@@ -414,8 +414,8 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, Map<Ref<E
 				_pre_gen_shape_list(mesh, shapes, true);
 			}
 
-			RigidBody3D *rigid_body = memnew(RigidBody3D);
-			rigid_body->set_name(_fixstr(name, "rigid"));
+			RigidDynamicBody3D *rigid_body = memnew(RigidDynamicBody3D);
+			rigid_body->set_name(_fixstr(name, "rigid_body"));
 			p_node->replace_by(rigid_body);
 			rigid_body->set_transform(mi->get_transform());
 			p_node = rigid_body;
@@ -622,7 +622,7 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, Map<Ref<
 								base = col;
 							} break;
 							case MESH_PHYSICS_RIGID_BODY_AND_MESH: {
-								RigidBody3D *rigid_body = memnew(RigidBody3D);
+								RigidDynamicBody3D *rigid_body = memnew(RigidDynamicBody3D);
 								rigid_body->set_name(p_node->get_name());
 								p_node->replace_by(rigid_body);
 								rigid_body->set_transform(mi->get_transform() * get_collision_shapes_transform(node_settings));

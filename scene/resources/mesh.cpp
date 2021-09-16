@@ -156,11 +156,6 @@ void Mesh::generate_debug_mesh_indices(Vector<Vector3> &r_points) {
 	}
 }
 
-bool Mesh::surface_is_softbody_friendly(int p_idx) const {
-	const uint32_t surface_format = surface_get_format(p_idx);
-	return (surface_format & Mesh::ARRAY_FLAG_USE_DYNAMIC_UPDATE);
-}
-
 Vector<Face3> Mesh::get_faces() const {
 	Ref<TriangleMesh> tm = generate_triangle_mesh();
 	if (tm.is_valid()) {

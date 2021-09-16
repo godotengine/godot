@@ -132,7 +132,6 @@ public:
 	virtual int get_surface_count() const = 0;
 	virtual int surface_get_array_len(int p_idx) const = 0;
 	virtual int surface_get_array_index_len(int p_idx) const = 0;
-	virtual bool surface_is_softbody_friendly(int p_idx) const;
 	virtual Array surface_get_arrays(int p_surface) const = 0;
 	virtual Array surface_get_blend_shape_arrays(int p_surface) const = 0;
 	virtual Dictionary surface_get_lods(int p_surface) const = 0;

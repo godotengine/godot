@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  soft_body_3d.h                                                       */
+/*  soft_dynamic_body_3d.h                                               */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,16 +28,16 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef SOFT_PHYSICS_BODY_H
-#define SOFT_PHYSICS_BODY_H
+#ifndef SOFT_DYNAMIC_BODY_H
+#define SOFT_DYNAMIC_BODY_H
 
 #include "scene/3d/mesh_instance_3d.h"
 #include "servers/physics_server_3d.h"
 
-class SoftBody3D;
+class SoftDynamicBody3D;
 
-class SoftBodyRenderingServerHandler : public RenderingServerHandler {
-	friend class SoftBody3D;
+class SoftDynamicBodyRenderingServerHandler : public RenderingServerHandler {
+	friend class SoftDynamicBody3D;
 
 	RID mesh;
 	int surface = 0;
@@ -49,7 +49,7 @@ class SoftBodyRenderingServerHandler : public RenderingServerHandler {
 	uint8_t *write_buffer = nullptr;
 
 private:
-	SoftBodyRenderingServerHandler();
+	SoftDynamicBodyRenderingServerHandler();
 	bool is_ready() { return mesh.is_valid(); }
 	void prepare(RID p_mesh_rid, int p_surface);
 	void clear();
@@ -63,8 +63,8 @@ public:
 	void set_aabb(const AABB &p_aabb) override;
 };
 
-class SoftBody3D : public MeshInstance3D {
-	GDCLASS(SoftBody3D, MeshInstance3D);
+class SoftDynamicBody3D : public MeshInstance3D {
+	GDCLASS(SoftDynamicBody3D, MeshInstance3D);
 
 public:
 	enum DisableMode {
@@ -84,7 +84,7 @@ public:
 	};
 
 private:
-	SoftBodyRenderingServerHandler rendering_server_handler;
+	SoftDynamicBodyRenderingServerHandler rendering_server_handler;
 
 	RID physics_rid;
 
@@ -105,8 +105,6 @@ private:
 	bool ray_pickable = true;
 
 	void _update_pickable();
-
-	void _softbody_changed();
 
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
@@ -184,12 +182,10 @@ public:
 	void set_ray_pickable(bool p_ray_pickable);
 	bool is_ray_pickable() const;
 
-	SoftBody3D();
-	~SoftBody3D();
+	SoftDynamicBody3D();
+	~SoftDynamicBody3D();
 
 private:
-	void reset_softbody_pin();
-
 	void _make_cache_dirty();
 	void _update_cache_pin_points_datas();
 
@@ -202,6 +198,6 @@ private:
 	int _has_pinned_point(int p_point_index) const;
 };
 
-VARIANT_ENUM_CAST(SoftBody3D::DisableMode);
+VARIANT_ENUM_CAST(SoftDynamicBody3D::DisableMode);
 
-#endif // SOFT_PHYSICS_BODY_H
+#endif // SOFT_DYNAMIC_BODY_H

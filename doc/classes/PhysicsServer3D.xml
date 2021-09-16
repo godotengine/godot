@@ -1212,7 +1212,7 @@
 			The [Shape3D] is a [HeightMapShape3D].
 		</constant>
 		<constant name="SHAPE_SOFT_BODY" value="9" enum="ShapeType">
-			The [Shape3D] is a [SoftBody3D].
+			The [Shape3D] is used internally for a soft body. Any attempt to create this kind of shape results in an error.
 		</constant>
 		<constant name="SHAPE_CUSTOM" value="10" enum="ShapeType">
 			This constant is used internally by the engine. Any attempt to create this kind of shape results in an error.

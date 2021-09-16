@@ -309,7 +309,7 @@ AnimatableBody2D::AnimatableBody2D() :
 	_update_kinematic_motion();
 }
 
-void RigidBody2D::_body_enter_tree(ObjectID p_id) {
+void RigidDynamicBody2D::_body_enter_tree(ObjectID p_id) {
 	Object *obj = ObjectDB::get_instance(p_id);
 	Node *node = Object::cast_to<Node>(obj);
 	ERR_FAIL_COND(!node);
@@ -331,7 +331,7 @@ void RigidBody2D::_body_enter_tree(ObjectID p_id) {
 	contact_monitor->locked = false;
 }
 
-void RigidBody2D::_body_exit_tree(ObjectID p_id) {
+void RigidDynamicBody2D::_body_exit_tree(ObjectID p_id) {
 	Object *obj = ObjectDB::get_instance(p_id);
 	Node *node = Object::cast_to<Node>(obj);
 	ERR_FAIL_COND(!node);
@@ -352,7 +352,7 @@ void RigidBody2D::_body_exit_tree(ObjectID p_id) {
 	contact_monitor->locked = false;
 }
 
-void RigidBody2D::_body_inout(int p_status, const RID &p_body, ObjectID p_instance, int p_body_shape, int p_local_shape) {
+void RigidDynamicBody2D::_body_inout(int p_status, const RID &p_body, ObjectID p_instance, int p_body_shape, int p_local_shape) {
 	bool body_in = p_status == 1;
 	ObjectID objid = p_instance;
 
@@ -371,8 +371,8 @@ void RigidBody2D::_body_inout(int p_status, const RID &p_body, ObjectID p_instan
 			//E->get().rc=0;
 			E->get().in_scene = node && node->is_inside_tree();
 			if (node) {
-				node->connect(SceneStringNames::get_singleton()->tree_entered, callable_mp(this, &RigidBody2D::_body_enter_tree), make_binds(objid));
-				node->connect(SceneStringNames::get_singleton()->tree_exiting, callable_mp(this, &RigidBody2D::_body_exit_tree), make_binds(objid));
+				node->connect(SceneStringNames::get_singleton()->tree_entered, callable_mp(this, &RigidDynamicBody2D::_body_enter_tree), make_binds(objid));
+				node->connect(SceneStringNames::get_singleton()->tree_exiting, callable_mp(this, &RigidDynamicBody2D::_body_exit_tree), make_binds(objid));
 				if (E->get().in_scene) {
 					emit_signal(SceneStringNames::get_singleton()->body_entered, node);
 				}
@@ -400,8 +400,8 @@ void RigidBody2D::_body_inout(int p_status, const RID &p_body, ObjectID p_instan
 
 		if (E->get().shapes.is_empty()) {
 			if (node) {
-				node->disconnect(SceneStringNames::get_singleton()->tree_entered, callable_mp(this, &RigidBody2D::_body_enter_tree));
-				node->disconnect(SceneStringNames::get_singleton()->tree_exiting, callable_mp(this, &RigidBody2D::_body_exit_tree));
+				node->disconnect(SceneStringNames::get_singleton()->tree_entered, callable_mp(this, &RigidDynamicBody2D::_body_enter_tree));
+				node->disconnect(SceneStringNames::get_singleton()->tree_exiting, callable_mp(this, &RigidDynamicBody2D::_body_exit_tree));
 				if (in_scene) {
 					emit_signal(SceneStringNames::get_singleton()->body_exited, node);
 				}
@@ -415,19 +415,19 @@ void RigidBody2D::_body_inout(int p_status, const RID &p_body, ObjectID p_instan
 	}
 }
 
-struct _RigidBody2DInOut {
+struct _RigidDynamicBody2DInOut {
 	RID rid;
 	ObjectID id;
 	int shape = 0;
 	int local_shape = 0;
 };
 
-void RigidBody2D::_body_state_changed_callback(void *p_instance, PhysicsDirectBodyState2D *p_state) {
-	RigidBody2D *body = (RigidBody2D *)p_instance;
+void RigidDynamicBody2D::_body_state_changed_callback(void *p_instance, PhysicsDirectBodyState2D *p_state) {
+	RigidDynamicBody2D *body = (RigidDynamicBody2D *)p_instance;
 	body->_body_state_changed(p_state);
 }
 
-void RigidBody2D::_body_state_changed(PhysicsDirectBodyState2D *p_state) {
+void RigidDynamicBody2D::_body_state_changed(PhysicsDirectBodyState2D *p_state) {
 	set_block_transform_notify(true); // don't want notify (would feedback loop)
 	if (mode != MODE_KINEMATIC) {
 		set_global_transform(p_state->get_transform());
@@ -457,9 +457,9 @@ void RigidBody2D::_body_state_changed(PhysicsDirectBodyState2D *p_state) {
 			}
 		}
 
-		_RigidBody2DInOut *toadd = (_RigidBody2DInOut *)alloca(p_state->get_contact_count() * sizeof(_RigidBody2DInOut));
+		_RigidDynamicBody2DInOut *toadd = (_RigidDynamicBody2DInOut *)alloca(p_state->get_contact_count() * sizeof(_RigidDynamicBody2DInOut));
 		int toadd_count = 0; //state->get_contact_count();
-		RigidBody2D_RemoveAction *toremove = (RigidBody2D_RemoveAction *)alloca(rc * sizeof(RigidBody2D_RemoveAction));
+		RigidDynamicBody2D_RemoveAction *toremove = (RigidDynamicBody2D_RemoveAction *)alloca(rc * sizeof(RigidDynamicBody2D_RemoveAction));
 		int toremove_count = 0;
 
 		//put the ones to add
@@ -523,7 +523,7 @@ void RigidBody2D::_body_state_changed(PhysicsDirectBodyState2D *p_state) {
 	}
 }
 
-void RigidBody2D::set_mode(Mode p_mode) {
+void RigidDynamicBody2D::set_mode(Mode p_mode) {
 	mode = p_mode;
 	switch (p_mode) {
 		case MODE_DYNAMIC: {
@@ -544,31 +544,31 @@ void RigidBody2D::set_mode(Mode p_mode) {
 	}
 }
 
-RigidBody2D::Mode RigidBody2D::get_mode() const {
+RigidDynamicBody2D::Mode RigidDynamicBody2D::get_mode() const {
 	return mode;
 }
 
-void RigidBody2D::set_mass(real_t p_mass) {
+void RigidDynamicBody2D::set_mass(real_t p_mass) {
 	ERR_FAIL_COND(p_mass <= 0);
 	mass = p_mass;
 	PhysicsServer2D::get_singleton()->body_set_param(get_rid(), PhysicsServer2D::BODY_PARAM_MASS, mass);
 }
 
-real_t RigidBody2D::get_mass() const {
+real_t RigidDynamicBody2D::get_mass() const {
 	return mass;
 }
 
-void RigidBody2D::set_inertia(real_t p_inertia) {
+void RigidDynamicBody2D::set_inertia(real_t p_inertia) {
 	ERR_FAIL_COND(p_inertia < 0);
 	inertia = p_inertia;
 	PhysicsServer2D::get_singleton()->body_set_param(get_rid(), PhysicsServer2D::BODY_PARAM_INERTIA, inertia);
 }
 
-real_t RigidBody2D::get_inertia() const {
+real_t RigidDynamicBody2D::get_inertia() const {
 	return inertia;
 }
 
-void RigidBody2D::set_center_of_mass_mode(CenterOfMassMode p_mode) {
+void RigidDynamicBody2D::set_center_of_mass_mode(CenterOfMassMode p_mode) {
 	if (center_of_mass_mode == p_mode) {
 		return;
 	}
@@ -590,11 +590,11 @@ void RigidBody2D::set_center_of_mass_mode(CenterOfMassMode p_mode) {
 	}
 }
 
-RigidBody2D::CenterOfMassMode RigidBody2D::get_center_of_mass_mode() const {
+RigidDynamicBody2D::CenterOfMassMode RigidDynamicBody2D::get_center_of_mass_mode() const {
 	return center_of_mass_mode;
 }
 
-void RigidBody2D::set_center_of_mass(const Vector2 &p_center_of_mass) {
+void RigidDynamicBody2D::set_center_of_mass(const Vector2 &p_center_of_mass) {
 	if (center_of_mass == p_center_of_mass) {
 		return;
 	}
@@ -605,84 +605,84 @@ void RigidBody2D::set_center_of_mass(const Vector2 &p_center_of_mass) {
 	PhysicsServer2D::get_singleton()->body_set_param(get_rid(), PhysicsServer2D::BODY_PARAM_CENTER_OF_MASS, center_of_mass);
 }
 
-const Vector2 &RigidBody2D::get_center_of_mass() const {
+const Vector2 &RigidDynamicBody2D::get_center_of_mass() const {
 	return center_of_mass;
 }
 
-void RigidBody2D::set_physics_material_override(const Ref<PhysicsMaterial> &p_physics_material_override) {
+void RigidDynamicBody2D::set_physics_material_override(const Ref<PhysicsMaterial> &p_physics_material_override) {
 	if (physics_material_override.is_valid()) {
-		if (physics_material_override->is_connected(CoreStringNames::get_singleton()->changed, callable_mp(this, &RigidBody2D::_reload_physics_characteristics))) {
-			physics_material_override->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &RigidBody2D::_reload_physics_characteristics));
+		if (physics_material_override->is_connected(CoreStringNames::get_singleton()->changed, callable_mp(this, &RigidDynamicBody2D::_reload_physics_characteristics))) {
+			physics_material_override->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &RigidDynamicBody2D::_reload_physics_characteristics));
 		}
 	}
 
 	physics_material_override = p_physics_material_override;
 
 	if (physics_material_override.is_valid()) {
-		physics_material_override->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &RigidBody2D::_reload_physics_characteristics));
+		physics_material_override->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &RigidDynamicBody2D::_reload_physics_characteristics));
 	}
 	_reload_physics_characteristics();
 }
 
-Ref<PhysicsMaterial> RigidBody2D::get_physics_material_override() const {
+Ref<PhysicsMaterial> RigidDynamicBody2D::get_physics_material_override() const {
 	return physics_material_override;
 }
 
-void RigidBody2D::set_gravity_scale(real_t p_gravity_scale) {
+void RigidDynamicBody2D::set_gravity_scale(real_t p_gravity_scale) {
 	gravity_scale = p_gravity_scale;
 	PhysicsServer2D::get_singleton()->body_set_param(get_rid(), PhysicsServer2D::BODY_PARAM_GRAVITY_SCALE, gravity_scale);
 }
 
-real_t RigidBody2D::get_gravity_scale() const {
+real_t RigidDynamicBody2D::get_gravity_scale() const {
 	return gravity_scale;
 }
 
-void RigidBody2D::set_linear_damp(real_t p_linear_damp) {
+void RigidDynamicBody2D::set_linear_damp(real_t p_linear_damp) {
 	ERR_FAIL_COND(p_linear_damp < -1);
 	linear_damp = p_linear_damp;
 	PhysicsServer2D::get_singleton()->body_set_param(get_rid(), PhysicsServer2D::BODY_PARAM_LINEAR_DAMP, linear_damp);
 }
 
-real_t RigidBody2D::get_linear_damp() const {
+real_t RigidDynamicBody2D::get_linear_damp() const {
 	return linear_damp;
 }
 
-void RigidBody2D::set_angular_damp(real_t p_angular_damp) {
+void RigidDynamicBody2D::set_angular_damp(real_t p_angular_damp) {
 	ERR_FAIL_COND(p_angular_damp < -1);
 	angular_damp = p_angular_damp;
 	PhysicsServer2D::get_singleton()->body_set_param(get_rid(), PhysicsServer2D::BODY_PARAM_ANGULAR_DAMP, angular_damp);
 }
 
-real_t RigidBody2D::get_angular_damp() const {
+real_t RigidDynamicBody2D::get_angular_damp() const {
 	return angular_damp;
 }
 
-void RigidBody2D::set_axis_velocity(const Vector2 &p_axis) {
+void RigidDynamicBody2D::set_axis_velocity(const Vector2 &p_axis) {
 	Vector2 axis = p_axis.normalized();
 	linear_velocity -= axis * axis.dot(linear_velocity);
 	linear_velocity += p_axis;
 	PhysicsServer2D::get_singleton()->body_set_state(get_rid(), PhysicsServer2D::BODY_STATE_LINEAR_VELOCITY, linear_velocity);
 }
 
-void RigidBody2D::set_linear_velocity(const Vector2 &p_velocity) {
+void RigidDynamicBody2D::set_linear_velocity(const Vector2 &p_velocity) {
 	linear_velocity = p_velocity;
 	PhysicsServer2D::get_singleton()->body_set_state(get_rid(), PhysicsServer2D::BODY_STATE_LINEAR_VELOCITY, linear_velocity);
 }
 
-Vector2 RigidBody2D::get_linear_velocity() const {
+Vector2 RigidDynamicBody2D::get_linear_velocity() const {
 	return linear_velocity;
 }
 
-void RigidBody2D::set_angular_velocity(real_t p_velocity) {
+void RigidDynamicBody2D::set_angular_velocity(real_t p_velocity) {
 	angular_velocity = p_velocity;
 	PhysicsServer2D::get_singleton()->body_set_state(get_rid(), PhysicsServer2D::BODY_STATE_ANGULAR_VELOCITY, angular_velocity);
 }
 
-real_t RigidBody2D::get_angular_velocity() const {
+real_t RigidDynamicBody2D::get_angular_velocity() const {
 	return angular_velocity;
 }
 
-void RigidBody2D::set_use_custom_integrator(bool p_enable) {
+void RigidDynamicBody2D::set_use_custom_integrator(bool p_enable) {
 	if (custom_integrator == p_enable) {
 		return;
 	}
@@ -691,87 +691,87 @@ void RigidBody2D::set_use_custom_integrator(bool p_enable) {
 	PhysicsServer2D::get_singleton()->body_set_omit_force_integration(get_rid(), p_enable);
 }
 
-bool RigidBody2D::is_using_custom_integrator() {
+bool RigidDynamicBody2D::is_using_custom_integrator() {
 	return custom_integrator;
 }
 
-void RigidBody2D::set_sleeping(bool p_sleeping) {
+void RigidDynamicBody2D::set_sleeping(bool p_sleeping) {
 	sleeping = p_sleeping;
 	PhysicsServer2D::get_singleton()->body_set_state(get_rid(), PhysicsServer2D::BODY_STATE_SLEEPING, sleeping);
 }
 
-void RigidBody2D::set_can_sleep(bool p_active) {
+void RigidDynamicBody2D::set_can_sleep(bool p_active) {
 	can_sleep = p_active;
 	PhysicsServer2D::get_singleton()->body_set_state(get_rid(), PhysicsServer2D::BODY_STATE_CAN_SLEEP, p_active);
 }
 
-bool RigidBody2D::is_able_to_sleep() const {
+bool RigidDynamicBody2D::is_able_to_sleep() const {
 	return can_sleep;
 }
 
-bool RigidBody2D::is_sleeping() const {
+bool RigidDynamicBody2D::is_sleeping() const {
 	return sleeping;
 }
 
-void RigidBody2D::set_max_contacts_reported(int p_amount) {
+void RigidDynamicBody2D::set_max_contacts_reported(int p_amount) {
 	max_contacts_reported = p_amount;
 	PhysicsServer2D::get_singleton()->body_set_max_contacts_reported(get_rid(), p_amount);
 }
 
-int RigidBody2D::get_max_contacts_reported() const {
+int RigidDynamicBody2D::get_max_contacts_reported() const {
 	return max_contacts_reported;
 }
 
-void RigidBody2D::apply_central_impulse(const Vector2 &p_impulse) {
+void RigidDynamicBody2D::apply_central_impulse(const Vector2 &p_impulse) {
 	PhysicsServer2D::get_singleton()->body_apply_central_impulse(get_rid(), p_impulse);
 }
 
-void RigidBody2D::apply_impulse(const Vector2 &p_impulse, const Vector2 &p_position) {
+void RigidDynamicBody2D::apply_impulse(const Vector2 &p_impulse, const Vector2 &p_position) {
 	PhysicsServer2D::get_singleton()->body_apply_impulse(get_rid(), p_impulse, p_position);
 }
 
-void RigidBody2D::apply_torque_impulse(real_t p_torque) {
+void RigidDynamicBody2D::apply_torque_impulse(real_t p_torque) {
 	PhysicsServer2D::get_singleton()->body_apply_torque_impulse(get_rid(), p_torque);
 }
 
-void RigidBody2D::set_applied_force(const Vector2 &p_force) {
+void RigidDynamicBody2D::set_applied_force(const Vector2 &p_force) {
 	PhysicsServer2D::get_singleton()->body_set_applied_force(get_rid(), p_force);
 };
 
-Vector2 RigidBody2D::get_applied_force() const {
+Vector2 RigidDynamicBody2D::get_applied_force() const {
 	return PhysicsServer2D::get_singleton()->body_get_applied_force(get_rid());
 };
 
-void RigidBody2D::set_applied_torque(const real_t p_torque) {
+void RigidDynamicBody2D::set_applied_torque(const real_t p_torque) {
 	PhysicsServer2D::get_singleton()->body_set_applied_torque(get_rid(), p_torque);
 };
 
-real_t RigidBody2D::get_applied_torque() const {
+real_t RigidDynamicBody2D::get_applied_torque() const {
 	return PhysicsServer2D::get_singleton()->body_get_applied_torque(get_rid());
 };
 
-void RigidBody2D::add_central_force(const Vector2 &p_force) {
+void RigidDynamicBody2D::add_central_force(const Vector2 &p_force) {
 	PhysicsServer2D::get_singleton()->body_add_central_force(get_rid(), p_force);
 }
 
-void RigidBody2D::add_force(const Vector2 &p_force, const Vector2 &p_position) {
+void RigidDynamicBody2D::add_force(const Vector2 &p_force, const Vector2 &p_position) {
 	PhysicsServer2D::get_singleton()->body_add_force(get_rid(), p_force, p_position);
 }
 
-void RigidBody2D::add_torque(const real_t p_torque) {
+void RigidDynamicBody2D::add_torque(const real_t p_torque) {
 	PhysicsServer2D::get_singleton()->body_add_torque(get_rid(), p_torque);
 }
 
-void RigidBody2D::set_continuous_collision_detection_mode(CCDMode p_mode) {
+void RigidDynamicBody2D::set_continuous_collision_detection_mode(CCDMode p_mode) {
 	ccd_mode = p_mode;
 	PhysicsServer2D::get_singleton()->body_set_continuous_collision_detection_mode(get_rid(), PhysicsServer2D::CCDMode(p_mode));
 }
 
-RigidBody2D::CCDMode RigidBody2D::get_continuous_collision_detection_mode() const {
+RigidDynamicBody2D::CCDMode RigidDynamicBody2D::get_continuous_collision_detection_mode() const {
 	return ccd_mode;
 }
 
-TypedArray<Node2D> RigidBody2D::get_colliding_bodies() const {
+TypedArray<Node2D> RigidDynamicBody2D::get_colliding_bodies() const {
 	ERR_FAIL_COND_V(!contact_monitor, Array());
 
 	TypedArray<Node2D> ret;
@@ -789,7 +789,7 @@ TypedArray<Node2D> RigidBody2D::get_colliding_bodies() const {
 	return ret;
 }
 
-void RigidBody2D::set_contact_monitor(bool p_enabled) {
+void RigidDynamicBody2D::set_contact_monitor(bool p_enabled) {
 	if (p_enabled == is_contact_monitor_enabled()) {
 		return;
 	}
@@ -803,8 +803,8 @@ void RigidBody2D::set_contact_monitor(bool p_enabled) {
 			Node *node = Object::cast_to<Node>(obj);
 
 			if (node) {
-				node->disconnect(SceneStringNames::get_singleton()->tree_entered, callable_mp(this, &RigidBody2D::_body_enter_tree));
-				node->disconnect(SceneStringNames::get_singleton()->tree_exiting, callable_mp(this, &RigidBody2D::_body_exit_tree));
+				node->disconnect(SceneStringNames::get_singleton()->tree_entered, callable_mp(this, &RigidDynamicBody2D::_body_enter_tree));
+				node->disconnect(SceneStringNames::get_singleton()->tree_exiting, callable_mp(this, &RigidDynamicBody2D::_body_exit_tree));
 			}
 		}
 
@@ -816,11 +816,11 @@ void RigidBody2D::set_contact_monitor(bool p_enabled) {
 	}
 }
 
-bool RigidBody2D::is_contact_monitor_enabled() const {
+bool RigidDynamicBody2D::is_contact_monitor_enabled() const {
 	return contact_monitor != nullptr;
 }
 
-void RigidBody2D::_notification(int p_what) {
+void RigidDynamicBody2D::_notification(int p_what) {
 #ifdef TOOLS_ENABLED
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
@@ -838,86 +838,86 @@ void RigidBody2D::_notification(int p_what) {
 #endif
 }
 
-TypedArray<String> RigidBody2D::get_configuration_warnings() const {
+TypedArray<String> RigidDynamicBody2D::get_configuration_warnings() const {
 	Transform2D t = get_transform();
 
 	TypedArray<String> warnings = CollisionObject2D::get_configuration_warnings();
 
 	if ((get_mode() == MODE_DYNAMIC || get_mode() == MODE_DYNAMIC_LOCKED) && (ABS(t.elements[0].length() - 1.0) > 0.05 || ABS(t.elements[1].length() - 1.0) > 0.05)) {
-		warnings.push_back(TTR("Size changes to RigidBody2D (in dynamic modes) will be overridden by the physics engine when running.\nChange the size in children collision shapes instead."));
+		warnings.push_back(TTR("Size changes to RigidDynamicBody2D (in dynamic modes) will be overridden by the physics engine when running.\nChange the size in children collision shapes instead."));
 	}
 
 	return warnings;
 }
 
-void RigidBody2D::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_mode", "mode"), &RigidBody2D::set_mode);
-	ClassDB::bind_method(D_METHOD("get_mode"), &RigidBody2D::get_mode);
+void RigidDynamicBody2D::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_mode", "mode"), &RigidDynamicBody2D::set_mode);
+	ClassDB::bind_method(D_METHOD("get_mode"), &RigidDynamicBody2D::get_mode);
 
-	ClassDB::bind_method(D_METHOD("set_mass", "mass"), &RigidBody2D::set_mass);
-	ClassDB::bind_method(D_METHOD("get_mass"), &RigidBody2D::get_mass);
+	ClassDB::bind_method(D_METHOD("set_mass", "mass"), &RigidDynamicBody2D::set_mass);
+	ClassDB::bind_method(D_METHOD("get_mass"), &RigidDynamicBody2D::get_mass);
 
-	ClassDB::bind_method(D_METHOD("get_inertia"), &RigidBody2D::get_inertia);
-	ClassDB::bind_method(D_METHOD("set_inertia", "inertia"), &RigidBody2D::set_inertia);
+	ClassDB::bind_method(D_METHOD("get_inertia"), &RigidDynamicBody2D::get_inertia);
+	ClassDB::bind_method(D_METHOD("set_inertia", "inertia"), &RigidDynamicBody2D::set_inertia);
 
-	ClassDB::bind_method(D_METHOD("set_center_of_mass_mode", "mode"), &RigidBody2D::set_center_of_mass_mode);
-	ClassDB::bind_method(D_METHOD("get_center_of_mass_mode"), &RigidBody2D::get_center_of_mass_mode);
+	ClassDB::bind_method(D_METHOD("set_center_of_mass_mode", "mode"), &RigidDynamicBody2D::set_center_of_mass_mode);
+	ClassDB::bind_method(D_METHOD("get_center_of_mass_mode"), &RigidDynamicBody2D::get_center_of_mass_mode);
 
-	ClassDB::bind_method(D_METHOD("set_center_of_mass", "center_of_mass"), &RigidBody2D::set_center_of_mass);
-	ClassDB::bind_method(D_METHOD("get_center_of_mass"), &RigidBody2D::get_center_of_mass);
+	ClassDB::bind_method(D_METHOD("set_center_of_mass", "center_of_mass"), &RigidDynamicBody2D::set_center_of_mass);
+	ClassDB::bind_method(D_METHOD("get_center_of_mass"), &RigidDynamicBody2D::get_center_of_mass);
 
-	ClassDB::bind_method(D_METHOD("set_physics_material_override", "physics_material_override"), &RigidBody2D::set_physics_material_override);
-	ClassDB::bind_method(D_METHOD("get_physics_material_override"), &RigidBody2D::get_physics_material_override);
+	ClassDB::bind_method(D_METHOD("set_physics_material_override", "physics_material_override"), &RigidDynamicBody2D::set_physics_material_override);
+	ClassDB::bind_method(D_METHOD("get_physics_material_override"), &RigidDynamicBody2D::get_physics_material_override);
 
-	ClassDB::bind_method(D_METHOD("set_gravity_scale", "gravity_scale"), &RigidBody2D::set_gravity_scale);
-	ClassDB::bind_method(D_METHOD("get_gravity_scale"), &RigidBody2D::get_gravity_scale);
+	ClassDB::bind_method(D_METHOD("set_gravity_scale", "gravity_scale"), &RigidDynamicBody2D::set_gravity_scale);
+	ClassDB::bind_method(D_METHOD("get_gravity_scale"), &RigidDynamicBody2D::get_gravity_scale);
 
-	ClassDB::bind_method(D_METHOD("set_linear_damp", "linear_damp"), &RigidBody2D::set_linear_damp);
-	ClassDB::bind_method(D_METHOD("get_linear_damp"), &RigidBody2D::get_linear_damp);
+	ClassDB::bind_method(D_METHOD("set_linear_damp", "linear_damp"), &RigidDynamicBody2D::set_linear_damp);
+	ClassDB::bind_method(D_METHOD("get_linear_damp"), &RigidDynamicBody2D::get_linear_damp);
 
-	ClassDB::bind_method(D_METHOD("set_angular_damp", "angular_damp"), &RigidBody2D::set_angular_damp);
-	ClassDB::bind_method(D_METHOD("get_angular_damp"), &RigidBody2D::get_angular_damp);
+	ClassDB::bind_method(D_METHOD("set_angular_damp", "angular_damp"), &RigidDynamicBody2D::set_angular_damp);
+	ClassDB::bind_method(D_METHOD("get_angular_damp"), &RigidDynamicBody2D::get_angular_damp);
 
-	ClassDB::bind_method(D_METHOD("set_linear_velocity", "linear_velocity"), &RigidBody2D::set_linear_velocity);
-	ClassDB::bind_method(D_METHOD("get_linear_velocity"), &RigidBody2D::get_linear_velocity);
+	ClassDB::bind_method(D_METHOD("set_linear_velocity", "linear_velocity"), &RigidDynamicBody2D::set_linear_velocity);
+	ClassDB::bind_method(D_METHOD("get_linear_velocity"), &RigidDynamicBody2D::get_linear_velocity);
 
-	ClassDB::bind_method(D_METHOD("set_angular_velocity", "angular_velocity"), &RigidBody2D::set_angular_velocity);
-	ClassDB::bind_method(D_METHOD("get_angular_velocity"), &RigidBody2D::get_angular_velocity);
+	ClassDB::bind_method(D_METHOD("set_angular_velocity", "angular_velocity"), &RigidDynamicBody2D::set_angular_velocity);
+	ClassDB::bind_method(D_METHOD("get_angular_velocity"), &RigidDynamicBody2D::get_angular_velocity);
 
-	ClassDB::bind_method(D_METHOD("set_max_contacts_reported", "amount"), &RigidBody2D::set_max_contacts_reported);
-	ClassDB::bind_method(D_METHOD("get_max_contacts_reported"), &RigidBody2D::get_max_contacts_reported);
+	ClassDB::bind_method(D_METHOD("set_max_contacts_reported", "amount"), &RigidDynamicBody2D::set_max_contacts_reported);
+	ClassDB::bind_method(D_METHOD("get_max_contacts_reported"), &RigidDynamicBody2D::get_max_contacts_reported);
 
-	ClassDB::bind_method(D_METHOD("set_use_custom_integrator", "enable"), &RigidBody2D::set_use_custom_integrator);
-	ClassDB::bind_method(D_METHOD("is_using_custom_integrator"), &RigidBody2D::is_using_custom_integrator);
+	ClassDB::bind_method(D_METHOD("set_use_custom_integrator", "enable"), &RigidDynamicBody2D::set_use_custom_integrator);
+	ClassDB::bind_method(D_METHOD("is_using_custom_integrator"), &RigidDynamicBody2D::is_using_custom_integrator);
 
-	ClassDB::bind_method(D_METHOD("set_contact_monitor", "enabled"), &RigidBody2D::set_contact_monitor);
-	ClassDB::bind_method(D_METHOD("is_contact_monitor_enabled"), &RigidBody2D::is_contact_monitor_enabled);
+	ClassDB::bind_method(D_METHOD("set_contact_monitor", "enabled"), &RigidDynamicBody2D::set_contact_monitor);
+	ClassDB::bind_method(D_METHOD("is_contact_monitor_enabled"), &RigidDynamicBody2D::is_contact_monitor_enabled);
 
-	ClassDB::bind_method(D_METHOD("set_continuous_collision_detection_mode", "mode"), &RigidBody2D::set_continuous_collision_detection_mode);
-	ClassDB::bind_method(D_METHOD("get_continuous_collision_detection_mode"), &RigidBody2D::get_continuous_collision_detection_mode);
+	ClassDB::bind_method(D_METHOD("set_continuous_collision_detection_mode", "mode"), &RigidDynamicBody2D::set_continuous_collision_detection_mode);
+	ClassDB::bind_method(D_METHOD("get_continuous_collision_detection_mode"), &RigidDynamicBody2D::get_continuous_collision_detection_mode);
 
-	ClassDB::bind_method(D_METHOD("set_axis_velocity", "axis_velocity"), &RigidBody2D::set_axis_velocity);
-	ClassDB::bind_method(D_METHOD("apply_central_impulse", "impulse"), &RigidBody2D::apply_central_impulse, Vector2());
-	ClassDB::bind_method(D_METHOD("apply_impulse", "impulse", "position"), &RigidBody2D::apply_impulse, Vector2());
-	ClassDB::bind_method(D_METHOD("apply_torque_impulse", "torque"), &RigidBody2D::apply_torque_impulse);
+	ClassDB::bind_method(D_METHOD("set_axis_velocity", "axis_velocity"), &RigidDynamicBody2D::set_axis_velocity);
+	ClassDB::bind_method(D_METHOD("apply_central_impulse", "impulse"), &RigidDynamicBody2D::apply_central_impulse, Vector2());
+	ClassDB::bind_method(D_METHOD("apply_impulse", "impulse", "position"), &RigidDynamicBody2D::apply_impulse, Vector2());
+	ClassDB::bind_method(D_METHOD("apply_torque_impulse", "torque"), &RigidDynamicBody2D::apply_torque_impulse);
 
-	ClassDB::bind_method(D_METHOD("set_applied_force", "force"), &RigidBody2D::set_applied_force);
-	ClassDB::bind_method(D_METHOD("get_applied_force"), &RigidBody2D::get_applied_force);
+	ClassDB::bind_method(D_METHOD("set_applied_force", "force"), &RigidDynamicBody2D::set_applied_force);
+	ClassDB::bind_method(D_METHOD("get_applied_force"), &RigidDynamicBody2D::get_applied_force);
 
-	ClassDB::bind_method(D_METHOD("set_applied_torque", "torque"), &RigidBody2D::set_applied_torque);
-	ClassDB::bind_method(D_METHOD("get_applied_torque"), &RigidBody2D::get_applied_torque);
+	ClassDB::bind_method(D_METHOD("set_applied_torque", "torque"), &RigidDynamicBody2D::set_applied_torque);
+	ClassDB::bind_method(D_METHOD("get_applied_torque"), &RigidDynamicBody2D::get_applied_torque);
 
-	ClassDB::bind_method(D_METHOD("add_central_force", "force"), &RigidBody2D::add_central_force);
-	ClassDB::bind_method(D_METHOD("add_force", "force", "position"), &RigidBody2D::add_force, Vector2());
-	ClassDB::bind_method(D_METHOD("add_torque", "torque"), &RigidBody2D::add_torque);
+	ClassDB::bind_method(D_METHOD("add_central_force", "force"), &RigidDynamicBody2D::add_central_force);
+	ClassDB::bind_method(D_METHOD("add_force", "force", "position"), &RigidDynamicBody2D::add_force, Vector2());
+	ClassDB::bind_method(D_METHOD("add_torque", "torque"), &RigidDynamicBody2D::add_torque);
 
-	ClassDB::bind_method(D_METHOD("set_sleeping", "sleeping"), &RigidBody2D::set_sleeping);
-	ClassDB::bind_method(D_METHOD("is_sleeping"), &RigidBody2D::is_sleeping);
+	ClassDB::bind_method(D_METHOD("set_sleeping", "sleeping"), &RigidDynamicBody2D::set_sleeping);
+	ClassDB::bind_method(D_METHOD("is_sleeping"), &RigidDynamicBody2D::is_sleeping);
 
-	ClassDB::bind_method(D_METHOD("set_can_sleep", "able_to_sleep"), &RigidBody2D::set_can_sleep);
-	ClassDB::bind_method(D_METHOD("is_able_to_sleep"), &RigidBody2D::is_able_to_sleep);
+	ClassDB::bind_method(D_METHOD("set_can_sleep", "able_to_sleep"), &RigidDynamicBody2D::set_can_sleep);
+	ClassDB::bind_method(D_METHOD("is_able_to_sleep"), &RigidDynamicBody2D::is_able_to_sleep);
 
-	ClassDB::bind_method(D_METHOD("get_colliding_bodies"), &RigidBody2D::get_colliding_bodies);
+	ClassDB::bind_method(D_METHOD("get_colliding_bodies"), &RigidDynamicBody2D::get_colliding_bodies);
 
 	GDVIRTUAL_BIND(_integrate_forces, "state");
 
@@ -964,7 +964,7 @@ void RigidBody2D::_bind_methods() {
 	BIND_ENUM_CONSTANT(CCD_MODE_CAST_SHAPE);
 }
 
-void RigidBody2D::_validate_property(PropertyInfo &property) const {
+void RigidDynamicBody2D::_validate_property(PropertyInfo &property) const {
 	if (center_of_mass_mode != CENTER_OF_MASS_MODE_CUSTOM) {
 		if (property.name == "center_of_mass") {
 			property.usage = PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL;
@@ -972,18 +972,18 @@ void RigidBody2D::_validate_property(PropertyInfo &property) const {
 	}
 }
 
-RigidBody2D::RigidBody2D() :
+RigidDynamicBody2D::RigidDynamicBody2D() :
 		PhysicsBody2D(PhysicsServer2D::BODY_MODE_DYNAMIC) {
 	PhysicsServer2D::get_singleton()->body_set_state_sync_callback(get_rid(), this, _body_state_changed_callback);
 }
 
-RigidBody2D::~RigidBody2D() {
+RigidDynamicBody2D::~RigidDynamicBody2D() {
 	if (contact_monitor) {
 		memdelete(contact_monitor);
 	}
 }
 
-void RigidBody2D::_reload_physics_characteristics() {
+void RigidDynamicBody2D::_reload_physics_characteristics() {
 	if (physics_material_override.is_null()) {
 		PhysicsServer2D::get_singleton()->body_set_param(get_rid(), PhysicsServer2D::BODY_PARAM_BOUNCE, 0);
 		PhysicsServer2D::get_singleton()->body_set_param(get_rid(), PhysicsServer2D::BODY_PARAM_FRICTION, 1);

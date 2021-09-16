@@ -33,7 +33,7 @@
 void PhysicalBone2D::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
-			// Position the RigidBody in the correct position.
+			// Position the RigidDynamicBody in the correct position.
 			if (follow_bone_when_simulating) {
 				_position_at_bone2d();
 			}
@@ -158,14 +158,14 @@ void PhysicalBone2D::_start_physics_simulation() {
 	PhysicsServer2D::get_singleton()->body_set_collision_mask(get_rid(), get_collision_mask());
 
 	// Apply the correct mode
-	RigidBody2D::Mode rigid_mode = get_mode();
-	if (rigid_mode == RigidBody2D::MODE_STATIC) {
+	RigidDynamicBody2D::Mode rigid_mode = get_mode();
+	if (rigid_mode == RigidDynamicBody2D::MODE_STATIC) {
 		set_body_mode(PhysicsServer2D::BODY_MODE_STATIC);
-	} else if (rigid_mode == RigidBody2D::MODE_DYNAMIC) {
+	} else if (rigid_mode == RigidDynamicBody2D::MODE_DYNAMIC) {
 		set_body_mode(PhysicsServer2D::BODY_MODE_DYNAMIC);
-	} else if (rigid_mode == RigidBody2D::MODE_KINEMATIC) {
+	} else if (rigid_mode == RigidDynamicBody2D::MODE_KINEMATIC) {
 		set_body_mode(PhysicsServer2D::BODY_MODE_KINEMATIC);
-	} else if (rigid_mode == RigidBody2D::MODE_DYNAMIC_LOCKED) {
+	} else if (rigid_mode == RigidDynamicBody2D::MODE_DYNAMIC_LOCKED) {
 		set_body_mode(PhysicsServer2D::BODY_MODE_DYNAMIC_LOCKED);
 	} else {
 		// Default to Dynamic.
@@ -295,7 +295,7 @@ void PhysicalBone2D::_bind_methods() {
 }
 
 PhysicalBone2D::PhysicalBone2D() {
-	// Stop the RigidBody from executing its force integration.
+	// Stop the RigidDynamicBody from executing its force integration.
 	PhysicsServer2D::get_singleton()->body_set_collision_layer(get_rid(), 0);
 	PhysicsServer2D::get_singleton()->body_set_collision_mask(get_rid(), 0);
 	PhysicsServer2D::get_singleton()->body_set_mode(get_rid(), PhysicsServer2D::BodyMode::BODY_MODE_STATIC);
