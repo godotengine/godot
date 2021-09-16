@@ -40,8 +40,6 @@
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/control.h"
-#include "scene/gui/label.h"
-#include "scene/gui/popup_menu.h"
 
 class EditorNode;
 
@@ -92,7 +90,13 @@ class InspectorDock : public VBoxContainer {
 	Button *warning;
 	AcceptDialog *warning_dialog;
 
+	int current_option = -1;
+	ConfirmationDialog *unique_resources_confirmation;
+	Tree *unique_resources_list_tree;
+
 	void _menu_option(int p_option);
+	void _menu_confirm_current();
+	void _menu_option_confirm(int p_option, bool p_confirmed);
 
 	void _new_resource();
 	void _load_resource(const String &p_type = "");
