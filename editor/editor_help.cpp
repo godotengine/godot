@@ -480,7 +480,7 @@ void EditorHelp::_update_doc() {
 			}
 
 			class_desc->push_color(symbol_color);
-			class_desc->append_bbcode("[url=" + link + "]" + linktxt + "[/url]");
+			class_desc->append_text("[url=" + link + "]" + linktxt + "[/url]");
 			class_desc->pop();
 			class_desc->add_newline();
 		}
@@ -1180,9 +1180,9 @@ void EditorHelp::_update_doc() {
 				class_desc->add_text(" ");
 				class_desc->push_color(comment_color);
 				if (cd.is_script_doc) {
-					class_desc->append_bbcode(TTR("There is currently no description for this property."));
+					class_desc->append_text(TTR("There is currently no description for this property."));
 				} else {
-					class_desc->append_bbcode(TTR("There is currently no description for this property. Please help us by [color=$color][url=$url]contributing one[/url][/color]!").replace("$url", CONTRIBUTE_URL).replace("$color", link_color_text));
+					class_desc->append_text(TTR("There is currently no description for this property. Please help us by [color=$color][url=$url]contributing one[/url][/color]!").replace("$url", CONTRIBUTE_URL).replace("$color", link_color_text));
 				}
 				class_desc->pop();
 			}
@@ -1229,7 +1229,7 @@ void EditorHelp::_update_doc() {
 				class_desc->push_font(doc_font);
 				class_desc->push_indent(1);
 				if (methods_filtered[i].errors_returned.size()) {
-					class_desc->append_bbcode(TTR("Error codes returned:"));
+					class_desc->append_text(TTR("Error codes returned:"));
 					class_desc->add_newline();
 					class_desc->push_list(0, RichTextLabel::LIST_DOTS, false);
 					for (int j = 0; j < methods_filtered[i].errors_returned.size(); j++) {
@@ -1246,7 +1246,7 @@ void EditorHelp::_update_doc() {
 						}
 
 						class_desc->push_bold();
-						class_desc->append_bbcode(text);
+						class_desc->append_text(text);
 						class_desc->pop();
 					}
 					class_desc->pop();
@@ -1260,9 +1260,9 @@ void EditorHelp::_update_doc() {
 					class_desc->add_text(" ");
 					class_desc->push_color(comment_color);
 					if (cd.is_script_doc) {
-						class_desc->append_bbcode(TTR("There is currently no description for this method."));
+						class_desc->append_text(TTR("There is currently no description for this method."));
 					} else {
-						class_desc->append_bbcode(TTR("There is currently no description for this method. Please help us by [color=$color][url=$url]contributing one[/url][/color]!").replace("$url", CONTRIBUTE_URL).replace("$color", link_color_text));
+						class_desc->append_text(TTR("There is currently no description for this method. Please help us by [color=$color][url=$url]contributing one[/url][/color]!").replace("$url", CONTRIBUTE_URL).replace("$color", link_color_text));
 					}
 					class_desc->pop();
 				}
