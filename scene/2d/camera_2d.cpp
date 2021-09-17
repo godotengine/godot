@@ -272,6 +272,18 @@ void Camera2D::_notification(int p_what) {
 			viewport = nullptr;
 
 		} break;
+		case NOTIFICATION_WORLD_2D_CHANGED: {
+			if (is_current()) {
+				if (viewport && !(custom_viewport && !ObjectDB::get_instance(custom_viewport_id))) {
+					viewport->set_canvas_transform(Transform2D());
+				}
+			}
+			remove_from_group(group_name);
+			remove_from_group(canvas_group_name);
+
+			_setup_viewport();
+			_update_scroll();
+		} break;
 #ifdef TOOLS_ENABLED
 		case NOTIFICATION_DRAW: {
 			if (!is_inside_tree() || !Engine::get_singleton()->is_editor_hint()) {

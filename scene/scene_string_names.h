@@ -112,6 +112,7 @@ public:
 	StringName _process;
 	StringName _enter_world;
 	StringName _exit_world;
+	StringName _world_2d_changed;
 	StringName _enter_tree;
 	StringName _exit_tree;
 	StringName _draw;

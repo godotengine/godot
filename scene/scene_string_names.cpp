@@ -96,6 +96,7 @@ SceneStringNames::SceneStringNames() {
 	_exit_tree = StaticCString::create("_exit_tree");
 	_enter_world = StaticCString::create("_enter_world");
 	_exit_world = StaticCString::create("_exit_world");
+	_world_2d_changed = StaticCString::create("_world_2d_changed");
 	_ready = StaticCString::create("_ready");
 
 	_update_scroll = StaticCString::create("_update_scroll");

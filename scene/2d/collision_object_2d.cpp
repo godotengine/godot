@@ -97,6 +97,27 @@ void CollisionObject2D::_notification(int p_what) {
 				Physics2DServer::get_singleton()->body_attach_canvas_instance_id(rid, 0);
 			}
 		} break;
+
+		case NOTIFICATION_WORLD_2D_CHANGED: {
+			Transform2D global_transform = get_global_transform();
+
+			if (area) {
+				Physics2DServer::get_singleton()->area_set_transform(rid, global_transform);
+			} else {
+				Physics2DServer::get_singleton()->body_set_state(rid, Physics2DServer::BODY_STATE_TRANSFORM, global_transform);
+			}
+
+			RID space = get_world_2d()->get_space();
+			if (area) {
+				Physics2DServer::get_singleton()->area_set_space(rid, space);
+			} else {
+				Physics2DServer::get_singleton()->body_set_space(rid, space);
+			}
+
+			_update_pickable();
+
+			//get space
+		} break;
 	}
 }
 

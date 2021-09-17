@@ -1018,6 +1018,10 @@ void Viewport::set_world_2d(const Ref<World2D> &p_world_2d) {
 	_update_listener_2d();
 
 	if (is_inside_tree()) {
+		_propagate_world_2d_changed(this);
+	}
+
+	if (is_inside_tree()) {
 		current_canvas = find_world_2d()->get_canvas();
 		VisualServer::get_singleton()->viewport_attach_canvas(viewport, current_canvas);
 		find_world_2d()->_register_viewport(this, Rect2());
@@ -1054,6 +1058,29 @@ void Viewport::_propagate_enter_world(Node *p_node) {
 
 	for (int i = 0; i < p_node->get_child_count(); i++) {
 		_propagate_enter_world(p_node->get_child(i));
+	}
+}
+
+void Viewport::_propagate_world_2d_changed(Node *p_node) {
+	if (p_node != this) {
+		if (!p_node->is_inside_tree()) { //may not have entered scene yet
+			return;
+		}
+
+		if (Object::cast_to<CanvasItem>(p_node)) {
+			p_node->notification(CanvasItem::NOTIFICATION_WORLD_2D_CHANGED);
+		} else {
+			Viewport *v = Object::cast_to<Viewport>(p_node);
+			if (v) {
+				if (v->world_2d.is_valid()) {
+					return;
+				}
+			}
+		}
+	}
+
+	for (int i = 0; i < p_node->get_child_count(); i++) {
+		_propagate_world_2d_changed(p_node->get_child(i));
 	}
 }
 

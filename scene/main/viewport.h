@@ -260,6 +260,7 @@ private:
 
 	void _propagate_enter_world(Node *p_node);
 	void _propagate_exit_world(Node *p_node);
+	void _propagate_world_2d_changed(Node *p_node);
 	void _propagate_viewport_notification(Node *p_node, int p_what);
 
 	void _update_stretch_transform();

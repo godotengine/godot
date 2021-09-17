@@ -596,6 +596,13 @@ void CanvasItem::_notification(int p_what) {
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			emit_signal(SceneStringNames::get_singleton()->visibility_changed);
 		} break;
+		case NOTIFICATION_WORLD_2D_CHANGED: {
+			_exit_canvas();
+			_enter_canvas();
+			if (get_script_instance()) {
+				get_script_instance()->call_multilevel(SceneStringNames::get_singleton()->_world_2d_changed, nullptr, 0);
+			}
+		} break;
 	}
 }
 
@@ -1199,6 +1206,7 @@ void CanvasItem::_bind_methods() {
 	BIND_CONSTANT(NOTIFICATION_VISIBILITY_CHANGED);
 	BIND_CONSTANT(NOTIFICATION_ENTER_CANVAS);
 	BIND_CONSTANT(NOTIFICATION_EXIT_CANVAS);
+	BIND_CONSTANT(NOTIFICATION_WORLD_2D_CHANGED);
 }
 
 Transform2D CanvasItem::get_canvas_transform() const {
