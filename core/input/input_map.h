@@ -46,8 +46,8 @@ public:
 	static int ALL_DEVICES;
 
 	struct Action {
-		int id;
-		float deadzone;
+		int id = 0;
+		float deadzone = 0.0;
 		List<Ref<InputEvent>> inputs;
 	};
 

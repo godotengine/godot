@@ -71,7 +71,7 @@ class StringName {
 
 	union _HashUnion {
 		_Data *ptr;
-		uint32_t hash;
+		uint32_t hash = 0;
 	};
 
 	void unref();

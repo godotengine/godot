@@ -90,7 +90,7 @@ struct BVHHandle {
 	operator uint32_t() const { return _data; }
 	void set(uint32_t p_value) { _data = p_value; }
 
-	uint32_t _data;
+	uint32_t _data = 0;
 
 	void set_invalid() { _data = BVHCommon::INVALID; }
 	bool is_invalid() const { return _data == BVHCommon::INVALID; }

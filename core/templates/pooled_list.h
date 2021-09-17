@@ -51,12 +51,10 @@ class PooledList {
 	LocalVector<uint32_t, uint32_t, true> freelist;
 
 	// not all list members are necessarily used
-	int _used_size;
+	int _used_size = 0;
 
 public:
-	PooledList() {
-		_used_size = 0;
-	}
+	PooledList() {}
 
 	int estimate_memory_use() const {
 		return (list.size() * sizeof(T)) + (freelist.size() * sizeof(uint32_t));

@@ -699,7 +699,4 @@ Vector<Face3> TriangleMesh::get_faces() const {
 	return faces;
 }
 
-TriangleMesh::TriangleMesh() {
-	valid = false;
-	max_depth = 0;
-}
+TriangleMesh::TriangleMesh() {}

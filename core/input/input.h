@@ -78,8 +78,8 @@ public:
 	};
 
 	struct JoyAxisValue {
-		int min;
-		float value;
+		int min = 0;
+		float value = 0.0;
 	};
 
 	typedef void (*EventDispatchFunc)(const Ref<InputEvent> &p_event);
@@ -99,12 +99,12 @@ private:
 	int64_t mouse_window = 0;
 
 	struct Action {
-		uint64_t physics_frame;
-		uint64_t process_frame;
-		bool pressed;
-		bool exact;
-		float strength;
-		float raw_strength;
+		uint64_t physics_frame = 0;
+		uint64_t process_frame = 0;
+		bool pressed = false;
+		bool exact = false;
+		float strength = 0.0;
+		float raw_strength = 0.0;
 	};
 
 	Map<StringName, Action> action_state;
@@ -117,12 +117,12 @@ private:
 	int mouse_from_touch_index = -1;
 
 	struct SpeedTrack {
-		uint64_t last_tick;
+		uint64_t last_tick = 0;
 		Vector2 speed;
 		Vector2 accum;
-		float accum_t;
-		float min_ref_frame;
-		float max_ref_frame;
+		float accum_t = 0.0;
+		float min_ref_frame = 0.0;
+		float max_ref_frame = 0.0;
 
 		void update(const Vector2 &p_delta_p);
 		void reset();
@@ -161,13 +161,13 @@ private:
 	};
 
 	struct JoyEvent {
-		int type;
-		int index;
-		float value;
+		int type = 0;
+		int index = 0;
+		float value = 0.0;
 	};
 
 	struct JoyBinding {
-		JoyType inputType;
+		JoyType inputType = JoyType::TYPE_AXIS;
 		union {
 			JoyButton button;
 
@@ -184,7 +184,7 @@ private:
 
 		} input;
 
-		JoyType outputType;
+		JoyType outputType = JoyType::TYPE_AXIS;
 		union {
 			JoyButton button;
 
@@ -229,10 +229,10 @@ private:
 
 protected:
 	struct VibrationInfo {
-		float weak_magnitude;
-		float strong_magnitude;
-		float duration; // Duration in seconds
-		uint64_t timestamp;
+		float weak_magnitude = 0.0;
+		float strong_magnitude = 0.0;
+		float duration = 0.0; // Duration in seconds
+		uint64_t timestamp = 0;
 	};
 
 	Map<int, VibrationInfo> joy_vibration;

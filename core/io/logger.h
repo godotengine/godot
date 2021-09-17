@@ -79,7 +79,7 @@ public:
  */
 class RotatedFileLogger : public Logger {
 	String base_path;
-	int max_files;
+	int max_files = 0;
 
 	FileAccess *file = nullptr;
 

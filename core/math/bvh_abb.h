@@ -37,9 +37,9 @@ struct BVH_ABB {
 	struct ConvexHull {
 		// convex hulls (optional)
 		const Plane *planes;
-		int num_planes;
+		int num_planes = 0;
 		const Vector3 *points;
-		int num_points;
+		int num_points = 0;
 	};
 
 	struct Segment {

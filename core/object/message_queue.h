@@ -52,17 +52,17 @@ class MessageQueue {
 
 	struct Message {
 		Callable callable;
-		int16_t type;
+		int16_t type = 0;
 		union {
-			int16_t notification;
+			int16_t notification = 0;
 			int16_t args;
 		};
 	};
 
-	uint8_t *buffer;
+	uint8_t *buffer = nullptr;
 	uint32_t buffer_end = 0;
 	uint32_t buffer_max_used = 0;
-	uint32_t buffer_size;
+	uint32_t buffer_size = 0;
 
 	void _call_function(const Callable &p_callable, const Variant *p_args, int p_argcount, bool p_show_error);
 

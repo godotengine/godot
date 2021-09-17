@@ -57,7 +57,7 @@ public:
 
 class CallableCustomUnbind : public CallableCustom {
 	Callable callable;
-	int argcount;
+	int argcount = 0;
 
 	static bool _equal_func(const CallableCustom *p_a, const CallableCustom *p_b);
 	static bool _less_func(const CallableCustom *p_a, const CallableCustom *p_b);

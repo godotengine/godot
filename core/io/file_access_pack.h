@@ -61,11 +61,11 @@ class PackedData {
 public:
 	struct PackedFile {
 		String pack;
-		uint64_t offset; //if offset is ZERO, the file was ERASED
-		uint64_t size;
+		uint64_t offset = 0; //if offset is ZERO, the file was ERASED
+		uint64_t size = 0;
 		uint8_t md5[16];
-		PackSource *src;
-		bool encrypted;
+		PackSource *src = nullptr;
+		bool encrypted = false;
 	};
 
 private:
@@ -146,11 +146,11 @@ public:
 class FileAccessPack : public FileAccess {
 	PackedData::PackedFile pf;
 
-	mutable uint64_t pos;
-	mutable bool eof;
-	uint64_t off;
+	mutable uint64_t pos = 0;
+	mutable bool eof = false;
+	uint64_t off = 0;
 
-	FileAccess *f;
+	FileAccess *f = nullptr;
 	virtual Error _open(const String &p_path, int p_mode_flags);
 	virtual uint64_t _get_modified_time(const String &p_file) { return 0; }
 	virtual uint32_t _get_unix_permissions(const String &p_file) { return 0; }

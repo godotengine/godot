@@ -303,7 +303,7 @@ public:
 	}
 
 	struct Iterator {
-		bool valid;
+		bool valid = false;
 
 		const TKey *key;
 		TValue *value;

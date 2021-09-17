@@ -47,14 +47,14 @@ class OptimizedTranslation : public Translation {
 	Vector<uint8_t> strings;
 
 	struct Bucket {
-		int size;
-		uint32_t func;
+		int size = 0;
+		uint32_t func = 0;
 
 		struct Elem {
-			uint32_t key;
-			uint32_t str_offset;
-			uint32_t comp_size;
-			uint32_t uncomp_size;
+			uint32_t key = 0;
+			uint32_t str_offset = 0;
+			uint32_t comp_size = 0;
+			uint32_t uncomp_size = 0;
 		};
 
 		Elem elem[1];

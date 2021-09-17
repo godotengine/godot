@@ -264,7 +264,7 @@ public:
 
 class SafeFlag {
 protected:
-	bool flag;
+	bool flag = false;
 
 public:
 	_ALWAYS_INLINE_ bool is_set() const {

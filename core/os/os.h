@@ -55,13 +55,13 @@ class OS {
 	bool _single_window = false;
 	String _local_clipboard;
 	int _exit_code = EXIT_FAILURE; // unexpected exit is marked as failure
-	int _orientation;
+	int _orientation = 0;
 	bool _allow_hidpi = false;
 	bool _allow_layered = false;
 	bool _stdout_enabled = true;
 	bool _stderr_enabled = true;
 
-	char *last_error;
+	char *last_error = nullptr;
 
 	CompositeLogger *_logger = nullptr;
 
@@ -186,21 +186,21 @@ public:
 	};
 
 	struct Date {
-		int64_t year;
-		Month month;
-		uint8_t day;
-		Weekday weekday;
-		bool dst;
+		int64_t year = 0;
+		Month month = Month::MONTH_JANUARY;
+		uint8_t day = 0;
+		Weekday weekday = Weekday::WEEKDAY_MONDAY;
+		bool dst = false;
 	};
 
 	struct Time {
-		uint8_t hour;
-		uint8_t minute;
-		uint8_t second;
+		uint8_t hour = 0;
+		uint8_t minute = 0;
+		uint8_t second = 0;
 	};
 
 	struct TimeZoneInfo {
-		int bias;
+		int bias = 0;
 		String name;
 	};
 

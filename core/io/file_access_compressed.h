@@ -46,8 +46,8 @@ class FileAccessCompressed : public FileAccess {
 	mutable bool at_end = false;
 
 	struct ReadBlock {
-		uint32_t csize;
-		uint64_t offset;
+		uint32_t csize = 0;
+		uint64_t offset = 0;
 	};
 
 	mutable Vector<uint8_t> comp_buffer;

@@ -73,7 +73,7 @@ class RID_Alloc : public RID_AllocBase {
 	uint32_t **free_list_chunks = nullptr;
 	uint32_t **validator_chunks = nullptr;
 
-	uint32_t elements_in_chunk;
+	uint32_t elements_in_chunk = 0;
 	uint32_t max_alloc = 0;
 	uint32_t alloc_count = 0;
 

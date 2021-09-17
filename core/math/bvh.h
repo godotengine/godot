@@ -668,26 +668,20 @@ private:
 		tree._extra[p_handle.id()].last_updated_tick = 0;
 	}
 
-	PairCallback pair_callback;
-	UnpairCallback unpair_callback;
-	void *pair_callback_userdata;
-	void *unpair_callback_userdata;
+	PairCallback pair_callback = nullptr;
+	UnpairCallback unpair_callback = nullptr;
+	void *pair_callback_userdata = nullptr;
+	void *unpair_callback_userdata = nullptr;
 
 	BVHTREE_CLASS tree;
 
 	// for collision pairing,
 	// maintain a list of all items moved etc on each frame / tick
 	LocalVector<BVHHandle, uint32_t, true> changed_items;
-	uint32_t _tick;
+	uint32_t _tick = 1; // start from 1 so items with 0 indicate never updated
 
 public:
-	BVH_Manager() {
-		_tick = 1; // start from 1 so items with 0 indicate never updated
-		pair_callback = nullptr;
-		unpair_callback = nullptr;
-		pair_callback_userdata = nullptr;
-		unpair_callback_userdata = nullptr;
-	}
+	BVH_Manager() {}
 };
 
 #undef BVHTREE_CLASS

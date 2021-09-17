@@ -71,7 +71,7 @@ private:
 		String name;
 		List<Operation> do_ops;
 		List<Operation> undo_ops;
-		uint64_t last_tick;
+		uint64_t last_tick = 0;
 	};
 
 	Vector<Action> actions;
