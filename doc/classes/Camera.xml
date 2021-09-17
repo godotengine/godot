@@ -144,7 +144,8 @@
 			If [code]true[/code], the ancestor [Viewport] is currently using this camera.
 		</member>
 		<member name="doppler_tracking" type="int" setter="set_doppler_tracking" getter="get_doppler_tracking" enum="Camera.DopplerTracking" default="0">
-			If not [constant DOPPLER_TRACKING_DISABLED], this camera will simulate the [url=https://en.wikipedia.org/wiki/Doppler_effect]Doppler effect[/url] for objects changed in particular [code]_process[/code] methods. See [enum DopplerTracking] for possible values.
+			If not [constant DOPPLER_TRACKING_DISABLED], this camera will simulate the [url=https://en.wikipedia.org/wiki/Doppler_effect]Doppler effect[/url] for objects changed in particular [code]_process[/code] methods. The Doppler effect is only simulated for [AudioStreamPlayer3D] nodes that have [member AudioStreamPlayer3D.doppler_tracking] set to a value other than [constant AudioStreamPlayer3D.DOPPLER_TRACKING_DISABLED].
+			[b]Note:[/b] To toggle the Doppler effect preview in the editor, use the Perspective menu in the top-left corner of the 3D viewport and toggle [b]Enable Doppler[/b].
 		</member>
 		<member name="environment" type="Environment" setter="set_environment" getter="get_environment">
 			The [Environment] to use for this camera.
