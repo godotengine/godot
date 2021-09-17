@@ -81,13 +81,10 @@
 			Sets the absolute maximum of the soundlevel, in decibels.
 		</member>
 		<member name="max_distance" type="float" setter="set_max_distance" getter="get_max_distance" default="0.0">
-			Sets the distance from which the [member out_of_range_mode] takes effect. Has no effect if set to 0.
+			The distance past which the sound can no longer be heard at all. Only has an effect if set to a value greater than [code]0.0[/code]. [member max_distance] works in tandem with [member unit_size]. However, unlike [member unit_size] whose behavior depends on the [member attenuation_model], [member max_distance] always works in a linear fashion. This can be used to prevent the [AudioStreamPlayer3D] from requiring audio mixing when the listener is far away, which saves CPU resources.
 		</member>
 		<member name="max_polyphony" type="int" setter="set_max_polyphony" getter="get_max_polyphony" default="1">
 			The maximum number of sounds this node can play at the same time. Playing additional sounds after this value is reached will cut off the oldest sounds.
-		</member>
-		<member name="out_of_range_mode" type="int" setter="set_out_of_range_mode" getter="get_out_of_range_mode" enum="AudioStreamPlayer3D.OutOfRangeMode" default="0">
-			Decides if audio should pause when source is outside of [member max_distance] range.
 		</member>
 		<member name="pitch_scale" type="float" setter="set_pitch_scale" getter="get_pitch_scale" default="1.0">
 			The pitch and the tempo of the audio, as a multiplier of the audio sample's sample rate.
@@ -127,12 +124,6 @@
 		</constant>
 		<constant name="ATTENUATION_DISABLED" value="3" enum="AttenuationModel">
 			No dampening of loudness according to distance. The sound will still be heard positionally, unlike an [AudioStreamPlayer].
-		</constant>
-		<constant name="OUT_OF_RANGE_MIX" value="0" enum="OutOfRangeMode">
-			Mix this audio in, even when it's out of range. This increases CPU usage, but keeps the sound playing at the correct position if the camera leaves and enters the [AudioStreamPlayer3D]'s [member max_distance] radius.
-		</constant>
-		<constant name="OUT_OF_RANGE_PAUSE" value="1" enum="OutOfRangeMode">
-			Pause this audio when it gets out of range. This decreases CPU usage, but will cause the sound to restart if the camera leaves and enters the [AudioStreamPlayer3D]'s [member max_distance] radius.
 		</constant>
 		<constant name="DOPPLER_TRACKING_DISABLED" value="0" enum="DopplerTracking">
 			Disables doppler tracking.

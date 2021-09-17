@@ -51,11 +51,6 @@ public:
 		ATTENUATION_DISABLED,
 	};
 
-	enum OutOfRangeMode {
-		OUT_OF_RANGE_MIX,
-		OUT_OF_RANGE_PAUSE,
-	};
-
 	enum DopplerTracking {
 		DOPPLER_TRACKING_DISABLED,
 		DOPPLER_TRACKING_IDLE_STEP,
@@ -117,8 +112,6 @@ private:
 	Ref<VelocityTracker3D> velocity_tracker;
 
 	DopplerTracking doppler_tracking = DOPPLER_TRACKING_DISABLED;
-
-	OutOfRangeMode out_of_range_mode = OUT_OF_RANGE_MIX;
 
 	float _get_attenuation_db(float p_distance) const;
 
@@ -182,9 +175,6 @@ public:
 	void set_attenuation_model(AttenuationModel p_model);
 	AttenuationModel get_attenuation_model() const;
 
-	void set_out_of_range_mode(OutOfRangeMode p_mode);
-	OutOfRangeMode get_out_of_range_mode() const;
-
 	void set_doppler_tracking(DopplerTracking p_tracking);
 	DopplerTracking get_doppler_tracking() const;
 
@@ -198,6 +188,5 @@ public:
 };
 
 VARIANT_ENUM_CAST(AudioStreamPlayer3D::AttenuationModel)
-VARIANT_ENUM_CAST(AudioStreamPlayer3D::OutOfRangeMode)
 VARIANT_ENUM_CAST(AudioStreamPlayer3D::DopplerTracking)
 #endif // AUDIO_STREAM_PLAYER_3D_H

@@ -713,15 +713,6 @@ AudioStreamPlayer3D::AttenuationModel AudioStreamPlayer3D::get_attenuation_model
 	return attenuation_model;
 }
 
-void AudioStreamPlayer3D::set_out_of_range_mode(OutOfRangeMode p_mode) {
-	ERR_FAIL_INDEX((int)p_mode, 2);
-	out_of_range_mode = p_mode;
-}
-
-AudioStreamPlayer3D::OutOfRangeMode AudioStreamPlayer3D::get_out_of_range_mode() const {
-	return out_of_range_mode;
-}
-
 void AudioStreamPlayer3D::set_doppler_tracking(DopplerTracking p_tracking) {
 	if (doppler_tracking == p_tracking) {
 		return;
@@ -832,9 +823,6 @@ void AudioStreamPlayer3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_attenuation_model", "model"), &AudioStreamPlayer3D::set_attenuation_model);
 	ClassDB::bind_method(D_METHOD("get_attenuation_model"), &AudioStreamPlayer3D::get_attenuation_model);
 
-	ClassDB::bind_method(D_METHOD("set_out_of_range_mode", "mode"), &AudioStreamPlayer3D::set_out_of_range_mode);
-	ClassDB::bind_method(D_METHOD("get_out_of_range_mode"), &AudioStreamPlayer3D::get_out_of_range_mode);
-
 	ClassDB::bind_method(D_METHOD("set_doppler_tracking", "mode"), &AudioStreamPlayer3D::set_doppler_tracking);
 	ClassDB::bind_method(D_METHOD("get_doppler_tracking"), &AudioStreamPlayer3D::get_doppler_tracking);
 
@@ -856,7 +844,6 @@ void AudioStreamPlayer3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "autoplay"), "set_autoplay", "is_autoplay_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "stream_paused", PROPERTY_HINT_NONE, ""), "set_stream_paused", "get_stream_paused");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "max_distance", PROPERTY_HINT_RANGE, "0,4096,1,or_greater,exp"), "set_max_distance", "get_max_distance");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "out_of_range_mode", PROPERTY_HINT_ENUM, "Mix,Pause"), "set_out_of_range_mode", "get_out_of_range_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_polyphony", PROPERTY_HINT_NONE, ""), "set_max_polyphony", "get_max_polyphony");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "bus", PROPERTY_HINT_ENUM, ""), "set_bus", "get_bus");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "area_mask", PROPERTY_HINT_LAYERS_2D_PHYSICS), "set_area_mask", "get_area_mask");
@@ -874,9 +861,6 @@ void AudioStreamPlayer3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(ATTENUATION_INVERSE_SQUARE_DISTANCE);
 	BIND_ENUM_CONSTANT(ATTENUATION_LOGARITHMIC);
 	BIND_ENUM_CONSTANT(ATTENUATION_DISABLED);
-
-	BIND_ENUM_CONSTANT(OUT_OF_RANGE_MIX);
-	BIND_ENUM_CONSTANT(OUT_OF_RANGE_PAUSE);
 
 	BIND_ENUM_CONSTANT(DOPPLER_TRACKING_DISABLED);
 	BIND_ENUM_CONSTANT(DOPPLER_TRACKING_IDLE_STEP);
