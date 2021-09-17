@@ -39,6 +39,7 @@
 #include "core/os/main_loop.h"
 #include "core/os/os.h"
 #include "core/string/ustring.h"
+#include "core/variant/variant.h"
 
 #include "tests/test_macros.h"
 
@@ -1379,6 +1380,78 @@ TEST_CASE("[String] validate_node_name") {
 
 	String name_with_invalid_chars = "Name with invalid characters :.@removed!";
 	CHECK(name_with_invalid_chars.validate_node_name() == "Name with invalid characters removed!");
+}
+
+TEST_CASE("[String] Variant indexed get") {
+	Variant s = String("abcd");
+	bool valid = false;
+	bool oob = true;
+
+	String r = s.get_indexed(1, valid, oob);
+
+	CHECK(valid);
+	CHECK_FALSE(oob);
+	CHECK_EQ(r, String("b"));
+}
+
+TEST_CASE("[String] Variant validated indexed get") {
+	Variant s = String("abcd");
+
+	Variant::ValidatedIndexedGetter getter = Variant::get_member_validated_indexed_getter(Variant::STRING);
+
+	Variant r;
+	bool oob = true;
+	getter(&s, 1, &r, &oob);
+
+	CHECK_FALSE(oob);
+	CHECK_EQ(r, String("b"));
+}
+
+TEST_CASE("[String] Variant ptr indexed get") {
+	String s("abcd");
+
+	Variant::PTRIndexedGetter getter = Variant::get_member_ptr_indexed_getter(Variant::STRING);
+
+	String r;
+	getter(&s, 1, &r);
+
+	CHECK_EQ(r, String("b"));
+}
+
+TEST_CASE("[String] Variant indexed set") {
+	Variant s = String("abcd");
+	bool valid = false;
+	bool oob = true;
+
+	s.set_indexed(1, String("z"), valid, oob);
+
+	CHECK(valid);
+	CHECK_FALSE(oob);
+	CHECK_EQ(s, String("azcd"));
+}
+
+TEST_CASE("[String] Variant validated indexed set") {
+	Variant s = String("abcd");
+
+	Variant::ValidatedIndexedSetter setter = Variant::get_member_validated_indexed_setter(Variant::STRING);
+
+	Variant v = String("z");
+	bool oob = true;
+	setter(&s, 1, &v, &oob);
+
+	CHECK_FALSE(oob);
+	CHECK_EQ(s, String("azcd"));
+}
+
+TEST_CASE("[String] Variant ptr indexed set") {
+	String s("abcd");
+
+	Variant::PTRIndexedSetter setter = Variant::get_member_ptr_indexed_setter(Variant::STRING);
+
+	String v("z");
+	setter(&s, 1, &v);
+
+	CHECK_EQ(s, String("azcd"));
 }
 } // namespace TestString
 
