@@ -261,6 +261,11 @@
 		</method>
 		<method name="operator !=" qualifiers="operator">
 			<return type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="operator !=" qualifiers="operator">
+			<return type="bool" />
 			<argument index="0" name="right" type="Color" />
 			<description>
 			</description>
@@ -310,6 +315,11 @@
 		<method name="operator /" qualifiers="operator">
 			<return type="Color" />
 			<argument index="0" name="right" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="operator ==" qualifiers="operator">
+			<return type="bool" />
 			<description>
 			</description>
 		</method>

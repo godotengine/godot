@@ -68,6 +68,11 @@
 		</method>
 		<method name="operator !=" qualifiers="operator">
 			<return type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="operator !=" qualifiers="operator">
+			<return type="bool" />
 			<argument index="0" name="right" type="float" />
 			<description>
 				Returns [code]true[/code] if operands are different from each other.
@@ -173,17 +178,17 @@
 			</description>
 		</method>
 		<method name="operator +" qualifiers="operator">
-			<return type="float" />
-			<argument index="0" name="right" type="float" />
-			<description>
-				Adds an [int] to a [float]. The result is a [float].
-			</description>
-		</method>
-		<method name="operator +" qualifiers="operator">
 			<return type="int" />
 			<argument index="0" name="right" type="int" />
 			<description>
 				Adds two integers.
+			</description>
+		</method>
+		<method name="operator +" qualifiers="operator">
+			<return type="float" />
+			<argument index="0" name="right" type="float" />
+			<description>
+				Adds an [int] to a [float]. The result is a [float].
 			</description>
 		</method>
 		<method name="operator -" qualifiers="operator">
@@ -258,6 +263,11 @@
 			<argument index="0" name="right" type="int" />
 			<description>
 				Returns [code]true[/code] the left integer is less than or equal to the right one.
+			</description>
+		</method>
+		<method name="operator ==" qualifiers="operator">
+			<return type="bool" />
+			<description>
 			</description>
 		</method>
 		<method name="operator ==" qualifiers="operator">

@@ -316,6 +316,11 @@
 		</method>
 		<method name="operator !=" qualifiers="operator">
 			<return type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="operator !=" qualifiers="operator">
+			<return type="bool" />
 			<argument index="0" name="right" type="PackedByteArray" />
 			<description>
 			</description>
@@ -323,6 +328,11 @@
 		<method name="operator +" qualifiers="operator">
 			<return type="PackedByteArray" />
 			<argument index="0" name="right" type="PackedByteArray" />
+			<description>
+			</description>
+		</method>
+		<method name="operator ==" qualifiers="operator">
+			<return type="bool" />
 			<description>
 			</description>
 		</method>

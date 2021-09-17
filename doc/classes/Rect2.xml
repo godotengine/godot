@@ -149,6 +149,11 @@
 		</method>
 		<method name="operator !=" qualifiers="operator">
 			<return type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="operator !=" qualifiers="operator">
+			<return type="bool" />
 			<argument index="0" name="right" type="Rect2" />
 			<description>
 			</description>
@@ -156,6 +161,11 @@
 		<method name="operator *" qualifiers="operator">
 			<return type="Rect2" />
 			<argument index="0" name="right" type="Transform2D" />
+			<description>
+			</description>
+		</method>
+		<method name="operator ==" qualifiers="operator">
+			<return type="bool" />
 			<description>
 			</description>
 		</method>

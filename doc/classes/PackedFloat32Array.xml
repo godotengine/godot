@@ -80,6 +80,11 @@
 		</method>
 		<method name="operator !=" qualifiers="operator">
 			<return type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="operator !=" qualifiers="operator">
+			<return type="bool" />
 			<argument index="0" name="right" type="PackedFloat32Array" />
 			<description>
 			</description>
@@ -87,6 +92,11 @@
 		<method name="operator +" qualifiers="operator">
 			<return type="PackedFloat32Array" />
 			<argument index="0" name="right" type="PackedFloat32Array" />
+			<description>
+			</description>
+		</method>
+		<method name="operator ==" qualifiers="operator">
+			<return type="bool" />
 			<description>
 			</description>
 		</method>

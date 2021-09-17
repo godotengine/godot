@@ -80,6 +80,11 @@
 		</method>
 		<method name="operator !=" qualifiers="operator">
 			<return type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="operator !=" qualifiers="operator">
+			<return type="bool" />
 			<argument index="0" name="right" type="PackedVector2Array" />
 			<description>
 			</description>
@@ -93,6 +98,11 @@
 		<method name="operator +" qualifiers="operator">
 			<return type="PackedVector2Array" />
 			<argument index="0" name="right" type="PackedVector2Array" />
+			<description>
+			</description>
+		</method>
+		<method name="operator ==" qualifiers="operator">
+			<return type="bool" />
 			<description>
 			</description>
 		</method>
