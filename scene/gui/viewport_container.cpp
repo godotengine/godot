@@ -114,7 +114,7 @@ void ViewportContainer::_notification(int p_what) {
 			}
 
 			if (is_visible_in_tree()) {
-				c->set_update_mode(Viewport::UPDATE_ALWAYS);
+				c->set_update_mode(Viewport::UPDATE_WHEN_VISIBLE);
 			} else {
 				c->set_update_mode(Viewport::UPDATE_DISABLED);
 			}
