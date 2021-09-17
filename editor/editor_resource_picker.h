@@ -156,6 +156,7 @@ class EditorShaderPicker : public EditorResourcePicker {
 	};
 
 	ShaderMaterial *edited_material = nullptr;
+	int preferred_mode = -1;
 
 public:
 	virtual void set_create_options(Object *p_menu_node) override;
@@ -163,6 +164,7 @@ public:
 
 	void set_edited_material(ShaderMaterial *p_material);
 	ShaderMaterial *get_edited_material() const;
+	void set_preferred_mode(int p_preferred_mode);
 
 	EditorShaderPicker();
 };

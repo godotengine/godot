@@ -2943,7 +2943,7 @@ void SceneTreeDock::open_script_dialog(Node *p_for_node, bool p_extend) {
 	}
 }
 
-void SceneTreeDock::attach_shader_to_selected() {
+void SceneTreeDock::attach_shader_to_selected(int p_preferred_mode) {
 	if (selected_shader_material.is_null()) {
 		return;
 	}
@@ -2970,13 +2970,13 @@ void SceneTreeDock::attach_shader_to_selected() {
 	shader_create_dialog->connect("shader_created", callable_mp(this, &SceneTreeDock::_shader_created));
 	shader_create_dialog->connect("confirmed", callable_mp(this, &SceneTreeDock::_shader_creation_closed));
 	shader_create_dialog->connect("cancelled", callable_mp(this, &SceneTreeDock::_shader_creation_closed));
-	shader_create_dialog->config(path);
+	shader_create_dialog->config(path, true, true, p_preferred_mode);
 	shader_create_dialog->popup_centered();
 }
 
-void SceneTreeDock::open_shader_dialog(Ref<ShaderMaterial> &p_for_material) {
+void SceneTreeDock::open_shader_dialog(Ref<ShaderMaterial> &p_for_material, int p_preferred_mode) {
 	selected_shader_material = p_for_material;
-	attach_shader_to_selected();
+	attach_shader_to_selected(p_preferred_mode);
 }
 
 void SceneTreeDock::open_add_child_dialog() {

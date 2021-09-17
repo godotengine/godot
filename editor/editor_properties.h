@@ -669,6 +669,7 @@ class EditorPropertyResource : public EditorProperty {
 	void _open_editor_pressed();
 	void _fold_other_editors(Object *p_self);
 	void _update_property_bg();
+	void _update_preferred_shader();
 
 protected:
 	virtual void _set_read_only(bool p_read_only) override;
