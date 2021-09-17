@@ -1308,6 +1308,8 @@ void ColorPickerButton::_modal_closed() {
 void ColorPickerButton::pressed() {
 	_update_picker();
 
+	Size2 size = get_size() * get_viewport()->get_canvas_transform().get_scale();
+
 	popup->set_as_minsize();
 	picker->_update_presets();
 
@@ -1319,13 +1321,13 @@ void ColorPickerButton::pressed() {
 		if (i > 1) {
 			cp_rect.position.y = get_screen_position().y - cp_rect.size.y;
 		} else {
-			cp_rect.position.y = get_screen_position().y + get_size().height;
+			cp_rect.position.y = get_screen_position().y + size.height;
 		}
 
 		if (i & 1) {
 			cp_rect.position.x = get_screen_position().x;
 		} else {
-			cp_rect.position.x = get_screen_position().x - MAX(0, (cp_rect.size.x - get_size().x));
+			cp_rect.position.x = get_screen_position().x - MAX(0, (cp_rect.size.x - size.x));
 		}
 
 		if (usable_rect.encloses(cp_rect)) {
