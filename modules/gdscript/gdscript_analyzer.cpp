@@ -1187,12 +1187,28 @@ void GDScriptAnalyzer::resolve_for(GDScriptParser::ForNode *p_for) {
 		}
 	}
 
-	if (!list_resolved) {
+	GDScriptParser::DataType variable_type;
+	if (list_resolved) {
+		variable_type.type_source = GDScriptParser::DataType::ANNOTATED_INFERRED;
+		variable_type.kind = GDScriptParser::DataType::BUILTIN;
+		variable_type.builtin_type = Variant::INT; // Can this ever be a float or something else?
+		p_for->variable->set_datatype(variable_type);
+	} else {
 		resolve_node(p_for->list);
+		if (p_for->list->datatype.has_container_element_type()) {
+			variable_type = p_for->list->datatype.get_container_element_type();
+			variable_type.type_source = GDScriptParser::DataType::ANNOTATED_INFERRED;
+		} else if (p_for->list->datatype.is_typed_container_type()) {
+			variable_type = p_for->list->datatype.get_typed_container_type();
+			variable_type.type_source = GDScriptParser::DataType::ANNOTATED_INFERRED;
+		} else {
+			// Last resort
+			// TODO: Must other cases be handled? Must we mark as unsafe?
+			variable_type.type_source = GDScriptParser::DataType::UNDETECTED;
+			variable_type.kind = GDScriptParser::DataType::VARIANT;
+		}
 	}
-
-	// TODO: If list is a typed array, the variable should be an element.
-	// Also applicable for constant range() (so variable is int or float).
+	p_for->variable->set_datatype(variable_type);
 
 	resolve_suite(p_for->loop);
 	p_for->set_datatype(p_for->loop->get_datatype());
@@ -1480,8 +1496,7 @@ void GDScriptAnalyzer::resolve_parameter(GDScriptParser::ParameterNode *p_parame
 	}
 
 	if (p_parameter->datatype_specifier != nullptr) {
-		resolve_datatype(p_parameter->datatype_specifier);
-		result = p_parameter->datatype_specifier->get_datatype();
+		result = resolve_datatype(p_parameter->datatype_specifier);
 		result.is_meta_type = false;
 
 		if (p_parameter->default_value != nullptr) {

@@ -3587,6 +3587,39 @@ String GDScriptParser::DataType::to_string() const {
 	ERR_FAIL_V_MSG("<unresolved type", "Kind set outside the enum range.");
 }
 
+static Variant::Type _variant_type_to_typed_array_element_type(Variant::Type p_type) {
+	switch (p_type) {
+		case Variant::PACKED_BYTE_ARRAY:
+		case Variant::PACKED_INT32_ARRAY:
+		case Variant::PACKED_INT64_ARRAY:
+			return Variant::INT;
+		case Variant::PACKED_FLOAT32_ARRAY:
+		case Variant::PACKED_FLOAT64_ARRAY:
+			return Variant::FLOAT;
+		case Variant::PACKED_STRING_ARRAY:
+			return Variant::STRING;
+		case Variant::PACKED_VECTOR2_ARRAY:
+			return Variant::VECTOR2;
+		case Variant::PACKED_VECTOR3_ARRAY:
+			return Variant::VECTOR3;
+		case Variant::PACKED_COLOR_ARRAY:
+			return Variant::COLOR;
+		default:
+			return Variant::NIL;
+	}
+}
+
+bool GDScriptParser::DataType::is_typed_container_type() const {
+	return kind == GDScriptParser::DataType::BUILTIN && _variant_type_to_typed_array_element_type(builtin_type) != Variant::NIL;
+}
+
+GDScriptParser::DataType GDScriptParser::DataType::get_typed_container_type() const {
+	GDScriptParser::DataType type;
+	type.kind = GDScriptParser::DataType::BUILTIN;
+	type.builtin_type = _variant_type_to_typed_array_element_type(builtin_type);
+	return type;
+}
+
 /*---------- PRETTY PRINT FOR DEBUG ----------*/
 
 #ifdef DEBUG_ENABLED
