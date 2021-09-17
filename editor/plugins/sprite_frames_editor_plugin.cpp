@@ -54,22 +54,46 @@ void SpriteFramesEditor::_open_sprite_sheet() {
 	file_split_sheet->popup_file_dialog();
 }
 
-void SpriteFramesEditor::_sheet_preview_draw() {
-	Size2i size = split_sheet_preview->get_size();
+int SpriteFramesEditor::_sheet_preview_position_to_frame_index(const Point2 &p_position) {
+	if (p_position.x < 0 || p_position.y < 0) {
+		return -1;
+	}
+
+	Size2i texture_size = split_sheet_preview->get_texture()->get_size();
 	int h = split_sheet_h->get_value();
 	int v = split_sheet_v->get_value();
-	int width = size.width / h;
-	int height = size.height / v;
-	const float a = 0.3;
-	for (int i = 1; i < h; i++) {
-		int x = i * width;
-		split_sheet_preview->draw_line(Point2(x, 0), Point2(x, size.height), Color(1, 1, 1, a));
-		split_sheet_preview->draw_line(Point2(x + 1, 0), Point2(x + 1, size.height), Color(0, 0, 0, a));
+	if (h > texture_size.width || v > texture_size.height) {
+		return -1;
 	}
-	for (int i = 1; i < v; i++) {
-		int y = i * height;
-		split_sheet_preview->draw_line(Point2(0, y), Point2(size.width, y), Color(1, 1, 1, a));
-		split_sheet_preview->draw_line(Point2(0, y + 1), Point2(size.width, y + 1), Color(0, 0, 0, a));
+
+	int x = int(p_position.x / sheet_zoom) / (texture_size.width / h);
+	int y = int(p_position.y / sheet_zoom) / (texture_size.height / v);
+	if (x >= h || y >= v) {
+		return -1;
+	}
+	return h * y + x;
+}
+
+void SpriteFramesEditor::_sheet_preview_draw() {
+	Size2i texture_size = split_sheet_preview->get_texture()->get_size();
+	int h = split_sheet_h->get_value();
+	int v = split_sheet_v->get_value();
+
+	real_t width = (texture_size.width / h) * sheet_zoom;
+	real_t height = (texture_size.height / v) * sheet_zoom;
+	const float a = 0.3;
+
+	real_t y_end = v * height;
+	for (int i = 0; i <= h; i++) {
+		real_t x = i * width;
+		split_sheet_preview->draw_line(Point2(x, 0), Point2(x, y_end), Color(1, 1, 1, a));
+		split_sheet_preview->draw_line(Point2(x + 1, 0), Point2(x + 1, y_end), Color(0, 0, 0, a));
+	}
+	real_t x_end = h * width;
+	for (int i = 0; i <= v; i++) {
+		real_t y = i * height;
+		split_sheet_preview->draw_line(Point2(0, y), Point2(x_end, y), Color(1, 1, 1, a));
+		split_sheet_preview->draw_line(Point2(0, y + 1), Point2(x_end, y + 1), Color(0, 0, 0, a));
 	}
 
 	if (frames_selected.size() == 0) {
@@ -83,9 +107,9 @@ void SpriteFramesEditor::_sheet_preview_draw() {
 	for (Set<int>::Element *E = frames_selected.front(); E; E = E->next()) {
 		int idx = E->get();
 		int xp = idx % h;
-		int yp = (idx - xp) / h;
-		int x = xp * width;
-		int y = yp * height;
+		int yp = idx / h;
+		real_t x = xp * width;
+		real_t y = yp * height;
 
 		split_sheet_preview->draw_rect(Rect2(x + 5, y + 5, width - 10, height - 10), Color(0, 0, 0, 0.35), true);
 		split_sheet_preview->draw_rect(Rect2(x + 0, y + 0, width - 0, height - 0), Color(0, 0, 0, 1), false);
@@ -103,46 +127,43 @@ void SpriteFramesEditor::_sheet_preview_draw() {
 void SpriteFramesEditor::_sheet_preview_input(const Ref<InputEvent> &p_event) {
 	const Ref<InputEventMouseButton> mb = p_event;
 	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_LEFT) {
-		const Size2i size = split_sheet_preview->get_size();
-		const int h = split_sheet_h->get_value();
-		const int v = split_sheet_v->get_value();
+		const int idx = _sheet_preview_position_to_frame_index(mb->get_position());
 
-		const int x = CLAMP(int(mb->get_position().x) * h / size.width, 0, h - 1);
-		const int y = CLAMP(int(mb->get_position().y) * v / size.height, 0, v - 1);
+		if (idx != -1) {
+			if (mb->is_shift_pressed() && last_frame_selected >= 0) {
+				//select multiple
+				int from = idx;
+				int to = last_frame_selected;
+				if (from > to) {
+					SWAP(from, to);
+				}
 
-		const int idx = h * y + x;
+				for (int i = from; i <= to; i++) {
+					// Prevent double-toggling the same frame when moving the mouse when the mouse button is still held.
+					frames_toggled_by_mouse_hover.insert(idx);
 
-		if (mb->is_shift_pressed() && last_frame_selected >= 0) {
-			//select multiple
-			int from = idx;
-			int to = last_frame_selected;
-			if (from > to) {
-				SWAP(from, to);
-			}
-
-			for (int i = from; i <= to; i++) {
+					if (mb->is_ctrl_pressed()) {
+						frames_selected.erase(i);
+					} else {
+						frames_selected.insert(i);
+					}
+				}
+			} else {
 				// Prevent double-toggling the same frame when moving the mouse when the mouse button is still held.
 				frames_toggled_by_mouse_hover.insert(idx);
 
-				if (mb->is_ctrl_pressed()) {
-					frames_selected.erase(i);
+				if (frames_selected.has(idx)) {
+					frames_selected.erase(idx);
 				} else {
-					frames_selected.insert(i);
+					frames_selected.insert(idx);
 				}
-			}
-		} else {
-			// Prevent double-toggling the same frame when moving the mouse when the mouse button is still held.
-			frames_toggled_by_mouse_hover.insert(idx);
-
-			if (frames_selected.has(idx)) {
-				frames_selected.erase(idx);
-			} else {
-				frames_selected.insert(idx);
 			}
 		}
 
-		last_frame_selected = idx;
-		split_sheet_preview->update();
+		if (last_frame_selected != idx || idx != -1) {
+			last_frame_selected = idx;
+			split_sheet_preview->update();
+		}
 	}
 
 	if (mb.is_valid() && !mb->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_LEFT) {
@@ -152,16 +173,9 @@ void SpriteFramesEditor::_sheet_preview_input(const Ref<InputEvent> &p_event) {
 	const Ref<InputEventMouseMotion> mm = p_event;
 	if (mm.is_valid() && mm->get_button_mask() & MOUSE_BUTTON_MASK_LEFT) {
 		// Select by holding down the mouse button on frames.
-		const Size2i size = split_sheet_preview->get_size();
-		const int h = split_sheet_h->get_value();
-		const int v = split_sheet_v->get_value();
+		const int idx = _sheet_preview_position_to_frame_index(mm->get_position());
 
-		const int x = CLAMP(int(mm->get_position().x) * h / size.width, 0, h - 1);
-		const int y = CLAMP(int(mm->get_position().y) * v / size.height, 0, v - 1);
-
-		const int idx = h * y + x;
-
-		if (!frames_toggled_by_mouse_hover.has(idx)) {
+		if (idx != -1 && !frames_toggled_by_mouse_hover.has(idx)) {
 			// Only allow toggling each tile once per mouse hold.
 			// Otherwise, the selection would constantly "flicker" in and out when moving the mouse cursor.
 			// The mouse button must be released before it can be toggled again.
@@ -199,17 +213,17 @@ void SpriteFramesEditor::_sheet_scroll_input(const Ref<InputEvent> &p_event) {
 }
 
 void SpriteFramesEditor::_sheet_add_frames() {
-	Size2i size = split_sheet_preview->get_texture()->get_size();
+	Size2i texture_size = split_sheet_preview->get_texture()->get_size();
 	int frame_count_x = split_sheet_h->get_value();
 	int frame_count_y = split_sheet_v->get_value();
-	Size2 frame_size(size.width / frame_count_x, size.height / frame_count_y);
+	Size2 frame_size(texture_size.width / frame_count_x, texture_size.height / frame_count_y);
 
 	undo_redo->create_action(TTR("Add Frame"));
 
 	int fc = frames->get_frame_count(edited_anim);
 
 	Point2 src_origin;
-	Rect2 src_region(Point2(), size);
+	Rect2 src_region(Point2(), texture_size);
 
 	AtlasTexture *src_atlas = Object::cast_to<AtlasTexture>(*split_sheet_preview->get_texture());
 	if (src_atlas && src_atlas->get_atlas().is_valid()) {
