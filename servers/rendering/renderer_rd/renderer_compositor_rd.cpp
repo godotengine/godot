@@ -276,7 +276,6 @@ RendererCompositorRD::RendererCompositorRD() {
 	}
 
 	singleton = this;
-	time = 0;
 
 	storage = memnew(RendererStorageRD);
 	canvas = memnew(RendererCanvasRenderRD(storage));

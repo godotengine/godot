@@ -80,8 +80,8 @@ protected:
 
 	Map<RID, RID> render_target_descriptors;
 
-	double time;
-	double delta;
+	double time = 0.0;
+	double delta = 0.0;
 
 	static uint64_t frame;
 

@@ -332,8 +332,8 @@ public:
 
 	struct VoxelGIInstance {
 		// access to our containers
-		RendererStorageRD *storage;
-		RendererSceneGIRD *gi;
+		RendererStorageRD *storage = nullptr;
+		RendererSceneGIRD *gi = nullptr;
 
 		RID probe;
 		RID texture;
@@ -359,8 +359,8 @@ public:
 			RID orm; //orm buffer for the first pass
 			RID fb; //used for rendering, only valid on first map
 			RID uniform_set;
-			uint32_t size;
-			int mipmap; // mipmap to write to, -1 if no mipmap assigned
+			uint32_t size = 0;
+			int mipmap = -1; // mipmap to write to, -1 if no mipmap assigned
 		};
 
 		Vector<DynamicMap> dynamic_maps;
@@ -439,7 +439,7 @@ public:
 			RID lightprobe_history_tex;
 			RID lightprobe_average_tex;
 
-			float cell_size;
+			float cell_size = 0.0;
 			Vector3i position;
 
 			static const Vector3i DIRTY_ALL;
@@ -456,8 +456,8 @@ public:
 		};
 
 		// access to our containers
-		RendererStorageRD *storage;
-		RendererSceneGIRD *gi;
+		RendererStorageRD *storage = nullptr;
+		RendererSceneGIRD *gi = nullptr;
 
 		// used for rendering (voxelization)
 		RID render_albedo;
@@ -475,7 +475,7 @@ public:
 		RID jump_flood_uniform_set[2];
 		RID jump_flood_half_uniform_set[2];
 		RID sdf_upscale_uniform_set;
-		int upscale_jfa_uniform_set_index;
+		int upscale_jfa_uniform_set_index = 0;
 		RID occlusion_uniform_set;
 
 		uint32_t cascade_size = 128;

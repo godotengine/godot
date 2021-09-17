@@ -62,9 +62,9 @@ class ShaderRD {
 		Vector<uint8_t> *variant_data = nullptr;
 		RID *variants = nullptr; //same size as version defines
 
-		bool valid;
-		bool dirty;
-		bool initialize_needed;
+		bool valid = false;
+		bool dirty = false;
+		bool initialize_needed = false;
 	};
 
 	Mutex variant_set_mutex;
@@ -88,7 +88,7 @@ class ShaderRD {
 				TYPE_TEXT
 			};
 
-			Type type;
+			Type type = TYPE_VERSION_DEFINES;
 			StringName code;
 			CharString text;
 		};

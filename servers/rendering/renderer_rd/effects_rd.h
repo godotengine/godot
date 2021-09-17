@@ -545,7 +545,7 @@ private:
 		RID uniform_set;
 		RID image_uniform_set;
 		RID coefficient_buffer;
-		bool use_high_quality;
+		bool use_high_quality = false;
 
 	} filter;
 

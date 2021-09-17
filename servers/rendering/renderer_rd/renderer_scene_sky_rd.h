@@ -106,7 +106,7 @@ private:
 	};
 
 	struct SkyShaderData : public RendererStorageRD::ShaderData {
-		bool valid;
+		bool valid = false;
 		RID version;
 
 		PipelineCacheRD pipelines[SKY_VERSION_MAX];
@@ -120,11 +120,11 @@ private:
 		String code;
 		Map<StringName, RID> default_texture_params;
 
-		bool uses_time;
-		bool uses_position;
-		bool uses_half_res;
-		bool uses_quarter_res;
-		bool uses_light;
+		bool uses_time = false;
+		bool uses_position = false;
+		bool uses_half_res = false;
+		bool uses_quarter_res = false;
+		bool uses_light = false;
 
 		virtual void set_code(const String &p_Code);
 		virtual void set_default_texture_param(const StringName &p_name, RID p_texture);
@@ -162,10 +162,10 @@ public:
 
 		UBO ubo;
 
-		SkyDirectionalLightData *directional_lights;
-		SkyDirectionalLightData *last_frame_directional_lights;
-		uint32_t max_directional_lights;
-		uint32_t last_frame_directional_light_count;
+		SkyDirectionalLightData *directional_lights = nullptr;
+		SkyDirectionalLightData *last_frame_directional_lights = nullptr;
+		uint32_t max_directional_lights = 0;
+		uint32_t last_frame_directional_light_count = 0;
 		RID directional_light_buffer;
 		RID uniform_set;
 		RID uniform_buffer;
@@ -228,10 +228,10 @@ public:
 	} sky_shader;
 
 	struct SkyMaterialData : public RendererStorageRD::MaterialData {
-		uint64_t last_frame;
-		SkyShaderData *shader_data;
+		uint64_t last_frame = 0;
+		SkyShaderData *shader_data = nullptr;
 		RID uniform_set;
-		bool uniform_set_updated;
+		bool uniform_set_updated = false;
 
 		virtual void set_render_priority(int p_priority) {}
 		virtual void set_next_pass(RID p_pass) {}
@@ -263,9 +263,9 @@ public:
 		Sky *dirty_list = nullptr;
 
 		//State to track when radiance cubemap needs updating
-		SkyMaterialData *prev_material;
+		SkyMaterialData *prev_material = nullptr;
 		Vector3 prev_position;
-		float prev_time;
+		float prev_time = 0.0;
 
 		void free(RendererStorageRD *p_storage);
 
@@ -276,11 +276,11 @@ public:
 		Ref<Image> bake_panorama(RendererStorageRD *p_storage, float p_energy, int p_roughness_layers, const Size2i &p_size);
 	};
 
-	uint32_t sky_ggx_samples_quality;
-	bool sky_use_cubemap_array;
+	uint32_t sky_ggx_samples_quality = 0;
+	bool sky_use_cubemap_array = false;
 	Sky *dirty_sky_list = nullptr;
 	mutable RID_Owner<Sky, true> sky_owner;
-	int roughness_layers;
+	int roughness_layers = 0;
 
 	RendererStorageRD::ShaderData *_create_sky_shader_func();
 	static RendererStorageRD::ShaderData *_create_sky_shader_funcs();

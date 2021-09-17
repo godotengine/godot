@@ -124,7 +124,7 @@ protected:
 		RID depth;
 		// RID normal_roughness_buffer;
 
-		RS::ViewportMSAA msaa;
+		RS::ViewportMSAA msaa = RS::VIEWPORT_MSAA_DISABLED;
 		RD::TextureSamples texture_samples;
 
 		RID color_msaa;
@@ -132,8 +132,8 @@ protected:
 		// RID normal_roughness_buffer_msaa;
 
 		RID color_fbs[FB_CONFIG_MAX];
-		int width, height;
-		uint32_t view_count;
+		int width = 0, height = 0;
+		uint32_t view_count = 0;
 
 		void clear();
 		virtual void configure(RID p_color_buffer, RID p_depth_buffer, RID p_target_buffer, int p_width, int p_height, RS::ViewportMSAA p_msaa, uint32_t p_view_count);
@@ -326,11 +326,11 @@ protected:
 		RID lightmap_ids[MAX_LIGHTMAPS];
 		bool lightmap_has_sh[MAX_LIGHTMAPS];
 		uint32_t lightmaps_used = 0;
-		uint32_t max_lightmaps;
+		uint32_t max_lightmaps = 0;
 		RID lightmap_buffer;
 
-		LightmapCaptureData *lightmap_captures;
-		uint32_t max_lightmap_captures;
+		LightmapCaptureData *lightmap_captures = nullptr;
+		uint32_t max_lightmap_captures = 0;
 		RID lightmap_capture_buffer;
 
 		bool used_screen_texture = false;
@@ -559,7 +559,7 @@ protected:
 
 		// lightmap
 		uint32_t gi_offset_cache = 0; // !BAS! Should rename this to lightmap_offset_cache, in forward clustered this was shared between gi and lightmap
-		uint32_t lightmap_slice_index;
+		uint32_t lightmap_slice_index = 0;
 		Rect2 lightmap_uv_scale;
 		RID lightmap_instance;
 		GeometryInstanceLightmapSH *lightmap_sh = nullptr;
@@ -582,7 +582,7 @@ protected:
 		struct Data {
 			//data used less often goes into regular heap
 			RID base;
-			RS::InstanceType base_type;
+			RS::InstanceType base_type = RS::InstanceType::INSTANCE_NONE;
 
 			RID skeleton;
 			Vector<RID> surface_materials;

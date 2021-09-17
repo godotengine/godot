@@ -161,7 +161,7 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 			BLEND_MODE_DISABLED,
 		};
 
-		bool valid;
+		bool valid = false;
 		RID version;
 		PipelineVariants pipeline_variants;
 		String path;
@@ -170,7 +170,7 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 		Vector<ShaderCompilerRD::GeneratedCode::Texture> texture_uniforms;
 
 		Vector<uint32_t> ubo_offsets;
-		uint32_t ubo_size;
+		uint32_t ubo_size = 0;
 
 		String code;
 		Map<StringName, RID> default_texture_params;
@@ -200,8 +200,8 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 	}
 
 	struct MaterialData : public RendererStorageRD::MaterialData {
-		uint64_t last_frame;
-		ShaderData *shader_data;
+		uint64_t last_frame = 0;
+		ShaderData *shader_data = nullptr;
 		RID uniform_set;
 
 		virtual void set_render_priority(int p_priority) {}
@@ -220,8 +220,8 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 	/**************************/
 
 	struct {
-		RS::CanvasItemTextureFilter default_filter;
-		RS::CanvasItemTextureRepeat default_repeat;
+		RS::CanvasItemTextureFilter default_filter = RS::CanvasItemTextureFilter::CANVAS_ITEM_TEXTURE_FILTER_DEFAULT;
+		RS::CanvasItemTextureRepeat default_repeat = RS::CanvasItemTextureRepeat::CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT;
 	} default_samplers;
 
 	/******************/
@@ -238,7 +238,7 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 
 	struct {
 		HashMap<PolygonID, PolygonBuffers> polygons;
-		PolygonID last_id;
+		PolygonID last_id = 0;
 	} polygon_buffers;
 
 	/********************/
@@ -261,8 +261,8 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 		RID texture;
 		struct {
 			bool enabled = false;
-			float z_far;
-			float y_offset;
+			float z_far = 0.0;
+			float y_offset = 0.0;
 			Transform2D directional_xform;
 		} shadow;
 	};
@@ -362,7 +362,7 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 			uint32_t pad2;
 		};
 
-		LightUniform *light_uniforms;
+		LightUniform *light_uniforms = nullptr;
 
 		RID lights_uniform_buffer;
 		RID canvas_state_buffer;
@@ -374,10 +374,10 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 
 		RID default_transforms_uniform_set;
 
-		uint32_t max_lights_per_render;
-		uint32_t max_lights_per_item;
+		uint32_t max_lights_per_render = 0;
+		uint32_t max_lights_per_item = 0;
 
-		double time;
+		double time = 0.0;
 
 	} state;
 

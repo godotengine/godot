@@ -241,28 +241,28 @@ private:
 			TYPE_3D
 		};
 
-		Type type;
+		Type type = TYPE_2D;
 		RS::TextureLayeredType layered_type = RS::TEXTURE_LAYERED_2D_ARRAY;
 
-		RenderingDevice::TextureType rd_type;
+		RenderingDevice::TextureType rd_type = RenderingDevice::TextureType::TEXTURE_TYPE_2D;
 		RID rd_texture;
 		RID rd_texture_srgb;
-		RenderingDevice::DataFormat rd_format;
-		RenderingDevice::DataFormat rd_format_srgb;
+		RenderingDevice::DataFormat rd_format = RenderingDevice::DataFormat::DATA_FORMAT_A1R5G5B5_UNORM_PACK16;
+		RenderingDevice::DataFormat rd_format_srgb = RenderingDevice::DataFormat::DATA_FORMAT_A1R5G5B5_UNORM_PACK16;
 
 		RD::TextureView rd_view;
 
-		Image::Format format;
-		Image::Format validated_format;
+		Image::Format format = Image::Format::FORMAT_BPTC_RGBA;
+		Image::Format validated_format = Image::Format::FORMAT_BPTC_RGBA;
 
-		int width;
-		int height;
-		int depth;
-		int layers;
-		int mipmaps;
+		int width = 0;
+		int height = 0;
+		int depth = 0;
+		int layers = 0;
+		int mipmaps = 0;
 
-		int height_2d;
-		int width_2d;
+		int height_2d = 0;
+		int width_2d = 0;
 
 		struct BufferSlice3D {
 			Size2i size;
@@ -272,8 +272,8 @@ private:
 		Vector<BufferSlice3D> buffer_slices_3d;
 		uint32_t buffer_size_3d = 0;
 
-		bool is_render_target;
-		bool is_proxy;
+		bool is_render_target = false;
+		bool is_proxy = false;
 
 		Ref<Image> image_cache_2d;
 		String path;
@@ -295,20 +295,12 @@ private:
 	};
 
 	struct TextureToRDFormat {
-		RD::DataFormat format;
-		RD::DataFormat format_srgb;
-		RD::TextureSwizzle swizzle_r;
-		RD::TextureSwizzle swizzle_g;
-		RD::TextureSwizzle swizzle_b;
-		RD::TextureSwizzle swizzle_a;
-		TextureToRDFormat() {
-			format = RD::DATA_FORMAT_MAX;
-			format_srgb = RD::DATA_FORMAT_MAX;
-			swizzle_r = RD::TEXTURE_SWIZZLE_R;
-			swizzle_g = RD::TEXTURE_SWIZZLE_G;
-			swizzle_b = RD::TEXTURE_SWIZZLE_B;
-			swizzle_a = RD::TEXTURE_SWIZZLE_A;
-		}
+		RD::DataFormat format = RD::DATA_FORMAT_MAX;
+		RD::DataFormat format_srgb = RD::DATA_FORMAT_MAX;
+		RD::TextureSwizzle swizzle_r = RD::TEXTURE_SWIZZLE_R;
+		RD::TextureSwizzle swizzle_g = RD::TEXTURE_SWIZZLE_G;
+		RD::TextureSwizzle swizzle_b = RD::TEXTURE_SWIZZLE_B;
+		RD::TextureSwizzle swizzle_a = RD::TEXTURE_SWIZZLE_A;
 	};
 
 	//textures can be created from threads, so this RID_Owner is thread safe
@@ -324,8 +316,8 @@ private:
 
 	struct DecalAtlas {
 		struct Texture {
-			int panorama_to_dp_users;
-			int users;
+			int panorama_to_dp_users = 0;
+			int users = 0;
 			Rect2 uv_rect;
 		};
 
@@ -369,9 +361,9 @@ private:
 	struct Material;
 
 	struct Shader {
-		ShaderData *data;
+		ShaderData *data = nullptr;
 		String code;
-		ShaderType type;
+		ShaderType type = SHADER_TYPE_2D;
 		Map<StringName, RID> default_texture_parameter;
 		Set<Material *> owners;
 	};
@@ -501,7 +493,7 @@ private:
 	mutable RID_Owner<Mesh, true> mesh_owner;
 
 	struct MeshInstance {
-		Mesh *mesh;
+		Mesh *mesh = nullptr;
 		RID skeleton;
 		struct Surface {
 			RID vertex_buffer;
@@ -869,7 +861,7 @@ private:
 	Particles *particle_update_list = nullptr;
 
 	struct ParticlesShaderData : public ShaderData {
-		bool valid;
+		bool valid = false;
 		RID version;
 		bool uses_collision = false;
 
@@ -878,7 +870,7 @@ private:
 		Vector<ShaderCompilerRD::GeneratedCode::Texture> texture_uniforms;
 
 		Vector<uint32_t> ubo_offsets;
-		uint32_t ubo_size;
+		uint32_t ubo_size = 0;
 
 		String path;
 		String code;
@@ -886,7 +878,7 @@ private:
 
 		RID pipeline;
 
-		bool uses_time;
+		bool uses_time = false;
 
 		virtual void set_code(const String &p_Code);
 		virtual void set_default_texture_param(const StringName &p_name, RID p_texture);
@@ -1117,7 +1109,7 @@ private:
 
 		struct BSP {
 			static const int32_t EMPTY_LEAF = INT32_MIN;
-			float plane[4];
+			float plane[4] = {};
 			int32_t over = EMPTY_LEAF, under = EMPTY_LEAF;
 		};
 
@@ -1139,7 +1131,7 @@ private:
 
 	struct RenderTarget {
 		Size2i size;
-		uint32_t view_count;
+		uint32_t view_count = 0;
 		RID framebuffer;
 		RID color;
 
@@ -1177,10 +1169,10 @@ private:
 
 		//texture generated for this owner (nor RD).
 		RID texture;
-		bool was_used;
+		bool was_used = false;
 
 		//clear request
-		bool clear_requested;
+		bool clear_requested = false;
 		Color clear_color;
 	};
 
@@ -1226,11 +1218,11 @@ private:
 		struct Variable {
 			Set<RID> texture_materials; // materials using this
 
-			RS::GlobalVariableType type;
+			RS::GlobalVariableType type = RS::GlobalVariableType::GLOBAL_VAR_TYPE_BOOL;
 			Variant value;
 			Variant override;
-			int32_t buffer_index; //for vectors
-			int32_t buffer_elements; //for vectors
+			int32_t buffer_index = 0; //for vectors
+			int32_t buffer_elements = 0; //for vectors
 		};
 
 		HashMap<StringName, Variable> variables;
@@ -1264,12 +1256,12 @@ private:
 		List<RID> materials_using_texture;
 
 		RID buffer;
-		Value *buffer_values;
-		ValueUsage *buffer_usage;
-		bool *buffer_dirty_regions;
+		Value *buffer_values = nullptr;
+		ValueUsage *buffer_usage = nullptr;
+		bool *buffer_dirty_regions = nullptr;
 		uint32_t buffer_dirty_region_count = 0;
 
-		uint32_t buffer_size;
+		uint32_t buffer_size = 0;
 
 		bool must_update_texture_materials = false;
 		bool must_update_buffer_materials = false;

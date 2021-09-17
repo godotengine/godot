@@ -90,8 +90,8 @@ class RenderForwardClustered : public RendererSceneRenderRD {
 		RID normal_roughness_buffer;
 		RID voxelgi_buffer;
 
-		RS::ViewportMSAA msaa;
-		RD::TextureSamples texture_samples;
+		RS::ViewportMSAA msaa = RS::ViewportMSAA::VIEWPORT_MSAA_DISABLED;
+		RD::TextureSamples texture_samples = RD::TextureSamples::TEXTURE_SAMPLES_MAX;
 
 		RID color_msaa;
 		RID depth_msaa;
@@ -106,7 +106,7 @@ class RenderForwardClustered : public RendererSceneRenderRD {
 		RID color_fb;
 		RID color_specular_fb;
 		RID specular_only_fb;
-		int width, height;
+		int width = 0, height = 0;
 
 		RID render_sdfgi_uniform_set;
 		void ensure_specular();
@@ -312,15 +312,15 @@ class RenderForwardClustered : public RendererSceneRenderRD {
 		RID lightmap_ids[MAX_LIGHTMAPS];
 		bool lightmap_has_sh[MAX_LIGHTMAPS];
 		uint32_t lightmaps_used = 0;
-		uint32_t max_lightmaps;
+		uint32_t max_lightmaps = 0;
 		RID lightmap_buffer;
 
 		RID instance_buffer[RENDER_LIST_MAX];
 		uint32_t instance_buffer_size[RENDER_LIST_MAX] = { 0, 0, 0 };
 		LocalVector<InstanceData> instance_data[RENDER_LIST_MAX];
 
-		LightmapCaptureData *lightmap_captures;
-		uint32_t max_lightmap_captures;
+		LightmapCaptureData *lightmap_captures = nullptr;
+		uint32_t max_lightmap_captures = 0;
 		RID lightmap_capture_buffer;
 
 		RID voxelgi_ids[MAX_VOXEL_GI_INSTANCESS];
@@ -458,7 +458,7 @@ class RenderForwardClustered : public RendererSceneRenderRD {
 		uint32_t flags_cache = 0;
 		bool store_transform_cache = true;
 		int32_t shader_parameters_offset = -1;
-		uint32_t lightmap_slice_index;
+		uint32_t lightmap_slice_index = 0;
 		Rect2 lightmap_uv_scale;
 		uint32_t layer_mask = 1;
 		RID transforms_uniform_set;
@@ -480,7 +480,7 @@ class RenderForwardClustered : public RendererSceneRenderRD {
 		struct Data {
 			//data used less often goes into regular heap
 			RID base;
-			RS::InstanceType base_type;
+			RS::InstanceType base_type = RS::InstanceType::INSTANCE_MAX;
 
 			RID skeleton;
 			Vector<RID> surface_materials;

@@ -60,25 +60,25 @@ public:
 		Vector<String> defines;
 		struct Texture {
 			StringName name;
-			ShaderLanguage::DataType type;
-			ShaderLanguage::ShaderNode::Uniform::Hint hint;
-			ShaderLanguage::TextureFilter filter;
-			ShaderLanguage::TextureRepeat repeat;
-			bool global;
+			ShaderLanguage::DataType type = ShaderLanguage::DataType::TYPE_VOID;
+			ShaderLanguage::ShaderNode::Uniform::Hint hint = ShaderLanguage::ShaderNode::Uniform::Hint::HINT_ALBEDO;
+			ShaderLanguage::TextureFilter filter = ShaderLanguage::TextureFilter::FILTER_DEFAULT;
+			ShaderLanguage::TextureRepeat repeat = ShaderLanguage::TextureRepeat::REPEAT_DEFAULT;
+			bool global = false;
 		};
 
 		Vector<Texture> texture_uniforms;
 
 		Vector<uint32_t> uniform_offsets;
-		uint32_t uniform_total_size;
+		uint32_t uniform_total_size = 0;
 		String uniforms;
 		String stage_globals[STAGE_MAX];
 
 		Map<String, String> code;
 
-		bool uses_global_textures;
-		bool uses_fragment_time;
-		bool uses_vertex_time;
+		bool uses_global_textures = false;
+		bool uses_fragment_time = false;
+		bool uses_vertex_time = false;
 	};
 
 	struct DefaultIdentifierActions {

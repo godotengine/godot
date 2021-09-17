@@ -90,9 +90,9 @@ class RendererSceneRenderRD : public RendererSceneRender {
 	friend RendererSceneGIRD;
 
 protected:
-	RendererStorageRD *storage;
-	double time;
-	double time_step = 0;
+	RendererStorageRD *storage = nullptr;
+	double time = 0.0;
+	double time_step = 0.0;
 
 	struct RenderBufferData {
 		virtual void configure(RID p_color_buffer, RID p_depth_buffer, RID p_target_buffer, int p_width, int p_height, RS::ViewportMSAA p_msaa, uint32_t p_view_count) = 0;
@@ -229,7 +229,7 @@ private:
 	struct DecalInstance {
 		RID decal;
 		Transform3D transform;
-		uint32_t cull_mask;
+		uint32_t cull_mask = 0;
 		ForwardID forward_id = -1;
 	};
 
@@ -249,7 +249,7 @@ private:
 	struct ShadowShrinkStage {
 		RID texture;
 		RID filter_texture;
-		uint32_t size;
+		uint32_t size = 0;
 	};
 
 	struct ShadowAtlas {
@@ -261,27 +261,16 @@ private:
 		};
 
 		struct Quadrant {
-			uint32_t subdivision;
+			uint32_t subdivision = 0; //not in use
 
 			struct Shadow {
 				RID owner;
-				uint64_t version;
-				uint64_t fog_version; // used for fog
-				uint64_t alloc_tick;
-
-				Shadow() {
-					version = 0;
-					fog_version = 0;
-					alloc_tick = 0;
-				}
+				uint64_t version = 0;
+				uint64_t fog_version = 0; // used for fog
+				uint64_t alloc_tick = 0;
 			};
 
 			Vector<Shadow> shadows;
-
-			Quadrant() {
-				subdivision = 0; //not in use
-			}
-
 		} quadrants[4];
 
 		int size_order[4] = { 0, 1, 2, 3 };
@@ -309,10 +298,10 @@ private:
 	float shadows_quality_radius = 1.0;
 	float directional_shadow_quality_radius = 1.0;
 
-	float *directional_penumbra_shadow_kernel;
-	float *directional_soft_shadow_kernel;
-	float *penumbra_shadow_kernel;
-	float *soft_shadow_kernel;
+	float *directional_penumbra_shadow_kernel = nullptr;
+	float *directional_soft_shadow_kernel = nullptr;
+	float *penumbra_shadow_kernel = nullptr;
+	float *soft_shadow_kernel = nullptr;
 	int directional_penumbra_shadow_samples = 0;
 	int directional_soft_shadow_samples = 0;
 	int penumbra_shadow_samples = 0;
@@ -413,17 +402,17 @@ private:
 
 	struct CameraEffects {
 		bool dof_blur_far_enabled = false;
-		float dof_blur_far_distance = 10;
-		float dof_blur_far_transition = 5;
+		float dof_blur_far_distance = 10.0;
+		float dof_blur_far_transition = 5.0;
 
 		bool dof_blur_near_enabled = false;
-		float dof_blur_near_distance = 2;
-		float dof_blur_near_transition = 1;
+		float dof_blur_near_distance = 2.0;
+		float dof_blur_near_transition = 1.0;
 
 		float dof_blur_amount = 0.1;
 
 		bool override_exposure_enabled = false;
-		float override_exposure = 1;
+		float override_exposure = 1.0;
 	};
 
 	RS::DOFBlurQuality dof_blur_quality = RS::DOF_BLUR_QUALITY_MEDIUM;
@@ -470,8 +459,8 @@ private:
 
 			struct Mipmap {
 				RID texture;
-				int width;
-				int height;
+				int width = 0;
+				int height = 0;
 
 				// only used on mobile renderer
 				RID fb;
@@ -658,32 +647,32 @@ private:
 			}
 		};
 
-		ReflectionData *reflections;
-		InstanceSort<ReflectionProbeInstance> *reflection_sort;
-		uint32_t max_reflections;
+		ReflectionData *reflections = nullptr;
+		InstanceSort<ReflectionProbeInstance> *reflection_sort = nullptr;
+		uint32_t max_reflections = 0;
 		RID reflection_buffer;
-		uint32_t max_reflection_probes_per_instance;
+		uint32_t max_reflection_probes_per_instance = 0;
 		uint32_t reflection_count = 0;
 
-		DecalData *decals;
-		InstanceSort<DecalInstance> *decal_sort;
-		uint32_t max_decals;
+		DecalData *decals = nullptr;
+		InstanceSort<DecalInstance> *decal_sort = nullptr;
+		uint32_t max_decals = 0;
 		RID decal_buffer;
-		uint32_t decal_count;
+		uint32_t decal_count = 0;
 
-		LightData *omni_lights;
-		LightData *spot_lights;
+		LightData *omni_lights = nullptr;
+		LightData *spot_lights = nullptr;
 
-		InstanceSort<LightInstance> *omni_light_sort;
-		InstanceSort<LightInstance> *spot_light_sort;
-		uint32_t max_lights;
+		InstanceSort<LightInstance> *omni_light_sort = nullptr;
+		InstanceSort<LightInstance> *spot_light_sort = nullptr;
+		uint32_t max_lights = 0;
 		RID omni_light_buffer;
 		RID spot_light_buffer;
 		uint32_t omni_light_count = 0;
 		uint32_t spot_light_count = 0;
 
-		DirectionalLightData *directional_lights;
-		uint32_t max_directional_lights;
+		DirectionalLightData *directional_lights = nullptr;
+		uint32_t max_directional_lights = 0;
 		RID directional_light_buffer;
 
 	} cluster;
@@ -701,7 +690,7 @@ private:
 		LocalVector<int> shadows;
 		LocalVector<int> directional_shadows;
 
-		bool depth_prepass_used; // this does not seem used anywhere...
+		bool depth_prepass_used = false; // this does not seem used anywhere...
 	} render_state;
 
 	struct VolumetricFog {
@@ -713,8 +702,8 @@ private:
 		uint32_t height = 0;
 		uint32_t depth = 0;
 
-		float length;
-		float spread;
+		float length = 0.0;
+		float spread = 0.0;
 
 		RID light_density_map;
 		RID prev_light_density_map;
