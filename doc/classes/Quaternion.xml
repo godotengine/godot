@@ -135,6 +135,11 @@
 		</method>
 		<method name="operator !=" qualifiers="operator">
 			<return type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="operator !=" qualifiers="operator">
+			<return type="bool" />
 			<argument index="0" name="right" type="Quaternion" />
 			<description>
 			</description>
@@ -184,6 +189,11 @@
 		<method name="operator /" qualifiers="operator">
 			<return type="Quaternion" />
 			<argument index="0" name="right" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="operator ==" qualifiers="operator">
+			<return type="bool" />
 			<description>
 			</description>
 		</method>

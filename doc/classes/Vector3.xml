@@ -210,6 +210,11 @@
 		</method>
 		<method name="operator !=" qualifiers="operator">
 			<return type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="operator !=" qualifiers="operator">
+			<return type="bool" />
 			<argument index="0" name="right" type="Vector3" />
 			<description>
 			</description>
@@ -289,6 +294,11 @@
 		<method name="operator &lt;=" qualifiers="operator">
 			<return type="bool" />
 			<argument index="0" name="right" type="Vector3" />
+			<description>
+			</description>
+		</method>
+		<method name="operator ==" qualifiers="operator">
+			<return type="bool" />
 			<description>
 			</description>
 		</method>

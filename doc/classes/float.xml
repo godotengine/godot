@@ -42,6 +42,11 @@
 		</method>
 		<method name="operator !=" qualifiers="operator">
 			<return type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="operator !=" qualifiers="operator">
+			<return type="bool" />
 			<argument index="0" name="right" type="float" />
 			<description>
 				Returns [code]true[/code] if two floats are different from each other.
@@ -187,6 +192,11 @@
 			<argument index="0" name="right" type="int" />
 			<description>
 				Returns [code]true[/code] if this [float] is less than or equal to the given [int].
+			</description>
+		</method>
+		<method name="operator ==" qualifiers="operator">
+			<return type="bool" />
+			<description>
 			</description>
 		</method>
 		<method name="operator ==" qualifiers="operator">

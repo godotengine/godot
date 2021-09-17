@@ -121,6 +121,11 @@
 		</method>
 		<method name="operator !=" qualifiers="operator">
 			<return type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="operator !=" qualifiers="operator">
+			<return type="bool" />
 			<argument index="0" name="right" type="bool" />
 			<description>
 				Returns [code]true[/code] if two bools are different, i.e. one is [code]true[/code] and the other is [code]false[/code].
@@ -131,6 +136,11 @@
 			<argument index="0" name="right" type="bool" />
 			<description>
 				Returns [code]true[/code] if left operand is [code]false[/code] and right operand is [code]true[/code].
+			</description>
+		</method>
+		<method name="operator ==" qualifiers="operator">
+			<return type="bool" />
+			<description>
 			</description>
 		</method>
 		<method name="operator ==" qualifiers="operator">

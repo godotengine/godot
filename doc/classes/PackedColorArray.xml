@@ -79,6 +79,11 @@
 		</method>
 		<method name="operator !=" qualifiers="operator">
 			<return type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="operator !=" qualifiers="operator">
+			<return type="bool" />
 			<argument index="0" name="right" type="PackedColorArray" />
 			<description>
 			</description>
@@ -86,6 +91,11 @@
 		<method name="operator +" qualifiers="operator">
 			<return type="PackedColorArray" />
 			<argument index="0" name="right" type="PackedColorArray" />
+			<description>
+			</description>
+		</method>
+		<method name="operator ==" qualifiers="operator">
+			<return type="bool" />
 			<description>
 			</description>
 		</method>

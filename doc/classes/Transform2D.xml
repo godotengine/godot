@@ -115,6 +115,11 @@
 		</method>
 		<method name="operator !=" qualifiers="operator">
 			<return type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="operator !=" qualifiers="operator">
+			<return type="bool" />
 			<argument index="0" name="right" type="Transform2D" />
 			<description>
 			</description>
@@ -155,6 +160,11 @@
 			<argument index="0" name="right" type="int" />
 			<description>
 				This operator multiplies all components of the [Transform2D], including the origin vector, which scales it uniformly.
+			</description>
+		</method>
+		<method name="operator ==" qualifiers="operator">
+			<return type="bool" />
+			<description>
 			</description>
 		</method>
 		<method name="operator ==" qualifiers="operator">

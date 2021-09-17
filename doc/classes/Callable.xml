@@ -125,9 +125,19 @@
 		</method>
 		<method name="operator !=" qualifiers="operator">
 			<return type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="operator !=" qualifiers="operator">
+			<return type="bool" />
 			<argument index="0" name="right" type="Callable" />
 			<description>
 				Returns [code]true[/code] if both [Callable]s invoke different targets.
+			</description>
+		</method>
+		<method name="operator ==" qualifiers="operator">
+			<return type="bool" />
+			<description>
 			</description>
 		</method>
 		<method name="operator ==" qualifiers="operator">
