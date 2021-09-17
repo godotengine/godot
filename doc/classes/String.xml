@@ -513,6 +513,12 @@
 			<description>
 			</description>
 		</method>
+		<method name="operator []" qualifiers="operator">
+			<return type="String" />
+			<argument index="0" name="index" type="int" />
+			<description>
+			</description>
+		</method>
 		<method name="pad_decimals" qualifiers="const">
 			<return type="String" />
 			<argument index="0" name="digits" type="int" />
