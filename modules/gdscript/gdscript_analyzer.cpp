@@ -1767,6 +1767,15 @@ void GDScriptAnalyzer::reduce_assignment(GDScriptParser::AssignmentNode *p_assig
 					identifier->variable_source->set_datatype(id_type);
 				}
 			} break;
+			case GDScriptParser::IdentifierNode::FUNCTION_PARAMETER: {
+				GDScriptParser::DataType id_type = identifier->parameter_source->get_datatype();
+				if (!id_type.is_hard_type()) {
+					id_type = assigned_value_type;
+					id_type.type_source = GDScriptParser::DataType::INFERRED;
+					id_type.is_constant = false;
+					identifier->parameter_source->set_datatype(id_type);
+				}
+			} break;
 			case GDScriptParser::IdentifierNode::LOCAL_VARIABLE: {
 				GDScriptParser::DataType id_type = identifier->variable_source->get_datatype();
 				if (!id_type.is_hard_type()) {
@@ -2428,13 +2437,15 @@ void GDScriptAnalyzer::reduce_identifier_from_base(GDScriptParser::IdentifierNod
 				p_identifier->is_constant = true;
 				p_identifier->reduced_value = result;
 				p_identifier->set_datatype(type_from_variant(result, p_identifier));
-			} else {
+			} else if (base.is_hard_type()) {
 				push_error(vformat(R"(Cannot find constant "%s" on type "%s".)", name, base.to_string()), p_identifier);
 			}
 		} else {
 			switch (base.builtin_type) {
 				case Variant::NIL: {
-					push_error(vformat(R"(Invalid get index "%s" on base Nil)", name), p_identifier);
+					if (base.is_hard_type()) {
+						push_error(vformat(R"(Invalid get index "%s" on base Nil)", name), p_identifier);
+					}
 					return;
 				}
 				case Variant::DICTIONARY: {
@@ -2455,7 +2466,9 @@ void GDScriptAnalyzer::reduce_identifier_from_base(GDScriptParser::IdentifierNod
 							return;
 						}
 					}
-					push_error(vformat(R"(Cannot find property "%s" on base "%s".)", name, base.to_string()), p_identifier);
+					if (base.is_hard_type()) {
+						push_error(vformat(R"(Cannot find property "%s" on base "%s".)", name, base.to_string()), p_identifier);
+					}
 				}
 			}
 		}
