@@ -362,11 +362,11 @@ class RenderingDeviceVulkan : public RenderingDevice {
 	struct Framebuffer {
 		FramebufferFormatID format_id = 0;
 		struct VersionKey {
-			InitialAction initial_color_action;
-			FinalAction final_color_action;
-			InitialAction initial_depth_action;
-			FinalAction final_depth_action;
-			uint32_t view_count;
+			InitialAction initial_color_action = INITIAL_ACTION_MAX;
+			FinalAction final_color_action = FINAL_ACTION_MAX;
+			InitialAction initial_depth_action = INITIAL_ACTION_MAX;
+			FinalAction final_depth_action = FINAL_ACTION_MAX;
+			uint32_t view_count = 0;
 
 			bool operator<(const VersionKey &p_key) const {
 				if (initial_color_action == p_key.initial_color_action) {
@@ -400,7 +400,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 
 		Map<VersionKey, Version> framebuffers;
 		Size2 size;
-		uint32_t view_count;
+		uint32_t view_count = 0;
 	};
 
 	RID_Owner<Framebuffer, true> framebuffer_owner;
@@ -699,7 +699,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 
 	struct DescriptorPool {
 		VkDescriptorPool pool;
-		uint32_t usage;
+		uint32_t usage = 0;
 	};
 
 	Map<DescriptorPoolKey, Set<DescriptorPool *>> descriptor_pools;
@@ -736,7 +736,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 		VkDescriptorSet descriptor_set = VK_NULL_HANDLE;
 		//VkPipelineLayout pipeline_layout; //not owned, inherited from shader
 		struct AttachableTexture {
-			uint32_t bind;
+			uint32_t bind = 0;
 			RID texture;
 		};
 
@@ -878,7 +878,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 		struct Validation {
 			uint32_t vertex_array_size = 0;
 			uint32_t index_array_size = 0;
-			uint32_t index_array_offset;
+			uint32_t index_array_offset = 0;
 		} validation;
 #endif
 	};
@@ -931,7 +931,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 			uint32_t local_group_size[3] = { 0, 0, 0 };
 			VkPipelineLayout pipeline_layout = VK_NULL_HANDLE;
 			uint32_t pipeline_push_constant_stages = 0;
-			bool allow_draw_overlap;
+			bool allow_draw_overlap = false;
 		} state;
 
 #ifdef DEBUG_ENABLED

@@ -1762,11 +1762,7 @@ void AnimationTimelineEdit::_bind_methods() {
 }
 
 AnimationTimelineEdit::AnimationTimelineEdit() {
-	use_fps = false;
-	editing = false;
 	name_limit = 150 * EDSCALE;
-	zoom = nullptr;
-	track_edit = nullptr;
 
 	play_position_pos = 0;
 	play_position = memnew(Control);
@@ -1810,10 +1806,6 @@ AnimationTimelineEdit::AnimationTimelineEdit() {
 	add_track->hide();
 	add_track->get_popup()->connect("index_pressed", callable_mp(this, &AnimationTimelineEdit::_track_added));
 	len_hb->hide();
-
-	panning_timeline = false;
-	dragging_timeline = false;
-	dragging_hsize = false;
 
 	set_layout_direction(Control::LAYOUT_DIRECTION_LTR);
 }
@@ -2982,22 +2974,6 @@ void AnimationTrackEdit::_bind_methods() {
 }
 
 AnimationTrackEdit::AnimationTrackEdit() {
-	undo_redo = nullptr;
-	timeline = nullptr;
-	root = nullptr;
-	path = nullptr;
-	path_popup = nullptr;
-	menu = nullptr;
-	clicking_on_name = false;
-	dropping_at = 0;
-
-	in_group = false;
-
-	moving_selection_attempt = false;
-	moving_selection = false;
-	select_single_attempt = -1;
-
-	play_position_pos = 0;
 	play_position = memnew(Control);
 	play_position->set_mouse_filter(MOUSE_FILTER_PASS);
 	add_child(play_position);
@@ -5767,8 +5743,6 @@ void AnimationTrackEditor::_pick_track_filter_input(const Ref<InputEvent> &p_ie)
 }
 
 AnimationTrackEditor::AnimationTrackEditor() {
-	root = nullptr;
-
 	undo_redo = EditorNode::get_singleton()->get_undo_redo();
 
 	main_panel = memnew(PanelContainer);
@@ -5950,11 +5924,6 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	add_child(method_selector);
 	method_selector->connect("selected", callable_mp(this, &AnimationTrackEditor::_add_method_key));
 
-	inserting = false;
-	insert_query = false;
-	insert_frame = 0;
-	insert_queue = false;
-
 	insert_confirm = memnew(ConfirmationDialog);
 	add_child(insert_confirm);
 	insert_confirm->connect("confirmed", callable_mp(this, &AnimationTrackEditor::_confirm_insert_list));
@@ -5972,10 +5941,6 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	insert_confirm_reset->set_text(TTR("Create RESET Track(s)", ""));
 	insert_confirm_reset->set_pressed(EDITOR_GET("editors/animation/default_create_reset_tracks"));
 	ichb->add_child(insert_confirm_reset);
-	keying = false;
-	moving_selection = false;
-	key_edit = nullptr;
-	multi_key_edit = nullptr;
 
 	box_selection = memnew(Control);
 	add_child(box_selection);
@@ -5983,7 +5948,6 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	box_selection->set_mouse_filter(MOUSE_FILTER_IGNORE);
 	box_selection->hide();
 	box_selection->connect("draw", callable_mp(this, &AnimationTrackEditor::_box_selection_draw));
-	box_selecting = false;
 
 	//default plugins
 

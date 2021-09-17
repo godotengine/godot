@@ -88,7 +88,7 @@ private:
 	StringName signal;
 	LineEdit *dst_method;
 	ConnectDialogBinds *cdbinds;
-	bool bEditMode;
+	bool bEditMode = false;
 	NodePath dst_path;
 	VBoxContainer *vbc_right;
 

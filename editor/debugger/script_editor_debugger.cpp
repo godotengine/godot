@@ -1836,11 +1836,6 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 	msgdialog = memnew(AcceptDialog);
 	add_child(msgdialog);
 
-	live_debug = true;
-	camera_override = CameraOverride::OVERRIDE_NONE;
-	last_path_id = false;
-	error_count = 0;
-	warning_count = 0;
 	_update_buttons_state();
 }
 

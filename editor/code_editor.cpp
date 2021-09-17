@@ -618,10 +618,6 @@ void FindReplaceBar::_bind_methods() {
 }
 
 FindReplaceBar::FindReplaceBar() {
-	results_count = -1;
-	replace_all_mode = false;
-	preserve_cursor = false;
-
 	vbc_lineedit = memnew(VBoxContainer);
 	add_child(vbc_lineedit);
 	vbc_lineedit->set_alignment(ALIGN_CENTER);
@@ -1794,7 +1790,6 @@ void CodeTextEditor::update_toggle_scripts_button() {
 }
 
 CodeTextEditor::CodeTextEditor() {
-	code_complete_func = nullptr;
 	ED_SHORTCUT("script_editor/zoom_in", TTR("Zoom In"), KEY_MASK_CMD | KEY_EQUAL);
 	ED_SHORTCUT("script_editor/zoom_out", TTR("Zoom Out"), KEY_MASK_CMD | KEY_MINUS);
 	ED_SHORTCUT("script_editor/reset_zoom", TTR("Reset Zoom"), KEY_MASK_CMD | KEY_0);
@@ -1847,9 +1842,6 @@ CodeTextEditor::CodeTextEditor() {
 	code_complete_timer->set_one_shot(true);
 	code_complete_timer->set_wait_time(EDITOR_GET("text_editor/completion/code_complete_delay"));
 
-	error_line = 0;
-	error_column = 0;
-
 	toggle_scripts_button = memnew(Button);
 	toggle_scripts_button->set_flat(true);
 	toggle_scripts_button->connect("pressed", callable_mp(this, &CodeTextEditor::_toggle_scripts_pressed));
@@ -1882,7 +1874,6 @@ CodeTextEditor::CodeTextEditor() {
 	error_button->add_theme_font_override("font", EditorNode::get_singleton()->get_gui_base()->get_theme_font(SNAME("status_source"), SNAME("EditorFonts")));
 	error_button->add_theme_font_size_override("font_size", EditorNode::get_singleton()->get_gui_base()->get_theme_font_size(SNAME("status_source_size"), SNAME("EditorFonts")));
 
-	is_errors_panel_opened = false;
 	set_error_count(0);
 
 	// Warnings
@@ -1898,7 +1889,6 @@ CodeTextEditor::CodeTextEditor() {
 	warning_button->add_theme_font_override("font", EditorNode::get_singleton()->get_gui_base()->get_theme_font(SNAME("status_source"), SNAME("EditorFonts")));
 	warning_button->add_theme_font_size_override("font_size", EditorNode::get_singleton()->get_gui_base()->get_theme_font_size(SNAME("status_source_size"), SNAME("EditorFonts")));
 
-	is_warnings_panel_opened = false;
 	set_warning_count(0);
 
 	// Line and column

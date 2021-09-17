@@ -663,9 +663,7 @@ void EditorExportPlugin::_bind_methods() {
 	GDVIRTUAL_BIND(_export_end);
 }
 
-EditorExportPlugin::EditorExportPlugin() {
-	skipped = false;
-}
+EditorExportPlugin::EditorExportPlugin() {}
 
 EditorExportPlatform::FeatureContainers EditorExportPlatform::get_feature_containers(const Ref<EditorExportPreset> &p_preset) {
 	Ref<EditorExportPlatform> platform = p_preset->get_platform();
@@ -1723,7 +1721,6 @@ EditorExport::EditorExport() {
 	save_timer->set_wait_time(0.8);
 	save_timer->set_one_shot(true);
 	save_timer->connect("timeout", callable_mp(this, &EditorExport::_save));
-	block_save = false;
 
 	_export_presets_updated = "export_presets_updated";
 
@@ -1975,10 +1972,7 @@ void EditorExportPlatformPC::set_fixup_embedded_pck_func(FixUpEmbeddedPckFunc p_
 	fixup_embedded_pck_func = p_fixup_embedded_pck_func;
 }
 
-EditorExportPlatformPC::EditorExportPlatformPC() {
-	chmod_flags = -1;
-	fixup_embedded_pck_func = nullptr;
-}
+EditorExportPlatformPC::EditorExportPlatformPC() {}
 
 ///////////////////////
 

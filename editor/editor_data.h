@@ -57,7 +57,7 @@ class EditorHistory {
 	friend class EditorData;
 
 	Vector<History> history;
-	int current;
+	int current = -1;
 
 	//Vector<EditorPlugin*> editor_plugins;
 
@@ -138,7 +138,7 @@ private:
 	void _cleanup_history();
 
 	Vector<EditedScene> edited_scene;
-	int current_edited_scene;
+	int current_edited_scene = -1;
 
 	bool _find_updated_instances(Node *p_root, Node *p_node, Set<String> &checked_paths);
 
@@ -241,9 +241,9 @@ class EditorSelection : public Object {
 private:
 	Map<Node *, Object *> selection;
 
-	bool emitted;
-	bool changed;
-	bool nl_changed;
+	bool emitted = false;
+	bool changed = false;
+	bool nl_changed = false;
 
 	void _node_removed(Node *p_node);
 

@@ -82,12 +82,12 @@ class FindReplaceBar : public HBoxContainer {
 	CodeTextEditor *base_text_editor = nullptr;
 	CodeEdit *text_editor;
 
-	int result_line;
-	int result_col;
-	int results_count;
+	int result_line = 0;
+	int result_col = 0;
+	int results_count = -1;
 
-	bool replace_all_mode;
-	bool preserve_cursor;
+	bool replace_all_mode = false;
+	bool preserve_cursor = false;
 
 	void _get_search_from(int &r_line, int &r_col);
 	void _update_results_count();
@@ -155,12 +155,12 @@ class CodeTextEditor : public VBoxContainer {
 	Timer *code_complete_timer;
 
 	Timer *font_resize_timer;
-	int font_resize_val;
-	real_t font_size;
+	int font_resize_val = 0;
+	real_t font_size = 0.0;
 
 	Label *error;
-	int error_line;
-	int error_column;
+	int error_line = 0;
+	int error_column = 0;
 
 	bool settings_changed = false;
 
@@ -183,7 +183,7 @@ class CodeTextEditor : public VBoxContainer {
 	Color completion_font_color;
 	Color completion_string_color;
 	Color completion_comment_color;
-	CodeTextEditorCodeCompleteFunc code_complete_func;
+	CodeTextEditorCodeCompleteFunc code_complete_func = nullptr;
 	void *code_complete_ud;
 
 	void _error_button_pressed();
@@ -207,8 +207,8 @@ protected:
 	void _notification(int);
 	static void _bind_methods();
 
-	bool is_warnings_panel_opened;
-	bool is_errors_panel_opened;
+	bool is_warnings_panel_opened = false;
+	bool is_errors_panel_opened = false;
 
 public:
 	void trim_trailing_whitespace();

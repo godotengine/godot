@@ -298,7 +298,7 @@ class EditorExportPlugin : public RefCounted {
 		bool remap = false;
 	};
 	Vector<ExtraFile> extra_files;
-	bool skipped;
+	bool skipped = false;
 
 	Vector<String> ios_frameworks;
 	Vector<String> ios_embedded_frameworks;
@@ -375,7 +375,7 @@ class EditorExport : public Node {
 	StringName _export_presets_updated;
 
 	Timer *save_timer;
-	bool block_save;
+	bool block_save = false;
 
 	static EditorExport *singleton;
 
@@ -429,9 +429,9 @@ private:
 	String debug_file_32;
 	String debug_file_64;
 
-	int chmod_flags;
+	int chmod_flags = -1;
 
-	FixUpEmbeddedPckFunc fixup_embedded_pck_func;
+	FixUpEmbeddedPckFunc fixup_embedded_pck_func = nullptr;
 
 public:
 	virtual void get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) override;

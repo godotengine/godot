@@ -90,9 +90,7 @@ float AudioStreamPreview::get_min(float p_time, float p_time_next) const {
 	return (vmin / 255.0) * 2.0 - 1.0;
 }
 
-AudioStreamPreview::AudioStreamPreview() {
-	length = 0;
-}
+AudioStreamPreview::AudioStreamPreview() {}
 
 ////
 

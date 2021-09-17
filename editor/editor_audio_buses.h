@@ -57,7 +57,7 @@ class EditorAudioBus : public PanelContainer {
 	MenuButton *bus_options;
 	VSlider *slider;
 
-	int cc;
+	int cc = 0;
 	static const int CHANNELS_MAX = 4;
 
 	struct {
@@ -86,9 +86,9 @@ class EditorAudioBus : public PanelContainer {
 
 	Tree *effects;
 
-	bool updating_bus;
-	bool is_master;
-	mutable bool hovering_drop;
+	bool updating_bus = false;
+	bool is_master = false;
+	mutable bool hovering_drop = false;
 
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 	void _effects_gui_input(Ref<InputEvent> p_event);

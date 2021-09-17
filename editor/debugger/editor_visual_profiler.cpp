@@ -798,9 +798,6 @@ EditorVisualProfiler::EditorVisualProfiler() {
 
 	int metric_size = CLAMP(int(EDITOR_DEF("debugger/profiler_frame_history_size", 600)), 60, 1024);
 	frame_metrics.resize(metric_size);
-	last_metric = -1;
-	//cursor_metric=-1;
-	hover_metric = -1;
 
 	//display_mode=DISPLAY_FRAME_TIME;
 
@@ -815,12 +812,6 @@ EditorVisualProfiler::EditorVisualProfiler() {
 	plot_delay->set_one_shot(true);
 	add_child(plot_delay);
 	plot_delay->connect("timeout", callable_mp(this, &EditorVisualProfiler::_update_plot));
-
-	seeking = false;
-	graph_height_cpu = 1;
-	graph_height_gpu = 1;
-
-	graph_limit = 1000 / 60.0;
 
 	//activate->set_disabled(true);
 }

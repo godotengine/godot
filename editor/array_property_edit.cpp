@@ -286,7 +286,6 @@ void ArrayPropertyEdit::_bind_methods() {
 }
 
 ArrayPropertyEdit::ArrayPropertyEdit() {
-	page = 0;
 	for (int i = 0; i < Variant::VARIANT_MAX; i++) {
 		if (i > 0) {
 			vtypes += ",";

@@ -41,13 +41,13 @@
 #include <unistd.h>
 
 class DirAccessUnix : public DirAccess {
-	DIR *dir_stream;
+	DIR *dir_stream = nullptr;
 
 	static DirAccess *create_fs();
 
 	String current_dir;
-	bool _cisdir;
-	bool _cishidden;
+	bool _cisdir = false;
+	bool _cishidden = false;
 
 protected:
 	virtual String fix_unicode_name(const char *p_name) const { return String::utf8(p_name); }

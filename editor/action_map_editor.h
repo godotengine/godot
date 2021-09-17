@@ -62,7 +62,7 @@ private:
 	Label *event_as_text;
 
 	// List of All Key/Mouse/Joypad input options.
-	int allowed_input_types;
+	int allowed_input_types = 0;
 	Tree *input_list_tree;
 	LineEdit *input_list_search;
 
@@ -156,7 +156,7 @@ private:
 
 	// Filtering and Adding actions
 
-	bool show_builtin_actions;
+	bool show_builtin_actions = false;
 	CheckButton *show_builtin_actions_checkbutton;
 	LineEdit *action_list_search;
 

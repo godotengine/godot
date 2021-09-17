@@ -47,7 +47,7 @@
 class VulkanContext {
 public:
 	struct SubgroupCapabilities {
-		uint32_t size;
+		uint32_t size = 0;
 		VkShaderStageFlags supportedStages;
 		VkSubgroupFeatureFlags supportedOperations;
 		VkBool32 quadOperationsInAllStages;
@@ -59,11 +59,11 @@ public:
 	};
 
 	struct MultiviewCapabilities {
-		bool is_supported;
-		bool geometry_shader_is_supported;
-		bool tessellation_shader_is_supported;
-		uint32_t max_view_count;
-		uint32_t max_instance_count;
+		bool is_supported = false;
+		bool geometry_shader_is_supported = false;
+		bool tessellation_shader_is_supported = false;
+		uint32_t max_view_count = 0;
+		uint32_t max_instance_count = 0;
 	};
 
 private:

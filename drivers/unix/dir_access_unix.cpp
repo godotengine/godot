@@ -476,9 +476,6 @@ bool DirAccessUnix::is_hidden(const String &p_name) {
 }
 
 DirAccessUnix::DirAccessUnix() {
-	dir_stream = nullptr;
-	_cisdir = false;
-
 	/* determine drive count */
 
 	// set current directory to an absolute path of the current directory

@@ -257,9 +257,7 @@ void EditorHistory::clear() {
 	current = -1;
 }
 
-EditorHistory::EditorHistory() {
-	current = -1;
-}
+EditorHistory::EditorHistory() {}
 
 EditorPlugin *EditorData::get_editor(Object *p_object) {
 	// We need to iterate backwards so that we can check user-created plugins first.
@@ -1022,8 +1020,6 @@ void EditorData::script_class_load_icon_paths() {
 }
 
 EditorData::EditorData() {
-	current_edited_scene = -1;
-
 	//load_imported_scenes_from_globals();
 	script_class_load_icon_paths();
 }
@@ -1195,11 +1191,7 @@ void EditorSelection::clear() {
 	nl_changed = true;
 }
 
-EditorSelection::EditorSelection() {
-	emitted = false;
-	changed = false;
-	nl_changed = false;
-}
+EditorSelection::EditorSelection() {}
 
 EditorSelection::~EditorSelection() {
 	clear();

@@ -47,7 +47,7 @@ class EditorDirDialog : public ConfirmationDialog {
 	Set<String> opened_paths;
 
 	Tree *tree;
-	bool updating;
+	bool updating = false;
 
 	void _item_collapsed(Object *p_item);
 	void _item_activated();
@@ -58,7 +58,7 @@ class EditorDirDialog : public ConfirmationDialog {
 
 	void ok_pressed() override;
 
-	bool must_reload;
+	bool must_reload = false;
 
 protected:
 	void _notification(int p_what);

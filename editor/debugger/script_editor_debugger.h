@@ -104,8 +104,8 @@ private:
 	};
 	FileDialogPurpose file_dialog_purpose;
 
-	int error_count;
-	int warning_count;
+	int error_count = 0;
+	int warning_count = 0;
 
 	bool skip_breakpoints_value = false;
 	Ref<Script> stack_script;
@@ -138,7 +138,7 @@ private:
 	Ref<RemoteDebuggerPeer> peer;
 
 	HashMap<NodePath, int> node_path_cache;
-	int last_path_id;
+	int last_path_id = false;
 	Map<String, int> res_path_cache;
 
 	EditorProfiler *profiler;
@@ -153,9 +153,9 @@ private:
 	bool can_debug = false;
 	bool move_to_foreground = true;
 
-	bool live_debug;
+	bool live_debug = true;
 
-	EditorDebuggerNode::CameraOverride camera_override;
+	EditorDebuggerNode::CameraOverride camera_override = EditorDebuggerNode::CameraOverride::OVERRIDE_NONE;
 
 	Map<Ref<Script>, EditorDebuggerPlugin *> debugger_plugins;
 

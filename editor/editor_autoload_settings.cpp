@@ -830,7 +830,6 @@ EditorAutoloadSettings::EditorAutoloadSettings() {
 
 	autoload_changed = "autoload_changed";
 
-	updating_autoload = false;
 	selected_autoload = "";
 
 	HBoxContainer *hbc = memnew(HBoxContainer);

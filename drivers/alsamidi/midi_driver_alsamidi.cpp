@@ -192,9 +192,7 @@ PackedStringArray MIDIDriverALSAMidi::get_connected_inputs() {
 	return list;
 }
 
-MIDIDriverALSAMidi::MIDIDriverALSAMidi() {
-	exit_thread = false;
-}
+MIDIDriverALSAMidi::MIDIDriverALSAMidi() {}
 
 MIDIDriverALSAMidi::~MIDIDriverALSAMidi() {
 	close();

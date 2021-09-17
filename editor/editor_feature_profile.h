@@ -63,7 +63,7 @@ private:
 
 	Set<StringName> collapsed_classes;
 
-	bool features_disabled[FEATURE_MAX];
+	bool features_disabled[FEATURE_MAX] = {};
 	static const char *feature_names[FEATURE_MAX];
 	static const char *feature_descriptions[FEATURE_MAX];
 	static const char *feature_identifiers[FEATURE_MAX];
@@ -156,7 +156,7 @@ class EditorFeatureProfileManager : public AcceptDialog {
 	void _import_profiles(const Vector<String> &p_paths);
 	void _export_profile(const String &p_path);
 
-	bool updating_features;
+	bool updating_features = false;
 
 	void _class_list_item_selected();
 	void _class_list_item_edited();

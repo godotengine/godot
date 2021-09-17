@@ -400,7 +400,5 @@ EditorAssetInstaller::EditorAssetInstaller() {
 	get_ok_button()->set_text(TTR("Install"));
 	set_title(TTR("Asset Installer"));
 
-	updating = false;
-
 	set_hide_on_ok(true);
 }

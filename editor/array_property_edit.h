@@ -36,7 +36,7 @@
 class ArrayPropertyEdit : public RefCounted {
 	GDCLASS(ArrayPropertyEdit, RefCounted);
 
-	int page;
+	int page = 0;
 	ObjectID obj;
 	StringName property;
 	String vtypes;
