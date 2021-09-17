@@ -46,6 +46,7 @@
 #include "editor/find_in_files.h"
 #include "editor/node_dock.h"
 #include "editor/plugins/shader_editor_plugin.h"
+#include "modules/visual_script/visual_script_editor.h"
 #include "scene/main/window.h"
 #include "scene/scene_string_names.h"
 #include "script_text_editor.h"
@@ -1236,14 +1237,15 @@ void ScriptEditor::_menu_option(int p_option) {
 			_update_script_names();
 		} break;
 		case TOGGLE_SCRIPTS_PANEL: {
+			toggle_scripts_panel();
 			if (current) {
-				ScriptTextEditor *editor = Object::cast_to<ScriptTextEditor>(current);
-				toggle_scripts_panel();
-				if (editor) {
-					editor->update_toggle_scripts_button();
-				}
+				current->update_toggle_scripts_button();
 			} else {
-				toggle_scripts_panel();
+				Control *tab = tab_container->get_current_tab_control();
+				EditorHelp *editor_help = Object::cast_to<EditorHelp>(tab);
+				if (editor_help) {
+					editor_help->update_toggle_scripts_button();
+				}
 			}
 		}
 	}
