@@ -31,7 +31,7 @@
 #include "audio_stream_player_2d.h"
 
 #include "scene/2d/area_2d.h"
-#include "scene/2d/listener_2d.h"
+#include "scene/2d/audio_listener_2d.h"
 #include "scene/main/window.h"
 
 void AudioStreamPlayer2D::_notification(int p_what) {
@@ -156,7 +156,7 @@ void AudioStreamPlayer2D::_update_panning() {
 		Vector2 relative_to_listener;
 
 		//screen in global is used for attenuation
-		Listener2D *listener = vp->get_listener_2d();
+		AudioListener2D *listener = vp->get_audio_listener_2d();
 		if (listener) {
 			listener_in_global = listener->get_global_position();
 			relative_to_listener = global_pos - listener_in_global;

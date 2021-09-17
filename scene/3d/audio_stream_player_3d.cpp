@@ -31,8 +31,8 @@
 #include "audio_stream_player_3d.h"
 
 #include "scene/3d/area_3d.h"
+#include "scene/3d/audio_listener_3d.h"
 #include "scene/3d/camera_3d.h"
-#include "scene/3d/listener_3d.h"
 #include "scene/main/viewport.h"
 
 // Based on "A Novel Multichannel Panning Method for Standard and Arbitrary Loudspeaker Configurations" by Ramy Sadek and Chris Kyriakakis (2004)
@@ -391,7 +391,7 @@ Vector<AudioFrame> AudioStreamPlayer3D::_update_panning() {
 		bool listener_is_camera = true;
 		Node3D *listener_node = camera;
 
-		Listener3D *listener = vp->get_listener_3d();
+		AudioListener3D *listener = vp->get_audio_listener_3d();
 		if (listener) {
 			listener_node = listener;
 			listener_is_camera = false;

@@ -36,6 +36,7 @@
 #include "core/os/os.h"
 #include "scene/2d/animated_sprite_2d.h"
 #include "scene/2d/area_2d.h"
+#include "scene/2d/audio_listener_2d.h"
 #include "scene/2d/audio_stream_player_2d.h"
 #include "scene/2d/back_buffer_copy.h"
 #include "scene/2d/camera_2d.h"
@@ -49,7 +50,6 @@
 #include "scene/2d/light_2d.h"
 #include "scene/2d/light_occluder_2d.h"
 #include "scene/2d/line_2d.h"
-#include "scene/2d/listener_2d.h"
 #include "scene/2d/mesh_instance_2d.h"
 #include "scene/2d/multimesh_instance_2d.h"
 #include "scene/2d/navigation_agent_2d.h"
@@ -205,6 +205,7 @@
 
 #ifndef _3D_DISABLED
 #include "scene/3d/area_3d.h"
+#include "scene/3d/audio_listener_3d.h"
 #include "scene/3d/audio_stream_player_3d.h"
 #include "scene/3d/bone_attachment_3d.h"
 #include "scene/3d/camera_3d.h"
@@ -217,7 +218,6 @@
 #include "scene/3d/light_3d.h"
 #include "scene/3d/lightmap_gi.h"
 #include "scene/3d/lightmap_probe.h"
-#include "scene/3d/listener_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/3d/multimesh_instance_3d.h"
 #include "scene/3d/navigation_agent_3d.h"
@@ -445,7 +445,7 @@ void register_scene_types() {
 	GDREGISTER_VIRTUAL_CLASS(GeometryInstance3D);
 	GDREGISTER_CLASS(Camera3D);
 	GDREGISTER_CLASS(ClippedCamera3D);
-	GDREGISTER_CLASS(Listener3D);
+	GDREGISTER_CLASS(AudioListener3D);
 	GDREGISTER_CLASS(XRCamera3D);
 	GDREGISTER_CLASS(XRController3D);
 	GDREGISTER_CLASS(XRAnchor3D);
@@ -672,7 +672,7 @@ void register_scene_types() {
 	OS::get_singleton()->yield(); //may take time to init
 
 	GDREGISTER_CLASS(Camera2D);
-	GDREGISTER_CLASS(Listener2D);
+	GDREGISTER_CLASS(AudioListener2D);
 	GDREGISTER_VIRTUAL_CLASS(Joint2D);
 	GDREGISTER_CLASS(PinJoint2D);
 	GDREGISTER_CLASS(GrooveJoint2D);
@@ -920,7 +920,7 @@ void register_scene_types() {
 	ClassDB::add_compatibility_class("KinematicCollision", "KinematicCollision3D");
 	ClassDB::add_compatibility_class("Light", "Light3D");
 	ClassDB::add_compatibility_class("LineShape2D", "WorldBoundaryShape2D");
-	ClassDB::add_compatibility_class("Listener", "Listener3D");
+	ClassDB::add_compatibility_class("Listener", "AudioListener3D");
 	ClassDB::add_compatibility_class("MeshInstance", "MeshInstance3D");
 	ClassDB::add_compatibility_class("MultiMeshInstance", "MultiMeshInstance3D");
 	ClassDB::add_compatibility_class("NavigationAgent", "NavigationAgent3D");

@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  listener_2d.h                                                        */
+/*  audio_listener_3d.h                                                  */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,22 +28,26 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef LISTENER_2D_H
-#define LISTENER_2D_H
+#ifndef LISTENER_3D_H
+#define LISTENER_3D_H
 
-#include "scene/2d/node_2d.h"
-#include "scene/main/window.h"
+#include "scene/3d/node_3d.h"
 
-class Listener2D : public Node2D {
-	GDCLASS(Listener2D, Node2D);
+class AudioListener3D : public Node3D {
+	GDCLASS(AudioListener3D, Node3D);
 
 private:
+	bool force_change = false;
 	bool current = false;
 
+	RID scenario_id;
+
 	friend class Viewport;
+	void _update_audio_listener_state();
 
 protected:
 	void _update_listener();
+	virtual void _request_listener_update();
 
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
@@ -56,6 +60,14 @@ public:
 	void make_current();
 	void clear_current();
 	bool is_current() const;
+
+	virtual Transform3D get_listener_transform() const;
+
+	void set_visible_layers(uint32_t p_layers);
+	uint32_t get_visible_layers() const;
+
+	AudioListener3D();
+	~AudioListener3D();
 };
 
 #endif

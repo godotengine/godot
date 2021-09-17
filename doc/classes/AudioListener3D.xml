@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Listener3D" inherits="Node3D" version="4.0">
+<class name="AudioListener3D" inherits="Node3D" version="4.0">
 	<brief_description>
 		Overrides the location sounds are heard from.
 	</brief_description>
@@ -25,7 +25,7 @@
 			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if the listener was made current using [method make_current], [code]false[/code] otherwise.
-				[b]Note:[/b] There may be more than one Listener3D marked as "current" in the scene tree, but only the one that was made current last will be used.
+				[b]Note:[/b] There may be more than one AudioListener3D marked as "current" in the scene tree, but only the one that was made current last will be used.
 			</description>
 		</method>
 		<method name="make_current">
