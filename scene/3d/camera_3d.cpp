@@ -46,7 +46,6 @@ void Camera3D::_update_camera_mode() {
 	switch (mode) {
 		case PROJECTION_PERSPECTIVE: {
 			set_perspective(fov, near, far);
-
 		} break;
 		case PROJECTION_ORTHOGONAL: {
 			set_orthogonal(size, near, far);
@@ -685,7 +684,6 @@ Camera3D::Camera3D() {
 	camera = RenderingServer::get_singleton()->camera_create();
 	set_perspective(75.0, 0.05, 4000.0);
 	RenderingServer::get_singleton()->camera_set_cull_mask(camera, layers);
-	//active=false;
 	velocity_tracker.instantiate();
 	set_notify_transform(true);
 	set_disable_scale(true);

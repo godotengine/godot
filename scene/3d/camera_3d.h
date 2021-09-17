@@ -87,7 +87,7 @@ private:
 	friend class Viewport;
 	void _update_audio_listener_state();
 
-	DopplerTracking doppler_tracking = DOPPLER_TRACKING_DISABLED;
+	DopplerTracking doppler_tracking = DOPPLER_TRACKING_IDLE_STEP;
 	Ref<VelocityTracker3D> velocity_tracker;
 
 	RID pyramid_shape;
