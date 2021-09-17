@@ -1322,6 +1322,7 @@ SceneTree::SceneTree() {
 	// Create with mainloop.
 
 	root = memnew(Window);
+	root->set_process_mode(Node::PROCESS_MODE_PAUSABLE);
 	root->set_name("root");
 #ifndef _3D_DISABLED
 	if (!root->get_world_3d().is_valid()) {

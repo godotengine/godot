@@ -70,7 +70,9 @@ void Node::_notification(int p_notification) {
 				if (data.parent) {
 					data.process_owner = data.parent->data.process_owner;
 				} else {
-					data.process_owner = nullptr;
+					ERR_PRINT("The root node can't be set to Inherit process mode, reverting to Pausable instead.");
+					data.process_mode = PROCESS_MODE_PAUSABLE;
+					data.process_owner = this;
 				}
 			} else {
 				data.process_owner = this;
@@ -436,17 +438,17 @@ void Node::set_process_mode(ProcessMode p_mode) {
 	bool prev_can_process = can_process();
 	bool prev_enabled = _is_enabled();
 
-	data.process_mode = p_mode;
-
-	if (data.process_mode == PROCESS_MODE_INHERIT) {
+	if (p_mode == PROCESS_MODE_INHERIT) {
 		if (data.parent) {
-			data.process_owner = data.parent->data.owner;
+			data.process_owner = data.parent->data.process_owner;
 		} else {
-			data.process_owner = nullptr;
+			ERR_FAIL_MSG("The root node can't be set to Inherit process mode.");
 		}
 	} else {
 		data.process_owner = this;
 	}
+
+	data.process_mode = p_mode;
 
 	bool next_can_process = can_process();
 	bool next_enabled = _is_enabled();
@@ -701,6 +703,9 @@ bool Node::_can_process(bool p_paused) const {
 	} else {
 		process_mode = data.process_mode;
 	}
+
+	// The owner can't be set to inherit, must be a bug.
+	ERR_FAIL_COND_V(process_mode == PROCESS_MODE_INHERIT, false);
 
 	if (process_mode == PROCESS_MODE_DISABLED) {
 		return false;
