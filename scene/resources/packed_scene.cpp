@@ -99,8 +99,9 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 #endif
 			parent = nparent;
 		} else {
-			// i == 0 is root node. Confirm that it doesn't have a parent defined.
+			// i == 0 is root node.
 			ERR_FAIL_COND_V_MSG(n.parent != -1, nullptr, vformat("Invalid scene: root node %s cannot specify a parent node.", snames[n.name]));
+			ERR_FAIL_COND_V_MSG(n.type == TYPE_INSTANCED && base_scene_idx < 0, nullptr, vformat("Invalid scene: root node %s in an instance, but there's no base scene.", snames[n.name]));
 		}
 
 		Node *node = nullptr;
