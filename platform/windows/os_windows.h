@@ -334,6 +334,7 @@ class OS_Windows : public OS {
 	Vector2 im_position;
 
 	MouseMode mouse_mode;
+	int restore_mouse_trails;
 	bool alt_mem;
 	bool gr_mem;
 	bool shift_mem;
