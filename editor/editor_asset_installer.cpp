@@ -36,45 +36,6 @@
 #include "editor_node.h"
 #include "progress_dialog.h"
 
-void EditorAssetInstaller::_update_subitems(TreeItem *p_item, bool p_check, bool p_first) {
-	if (p_check) {
-		if (p_item->get_custom_color(0) == Color()) {
-			p_item->set_checked(0, true);
-		}
-	} else {
-		p_item->set_checked(0, false);
-	}
-
-	if (p_item->get_first_child()) {
-		_update_subitems(p_item->get_first_child(), p_check);
-	}
-
-	if (!p_first && p_item->get_next()) {
-		_update_subitems(p_item->get_next(), p_check);
-	}
-}
-
-void EditorAssetInstaller::_uncheck_parent(TreeItem *p_item) {
-	if (!p_item) {
-		return;
-	}
-
-	bool any_checked = false;
-	TreeItem *item = p_item->get_first_child();
-	while (item) {
-		if (item->is_checked(0)) {
-			any_checked = true;
-			break;
-		}
-		item = item->get_next();
-	}
-
-	if (!any_checked) {
-		p_item->set_checked(0, false);
-		_uncheck_parent(p_item->get_parent());
-	}
-}
-
 void EditorAssetInstaller::_item_edited() {
 	if (updating) {
 		return;
@@ -85,22 +46,17 @@ void EditorAssetInstaller::_item_edited() {
 		return;
 	}
 
-	String path = item->get_metadata(0);
-
 	updating = true;
-	if (path.is_empty() || item == tree->get_root()) { //a dir or root
-		_update_subitems(item, item->is_checked(0), true);
-	}
-
-	if (item->is_checked(0)) {
-		while (item) {
-			item->set_checked(0, true);
-			item = item->get_parent();
-		}
-	} else {
-		_uncheck_parent(item->get_parent());
-	}
+	item->propagate_check(0);
 	updating = false;
+}
+
+void EditorAssetInstaller::_check_propagated_to_item(Object *p_obj, int column) {
+	TreeItem *affected_item = Object::cast_to<TreeItem>(p_obj);
+	if (affected_item && affected_item->get_custom_color(0) != Color()) {
+		affected_item->set_checked(0, false);
+		affected_item->propagate_check(0, false);
+	}
 }
 
 void EditorAssetInstaller::open(const String &p_path, int p_depth) {
@@ -260,6 +216,7 @@ void EditorAssetInstaller::open(const String &p_path, int p_depth) {
 				ti->set_custom_color(0, tree->get_theme_color(SNAME("error_color"), SNAME("Editor")));
 				ti->set_tooltip(0, vformat(TTR("%s (already exists)"), res_path));
 				ti->set_checked(0, false);
+				ti->propagate_check(0);
 			} else {
 				ti->set_tooltip(0, res_path);
 			}
@@ -305,7 +262,7 @@ void EditorAssetInstaller::ok_pressed() {
 
 		String name = fname;
 
-		if (status_map.has(name) && status_map[name]->is_checked(0)) {
+		if (status_map.has(name) && (status_map[name]->is_checked(0) || status_map[name]->is_indeterminate(0))) {
 			String path = status_map[name]->get_metadata(0);
 			if (path.is_empty()) { // a dir
 
@@ -393,6 +350,7 @@ EditorAssetInstaller::EditorAssetInstaller() {
 	tree = memnew(Tree);
 	tree->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	tree->connect("item_edited", callable_mp(this, &EditorAssetInstaller::_item_edited));
+	tree->connect("check_propagated_to_item", callable_mp(this, &EditorAssetInstaller::_check_propagated_to_item));
 	vb->add_child(tree);
 
 	error = memnew(AcceptDialog);

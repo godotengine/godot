@@ -198,6 +198,65 @@ bool TreeItem::is_indeterminate(int p_column) const {
 	return cells[p_column].indeterminate;
 }
 
+void TreeItem::propagate_check(int p_column, bool p_emit_signal) {
+	bool ch = cells[p_column].checked;
+
+	if (p_emit_signal) {
+		tree->emit_signal("check_propagated_to_item", this, p_column);
+	}
+	_propagate_check_through_children(p_column, ch, p_emit_signal);
+	_propagate_check_through_parents(p_column, p_emit_signal);
+}
+
+void TreeItem::_propagate_check_through_children(int p_column, bool p_checked, bool p_emit_signal) {
+	TreeItem *current = get_first_child();
+	while (current) {
+		current->set_checked(p_column, p_checked);
+		if (p_emit_signal) {
+			current->tree->emit_signal("check_propagated_to_item", current, p_column);
+		}
+		current->_propagate_check_through_children(p_column, p_checked, p_emit_signal);
+		current = current->get_next();
+	}
+}
+
+void TreeItem::_propagate_check_through_parents(int p_column, bool p_emit_signal) {
+	TreeItem *current = get_parent();
+	if (!current) {
+		return;
+	}
+
+	bool all_unchecked_and_not_indeterminate = true;
+	bool any_unchecked_or_indeterminate = false;
+
+	TreeItem *child_item = current->get_first_child();
+	while (child_item) {
+		if (!child_item->is_checked(p_column)) {
+			any_unchecked_or_indeterminate = true;
+			if (child_item->is_indeterminate(p_column)) {
+				all_unchecked_and_not_indeterminate = false;
+				break;
+			}
+		} else {
+			all_unchecked_and_not_indeterminate = false;
+		}
+		child_item = child_item->get_next();
+	}
+
+	if (all_unchecked_and_not_indeterminate) {
+		current->set_checked(p_column, false);
+	} else if (any_unchecked_or_indeterminate) {
+		current->set_indeterminate(p_column, true);
+	} else {
+		current->set_checked(p_column, true);
+	}
+
+	if (p_emit_signal) {
+		current->tree->emit_signal("check_propagated_to_item", current, p_column);
+	}
+	current->_propagate_check_through_parents(p_column, p_emit_signal);
+}
+
 void TreeItem::set_text(int p_column, String p_text) {
 	ERR_FAIL_INDEX(p_column, cells.size());
 	cells.write[p_column].text = p_text;
@@ -1140,6 +1199,8 @@ void TreeItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_indeterminate", "column", "indeterminate"), &TreeItem::set_indeterminate);
 	ClassDB::bind_method(D_METHOD("is_checked", "column"), &TreeItem::is_checked);
 	ClassDB::bind_method(D_METHOD("is_indeterminate", "column"), &TreeItem::is_indeterminate);
+
+	ClassDB::bind_method(D_METHOD("propagate_check", "column", "emit_signal"), &TreeItem::propagate_check, DEFVAL(true));
 
 	ClassDB::bind_method(D_METHOD("set_text", "column", "text"), &TreeItem::set_text);
 	ClassDB::bind_method(D_METHOD("get_text", "column"), &TreeItem::get_text);
@@ -4848,6 +4909,7 @@ void Tree::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("item_custom_button_pressed"));
 	ADD_SIGNAL(MethodInfo("item_double_clicked"));
 	ADD_SIGNAL(MethodInfo("item_collapsed", PropertyInfo(Variant::OBJECT, "item", PROPERTY_HINT_RESOURCE_TYPE, "TreeItem")));
+	ADD_SIGNAL(MethodInfo("check_propagated_to_item", PropertyInfo(Variant::OBJECT, "item", PROPERTY_HINT_RESOURCE_TYPE, "TreeItem"), PropertyInfo(Variant::INT, "column")));
 	//ADD_SIGNAL( MethodInfo("item_double_clicked" ) );
 	ADD_SIGNAL(MethodInfo("button_pressed", PropertyInfo(Variant::OBJECT, "item", PROPERTY_HINT_RESOURCE_TYPE, "TreeItem"), PropertyInfo(Variant::INT, "column"), PropertyInfo(Variant::INT, "id")));
 	ADD_SIGNAL(MethodInfo("custom_popup_edited", PropertyInfo(Variant::BOOL, "arrow_clicked")));
