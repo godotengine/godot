@@ -2592,6 +2592,10 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_subscript(ExpressionNode *
 	subscript->base = p_previous_operand;
 	subscript->index = parse_expression(false);
 
+	if (subscript->index == nullptr) {
+		push_error(R"(Expected expression after "[".)");
+	}
+
 	pop_multiline();
 	consume(GDScriptTokenizer::Token::BRACKET_CLOSE, R"(Expected "]" after subscription index.)");
 
