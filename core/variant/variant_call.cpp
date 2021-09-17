@@ -1568,7 +1568,6 @@ static void _register_variant_builtin_methods() {
 	bind_method(Vector3, dot, sarray("with"), varray());
 	bind_method(Vector3, cross, sarray("with"), varray());
 	bind_method(Vector3, outer, sarray("with"), varray());
-	bind_method(Vector3, to_diagonal_matrix, sarray(), varray());
 	bind_method(Vector3, abs, sarray(), varray());
 	bind_method(Vector3, floor, sarray(), varray());
 	bind_method(Vector3, ceil, sarray(), varray());
@@ -1732,6 +1731,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(Basis, is_equal_approx, sarray("b"), varray());
 	bind_method(Basis, get_rotation_quaternion, sarray(), varray());
 	bind_static_method(Basis, looking_at, sarray("target", "up"), varray(Vector3(0, 1, 0)));
+	bind_static_method(Basis, from_scale, sarray("scale"), varray());
 
 	/* AABB */
 

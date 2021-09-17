@@ -207,6 +207,10 @@ Basis Basis::transposed() const {
 	return tr;
 }
 
+Basis Basis::from_scale(const Vector3 &p_scale) {
+	return Basis(p_scale.x, 0, 0, 0, p_scale.y, 0, 0, 0, p_scale.z);
+}
+
 // Multiplies the matrix from left by the scaling matrix: M -> S.M
 // See the comment for Basis::rotated for further explanation.
 void Basis::scale(const Vector3 &p_scale) {
@@ -246,10 +250,7 @@ void Basis::make_scale_uniform() {
 }
 
 Basis Basis::scaled_local(const Vector3 &p_scale) const {
-	Basis b;
-	b.set_diagonal(p_scale);
-
-	return (*this) * b;
+	return (*this) * Basis::from_scale(p_scale);
 }
 
 Vector3 Basis::get_scale_abs() const {
@@ -991,21 +992,23 @@ void Basis::set_axis_angle(const Vector3 &p_axis, real_t p_phi) {
 }
 
 void Basis::set_axis_angle_scale(const Vector3 &p_axis, real_t p_phi, const Vector3 &p_scale) {
-	set_diagonal(p_scale);
+	_set_diagonal(p_scale);
 	rotate(p_axis, p_phi);
 }
 
 void Basis::set_euler_scale(const Vector3 &p_euler, const Vector3 &p_scale) {
-	set_diagonal(p_scale);
+	_set_diagonal(p_scale);
 	rotate(p_euler);
 }
 
 void Basis::set_quaternion_scale(const Quaternion &p_quaternion, const Vector3 &p_scale) {
-	set_diagonal(p_scale);
+	_set_diagonal(p_scale);
 	rotate(p_quaternion);
 }
 
-void Basis::set_diagonal(const Vector3 &p_diag) {
+// This also sets the non-diagonal elements to 0, which is misleading from the
+// name, so we want this method to be private. Use `from_scale` externally.
+void Basis::_set_diagonal(const Vector3 &p_diag) {
 	elements[0][0] = p_diag.x;
 	elements[0][1] = 0;
 	elements[0][2] = 0;

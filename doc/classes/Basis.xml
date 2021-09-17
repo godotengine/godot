@@ -71,6 +71,13 @@
 				A negative determinant means the basis has a negative scale. A zero determinant means the basis isn't invertible, and is usually considered invalid.
 			</description>
 		</method>
+		<method name="from_scale" qualifiers="static">
+			<return type="Basis" />
+			<argument index="0" name="scale" type="Vector3" />
+			<description>
+				Constructs a pure scale basis matrix with no rotation or shearing. The scale values are set as the diagonal of the matrix, and the other parts of the matrix are zero.
+			</description>
+		</method>
 		<method name="get_euler" qualifiers="const">
 			<return type="Vector3" />
 			<description>
