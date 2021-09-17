@@ -581,27 +581,24 @@ Ref<InputEvent> InputEventMouseButton::xformed_by(const Transform2D &p_xform, co
 }
 
 bool InputEventMouseButton::action_match(const Ref<InputEvent> &p_event, bool *p_pressed, float *p_strength, float *p_raw_strength, float p_deadzone) const {
-	Ref<InputEventMouseButton> mb = p_event;
-	if (mb.is_null()) {
+	if (!is_match(p_event, true)) {
 		return false;
 	}
 
-	bool match = mb->button_index == button_index;
-	if (match) {
-		bool pressed = mb->is_pressed();
-		if (p_pressed != nullptr) {
-			*p_pressed = pressed;
-		}
-		float strength = pressed ? 1.0f : 0.0f;
-		if (p_strength != nullptr) {
-			*p_strength = strength;
-		}
-		if (p_raw_strength != nullptr) {
-			*p_raw_strength = strength;
-		}
+	Ref<InputEventMouseButton> mb = p_event; // Already validated by `is_match`.
+	bool pressed = mb->is_pressed();
+	if (p_pressed != nullptr) {
+		*p_pressed = pressed;
+	}
+	float strength = pressed ? 1.0f : 0.0f;
+	if (p_strength != nullptr) {
+		*p_strength = strength;
+	}
+	if (p_raw_strength != nullptr) {
+		*p_raw_strength = strength;
 	}
 
-	return match;
+	return true;
 }
 
 bool InputEventMouseButton::is_match(const Ref<InputEvent> &p_event, bool p_exact_match) const {
@@ -697,7 +694,6 @@ void InputEventMouseButton::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_button_index"), &InputEventMouseButton::get_button_index);
 
 	ClassDB::bind_method(D_METHOD("set_pressed", "pressed"), &InputEventMouseButton::set_pressed);
-	//	ClassDB::bind_method(D_METHOD("is_pressed"), &InputEventMouseButton::is_pressed);
 
 	ClassDB::bind_method(D_METHOD("set_double_click", "double_click"), &InputEventMouseButton::set_double_click);
 	ClassDB::bind_method(D_METHOD("is_double_click"), &InputEventMouseButton::is_double_click);
@@ -1084,7 +1080,6 @@ void InputEventJoypadButton::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_pressure"), &InputEventJoypadButton::get_pressure);
 
 	ClassDB::bind_method(D_METHOD("set_pressed", "pressed"), &InputEventJoypadButton::set_pressed);
-	//	ClassDB::bind_method(D_METHOD("is_pressed"), &InputEventJoypadButton::is_pressed);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "button_index"), "set_button_index", "get_button_index");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "pressure"), "set_pressure", "get_pressure");
@@ -1148,7 +1143,6 @@ void InputEventScreenTouch::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_position"), &InputEventScreenTouch::get_position);
 
 	ClassDB::bind_method(D_METHOD("set_pressed", "pressed"), &InputEventScreenTouch::set_pressed);
-	//ClassDB::bind_method(D_METHOD("is_pressed"),&InputEventScreenTouch::is_pressed);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "index"), "set_index", "get_index");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "position"), "set_position", "get_position");
@@ -1323,12 +1317,9 @@ void InputEventAction::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_action"), &InputEventAction::get_action);
 
 	ClassDB::bind_method(D_METHOD("set_pressed", "pressed"), &InputEventAction::set_pressed);
-	//ClassDB::bind_method(D_METHOD("is_pressed"), &InputEventAction::is_pressed);
 
 	ClassDB::bind_method(D_METHOD("set_strength", "strength"), &InputEventAction::set_strength);
 	ClassDB::bind_method(D_METHOD("get_strength"), &InputEventAction::get_strength);
-
-	//	ClassDB::bind_method(D_METHOD("is_action", "name"), &InputEventAction::is_action);
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "action"), "set_action", "get_action");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "pressed"), "set_pressed", "is_pressed");
