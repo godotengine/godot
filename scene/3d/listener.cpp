@@ -140,16 +140,6 @@ bool Listener::is_current() const {
 	return false;
 }
 
-bool Listener::_can_gizmo_scale() const {
-	return false;
-}
-
-RES Listener::_get_gizmo_geometry() const {
-	Ref<ArrayMesh> mesh = memnew(ArrayMesh);
-
-	return mesh;
-}
-
 void Listener::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("make_current"), &Listener::make_current);
 	ClassDB::bind_method(D_METHOD("clear_current"), &Listener::clear_current);
@@ -161,7 +151,6 @@ Listener::Listener() {
 	current = false;
 	force_change = false;
 	set_notify_transform(true);
-	//active=false;
 }
 
 Listener::~Listener() {

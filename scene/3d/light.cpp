@@ -34,10 +34,6 @@
 #include "core/project_settings.h"
 #include "scene/resources/surface_tool.h"
 
-bool Light::_can_gizmo_scale() const {
-	return false;
-}
-
 void Light::set_param(Param p_param, float p_value) {
 	ERR_FAIL_INDEX(p_param, PARAM_MAX);
 	param[p_param] = p_value;
