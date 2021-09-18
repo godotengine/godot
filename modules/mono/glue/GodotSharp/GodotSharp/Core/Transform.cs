@@ -168,7 +168,7 @@ namespace Godot
         /// <returns>The resulting transform.</returns>
         public Transform LookingAt(Vector3 target, Vector3 up)
         {
-            var t = this;
+            Transform t = this;
             t.SetLookAt(origin, target, up);
             return t;
         }
@@ -205,7 +205,7 @@ namespace Godot
             return new Transform(basis.Scaled(scale), origin * scale);
         }
 
-        public void SetLookAt(Vector3 eye, Vector3 target, Vector3 up)
+        private void SetLookAt(Vector3 eye, Vector3 target, Vector3 up)
         {
             // Make rotation matrix
             // Z vector
@@ -278,9 +278,9 @@ namespace Godot
 
             return new Vector3
             (
-                basis.Row0[0] * vInv.x + basis.Row1[0] * vInv.y + basis.Row2[0] * vInv.z,
-                basis.Row0[1] * vInv.x + basis.Row1[1] * vInv.y + basis.Row2[1] * vInv.z,
-                basis.Row0[2] * vInv.x + basis.Row1[2] * vInv.y + basis.Row2[2] * vInv.z
+                (basis.Row0[0] * vInv.x) + (basis.Row1[0] * vInv.y) + (basis.Row2[0] * vInv.z),
+                (basis.Row0[1] * vInv.x) + (basis.Row1[1] * vInv.y) + (basis.Row2[1] * vInv.z),
+                (basis.Row0[2] * vInv.x) + (basis.Row1[2] * vInv.y) + (basis.Row2[2] * vInv.z)
             );
         }
 
@@ -327,14 +327,14 @@ namespace Godot
         }
 
         /// <summary>
-        /// Constructs a transformation matrix from the given <paramref name="quat"/>
+        /// Constructs a transformation matrix from the given <paramref name="quaternion"/>
         /// and <paramref name="origin"/> vector.
         /// </summary>
-        /// <param name="quat">The <see cref="Quat"/> to create the basis from.</param>
+        /// <param name="quaternion">The <see cref="Quat"/> to create the basis from.</param>
         /// <param name="origin">The origin vector, or column index 3.</param>
-        public Transform(Quat quat, Vector3 origin)
+        public Transform(Quat quaternion, Vector3 origin)
         {
-            basis = new Basis(quat);
+            basis = new Basis(quaternion);
             this.origin = origin;
         }
 

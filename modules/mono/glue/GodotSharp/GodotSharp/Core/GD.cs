@@ -552,70 +552,69 @@ namespace Godot
         }
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static object godot_icall_GD_bytes2var(byte[] bytes, bool allow_objects);
+        internal static extern object godot_icall_GD_bytes2var(byte[] bytes, bool allowObjects);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static object godot_icall_GD_convert(object what, Variant.Type type);
+        internal static extern object godot_icall_GD_convert(object what, Variant.Type type);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static int godot_icall_GD_hash(object var);
+        internal static extern int godot_icall_GD_hash(object var);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static Object godot_icall_GD_instance_from_id(ulong instance_id);
+        internal static extern Object godot_icall_GD_instance_from_id(ulong instanceId);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static void godot_icall_GD_print(object[] what);
+        internal static extern void godot_icall_GD_print(object[] what);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static void godot_icall_GD_printerr(object[] what);
+        internal static extern void godot_icall_GD_printerr(object[] what);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static void godot_icall_GD_printraw(object[] what);
+        internal static extern void godot_icall_GD_printraw(object[] what);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static void godot_icall_GD_prints(object[] what);
+        internal static extern void godot_icall_GD_prints(object[] what);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static void godot_icall_GD_printt(object[] what);
+        internal static extern void godot_icall_GD_printt(object[] what);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static float godot_icall_GD_randf();
+        internal static extern float godot_icall_GD_randf();
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static uint godot_icall_GD_randi();
+        internal static extern uint godot_icall_GD_randi();
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static void godot_icall_GD_randomize();
-
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static double godot_icall_GD_rand_range(double from, double to);
+        internal static extern void godot_icall_GD_randomize();
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static uint godot_icall_GD_rand_seed(ulong seed, out ulong newSeed);
+        internal static extern double godot_icall_GD_rand_range(double from, double to);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static void godot_icall_GD_seed(ulong seed);
+        internal static extern uint godot_icall_GD_rand_seed(ulong seed, out ulong newSeed);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static string godot_icall_GD_str(object[] what);
+        internal static extern void godot_icall_GD_seed(ulong seed);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static object godot_icall_GD_str2var(string str);
+        internal static extern string godot_icall_GD_str(object[] what);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static bool godot_icall_GD_type_exists(string type);
+        internal static extern object godot_icall_GD_str2var(string str);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static byte[] godot_icall_GD_var2bytes(object what, bool full_objects);
+        internal static extern bool godot_icall_GD_type_exists(string type);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static string godot_icall_GD_var2str(object var);
+        internal static extern byte[] godot_icall_GD_var2bytes(object what, bool fullObjects);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static void godot_icall_GD_pusherror(string type);
+        internal static extern string godot_icall_GD_var2str(object var);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static void godot_icall_GD_pushwarning(string type);
+        internal static extern void godot_icall_GD_pusherror(string type);
+
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void godot_icall_GD_pushwarning(string type);
     }
 }

@@ -13,10 +13,10 @@ namespace GodotTools.Utils
     public static class OS
     {
         [MethodImpl(MethodImplOptions.InternalCall)]
-        static extern string GetPlatformName();
+        private static extern string GetPlatformName();
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        static extern bool UnixFileHasExecutableAccess(string filePath);
+        private static extern bool UnixFileHasExecutableAccess(string filePath);
 
         public static class Names
         {
@@ -96,7 +96,10 @@ namespace GodotTools.Utils
 
         public static string PathWhich([NotNull] string name)
         {
-            return IsWindows ? PathWhichWindows(name) : PathWhichUnix(name);
+            if (IsWindows)
+                return PathWhichWindows(name);
+
+            return PathWhichUnix(name);
         }
 
         private static string PathWhichWindows([NotNull] string name)
@@ -119,7 +122,8 @@ namespace GodotTools.Utils
             }
 
             string nameExt = Path.GetExtension(name);
-            bool hasPathExt = !string.IsNullOrEmpty(nameExt) && windowsExts.Contains(nameExt, StringComparer.OrdinalIgnoreCase);
+            bool hasPathExt = !string.IsNullOrEmpty(nameExt) &&
+                windowsExts.Contains(nameExt, StringComparer.OrdinalIgnoreCase);
 
             searchDirs.Add(System.IO.Directory.GetCurrentDirectory()); // last in the list
 

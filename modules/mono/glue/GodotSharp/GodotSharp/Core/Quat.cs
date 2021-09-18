@@ -15,7 +15,7 @@ namespace Godot
     /// It is similar to <see cref="Basis"/>, which implements matrix
     /// representation of rotations, and can be parametrized using both
     /// an axis-angle pair or Euler angles. Basis stores rotation, scale,
-    /// and shearing, while Quat only stores rotation
+    /// and shearing, while Quat only stores rotation.
     ///
     /// Due to its compactness and the way it is stored in memory, certain
     /// operations (obtaining axis-angle and performing SLERP, in particular)
@@ -147,10 +147,9 @@ namespace Godot
         /// <returns>The interpolated quaternion.</returns>
         public Quat CubicSlerp(Quat b, Quat preA, Quat postB, real_t weight)
         {
-            real_t t = weight;
-            real_t t2 = (1.0f - t) * t * 2f;
-            Quat sp = Slerp(b, t);
-            Quat sq = preA.Slerpni(postB, t);
+            real_t t2 = (1.0f - weight) * weight * 2f;
+            Quat sp = Slerp(b, weight);
+            Quat sq = preA.Slerpni(postB, weight);
             return sp.Slerpni(sq, t2);
         }
 
@@ -161,7 +160,7 @@ namespace Godot
         /// <returns>The dot product.</returns>
         public real_t Dot(Quat b)
         {
-            return x * b.x + y * b.y + z * b.z + w * b.w;
+            return (x * b.x) + (y * b.y) + (z * b.z) + (w * b.w);
         }
 
         /// <summary>
@@ -308,10 +307,10 @@ namespace Godot
             // Calculate final values.
             return new Quat
             (
-                scale0 * x + scale1 * to1.x,
-                scale0 * y + scale1 * to1.y,
-                scale0 * z + scale1 * to1.z,
-                scale0 * w + scale1 * to1.w
+                (scale0 * x) + (scale1 * to1.x),
+                (scale0 * y) + (scale1 * to1.y),
+                (scale0 * z) + (scale1 * to1.z),
+                (scale0 * w) + (scale1 * to1.w)
             );
         }
 
@@ -339,10 +338,10 @@ namespace Godot
 
             return new Quat
             (
-                invFactor * x + newFactor * to.x,
-                invFactor * y + newFactor * to.y,
-                invFactor * z + newFactor * to.z,
-                invFactor * w + newFactor * to.w
+                (invFactor * x) + (newFactor * to.x),
+                (invFactor * y) + (newFactor * to.y),
+                (invFactor * z) + (newFactor * to.z),
+                (invFactor * w) + (newFactor * to.w)
             );
         }
 
@@ -361,7 +360,7 @@ namespace Godot
 #endif
             var u = new Vector3(x, y, z);
             Vector3 uv = u.Cross(v);
-            return v + ((uv * w) + u.Cross(uv)) * 2;
+            return v + (((uv * w) + u.Cross(uv)) * 2);
         }
 
         // Constants
@@ -416,25 +415,25 @@ namespace Godot
         /// <param name="eulerYXZ">Euler angles that the quaternion will be rotated by.</param>
         public Quat(Vector3 eulerYXZ)
         {
-            real_t half_a1 = eulerYXZ.y * 0.5f;
-            real_t half_a2 = eulerYXZ.x * 0.5f;
-            real_t half_a3 = eulerYXZ.z * 0.5f;
+            real_t halfA1 = eulerYXZ.y * 0.5f;
+            real_t halfA2 = eulerYXZ.x * 0.5f;
+            real_t halfA3 = eulerYXZ.z * 0.5f;
 
             // R = Y(a1).X(a2).Z(a3) convention for Euler angles.
             // Conversion to quaternion as listed in https://ntrs.nasa.gov/archive/nasa/casi.ntrs.nasa.gov/19770024290.pdf (page A-6)
             // a3 is the angle of the first rotation, following the notation in this reference.
 
-            real_t cos_a1 = Mathf.Cos(half_a1);
-            real_t sin_a1 = Mathf.Sin(half_a1);
-            real_t cos_a2 = Mathf.Cos(half_a2);
-            real_t sin_a2 = Mathf.Sin(half_a2);
-            real_t cos_a3 = Mathf.Cos(half_a3);
-            real_t sin_a3 = Mathf.Sin(half_a3);
+            real_t cosA1 = Mathf.Cos(halfA1);
+            real_t sinA1 = Mathf.Sin(halfA1);
+            real_t cosA2 = Mathf.Cos(halfA2);
+            real_t sinA2 = Mathf.Sin(halfA2);
+            real_t cosA3 = Mathf.Cos(halfA3);
+            real_t sinA3 = Mathf.Sin(halfA3);
 
-            x = sin_a1 * cos_a2 * sin_a3 + cos_a1 * sin_a2 * cos_a3;
-            y = sin_a1 * cos_a2 * cos_a3 - cos_a1 * sin_a2 * sin_a3;
-            z = cos_a1 * cos_a2 * sin_a3 - sin_a1 * sin_a2 * cos_a3;
-            w = sin_a1 * sin_a2 * sin_a3 + cos_a1 * cos_a2 * cos_a3;
+            x = (sinA1 * cosA2 * sinA3) + (cosA1 * sinA2 * cosA3);
+            y = (sinA1 * cosA2 * cosA3) - (cosA1 * sinA2 * sinA3);
+            z = (cosA1 * cosA2 * sinA3) - (sinA1 * sinA2 * cosA3);
+            w = (sinA1 * sinA2 * sinA3) + (cosA1 * cosA2 * cosA3);
         }
 
         /// <summary>
@@ -478,10 +477,10 @@ namespace Godot
         {
             return new Quat
             (
-                left.w * right.x + left.x * right.w + left.y * right.z - left.z * right.y,
-                left.w * right.y + left.y * right.w + left.z * right.x - left.x * right.z,
-                left.w * right.z + left.z * right.w + left.x * right.y - left.y * right.x,
-                left.w * right.w - left.x * right.x - left.y * right.y - left.z * right.z
+                (left.w * right.x) + (left.x * right.w) + (left.y * right.z) - (left.z * right.y),
+                (left.w * right.y) + (left.y * right.w) + (left.z * right.x) - (left.x * right.z),
+                (left.w * right.z) + (left.z * right.w) + (left.x * right.y) - (left.y * right.x),
+                (left.w * right.w) - (left.x * right.x) - (left.y * right.y) - (left.z * right.z)
             );
         }
 
@@ -504,10 +503,10 @@ namespace Godot
         {
             return new Quat
             (
-                left.w * right.x + left.y * right.z - left.z * right.y,
-                left.w * right.y + left.z * right.x - left.x * right.z,
-                left.w * right.z + left.x * right.y - left.y * right.x,
-                -left.x * right.x - left.y * right.y - left.z * right.z
+                (left.w * right.x) + (left.y * right.z) - (left.z * right.y),
+                (left.w * right.y) + (left.z * right.x) - (left.x * right.z),
+                (left.w * right.z) + (left.x * right.y) - (left.y * right.x),
+                -(left.x * right.x) - (left.y * right.y) - (left.z * right.z)
             );
         }
 
@@ -515,10 +514,10 @@ namespace Godot
         {
             return new Quat
             (
-                right.w * left.x + right.y * left.z - right.z * left.y,
-                right.w * left.y + right.z * left.x - right.x * left.z,
-                right.w * left.z + right.x * left.y - right.y * left.x,
-                -right.x * left.x - right.y * left.y - right.z * left.z
+                (right.w * left.x) + (right.y * left.z) - (right.z * left.y),
+                (right.w * left.y) + (right.z * left.x) - (right.x * left.z),
+                (right.w * left.z) + (right.x * left.y) - (right.y * left.x),
+                -(right.x * left.x) - (right.y * left.y) - (right.z * left.z)
             );
         }
 
@@ -598,7 +597,7 @@ namespace Godot
         /// <returns>A string representation of this quaternion.</returns>
         public override string ToString()
         {
-            return String.Format("({0}, {1}, {2}, {3})", x.ToString(), y.ToString(), z.ToString(), w.ToString());
+            return $"({x}, {y}, {z}, {w})";
         }
 
         /// <summary>
@@ -607,7 +606,7 @@ namespace Godot
         /// <returns>A string representation of this quaternion.</returns>
         public string ToString(string format)
         {
-            return String.Format("({0}, {1}, {2}, {3})", x.ToString(format), y.ToString(format), z.ToString(format), w.ToString(format));
+            return $"({x.ToString(format)}, {y.ToString(format)}, {z.ToString(format)}, {w.ToString(format)})";
         }
     }
 }

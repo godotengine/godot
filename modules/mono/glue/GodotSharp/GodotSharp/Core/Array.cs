@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 
 namespace Godot.Collections
 {
-    class ArraySafeHandle : SafeHandle
+    internal class ArraySafeHandle : SafeHandle
     {
         public ArraySafeHandle(IntPtr handle) : base(IntPtr.Zero, true)
         {
@@ -33,15 +33,15 @@ namespace Godot.Collections
     /// </summary>
     public class Array : IList, IDisposable
     {
-        ArraySafeHandle safeHandle;
-        bool disposed = false;
+        private ArraySafeHandle _safeHandle;
+        private bool _disposed = false;
 
         /// <summary>
         /// Constructs a new empty <see cref="Array"/>.
         /// </summary>
         public Array()
         {
-            safeHandle = new ArraySafeHandle(godot_icall_Array_Ctor());
+            _safeHandle = new ArraySafeHandle(godot_icall_Array_Ctor());
         }
 
         /// <summary>
@@ -69,25 +69,25 @@ namespace Godot.Collections
             {
                 throw new NullReferenceException($"Parameter '{nameof(array)} cannot be null.'");
             }
-            safeHandle = new ArraySafeHandle(godot_icall_Array_Ctor_MonoArray(array));
+            _safeHandle = new ArraySafeHandle(godot_icall_Array_Ctor_MonoArray(array));
         }
 
         internal Array(ArraySafeHandle handle)
         {
-            safeHandle = handle;
+            _safeHandle = handle;
         }
 
         internal Array(IntPtr handle)
         {
-            safeHandle = new ArraySafeHandle(handle);
+            _safeHandle = new ArraySafeHandle(handle);
         }
 
         internal IntPtr GetPtr()
         {
-            if (disposed)
+            if (_disposed)
                 throw new ObjectDisposedException(GetType().FullName);
 
-            return safeHandle.DangerousGetHandle();
+            return _safeHandle.DangerousGetHandle();
         }
 
         /// <summary>
@@ -136,16 +136,16 @@ namespace Godot.Collections
         /// </summary>
         public void Dispose()
         {
-            if (disposed)
+            if (_disposed)
                 return;
 
-            if (safeHandle != null)
+            if (_safeHandle != null)
             {
-                safeHandle.Dispose();
-                safeHandle = null;
+                _safeHandle.Dispose();
+                _safeHandle = null;
             }
 
-            disposed = true;
+            _disposed = true;
         }
 
         // IList
@@ -272,67 +272,67 @@ namespace Godot.Collections
         }
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static IntPtr godot_icall_Array_Ctor();
+        internal static extern IntPtr godot_icall_Array_Ctor();
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static IntPtr godot_icall_Array_Ctor_MonoArray(System.Array array);
+        internal static extern IntPtr godot_icall_Array_Ctor_MonoArray(System.Array array);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static void godot_icall_Array_Dtor(IntPtr ptr);
+        internal static extern void godot_icall_Array_Dtor(IntPtr ptr);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static object godot_icall_Array_At(IntPtr ptr, int index);
+        internal static extern object godot_icall_Array_At(IntPtr ptr, int index);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static object godot_icall_Array_At_Generic(IntPtr ptr, int index, int elemTypeEncoding, IntPtr elemTypeClass);
+        internal static extern object godot_icall_Array_At_Generic(IntPtr ptr, int index, int elemTypeEncoding, IntPtr elemTypeClass);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static void godot_icall_Array_SetAt(IntPtr ptr, int index, object value);
+        internal static extern void godot_icall_Array_SetAt(IntPtr ptr, int index, object value);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static int godot_icall_Array_Count(IntPtr ptr);
+        internal static extern int godot_icall_Array_Count(IntPtr ptr);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static int godot_icall_Array_Add(IntPtr ptr, object item);
+        internal static extern int godot_icall_Array_Add(IntPtr ptr, object item);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static void godot_icall_Array_Clear(IntPtr ptr);
+        internal static extern void godot_icall_Array_Clear(IntPtr ptr);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static IntPtr godot_icall_Array_Concatenate(IntPtr left, IntPtr right);
+        internal static extern IntPtr godot_icall_Array_Concatenate(IntPtr left, IntPtr right);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static bool godot_icall_Array_Contains(IntPtr ptr, object item);
+        internal static extern bool godot_icall_Array_Contains(IntPtr ptr, object item);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static void godot_icall_Array_CopyTo(IntPtr ptr, System.Array array, int arrayIndex);
+        internal static extern void godot_icall_Array_CopyTo(IntPtr ptr, System.Array array, int arrayIndex);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static IntPtr godot_icall_Array_Duplicate(IntPtr ptr, bool deep);
+        internal static extern IntPtr godot_icall_Array_Duplicate(IntPtr ptr, bool deep);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static int godot_icall_Array_IndexOf(IntPtr ptr, object item);
+        internal static extern int godot_icall_Array_IndexOf(IntPtr ptr, object item);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static void godot_icall_Array_Insert(IntPtr ptr, int index, object item);
+        internal static extern void godot_icall_Array_Insert(IntPtr ptr, int index, object item);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static bool godot_icall_Array_Remove(IntPtr ptr, object item);
+        internal static extern bool godot_icall_Array_Remove(IntPtr ptr, object item);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static void godot_icall_Array_RemoveAt(IntPtr ptr, int index);
+        internal static extern void godot_icall_Array_RemoveAt(IntPtr ptr, int index);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static Error godot_icall_Array_Resize(IntPtr ptr, int newSize);
+        internal static extern Error godot_icall_Array_Resize(IntPtr ptr, int newSize);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static Error godot_icall_Array_Shuffle(IntPtr ptr);
+        internal static extern Error godot_icall_Array_Shuffle(IntPtr ptr);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static void godot_icall_Array_Generic_GetElementTypeInfo(Type elemType, out int elemTypeEncoding, out IntPtr elemTypeClass);
+        internal static extern void godot_icall_Array_Generic_GetElementTypeInfo(Type elemType, out int elemTypeEncoding, out IntPtr elemTypeClass);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static string godot_icall_Array_ToString(IntPtr ptr);
+        internal static extern string godot_icall_Array_ToString(IntPtr ptr);
     }
 
     /// <summary>
@@ -344,7 +344,7 @@ namespace Godot.Collections
     /// <typeparam name="T">The type of the array.</typeparam>
     public class Array<T> : IList<T>, ICollection<T>, IEnumerable<T>
     {
-        Array objectArray;
+        private Array _objectArray;
 
         internal static int elemTypeEncoding;
         internal static IntPtr elemTypeClass;
@@ -359,7 +359,7 @@ namespace Godot.Collections
         /// </summary>
         public Array()
         {
-            objectArray = new Array();
+            _objectArray = new Array();
         }
 
         /// <summary>
@@ -372,7 +372,7 @@ namespace Godot.Collections
             if (collection == null)
                 throw new NullReferenceException($"Parameter '{nameof(collection)} cannot be null.'");
 
-            objectArray = new Array(collection);
+            _objectArray = new Array(collection);
         }
 
         /// <summary>
@@ -386,7 +386,7 @@ namespace Godot.Collections
             {
                 throw new NullReferenceException($"Parameter '{nameof(array)} cannot be null.'");
             }
-            objectArray = new Array(array);
+            _objectArray = new Array(array);
         }
 
         /// <summary>
@@ -395,22 +395,22 @@ namespace Godot.Collections
         /// <param name="array">The untyped array to construct from.</param>
         public Array(Array array)
         {
-            objectArray = array;
+            _objectArray = array;
         }
 
         internal Array(IntPtr handle)
         {
-            objectArray = new Array(handle);
+            _objectArray = new Array(handle);
         }
 
         internal Array(ArraySafeHandle handle)
         {
-            objectArray = new Array(handle);
+            _objectArray = new Array(handle);
         }
 
         internal IntPtr GetPtr()
         {
-            return objectArray.GetPtr();
+            return _objectArray.GetPtr();
         }
 
         /// <summary>
@@ -419,7 +419,7 @@ namespace Godot.Collections
         /// <param name="from">The typed array to convert.</param>
         public static explicit operator Array(Array<T> from)
         {
-            return from.objectArray;
+            return from._objectArray;
         }
 
         /// <summary>
@@ -429,7 +429,7 @@ namespace Godot.Collections
         /// <returns>A new Godot Array.</returns>
         public Array<T> Duplicate(bool deep = false)
         {
-            return new Array<T>(objectArray.Duplicate(deep));
+            return new Array<T>(_objectArray.Duplicate(deep));
         }
 
         /// <summary>
@@ -439,7 +439,7 @@ namespace Godot.Collections
         /// <returns><see cref="Error.Ok"/> if successful, or an error code.</returns>
         public Error Resize(int newSize)
         {
-            return objectArray.Resize(newSize);
+            return _objectArray.Resize(newSize);
         }
 
         /// <summary>
@@ -447,7 +447,7 @@ namespace Godot.Collections
         /// </summary>
         public void Shuffle()
         {
-            objectArray.Shuffle();
+            _objectArray.Shuffle();
         }
 
         /// <summary>
@@ -458,7 +458,7 @@ namespace Godot.Collections
         /// <returns>A new Godot Array with the contents of both arrays.</returns>
         public static Array<T> operator +(Array<T> left, Array<T> right)
         {
-            return new Array<T>(left.objectArray + right.objectArray);
+            return new Array<T>(left._objectArray + right._objectArray);
         }
 
         // IList<T>
@@ -470,7 +470,7 @@ namespace Godot.Collections
         public T this[int index]
         {
             get { return (T)Array.godot_icall_Array_At_Generic(GetPtr(), index, elemTypeEncoding, elemTypeClass); }
-            set { objectArray[index] = value; }
+            set { _objectArray[index] = value; }
         }
 
         /// <summary>
@@ -481,7 +481,7 @@ namespace Godot.Collections
         /// <returns>The index of the item, or -1 if not found.</returns>
         public int IndexOf(T item)
         {
-            return objectArray.IndexOf(item);
+            return _objectArray.IndexOf(item);
         }
 
         /// <summary>
@@ -494,7 +494,7 @@ namespace Godot.Collections
         /// <param name="item">The item to insert.</param>
         public void Insert(int index, T item)
         {
-            objectArray.Insert(index, item);
+            _objectArray.Insert(index, item);
         }
 
         /// <summary>
@@ -503,7 +503,7 @@ namespace Godot.Collections
         /// <param name="index">The index of the element to remove.</param>
         public void RemoveAt(int index)
         {
-            objectArray.RemoveAt(index);
+            _objectArray.RemoveAt(index);
         }
 
         // ICollection<T>
@@ -515,7 +515,7 @@ namespace Godot.Collections
         /// <returns>The number of elements.</returns>
         public int Count
         {
-            get { return objectArray.Count; }
+            get { return _objectArray.Count; }
         }
 
         bool ICollection<T>.IsReadOnly => false;
@@ -528,7 +528,7 @@ namespace Godot.Collections
         /// <returns>The new size after adding the item.</returns>
         public void Add(T item)
         {
-            objectArray.Add(item);
+            _objectArray.Add(item);
         }
 
         /// <summary>
@@ -536,7 +536,7 @@ namespace Godot.Collections
         /// </summary>
         public void Clear()
         {
-            objectArray.Clear();
+            _objectArray.Clear();
         }
 
         /// <summary>
@@ -546,7 +546,7 @@ namespace Godot.Collections
         /// <returns>Whether or not this array contains the given item.</returns>
         public bool Contains(T item)
         {
-            return objectArray.Contains(item);
+            return _objectArray.Contains(item);
         }
 
         /// <summary>
@@ -566,7 +566,7 @@ namespace Godot.Collections
             // TODO This may be quite slow because every element access is an internal call.
             // It could be moved entirely to an internal call if we find out how to do the cast there.
 
-            int count = objectArray.Count;
+            int count = _objectArray.Count;
 
             if (array.Length < (arrayIndex + count))
                 throw new ArgumentException("Destination array was not long enough. Check destIndex and length, and the array's lower bounds.");
@@ -597,7 +597,7 @@ namespace Godot.Collections
         /// <returns>An enumerator.</returns>
         public IEnumerator<T> GetEnumerator()
         {
-            int count = objectArray.Count;
+            int count = _objectArray.Count;
 
             for (int i = 0; i < count; i++)
             {
@@ -614,6 +614,6 @@ namespace Godot.Collections
         /// Converts this <see cref="Array{T}"/> to a string.
         /// </summary>
         /// <returns>A string representation of this array.</returns>
-        public override string ToString() => objectArray.ToString();
+        public override string ToString() => _objectArray.ToString();
     }
 }

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Godot
 {
-    static class MarshalUtils
+    internal static class MarshalUtils
     {
         /// <summary>
         /// Returns <see langword="true"/> if the generic type definition of <paramref name="type"/>

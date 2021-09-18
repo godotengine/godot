@@ -41,16 +41,16 @@ namespace Godot
     /// </example>
     public sealed partial class NodePath : IDisposable
     {
-        private bool disposed = false;
+        private bool _disposed = false;
 
-        internal IntPtr ptr;
+        private IntPtr ptr;
 
         internal static IntPtr GetPtr(NodePath instance)
         {
             if (instance == null)
                 throw new NullReferenceException($"The instance of type {nameof(NodePath)} is null.");
 
-            if (instance.disposed)
+            if (instance._disposed)
                 throw new ObjectDisposedException(instance.GetType().FullName);
 
             return instance.ptr;
@@ -72,7 +72,7 @@ namespace Godot
 
         private void Dispose(bool disposing)
         {
-            if (disposed)
+            if (_disposed)
                 return;
 
             if (ptr != IntPtr.Zero)
@@ -81,7 +81,7 @@ namespace Godot
                 ptr = IntPtr.Zero;
             }
 
-            disposed = true;
+            _disposed = true;
         }
 
         internal NodePath(IntPtr ptr)
@@ -101,7 +101,6 @@ namespace Godot
         /// Constructs an empty <see cref="NodePath"/>.
         /// </summary>
         public NodePath() : this(string.Empty) { }
-
 
         /// <summary>
         /// Constructs a <see cref="NodePath"/> from a string <paramref name="path"/>,
@@ -134,7 +133,7 @@ namespace Godot
         /// <param name="path"></param>
         public NodePath(string path)
         {
-            this.ptr = godot_icall_NodePath_Ctor(path);
+            ptr = godot_icall_NodePath_Ctor(path);
         }
 
         /// <summary>
@@ -272,36 +271,36 @@ namespace Godot
         }
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static IntPtr godot_icall_NodePath_Ctor(string path);
+        private static extern IntPtr godot_icall_NodePath_Ctor(string path);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static void godot_icall_NodePath_Dtor(IntPtr ptr);
+        private static extern void godot_icall_NodePath_Dtor(IntPtr ptr);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static string godot_icall_NodePath_operator_String(IntPtr ptr);
+        private static extern string godot_icall_NodePath_operator_String(IntPtr ptr);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static IntPtr godot_icall_NodePath_get_as_property_path(IntPtr ptr);
+        private static extern IntPtr godot_icall_NodePath_get_as_property_path(IntPtr ptr);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static string godot_icall_NodePath_get_concatenated_subnames(IntPtr ptr);
+        private static extern string godot_icall_NodePath_get_concatenated_subnames(IntPtr ptr);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static string godot_icall_NodePath_get_name(IntPtr ptr, int arg1);
+        private static extern string godot_icall_NodePath_get_name(IntPtr ptr, int arg1);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static int godot_icall_NodePath_get_name_count(IntPtr ptr);
+        private static extern int godot_icall_NodePath_get_name_count(IntPtr ptr);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static string godot_icall_NodePath_get_subname(IntPtr ptr, int arg1);
+        private static extern string godot_icall_NodePath_get_subname(IntPtr ptr, int arg1);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static int godot_icall_NodePath_get_subname_count(IntPtr ptr);
+        private static extern int godot_icall_NodePath_get_subname_count(IntPtr ptr);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static bool godot_icall_NodePath_is_absolute(IntPtr ptr);
+        private static extern bool godot_icall_NodePath_is_absolute(IntPtr ptr);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static bool godot_icall_NodePath_is_empty(IntPtr ptr);
+        private static extern bool godot_icall_NodePath_is_empty(IntPtr ptr);
     }
 }

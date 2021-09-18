@@ -33,7 +33,7 @@ namespace GodotTools.Build
 
         private static void RemoveOldIssuesFile(BuildInfo buildInfo)
         {
-            var issuesFile = GetIssuesFilePath(buildInfo);
+            string issuesFile = GetIssuesFilePath(buildInfo);
 
             if (!File.Exists(issuesFile))
                 return;
