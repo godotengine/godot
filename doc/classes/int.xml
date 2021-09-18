@@ -54,6 +54,13 @@
 		</constructor>
 		<constructor name="int">
 			<return type="int" />
+			<param index="0" name="from" type="String" />
+			<description>
+				Converts a [String] to an [int], following the same rules as [method String.to_int].
+			</description>
+		</constructor>
+		<constructor name="int">
+			<return type="int" />
 			<param index="0" name="from" type="bool" />
 			<description>
 				Cast a [bool] value to an integer value, [code]int(true)[/code] will be equals to 1 and [code]int(false)[/code] will be equals to 0.
