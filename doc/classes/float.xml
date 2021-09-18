@@ -28,6 +28,13 @@
 		</constructor>
 		<constructor name="float">
 			<return type="float" />
+			<param index="0" name="from" type="String" />
+			<description>
+				Converts a [String] to a [float], following the same rules as [method String.to_float].
+			</description>
+		</constructor>
+		<constructor name="float">
+			<return type="float" />
 			<param index="0" name="from" type="bool" />
 			<description>
 				Cast a [bool] value to a floating-point value, [code]float(true)[/code] will be equal to 1.0 and [code]float(false)[/code] will be equal to 0.0.

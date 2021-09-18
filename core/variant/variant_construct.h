@@ -222,6 +222,64 @@ public:
 	}
 };
 
+template <class T>
+class VariantConstructorFromString {
+public:
+	static void construct(Variant &r_ret, const Variant **p_args, Callable::CallError &r_error) {
+		if (p_args[0]->get_type() != Variant::STRING) {
+			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
+			r_error.argument = 0;
+			r_error.expected = Variant::STRING;
+			return;
+		}
+
+		VariantTypeChanger<T>::change(&r_ret);
+		const String &src_str = *VariantGetInternalPtr<String>::get_ptr(p_args[0]);
+
+		if (r_ret.get_type() == Variant::Type::INT) {
+			r_ret = src_str.to_int();
+		} else if (r_ret.get_type() == Variant::Type::FLOAT) {
+			r_ret = src_str.to_float();
+		}
+	}
+
+	static inline void validated_construct(Variant *r_ret, const Variant **p_args) {
+		VariantTypeChanger<T>::change(r_ret);
+		const String &src_str = *VariantGetInternalPtr<String>::get_ptr(p_args[0]);
+		T ret = Variant();
+		if (r_ret->get_type() == Variant::Type::INT) {
+			ret = src_str.to_int();
+		} else if (r_ret->get_type() == Variant::Type::FLOAT) {
+			ret = src_str.to_float();
+		}
+		*r_ret = ret;
+	}
+
+	static void ptr_construct(void *base, const void **p_args) {
+		String src_str = PtrToArg<String>::convert(p_args[0]);
+		T dst_var = Variant();
+		Variant type_test = Variant(dst_var);
+		if (type_test.get_type() == Variant::Type::INT) {
+			dst_var = src_str.to_int();
+		} else if (type_test.get_type() == Variant::Type::FLOAT) {
+			dst_var = src_str.to_float();
+		}
+		PtrConstruct<T>::construct(dst_var, base);
+	}
+
+	static int get_argument_count() {
+		return 1;
+	}
+
+	static Variant::Type get_argument_type(int p_arg) {
+		return Variant::STRING;
+	}
+
+	static Variant::Type get_base_type() {
+		return GetTypeInfo<T>::VARIANT_TYPE;
+	}
+};
+
 class VariantConstructorCallableArgs {
 public:
 	static void construct(Variant &r_ret, const Variant **p_args, Callable::CallError &r_error) {
