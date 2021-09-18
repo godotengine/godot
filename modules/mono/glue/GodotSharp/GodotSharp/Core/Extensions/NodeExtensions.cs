@@ -78,7 +78,8 @@ namespace Godot
         /// </example>
         /// <seealso cref="GetNode{T}(NodePath)"/>
         /// <param name="path">The path to the node to fetch.</param>
-        /// <typeparam name="T">The type to cast to. Should be a descendant of <see cref="Node"/>.</typeparam>/// ///////// <returns>
+        /// <typeparam name="T">The type to cast to. Should be a descendant of <see cref="Node"/>.</typeparam>
+        /// <returns>
         /// The <see cref="Node"/> at the given <paramref name="path"/>, or <see langword="null"/> if not found.
         /// </returns>
         public T GetNodeOrNull<T>(NodePath path) where T : class
@@ -97,7 +98,8 @@ namespace Godot
         /// <exception cref="InvalidCastException">
         /// Thrown when the given the fetched node can't be casted to the given type <typeparamref name="T"/>.
         /// </exception>
-        /// <typeparam name="T">The type to cast to. Should be a descendant of <see cref="Node"/>.</typeparam>/// ///////// <returns>
+        /// <typeparam name="T">The type to cast to. Should be a descendant of <see cref="Node"/>.</typeparam>
+        /// <returns>
         /// The child <see cref="Node"/> at the given index <paramref name="idx"/>.
         /// </returns>
         public T GetChild<T>(int idx) where T : class

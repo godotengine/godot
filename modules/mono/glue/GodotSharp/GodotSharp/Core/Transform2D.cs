@@ -478,7 +478,7 @@ namespace Godot
         /// <summary>
         /// Returns a Vector2 transformed (multiplied) by the inverse transformation matrix.
         /// </summary>
-        /// <param name="vector">A vector to inversely transform.</param>
+        /// <param name="vector">A Vector2 to inversely transform.</param>
         /// <param name="transform">The transformation to apply.</param>
         /// <returns>The inversely transformed Vector2.</returns>
         public static Vector2 operator *(Vector2 vector, Transform2D transform)
@@ -522,7 +522,7 @@ namespace Godot
         /// Returns a copy of the given Vector2[] transformed (multiplied) by transformation matrix.
         /// </summary>
         /// <param name="transform">The transformation to apply.</param>
-        /// <param name="array">a Vector2[] to transform.</param>
+        /// <param name="array">A Vector2[] to transform.</param>
         /// <returns>The transformed copy of the Vector2[].</returns>
         public static Vector2[] operator *(Transform2D transform, Vector2[] array)
         {
