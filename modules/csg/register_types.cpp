@@ -46,6 +46,15 @@ void register_csg_types() {
 	GDREGISTER_CLASS(CSGPolygon3D);
 	GDREGISTER_CLASS(CSGCombiner3D);
 
+	GDREGISTER_VIRTUAL_CLASS(CSGPrimitiveShape3D);
+	GDREGISTER_CLASS(CSGMeshShape3D);
+	GDREGISTER_CLASS(CSGBoxShape3D);
+	GDREGISTER_CLASS(CSGCylinderShape3D);
+	GDREGISTER_CLASS(CSGSphereShape3D);
+	GDREGISTER_CLASS(CSGTorusShape3D);
+	GDREGISTER_CLASS(CSGPolygonShape3D);
+	GDREGISTER_CLASS(CSGTool);
+
 #ifdef TOOLS_ENABLED
 	EditorPlugins::add_by_type<EditorPluginCSG>();
 #endif

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="CSGMeshShape3D" inherits="CSGPrimitiveShape3D" version="4.0">
+	<brief_description>
+		A CSG Mesh shape that uses a mesh resource.
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+	</methods>
+	<members>
+		<member name="mesh" type="Mesh" setter="set_mesh" getter="get_mesh">
+			The [Mesh] resource to use as a CSG shape.
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

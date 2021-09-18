@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="CSGPolygonShape3D" inherits="CSGPrimitiveShape3D" version="4.0">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+	</methods>
+	<members>
+		<member name="depth" type="float" setter="set_depth" getter="get_depth" default="1.0">
+			Extrusion depth when [member mode] is [constant MODE_DEPTH].
+		</member>
+		<member name="mode" type="int" setter="set_mode" getter="get_mode" enum="CSGPolygonShape3D.Mode" default="0">
+			Extrusion mode.
+		</member>
+		<member name="path_continuous_u" type="bool" setter="set_path_continuous_u" getter="is_path_continuous_u">
+			If [code]true[/code] the u component of our uv will continuously increase in unison with the distance traveled along our path when [member mode] is [constant MODE_PATH].
+		</member>
+		<member name="path_curve" type="Curve3D" setter="set_path_curve" getter="get_path_curve">
+		</member>
+		<member name="path_interval" type="float" setter="set_path_interval" getter="get_path_interval">
+			Interval at which a new extrusion slice is added along the path when [member mode] is [constant MODE_PATH].
+		</member>
+		<member name="path_joined" type="bool" setter="set_path_joined" getter="is_path_joined">
+			If [code]true[/code] the start and end of our path are joined together ensuring there is no seam when [member mode] is [constant MODE_PATH].
+		</member>
+		<member name="path_rotation" type="int" setter="set_path_rotation" getter="get_path_rotation" enum="CSGPolygonShape3D.PathRotation">
+			The method by which each slice is rotated along the path when [member mode] is [constant MODE_PATH].
+		</member>
+		<member name="path_transform" type="Transform3D" setter="set_path_transform" getter="get_path_transform">
+			When [member mode] is [constant MODE_PATH], the [Curve3D] object used to extrude the [member polygon].
+		</member>
+		<member name="polygon" type="PackedVector2Array" setter="set_polygon" getter="get_polygon" default="PackedVector2Array()">
+			Point array that defines the shape that we'll extrude.
+		</member>
+		<member name="spin_degrees" type="float" setter="set_spin_degrees" getter="get_spin_degrees">
+			Degrees to rotate our extrusion for each slice when [member mode] is [constant MODE_SPIN].
+		</member>
+		<member name="spin_sides" type="int" setter="set_spin_sides" getter="get_spin_sides">
+			Number of extrusion when [member mode] is [constant MODE_SPIN].
+		</member>
+	</members>
+	<constants>
+		<constant name="MODE_DEPTH" value="0" enum="Mode">
+			Curve3D is extruded to [member depth].
+		</constant>
+		<constant name="MODE_SPIN" value="1" enum="Mode">
+			Curve3D is extruded by rotating it around an axis.
+		</constant>
+		<constant name="MODE_PATH" value="2" enum="Mode">
+			Curve3D is extruded along the path set in [member path_curve].
+		</constant>
+		<constant name="PATH_ROTATION_POLYGON" value="0" enum="PathRotation">
+			Slice is not rotated.
+		</constant>
+		<constant name="PATH_ROTATION_PATH" value="1" enum="PathRotation">
+			Slice is rotated around the up vector of the path.
+		</constant>
+		<constant name="PATH_ROTATION_PATH_FOLLOW" value="2" enum="PathRotation">
+			Slice is rotate to match the path exactly.
+		</constant>
+	</constants>
+</class>
