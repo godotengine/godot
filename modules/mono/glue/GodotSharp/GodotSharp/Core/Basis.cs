@@ -88,9 +88,9 @@ namespace Godot
             get => new Vector3(Row0.x, Row1.x, Row2.x);
             set
             {
-                this.Row0.x = value.x;
-                this.Row1.x = value.y;
-                this.Row2.x = value.z;
+                Row0.x = value.x;
+                Row1.x = value.y;
+                Row2.x = value.z;
             }
         }
 
@@ -103,9 +103,9 @@ namespace Godot
             get => new Vector3(Row0.y, Row1.y, Row2.y);
             set
             {
-                this.Row0.y = value.x;
-                this.Row1.y = value.y;
-                this.Row2.y = value.z;
+                Row0.y = value.x;
+                Row1.y = value.y;
+                Row2.y = value.z;
             }
         }
 
@@ -118,9 +118,9 @@ namespace Godot
             get => new Vector3(Row0.z, Row1.z, Row2.z);
             set
             {
-                this.Row0.z = value.x;
-                this.Row1.z = value.y;
-                this.Row2.z = value.z;
+                Row0.z = value.x;
+                Row1.z = value.y;
+                Row2.z = value.z;
             }
         }
 
@@ -211,7 +211,7 @@ namespace Godot
 
         /// <summary>
         /// Returns the <see cref="Basis"/>'s rotation in the form of a
-        /// <see cref="Godot.Quat"/>. See <see cref="GetEuler"/> if you
+        /// <see cref="Quat"/>. See <see cref="GetEuler"/> if you
         /// need Euler angles, but keep in mind quaternions should generally
         /// be preferred to Euler angles.
         /// </summary>
@@ -230,15 +230,15 @@ namespace Godot
             return orthonormalizedBasis.Quat();
         }
 
-        internal void SetQuatScale(Quat quat, Vector3 scale)
+        internal void SetQuatScale(Quat quaternion, Vector3 scale)
         {
             SetDiagonal(scale);
-            Rotate(quat);
+            Rotate(quaternion);
         }
 
-        private void Rotate(Quat quat)
+        private void Rotate(Quat quaternion)
         {
-            this *= new Basis(quat);
+            this *= new Basis(quaternion);
         }
 
         private void SetDiagonal(Vector3 diagonal)
@@ -272,7 +272,7 @@ namespace Godot
         /// The returned vector contains the rotation angles in
         /// the format (X angle, Y angle, Z angle).
         ///
-        /// Consider using the <see cref="Basis.Quat()"/> method instead, which
+        /// Consider using the <see cref="Quat()"/> method instead, which
         /// returns a <see cref="Godot.Quat"/> quaternion instead of Euler angles.
         /// </summary>
         /// <returns>A <see cref="Vector3"/> representing the basis rotation in Euler angles.</returns>
@@ -552,7 +552,7 @@ namespace Godot
         /// <returns>The resulting dot product.</returns>
         public real_t Tdotx(Vector3 with)
         {
-            return this.Row0[0] * with[0] + this.Row1[0] * with[1] + this.Row2[0] * with[2];
+            return Row0[0] * with[0] + Row1[0] * with[1] + Row2[0] * with[2];
         }
 
         /// <summary>
@@ -562,7 +562,7 @@ namespace Godot
         /// <returns>The resulting dot product.</returns>
         public real_t Tdoty(Vector3 with)
         {
-            return this.Row0[1] * with[0] + this.Row1[1] * with[1] + this.Row2[1] * with[2];
+            return Row0[1] * with[0] + Row1[1] * with[1] + Row2[1] * with[2];
         }
 
         /// <summary>
@@ -572,7 +572,7 @@ namespace Godot
         /// <returns>The resulting dot product.</returns>
         public real_t Tdotz(Vector3 with)
         {
-            return this.Row0[2] * with[0] + this.Row1[2] * with[1] + this.Row2[2] * with[2];
+            return Row0[2] * with[0] + Row1[2] * with[1] + Row2[2] * with[2];
         }
 
         /// <summary>
@@ -581,7 +581,7 @@ namespace Godot
         /// <returns>The transposed basis matrix.</returns>
         public Basis Transposed()
         {
-            var tr = this;
+            Basis tr = this;
 
             real_t temp = tr.Row0[1];
             tr.Row0[1] = tr.Row1[0];
@@ -608,9 +608,9 @@ namespace Godot
         {
             return new Vector3
             (
-                this.Row0.Dot(v),
-                this.Row1.Dot(v),
-                this.Row2.Dot(v)
+                Row0.Dot(v),
+                Row1.Dot(v),
+                Row2.Dot(v)
             );
         }
 
@@ -627,9 +627,9 @@ namespace Godot
         {
             return new Vector3
             (
-                this.Row0[0] * v.x + this.Row1[0] * v.y + this.Row2[0] * v.z,
-                this.Row0[1] * v.x + this.Row1[1] * v.y + this.Row2[1] * v.z,
-                this.Row0[2] * v.x + this.Row1[2] * v.y + this.Row2[2] * v.z
+                Row0[0] * v.x + Row1[0] * v.y + Row2[0] * v.z,
+                Row0[1] * v.x + Row1[1] * v.y + Row2[1] * v.z,
+                Row0[2] * v.x + Row1[2] * v.y + Row2[2] * v.z
             );
         }
 
@@ -749,23 +749,23 @@ namespace Godot
         /// <summary>
         /// Constructs a pure rotation basis matrix from the given quaternion.
         /// </summary>
-        /// <param name="quat">The quaternion to create the basis from.</param>
-        public Basis(Quat quat)
+        /// <param name="quaternion">The quaternion to create the basis from.</param>
+        public Basis(Quat quaternion)
         {
-            real_t s = 2.0f / quat.LengthSquared;
+            real_t s = 2.0f / quaternion.LengthSquared;
 
-            real_t xs = quat.x * s;
-            real_t ys = quat.y * s;
-            real_t zs = quat.z * s;
-            real_t wx = quat.w * xs;
-            real_t wy = quat.w * ys;
-            real_t wz = quat.w * zs;
-            real_t xx = quat.x * xs;
-            real_t xy = quat.x * ys;
-            real_t xz = quat.x * zs;
-            real_t yy = quat.y * ys;
-            real_t yz = quat.y * zs;
-            real_t zz = quat.z * zs;
+            real_t xs = quaternion.x * s;
+            real_t ys = quaternion.y * s;
+            real_t zs = quaternion.z * s;
+            real_t wx = quaternion.w * xs;
+            real_t wy = quaternion.w * ys;
+            real_t wz = quaternion.w * zs;
+            real_t xx = quaternion.x * xs;
+            real_t xy = quaternion.x * ys;
+            real_t xz = quaternion.x * zs;
+            real_t yy = quaternion.y * ys;
+            real_t yz = quaternion.y * zs;
+            real_t zz = quaternion.z * zs;
 
             Row0 = new Vector3(1.0f - (yy + zz), xy - wz, xz + wy);
             Row1 = new Vector3(xy + wz, 1.0f - (xx + zz), yz - wx);

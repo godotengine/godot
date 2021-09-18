@@ -10,17 +10,17 @@ namespace GodotTools.Ides.MonoDevelop
     public class Instance : IDisposable
     {
         public DateTime LaunchTime { get; private set; }
-        private readonly string solutionFile;
-        private readonly EditorId editorId;
+        private readonly string _solutionFile;
+        private readonly EditorId _editorId;
 
-        private Process process;
+        private Process _process;
 
-        public bool IsRunning => process != null && !process.HasExited;
+        public bool IsRunning => _process != null && !_process.HasExited;
         public bool IsDisposed { get; private set; }
 
         public void Execute()
         {
-            bool newWindow = process == null || process.HasExited;
+            bool newWindow = _process == null || _process.HasExited;
 
             var args = new List<string>();
 
@@ -28,7 +28,7 @@ namespace GodotTools.Ides.MonoDevelop
 
             if (OS.IsOSX)
             {
-                string bundleId = BundleIds[editorId];
+                string bundleId = BundleIds[_editorId];
 
                 if (Internal.IsOsxAppBundleInstalled(bundleId))
                 {
@@ -45,18 +45,18 @@ namespace GodotTools.Ides.MonoDevelop
                 }
                 else
                 {
-                    command = OS.PathWhich(ExecutableNames[editorId]);
+                    command = OS.PathWhich(ExecutableNames[_editorId]);
                 }
             }
             else
             {
-                command = OS.PathWhich(ExecutableNames[editorId]);
+                command = OS.PathWhich(ExecutableNames[_editorId]);
             }
 
             args.Add("--ipc-tcp");
 
             if (newWindow)
-                args.Add("\"" + Path.GetFullPath(solutionFile) + "\"");
+                args.Add("\"" + Path.GetFullPath(_solutionFile) + "\"");
 
             if (command == null)
                 throw new FileNotFoundException();
@@ -65,7 +65,7 @@ namespace GodotTools.Ides.MonoDevelop
 
             if (newWindow)
             {
-                process = Process.Start(new ProcessStartInfo
+                _process = Process.Start(new ProcessStartInfo
                 {
                     FileName = command,
                     Arguments = string.Join(" ", args),
@@ -88,14 +88,14 @@ namespace GodotTools.Ides.MonoDevelop
             if (editorId == EditorId.VisualStudioForMac && !OS.IsOSX)
                 throw new InvalidOperationException($"{nameof(EditorId.VisualStudioForMac)} not supported on this platform");
 
-            this.solutionFile = solutionFile;
-            this.editorId = editorId;
+            _solutionFile = solutionFile;
+            _editorId = editorId;
         }
 
         public void Dispose()
         {
             IsDisposed = true;
-            process?.Dispose();
+            _process?.Dispose();
         }
 
         private static readonly IReadOnlyDictionary<EditorId, string> ExecutableNames;

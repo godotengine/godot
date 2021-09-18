@@ -939,7 +939,7 @@ Error BindingsGenerator::generate_cs_core_project(const String &p_proj_dir) {
 #define ADD_INTERNAL_CALL(m_icall)                                                               \
 	if (!m_icall.editor_only) {                                                                  \
 		cs_icalls_content.append(MEMBER_BEGIN "[MethodImpl(MethodImplOptions.InternalCall)]\n"); \
-		cs_icalls_content.append(INDENT2 "internal extern static ");                             \
+		cs_icalls_content.append(INDENT2 "internal static extern ");                             \
 		cs_icalls_content.append(m_icall.im_type_out + " ");                                     \
 		cs_icalls_content.append(m_icall.name + "(");                                            \
 		cs_icalls_content.append(m_icall.im_sig + ");\n");                                       \
@@ -1043,7 +1043,7 @@ Error BindingsGenerator::generate_cs_editor_project(const String &p_proj_dir) {
 #define ADD_INTERNAL_CALL(m_icall)                                                               \
 	if (m_icall.editor_only) {                                                                   \
 		cs_icalls_content.append(MEMBER_BEGIN "[MethodImpl(MethodImplOptions.InternalCall)]\n"); \
-		cs_icalls_content.append(INDENT2 "internal extern static ");                             \
+		cs_icalls_content.append(INDENT2 "internal static extern ");                             \
 		cs_icalls_content.append(m_icall.im_type_out + " ");                                     \
 		cs_icalls_content.append(m_icall.name + "(");                                            \
 		cs_icalls_content.append(m_icall.im_sig + ");\n");                                       \

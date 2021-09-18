@@ -127,11 +127,11 @@ namespace Godot
                 }
                 else if (g == max)
                 {
-                    h = 2 + (b - r) / delta; // Between cyan & yellow
+                    h = 2 + ((b - r) / delta); // Between cyan & yellow
                 }
                 else
                 {
-                    h = 4 + (r - g) / delta; // Between magenta & cyan
+                    h = 4 + ((r - g) / delta); // Between magenta & cyan
                 }
 
                 h /= 6.0f;
@@ -358,16 +358,16 @@ namespace Godot
             Color res;
 
             float sa = 1.0f - over.a;
-            res.a = a * sa + over.a;
+            res.a = (a * sa) + over.a;
 
             if (res.a == 0)
             {
                 return new Color(0, 0, 0, 0);
             }
 
-            res.r = (r * a * sa + over.r * over.a) / res.a;
-            res.g = (g * a * sa + over.g * over.a) / res.a;
-            res.b = (b * a * sa + over.b * over.a) / res.a;
+            res.r = ((r * a * sa) + (over.r * over.a)) / res.a;
+            res.g = ((g * a * sa) + (over.g * over.a)) / res.a;
+            res.b = ((b * a * sa) + (over.b * over.a)) / res.a;
 
             return res;
         }
@@ -395,9 +395,9 @@ namespace Godot
         public Color Darkened(float amount)
         {
             Color res = this;
-            res.r = res.r * (1.0f - amount);
-            res.g = res.g * (1.0f - amount);
-            res.b = res.b * (1.0f - amount);
+            res.r *= 1.0f - amount;
+            res.g *= 1.0f - amount;
+            res.b *= 1.0f - amount;
             return res;
         }
 
@@ -424,9 +424,9 @@ namespace Godot
         public Color Lightened(float amount)
         {
             Color res = this;
-            res.r = res.r + (1.0f - res.r) * amount;
-            res.g = res.g + (1.0f - res.g) * amount;
-            res.b = res.b + (1.0f - res.b) * amount;
+            res.r += (1.0f - res.r) * amount;
+            res.g += (1.0f - res.g) * amount;
+            res.b += (1.0f - res.b) * amount;
             return res;
         }
 

@@ -149,7 +149,7 @@ namespace Godot
             if (det == 0)
                 throw new InvalidOperationException("Matrix determinant is zero and cannot be inverted.");
 
-            var inv = this;
+            Transform2D inv = this;
 
             real_t temp = inv[0, 0];
             inv[0, 0] = inv[1, 1];
@@ -176,7 +176,7 @@ namespace Godot
         /// <returns>The determinant of the basis matrix.</returns>
         private real_t BasisDeterminant()
         {
-            return x.x * y.y - x.y * y.x;
+            return (x.x * y.y) - (x.y * y.x);
         }
 
         /// <summary>
@@ -238,8 +238,8 @@ namespace Godot
             else
             {
                 real_t angle = weight * Mathf.Acos(dot);
-                Vector2 v3 = (v2 - v1 * dot).Normalized();
-                v = v1 * Mathf.Cos(angle) + v3 * Mathf.Sin(angle);
+                Vector2 v3 = (v2 - (v1 * dot)).Normalized();
+                v = (v1 * Mathf.Cos(angle)) + (v3 * Mathf.Sin(angle));
             }
 
             // Extract parameters
@@ -263,7 +263,7 @@ namespace Godot
         /// <returns>The inverse matrix.</returns>
         public Transform2D Inverse()
         {
-            var inv = this;
+            Transform2D inv = this;
 
             // Swap
             real_t temp = inv.x.y;
@@ -282,13 +282,13 @@ namespace Godot
         /// <returns>The orthonormalized transform.</returns>
         public Transform2D Orthonormalized()
         {
-            var on = this;
+            Transform2D on = this;
 
             Vector2 onX = on.x;
             Vector2 onY = on.y;
 
             onX.Normalize();
-            onY = onY - onX * onX.Dot(onY);
+            onY = onY - (onX * onX.Dot(onY));
             onY.Normalize();
 
             on.x = onX;
@@ -314,7 +314,7 @@ namespace Godot
         /// <returns>The scaled transformation matrix.</returns>
         public Transform2D Scaled(Vector2 scale)
         {
-            var copy = this;
+            Transform2D copy = this;
             copy.x *= scale;
             copy.y *= scale;
             copy.origin *= scale;
@@ -331,12 +331,12 @@ namespace Godot
 
         private real_t Tdotx(Vector2 with)
         {
-            return this[0, 0] * with[0] + this[1, 0] * with[1];
+            return (this[0, 0] * with[0]) + (this[1, 0] * with[1]);
         }
 
         private real_t Tdoty(Vector2 with)
         {
-            return this[0, 1] * with[0] + this[1, 1] * with[1];
+            return (this[0, 1] * with[0]) + (this[1, 1] * with[1]);
         }
 
         /// <summary>
@@ -350,7 +350,7 @@ namespace Godot
         /// <returns>The translated matrix.</returns>
         public Transform2D Translated(Vector2 offset)
         {
-            var copy = this;
+            Transform2D copy = this;
             copy.origin += copy.BasisXform(offset);
             return copy;
         }
@@ -478,7 +478,7 @@ namespace Godot
         /// <summary>
         /// Returns a Vector2 transformed (multiplied) by the inverse transformation matrix.
         /// </summary>
-        /// <param name="vector">A vector to inversely transform.</param>
+        /// <param name="vector">A Vector2 to inversely transform.</param>
         /// <param name="transform">The transformation to apply.</param>
         /// <returns>The inversely transformed Vector2.</returns>
         public static Vector2 operator *(Vector2 vector, Transform2D transform)
@@ -522,7 +522,7 @@ namespace Godot
         /// Returns a copy of the given Vector2[] transformed (multiplied) by transformation matrix.
         /// </summary>
         /// <param name="transform">The transformation to apply.</param>
-        /// <param name="array">a Vector2[] to transform.</param>
+        /// <param name="array">A Vector2[] to transform.</param>
         /// <returns>The transformed copy of the Vector2[].</returns>
         public static Vector2[] operator *(Transform2D transform, Vector2[] array)
         {

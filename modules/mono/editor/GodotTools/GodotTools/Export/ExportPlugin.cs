@@ -20,7 +20,7 @@ namespace GodotTools.Export
     public class ExportPlugin : EditorExportPlugin
     {
         [Flags]
-        enum I18NCodesets
+        private enum I18NCodesets
         {
             None = 0,
             CJK = 1,
@@ -30,6 +30,8 @@ namespace GodotTools.Export
             West = 16,
             All = CJK | MidEast | Other | Rare | West
         }
+
+        private string _maybeLastExportError;
 
         private void AddI18NAssemblies(Godot.Collections.Dictionary<string, string> assemblies, string bclDir)
         {
@@ -83,8 +85,6 @@ namespace GodotTools.Export
             GlobalDef("mono/export/aot/android_toolchain_path", "");
         }
 
-        private string maybeLastExportError;
-
         private void AddFile(string srcPath, string dstPath, bool remap = false)
         {
             // Add file to the PCK
@@ -129,14 +129,14 @@ namespace GodotTools.Export
             }
             catch (Exception e)
             {
-                maybeLastExportError = e.Message;
+                _maybeLastExportError = e.Message;
 
                 // 'maybeLastExportError' cannot be null or empty if there was an error, so we
                 // must consider the possibility of exceptions being thrown without a message.
-                if (string.IsNullOrEmpty(maybeLastExportError))
-                    maybeLastExportError = $"Exception thrown: {e.GetType().Name}";
+                if (string.IsNullOrEmpty(_maybeLastExportError))
+                    _maybeLastExportError = $"Exception thrown: {e.GetType().Name}";
 
-                GD.PushError($"Failed to export project: {maybeLastExportError}");
+                GD.PushError($"Failed to export project: {_maybeLastExportError}");
                 Console.Error.WriteLine(e);
                 // TODO: Do something on error once _ExportBegin supports failing.
             }
@@ -320,10 +320,10 @@ namespace GodotTools.Export
                 Directory.Delete(aotTempDir, recursive: true);
 
             // TODO: Just a workaround until the export plugins can be made to abort with errors
-            if (!string.IsNullOrEmpty(maybeLastExportError)) // Check empty as well, because it's set to empty after hot-reloading
+            if (!string.IsNullOrEmpty(_maybeLastExportError)) // Check empty as well, because it's set to empty after hot-reloading
             {
-                string lastExportError = maybeLastExportError;
-                maybeLastExportError = null;
+                string lastExportError = _maybeLastExportError;
+                _maybeLastExportError = null;
 
                 GodotSharpEditor.Instance.ShowErrorDialog(lastExportError, "Failed to export C# project");
             }
@@ -473,7 +473,7 @@ namespace GodotTools.Export
 
         private static string DetermineDataDirNameForProject()
         {
-            var appName = (string)ProjectSettings.GetSetting("application/config/name");
+            string appName = (string)ProjectSettings.GetSetting("application/config/name");
             string appNameSafe = appName.ToSafeDirName();
             return $"data_{appNameSafe}";
         }

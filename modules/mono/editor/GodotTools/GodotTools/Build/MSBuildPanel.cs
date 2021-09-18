@@ -11,10 +11,10 @@ namespace GodotTools.Build
     {
         public BuildOutputView BuildOutputView { get; private set; }
 
-        private MenuButton buildMenuBtn;
-        private Button errorsBtn;
-        private Button warningsBtn;
-        private Button viewLogBtn;
+        private MenuButton _buildMenuBtn;
+        private Button _errorsBtn;
+        private Button _warningsBtn;
+        private Button _viewLogBtn;
 
         private void WarningsToggled(bool pressed)
         {
@@ -116,16 +116,16 @@ namespace GodotTools.Build
             var toolBarHBox = new HBoxContainer { SizeFlagsHorizontal = (int)SizeFlags.ExpandFill };
             AddChild(toolBarHBox);
 
-            buildMenuBtn = new MenuButton { Text = "Build", Icon = GetIcon("Play", "EditorIcons") };
-            toolBarHBox.AddChild(buildMenuBtn);
+            _buildMenuBtn = new MenuButton { Text = "Build", Icon = GetIcon("Play", "EditorIcons") };
+            toolBarHBox.AddChild(_buildMenuBtn);
 
-            var buildMenu = buildMenuBtn.GetPopup();
+            var buildMenu = _buildMenuBtn.GetPopup();
             buildMenu.AddItem("Build Solution".TTR(), (int)BuildMenuOptions.BuildSolution);
             buildMenu.AddItem("Rebuild Solution".TTR(), (int)BuildMenuOptions.RebuildSolution);
             buildMenu.AddItem("Clean Solution".TTR(), (int)BuildMenuOptions.CleanSolution);
             buildMenu.Connect("id_pressed", this, nameof(BuildMenuOptionPressed));
 
-            errorsBtn = new Button
+            _errorsBtn = new Button
             {
                 HintTooltip = "Show Errors".TTR(),
                 Icon = GetIcon("StatusError", "EditorIcons"),
@@ -134,10 +134,10 @@ namespace GodotTools.Build
                 Pressed = true,
                 FocusMode = FocusModeEnum.None
             };
-            errorsBtn.Connect("toggled", this, nameof(ErrorsToggled));
-            toolBarHBox.AddChild(errorsBtn);
+            _errorsBtn.Connect("toggled", this, nameof(ErrorsToggled));
+            toolBarHBox.AddChild(_errorsBtn);
 
-            warningsBtn = new Button
+            _warningsBtn = new Button
             {
                 HintTooltip = "Show Warnings".TTR(),
                 Icon = GetIcon("NodeWarning", "EditorIcons"),
@@ -146,18 +146,18 @@ namespace GodotTools.Build
                 Pressed = true,
                 FocusMode = FocusModeEnum.None
             };
-            warningsBtn.Connect("toggled", this, nameof(WarningsToggled));
-            toolBarHBox.AddChild(warningsBtn);
+            _warningsBtn.Connect("toggled", this, nameof(WarningsToggled));
+            toolBarHBox.AddChild(_warningsBtn);
 
-            viewLogBtn = new Button
+            _viewLogBtn = new Button
             {
                 Text = "Show Output".TTR(),
                 ToggleMode = true,
                 Pressed = true,
                 FocusMode = FocusModeEnum.None
             };
-            viewLogBtn.Connect("toggled", this, nameof(ViewLogToggled));
-            toolBarHBox.AddChild(viewLogBtn);
+            _viewLogBtn.Connect("toggled", this, nameof(ViewLogToggled));
+            toolBarHBox.AddChild(_viewLogBtn);
 
             BuildOutputView = new BuildOutputView();
             AddChild(BuildOutputView);
@@ -169,12 +169,12 @@ namespace GodotTools.Build
 
             if (what == NotificationThemeChanged)
             {
-                if (buildMenuBtn != null)
-                    buildMenuBtn.Icon = GetIcon("Play", "EditorIcons");
-                if (errorsBtn != null)
-                    errorsBtn.Icon = GetIcon("StatusError", "EditorIcons");
-                if (warningsBtn != null)
-                    warningsBtn.Icon = GetIcon("NodeWarning", "EditorIcons");
+                if (_buildMenuBtn != null)
+                    _buildMenuBtn.Icon = GetIcon("Play", "EditorIcons");
+                if (_errorsBtn != null)
+                    _errorsBtn.Icon = GetIcon("StatusError", "EditorIcons");
+                if (_warningsBtn != null)
+                    _warningsBtn.Icon = GetIcon("NodeWarning", "EditorIcons");
             }
         }
     }
