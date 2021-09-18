@@ -98,29 +98,45 @@ void Tabs::gui_input(const Ref<InputEvent> &p_event) {
 	if (mm.is_valid()) {
 		Point2 pos = mm->get_position();
 
-		highlight_arrow = -1;
 		if (buttons_visible) {
 			Ref<Texture2D> incr = get_theme_icon(SNAME("increment"));
 			Ref<Texture2D> decr = get_theme_icon(SNAME("decrement"));
 
 			if (is_layout_rtl()) {
 				if (pos.x < decr->get_width()) {
-					highlight_arrow = 1;
+					if (highlight_arrow != 1) {
+						highlight_arrow = 1;
+						update();
+					}
 				} else if (pos.x < incr->get_width() + decr->get_width()) {
-					highlight_arrow = 0;
+					if (highlight_arrow != 0) {
+						highlight_arrow = 0;
+						update();
+					}
+				} else if (highlight_arrow != -1) {
+					highlight_arrow = -1;
+					update();
 				}
 			} else {
 				int limit_minus_buttons = get_size().width - incr->get_width() - decr->get_width();
 				if (pos.x > limit_minus_buttons + decr->get_width()) {
-					highlight_arrow = 1;
+					if (highlight_arrow != 1) {
+						highlight_arrow = 1;
+						update();
+					}
 				} else if (pos.x > limit_minus_buttons) {
-					highlight_arrow = 0;
+					if (highlight_arrow != 0) {
+						highlight_arrow = 0;
+						update();
+					}
+				} else if (highlight_arrow != -1) {
+					highlight_arrow = -1;
+					update();
 				}
 			}
 		}
 
 		_update_hover();
-		update();
 		return;
 	}
 
