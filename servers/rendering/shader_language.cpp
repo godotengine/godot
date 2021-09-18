@@ -2384,6 +2384,10 @@ bool ShaderLanguage::_validate_function_call(BlockNode *p_block, const FunctionI
 				failed_builtin = true;
 				bool fail = false;
 				for (int i = 0; i < argcount; i++) {
+					if (p_func->arguments[i + 1]->type == Node::TYPE_ARRAY && !static_cast<const ArrayNode *>(p_func->arguments[i + 1])->is_indexed()) {
+						fail = true;
+						break;
+					}
 					if (get_scalar_type(args[i]) == args[i] && p_func->arguments[i + 1]->type == Node::TYPE_CONSTANT && convert_constant(static_cast<ConstantNode *>(p_func->arguments[i + 1]), builtin_func_defs[idx].args[i])) {
 						//all good, but needs implicit conversion later
 					} else if (args[i] != builtin_func_defs[idx].args[i]) {
@@ -2559,6 +2563,11 @@ bool ShaderLanguage::_validate_function_call(BlockNode *p_block, const FunctionI
 				arg_name = args2[i];
 			} else {
 				arg_name = get_datatype_name(args[i]);
+			}
+			if (args3[i] > 0) {
+				arg_name += "[";
+				arg_name += itos(args3[i]);
+				arg_name += "]";
 			}
 			err += arg_name;
 		}
