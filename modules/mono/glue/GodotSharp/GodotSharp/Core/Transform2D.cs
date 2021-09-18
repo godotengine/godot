@@ -361,6 +361,7 @@ namespace Godot
         /// <seealso cref="XformInv(Vector2)"/>
         /// <param name="v">A vector to transform.</param>
         /// <returns>The transformed vector.</returns>
+        [Obsolete("Xform is deprecated. Use the multiplication operator (Transform2D * Vector2) instead.")]
         public Vector2 Xform(Vector2 v)
         {
             return new Vector2(Tdotx(v), Tdoty(v)) + origin;
@@ -372,6 +373,7 @@ namespace Godot
         /// <seealso cref="Xform(Vector2)"/>
         /// <param name="v">A vector to inversely transform.</param>
         /// <returns>The inversely transformed vector.</returns>
+        [Obsolete("XformInv is deprecated. Use the multiplication operator (Vector2 * Transform2D) instead.")]
         public Vector2 XformInv(Vector2 v)
         {
             Vector2 vInv = v - origin;
@@ -447,7 +449,7 @@ namespace Godot
 
         public static Transform2D operator *(Transform2D left, Transform2D right)
         {
-            left.origin = left.Xform(right.origin);
+            left.origin = left * right.origin;
 
             real_t x0 = left.Tdotx(right.x);
             real_t x1 = left.Tdoty(right.x);
@@ -460,6 +462,96 @@ namespace Godot
             left.y.y = y1;
 
             return left;
+        }
+
+        /// <summary>
+        /// Returns a Vector2 transformed (multiplied) by transformation matrix.
+        /// </summary>
+        /// <param name="transform">The transformation to apply.</param>
+        /// <param name="vector">A Vector2 to transform.</param>
+        /// <returns>The transformed Vector2.</returns>
+        public static Vector2 operator *(Transform2D transform, Vector2 vector)
+        {
+            return new Vector2(transform.Tdotx(vector), transform.Tdoty(vector)) + transform.origin;
+        }
+
+        /// <summary>
+        /// Returns a Vector2 transformed (multiplied) by the inverse transformation matrix.
+        /// </summary>
+        /// <param name="vector">A vector to inversely transform.</param>
+        /// <param name="transform">The transformation to apply.</param>
+        /// <returns>The inversely transformed Vector2.</returns>
+        public static Vector2 operator *(Vector2 vector, Transform2D transform)
+        {
+            Vector2 vInv = vector - transform.origin;
+            return new Vector2(transform.x.Dot(vInv), transform.y.Dot(vInv));
+        }
+
+        /// <summary>
+        /// Returns a Rect2 transformed (multiplied) by transformation matrix.
+        /// </summary>
+        /// <param name="transform">The transformation to apply.</param>
+        /// <param name="rect">A Rect2 to transform.</param>
+        /// <returns>The transformed Rect2.</returns>
+        public static Rect2 operator *(Transform2D transform, Rect2 rect)
+        {
+            Vector2 pos = transform * rect.Position;
+            Vector2 toX = transform.x * rect.Size.x;
+            Vector2 toY = transform.y * rect.Size.y;
+
+            return new Rect2(pos, rect.Size).Expand(pos + toX).Expand(pos + toY).Expand(pos + toX + toY);
+        }
+
+        /// <summary>
+        /// Returns a Rect2 transformed (multiplied) by the inverse transformation matrix.
+        /// </summary>
+        /// <param name="rect">A Rect2 to inversely transform.</param>
+        /// <param name="transform">The transformation to apply.</param>
+        /// <returns>The inversely transformed Rect2.</returns>
+        public static Rect2 operator *(Rect2 rect, Transform2D transform)
+        {
+            Vector2 pos = rect.Position * transform;
+            Vector2 to1 = new Vector2(rect.Position.x, rect.Position.y + rect.Size.y) * transform;
+            Vector2 to2 = new Vector2(rect.Position.x + rect.Size.x, rect.Position.y + rect.Size.y) * transform;
+            Vector2 to3 = new Vector2(rect.Position.x + rect.Size.x, rect.Position.y) * transform;
+
+            return new Rect2(pos, rect.Size).Expand(to1).Expand(to2).Expand(to3);
+        }
+
+        /// <summary>
+        /// Returns a copy of the given Vector2[] transformed (multiplied) by transformation matrix.
+        /// </summary>
+        /// <param name="transform">The transformation to apply.</param>
+        /// <param name="array">a Vector2[] to transform.</param>
+        /// <returns>The transformed copy of the Vector2[].</returns>
+        public static Vector2[] operator *(Transform2D transform, Vector2[] array)
+        {
+            Vector2[] newArray = new Vector2[array.Length];
+
+            for (int i = 0; i < array.Length; i++)
+            {
+                newArray[i] = transform * array[i];
+            }
+
+            return newArray;
+        }
+
+        /// <summary>
+        /// Returns a copy of the given Vector2[] transformed (multiplied) by the inverse transformation matrix.
+        /// </summary>
+        /// <param name="array">A Vector2[] to inversely transform.</param>
+        /// <param name="transform">The transformation to apply.</param>
+        /// <returns>The inversely transformed copy of the Vector2[].</returns>
+        public static Vector2[] operator *(Vector2[] array, Transform2D transform)
+        {
+            Vector2[] newArray = new Vector2[array.Length];
+
+            for (int i = 0; i < array.Length; i++)
+            {
+                newArray[i] = array[i] * transform;
+            }
+
+            return newArray;
         }
 
         public static bool operator ==(Transform2D left, Transform2D right)
