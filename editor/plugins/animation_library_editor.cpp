@@ -673,7 +673,7 @@ AnimationLibraryEditor::AnimationLibraryEditor() {
 	tree->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 
 	tree->connect("item_edited", callable_mp(this, &AnimationLibraryEditor::_item_renamed));
-	tree->connect("button_pressed", callable_mp(this, &AnimationLibraryEditor::_button_pressed));
+	tree->connect("button_clicked", callable_mp(this, &AnimationLibraryEditor::_button_pressed));
 
 	file_popup = memnew(PopupMenu);
 	add_child(file_popup);

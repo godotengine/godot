@@ -49,7 +49,10 @@ void DependencyEditor::_searched(const String &p_path) {
 	_update_file();
 }
 
-void DependencyEditor::_load_pressed(Object *p_item, int p_cell, int p_button) {
+void DependencyEditor::_load_pressed(Object *p_item, int p_cell, int p_button, MouseButton p_mouse_button) {
+	if (p_mouse_button != MouseButton::LEFT) {
+		return;
+	}
 	TreeItem *ti = Object::cast_to<TreeItem>(p_item);
 	replacing = ti->get_text(1);
 
@@ -242,7 +245,7 @@ DependencyEditor::DependencyEditor() {
 	tree->set_column_clip_content(1, true);
 	tree->set_column_expand_ratio(1, 1);
 	tree->set_hide_root(true);
-	tree->connect("button_pressed", callable_mp(this, &DependencyEditor::_load_pressed));
+	tree->connect("button_clicked", callable_mp(this, &DependencyEditor::_load_pressed));
 
 	HBoxContainer *hbc = memnew(HBoxContainer);
 	Label *label = memnew(Label(TTR("Dependencies:")));
@@ -761,7 +764,10 @@ void OrphanResourcesDialog::_delete_confirm() {
 	refresh();
 }
 
-void OrphanResourcesDialog::_button_pressed(Object *p_item, int p_column, int p_id) {
+void OrphanResourcesDialog::_button_pressed(Object *p_item, int p_column, int p_id, MouseButton p_button) {
+	if (p_button != MouseButton::LEFT) {
+		return;
+	}
 	TreeItem *ti = Object::cast_to<TreeItem>(p_item);
 
 	String path = ti->get_metadata(0);
@@ -796,5 +802,5 @@ OrphanResourcesDialog::OrphanResourcesDialog() {
 	files->set_column_title(1, TTR("Owns"));
 	files->set_hide_root(true);
 	vbc->add_margin_child(TTR("Resources Without Explicit Ownership:"), files, true);
-	files->connect("button_pressed", callable_mp(this, &OrphanResourcesDialog::_button_pressed));
+	files->connect("button_clicked", callable_mp(this, &OrphanResourcesDialog::_button_pressed));
 }

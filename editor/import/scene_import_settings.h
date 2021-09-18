@@ -182,7 +182,7 @@ class SceneImportSettings : public ConfirmationDialog {
 
 	TreeItem *save_path_item = nullptr;
 	void _save_path_changed(const String &p_path);
-	void _browse_save_callback(Object *p_item, int p_column, int p_id);
+	void _browse_save_callback(Object *p_item, int p_column, int p_id, MouseButton p_button);
 	void _save_dir_confirm();
 
 	Dictionary base_subresource_settings;

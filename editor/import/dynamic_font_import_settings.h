@@ -91,7 +91,7 @@ class DynamicFontImportSettings : public ConfirmationDialog {
 
 	void _variation_add();
 	void _variation_selected();
-	void _variation_remove(Object *p_item, int p_column, int p_id);
+	void _variation_remove(Object *p_item, int p_column, int p_id, MouseButton p_button);
 	void _variation_changed(const String &p_edited_property);
 	void _variations_validate();
 
@@ -145,15 +145,15 @@ class DynamicFontImportSettings : public ConfirmationDialog {
 
 	void _lang_add();
 	void _lang_add_item(const String &p_locale);
-	void _lang_remove(Object *p_item, int p_column, int p_id);
+	void _lang_remove(Object *p_item, int p_column, int p_id, MouseButton p_button);
 
 	void _script_add();
 	void _script_add_item(int p_option);
-	void _script_remove(Object *p_item, int p_column, int p_id);
+	void _script_remove(Object *p_item, int p_column, int p_id, MouseButton p_button);
 
 	void _ot_add();
 	void _ot_add_item(int p_option);
-	void _ot_remove(Object *p_item, int p_column, int p_id);
+	void _ot_remove(Object *p_item, int p_column, int p_id, MouseButton p_button);
 
 	// Common
 

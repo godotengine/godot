@@ -969,7 +969,11 @@ void SceneImportSettings::_save_path_changed(const String &p_path) {
 	}
 }
 
-void SceneImportSettings::_browse_save_callback(Object *p_item, int p_column, int p_id) {
+void SceneImportSettings::_browse_save_callback(Object *p_item, int p_column, int p_id, MouseButton p_button) {
+	if (p_button != MouseButton::LEFT) {
+		return;
+	}
+
 	TreeItem *item = Object::cast_to<TreeItem>(p_item);
 
 	String path = item->get_text(1);
@@ -1331,7 +1335,7 @@ SceneImportSettings::SceneImportSettings() {
 	add_child(external_paths);
 	external_path_tree = memnew(Tree);
 	external_paths->add_child(external_path_tree);
-	external_path_tree->connect("button_pressed", callable_mp(this, &SceneImportSettings::_browse_save_callback));
+	external_path_tree->connect("button_clicked", callable_mp(this, &SceneImportSettings::_browse_save_callback));
 	external_paths->connect("confirmed", callable_mp(this, &SceneImportSettings::_save_dir_confirm));
 	external_path_tree->set_columns(3);
 	external_path_tree->set_column_titles_visible(true);

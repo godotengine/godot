@@ -280,7 +280,10 @@ void EditorAutoloadSettings::_autoload_edited() {
 	updating_autoload = false;
 }
 
-void EditorAutoloadSettings::_autoload_button_pressed(Object *p_item, int p_column, int p_button) {
+void EditorAutoloadSettings::_autoload_button_pressed(Object *p_item, int p_column, int p_button, MouseButton p_mouse_button) {
+	if (p_mouse_button != MouseButton::LEFT) {
+		return;
+	}
 	TreeItem *ti = Object::cast_to<TreeItem>(p_item);
 
 	String name = "autoload/" + ti->get_text(0);
@@ -950,7 +953,7 @@ EditorAutoloadSettings::EditorAutoloadSettings() {
 
 	tree->connect("cell_selected", callable_mp(this, &EditorAutoloadSettings::_autoload_selected));
 	tree->connect("item_edited", callable_mp(this, &EditorAutoloadSettings::_autoload_edited));
-	tree->connect("button_pressed", callable_mp(this, &EditorAutoloadSettings::_autoload_button_pressed));
+	tree->connect("button_clicked", callable_mp(this, &EditorAutoloadSettings::_autoload_button_pressed));
 	tree->connect("item_activated", callable_mp(this, &EditorAutoloadSettings::_autoload_activated));
 	tree->set_v_size_flags(SIZE_EXPAND_FILL);
 

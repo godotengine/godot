@@ -569,7 +569,7 @@ void Skeleton3DEditor::_joint_tree_selection_changed() {
 }
 
 // May be not used with single select mode.
-void Skeleton3DEditor::_joint_tree_rmb_select(const Vector2 &p_pos) {
+void Skeleton3DEditor::_joint_tree_rmb_select(const Vector2 &p_pos, MouseButton p_button) {
 }
 
 void Skeleton3DEditor::_update_properties() {
@@ -766,7 +766,7 @@ void Skeleton3DEditor::_notification(int p_what) {
 			update_joint_tree();
 			update_editors();
 			joint_tree->connect("item_selected", callable_mp(this, &Skeleton3DEditor::_joint_tree_selection_changed));
-			joint_tree->connect("item_rmb_selected", callable_mp(this, &Skeleton3DEditor::_joint_tree_rmb_select));
+			joint_tree->connect("item_mouse_selected", callable_mp(this, &Skeleton3DEditor::_joint_tree_rmb_select));
 #ifdef TOOLS_ENABLED
 			skeleton->connect("pose_updated", callable_mp(this, &Skeleton3DEditor::_draw_gizmo));
 			skeleton->connect("pose_updated", callable_mp(this, &Skeleton3DEditor::_update_properties));

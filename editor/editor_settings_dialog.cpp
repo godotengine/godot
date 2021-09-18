@@ -475,7 +475,10 @@ void EditorSettingsDialog::_update_shortcuts() {
 	}
 }
 
-void EditorSettingsDialog::_shortcut_button_pressed(Object *p_item, int p_column, int p_idx) {
+void EditorSettingsDialog::_shortcut_button_pressed(Object *p_item, int p_column, int p_idx, MouseButton p_button) {
+	if (p_button != MouseButton::LEFT) {
+		return;
+	}
 	TreeItem *ti = Object::cast_to<TreeItem>(p_item);
 	ERR_FAIL_COND_MSG(!ti, "Object passed is not a TreeItem");
 
@@ -748,7 +751,7 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	shortcuts->set_column_titles_visible(true);
 	shortcuts->set_column_title(0, TTR("Name"));
 	shortcuts->set_column_title(1, TTR("Binding"));
-	shortcuts->connect("button_pressed", callable_mp(this, &EditorSettingsDialog::_shortcut_button_pressed));
+	shortcuts->connect("button_clicked", callable_mp(this, &EditorSettingsDialog::_shortcut_button_pressed));
 	shortcuts->connect("item_activated", callable_mp(this, &EditorSettingsDialog::_shortcut_cell_double_clicked));
 	tab_shortcuts->add_child(shortcuts);
 

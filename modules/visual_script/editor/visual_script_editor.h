@@ -226,7 +226,7 @@ class VisualScriptEditor : public ScriptEditorBase {
 
 	void _update_available_nodes();
 
-	void _member_button(Object *p_item, int p_column, int p_button);
+	void _member_button(Object *p_item, int p_column, int p_button, MouseButton p_mouse_button);
 
 	void _expression_text_changed(const String &p_text, int p_id);
 	void _add_input_port(int p_id);
@@ -289,7 +289,7 @@ class VisualScriptEditor : public ScriptEditorBase {
 
 	VisualScriptNode::TypeGuess _guess_output_type(int p_port_action_node, int p_port_action_output, RBSet<int> &p_visited_nodes);
 
-	void _member_rmb_selected(const Vector2 &p_pos);
+	void _member_rmb_selected(const Vector2 &p_pos, MouseButton p_button);
 	void _member_option(int p_option);
 
 	void _toggle_scripts_pressed();

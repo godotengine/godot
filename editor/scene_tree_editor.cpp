@@ -49,7 +49,11 @@ Node *SceneTreeEditor::get_scene_node() {
 	return get_tree()->get_edited_scene_root();
 }
 
-void SceneTreeEditor::_cell_button_pressed(Object *p_item, int p_column, int p_id) {
+void SceneTreeEditor::_cell_button_pressed(Object *p_item, int p_column, int p_id, MouseButton p_button) {
+	if (p_button != MouseButton::LEFT) {
+		return;
+	}
+
 	if (connect_to_script_mode) {
 		return; //don't do anything in this mode
 	}
@@ -1166,7 +1170,17 @@ void SceneTreeEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data,
 	}
 }
 
-void SceneTreeEditor::_rmb_select(const Vector2 &p_pos) {
+void SceneTreeEditor::_empty_clicked(const Vector2 &p_pos, MouseButton p_button) {
+	if (p_button != MouseButton::RIGHT) {
+		return;
+	}
+	_rmb_select(p_pos);
+}
+
+void SceneTreeEditor::_rmb_select(const Vector2 &p_pos, MouseButton p_button) {
+	if (p_button != MouseButton::RIGHT) {
+		return;
+	}
 	emit_signal(SNAME("rmb_pressed"), tree->get_screen_position() + p_pos);
 }
 
@@ -1251,14 +1265,14 @@ SceneTreeEditor::SceneTreeEditor(bool p_label, bool p_can_rename, bool p_can_ope
 	tree->set_drag_forwarding(this);
 	if (p_can_rename) {
 		tree->set_allow_rmb_select(true);
-		tree->connect("item_rmb_selected", callable_mp(this, &SceneTreeEditor::_rmb_select));
-		tree->connect("empty_tree_rmb_selected", callable_mp(this, &SceneTreeEditor::_rmb_select));
+		tree->connect("item_mouse_selected", callable_mp(this, &SceneTreeEditor::_rmb_select));
+		tree->connect("empty_clicked", callable_mp(this, &SceneTreeEditor::_empty_clicked));
 	}
 
 	tree->connect("cell_selected", callable_mp(this, &SceneTreeEditor::_selected_changed));
 	tree->connect("item_edited", callable_mp(this, &SceneTreeEditor::_renamed));
 	tree->connect("multi_selected", callable_mp(this, &SceneTreeEditor::_cell_multi_selected));
-	tree->connect("button_pressed", callable_mp(this, &SceneTreeEditor::_cell_button_pressed));
+	tree->connect("button_clicked", callable_mp(this, &SceneTreeEditor::_cell_button_pressed));
 	tree->connect("nothing_selected", callable_mp(this, &SceneTreeEditor::_deselect_items));
 
 	error = memnew(AcceptDialog);
