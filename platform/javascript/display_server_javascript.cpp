@@ -595,6 +595,12 @@ void DisplayServerJavaScript::virtual_keyboard_hide() {
 	godot_js_display_vk_hide();
 }
 
+// Window blur callback
+EM_BOOL DisplayServerJavaScript::blur_callback(int p_event_type, const EmscriptenFocusEvent *p_event, void *p_user_data) {
+	Input::get_singleton()->release_pressed_events();
+	return false;
+}
+
 // Gamepad
 void DisplayServerJavaScript::gamepad_callback(int p_index, int p_connected, const char *p_id, const char *p_guid) {
 	Input *input = Input::get_singleton();
@@ -797,6 +803,7 @@ DisplayServerJavaScript::DisplayServerJavaScript(const String &p_rendering_drive
 	SET_EM_CALLBACK(canvas_id, mousedown, mouse_button_callback)
 	SET_EM_WINDOW_CALLBACK(mousemove, mousemove_callback)
 	SET_EM_WINDOW_CALLBACK(mouseup, mouse_button_callback)
+	SET_EM_WINDOW_CALLBACK(blur, blur_callback)
 	SET_EM_CALLBACK(canvas_id, wheel, wheel_callback)
 	SET_EM_CALLBACK(canvas_id, touchstart, touch_press_callback)
 	SET_EM_CALLBACK(canvas_id, touchmove, touchmove_callback)

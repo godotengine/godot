@@ -85,6 +85,8 @@ private:
 	static EM_BOOL touch_press_callback(int p_event_type, const EmscriptenTouchEvent *p_event, void *p_user_data);
 	static EM_BOOL touchmove_callback(int p_event_type, const EmscriptenTouchEvent *p_event, void *p_user_data);
 
+	static EM_BOOL blur_callback(int p_event_type, const EmscriptenFocusEvent *p_event, void *p_user_data);
+
 	static void gamepad_callback(int p_index, int p_connected, const char *p_id, const char *p_guid);
 	void process_joypads();
 
