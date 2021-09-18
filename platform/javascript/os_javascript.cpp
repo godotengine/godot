@@ -123,6 +123,11 @@ EM_BOOL OS_JavaScript::fullscreen_change_callback(int p_event_type, const Emscri
 	return false;
 }
 
+EM_BOOL OS_JavaScript::blur_callback(int p_event_type, const EmscriptenFocusEvent *p_event, void *p_user_data) {
+	get_singleton()->input->release_pressed_events();
+	return false;
+}
+
 void OS_JavaScript::set_video_mode(const VideoMode &p_video_mode, int p_screen) {
 
 	video_mode = p_video_mode;
@@ -875,6 +880,7 @@ Error OS_JavaScript::initialize(const VideoMode &p_desired, int p_video_driver, 
 	SET_EM_CALLBACK(canvas_id, mousedown, mouse_button_callback)
 	SET_EM_WINDOW_CALLBACK(mousemove, mousemove_callback)
 	SET_EM_WINDOW_CALLBACK(mouseup, mouse_button_callback)
+	SET_EM_WINDOW_CALLBACK(blur, blur_callback)
 	SET_EM_CALLBACK(canvas_id, wheel, wheel_callback)
 	SET_EM_CALLBACK(canvas_id, touchstart, touch_press_callback)
 	SET_EM_CALLBACK(canvas_id, touchmove, touchmove_callback)
