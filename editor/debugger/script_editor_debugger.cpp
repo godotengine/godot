@@ -884,8 +884,7 @@ void ScriptEditorDebugger::_clear_breakpoints() {
 }
 
 void ScriptEditorDebugger::start(Ref<RemoteDebuggerPeer> p_peer) {
-	error_count = 0;
-	warning_count = 0;
+	_clear_errors_list();
 	stop();
 
 	peer = p_peer;
