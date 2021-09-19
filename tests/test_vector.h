@@ -472,6 +472,19 @@ TEST_CASE("[Vector] Sort custom") {
 	CHECK(vector[7] == "World");
 }
 
+TEST_CASE("[Vector] Search") {
+	Vector<int> vector;
+	vector.push_back(1);
+	vector.push_back(2);
+	vector.push_back(3);
+	vector.push_back(5);
+	vector.push_back(8);
+	CHECK(vector.bsearch(2, true) == 1);
+	CHECK(vector.bsearch(2, false) == 2);
+	CHECK(vector.bsearch(5, true) == 3);
+	CHECK(vector.bsearch(5, false) == 4);
+}
+
 TEST_CASE("[Vector] Operators") {
 	Vector<int> vector;
 	vector.push_back(2);

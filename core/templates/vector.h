@@ -40,6 +40,7 @@
 #include "core/error/error_macros.h"
 #include "core/os/memory.h"
 #include "core/templates/cowdata.h"
+#include "core/templates/search_array.h"
 #include "core/templates/sort_array.h"
 
 template <class T>
@@ -110,6 +111,11 @@ public:
 
 	void sort() {
 		sort_custom<_DefaultComparator<T>>();
+	}
+
+	int bsearch(const T &p_value, bool p_before) {
+		SearchArray<T> search;
+		return search.bisect(ptrw(), size(), p_value, p_before);
 	}
 
 	Vector<T> duplicate() {

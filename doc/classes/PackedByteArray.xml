@@ -43,6 +43,15 @@
 				Appends a [PackedByteArray] at the end of this array.
 			</description>
 		</method>
+		<method name="bsearch">
+			<return type="int" />
+			<argument index="0" name="value" type="int" />
+			<argument index="1" name="before" type="bool" default="true" />
+			<description>
+				Finds the index of an existing value (or the insertion index that maintains sorting order, if the value is not yet present in the array) using binary search. Optionally, a [code]before[/code] specifier can be passed. If [code]false[/code], the returned index comes after all existing entries of the value in the array.
+				[b]Note:[/b] Calling [method bsearch] on an unsorted array results in unexpected behavior.
+			</description>
+		</method>
 		<method name="compress" qualifiers="const">
 			<return type="PackedByteArray" />
 			<argument index="0" name="compression_mode" type="int" default="0" />
