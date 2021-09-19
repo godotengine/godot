@@ -148,6 +148,7 @@ class SceneTreeDock : public VBoxContainer {
 	ConfirmationDialog *delete_dialog;
 	ConfirmationDialog *editable_instance_remove_dialog;
 	ConfirmationDialog *placeholder_editable_instance_remove_dialog;
+	String a_path;
 
 	ReparentDialog *reparent_dialog;
 	EditorQuickOpen *quick_open;

@@ -1943,6 +1943,9 @@ void SceneTreeDock::_script_created(Ref<Script> p_script) {
 
 	editor->push_item(p_script.operator->());
 	_update_script_button();
+
+	// Remember the directory we're in so we can use it again next time.
+	a_path = p_script->get_path().get_base_dir().plus_file(p_script->get_name());
 }
 
 void SceneTreeDock::_shader_created(Ref<Shader> p_shader) {
@@ -2884,6 +2887,9 @@ void SceneTreeDock::attach_script_to_selected(bool p_extend) {
 	Ref<Script> existing = selected->get_script();
 
 	String path = selected->get_filename();
+	if (a_path != "") { // If we have an associated directory, use it.
+		path = a_path.get_base_dir().plus_file(selected->get_name());
+	}
 	if (path == "") {
 		String root_path = editor_data->get_edited_scene_root()->get_filename();
 		if (root_path == "") {
