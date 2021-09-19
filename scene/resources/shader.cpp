@@ -156,6 +156,9 @@ Shader::Shader() {
 }
 
 Shader::~Shader() {
+	if (shader.is_null()) {
+		return;
+	}
 	RenderingServer::get_singleton()->free(shader);
 }
 

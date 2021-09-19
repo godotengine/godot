@@ -1304,5 +1304,8 @@ CanvasTexture::CanvasTexture() {
 	canvas_texture = RS::get_singleton()->canvas_texture_create();
 }
 CanvasTexture::~CanvasTexture() {
+	if (canvas_texture.is_null()) {
+		return;
+	}
 	RS::get_singleton()->free(canvas_texture);
 }
