@@ -467,7 +467,7 @@ void CodeEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 	}
 
 	/* MISC */
-	if (k->is_action("ui_cancel", true)) {
+	if (!code_hint.is_empty() && k->is_action("ui_cancel", true)) {
 		set_code_hint("");
 		accept_event();
 		return;
@@ -1725,14 +1725,17 @@ bool CodeEdit::is_code_completion_enabled() const {
 void CodeEdit::set_code_completion_prefixes(const TypedArray<String> &p_prefixes) {
 	code_completion_prefixes.clear();
 	for (int i = 0; i < p_prefixes.size(); i++) {
-		code_completion_prefixes.insert(p_prefixes[i]);
+		const String prefix = p_prefixes[i];
+
+		ERR_CONTINUE_MSG(prefix.is_empty(), "Code completion prefix cannot be empty.");
+		code_completion_prefixes.insert(prefix[0]);
 	}
 }
 
 TypedArray<String> CodeEdit::get_code_completion_prefixes() const {
 	TypedArray<String> prefixes;
-	for (Set<String>::Element *E = code_completion_prefixes.front(); E; E = E->next()) {
-		prefixes.push_back(E->get());
+	for (const Set<char32_t>::Element *E = code_completion_prefixes.front(); E; E = E->next()) {
+		prefixes.push_back(String::chr(E->get()));
 	}
 	return prefixes;
 }
@@ -1795,9 +1798,9 @@ void CodeEdit::request_code_completion(bool p_force) {
 	String line = get_line(get_caret_line());
 	int ofs = CLAMP(get_caret_column(), 0, line.length());
 
-	if (ofs > 0 && (is_in_string(get_caret_line(), ofs) != -1 || _is_char(line[ofs - 1]) || code_completion_prefixes.has(String::chr(line[ofs - 1])))) {
+	if (ofs > 0 && (is_in_string(get_caret_line(), ofs) != -1 || _is_char(line[ofs - 1]) || code_completion_prefixes.has(line[ofs - 1]))) {
 		emit_signal(SNAME("request_code_completion"));
-	} else if (ofs > 1 && line[ofs - 1] == ' ' && code_completion_prefixes.has(String::chr(line[ofs - 2]))) {
+	} else if (ofs > 1 && line[ofs - 1] == ' ' && code_completion_prefixes.has(line[ofs - 2])) {
 		emit_signal(SNAME("request_code_completion"));
 	}
 }
@@ -1969,7 +1972,7 @@ void CodeEdit::confirm_code_completion(bool p_replace) {
 	end_complex_operation();
 
 	cancel_code_completion();
-	if (code_completion_prefixes.has(String::chr(last_completion_char))) {
+	if (code_completion_prefixes.has(last_completion_char)) {
 		request_code_completion();
 	}
 }
@@ -2764,7 +2767,7 @@ void CodeEdit::_filter_code_completion_candidates_impl() {
 	bool prev_is_word = false;
 
 	/* Cancel if we are at the close of a string. */
-	if (in_string == -1 && first_quote_col == cofs - 1) {
+	if (caret_column > 0 && in_string == -1 && first_quote_col == cofs - 1) {
 		cancel_code_completion();
 		return;
 		/* In a string, therefore we are trying to complete the string text. */
@@ -2790,9 +2793,9 @@ void CodeEdit::_filter_code_completion_candidates_impl() {
 	/* If all else fails, check for a prefix.         */
 	/* Single space between caret and prefix is okay. */
 	bool prev_is_prefix = false;
-	if (cofs > 0 && code_completion_prefixes.has(String::chr(line[cofs - 1]))) {
+	if (cofs > 0 && code_completion_prefixes.has(line[cofs - 1])) {
 		prev_is_prefix = true;
-	} else if (cofs > 1 && line[cofs - 1] == ' ' && code_completion_prefixes.has(String::chr(line[cofs - 2]))) {
+	} else if (cofs > 1 && line[cofs - 1] == ' ' && code_completion_prefixes.has(line[cofs - 2])) {
 		prev_is_prefix = true;
 	}
 
