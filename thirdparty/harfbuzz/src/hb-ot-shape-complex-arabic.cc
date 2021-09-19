@@ -259,7 +259,7 @@ struct arabic_shape_plan_t
 void *
 data_create_arabic (const hb_ot_shape_plan_t *plan)
 {
-  arabic_shape_plan_t *arabic_plan = (arabic_shape_plan_t *) calloc (1, sizeof (arabic_shape_plan_t));
+  arabic_shape_plan_t *arabic_plan = (arabic_shape_plan_t *) hb_calloc (1, sizeof (arabic_shape_plan_t));
   if (unlikely (!arabic_plan))
     return nullptr;
 
@@ -282,7 +282,7 @@ data_destroy_arabic (void *data)
 
   arabic_fallback_plan_destroy (arabic_plan->fallback_plan);
 
-  free (data);
+  hb_free (data);
 }
 
 static void

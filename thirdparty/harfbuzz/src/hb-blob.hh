@@ -88,7 +88,7 @@ struct hb_blob_ptr_t
   const T * get () const { return b->as<T> (); }
   hb_blob_t * get_blob () const { return b.get_raw (); }
   unsigned int get_length () const { return b.get ()->length; }
-  void destroy () { hb_blob_destroy (b.get ()); b = nullptr; }
+  void destroy () { hb_blob_destroy (b.get_raw ()); b = nullptr; }
 
   private:
   hb_nonnull_ptr_t<hb_blob_t> b;

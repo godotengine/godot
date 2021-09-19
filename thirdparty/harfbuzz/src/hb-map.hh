@@ -85,7 +85,7 @@ struct hb_hashmap_t
   }
   void fini_shallow ()
   {
-    free (items);
+    hb_free (items);
     items = nullptr;
     population = occupancy = 0;
   }
@@ -109,7 +109,7 @@ struct hb_hashmap_t
 
     unsigned int power = hb_bit_storage (population * 2 + 8);
     unsigned int new_size = 1u << power;
-    item_t *new_items = (item_t *) malloc ((size_t) new_size * sizeof (item_t));
+    item_t *new_items = (item_t *) hb_malloc ((size_t) new_size * sizeof (item_t));
     if (unlikely (!new_items))
     {
       successful = false;
@@ -135,14 +135,14 @@ struct hb_hashmap_t
 			 old_items[i].hash,
 			 old_items[i].value);
 
-    free (old_items);
+    hb_free (old_items);
 
     return true;
   }
 
-  void set (K key, V value)
+  bool set (K key, V value)
   {
-    set_with_hash (key, hb_hash (key), value);
+    return set_with_hash (key, hb_hash (key), value);
   }
 
   V get (K key) const
@@ -169,6 +169,8 @@ struct hb_hashmap_t
 
   void clear ()
   {
+    if (unlikely (!successful)) return;
+
     if (items)
       for (auto &_ : hb_iter (items, mask + 1))
 	_.clear ();
@@ -211,20 +213,20 @@ struct hb_hashmap_t
 
   protected:
 
-  void set_with_hash (K key, uint32_t hash, V value)
+  bool set_with_hash (K key, uint32_t hash, V value)
   {
-    if (unlikely (!successful)) return;
-    if (unlikely (key == kINVALID)) return;
-    if ((occupancy + occupancy / 2) >= mask && !resize ()) return;
+    if (unlikely (!successful)) return false;
+    if (unlikely (key == kINVALID)) return true;
+    if (unlikely ((occupancy + occupancy / 2) >= mask && !resize ())) return false;
     unsigned int i = bucket_for_hash (key, hash);
 
     if (value == vINVALID && items[i].key != key)
-      return; /* Trying to delete non-existent key. */
+      return true; /* Trying to delete non-existent key. */
 
     if (!items[i].is_unused ())
     {
       occupancy--;
-      if (items[i].is_tombstone ())
+      if (!items[i].is_tombstone ())
 	population--;
     }
 
@@ -235,6 +237,8 @@ struct hb_hashmap_t
     occupancy++;
     if (!items[i].is_tombstone ())
       population++;
+
+    return true;
   }
 
   unsigned int bucket_for (K key) const

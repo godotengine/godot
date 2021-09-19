@@ -39,8 +39,11 @@
 
 #define HB_NULL_POOL_SIZE 384
 
-/* Use SFINAE to sniff whether T has min_size; in which case return T::null_size,
- * otherwise return sizeof(T). */
+/* Use SFINAE to sniff whether T has min_size; in which case return the larger
+ * of sizeof(T) and T::null_size, otherwise return sizeof(T).
+ *
+ * The main purpose of this is to let structs communicate that they are not nullable,
+ * by defining min_size but *not* null_size. */
 
 /* The hard way...
  * https://stackoverflow.com/questions/7776448/sfinae-tried-with-bool-gives-compiler-error-template-argument-tvalue-invol
@@ -49,8 +52,9 @@
 template <typename T, typename>
 struct _hb_null_size : hb_integral_constant<unsigned, sizeof (T)> {};
 template <typename T>
-struct _hb_null_size<T, hb_void_t<decltype (T::min_size)>> : hb_integral_constant<unsigned, T::null_size> {};
-
+struct _hb_null_size<T, hb_void_t<decltype (T::min_size)>>
+	: hb_integral_constant<unsigned,
+			       (sizeof (T) > T::null_size ? sizeof (T) : T::null_size)> {};
 template <typename T>
 using hb_null_size = _hb_null_size<T, void>;
 #define hb_null_size(T) hb_null_size<T>::value
@@ -67,6 +71,14 @@ struct _hb_static_size<T, hb_void_t<decltype (T::min_size)>> : hb_integral_const
 template <typename T>
 using hb_static_size = _hb_static_size<T, void>;
 #define hb_static_size(T) hb_static_size<T>::value
+
+template <typename T, typename>
+struct _hb_min_size : hb_integral_constant<unsigned, sizeof (T)> {};
+template <typename T>
+struct _hb_min_size<T, hb_void_t<decltype (T::min_size)>> : hb_integral_constant<unsigned, T::min_size> {};
+template <typename T>
+using hb_min_size = _hb_min_size<T, void>;
+#define hb_min_size(T) hb_min_size<T>::value
 
 
 /*

@@ -6,10 +6,10 @@
  *
  * on files with these headers:
  *
- * # ArabicShaping-13.0.0.txt
- * # Date: 2020-01-31, 23:55:00 GMT [KW, RP]
- * # Scripts-13.0.0.txt
- * # Date: 2020-01-22, 00:07:43 GMT
+ * # ArabicShaping-14.0.0.txt
+ * # Date: 2021-05-21, 01:54:00 GMT [KW, RP]
+ * # Scripts-14.0.0.txt
+ * # Date: 2021-07-10, 00:35:31 GMT
  */
 
 #ifndef HB_OT_SHAPE_COMPLEX_ARABIC_JOINING_LIST_HH
@@ -29,6 +29,7 @@ has_arabic_joining (hb_script_t script)
     case HB_SCRIPT_MANICHAEAN:
     case HB_SCRIPT_MONGOLIAN:
     case HB_SCRIPT_NKO:
+    case HB_SCRIPT_OLD_UYGHUR:
     case HB_SCRIPT_PHAGS_PA:
     case HB_SCRIPT_PSALTER_PAHLAVI:
     case HB_SCRIPT_SOGDIAN:

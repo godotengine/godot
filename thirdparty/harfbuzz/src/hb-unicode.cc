@@ -268,7 +268,7 @@ hb_unicode_funcs_destroy (hb_unicode_funcs_t *ufuncs)
 
   hb_unicode_funcs_destroy (ufuncs->parent);
 
-  free (ufuncs);
+  hb_free (ufuncs);
 }
 
 /**

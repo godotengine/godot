@@ -259,7 +259,10 @@ struct subr_flattener_t
 	return false;
       cs_interpreter_t<ENV, OPSET, flatten_param_t> interp;
       interp.env.init (str, acc, fd);
-      flatten_param_t  param = { flat_charstrings[i], plan->drop_hints };
+      flatten_param_t  param = {
+        flat_charstrings[i],
+        (bool) (plan->flags & HB_SUBSET_FLAGS_NO_HINTING)
+      };
       if (unlikely (!interp.interpret (param)))
 	return false;
     }
@@ -636,7 +639,7 @@ struct subr_subsetter_t
       param.init (&parsed_charstrings[i],
 		  &parsed_global_subrs,  &parsed_local_subrs[fd],
 		  closures.global_closure, closures.local_closures[fd],
-		  plan->drop_hints);
+		  plan->flags & HB_SUBSET_FLAGS_NO_HINTING);
 
       if (unlikely (!interp.interpret (param)))
 	return false;
@@ -645,7 +648,7 @@ struct subr_subsetter_t
       SUBSETTER::complete_parsed_str (interp.env, param, parsed_charstrings[i]);
     }
 
-    if (plan->drop_hints)
+    if (plan->flags & HB_SUBSET_FLAGS_NO_HINTING)
     {
       /* mark hint ops and arguments for drop */
       for (unsigned int i = 0; i < plan->num_output_glyphs (); i++)
@@ -660,7 +663,7 @@ struct subr_subsetter_t
 	param.init (&parsed_charstrings[i],
 		    &parsed_global_subrs,  &parsed_local_subrs[fd],
 		    closures.global_closure, closures.local_closures[fd],
-		    plan->drop_hints);
+                    plan->flags & HB_SUBSET_FLAGS_NO_HINTING);
 
 	drop_hints_param_t  drop;
 	if (drop_hints_in_str (parsed_charstrings[i], param, drop))
@@ -685,7 +688,7 @@ struct subr_subsetter_t
 	param.init (&parsed_charstrings[i],
 		    &parsed_global_subrs,  &parsed_local_subrs[fd],
 		    closures.global_closure, closures.local_closures[fd],
-		    plan->drop_hints);
+                    plan->flags & HB_SUBSET_FLAGS_NO_HINTING);
 	collect_subr_refs_in_str (parsed_charstrings[i], param);
       }
     }

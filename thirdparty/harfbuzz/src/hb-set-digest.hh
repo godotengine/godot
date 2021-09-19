@@ -87,6 +87,8 @@ struct hb_set_digest_lowest_bits_t
     }
   }
   template <typename T>
+  void add_array (const hb_array_t<const T>& arr) { add_array (&arr, arr.len ()); }
+  template <typename T>
   bool add_sorted_array (const T *array, unsigned int count, unsigned int stride=sizeof(T))
   {
     for (unsigned int i = 0; i < count; i++)
@@ -96,6 +98,8 @@ struct hb_set_digest_lowest_bits_t
     }
     return true;
   }
+  template <typename T>
+  bool add_sorted_array (const hb_sorted_array_t<const T>& arr) { return add_sorted_array (&arr, arr.len ()); }
 
   bool may_have (hb_codepoint_t g) const
   { return !!(mask & mask_for (g)); }
@@ -135,12 +139,16 @@ struct hb_set_digest_combiner_t
     tail.add_array (array, count, stride);
   }
   template <typename T>
+  void add_array (const hb_array_t<const T>& arr) { add_array (&arr, arr.len ()); }
+  template <typename T>
   bool add_sorted_array (const T *array, unsigned int count, unsigned int stride=sizeof(T))
   {
     head.add_sorted_array (array, count, stride);
     tail.add_sorted_array (array, count, stride);
     return true;
   }
+  template <typename T>
+  bool add_sorted_array (const hb_sorted_array_t<const T>& arr) { return add_sorted_array (&arr, arr.len ()); }
 
   bool may_have (hb_codepoint_t g) const
   {

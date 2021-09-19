@@ -103,7 +103,7 @@ struct BaseCoordFormat3
   protected:
   HBUINT16	format;		/* Format identifier--format = 3 */
   FWORD		coordinate;	/* X or Y value, in design units */
-  OffsetTo<Device>
+  Offset16To<Device>
 		deviceTable;	/* Offset to Device table for X or
 				 * Y value, from beginning of
 				 * BaseCoord table (may be NULL). */
@@ -173,11 +173,11 @@ struct FeatMinMaxRecord
   protected:
   Tag		tag;		/* 4-byte feature identification tag--must
 				 * match feature tag in FeatureList */
-  OffsetTo<BaseCoord>
+  Offset16To<BaseCoord>
 		minCoord;	/* Offset to BaseCoord table that defines
 				 * the minimum extent value, from beginning
 				 * of MinMax table (may be NULL) */
-  OffsetTo<BaseCoord>
+  Offset16To<BaseCoord>
 		maxCoord;	/* Offset to BaseCoord table that defines
 				 * the maximum extent value, from beginning
 				 * of MinMax table (may be NULL) */
@@ -212,15 +212,15 @@ struct MinMax
   }
 
   protected:
-  OffsetTo<BaseCoord>
+  Offset16To<BaseCoord>
 		minCoord;	/* Offset to BaseCoord table that defines
 				 * minimum extent value, from the beginning
 				 * of MinMax table (may be NULL) */
-  OffsetTo<BaseCoord>
+  Offset16To<BaseCoord>
 		maxCoord;	/* Offset to BaseCoord table that defines
 				 * maximum extent value, from the beginning
 				 * of MinMax table (may be NULL) */
-  SortedArrayOf<FeatMinMaxRecord>
+  SortedArray16Of<FeatMinMaxRecord>
 		featMinMaxRecords;
 				/* Array of FeatMinMaxRecords, in alphabetical
 				 * order by featureTableTag */
@@ -247,7 +247,7 @@ struct BaseValues
   Index		defaultIndex;	/* Index number of default baseline for this
 				 * script — equals index position of baseline tag
 				 * in baselineTags array of the BaseTagList */
-  OffsetArrayOf<BaseCoord>
+  Array16OfOffset16To<BaseCoord>
 		baseCoords;	/* Number of BaseCoord tables defined — should equal
 				 * baseTagCount in the BaseTagList
 				 *
@@ -275,7 +275,7 @@ struct BaseLangSysRecord
 
   protected:
   Tag		baseLangSysTag;	/* 4-byte language system identification tag */
-  OffsetTo<MinMax>
+  Offset16To<MinMax>
 		minMax;		/* Offset to MinMax table, from beginning
 				 * of BaseScript table */
   public:
@@ -305,13 +305,13 @@ struct BaseScript
   }
 
   protected:
-  OffsetTo<BaseValues>
+  Offset16To<BaseValues>
 		baseValues;	/* Offset to BaseValues table, from beginning
 				 * of BaseScript table (may be NULL) */
-  OffsetTo<MinMax>
+  Offset16To<MinMax>
 		defaultMinMax;	/* Offset to MinMax table, from beginning of
 				 * BaseScript table (may be NULL) */
-  SortedArrayOf<BaseLangSysRecord>
+  SortedArray16Of<BaseLangSysRecord>
 		baseLangSysRecords;
 				/* Number of BaseLangSysRecords
 				 * defined — may be zero (0) */
@@ -339,7 +339,7 @@ struct BaseScriptRecord
 
   protected:
   Tag		baseScriptTag;	/* 4-byte script identification tag */
-  OffsetTo<BaseScript>
+  Offset16To<BaseScript>
 		baseScript;	/* Offset to BaseScript table, from beginning
 				 * of BaseScriptList */
 
@@ -364,7 +364,7 @@ struct BaseScriptList
   }
 
   protected:
-  SortedArrayOf<BaseScriptRecord>
+  SortedArray16Of<BaseScriptRecord>
 			baseScriptRecords;
 
   public:
@@ -426,12 +426,12 @@ struct Axis
   }
 
   protected:
-  OffsetTo<SortedArrayOf<Tag>>
+  Offset16To<SortedArray16Of<Tag>>
 		baseTagList;	/* Offset to BaseTagList table, from beginning
 				 * of Axis table (may be NULL)
 				 * Array of 4-byte baseline identification tags — must
 				 * be in alphabetical order */
-  OffsetTo<BaseScriptList>
+  Offset16To<BaseScriptList>
 		baseScriptList;	/* Offset to BaseScriptList table, from beginning
 				 * of Axis table
 				 * Array of BaseScriptRecords, in alphabetical order
@@ -501,11 +501,11 @@ struct BASE
 
   protected:
   FixedVersion<>version;	/* Version of the BASE table */
-  OffsetTo<Axis>hAxis;		/* Offset to horizontal Axis table, from beginning
+  Offset16To<Axis>hAxis;		/* Offset to horizontal Axis table, from beginning
 				 * of BASE table (may be NULL) */
-  OffsetTo<Axis>vAxis;		/* Offset to vertical Axis table, from beginning
+  Offset16To<Axis>vAxis;		/* Offset to vertical Axis table, from beginning
 				 * of BASE table (may be NULL) */
-  LOffsetTo<VariationStore>
+  Offset32To<VariationStore>
 		varStore;	/* Offset to the table of Item Variation
 				 * Store--from beginning of BASE
 				 * header (may be NULL).  Introduced
