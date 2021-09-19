@@ -393,6 +393,8 @@ void CodeEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 		return;
 	}
 
+	bool control_symbol_pressed = false;
+
 	if (code_completion_active) {
 		if (k->is_action("ui_up", true)) {
 			if (code_completion_current_selected > 0) {
@@ -464,6 +466,20 @@ void CodeEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 		if (!update_code_completion) {
 			cancel_code_completion();
 		}
+	} else {
+		if (k->is_action("ui_up", true) ||
+				k->is_action("ui_down", true) ||
+				k->is_action("ui_left", true) ||
+				k->is_action("ui_right", true) ||
+				k->is_action("ui_page_up", true) ||
+				k->is_action("ui_page_down", true) ||
+				k->is_action("ui_home", true) ||
+				k->is_action("ui_end", true) ||
+				k->is_action("ui_text_backspace", true) ||
+				k->is_action("ui_text_completion_replace", true) ||
+				k->is_action("ui_text_completion_accept", true)) {
+			control_symbol_pressed = true;
+		}
 	}
 
 	/* MISC */
@@ -520,6 +536,10 @@ void CodeEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 	}
 
 	TextEdit::gui_input(p_gui_input);
+
+	if (!control_symbol_pressed) {
+		request_code_completion(true);
+	}
 
 	if (update_code_completion) {
 		_filter_code_completion_candidates_impl();
