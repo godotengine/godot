@@ -455,10 +455,10 @@ void Main::test_cleanup() {
 	ResourceLoader::remove_custom_loaders();
 	ResourceSaver::remove_custom_savers();
 
+	unregister_driver_types();
 #ifdef TOOLS_ENABLED
 	EditorNode::unregister_editor_types();
 #endif
-	unregister_driver_types();
 	unregister_module_types();
 	unregister_platform_apis();
 	unregister_scene_types();
