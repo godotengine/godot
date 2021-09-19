@@ -2517,6 +2517,7 @@ Variant::Variant(const Object *p_object) {
 		if (p_object->is_ref_counted()) {
 			RefCounted *ref_counted = const_cast<RefCounted *>(static_cast<const RefCounted *>(p_object));
 			if (!ref_counted->init_ref()) {
+				ref_counted->reference();
 				_get_obj().obj = nullptr;
 				_get_obj().id = ObjectID();
 				return;
