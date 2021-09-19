@@ -781,6 +781,9 @@ static void _find_identifiers_in_class(const GDScriptParser::ClassNode *p_class,
 						if (p_only_functions) {
 							continue;
 						}
+						if (r_result.has(member.constant->identifier->name)) {
+							continue;
+						}
 						option = ScriptCodeCompletionOption(member.constant->identifier->name, ScriptCodeCompletionOption::KIND_CONSTANT);
 						if (member.constant->initializer) {
 							option.default_value = member.constant->initializer->reduced_value;
