@@ -120,8 +120,8 @@ void InputEventConfigurationDialog::_set_event(const Ref<InputEvent> &p_event) {
 		physical_key_checkbox->set_visible(show_phys_key);
 		additional_options_container->show();
 
-		// Update selected item in input list for keys, joybuttons and joyaxis only (since the mouse cannot be "listened" for).
-		if (k.is_valid() || joyb.is_valid() || joym.is_valid()) {
+		// Update selected item in input list.
+		if (k.is_valid() || joyb.is_valid() || joym.is_valid() || mb.is_valid()) {
 			TreeItem *category = input_list_tree->get_root()->get_first_child();
 			while (category) {
 				TreeItem *input_item = category->get_first_child();
@@ -134,13 +134,14 @@ void InputEventConfigurationDialog::_set_event(const Ref<InputEvent> &p_event) {
 				}
 
 				// If event type matches input types of this category.
-				if ((k.is_valid() && input_type == INPUT_KEY) || (joyb.is_valid() && input_type == INPUT_JOY_BUTTON) || (joym.is_valid() && input_type == INPUT_JOY_MOTION)) {
+				if ((k.is_valid() && input_type == INPUT_KEY) || (joyb.is_valid() && input_type == INPUT_JOY_BUTTON) || (joym.is_valid() && input_type == INPUT_JOY_MOTION) || (mb.is_valid() && input_type == INPUT_MOUSE_BUTTON)) {
 					// Loop through all items of this category until one matches.
 					while (input_item) {
 						bool key_match = k.is_valid() && (Variant(k->get_keycode()) == input_item->get_meta("__keycode") || Variant(k->get_physical_keycode()) == input_item->get_meta("__keycode"));
 						bool joyb_match = joyb.is_valid() && Variant(joyb->get_button_index()) == input_item->get_meta("__index");
 						bool joym_match = joym.is_valid() && Variant(joym->get_axis()) == input_item->get_meta("__axis") && joym->get_axis_value() == (float)input_item->get_meta("__value");
-						if (key_match || joyb_match || joym_match) {
+						bool mb_match = mb.is_valid() && Variant(mb->get_button_index()) == input_item->get_meta("__index");
+						if (key_match || joyb_match || joym_match || mb_match) {
 							category->set_collapsed(false);
 							input_item->select(0);
 							input_list_tree->ensure_cursor_is_visible();
@@ -165,7 +166,6 @@ void InputEventConfigurationDialog::_set_event(const Ref<InputEvent> &p_event) {
 		if (allowed_input_types & INPUT_KEY) {
 			strings.append(TTR("Key"));
 		}
-		// We don't check for INPUT_MOUSE_BUTTON since it is ignored in the "Listen Window Input" method.
 
 		if (allowed_input_types & INPUT_JOY_BUTTON) {
 			strings.append(TTR("Joypad Button"));
@@ -173,7 +173,9 @@ void InputEventConfigurationDialog::_set_event(const Ref<InputEvent> &p_event) {
 		if (allowed_input_types & INPUT_JOY_MOTION) {
 			strings.append(TTR("Joypad Axis"));
 		}
-
+		if (allowed_input_types & INPUT_MOUSE_BUTTON) {
+			strings.append(TTR("Mouse Button in area below"));
+		}
 		if (strings.size() == 0) {
 			text = TTR("Input Event dialog has been misconfigured: No input types are allowed.");
 			event_as_text->set_text(text);
@@ -214,10 +216,19 @@ void InputEventConfigurationDialog::_listen_window_input(const Ref<InputEvent> &
 		return;
 	}
 
-	// Ignore mouse
-	Ref<InputEventMouse> m = p_event;
-	if (m.is_valid()) {
+	// Ignore mouse motion
+	Ref<InputEventMouseMotion> mm = p_event;
+	if (mm.is_valid()) {
 		return;
+	}
+
+	// Ignore mouse button if not in the detection rect
+	Ref<InputEventMouseButton> mb = p_event;
+	if (mb.is_valid()) {
+		Rect2 r = mouse_detection_rect->get_rect();
+		if (!r.has_point(mouse_detection_rect->get_local_mouse_position() + r.get_position())) {
+			return;
+		}
 	}
 
 	// Check what the type is and if it is allowed.
@@ -227,6 +238,7 @@ void InputEventConfigurationDialog::_listen_window_input(const Ref<InputEvent> &
 
 	int type = k.is_valid() ? INPUT_KEY : joyb.is_valid() ? INPUT_JOY_BUTTON :
 								  joym.is_valid()		  ? INPUT_JOY_MOTION :
+								  mb.is_valid()			  ? INPUT_MOUSE_BUTTON :
 															  0;
 
 	if (!(allowed_input_types & type)) {
@@ -537,6 +549,8 @@ void InputEventConfigurationDialog::_notification(int p_what) {
 			icon_cache.joypad_button = get_theme_icon(SNAME("JoyButton"), SNAME("EditorIcons"));
 			icon_cache.joypad_axis = get_theme_icon(SNAME("JoyAxis"), SNAME("EditorIcons"));
 
+			mouse_detection_rect->set_color(get_theme_color(SNAME("dark_color_2"), SNAME("Editor")));
+
 			_update_input_list();
 		} break;
 		default:
@@ -575,7 +589,7 @@ void InputEventConfigurationDialog::set_allowed_input_types(int p_type_masks) {
 }
 
 InputEventConfigurationDialog::InputEventConfigurationDialog() {
-	allowed_input_types = INPUT_KEY | INPUT_MOUSE_BUTTON | INPUT_JOY_BUTTON | INPUT_JOY_MOTION;
+	allowed_input_types = INPUT_KEY | INPUT_MOUSE_BUTTON | INPUT_JOY_BUTTON | INPUT_JOY_MOTION | INPUT_MOUSE_BUTTON;
 
 	set_title(TTR("Event Configuration"));
 	set_min_size(Size2i(550 * EDSCALE, 0)); // Min width
@@ -590,12 +604,17 @@ InputEventConfigurationDialog::InputEventConfigurationDialog() {
 	tab_container->connect("tab_selected", callable_mp(this, &InputEventConfigurationDialog::_tab_selected));
 	main_vbox->add_child(tab_container);
 
-	CenterContainer *cc = memnew(CenterContainer);
-	cc->set_name(TTR("Listen for Input"));
+	// Listen to input tab
+	VBoxContainer *vb = memnew(VBoxContainer);
+	vb->set_name(TTR("Listen for Input"));
 	event_as_text = memnew(Label);
 	event_as_text->set_align(Label::ALIGN_CENTER);
-	cc->add_child(event_as_text);
-	tab_container->add_child(cc);
+	vb->add_child(event_as_text);
+	// Mouse button detection rect (Mouse button event outside this ColorRect will be ignored)
+	mouse_detection_rect = memnew(ColorRect);
+	mouse_detection_rect->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	vb->add_child(mouse_detection_rect);
+	tab_container->add_child(vb);
 
 	// List of all input options to manually select from.
 
