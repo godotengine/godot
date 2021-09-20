@@ -131,8 +131,12 @@ int register_test_command(String p_command, TestFunc p_function);
 			register_test_command(m_command, m_function);               \
 	DOCTEST_GLOBAL_NO_WARNINGS_END()
 
-// Utility macro to send an action event to a given object
+// Utility macros to send an event actions to a given object
 // Requires Message Queue and InputMap to be setup.
+// SEND_GUI_ACTION    - takes an object and a input map key. e.g SEND_GUI_ACTION(code_edit, "ui_text_newline").
+// SEND_GUI_KEY_EVENT - takes an object and a keycode set.   e.g SEND_GUI_KEY_EVENT(code_edit, KEY_A | KEY_MASK_CMD).
+// SEND_GUI_MOUSE_EVENT - takes an object, position, mouse button and mouse mask e.g SEND_GUI_MOUSE_EVENT(code_edit, Vector2(50, 50), MOUSE_BUTTON_NONE, MOUSE_BUTTON_NONE);
+// SEND_GUI_DOUBLE_CLICK - takes an object and a postion. e.g SEND_GUI_DOUBLE_CLICK(code_edit, Vector2(50, 50));
 
 #define SEND_GUI_ACTION(m_object, m_action)                                                           \
 	{                                                                                                 \
@@ -142,6 +146,37 @@ int register_test_command(String p_command, TestFunc p_function);
 		event->set_pressed(true);                                                                     \
 		m_object->gui_input(event);                                                                   \
 		MessageQueue::get_singleton()->flush();                                                       \
+	}
+
+#define SEND_GUI_KEY_EVENT(m_object, m_input)                                \
+	{                                                                        \
+		Ref<InputEventKey> event = InputEventKey::create_reference(m_input); \
+		event->set_pressed(true);                                            \
+		m_object->gui_input(event);                                          \
+		MessageQueue::get_singleton()->flush();                              \
+	}
+
+#define _CREATE_GUI_MOUSE_EVENT(m_object, m_local_pos, m_input, m_mask) \
+	Ref<InputEventMouseButton> event;                                   \
+	event.instantiate();                                                \
+	event->set_position(m_local_pos);                                   \
+	event->set_button_index(m_input);                                   \
+	event->set_button_mask(m_mask);                                     \
+	event->set_pressed(true);
+
+#define SEND_GUI_MOUSE_EVENT(m_object, m_local_pos, m_input, m_mask)     \
+	{                                                                    \
+		_CREATE_GUI_MOUSE_EVENT(m_object, m_local_pos, m_input, m_mask); \
+		m_object->get_viewport()->push_input(event);                     \
+		MessageQueue::get_singleton()->flush();                          \
+	}
+
+#define SEND_GUI_DOUBLE_CLICK(m_object, m_local_pos)                                          \
+	{                                                                                         \
+		_CREATE_GUI_MOUSE_EVENT(m_object, m_local_pos, MOUSE_BUTTON_LEFT, MOUSE_BUTTON_LEFT); \
+		event->set_double_click(true);                                                        \
+		m_object->get_viewport()->push_input(event);                                          \
+		MessageQueue::get_singleton()->flush();                                               \
 	}
 
 // Utility class / macros for testing signals

@@ -214,7 +214,7 @@ private:
 	int code_completion_longest_line = 0;
 	Rect2i code_completion_rect;
 
-	Set<String> code_completion_prefixes;
+	Set<char32_t> code_completion_prefixes;
 	List<ScriptCodeCompletionOption> code_completion_option_submitted;
 	List<ScriptCodeCompletionOption> code_completion_option_sources;
 	String code_completion_base;
