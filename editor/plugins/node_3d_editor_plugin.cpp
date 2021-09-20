@@ -4820,7 +4820,7 @@ void _update_all_gizmos(Node *p_node) {
 }
 
 void Node3DEditor::update_all_gizmos(Node *p_node) {
-	if (!p_node && get_tree()) {
+	if (!p_node && is_inside_tree()) {
 		p_node = get_tree()->get_edited_scene_root();
 	}
 
