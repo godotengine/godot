@@ -4,9 +4,8 @@ ext.versions = [
     minSdk             : 19,
     targetSdk          : 30,
     buildTools         : '30.0.3',
-    supportCoreUtils   : '1.0.0',
     kotlinVersion      : '1.5.10',
-    v4Support          : '1.0.0',
+    fragmentVersion    : '1.3.6',
     javaVersion        : 1.8,
     ndkVersion         : '21.4.7075529' // Also update 'platform/android/detect.py#get_project_ndk_version()' when this is updated.
 
@@ -14,10 +13,9 @@ ext.versions = [
 
 ext.libraries = [
     androidGradlePlugin: "com.android.tools.build:gradle:$versions.androidGradlePlugin",
-    supportCoreUtils   : "androidx.legacy:legacy-support-core-utils:$versions.supportCoreUtils",
     kotlinGradlePlugin : "org.jetbrains.kotlin:kotlin-gradle-plugin:$versions.kotlinVersion",
     kotlinStdLib       : "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$versions.kotlinVersion",
-    v4Support          : "androidx.legacy:legacy-support-v4:$versions.v4Support"
+    androidxFragment   : "androidx.fragment:fragment:$versions.fragmentVersion",
 ]
 
 ext.getExportPackageName = { ->

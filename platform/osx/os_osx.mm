@@ -306,6 +306,8 @@ static NSCursor *cursorFromSelector(SEL selector, SEL fallback = nil) {
 
 	[OS_OSX::singleton->window_object setContentMinSize:NSMakeSize(0, 0)];
 	[OS_OSX::singleton->window_object setContentMaxSize:NSMakeSize(FLT_MAX, FLT_MAX)];
+	// Force window resize event.
+	[self windowDidResize:notification];
 }
 
 - (void)windowDidExitFullScreen:(NSNotification *)notification {
@@ -325,6 +327,9 @@ static NSCursor *cursorFromSelector(SEL selector, SEL fallback = nil) {
 
 	if (OS_OSX::singleton->on_top)
 		[OS_OSX::singleton->window_object setLevel:NSFloatingWindowLevel];
+
+	// Force window resize event.
+	[self windowDidResize:notification];
 }
 
 - (void)windowDidChangeBackingProperties:(NSNotification *)notification {
