@@ -30,6 +30,7 @@
 #include "hb-open-type.hh"
 #include "hb-aat-layout-common.hh"
 #include "hb-ot-layout-common.hh"
+#include "hb-ot-layout-gdef-table.hh"
 #include "hb-aat-map.hh"
 
 /*
@@ -215,7 +216,9 @@ struct ContextualSubtable
 			     hb_aat_apply_context_t *c_) :
 	ret (false),
 	c (c_),
+	gdef (*c->gdef_table),
 	mark_set (false),
+	has_glyph_classes (gdef.has_glyph_classes ()),
 	mark (0),
 	table (table_),
 	subs (table+table->substitutionTables) {}
@@ -263,6 +266,9 @@ struct ContextualSubtable
       {
 	buffer->unsafe_to_break (mark, hb_min (buffer->idx + 1, buffer->len));
 	buffer->info[mark].codepoint = *replacement;
+	if (has_glyph_classes)
+	  _hb_glyph_info_set_glyph_props (&buffer->info[mark],
+					  gdef.get_glyph_props (*replacement));
 	ret = true;
       }
 
@@ -287,6 +293,9 @@ struct ContextualSubtable
       if (replacement)
       {
 	buffer->info[idx].codepoint = *replacement;
+	if (has_glyph_classes)
+	  _hb_glyph_info_set_glyph_props (&buffer->info[idx],
+					  gdef.get_glyph_props (*replacement));
 	ret = true;
       }
 
@@ -301,10 +310,12 @@ struct ContextualSubtable
     bool ret;
     private:
     hb_aat_apply_context_t *c;
+    const OT::GDEF &gdef;
     bool mark_set;
+    bool has_glyph_classes;
     unsigned int mark;
     const ContextualSubtable *table;
-    const UnsizedOffsetListOf<Lookup<HBGlyphID>, HBUINT, false> &subs;
+    const UnsizedListOfOffset16To<Lookup<HBGlyphID>, HBUINT, false> &subs;
   };
 
   bool apply (hb_aat_apply_context_t *c) const
@@ -348,7 +359,7 @@ struct ContextualSubtable
   protected:
   StateTable<Types, EntryData>
 		machine;
-  NNOffsetTo<UnsizedOffsetListOf<Lookup<HBGlyphID>, HBUINT, false>, HBUINT>
+  NNOffsetTo<UnsizedListOfOffset16To<Lookup<HBGlyphID>, HBUINT, false>, HBUINT>
 		substitutionTables;
   public:
   DEFINE_SIZE_STATIC (20);
@@ -599,6 +610,9 @@ struct NoncontextualSubtable
   {
     TRACE_APPLY (this);
 
+    const OT::GDEF &gdef (*c->gdef_table);
+    bool has_glyph_classes = gdef.has_glyph_classes ();
+
     bool ret = false;
     unsigned int num_glyphs = c->face->get_num_glyphs ();
 
@@ -610,6 +624,9 @@ struct NoncontextualSubtable
       if (replacement)
       {
 	info[i].codepoint = *replacement;
+	if (has_glyph_classes)
+	  _hb_glyph_info_set_glyph_props (&info[i],
+					  gdef.get_glyph_props (*replacement));
 	ret = true;
       }
     }

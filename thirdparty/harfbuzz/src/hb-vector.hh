@@ -69,7 +69,7 @@ struct hb_vector_t
 
   void fini ()
   {
-    free (arrayZ);
+    hb_free (arrayZ);
     init ();
   }
   void fini_deep ()
@@ -177,6 +177,11 @@ struct hb_vector_t
   Type *push (T&& v)
   {
     Type *p = push ();
+    if (p == &Crap (Type))
+      // If push failed to allocate then don't copy v, since this may cause
+      // the created copy to leak memory since we won't have stored a
+      // reference to it.
+      return p;
     *p = hb_forward<T> (v);
     return p;
   }
@@ -204,7 +209,7 @@ struct hb_vector_t
       (new_allocated < (unsigned) allocated) ||
       hb_unsigned_mul_overflows (new_allocated, sizeof (Type));
     if (likely (!overflows))
-      new_array = (Type *) realloc (arrayZ, new_allocated * sizeof (Type));
+      new_array = (Type *) hb_realloc (arrayZ, new_allocated * sizeof (Type));
 
     if (unlikely (!new_array))
     {
@@ -310,7 +315,7 @@ struct hb_sorted_vector_t : hb_vector_t<Type>
   { return as_array ().bsearch (x, not_found); }
   template <typename T>
   bool bfind (const T &x, unsigned int *i = nullptr,
-	      hb_bfind_not_found_t not_found = HB_BFIND_NOT_FOUND_DONT_STORE,
+	      hb_not_found_t not_found = HB_NOT_FOUND_DONT_STORE,
 	      unsigned int to_store = (unsigned int) -1) const
   { return as_array ().bfind (x, i, not_found, to_store); }
 };

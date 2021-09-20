@@ -208,11 +208,11 @@ struct ManifestLookup
 {
   public:
   OT::Tag tag;
-  OT::OffsetTo<OT::SubstLookup> lookupOffset;
+  OT::Offset16To<OT::SubstLookup> lookupOffset;
   public:
   DEFINE_SIZE_STATIC (6);
 };
-typedef OT::ArrayOf<ManifestLookup> Manifest;
+typedef OT::Array16Of<ManifestLookup> Manifest;
 
 static bool
 arabic_fallback_plan_init_win1256 (arabic_fallback_plan_t *fallback_plan HB_UNUSED,
@@ -290,7 +290,7 @@ static arabic_fallback_plan_t *
 arabic_fallback_plan_create (const hb_ot_shape_plan_t *plan,
 			     hb_font_t *font)
 {
-  arabic_fallback_plan_t *fallback_plan = (arabic_fallback_plan_t *) calloc (1, sizeof (arabic_fallback_plan_t));
+  arabic_fallback_plan_t *fallback_plan = (arabic_fallback_plan_t *) hb_calloc (1, sizeof (arabic_fallback_plan_t));
   if (unlikely (!fallback_plan))
     return const_cast<arabic_fallback_plan_t *> (&Null (arabic_fallback_plan_t));
 
@@ -308,7 +308,7 @@ arabic_fallback_plan_create (const hb_ot_shape_plan_t *plan,
     return fallback_plan;
 
   assert (fallback_plan->num_lookups == 0);
-  free (fallback_plan);
+  hb_free (fallback_plan);
   return const_cast<arabic_fallback_plan_t *> (&Null (arabic_fallback_plan_t));
 }
 
@@ -323,10 +323,10 @@ arabic_fallback_plan_destroy (arabic_fallback_plan_t *fallback_plan)
     {
       fallback_plan->accel_array[i].fini ();
       if (fallback_plan->free_lookups)
-	free (fallback_plan->lookup_array[i]);
+	hb_free (fallback_plan->lookup_array[i]);
     }
 
-  free (fallback_plan);
+  hb_free (fallback_plan);
 }
 
 static void

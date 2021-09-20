@@ -1379,7 +1379,7 @@ License: HarfBuzz
  Copyright (C) 2009  Keith Stribley
  Copyright (C) 2009  Martin Hosken and SIL International
  Copyright (C) 2007  Chris Wilson
- Copyright (C) 2006  Behdad Esfahbod
+ Copyright (C) 2005,2006,2020,2021  Behdad Esfahbod
  Copyright (C) 2005  David Turner
  Copyright (C) 2004,2007,2008,2009,2010  Red Hat, Inc.
  Copyright (C) 1998-2004  David Turner and Werner Lemberg

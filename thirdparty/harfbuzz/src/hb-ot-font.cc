@@ -253,9 +253,7 @@ hb_ot_get_font_v_extents (hb_font_t *font,
 	 _hb_ot_metrics_get_position_common (font, HB_OT_METRICS_TAG_VERTICAL_LINE_GAP, &metrics->line_gap);
 }
 
-#if HB_USE_ATEXIT
-static void free_static_ot_funcs ();
-#endif
+static inline void free_static_ot_funcs ();
 
 static struct hb_ot_font_funcs_lazy_loader_t : hb_font_funcs_lazy_loader_t<hb_ot_font_funcs_lazy_loader_t>
 {
@@ -281,21 +279,17 @@ static struct hb_ot_font_funcs_lazy_loader_t : hb_font_funcs_lazy_loader_t<hb_ot
 
     hb_font_funcs_make_immutable (funcs);
 
-#if HB_USE_ATEXIT
-    atexit (free_static_ot_funcs);
-#endif
+    hb_atexit (free_static_ot_funcs);
 
     return funcs;
   }
 } static_ot_funcs;
 
-#if HB_USE_ATEXIT
-static
+static inline
 void free_static_ot_funcs ()
 {
   static_ot_funcs.free_instance ();
 }
-#endif
 
 static hb_font_funcs_t *
 _hb_ot_get_font_funcs ()

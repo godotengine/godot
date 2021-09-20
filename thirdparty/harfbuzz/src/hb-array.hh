@@ -36,6 +36,14 @@
 template <typename Type>
 struct hb_sorted_array_t;
 
+enum hb_not_found_t
+{
+  HB_NOT_FOUND_DONT_STORE,
+  HB_NOT_FOUND_STORE,
+  HB_NOT_FOUND_STORE_CLOSEST,
+};
+
+
 template <typename Type>
 struct hb_array_t : hb_iter_with_fallback_t<hb_array_t<Type>, Type&>
 {
@@ -139,7 +147,9 @@ struct hb_array_t : hb_iter_with_fallback_t<hb_array_t<Type>, Type&>
     return lfind (x, &i) ? &this->arrayZ[i] : not_found;
   }
   template <typename T>
-  bool lfind (const T &x, unsigned *pos = nullptr) const
+  bool lfind (const T &x, unsigned *pos = nullptr,
+	      hb_not_found_t not_found = HB_NOT_FOUND_DONT_STORE,
+	      unsigned int to_store = (unsigned int) -1) const
   {
     for (unsigned i = 0; i < length; ++i)
       if (hb_equal (x, this->arrayZ[i]))
@@ -149,6 +159,22 @@ struct hb_array_t : hb_iter_with_fallback_t<hb_array_t<Type>, Type&>
 	return true;
       }
 
+    if (pos)
+    {
+      switch (not_found)
+      {
+	case HB_NOT_FOUND_DONT_STORE:
+	  break;
+
+	case HB_NOT_FOUND_STORE:
+	  *pos = to_store;
+	  break;
+
+	case HB_NOT_FOUND_STORE_CLOSEST:
+	  *pos = length;
+	  break;
+      }
+    }
     return false;
   }
 
@@ -219,7 +245,7 @@ struct hb_array_t : hb_iter_with_fallback_t<hb_array_t<Type>, Type&>
 	    unsigned P = sizeof (Type),
 	    hb_enable_if (P == 1)>
   const T *as () const
-  { return length < hb_null_size (T) ? &Null (T) : reinterpret_cast<const T *> (arrayZ); }
+  { return length < hb_min_size (T) ? &Null (T) : reinterpret_cast<const T *> (arrayZ); }
 
   template <typename T,
 	    unsigned P = sizeof (Type),
@@ -231,9 +257,9 @@ struct hb_array_t : hb_iter_with_fallback_t<hb_array_t<Type>, Type&>
 	&& (unsigned int) (arrayZ + length - (const char *) p) >= size;
   }
 
-  /* Only call if you allocated the underlying array using malloc() or similar. */
-  void free ()
-  { ::free ((void *) arrayZ); arrayZ = nullptr; length = 0; }
+  /* Only call if you allocated the underlying array using hb_malloc() or similar. */
+  void fini ()
+  { hb_free ((void *) arrayZ); arrayZ = nullptr; length = 0; }
 
   template <typename hb_serialize_context_t>
   hb_array_t copy (hb_serialize_context_t *c) const
@@ -265,13 +291,6 @@ hb_array (T *array, unsigned int length)
 template <typename T, unsigned int length_> inline hb_array_t<T>
 hb_array (T (&array_)[length_])
 { return hb_array_t<T> (array_); }
-
-enum hb_bfind_not_found_t
-{
-  HB_BFIND_NOT_FOUND_DONT_STORE,
-  HB_BFIND_NOT_FOUND_STORE,
-  HB_BFIND_NOT_FOUND_STORE_CLOSEST,
-};
 
 template <typename Type>
 struct hb_sorted_array_t :
@@ -323,7 +342,7 @@ struct hb_sorted_array_t :
   }
   template <typename T>
   bool bfind (const T &x, unsigned int *i = nullptr,
-	      hb_bfind_not_found_t not_found = HB_BFIND_NOT_FOUND_DONT_STORE,
+	      hb_not_found_t not_found = HB_NOT_FOUND_DONT_STORE,
 	      unsigned int to_store = (unsigned int) -1) const
   {
     unsigned pos;
@@ -339,14 +358,14 @@ struct hb_sorted_array_t :
     {
       switch (not_found)
       {
-	case HB_BFIND_NOT_FOUND_DONT_STORE:
+	case HB_NOT_FOUND_DONT_STORE:
 	  break;
 
-	case HB_BFIND_NOT_FOUND_STORE:
+	case HB_NOT_FOUND_STORE:
 	  *i = to_store;
 	  break;
 
-	case HB_BFIND_NOT_FOUND_STORE_CLOSEST:
+	case HB_NOT_FOUND_STORE_CLOSEST:
 	  *i = pos;
 	  break;
       }

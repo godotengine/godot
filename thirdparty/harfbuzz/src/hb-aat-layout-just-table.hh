@@ -79,7 +79,7 @@ struct DecompositionAction
 				 * to decompose before more frequent ones. The ligatures
 				 * on the line of text will decompose in increasing
 				 * value of this field. */
-  ArrayOf<HBUINT16>
+  Array16Of<HBUINT16>
 		decomposedglyphs;
 				/* Number of 16-bit glyph indexes that follow;
 				 * the ligature will be decomposed into these glyphs.
@@ -310,7 +310,7 @@ struct WidthDeltaPair
   DEFINE_SIZE_STATIC (24);
 };
 
-typedef OT::LArrayOf<WidthDeltaPair> WidthDeltaCluster;
+typedef OT::Array32Of<WidthDeltaPair> WidthDeltaCluster;
 
 struct JustificationCategory
 {
@@ -358,20 +358,20 @@ struct JustificationHeader
   }
 
   protected:
-  OffsetTo<JustificationCategory>
+  Offset16To<JustificationCategory>
 		justClassTable;	/* Offset to the justification category state table. */
-  OffsetTo<WidthDeltaCluster>
+  Offset16To<WidthDeltaCluster>
 		wdcTable;	/* Offset from start of justification table to start
 				 * of the subtable containing the width delta factors
 				 * for the glyphs in your font.
 				 *
 				 * The width delta clusters table. */
-  OffsetTo<PostcompensationActionChain>
+  Offset16To<PostcompensationActionChain>
 		pcTable;	/* Offset from start of justification table to start
 				 * of postcompensation subtable (set to zero if none).
 				 *
 				 * The postcompensation subtable, if present in the font. */
-  Lookup<OffsetTo<WidthDeltaCluster>>
+  Lookup<Offset16To<WidthDeltaCluster>>
 		lookupTable;	/* Lookup table associating glyphs with width delta
 				 * clusters. See the description of Width Delta Clusters
 				 * table for details on how to interpret the lookup values. */
@@ -398,13 +398,13 @@ struct just
   FixedVersion<>version;	/* Version of the justification table
 				 * (0x00010000u for version 1.0). */
   HBUINT16	format;		/* Format of the justification table (set to 0). */
-  OffsetTo<JustificationHeader>
+  Offset16To<JustificationHeader>
 		horizData;	/* Byte offset from the start of the justification table
 				 * to the header for tables that contain justification
 				 * information for horizontal text.
 				 * If you are not including this information,
 				 * store 0. */
-  OffsetTo<JustificationHeader>
+  Offset16To<JustificationHeader>
 		vertData;	/* ditto, vertical */
 
   public:

@@ -46,7 +46,7 @@
  * TODO Document more.
  *
  * If iterator implementation implements operator!=, then can be
- * used in range-based for loop.  That comes free if the iterator
+ * used in range-based for loop.  That already happens if the iterator
  * is random-access.  Otherwise, the range-based for loop incurs
  * one traversal to find end(), which can be avoided if written
  * as a while-style for loop, or if iterator implements a faster

@@ -192,13 +192,13 @@ Files extracted from upstream source:
 ## harfbuzz
 
 - Upstream: https://github.com/harfbuzz/harfbuzz
-- Version: 2.8.0 (03538e872a0610a65fad692b33d3646f387cf578, 2021)
+- Version: 3.0.0 (9c387e20d65a7a366ac270d789f6ad266014c9e0, 2021)
 - License: MIT
 
 Files extracted from upstream source:
 
 - the `src` folder
-- `AUTHORS`, `COPYING`, `NEWS`, `THANKS`
+- `AUTHORS`, `COPYING`, `THANKS`
 
 
 ## icu4c

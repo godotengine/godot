@@ -49,12 +49,12 @@ struct DeltaSetIndexMap
   {
     unsigned int width = plan.get_width ();
     unsigned int inner_bit_count = plan.get_inner_bit_count ();
-    const hb_array_t<const unsigned int> output_map = plan.get_output_map ();
+    const hb_array_t<const uint32_t> output_map = plan.get_output_map ();
 
     TRACE_SERIALIZE (this);
     if (unlikely (output_map.length && ((((inner_bit_count-1)&~0xF)!=0) || (((width-1)&~0x3)!=0))))
       return_trace (false);
-    if (unlikely (!c->extend_min (*this))) return_trace (false);
+    if (unlikely (!c->extend_min (this))) return_trace (false);
 
     format = ((width-1)<<4)|(inner_bit_count-1);
     mapCount = output_map.length;
@@ -76,7 +76,7 @@ struct DeltaSetIndexMap
     return_trace (true);
   }
 
-  unsigned int map (unsigned int v) const /* Returns 16.16 outer.inner. */
+  uint32_t map (unsigned int v) const /* Returns 16.16 outer.inner. */
   {
     /* If count is zero, pass value unchanged.  This takes
      * care of direct mapping for advance map. */
@@ -217,7 +217,7 @@ struct index_map_subset_plan_t
       hb_codepoint_t	old_gid;
       if (plan->old_gid_for_new_gid (gid, &old_gid))
       {
-	unsigned int v = input_map->map (old_gid);
+	uint32_t v = input_map->map (old_gid);
 	unsigned int outer = v >> 16;
 	output_map[gid] = (outer_map[outer] << 16) | (inner_maps[outer][v & 0xFFFF]);
       }
@@ -234,14 +234,14 @@ struct index_map_subset_plan_t
   { return (map_count? (DeltaSetIndexMap::min_size + get_width () * map_count): 0); }
 
   bool is_identity () const { return get_output_map ().length == 0; }
-  hb_array_t<const unsigned int> get_output_map () const { return output_map.as_array (); }
+  hb_array_t<const uint32_t> get_output_map () const { return output_map.as_array (); }
 
   protected:
   unsigned int map_count;
   hb_vector_t<unsigned int> max_inners;
   unsigned int outer_bit_count;
   unsigned int inner_bit_count;
-  hb_vector_t<unsigned int> output_map;
+  hb_vector_t<uint32_t> output_map;
 };
 
 struct hvarvvar_subset_plan_t
@@ -272,7 +272,7 @@ struct hvarvvar_subset_plan_t
     index_map_plans[0].init (*index_maps[0], outer_map, inner_sets, plan);
     if (index_maps[0] == &Null (DeltaSetIndexMap))
     {
-      retain_adv_map = plan->retain_gids;
+      retain_adv_map = plan->flags & HB_SUBSET_FLAGS_RETAIN_GIDS;
       outer_map.add (0);
       for (hb_codepoint_t gid = 0; gid < plan->num_output_glyphs (); gid++)
       {
@@ -367,15 +367,15 @@ struct HVARVVAR
     TRACE_SERIALIZE (this);
     if (im_plans[index_map_subset_plan_t::ADV_INDEX].is_identity ())
       advMap = 0;
-    else if (unlikely (!advMap.serialize (c, this).serialize (c, im_plans[index_map_subset_plan_t::ADV_INDEX])))
+    else if (unlikely (!advMap.serialize_serialize (c, im_plans[index_map_subset_plan_t::ADV_INDEX])))
       return_trace (false);
     if (im_plans[index_map_subset_plan_t::LSB_INDEX].is_identity ())
       lsbMap = 0;
-    else if (unlikely (!lsbMap.serialize (c, this).serialize (c, im_plans[index_map_subset_plan_t::LSB_INDEX])))
+    else if (unlikely (!lsbMap.serialize_serialize (c, im_plans[index_map_subset_plan_t::LSB_INDEX])))
       return_trace (false);
     if (im_plans[index_map_subset_plan_t::RSB_INDEX].is_identity ())
       rsbMap = 0;
-    else if (unlikely (!rsbMap.serialize (c, this).serialize (c, im_plans[index_map_subset_plan_t::RSB_INDEX])))
+    else if (unlikely (!rsbMap.serialize_serialize (c, im_plans[index_map_subset_plan_t::RSB_INDEX])))
       return_trace (false);
 
     return_trace (true);
@@ -398,8 +398,10 @@ struct HVARVVAR
     out->version.major = 1;
     out->version.minor = 0;
 
-    if (unlikely (!out->varStore.serialize (c->serializer, out)
-		     .serialize (c->serializer, hvar_plan.var_store, hvar_plan.inner_maps.as_array ())))
+    if (unlikely (!out->varStore
+		      .serialize_serialize (c->serializer,
+					    hvar_plan.var_store,
+					    hvar_plan.inner_maps.as_array ())))
       return_trace (false);
 
     return_trace (out->T::serialize_index_maps (c->serializer,
@@ -408,7 +410,7 @@ struct HVARVVAR
 
   float get_advance_var (hb_codepoint_t glyph, hb_font_t *font) const
   {
-    unsigned int varidx = (this+advMap).map (glyph);
+    uint32_t varidx = (this+advMap).map (glyph);
     return (this+varStore).get_delta (varidx, font->coords, font->num_coords);
   }
 
@@ -416,7 +418,7 @@ struct HVARVVAR
 			      const int *coords, unsigned int coord_count) const
   {
     if (!has_side_bearing_deltas ()) return 0.f;
-    unsigned int varidx = (this+lsbMap).map (glyph);
+    uint32_t varidx = (this+lsbMap).map (glyph);
     return (this+varStore).get_delta (varidx, coords, coord_count);
   }
 
@@ -425,13 +427,13 @@ struct HVARVVAR
   protected:
   FixedVersion<>version;	/* Version of the metrics variation table
 				 * initially set to 0x00010000u */
-  LOffsetTo<VariationStore>
+  Offset32To<VariationStore>
 		varStore;	/* Offset to item variation store table. */
-  LOffsetTo<DeltaSetIndexMap>
+  Offset32To<DeltaSetIndexMap>
 		advMap;		/* Offset to advance var-idx mapping. */
-  LOffsetTo<DeltaSetIndexMap>
+  Offset32To<DeltaSetIndexMap>
 		lsbMap;		/* Offset to lsb/tsb var-idx mapping. */
-  LOffsetTo<DeltaSetIndexMap>
+  Offset32To<DeltaSetIndexMap>
 		rsbMap;		/* Offset to rsb/bsb var-idx mapping. */
 
   public:
@@ -466,7 +468,7 @@ struct VVAR : HVARVVAR {
       return_trace (false);
     if (!im_plans[index_map_subset_plan_t::VORG_INDEX].get_map_count ())
       vorgMap = 0;
-    else if (unlikely (!vorgMap.serialize (c, this).serialize (c, im_plans[index_map_subset_plan_t::VORG_INDEX])))
+    else if (unlikely (!vorgMap.serialize_serialize (c, im_plans[index_map_subset_plan_t::VORG_INDEX])))
       return_trace (false);
 
     return_trace (true);
@@ -475,7 +477,7 @@ struct VVAR : HVARVVAR {
   bool subset (hb_subset_context_t *c) const { return HVARVVAR::_subset<VVAR> (c); }
 
   protected:
-  LOffsetTo<DeltaSetIndexMap>
+  Offset32To<DeltaSetIndexMap>
 		vorgMap;	/* Offset to vertical-origin var-idx mapping. */
 
   public:
