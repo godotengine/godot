@@ -30,12 +30,38 @@
 				Returns a category associated with the class for use in documentation and the Asset Library. Debug mode required.
 			</description>
 		</method>
+		<method name="class_get_enum_constants" qualifiers="const">
+			<return type="PoolStringArray" />
+			<argument index="0" name="class" type="String" />
+			<argument index="1" name="enum" type="String" />
+			<argument index="2" name="no_inheritance" type="bool" default="false" />
+			<description>
+				Returns an array with all the keys in [code]enum[/code] of [code]class[/code] or its ancestry.
+			</description>
+		</method>
+		<method name="class_get_enum_list" qualifiers="const">
+			<return type="PoolStringArray" />
+			<argument index="0" name="class" type="String" />
+			<argument index="1" name="no_inheritance" type="bool" default="false" />
+			<description>
+				Returns an array with all the enums of [code]class[/code] or its ancestry.
+			</description>
+		</method>
 		<method name="class_get_integer_constant" qualifiers="const">
 			<return type="int" />
 			<argument index="0" name="class" type="String" />
 			<argument index="1" name="name" type="String" />
 			<description>
 				Returns the value of the integer constant [code]name[/code] of [code]class[/code] or its ancestry. Always returns 0 when the constant could not be found.
+			</description>
+		</method>
+		<method name="class_get_integer_constant_enum" qualifiers="const">
+			<return type="String" />
+			<argument index="0" name="class" type="String" />
+			<argument index="1" name="name" type="String" />
+			<argument index="2" name="no_inheritance" type="bool" default="false" />
+			<description>
+				Returns which enum the integer constant [code]name[/code] of [code]class[/code] or its ancestry belongs to.
 			</description>
 		</method>
 		<method name="class_get_integer_constant_list" qualifiers="const">
@@ -85,6 +111,15 @@
 			<argument index="1" name="no_inheritance" type="bool" default="false" />
 			<description>
 				Returns an array with all the signals of [code]class[/code] or its ancestry if [code]no_inheritance[/code] is [code]false[/code]. Every element of the array is a [Dictionary] as described in [method class_get_signal].
+			</description>
+		</method>
+		<method name="class_has_enum" qualifiers="const">
+			<return type="bool" />
+			<argument index="0" name="class" type="String" />
+			<argument index="1" name="name" type="String" />
+			<argument index="2" name="no_inheritance" type="bool" default="false" />
+			<description>
+				Returns whether [code]class[/code] or its ancestry has an enum called [code]name[/code] or not.
 			</description>
 		</method>
 		<method name="class_has_integer_constant" qualifiers="const">

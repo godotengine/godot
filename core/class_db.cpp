@@ -790,6 +790,24 @@ void ClassDB::get_enum_constants(const StringName &p_class, const StringName &p_
 	}
 }
 
+bool ClassDB::has_enum(const StringName &p_class, const StringName &p_name, bool p_no_inheritance) {
+	OBJTYPE_RLOCK;
+
+	ClassInfo *type = classes.getptr(p_class);
+
+	while (type) {
+		if (type->enum_map.has(p_name)) {
+			return true;
+		}
+		if (p_no_inheritance) {
+			return false;
+		}
+		type = type->inherits_ptr;
+	}
+
+	return false;
+}
+
 void ClassDB::add_signal(StringName p_class, const MethodInfo &p_signal) {
 	OBJTYPE_WLOCK;
 
