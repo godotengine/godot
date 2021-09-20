@@ -808,39 +808,35 @@ void ScriptEditor::_copy_script_path() {
 }
 
 void ScriptEditor::_close_other_tabs() {
-	int child_count = tab_container->get_child_count();
 	int current_idx = tab_container->get_current_tab();
-	for (int i = child_count - 1; i >= 0; i--) {
-		if (i == current_idx) {
-			continue;
+	for (int i = tab_container->get_child_count() - 1; i >= 0; i--) {
+		if (i != current_idx) {
+			script_close_queue.push_back(i);
 		}
-
-		tab_container->set_current_tab(i);
-		ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(tab_container->get_child(i));
-
-		if (se) {
-			// Maybe there are unsaved changes
-			if (se->is_unsaved()) {
-				_ask_close_current_unsaved_tab(se);
-				continue;
-			}
-		}
-
-		_close_current_tab(false);
 	}
+	_queue_close_tabs();
 }
 
 void ScriptEditor::_close_all_tabs() {
-	int child_count = tab_container->get_child_count();
-	for (int i = child_count - 1; i >= 0; i--) {
-		tab_container->set_current_tab(i);
-		ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(tab_container->get_child(i));
+	for (int i = tab_container->get_child_count() - 1; i >= 0; i--) {
+		script_close_queue.push_back(i);
+	}
+	_queue_close_tabs();
+}
 
+void ScriptEditor::_queue_close_tabs() {
+	while (!script_close_queue.is_empty()) {
+		int idx = script_close_queue.front()->get();
+		script_close_queue.pop_front();
+
+		tab_container->set_current_tab(idx);
+		ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(tab_container->get_child(idx));
 		if (se) {
-			// Maybe there are unsaved changes
+			// Maybe there are unsaved changes.
 			if (se->is_unsaved()) {
 				_ask_close_current_unsaved_tab(se);
-				continue;
+				erase_tab_confirm->connect(SceneStringNames::get_singleton()->visibility_changed, callable_mp(this, &ScriptEditor::_queue_close_tabs), varray(), CONNECT_ONESHOT);
+				break;
 			}
 		}
 
