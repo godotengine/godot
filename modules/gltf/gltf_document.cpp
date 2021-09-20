@@ -6744,6 +6744,8 @@ Error GLTFDocument::_serialize_file(Ref<GLTFState> state, const String p_path) {
 Error GLTFDocument::save_scene(Node *p_node, const String &p_path,
 		const String &p_src_path, uint32_t p_flags,
 		float p_bake_fps, Ref<GLTFState> r_state) {
+	ERR_FAIL_NULL_V(p_node, ERR_INVALID_PARAMETER);
+
 	Ref<GLTFDocument> gltf_document;
 	gltf_document.instantiate();
 	if (r_state == Ref<GLTFState>()) {
