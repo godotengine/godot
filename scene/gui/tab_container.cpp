@@ -538,7 +538,6 @@ void TabContainer::_notification(int p_what) {
 void TabContainer::_draw_tab(Ref<StyleBox> &p_tab_style, Color &p_font_color, int p_index, float p_x) {
 	Control *control = get_tab_control(p_index);
 	RID canvas = get_canvas_item();
-	Ref<Font> font = get_theme_font(SNAME("font"));
 	Color font_outline_color = get_theme_color(SNAME("font_outline_color"));
 	int outline_size = get_theme_constant(SNAME("outline_size"));
 	int icon_text_distance = get_theme_constant(SNAME("icon_separation"));
@@ -1134,7 +1133,6 @@ Size2 TabContainer::get_minimum_size() const {
 	Ref<StyleBox> tab_unselected = get_theme_stylebox(SNAME("tab_unselected"));
 	Ref<StyleBox> tab_selected = get_theme_stylebox(SNAME("tab_selected"));
 	Ref<StyleBox> tab_disabled = get_theme_stylebox(SNAME("tab_disabled"));
-	Ref<Font> font = get_theme_font(SNAME("font"));
 
 	if (tabs_visible) {
 		ms.y += MAX(MAX(tab_unselected->get_minimum_size().y, tab_selected->get_minimum_size().y), tab_disabled->get_minimum_size().y);
