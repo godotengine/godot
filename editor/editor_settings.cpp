@@ -463,6 +463,9 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	// Property editor
 	_initial_set("docks/property_editor/auto_refresh_interval", 0.2); //update 5 times per second by default
 	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "docks/property_editor/subresource_hue_tint", 0.75, "0,1,0.01")
+	_initial_set("docks/property_editor/auto_pin_on_value_override", true);
+	_initial_set("docks/property_editor/auto_unpin_on_value_revert", true);
+	_initial_set("docks/property_editor/show_pin_ui_only_if_override_possible", true);
 
 	/* Text editor */
 

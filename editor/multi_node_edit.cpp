@@ -31,6 +31,7 @@
 #include "multi_node_edit.h"
 
 #include "core/math/math_fieldwise.h"
+#include "editor/editor_inspector.h"
 #include "editor_node.h"
 
 bool MultiNodeEdit::_set(const StringName &p_name, const Variant &p_value) {
@@ -86,6 +87,13 @@ bool MultiNodeEdit::_set_impl(const StringName &p_name, const Variant &p_value, 
 		}
 
 		ur->add_undo_property(n, name, n->get(name));
+
+		int new_pinned_state = EditorInspector::get_property_new_pinned_state(n, p_name, p_value);
+		if (new_pinned_state >= 0) {
+			bool new_pinned = new_pinned_state;
+			ur->add_do_method(n, "_set_property_pinned", name, new_pinned);
+			ur->add_undo_method(n, "_set_property_pinned", name, !new_pinned);
+		}
 	}
 	ur->add_do_method(EditorNode::get_singleton()->get_inspector(), "refresh");
 	ur->add_undo_method(EditorNode::get_singleton()->get_inspector(), "refresh");

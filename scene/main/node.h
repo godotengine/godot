@@ -150,6 +150,8 @@ private:
 		bool display_folded = false;
 		bool editable_instance = false;
 
+		Set<StringName> pinned_properties;
+
 		mutable NodePath *path_cache = nullptr;
 
 	} data;
@@ -362,6 +364,11 @@ public:
 	void set_editable_instance(Node *p_node, bool p_editable);
 	bool is_editable_instance(const Node *p_node) const;
 	Node *get_deepest_editable_node(Node *p_start_node) const;
+
+	void set_property_pinned(const StringName &p_property, bool p_pinned);
+	bool is_property_pinned(const StringName &p_property) const;
+	virtual StringName get_property_pin_proxy(const StringName &p_property) const;
+	void get_pinnable_properties(Set<StringName> &r_pinnable_properties) const;
 
 	virtual String to_string() override;
 

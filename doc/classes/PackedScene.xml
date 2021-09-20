@@ -104,7 +104,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="_bundled" type="Dictionary" setter="_set_bundled_scene" getter="_get_bundled_scene" default="{&quot;conn_count&quot;: 0,&quot;conns&quot;: PackedInt32Array(),&quot;editable_instances&quot;: [],&quot;names&quot;: PackedStringArray(),&quot;node_count&quot;: 0,&quot;node_paths&quot;: [],&quot;nodes&quot;: PackedInt32Array(),&quot;variants&quot;: [],&quot;version&quot;: 2}">
+		<member name="_bundled" type="Dictionary" setter="_set_bundled_scene" getter="_get_bundled_scene" default="{&quot;conn_count&quot;: 0,&quot;conns&quot;: PackedInt32Array(),&quot;editable_instances&quot;: [],&quot;names&quot;: PackedStringArray(),&quot;node_count&quot;: 0,&quot;node_paths&quot;: [],&quot;nodes&quot;: PackedInt32Array(),&quot;variants&quot;: [],&quot;version&quot;: 3}">
 			A dictionary representation of the scene contents.
 			Available keys include "rnames" and "variants" for resources, "node_count", "nodes", "node_paths" for nodes, "editable_instances" for base scene children overrides, "conn_count" and "conns" for signal connections, and "version" for the format style of the PackedScene.
 		</member>
@@ -119,6 +119,10 @@
 		</constant>
 		<constant name="GEN_EDIT_STATE_MAIN" value="2" enum="GenEditState">
 			If passed to [method instantiate], provides local scene resources to the local scene. Only the main scene should receive the main edit state.
+			[b]Note:[/b] Only available in editor builds.
+		</constant>
+		<constant name="GEN_EDIT_STATE_MAIN_INHERITED" value="3" enum="GenEditState">
+			It's similar to [code]GEN_EDIT_STATE_MAIN[/code], but for the case where the scene is being instantiated to be the base of another one.
 			[b]Note:[/b] Only available in editor builds.
 		</constant>
 	</constants>

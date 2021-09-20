@@ -41,7 +41,7 @@
 #include "scene/gui/control.h"
 #include "scene/main/instance_placeholder.h"
 
-#define PACKED_SCENE_VERSION 2
+#define PACKED_SCENE_VERSION 3
 
 bool SceneState::can_instantiate() const {
 	return nodes.size() > 0;
@@ -187,6 +187,12 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 			// may not have found the node (part of instantiated scene and removed)
 			// if found all is good, otherwise ignore
 
+			Set<StringName> pinnable_properties;
+			// we only want pinned flag to be set if instancing as pure main (no instance, no inheriting)
+			if (p_edit_state == GEN_EDIT_STATE_MAIN) {
+				node->get_pinnable_properties(pinnable_properties);
+			}
+
 			//properties
 			int nprop_count = n.properties.size();
 			if (nprop_count) {
@@ -228,7 +234,7 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 									} else {
 										Node *base = i == 0 ? node : ret_nodes[0];
 
-										if (p_edit_state == GEN_EDIT_STATE_MAIN) {
+										if (p_edit_state == GEN_EDIT_STATE_MAIN || p_edit_state == GEN_EDIT_STATE_MAIN_INHERITED) {
 											//for the main scene, use the resource as is
 											res->configure_for_local_scene(base, resources_local_to_scene);
 											resources_local_to_scene[res] = res;
@@ -249,6 +255,13 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 							value = value.duplicate(true); // Duplicate arrays and dictionaries for the editor
 						}
 						node->set(snames[nprops[j].name], value, &valid);
+					}
+
+					if (p_edit_state != GEN_EDIT_STATE_DISABLED) {
+						StringName property_name = snames[nprops[j].name];
+						if ((nprops[j].flags & NodeData::Property::FLAG_PINNED) && pinnable_properties.has(node->get_property_pin_proxy(property_name))) {
+							node->set_property_pinned(property_name, true);
+						}
 					}
 				}
 			}
@@ -461,15 +474,23 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Map
 		String name = E.name;
 		Variant value = p_node->get(name);
 
-		// It needs saving if different from the the default
-		Variant default_value = PropertyUtils::get_property_default_value(p_node, name, p_owner, &states_stack);
-		if (!PropertyUtils::is_property_value_different(value, default_value)) {
+		bool is_pinned = p_node->is_property_pinned(name);
+		bool needs_save = false;
+		if (is_pinned) {
+			needs_save = true;
+		} else {
+			// If not pinned, it needs saving if different from the the default
+			Variant default_value = PropertyUtils::get_property_default_value(p_node, name, p_owner, &states_stack);
+			needs_save = PropertyUtils::is_property_value_different(value, default_value);
+		}
+		if (!needs_save) {
 			continue;
 		}
 
 		NodeData::Property prop;
 		prop.name = _nm_get_string(name, name_map);
 		prop.value = _vm_get_variant(value, variant_map);
+		prop.flags = is_pinned ? NodeData::Property::FLAG_PINNED : 0;
 		nd.properties.push_back(prop);
 	}
 
@@ -915,6 +936,22 @@ Variant SceneState::get_property_value(int p_node, const StringName &p_property,
 	return Variant();
 }
 
+bool SceneState::is_property_pinned(int p_node, const StringName &p_property) const {
+	ERR_FAIL_INDEX_V(p_node, nodes.size(), false);
+
+	int pc = nodes[p_node].properties.size();
+	const StringName *namep = names.ptr();
+
+	const NodeData::Property *p = nodes[p_node].properties.ptr();
+	for (int i = 0; i < pc; i++) {
+		if (p_property == namep[p[i].name]) {
+			return (p[i].flags & NodeData::Property::FLAG_PINNED);
+		}
+	}
+
+	return false;
+}
+
 bool SceneState::is_node_in_group(int p_node, const StringName &p_group) const {
 	ERR_FAIL_COND_V(p_node < 0, false);
 
@@ -1038,6 +1075,7 @@ void SceneState::set_bundled_scene(const Dictionary &p_dictionary) {
 			for (int j = 0; j < nd.properties.size(); j++) {
 				nd.properties.write[j].name = r[idx++];
 				nd.properties.write[j].value = r[idx++];
+				nd.properties.write[j].flags = r[idx++];
 			}
 			nd.groups.resize(r[idx++]);
 			for (int j = 0; j < nd.groups.size(); j++) {
@@ -1125,6 +1163,7 @@ Dictionary SceneState::get_bundled_scene() const {
 		for (int j = 0; j < nd.properties.size(); j++) {
 			rnodes.push_back(nd.properties[j].name);
 			rnodes.push_back(nd.properties[j].value);
+			rnodes.push_back(nd.properties[j].flags);
 		}
 		rnodes.push_back(nd.groups.size());
 		for (int j = 0; j < nd.groups.size(); j++) {
@@ -1296,8 +1335,12 @@ StringName SceneState::get_node_property_name(int p_idx, int p_prop) const {
 Variant SceneState::get_node_property_value(int p_idx, int p_prop) const {
 	ERR_FAIL_INDEX_V(p_idx, nodes.size(), Variant());
 	ERR_FAIL_INDEX_V(p_prop, nodes[p_idx].properties.size(), Variant());
-
 	return variants[nodes[p_idx].properties[p_prop].value];
+}
+bool SceneState::is_node_property_pinned(int p_idx, int p_prop) const {
+	ERR_FAIL_INDEX_V(p_idx, nodes.size(), false);
+	ERR_FAIL_INDEX_V(p_prop, nodes[p_idx].properties.size(), false);
+	return (nodes[p_idx].properties[p_prop].flags & NodeData::Property::FLAG_PINNED);
 }
 
 NodePath SceneState::get_node_owner_path(int p_idx) const {
@@ -1431,7 +1474,7 @@ int SceneState::add_node(int p_parent, int p_owner, int p_type, int p_name, int 
 	return nodes.size() - 1;
 }
 
-void SceneState::add_node_property(int p_node, int p_name, int p_value) {
+void SceneState::add_node_property(int p_node, int p_name, int p_value, bool p_pinned) {
 	ERR_FAIL_INDEX(p_node, nodes.size());
 	ERR_FAIL_INDEX(p_name, names.size());
 	ERR_FAIL_INDEX(p_value, variants.size());
@@ -1439,6 +1482,7 @@ void SceneState::add_node_property(int p_node, int p_name, int p_value) {
 	NodeData::Property prop;
 	prop.name = p_name;
 	prop.value = p_value;
+	prop.flags = p_pinned ? NodeData::Property::FLAG_PINNED : 0;
 	nodes.write[p_node].properties.push_back(prop);
 }
 
@@ -1512,6 +1556,7 @@ void SceneState::_bind_methods() {
 	BIND_ENUM_CONSTANT(GEN_EDIT_STATE_DISABLED);
 	BIND_ENUM_CONSTANT(GEN_EDIT_STATE_INSTANCE);
 	BIND_ENUM_CONSTANT(GEN_EDIT_STATE_MAIN);
+	BIND_ENUM_CONSTANT(GEN_EDIT_STATE_MAIN_INHERITED);
 }
 
 SceneState::SceneState() {
@@ -1603,6 +1648,7 @@ void PackedScene::_bind_methods() {
 	BIND_ENUM_CONSTANT(GEN_EDIT_STATE_DISABLED);
 	BIND_ENUM_CONSTANT(GEN_EDIT_STATE_INSTANCE);
 	BIND_ENUM_CONSTANT(GEN_EDIT_STATE_MAIN);
+	BIND_ENUM_CONSTANT(GEN_EDIT_STATE_MAIN_INHERITED);
 }
 
 PackedScene::PackedScene() {

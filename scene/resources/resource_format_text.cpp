@@ -258,6 +258,10 @@ Ref<PackedScene> ResourceLoaderText::_parse_node_tag(VariantParser::ResourcePars
 				}
 			}
 
+			struct {
+				int name_idx = -1;
+				int value_idx = -1;
+			} pending_assign;
 			while (true) {
 				String assign;
 				Variant value;
@@ -269,19 +273,40 @@ Ref<PackedScene> ResourceLoaderText::_parse_node_tag(VariantParser::ResourcePars
 						_printerr();
 						return Ref<PackedScene>();
 					} else {
-						error = OK;
-						return packed_scene;
+						break;
 					}
 				}
 
 				if (assign != String()) {
-					int nameidx = packed_scene->get_state()->add_name(assign);
-					int valueidx = packed_scene->get_state()->add_value(value);
-					packed_scene->get_state()->add_node_property(node_id, nameidx, valueidx);
-					//it's assignment
+					//it's assignment; flush pending first
+					if (pending_assign.name_idx != -1) {
+						packed_scene->get_state()->add_node_property(node_id, pending_assign.name_idx, pending_assign.value_idx, false);
+					}
+					pending_assign = {
+						packed_scene->get_state()->add_name(assign),
+						packed_scene->get_state()->add_value(value)
+					};
+				} else if (next_tag.name == "pinned") {
+					if (pending_assign.name_idx == -1) {
+						error = ERR_FILE_CORRUPT;
+						error_text = "Found 'pinned' tag with no assignment";
+						return Ref<PackedScene>();
+					} else {
+						//now we can flush knowing it's pinned
+						packed_scene->get_state()->add_node_property(node_id, pending_assign.name_idx, pending_assign.value_idx, true);
+						pending_assign = { -1, -1 };
+					}
 				} else if (next_tag.name != String()) {
 					break;
 				}
+			}
+			// flush the last one, which for sure it's not pinned
+			if (pending_assign.name_idx != -1) {
+				packed_scene->get_state()->add_node_property(node_id, pending_assign.name_idx, pending_assign.value_idx, false);
+			}
+			if (error == ERR_FILE_EOF) {
+				error = OK;
+				return packed_scene;
 			}
 		} else if (next_tag.name == "connection") {
 			if (!next_tag.fields.has("from")) {
@@ -1886,7 +1911,11 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const RES &p_r
 				String vars;
 				VariantWriter::write_to_string(state->get_node_property_value(i, j), vars, _write_resources, this);
 
-				f->store_string(String(state->get_node_property_name(i, j)).property_name_encode() + " = " + vars + "\n");
+				String assign = String(state->get_node_property_name(i, j)).property_name_encode() + " = " + vars;
+				if (state->is_node_property_pinned(i, j)) {
+					assign += " [pinned]";
+				}
+				f->store_string(assign + "\n");
 			}
 
 			if (i < state->get_node_count() - 1) {
