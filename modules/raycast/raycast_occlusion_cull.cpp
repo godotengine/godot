@@ -66,28 +66,45 @@ void RaycastOcclusionCull::RaycastHZBuffer::resize(const Size2i &p_size) {
 
 void RaycastOcclusionCull::RaycastHZBuffer::update_camera_rays(const Transform3D &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, ThreadWorkPool &p_thread_work_pool) {
 	CameraRayThreadData td;
-	td.camera_matrix = p_cam_projection;
-	td.camera_transform = p_cam_transform;
-	td.camera_orthogonal = p_cam_orthogonal;
 	td.thread_count = p_thread_work_pool.get_thread_count();
+
+	td.z_near = p_cam_projection.get_z_near();
+	td.z_far = p_cam_projection.get_z_far() * 1.05f;
+	td.camera_pos = p_cam_transform.origin;
+	td.camera_dir = -p_cam_transform.basis.get_axis(2);
+	td.camera_orthogonal = p_cam_orthogonal;
+
+	CameraMatrix inv_camera_matrix = p_cam_projection.inverse();
+	Vector3 camera_corner_proj = Vector3(-1.0f, -1.0f, -1.0f);
+	Vector3 camera_corner_view = inv_camera_matrix.xform(camera_corner_proj);
+	td.pixel_corner = p_cam_transform.xform(camera_corner_view);
+
+	Vector3 top_corner_proj = Vector3(-1.0f, 1.0f, -1.0f);
+	Vector3 top_corner_view = inv_camera_matrix.xform(top_corner_proj);
+	Vector3 top_corner_world = p_cam_transform.xform(top_corner_view);
+
+	Vector3 left_corner_proj = Vector3(1.0f, -1.0f, -1.0f);
+	Vector3 left_corner_view = inv_camera_matrix.xform(left_corner_proj);
+	Vector3 left_corner_world = p_cam_transform.xform(left_corner_view);
+
+	td.pixel_u_interp = left_corner_world - td.pixel_corner;
+	td.pixel_v_interp = top_corner_world - td.pixel_corner;
+
+	debug_tex_range = td.z_far;
 
 	p_thread_work_pool.do_work(td.thread_count, this, &RaycastHZBuffer::_camera_rays_threaded, &td);
 }
 
-void RaycastOcclusionCull::RaycastHZBuffer::_camera_rays_threaded(uint32_t p_thread, RaycastOcclusionCull::RaycastHZBuffer::CameraRayThreadData *p_data) {
+void RaycastOcclusionCull::RaycastHZBuffer::_camera_rays_threaded(uint32_t p_thread, const CameraRayThreadData *p_data) {
 	uint32_t packs_total = camera_rays.size();
 	uint32_t total_threads = p_data->thread_count;
 	uint32_t from = p_thread * packs_total / total_threads;
 	uint32_t to = (p_thread + 1 == total_threads) ? packs_total : ((p_thread + 1) * packs_total / total_threads);
-	_generate_camera_rays(p_data->camera_transform, p_data->camera_matrix, p_data->camera_orthogonal, from, to);
+	_generate_camera_rays(p_data, from, to);
 }
 
-void RaycastOcclusionCull::RaycastHZBuffer::_generate_camera_rays(const Transform3D &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, int p_from, int p_to) {
-	Size2i buffer_size = sizes[0];
-
-	CameraMatrix inv_camera_matrix = p_cam_projection.inverse();
-	float z_far = p_cam_projection.get_z_far() * 1.05f;
-	debug_tex_range = z_far;
+void RaycastOcclusionCull::RaycastHZBuffer::_generate_camera_rays(const CameraRayThreadData *p_data, int p_from, int p_to) {
+	const Size2i &buffer_size = sizes[0];
 
 	RayPacket *ray_packets = camera_rays.ptr();
 	uint32_t *ray_masks = camera_ray_masks.ptr();
@@ -98,56 +115,52 @@ void RaycastOcclusionCull::RaycastHZBuffer::_generate_camera_rays(const Transfor
 		int tile_y = (i / packs_size.x) * TILE_SIZE;
 
 		for (int j = 0; j < TILE_RAYS; j++) {
-			float x = tile_x + j % TILE_SIZE;
-			float y = tile_y + j / TILE_SIZE;
-
-			ray_masks[i * TILE_RAYS + j] = ~0U;
+			int x = tile_x + j % TILE_SIZE;
+			int y = tile_y + j / TILE_SIZE;
 
 			if (x >= buffer_size.x || y >= buffer_size.y) {
 				ray_masks[i * TILE_RAYS + j] = 0U;
-			} else {
-				float u = x / (buffer_size.x - 1);
-				float v = y / (buffer_size.y - 1);
-				u = u * 2.0f - 1.0f;
-				v = v * 2.0f - 1.0f;
-
-				Plane pixel_proj = Plane(u, v, -1.0, 1.0);
-				Plane pixel_view = inv_camera_matrix.xform4(pixel_proj);
-				Vector3 pixel_world = p_cam_transform.xform(pixel_view.normal);
-
-				Vector3 dir;
-				if (p_cam_orthogonal) {
-					dir = -p_cam_transform.basis.get_axis(2);
-				} else {
-					dir = (pixel_world - p_cam_transform.origin).normalized();
-				}
-
-				packet.ray.org_x[j] = pixel_world.x;
-				packet.ray.org_y[j] = pixel_world.y;
-				packet.ray.org_z[j] = pixel_world.z;
-
-				packet.ray.dir_x[j] = dir.x;
-				packet.ray.dir_y[j] = dir.y;
-				packet.ray.dir_z[j] = dir.z;
-
-				packet.ray.tnear[j] = 0.0f;
-
-				packet.ray.time[j] = 0.0f;
-
-				packet.ray.flags[j] = 0;
-				packet.ray.mask[j] = -1;
-				packet.hit.geomID[j] = RTC_INVALID_GEOMETRY_ID;
+				continue;
 			}
 
-			packet.ray.tfar[j] = z_far;
+			ray_masks[i * TILE_RAYS + j] = ~0U;
+
+			float u = (float(x) + 0.5f) / buffer_size.x;
+			float v = (float(y) + 0.5f) / buffer_size.y;
+			Vector3 pixel_pos = p_data->pixel_corner + u * p_data->pixel_u_interp + v * p_data->pixel_v_interp;
+
+			packet.ray.tnear[j] = p_data->z_near;
+
+			Vector3 dir;
+			if (p_data->camera_orthogonal) {
+				dir = -p_data->camera_dir;
+				packet.ray.org_x[j] = pixel_pos.x - dir.x * p_data->z_near;
+				packet.ray.org_y[j] = pixel_pos.y - dir.y * p_data->z_near;
+				packet.ray.org_z[j] = pixel_pos.z - dir.z * p_data->z_near;
+			} else {
+				dir = (pixel_pos - p_data->camera_pos).normalized();
+				packet.ray.org_x[j] = p_data->camera_pos.x;
+				packet.ray.org_y[j] = p_data->camera_pos.y;
+				packet.ray.org_z[j] = p_data->camera_pos.z;
+				packet.ray.tnear[j] /= dir.dot(p_data->camera_dir);
+			}
+
+			packet.ray.dir_x[j] = dir.x;
+			packet.ray.dir_y[j] = dir.y;
+			packet.ray.dir_z[j] = dir.z;
+
+			packet.ray.tfar[j] = p_data->z_far;
+			packet.ray.time[j] = 0.0f;
+
+			packet.ray.flags[j] = 0;
+			packet.ray.mask[j] = -1;
+			packet.hit.geomID[j] = RTC_INVALID_GEOMETRY_ID;
 		}
 	}
 }
 
-void RaycastOcclusionCull::RaycastHZBuffer::sort_rays() {
-	if (is_empty()) {
-		return;
-	}
+void RaycastOcclusionCull::RaycastHZBuffer::sort_rays(const Vector3 &p_camera_dir, bool p_orthogonal) {
+	ERR_FAIL_COND(is_empty());
 
 	Size2i buffer_size = sizes[0];
 	for (int i = 0; i < packs_size.y; i++) {
@@ -161,7 +174,17 @@ void RaycastOcclusionCull::RaycastHZBuffer::sort_rays() {
 					}
 					int k = tile_i * TILE_SIZE + tile_j;
 					int packet_index = i * packs_size.x + j;
-					mips[0][y * buffer_size.x + x] = camera_rays[packet_index].ray.tfar[k];
+					float d = camera_rays[packet_index].ray.tfar[k];
+
+					if (!p_orthogonal) {
+						const float &dir_x = camera_rays[packet_index].ray.dir_x[k];
+						const float &dir_y = camera_rays[packet_index].ray.dir_y[k];
+						const float &dir_z = camera_rays[packet_index].ray.dir_z[k];
+						float cos_theta = p_camera_dir.x * dir_x + p_camera_dir.y * dir_y + p_camera_dir.z * dir_z;
+						d *= cos_theta;
+					}
+
+					mips[0][y * buffer_size.x + x] = d;
 				}
 			}
 		}
@@ -514,7 +537,7 @@ void RaycastOcclusionCull::buffer_update(RID p_buffer, const Transform3D &p_cam_
 	buffer.update_camera_rays(p_cam_transform, p_cam_projection, p_cam_orthogonal, p_thread_pool);
 
 	scenario.raycast(buffer.camera_rays, buffer.camera_ray_masks, p_thread_pool);
-	buffer.sort_rays();
+	buffer.sort_rays(-p_cam_transform.basis.get_axis(2), p_cam_orthogonal);
 	buffer.update_mips();
 }
 

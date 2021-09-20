@@ -51,15 +51,20 @@ public:
 		Size2i packs_size;
 
 		struct CameraRayThreadData {
-			CameraMatrix camera_matrix;
-			Transform3D camera_transform;
-			bool camera_orthogonal;
 			int thread_count;
+			float z_near;
+			float z_far;
+			Vector3 camera_dir;
+			Vector3 camera_pos;
+			Vector3 pixel_corner;
+			Vector3 pixel_u_interp;
+			Vector3 pixel_v_interp;
+			bool camera_orthogonal;
 			Size2i buffer_size;
 		};
 
-		void _camera_rays_threaded(uint32_t p_thread, CameraRayThreadData *p_data);
-		void _generate_camera_rays(const Transform3D &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, int p_from, int p_to);
+		void _camera_rays_threaded(uint32_t p_thread, const CameraRayThreadData *p_data);
+		void _generate_camera_rays(const CameraRayThreadData *p_data, int p_from, int p_to);
 
 	public:
 		LocalVector<RayPacket> camera_rays;
@@ -68,7 +73,7 @@ public:
 
 		virtual void clear() override;
 		virtual void resize(const Size2i &p_size) override;
-		void sort_rays();
+		void sort_rays(const Vector3 &p_camera_dir, bool p_orthogonal);
 		void update_camera_rays(const Transform3D &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, ThreadWorkPool &p_thread_work_pool);
 	};
 
