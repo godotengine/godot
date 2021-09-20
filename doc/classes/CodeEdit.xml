@@ -596,7 +596,7 @@
 		<theme_item name="completion_background_color" data_type="color" type="Color" default="Color(0.17, 0.16, 0.2, 1)">
 			Sets the background [Color] for the code completion popup.
 		</theme_item>
-		<theme_item name="completion_existing_color" data_type="color" type="Color" default="Color(0.596, 0.607, 0.639, 0.458)">
+		<theme_item name="completion_existing_color" data_type="color" type="Color" default="Color(0.87, 0.87, 0.87, 0.13)">
 			Background highlight [Color] for matching text in code completion options.
 		</theme_item>
 		<theme_item name="completion_font_color" data_type="color" type="Color" default="Color(0.67, 0.67, 0.67, 1)">
