@@ -94,6 +94,7 @@ const char *VisualScriptBuiltinFunc::func_name[VisualScriptBuiltinFunc::FUNC_MAX
 	"print",
 	"printerr",
 	"printraw",
+	"print_verbose",
 	"var2str",
 	"str2var",
 	"var2bytes",
@@ -129,6 +130,7 @@ bool VisualScriptBuiltinFunc::has_input_sequence_port() const {
 		case TEXT_PRINT:
 		case TEXT_PRINTERR:
 		case TEXT_PRINTRAW:
+		case TEXT_PRINT_VERBOSE:
 		case MATH_SEED:
 			return true;
 		default:
@@ -177,6 +179,7 @@ int VisualScriptBuiltinFunc::get_func_argument_count(BuiltinFunc p_func) {
 		case TEXT_PRINT:
 		case TEXT_PRINTERR:
 		case TEXT_PRINTRAW:
+		case TEXT_PRINT_VERBOSE:
 		case VAR_TO_STR:
 		case STR_TO_VAR:
 		case TYPE_EXISTS:
@@ -223,6 +226,7 @@ int VisualScriptBuiltinFunc::get_output_value_port_count() const {
 		case TEXT_PRINT:
 		case TEXT_PRINTERR:
 		case TEXT_PRINTRAW:
+		case TEXT_PRINT_VERBOSE:
 		case MATH_SEED:
 			return 0;
 		case MATH_RANDSEED:
@@ -424,7 +428,8 @@ PropertyInfo VisualScriptBuiltinFunc::get_input_value_port_info(int p_idx) const
 		case TEXT_STR:
 		case TEXT_PRINT:
 		case TEXT_PRINTERR:
-		case TEXT_PRINTRAW: {
+		case TEXT_PRINTRAW:
+		case TEXT_PRINT_VERBOSE: {
 			return PropertyInfo(Variant::NIL, "value");
 		} break;
 		case STR_TO_VAR: {
@@ -571,6 +576,8 @@ PropertyInfo VisualScriptBuiltinFunc::get_output_value_port_info(int p_idx) cons
 		case TEXT_PRINTERR: {
 		} break;
 		case TEXT_PRINTRAW: {
+		} break;
+		case TEXT_PRINT_VERBOSE: {
 		} break;
 		case VAR_TO_STR: {
 			t = Variant::STRING;
@@ -1020,6 +1027,10 @@ void VisualScriptBuiltinFunc::exec_func(BuiltinFunc p_func, const Variant **p_in
 			OS::get_singleton()->print("%s", str.utf8().get_data());
 
 		} break;
+		case VisualScriptBuiltinFunc::TEXT_PRINT_VERBOSE: {
+			String str = *p_inputs[0];
+			print_verbose(str);
+		} break;
 		case VisualScriptBuiltinFunc::VAR_TO_STR: {
 			String vars;
 			VariantWriter::write_to_string(*p_inputs[0], vars);
@@ -1208,6 +1219,7 @@ void VisualScriptBuiltinFunc::_bind_methods() {
 	BIND_ENUM_CONSTANT(TEXT_PRINT);
 	BIND_ENUM_CONSTANT(TEXT_PRINTERR);
 	BIND_ENUM_CONSTANT(TEXT_PRINTRAW);
+	BIND_ENUM_CONSTANT(TEXT_PRINT_VERBOSE);
 	BIND_ENUM_CONSTANT(VAR_TO_STR);
 	BIND_ENUM_CONSTANT(STR_TO_VAR);
 	BIND_ENUM_CONSTANT(VAR_TO_BYTES);
@@ -1300,6 +1312,7 @@ void register_visual_script_builtin_func_node() {
 	VisualScriptLanguage::singleton->add_register_func("functions/built_in/print", create_builtin_func_node<VisualScriptBuiltinFunc::TEXT_PRINT>);
 	VisualScriptLanguage::singleton->add_register_func("functions/built_in/printerr", create_builtin_func_node<VisualScriptBuiltinFunc::TEXT_PRINTERR>);
 	VisualScriptLanguage::singleton->add_register_func("functions/built_in/printraw", create_builtin_func_node<VisualScriptBuiltinFunc::TEXT_PRINTRAW>);
+	VisualScriptLanguage::singleton->add_register_func("functions/built_in/print_verbose", create_builtin_func_node<VisualScriptBuiltinFunc::TEXT_PRINT_VERBOSE>);
 	VisualScriptLanguage::singleton->add_register_func("functions/built_in/var2str", create_builtin_func_node<VisualScriptBuiltinFunc::VAR_TO_STR>);
 	VisualScriptLanguage::singleton->add_register_func("functions/built_in/str2var", create_builtin_func_node<VisualScriptBuiltinFunc::STR_TO_VAR>);
 	VisualScriptLanguage::singleton->add_register_func("functions/built_in/var2bytes", create_builtin_func_node<VisualScriptBuiltinFunc::VAR_TO_BYTES>);
