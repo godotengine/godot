@@ -225,6 +225,36 @@
 				Configures screen stretching to the given [enum StretchMode], [enum StretchAspect], minimum size and [code]scale[/code].
 			</description>
 		</method>
+		<method name="update_font_oversampling">
+			<return type="void" />
+			<argument index="0" name="ratio" type="float" />
+			<description>
+				If [member use_font_oversampling] is [code]true[/code], configures [DynamicFont] oversampling to use the given [code]ratio[/code].
+				This can be used to customize the screen stretching algorithm, e.g. to enforce pixel perfect scaling ratios.
+				[b]Example:[/b]
+				[codeblock]
+				var base_size = Vector2(480, 270) # Base game size.
+
+				func ready():
+				    # Disable automatic render stretching algorithm.
+				    get_tree().set_screen_stretch(SceneTree.STRETCH_MODE_DISABLED, SceneTree.STRETCH_ASPECT_IGNORE, base_size, 1.0)
+				    on_screen_resized()
+				    get_tree().connect("screen_resized", self, "on_screen_resized")
+
+				# Custom render stretching algorithm.
+				func on_screen_resized():
+				    var scale = 3.0 # Custom desired game scale (here 3 times base size).
+				    var viewport_size = base_size * scale # Scaled viewport size.
+				    var margin = Vector2() # No margin.
+				    get_tree().update_font_oversampling(scale) # Match font oversampling to the custom scale.
+				    var root = get_tree().root
+				    root.set_size(viewport_size)
+				    root.set_attach_to_screen_rect(Rect2(margin, viewport_size)) # Offset the viewport inside screen.
+				    root.set_size_override_stretch(true)
+				    root.set_size_override(true, base_size)
+				[/codeblock]
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="current_scene" type="Node" setter="set_current_scene" getter="get_current_scene">

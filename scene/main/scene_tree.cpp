@@ -502,7 +502,7 @@ bool SceneTree::iteration(float p_time) {
 	return _quit;
 }
 
-void SceneTree::_update_font_oversampling(float p_ratio) {
+void SceneTree::update_font_oversampling(float p_ratio) {
 #ifdef MODULE_FREETYPE_ENABLED
 	if (use_font_oversampling) {
 		DynamicFontAtSize::font_oversampling = p_ratio;
@@ -1123,7 +1123,7 @@ int SceneTree::get_node_count() const {
 
 void SceneTree::_update_root_rect() {
 	if (stretch_mode == STRETCH_MODE_DISABLED) {
-		_update_font_oversampling(stretch_scale);
+		update_font_oversampling(stretch_scale);
 		root->set_size(last_screen_size.floor());
 		root->set_attach_to_screen_rect(Rect2(Point2(), last_screen_size));
 		root->set_size_override_stretch(true);
@@ -1204,7 +1204,7 @@ void SceneTree::_update_root_rect() {
 			// Already handled above
 		} break;
 		case STRETCH_MODE_2D: {
-			_update_font_oversampling((screen_size.x / viewport_size.x) * stretch_scale); //screen / viewport ratio drives oversampling
+			update_font_oversampling((screen_size.x / viewport_size.x) * stretch_scale); //screen / viewport ratio drives oversampling
 			root->set_size(screen_size.floor());
 			root->set_attach_to_screen_rect(Rect2(margin, screen_size));
 			root->set_size_override_stretch(true);
@@ -1213,7 +1213,7 @@ void SceneTree::_update_root_rect() {
 
 		} break;
 		case STRETCH_MODE_VIEWPORT: {
-			_update_font_oversampling(1.0);
+			update_font_oversampling(1.0);
 			root->set_size((viewport_size / stretch_scale).floor());
 			root->set_attach_to_screen_rect(Rect2(margin, screen_size));
 			root->set_size_override_stretch(false);
@@ -1898,6 +1898,7 @@ void SceneTree::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_connection_failed"), &SceneTree::_connection_failed);
 	ClassDB::bind_method(D_METHOD("_server_disconnected"), &SceneTree::_server_disconnected);
 
+	ClassDB::bind_method(D_METHOD("update_font_oversampling", "ratio"), &SceneTree::update_font_oversampling);
 	ClassDB::bind_method(D_METHOD("set_use_font_oversampling", "enable"), &SceneTree::set_use_font_oversampling);
 	ClassDB::bind_method(D_METHOD("is_using_font_oversampling"), &SceneTree::is_using_font_oversampling);
 
