@@ -955,6 +955,11 @@ void DisplayServerWindows::window_set_mode(WindowMode p_mode, WindowID p_window)
 		_update_window_style(p_window, false);
 
 		MoveWindow(wd.hWnd, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, TRUE);
+
+		if (restore_mouse_trails > 1) {
+			SystemParametersInfoA(SPI_SETMOUSETRAILS, restore_mouse_trails, 0, 0);
+			restore_mouse_trails = 0;
+		}
 	} else if (p_mode == WINDOW_MODE_WINDOWED) {
 		ShowWindow(wd.hWnd, SW_RESTORE);
 		wd.maximized = false;
@@ -994,6 +999,13 @@ void DisplayServerWindows::window_set_mode(WindowMode p_mode, WindowID p_window)
 		_update_window_style(false);
 
 		MoveWindow(wd.hWnd, pos.x, pos.y, size.width, size.height, TRUE);
+
+		// If the user has mouse trails enabled in windows, then sometimes the cursor disappears in fullscreen mode.
+		// Save number of trails so we can restore when exiting, then turn off mouse trails
+		SystemParametersInfoA(SPI_GETMOUSETRAILS, 0, &restore_mouse_trails, 0);
+		if (restore_mouse_trails > 1) {
+			SystemParametersInfoA(SPI_SETMOUSETRAILS, 0, 0, 0);
+		}
 	}
 }
 
@@ -3395,4 +3407,8 @@ DisplayServerWindows::~DisplayServerWindows() {
 			memdelete(context_vulkan);
 	}
 #endif
+
+	if (restore_mouse_trails > 1) {
+		SystemParametersInfoA(SPI_SETMOUSETRAILS, restore_mouse_trails, 0, 0);
+	}
 }
