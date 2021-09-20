@@ -92,8 +92,12 @@ void Label::_shape() {
 		const Ref<Font> &font = get_theme_font(SNAME("font"));
 		int font_size = get_theme_font_size(SNAME("font_size"));
 		ERR_FAIL_COND(font.is_null());
-		TS->shaped_text_add_string(text_rid, (uppercase) ? xl_text.to_upper() : xl_text, font->get_rids(), font_size, opentype_features, (language != "") ? language : TranslationServer::get_singleton()->get_tool_locale());
-		TS->shaped_text_set_bidi_override(text_rid, structured_text_parser(st_parser, st_args, xl_text));
+		String text = (uppercase) ? xl_text.to_upper() : xl_text;
+		if (visible_chars >= 0) {
+			text = text.substr(0, visible_chars);
+		}
+		TS->shaped_text_add_string(text_rid, text, font->get_rids(), font_size, opentype_features, (language != "") ? language : TranslationServer::get_singleton()->get_tool_locale());
+		TS->shaped_text_set_bidi_override(text_rid, structured_text_parser(st_parser, st_args, text));
 		dirty = false;
 		lines_dirty = true;
 	}
@@ -258,6 +262,9 @@ void Label::_notification(int p_what) {
 			return; // Nothing new.
 		}
 		xl_text = new_text;
+		if (percent_visible < 1) {
+			visible_chars = get_total_character_count() * percent_visible;
+		}
 		dirty = true;
 
 		update();
@@ -342,24 +349,6 @@ void Label::_notification(int p_what) {
 			}
 		}
 
-		int visible_glyphs = -1;
-		int glyhps_drawn = 0;
-		if (percent_visible < 1) {
-			int total_glyphs = 0;
-			for (int i = lines_skipped; i < last_line; i++) {
-				const Vector<TextServer::Glyph> visual = TS->shaped_text_get_glyphs(lines_rid[i]);
-				const TextServer::Glyph *glyphs = visual.ptr();
-				int gl_size = visual.size();
-				for (int j = 0; j < gl_size; j++) {
-					if ((glyphs[j].flags & TextServer::GRAPHEME_IS_VIRTUAL) != TextServer::GRAPHEME_IS_VIRTUAL) {
-						total_glyphs++;
-					}
-				}
-			}
-
-			visible_glyphs = MIN(total_glyphs, visible_chars);
-		}
-
 		Vector2 ofs;
 		ofs.y = style->get_offset().y + vbegin;
 		for (int i = lines_skipped; i < last_line; i++) {
@@ -407,14 +396,6 @@ void Label::_notification(int p_what) {
 				// Draw main text.
 				for (int j = 0; j < gl_size; j++) {
 					for (int k = 0; k < glyphs[j].repeat; k++) {
-						if (visible_glyphs != -1) {
-							if ((glyphs[j].flags & TextServer::GRAPHEME_IS_VIRTUAL) != TextServer::GRAPHEME_IS_VIRTUAL) {
-								if (glyhps_drawn >= visible_glyphs) {
-									return;
-								}
-							}
-						}
-
 						// Trim when necessary.
 						if (trim_data.trim_pos >= 0) {
 							if (rtl) {
@@ -431,7 +412,6 @@ void Label::_notification(int p_what) {
 						// Draw glyph outlines and shadow.
 						draw_glyph_outline(glyphs[j], ci, font_color, font_shadow_color, font_outline_color, shadow_outline_size, outline_size, offset, shadow_ofs);
 						offset.x += glyphs[j].advance;
-						glyhps_drawn++;
 					}
 				}
 				// Draw LTR ellipsis string when necessary.
@@ -462,14 +442,6 @@ void Label::_notification(int p_what) {
 			// Draw main text.
 			for (int j = 0; j < gl_size; j++) {
 				for (int k = 0; k < glyphs[j].repeat; k++) {
-					if (visible_glyphs != -1) {
-						if ((glyphs[j].flags & TextServer::GRAPHEME_IS_VIRTUAL) != TextServer::GRAPHEME_IS_VIRTUAL) {
-							if (glyhps_drawn >= visible_glyphs) {
-								return;
-							}
-						}
-					}
-
 					// Trim when necessary.
 					if (trim_data.trim_pos >= 0) {
 						if (rtl) {
@@ -486,7 +458,6 @@ void Label::_notification(int p_what) {
 					// Draw glyph outlines and shadow.
 					draw_glyph(glyphs[j], ci, font_color, ofs);
 					ofs.x += glyphs[j].advance;
-					glyhps_drawn++;
 				}
 			}
 			// Draw LTR ellipsis string when necessary.
@@ -709,16 +680,16 @@ String Label::get_text() const {
 }
 
 void Label::set_visible_characters(int p_amount) {
-	visible_chars = p_amount;
-	if (get_total_character_count() > 0) {
-		percent_visible = (float)p_amount / (float)get_total_character_count();
-	} else {
-		percent_visible = 1.0;
+	if (visible_chars != p_amount) {
+		visible_chars = p_amount;
+		if (get_total_character_count() > 0) {
+			percent_visible = (float)p_amount / (float)get_total_character_count();
+		} else {
+			percent_visible = 1.0;
+		}
+		dirty = true;
+		update();
 	}
-	if (p_amount == -1) {
-		lines_dirty = true;
-	}
-	update();
 }
 
 int Label::get_visible_characters() const {
@@ -726,15 +697,17 @@ int Label::get_visible_characters() const {
 }
 
 void Label::set_percent_visible(float p_percent) {
-	if (p_percent < 0 || p_percent >= 1) {
-		visible_chars = -1;
-		percent_visible = 1;
-		lines_dirty = true;
-	} else {
-		visible_chars = get_total_character_count() * p_percent;
-		percent_visible = p_percent;
+	if (percent_visible != p_percent) {
+		if (p_percent < 0 || p_percent >= 1) {
+			visible_chars = -1;
+			percent_visible = 1;
+		} else {
+			visible_chars = get_total_character_count() * p_percent;
+			percent_visible = p_percent;
+		}
+		dirty = true;
+		update();
 	}
-	update();
 }
 
 float Label::get_percent_visible() const {
@@ -889,7 +862,7 @@ void Label::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "clip_text"), "set_clip_text", "is_clipping_text");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "text_overrun_behavior", PROPERTY_HINT_ENUM, "Trim Nothing,Trim Characters,Trim Words,Ellipsis,Word Ellipsis"), "set_text_overrun_behavior", "get_text_overrun_behavior");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "uppercase"), "set_uppercase", "is_uppercase");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "visible_characters", PROPERTY_HINT_RANGE, "-1,128000,1", PROPERTY_USAGE_EDITOR), "set_visible_characters", "get_visible_characters");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "visible_characters", PROPERTY_HINT_RANGE, "-1,128000,1"), "set_visible_characters", "get_visible_characters");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "percent_visible", PROPERTY_HINT_RANGE, "0,1,0.001"), "set_percent_visible", "get_percent_visible");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "lines_skipped", PROPERTY_HINT_RANGE, "0,999,1"), "set_lines_skipped", "get_lines_skipped");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_lines_visible", PROPERTY_HINT_RANGE, "-1,999,1"), "set_max_lines_visible", "get_max_lines_visible");
