@@ -39,6 +39,8 @@ class UndoRedo;
 
 class EditorPropertyRevert {
 public:
+	static bool reverting;
+
 	static bool may_node_be_in_instance(Node *p_node);
 	static bool get_instanced_node_original_property(Node *p_node, const StringName &p_prop, Variant &value, bool p_check_class_default = true);
 	static bool is_node_property_different(Node *p_node, const Variant &p_current, const Variant &p_orig);
@@ -69,14 +71,20 @@ private:
 	Rect2 right_child_rect;
 	Rect2 bottom_child_rect;
 
+	bool hover;
 	Rect2 keying_rect;
 	bool keying_hover;
+	Rect2 pin_rect;
+	bool pin_hover;
 	Rect2 revert_rect;
 	bool revert_hover;
 	Rect2 check_rect;
 	bool check_hover;
 
 	bool can_revert;
+	bool can_pin;
+	bool pin_hidden;
+	bool is_pinned;
 
 	bool use_folding;
 	bool draw_top_bg;
@@ -94,6 +102,8 @@ private:
 	Control *bottom_editor;
 
 	mutable String tooltip_text;
+
+	void _update_pinnability();
 
 protected:
 	void _notification(int p_what);
@@ -116,7 +126,7 @@ public:
 	StringName get_edited_property();
 
 	virtual void update_property();
-	void update_reload_status();
+	void update_revert_and_pin_status();
 
 	virtual bool use_keying_next() const;
 
@@ -306,8 +316,8 @@ class EditorInspector : public ScrollContainer {
 	void _multiple_properties_changed(Vector<String> p_paths, Array p_values);
 	void _property_keyed(const String &p_path, bool p_advance);
 	void _property_keyed_with_value(const String &p_path, const Variant &p_value, bool p_advance);
-
 	void _property_checked(const String &p_path, bool p_checked);
+	void _property_pin_changed(const String &p_path, bool p_pinned);
 
 	void _resource_selected(const String &p_path, RES p_resource);
 	void _property_selected(const String &p_path, int p_focusable);
@@ -339,6 +349,8 @@ public:
 	static void cleanup_plugins();
 
 	static EditorProperty *instantiate_property_editor(Object *p_object, Variant::Type p_type, const String &p_path, PropertyHint p_hint, const String &p_hint_text, int p_usage);
+
+	static int get_property_new_pinned_state(Node *p_node, const String &p_property, const Variant &p_new_value);
 
 	void set_undo_redo(UndoRedo *p_undo_redo);
 

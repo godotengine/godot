@@ -102,6 +102,8 @@ public:
 
 	RID get_canvas() const;
 
+	StringName get_property_pin_proxy(const StringName &p_property) const override;
+
 	CanvasLayer();
 	~CanvasLayer();
 };

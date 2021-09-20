@@ -63,6 +63,7 @@ class SceneState : public Reference {
 		struct Property {
 			int name;
 			int value;
+			bool pinned;
 		};
 
 		Vector<Property> properties;
@@ -110,6 +111,7 @@ public:
 		GEN_EDIT_STATE_DISABLED,
 		GEN_EDIT_STATE_INSTANCE,
 		GEN_EDIT_STATE_MAIN,
+		GEN_EDIT_STATE_MAIN_INHERITED,
 	};
 
 	struct PackState {
@@ -121,6 +123,7 @@ public:
 
 	int find_node_by_path(const NodePath &p_node) const;
 	Variant get_property_value(int p_node, const StringName &p_property, bool &found) const;
+	bool is_property_pinned(int p_node, const StringName &p_property) const;
 	bool is_node_in_group(int p_node, const StringName &p_group) const;
 	bool is_connection(int p_node, const StringName &p_signal, int p_to_node, const StringName &p_to_method) const;
 
@@ -155,6 +158,7 @@ public:
 	int get_node_property_count(int p_idx) const;
 	StringName get_node_property_name(int p_idx, int p_prop) const;
 	Variant get_node_property_value(int p_idx, int p_prop) const;
+	bool is_node_property_pinned(int p_idx, int p_prop) const;
 
 	int get_connection_count() const;
 	NodePath get_connection_source(int p_idx) const;
@@ -175,7 +179,7 @@ public:
 	int add_value(const Variant &p_value);
 	int add_node_path(const NodePath &p_path);
 	int add_node(int p_parent, int p_owner, int p_type, int p_name, int p_instance, int p_index);
-	void add_node_property(int p_node, int p_name, int p_value);
+	void add_node_property(int p_node, int p_name, int p_value, bool p_pinned);
 	void add_node_group(int p_node, int p_group);
 	void set_base_scene(int p_idx);
 	void add_connection(int p_from, int p_to, int p_signal, int p_method, int p_flags, const Vector<int> &p_binds);
@@ -207,6 +211,7 @@ public:
 		GEN_EDIT_STATE_DISABLED,
 		GEN_EDIT_STATE_INSTANCE,
 		GEN_EDIT_STATE_MAIN,
+		GEN_EDIT_STATE_MAIN_INHERITED,
 	};
 
 	Error pack(Node *p_scene);

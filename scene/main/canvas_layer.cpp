@@ -302,6 +302,14 @@ void CanvasLayer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "follow_viewport_scale", PROPERTY_HINT_RANGE, "0.001,1000,0.001,or_greater,or_lesser"), "set_follow_viewport_scale", "get_follow_viewport_scale");
 }
 
+StringName CanvasLayer::get_property_pin_proxy(const StringName &p_property) const {
+	if (p_property == "rotation_degrees") {
+		return "rotation";
+	} else {
+		return Node::get_property_pin_proxy(p_property);
+	}
+}
+
 CanvasLayer::CanvasLayer() {
 	vp = nullptr;
 	scale = Vector2(1, 1);

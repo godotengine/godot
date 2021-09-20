@@ -411,6 +411,9 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("docks/property_editor/auto_refresh_interval", 0.3);
 	_initial_set("docks/property_editor/subresource_hue_tint", 0.75);
 	hints["docks/property_editor/subresource_hue_tint"] = PropertyInfo(Variant::REAL, "docks/property_editor/subresource_hue_tint", PROPERTY_HINT_RANGE, "0,1,0.01", PROPERTY_USAGE_DEFAULT);
+	_initial_set("docks/property_editor/auto_pin_on_value_override", true);
+	_initial_set("docks/property_editor/auto_unpin_on_value_revert", true);
+	_initial_set("docks/property_editor/show_pin_ui_only_if_override_possible", true);
 
 	/* Text editor */
 

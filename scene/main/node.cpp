@@ -1866,6 +1866,34 @@ Node *Node::get_deepest_editable_node(Node *p_start_node) const {
 	return node;
 }
 
+void Node::set_property_pinned(const StringName &p_property, bool p_pinned) {
+	StringName ppp = get_property_pin_proxy(p_property);
+	if (p_pinned) {
+		data.pinned_properties.insert(ppp);
+	} else {
+		data.pinned_properties.erase(ppp);
+	}
+}
+
+bool Node::is_property_pinned(const StringName &p_property) const {
+	StringName ppp = get_property_pin_proxy(p_property);
+	return data.pinned_properties.has(ppp);
+}
+
+StringName Node::get_property_pin_proxy(const StringName &p_property) const {
+	return p_property;
+}
+
+void Node::get_pinnable_properties(Set<StringName> &r_pinnable_properties) const {
+	List<PropertyInfo> pi;
+	get_property_list(&pi);
+	for (List<PropertyInfo>::Element *E = pi.front(); E; E = E->next()) {
+		if ((E->get().usage & PROPERTY_USAGE_STORAGE)) {
+			r_pinnable_properties.insert(E->get().name);
+		}
+	}
+}
+
 String Node::to_string() {
 	if (get_script_instance()) {
 		bool valid;
@@ -2747,6 +2775,7 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("print_tree_pretty"), &Node::print_tree_pretty);
 	ClassDB::bind_method(D_METHOD("set_filename", "filename"), &Node::set_filename);
 	ClassDB::bind_method(D_METHOD("get_filename"), &Node::get_filename);
+	ClassDB::bind_method(D_METHOD("_set_property_pinned", "property", "pinned"), &Node::set_property_pinned);
 	ClassDB::bind_method(D_METHOD("propagate_notification", "what"), &Node::propagate_notification);
 	ClassDB::bind_method(D_METHOD("propagate_call", "method", "args", "parent_first"), &Node::propagate_call, DEFVAL(Array()), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("set_physics_process", "enable"), &Node::set_physics_process);

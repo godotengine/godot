@@ -439,6 +439,14 @@ void Node2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "z_as_relative"), "set_z_as_relative", "is_z_relative");
 }
 
+StringName Node2D::get_property_pin_proxy(const StringName &p_property) const {
+	if (p_property == "rotation_degrees") {
+		return "rotation";
+	} else {
+		return Node::get_property_pin_proxy(p_property);
+	}
+}
+
 Node2D::Node2D() {
 	angle = 0;
 	_scale = Vector2(1, 1);

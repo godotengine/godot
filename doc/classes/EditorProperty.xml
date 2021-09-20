@@ -102,7 +102,7 @@
 		</signal>
 		<signal name="property_checked">
 			<argument index="0" name="property" type="String" />
-			<argument index="1" name="bool" type="String" />
+			<argument index="1" name="checked" type="bool" />
 			<description>
 				Emitted when a property was checked. Used internally.
 			</description>
@@ -118,6 +118,13 @@
 			<argument index="1" name="value" type="Variant" />
 			<description>
 				Emit it if you want to key a property with a single value.
+			</description>
+		</signal>
+		<signal name="property_pin_changed">
+			<argument index="0" name="property" type="String" />
+			<argument index="1" name="pinned" type="bool" />
+			<description>
+				Emit it if you want to change the pinned state of a property.
 			</description>
 		</signal>
 		<signal name="resource_selected">

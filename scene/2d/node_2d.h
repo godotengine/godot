@@ -116,6 +116,8 @@ public:
 
 	Transform2D get_transform() const;
 
+	virtual StringName get_property_pin_proxy(const StringName &p_property) const override;
+
 	Node2D();
 };
 
