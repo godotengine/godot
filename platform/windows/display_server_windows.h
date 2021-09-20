@@ -403,6 +403,7 @@ class DisplayServerWindows : public DisplayServer {
 	void _get_window_style(bool p_main_window, bool p_fullscreen, bool p_borderless, bool p_resizable, bool p_maximized, bool p_no_activate_focus, DWORD &r_style, DWORD &r_style_ex);
 
 	MouseMode mouse_mode;
+	int restore_mouse_trails = 0;
 	bool alt_mem = false;
 	bool gr_mem = false;
 	bool shift_mem = false;
