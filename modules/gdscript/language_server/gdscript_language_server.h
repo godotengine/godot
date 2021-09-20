@@ -44,6 +44,7 @@ class GDScriptLanguageServer : public EditorPlugin {
 	bool thread_running = false;
 	bool started = false;
 	bool use_thread = false;
+	String host = "127.0.0.1";
 	int port = 6008;
 	static void thread_main(void *p_userdata);
 
