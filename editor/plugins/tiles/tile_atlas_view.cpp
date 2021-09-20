@@ -330,7 +330,7 @@ void TileAtlasView::_draw_base_tiles_shape_grid() {
 
 		// Draw only if the tile shape fits in the texture region
 		Transform2D tile_xform;
-		tile_xform.set_origin(texture_region.position + texture_region.size / 2 + in_tile_base_offset);
+		tile_xform.set_origin(texture_region.get_center() + in_tile_base_offset);
 		tile_xform.set_scale(tile_shape_size);
 		tile_set->draw_tile_shape(base_tiles_shape_grid, tile_xform, grid_color);
 	}

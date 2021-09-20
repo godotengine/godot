@@ -1286,7 +1286,7 @@ void RendererSceneCull::_update_instance_visibility_dependencies(Instance *p_ins
 		vd.range_end = p_instance->visibility_range_end;
 		vd.range_begin_margin = p_instance->visibility_range_begin_margin;
 		vd.range_end_margin = p_instance->visibility_range_end_margin;
-		vd.position = p_instance->transformed_aabb.get_position() + p_instance->transformed_aabb.get_size() / 2.0f;
+		vd.position = p_instance->transformed_aabb.get_center();
 		vd.array_index = p_instance->array_index;
 
 		InstanceGeometryData *geom_data = static_cast<InstanceGeometryData *>(p_instance->base_data);
@@ -1636,7 +1636,7 @@ void RendererSceneCull::_update_instance(Instance *p_instance) {
 	}
 
 	if (p_instance->visibility_index != -1) {
-		p_instance->scenario->instance_visibility[p_instance->visibility_index].position = p_instance->transformed_aabb.get_position() + p_instance->transformed_aabb.get_size() / 2.0f;
+		p_instance->scenario->instance_visibility[p_instance->visibility_index].position = p_instance->transformed_aabb.get_center();
 	}
 
 	//move instance and repair
@@ -1851,7 +1851,7 @@ void RendererSceneCull::_update_instance_lightmap_captures(Instance *p_instance)
 		}
 
 		Transform3D to_bounds = lightmap->transform.affine_inverse();
-		Vector3 center = p_instance->transform.xform(p_instance->aabb.position + p_instance->aabb.size * 0.5); //use aabb center
+		Vector3 center = p_instance->transform.xform(p_instance->aabb.get_center()); //use aabb center
 
 		Vector3 lm_pos = to_bounds.xform(center);
 

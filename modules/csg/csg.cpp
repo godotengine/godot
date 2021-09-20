@@ -517,7 +517,7 @@ int CSGBrushOperation::MeshMerge::_create_bvh(FaceBVH *facebvhptr, FaceBVH **fac
 	int index = r_max_alloc++;
 	FaceBVH *_new = &facebvhptr[index];
 	_new->aabb = aabb;
-	_new->center = aabb.position + aabb.size * 0.5;
+	_new->center = aabb.get_center();
 	_new->face = -1;
 	_new->left = left;
 	_new->right = right;
@@ -678,7 +678,7 @@ void CSGBrushOperation::MeshMerge::mark_inside_faces() {
 		facebvh[i].aabb.position = points[faces[i].points[0]];
 		facebvh[i].aabb.expand_to(points[faces[i].points[1]]);
 		facebvh[i].aabb.expand_to(points[faces[i].points[2]]);
-		facebvh[i].center = facebvh[i].aabb.position + facebvh[i].aabb.size * 0.5;
+		facebvh[i].center = facebvh[i].aabb.get_center();
 		facebvh[i].aabb.grow_by(vertex_snap);
 		facebvh[i].next = -1;
 

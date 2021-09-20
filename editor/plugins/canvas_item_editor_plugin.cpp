@@ -387,7 +387,7 @@ Point2 CanvasItemEditor::snap_point(Point2 p_target, unsigned int p_modes, unsig
 		// Self center
 		if ((is_snap_active && snap_node_center && (p_modes & SNAP_NODE_CENTER)) || (p_forced_modes & SNAP_NODE_CENTER)) {
 			if (p_self_canvas_item->_edit_use_rect()) {
-				Point2 center = p_self_canvas_item->get_global_transform_with_canvas().xform(p_self_canvas_item->_edit_get_rect().get_position() + p_self_canvas_item->_edit_get_rect().get_size() / 2.0);
+				Point2 center = p_self_canvas_item->get_global_transform_with_canvas().xform(p_self_canvas_item->_edit_get_rect().get_center());
 				_snap_if_closer_point(p_target, output, snap_target, center, SNAP_TARGET_SELF, rotation);
 			} else {
 				Point2 position = p_self_canvas_item->get_global_transform_with_canvas().xform(Point2());
@@ -525,7 +525,7 @@ Rect2 CanvasItemEditor::_get_encompassing_rect_from_list(List<CanvasItem *> p_li
 
 	// Handles the first element
 	CanvasItem *canvas_item = p_list.front()->get();
-	Rect2 rect = Rect2(canvas_item->get_global_transform_with_canvas().xform(canvas_item->_edit_get_rect().position + canvas_item->_edit_get_rect().size / 2), Size2());
+	Rect2 rect = Rect2(canvas_item->get_global_transform_with_canvas().xform(canvas_item->_edit_get_rect().get_center()), Size2());
 
 	// Expand with the other ones
 	for (CanvasItem *canvas_item2 : p_list) {
@@ -564,7 +564,7 @@ void CanvasItemEditor::_expand_encompassing_rect_using_children(Rect2 &r_rect, c
 		Transform2D xform = p_parent_xform * p_canvas_xform * canvas_item->get_transform();
 		Rect2 rect = canvas_item->_edit_get_rect();
 		if (r_first) {
-			r_rect = Rect2(xform.xform(rect.position + rect.size / 2), Size2());
+			r_rect = Rect2(xform.xform(rect.get_center()), Size2());
 			r_first = false;
 		}
 		r_rect.expand_to(xform.xform(rect.position));
@@ -4896,7 +4896,7 @@ void CanvasItemEditor::_focus_selection(int p_op) {
 	};
 
 	if (p_op == VIEW_CENTER_TO_SELECTION) {
-		center = rect.position + rect.size / 2;
+		center = rect.get_center();
 		Vector2 offset = viewport->get_size() / 2 - editor->get_scene_root()->get_global_canvas_transform().xform(center);
 		view_offset.x -= Math::round(offset.x / zoom);
 		view_offset.y -= Math::round(offset.y / zoom);

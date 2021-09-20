@@ -99,7 +99,7 @@ void AtlasMergingDialog::_generate_merged(Vector<Ref<TileSetAtlasSource>> p_atla
 				if (dst_rect_wide.get_end().x > output_image->get_width() || dst_rect_wide.get_end().y > output_image->get_height()) {
 					output_image->crop(MAX(dst_rect_wide.get_end().x, output_image->get_width()), MAX(dst_rect_wide.get_end().y, output_image->get_height()));
 				}
-				output_image->blit_rect(atlas_source->get_texture()->get_image(), src_rect, (dst_rect_wide.get_position() + dst_rect_wide.get_end()) / 2 - src_rect.size / 2);
+				output_image->blit_rect(atlas_source->get_texture()->get_image(), src_rect, dst_rect_wide.get_center() - src_rect.size / 2);
 			}
 
 			// Compute the atlas offset.

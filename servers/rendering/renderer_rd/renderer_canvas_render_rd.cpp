@@ -1621,7 +1621,7 @@ void RendererCanvasRenderRD::light_update_directional_shadow(RID p_rid, int p_sh
 
 	Vector2 light_dir = p_light_xform.elements[1].normalized();
 
-	Vector2 center = p_clip_rect.position + p_clip_rect.size * 0.5;
+	Vector2 center = p_clip_rect.get_center();
 
 	float to_edge_distance = ABS(light_dir.dot(p_clip_rect.get_support(light_dir)) - light_dir.dot(center));
 

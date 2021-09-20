@@ -467,7 +467,7 @@ int32_t LightmapGI::_compute_bsp_tree(const Vector<Vector3> &p_points, const Loc
 				}
 			}
 			if (i == 0) {
-				centers.push_back(bounds.position + bounds.size * 0.5);
+				centers.push_back(bounds.get_center());
 			} else {
 				bounds_all.merge_with(bounds);
 			}
@@ -555,7 +555,7 @@ void LightmapGI::_plot_triangle_into_octree(GenProbesOctree *p_cell, float p_cel
 		subcell.position = Vector3(pos) * p_cell_size;
 		subcell.size = Vector3(half_size, half_size, half_size) * p_cell_size;
 
-		if (!Geometry3D::triangle_box_overlap(subcell.position + subcell.size * 0.5, subcell.size * 0.5, p_triangle)) {
+		if (!Geometry3D::triangle_box_overlap(subcell.get_center(), subcell.size * 0.5, p_triangle)) {
 			continue;
 		}
 

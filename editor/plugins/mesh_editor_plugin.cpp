@@ -80,7 +80,7 @@ void MeshEditor::edit(Ref<Mesh> p_mesh) {
 	_update_rotation();
 
 	AABB aabb = mesh->get_aabb();
-	Vector3 ofs = aabb.position + aabb.size * 0.5;
+	Vector3 ofs = aabb.get_center();
 	float m = aabb.get_longest_axis_size();
 	if (m != 0) {
 		m = 1.0 / m;

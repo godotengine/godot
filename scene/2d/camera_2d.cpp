@@ -198,7 +198,7 @@ Transform2D Camera2D::get_camera_transform() {
 		screen_rect.position += offset;
 	}
 
-	camera_screen_center = screen_rect.position + screen_rect.size * 0.5;
+	camera_screen_center = screen_rect.get_center();
 
 	Transform2D xform;
 	xform.scale_basis(zoom);

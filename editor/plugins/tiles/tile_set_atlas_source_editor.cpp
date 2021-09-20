@@ -1638,7 +1638,7 @@ void TileSetAtlasSourceEditor::_tile_atlas_control_unscaled_draw() {
 		for (int i = 0; i < tile_set_atlas_source->get_tiles_count(); i++) {
 			Vector2i coords = tile_set_atlas_source->get_tile_id(i);
 			Rect2i texture_region = tile_set_atlas_source->get_tile_texture_region(coords);
-			Vector2i position = (texture_region.position + texture_region.get_end()) / 2 + tile_set_atlas_source->get_tile_effective_texture_offset(coords, 0);
+			Vector2i position = texture_region.get_center() + tile_set_atlas_source->get_tile_effective_texture_offset(coords, 0);
 
 			Transform2D xform = tile_atlas_control->get_parent_control()->get_transform();
 			xform.translate(position);
@@ -1661,7 +1661,7 @@ void TileSetAtlasSourceEditor::_tile_atlas_control_unscaled_draw() {
 					continue;
 				}
 				Rect2i texture_region = tile_set_atlas_source->get_tile_texture_region(E->get().tile);
-				Vector2i position = (texture_region.position + texture_region.get_end()) / 2 + tile_set_atlas_source->get_tile_effective_texture_offset(E->get().tile, 0);
+				Vector2i position = texture_region.get_center() + tile_set_atlas_source->get_tile_effective_texture_offset(E->get().tile, 0);
 
 				Transform2D xform = tile_atlas_control->get_parent_control()->get_transform();
 				xform.translate(position);
@@ -1805,7 +1805,7 @@ void TileSetAtlasSourceEditor::_tile_alternatives_control_unscaled_draw() {
 					continue;
 				}
 				Rect2i rect = tile_atlas_view->get_alternative_tile_rect(coords, alternative_tile);
-				Vector2 position = (rect.get_position() + rect.get_end()) / 2;
+				Vector2 position = rect.get_center();
 
 				Transform2D xform = alternative_tiles_control->get_parent_control()->get_transform();
 				xform.translate(position);
@@ -1829,7 +1829,7 @@ void TileSetAtlasSourceEditor::_tile_alternatives_control_unscaled_draw() {
 					continue;
 				}
 				Rect2i rect = tile_atlas_view->get_alternative_tile_rect(E->get().tile, E->get().alternative);
-				Vector2 position = (rect.get_position() + rect.get_end()) / 2;
+				Vector2 position = rect.get_center();
 
 				Transform2D xform = alternative_tiles_control->get_parent_control()->get_transform();
 				xform.translate(position);

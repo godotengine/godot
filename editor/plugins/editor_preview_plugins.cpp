@@ -718,7 +718,7 @@ Ref<Texture2D> EditorMeshPreviewPlugin::generate(const RES &p_from, const Size2 
 	RS::get_singleton()->instance_set_base(mesh_instance, mesh->get_rid());
 
 	AABB aabb = mesh->get_aabb();
-	Vector3 ofs = aabb.position + aabb.size * 0.5;
+	Vector3 ofs = aabb.get_center();
 	aabb.position -= ofs;
 	Transform3D xform;
 	xform.basis = Basis().rotated(Vector3(0, 1, 0), -Math_PI * 0.125);
