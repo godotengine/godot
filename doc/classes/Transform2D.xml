@@ -37,6 +37,16 @@
 		</method>
 		<method name="Transform2D" qualifiers="constructor">
 			<return type="Transform2D" />
+			<argument index="0" name="rotation" type="float" />
+			<argument index="1" name="scale" type="Vector2" />
+			<argument index="2" name="skew" type="float" />
+			<argument index="3" name="position" type="Vector2" />
+			<description>
+				Constructs the transform from a given angle (in radians), scale, skew (in radians) and position.
+			</description>
+		</method>
+		<method name="Transform2D" qualifiers="constructor">
+			<return type="Transform2D" />
 			<argument index="0" name="x_axis" type="Vector2" />
 			<argument index="1" name="y_axis" type="Vector2" />
 			<argument index="2" name="origin" type="Vector2" />
@@ -84,6 +94,12 @@
 				Returns the scale.
 			</description>
 		</method>
+		<method name="get_skew" qualifiers="const">
+			<return type="float" />
+			<description>
+				Returns the transform's skew (in radians).
+			</description>
+		</method>
 		<method name="interpolate_with" qualifiers="const">
 			<return type="Transform2D" />
 			<argument index="0" name="xform" type="Transform2D" />
@@ -125,14 +141,8 @@
 			</description>
 		</method>
 		<method name="operator *" qualifiers="operator">
-			<return type="Vector2" />
-			<argument index="0" name="right" type="Vector2" />
-			<description>
-			</description>
-		</method>
-		<method name="operator *" qualifiers="operator">
-			<return type="Rect2" />
-			<argument index="0" name="right" type="Rect2" />
+			<return type="PackedVector2Array" />
+			<argument index="0" name="right" type="PackedVector2Array" />
 			<description>
 			</description>
 		</method>
@@ -143,8 +153,14 @@
 			</description>
 		</method>
 		<method name="operator *" qualifiers="operator">
-			<return type="PackedVector2Array" />
-			<argument index="0" name="right" type="PackedVector2Array" />
+			<return type="Rect2" />
+			<argument index="0" name="right" type="Rect2" />
+			<description>
+			</description>
+		</method>
+		<method name="operator *" qualifiers="operator">
+			<return type="Vector2" />
+			<argument index="0" name="right" type="Vector2" />
 			<description>
 			</description>
 		</method>
@@ -204,6 +220,20 @@
 			<argument index="0" name="rotation" type="float" />
 			<description>
 				Sets the transform's rotation (in radians).
+			</description>
+		</method>
+		<method name="set_scale">
+			<return type="void" />
+			<argument index="0" name="scale" type="Vector2" />
+			<description>
+				Sets the transform's scale.
+			</description>
+		</method>
+		<method name="set_skew">
+			<return type="void" />
+			<argument index="0" name="skew" type="float" />
+			<description>
+				Sets the transform's skew (in radians).
 			</description>
 		</method>
 		<method name="translated" qualifiers="const">

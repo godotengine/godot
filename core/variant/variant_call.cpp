@@ -1702,6 +1702,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(Transform2D, get_rotation, sarray(), varray());
 	bind_method(Transform2D, get_origin, sarray(), varray());
 	bind_method(Transform2D, get_scale, sarray(), varray());
+	bind_method(Transform2D, get_skew, sarray(), varray());
 	bind_method(Transform2D, orthonormalized, sarray(), varray());
 	bind_method(Transform2D, rotated, sarray("phi"), varray());
 	bind_method(Transform2D, scaled, sarray("scale"), varray());
@@ -1711,6 +1712,8 @@ static void _register_variant_builtin_methods() {
 	bind_method(Transform2D, interpolate_with, sarray("xform", "weight"), varray());
 	bind_method(Transform2D, is_equal_approx, sarray("xform"), varray());
 	bind_method(Transform2D, set_rotation, sarray("rotation"), varray());
+	bind_method(Transform2D, set_scale, sarray("scale"), varray());
+	bind_method(Transform2D, set_skew, sarray("skew"), varray());
 	bind_method(Transform2D, looking_at, sarray("target"), varray(Vector2()));
 
 	/* Basis */
