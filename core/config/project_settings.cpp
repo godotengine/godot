@@ -55,11 +55,7 @@ String ProjectSettings::get_resource_path() const {
 const String ProjectSettings::IMPORTED_FILES_PATH("res://.godot/imported");
 
 String ProjectSettings::localize_path(const String &p_path) const {
-	if (resource_path == "") {
-		return p_path; //not initialized yet
-	}
-
-	if (p_path.begins_with("res://") || p_path.begins_with("user://") ||
+	if (resource_path.is_empty() || p_path.begins_with("res://") || p_path.begins_with("user://") ||
 			(p_path.is_absolute_path() && !p_path.begins_with(resource_path))) {
 		return p_path.simplify_path();
 	}
