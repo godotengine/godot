@@ -399,8 +399,9 @@ void RichTextLabel::_shape_line(ItemFrame *p_frame, int p_line, const Ref<Font> 
 	// Shape current paragraph.
 	String text;
 	Item *it_to = (p_line + 1 < p_frame->lines.size()) ? p_frame->lines[p_line + 1].from : nullptr;
+	int remaining_characters = visible_characters - l.char_offset;
 	for (Item *it = l.from; it && it != it_to; it = _get_next_item(it)) {
-		if (visible_characters >= 0 && l.char_offset + l.char_count > visible_characters) {
+		if (visible_characters >= 0 && remaining_characters <= 0) {
 			break;
 		}
 		switch (it->type) {
@@ -427,7 +428,8 @@ void RichTextLabel::_shape_line(ItemFrame *p_frame, int p_line, const Ref<Font> 
 				}
 				l.text_buf->add_string("\n", font, font_size, Dictionary(), "");
 				text += "\n";
-				l.char_count += 1;
+				l.char_count++;
+				remaining_characters--;
 			} break;
 			case ITEM_TEXT: {
 				ItemText *t = (ItemText *)it;
@@ -442,9 +444,10 @@ void RichTextLabel::_shape_line(ItemFrame *p_frame, int p_line, const Ref<Font> 
 				Dictionary font_ftr = _find_font_features(it);
 				String lang = _find_language(it);
 				String tx = t->text;
-				if (visible_characters >= 0 && l.char_offset + l.char_count + tx.length() > visible_characters) {
-					tx = tx.substr(0, l.char_offset + l.char_count + tx.length() - visible_characters);
+				if (visible_characters >= 0 && remaining_characters >= 0) {
+					tx = tx.substr(0, remaining_characters);
 				}
+				remaining_characters -= tx.length();
 
 				l.text_buf->add_string(tx, font, font_size, font_ftr, lang);
 				text += tx;
@@ -454,7 +457,8 @@ void RichTextLabel::_shape_line(ItemFrame *p_frame, int p_line, const Ref<Font> 
 				ItemImage *img = (ItemImage *)it;
 				l.text_buf->add_object((uint64_t)it, img->image->get_size(), img->inline_align, 1);
 				text += String::chr(0xfffc);
-				l.char_count += 1;
+				l.char_count++;
+				remaining_characters--;
 			} break;
 			case ITEM_TABLE: {
 				ItemTable *table = static_cast<ItemTable *>(it);
@@ -483,6 +487,7 @@ void RichTextLabel::_shape_line(ItemFrame *p_frame, int p_line, const Ref<Font> 
 						int cell_ch = (char_offset - (l.char_offset + l.char_count));
 						l.char_count += cell_ch;
 						t_char_count += cell_ch;
+						remaining_characters -= cell_ch;
 
 						table->columns.write[column].min_width = MAX(table->columns[column].min_width, ceil(frame->lines[i].text_buf->get_size().x));
 						table->columns.write[column].max_width = MAX(table->columns[column].max_width, ceil(frame->lines[i].text_buf->get_non_wraped_size().x));
@@ -3855,7 +3860,12 @@ String RichTextLabel::get_parsed_text() const {
 	String text = "";
 	Item *it = main;
 	while (it) {
-		if (it->type == ITEM_TEXT) {
+		if (it->type == ITEM_DROPCAP) {
+			const ItemDropcap *dc = (ItemDropcap *)it;
+			if (dc != nullptr) {
+				text += dc->text;
+			}
+		} else if (it->type == ITEM_TEXT) {
 			ItemText *t = static_cast<ItemText *>(it);
 			text += t->text;
 		} else if (it->type == ITEM_NEWLINE) {
@@ -3926,7 +3936,6 @@ void RichTextLabel::set_percent_visible(float p_percent) {
 		if (p_percent < 0 || p_percent >= 1) {
 			visible_characters = -1;
 			percent_visible = 1;
-
 		} else {
 			visible_characters = get_total_character_count() * p_percent;
 			percent_visible = p_percent;
@@ -4160,16 +4169,20 @@ void RichTextLabel::_bind_methods() {
 }
 
 void RichTextLabel::set_visible_characters(int p_visible) {
-	visible_characters = p_visible;
-	if (p_visible == -1) {
-		percent_visible = 1;
-	} else {
-		int total_char_count = get_total_character_count();
-		if (total_char_count > 0) {
-			percent_visible = (float)p_visible / (float)total_char_count;
+	if (visible_characters != p_visible) {
+		visible_characters = p_visible;
+		if (p_visible == -1) {
+			percent_visible = 1;
+		} else {
+			int total_char_count = get_total_character_count();
+			if (total_char_count > 0) {
+				percent_visible = (float)p_visible / (float)total_char_count;
+			}
 		}
+		main->first_invalid_line = 0; //invalidate ALL
+		_validate_line_caches(main);
+		update();
 	}
-	update();
 }
 
 int RichTextLabel::get_visible_characters() const {
@@ -4177,9 +4190,19 @@ int RichTextLabel::get_visible_characters() const {
 }
 
 int RichTextLabel::get_total_character_count() const {
+	// Note: Do not use line buffer "char_count", it includes only visible characters.
 	int tc = 0;
-	for (int i = 0; i < current_frame->lines.size(); i++) {
-		tc += current_frame->lines[i].char_count;
+	Item *it = main;
+	while (it) {
+		if (it->type == ITEM_TEXT) {
+			ItemText *t = static_cast<ItemText *>(it);
+			tc += t->text.length();
+		} else if (it->type == ITEM_NEWLINE) {
+			tc++;
+		} else if (it->type == ITEM_IMAGE) {
+			tc++;
+		}
+		it = _get_next_item(it, true);
 	}
 
 	return tc;
