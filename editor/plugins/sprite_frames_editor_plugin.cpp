@@ -54,24 +54,46 @@ void SpriteFramesEditor::_open_sprite_sheet() {
 	file_split_sheet->popup_centered_ratio();
 }
 
-void SpriteFramesEditor::_sheet_preview_draw() {
+int SpriteFramesEditor::_sheet_preview_position_to_frame_index(const Point2 &p_position) {
+	if (p_position.x < 0 || p_position.y < 0) {
+		return -1;
+	}
 
-	Size2i size = split_sheet_preview->get_size();
+	Size2i texture_size = split_sheet_preview->get_texture()->get_size();
 	int h = split_sheet_h->get_value();
 	int v = split_sheet_v->get_value();
-	int width = size.width / h;
-	int height = size.height / v;
+	if (h > texture_size.width || v > texture_size.height) {
+		return -1;
+	}
+
+	int x = int(p_position.x) / (texture_size.width / h);
+	int y = int(p_position.y) / (texture_size.height / v);
+	if (x >= h || y >= v) {
+		return -1;
+	}
+	return h * y + x;
+}
+
+void SpriteFramesEditor::_sheet_preview_draw() {
+
+	Size2i texture_size = split_sheet_preview->get_texture()->get_size();
+	int h = split_sheet_h->get_value();
+	int v = split_sheet_v->get_value();
+	int width = texture_size.width / h;
+	int height = texture_size.height / v;
 	const float a = 0.3;
-	for (int i = 1; i < h; i++) {
+	int y_end = v * height;
+	for (int i = 0; i <= h; i++) {
 
 		int x = i * width;
-		split_sheet_preview->draw_line(Point2(x, 0), Point2(x, size.height), Color(1, 1, 1, a));
-		split_sheet_preview->draw_line(Point2(x + 1, 0), Point2(x + 1, size.height), Color(0, 0, 0, a));
+		split_sheet_preview->draw_line(Point2(x, 0), Point2(x, y_end), Color(1, 1, 1, a));
+		split_sheet_preview->draw_line(Point2(x + 1, 0), Point2(x + 1, y_end), Color(0, 0, 0, a));
 	}
-	for (int i = 1; i < v; i++) {
+	int x_end = h * width;
+	for (int i = 0; i <= v; i++) {
 		int y = i * height;
-		split_sheet_preview->draw_line(Point2(0, y), Point2(size.width, y), Color(1, 1, 1, a));
-		split_sheet_preview->draw_line(Point2(0, y + 1), Point2(size.width, y + 1), Color(0, 0, 0, a));
+		split_sheet_preview->draw_line(Point2(0, y), Point2(x_end, y), Color(1, 1, 1, a));
+		split_sheet_preview->draw_line(Point2(0, y + 1), Point2(x_end, y + 1), Color(0, 0, 0, a));
 	}
 
 	if (frames_selected.size() == 0) {
@@ -85,7 +107,7 @@ void SpriteFramesEditor::_sheet_preview_draw() {
 	for (Set<int>::Element *E = frames_selected.front(); E; E = E->next()) {
 		int idx = E->get();
 		int xp = idx % h;
-		int yp = (idx - xp) / h;
+		int yp = idx / h;
 		int x = xp * width;
 		int y = yp * height;
 
@@ -106,73 +128,73 @@ void SpriteFramesEditor::_sheet_preview_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseButton> mb = p_event;
 
 	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == BUTTON_LEFT) {
-		Size2i size = split_sheet_preview->get_size();
-		int h = split_sheet_h->get_value();
-		int v = split_sheet_v->get_value();
+		const int idx = _sheet_preview_position_to_frame_index(mb->get_position());
 
-		int x = CLAMP(int(mb->get_position().x) * h / size.width, 0, h - 1);
-		int y = CLAMP(int(mb->get_position().y) * v / size.height, 0, v - 1);
-
-		int idx = h * y + x;
-
-		if (mb->get_shift() && last_frame_selected >= 0) {
-			//select multiple
-			int from = idx;
-			int to = last_frame_selected;
-			if (from > to) {
-				SWAP(from, to);
-			}
-
-			for (int i = from; i <= to; i++) {
-				if (mb->get_control()) {
-					frames_selected.erase(i);
-				} else {
-					frames_selected.insert(i);
+		if (idx != -1) {
+			if (mb->get_shift() && last_frame_selected >= 0) {
+				//select multiple
+				int from = idx;
+				int to = last_frame_selected;
+				if (from > to) {
+					SWAP(from, to);
 				}
-			}
-		} else {
-			if (frames_selected.has(idx)) {
-				frames_selected.erase(idx);
+
+				for (int i = from; i <= to; i++) {
+					if (mb->get_control()) {
+						frames_selected.erase(i);
+					} else {
+						frames_selected.insert(i);
+					}
+				}
 			} else {
-				frames_selected.insert(idx);
+				if (frames_selected.has(idx)) {
+					frames_selected.erase(idx);
+				} else {
+					frames_selected.insert(idx);
+				}
 			}
 		}
 
-		last_frame_selected = idx;
-		split_sheet_preview->update();
+		if (last_frame_selected != idx || idx != -1) {
+			last_frame_selected = idx;
+			split_sheet_preview->update();
+		}
 	}
 }
 
 void SpriteFramesEditor::_sheet_add_frames() {
 
-	Size2i size = split_sheet_preview->get_size();
-	int h = split_sheet_h->get_value();
-	int v = split_sheet_v->get_value();
+	Size2i texture_size = split_sheet_preview->get_texture()->get_size();
+	int frame_count_x = split_sheet_h->get_value();
+	int frame_count_y = split_sheet_v->get_value();
+	Size2 frame_size(texture_size.width / frame_count_x, texture_size.height / frame_count_y);
 
 	undo_redo->create_action(TTR("Add Frame"));
 
 	int fc = frames->get_frame_count(edited_anim);
 
-	AtlasTexture *atlas_source = Object::cast_to<AtlasTexture>(*split_sheet_preview->get_texture());
+	Point2 src_origin;
+	Rect2 src_region(Point2(), texture_size);
 
-	Rect2 region_rect = Rect2();
-
-	if (atlas_source && atlas_source->get_atlas().is_valid())
-		region_rect = atlas_source->get_region();
+	AtlasTexture *src_atlas = Object::cast_to<AtlasTexture>(*split_sheet_preview->get_texture());
+	if (src_atlas && src_atlas->get_atlas().is_valid()) {
+		src_origin = src_atlas->get_region().position - src_atlas->get_margin().position;
+		src_region = src_atlas->get_region();
+	}
 
 	for (Set<int>::Element *E = frames_selected.front(); E; E = E->next()) {
 		int idx = E->get();
-		int width = size.width / h;
-		int height = size.height / v;
-		int xp = idx % h;
-		int yp = (idx - xp) / h;
-		int x = (xp * width) + region_rect.position.x;
-		int y = (yp * height) + region_rect.position.y;
+		Point2 frame_coords(idx % frame_count_x, idx / frame_count_x);
+
+		Rect2 frame(frame_coords * frame_size + src_origin, frame_size);
+		Rect2 region = frame.clip(src_region);
+		Rect2 margin(region == Rect2() ? Point2() : region.position - frame.position, frame.size - region.size);
 
 		Ref<AtlasTexture> at;
 		at.instance();
 		at->set_atlas(split_sheet_preview->get_texture());
-		at->set_region(Rect2(x, y, width, height));
+		at->set_region(region);
+		at->set_margin(margin);
 
 		undo_redo->add_do_method(frames, "add_frame", edited_anim, at, -1);
 		undo_redo->add_undo_method(frames, "remove_frame", edited_anim, fc);
