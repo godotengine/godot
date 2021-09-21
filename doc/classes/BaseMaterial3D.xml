@@ -658,19 +658,13 @@
 			Uses a hard cut for lighting, with smoothing affected by roughness.
 		</constant>
 		<constant name="SPECULAR_SCHLICK_GGX" value="0" enum="SpecularMode">
-			Default specular blob.
+			Default specular blob based on the Schlick-GGX approximation.
 		</constant>
-		<constant name="SPECULAR_BLINN" value="1" enum="SpecularMode">
-			Older specular algorithm, included for compatibility.
-		</constant>
-		<constant name="SPECULAR_PHONG" value="2" enum="SpecularMode">
-			Older specular algorithm, included for compatibility.
-		</constant>
-		<constant name="SPECULAR_TOON" value="3" enum="SpecularMode">
+		<constant name="SPECULAR_TOON" value="1" enum="SpecularMode">
 			Toon blob which changes size based on roughness.
 		</constant>
-		<constant name="SPECULAR_DISABLED" value="4" enum="SpecularMode">
-			No specular blob.
+		<constant name="SPECULAR_DISABLED" value="2" enum="SpecularMode">
+			No specular blob. This is the fastest specular mode to render.
 		</constant>
 		<constant name="BILLBOARD_DISABLED" value="0" enum="BillboardMode">
 			Billboard mode is disabled.

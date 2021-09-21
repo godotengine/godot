@@ -219,8 +219,6 @@ ShaderTypes::ShaderTypes() {
 	shader_modes[RS::SHADER_SPATIAL].modes.push_back("diffuse_toon");
 
 	shader_modes[RS::SHADER_SPATIAL].modes.push_back("specular_schlick_ggx");
-	shader_modes[RS::SHADER_SPATIAL].modes.push_back("specular_blinn");
-	shader_modes[RS::SHADER_SPATIAL].modes.push_back("specular_phong");
 	shader_modes[RS::SHADER_SPATIAL].modes.push_back("specular_toon");
 	shader_modes[RS::SHADER_SPATIAL].modes.push_back("specular_disabled");
 

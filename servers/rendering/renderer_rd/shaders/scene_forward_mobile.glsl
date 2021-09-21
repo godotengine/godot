@@ -505,7 +505,7 @@ layout(location = 0) out mediump vec4 frag_color;
 #if !defined(MODE_RENDER_DEPTH) && !defined(MODE_UNSHADED)
 
 /* Make a default specular mode SPECULAR_SCHLICK_GGX. */
-#if !defined(SPECULAR_DISABLED) && !defined(SPECULAR_SCHLICK_GGX) && !defined(SPECULAR_BLINN) && !defined(SPECULAR_PHONG) && !defined(SPECULAR_TOON)
+#if !defined(SPECULAR_DISABLED) && !defined(SPECULAR_SCHLICK_GGX) && !defined(SPECULAR_TOON)
 #define SPECULAR_SCHLICK_GGX
 #endif
 

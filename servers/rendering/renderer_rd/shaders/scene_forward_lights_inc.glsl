@@ -113,11 +113,11 @@ void light_compute(vec3 N, vec3 L, vec3 V, float A, vec3 light_color, float atte
 	float NdotV = dot(N, V);
 	float cNdotV = max(NdotV, 0.0);
 
-#if defined(DIFFUSE_BURLEY) || defined(SPECULAR_BLINN) || defined(SPECULAR_SCHLICK_GGX) || defined(LIGHT_CLEARCOAT_USED)
+#if defined(DIFFUSE_BURLEY) || defined(SPECULAR_SCHLICK_GGX) || defined(LIGHT_CLEARCOAT_USED)
 	vec3 H = normalize(V + L);
 #endif
 
-#if defined(SPECULAR_BLINN) || defined(SPECULAR_SCHLICK_GGX) || defined(LIGHT_CLEARCOAT_USED)
+#if defined(SPECULAR_SCHLICK_GGX) || defined(LIGHT_CLEARCOAT_USED)
 	float cNdotH = clamp(A + dot(N, H), 0.0, 1.0);
 #endif
 
@@ -204,26 +204,7 @@ void light_compute(vec3 N, vec3 L, vec3 V, float A, vec3 light_color, float atte
 
 		// D
 
-#if defined(SPECULAR_BLINN)
-
-		//normalized blinn
-		float shininess = exp2(15.0 * (1.0 - roughness) + 1.0) * 0.25;
-		float blinn = pow(cNdotH, shininess);
-		blinn *= (shininess + 2.0) * (1.0 / (8.0 * M_PI));
-
-		specular_light += light_color * attenuation * specular_amount * blinn * f0 * unpackUnorm4x8(orms).w;
-
-#elif defined(SPECULAR_PHONG)
-
-		vec3 R = normalize(-reflect(L, N));
-		float cRdotV = clamp(A + dot(R, V), 0.0, 1.0);
-		float shininess = exp2(15.0 * (1.0 - roughness) + 1.0) * 0.25;
-		float phong = pow(cRdotV, shininess);
-		phong *= (shininess + 1.0) * (1.0 / (8.0 * M_PI));
-
-		specular_light += light_color * attenuation * specular_amount * phong * f0 * unpackUnorm4x8(orms).w;
-
-#elif defined(SPECULAR_TOON)
+#if defined(SPECULAR_TOON)
 
 		vec3 R = normalize(-reflect(L, N));
 		float RdotV = dot(R, V);

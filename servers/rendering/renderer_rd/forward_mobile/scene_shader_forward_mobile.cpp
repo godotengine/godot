@@ -638,15 +638,7 @@ void SceneShaderForwardMobile::init(RendererStorageRD *p_storage, const String p
 
 		actions.render_mode_defines["sss_mode_skin"] = "#define SSS_MODE_SKIN\n";
 
-		bool force_blinn = GLOBAL_GET("rendering/shading/overrides/force_blinn_over_ggx");
-		if (!force_blinn) {
-			actions.render_mode_defines["specular_schlick_ggx"] = "#define SPECULAR_SCHLICK_GGX\n";
-		} else {
-			actions.render_mode_defines["specular_schlick_ggx"] = "#define SPECULAR_BLINN\n";
-		}
-
-		actions.render_mode_defines["specular_blinn"] = "#define SPECULAR_BLINN\n";
-		actions.render_mode_defines["specular_phong"] = "#define SPECULAR_PHONG\n";
+		actions.render_mode_defines["specular_schlick_ggx"] = "#define SPECULAR_SCHLICK_GGX\n";
 		actions.render_mode_defines["specular_toon"] = "#define SPECULAR_TOON\n";
 		actions.render_mode_defines["specular_disabled"] = "#define SPECULAR_DISABLED\n";
 		actions.render_mode_defines["shadows_disabled"] = "#define SHADOWS_DISABLED\n";
