@@ -3804,7 +3804,12 @@ bool TextServerAdvanced::shaped_text_update_breaks(RID p_shaped) {
 						gl.font_rid = sd_glyphs[i].font_rid;
 						gl.font_size = sd_glyphs[i].font_size;
 						gl.flags = GRAPHEME_IS_BREAK_SOFT | GRAPHEME_IS_VIRTUAL;
-						sd->glyphs.insert(i + sd_glyphs[i].count, gl); // Insert after.
+						if (sd->glyphs[i].flags & GRAPHEME_IS_RTL) {
+							gl.flags |= GRAPHEME_IS_RTL;
+							sd->glyphs.insert(i, gl); // Insert before.
+						} else {
+							sd->glyphs.insert(i + sd_glyphs[i].count, gl); // Insert after.
+						}
 
 						// Update write pointer and size.
 						sd_size = sd->glyphs.size();
@@ -3998,7 +4003,12 @@ bool TextServerAdvanced::shaped_text_update_justification_ops(RID p_shaped) {
 						gl.font_rid = sd->glyphs[i].font_rid;
 						gl.font_size = sd->glyphs[i].font_size;
 						gl.flags = GRAPHEME_IS_SPACE | GRAPHEME_IS_VIRTUAL;
-						sd->glyphs.insert(i + sd->glyphs[i].count, gl); // Insert after.
+						if (sd->glyphs[i].flags & GRAPHEME_IS_RTL) {
+							gl.flags |= GRAPHEME_IS_RTL;
+							sd->glyphs.insert(i, gl); // Insert before.
+						} else {
+							sd->glyphs.insert(i + sd->glyphs[i].count, gl); // Insert after.
+						}
 						i += sd->glyphs[i].count;
 						continue;
 					}
@@ -4147,7 +4157,7 @@ void TextServerAdvanced::_shape_run(ShapedTextDataAdvanced *p_sd, int32_t p_star
 					}
 				}
 				if (p_direction == HB_DIRECTION_RTL || p_direction == HB_DIRECTION_BTT) {
-					w[last_cluster_index].flags |= TextServer::GRAPHEME_IS_RTL;
+					w[last_cluster_index].flags |= GRAPHEME_IS_RTL;
 				}
 				if (last_cluster_valid) {
 					w[last_cluster_index].flags |= GRAPHEME_IS_VALID;
@@ -4168,6 +4178,10 @@ void TextServerAdvanced::_shape_run(ShapedTextDataAdvanced *p_sd, int32_t p_star
 
 			gl.font_rid = p_fonts[p_fb_index];
 			gl.font_size = fs;
+
+			if (glyph_info[i].mask & HB_GLYPH_FLAG_DEFINED) {
+				gl.flags |= GRAPHEME_IS_CONNECTED;
+			}
 
 			gl.index = glyph_info[i].codepoint;
 			if (gl.index != 0) {
@@ -4199,7 +4213,7 @@ void TextServerAdvanced::_shape_run(ShapedTextDataAdvanced *p_sd, int32_t p_star
 		}
 		w[last_cluster_index].count = glyph_count - last_cluster_index;
 		if (p_direction == HB_DIRECTION_RTL || p_direction == HB_DIRECTION_BTT) {
-			w[last_cluster_index].flags |= TextServer::GRAPHEME_IS_RTL;
+			w[last_cluster_index].flags |= GRAPHEME_IS_RTL;
 		}
 		if (last_cluster_valid) {
 			w[last_cluster_index].flags |= GRAPHEME_IS_VALID;

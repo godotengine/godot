@@ -1247,6 +1247,12 @@
 		<constant name="GRAPHEME_IS_PUNCTUATION" value="256" enum="GraphemeFlag">
 			Grapheme is punctuation character.
 		</constant>
+		<constant name="GRAPHEME_IS_UNDERSCORE" value="512" enum="GraphemeFlag">
+			Grapheme is underscore character.
+		</constant>
+		<constant name="GRAPHEME_IS_CONNECTED" value="1024" enum="GraphemeFlag">
+			Grapheme is connected to the previous grapheme. Breaking line before this grapheme is not safe.
+		</constant>
 		<constant name="HINTING_NONE" value="0" enum="Hinting">
 			Disables font hinting (smoother but less crisp).
 		</constant>

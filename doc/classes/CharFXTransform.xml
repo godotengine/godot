@@ -28,6 +28,12 @@
 		<member name="font" type="RID" setter="set_font" getter="get_font">
 			Font resource used to render glyph.
 		</member>
+		<member name="glyph_count" type="int" setter="set_glyph_count" getter="get_glyph_count" default="0">
+			Number of glyphs in the grapheme cluster. This value is set in the first glyph of a cluster. Setting this property won't affect drawing.
+		</member>
+		<member name="glyph_flags" type="int" setter="set_glyph_flags" getter="get_glyph_flags" default="0">
+			Glyph flags. See [enum TextServer.GraphemeFlag] for more info. Setting this property won't affect drawing.
+		</member>
 		<member name="glyph_index" type="int" setter="set_glyph_index" getter="get_glyph_index" default="0">
 			Font specific glyph index.
 		</member>
