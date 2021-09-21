@@ -62,7 +62,7 @@ private:
 
 	MainLoop *main_loop;
 	int video_driver_index;
-	AudioDriverJavaScript *audio_driver_javascript;
+	List<AudioDriverJavaScript *> audio_drivers;
 	VisualServer *visual_server;
 
 	bool swap_ok_cancel;
