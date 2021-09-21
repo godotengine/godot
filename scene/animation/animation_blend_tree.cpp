@@ -248,27 +248,26 @@ double AnimationNodeOneShot::process(double p_time, bool p_seek) {
 		if (fade_in > 0) {
 			blend = time / fade_in;
 		} else {
-			blend = 0; //wtf
+			blend = 0;
 		}
-
-	} else if (!do_start && remaining < fade_out) {
-		if (fade_out) {
+	} else if (!do_start && remaining <= fade_out) {
+		if (fade_out > 0) {
 			blend = (remaining / fade_out);
 		} else {
-			blend = 1.0;
+			blend = 0;
 		}
 	} else {
 		blend = 1.0;
 	}
 
-	float main_rem;
+	double main_rem;
 	if (mix == MIX_MODE_ADD) {
 		main_rem = blend_input(0, p_time, p_seek, 1.0, FILTER_IGNORE, !sync);
 	} else {
 		main_rem = blend_input(0, p_time, p_seek, 1.0 - blend, FILTER_BLEND, !sync);
 	}
 
-	float os_rem = blend_input(1, os_seek ? time : p_time, os_seek, blend, FILTER_PASS, false);
+	double os_rem = blend_input(1, os_seek ? time : p_time, os_seek, blend, FILTER_PASS, false);
 
 	if (do_start) {
 		remaining = os_rem;
