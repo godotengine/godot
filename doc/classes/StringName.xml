@@ -8,60 +8,62 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-		<method name="StringName" qualifiers="constructor">
+	<constructors>
+		<constructor name="StringName">
 			<return type="StringName" />
 			<description>
 				Constructs an empty [StringName].
 			</description>
-		</method>
-		<method name="StringName" qualifiers="constructor">
+		</constructor>
+		<constructor name="StringName">
 			<return type="StringName" />
 			<argument index="0" name="from" type="StringName" />
 			<description>
 				Constructs a [StringName] as a copy of the given [StringName].
 			</description>
-		</method>
-		<method name="StringName" qualifiers="constructor">
+		</constructor>
+		<constructor name="StringName">
 			<return type="StringName" />
 			<argument index="0" name="from" type="String" />
 			<description>
 				Creates a new [StringName] from the given [String].
 			</description>
-		</method>
-		<method name="operator !=" qualifiers="operator">
+		</constructor>
+	</constructors>
+	<operators>
+		<operator name="operator !=">
 			<return type="bool" />
 			<description>
 			</description>
-		</method>
-		<method name="operator !=" qualifiers="operator">
-			<return type="bool" />
-			<argument index="0" name="right" type="String" />
-			<description>
-			</description>
-		</method>
-		<method name="operator !=" qualifiers="operator">
-			<return type="bool" />
-			<argument index="0" name="right" type="StringName" />
-			<description>
-			</description>
-		</method>
-		<method name="operator ==" qualifiers="operator">
-			<return type="bool" />
-			<description>
-			</description>
-		</method>
-		<method name="operator ==" qualifiers="operator">
+		</operator>
+		<operator name="operator !=">
 			<return type="bool" />
 			<argument index="0" name="right" type="String" />
 			<description>
 			</description>
-		</method>
-		<method name="operator ==" qualifiers="operator">
+		</operator>
+		<operator name="operator !=">
 			<return type="bool" />
 			<argument index="0" name="right" type="StringName" />
 			<description>
 			</description>
-		</method>
-	</methods>
+		</operator>
+		<operator name="operator ==">
+			<return type="bool" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator ==">
+			<return type="bool" />
+			<argument index="0" name="right" type="String" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator ==">
+			<return type="bool" />
+			<argument index="0" name="right" type="StringName" />
+			<description>
+			</description>
+		</operator>
+	</operators>
 </class>

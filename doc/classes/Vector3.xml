@@ -16,28 +16,28 @@
 		<link title="Matrix Transform Demo">https://godotengine.org/asset-library/asset/584</link>
 		<link title="All 3D Demos">https://github.com/godotengine/godot-demo-projects/tree/master/3d</link>
 	</tutorials>
-	<methods>
-		<method name="Vector3" qualifiers="constructor">
+	<constructors>
+		<constructor name="Vector3">
 			<return type="Vector3" />
 			<description>
 				Constructs a default-initialized [Vector3] with all components set to [code]0[/code].
 			</description>
-		</method>
-		<method name="Vector3" qualifiers="constructor">
+		</constructor>
+		<constructor name="Vector3">
 			<return type="Vector3" />
 			<argument index="0" name="from" type="Vector3" />
 			<description>
 				Constructs a [Vector3] as a copy of the given [Vector3].
 			</description>
-		</method>
-		<method name="Vector3" qualifiers="constructor">
+		</constructor>
+		<constructor name="Vector3">
 			<return type="Vector3" />
 			<argument index="0" name="from" type="Vector3i" />
 			<description>
 				Constructs a new [Vector3] from [Vector3i].
 			</description>
-		</method>
-		<method name="Vector3" qualifiers="constructor">
+		</constructor>
+		<constructor name="Vector3">
 			<return type="Vector3" />
 			<argument index="0" name="x" type="float" />
 			<argument index="1" name="y" type="float" />
@@ -45,7 +45,9 @@
 			<description>
 				Returns a [Vector3] with the given components.
 			</description>
-		</method>
+		</constructor>
+	</constructors>
+	<methods>
 		<method name="abs" qualifiers="const">
 			<return type="Vector3" />
 			<description>
@@ -219,134 +221,6 @@
 			<description>
 			</description>
 		</method>
-		<method name="operator !=" qualifiers="operator">
-			<return type="bool" />
-			<description>
-			</description>
-		</method>
-		<method name="operator !=" qualifiers="operator">
-			<return type="bool" />
-			<argument index="0" name="right" type="Vector3" />
-			<description>
-			</description>
-		</method>
-		<method name="operator *" qualifiers="operator">
-			<return type="Vector3" />
-			<argument index="0" name="right" type="Vector3" />
-			<description>
-			</description>
-		</method>
-		<method name="operator *" qualifiers="operator">
-			<return type="Vector3" />
-			<argument index="0" name="right" type="Basis" />
-			<description>
-			</description>
-		</method>
-		<method name="operator *" qualifiers="operator">
-			<return type="Vector3" />
-			<argument index="0" name="right" type="Quaternion" />
-			<description>
-			</description>
-		</method>
-		<method name="operator *" qualifiers="operator">
-			<return type="Vector3" />
-			<argument index="0" name="right" type="Transform3D" />
-			<description>
-			</description>
-		</method>
-		<method name="operator *" qualifiers="operator">
-			<return type="Vector3" />
-			<argument index="0" name="right" type="float" />
-			<description>
-			</description>
-		</method>
-		<method name="operator *" qualifiers="operator">
-			<return type="Vector3" />
-			<argument index="0" name="right" type="int" />
-			<description>
-			</description>
-		</method>
-		<method name="operator +" qualifiers="operator">
-			<return type="Vector3" />
-			<argument index="0" name="right" type="Vector3" />
-			<description>
-			</description>
-		</method>
-		<method name="operator -" qualifiers="operator">
-			<return type="Vector3" />
-			<argument index="0" name="right" type="Vector3" />
-			<description>
-			</description>
-		</method>
-		<method name="operator /" qualifiers="operator">
-			<return type="Vector3" />
-			<argument index="0" name="right" type="Vector3" />
-			<description>
-			</description>
-		</method>
-		<method name="operator /" qualifiers="operator">
-			<return type="Vector3" />
-			<argument index="0" name="right" type="float" />
-			<description>
-			</description>
-		</method>
-		<method name="operator /" qualifiers="operator">
-			<return type="Vector3" />
-			<argument index="0" name="right" type="int" />
-			<description>
-			</description>
-		</method>
-		<method name="operator &lt;" qualifiers="operator">
-			<return type="bool" />
-			<argument index="0" name="right" type="Vector3" />
-			<description>
-			</description>
-		</method>
-		<method name="operator &lt;=" qualifiers="operator">
-			<return type="bool" />
-			<argument index="0" name="right" type="Vector3" />
-			<description>
-			</description>
-		</method>
-		<method name="operator ==" qualifiers="operator">
-			<return type="bool" />
-			<description>
-			</description>
-		</method>
-		<method name="operator ==" qualifiers="operator">
-			<return type="bool" />
-			<argument index="0" name="right" type="Vector3" />
-			<description>
-			</description>
-		</method>
-		<method name="operator &gt;" qualifiers="operator">
-			<return type="bool" />
-			<argument index="0" name="right" type="Vector3" />
-			<description>
-			</description>
-		</method>
-		<method name="operator &gt;=" qualifiers="operator">
-			<return type="bool" />
-			<argument index="0" name="right" type="Vector3" />
-			<description>
-			</description>
-		</method>
-		<method name="operator []" qualifiers="operator">
-			<return type="float" />
-			<argument index="0" name="index" type="int" />
-			<description>
-			</description>
-		</method>
-		<method name="operator unary+" qualifiers="operator">
-			<return type="Vector3" />
-			<description>
-			</description>
-		</method>
-		<method name="operator unary-" qualifiers="operator">
-			<return type="Vector3" />
-			<description>
-			</description>
-		</method>
 		<method name="outer" qualifiers="const">
 			<return type="Basis" />
 			<argument index="0" name="with" type="Vector3" />
@@ -483,4 +357,134 @@
 			Back unit vector. Represents the local direction of back, and the global direction of south.
 		</constant>
 	</constants>
+	<operators>
+		<operator name="operator !=">
+			<return type="bool" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator !=">
+			<return type="bool" />
+			<argument index="0" name="right" type="Vector3" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator *">
+			<return type="Vector3" />
+			<argument index="0" name="right" type="Vector3" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator *">
+			<return type="Vector3" />
+			<argument index="0" name="right" type="Basis" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator *">
+			<return type="Vector3" />
+			<argument index="0" name="right" type="Quaternion" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator *">
+			<return type="Vector3" />
+			<argument index="0" name="right" type="Transform3D" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator *">
+			<return type="Vector3" />
+			<argument index="0" name="right" type="float" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator *">
+			<return type="Vector3" />
+			<argument index="0" name="right" type="int" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator +">
+			<return type="Vector3" />
+			<argument index="0" name="right" type="Vector3" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator -">
+			<return type="Vector3" />
+			<argument index="0" name="right" type="Vector3" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator /">
+			<return type="Vector3" />
+			<argument index="0" name="right" type="Vector3" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator /">
+			<return type="Vector3" />
+			<argument index="0" name="right" type="float" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator /">
+			<return type="Vector3" />
+			<argument index="0" name="right" type="int" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator &lt;">
+			<return type="bool" />
+			<argument index="0" name="right" type="Vector3" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator &lt;=">
+			<return type="bool" />
+			<argument index="0" name="right" type="Vector3" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator ==">
+			<return type="bool" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator ==">
+			<return type="bool" />
+			<argument index="0" name="right" type="Vector3" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator &gt;">
+			<return type="bool" />
+			<argument index="0" name="right" type="Vector3" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator &gt;=">
+			<return type="bool" />
+			<argument index="0" name="right" type="Vector3" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator []">
+			<return type="float" />
+			<argument index="0" name="index" type="int" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator unary+">
+			<return type="Vector3" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator unary-">
+			<return type="Vector3" />
+			<description>
+			</description>
+		</operator>
+	</operators>
 </class>

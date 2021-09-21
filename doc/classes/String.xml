@@ -9,34 +9,36 @@
 	<tutorials>
 		<link title="GDScript format strings">https://docs.godotengine.org/en/latest/tutorials/scripting/gdscript/gdscript_format_string.html</link>
 	</tutorials>
-	<methods>
-		<method name="String" qualifiers="constructor">
+	<constructors>
+		<constructor name="String">
 			<return type="String" />
 			<description>
 				Constructs an empty [String] ([code]""[/code]).
 			</description>
-		</method>
-		<method name="String" qualifiers="constructor">
+		</constructor>
+		<constructor name="String">
 			<return type="String" />
 			<argument index="0" name="from" type="String" />
 			<description>
 				Constructs a [String] as a copy of the given [String].
 			</description>
-		</method>
-		<method name="String" qualifiers="constructor">
+		</constructor>
+		<constructor name="String">
 			<return type="String" />
 			<argument index="0" name="from" type="NodePath" />
 			<description>
 				Constructs a new String from the given [NodePath].
 			</description>
-		</method>
-		<method name="String" qualifiers="constructor">
+		</constructor>
+		<constructor name="String">
 			<return type="String" />
 			<argument index="0" name="from" type="StringName" />
 			<description>
 				Constructs a new String from the given [StringName].
 			</description>
-		</method>
+		</constructor>
+	</constructors>
+	<methods>
 		<method name="begins_with" qualifiers="const">
 			<return type="bool" />
 			<argument index="0" name="text" type="String" />
@@ -443,82 +445,6 @@
 			<description>
 			</description>
 		</method>
-		<method name="operator !=" qualifiers="operator">
-			<return type="bool" />
-			<description>
-			</description>
-		</method>
-		<method name="operator !=" qualifiers="operator">
-			<return type="bool" />
-			<argument index="0" name="right" type="String" />
-			<description>
-			</description>
-		</method>
-		<method name="operator !=" qualifiers="operator">
-			<return type="bool" />
-			<argument index="0" name="right" type="StringName" />
-			<description>
-			</description>
-		</method>
-		<method name="operator %" qualifiers="operator">
-			<return type="String" />
-			<argument index="0" name="right" type="Variant" />
-			<description>
-			</description>
-		</method>
-		<method name="operator +" qualifiers="operator">
-			<return type="String" />
-			<argument index="0" name="right" type="String" />
-			<description>
-			</description>
-		</method>
-		<method name="operator &lt;" qualifiers="operator">
-			<return type="bool" />
-			<argument index="0" name="right" type="String" />
-			<description>
-			</description>
-		</method>
-		<method name="operator &lt;=" qualifiers="operator">
-			<return type="bool" />
-			<argument index="0" name="right" type="String" />
-			<description>
-			</description>
-		</method>
-		<method name="operator ==" qualifiers="operator">
-			<return type="bool" />
-			<description>
-			</description>
-		</method>
-		<method name="operator ==" qualifiers="operator">
-			<return type="bool" />
-			<argument index="0" name="right" type="String" />
-			<description>
-			</description>
-		</method>
-		<method name="operator ==" qualifiers="operator">
-			<return type="bool" />
-			<argument index="0" name="right" type="StringName" />
-			<description>
-			</description>
-		</method>
-		<method name="operator &gt;" qualifiers="operator">
-			<return type="bool" />
-			<argument index="0" name="right" type="String" />
-			<description>
-			</description>
-		</method>
-		<method name="operator &gt;=" qualifiers="operator">
-			<return type="bool" />
-			<argument index="0" name="right" type="String" />
-			<description>
-			</description>
-		</method>
-		<method name="operator []" qualifiers="operator">
-			<return type="String" />
-			<argument index="0" name="index" type="int" />
-			<description>
-			</description>
-		</method>
 		<method name="pad_decimals" qualifiers="const">
 			<return type="String" />
 			<argument index="0" name="digits" type="int" />
@@ -843,4 +769,82 @@
 			</description>
 		</method>
 	</methods>
+	<operators>
+		<operator name="operator !=">
+			<return type="bool" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator !=">
+			<return type="bool" />
+			<argument index="0" name="right" type="String" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator !=">
+			<return type="bool" />
+			<argument index="0" name="right" type="StringName" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator %">
+			<return type="String" />
+			<argument index="0" name="right" type="Variant" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator +">
+			<return type="String" />
+			<argument index="0" name="right" type="String" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator &lt;">
+			<return type="bool" />
+			<argument index="0" name="right" type="String" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator &lt;=">
+			<return type="bool" />
+			<argument index="0" name="right" type="String" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator ==">
+			<return type="bool" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator ==">
+			<return type="bool" />
+			<argument index="0" name="right" type="String" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator ==">
+			<return type="bool" />
+			<argument index="0" name="right" type="StringName" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator &gt;">
+			<return type="bool" />
+			<argument index="0" name="right" type="String" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator &gt;=">
+			<return type="bool" />
+			<argument index="0" name="right" type="String" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator []">
+			<return type="String" />
+			<argument index="0" name="index" type="int" />
+			<description>
+			</description>
+		</operator>
+	</operators>
 </class>

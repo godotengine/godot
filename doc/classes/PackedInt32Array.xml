@@ -9,27 +9,29 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-		<method name="PackedInt32Array" qualifiers="constructor">
+	<constructors>
+		<constructor name="PackedInt32Array">
 			<return type="PackedInt32Array" />
 			<description>
 				Constructs an empty [PackedInt32Array].
 			</description>
-		</method>
-		<method name="PackedInt32Array" qualifiers="constructor">
+		</constructor>
+		<constructor name="PackedInt32Array">
 			<return type="PackedInt32Array" />
 			<argument index="0" name="from" type="PackedInt32Array" />
 			<description>
 				Constructs a [PackedInt32Array] as a copy of the given [PackedInt32Array].
 			</description>
-		</method>
-		<method name="PackedInt32Array" qualifiers="constructor">
+		</constructor>
+		<constructor name="PackedInt32Array">
 			<return type="PackedInt32Array" />
 			<argument index="0" name="from" type="Array" />
 			<description>
 				Constructs a new [PackedInt32Array]. Optionally, you can pass in a generic [Array] that will be converted.
 			</description>
-		</method>
+		</constructor>
+	</constructors>
+	<methods>
 		<method name="append">
 			<return type="bool" />
 			<argument index="0" name="value" type="int" />
@@ -85,40 +87,6 @@
 			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if the array is empty.
-			</description>
-		</method>
-		<method name="operator !=" qualifiers="operator">
-			<return type="bool" />
-			<description>
-			</description>
-		</method>
-		<method name="operator !=" qualifiers="operator">
-			<return type="bool" />
-			<argument index="0" name="right" type="PackedInt32Array" />
-			<description>
-			</description>
-		</method>
-		<method name="operator +" qualifiers="operator">
-			<return type="PackedInt32Array" />
-			<argument index="0" name="right" type="PackedInt32Array" />
-			<description>
-			</description>
-		</method>
-		<method name="operator ==" qualifiers="operator">
-			<return type="bool" />
-			<description>
-			</description>
-		</method>
-		<method name="operator ==" qualifiers="operator">
-			<return type="bool" />
-			<argument index="0" name="right" type="PackedInt32Array" />
-			<description>
-			</description>
-		</method>
-		<method name="operator []" qualifiers="operator">
-			<return type="int" />
-			<argument index="0" name="index" type="int" />
-			<description>
 			</description>
 		</method>
 		<method name="push_back">
@@ -183,4 +151,40 @@
 			</description>
 		</method>
 	</methods>
+	<operators>
+		<operator name="operator !=">
+			<return type="bool" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator !=">
+			<return type="bool" />
+			<argument index="0" name="right" type="PackedInt32Array" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator +">
+			<return type="PackedInt32Array" />
+			<argument index="0" name="right" type="PackedInt32Array" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator ==">
+			<return type="bool" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator ==">
+			<return type="bool" />
+			<argument index="0" name="right" type="PackedInt32Array" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator []">
+			<return type="int" />
+			<argument index="0" name="index" type="int" />
+			<description>
+			</description>
+		</operator>
+	</operators>
 </class>
