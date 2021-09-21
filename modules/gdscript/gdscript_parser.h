@@ -1324,7 +1324,7 @@ private:
 	ClassNode *parse_class();
 	void parse_class_name();
 	void parse_extends();
-	void parse_class_body();
+	void parse_class_body(bool p_is_multiline);
 	template <class T>
 	void parse_class_member(T *(GDScriptParser::*p_parse_function)(), AnnotationInfo::TargetKind p_target, const String &p_member_kind);
 	SignalNode *parse_signal();
