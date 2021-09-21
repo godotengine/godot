@@ -55,6 +55,9 @@
 		<member name="suffix" type="String" setter="set_suffix" getter="get_suffix" default="&quot;&quot;">
 			Adds the specified [code]suffix[/code] string after the numerical value of the [SpinBox].
 		</member>
+		<member name="update_on_text_changed" type="bool" setter="set_update_on_text_changed" getter="get_update_on_text_changed" default="false">
+			Sets the value of the [Range] for this [SpinBox] when the [LineEdit] text is [i]changed[/i] instead of [i]submitted[/i]. See [signal LineEdit.text_changed] and [signal LineEdit.text_submitted].
+		</member>
 	</members>
 	<theme_items>
 		<theme_item name="updown" data_type="icon" type="Texture2D">
