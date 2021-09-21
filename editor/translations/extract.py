@@ -5,6 +5,8 @@ import os
 import shutil
 import subprocess
 import sys
+import string
+import re
 
 
 line_nb = False
@@ -150,7 +152,18 @@ def process_file(f, fname):
 
     global main_po, unique_str, unique_loc
 
-    patterns = ['RTR("', 'TTR("', 'TTRC("']
+    patterns = [
+        'RTR("',
+        'TTR("',
+        'TTRC("',
+        'TTRN("',
+        '_initial_set("',
+        '_DEF("',
+        '_DEF_RST("',
+        'ADD_GROUP("',
+        "ADD_PROPERTY(PropertyInfo(Variant::",
+        "ADD_PROPERTYI(PropertyInfo(Variant::",
+    ]
 
     l = f.readline()
     lc = 1
@@ -184,7 +197,12 @@ def process_file(f, fname):
                     idx += 1
                     pos = 0
                 continue
-            pos += len(patterns[idx])
+            if patterns[idx] in ["ADD_PROPERTY(PropertyInfo(Variant::", "ADD_PROPERTYI(PropertyInfo(Variant::"]:
+                pattern = re.compile(r'ADD[_]PROPERTY[I]?[(]PropertyInfo[(]Variant[::](.*?)[,][ ]?["]')
+                newpos = re.search(pattern, l[pos:]).span()
+                pos += newpos[1]
+            else:
+                pos += len(patterns[idx])
 
             msg = ""
             while pos < len(l) and (l[pos] != '"' or l[pos - 1] == "\\"):
@@ -195,23 +213,38 @@ def process_file(f, fname):
             if line_nb:
                 location += ":" + str(lc)
 
-            # Write translator comment.
-            _write_translator_comment(msg, translator_comment)
-            translator_comment = ""
+            msglist = []
+            if patterns[idx] in [
+                '_initial_set("',
+                '_DEF("',
+                '_DEF_RST("',
+                "ADD_PROPERTY(PropertyInfo(Variant::",
+                "ADD_PROPERTYI(PropertyInfo(Variant::",
+            ]:
+                msgs = msg.split("/")
+                for msgtemp in msgs:
+                    msglist.append(string.capwords(msgtemp.replace("_", " ")))
+            else:
+                msglist.append(msg)
 
-            if not msg in unique_str:
-                main_po += "#: " + location + "\n"
-                main_po += 'msgid "' + msg + '"\n'
-                main_po += 'msgstr ""\n\n'
-                unique_str.append(msg)
-                unique_loc[msg] = [location]
-            elif not location in unique_loc[msg]:
-                # Add additional location to previous occurrence too
-                msg_pos = main_po.find('\nmsgid "' + msg + '"')
-                if msg_pos == -1:
-                    print("Someone apparently thought writing Python was as easy as GDScript. Ping Akien.")
-                main_po = main_po[:msg_pos] + " " + location + main_po[msg_pos:]
-                unique_loc[msg].append(location)
+            for newmsg in msglist:
+                # Write translator comment.
+                _write_translator_comment(newmsg, translator_comment)
+                translator_comment = ""
+
+                if not newmsg in unique_str:
+                    main_po += "#: " + location + "\n"
+                    main_po += 'msgid "' + newmsg + '"\n'
+                    main_po += 'msgstr ""\n\n'
+                    unique_str.append(newmsg)
+                    unique_loc[newmsg] = [location]
+                elif not location in unique_loc[newmsg]:
+                    # Add additional location to previous occurrence too
+                    msg_pos = main_po.find('\nmsgid "' + newmsg + '"')
+                    if msg_pos == -1:
+                        print("Someone apparently thought writing Python was as easy as GDScript. Ping Akien.")
+                    main_po = main_po[:msg_pos] + " " + location + main_po[msg_pos:]
+                    unique_loc[newmsg].append(location)
 
         l = f.readline()
         lc += 1

@@ -307,6 +307,8 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	/* Interface */
 
 	// Editor
+	_initial_set("interface/editor/editor_setting_translation", true);
+	_initial_set("interface/editor/property_name_translation", false);
 	_initial_set("interface/editor/display_scale", 0);
 	// Display what the Auto display scale setting effectively corresponds to.
 	float scale = get_auto_display_scale();
