@@ -1155,6 +1155,9 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 	String ctor_method(ICALL_PREFIX + itype.proxy_name + "_Ctor"); // Used only for derived types
 
 	StringBuilder output;
+	StringBuilder property_names;
+	StringBuilder method_names;
+	StringBuilder signal_names;
 
 	output.append("using System;\n"); // IntPtr
 	output.append("using System.Diagnostics;\n"); // DebuggerBrowsable
@@ -1196,16 +1199,41 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 
 	if (itype.is_singleton) {
 		output.append("\n");
+		property_names.append(INDENT2 "public class PropertyName");
+		method_names.append(INDENT2 "public class MethodName");
+		signal_names.append(INDENT2 "public class SignalName");
 	} else if (is_derived_type) {
+		property_names.append(INDENT2 "public new class PropertyName");
+		method_names.append(INDENT2 "public new class MethodName");
+		signal_names.append(INDENT2 "public new class SignalName");
 		if (obj_types.has(itype.base_name)) {
 			output.append(" : ");
 			output.append(obj_types[itype.base_name].proxy_name);
 			output.append("\n");
+			property_names.append(" : ");
+			property_names.append(obj_types[itype.base_name].proxy_name);
+			property_names.append(".PropertyName");
+			method_names.append(" : ");
+			method_names.append(obj_types[itype.base_name].proxy_name);
+			method_names.append(".MethodName");
+			signal_names.append(" : ");
+			signal_names.append(obj_types[itype.base_name].proxy_name);
+			signal_names.append(".SignalName");
 		} else {
 			ERR_PRINT("Base type '" + itype.base_name.operator String() + "' does not exist, for class '" + itype.name + "'.");
 			return ERR_INVALID_DATA;
 		}
+	} else {
+		property_names.append(INDENT2 "public class PropertyName");
+		method_names.append(INDENT2 "public class MethodName");
+		signal_names.append(INDENT2 "public class SignalName");
 	}
+	property_names.append("\n");
+	method_names.append("\n");
+	signal_names.append("\n");
+	property_names.append(INDENT2 "{\n");
+	method_names.append(INDENT2 "{\n");
+	signal_names.append(INDENT2 "{\n");
 
 	output.append(INDENT1 "{");
 
@@ -1287,6 +1315,7 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 
 		for (const List<PropertyInterface>::Element *E = itype.properties.front(); E; E = E->next()) {
 			const PropertyInterface &iprop = E->get();
+			property_names.append(INDENT3 "public const string " + iprop.proxy_name + " = \"" + iprop.cname + "\";\n");
 			Error prop_err = _generate_cs_property(itype, iprop, output);
 			ERR_FAIL_COND_V_MSG(prop_err != OK, prop_err,
 					"Failed to generate property '" + iprop.cname.operator String() +
@@ -1352,9 +1381,15 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 	int method_bind_count = 0;
 	for (const List<MethodInterface>::Element *E = itype.methods.front(); E; E = E->next()) {
 		const MethodInterface &imethod = E->get();
+		method_names.append(INDENT3 "public const string " + imethod.proxy_name + " = \"" + imethod.cname + "\";\n");
 		Error method_err = _generate_cs_method(itype, imethod, method_bind_count, output);
 		ERR_FAIL_COND_V_MSG(method_err != OK, method_err,
 				"Failed to generate method '" + imethod.name + "' for class '" + itype.name + "'.");
+	}
+
+	for (const List<SignalInterface>::Element *E = itype.signals_.front(); E; E = E->next()) {
+		const SignalInterface &isignal = E->get();
+		signal_names.append(INDENT3 "public const string " + isignal.proxy_name + " = \"" + isignal.cname + "\";\n");
 	}
 
 	if (itype.is_singleton) {
@@ -1370,6 +1405,15 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 		if (!find_icall_by_name(ctor_icall.name, custom_icalls))
 			custom_icalls.push_back(ctor_icall);
 	}
+
+	property_names.append(INDENT2 "}\n");
+	output.append(property_names);
+
+	method_names.append(INDENT2 "}\n");
+	output.append(method_names);
+
+	signal_names.append(INDENT2 "}\n");
+	output.append(signal_names);
 
 	output.append(INDENT1 CLOSE_BLOCK /* class */
 					CLOSE_BLOCK /* namespace */);
@@ -2469,13 +2513,31 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 			}
 		}
 
+		// Populate signals
+
+		const HashMap<StringName, MethodInfo> &signal_map = class_info->signal_map;
+		const StringName *k = NULL;
+
+		while ((k = signal_map.next(k))) {
+			SignalInterface isignal;
+
+			const MethodInfo &method_info = signal_map.get(*k);
+
+			isignal.name = method_info.name;
+			isignal.cname = method_info.name;
+
+			isignal.proxy_name = escape_csharp_keyword(snake_to_pascal_case(isignal.name));
+
+			itype.signals_.push_back(isignal);
+		}
+
 		// Populate enums and constants
 
 		List<String> constants;
 		ClassDB::get_integer_constant_list(type_cname, &constants, true);
 
 		const HashMap<StringName, List<StringName>> &enum_map = class_info->enum_map;
-		const StringName *k = NULL;
+		k = NULL;
 
 		while ((k = enum_map.next(k))) {
 			StringName enum_proxy_cname = *k;

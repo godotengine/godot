@@ -174,6 +174,29 @@ class BindingsGenerator {
 		}
 	};
 
+	struct SignalInterface {
+		String name;
+		StringName cname;
+
+		/**
+		 * Name of the C# method
+		 */
+		String proxy_name;
+
+		List<ArgumentInterface> arguments;
+
+		const DocData::MethodDoc *method_doc = NULL;
+
+		bool is_deprecated = false;
+		String deprecation_message;
+
+		void add_argument(const ArgumentInterface &argument) {
+			arguments.push_back(argument);
+		}
+
+		SignalInterface() {}
+	};
+
 	struct TypeInterface {
 		/**
 		 * Identifier name for this type.
@@ -335,6 +358,7 @@ class BindingsGenerator {
 		List<EnumInterface> enums;
 		List<PropertyInterface> properties;
 		List<MethodInterface> methods;
+		List<SignalInterface> signals_;
 
 		const MethodInterface *find_method_by_name(const StringName &p_cname) const {
 			for (const List<MethodInterface>::Element *E = methods.front(); E; E = E->next()) {
