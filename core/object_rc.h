@@ -31,8 +31,6 @@
 #ifndef OBJECTRC_H
 #define OBJECTRC_H
 
-#ifdef DEBUG_ENABLED
-
 #include "core/os/memory.h"
 #include "core/typedefs.h"
 
@@ -75,7 +73,5 @@ public:
 		_ptr.store(p_object, std::memory_order_release);
 	}
 };
-
-#endif
 
 #endif

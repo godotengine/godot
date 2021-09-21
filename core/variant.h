@@ -73,22 +73,12 @@ typedef PoolVector<Color> PoolColorArray;
 #define GCC_ALIGNED_8
 #endif
 
-// With DEBUG_ENABLED, the pointer to a deleted object stored in ObjectRC is set to nullptr,
-// so _OBJ_PTR is not useful for checks in which we want to act as if we still believed the
-// object is alive; e.g., comparing a Variant that points to a deleted object with NIL,
-// should return false regardless DEBUG_ENABLED is defined or not.
-// So in cases like that we use _UNSAFE_OBJ_PROXY_PTR, which serves that purpose. With DEBUG_ENABLED
-// it won't be the real pointer to the object for non-Reference types, but that's fine.
-// We just need it to be unique for each object, to be comparable and not to be forced to NULL
-// when the object is freed.
-#ifdef DEBUG_ENABLED
 #define _REF_OBJ_PTR(m_variant) (reinterpret_cast<Ref<Reference> *>((m_variant)._get_obj().ref.get_data())->ptr())
 #define _OBJ_PTR(m_variant) ((m_variant)._get_obj().rc ? (m_variant)._get_obj().rc->get_ptr() : _REF_OBJ_PTR(m_variant))
+// _UNSAFE_OBJ_PROXY_PTR is needed for comparing an object Variant against NIL or compare two object Variants.
+// It's guaranteed to be unique per object, in contrast to the pointer stored in the RC structure,
+// which is set to null when the object is destroyed.
 #define _UNSAFE_OBJ_PROXY_PTR(m_variant) ((m_variant)._get_obj().rc ? reinterpret_cast<uint8_t *>((m_variant)._get_obj().rc) : reinterpret_cast<uint8_t *>(_REF_OBJ_PTR(m_variant)))
-#else
-#define _OBJ_PTR(m_variant) ((m_variant)._get_obj().obj)
-#define _UNSAFE_OBJ_PROXY_PTR(m_variant) _OBJ_PTR(m_variant)
-#endif
 
 class Variant {
 public:
@@ -149,13 +139,9 @@ private:
 	Type type;
 
 	struct ObjData {
-#ifdef DEBUG_ENABLED
 		// Will be null for every type deriving from Reference as they have their
 		// own reference count mechanism
 		ObjectRC *rc;
-#else
-		Object *obj;
-#endif
 		// Always initialized, but will be null if the Ref<> assigned was null
 		// or this Variant is not even holding a Reference-derived object
 		RefPtr ref;
@@ -193,6 +179,7 @@ public:
 	bool is_one() const;
 
 	ObjectID get_object_instance_id() const;
+	bool is_invalid_object() const;
 
 	operator bool() const;
 	operator signed int() const;

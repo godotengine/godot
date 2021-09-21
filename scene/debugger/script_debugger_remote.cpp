@@ -101,7 +101,7 @@ void ScriptDebuggerRemote::_put_variable(const String &p_name, const Variant &p_
 	packet_peer_stream->put_var(p_name);
 
 	Variant var = p_variable;
-	if (p_variable.get_type() == Variant::OBJECT && !ObjectDB::instance_validate(p_variable)) {
+	if (p_variable.get_type() == Variant::OBJECT && p_variable.operator Object *() == nullptr) {
 		var = Variant();
 	}
 

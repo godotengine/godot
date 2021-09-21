@@ -81,7 +81,7 @@ struct GDScriptDataType {
 				}
 
 				Object *obj = p_variant.operator Object *();
-				if (!obj || !ObjectDB::instance_validate(obj)) {
+				if (!obj) {
 					return false;
 				}
 
@@ -104,7 +104,7 @@ struct GDScriptDataType {
 				}
 
 				Object *obj = p_variant.operator Object *();
-				if (!obj || !ObjectDB::instance_validate(obj)) {
+				if (!obj) {
 					return false;
 				}
 

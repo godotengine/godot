@@ -1162,9 +1162,9 @@ void Variant::call_ptr(const StringName &p_method, const Variant **p_args, int p
 	if (type == Variant::OBJECT) {
 		//call object
 		Object *obj = _OBJ_PTR(*this);
-		if (!obj) {
+		if (unlikely(!obj)) {
 #ifdef DEBUG_ENABLED
-			if (ScriptDebugger::get_singleton() && _get_obj().rc && !ObjectDB::get_instance(_get_obj().rc->instance_id)) {
+			if (_get_obj().rc) {
 				ERR_PRINT("Attempted method call on a deleted object.");
 			}
 #endif
@@ -1374,9 +1374,9 @@ Variant Variant::construct(const Variant::Type p_type, const Variant **p_args, i
 bool Variant::has_method(const StringName &p_method) const {
 	if (type == OBJECT) {
 		Object *obj = _OBJ_PTR(*this);
-		if (!obj) {
+		if (unlikely(!obj)) {
 #ifdef DEBUG_ENABLED
-			if (ScriptDebugger::get_singleton() && _get_obj().rc && !ObjectDB::get_instance(_get_obj().rc->instance_id)) {
+			if (_get_obj().rc) {
 				ERR_PRINT("Attempted method check on a deleted object.");
 			}
 #endif
