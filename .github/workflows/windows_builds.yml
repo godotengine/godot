@@ -5,7 +5,7 @@ on: [push, pull_request]
 # SCONS_CACHE for windows must be set in the build environment
 env:
   GODOT_BASE_BRANCH: master
-  SCONSFLAGS: verbose=yes warnings=all werror=yes debug_symbols=no module_text_server_fb_enabled=yes
+  SCONSFLAGS: verbose=yes warnings=all werror=yes module_text_server_fb_enabled=yes
   SCONS_CACHE_MSVC_CONFIG: true
 
 concurrency:
@@ -33,6 +33,7 @@ jobs:
             target: release
             tools: false
             tests: false
+            sconsflags: debug_symbols=no
 
     steps:
       - uses: actions/checkout@v2
@@ -50,7 +51,7 @@ jobs:
       - name: Compilation
         uses: ./.github/actions/godot-build
         with:
-          sconsflags: ${{ env.SCONSFLAGS }}
+          sconsflags: ${{ env.SCONSFLAGS }} ${{ matrix.sconsflags }}
           platform: windows
           target: ${{ matrix.target }}
           tools: ${{ matrix.tools }}
@@ -62,6 +63,10 @@ jobs:
         if: ${{ matrix.tests }}
         run: |
           ${{ matrix.bin }} --test
+
+      - name: Prepare artifact
+        run: |
+          Remove-Item bin/* -Include *.exp,*.lib,*.pdb -Force
 
       - name: Upload artifact
         uses: ./.github/actions/upload-artifact
