@@ -556,6 +556,11 @@
 				[b]Note:[/b] Consider using [method push_error] and [method push_warning] to print error and warning messages instead of [method print]. This distinguishes them from print messages used for debugging purposes, while also displaying a stack trace when an error or warning is printed.
 			</description>
 		</method>
+		<method name="print_verbose" qualifiers="vararg">
+			<description>
+				If verbose mode is enabled ([method OS.is_stdout_verbose] returning [code]true[/code]), converts one or more arguments of any type to string in the best way possible and prints them to the console.
+			</description>
+		</method>
 		<method name="printerr" qualifiers="vararg">
 			<description>
 				Prints one or more arguments to strings in the best way possible to standard error line.

@@ -487,10 +487,6 @@ struct VariantUtilityFunctions {
 	}
 
 	static inline void print(const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
-		if (p_arg_count < 1) {
-			r_error.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
-			r_error.argument = 1;
-		}
 		String str;
 		for (int i = 0; i < p_arg_count; i++) {
 			String os = p_args[i]->operator String();
@@ -506,11 +502,29 @@ struct VariantUtilityFunctions {
 		r_error.error = Callable::CallError::CALL_OK;
 	}
 
-	static inline void printerr(const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
-		if (p_arg_count < 1) {
-			r_error.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
-			r_error.argument = 1;
+	static inline void print_verbose(const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
+		if (OS::get_singleton()->is_stdout_verbose()) {
+			String str;
+			for (int i = 0; i < p_arg_count; i++) {
+				String os = p_args[i]->operator String();
+
+				if (i == 0) {
+					str = os;
+				} else {
+					str += os;
+				}
+			}
+
+			// No need to use `print_verbose()` as this call already only happens
+			// when verbose mode is enabled. This avoids performing string argument concatenation
+			// when not needed.
+			print_line(str);
 		}
+
+		r_error.error = Callable::CallError::CALL_OK;
+	}
+
+	static inline void printerr(const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
 		String str;
 		for (int i = 0; i < p_arg_count; i++) {
 			String os = p_args[i]->operator String();
@@ -527,10 +541,6 @@ struct VariantUtilityFunctions {
 	}
 
 	static inline void printt(const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
-		if (p_arg_count < 1) {
-			r_error.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
-			r_error.argument = 1;
-		}
 		String str;
 		for (int i = 0; i < p_arg_count; i++) {
 			if (i) {
@@ -544,10 +554,6 @@ struct VariantUtilityFunctions {
 	}
 
 	static inline void prints(const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
-		if (p_arg_count < 1) {
-			r_error.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
-			r_error.argument = 1;
-		}
 		String str;
 		for (int i = 0; i < p_arg_count; i++) {
 			if (i) {
@@ -561,10 +567,6 @@ struct VariantUtilityFunctions {
 	}
 
 	static inline void printraw(const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
-		if (p_arg_count < 1) {
-			r_error.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
-			r_error.argument = 1;
-		}
 		String str;
 		for (int i = 0; i < p_arg_count; i++) {
 			String os = p_args[i]->operator String();
@@ -1246,6 +1248,7 @@ void Variant::_register_variant_utility_functions() {
 	FUNCBINDVARARGV(printt, sarray(), Variant::UTILITY_FUNC_TYPE_GENERAL);
 	FUNCBINDVARARGV(prints, sarray(), Variant::UTILITY_FUNC_TYPE_GENERAL);
 	FUNCBINDVARARGV(printraw, sarray(), Variant::UTILITY_FUNC_TYPE_GENERAL);
+	FUNCBINDVARARGV(print_verbose, sarray(), Variant::UTILITY_FUNC_TYPE_GENERAL);
 	FUNCBINDVARARGV(push_error, sarray(), Variant::UTILITY_FUNC_TYPE_GENERAL);
 	FUNCBINDVARARGV(push_warning, sarray(), Variant::UTILITY_FUNC_TYPE_GENERAL);
 
