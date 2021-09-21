@@ -722,6 +722,38 @@ String String::camelcase_to_underscore(bool lowercase) const {
 	return lowercase ? new_string.to_lower() : new_string;
 }
 
+String String::snake_to_pascal_case(bool p_input_is_upper) const {
+	String ret;
+	Vector<String> parts = this->split("_", true);
+
+	for (int i = 0; i < parts.size(); i++) {
+		String part = parts[i];
+
+		if (part.length()) {
+			part[0] = _find_upper(part[0]);
+			if (p_input_is_upper) {
+				for (int j = 1; j < part.length(); j++)
+					part[j] = _find_lower(part[j]);
+			}
+			ret += part;
+		} else {
+			if (i == 0 || i == (parts.size() - 1)) {
+				// Preserve underscores at the beginning and end
+				ret += "_";
+			} else {
+				// Preserve contiguous underscores
+				if (parts[i - 1].length()) {
+					ret += "__";
+				} else {
+					ret += "_";
+				}
+			}
+		}
+	}
+
+	return ret;
+}
+
 int String::get_slice_count(String p_splitter) const {
 	if (empty()) {
 		return 0;

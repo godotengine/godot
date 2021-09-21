@@ -257,6 +257,7 @@ public:
 	static int64_t to_int(const CharType *p_str, int p_len = -1);
 	String capitalize() const;
 	String camelcase_to_underscore(bool lowercase = true) const;
+	String snake_to_pascal_case(bool p_input_is_upper = false) const;
 
 	int get_slice_count(String p_splitter) const;
 	String get_slice(String p_splitter, int p_slice) const;

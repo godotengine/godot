@@ -39,6 +39,7 @@
 #include "core/os/file_access.h"
 #include "core/os/os.h"
 #include "core/ucaps.h"
+#include "core/ustring.h"
 #include "main/main.h"
 
 #include "../glue/cs_glue_version.gen.h"
@@ -107,38 +108,6 @@ static String fix_doc_description(const String &p_bbcode) {
 			.replace("\t", "")
 			.replace("\r", "")
 			.strip_edges();
-}
-
-static String snake_to_pascal_case(const String &p_identifier, bool p_input_is_upper = false) {
-	String ret;
-	Vector<String> parts = p_identifier.split("_", true);
-
-	for (int i = 0; i < parts.size(); i++) {
-		String part = parts[i];
-
-		if (part.length()) {
-			part[0] = _find_upper(part[0]);
-			if (p_input_is_upper) {
-				for (int j = 1; j < part.length(); j++)
-					part[j] = _find_lower(part[j]);
-			}
-			ret += part;
-		} else {
-			if (i == 0 || i == (parts.size() - 1)) {
-				// Preserve underscores at the beginning and end
-				ret += "_";
-			} else {
-				// Preserve contiguous underscores
-				if (parts[i - 1].length()) {
-					ret += "__";
-				} else {
-					ret += "_";
-				}
-			}
-		}
-	}
-
-	return ret;
 }
 
 static String snake_to_camel_case(const String &p_identifier, bool p_input_is_upper = false) {
@@ -688,7 +657,7 @@ void BindingsGenerator::_apply_prefix_to_enum_constants(BindingsGenerator::EnumI
 				constant_name += parts[i];
 			}
 
-			curr_const.proxy_name = snake_to_pascal_case(constant_name, true);
+			curr_const.proxy_name = constant_name.snake_to_pascal_case(true);
 		}
 	}
 }
@@ -2269,7 +2238,7 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 			iprop.index = ClassDB::get_property_index(type_cname, iprop.cname, &valid);
 			ERR_FAIL_COND_V(!valid, false);
 
-			iprop.proxy_name = escape_csharp_keyword(snake_to_pascal_case(iprop.cname));
+			iprop.proxy_name = escape_csharp_keyword(String(iprop.cname).snake_to_pascal_case());
 
 			// Prevent the property and its enclosing type from sharing the same name
 			if (iprop.proxy_name == itype.proxy_name) {
@@ -2425,7 +2394,7 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 				imethod.add_argument(ivararg);
 			}
 
-			imethod.proxy_name = escape_csharp_keyword(snake_to_pascal_case(imethod.name));
+			imethod.proxy_name = escape_csharp_keyword(imethod.name.snake_to_pascal_case());
 
 			// Prevent the method and its enclosing type from sharing the same name
 			if (imethod.proxy_name == itype.proxy_name) {
@@ -2495,7 +2464,7 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 				ERR_FAIL_NULL_V(value, false);
 				constants.erase(constant_name);
 
-				ConstantInterface iconstant(constant_name, snake_to_pascal_case(constant_name, true), *value);
+				ConstantInterface iconstant(constant_name, constant_name.snake_to_pascal_case(true), *value);
 
 				iconstant.const_doc = NULL;
 				for (int i = 0; i < itype.class_doc->constants.size(); i++) {
@@ -2530,7 +2499,7 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 			int *value = class_info->constant_map.getptr(StringName(E->get()));
 			ERR_FAIL_NULL_V(value, false);
 
-			ConstantInterface iconstant(constant_name, snake_to_pascal_case(constant_name, true), *value);
+			ConstantInterface iconstant(constant_name, constant_name.snake_to_pascal_case(true), *value);
 
 			iconstant.const_doc = NULL;
 			for (int i = 0; i < itype.class_doc->constants.size(); i++) {
@@ -2998,7 +2967,7 @@ void BindingsGenerator::_populate_global_constants() {
 			int constant_value = GlobalConstants::get_global_constant_value(i);
 			StringName enum_name = GlobalConstants::get_global_constant_enum(i);
 
-			ConstantInterface iconstant(constant_name, snake_to_pascal_case(constant_name, true), constant_value);
+			ConstantInterface iconstant(constant_name, constant_name.snake_to_pascal_case(true), constant_value);
 			iconstant.const_doc = const_doc;
 
 			if (enum_name != StringName()) {
