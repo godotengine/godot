@@ -2825,7 +2825,7 @@ case RasterizerCanvas::Item::Command::TYPE_POLYGON:
 
 PREAMBLE(bool)::sort_items_from(int p_start) {
 #if defined(TOOLS_ENABLED) && defined(DEBUG_ENABLED)
-	ERR_FAIL_COND_V((p_start + 1) >= bdata.sort_items.size(), false)
+	ERR_FAIL_COND_V((p_start + 1) >= bdata.sort_items.size(), false);
 #endif
 
 	const BSortItem &start = bdata.sort_items[p_start];
