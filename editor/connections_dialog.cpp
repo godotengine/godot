@@ -31,6 +31,7 @@
 #include "connections_dialog.h"
 
 #include "core/print_string.h"
+#include "core/ustring.h"
 #include "editor_node.h"
 #include "editor_scale.h"
 #include "editor_settings.h"
@@ -719,18 +720,24 @@ void ConnectionsDock::_open_connection_dialog(TreeItem &item) {
 		midname[i] = c;
 	}
 
+	Connection c;
 	Node *dst_node = selectedNode->get_owner() ? selectedNode->get_owner() : selectedNode;
 	if (!dst_node || dst_node->get_script().is_null()) {
 		dst_node = _find_first_script(get_tree()->get_edited_scene_root(), get_tree()->get_edited_scene_root());
+	} else {
+		Ref<Script> script = dst_node->get_script();
+		String extensionname = script->get_path().get_extension();
+		StringName dst_method;
+		if (extensionname == "cs") {
+			dst_method = "On" + midname.snake_to_pascal_case() + signal.snake_to_pascal_case();
+		} else {
+			dst_method = "_on_" + midname + "_" + signal;
+		}
+		c.method = dst_method;
 	}
-
-	StringName dst_method = "_on_" + midname + "_" + signal;
-
-	Connection c;
 	c.source = selectedNode;
 	c.signal = StringName(signalname);
 	c.target = dst_node;
-	c.method = dst_method;
 	connect_dialog->popup_dialog(signalname);
 	connect_dialog->init(c);
 	connect_dialog->set_title(TTR("Connect a Signal to a Method"));
