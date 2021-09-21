@@ -244,59 +244,59 @@ void MobileVRInterface::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "k2", PROPERTY_HINT_RANGE, "0.1,10.0,0.0001"), "set_k2", "get_k2");
 }
 
-void MobileVRInterface::set_eye_height(const real_t p_eye_height) {
+void MobileVRInterface::set_eye_height(const double p_eye_height) {
 	eye_height = p_eye_height;
 }
 
-real_t MobileVRInterface::get_eye_height() const {
+double MobileVRInterface::get_eye_height() const {
 	return eye_height;
 }
 
-void MobileVRInterface::set_iod(const real_t p_iod) {
+void MobileVRInterface::set_iod(const double p_iod) {
 	intraocular_dist = p_iod;
 };
 
-real_t MobileVRInterface::get_iod() const {
+double MobileVRInterface::get_iod() const {
 	return intraocular_dist;
 };
 
-void MobileVRInterface::set_display_width(const real_t p_display_width) {
+void MobileVRInterface::set_display_width(const double p_display_width) {
 	display_width = p_display_width;
 };
 
-real_t MobileVRInterface::get_display_width() const {
+double MobileVRInterface::get_display_width() const {
 	return display_width;
 };
 
-void MobileVRInterface::set_display_to_lens(const real_t p_display_to_lens) {
+void MobileVRInterface::set_display_to_lens(const double p_display_to_lens) {
 	display_to_lens = p_display_to_lens;
 };
 
-real_t MobileVRInterface::get_display_to_lens() const {
+double MobileVRInterface::get_display_to_lens() const {
 	return display_to_lens;
 };
 
-void MobileVRInterface::set_oversample(const real_t p_oversample) {
+void MobileVRInterface::set_oversample(const double p_oversample) {
 	oversample = p_oversample;
 };
 
-real_t MobileVRInterface::get_oversample() const {
+double MobileVRInterface::get_oversample() const {
 	return oversample;
 };
 
-void MobileVRInterface::set_k1(const real_t p_k1) {
+void MobileVRInterface::set_k1(const double p_k1) {
 	k1 = p_k1;
 };
 
-real_t MobileVRInterface::get_k1() const {
+double MobileVRInterface::get_k1() const {
 	return k1;
 };
 
-void MobileVRInterface::set_k2(const real_t p_k2) {
+void MobileVRInterface::set_k2(const double p_k2) {
 	k2 = p_k2;
 };
 
-real_t MobileVRInterface::get_k2() const {
+double MobileVRInterface::get_k2() const {
 	return k2;
 };
 
@@ -422,7 +422,7 @@ Transform3D MobileVRInterface::get_transform_for_view(uint32_t p_view, const Tra
 	return transform_for_eye;
 };
 
-CameraMatrix MobileVRInterface::get_projection_for_view(uint32_t p_view, real_t p_aspect, real_t p_z_near, real_t p_z_far) {
+CameraMatrix MobileVRInterface::get_projection_for_view(uint32_t p_view, double p_aspect, double p_z_near, double p_z_far) {
 	_THREAD_SAFE_METHOD_
 
 	CameraMatrix eye;
