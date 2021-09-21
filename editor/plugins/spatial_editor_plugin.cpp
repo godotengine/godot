@@ -6947,7 +6947,8 @@ String EditorSpatialGizmoPlugin::get_name() const {
 	if (get_script_instance() && get_script_instance()->has_method("get_name")) {
 		return get_script_instance()->call("get_name");
 	}
-	return TTR("Nameless gizmo");
+	WARN_PRINT_ONCE("A 3D editor gizmo has no name defined (it will appear as \"Unnamed Gizmo\" in the \"View > Gizmos\" menu). To resolve this, override the `get_name()` function to return a String in the script that extends EditorSpatialGizmoPlugin.");
+	return TTR("Unnamed Gizmo");
 }
 
 int EditorSpatialGizmoPlugin::get_priority() const {

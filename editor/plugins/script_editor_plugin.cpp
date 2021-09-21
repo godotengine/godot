@@ -635,39 +635,35 @@ void ScriptEditor::_copy_script_path() {
 }
 
 void ScriptEditor::_close_other_tabs() {
-	int child_count = tab_container->get_child_count();
 	int current_idx = tab_container->get_current_tab();
-	for (int i = child_count - 1; i >= 0; i--) {
-		if (i == current_idx) {
-			continue;
+	for (int i = tab_container->get_child_count() - 1; i >= 0; i--) {
+		if (i != current_idx) {
+			script_close_queue.push_back(i);
 		}
-
-		tab_container->set_current_tab(i);
-		ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(tab_container->get_child(i));
-
-		if (se) {
-			// Maybe there are unsaved changes
-			if (se->is_unsaved()) {
-				_ask_close_current_unsaved_tab(se);
-				continue;
-			}
-		}
-
-		_close_current_tab(false);
 	}
+	_queue_close_tabs();
 }
 
 void ScriptEditor::_close_all_tabs() {
-	int child_count = tab_container->get_child_count();
-	for (int i = child_count - 1; i >= 0; i--) {
-		tab_container->set_current_tab(i);
-		ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(tab_container->get_child(i));
+	for (int i = tab_container->get_child_count() - 1; i >= 0; i--) {
+		script_close_queue.push_back(i);
+	}
+	_queue_close_tabs();
+}
 
+void ScriptEditor::_queue_close_tabs() {
+	while (!script_close_queue.empty()) {
+		int idx = script_close_queue.front()->get();
+		script_close_queue.pop_front();
+
+		tab_container->set_current_tab(idx);
+		ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(tab_container->get_child(idx));
 		if (se) {
-			// Maybe there are unsaved changes
+			// Maybe there are unsaved changes.
 			if (se->is_unsaved()) {
 				_ask_close_current_unsaved_tab(se);
-				continue;
+				erase_tab_confirm->connect(SceneStringNames::get_singleton()->visibility_changed, this, "_queue_close_tabs", varray(), CONNECT_ONESHOT);
+				break;
 			}
 		}
 
@@ -3048,6 +3044,7 @@ void ScriptEditor::_bind_methods() {
 	ClassDB::bind_method("_close_docs_tab", &ScriptEditor::_close_docs_tab);
 	ClassDB::bind_method("_close_all_tabs", &ScriptEditor::_close_all_tabs);
 	ClassDB::bind_method("_close_other_tabs", &ScriptEditor::_close_other_tabs);
+	ClassDB::bind_method("_queue_close_tabs", &ScriptEditor::_queue_close_tabs);
 	ClassDB::bind_method("_open_recent_script", &ScriptEditor::_open_recent_script);
 	ClassDB::bind_method("_theme_option", &ScriptEditor::_theme_option);
 	ClassDB::bind_method("_editor_play", &ScriptEditor::_editor_play);

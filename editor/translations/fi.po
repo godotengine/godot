@@ -16,7 +16,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-08-10 21:40+0000\n"
+"PO-Revision-Date: 2021-09-21 15:22+0000\n"
 "Last-Translator: Tapani Niemi <tapani.niemi@kapsi.fi>\n"
 "Language-Team: Finnish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fi/>\n"
@@ -25,7 +25,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.8-dev\n"
+"X-Generator: Weblate 4.9-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -374,15 +374,13 @@ msgstr "Animaatio: lisää"
 
 #. TRANSLATORS: This describes the target of new animation track, will be inserted into another string.
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "node '%s'"
-msgstr "Ei voida avata tiedostoa '%s'."
+msgstr "solmu '%s'"
 
 #. TRANSLATORS: This describes the target of new animation track, will be inserted into another string.
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "animation"
-msgstr "Animaatio"
+msgstr "animaatio"
 
 #: editor/animation_track_editor.cpp
 msgid "AnimationPlayer can't animate itself, only other players."
@@ -390,9 +388,8 @@ msgstr "AnimationPlayer ei voi animoida itseään, vain muita toistimia."
 
 #. TRANSLATORS: This describes the target of new animation track, will be inserted into another string.
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "property '%s'"
-msgstr "Ominaisuutta '%s' ei löytynyt."
+msgstr "ominaisuus '%s'"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Create & Insert"
@@ -1025,7 +1022,7 @@ msgstr ""
 msgid "Dependencies"
 msgstr "Riippuvuudet"
 
-#: editor/dependency_editor.cpp
+#: editor/dependency_editor.cpp editor/editor_resource_picker.cpp
 msgid "Resource"
 msgstr "Resurssi"
 
@@ -1685,13 +1682,13 @@ msgstr ""
 "Kytke 'Import Pvrtc' päälle projektin asetuksista tai poista 'Driver "
 "Fallback Enabled' asetus."
 
-#: editor/editor_export.cpp platform/android/export/export.cpp
+#: editor/editor_export.cpp platform/android/export/export_plugin.cpp
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
 #: platform/osx/export/export.cpp platform/uwp/export/export.cpp
 msgid "Custom debug template not found."
 msgstr "Mukautettua debug-vientimallia ei löytynyt."
 
-#: editor/editor_export.cpp platform/android/export/export.cpp
+#: editor/editor_export.cpp platform/android/export/export_plugin.cpp
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
 #: platform/osx/export/export.cpp platform/uwp/export/export.cpp
 msgid "Custom release template not found."
@@ -2072,7 +2069,7 @@ msgstr ""
 msgid "(Re)Importing Assets"
 msgstr "Tuodaan (uudelleen) assetteja"
 
-#: editor/editor_help.cpp editor/plugins/spatial_editor_plugin.cpp
+#: editor/editor_help.cpp
 msgid "Top"
 msgstr "Yläpuoli"
 
@@ -2309,6 +2306,9 @@ msgid ""
 "Update Continuously is enabled, which can increase power usage. Click to "
 "disable it."
 msgstr ""
+"Pyörii editori-ikkunan piirtäessä.\n"
+"Päivitä jatkuvasti -asetus on päällä, mikä voi lisätä virrankulutusta. "
+"Napsauta kytkeäksesi se pois päältä."
 
 #: editor/editor_node.cpp
 msgid "Spins when the editor window redraws."
@@ -2582,6 +2582,32 @@ msgstr "Tätä toimintoa ei voi tehdä ilman valittua solmua."
 #: editor/editor_node.cpp
 msgid "Current scene not saved. Open anyway?"
 msgstr "Nykyistä skeneä ei ole tallennettu. Avaa joka tapauksessa?"
+
+#: editor/editor_node.cpp
+msgid "Can't undo while mouse buttons are pressed."
+msgstr ""
+
+#: editor/editor_node.cpp
+msgid "Nothing to undo."
+msgstr ""
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Undo: %s"
+msgstr "Peru"
+
+#: editor/editor_node.cpp
+msgid "Can't redo while mouse buttons are pressed."
+msgstr ""
+
+#: editor/editor_node.cpp
+msgid "Nothing to redo."
+msgstr ""
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Redo: %s"
+msgstr "Tee uudelleen"
 
 #: editor/editor_node.cpp
 msgid "Can't reload a scene that was never saved."
@@ -3263,6 +3289,11 @@ msgid "Merge With Existing"
 msgstr "Yhdistä olemassaolevaan"
 
 #: editor/editor_node.cpp
+#, fuzzy
+msgid "Apply MeshInstance Transforms"
+msgstr "Animaatio: muuta muunnosta"
+
+#: editor/editor_node.cpp
 msgid "Open & Run a Script"
 msgstr "Avaa ja suorita skripti"
 
@@ -3521,6 +3552,10 @@ msgstr ""
 "Valittu resurssi (%s) ei vastaa mitään odotettua tyyppiä tälle "
 "ominaisuudelle (%s)."
 
+#: editor/editor_resource_picker.cpp
+msgid "Quick Load"
+msgstr ""
+
 #: editor/editor_resource_picker.cpp editor/property_editor.cpp
 msgid "Make Unique"
 msgstr "Tee yksilölliseksi"
@@ -3590,10 +3625,9 @@ msgid "Did you forget the '_run' method?"
 msgstr "Unohditko '_run' metodin?"
 
 #: editor/editor_spin_slider.cpp
-#, fuzzy
 msgid "Hold %s to round to integers. Hold Shift for more precise changes."
 msgstr ""
-"Pidä Ctrl pohjassa pyöristääksesi kokonaislukuun. Pidä Shift pohjassa "
+"Pidä %s pohjassa pyöristääksesi kokonaislukuun. Pidä Shift pohjassa "
 "tarkempia muutoksia varten."
 
 #: editor/editor_sub_scene.cpp
@@ -3614,21 +3648,19 @@ msgstr "Tuo solmusta:"
 
 #: editor/export_template_manager.cpp
 msgid "Open the folder containing these templates."
-msgstr ""
+msgstr "Avaa kansio, joka sisältää nämä vientimallit."
 
 #: editor/export_template_manager.cpp
 msgid "Uninstall these templates."
-msgstr ""
+msgstr "Poista näiden vientimallien asennus."
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "There are no mirrors available."
-msgstr "Tiedostoa '%s' ei ole."
+msgstr "Peilipalvelimia ei ole saatavilla."
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Retrieving the mirror list..."
-msgstr "Noudetaan peilipalvelimia, hetkinen..."
+msgstr "Noudetaan luetteloa peilipalvelimista..."
 
 #: editor/export_template_manager.cpp
 msgid "Starting the download..."
@@ -3688,7 +3720,6 @@ msgid "Error getting the list of mirrors."
 msgstr "Virhe peilipalvelimien listan haussa."
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Error parsing JSON with the list of mirrors. Please report this issue!"
 msgstr ""
 "Virhe jäsennettäessä peilipalvelimien JSON-listaa. Raportoi tämä ongelma, "
@@ -3753,19 +3784,16 @@ msgid "Can't open the export templates file."
 msgstr "Vientimallien tiedostoa ei voida avata."
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Invalid version.txt format inside the export templates file: %s."
-msgstr "Vientimalli sisältää virheellisen version.txt tiedoston: %s."
+msgstr "Vientimalli sisältää virheellisen version.txt tallennusmuodon: %s."
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "No version.txt found inside the export templates file."
-msgstr "Vientimalleista ei löytynyt version.txt tiedostoa."
+msgstr "Vientimallista ei löytynyt version.txt tiedostoa."
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Error creating path for extracting templates:"
-msgstr "Virhe luotaessa polkua malleille:"
+msgstr "Virhe luotaessa polkua vientimallien purkamista varten:"
 
 #: editor/export_template_manager.cpp
 msgid "Extracting Export Templates"
@@ -3776,9 +3804,8 @@ msgid "Importing:"
 msgstr "Tuodaan:"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Remove templates for the version '%s'?"
-msgstr "Poista mallin versio '%s'?"
+msgstr "Poista vientimallit versiolle '%s'?"
 
 #: editor/export_template_manager.cpp
 msgid "Uncompressing Android Build Sources"
@@ -3794,11 +3821,11 @@ msgstr "Nykyinen versio:"
 
 #: editor/export_template_manager.cpp
 msgid "Export templates are missing. Download them or install from a file."
-msgstr ""
+msgstr "Vientimallit puuttuvat. Lataa ne tai asenna ne tiedostosta."
 
 #: editor/export_template_manager.cpp
 msgid "Export templates are installed and ready to be used."
-msgstr ""
+msgstr "Vientimallit ovat asennettu ja valmiita käyttöä varten."
 
 #: editor/export_template_manager.cpp
 msgid "Open Folder"
@@ -3806,30 +3833,27 @@ msgstr "Avaa kansio"
 
 #: editor/export_template_manager.cpp
 msgid "Open the folder containing installed templates for the current version."
-msgstr ""
+msgstr "Avaa kansio, joka sisältää vientimallit nykyistä versiota varten."
 
 #: editor/export_template_manager.cpp
 msgid "Uninstall"
 msgstr "Poista asennus"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Uninstall templates for the current version."
-msgstr "Laskurin alkuarvo"
+msgstr "Poista vientimallien asennus nykyiseltä versiolta."
 
 #: editor/export_template_manager.cpp
 msgid "Download from:"
 msgstr "Lataa sijannista:"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Open in Web Browser"
-msgstr "Suorita selaimessa"
+msgstr "Avaa selaimessa"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Copy Mirror URL"
-msgstr "Kopioi virhe"
+msgstr "Kopioi peilipalvelimen web-osoite"
 
 #: editor/export_template_manager.cpp
 msgid "Download and Install"
@@ -4070,7 +4094,7 @@ msgstr "Nimeä uudelleen..."
 
 #: editor/filesystem_dock.cpp
 msgid "Focus the search box"
-msgstr ""
+msgstr "Kohdista hakukenttään"
 
 #: editor/filesystem_dock.cpp
 msgid "Previous Folder/File"
@@ -4416,18 +4440,16 @@ msgid "Extra resource options."
 msgstr "Ylimääräiset resurssivalinnat."
 
 #: editor/inspector_dock.cpp
-#, fuzzy
 msgid "Edit Resource from Clipboard"
-msgstr "Muokkaa resurssien leikepöytää"
+msgstr "Muokkaa leikepöydän resurssia"
 
 #: editor/inspector_dock.cpp
 msgid "Copy Resource"
 msgstr "Kopioi resurssi"
 
 #: editor/inspector_dock.cpp
-#, fuzzy
 msgid "Make Resource Built-In"
-msgstr "Tee sisäänrakennettu"
+msgstr "Tee resurssista sisäänrakennettu"
 
 #: editor/inspector_dock.cpp
 msgid "Go to the previous edited object in history."
@@ -4442,9 +4464,8 @@ msgid "History of recently edited objects."
 msgstr "Viimeisimmin muokatut objektit."
 
 #: editor/inspector_dock.cpp
-#, fuzzy
 msgid "Open documentation for this object."
-msgstr "Avaa dokumentaatio"
+msgstr "Avaa dokumentaatio tälle objektille."
 
 #: editor/inspector_dock.cpp editor/scene_tree_dock.cpp
 msgid "Open Documentation"
@@ -4455,9 +4476,8 @@ msgid "Filter properties"
 msgstr "Suodata ominaisuuksia"
 
 #: editor/inspector_dock.cpp
-#, fuzzy
 msgid "Manage object properties."
-msgstr "Objektin ominaisuudet."
+msgstr "Hallitse objektin ominaisuuksia."
 
 #: editor/inspector_dock.cpp
 msgid "Changes may be lost!"
@@ -4702,9 +4722,8 @@ msgid "Blend:"
 msgstr "Sulautus:"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
-#, fuzzy
 msgid "Parameter Changed:"
-msgstr "Parametri muutettu"
+msgstr "Parametri muutettu:"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
@@ -5434,7 +5453,7 @@ msgstr "Kaikki"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Search templates, projects, and demos"
-msgstr ""
+msgstr "Hae malleja, projekteja ja esimerkkejä"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Search assets (excluding templates, projects, and demos)"
@@ -5641,6 +5660,18 @@ msgid "Move CanvasItem \"%s\" to (%d, %d)"
 msgstr "Siirrä CanvasItem \"%s\" koordinaattiin (%d, %d)"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Locked"
+msgstr "Lukitse valitut"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Grouped"
+msgstr "Ryhmät"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid ""
 "Children of containers have their anchors and margins values overridden by "
 "their parent."
@@ -5826,31 +5857,27 @@ msgstr "Valintatila"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Drag: Rotate selected node around pivot."
-msgstr "Poista valittu solmu tai siirtymä."
+msgstr "Vedä: kierrä valittua solmua kääntökeskiön ympäri."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Alt+Drag: Move selected node."
-msgstr "Alt+Vedä: Siirrä"
+msgstr "Alt+Vedä: Siirrä valittua solmua."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "V: Set selected node's pivot position."
-msgstr "Poista valittu solmu tai siirtymä."
+msgstr "V: Aseta nykyisen solmun kääntökeskiön sijainti."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Alt+RMB: Show list of all nodes at position clicked, including locked."
 msgstr ""
-"Näytä lista kaikista napsautetussa kohdassa olevista objekteista\n"
-"(sama kuin Alt + Hiiren oikea painike valintatilassa)."
+"Alt+Hiiren oikea painike: Näytä lista kaikista napsautetussa kohdassa "
+"olevista solmuista, mukaan lukien lukituista."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "RMB: Add node at position clicked."
-msgstr ""
+msgstr "Hiiren oikea painike: Lisää solmu napsautettuun paikkaan."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -6088,14 +6115,12 @@ msgid "Clear Pose"
 msgstr "Tyhjennä asento"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Add Node Here"
-msgstr "Lisää solmu"
+msgstr "Lisää solmu tähän"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Instance Scene Here"
-msgstr "Luo ilmentymä skenestä tai skeneistä"
+msgstr "Luo ilmentymä skenestä tähän"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Multiply grid step by 2"
@@ -6111,49 +6136,43 @@ msgstr "Panorointinäkymä"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Zoom to 3.125%"
-msgstr ""
+msgstr "Aseta lähennystasoksi 3.125%"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Zoom to 6.25%"
-msgstr ""
+msgstr "Aseta lähennystasoksi 6.25%"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Zoom to 12.5%"
-msgstr ""
+msgstr "Aseta lähennystasoksi 12.5%"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Zoom to 25%"
-msgstr "Loitonna"
+msgstr "Aseta lähennystasoksi 25%"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Zoom to 50%"
-msgstr "Loitonna"
+msgstr "Aseta lähennystasoksi 50%"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Zoom to 100%"
-msgstr "Loitonna"
+msgstr "Aseta lähennystasoksi 100%"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Zoom to 200%"
-msgstr "Loitonna"
+msgstr "Aseta lähennystasoksi 200%"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Zoom to 400%"
-msgstr "Loitonna"
+msgstr "Aseta lähennystasoksi 400%"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Zoom to 800%"
-msgstr "Loitonna"
+msgstr "Aseta lähennystasoksi 800%"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Zoom to 1600%"
-msgstr ""
+msgstr "Aseta lähennystasoksi 1600%"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Add %s"
@@ -6398,9 +6417,8 @@ msgid "Couldn't create a single convex collision shape."
 msgstr "Ei voitu luoda yksittäistä konveksia törmäysmuotoa."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#, fuzzy
 msgid "Create Simplified Convex Shape"
-msgstr "Luo yksittäinen konveksi muoto"
+msgstr "Luo pelkistetty konveksi muoto"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Single Convex Shape"
@@ -6435,9 +6453,8 @@ msgid "No mesh to debug."
 msgstr "Ei meshiä debugattavaksi."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#, fuzzy
 msgid "Mesh has no UV in layer %d."
-msgstr "Mallilla ei ole UV-kanavaa tällä kerroksella"
+msgstr "Meshillä ei ole UV-kanavaa kerroksella %d."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "MeshInstance lacks a Mesh!"
@@ -6502,9 +6519,8 @@ msgstr ""
 "Tämä on nopein (mutta epätarkin) vaihtoehto törmäystunnistukselle."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#, fuzzy
 msgid "Create Simplified Convex Collision Sibling"
-msgstr "Luo yksittäisen konveksin törmäyksen sisar"
+msgstr "Luo pelkistetty konveksin törmäyksen sisar"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid ""
@@ -6512,20 +6528,24 @@ msgid ""
 "This is similar to single collision shape, but can result in a simpler "
 "geometry in some cases, at the cost of accuracy."
 msgstr ""
+"Luo pelkistetyn konveksin törmäysmuodon.\n"
+"Tämä on samankaltainen kuin yksittäinen törmäysmuoto, mutta voi johtaa "
+"joissakin tapauksissa yksinkertaisempaan geometriaan tarkkuuden "
+"kustannuksella."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Multiple Convex Collision Siblings"
 msgstr "Luo useita konvekseja törmäysmuotojen sisaria"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "Creates a polygon-based collision shape.\n"
 "This is a performance middle-ground between a single convex collision and a "
 "polygon-based collision."
 msgstr ""
 "Luo polygonipohjaisen törmäysmuodon.\n"
-"Tämä on suorituskyvyltään välimaastoa kahdelle yllä olevalle vaihtoehdolle."
+"Tämä on suorituskyvyltään yksittäisen konveksin törmäyksen ja "
+"polygonipohjaisen törmäyksen välimaastoa."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Outline Mesh..."
@@ -6592,7 +6612,13 @@ msgid "Remove Selected Item"
 msgstr "Poista valitut kohteet"
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
-msgid "Import from Scene"
+#, fuzzy
+msgid "Import from Scene (Ignore Transforms)"
+msgstr "Tuo skenestä"
+
+#: editor/plugins/mesh_library_editor_plugin.cpp
+#, fuzzy
+msgid "Import from Scene (Apply Transforms)"
 msgstr "Tuo skenestä"
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
@@ -7171,24 +7197,30 @@ msgid "ResourcePreloader"
 msgstr "Resurssien esilataaja"
 
 #: editor/plugins/room_manager_editor_plugin.cpp
-#, fuzzy
 msgid "Flip Portals"
-msgstr "Käännä vaakasuorasti"
+msgstr "Käännä portaalit"
 
 #: editor/plugins/room_manager_editor_plugin.cpp
-#, fuzzy
 msgid "Room Generate Points"
-msgstr "Luotujen pisteiden määrä:"
+msgstr "Luo huoneen pisteet"
 
 #: editor/plugins/room_manager_editor_plugin.cpp
-#, fuzzy
 msgid "Generate Points"
-msgstr "Luotujen pisteiden määrä:"
+msgstr "Luo pisteet"
+
+#: editor/plugins/room_manager_editor_plugin.cpp
+msgid "Flip Portal"
+msgstr "Käännä portaali"
 
 #: editor/plugins/room_manager_editor_plugin.cpp
 #, fuzzy
-msgid "Flip Portal"
-msgstr "Käännä vaakasuorasti"
+msgid "Occluder Set Transform"
+msgstr "Tyhjennä muunnos"
+
+#: editor/plugins/room_manager_editor_plugin.cpp
+#, fuzzy
+msgid "Center Node"
+msgstr "Luo solmu"
 
 #: editor/plugins/root_motion_editor_plugin.cpp
 msgid "AnimationTree has no path set to an AnimationPlayer"
@@ -7693,12 +7725,14 @@ msgid "Skeleton2D"
 msgstr "Skeleton2D"
 
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
-msgid "Make Rest Pose (From Bones)"
-msgstr "Tee lepoasento (luista)"
+#, fuzzy
+msgid "Reset to Rest Pose"
+msgstr "Aseta luut lepoasentoon"
 
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
-msgid "Set Bones to Rest Pose"
-msgstr "Aseta luut lepoasentoon"
+#, fuzzy
+msgid "Overwrite Rest Pose"
+msgstr "Ylikirjoita"
 
 #: editor/plugins/skeleton_editor_plugin.cpp
 msgid "Create physical bones"
@@ -7723,6 +7757,71 @@ msgstr "Ortogonaalinen"
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Perspective"
 msgstr "Perspektiivi"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Top Orthogonal"
+msgstr "Ortogonaalinen"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Top Perspective"
+msgstr "Perspektiivi"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Bottom Orthogonal"
+msgstr "Ortogonaalinen"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Bottom Perspective"
+msgstr "Perspektiivi"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Left Orthogonal"
+msgstr "Ortogonaalinen"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Right Perspective"
+msgstr "Perspektiivi"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Right Orthogonal"
+msgstr "Ortogonaalinen"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Front Orthogonal"
+msgstr "Ortogonaalinen"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Front Perspective"
+msgstr "Perspektiivi"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Rear Orthogonal"
+msgstr "Ortogonaalinen"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Rear Perspective"
+msgstr "Perspektiivi"
+
+#. TRANSLATORS: This will be appended to the view name when Auto Orthogonal is enabled.
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid " [auto]"
+msgstr ""
+
+#. TRANSLATORS: This will be appended to the view name when Portal Occulusion is enabled.
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid " [portals active]"
+msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Transform Aborted."
@@ -7751,20 +7850,17 @@ msgid "None"
 msgstr "Ei mitään"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Rotate"
-msgstr "Kiertotila"
+msgstr "Kierrä"
 
 #. TRANSLATORS: This refers to the movement that changes the position of an object.
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Translate"
-msgstr "Siirrä:"
+msgstr "Siirrä"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Scale"
-msgstr "Skaalaus:"
+msgstr "Skaalaa"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Scaling: "
@@ -7787,52 +7883,44 @@ msgid "Animation Key Inserted."
 msgstr "Animaatioavain lisätty."
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Pitch:"
-msgstr "Nyökkäys (pitch)"
+msgstr "Nyökkäyskulma:"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Yaw:"
-msgstr ""
+msgstr "Kääntymiskulma:"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Size:"
-msgstr "Koko: "
+msgstr "Koko:"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Objects Drawn:"
-msgstr "Objekteja piirretty"
+msgstr "Objekteja piirretty:"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Material Changes:"
-msgstr "Materiaalimuutokset"
+msgstr "Materiaalimuutokset:"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Shader Changes:"
-msgstr "Sävytinmuutokset"
+msgstr "Sävytinmuutokset:"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Surface Changes:"
-msgstr "Pintamuutokset"
+msgstr "Pintamuutokset:"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Draw Calls:"
-msgstr "Piirtokutsuja"
+msgstr "Piirtokutsuja:"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Vertices:"
-msgstr "Kärkipisteet"
+msgstr "Kärkipisteitä:"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "FPS: %d (%s ms)"
-msgstr ""
+msgstr "FPS: %d (%s ms)"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Top View."
@@ -7843,40 +7931,20 @@ msgid "Bottom View."
 msgstr "Pohjanäkymä."
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Bottom"
-msgstr "Pohja"
-
-#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Left View."
 msgstr "Vasen näkymä."
-
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "Left"
-msgstr "Vasen"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Right View."
 msgstr "Oikea näkymä."
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Right"
-msgstr "Oikea"
-
-#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Front View."
 msgstr "Etunäkymä."
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Front"
-msgstr "Etu"
-
-#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Rear View."
 msgstr "Takanäkymä."
-
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "Rear"
-msgstr "Taka"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Align Transform with View"
@@ -7987,9 +8055,8 @@ msgid "Freelook Slow Modifier"
 msgstr "Liikkumisen hitauskerroin"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Toggle Camera Preview"
-msgstr "Muuta kameran kokoa"
+msgstr "Aseta kameran esikatselu"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "View Rotation Locked"
@@ -8011,9 +8078,8 @@ msgstr ""
 "Sitä ei voi käyttää luotettavana pelin sisäisenä tehokkuuden ilmaisimena."
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Convert Rooms"
-msgstr "Muunna muotoon %s"
+msgstr "Muunna huoneet"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "XForm Dialog"
@@ -8035,7 +8101,6 @@ msgstr ""
 "läpi (\"röntgen\")."
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Snap Nodes to Floor"
 msgstr "Tarraa solmut lattiaan"
 
@@ -8053,7 +8118,7 @@ msgstr "Käytä tarttumista"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Converts rooms for portal culling."
-msgstr ""
+msgstr "Muunna huoneet portaalien harvennukseen."
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Bottom View"
@@ -8149,9 +8214,13 @@ msgid "View Grid"
 msgstr "Näytä ruudukko"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "View Portal Culling"
-msgstr "Näyttöruudun asetukset"
+msgstr "Näytä portaalien harvennus"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "View Occlusion Culling"
+msgstr "Näytä portaalien harvennus"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 #: modules/gridmap/grid_map_editor_plugin.cpp
@@ -8219,8 +8288,9 @@ msgid "Post"
 msgstr "Jälki"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Nameless gizmo"
-msgstr "Nimetön muokkain"
+#, fuzzy
+msgid "Unnamed Gizmo"
+msgstr "Nimetön projekti"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Create Mesh2D"
@@ -8471,221 +8541,196 @@ msgid "TextureRegion"
 msgstr "Tekstuurialue"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Colors"
-msgstr "Väri"
+msgstr "Värit"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Fonts"
-msgstr "Fontti"
+msgstr "Fontit"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Icons"
-msgstr "Kuvake"
+msgstr "Kuvakkeet"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Styleboxes"
-msgstr "StyleBox"
+msgstr "Tyylilaatikot"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "{num} color(s)"
-msgstr ""
+msgstr "{num} väriä"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "No colors found."
-msgstr "Aliresursseja ei löydetty."
+msgstr "Värejä ei löytynyt."
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "{num} constant(s)"
-msgstr "Vakiot"
+msgstr "{num} vakiota"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "No constants found."
-msgstr "Värivakio."
+msgstr "Vakioita ei löytynyt."
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "{num} font(s)"
-msgstr ""
+msgstr "{num} fonttia"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "No fonts found."
-msgstr "Ei löytynyt!"
+msgstr "Fontteja ei löytynyt."
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "{num} icon(s)"
-msgstr ""
+msgstr "{num} kuvaketta"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "No icons found."
-msgstr "Ei löytynyt!"
+msgstr "Kuvakkeita ei löytynyt."
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "{num} stylebox(es)"
-msgstr ""
+msgstr "{num} tyylilaatikkoa"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "No styleboxes found."
-msgstr "Aliresursseja ei löydetty."
+msgstr "Tyylilaatikkoja ei löytynyt."
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "{num} currently selected"
-msgstr ""
+msgstr "{num} tällä hetkellä valittuna"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Nothing was selected for the import."
-msgstr ""
+msgstr "Mitään ei ollut valittuna tuontia varten."
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Importing Theme Items"
-msgstr "Tuo teema"
+msgstr "Teeman osien tuonti"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Importing items {n}/{n}"
-msgstr ""
+msgstr "Tuodaan teeman osia {n}/{n}"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Updating the editor"
-msgstr "Poistu editorista?"
+msgstr "Päivitetään editoria"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Finalizing"
-msgstr "Analysoidaan"
+msgstr "Viimeistellään"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Filter:"
-msgstr "Suodatin: "
+msgstr "Suodatin:"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "With Data"
-msgstr ""
+msgstr "Datan kanssa"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Select by data type:"
-msgstr "Valitse solmu"
+msgstr "Valitse datatyypin mukaan:"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Select all visible color items."
-msgstr "Valitse jako poistaaksesi sen."
+msgstr "Valitse kaikki näkyvät värit."
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Select all visible color items and their data."
-msgstr ""
+msgstr "Valitse kaikki näkyvät värit ja niiden data."
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Deselect all visible color items."
-msgstr ""
+msgstr "Poista kaikkien näkyvien värien valinta."
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Select all visible constant items."
-msgstr "Valitse asetus ensin!"
+msgstr "Valitse kaikki näkyvät vakiot."
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Select all visible constant items and their data."
-msgstr ""
+msgstr "Valitse kaikki näkyvät vakiot ja niiden data."
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Deselect all visible constant items."
-msgstr ""
+msgstr "Poista kaikkien näkyvien vakioiden valinta."
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Select all visible font items."
-msgstr "Valitse asetus ensin!"
+msgstr "Valitse kaikki näkyvät fontit."
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Select all visible font items and their data."
-msgstr ""
+msgstr "Valitse kaikki näkyvät fontit ja niiden data."
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Deselect all visible font items."
-msgstr ""
+msgstr "Poista kaikkien näkyvien fonttien valinta."
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Select all visible icon items."
-msgstr "Valitse asetus ensin!"
+msgstr "Valitse kaikki näkyvät kuvakkeet."
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Select all visible icon items and their data."
-msgstr "Valitse asetus ensin!"
+msgstr "Valitse kaikki näkyvät kuvakkeet ja niiden data."
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Deselect all visible icon items."
-msgstr "Valitse asetus ensin!"
+msgstr "Poista kaikkien näkyvien kuvakkeiden valinta."
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Select all visible stylebox items."
-msgstr ""
+msgstr "Valitse kaikki näkyvät tyylilaatikot."
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Select all visible stylebox items and their data."
-msgstr ""
+msgstr "Valitse kaikki näkyvät tyylilaatikot ja niiden data."
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Deselect all visible stylebox items."
-msgstr ""
+msgstr "Poista kaikkien näkyvien tyylilaatikoiden valinta."
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid ""
 "Caution: Adding icon data may considerably increase the size of your Theme "
 "resource."
 msgstr ""
+"Varoitus: kuvakkeiden datan lisäys voi kasvattaa teemaresurssisi kokoa "
+"merkittävästi."
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Collapse types."
-msgstr "Tiivistä kaikki"
+msgstr "Tiivistä tyypit."
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Expand types."
-msgstr "Laajenna kaikki"
+msgstr "Laajenna tyypit."
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Select all Theme items."
-msgstr "Valitse mallitiedosto"
+msgstr "Valitse kaikki teeman osat."
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Select With Data"
-msgstr "Valitse pisteet"
+msgstr "Valitse datan kanssa"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Select all Theme items with item data."
-msgstr ""
+msgstr "Valitse kaikki teeman osat datan kanssa."
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Deselect All"
-msgstr "Valitse kaikki"
+msgstr "Poista kaikki valinnat"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Deselect all Theme items."
-msgstr ""
+msgstr "Poista kaikkien teeman osien valinta."
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Import Selected"
-msgstr "Tuo skene"
+msgstr "Tuo valittu"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid ""
@@ -8693,283 +8738,249 @@ msgid ""
 "closing this window.\n"
 "Close anyway?"
 msgstr ""
+"Tuo osat -välilehdellä on joitakin osia valittuna. Valinta menetetään tämän "
+"ikkunan sulkeuduttua.\n"
+"Suljetaanko silti?"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid ""
 "Select a theme type from the list to edit its items.\n"
 "You can add a custom type or import a type with its items from another theme."
 msgstr ""
+"Valitse teeman tyyppi luettelosta muokataksesi sen osia.\n"
+"Voit lisätä mukautetun tyypin tai tuoda tyypin osineen toisesta teemasta."
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Remove All Color Items"
-msgstr "Poista kaikki"
+msgstr "Poista kaikki värit"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Rename Item"
-msgstr "Poista"
+msgstr "Nimeä osa uudellen"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Remove All Constant Items"
-msgstr "Poista kaikki"
+msgstr "Poista kaikki vakiot"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Remove All Font Items"
-msgstr "Poista kaikki"
+msgstr "Poista kaikki fontit"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Remove All Icon Items"
-msgstr "Poista kaikki"
+msgstr "Poista kaikki kuvakkeet"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Remove All StyleBox Items"
-msgstr "Poista kaikki"
+msgstr "Poista kaikki tyylilaatikot"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid ""
 "This theme type is empty.\n"
 "Add more items to it manually or by importing from another theme."
 msgstr ""
+"Tämä teema on tyhjä.\n"
+"Lisää siihen osia käsin tai tuomalla niitä toisesta teemasta."
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Add Color Item"
-msgstr "Lisää luokka"
+msgstr "Lisää väri"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Add Constant Item"
-msgstr "Lisää luokka"
+msgstr "Lisää vakio"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Add Font Item"
-msgstr "Lisää kohde"
+msgstr "Lisää fontti"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Add Icon Item"
-msgstr "Lisää kohde"
+msgstr "Lisää kuvake"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Add Stylebox Item"
-msgstr "Lisää kaikki"
+msgstr "Lisää tyylilaatikko"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Rename Color Item"
-msgstr "Poista luokka"
+msgstr "Nimeä väri uudelleen"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Rename Constant Item"
-msgstr "Poista luokka"
+msgstr "Nimeä vakio uudelleen"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Rename Font Item"
-msgstr "Nimeä solmu uudelleen"
+msgstr "Nimeä fontti uudelleen"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Rename Icon Item"
-msgstr "Nimeä solmu uudelleen"
+msgstr "Nimeä kuvake uudelleen"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Rename Stylebox Item"
-msgstr "Poista valitut kohteet"
+msgstr "Nimeä tyylilaatikko uudelleen"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Invalid file, not a Theme resource."
-msgstr "Virheellinen tiedosto. Tämä ei ole ääniväylän asettelu ensinkään."
+msgstr "Virheellinen tiedosto, ei ole teemaresurssi."
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Invalid file, same as the edited Theme resource."
-msgstr ""
+msgstr "Virheellinen tiedosto, sama kuin muokattu teemaresurssi."
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Manage Theme Items"
-msgstr "Hallinnoi malleja"
+msgstr "Hallinnoi teeman osia"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Edit Items"
-msgstr "Muokattava osanen"
+msgstr "Muokkaa osia"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Types:"
-msgstr "Tyyppi:"
+msgstr "Tyypit:"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Add Type:"
-msgstr "Tyyppi:"
+msgstr "Lisää tyyppi:"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Add Item:"
-msgstr "Lisää kohde"
+msgstr "Lisää osa:"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Add StyleBox Item"
-msgstr "Lisää kaikki"
+msgstr "Lisää tyylilaatikko"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Remove Items:"
-msgstr "Poista"
+msgstr "Poista osia:"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Remove Class Items"
 msgstr "Poista luokka"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Remove Custom Items"
-msgstr "Poista luokka"
+msgstr "Poista mukautettuja osia"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Remove All Items"
 msgstr "Poista kaikki"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Add Theme Item"
-msgstr "Käyttöliittymäteeman osat"
+msgstr "Lisää teeman osa"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Old Name:"
-msgstr "Solmun nimi:"
+msgstr "Vanha nimi:"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Import Items"
-msgstr "Tuo teema"
+msgstr "Tuo osia"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Default Theme"
-msgstr "Oletus"
+msgstr "Oletusteema"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Editor Theme"
-msgstr "Muokkaa teemaa"
+msgstr "Editorin teema"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Select Another Theme Resource:"
-msgstr "Poista resurssi"
+msgstr "Valitse toinen teemaresurssi:"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Another Theme"
-msgstr "Tuo teema"
+msgstr "Toinen teema"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Confirm Item Rename"
-msgstr "Animaatioraita: nimeä uudelleen"
+msgstr "Vahvista osan uudelleen nimeäminen"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Cancel Item Rename"
-msgstr "Niputettu uudelleennimeäminen"
+msgstr "Peruuta osan uudelleen nimeäminen"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Override Item"
-msgstr "Ylikirjoittaa"
+msgstr "Ylikirjoita osa"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Unpin this StyleBox as a main style."
-msgstr ""
+msgstr "Irrota tämä tyylilaatikko päätyylistä."
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid ""
 "Pin this StyleBox as a main style. Editing its properties will update the "
 "same properties in all other StyleBoxes of this type."
 msgstr ""
+"Kiinnitä tämä tyylilaatikko päätyyliksi. Sen ominaisuuksien muokkaaminen "
+"päivittää kaikkien muiden tämän tyyppisten tyylilaatikoiden ominaisuuksia."
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Add Type"
-msgstr "Tyyppi"
+msgstr "Lisää tyyppi"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Add Item Type"
-msgstr "Lisää kohde"
+msgstr "Lisää osan tyyppi"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Node Types:"
-msgstr "Solmun tyyppi"
+msgstr "Solmutyypit:"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Show Default"
-msgstr "Lataa oletus"
+msgstr "Näytä oletus"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Show default type items alongside items that have been overridden."
-msgstr ""
+msgstr "Näytä oletustyypin osat ylikirjoitettujen osien ohella."
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Override All"
-msgstr "Ylikirjoittaa"
+msgstr "Ylikirjoita kaikki"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Override all default type items."
-msgstr ""
+msgstr "Ylikirjoita kaikki oletustyypin osat."
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Theme:"
-msgstr "Teema"
+msgstr "Teema:"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Manage Items..."
-msgstr "Hallinnoi vientimalleja..."
+msgstr "Hallinnoi osia..."
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Add, remove, organize and import Theme items."
-msgstr ""
+msgstr "Lisää, poista, järjestele ja tuo teeman osia."
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Add Preview"
-msgstr "Esikatselu"
+msgstr "Lisää esikatselu"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Default Preview"
-msgstr "Päivitä esikatselu"
+msgstr "Oletusesikatselu"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Select UI Scene:"
-msgstr "Valitse lähdemesh:"
+msgstr "Valitse käyttöliittymäskene:"
 
 #: editor/plugins/theme_editor_preview.cpp
 msgid ""
 "Toggle the control picker, allowing to visually select control types for "
 "edit."
 msgstr ""
+"Kytke päälle tai pois kontrollien valitsija, joka antaa valita "
+"kontrollityypit muokkausta varten visuaalisesti."
 
 #: editor/plugins/theme_editor_preview.cpp
 msgid "Toggle Button"
@@ -9004,7 +9015,6 @@ msgid "Checked Radio Item"
 msgstr "Valittu valintapainike"
 
 #: editor/plugins/theme_editor_preview.cpp
-#, fuzzy
 msgid "Named Separator"
 msgstr "Nimetty erotin"
 
@@ -9059,19 +9069,21 @@ msgstr "On,Useita,Asetuksia"
 #: editor/plugins/theme_editor_preview.cpp
 msgid "Invalid path, the PackedScene resource was probably moved or removed."
 msgstr ""
+"Virheellinen polku, PackedScene resurssi oli todennäköisesti siirretty tai "
+"poistettu."
 
 #: editor/plugins/theme_editor_preview.cpp
 msgid "Invalid PackedScene resource, must have a Control node at its root."
 msgstr ""
+"Virheellinen PackedScene resurssi, juurisolmuna täytyy olla Control solmu."
 
 #: editor/plugins/theme_editor_preview.cpp
-#, fuzzy
 msgid "Invalid file, not a PackedScene resource."
-msgstr "Virheellinen tiedosto. Tämä ei ole ääniväylän asettelu ensinkään."
+msgstr "Virheellinen tiedosto, ei ole PackedScene resurssi."
 
 #: editor/plugins/theme_editor_preview.cpp
 msgid "Reload the scene to reflect its most actual state."
-msgstr ""
+msgstr "Lataa skenen uudelleen vastaamaan sen varsinaista tilaa."
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Erase Selection"
@@ -9658,7 +9670,7 @@ msgstr "Aseta lauseke"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Resize VisualShader node"
-msgstr "Muuta VisualShader solmun kokoa"
+msgstr "Muuta visuaalisen sävyttimen solmun kokoa"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Set Uniform Name"
@@ -9670,7 +9682,7 @@ msgstr "Aseta oletustuloportti"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Add Node to Visual Shader"
-msgstr "Lisää solmu Visual Shaderiin"
+msgstr "Lisää solmu visuaaliseen sävyttimeen"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Node(s) Moved"
@@ -9691,7 +9703,7 @@ msgstr "Poista solmut"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Visual Shader Input Type Changed"
-msgstr "Visual Shaderin syötteen tyyppi vaihdettu"
+msgstr "Visuaalisen sävyttimen syötteen tyyppi vaihdettu"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "UniformRef Name Changed"
@@ -9703,7 +9715,7 @@ msgstr "Kärkipiste"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Fragment"
-msgstr "Fragmentti"
+msgstr "Kuvapiste"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Light"
@@ -9715,7 +9727,7 @@ msgstr "Näytä syntyvä sävytinkoodi."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Create Shader Node"
-msgstr "Luo Shader solmu"
+msgstr "Luo sävytinsolmu"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Color function."
@@ -10412,18 +10424,18 @@ msgstr "Viittaus olemassa olevaan uniformiin."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "(Fragment/Light mode only) Scalar derivative function."
-msgstr "(Vain Fragment/Light tilat) Skalaariderivaattafunktio."
+msgstr "(Vain kuvapiste- tai valotilassa) Skalaariderivaattafunktio."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "(Fragment/Light mode only) Vector derivative function."
-msgstr "(Vain Fragment/Light tilat) Vektoriderivaattafunktio."
+msgstr "(Vain kuvapiste- tai valotilassa) Vektoriderivaattafunktio."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
 "(Fragment/Light mode only) (Vector) Derivative in 'x' using local "
 "differencing."
 msgstr ""
-"(Vain Fragment/Light tilat) (Vektori) 'x' derivaatta käyttäen "
+"(Vain kuvapiste- tai valotilassa) (Vektori) 'x' derivaatta käyttäen "
 "paikallisdifferentiaalia."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -10431,7 +10443,7 @@ msgid ""
 "(Fragment/Light mode only) (Scalar) Derivative in 'x' using local "
 "differencing."
 msgstr ""
-"(Vain Fragment/Light tilat) (Skalaari) 'x' derivaatta käyttäen "
+"(Vain kuvapiste- tai valotilassa) (Skalaari) 'x' derivaatta käyttäen "
 "paikallisdifferentiaalia."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -10439,7 +10451,7 @@ msgid ""
 "(Fragment/Light mode only) (Vector) Derivative in 'y' using local "
 "differencing."
 msgstr ""
-"(Vain Fragment/Light tilat) (Vektori) 'y' derivaatta käyttäen "
+"(Vain kuvapiste- tai valotilassa) (Vektori) 'y' derivaatta käyttäen "
 "paikallisdifferentiaalia."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -10447,7 +10459,7 @@ msgid ""
 "(Fragment/Light mode only) (Scalar) Derivative in 'y' using local "
 "differencing."
 msgstr ""
-"(Vain Fragment/Light tilat) (Skalaari) 'y' derivaatta käyttäen "
+"(Vain kuvapiste- tai valotilassa) (Skalaari) 'y' derivaatta käyttäen "
 "paikallisdifferentiaalia."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -10455,15 +10467,15 @@ msgid ""
 "(Fragment/Light mode only) (Vector) Sum of absolute derivative in 'x' and "
 "'y'."
 msgstr ""
-"(Vain Fragment/Light tilat) (Vektori) 'x' ja 'y' derivaattojen itseisarvojen "
-"summa."
+"(Vain kuvapiste- tai valotilassa) (Vektori) 'x' ja 'y' derivaattojen "
+"itseisarvojen summa."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
 "(Fragment/Light mode only) (Scalar) Sum of absolute derivative in 'x' and "
 "'y'."
 msgstr ""
-"(Vain Fragment/Light tilat) (Skalaari) 'x' ja 'y' derivaattojen "
+"(Vain kuvapiste- tai valotilassa) (Skalaari) 'x' ja 'y' derivaattojen "
 "itseisarvojen summa."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -10471,13 +10483,12 @@ msgid "VisualShader"
 msgstr "VisualShader"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Edit Visual Property:"
-msgstr "Muokkaa visuaalista ominaisuutta"
+msgstr "Muokkaa visuaalista ominaisuutta:"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Visual Shader Mode Changed"
-msgstr "Visual Shaderin tila vaihdettu"
+msgstr "Visuaalisen sävyttimen tila vaihdettu"
 
 #: editor/project_export.cpp
 msgid "Runnable"
@@ -10539,7 +10550,7 @@ msgstr ""
 
 #: editor/project_export.cpp
 msgid "Export Path"
-msgstr "Vie polku"
+msgstr "Vientipolku"
 
 #: editor/project_export.cpp
 msgid "Resources"
@@ -10599,9 +10610,8 @@ msgid "Script"
 msgstr "Skripti"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "GDScript Export Mode:"
-msgstr "Skriptin vientitila:"
+msgstr "GDScriptin vientitila:"
 
 #: editor/project_export.cpp
 msgid "Text"
@@ -10609,21 +10619,19 @@ msgstr "Teksti"
 
 #: editor/project_export.cpp
 msgid "Compiled Bytecode (Faster Loading)"
-msgstr ""
+msgstr "Käännetty bytekoodi (nopeampi latautuminen)"
 
 #: editor/project_export.cpp
 msgid "Encrypted (Provide Key Below)"
 msgstr "Salattu (syötä avain alla)"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "Invalid Encryption Key (must be 64 hexadecimal characters long)"
-msgstr "Virheellinen salausavain (oltava 64 merkkiä pitkä)"
+msgstr "Virheellinen salausavain (oltava 64 heksadesimaalimerkkiä pitkä)"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "GDScript Encryption Key (256-bits as hexadecimal):"
-msgstr "Skriptin salausavain (256-bittinen heksana):"
+msgstr "GDScriptin salausavain (256-bittinen heksadesimaalina):"
 
 #: editor/project_export.cpp
 msgid "Export PCK/Zip"
@@ -10697,7 +10705,6 @@ msgid "Imported Project"
 msgstr "Tuotu projekti"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Invalid project name."
 msgstr "Virheellinen projektin nimi."
 
@@ -10921,14 +10928,12 @@ msgid "Are you sure to run %d projects at once?"
 msgstr "Haluatko varmasti suorittaa %d projektia yhdenaikaisesti?"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Remove %d projects from the list?"
-msgstr "Valitse laite listasta"
+msgstr "Poista %d projektia listasta?"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Remove this project from the list?"
-msgstr "Valitse laite listasta"
+msgstr "Poistetaanko tämä projekti listasta?"
 
 #: editor/project_manager.cpp
 msgid ""
@@ -10961,9 +10966,8 @@ msgid "Project Manager"
 msgstr "Projektinhallinta"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Local Projects"
-msgstr "Projektit"
+msgstr "Paikalliset projektit"
 
 #: editor/project_manager.cpp
 msgid "Loading, please wait..."
@@ -10974,23 +10978,20 @@ msgid "Last Modified"
 msgstr "Viimeksi muutettu"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Edit Project"
-msgstr "Vie projekti"
+msgstr "Muokkaa projektia"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Run Project"
-msgstr "Nimetä projekti"
+msgstr "Aja projekti"
 
 #: editor/project_manager.cpp
 msgid "Scan"
 msgstr "Tutki"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Scan Projects"
-msgstr "Projektit"
+msgstr "Skannaa projektit"
 
 #: editor/project_manager.cpp
 msgid "Select a Folder to Scan"
@@ -11001,14 +11002,12 @@ msgid "New Project"
 msgstr "Uusi projekti"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Import Project"
-msgstr "Tuotu projekti"
+msgstr "Tuo projekti"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Remove Project"
-msgstr "Nimetä projekti"
+msgstr "Poista projekti"
 
 #: editor/project_manager.cpp
 msgid "Remove Missing"
@@ -11019,9 +11018,8 @@ msgid "About"
 msgstr "Tietoja"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Asset Library Projects"
-msgstr "Asset-kirjasto"
+msgstr "Asset-kirjaston projektit"
 
 #: editor/project_manager.cpp
 msgid "Restart Now"
@@ -11033,7 +11031,7 @@ msgstr "Poista kaikki"
 
 #: editor/project_manager.cpp
 msgid "Also delete project contents (no undo!)"
-msgstr ""
+msgstr "Poista myös projektien sisältö (ei voi kumota!)"
 
 #: editor/project_manager.cpp
 msgid "Can't run project"
@@ -11048,18 +11046,16 @@ msgstr ""
 "Haluaisitko selata virallisia esimerkkiprojekteja Asset-kirjastosta?"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Filter projects"
-msgstr "Suodata ominaisuuksia"
+msgstr "Suodata projekteja"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid ""
 "This field filters projects by name and last path component.\n"
 "To filter projects by name and full path, the query must contain at least "
 "one `/` character."
 msgstr ""
-"Hakulaatikko suodattaa projektit nimen ja polun loppuosan mukaan.\n"
+"Tämä kenttä suodattaa projektit nimen ja polun loppuosan mukaan.\n"
 "Suodattaaksesi projektit nimen ja koko polun mukaan, haussa tulee olla "
 "mukana vähintään yksi `/` merkki."
 
@@ -11069,7 +11065,7 @@ msgstr "Näppäin "
 
 #: editor/project_settings_editor.cpp
 msgid "Physical Key"
-msgstr ""
+msgstr "Fyysinen avain"
 
 #: editor/project_settings_editor.cpp
 msgid "Joy Button"
@@ -11117,7 +11113,7 @@ msgstr "Laite"
 
 #: editor/project_settings_editor.cpp
 msgid " (Physical)"
-msgstr ""
+msgstr " (fyysinen)"
 
 #: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
 msgid "Press a Key..."
@@ -11260,23 +11256,20 @@ msgid "Override for Feature"
 msgstr "Ominaisuuden ohitus"
 
 #: editor/project_settings_editor.cpp
-#, fuzzy
 msgid "Add %d Translations"
-msgstr "Lisää käännös"
+msgstr "Lisää %d käännöstä"
 
 #: editor/project_settings_editor.cpp
 msgid "Remove Translation"
 msgstr "Poista käännös"
 
 #: editor/project_settings_editor.cpp
-#, fuzzy
 msgid "Translation Resource Remap: Add %d Path(s)"
-msgstr "Lisää resurssin korvaavuus"
+msgstr "Käännösresurssin uudelleenmäppäys: lisää %d polkua"
 
 #: editor/project_settings_editor.cpp
-#, fuzzy
 msgid "Translation Resource Remap: Add %d Remap(s)"
-msgstr "Lisää resurssin korvaavuus"
+msgstr "Käännösresurssin uudelleenmäppäys: lisää %d uudelleenmäppäystä"
 
 #: editor/project_settings_editor.cpp
 msgid "Change Resource Remap Language"
@@ -11722,12 +11715,15 @@ msgstr "Poista solmu \"%s\"?"
 msgid ""
 "Saving the branch as a scene requires having a scene open in the editor."
 msgstr ""
+"Haaran tallentaminen skenenä edellyttää, että skene on avoinna editorissa."
 
 #: editor/scene_tree_dock.cpp
 msgid ""
 "Saving the branch as a scene requires selecting only one node, but you have "
 "selected %d nodes."
 msgstr ""
+"Haaran tallentaminen skenenä edellyttää, että vain yksi solmu on valittuna, "
+"mutta olet valinnut %d solmua."
 
 #: editor/scene_tree_dock.cpp
 msgid ""
@@ -11736,6 +11732,11 @@ msgid ""
 "FileSystem dock context menu\n"
 "or create an inherited scene using Scene > New Inherited Scene... instead."
 msgstr ""
+"Ei voida tallentaa juurisolmun haaraa skenen ilmentymänä.\n"
+"Luodaksesi muokattavan kopion nykyisestä skenestä, monista se "
+"Tiedostojärjestelmä-telakan pikavalikosta\n"
+"tai luo vaihtoehtoisesti periytetty skene Skene > Uusi periytetty skene... "
+"valikosta."
 
 #: editor/scene_tree_dock.cpp
 msgid ""
@@ -11743,6 +11744,9 @@ msgid ""
 "To create a variation of a scene, you can make an inherited scene based on "
 "the instanced scene using Scene > New Inherited Scene... instead."
 msgstr ""
+"Skenestä, joka on jo ilmentymä, ei voida luoda haaraa.\n"
+"Luodaksesi muunnelman skenestä voit sen sijaan tehdä periytetyn skenen "
+"skeneilmentymästä Skene > Uusi periytetty skene... valikosta."
 
 #: editor/scene_tree_dock.cpp
 msgid "Save New Scene As..."
@@ -12150,6 +12154,8 @@ msgid ""
 "Warning: Having the script name be the same as a built-in type is usually "
 "not desired."
 msgstr ""
+"Varoitus: skriptin nimeäminen sisäänrakennetun tyypin nimiseksi ei ole "
+"yleensä toivottua."
 
 #: editor/script_create_dialog.cpp
 msgid "Class Name:"
@@ -12221,7 +12227,7 @@ msgstr "Kopioi virhe"
 
 #: editor/script_editor_debugger.cpp
 msgid "Open C++ Source on GitHub"
-msgstr ""
+msgstr "Avaa C++ lähdekoodi GitHubissa"
 
 #: editor/script_editor_debugger.cpp
 msgid "Video RAM"
@@ -12400,14 +12406,22 @@ msgid "Change Ray Shape Length"
 msgstr "Vaihda säteen muodon pituutta"
 
 #: editor/spatial_editor_gizmos.cpp
-#, fuzzy
 msgid "Set Room Point Position"
-msgstr "Aseta käyräpisteen sijainti"
+msgstr "Aseta huoneen pisteen sijainti"
+
+#: editor/spatial_editor_gizmos.cpp
+msgid "Set Portal Point Position"
+msgstr "Aseta portaalin pisteen sijainti"
 
 #: editor/spatial_editor_gizmos.cpp
 #, fuzzy
-msgid "Set Portal Point Position"
-msgstr "Aseta käyräpisteen sijainti"
+msgid "Set Occluder Sphere Radius"
+msgstr "Muuta sylinterimuodon sädettä"
+
+#: editor/spatial_editor_gizmos.cpp
+#, fuzzy
+msgid "Set Occluder Sphere Position"
+msgstr "Aseta käyrän aloitussijainti"
 
 #: modules/csg/csg_gizmos.cpp
 msgid "Change Cylinder Radius"
@@ -12522,14 +12536,12 @@ msgid "Object can't provide a length."
 msgstr "Objektille ei voida määrittää pituutta."
 
 #: modules/gltf/editor_scene_exporter_gltf_plugin.cpp
-#, fuzzy
 msgid "Export Mesh GLTF2"
-msgstr "Vie mesh-kirjasto"
+msgstr "Vie mesh GLTF2:na"
 
 #: modules/gltf/editor_scene_exporter_gltf_plugin.cpp
-#, fuzzy
 msgid "Export GLTF..."
-msgstr "Vie..."
+msgstr "Vie GLTF..."
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Next Plane"
@@ -12572,9 +12584,8 @@ msgid "GridMap Paint"
 msgstr "Ruudukon maalaus"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
-#, fuzzy
 msgid "GridMap Selection"
-msgstr "Täytä valinta"
+msgstr "Ruudukon valinta"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Grid Map"
@@ -12696,6 +12707,11 @@ msgstr "Piirretään lightmappeja"
 #: modules/mono/csharp_script.cpp
 msgid "Class name can't be a reserved keyword"
 msgstr "Luokan nimi ei voi olla varattu avainsana"
+
+#: modules/mono/csharp_script.cpp
+#, fuzzy
+msgid "Build Solution"
+msgstr "Täytä valinta"
 
 #: modules/mono/mono_gd/gd_mono_utils.cpp
 msgid "End of inner exception stack trace"
@@ -12826,14 +12842,12 @@ msgid "Add Output Port"
 msgstr "Lisää lähtöportti"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Change Port Type"
-msgstr "Muuta tyyppiä"
+msgstr "Vaihda portin tyyppi"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Change Port Name"
-msgstr "Vaihda tuloportin nimi"
+msgstr "Vaihda portin nimi"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Override an existing built-in function."
@@ -12949,9 +12963,8 @@ msgid "Add Preload Node"
 msgstr "Lisää esiladattu solmu"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Add Node(s)"
-msgstr "Lisää solmu"
+msgstr "Lisää solmuja"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Node(s) From Tree"
@@ -13183,73 +13196,67 @@ msgstr "Hae VisualScriptistä"
 msgid "Get %s"
 msgstr "Hae %s"
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Package name is missing."
 msgstr "Paketin nimi puuttuu."
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Package segments must be of non-zero length."
 msgstr "Paketin osioiden pituuksien täytyy olla nollasta poikkeavia."
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "The character '%s' is not allowed in Android application package names."
 msgstr "Merkki '%s' ei ole sallittu Android-sovellusten pakettien nimissä."
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "A digit cannot be the first character in a package segment."
 msgstr "Paketin osion ensimmäinen merkki ei voi olla numero."
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "The character '%s' cannot be the first character in a package segment."
 msgstr "Merkki '%s' ei voi olla paketin osion ensimmäinen merkki."
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "The package must have at least one '.' separator."
 msgstr "Paketilla on oltava ainakin yksi '.' erotinmerkki."
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Select device from the list"
 msgstr "Valitse laite listasta"
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Running on %s"
-msgstr ""
+msgstr "Ajetaan %s"
 
-#: platform/android/export/export.cpp
-#, fuzzy
+#: platform/android/export/export_plugin.cpp
 msgid "Exporting APK..."
-msgstr "Viedään kaikki"
+msgstr "Viedään APK:ta..."
 
-#: platform/android/export/export.cpp
-#, fuzzy
+#: platform/android/export/export_plugin.cpp
 msgid "Uninstalling..."
-msgstr "Poista asennus"
+msgstr "Poistetaan asennusta..."
 
-#: platform/android/export/export.cpp
-#, fuzzy
+#: platform/android/export/export_plugin.cpp
 msgid "Installing to device, please wait..."
-msgstr "Ladataan, hetkinen..."
+msgstr "Asennetaan laitteelle, hetkinen..."
 
-#: platform/android/export/export.cpp
-#, fuzzy
+#: platform/android/export/export_plugin.cpp
 msgid "Could not install to device: %s"
-msgstr "Aliprosessia ei voitu käynnistää!"
+msgstr "Ei voitu asentaa laitteelle: %s"
 
-#: platform/android/export/export.cpp
-#, fuzzy
+#: platform/android/export/export_plugin.cpp
 msgid "Running on device..."
-msgstr "Suoritetaan mukautettua skriptiä..."
+msgstr "Ajetaan laitteella..."
 
-#: platform/android/export/export.cpp
-#, fuzzy
+#: platform/android/export/export_plugin.cpp
 msgid "Could not execute on device."
-msgstr "Kansiota ei voitu luoda."
+msgstr "Ei voitu suorittaa laitteella."
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Unable to find the 'apksigner' tool."
 msgstr "'apksigner' työkalua ei löydy."
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid ""
 "Android build template not installed in the project. Install it from the "
 "Project menu."
@@ -13257,7 +13264,7 @@ msgstr ""
 "Android-käännösmallia ei ole asennettu projektiin. Asenna se Projekti-"
 "valikosta."
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid ""
 "Either Debug Keystore, Debug User AND Debug Password settings must be "
 "configured OR none of them."
@@ -13265,12 +13272,12 @@ msgstr ""
 "Joko Debug Keystore, Debug User JA Debug Password asetukset on kaikki "
 "konfiguroitava TAI ei mitään niistä."
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Debug keystore not configured in the Editor Settings nor in the preset."
 msgstr ""
 "Debug keystore ei ole määritettynä editorin asetuksissa eikä esiasetuksissa."
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid ""
 "Either Release Keystore, Release User AND Release Password settings must be "
 "configured OR none of them."
@@ -13278,48 +13285,48 @@ msgstr ""
 "Joko Release Keystore, Release User JA Release Password asetukset on kaikki "
 "konfiguroitava TAI ei mitään niistä."
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Release keystore incorrectly configured in the export preset."
 msgstr "Release keystore on konfiguroitu väärin viennin esiasetuksissa."
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "A valid Android SDK path is required in Editor Settings."
 msgstr "Editorin asetuksiin tarvitaan kelvollinen Android SDK -polku."
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Invalid Android SDK path in Editor Settings."
 msgstr "Editorin asetuksissa on virheellinen Android SDK -polku."
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Missing 'platform-tools' directory!"
 msgstr "'platform-tools' hakemisto puuttuu!"
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Unable to find Android SDK platform-tools' adb command."
 msgstr "Android SDK platform-tools adb-komentoa ei löydy."
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Please check in the Android SDK directory specified in Editor Settings."
 msgstr ""
 "Ole hyvä ja tarkista editorin asetuksissa määritelty Android SDK -hakemisto."
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Missing 'build-tools' directory!"
 msgstr "'build-tools' hakemisto puuttuu!"
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Unable to find Android SDK build-tools' apksigner command."
 msgstr "Android SDK build-tools apksigner-komentoa ei löydy."
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Invalid public key for APK expansion."
 msgstr "Virheellinen julkinen avain APK-laajennosta varten."
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Invalid package name:"
 msgstr "Virheellinen paketin nimi:"
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid ""
 "Invalid \"GodotPaymentV3\" module included in the \"android/modules\" "
 "project setting (changed in Godot 3.2.2).\n"
@@ -13327,102 +13334,85 @@ msgstr ""
 "\"android/modules\" projektiasetukseen on liitetty virheellinen "
 "\"GodotPaymentV3\" moduuli (muuttunut Godotin versiossa 3.2.2).\n"
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "\"Use Custom Build\" must be enabled to use the plugins."
 msgstr ""
 "\"Use Custom Build\" asetuksen täytyy olla päällä, jotta liittännäisiä voi "
 "käyttää."
 
-#: platform/android/export/export.cpp
-msgid ""
-"\"Degrees Of Freedom\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR"
-"\"."
-msgstr ""
-"\"Degrees Of Freedom\" on käyttökelpoinen ainoastaan kun \"Xr Mode\" asetus "
-"on \"Oculus Mobile VR\"."
-
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid ""
 "\"Hand Tracking\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\"."
 msgstr ""
 "\"Hand Tracking\" on käyttökelpoinen ainoastaan kun \"Xr Mode\" asetus on "
 "\"Oculus Mobile VR\"."
 
-#: platform/android/export/export.cpp
-msgid ""
-"\"Focus Awareness\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\"."
-msgstr ""
-"\"Focus Awareness\" on käyttökelpoinen ainoastaan kun \"Xr Mode\" asetus on "
-"\"Oculus Mobile VR\"."
-
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "\"Export AAB\" is only valid when \"Use Custom Build\" is enabled."
 msgstr ""
 "\"Export AAB\" on käyttökelpoinen vain, kun \"Use Custom Build\" asetus on "
 "päällä."
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid ""
 "'apksigner' could not be found.\n"
 "Please check the command is available in the Android SDK build-tools "
 "directory.\n"
 "The resulting %s is unsigned."
 msgstr ""
+"'apksigner' ei löydy.\n"
+"Ole hyvä ja tarkista, että komento on saatavilla Android SDK build-tools "
+"hakemistossa.\n"
+"Tuloksena syntynyt %s on allekirjoittamaton."
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Signing debug %s..."
-msgstr ""
+msgstr "Allekirjoitetaan debug %s..."
 
-#: platform/android/export/export.cpp
-#, fuzzy
+#: platform/android/export/export_plugin.cpp
 msgid "Signing release %s..."
-msgstr ""
-"Selataan tiedostoja,\n"
-"Hetkinen…"
+msgstr "Allekirjoitetaan release %s..."
 
-#: platform/android/export/export.cpp
-#, fuzzy
+#: platform/android/export/export_plugin.cpp
 msgid "Could not find keystore, unable to export."
-msgstr "Mallin avaus vientiin epäonnistui:"
+msgstr "Keystorea ei löytynyt, ei voida viedä."
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "'apksigner' returned with error #%d"
-msgstr ""
+msgstr "'apksigner' palautti virheen #%d"
 
-#: platform/android/export/export.cpp
-#, fuzzy
+#: platform/android/export/export_plugin.cpp
 msgid "Verifying %s..."
-msgstr "Lisätään %s..."
+msgstr "Todennetaan %s..."
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "'apksigner' verification of %s failed."
-msgstr ""
+msgstr "'apksigner' todennus kohteelle %s epäonnistui."
 
-#: platform/android/export/export.cpp
-#, fuzzy
+#: platform/android/export/export_plugin.cpp
 msgid "Exporting for Android"
-msgstr "Viedään kaikki"
+msgstr "Viedään Androidille"
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Invalid filename! Android App Bundle requires the *.aab extension."
 msgstr ""
 "Virheellinen tiedostonimi! Android App Bundle tarvitsee *.aab "
 "tiedostopäätteen."
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "APK Expansion not compatible with Android App Bundle."
 msgstr "APK Expansion ei ole yhteensopiva Android App Bundlen kanssa."
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Invalid filename! Android APK requires the *.apk extension."
 msgstr ""
 "Virheellinen tiedostonimi! Android APK tarvitsee *.apk tiedostopäätteen."
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Unsupported export format!\n"
-msgstr ""
+msgstr "Vientiformaatti ei ole tuettu!\n"
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid ""
 "Trying to build from a custom built template, but no version info for it "
 "exists. Please reinstall from the 'Project' menu."
@@ -13430,7 +13420,7 @@ msgstr ""
 "Yritetään kääntää mukautetulla käännösmallilla, mutta sillä ei ole "
 "versiotietoa. Ole hyvä ja uudelleenasenna se 'Projekti'-valikosta."
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid ""
 "Android build version mismatch:\n"
 "   Template installed: %s\n"
@@ -13442,26 +13432,26 @@ msgstr ""
 "   Godotin versio: %s\n"
 "Ole hyvä ja uudelleenasenna Androidin käännösmalli 'Projekti'-valikosta."
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid ""
 "Unable to overwrite res://android/build/res/*.xml files with project name"
 msgstr ""
+"Ei voitu ylikirjoittaa res://android/build/res/*.xml tiedostoja projektin "
+"nimellä"
 
-#: platform/android/export/export.cpp
-#, fuzzy
+#: platform/android/export/export_plugin.cpp
 msgid "Could not export project files to gradle project\n"
-msgstr "Ei voitu luoda godot.cfg -tiedostoa projektin polkuun."
+msgstr "Ei voitu viedä projektitiedostoja gradle-projektiksi.\n"
 
-#: platform/android/export/export.cpp
-#, fuzzy
+#: platform/android/export/export_plugin.cpp
 msgid "Could not write expansion package file!"
-msgstr "Ei voitu kirjoittaa tiedostoa:"
+msgstr "Ei voitu kirjoittaa laajennuspakettitiedostoa!"
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Building Android Project (gradle)"
 msgstr "Käännetään Android-projektia (gradle)"
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid ""
 "Building of Android project failed, check output for the error.\n"
 "Alternatively visit docs.godotengine.org for Android build documentation."
@@ -13470,11 +13460,11 @@ msgstr ""
 "Vaihtoehtoisesti, lue docs.godotengine.org sivustolta Androidin "
 "käännösdokumentaatio."
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Moving output"
 msgstr "Siirretään tulostetta"
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid ""
 "Unable to copy and rename export file, check gradle project directory for "
 "outputs."
@@ -13482,48 +13472,48 @@ msgstr ""
 "Vientitiedoston kopiointi ja uudelleennimeäminen ei onnistu, tarkista "
 "tulosteet gradle-projektin hakemistosta."
 
-#: platform/android/export/export.cpp
-#, fuzzy
+#: platform/android/export/export_plugin.cpp
 msgid "Package not found: %s"
-msgstr "Animaatio ei löytynyt: '%s'"
+msgstr "Pakettia ei löytynyt: %s"
 
-#: platform/android/export/export.cpp
-#, fuzzy
+#: platform/android/export/export_plugin.cpp
 msgid "Creating APK..."
-msgstr "Luodaan korkeuskäyriä..."
+msgstr "Luodaan APK:ta..."
 
-#: platform/android/export/export.cpp
-#, fuzzy
+#: platform/android/export/export_plugin.cpp
 msgid ""
 "Could not find template APK to export:\n"
 "%s"
-msgstr "Mallin avaus vientiin epäonnistui:"
+msgstr ""
+"Ei löydetty APK-vientimallia vientiä varten:\n"
+"%s"
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid ""
 "Missing libraries in the export template for the selected architectures: "
 "%s.\n"
 "Please build a template with all required libraries, or uncheck the missing "
 "architectures in the export preset."
 msgstr ""
+"Vientimalleista puuttuu kirjastoja valituille arkkitehtuureille: %s.\n"
+"Ole hyvä ja kokoa malli, jossa on kaikki tarvittavat kirjastot, tai poista "
+"puuttuvien arkkitehtuurien valinta viennin esiasetuksista."
 
-#: platform/android/export/export.cpp
-#, fuzzy
+#: platform/android/export/export_plugin.cpp
 msgid "Adding files..."
-msgstr "Lisätään %s..."
+msgstr "Lisätään tiedostoja..."
 
-#: platform/android/export/export.cpp
-#, fuzzy
+#: platform/android/export/export_plugin.cpp
 msgid "Could not export project files"
-msgstr "Ei voitu kirjoittaa tiedostoa:"
+msgstr "Ei voitu viedä projektin tiedostoja"
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Aligning APK..."
 msgstr "Tasataan APK:ta..."
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Could not unzip temporary unaligned APK."
-msgstr ""
+msgstr "Ei voitu purkaa väliaikaista unaligned APK:ta."
 
 #: platform/iphone/export/export.cpp platform/osx/export/export.cpp
 msgid "Identifier is missing."
@@ -13570,45 +13560,40 @@ msgid "Could not write file:"
 msgstr "Ei voitu kirjoittaa tiedostoa:"
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Could not read file:"
-msgstr "Ei voitu kirjoittaa tiedostoa:"
+msgstr "Ei voitu lukea tiedostoa:"
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Could not read HTML shell:"
-msgstr "Ei voitu lukea mukautettua HTML tulkkia:"
+msgstr "Ei voitu lukea HTML tulkkia:"
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Could not create HTTP server directory:"
-msgstr "Kansiota ei voitu luoda."
+msgstr "Ei voitu luoda HTTP-palvelimen hakemistoa:"
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Error starting HTTP server:"
-msgstr "Virhe tallennettaessa skeneä."
+msgstr "Virhe käynnistettäessä HTTP-palvelinta:"
 
 #: platform/osx/export/export.cpp
-#, fuzzy
 msgid "Invalid bundle identifier:"
-msgstr "Virheellinen Identifier osio:"
+msgstr "Virheellinen bundle-tunniste:"
 
 #: platform/osx/export/export.cpp
 msgid "Notarization: code signing required."
-msgstr ""
+msgstr "Notarisointi: koodin allekirjoitus tarvitaan."
 
 #: platform/osx/export/export.cpp
 msgid "Notarization: hardened runtime required."
-msgstr ""
+msgstr "Notarisointi: hardened runtime tarvitaan."
 
 #: platform/osx/export/export.cpp
 msgid "Notarization: Apple ID name not specified."
-msgstr ""
+msgstr "Notarointi: Apple ID nimeä ei ole määritetty."
 
 #: platform/osx/export/export.cpp
 msgid "Notarization: Apple ID password not specified."
-msgstr ""
+msgstr "Notarointi: Apple ID salasanaa ei ole määritetty."
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid package short name."
@@ -14041,6 +14026,9 @@ msgid ""
 "longer has any effect.\n"
 "To remove this warning, disable the GIProbe's Compress property."
 msgstr ""
+"GIProben Compress-ominaisuus on poistettu käytöstä tiedossa olevien bugien "
+"vuoksi, eikä sillä ole enää mitään vaikutusta.\n"
+"Poista GIProben Compress-ominaisuus käytöstä poistaaksesi tämän varoituksen."
 
 #: scene/3d/light.cpp
 msgid "A SpotLight with an angle wider than 90 degrees cannot cast shadows."
@@ -14060,6 +14048,14 @@ msgid ""
 msgstr ""
 "NavigationMeshInstance solmun täytyy olla Navigation solmun alaisuudessa. Se "
 "tarjoaa vain navigointidataa."
+
+#: scene/3d/occluder.cpp
+msgid "No shape is set."
+msgstr ""
+
+#: scene/3d/occluder.cpp
+msgid "Only uniform scales are supported."
+msgstr ""
 
 #: scene/3d/particles.cpp
 msgid ""
@@ -14130,15 +14126,15 @@ msgstr "Solmujen A ja B tulee olla eri PhysicsBody solmut"
 
 #: scene/3d/portal.cpp
 msgid "The RoomManager should not be a child or grandchild of a Portal."
-msgstr ""
+msgstr "RoomManager solmun ei pitäisi sijaita Portal solmun alla."
 
 #: scene/3d/portal.cpp
 msgid "A Room should not be a child or grandchild of a Portal."
-msgstr ""
+msgstr "Room solmun ei pitäisi sijaita Portal solmun alla."
 
 #: scene/3d/portal.cpp
 msgid "A RoomGroup should not be a child or grandchild of a Portal."
-msgstr ""
+msgstr "RoomGroup solmun ei pitäisi sijaita Portal solmun alla."
 
 #: scene/3d/remote_transform.cpp
 msgid ""
@@ -14150,79 +14146,96 @@ msgstr ""
 
 #: scene/3d/room.cpp
 msgid "A Room cannot have another Room as a child or grandchild."
-msgstr ""
+msgstr "Room solmun alla ei voi olla toista Room solmua."
 
 #: scene/3d/room.cpp
 msgid "The RoomManager should not be placed inside a Room."
-msgstr ""
+msgstr "RoomManager solmua ei pitäisi sijoittaa Room solmun sisään."
 
 #: scene/3d/room.cpp
 msgid "A RoomGroup should not be placed inside a Room."
-msgstr ""
+msgstr "RoomGroup solmua ei pitäisi sijoittaa Room solmun sisään."
 
 #: scene/3d/room.cpp
 msgid ""
 "Room convex hull contains a large number of planes.\n"
 "Consider simplifying the room bound in order to increase performance."
 msgstr ""
+"Huoneen konveksi runko sisältää suuren määrän tasoja.\n"
+"Harkitse huoneen rajojen yksinkertaistamista suorituskyvyn lisäämiseksi."
 
 #: scene/3d/room_group.cpp
 msgid "The RoomManager should not be placed inside a RoomGroup."
-msgstr ""
+msgstr "RoomManager solmua ei pitäisi sijoittaa RoomGroup solmun sisään."
 
 #: scene/3d/room_manager.cpp
 msgid "The RoomList has not been assigned."
-msgstr ""
+msgstr "RoomList solmua ei ole määrätty."
 
 #: scene/3d/room_manager.cpp
 msgid "The RoomList node should be a Spatial (or derived from Spatial)."
-msgstr ""
+msgstr "RoomList solmun tulisi olla Spatial (tai periytynyt Spatial solmusta)."
 
 #: scene/3d/room_manager.cpp
 msgid ""
 "Portal Depth Limit is set to Zero.\n"
 "Only the Room that the Camera is in will render."
 msgstr ""
+"Portaalin Depth Limit on asetettu nollaksi.\n"
+"Vain se huone, jossa kamera on, piirretään."
 
 #: scene/3d/room_manager.cpp
 msgid "There should only be one RoomManager in the SceneTree."
-msgstr ""
+msgstr "Skenepuussa pitäisi olla vain yksi RoomManager solmu."
 
 #: scene/3d/room_manager.cpp
 msgid ""
 "RoomList path is invalid.\n"
 "Please check the RoomList branch has been assigned in the RoomManager."
 msgstr ""
+"RoomList solmun polku on virheellinen.\n"
+"Ole hyvä ja tarkista, että RoomList haara on määrätty RoomManager solmussa."
 
 #: scene/3d/room_manager.cpp
 msgid "RoomList contains no Rooms, aborting."
-msgstr ""
+msgstr "RoomList solmulla ei ole Room solmuja, keskeytetään."
 
 #: scene/3d/room_manager.cpp
 msgid "Misnamed nodes detected, check output log for details. Aborting."
 msgstr ""
+"Havaittiin väärin nimettyjä solmuja, tarkista yksityiskohdat tulostelokista. "
+"Keskeytetään."
 
 #: scene/3d/room_manager.cpp
 msgid "Portal link room not found, check output log for details."
 msgstr ""
+"Portaalin linkkihuonetta ei löydetty, tarkista yksityiskohdat tulostelokista."
 
 #: scene/3d/room_manager.cpp
 msgid ""
 "Portal autolink failed, check output log for details.\n"
 "Check the portal is facing outwards from the source room."
 msgstr ""
+"Portaalin automaatinen linkitys epäonnistui, tarkista yksityiskohdat "
+"tulostelokista.\n"
+"Tarkista, että portaali on suunnattu ulospäin lähtöhuoneesta katsottuna."
 
 #: scene/3d/room_manager.cpp
 msgid ""
 "Room overlap detected, cameras may work incorrectly in overlapping area.\n"
 "Check output log for details."
 msgstr ""
+"Havaittiin päällekkäisiä huoneita, kamerat saattavat toimia virheellisesti "
+"päällekkäisillä alueilla.\n"
+"Tarkista yksityiskohdat tulostelokista."
 
 #: scene/3d/room_manager.cpp
 msgid ""
 "Error calculating room bounds.\n"
 "Ensure all rooms contain geometry or manual bounds."
 msgstr ""
+"Virhe laskettaessa huoneen rajoja.\n"
+"Varmista, että kaikki huoneet sisältävät geometrian tai käsin syötetyt rajat."
 
 #: scene/3d/soft_body.cpp
 msgid "This body will be ignored until you set a mesh."
@@ -14287,7 +14300,7 @@ msgstr "Animaatio ei löytynyt: '%s'"
 
 #: scene/animation/animation_player.cpp
 msgid "Anim Apply Reset"
-msgstr ""
+msgstr "Tee animaation palautus"
 
 #: scene/animation/animation_tree.cpp
 msgid "In node '%s', invalid animation: '%s'."
@@ -14388,6 +14401,14 @@ msgstr "Käytä sopivaa tiedostopäätettä."
 msgid "Enable grid minimap."
 msgstr "Käytä ruudukon pienoiskarttaa."
 
+#: scene/gui/nine_patch_rect.cpp
+msgid ""
+"The Tile and Tile Fit options for Axis Stretch properties are only effective "
+"when using the GLES3 rendering backend.\n"
+"The GLES2 backend is currently in use, so these modes will act like Stretch "
+"instead."
+msgstr ""
+
 #: scene/gui/popup.cpp
 msgid ""
 "Popups will hide by default unless you call popup() or any of the popup*() "
@@ -14441,6 +14462,10 @@ msgid "Viewport size must be greater than 0 to render anything."
 msgstr ""
 "Näyttöruudun koko on oltava suurempi kuin 0, jotta mitään renderöidään."
 
+#: scene/resources/occluder_shape.cpp
+msgid "OccluderShapeSphere Set Spheres"
+msgstr ""
+
 #: scene/resources/visual_shader_nodes.cpp
 msgid ""
 "The sampler port is connected but not used. Consider changing the source to "
@@ -14462,25 +14487,29 @@ msgid "Invalid comparison function for that type."
 msgstr "Virheellinen vertailufunktio tälle tyypille."
 
 #: servers/visual/shader_language.cpp
-#, fuzzy
 msgid "Varying may not be assigned in the '%s' function."
-msgstr "Varying tyypin voi sijoittaa vain vertex-funktiossa."
+msgstr "Varying tyyppiä ei voi sijoittaa '%s' funktiossa."
 
 #: servers/visual/shader_language.cpp
 msgid ""
 "Varyings which assigned in 'vertex' function may not be reassigned in "
 "'fragment' or 'light'."
 msgstr ""
+"Varying muuttujia, jotka on sijoitettu 'vertex' funktiossa, ei voi "
+"uudelleensijoittaa 'fragment' tai 'light' funktioissa."
 
 #: servers/visual/shader_language.cpp
 msgid ""
 "Varyings which assigned in 'fragment' function may not be reassigned in "
 "'vertex' or 'light'."
 msgstr ""
+"Varying muuttujia, jotka on sijoitettu 'fragment' funktiossa, ei voi "
+"uudelleensijoittaa 'vertex' tai 'light' funktioissa."
 
 #: servers/visual/shader_language.cpp
 msgid "Fragment-stage varying could not been accessed in custom function!"
 msgstr ""
+"Kuvapistevaiheen varying muuttujaa ei voitu käyttää mukautetussa funktiossa!"
 
 #: servers/visual/shader_language.cpp
 msgid "Assignment to function."
@@ -14493,6 +14522,41 @@ msgstr "Sijoitus uniformille."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Vakioita ei voi muokata."
+
+#~ msgid "Make Rest Pose (From Bones)"
+#~ msgstr "Tee lepoasento (luista)"
+
+#~ msgid "Bottom"
+#~ msgstr "Pohja"
+
+#~ msgid "Left"
+#~ msgstr "Vasen"
+
+#~ msgid "Right"
+#~ msgstr "Oikea"
+
+#~ msgid "Front"
+#~ msgstr "Etu"
+
+#~ msgid "Rear"
+#~ msgstr "Taka"
+
+#~ msgid "Nameless gizmo"
+#~ msgstr "Nimetön muokkain"
+
+#~ msgid ""
+#~ "\"Degrees Of Freedom\" is only valid when \"Xr Mode\" is \"Oculus Mobile "
+#~ "VR\"."
+#~ msgstr ""
+#~ "\"Degrees Of Freedom\" on käyttökelpoinen ainoastaan kun \"Xr Mode\" "
+#~ "asetus on \"Oculus Mobile VR\"."
+
+#~ msgid ""
+#~ "\"Focus Awareness\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR"
+#~ "\"."
+#~ msgstr ""
+#~ "\"Focus Awareness\" on käyttökelpoinen ainoastaan kun \"Xr Mode\" asetus "
+#~ "on \"Oculus Mobile VR\"."
 
 #~ msgid "Package Contents:"
 #~ msgstr "Paketin sisältö:"

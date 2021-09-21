@@ -1035,7 +1035,7 @@ msgstr ""
 msgid "Dependencies"
 msgstr "การอ้างอิง"
 
-#: editor/dependency_editor.cpp
+#: editor/dependency_editor.cpp editor/editor_resource_picker.cpp
 msgid "Resource"
 msgstr "ทรัพยากร"
 
@@ -1695,13 +1695,13 @@ msgstr ""
 "แพลตฟอร์มเป้าหมายต้องการการบีบอัดเทกเจอร์ 'PVRTC' สำหรับการกลับมาใช้ GLES2\n"
 "เปิด 'Import Pvrtc' ในตั้งค่าโปรเจ็คหรือปิด 'Driver Fallback Enabled'"
 
-#: editor/editor_export.cpp platform/android/export/export.cpp
+#: editor/editor_export.cpp platform/android/export/export_plugin.cpp
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
 #: platform/osx/export/export.cpp platform/uwp/export/export.cpp
 msgid "Custom debug template not found."
 msgstr "ไม่พบเทมเพลตการดีบักแบบกำหนดเอง"
 
-#: editor/editor_export.cpp platform/android/export/export.cpp
+#: editor/editor_export.cpp platform/android/export/export_plugin.cpp
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
 #: platform/osx/export/export.cpp platform/uwp/export/export.cpp
 msgid "Custom release template not found."
@@ -2081,7 +2081,7 @@ msgstr "มีการนำเข้าไฟล์ %s หลายอัน �
 msgid "(Re)Importing Assets"
 msgstr "กำลังนำเข้าทรัพยากร(อีกครั้ง)"
 
-#: editor/editor_help.cpp editor/plugins/spatial_editor_plugin.cpp
+#: editor/editor_help.cpp
 msgid "Top"
 msgstr "บนสุด"
 
@@ -2574,6 +2574,32 @@ msgstr "ทำไม่ได้ถ้าไม่ได้เลือกโห
 #: editor/editor_node.cpp
 msgid "Current scene not saved. Open anyway?"
 msgstr "ฉากปัจจุบันยังไม่ได้บันทึก จะเปิดไฟล์หรือไม่?"
+
+#: editor/editor_node.cpp
+msgid "Can't undo while mouse buttons are pressed."
+msgstr ""
+
+#: editor/editor_node.cpp
+msgid "Nothing to undo."
+msgstr ""
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Undo: %s"
+msgstr "เลิกทำ"
+
+#: editor/editor_node.cpp
+msgid "Can't redo while mouse buttons are pressed."
+msgstr ""
+
+#: editor/editor_node.cpp
+msgid "Nothing to redo."
+msgstr ""
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Redo: %s"
+msgstr "ทำซ้ำ"
 
 #: editor/editor_node.cpp
 msgid "Can't reload a scene that was never saved."
@@ -3245,6 +3271,11 @@ msgid "Merge With Existing"
 msgstr "รวมกับที่มีอยู่เดิม"
 
 #: editor/editor_node.cpp
+#, fuzzy
+msgid "Apply MeshInstance Transforms"
+msgstr "เคลื่อนย้ายแอนิเมชัน"
+
+#: editor/editor_node.cpp
 msgid "Open & Run a Script"
 msgstr "เปิดและรันสคริปต์"
 
@@ -3496,6 +3527,10 @@ msgid ""
 "The selected resource (%s) does not match any type expected for this "
 "property (%s)."
 msgstr "ทรัพยากรที่เลือก (%s) มีประเทไม่ตรงกับค่าที่ต้องการ (%s)"
+
+#: editor/editor_resource_picker.cpp
+msgid "Quick Load"
+msgstr ""
 
 #: editor/editor_resource_picker.cpp editor/property_editor.cpp
 msgid "Make Unique"
@@ -5600,6 +5635,18 @@ msgid "Move CanvasItem \"%s\" to (%d, %d)"
 msgstr "เลื่อน CanvasItem \"%s\" ไปยัง (%d, %d)"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Locked"
+msgstr "ล็อกที่เลือก"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Grouped"
+msgstr "กลุ่ม"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid ""
 "Children of containers have their anchors and margins values overridden by "
 "their parent."
@@ -6538,7 +6585,13 @@ msgid "Remove Selected Item"
 msgstr "ลบไอเทมที่เลือก"
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
-msgid "Import from Scene"
+#, fuzzy
+msgid "Import from Scene (Ignore Transforms)"
+msgstr "นำเข้าจากฉาก"
+
+#: editor/plugins/mesh_library_editor_plugin.cpp
+#, fuzzy
+msgid "Import from Scene (Apply Transforms)"
 msgstr "นำเข้าจากฉาก"
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
@@ -7130,6 +7183,16 @@ msgstr "จำนวนจุดที่สร้างขึ้น:"
 msgid "Flip Portal"
 msgstr "พลิกแนวนอน"
 
+#: editor/plugins/room_manager_editor_plugin.cpp
+#, fuzzy
+msgid "Occluder Set Transform"
+msgstr "เคลียร์การแปลง"
+
+#: editor/plugins/room_manager_editor_plugin.cpp
+#, fuzzy
+msgid "Center Node"
+msgstr "สร้างโหนด"
+
 #: editor/plugins/root_motion_editor_plugin.cpp
 msgid "AnimationTree has no path set to an AnimationPlayer"
 msgstr "AnimationTree ไม่มีที่อยู่ไปยัง AnimationPlayer"
@@ -7629,12 +7692,14 @@ msgid "Skeleton2D"
 msgstr "Skeleton2D"
 
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
-msgid "Make Rest Pose (From Bones)"
-msgstr "สร้างท่าโพส (จากโครง)"
+#, fuzzy
+msgid "Reset to Rest Pose"
+msgstr "ตั้งโครงไปยังท่าโพส"
 
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
-msgid "Set Bones to Rest Pose"
-msgstr "ตั้งโครงไปยังท่าโพส"
+#, fuzzy
+msgid "Overwrite Rest Pose"
+msgstr "เขียนทับ"
 
 #: editor/plugins/skeleton_editor_plugin.cpp
 msgid "Create physical bones"
@@ -7659,6 +7724,71 @@ msgstr "ขนาน"
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Perspective"
 msgstr "เพอร์สเปกทีฟ"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Top Orthogonal"
+msgstr "ขนาน"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Top Perspective"
+msgstr "เพอร์สเปกทีฟ"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Bottom Orthogonal"
+msgstr "ขนาน"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Bottom Perspective"
+msgstr "เพอร์สเปกทีฟ"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Left Orthogonal"
+msgstr "ขนาน"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Right Perspective"
+msgstr "เพอร์สเปกทีฟ"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Right Orthogonal"
+msgstr "ขนาน"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Front Orthogonal"
+msgstr "ขนาน"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Front Perspective"
+msgstr "เพอร์สเปกทีฟ"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Rear Orthogonal"
+msgstr "ขนาน"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Rear Perspective"
+msgstr "เพอร์สเปกทีฟ"
+
+#. TRANSLATORS: This will be appended to the view name when Auto Orthogonal is enabled.
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid " [auto]"
+msgstr ""
+
+#. TRANSLATORS: This will be appended to the view name when Portal Occulusion is enabled.
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid " [portals active]"
+msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Transform Aborted."
@@ -7779,40 +7909,20 @@ msgid "Bottom View."
 msgstr "มุมล่าง"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Bottom"
-msgstr "ล่าง"
-
-#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Left View."
 msgstr "มุมซ้าย"
-
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "Left"
-msgstr "ซ้าย"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Right View."
 msgstr "มุมขวา"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Right"
-msgstr "ขวา"
-
-#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Front View."
 msgstr "มุมหน้า"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Front"
-msgstr "หน้า"
-
-#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Rear View."
 msgstr "มุมหลัง"
-
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "Rear"
-msgstr "หลัง"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Align Transform with View"
@@ -8087,6 +8197,11 @@ msgid "View Portal Culling"
 msgstr "ตั้งค่ามุมมอง"
 
 #: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "View Occlusion Culling"
+msgstr "ตั้งค่ามุมมอง"
+
+#: editor/plugins/spatial_editor_plugin.cpp
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Settings..."
 msgstr "ตั้งค่า..."
@@ -8152,8 +8267,9 @@ msgid "Post"
 msgstr "หลัง"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Nameless gizmo"
-msgstr "กิสโมไม่มีชื่อ"
+#, fuzzy
+msgid "Unnamed Gizmo"
+msgstr "โปรเจกต์ไม่มีชื่อ"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Create Mesh2D"
@@ -12275,6 +12391,16 @@ msgstr "กำหนดพิกัดจุดเส้นโค้ง"
 msgid "Set Portal Point Position"
 msgstr "กำหนดพิกัดจุดเส้นโค้ง"
 
+#: editor/spatial_editor_gizmos.cpp
+#, fuzzy
+msgid "Set Occluder Sphere Radius"
+msgstr "ปรับรัศมีทรงแคปซูล"
+
+#: editor/spatial_editor_gizmos.cpp
+#, fuzzy
+msgid "Set Occluder Sphere Position"
+msgstr "กำหนดเส้นโค้งขาเข้า"
+
 #: modules/csg/csg_gizmos.cpp
 msgid "Change Cylinder Radius"
 msgstr "ปรับรัศมีทรงกระบอก"
@@ -12557,6 +12683,11 @@ msgstr "กำลังพล็อต lightmaps"
 #: modules/mono/csharp_script.cpp
 msgid "Class name can't be a reserved keyword"
 msgstr "ชื่อคลาสไม่สามารถมีคีย์เวิร์ดได้"
+
+#: modules/mono/csharp_script.cpp
+#, fuzzy
+msgid "Build Solution"
+msgstr "เติมส่วนที่เลือก"
 
 #: modules/mono/mono_gd/gd_mono_utils.cpp
 msgid "End of inner exception stack trace"
@@ -13030,135 +13161,135 @@ msgstr "ค้นหาโหนด VisualScript"
 msgid "Get %s"
 msgstr "รับ %s"
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Package name is missing."
 msgstr "ชื่อแพ็คเกจหายไป"
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Package segments must be of non-zero length."
 msgstr "ส่วนของแพ็คเกจจะต้องมีความยาวไม่เป็นศูนย์"
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "The character '%s' is not allowed in Android application package names."
 msgstr "ตัวอักษร '%s' ไม่อนุญาตให้ใช้ในชื่อของ Android application package"
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "A digit cannot be the first character in a package segment."
 msgstr "ไม่สามารถใช้ตัวเลขเป็นตัวแรกในส่วนของแพ็คเกจ"
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "The character '%s' cannot be the first character in a package segment."
 msgstr "ตัวอักษร '%s' ไม่สามารถเป็นตัวอักษรตัวแรกในส่วนของแพ็คเกจ"
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "The package must have at least one '.' separator."
 msgstr "แพ็คเกจจำเป็นต้องมี '.' อย่างน้อยหนึ่งตัว"
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Select device from the list"
 msgstr "เลือกอุปกรณ์จากรายชื่อ"
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Running on %s"
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 #, fuzzy
 msgid "Exporting APK..."
 msgstr "ส่งออกทั้งหมด"
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 #, fuzzy
 msgid "Uninstalling..."
 msgstr "ถอนการติดตั้ง"
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 #, fuzzy
 msgid "Installing to device, please wait..."
 msgstr "กำลังโหลด โปรดรอ..."
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 #, fuzzy
 msgid "Could not install to device: %s"
 msgstr "อินสแตนซ์ฉากไม่ได้!"
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 #, fuzzy
 msgid "Running on device..."
 msgstr "กำลังรันสคริปต์..."
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 #, fuzzy
 msgid "Could not execute on device."
 msgstr "ไม่สามารถสร้างโฟลเดอร์"
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Unable to find the 'apksigner' tool."
 msgstr "ไม่สามารถหาเครื่องมือ 'apksigner'"
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid ""
 "Android build template not installed in the project. Install it from the "
 "Project menu."
 msgstr "เทมเพลตการสร้างสำหรับแอนดรอยด์ไม่ถูกติดตั้ง สามารถติดตั้งจากเมนูโปรเจกต์"
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid ""
 "Either Debug Keystore, Debug User AND Debug Password settings must be "
 "configured OR none of them."
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Debug keystore not configured in the Editor Settings nor in the preset."
 msgstr "ดีบัก Keystore ไม่ได้ถูกตั้งไว้ในตั้งค่าของตัวแก้ไขหรือในพรีเซ็ต"
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid ""
 "Either Release Keystore, Release User AND Release Password settings must be "
 "configured OR none of them."
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Release keystore incorrectly configured in the export preset."
 msgstr "Release keystore กำหนดค่าไว้อย่างไม่ถูกต้องในพรีเซ็ตสำหรับการส่งออก"
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "A valid Android SDK path is required in Editor Settings."
 msgstr "ต้องการที่อยู่ของ Android SDK ที่ถูกต้อง ในการตั้งค่าตัวแก้ไข"
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Invalid Android SDK path in Editor Settings."
 msgstr "ที่อยู่ Android SDK ไม่ถูกต้องในการตั้งค่าตัวแก้ไข"
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Missing 'platform-tools' directory!"
 msgstr "ไดเร็กทอรี 'platform-tools' หายไป!"
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Unable to find Android SDK platform-tools' adb command."
 msgstr "ไม่พบคำสั่ง adb ของ Android SDK platform-tools"
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Please check in the Android SDK directory specified in Editor Settings."
 msgstr "กรุณาตรวจสอบในตำแหน่งของ Android SDK ที่ระบุไว้ในการตั้งค่าตัวแก้ไข"
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Missing 'build-tools' directory!"
 msgstr "ไดเร็กทอรี 'build-tools' หายไป!"
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Unable to find Android SDK build-tools' apksigner command."
 msgstr "ไม่พบคำสั่ง apksigner ของ Android SDK build-tools"
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Invalid public key for APK expansion."
 msgstr "public key ผิดพลาดสำหรับ APK expansion"
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Invalid package name:"
 msgstr "ชื่อแพ็คเกจผิดพลาด:"
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid ""
 "Invalid \"GodotPaymentV3\" module included in the \"android/modules\" "
 "project setting (changed in Godot 3.2.2).\n"
@@ -13166,33 +13297,20 @@ msgstr ""
 "โมดูล \"GodotPaymentV3\" ที่ไม่ถูกต้องได้รวมอยู่ในการตั้งค่าโปรเจกต์ \"android/modules"
 "\" (เปลี่ยนแปลงใน Godot 3.2.2)\n"
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "\"Use Custom Build\" must be enabled to use the plugins."
 msgstr "\"Use Custom Build\" จำเป็นต้องเปิดการใช้งานหากจะใช้ปลั๊กอิน"
 
-#: platform/android/export/export.cpp
-msgid ""
-"\"Degrees Of Freedom\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR"
-"\"."
-msgstr ""
-"\"Degrees Of Freedom\" จะใช้ได้เฉพาะเมื่อ \"Xr Mode\" เป็น \"Oculus Mobile VR\""
-
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid ""
 "\"Hand Tracking\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\"."
 msgstr "\"Hand Tracking\" จะสามารถใช้ได้เมื่อ \"Xr Mode\" เป็น \"Oculus Mobile VR\""
 
-#: platform/android/export/export.cpp
-msgid ""
-"\"Focus Awareness\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\"."
-msgstr ""
-"\"Focus Awareness\" จะสามารถใช้ได้เมื่อ \"Xr Mode\" เป็น \"Oculus Mobile VR\""
-
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "\"Export AAB\" is only valid when \"Use Custom Build\" is enabled."
 msgstr "\"Export AAB\" จะใช้ได้เฉพาะเมื่อเปิดใช้งาน \"Use Custom Build\""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid ""
 "'apksigner' could not be found.\n"
 "Please check the command is available in the Android SDK build-tools "
@@ -13200,64 +13318,64 @@ msgid ""
 "The resulting %s is unsigned."
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Signing debug %s..."
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 #, fuzzy
 msgid "Signing release %s..."
 msgstr ""
 "กำลังสแกนไฟล์,\n"
 "กรุณารอ..."
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 #, fuzzy
 msgid "Could not find keystore, unable to export."
 msgstr "เปิดเทมเพลตเพื่อส่งออกไม่ได้:"
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "'apksigner' returned with error #%d"
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 #, fuzzy
 msgid "Verifying %s..."
 msgstr "กำลังเพิ่ม %s..."
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "'apksigner' verification of %s failed."
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 #, fuzzy
 msgid "Exporting for Android"
 msgstr "ส่งออกทั้งหมด"
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Invalid filename! Android App Bundle requires the *.aab extension."
 msgstr "ชื่อไฟล์ผิดพลาด! แอนดรอยด์แอปบันเดิลจำเป็นต้องมีนามสกุล *.aab"
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "APK Expansion not compatible with Android App Bundle."
 msgstr "การขยาย APK เข้ากันไม่ได้กับแอนดรอยด์แอปบันเดิล"
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Invalid filename! Android APK requires the *.apk extension."
 msgstr "ชื่อไฟล์ผิดพลาด! แอนดรอยด์ APK จำเป็นต้องมีนามสกุล *.apk"
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Unsupported export format!\n"
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid ""
 "Trying to build from a custom built template, but no version info for it "
 "exists. Please reinstall from the 'Project' menu."
 msgstr ""
 "พยายามสร้างจากเทมเพลตที่สร้างขึ้นเอง แต่ไม่มีข้อมูลเวอร์ชัน โปรดติดตั้งใหม่จากเมนู \"โปรเจกต์\""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid ""
 "Android build version mismatch:\n"
 "   Template installed: %s\n"
@@ -13269,26 +13387,26 @@ msgstr ""
 "    Godot เวอร์ชัน:% s\n"
 "โปรดติดตั้งเทมเพลตการสร้างสำหรับแอนดรอยด์ใหม่จากเมนู \"โปรเจกต์\""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid ""
 "Unable to overwrite res://android/build/res/*.xml files with project name"
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 #, fuzzy
 msgid "Could not export project files to gradle project\n"
 msgstr "ไม่พบไฟล์ project.godot"
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 #, fuzzy
 msgid "Could not write expansion package file!"
 msgstr "เขียนไฟล์ไม่ได้:"
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Building Android Project (gradle)"
 msgstr "กำลังสร้างโปรเจคแอนดรอยด์ (gradle)"
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid ""
 "Building of Android project failed, check output for the error.\n"
 "Alternatively visit docs.godotengine.org for Android build documentation."
@@ -13296,35 +13414,35 @@ msgstr ""
 "การสร้างโปรเจกต์แอนดรอยด์ล้มเหลว ตรวจสอบผลลัพธ์เพื่อหาข้อผิดพลาด\n"
 "หรือไปที่ docs.godotengine.org สำหรับเอกสารประกอบการสร้างสำหรับแอนดรอยด์"
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Moving output"
 msgstr "กำลังย้ายเอาต์พุต"
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid ""
 "Unable to copy and rename export file, check gradle project directory for "
 "outputs."
 msgstr ""
 "ไม่สามารถคัดลอกและเปลี่ยนชื่อไฟล์ส่งออก ตรวจสอบไดเร็กทอรีโปรเจ็กต์ gradle สำหรับเอาต์พุต"
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 #, fuzzy
 msgid "Package not found: %s"
 msgstr "ไม่พบแอนิเมชัน: '%s'"
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 #, fuzzy
 msgid "Creating APK..."
 msgstr "กำลังสร้างคอนทัวร์..."
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 #, fuzzy
 msgid ""
 "Could not find template APK to export:\n"
 "%s"
 msgstr "เปิดเทมเพลตเพื่อส่งออกไม่ได้:"
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid ""
 "Missing libraries in the export template for the selected architectures: "
 "%s.\n"
@@ -13332,21 +13450,21 @@ msgid ""
 "architectures in the export preset."
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 #, fuzzy
 msgid "Adding files..."
 msgstr "กำลังเพิ่ม %s..."
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 #, fuzzy
 msgid "Could not export project files"
 msgstr "เขียนไฟล์ไม่ได้:"
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Aligning APK..."
 msgstr "จัดเรียง APK..."
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Could not unzip temporary unaligned APK."
 msgstr ""
 
@@ -13843,6 +13961,14 @@ msgstr ""
 "NavigationMeshInstance ต้องเป็นโหนดลูก/หลานของโหนด Navigation "
 "โดยจะให้ข้อมูลการนำทางเท่านั้น"
 
+#: scene/3d/occluder.cpp
+msgid "No shape is set."
+msgstr ""
+
+#: scene/3d/occluder.cpp
+msgid "Only uniform scales are supported."
+msgstr ""
+
 #: scene/3d/particles.cpp
 msgid ""
 "GPU-based particles are not supported by the GLES2 video driver.\n"
@@ -14156,6 +14282,14 @@ msgstr "นามสกุลไฟล์ไม่ถูกต้อง"
 msgid "Enable grid minimap."
 msgstr "เปิดเส้นกริดมินิแมพ"
 
+#: scene/gui/nine_patch_rect.cpp
+msgid ""
+"The Tile and Tile Fit options for Axis Stretch properties are only effective "
+"when using the GLES3 rendering backend.\n"
+"The GLES2 backend is currently in use, so these modes will act like Stretch "
+"instead."
+msgstr ""
+
 #: scene/gui/popup.cpp
 msgid ""
 "Popups will hide by default unless you call popup() or any of the popup*() "
@@ -14204,6 +14338,10 @@ msgstr ""
 #: scene/main/viewport.cpp
 msgid "Viewport size must be greater than 0 to render anything."
 msgstr "ขนาดวิวพอร์ตจะต้องมากกว่า 0 เพื่อที่จะเรนเดอร์ได้"
+
+#: scene/resources/occluder_shape.cpp
+msgid "OccluderShapeSphere Set Spheres"
+msgstr ""
 
 #: scene/resources/visual_shader_nodes.cpp
 msgid ""
@@ -14255,6 +14393,39 @@ msgstr "การกำหนดให้กับยูนิฟอร์ม"
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "ค่าคงที่ไม่สามารถแก้ไขได้"
+
+#~ msgid "Make Rest Pose (From Bones)"
+#~ msgstr "สร้างท่าโพส (จากโครง)"
+
+#~ msgid "Bottom"
+#~ msgstr "ล่าง"
+
+#~ msgid "Left"
+#~ msgstr "ซ้าย"
+
+#~ msgid "Right"
+#~ msgstr "ขวา"
+
+#~ msgid "Front"
+#~ msgstr "หน้า"
+
+#~ msgid "Rear"
+#~ msgstr "หลัง"
+
+#~ msgid "Nameless gizmo"
+#~ msgstr "กิสโมไม่มีชื่อ"
+
+#~ msgid ""
+#~ "\"Degrees Of Freedom\" is only valid when \"Xr Mode\" is \"Oculus Mobile "
+#~ "VR\"."
+#~ msgstr ""
+#~ "\"Degrees Of Freedom\" จะใช้ได้เฉพาะเมื่อ \"Xr Mode\" เป็น \"Oculus Mobile VR\""
+
+#~ msgid ""
+#~ "\"Focus Awareness\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR"
+#~ "\"."
+#~ msgstr ""
+#~ "\"Focus Awareness\" จะสามารถใช้ได้เมื่อ \"Xr Mode\" เป็น \"Oculus Mobile VR\""
 
 #~ msgid "Package Contents:"
 #~ msgstr "เนื้อหาแพคเกจ:"

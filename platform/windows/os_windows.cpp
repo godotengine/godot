@@ -3083,8 +3083,27 @@ void OS_Windows::move_window_to_foreground() {
 }
 
 Error OS_Windows::shell_open(String p_uri) {
-	ShellExecuteW(NULL, NULL, p_uri.c_str(), NULL, NULL, SW_SHOWNORMAL);
-	return OK;
+	INT_PTR ret = (INT_PTR)ShellExecuteW(nullptr, nullptr, p_uri.c_str(), nullptr, nullptr, SW_SHOWNORMAL);
+	if (ret > 32) {
+		return OK;
+	} else {
+		switch (ret) {
+			case ERROR_FILE_NOT_FOUND:
+			case SE_ERR_DLLNOTFOUND:
+				return ERR_FILE_NOT_FOUND;
+			case ERROR_PATH_NOT_FOUND:
+				return ERR_FILE_BAD_PATH;
+			case ERROR_BAD_FORMAT:
+				return ERR_FILE_CORRUPT;
+			case SE_ERR_ACCESSDENIED:
+				return ERR_UNAUTHORIZED;
+			case 0:
+			case SE_ERR_OOM:
+				return ERR_OUT_OF_MEMORY;
+			default:
+				return FAILED;
+		}
+	}
 }
 
 String OS_Windows::get_locale() const {
@@ -3092,21 +3111,21 @@ String OS_Windows::get_locale() const {
 
 	LANGID langid = GetUserDefaultUILanguage();
 	String neutral;
-	int lang = langid & ((1 << 9) - 1);
-	int sublang = langid & ~((1 << 9) - 1);
+	int lang = PRIMARYLANGID(langid);
+	int sublang = SUBLANGID(langid);
 
 	while (wl->locale) {
 		if (wl->main_lang == lang && wl->sublang == SUBLANG_NEUTRAL)
 			neutral = wl->locale;
 
 		if (lang == wl->main_lang && sublang == wl->sublang)
-			return wl->locale;
+			return String(wl->locale).replace("-", "_");
 
 		wl++;
 	}
 
 	if (neutral != "")
-		return neutral;
+		return String(neutral).replace("-", "_");
 
 	return "en";
 }

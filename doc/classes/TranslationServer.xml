@@ -27,13 +27,14 @@
 		<method name="get_loaded_locales" qualifiers="const">
 			<return type="Array" />
 			<description>
-				Returns an Array of all loaded locales of the game.
+				Returns an array of all loaded locales of the project.
 			</description>
 		</method>
 		<method name="get_locale" qualifiers="const">
 			<return type="String" />
 			<description>
-				Returns the current locale of the game.
+				Returns the current locale of the project.
+				See also [method OS.get_locale] and [method OS.get_locale_language] to query the locale of the user system.
 			</description>
 		</method>
 		<method name="get_locale_name" qualifiers="const">
@@ -54,7 +55,8 @@
 			<return type="void" />
 			<argument index="0" name="locale" type="String" />
 			<description>
-				Sets the locale of the game.
+				Sets the locale of the project. The [code]locale[/code] string will be standardized to match known locales (e.g. [code]en-US[/code] would be matched to [code]en_US[/code]).
+				If translations have been loaded beforehand for the new locale, they will be applied.
 			</description>
 		</method>
 		<method name="translate" qualifiers="const">

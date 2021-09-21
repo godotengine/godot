@@ -527,6 +527,10 @@ String _OS::get_locale() const {
 	return OS::get_singleton()->get_locale();
 }
 
+String _OS::get_locale_language() const {
+	return OS::get_singleton()->get_locale_language();
+}
+
 String _OS::get_latin_keyboard_variant() const {
 	switch (OS::get_singleton()->get_latin_keyboard_variant()) {
 		case OS::LATIN_KEYBOARD_QWERTY:
@@ -1333,6 +1337,7 @@ void _OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_ticks_usec"), &_OS::get_ticks_usec);
 	ClassDB::bind_method(D_METHOD("get_splash_tick_msec"), &_OS::get_splash_tick_msec);
 	ClassDB::bind_method(D_METHOD("get_locale"), &_OS::get_locale);
+	ClassDB::bind_method(D_METHOD("get_locale_language"), &_OS::get_locale_language);
 	ClassDB::bind_method(D_METHOD("get_latin_keyboard_variant"), &_OS::get_latin_keyboard_variant);
 	ClassDB::bind_method(D_METHOD("get_model_name"), &_OS::get_model_name);
 

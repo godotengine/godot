@@ -725,7 +725,7 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, float 
 					if (anim->has_loop()) {
 						at_anim_pos = Math::fposmod(p_time - pos, anim->get_length()); //seek to loop
 					} else {
-						at_anim_pos = MAX(anim->get_length(), p_time - pos); //seek to end
+						at_anim_pos = MIN(anim->get_length(), p_time - pos); //seek to end
 					}
 
 					if (player->is_playing() || p_seeked) {
@@ -753,6 +753,7 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, float 
 							}
 						} else {
 							player->play(anim_name);
+							player->seek(0.0, true);
 							nc->animation_playing = true;
 							playing_caches.insert(nc);
 						}
