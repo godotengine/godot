@@ -270,6 +270,10 @@ void Label::_notification(int p_what) {
 		update();
 	}
 
+	if (p_what == NOTIFICATION_LAYOUT_DIRECTION_CHANGED) {
+		update();
+	}
+
 	if (p_what == NOTIFICATION_DRAW) {
 		if (clip) {
 			RenderingServer::get_singleton()->canvas_item_set_clip(get_canvas_item(), true);
@@ -293,6 +297,7 @@ void Label::_notification(int p_what) {
 		int outline_size = get_theme_constant(SNAME("outline_size"));
 		int shadow_outline_size = get_theme_constant(SNAME("shadow_outline_size"));
 		bool rtl = TS->shaped_text_get_direction(text_rid);
+		bool rtl_layout = is_layout_rtl();
 
 		style->draw(ci, Rect2(Point2(0, 0), get_size()));
 
@@ -364,13 +369,21 @@ void Label::_notification(int p_what) {
 					}
 					break;
 				case ALIGN_LEFT: {
-					ofs.x = style->get_offset().x;
+					if (rtl_layout) {
+						ofs.x = int(size.width - style->get_margin(SIDE_RIGHT) - line_size.width);
+					} else {
+						ofs.x = style->get_offset().x;
+					}
 				} break;
 				case ALIGN_CENTER: {
 					ofs.x = int(size.width - line_size.width) / 2;
 				} break;
 				case ALIGN_RIGHT: {
-					ofs.x = int(size.width - style->get_margin(SIDE_RIGHT) - line_size.width);
+					if (rtl_layout) {
+						ofs.x = style->get_offset().x;
+					} else {
+						ofs.x = int(size.width - style->get_margin(SIDE_RIGHT) - line_size.width);
+					}
 				} break;
 			}
 

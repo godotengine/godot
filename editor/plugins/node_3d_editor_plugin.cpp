@@ -4196,7 +4196,8 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, Edito
 
 	VBoxContainer *vbox = memnew(VBoxContainer);
 	surface->add_child(vbox);
-	vbox->set_position(Point2(10, 10) * EDSCALE);
+	vbox->set_offset(SIDE_LEFT, 10 * EDSCALE);
+	vbox->set_offset(SIDE_TOP, 10 * EDSCALE);
 
 	view_menu = memnew(MenuButton);
 	view_menu->set_flat(false);
