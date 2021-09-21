@@ -9,8 +9,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="copy_mode" type="int" setter="set_copy_mode" getter="get_copy_mode" enum="BackBufferCopy.CopyMode" default="1">
 			Buffer mode. See [enum CopyMode] constants.

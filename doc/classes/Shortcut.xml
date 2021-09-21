@@ -36,6 +36,4 @@
 			Generally the [InputEvent] is a keyboard key, though it can be any [InputEvent], including an [InputEventAction].
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

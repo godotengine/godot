@@ -9,8 +9,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="dof_blur_amount" type="float" setter="set_dof_blur_amount" getter="get_dof_blur_amount" default="0.1">
 			The amount of blur for both near and far depth-of-field effects. The amount of blur increases the radius of the blur effect, making the affected area blurrier. However, If the amount is too high, you might start to see lines appearing, especially when using a low quality blur.
@@ -40,6 +38,4 @@
 			If [code]true[/code], overrides the manual or automatic exposure defined in the [Environment] with the value in [member override_exposure].
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

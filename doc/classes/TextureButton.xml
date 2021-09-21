@@ -11,8 +11,6 @@
 	<tutorials>
 		<link title="3D Voxel Demo">https://godotengine.org/asset-library/asset/676</link>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="expand" type="bool" setter="set_expand" getter="get_expand" default="false">
 			If [code]true[/code], the texture stretches to the edges of the node's bounding rectangle using the [member stretch_mode]. If [code]false[/code], the texture will not scale with the node.

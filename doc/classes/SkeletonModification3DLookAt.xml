@@ -61,6 +61,4 @@
 			The NodePath to the node that is the target for the modification.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

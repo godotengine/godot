@@ -89,6 +89,4 @@
 			Lock the body's linear movement in the Z axis.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

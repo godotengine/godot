@@ -83,6 +83,4 @@
 		</member>
 		<member name="transfer_mode" type="int" setter="set_transfer_mode" getter="get_transfer_mode" override="true" enum="TransferMode" default="2" />
 	</members>
-	<constants>
-	</constants>
 </class>

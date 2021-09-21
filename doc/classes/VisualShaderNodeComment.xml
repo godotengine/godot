@@ -8,8 +8,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="description" type="String" setter="set_description" getter="get_description" default="&quot;&quot;">
 			An additional description which placed below the title.
@@ -18,6 +16,4 @@
 			A title of the node.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

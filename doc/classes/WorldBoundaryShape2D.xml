@@ -8,8 +8,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="distance" type="float" setter="set_distance" getter="get_distance" default="0.0">
 			The line's distance from the origin.
@@ -18,6 +16,4 @@
 			The line's normal. Defaults to [code]Vector2.UP[/code].
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

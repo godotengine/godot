@@ -81,6 +81,4 @@
 			Sets the skin to be used by this instance.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

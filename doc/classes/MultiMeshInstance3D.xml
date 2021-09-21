@@ -12,13 +12,9 @@
 		<link title="Using MultiMeshInstance">https://docs.godotengine.org/en/latest/tutorials/3d/using_multi_mesh_instance.html</link>
 		<link title="Optimization using MultiMeshes">https://docs.godotengine.org/en/latest/tutorials/optimization/using_multimesh.html</link>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="multimesh" type="MultiMesh" setter="set_multimesh" getter="get_multimesh">
 			The [MultiMesh] resource that will be used and shared among all instances of the [MultiMeshInstance3D].
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

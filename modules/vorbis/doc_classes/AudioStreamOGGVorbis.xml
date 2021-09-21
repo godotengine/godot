@@ -6,8 +6,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="loop" type="bool" setter="set_loop" getter="has_loop" default="false">
 			If [code]true[/code], the stream will automatically loop when it reaches the end.
@@ -19,6 +17,4 @@
 			Contains the raw OGG data for this stream.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

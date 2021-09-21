@@ -10,8 +10,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="ground_bottom_color" type="Color" setter="set_ground_bottom_color" getter="get_ground_bottom_color" default="Color(0.12, 0.12, 0.13, 1)">
 			Color of the ground at the bottom. Blends with [member ground_horizon_color].
@@ -44,6 +42,4 @@
 			How quickly the sun fades away between the edge of the sun disk and [member sun_angle_max].
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

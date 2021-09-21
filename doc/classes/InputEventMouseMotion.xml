@@ -11,8 +11,6 @@
 		<link title="Mouse and input coordinates">https://docs.godotengine.org/en/latest/tutorials/inputs/mouse_and_input_coordinates.html</link>
 		<link title="3D Voxel Demo">https://godotengine.org/asset-library/asset/676</link>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="pressure" type="float" setter="set_pressure" getter="get_pressure" default="0.0">
 			Represents the pressure the user puts on the pen. Ranges from [code]0.0[/code] to [code]1.0[/code].
@@ -28,6 +26,4 @@
 			Represents the angles of tilt of the pen. Positive X-coordinate value indicates a tilt to the right. Positive Y-coordinate value indicates a tilt toward the user. Ranges from [code]-1.0[/code] to [code]1.0[/code] for both axes.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

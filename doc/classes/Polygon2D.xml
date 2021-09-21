@@ -114,6 +114,4 @@
 			Color for each vertex. Colors are interpolated between vertices, resulting in smooth gradients. There should be one per polygon vertex. If there are fewer, undefined vertices will use [code]color[/code].
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

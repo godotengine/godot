@@ -76,6 +76,4 @@
 			Gradient's offsets returned as a [PackedFloat32Array].
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

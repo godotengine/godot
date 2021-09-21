@@ -51,6 +51,4 @@
 	<members>
 		<member name="dialog_hide_on_ok" type="bool" setter="set_hide_on_ok" getter="get_hide_on_ok" override="true" default="false" />
 	</members>
-	<constants>
-	</constants>
 </class>

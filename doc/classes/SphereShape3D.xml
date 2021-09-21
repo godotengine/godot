@@ -9,13 +9,9 @@
 	<tutorials>
 		<link title="3D Physics Tests Demo">https://godotengine.org/asset-library/asset/675</link>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="radius" type="float" setter="set_radius" getter="get_radius" default="1.0">
 			The sphere's radius. The shape's diameter is double the radius.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

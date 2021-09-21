@@ -52,8 +52,6 @@
 			</description>
 		</signal>
 	</signals>
-	<constants>
-	</constants>
 	<theme_items>
 		<theme_item name="bg" data_type="icon" type="Texture2D">
 			The background of the color preview rect on the button.

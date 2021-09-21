@@ -8,8 +8,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="mode" type="int" setter="set_yield_mode" getter="get_yield_mode" enum="VisualScriptYield.YieldMode" default="1">
 			The mode to use for yielding. See [enum YieldMode] for available options.

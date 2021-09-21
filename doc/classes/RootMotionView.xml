@@ -10,8 +10,6 @@
 	<tutorials>
 		<link title="Using AnimationTree - Root motion">https://docs.godotengine.org/en/latest/tutorials/animation/animation_tree.html#root-motion</link>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="animation_path" type="NodePath" setter="set_animation_path" getter="get_animation_path">
 			Path to an [AnimationTree] node to use as a basis for root motion.
@@ -29,6 +27,4 @@
 			If [code]true[/code], the grid's points will all be on the same Y coordinate ([i]local[/i] Y = 0). If [code]false[/code], the points' original Y coordinate is preserved.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

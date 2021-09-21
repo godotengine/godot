@@ -83,6 +83,4 @@
 			The NodePath to the node that is the target for the FABRIK modification. This node is what the FABRIK chain will attempt to rotate the bone chain to.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

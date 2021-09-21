@@ -9,8 +9,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="atlas" type="Texture2D" setter="set_atlas" getter="get_atlas">
 			The texture that contains the atlas. Can be any [Texture2D] subtype.
@@ -25,6 +23,4 @@
 			The AtlasTexture's used region.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

@@ -183,8 +183,6 @@
 			</description>
 		</signal>
 	</signals>
-	<constants>
-	</constants>
 	<theme_items>
 		<theme_item name="arrow" data_type="icon" type="Texture2D">
 			The arrow icon to be drawn on the right end of the button.

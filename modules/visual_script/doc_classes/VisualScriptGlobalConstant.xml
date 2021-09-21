@@ -8,13 +8,9 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="constant" type="int" setter="set_global_constant" getter="get_global_constant" default="0">
 			The constant to be used.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

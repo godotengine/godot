@@ -10,8 +10,6 @@
 		<link title="BBCode in RichTextLabel">https://docs.godotengine.org/en/latest/tutorials/gui/bbcode_in_richtextlabel.html</link>
 		<link title="RichTextEffect test project (third-party)">https://github.com/Eoin-ONeill-Yokai/Godot-Rich-Text-Effect-Test-Project</link>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="color" type="Color" setter="set_color" getter="get_color" default="Color(0, 0, 0, 1)">
 			The color the character will be drawn with.
@@ -46,6 +44,4 @@
 			If [code]true[/code], the character will be drawn. If [code]false[/code], the character will be hidden. Characters around hidden characters will reflow to take the space of hidden characters. If this is not desired, set their [member color] to [code]Color(1, 1, 1, 0)[/code] instead.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

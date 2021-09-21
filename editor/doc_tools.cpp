@@ -1173,6 +1173,59 @@ static void _write_string(FileAccess *f, int p_tablevel, const String &p_string)
 	f->store_string(tab + p_string + "\n");
 }
 
+static void _write_method_doc(FileAccess *f, const String &p_name, Vector<DocData::MethodDoc> &p_method_docs) {
+	if (!p_method_docs.is_empty()) {
+		p_method_docs.sort();
+		_write_string(f, 1, "<" + p_name + "s>");
+		for (int i = 0; i < p_method_docs.size(); i++) {
+			const DocData::MethodDoc &m = p_method_docs[i];
+
+			String qualifiers;
+			if (m.qualifiers != "") {
+				qualifiers += " qualifiers=\"" + m.qualifiers.xml_escape() + "\"";
+			}
+
+			_write_string(f, 2, "<" + p_name + " name=\"" + m.name.xml_escape() + "\"" + qualifiers + ">");
+
+			if (m.return_type != "") {
+				String enum_text;
+				if (m.return_enum != String()) {
+					enum_text = " enum=\"" + m.return_enum + "\"";
+				}
+				_write_string(f, 3, "<return type=\"" + m.return_type + "\"" + enum_text + " />");
+			}
+			if (m.errors_returned.size() > 0) {
+				for (int j = 0; j < m.errors_returned.size(); j++) {
+					_write_string(f, 3, "<returns_error number=\"" + itos(m.errors_returned[j]) + "\"/>");
+				}
+			}
+
+			for (int j = 0; j < m.arguments.size(); j++) {
+				const DocData::ArgumentDoc &a = m.arguments[j];
+
+				String enum_text;
+				if (a.enumeration != String()) {
+					enum_text = " enum=\"" + a.enumeration + "\"";
+				}
+
+				if (a.default_value != "") {
+					_write_string(f, 3, "<argument index=\"" + itos(j) + "\" name=\"" + a.name.xml_escape() + "\" type=\"" + a.type.xml_escape() + "\"" + enum_text + " default=\"" + a.default_value.xml_escape(true) + "\" />");
+				} else {
+					_write_string(f, 3, "<argument index=\"" + itos(j) + "\" name=\"" + a.name.xml_escape() + "\" type=\"" + a.type.xml_escape() + "\"" + enum_text + " />");
+				}
+			}
+
+			_write_string(f, 3, "<description>");
+			_write_string(f, 4, m.description.strip_edges().xml_escape());
+			_write_string(f, 3, "</description>");
+
+			_write_string(f, 2, "</" + p_name + ">");
+		}
+
+		_write_string(f, 1, "</" + p_name + "s>");
+	}
+}
+
 Error DocTools::save_classes(const String &p_default_path, const Map<String, String> &p_class_path) {
 	for (Map<String, DocData::ClassDoc>::Element *E = class_list.front(); E; E = E->next()) {
 		DocData::ClassDoc &c = E->get();
@@ -1216,58 +1269,9 @@ Error DocTools::save_classes(const String &p_default_path, const Map<String, Str
 		}
 		_write_string(f, 1, "</tutorials>");
 
-		_write_string(f, 1, "<methods>");
+		_write_method_doc(f, "method", c.methods);
 
-		c.methods.sort();
-
-		for (int i = 0; i < c.methods.size(); i++) {
-			const DocData::MethodDoc &m = c.methods[i];
-
-			String qualifiers;
-			if (m.qualifiers != "") {
-				qualifiers += " qualifiers=\"" + m.qualifiers.xml_escape() + "\"";
-			}
-
-			_write_string(f, 2, "<method name=\"" + m.name.xml_escape() + "\"" + qualifiers + ">");
-
-			if (m.return_type != "") {
-				String enum_text;
-				if (m.return_enum != String()) {
-					enum_text = " enum=\"" + m.return_enum + "\"";
-				}
-				_write_string(f, 3, "<return type=\"" + m.return_type + "\"" + enum_text + " />");
-			}
-			if (m.errors_returned.size() > 0) {
-				for (int j = 0; j < m.errors_returned.size(); j++) {
-					_write_string(f, 3, "<returns_error number=\"" + itos(m.errors_returned[j]) + "\"/>");
-				}
-			}
-
-			for (int j = 0; j < m.arguments.size(); j++) {
-				const DocData::ArgumentDoc &a = m.arguments[j];
-
-				String enum_text;
-				if (a.enumeration != String()) {
-					enum_text = " enum=\"" + a.enumeration + "\"";
-				}
-
-				if (a.default_value != "") {
-					_write_string(f, 3, "<argument index=\"" + itos(j) + "\" name=\"" + a.name.xml_escape() + "\" type=\"" + a.type.xml_escape() + "\"" + enum_text + " default=\"" + a.default_value.xml_escape(true) + "\" />");
-				} else {
-					_write_string(f, 3, "<argument index=\"" + itos(j) + "\" name=\"" + a.name.xml_escape() + "\" type=\"" + a.type.xml_escape() + "\"" + enum_text + " />");
-				}
-			}
-
-			_write_string(f, 3, "<description>");
-			_write_string(f, 4, m.description.strip_edges().xml_escape());
-			_write_string(f, 3, "</description>");
-
-			_write_string(f, 2, "</method>");
-		}
-
-		_write_string(f, 1, "</methods>");
-
-		if (c.properties.size()) {
+		if (!c.properties.is_empty()) {
 			_write_string(f, 1, "<members>");
 
 			c.properties.sort();
@@ -1294,52 +1298,33 @@ Error DocTools::save_classes(const String &p_default_path, const Map<String, Str
 			_write_string(f, 1, "</members>");
 		}
 
-		if (c.signals.size()) {
-			c.signals.sort();
+		_write_method_doc(f, "signal", c.signals);
 
-			_write_string(f, 1, "<signals>");
-			for (int i = 0; i < c.signals.size(); i++) {
-				const DocData::MethodDoc &m = c.signals[i];
-				_write_string(f, 2, "<signal name=\"" + m.name + "\">");
-				for (int j = 0; j < m.arguments.size(); j++) {
-					const DocData::ArgumentDoc &a = m.arguments[j];
-					_write_string(f, 3, "<argument index=\"" + itos(j) + "\" name=\"" + a.name.xml_escape() + "\" type=\"" + a.type.xml_escape() + "\" />");
+		if (!c.constants.is_empty()) {
+			_write_string(f, 1, "<constants>");
+			for (int i = 0; i < c.constants.size(); i++) {
+				const DocData::ConstantDoc &k = c.constants[i];
+				if (k.is_value_valid) {
+					if (k.enumeration != String()) {
+						_write_string(f, 2, "<constant name=\"" + k.name + "\" value=\"" + k.value + "\" enum=\"" + k.enumeration + "\">");
+					} else {
+						_write_string(f, 2, "<constant name=\"" + k.name + "\" value=\"" + k.value + "\">");
+					}
+				} else {
+					if (k.enumeration != String()) {
+						_write_string(f, 2, "<constant name=\"" + k.name + "\" value=\"platform-dependent\" enum=\"" + k.enumeration + "\">");
+					} else {
+						_write_string(f, 2, "<constant name=\"" + k.name + "\" value=\"platform-dependent\">");
+					}
 				}
-
-				_write_string(f, 3, "<description>");
-				_write_string(f, 4, m.description.strip_edges().xml_escape());
-				_write_string(f, 3, "</description>");
-
-				_write_string(f, 2, "</signal>");
+				_write_string(f, 3, k.description.strip_edges().xml_escape());
+				_write_string(f, 2, "</constant>");
 			}
 
-			_write_string(f, 1, "</signals>");
+			_write_string(f, 1, "</constants>");
 		}
 
-		_write_string(f, 1, "<constants>");
-
-		for (int i = 0; i < c.constants.size(); i++) {
-			const DocData::ConstantDoc &k = c.constants[i];
-			if (k.is_value_valid) {
-				if (k.enumeration != String()) {
-					_write_string(f, 2, "<constant name=\"" + k.name + "\" value=\"" + k.value + "\" enum=\"" + k.enumeration + "\">");
-				} else {
-					_write_string(f, 2, "<constant name=\"" + k.name + "\" value=\"" + k.value + "\">");
-				}
-			} else {
-				if (k.enumeration != String()) {
-					_write_string(f, 2, "<constant name=\"" + k.name + "\" value=\"platform-dependent\" enum=\"" + k.enumeration + "\">");
-				} else {
-					_write_string(f, 2, "<constant name=\"" + k.name + "\" value=\"platform-dependent\">");
-				}
-			}
-			_write_string(f, 3, k.description.strip_edges().xml_escape());
-			_write_string(f, 2, "</constant>");
-		}
-
-		_write_string(f, 1, "</constants>");
-
-		if (c.theme_properties.size()) {
+		if (!c.theme_properties.is_empty()) {
 			c.theme_properties.sort();
 
 			_write_string(f, 1, "<theme_items>");

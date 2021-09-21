@@ -15,8 +15,6 @@
 		<link title="Third Person Shooter Demo">https://godotengine.org/asset-library/asset/678</link>
 		<link title="3D Voxel Demo">https://godotengine.org/asset-library/asset/676</link>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="constant_angular_velocity" type="Vector3" setter="set_constant_angular_velocity" getter="get_constant_angular_velocity" default="Vector3(0, 0, 0)">
 			The body's constant angular velocity. This does not rotate the body, but affects touching bodies, as if it were rotating.
@@ -29,6 +27,4 @@
 			If a material is assigned to this property, it will be used instead of any other physics material, such as an inherited one.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

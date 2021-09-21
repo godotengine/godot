@@ -9,13 +9,9 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="object_id" type="int" setter="set_object_id" getter="get_object_id" default="0">
 			The [Object] identifier stored in this [EncodedObjectAsID] instance. The object instance can be retrieved with [method @GlobalScope.instance_from_id].
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

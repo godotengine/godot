@@ -10,8 +10,6 @@
 	<tutorials>
 		<link title="Third Person Shooter Demo">https://godotengine.org/asset-library/asset/678</link>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="damping" type="float" setter="set_damping" getter="get_damping" default="0.5">
 			Defines how reflective the imaginary room's walls are. Value can range from 0 to 1.
@@ -38,6 +36,4 @@
 			Output percent of modified sound. At 0, only original sound is outputted. Value can range from 0 to 1.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

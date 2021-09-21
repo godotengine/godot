@@ -27,6 +27,4 @@
 			Holds sample rate information about this sequence. Must be set by another class that actually understands the codec.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

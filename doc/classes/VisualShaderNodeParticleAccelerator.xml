@@ -6,8 +6,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="mode" type="int" setter="set_mode" getter="get_mode" enum="VisualShaderNodeParticleAccelerator.Mode" default="0">
 		</member>

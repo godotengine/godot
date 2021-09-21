@@ -130,6 +130,4 @@
 			The end position of the CCDIK chain. Typically, this should be a child of a [Bone2D] node attached to the final [Bone2D] in the CCDIK chain.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

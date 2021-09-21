@@ -6,8 +6,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="color" type="Color" setter="set_color" getter="get_color" default="Color(0, 0, 0, 1)">
 		</member>
@@ -22,6 +20,4 @@
 		<member name="range" type="float" setter="set_range" getter="get_range" default="0.0">
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

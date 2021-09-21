@@ -8,10 +8,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
-	<constants>
-	</constants>
 	<theme_items>
 		<theme_item name="separation" data_type="constant" type="int" default="4">
 			The width of the area covered by the separator. Effectively works like a minimum width.

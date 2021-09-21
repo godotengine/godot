@@ -42,6 +42,4 @@
 			[b]Note:[/b] To have the Bone2D nodes visually follow the [code]PhysicalBone2D[/code] node, use a [SkeletonModification2DPhysicalBones] modification on the [Skeleton2D] node with the [Bone2D] nodes.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

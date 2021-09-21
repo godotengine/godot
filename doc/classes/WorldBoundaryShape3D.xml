@@ -8,13 +8,9 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="plane" type="Plane" setter="set_plane" getter="get_plane" default="Plane(0, 1, 0, 0)">
 			The [Plane] used by the [WorldBoundaryShape3D] for collision.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

@@ -85,6 +85,4 @@
 			The interpolation strength of the modifications in stack. A value of [code]0[/code] will make it where the modifications are not applied, a strength of [code]0.5[/code] will be half applied, and a strength of [code]1[/code] will allow the modifications to be fully applied and override the skeleton bone poses.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

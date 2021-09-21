@@ -6,8 +6,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="enable_mode" type="int" setter="set_enable_mode" getter="get_enable_mode" enum="VisibleOnScreenEnabler2D.EnableMode" default="0">
 		</member>

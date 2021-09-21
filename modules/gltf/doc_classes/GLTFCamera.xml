@@ -6,8 +6,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="depth_far" type="float" setter="set_depth_far" getter="get_depth_far" default="4000.0">
 		</member>
@@ -18,6 +16,4 @@
 		<member name="perspective" type="bool" setter="set_perspective" getter="get_perspective" default="true">
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

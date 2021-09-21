@@ -12,8 +12,6 @@
 		<link title="2D Pong Demo">https://godotengine.org/asset-library/asset/121</link>
 		<link title="2D Kinematic Character Demo">https://godotengine.org/asset-library/asset/113</link>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="disabled" type="bool" setter="set_disabled" getter="is_disabled" default="false">
 			A disabled collision shape has no effect in the world. This property should be changed with [method Object.set_deferred].
@@ -28,6 +26,4 @@
 			The actual shape owned by this collision shape.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

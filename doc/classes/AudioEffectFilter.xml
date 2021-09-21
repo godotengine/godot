@@ -9,8 +9,6 @@
 	<tutorials>
 		<link title="Audio buses">https://docs.godotengine.org/en/latest/tutorials/audio/audio_buses.html</link>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="cutoff_hz" type="float" setter="set_cutoff" getter="get_cutoff" default="2000.0">
 			Threshold frequency for the filter, in Hz.

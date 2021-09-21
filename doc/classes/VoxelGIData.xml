@@ -67,6 +67,4 @@
 		<member name="use_two_bounces" type="bool" setter="set_use_two_bounces" getter="is_using_two_bounces" default="false">
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

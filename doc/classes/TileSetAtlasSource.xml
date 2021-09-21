@@ -148,6 +148,4 @@
 			The base tile size in the texture (in pixel). This size must be bigger than the TileSet's [code]tile_size[/code] value.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

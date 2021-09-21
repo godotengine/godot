@@ -8,8 +8,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="custom_step" type="float" setter="set_custom_step" getter="get_custom_step" default="-1.0">
 			Overrides the step used when clicking increment and decrement buttons or when using arrow keys when the [ScrollBar] is focused.
@@ -24,6 +22,4 @@
 			</description>
 		</signal>
 	</signals>
-	<constants>
-	</constants>
 </class>

@@ -6,12 +6,8 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="loop" type="bool" setter="set_loop" getter="get_loop" default="false">
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

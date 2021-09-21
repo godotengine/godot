@@ -1778,6 +1778,4 @@
 			If [code]true[/code], XR support is enabled in Godot, this ensures required shaders are compiled.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

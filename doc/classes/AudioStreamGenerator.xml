@@ -12,8 +12,6 @@
 		<link title="Audio Generator Demo">https://godotengine.org/asset-library/asset/526</link>
 		<link title="https://godotengine.org/article/godot-32-will-get-new-audio-features">Godot 3.2 will get new audio features</link>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="buffer_length" type="float" setter="set_buffer_length" getter="get_buffer_length" default="0.5">
 			The length of the buffer to generate (in seconds). Lower values result in less latency, but require the script to generate audio data faster, resulting in increased CPU usage and more risk for audio cracking if the CPU can't keep up.
@@ -24,6 +22,4 @@
 			According to the [url=https://en.wikipedia.org/wiki/Nyquist%E2%80%93Shannon_sampling_theorem]Nyquist-Shannon sampling theorem[/url], there is no quality difference to human hearing when going past 40,000 Hz (since most humans can only hear up to ~20,000 Hz, often less). If you are generating lower-pitched sounds such as voices, lower sample rates such as [code]32000[/code] or [code]22050[/code] may be usable with no loss in quality.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

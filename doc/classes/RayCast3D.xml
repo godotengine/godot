@@ -131,6 +131,4 @@
 			The ray's destination point, relative to the RayCast's [code]position[/code].
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

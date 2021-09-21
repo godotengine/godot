@@ -106,6 +106,4 @@
 			[b]Note:[/b] This device ID will always be [code]-1[/code] for emulated mouse input from a touchscreen. This can be used to distinguish emulated mouse input from physical mouse input.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

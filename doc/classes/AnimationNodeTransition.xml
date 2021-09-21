@@ -47,6 +47,4 @@
 			Cross-fading time (in seconds) between each animation connected to the inputs.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

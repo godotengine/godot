@@ -105,6 +105,4 @@
 			If [code]true[/code], enables the use of pseudolocalization. See [member ProjectSettings.internationalization/pseudolocalization/use_pseudolocalization] for details.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

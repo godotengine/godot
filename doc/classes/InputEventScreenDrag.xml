@@ -9,8 +9,6 @@
 	<tutorials>
 		<link title="InputEvent">https://docs.godotengine.org/en/latest/tutorials/inputs/inputevent.html</link>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="index" type="int" setter="set_index" getter="get_index" default="0">
 			The drag event index in the case of a multi-drag event.
@@ -25,6 +23,4 @@
 			The drag speed.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

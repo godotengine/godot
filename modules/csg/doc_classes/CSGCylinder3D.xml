@@ -8,8 +8,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="cone" type="bool" setter="set_cone" getter="is_cone" default="false">
 			If [code]true[/code] a cone is created, the [member radius] will only apply to one side.
@@ -30,6 +28,4 @@
 			If [code]true[/code] the normals of the cylinder are set to give a smooth effect making the cylinder seem rounded. If [code]false[/code] the cylinder will have a flat shaded look.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>
