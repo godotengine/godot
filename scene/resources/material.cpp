@@ -1301,7 +1301,7 @@ void BaseMaterial3D::flush_changes() {
 void BaseMaterial3D::_queue_shader_change() {
 	MutexLock lock(material_mutex);
 
-	if (!element.in_list()) {
+	if (is_initialized && !element.in_list()) {
 		dirty_materials->add(&element);
 	}
 }
@@ -2777,6 +2777,7 @@ BaseMaterial3D::BaseMaterial3D(bool p_orm) :
 
 	flags[FLAG_USE_TEXTURE_REPEAT] = true;
 
+	is_initialized = true;
 	_queue_shader_change();
 }
 
