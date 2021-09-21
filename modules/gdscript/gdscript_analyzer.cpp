@@ -1754,7 +1754,6 @@ void GDScriptAnalyzer::reduce_assignment(GDScriptParser::AssignmentNode *p_assig
 				} else {
 					// TODO: Warning in this case.
 					mark_node_unsafe(p_assignment);
-					p_assignment->use_conversion_assign = true;
 				}
 			}
 		} else {
