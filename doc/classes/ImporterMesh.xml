@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="EditorSceneImporterMesh" inherits="Resource" version="4.0">
+<class name="ImporterMesh" inherits="Resource" version="4.0">
 	<brief_description>
 		A [Resource] that contains vertex array-based geometry during the import process.
 	</brief_description>
 	<description>
-		EditorSceneImporterMesh is a type of [Resource] analogous to [ArrayMesh]. It contains vertex array-based geometry, divided in [i]surfaces[/i]. Each surface contains a completely separate array and a material used to draw it. Design wise, a mesh with multiple surfaces is preferred to a single surface, because objects created in 3D editing software commonly contain multiple materials.
+		ImporterMesh is a type of [Resource] analogous to [ArrayMesh]. It contains vertex array-based geometry, divided in [i]surfaces[/i]. Each surface contains a completely separate array and a material used to draw it. Design wise, a mesh with multiple surfaces is preferred to a single surface, because objects created in 3D editing software commonly contain multiple materials.
 
-		Unlike its runtime counterpart, [EditorSceneImporterMesh] contains mesh data before various import steps, such as lod and shadow mesh generation, have taken place. Modify surface data by calling [method clear], followed by [method add_surface] for each surface.
+		Unlike its runtime counterpart, [ImporterMesh] contains mesh data before various import steps, such as lod and shadow mesh generation, have taken place. Modify surface data by calling [method clear], followed by [method add_surface] for each surface.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -37,7 +37,7 @@
 		<method name="clear">
 			<return type="void" />
 			<description>
-				Removes all surfaces and blend shapes from this [EditorSceneImporterMesh].
+				Removes all surfaces and blend shapes from this [ImporterMesh].
 			</description>
 		</method>
 		<method name="get_blend_shape_count" qualifiers="const">
@@ -69,7 +69,7 @@
 			<return type="ArrayMesh" />
 			<argument index="0" name="base_mesh" type="ArrayMesh" default="null" />
 			<description>
-				Returns the mesh data represented by this [EditorSceneImporterMesh] as a usable [ArrayMesh].
+				Returns the mesh data represented by this [ImporterMesh] as a usable [ArrayMesh].
 				This method caches the returned mesh, and subsequent calls will return the cached data until [method clear] is called.
 				If not yet cached and [code]base_mesh[/code] is provided, [code]base_mesh[/code] will be used and mutated.
 			</description>

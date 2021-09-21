@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  register_types.cpp                                                   */
+/*  gltf_document_extension_convert_importer_mesh.cpp                    */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,64 +28,52 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "register_types.h"
-
-#include "editor/editor_node.h"
-#include "editor_scene_exporter_gltf_plugin.h"
-#include "editor_scene_importer_gltf.h"
-#include "gltf_accessor.h"
-#include "gltf_animation.h"
-#include "gltf_buffer_view.h"
-#include "gltf_camera.h"
-#include "gltf_document.h"
-#include "gltf_document_extension.h"
 #include "gltf_document_extension_convert_importer_mesh.h"
-#include "gltf_light.h"
-#include "gltf_mesh.h"
-#include "gltf_node.h"
-#include "gltf_skeleton.h"
-#include "gltf_skin.h"
-#include "gltf_spec_gloss.h"
-#include "gltf_state.h"
-#include "gltf_texture.h"
+#include "scene/3d/mesh_instance_3d.h"
+#include "scene/resources/importer_mesh.h"
 
-#ifndef _3D_DISABLED
-#ifdef TOOLS_ENABLED
-static void _editor_init() {
-	Ref<EditorSceneImporterGLTF> import_gltf;
-	import_gltf.instantiate();
-	ResourceImporterScene::get_singleton()->add_importer(import_gltf);
-}
-#endif
-#endif
+#include <cstddef>
 
-void register_gltf_types() {
-#ifndef _3D_DISABLED
-#ifdef TOOLS_ENABLED
-	ClassDB::APIType prev_api = ClassDB::get_current_api();
-	ClassDB::set_current_api(ClassDB::API_EDITOR);
-	GDREGISTER_CLASS(EditorSceneImporterGLTF);
-	GDREGISTER_CLASS(GLTFMesh);
-	EditorPlugins::add_by_type<SceneExporterGLTFPlugin>();
-	ClassDB::set_current_api(prev_api);
-	EditorNode::add_init_callback(_editor_init);
-#endif
-	GDREGISTER_CLASS(GLTFSpecGloss);
-	GDREGISTER_CLASS(GLTFNode);
-	GDREGISTER_CLASS(GLTFAnimation);
-	GDREGISTER_CLASS(GLTFBufferView);
-	GDREGISTER_CLASS(GLTFAccessor);
-	GDREGISTER_CLASS(GLTFTexture);
-	GDREGISTER_CLASS(GLTFSkeleton);
-	GDREGISTER_CLASS(GLTFSkin);
-	GDREGISTER_CLASS(GLTFCamera);
-	GDREGISTER_CLASS(GLTFLight);
-	GDREGISTER_CLASS(GLTFState);
-	GDREGISTER_CLASS(GLTFDocumentExtensionConvertImporterMesh);
-	GDREGISTER_CLASS(GLTFDocumentExtension);
-	GDREGISTER_CLASS(GLTFDocument);
-#endif
+void GLTFDocumentExtensionConvertImporterMesh::_bind_methods() {
 }
 
-void unregister_gltf_types() {
+Error GLTFDocumentExtensionConvertImporterMesh::import_post(Ref<GLTFDocument> p_document, Node *p_node) {
+	List<Node *> queue;
+	queue.push_back(p_node);
+	List<Node *> delete_queue;
+	while (!queue.is_empty()) {
+		List<Node *>::Element *E = queue.front();
+		Node *node = E->get();
+		{
+			ImporterMeshInstance3D *mesh_3d = cast_to<ImporterMeshInstance3D>(node);
+			if (mesh_3d) {
+				MeshInstance3D *mesh_instance_node_3d = memnew(MeshInstance3D);
+				Ref<ImporterMesh> mesh = mesh_3d->get_mesh();
+				if (mesh.is_valid()) {
+					Ref<ArrayMesh> array_mesh = mesh->get_mesh();
+					mesh_instance_node_3d->set_name(node->get_name());
+					mesh_instance_node_3d->set_transform(mesh_3d->get_transform());
+					mesh_instance_node_3d->set_mesh(array_mesh);
+					mesh_instance_node_3d->set_skin(mesh_3d->get_skin());
+					mesh_instance_node_3d->set_skeleton_path(mesh_3d->get_skeleton_path());
+					node->replace_by(mesh_instance_node_3d);
+					delete_queue.push_back(node);
+				} else {
+					memdelete(mesh_instance_node_3d);
+				}
+			}
+		}
+		int child_count = node->get_child_count();
+		for (int i = 0; i < child_count; i++) {
+			queue.push_back(node->get_child(i));
+		}
+		queue.pop_front();
+	}
+	while (!queue.is_empty()) {
+		List<Node *>::Element *E = delete_queue.front();
+		Node *node = E->get();
+		memdelete(node);
+		delete_queue.pop_front();
+	}
+	return OK;
 }

@@ -9,7 +9,7 @@
 	<members>
 		<member name="blend_weights" type="PackedFloat32Array" setter="set_blend_weights" getter="get_blend_weights" default="PackedFloat32Array()">
 		</member>
-		<member name="mesh" type="EditorSceneImporterMesh" setter="set_mesh" getter="get_mesh">
+		<member name="mesh" type="ImporterMesh" setter="set_mesh" getter="get_mesh">
 		</member>
 	</members>
 </class>

@@ -49,6 +49,7 @@
 #include "core/version.h"
 #include "core/version_hash.gen.h"
 #include "main/main.h"
+#include "scene/3d/importer_mesh_instance_3d.h"
 #include "scene/gui/center_container.h"
 #include "scene/gui/control.h"
 #include "scene/gui/dialogs.h"
@@ -113,7 +114,6 @@
 #include "editor/import/resource_importer_texture_atlas.h"
 #include "editor/import/resource_importer_wav.h"
 #include "editor/import/scene_import_settings.h"
-#include "editor/import/scene_importer_mesh_node_3d.h"
 #include "editor/import_dock.h"
 #include "editor/multi_node_edit.h"
 #include "editor/node_dock.h"
@@ -3852,8 +3852,6 @@ void EditorNode::register_editor_types() {
 	GDREGISTER_CLASS(EditorSpinSlider);
 	GDREGISTER_CLASS(EditorResourcePicker);
 	GDREGISTER_CLASS(EditorScriptPicker);
-	GDREGISTER_CLASS(EditorSceneImporterMesh);
-	GDREGISTER_CLASS(EditorSceneImporterMeshNode3D);
 
 	GDREGISTER_VIRTUAL_CLASS(FileSystemDock);
 

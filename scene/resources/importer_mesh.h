@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  scene_importer_mesh.h                                                */
+/*  importer_mesh.h                                                      */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef EDITOR_SCENE_IMPORTER_MESH_H
-#define EDITOR_SCENE_IMPORTER_MESH_H
+#ifndef SCENE_IMPORTER_MESH_H
+#define SCENE_IMPORTER_MESH_H
 
 #include "core/io/resource.h"
 #include "core/templates/local_vector.h"
@@ -44,8 +44,8 @@
 // so the data is not registered (hence, quality loss), importing happens faster and
 // its easier to modify before saving
 
-class EditorSceneImporterMesh : public Resource {
-	GDCLASS(EditorSceneImporterMesh, Resource)
+class ImporterMesh : public Resource {
+	GDCLASS(ImporterMesh, Resource)
 
 	struct Surface {
 		Mesh::PrimitiveType primitive;
@@ -77,7 +77,7 @@ class EditorSceneImporterMesh : public Resource {
 
 	Ref<ArrayMesh> mesh;
 
-	Ref<EditorSceneImporterMesh> shadow_mesh;
+	Ref<ImporterMesh> shadow_mesh;
 
 	Size2i lightmap_size_hint;
 
@@ -114,7 +114,7 @@ public:
 	void generate_lods(float p_normal_merge_angle, float p_normal_split_angle);
 
 	void create_shadow_mesh();
-	Ref<EditorSceneImporterMesh> get_shadow_mesh() const;
+	Ref<ImporterMesh> get_shadow_mesh() const;
 
 	Vector<Face3> get_faces() const;
 	Vector<Ref<Shape3D>> convex_decompose(const Mesh::ConvexDecompositionSettings &p_settings) const;
@@ -129,4 +129,4 @@ public:
 	Ref<ArrayMesh> get_mesh(const Ref<ArrayMesh> &p_base = Ref<ArrayMesh>());
 	void clear();
 };
-#endif // EDITOR_SCENE_IMPORTER_MESH_H
+#endif // SCENE_IMPORTER_MESH_H

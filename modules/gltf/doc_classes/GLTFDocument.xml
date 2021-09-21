@@ -30,4 +30,8 @@
 			</description>
 		</method>
 	</methods>
+	<members>
+		<member name="extensions" type="GLTFDocumentExtension[]" setter="set_extensions" getter="get_extensions" default="[Object(GLTFDocumentExtensionConvertImporterMesh,&quot;resource_local_to_scene&quot;:false,&quot;resource_name&quot;:&quot;&quot;,&quot;script&quot;:null)]">
+		</member>
+	</members>
 </class>

@@ -934,7 +934,7 @@ Error RenderingServer::mesh_create_surface_data_from_arrays(SurfaceData *r_surfa
 				}
 			}
 
-			ERR_FAIL_COND_V((bsformat) != (format & (RS::ARRAY_FORMAT_INDEX - 1)), ERR_INVALID_PARAMETER);
+			ERR_FAIL_COND_V_MSG((bsformat) != (format & (ARRAY_FORMAT_VERTEX | ARRAY_FORMAT_NORMAL | ARRAY_FORMAT_TANGENT)), ERR_INVALID_PARAMETER, "Blend shape format must match the main array format for Vertex, Normal and Tangent arrays.");
 		}
 	}
 

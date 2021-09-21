@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  scene_importer_mesh.cpp                                              */
+/*  importer_mesh.cpp                                                    */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "scene_importer_mesh.h"
+#include "importer_mesh.h"
 
 #include "core/math/random_pcg.h"
 #include "core/math/static_raycaster.h"
@@ -36,7 +36,7 @@
 
 #include <cstdint>
 
-void EditorSceneImporterMesh::Surface::split_normals(const LocalVector<int> &p_indices, const LocalVector<Vector3> &p_normals) {
+void ImporterMesh::Surface::split_normals(const LocalVector<int> &p_indices, const LocalVector<Vector3> &p_normals) {
 	ERR_FAIL_COND(arrays.size() != RS::ARRAY_MAX);
 
 	const PackedVector3Array &vertices = arrays[RS::ARRAY_VERTEX];
@@ -124,29 +124,29 @@ void EditorSceneImporterMesh::Surface::split_normals(const LocalVector<int> &p_i
 	}
 }
 
-void EditorSceneImporterMesh::add_blend_shape(const String &p_name) {
+void ImporterMesh::add_blend_shape(const String &p_name) {
 	ERR_FAIL_COND(surfaces.size() > 0);
 	blend_shapes.push_back(p_name);
 }
 
-int EditorSceneImporterMesh::get_blend_shape_count() const {
+int ImporterMesh::get_blend_shape_count() const {
 	return blend_shapes.size();
 }
 
-String EditorSceneImporterMesh::get_blend_shape_name(int p_blend_shape) const {
+String ImporterMesh::get_blend_shape_name(int p_blend_shape) const {
 	ERR_FAIL_INDEX_V(p_blend_shape, blend_shapes.size(), String());
 	return blend_shapes[p_blend_shape];
 }
 
-void EditorSceneImporterMesh::set_blend_shape_mode(Mesh::BlendShapeMode p_blend_shape_mode) {
+void ImporterMesh::set_blend_shape_mode(Mesh::BlendShapeMode p_blend_shape_mode) {
 	blend_shape_mode = p_blend_shape_mode;
 }
 
-Mesh::BlendShapeMode EditorSceneImporterMesh::get_blend_shape_mode() const {
+Mesh::BlendShapeMode ImporterMesh::get_blend_shape_mode() const {
 	return blend_shape_mode;
 }
 
-void EditorSceneImporterMesh::add_surface(Mesh::PrimitiveType p_primitive, const Array &p_arrays, const Array &p_blend_shapes, const Dictionary &p_lods, const Ref<Material> &p_material, const String &p_name, const uint32_t p_flags) {
+void ImporterMesh::add_surface(Mesh::PrimitiveType p_primitive, const Array &p_arrays, const Array &p_blend_shapes, const Dictionary &p_lods, const Ref<Material> &p_material, const String &p_name, const uint32_t p_flags) {
 	ERR_FAIL_COND(p_blend_shapes.size() != blend_shapes.size());
 	ERR_FAIL_COND(p_arrays.size() != Mesh::ARRAY_MAX);
 	Surface s;
@@ -186,67 +186,67 @@ void EditorSceneImporterMesh::add_surface(Mesh::PrimitiveType p_primitive, const
 	mesh.unref();
 }
 
-int EditorSceneImporterMesh::get_surface_count() const {
+int ImporterMesh::get_surface_count() const {
 	return surfaces.size();
 }
 
-Mesh::PrimitiveType EditorSceneImporterMesh::get_surface_primitive_type(int p_surface) {
+Mesh::PrimitiveType ImporterMesh::get_surface_primitive_type(int p_surface) {
 	ERR_FAIL_INDEX_V(p_surface, surfaces.size(), Mesh::PRIMITIVE_MAX);
 	return surfaces[p_surface].primitive;
 }
-Array EditorSceneImporterMesh::get_surface_arrays(int p_surface) const {
+Array ImporterMesh::get_surface_arrays(int p_surface) const {
 	ERR_FAIL_INDEX_V(p_surface, surfaces.size(), Array());
 	return surfaces[p_surface].arrays;
 }
-String EditorSceneImporterMesh::get_surface_name(int p_surface) const {
+String ImporterMesh::get_surface_name(int p_surface) const {
 	ERR_FAIL_INDEX_V(p_surface, surfaces.size(), String());
 	return surfaces[p_surface].name;
 }
-void EditorSceneImporterMesh::set_surface_name(int p_surface, const String &p_name) {
+void ImporterMesh::set_surface_name(int p_surface, const String &p_name) {
 	ERR_FAIL_INDEX(p_surface, surfaces.size());
 	surfaces.write[p_surface].name = p_name;
 	mesh.unref();
 }
 
-Array EditorSceneImporterMesh::get_surface_blend_shape_arrays(int p_surface, int p_blend_shape) const {
+Array ImporterMesh::get_surface_blend_shape_arrays(int p_surface, int p_blend_shape) const {
 	ERR_FAIL_INDEX_V(p_surface, surfaces.size(), Array());
 	ERR_FAIL_INDEX_V(p_blend_shape, surfaces[p_surface].blend_shape_data.size(), Array());
 	return surfaces[p_surface].blend_shape_data[p_blend_shape].arrays;
 }
-int EditorSceneImporterMesh::get_surface_lod_count(int p_surface) const {
+int ImporterMesh::get_surface_lod_count(int p_surface) const {
 	ERR_FAIL_INDEX_V(p_surface, surfaces.size(), 0);
 	return surfaces[p_surface].lods.size();
 }
-Vector<int> EditorSceneImporterMesh::get_surface_lod_indices(int p_surface, int p_lod) const {
+Vector<int> ImporterMesh::get_surface_lod_indices(int p_surface, int p_lod) const {
 	ERR_FAIL_INDEX_V(p_surface, surfaces.size(), Vector<int>());
 	ERR_FAIL_INDEX_V(p_lod, surfaces[p_surface].lods.size(), Vector<int>());
 
 	return surfaces[p_surface].lods[p_lod].indices;
 }
 
-float EditorSceneImporterMesh::get_surface_lod_size(int p_surface, int p_lod) const {
+float ImporterMesh::get_surface_lod_size(int p_surface, int p_lod) const {
 	ERR_FAIL_INDEX_V(p_surface, surfaces.size(), 0);
 	ERR_FAIL_INDEX_V(p_lod, surfaces[p_surface].lods.size(), 0);
 	return surfaces[p_surface].lods[p_lod].distance;
 }
 
-uint32_t EditorSceneImporterMesh::get_surface_format(int p_surface) const {
+uint32_t ImporterMesh::get_surface_format(int p_surface) const {
 	ERR_FAIL_INDEX_V(p_surface, surfaces.size(), 0);
 	return surfaces[p_surface].flags;
 }
 
-Ref<Material> EditorSceneImporterMesh::get_surface_material(int p_surface) const {
+Ref<Material> ImporterMesh::get_surface_material(int p_surface) const {
 	ERR_FAIL_INDEX_V(p_surface, surfaces.size(), Ref<Material>());
 	return surfaces[p_surface].material;
 }
 
-void EditorSceneImporterMesh::set_surface_material(int p_surface, const Ref<Material> &p_material) {
+void ImporterMesh::set_surface_material(int p_surface, const Ref<Material> &p_material) {
 	ERR_FAIL_INDEX(p_surface, surfaces.size());
 	surfaces.write[p_surface].material = p_material;
 	mesh.unref();
 }
 
-void EditorSceneImporterMesh::generate_lods(float p_normal_merge_angle, float p_normal_split_angle) {
+void ImporterMesh::generate_lods(float p_normal_merge_angle, float p_normal_split_angle) {
 	if (!SurfaceTool::simplify_scale_func) {
 		return;
 	}
@@ -608,11 +608,11 @@ void EditorSceneImporterMesh::generate_lods(float p_normal_merge_angle, float p_
 	}
 }
 
-bool EditorSceneImporterMesh::has_mesh() const {
+bool ImporterMesh::has_mesh() const {
 	return mesh.is_valid();
 }
 
-Ref<ArrayMesh> EditorSceneImporterMesh::get_mesh(const Ref<ArrayMesh> &p_base) {
+Ref<ArrayMesh> ImporterMesh::get_mesh(const Ref<ArrayMesh> &p_base) {
 	ERR_FAIL_COND_V(surfaces.size() == 0, Ref<ArrayMesh>());
 
 	if (mesh.is_null()) {
@@ -664,13 +664,13 @@ Ref<ArrayMesh> EditorSceneImporterMesh::get_mesh(const Ref<ArrayMesh> &p_base) {
 	return mesh;
 }
 
-void EditorSceneImporterMesh::clear() {
+void ImporterMesh::clear() {
 	surfaces.clear();
 	blend_shapes.clear();
 	mesh.unref();
 }
 
-void EditorSceneImporterMesh::create_shadow_mesh() {
+void ImporterMesh::create_shadow_mesh() {
 	if (shadow_mesh.is_valid()) {
 		shadow_mesh.unref();
 	}
@@ -763,11 +763,11 @@ void EditorSceneImporterMesh::create_shadow_mesh() {
 	}
 }
 
-Ref<EditorSceneImporterMesh> EditorSceneImporterMesh::get_shadow_mesh() const {
+Ref<ImporterMesh> ImporterMesh::get_shadow_mesh() const {
 	return shadow_mesh;
 }
 
-void EditorSceneImporterMesh::_set_data(const Dictionary &p_data) {
+void ImporterMesh::_set_data(const Dictionary &p_data) {
 	clear();
 	if (p_data.has("blend_shape_names")) {
 		blend_shapes = p_data["blend_shape_names"];
@@ -805,7 +805,7 @@ void EditorSceneImporterMesh::_set_data(const Dictionary &p_data) {
 		}
 	}
 }
-Dictionary EditorSceneImporterMesh::_get_data() const {
+Dictionary ImporterMesh::_get_data() const {
 	Dictionary data;
 	if (blend_shapes.size()) {
 		data["blend_shape_names"] = blend_shapes;
@@ -848,7 +848,7 @@ Dictionary EditorSceneImporterMesh::_get_data() const {
 	return data;
 }
 
-Vector<Face3> EditorSceneImporterMesh::get_faces() const {
+Vector<Face3> ImporterMesh::get_faces() const {
 	Vector<Face3> faces;
 	for (int i = 0; i < surfaces.size(); i++) {
 		if (surfaces[i].primitive == Mesh::PRIMITIVE_TRIANGLES) {
@@ -877,7 +877,7 @@ Vector<Face3> EditorSceneImporterMesh::get_faces() const {
 	return faces;
 }
 
-Vector<Ref<Shape3D>> EditorSceneImporterMesh::convex_decompose(const Mesh::ConvexDecompositionSettings &p_settings) const {
+Vector<Ref<Shape3D>> ImporterMesh::convex_decompose(const Mesh::ConvexDecompositionSettings &p_settings) const {
 	ERR_FAIL_COND_V(!Mesh::convex_decomposition_function, Vector<Ref<Shape3D>>());
 
 	const Vector<Face3> faces = get_faces();
@@ -924,7 +924,7 @@ Vector<Ref<Shape3D>> EditorSceneImporterMesh::convex_decompose(const Mesh::Conve
 	return ret;
 }
 
-Ref<Shape3D> EditorSceneImporterMesh::create_trimesh_shape() const {
+Ref<Shape3D> ImporterMesh::create_trimesh_shape() const {
 	Vector<Face3> faces = get_faces();
 	if (faces.size() == 0) {
 		return Ref<Shape3D>();
@@ -945,7 +945,7 @@ Ref<Shape3D> EditorSceneImporterMesh::create_trimesh_shape() const {
 	return shape;
 }
 
-Ref<NavigationMesh> EditorSceneImporterMesh::create_navigation_mesh() {
+Ref<NavigationMesh> ImporterMesh::create_navigation_mesh() {
 	Vector<Face3> faces = get_faces();
 	if (faces.size() == 0) {
 		return Ref<NavigationMesh>();
@@ -1000,7 +1000,7 @@ struct EditorSceneImporterMeshLightmapSurface {
 	String name;
 };
 
-Error EditorSceneImporterMesh::lightmap_unwrap_cached(const Transform3D &p_base_transform, float p_texel_size, const Vector<uint8_t> &p_src_cache, Vector<uint8_t> &r_dst_cache) {
+Error ImporterMesh::lightmap_unwrap_cached(const Transform3D &p_base_transform, float p_texel_size, const Vector<uint8_t> &p_src_cache, Vector<uint8_t> &r_dst_cache) {
 	ERR_FAIL_COND_V(!array_mesh_lightmap_unwrap_callback, ERR_UNCONFIGURED);
 	ERR_FAIL_COND_V_MSG(blend_shapes.size() != 0, ERR_UNAVAILABLE, "Can't unwrap mesh with blend shapes.");
 
@@ -1197,46 +1197,46 @@ Error EditorSceneImporterMesh::lightmap_unwrap_cached(const Transform3D &p_base_
 	return OK;
 }
 
-void EditorSceneImporterMesh::set_lightmap_size_hint(const Size2i &p_size) {
+void ImporterMesh::set_lightmap_size_hint(const Size2i &p_size) {
 	lightmap_size_hint = p_size;
 }
 
-Size2i EditorSceneImporterMesh::get_lightmap_size_hint() const {
+Size2i ImporterMesh::get_lightmap_size_hint() const {
 	return lightmap_size_hint;
 }
 
-void EditorSceneImporterMesh::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("add_blend_shape", "name"), &EditorSceneImporterMesh::add_blend_shape);
-	ClassDB::bind_method(D_METHOD("get_blend_shape_count"), &EditorSceneImporterMesh::get_blend_shape_count);
-	ClassDB::bind_method(D_METHOD("get_blend_shape_name", "blend_shape_idx"), &EditorSceneImporterMesh::get_blend_shape_name);
+void ImporterMesh::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("add_blend_shape", "name"), &ImporterMesh::add_blend_shape);
+	ClassDB::bind_method(D_METHOD("get_blend_shape_count"), &ImporterMesh::get_blend_shape_count);
+	ClassDB::bind_method(D_METHOD("get_blend_shape_name", "blend_shape_idx"), &ImporterMesh::get_blend_shape_name);
 
-	ClassDB::bind_method(D_METHOD("set_blend_shape_mode", "mode"), &EditorSceneImporterMesh::set_blend_shape_mode);
-	ClassDB::bind_method(D_METHOD("get_blend_shape_mode"), &EditorSceneImporterMesh::get_blend_shape_mode);
+	ClassDB::bind_method(D_METHOD("set_blend_shape_mode", "mode"), &ImporterMesh::set_blend_shape_mode);
+	ClassDB::bind_method(D_METHOD("get_blend_shape_mode"), &ImporterMesh::get_blend_shape_mode);
 
-	ClassDB::bind_method(D_METHOD("add_surface", "primitive", "arrays", "blend_shapes", "lods", "material", "name", "flags"), &EditorSceneImporterMesh::add_surface, DEFVAL(Array()), DEFVAL(Dictionary()), DEFVAL(Ref<Material>()), DEFVAL(String()), DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("add_surface", "primitive", "arrays", "blend_shapes", "lods", "material", "name", "flags"), &ImporterMesh::add_surface, DEFVAL(Array()), DEFVAL(Dictionary()), DEFVAL(Ref<Material>()), DEFVAL(String()), DEFVAL(0));
 
-	ClassDB::bind_method(D_METHOD("get_surface_count"), &EditorSceneImporterMesh::get_surface_count);
-	ClassDB::bind_method(D_METHOD("get_surface_primitive_type", "surface_idx"), &EditorSceneImporterMesh::get_surface_primitive_type);
-	ClassDB::bind_method(D_METHOD("get_surface_name", "surface_idx"), &EditorSceneImporterMesh::get_surface_name);
-	ClassDB::bind_method(D_METHOD("get_surface_arrays", "surface_idx"), &EditorSceneImporterMesh::get_surface_arrays);
-	ClassDB::bind_method(D_METHOD("get_surface_blend_shape_arrays", "surface_idx", "blend_shape_idx"), &EditorSceneImporterMesh::get_surface_blend_shape_arrays);
-	ClassDB::bind_method(D_METHOD("get_surface_lod_count", "surface_idx"), &EditorSceneImporterMesh::get_surface_lod_count);
-	ClassDB::bind_method(D_METHOD("get_surface_lod_size", "surface_idx", "lod_idx"), &EditorSceneImporterMesh::get_surface_lod_size);
-	ClassDB::bind_method(D_METHOD("get_surface_lod_indices", "surface_idx", "lod_idx"), &EditorSceneImporterMesh::get_surface_lod_indices);
-	ClassDB::bind_method(D_METHOD("get_surface_material", "surface_idx"), &EditorSceneImporterMesh::get_surface_material);
-	ClassDB::bind_method(D_METHOD("get_surface_format", "surface_idx"), &EditorSceneImporterMesh::get_surface_format);
+	ClassDB::bind_method(D_METHOD("get_surface_count"), &ImporterMesh::get_surface_count);
+	ClassDB::bind_method(D_METHOD("get_surface_primitive_type", "surface_idx"), &ImporterMesh::get_surface_primitive_type);
+	ClassDB::bind_method(D_METHOD("get_surface_name", "surface_idx"), &ImporterMesh::get_surface_name);
+	ClassDB::bind_method(D_METHOD("get_surface_arrays", "surface_idx"), &ImporterMesh::get_surface_arrays);
+	ClassDB::bind_method(D_METHOD("get_surface_blend_shape_arrays", "surface_idx", "blend_shape_idx"), &ImporterMesh::get_surface_blend_shape_arrays);
+	ClassDB::bind_method(D_METHOD("get_surface_lod_count", "surface_idx"), &ImporterMesh::get_surface_lod_count);
+	ClassDB::bind_method(D_METHOD("get_surface_lod_size", "surface_idx", "lod_idx"), &ImporterMesh::get_surface_lod_size);
+	ClassDB::bind_method(D_METHOD("get_surface_lod_indices", "surface_idx", "lod_idx"), &ImporterMesh::get_surface_lod_indices);
+	ClassDB::bind_method(D_METHOD("get_surface_material", "surface_idx"), &ImporterMesh::get_surface_material);
+	ClassDB::bind_method(D_METHOD("get_surface_format", "surface_idx"), &ImporterMesh::get_surface_format);
 
-	ClassDB::bind_method(D_METHOD("set_surface_name", "surface_idx", "name"), &EditorSceneImporterMesh::set_surface_name);
-	ClassDB::bind_method(D_METHOD("set_surface_material", "surface_idx", "material"), &EditorSceneImporterMesh::set_surface_material);
+	ClassDB::bind_method(D_METHOD("set_surface_name", "surface_idx", "name"), &ImporterMesh::set_surface_name);
+	ClassDB::bind_method(D_METHOD("set_surface_material", "surface_idx", "material"), &ImporterMesh::set_surface_material);
 
-	ClassDB::bind_method(D_METHOD("get_mesh", "base_mesh"), &EditorSceneImporterMesh::get_mesh, DEFVAL(Ref<ArrayMesh>()));
-	ClassDB::bind_method(D_METHOD("clear"), &EditorSceneImporterMesh::clear);
+	ClassDB::bind_method(D_METHOD("get_mesh", "base_mesh"), &ImporterMesh::get_mesh, DEFVAL(Ref<ArrayMesh>()));
+	ClassDB::bind_method(D_METHOD("clear"), &ImporterMesh::clear);
 
-	ClassDB::bind_method(D_METHOD("_set_data", "data"), &EditorSceneImporterMesh::_set_data);
-	ClassDB::bind_method(D_METHOD("_get_data"), &EditorSceneImporterMesh::_get_data);
+	ClassDB::bind_method(D_METHOD("_set_data", "data"), &ImporterMesh::_set_data);
+	ClassDB::bind_method(D_METHOD("_get_data"), &ImporterMesh::_get_data);
 
-	ClassDB::bind_method(D_METHOD("set_lightmap_size_hint", "size"), &EditorSceneImporterMesh::set_lightmap_size_hint);
-	ClassDB::bind_method(D_METHOD("get_lightmap_size_hint"), &EditorSceneImporterMesh::get_lightmap_size_hint);
+	ClassDB::bind_method(D_METHOD("set_lightmap_size_hint", "size"), &ImporterMesh::set_lightmap_size_hint);
+	ClassDB::bind_method(D_METHOD("get_lightmap_size_hint"), &ImporterMesh::get_lightmap_size_hint);
 
 	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "_data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "_set_data", "_get_data");
 }

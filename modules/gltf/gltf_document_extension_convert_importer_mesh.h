@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  register_types.cpp                                                   */
+/*  gltf_document_extension_convert_importer_mesh.h                      */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,64 +28,28 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "register_types.h"
+#ifndef GLTF_EXTENSION_EDITOR_H
+#define GLTF_EXTENSION_EDITOR_H
 
-#include "editor/editor_node.h"
-#include "editor_scene_exporter_gltf_plugin.h"
-#include "editor_scene_importer_gltf.h"
-#include "gltf_accessor.h"
-#include "gltf_animation.h"
-#include "gltf_buffer_view.h"
-#include "gltf_camera.h"
+#include "core/io/resource.h"
+#include "core/variant/dictionary.h"
+
 #include "gltf_document.h"
 #include "gltf_document_extension.h"
-#include "gltf_document_extension_convert_importer_mesh.h"
-#include "gltf_light.h"
-#include "gltf_mesh.h"
-#include "gltf_node.h"
-#include "gltf_skeleton.h"
-#include "gltf_skin.h"
-#include "gltf_spec_gloss.h"
-#include "gltf_state.h"
-#include "gltf_texture.h"
+#include "scene/3d/importer_mesh_instance_3d.h"
+#include "scene/3d/mesh_instance_3d.h"
+#include "scene/main/node.h"
+#include "scene/resources/importer_mesh.h"
 
-#ifndef _3D_DISABLED
-#ifdef TOOLS_ENABLED
-static void _editor_init() {
-	Ref<EditorSceneImporterGLTF> import_gltf;
-	import_gltf.instantiate();
-	ResourceImporterScene::get_singleton()->add_importer(import_gltf);
-}
-#endif
-#endif
+class GLTFDocumentExtension;
+class GLTFDocument;
+class GLTFDocumentExtensionConvertImporterMesh : public GLTFDocumentExtension {
+	GDCLASS(GLTFDocumentExtensionConvertImporterMesh, GLTFDocumentExtension);
 
-void register_gltf_types() {
-#ifndef _3D_DISABLED
-#ifdef TOOLS_ENABLED
-	ClassDB::APIType prev_api = ClassDB::get_current_api();
-	ClassDB::set_current_api(ClassDB::API_EDITOR);
-	GDREGISTER_CLASS(EditorSceneImporterGLTF);
-	GDREGISTER_CLASS(GLTFMesh);
-	EditorPlugins::add_by_type<SceneExporterGLTFPlugin>();
-	ClassDB::set_current_api(prev_api);
-	EditorNode::add_init_callback(_editor_init);
-#endif
-	GDREGISTER_CLASS(GLTFSpecGloss);
-	GDREGISTER_CLASS(GLTFNode);
-	GDREGISTER_CLASS(GLTFAnimation);
-	GDREGISTER_CLASS(GLTFBufferView);
-	GDREGISTER_CLASS(GLTFAccessor);
-	GDREGISTER_CLASS(GLTFTexture);
-	GDREGISTER_CLASS(GLTFSkeleton);
-	GDREGISTER_CLASS(GLTFSkin);
-	GDREGISTER_CLASS(GLTFCamera);
-	GDREGISTER_CLASS(GLTFLight);
-	GDREGISTER_CLASS(GLTFState);
-	GDREGISTER_CLASS(GLTFDocumentExtensionConvertImporterMesh);
-	GDREGISTER_CLASS(GLTFDocumentExtension);
-	GDREGISTER_CLASS(GLTFDocument);
-#endif
-}
+protected:
+	static void _bind_methods();
 
-void unregister_gltf_types() {
-}
+public:
+	Error import_post(Ref<GLTFDocument> p_document, Node *p_node) override;
+};
+#endif // GLTF_EXTENSION_EDITOR_H

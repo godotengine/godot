@@ -33,8 +33,8 @@
 #include "core/error/error_list.h"
 #include "core/error/error_macros.h"
 #include "core/math/transform_3d.h"
-#include "editor/import/scene_importer_mesh_node_3d.h"
 #include "resource_importer_scene.h"
+#include "scene/3d/importer_mesh_instance_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/3d/node_3d.h"
 #include "scene/3d/skeleton_3d.h"
@@ -71,7 +71,7 @@ void BakeReset::_bake_animation_pose(Node *scene, const String &p_bake_anim) {
 	while (!queue.is_empty()) {
 		List<Node *>::Element *E = queue.front();
 		Node *node = E->get();
-		EditorSceneImporterMeshNode3D *editor_mesh_3d = scene->cast_to<EditorSceneImporterMeshNode3D>(node);
+		ImporterMeshInstance3D *editor_mesh_3d = scene->cast_to<ImporterMeshInstance3D>(node);
 		MeshInstance3D *mesh_3d = scene->cast_to<MeshInstance3D>(node);
 		if (scene->cast_to<Skeleton3D>(node)) {
 			Skeleton3D *skeleton = Object::cast_to<Skeleton3D>(node);
