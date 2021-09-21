@@ -267,6 +267,7 @@ private:
 		float rate = 0.0f;
 		uint64_t _current_rng = 0;
 		uint64_t _previous_rng = 0;
+		Vector2 prev_off;
 
 		ItemShake() { type = ITEM_SHAKE; }
 
@@ -289,6 +290,7 @@ private:
 	struct ItemWave : public ItemFX {
 		float frequency = 1.0f;
 		float amplitude = 1.0f;
+		Vector2 prev_off;
 
 		ItemWave() { type = ITEM_WAVE; }
 	};
@@ -296,6 +298,7 @@ private:
 	struct ItemTornado : public ItemFX {
 		float radius = 1.0f;
 		float frequency = 1.0f;
+		Vector2 prev_off;
 
 		ItemTornado() { type = ITEM_TORNADO; }
 	};
