@@ -58,6 +58,7 @@ public:
 		bool use_anisotropic_filter;
 		bool use_skeleton_software;
 		bool use_lightmap_filter_bicubic;
+		bool use_physical_light_attenuation;
 
 		int max_vertex_texture_image_units;
 		int max_texture_image_units;

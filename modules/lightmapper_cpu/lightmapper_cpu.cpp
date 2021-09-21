@@ -704,6 +704,15 @@ _ALWAYS_INLINE_ float uniform_rand() {
 	return float(state) / float(UINT32_MAX);
 }
 
+float LightmapperCPU::_get_omni_attenuation(float distance, float inv_range, float decay) const {
+	float nd = distance * inv_range;
+	nd *= nd;
+	nd *= nd; // nd^4
+	nd = MAX(1.0 - nd, 0.0);
+	nd *= nd; // nd^2
+	return nd * powf(MAX(distance, 0.0001f), -decay);
+}
+
 void LightmapperCPU::_compute_direct_light(uint32_t p_idx, void *r_lightmap) {
 	LightmapTexel *lightmap = (LightmapTexel *)r_lightmap;
 	for (unsigned int i = 0; i < lights.size(); ++i) {
@@ -734,7 +743,11 @@ void LightmapperCPU::_compute_direct_light(uint32_t p_idx, void *r_lightmap) {
 			soft_shadowing_disk_size = light.size / dist;
 
 			if (light.type == LIGHT_TYPE_OMNI) {
-				attenuation = powf(1.0 - dist / light.range, light.attenuation);
+				if (parameters.use_physical_light_attenuation) {
+					attenuation = _get_omni_attenuation(dist, 1.0f / light.range, light.attenuation);
+				} else {
+					attenuation = powf(1.0 - dist / light.range, light.attenuation);
+				}
 			} else /* (light.type == LIGHT_TYPE_SPOT) */ {
 				float angle = Math::acos(light.direction.dot(light_to_point));
 
@@ -743,7 +756,12 @@ void LightmapperCPU::_compute_direct_light(uint32_t p_idx, void *r_lightmap) {
 				}
 
 				float normalized_dist = dist * (1.0f / MAX(0.001f, light.range));
-				float norm_light_attenuation = Math::pow(MAX(1.0f - normalized_dist, 0.001f), light.attenuation);
+				float norm_light_attenuation;
+				if (parameters.use_physical_light_attenuation) {
+					norm_light_attenuation = _get_omni_attenuation(dist, 1.0f / light.range, light.attenuation);
+				} else {
+					norm_light_attenuation = Math::pow(MAX(1.0f - normalized_dist, 0.001f), light.attenuation);
+				}
 
 				float spot_cutoff = Math::cos(light.spot_angle);
 				float scos = MAX(light_to_point.dot(light.direction), spot_cutoff);
@@ -1279,6 +1297,7 @@ LightmapperCPU::BakeError LightmapperCPU::bake(BakeQuality p_quality, bool p_use
 
 	// Collect parameters
 	parameters.use_denoiser = p_use_denoiser;
+	parameters.use_physical_light_attenuation = bool(GLOBAL_GET("rendering/quality/shading/use_physical_light_attenuation"));
 	parameters.bias = p_bias;
 	parameters.bounces = p_bounces;
 	parameters.bounce_indirect_energy = p_bounce_indirect_energy;

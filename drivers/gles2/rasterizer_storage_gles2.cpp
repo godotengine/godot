@@ -6508,6 +6508,8 @@ void RasterizerStorageGLES2::initialize() {
 	GLOBAL_DEF_RST("rendering/quality/lightmapping/use_bicubic_sampling.mobile", false);
 	config.use_lightmap_filter_bicubic = GLOBAL_GET("rendering/quality/lightmapping/use_bicubic_sampling");
 
+	config.use_physical_light_attenuation = GLOBAL_GET("rendering/quality/shading/use_physical_light_attenuation");
+
 	int orphan_mode = GLOBAL_GET("rendering/2d/opengl/legacy_orphan_buffers");
 	switch (orphan_mode) {
 		default: {
