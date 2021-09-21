@@ -66,7 +66,8 @@
 			The bus on which this audio is playing.
 		</member>
 		<member name="doppler_tracking" type="int" setter="set_doppler_tracking" getter="get_doppler_tracking" enum="AudioStreamPlayer3D.DopplerTracking" default="0">
-			Decides in which step the Doppler effect should be calculated.
+			Decides in which step the [url=https://en.wikipedia.org/wiki/Doppler_effect]Doppler effect[/url] should be calculated.
+			[b]Note:[/b] Only effective if the current [Camera]'s [member Camera.doppler_tracking] property is set to a value other than [constant Camera.DOPPLER_TRACKING_DISABLED].
 		</member>
 		<member name="emission_angle_degrees" type="float" setter="set_emission_angle" getter="get_emission_angle" default="45.0">
 			The angle in which the audio reaches cameras undampened.
@@ -135,10 +136,10 @@
 			Disables doppler tracking.
 		</constant>
 		<constant name="DOPPLER_TRACKING_IDLE_STEP" value="1" enum="DopplerTracking">
-			Executes doppler tracking in idle step.
+			Executes doppler tracking in idle step (every rendered frame).
 		</constant>
 		<constant name="DOPPLER_TRACKING_PHYSICS_STEP" value="2" enum="DopplerTracking">
-			Executes doppler tracking in physics step.
+			Executes doppler tracking in physics step (every simulated physics frame).
 		</constant>
 	</constants>
 </class>
