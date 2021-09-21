@@ -69,11 +69,12 @@
 # pabloggomez <pgg2733@gmail.com>, 2021.
 # Erick Figueroa <querecuto@hotmail.com>, 2021.
 # jonagamerpro1234 ss <js398704@gmail.com>, 2021.
+# davidrogel <david.rogel.pernas@icloud.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-08-12 14:48+0000\n"
+"PO-Revision-Date: 2021-08-27 08:25+0000\n"
 "Last-Translator: Javier Ocampos <xavier.ocampos@gmail.com>\n"
 "Language-Team: Spanish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/es/>\n"
@@ -82,7 +83,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.8-dev\n"
+"X-Generator: Weblate 4.8.1-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -433,15 +434,13 @@ msgstr "Insertar Animación"
 
 #. TRANSLATORS: This describes the target of new animation track, will be inserted into another string.
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "node '%s'"
-msgstr "No se puede abrir '%s'."
+msgstr "nodo '%s'"
 
 #. TRANSLATORS: This describes the target of new animation track, will be inserted into another string.
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "animation"
-msgstr "Animación"
+msgstr "animación"
 
 #: editor/animation_track_editor.cpp
 msgid "AnimationPlayer can't animate itself, only other players."
@@ -449,9 +448,8 @@ msgstr "Un AnimationPlayer no puede animarse a sí mismo, solo a otros players."
 
 #. TRANSLATORS: This describes the target of new animation track, will be inserted into another string.
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "property '%s'"
-msgstr "No existe la propiedad '%s'."
+msgstr "propiedad '%s'"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Create & Insert"
@@ -690,7 +688,7 @@ msgstr "Crear pista(s) RESET"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim. Optimizer"
-msgstr "Optimizar animación"
+msgstr "Optimizar Animación"
 
 #: editor/animation_track_editor.cpp
 msgid "Max. Linear Error:"
@@ -795,7 +793,7 @@ msgstr "%d coincidencias."
 
 #: editor/code_editor.cpp editor/find_in_files.cpp
 msgid "Match Case"
-msgstr "Distinguir mayúsculas y minúsculas"
+msgstr "Coincidir Mayus./Minus."
 
 #: editor/code_editor.cpp editor/find_in_files.cpp
 msgid "Whole Words"
@@ -1094,7 +1092,7 @@ msgstr ""
 msgid "Dependencies"
 msgstr "Dependencias"
 
-#: editor/dependency_editor.cpp
+#: editor/dependency_editor.cpp editor/editor_resource_picker.cpp
 msgid "Resource"
 msgstr "Recursos"
 
@@ -1755,13 +1753,13 @@ msgstr ""
 "Activa Import Pvrtc' en Configuración del Proyecto, o desactiva 'Driver "
 "Fallback Enabled'."
 
-#: editor/editor_export.cpp platform/android/export/export.cpp
+#: editor/editor_export.cpp platform/android/export/export_plugin.cpp
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
 #: platform/osx/export/export.cpp platform/uwp/export/export.cpp
 msgid "Custom debug template not found."
 msgstr "No se encontró la plantilla de depuración personalizada."
 
-#: editor/editor_export.cpp platform/android/export/export.cpp
+#: editor/editor_export.cpp platform/android/export/export_plugin.cpp
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
 #: platform/osx/export/export.cpp platform/uwp/export/export.cpp
 msgid "Custom release template not found."
@@ -2146,7 +2144,7 @@ msgstr ""
 msgid "(Re)Importing Assets"
 msgstr "(Re)Importación de Assets"
 
-#: editor/editor_help.cpp editor/plugins/spatial_editor_plugin.cpp
+#: editor/editor_help.cpp
 msgid "Top"
 msgstr "Superior"
 
@@ -2234,7 +2232,7 @@ msgstr "Buscar en la Ayuda"
 
 #: editor/editor_help_search.cpp
 msgid "Case Sensitive"
-msgstr "Respetar mayús/minúsculas"
+msgstr "Respetar Mayus./Minus."
 
 #: editor/editor_help_search.cpp
 msgid "Show Hierarchy"
@@ -2383,6 +2381,9 @@ msgid ""
 "Update Continuously is enabled, which can increase power usage. Click to "
 "disable it."
 msgstr ""
+"Gira cuando la ventana del editor se vuelve a dibujar.\n"
+"Si Update Continuously está habilitado puede incrementarse el consumo. Clica "
+"para deshabilitarlo."
 
 #: editor/editor_node.cpp
 msgid "Spins when the editor window redraws."
@@ -2659,6 +2660,32 @@ msgstr "Esta operación no puede realizarse sin un nodo seleccionado."
 #: editor/editor_node.cpp
 msgid "Current scene not saved. Open anyway?"
 msgstr "Escena actual no guardada ¿Abrir de todos modos?"
+
+#: editor/editor_node.cpp
+msgid "Can't undo while mouse buttons are pressed."
+msgstr ""
+
+#: editor/editor_node.cpp
+msgid "Nothing to undo."
+msgstr ""
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Undo: %s"
+msgstr "Deshacer"
+
+#: editor/editor_node.cpp
+msgid "Can't redo while mouse buttons are pressed."
+msgstr ""
+
+#: editor/editor_node.cpp
+msgid "Nothing to redo."
+msgstr ""
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Redo: %s"
+msgstr "Rehacer"
 
 #: editor/editor_node.cpp
 msgid "Can't reload a scene that was never saved."
@@ -3215,7 +3242,7 @@ msgstr "Apoyar el desarrollo de Godot"
 
 #: editor/editor_node.cpp
 msgid "Play the project."
-msgstr "Ejecutar el proyecto."
+msgstr "Reproducir el proyecto."
 
 #: editor/editor_node.cpp
 msgid "Play"
@@ -3354,6 +3381,11 @@ msgstr "Exportar Librería"
 #: editor/editor_node.cpp
 msgid "Merge With Existing"
 msgstr "Combinar Con Existentes"
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Apply MeshInstance Transforms"
+msgstr "Cambiar Transformación de la Animación"
 
 #: editor/editor_node.cpp
 msgid "Open & Run a Script"
@@ -3612,6 +3644,10 @@ msgid ""
 msgstr ""
 "El recurso seleccionado (%s) no coincide con ningún tipo esperado para esta "
 "propiedad (%s)."
+
+#: editor/editor_resource_picker.cpp
+msgid "Quick Load"
+msgstr ""
 
 #: editor/editor_resource_picker.cpp editor/property_editor.cpp
 msgid "Make Unique"
@@ -3911,14 +3947,12 @@ msgid "Download from:"
 msgstr "Descargar desde:"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Open in Web Browser"
-msgstr "Ejecutar en Navegador"
+msgstr "Abrir en el Navegador Web"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Copy Mirror URL"
-msgstr "Copiar Error"
+msgstr "Copiar Mirror URL"
 
 #: editor/export_template_manager.cpp
 msgid "Download and Install"
@@ -5731,6 +5765,18 @@ msgid "Move CanvasItem \"%s\" to (%d, %d)"
 msgstr "Mover CanvasItem \"%s\" a (%d, %d)"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Locked"
+msgstr "Bloqueo Seleccionado"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Grouped"
+msgstr "Grupo"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid ""
 "Children of containers have their anchors and margins values overridden by "
 "their parent."
@@ -6676,7 +6722,13 @@ msgid "Remove Selected Item"
 msgstr "Eliminar Elemento Seleccionado"
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
-msgid "Import from Scene"
+#, fuzzy
+msgid "Import from Scene (Ignore Transforms)"
+msgstr "Importar desde escena"
+
+#: editor/plugins/mesh_library_editor_plugin.cpp
+#, fuzzy
+msgid "Import from Scene (Apply Transforms)"
 msgstr "Importar desde escena"
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
@@ -7274,6 +7326,16 @@ msgstr "Generar puntos"
 msgid "Flip Portal"
 msgstr "Voltear Portal"
 
+#: editor/plugins/room_manager_editor_plugin.cpp
+#, fuzzy
+msgid "Occluder Set Transform"
+msgstr "Reestablecer Transformación"
+
+#: editor/plugins/room_manager_editor_plugin.cpp
+#, fuzzy
+msgid "Center Node"
+msgstr "Crear Nodo"
+
 #: editor/plugins/root_motion_editor_plugin.cpp
 msgid "AnimationTree has no path set to an AnimationPlayer"
 msgstr "El AnimationTree no tiene una ruta asignada a un AnimationPlayer"
@@ -7605,15 +7667,15 @@ msgstr "Seleccionar Color"
 
 #: editor/plugins/script_text_editor.cpp editor/plugins/text_editor.cpp
 msgid "Convert Case"
-msgstr "Convertir Mayús./Minús."
+msgstr "Convertir Mayus./Minus."
 
 #: editor/plugins/script_text_editor.cpp editor/plugins/text_editor.cpp
 msgid "Uppercase"
-msgstr "Mayúscula"
+msgstr "Mayúsculas"
 
 #: editor/plugins/script_text_editor.cpp editor/plugins/text_editor.cpp
 msgid "Lowercase"
-msgstr "Minúscula"
+msgstr "Minúsculas"
 
 #: editor/plugins/script_text_editor.cpp editor/plugins/text_editor.cpp
 msgid "Capitalize"
@@ -7777,12 +7839,14 @@ msgid "Skeleton2D"
 msgstr "Skeleton2D"
 
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
-msgid "Make Rest Pose (From Bones)"
-msgstr "Crear Pose de Descanso (Desde Huesos)"
+#, fuzzy
+msgid "Reset to Rest Pose"
+msgstr "Asignar Pose de Descanso a Huesos"
 
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
-msgid "Set Bones to Rest Pose"
-msgstr "Asignar Pose de Descanso a Huesos"
+#, fuzzy
+msgid "Overwrite Rest Pose"
+msgstr "Sobreescribir"
 
 #: editor/plugins/skeleton_editor_plugin.cpp
 msgid "Create physical bones"
@@ -7807,6 +7871,71 @@ msgstr "Ortogonal"
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Perspective"
 msgstr "Perspectiva"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Top Orthogonal"
+msgstr "Ortogonal"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Top Perspective"
+msgstr "Perspectiva"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Bottom Orthogonal"
+msgstr "Ortogonal"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Bottom Perspective"
+msgstr "Perspectiva"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Left Orthogonal"
+msgstr "Ortogonal"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Right Perspective"
+msgstr "Perspectiva"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Right Orthogonal"
+msgstr "Ortogonal"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Front Orthogonal"
+msgstr "Ortogonal"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Front Perspective"
+msgstr "Perspectiva"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Rear Orthogonal"
+msgstr "Ortogonal"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Rear Perspective"
+msgstr "Perspectiva"
+
+#. TRANSLATORS: This will be appended to the view name when Auto Orthogonal is enabled.
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid " [auto]"
+msgstr ""
+
+#. TRANSLATORS: This will be appended to the view name when Portal Occulusion is enabled.
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid " [portals active]"
+msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Transform Aborted."
@@ -7916,40 +8045,20 @@ msgid "Bottom View."
 msgstr "Vista Inferior."
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Bottom"
-msgstr "Abajo"
-
-#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Left View."
 msgstr "Vista Izquierda."
-
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "Left"
-msgstr "Izquierda"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Right View."
 msgstr "Vista Derecha."
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Right"
-msgstr "Derecha"
-
-#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Front View."
 msgstr "Vista Frontal."
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Front"
-msgstr "Frente"
-
-#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Rear View."
 msgstr "Vista Posterior."
-
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "Rear"
-msgstr "Detrás"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Align Transform with View"
@@ -8223,6 +8332,11 @@ msgid "View Portal Culling"
 msgstr "Ver Eliminación de Portales"
 
 #: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "View Occlusion Culling"
+msgstr "Ver Eliminación de Portales"
+
+#: editor/plugins/spatial_editor_plugin.cpp
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Settings..."
 msgstr "Configuración..."
@@ -8288,8 +8402,9 @@ msgid "Post"
 msgstr "Posterior"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Nameless gizmo"
-msgstr "Gizmo sin nombre"
+#, fuzzy
+msgid "Unnamed Gizmo"
+msgstr "Proyecto Sin Nombre"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Create Mesh2D"
@@ -8747,6 +8862,9 @@ msgid ""
 "Select a theme type from the list to edit its items.\n"
 "You can add a custom type or import a type with its items from another theme."
 msgstr ""
+"Selecciona un Theme de la lista para editar sus propiedades.\n"
+"Puedes añadir un Theme personalizado o importar un Theme con sus propiedades "
+"desde otro Theme."
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Remove All Color Items"
@@ -8777,6 +8895,8 @@ msgid ""
 "This theme type is empty.\n"
 "Add more items to it manually or by importing from another theme."
 msgstr ""
+"Este Theme está vacío.\n"
+"Añade más propiedades manualmente o impórtalas desde otro Theme."
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Add Color Item"
@@ -11567,15 +11687,15 @@ msgstr "snake_case a PascalCase"
 
 #: editor/rename_dialog.cpp
 msgid "Case"
-msgstr "Mayús./Minús."
+msgstr "Mayus./Minus."
 
 #: editor/rename_dialog.cpp
 msgid "To Lowercase"
-msgstr "A minúsculas"
+msgstr "A Minúsculas"
 
 #: editor/rename_dialog.cpp
 msgid "To Uppercase"
-msgstr "A mayúsculas"
+msgstr "A Mayúsculas"
 
 #: editor/rename_dialog.cpp
 msgid "Reset"
@@ -12417,14 +12537,22 @@ msgid "Change Ray Shape Length"
 msgstr "Cambiar Longitud de la Forma del Rayo"
 
 #: editor/spatial_editor_gizmos.cpp
-#, fuzzy
 msgid "Set Room Point Position"
-msgstr "Establecer Posición de Punto de Curva"
+msgstr "Establecer Posición del Room Point"
+
+#: editor/spatial_editor_gizmos.cpp
+msgid "Set Portal Point Position"
+msgstr "Establecer Posición del Portal Point"
 
 #: editor/spatial_editor_gizmos.cpp
 #, fuzzy
-msgid "Set Portal Point Position"
-msgstr "Establecer Posición de Punto de Curva"
+msgid "Set Occluder Sphere Radius"
+msgstr "Cambiar Radio de la Forma del Cilindro"
+
+#: editor/spatial_editor_gizmos.cpp
+#, fuzzy
+msgid "Set Occluder Sphere Position"
+msgstr "Establecer Posición de Entrada de Curva"
 
 #: modules/csg/csg_gizmos.cpp
 msgid "Change Cylinder Radius"
@@ -12710,6 +12838,11 @@ msgstr "Trazar lightmaps"
 #: modules/mono/csharp_script.cpp
 msgid "Class name can't be a reserved keyword"
 msgstr "El nombre de la clase no puede ser una palabra reservada"
+
+#: modules/mono/csharp_script.cpp
+#, fuzzy
+msgid "Build Solution"
+msgstr "Rellenar Selección"
 
 #: modules/mono/mono_gd/gd_mono_utils.cpp
 msgid "End of inner exception stack trace"
@@ -13197,70 +13330,70 @@ msgstr "Buscar en VisualScript"
 msgid "Get %s"
 msgstr "Obtener %s"
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Package name is missing."
 msgstr "Falta el nombre del paquete."
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Package segments must be of non-zero length."
 msgstr "Los segmentos del paquete deben ser de largo no nulo."
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "The character '%s' is not allowed in Android application package names."
 msgstr ""
 "El carácter '%s' no está permitido en nombres de paquete de aplicación "
 "Android."
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "A digit cannot be the first character in a package segment."
 msgstr "Un dígito no puede ser el primer carácter en un segmento de paquete."
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "The character '%s' cannot be the first character in a package segment."
 msgstr ""
 "El carácter '%s' no puede ser el primer carácter en un segmento de paquete."
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "The package must have at least one '.' separator."
 msgstr "El paquete debe tener al menos un '.' como separador."
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Select device from the list"
 msgstr "Seleccionar dispositivo de la lista"
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Running on %s"
 msgstr "Ejecutar en %s"
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Exporting APK..."
 msgstr "Exportar APK..."
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Uninstalling..."
 msgstr "Desinstalando..."
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Installing to device, please wait..."
 msgstr "Instalando en el dispositivo, espera por favor..."
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Could not install to device: %s"
 msgstr "No se pudo instalar en el dispositivo: %s"
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Running on device..."
 msgstr "Ejecutando en el dispositivo..."
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Could not execute on device."
 msgstr "No se ha podido ejecutar en el dispositivo."
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Unable to find the 'apksigner' tool."
 msgstr "No se pudo encontrar la herramienta 'apksigner'."
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid ""
 "Android build template not installed in the project. Install it from the "
 "Project menu."
@@ -13268,7 +13401,7 @@ msgstr ""
 "La plantilla de exportación de Android no esta instalada en el proyecto. "
 "Instalala desde el menú de Proyecto."
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid ""
 "Either Debug Keystore, Debug User AND Debug Password settings must be "
 "configured OR none of them."
@@ -13276,12 +13409,12 @@ msgstr ""
 "Deben configurarse los ajustes de Depuración de Claves, Depuración de "
 "Usuarios Y Depuración de Contraseñas O ninguno de ellos."
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Debug keystore not configured in the Editor Settings nor in the preset."
 msgstr ""
 "Debug keystore no configurada en Configuración del Editor ni en el preset."
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid ""
 "Either Release Keystore, Release User AND Release Password settings must be "
 "configured OR none of them."
@@ -13289,57 +13422,57 @@ msgstr ""
 "Deben configurarse los ajustes de Liberación del Almacén de Claves, "
 "Liberación del Usuario Y Liberación de la Contraseña O ninguno de ellos."
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Release keystore incorrectly configured in the export preset."
 msgstr ""
 "Release keystore no está configurado correctamente en el preset de "
 "exportación."
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "A valid Android SDK path is required in Editor Settings."
 msgstr ""
 "Se requiere una ruta válida del SDK de Android en la Configuración del "
 "Editor."
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Invalid Android SDK path in Editor Settings."
 msgstr "Ruta del SDK de Android inválida en la Configuración del Editor."
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Missing 'platform-tools' directory!"
 msgstr "¡No se encontró el directorio 'platform-tools'!"
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Unable to find Android SDK platform-tools' adb command."
 msgstr ""
 "No se pudo encontrar el comando adb de las herramientas de la plataforma SDK "
 "de Android."
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Please check in the Android SDK directory specified in Editor Settings."
 msgstr ""
 "Por favor, comprueba el directorio del SDK de Android especificado en la "
 "Configuración del Editor."
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Missing 'build-tools' directory!"
 msgstr "¡No se encontró el directorio 'build-tools'!"
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Unable to find Android SDK build-tools' apksigner command."
 msgstr ""
 "No se pudo encontrar el comando apksigner de las herramientas de "
 "construcción del SDK de Android."
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Invalid public key for APK expansion."
 msgstr "Clave pública inválida para la expansión de APK."
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Invalid package name:"
 msgstr "Nombre de paquete inválido:"
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid ""
 "Invalid \"GodotPaymentV3\" module included in the \"android/modules\" "
 "project setting (changed in Godot 3.2.2).\n"
@@ -13347,37 +13480,22 @@ msgstr ""
 "El módulo \"GodotPaymentV3\" incluido en los ajustes del proyecto \"android/"
 "modules\" es inválido (cambiado en Godot 3.2.2).\n"
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "\"Use Custom Build\" must be enabled to use the plugins."
 msgstr "\"Use Custom Build\" debe estar activado para usar los plugins."
 
-#: platform/android/export/export.cpp
-msgid ""
-"\"Degrees Of Freedom\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR"
-"\"."
-msgstr ""
-"\"Degrees Of Freedom\" sólo es válido cuando \"Xr Mode\" es \"Oculus Mobile "
-"VR\"."
-
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid ""
 "\"Hand Tracking\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\"."
 msgstr ""
 "\"Hand Tracking\" sólo es válido cuando \"Xr Mode\" es \"Oculus Mobile VR\"."
 
-#: platform/android/export/export.cpp
-msgid ""
-"\"Focus Awareness\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\"."
-msgstr ""
-"\"Focus Awareness\" sólo es válido cuando \"Xr Mode\" es \"Oculus Mobile VR"
-"\"."
-
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "\"Export AAB\" is only valid when \"Use Custom Build\" is enabled."
 msgstr ""
 "\"Export AAB\" sólo es válido cuando \"Use Custom Build\" está activado."
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid ""
 "'apksigner' could not be found.\n"
 "Please check the command is available in the Android SDK build-tools "
@@ -13389,52 +13507,52 @@ msgstr ""
 "SDK build-tools.\n"
 "El resultado %s es sin firma."
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Signing debug %s..."
 msgstr "Firma de depuración %s..."
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Signing release %s..."
 msgstr "Firmando liberación %s..."
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Could not find keystore, unable to export."
 msgstr "No se pudo encontrar la keystore, no se puedo exportar."
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "'apksigner' returned with error #%d"
 msgstr "'apksigner' ha retornado con error #%d"
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Verifying %s..."
 msgstr "Verificando %s..."
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "'apksigner' verification of %s failed."
 msgstr "La verificación de 'apksigner' de %s ha fallado."
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Exporting for Android"
 msgstr "Exportando para Android"
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Invalid filename! Android App Bundle requires the *.aab extension."
 msgstr ""
 "¡Nombre del archivo inválido! Android App Bundle requiere la extensión *.aab."
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "APK Expansion not compatible with Android App Bundle."
 msgstr "La Expansión APK no es compatible con Android App Bundle."
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Invalid filename! Android APK requires the *.apk extension."
 msgstr "¡Nombre de archivo inválido! Android APK requiere la extensión *.apk."
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Unsupported export format!\n"
 msgstr "¡Formato de exportación no compatible!\n"
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid ""
 "Trying to build from a custom built template, but no version info for it "
 "exists. Please reinstall from the 'Project' menu."
@@ -13443,7 +13561,7 @@ msgstr ""
 "información de la versión para ello. Por favor, reinstala desde el menú "
 "'Proyecto'."
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid ""
 "Android build version mismatch:\n"
 "   Template installed: %s\n"
@@ -13456,26 +13574,26 @@ msgstr ""
 "Por favor, reinstala la plantilla de compilación de Android desde el menú "
 "'Proyecto'."
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid ""
 "Unable to overwrite res://android/build/res/*.xml files with project name"
 msgstr ""
 "No se puede sobrescribir los archivos res://android/build/res/*.xml con el "
 "nombre del proyecto"
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Could not export project files to gradle project\n"
 msgstr "No se pueden exportar los archivos del proyecto a un proyecto gradle\n"
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Could not write expansion package file!"
 msgstr "¡No se pudo escribir el archivo del paquete de expansión!"
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Building Android Project (gradle)"
 msgstr "Construir Proyecto Android (gradle)"
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid ""
 "Building of Android project failed, check output for the error.\n"
 "Alternatively visit docs.godotengine.org for Android build documentation."
@@ -13484,11 +13602,11 @@ msgstr ""
 "También puedes visitar docs.godotengine.org para consultar la documentación "
 "de compilación de Android."
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Moving output"
 msgstr "Moviendo salida"
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid ""
 "Unable to copy and rename export file, check gradle project directory for "
 "outputs."
@@ -13496,15 +13614,15 @@ msgstr ""
 "No se puede copiar y renombrar el archivo de exportación, comprueba el "
 "directorio del proyecto de gradle para ver los resultados."
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Package not found: %s"
 msgstr "Paquete no encontrado:% s"
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Creating APK..."
 msgstr "Creando APK..."
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid ""
 "Could not find template APK to export:\n"
 "%s"
@@ -13512,7 +13630,7 @@ msgstr ""
 "No se pudo encontrar la plantilla APK para exportar:\n"
 "%s"
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid ""
 "Missing libraries in the export template for the selected architectures: "
 "%s.\n"
@@ -13524,19 +13642,19 @@ msgstr ""
 "Por favor, construya una plantilla con todas las bibliotecas necesarias, o "
 "desmarque las arquitecturas que faltan en el preajuste de exportación."
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Adding files..."
 msgstr "Añadiendo archivos ..."
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Could not export project files"
 msgstr "No se pudieron exportar los archivos del proyecto"
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Aligning APK..."
 msgstr "Alineando APK..."
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Could not unzip temporary unaligned APK."
 msgstr "No se pudo descomprimir el APK no alineado temporal."
 
@@ -14090,6 +14208,14 @@ msgstr ""
 "NavigationMeshInstance debe ser hijo o nieto de un nodo Navigation. Ya que "
 "sólo proporciona los datos de navegación."
 
+#: scene/3d/occluder.cpp
+msgid "No shape is set."
+msgstr ""
+
+#: scene/3d/occluder.cpp
+msgid "Only uniform scales are supported."
+msgstr ""
+
 #: scene/3d/particles.cpp
 msgid ""
 "GPU-based particles are not supported by the GLES2 video driver.\n"
@@ -14229,36 +14355,50 @@ msgid ""
 "RoomList path is invalid.\n"
 "Please check the RoomList branch has been assigned in the RoomManager."
 msgstr ""
+"La ruta del RoomList no es válida.\n"
+"Por favor, comprueba que la rama de la RoomList ha sido asignada al "
+"RoomManager."
 
 #: scene/3d/room_manager.cpp
 msgid "RoomList contains no Rooms, aborting."
-msgstr ""
+msgstr "La RoomList no contiene Rooms, abortando."
 
 #: scene/3d/room_manager.cpp
 msgid "Misnamed nodes detected, check output log for details. Aborting."
 msgstr ""
+"Nodos con nombres incorrectos detectados, comprueba la salida del Log para "
+"más detalles. Abortando."
 
 #: scene/3d/room_manager.cpp
 msgid "Portal link room not found, check output log for details."
 msgstr ""
+"No se encuentra Portal link room, comprueba la salida del Log para más "
+"detalles."
 
 #: scene/3d/room_manager.cpp
 msgid ""
 "Portal autolink failed, check output log for details.\n"
 "Check the portal is facing outwards from the source room."
 msgstr ""
+"Fallo en el Portal autolink, comprueba la salida del Log para más detalles.\n"
+"Comprueba si el portal está mirando hacia fuera de la room de origen."
 
 #: scene/3d/room_manager.cpp
 msgid ""
 "Room overlap detected, cameras may work incorrectly in overlapping area.\n"
 "Check output log for details."
 msgstr ""
+"Detectada superposición de la Room, las cámaras pueden funcionar "
+"incorrectamente en las zonas donde hay superposición.\n"
+"Comrpueba la salida del Log para más detalles."
 
 #: scene/3d/room_manager.cpp
 msgid ""
 "Error calculating room bounds.\n"
 "Ensure all rooms contain geometry or manual bounds."
 msgstr ""
+"Error al calcular los límites de la room.\n"
+"Asegúrate de que todas las rooms contienen geometría o límites manuales."
 
 #: scene/3d/soft_body.cpp
 msgid "This body will be ignored until you set a mesh."
@@ -14426,6 +14566,14 @@ msgstr "Debe tener una extensión válida."
 msgid "Enable grid minimap."
 msgstr "Activar minimapa de cuadrícula."
 
+#: scene/gui/nine_patch_rect.cpp
+msgid ""
+"The Tile and Tile Fit options for Axis Stretch properties are only effective "
+"when using the GLES3 rendering backend.\n"
+"The GLES2 backend is currently in use, so these modes will act like Stretch "
+"instead."
+msgstr ""
+
 #: scene/gui/popup.cpp
 msgid ""
 "Popups will hide by default unless you call popup() or any of the popup*() "
@@ -14480,6 +14628,10 @@ msgid "Viewport size must be greater than 0 to render anything."
 msgstr ""
 "El tamaño del Viewport debe ser mayor que 0 para poder renderizar cualquier "
 "cosa."
+
+#: scene/resources/occluder_shape.cpp
+msgid "OccluderShapeSphere Set Spheres"
+msgstr ""
 
 #: scene/resources/visual_shader_nodes.cpp
 msgid ""
@@ -14538,6 +14690,41 @@ msgstr "Asignación a uniform."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Las constantes no pueden modificarse."
+
+#~ msgid "Make Rest Pose (From Bones)"
+#~ msgstr "Crear Pose de Descanso (Desde Huesos)"
+
+#~ msgid "Bottom"
+#~ msgstr "Abajo"
+
+#~ msgid "Left"
+#~ msgstr "Izquierda"
+
+#~ msgid "Right"
+#~ msgstr "Derecha"
+
+#~ msgid "Front"
+#~ msgstr "Frente"
+
+#~ msgid "Rear"
+#~ msgstr "Detrás"
+
+#~ msgid "Nameless gizmo"
+#~ msgstr "Gizmo sin nombre"
+
+#~ msgid ""
+#~ "\"Degrees Of Freedom\" is only valid when \"Xr Mode\" is \"Oculus Mobile "
+#~ "VR\"."
+#~ msgstr ""
+#~ "\"Degrees Of Freedom\" sólo es válido cuando \"Xr Mode\" es \"Oculus "
+#~ "Mobile VR\"."
+
+#~ msgid ""
+#~ "\"Focus Awareness\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR"
+#~ "\"."
+#~ msgstr ""
+#~ "\"Focus Awareness\" sólo es válido cuando \"Xr Mode\" es \"Oculus Mobile "
+#~ "VR\"."
 
 #~ msgid "Package Contents:"
 #~ msgstr "Contenido del Paquete:"
@@ -16734,9 +16921,6 @@ msgstr "Las constantes no pueden modificarse."
 
 #~ msgid "Images:"
 #~ msgstr "Imágenes:"
-
-#~ msgid "Group"
-#~ msgstr "Grupo"
 
 #~ msgid "Sample Conversion Mode: (.wav files):"
 #~ msgstr "Modo de conversión de muestreo: (archivos .wav):"

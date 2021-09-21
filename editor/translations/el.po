@@ -1041,7 +1041,7 @@ msgstr ""
 msgid "Dependencies"
 msgstr "Εξαρτήσεις"
 
-#: editor/dependency_editor.cpp
+#: editor/dependency_editor.cpp editor/editor_resource_picker.cpp
 msgid "Resource"
 msgstr "Πόρος"
 
@@ -1709,13 +1709,13 @@ msgstr ""
 "Ενεργοποιήστε το 'Εισαγωγή PVRTC' στις Ρυθμίσεις Έργου, ή απενεργοποιήστε το "
 "'Ενεργοποίηση εναλλαγής οδηγού'."
 
-#: editor/editor_export.cpp platform/android/export/export.cpp
+#: editor/editor_export.cpp platform/android/export/export_plugin.cpp
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
 #: platform/osx/export/export.cpp platform/uwp/export/export.cpp
 msgid "Custom debug template not found."
 msgstr "Δεν βρέθηκε προσαρμοσμένο πακέτο αποσφαλμάτωσης."
 
-#: editor/editor_export.cpp platform/android/export/export.cpp
+#: editor/editor_export.cpp platform/android/export/export_plugin.cpp
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
 #: platform/osx/export/export.cpp platform/uwp/export/export.cpp
 msgid "Custom release template not found."
@@ -2099,7 +2099,7 @@ msgstr ""
 msgid "(Re)Importing Assets"
 msgstr "(Επαν)εισαγωγή"
 
-#: editor/editor_help.cpp editor/plugins/spatial_editor_plugin.cpp
+#: editor/editor_help.cpp
 msgid "Top"
 msgstr "Κορυφή"
 
@@ -2612,6 +2612,32 @@ msgstr "Αυτή η λειτουργία δεν μπορεί να γίνει χ�
 #: editor/editor_node.cpp
 msgid "Current scene not saved. Open anyway?"
 msgstr "Η τρέχουσα σκηνή δεν έχει αποθηκευτεί. Συνέχεια με το άνοιγμα;"
+
+#: editor/editor_node.cpp
+msgid "Can't undo while mouse buttons are pressed."
+msgstr ""
+
+#: editor/editor_node.cpp
+msgid "Nothing to undo."
+msgstr ""
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Undo: %s"
+msgstr "Αναίρεση"
+
+#: editor/editor_node.cpp
+msgid "Can't redo while mouse buttons are pressed."
+msgstr ""
+
+#: editor/editor_node.cpp
+msgid "Nothing to redo."
+msgstr ""
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Redo: %s"
+msgstr "Ακύρωση αναίρεσης"
 
 #: editor/editor_node.cpp
 msgid "Can't reload a scene that was never saved."
@@ -3319,6 +3345,11 @@ msgid "Merge With Existing"
 msgstr "Συγχώνευση με υπάρχων"
 
 #: editor/editor_node.cpp
+#, fuzzy
+msgid "Apply MeshInstance Transforms"
+msgstr "Αλλαγή Μετασχηματισμού Κίνησης"
+
+#: editor/editor_node.cpp
 msgid "Open & Run a Script"
 msgstr "Άνοιξε & Τρέξε μία δέσμη ενεργειών"
 
@@ -3574,6 +3605,10 @@ msgid ""
 msgstr ""
 "Ο επιλεγμένος πόρος (%s) δεν ταιριάζει σε κανέναν αναμενόμενο τύπο γι'αυτήν "
 "την ιδιότητα (%s)."
+
+#: editor/editor_resource_picker.cpp
+msgid "Quick Load"
+msgstr ""
 
 #: editor/editor_resource_picker.cpp editor/property_editor.cpp
 msgid "Make Unique"
@@ -5722,6 +5757,18 @@ msgid "Move CanvasItem \"%s\" to (%d, %d)"
 msgstr "Μετακίνηση CanvasItem"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Locked"
+msgstr "Κλείδωσε το Επιλεγμένο"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Grouped"
+msgstr "Ομάδες"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid ""
 "Children of containers have their anchors and margins values overridden by "
 "their parent."
@@ -6678,7 +6725,13 @@ msgid "Remove Selected Item"
 msgstr "Αφαίρεση του επιλεγμένου στοιοχείου"
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
-msgid "Import from Scene"
+#, fuzzy
+msgid "Import from Scene (Ignore Transforms)"
+msgstr "Εισαγωγή από την σκηνή"
+
+#: editor/plugins/mesh_library_editor_plugin.cpp
+#, fuzzy
+msgid "Import from Scene (Apply Transforms)"
 msgstr "Εισαγωγή από την σκηνή"
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
@@ -7283,6 +7336,16 @@ msgstr "Αριθμός δημιουργημένων σημείων:"
 msgid "Flip Portal"
 msgstr "Αναστροφή Οριζόντια"
 
+#: editor/plugins/room_manager_editor_plugin.cpp
+#, fuzzy
+msgid "Occluder Set Transform"
+msgstr "Εκκαθάριση Μετασχηματισμού"
+
+#: editor/plugins/room_manager_editor_plugin.cpp
+#, fuzzy
+msgid "Center Node"
+msgstr "Δημιουργία κόμβου"
+
 #: editor/plugins/root_motion_editor_plugin.cpp
 msgid "AnimationTree has no path set to an AnimationPlayer"
 msgstr "Το AnimationTree δεν έχει διαδρομή σε AnimationPlayer"
@@ -7792,12 +7855,14 @@ msgid "Skeleton2D"
 msgstr "Skeleton2D"
 
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
-msgid "Make Rest Pose (From Bones)"
-msgstr "Κάνε Στάση Αδράνειας (Από Οστά)"
+#, fuzzy
+msgid "Reset to Rest Pose"
+msgstr "Θέσε Οστά σε Στάση Αδράνειας"
 
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
-msgid "Set Bones to Rest Pose"
-msgstr "Θέσε Οστά σε Στάση Αδράνειας"
+#, fuzzy
+msgid "Overwrite Rest Pose"
+msgstr "Αντικατάσταση"
 
 #: editor/plugins/skeleton_editor_plugin.cpp
 msgid "Create physical bones"
@@ -7822,6 +7887,71 @@ msgstr "Αξονομετρική"
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Perspective"
 msgstr "Προοπτική"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Top Orthogonal"
+msgstr "Αξονομετρική"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Top Perspective"
+msgstr "Προοπτική"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Bottom Orthogonal"
+msgstr "Αξονομετρική"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Bottom Perspective"
+msgstr "Προοπτική"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Left Orthogonal"
+msgstr "Αξονομετρική"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Right Perspective"
+msgstr "Προοπτική"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Right Orthogonal"
+msgstr "Αξονομετρική"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Front Orthogonal"
+msgstr "Αξονομετρική"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Front Perspective"
+msgstr "Προοπτική"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Rear Orthogonal"
+msgstr "Αξονομετρική"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Rear Perspective"
+msgstr "Προοπτική"
+
+#. TRANSLATORS: This will be appended to the view name when Auto Orthogonal is enabled.
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid " [auto]"
+msgstr ""
+
+#. TRANSLATORS: This will be appended to the view name when Portal Occulusion is enabled.
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid " [portals active]"
+msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Transform Aborted."
@@ -7943,40 +8073,20 @@ msgid "Bottom View."
 msgstr "Κάτω όψη."
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Bottom"
-msgstr "Κάτω"
-
-#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Left View."
 msgstr "Αριστερή όψη."
-
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "Left"
-msgstr "Αριστερά"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Right View."
 msgstr "Δεξιά όψη."
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Right"
-msgstr "Δεξιά"
-
-#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Front View."
 msgstr "Εμπρόσθια όψη."
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Front"
-msgstr "Μπροστά"
-
-#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Rear View."
 msgstr "Πίσω όψη."
-
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "Rear"
-msgstr "Πίσω"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Align Transform with View"
@@ -8254,6 +8364,11 @@ msgid "View Portal Culling"
 msgstr "Ρυθμίσεις οπτικής γωνίας"
 
 #: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "View Occlusion Culling"
+msgstr "Ρυθμίσεις οπτικής γωνίας"
+
+#: editor/plugins/spatial_editor_plugin.cpp
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Settings..."
 msgstr "Ρυθμίσεις..."
@@ -8319,8 +8434,9 @@ msgid "Post"
 msgstr "Μετά"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Nameless gizmo"
-msgstr "Ανώνυμο μαραφέτι"
+#, fuzzy
+msgid "Unnamed Gizmo"
+msgstr "Ανώνυμο έργο"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Create Mesh2D"
@@ -12528,6 +12644,16 @@ msgstr "Ορισμός θέσης σημείου καμπύλης"
 msgid "Set Portal Point Position"
 msgstr "Ορισμός θέσης σημείου καμπύλης"
 
+#: editor/spatial_editor_gizmos.cpp
+#, fuzzy
+msgid "Set Occluder Sphere Radius"
+msgstr "Αλλαγή Ακτίνας Σχήματος Κυλίνδρου"
+
+#: editor/spatial_editor_gizmos.cpp
+#, fuzzy
+msgid "Set Occluder Sphere Position"
+msgstr "Ορισμός θέσης εισόδου καμπύλης"
+
 #: modules/csg/csg_gizmos.cpp
 msgid "Change Cylinder Radius"
 msgstr "Αλλαγή Ακτίνας Κυλίνδρου"
@@ -12817,6 +12943,11 @@ msgstr "Τοποθέτηση φώτων:"
 #: modules/mono/csharp_script.cpp
 msgid "Class name can't be a reserved keyword"
 msgstr "Το όνομα της κλάσης δεν μπορεί να είναι λέξη-κλειδί"
+
+#: modules/mono/csharp_script.cpp
+#, fuzzy
+msgid "Build Solution"
+msgstr "Γέμισμα Επιλογής"
 
 #: modules/mono/mono_gd/gd_mono_utils.cpp
 msgid "End of inner exception stack trace"
@@ -13309,77 +13440,77 @@ msgstr "Αναζήτηση VisualScript"
 msgid "Get %s"
 msgstr "Διάβασε %s"
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Package name is missing."
 msgstr "Το όνομα του πακέτου λείπει."
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Package segments must be of non-zero length."
 msgstr "Τα τμήματα του πακέτου πρέπει να έχουν μη μηδενικό μήκος."
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "The character '%s' is not allowed in Android application package names."
 msgstr ""
 "Ο χαρακτήρας «%s» απαγορεύεται στο όνομα πακέτου των εφαρμογών Android."
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "A digit cannot be the first character in a package segment."
 msgstr ""
 "Ένα ψηφίο δεν μπορεί να είναι ο πρώτος χαρακτήρας σε ένα τμήμα πακέτου."
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "The character '%s' cannot be the first character in a package segment."
 msgstr ""
 "Ο χαρακτήρας '%s' δεν μπορεί να είναι ο πρώτος χαρακτήρας σε ένα τμήμα "
 "πακέτου."
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "The package must have at least one '.' separator."
 msgstr "Το πακέτο πρέπει να έχει τουλάχιστον έναν '.' διαχωριστή."
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Select device from the list"
 msgstr "Επιλέξτε συσκευή από την λίστα"
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Running on %s"
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 #, fuzzy
 msgid "Exporting APK..."
 msgstr "Εξαγωγή Όλων"
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 #, fuzzy
 msgid "Uninstalling..."
 msgstr "Απεγκατάσταση"
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 #, fuzzy
 msgid "Installing to device, please wait..."
 msgstr "Ανάκτηση δεδοένων κατοπτρισμού, παρακαλώ περιμένετε..."
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 #, fuzzy
 msgid "Could not install to device: %s"
 msgstr "Δεν ήταν δυνατή η δημιουργία στιγμιοτύπου της σκηνής!"
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 #, fuzzy
 msgid "Running on device..."
 msgstr "Εκτέλεση Προσαρμοσμένης Δέσμης Ενεργειών..."
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 #, fuzzy
 msgid "Could not execute on device."
 msgstr "Αδύνατη η δημιουργία φακέλου."
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Unable to find the 'apksigner' tool."
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid ""
 "Android build template not installed in the project. Install it from the "
 "Project menu."
@@ -13387,75 +13518,75 @@ msgstr ""
 "Λείπει το πρότυπο δόμησης Android από το έργο. Εγκαταστήστε το από το μενού "
 "«Έργο»."
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid ""
 "Either Debug Keystore, Debug User AND Debug Password settings must be "
 "configured OR none of them."
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Debug keystore not configured in the Editor Settings nor in the preset."
 msgstr ""
 "Το «debug keystore» δεν έχει καθοριστεί στις Ρυθμίσεις Επεξεργαστή ή την "
 "διαμόρφωση."
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid ""
 "Either Release Keystore, Release User AND Release Password settings must be "
 "configured OR none of them."
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Release keystore incorrectly configured in the export preset."
 msgstr ""
 "Εσφαλμένη ρύθμιση αποθετηρίου κλειδιών διανομής στην διαμόρφωση εξαγωγής."
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 #, fuzzy
 msgid "A valid Android SDK path is required in Editor Settings."
 msgstr ""
 "Μη έγκυρη διαδρομή Android SDK για προσαρμοσμένη δόμηση στις Ρυθμίσεις "
 "Επεξεργαστή."
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 #, fuzzy
 msgid "Invalid Android SDK path in Editor Settings."
 msgstr ""
 "Μη έγκυρη διαδρομή Android SDK για προσαρμοσμένη δόμηση στις Ρυθμίσεις "
 "Επεξεργαστή."
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Missing 'platform-tools' directory!"
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Unable to find Android SDK platform-tools' adb command."
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 #, fuzzy
 msgid "Please check in the Android SDK directory specified in Editor Settings."
 msgstr ""
 "Μη έγκυρη διαδρομή Android SDK για προσαρμοσμένη δόμηση στις Ρυθμίσεις "
 "Επεξεργαστή."
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Missing 'build-tools' directory!"
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Unable to find Android SDK build-tools' apksigner command."
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Invalid public key for APK expansion."
 msgstr "Μη έγκυρο δημόσιο κλειδί (public key) για επέκταση APK."
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Invalid package name:"
 msgstr "Άκυρο όνομα πακέτου:"
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid ""
 "Invalid \"GodotPaymentV3\" module included in the \"android/modules\" "
 "project setting (changed in Godot 3.2.2).\n"
@@ -13463,38 +13594,23 @@ msgstr ""
 "Εσφαλμένη λειτουργική μονάδα «GodotPaymentV3» στην ρύθμιση εργου «Android/"
 "Modules» (άλλαξε στην Godot 3.2.2).\n"
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "\"Use Custom Build\" must be enabled to use the plugins."
 msgstr ""
 "Η επιλογή «Use Custom Build» πρέπει να ενεργοποιηθεί για χρήση προσθέτων."
 
-#: platform/android/export/export.cpp
-msgid ""
-"\"Degrees Of Freedom\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR"
-"\"."
-msgstr ""
-"Το «Degrees Of Freedom» είναι έγκυρο μόνο όταν το «Xr Mode» είναι «Oculus "
-"Mobile VR»."
-
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid ""
 "\"Hand Tracking\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\"."
 msgstr ""
 "Το «Hand Tracking» είναι έγκυρο μόνο όταν το «Xr Mode» είναι «Oculus Mobile "
 "VR»."
 
-#: platform/android/export/export.cpp
-msgid ""
-"\"Focus Awareness\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\"."
-msgstr ""
-"Το «Focus Awareness» είναι έγκυρο μόνο όταν το «Xr Mode» είναι «Oculus "
-"Mobile VR»."
-
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "\"Export AAB\" is only valid when \"Use Custom Build\" is enabled."
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid ""
 "'apksigner' could not be found.\n"
 "Please check the command is available in the Android SDK build-tools "
@@ -13502,57 +13618,57 @@ msgid ""
 "The resulting %s is unsigned."
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Signing debug %s..."
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 #, fuzzy
 msgid "Signing release %s..."
 msgstr ""
 "Σάρωση αρχείων,\n"
 "Παρακαλώ περιμένετε..."
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 #, fuzzy
 msgid "Could not find keystore, unable to export."
 msgstr "Σφάλμα κατά το άνοιγμα προτύπου για εξαγωγή:"
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "'apksigner' returned with error #%d"
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 #, fuzzy
 msgid "Verifying %s..."
 msgstr "Προσθήκη %s..."
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "'apksigner' verification of %s failed."
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 #, fuzzy
 msgid "Exporting for Android"
 msgstr "Εξαγωγή Όλων"
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Invalid filename! Android App Bundle requires the *.aab extension."
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "APK Expansion not compatible with Android App Bundle."
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Invalid filename! Android APK requires the *.apk extension."
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Unsupported export format!\n"
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid ""
 "Trying to build from a custom built template, but no version info for it "
 "exists. Please reinstall from the 'Project' menu."
@@ -13560,7 +13676,7 @@ msgstr ""
 "Δοκιμή δόμησης από προσαρμοσμένο πρότυπο δόμησης, αλλά δεν υπάρχουν "
 "πληροφορίες έκδοσης. Παρακαλούμε κάντε επανεγκατάσταση από το μενού «Έργο»."
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid ""
 "Android build version mismatch:\n"
 "   Template installed: %s\n"
@@ -13573,26 +13689,26 @@ msgstr ""
 "Παρακαλούμε να επανεγκαταστήσετε το πρότυπο δόμησης Android από το μενού "
 "«Έργο»."
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid ""
 "Unable to overwrite res://android/build/res/*.xml files with project name"
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 #, fuzzy
 msgid "Could not export project files to gradle project\n"
 msgstr "Δεν βρέθηκε το project.godot στη διαδρομή του έργου."
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 #, fuzzy
 msgid "Could not write expansion package file!"
 msgstr "Απέτυχε η εγγραφή σε αρχείο:"
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Building Android Project (gradle)"
 msgstr "Δόμηση Έργου Android (gradle)"
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid ""
 "Building of Android project failed, check output for the error.\n"
 "Alternatively visit docs.godotengine.org for Android build documentation."
@@ -13601,34 +13717,34 @@ msgstr ""
 "Εναλλακτικά, επισκεφτείτε τη σελίδα docs.godotengine.org για τεκμηρίωση "
 "δόμησης Android."
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Moving output"
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid ""
 "Unable to copy and rename export file, check gradle project directory for "
 "outputs."
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 #, fuzzy
 msgid "Package not found: %s"
 msgstr "Δεν βρέθηκε η κίνηση: «%s»"
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 #, fuzzy
 msgid "Creating APK..."
 msgstr "Δημιουργία περιγραμμάτων..."
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 #, fuzzy
 msgid ""
 "Could not find template APK to export:\n"
 "%s"
 msgstr "Σφάλμα κατά το άνοιγμα προτύπου για εξαγωγή:"
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid ""
 "Missing libraries in the export template for the selected architectures: "
 "%s.\n"
@@ -13636,21 +13752,21 @@ msgid ""
 "architectures in the export preset."
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 #, fuzzy
 msgid "Adding files..."
 msgstr "Προσθήκη %s..."
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 #, fuzzy
 msgid "Could not export project files"
 msgstr "Απέτυχε η εγγραφή σε αρχείο:"
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Aligning APK..."
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Could not unzip temporary unaligned APK."
 msgstr ""
 
@@ -14197,6 +14313,14 @@ msgstr ""
 "Ένας κόμβος τύπου στιγμιοτύπου πλέγματος πλοήγησης πρέπει να κληρονομεί έναν "
 "κόμβο τύπου πλοήγηση, διότι διαθέτει μόνο δεδομένα πλοήγησης."
 
+#: scene/3d/occluder.cpp
+msgid "No shape is set."
+msgstr ""
+
+#: scene/3d/occluder.cpp
+msgid "Only uniform scales are supported."
+msgstr ""
+
 #: scene/3d/particles.cpp
 msgid ""
 "GPU-based particles are not supported by the GLES2 video driver.\n"
@@ -14525,6 +14649,14 @@ msgstr "Απαιτείται η χρήση έγκυρης επέκτασης."
 msgid "Enable grid minimap."
 msgstr "Ενεργοποίηση κουμπώματος"
 
+#: scene/gui/nine_patch_rect.cpp
+msgid ""
+"The Tile and Tile Fit options for Axis Stretch properties are only effective "
+"when using the GLES3 rendering backend.\n"
+"The GLES2 backend is currently in use, so these modes will act like Stretch "
+"instead."
+msgstr ""
+
 #: scene/gui/popup.cpp
 msgid ""
 "Popups will hide by default unless you call popup() or any of the popup*() "
@@ -14582,6 +14714,10 @@ msgstr ""
 "Το μέγεθος της οπτικής γωνίας πρέπει να είναι μεγαλύτερο του 0 για να γίνει "
 "απόδοση."
 
+#: scene/resources/occluder_shape.cpp
+msgid "OccluderShapeSphere Set Spheres"
+msgstr ""
+
 #: scene/resources/visual_shader_nodes.cpp
 msgid ""
 "The sampler port is connected but not used. Consider changing the source to "
@@ -14632,6 +14768,41 @@ msgstr "Ανάθεση σε ενιαία μεταβλητή."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Οι σταθερές δεν μπορούν να τροποποιηθούν."
+
+#~ msgid "Make Rest Pose (From Bones)"
+#~ msgstr "Κάνε Στάση Αδράνειας (Από Οστά)"
+
+#~ msgid "Bottom"
+#~ msgstr "Κάτω"
+
+#~ msgid "Left"
+#~ msgstr "Αριστερά"
+
+#~ msgid "Right"
+#~ msgstr "Δεξιά"
+
+#~ msgid "Front"
+#~ msgstr "Μπροστά"
+
+#~ msgid "Rear"
+#~ msgstr "Πίσω"
+
+#~ msgid "Nameless gizmo"
+#~ msgstr "Ανώνυμο μαραφέτι"
+
+#~ msgid ""
+#~ "\"Degrees Of Freedom\" is only valid when \"Xr Mode\" is \"Oculus Mobile "
+#~ "VR\"."
+#~ msgstr ""
+#~ "Το «Degrees Of Freedom» είναι έγκυρο μόνο όταν το «Xr Mode» είναι «Oculus "
+#~ "Mobile VR»."
+
+#~ msgid ""
+#~ "\"Focus Awareness\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR"
+#~ "\"."
+#~ msgstr ""
+#~ "Το «Focus Awareness» είναι έγκυρο μόνο όταν το «Xr Mode» είναι «Oculus "
+#~ "Mobile VR»."
 
 #~ msgid "Package Contents:"
 #~ msgstr "Περιεχόμενα Πακέτου:"
