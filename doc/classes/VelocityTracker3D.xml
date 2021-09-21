@@ -29,6 +29,4 @@
 		<member name="track_physics_step" type="bool" setter="set_track_physics_step" getter="is_tracking_physics_step" default="false">
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

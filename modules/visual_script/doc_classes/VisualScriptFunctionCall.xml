@@ -8,8 +8,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="base_script" type="String" setter="set_base_script" getter="get_base_script">
 			The script to be used when [member call_mode] is set to [constant CALL_MODE_INSTANCE].

@@ -130,6 +130,4 @@
 			Z index. Controls the order in which the nodes render. A node with a higher Z index will display in front of others. Must be between [constant RenderingServer.CANVAS_ITEM_Z_MIN] and [constant RenderingServer.CANVAS_ITEM_Z_MAX] (inclusive).
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

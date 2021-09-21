@@ -8,8 +8,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="source" type="int" setter="set_source" getter="get_source" enum="VisualShaderNodeSample3D.Source" default="0">
 			An input source type.

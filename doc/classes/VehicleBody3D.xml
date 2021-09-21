@@ -11,8 +11,6 @@
 	<tutorials>
 		<link title="3D Truck Town Demo">https://godotengine.org/asset-library/asset/524</link>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="brake" type="float" setter="set_brake" getter="get_brake" default="0.0">
 			Slows down the vehicle by applying a braking force. The vehicle is only slowed down if the wheels are in contact with a surface. The force you need to apply to adequately slow down your vehicle depends on the [member RigidDynamicBody3D.mass] of the vehicle. For a vehicle with a mass set to 1000, try a value in the 25 - 30 range for hard braking.
@@ -27,6 +25,4 @@
 			The steering angle for the vehicle. Setting this to a non-zero value will result in the vehicle turning when it's moving. Wheels that have [member VehicleWheel3D.use_as_steering] set to [code]true[/code] will automatically be rotated.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

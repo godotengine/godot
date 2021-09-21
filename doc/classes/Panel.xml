@@ -11,8 +11,6 @@
 		<link title="2D Finite State Machine Demo">https://godotengine.org/asset-library/asset/516</link>
 		<link title="3D Inverse Kinematics Demo">https://godotengine.org/asset-library/asset/523</link>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="mode" type="int" setter="set_mode" getter="get_mode" enum="Panel.Mode" default="0">
 		</member>

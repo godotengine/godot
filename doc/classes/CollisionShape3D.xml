@@ -35,6 +35,4 @@
 			The actual shape owned by this collision shape.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

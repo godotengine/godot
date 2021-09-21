@@ -535,8 +535,6 @@
 			</description>
 		</signal>
 	</signals>
-	<constants>
-	</constants>
 	<theme_items>
 		<theme_item name="checked" data_type="icon" type="Texture2D">
 			[Texture2D] icon for the checked checkbox items.

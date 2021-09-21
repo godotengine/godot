@@ -8,8 +8,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="left_to_right" type="float" setter="set_left_to_right" getter="get_left_to_right" default="0.5">
 			Displacement of the upper edge along the X axis. 0.0 positions edge straight above the bottom-left edge.
@@ -27,6 +25,4 @@
 			Number of added edge loops along the X axis.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

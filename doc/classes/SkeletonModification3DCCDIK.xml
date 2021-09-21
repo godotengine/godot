@@ -133,6 +133,4 @@
 			The end position of the CCDIK chain. Typically, this should be a child of a [BoneAttachment3D] node attached to the final bone in the CCDIK chain, where the child node is offset so it is at the end of the final bone.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

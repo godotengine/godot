@@ -99,6 +99,4 @@
 			The script source code or an empty string if source code is not available. When set, does not reload the class implementation automatically.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

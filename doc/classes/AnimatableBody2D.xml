@@ -10,13 +10,9 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="sync_to_physics" type="bool" setter="set_sync_to_physics" getter="is_sync_to_physics_enabled" default="false">
 			If [code]true[/code], the body's movement will be synchronized to the physics frame. This is useful when animating movement via [AnimationPlayer], for example on moving platforms. Do [b]not[/b] use together with [method PhysicsBody2D.move_and_collide].
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

@@ -188,6 +188,4 @@
 			If the size is negative, you can use [method abs] to fix it.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

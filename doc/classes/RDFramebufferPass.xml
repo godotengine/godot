@@ -9,8 +9,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="color_attachments" type="PackedInt32Array" setter="set_color_attachments" getter="get_color_attachments" default="PackedInt32Array()">
 			Color attachments in order starting from 0. If this attachment is not used by the shader, pass ATTACHMENT_UNUSED to skip.

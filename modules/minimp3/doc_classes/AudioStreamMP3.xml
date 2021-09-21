@@ -8,8 +8,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="data" type="PackedByteArray" setter="set_data" getter="get_data" default="PackedByteArray()">
 			Contains the audio data in bytes.
@@ -21,6 +19,4 @@
 			Time in seconds at which the stream starts after being looped.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

@@ -6,8 +6,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="bias" type="float" setter="set_bias" getter="get_bias" default="0.0005">
 		</member>

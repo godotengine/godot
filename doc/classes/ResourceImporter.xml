@@ -9,8 +9,6 @@
 	<tutorials>
 		<link title="Import plugins">https://docs.godotengine.org/en/latest/tutorials/plugins/editor/import_plugins.html</link>
 	</tutorials>
-	<methods>
-	</methods>
 	<constants>
 		<constant name="IMPORT_ORDER_DEFAULT" value="0" enum="ImportOrder">
 			The default import order.

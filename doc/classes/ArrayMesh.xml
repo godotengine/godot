@@ -203,6 +203,4 @@
 		<member name="shadow_mesh" type="ArrayMesh" setter="set_shadow_mesh" getter="get_shadow_mesh">
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

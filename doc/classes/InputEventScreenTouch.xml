@@ -10,8 +10,6 @@
 	<tutorials>
 		<link title="InputEvent">https://docs.godotengine.org/en/latest/tutorials/inputs/inputevent.html</link>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="index" type="int" setter="set_index" getter="get_index" default="0">
 			The touch index in the case of a multi-touch event. One index = one finger.
@@ -23,6 +21,4 @@
 			If [code]true[/code], the touch's state is pressed. If [code]false[/code], the touch's state is released.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

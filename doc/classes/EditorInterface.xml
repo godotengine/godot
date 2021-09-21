@@ -238,6 +238,4 @@
 			If [code]true[/code], enables distraction-free mode which hides side docks to increase the space available for the main view.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

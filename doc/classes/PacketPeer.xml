@@ -57,6 +57,4 @@
 			The [method put_var] method allocates memory on the stack, and the buffer used will grow automatically to the closest power of two to match the size of the [Variant]. If the [Variant] is bigger than [code]encode_buffer_max_size[/code], the method will error out with [constant ERR_OUT_OF_MEMORY].
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

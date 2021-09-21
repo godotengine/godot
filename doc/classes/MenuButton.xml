@@ -41,8 +41,6 @@
 			</description>
 		</signal>
 	</signals>
-	<constants>
-	</constants>
 	<theme_items>
 		<theme_item name="disabled" data_type="style" type="StyleBox">
 			[StyleBox] used when the [MenuButton] is disabled.

@@ -8,8 +8,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="assign_op" type="int" setter="set_assign_op" getter="get_assign_op" enum="VisualScriptPropertySet.AssignOp" default="0">
 			The additional operation to perform when assigning. See [enum AssignOp] for options.

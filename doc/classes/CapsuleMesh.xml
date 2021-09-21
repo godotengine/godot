@@ -8,8 +8,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="height" type="float" setter="set_height" getter="get_height" default="3.0">
 			Total height of the capsule mesh (including the hemispherical ends).
@@ -24,6 +22,4 @@
 			Number of rings along the height of the capsule.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

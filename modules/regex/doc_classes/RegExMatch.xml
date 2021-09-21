@@ -51,6 +51,4 @@
 			The source string used with the search pattern to find this matching result.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

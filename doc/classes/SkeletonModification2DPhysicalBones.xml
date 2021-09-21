@@ -53,6 +53,4 @@
 			The amount of [PhysicalBone2D] nodes linked in this modification.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

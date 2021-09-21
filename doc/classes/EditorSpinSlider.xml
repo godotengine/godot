@@ -8,8 +8,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="flat" type="bool" setter="set_flat" getter="is_flat" default="false">
 		</member>
@@ -22,6 +20,4 @@
 			The suffix to display after the value (in a faded color). This should generally be a plural word. You may have to use an abbreviation if the suffix is too long to be displayed.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

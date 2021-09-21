@@ -69,8 +69,6 @@
 			</description>
 		</signal>
 	</signals>
-	<constants>
-	</constants>
 	<theme_items>
 		<theme_item name="bg" data_type="style" type="StyleBox">
 			The background [StyleBox] of the [ScrollContainer].

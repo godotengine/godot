@@ -36,6 +36,4 @@
 			Specifies the format in which the sample will be recorded. See [enum AudioStreamSample.Format] for available formats.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

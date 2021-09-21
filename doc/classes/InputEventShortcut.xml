@@ -6,12 +6,8 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="shortcut" type="Shortcut" setter="set_shortcut" getter="get_shortcut">
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

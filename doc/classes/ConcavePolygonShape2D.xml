@@ -9,13 +9,9 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="segments" type="PackedVector2Array" setter="set_segments" getter="get_segments" default="PackedVector2Array()">
 			The array of points that make up the [ConcavePolygonShape2D]'s line segments.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

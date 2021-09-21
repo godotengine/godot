@@ -6,8 +6,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="diffuse_factor" type="Color" setter="set_diffuse_factor" getter="get_diffuse_factor" default="Color(1, 1, 1, 1)">
 		</member>
@@ -20,6 +18,4 @@
 		<member name="specular_factor" type="Color" setter="set_specular_factor" getter="get_specular_factor" default="Color(1, 1, 1, 1)">
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

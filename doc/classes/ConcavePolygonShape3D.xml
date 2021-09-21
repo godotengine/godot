@@ -30,6 +30,4 @@
 			If set to [code]true[/code], collisions occur on both sides of the concave shape faces. Otherwise they occur only along the face normals.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

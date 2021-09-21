@@ -128,6 +128,4 @@
 			Direction vector used to determine what is a wall and what is a floor (or a ceiling), rather than a wall, when calling [method move_and_slide]. Defaults to [code]Vector3.UP[/code]. If set to [code]Vector3(0, 0, 0)[/code], everything is considered a wall. This is useful for topdown games.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

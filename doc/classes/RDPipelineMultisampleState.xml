@@ -6,8 +6,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="enable_alpha_to_coverage" type="bool" setter="set_enable_alpha_to_coverage" getter="get_enable_alpha_to_coverage" default="false">
 		</member>
@@ -22,6 +20,4 @@
 		<member name="sample_masks" type="int[]" setter="set_sample_masks" getter="get_sample_masks" default="[]">
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

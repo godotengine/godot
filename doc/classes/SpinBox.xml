@@ -56,8 +56,6 @@
 			Adds the specified [code]suffix[/code] string after the numerical value of the [SpinBox].
 		</member>
 	</members>
-	<constants>
-	</constants>
 	<theme_items>
 		<theme_item name="updown" data_type="icon" type="Texture2D">
 			Sets a custom [Texture2D] for up and down arrows of the [SpinBox].

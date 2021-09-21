@@ -56,6 +56,4 @@
 			The distance the moving object traveled before collision.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

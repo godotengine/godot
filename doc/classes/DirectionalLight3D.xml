@@ -9,8 +9,6 @@
 	<tutorials>
 		<link title="Lights and shadows">https://docs.godotengine.org/en/latest/tutorials/3d/lights_and_shadows.html</link>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="directional_shadow_blend_splits" type="bool" setter="set_blend_splits" getter="is_blend_splits_enabled" default="false">
 			If [code]true[/code], shadow detail is sacrificed in exchange for smoother transitions between splits.

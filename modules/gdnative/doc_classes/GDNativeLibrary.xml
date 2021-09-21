@@ -45,6 +45,4 @@
 			On platforms that require statically linking libraries (currently only iOS), each library must have a different [code]symbol_prefix[/code].
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

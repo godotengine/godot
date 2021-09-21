@@ -8,14 +8,10 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="size_flags_horizontal" type="int" setter="set_h_size_flags" getter="get_h_size_flags" override="true" default="0" />
 		<member name="size_flags_vertical" type="int" setter="set_v_size_flags" getter="get_v_size_flags" override="true" default="1" />
 	</members>
-	<constants>
-	</constants>
 	<theme_items>
 		<theme_item name="decrement" data_type="icon" type="Texture2D">
 			Icon used as a button to scroll the [ScrollBar] up. Supports custom step using the [member ScrollBar.custom_step] property.

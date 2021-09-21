@@ -57,6 +57,4 @@
 	<members>
 		<member name="input_pickable" type="bool" setter="set_pickable" getter="is_pickable" override="true" default="false" />
 	</members>
-	<constants>
-	</constants>
 </class>

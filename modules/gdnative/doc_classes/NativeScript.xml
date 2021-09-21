@@ -52,6 +52,4 @@
 		<member name="script_class_name" type="String" setter="set_script_class_name" getter="get_script_class_name" default="&quot;&quot;">
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

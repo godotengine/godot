@@ -173,6 +173,4 @@
 			Define the maximum number of pending connections, during [method poll], any new pending connection exceeding that value will be automatically dropped. Setting this value to [code]0[/code] effectively prevents any new pending connection to be accepted (e.g. when all your players have connected).
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

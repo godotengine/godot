@@ -45,6 +45,4 @@
 			The [Shader] program used to render this material.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

@@ -135,6 +135,4 @@
 			Compatibility property, always equals to an empty array.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

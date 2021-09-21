@@ -9,8 +9,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="cubic_interp" type="bool" setter="set_cubic_interpolation" getter="get_cubic_interpolation" default="true">
 			If [code]true[/code], the position between two cached points is interpolated cubically, and linearly otherwise.

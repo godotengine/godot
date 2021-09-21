@@ -8,8 +8,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="collide_with_areas" type="bool" setter="set_collide_with_areas" getter="is_collide_with_areas_enabled" default="false">
 			If [code]true[/code], the query will take [Area3D]s into account.
@@ -64,6 +62,4 @@
 			The queried shape's transform matrix.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

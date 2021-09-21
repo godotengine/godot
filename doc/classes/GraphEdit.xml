@@ -287,8 +287,6 @@
 			</description>
 		</signal>
 	</signals>
-	<constants>
-	</constants>
 	<theme_items>
 		<theme_item name="activity" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
 		</theme_item>
