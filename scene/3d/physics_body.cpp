@@ -1278,6 +1278,7 @@ bool KinematicBody::separate_raycast_shapes(bool p_infinite_inertia, Collision &
 
 	if (deepest != -1) {
 		r_collision.collider = sep_res[deepest].collider_id;
+		r_collision.collider_rid = sep_res[deepest].collider;
 		r_collision.collider_metadata = sep_res[deepest].collider_metadata;
 		r_collision.collider_shape = sep_res[deepest].collider_shape;
 		r_collision.collider_vel = sep_res[deepest].collider_velocity;
