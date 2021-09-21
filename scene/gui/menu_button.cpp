@@ -89,13 +89,15 @@ void MenuButton::pressed() {
 	emit_signal(SNAME("about_to_popup"));
 	Size2 size = get_size() * get_viewport()->get_canvas_transform().get_scale();
 
+	popup->set_size(Size2(size.width, 0));
 	Point2 gp = get_screen_position();
 	gp.y += size.y;
-
+	if (is_layout_rtl()) {
+		gp.x += size.width - popup->get_size().width;
+	}
 	popup->set_position(gp);
-
-	popup->set_size(Size2(size.width, 0));
 	popup->set_parent_rect(Rect2(Point2(gp - popup->get_position()), size));
+
 	popup->take_mouse_focus();
 	popup->popup();
 }

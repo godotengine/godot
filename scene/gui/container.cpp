@@ -96,17 +96,18 @@ void Container::fit_child_in_rect(Control *p_child, const Rect2 &p_rect) {
 	ERR_FAIL_COND(!p_child);
 	ERR_FAIL_COND(p_child->get_parent() != this);
 
+	bool rtl = is_layout_rtl();
 	Size2 minsize = p_child->get_combined_minimum_size();
 	Rect2 r = p_rect;
 
 	if (!(p_child->get_h_size_flags() & SIZE_FILL)) {
 		r.size.x = minsize.width;
 		if (p_child->get_h_size_flags() & SIZE_SHRINK_END) {
-			r.position.x += p_rect.size.width - minsize.width;
+			r.position.x += rtl ? 0 : (p_rect.size.width - minsize.width);
 		} else if (p_child->get_h_size_flags() & SIZE_SHRINK_CENTER) {
 			r.position.x += Math::floor((p_rect.size.x - minsize.width) / 2);
 		} else {
-			r.position.x += 0;
+			r.position.x += rtl ? (p_rect.size.width - minsize.width) : 0;
 		}
 	}
 
