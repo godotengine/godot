@@ -361,7 +361,7 @@ bool Object::Connection::operator<(const Connection &p_conn) const {
 		} else
 			return signal < p_conn.signal;
 	} else {
-		return source < p_conn.source;
+		return source->get_instance_id() < p_conn.source->get_instance_id();
 	}
 }
 Object::Connection::Connection(const Variant &p_variant) {
