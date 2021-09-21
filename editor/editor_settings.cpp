@@ -1444,6 +1444,23 @@ Ref<Shortcut> ED_GET_SHORTCUT(const String &p_path) {
 	return sc;
 }
 
+void ED_SHORTCUT_OVERRIDE(const String &p_path, const String &p_feature, Key p_keycode) {
+	Ref<Shortcut> sc = EditorSettings::get_singleton()->get_shortcut(p_path);
+	ERR_FAIL_COND_MSG(!sc.is_valid(), "Used ED_SHORTCUT_OVERRIDE with invalid shortcut: " + p_path + ".");
+
+	// Only add the override if the OS supports the provided feature.
+	if (OS::get_singleton()->has_feature(p_feature)) {
+		Ref<InputEventKey> ie;
+		if (p_keycode) {
+			ie = InputEventKey::create_reference(p_keycode);
+		}
+
+		// Directly override the existing shortcut.
+		sc->set_event(ie);
+		sc->set_meta("original", ie);
+	}
+}
+
 Ref<Shortcut> ED_SHORTCUT(const String &p_path, const String &p_name, Key p_keycode) {
 #ifdef OSX_ENABLED
 	// Use Cmd+Backspace as a general replacement for Delete shortcuts on macOS
@@ -1454,14 +1471,7 @@ Ref<Shortcut> ED_SHORTCUT(const String &p_path, const String &p_name, Key p_keyc
 
 	Ref<InputEventKey> ie;
 	if (p_keycode) {
-		ie.instantiate();
-
-		ie->set_unicode(p_keycode & KEY_CODE_MASK);
-		ie->set_keycode(p_keycode & KEY_CODE_MASK);
-		ie->set_shift_pressed(bool(p_keycode & KEY_MASK_SHIFT));
-		ie->set_alt_pressed(bool(p_keycode & KEY_MASK_ALT));
-		ie->set_ctrl_pressed(bool(p_keycode & KEY_MASK_CTRL));
-		ie->set_meta_pressed(bool(p_keycode & KEY_MASK_META));
+		ie = InputEventKey::create_reference(p_keycode);
 	}
 
 	if (!EditorSettings::get_singleton()) {
