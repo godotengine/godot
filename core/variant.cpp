@@ -817,9 +817,13 @@ ObjectID Variant::get_object_instance_id() const {
 	if (is_ref() && _get_obj().ref.is_null()) {
 		return 0;
 	} else {
-		return _get_obj().obj->get_instance_id();
+		return _get_obj().rc->get_ptr()->get_instance_id();
 	}
 #endif
+}
+
+bool Variant::is_invalid_object() const {
+	return type == OBJECT && _get_obj().rc && !_get_obj().rc->get_ptr();
 }
 
 void Variant::reference(const Variant &p_variant) {
@@ -896,11 +900,9 @@ void Variant::reference(const Variant &p_variant) {
 		} break;
 		case OBJECT: {
 			memnew_placement(_data._mem, ObjData(p_variant._get_obj()));
-#ifdef DEBUG_ENABLED
-			if (_get_obj().rc) {
+			if (likely(_get_obj().rc)) {
 				_get_obj().rc->increment();
 			}
-#endif
 		} break;
 		case NODE_PATH: {
 			memnew_placement(_data._mem, NodePath(*reinterpret_cast<const NodePath *>(p_variant._data._mem)));
@@ -1018,7 +1020,6 @@ void Variant::clear() {
 			reinterpret_cast<NodePath *>(_data._mem)->~NodePath();
 		} break;
 		case OBJECT: {
-#ifdef DEBUG_ENABLED
 			if (likely(_get_obj().rc)) {
 				if (unlikely(_get_obj().rc->decrement())) {
 					memdelete(_get_obj().rc);
@@ -1026,10 +1027,6 @@ void Variant::clear() {
 			} else {
 				_get_obj().ref.unref();
 			}
-#else
-			_get_obj().obj = NULL;
-			_get_obj().ref.unref();
-#endif
 		} break;
 		case _RID: {
 			// not much need probably
@@ -1511,18 +1508,12 @@ String Variant::stringify(List<const void *> &stack) const {
 		} break;
 		case OBJECT: {
 			Object *obj = _OBJ_PTR(*this);
-			if (obj) {
-				if (_get_obj().ref.is_null() && !ObjectDB::get_instance(obj->get_instance_id())) {
-					return "[Deleted Object]";
-				}
-
+			if (likely(obj)) {
 				return obj->to_string();
 			} else {
-#ifdef DEBUG_ENABLED
-				if (ScriptDebugger::get_singleton() && _get_obj().rc && !ObjectDB::get_instance(_get_obj().rc->instance_id)) {
+				if (_get_obj().rc) {
 					return "[Deleted Object]";
 				}
-#endif
 				return "[Object:null]";
 			}
 		} break;
@@ -1678,20 +1669,13 @@ Variant::operator RID() const {
 		if (!_get_obj().ref.is_null()) {
 			return _get_obj().ref.get_rid();
 		} else {
-#ifdef DEBUG_ENABLED
 			Object *obj = likely(_get_obj().rc) ? _get_obj().rc->get_ptr() : nullptr;
 			if (unlikely(!obj)) {
-				if (ScriptDebugger::get_singleton() && _get_obj().rc && !ObjectDB::get_instance(_get_obj().rc->instance_id)) {
+				if (_get_obj().rc) {
 					ERR_PRINT("Attempted get RID on a deleted object.");
 				}
 				return RID();
 			}
-#else
-			Object *obj = _get_obj().obj;
-			if (unlikely(!obj)) {
-				return RID();
-			}
-#endif
 			Variant::CallError ce;
 			Variant ret = obj->call(CoreStringNames::get_singleton()->get_rid, nullptr, 0, ce);
 			if (ce.error == Variant::CallError::CALL_OK && ret.get_type() == Variant::_RID) {
@@ -1714,22 +1698,14 @@ Variant::operator Object *() const {
 }
 Variant::operator Node *() const {
 	if (type == OBJECT) {
-#ifdef DEBUG_ENABLED
 		Object *obj = _get_obj().rc ? _get_obj().rc->get_ptr() : nullptr;
-#else
-		Object *obj = _get_obj().obj;
-#endif
 		return Object::cast_to<Node>(obj);
 	}
 	return nullptr;
 }
 Variant::operator Control *() const {
 	if (type == OBJECT) {
-#ifdef DEBUG_ENABLED
 		Object *obj = _get_obj().rc ? _get_obj().rc->get_ptr() : nullptr;
-#else
-		Object *obj = _get_obj().obj;
-#endif
 		return Object::cast_to<Control>(obj);
 	}
 	return nullptr;
@@ -2182,12 +2158,7 @@ Variant::Variant(const NodePath &p_node_path) {
 Variant::Variant(const RefPtr &p_resource) {
 	type = OBJECT;
 	memnew_placement(_data._mem, ObjData);
-#ifdef DEBUG_ENABLED
 	_get_obj().rc = nullptr;
-#else
-	REF *ref = reinterpret_cast<REF *>(p_resource.get_data());
-	_get_obj().obj = ref->ptr();
-#endif
 	_get_obj().ref = p_resource;
 }
 
@@ -2204,15 +2175,10 @@ Variant::Variant(const Object *p_object) {
 	Reference *ref = Object::cast_to<Reference>(obj);
 	if (unlikely(ref)) {
 		*reinterpret_cast<Ref<Reference> *>(_get_obj().ref.get_data()) = Ref<Reference>(ref);
-#ifdef DEBUG_ENABLED
 		_get_obj().rc = nullptr;
 	} else {
 		_get_obj().rc = likely(obj) ? obj->_use_rc() : nullptr;
-#endif
 	}
-#if !defined(DEBUG_ENABLED)
-	_get_obj().obj = obj;
-#endif
 }
 
 Variant::Variant(const Dictionary &p_dictionary) {
@@ -2490,19 +2456,15 @@ void Variant::operator=(const Variant &p_variant) {
 			*reinterpret_cast<RID *>(_data._mem) = *reinterpret_cast<const RID *>(p_variant._data._mem);
 		} break;
 		case OBJECT: {
-#ifdef DEBUG_ENABLED
 			if (likely(_get_obj().rc)) {
 				if (unlikely(_get_obj().rc->decrement())) {
 					memdelete(_get_obj().rc);
 				}
 			}
-#endif
 			*reinterpret_cast<ObjData *>(_data._mem) = p_variant._get_obj();
-#ifdef DEBUG_ENABLED
 			if (likely(_get_obj().rc)) {
 				_get_obj().rc->increment();
 			}
-#endif
 		} break;
 		case NODE_PATH: {
 			*reinterpret_cast<NodePath *>(_data._mem) = *reinterpret_cast<const NodePath *>(p_variant._data._mem);

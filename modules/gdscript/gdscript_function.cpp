@@ -133,16 +133,16 @@ static String _get_var_type(const Variant *p_var) {
 	if (p_var->get_type() == Variant::OBJECT) {
 		Object *bobj = *p_var;
 		if (!bobj) {
-			basestr = "null instance";
-		} else {
-			if (ObjectDB::instance_validate(bobj)) {
-				if (bobj->get_script_instance()) {
-					basestr = bobj->get_class() + " (" + bobj->get_script_instance()->get_script()->get_path().get_file() + ")";
-				} else {
-					basestr = bobj->get_class();
-				}
-			} else {
+			if (p_var->is_invalid_object()) {
 				basestr = "previously freed instance";
+			} else {
+				basestr = "null instance";
+			}
+		} else {
+			if (bobj->get_script_instance()) {
+				basestr = bobj->get_class() + " (" + bobj->get_script_instance()->get_script()->get_path().get_file() + ")";
+			} else {
+				basestr = bobj->get_class();
 			}
 		}
 
@@ -364,6 +364,9 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 		}
 	}
 
+#ifdef DEBUG_ENABLED
+	Variant instance = p_instance;
+#endif
 	static_ref = script;
 
 	String err_text;
@@ -466,7 +469,11 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				GET_VARIANT_PTR(dst, 3);
 
 #ifdef DEBUG_ENABLED
-				if (b->get_type() != Variant::OBJECT || b->operator Object *() == nullptr) {
+				if (a->is_invalid_object()) {
+					err_text = "Left operand of 'is' was already freed.";
+					OPCODE_BREAK;
+				}
+				if (b->is_invalid_object()) {
 					err_text = "Right operand of 'is' is not a class.";
 					OPCODE_BREAK;
 				}
@@ -476,13 +483,6 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				if (a->get_type() == Variant::OBJECT && a->operator Object *() != nullptr) {
 					Object *obj_A = *a;
 					Object *obj_B = *b;
-
-#ifdef DEBUG_ENABLED
-					if (!ObjectDB::instance_validate(obj_A)) {
-						err_text = "Left operand of 'is' was already freed.";
-						OPCODE_BREAK;
-					}
-#endif // DEBUG_ENABLED
 
 					GDScript *scr_B = Object::cast_to<GDScript>(obj_B);
 
@@ -1264,16 +1264,14 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					Object *obj = argobj->operator Object *();
 					String signal = argname->operator String();
 
+					if (argobj->is_invalid_object()) {
+						err_text = "First argument of yield() is a previously freed instance.";
+						OPCODE_BREAK;
+					}
 #ifdef DEBUG_ENABLED
 					if (!obj) {
 						err_text = "First argument of yield() is null.";
 						OPCODE_BREAK;
-					}
-					if (ScriptDebugger::get_singleton()) {
-						if (!ObjectDB::instance_validate(obj)) {
-							err_text = "First argument of yield() is a previously freed instance.";
-							OPCODE_BREAK;
-						}
 					}
 					if (signal.length() == 0) {
 						err_text = "Second argument of yield() is an empty string (for signal name).";
@@ -1525,7 +1523,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 		//error
 		// function, file, line, error, explanation
 		String err_file;
-		if (p_instance && ObjectDB::instance_validate(p_instance->owner) && p_instance->script->is_valid() && p_instance->script->path != "") {
+		if (p_instance && !instance.is_invalid_object() && p_instance->script->is_valid() && p_instance->script->path != "") {
 			err_file = p_instance->script->path;
 		} else if (script) {
 			err_file = script->path;
@@ -1534,7 +1532,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			err_file = "<built-in>";
 		}
 		String err_func = name;
-		if (p_instance && ObjectDB::instance_validate(p_instance->owner) && p_instance->script->is_valid() && p_instance->script->name != "") {
+		if (p_instance && !instance.is_invalid_object() && p_instance->script->is_valid() && p_instance->script->name != "") {
 			err_func = p_instance->script->name + "." + err_func;
 		}
 		int err_line = line;
