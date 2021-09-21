@@ -137,6 +137,7 @@ typedef void *GDNativeStringNamePtr;
 typedef void *GDNativeStringPtr;
 typedef void *GDNativeObjectPtr;
 typedef void *GDNativeTypePtr;
+typedef void *GDNativeExtensionPtr;
 typedef void *GDNativeMethodBindPtr;
 typedef int64_t GDNativeInt;
 typedef uint8_t GDNativeBool;
@@ -432,6 +433,8 @@ typedef struct {
 	/* CLASSDB */
 
 	GDNativeClassConstructor (*classdb_get_constructor)(const char *p_classname);
+	GDNativeExtensionPtr (*classdb_get_extension)(const char *p_classname);
+	GDNativeObjectPtr (*classdb_construct_extended)(GDNativeClassConstructor p_constructor, GDNativeExtensionPtr p_extension);
 	GDNativeMethodBindPtr (*classdb_get_method_bind)(const char *p_classname, const char *p_methodname, GDNativeInt p_hash);
 	void *(*classdb_get_class_tag)(const char *p_classname);
 
