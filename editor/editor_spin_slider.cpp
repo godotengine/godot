@@ -328,7 +328,7 @@ void EditorSpinSlider::_draw_spin_slider() {
 		Rect2 grabber_rect = Rect2(ofs + gofs, svofs + 1, grabber_w, 2 * EDSCALE);
 		draw_rect(grabber_rect, c);
 
-		grabbing_spinner_mouse_pos = get_global_position() + grabber_rect.position + grabber_rect.size * 0.5;
+		grabbing_spinner_mouse_pos = get_global_position() + grabber_rect.get_center();
 
 		bool display_grabber = (mouse_over_spin || mouse_over_grabber) && !grabbing_spinner && !(value_input_popup && value_input_popup->is_visible());
 		if (grabber->is_visible() != display_grabber) {
@@ -354,7 +354,7 @@ void EditorSpinSlider::_draw_spin_slider() {
 			Vector2 scale = get_global_transform_with_canvas().get_scale();
 			grabber->set_scale(scale);
 			grabber->set_size(Size2(0, 0));
-			grabber->set_position(get_global_position() + (grabber_rect.position + grabber_rect.size * 0.5 - grabber->get_size() * 0.5) * scale);
+			grabber->set_position(get_global_position() + (grabber_rect.get_center() - grabber->get_size() * 0.5) * scale);
 
 			if (mousewheel_over_grabber) {
 				Input::get_singleton()->warp_mouse_position(grabber->get_position() + grabber_rect.size);

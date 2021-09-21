@@ -434,7 +434,7 @@ void SceneImportSettings::_update_camera() {
 		}
 	}
 
-	Vector3 center = camera_aabb.position + camera_aabb.size * 0.5;
+	Vector3 center = camera_aabb.get_center();
 	float camera_size = camera_aabb.get_longest_axis_size();
 
 	camera->set_orthogonal(camera_size * zoom, 0.0001, camera_size * 2);

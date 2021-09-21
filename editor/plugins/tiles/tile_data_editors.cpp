@@ -1495,7 +1495,7 @@ void TileDataTerrainsEditor::forward_draw_over_atlas(TileAtlasView *p_tile_atlas
 			TileData *tile_data = Object::cast_to<TileData>(p_tile_set_atlas_source->get_tile_data(hovered_coords, 0));
 			int terrain_set = tile_data->get_terrain_set();
 			Rect2i texture_region = p_tile_set_atlas_source->get_tile_texture_region(hovered_coords);
-			Vector2i position = (texture_region.position + texture_region.get_end()) / 2 + p_tile_set_atlas_source->get_tile_effective_texture_offset(hovered_coords, 0);
+			Vector2i position = texture_region.get_center() + p_tile_set_atlas_source->get_tile_effective_texture_offset(hovered_coords, 0);
 
 			if (terrain_set >= 0 && terrain_set == int(dummy_object->get("terrain_set"))) {
 				// Draw hovered bit.
@@ -1540,7 +1540,7 @@ void TileDataTerrainsEditor::forward_draw_over_atlas(TileAtlasView *p_tile_atlas
 				// Text
 				p_canvas_item->draw_set_transform_matrix(Transform2D());
 				Rect2i texture_region = p_tile_set_atlas_source->get_tile_texture_region(coords);
-				Vector2i position = (texture_region.position + texture_region.get_end()) / 2 + p_tile_set_atlas_source->get_tile_effective_texture_offset(coords, 0);
+				Vector2i position = texture_region.get_center() + p_tile_set_atlas_source->get_tile_effective_texture_offset(coords, 0);
 
 				Color color = Color(1, 1, 1);
 				String text;
@@ -1632,7 +1632,7 @@ void TileDataTerrainsEditor::forward_draw_over_atlas(TileAtlasView *p_tile_atlas
 			Vector2i coords = E->get().get_atlas_coords();
 
 			Rect2i texture_region = p_tile_set_atlas_source->get_tile_texture_region(coords);
-			Vector2i position = (texture_region.position + texture_region.get_end()) / 2 + p_tile_set_atlas_source->get_tile_effective_texture_offset(coords, 0);
+			Vector2i position = texture_region.get_center() + p_tile_set_atlas_source->get_tile_effective_texture_offset(coords, 0);
 
 			for (int i = 0; i < TileSet::CELL_NEIGHBOR_MAX; i++) {
 				TileSet::CellNeighbor bit = TileSet::CellNeighbor(i);
@@ -1668,7 +1668,7 @@ void TileDataTerrainsEditor::forward_draw_over_alternatives(TileAtlasView *p_til
 			TileData *tile_data = Object::cast_to<TileData>(p_tile_set_atlas_source->get_tile_data(hovered_coords, hovered_alternative));
 			int terrain_set = tile_data->get_terrain_set();
 			Rect2i texture_region = p_tile_atlas_view->get_alternative_tile_rect(hovered_coords, hovered_alternative);
-			Vector2i position = (texture_region.position + texture_region.get_end()) / 2 + p_tile_set_atlas_source->get_tile_effective_texture_offset(hovered_coords, hovered_alternative);
+			Vector2i position = texture_region.get_center() + p_tile_set_atlas_source->get_tile_effective_texture_offset(hovered_coords, hovered_alternative);
 
 			if (terrain_set == int(dummy_object->get("terrain_set"))) {
 				// Draw hovered bit.
@@ -1715,7 +1715,7 @@ void TileDataTerrainsEditor::forward_draw_over_alternatives(TileAtlasView *p_til
 					// Text
 					p_canvas_item->draw_set_transform_matrix(Transform2D());
 					Rect2i texture_region = p_tile_atlas_view->get_alternative_tile_rect(coords, alternative_tile);
-					Vector2i position = (texture_region.position + texture_region.get_end()) / 2 + p_tile_set_atlas_source->get_tile_effective_texture_offset(coords, 0);
+					Vector2i position = texture_region.get_center() + p_tile_set_atlas_source->get_tile_effective_texture_offset(coords, 0);
 
 					Color color = Color(1, 1, 1);
 					String text;
@@ -1796,7 +1796,7 @@ void TileDataTerrainsEditor::forward_painting_atlas_gui_input(TileAtlasView *p_t
 
 						// Set the terrains bits.
 						Rect2i texture_region = p_tile_set_atlas_source->get_tile_texture_region(coords);
-						Vector2i position = (texture_region.position + texture_region.get_end()) / 2 + p_tile_set_atlas_source->get_tile_effective_texture_offset(coords, 0);
+						Vector2i position = texture_region.get_center() + p_tile_set_atlas_source->get_tile_effective_texture_offset(coords, 0);
 						for (int j = 0; j < TileSet::CELL_NEIGHBOR_MAX; j++) {
 							TileSet::CellNeighbor bit = TileSet::CellNeighbor(j);
 							if (tile_data->is_valid_peering_bit_terrain(bit)) {
@@ -1824,7 +1824,7 @@ void TileDataTerrainsEditor::forward_painting_atlas_gui_input(TileAtlasView *p_t
 						TileData *tile_data = Object::cast_to<TileData>(p_tile_set_atlas_source->get_tile_data(coords, 0));
 						int terrain_set = tile_data->get_terrain_set();
 						Rect2i texture_region = p_tile_set_atlas_source->get_tile_texture_region(coords);
-						Vector2i position = (texture_region.position + texture_region.get_end()) / 2 + p_tile_set_atlas_source->get_tile_effective_texture_offset(coords, 0);
+						Vector2i position = texture_region.get_center() + p_tile_set_atlas_source->get_tile_effective_texture_offset(coords, 0);
 						dummy_object->set("terrain_set", terrain_set);
 						dummy_object->set("terrain", -1);
 						for (int i = 0; i < TileSet::CELL_NEIGHBOR_MAX; i++) {
@@ -1922,7 +1922,7 @@ void TileDataTerrainsEditor::forward_painting_atlas_gui_input(TileAtlasView *p_t
 
 								// Set the terrain bit.
 								Rect2i texture_region = p_tile_set_atlas_source->get_tile_texture_region(coords);
-								Vector2i position = (texture_region.position + texture_region.get_end()) / 2 + p_tile_set_atlas_source->get_tile_effective_texture_offset(coords, 0);
+								Vector2i position = texture_region.get_center() + p_tile_set_atlas_source->get_tile_effective_texture_offset(coords, 0);
 
 								for (int i = 0; i < TileSet::CELL_NEIGHBOR_MAX; i++) {
 									TileSet::CellNeighbor bit = TileSet::CellNeighbor(i);
@@ -2055,7 +2055,7 @@ void TileDataTerrainsEditor::forward_painting_atlas_gui_input(TileAtlasView *p_t
 							TileSet::CellNeighbor bit = TileSet::CellNeighbor(i);
 							if (tile_set->is_valid_peering_bit_terrain(terrain_set, bit)) {
 								Rect2i texture_region = p_tile_set_atlas_source->get_tile_texture_region(coords);
-								Vector2i position = (texture_region.position + texture_region.get_end()) / 2 + p_tile_set_atlas_source->get_tile_effective_texture_offset(coords, 0);
+								Vector2i position = texture_region.get_center() + p_tile_set_atlas_source->get_tile_effective_texture_offset(coords, 0);
 
 								Vector<Vector2> polygon = tile_set->get_terrain_bit_polygon(terrain_set, bit);
 								for (int j = 0; j < polygon.size(); j++) {
@@ -2138,7 +2138,7 @@ void TileDataTerrainsEditor::forward_painting_alternatives_gui_input(TileAtlasVi
 
 					// Set the terrains bits.
 					Rect2i texture_region = p_tile_atlas_view->get_alternative_tile_rect(coords, alternative_tile);
-					Vector2i position = (texture_region.position + texture_region.get_end()) / 2 + p_tile_set_atlas_source->get_tile_effective_texture_offset(coords, alternative_tile);
+					Vector2i position = texture_region.get_center() + p_tile_set_atlas_source->get_tile_effective_texture_offset(coords, alternative_tile);
 					for (int j = 0; j < TileSet::CELL_NEIGHBOR_MAX; j++) {
 						TileSet::CellNeighbor bit = TileSet::CellNeighbor(j);
 						if (tile_data->is_valid_peering_bit_terrain(bit)) {
@@ -2167,7 +2167,7 @@ void TileDataTerrainsEditor::forward_painting_alternatives_gui_input(TileAtlasVi
 						TileData *tile_data = Object::cast_to<TileData>(p_tile_set_atlas_source->get_tile_data(coords, alternative_tile));
 						int terrain_set = tile_data->get_terrain_set();
 						Rect2i texture_region = p_tile_atlas_view->get_alternative_tile_rect(coords, alternative_tile);
-						Vector2i position = (texture_region.position + texture_region.get_end()) / 2 + p_tile_set_atlas_source->get_tile_effective_texture_offset(coords, alternative_tile);
+						Vector2i position = texture_region.get_center() + p_tile_set_atlas_source->get_tile_effective_texture_offset(coords, alternative_tile);
 						dummy_object->set("terrain_set", terrain_set);
 						dummy_object->set("terrain", -1);
 						for (int i = 0; i < TileSet::CELL_NEIGHBOR_MAX; i++) {
@@ -2242,7 +2242,7 @@ void TileDataTerrainsEditor::forward_painting_alternatives_gui_input(TileAtlasVi
 
 							// Set the terrain bit.
 							Rect2i texture_region = p_tile_atlas_view->get_alternative_tile_rect(coords, alternative_tile);
-							Vector2i position = (texture_region.position + texture_region.get_end()) / 2 + p_tile_set_atlas_source->get_tile_effective_texture_offset(coords, alternative_tile);
+							Vector2i position = texture_region.get_center() + p_tile_set_atlas_source->get_tile_effective_texture_offset(coords, alternative_tile);
 							for (int i = 0; i < TileSet::CELL_NEIGHBOR_MAX; i++) {
 								TileSet::CellNeighbor bit = TileSet::CellNeighbor(i);
 								if (tile_set->is_valid_peering_bit_terrain(terrain_set, bit)) {

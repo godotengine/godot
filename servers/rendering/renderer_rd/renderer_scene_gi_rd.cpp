@@ -2575,7 +2575,7 @@ void RendererSceneGIRD::VoxelGIInstance::update(bool p_update_light_instances, c
 				Vector3 render_dir = render_z[j];
 				Vector3 up_dir = render_up[j];
 
-				Vector3 center = aabb.position + aabb.size * 0.5;
+				Vector3 center = aabb.get_center();
 				Transform3D xform;
 				xform.set_look_at(center - aabb.size * 0.5 * render_dir, center, up_dir);
 

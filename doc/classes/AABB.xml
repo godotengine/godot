@@ -61,6 +61,12 @@
 				Returns the volume of the [AABB].
 			</description>
 		</method>
+		<method name="get_center" qualifiers="const">
+			<return type="Vector3" />
+			<description>
+				Returns the center of the [AABB], which is equal to [member position] + ([member size] / 2).
+			</description>
+		</method>
 		<method name="get_endpoint" qualifiers="const">
 			<return type="Vector3" />
 			<argument index="0" name="idx" type="int" />

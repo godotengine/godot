@@ -46,6 +46,8 @@ struct Rect2 {
 
 	real_t get_area() const { return size.width * size.height; }
 
+	_FORCE_INLINE_ Vector2 get_center() const { return position + (size * 0.5); }
+
 	inline bool intersects(const Rect2 &p_rect, const bool p_include_borders = false) const {
 		if (p_include_borders) {
 			if (position.x > (p_rect.position.x + p_rect.size.width)) {
@@ -259,7 +261,7 @@ struct Rect2 {
 	}
 
 	_FORCE_INLINE_ bool intersects_filled_polygon(const Vector2 *p_points, int p_point_count) const {
-		Vector2 center = position + size * 0.5;
+		Vector2 center = get_center();
 		int side_plus = 0;
 		int side_minus = 0;
 		Vector2 end = position + size;
@@ -343,6 +345,8 @@ struct Rect2i {
 	void set_size(const Size2i &p_size) { size = p_size; }
 
 	int get_area() const { return size.width * size.height; }
+
+	_FORCE_INLINE_ Vector2i get_center() const { return position + (size / 2); }
 
 	inline bool intersects(const Rect2i &p_rect) const {
 		if (position.x > (p_rect.position.x + p_rect.size.width)) {

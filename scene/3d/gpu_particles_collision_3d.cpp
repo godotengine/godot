@@ -420,7 +420,7 @@ Ref<Image> GPUParticlesCollisionSDF::bake() {
 					}
 
 					//test against original bounds
-					if (!Geometry3D::triangle_box_overlap(aabb.position + aabb.size * 0.5, aabb.size * 0.5, face.vertex)) {
+					if (!Geometry3D::triangle_box_overlap(aabb.get_center(), aabb.size * 0.5, face.vertex)) {
 						continue;
 					}
 
@@ -438,7 +438,7 @@ Ref<Image> GPUParticlesCollisionSDF::bake() {
 					}
 
 					//test against original bounds
-					if (!Geometry3D::triangle_box_overlap(aabb.position + aabb.size * 0.5, aabb.size * 0.5, face.vertex)) {
+					if (!Geometry3D::triangle_box_overlap(aabb.get_center(), aabb.size * 0.5, face.vertex)) {
 						continue;
 					}
 

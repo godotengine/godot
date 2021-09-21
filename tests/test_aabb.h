@@ -65,6 +65,9 @@ TEST_CASE("[AABB] Basic getters") {
 	CHECK_MESSAGE(
 			aabb.get_end().is_equal_approx(Vector3(2.5, 7, 3.5)),
 			"get_end() should return the expected value.");
+	CHECK_MESSAGE(
+			aabb.get_center().is_equal_approx(Vector3(0.5, 4.5, 0.5)),
+			"get_center() should return the expected value.");
 }
 
 TEST_CASE("[AABB] Basic setters") {

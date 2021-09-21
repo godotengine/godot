@@ -76,6 +76,13 @@
 				Returns the area of the [Rect2i].
 			</description>
 		</method>
+		<method name="get_center" qualifiers="const">
+			<return type="Vector2i" />
+			<description>
+				Returns the center of the [Rect2i], which is equal to [member position] + ([member size] / 2).
+				If [member size] is an odd number, the returned center value will be rounded towards [member position].
+			</description>
+		</method>
 		<method name="grow" qualifiers="const">
 			<return type="Rect2i" />
 			<argument index="0" name="amount" type="int" />

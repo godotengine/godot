@@ -151,12 +151,24 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns the area of the <see cref="Rect2"/>.
+        /// Returns the area of the <see cref="Rect2i"/>.
         /// </summary>
         /// <returns>The area.</returns>
         public int GetArea()
         {
             return _size.x * _size.y;
+        }
+
+        /// <summary>
+        /// Returns the center of the <see cref="Rect2i"/>, which is equal
+        /// to <see cref="Position"/> + (<see cref="Size"/> / 2).
+        /// If <see cref="Size"/> is an odd number, the returned center
+        /// value will be rounded towards <see cref="Position"/>.
+        /// </summary>
+        /// <returns>The center.</returns>
+        public Vector2i GetCenter()
+        {
+            return _position + (_size / 2);
         }
 
         /// <summary>

@@ -173,7 +173,7 @@ void Voxelizer::_plot_face(int p_idx, int p_level, int p_x, int p_y, int p_z, co
 			//could not in any way get texture information.. so use closest point to center
 
 			Face3 f(p_vtx[0], p_vtx[1], p_vtx[2]);
-			Vector3 inters = f.get_closest_point_to(p_aabb.position + p_aabb.size * 0.5);
+			Vector3 inters = f.get_closest_point_to(p_aabb.get_center());
 
 			Vector3 lnormal;
 			Vector2 uv;
@@ -434,7 +434,7 @@ void Voxelizer::plot_mesh(const Transform3D &p_xform, Ref<Mesh> &p_mesh, const V
 				}
 
 				//test against original bounds
-				if (!Geometry3D::triangle_box_overlap(original_bounds.position + original_bounds.size * 0.5, original_bounds.size * 0.5, vtxs)) {
+				if (!Geometry3D::triangle_box_overlap(original_bounds.get_center(), original_bounds.size * 0.5, vtxs)) {
 					continue;
 				}
 				//plot
@@ -466,7 +466,7 @@ void Voxelizer::plot_mesh(const Transform3D &p_xform, Ref<Mesh> &p_mesh, const V
 				}
 
 				//test against original bounds
-				if (!Geometry3D::triangle_box_overlap(original_bounds.position + original_bounds.size * 0.5, original_bounds.size * 0.5, vtxs)) {
+				if (!Geometry3D::triangle_box_overlap(original_bounds.get_center(), original_bounds.size * 0.5, vtxs)) {
 					continue;
 				}
 				//plot face
@@ -885,7 +885,7 @@ Vector<uint8_t> Voxelizer::get_sdf_3d_image() const {
 
 void Voxelizer::_debug_mesh(int p_idx, int p_level, const AABB &p_aabb, Ref<MultiMesh> &p_multimesh, int &idx) {
 	if (p_level == cell_subdiv - 1) {
-		Vector3 center = p_aabb.position + p_aabb.size * 0.5;
+		Vector3 center = p_aabb.get_center();
 		Transform3D xform;
 		xform.origin = center;
 		xform.basis.scale(p_aabb.size * 0.5);

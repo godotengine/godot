@@ -118,6 +118,10 @@ public:
 		return position + size;
 	}
 
+	_FORCE_INLINE_ Vector3 get_center() const {
+		return position + (size * 0.5);
+	}
+
 	operator String() const;
 
 	_FORCE_INLINE_ AABB() {}

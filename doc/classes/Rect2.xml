@@ -78,6 +78,12 @@
 				Returns the area of the [Rect2].
 			</description>
 		</method>
+		<method name="get_center" qualifiers="const">
+			<return type="Vector2" />
+			<description>
+				Returns the center of the [Rect2], which is equal to [member position] + ([member size] / 2).
+			</description>
+		</method>
 		<method name="grow" qualifiers="const">
 			<return type="Rect2" />
 			<argument index="0" name="amount" type="float" />

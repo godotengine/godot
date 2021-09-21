@@ -2652,7 +2652,7 @@ void VisibleOnScreenNotifier3DGizmoPlugin::set_handle(const EditorNode3DGizmo *p
 
 	Vector3 sg[2] = { gi.xform(ray_from), gi.xform(ray_from + ray_dir * 4096) };
 
-	Vector3 ofs = aabb.position + aabb.size * 0.5;
+	Vector3 ofs = aabb.get_center();
 
 	Vector3 axis;
 	axis[p_id] = 1.0;
@@ -2728,7 +2728,7 @@ void VisibleOnScreenNotifier3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 		handles.push_back(ax);
 	}
 
-	Vector3 center = aabb.position + aabb.size * 0.5;
+	Vector3 center = aabb.get_center();
 	for (int i = 0; i < 3; i++) {
 		Vector3 ax;
 		ax[i] = 1.0;
@@ -2744,7 +2744,7 @@ void VisibleOnScreenNotifier3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 
 	if (p_gizmo->is_selected()) {
 		Ref<Material> solid_material = get_material("visibility_notifier_solid_material", p_gizmo);
-		p_gizmo->add_solid_box(solid_material, aabb.get_size(), aabb.get_position() + aabb.get_size() / 2.0);
+		p_gizmo->add_solid_box(solid_material, aabb.get_size(), aabb.get_center());
 	}
 
 	p_gizmo->add_handles(handles, get_material("handles"));
@@ -2843,7 +2843,7 @@ void GPUParticles3DGizmoPlugin::set_handle(const EditorNode3DGizmo *p_gizmo, int
 
 	Vector3 sg[2] = { gi.xform(ray_from), gi.xform(ray_from + ray_dir * 4096) };
 
-	Vector3 ofs = aabb.position + aabb.size * 0.5;
+	Vector3 ofs = aabb.get_center();
 
 	Vector3 axis;
 	axis[p_id] = 1.0;
@@ -2919,7 +2919,7 @@ void GPUParticles3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 		handles.push_back(ax);
 	}
 
-	Vector3 center = aabb.position + aabb.size * 0.5;
+	Vector3 center = aabb.get_center();
 	for (int i = 0; i < 3; i++) {
 		Vector3 ax;
 		ax[i] = 1.0;
@@ -2935,7 +2935,7 @@ void GPUParticles3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 
 	if (p_gizmo->is_selected()) {
 		Ref<Material> solid_material = get_material("particles_solid_material", p_gizmo);
-		p_gizmo->add_solid_box(solid_material, aabb.get_size(), aabb.get_position() + aabb.get_size() / 2.0);
+		p_gizmo->add_solid_box(solid_material, aabb.get_size(), aabb.get_center());
 	}
 
 	p_gizmo->add_handles(handles, get_material("handles"));
