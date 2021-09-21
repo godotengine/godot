@@ -1388,6 +1388,7 @@ private:
 	ExpressionNode *parse_attribute(ExpressionNode *p_previous_operand, bool p_can_assign);
 	ExpressionNode *parse_subscript(ExpressionNode *p_previous_operand, bool p_can_assign);
 	ExpressionNode *parse_lambda(ExpressionNode *p_previous_operand, bool p_can_assign);
+	ExpressionNode *parse_yield(ExpressionNode *p_previous_operand, bool p_can_assign);
 	ExpressionNode *parse_invalid_token(ExpressionNode *p_previous_operand, bool p_can_assign);
 	TypeNode *parse_type(bool p_allow_void = false);
 #ifdef TOOLS_ENABLED
