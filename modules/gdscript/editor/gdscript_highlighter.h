@@ -47,8 +47,8 @@ private:
 	Vector<ColorRegion> color_regions;
 	Map<int, int> color_region_cache;
 
-	Dictionary keywords;
-	Dictionary member_keywords;
+	HashMap<StringName, Color> keywords;
+	HashMap<StringName, Color> member_keywords;
 
 	enum Type {
 		NONE,

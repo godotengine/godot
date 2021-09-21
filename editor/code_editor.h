@@ -162,8 +162,6 @@ class CodeTextEditor : public VBoxContainer {
 	int error_line;
 	int error_column;
 
-	bool settings_changed = false;
-
 	void _on_settings_change();
 	void _apply_settings_change();
 

@@ -1579,17 +1579,10 @@ void CodeTextEditor::_update_text_editor_theme() {
 }
 
 void CodeTextEditor::_on_settings_change() {
-	if (settings_changed) {
-		return;
-	}
-
-	settings_changed = true;
-	MessageQueue::get_singleton()->push_callable(callable_mp(this, &CodeTextEditor::_apply_settings_change));
+	_apply_settings_change();
 }
 
 void CodeTextEditor::_apply_settings_change() {
-	settings_changed = false;
-
 	_update_text_editor_theme();
 
 	font_size = EditorSettings::get_singleton()->get("interface/editor/code_font_size");
