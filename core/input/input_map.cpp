@@ -33,6 +33,7 @@
 #include "core/config/project_settings.h"
 #include "core/input/input.h"
 #include "core/os/keyboard.h"
+#include "core/os/os.h"
 
 InputMap *InputMap::singleton = nullptr;
 
@@ -699,34 +700,57 @@ const OrderedHashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins() {
 	return default_builtin_cache;
 }
 
-void InputMap::load_default() {
+const OrderedHashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins_with_feature_overrides_applied() {
+	if (default_builtin_with_overrides_cache.size() > 0) {
+		return default_builtin_with_overrides_cache;
+	}
+
 	OrderedHashMap<String, List<Ref<InputEvent>>> builtins = get_builtins();
 
-	// List of Builtins which have an override for macOS.
-	Vector<String> macos_builtins;
+	// Get a list of all built in inputs which are valid overrides for the OS
+	// Key = builtin name (e.g. ui_accept)
+	// Value = override/feature names (e.g. macos, if it was defined as "ui_accept.macos" and the platform supports that feature)
+	Map<String, Vector<String>> builtins_with_overrides;
 	for (OrderedHashMap<String, List<Ref<InputEvent>>>::Element E = builtins.front(); E; E = E.next()) {
-		if (String(E.key()).ends_with(".macos")) {
-			// Strip .macos from name: some_input_name.macos -> some_input_name
-			macos_builtins.push_back(String(E.key()).split(".")[0]);
+		String fullname = E.key();
+
+		Vector<String> split = fullname.split(".");
+		String name = split[0];
+		String override_for = split.size() > 1 ? split[1] : String();
+
+		if (override_for != String() && OS::get_singleton()->has_feature(override_for)) {
+			builtins_with_overrides[name].push_back(override_for);
 		}
 	}
 
 	for (OrderedHashMap<String, List<Ref<InputEvent>>>::Element E = builtins.front(); E; E = E.next()) {
 		String fullname = E.key();
-		String name = fullname.split(".")[0];
-		String override_for = fullname.split(".").size() > 1 ? fullname.split(".")[1] : "";
 
-#ifdef APPLE_STYLE_KEYS
-		if (macos_builtins.has(name) && override_for != "macos") {
-			// Name has `macos` builtin but this particular one is for non-macOS systems - so skip.
+		Vector<String> split = fullname.split(".");
+		String name = split[0];
+		String override_for = split.size() > 1 ? split[1] : String();
+
+		if (builtins_with_overrides.has(name) && override_for == String()) {
+			// Builtin has an override but this particular one is not an override, so skip.
 			continue;
 		}
-#else
-		if (override_for == "macos") {
-			// Override for macOS - not needed on non-macOS platforms.
+
+		if (override_for != String() && !OS::get_singleton()->has_feature(override_for)) {
+			// OS does not support this override - skip.
 			continue;
 		}
-#endif
+
+		default_builtin_with_overrides_cache.insert(name, E.value());
+	}
+
+	return default_builtin_with_overrides_cache;
+}
+
+void InputMap::load_default() {
+	OrderedHashMap<String, List<Ref<InputEvent>>> builtins = get_builtins_with_feature_overrides_applied();
+
+	for (OrderedHashMap<String, List<Ref<InputEvent>>>::Element E = builtins.front(); E; E = E.next()) {
+		String name = E.key();
 
 		add_action(name);
 
