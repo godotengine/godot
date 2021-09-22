@@ -47,6 +47,7 @@
 #include <fcntl.h>
 #include <io.h>
 #include <stdio.h>
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
 class OS_UWP : public OS {

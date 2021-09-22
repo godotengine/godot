@@ -35,6 +35,7 @@
 #include "core/os/file_access.h"
 #include "core/os/os.h"
 
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
 class PowerWindows {
