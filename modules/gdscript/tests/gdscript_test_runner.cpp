@@ -334,7 +334,7 @@ void GDScriptTest::print_handler(void *p_this, const String &p_message, bool p_e
 	result->output += p_message + "\n";
 }
 
-void GDScriptTest::error_handler(void *p_this, const char *p_function, const char *p_file, int p_line, const char *p_error, const char *p_explanation, ErrorHandlerType p_type) {
+void GDScriptTest::error_handler(void *p_this, const char *p_function, const char *p_file, int p_line, const char *p_error, const char *p_explanation, bool p_editor_notify, ErrorHandlerType p_type) {
 	ErrorHandlerData *data = (ErrorHandlerData *)p_this;
 	GDScriptTest *self = data->self;
 	TestResult *result = data->result;

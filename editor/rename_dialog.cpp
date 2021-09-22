@@ -459,7 +459,7 @@ String RenameDialog::_substitute(const String &subject, const Node *node, int co
 	return result;
 }
 
-void RenameDialog::_error_handler(void *p_self, const char *p_func, const char *p_file, int p_line, const char *p_error, const char *p_errorexp, ErrorHandlerType p_type) {
+void RenameDialog::_error_handler(void *p_self, const char *p_func, const char *p_file, int p_line, const char *p_error, const char *p_errorexp, bool p_editor_notify, ErrorHandlerType p_type) {
 	RenameDialog *self = (RenameDialog *)p_self;
 	String source_file(p_file);
 

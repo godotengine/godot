@@ -1688,7 +1688,7 @@ Variant VisualScriptInstance::_call_internal(const StringName &p_method, void *p
 		// debugger break did not happen
 
 		if (!VisualScriptLanguage::singleton->debug_break(error_str, false)) {
-			_err_print_error(err_func.utf8().get_data(), err_file.utf8().get_data(), err_line, error_str.utf8().get_data(), ERR_HANDLER_SCRIPT);
+			_err_print_error(err_func.utf8().get_data(), err_file.utf8().get_data(), err_line, error_str.utf8().get_data(), false, ERR_HANDLER_SCRIPT);
 		}
 
 		//}
