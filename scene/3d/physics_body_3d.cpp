@@ -38,8 +38,8 @@
 #endif
 
 void PhysicsBody3D::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("move_and_collide", "rel_vec", "test_only", "safe_margin"), &PhysicsBody3D::_move, DEFVAL(false), DEFVAL(0.001));
-	ClassDB::bind_method(D_METHOD("test_move", "from", "rel_vec", "collision", "safe_margin"), &PhysicsBody3D::test_move, DEFVAL(Variant()), DEFVAL(0.001));
+	ClassDB::bind_method(D_METHOD("move_and_collide", "rel_vec", "test_only", "safe_margin", "max_collisions"), &PhysicsBody3D::_move, DEFVAL(false), DEFVAL(0.001), DEFVAL(1));
+	ClassDB::bind_method(D_METHOD("test_move", "from", "rel_vec", "collision", "safe_margin", "max_collisions"), &PhysicsBody3D::test_move, DEFVAL(Variant()), DEFVAL(0.001), DEFVAL(1));
 
 	ClassDB::bind_method(D_METHOD("set_axis_lock", "axis", "lock"), &PhysicsBody3D::set_axis_lock);
 	ClassDB::bind_method(D_METHOD("get_axis_lock", "axis"), &PhysicsBody3D::get_axis_lock);
@@ -95,9 +95,9 @@ void PhysicsBody3D::remove_collision_exception_with(Node *p_node) {
 	PhysicsServer3D::get_singleton()->body_remove_collision_exception(get_rid(), collision_object->get_rid());
 }
 
-Ref<KinematicCollision3D> PhysicsBody3D::_move(const Vector3 &p_motion, bool p_test_only, real_t p_margin) {
+Ref<KinematicCollision3D> PhysicsBody3D::_move(const Vector3 &p_motion, bool p_test_only, real_t p_margin, int p_max_collisions) {
 	PhysicsServer3D::MotionResult result;
-	if (move_and_collide(p_motion, result, p_margin, p_test_only)) {
+	if (move_and_collide(p_motion, result, p_margin, p_test_only, p_max_collisions)) {
 		if (motion_cache.is_null()) {
 			motion_cache.instantiate();
 			motion_cache->owner = this;
@@ -111,9 +111,9 @@ Ref<KinematicCollision3D> PhysicsBody3D::_move(const Vector3 &p_motion, bool p_t
 	return Ref<KinematicCollision3D>();
 }
 
-bool PhysicsBody3D::move_and_collide(const Vector3 &p_motion, PhysicsServer3D::MotionResult &r_result, real_t p_margin, bool p_test_only, bool p_cancel_sliding, bool p_collide_separation_ray, const Set<RID> &p_exclude) {
+bool PhysicsBody3D::move_and_collide(const Vector3 &p_motion, PhysicsServer3D::MotionResult &r_result, real_t p_margin, bool p_test_only, int p_max_collisions, bool p_cancel_sliding, bool p_collide_separation_ray, const Set<RID> &p_exclude) {
 	Transform3D gt = get_global_transform();
-	bool colliding = PhysicsServer3D::get_singleton()->body_test_motion(get_rid(), gt, p_motion, p_margin, &r_result, p_collide_separation_ray, p_exclude);
+	bool colliding = PhysicsServer3D::get_singleton()->body_test_motion(get_rid(), gt, p_motion, p_margin, &r_result, p_max_collisions, p_collide_separation_ray, p_exclude);
 
 	// Restore direction of motion to be along original motion,
 	// in order to avoid sliding due to recovery,
@@ -125,9 +125,9 @@ bool PhysicsBody3D::move_and_collide(const Vector3 &p_motion, PhysicsServer3D::M
 		if (colliding) {
 			// Can't just use margin as a threshold because collision depth is calculated on unsafe motion,
 			// so even in normal resting cases the depth can be a bit more than the margin.
-			precision += motion_length * (r_result.collision_unsafe_fraction - r_result.collision_safe_fraction);
+			precision += motion_length * (r_result.unsafe_fraction - r_result.safe_fraction);
 
-			if (r_result.collision_depth > (real_t)p_margin + precision) {
+			if (r_result.collisions[0].depth > (real_t)p_margin + precision) {
 				p_cancel_sliding = false;
 			}
 		}
@@ -167,7 +167,7 @@ bool PhysicsBody3D::move_and_collide(const Vector3 &p_motion, PhysicsServer3D::M
 	return colliding;
 }
 
-bool PhysicsBody3D::test_move(const Transform3D &p_from, const Vector3 &p_motion, const Ref<KinematicCollision3D> &r_collision, real_t p_margin) {
+bool PhysicsBody3D::test_move(const Transform3D &p_from, const Vector3 &p_motion, const Ref<KinematicCollision3D> &r_collision, real_t p_margin, int p_max_collisions) {
 	ERR_FAIL_COND_V(!is_inside_tree(), false);
 
 	PhysicsServer3D::MotionResult *r = nullptr;
@@ -176,7 +176,7 @@ bool PhysicsBody3D::test_move(const Transform3D &p_from, const Vector3 &p_motion
 		r = const_cast<PhysicsServer3D::MotionResult *>(&r_collision->result);
 	}
 
-	return PhysicsServer3D::get_singleton()->body_test_motion(get_rid(), p_from, p_motion, p_margin, r);
+	return PhysicsServer3D::get_singleton()->body_test_motion(get_rid(), p_from, p_motion, p_margin, r, p_max_collisions);
 }
 
 void PhysicsBody3D::set_axis_lock(PhysicsServer3D::BodyAxis p_axis, bool p_lock) {
@@ -1037,64 +1037,116 @@ void RigidDynamicBody3D::_reload_physics_characteristics() {
 #define FLOOR_ANGLE_THRESHOLD 0.01
 
 bool CharacterBody3D::move_and_slide() {
-	bool was_on_floor = on_floor;
-
 	// Hack in order to work with calling from _process as well as from _physics_process; calling from thread is risky
 	double delta = Engine::get_singleton()->is_in_physics_frame() ? get_physics_process_delta_time() : get_process_delta_time();
-
+	previous_position = get_global_transform().origin;
 	for (int i = 0; i < 3; i++) {
 		if (locked_axis & (1 << i)) {
 			linear_velocity[i] = 0.0;
 		}
 	}
 
-	Vector3 current_floor_velocity = floor_velocity;
-	if ((on_floor || on_wall) && on_floor_body.is_valid()) {
-		//this approach makes sure there is less delay between the actual body velocity and the one we saved
-		PhysicsDirectBodyState3D *bs = PhysicsServer3D::get_singleton()->body_get_direct_state(on_floor_body);
-		if (bs) {
-			Transform3D gt = get_global_transform();
-			Vector3 local_position = gt.origin - bs->get_transform().origin;
-			current_floor_velocity = bs->get_velocity_at_local_position(local_position);
+	Vector3 current_platform_velocity = platform_velocity;
+
+	if ((collision_state.floor || collision_state.wall) && platform_rid.is_valid()) {
+		bool excluded = false;
+		if (collision_state.floor) {
+			excluded = (moving_platform_floor_layers & platform_layer) == 0;
+		} else if (collision_state.wall) {
+			excluded = (moving_platform_wall_layers & platform_layer) == 0;
+		}
+		if (!excluded) {
+			//this approach makes sure there is less delay between the actual body velocity and the one we saved
+			PhysicsDirectBodyState3D *bs = PhysicsServer3D::get_singleton()->body_get_direct_state(platform_rid);
+			if (bs) {
+				Transform3D gt = get_global_transform();
+				Vector3 local_position = gt.origin - bs->get_transform().origin;
+				current_platform_velocity = bs->get_velocity_at_local_position(local_position);
+			}
+		} else {
+			current_platform_velocity = Vector3();
 		}
 	}
 
 	motion_results.clear();
-	on_floor = false;
-	on_ceiling = false;
-	on_wall = false;
-	floor_normal = Vector3();
-	floor_velocity = Vector3();
 
-	if (!current_floor_velocity.is_equal_approx(Vector3()) && on_floor_body.is_valid()) {
+	bool was_on_floor = collision_state.floor;
+	collision_state.state = 0;
+
+	if (!current_platform_velocity.is_equal_approx(Vector3())) {
 		PhysicsServer3D::MotionResult floor_result;
 		Set<RID> exclude;
-		exclude.insert(on_floor_body);
-		if (move_and_collide(current_floor_velocity * delta, floor_result, margin, false, false, false, exclude)) {
+		exclude.insert(platform_rid);
+		if (move_and_collide(current_platform_velocity * delta, floor_result, margin, false, 1, false, false, exclude)) {
 			motion_results.push_back(floor_result);
-			_set_collision_direction(floor_result);
+
+			CollisionState result_state;
+			_set_collision_direction(floor_result, result_state);
 		}
 	}
 
-	on_floor_body = RID();
-	Vector3 motion = linear_velocity * delta;
+	if (motion_mode == MOTION_MODE_GROUNDED) {
+		_move_and_slide_grounded(delta, was_on_floor);
+	} else {
+		_move_and_slide_free(delta);
+	}
+
+	// Compute real velocity.
+	real_velocity = get_position_delta() / delta;
+
+	if (moving_platform_apply_velocity_on_leave != PLATFORM_VEL_ON_LEAVE_NEVER) {
+		// Add last platform velocity when just left a moving platform.
+		if (!collision_state.floor && !collision_state.wall) {
+			if (moving_platform_apply_velocity_on_leave == PLATFORM_VEL_ON_LEAVE_UPWARD_ONLY && current_platform_velocity.dot(up_direction) < 0) {
+				current_platform_velocity = current_platform_velocity.slide(up_direction);
+			}
+			linear_velocity += current_platform_velocity;
+		}
+	}
+
+	// Reset the gravity accumulation when touching the ground.
+	if (collision_state.floor && linear_velocity.dot(up_direction) <= 0) {
+		linear_velocity = linear_velocity.slide(up_direction);
+	}
+
+	return motion_results.size() > 0;
+}
+
+void CharacterBody3D::_move_and_slide_grounded(double p_delta, bool p_was_on_floor) {
+	Vector3 motion = linear_velocity * p_delta;
+	Vector3 motion_slide_up = motion.slide(up_direction);
+	Vector3 prev_floor_normal = floor_normal;
+
+	platform_rid = RID();
+	platform_velocity = Vector3();
+	floor_normal = Vector3();
+	wall_normal = Vector3();
 
 	// No sliding on first attempt to keep floor motion stable when possible,
-	// when stop on slope is enabled.
+	// When stop on slope is enabled or when there is no up direction.
 	bool sliding_enabled = !floor_stop_on_slope;
+	// Constant speed can be applied only the first time sliding is enabled.
+	bool can_apply_constant_speed = sliding_enabled;
+	bool first_slide = true;
+	bool vel_dir_facing_up = linear_velocity.dot(up_direction) > 0;
+	Vector3 total_travel;
 
 	for (int iteration = 0; iteration < max_slides; ++iteration) {
 		PhysicsServer3D::MotionResult result;
-		bool collided = move_and_collide(motion, result, margin, false, !sliding_enabled);
+		bool collided = move_and_collide(motion, result, margin, false, 4, !sliding_enabled);
+
 		if (collided) {
 			motion_results.push_back(result);
-			_set_collision_direction(result);
 
-			if (on_floor && floor_stop_on_slope && (linear_velocity.normalized() + up_direction).length() < 0.01) {
+			CollisionState previous_state = collision_state;
+
+			CollisionState result_state;
+			_set_collision_direction(result, result_state);
+
+			if (collision_state.floor && floor_stop_on_slope && (linear_velocity.normalized() + up_direction).length() < 0.01) {
 				Transform3D gt = get_global_transform();
-				if (result.travel.length() > margin) {
-					gt.origin -= result.travel.slide(up_direction);
-				} else {
+				real_t travel_total = result.travel.length();
+				if (travel_total <= margin + CMP_EPSILON) {
 					gt.origin -= result.travel;
 				}
 				set_global_transform(gt);
@@ -1105,94 +1157,353 @@ bool CharacterBody3D::move_and_slide() {
 
 			if (result.remainder.is_equal_approx(Vector3())) {
 				motion = Vector3();
+				last_motion = result.travel;
 				break;
 			}
 
-			if (sliding_enabled || !on_floor) {
-				Vector3 slide_motion = result.remainder.slide(result.collision_normal);
-				if (slide_motion.dot(linear_velocity) > 0.0) {
-					motion = slide_motion;
-				} else {
-					motion = Vector3();
+			// Apply regular sliding by default.
+			bool apply_default_sliding = true;
+
+			// Wall collision checks.
+			if (result_state.wall && (motion_slide_up.dot(wall_normal) <= 0)) {
+				// Move on floor only checks.
+				if (floor_block_on_wall) {
+					// Needs horizontal motion from current motion instead of motion_slide_up
+					// to properly test the angle and avoid standing on slopes
+					Vector3 horizontal_motion = motion.slide(up_direction);
+					Vector3 horizontal_normal = wall_normal.slide(up_direction).normalized();
+					real_t motion_angle = Math::abs(Math::acos(-horizontal_normal.dot(horizontal_motion.normalized())));
+
+					// Avoid to move forward on a wall if floor_block_on_wall is true.
+					// Applies only when the motion angle is under 90 degrees,
+					// in order to avoid blocking lateral motion along a wall.
+					if (motion_angle < .5 * Math_PI) {
+						apply_default_sliding = false;
+
+						if (p_was_on_floor && !vel_dir_facing_up) {
+							// Cancel the motion.
+							Transform3D gt = get_global_transform();
+							real_t travel_total = result.travel.length();
+							real_t cancel_dist_max = MIN(0.1, margin * 20);
+							if (travel_total < margin + CMP_EPSILON) {
+								gt.origin -= result.travel;
+							} else if (travel_total < cancel_dist_max) { // If the movement is large the body can be prevented from reaching the walls.
+								gt.origin -= result.travel.slide(up_direction);
+								// Keep remaining motion in sync with amount canceled.
+								motion = motion.slide(up_direction);
+							}
+							set_global_transform(gt);
+							result.travel = Vector3(); // Cancel for constant speed computation.
+
+							// Determines if you are on the ground, and limits the possibility of climbing on the walls because of the approximations.
+							_snap_on_floor(true, false);
+						} else {
+							// If the movement is not cancelled we only keep the remaining.
+							motion = result.remainder;
+						}
+
+						// Apply slide on forward in order to allow only lateral motion on next step.
+						Vector3 forward = wall_normal.slide(up_direction).normalized();
+						motion = motion.slide(forward);
+						// Avoid accelerating when you jump on the wall and smooth falling.
+						linear_velocity = linear_velocity.slide(forward);
+
+						// Allow only lateral motion along previous floor when already on floor.
+						// Fixes slowing down when moving in diagonal against an inclined wall.
+						if (p_was_on_floor && !vel_dir_facing_up && (motion.dot(up_direction) > 0.0)) {
+							// Slide along the corner between the wall and previous floor.
+							Vector3 floor_side = prev_floor_normal.cross(wall_normal);
+							if (floor_side != Vector3()) {
+								motion = floor_side * motion.dot(floor_side);
+							}
+						}
+
+						// Stop all motion when a second wall is hit (unless sliding down or jumping),
+						// in order to avoid jittering in corner cases.
+						bool stop_all_motion = previous_state.wall && !vel_dir_facing_up;
+
+						// Allow sliding when the body falls.
+						if (!collision_state.floor && motion.dot(up_direction) < 0) {
+							Vector3 slide_motion = motion.slide(wall_normal);
+							// Test again to allow sliding only if the result goes downwards.
+							// Fixes jittering issues at the bottom of inclined walls.
+							if (slide_motion.dot(up_direction) < 0) {
+								stop_all_motion = false;
+								motion = slide_motion;
+							}
+						}
+
+						if (stop_all_motion) {
+							motion = Vector3();
+							linear_velocity = Vector3();
+						}
+					}
 				}
-			} else {
-				motion = result.remainder;
+
+				// Stop horizontal motion when under wall slide threshold.
+				if (p_was_on_floor && (wall_min_slide_angle > 0.0) && result_state.wall) {
+					Vector3 horizontal_normal = wall_normal.slide(up_direction).normalized();
+					real_t motion_angle = Math::abs(Math::acos(-horizontal_normal.dot(motion_slide_up.normalized())));
+					if (motion_angle < wall_min_slide_angle) {
+						motion = up_direction * motion.dot(up_direction);
+						linear_velocity = up_direction * linear_velocity.dot(up_direction);
+
+						apply_default_sliding = false;
+					}
+				}
 			}
+
+			if (apply_default_sliding) {
+				// Regular sliding, the last part of the test handle the case when you don't want to slide on the ceiling.
+				if ((sliding_enabled || !collision_state.floor) && (!collision_state.ceiling || slide_on_ceiling || !vel_dir_facing_up)) {
+					const PhysicsServer3D::MotionCollision &collision = result.collisions[0];
+					Vector3 slide_motion = result.remainder.slide(collision.normal);
+					if (slide_motion.dot(linear_velocity) > 0.0) {
+						motion = slide_motion;
+					} else {
+						motion = Vector3();
+					}
+					if (slide_on_ceiling && result_state.ceiling) {
+						// Apply slide only in the direction of the input motion, otherwise just stop to avoid jittering when moving against a wall.
+						if (vel_dir_facing_up) {
+							linear_velocity = linear_velocity.slide(collision.normal);
+						} else {
+							// Avoid acceleration in slope when falling.
+							linear_velocity = up_direction * up_direction.dot(linear_velocity);
+						}
+					}
+				}
+				// No sliding on first attempt to keep floor motion stable when possible.
+				else {
+					motion = result.remainder;
+					if (result_state.ceiling && !slide_on_ceiling && vel_dir_facing_up) {
+						linear_velocity = linear_velocity.slide(up_direction);
+						motion = motion.slide(up_direction);
+					}
+				}
+			}
+
+			// Apply Constant Speed.
+			if (p_was_on_floor && floor_constant_speed && collision_state.floor && !motion.is_equal_approx(Vector3())) {
+				motion = motion.normalized() * MAX(0, (motion_slide_up.length() - result.travel.slide(up_direction).length() - total_travel.slide(up_direction).length()));
+			}
+
+			total_travel += result.travel;
+		}
+		// When you move forward in a downward slope you don’t collide because you will be in the air.
+		// This test ensures that constant speed is applied, only if the player is still on the ground after the snap is applied.
+		else if (floor_constant_speed && first_slide && _on_floor_if_snapped(p_was_on_floor, vel_dir_facing_up)) {
+			can_apply_constant_speed = false;
+			sliding_enabled = true;
+			Transform3D gt = get_global_transform();
+			gt.origin = gt.origin - result.travel;
+			set_global_transform(gt);
+
+			Vector3 motion_slide_norm = motion.slide(prev_floor_normal).normalized();
+			motion = motion_slide_norm * (motion_slide_up.length());
+			collided = true;
 		}
 
+		can_apply_constant_speed = !can_apply_constant_speed && !sliding_enabled;
 		sliding_enabled = true;
+		first_slide = false;
+
+		if (!motion.is_equal_approx(Vector3())) {
+			last_motion = motion;
+		}
 
 		if (!collided || motion.is_equal_approx(Vector3())) {
 			break;
 		}
 	}
 
-	if (was_on_floor && !on_floor && !snap.is_equal_approx(Vector3())) {
-		// Apply snap.
-		Transform3D gt = get_global_transform();
-		PhysicsServer3D::MotionResult result;
-		if (move_and_collide(snap, result, margin, true, false, true)) {
-			bool apply = true;
-			if (up_direction != Vector3()) {
-				if (result.get_angle(up_direction) <= floor_max_angle + FLOOR_ANGLE_THRESHOLD) {
-					on_floor = true;
-					floor_normal = result.collision_normal;
-					on_floor_body = result.collider;
-					floor_velocity = result.collider_velocity;
-					if (floor_stop_on_slope) {
-						// move and collide may stray the object a bit because of pre un-stucking,
-						// so only ensure that motion happens on floor direction in this case.
-						if (result.travel.length() > margin) {
-							result.travel = result.travel.project(up_direction);
-						} else {
-							result.travel = Vector3();
-						}
-					}
-				} else {
-					apply = false; //snapped with floor direction, but did not snap to a floor, do not snap.
-				}
-			}
-			if (apply) {
-				gt.origin += result.travel;
-				set_global_transform(gt);
-			}
-		}
-	}
-
-	if (!on_floor && !on_wall) {
-		// Add last platform velocity when just left a moving platform.
-		linear_velocity += current_floor_velocity;
-	}
+	_snap_on_floor(p_was_on_floor, vel_dir_facing_up);
 
 	// Reset the gravity accumulation when touching the ground.
-	if (on_floor && linear_velocity.dot(up_direction) <= 0) {
+	if (collision_state.floor && !vel_dir_facing_up) {
 		linear_velocity = linear_velocity.slide(up_direction);
 	}
-
-	return motion_results.size() > 0;
 }
 
-void CharacterBody3D::_set_collision_direction(const PhysicsServer3D::MotionResult &p_result) {
-	if (up_direction == Vector3()) {
-		//all is a wall
-		on_wall = true;
-	} else {
-		if (p_result.get_angle(up_direction) <= floor_max_angle + FLOOR_ANGLE_THRESHOLD) { //floor
-			on_floor = true;
-			floor_normal = p_result.collision_normal;
-			on_floor_body = p_result.collider;
-			floor_velocity = p_result.collider_velocity;
-		} else if (p_result.get_angle(-up_direction) <= floor_max_angle + FLOOR_ANGLE_THRESHOLD) { //ceiling
-			on_ceiling = true;
-		} else {
-			on_wall = true;
+void CharacterBody3D::_move_and_slide_free(double p_delta) {
+	Vector3 motion = linear_velocity * p_delta;
+
+	platform_rid = RID();
+	floor_normal = Vector3();
+	platform_velocity = Vector3();
+
+	bool first_slide = true;
+	for (int iteration = 0; iteration < max_slides; ++iteration) {
+		PhysicsServer3D::MotionResult result;
+
+		bool collided = move_and_collide(motion, result, margin, false, 1, false);
+
+		if (collided) {
+			motion_results.push_back(result);
+
+			CollisionState result_state;
+			_set_collision_direction(result, result_state);
+
+			if (wall_min_slide_angle != 0 && Math::acos(wall_normal.dot(-linear_velocity.normalized())) < wall_min_slide_angle + FLOOR_ANGLE_THRESHOLD) {
+				motion = Vector3();
+				if (result.travel.length() < margin + CMP_EPSILON) {
+					Transform3D gt = get_global_transform();
+					gt.origin -= result.travel;
+					set_global_transform(gt);
+				}
+			} else if (first_slide) {
+				Vector3 motion_slide_norm = result.remainder.slide(wall_normal).normalized();
+				motion = motion_slide_norm * (motion.length() - result.travel.length());
+			} else {
+				motion = result.remainder.slide(wall_normal);
+			}
+
+			if (motion.dot(linear_velocity) <= 0.0) {
+				motion = Vector3();
+			}
+		}
+
+		first_slide = false;
+
+		if (!collided || motion.is_equal_approx(Vector3())) {
+			break;
+		}
+	}
+}
+
+void CharacterBody3D::_snap_on_floor(bool was_on_floor, bool vel_dir_facing_up) {
+	if (collision_state.floor || !was_on_floor || vel_dir_facing_up) {
+		return;
+	}
+
+	real_t length = MAX(floor_snap_length, margin);
+	Transform3D gt = get_global_transform();
+	PhysicsServer3D::MotionResult result;
+	if (move_and_collide(-up_direction * length, result, margin, true, 4, false, true)) {
+		CollisionState result_state;
+		// Apply direction for floor only.
+		_set_collision_direction(result, result_state, CollisionState(true, false, false));
+
+		if (result_state.floor) {
+			if (floor_stop_on_slope) {
+				// move and collide may stray the object a bit because of pre un-stucking,
+				// so only ensure that motion happens on floor direction in this case.
+				if (result.travel.length() > margin) {
+					result.travel = up_direction * up_direction.dot(result.travel);
+				} else {
+					result.travel = Vector3();
+				}
+			}
+
+			gt.origin += result.travel;
+			set_global_transform(gt);
+		}
+	}
+}
+
+bool CharacterBody3D::_on_floor_if_snapped(bool was_on_floor, bool vel_dir_facing_up) {
+	if (Math::is_zero_approx(floor_snap_length) || up_direction == Vector3() || collision_state.floor || !was_on_floor || vel_dir_facing_up) {
+		return false;
+	}
+
+	PhysicsServer3D::MotionResult result;
+	if (move_and_collide(-up_direction * floor_snap_length, result, margin, true, 4, false, true)) {
+		CollisionState result_state;
+		// Don't apply direction for any type.
+		_set_collision_direction(result, result_state, CollisionState());
+
+		return result_state.floor;
+	}
+
+	return false;
+}
+
+void CharacterBody3D::_set_collision_direction(const PhysicsServer3D::MotionResult &p_result, CollisionState &r_state, CollisionState p_apply_state) {
+	r_state.state = 0;
+
+	real_t wall_depth = -1.0;
+	real_t floor_depth = -1.0;
+
+	bool was_on_wall = collision_state.wall;
+	Vector3 prev_wall_normal = wall_normal;
+	int wall_collision_count = 0;
+	Vector3 combined_wall_normal;
+
+	for (int i = p_result.collision_count - 1; i >= 0; i--) {
+		const PhysicsServer3D::MotionCollision &collision = p_result.collisions[i];
+
+		if (motion_mode == MOTION_MODE_GROUNDED) {
+			// Check if any collision is floor.
+			real_t floor_angle = collision.get_angle(up_direction);
+			if (floor_angle <= floor_max_angle + FLOOR_ANGLE_THRESHOLD) {
+				r_state.floor = true;
+				if (p_apply_state.floor && collision.depth > floor_depth) {
+					collision_state.floor = true;
+					floor_normal = collision.normal;
+					floor_depth = collision.depth;
+					_set_platform_data(collision);
+				}
+				continue;
+			}
+
+			// Check if any collision is ceiling.
+			real_t ceiling_angle = collision.get_angle(-up_direction);
+			if (ceiling_angle <= floor_max_angle + FLOOR_ANGLE_THRESHOLD) {
+				r_state.ceiling = true;
+				if (p_apply_state.ceiling) {
+					collision_state.ceiling = true;
+				}
+				continue;
+			}
+		}
+
+		// Collision is wall by default.
+		r_state.wall = true;
+
+		if (p_apply_state.wall && collision.depth > wall_depth) {
+			collision_state.wall = true;
+			wall_depth = collision.depth;
+			wall_normal = collision.normal;
+
 			// Don't apply wall velocity when the collider is a CharacterBody3D.
-			if (Object::cast_to<CharacterBody3D>(ObjectDB::get_instance(p_result.collider_id)) == nullptr) {
-				on_floor_body = p_result.collider;
-				floor_velocity = p_result.collider_velocity;
+			if (Object::cast_to<CharacterBody3D>(ObjectDB::get_instance(collision.collider_id)) == nullptr) {
+				_set_platform_data(collision);
+			}
+		}
+
+		// Collect normal for calculating average.
+		combined_wall_normal += collision.normal;
+		wall_collision_count++;
+	}
+
+	if (r_state.wall) {
+		if (wall_collision_count > 1 && !r_state.floor) {
+			// Check if wall normals cancel out to floor support.
+			if (!r_state.floor && motion_mode == MOTION_MODE_GROUNDED) {
+				combined_wall_normal.normalize();
+				real_t floor_angle = Math::acos(combined_wall_normal.dot(up_direction));
+				if (floor_angle <= floor_max_angle + FLOOR_ANGLE_THRESHOLD) {
+					r_state.floor = true;
+					r_state.wall = false;
+					if (p_apply_state.floor) {
+						collision_state.floor = true;
+						floor_normal = combined_wall_normal;
+					}
+					if (p_apply_state.wall) {
+						collision_state.wall = was_on_wall;
+						wall_normal = prev_wall_normal;
+					}
+					return;
+				}
 			}
 		}
 	}
+}
+
+void CharacterBody3D::_set_platform_data(const PhysicsServer3D::MotionCollision &p_collision) {
+	platform_rid = p_collision.collider;
+	platform_velocity = p_collision.collider_velocity;
+	platform_layer = PhysicsServer3D::get_singleton()->body_get_collision_layer(platform_rid);
 }
 
 void CharacterBody3D::set_safe_margin(real_t p_margin) {
@@ -1212,32 +1523,48 @@ void CharacterBody3D::set_linear_velocity(const Vector3 &p_velocity) {
 }
 
 bool CharacterBody3D::is_on_floor() const {
-	return on_floor;
+	return collision_state.floor;
 }
 
 bool CharacterBody3D::is_on_floor_only() const {
-	return on_floor && !on_wall && !on_ceiling;
+	return collision_state.floor && !collision_state.wall && !collision_state.ceiling;
 }
 
 bool CharacterBody3D::is_on_wall() const {
-	return on_wall;
+	return collision_state.wall;
 }
 
 bool CharacterBody3D::is_on_wall_only() const {
-	return on_wall && !on_floor && !on_ceiling;
+	return collision_state.wall && !collision_state.floor && !collision_state.ceiling;
 }
 
 bool CharacterBody3D::is_on_ceiling() const {
-	return on_ceiling;
+	return collision_state.ceiling;
 }
 
 bool CharacterBody3D::is_on_ceiling_only() const {
-	return on_ceiling && !on_floor && !on_wall;
+	return collision_state.ceiling && !collision_state.floor && !collision_state.wall;
 }
 
 Vector3 CharacterBody3D::get_floor_normal() const {
 	return floor_normal;
 }
+
+Vector3 CharacterBody3D::get_wall_normal() const {
+	return wall_normal;
+}
+
+Vector3 CharacterBody3D::get_last_motion() const {
+	return last_motion;
+}
+
+Vector3 CharacterBody3D::get_position_delta() const {
+	return get_transform().origin - previous_position;
+}
+
+Vector3 CharacterBody3D::get_real_velocity() const {
+	return real_velocity;
+};
 
 real_t CharacterBody3D::get_floor_angle(const Vector3 &p_up_direction) const {
 	ERR_FAIL_COND_V(p_up_direction == Vector3(), 0);
@@ -1245,7 +1572,7 @@ real_t CharacterBody3D::get_floor_angle(const Vector3 &p_up_direction) const {
 }
 
 Vector3 CharacterBody3D::get_platform_velocity() const {
-	return floor_velocity;
+	return platform_velocity;
 }
 
 int CharacterBody3D::get_slide_collision_count() const {
@@ -1287,6 +1614,62 @@ void CharacterBody3D::set_floor_stop_on_slope_enabled(bool p_enabled) {
 	floor_stop_on_slope = p_enabled;
 }
 
+bool CharacterBody3D::is_floor_constant_speed_enabled() const {
+	return floor_constant_speed;
+}
+
+void CharacterBody3D::set_floor_constant_speed_enabled(bool p_enabled) {
+	floor_constant_speed = p_enabled;
+}
+
+bool CharacterBody3D::is_floor_block_on_wall_enabled() const {
+	return floor_block_on_wall;
+}
+
+void CharacterBody3D::set_floor_block_on_wall_enabled(bool p_enabled) {
+	floor_block_on_wall = p_enabled;
+}
+
+bool CharacterBody3D::is_slide_on_ceiling_enabled() const {
+	return slide_on_ceiling;
+}
+
+void CharacterBody3D::set_slide_on_ceiling_enabled(bool p_enabled) {
+	slide_on_ceiling = p_enabled;
+}
+
+uint32_t CharacterBody3D::get_moving_platform_floor_layers() const {
+	return moving_platform_floor_layers;
+}
+
+void CharacterBody3D::set_moving_platform_floor_layers(uint32_t p_exclude_layers) {
+	moving_platform_floor_layers = p_exclude_layers;
+}
+
+uint32_t CharacterBody3D::get_moving_platform_wall_layers() const {
+	return moving_platform_wall_layers;
+}
+
+void CharacterBody3D::set_moving_platform_wall_layers(uint32_t p_exclude_layers) {
+	moving_platform_wall_layers = p_exclude_layers;
+}
+
+void CharacterBody3D::set_motion_mode(MotionMode p_mode) {
+	motion_mode = p_mode;
+}
+
+CharacterBody3D::MotionMode CharacterBody3D::get_motion_mode() const {
+	return motion_mode;
+}
+
+void CharacterBody3D::set_moving_platform_apply_velocity_on_leave(MovingPlatformApplyVelocityOnLeave p_on_leave_apply_velocity) {
+	moving_platform_apply_velocity_on_leave = p_on_leave_apply_velocity;
+}
+
+CharacterBody3D::MovingPlatformApplyVelocityOnLeave CharacterBody3D::get_moving_platform_apply_velocity_on_leave() const {
+	return moving_platform_apply_velocity_on_leave;
+}
+
 int CharacterBody3D::get_max_slides() const {
 	return max_slides;
 }
@@ -1304,12 +1687,21 @@ void CharacterBody3D::set_floor_max_angle(real_t p_radians) {
 	floor_max_angle = p_radians;
 }
 
-const Vector3 &CharacterBody3D::get_snap() const {
-	return snap;
+real_t CharacterBody3D::get_floor_snap_length() {
+	return floor_snap_length;
 }
 
-void CharacterBody3D::set_snap(const Vector3 &p_snap) {
-	snap = p_snap;
+void CharacterBody3D::set_floor_snap_length(real_t p_floor_snap_length) {
+	ERR_FAIL_COND(p_floor_snap_length < 0);
+	floor_snap_length = p_floor_snap_length;
+}
+
+real_t CharacterBody3D::get_wall_min_slide_angle() const {
+	return wall_min_slide_angle;
+}
+
+void CharacterBody3D::set_wall_min_slide_angle(real_t p_radians) {
+	wall_min_slide_angle = p_radians;
 }
 
 const Vector3 &CharacterBody3D::get_up_direction() const {
@@ -1317,6 +1709,7 @@ const Vector3 &CharacterBody3D::get_up_direction() const {
 }
 
 void CharacterBody3D::set_up_direction(const Vector3 &p_up_direction) {
+	ERR_FAIL_COND_MSG(p_up_direction == Vector3(), "up_direction can't be equal to Vector3.ZERO, consider using Free motion mode instead.");
 	up_direction = p_up_direction.normalized();
 }
 
@@ -1324,12 +1717,10 @@ void CharacterBody3D::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			// Reset move_and_slide() data.
-			on_floor = false;
-			on_floor_body = RID();
-			on_ceiling = false;
-			on_wall = false;
+			collision_state.state = 0;
+			platform_rid = RID();
 			motion_results.clear();
-			floor_velocity = Vector3();
+			platform_velocity = Vector3();
 		} break;
 	}
 }
@@ -1344,14 +1735,32 @@ void CharacterBody3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_safe_margin"), &CharacterBody3D::get_safe_margin);
 	ClassDB::bind_method(D_METHOD("is_floor_stop_on_slope_enabled"), &CharacterBody3D::is_floor_stop_on_slope_enabled);
 	ClassDB::bind_method(D_METHOD("set_floor_stop_on_slope_enabled", "enabled"), &CharacterBody3D::set_floor_stop_on_slope_enabled);
+	ClassDB::bind_method(D_METHOD("set_floor_constant_speed_enabled", "enabled"), &CharacterBody3D::set_floor_constant_speed_enabled);
+	ClassDB::bind_method(D_METHOD("is_floor_constant_speed_enabled"), &CharacterBody3D::is_floor_constant_speed_enabled);
+	ClassDB::bind_method(D_METHOD("set_floor_block_on_wall_enabled", "enabled"), &CharacterBody3D::set_floor_block_on_wall_enabled);
+	ClassDB::bind_method(D_METHOD("is_floor_block_on_wall_enabled"), &CharacterBody3D::is_floor_block_on_wall_enabled);
+	ClassDB::bind_method(D_METHOD("set_slide_on_ceiling_enabled", "enabled"), &CharacterBody3D::set_slide_on_ceiling_enabled);
+	ClassDB::bind_method(D_METHOD("is_slide_on_ceiling_enabled"), &CharacterBody3D::is_slide_on_ceiling_enabled);
+
+	ClassDB::bind_method(D_METHOD("set_moving_platform_floor_layers", "exclude_layer"), &CharacterBody3D::set_moving_platform_floor_layers);
+	ClassDB::bind_method(D_METHOD("get_moving_platform_floor_layers"), &CharacterBody3D::get_moving_platform_floor_layers);
+	ClassDB::bind_method(D_METHOD("set_moving_platform_wall_layers", "exclude_layer"), &CharacterBody3D::set_moving_platform_wall_layers);
+	ClassDB::bind_method(D_METHOD("get_moving_platform_wall_layers"), &CharacterBody3D::get_moving_platform_wall_layers);
+
 	ClassDB::bind_method(D_METHOD("get_max_slides"), &CharacterBody3D::get_max_slides);
 	ClassDB::bind_method(D_METHOD("set_max_slides", "max_slides"), &CharacterBody3D::set_max_slides);
 	ClassDB::bind_method(D_METHOD("get_floor_max_angle"), &CharacterBody3D::get_floor_max_angle);
 	ClassDB::bind_method(D_METHOD("set_floor_max_angle", "radians"), &CharacterBody3D::set_floor_max_angle);
-	ClassDB::bind_method(D_METHOD("get_snap"), &CharacterBody3D::get_snap);
-	ClassDB::bind_method(D_METHOD("set_snap", "snap"), &CharacterBody3D::set_snap);
+	ClassDB::bind_method(D_METHOD("get_floor_snap_length"), &CharacterBody3D::get_floor_snap_length);
+	ClassDB::bind_method(D_METHOD("set_floor_snap_length", "floor_snap_length"), &CharacterBody3D::set_floor_snap_length);
+	ClassDB::bind_method(D_METHOD("get_wall_min_slide_angle"), &CharacterBody3D::get_wall_min_slide_angle);
+	ClassDB::bind_method(D_METHOD("set_wall_min_slide_angle", "radians"), &CharacterBody3D::set_wall_min_slide_angle);
 	ClassDB::bind_method(D_METHOD("get_up_direction"), &CharacterBody3D::get_up_direction);
 	ClassDB::bind_method(D_METHOD("set_up_direction", "up_direction"), &CharacterBody3D::set_up_direction);
+	ClassDB::bind_method(D_METHOD("set_motion_mode", "mode"), &CharacterBody3D::set_motion_mode);
+	ClassDB::bind_method(D_METHOD("get_motion_mode"), &CharacterBody3D::get_motion_mode);
+	ClassDB::bind_method(D_METHOD("set_moving_platform_apply_velocity_on_leave", "on_leave_apply_velocity"), &CharacterBody3D::set_moving_platform_apply_velocity_on_leave);
+	ClassDB::bind_method(D_METHOD("get_moving_platform_apply_velocity_on_leave"), &CharacterBody3D::get_moving_platform_apply_velocity_on_leave);
 
 	ClassDB::bind_method(D_METHOD("is_on_floor"), &CharacterBody3D::is_on_floor);
 	ClassDB::bind_method(D_METHOD("is_on_floor_only"), &CharacterBody3D::is_on_floor_only);
@@ -1360,21 +1769,49 @@ void CharacterBody3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_on_wall"), &CharacterBody3D::is_on_wall);
 	ClassDB::bind_method(D_METHOD("is_on_wall_only"), &CharacterBody3D::is_on_wall_only);
 	ClassDB::bind_method(D_METHOD("get_floor_normal"), &CharacterBody3D::get_floor_normal);
+	ClassDB::bind_method(D_METHOD("get_wall_normal"), &CharacterBody3D::get_wall_normal);
+	ClassDB::bind_method(D_METHOD("get_last_motion"), &CharacterBody3D::get_last_motion);
+	ClassDB::bind_method(D_METHOD("get_position_delta"), &CharacterBody3D::get_position_delta);
+	ClassDB::bind_method(D_METHOD("get_real_velocity"), &CharacterBody3D::get_real_velocity);
 	ClassDB::bind_method(D_METHOD("get_floor_angle", "up_direction"), &CharacterBody3D::get_floor_angle, DEFVAL(Vector3(0.0, 1.0, 0.0)));
 	ClassDB::bind_method(D_METHOD("get_platform_velocity"), &CharacterBody3D::get_platform_velocity);
-
 	ClassDB::bind_method(D_METHOD("get_slide_collision_count"), &CharacterBody3D::get_slide_collision_count);
 	ClassDB::bind_method(D_METHOD("get_slide_collision", "slide_idx"), &CharacterBody3D::_get_slide_collision);
 	ClassDB::bind_method(D_METHOD("get_last_slide_collision"), &CharacterBody3D::_get_last_slide_collision);
 
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "linear_velocity"), "set_linear_velocity", "get_linear_velocity");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_slides", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_max_slides", "get_max_slides");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "snap"), "set_snap", "get_snap");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "motion_mode", PROPERTY_HINT_ENUM, "Grounded,Free", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), "set_motion_mode", "get_motion_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "up_direction"), "set_up_direction", "get_up_direction");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "slide_on_ceiling"), "set_slide_on_ceiling_enabled", "is_slide_on_ceiling_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "linear_velocity", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_linear_velocity", "get_linear_velocity");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_slides", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_max_slides", "get_max_slides");
+	ADD_GROUP("Free Mode", "free_mode_");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "wall_min_slide_angle", PROPERTY_HINT_RANGE, "0,180,0.1,radians", PROPERTY_USAGE_DEFAULT), "set_wall_min_slide_angle", "get_wall_min_slide_angle");
 	ADD_GROUP("Floor", "floor_");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "floor_max_angle", PROPERTY_HINT_RANGE, "0,180,0.1,radians"), "set_floor_max_angle", "get_floor_max_angle");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "floor_stop_on_slope"), "set_floor_stop_on_slope_enabled", "is_floor_stop_on_slope_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "floor_constant_speed"), "set_floor_constant_speed_enabled", "is_floor_constant_speed_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "floor_block_on_wall"), "set_floor_block_on_wall_enabled", "is_floor_block_on_wall_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "floor_max_angle", PROPERTY_HINT_RANGE, "0,180,0.1,radians"), "set_floor_max_angle", "get_floor_max_angle");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "floor_snap_length", PROPERTY_HINT_RANGE, "0,1,0.01,or_greater"), "set_floor_snap_length", "get_floor_snap_length");
+	ADD_GROUP("Moving platform", "moving_platform");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "moving_platform_apply_velocity_on_leave", PROPERTY_HINT_ENUM, "Always,Upward Only,Never", PROPERTY_USAGE_DEFAULT), "set_moving_platform_apply_velocity_on_leave", "get_moving_platform_apply_velocity_on_leave");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "moving_platform_floor_layers", PROPERTY_HINT_LAYERS_2D_PHYSICS), "set_moving_platform_floor_layers", "get_moving_platform_floor_layers");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "moving_platform_wall_layers", PROPERTY_HINT_LAYERS_2D_PHYSICS), "set_moving_platform_wall_layers", "get_moving_platform_wall_layers");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "collision/safe_margin", PROPERTY_HINT_RANGE, "0.001,256,0.001"), "set_safe_margin", "get_safe_margin");
+
+	BIND_ENUM_CONSTANT(MOTION_MODE_GROUNDED);
+	BIND_ENUM_CONSTANT(MOTION_MODE_FREE);
+
+	BIND_ENUM_CONSTANT(PLATFORM_VEL_ON_LEAVE_ALWAYS);
+	BIND_ENUM_CONSTANT(PLATFORM_VEL_ON_LEAVE_UPWARD_ONLY);
+	BIND_ENUM_CONSTANT(PLATFORM_VEL_ON_LEAVE_NEVER);
+}
+
+void CharacterBody3D::_validate_property(PropertyInfo &property) const {
+	if (motion_mode == MOTION_MODE_FREE) {
+		if (property.name.begins_with("floor_") || property.name == "up_direction" || property.name == "slide_on_ceiling") {
+			property.usage = PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL;
+		}
+	}
 }
 
 CharacterBody3D::CharacterBody3D() :
@@ -1391,14 +1828,6 @@ CharacterBody3D::~CharacterBody3D() {
 
 ///////////////////////////////////////
 
-Vector3 KinematicCollision3D::get_position() const {
-	return result.collision_point;
-}
-
-Vector3 KinematicCollision3D::get_normal() const {
-	return result.collision_normal;
-}
-
 Vector3 KinematicCollision3D::get_travel() const {
 	return result.travel;
 }
@@ -1407,41 +1836,60 @@ Vector3 KinematicCollision3D::get_remainder() const {
 	return result.remainder;
 }
 
-real_t KinematicCollision3D::get_angle(const Vector3 &p_up_direction) const {
-	ERR_FAIL_COND_V(p_up_direction == Vector3(), 0);
-	return result.get_angle(p_up_direction);
+int KinematicCollision3D::get_collision_count() const {
+	return result.collision_count;
 }
 
-Object *KinematicCollision3D::get_local_shape() const {
+Vector3 KinematicCollision3D::get_position(int p_collision_index) const {
+	ERR_FAIL_INDEX_V(p_collision_index, result.collision_count, Vector3());
+	return result.collisions[p_collision_index].position;
+}
+
+Vector3 KinematicCollision3D::get_normal(int p_collision_index) const {
+	ERR_FAIL_INDEX_V(p_collision_index, result.collision_count, Vector3());
+	return result.collisions[p_collision_index].normal;
+}
+
+real_t KinematicCollision3D::get_angle(int p_collision_index, const Vector3 &p_up_direction) const {
+	ERR_FAIL_INDEX_V(p_collision_index, result.collision_count, 0.0);
+	ERR_FAIL_COND_V(p_up_direction == Vector3(), 0);
+	return result.collisions[p_collision_index].get_angle(p_up_direction);
+}
+
+Object *KinematicCollision3D::get_local_shape(int p_collision_index) const {
+	ERR_FAIL_INDEX_V(p_collision_index, result.collision_count, nullptr);
 	if (!owner) {
 		return nullptr;
 	}
-	uint32_t ownerid = owner->shape_find_owner(result.collision_local_shape);
+	uint32_t ownerid = owner->shape_find_owner(result.collisions[p_collision_index].local_shape);
 	return owner->shape_owner_get_owner(ownerid);
 }
 
-Object *KinematicCollision3D::get_collider() const {
-	if (result.collider_id.is_valid()) {
-		return ObjectDB::get_instance(result.collider_id);
+Object *KinematicCollision3D::get_collider(int p_collision_index) const {
+	ERR_FAIL_INDEX_V(p_collision_index, result.collision_count, nullptr);
+	if (result.collisions[p_collision_index].collider_id.is_valid()) {
+		return ObjectDB::get_instance(result.collisions[p_collision_index].collider_id);
 	}
 
 	return nullptr;
 }
 
-ObjectID KinematicCollision3D::get_collider_id() const {
-	return result.collider_id;
+ObjectID KinematicCollision3D::get_collider_id(int p_collision_index) const {
+	ERR_FAIL_INDEX_V(p_collision_index, result.collision_count, ObjectID());
+	return result.collisions[p_collision_index].collider_id;
 }
 
-RID KinematicCollision3D::get_collider_rid() const {
-	return result.collider;
+RID KinematicCollision3D::get_collider_rid(int p_collision_index) const {
+	ERR_FAIL_INDEX_V(p_collision_index, result.collision_count, RID());
+	return result.collisions[p_collision_index].collider;
 }
 
-Object *KinematicCollision3D::get_collider_shape() const {
-	Object *collider = get_collider();
+Object *KinematicCollision3D::get_collider_shape(int p_collision_index) const {
+	Object *collider = get_collider(p_collision_index);
 	if (collider) {
 		CollisionObject3D *obj2d = Object::cast_to<CollisionObject3D>(collider);
 		if (obj2d) {
-			uint32_t ownerid = obj2d->shape_find_owner(result.collider_shape);
+			uint32_t ownerid = obj2d->shape_find_owner(result.collisions[p_collision_index].collider_shape);
 			return obj2d->shape_owner_get_owner(ownerid);
 		}
 	}
@@ -1449,45 +1897,101 @@ Object *KinematicCollision3D::get_collider_shape() const {
 	return nullptr;
 }
 
-int KinematicCollision3D::get_collider_shape_index() const {
-	return result.collider_shape;
+int KinematicCollision3D::get_collider_shape_index(int p_collision_index) const {
+	ERR_FAIL_INDEX_V(p_collision_index, result.collision_count, 0);
+	return result.collisions[p_collision_index].collider_shape;
 }
 
-Vector3 KinematicCollision3D::get_collider_velocity() const {
-	return result.collider_velocity;
+Vector3 KinematicCollision3D::get_collider_velocity(int p_collision_index) const {
+	ERR_FAIL_INDEX_V(p_collision_index, result.collision_count, Vector3());
+	return result.collisions[p_collision_index].collider_velocity;
 }
 
-Variant KinematicCollision3D::get_collider_metadata() const {
+Variant KinematicCollision3D::get_collider_metadata(int p_collision_index) const {
+	ERR_FAIL_INDEX_V(p_collision_index, result.collision_count, Variant());
 	return Variant();
 }
 
+Vector3 KinematicCollision3D::get_best_position() const {
+	return result.collision_count ? get_position() : Vector3();
+}
+
+Vector3 KinematicCollision3D::get_best_normal() const {
+	return result.collision_count ? get_normal() : Vector3();
+}
+
+Object *KinematicCollision3D::get_best_local_shape() const {
+	return result.collision_count ? get_local_shape() : nullptr;
+}
+
+Object *KinematicCollision3D::get_best_collider() const {
+	return result.collision_count ? get_collider() : nullptr;
+}
+
+ObjectID KinematicCollision3D::get_best_collider_id() const {
+	return result.collision_count ? get_collider_id() : ObjectID();
+}
+
+RID KinematicCollision3D::get_best_collider_rid() const {
+	return result.collision_count ? get_collider_rid() : RID();
+}
+
+Object *KinematicCollision3D::get_best_collider_shape() const {
+	return result.collision_count ? get_collider_shape() : nullptr;
+}
+
+int KinematicCollision3D::get_best_collider_shape_index() const {
+	return result.collision_count ? get_collider_shape_index() : 0;
+}
+
+Vector3 KinematicCollision3D::get_best_collider_velocity() const {
+	return result.collision_count ? get_collider_velocity() : Vector3();
+}
+
+Variant KinematicCollision3D::get_best_collider_metadata() const {
+	return result.collision_count ? get_collider_metadata() : Variant();
+}
+
 void KinematicCollision3D::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("get_position"), &KinematicCollision3D::get_position);
-	ClassDB::bind_method(D_METHOD("get_normal"), &KinematicCollision3D::get_normal);
 	ClassDB::bind_method(D_METHOD("get_travel"), &KinematicCollision3D::get_travel);
 	ClassDB::bind_method(D_METHOD("get_remainder"), &KinematicCollision3D::get_remainder);
-	ClassDB::bind_method(D_METHOD("get_angle", "up_direction"), &KinematicCollision3D::get_angle, DEFVAL(Vector3(0.0, 1.0, 0.0)));
-	ClassDB::bind_method(D_METHOD("get_local_shape"), &KinematicCollision3D::get_local_shape);
-	ClassDB::bind_method(D_METHOD("get_collider"), &KinematicCollision3D::get_collider);
-	ClassDB::bind_method(D_METHOD("get_collider_id"), &KinematicCollision3D::get_collider_id);
-	ClassDB::bind_method(D_METHOD("get_collider_rid"), &KinematicCollision3D::get_collider_rid);
-	ClassDB::bind_method(D_METHOD("get_collider_shape"), &KinematicCollision3D::get_collider_shape);
-	ClassDB::bind_method(D_METHOD("get_collider_shape_index"), &KinematicCollision3D::get_collider_shape_index);
-	ClassDB::bind_method(D_METHOD("get_collider_velocity"), &KinematicCollision3D::get_collider_velocity);
-	ClassDB::bind_method(D_METHOD("get_collider_metadata"), &KinematicCollision3D::get_collider_metadata);
+	ClassDB::bind_method(D_METHOD("get_collision_count"), &KinematicCollision3D::get_collision_count);
+	ClassDB::bind_method(D_METHOD("get_position", "collision_index"), &KinematicCollision3D::get_position, DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("get_normal", "collision_index"), &KinematicCollision3D::get_normal, DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("get_angle", "collision_index", "up_direction"), &KinematicCollision3D::get_angle, DEFVAL(0), DEFVAL(Vector3(0.0, 1.0, 0.0)));
+	ClassDB::bind_method(D_METHOD("get_local_shape", "collision_index"), &KinematicCollision3D::get_local_shape, DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("get_collider", "collision_index"), &KinematicCollision3D::get_collider, DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("get_collider_id", "collision_index"), &KinematicCollision3D::get_collider_id, DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("get_collider_rid", "collision_index"), &KinematicCollision3D::get_collider_rid, DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("get_collider_shape", "collision_index"), &KinematicCollision3D::get_collider_shape, DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("get_collider_shape_index", "collision_index"), &KinematicCollision3D::get_collider_shape_index, DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("get_collider_velocity", "collision_index"), &KinematicCollision3D::get_collider_velocity, DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("get_collider_metadata", "collision_index"), &KinematicCollision3D::get_collider_metadata, DEFVAL(0));
 
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "position"), "", "get_position");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "normal"), "", "get_normal");
+	ClassDB::bind_method(D_METHOD("get_best_position"), &KinematicCollision3D::get_best_position);
+	ClassDB::bind_method(D_METHOD("get_best_normal"), &KinematicCollision3D::get_best_normal);
+	ClassDB::bind_method(D_METHOD("get_best_local_shape"), &KinematicCollision3D::get_best_local_shape);
+	ClassDB::bind_method(D_METHOD("get_best_collider"), &KinematicCollision3D::get_best_collider);
+	ClassDB::bind_method(D_METHOD("get_best_collider_id"), &KinematicCollision3D::get_best_collider_id);
+	ClassDB::bind_method(D_METHOD("get_best_collider_rid"), &KinematicCollision3D::get_best_collider_rid);
+	ClassDB::bind_method(D_METHOD("get_best_collider_shape"), &KinematicCollision3D::get_best_collider_shape);
+	ClassDB::bind_method(D_METHOD("get_best_collider_shape_index"), &KinematicCollision3D::get_best_collider_shape_index);
+	ClassDB::bind_method(D_METHOD("get_best_collider_velocity"), &KinematicCollision3D::get_best_collider_velocity);
+	ClassDB::bind_method(D_METHOD("get_best_collider_metadata"), &KinematicCollision3D::get_best_collider_metadata);
+
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "travel"), "", "get_travel");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "remainder"), "", "get_remainder");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "local_shape"), "", "get_local_shape");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "collider"), "", "get_collider");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "collider_id"), "", "get_collider_id");
-	ADD_PROPERTY(PropertyInfo(Variant::RID, "collider_rid"), "", "get_collider_rid");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "collider_shape"), "", "get_collider_shape");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "collider_shape_index"), "", "get_collider_shape_index");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "collider_velocity"), "", "get_collider_velocity");
-	ADD_PROPERTY(PropertyInfo(Variant::NIL, "collider_metadata", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NIL_IS_VARIANT), "", "get_collider_metadata");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_count"), "", "get_collision_count");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "position"), "", "get_best_position");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "normal"), "", "get_best_normal");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "local_shape"), "", "get_best_local_shape");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "collider"), "", "get_best_collider");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "collider_id"), "", "get_best_collider_id");
+	ADD_PROPERTY(PropertyInfo(Variant::RID, "collider_rid"), "", "get_best_collider_rid");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "collider_shape"), "", "get_best_collider_shape");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "collider_shape_index"), "", "get_best_collider_shape_index");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "collider_velocity"), "", "get_best_collider_velocity");
+	ADD_PROPERTY(PropertyInfo(Variant::NIL, "collider_metadata", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NIL_IS_VARIANT), "", "get_best_collider_metadata");
 }
 
 ///////////////////////////////////////

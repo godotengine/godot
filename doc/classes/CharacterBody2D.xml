@@ -170,7 +170,7 @@
 			Apply when notions of walls, ceiling and floor are relevant. In this mode the body motion will react to slopes (acceleration/slowdown). This mode is suitable for sided games like platformers.
 		</constant>
 		<constant name="MOTION_MODE_FREE" value="1" enum="MotionMode">
-			Apply when there is no notion of floor or ceiling. All collisions will be reported as [code]on_wall[/code]. In this mode, when you slide, the speed will be always constant. This mode is suitable for top-down games.
+			Apply when there is no notion of floor or ceiling. All collisions will be reported as [code]on_wall[/code]. In this mode, when you slide, the speed will always be constant. This mode is suitable for top-down games.
 		</constant>
 	</constants>
 </class>

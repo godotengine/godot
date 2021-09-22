@@ -50,11 +50,11 @@ protected:
 
 	uint16_t locked_axis = 0;
 
-	Ref<KinematicCollision3D> _move(const Vector3 &p_motion, bool p_test_only = false, real_t p_margin = 0.001);
+	Ref<KinematicCollision3D> _move(const Vector3 &p_motion, bool p_test_only = false, real_t p_margin = 0.001, int p_max_collisions = 1);
 
 public:
-	bool move_and_collide(const Vector3 &p_motion, PhysicsServer3D::MotionResult &r_result, real_t p_margin, bool p_test_only = false, bool p_cancel_sliding = true, bool p_collide_separation_ray = false, const Set<RID> &p_exclude = Set<RID>());
-	bool test_move(const Transform3D &p_from, const Vector3 &p_motion, const Ref<KinematicCollision3D> &r_collision = Ref<KinematicCollision3D>(), real_t p_margin = 0.001);
+	bool move_and_collide(const Vector3 &p_motion, PhysicsServer3D::MotionResult &r_result, real_t p_margin, bool p_test_only = false, int p_max_collisions = 1, bool p_cancel_sliding = true, bool p_collide_separation_ray = false, const Set<RID> &p_exclude = Set<RID>());
+	bool test_move(const Transform3D &p_from, const Vector3 &p_motion, const Ref<KinematicCollision3D> &r_collision = Ref<KinematicCollision3D>(), real_t p_margin = 0.001, int p_max_collisions = 1);
 
 	void set_axis_lock(PhysicsServer3D::BodyAxis p_axis, bool p_lock);
 	bool get_axis_lock(PhysicsServer3D::BodyAxis p_axis) const;
@@ -306,54 +306,16 @@ class KinematicCollision3D;
 class CharacterBody3D : public PhysicsBody3D {
 	GDCLASS(CharacterBody3D, PhysicsBody3D);
 
-private:
-	real_t margin = 0.001;
-
-	bool floor_stop_on_slope = false;
-	int max_slides = 4;
-	real_t floor_max_angle = Math::deg2rad((real_t)45.0);
-	Vector3 snap;
-	Vector3 up_direction = Vector3(0.0, 1.0, 0.0);
-
-	Vector3 linear_velocity;
-
-	Vector3 floor_normal;
-	Vector3 floor_velocity;
-	RID on_floor_body;
-	bool on_floor = false;
-	bool on_ceiling = false;
-	bool on_wall = false;
-	Vector<PhysicsServer3D::MotionResult> motion_results;
-	Vector<Ref<KinematicCollision3D>> slide_colliders;
-
-	Ref<KinematicCollision3D> _get_slide_collision(int p_bounce);
-	Ref<KinematicCollision3D> _get_last_slide_collision();
-
-	void _set_collision_direction(const PhysicsServer3D::MotionResult &p_result);
-
-	void set_safe_margin(real_t p_margin);
-	real_t get_safe_margin() const;
-
-	bool is_floor_stop_on_slope_enabled() const;
-	void set_floor_stop_on_slope_enabled(bool p_enabled);
-
-	int get_max_slides() const;
-	void set_max_slides(int p_max_slides);
-
-	real_t get_floor_max_angle() const;
-	void set_floor_max_angle(real_t p_radians);
-
-	const Vector3 &get_snap() const;
-	void set_snap(const Vector3 &p_snap);
-
-	const Vector3 &get_up_direction() const;
-	void set_up_direction(const Vector3 &p_up_direction);
-
-protected:
-	void _notification(int p_what);
-	static void _bind_methods();
-
 public:
+	enum MotionMode {
+		MOTION_MODE_GROUNDED,
+		MOTION_MODE_FREE,
+	};
+	enum MovingPlatformApplyVelocityOnLeave {
+		PLATFORM_VEL_ON_LEAVE_ALWAYS,
+		PLATFORM_VEL_ON_LEAVE_UPWARD_ONLY,
+		PLATFORM_VEL_ON_LEAVE_NEVER,
+	};
 	bool move_and_slide();
 
 	virtual Vector3 get_linear_velocity() const override;
@@ -365,7 +327,11 @@ public:
 	bool is_on_wall_only() const;
 	bool is_on_ceiling() const;
 	bool is_on_ceiling_only() const;
+	Vector3 get_last_motion() const;
+	Vector3 get_position_delta() const;
 	Vector3 get_floor_normal() const;
+	Vector3 get_wall_normal() const;
+	Vector3 get_real_velocity() const;
 	real_t get_floor_angle(const Vector3 &p_up_direction = Vector3(0.0, 1.0, 0.0)) const;
 	Vector3 get_platform_velocity() const;
 
@@ -374,7 +340,113 @@ public:
 
 	CharacterBody3D();
 	~CharacterBody3D();
+
+private:
+	real_t margin = 0.001;
+	MotionMode motion_mode = MOTION_MODE_GROUNDED;
+	MovingPlatformApplyVelocityOnLeave moving_platform_apply_velocity_on_leave = PLATFORM_VEL_ON_LEAVE_ALWAYS;
+	union CollisionState {
+		uint32_t state = 0;
+		struct {
+			bool floor;
+			bool wall;
+			bool ceiling;
+		};
+
+		CollisionState() {
+		}
+
+		CollisionState(bool p_floor, bool p_wall, bool p_ceiling) {
+			floor = p_floor;
+			wall = p_wall;
+			ceiling = p_ceiling;
+		}
+	};
+
+	CollisionState collision_state;
+	bool floor_stop_on_slope = false;
+	bool floor_constant_speed = false;
+	bool floor_block_on_wall = true;
+	bool slide_on_ceiling = true;
+	int max_slides = 6;
+	int platform_layer;
+	RID platform_rid;
+	uint32_t moving_platform_floor_layers = UINT32_MAX;
+	uint32_t moving_platform_wall_layers = 0;
+	real_t floor_snap_length = 0.1;
+	real_t floor_max_angle = Math::deg2rad((real_t)45.0);
+	real_t wall_min_slide_angle = Math::deg2rad((real_t)15.0);
+	Vector3 up_direction = Vector3(0.0, 1.0, 0.0);
+	Vector3 linear_velocity;
+	Vector3 floor_normal;
+	Vector3 wall_normal;
+	Vector3 last_motion;
+	Vector3 platform_velocity;
+	Vector3 previous_position;
+	Vector3 real_velocity;
+
+	Vector<PhysicsServer3D::MotionResult> motion_results;
+	Vector<Ref<KinematicCollision3D>> slide_colliders;
+
+	void set_safe_margin(real_t p_margin);
+	real_t get_safe_margin() const;
+
+	bool is_floor_stop_on_slope_enabled() const;
+	void set_floor_stop_on_slope_enabled(bool p_enabled);
+
+	bool is_floor_constant_speed_enabled() const;
+	void set_floor_constant_speed_enabled(bool p_enabled);
+
+	bool is_floor_block_on_wall_enabled() const;
+	void set_floor_block_on_wall_enabled(bool p_enabled);
+
+	bool is_slide_on_ceiling_enabled() const;
+	void set_slide_on_ceiling_enabled(bool p_enabled);
+
+	int get_max_slides() const;
+	void set_max_slides(int p_max_slides);
+
+	real_t get_floor_max_angle() const;
+	void set_floor_max_angle(real_t p_radians);
+
+	real_t get_floor_snap_length();
+	void set_floor_snap_length(real_t p_floor_snap_length);
+
+	real_t get_wall_min_slide_angle() const;
+	void set_wall_min_slide_angle(real_t p_radians);
+
+	uint32_t get_moving_platform_floor_layers() const;
+	void set_moving_platform_floor_layers(const uint32_t p_exclude_layer);
+
+	uint32_t get_moving_platform_wall_layers() const;
+	void set_moving_platform_wall_layers(const uint32_t p_exclude_layer);
+
+	void set_motion_mode(MotionMode p_mode);
+	MotionMode get_motion_mode() const;
+
+	void set_moving_platform_apply_velocity_on_leave(MovingPlatformApplyVelocityOnLeave p_on_leave_velocity);
+	MovingPlatformApplyVelocityOnLeave get_moving_platform_apply_velocity_on_leave() const;
+
+	void _move_and_slide_free(double p_delta);
+	void _move_and_slide_grounded(double p_delta, bool p_was_on_floor);
+
+	Ref<KinematicCollision3D> _get_slide_collision(int p_bounce);
+	Ref<KinematicCollision3D> _get_last_slide_collision();
+	const Vector3 &get_up_direction() const;
+	bool _on_floor_if_snapped(bool was_on_floor, bool vel_dir_facing_up);
+	void set_up_direction(const Vector3 &p_up_direction);
+	void _set_collision_direction(const PhysicsServer3D::MotionResult &p_result, CollisionState &r_state, CollisionState p_apply_state = CollisionState(true, true, true));
+	void _set_platform_data(const PhysicsServer3D::MotionCollision &p_collision);
+	void _snap_on_floor(bool was_on_floor, bool vel_dir_facing_up);
+
+protected:
+	void _notification(int p_what);
+	static void _bind_methods();
+	virtual void _validate_property(PropertyInfo &property) const override;
 };
+
+VARIANT_ENUM_CAST(CharacterBody3D::MotionMode);
+VARIANT_ENUM_CAST(CharacterBody3D::MovingPlatformApplyVelocityOnLeave);
 
 class KinematicCollision3D : public RefCounted {
 	GDCLASS(KinematicCollision3D, RefCounted);
@@ -388,19 +460,31 @@ protected:
 	static void _bind_methods();
 
 public:
-	Vector3 get_position() const;
-	Vector3 get_normal() const;
 	Vector3 get_travel() const;
 	Vector3 get_remainder() const;
-	real_t get_angle(const Vector3 &p_up_direction = Vector3(0.0, 1.0, 0.0)) const;
-	Object *get_local_shape() const;
-	Object *get_collider() const;
-	ObjectID get_collider_id() const;
-	RID get_collider_rid() const;
-	Object *get_collider_shape() const;
-	int get_collider_shape_index() const;
-	Vector3 get_collider_velocity() const;
-	Variant get_collider_metadata() const;
+	int get_collision_count() const;
+	Vector3 get_position(int p_collision_index = 0) const;
+	Vector3 get_normal(int p_collision_index = 0) const;
+	real_t get_angle(int p_collision_index = 0, const Vector3 &p_up_direction = Vector3(0.0, 1.0, 0.0)) const;
+	Object *get_local_shape(int p_collision_index = 0) const;
+	Object *get_collider(int p_collision_index = 0) const;
+	ObjectID get_collider_id(int p_collision_index = 0) const;
+	RID get_collider_rid(int p_collision_index = 0) const;
+	Object *get_collider_shape(int p_collision_index = 0) const;
+	int get_collider_shape_index(int p_collision_index = 0) const;
+	Vector3 get_collider_velocity(int p_collision_index = 0) const;
+	Variant get_collider_metadata(int p_collision_index = 0) const;
+
+	Vector3 get_best_position() const;
+	Vector3 get_best_normal() const;
+	Object *get_best_local_shape() const;
+	Object *get_best_collider() const;
+	ObjectID get_best_collider_id() const;
+	RID get_best_collider_rid() const;
+	Object *get_best_collider_shape() const;
+	int get_best_collider_shape_index() const;
+	Vector3 get_best_collider_velocity() const;
+	Variant get_best_collider_metadata() const;
 };
 
 class PhysicalBone3D : public PhysicsBody3D {
