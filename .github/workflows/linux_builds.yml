@@ -4,7 +4,7 @@ on: [push, pull_request]
 # Global Settings
 env:
   GODOT_BASE_BRANCH: master
-  SCONSFLAGS: verbose=yes warnings=extra werror=yes debug_symbols=no module_text_server_fb_enabled=yes
+  SCONSFLAGS: verbose=yes warnings=extra werror=yes module_text_server_fb_enabled=yes
 
 concurrency:
   group: ci-${{github.actor}}-${{github.head_ref || github.run_number}}-${{github.ref}}-linux
@@ -23,7 +23,6 @@ jobs:
             target: release_debug
             tools: true
             tests: true
-            sconsflags: ""
             doc-test: true
             bin: "./bin/godot.linuxbsd.opt.tools.64"
             artifact: true
@@ -44,7 +43,7 @@ jobs:
             target: release
             tools: false
             tests: false
-            sconsflags: module_mono_enabled=yes mono_glue=no
+            sconsflags: module_mono_enabled=yes mono_glue=no debug_symbols=no
             artifact: true
 
     steps:
@@ -126,6 +125,11 @@ jobs:
         run: |
           VK_ICD_FILENAMES=$(pwd)/vk_swiftshader_icd.json DRI_PRIME=0 xvfb-run ${{ matrix.bin }} 40 --audio-driver Dummy --path test_project 2>&1 | tee sanitizers_log.txt || true
           misc/scripts/check_ci_log.py sanitizers_log.txt
+
+      - name: Prepare artifact
+        if: ${{ matrix.artifact }}
+        run: |
+          strip bin/godot.*
 
       - name: Upload artifact
         uses: ./.github/actions/upload-artifact
