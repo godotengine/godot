@@ -92,6 +92,8 @@ struct UniRange {
 	String name;
 };
 
+// Unicode Character Blocks
+// Source: https://www.unicode.org/Public/14.0.0/ucd/Blocks.txt
 static UniRange unicode_ranges[] = {
 	{ 0x0000, 0x007F, U"Basic Latin" },
 	{ 0x0080, 0x00FF, U"Latin-1 Supplement" },
@@ -109,10 +111,11 @@ static UniRange unicode_ranges[] = {
 	{ 0x0700, 0x074F, U"Syriac" },
 	{ 0x0750, 0x077F, U"Arabic Supplement" },
 	{ 0x0780, 0x07BF, U"Thaana" },
-	{ 0x07C0, 0x07FF, U"N'Ko" },
+	{ 0x07C0, 0x07FF, U"NKo" },
 	{ 0x0800, 0x083F, U"Samaritan" },
 	{ 0x0840, 0x085F, U"Mandaic" },
 	{ 0x0860, 0x086F, U"Syriac Supplement" },
+	{ 0x0870, 0x089F, U"Arabic Extended-B" },
 	{ 0x08A0, 0x08FF, U"Arabic Extended-A" },
 	{ 0x0900, 0x097F, U"Devanagari" },
 	{ 0x0980, 0x09FF, U"Bengali" },
@@ -239,9 +242,12 @@ static UniRange unicode_ranges[] = {
 	{ 0xAB30, 0xAB6F, U"Latin Extended-E" },
 	{ 0xAB70, 0xABBF, U"Cherokee Supplement" },
 	{ 0xABC0, 0xABFF, U"Meetei Mayek" },
+	{ 0xAC00, 0xD7AF, U"Hangul Syllables" },
 	{ 0xD7B0, 0xD7FF, U"Hangul Jamo Extended-B" },
-	//{ 0xF800, 0xDFFF, U"Surrogates" },
-	{ 0xE000, 0xE2FE, U"Private Use Area" },
+	//{ 0xD800, 0xDB7F, U"High Surrogates" },
+	//{ 0xDB80, 0xDBFF, U"High Private Use Surrogates" },
+	//{ 0xDC00, 0xDFFF, U"Low Surrogates" },
+	{ 0xE000, 0xF8FF, U"Private Use Area" },
 	{ 0xF900, 0xFAFF, U"CJK Compatibility Ideographs" },
 	{ 0xFB00, 0xFB4F, U"Alphabetic Presentation Forms" },
 	{ 0xFB50, 0xFDFF, U"Arabic Presentation Forms-A" },
@@ -273,7 +279,9 @@ static UniRange unicode_ranges[] = {
 	{ 0x104B0, 0x104FF, U"Osage" },
 	{ 0x10500, 0x1052F, U"Elbasan" },
 	{ 0x10530, 0x1056F, U"Caucasian Albanian" },
+	{ 0x10570, 0x105BF, U"Vithkuqi" },
 	{ 0x10600, 0x1077F, U"Linear A" },
+	{ 0x10780, 0x107BF, U"Latin Extended-F" },
 	{ 0x10800, 0x1083F, U"Cypriot Syllabary" },
 	{ 0x10840, 0x1085F, U"Imperial Aramaic" },
 	{ 0x10860, 0x1087F, U"Palmyrene" },
@@ -298,6 +306,7 @@ static UniRange unicode_ranges[] = {
 	{ 0x10E80, 0x10EBF, U"Yezidi" },
 	{ 0x10F00, 0x10F2F, U"Old Sogdian" },
 	{ 0x10F30, 0x10F6F, U"Sogdian" },
+	{ 0x10F70, 0x10FAF, U"Old Uyghur" },
 	{ 0x10FB0, 0x10FDF, U"Chorasmian" },
 	{ 0x10FE0, 0x10FFF, U"Elymaic" },
 	{ 0x11000, 0x1107F, U"Brahmi" },
@@ -317,13 +326,14 @@ static UniRange unicode_ranges[] = {
 	{ 0x11600, 0x1165F, U"Modi" },
 	{ 0x11660, 0x1167F, U"Mongolian Supplement" },
 	{ 0x11680, 0x116CF, U"Takri" },
-	{ 0x11700, 0x1173F, U"Ahom" },
+	{ 0x11700, 0x1174F, U"Ahom" },
 	{ 0x11800, 0x1184F, U"Dogra" },
 	{ 0x118A0, 0x118FF, U"Warang Citi" },
 	{ 0x11900, 0x1195F, U"Dives Akuru" },
 	{ 0x119A0, 0x119FF, U"Nandinagari" },
 	{ 0x11A00, 0x11A4F, U"Zanabazar Square" },
 	{ 0x11A50, 0x11AAF, U"Soyombo" },
+	{ 0x11AB0, 0x11ABF, U"Unified Canadian Aboriginal Syllabics Extended-A" },
 	{ 0x11AC0, 0x11AFF, U"Pau Cin Hau" },
 	{ 0x11C00, 0x11C6F, U"Bhaiksuki" },
 	{ 0x11C70, 0x11CBF, U"Marchen" },
@@ -335,11 +345,13 @@ static UniRange unicode_ranges[] = {
 	{ 0x12000, 0x123FF, U"Cuneiform" },
 	{ 0x12400, 0x1247F, U"Cuneiform Numbers and Punctuation" },
 	{ 0x12480, 0x1254F, U"Early Dynastic Cuneiform" },
+	{ 0x12F90, 0x12FFF, U"Cypro-Minoan" },
 	{ 0x13000, 0x1342F, U"Egyptian Hieroglyphs" },
 	{ 0x13430, 0x1343F, U"Egyptian Hieroglyph Format Controls" },
 	{ 0x14400, 0x1467F, U"Anatolian Hieroglyphs" },
 	{ 0x16800, 0x16A3F, U"Bamum Supplement" },
 	{ 0x16A40, 0x16A6F, U"Mro" },
+	{ 0x16A70, 0x16ACF, U"Tangsa" },
 	{ 0x16AD0, 0x16AFF, U"Bassa Vah" },
 	{ 0x16B00, 0x16B8F, U"Pahawh Hmong" },
 	{ 0x16E40, 0x16E9F, U"Medefaidrin" },
@@ -348,13 +360,15 @@ static UniRange unicode_ranges[] = {
 	{ 0x17000, 0x187FF, U"Tangut" },
 	{ 0x18800, 0x18AFF, U"Tangut Components" },
 	{ 0x18B00, 0x18CFF, U"Khitan Small Script" },
-	{ 0x18D00, 0x18D8F, U"Tangut Supplement" },
+	{ 0x18D00, 0x18D7F, U"Tangut Supplement" },
+	{ 0x1AFF0, 0x1AFFF, U"Kana Extended-B" },
 	{ 0x1B000, 0x1B0FF, U"Kana Supplement" },
 	{ 0x1B100, 0x1B12F, U"Kana Extended-A" },
 	{ 0x1B130, 0x1B16F, U"Small Kana Extension" },
 	{ 0x1B170, 0x1B2FF, U"Nushu" },
 	{ 0x1BC00, 0x1BC9F, U"Duployan" },
 	{ 0x1BCA0, 0x1BCAF, U"Shorthand Format Controls" },
+	{ 0x1CF00, 0x1CFCF, U"Znamenny Musical Notation" },
 	{ 0x1D000, 0x1D0FF, U"Byzantine Musical Symbols" },
 	{ 0x1D100, 0x1D1FF, U"Musical Symbols" },
 	{ 0x1D200, 0x1D24F, U"Ancient Greek Musical Notation" },
@@ -363,9 +377,12 @@ static UniRange unicode_ranges[] = {
 	{ 0x1D360, 0x1D37F, U"Counting Rod Numerals" },
 	{ 0x1D400, 0x1D7FF, U"Mathematical Alphanumeric Symbols" },
 	{ 0x1D800, 0x1DAAF, U"Sutton SignWriting" },
+	{ 0x1DF00, 0x1DFFF, U"Latin Extended-G" },
 	{ 0x1E000, 0x1E02F, U"Glagolitic Supplement" },
 	{ 0x1E100, 0x1E14F, U"Nyiakeng Puachue Hmong" },
+	{ 0x1E290, 0x1E2BF, U"Toto" },
 	{ 0x1E2C0, 0x1E2FF, U"Wancho" },
+	{ 0x1E7E0, 0x1E7FF, U"Ethiopic Extended-B" },
 	{ 0x1E800, 0x1E8DF, U"Mende Kikakui" },
 	{ 0x1E900, 0x1E95F, U"Adlam" },
 	{ 0x1EC70, 0x1ECBF, U"Indic Siyaq Numbers" },
@@ -396,8 +413,8 @@ static UniRange unicode_ranges[] = {
 	{ 0x30000, 0x3134F, U"CJK Unified Ideographs Extension G" },
 	//{ 0xE0000, 0xE007F, U"Tags" },
 	//{ 0xE0100, 0xE01EF, U"Variation Selectors Supplement" },
-	{ 0xF0000, 0xFFFFD, U"Supplementary Private Use Area-A" },
-	{ 0x100000, 0x10FFFD, U"Supplementary Private Use Area-B" },
+	{ 0xF0000, 0xFFFFF, U"Supplementary Private Use Area-A" },
+	{ 0x100000, 0x10FFFF, U"Supplementary Private Use Area-B" },
 	{ 0x10FFFF, 0x10FFFF, String() }
 };
 
@@ -1799,7 +1816,7 @@ DynamicFontImportSettings::DynamicFontImportSettings() {
 	glyph_tree = memnew(Tree);
 	glyphs_split->add_child(glyph_tree);
 	glyph_tree->set_custom_minimum_size(Size2(300 * EDSCALE, 0));
-	glyph_tree->set_columns(3);
+	glyph_tree->set_columns(2);
 	glyph_tree->set_hide_root(true);
 	glyph_tree->set_column_expand(0, false);
 	glyph_tree->set_column_expand(1, true);
