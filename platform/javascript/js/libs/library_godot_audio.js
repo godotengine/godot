@@ -229,7 +229,7 @@ const GodotAudioWorklet = {
 					'godot-processor',
 					{
 						'outputChannelCount': [channels],
-					},
+					}
 				);
 				return Promise.resolve();
 			});
