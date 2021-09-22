@@ -103,7 +103,7 @@ will limit its functionality to IPv4 only.
 ## etcpak
 
 - Upstream: https://github.com/wolfpld/etcpak
-- Version: git (f27daea656ff77671580f838a889e33049430ebd, 2021)
+- Version: git (7c3cb6fe708d4ae330b0ab2af1ad472bae2a37a2, 2021)
 - License: BSD-3-Clause
 
 Files extracted from upstream source:
