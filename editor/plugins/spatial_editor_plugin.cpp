@@ -740,7 +740,7 @@ void SpatialEditorViewport::_update_name() {
 			if (orthogonal) {
 				name = TTR("Left Orthogonal");
 			} else {
-				name = TTR("Right Perspective");
+				name = TTR("Left Perspective");
 			}
 		} break;
 		case VIEW_TYPE_RIGHT: {
