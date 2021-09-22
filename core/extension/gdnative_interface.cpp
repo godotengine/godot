@@ -854,24 +854,19 @@ static GDNativeMethodBindPtr gdnative_classdb_get_method_bind(const char *p_clas
 	return (GDNativeMethodBindPtr)mb;
 }
 
-static GDNativeClassConstructor gdnative_classdb_get_constructor(const char *p_classname) {
+static GDNativeClassConstructor gdnative_classdb_get_constructor(const char *p_classname, GDNativeExtensionPtr *r_extension) {
 	ClassDB::ClassInfo *class_info = ClassDB::classes.getptr(StringName(p_classname));
 	if (class_info) {
+		if (r_extension) {
+			*r_extension = class_info->native_extension;
+		}
 		return (GDNativeClassConstructor)class_info->creation_func;
 	}
 	return nullptr;
 }
 
-static GDNativeExtensionPtr gdnative_classdb_get_extension(const char *p_classname) {
-	ClassDB::ClassInfo *class_info = ClassDB::classes.getptr(StringName(p_classname));
-	if (class_info) {
-		return (GDNativeExtensionPtr)class_info->native_extension;
-	}
-	return nullptr;
-}
-
-static GDNativeObjectPtr gdnative_classdb_construct_extended(GDNativeClassConstructor p_constructor, GDNativeExtensionPtr p_extension) {
-	return (GDNativeObjectPtr)ClassDB::construct_extended((Object * (*)()) p_constructor, (ObjectNativeExtension *)p_extension);
+static GDNativeObjectPtr gdnative_classdb_construct_object(GDNativeClassConstructor p_constructor, GDNativeExtensionPtr p_extension) {
+	return (GDNativeObjectPtr)ClassDB::construct_object((Object * (*)()) p_constructor, (ObjectNativeExtension *)p_extension);
 }
 
 static void *gdnative_classdb_get_class_tag(const char *p_classname) {
@@ -1022,8 +1017,7 @@ void gdnative_setup_interface(GDNativeInterface *p_interface) {
 	/* CLASSDB */
 
 	gdni.classdb_get_constructor = gdnative_classdb_get_constructor;
-	gdni.classdb_get_extension = gdnative_classdb_get_extension;
-	gdni.classdb_construct_extended = gdnative_classdb_construct_extended;
+	gdni.classdb_construct_object = gdnative_classdb_construct_object;
 	gdni.classdb_get_method_bind = gdnative_classdb_get_method_bind;
 	gdni.classdb_get_class_tag = gdnative_classdb_get_class_tag;
 

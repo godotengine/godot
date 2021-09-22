@@ -432,9 +432,8 @@ typedef struct {
 
 	/* CLASSDB */
 
-	GDNativeClassConstructor (*classdb_get_constructor)(const char *p_classname);
-	GDNativeExtensionPtr (*classdb_get_extension)(const char *p_classname);
-	GDNativeObjectPtr (*classdb_construct_extended)(GDNativeClassConstructor p_constructor, GDNativeExtensionPtr p_extension);
+	GDNativeClassConstructor (*classdb_get_constructor)(const char *p_classname, GDNativeExtensionPtr *r_extension);
+	GDNativeObjectPtr (*classdb_construct_object)(GDNativeClassConstructor p_constructor, GDNativeExtensionPtr p_extension);
 	GDNativeMethodBindPtr (*classdb_get_method_bind)(const char *p_classname, const char *p_methodname, GDNativeInt p_hash);
 	void *(*classdb_get_class_tag)(const char *p_classname);
 
