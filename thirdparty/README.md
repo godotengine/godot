@@ -494,7 +494,7 @@ Files extracted from the upstream source:
 ## nanosvg
 
 - Upstream: https://github.com/memononen/nanosvg
-- Version: git (3e403ec72a9145cbbcc6c63d94a4caf079aafec2, 2020)
+- Version: git (ccdb1995134d340a93fb20e3a3d323ccb3838dd0, 2021)
 - License: zlib
 
 Files extracted from the upstream source:
