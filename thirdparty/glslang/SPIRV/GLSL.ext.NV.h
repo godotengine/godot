@@ -69,6 +69,9 @@ const char* const E_SPV_NV_mesh_shader = "SPV_NV_mesh_shader";
 //SPV_NV_raytracing
 const char* const E_SPV_NV_ray_tracing = "SPV_NV_ray_tracing";
 
+//SPV_NV_ray_tracing_motion_blur
+const char* const E_SPV_NV_ray_tracing_motion_blur = "SPV_NV_ray_tracing_motion_blur";
+
 //SPV_NV_shading_rate
 const char* const E_SPV_NV_shading_rate = "SPV_NV_shading_rate";
 

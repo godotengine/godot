@@ -159,7 +159,7 @@ Files extracted from upstream source:
 ## glslang
 
 - Upstream: https://github.com/KhronosGroup/glslang
-- Version: git (dd69df7f3dac26362e10b0f38efb9e47990f7537, 2020)
+- Version: 11.6.0 (2fb89a0072ae7316af1c856f22663fde4928128a, 2021)
 - License: glslang
 
 Version should be kept in sync with the one of the used Vulkan SDK (see `vulkan`
@@ -173,7 +173,7 @@ Files extracted from upstream source:
 - Run `cmake . && make` and copy generated `include/glslang/build_info.h`
   to `glslang/build_info.h`
 - `LICENSE.txt`
-- Unnecessary files like `CMakeLists.txt` and `updateGrammar` removed.
+- Unnecessary files like `CMakeLists.txt`, `*.m4` and `updateGrammar` removed.
 
 
 ## graphite
@@ -611,8 +611,11 @@ Godot. Please check the file to know what's new.
 ## spirv-reflect
 
 - Upstream: https://github.com/KhronosGroup/SPIRV-Reflect
-- Version: git (272e050728de8d4a4ce9e7101c1244e6ff56e5b0, 2021)
+- Version: git (cc937caab141d889c9c9dff572c5a6854d5cf9b4, 2021)
 - License: Apache 2.0
+
+Does not track Vulkan SDK releases closely, but try to package a commit newer
+than the matching glslang and Vulkan headers, just in case.
 
 Files extracted from upstream source:
 
@@ -672,10 +675,16 @@ folder.
 ## volk
 
 - Upstream: https://github.com/zeux/volk
-- Version: git (d75c007f375f35612dba3de512ac73f10bf9aa0e, 2021)
+- Version: 1.2.190 (760a782f295a66de7391d6ed573d65e3fb1c8450, 2021)
 - License: MIT
 
-The volk commit should match the version of the Vulkan headers defined below.
+Unless there is a specific reason to package a more recent version, please stick
+to tagged releases. All Vulkan libraries and headers should be kept in sync so:
+
+- Update Vulkan SDK components to the matching tag (see "vulkan").
+- Update glslang (see "glslang").
+- Update spirv-reflect (see "spirv-reflect").
+
 
 Files extracted from upstream source:
 
@@ -686,11 +695,10 @@ Files extracted from upstream source:
 ## vulkan
 
 - Upstream: https://github.com/KhronosGroup/Vulkan-Headers
-- Version: sdk-1.2.182.0 (37164a5726f7e6113810f9557903a117498421cf, 2021)
+- Version: 1.2.190 (9e62d027636cd7210f60d934f56107ed6e1579b8, 2021)
 - License: Apache 2.0
 
-Unless there is a specific reason to package a more recent version, please stick
-to Vulkan SDK releases (prefixed by `sdk-`) for all components.
+The vendored version should be kept in sync with volk, see above.
 
 Files extracted from upstream source:
 
@@ -701,7 +709,7 @@ Files extracted from upstream source:
 SDK release: https://github.com/KhronosGroup/Vulkan-ValidationLayers/blob/master/layers/generated/vk_enum_string_helper.h
 
 `vk_mem_alloc.h` is taken from https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator
-Version: 3.0.0-development (2021-06-21), branch `feature-small-buffers`, commit `cfea2f72851f9ee4a399769f18865047b83711f1`
+Version: 3.0.0-development (2021-07-07), branch `feature-small-buffers`, commit `cfea2f72851f9ee4a399769f18865047b83711f1`
 `vk_mem_alloc.cpp` is a Godot file and should be preserved on updates.
 
 Patches in the `patches` directory should be re-applied after updates.

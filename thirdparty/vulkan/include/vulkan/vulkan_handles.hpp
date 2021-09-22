@@ -10,981 +10,1229 @@
 
 namespace VULKAN_HPP_NAMESPACE
 {
-  struct AabbPositionsKHR;
-  using AabbPositionsNV = AabbPositionsKHR;
-  struct AccelerationStructureBuildGeometryInfoKHR;
-  struct AccelerationStructureBuildRangeInfoKHR;
-  struct AccelerationStructureBuildSizesInfoKHR;
-  struct AccelerationStructureCreateInfoKHR;
-  struct AccelerationStructureCreateInfoNV;
-  struct AccelerationStructureDeviceAddressInfoKHR;
-  struct AccelerationStructureGeometryAabbsDataKHR;
-  union AccelerationStructureGeometryDataKHR;
-  struct AccelerationStructureGeometryInstancesDataKHR;
-  struct AccelerationStructureGeometryKHR;
-  struct AccelerationStructureGeometryMotionTrianglesDataNV;
-  struct AccelerationStructureGeometryTrianglesDataKHR;
-  struct AccelerationStructureInfoNV;
-  struct AccelerationStructureInstanceKHR;
-  using AccelerationStructureInstanceNV = AccelerationStructureInstanceKHR;
-  struct AccelerationStructureMatrixMotionInstanceNV;
-  struct AccelerationStructureMemoryRequirementsInfoNV;
-  struct AccelerationStructureMotionInfoNV;
-  union AccelerationStructureMotionInstanceDataNV;
-  struct AccelerationStructureMotionInstanceNV;
-  struct AccelerationStructureSRTMotionInstanceNV;
-  struct AccelerationStructureVersionInfoKHR;
-  struct AcquireNextImageInfoKHR;
-  struct AcquireProfilingLockInfoKHR;
-  struct AllocationCallbacks;
-#if defined( VK_USE_PLATFORM_ANDROID_KHR )
-  struct AndroidHardwareBufferFormatPropertiesANDROID;
-#endif /*VK_USE_PLATFORM_ANDROID_KHR*/
-#if defined( VK_USE_PLATFORM_ANDROID_KHR )
-  struct AndroidHardwareBufferPropertiesANDROID;
-#endif /*VK_USE_PLATFORM_ANDROID_KHR*/
-#if defined( VK_USE_PLATFORM_ANDROID_KHR )
-  struct AndroidHardwareBufferUsageANDROID;
-#endif /*VK_USE_PLATFORM_ANDROID_KHR*/
-#if defined( VK_USE_PLATFORM_ANDROID_KHR )
-  struct AndroidSurfaceCreateInfoKHR;
-#endif /*VK_USE_PLATFORM_ANDROID_KHR*/
-  struct ApplicationInfo;
-  struct AttachmentDescription;
-  struct AttachmentDescription2;
-  using AttachmentDescription2KHR = AttachmentDescription2;
-  struct AttachmentDescriptionStencilLayout;
-  using AttachmentDescriptionStencilLayoutKHR = AttachmentDescriptionStencilLayout;
-  struct AttachmentReference;
-  struct AttachmentReference2;
-  using AttachmentReference2KHR = AttachmentReference2;
-  struct AttachmentReferenceStencilLayout;
-  using AttachmentReferenceStencilLayoutKHR = AttachmentReferenceStencilLayout;
-  struct AttachmentSampleLocationsEXT;
+  //===================================
+  //=== STRUCT forward declarations ===
+  //===================================
+
+  //=== VK_VERSION_1_0 ===
+  struct Extent2D;
+  struct Extent3D;
+  struct Offset2D;
+  struct Offset3D;
+  struct Rect2D;
   struct BaseInStructure;
   struct BaseOutStructure;
-  struct BindAccelerationStructureMemoryInfoNV;
-  struct BindBufferMemoryDeviceGroupInfo;
-  using BindBufferMemoryDeviceGroupInfoKHR = BindBufferMemoryDeviceGroupInfo;
-  struct BindBufferMemoryInfo;
-  using BindBufferMemoryInfoKHR = BindBufferMemoryInfo;
-  struct BindImageMemoryDeviceGroupInfo;
-  using BindImageMemoryDeviceGroupInfoKHR = BindImageMemoryDeviceGroupInfo;
-  struct BindImageMemoryInfo;
-  using BindImageMemoryInfoKHR = BindImageMemoryInfo;
-  struct BindImageMemorySwapchainInfoKHR;
-  struct BindImagePlaneMemoryInfo;
-  using BindImagePlaneMemoryInfoKHR = BindImagePlaneMemoryInfo;
-  struct BindIndexBufferIndirectCommandNV;
-  struct BindShaderGroupIndirectCommandNV;
-  struct BindSparseInfo;
-  struct BindVertexBufferIndirectCommandNV;
-  struct BlitImageInfo2KHR;
-  struct BufferCopy;
-  struct BufferCopy2KHR;
-  struct BufferCreateInfo;
-  struct BufferDeviceAddressCreateInfoEXT;
-  struct BufferDeviceAddressInfo;
-  using BufferDeviceAddressInfoEXT = BufferDeviceAddressInfo;
-  using BufferDeviceAddressInfoKHR = BufferDeviceAddressInfo;
-  struct BufferImageCopy;
-  struct BufferImageCopy2KHR;
   struct BufferMemoryBarrier;
-  struct BufferMemoryBarrier2KHR;
-  struct BufferMemoryRequirementsInfo2;
-  using BufferMemoryRequirementsInfo2KHR = BufferMemoryRequirementsInfo2;
-  struct BufferOpaqueCaptureAddressCreateInfo;
-  using BufferOpaqueCaptureAddressCreateInfoKHR = BufferOpaqueCaptureAddressCreateInfo;
+  struct DispatchIndirectCommand;
+  struct DrawIndexedIndirectCommand;
+  struct DrawIndirectCommand;
+  struct ImageMemoryBarrier;
+  struct MemoryBarrier;
+  struct PipelineCacheHeaderVersionOne;
+  struct AllocationCallbacks;
+  struct ApplicationInfo;
+  struct FormatProperties;
+  struct ImageFormatProperties;
+  struct InstanceCreateInfo;
+  struct MemoryHeap;
+  struct MemoryType;
+  struct PhysicalDeviceFeatures;
+  struct PhysicalDeviceLimits;
+  struct PhysicalDeviceMemoryProperties;
+  struct PhysicalDeviceProperties;
+  struct PhysicalDeviceSparseProperties;
+  struct QueueFamilyProperties;
+  struct DeviceCreateInfo;
+  struct DeviceQueueCreateInfo;
+  struct ExtensionProperties;
+  struct LayerProperties;
+  struct SubmitInfo;
+  struct MappedMemoryRange;
+  struct MemoryAllocateInfo;
+  struct MemoryRequirements;
+  struct BindSparseInfo;
+  struct ImageSubresource;
+  struct SparseBufferMemoryBindInfo;
+  struct SparseImageFormatProperties;
+  struct SparseImageMemoryBind;
+  struct SparseImageMemoryBindInfo;
+  struct SparseImageMemoryRequirements;
+  struct SparseImageOpaqueMemoryBindInfo;
+  struct SparseMemoryBind;
+  struct FenceCreateInfo;
+  struct SemaphoreCreateInfo;
+  struct EventCreateInfo;
+  struct QueryPoolCreateInfo;
+  struct BufferCreateInfo;
   struct BufferViewCreateInfo;
-  struct CalibratedTimestampInfoEXT;
-  struct CheckpointData2NV;
-  struct CheckpointDataNV;
+  struct ImageCreateInfo;
+  struct SubresourceLayout;
+  struct ComponentMapping;
+  struct ImageSubresourceRange;
+  struct ImageViewCreateInfo;
+  struct ShaderModuleCreateInfo;
+  struct PipelineCacheCreateInfo;
+  struct ComputePipelineCreateInfo;
+  struct GraphicsPipelineCreateInfo;
+  struct PipelineColorBlendAttachmentState;
+  struct PipelineColorBlendStateCreateInfo;
+  struct PipelineDepthStencilStateCreateInfo;
+  struct PipelineDynamicStateCreateInfo;
+  struct PipelineInputAssemblyStateCreateInfo;
+  struct PipelineMultisampleStateCreateInfo;
+  struct PipelineRasterizationStateCreateInfo;
+  struct PipelineShaderStageCreateInfo;
+  struct PipelineTessellationStateCreateInfo;
+  struct PipelineVertexInputStateCreateInfo;
+  struct PipelineViewportStateCreateInfo;
+  struct SpecializationInfo;
+  struct SpecializationMapEntry;
+  struct StencilOpState;
+  struct VertexInputAttributeDescription;
+  struct VertexInputBindingDescription;
+  struct Viewport;
+  struct PipelineLayoutCreateInfo;
+  struct PushConstantRange;
+  struct SamplerCreateInfo;
+  struct CopyDescriptorSet;
+  struct DescriptorBufferInfo;
+  struct DescriptorImageInfo;
+  struct DescriptorPoolCreateInfo;
+  struct DescriptorPoolSize;
+  struct DescriptorSetAllocateInfo;
+  struct DescriptorSetLayoutBinding;
+  struct DescriptorSetLayoutCreateInfo;
+  struct WriteDescriptorSet;
+  struct AttachmentDescription;
+  struct AttachmentReference;
+  struct FramebufferCreateInfo;
+  struct RenderPassCreateInfo;
+  struct SubpassDependency;
+  struct SubpassDescription;
+  struct CommandPoolCreateInfo;
+  struct CommandBufferAllocateInfo;
+  struct CommandBufferBeginInfo;
+  struct CommandBufferInheritanceInfo;
+  struct BufferCopy;
+  struct BufferImageCopy;
   struct ClearAttachment;
   union ClearColorValue;
   struct ClearDepthStencilValue;
   struct ClearRect;
   union ClearValue;
-  struct CoarseSampleLocationNV;
-  struct CoarseSampleOrderCustomNV;
-  struct CommandBufferAllocateInfo;
-  struct CommandBufferBeginInfo;
-  struct CommandBufferInheritanceConditionalRenderingInfoEXT;
-  struct CommandBufferInheritanceInfo;
-  struct CommandBufferInheritanceRenderPassTransformInfoQCOM;
-  struct CommandBufferInheritanceViewportScissorInfoNV;
-  struct CommandBufferSubmitInfoKHR;
-  struct CommandPoolCreateInfo;
-  struct ComponentMapping;
-  struct ComputePipelineCreateInfo;
-  struct ConditionalRenderingBeginInfoEXT;
+  struct ImageBlit;
+  struct ImageCopy;
+  struct ImageResolve;
+  struct ImageSubresourceLayers;
+  struct RenderPassBeginInfo;
+
+  //=== VK_VERSION_1_1 ===
+  struct PhysicalDeviceSubgroupProperties;
+  struct BindBufferMemoryInfo;
+  using BindBufferMemoryInfoKHR = BindBufferMemoryInfo;
+  struct BindImageMemoryInfo;
+  using BindImageMemoryInfoKHR = BindImageMemoryInfo;
+  struct PhysicalDevice16BitStorageFeatures;
+  using PhysicalDevice16BitStorageFeaturesKHR = PhysicalDevice16BitStorageFeatures;
+  struct MemoryDedicatedRequirements;
+  using MemoryDedicatedRequirementsKHR = MemoryDedicatedRequirements;
+  struct MemoryDedicatedAllocateInfo;
+  using MemoryDedicatedAllocateInfoKHR = MemoryDedicatedAllocateInfo;
+  struct MemoryAllocateFlagsInfo;
+  using MemoryAllocateFlagsInfoKHR = MemoryAllocateFlagsInfo;
+  struct DeviceGroupRenderPassBeginInfo;
+  using DeviceGroupRenderPassBeginInfoKHR = DeviceGroupRenderPassBeginInfo;
+  struct DeviceGroupCommandBufferBeginInfo;
+  using DeviceGroupCommandBufferBeginInfoKHR = DeviceGroupCommandBufferBeginInfo;
+  struct DeviceGroupSubmitInfo;
+  using DeviceGroupSubmitInfoKHR = DeviceGroupSubmitInfo;
+  struct DeviceGroupBindSparseInfo;
+  using DeviceGroupBindSparseInfoKHR = DeviceGroupBindSparseInfo;
+  struct BindBufferMemoryDeviceGroupInfo;
+  using BindBufferMemoryDeviceGroupInfoKHR = BindBufferMemoryDeviceGroupInfo;
+  struct BindImageMemoryDeviceGroupInfo;
+  using BindImageMemoryDeviceGroupInfoKHR = BindImageMemoryDeviceGroupInfo;
+  struct PhysicalDeviceGroupProperties;
+  using PhysicalDeviceGroupPropertiesKHR = PhysicalDeviceGroupProperties;
+  struct DeviceGroupDeviceCreateInfo;
+  using DeviceGroupDeviceCreateInfoKHR = DeviceGroupDeviceCreateInfo;
+  struct BufferMemoryRequirementsInfo2;
+  using BufferMemoryRequirementsInfo2KHR = BufferMemoryRequirementsInfo2;
+  struct ImageMemoryRequirementsInfo2;
+  using ImageMemoryRequirementsInfo2KHR = ImageMemoryRequirementsInfo2;
+  struct ImageSparseMemoryRequirementsInfo2;
+  using ImageSparseMemoryRequirementsInfo2KHR = ImageSparseMemoryRequirementsInfo2;
+  struct MemoryRequirements2;
+  using MemoryRequirements2KHR = MemoryRequirements2;
+  struct SparseImageMemoryRequirements2;
+  using SparseImageMemoryRequirements2KHR = SparseImageMemoryRequirements2;
+  struct PhysicalDeviceFeatures2;
+  using PhysicalDeviceFeatures2KHR = PhysicalDeviceFeatures2;
+  struct PhysicalDeviceProperties2;
+  using PhysicalDeviceProperties2KHR = PhysicalDeviceProperties2;
+  struct FormatProperties2;
+  using FormatProperties2KHR = FormatProperties2;
+  struct ImageFormatProperties2;
+  using ImageFormatProperties2KHR = ImageFormatProperties2;
+  struct PhysicalDeviceImageFormatInfo2;
+  using PhysicalDeviceImageFormatInfo2KHR = PhysicalDeviceImageFormatInfo2;
+  struct QueueFamilyProperties2;
+  using QueueFamilyProperties2KHR = QueueFamilyProperties2;
+  struct PhysicalDeviceMemoryProperties2;
+  using PhysicalDeviceMemoryProperties2KHR = PhysicalDeviceMemoryProperties2;
+  struct SparseImageFormatProperties2;
+  using SparseImageFormatProperties2KHR = SparseImageFormatProperties2;
+  struct PhysicalDeviceSparseImageFormatInfo2;
+  using PhysicalDeviceSparseImageFormatInfo2KHR = PhysicalDeviceSparseImageFormatInfo2;
+  struct PhysicalDevicePointClippingProperties;
+  using PhysicalDevicePointClippingPropertiesKHR = PhysicalDevicePointClippingProperties;
+  struct RenderPassInputAttachmentAspectCreateInfo;
+  using RenderPassInputAttachmentAspectCreateInfoKHR = RenderPassInputAttachmentAspectCreateInfo;
+  struct InputAttachmentAspectReference;
+  using InputAttachmentAspectReferenceKHR = InputAttachmentAspectReference;
+  struct ImageViewUsageCreateInfo;
+  using ImageViewUsageCreateInfoKHR = ImageViewUsageCreateInfo;
+  struct PipelineTessellationDomainOriginStateCreateInfo;
+  using PipelineTessellationDomainOriginStateCreateInfoKHR = PipelineTessellationDomainOriginStateCreateInfo;
+  struct RenderPassMultiviewCreateInfo;
+  using RenderPassMultiviewCreateInfoKHR = RenderPassMultiviewCreateInfo;
+  struct PhysicalDeviceMultiviewFeatures;
+  using PhysicalDeviceMultiviewFeaturesKHR = PhysicalDeviceMultiviewFeatures;
+  struct PhysicalDeviceMultiviewProperties;
+  using PhysicalDeviceMultiviewPropertiesKHR = PhysicalDeviceMultiviewProperties;
+  struct PhysicalDeviceVariablePointersFeatures;
+  using PhysicalDeviceVariablePointerFeatures     = PhysicalDeviceVariablePointersFeatures;
+  using PhysicalDeviceVariablePointerFeaturesKHR  = PhysicalDeviceVariablePointersFeatures;
+  using PhysicalDeviceVariablePointersFeaturesKHR = PhysicalDeviceVariablePointersFeatures;
+  struct PhysicalDeviceProtectedMemoryFeatures;
+  struct PhysicalDeviceProtectedMemoryProperties;
+  struct DeviceQueueInfo2;
+  struct ProtectedSubmitInfo;
+  struct SamplerYcbcrConversionCreateInfo;
+  using SamplerYcbcrConversionCreateInfoKHR = SamplerYcbcrConversionCreateInfo;
+  struct SamplerYcbcrConversionInfo;
+  using SamplerYcbcrConversionInfoKHR = SamplerYcbcrConversionInfo;
+  struct BindImagePlaneMemoryInfo;
+  using BindImagePlaneMemoryInfoKHR = BindImagePlaneMemoryInfo;
+  struct ImagePlaneMemoryRequirementsInfo;
+  using ImagePlaneMemoryRequirementsInfoKHR = ImagePlaneMemoryRequirementsInfo;
+  struct PhysicalDeviceSamplerYcbcrConversionFeatures;
+  using PhysicalDeviceSamplerYcbcrConversionFeaturesKHR = PhysicalDeviceSamplerYcbcrConversionFeatures;
+  struct SamplerYcbcrConversionImageFormatProperties;
+  using SamplerYcbcrConversionImageFormatPropertiesKHR = SamplerYcbcrConversionImageFormatProperties;
+  struct DescriptorUpdateTemplateEntry;
+  using DescriptorUpdateTemplateEntryKHR = DescriptorUpdateTemplateEntry;
+  struct DescriptorUpdateTemplateCreateInfo;
+  using DescriptorUpdateTemplateCreateInfoKHR = DescriptorUpdateTemplateCreateInfo;
+  struct ExternalMemoryProperties;
+  using ExternalMemoryPropertiesKHR = ExternalMemoryProperties;
+  struct PhysicalDeviceExternalImageFormatInfo;
+  using PhysicalDeviceExternalImageFormatInfoKHR = PhysicalDeviceExternalImageFormatInfo;
+  struct ExternalImageFormatProperties;
+  using ExternalImageFormatPropertiesKHR = ExternalImageFormatProperties;
+  struct PhysicalDeviceExternalBufferInfo;
+  using PhysicalDeviceExternalBufferInfoKHR = PhysicalDeviceExternalBufferInfo;
+  struct ExternalBufferProperties;
+  using ExternalBufferPropertiesKHR = ExternalBufferProperties;
+  struct PhysicalDeviceIDProperties;
+  using PhysicalDeviceIDPropertiesKHR = PhysicalDeviceIDProperties;
+  struct ExternalMemoryImageCreateInfo;
+  using ExternalMemoryImageCreateInfoKHR = ExternalMemoryImageCreateInfo;
+  struct ExternalMemoryBufferCreateInfo;
+  using ExternalMemoryBufferCreateInfoKHR = ExternalMemoryBufferCreateInfo;
+  struct ExportMemoryAllocateInfo;
+  using ExportMemoryAllocateInfoKHR = ExportMemoryAllocateInfo;
+  struct PhysicalDeviceExternalFenceInfo;
+  using PhysicalDeviceExternalFenceInfoKHR = PhysicalDeviceExternalFenceInfo;
+  struct ExternalFenceProperties;
+  using ExternalFencePropertiesKHR = ExternalFenceProperties;
+  struct ExportFenceCreateInfo;
+  using ExportFenceCreateInfoKHR = ExportFenceCreateInfo;
+  struct ExportSemaphoreCreateInfo;
+  using ExportSemaphoreCreateInfoKHR = ExportSemaphoreCreateInfo;
+  struct PhysicalDeviceExternalSemaphoreInfo;
+  using PhysicalDeviceExternalSemaphoreInfoKHR = PhysicalDeviceExternalSemaphoreInfo;
+  struct ExternalSemaphoreProperties;
+  using ExternalSemaphorePropertiesKHR = ExternalSemaphoreProperties;
+  struct PhysicalDeviceMaintenance3Properties;
+  using PhysicalDeviceMaintenance3PropertiesKHR = PhysicalDeviceMaintenance3Properties;
+  struct DescriptorSetLayoutSupport;
+  using DescriptorSetLayoutSupportKHR = DescriptorSetLayoutSupport;
+  struct PhysicalDeviceShaderDrawParametersFeatures;
+  using PhysicalDeviceShaderDrawParameterFeatures = PhysicalDeviceShaderDrawParametersFeatures;
+
+  //=== VK_VERSION_1_2 ===
+  struct PhysicalDeviceVulkan11Features;
+  struct PhysicalDeviceVulkan11Properties;
+  struct PhysicalDeviceVulkan12Features;
+  struct PhysicalDeviceVulkan12Properties;
+  struct ImageFormatListCreateInfo;
+  using ImageFormatListCreateInfoKHR = ImageFormatListCreateInfo;
+  struct RenderPassCreateInfo2;
+  using RenderPassCreateInfo2KHR = RenderPassCreateInfo2;
+  struct AttachmentDescription2;
+  using AttachmentDescription2KHR = AttachmentDescription2;
+  struct AttachmentReference2;
+  using AttachmentReference2KHR = AttachmentReference2;
+  struct SubpassDescription2;
+  using SubpassDescription2KHR = SubpassDescription2;
+  struct SubpassDependency2;
+  using SubpassDependency2KHR = SubpassDependency2;
+  struct SubpassBeginInfo;
+  using SubpassBeginInfoKHR = SubpassBeginInfo;
+  struct SubpassEndInfo;
+  using SubpassEndInfoKHR = SubpassEndInfo;
+  struct PhysicalDevice8BitStorageFeatures;
+  using PhysicalDevice8BitStorageFeaturesKHR = PhysicalDevice8BitStorageFeatures;
   struct ConformanceVersion;
   using ConformanceVersionKHR = ConformanceVersion;
-  struct CooperativeMatrixPropertiesNV;
-  struct CopyAccelerationStructureInfoKHR;
-  struct CopyAccelerationStructureToMemoryInfoKHR;
-  struct CopyBufferInfo2KHR;
-  struct CopyBufferToImageInfo2KHR;
-  struct CopyCommandTransformInfoQCOM;
-  struct CopyDescriptorSet;
-  struct CopyImageInfo2KHR;
-  struct CopyImageToBufferInfo2KHR;
-  struct CopyMemoryToAccelerationStructureInfoKHR;
-  struct CuFunctionCreateInfoNVX;
-  struct CuLaunchInfoNVX;
-  struct CuModuleCreateInfoNVX;
+  struct PhysicalDeviceDriverProperties;
+  using PhysicalDeviceDriverPropertiesKHR = PhysicalDeviceDriverProperties;
+  struct PhysicalDeviceShaderAtomicInt64Features;
+  using PhysicalDeviceShaderAtomicInt64FeaturesKHR = PhysicalDeviceShaderAtomicInt64Features;
+  struct PhysicalDeviceShaderFloat16Int8Features;
+  using PhysicalDeviceFloat16Int8FeaturesKHR       = PhysicalDeviceShaderFloat16Int8Features;
+  using PhysicalDeviceShaderFloat16Int8FeaturesKHR = PhysicalDeviceShaderFloat16Int8Features;
+  struct PhysicalDeviceFloatControlsProperties;
+  using PhysicalDeviceFloatControlsPropertiesKHR = PhysicalDeviceFloatControlsProperties;
+  struct DescriptorSetLayoutBindingFlagsCreateInfo;
+  using DescriptorSetLayoutBindingFlagsCreateInfoEXT = DescriptorSetLayoutBindingFlagsCreateInfo;
+  struct PhysicalDeviceDescriptorIndexingFeatures;
+  using PhysicalDeviceDescriptorIndexingFeaturesEXT = PhysicalDeviceDescriptorIndexingFeatures;
+  struct PhysicalDeviceDescriptorIndexingProperties;
+  using PhysicalDeviceDescriptorIndexingPropertiesEXT = PhysicalDeviceDescriptorIndexingProperties;
+  struct DescriptorSetVariableDescriptorCountAllocateInfo;
+  using DescriptorSetVariableDescriptorCountAllocateInfoEXT = DescriptorSetVariableDescriptorCountAllocateInfo;
+  struct DescriptorSetVariableDescriptorCountLayoutSupport;
+  using DescriptorSetVariableDescriptorCountLayoutSupportEXT = DescriptorSetVariableDescriptorCountLayoutSupport;
+  struct SubpassDescriptionDepthStencilResolve;
+  using SubpassDescriptionDepthStencilResolveKHR = SubpassDescriptionDepthStencilResolve;
+  struct PhysicalDeviceDepthStencilResolveProperties;
+  using PhysicalDeviceDepthStencilResolvePropertiesKHR = PhysicalDeviceDepthStencilResolveProperties;
+  struct PhysicalDeviceScalarBlockLayoutFeatures;
+  using PhysicalDeviceScalarBlockLayoutFeaturesEXT = PhysicalDeviceScalarBlockLayoutFeatures;
+  struct ImageStencilUsageCreateInfo;
+  using ImageStencilUsageCreateInfoEXT = ImageStencilUsageCreateInfo;
+  struct SamplerReductionModeCreateInfo;
+  using SamplerReductionModeCreateInfoEXT = SamplerReductionModeCreateInfo;
+  struct PhysicalDeviceSamplerFilterMinmaxProperties;
+  using PhysicalDeviceSamplerFilterMinmaxPropertiesEXT = PhysicalDeviceSamplerFilterMinmaxProperties;
+  struct PhysicalDeviceVulkanMemoryModelFeatures;
+  using PhysicalDeviceVulkanMemoryModelFeaturesKHR = PhysicalDeviceVulkanMemoryModelFeatures;
+  struct PhysicalDeviceImagelessFramebufferFeatures;
+  using PhysicalDeviceImagelessFramebufferFeaturesKHR = PhysicalDeviceImagelessFramebufferFeatures;
+  struct FramebufferAttachmentsCreateInfo;
+  using FramebufferAttachmentsCreateInfoKHR = FramebufferAttachmentsCreateInfo;
+  struct FramebufferAttachmentImageInfo;
+  using FramebufferAttachmentImageInfoKHR = FramebufferAttachmentImageInfo;
+  struct RenderPassAttachmentBeginInfo;
+  using RenderPassAttachmentBeginInfoKHR = RenderPassAttachmentBeginInfo;
+  struct PhysicalDeviceUniformBufferStandardLayoutFeatures;
+  using PhysicalDeviceUniformBufferStandardLayoutFeaturesKHR = PhysicalDeviceUniformBufferStandardLayoutFeatures;
+  struct PhysicalDeviceShaderSubgroupExtendedTypesFeatures;
+  using PhysicalDeviceShaderSubgroupExtendedTypesFeaturesKHR = PhysicalDeviceShaderSubgroupExtendedTypesFeatures;
+  struct PhysicalDeviceSeparateDepthStencilLayoutsFeatures;
+  using PhysicalDeviceSeparateDepthStencilLayoutsFeaturesKHR = PhysicalDeviceSeparateDepthStencilLayoutsFeatures;
+  struct AttachmentReferenceStencilLayout;
+  using AttachmentReferenceStencilLayoutKHR = AttachmentReferenceStencilLayout;
+  struct AttachmentDescriptionStencilLayout;
+  using AttachmentDescriptionStencilLayoutKHR = AttachmentDescriptionStencilLayout;
+  struct PhysicalDeviceHostQueryResetFeatures;
+  using PhysicalDeviceHostQueryResetFeaturesEXT = PhysicalDeviceHostQueryResetFeatures;
+  struct PhysicalDeviceTimelineSemaphoreFeatures;
+  using PhysicalDeviceTimelineSemaphoreFeaturesKHR = PhysicalDeviceTimelineSemaphoreFeatures;
+  struct PhysicalDeviceTimelineSemaphoreProperties;
+  using PhysicalDeviceTimelineSemaphorePropertiesKHR = PhysicalDeviceTimelineSemaphoreProperties;
+  struct SemaphoreTypeCreateInfo;
+  using SemaphoreTypeCreateInfoKHR = SemaphoreTypeCreateInfo;
+  struct TimelineSemaphoreSubmitInfo;
+  using TimelineSemaphoreSubmitInfoKHR = TimelineSemaphoreSubmitInfo;
+  struct SemaphoreWaitInfo;
+  using SemaphoreWaitInfoKHR = SemaphoreWaitInfo;
+  struct SemaphoreSignalInfo;
+  using SemaphoreSignalInfoKHR = SemaphoreSignalInfo;
+  struct PhysicalDeviceBufferDeviceAddressFeatures;
+  using PhysicalDeviceBufferDeviceAddressFeaturesKHR = PhysicalDeviceBufferDeviceAddressFeatures;
+  struct BufferDeviceAddressInfo;
+  using BufferDeviceAddressInfoEXT = BufferDeviceAddressInfo;
+  using BufferDeviceAddressInfoKHR = BufferDeviceAddressInfo;
+  struct BufferOpaqueCaptureAddressCreateInfo;
+  using BufferOpaqueCaptureAddressCreateInfoKHR = BufferOpaqueCaptureAddressCreateInfo;
+  struct MemoryOpaqueCaptureAddressAllocateInfo;
+  using MemoryOpaqueCaptureAddressAllocateInfoKHR = MemoryOpaqueCaptureAddressAllocateInfo;
+  struct DeviceMemoryOpaqueCaptureAddressInfo;
+  using DeviceMemoryOpaqueCaptureAddressInfoKHR = DeviceMemoryOpaqueCaptureAddressInfo;
+
+  //=== VK_KHR_surface ===
+  struct SurfaceCapabilitiesKHR;
+  struct SurfaceFormatKHR;
+
+  //=== VK_KHR_swapchain ===
+  struct SwapchainCreateInfoKHR;
+  struct PresentInfoKHR;
+  struct ImageSwapchainCreateInfoKHR;
+  struct BindImageMemorySwapchainInfoKHR;
+  struct AcquireNextImageInfoKHR;
+  struct DeviceGroupPresentCapabilitiesKHR;
+  struct DeviceGroupPresentInfoKHR;
+  struct DeviceGroupSwapchainCreateInfoKHR;
+
+  //=== VK_KHR_display ===
+  struct DisplayModeCreateInfoKHR;
+  struct DisplayModeParametersKHR;
+  struct DisplayModePropertiesKHR;
+  struct DisplayPlaneCapabilitiesKHR;
+  struct DisplayPlanePropertiesKHR;
+  struct DisplayPropertiesKHR;
+  struct DisplaySurfaceCreateInfoKHR;
+
+  //=== VK_KHR_display_swapchain ===
+  struct DisplayPresentInfoKHR;
+
+#if defined( VK_USE_PLATFORM_XLIB_KHR )
+  //=== VK_KHR_xlib_surface ===
+  struct XlibSurfaceCreateInfoKHR;
+#endif /*VK_USE_PLATFORM_XLIB_KHR*/
+
+#if defined( VK_USE_PLATFORM_XCB_KHR )
+  //=== VK_KHR_xcb_surface ===
+  struct XcbSurfaceCreateInfoKHR;
+#endif /*VK_USE_PLATFORM_XCB_KHR*/
+
+#if defined( VK_USE_PLATFORM_WAYLAND_KHR )
+  //=== VK_KHR_wayland_surface ===
+  struct WaylandSurfaceCreateInfoKHR;
+#endif /*VK_USE_PLATFORM_WAYLAND_KHR*/
+
+#if defined( VK_USE_PLATFORM_ANDROID_KHR )
+  //=== VK_KHR_android_surface ===
+  struct AndroidSurfaceCreateInfoKHR;
+#endif /*VK_USE_PLATFORM_ANDROID_KHR*/
+
 #if defined( VK_USE_PLATFORM_WIN32_KHR )
-  struct D3D12FenceSubmitInfoKHR;
+  //=== VK_KHR_win32_surface ===
+  struct Win32SurfaceCreateInfoKHR;
 #endif /*VK_USE_PLATFORM_WIN32_KHR*/
-  struct DebugMarkerMarkerInfoEXT;
+
+  //=== VK_EXT_debug_report ===
+  struct DebugReportCallbackCreateInfoEXT;
+
+  //=== VK_AMD_rasterization_order ===
+  struct PipelineRasterizationStateRasterizationOrderAMD;
+
+  //=== VK_EXT_debug_marker ===
   struct DebugMarkerObjectNameInfoEXT;
   struct DebugMarkerObjectTagInfoEXT;
-  struct DebugReportCallbackCreateInfoEXT;
+  struct DebugMarkerMarkerInfoEXT;
+
+#if defined( VK_ENABLE_BETA_EXTENSIONS )
+  //=== VK_KHR_video_queue ===
+  struct VideoQueueFamilyProperties2KHR;
+  struct VideoProfileKHR;
+  struct VideoProfilesKHR;
+  struct VideoCapabilitiesKHR;
+  struct PhysicalDeviceVideoFormatInfoKHR;
+  struct VideoFormatPropertiesKHR;
+  struct VideoPictureResourceKHR;
+  struct VideoReferenceSlotKHR;
+  struct VideoGetMemoryPropertiesKHR;
+  struct VideoBindMemoryKHR;
+  struct VideoSessionCreateInfoKHR;
+  struct VideoSessionParametersCreateInfoKHR;
+  struct VideoSessionParametersUpdateInfoKHR;
+  struct VideoBeginCodingInfoKHR;
+  struct VideoEndCodingInfoKHR;
+  struct VideoCodingControlInfoKHR;
+#endif /*VK_ENABLE_BETA_EXTENSIONS*/
+
+#if defined( VK_ENABLE_BETA_EXTENSIONS )
+  //=== VK_KHR_video_decode_queue ===
+  struct VideoDecodeInfoKHR;
+#endif /*VK_ENABLE_BETA_EXTENSIONS*/
+
+  //=== VK_NV_dedicated_allocation ===
+  struct DedicatedAllocationImageCreateInfoNV;
+  struct DedicatedAllocationBufferCreateInfoNV;
+  struct DedicatedAllocationMemoryAllocateInfoNV;
+
+  //=== VK_EXT_transform_feedback ===
+  struct PhysicalDeviceTransformFeedbackFeaturesEXT;
+  struct PhysicalDeviceTransformFeedbackPropertiesEXT;
+  struct PipelineRasterizationStateStreamCreateInfoEXT;
+
+  //=== VK_NVX_binary_import ===
+  struct CuModuleCreateInfoNVX;
+  struct CuFunctionCreateInfoNVX;
+  struct CuLaunchInfoNVX;
+
+  //=== VK_NVX_image_view_handle ===
+  struct ImageViewHandleInfoNVX;
+  struct ImageViewAddressPropertiesNVX;
+
+#if defined( VK_ENABLE_BETA_EXTENSIONS )
+  //=== VK_EXT_video_encode_h264 ===
+  struct VideoEncodeH264CapabilitiesEXT;
+  struct VideoEncodeH264SessionCreateInfoEXT;
+  struct VideoEncodeH264SessionParametersCreateInfoEXT;
+  struct VideoEncodeH264SessionParametersAddInfoEXT;
+  struct VideoEncodeH264VclFrameInfoEXT;
+  struct VideoEncodeH264EmitPictureParametersEXT;
+  struct VideoEncodeH264DpbSlotInfoEXT;
+  struct VideoEncodeH264NaluSliceEXT;
+  struct VideoEncodeH264ProfileEXT;
+#endif /*VK_ENABLE_BETA_EXTENSIONS*/
+
+#if defined( VK_ENABLE_BETA_EXTENSIONS )
+  //=== VK_EXT_video_decode_h264 ===
+  struct VideoDecodeH264ProfileEXT;
+  struct VideoDecodeH264CapabilitiesEXT;
+  struct VideoDecodeH264SessionCreateInfoEXT;
+  struct VideoDecodeH264SessionParametersCreateInfoEXT;
+  struct VideoDecodeH264SessionParametersAddInfoEXT;
+  struct VideoDecodeH264PictureInfoEXT;
+  struct VideoDecodeH264MvcEXT;
+  struct VideoDecodeH264DpbSlotInfoEXT;
+#endif /*VK_ENABLE_BETA_EXTENSIONS*/
+
+  //=== VK_AMD_texture_gather_bias_lod ===
+  struct TextureLODGatherFormatPropertiesAMD;
+
+  //=== VK_AMD_shader_info ===
+  struct ShaderResourceUsageAMD;
+  struct ShaderStatisticsInfoAMD;
+
+#if defined( VK_USE_PLATFORM_GGP )
+  //=== VK_GGP_stream_descriptor_surface ===
+  struct StreamDescriptorSurfaceCreateInfoGGP;
+#endif /*VK_USE_PLATFORM_GGP*/
+
+  //=== VK_NV_corner_sampled_image ===
+  struct PhysicalDeviceCornerSampledImageFeaturesNV;
+
+  //=== VK_NV_external_memory_capabilities ===
+  struct ExternalImageFormatPropertiesNV;
+
+  //=== VK_NV_external_memory ===
+  struct ExternalMemoryImageCreateInfoNV;
+  struct ExportMemoryAllocateInfoNV;
+
+#if defined( VK_USE_PLATFORM_WIN32_KHR )
+  //=== VK_NV_external_memory_win32 ===
+  struct ImportMemoryWin32HandleInfoNV;
+  struct ExportMemoryWin32HandleInfoNV;
+#endif /*VK_USE_PLATFORM_WIN32_KHR*/
+
+#if defined( VK_USE_PLATFORM_WIN32_KHR )
+  //=== VK_NV_win32_keyed_mutex ===
+  struct Win32KeyedMutexAcquireReleaseInfoNV;
+#endif /*VK_USE_PLATFORM_WIN32_KHR*/
+
+  //=== VK_EXT_validation_flags ===
+  struct ValidationFlagsEXT;
+
+#if defined( VK_USE_PLATFORM_VI_NN )
+  //=== VK_NN_vi_surface ===
+  struct ViSurfaceCreateInfoNN;
+#endif /*VK_USE_PLATFORM_VI_NN*/
+
+  //=== VK_EXT_texture_compression_astc_hdr ===
+  struct PhysicalDeviceTextureCompressionASTCHDRFeaturesEXT;
+
+  //=== VK_EXT_astc_decode_mode ===
+  struct ImageViewASTCDecodeModeEXT;
+  struct PhysicalDeviceASTCDecodeFeaturesEXT;
+
+#if defined( VK_USE_PLATFORM_WIN32_KHR )
+  //=== VK_KHR_external_memory_win32 ===
+  struct ImportMemoryWin32HandleInfoKHR;
+  struct ExportMemoryWin32HandleInfoKHR;
+  struct MemoryWin32HandlePropertiesKHR;
+  struct MemoryGetWin32HandleInfoKHR;
+#endif /*VK_USE_PLATFORM_WIN32_KHR*/
+
+  //=== VK_KHR_external_memory_fd ===
+  struct ImportMemoryFdInfoKHR;
+  struct MemoryFdPropertiesKHR;
+  struct MemoryGetFdInfoKHR;
+
+#if defined( VK_USE_PLATFORM_WIN32_KHR )
+  //=== VK_KHR_win32_keyed_mutex ===
+  struct Win32KeyedMutexAcquireReleaseInfoKHR;
+#endif /*VK_USE_PLATFORM_WIN32_KHR*/
+
+#if defined( VK_USE_PLATFORM_WIN32_KHR )
+  //=== VK_KHR_external_semaphore_win32 ===
+  struct ImportSemaphoreWin32HandleInfoKHR;
+  struct ExportSemaphoreWin32HandleInfoKHR;
+  struct D3D12FenceSubmitInfoKHR;
+  struct SemaphoreGetWin32HandleInfoKHR;
+#endif /*VK_USE_PLATFORM_WIN32_KHR*/
+
+  //=== VK_KHR_external_semaphore_fd ===
+  struct ImportSemaphoreFdInfoKHR;
+  struct SemaphoreGetFdInfoKHR;
+
+  //=== VK_KHR_push_descriptor ===
+  struct PhysicalDevicePushDescriptorPropertiesKHR;
+
+  //=== VK_EXT_conditional_rendering ===
+  struct ConditionalRenderingBeginInfoEXT;
+  struct PhysicalDeviceConditionalRenderingFeaturesEXT;
+  struct CommandBufferInheritanceConditionalRenderingInfoEXT;
+
+  //=== VK_KHR_incremental_present ===
+  struct PresentRegionsKHR;
+  struct PresentRegionKHR;
+  struct RectLayerKHR;
+
+  //=== VK_NV_clip_space_w_scaling ===
+  struct ViewportWScalingNV;
+  struct PipelineViewportWScalingStateCreateInfoNV;
+
+  //=== VK_EXT_display_surface_counter ===
+  struct SurfaceCapabilities2EXT;
+
+  //=== VK_EXT_display_control ===
+  struct DisplayPowerInfoEXT;
+  struct DeviceEventInfoEXT;
+  struct DisplayEventInfoEXT;
+  struct SwapchainCounterCreateInfoEXT;
+
+  //=== VK_GOOGLE_display_timing ===
+  struct RefreshCycleDurationGOOGLE;
+  struct PastPresentationTimingGOOGLE;
+  struct PresentTimesInfoGOOGLE;
+  struct PresentTimeGOOGLE;
+
+  //=== VK_NVX_multiview_per_view_attributes ===
+  struct PhysicalDeviceMultiviewPerViewAttributesPropertiesNVX;
+
+  //=== VK_NV_viewport_swizzle ===
+  struct ViewportSwizzleNV;
+  struct PipelineViewportSwizzleStateCreateInfoNV;
+
+  //=== VK_EXT_discard_rectangles ===
+  struct PhysicalDeviceDiscardRectanglePropertiesEXT;
+  struct PipelineDiscardRectangleStateCreateInfoEXT;
+
+  //=== VK_EXT_conservative_rasterization ===
+  struct PhysicalDeviceConservativeRasterizationPropertiesEXT;
+  struct PipelineRasterizationConservativeStateCreateInfoEXT;
+
+  //=== VK_EXT_depth_clip_enable ===
+  struct PhysicalDeviceDepthClipEnableFeaturesEXT;
+  struct PipelineRasterizationDepthClipStateCreateInfoEXT;
+
+  //=== VK_EXT_hdr_metadata ===
+  struct HdrMetadataEXT;
+  struct XYColorEXT;
+
+  //=== VK_KHR_shared_presentable_image ===
+  struct SharedPresentSurfaceCapabilitiesKHR;
+
+#if defined( VK_USE_PLATFORM_WIN32_KHR )
+  //=== VK_KHR_external_fence_win32 ===
+  struct ImportFenceWin32HandleInfoKHR;
+  struct ExportFenceWin32HandleInfoKHR;
+  struct FenceGetWin32HandleInfoKHR;
+#endif /*VK_USE_PLATFORM_WIN32_KHR*/
+
+  //=== VK_KHR_external_fence_fd ===
+  struct ImportFenceFdInfoKHR;
+  struct FenceGetFdInfoKHR;
+
+  //=== VK_KHR_performance_query ===
+  struct PhysicalDevicePerformanceQueryFeaturesKHR;
+  struct PhysicalDevicePerformanceQueryPropertiesKHR;
+  struct PerformanceCounterKHR;
+  struct PerformanceCounterDescriptionKHR;
+  struct QueryPoolPerformanceCreateInfoKHR;
+  union PerformanceCounterResultKHR;
+  struct AcquireProfilingLockInfoKHR;
+  struct PerformanceQuerySubmitInfoKHR;
+
+  //=== VK_KHR_get_surface_capabilities2 ===
+  struct PhysicalDeviceSurfaceInfo2KHR;
+  struct SurfaceCapabilities2KHR;
+  struct SurfaceFormat2KHR;
+
+  //=== VK_KHR_get_display_properties2 ===
+  struct DisplayProperties2KHR;
+  struct DisplayPlaneProperties2KHR;
+  struct DisplayModeProperties2KHR;
+  struct DisplayPlaneInfo2KHR;
+  struct DisplayPlaneCapabilities2KHR;
+
+#if defined( VK_USE_PLATFORM_IOS_MVK )
+  //=== VK_MVK_ios_surface ===
+  struct IOSSurfaceCreateInfoMVK;
+#endif /*VK_USE_PLATFORM_IOS_MVK*/
+
+#if defined( VK_USE_PLATFORM_MACOS_MVK )
+  //=== VK_MVK_macos_surface ===
+  struct MacOSSurfaceCreateInfoMVK;
+#endif /*VK_USE_PLATFORM_MACOS_MVK*/
+
+  //=== VK_EXT_debug_utils ===
   struct DebugUtilsLabelEXT;
   struct DebugUtilsMessengerCallbackDataEXT;
   struct DebugUtilsMessengerCreateInfoEXT;
   struct DebugUtilsObjectNameInfoEXT;
   struct DebugUtilsObjectTagInfoEXT;
-  struct DedicatedAllocationBufferCreateInfoNV;
-  struct DedicatedAllocationImageCreateInfoNV;
-  struct DedicatedAllocationMemoryAllocateInfoNV;
-  struct DependencyInfoKHR;
-  struct DescriptorBufferInfo;
-  struct DescriptorImageInfo;
-  struct DescriptorPoolCreateInfo;
-  struct DescriptorPoolInlineUniformBlockCreateInfoEXT;
-  struct DescriptorPoolSize;
-  struct DescriptorSetAllocateInfo;
-  struct DescriptorSetLayoutBinding;
-  struct DescriptorSetLayoutBindingFlagsCreateInfo;
-  using DescriptorSetLayoutBindingFlagsCreateInfoEXT = DescriptorSetLayoutBindingFlagsCreateInfo;
-  struct DescriptorSetLayoutCreateInfo;
-  struct DescriptorSetLayoutSupport;
-  using DescriptorSetLayoutSupportKHR = DescriptorSetLayoutSupport;
-  struct DescriptorSetVariableDescriptorCountAllocateInfo;
-  using DescriptorSetVariableDescriptorCountAllocateInfoEXT = DescriptorSetVariableDescriptorCountAllocateInfo;
-  struct DescriptorSetVariableDescriptorCountLayoutSupport;
-  using DescriptorSetVariableDescriptorCountLayoutSupportEXT = DescriptorSetVariableDescriptorCountLayoutSupport;
-  struct DescriptorUpdateTemplateCreateInfo;
-  using DescriptorUpdateTemplateCreateInfoKHR = DescriptorUpdateTemplateCreateInfo;
-  struct DescriptorUpdateTemplateEntry;
-  using DescriptorUpdateTemplateEntryKHR = DescriptorUpdateTemplateEntry;
-  struct DeviceCreateInfo;
-  struct DeviceDeviceMemoryReportCreateInfoEXT;
-  struct DeviceDiagnosticsConfigCreateInfoNV;
-  struct DeviceEventInfoEXT;
-  struct DeviceGroupBindSparseInfo;
-  using DeviceGroupBindSparseInfoKHR = DeviceGroupBindSparseInfo;
-  struct DeviceGroupCommandBufferBeginInfo;
-  using DeviceGroupCommandBufferBeginInfoKHR = DeviceGroupCommandBufferBeginInfo;
-  struct DeviceGroupDeviceCreateInfo;
-  using DeviceGroupDeviceCreateInfoKHR = DeviceGroupDeviceCreateInfo;
-  struct DeviceGroupPresentCapabilitiesKHR;
-  struct DeviceGroupPresentInfoKHR;
-  struct DeviceGroupRenderPassBeginInfo;
-  using DeviceGroupRenderPassBeginInfoKHR = DeviceGroupRenderPassBeginInfo;
-  struct DeviceGroupSubmitInfo;
-  using DeviceGroupSubmitInfoKHR = DeviceGroupSubmitInfo;
-  struct DeviceGroupSwapchainCreateInfoKHR;
-  struct DeviceMemoryOpaqueCaptureAddressInfo;
-  using DeviceMemoryOpaqueCaptureAddressInfoKHR = DeviceMemoryOpaqueCaptureAddressInfo;
-  struct DeviceMemoryOverallocationCreateInfoAMD;
-  struct DeviceMemoryReportCallbackDataEXT;
-  union DeviceOrHostAddressConstKHR;
-  union DeviceOrHostAddressKHR;
-  struct DevicePrivateDataCreateInfoEXT;
-  struct DeviceQueueCreateInfo;
-  struct DeviceQueueGlobalPriorityCreateInfoEXT;
-  struct DeviceQueueInfo2;
-#if defined( VK_USE_PLATFORM_DIRECTFB_EXT )
-  struct DirectFBSurfaceCreateInfoEXT;
-#endif /*VK_USE_PLATFORM_DIRECTFB_EXT*/
-  struct DispatchIndirectCommand;
-  struct DisplayEventInfoEXT;
-  struct DisplayModeCreateInfoKHR;
-  struct DisplayModeParametersKHR;
-  struct DisplayModeProperties2KHR;
-  struct DisplayModePropertiesKHR;
-  struct DisplayNativeHdrSurfaceCapabilitiesAMD;
-  struct DisplayPlaneCapabilities2KHR;
-  struct DisplayPlaneCapabilitiesKHR;
-  struct DisplayPlaneInfo2KHR;
-  struct DisplayPlaneProperties2KHR;
-  struct DisplayPlanePropertiesKHR;
-  struct DisplayPowerInfoEXT;
-  struct DisplayPresentInfoKHR;
-  struct DisplayProperties2KHR;
-  struct DisplayPropertiesKHR;
-  struct DisplaySurfaceCreateInfoKHR;
-  struct DrawIndexedIndirectCommand;
-  struct DrawIndirectCommand;
-  struct DrawMeshTasksIndirectCommandNV;
-  struct DrmFormatModifierPropertiesEXT;
-  struct DrmFormatModifierPropertiesListEXT;
-  struct EventCreateInfo;
-  struct ExportFenceCreateInfo;
-  using ExportFenceCreateInfoKHR = ExportFenceCreateInfo;
-#if defined( VK_USE_PLATFORM_WIN32_KHR )
-  struct ExportFenceWin32HandleInfoKHR;
-#endif /*VK_USE_PLATFORM_WIN32_KHR*/
-  struct ExportMemoryAllocateInfo;
-  using ExportMemoryAllocateInfoKHR = ExportMemoryAllocateInfo;
-  struct ExportMemoryAllocateInfoNV;
-#if defined( VK_USE_PLATFORM_WIN32_KHR )
-  struct ExportMemoryWin32HandleInfoKHR;
-#endif /*VK_USE_PLATFORM_WIN32_KHR*/
-#if defined( VK_USE_PLATFORM_WIN32_KHR )
-  struct ExportMemoryWin32HandleInfoNV;
-#endif /*VK_USE_PLATFORM_WIN32_KHR*/
-  struct ExportSemaphoreCreateInfo;
-  using ExportSemaphoreCreateInfoKHR = ExportSemaphoreCreateInfo;
-#if defined( VK_USE_PLATFORM_WIN32_KHR )
-  struct ExportSemaphoreWin32HandleInfoKHR;
-#endif /*VK_USE_PLATFORM_WIN32_KHR*/
-  struct ExtensionProperties;
-  struct Extent2D;
-  struct Extent3D;
-  struct ExternalBufferProperties;
-  using ExternalBufferPropertiesKHR = ExternalBufferProperties;
-  struct ExternalFenceProperties;
-  using ExternalFencePropertiesKHR = ExternalFenceProperties;
+
 #if defined( VK_USE_PLATFORM_ANDROID_KHR )
+  //=== VK_ANDROID_external_memory_android_hardware_buffer ===
+  struct AndroidHardwareBufferUsageANDROID;
+  struct AndroidHardwareBufferPropertiesANDROID;
+  struct AndroidHardwareBufferFormatPropertiesANDROID;
+  struct ImportAndroidHardwareBufferInfoANDROID;
+  struct MemoryGetAndroidHardwareBufferInfoANDROID;
   struct ExternalFormatANDROID;
 #endif /*VK_USE_PLATFORM_ANDROID_KHR*/
-  struct ExternalImageFormatProperties;
-  using ExternalImageFormatPropertiesKHR = ExternalImageFormatProperties;
-  struct ExternalImageFormatPropertiesNV;
-  struct ExternalMemoryBufferCreateInfo;
-  using ExternalMemoryBufferCreateInfoKHR = ExternalMemoryBufferCreateInfo;
-  struct ExternalMemoryImageCreateInfo;
-  using ExternalMemoryImageCreateInfoKHR = ExternalMemoryImageCreateInfo;
-  struct ExternalMemoryImageCreateInfoNV;
-  struct ExternalMemoryProperties;
-  using ExternalMemoryPropertiesKHR = ExternalMemoryProperties;
-  struct ExternalSemaphoreProperties;
-  using ExternalSemaphorePropertiesKHR = ExternalSemaphoreProperties;
-  struct FenceCreateInfo;
-  struct FenceGetFdInfoKHR;
-#if defined( VK_USE_PLATFORM_WIN32_KHR )
-  struct FenceGetWin32HandleInfoKHR;
-#endif /*VK_USE_PLATFORM_WIN32_KHR*/
-  struct FilterCubicImageViewImageFormatPropertiesEXT;
-  struct FormatProperties;
-  struct FormatProperties2;
-  using FormatProperties2KHR = FormatProperties2;
-  struct FragmentShadingRateAttachmentInfoKHR;
-  struct FramebufferAttachmentImageInfo;
-  using FramebufferAttachmentImageInfoKHR = FramebufferAttachmentImageInfo;
-  struct FramebufferAttachmentsCreateInfo;
-  using FramebufferAttachmentsCreateInfoKHR = FramebufferAttachmentsCreateInfo;
-  struct FramebufferCreateInfo;
-  struct FramebufferMixedSamplesCombinationNV;
-  struct GeneratedCommandsInfoNV;
-  struct GeneratedCommandsMemoryRequirementsInfoNV;
+
+  //=== VK_EXT_inline_uniform_block ===
+  struct PhysicalDeviceInlineUniformBlockFeaturesEXT;
+  struct PhysicalDeviceInlineUniformBlockPropertiesEXT;
+  struct WriteDescriptorSetInlineUniformBlockEXT;
+  struct DescriptorPoolInlineUniformBlockCreateInfoEXT;
+
+  //=== VK_EXT_sample_locations ===
+  struct SampleLocationEXT;
+  struct SampleLocationsInfoEXT;
+  struct AttachmentSampleLocationsEXT;
+  struct SubpassSampleLocationsEXT;
+  struct RenderPassSampleLocationsBeginInfoEXT;
+  struct PipelineSampleLocationsStateCreateInfoEXT;
+  struct PhysicalDeviceSampleLocationsPropertiesEXT;
+  struct MultisamplePropertiesEXT;
+
+  //=== VK_EXT_blend_operation_advanced ===
+  struct PhysicalDeviceBlendOperationAdvancedFeaturesEXT;
+  struct PhysicalDeviceBlendOperationAdvancedPropertiesEXT;
+  struct PipelineColorBlendAdvancedStateCreateInfoEXT;
+
+  //=== VK_NV_fragment_coverage_to_color ===
+  struct PipelineCoverageToColorStateCreateInfoNV;
+
+  //=== VK_KHR_acceleration_structure ===
+  union DeviceOrHostAddressKHR;
+  union DeviceOrHostAddressConstKHR;
+  struct AccelerationStructureBuildRangeInfoKHR;
+  struct AabbPositionsKHR;
+  using AabbPositionsNV = AabbPositionsKHR;
+  struct AccelerationStructureGeometryTrianglesDataKHR;
+  struct TransformMatrixKHR;
+  using TransformMatrixNV = TransformMatrixKHR;
+  struct AccelerationStructureBuildGeometryInfoKHR;
+  struct AccelerationStructureGeometryAabbsDataKHR;
+  struct AccelerationStructureInstanceKHR;
+  using AccelerationStructureInstanceNV = AccelerationStructureInstanceKHR;
+  struct AccelerationStructureGeometryInstancesDataKHR;
+  union AccelerationStructureGeometryDataKHR;
+  struct AccelerationStructureGeometryKHR;
+  struct AccelerationStructureCreateInfoKHR;
+  struct WriteDescriptorSetAccelerationStructureKHR;
+  struct PhysicalDeviceAccelerationStructureFeaturesKHR;
+  struct PhysicalDeviceAccelerationStructurePropertiesKHR;
+  struct AccelerationStructureDeviceAddressInfoKHR;
+  struct AccelerationStructureVersionInfoKHR;
+  struct CopyAccelerationStructureToMemoryInfoKHR;
+  struct CopyMemoryToAccelerationStructureInfoKHR;
+  struct CopyAccelerationStructureInfoKHR;
+  struct AccelerationStructureBuildSizesInfoKHR;
+
+  //=== VK_NV_framebuffer_mixed_samples ===
+  struct PipelineCoverageModulationStateCreateInfoNV;
+
+  //=== VK_NV_shader_sm_builtins ===
+  struct PhysicalDeviceShaderSMBuiltinsPropertiesNV;
+  struct PhysicalDeviceShaderSMBuiltinsFeaturesNV;
+
+  //=== VK_EXT_image_drm_format_modifier ===
+  struct DrmFormatModifierPropertiesListEXT;
+  struct DrmFormatModifierPropertiesEXT;
+  struct PhysicalDeviceImageDrmFormatModifierInfoEXT;
+  struct ImageDrmFormatModifierListCreateInfoEXT;
+  struct ImageDrmFormatModifierExplicitCreateInfoEXT;
+  struct ImageDrmFormatModifierPropertiesEXT;
+
+  //=== VK_EXT_validation_cache ===
+  struct ValidationCacheCreateInfoEXT;
+  struct ShaderModuleValidationCacheCreateInfoEXT;
+
+#if defined( VK_ENABLE_BETA_EXTENSIONS )
+  //=== VK_KHR_portability_subset ===
+  struct PhysicalDevicePortabilitySubsetFeaturesKHR;
+  struct PhysicalDevicePortabilitySubsetPropertiesKHR;
+#endif /*VK_ENABLE_BETA_EXTENSIONS*/
+
+  //=== VK_NV_shading_rate_image ===
+  struct ShadingRatePaletteNV;
+  struct PipelineViewportShadingRateImageStateCreateInfoNV;
+  struct PhysicalDeviceShadingRateImageFeaturesNV;
+  struct PhysicalDeviceShadingRateImagePropertiesNV;
+  struct CoarseSampleLocationNV;
+  struct CoarseSampleOrderCustomNV;
+  struct PipelineViewportCoarseSampleOrderStateCreateInfoNV;
+
+  //=== VK_NV_ray_tracing ===
+  struct RayTracingShaderGroupCreateInfoNV;
+  struct RayTracingPipelineCreateInfoNV;
+  struct GeometryTrianglesNV;
   struct GeometryAABBNV;
   struct GeometryDataNV;
   struct GeometryNV;
-  struct GeometryTrianglesNV;
-  struct GraphicsPipelineCreateInfo;
-  struct GraphicsPipelineShaderGroupsCreateInfoNV;
-  struct GraphicsShaderGroupCreateInfoNV;
-  struct HdrMetadataEXT;
-  struct HeadlessSurfaceCreateInfoEXT;
-#if defined( VK_USE_PLATFORM_IOS_MVK )
-  struct IOSSurfaceCreateInfoMVK;
-#endif /*VK_USE_PLATFORM_IOS_MVK*/
-  struct ImageBlit;
-  struct ImageBlit2KHR;
-  struct ImageCopy;
-  struct ImageCopy2KHR;
-  struct ImageCreateInfo;
-  struct ImageDrmFormatModifierExplicitCreateInfoEXT;
-  struct ImageDrmFormatModifierListCreateInfoEXT;
-  struct ImageDrmFormatModifierPropertiesEXT;
-  struct ImageFormatListCreateInfo;
-  using ImageFormatListCreateInfoKHR = ImageFormatListCreateInfo;
-  struct ImageFormatProperties;
-  struct ImageFormatProperties2;
-  using ImageFormatProperties2KHR = ImageFormatProperties2;
-  struct ImageMemoryBarrier;
-  struct ImageMemoryBarrier2KHR;
-  struct ImageMemoryRequirementsInfo2;
-  using ImageMemoryRequirementsInfo2KHR = ImageMemoryRequirementsInfo2;
-#if defined( VK_USE_PLATFORM_FUCHSIA )
-  struct ImagePipeSurfaceCreateInfoFUCHSIA;
-#endif /*VK_USE_PLATFORM_FUCHSIA*/
-  struct ImagePlaneMemoryRequirementsInfo;
-  using ImagePlaneMemoryRequirementsInfoKHR = ImagePlaneMemoryRequirementsInfo;
-  struct ImageResolve;
-  struct ImageResolve2KHR;
-  struct ImageSparseMemoryRequirementsInfo2;
-  using ImageSparseMemoryRequirementsInfo2KHR = ImageSparseMemoryRequirementsInfo2;
-  struct ImageStencilUsageCreateInfo;
-  using ImageStencilUsageCreateInfoEXT = ImageStencilUsageCreateInfo;
-  struct ImageSubresource;
-  struct ImageSubresourceLayers;
-  struct ImageSubresourceRange;
-  struct ImageSwapchainCreateInfoKHR;
-  struct ImageViewASTCDecodeModeEXT;
-  struct ImageViewAddressPropertiesNVX;
-  struct ImageViewCreateInfo;
-  struct ImageViewHandleInfoNVX;
-  struct ImageViewUsageCreateInfo;
-  using ImageViewUsageCreateInfoKHR = ImageViewUsageCreateInfo;
-#if defined( VK_USE_PLATFORM_ANDROID_KHR )
-  struct ImportAndroidHardwareBufferInfoANDROID;
-#endif /*VK_USE_PLATFORM_ANDROID_KHR*/
-  struct ImportFenceFdInfoKHR;
-#if defined( VK_USE_PLATFORM_WIN32_KHR )
-  struct ImportFenceWin32HandleInfoKHR;
-#endif /*VK_USE_PLATFORM_WIN32_KHR*/
-  struct ImportMemoryFdInfoKHR;
-  struct ImportMemoryHostPointerInfoEXT;
-#if defined( VK_USE_PLATFORM_WIN32_KHR )
-  struct ImportMemoryWin32HandleInfoKHR;
-#endif /*VK_USE_PLATFORM_WIN32_KHR*/
-#if defined( VK_USE_PLATFORM_WIN32_KHR )
-  struct ImportMemoryWin32HandleInfoNV;
-#endif /*VK_USE_PLATFORM_WIN32_KHR*/
-#if defined( VK_USE_PLATFORM_FUCHSIA )
-  struct ImportMemoryZirconHandleInfoFUCHSIA;
-#endif /*VK_USE_PLATFORM_FUCHSIA*/
-  struct ImportSemaphoreFdInfoKHR;
-#if defined( VK_USE_PLATFORM_WIN32_KHR )
-  struct ImportSemaphoreWin32HandleInfoKHR;
-#endif /*VK_USE_PLATFORM_WIN32_KHR*/
-#if defined( VK_USE_PLATFORM_FUCHSIA )
-  struct ImportSemaphoreZirconHandleInfoFUCHSIA;
-#endif /*VK_USE_PLATFORM_FUCHSIA*/
-  struct IndirectCommandsLayoutCreateInfoNV;
-  struct IndirectCommandsLayoutTokenNV;
-  struct IndirectCommandsStreamNV;
-  struct InitializePerformanceApiInfoINTEL;
-  struct InputAttachmentAspectReference;
-  using InputAttachmentAspectReferenceKHR = InputAttachmentAspectReference;
-  struct InstanceCreateInfo;
-  struct LayerProperties;
-#if defined( VK_USE_PLATFORM_MACOS_MVK )
-  struct MacOSSurfaceCreateInfoMVK;
-#endif /*VK_USE_PLATFORM_MACOS_MVK*/
-  struct MappedMemoryRange;
-  struct MemoryAllocateFlagsInfo;
-  using MemoryAllocateFlagsInfoKHR = MemoryAllocateFlagsInfo;
-  struct MemoryAllocateInfo;
-  struct MemoryBarrier;
-  struct MemoryBarrier2KHR;
-  struct MemoryDedicatedAllocateInfo;
-  using MemoryDedicatedAllocateInfoKHR = MemoryDedicatedAllocateInfo;
-  struct MemoryDedicatedRequirements;
-  using MemoryDedicatedRequirementsKHR = MemoryDedicatedRequirements;
-  struct MemoryFdPropertiesKHR;
-#if defined( VK_USE_PLATFORM_ANDROID_KHR )
-  struct MemoryGetAndroidHardwareBufferInfoANDROID;
-#endif /*VK_USE_PLATFORM_ANDROID_KHR*/
-  struct MemoryGetFdInfoKHR;
-#if defined( VK_USE_PLATFORM_WIN32_KHR )
-  struct MemoryGetWin32HandleInfoKHR;
-#endif /*VK_USE_PLATFORM_WIN32_KHR*/
-#if defined( VK_USE_PLATFORM_FUCHSIA )
-  struct MemoryGetZirconHandleInfoFUCHSIA;
-#endif /*VK_USE_PLATFORM_FUCHSIA*/
-  struct MemoryHeap;
-  struct MemoryHostPointerPropertiesEXT;
-  struct MemoryOpaqueCaptureAddressAllocateInfo;
-  using MemoryOpaqueCaptureAddressAllocateInfoKHR = MemoryOpaqueCaptureAddressAllocateInfo;
-  struct MemoryPriorityAllocateInfoEXT;
-  struct MemoryRequirements;
-  struct MemoryRequirements2;
-  using MemoryRequirements2KHR = MemoryRequirements2;
-  struct MemoryType;
-#if defined( VK_USE_PLATFORM_WIN32_KHR )
-  struct MemoryWin32HandlePropertiesKHR;
-#endif /*VK_USE_PLATFORM_WIN32_KHR*/
-#if defined( VK_USE_PLATFORM_FUCHSIA )
-  struct MemoryZirconHandlePropertiesFUCHSIA;
-#endif /*VK_USE_PLATFORM_FUCHSIA*/
-#if defined( VK_USE_PLATFORM_METAL_EXT )
-  struct MetalSurfaceCreateInfoEXT;
-#endif /*VK_USE_PLATFORM_METAL_EXT*/
-  struct MultiDrawIndexedInfoEXT;
-  struct MultiDrawInfoEXT;
-  struct MultisamplePropertiesEXT;
-  struct MutableDescriptorTypeCreateInfoVALVE;
-  struct MutableDescriptorTypeListVALVE;
-  struct Offset2D;
-  struct Offset3D;
-  struct PastPresentationTimingGOOGLE;
-  struct PerformanceConfigurationAcquireInfoINTEL;
-  struct PerformanceCounterDescriptionKHR;
-  struct PerformanceCounterKHR;
-  union PerformanceCounterResultKHR;
-  struct PerformanceMarkerInfoINTEL;
-  struct PerformanceOverrideInfoINTEL;
-  struct PerformanceQuerySubmitInfoKHR;
-  struct PerformanceStreamMarkerInfoINTEL;
-  union PerformanceValueDataINTEL;
-  struct PerformanceValueINTEL;
-  struct PhysicalDevice16BitStorageFeatures;
-  using PhysicalDevice16BitStorageFeaturesKHR = PhysicalDevice16BitStorageFeatures;
-  struct PhysicalDevice4444FormatsFeaturesEXT;
-  struct PhysicalDevice8BitStorageFeatures;
-  using PhysicalDevice8BitStorageFeaturesKHR = PhysicalDevice8BitStorageFeatures;
-  struct PhysicalDeviceASTCDecodeFeaturesEXT;
-  struct PhysicalDeviceAccelerationStructureFeaturesKHR;
-  struct PhysicalDeviceAccelerationStructurePropertiesKHR;
-  struct PhysicalDeviceBlendOperationAdvancedFeaturesEXT;
-  struct PhysicalDeviceBlendOperationAdvancedPropertiesEXT;
-  struct PhysicalDeviceBufferDeviceAddressFeatures;
-  using PhysicalDeviceBufferDeviceAddressFeaturesKHR = PhysicalDeviceBufferDeviceAddressFeatures;
-  struct PhysicalDeviceBufferDeviceAddressFeaturesEXT;
-  using PhysicalDeviceBufferAddressFeaturesEXT = PhysicalDeviceBufferDeviceAddressFeaturesEXT;
-  struct PhysicalDeviceCoherentMemoryFeaturesAMD;
-  struct PhysicalDeviceColorWriteEnableFeaturesEXT;
-  struct PhysicalDeviceComputeShaderDerivativesFeaturesNV;
-  struct PhysicalDeviceConditionalRenderingFeaturesEXT;
-  struct PhysicalDeviceConservativeRasterizationPropertiesEXT;
-  struct PhysicalDeviceCooperativeMatrixFeaturesNV;
-  struct PhysicalDeviceCooperativeMatrixPropertiesNV;
-  struct PhysicalDeviceCornerSampledImageFeaturesNV;
-  struct PhysicalDeviceCoverageReductionModeFeaturesNV;
-  struct PhysicalDeviceCustomBorderColorFeaturesEXT;
-  struct PhysicalDeviceCustomBorderColorPropertiesEXT;
-  struct PhysicalDeviceDedicatedAllocationImageAliasingFeaturesNV;
-  struct PhysicalDeviceDepthClipEnableFeaturesEXT;
-  struct PhysicalDeviceDepthStencilResolveProperties;
-  using PhysicalDeviceDepthStencilResolvePropertiesKHR = PhysicalDeviceDepthStencilResolveProperties;
-  struct PhysicalDeviceDescriptorIndexingFeatures;
-  using PhysicalDeviceDescriptorIndexingFeaturesEXT = PhysicalDeviceDescriptorIndexingFeatures;
-  struct PhysicalDeviceDescriptorIndexingProperties;
-  using PhysicalDeviceDescriptorIndexingPropertiesEXT = PhysicalDeviceDescriptorIndexingProperties;
-  struct PhysicalDeviceDeviceGeneratedCommandsFeaturesNV;
-  struct PhysicalDeviceDeviceGeneratedCommandsPropertiesNV;
-  struct PhysicalDeviceDeviceMemoryReportFeaturesEXT;
-  struct PhysicalDeviceDiagnosticsConfigFeaturesNV;
-  struct PhysicalDeviceDiscardRectanglePropertiesEXT;
-  struct PhysicalDeviceDriverProperties;
-  using PhysicalDeviceDriverPropertiesKHR = PhysicalDeviceDriverProperties;
-  struct PhysicalDeviceDrmPropertiesEXT;
-  struct PhysicalDeviceExclusiveScissorFeaturesNV;
-  struct PhysicalDeviceExtendedDynamicState2FeaturesEXT;
-  struct PhysicalDeviceExtendedDynamicStateFeaturesEXT;
-  struct PhysicalDeviceExternalBufferInfo;
-  using PhysicalDeviceExternalBufferInfoKHR = PhysicalDeviceExternalBufferInfo;
-  struct PhysicalDeviceExternalFenceInfo;
-  using PhysicalDeviceExternalFenceInfoKHR = PhysicalDeviceExternalFenceInfo;
-  struct PhysicalDeviceExternalImageFormatInfo;
-  using PhysicalDeviceExternalImageFormatInfoKHR = PhysicalDeviceExternalImageFormatInfo;
-  struct PhysicalDeviceExternalMemoryHostPropertiesEXT;
-  struct PhysicalDeviceExternalSemaphoreInfo;
-  using PhysicalDeviceExternalSemaphoreInfoKHR = PhysicalDeviceExternalSemaphoreInfo;
-  struct PhysicalDeviceFeatures;
-  struct PhysicalDeviceFeatures2;
-  using PhysicalDeviceFeatures2KHR = PhysicalDeviceFeatures2;
-  struct PhysicalDeviceFloatControlsProperties;
-  using PhysicalDeviceFloatControlsPropertiesKHR = PhysicalDeviceFloatControlsProperties;
-  struct PhysicalDeviceFragmentDensityMap2FeaturesEXT;
-  struct PhysicalDeviceFragmentDensityMap2PropertiesEXT;
-  struct PhysicalDeviceFragmentDensityMapFeaturesEXT;
-  struct PhysicalDeviceFragmentDensityMapPropertiesEXT;
-  struct PhysicalDeviceFragmentShaderBarycentricFeaturesNV;
-  struct PhysicalDeviceFragmentShaderInterlockFeaturesEXT;
-  struct PhysicalDeviceFragmentShadingRateEnumsFeaturesNV;
-  struct PhysicalDeviceFragmentShadingRateEnumsPropertiesNV;
-  struct PhysicalDeviceFragmentShadingRateFeaturesKHR;
-  struct PhysicalDeviceFragmentShadingRateKHR;
-  struct PhysicalDeviceFragmentShadingRatePropertiesKHR;
-  struct PhysicalDeviceGlobalPriorityQueryFeaturesEXT;
-  struct PhysicalDeviceGroupProperties;
-  using PhysicalDeviceGroupPropertiesKHR = PhysicalDeviceGroupProperties;
-  struct PhysicalDeviceHostQueryResetFeatures;
-  using PhysicalDeviceHostQueryResetFeaturesEXT = PhysicalDeviceHostQueryResetFeatures;
-  struct PhysicalDeviceIDProperties;
-  using PhysicalDeviceIDPropertiesKHR = PhysicalDeviceIDProperties;
-  struct PhysicalDeviceImageDrmFormatModifierInfoEXT;
-  struct PhysicalDeviceImageFormatInfo2;
-  using PhysicalDeviceImageFormatInfo2KHR = PhysicalDeviceImageFormatInfo2;
-  struct PhysicalDeviceImageRobustnessFeaturesEXT;
-  struct PhysicalDeviceImageViewImageFormatInfoEXT;
-  struct PhysicalDeviceImagelessFramebufferFeatures;
-  using PhysicalDeviceImagelessFramebufferFeaturesKHR = PhysicalDeviceImagelessFramebufferFeatures;
-  struct PhysicalDeviceIndexTypeUint8FeaturesEXT;
-  struct PhysicalDeviceInheritedViewportScissorFeaturesNV;
-  struct PhysicalDeviceInlineUniformBlockFeaturesEXT;
-  struct PhysicalDeviceInlineUniformBlockPropertiesEXT;
-  struct PhysicalDeviceLimits;
-  struct PhysicalDeviceLineRasterizationFeaturesEXT;
-  struct PhysicalDeviceLineRasterizationPropertiesEXT;
-  struct PhysicalDeviceMaintenance3Properties;
-  using PhysicalDeviceMaintenance3PropertiesKHR = PhysicalDeviceMaintenance3Properties;
-  struct PhysicalDeviceMemoryBudgetPropertiesEXT;
-  struct PhysicalDeviceMemoryPriorityFeaturesEXT;
-  struct PhysicalDeviceMemoryProperties;
-  struct PhysicalDeviceMemoryProperties2;
-  using PhysicalDeviceMemoryProperties2KHR = PhysicalDeviceMemoryProperties2;
-  struct PhysicalDeviceMeshShaderFeaturesNV;
-  struct PhysicalDeviceMeshShaderPropertiesNV;
-  struct PhysicalDeviceMultiDrawFeaturesEXT;
-  struct PhysicalDeviceMultiDrawPropertiesEXT;
-  struct PhysicalDeviceMultiviewFeatures;
-  using PhysicalDeviceMultiviewFeaturesKHR = PhysicalDeviceMultiviewFeatures;
-  struct PhysicalDeviceMultiviewPerViewAttributesPropertiesNVX;
-  struct PhysicalDeviceMultiviewProperties;
-  using PhysicalDeviceMultiviewPropertiesKHR = PhysicalDeviceMultiviewProperties;
-  struct PhysicalDeviceMutableDescriptorTypeFeaturesVALVE;
-  struct PhysicalDevicePCIBusInfoPropertiesEXT;
-  struct PhysicalDevicePerformanceQueryFeaturesKHR;
-  struct PhysicalDevicePerformanceQueryPropertiesKHR;
-  struct PhysicalDevicePipelineCreationCacheControlFeaturesEXT;
-  struct PhysicalDevicePipelineExecutablePropertiesFeaturesKHR;
-  struct PhysicalDevicePointClippingProperties;
-  using PhysicalDevicePointClippingPropertiesKHR = PhysicalDevicePointClippingProperties;
-#if defined( VK_ENABLE_BETA_EXTENSIONS )
-  struct PhysicalDevicePortabilitySubsetFeaturesKHR;
-#endif /*VK_ENABLE_BETA_EXTENSIONS*/
-#if defined( VK_ENABLE_BETA_EXTENSIONS )
-  struct PhysicalDevicePortabilitySubsetPropertiesKHR;
-#endif /*VK_ENABLE_BETA_EXTENSIONS*/
-  struct PhysicalDevicePrivateDataFeaturesEXT;
-  struct PhysicalDeviceProperties;
-  struct PhysicalDeviceProperties2;
-  using PhysicalDeviceProperties2KHR = PhysicalDeviceProperties2;
-  struct PhysicalDeviceProtectedMemoryFeatures;
-  struct PhysicalDeviceProtectedMemoryProperties;
-  struct PhysicalDeviceProvokingVertexFeaturesEXT;
-  struct PhysicalDeviceProvokingVertexPropertiesEXT;
-  struct PhysicalDevicePushDescriptorPropertiesKHR;
-  struct PhysicalDeviceRayQueryFeaturesKHR;
-  struct PhysicalDeviceRayTracingMotionBlurFeaturesNV;
-  struct PhysicalDeviceRayTracingPipelineFeaturesKHR;
-  struct PhysicalDeviceRayTracingPipelinePropertiesKHR;
+  struct AccelerationStructureInfoNV;
+  struct AccelerationStructureCreateInfoNV;
+  struct BindAccelerationStructureMemoryInfoNV;
+  struct WriteDescriptorSetAccelerationStructureNV;
+  struct AccelerationStructureMemoryRequirementsInfoNV;
   struct PhysicalDeviceRayTracingPropertiesNV;
+
+  //=== VK_NV_representative_fragment_test ===
   struct PhysicalDeviceRepresentativeFragmentTestFeaturesNV;
-  struct PhysicalDeviceRobustness2FeaturesEXT;
-  struct PhysicalDeviceRobustness2PropertiesEXT;
-  struct PhysicalDeviceSampleLocationsPropertiesEXT;
-  struct PhysicalDeviceSamplerFilterMinmaxProperties;
-  using PhysicalDeviceSamplerFilterMinmaxPropertiesEXT = PhysicalDeviceSamplerFilterMinmaxProperties;
-  struct PhysicalDeviceSamplerYcbcrConversionFeatures;
-  using PhysicalDeviceSamplerYcbcrConversionFeaturesKHR = PhysicalDeviceSamplerYcbcrConversionFeatures;
-  struct PhysicalDeviceScalarBlockLayoutFeatures;
-  using PhysicalDeviceScalarBlockLayoutFeaturesEXT = PhysicalDeviceScalarBlockLayoutFeatures;
-  struct PhysicalDeviceSeparateDepthStencilLayoutsFeatures;
-  using PhysicalDeviceSeparateDepthStencilLayoutsFeaturesKHR = PhysicalDeviceSeparateDepthStencilLayoutsFeatures;
-  struct PhysicalDeviceShaderAtomicFloatFeaturesEXT;
-  struct PhysicalDeviceShaderAtomicInt64Features;
-  using PhysicalDeviceShaderAtomicInt64FeaturesKHR = PhysicalDeviceShaderAtomicInt64Features;
-  struct PhysicalDeviceShaderClockFeaturesKHR;
-  struct PhysicalDeviceShaderCoreProperties2AMD;
-  struct PhysicalDeviceShaderCorePropertiesAMD;
-  struct PhysicalDeviceShaderDemoteToHelperInvocationFeaturesEXT;
-  struct PhysicalDeviceShaderDrawParametersFeatures;
-  using PhysicalDeviceShaderDrawParameterFeatures = PhysicalDeviceShaderDrawParametersFeatures;
-  struct PhysicalDeviceShaderFloat16Int8Features;
-  using PhysicalDeviceFloat16Int8FeaturesKHR       = PhysicalDeviceShaderFloat16Int8Features;
-  using PhysicalDeviceShaderFloat16Int8FeaturesKHR = PhysicalDeviceShaderFloat16Int8Features;
-  struct PhysicalDeviceShaderImageAtomicInt64FeaturesEXT;
-  struct PhysicalDeviceShaderImageFootprintFeaturesNV;
-  struct PhysicalDeviceShaderIntegerFunctions2FeaturesINTEL;
-  struct PhysicalDeviceShaderSMBuiltinsFeaturesNV;
-  struct PhysicalDeviceShaderSMBuiltinsPropertiesNV;
-  struct PhysicalDeviceShaderSubgroupExtendedTypesFeatures;
-  using PhysicalDeviceShaderSubgroupExtendedTypesFeaturesKHR = PhysicalDeviceShaderSubgroupExtendedTypesFeatures;
-  struct PhysicalDeviceShaderSubgroupUniformControlFlowFeaturesKHR;
-  struct PhysicalDeviceShaderTerminateInvocationFeaturesKHR;
-  struct PhysicalDeviceShadingRateImageFeaturesNV;
-  struct PhysicalDeviceShadingRateImagePropertiesNV;
-  struct PhysicalDeviceSparseImageFormatInfo2;
-  using PhysicalDeviceSparseImageFormatInfo2KHR = PhysicalDeviceSparseImageFormatInfo2;
-  struct PhysicalDeviceSparseProperties;
-  struct PhysicalDeviceSubgroupProperties;
-  struct PhysicalDeviceSubgroupSizeControlFeaturesEXT;
-  struct PhysicalDeviceSubgroupSizeControlPropertiesEXT;
-  struct PhysicalDeviceSubpassShadingFeaturesHUAWEI;
-  struct PhysicalDeviceSubpassShadingPropertiesHUAWEI;
-  struct PhysicalDeviceSurfaceInfo2KHR;
-  struct PhysicalDeviceSynchronization2FeaturesKHR;
-  struct PhysicalDeviceTexelBufferAlignmentFeaturesEXT;
-  struct PhysicalDeviceTexelBufferAlignmentPropertiesEXT;
-  struct PhysicalDeviceTextureCompressionASTCHDRFeaturesEXT;
-  struct PhysicalDeviceTimelineSemaphoreFeatures;
-  using PhysicalDeviceTimelineSemaphoreFeaturesKHR = PhysicalDeviceTimelineSemaphoreFeatures;
-  struct PhysicalDeviceTimelineSemaphoreProperties;
-  using PhysicalDeviceTimelineSemaphorePropertiesKHR = PhysicalDeviceTimelineSemaphoreProperties;
-  struct PhysicalDeviceToolPropertiesEXT;
-  struct PhysicalDeviceTransformFeedbackFeaturesEXT;
-  struct PhysicalDeviceTransformFeedbackPropertiesEXT;
-  struct PhysicalDeviceUniformBufferStandardLayoutFeatures;
-  using PhysicalDeviceUniformBufferStandardLayoutFeaturesKHR = PhysicalDeviceUniformBufferStandardLayoutFeatures;
-  struct PhysicalDeviceVariablePointersFeatures;
-  using PhysicalDeviceVariablePointerFeatures     = PhysicalDeviceVariablePointersFeatures;
-  using PhysicalDeviceVariablePointerFeaturesKHR  = PhysicalDeviceVariablePointersFeatures;
-  using PhysicalDeviceVariablePointersFeaturesKHR = PhysicalDeviceVariablePointersFeatures;
-  struct PhysicalDeviceVertexAttributeDivisorFeaturesEXT;
-  struct PhysicalDeviceVertexAttributeDivisorPropertiesEXT;
-  struct PhysicalDeviceVertexInputDynamicStateFeaturesEXT;
-#if defined( VK_ENABLE_BETA_EXTENSIONS )
-  struct PhysicalDeviceVideoFormatInfoKHR;
-#endif /*VK_ENABLE_BETA_EXTENSIONS*/
-  struct PhysicalDeviceVulkan11Features;
-  struct PhysicalDeviceVulkan11Properties;
-  struct PhysicalDeviceVulkan12Features;
-  struct PhysicalDeviceVulkan12Properties;
-  struct PhysicalDeviceVulkanMemoryModelFeatures;
-  using PhysicalDeviceVulkanMemoryModelFeaturesKHR = PhysicalDeviceVulkanMemoryModelFeatures;
-  struct PhysicalDeviceWorkgroupMemoryExplicitLayoutFeaturesKHR;
-  struct PhysicalDeviceYcbcr2Plane444FormatsFeaturesEXT;
-  struct PhysicalDeviceYcbcrImageArraysFeaturesEXT;
-  struct PhysicalDeviceZeroInitializeWorkgroupMemoryFeaturesKHR;
-  struct PipelineCacheCreateInfo;
-  struct PipelineColorBlendAdvancedStateCreateInfoEXT;
-  struct PipelineColorBlendAttachmentState;
-  struct PipelineColorBlendStateCreateInfo;
-  struct PipelineColorWriteCreateInfoEXT;
-  struct PipelineCompilerControlCreateInfoAMD;
-  struct PipelineCoverageModulationStateCreateInfoNV;
-  struct PipelineCoverageReductionStateCreateInfoNV;
-  struct PipelineCoverageToColorStateCreateInfoNV;
-  struct PipelineCreationFeedbackCreateInfoEXT;
-  struct PipelineCreationFeedbackEXT;
-  struct PipelineDepthStencilStateCreateInfo;
-  struct PipelineDiscardRectangleStateCreateInfoEXT;
-  struct PipelineDynamicStateCreateInfo;
-  struct PipelineExecutableInfoKHR;
-  struct PipelineExecutableInternalRepresentationKHR;
-  struct PipelineExecutablePropertiesKHR;
-  struct PipelineExecutableStatisticKHR;
-  union PipelineExecutableStatisticValueKHR;
-  struct PipelineFragmentShadingRateEnumStateCreateInfoNV;
-  struct PipelineFragmentShadingRateStateCreateInfoKHR;
-  struct PipelineInfoKHR;
-  struct PipelineInputAssemblyStateCreateInfo;
-  struct PipelineLayoutCreateInfo;
-  struct PipelineLibraryCreateInfoKHR;
-  struct PipelineMultisampleStateCreateInfo;
-  struct PipelineRasterizationConservativeStateCreateInfoEXT;
-  struct PipelineRasterizationDepthClipStateCreateInfoEXT;
-  struct PipelineRasterizationLineStateCreateInfoEXT;
-  struct PipelineRasterizationProvokingVertexStateCreateInfoEXT;
-  struct PipelineRasterizationStateCreateInfo;
-  struct PipelineRasterizationStateRasterizationOrderAMD;
-  struct PipelineRasterizationStateStreamCreateInfoEXT;
   struct PipelineRepresentativeFragmentTestStateCreateInfoNV;
-  struct PipelineSampleLocationsStateCreateInfoEXT;
-  struct PipelineShaderStageCreateInfo;
-  struct PipelineShaderStageRequiredSubgroupSizeCreateInfoEXT;
-  struct PipelineTessellationDomainOriginStateCreateInfo;
-  using PipelineTessellationDomainOriginStateCreateInfoKHR = PipelineTessellationDomainOriginStateCreateInfo;
-  struct PipelineTessellationStateCreateInfo;
-  struct PipelineVertexInputDivisorStateCreateInfoEXT;
-  struct PipelineVertexInputStateCreateInfo;
-  struct PipelineViewportCoarseSampleOrderStateCreateInfoNV;
-  struct PipelineViewportExclusiveScissorStateCreateInfoNV;
-  struct PipelineViewportShadingRateImageStateCreateInfoNV;
-  struct PipelineViewportStateCreateInfo;
-  struct PipelineViewportSwizzleStateCreateInfoNV;
-  struct PipelineViewportWScalingStateCreateInfoNV;
-#if defined( VK_USE_PLATFORM_GGP )
-  struct PresentFrameTokenGGP;
-#endif /*VK_USE_PLATFORM_GGP*/
-  struct PresentInfoKHR;
-  struct PresentRegionKHR;
-  struct PresentRegionsKHR;
-  struct PresentTimeGOOGLE;
-  struct PresentTimesInfoGOOGLE;
-  struct PrivateDataSlotCreateInfoEXT;
-  struct ProtectedSubmitInfo;
-  struct PushConstantRange;
-  struct QueryPoolCreateInfo;
-  struct QueryPoolPerformanceCreateInfoKHR;
-  struct QueryPoolPerformanceQueryCreateInfoINTEL;
-  using QueryPoolCreateInfoINTEL = QueryPoolPerformanceQueryCreateInfoINTEL;
-  struct QueueFamilyCheckpointProperties2NV;
-  struct QueueFamilyCheckpointPropertiesNV;
-  struct QueueFamilyGlobalPriorityPropertiesEXT;
-  struct QueueFamilyProperties;
-  struct QueueFamilyProperties2;
-  using QueueFamilyProperties2KHR = QueueFamilyProperties2;
-  struct RayTracingPipelineCreateInfoKHR;
-  struct RayTracingPipelineCreateInfoNV;
-  struct RayTracingPipelineInterfaceCreateInfoKHR;
-  struct RayTracingShaderGroupCreateInfoKHR;
-  struct RayTracingShaderGroupCreateInfoNV;
-  struct Rect2D;
-  struct RectLayerKHR;
-  struct RefreshCycleDurationGOOGLE;
-  struct RenderPassAttachmentBeginInfo;
-  using RenderPassAttachmentBeginInfoKHR = RenderPassAttachmentBeginInfo;
-  struct RenderPassBeginInfo;
-  struct RenderPassCreateInfo;
-  struct RenderPassCreateInfo2;
-  using RenderPassCreateInfo2KHR = RenderPassCreateInfo2;
-  struct RenderPassFragmentDensityMapCreateInfoEXT;
-  struct RenderPassInputAttachmentAspectCreateInfo;
-  using RenderPassInputAttachmentAspectCreateInfoKHR = RenderPassInputAttachmentAspectCreateInfo;
-  struct RenderPassMultiviewCreateInfo;
-  using RenderPassMultiviewCreateInfoKHR = RenderPassMultiviewCreateInfo;
-  struct RenderPassSampleLocationsBeginInfoEXT;
-  struct RenderPassTransformBeginInfoQCOM;
-  struct ResolveImageInfo2KHR;
-  struct SRTDataNV;
-  struct SampleLocationEXT;
-  struct SampleLocationsInfoEXT;
-  struct SamplerCreateInfo;
-  struct SamplerCustomBorderColorCreateInfoEXT;
-  struct SamplerReductionModeCreateInfo;
-  using SamplerReductionModeCreateInfoEXT = SamplerReductionModeCreateInfo;
-  struct SamplerYcbcrConversionCreateInfo;
-  using SamplerYcbcrConversionCreateInfoKHR = SamplerYcbcrConversionCreateInfo;
-  struct SamplerYcbcrConversionImageFormatProperties;
-  using SamplerYcbcrConversionImageFormatPropertiesKHR = SamplerYcbcrConversionImageFormatProperties;
-  struct SamplerYcbcrConversionInfo;
-  using SamplerYcbcrConversionInfoKHR = SamplerYcbcrConversionInfo;
-#if defined( VK_USE_PLATFORM_SCREEN_QNX )
-  struct ScreenSurfaceCreateInfoQNX;
-#endif /*VK_USE_PLATFORM_SCREEN_QNX*/
-  struct SemaphoreCreateInfo;
-  struct SemaphoreGetFdInfoKHR;
-#if defined( VK_USE_PLATFORM_WIN32_KHR )
-  struct SemaphoreGetWin32HandleInfoKHR;
-#endif /*VK_USE_PLATFORM_WIN32_KHR*/
-#if defined( VK_USE_PLATFORM_FUCHSIA )
-  struct SemaphoreGetZirconHandleInfoFUCHSIA;
-#endif /*VK_USE_PLATFORM_FUCHSIA*/
-  struct SemaphoreSignalInfo;
-  using SemaphoreSignalInfoKHR = SemaphoreSignalInfo;
-  struct SemaphoreSubmitInfoKHR;
-  struct SemaphoreTypeCreateInfo;
-  using SemaphoreTypeCreateInfoKHR = SemaphoreTypeCreateInfo;
-  struct SemaphoreWaitInfo;
-  using SemaphoreWaitInfoKHR = SemaphoreWaitInfo;
-  struct SetStateFlagsIndirectCommandNV;
-  struct ShaderModuleCreateInfo;
-  struct ShaderModuleValidationCacheCreateInfoEXT;
-  struct ShaderResourceUsageAMD;
-  struct ShaderStatisticsInfoAMD;
-  struct ShadingRatePaletteNV;
-  struct SharedPresentSurfaceCapabilitiesKHR;
-  struct SparseBufferMemoryBindInfo;
-  struct SparseImageFormatProperties;
-  struct SparseImageFormatProperties2;
-  using SparseImageFormatProperties2KHR = SparseImageFormatProperties2;
-  struct SparseImageMemoryBind;
-  struct SparseImageMemoryBindInfo;
-  struct SparseImageMemoryRequirements;
-  struct SparseImageMemoryRequirements2;
-  using SparseImageMemoryRequirements2KHR = SparseImageMemoryRequirements2;
-  struct SparseImageOpaqueMemoryBindInfo;
-  struct SparseMemoryBind;
-  struct SpecializationInfo;
-  struct SpecializationMapEntry;
-  struct StencilOpState;
-#if defined( VK_USE_PLATFORM_GGP )
-  struct StreamDescriptorSurfaceCreateInfoGGP;
-#endif /*VK_USE_PLATFORM_GGP*/
-  struct StridedDeviceAddressRegionKHR;
-  struct SubmitInfo;
-  struct SubmitInfo2KHR;
-  struct SubpassBeginInfo;
-  using SubpassBeginInfoKHR = SubpassBeginInfo;
-  struct SubpassDependency;
-  struct SubpassDependency2;
-  using SubpassDependency2KHR = SubpassDependency2;
-  struct SubpassDescription;
-  struct SubpassDescription2;
-  using SubpassDescription2KHR = SubpassDescription2;
-  struct SubpassDescriptionDepthStencilResolve;
-  using SubpassDescriptionDepthStencilResolveKHR = SubpassDescriptionDepthStencilResolve;
-  struct SubpassEndInfo;
-  using SubpassEndInfoKHR = SubpassEndInfo;
-  struct SubpassSampleLocationsEXT;
-  struct SubpassShadingPipelineCreateInfoHUAWEI;
-  struct SubresourceLayout;
-  struct SurfaceCapabilities2EXT;
-  struct SurfaceCapabilities2KHR;
-#if defined( VK_USE_PLATFORM_WIN32_KHR )
-  struct SurfaceCapabilitiesFullScreenExclusiveEXT;
-#endif /*VK_USE_PLATFORM_WIN32_KHR*/
-  struct SurfaceCapabilitiesKHR;
-  struct SurfaceFormat2KHR;
-  struct SurfaceFormatKHR;
-#if defined( VK_USE_PLATFORM_WIN32_KHR )
-  struct SurfaceFullScreenExclusiveInfoEXT;
-#endif /*VK_USE_PLATFORM_WIN32_KHR*/
-#if defined( VK_USE_PLATFORM_WIN32_KHR )
-  struct SurfaceFullScreenExclusiveWin32InfoEXT;
-#endif /*VK_USE_PLATFORM_WIN32_KHR*/
-  struct SurfaceProtectedCapabilitiesKHR;
-  struct SwapchainCounterCreateInfoEXT;
-  struct SwapchainCreateInfoKHR;
-  struct SwapchainDisplayNativeHdrCreateInfoAMD;
-  struct TextureLODGatherFormatPropertiesAMD;
-  struct TimelineSemaphoreSubmitInfo;
-  using TimelineSemaphoreSubmitInfoKHR = TimelineSemaphoreSubmitInfo;
-  struct TraceRaysIndirectCommandKHR;
-  struct TransformMatrixKHR;
-  using TransformMatrixNV = TransformMatrixKHR;
-  struct ValidationCacheCreateInfoEXT;
-  struct ValidationFeaturesEXT;
-  struct ValidationFlagsEXT;
-  struct VertexInputAttributeDescription;
-  struct VertexInputAttributeDescription2EXT;
-  struct VertexInputBindingDescription;
-  struct VertexInputBindingDescription2EXT;
-  struct VertexInputBindingDivisorDescriptionEXT;
-#if defined( VK_USE_PLATFORM_VI_NN )
-  struct ViSurfaceCreateInfoNN;
-#endif /*VK_USE_PLATFORM_VI_NN*/
+
+  //=== VK_EXT_filter_cubic ===
+  struct PhysicalDeviceImageViewImageFormatInfoEXT;
+  struct FilterCubicImageViewImageFormatPropertiesEXT;
+
+  //=== VK_EXT_global_priority ===
+  struct DeviceQueueGlobalPriorityCreateInfoEXT;
+
+  //=== VK_EXT_external_memory_host ===
+  struct ImportMemoryHostPointerInfoEXT;
+  struct MemoryHostPointerPropertiesEXT;
+  struct PhysicalDeviceExternalMemoryHostPropertiesEXT;
+
+  //=== VK_KHR_shader_clock ===
+  struct PhysicalDeviceShaderClockFeaturesKHR;
+
+  //=== VK_AMD_pipeline_compiler_control ===
+  struct PipelineCompilerControlCreateInfoAMD;
+
+  //=== VK_EXT_calibrated_timestamps ===
+  struct CalibratedTimestampInfoEXT;
+
+  //=== VK_AMD_shader_core_properties ===
+  struct PhysicalDeviceShaderCorePropertiesAMD;
+
 #if defined( VK_ENABLE_BETA_EXTENSIONS )
-  struct VideoBeginCodingInfoKHR;
-#endif /*VK_ENABLE_BETA_EXTENSIONS*/
-#if defined( VK_ENABLE_BETA_EXTENSIONS )
-  struct VideoBindMemoryKHR;
-#endif /*VK_ENABLE_BETA_EXTENSIONS*/
-#if defined( VK_ENABLE_BETA_EXTENSIONS )
-  struct VideoCapabilitiesKHR;
-#endif /*VK_ENABLE_BETA_EXTENSIONS*/
-#if defined( VK_ENABLE_BETA_EXTENSIONS )
-  struct VideoCodingControlInfoKHR;
-#endif /*VK_ENABLE_BETA_EXTENSIONS*/
-#if defined( VK_ENABLE_BETA_EXTENSIONS )
-  struct VideoDecodeH264CapabilitiesEXT;
-#endif /*VK_ENABLE_BETA_EXTENSIONS*/
-#if defined( VK_ENABLE_BETA_EXTENSIONS )
-  struct VideoDecodeH264DpbSlotInfoEXT;
-#endif /*VK_ENABLE_BETA_EXTENSIONS*/
-#if defined( VK_ENABLE_BETA_EXTENSIONS )
-  struct VideoDecodeH264MvcEXT;
-#endif /*VK_ENABLE_BETA_EXTENSIONS*/
-#if defined( VK_ENABLE_BETA_EXTENSIONS )
-  struct VideoDecodeH264PictureInfoEXT;
-#endif /*VK_ENABLE_BETA_EXTENSIONS*/
-#if defined( VK_ENABLE_BETA_EXTENSIONS )
-  struct VideoDecodeH264ProfileEXT;
-#endif /*VK_ENABLE_BETA_EXTENSIONS*/
-#if defined( VK_ENABLE_BETA_EXTENSIONS )
-  struct VideoDecodeH264SessionCreateInfoEXT;
-#endif /*VK_ENABLE_BETA_EXTENSIONS*/
-#if defined( VK_ENABLE_BETA_EXTENSIONS )
-  struct VideoDecodeH264SessionParametersAddInfoEXT;
-#endif /*VK_ENABLE_BETA_EXTENSIONS*/
-#if defined( VK_ENABLE_BETA_EXTENSIONS )
-  struct VideoDecodeH264SessionParametersCreateInfoEXT;
-#endif /*VK_ENABLE_BETA_EXTENSIONS*/
-#if defined( VK_ENABLE_BETA_EXTENSIONS )
+  //=== VK_EXT_video_decode_h265 ===
+  struct VideoDecodeH265ProfileEXT;
   struct VideoDecodeH265CapabilitiesEXT;
-#endif /*VK_ENABLE_BETA_EXTENSIONS*/
-#if defined( VK_ENABLE_BETA_EXTENSIONS )
+  struct VideoDecodeH265SessionCreateInfoEXT;
+  struct VideoDecodeH265SessionParametersCreateInfoEXT;
+  struct VideoDecodeH265SessionParametersAddInfoEXT;
+  struct VideoDecodeH265PictureInfoEXT;
   struct VideoDecodeH265DpbSlotInfoEXT;
 #endif /*VK_ENABLE_BETA_EXTENSIONS*/
+
+  //=== VK_AMD_memory_overallocation_behavior ===
+  struct DeviceMemoryOverallocationCreateInfoAMD;
+
+  //=== VK_EXT_vertex_attribute_divisor ===
+  struct PhysicalDeviceVertexAttributeDivisorPropertiesEXT;
+  struct VertexInputBindingDivisorDescriptionEXT;
+  struct PipelineVertexInputDivisorStateCreateInfoEXT;
+  struct PhysicalDeviceVertexAttributeDivisorFeaturesEXT;
+
+#if defined( VK_USE_PLATFORM_GGP )
+  //=== VK_GGP_frame_token ===
+  struct PresentFrameTokenGGP;
+#endif /*VK_USE_PLATFORM_GGP*/
+
+  //=== VK_EXT_pipeline_creation_feedback ===
+  struct PipelineCreationFeedbackCreateInfoEXT;
+  struct PipelineCreationFeedbackEXT;
+
+  //=== VK_NV_compute_shader_derivatives ===
+  struct PhysicalDeviceComputeShaderDerivativesFeaturesNV;
+
+  //=== VK_NV_mesh_shader ===
+  struct PhysicalDeviceMeshShaderFeaturesNV;
+  struct PhysicalDeviceMeshShaderPropertiesNV;
+  struct DrawMeshTasksIndirectCommandNV;
+
+  //=== VK_NV_fragment_shader_barycentric ===
+  struct PhysicalDeviceFragmentShaderBarycentricFeaturesNV;
+
+  //=== VK_NV_shader_image_footprint ===
+  struct PhysicalDeviceShaderImageFootprintFeaturesNV;
+
+  //=== VK_NV_scissor_exclusive ===
+  struct PipelineViewportExclusiveScissorStateCreateInfoNV;
+  struct PhysicalDeviceExclusiveScissorFeaturesNV;
+
+  //=== VK_NV_device_diagnostic_checkpoints ===
+  struct QueueFamilyCheckpointPropertiesNV;
+  struct CheckpointDataNV;
+
+  //=== VK_INTEL_shader_integer_functions2 ===
+  struct PhysicalDeviceShaderIntegerFunctions2FeaturesINTEL;
+
+  //=== VK_INTEL_performance_query ===
+  union PerformanceValueDataINTEL;
+  struct PerformanceValueINTEL;
+  struct InitializePerformanceApiInfoINTEL;
+  struct QueryPoolPerformanceQueryCreateInfoINTEL;
+  using QueryPoolCreateInfoINTEL = QueryPoolPerformanceQueryCreateInfoINTEL;
+  struct PerformanceMarkerInfoINTEL;
+  struct PerformanceStreamMarkerInfoINTEL;
+  struct PerformanceOverrideInfoINTEL;
+  struct PerformanceConfigurationAcquireInfoINTEL;
+
+  //=== VK_EXT_pci_bus_info ===
+  struct PhysicalDevicePCIBusInfoPropertiesEXT;
+
+  //=== VK_AMD_display_native_hdr ===
+  struct DisplayNativeHdrSurfaceCapabilitiesAMD;
+  struct SwapchainDisplayNativeHdrCreateInfoAMD;
+
+#if defined( VK_USE_PLATFORM_FUCHSIA )
+  //=== VK_FUCHSIA_imagepipe_surface ===
+  struct ImagePipeSurfaceCreateInfoFUCHSIA;
+#endif /*VK_USE_PLATFORM_FUCHSIA*/
+
+  //=== VK_KHR_shader_terminate_invocation ===
+  struct PhysicalDeviceShaderTerminateInvocationFeaturesKHR;
+
+#if defined( VK_USE_PLATFORM_METAL_EXT )
+  //=== VK_EXT_metal_surface ===
+  struct MetalSurfaceCreateInfoEXT;
+#endif /*VK_USE_PLATFORM_METAL_EXT*/
+
+  //=== VK_EXT_fragment_density_map ===
+  struct PhysicalDeviceFragmentDensityMapFeaturesEXT;
+  struct PhysicalDeviceFragmentDensityMapPropertiesEXT;
+  struct RenderPassFragmentDensityMapCreateInfoEXT;
+
+  //=== VK_EXT_subgroup_size_control ===
+  struct PhysicalDeviceSubgroupSizeControlFeaturesEXT;
+  struct PhysicalDeviceSubgroupSizeControlPropertiesEXT;
+  struct PipelineShaderStageRequiredSubgroupSizeCreateInfoEXT;
+
+  //=== VK_KHR_fragment_shading_rate ===
+  struct FragmentShadingRateAttachmentInfoKHR;
+  struct PipelineFragmentShadingRateStateCreateInfoKHR;
+  struct PhysicalDeviceFragmentShadingRateFeaturesKHR;
+  struct PhysicalDeviceFragmentShadingRatePropertiesKHR;
+  struct PhysicalDeviceFragmentShadingRateKHR;
+
+  //=== VK_AMD_shader_core_properties2 ===
+  struct PhysicalDeviceShaderCoreProperties2AMD;
+
+  //=== VK_AMD_device_coherent_memory ===
+  struct PhysicalDeviceCoherentMemoryFeaturesAMD;
+
+  //=== VK_EXT_shader_image_atomic_int64 ===
+  struct PhysicalDeviceShaderImageAtomicInt64FeaturesEXT;
+
+  //=== VK_EXT_memory_budget ===
+  struct PhysicalDeviceMemoryBudgetPropertiesEXT;
+
+  //=== VK_EXT_memory_priority ===
+  struct PhysicalDeviceMemoryPriorityFeaturesEXT;
+  struct MemoryPriorityAllocateInfoEXT;
+
+  //=== VK_KHR_surface_protected_capabilities ===
+  struct SurfaceProtectedCapabilitiesKHR;
+
+  //=== VK_NV_dedicated_allocation_image_aliasing ===
+  struct PhysicalDeviceDedicatedAllocationImageAliasingFeaturesNV;
+
+  //=== VK_EXT_buffer_device_address ===
+  struct PhysicalDeviceBufferDeviceAddressFeaturesEXT;
+  using PhysicalDeviceBufferAddressFeaturesEXT = PhysicalDeviceBufferDeviceAddressFeaturesEXT;
+  struct BufferDeviceAddressCreateInfoEXT;
+
+  //=== VK_EXT_tooling_info ===
+  struct PhysicalDeviceToolPropertiesEXT;
+
+  //=== VK_EXT_validation_features ===
+  struct ValidationFeaturesEXT;
+
+  //=== VK_KHR_present_wait ===
+  struct PhysicalDevicePresentWaitFeaturesKHR;
+
+  //=== VK_NV_cooperative_matrix ===
+  struct CooperativeMatrixPropertiesNV;
+  struct PhysicalDeviceCooperativeMatrixFeaturesNV;
+  struct PhysicalDeviceCooperativeMatrixPropertiesNV;
+
+  //=== VK_NV_coverage_reduction_mode ===
+  struct PhysicalDeviceCoverageReductionModeFeaturesNV;
+  struct PipelineCoverageReductionStateCreateInfoNV;
+  struct FramebufferMixedSamplesCombinationNV;
+
+  //=== VK_EXT_fragment_shader_interlock ===
+  struct PhysicalDeviceFragmentShaderInterlockFeaturesEXT;
+
+  //=== VK_EXT_ycbcr_image_arrays ===
+  struct PhysicalDeviceYcbcrImageArraysFeaturesEXT;
+
+  //=== VK_EXT_provoking_vertex ===
+  struct PhysicalDeviceProvokingVertexFeaturesEXT;
+  struct PhysicalDeviceProvokingVertexPropertiesEXT;
+  struct PipelineRasterizationProvokingVertexStateCreateInfoEXT;
+
+#if defined( VK_USE_PLATFORM_WIN32_KHR )
+  //=== VK_EXT_full_screen_exclusive ===
+  struct SurfaceFullScreenExclusiveInfoEXT;
+  struct SurfaceCapabilitiesFullScreenExclusiveEXT;
+  struct SurfaceFullScreenExclusiveWin32InfoEXT;
+#endif /*VK_USE_PLATFORM_WIN32_KHR*/
+
+  //=== VK_EXT_headless_surface ===
+  struct HeadlessSurfaceCreateInfoEXT;
+
+  //=== VK_EXT_line_rasterization ===
+  struct PhysicalDeviceLineRasterizationFeaturesEXT;
+  struct PhysicalDeviceLineRasterizationPropertiesEXT;
+  struct PipelineRasterizationLineStateCreateInfoEXT;
+
+  //=== VK_EXT_shader_atomic_float ===
+  struct PhysicalDeviceShaderAtomicFloatFeaturesEXT;
+
+  //=== VK_EXT_index_type_uint8 ===
+  struct PhysicalDeviceIndexTypeUint8FeaturesEXT;
+
+  //=== VK_EXT_extended_dynamic_state ===
+  struct PhysicalDeviceExtendedDynamicStateFeaturesEXT;
+
+  //=== VK_KHR_pipeline_executable_properties ===
+  struct PhysicalDevicePipelineExecutablePropertiesFeaturesKHR;
+  struct PipelineInfoKHR;
+  struct PipelineExecutablePropertiesKHR;
+  struct PipelineExecutableInfoKHR;
+  union PipelineExecutableStatisticValueKHR;
+  struct PipelineExecutableStatisticKHR;
+  struct PipelineExecutableInternalRepresentationKHR;
+
+  //=== VK_EXT_shader_atomic_float2 ===
+  struct PhysicalDeviceShaderAtomicFloat2FeaturesEXT;
+
+  //=== VK_EXT_shader_demote_to_helper_invocation ===
+  struct PhysicalDeviceShaderDemoteToHelperInvocationFeaturesEXT;
+
+  //=== VK_NV_device_generated_commands ===
+  struct PhysicalDeviceDeviceGeneratedCommandsPropertiesNV;
+  struct PhysicalDeviceDeviceGeneratedCommandsFeaturesNV;
+  struct GraphicsShaderGroupCreateInfoNV;
+  struct GraphicsPipelineShaderGroupsCreateInfoNV;
+  struct BindShaderGroupIndirectCommandNV;
+  struct BindIndexBufferIndirectCommandNV;
+  struct BindVertexBufferIndirectCommandNV;
+  struct SetStateFlagsIndirectCommandNV;
+  struct IndirectCommandsStreamNV;
+  struct IndirectCommandsLayoutTokenNV;
+  struct IndirectCommandsLayoutCreateInfoNV;
+  struct GeneratedCommandsInfoNV;
+  struct GeneratedCommandsMemoryRequirementsInfoNV;
+
+  //=== VK_NV_inherited_viewport_scissor ===
+  struct PhysicalDeviceInheritedViewportScissorFeaturesNV;
+  struct CommandBufferInheritanceViewportScissorInfoNV;
+
+  //=== VK_KHR_shader_integer_dot_product ===
+  struct PhysicalDeviceShaderIntegerDotProductFeaturesKHR;
+  struct PhysicalDeviceShaderIntegerDotProductPropertiesKHR;
+
+  //=== VK_EXT_texel_buffer_alignment ===
+  struct PhysicalDeviceTexelBufferAlignmentFeaturesEXT;
+  struct PhysicalDeviceTexelBufferAlignmentPropertiesEXT;
+
+  //=== VK_QCOM_render_pass_transform ===
+  struct RenderPassTransformBeginInfoQCOM;
+  struct CommandBufferInheritanceRenderPassTransformInfoQCOM;
+
+  //=== VK_EXT_device_memory_report ===
+  struct PhysicalDeviceDeviceMemoryReportFeaturesEXT;
+  struct DeviceDeviceMemoryReportCreateInfoEXT;
+  struct DeviceMemoryReportCallbackDataEXT;
+
+  //=== VK_EXT_robustness2 ===
+  struct PhysicalDeviceRobustness2FeaturesEXT;
+  struct PhysicalDeviceRobustness2PropertiesEXT;
+
+  //=== VK_EXT_custom_border_color ===
+  struct SamplerCustomBorderColorCreateInfoEXT;
+  struct PhysicalDeviceCustomBorderColorPropertiesEXT;
+  struct PhysicalDeviceCustomBorderColorFeaturesEXT;
+
+  //=== VK_KHR_pipeline_library ===
+  struct PipelineLibraryCreateInfoKHR;
+
+  //=== VK_KHR_present_id ===
+  struct PresentIdKHR;
+  struct PhysicalDevicePresentIdFeaturesKHR;
+
+  //=== VK_EXT_private_data ===
+  struct PhysicalDevicePrivateDataFeaturesEXT;
+  struct DevicePrivateDataCreateInfoEXT;
+  struct PrivateDataSlotCreateInfoEXT;
+
+  //=== VK_EXT_pipeline_creation_cache_control ===
+  struct PhysicalDevicePipelineCreationCacheControlFeaturesEXT;
+
 #if defined( VK_ENABLE_BETA_EXTENSIONS )
-  struct VideoDecodeH265PictureInfoEXT;
-#endif /*VK_ENABLE_BETA_EXTENSIONS*/
-#if defined( VK_ENABLE_BETA_EXTENSIONS )
-  struct VideoDecodeH265ProfileEXT;
-#endif /*VK_ENABLE_BETA_EXTENSIONS*/
-#if defined( VK_ENABLE_BETA_EXTENSIONS )
-  struct VideoDecodeH265SessionCreateInfoEXT;
-#endif /*VK_ENABLE_BETA_EXTENSIONS*/
-#if defined( VK_ENABLE_BETA_EXTENSIONS )
-  struct VideoDecodeH265SessionParametersAddInfoEXT;
-#endif /*VK_ENABLE_BETA_EXTENSIONS*/
-#if defined( VK_ENABLE_BETA_EXTENSIONS )
-  struct VideoDecodeH265SessionParametersCreateInfoEXT;
-#endif /*VK_ENABLE_BETA_EXTENSIONS*/
-#if defined( VK_ENABLE_BETA_EXTENSIONS )
-  struct VideoDecodeInfoKHR;
-#endif /*VK_ENABLE_BETA_EXTENSIONS*/
-#if defined( VK_ENABLE_BETA_EXTENSIONS )
-  struct VideoEncodeH264CapabilitiesEXT;
-#endif /*VK_ENABLE_BETA_EXTENSIONS*/
-#if defined( VK_ENABLE_BETA_EXTENSIONS )
-  struct VideoEncodeH264DpbSlotInfoEXT;
-#endif /*VK_ENABLE_BETA_EXTENSIONS*/
-#if defined( VK_ENABLE_BETA_EXTENSIONS )
-  struct VideoEncodeH264EmitPictureParametersEXT;
-#endif /*VK_ENABLE_BETA_EXTENSIONS*/
-#if defined( VK_ENABLE_BETA_EXTENSIONS )
-  struct VideoEncodeH264NaluSliceEXT;
-#endif /*VK_ENABLE_BETA_EXTENSIONS*/
-#if defined( VK_ENABLE_BETA_EXTENSIONS )
-  struct VideoEncodeH264ProfileEXT;
-#endif /*VK_ENABLE_BETA_EXTENSIONS*/
-#if defined( VK_ENABLE_BETA_EXTENSIONS )
-  struct VideoEncodeH264SessionCreateInfoEXT;
-#endif /*VK_ENABLE_BETA_EXTENSIONS*/
-#if defined( VK_ENABLE_BETA_EXTENSIONS )
-  struct VideoEncodeH264SessionParametersAddInfoEXT;
-#endif /*VK_ENABLE_BETA_EXTENSIONS*/
-#if defined( VK_ENABLE_BETA_EXTENSIONS )
-  struct VideoEncodeH264SessionParametersCreateInfoEXT;
-#endif /*VK_ENABLE_BETA_EXTENSIONS*/
-#if defined( VK_ENABLE_BETA_EXTENSIONS )
-  struct VideoEncodeH264VclFrameInfoEXT;
-#endif /*VK_ENABLE_BETA_EXTENSIONS*/
-#if defined( VK_ENABLE_BETA_EXTENSIONS )
+  //=== VK_KHR_video_encode_queue ===
   struct VideoEncodeInfoKHR;
-#endif /*VK_ENABLE_BETA_EXTENSIONS*/
-#if defined( VK_ENABLE_BETA_EXTENSIONS )
   struct VideoEncodeRateControlInfoKHR;
 #endif /*VK_ENABLE_BETA_EXTENSIONS*/
-#if defined( VK_ENABLE_BETA_EXTENSIONS )
-  struct VideoEndCodingInfoKHR;
-#endif /*VK_ENABLE_BETA_EXTENSIONS*/
-#if defined( VK_ENABLE_BETA_EXTENSIONS )
-  struct VideoFormatPropertiesKHR;
-#endif /*VK_ENABLE_BETA_EXTENSIONS*/
-#if defined( VK_ENABLE_BETA_EXTENSIONS )
-  struct VideoGetMemoryPropertiesKHR;
-#endif /*VK_ENABLE_BETA_EXTENSIONS*/
-#if defined( VK_ENABLE_BETA_EXTENSIONS )
-  struct VideoPictureResourceKHR;
-#endif /*VK_ENABLE_BETA_EXTENSIONS*/
-#if defined( VK_ENABLE_BETA_EXTENSIONS )
-  struct VideoProfileKHR;
-#endif /*VK_ENABLE_BETA_EXTENSIONS*/
-#if defined( VK_ENABLE_BETA_EXTENSIONS )
-  struct VideoProfilesKHR;
-#endif /*VK_ENABLE_BETA_EXTENSIONS*/
-#if defined( VK_ENABLE_BETA_EXTENSIONS )
-  struct VideoQueueFamilyProperties2KHR;
-#endif /*VK_ENABLE_BETA_EXTENSIONS*/
-#if defined( VK_ENABLE_BETA_EXTENSIONS )
-  struct VideoReferenceSlotKHR;
-#endif /*VK_ENABLE_BETA_EXTENSIONS*/
-#if defined( VK_ENABLE_BETA_EXTENSIONS )
-  struct VideoSessionCreateInfoKHR;
-#endif /*VK_ENABLE_BETA_EXTENSIONS*/
-#if defined( VK_ENABLE_BETA_EXTENSIONS )
-  struct VideoSessionParametersCreateInfoKHR;
-#endif /*VK_ENABLE_BETA_EXTENSIONS*/
-#if defined( VK_ENABLE_BETA_EXTENSIONS )
-  struct VideoSessionParametersUpdateInfoKHR;
-#endif /*VK_ENABLE_BETA_EXTENSIONS*/
-  struct Viewport;
-  struct ViewportSwizzleNV;
-  struct ViewportWScalingNV;
-#if defined( VK_USE_PLATFORM_WAYLAND_KHR )
-  struct WaylandSurfaceCreateInfoKHR;
-#endif /*VK_USE_PLATFORM_WAYLAND_KHR*/
-#if defined( VK_USE_PLATFORM_WIN32_KHR )
-  struct Win32KeyedMutexAcquireReleaseInfoKHR;
-#endif /*VK_USE_PLATFORM_WIN32_KHR*/
-#if defined( VK_USE_PLATFORM_WIN32_KHR )
-  struct Win32KeyedMutexAcquireReleaseInfoNV;
-#endif /*VK_USE_PLATFORM_WIN32_KHR*/
-#if defined( VK_USE_PLATFORM_WIN32_KHR )
-  struct Win32SurfaceCreateInfoKHR;
-#endif /*VK_USE_PLATFORM_WIN32_KHR*/
-  struct WriteDescriptorSet;
-  struct WriteDescriptorSetAccelerationStructureKHR;
-  struct WriteDescriptorSetAccelerationStructureNV;
-  struct WriteDescriptorSetInlineUniformBlockEXT;
-  struct XYColorEXT;
-#if defined( VK_USE_PLATFORM_XCB_KHR )
-  struct XcbSurfaceCreateInfoKHR;
-#endif /*VK_USE_PLATFORM_XCB_KHR*/
-#if defined( VK_USE_PLATFORM_XLIB_KHR )
-  struct XlibSurfaceCreateInfoKHR;
-#endif /*VK_USE_PLATFORM_XLIB_KHR*/
+
+  //=== VK_NV_device_diagnostics_config ===
+  struct PhysicalDeviceDiagnosticsConfigFeaturesNV;
+  struct DeviceDiagnosticsConfigCreateInfoNV;
+
+  //=== VK_KHR_synchronization2 ===
+  struct MemoryBarrier2KHR;
+  struct BufferMemoryBarrier2KHR;
+  struct ImageMemoryBarrier2KHR;
+  struct DependencyInfoKHR;
+  struct SubmitInfo2KHR;
+  struct SemaphoreSubmitInfoKHR;
+  struct CommandBufferSubmitInfoKHR;
+  struct PhysicalDeviceSynchronization2FeaturesKHR;
+  struct QueueFamilyCheckpointProperties2NV;
+  struct CheckpointData2NV;
+
+  //=== VK_KHR_shader_subgroup_uniform_control_flow ===
+  struct PhysicalDeviceShaderSubgroupUniformControlFlowFeaturesKHR;
+
+  //=== VK_KHR_zero_initialize_workgroup_memory ===
+  struct PhysicalDeviceZeroInitializeWorkgroupMemoryFeaturesKHR;
+
+  //=== VK_NV_fragment_shading_rate_enums ===
+  struct PhysicalDeviceFragmentShadingRateEnumsFeaturesNV;
+  struct PhysicalDeviceFragmentShadingRateEnumsPropertiesNV;
+  struct PipelineFragmentShadingRateEnumStateCreateInfoNV;
+
+  //=== VK_NV_ray_tracing_motion_blur ===
+  struct AccelerationStructureGeometryMotionTrianglesDataNV;
+  struct AccelerationStructureMotionInfoNV;
+  struct AccelerationStructureMotionInstanceNV;
+  union AccelerationStructureMotionInstanceDataNV;
+  struct AccelerationStructureMatrixMotionInstanceNV;
+  struct AccelerationStructureSRTMotionInstanceNV;
+  struct SRTDataNV;
+  struct PhysicalDeviceRayTracingMotionBlurFeaturesNV;
+
+  //=== VK_EXT_ycbcr_2plane_444_formats ===
+  struct PhysicalDeviceYcbcr2Plane444FormatsFeaturesEXT;
+
+  //=== VK_EXT_fragment_density_map2 ===
+  struct PhysicalDeviceFragmentDensityMap2FeaturesEXT;
+  struct PhysicalDeviceFragmentDensityMap2PropertiesEXT;
+
+  //=== VK_QCOM_rotated_copy_commands ===
+  struct CopyCommandTransformInfoQCOM;
+
+  //=== VK_EXT_image_robustness ===
+  struct PhysicalDeviceImageRobustnessFeaturesEXT;
+
+  //=== VK_KHR_workgroup_memory_explicit_layout ===
+  struct PhysicalDeviceWorkgroupMemoryExplicitLayoutFeaturesKHR;
+
+  //=== VK_KHR_copy_commands2 ===
+  struct CopyBufferInfo2KHR;
+  struct CopyImageInfo2KHR;
+  struct CopyBufferToImageInfo2KHR;
+  struct CopyImageToBufferInfo2KHR;
+  struct BlitImageInfo2KHR;
+  struct ResolveImageInfo2KHR;
+  struct BufferCopy2KHR;
+  struct ImageCopy2KHR;
+  struct ImageBlit2KHR;
+  struct BufferImageCopy2KHR;
+  struct ImageResolve2KHR;
+
+  //=== VK_EXT_4444_formats ===
+  struct PhysicalDevice4444FormatsFeaturesEXT;
+
+#if defined( VK_USE_PLATFORM_DIRECTFB_EXT )
+  //=== VK_EXT_directfb_surface ===
+  struct DirectFBSurfaceCreateInfoEXT;
+#endif /*VK_USE_PLATFORM_DIRECTFB_EXT*/
+
+  //=== VK_KHR_ray_tracing_pipeline ===
+  struct RayTracingShaderGroupCreateInfoKHR;
+  struct RayTracingPipelineCreateInfoKHR;
+  struct PhysicalDeviceRayTracingPipelineFeaturesKHR;
+  struct PhysicalDeviceRayTracingPipelinePropertiesKHR;
+  struct StridedDeviceAddressRegionKHR;
+  struct TraceRaysIndirectCommandKHR;
+  struct RayTracingPipelineInterfaceCreateInfoKHR;
+
+  //=== VK_KHR_ray_query ===
+  struct PhysicalDeviceRayQueryFeaturesKHR;
+
+  //=== VK_VALVE_mutable_descriptor_type ===
+  struct PhysicalDeviceMutableDescriptorTypeFeaturesVALVE;
+  struct MutableDescriptorTypeListVALVE;
+  struct MutableDescriptorTypeCreateInfoVALVE;
+
+  //=== VK_EXT_vertex_input_dynamic_state ===
+  struct PhysicalDeviceVertexInputDynamicStateFeaturesEXT;
+  struct VertexInputBindingDescription2EXT;
+  struct VertexInputAttributeDescription2EXT;
+
+  //=== VK_EXT_physical_device_drm ===
+  struct PhysicalDeviceDrmPropertiesEXT;
+
+  //=== VK_EXT_primitive_topology_list_restart ===
+  struct PhysicalDevicePrimitiveTopologyListRestartFeaturesEXT;
+
+#if defined( VK_USE_PLATFORM_FUCHSIA )
+  //=== VK_FUCHSIA_external_memory ===
+  struct ImportMemoryZirconHandleInfoFUCHSIA;
+  struct MemoryZirconHandlePropertiesFUCHSIA;
+  struct MemoryGetZirconHandleInfoFUCHSIA;
+#endif /*VK_USE_PLATFORM_FUCHSIA*/
+
+#if defined( VK_USE_PLATFORM_FUCHSIA )
+  //=== VK_FUCHSIA_external_semaphore ===
+  struct ImportSemaphoreZirconHandleInfoFUCHSIA;
+  struct SemaphoreGetZirconHandleInfoFUCHSIA;
+#endif /*VK_USE_PLATFORM_FUCHSIA*/
+
+  //=== VK_HUAWEI_subpass_shading ===
+  struct SubpassShadingPipelineCreateInfoHUAWEI;
+  struct PhysicalDeviceSubpassShadingFeaturesHUAWEI;
+  struct PhysicalDeviceSubpassShadingPropertiesHUAWEI;
+
+  //=== VK_HUAWEI_invocation_mask ===
+  struct PhysicalDeviceInvocationMaskFeaturesHUAWEI;
+
+  //=== VK_NV_external_memory_rdma ===
+  struct MemoryGetRemoteAddressInfoNV;
+  struct PhysicalDeviceExternalMemoryRDMAFeaturesNV;
+
+  //=== VK_EXT_extended_dynamic_state2 ===
+  struct PhysicalDeviceExtendedDynamicState2FeaturesEXT;
+
+#if defined( VK_USE_PLATFORM_SCREEN_QNX )
+  //=== VK_QNX_screen_surface ===
+  struct ScreenSurfaceCreateInfoQNX;
+#endif /*VK_USE_PLATFORM_SCREEN_QNX*/
+
+  //=== VK_EXT_color_write_enable ===
+  struct PhysicalDeviceColorWriteEnableFeaturesEXT;
+  struct PipelineColorWriteCreateInfoEXT;
+
+  //=== VK_EXT_global_priority_query ===
+  struct PhysicalDeviceGlobalPriorityQueryFeaturesEXT;
+  struct QueueFamilyGlobalPriorityPropertiesEXT;
+
+  //=== VK_EXT_multi_draw ===
+  struct PhysicalDeviceMultiDrawFeaturesEXT;
+  struct PhysicalDeviceMultiDrawPropertiesEXT;
+  struct MultiDrawInfoEXT;
+  struct MultiDrawIndexedInfoEXT;
+
+  //===============
+  //=== HANDLEs ===
+  //===============
 
   class SurfaceKHR
   {
@@ -2128,100 +2376,6 @@ namespace VULKAN_HPP_NAMESPACE
     static VULKAN_HPP_CONST_OR_CONSTEXPR bool value = true;
   };
 
-  class Pipeline
-  {
-  public:
-    using CType = VkPipeline;
-
-    static VULKAN_HPP_CONST_OR_CONSTEXPR VULKAN_HPP_NAMESPACE::ObjectType objectType =
-      VULKAN_HPP_NAMESPACE::ObjectType::ePipeline;
-    static VULKAN_HPP_CONST_OR_CONSTEXPR VULKAN_HPP_NAMESPACE::DebugReportObjectTypeEXT debugReportObjectType =
-      VULKAN_HPP_NAMESPACE::DebugReportObjectTypeEXT::ePipeline;
-
-  public:
-    VULKAN_HPP_CONSTEXPR         Pipeline() = default;
-    VULKAN_HPP_CONSTEXPR         Pipeline( std::nullptr_t ) VULKAN_HPP_NOEXCEPT {}
-    VULKAN_HPP_TYPESAFE_EXPLICIT Pipeline( VkPipeline pipeline ) VULKAN_HPP_NOEXCEPT : m_pipeline( pipeline ) {}
-
-#if defined( VULKAN_HPP_TYPESAFE_CONVERSION )
-    Pipeline & operator=( VkPipeline pipeline ) VULKAN_HPP_NOEXCEPT
-    {
-      m_pipeline = pipeline;
-      return *this;
-    }
-#endif
-
-    Pipeline & operator=( std::nullptr_t ) VULKAN_HPP_NOEXCEPT
-    {
-      m_pipeline = {};
-      return *this;
-    }
-
-#if defined( VULKAN_HPP_HAS_SPACESHIP_OPERATOR )
-    auto operator<=>( Pipeline const & ) const = default;
-#else
-    bool operator==( Pipeline const & rhs ) const VULKAN_HPP_NOEXCEPT
-    {
-      return m_pipeline == rhs.m_pipeline;
-    }
-
-    bool operator!=( Pipeline const & rhs ) const VULKAN_HPP_NOEXCEPT
-    {
-      return m_pipeline != rhs.m_pipeline;
-    }
-
-    bool operator<( Pipeline const & rhs ) const VULKAN_HPP_NOEXCEPT
-    {
-      return m_pipeline < rhs.m_pipeline;
-    }
-#endif
-
-    VULKAN_HPP_TYPESAFE_EXPLICIT operator VkPipeline() const VULKAN_HPP_NOEXCEPT
-    {
-      return m_pipeline;
-    }
-
-    explicit operator bool() const VULKAN_HPP_NOEXCEPT
-    {
-      return m_pipeline != VK_NULL_HANDLE;
-    }
-
-    bool operator!() const VULKAN_HPP_NOEXCEPT
-    {
-      return m_pipeline == VK_NULL_HANDLE;
-    }
-
-  private:
-    VkPipeline m_pipeline = {};
-  };
-  static_assert( sizeof( VULKAN_HPP_NAMESPACE::Pipeline ) == sizeof( VkPipeline ),
-                 "handle and wrapper have different size!" );
-
-  template <>
-  struct VULKAN_HPP_DEPRECATED( "vk::cpp_type is deprecated. Use vk::CppType instead." ) cpp_type<ObjectType::ePipeline>
-  {
-    using type = VULKAN_HPP_NAMESPACE::Pipeline;
-  };
-
-  template <>
-  struct CppType<VULKAN_HPP_NAMESPACE::ObjectType, VULKAN_HPP_NAMESPACE::ObjectType::ePipeline>
-  {
-    using Type = VULKAN_HPP_NAMESPACE::Pipeline;
-  };
-
-  template <>
-  struct CppType<VULKAN_HPP_NAMESPACE::DebugReportObjectTypeEXT,
-                 VULKAN_HPP_NAMESPACE::DebugReportObjectTypeEXT::ePipeline>
-  {
-    using Type = VULKAN_HPP_NAMESPACE::Pipeline;
-  };
-
-  template <>
-  struct isVulkanHandleType<VULKAN_HPP_NAMESPACE::Pipeline>
-  {
-    static VULKAN_HPP_CONST_OR_CONSTEXPR bool value = true;
-  };
-
   class ImageView
   {
   public:
@@ -2313,6 +2467,100 @@ namespace VULKAN_HPP_NAMESPACE
 
   template <>
   struct isVulkanHandleType<VULKAN_HPP_NAMESPACE::ImageView>
+  {
+    static VULKAN_HPP_CONST_OR_CONSTEXPR bool value = true;
+  };
+
+  class Pipeline
+  {
+  public:
+    using CType = VkPipeline;
+
+    static VULKAN_HPP_CONST_OR_CONSTEXPR VULKAN_HPP_NAMESPACE::ObjectType objectType =
+      VULKAN_HPP_NAMESPACE::ObjectType::ePipeline;
+    static VULKAN_HPP_CONST_OR_CONSTEXPR VULKAN_HPP_NAMESPACE::DebugReportObjectTypeEXT debugReportObjectType =
+      VULKAN_HPP_NAMESPACE::DebugReportObjectTypeEXT::ePipeline;
+
+  public:
+    VULKAN_HPP_CONSTEXPR         Pipeline() = default;
+    VULKAN_HPP_CONSTEXPR         Pipeline( std::nullptr_t ) VULKAN_HPP_NOEXCEPT {}
+    VULKAN_HPP_TYPESAFE_EXPLICIT Pipeline( VkPipeline pipeline ) VULKAN_HPP_NOEXCEPT : m_pipeline( pipeline ) {}
+
+#if defined( VULKAN_HPP_TYPESAFE_CONVERSION )
+    Pipeline & operator=( VkPipeline pipeline ) VULKAN_HPP_NOEXCEPT
+    {
+      m_pipeline = pipeline;
+      return *this;
+    }
+#endif
+
+    Pipeline & operator=( std::nullptr_t ) VULKAN_HPP_NOEXCEPT
+    {
+      m_pipeline = {};
+      return *this;
+    }
+
+#if defined( VULKAN_HPP_HAS_SPACESHIP_OPERATOR )
+    auto operator<=>( Pipeline const & ) const = default;
+#else
+    bool operator==( Pipeline const & rhs ) const VULKAN_HPP_NOEXCEPT
+    {
+      return m_pipeline == rhs.m_pipeline;
+    }
+
+    bool operator!=( Pipeline const & rhs ) const VULKAN_HPP_NOEXCEPT
+    {
+      return m_pipeline != rhs.m_pipeline;
+    }
+
+    bool operator<( Pipeline const & rhs ) const VULKAN_HPP_NOEXCEPT
+    {
+      return m_pipeline < rhs.m_pipeline;
+    }
+#endif
+
+    VULKAN_HPP_TYPESAFE_EXPLICIT operator VkPipeline() const VULKAN_HPP_NOEXCEPT
+    {
+      return m_pipeline;
+    }
+
+    explicit operator bool() const VULKAN_HPP_NOEXCEPT
+    {
+      return m_pipeline != VK_NULL_HANDLE;
+    }
+
+    bool operator!() const VULKAN_HPP_NOEXCEPT
+    {
+      return m_pipeline == VK_NULL_HANDLE;
+    }
+
+  private:
+    VkPipeline m_pipeline = {};
+  };
+  static_assert( sizeof( VULKAN_HPP_NAMESPACE::Pipeline ) == sizeof( VkPipeline ),
+                 "handle and wrapper have different size!" );
+
+  template <>
+  struct VULKAN_HPP_DEPRECATED( "vk::cpp_type is deprecated. Use vk::CppType instead." ) cpp_type<ObjectType::ePipeline>
+  {
+    using type = VULKAN_HPP_NAMESPACE::Pipeline;
+  };
+
+  template <>
+  struct CppType<VULKAN_HPP_NAMESPACE::ObjectType, VULKAN_HPP_NAMESPACE::ObjectType::ePipeline>
+  {
+    using Type = VULKAN_HPP_NAMESPACE::Pipeline;
+  };
+
+  template <>
+  struct CppType<VULKAN_HPP_NAMESPACE::DebugReportObjectTypeEXT,
+                 VULKAN_HPP_NAMESPACE::DebugReportObjectTypeEXT::ePipeline>
+  {
+    using Type = VULKAN_HPP_NAMESPACE::Pipeline;
+  };
+
+  template <>
+  struct isVulkanHandleType<VULKAN_HPP_NAMESPACE::Pipeline>
   {
     static VULKAN_HPP_CONST_OR_CONSTEXPR bool value = true;
   };
@@ -4371,6 +4619,14 @@ namespace VULKAN_HPP_NAMESPACE
     template <typename Dispatch = VULKAN_HPP_DEFAULT_DISPATCHER_TYPE>
     void subpassShadingHUAWEI( Dispatch const & d VULKAN_HPP_DEFAULT_DISPATCHER_ASSIGNMENT ) const VULKAN_HPP_NOEXCEPT;
 
+    //=== VK_HUAWEI_invocation_mask ===
+
+    template <typename Dispatch = VULKAN_HPP_DEFAULT_DISPATCHER_TYPE>
+    void
+      bindInvocationMaskHUAWEI( VULKAN_HPP_NAMESPACE::ImageView   imageView,
+                                VULKAN_HPP_NAMESPACE::ImageLayout imageLayout,
+                                Dispatch const & d VULKAN_HPP_DEFAULT_DISPATCHER_ASSIGNMENT ) const VULKAN_HPP_NOEXCEPT;
+
     //=== VK_EXT_extended_dynamic_state2 ===
 
     template <typename Dispatch = VULKAN_HPP_DEFAULT_DISPATCHER_TYPE>
@@ -5776,18 +6032,6 @@ namespace VULKAN_HPP_NAMESPACE
       return m_renderPass < rhs.m_renderPass;
     }
 #endif
-
-    //=== VK_HUAWEI_subpass_shading ===
-
-    template <typename Dispatch = VULKAN_HPP_DEFAULT_DISPATCHER_TYPE>
-    VULKAN_HPP_NODISCARD Result getSubpassShadingMaxWorkgroupSizeHUAWEI(
-      VULKAN_HPP_NAMESPACE::Extent2D * pMaxWorkgroupSize,
-      Dispatch const & d VULKAN_HPP_DEFAULT_DISPATCHER_ASSIGNMENT ) const VULKAN_HPP_NOEXCEPT;
-#ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
-    template <typename Dispatch = VULKAN_HPP_DEFAULT_DISPATCHER_TYPE>
-    VULKAN_HPP_NODISCARD ResultValue<VULKAN_HPP_NAMESPACE::Extent2D>
-                         getSubpassShadingMaxWorkgroupSizeHUAWEI( Dispatch const & d VULKAN_HPP_DEFAULT_DISPATCHER_ASSIGNMENT ) const;
-#endif /*VULKAN_HPP_DISABLE_ENHANCED_MODE*/
 
     VULKAN_HPP_TYPESAFE_EXPLICIT operator VkRenderPass() const VULKAN_HPP_NOEXCEPT
     {
@@ -10503,6 +10747,23 @@ namespace VULKAN_HPP_NAMESPACE
                            Dispatch const & d VULKAN_HPP_DEFAULT_DISPATCHER_ASSIGNMENT ) const VULKAN_HPP_NOEXCEPT;
 #endif /*VULKAN_HPP_DISABLE_ENHANCED_MODE*/
 
+    //=== VK_KHR_present_wait ===
+
+#ifdef VULKAN_HPP_DISABLE_ENHANCED_MODE
+    template <typename Dispatch = VULKAN_HPP_DEFAULT_DISPATCHER_TYPE>
+    VULKAN_HPP_NODISCARD Result
+                         waitForPresentKHR( VULKAN_HPP_NAMESPACE::SwapchainKHR swapchain,
+                                            uint64_t                           presentId,
+                                            uint64_t                           timeout,
+                                            Dispatch const & d VULKAN_HPP_DEFAULT_DISPATCHER_ASSIGNMENT ) const VULKAN_HPP_NOEXCEPT;
+#else
+    template <typename Dispatch = VULKAN_HPP_DEFAULT_DISPATCHER_TYPE>
+    VULKAN_HPP_NODISCARD Result waitForPresentKHR( VULKAN_HPP_NAMESPACE::SwapchainKHR swapchain,
+                                                   uint64_t                           presentId,
+                                                   uint64_t                           timeout,
+                                                   Dispatch const & d VULKAN_HPP_DEFAULT_DISPATCHER_ASSIGNMENT ) const;
+#endif /*VULKAN_HPP_DISABLE_ENHANCED_MODE*/
+
 #if defined( VK_USE_PLATFORM_WIN32_KHR )
     //=== VK_EXT_full_screen_exclusive ===
 
@@ -11098,6 +11359,34 @@ namespace VULKAN_HPP_NAMESPACE
                                        Dispatch const & d VULKAN_HPP_DEFAULT_DISPATCHER_ASSIGNMENT ) const;
 #  endif /*VULKAN_HPP_DISABLE_ENHANCED_MODE*/
 #endif   /*VK_USE_PLATFORM_FUCHSIA*/
+
+    //=== VK_HUAWEI_subpass_shading ===
+
+    template <typename Dispatch = VULKAN_HPP_DEFAULT_DISPATCHER_TYPE>
+    VULKAN_HPP_NODISCARD Result getSubpassShadingMaxWorkgroupSizeHUAWEI(
+      VULKAN_HPP_NAMESPACE::RenderPass renderpass,
+      VULKAN_HPP_NAMESPACE::Extent2D * pMaxWorkgroupSize,
+      Dispatch const & d VULKAN_HPP_DEFAULT_DISPATCHER_ASSIGNMENT ) const VULKAN_HPP_NOEXCEPT;
+#ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
+    template <typename Dispatch = VULKAN_HPP_DEFAULT_DISPATCHER_TYPE>
+    VULKAN_HPP_NODISCARD ResultValue<VULKAN_HPP_NAMESPACE::Extent2D>
+                         getSubpassShadingMaxWorkgroupSizeHUAWEI( VULKAN_HPP_NAMESPACE::RenderPass renderpass,
+                                                                  Dispatch const & d VULKAN_HPP_DEFAULT_DISPATCHER_ASSIGNMENT ) const;
+#endif /*VULKAN_HPP_DISABLE_ENHANCED_MODE*/
+
+    //=== VK_NV_external_memory_rdma ===
+
+    template <typename Dispatch = VULKAN_HPP_DEFAULT_DISPATCHER_TYPE>
+    VULKAN_HPP_NODISCARD Result
+                         getMemoryRemoteAddressNV( const VULKAN_HPP_NAMESPACE::MemoryGetRemoteAddressInfoNV * pMemoryGetRemoteAddressInfo,
+                                                   VULKAN_HPP_NAMESPACE::RemoteAddressNV *                    pAddress,
+                                                   Dispatch const & d VULKAN_HPP_DEFAULT_DISPATCHER_ASSIGNMENT ) const VULKAN_HPP_NOEXCEPT;
+#ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
+    template <typename Dispatch = VULKAN_HPP_DEFAULT_DISPATCHER_TYPE>
+    typename ResultValueType<VULKAN_HPP_NAMESPACE::RemoteAddressNV>::type
+      getMemoryRemoteAddressNV( const MemoryGetRemoteAddressInfoNV & memoryGetRemoteAddressInfo,
+                                Dispatch const & d VULKAN_HPP_DEFAULT_DISPATCHER_ASSIGNMENT ) const;
+#endif /*VULKAN_HPP_DISABLE_ENHANCED_MODE*/
 
     VULKAN_HPP_TYPESAFE_EXPLICIT operator VkDevice() const VULKAN_HPP_NOEXCEPT
     {
