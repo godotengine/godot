@@ -142,7 +142,7 @@ public:
 
 	void set_visible_characters(int p_amount);
 	int get_visible_characters() const;
-	int get_total_character_count() const;
+	int get_total_character_count(bool p_include_spaces = true) const;
 
 	void set_clip_text(bool p_clip);
 	bool is_clipping_text() const;

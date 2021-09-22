@@ -41,8 +41,10 @@
 		</method>
 		<method name="get_total_character_count" qualifiers="const">
 			<return type="int" />
+			<argument index="0" name="p_include_spaces" type="bool" default="true" />
 			<description>
-				Returns the total number of printable characters in the text (excluding spaces and newlines).
+				Returns the total number of printable characters in the text (excluding newlines).
+				If [code]include_spaces[/code] is set to [code]false[/code], it doesn't count spaces.
 			</description>
 		</method>
 		<method name="get_visible_line_count" qualifiers="const">

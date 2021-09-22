@@ -4134,7 +4134,7 @@ void RichTextLabel::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_percent_visible", "percent_visible"), &RichTextLabel::set_percent_visible);
 	ClassDB::bind_method(D_METHOD("get_percent_visible"), &RichTextLabel::get_percent_visible);
 
-	ClassDB::bind_method(D_METHOD("get_total_character_count"), &RichTextLabel::get_total_character_count);
+	ClassDB::bind_method(D_METHOD("get_total_character_count", "p_include_spaces"), &RichTextLabel::get_total_character_count, DEFVAL(true));
 
 	ClassDB::bind_method(D_METHOD("set_use_bbcode", "enable"), &RichTextLabel::set_use_bbcode);
 	ClassDB::bind_method(D_METHOD("is_using_bbcode"), &RichTextLabel::is_using_bbcode);
@@ -4241,14 +4241,23 @@ int RichTextLabel::get_visible_characters() const {
 	return visible_characters;
 }
 
-int RichTextLabel::get_total_character_count() const {
+int RichTextLabel::get_total_character_count(bool p_include_spaces) const {
 	// Note: Do not use line buffer "char_count", it includes only visible characters.
+
 	int tc = 0;
 	Item *it = main;
 	while (it) {
 		if (it->type == ITEM_TEXT) {
 			ItemText *t = static_cast<ItemText *>(it);
 			tc += t->text.length();
+
+			if (!p_include_spaces) {
+				for (int i = 0; i < t->text.length(); i++) {
+					if (t->text[i] == ' ') {
+						tc--;
+					}
+				}
+			}
 		} else if (it->type == ITEM_NEWLINE) {
 			tc++;
 		} else if (it->type == ITEM_IMAGE) {

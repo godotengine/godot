@@ -575,7 +575,7 @@ public:
 
 	void set_visible_characters(int p_visible);
 	int get_visible_characters() const;
-	int get_total_character_count() const;
+	int get_total_character_count(bool p_include_spaces = true) const;
 
 	void set_percent_visible(float p_percent);
 	float get_percent_visible() const;

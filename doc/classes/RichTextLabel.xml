@@ -93,8 +93,10 @@
 		</method>
 		<method name="get_total_character_count" qualifiers="const">
 			<return type="int" />
+			<argument index="0" name="p_include_spaces" type="bool" default="true" />
 			<description>
 				Returns the total number of characters from text tags. Does not include BBCodes.
+				If [code]include_spaces[/code] is set to [code]false[/code], it doesn't count spaces.
 			</description>
 		</method>
 		<method name="get_v_scroll">

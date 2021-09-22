@@ -748,12 +748,22 @@ int Label::get_max_lines_visible() const {
 	return max_lines_visible;
 }
 
-int Label::get_total_character_count() const {
+int Label::get_total_character_count(bool p_include_spaces) const {
 	if (dirty || lines_dirty) {
 		const_cast<Label *>(this)->_shape();
 	}
 
-	return xl_text.length();
+	if (p_include_spaces) {
+		return xl_text.length();
+	} else {
+		int space_count = 0;
+		for (int i = 0; i < xl_text.length(); i++) {
+			if (xl_text[i] == ' ') {
+				space_count++;
+			}
+		}
+		return xl_text.length() - space_count;
+	}
 }
 
 bool Label::_set(const StringName &p_name, const Variant &p_value) {
@@ -831,7 +841,7 @@ void Label::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_line_height", "line"), &Label::get_line_height, DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("get_line_count"), &Label::get_line_count);
 	ClassDB::bind_method(D_METHOD("get_visible_line_count"), &Label::get_visible_line_count);
-	ClassDB::bind_method(D_METHOD("get_total_character_count"), &Label::get_total_character_count);
+	ClassDB::bind_method(D_METHOD("get_total_character_count", "p_include_spaces"), &Label::get_total_character_count, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("set_visible_characters", "amount"), &Label::set_visible_characters);
 	ClassDB::bind_method(D_METHOD("get_visible_characters"), &Label::get_visible_characters);
 	ClassDB::bind_method(D_METHOD("set_percent_visible", "percent_visible"), &Label::set_percent_visible);
