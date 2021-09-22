@@ -176,7 +176,7 @@ void EditorPropertyArray::_change_type(Object *p_button, int p_index) {
 	changing_type_index = p_index;
 	Rect2 rect = button->get_screen_rect();
 	change_type->set_as_minsize();
-	change_type->set_position(rect.position + rect.size - Vector2(change_type->get_contents_minimum_size().x, 0));
+	change_type->set_position(rect.get_end() - Vector2(change_type->get_contents_minimum_size().x, 0));
 	change_type->popup();
 }
 
@@ -726,7 +726,7 @@ void EditorPropertyDictionary::_change_type(Object *p_button, int p_index) {
 
 	Rect2 rect = button->get_screen_rect();
 	change_type->set_as_minsize();
-	change_type->set_position(rect.position + rect.size - Vector2(change_type->get_contents_minimum_size().x, 0));
+	change_type->set_position(rect.get_end() - Vector2(change_type->get_contents_minimum_size().x, 0));
 	change_type->popup();
 	changing_type_index = p_index;
 }

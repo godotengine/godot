@@ -901,7 +901,7 @@ public:
 					if (layer_index >= layer_count) {
 						if (!flag_rects.is_empty() && (expansion_rows == 0)) {
 							const Rect2 &last_rect = flag_rects[flag_rects.size() - 1];
-							arrow_pos = last_rect.position + last_rect.size;
+							arrow_pos = last_rect.get_end();
 						}
 						break;
 					}
@@ -913,7 +913,7 @@ public:
 						// Keep last valid cell position for the expansion icon.
 						if (!flag_rects.is_empty() && (expansion_rows == 0)) {
 							const Rect2 &last_rect = flag_rects[flag_rects.size() - 1];
-							arrow_pos = last_rect.position + last_rect.size;
+							arrow_pos = last_rect.get_end();
 						}
 						++expansion_rows;
 
