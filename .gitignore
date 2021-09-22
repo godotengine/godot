@@ -390,3 +390,8 @@ gcov.css
 # https://clangd.llvm.org/ cache folder
 .clangd/
 .cache/
+
+# ninja tool
+.ninja
+build.ninja
+run_ninja_env.bat
