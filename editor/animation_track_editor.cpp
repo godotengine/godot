@@ -215,7 +215,6 @@ public:
 						}
 					} else if (what == "value") {
 						Variant value = p_value;
-
 						args.write[idx] = value;
 						d_new["args"] = args;
 						mergeable = true;
