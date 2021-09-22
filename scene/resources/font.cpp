@@ -1214,6 +1214,14 @@ void Font::add_data(const Ref<FontData> &p_data) {
 
 	if (data[data.size() - 1].is_valid()) {
 		data.write[data.size() - 1]->connect(SNAME("changed"), callable_mp(this, &Font::_data_changed), varray(), CONNECT_REFERENCE_COUNTED);
+		Dictionary data_var_list = p_data->get_supported_variation_list();
+		for (int j = 0; j < data_var_list.size(); j++) {
+			int32_t tag = data_var_list.get_key_at_index(j);
+			Vector3i value = data_var_list.get_value_at_index(j);
+			if (!variation_coordinates.has(tag) && !variation_coordinates.has(TS->tag_to_name(tag))) {
+				variation_coordinates[TS->tag_to_name(tag)] = value.z;
+			}
+		}
 	}
 
 	cache.clear();
@@ -1233,6 +1241,14 @@ void Font::set_data(int p_idx, const Ref<FontData> &p_data) {
 
 	data.write[p_idx] = p_data;
 	rids.write[p_idx] = RID();
+	Dictionary data_var_list = p_data->get_supported_variation_list();
+	for (int j = 0; j < data_var_list.size(); j++) {
+		int32_t tag = data_var_list.get_key_at_index(j);
+		Vector3i value = data_var_list.get_value_at_index(j);
+		if (!variation_coordinates.has(tag) && !variation_coordinates.has(TS->tag_to_name(tag))) {
+			variation_coordinates[TS->tag_to_name(tag)] = value.z;
+		}
+	}
 
 	if (data[p_idx].is_valid()) {
 		data.write[p_idx]->connect(SNAME("changed"), callable_mp(this, &Font::_data_changed), varray(), CONNECT_REFERENCE_COUNTED);
