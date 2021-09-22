@@ -59,7 +59,7 @@ Extracted from .zip provided. Extracted license and header only.
 ## embree
 
 - Upstream: https://github.com/embree/embree
-- Version: 3.13.0 (7c53133eb21424f7f0ae1e25bf357e358feaf6ab, 2021)
+- Version: 3.13.1 (12b99393438a4cc9e478e33459eed78bec6233fd, 2021)
 - License: Apache 2.0
 
 Files extracted from upstream:
