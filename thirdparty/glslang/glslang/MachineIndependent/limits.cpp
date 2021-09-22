@@ -63,14 +63,14 @@ namespace glslang {
 
 class TInductiveTraverser : public TIntermTraverser {
 public:
-    TInductiveTraverser(int id, TSymbolTable& st)
+    TInductiveTraverser(long long id, TSymbolTable& st)
     : loopId(id), symbolTable(st), bad(false)  { }
 
     virtual bool visitBinary(TVisit, TIntermBinary* node);
     virtual bool visitUnary(TVisit, TIntermUnary* node);
     virtual bool visitAggregate(TVisit, TIntermAggregate* node);
 
-    int loopId;           // unique ID of the symbol that's the loop inductive variable
+    long long loopId;           // unique ID of the symbol that's the loop inductive variable
     TSymbolTable& symbolTable;
     bool bad;
     TSourceLoc badLoc;
@@ -129,7 +129,7 @@ bool TInductiveTraverser::visitAggregate(TVisit /* visit */, TIntermAggregate* n
 //
 // External function to call for loop check.
 //
-void TParseContext::inductiveLoopBodyCheck(TIntermNode* body, int loopId, TSymbolTable& symbolTable)
+void TParseContext::inductiveLoopBodyCheck(TIntermNode* body, long long loopId, TSymbolTable& symbolTable)
 {
     TInductiveTraverser it(loopId, symbolTable);
 
