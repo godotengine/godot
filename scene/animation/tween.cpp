@@ -1554,6 +1554,10 @@ bool Tween::follow_property(Object *p_object, NodePath p_property, Variant p_ini
 		return true;
 	}
 
+	// Confirm the source and target objects are valid
+	ERR_FAIL_NULL_V(p_object, false);
+	ERR_FAIL_NULL_V(p_target, false);
+
 	// Get the two properties from their paths
 	p_property = p_property.get_as_property_path();
 	p_target_property = p_target_property.get_as_property_path();
@@ -1568,10 +1572,6 @@ bool Tween::follow_property(Object *p_object, NodePath p_property, Variant p_ini
 	if (p_initial_val.get_type() == Variant::INT) {
 		p_initial_val = p_initial_val.operator real_t();
 	}
-
-	// Confirm the source and target objects are valid
-	ERR_FAIL_COND_V(p_object == nullptr, false);
-	ERR_FAIL_COND_V(p_target == nullptr, false);
 
 	// No negative durations
 	ERR_FAIL_COND_V(p_duration < 0, false);
