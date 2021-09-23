@@ -576,7 +576,7 @@ void EditorNode::_notification(int p_what) {
 
 				// update the icon itself only when the spinner is visible
 				if (EditorSettings::get_singleton()->get("interface/editor/show_update_spinner")) {
-					update_spinner->set_icon(gui_base->get_theme_icon("Progress" + itos(update_spinner_step + 1), "EditorIcons"));
+					update_spinner->set_icon(gui_base->get_theme_icon("Progress" + itos(update_spinner_step + 1), SNAME("EditorIcons")));
 				}
 			}
 
@@ -767,7 +767,7 @@ void EditorNode::_update_update_spinner() {
 		// On a light theme, icons are dark, so we need to modulate them with an even brighter color.
 		const bool dark_theme = EditorSettings::get_singleton()->is_dark_theme();
 		update_spinner->set_self_modulate(
-				gui_base->get_theme_color("error_color", "Editor") * (dark_theme ? Color(1.1, 1.1, 1.1) : Color(4.25, 4.25, 4.25)));
+				gui_base->get_theme_color(SNAME("error_color"), SNAME("Editor")) * (dark_theme ? Color(1.1, 1.1, 1.1) : Color(4.25, 4.25, 4.25)));
 	} else {
 		update_spinner->set_tooltip(TTR("Spins when the editor window redraws."));
 		update_spinner->set_self_modulate(Color(1, 1, 1));

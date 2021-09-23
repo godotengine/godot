@@ -86,7 +86,7 @@ void EditorFileDialog::_notification(int p_what) {
 				if (preview_wheel_index >= 8) {
 					preview_wheel_index = 0;
 				}
-				Ref<Texture2D> frame = item_list->get_theme_icon("Progress" + itos(preview_wheel_index + 1), "EditorIcons");
+				Ref<Texture2D> frame = item_list->get_theme_icon("Progress" + itos(preview_wheel_index + 1), SNAME("EditorIcons"));
 				preview->set_texture(frame);
 				preview_wheel_timeout = 0.1;
 			}

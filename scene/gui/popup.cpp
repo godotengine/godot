@@ -194,7 +194,7 @@ Popup::~Popup() {
 }
 
 Size2 PopupPanel::_get_contents_minimum_size() const {
-	Ref<StyleBox> p = get_theme_stylebox("panel", get_class_name());
+	Ref<StyleBox> p = get_theme_stylebox(SNAME("panel"), get_class_name());
 
 	Size2 ms;
 
@@ -217,7 +217,7 @@ Size2 PopupPanel::_get_contents_minimum_size() const {
 }
 
 void PopupPanel::_update_child_rects() {
-	Ref<StyleBox> p = get_theme_stylebox("panel", get_class_name());
+	Ref<StyleBox> p = get_theme_stylebox(SNAME("panel"), get_class_name());
 
 	Vector2 cpos(p->get_offset());
 	Vector2 csize(get_size() - p->get_minimum_size());
@@ -244,9 +244,9 @@ void PopupPanel::_update_child_rects() {
 
 void PopupPanel::_notification(int p_what) {
 	if (p_what == NOTIFICATION_THEME_CHANGED) {
-		panel->add_theme_style_override("panel", get_theme_stylebox("panel", get_class_name()));
+		panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("panel"), get_class_name()));
 	} else if (p_what == NOTIFICATION_READY || p_what == NOTIFICATION_ENTER_TREE) {
-		panel->add_theme_style_override("panel", get_theme_stylebox("panel", get_class_name()));
+		panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("panel"), get_class_name()));
 		_update_child_rects();
 	} else if (p_what == NOTIFICATION_WM_SIZE_CHANGED) {
 		_update_child_rects();

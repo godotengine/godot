@@ -118,8 +118,8 @@ void EditorCommandPalette::_update_command_search(const String &search_text) {
 			section->set_text(0, item_name);
 			section->set_selectable(0, false);
 			section->set_selectable(1, false);
-			section->set_custom_bg_color(0, search_options->get_theme_color("prop_subsection", "Editor"));
-			section->set_custom_bg_color(1, search_options->get_theme_color("prop_subsection", "Editor"));
+			section->set_custom_bg_color(0, search_options->get_theme_color(SNAME("prop_subsection"), SNAME("Editor")));
+			section->set_custom_bg_color(1, search_options->get_theme_color(SNAME("prop_subsection"), SNAME("Editor")));
 
 			sections[section_name] = section;
 		}
@@ -263,7 +263,7 @@ Ref<Shortcut> EditorCommandPalette::add_shortcut_command(const String &p_command
 }
 
 void EditorCommandPalette::_theme_changed() {
-	command_search_box->set_right_icon(search_options->get_theme_icon("Search", "EditorIcons"));
+	command_search_box->set_right_icon(search_options->get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
 }
 
 void EditorCommandPalette::_save_history() const {

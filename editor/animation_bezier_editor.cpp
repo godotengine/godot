@@ -491,10 +491,10 @@ void AnimationBezierTrackEdit::_notification(int p_what) {
 			}
 			draw_rect(
 					Rect2(bs_from, bs_to - bs_from),
-					get_theme_color("box_selection_fill_color", "Editor"));
+					get_theme_color(SNAME("box_selection_fill_color"), SNAME("Editor")));
 			draw_rect(
 					Rect2(bs_from, bs_to - bs_from),
-					get_theme_color("box_selection_stroke_color", "Editor"),
+					get_theme_color(SNAME("box_selection_stroke_color"), SNAME("Editor")),
 					false,
 					Math::round(EDSCALE));
 		}
