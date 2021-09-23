@@ -106,7 +106,7 @@ bool FileSystemDock::_create_tree(TreeItem *p_parent, EditorFileSystemDirectory 
 		List<FileInfo> file_list;
 		for (int i = 0; i < p_dir->get_file_count(); i++) {
 			String file_type = p_dir->get_file_type(i);
-			if (_is_file_type_disabled_by_feature_profile(file_type)) {
+			if (file_type != "TextFile" && _is_file_type_disabled_by_feature_profile(file_type)) {
 				// If type is disabled, file won't be displayed.
 				continue;
 			}
@@ -1954,6 +1954,13 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 		case FILE_NEW_RESOURCE: {
 			new_resource_dialog->popup_create(true);
 		} break;
+		case FILE_NEW_TEXTFILE: {
+			String fpath = path;
+			if (!fpath.ends_with("/")) {
+				fpath = fpath.get_base_dir();
+			}
+			ScriptEditor::get_singleton()->open_text_file_create_dialog(fpath);
+		} break;
 	}
 }
 
@@ -2473,6 +2480,7 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, Vector<Str
 			p_popup->add_icon_item(get_theme_icon(SNAME("PackedScene"), SNAME("EditorIcons")), TTR("New Scene..."), FILE_NEW_SCENE);
 			p_popup->add_icon_item(get_theme_icon(SNAME("Script"), SNAME("EditorIcons")), TTR("New Script..."), FILE_NEW_SCRIPT);
 			p_popup->add_icon_item(get_theme_icon(SNAME("Object"), SNAME("EditorIcons")), TTR("New Resource..."), FILE_NEW_RESOURCE);
+			p_popup->add_icon_item(get_theme_icon(SNAME("TextFile"), SNAME("EditorIcons")), TTR("New TextFile..."), FILE_NEW_TEXTFILE);
 			p_popup->add_separator();
 		}
 
@@ -2513,6 +2521,7 @@ void FileSystemDock::_tree_rmb_empty(const Vector2 &p_pos) {
 	tree_popup->add_icon_item(get_theme_icon(SNAME("PackedScene"), SNAME("EditorIcons")), TTR("New Scene..."), FILE_NEW_SCENE);
 	tree_popup->add_icon_item(get_theme_icon(SNAME("Script"), SNAME("EditorIcons")), TTR("New Script..."), FILE_NEW_SCRIPT);
 	tree_popup->add_icon_item(get_theme_icon(SNAME("Object"), SNAME("EditorIcons")), TTR("New Resource..."), FILE_NEW_RESOURCE);
+	tree_popup->add_icon_item(get_theme_icon(SNAME("TextFile"), SNAME("EditorIcons")), TTR("New TextFile..."), FILE_NEW_TEXTFILE);
 	tree_popup->set_position(tree->get_global_position() + p_pos);
 	tree_popup->popup();
 }
@@ -2558,6 +2567,7 @@ void FileSystemDock::_file_list_rmb_pressed(const Vector2 &p_pos) {
 	file_list_popup->add_icon_item(get_theme_icon(SNAME("PackedScene"), SNAME("EditorIcons")), TTR("New Scene..."), FILE_NEW_SCENE);
 	file_list_popup->add_icon_item(get_theme_icon(SNAME("Script"), SNAME("EditorIcons")), TTR("New Script..."), FILE_NEW_SCRIPT);
 	file_list_popup->add_icon_item(get_theme_icon(SNAME("Object"), SNAME("EditorIcons")), TTR("New Resource..."), FILE_NEW_RESOURCE);
+	file_list_popup->add_icon_item(get_theme_icon(SNAME("TextFile"), SNAME("EditorIcons")), TTR("New TextFile..."), FILE_NEW_TEXTFILE);
 	file_list_popup->add_separator();
 	file_list_popup->add_icon_item(get_theme_icon(SNAME("Filesystem"), SNAME("EditorIcons")), TTR("Open in File Manager"), FILE_SHOW_IN_EXPLORER);
 	file_list_popup->set_position(files->get_global_position() + p_pos);

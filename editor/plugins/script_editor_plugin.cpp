@@ -1030,35 +1030,22 @@ void ScriptEditor::_file_dialog_action(String p_file) {
 			}
 			file->close();
 			memdelete(file);
+
+			if (EditorFileSystem::get_singleton()) {
+				const Vector<String> textfile_extensions = ((String)(EditorSettings::get_singleton()->get("docks/filesystem/textfile_extensions"))).split(",", false);
+				if (textfile_extensions.has(p_file.get_extension())) {
+					EditorFileSystem::get_singleton()->update_file(p_file);
+				}
+			}
+
+			if (!open_textfile_after_create) {
+				return;
+			}
 			[[fallthrough]];
 		}
 		case FILE_OPEN: {
-			List<String> extensions;
-			ResourceLoader::get_recognized_extensions_for_type("Script", &extensions);
-			if (extensions.find(p_file.get_extension())) {
-				Ref<Script> scr = ResourceLoader::load(p_file);
-				if (!scr.is_valid()) {
-					editor->show_warning(TTR("Could not load file at:") + "\n\n" + p_file, TTR("Error!"));
-					file_dialog_option = -1;
-					return;
-				}
-
-				edit(scr);
-				file_dialog_option = -1;
-				return;
-			}
-
-			Error error;
-			Ref<TextFile> text_file = _load_text_file(p_file, &error);
-			if (error != OK) {
-				editor->show_warning(TTR("Could not load file at:") + "\n\n" + p_file, TTR("Error!"));
-			}
-
-			if (text_file.is_valid()) {
-				edit(text_file);
-				file_dialog_option = -1;
-				return;
-			}
+			open_file(p_file);
+			file_dialog_option = -1;
 		} break;
 		case FILE_SAVE_AS: {
 			ScriptEditorBase *current = _get_current_editor();
@@ -1133,8 +1120,13 @@ void ScriptEditor::_menu_option(int p_option) {
 			file_dialog_option = FILE_NEW_TEXTFILE;
 
 			file_dialog->clear_filters();
+			const Vector<String> textfile_ext = ((String)(EditorSettings::get_singleton()->get("docks/filesystem/textfile_extensions"))).split(",", false);
+			for (int i = 0; i < textfile_ext.size(); i++) {
+				file_dialog->add_filter("*." + textfile_ext[i] + " ; " + textfile_ext[i].to_upper());
+			}
 			file_dialog->popup_file_dialog();
 			file_dialog->set_title(TTR("New Text File..."));
+			open_textfile_after_create = true;
 		} break;
 		case FILE_OPEN: {
 			file_dialog->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
@@ -1146,6 +1138,11 @@ void ScriptEditor::_menu_option(int p_option) {
 			file_dialog->clear_filters();
 			for (int i = 0; i < extensions.size(); i++) {
 				file_dialog->add_filter("*." + extensions[i] + " ; " + extensions[i].to_upper());
+			}
+
+			const Vector<String> textfile_ext = ((String)(EditorSettings::get_singleton()->get("docks/filesystem/textfile_extensions"))).split(",", false);
+			for (int i = 0; i < textfile_ext.size(); i++) {
+				file_dialog->add_filter("*." + textfile_ext[i] + " ; " + textfile_ext[i].to_upper());
 			}
 
 			file_dialog->popup_file_dialog();
@@ -2434,6 +2431,41 @@ void ScriptEditor::apply_scripts() const {
 void ScriptEditor::open_script_create_dialog(const String &p_base_name, const String &p_base_path) {
 	_menu_option(FILE_NEW);
 	script_create_dialog->config(p_base_name, p_base_path);
+}
+
+void ScriptEditor::open_text_file_create_dialog(const String &p_base_path, const String &p_base_name) {
+	file_dialog->set_current_file(p_base_name);
+	file_dialog->set_current_dir(p_base_path);
+	_menu_option(FILE_NEW_TEXTFILE);
+	open_textfile_after_create = false;
+}
+
+RES ScriptEditor::open_file(const String &p_file) {
+	List<String> extensions;
+	ResourceLoader::get_recognized_extensions_for_type("Script", &extensions);
+	if (extensions.find(p_file.get_extension())) {
+		Ref<Script> scr = ResourceLoader::load(p_file);
+		if (!scr.is_valid()) {
+			editor->show_warning(TTR("Could not load file at:") + "\n\n" + p_file, TTR("Error!"));
+			return RES();
+		}
+
+		edit(scr);
+		return scr;
+	}
+
+	Error error;
+	Ref<TextFile> text_file = _load_text_file(p_file, &error);
+	if (error != OK) {
+		editor->show_warning(TTR("Could not load file at:") + "\n\n" + p_file, TTR("Error!"));
+		return RES();
+	}
+
+	if (text_file.is_valid()) {
+		edit(text_file);
+		return text_file;
+	}
+	return RES();
 }
 
 void ScriptEditor::_editor_stop() {

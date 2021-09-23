@@ -741,6 +741,21 @@ void EditorNode::_notification(int p_what) {
 				main_editor_buttons.write[i]->add_theme_font_size_override("font_size", gui_base->get_theme_font_size(SNAME("main_button_font_size"), SNAME("EditorFonts")));
 			}
 
+			Set<String> updated_textfile_extensions;
+			bool extensions_match = true;
+			const Vector<String> textfile_ext = ((String)(EditorSettings::get_singleton()->get("docks/filesystem/textfile_extensions"))).split(",", false);
+			for (const String &E : textfile_ext) {
+				updated_textfile_extensions.insert(E);
+				if (extensions_match && !textfile_extensions.has(E)) {
+					extensions_match = false;
+				}
+			}
+
+			if (!extensions_match || updated_textfile_extensions.size() < textfile_extensions.size()) {
+				textfile_extensions = updated_textfile_extensions;
+				EditorFileSystem::get_singleton()->scan();
+			}
+
 			_update_update_spinner();
 		} break;
 
@@ -1114,7 +1129,13 @@ Error EditorNode::load_resource(const String &p_resource, bool p_ignore_broken_d
 	dependency_errors.clear();
 
 	Error err;
-	RES res = ResourceLoader::load(p_resource, "", ResourceFormatLoader::CACHE_MODE_REUSE, &err);
+
+	RES res;
+	if (ResourceLoader::exists(p_resource, "")) {
+		res = ResourceLoader::load(p_resource, "", ResourceFormatLoader::CACHE_MODE_REUSE, &err);
+	} else if (textfile_extensions.has(p_resource.get_extension())) {
+		res = ScriptEditor::get_singleton()->open_file(p_resource);
+	}
 	ERR_FAIL_COND_V(!res.is_valid(), ERR_CANT_OPEN);
 
 	if (!p_ignore_broken_deps && dependency_errors.has(p_resource)) {
@@ -5983,6 +6004,11 @@ EditorNode::EditorNode() {
 	EDITOR_DEF("interface/inspector/default_color_picker_shape", (int32_t)ColorPicker::SHAPE_VHS_CIRCLE);
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::INT, "interface/inspector/default_color_picker_shape", PROPERTY_HINT_ENUM, "HSV Rectangle,HSV Rectangle Wheel,VHS Circle", PROPERTY_USAGE_DEFAULT));
 	EDITOR_DEF("run/auto_save/save_before_running", true);
+
+	const Vector<String> textfile_ext = ((String)(EditorSettings::get_singleton()->get("docks/filesystem/textfile_extensions"))).split(",", false);
+	for (const String &E : textfile_ext) {
+		textfile_extensions.insert(E);
+	}
 
 	theme_base = memnew(Control);
 	add_child(theme_base);

@@ -862,6 +862,9 @@ void EditorFileSystem::_scan_new_dir(EditorFileSystemDirectory *p_dir, DirAccess
 			} else {
 				//new or modified time
 				fi->type = ResourceLoader::get_resource_type(path);
+				if (fi->type == "" && textfile_extensions.has(ext)) {
+					fi->type = "TextFile";
+				}
 				fi->uid = ResourceLoader::get_resource_uid(path);
 				fi->script_class_name = _get_global_script_class(fi->type, path, &fi->script_class_extends, &fi->script_class_icon_path);
 				fi->deps = _get_dependencies(path);
@@ -984,6 +987,9 @@ void EditorFileSystem::_scan_fs_changes(EditorFileSystemDirectory *p_dir, const 
 					fi->modified_time = FileAccess::get_modified_time(path);
 					fi->import_modified_time = 0;
 					fi->type = ResourceLoader::get_resource_type(path);
+					if (fi->type == "" && textfile_extensions.has(ext)) {
+						fi->type = "TextFile";
+					}
 					fi->script_class_name = _get_global_script_class(fi->type, path, &fi->script_class_extends, &fi->script_class_icon_path);
 					fi->import_valid = ResourceLoader::is_import_valid(path);
 					fi->import_group_file = ResourceLoader::get_import_group_file(path);
@@ -1539,6 +1545,9 @@ void EditorFileSystem::update_file(const String &p_file) {
 	}
 
 	String type = ResourceLoader::get_resource_type(p_file);
+	if (type == "" && textfile_extensions.has(p_file.get_extension())) {
+		type = "TextFile";
+	}
 	ResourceUID::ID uid = ResourceLoader::get_resource_uid(p_file);
 
 	if (cpos == -1) {
@@ -1556,7 +1565,7 @@ void EditorFileSystem::update_file(const String &p_file) {
 		EditorFileSystemDirectory::FileInfo *fi = memnew(EditorFileSystemDirectory::FileInfo);
 		fi->file = file_name;
 		fi->import_modified_time = 0;
-		fi->import_valid = ResourceLoader::is_import_valid(p_file);
+		fi->import_valid = type == "TextFile" ? true : ResourceLoader::is_import_valid(p_file);
 
 		if (idx == fs->files.size()) {
 			fs->files.push_back(fi);
@@ -1577,7 +1586,7 @@ void EditorFileSystem::update_file(const String &p_file) {
 	fs->files[cpos]->import_group_file = ResourceLoader::get_import_group_file(p_file);
 	fs->files[cpos]->modified_time = FileAccess::get_modified_time(p_file);
 	fs->files[cpos]->deps = _get_dependencies(p_file);
-	fs->files[cpos]->import_valid = ResourceLoader::is_import_valid(p_file);
+	fs->files[cpos]->import_valid = type == "TextFile" ? true : ResourceLoader::is_import_valid(p_file);
 
 	if (uid != ResourceUID::INVALID_ID) {
 		if (ResourceUID::get_singleton()->has_id(uid)) {
@@ -1740,6 +1749,9 @@ Error EditorFileSystem::_reimport_group(const String &p_group_file, const Vector
 		fs->files[cpos]->import_modified_time = FileAccess::get_modified_time(file + ".import");
 		fs->files[cpos]->deps = _get_dependencies(file);
 		fs->files[cpos]->type = importer->get_resource_type();
+		if (fs->files[cpos]->type == "" && textfile_extensions.has(file.get_extension())) {
+			fs->files[cpos]->type = "TextFile";
+		}
 		fs->files[cpos]->import_valid = err == OK;
 
 		//if file is currently up, maybe the source it was loaded from changed, so import math must be updated for it
@@ -2329,11 +2341,21 @@ void EditorFileSystem::_bind_methods() {
 void EditorFileSystem::_update_extensions() {
 	valid_extensions.clear();
 	import_extensions.clear();
+	textfile_extensions.clear();
 
 	List<String> extensionsl;
 	ResourceLoader::get_recognized_extensions_for_type("", &extensionsl);
 	for (const String &E : extensionsl) {
 		valid_extensions.insert(E);
+	}
+
+	const Vector<String> textfile_ext = ((String)(EditorSettings::get_singleton()->get("docks/filesystem/textfile_extensions"))).split(",", false);
+	for (const String &E : textfile_ext) {
+		if (valid_extensions.has(E)) {
+			continue;
+		}
+		valid_extensions.insert(E);
+		textfile_extensions.insert(E);
 	}
 
 	extensionsl.clear();
