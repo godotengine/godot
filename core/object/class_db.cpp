@@ -545,6 +545,15 @@ Object *ClassDB::instantiate(const StringName &p_class) {
 	return ti->creation_func();
 }
 
+Object *ClassDB::construct_object(Object *(*p_create_func)(), ObjectNativeExtension *p_extension) {
+	if (p_extension) {
+		initializing_with_extension = true;
+		initializing_extension = p_extension;
+		initializing_extension_instance = p_extension->create_instance(p_extension->class_userdata);
+	}
+	return p_create_func();
+}
+
 bool ClassDB::can_instantiate(const StringName &p_class) {
 	OBJTYPE_RLOCK;
 
