@@ -1466,7 +1466,7 @@ void SphereMesh::_create_mesh_array(Array &p_arr) const {
 			} else {
 				Vector3 p = Vector3(x * radius * w, y, z * radius * w);
 				points.push_back(p);
-				Vector3 normal = Vector3(x * radius * w * scale, y / scale, z * radius * w * scale);
+				Vector3 normal = Vector3(x * w * scale, radius * (y / scale), z * w * scale);
 				normals.push_back(normal.normalized());
 			};
 			ADD_TANGENT(z, 0.0, -x, 1.0)
