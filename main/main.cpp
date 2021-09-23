@@ -35,6 +35,7 @@
 #include "core/crypto/crypto.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/extension/extension_api_dump.h"
+#include "core/extension/native_extension_manager.h"
 #include "core/input/input.h"
 #include "core/input/input_map.h"
 #include "core/io/dir_access.h"
@@ -440,6 +441,8 @@ Error Main::test_setup() {
 	register_module_types();
 	register_driver_types();
 
+	NativeExtensionManager::get_singleton()->initialize_extensions(NativeExtension::INITIALIZATION_LEVEL_PLUGIN);
+
 	ClassDB::set_current_api(ClassDB::API_NONE);
 
 	_start_success = true;
@@ -454,6 +457,8 @@ void Main::test_cleanup() {
 
 	ResourceLoader::remove_custom_loaders();
 	ResourceSaver::remove_custom_savers();
+
+	NativeExtensionManager::get_singleton()->deinitialize_extensions(NativeExtension::INITIALIZATION_LEVEL_PLUGIN);
 
 	unregister_driver_types();
 #ifdef TOOLS_ENABLED
@@ -1840,6 +1845,8 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 		rendering_server->global_variables_load_settings(!editor);
 	}
 
+	NativeExtensionManager::get_singleton()->initialize_extensions(NativeExtension::INITIALIZATION_LEVEL_PLUGIN);
+
 	_start_success = true;
 	locale = String();
 
@@ -2687,6 +2694,8 @@ void Main::cleanup(bool p_force) {
 
 	//clear global shader variables before scene and other graphics stuff are deinitialized.
 	rendering_server->global_variables_clear();
+
+	NativeExtensionManager::get_singleton()->deinitialize_extensions(NativeExtension::INITIALIZATION_LEVEL_PLUGIN);
 
 	if (xr_server) {
 		// cleanup now before we pull the rug from underneath...
