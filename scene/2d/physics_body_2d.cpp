@@ -58,7 +58,8 @@ Ref<KinematicCollision2D> PhysicsBody2D::_move(const Vector2 &p_motion, bool p_t
 	PhysicsServer2D::MotionResult result;
 
 	if (move_and_collide(p_motion, result, p_margin, p_test_only)) {
-		if (motion_cache.is_null()) {
+		// Create a new instance when the cached reference is invalid or still in use in script.
+		if (motion_cache.is_null() || motion_cache->reference_get_count() > 1) {
 			motion_cache.instantiate();
 			motion_cache->owner = this;
 		}
@@ -1369,7 +1370,8 @@ Ref<KinematicCollision2D> CharacterBody2D::_get_slide_collision(int p_bounce) {
 		slide_colliders.resize(p_bounce + 1);
 	}
 
-	if (slide_colliders[p_bounce].is_null()) {
+	// Create a new instance when the cached reference is invalid or still in use in script.
+	if (slide_colliders[p_bounce].is_null() || slide_colliders[p_bounce]->reference_get_count() > 1) {
 		slide_colliders.write[p_bounce].instantiate();
 		slide_colliders.write[p_bounce]->owner = this;
 	}
