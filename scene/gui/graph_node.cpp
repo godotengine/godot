@@ -31,6 +31,9 @@
 #include "graph_node.h"
 
 #include "core/string/translation.h"
+#ifdef TOOLS_ENABLED
+#include "graph_edit.h"
+#endif
 
 struct _MinSizeCache {
 	int min_size;
@@ -457,6 +460,27 @@ void GraphNode::_shape() {
 	}
 	title_buf->add_string(title, font, font_size, opentype_features, (language != "") ? language : TranslationServer::get_singleton()->get_tool_locale());
 }
+
+#ifdef TOOLS_ENABLED
+void GraphNode::_edit_set_position(const Point2 &p_position) {
+	GraphEdit *graph = Object::cast_to<GraphEdit>(get_parent());
+	if (graph) {
+		Point2 offset = (p_position + graph->get_scroll_ofs()) * graph->get_zoom();
+		set_position_offset(offset);
+	}
+	set_position(p_position);
+}
+
+void GraphNode::_validate_property(PropertyInfo &property) const {
+	Control::_validate_property(property);
+	GraphEdit *graph = Object::cast_to<GraphEdit>(get_parent());
+	if (graph) {
+		if (property.name == "rect_position") {
+			property.usage |= PROPERTY_USAGE_READ_ONLY;
+		}
+	}
+}
+#endif
 
 void GraphNode::set_slot(int p_idx, bool p_enable_left, int p_type_left, const Color &p_color_left, bool p_enable_right, int p_type_right, const Color &p_color_right, const Ref<Texture2D> &p_custom_left, const Ref<Texture2D> &p_custom_right) {
 	ERR_FAIL_COND_MSG(p_idx < 0, vformat("Cannot set slot with p_idx (%d) lesser than zero.", p_idx));
