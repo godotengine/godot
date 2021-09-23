@@ -98,7 +98,8 @@ void PhysicsBody3D::remove_collision_exception_with(Node *p_node) {
 Ref<KinematicCollision3D> PhysicsBody3D::_move(const Vector3 &p_motion, bool p_test_only, real_t p_margin, int p_max_collisions) {
 	PhysicsServer3D::MotionResult result;
 	if (move_and_collide(p_motion, result, p_margin, p_test_only, p_max_collisions)) {
-		if (motion_cache.is_null()) {
+		// Create a new instance when the cached reference is invalid or still in use in script.
+		if (motion_cache.is_null() || motion_cache->reference_get_count() > 1) {
 			motion_cache.instantiate();
 			motion_cache->owner = this;
 		}
@@ -1590,7 +1591,8 @@ Ref<KinematicCollision3D> CharacterBody3D::_get_slide_collision(int p_bounce) {
 		slide_colliders.resize(p_bounce + 1);
 	}
 
-	if (slide_colliders[p_bounce].is_null()) {
+	// Create a new instance when the cached reference is invalid or still in use in script.
+	if (slide_colliders[p_bounce].is_null() || slide_colliders[p_bounce]->reference_get_count() > 1) {
 		slide_colliders.write[p_bounce].instantiate();
 		slide_colliders.write[p_bounce]->owner = this;
 	}
