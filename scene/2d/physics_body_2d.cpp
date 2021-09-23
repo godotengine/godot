@@ -981,7 +981,8 @@ Ref<KinematicCollision2D> KinematicBody2D::_move(const Vector2 &p_motion, bool p
 	Collision col;
 
 	if (move_and_collide(p_motion, p_infinite_inertia, col, p_exclude_raycast_shapes, p_test_only)) {
-		if (motion_cache.is_null()) {
+		// Create a new instance when the cached reference is invalid or still in use in script.
+		if (motion_cache.is_null() || motion_cache->reference_get_count() > 1) {
 			motion_cache.instance();
 			motion_cache->owner = this;
 		}
@@ -1320,7 +1321,8 @@ Ref<KinematicCollision2D> KinematicBody2D::_get_slide_collision(int p_bounce) {
 		slide_colliders.resize(p_bounce + 1);
 	}
 
-	if (slide_colliders[p_bounce].is_null()) {
+	// Create a new instance when the cached reference is invalid or still in use in script.
+	if (slide_colliders[p_bounce].is_null() || slide_colliders[p_bounce]->reference_get_count() > 1) {
 		slide_colliders.write[p_bounce].instance();
 		slide_colliders.write[p_bounce]->owner = this;
 	}
