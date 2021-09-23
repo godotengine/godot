@@ -3689,7 +3689,7 @@ void TextEdit::select_word_under_caret() {
 	int end = 0;
 	const Vector<Vector2i> words = TS->shaped_text_get_word_breaks(text.get_line_data(caret.line)->get_rid());
 	for (int i = 0; i < words.size(); i++) {
-		if (words[i].x <= caret.column && words[i].y >= caret.column) {
+		if ((words[i].x < caret.column && words[i].y > caret.column) || (i == words.size() - 1 && caret.column == words[i].y)) {
 			begin = words[i].x;
 			end = words[i].y;
 			break;
@@ -5411,7 +5411,7 @@ void TextEdit::_update_selection_mode_word() {
 	int end = beg;
 	Vector<Vector2i> words = TS->shaped_text_get_word_breaks(text.get_line_data(line)->get_rid());
 	for (int i = 0; i < words.size(); i++) {
-		if (words[i].x < caret_pos && words[i].y > caret_pos) {
+		if ((words[i].x < caret_pos && words[i].y > caret_pos) || (i == words.size() - 1 && caret_pos == words[i].y)) {
 			beg = words[i].x;
 			end = words[i].y;
 			break;

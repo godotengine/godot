@@ -136,7 +136,6 @@ private:
 		bool creating = false;
 		bool double_click = false;
 		bool drag_attempt = false;
-		uint64_t last_dblclk = 0;
 	} selection;
 
 	struct TextOperation {
@@ -152,6 +151,9 @@ private:
 		bool press_attempt = false;
 		bool pressing_inside = false;
 	} clear_button_status;
+
+	uint64_t last_dblclk = 0;
+	Vector2 last_dblclk_pos;
 
 	bool caret_blink_enabled = false;
 	bool caret_force_displayed = false;

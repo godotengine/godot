@@ -260,24 +260,29 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 
 			} else {
 				if (selecting_enabled) {
-					if (!b->is_double_click() && (OS::get_singleton()->get_ticks_msec() - selection.last_dblclk) < 600) {
+					const int triple_click_timeout = 600;
+					const int triple_click_tolerance = 5;
+					const bool is_triple_click = !b->is_double_click() && (OS::get_singleton()->get_ticks_msec() - last_dblclk) < triple_click_timeout && b->get_position().distance_to(last_dblclk_pos) < triple_click_tolerance;
+
+					if (is_triple_click && text.length()) {
 						// Triple-click select all.
 						selection.enabled = true;
 						selection.begin = 0;
 						selection.end = text.length();
 						selection.double_click = true;
-						selection.last_dblclk = 0;
+						last_dblclk = 0;
 						caret_column = selection.begin;
 					} else if (b->is_double_click()) {
 						// Double-click select word.
+						last_dblclk = OS::get_singleton()->get_ticks_msec();
+						last_dblclk_pos = b->get_position();
 						Vector<Vector2i> words = TS->shaped_text_get_word_breaks(text_rid);
 						for (int i = 0; i < words.size(); i++) {
-							if (words[i].x < caret_column && words[i].y > caret_column) {
+							if ((words[i].x < caret_column && words[i].y > caret_column) || (i == words.size() - 1 && caret_column == words[i].y)) {
 								selection.enabled = true;
 								selection.begin = words[i].x;
 								selection.end = words[i].y;
 								selection.double_click = true;
-								selection.last_dblclk = OS::get_singleton()->get_ticks_msec();
 								caret_column = selection.end;
 								break;
 							}
