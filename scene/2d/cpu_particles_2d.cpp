@@ -155,7 +155,7 @@ void CPUParticles2D::_update_mesh_texture() {
 	Vector<Vector2> vertices;
 	vertices.push_back(-tex_size * 0.5);
 	vertices.push_back(-tex_size * 0.5 + Vector2(tex_size.x, 0));
-	vertices.push_back(-tex_size * 0.5 + Vector2(tex_size.x, tex_size.y));
+	vertices.push_back(-tex_size * 0.5 + tex_size);
 	vertices.push_back(-tex_size * 0.5 + Vector2(0, tex_size.y));
 	Vector<Vector2> uvs;
 	AtlasTexture *atlas_texure = Object::cast_to<AtlasTexture>(*texture);

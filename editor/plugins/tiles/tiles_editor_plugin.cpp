@@ -146,7 +146,7 @@ void TilesEditor::synchronize_atlas_view(Object *p_current) {
 	ERR_FAIL_COND(!tile_atlas_view);
 
 	if (tile_atlas_view->is_visible_in_tree()) {
-		tile_atlas_view->set_transform(atlas_view_zoom, Vector2(atlas_view_scroll.x, atlas_view_scroll.y));
+		tile_atlas_view->set_transform(atlas_view_zoom, atlas_view_scroll);
 	}
 }
 

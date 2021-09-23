@@ -296,7 +296,7 @@ void CodeEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 				mpos.x = get_size().x - mpos.x;
 			}
 
-			Point2i pos = get_line_column_at_pos(Point2i(mpos.x, mpos.y));
+			Point2i pos = get_line_column_at_pos(mpos);
 			int line = pos.y;
 			int col = pos.x;
 
@@ -321,7 +321,7 @@ void CodeEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 						mpos.x = get_size().x - mpos.x;
 					}
 
-					Point2i pos = get_line_column_at_pos(Point2i(mpos.x, mpos.y));
+					Point2i pos = get_line_column_at_pos(mpos);
 					int line = pos.y;
 					int col = pos.x;
 

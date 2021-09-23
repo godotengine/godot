@@ -52,8 +52,8 @@ void AABB::merge_with(const AABB &p_aabb) {
 
 	beg_1 = position;
 	beg_2 = p_aabb.position;
-	end_1 = Vector3(size.x, size.y, size.z) + beg_1;
-	end_2 = Vector3(p_aabb.size.x, p_aabb.size.y, p_aabb.size.z) + beg_2;
+	end_1 = size + beg_1;
+	end_2 = p_aabb.size + beg_2;
 
 	min.x = (beg_1.x < beg_2.x) ? beg_1.x : beg_2.x;
 	min.y = (beg_1.y < beg_2.y) ? beg_1.y : beg_2.y;

@@ -48,7 +48,7 @@ void BitMap::create_from_image_alpha(const Ref<Image> &p_image, float p_threshol
 	img->convert(Image::FORMAT_LA8);
 	ERR_FAIL_COND(img->get_format() != Image::FORMAT_LA8);
 
-	create(Size2(img->get_width(), img->get_height()));
+	create(img->get_size());
 
 	const uint8_t *r = img->get_data().ptr();
 	uint8_t *w = bitmask.ptrw();

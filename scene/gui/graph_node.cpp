@@ -871,7 +871,7 @@ void GraphNode::gui_input(const Ref<InputEvent> &p_ev) {
 		ERR_FAIL_COND_MSG(get_parent_control() == nullptr, "GraphNode must be the child of a GraphEdit node.");
 
 		if (mb->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_LEFT) {
-			Vector2 mpos = Vector2(mb->get_position().x, mb->get_position().y);
+			Vector2 mpos = mb->get_position();
 			if (close_rect.size != Size2() && close_rect.has_point(mpos)) {
 				//send focus to parent
 				get_parent_control()->grab_focus();
