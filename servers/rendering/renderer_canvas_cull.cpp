@@ -182,7 +182,7 @@ void RendererCanvasCull::_attach_canvas_item_for_draw(RendererCanvasCull::Item *
 
 		if (ci->commands != nullptr) {
 			ci->final_transform = xform;
-			ci->final_modulate = Color(modulate.r * ci->self_modulate.r, modulate.g * ci->self_modulate.g, modulate.b * ci->self_modulate.b, modulate.a * ci->self_modulate.a);
+			ci->final_modulate = modulate * ci->self_modulate;
 			ci->global_rect_cache = global_rect;
 			ci->global_rect_cache.position -= p_clip_rect.position;
 			ci->light_masked = false;

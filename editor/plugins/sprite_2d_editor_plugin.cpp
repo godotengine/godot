@@ -182,7 +182,7 @@ void Sprite2DEditor::_update_mesh_data() {
 	if (node->is_region_enabled()) {
 		rect = node->get_region_rect();
 	} else {
-		rect.size = Size2(image->get_width(), image->get_height());
+		rect.size = image->get_size();
 	}
 
 	Ref<BitMap> bm;
@@ -209,7 +209,7 @@ void Sprite2DEditor::_update_mesh_data() {
 	computed_uv.clear();
 	computed_indices.clear();
 
-	Size2 img_size = Vector2(image->get_width(), image->get_height());
+	Size2 img_size = image->get_size();
 	for (int i = 0; i < lines.size(); i++) {
 		lines.write[i] = expand(lines[i], rect, epsilon);
 	}

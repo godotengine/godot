@@ -333,7 +333,7 @@ void RichTextLabel::_resize_line(ItemFrame *p_frame, int p_line, const Ref<Font>
 						} else {
 							frame->lines.write[i].offset.y = 0;
 						}
-						frame->lines.write[i].offset += Vector2(offset.x, offset.y);
+						frame->lines.write[i].offset += offset;
 
 						float h = frame->lines[i].text_buf->get_size().y;
 						if (frame->min_size_over.y > 0) {
@@ -578,7 +578,7 @@ void RichTextLabel::_shape_line(ItemFrame *p_frame, int p_line, const Ref<Font> 
 						} else {
 							frame->lines.write[i].offset.y = 0;
 						}
-						frame->lines.write[i].offset += Vector2(offset.x, offset.y);
+						frame->lines.write[i].offset += offset;
 
 						float h = frame->lines[i].text_buf->get_size().y;
 						if (frame->min_size_over.y > 0) {

@@ -51,7 +51,7 @@ static Ref<StyleBoxTexture> make_stylebox(T p_src, float p_left, float p_top, fl
 	} else {
 		texture = Ref<ImageTexture>(memnew(ImageTexture));
 		Ref<Image> img = memnew(Image(p_src));
-		const Size2 orig_size = Size2(img->get_width(), img->get_height());
+		const Size2 orig_size = img->get_size();
 		img->convert(Image::FORMAT_RGBA8);
 		img->resize(orig_size.x * scale, orig_size.y * scale);
 
@@ -97,7 +97,7 @@ template <class T>
 static Ref<Texture2D> make_icon(T p_src) {
 	Ref<ImageTexture> texture(memnew(ImageTexture));
 	Ref<Image> img = memnew(Image(p_src));
-	const Size2 orig_size = Size2(img->get_width(), img->get_height());
+	const Size2 orig_size = img->get_size();
 	img->convert(Image::FORMAT_RGBA8);
 	img->resize(orig_size.x * scale, orig_size.y * scale);
 	texture->create_from_image(img);

@@ -560,7 +560,7 @@ void ScrollBar::_drag_node_input(const Ref<InputEvent> &p_input) {
 
 	if (mm.is_valid()) {
 		if (drag_node_touching && !drag_node_touching_deaccel) {
-			Vector2 motion = Vector2(mm->get_relative().x, mm->get_relative().y);
+			Vector2 motion = mm->get_relative();
 
 			drag_node_accum -= motion;
 			Vector2 diff = drag_node_from + drag_node_accum;

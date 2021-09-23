@@ -3365,7 +3365,7 @@ void RendererSceneRenderRD::_setup_decals(const PagedArray<RID> &p_decals, const
 		Vector3 decal_extents = storage->decal_get_extents(decal);
 
 		Transform3D scale_xform;
-		scale_xform.basis.scale(Vector3(decal_extents.x, decal_extents.y, decal_extents.z));
+		scale_xform.basis.scale(decal_extents);
 		Transform3D to_decal_xform = (p_camera_inverse_xform * di->transform * scale_xform * uv_xform).affine_inverse();
 		RendererStorageRD::store_transform(to_decal_xform, dd.xform);
 

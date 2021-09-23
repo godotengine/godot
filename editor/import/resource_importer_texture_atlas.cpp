@@ -324,7 +324,7 @@ Error ResourceImporterTextureAtlas::import_group_file(const String &p_group_file
 			atlas_texture.instantiate();
 			atlas_texture->set_atlas(cache);
 			atlas_texture->set_region(Rect2(offset, pack_data.region.size));
-			atlas_texture->set_margin(Rect2(pack_data.region.position, Size2(pack_data.image->get_width(), pack_data.image->get_height()) - pack_data.region.size));
+			atlas_texture->set_margin(Rect2(pack_data.region.position, pack_data.image->get_size() - pack_data.region.size));
 
 			texture = atlas_texture;
 		} else {

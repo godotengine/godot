@@ -167,7 +167,7 @@ void ScrollContainer::gui_input(const Ref<InputEvent> &p_gui_input) {
 
 	if (mm.is_valid()) {
 		if (drag_touching && !drag_touching_deaccel) {
-			Vector2 motion = Vector2(mm->get_relative().x, mm->get_relative().y);
+			Vector2 motion = mm->get_relative();
 			drag_accum -= motion;
 
 			if (beyond_deadzone || (scroll_h && Math::abs(drag_accum.x) > deadzone) || (scroll_v && Math::abs(drag_accum.y) > deadzone)) {

@@ -1037,8 +1037,7 @@ void TileMap::draw_tile(RID p_canvas_item, Vector2i p_position, const Ref<TileSe
 		TileData *tile_data = Object::cast_to<TileData>(atlas_source->get_tile_data(p_atlas_coords, p_alternative_tile));
 
 		// Get the tile modulation.
-		Color modulate = tile_data->get_modulate();
-		modulate = Color(modulate.r * p_modulation.r, modulate.g * p_modulation.g, modulate.b * p_modulation.b, modulate.a * p_modulation.a);
+		Color modulate = tile_data->get_modulate() * p_modulation;
 
 		// Compute the offset.
 		Vector2i tile_offset = atlas_source->get_tile_effective_texture_offset(p_atlas_coords, p_alternative_tile);

@@ -697,7 +697,7 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 			} else if (!just_disconnected) {
 				String from = connecting_from;
 				int from_slot = connecting_index;
-				Vector2 ofs = Vector2(mb->get_position().x, mb->get_position().y);
+				Vector2 ofs = mb->get_position();
 
 				if (!connecting_out) {
 					emit_signal(SNAME("connection_from_empty"), from, from_slot, ofs);
