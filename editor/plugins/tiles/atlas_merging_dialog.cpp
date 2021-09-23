@@ -94,12 +94,14 @@ void AtlasMergingDialog::_generate_merged(Vector<Ref<TileSetAtlasSource>> p_atla
 				}
 
 				// Copy the texture.
-				Rect2i src_rect = atlas_source->get_tile_texture_region(tile_id);
-				Rect2 dst_rect_wide = Rect2i(new_tile_rect_in_altas.position * new_texture_region_size, new_tile_rect_in_altas.size * new_texture_region_size);
-				if (dst_rect_wide.get_end().x > output_image->get_width() || dst_rect_wide.get_end().y > output_image->get_height()) {
-					output_image->crop(MAX(dst_rect_wide.get_end().x, output_image->get_width()), MAX(dst_rect_wide.get_end().y, output_image->get_height()));
+				for (int frame = 0; frame < atlas_source->get_tile_animation_frames_count(tile_id); frame++) {
+					Rect2i src_rect = atlas_source->get_tile_texture_region(tile_id, frame);
+					Rect2 dst_rect_wide = Rect2i(new_tile_rect_in_altas.position * new_texture_region_size, new_tile_rect_in_altas.size * new_texture_region_size);
+					if (dst_rect_wide.get_end().x > output_image->get_width() || dst_rect_wide.get_end().y > output_image->get_height()) {
+						output_image->crop(MAX(dst_rect_wide.get_end().x, output_image->get_width()), MAX(dst_rect_wide.get_end().y, output_image->get_height()));
+					}
+					output_image->blit_rect(atlas_source->get_texture()->get_image(), src_rect, dst_rect_wide.get_center() - src_rect.size / 2);
 				}
-				output_image->blit_rect(atlas_source->get_texture()->get_image(), src_rect, dst_rect_wide.get_center() - src_rect.size / 2);
 			}
 
 			// Compute the atlas offset.

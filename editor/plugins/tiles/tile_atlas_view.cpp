@@ -256,11 +256,15 @@ void TileAtlasView::_draw_base_tiles() {
 		for (int i = 0; i < tile_set_atlas_source->get_tiles_count(); i++) {
 			Vector2i atlas_coords = tile_set_atlas_source->get_tile_id(i);
 
-			// Update the y to max value.
-			Vector2i offset_pos = (margins + (atlas_coords * texture_region_size) + tile_set_atlas_source->get_tile_texture_region(atlas_coords).size / 2 + tile_set_atlas_source->get_tile_effective_texture_offset(atlas_coords, 0));
+			for (int frame = 0; frame < tile_set_atlas_source->get_tile_animation_frames_count(atlas_coords); frame++) {
+				// Update the y to max value.
+				int animation_columns = tile_set_atlas_source->get_tile_animation_columns(atlas_coords);
+				Vector2i frame_coords = atlas_coords + (tile_set_atlas_source->get_tile_size_in_atlas(atlas_coords) + tile_set_atlas_source->get_tile_animation_separation(atlas_coords)) * ((animation_columns > 0) ? Vector2i(frame % animation_columns, frame / animation_columns) : Vector2i(frame, 0));
+				Vector2i offset_pos = (margins + (frame_coords * texture_region_size) + tile_set_atlas_source->get_tile_texture_region(atlas_coords, frame).size / 2 + tile_set_atlas_source->get_tile_effective_texture_offset(atlas_coords, 0));
 
-			// Draw the tile.
-			TileMap::draw_tile(base_tiles_draw->get_canvas_item(), offset_pos, tile_set, source_id, atlas_coords, 0);
+				// Draw the tile.
+				TileMap::draw_tile(base_tiles_draw->get_canvas_item(), offset_pos, tile_set, source_id, atlas_coords, 0, frame);
+			}
 		}
 	}
 }
@@ -326,13 +330,18 @@ void TileAtlasView::_draw_base_tiles_shape_grid() {
 	for (int i = 0; i < tile_set_atlas_source->get_tiles_count(); i++) {
 		Vector2i tile_id = tile_set_atlas_source->get_tile_id(i);
 		Vector2 in_tile_base_offset = tile_set_atlas_source->get_tile_effective_texture_offset(tile_id, 0);
-		Rect2i texture_region = tile_set_atlas_source->get_tile_texture_region(tile_id);
 
-		// Draw only if the tile shape fits in the texture region
-		Transform2D tile_xform;
-		tile_xform.set_origin(texture_region.get_center() + in_tile_base_offset);
-		tile_xform.set_scale(tile_shape_size);
-		tile_set->draw_tile_shape(base_tiles_shape_grid, tile_xform, grid_color);
+		for (int frame = 0; frame < tile_set_atlas_source->get_tile_animation_frames_count(tile_id); frame++) {
+			Color color = grid_color;
+			if (frame > 0) {
+				color.a *= 0.3;
+			}
+			Rect2i texture_region = tile_set_atlas_source->get_tile_texture_region(tile_id);
+			Transform2D tile_xform;
+			tile_xform.set_origin(texture_region.get_center() + in_tile_base_offset);
+			tile_xform.set_scale(tile_shape_size);
+			tile_set->draw_tile_shape(base_tiles_shape_grid, tile_xform, color);
+		}
 	}
 }
 
@@ -360,7 +369,7 @@ void TileAtlasView::_draw_alternatives() {
 			Vector2i atlas_coords = tile_set_atlas_source->get_tile_id(i);
 			current_pos.x = 0;
 			int y_increment = 0;
-			Rect2i texture_region = tile_set_atlas_source->get_tile_texture_region(atlas_coords);
+			Size2i texture_region_size = tile_set_atlas_source->get_tile_texture_region(atlas_coords).size;
 			int alternatives_count = tile_set_atlas_source->get_alternative_tiles_count(atlas_coords);
 			for (int j = 1; j < alternatives_count; j++) {
 				int alternative_id = tile_set_atlas_source->get_alternative_tile_id(atlas_coords, j);
@@ -370,18 +379,18 @@ void TileAtlasView::_draw_alternatives() {
 				// Update the y to max value.
 				Vector2i offset_pos = current_pos;
 				if (transposed) {
-					offset_pos = (current_pos + Vector2(texture_region.size.y, texture_region.size.x) / 2 + tile_set_atlas_source->get_tile_effective_texture_offset(atlas_coords, alternative_id));
-					y_increment = MAX(y_increment, texture_region.size.x);
+					offset_pos = (current_pos + Vector2(texture_region_size.y, texture_region_size.x) / 2 + tile_set_atlas_source->get_tile_effective_texture_offset(atlas_coords, alternative_id));
+					y_increment = MAX(y_increment, texture_region_size.x);
 				} else {
-					offset_pos = (current_pos + texture_region.size / 2 + tile_set_atlas_source->get_tile_effective_texture_offset(atlas_coords, alternative_id));
-					y_increment = MAX(y_increment, texture_region.size.y);
+					offset_pos = (current_pos + texture_region_size / 2 + tile_set_atlas_source->get_tile_effective_texture_offset(atlas_coords, alternative_id));
+					y_increment = MAX(y_increment, texture_region_size.y);
 				}
 
 				// Draw the tile.
 				TileMap::draw_tile(alternatives_draw->get_canvas_item(), offset_pos, tile_set, source_id, atlas_coords, alternative_id);
 
 				// Increment the x position.
-				current_pos.x += transposed ? texture_region.size.y : texture_region.size.x;
+				current_pos.x += transposed ? texture_region_size.y : texture_region_size.x;
 			}
 			if (alternatives_count > 1) {
 				current_pos.y += y_increment;

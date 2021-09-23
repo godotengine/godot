@@ -15,16 +15,6 @@
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="can_move_tile_in_atlas" qualifiers="const">
-			<return type="bool" />
-			<argument index="0" name="atlas_coords" type="Vector2i" />
-			<argument index="1" name="new_atlas_coords" type="Vector2i" default="Vector2i(-1, -1)" />
-			<argument index="2" name="new_size" type="Vector2i" default="Vector2i(-1, -1)" />
-			<description>
-				Returns true if the tile at the [code]atlas_coords[/code] coordinates can be moved to the [code]new_atlas_coords[/code] coordinates with the [code]new_size[/code] size. This functions returns false if a tile is already present in the given area, or if this area is outside the atlas boundaries.
-				If [code]new_atlas_coords[/code] is [code]Vector2i(-1, -1)[/code], keeps the tile's coordinates. If [code]new_size[/code] is [code]Vector2i(-1, -1)[/code], keeps the tile's size.
-			</description>
-		</method>
 		<method name="clear_tiles_outside_texture">
 			<return type="void" />
 			<description>
@@ -61,6 +51,49 @@
 				Returns the alternative ID a following call to [method create_alternative_tile] would return.
 			</description>
 		</method>
+		<method name="get_tile_animation_columns" qualifiers="const">
+			<return type="int" />
+			<argument index="0" name="atlas_coords" type="Vector2i" />
+			<description>
+				Returns how many columns the tile at [code]atlas_coords[/code] has in its animation layout.
+			</description>
+		</method>
+		<method name="get_tile_animation_frame_duration" qualifiers="const">
+			<return type="float" />
+			<argument index="0" name="atlas_coords" type="Vector2i" />
+			<argument index="1" name="frame_index" type="int" />
+			<description>
+				Returns the animation frame duration of frame [code]frame_index[/code] for the tile at coordinates [code]atlas_coords[/code].
+			</description>
+		</method>
+		<method name="get_tile_animation_frames_count" qualifiers="const">
+			<return type="int" />
+			<argument index="0" name="atlas_coords" type="Vector2i" />
+			<description>
+				Returns how many animation frames has the tile at coordinates [code]atlas_coords[/code].
+			</description>
+		</method>
+		<method name="get_tile_animation_separation" qualifiers="const">
+			<return type="Vector2i" />
+			<argument index="0" name="atlas_coords" type="Vector2i" />
+			<description>
+				Returns the separation (as in the atlas grid) between each frame of an animated tile at coordinates [code]atlas_coords[/code].
+			</description>
+		</method>
+		<method name="get_tile_animation_speed" qualifiers="const">
+			<return type="float" />
+			<argument index="0" name="atlas_coords" type="Vector2i" />
+			<description>
+				Returns the animation speed of the tile at coordinates [code]atlas_coords[/code].
+			</description>
+		</method>
+		<method name="get_tile_animation_total_duration" qualifiers="const">
+			<return type="float" />
+			<argument index="0" name="atlas_coords" type="Vector2i" />
+			<description>
+				Returns the sum of the sum of the frame durations of the tile at coordinates [code]atlas_coords[/code]. This value needs to be divided by the animation speed to get the actual animation loop duration.
+			</description>
+		</method>
 		<method name="get_tile_at_coords" qualifiers="const">
 			<return type="Vector2i" />
 			<argument index="0" name="atlas_coords" type="Vector2i" />
@@ -86,8 +119,21 @@
 		<method name="get_tile_texture_region" qualifiers="const">
 			<return type="Rect2i" />
 			<argument index="0" name="atlas_coords" type="Vector2i" />
+			<argument index="1" name="frame" type="int" default="0" />
 			<description>
-				Returns a tile's texture region in the atlas texture.
+				Returns a tile's texture region in the atlas texture. For animated tiles, a [code]frame[/code] argument might be provided for the different frames of the animation.
+			</description>
+		</method>
+		<method name="has_room_for_tile" qualifiers="const">
+			<return type="bool" />
+			<argument index="0" name="atlas_coords" type="Vector2i" />
+			<argument index="1" name="size" type="Vector2i" />
+			<argument index="2" name="animation_columns" type="int" />
+			<argument index="3" name="animation_separation" type="Vector2i" />
+			<argument index="4" name="frames_count" type="int" />
+			<argument index="5" name="ignored_tile" type="Vector2i" default="Vector2i(-1, -1)" />
+			<description>
+				Returns whether there is enough room in an atlas to create/modify a tile with the given properties. If [code]ignored_tile[/code] is provided, act as is the given tile was not present in the atlas. This may be used when you want to modify a tile's properties.
 			</description>
 		</method>
 		<method name="has_tiles_outside_texture">
@@ -104,7 +150,7 @@
 			<description>
 				Move the tile and its alternatives at the [code]atlas_coords[/code] coordinates to the [code]new_atlas_coords[/code] coordinates with the [code]new_size[/code] size. This functions will fail if a tile is already present in the given area.
 				If [code]new_atlas_coords[/code] is [code]Vector2i(-1, -1)[/code], keeps the tile's coordinates. If [code]new_size[/code] is [code]Vector2i(-1, -1)[/code], keeps the tile's size.
-				To avoid an error, first check if a move is possible using [method can_move_tile_in_atlas].
+				To avoid an error, first check if a move is possible using [method has_room_for_tile].
 			</description>
 		</method>
 		<method name="remove_alternative_tile">
@@ -131,6 +177,47 @@
 			<description>
 				Change a tile's alternative ID from [code]alternative_tile[/code] to [code]new_id[/code].
 				Calling this function with [code]alternative_id[/code] equals to 0 will fail, as the base tile alternative cannot be moved.
+			</description>
+		</method>
+		<method name="set_tile_animation_columns">
+			<return type="void" />
+			<argument index="0" name="atlas_coords" type="Vector2i" />
+			<argument index="1" name="frame_columns" type="int" />
+			<description>
+				Sets the number of columns in the animation layout of the tile at coordinates [code]atlas_coords[/code]. If set to 0, then the different frames of the animation are laid out as a single horizontal line in the atlas.
+			</description>
+		</method>
+		<method name="set_tile_animation_frame_duration">
+			<return type="void" />
+			<argument index="0" name="atlas_coords" type="Vector2i" />
+			<argument index="1" name="frame_index" type="int" />
+			<argument index="2" name="duration" type="float" />
+			<description>
+				Sets the animation frame duration of frame [code]frame_index[/code] for the tile at coordinates [code]atlas_coords[/code].
+			</description>
+		</method>
+		<method name="set_tile_animation_frames_count">
+			<return type="void" />
+			<argument index="0" name="atlas_coords" type="Vector2i" />
+			<argument index="1" name="frames_count" type="int" />
+			<description>
+				Sets how many animation frames the tile at coordinates [code]atlas_coords[/code] has.
+			</description>
+		</method>
+		<method name="set_tile_animation_separation">
+			<return type="void" />
+			<argument index="0" name="atlas_coords" type="Vector2i" />
+			<argument index="1" name="separation" type="Vector2i" />
+			<description>
+				Sets the margin (in grid tiles) between each tile in the animation layout of the tile at coordinates [code]atlas_coords[/code] has.
+			</description>
+		</method>
+		<method name="set_tile_animation_speed">
+			<return type="void" />
+			<argument index="0" name="atlas_coords" type="Vector2i" />
+			<argument index="1" name="speed" type="float" />
+			<description>
+				Sets the animation speed of the tile at coordinates [code]atlas_coords[/code] has.
 			</description>
 		</method>
 	</methods>

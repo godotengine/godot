@@ -3119,7 +3119,7 @@ Vector2i TileSetAtlasSource::get_atlas_grid_size() const {
 }
 
 bool TileSetAtlasSource::_set(const StringName &p_name, const Variant &p_value) {
-	Vector<String> components = String(p_name).split("/", true, 2);
+	Vector<String> components = String(p_name).split("/", true, 3);
 
 	// Compute the vector2i if we have coordinates.
 	Vector<String> coords_split = components[0].split(":");
@@ -3138,8 +3138,32 @@ bool TileSetAtlasSource::_set(const StringName &p_name, const Variant &p_value) 
 			// Properties.
 			if (components[1] == "size_in_atlas") {
 				move_tile_in_atlas(coords, coords, p_value);
+				return true;
 			} else if (components[1] == "next_alternative_id") {
 				tiles[coords].next_alternative_id = p_value;
+				return true;
+			} else if (components[1] == "animation_columns") {
+				set_tile_animation_columns(coords, p_value);
+				return true;
+			} else if (components[1] == "animation_separation") {
+				set_tile_animation_separation(coords, p_value);
+				return true;
+			} else if (components[1] == "animation_speed") {
+				set_tile_animation_speed(coords, p_value);
+				return true;
+			} else if (components[1] == "animation_frames_count") {
+				set_tile_animation_frames_count(coords, p_value);
+				return true;
+			} else if (components.size() >= 3 && components[1].begins_with("animation_frame_") && components[1].trim_prefix("animation_frame_").is_valid_int()) {
+				int frame = components[1].trim_prefix("animation_frame_").to_int();
+				if (components[2] == "duration") {
+					if (frame >= get_tile_animation_frames_count(coords)) {
+						set_tile_animation_frames_count(coords, frame + 1);
+					}
+					set_tile_animation_frame_duration(coords, frame, p_value);
+					return true;
+				}
+				return false;
 			} else if (components[1].is_valid_int()) {
 				int alternative_id = components[1].to_int();
 				if (alternative_id != TileSetSource::INVALID_TILE_ALTERNATIVE) {
@@ -3185,6 +3209,28 @@ bool TileSetAtlasSource::_get(const StringName &p_name, Variant &r_ret) const {
 				} else if (components[1] == "next_alternative_id") {
 					r_ret = tiles[coords].next_alternative_id;
 					return true;
+				} else if (components[1] == "animation_columns") {
+					r_ret = get_tile_animation_columns(coords);
+					return true;
+				} else if (components[1] == "animation_separation") {
+					r_ret = get_tile_animation_separation(coords);
+					return true;
+				} else if (components[1] == "animation_speed") {
+					r_ret = get_tile_animation_speed(coords);
+					return true;
+				} else if (components[1] == "animation_frames_count") {
+					r_ret = get_tile_animation_frames_count(coords);
+					return true;
+				} else if (components.size() >= 3 && components[1].begins_with("animation_frame_") && components[1].trim_prefix("animation_frame_").is_valid_int()) {
+					int frame = components[1].trim_prefix("animation_frame_").to_int();
+					if (frame < 0 || frame >= get_tile_animation_frames_count(coords)) {
+						return false;
+					}
+					if (components[2] == "duration") {
+						r_ret = get_tile_animation_frame_duration(coords, frame);
+						return true;
+					}
+					return false;
 				} else if (components[1].is_valid_int()) {
 					int alternative_id = components[1].to_int();
 					if (alternative_id != TileSetSource::INVALID_TILE_ALTERNATIVE && tiles[coords].alternatives.has(alternative_id)) {
@@ -3226,6 +3272,40 @@ void TileSetAtlasSource::_get_property_list(List<PropertyInfo> *p_list) const {
 		}
 		tile_property_list.push_back(property_info);
 
+		// animation_columns.
+		property_info = PropertyInfo(Variant::INT, "animation_columns", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR);
+		if (E_tile->get().animation_columns == 0) {
+			property_info.usage ^= PROPERTY_USAGE_STORAGE;
+		}
+		tile_property_list.push_back(property_info);
+
+		// animation_separation.
+		property_info = PropertyInfo(Variant::INT, "animation_separation", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR);
+		if (E_tile->get().animation_separation == Vector2i()) {
+			property_info.usage ^= PROPERTY_USAGE_STORAGE;
+		}
+		tile_property_list.push_back(property_info);
+
+		// animation_speed.
+		property_info = PropertyInfo(Variant::FLOAT, "animation_speed", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR);
+		if (E_tile->get().animation_speed == 1.0) {
+			property_info.usage ^= PROPERTY_USAGE_STORAGE;
+		}
+		tile_property_list.push_back(property_info);
+
+		// animation_frames_count.
+		tile_property_list.push_back(PropertyInfo(Variant::INT, "animation_frames_count", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NETWORK));
+
+		// animation_frame_*.
+		bool store_durations = tiles[E_tile->key()].animation_frames_durations.size() >= 2;
+		for (int i = 0; i < (int)tiles[E_tile->key()].animation_frames_durations.size(); i++) {
+			property_info = PropertyInfo(Variant::FLOAT, vformat("animation_frame_%d/duration", i), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR);
+			if (!store_durations) {
+				property_info.usage ^= PROPERTY_USAGE_STORAGE;
+			}
+			tile_property_list.push_back(property_info);
+		}
+
 		for (Map<int, TileData *>::Element *E_alternative = E_tile->get().alternatives.front(); E_alternative; E_alternative = E_alternative->next()) {
 			// Add a dummy property to show the alternative exists.
 			tile_property_list.push_back(PropertyInfo(Variant::INT, vformat("%d", E_alternative->key()), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
@@ -3234,11 +3314,10 @@ void TileSetAtlasSource::_get_property_list(List<PropertyInfo> *p_list) const {
 			List<PropertyInfo> alternative_property_list;
 			E_alternative->get()->get_property_list(&alternative_property_list);
 			for (PropertyInfo &alternative_property_info : alternative_property_list) {
-				bool valid;
-				Variant default_value = ClassDB::class_get_default_property_value("TileData", alternative_property_info.name, &valid);
+				Variant default_value = ClassDB::class_get_default_property_value("TileData", alternative_property_info.name);
 				Variant value = E_alternative->get()->get(alternative_property_info.name);
-				if (valid && value == default_value) {
-					property_info.usage ^= PROPERTY_USAGE_STORAGE;
+				if (default_value.get_type() != Variant::NIL && bool(Variant::evaluate(Variant::OP_EQUAL, value, default_value))) {
+					alternative_property_info.usage ^= PROPERTY_USAGE_STORAGE;
 				}
 				alternative_property_info.name = vformat("%s/%s", vformat("%d", E_alternative->key()), alternative_property_info.name);
 				tile_property_list.push_back(alternative_property_info);
@@ -3257,33 +3336,27 @@ void TileSetAtlasSource::create_tile(const Vector2i p_atlas_coords, const Vector
 	// Create a tile if it does not exists.
 	ERR_FAIL_COND(p_atlas_coords.x < 0 || p_atlas_coords.y < 0);
 	ERR_FAIL_COND(p_size.x <= 0 || p_size.y <= 0);
-	for (int x = 0; x < p_size.x; x++) {
-		for (int y = 0; y < p_size.y; y++) {
-			Vector2i coords = p_atlas_coords + Vector2i(x, y);
-			ERR_FAIL_COND_MSG(tiles.has(coords), vformat("Cannot create tile at position %s with size %s. Already a tile present at %s.", p_atlas_coords, p_size, coords));
-		}
-	}
+
+	bool room_for_tile = has_room_for_tile(p_atlas_coords, p_size, 1, Vector2i(), 1);
+	ERR_FAIL_COND_MSG(!room_for_tile, "Cannot create tile, tiles are already present in the space the tile would cover.");
+
+	// Initialize the tile data.
+	TileAlternativesData tad;
+	tad.size_in_atlas = p_size;
+	tad.animation_frames_durations.push_back(1.0);
+	tad.alternatives[0] = memnew(TileData);
+	tad.alternatives[0]->set_tile_set(tile_set);
+	tad.alternatives[0]->set_allow_transform(false);
+	tad.alternatives[0]->connect("changed", callable_mp((Resource *)this, &TileSetAtlasSource::emit_changed));
+	tad.alternatives[0]->notify_property_list_changed();
+	tad.alternatives_ids.append(0);
 
 	// Create and resize the tile.
-	tiles.insert(p_atlas_coords, TileSetAtlasSource::TileAlternativesData());
+	tiles.insert(p_atlas_coords, tad);
 	tiles_ids.append(p_atlas_coords);
 	tiles_ids.sort();
 
-	tiles[p_atlas_coords].size_in_atlas = p_size;
-	tiles[p_atlas_coords].alternatives[0] = memnew(TileData);
-	tiles[p_atlas_coords].alternatives[0]->set_tile_set(tile_set);
-	tiles[p_atlas_coords].alternatives[0]->set_allow_transform(false);
-	tiles[p_atlas_coords].alternatives[0]->connect("changed", callable_mp((Resource *)this, &TileSetAtlasSource::emit_changed));
-	tiles[p_atlas_coords].alternatives[0]->notify_property_list_changed();
-	tiles[p_atlas_coords].alternatives_ids.append(0);
-
-	// Add all covered positions to the mapping cache
-	for (int x = 0; x < p_size.x; x++) {
-		for (int y = 0; y < p_size.y; y++) {
-			Vector2i coords = p_atlas_coords + Vector2i(x, y);
-			_coords_mapping_cache[coords] = p_atlas_coords;
-		}
-	}
+	_create_coords_mapping_cache(p_atlas_coords);
 
 	emit_signal(SNAME("changed"));
 }
@@ -3292,14 +3365,7 @@ void TileSetAtlasSource::remove_tile(Vector2i p_atlas_coords) {
 	ERR_FAIL_COND_MSG(!tiles.has(p_atlas_coords), vformat("TileSetAtlasSource has no tile at %s.", String(p_atlas_coords)));
 
 	// Remove all covered positions from the mapping cache
-	Size2i size = tiles[p_atlas_coords].size_in_atlas;
-
-	for (int x = 0; x < size.x; x++) {
-		for (int y = 0; y < size.y; y++) {
-			Vector2i coords = p_atlas_coords + Vector2i(x, y);
-			_coords_mapping_cache.erase(coords);
-		}
-	}
+	_clear_coords_mapping_cache(p_atlas_coords);
 
 	// Free tile data.
 	for (Map<int, TileData *>::Element *E_tile_data = tiles[p_atlas_coords].alternatives.front(); E_tile_data; E_tile_data = E_tile_data->next()) {
@@ -3326,6 +3392,118 @@ Vector2i TileSetAtlasSource::get_tile_at_coords(Vector2i p_atlas_coords) const {
 	return _coords_mapping_cache[p_atlas_coords];
 }
 
+void TileSetAtlasSource::set_tile_animation_columns(const Vector2i p_atlas_coords, int p_frame_columns) {
+	ERR_FAIL_COND_MSG(!tiles.has(p_atlas_coords), vformat("TileSetAtlasSource has no tile at %s.", Vector2i(p_atlas_coords)));
+	ERR_FAIL_COND(p_frame_columns < 0);
+
+	TileAlternativesData &tad = tiles[p_atlas_coords];
+	bool room_for_tile = has_room_for_tile(p_atlas_coords, tad.size_in_atlas, p_frame_columns, tad.animation_separation, tad.animation_frames_durations.size(), p_atlas_coords);
+	ERR_FAIL_COND_MSG(!room_for_tile, "Cannot set animation columns count, tiles are already present in the space the tile would cover.");
+
+	_clear_coords_mapping_cache(p_atlas_coords);
+
+	tiles[p_atlas_coords].animation_columns = p_frame_columns;
+
+	_create_coords_mapping_cache(p_atlas_coords);
+
+	emit_signal(SNAME("changed"));
+}
+
+int TileSetAtlasSource::get_tile_animation_columns(const Vector2i p_atlas_coords) const {
+	ERR_FAIL_COND_V_MSG(!tiles.has(p_atlas_coords), 1, vformat("TileSetAtlasSource has no tile at %s.", Vector2i(p_atlas_coords)));
+	return tiles[p_atlas_coords].animation_columns;
+}
+
+void TileSetAtlasSource::set_tile_animation_separation(const Vector2i p_atlas_coords, const Vector2i p_separation) {
+	ERR_FAIL_COND_MSG(!tiles.has(p_atlas_coords), vformat("TileSetAtlasSource has no tile at %s.", Vector2i(p_atlas_coords)));
+	ERR_FAIL_COND(p_separation.x < 0 || p_separation.y < 0);
+
+	TileAlternativesData &tad = tiles[p_atlas_coords];
+	bool room_for_tile = has_room_for_tile(p_atlas_coords, tad.size_in_atlas, tad.animation_columns, p_separation, tad.animation_frames_durations.size(), p_atlas_coords);
+	ERR_FAIL_COND_MSG(!room_for_tile, "Cannot set animation columns count, tiles are already present in the space the tile would cover.");
+
+	_clear_coords_mapping_cache(p_atlas_coords);
+
+	tiles[p_atlas_coords].animation_separation = p_separation;
+
+	_create_coords_mapping_cache(p_atlas_coords);
+
+	emit_signal(SNAME("changed"));
+}
+
+Vector2i TileSetAtlasSource::get_tile_animation_separation(const Vector2i p_atlas_coords) const {
+	ERR_FAIL_COND_V_MSG(!tiles.has(p_atlas_coords), Vector2i(), vformat("TileSetAtlasSource has no tile at %s.", Vector2i(p_atlas_coords)));
+	return tiles[p_atlas_coords].animation_separation;
+}
+
+void TileSetAtlasSource::set_tile_animation_speed(const Vector2i p_atlas_coords, real_t p_speed) {
+	ERR_FAIL_COND_MSG(!tiles.has(p_atlas_coords), vformat("TileSetAtlasSource has no tile at %s.", Vector2i(p_atlas_coords)));
+	ERR_FAIL_COND(p_speed <= 0);
+
+	tiles[p_atlas_coords].animation_speed = p_speed;
+
+	emit_signal(SNAME("changed"));
+}
+
+real_t TileSetAtlasSource::get_tile_animation_speed(const Vector2i p_atlas_coords) const {
+	ERR_FAIL_COND_V_MSG(!tiles.has(p_atlas_coords), 1.0, vformat("TileSetAtlasSource has no tile at %s.", Vector2i(p_atlas_coords)));
+	return tiles[p_atlas_coords].animation_speed;
+}
+
+void TileSetAtlasSource::set_tile_animation_frames_count(const Vector2i p_atlas_coords, int p_frames_count) {
+	ERR_FAIL_COND_MSG(!tiles.has(p_atlas_coords), vformat("TileSetAtlasSource has no tile at %s.", Vector2i(p_atlas_coords)));
+	ERR_FAIL_COND(p_frames_count < 1);
+
+	TileAlternativesData &tad = tiles[p_atlas_coords];
+	bool room_for_tile = has_room_for_tile(p_atlas_coords, tad.size_in_atlas, tad.animation_columns, tad.animation_separation, p_frames_count, p_atlas_coords);
+	ERR_FAIL_COND_MSG(!room_for_tile, "Cannot set animation columns count, tiles are already present in the space the tile would cover.");
+
+	_clear_coords_mapping_cache(p_atlas_coords);
+
+	int old_size = tiles[p_atlas_coords].animation_frames_durations.size();
+	tiles[p_atlas_coords].animation_frames_durations.resize(p_frames_count);
+	for (int i = old_size; i < p_frames_count; i++) {
+		tiles[p_atlas_coords].animation_frames_durations[i] = 1.0;
+	}
+
+	_create_coords_mapping_cache(p_atlas_coords);
+
+	notify_property_list_changed();
+
+	emit_signal(SNAME("changed"));
+}
+
+int TileSetAtlasSource::get_tile_animation_frames_count(const Vector2i p_atlas_coords) const {
+	ERR_FAIL_COND_V_MSG(!tiles.has(p_atlas_coords), 1, vformat("TileSetAtlasSource has no tile at %s.", Vector2i(p_atlas_coords)));
+	return tiles[p_atlas_coords].animation_frames_durations.size();
+}
+
+void TileSetAtlasSource::set_tile_animation_frame_duration(const Vector2i p_atlas_coords, int p_frame_index, real_t p_duration) {
+	ERR_FAIL_COND_MSG(!tiles.has(p_atlas_coords), vformat("TileSetAtlasSource has no tile at %s.", Vector2i(p_atlas_coords)));
+	ERR_FAIL_INDEX(p_frame_index, (int)tiles[p_atlas_coords].animation_frames_durations.size());
+	ERR_FAIL_COND(p_duration <= 0.0);
+
+	tiles[p_atlas_coords].animation_frames_durations[p_frame_index] = p_duration;
+
+	emit_signal(SNAME("changed"));
+}
+
+real_t TileSetAtlasSource::get_tile_animation_frame_duration(const Vector2i p_atlas_coords, int p_frame_index) const {
+	ERR_FAIL_COND_V_MSG(!tiles.has(p_atlas_coords), 1, vformat("TileSetAtlasSource has no tile at %s.", Vector2i(p_atlas_coords)));
+	ERR_FAIL_INDEX_V(p_frame_index, (int)tiles[p_atlas_coords].animation_frames_durations.size(), 0.0);
+	return tiles[p_atlas_coords].animation_frames_durations[p_frame_index];
+}
+
+real_t TileSetAtlasSource::get_tile_animation_total_duration(const Vector2i p_atlas_coords) const {
+	ERR_FAIL_COND_V_MSG(!tiles.has(p_atlas_coords), 1, vformat("TileSetAtlasSource has no tile at %s.", Vector2i(p_atlas_coords)));
+
+	real_t sum = 0.0;
+	for (int frame = 0; frame < (int)tiles[p_atlas_coords].animation_frames_durations.size(); frame++) {
+		sum += tiles[p_atlas_coords].animation_frames_durations[frame];
+	}
+	return sum;
+}
+
 Vector2i TileSetAtlasSource::get_tile_size_in_atlas(Vector2i p_atlas_coords) const {
 	ERR_FAIL_COND_V_MSG(!tiles.has(p_atlas_coords), Vector2i(-1, -1), vformat("TileSetAtlasSource has no tile at %s.", String(p_atlas_coords)));
 
@@ -3341,16 +3519,34 @@ Vector2i TileSetAtlasSource::get_tile_id(int p_index) const {
 	return tiles_ids[p_index];
 }
 
-Rect2i TileSetAtlasSource::get_tile_texture_region(Vector2i p_atlas_coords) const {
-	ERR_FAIL_COND_V_MSG(!tiles.has(p_atlas_coords), Rect2i(), vformat("TileSetAtlasSource has no tile at %s.", String(p_atlas_coords)));
+bool TileSetAtlasSource::has_room_for_tile(Vector2i p_atlas_coords, Vector2i p_size, int p_animation_columns, Vector2i p_animation_separation, int p_frames_count, Vector2i p_ignored_tile) const {
+	for (int frame = 0; frame < p_frames_count; frame++) {
+		Vector2i frame_coords = p_atlas_coords + (p_size + p_animation_separation) * ((p_animation_columns > 0) ? Vector2i(frame % p_animation_columns, frame / p_animation_columns) : Vector2i(frame, 0));
+		for (int x = 0; x < p_size.x; x++) {
+			for (int y = 0; y < p_size.y; y++) {
+				Vector2i coords = frame_coords + Vector2i(x, y);
+				if (_coords_mapping_cache.has(coords) && _coords_mapping_cache[coords] != p_ignored_tile) {
+					return false;
+				}
+			}
+		}
+	}
+	return true;
+}
 
-	Vector2i size_in_atlas = tiles[p_atlas_coords].size_in_atlas;
+Rect2i TileSetAtlasSource::get_tile_texture_region(Vector2i p_atlas_coords, int p_frame) const {
+	ERR_FAIL_COND_V_MSG(!tiles.has(p_atlas_coords), Rect2i(), vformat("TileSetAtlasSource has no tile at %s.", String(p_atlas_coords)));
+	ERR_FAIL_INDEX_V(p_frame, (int)tiles[p_atlas_coords].animation_frames_durations.size(), Rect2i());
+
+	const TileAlternativesData &tad = tiles[p_atlas_coords];
+
+	Vector2i size_in_atlas = tad.size_in_atlas;
 	Vector2 region_size = texture_region_size * size_in_atlas + separation * (size_in_atlas - Vector2i(1, 1));
 
-	Vector2 origin = margins + (p_atlas_coords * (texture_region_size + separation));
+	Vector2i frame_coords = p_atlas_coords + (size_in_atlas + tad.animation_separation) * ((tad.animation_columns > 0) ? Vector2i(p_frame % tad.animation_columns, p_frame / tad.animation_columns) : Vector2i(p_frame, 0));
+	Vector2 origin = margins + (frame_coords * (texture_region_size + separation));
 
 	return Rect2(origin, region_size);
-	;
 }
 
 Vector2i TileSetAtlasSource::get_tile_effective_texture_offset(Vector2i p_atlas_coords, int p_alternative_tile) const {
@@ -3369,56 +3565,23 @@ Vector2i TileSetAtlasSource::get_tile_effective_texture_offset(Vector2i p_atlas_
 	return effective_texture_offset;
 }
 
-bool TileSetAtlasSource::can_move_tile_in_atlas(Vector2i p_atlas_coords, Vector2i p_new_atlas_coords, Vector2i p_new_size) const {
-	ERR_FAIL_COND_V_MSG(!tiles.has(p_atlas_coords), false, vformat("TileSetAtlasSource has no tile at %s.", String(p_atlas_coords)));
-
-	Vector2i new_atlas_coords = (p_new_atlas_coords != INVALID_ATLAS_COORDS) ? p_new_atlas_coords : p_atlas_coords;
-	if (new_atlas_coords.x < 0 || new_atlas_coords.y < 0) {
-		return false;
-	}
-
-	Vector2i size = (p_new_size != Vector2i(-1, -1)) ? p_new_size : tiles[p_atlas_coords].size_in_atlas;
-	ERR_FAIL_COND_V(size.x <= 0 || size.y <= 0, false);
-
-	Size2i grid_size = get_atlas_grid_size();
-	if (new_atlas_coords.x + size.x > grid_size.x || new_atlas_coords.y + size.y > grid_size.y) {
-		return false;
-	}
-
-	Rect2i new_rect = Rect2i(new_atlas_coords, size);
-	// Check if the new tile can fit in the new rect.
-	for (int x = new_rect.position.x; x < new_rect.get_end().x; x++) {
-		for (int y = new_rect.position.y; y < new_rect.get_end().y; y++) {
-			Vector2i coords = get_tile_at_coords(Vector2i(x, y));
-			if (coords != p_atlas_coords && coords != TileSetSource::INVALID_ATLAS_COORDS) {
-				return false;
-			}
-		}
-	}
-
-	return true;
-}
-
 void TileSetAtlasSource::move_tile_in_atlas(Vector2i p_atlas_coords, Vector2i p_new_atlas_coords, Vector2i p_new_size) {
-	bool can_move = can_move_tile_in_atlas(p_atlas_coords, p_new_atlas_coords, p_new_size);
-	ERR_FAIL_COND_MSG(!can_move, vformat("Cannot move tile at position %s with size %s. Tile already present.", p_new_atlas_coords, p_new_size));
+	ERR_FAIL_COND_MSG(!tiles.has(p_atlas_coords), vformat("TileSetAtlasSource has no tile at %s.", String(p_atlas_coords)));
+
+	TileAlternativesData &tad = tiles[p_atlas_coords];
 
 	// Compute the actual new rect from arguments.
 	Vector2i new_atlas_coords = (p_new_atlas_coords != INVALID_ATLAS_COORDS) ? p_new_atlas_coords : p_atlas_coords;
-	Vector2i size = (p_new_size != Vector2i(-1, -1)) ? p_new_size : tiles[p_atlas_coords].size_in_atlas;
+	Vector2i new_size = (p_new_size != Vector2i(-1, -1)) ? p_new_size : tad.size_in_atlas;
 
-	if (new_atlas_coords == p_atlas_coords && size == tiles[p_atlas_coords].size_in_atlas) {
+	if (new_atlas_coords == p_atlas_coords && new_size == tad.size_in_atlas) {
 		return;
 	}
 
-	// Remove all covered positions from the mapping cache.
-	Size2i old_size = tiles[p_atlas_coords].size_in_atlas;
-	for (int x = 0; x < old_size.x; x++) {
-		for (int y = 0; y < old_size.y; y++) {
-			Vector2i coords = p_atlas_coords + Vector2i(x, y);
-			_coords_mapping_cache.erase(coords);
-		}
-	}
+	bool room_for_tile = has_room_for_tile(new_atlas_coords, new_size, tad.animation_columns, tad.animation_separation, tad.animation_frames_durations.size(), p_atlas_coords);
+	ERR_FAIL_COND_MSG(!room_for_tile, vformat("Cannot move tile at position %s with size %s. Tile already present.", new_atlas_coords, new_size));
+
+	_clear_coords_mapping_cache(p_atlas_coords);
 
 	// Move the tile and update its size.
 	if (new_atlas_coords != p_atlas_coords) {
@@ -3429,15 +3592,9 @@ void TileSetAtlasSource::move_tile_in_atlas(Vector2i p_atlas_coords, Vector2i p_
 		tiles_ids.append(new_atlas_coords);
 		tiles_ids.sort();
 	}
-	tiles[new_atlas_coords].size_in_atlas = size;
+	tiles[new_atlas_coords].size_in_atlas = new_size;
 
-	// Add all covered positions to the mapping cache again.
-	for (int x = 0; x < size.x; x++) {
-		for (int y = 0; y < size.y; y++) {
-			Vector2i coords = new_atlas_coords + Vector2i(x, y);
-			_coords_mapping_cache[coords] = new_atlas_coords;
-		}
-	}
+	_create_coords_mapping_cache(new_atlas_coords);
 
 	emit_signal(SNAME("changed"));
 }
@@ -3566,11 +3723,24 @@ void TileSetAtlasSource::_bind_methods() {
 	// Base tiles
 	ClassDB::bind_method(D_METHOD("create_tile", "atlas_coords", "size"), &TileSetAtlasSource::create_tile, DEFVAL(Vector2i(1, 1)));
 	ClassDB::bind_method(D_METHOD("remove_tile", "atlas_coords"), &TileSetAtlasSource::remove_tile); // Remove a tile. If p_tile_key.alternative_tile if different from 0, remove the alternative
-	ClassDB::bind_method(D_METHOD("can_move_tile_in_atlas", "atlas_coords", "new_atlas_coords", "new_size"), &TileSetAtlasSource::can_move_tile_in_atlas, DEFVAL(INVALID_ATLAS_COORDS), DEFVAL(Vector2i(-1, -1)));
 	ClassDB::bind_method(D_METHOD("move_tile_in_atlas", "atlas_coords", "new_atlas_coords", "new_size"), &TileSetAtlasSource::move_tile_in_atlas, DEFVAL(INVALID_ATLAS_COORDS), DEFVAL(Vector2i(-1, -1)));
 	ClassDB::bind_method(D_METHOD("get_tile_size_in_atlas", "atlas_coords"), &TileSetAtlasSource::get_tile_size_in_atlas);
 
+	ClassDB::bind_method(D_METHOD("has_room_for_tile", "atlas_coords", "size", "animation_columns", "animation_separation", "frames_count", "ignored_tile"), &TileSetAtlasSource::has_room_for_tile, DEFVAL(INVALID_ATLAS_COORDS));
+
 	ClassDB::bind_method(D_METHOD("get_tile_at_coords", "atlas_coords"), &TileSetAtlasSource::get_tile_at_coords);
+
+	ClassDB::bind_method(D_METHOD("set_tile_animation_columns", "atlas_coords", "frame_columns"), &TileSetAtlasSource::set_tile_animation_columns);
+	ClassDB::bind_method(D_METHOD("get_tile_animation_columns", "atlas_coords"), &TileSetAtlasSource::get_tile_animation_columns);
+	ClassDB::bind_method(D_METHOD("set_tile_animation_separation", "atlas_coords", "separation"), &TileSetAtlasSource::set_tile_animation_separation);
+	ClassDB::bind_method(D_METHOD("get_tile_animation_separation", "atlas_coords"), &TileSetAtlasSource::get_tile_animation_separation);
+	ClassDB::bind_method(D_METHOD("set_tile_animation_speed", "atlas_coords", "speed"), &TileSetAtlasSource::set_tile_animation_speed);
+	ClassDB::bind_method(D_METHOD("get_tile_animation_speed", "atlas_coords"), &TileSetAtlasSource::get_tile_animation_speed);
+	ClassDB::bind_method(D_METHOD("set_tile_animation_frames_count", "atlas_coords", "frames_count"), &TileSetAtlasSource::set_tile_animation_frames_count);
+	ClassDB::bind_method(D_METHOD("get_tile_animation_frames_count", "atlas_coords"), &TileSetAtlasSource::get_tile_animation_frames_count);
+	ClassDB::bind_method(D_METHOD("set_tile_animation_frame_duration", "atlas_coords", "frame_index", "duration"), &TileSetAtlasSource::set_tile_animation_frame_duration);
+	ClassDB::bind_method(D_METHOD("get_tile_animation_frame_duration", "atlas_coords", "frame_index"), &TileSetAtlasSource::get_tile_animation_frame_duration);
+	ClassDB::bind_method(D_METHOD("get_tile_animation_total_duration", "atlas_coords"), &TileSetAtlasSource::get_tile_animation_total_duration);
 
 	// Alternative tiles
 	ClassDB::bind_method(D_METHOD("create_alternative_tile", "atlas_coords", "alternative_id_override"), &TileSetAtlasSource::create_alternative_tile, DEFVAL(INVALID_TILE_ALTERNATIVE));
@@ -3584,7 +3754,7 @@ void TileSetAtlasSource::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_atlas_grid_size"), &TileSetAtlasSource::get_atlas_grid_size);
 	ClassDB::bind_method(D_METHOD("has_tiles_outside_texture"), &TileSetAtlasSource::has_tiles_outside_texture);
 	ClassDB::bind_method(D_METHOD("clear_tiles_outside_texture"), &TileSetAtlasSource::clear_tiles_outside_texture);
-	ClassDB::bind_method(D_METHOD("get_tile_texture_region", "atlas_coords"), &TileSetAtlasSource::get_tile_texture_region);
+	ClassDB::bind_method(D_METHOD("get_tile_texture_region", "atlas_coords", "frame"), &TileSetAtlasSource::get_tile_texture_region, DEFVAL(0));
 }
 
 TileSetAtlasSource::~TileSetAtlasSource() {
@@ -3616,6 +3786,45 @@ void TileSetAtlasSource::_compute_next_alternative_id(const Vector2i p_atlas_coo
 	while (tiles[p_atlas_coords].alternatives.has(tiles[p_atlas_coords].next_alternative_id)) {
 		tiles[p_atlas_coords].next_alternative_id = (tiles[p_atlas_coords].next_alternative_id % 1073741823) + 1; // 2 ** 30
 	};
+}
+
+void TileSetAtlasSource::_clear_coords_mapping_cache(Vector2i p_atlas_coords) {
+	ERR_FAIL_COND_MSG(!tiles.has(p_atlas_coords), vformat("TileSetAtlasSource has no tile at %s.", Vector2i(p_atlas_coords)));
+	TileAlternativesData &tad = tiles[p_atlas_coords];
+	for (int frame = 0; frame < (int)tad.animation_frames_durations.size(); frame++) {
+		Vector2i frame_coords = p_atlas_coords + (tad.size_in_atlas + tad.animation_separation) * ((tad.animation_columns > 0) ? Vector2i(frame % tad.animation_columns, frame / tad.animation_columns) : Vector2i(frame, 0));
+		for (int x = 0; x < tad.size_in_atlas.x; x++) {
+			for (int y = 0; y < tad.size_in_atlas.y; y++) {
+				Vector2i coords = frame_coords + Vector2i(x, y);
+				if (!_coords_mapping_cache.has(coords)) {
+					WARN_PRINT(vformat("TileSetAtlasSource has no cached tile at position %s, the position cache might be corrupted.", coords));
+				} else {
+					if (_coords_mapping_cache[coords] != p_atlas_coords) {
+						WARN_PRINT(vformat("The position cache at position %s is pointing to a wrong tile, the position cache might be corrupted.", coords));
+					}
+					_coords_mapping_cache.erase(coords);
+				}
+			}
+		}
+	}
+}
+
+void TileSetAtlasSource::_create_coords_mapping_cache(Vector2i p_atlas_coords) {
+	ERR_FAIL_COND_MSG(!tiles.has(p_atlas_coords), vformat("TileSetAtlasSource has no tile at %s.", Vector2i(p_atlas_coords)));
+
+	TileAlternativesData &tad = tiles[p_atlas_coords];
+	for (int frame = 0; frame < (int)tad.animation_frames_durations.size(); frame++) {
+		Vector2i frame_coords = p_atlas_coords + (tad.size_in_atlas + tad.animation_separation) * ((tad.animation_columns > 0) ? Vector2i(frame % tad.animation_columns, frame / tad.animation_columns) : Vector2i(frame, 0));
+		for (int x = 0; x < tad.size_in_atlas.x; x++) {
+			for (int y = 0; y < tad.size_in_atlas.y; y++) {
+				Vector2i coords = frame_coords + Vector2i(x, y);
+				if (_coords_mapping_cache.has(coords)) {
+					WARN_PRINT(vformat("The cache already has a tile for position %s, the position cache might be corrupted.", coords));
+				}
+				_coords_mapping_cache[coords] = p_atlas_coords;
+			}
+		}
+	}
 }
 
 /////////////////////////////// TileSetScenesCollectionSource //////////////////////////////////////

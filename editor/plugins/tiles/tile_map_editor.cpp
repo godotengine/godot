@@ -1456,13 +1456,25 @@ void TileMapEditorTilesPlugin::_tile_atlas_control_draw() {
 	Color selection_color = Color().from_hsv(Math::fposmod(grid_color.get_h() + 0.5, 1.0), grid_color.get_s(), grid_color.get_v(), 1.0);
 	for (Set<TileMapCell>::Element *E = tile_set_selection.front(); E; E = E->next()) {
 		if (E->get().source_id == source_id && E->get().alternative_tile == 0) {
-			tile_atlas_control->draw_rect(atlas->get_tile_texture_region(E->get().get_atlas_coords()), selection_color, false);
+			for (int frame = 0; frame < atlas->get_tile_animation_frames_count(E->get().get_atlas_coords()); frame++) {
+				Color color = selection_color;
+				if (frame > 0) {
+					color.a *= 0.3;
+				}
+				tile_atlas_control->draw_rect(atlas->get_tile_texture_region(E->get().get_atlas_coords(), frame), color, false);
+			}
 		}
 	}
 
 	// Draw the hovered tile.
 	if (hovered_tile.get_atlas_coords() != TileSetSource::INVALID_ATLAS_COORDS && hovered_tile.alternative_tile == 0 && !tile_set_dragging_selection) {
-		tile_atlas_control->draw_rect(atlas->get_tile_texture_region(hovered_tile.get_atlas_coords()), Color(1.0, 1.0, 1.0), false);
+		for (int frame = 0; frame < atlas->get_tile_animation_frames_count(hovered_tile.get_atlas_coords()); frame++) {
+			Color color = Color(1.0, 1.0, 1.0);
+			if (frame > 0) {
+				color.a *= 0.3;
+			}
+			tile_atlas_control->draw_rect(atlas->get_tile_texture_region(hovered_tile.get_atlas_coords(), frame), color, false);
+		}
 	}
 
 	// Draw the selection rect.
