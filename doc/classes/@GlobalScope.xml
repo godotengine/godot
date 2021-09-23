@@ -2493,7 +2493,10 @@
 		</constant>
 		<constant name="PROPERTY_HINT_ARRAY_TYPE" value="39" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_MAX" value="41" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_LOCALE_ID" value="41" enum="PropertyHint">
+			Hints that a string property is a locale code. Editing it will show a locale dialog for picking language and country.
+		</constant>
+		<constant name="PROPERTY_HINT_MAX" value="42" enum="PropertyHint">
 		</constant>
 		<constant name="PROPERTY_USAGE_NONE" value="0" enum="PropertyUsageFlags">
 		</constant>

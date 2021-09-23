@@ -506,12 +506,16 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 
 		} break;
 		case Variant::STRING: {
-			if (hint == PROPERTY_HINT_FILE || hint == PROPERTY_HINT_GLOBAL_FILE) {
+			if (hint == PROPERTY_HINT_LOCALE_ID) {
+				List<String> names;
+				names.push_back(TTR("Locale..."));
+				names.push_back(TTR("Clear"));
+				config_action_buttons(names);
+			} else if (hint == PROPERTY_HINT_FILE || hint == PROPERTY_HINT_GLOBAL_FILE) {
 				List<String> names;
 				names.push_back(TTR("File..."));
 				names.push_back(TTR("Clear"));
 				config_action_buttons(names);
-
 			} else if (hint == PROPERTY_HINT_DIR || hint == PROPERTY_HINT_GLOBAL_DIR) {
 				List<String> names;
 				names.push_back(TTR("Dir..."));
@@ -1034,6 +1038,14 @@ void CustomPropertyEditor::_file_selected(String p_file) {
 	}
 }
 
+void CustomPropertyEditor::_locale_selected(String p_locale) {
+	if (type == Variant::STRING && hint == PROPERTY_HINT_LOCALE_ID) {
+		v = p_locale;
+		emit_signal(SNAME("variant_changed"));
+		hide();
+	}
+}
+
 void CustomPropertyEditor::_type_create_selected(int p_idx) {
 	if (type == Variant::INT || type == Variant::FLOAT) {
 		float newval = 0;
@@ -1177,7 +1189,8 @@ void CustomPropertyEditor::_action_pressed(int p_which) {
 		case Variant::STRING: {
 			if (hint == PROPERTY_HINT_MULTILINE_TEXT) {
 				hide();
-
+			} else if (hint == PROPERTY_HINT_LOCALE_ID) {
+				locale->popup_locale_dialog();
 			} else if (hint == PROPERTY_HINT_FILE || hint == PROPERTY_HINT_GLOBAL_FILE) {
 				if (p_which == 0) {
 					if (hint == PROPERTY_HINT_FILE) {
@@ -1820,6 +1833,12 @@ CustomPropertyEditor::CustomPropertyEditor() {
 
 	file->connect("file_selected", callable_mp(this, &CustomPropertyEditor::_file_selected));
 	file->connect("dir_selected", callable_mp(this, &CustomPropertyEditor::_file_selected));
+
+	locale = memnew(EditorLocaleDialog);
+	value_vbox->add_child(locale);
+	locale->hide();
+
+	locale->connect("locale_selected", callable_mp(this, &CustomPropertyEditor::_locale_selected));
 
 	error = memnew(ConfirmationDialog);
 	error->set_title(TTR("Error!"));

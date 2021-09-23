@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  localization_editor.h                                                */
+/*  editor_locale_dialog.h                                               */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,67 +28,66 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef LOCALIZATION_EDITOR_H
-#define LOCALIZATION_EDITOR_H
+#ifndef EDITOR_LOCALE_DIALOG_H
+#define EDITOR_LOCALE_DIALOG_H
 
-#include "core/object/undo_redo.h"
-#include "editor_file_dialog.h"
-#include "editor_locale_dialog.h"
-#include "scene/gui/tree.h"
+#include "core/string/translation.h"
+#include "scene/gui/dialogs.h"
 
-class LocalizationEditor : public VBoxContainer {
-	GDCLASS(LocalizationEditor, VBoxContainer);
+class Button;
+class HBoxContainer;
+class VBoxContainer;
+class LineEdit;
+class Tree;
+class OptionButton;
+class UndoRedo;
 
-	Tree *translation_list;
+class EditorLocaleDialog : public ConfirmationDialog {
+	GDCLASS(EditorLocaleDialog, ConfirmationDialog);
 
-	EditorLocaleDialog *locale_select;
-	EditorFileDialog *translation_file_open;
+	enum LocaleFilter {
+		SHOW_ALL_LOCALES,
+		SHOW_ONLY_SELECTED_LOCALES,
+	};
 
-	Button *translation_res_option_add_button;
-	EditorFileDialog *translation_res_file_open_dialog;
-	EditorFileDialog *translation_res_option_file_open_dialog;
-	Tree *translation_remap;
-	Tree *translation_remap_options;
+	HBoxContainer *hb_locale = nullptr;
+	VBoxContainer *vb_script_list = nullptr;
+	OptionButton *filter_mode = nullptr;
+	Button *edit_filters = nullptr;
+	Button *advanced = nullptr;
+	LineEdit *lang_code = nullptr;
+	LineEdit *script_code = nullptr;
+	LineEdit *country_code = nullptr;
+	LineEdit *variant_code = nullptr;
+	Tree *lang_list = nullptr;
+	Tree *script_list = nullptr;
+	Tree *cnt_list = nullptr;
 
-	Tree *translation_pot_list;
-	EditorFileDialog *pot_file_open_dialog;
-	EditorFileDialog *pot_generate_dialog;
+	UndoRedo *undo_redo = nullptr;
 
-	UndoRedo *undo_redo;
-	bool updating_translations;
-	String localization_changed;
-
-	void _translation_file_open();
-	void _translation_add(const PackedStringArray &p_paths);
-	void _translation_delete(Object *p_item, int p_column, int p_button);
-
-	void _translation_res_file_open();
-	void _translation_res_add(const PackedStringArray &p_paths);
-	void _translation_res_delete(Object *p_item, int p_column, int p_button);
-	void _translation_res_select();
-	void _translation_res_option_file_open();
-	void _translation_res_option_add(const PackedStringArray &p_paths);
-	void _translation_res_option_changed();
-	void _translation_res_option_delete(Object *p_item, int p_column, int p_button);
-	void _translation_res_option_popup(bool p_arrow_clicked);
-	void _translation_res_option_selected(const String &p_locale);
-
-	void _pot_add(const PackedStringArray &p_paths);
-	void _pot_delete(Object *p_item, int p_column, int p_button);
-	void _pot_file_open();
-	void _pot_generate_open();
-	void _pot_generate(const String &p_file);
-	void _update_pot_file_extensions();
+	bool locale_set = false;
+	bool updating_lists = false;
 
 protected:
-	void _notification(int p_what);
 	static void _bind_methods();
+	virtual void _post_popup() override;
+	virtual void ok_pressed() override;
+
+	void _item_selected();
+	void _filter_lang_option_changed();
+	void _filter_script_option_changed();
+	void _filter_cnt_option_changed();
+	void _filter_mode_changed(int p_mode);
+	void _edit_filters(bool p_checked);
+	void _toggle_advanced(bool p_checked);
+
+	void _update_tree();
 
 public:
-	void add_translation(const String &p_translation);
-	void update_translations();
+	EditorLocaleDialog();
 
-	LocalizationEditor();
+	void set_locale(const String &p_locale);
+	void popup_locale_dialog();
 };
 
-#endif // LOCALIZATION_EDITOR_H
+#endif // EDITOR_LOCALE_DIALOG_H

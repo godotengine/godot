@@ -94,6 +94,7 @@ enum PropertyHint {
 	PROPERTY_HINT_INT_IS_OBJECTID,
 	PROPERTY_HINT_ARRAY_TYPE,
 	PROPERTY_HINT_INT_IS_POINTER,
+	PROPERTY_HINT_LOCALE_ID,
 	PROPERTY_HINT_MAX,
 	// When updating PropertyHint, also sync the hardcoded list in VisualScriptEditorVariableEdit
 };

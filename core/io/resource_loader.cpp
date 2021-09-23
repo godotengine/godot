@@ -806,38 +806,26 @@ String ResourceLoader::_path_remap(const String &p_path, bool *r_translation_rem
 
 		// To find the path of the remapped resource, we extract the locale name after
 		// the last ':' to match the project locale.
-		// We also fall back in case of regional locales as done in TranslationServer::translate
-		// (e.g. 'ru_RU' -> 'ru' if the former has no specific mapping).
 
 		String locale = TranslationServer::get_singleton()->get_locale();
 		ERR_FAIL_COND_V_MSG(locale.length() < 2, p_path, "Could not remap path '" + p_path + "' for translation as configured locale '" + locale + "' is invalid.");
-		String lang = TranslationServer::get_language_code(locale);
 
 		Vector<String> &res_remaps = *translation_remaps.getptr(new_path);
-		bool near_match = false;
 
+		int best_score = 0;
 		for (int i = 0; i < res_remaps.size(); i++) {
 			int split = res_remaps[i].rfind(":");
 			if (split == -1) {
 				continue;
 			}
-
 			String l = res_remaps[i].substr(split + 1).strip_edges();
-			if (l == locale) { // Exact match.
+			int score = TranslationServer::get_singleton()->compare_locales(locale, l);
+			if (score >= best_score) {
 				new_path = res_remaps[i].left(split);
-				break;
-			} else if (near_match) {
-				continue; // Already found near match, keep going for potential exact match.
-			}
-
-			// No exact match (e.g. locale 'ru_RU' but remap is 'ru'), let's look further
-			// for a near match (same language code, i.e. first 2 or 3 letters before
-			// regional code, if included).
-			if (TranslationServer::get_language_code(l) == lang) {
-				// Language code matches, that's a near match. Keep looking for exact match.
-				near_match = true;
-				new_path = res_remaps[i].left(split);
-				continue;
+				best_score = score;
+				if (score == 10) {
+					break; // Exact match, skip the rest.
+				}
 			}
 		}
 
