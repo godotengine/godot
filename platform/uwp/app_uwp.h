@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  app.h                                                                */
+/*  app_uwp.h                                                            */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,7 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#pragma once
+#ifndef APP_UWP_H
+#define APP_UWP_H
 
 #include <string>
 
@@ -111,3 +112,4 @@ namespace GodotUWP
 }
 
 /* clang-format on */
+#endif // APP_UWP_H
