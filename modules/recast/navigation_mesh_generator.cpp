@@ -299,7 +299,7 @@ void EditorNavigationMeshGenerator::_convert_detail_mesh_to_native_navigation_me
 #ifdef TOOLS_ENABLED
 void EditorNavigationMeshGenerator::_build_recast_navigation_mesh(Ref<NavigationMesh> p_nav_mesh,
 		rcHeightfield *hf, rcCompactHeightfield *chf, rcContourSet *cset, rcPolyMesh *poly_mesh, rcPolyMeshDetail *detail_mesh,
-		Vector<float> &vertices, Vector<int> &indices , EditorProgress *ep = nullptr) {
+		Vector<float> &vertices, Vector<int> &indices, EditorProgress *ep = nullptr) {
 #else
 void EditorNavigationMeshGenerator::_build_recast_navigation_mesh(Ref<NavigationMesh> p_nav_mesh,
 		rcHeightfield *hf, rcCompactHeightfield *chf, rcContourSet *cset, rcPolyMesh *poly_mesh, rcPolyMeshDetail *detail_mesh,
@@ -488,12 +488,11 @@ void EditorNavigationMeshGenerator::bake(Ref<NavigationMesh> p_nav_mesh, Node *p
 #ifdef TOOLS_ENABLED
 	EditorProgress *ep = nullptr;
 
-	 if (Engine::get_singleton()->is_editor_hint()) {
+	if (Engine::get_singleton()->is_editor_hint()) {
 		ep = memnew(EditorProgress("bake", TTR("Navigation Mesh Generator Setup:"), 11));
 		ep->step(TTR("Parsing Geometry..."), 0);
 	}
 #endif
-
 
 	ERR_FAIL_COND(!p_nav_mesh.is_valid());
 
@@ -542,7 +541,7 @@ void EditorNavigationMeshGenerator::bake(Ref<NavigationMesh> p_nav_mesh, Node *p
 	}
 
 #ifdef TOOLS_ENABLED
-	 if (ep) {
+	if (ep) {
 		ep->step(TTR("Done!"), 11);
 		memdelete(ep);
 	}

@@ -45,7 +45,7 @@ void register_recast_types() {
 	ClassDB::set_current_api(ClassDB::API_EDITOR);
 
 #ifdef TOOLS_ENABLED
-	  EditorPlugins::add_by_type<NavigationMeshEditorPlugin>();
+	EditorPlugins::add_by_type<NavigationMeshEditorPlugin>();
 #endif
 	_nav_mesh_generator = memnew(EditorNavigationMeshGenerator);
 
@@ -61,4 +61,3 @@ void unregister_recast_types() {
 		memdelete(_nav_mesh_generator);
 	}
 }
-

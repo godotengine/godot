@@ -60,7 +60,7 @@ protected:
 
 	static void _build_recast_navigation_mesh(Ref<NavigationMesh> p_nav_mesh,
 			rcHeightfield *hf, rcCompactHeightfield *chf, rcContourSet *cset, rcPolyMesh *poly_mesh,
-			rcPolyMeshDetail *detail_mesh, Vector<float> &vertices, Vector<int> &indices , EditorProgress *ep);
+			rcPolyMeshDetail *detail_mesh, Vector<float> &vertices, Vector<int> &indices, EditorProgress *ep);
 
 #else
 
