@@ -6,8 +6,6 @@
 	<description>
 		Sets the active tab's [code]visible[/code] property to the value [code]true[/code]. Sets all other children's to [code]false[/code].
 		Ignores non-[Control] children.
-		Individual tabs are always visible unless you use [method set_tab_disabled] and [method set_tab_title] to hide it.
-		To hide only a tab's content, nest the content inside a child [Control], so it receives the [TabContainer]'s visibility setting instead.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -50,6 +48,13 @@
 				Returns [code]true[/code] if the tab at index [code]tab_idx[/code] is disabled.
 			</description>
 		</method>
+		<method name="get_tab_hidden" qualifiers="const">
+			<return type="bool" />
+			<argument index="0" name="tab_idx" type="int" />
+			<description>
+				Returns [code]true[/code] if the tab at index [code]tab_idx[/code] is hidden.
+			</description>
+		</method>
 		<method name="get_tab_icon" qualifiers="const">
 			<return type="Texture" />
 			<argument index="0" name="tab_idx" type="int" />
@@ -89,8 +94,15 @@
 			<argument index="0" name="tab_idx" type="int" />
 			<argument index="1" name="disabled" type="bool" />
 			<description>
-				If [code]disabled[/code] is [code]false[/code], hides the tab at index [code]tab_idx[/code].
-				[b]Note:[/b] Its title text will remain, unless also removed with [method set_tab_title].
+				If [code]disabled[/code] is [code]true[/code], disables the tab at index [code]tab_idx[/code], making it non-interactable.
+			</description>
+		</method>
+		<method name="set_tab_hidden">
+			<return type="void" />
+			<argument index="0" name="tab_idx" type="int" />
+			<argument index="1" name="hidden" type="bool" />
+			<description>
+				If [code]hidden[/code] is [code]true[/code], hides the tab at index [code]tab_idx[/code], making it disappear from the tab area.
 			</description>
 		</method>
 		<method name="set_tab_icon">
@@ -106,14 +118,14 @@
 			<argument index="0" name="tab_idx" type="int" />
 			<argument index="1" name="title" type="String" />
 			<description>
-				Sets a title for the tab at index [code]tab_idx[/code]. Tab titles default to the name of the indexed child node, but this can be overridden with [method set_tab_title].
+				Sets a title for the tab at index [code]tab_idx[/code]. Tab titles default to the name of the indexed child node.
 			</description>
 		</method>
 		<method name="set_tabs_rearrange_group">
 			<return type="void" />
 			<argument index="0" name="group_id" type="int" />
 			<description>
-				Defines rearrange group id, choose for each [TabContainer] the same value to enable tab drag between [TabContainer]. Enable drag with [code]set_drag_to_rearrange_enabled(true)[/code].
+				Defines rearrange group id, choose for each [TabContainer] the same value to enable tab drag between [TabContainer]. Enable drag with [member drag_to_rearrange_enabled].
 			</description>
 		</method>
 	</methods>

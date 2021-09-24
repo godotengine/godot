@@ -79,7 +79,7 @@
 			<return type="String" />
 			<argument index="0" name="tab_idx" type="int" />
 			<description>
-				Returns the title of the tab at index [code]tab_idx[/code]. Tab titles default to the name of the indexed child node, but this can be overridden with [method set_tab_title].
+				Returns the title of the tab at index [code]tab_idx[/code].
 			</description>
 		</method>
 		<method name="get_tabs_rearrange_group" qualifiers="const">
@@ -115,8 +115,7 @@
 			<argument index="0" name="tab_idx" type="int" />
 			<argument index="1" name="disabled" type="bool" />
 			<description>
-				If [code]disabled[/code] is [code]false[/code], hides the tab at index [code]tab_idx[/code].
-				[b]Note:[/b] Its title text will remain unless it is also removed with [method set_tab_title].
+				If [code]disabled[/code] is [code]true[/code], disables the tab at index [code]tab_idx[/code], making it non-interactable.
 			</description>
 		</method>
 		<method name="set_tab_icon">
@@ -139,7 +138,7 @@
 			<return type="void" />
 			<argument index="0" name="group_id" type="int" />
 			<description>
-				Defines the rearrange group ID. Choose for each [Tabs] the same value to dragging tabs between [Tabs]. Enable drag with [code]set_drag_to_rearrange_enabled(true)[/code].
+				Defines the rearrange group ID. Choose for each [Tabs] the same value to dragging tabs between [Tabs]. Enable drag with [member drag_to_rearrange_enabled].
 			</description>
 		</method>
 	</methods>
