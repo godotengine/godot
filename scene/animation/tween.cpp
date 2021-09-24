@@ -30,7 +30,22 @@
 
 #include "tween.h"
 
+#include "scene/animation/easing_equations.h"
 #include "scene/main/node.h"
+
+Tween::interpolater Tween::interpolaters[Tween::TRANS_MAX][Tween::EASE_MAX] = {
+	{ &linear::in, &linear::in, &linear::in, &linear::in }, // Linear is the same for each easing.
+	{ &sine::in, &sine::out, &sine::in_out, &sine::out_in },
+	{ &quint::in, &quint::out, &quint::in_out, &quint::out_in },
+	{ &quart::in, &quart::out, &quart::in_out, &quart::out_in },
+	{ &quad::in, &quad::out, &quad::in_out, &quad::out_in },
+	{ &expo::in, &expo::out, &expo::in_out, &expo::out_in },
+	{ &elastic::in, &elastic::out, &elastic::in_out, &elastic::out_in },
+	{ &cubic::in, &cubic::out, &cubic::in_out, &cubic::out_in },
+	{ &circ::in, &circ::out, &circ::in_out, &circ::out_in },
+	{ &bounce::in, &bounce::out, &bounce::in_out, &bounce::out_in },
+	{ &back::in, &back::out, &back::in_out, &back::out_in },
+};
 
 void Tweener::set_tween(Ref<Tween> p_tween) {
 	tween = p_tween;
@@ -315,6 +330,16 @@ bool Tween::should_pause() {
 	}
 
 	return pause_mode != TWEEN_PAUSE_PROCESS;
+}
+
+real_t Tween::run_equation(TransitionType p_trans_type, EaseType p_ease_type, real_t p_time, real_t p_initial, real_t p_delta, real_t p_duration) {
+	if (p_duration == 0) {
+		// Special case to avoid dividing by 0 in equations.
+		return p_initial + p_delta;
+	}
+
+	interpolater func = interpolaters[p_trans_type][p_ease_type];
+	return func(p_time, p_initial, p_delta, p_duration);
 }
 
 Variant Tween::interpolate_variant(Variant p_initial_val, Variant p_delta_val, float p_time, float p_duration, TransitionType p_trans, EaseType p_ease) {
