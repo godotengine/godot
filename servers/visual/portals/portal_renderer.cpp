@@ -165,7 +165,7 @@ void PortalRenderer::instance_moving_destroy(OcclusionHandle p_handle) {
 	// The alternative is to remove the reference, but this is not currently supported
 	// (it would mean rejigging rooms etc)
 	if (_occlusion_handle_is_in_room(p_handle)) {
-		_ensure_unloaded();
+		_ensure_unloaded("deleting STATIC or DYNAMIC");
 		return;
 	}
 
@@ -224,7 +224,7 @@ PortalHandle PortalRenderer::portal_create() {
 
 void PortalRenderer::portal_destroy(PortalHandle p_portal) {
 	ERR_FAIL_COND(!p_portal);
-	_ensure_unloaded();
+	_ensure_unloaded("deleting Portal");
 
 	// plus one based
 	p_portal--;
@@ -378,7 +378,7 @@ void PortalRenderer::roomgroup_prepare(RoomGroupHandle p_roomgroup, ObjectID p_r
 
 void PortalRenderer::roomgroup_destroy(RoomGroupHandle p_roomgroup) {
 	ERR_FAIL_COND(!p_roomgroup);
-	_ensure_unloaded();
+	_ensure_unloaded("deleting RoomGroup");
 
 	// plus one based
 	p_roomgroup--;
@@ -618,7 +618,7 @@ RoomHandle PortalRenderer::room_create() {
 
 void PortalRenderer::room_destroy(RoomHandle p_room) {
 	ERR_FAIL_COND(!p_room);
-	_ensure_unloaded();
+	_ensure_unloaded("deleting Room");
 
 	// plus one based
 	p_room--;
@@ -1007,10 +1007,18 @@ void PortalRenderer::sprawl_roaming(uint32_t p_mover_pool_id, MovingBase &r_movi
 }
 
 // This gets called when you delete an instance the the room system depends on
-void PortalRenderer::_ensure_unloaded() {
+void PortalRenderer::_ensure_unloaded(String p_reason) {
 	if (_loaded) {
 		_loaded = false;
-		_log("Portal system unloaded.", 1);
+
+		String str;
+		if (p_reason != String()) {
+			str = "Portal system unloaded ( " + p_reason + " ).";
+		} else {
+			str = "Portal system unloaded.";
+		}
+
+		_log(str, 1);
 
 		// this should probably have some thread protection, but I doubt it matters
 		// as this will worst case give wrong result for a frame

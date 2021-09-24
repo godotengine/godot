@@ -80,7 +80,7 @@ void RoomGroup::_changed() {
 		return;
 	}
 
-	rm->_rooms_changed();
+	rm->_rooms_changed("changed RoomGroup " + get_name());
 #endif
 }
 

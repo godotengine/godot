@@ -147,7 +147,7 @@ void Portal::_changed() {
 		return;
 	}
 
-	rm->_rooms_changed();
+	rm->_rooms_changed("changed Portal " + get_name());
 #endif
 }
 

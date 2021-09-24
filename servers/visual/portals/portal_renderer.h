@@ -162,7 +162,7 @@ public:
 
 	// for use in the editor only, to allow a cheap way of turning off portals
 	// if there has been a change, e.g. moving a room etc.
-	void rooms_unload() { _ensure_unloaded(); }
+	void rooms_unload(String p_reason) { _ensure_unloaded(p_reason); }
 	bool rooms_is_loaded() const { return _loaded; }
 
 	// debugging
@@ -257,7 +257,7 @@ private:
 	void _moving_remove_from_rooms(uint32_t p_moving_pool_id);
 	void _rghost_remove_from_rooms(uint32_t p_pool_id);
 	void _occluder_remove_from_rooms(uint32_t p_pool_id);
-	void _ensure_unloaded();
+	void _ensure_unloaded(String p_reason = String());
 	void _rooms_add_portals_to_convex_hulls();
 	void _add_portal_to_convex_hull(LocalVector<Plane, int32_t> &p_planes, const Plane &p);
 
