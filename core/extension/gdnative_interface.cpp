@@ -865,8 +865,8 @@ static GDNativeClassConstructor gdnative_classdb_get_constructor(const char *p_c
 	return nullptr;
 }
 
-static GDNativeObjectPtr gdnative_classdb_construct_object(GDNativeClassConstructor p_constructor, GDNativeExtensionPtr p_extension) {
-	return (GDNativeObjectPtr)ClassDB::construct_object((Object * (*)()) p_constructor, (ObjectNativeExtension *)p_extension);
+static GDNativeObjectPtr gdnative_classdb_construct_object(GDNativeClassConstructor p_constructor, GDNativeExtensionPtr p_extension, void **r_instance) {
+	return (GDNativeObjectPtr)ClassDB::construct_object((Object * (*)()) p_constructor, (ObjectNativeExtension *)p_extension, r_instance);
 }
 
 static void *gdnative_classdb_get_class_tag(const char *p_classname) {

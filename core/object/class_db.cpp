@@ -545,11 +545,16 @@ Object *ClassDB::instantiate(const StringName &p_class) {
 	return ti->creation_func();
 }
 
-Object *ClassDB::construct_object(Object *(*p_create_func)(), ObjectNativeExtension *p_extension) {
+Object *ClassDB::construct_object(Object *(*p_create_func)(), ObjectNativeExtension *p_extension, void **r_instance) {
 	if (p_extension) {
 		initializing_with_extension = true;
 		initializing_extension = p_extension;
 		initializing_extension_instance = p_extension->create_instance(p_extension->class_userdata);
+		if (r_instance) {
+			*r_instance = initializing_extension_instance;
+		}
+	} else {
+		*r_instance = nullptr;
 	}
 	return p_create_func();
 }
