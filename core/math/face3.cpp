@@ -151,8 +151,8 @@ Face3::Side Face3::get_side_of(const Face3 &p_face, ClockDirection p_clock_dir) 
 }
 
 Vector3 Face3::get_random_point_inside() const {
-	real_t a = Math::random(0, 1);
-	real_t b = Math::random(0, 1);
+	real_t a = Math::random(0.0, 1.0);
+	real_t b = Math::random(0.0, 1.0);
 	if (a > b) {
 		SWAP(a, b);
 	}
