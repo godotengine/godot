@@ -916,6 +916,10 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 		error->set_text(0, time);
 		error->set_text_align(0, TreeItem::ALIGN_LEFT);
 
+		const Color color = get_color(is_warning ? "warning_color" : "error_color", "Editor");
+		error->set_custom_color(0, color);
+		error->set_custom_color(1, color);
+
 		String error_title;
 		// Include method name, when given, in error title.
 		if (has_method) {
