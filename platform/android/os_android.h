@@ -45,7 +45,7 @@ class OS_Android : public OS_Unix {
 	bool use_gl2;
 	bool use_apk_expansion;
 
-	bool use_16bits_fbo;
+	bool secondary_gl_available = false;
 
 	VisualServer *visual_server;
 
@@ -137,7 +137,9 @@ public:
 	void set_opengl_extensions(const char *p_gl_extensions);
 	void set_display_size(Size2 p_size);
 
-	void set_context_is_16_bits(bool p_is_16);
+	void set_offscreen_gl_available(bool p_available);
+	virtual bool is_offscreen_gl_available() const;
+	virtual void set_offscreen_gl_current(bool p_current);
 
 	virtual void set_screen_orientation(ScreenOrientation p_orientation);
 	virtual ScreenOrientation get_screen_orientation() const;

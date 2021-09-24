@@ -59,6 +59,9 @@ GodotJavaWrapper::GodotJavaWrapper(JNIEnv *p_env, jobject p_activity, jobject p_
 
 	// get some Godot method pointers...
 	_on_video_init = p_env->GetMethodID(godot_class, "onVideoInit", "()V");
+	_create_offscreen_gl = p_env->GetMethodID(godot_class, "createOffscreenGL", "()Z");
+	_destroy_offscreen_gl = p_env->GetMethodID(godot_class, "destroyOffscreenGL", "()V");
+	_set_offscreen_gl_current = p_env->GetMethodID(godot_class, "setOffscreenGLCurrent", "(Z)V");
 	_restart = p_env->GetMethodID(godot_class, "restart", "()V");
 	_finish = p_env->GetMethodID(godot_class, "forceQuit", "()V");
 	_set_keep_screen_on = p_env->GetMethodID(godot_class, "setKeepScreenOn", "(Z)V");
@@ -128,6 +131,29 @@ void GodotJavaWrapper::on_video_init(JNIEnv *p_env) {
 		ERR_FAIL_COND(p_env == nullptr);
 
 		p_env->CallVoidMethod(godot_instance, _on_video_init);
+	}
+}
+
+bool GodotJavaWrapper::create_offscreen_gl(JNIEnv *p_env) {
+	if (_create_offscreen_gl) {
+		return p_env->CallBooleanMethod(godot_instance, _create_offscreen_gl);
+	} else {
+		return false;
+	}
+}
+
+void GodotJavaWrapper::destroy_offscreen_gl(JNIEnv *p_env) {
+	if (_destroy_offscreen_gl) {
+		p_env->CallBooleanMethod(godot_instance, _destroy_offscreen_gl);
+	}
+}
+
+void GodotJavaWrapper::set_offscreen_gl_current(JNIEnv *p_env, bool p_current) {
+	if (_set_offscreen_gl_current) {
+		if (p_env == NULL)
+			p_env = get_jni_env();
+		ERR_FAIL_COND(p_env == nullptr);
+		p_env->CallVoidMethod(godot_instance, _set_offscreen_gl_current, p_current);
 	}
 }
 

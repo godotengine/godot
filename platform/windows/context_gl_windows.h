@@ -47,6 +47,7 @@ typedef int(APIENTRY *PFNWGLGETSWAPINTERVALEXTPROC)(void);
 class ContextGL_Windows {
 	HDC hDC;
 	HGLRC hRC;
+	HGLRC hRC_offscreen;
 	unsigned int pixel_format;
 	HWND hWnd;
 	bool opengl_3_context;
@@ -62,6 +63,10 @@ public:
 	void release_current();
 
 	void make_current();
+
+	bool is_offscreen_available() const;
+	void make_offscreen_current();
+	void release_offscreen_current();
 
 	HDC get_hdc();
 	HGLRC get_hglrc();

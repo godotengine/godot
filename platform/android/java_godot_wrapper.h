@@ -48,6 +48,9 @@ private:
 	jclass activity_class;
 
 	jmethodID _on_video_init = 0;
+	jmethodID _create_offscreen_gl = 0;
+	jmethodID _destroy_offscreen_gl = 0;
+	jmethodID _set_offscreen_gl_current = 0;
 	jmethodID _restart = 0;
 	jmethodID _finish = 0;
 	jmethodID _set_keep_screen_on = 0;
@@ -77,6 +80,9 @@ public:
 	jobject get_class_loader();
 
 	void gfx_init(bool gl2);
+	bool create_offscreen_gl(JNIEnv *p_env);
+	void destroy_offscreen_gl(JNIEnv *p_env);
+	void set_offscreen_gl_current(JNIEnv *p_env, bool p_current);
 	void on_video_init(JNIEnv *p_env = NULL);
 	void on_godot_setup_completed(JNIEnv *p_env = NULL);
 	void on_godot_main_loop_started(JNIEnv *p_env = NULL);

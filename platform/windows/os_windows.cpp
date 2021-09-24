@@ -1672,6 +1672,24 @@ Error OS_Windows::initialize(const VideoMode &p_desired, int p_video_driver, int
 	return OK;
 }
 
+bool OS_Windows::is_offscreen_gl_available() const {
+#if defined(OPENGL_ENABLED)
+	return gl_context->is_offscreen_available();
+#else
+	return false;
+#endif
+}
+
+void OS_Windows::set_offscreen_gl_current(bool p_current) {
+#if defined(OPENGL_ENABLED)
+	if (p_current) {
+		return gl_context->make_offscreen_current();
+	} else {
+		return gl_context->release_offscreen_current();
+	}
+#endif
+}
+
 void OS_Windows::set_clipboard(const String &p_text) {
 	// Convert LF line endings to CRLF in clipboard content
 	// Otherwise, line endings won't be visible when pasted in other software

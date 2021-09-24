@@ -115,6 +115,7 @@ public:
 	id cursor;
 	NSOpenGLPixelFormat *pixelFormat;
 	NSOpenGLContext *context;
+	NSOpenGLContext *context_offscreen;
 
 	Vector<Vector2> mpath;
 	bool layered_window;
@@ -249,6 +250,9 @@ public:
 	virtual void set_video_mode(const VideoMode &p_video_mode, int p_screen = 0);
 	virtual VideoMode get_video_mode(int p_screen = 0) const;
 	virtual void get_fullscreen_mode_list(List<VideoMode> *p_list, int p_screen = 0) const;
+
+	virtual bool is_offscreen_gl_available() const;
+	virtual void set_offscreen_gl_current(bool p_current);
 
 	virtual String get_executable_path() const;
 	virtual Error execute(const String &p_path, const List<String> &p_arguments, bool p_blocking = true, ProcessID *r_child_id = nullptr, String *r_pipe = nullptr, int *r_exitcode = nullptr, bool read_stderr = false, Mutex *p_pipe_mutex = nullptr);
