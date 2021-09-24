@@ -6105,9 +6105,9 @@ EditorNode::EditorNode() {
 	dock_tab_move_right = memnew(Button);
 	dock_tab_move_right->set_flat(true);
 	if (gui_base->is_layout_rtl()) {
-		dock_tab_move_right->set_icon(theme->get_icon("Forward", "EditorIcons"));
-	} else {
 		dock_tab_move_right->set_icon(theme->get_icon("Back", "EditorIcons"));
+	} else {
+		dock_tab_move_right->set_icon(theme->get_icon("Forward", "EditorIcons"));
 	}
 	dock_tab_move_right->set_focus_mode(Control::FOCUS_NONE);
 	dock_tab_move_right->connect("pressed", callable_mp(this, &EditorNode::_dock_move_right));
