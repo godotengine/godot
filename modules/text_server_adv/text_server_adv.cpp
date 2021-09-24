@@ -131,20 +131,6 @@ hb_position_t TextServerAdvanced::hb_bmp_get_glyph_h_kerning(hb_font_t *p_font, 
 	return bm_font->face->kerning_map[Vector2i(p_left_glyph, p_right_glyph)].x * 64;
 }
 
-hb_position_t TextServerAdvanced::hb_bmp_get_glyph_v_kerning(hb_font_t *p_font, void *p_font_data, hb_codepoint_t p_left_glyph, hb_codepoint_t p_right_glyph, void *p_user_data) {
-	const hb_bmp_font_t *bm_font = reinterpret_cast<const hb_bmp_font_t *>(p_font_data);
-
-	if (!bm_font->face) {
-		return 0;
-	}
-
-	if (!bm_font->face->kerning_map.has(Vector2i(p_left_glyph, p_right_glyph))) {
-		return 0;
-	}
-
-	return bm_font->face->kerning_map[Vector2i(p_left_glyph, p_right_glyph)].y * 64;
-}
-
 hb_bool_t TextServerAdvanced::hb_bmp_get_glyph_v_origin(hb_font_t *p_font, void *p_font_data, hb_codepoint_t p_glyph, hb_position_t *r_x, hb_position_t *r_y, void *p_user_data) {
 	const hb_bmp_font_t *bm_font = reinterpret_cast<const hb_bmp_font_t *>(p_font_data);
 
@@ -205,7 +191,6 @@ void TextServerAdvanced::hb_bmp_create_font_funcs() {
 		hb_font_funcs_set_glyph_v_advance_func(funcs, hb_bmp_get_glyph_v_advance, nullptr, nullptr);
 		hb_font_funcs_set_glyph_v_origin_func(funcs, hb_bmp_get_glyph_v_origin, nullptr, nullptr);
 		hb_font_funcs_set_glyph_h_kerning_func(funcs, hb_bmp_get_glyph_h_kerning, nullptr, nullptr);
-		hb_font_funcs_set_glyph_v_kerning_func(funcs, hb_bmp_get_glyph_v_kerning, nullptr, nullptr);
 		hb_font_funcs_set_glyph_extents_func(funcs, hb_bmp_get_glyph_extents, nullptr, nullptr);
 
 		hb_font_funcs_make_immutable(funcs);
