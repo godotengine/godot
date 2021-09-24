@@ -244,6 +244,7 @@ void ItemListEditor::_node_removed(Node *p_node) {
 void ItemListEditor::_notification(int p_notification) {
 	if (p_notification == NOTIFICATION_ENTER_TREE || p_notification == NOTIFICATION_THEME_CHANGED) {
 		add_button->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
+		clear_button->set_icon(get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")));
 		del_button->set_icon(get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")));
 	} else if (p_notification == NOTIFICATION_READY) {
 		get_tree()->connect("node_removed", callable_mp(this, &ItemListEditor::_node_removed));
@@ -256,6 +257,12 @@ void ItemListEditor::_add_pressed() {
 	}
 
 	item_plugins[selected_idx]->add_item();
+}
+
+void ItemListEditor::_clear_pressed() {
+	for (int i = item_plugins[selected_idx]->get_item_count() - 1; i >= 0; i--) {
+		item_plugins[selected_idx]->erase(i);
+	}
 }
 
 void ItemListEditor::_delete_pressed() {
@@ -349,6 +356,11 @@ ItemListEditor::ItemListEditor() {
 	add_button->connect("pressed", callable_mp(this, &ItemListEditor::_add_pressed));
 
 	hbc->add_spacer();
+
+	clear_button = memnew(Button);
+	clear_button->set_text(TTR("Delete All"));
+	hbc->add_child(clear_button);
+	clear_button->connect("pressed", callable_mp(this, &ItemListEditor::_clear_pressed));
 
 	del_button = memnew(Button);
 	del_button->set_text(TTR("Delete"));

@@ -204,6 +204,7 @@ class ItemListEditor : public HBoxContainer {
 	Tree *tree;
 	Button *add_button;
 	Button *del_button;
+	Button *clear_button;
 
 	int selected_idx;
 
@@ -213,6 +214,7 @@ class ItemListEditor : public HBoxContainer {
 
 	void _add_pressed();
 	void _delete_pressed();
+	void _clear_pressed();
 
 	void _node_removed(Node *p_node);
 
