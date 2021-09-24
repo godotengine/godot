@@ -59,6 +59,7 @@ real_t PhysicsDirectBodyState2DSW::get_inverse_inertia() const {
 }
 
 void PhysicsDirectBodyState2DSW::set_linear_velocity(const Vector2 &p_velocity) {
+	body->set_active(true);
 	body->set_linear_velocity(p_velocity);
 }
 
@@ -67,6 +68,7 @@ Vector2 PhysicsDirectBodyState2DSW::get_linear_velocity() const {
 }
 
 void PhysicsDirectBodyState2DSW::set_angular_velocity(real_t p_velocity) {
+	body->set_active(true);
 	body->set_angular_velocity(p_velocity);
 }
 
@@ -87,26 +89,32 @@ Vector2 PhysicsDirectBodyState2DSW::get_velocity_at_local_position(const Vector2
 }
 
 void PhysicsDirectBodyState2DSW::add_central_force(const Vector2 &p_force) {
+	body->set_active(true);
 	body->add_central_force(p_force);
 }
 
 void PhysicsDirectBodyState2DSW::add_force(const Vector2 &p_force, const Vector2 &p_position) {
+	body->set_active(true);
 	body->add_force(p_force, p_position);
 }
 
 void PhysicsDirectBodyState2DSW::add_torque(real_t p_torque) {
+	body->set_active(true);
 	body->add_torque(p_torque);
 }
 
 void PhysicsDirectBodyState2DSW::apply_central_impulse(const Vector2 &p_impulse) {
+	body->set_active(true);
 	body->apply_central_impulse(p_impulse);
 }
 
 void PhysicsDirectBodyState2DSW::apply_impulse(const Vector2 &p_impulse, const Vector2 &p_position) {
+	body->set_active(true);
 	body->apply_impulse(p_impulse, p_position);
 }
 
 void PhysicsDirectBodyState2DSW::apply_torque_impulse(real_t p_torque) {
+	body->set_active(true);
 	body->apply_torque_impulse(p_torque);
 }
 
