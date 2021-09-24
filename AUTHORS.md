@@ -36,6 +36,7 @@ name is available.
     Andrii Doroshenko (Xrayez)
     Andy Moss (MillionOstrich)
     Angad Kambli (angad-k)
+    Anilforextra (AnilBK)
     Anish Bhobe (KidRigger)
     Anton Yabchinskiy (a12n)
     Anutrix
@@ -76,6 +77,7 @@ name is available.
     Eric Rybicki (ericrybick)
     Erik Selecký (rxlecky)
     est31
+    Eveline Jarosz (Marqin)
     Fabian Mathews (supagu)
     Fabio Alessandrelli (Faless)
     fabriceci
@@ -99,7 +101,6 @@ name is available.
     Hiroshi Ogawa (hi-ogawa)
     homer666
     hoontee
-    Hubert Jarosz (Marqin)
     Hugo Locurcio (Calinou)
     Ian Bishop (ianb96)
     Ibrahn Sahir (ibrahn)
@@ -109,9 +110,9 @@ name is available.
     J08nY
     Jakub Grzesik (kubecz3k)
     James Buck (jbuck3)
+    Jean-Michel Bernard (jmb462)
     Jérôme Gully (Nutriz)
     Jia Jun Chai (SkyLucilfer)
-    jmb462
     Joan Fons Sanchez (JFonS)
     Johannes Witt (HaSa1002)
     Johan Manuel (29jm)
@@ -119,6 +120,7 @@ name is available.
     Juan Linietsky (reduz)
     Julian Murgia (StraToN)
     Julien Nguyen (Blackiris)
+    Jummit
     Justo Delgado (mrcdk)
     Kelly Thomas (KellyThomas)
     kleonc
@@ -137,7 +139,7 @@ name is available.
     Marc Gilleron (Zylann)
     Marcin Zawiejski (dragmz)
     Marcus Brummer (mbrlabs)
-    Marcus (MCrafterzz)
+    Marcus Elg (MCrafterzz)
     Mariano Javier Suligoy (MarianoGnu)
     Mario Schlack (hurikhan)
     Martin Capitanio (capnm)
