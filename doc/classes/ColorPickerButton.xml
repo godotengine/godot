@@ -6,6 +6,7 @@
 	<description>
 		Encapsulates a [ColorPicker] making it accessible by pressing a button. Pressing the button will toggle the [ColorPicker] visibility.
 		See also [BaseButton] which contains common properties and methods associated with this node.
+		[b]Note:[/b] By default, the button may not be wide enough for the color preview swatch to be visible. Make sure to set [member Control.rect_min_size] to a big enough value to give the button enough space.
 	</description>
 	<tutorials>
 		<link title="GUI Drag And Drop Demo">https://godotengine.org/asset-library/asset/133</link>

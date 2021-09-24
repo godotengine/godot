@@ -4,7 +4,8 @@
 		Color picker control.
 	</brief_description>
 	<description>
-		[Control] node displaying a color picker widget. It's useful for selecting a color from an RGB/RGBA colorspace.
+		Displays a color picker widget. Useful for selecting a color from an RGB/RGBA colorspace.
+		[b]Note:[/b] This control is the color picker widget itself. You can use a [ColorPickerButton] instead if you need a button that brings up a [ColorPicker] in a pop-up.
 	</description>
 	<tutorials>
 		<link title="Tween Demo">https://godotengine.org/asset-library/asset/146</link>
