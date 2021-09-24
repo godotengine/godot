@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  app.cpp                                                              */
+/*  app_uwp.cpp                                                          */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -32,7 +32,7 @@
 // This file demonstrates how to initialize EGL in a Windows Store app, using ICoreWindow.
 //
 
-#include "app.h"
+#include "app_uwp.h"
 
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
