@@ -44,6 +44,8 @@ private:
 	TextureRect *checkerboard = nullptr;
 	Label *metadata_label = nullptr;
 
+	void _update_metadata_label_text();
+
 protected:
 	void _notification(int p_what);
 
