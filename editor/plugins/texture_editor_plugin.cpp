@@ -58,6 +58,21 @@ void TexturePreview::_notification(int p_what) {
 	}
 }
 
+void TexturePreview::_update_metadata_label_text() {
+	Ref<Texture2D> texture = texture_display->get_texture();
+
+	String format;
+	if (Object::cast_to<ImageTexture>(*texture)) {
+		format = Image::get_format_name(Object::cast_to<ImageTexture>(*texture)->get_format());
+	} else if (Object::cast_to<StreamTexture2D>(*texture)) {
+		format = Image::get_format_name(Object::cast_to<StreamTexture2D>(*texture)->get_format());
+	} else {
+		format = texture->get_class();
+	}
+
+	metadata_label->set_text(itos(texture->get_width()) + "x" + itos(texture->get_height()) + " " + format);
+}
+
 TexturePreview::TexturePreview(Ref<Texture2D> p_texture, bool p_show_metadata) {
 	checkerboard = memnew(TextureRect);
 	checkerboard->set_stretch_mode(TextureRect::STRETCH_TILE);
@@ -75,16 +90,8 @@ TexturePreview::TexturePreview(Ref<Texture2D> p_texture, bool p_show_metadata) {
 	if (p_show_metadata) {
 		metadata_label = memnew(Label);
 
-		String format;
-		if (Object::cast_to<ImageTexture>(*p_texture)) {
-			format = Image::get_format_name(Object::cast_to<ImageTexture>(*p_texture)->get_format());
-		} else if (Object::cast_to<StreamTexture2D>(*p_texture)) {
-			format = Image::get_format_name(Object::cast_to<StreamTexture2D>(*p_texture)->get_format());
-		} else {
-			format = p_texture->get_class();
-		}
-
-		metadata_label->set_text(itos(p_texture->get_width()) + "x" + itos(p_texture->get_height()) + " " + format);
+		_update_metadata_label_text();
+		p_texture->connect("changed", callable_mp(this, &TexturePreview::_update_metadata_label_text));
 
 		// It's okay that these colors are static since the grid color is static too.
 		metadata_label->add_theme_color_override("font_color", Color::named("white"));
