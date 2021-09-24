@@ -484,7 +484,6 @@ EditorNavigationMeshGenerator::~EditorNavigationMeshGenerator() {
 }
 
 void EditorNavigationMeshGenerator::bake(Ref<NavigationMesh> p_nav_mesh, Node *p_node) {
-
 #ifdef TOOLS_ENABLED
 	EditorProgress *ep = nullptr;
 
