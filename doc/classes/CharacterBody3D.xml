@@ -32,7 +32,7 @@
 		<method name="get_last_motion" qualifiers="const">
 			<return type="Vector3" />
 			<description>
-				Returns the last motion applied to the [CharacterBody3D] during the last call to [method move_and_slide]. The movement can be split if needed into multiple motion, this method return the last one, it's useful to retrieve the current direction of the movement.
+				Returns the last motion applied to the [CharacterBody3D] during the last call to [method move_and_slide]. The movement can be split into multiple motions when sliding occurs, and this method return the last one, which is useful to retrieve the current direction of the movement.
 			</description>
 		</method>
 		<method name="get_last_slide_collision">
@@ -56,7 +56,7 @@
 		<method name="get_real_velocity" qualifiers="const">
 			<return type="Vector3" />
 			<description>
-				Returns the current real velocity since the last call to [method move_and_slide]. For example, when you climb a slope, you will move diagonally even though the velocity is horizontal. This method returns the diagonal movement, as opposed to [member linear_velocity] which returns the requested velocity.
+				Returns the current real velocity since the last call to [method move_and_slide]. For example, when you climb a slope, you will move diagonally even though the velocity is horizontal. This method returns the diagonal movement, as opposed to [member motion_velocity] which returns the requested velocity.
 			</description>
 		</method>
 		<method name="get_slide_collision">
@@ -117,9 +117,9 @@
 		<method name="move_and_slide">
 			<return type="bool" />
 			<description>
-				Moves the body based on [member linear_velocity]. If the body collides with another, it will slide along the other body rather than stop immediately. If the other body is a [CharacterBody3D] or [RigidDynamicBody3D], it will also be affected by the motion of the other body. You can use this to make moving and rotating platforms, or to make nodes push other nodes.
+				Moves the body based on [member motion_velocity]. If the body collides with another, it will slide along the other body rather than stop immediately. If the other body is a [CharacterBody3D] or [RigidDynamicBody3D], it will also be affected by the motion of the other body. You can use this to make moving and rotating platforms, or to make nodes push other nodes.
 				This method should be used in [method Node._physics_process] (or in a method called by [method Node._physics_process]), as it uses the physics step's [code]delta[/code] value automatically in calculations. Otherwise, the simulation will run at an incorrect speed.
-				Modifies [member linear_velocity] if a slide collision occurred. To get the latest collision call [method get_last_slide_collision], for more detailed information about collisions that occurred, use [method get_slide_collision].
+				Modifies [member motion_velocity] if a slide collision occurred. To get the latest collision call [method get_last_slide_collision], for more detailed information about collisions that occurred, use [method get_slide_collision].
 				When the body touches a moving platform, the platform's velocity is automatically added to the body motion. If a collision occurs due to the platform's motion, it will always be first in the slide collisions.
 				Returns [code]true[/code] if the body collided, otherwise, returns [code]false[/code].
 			</description>
@@ -147,16 +147,17 @@
 			As long as the snapping vector is in contact with the ground and the body moves against `up_direction`, the body will remain attached to the surface. Snapping is not applied if the body moves along `up_direction`, so it will be able to detach from the ground when jumping.
 		</member>
 		<member name="floor_stop_on_slope" type="bool" setter="set_floor_stop_on_slope_enabled" getter="is_floor_stop_on_slope_enabled" default="true">
-			If [code]true[/code], the body will not slide on slopes when you include gravity in [code]linear_velocity[/code] when calling [method move_and_slide] and the body is standing still.
-		</member>
-		<member name="linear_velocity" type="Vector3" setter="set_linear_velocity" getter="get_linear_velocity" default="Vector3(0, 0, 0)">
-			Current velocity vector (typically meters per second), used and modified during calls to [method move_and_slide].
+			If [code]true[/code], the body will not slide on slopes when calling [method move_and_slide] when the body is standing still.
+			If [code]false[/code], the body will slide on floor's slopes when [member motion_velocity] applies a downward force.
 		</member>
 		<member name="max_slides" type="int" setter="set_max_slides" getter="get_max_slides" default="6">
 			Maximum number of times the body can change direction before it stops when calling [method move_and_slide].
 		</member>
 		<member name="motion_mode" type="int" setter="set_motion_mode" getter="get_motion_mode" enum="CharacterBody3D.MotionMode" default="0">
 			Sets the motion mode which defines the behaviour of [method move_and_slide]. See [enum MotionMode] constants for available modes.
+		</member>
+		<member name="motion_velocity" type="Vector3" setter="set_motion_velocity" getter="get_motion_velocity" default="Vector3(0, 0, 0)">
+			Current velocity vector (typically meters per second), used and modified during calls to [method move_and_slide].
 		</member>
 		<member name="moving_platform_apply_velocity_on_leave" type="int" setter="set_moving_platform_apply_velocity_on_leave" getter="get_moving_platform_apply_velocity_on_leave" enum="CharacterBody3D.MovingPlatformApplyVelocityOnLeave" default="0">
 			Sets the behaviour to apply when you leave a moving platform. By default, to be physically accurate, when you leave the last platform velocity is applied. See [enum MovingPlatformApplyVelocityOnLeave] constants for available behaviour.
@@ -185,10 +186,10 @@
 			Apply when there is no notion of floor or ceiling. All collisions will be reported as [code]on_wall[/code]. In this mode, when you slide, the speed will always be constant. This mode is suitable for games without ground like space games.
 		</constant>
 		<constant name="PLATFORM_VEL_ON_LEAVE_ALWAYS" value="0" enum="MovingPlatformApplyVelocityOnLeave">
-			Add the last platform velocity to the [member linear_velocity] when you leave a moving platform.
+			Add the last platform velocity to the [member motion_velocity] when you leave a moving platform.
 		</constant>
 		<constant name="PLATFORM_VEL_ON_LEAVE_UPWARD_ONLY" value="1" enum="MovingPlatformApplyVelocityOnLeave">
-			Add the last platform velocity to the [member linear_velocity] when you leave a moving platform, but any downward motion is ignored. It's useful to keep full jump height even when the platform is moving down.
+			Add the last platform velocity to the [member motion_velocity] when you leave a moving platform, but any downward motion is ignored. It's useful to keep full jump height even when the platform is moving down.
 		</constant>
 		<constant name="PLATFORM_VEL_ON_LEAVE_NEVER" value="2" enum="MovingPlatformApplyVelocityOnLeave">
 			Do nothing when leaving a platform.
