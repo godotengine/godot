@@ -74,6 +74,24 @@
 				Returns the scroll offset due to [member caret_position], as a number of characters.
 			</description>
 		</method>
+		<method name="get_selection_from_column" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the selection begin column.
+			</description>
+		</method>
+		<method name="get_selection_to_column" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the selection end column.
+			</description>
+		</method>
+		<method name="has_selection" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the user has selected text.
+			</description>
+		</method>
 		<method name="menu_option">
 			<return type="void" />
 			<argument index="0" name="option" type="int" />
