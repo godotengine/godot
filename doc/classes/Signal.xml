@@ -32,10 +32,16 @@
 		<method name="connect">
 			<return type="int" />
 			<argument index="0" name="callable" type="Callable" />
-			<argument index="1" name="binds" type="Array" default="[]" />
-			<argument index="2" name="flags" type="int" default="0" />
+			<argument index="1" name="flags" type="int" default="0" />
 			<description>
-				Connects this signal to the specified [Callable], optionally providing binds and connection flags.
+				Connects this signal to the specified [Callable], optionally providing connection flags. You can provide additional arguments to the connected method call by using [method Callable.bind].
+				[codeblock]
+				for button in $Buttons.get_children():
+				    button.pressed.connect(on_pressed.bind(button))
+
+				func on_pressed(button):
+				    print(button.name, " was pressed")
+				[/codeblock]
 			</description>
 		</method>
 		<method name="disconnect">

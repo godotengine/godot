@@ -1690,7 +1690,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(Signal, get_object_id, sarray(), varray());
 	bind_method(Signal, get_name, sarray(), varray());
 
-	bind_method(Signal, connect, sarray("callable", "binds", "flags"), varray(Array(), 0));
+	bind_method(Signal, connect, sarray("callable", "flags"), varray(0));
 	bind_method(Signal, disconnect, sarray("callable"), varray());
 	bind_method(Signal, is_connected, sarray("callable"), varray());
 	bind_method(Signal, get_connections, sarray(), varray());
