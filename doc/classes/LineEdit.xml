@@ -82,6 +82,24 @@
 				Returns the scroll offset due to [member caret_column], as a number of characters.
 			</description>
 		</method>
+		<method name="get_selection_from_column" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the selection begin column.
+			</description>
+		</method>
+		<method name="get_selection_to_column" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the selection end column.
+			</description>
+		</method>
+		<method name="has_selection" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the user has selected text.
+			</description>
+		</method>
 		<method name="insert_text_at_caret">
 			<return type="void" />
 			<argument index="0" name="text" type="String" />
