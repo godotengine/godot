@@ -279,7 +279,7 @@ Transform2D Transform2D::interpolate_with(const Transform2D &p_transform, const 
 	}
 
 	//construct matrix
-	Transform2D res(Math::atan2(v.y, v.x), p1.lerp(p2, p_c));
+	Transform2D res(v.angle(), p1.lerp(p2, p_c));
 	res.scale_basis(s1.lerp(s2, p_c));
 	return res;
 }
