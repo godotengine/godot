@@ -804,22 +804,15 @@ bool Variant::is_one() const {
 }
 
 ObjectID Variant::get_object_instance_id() const {
-	if (type != OBJECT) {
+	if (unlikely(type != OBJECT)) {
 		return 0;
-	}
-#ifdef DEBUG_ENABLED
-	if (is_ref()) {
-		return !_get_obj().ref.is_null() ? _REF_OBJ_PTR(*this)->get_instance_id() : 0;
-	} else {
+	} else if (likely(_get_obj().rc)) {
 		return _get_obj().rc->instance_id;
-	}
-#else
-	if (is_ref() && _get_obj().ref.is_null()) {
-		return 0;
+	} else if (likely(!_get_obj().ref.is_null())) {
+		return _REF_OBJ_PTR(*this)->get_instance_id();
 	} else {
-		return _get_obj().rc->get_ptr()->get_instance_id();
+		return 0;
 	}
-#endif
 }
 
 bool Variant::is_invalid_object() const {
