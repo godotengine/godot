@@ -471,7 +471,7 @@ void TextureProgressBar::_notification(int p_what) {
 								Vector<Point2> uvs;
 								Vector<Point2> points;
 								uvs.push_back(get_relative_center());
-								points.push_back(progress_offset + Point2(s.x * get_relative_center().x, s.y * get_relative_center().y));
+								points.push_back(progress_offset + s * get_relative_center());
 								for (int i = 0; i < pts.size(); i++) {
 									Point2 uv = unit_val_to_uv(pts[i]);
 									if (uvs.find(uv) >= 0) {
@@ -493,8 +493,7 @@ void TextureProgressBar::_notification(int p_what) {
 									p = progress->get_size();
 								}
 
-								p.x *= get_relative_center().x;
-								p.y *= get_relative_center().y;
+								p *= get_relative_center();
 								p = p.floor();
 								draw_line(p - Point2(8, 0), p + Point2(8, 0), Color(0.9, 0.5, 0.5), 2);
 								draw_line(p - Point2(0, 8), p + Point2(0, 8), Color(0.9, 0.5, 0.5), 2);

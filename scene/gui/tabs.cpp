@@ -167,7 +167,7 @@ void Tabs::gui_input(const Ref<InputEvent> &p_event) {
 
 		if (mb->is_pressed() && (mb->get_button_index() == MOUSE_BUTTON_LEFT || (select_with_rmb && mb->get_button_index() == MOUSE_BUTTON_RIGHT))) {
 			// clicks
-			Point2 pos(mb->get_position().x, mb->get_position().y);
+			Point2 pos = mb->get_position();
 
 			if (buttons_visible) {
 				Ref<Texture2D> incr = get_theme_icon(SNAME("increment"));

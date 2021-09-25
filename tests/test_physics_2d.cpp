@@ -199,7 +199,7 @@ protected:
 
 		if (mb.is_valid()) {
 			if (mb->is_pressed()) {
-				Point2 p(mb->get_position().x, mb->get_position().y);
+				Point2 p = mb->get_position();
 
 				if (mb->get_button_index() == 1) {
 					ray_to = p;
