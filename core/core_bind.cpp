@@ -1768,6 +1768,12 @@ void Thread::_start_func(void *ud) {
 	Ref<Thread> *tud = (Ref<Thread> *)ud;
 	Ref<Thread> t = *tud;
 	memdelete(tud);
+
+	Object *target_instance = t->target_callable.get_object();
+	if (!target_instance) {
+		ERR_FAIL_MSG(vformat("Could not call function '%s' on previously freed instance to start thread %s.", t->target_callable.get_method(), t->get_id()));
+	}
+
 	Callable::CallError ce;
 	const Variant *arg[1] = { &t->userdata };
 	int argc = 0;
@@ -1786,15 +1792,17 @@ void Thread::_start_func(void *ud) {
 		// We must check if we are in case b).
 		int target_param_count = 0;
 		int target_default_arg_count = 0;
-		Ref<Script> script = t->target_callable.get_object()->get_script();
+		Ref<Script> script = target_instance->get_script();
 		if (script.is_valid()) {
 			MethodInfo mi = script->get_method_info(t->target_callable.get_method());
 			target_param_count = mi.arguments.size();
 			target_default_arg_count = mi.default_arguments.size();
 		} else {
-			MethodBind *method = ClassDB::get_method(t->target_callable.get_object()->get_class_name(), t->target_callable.get_method());
-			target_param_count = method->get_argument_count();
-			target_default_arg_count = method->get_default_argument_count();
+			MethodBind *method = ClassDB::get_method(target_instance->get_class_name(), t->target_callable.get_method());
+			if (method) {
+				target_param_count = method->get_argument_count();
+				target_default_arg_count = method->get_default_argument_count();
+			}
 		}
 		if (target_param_count >= 1 && target_default_arg_count < target_param_count) {
 			argc = 1;
