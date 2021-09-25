@@ -263,6 +263,16 @@ struct WorkspaceEdit {
 	 */
 	Map<String, Vector<TextEdit>> changes;
 
+	_FORCE_INLINE_ void add_edit(const String &uri, const TextEdit &edit) {
+		if (changes.has(uri)) {
+			changes[uri].push_back(edit);
+		} else {
+			Vector<TextEdit> edits;
+			edits.push_back(edit);
+			changes[uri] = edits;
+		}
+	}
+
 	_FORCE_INLINE_ Dictionary to_json() const {
 		Dictionary dict;
 
@@ -1319,6 +1329,18 @@ struct DocumentSymbol {
 		}
 
 		return item;
+	}
+};
+
+struct ApplyWorkspaceEditParams {
+	WorkspaceEdit edit;
+
+	Dictionary to_json() {
+		Dictionary dict;
+
+		dict["edit"] = edit.to_json();
+
+		return dict;
 	}
 };
 
