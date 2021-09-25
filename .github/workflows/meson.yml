@@ -178,5 +178,5 @@ jobs:
         run: |
           ./builddir/godot --headless --test
 
-      - name: Upload Artifact
-        uses: ./.github/actions/upload-artifact
+      #- name: Upload Artifact
+      #  uses: ./.github/actions/upload-artifact
