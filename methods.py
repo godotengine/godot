@@ -429,7 +429,7 @@ def save_active_platforms(apnames, ap):
                 pngw.write(str)
 
 
-def no_verbose(sys, env):
+def get_terminal_colors(sys):
 
     colors = {}
 
@@ -451,6 +451,19 @@ def no_verbose(sys, env):
         colors["yellow"] = ""
         colors["red"] = ""
         colors["end"] = ""
+
+    return colors
+
+
+def print_color(sys, color, message):
+
+    colors = get_terminal_colors(sys)
+    print("{}{}{}".format(colors[color], message, colors["end"]))
+
+
+def no_verbose(sys, env):
+
+    colors = get_terminal_colors(sys)
 
     compile_source_message = "{}Compiling {}==> {}$SOURCE{}".format(
         colors["blue"], colors["purple"], colors["yellow"], colors["end"]

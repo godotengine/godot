@@ -5,10 +5,10 @@ Import("env_modules")
 
 env_camera = env_modules.Clone()
 
-if env["platform"] == "windows":
+if env["selected_platform"] == "windows":
     env_camera.add_source_files(env.modules_sources, "register_types.cpp")
     env_camera.add_source_files(env.modules_sources, "camera_win.cpp")
 
-elif env["platform"] == "osx":
+elif env["selected_platform"] == "osx":
     env_camera.add_source_files(env.modules_sources, "register_types.cpp")
     env_camera.add_source_files(env.modules_sources, "camera_osx.mm")

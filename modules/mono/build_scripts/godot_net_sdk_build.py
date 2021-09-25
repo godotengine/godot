@@ -15,7 +15,7 @@ def build_godot_net_sdk(source, target, env):
 
     from .solution_builder import build_solution
 
-    extra_msbuild_args = ["/p:GodotPlatform=" + env["platform"]]
+    extra_msbuild_args = ["/p:GodotPlatform=" + env["selected_platform"]]
 
     build_solution(env, solution_path, build_config, extra_msbuild_args)
     # No need to copy targets. The Godot.NET.Sdk csproj takes care of copying them.

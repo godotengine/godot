@@ -69,10 +69,10 @@ if env["builtin_embree"]:
         if env["arch"] in ["x86", "x86_64"]:
             env_raycast.Append(CPPFLAGS=["-msse2", "-mxsave"])
 
-        if env["platform"] == "windows":
+        if env["selected_platform"] == "windows":
             env_raycast.Append(CPPFLAGS=["-mstackrealign"])
 
-    if env["platform"] == "windows":
+    if env["selected_platform"] == "windows":
         if env.msvc:
             env.Append(LINKFLAGS=["psapi.lib"])
         else:

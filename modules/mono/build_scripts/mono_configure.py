@@ -87,9 +87,9 @@ def find_wasm_src_dir(mono_root):
 
 def configure(env, env_mono):
     bits = env["bits"]
-    is_android = env["platform"] == "android"
-    is_javascript = env["platform"] == "javascript"
-    is_ios = env["platform"] == "iphone"
+    is_android = env["selected_platform"] == "android"
+    is_javascript = env["selected_platform"] == "javascript"
+    is_ios = env["selected_platform"] == "iphone"
     is_ios_sim = is_ios and env["arch"] in ["x86", "x86_64"]
 
     tools_enabled = env["tools"]
@@ -104,7 +104,7 @@ def configure(env, env_mono):
     if is_android and not env["android_arch"] in android_arch_dirs:
         raise RuntimeError("This module does not support the specified 'android_arch': " + env["android_arch"])
 
-    if tools_enabled and not module_supports_tools_on(env["platform"]):
+    if tools_enabled and not module_supports_tools_on(env["selected_platform"]):
         # TODO:
         # Android: We have to add the data directory to the apk, concretely the Api and Tools folders.
         raise RuntimeError("This module does not currently support building for this platform with tools enabled")
@@ -137,7 +137,7 @@ def configure(env, env_mono):
     if (env["tools"] or env["target"] != "release") and not mono_single_appdomain:
         env_mono.Append(CPPDEFINES=["GD_MONO_HOT_RELOAD"])
 
-    if env["platform"] == "windows":
+    if env["selected_platform"] == "windows":
         mono_root = mono_prefix
 
         if not mono_root and os.name == "nt":
@@ -206,7 +206,7 @@ def configure(env, env_mono):
 
             copy_file(mono_bin_path, "#bin", mono_dll_file)
     else:
-        is_apple = env["platform"] in ["osx", "iphone"]
+        is_apple = env["selected_platform"] in ["osx", "iphone"]
         is_macos = is_apple and not is_ios
 
         sharedlib_ext = ".dylib" if is_apple else ".so"
@@ -284,7 +284,7 @@ def configure(env, env_mono):
                             copy_mono_lib("libmono-icall-table")
                             copy_mono_lib("libmono-ilgen")
                 else:
-                    assert is_desktop(env["platform"]) or is_android or is_javascript
+                    assert is_desktop(env["selected_platform"]) or is_android or is_javascript
                     env.Append(LINKFLAGS=["-Wl,-whole-archive", mono_lib_file, "-Wl,-no-whole-archive"])
 
                 if is_javascript:
@@ -365,7 +365,7 @@ def configure(env, env_mono):
             copy_file(mono_lib_path, libs_output_dir, mono_so_file)
 
     if not tools_enabled:
-        if is_desktop(env["platform"]):
+        if is_desktop(env["selected_platform"]):
             if not mono_root:
                 mono_root = (
                     subprocess.check_output(["pkg-config", "mono-2", "--variable=prefix"]).decode("utf8").strip()
@@ -399,7 +399,7 @@ def configure(env, env_mono):
 def make_template_dir(env, mono_root):
     from shutil import rmtree
 
-    platform = env["platform"]
+    platform = env["selected_platform"]
     target = env["target"]
 
     template_dir_name = ""
@@ -443,7 +443,7 @@ def copy_mono_root_files(env, mono_root, mono_bcl):
     # Copy etc/mono/
 
     editor_mono_config_dir = os.path.join(editor_mono_root_dir, "etc", "mono")
-    copy_mono_etc_dir(mono_root, editor_mono_config_dir, env["platform"])
+    copy_mono_etc_dir(mono_root, editor_mono_config_dir, env["selected_platform"])
 
     # Copy the required shared libraries
 
@@ -509,7 +509,7 @@ def copy_mono_shared_libs(env, mono_root, target_mono_root_dir):
         if os.path.isfile(src):
             copy(src, dst)
 
-    platform = env["platform"]
+    platform = env["selected_platform"]
 
     if platform == "windows":
         src_mono_bin_dir = os.path.join(mono_root, "bin")

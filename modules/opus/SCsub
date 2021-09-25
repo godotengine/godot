@@ -139,7 +139,7 @@ if env["builtin_opus"]:
 
     opus_sources_silk = []
 
-    if env["platform"] in ["android", "iphone", "javascript"]:
+    if env["selected_platform"] in ["android", "iphone", "javascript"]:
         env_opus.Append(CPPDEFINES=["FIXED_POINT"])
         opus_sources_silk = [
             "silk/fixed/LTP_analysis_filter_FIX.c",
@@ -221,17 +221,17 @@ if env["builtin_opus"]:
     ]
     env_opus.Prepend(CPPPATH=[thirdparty_dir + "/" + dir for dir in thirdparty_include_paths])
 
-    if env["platform"] == "android":
+    if env["selected_platform"] == "android":
         if "android_arch" in env and env["android_arch"] == "armv7":
             env_opus.Append(CPPDEFINES=["OPUS_ARM_OPT"])
         elif "android_arch" in env and env["android_arch"] == "arm64v8":
             env_opus.Append(CPPDEFINES=["OPUS_ARM64_OPT"])
-    elif env["platform"] == "iphone":
+    elif env["selected_platform"] == "iphone":
         if "arch" in env and env["arch"] == "arm":
             env_opus.Append(CPPDEFINES=["OPUS_ARM_OPT"])
         elif "arch" in env and env["arch"] == "arm64":
             env_opus.Append(CPPDEFINES=["OPUS_ARM64_OPT"])
-    elif env["platform"] == "osx":
+    elif env["selected_platform"] == "osx":
         if "arch" in env and env["arch"] == "arm64":
             env_opus.Append(CPPDEFINES=["OPUS_ARM64_OPT"])
 

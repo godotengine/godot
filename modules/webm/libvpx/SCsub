@@ -222,12 +222,12 @@ env_libvpx = env_modules.Clone()
 env_libvpx.disable_warnings()
 env_libvpx.Prepend(CPPPATH=[libvpx_dir])
 
-webm_multithread = env["platform"] != "javascript"
+webm_multithread = env["selected_platform"] != "javascript"
 
 cpu_bits = env["bits"]
 webm_cpu_x86 = False
 webm_cpu_arm = False
-if env["platform"] == "uwp":
+if env["selected_platform"] == "uwp":
     if "arm" in env["PROGSUFFIX"]:
         webm_cpu_arm = True
     else:
@@ -235,21 +235,21 @@ if env["platform"] == "uwp":
 else:
     import platform
 
-    is_x11_or_server_arm = env["platform"] == "linuxbsd" and (
+    is_x11_or_server_arm = env["selected_platform"] == "linuxbsd" and (
         platform.machine().startswith("arm") or platform.machine().startswith("aarch")
     )
-    is_macos_x86 = env["platform"] == "osx" and ("arch" in env and (env["arch"] != "arm64"))
-    is_ios_x86 = env["platform"] == "iphone" and ("arch" in env and env["arch"].startswith("x86"))
-    is_android_x86 = env["platform"] == "android" and env["android_arch"].startswith("x86")
+    is_macos_x86 = env["selected_platform"] == "osx" and ("arch" in env and (env["arch"] != "arm64"))
+    is_ios_x86 = env["selected_platform"] == "iphone" and ("arch" in env and env["arch"].startswith("x86"))
+    is_android_x86 = env["selected_platform"] == "android" and env["android_arch"].startswith("x86")
     if is_android_x86:
         cpu_bits = "32" if env["android_arch"] == "x86" else "64"
     webm_cpu_x86 = (
         not is_x11_or_server_arm
         and (cpu_bits == "32" or cpu_bits == "64")
         and (
-            env["platform"] == "windows"
-            or env["platform"] == "linuxbsd"
-            or env["platform"] == "haiku"
+            env["selected_platform"] == "windows"
+            or env["selected_platform"] == "linuxbsd"
+            or env["selected_platform"] == "haiku"
             or is_macos_x86
             or is_android_x86
             or is_ios_x86
@@ -257,9 +257,9 @@ else:
     )
     webm_cpu_arm = (
         is_x11_or_server_arm
-        or (not is_macos_x86 and env["platform"] == "osx")
-        or (not is_ios_x86 and env["platform"] == "iphone")
-        or (not is_android_x86 and env["platform"] == "android")
+        or (not is_macos_x86 and env["selected_platform"] == "osx")
+        or (not is_ios_x86 and env["selected_platform"] == "iphone")
+        or (not is_android_x86 and env["selected_platform"] == "android")
     )
 
 if webm_cpu_x86:
@@ -290,9 +290,9 @@ if webm_cpu_x86:
 webm_simd_optimizations = False
 
 if webm_cpu_x86:
-    if env["platform"] == "windows" or env["platform"] == "uwp":
+    if env["selected_platform"] == "windows" or env["selected_platform"] == "uwp":
         env_libvpx["ASFORMAT"] = "win"
-    elif env["platform"] == "osx" or env["platform"] == "iphone":
+    elif env["selected_platform"] == "osx" or env["selected_platform"] == "iphone":
         env_libvpx["ASFORMAT"] = "macho"
     else:
         env_libvpx["ASFORMAT"] = "elf"
@@ -312,11 +312,15 @@ if webm_cpu_x86:
     webm_simd_optimizations = True
 
 if webm_cpu_arm:
-    if env["platform"] == "iphone":
+    if env["selected_platform"] == "iphone":
         env_libvpx["ASFLAGS"] = "-arch armv7"
-    elif env["platform"] == "android" and env["android_arch"] == "armv7" or env["platform"] == "linuxbsd":
+    elif (
+        env["selected_platform"] == "android"
+        and env["android_arch"] == "armv7"
+        or env["selected_platform"] == "linuxbsd"
+    ):
         env_libvpx["ASFLAGS"] = "-mfpu=neon"
-    elif env["platform"] == "uwp":
+    elif env["selected_platform"] == "uwp":
         env_libvpx["AS"] = "armasm"
         env_libvpx["ASFLAGS"] = ""
         env_libvpx["ASCOM"] = "$AS $ASFLAGS -o $TARGET $SOURCES"
@@ -365,18 +369,18 @@ if webm_cpu_x86:
         env_libvpx.add_source_files(env.modules_sources, libvpx_sources_x86_64asm)
 elif webm_cpu_arm:
     env_libvpx.add_source_files(env.modules_sources, libvpx_sources_arm)
-    if env["platform"] == "android":
+    if env["selected_platform"] == "android":
         env_libvpx.Prepend(CPPPATH=[libvpx_dir + "third_party/android"])
         env_libvpx.add_source_files(env.modules_sources, [libvpx_dir + "third_party/android/cpu-features.c"])
 
     env_libvpx_neon = env_libvpx.Clone()
     env_libvpx_neon.add_source_files(env.modules_sources, libvpx_sources_arm_neon)
 
-    if env["platform"] == "uwp":
+    if env["selected_platform"] == "uwp":
         env_libvpx.add_source_files(env.modules_sources, libvpx_sources_arm_neon_armasm_ms)
-    elif env["platform"] == "iphone":
+    elif env["selected_platform"] == "iphone":
         env_libvpx.add_source_files(env.modules_sources, libvpx_sources_arm_neon_gas_apple)
     elif (is_x11_or_server_arm and cpu_bits == "32") or (
-        env["platform"] == "android" and not env["android_arch"] == "arm64v8"
+        env["selected_platform"] == "android" and not env["android_arch"] == "arm64v8"
     ):
         env_libvpx.add_source_files(env.modules_sources, libvpx_sources_arm_neon_gas)
