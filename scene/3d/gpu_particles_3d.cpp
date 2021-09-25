@@ -469,7 +469,7 @@ void GPUParticles3D::_skinning_changed() {
 			if (draw_pass.is_valid() && draw_pass->get_builtin_bind_pose_count() > 0) {
 				xforms.resize(draw_pass->get_builtin_bind_pose_count());
 				for (int j = 0; j < draw_pass->get_builtin_bind_pose_count(); j++) {
-					xforms.write[i] = draw_pass->get_builtin_bind_pose(j);
+					xforms.write[j] = draw_pass->get_builtin_bind_pose(j);
 				}
 				break;
 			}
