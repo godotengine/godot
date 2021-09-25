@@ -5,6 +5,7 @@
 	</brief_description>
 	<description>
 		Base class for WebSocket server and client, allowing them to be used as multiplayer peer for the [MultiplayerAPI].
+		[b]Note:[/b] When exporting to Android, make sure to enable the [code]INTERNET[/code] permission in the Android export preset before exporting the project or using one-click deploy. Otherwise, network communication of any kind will be blocked by Android.
 	</description>
 	<tutorials>
 	</tutorials>
