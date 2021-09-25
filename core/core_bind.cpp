@@ -1786,13 +1786,13 @@ void Thread::_start_func(void *ud) {
 		// We must check if we are in case b).
 		int target_param_count = 0;
 		int target_default_arg_count = 0;
-		Ref<Script> script = t->target_instance->get_script();
+		Ref<Script> script = t->target_callable.get_object()->get_script();
 		if (script.is_valid()) {
-			MethodInfo mi = script->get_method_info(t->target_method);
+			MethodInfo mi = script->get_method_info(t->target_callable.get_method());
 			target_param_count = mi.arguments.size();
 			target_default_arg_count = mi.default_arguments.size();
 		} else {
-			MethodBind *method = ClassDB::get_method(t->target_instance->get_class_name(), t->target_method);
+			MethodBind *method = ClassDB::get_method(t->target_callable.get_object()->get_class_name(), t->target_callable.get_method());
 			target_param_count = method->get_argument_count();
 			target_default_arg_count = method->get_default_argument_count();
 		}
@@ -1801,41 +1801,21 @@ void Thread::_start_func(void *ud) {
 		}
 	}
 
-	::Thread::set_name(t->target_method);
+	::Thread::set_name(t->target_callable.get_method());
 
-	t->ret = t->target_instance->call(t->target_method, arg, argc, ce);
+	t->target_callable.call(arg, argc, t->ret, ce);
 	if (ce.error != Callable::CallError::CALL_OK) {
-		String reason;
-		switch (ce.error) {
-			case Callable::CallError::CALL_ERROR_INVALID_ARGUMENT: {
-				reason = "Invalid Argument #" + itos(ce.argument);
-			} break;
-			case Callable::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS: {
-				reason = "Too Many Arguments";
-			} break;
-			case Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS: {
-				reason = "Too Few Arguments";
-			} break;
-			case Callable::CallError::CALL_ERROR_INVALID_METHOD: {
-				reason = "Method Not Found";
-			} break;
-			default: {
-			}
-		}
-
-		ERR_FAIL_MSG("Could not call function '" + t->target_method.operator String() + "' to start thread " + t->get_id() + ": " + reason + ".");
+		ERR_FAIL_MSG("Could not call function '" + t->target_callable.get_method().operator String() + "' to start thread " + t->get_id() + ": " + Variant::get_callable_error_text(t->target_callable, arg, argc, ce) + ".");
 	}
 }
 
-Error Thread::start(Object *p_instance, const StringName &p_method, const Variant &p_userdata, Priority p_priority) {
+Error Thread::start(const Callable &p_callable, const Variant &p_userdata, Priority p_priority) {
 	ERR_FAIL_COND_V_MSG(active.is_set(), ERR_ALREADY_IN_USE, "Thread already started.");
-	ERR_FAIL_COND_V(!p_instance, ERR_INVALID_PARAMETER);
-	ERR_FAIL_COND_V(p_method == StringName(), ERR_INVALID_PARAMETER);
+	ERR_FAIL_COND_V(p_callable.is_null(), ERR_INVALID_PARAMETER);
 	ERR_FAIL_INDEX_V(p_priority, PRIORITY_MAX, ERR_INVALID_PARAMETER);
 
 	ret = Variant();
-	target_method = p_method;
-	target_instance = p_instance;
+	target_callable = p_callable;
 	userdata = p_userdata;
 	active.set();
 
@@ -1861,15 +1841,14 @@ Variant Thread::wait_to_finish() {
 	thread.wait_to_finish();
 	Variant r = ret;
 	active.clear();
-	target_method = StringName();
-	target_instance = nullptr;
+	target_callable = Callable();
 	userdata = Variant();
 
 	return r;
 }
 
 void Thread::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("start", "instance", "method", "userdata", "priority"), &Thread::start, DEFVAL(Variant()), DEFVAL(PRIORITY_NORMAL));
+	ClassDB::bind_method(D_METHOD("start", "callable", "userdata", "priority"), &Thread::start, DEFVAL(Variant()), DEFVAL(PRIORITY_NORMAL));
 	ClassDB::bind_method(D_METHOD("get_id"), &Thread::get_id);
 	ClassDB::bind_method(D_METHOD("is_active"), &Thread::is_active);
 	ClassDB::bind_method(D_METHOD("wait_to_finish"), &Thread::wait_to_finish);
