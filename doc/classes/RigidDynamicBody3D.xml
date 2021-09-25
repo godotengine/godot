@@ -170,28 +170,28 @@
 		<signal name="body_shape_entered">
 			<argument index="0" name="body_rid" type="RID" />
 			<argument index="1" name="body" type="Node" />
-			<argument index="2" name="body_shape" type="int" />
-			<argument index="3" name="local_shape" type="int" />
+			<argument index="2" name="body_shape_index" type="int" />
+			<argument index="3" name="local_shape_index" type="int" />
 			<description>
 				Emitted when one of this RigidDynamicBody3D's [Shape3D]s collides with another [PhysicsBody3D] or [GridMap]'s [Shape3D]s. Requires [member contact_monitor] to be set to [code]true[/code] and [member contacts_reported] to be set high enough to detect all the collisions. [GridMap]s are detected if the [MeshLibrary] has Collision [Shape3D]s.
-				[code]body_id[/code] the [RID] of the other [PhysicsBody3D] or [MeshLibrary]'s [CollisionObject3D] used by the [PhysicsServer3D].
+				[code]body_rid[/code] the [RID] of the other [PhysicsBody3D] or [MeshLibrary]'s [CollisionObject3D] used by the [PhysicsServer3D].
 				[code]body[/code] the [Node], if it exists in the tree, of the other [PhysicsBody3D] or [GridMap].
-				[code]body_shape[/code] the index of the [Shape3D] of the other [PhysicsBody3D] or [GridMap] used by the [PhysicsServer3D].
-				[code]local_shape[/code] the index of the [Shape3D] of this RigidDynamicBody3D used by the [PhysicsServer3D].
+				[code]body_shape_index[/code] the index of the [Shape3D] of the other [PhysicsBody3D] or [GridMap] used by the [PhysicsServer3D]. Get the [CollisionShape3D] node with [code]body.shape_owner_get_owner(body_shape_index)[/code].
+				[code]local_shape_index[/code] the index of the [Shape3D] of this RigidDynamicBody3D used by the [PhysicsServer3D]. Get the [CollisionShape3D] node with [code]self.shape_owner_get_owner(local_shape_index)[/code].
 				[b]Note:[/b] Bullet physics cannot identify the shape index when using a [ConcavePolygonShape3D]. Don't use multiple [CollisionShape3D]s when using a [ConcavePolygonShape3D] with Bullet physics if you need shape indices.
 			</description>
 		</signal>
 		<signal name="body_shape_exited">
 			<argument index="0" name="body_rid" type="RID" />
 			<argument index="1" name="body" type="Node" />
-			<argument index="2" name="body_shape" type="int" />
-			<argument index="3" name="local_shape" type="int" />
+			<argument index="2" name="body_shape_index" type="int" />
+			<argument index="3" name="local_shape_index" type="int" />
 			<description>
 				Emitted when the collision between one of this RigidDynamicBody3D's [Shape3D]s and another [PhysicsBody3D] or [GridMap]'s [Shape3D]s ends. Requires [member contact_monitor] to be set to [code]true[/code] and [member contacts_reported] to be set high enough to detect all the collisions. [GridMap]s are detected if the [MeshLibrary] has Collision [Shape3D]s.
-				[code]body_id[/code] the [RID] of the other [PhysicsBody3D] or [MeshLibrary]'s [CollisionObject3D] used by the [PhysicsServer3D]. [GridMap]s are detected if the Meshes have [Shape3D]s.
+				[code]body_rid[/code] the [RID] of the other [PhysicsBody3D] or [MeshLibrary]'s [CollisionObject3D] used by the [PhysicsServer3D]. [GridMap]s are detected if the Meshes have [Shape3D]s.
 				[code]body[/code] the [Node], if it exists in the tree, of the other [PhysicsBody3D] or [GridMap].
-				[code]body_shape[/code] the index of the [Shape3D] of the other [PhysicsBody3D] or [GridMap] used by the [PhysicsServer3D].
-				[code]local_shape[/code] the index of the [Shape3D] of this RigidDynamicBody3D used by the [PhysicsServer3D].
+				[code]body_shape_index[/code] the index of the [Shape3D] of the other [PhysicsBody3D] or [GridMap] used by the [PhysicsServer3D]. Get the [CollisionShape3D] node with [code]body.shape_owner_get_owner(body_shape_index)[/code].
+				[code]local_shape_index[/code] the index of the [Shape3D] of this RigidDynamicBody3D used by the [PhysicsServer3D]. Get the [CollisionShape3D] node with [code]self.shape_owner_get_owner(local_shape_index)[/code].
 				[b]Note:[/b] Bullet physics cannot identify the shape index when using a [ConcavePolygonShape3D]. Don't use multiple [CollisionShape3D]s when using a [ConcavePolygonShape3D] with Bullet physics if you need shape indices.
 			</description>
 		</signal>
