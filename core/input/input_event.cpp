@@ -1557,9 +1557,13 @@ bool InputEventShortcut::is_pressed() const {
 }
 
 String InputEventShortcut::as_text() const {
+	ERR_FAIL_COND_V(shortcut.is_null(), "None");
+
 	return vformat(RTR("Input Event with Shortcut=%s"), shortcut->get_as_text());
 }
 
 String InputEventShortcut::to_string() {
+	ERR_FAIL_COND_V(shortcut.is_null(), "None");
+
 	return vformat("InputEventShortcut: shortcut=%s", shortcut->get_as_text());
 }
