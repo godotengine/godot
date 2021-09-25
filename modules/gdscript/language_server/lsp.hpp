@@ -263,6 +263,16 @@ struct WorkspaceEdit {
 	 */
 	Map<String, Vector<TextEdit>> changes;
 
+	_FORCE_INLINE_ void add_edit(const String &uri, const TextEdit &edit) {
+		if (changes.has(uri)) {
+			changes[uri].push_back(edit);
+		} else {
+			Vector<TextEdit> edits;
+			edits.push_back(edit);
+			changes[uri] = edits;
+		}
+	}
+
 	_FORCE_INLINE_ Dictionary to_json() const {
 		Dictionary dict;
 
@@ -1319,46 +1329,6 @@ struct DocumentSymbol {
 		}
 
 		return item;
-	}
-};
-
-struct WorkspaceEdit {
-	HashMap<String, List<TextEdit>> changes;
-
-	void add_edit(String uri, TextEdit edit) {
-		if (changes.has(uri)) {
-			changes[uri].push_back(edit);
-		} else {
-			List<TextEdit> edits;
-			edits.push_back(edit);
-			changes[uri] = edits;
-		}
-	}
-
-	Dictionary to_json() {
-		Dictionary dict;
-
-		Dictionary changes_dict;
-
-		List<String> key_list;
-		changes.get_key_list(&key_list);
-		for (int i = 0; i < key_list.size(); ++i) {
-			String uri = key_list[i];
-
-			List<TextEdit> edits = changes[key_list[i]];
-			Array changes_arr;
-			for (int l = 0; l < edits.size(); ++l) {
-				Dictionary change_dict;
-				change_dict["newText"] = edits[l].newText;
-				change_dict["range"] = edits[l].range.to_json();
-				changes_arr.push_back(change_dict);
-			}
-			changes_dict[uri] = changes_arr;
-		}
-
-		dict["changes"] = changes_dict;
-
-		return dict;
 	}
 };
 
