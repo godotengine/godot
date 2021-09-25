@@ -49,11 +49,11 @@ private:
 
 	bool one_shot = false;
 	int amount = 0;
-	double lifetime = 0.0f;
-	double pre_process_time = 0.0f;
+	double lifetime = 0;
+	double pre_process_time = 0;
 	real_t explosiveness_ratio = 0;
 	real_t randomness_ratio = 0;
-	double speed_scale = 0.0f;
+	double speed_scale = 0;
 	Rect2 visibility_rect;
 	bool local_coords = false;
 	int fixed_fps = false;

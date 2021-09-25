@@ -45,11 +45,11 @@ class NavigationAgent2D : public Node {
 	uint32_t navigable_layers = 1;
 
 	real_t target_desired_distance = 1.0;
-	real_t radius = 1.0f;
-	real_t neighbor_dist = 1.0f;
+	real_t radius = 0;
+	real_t neighbor_dist = 0;
 	int max_neighbors = 0;
-	real_t time_horizon = 1.0f;
-	real_t max_speed = 1.0f;
+	real_t time_horizon = 0;
+	real_t max_speed = 0;
 
 	real_t path_max_distance = 3.0;
 
