@@ -684,7 +684,7 @@ protected:
 	Variant ret;
 	Variant userdata;
 	SafeFlag active;
-	Object *target_instance;
+	ObjectID target_instance_id;
 	StringName target_method;
 	Thread thread;
 	static void _bind_methods();
