@@ -2297,13 +2297,11 @@ void Engine::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("unregister_singleton", "name"), &Engine::unregister_singleton);
 	ClassDB::bind_method(D_METHOD("get_singleton_list"), &Engine::get_singleton_list);
 
-	ClassDB::bind_method(D_METHOD("set_editor_hint", "enabled"), &Engine::set_editor_hint);
 	ClassDB::bind_method(D_METHOD("is_editor_hint"), &Engine::is_editor_hint);
 
 	ClassDB::bind_method(D_METHOD("set_print_error_messages", "enabled"), &Engine::set_print_error_messages);
 	ClassDB::bind_method(D_METHOD("is_printing_error_messages"), &Engine::is_printing_error_messages);
 
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "editor_hint"), "set_editor_hint", "is_editor_hint");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "print_error_messages"), "set_print_error_messages", "is_printing_error_messages");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "physics_ticks_per_second"), "set_physics_ticks_per_second", "get_physics_ticks_per_second");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "target_fps"), "set_target_fps", "get_target_fps");
