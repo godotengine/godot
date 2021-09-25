@@ -47,6 +47,10 @@
 		</member>
 		<member name="lod_bias" type="float" setter="set_lod_bias" getter="get_lod_bias" default="1.0">
 		</member>
+		<member name="material_overlay" type="Material" setter="set_material_overlay" getter="get_material_overlay">
+			The material overlay for the whole geometry.
+			If a material is assigned to this property, it will be rendered on top of any other active material for all the surfaces.
+		</member>
 		<member name="material_override" type="Material" setter="set_material_override" getter="get_material_override">
 			The material override for the whole geometry.
 			If a material is assigned to this property, it will be used instead of any material set in any material slot of the mesh.

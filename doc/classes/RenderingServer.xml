@@ -1403,6 +1403,14 @@
 			<description>
 			</description>
 		</method>
+		<method name="instance_geometry_set_material_overlay">
+			<return type="void" />
+			<argument index="0" name="instance" type="RID" />
+			<argument index="1" name="material" type="RID" />
+			<description>
+				Sets a material that will be rendered for all surfaces on top of active materials for the mesh associated with this instance. Equivalent to [member GeometryInstance3D.material_overlay].
+			</description>
+		</method>
 		<method name="instance_geometry_set_material_override">
 			<return type="void" />
 			<argument index="0" name="instance" type="RID" />

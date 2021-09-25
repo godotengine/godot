@@ -110,6 +110,7 @@ public:
 private:
 	ShadowCastingSetting shadow_casting_setting = SHADOW_CASTING_SETTING_ON;
 	Ref<Material> material_override;
+	Ref<Material> material_overlay;
 
 	float visibility_range_begin = 0.0;
 	float visibility_range_end = 0.0;
@@ -163,6 +164,9 @@ public:
 
 	void set_material_override(const Ref<Material> &p_material);
 	Ref<Material> get_material_override() const;
+
+	void set_material_overlay(const Ref<Material> &p_material);
+	Ref<Material> get_material_overlay() const;
 
 	void set_extra_cull_margin(float p_margin);
 	float get_extra_cull_margin() const;

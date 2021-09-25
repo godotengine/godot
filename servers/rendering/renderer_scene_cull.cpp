@@ -636,6 +636,7 @@ void RendererSceneCull::instance_set_base(RID p_instance, RID p_base) {
 
 				scene_render->geometry_instance_set_skeleton(geom->geometry_instance, instance->skeleton);
 				scene_render->geometry_instance_set_material_override(geom->geometry_instance, instance->material_override);
+				scene_render->geometry_instance_set_material_overlay(geom->geometry_instance, instance->material_overlay);
 				scene_render->geometry_instance_set_surface_materials(geom->geometry_instance, instance->materials);
 				scene_render->geometry_instance_set_transform(geom->geometry_instance, instance->transform, instance->aabb, instance->transformed_aabb);
 				scene_render->geometry_instance_set_layer_mask(geom->geometry_instance, instance->layer_mask);
@@ -1219,6 +1220,19 @@ void RendererSceneCull::instance_geometry_set_material_override(RID p_instance, 
 	if ((1 << instance->base_type) & RS::INSTANCE_GEOMETRY_MASK && instance->base_data) {
 		InstanceGeometryData *geom = static_cast<InstanceGeometryData *>(instance->base_data);
 		scene_render->geometry_instance_set_material_override(geom->geometry_instance, p_material);
+	}
+}
+
+void RendererSceneCull::instance_geometry_set_material_overlay(RID p_instance, RID p_material) {
+	Instance *instance = instance_owner.get_or_null(p_instance);
+	ERR_FAIL_COND(!instance);
+
+	instance->material_overlay = p_material;
+	_instance_queue_update(instance, false, true);
+
+	if ((1 << instance->base_type) & RS::INSTANCE_GEOMETRY_MASK && instance->base_data) {
+		InstanceGeometryData *geom = static_cast<InstanceGeometryData *>(instance->base_data);
+		scene_render->geometry_instance_set_material_overlay(geom->geometry_instance, p_material);
 	}
 }
 
@@ -3656,6 +3670,10 @@ void RendererSceneCull::_update_dirty_instance(Instance *p_instance) {
 			RSG::storage->material_update_dependency(p_instance->material_override, &p_instance->dependency_tracker);
 		}
 
+		if (p_instance->material_overlay.is_valid()) {
+			RSG::storage->material_update_dependency(p_instance->material_overlay, &p_instance->dependency_tracker);
+		}
+
 		if (p_instance->base_type == RS::INSTANCE_MESH) {
 			//remove materials no longer used and un-own them
 
@@ -3785,6 +3803,12 @@ void RendererSceneCull::_update_dirty_instance(Instance *p_instance) {
 				}
 			}
 
+			if (p_instance->material_overlay.is_valid()) {
+				can_cast_shadows = can_cast_shadows || RSG::storage->material_casts_shadows(p_instance->material_overlay);
+				is_animated = is_animated || RSG::storage->material_is_animated(p_instance->material_overlay);
+				_update_instance_shader_parameters_from_material(isparams, p_instance->instance_shader_parameters, p_instance->material_overlay);
+			}
+
 			if (can_cast_shadows != geom->can_cast_shadows) {
 				//ability to cast shadows change, let lights now
 				for (Set<Instance *>::Element *E = geom->lights.front(); E; E = E->next()) {
@@ -3897,6 +3921,7 @@ bool RendererSceneCull::free(RID p_rid) {
 		instance_set_scenario(p_rid, RID());
 		instance_set_base(p_rid, RID());
 		instance_geometry_set_material_override(p_rid, RID());
+		instance_geometry_set_material_overlay(p_rid, RID());
 		instance_attach_skeleton(p_rid, RID());
 
 		if (instance->instance_allocated_shader_parameters) {
