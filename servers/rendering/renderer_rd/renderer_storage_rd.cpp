@@ -4138,6 +4138,7 @@ void RendererStorageRD::particles_set_use_local_coordinates(RID p_particles, boo
 	ERR_FAIL_COND(!particles);
 
 	particles->use_local_coords = p_enable;
+	particles->dependency.changed_notify(DEPENDENCY_CHANGED_PARTICLES);
 }
 
 void RendererStorageRD::particles_set_fixed_fps(RID p_particles, int p_fps) {
