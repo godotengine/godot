@@ -621,7 +621,6 @@ private:
 		float color[4];
 		float custom[3];
 		float lifetime;
-		uint32_t pad[3];
 	};
 
 	struct ParticlesFrameParams {
