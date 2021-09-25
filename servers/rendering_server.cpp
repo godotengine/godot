@@ -1476,12 +1476,12 @@ ShaderLanguage::DataType RenderingServer::global_variable_type_get_shader_dataty
 	}
 }
 
-RenderingDevice *RenderingServer::get_rendering_device() const {
+Ref<RenderingDevice> RenderingServer::get_rendering_device() const {
 	// return the rendering device we're using globally
 	return RenderingDevice::get_singleton();
 }
 
-RenderingDevice *RenderingServer::create_local_rendering_device() const {
+Ref<RenderingDevice> RenderingServer::create_local_rendering_device() const {
 	return RenderingDevice::get_singleton()->create_local_device();
 }
 

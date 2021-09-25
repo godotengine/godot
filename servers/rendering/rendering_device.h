@@ -50,8 +50,8 @@ class RDPipelineColorBlendState;
 class RDFramebufferPass;
 class RDPipelineSpecializationConstant;
 
-class RenderingDevice : public Object {
-	GDCLASS(RenderingDevice, Object)
+class RenderingDevice : public RefCounted {
+	GDCLASS(RenderingDevice, RefCounted)
 public:
 	enum DeviceFamily {
 		DEVICE_UNKNOWN,
@@ -131,7 +131,7 @@ private:
 	static ShaderCacheFunction cache_function;
 	static ShaderSPIRVGetCacheKeyFunction get_spirv_cache_key_function;
 
-	static RenderingDevice *singleton;
+	static Ref<RenderingDevice> singleton;
 
 protected:
 	static void _bind_methods();
@@ -1188,7 +1188,7 @@ public:
 
 	virtual uint64_t get_memory_usage(MemoryType p_type) const = 0;
 
-	virtual RenderingDevice *create_local_device() = 0;
+	virtual Ref<RenderingDevice> create_local_device() = 0;
 
 	virtual void set_resource_name(RID p_id, const String p_name) = 0;
 
@@ -1202,7 +1202,7 @@ public:
 
 	virtual uint64_t get_driver_resource(DriverResource p_resource, RID p_rid = RID(), uint64_t p_index = 0) = 0;
 
-	static RenderingDevice *get_singleton();
+	static Ref<RenderingDevice> get_singleton();
 	RenderingDevice();
 
 protected:

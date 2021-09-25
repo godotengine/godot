@@ -274,7 +274,7 @@ Lightmapper::BakeError LightmapperRD::_blit_meshes_into_atlas(int p_max_texture_
 	return BAKE_OK;
 }
 
-void LightmapperRD::_create_acceleration_structures(RenderingDevice *rd, Size2i atlas_size, int atlas_slices, AABB &bounds, int grid_size, Vector<Probe> &probe_positions, GenerateProbes p_generate_probes, Vector<int> &slice_triangle_count, Vector<int> &slice_seam_count, RID &vertex_buffer, RID &triangle_buffer, RID &lights_buffer, RID &triangle_cell_indices_buffer, RID &probe_positions_buffer, RID &grid_texture, RID &seams_buffer, BakeStepFunc p_step_function, void *p_bake_userdata) {
+void LightmapperRD::_create_acceleration_structures(Ref<RenderingDevice> rd, Size2i atlas_size, int atlas_slices, AABB &bounds, int grid_size, Vector<Probe> &probe_positions, GenerateProbes p_generate_probes, Vector<int> &slice_triangle_count, Vector<int> &slice_seam_count, RID &vertex_buffer, RID &triangle_buffer, RID &lights_buffer, RID &triangle_cell_indices_buffer, RID &probe_positions_buffer, RID &grid_texture, RID &seams_buffer, BakeStepFunc p_step_function, void *p_bake_userdata) {
 	HashMap<Vertex, uint32_t, VertexHash> vertex_map;
 
 	//fill triangles array and vertex array
@@ -541,7 +541,7 @@ void LightmapperRD::_create_acceleration_structures(RenderingDevice *rd, Size2i 
 	}
 }
 
-void LightmapperRD::_raster_geometry(RenderingDevice *rd, Size2i atlas_size, int atlas_slices, int grid_size, AABB bounds, float p_bias, Vector<int> slice_triangle_count, RID position_tex, RID unocclude_tex, RID normal_tex, RID raster_depth_buffer, RID rasterize_shader, RID raster_base_uniform) {
+void LightmapperRD::_raster_geometry(Ref<RenderingDevice> rd, Size2i atlas_size, int atlas_slices, int grid_size, AABB bounds, float p_bias, Vector<int> slice_triangle_count, RID position_tex, RID unocclude_tex, RID normal_tex, RID raster_depth_buffer, RID rasterize_shader, RID raster_base_uniform) {
 	Vector<RID> framebuffers;
 
 	for (int i = 0; i < atlas_slices; i++) {
@@ -638,7 +638,7 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 	}
 #endif
 
-	RenderingDevice *rd = RenderingDevice::get_singleton()->create_local_device();
+	Ref<RenderingDevice> rd = RenderingDevice::get_singleton()->create_local_device();
 
 	RID albedo_array_tex;
 	RID emission_array_tex;
@@ -780,8 +780,6 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 
 		FREE_TEXTURES
 		FREE_BUFFERS
-
-		memdelete(rd);
 	}
 	ERR_FAIL_COND_V(err != OK, BAKE_ERROR_LIGHTMAP_CANT_PRE_BAKE_MESHES);
 
@@ -923,7 +921,6 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 		FREE_TEXTURES
 		FREE_BUFFERS
 		FREE_RASTER_RESOURCES
-		memdelete(rd);
 		compute_shader->print_errors("compute_shader");
 	}
 	ERR_FAIL_COND_V(err != OK, BAKE_ERROR_LIGHTMAP_CANT_PRE_BAKE_MESHES);
@@ -1485,7 +1482,6 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 		FREE_BUFFERS
 		FREE_RASTER_RESOURCES
 		FREE_COMPUTE_RESOURCES
-		memdelete(rd);
 		blendseams_shader->print_errors("blendseams_shader");
 	}
 	ERR_FAIL_COND_V(err != OK, BAKE_ERROR_LIGHTMAP_CANT_PRE_BAKE_MESHES);
@@ -1664,8 +1660,6 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 	FREE_RASTER_RESOURCES
 	FREE_COMPUTE_RESOURCES
 	FREE_BLENDSEAMS_RESOURCES
-
-	memdelete(rd);
 
 	return BAKE_OK;
 }

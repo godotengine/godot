@@ -9323,7 +9323,7 @@ void RenderingDeviceVulkan::finalize() {
 	ERR_FAIL_COND(reverse_dependency_map.size());
 }
 
-RenderingDevice *RenderingDeviceVulkan::create_local_device() {
+Ref<RenderingDevice> RenderingDeviceVulkan::create_local_device() {
 	RenderingDeviceVulkan *rd = memnew(RenderingDeviceVulkan);
 	rd->initialize(context, true);
 	return rd;

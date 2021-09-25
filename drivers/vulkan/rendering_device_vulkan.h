@@ -1213,7 +1213,7 @@ public:
 
 	virtual uint32_t get_frame_delay() const;
 
-	virtual RenderingDevice *create_local_device();
+	virtual Ref<RenderingDevice> create_local_device();
 
 	virtual uint64_t get_memory_usage(MemoryType p_type) const;
 

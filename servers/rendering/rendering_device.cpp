@@ -32,9 +32,9 @@
 
 #include "rendering_device_binds.h"
 
-RenderingDevice *RenderingDevice::singleton = nullptr;
+Ref<RenderingDevice> RenderingDevice::singleton = Ref<RenderingDevice>();
 
-RenderingDevice *RenderingDevice::get_singleton() {
+Ref<RenderingDevice> RenderingDevice::get_singleton() {
 	return singleton;
 }
 
@@ -978,7 +978,7 @@ void RenderingDevice::_bind_methods() {
 }
 
 RenderingDevice::RenderingDevice() {
-	if (singleton == nullptr) { // there may be more rendering devices later
-		singleton = this;
+	if (singleton.is_null()) { // there may be more rendering devices later
+		singleton.reference_ptr(this);
 	}
 }
