@@ -926,11 +926,11 @@ void TileSetAtlasSourceEditor::_tile_atlas_control_gui_input(const Ref<InputEven
 							can_grow[i] |= (i % 2 == 0) ? size_in_atlas.y > 1 : size_in_atlas.x > 1;
 						}
 						for (int i = 0; i < 4; i++) {
-							Vector2 pos = rect.position + Vector2(rect.size.x, rect.size.y) * coords[i];
+							Vector2 pos = rect.position + rect.size * coords[i];
 							if (can_grow[i] && can_grow[(i + 3) % 4] && Rect2(pos, zoomed_size).has_point(mouse_local_pos)) {
 								cursor_shape = (i % 2) ? CURSOR_BDIAGSIZE : CURSOR_FDIAGSIZE;
 							}
-							Vector2 next_pos = rect.position + Vector2(rect.size.x, rect.size.y) * coords[(i + 1) % 4];
+							Vector2 next_pos = rect.position + rect.size * coords[(i + 1) % 4];
 							if (can_grow[i] && Rect2((pos + next_pos) / 2.0, zoomed_size).has_point(mouse_local_pos)) {
 								cursor_shape = (i % 2) ? CURSOR_HSIZE : CURSOR_VSIZE;
 							}
@@ -1136,7 +1136,7 @@ void TileSetAtlasSourceEditor::_tile_atlas_control_gui_input(const Ref<InputEven
 									can_grow[i] |= (i % 2 == 0) ? size_in_atlas.y > 1 : size_in_atlas.x > 1;
 								}
 								for (int i = 0; i < 4; i++) {
-									Vector2 pos = rect.position + Vector2(rect.size.x, rect.size.y) * coords[i];
+									Vector2 pos = rect.position + rect.size * coords[i];
 									if (can_grow[i] && can_grow[(i + 3) % 4] && Rect2(pos, zoomed_size).has_point(mouse_local_pos)) {
 										drag_type = (DragType)((int)DRAG_TYPE_RESIZE_TOP_LEFT + i * 2);
 										drag_start_mouse_pos = mouse_local_pos;
@@ -1145,7 +1145,7 @@ void TileSetAtlasSourceEditor::_tile_atlas_control_gui_input(const Ref<InputEven
 										drag_start_tile_shape = Rect2i(selected.tile, tile_set_atlas_source->get_tile_size_in_atlas(selected.tile));
 										cursor_shape = (i % 2) ? CURSOR_BDIAGSIZE : CURSOR_FDIAGSIZE;
 									}
-									Vector2 next_pos = rect.position + Vector2(rect.size.x, rect.size.y) * coords[(i + 1) % 4];
+									Vector2 next_pos = rect.position + rect.size * coords[(i + 1) % 4];
 									if (can_grow[i] && Rect2((pos + next_pos) / 2.0, zoomed_size).has_point(mouse_local_pos)) {
 										drag_type = (DragType)((int)DRAG_TYPE_RESIZE_TOP + i * 2);
 										drag_start_mouse_pos = mouse_local_pos;
@@ -1614,13 +1614,13 @@ void TileSetAtlasSourceEditor::_tile_atlas_control_draw() {
 					can_grow[i] |= (i % 2 == 0) ? size_in_atlas.y > 1 : size_in_atlas.x > 1;
 				}
 				for (int i = 0; i < 4; i++) {
-					Vector2 pos = rect.position + Vector2(rect.size.x, rect.size.y) * coords[i];
+					Vector2 pos = rect.position + rect.size * coords[i];
 					if (can_grow[i] && can_grow[(i + 3) % 4]) {
 						tile_atlas_control->draw_texture_rect(resize_handle, Rect2(pos, zoomed_size), false);
 					} else {
 						tile_atlas_control->draw_texture_rect(resize_handle_disabled, Rect2(pos, zoomed_size), false);
 					}
-					Vector2 next_pos = rect.position + Vector2(rect.size.x, rect.size.y) * coords[(i + 1) % 4];
+					Vector2 next_pos = rect.position + rect.size * coords[(i + 1) % 4];
 					if (can_grow[i]) {
 						tile_atlas_control->draw_texture_rect(resize_handle, Rect2((pos + next_pos) / 2.0, zoomed_size), false);
 					} else {

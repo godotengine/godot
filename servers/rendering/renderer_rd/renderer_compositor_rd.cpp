@@ -197,7 +197,7 @@ void RendererCompositorRD::set_boot_image(const Ref<Image> &p_image, const Color
 		}
 	} else {
 		screenrect = imgrect;
-		screenrect.position += ((Size2(window_size.width, window_size.height) - screenrect.size) / 2.0).floor();
+		screenrect.position += ((window_size - screenrect.size) / 2.0).floor();
 	}
 
 	screenrect.position /= window_size;

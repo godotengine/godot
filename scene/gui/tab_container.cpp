@@ -79,7 +79,7 @@ void TabContainer::gui_input(const Ref<InputEvent> &p_event) {
 	Popup *popup = get_popup();
 
 	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_LEFT) {
-		Point2 pos(mb->get_position().x, mb->get_position().y);
+		Point2 pos = mb->get_position();
 		Size2 size = get_size();
 
 		// Click must be on tabs in the tab header area.
@@ -190,7 +190,7 @@ void TabContainer::gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseMotion> mm = p_event;
 
 	if (mm.is_valid()) {
-		Point2 pos(mm->get_position().x, mm->get_position().y);
+		Point2 pos = mm->get_position();
 		Size2 size = get_size();
 
 		// Mouse must be on tabs in the tab header area.

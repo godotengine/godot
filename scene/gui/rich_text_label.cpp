@@ -2378,8 +2378,7 @@ void RichTextLabel::add_image(const Ref<Texture2D> &p_image, const int p_width, 
 			item->size.width = p_image->get_width() * p_height / p_image->get_height();
 		} else {
 			// keep original width and height
-			item->size.height = p_image->get_height();
-			item->size.width = p_image->get_width();
+			item->size = p_image->get_size();
 		}
 	}
 
