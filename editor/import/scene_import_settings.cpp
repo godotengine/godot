@@ -413,8 +413,30 @@ void SceneImportSettings::_update_view_gizmos() {
 	}
 	for (const KeyValue<String, NodeData> &e : node_map) {
 		bool generate_collider = false;
+		bool use_default_collider_settings = true;
+
 		if (e.value.settings.has(SNAME("generate/physics"))) {
-			generate_collider = e.value.settings[SNAME("generate/physics")];
+			const ResourceImporterScene::MeshPhysicsOverride mesh_physics_override_settings =
+					(ResourceImporterScene::MeshPhysicsOverride)e.value.settings[SNAME("generate/physics")].operator int();
+
+			switch (mesh_physics_override_settings) {
+				case ResourceImporterScene::MESH_PHYSICS_OVERRIDE_ENABLE: {
+					generate_collider = true;
+					use_default_collider_settings = false;
+				} break;
+				case ResourceImporterScene::MESH_PHYSICS_OVERRIDE_DISABLE: {
+					generate_collider = false;
+				} break;
+				default: {
+					if (defaults[SNAME("nodes/generate_physics")]) {
+						generate_collider = true;
+					}
+				} break;
+			}
+		} else {
+			if (defaults[SNAME("nodes/generate_physics")]) {
+				generate_collider = true;
+			}
 		}
 
 		MeshInstance3D *mesh_node = Object::cast_to<MeshInstance3D>(e.value.node);
@@ -433,8 +455,8 @@ void SceneImportSettings::_update_view_gizmos() {
 			// This collider_view doesn't have a mesh so we need to generate a new one.
 
 			// Generate the mesh collider.
-			Vector<Ref<Shape3D>> shapes = ResourceImporterScene::get_collision_shapes(mesh_node->get_mesh(), e.value.settings);
-			const Transform3D transform = ResourceImporterScene::get_collision_shapes_transform(e.value.settings);
+			Vector<Ref<Shape3D>> shapes = ResourceImporterScene::get_collision_shapes(mesh_node->get_mesh(), use_default_collider_settings ? defaults : e.value.settings);
+			const Transform3D transform = ResourceImporterScene::get_collision_shapes_transform(use_default_collider_settings ? defaults : e.value.settings);
 
 			Ref<ArrayMesh> collider_view_mesh;
 			collider_view_mesh.instantiate();

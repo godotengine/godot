@@ -283,6 +283,16 @@ bool ResourceImporterScene::get_option_visibility(const String &p_path, const St
 		return false;
 	}
 
+	bool physics_option_visible = false;
+	if (get_physics_option_visibility(
+				(p_options.has("nodes/generate_physics") &&
+						p_options["nodes/generate_physics"].operator bool()),
+				p_option,
+				p_options,
+				&physics_option_visible)) {
+		return physics_option_visible;
+	}
+
 	for (int i = 0; i < post_importer_plugins.size(); i++) {
 		Variant ret = post_importer_plugins.write[i]->get_option_visibility(p_path, animation_importer, p_option, p_options);
 		if (ret.get_type() == Variant::BOOL) {
@@ -704,10 +714,10 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, HashMap<R
 	return p_node;
 }
 
-Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, HashMap<Ref<ImporterMesh>, Vector<Ref<Shape3D>>> &collision_map, Pair<PackedVector3Array, PackedInt32Array> &r_occluder_arrays, HashSet<Ref<ImporterMesh>> &r_scanned_meshes, const Dictionary &p_node_data, const Dictionary &p_material_data, const Dictionary &p_animation_data, float p_animation_fps) {
+Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, HashMap<Ref<ImporterMesh>, Vector<Ref<Shape3D>>> &collision_map, Pair<PackedVector3Array, PackedInt32Array> &r_occluder_arrays, const HashMap<StringName, Variant> &p_options, HashSet<Ref<ImporterMesh>> &r_scanned_meshes, const Dictionary &p_node_data, const Dictionary &p_material_data, const Dictionary &p_animation_data, float p_animation_fps) {
 	// children first
 	for (int i = 0; i < p_node->get_child_count(); i++) {
-		Node *r = _post_fix_node(p_node->get_child(i), p_root, collision_map, r_occluder_arrays, r_scanned_meshes, p_node_data, p_material_data, p_animation_data, p_animation_fps);
+		Node *r = _post_fix_node(p_node->get_child(i), p_root, collision_map, r_occluder_arrays, p_options, r_scanned_meshes, p_node_data, p_material_data, p_animation_data, p_animation_fps);
 		if (!r) {
 			i--; //was erased
 		}
@@ -780,89 +790,107 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, HashMap<
 				r_scanned_meshes.insert(m);
 			}
 
-			if (node_settings.has("generate/physics")) {
-				int mesh_physics_mode = MeshPhysicsMode::MESH_PHYSICS_DISABLED;
+			MeshPhysicsOverride mesh_physics_override_mode = MESH_PHYSICS_OVERRIDE_DEFAULT;
 
-				const bool generate_collider = node_settings["generate/physics"];
-				if (generate_collider) {
-					mesh_physics_mode = MeshPhysicsMode::MESH_PHYSICS_MESH_AND_STATIC_COLLIDER;
-					if (node_settings.has("physics/body_type")) {
-						const BodyType body_type = (BodyType)node_settings["physics/body_type"].operator int();
-						switch (body_type) {
-							case BODY_TYPE_STATIC:
-								mesh_physics_mode = MeshPhysicsMode::MESH_PHYSICS_MESH_AND_STATIC_COLLIDER;
-								break;
-							case BODY_TYPE_DYNAMIC:
-								mesh_physics_mode = MeshPhysicsMode::MESH_PHYSICS_RIGID_BODY_AND_MESH;
-								break;
-							case BODY_TYPE_AREA:
-								mesh_physics_mode = MeshPhysicsMode::MESH_PHYSICS_AREA_ONLY;
-								break;
-						}
+			if (node_settings.has("generate/physics")) {
+				mesh_physics_override_mode = (MeshPhysicsOverride)node_settings["generate/physics"].operator int();
+			}
+
+			MeshPhysicsMode mesh_physics_mode = MESH_PHYSICS_DISABLED;
+			if (mesh_physics_override_mode == MESH_PHYSICS_OVERRIDE_ENABLE) {
+				mesh_physics_mode = get_mesh_physics_mode(node_settings);
+			} else if (mesh_physics_override_mode == MESH_PHYSICS_OVERRIDE_DEFAULT) {
+				if (p_options.has("nodes/generate_physics")) {
+					if ((NavMeshMode)p_options["nodes/generate_physics"].operator bool()) {
+						mesh_physics_mode = get_mesh_physics_mode(p_options);
 					}
 				}
+			}
 
-				if (mesh_physics_mode != MeshPhysicsMode::MESH_PHYSICS_DISABLED) {
-					Vector<Ref<Shape3D>> shapes;
-					if (collision_map.has(m)) {
-						shapes = collision_map[m];
-					} else {
+			if (mesh_physics_mode != MESH_PHYSICS_DISABLED) {
+				Vector<Ref<Shape3D>> shapes;
+				if (collision_map.has(m)) {
+					shapes = collision_map[m];
+				} else {
+					if (mesh_physics_override_mode == MESH_PHYSICS_OVERRIDE_ENABLE) {
 						shapes = get_collision_shapes(
 								m->get_mesh(),
 								node_settings);
+					} else {
+						shapes = get_collision_shapes(
+								m->get_mesh(),
+								p_options);
+					}
+				}
+
+				if (shapes.size()) {
+					CollisionObject3D *base = nullptr;
+					switch (mesh_physics_mode) {
+						case MESH_PHYSICS_MESH_AND_STATIC_COLLIDER: {
+							StaticBody3D *col = memnew(StaticBody3D);
+							p_node->add_child(col);
+							col->set_owner(p_node->get_owner());
+							if (mesh_physics_override_mode == MESH_PHYSICS_OVERRIDE_ENABLE) {
+								col->set_transform(get_collision_shapes_transform(node_settings));
+							} else {
+								col->set_transform(get_collision_shapes_transform(p_options));
+							}
+							base = col;
+						} break;
+						case MESH_PHYSICS_RIGID_BODY_AND_MESH: {
+							RigidDynamicBody3D *rigid_body = memnew(RigidDynamicBody3D);
+							rigid_body->set_name(p_node->get_name());
+							p_node->replace_by(rigid_body);
+							if (mesh_physics_override_mode == MESH_PHYSICS_OVERRIDE_ENABLE) {
+								rigid_body->set_transform(mi->get_transform() * get_collision_shapes_transform(node_settings));
+							} else {
+								rigid_body->set_transform(mi->get_transform() * get_collision_shapes_transform(p_options));
+							}
+							p_node = rigid_body;
+							mi->set_transform(Transform3D());
+							rigid_body->add_child(mi);
+							mi->set_owner(rigid_body->get_owner());
+							base = rigid_body;
+						} break;
+						case MESH_PHYSICS_STATIC_COLLIDER_ONLY: {
+							StaticBody3D *col = memnew(StaticBody3D);
+							if (mesh_physics_override_mode == MESH_PHYSICS_OVERRIDE_ENABLE) {
+								col->set_transform(mi->get_transform() * get_collision_shapes_transform(node_settings));
+							} else {
+								col->set_transform(mi->get_transform() * get_collision_shapes_transform(p_options));
+							}
+							col->set_name(p_node->get_name());
+							p_node->replace_by(col);
+							memdelete(p_node);
+							p_node = col;
+							base = col;
+						} break;
+						case MESH_PHYSICS_AREA_ONLY: {
+							Area3D *area = memnew(Area3D);
+							if (mesh_physics_override_mode == MESH_PHYSICS_OVERRIDE_ENABLE) {
+								area->set_transform(mi->get_transform() * get_collision_shapes_transform(node_settings));
+							} else {
+								area->set_transform(mi->get_transform() * get_collision_shapes_transform(p_options));
+							}
+							area->set_name(p_node->get_name());
+							p_node->replace_by(area);
+							memdelete(p_node);
+							p_node = area;
+							base = area;
+
+						} break;
+						default: {
+						}
 					}
 
-					if (shapes.size()) {
-						CollisionObject3D *base = nullptr;
-						switch (mesh_physics_mode) {
-							case MESH_PHYSICS_MESH_AND_STATIC_COLLIDER: {
-								StaticBody3D *col = memnew(StaticBody3D);
-								p_node->add_child(col, true);
-								col->set_owner(p_node->get_owner());
-								col->set_transform(get_collision_shapes_transform(node_settings));
-								base = col;
-							} break;
-							case MESH_PHYSICS_RIGID_BODY_AND_MESH: {
-								RigidDynamicBody3D *rigid_body = memnew(RigidDynamicBody3D);
-								rigid_body->set_name(p_node->get_name());
-								p_node->replace_by(rigid_body);
-								rigid_body->set_transform(mi->get_transform() * get_collision_shapes_transform(node_settings));
-								p_node = rigid_body;
-								mi->set_transform(Transform3D());
-								rigid_body->add_child(mi, true);
-								mi->set_owner(rigid_body->get_owner());
-								base = rigid_body;
-							} break;
-							case MESH_PHYSICS_STATIC_COLLIDER_ONLY: {
-								StaticBody3D *col = memnew(StaticBody3D);
-								col->set_transform(mi->get_transform() * get_collision_shapes_transform(node_settings));
-								col->set_name(p_node->get_name());
-								p_node->replace_by(col);
-								memdelete(p_node);
-								p_node = col;
-								base = col;
-							} break;
-							case MESH_PHYSICS_AREA_ONLY: {
-								Area3D *area = memnew(Area3D);
-								area->set_transform(mi->get_transform() * get_collision_shapes_transform(node_settings));
-								area->set_name(p_node->get_name());
-								p_node->replace_by(area);
-								memdelete(p_node);
-								p_node = area;
-								base = area;
+					int idx = 0;
+					for (const Ref<Shape3D> &E : shapes) {
+						CollisionShape3D *cshape = memnew(CollisionShape3D);
+						cshape->set_shape(E);
+						base->add_child(cshape);
 
-							} break;
-						}
-
-						int idx = 0;
-						for (const Ref<Shape3D> &E : shapes) {
-							CollisionShape3D *cshape = memnew(CollisionShape3D);
-							cshape->set_shape(E);
-							base->add_child(cshape, true);
-
-							cshape->set_owner(base->get_owner());
-							idx++;
-						}
+						cshape->set_owner(base->get_owner());
+						idx++;
 					}
 				}
 			}
@@ -876,24 +904,44 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, HashMap<
 		Ref<ImporterMesh> m = mi->get_mesh();
 
 		if (m.is_valid()) {
+			NavMeshOverride navmesh_override_mode = NAVMESH_OVERRIDE_DEFAULT;
+
 			if (node_settings.has("generate/navmesh")) {
-				int navmesh_mode = node_settings["generate/navmesh"];
+				navmesh_override_mode = (NavMeshOverride)node_settings["generate/navmesh"].operator int();
+			}
 
-				if (navmesh_mode != NAVMESH_DISABLED) {
-					NavigationRegion3D *nmi = memnew(NavigationRegion3D);
+			NavMeshMode navmesh_mode = NAVMESH_DISABLED;
 
-					Ref<NavigationMesh> nmesh = m->create_navigation_mesh();
-					nmi->set_navigation_mesh(nmesh);
-
-					if (navmesh_mode == NAVMESH_NAVMESH_ONLY) {
-						nmi->set_transform(mi->get_transform());
-						p_node->replace_by(nmi);
-						memdelete(p_node);
-						p_node = nmi;
-					} else {
-						mi->add_child(nmi, true);
-						nmi->set_owner(mi->get_owner());
+			switch (navmesh_override_mode) {
+				case NAVMESH_OVERRIDE_DEFAULT: {
+					if (p_options.has("nodes/generate_navmesh")) {
+						navmesh_mode = (NavMeshMode)p_options["nodes/generate_navmesh"].operator int();
 					}
+				} break;
+				case NAVMESH_OVERRIDE_MESH_AND_NAVMESH: {
+					navmesh_mode = NAVMESH_MESH_AND_NAVMESH;
+				} break;
+				case NAVMESH_OVERRIDE_NAVMESH_ONLY: {
+					navmesh_mode = NAVMESH_NAVMESH_ONLY;
+				} break;
+				default: {
+				}
+			}
+
+			if (navmesh_mode != NAVMESH_DISABLED) {
+				NavigationRegion3D *nmi = memnew(NavigationRegion3D);
+
+				Ref<NavigationMesh> nmesh = m->create_navigation_mesh();
+				nmi->set_navigation_mesh(nmesh);
+
+				if (navmesh_mode == NAVMESH_NAVMESH_ONLY) {
+					nmi->set_transform(mi->get_transform());
+					p_node->replace_by(nmi);
+					memdelete(p_node);
+					p_node = nmi;
+				} else {
+					mi->add_child(nmi);
+					nmi->set_owner(mi->get_owner());
 				}
 			}
 		}
@@ -1264,6 +1312,105 @@ void ResourceImporterScene::_compress_animations(AnimationPlayer *anim, int p_pa
 	}
 }
 
+void ResourceImporterScene::get_physics_import_options(List<ImportOption> *r_options) const {
+	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "physics/body_type", PROPERTY_HINT_ENUM, "Static,Dynamic,Area"), 0));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "physics/shape_type", PROPERTY_HINT_ENUM, "Decompose Convex,Simple Convex,Trimesh,Box,Sphere,Cylinder,Capsule", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), 0));
+
+	// Decomposition
+	Mesh::ConvexDecompositionSettings decomposition_default;
+	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "decomposition/advanced", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), false));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "decomposition/precision", PROPERTY_HINT_RANGE, "1,10,1"), 5));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "decomposition/max_concavity", PROPERTY_HINT_RANGE, "0.0,1.0,0.001", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), decomposition_default.max_concavity));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "decomposition/symmetry_planes_clipping_bias", PROPERTY_HINT_RANGE, "0.0,1.0,0.001", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), decomposition_default.symmetry_planes_clipping_bias));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "decomposition/revolution_axes_clipping_bias", PROPERTY_HINT_RANGE, "0.0,1.0,0.001", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), decomposition_default.revolution_axes_clipping_bias));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "decomposition/min_volume_per_convex_hull", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), decomposition_default.min_volume_per_convex_hull));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "decomposition/resolution", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), decomposition_default.resolution));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "decomposition/max_num_vertices_per_convex_hull", PROPERTY_HINT_RANGE, "5,512,1", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), decomposition_default.max_num_vertices_per_convex_hull));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "decomposition/plane_downsampling", PROPERTY_HINT_RANGE, "1,16,1", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), decomposition_default.plane_downsampling));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "decomposition/convexhull_downsampling", PROPERTY_HINT_RANGE, "1,16,1", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), decomposition_default.convexhull_downsampling));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "decomposition/normalize_mesh", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), decomposition_default.normalize_mesh));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "decomposition/mode", PROPERTY_HINT_ENUM, "Voxel,Tetrahedron", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), static_cast<int>(decomposition_default.mode)));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "decomposition/convexhull_approximation", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), decomposition_default.convexhull_approximation));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "decomposition/max_convex_hulls", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), decomposition_default.max_convex_hulls));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "decomposition/project_hull_vertices", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), decomposition_default.project_hull_vertices));
+
+	// Primitives: Box, Sphere, Cylinder, Capsule.
+	r_options->push_back(ImportOption(PropertyInfo(Variant::VECTOR3, "primitive/size", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), Vector3(2.0, 2.0, 2.0)));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "primitive/height", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), 1.0));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "primitive/radius", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), 1.0));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::VECTOR3, "primitive/position", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), Vector3()));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::VECTOR3, "primitive/rotation", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), Vector3()));
+}
+
+bool ResourceImporterScene::get_physics_option_visibility(const bool p_generate_physics, const String &p_option, const HashMap<StringName, Variant> &p_options, bool *p_physics_option_visible) const {
+	if (p_option == "physics/body_type" ||
+			p_option == "physics/shape_type") {
+		// Show if need to generate collisions.
+		*p_physics_option_visible = p_generate_physics;
+		return true;
+	}
+
+	if (p_option.find("decomposition/") >= 0) {
+		// Show if need to generate collisions.
+		if (p_generate_physics &&
+				// Show if convex is enabled.
+				p_options["physics/shape_type"] == Variant(SHAPE_TYPE_DECOMPOSE_CONVEX)) {
+			if (p_option == "decomposition/advanced") {
+				*p_physics_option_visible = true;
+				return true;
+			}
+
+			const bool decomposition_advanced =
+					p_options.has("decomposition/advanced") &&
+					p_options["decomposition/advanced"].operator bool();
+
+			if (p_option == "decomposition/precision") {
+				*p_physics_option_visible = !decomposition_advanced;
+			} else {
+				*p_physics_option_visible = decomposition_advanced;
+			}
+		} else {
+			*p_physics_option_visible = false;
+		}
+
+		return true;
+	}
+
+	if (p_option == "primitive/position" || p_option == "primitive/rotation") {
+		const ShapeType physics_shape = (ShapeType)p_options["physics/shape_type"].operator int();
+		*p_physics_option_visible = p_generate_physics &&
+				physics_shape >= SHAPE_TYPE_BOX;
+
+		return true;
+	}
+
+	if (p_option == "primitive/size") {
+		const ShapeType physics_shape = (ShapeType)p_options["physics/shape_type"].operator int();
+		*p_physics_option_visible = p_generate_physics &&
+				physics_shape == SHAPE_TYPE_BOX;
+
+		return true;
+	}
+
+	if (p_option == "primitive/radius") {
+		const ShapeType physics_shape = (ShapeType)p_options["physics/shape_type"].operator int();
+		*p_physics_option_visible = p_generate_physics && (physics_shape == SHAPE_TYPE_SPHERE || physics_shape == SHAPE_TYPE_CYLINDER || physics_shape == SHAPE_TYPE_CAPSULE);
+
+		return true;
+	}
+
+	if (p_option == "primitive/height") {
+		const ShapeType physics_shape = (ShapeType)p_options["physics/shape_type"].operator int();
+		*p_physics_option_visible = p_generate_physics &&
+				(physics_shape == SHAPE_TYPE_CYLINDER ||
+						physics_shape == SHAPE_TYPE_CAPSULE);
+
+		return true;
+	}
+
+	return false;
+}
+
 void ResourceImporterScene::get_internal_import_options(InternalImportCategory p_category, List<ImportOption> *r_options) const {
 	switch (p_category) {
 		case INTERNAL_IMPORT_CATEGORY_NODE: {
@@ -1271,35 +1418,10 @@ void ResourceImporterScene::get_internal_import_options(InternalImportCategory p
 		} break;
 		case INTERNAL_IMPORT_CATEGORY_MESH_3D_NODE: {
 			r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "import/skip_import", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), false));
-			r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "generate/physics", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), false));
-			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "generate/navmesh", PROPERTY_HINT_ENUM, "Disabled,Mesh + NavMesh,NavMesh Only"), 0));
-			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "physics/body_type", PROPERTY_HINT_ENUM, "Static,Dynamic,Area"), 0));
-			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "physics/shape_type", PROPERTY_HINT_ENUM, "Decompose Convex,Simple Convex,Trimesh,Box,Sphere,Cylinder,Capsule", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), 0));
+			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "generate/physics", PROPERTY_HINT_ENUM, "Default,Enable,Disable", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), false));
+			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "generate/navmesh", PROPERTY_HINT_ENUM, "Default,Disabled,Mesh + NavMesh,NavMesh Only"), 0));
 
-			// Decomposition
-			Mesh::ConvexDecompositionSettings decomposition_default;
-			r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "decomposition/advanced", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), false));
-			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "decomposition/precision", PROPERTY_HINT_RANGE, "1,10,1"), 5));
-			r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "decomposition/max_concavity", PROPERTY_HINT_RANGE, "0.0,1.0,0.001", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), decomposition_default.max_concavity));
-			r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "decomposition/symmetry_planes_clipping_bias", PROPERTY_HINT_RANGE, "0.0,1.0,0.001", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), decomposition_default.symmetry_planes_clipping_bias));
-			r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "decomposition/revolution_axes_clipping_bias", PROPERTY_HINT_RANGE, "0.0,1.0,0.001", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), decomposition_default.revolution_axes_clipping_bias));
-			r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "decomposition/min_volume_per_convex_hull", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), decomposition_default.min_volume_per_convex_hull));
-			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "decomposition/resolution", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), decomposition_default.resolution));
-			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "decomposition/max_num_vertices_per_convex_hull", PROPERTY_HINT_RANGE, "5,512,1", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), decomposition_default.max_num_vertices_per_convex_hull));
-			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "decomposition/plane_downsampling", PROPERTY_HINT_RANGE, "1,16,1", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), decomposition_default.plane_downsampling));
-			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "decomposition/convexhull_downsampling", PROPERTY_HINT_RANGE, "1,16,1", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), decomposition_default.convexhull_downsampling));
-			r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "decomposition/normalize_mesh", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), decomposition_default.normalize_mesh));
-			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "decomposition/mode", PROPERTY_HINT_ENUM, "Voxel,Tetrahedron", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), static_cast<int>(decomposition_default.mode)));
-			r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "decomposition/convexhull_approximation", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), decomposition_default.convexhull_approximation));
-			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "decomposition/max_convex_hulls", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), decomposition_default.max_convex_hulls));
-			r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "decomposition/project_hull_vertices", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), decomposition_default.project_hull_vertices));
-
-			// Primitives: Box, Sphere, Cylinder, Capsule.
-			r_options->push_back(ImportOption(PropertyInfo(Variant::VECTOR3, "primitive/size", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), Vector3(2.0, 2.0, 2.0)));
-			r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "primitive/height", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), 1.0));
-			r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "primitive/radius", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), 1.0));
-			r_options->push_back(ImportOption(PropertyInfo(Variant::VECTOR3, "primitive/position", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), Vector3()));
-			r_options->push_back(ImportOption(PropertyInfo(Variant::VECTOR3, "primitive/rotation", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), Vector3()));
+			get_physics_import_options(r_options);
 
 			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "generate/occluder", PROPERTY_HINT_ENUM, "Disabled,Mesh + Occluder,Occluder Only", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), 0));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "occluder/simplification_distance", PROPERTY_HINT_RANGE, "0.0,2.0,0.01", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), 0.1f));
@@ -1364,65 +1486,14 @@ bool ResourceImporterScene::get_internal_option_visibility(InternalImportCategor
 		case INTERNAL_IMPORT_CATEGORY_NODE: {
 		} break;
 		case INTERNAL_IMPORT_CATEGORY_MESH_3D_NODE: {
-			const bool generate_physics =
-					p_options.has("generate/physics") &&
-					p_options["generate/physics"].operator bool();
-
-			if (
-					p_option == "physics/body_type" ||
-					p_option == "physics/shape_type") {
-				// Show if need to generate collisions.
-				return generate_physics;
-			}
-
-			if (p_option.find("decomposition/") >= 0) {
-				// Show if need to generate collisions.
-				if (generate_physics &&
-						// Show if convex is enabled.
-						p_options["physics/shape_type"] == Variant(SHAPE_TYPE_DECOMPOSE_CONVEX)) {
-					if (p_option == "decomposition/advanced") {
-						return true;
-					}
-
-					const bool decomposition_advanced =
-							p_options.has("decomposition/advanced") &&
-							p_options["decomposition/advanced"].operator bool();
-
-					if (p_option == "decomposition/precision") {
-						return !decomposition_advanced;
-					} else {
-						return decomposition_advanced;
-					}
-				}
-
-				return false;
-			}
-
-			if (p_option == "primitive/position" || p_option == "primitive/rotation") {
-				const ShapeType physics_shape = (ShapeType)p_options["physics/shape_type"].operator int();
-				return generate_physics &&
-						physics_shape >= SHAPE_TYPE_BOX;
-			}
-
-			if (p_option == "primitive/size") {
-				const ShapeType physics_shape = (ShapeType)p_options["physics/shape_type"].operator int();
-				return generate_physics &&
-						physics_shape == SHAPE_TYPE_BOX;
-			}
-
-			if (p_option == "primitive/radius") {
-				const ShapeType physics_shape = (ShapeType)p_options["physics/shape_type"].operator int();
-				return generate_physics &&
-						(physics_shape == SHAPE_TYPE_SPHERE ||
-								physics_shape == SHAPE_TYPE_CYLINDER ||
-								physics_shape == SHAPE_TYPE_CAPSULE);
-			}
-
-			if (p_option == "primitive/height") {
-				const ShapeType physics_shape = (ShapeType)p_options["physics/shape_type"].operator int();
-				return generate_physics &&
-						(physics_shape == SHAPE_TYPE_CYLINDER ||
-								physics_shape == SHAPE_TYPE_CAPSULE);
+			bool physics_option_visible = false;
+			if (get_physics_option_visibility(
+						(p_options.has("generate/physics") &&
+								p_options["generate/physics"].operator int() == MESH_PHYSICS_OVERRIDE_ENABLE),
+						p_option,
+						p_options,
+						&physics_option_visible)) {
+				return physics_option_visible;
 			}
 
 			if (p_option == "occluder/simplification_distance") {
@@ -1462,6 +1533,16 @@ bool ResourceImporterScene::get_internal_option_visibility(InternalImportCategor
 			}
 		} break;
 		default: {
+			// Default applies to scene node
+			bool physics_option_visible = false;
+			if (get_physics_option_visibility(
+						(p_options.has("nodes/generate_physics") &&
+								p_options["nodes/generate_physics"].operator bool()),
+						p_option,
+						p_options,
+						&physics_option_visible)) {
+				return physics_option_visible;
+			}
 		}
 	}
 
@@ -1497,6 +1578,13 @@ bool ResourceImporterScene::get_internal_option_update_view_required(InternalImp
 		case INTERNAL_IMPORT_CATEGORY_ANIMATION_NODE: {
 		} break;
 		default: {
+			// Default covers global options
+			if (p_option == "nodes/generate_physics" ||
+					p_option == "physics/shape_type" ||
+					p_option.find("decomposition/") >= 0 ||
+					p_option.find("primitive/") >= 0) {
+				return true;
+			}
 		}
 	}
 
@@ -1527,6 +1615,11 @@ void ResourceImporterScene::get_import_options(const String &p_path, List<Import
 	}
 
 	r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "nodes/root_scale", PROPERTY_HINT_RANGE, "0.001,1000,0.001"), 1.0));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "nodes/generate_physics", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), false));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "nodes/generate_navmesh", PROPERTY_HINT_ENUM, "Disabled,Mesh + NavMesh,NavMesh Only"), 0));
+
+	get_physics_import_options(r_options);
+
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "meshes/ensure_tangents"), true));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "meshes/generate_lods"), true));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "meshes/create_shadow_meshes"), true));
@@ -2005,7 +2098,7 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 		post_importer_plugins.write[i]->pre_process(scene, p_options);
 	}
 
-	_post_fix_node(scene, scene, collision_map, occluder_arrays, scanned_meshes, node_data, material_data, animation_data, fps);
+	_post_fix_node(scene, scene, collision_map, occluder_arrays, p_options, scanned_meshes, node_data, material_data, animation_data, fps);
 
 	String root_type = p_options["nodes/root_type"];
 	root_type = root_type.split(" ")[0]; // full root_type is "ClassName (filename.gd)" for a script global class.

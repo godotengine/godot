@@ -211,6 +211,8 @@ class ResourceImporterScene : public ResourceImporter {
 	void _generate_meshes(Node *p_node, const Dictionary &p_mesh_data, bool p_generate_lods, bool p_create_shadow_meshes, LightBakeMode p_light_bake_mode, float p_lightmap_texel_size, const Vector<uint8_t> &p_src_lightmap_cache, Vector<Vector<uint8_t>> &r_lightmap_caches);
 	void _add_shapes(Node *p_node, const Vector<Ref<Shape3D>> &p_shapes);
 
+	void get_physics_import_options(List<ImportOption> *r_options) const;
+	bool get_physics_option_visibility(const bool p_generate_physics, const String &p_option, const HashMap<StringName, Variant> &p_options, bool *p_physics_option_visible) const;
 	enum AnimationImportTracks {
 		ANIMATION_IMPORT_TRACKS_IF_PRESENT,
 		ANIMATION_IMPORT_TRACKS_IF_PRESENT_FOR_ALL,
@@ -252,6 +254,19 @@ public:
 	virtual int get_preset_count() const override;
 	virtual String get_preset_name(int p_idx) const override;
 
+	enum MeshPhysicsOverride {
+		MESH_PHYSICS_OVERRIDE_DEFAULT,
+		MESH_PHYSICS_OVERRIDE_ENABLE,
+		MESH_PHYSICS_OVERRIDE_DISABLE
+	};
+
+	enum NavMeshOverride {
+		NAVMESH_OVERRIDE_DEFAULT,
+		NAVMESH_OVERRIDE_DISABLED,
+		NAVMESH_OVERRIDE_MESH_AND_NAVMESH,
+		NAVMESH_OVERRIDE_NAVMESH_ONLY,
+	};
+
 	enum InternalImportCategory {
 		INTERNAL_IMPORT_CATEGORY_NODE = EditorScenePostImportPlugin::INTERNAL_IMPORT_CATEGORY_NODE,
 		INTERNAL_IMPORT_CATEGORY_MESH_3D_NODE = EditorScenePostImportPlugin::INTERNAL_IMPORT_CATEGORY_MESH_3D_NODE,
@@ -272,7 +287,7 @@ public:
 	virtual int get_import_order() const override { return ResourceImporter::IMPORT_ORDER_SCENE; }
 
 	Node *_pre_fix_node(Node *p_node, Node *p_root, HashMap<Ref<ImporterMesh>, Vector<Ref<Shape3D>>> &r_collision_map, Pair<PackedVector3Array, PackedInt32Array> *r_occluder_arrays, List<Pair<NodePath, Node *>> &r_node_renames);
-	Node *_post_fix_node(Node *p_node, Node *p_root, HashMap<Ref<ImporterMesh>, Vector<Ref<Shape3D>>> &collision_map, Pair<PackedVector3Array, PackedInt32Array> &r_occluder_arrays, HashSet<Ref<ImporterMesh>> &r_scanned_meshes, const Dictionary &p_node_data, const Dictionary &p_material_data, const Dictionary &p_animation_data, float p_animation_fps);
+	Node *_post_fix_node(Node *p_node, Node *p_root, HashMap<Ref<ImporterMesh>, Vector<Ref<Shape3D>>> &collision_map, Pair<PackedVector3Array, PackedInt32Array> &r_occluder_arrays, const HashMap<StringName, Variant> &p_options, HashSet<Ref<ImporterMesh>> &r_scanned_meshes, const Dictionary &p_node_data, const Dictionary &p_material_data, const Dictionary &p_animation_data, float p_animation_fps);
 
 	Ref<Animation> _save_animation_to_file(Ref<Animation> anim, bool p_save_to_file, String p_save_to_path, bool p_keep_custom_tracks);
 	void _create_clips(AnimationPlayer *anim, const Array &p_clips, bool p_bake_all);
@@ -288,6 +303,9 @@ public:
 	virtual bool can_import_threaded() const override { return false; }
 
 	ResourceImporterScene(bool p_animation_import = false);
+
+	template <class M>
+	static MeshPhysicsMode get_mesh_physics_mode(const M &p_options);
 
 	template <class M>
 	static Vector<Ref<Shape3D>> get_collision_shapes(const Ref<Mesh> &p_mesh, const M &p_options);
@@ -309,6 +327,25 @@ public:
 #include "scene/resources/capsule_shape_3d.h"
 #include "scene/resources/cylinder_shape_3d.h"
 #include "scene/resources/sphere_shape_3d.h"
+
+template <class M>
+ResourceImporterScene::MeshPhysicsMode ResourceImporterScene::get_mesh_physics_mode(const M &p_options) {
+	if (p_options.has("physics/body_type")) {
+		const BodyType body_type = (BodyType)p_options["physics/body_type"].operator int();
+		switch (body_type) {
+			case BODY_TYPE_STATIC:
+				return MeshPhysicsMode::MESH_PHYSICS_MESH_AND_STATIC_COLLIDER;
+			case BODY_TYPE_DYNAMIC:
+				return MeshPhysicsMode::MESH_PHYSICS_RIGID_BODY_AND_MESH;
+			case BODY_TYPE_AREA:
+				return MeshPhysicsMode::MESH_PHYSICS_AREA_ONLY;
+			default:
+				return MeshPhysicsMode::MESH_PHYSICS_MESH_AND_STATIC_COLLIDER;
+		}
+	}
+
+	return MeshPhysicsMode::MESH_PHYSICS_MESH_AND_STATIC_COLLIDER;
+}
 
 template <class M>
 Vector<Ref<Shape3D>> ResourceImporterScene::get_collision_shapes(const Ref<Mesh> &p_mesh, const M &p_options) {
