@@ -286,9 +286,9 @@ def build_legacygl_header(filename, include, class_suffix, output_attribs, gles2
     )
 
     fd.write(
-        """\t_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, const Transform& p_transform) {  _FU
+        """\t_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, const Transform3D& p_transform) {  _FU
 
-        const Transform &tr = p_transform;
+        const Transform3D &tr = p_transform;
 
         GLfloat matrix[16]={ /* build a 16x16 matrix */
             tr.basis.elements[0][0],
