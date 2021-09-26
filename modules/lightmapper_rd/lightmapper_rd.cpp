@@ -611,6 +611,61 @@ void LightmapperRD::_raster_geometry(RenderingDevice *rd, Size2i atlas_size, int
 	}
 }
 
+LightmapperRD::BakeError LightmapperRD::_dilate(RenderingDevice *rd, Ref<RDShaderFile> &compute_shader, RID &compute_base_uniform_set, PushConstant &push_constant, RID &source_light_tex, RID &dest_light_tex, const Size2i &atlas_size, int atlas_slices) {
+	Vector<RD::Uniform> uniforms;
+	{
+		{
+			RD::Uniform u;
+			u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
+			u.binding = 0;
+			u.ids.push_back(dest_light_tex);
+			uniforms.push_back(u);
+		}
+		{
+			RD::Uniform u;
+			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
+			u.binding = 1;
+			u.ids.push_back(source_light_tex);
+			uniforms.push_back(u);
+		}
+	}
+
+	RID compute_shader_dilate = rd->shader_create_from_spirv(compute_shader->get_spirv_stages("dilate"));
+	ERR_FAIL_COND_V(compute_shader_dilate.is_null(), BAKE_ERROR_LIGHTMAP_CANT_PRE_BAKE_MESHES); //internal check, should not happen
+	RID compute_shader_dilate_pipeline = rd->compute_pipeline_create(compute_shader_dilate);
+
+	RID dilate_uniform_set = rd->uniform_set_create(uniforms, compute_shader_dilate, 1);
+
+	RD::ComputeListID compute_list = rd->compute_list_begin();
+	rd->compute_list_bind_compute_pipeline(compute_list, compute_shader_dilate_pipeline);
+	rd->compute_list_bind_uniform_set(compute_list, compute_base_uniform_set, 0);
+	rd->compute_list_bind_uniform_set(compute_list, dilate_uniform_set, 1);
+	push_constant.region_ofs[0] = 0;
+	push_constant.region_ofs[1] = 0;
+	Vector3i group_size((atlas_size.x - 1) / 8 + 1, (atlas_size.y - 1) / 8 + 1, 1); //restore group size
+
+	for (int i = 0; i < atlas_slices; i++) {
+		push_constant.atlas_slice = i;
+		rd->compute_list_set_push_constant(compute_list, &push_constant, sizeof(PushConstant));
+		rd->compute_list_dispatch(compute_list, group_size.x, group_size.y, group_size.z);
+		//no barrier, let them run all together
+	}
+	rd->compute_list_end();
+	rd->free(compute_shader_dilate);
+
+#ifdef DEBUG_TEXTURES
+	for (int i = 0; i < atlas_slices; i++) {
+		Vector<uint8_t> s = rd->texture_get_data(light_accum_tex, i);
+		Ref<Image> img;
+		img.instantiate();
+		img->create(atlas_size.width, atlas_size.height, false, Image::FORMAT_RGBAH, s);
+		img->convert(Image::FORMAT_RGBA8);
+		img->save_png("res://5_dilated_" + itos(i) + ".png");
+	}
+#endif
+	return BAKE_OK;
+}
+
 LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_denoiser, int p_bounces, float p_bias, int p_max_texture_size, bool p_bake_sh, GenerateProbes p_generate_probes, const Ref<Image> &p_environment_panorama, const Basis &p_environment_transform, BakeStepFunc p_step_function, void *p_bake_userdata) {
 	if (p_step_function) {
 		p_step_function(0.0, TTR("Begin Bake"), p_bake_userdata, true);
@@ -943,11 +998,6 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 	ERR_FAIL_COND_V(compute_shader_secondary.is_null(), BAKE_ERROR_LIGHTMAP_CANT_PRE_BAKE_MESHES); //internal check, should not happen
 	RID compute_shader_secondary_pipeline = rd->compute_pipeline_create(compute_shader_secondary);
 
-	// Dilate
-	RID compute_shader_dilate = rd->shader_create_from_spirv(compute_shader->get_spirv_stages("dilate"));
-	ERR_FAIL_COND_V(compute_shader_dilate.is_null(), BAKE_ERROR_LIGHTMAP_CANT_PRE_BAKE_MESHES); //internal check, should not happen
-	RID compute_shader_dilate_pipeline = rd->compute_pipeline_create(compute_shader_dilate);
-
 	// Light probes
 	RID compute_shader_light_probes = rd->shader_create_from_spirv(compute_shader->get_spirv_stages("light_probes"));
 	ERR_FAIL_COND_V(compute_shader_light_probes.is_null(), BAKE_ERROR_LIGHTMAP_CANT_PRE_BAKE_MESHES); //internal check, should not happen
@@ -959,7 +1009,6 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 	rd->free(compute_shader_unocclude); \
 	rd->free(compute_shader_primary);   \
 	rd->free(compute_shader_secondary); \
-	rd->free(compute_shader_dilate);    \
 	rd->free(compute_shader_light_probes);
 
 	PushConstant push_constant;
@@ -1270,7 +1319,7 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 		push_constant.environment_xform[3] = 0.0f;
 	}
 
-	/* LIGHPROBES */
+	/* LIGHTPROBES */
 
 	RID light_probe_buffer;
 
@@ -1377,6 +1426,14 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 	}
 #endif
 
+	{
+		SWAP(light_accum_tex, light_accum_tex2);
+		BakeError error = _dilate(rd, compute_shader, compute_base_uniform_set, push_constant, light_accum_tex2, light_accum_tex, atlas_size, atlas_slices * (p_bake_sh ? 4 : 1));
+		if (unlikely(error != BAKE_OK)) {
+			return error;
+		}
+	}
+
 	/* DENOISE */
 
 	if (p_use_denoiser) {
@@ -1419,59 +1476,6 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 		img.instantiate();
 		img->create(atlas_size.width, atlas_size.height, false, Image::FORMAT_RGBAH, s);
 		img->save_exr("res://4_light_secondary_" + itos(i) + ".exr", false);
-	}
-#endif
-
-	/* DILATE LIGHTMAP */
-	{
-		SWAP(light_accum_tex, light_accum_tex2);
-
-		Vector<RD::Uniform> uniforms;
-		{
-			{
-				RD::Uniform u;
-				u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
-				u.binding = 0;
-				u.ids.push_back(light_accum_tex);
-				uniforms.push_back(u);
-			}
-			{
-				RD::Uniform u;
-				u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
-				u.binding = 1;
-				u.ids.push_back(light_accum_tex2);
-				uniforms.push_back(u);
-			}
-		}
-
-		RID dilate_uniform_set = rd->uniform_set_create(uniforms, compute_shader_dilate, 1);
-
-		RD::ComputeListID compute_list = rd->compute_list_begin();
-		rd->compute_list_bind_compute_pipeline(compute_list, compute_shader_dilate_pipeline);
-		rd->compute_list_bind_uniform_set(compute_list, compute_base_uniform_set, 0);
-		rd->compute_list_bind_uniform_set(compute_list, dilate_uniform_set, 1);
-		push_constant.region_ofs[0] = 0;
-		push_constant.region_ofs[1] = 0;
-		group_size = Vector3i((atlas_size.x - 1) / 8 + 1, (atlas_size.y - 1) / 8 + 1, 1); //restore group size
-
-		for (int i = 0; i < atlas_slices * (p_bake_sh ? 4 : 1); i++) {
-			push_constant.atlas_slice = i;
-			rd->compute_list_set_push_constant(compute_list, &push_constant, sizeof(PushConstant));
-			rd->compute_list_dispatch(compute_list, group_size.x, group_size.y, group_size.z);
-			//no barrier, let them run all together
-		}
-		rd->compute_list_end();
-	}
-
-#ifdef DEBUG_TEXTURES
-
-	for (int i = 0; i < atlas_slices * (p_bake_sh ? 4 : 1); i++) {
-		Vector<uint8_t> s = rd->texture_get_data(light_accum_tex, i);
-		Ref<Image> img;
-		img.instantiate();
-		img->create(atlas_size.width, atlas_size.height, false, Image::FORMAT_RGBAH, s);
-		img->convert(Image::FORMAT_RGBA8);
-		img->save_png("res://5_dilated_" + itos(i) + ".png");
 	}
 #endif
 
