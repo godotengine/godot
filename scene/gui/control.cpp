@@ -558,6 +558,16 @@ void Control::add_child_notify(Node *p_child) {
 	if (child_w && child_w->theme.is_null() && (data.theme_owner || data.theme_owner_window)) {
 		_propagate_theme_changed(child_w, data.theme_owner, data.theme_owner_window); //need to propagate here, since many controls may require setting up stuff
 	}
+	if (child_c) {
+		if (get_mouse_filter_owner() != nullptr) {
+			child_c->propagate_mouse_filter(get_mouse_filter_owner());
+		} else if (get_mouse_filter_propagate() == Control::MOUSE_FILTER_PROPAGATE_PROPAGATE) {
+			child_c->propagate_mouse_filter(this);
+		} else if (get_mouse_filter_propagate() == Control::MOUSE_FILTER_PROPAGATE_NORMAL ||
+				   get_mouse_filter_propagate() == Control::MOUSE_FILTER_PROPAGATE_NO_PROPAGATE) {
+			child_c->propagate_mouse_filter(nullptr);
+		}
+	}
 }
 
 void Control::remove_child_notify(Node *p_child) {
@@ -2428,6 +2438,77 @@ Control::MouseFilter Control::get_mouse_filter() const {
 	return data.mouse_filter;
 }
 
+void Control::set_mouse_filter_propagate(MouseFilterPropagate p_filter_propagate) {
+	ERR_FAIL_INDEX(p_filter_propagate, 3);
+	data.mouse_filter_propagate = p_filter_propagate;
+
+	Control *mouse_filter_owner = nullptr;
+	if (p_filter_propagate == Control::MOUSE_FILTER_PROPAGATE_PROPAGATE) {
+		mouse_filter_owner = this;
+	} else if (p_filter_propagate == Control::MOUSE_FILTER_PROPAGATE_NORMAL && get_parent_control()) {
+		switch (get_parent_control()->get_mouse_filter_propagate()) {
+			case Control::MOUSE_FILTER_PROPAGATE_NORMAL: {
+				set_mouse_filter_owner(get_parent_control()->get_mouse_filter_owner());
+				mouse_filter_owner = get_mouse_filter_owner();
+			} break;
+			case Control::MOUSE_FILTER_PROPAGATE_PROPAGATE: {
+				set_mouse_filter_owner(get_parent_control());
+				mouse_filter_owner = get_mouse_filter_owner();
+			} break;
+			case Control::MOUSE_FILTER_PROPAGATE_NO_PROPAGATE: {
+				set_mouse_filter_owner(nullptr);
+				mouse_filter_owner = get_mouse_filter_owner();
+			} break;
+		}
+
+	} else if (p_filter_propagate == Control::MOUSE_FILTER_PROPAGATE_NO_PROPAGATE) {
+		mouse_filter_owner = nullptr;
+	}
+
+	for (int i = get_child_count() - 1; i >= 0; i--) {
+		Control *child = Object::cast_to<Control>(get_child(i));
+		if (child) {
+			child->propagate_mouse_filter(mouse_filter_owner);
+		}
+	}
+
+	update_configuration_warnings();
+}
+
+Control::MouseFilterPropagate Control::get_mouse_filter_propagate() const {
+	return data.mouse_filter_propagate;
+}
+
+void Control::propagate_mouse_filter(Control *new_owner) {
+	if (get_mouse_filter_propagate() != Control::MOUSE_FILTER_PROPAGATE_NORMAL) {
+		return;
+	}
+
+	set_mouse_filter_owner(new_owner);
+	for (int i = get_child_count() - 1; i >= 0; i--) {
+		Control *child = Object::cast_to<Control>(get_child(i));
+		if (child) {
+			child->propagate_mouse_filter(new_owner);
+		}
+	}
+}
+
+void Control::set_mouse_filter_owner(Control *new_owner) {
+	data.mouse_filter_owner = new_owner;
+}
+
+Control *Control::get_mouse_filter_owner() const {
+	return data.mouse_filter_owner;
+}
+
+Control::MouseFilter Control::get_applied_mouse_filter() const {
+	if (get_mouse_filter_owner() != nullptr) {
+		return get_mouse_filter_owner()->get_mouse_filter();
+	}
+
+	return data.mouse_filter;
+}
+
 Control *Control::get_focus_owner() const {
 	ERR_FAIL_COND_V(!is_inside_tree(), nullptr);
 	return get_viewport()->_gui_get_focus_owner();
@@ -2652,7 +2733,7 @@ void Control::get_argument_options(const StringName &p_function, int p_idx, List
 TypedArray<String> Control::get_configuration_warnings() const {
 	TypedArray<String> warnings = Node::get_configuration_warnings();
 
-	if (data.mouse_filter == MOUSE_FILTER_IGNORE && data.tooltip != "") {
+	if (get_applied_mouse_filter() == MOUSE_FILTER_IGNORE && data.tooltip != "") {
 		warnings.push_back(TTR("The Hint Tooltip won't be displayed as the control's Mouse Filter is set to \"Ignore\". To solve this, set the Mouse Filter to \"Stop\" or \"Pass\"."));
 	}
 
@@ -2822,6 +2903,9 @@ void Control::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_mouse_filter", "filter"), &Control::set_mouse_filter);
 	ClassDB::bind_method(D_METHOD("get_mouse_filter"), &Control::get_mouse_filter);
 
+	ClassDB::bind_method(D_METHOD("set_mouse_filter_propagate", "filter_propagate"), &Control::set_mouse_filter_propagate);
+	ClassDB::bind_method(D_METHOD("get_mouse_filter_propagate"), &Control::get_mouse_filter_propagate);
+
 	ClassDB::bind_method(D_METHOD("set_clip_contents", "enable"), &Control::set_clip_contents);
 	ClassDB::bind_method(D_METHOD("is_clipping_contents"), &Control::is_clipping_contents);
 
@@ -2887,6 +2971,7 @@ void Control::_bind_methods() {
 
 	ADD_GROUP("Mouse", "mouse_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "mouse_filter", PROPERTY_HINT_ENUM, "Stop,Pass,Ignore"), "set_mouse_filter", "get_mouse_filter");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "mouse_filter_propagate", PROPERTY_HINT_ENUM, "Normal,Propagate,No Propagate"), "set_mouse_filter_propagate", "get_mouse_filter_propagate");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "mouse_default_cursor_shape", PROPERTY_HINT_ENUM, "Arrow,I-Beam,Pointing Hand,Cross,Wait,Busy,Drag,Can Drop,Forbidden,Vertical Resize,Horizontal Resize,Secondary Diagonal Resize,Main Diagonal Resize,Move,Vertical Split,Horizontal Split,Help"), "set_default_cursor_shape", "get_default_cursor_shape");
 
 	ADD_GROUP("Size Flags", "size_flags_");
@@ -2961,6 +3046,10 @@ void Control::_bind_methods() {
 	BIND_ENUM_CONSTANT(MOUSE_FILTER_STOP);
 	BIND_ENUM_CONSTANT(MOUSE_FILTER_PASS);
 	BIND_ENUM_CONSTANT(MOUSE_FILTER_IGNORE);
+
+	BIND_ENUM_CONSTANT(MOUSE_FILTER_PROPAGATE_NORMAL);
+	BIND_ENUM_CONSTANT(MOUSE_FILTER_PROPAGATE_PROPAGATE);
+	BIND_ENUM_CONSTANT(MOUSE_FILTER_PROPAGATE_NO_PROPAGATE);
 
 	BIND_ENUM_CONSTANT(GROW_DIRECTION_BEGIN);
 	BIND_ENUM_CONSTANT(GROW_DIRECTION_END);

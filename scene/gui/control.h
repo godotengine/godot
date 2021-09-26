@@ -81,6 +81,12 @@ public:
 		MOUSE_FILTER_IGNORE
 	};
 
+	enum MouseFilterPropagate {
+		MOUSE_FILTER_PROPAGATE_NORMAL,
+		MOUSE_FILTER_PROPAGATE_PROPAGATE,
+		MOUSE_FILTER_PROPAGATE_NO_PROPAGATE
+	};
+
 	enum CursorShape {
 		CURSOR_ARROW,
 		CURSOR_IBEAM,
@@ -195,6 +201,8 @@ private:
 		Point2 custom_minimum_size;
 
 		MouseFilter mouse_filter = MOUSE_FILTER_STOP;
+		MouseFilterPropagate mouse_filter_propagate = MOUSE_FILTER_PROPAGATE_NORMAL;
+		Control *mouse_filter_owner = nullptr;
 
 		bool clip_contents = false;
 
@@ -278,6 +286,8 @@ private:
 	_FORCE_INLINE_ void _get_theme_type_dependencies(const StringName &p_theme_type, List<StringName> *p_list) const;
 
 protected:
+	void propagate_mouse_filter(Control *caller = nullptr);
+
 	virtual void add_child_notify(Node *p_child) override;
 	virtual void remove_child_notify(Node *p_child) override;
 
@@ -468,6 +478,13 @@ public:
 
 	void set_mouse_filter(MouseFilter p_filter);
 	MouseFilter get_mouse_filter() const;
+	MouseFilter get_applied_mouse_filter() const;
+
+	void set_mouse_filter_owner(Control *new_owner);
+	Control *get_mouse_filter_owner() const;
+
+	void set_mouse_filter_propagate(MouseFilterPropagate p_filter_propagate);
+	MouseFilterPropagate get_mouse_filter_propagate() const;
 
 	/* SKINNING */
 
@@ -557,6 +574,7 @@ VARIANT_ENUM_CAST(Control::CursorShape);
 VARIANT_ENUM_CAST(Control::LayoutPreset);
 VARIANT_ENUM_CAST(Control::LayoutPresetMode);
 VARIANT_ENUM_CAST(Control::MouseFilter);
+VARIANT_ENUM_CAST(Control::MouseFilterPropagate);
 VARIANT_ENUM_CAST(Control::GrowDirection);
 VARIANT_ENUM_CAST(Control::Anchor);
 VARIANT_ENUM_CAST(Control::LayoutDirection);

@@ -720,7 +720,7 @@ bool GraphEdit::_check_clickable_control(Control *p_control, const Vector2 &pos)
 		return false;
 	}
 
-	if (!p_control->has_point(pos) || p_control->get_mouse_filter() == MOUSE_FILTER_IGNORE) {
+	if (!p_control->has_point(pos) || p_control->get_applied_mouse_filter() == MOUSE_FILTER_IGNORE) {
 		//test children
 		for (int i = 0; i < p_control->get_child_count(); i++) {
 			Control *subchild = Object::cast_to<Control>(p_control->get_child(i));

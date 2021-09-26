@@ -985,6 +985,9 @@
 		<member name="mouse_filter" type="int" setter="set_mouse_filter" getter="get_mouse_filter" enum="Control.MouseFilter" default="0">
 			Controls whether the control will be able to receive mouse button input events through [method _gui_input] and how these events should be handled. Also controls whether the control can receive the [signal mouse_entered], and [signal mouse_exited] signals. See the constants to learn what each does.
 		</member>
+		<member name="mouse_filter_propagate" type="int" setter="set_mouse_filter_propagate" getter="get_mouse_filter_propagate" enum="Control.MouseFilterPropagate" default="0">
+			Controls whether the control shall propagate its mouse_filter setting to its children. See the constants to learn what each does.
+		</member>
 		<member name="offset_bottom" type="float" setter="set_offset" getter="get_offset" default="0.0">
 			Distance between the node's bottom edge and its parent control, based on [member anchor_bottom].
 			Offsets are often controlled by one or multiple parent [Container] nodes, so you should not modify them manually if your node is a direct child of a [Container]. Offsets update automatically when you move or resize the node.
@@ -1266,6 +1269,15 @@
 		</constant>
 		<constant name="MOUSE_FILTER_IGNORE" value="2" enum="MouseFilter">
 			The control will not receive mouse button input events through [method _gui_input]. The control will also not receive the [signal mouse_entered] nor [signal mouse_exited] signals. This will not block other controls from receiving these events or firing the signals. Ignored events will not be handled automatically.
+		</constant>
+		<constant name="MOUSE_FILTER_PROPAGATE_NORMAL" value="0" enum="MouseFilterPropagate">
+			The constant will not propagate its mouse_filter settings to any children and is open to receive a propagated mouse_filter from a parent control.
+		</constant>
+		<constant name="MOUSE_FILTER_PROPAGATE_PROPAGATE" value="1" enum="MouseFilterPropagate">
+			The control will propagate its mouse_filter settings to its children and will not accept any propagation from any parent control. Any child that is set to any constant but [constant MOUSE_FILTER_PROPAGATE_NORMAL] shall overrule this setting for its children.
+		</constant>
+		<constant name="MOUSE_FILTER_PROPAGATE_NO_PROPAGATE" value="2" enum="MouseFilterPropagate">
+			The control will not propagate its mouse_filter settings to its children and will not accept any propagation from any parent control. Any child that is set to any constant but [constant MOUSE_FILTER_PROPAGATE_NORMAL] shall overrule this setting for its children.
 		</constant>
 		<constant name="GROW_DIRECTION_BEGIN" value="0" enum="GrowDirection">
 			The control will grow to the left or top to make up if its minimum size is changed to be greater than its current size on the respective axis.
