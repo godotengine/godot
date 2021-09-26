@@ -29,7 +29,7 @@
 		    some_key = 42,
 		}
 		[/codeblock]
-		You can access a dictionary's values by referencing the appropriate key. In the above example, [code]points_dir["White"][/code] will return [code]50[/code]. You can also write [code]points_dir.White[/code], which is equivalent. However, you'll have to use the bracket syntax if the key you're accessing the dictionary with isn't a fixed string (such as a number or variable).
+		You can access a dictionary's values by referencing the appropriate key. In the above example, [code]points_dict["White"][/code] will return [code]50[/code]. You can also write [code]points_dict.White[/code], which is equivalent. However, you'll have to use the bracket syntax if the key you're accessing the dictionary with isn't a fixed string (such as a number or variable).
 		[codeblock]
 		export(string, "White", "Yellow", "Orange") var my_color
 		var points_dict = {"White": 50, "Yellow": 75, "Orange": 100}
@@ -50,7 +50,7 @@
 		Finally, dictionaries can contain different types of keys and values in the same dictionary:
 		[codeblock]
 		# This is a valid dictionary.
-		# To access the string "Nested value" below, use `my_dir.sub_dir.sub_key` or `my_dir["sub_dir"]["sub_key"]`.
+		# To access the string "Nested value" below, use `my_dict.sub_dict.sub_key` or `my_dict["sub_dict"]["sub_key"]`.
 		# Indexing styles can be mixed and matched depending on your needs.
 		var my_dict = {
 		    "String Key": 5,
