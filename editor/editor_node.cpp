@@ -595,7 +595,6 @@ void EditorNode::_notification(int p_what) {
 
 			// if using a main thread only renderer, we need to update the resource previews
 			EditorResourcePreview::get_singleton()->update();
-
 		} break;
 
 		case NOTIFICATION_ENTER_TREE: {

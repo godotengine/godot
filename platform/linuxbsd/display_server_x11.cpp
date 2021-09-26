@@ -3675,17 +3675,31 @@ void DisplayServerX11::set_icon(const Ref<Image> &p_icon) {
 void DisplayServerX11::window_set_vsync_mode(DisplayServer::VSyncMode p_vsync_mode, WindowID p_window) {
 	_THREAD_SAFE_METHOD_
 #if defined(VULKAN_ENABLED)
-	context_vulkan->set_vsync_mode(p_window, p_vsync_mode);
+	if (context_vulkan) {
+		context_vulkan->set_vsync_mode(p_window, p_vsync_mode);
+	}
+#endif
+
+#if defined(GLES_X11_ENABLED)
+	if (gl_manager) {
+		gl_manager->set_use_vsync(p_vsync_mode == DisplayServer::VSYNC_ENABLED);
+	}
 #endif
 }
 
 DisplayServer::VSyncMode DisplayServerX11::window_get_vsync_mode(WindowID p_window) const {
 	_THREAD_SAFE_METHOD_
 #if defined(VULKAN_ENABLED)
-	return context_vulkan->get_vsync_mode(p_window);
-#else
-	return DisplayServer::VSYNC_ENABLED;
+	if (context_vulkan) {
+		return context_vulkan->get_vsync_mode(p_window);
+	}
 #endif
+#if defined(GLES_X11_ENABLED)
+	if (gl_manager) {
+		return gl_manager->is_using_vsync() ? DisplayServer::VSYNC_ENABLED : DisplayServer::VSYNC_DISABLED;
+	}
+#endif
+	return DisplayServer::VSYNC_ENABLED;
 }
 
 Vector<String> DisplayServerX11::get_rendering_drivers_func() {

@@ -210,39 +210,21 @@ void EditorResourcePreview::_generate_preview(Ref<ImageTexture> &r_texture, Ref<
 	}
 }
 
-void EditorResourcePreview::_thread() {
-	exited.clear();
-	while (!exit.is_set()) {
-		preview_sem.wait();
-		preview_mutex.lock();
+void EditorResourcePreview::_iterate() {
+	preview_mutex.lock();
 
-		if (queue.size()) {
-			QueueItem item = queue.front()->get();
-			queue.pop_front();
+	if (queue.size()) {
+		QueueItem item = queue.front()->get();
+		queue.pop_front();
 
-			if (cache.has(item.path)) {
-				//already has it because someone loaded it, just let it know it's ready
-				String path = item.path;
-				if (item.resource.is_valid()) {
-					path += ":" + itos(cache[item.path].last_hash); //keep last hash (see description of what this is in condition below)
-				}
+		if (cache.has(item.path)) {
+			//already has it because someone loaded it, just let it know it's ready
+			String path = item.path;
+			if (item.resource.is_valid()) {
+				path += ":" + itos(cache[item.path].last_hash); //keep last hash (see description of what this is in condition below)
+			}
 
-				_preview_ready(path, cache[item.path].preview, cache[item.path].small_preview, item.id, item.function, item.userdata);
-//void EditorResourcePreview::_iterate() {
-//	preview_mutex.lock();
-
-//	if (queue.size()) {
-//		QueueItem item = queue.front()->get();
-//		queue.pop_front();
-
-//		if (cache.has(item.path)) {
-//			//already has it because someone loaded it, just let it know it's ready
-//			String path = item.path;
-//			if (item.resource.is_valid()) {
-//				path += ":" + itos(cache[item.path].last_hash); //keep last hash (see description of what this is in condition below)
-//			}
-
-			//_preview_ready(path, cache[item.path].preview, cache[item.path].small_preview, item.id, item.function, item.userdata);
+			_preview_ready(path, cache[item.path].preview, cache[item.path].small_preview, item.id, item.function, item.userdata);
 
 			preview_mutex.unlock();
 		} else {
@@ -257,16 +239,11 @@ void EditorResourcePreview::_thread() {
 			if (item.resource.is_valid()) {
 				_generate_preview(texture, small_texture, item, String());
 
-				} else {
-					String temp_path = EditorPaths::get_singleton()->get_cache_dir();
-					String cache_base = ProjectSettings::get_singleton()->globalize_path(item.path).md5_text();
-					cache_base = temp_path.plus_file("resthumb-" + cache_base);
-				// JARJAR TODO
 				//adding hash to the end of path (should be ID:<objid>:<hash>) because of 5 argument limit to call_deferred
-//				_preview_ready(item.path + ":" + itos(item.resource->hash_edited_version()), texture, small_texture, item.id, item.function, item.userdata);
+				_preview_ready(item.path + ":" + itos(item.resource->hash_edited_version()), texture, small_texture, item.id, item.function, item.userdata);
 
 			} else {
-				String temp_path = EditorSettings::get_singleton()->get_cache_dir();
+				String temp_path = EditorPaths::get_singleton()->get_cache_dir();
 				String cache_base = ProjectSettings::get_singleton()->globalize_path(item.path).md5_text();
 				cache_base = temp_path.plus_file("resthumb-" + cache_base);
 
@@ -316,42 +293,23 @@ void EditorResourcePreview::_thread() {
 						memdelete(f);
 					}
 
-//						if (cache_valid) {
-//							Ref<Image> img;
-//							img.instantiate();
-//							Ref<Image> small_img;
-//							small_img.instantiate();
-
-//							if (img->load(cache_base + ".png") != OK) {
-//								cache_valid = false;
-//							} else {
-//								texture.instantiate();
-//								texture->create_from_image(img);
-
-//								if (has_small_texture) {
-//									if (small_img->load(cache_base + "_small.png") != OK) {
-//										cache_valid = false;
-//									} else {
-//										small_texture.instantiate();
-//										small_texture->create_from_image(small_img);
-//									}
 					if (cache_valid) {
 						Ref<Image> img;
-						img.instance();
+						img.instantiate();
 						Ref<Image> small_img;
-						small_img.instance();
+						small_img.instantiate();
 
 						if (img->load(cache_base + ".png") != OK) {
 							cache_valid = false;
 						} else {
-							texture.instance();
+							texture.instantiate();
 							texture->create_from_image(img);
 
 							if (has_small_texture) {
 								if (small_img->load(cache_base + "_small.png") != OK) {
 									cache_valid = false;
 								} else {
-									small_texture.instance();
+									small_texture.instantiate();
 									small_texture->create_from_image(small_img);
 								}
 							}
@@ -371,31 +329,12 @@ void EditorResourcePreview::_thread() {
 	}
 }
 
-void EditorResourcePreview::update() {
-	if (!_mainthread_only) {
-		return;
-	}
-
-	if (!exit) {
-		// no need to even lock the mutex if the size is zero
-		// there is no problem if queue.size() is wrong, even if
-		// there was a race condition.
-		if (queue.size()) {
-			_iterate();
-		}
-	}
-	exited.set();
-}
-
 void EditorResourcePreview::_thread() {
 	exited.clear();
-	//exited = false;
-	while (!exit) {
+	while (!exit.is_set()) {
 		preview_sem.wait();
-
 		_iterate();
 	}
-	//exited = true;
 	exited.set();
 }
 
@@ -494,11 +433,9 @@ void EditorResourcePreview::check_for_invalidation(const String &p_path) {
 }
 
 void EditorResourcePreview::start() {
-//	ERR_FAIL_COND_MSG(thread.is_started(), "Thread already started.");
-//	thread.start(_thread_func, this);
 	if (OS::get_singleton()->get_render_main_thread_mode() == OS::RENDER_ANY_THREAD) {
-		ERR_FAIL_COND_MSG(thread, "Thread already started.");
-		thread = Thread::create(_thread_func, this);
+		ERR_FAIL_COND_MSG(thread.is_started(), "Thread already started.");
+		thread.start(_thread_func, this);
 	} else {
 		_mainthread_only = true;
 	}
@@ -523,4 +460,19 @@ EditorResourcePreview::EditorResourcePreview() {
 
 EditorResourcePreview::~EditorResourcePreview() {
 	stop();
+}
+
+void EditorResourcePreview::update() {
+	if (!_mainthread_only) {
+		return;
+	}
+
+	if (!exit.is_set()) {
+		// no need to even lock the mutex if the size is zero
+		// there is no problem if queue.size() is wrong, even if
+		// there was a race condition.
+		if (queue.size()) {
+			_iterate();
+		}
+	}
 }
