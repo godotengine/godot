@@ -32,8 +32,11 @@
 #define SHADER_GLES3_H
 
 #include "core/hash_map.h"
+#include "core/local_vector.h"
 #include "core/map.h"
 #include "core/math/camera_matrix.h"
+#include "core/safe_refcount.h"
+#include "core/self_list.h"
 #include "core/variant.h"
 
 #include "platform_config.h"
@@ -44,6 +47,10 @@
 #endif
 
 #include <stdio.h>
+
+template <class K>
+class ThreadedCallableQueue;
+class ShaderCacheGLES3;
 
 class ShaderGLES3 {
 protected:
@@ -83,7 +90,7 @@ protected:
 		int conditional;
 	};
 
-	bool uniforms_dirty;
+	virtual int get_ubershader_flags_uniform() const { return -1; }
 
 private:
 	//@TODO Optimize to a fixed set of shader pools and use a LRU
@@ -96,6 +103,13 @@ private:
 	int fragment_code_start;
 	int attribute_pair_count;
 
+public:
+	enum AsyncMode {
+		ASYNC_MODE_VISIBLE,
+		ASYNC_MODE_HIDDEN,
+	};
+
+private:
 	struct CustomCode {
 		String vertex;
 		String vertex_globals;
@@ -103,32 +117,35 @@ private:
 		String fragment_globals;
 		String light;
 		String uniforms;
+		AsyncMode async_mode;
 		uint32_t version;
 		Vector<StringName> texture_uniforms;
 		Vector<CharString> custom_defines;
 		Set<uint32_t> versions;
 	};
 
-	struct Version {
-		GLuint id;
-		GLuint vert_id;
-		GLuint frag_id;
-		GLint *uniform_location;
-		Vector<GLint> texture_uniform_locations;
-		uint32_t code_version;
-		bool ok;
-		Version() :
-				id(0),
-				vert_id(0),
-				frag_id(0),
-				uniform_location(nullptr),
-				code_version(0),
-				ok(false) {}
-	};
+public:
+	static ShaderCacheGLES3 *shader_cache;
+	static ThreadedCallableQueue<GLuint> *cache_write_queue;
 
-	Version *version;
+	static ThreadedCallableQueue<GLuint> *compile_queue; // Non-null if using queued asynchronous compilation (via seconday context)
+	static bool parallel_compile_supported; // True if using natively supported asyncrhonous compilation
+
+	static bool async_hidden_forbidden;
+	static int *compiles_started_this_frame;
+	static int max_simultaneous_compiles;
+#ifdef DEBUG_ENABLED
+	static bool log_active_async_compiles_count;
+#endif
+	static uint64_t current_frame;
+
+	static void advance_async_shaders_compilation();
+
+private:
+	static int active_compiles_count;
 
 	union VersionKey {
+		static const uint32_t UBERSHADER_FLAG = ((uint32_t)1) << 31;
 		struct {
 			uint32_t version;
 			uint32_t code_version;
@@ -136,7 +153,78 @@ private:
 		uint64_t key;
 		bool operator==(const VersionKey &p_key) const { return key == p_key.key; }
 		bool operator<(const VersionKey &p_key) const { return key < p_key.key; }
+		VersionKey() {}
+		VersionKey(uint64_t p_key) :
+				key(p_key) {}
+		_FORCE_INLINE_ bool is_subject_to_caching() const { return (version & UBERSHADER_FLAG); }
 	};
+
+	struct Version {
+		VersionKey version_key;
+
+		// Set by the render thread upfront; the compile thread (for queued async.) reads them
+		struct Ids {
+			GLuint main;
+			GLuint vert;
+			GLuint frag;
+		} ids;
+
+		ShaderGLES3 *shader;
+		uint32_t code_version;
+
+		AsyncMode async_mode;
+		GLint *uniform_location;
+		Vector<GLint> texture_uniform_locations;
+		bool uniforms_ready;
+		uint64_t last_frame_processed;
+
+		enum CompileStatus {
+			COMPILE_STATUS_PENDING,
+			COMPILE_STATUS_SOURCE_PROVIDED,
+			COMPILE_STATUS_COMPILING_VERTEX,
+			COMPILE_STATUS_COMPILING_FRAGMENT,
+			COMPILE_STATUS_COMPILING_VERTEX_AND_FRAGMENT,
+			COMPILE_STATUS_PROCESSING_AT_QUEUE,
+			COMPILE_STATUS_BINARY_READY,
+			COMPILE_STATUS_BINARY_READY_FROM_CACHE,
+			COMPILE_STATUS_LINKING,
+			COMPILE_STATUS_ERROR,
+			COMPILE_STATUS_RESTART_NEEDED,
+			COMPILE_STATUS_OK,
+		};
+		CompileStatus compile_status;
+		SelfList<Version> compiling_list;
+
+		struct ProgramBinary {
+			String cache_hash;
+			enum Source {
+				SOURCE_NONE,
+				SOURCE_LOCAL, // Binary data will only be available if cache enabled
+				SOURCE_QUEUE,
+				SOURCE_CACHE,
+			} source;
+			// Shared with the compile thread (for queued async.); otherwise render thread only
+			GLenum format;
+			PoolByteArray data;
+			SafeNumeric<int> result_from_queue;
+		} program_binary;
+
+		Version() :
+				version_key(0),
+				ids(),
+				shader(nullptr),
+				code_version(0),
+				async_mode(ASYNC_MODE_VISIBLE),
+				uniform_location(nullptr),
+				uniforms_ready(false),
+				last_frame_processed(UINT64_MAX),
+				compile_status(COMPILE_STATUS_PENDING),
+				compiling_list(this),
+				program_binary() {}
+	};
+	static SelfList<Version>::List versions_compiling;
+
+	Version *version;
 
 	struct VersionKeyHash {
 		static _FORCE_INLINE_ uint32_t hash(const VersionKey &p_key) { return HashMapHasherDefault::hash(p_key.key); };
@@ -176,7 +264,16 @@ private:
 
 	int base_material_tex_index;
 
-	Version *get_current_version();
+	Version *get_current_version(bool &r_async_forbidden);
+	// These will run on the shader compile thread if using que compile queue approach to async.
+	void _set_source(Version::Ids p_ids, const LocalVector<const char *> &p_vertex_strings, const LocalVector<const char *> &p_fragment_strings) const;
+	bool _complete_compile(Version::Ids p_ids, bool p_retrievable) const;
+	bool _complete_link(Version::Ids p_ids, GLenum *r_program_format = nullptr, PoolByteArray *r_program_binary = nullptr) const;
+	// ---
+	static void _log_active_compiles();
+	static bool _process_program_state(Version *p_version, bool p_async_forbidden);
+	void _setup_uniforms(CustomCode *p_cc) const;
+	void _dispose_program(Version *p_version);
 
 	static ShaderGLES3 *active;
 
@@ -271,8 +368,8 @@ private:
 		}
 	}
 
-	Map<uint32_t, Variant> uniform_defaults;
-	Map<uint32_t, CameraMatrix> uniform_cameras;
+	bool _bind(bool p_binding_fallback);
+	bool _bind_ubershader();
 
 protected:
 	_FORCE_INLINE_ int _get_uniform(int p_which) const;
@@ -293,47 +390,20 @@ public:
 	static _FORCE_INLINE_ ShaderGLES3 *get_active() { return active; };
 	bool bind();
 	void unbind();
-	void bind_uniforms();
-
-	inline GLuint get_program() const { return version ? version->id : 0; }
 
 	void clear_caches();
 
 	uint32_t create_custom_shader();
-	void set_custom_shader_code(uint32_t p_code_id, const String &p_vertex, const String &p_vertex_globals, const String &p_fragment, const String &p_light, const String &p_fragment_globals, const String &p_uniforms, const Vector<StringName> &p_texture_uniforms, const Vector<CharString> &p_custom_defines);
+	void set_custom_shader_code(uint32_t p_code_id, const String &p_vertex, const String &p_vertex_globals, const String &p_fragment, const String &p_light, const String &p_fragment_globals, const String &p_uniforms, const Vector<StringName> &p_texture_uniforms, const Vector<CharString> &p_custom_defines, AsyncMode p_async_mode);
 	void set_custom_shader(uint32_t p_code_id);
 	void free_custom_shader(uint32_t p_code_id);
 
-	void set_uniform_default(int p_idx, const Variant &p_value) {
-		if (p_value.get_type() == Variant::NIL) {
-			uniform_defaults.erase(p_idx);
-		} else {
-			uniform_defaults[p_idx] = p_value;
-		}
-		uniforms_dirty = true;
-	}
-
 	uint32_t get_version() const { return new_conditional_version.version; }
-	_FORCE_INLINE_ bool is_version_valid() const { return version && version->ok; }
-
-	void set_uniform_camera(int p_idx, const CameraMatrix &p_mat) {
-		uniform_cameras[p_idx] = p_mat;
-		uniforms_dirty = true;
-	};
-
-	_FORCE_INLINE_ void set_texture_uniform(int p_idx, const Variant &p_value) {
-		ERR_FAIL_COND(!version);
-		ERR_FAIL_INDEX(p_idx, version->texture_uniform_locations.size());
-		_set_uniform_variant(version->texture_uniform_locations[p_idx], p_value);
-	}
-
-	_FORCE_INLINE_ GLint get_texture_uniform_location(int p_idx) {
-		ERR_FAIL_COND_V(!version, -1);
-		ERR_FAIL_INDEX_V(p_idx, version->texture_uniform_locations.size(), -1);
-		return version->texture_uniform_locations[p_idx];
-	}
+	_FORCE_INLINE_ bool is_version_valid() const { return version && version->compile_status == Version::COMPILE_STATUS_OK; }
 
 	virtual void init() = 0;
+	void init_async_compilation();
+	bool is_async_compilation_supported();
 	void finish();
 
 	void set_base_material_tex_index(int p_idx);

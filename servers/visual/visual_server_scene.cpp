@@ -2875,7 +2875,11 @@ bool VisualServerScene::_render_reflection_probe_step(Instance *p_instance, int 
 		}
 
 		_prepare_scene(xform, cm, false, RID(), VSG::storage->reflection_probe_get_cull_mask(p_instance->base), p_instance->scenario->self, shadow_atlas, reflection_probe->instance, reflection_probe->previous_room_id_hint);
+
+		bool async_forbidden_backup = VSG::storage->is_shader_async_hidden_forbidden();
+		VSG::storage->set_shader_async_hidden_forbidden(true);
 		_render_scene(xform, cm, 0, false, RID(), p_instance->scenario->self, shadow_atlas, reflection_probe->instance, p_step);
+		VSG::storage->set_shader_async_hidden_forbidden(async_forbidden_backup);
 
 	} else {
 		//do roughness postprocess step until it believes it's done

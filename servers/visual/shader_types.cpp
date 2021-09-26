@@ -197,6 +197,9 @@ ShaderTypes::ShaderTypes() {
 
 	shader_modes[VS::SHADER_SPATIAL].modes.push_back("vertex_lighting");
 
+	shader_modes[VS::SHADER_SPATIAL].modes.push_back("async_visible");
+	shader_modes[VS::SHADER_SPATIAL].modes.push_back("async_hidden");
+
 	/************ CANVAS ITEM **************************/
 
 	shader_modes[VS::SHADER_CANVAS_ITEM].functions["global"].built_ins["TIME"] = constt(ShaderLanguage::TYPE_FLOAT);

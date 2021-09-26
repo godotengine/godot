@@ -1222,6 +1222,39 @@
 			If [code]true[/code] and available on the target Android device, enables high floating point precision for all shader computations in GLES2.
 			[b]Warning:[/b] High floating point precision can be extremely slow on older devices and is often not available at all. Use with caution.
 		</member>
+		<member name="rendering/gles3/shaders/log_active_async_compiles_count" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], every time an asynchronous shader compilation or an asynchronous shader reconstruction from cache starts or finishes, a line will be logged telling how many of those are happening.
+			If the platform doesn't support parallel shader compile, but only the compile queue via a secondary GL context, what the message will tell is the number of shader compiles currently queued.
+			[b]Note:[/b] This setting is only meaningful if [code]rendering/gles3/shaders/shader_compilation_mode[/code] is [b]not[/b] [code]Synchronous[/code].
+		</member>
+		<member name="rendering/gles3/shaders/max_simultaneous_compiles" type="int" setter="" getter="" default="2">
+			This is the maximum number of shaders that can be compiled (or reconstructed from cache) at the same time.
+			At runtime, while that count is reached, other shaders that can be asynchronously compiled will just use their fallback, without their setup being started until the count gets lower.
+			This is a way to balance the CPU work between running the game and compiling the shaders. The goal is to have as many asynchronous compiles in flight as possible without impacting the responsiveness of the game, which beyond some point would destroy the benefits of asynchronous compilation. In other words, you may be able to afford that the FPS lowers a bit, and that will already be better than the stalling that synchronous compilation could cause.
+			The default value is a conservative one, so you are advised to tweak it according to the hardware you are targeting.
+			[b]Note:[/b] This setting is only meaningful if [code]rendering/gles3/shaders/shader_compilation_mode[/code] is [b]not[/b] [code]Synchronous[/code].
+		</member>
+		<member name="rendering/gles3/shaders/max_simultaneous_compiles.mobile" type="int" setter="" getter="" default="1">
+			The default is a very conservative override for [code]rendering/gles3/shaders/max_concurrent_compiles[/code].
+			Depending on the specific devices you are targeting, you may want to raise it.
+			[b]Note:[/b] This setting is only meaningful if [code]rendering/gles3/shaders/shader_compilation_mode[/code] is [b]not[/b] [code]Synchronous[/code].
+		</member>
+		<member name="rendering/gles3/shaders/shader_cache_size_mb" type="int" setter="" getter="" default="512">
+			The maximum size, in megabytes, that the ubershader cache can grow up to. On startup, the least recently used entries will be deleted until the total size is within bounds.
+			[b]Note:[/b] This setting is only meaningful if [code]rendering/gles3/shaders/shader_compilation_mode[/code] is set to [code]Asynchronous + Cache[/code].
+		</member>
+		<member name="rendering/gles3/shaders/shader_cache_size_mb.mobile" type="int" setter="" getter="" default="128">
+			An override for [code]rendering/gles3/shaders/ubershader_cache_size_mb[/code], so a smaller maximum size can be configured for mobile platforms, where storage space is more limited.
+			[b]Note:[/b] This setting is only meaningful if [code]rendering/gles3/shaders/shader_compilation_mode[/code] is set to [code]Asynchronous + Cache[/code].
+		</member>
+		<member name="rendering/gles3/shaders/shader_compilation_mode" type="int" setter="" getter="" default="0">
+			If set to [code]Asynchronous[/code] and available on the target device, asynchronous compilation of shaders is enabled (in contrast to [code]Asynchronous[/code]).
+			That means that when a shader is first used under some new rendering situation, the game won't stall while such shader is being compiled. Instead, a fallback will be used and the real shader will be compiled in the background. Once the actual shader is compiled, it will be used the next times it's used to draw a frame.
+			Depending on the async mode configured for a given material/shader, the fallback will be an "ubershader" (the default) or just skip rendering any item it is applied to.
+			An ubershader is a very complex shader, slow but suited to any rendering situation, that the engine generates internally so it can be used from the beginning while the traditional conditioned, optimized version of it is being compiled.
+			In order to save some loading time, you can use [code]Asynchronous + Cache[/code], which also causes the ubershaders to be cached into storage so they can be ready faster next time they are used (provided the platform provides support for it).
+			[b]Warning:[/b] Async. compilation is currently only supported for spatial and particle materials/shaders.
+		</member>
 		<member name="rendering/limits/buffers/blend_shape_max_buffer_size_kb" type="int" setter="" getter="" default="4096">
 			Max buffer size for blend shapes. Any blend shape bigger than this will not work.
 		</member>

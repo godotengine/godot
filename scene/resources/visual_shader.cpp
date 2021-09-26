@@ -897,6 +897,7 @@ VisualShader::RenderModeEnums VisualShader::render_mode_enums[] = {
 	{ Shader::MODE_SPATIAL, "cull" },
 	{ Shader::MODE_SPATIAL, "diffuse" },
 	{ Shader::MODE_SPATIAL, "specular" },
+	{ Shader::MODE_SPATIAL, "async" },
 	{ Shader::MODE_CANVAS_ITEM, "blend" },
 	{ Shader::MODE_CANVAS_ITEM, nullptr }
 };

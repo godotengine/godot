@@ -192,6 +192,8 @@ public:
 	BIND2C(shader_get_custom_defines, RID, Vector<String> *)
 	BIND2(shader_remove_custom_define, RID, const String &)
 
+	BIND1(set_shader_async_hidden_forbidden, bool)
+
 	/* COMMON MATERIAL API */
 
 	BIND0R(RID, material_create)

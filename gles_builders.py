@@ -4,6 +4,7 @@ All such functions are invoked in a subprocess on Windows to prevent build flaki
 
 """
 from platform_methods import subprocess_main
+import re
 
 
 class LegacyGLHeaderStruct:
@@ -69,7 +70,7 @@ def include_file_in_legacygl_header(filename, header_data, depth):
 
         if line.find("#ifdef ") != -1:
             if line.find("#ifdef ") != -1:
-                ifdefline = line.replace("#ifdef ", "").strip()
+                ifdefline = re.sub(r".*#ifdef (\S+).*\n", "\\1", line)
 
             if line.find("_EN_") != -1:
                 enumbase = ifdefline[: ifdefline.find("_EN_")]
@@ -226,6 +227,10 @@ def build_legacygl_header(filename, include, class_suffix, output_attribs, gles2
         for x in header_data.uniforms:
             fd.write("\t\t" + x.upper() + ",\n")
         fd.write("\t};\n\n")
+
+    supports_ubershader = not gles2 and "ubershader_flags" in header_data.uniforms
+    if supports_ubershader:
+        fd.write("\tint get_ubershader_flags_uniform() const { return Uniforms::UBERSHADER_FLAGS; }\n\n")
 
     fd.write("\t_FORCE_INLINE_ int get_uniform(Uniforms p_uniform) const { return _get_uniform(p_uniform); }\n\n")
     if header_data.conditionals:

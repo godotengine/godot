@@ -2525,6 +2525,15 @@
 				Sets the default clear color which is used when a specific clear color has not been selected.
 			</description>
 		</method>
+		<method name="set_shader_async_hidden_forbidden">
+			<return type="void" />
+			<argument index="0" name="forbidden" type="bool" />
+			<description>
+				If asynchronous shader compilation is enabled, this controls whether [constant SpatialMaterial.ASYNC_MODE_HIDDEN] is obeyed.
+				For instance, you may want to enable this temporarily before taking a screenshot. This ensures everything is visible even if shaders with async mode [i]hidden[/i] are not ready yet.
+				Reflection probes use this internally to ensure they capture everything regardless the shaders are ready or not.
+			</description>
+		</method>
 		<method name="set_shader_time_scale">
 			<return type="void" />
 			<argument index="0" name="scale" type="float" />

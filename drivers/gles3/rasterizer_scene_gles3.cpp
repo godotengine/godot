@@ -1817,7 +1817,7 @@ void RasterizerSceneGLES3::_setup_light(RenderList::Element *e, const Transform 
 		GIProbeInstance *gipi = gi_probe_instance_owner.getptr(ridp[0]);
 
 		float bias_scale = e->instance->baked_light ? 1 : 0;
-		glActiveTexture(GL_TEXTURE0 + storage->config.max_texture_image_units - 9);
+		glActiveTexture(GL_TEXTURE0 + storage->config.max_texture_image_units - 10);
 		glBindTexture(GL_TEXTURE_3D, gipi->tex_cache);
 		state.scene_shader.set_uniform(SceneShaderGLES3::GI_PROBE_XFORM1, gipi->transform_to_data * p_view_transform);
 		state.scene_shader.set_uniform(SceneShaderGLES3::GI_PROBE_BOUNDS1, gipi->bounds);
@@ -1829,7 +1829,7 @@ void RasterizerSceneGLES3::_setup_light(RenderList::Element *e, const Transform 
 		if (gi_probe_count > 1) {
 			GIProbeInstance *gipi2 = gi_probe_instance_owner.getptr(ridp[1]);
 
-			glActiveTexture(GL_TEXTURE0 + storage->config.max_texture_image_units - 10);
+			glActiveTexture(GL_TEXTURE0 + storage->config.max_texture_image_units - 11);
 			glBindTexture(GL_TEXTURE_3D, gipi2->tex_cache);
 			state.scene_shader.set_uniform(SceneShaderGLES3::GI_PROBE_XFORM2, gipi2->transform_to_data * p_view_transform);
 			state.scene_shader.set_uniform(SceneShaderGLES3::GI_PROBE_BOUNDS2, gipi2->bounds);
@@ -1850,7 +1850,7 @@ void RasterizerSceneGLES3::_setup_light(RenderList::Element *e, const Transform 
 		RasterizerStorageGLES3::LightmapCapture *capture = storage->lightmap_capture_data_owner.getornull(e->instance->lightmap_capture->base);
 
 		if (lightmap && capture) {
-			glActiveTexture(GL_TEXTURE0 + storage->config.max_texture_image_units - 9);
+			glActiveTexture(GL_TEXTURE0 + storage->config.max_texture_image_units - 10);
 			if (e->instance->lightmap_slice == -1) {
 				glBindTexture(GL_TEXTURE_2D, lightmap->tex_id);
 			} else {
@@ -1897,13 +1897,14 @@ void RasterizerSceneGLES3::_render_list(RenderList::Element **p_elements, int p_
 		glBindBufferBase(GL_UNIFORM_BUFFER, 2, state.env_radiance_ubo); //bind environment radiance info
 
 		if (p_sky != nullptr) {
-			glActiveTexture(GL_TEXTURE0 + storage->config.max_texture_image_units - 2);
 			if (storage->config.use_texture_array_environment) {
+				glActiveTexture(GL_TEXTURE0 + storage->config.max_texture_image_units - 3);
 				glBindTexture(GL_TEXTURE_2D_ARRAY, p_sky->radiance);
 			} else {
+				glActiveTexture(GL_TEXTURE0 + storage->config.max_texture_image_units - 2);
 				glBindTexture(GL_TEXTURE_2D, p_sky->radiance);
 			}
-			glActiveTexture(GL_TEXTURE0 + storage->config.max_texture_image_units - 6);
+			glActiveTexture(GL_TEXTURE0 + storage->config.max_texture_image_units - 7);
 			glBindTexture(GL_TEXTURE_2D, p_sky->irradiance);
 			state.scene_shader.set_conditional(SceneShaderGLES3::USE_RADIANCE_MAP, true);
 			state.scene_shader.set_conditional(SceneShaderGLES3::USE_RADIANCE_MAP_ARRAY, storage->config.use_texture_array_environment);
@@ -2572,7 +2573,7 @@ void RasterizerSceneGLES3::_setup_environment(Environment *env, const CameraMatr
 		state.ubo_data.shadow_directional_pixel_size[0] = 1.0 / directional_shadow.size;
 		state.ubo_data.shadow_directional_pixel_size[1] = 1.0 / directional_shadow.size;
 
-		glActiveTexture(GL_TEXTURE0 + storage->config.max_texture_image_units - 4);
+		glActiveTexture(GL_TEXTURE0 + storage->config.max_texture_image_units - 5);
 		glBindTexture(GL_TEXTURE_2D, directional_shadow.depth);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LESS);
@@ -3170,7 +3171,7 @@ void RasterizerSceneGLES3::_bind_depth_texture() {
 	if (!state.bound_depth_texture) {
 		ERR_FAIL_COND(!state.prepared_depth_texture);
 		//bind depth for read
-		glActiveTexture(GL_TEXTURE0 + storage->config.max_texture_image_units - 8);
+		glActiveTexture(GL_TEXTURE0 + storage->config.max_texture_image_units - 9);
 		glBindTexture(GL_TEXTURE_2D, storage->frame.current_rt->depth);
 		state.bound_depth_texture = true;
 	}
@@ -4026,7 +4027,7 @@ void RasterizerSceneGLES3::render_scene(const Transform &p_cam_transform, const 
 	state.scene_shader.set_conditional(SceneShaderGLES3::USE_SHADOW, use_shadows);
 
 	if (use_shadows) {
-		glActiveTexture(GL_TEXTURE0 + storage->config.max_texture_image_units - 5);
+		glActiveTexture(GL_TEXTURE0 + storage->config.max_texture_image_units - 6);
 		glBindTexture(GL_TEXTURE_2D, shadow_atlas->depth);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LESS);
@@ -4035,7 +4036,7 @@ void RasterizerSceneGLES3::render_scene(const Transform &p_cam_transform, const 
 	}
 
 	if (reflection_atlas && reflection_atlas->size) {
-		glActiveTexture(GL_TEXTURE0 + storage->config.max_texture_image_units - 3);
+		glActiveTexture(GL_TEXTURE0 + storage->config.max_texture_image_units - 4);
 		glBindTexture(GL_TEXTURE_2D, reflection_atlas->color);
 	}
 
@@ -4464,7 +4465,7 @@ void RasterizerSceneGLES3::render_scene(const Transform &p_cam_transform, const 
 	}
 
 	if (storage->frame.current_rt && state.used_screen_texture && storage->frame.current_rt->buffers.active) {
-		glActiveTexture(GL_TEXTURE0 + storage->config.max_texture_image_units - 7);
+		glActiveTexture(GL_TEXTURE0 + storage->config.max_texture_image_units - 8);
 		glBindTexture(GL_TEXTURE_2D, storage->frame.current_rt->effects.mip_maps[0].color);
 	}
 
@@ -5235,6 +5236,10 @@ void RasterizerSceneGLES3::initialize() {
 	state.debug_draw = VS::VIEWPORT_DEBUG_DRAW_DISABLED;
 
 	glFrontFace(GL_CW);
+
+	if (storage->config.async_compilation_enabled) {
+		state.scene_shader.init_async_compilation();
+	}
 }
 
 void RasterizerSceneGLES3::iteration() {

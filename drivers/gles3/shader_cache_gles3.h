@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  editor_run.h                                                         */
+/*  shader_cache_gles3.h                                                 */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,48 +28,31 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef EDITOR_RUN_H
-#define EDITOR_RUN_H
+#ifndef SHADER_CACHE_GLES3_H
+#define SHADER_CACHE_GLES3_H
 
-#include "core/os/os.h"
-#include "scene/main/node.h"
-class EditorRun {
-public:
-	enum Status {
+#include "core/local_vector.h"
+#include "core/reference.h"
 
-		STATUS_PLAY,
-		STATUS_PAUSED,
-		STATUS_STOP
-	};
+class DirAccess;
+class String;
 
-	OS::ProcessID pid;
+class ShaderCacheGLES3 {
+	DirAccess *storage_da;
+	String storage_path;
+	uint64_t storage_size = 0;
 
-private:
-	bool debug_collisions;
-	bool debug_navigation;
-	bool debug_shader_fallbacks;
-	Status status;
-	String running_scene;
+	void _purge_excess();
 
 public:
-	Status get_status() const;
-	String get_running_scene() const;
-	Error run(const String &p_scene, const String &p_custom_args, const List<String> &p_breakpoints, const bool &p_skip_breakpoints = false);
-	void run_native_notify() { status = STATUS_PLAY; }
-	void stop();
+	static String hash_program(const char *const *p_platform_strings, const LocalVector<const char *> &p_vertex_strings, const LocalVector<const char *> &p_fragment_strings);
 
-	OS::ProcessID get_pid() const { return pid; }
+	bool retrieve(const String &p_program_hash, uint32_t *r_format, PoolByteArray *r_data);
+	void store(const String &p_program_hash, uint32_t p_program_format, const PoolByteArray &p_program_data);
+	void remove(const String &p_program_hash);
 
-	void set_debug_collisions(bool p_debug);
-	bool get_debug_collisions() const;
-
-	void set_debug_navigation(bool p_debug);
-	bool get_debug_navigation() const;
-
-	void set_debug_shader_fallbacks(bool p_debug);
-	bool get_debug_shader_fallbacks() const;
-
-	EditorRun();
+	ShaderCacheGLES3();
+	~ShaderCacheGLES3();
 };
 
-#endif // EDITOR_RUN_H
+#endif

@@ -142,6 +142,9 @@ void EditorRunNative::_run_native(int p_idx, int p_platform) {
 	if (debug_navigation) {
 		flags |= EditorExportPlatform::DEBUG_FLAG_VIEW_NAVIGATION;
 	}
+	if (debug_shader_fallbacks) {
+		flags |= EditorExportPlatform::DEBUG_FLAG_SHADER_FALLBACKS;
+	}
 
 	eep->run(preset, p_idx, flags);
 }
@@ -188,6 +191,14 @@ bool EditorRunNative::get_debug_navigation() const {
 	return debug_navigation;
 }
 
+void EditorRunNative::set_debug_shader_fallbacks(bool p_debug) {
+	debug_shader_fallbacks = p_debug;
+}
+
+bool EditorRunNative::get_debug_shader_fallbacks() const {
+	return debug_shader_fallbacks;
+}
+
 EditorRunNative::EditorRunNative() {
 	set_process(true);
 	first = true;
@@ -195,6 +206,7 @@ EditorRunNative::EditorRunNative() {
 	deploy_debug_remote = false;
 	debug_collisions = false;
 	debug_navigation = false;
+	debug_shader_fallbacks = false;
 	resume_idx = 0;
 	resume_platform = 0;
 }

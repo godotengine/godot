@@ -120,14 +120,14 @@ static String dump_node_code(SL::Node *p_node, int p_level) {
 		case SL::Node::TYPE_SHADER: {
 			SL::ShaderNode *pnode = (SL::ShaderNode *)p_node;
 
-			for (Map<StringName, SL::ShaderNode::Uniform>::Element *E = pnode->uniforms.front(); E; E = E->next()) {
+			for (OrderedHashMap<StringName, SL::ShaderNode::Uniform>::Element E = pnode->uniforms.front(); E; E = E.next()) {
 				String ucode = "uniform ";
-				ucode += _prestr(E->get().precision);
-				ucode += _typestr(E->get().type);
-				ucode += " " + String(E->key());
+				ucode += _prestr(E.get().precision);
+				ucode += _typestr(E.get().type);
+				ucode += " " + String(E.key());
 
-				if (E->get().default_value.size()) {
-					ucode += " = " + get_constant_text(E->get().type, E->get().default_value);
+				if (E.get().default_value.size()) {
+					ucode += " = " + get_constant_text(E.get().type, E.get().default_value);
 				}
 
 				static const char *hint_name[SL::ShaderNode::Uniform::HINT_MAX] = {
@@ -140,18 +140,18 @@ static String dump_node_code(SL::Node *p_node, int p_level) {
 					"white"
 				};
 
-				if (E->get().hint) {
-					ucode += " : " + String(hint_name[E->get().hint]);
+				if (E.get().hint) {
+					ucode += " : " + String(hint_name[E.get().hint]);
 				}
 
 				code += ucode + "\n";
 			}
 
-			for (Map<StringName, SL::ShaderNode::Varying>::Element *E = pnode->varyings.front(); E; E = E->next()) {
+			for (OrderedHashMap<StringName, SL::ShaderNode::Varying>::Element E = pnode->varyings.front(); E; E = E.next()) {
 				String vcode = "varying ";
-				vcode += _prestr(E->get().precision);
-				vcode += _typestr(E->get().type);
-				vcode += " " + String(E->key());
+				vcode += _prestr(E.get().precision);
+				vcode += _typestr(E.get().type);
+				vcode += " " + String(E.key());
 
 				code += vcode + "\n";
 			}

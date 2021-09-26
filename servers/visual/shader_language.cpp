@@ -6893,11 +6893,11 @@ Error ShaderLanguage::complete(const String &p_code, const Map<StringName, Funct
 						}
 					}
 
-					for (const Map<StringName, ShaderNode::Varying>::Element *E = shader->varyings.front(); E; E = E->next()) {
-						matches.insert(E->key(), ScriptCodeCompletionOption::KIND_VARIABLE);
+					for (OrderedHashMap<StringName, ShaderNode::Varying>::Element E = shader->varyings.front(); E; E = E.next()) {
+						matches.insert(E.key(), ScriptCodeCompletionOption::KIND_VARIABLE);
 					}
-					for (const Map<StringName, ShaderNode::Uniform>::Element *E = shader->uniforms.front(); E; E = E->next()) {
-						matches.insert(E->key(), ScriptCodeCompletionOption::KIND_MEMBER);
+					for (OrderedHashMap<StringName, ShaderNode::Uniform>::Element E = shader->uniforms.front(); E; E = E.next()) {
+						matches.insert(E.key(), ScriptCodeCompletionOption::KIND_MEMBER);
 					}
 				}
 

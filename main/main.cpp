@@ -145,6 +145,7 @@ static bool use_debug_profiler = false;
 #ifdef DEBUG_ENABLED
 static bool debug_collisions = false;
 static bool debug_navigation = false;
+static bool debug_shader_fallbacks = false;
 #endif
 static int frame_delay = 0;
 static bool disable_render_loop = false;
@@ -292,6 +293,7 @@ void Main::print_help(const char *p_binary) {
 #if defined(DEBUG_ENABLED) && !defined(SERVER_ENABLED)
 	OS::get_singleton()->print("  --debug-collisions               Show collision shapes when running the scene.\n");
 	OS::get_singleton()->print("  --debug-navigation               Show navigation polygons when running the scene.\n");
+	OS::get_singleton()->print("  --debug-shader-fallbacks         Use the fallbacks of the shaders which have one when running the scene (GL ES 3 only).\n");
 #endif
 	OS::get_singleton()->print("  --frame-delay <ms>               Simulate high CPU load (delay each frame by <ms> milliseconds).\n");
 	OS::get_singleton()->print("  --time-scale <scale>             Force time scale (higher values are faster, 1.0 is normal speed).\n");
@@ -806,6 +808,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			debug_collisions = true;
 		} else if (I->get() == "--debug-navigation") {
 			debug_navigation = true;
+		} else if (I->get() == "--debug-shader-fallbacks") {
+			debug_shader_fallbacks = true;
 #endif
 		} else if (I->get() == "--remote-debug") {
 			if (I->next()) {
@@ -1217,6 +1221,13 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	GLOBAL_DEF("input_devices/pointing/ios/touch_delay", 0.150);
 
 	Engine::get_singleton()->set_frame_delay(frame_delay);
+
+#ifdef DEBUG_ENABLED
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		GLOBAL_DEF("rendering/gles3/shaders/debug_shader_fallbacks", debug_shader_fallbacks);
+		ProjectSettings::get_singleton()->set_hide_from_editor("rendering/gles3/shaders/debug_shader_fallbacks", true);
+	}
+#endif
 
 	message_queue = memnew(MessageQueue);
 

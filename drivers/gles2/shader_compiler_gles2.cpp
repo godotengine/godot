@@ -295,8 +295,8 @@ String ShaderCompilerGLES2::_dump_node_code(const SL::Node *p_node, int p_level,
 			int max_texture_uniforms = 0;
 			int max_uniforms = 0;
 
-			for (Map<StringName, SL::ShaderNode::Uniform>::Element *E = snode->uniforms.front(); E; E = E->next()) {
-				if (SL::is_sampler_type(E->get().type)) {
+			for (OrderedHashMap<StringName, SL::ShaderNode::Uniform>::Element E = snode->uniforms.front(); E; E = E.next()) {
+				if (SL::is_sampler_type(E.get().type)) {
 					max_texture_uniforms++;
 				} else {
 					max_uniforms++;
@@ -347,55 +347,55 @@ String ShaderCompilerGLES2::_dump_node_code(const SL::Node *p_node, int p_level,
 
 			// uniforms
 
-			for (Map<StringName, SL::ShaderNode::Uniform>::Element *E = snode->uniforms.front(); E; E = E->next()) {
+			for (OrderedHashMap<StringName, SL::ShaderNode::Uniform>::Element E = snode->uniforms.front(); E; E = E.next()) {
 				StringBuffer<> uniform_code;
 
 				// use highp if no precision is specified to prevent different default values in fragment and vertex shader
-				SL::DataPrecision precision = E->get().precision;
-				if (precision == SL::PRECISION_DEFAULT && E->get().type != SL::TYPE_BOOL) {
+				SL::DataPrecision precision = E.get().precision;
+				if (precision == SL::PRECISION_DEFAULT && E.get().type != SL::TYPE_BOOL) {
 					precision = SL::PRECISION_HIGHP;
 				}
 
 				uniform_code += "uniform ";
 				uniform_code += _prestr(precision);
-				uniform_code += _typestr(E->get().type);
+				uniform_code += _typestr(E.get().type);
 				uniform_code += " ";
-				uniform_code += _mkid(E->key());
+				uniform_code += _mkid(E.key());
 				uniform_code += ";\n";
 
-				if (SL::is_sampler_type(E->get().type)) {
-					r_gen_code.texture_uniforms.write[E->get().texture_order] = E->key();
-					r_gen_code.texture_hints.write[E->get().texture_order] = E->get().hint;
+				if (SL::is_sampler_type(E.get().type)) {
+					r_gen_code.texture_uniforms.write[E.get().texture_order] = E.key();
+					r_gen_code.texture_hints.write[E.get().texture_order] = E.get().hint;
 				} else {
-					r_gen_code.uniforms.write[E->get().order] = E->key();
+					r_gen_code.uniforms.write[E.get().order] = E.key();
 				}
 
 				vertex_global += uniform_code.as_string();
 				fragment_global += uniform_code.as_string();
 
-				p_actions.uniforms->insert(E->key(), E->get());
+				p_actions.uniforms->insert(E.key(), E.get());
 			}
 
 			// varyings
 
 			List<Pair<StringName, SL::ShaderNode::Varying>> var_frag_to_light;
 
-			for (Map<StringName, SL::ShaderNode::Varying>::Element *E = snode->varyings.front(); E; E = E->next()) {
-				if (E->get().stage == SL::ShaderNode::Varying::STAGE_FRAGMENT_TO_LIGHT || E->get().stage == SL::ShaderNode::Varying::STAGE_FRAGMENT) {
-					var_frag_to_light.push_back(Pair<StringName, SL::ShaderNode::Varying>(E->key(), E->get()));
-					fragment_varyings.insert(E->key());
+			for (OrderedHashMap<StringName, SL::ShaderNode::Varying>::Element E = snode->varyings.front(); E; E = E.next()) {
+				if (E.get().stage == SL::ShaderNode::Varying::STAGE_FRAGMENT_TO_LIGHT || E.get().stage == SL::ShaderNode::Varying::STAGE_FRAGMENT) {
+					var_frag_to_light.push_back(Pair<StringName, SL::ShaderNode::Varying>(E.key(), E.get()));
+					fragment_varyings.insert(E.key());
 					continue;
 				}
 				StringBuffer<> varying_code;
 
 				varying_code += "varying ";
-				varying_code += _prestr(E->get().precision);
-				varying_code += _typestr(E->get().type);
+				varying_code += _prestr(E.get().precision);
+				varying_code += _typestr(E.get().type);
 				varying_code += " ";
-				varying_code += _mkid(E->key());
-				if (E->get().array_size > 0) {
+				varying_code += _mkid(E.key());
+				if (E.get().array_size > 0) {
 					varying_code += "[";
-					varying_code += itos(E->get().array_size);
+					varying_code += itos(E.get().array_size);
 					varying_code += "]";
 				}
 				varying_code += ";\n";

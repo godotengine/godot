@@ -75,6 +75,10 @@ Error EditorRun::run(const String &p_scene, const String &p_custom_args, const L
 		args.push_back("--debug-navigation");
 	}
 
+	if (debug_shader_fallbacks) {
+		args.push_back("--debug-shader-fallbacks");
+	}
+
 	int screen = EditorSettings::get_singleton()->get("run/window_placement/screen");
 	if (screen == 0) {
 		// Same as editor
@@ -273,9 +277,18 @@ bool EditorRun::get_debug_navigation() const {
 	return debug_navigation;
 }
 
+void EditorRun::set_debug_shader_fallbacks(bool p_debug) {
+	debug_shader_fallbacks = p_debug;
+}
+
+bool EditorRun::get_debug_shader_fallbacks() const {
+	return debug_shader_fallbacks;
+}
+
 EditorRun::EditorRun() {
 	status = STATUS_STOP;
 	running_scene = "";
 	debug_collisions = false;
 	debug_navigation = false;
+	debug_shader_fallbacks = false;
 }
