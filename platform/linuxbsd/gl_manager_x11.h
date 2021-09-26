@@ -28,13 +28,14 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#pragma once
+#ifndef GL_MANAGER_X11_H
+#define GL_MANAGER_X11_H
 
 #ifdef X11_ENABLED
 
-#include "drivers/gles_common/rasterizer_platforms.h"
+#include "drivers/opengl/rasterizer_platforms.h"
 
-#if defined(GLES_X11_ENABLED)
+#ifdef OPENGL_ENABLED
 
 #include "core/os/os.h"
 #include "core/templates/local_vector.h"
@@ -47,7 +48,7 @@ struct GLManager_X11_Private;
 class GLManager_X11 {
 public:
 	enum ContextType {
-		GLES_2_0_COMPATIBLE,
+		GLES_3_0_COMPATIBLE,
 	};
 
 private:
@@ -123,5 +124,7 @@ public:
 	~GLManager_X11();
 };
 
-#endif // GLES_X11_ENABLED
+#endif // OPENGL_ENABLED
 #endif // X11_ENABLED
+
+#endif // GL_MANAGER_X11_H

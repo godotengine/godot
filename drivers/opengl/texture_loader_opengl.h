@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  rasterizer_gles2.h                                                   */
+/*  texture_loader_opengl.h                                              */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,63 +28,25 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#pragma once
+#ifndef TEXTURE_LOADER_OPENGL_H
+#define TEXTURE_LOADER_OPENGL_H
 
-#include "drivers/gles_common/rasterizer_platforms.h"
-#ifdef GLES2_BACKEND_ENABLED
+#include "drivers/opengl/rasterizer_platforms.h"
+#ifdef OPENGL_BACKEND_ENABLED
 
-#include "drivers/gles_common/rasterizer_version.h"
-#include "rasterizer_canvas_gles2.h"
-#include "rasterizer_scene_gles2.h"
-#include "rasterizer_storage_gles2.h"
-#include "servers/rendering/renderer_compositor.h"
+#include "core/io/resource_loader.h"
+#include "scene/resources/texture.h"
 
-class RasterizerGLES2 : public RendererCompositor {
-private:
-	uint64_t frame = 1;
-	float delta = 0;
-
-	double time_total = 0.0;
-	double time_scale = 1.0;
-
-protected:
-	RasterizerCanvasGLES2 canvas;
-	RasterizerStorageGLES2 storage;
-	RasterizerSceneGLES2 scene;
-
-	void _blit_render_target_to_screen(RID p_render_target, const Rect2 &p_screen_rect);
-
+class ResourceFormatGLES2Texture : public ResourceFormatLoader {
 public:
-	RendererStorage *get_storage() { return &storage; }
-	RendererCanvasRender *get_canvas() { return &canvas; }
-	RendererSceneRender *get_scene() { return &scene; }
+	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, CacheMode p_cache_mode = CACHE_MODE_REUSE);
+	virtual void get_recognized_extensions(List<String> *p_extensions) const;
+	virtual bool handles_type(const String &p_type) const;
+	virtual String get_resource_type(const String &p_path) const;
 
-	void set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale, bool p_use_filter = true);
-
-	void initialize();
-	void begin_frame(double frame_step);
-
-	void prepare_for_blitting_render_targets();
-	void blit_render_targets_to_screen(DisplayServer::WindowID p_screen, const BlitToScreen *p_render_targets, int p_amount);
-
-	void end_frame(bool p_swap_buffers);
-
-	void finalize() {}
-
-	static RendererCompositor *_create_current() {
-		return memnew(RasterizerGLES2);
-	}
-
-	static void make_current() {
-		_create_func = _create_current;
-	}
-
-	virtual bool is_low_end() const { return true; }
-	uint64_t get_frame_number() const { return frame; }
-	double get_frame_delta_time() const { return delta; }
-
-	RasterizerGLES2();
-	~RasterizerGLES2() {}
+	virtual ~ResourceFormatGLES2Texture() {}
 };
 
-#endif // GLES2_BACKEND_ENABLED
+#endif // OPENGL_BACKEND_ENABLED
+
+#endif // TEXTURE_LOADER_OPENGL_H

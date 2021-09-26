@@ -31,7 +31,7 @@
 #include "gl_manager_x11.h"
 
 #ifdef X11_ENABLED
-#if defined(GLES_X11_ENABLED)
+#if defined(OPENGL_ENABLED)
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -174,9 +174,19 @@ Error GLManager_X11::_create_context(GLDisplay &gl_display) {
 	int (*oldHandler)(Display *, XErrorEvent *) = XSetErrorHandler(&ctxErrorHandler);
 
 	switch (context_type) {
-		case GLES_2_0_COMPATIBLE: {
-			gl_display.context->glx_context = glXCreateNewContext(gl_display.x11_display, fbconfig, GLX_RGBA_TYPE, 0, true);
-			ERR_FAIL_COND_V(!gl_display.context->glx_context, ERR_UNCONFIGURED);
+		case GLES_3_0_COMPATIBLE: {
+			// FIXME: Use `GLX_CONTEXT_CORE_PROFILE_BIT_ARB` instead of compatibility profile
+			// once deprecated API usages are fixed.
+			static int context_attribs[] = {
+				GLX_CONTEXT_MAJOR_VERSION_ARB, 3,
+				GLX_CONTEXT_MINOR_VERSION_ARB, 3,
+				GLX_CONTEXT_PROFILE_MASK_ARB, GLX_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB,
+				GLX_CONTEXT_FLAGS_ARB, GLX_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB /*|GLX_CONTEXT_DEBUG_BIT_ARB*/,
+				None
+			};
+
+			gl_display.context->glx_context = glXCreateContextAttribsARB(x11_display, fbconfig, nullptr, true, context_attribs);
+			ERR_FAIL_COND_V(ctxErrorOccurred || !gl_display.context->glx_context, ERR_UNCONFIGURED);
 		} break;
 	}
 

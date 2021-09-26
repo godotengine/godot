@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  rasterizer_platforms.h                                               */
+/*  rasterizer_canvas_opengl.h                                           */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,46 +28,44 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#pragma once
+#ifndef RASTERIZER_CANVAS_OPENGL_H
+#define RASTERIZER_CANVAS_OPENGL_H
 
-/////////////////////////////////////////////////////
-// override for intellisense .. ONLY FOR DEVELOPMENT
-//#ifndef X11_ENABLED
-//#define X11_ENABLED
-//#endif
-//#define GLES2_BACKEND_ENABLED
-/////////////////////////////////////////////////////
+#include "drivers/opengl/rasterizer_platforms.h"
+#ifdef OPENGL_BACKEND_ENABLED
 
-#if defined(OPENGL_ENABLED) || defined(GLES_ENABLED)
+#include "drivers/opengl/rasterizer_canvas_batcher.h"
+#include "rasterizer_canvas_base_opengl.h"
 
-// platform specific defines to compile in / out GLES support
-// these can later be made from Scons
-#ifdef X11_ENABLED
-#define GLES_X11_ENABLED
-#endif
+class RasterizerSceneOpenGL;
 
-#ifdef WINDOWS_ENABLED
-//#define GLES_WINDOWS_ENABLED
-#endif
+class RasterizerCanvasOpenGL : public RasterizerCanvasBaseOpenGL, public RasterizerCanvasBatcher<RasterizerCanvasOpenGL, RasterizerStorageOpenGL> {
+	friend class RasterizerCanvasBatcher<RasterizerCanvasOpenGL, RasterizerStorageOpenGL>;
 
-#ifdef IPHONE_ENABLED
-//#define GLES_IPHONE_ENABLED
-#endif
+private:
+	// legacy codepath .. to remove after testing
+	void _legacy_canvas_render_item(Item *p_ci, RenderItemState &r_ris);
 
-#ifdef OSX_ENABLED
-//#define GLES_OSX_ENABLED
-#endif
+	// high level batch funcs
+	void canvas_render_items_implementation(Item *p_item_list, int p_z, const Color &p_modulate, Light *p_light, const Transform2D &p_base_transform);
+	void render_batches(Item::Command *const *p_commands, Item *p_current_clip, bool &r_reclip, RasterizerStorageOpenGL::Material *p_material);
 
-#ifdef ANDROID_ENABLED
-//#define GLES_ANDROID_ENABLED
-#endif
+	// funcs used from rasterizer_canvas_batcher template
+	void gl_enable_scissor(int p_x, int p_y, int p_width, int p_height) const;
+	void gl_disable_scissor() const;
 
-#if defined(GLES_X11_ENABLED) || defined(GLES_WINDOW_ENABLED) || defined(GLES_IPHONE_ENABLED) || defined(GLES_OSX_ENABLED) || defined(GLES_ANDROID_ENABLED)
-#define GLES2_BACKEND_ENABLED
-#endif
+public:
+	void canvas_render_items_begin(const Color &p_modulate, Light *p_light, const Transform2D &p_base_transform);
+	void canvas_render_items_end();
+	void canvas_render_items_internal(Item *p_item_list, int p_z, const Color &p_modulate, Light *p_light, const Transform2D &p_base_transform);
+	void canvas_begin() override;
+	void canvas_end() override;
 
-#if defined(GLES_X11_ENABLED) || defined(GLES_WINDOW_ENABLED) || defined(GLES_IPHONE_ENABLED) || defined(GLES_OSX_ENABLED) || defined(GLES_ANDROID_ENABLED)
-#define GLES3_BACKEND_ENABLED
-#endif
+	void canvas_render_items(RID p_to_render_target, Item *p_item_list, const Color &p_modulate, Light *p_light_list, Light *p_directional_list, const Transform2D &p_canvas_transform, RS::CanvasItemTextureFilter p_default_filter, RS::CanvasItemTextureRepeat p_default_repeat, bool p_snap_2d_vertices_to_pixel, bool &r_sdf_used) override;
 
-#endif // defined(OPENGL_ENABLED) || defined(GLES_ENABLED)
+	void initialize();
+	RasterizerCanvasOpenGL();
+};
+
+#endif // OPENGL_BACKEND_ENABLED
+#endif // RASTERIZER_CANVAS_OPENGL_H

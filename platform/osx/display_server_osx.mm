@@ -3750,7 +3750,7 @@ DisplayServerOSX::DisplayServerOSX(const String &p_rendering_driver, WindowMode 
 	[main_menu setSubmenu:apple_menu forItem:menu_item];
 
 	//!!!!!!!!!!!!!!!!!!!!!!!!!!
-	//TODO - do Vulkan and GLES2 support checks, driver selection and fallback
+	//TODO - do Vulkan and OpenGL support checks, driver selection and fallback
 	rendering_driver = p_rendering_driver;
 
 #ifndef _MSC_VER

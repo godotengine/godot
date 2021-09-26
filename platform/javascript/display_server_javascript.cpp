@@ -677,7 +677,7 @@ DisplayServerJavaScript::DisplayServerJavaScript(const String &p_rendering_drive
 	// Expose method for requesting quit.
 	godot_js_os_request_quit_cb(request_quit_callback);
 
-	RasterizerDummy::make_current(); // TODO GLES2 in Godot 4.0... or webgpu?
+	RasterizerDummy::make_current(); // TODO OpenGL in Godot 4.0... or webgpu?
 #if 0
 	EmscriptenWebGLContextAttributes attributes;
 	emscripten_webgl_init_context_attributes(&attributes);
@@ -691,10 +691,10 @@ DisplayServerJavaScript::DisplayServerJavaScript(const String &p_rendering_drive
 
 	bool gl_initialization_error = false;
 
-	if (RasterizerGLES2::is_viable() == OK) {
+	if (RasterizerOpenGLis_viable() == OK) {
 		attributes.majorVersion = 1;
-		RasterizerGLES2::register_config();
-		RasterizerGLES2::make_current();
+		RasterizerOpenGLregister_config();
+		RasterizerOpenGLmake_current();
 	} else {
 		gl_initialization_error = true;
 	}

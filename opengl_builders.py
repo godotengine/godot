@@ -187,7 +187,7 @@ def include_file_in_legacygl_header(filename, header_data, depth):
     return header_data
 
 
-def build_legacygl_header(filename, include, class_suffix, output_attribs, gles2=False):
+def build_legacygl_header(filename, include, class_suffix, output_attribs):
     header_data = LegacyGLHeaderStruct()
     include_file_in_legacygl_header(filename, header_data, 0)
 
@@ -286,9 +286,9 @@ def build_legacygl_header(filename, include, class_suffix, output_attribs, gles2
     )
 
     fd.write(
-        """\t_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, const Transform& p_transform) {  _FU
+        """\t_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, const Transform3D& p_transform) {  _FU
 
-        const Transform &tr = p_transform;
+        const Transform3D &tr = p_transform;
 
         GLfloat matrix[16]={ /* build a 16x16 matrix */
             tr.basis.elements[0][0],
@@ -449,26 +449,6 @@ def build_legacygl_header(filename, include, class_suffix, output_attribs, gles2
 
     feedback_count = 0
 
-    if not gles2 and len(header_data.feedbacks):
-
-        fd.write("\t\tstatic const Feedback _feedbacks[]={\n")
-        for x in header_data.feedbacks:
-            name = x[0]
-            cond = x[1]
-            if cond in conditionals_found:
-                fd.write('\t\t\t{"' + name + '",' + str(conditionals_found.index(cond)) + "},\n")
-            else:
-                fd.write('\t\t\t{"' + name + '",-1},\n')
-
-            feedback_count += 1
-
-        fd.write("\t\t};\n\n")
-    else:
-        if gles2:
-            pass
-        else:
-            fd.write("\t\tstatic const Feedback* _feedbacks=NULL;\n")
-
     if header_data.texunits:
         fd.write("\t\tstatic TexUnitPair _texunit_pairs[]={\n")
         for x in header_data.texunits:
@@ -476,17 +456,6 @@ def build_legacygl_header(filename, include, class_suffix, output_attribs, gles2
         fd.write("\t\t};\n\n")
     else:
         fd.write("\t\tstatic TexUnitPair *_texunit_pairs=NULL;\n")
-
-    if not gles2 and header_data.ubos:
-        fd.write("\t\tstatic UBOPair _ubo_pairs[]={\n")
-        for x in header_data.ubos:
-            fd.write('\t\t\t{"' + x[0] + '",' + x[1] + "},\n")
-        fd.write("\t\t};\n\n")
-    else:
-        if gles2:
-            pass
-        else:
-            fd.write("\t\tstatic UBOPair *_ubo_pairs=NULL;\n")
 
     fd.write("\t\tstatic const char _vertex_code[]={\n")
     for x in header_data.vertex_lines:
@@ -509,67 +478,31 @@ def build_legacygl_header(filename, include, class_suffix, output_attribs, gles2
     fd.write("\t\tstatic const int _fragment_code_start=" + str(header_data.fragment_offset) + ";\n")
 
     if output_attribs:
-        if gles2:
-            fd.write(
-                "\t\tsetup(_conditional_strings,"
-                + str(len(header_data.conditionals))
-                + ",_uniform_strings,"
-                + str(len(header_data.uniforms))
-                + ",_attribute_pairs,"
-                + str(len(header_data.attributes))
-                + ", _texunit_pairs,"
-                + str(len(header_data.texunits))
-                + ",_vertex_code,_fragment_code,_vertex_code_start,_fragment_code_start);\n"
-            )
-        else:
-            fd.write(
-                "\t\tsetup(_conditional_strings,"
-                + str(len(header_data.conditionals))
-                + ",_uniform_strings,"
-                + str(len(header_data.uniforms))
-                + ",_attribute_pairs,"
-                + str(len(header_data.attributes))
-                + ", _texunit_pairs,"
-                + str(len(header_data.texunits))
-                + ",_ubo_pairs,"
-                + str(len(header_data.ubos))
-                + ",_feedbacks,"
-                + str(feedback_count)
-                + ",_vertex_code,_fragment_code,_vertex_code_start,_fragment_code_start);\n"
-            )
+        fd.write(
+            "\t\tsetup(_conditional_strings,"
+            + str(len(header_data.conditionals))
+            + ",_uniform_strings,"
+            + str(len(header_data.uniforms))
+            + ",_attribute_pairs,"
+            + str(len(header_data.attributes))
+            + ", _texunit_pairs,"
+            + str(len(header_data.texunits))
+            + ",_vertex_code,_fragment_code,_vertex_code_start,_fragment_code_start);\n"
+        )
     else:
-        if gles2:
-            fd.write(
-                "\t\tsetup(_conditional_strings,"
-                + str(len(header_data.conditionals))
-                + ",_uniform_strings,"
-                + str(len(header_data.uniforms))
-                + ",_texunit_pairs,"
-                + str(len(header_data.texunits))
-                + ",_enums,"
-                + str(len(header_data.enums))
-                + ",_enum_values,"
-                + str(enum_value_count)
-                + ",_vertex_code,_fragment_code,_vertex_code_start,_fragment_code_start);\n"
-            )
-        else:
-            fd.write(
-                "\t\tsetup(_conditional_strings,"
-                + str(len(header_data.conditionals))
-                + ",_uniform_strings,"
-                + str(len(header_data.uniforms))
-                + ",_texunit_pairs,"
-                + str(len(header_data.texunits))
-                + ",_enums,"
-                + str(len(header_data.enums))
-                + ",_enum_values,"
-                + str(enum_value_count)
-                + ",_ubo_pairs,"
-                + str(len(header_data.ubos))
-                + ",_feedbacks,"
-                + str(feedback_count)
-                + ",_vertex_code,_fragment_code,_vertex_code_start,_fragment_code_start);\n"
-            )
+        fd.write(
+            "\t\tsetup(_conditional_strings,"
+            + str(len(header_data.conditionals))
+            + ",_uniform_strings,"
+            + str(len(header_data.uniforms))
+            + ",_texunit_pairs,"
+            + str(len(header_data.texunits))
+            + ",_enums,"
+            + str(len(header_data.enums))
+            + ",_enum_values,"
+            + str(enum_value_count)
+            + ",_vertex_code,_fragment_code,_vertex_code_start,_fragment_code_start);\n"
+        )
 
     fd.write("\t}\n\n")
 
@@ -586,15 +519,10 @@ def build_legacygl_header(filename, include, class_suffix, output_attribs, gles2
     fd.close()
 
 
-def build_gles3_headers(target, source, env):
-    for x in source:
-        build_legacygl_header(str(x), include="drivers/gles3/shader_gles3.h", class_suffix="GLES3", output_attribs=True)
-
-
-def build_gles2_headers(target, source, env):
+def build_opengl_headers(target, source, env):
     for x in source:
         build_legacygl_header(
-            str(x), include="drivers/gles2/shader_gles2.h", class_suffix="GLES2", output_attribs=True, gles2=True
+            str(x), include="drivers/opengl/shader_opengl.h", class_suffix="OpenGL", output_attribs=True
         )
 
 

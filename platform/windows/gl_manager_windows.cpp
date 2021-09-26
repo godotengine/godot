@@ -31,7 +31,7 @@
 #include "gl_manager_windows.h"
 
 #ifdef WINDOWS_ENABLED
-#ifdef GLES_WINDOWS_ENABLED
+#ifdef OPENGL_ENABLED
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -66,7 +66,7 @@ int GLManager_Windows::_find_or_create_display(GLWindow &win) {
 	//	}
 
 	// create
-	GLDisplay d_temp;
+	GLDisplay d_temp = {};
 	_displays.push_back(d_temp);
 	int new_display_id = _displays.size() - 1;
 

@@ -458,7 +458,7 @@ TypedArray<String> VoxelGI::get_configuration_warnings() const {
 	TypedArray<String> warnings = Node::get_configuration_warnings();
 
 	if (RenderingServer::get_singleton()->is_low_end()) {
-		warnings.push_back(TTR("VoxelGIs are not supported by the GLES2 video driver.\nUse a LightmapGI instead."));
+		warnings.push_back(TTR("VoxelGIs are not supported by the OpenGL video driver.\nUse a LightmapGI instead."));
 	} else if (probe_data.is_null()) {
 		warnings.push_back(TTR("No VoxelGI data set, so this node is disabled. Bake static objects to enable GI."));
 	}

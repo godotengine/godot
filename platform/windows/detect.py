@@ -279,7 +279,7 @@ def configure_msvc(env, manual_msvc_config):
     if not env["use_volk"]:
         LIBS += ["vulkan"]
 
-    # env.AppendUnique(CPPDEFINES = ['OPENGL_ENABLED'])
+    env.AppendUnique(CPPDEFINES=["OPENGL_ENABLED"])
     LIBS += ["opengl32"]
 
     env.Append(LINKFLAGS=[p + env["LIBSUFFIX"] for p in LIBS])

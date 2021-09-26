@@ -28,11 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#pragma once
+#ifndef GL_MANAGER_WINDOWS_H
+#define GL_MANAGER_WINDOWS_H
 
-#ifdef WINDOWS_ENABLED
-
-#ifdef GLES_WINDOWS_ENABLED
+#if defined(WINDOWS_ENABLED) && defined(OPENGL_ENABLED)
 
 #include "core/error/error_list.h"
 #include "core/os/os.h"
@@ -47,7 +46,7 @@ typedef int(APIENTRY *PFNWGLGETSWAPINTERVALEXTPROC)(void);
 class GLManager_Windows {
 public:
 	enum ContextType {
-		GLES_2_0_COMPATIBLE,
+		GLES_3_0_COMPATIBLE,
 	};
 
 private:
@@ -124,6 +123,6 @@ public:
 	~GLManager_Windows();
 };
 
-#endif // OPENGL_ENABLED
+#endif // defined(WINDOWS_ENABLED) && defined(OPENGL_ENABLED)
 
-#endif // WINDOWS
+#endif // GL_MANAGER_WINDOWS_H

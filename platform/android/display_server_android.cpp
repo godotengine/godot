@@ -411,9 +411,9 @@ DisplayServerAndroid::DisplayServerAndroid(const String &p_rendering_driver, Dis
 	if (rendering_driver == "opengl") {
 		bool gl_initialization_error = false;
 
-		if (RasterizerGLES2::is_viable() == OK) {
-			RasterizerGLES2::register_config();
-			RasterizerGLES2::make_current();
+		if (RasterizerOpenGLis_viable() == OK) {
+			RasterizerOpenGLregister_config();
+			RasterizerOpenGLmake_current();
 		} else {
 			gl_initialization_error = true;
 		}

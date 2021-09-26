@@ -36,29 +36,24 @@
  * For use in render drivers, not for general use.
  * TO BE REPLACED by local_vector.
 */
-#include "rasterizer_version.h"
 
 #include "core/os/memory.h"
 #include <string.h>
 
-#ifdef GODOT_4
 #include "core/templates/local_vector.h"
 #include "core/templates/vector.h"
-#else
-#include "core/vector.h"
-#endif
 
 // very simple non-growable array, that keeps track of the size of a 'unit'
 // which can be cast to whatever vertex format FVF required, and is initially
 // created with enough memory to hold the biggest FVF.
 // This allows multiple FVFs to use the same array.
-class RasterizerUnitArrayGLES2 {
+class RasterizerUnitArrayOpenGL {
 public:
-	RasterizerUnitArrayGLES2() {
+	RasterizerUnitArrayOpenGL() {
 		_list = nullptr;
 		free();
 	}
-	~RasterizerUnitArrayGLES2() { free(); }
+	~RasterizerUnitArrayOpenGL() { free(); }
 
 	uint8_t *get_unit(unsigned int ui) { return &_list[ui * _unit_size_bytes]; }
 	const uint8_t *get_unit(unsigned int ui) const { return &_list[ui * _unit_size_bytes]; }

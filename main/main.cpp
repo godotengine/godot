@@ -1275,14 +1275,14 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	register_core_extensions(); //before display
 	// possibly be worth changing the default from vulkan to something lower spec,
 	// for the project manager, depending on how smooth the fallback is.
-	GLOBAL_DEF("rendering/driver/driver_name", "Vulkan");
+	GLOBAL_DEF_RST("rendering/driver/driver_name", "Vulkan");
 
 	// this list is hard coded, which makes it more difficult to add new backends.
 	// can potentially be changed to more of a plugin system at a later date.
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/driver/driver_name",
 			PropertyInfo(Variant::STRING,
 					"rendering/driver/driver_name",
-					PROPERTY_HINT_ENUM, "Vulkan,GLES2,GLES3"));
+					PROPERTY_HINT_ENUM, "Vulkan,OpenGL"));
 
 	// if not set on the command line
 	if (rendering_driver == "") {
@@ -1294,10 +1294,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	// shows the correct driver string.
 	OS::get_singleton()->set_current_rendering_driver_name(rendering_driver);
 
-	// always convert to lower case vulkan for consistency in the code
-	if (rendering_driver == "Vulkan") {
-		rendering_driver = "vulkan";
-	}
+	// always convert to lower case for consistency in the code
+	rendering_driver = rendering_driver.to_lower();
 
 	GLOBAL_DEF_BASIC("display/window/size/width", 1024);
 	ProjectSettings::get_singleton()->set_custom_property_info("display/window/size/width",

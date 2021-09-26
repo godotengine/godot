@@ -1,12 +1,12 @@
 /*************************************************************************/
-/*  rasterizer_canvas_base_gles2.h                                       */
+/*  rasterizer_canvas_base_opengl.h                                      */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,24 +28,24 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#pragma once
+#ifndef RASTERIZER_CANVAS_BASE_OPENGL_H
+#define RASTERIZER_CANVAS_BASE_OPENGL_H
 
-#include "drivers/gles_common/rasterizer_platforms.h"
-#ifdef GLES2_BACKEND_ENABLED
+#include "drivers/opengl/rasterizer_platforms.h"
+#ifdef OPENGL_BACKEND_ENABLED
 
-#include "drivers/gles_common/rasterizer_array.h"
-#include "drivers/gles_common/rasterizer_common_stubs.h"
-#include "drivers/gles_common/rasterizer_storage_common.h"
-#include "drivers/gles_common/rasterizer_version.h"
-#include "rasterizer_scene_gles2.h"
-#include "rasterizer_storage_gles2.h"
+#include "drivers/opengl/rasterizer_array.h"
+#include "drivers/opengl/rasterizer_storage_common.h"
+#include "rasterizer_scene_opengl.h"
+#include "rasterizer_storage_opengl.h"
+#include "servers/rendering/renderer_canvas_render.h"
 #include "servers/rendering/renderer_compositor.h"
 
 #include "shaders/canvas.glsl.gen.h"
 #include "shaders/canvas_shadow.glsl.gen.h"
 #include "shaders/lens_distorted.glsl.gen.h"
 
-class RasterizerCanvasBaseGLES2 : public StubsCanvas {
+class RasterizerCanvasBaseOpenGL : public RendererCanvasRender {
 public:
 	enum {
 		INSTANCE_ATTRIB_BASE = 8,
@@ -77,9 +77,9 @@ public:
 	struct State {
 		Uniforms uniforms;
 		bool canvas_texscreen_used;
-		CanvasShaderGLES2 canvas_shader;
-		CanvasShadowShaderGLES2 canvas_shadow_shader;
-		LensDistortedShaderGLES2 lens_shader;
+		CanvasShaderOpenGL canvas_shader;
+		CanvasShadowShaderOpenGL canvas_shadow_shader;
+		LensDistortedShaderOpenGL lens_shader;
 
 		bool using_texture_rect;
 
@@ -96,7 +96,7 @@ public:
 
 		RID current_tex;
 		RID current_normal;
-		RasterizerStorageGLES2::Texture *current_tex_ptr;
+		RasterizerStorageOpenGL::Texture *current_tex_ptr;
 
 		Transform3D vp;
 		Light *using_light;
@@ -111,9 +111,9 @@ public:
 
 	typedef void Texture;
 
-	RasterizerSceneGLES2 *scene_render;
+	RasterizerSceneOpenGL *scene_render;
 
-	RasterizerStorageGLES2 *storage;
+	RasterizerStorageOpenGL *storage;
 
 	// allow user to choose api usage
 	GLenum _buffer_upload_usage_flag;
@@ -128,9 +128,9 @@ public:
 	virtual void canvas_end();
 
 protected:
-	void _legacy_draw_primitive(Item::CommandPrimitive *p_pr, RasterizerStorageGLES2::Material *p_material);
-	void _legacy_draw_line(Item::CommandPrimitive *p_pr, RasterizerStorageGLES2::Material *p_material);
-	void _legacy_draw_poly_triangles(Item::CommandPolygon *p_poly, RasterizerStorageGLES2::Material *p_material);
+	void _legacy_draw_primitive(Item::CommandPrimitive *p_pr, RasterizerStorageOpenGL::Material *p_material);
+	void _legacy_draw_line(Item::CommandPrimitive *p_pr, RasterizerStorageOpenGL::Material *p_material);
+	void _legacy_draw_poly_triangles(Item::CommandPolygon *p_poly, RasterizerStorageOpenGL::Material *p_material);
 
 public:
 	void _draw_gui_primitive(int p_points, const Vector2 *p_vertices, const Color *p_colors, const Vector2 *p_uvs, const float *p_light_angles = nullptr);
@@ -148,9 +148,27 @@ public:
 
 	virtual void reset_canvas();
 	virtual void canvas_light_shadow_buffer_update(RID p_buffer, const Transform2D &p_light_xform, int p_light_mask, float p_near, float p_far, LightOccluderInstance *p_occluders, CameraMatrix *p_xform_cache);
+
+	// Copied from RasterizerCanvasDummy:
 	virtual void canvas_debug_viewport_shadows(Light *p_lights_with_shadow) override;
 
-	RasterizerStorageGLES2::Texture *_bind_canvas_texture(const RID &p_texture, const RID &p_normal_map);
+	RID light_create() override;
+	void light_set_texture(RID p_rid, RID p_texture) override;
+	void light_set_use_shadow(RID p_rid, bool p_enable) override;
+	void light_update_shadow(RID p_rid, int p_shadow_index, const Transform2D &p_light_xform, int p_light_mask, float p_near, float p_far, LightOccluderInstance *p_occluders) override;
+	void light_update_directional_shadow(RID p_rid, int p_shadow_index, const Transform2D &p_light_xform, int p_light_mask, float p_cull_distance, const Rect2 &p_clip_rect, LightOccluderInstance *p_occluders) override;
+
+	void render_sdf(RID p_render_target, LightOccluderInstance *p_occluders) override;
+	RID occluder_polygon_create() override;
+	void occluder_polygon_set_shape(RID p_occluder, const Vector<Vector2> &p_points, bool p_closed) override;
+	void occluder_polygon_set_cull_mode(RID p_occluder, RS::CanvasOccluderPolygonCullMode p_mode) override;
+	void set_shadow_texture_size(int p_size) override;
+
+	bool free(RID p_rid) override;
+	void update() override;
+	// End copied from RasterizerCanvasDummy.
+
+	RasterizerStorageOpenGL::Texture *_bind_canvas_texture(const RID &p_texture, const RID &p_normal_map);
 	void _set_texture_rect_mode(bool p_texture_rect, bool p_light_angle = false, bool p_modulate = false, bool p_large_vertex = false);
 
 	// NEW API
@@ -170,7 +188,9 @@ public:
 	void initialize();
 	void finalize();
 
-	RasterizerCanvasBaseGLES2();
+	RasterizerCanvasBaseOpenGL();
 };
 
-#endif // GLES2_BACKEND_ENABLED
+#endif // OPENGL_BACKEND_ENABLED
+
+#endif // RASTERIZER_CANVAS_BASE_OPENGL_H

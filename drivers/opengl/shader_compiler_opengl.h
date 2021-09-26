@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  shader_compiler_gles2.h                                              */
+/*  shader_compiler_opengl.h                                             */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,27 +28,19 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#pragma once
+#ifndef SHADER_COMPILER_OPENGL_H
+#define SHADER_COMPILER_OPENGL_H
 
-#include "drivers/gles_common/rasterizer_platforms.h"
-#ifdef GLES2_BACKEND_ENABLED
+#include "drivers/opengl/rasterizer_platforms.h"
+#ifdef OPENGL_BACKEND_ENABLED
 
-#include "drivers/gles_common/rasterizer_version.h"
-#ifdef GODOT_3
-#include "core/pair.h"
-#include "core/string_builder.h"
-#include "servers/visual/shader_language.h"
-#include "servers/visual/shader_types.h"
-#include "servers/visual_server.h"
-#else
 #include "core/string/string_builder.h"
 #include "core/templates/pair.h"
 #include "servers/rendering/shader_language.h"
 #include "servers/rendering/shader_types.h"
 #include "servers/rendering_server.h"
-#endif
 
-class ShaderCompilerGLES2 {
+class ShaderCompilerOpenGL {
 public:
 	struct IdentifierActions {
 		Map<StringName, Pair<int *, int>> render_mode_values;
@@ -98,15 +90,17 @@ private:
 	Set<StringName> used_rmode_defines;
 	Set<StringName> internal_functions;
 
-	DefaultIdentifierActions actions[GD_VS::SHADER_MAX];
+	DefaultIdentifierActions actions[RS::SHADER_MAX];
 
 	// compatibility with godot 4
 	static ShaderLanguage::DataType _get_variable_type(const StringName &p_type);
 
 public:
-	Error compile(GD_VS::ShaderMode p_mode, const String &p_code, IdentifierActions *p_actions, const String &p_path, GeneratedCode &r_gen_code);
+	Error compile(RS::ShaderMode p_mode, const String &p_code, IdentifierActions *p_actions, const String &p_path, GeneratedCode &r_gen_code);
 
-	ShaderCompilerGLES2();
+	ShaderCompilerOpenGL();
 };
 
-#endif // GLES2_BACKEND_ENABLED
+#endif // OPENGL_BACKEND_ENABLED
+
+#endif // SHADER_COMPILER_OPENGL_H

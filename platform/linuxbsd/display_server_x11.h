@@ -31,7 +31,7 @@
 #ifndef DISPLAY_SERVER_X11_H
 #define DISPLAY_SERVER_X11_H
 
-#include "drivers/gles_common/rasterizer_platforms.h"
+#include "drivers/opengl/rasterizer_platforms.h"
 
 #ifdef X11_ENABLED
 
@@ -48,7 +48,7 @@
 #include "servers/rendering/renderer_compositor.h"
 #include "servers/rendering_server.h"
 
-#if defined(GLES_X11_ENABLED)
+#if defined(OPENGL_ENABLED)
 #include "gl_manager_x11.h"
 #endif
 
@@ -101,7 +101,7 @@ class DisplayServerX11 : public DisplayServer {
 	Atom requested;
 	int xdnd_version;
 
-#if defined(GLES_X11_ENABLED)
+#if defined(OPENGL_ENABLED)
 	GLManager_X11 *gl_manager = nullptr;
 #endif
 #if defined(VULKAN_ENABLED)
@@ -339,7 +339,7 @@ public:
 
 	virtual void window_set_max_size(const Size2i p_size, WindowID p_window = MAIN_WINDOW_ID) override;
 	virtual Size2i window_get_max_size(WindowID p_window = MAIN_WINDOW_ID) const override;
-	virtual void gl_window_make_current(DisplayServer::WindowID p_window_id);
+	virtual void gl_window_make_current(DisplayServer::WindowID p_window_id) override;
 
 	virtual void window_set_transient(WindowID p_window, WindowID p_parent) override;
 

@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  rasterizer_gles2.cpp                                                 */
+/*  rasterizer_opengl.cpp                                                */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,10 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "rasterizer_gles2.h"
+#include "rasterizer_opengl.h"
 
-#ifdef GLES2_BACKEND_ENABLED
-#include "shader_gles2.h"
+#ifdef OPENGL_BACKEND_ENABLED
+#include "shader_opengl.h"
 
 #include "core/config/project_settings.h"
 #include "core/os/os.h"
@@ -87,7 +87,7 @@
 #define strcpy strcpy_s
 #endif
 
-void RasterizerGLES2::begin_frame(double frame_step) {
+void RasterizerOpenGL::begin_frame(double frame_step) {
 	frame++;
 	delta = frame_step;
 
@@ -117,7 +117,7 @@ void RasterizerGLES2::begin_frame(double frame_step) {
 	//scene->iteration();
 }
 
-void RasterizerGLES2::end_frame(bool p_swap_buffers) {
+void RasterizerOpenGL::end_frame(bool p_swap_buffers) {
 	//	if (OS::get_singleton()->is_layered_allowed()) {
 	//		if (!OS::get_singleton()->get_window_per_pixel_transparency_enabled()) {
 	//clear alpha
@@ -196,8 +196,8 @@ typedef void (*DEBUGPROCARB)(GLenum source,
 
 typedef void (*DebugMessageCallbackARB)(DEBUGPROCARB callback, const void *userParam);
 
-void RasterizerGLES2::initialize() {
-	print_verbose("Using GLES2 video driver");
+void RasterizerOpenGL::initialize() {
+	print_verbose("Using OpenGL video driver");
 
 	storage._main_thread_id = Thread::get_caller_id();
 
@@ -252,7 +252,7 @@ void RasterizerGLES2::initialize() {
 #endif // GLES_OVER_GL
 #endif // CAN_DEBUG
 
-	print_line("OpenGL ES 2.0 Renderer: " + GD_VS::get_singleton()->get_video_adapter_name());
+	print_line("OpenGL Renderer: " + RS::get_singleton()->get_video_adapter_name());
 	storage.initialize();
 	canvas.initialize();
 	//	scene.initialize();
@@ -261,7 +261,7 @@ void RasterizerGLES2::initialize() {
 	OS::get_singleton()->set_render_main_thread_mode(OS::RENDER_MAIN_THREAD_ONLY);
 }
 
-RasterizerGLES2::RasterizerGLES2() {
+RasterizerOpenGL::RasterizerOpenGL() {
 	canvas.storage = &storage;
 	canvas.scene_render = &scene;
 	storage.canvas = &canvas;
@@ -269,15 +269,15 @@ RasterizerGLES2::RasterizerGLES2() {
 	storage.scene = &scene;
 }
 
-void RasterizerGLES2::prepare_for_blitting_render_targets() {
+void RasterizerOpenGL::prepare_for_blitting_render_targets() {
 }
 
-void RasterizerGLES2::_blit_render_target_to_screen(RID p_render_target, const Rect2 &p_screen_rect) {
+void RasterizerOpenGL::_blit_render_target_to_screen(RID p_render_target, const Rect2 &p_screen_rect) {
 	ERR_FAIL_COND(storage.frame.current_rt);
 
 	//	print_line("_blit_render_target_to_screen " + itos (p_screen) + ", rect " + String(Variant(p_screen_rect)));
 
-	RasterizerStorageGLES2::RenderTarget *rt = storage.render_target_owner.getornull(p_render_target);
+	RasterizerStorageOpenGL::RenderTarget *rt = storage.render_target_owner.get_or_null(p_render_target);
 	ERR_FAIL_COND(!rt);
 
 	canvas._set_texture_rect_mode(true);
@@ -300,7 +300,7 @@ void RasterizerGLES2::_blit_render_target_to_screen(RID p_render_target, const R
 }
 
 // is this p_screen useless in a multi window environment?
-void RasterizerGLES2::blit_render_targets_to_screen(DisplayServer::WindowID p_screen, const BlitToScreen *p_render_targets, int p_amount) {
+void RasterizerOpenGL::blit_render_targets_to_screen(DisplayServer::WindowID p_screen, const BlitToScreen *p_render_targets, int p_amount) {
 	// do this once off for all blits
 	storage.bind_framebuffer_system();
 
@@ -316,7 +316,7 @@ void RasterizerGLES2::blit_render_targets_to_screen(DisplayServer::WindowID p_sc
 	}
 }
 
-void RasterizerGLES2::set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale, bool p_use_filter) {
+void RasterizerOpenGL::set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale, bool p_use_filter) {
 	if (p_image.is_null() || p_image->is_empty())
 		return;
 
@@ -339,7 +339,7 @@ void RasterizerGLES2::set_boot_image(const Ref<Image> &p_image, const Color &p_c
 
 	RID texture = storage.texture_create();
 	//storage.texture_allocate(texture, p_image->get_width(), p_image->get_height(), 0, p_image->get_format(), VS::TEXTURE_TYPE_2D, p_use_filter ? VS::TEXTURE_FLAG_FILTER : 0);
-	storage._texture_allocate_internal(texture, p_image->get_width(), p_image->get_height(), 0, p_image->get_format(), GD_RD::TEXTURE_TYPE_2D);
+	storage._texture_allocate_internal(texture, p_image->get_width(), p_image->get_height(), 0, p_image->get_format(), RenderingDevice::TEXTURE_TYPE_2D);
 	storage.texture_set_data(texture, p_image);
 
 	Rect2 imgrect(0, 0, p_image->get_width(), p_image->get_height());
@@ -362,7 +362,7 @@ void RasterizerGLES2::set_boot_image(const Ref<Image> &p_image, const Color &p_c
 		screenrect.position += ((Size2(window_w, window_h) - screenrect.size) / 2.0).floor();
 	}
 
-	RasterizerStorageGLES2::Texture *t = storage.texture_owner.getornull(texture);
+	RasterizerStorageOpenGL::Texture *t = storage.texture_owner.get_or_null(texture);
 	glActiveTexture(GL_TEXTURE0 + storage.config.max_texture_image_units - 1);
 	glBindTexture(GL_TEXTURE_2D, t->tex_id);
 	canvas.draw_generic_textured_rect(screenrect, Rect2(0, 0, 1, 1));
@@ -374,4 +374,4 @@ void RasterizerGLES2::set_boot_image(const Ref<Image> &p_image, const Color &p_c
 	end_frame(true);
 }
 
-#endif // GLES2_BACKEND_ENABLED
+#endif // OPENGL_BACKEND_ENABLED

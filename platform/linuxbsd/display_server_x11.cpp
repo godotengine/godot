@@ -44,8 +44,8 @@
 #include "servers/rendering/renderer_rd/renderer_compositor_rd.h"
 #endif
 
-#if defined(GLES_X11_ENABLED)
-#include "drivers/gles2/rasterizer_gles2.h"
+#if defined(OPENGL_ENABLED)
+#include "drivers/opengl/rasterizer_opengl.h"
 #endif
 
 #include <limits.h>
@@ -889,7 +889,7 @@ void DisplayServerX11::delete_sub_window(WindowID p_id) {
 		context_vulkan->window_destroy(p_id);
 	}
 #endif
-#ifdef GLES_X11_ENABLED
+#ifdef OPENGL_ENABLED
 	if (gl_manager) {
 		gl_manager->window_destroy(p_id);
 	}
@@ -1064,7 +1064,7 @@ int DisplayServerX11::window_get_current_screen(WindowID p_window) const {
 }
 
 void DisplayServerX11::gl_window_make_current(DisplayServer::WindowID p_window_id) {
-#if defined(GLES_X11_ENABLED)
+#if defined(OPENGL_ENABLED)
 	if (gl_manager)
 		gl_manager->window_make_current(p_window_id);
 #endif
@@ -2666,7 +2666,7 @@ void DisplayServerX11::_window_changed(XEvent *event) {
 		context_vulkan->window_resize(window_id, wd.size.width, wd.size.height);
 	}
 #endif
-#if defined(GLES_X11_ENABLED)
+#if defined(OPENGL_ENABLED)
 	if (gl_manager) {
 		gl_manager->window_resize(window_id, wd.size.width, wd.size.height);
 	}
@@ -3547,19 +3547,19 @@ void DisplayServerX11::process_events() {
 }
 
 void DisplayServerX11::release_rendering_thread() {
-#if defined(GLES_X11_ENABLED)
+#if defined(OPENGL_ENABLED)
 //	gl_manager->release_current();
 #endif
 }
 
 void DisplayServerX11::make_rendering_thread() {
-#if defined(GLES_X11_ENABLED)
+#if defined(OPENGL_ENABLED)
 //	gl_manager->make_current();
 #endif
 }
 
 void DisplayServerX11::swap_buffers() {
-#if defined(GLES_X11_ENABLED)
+#if defined(OPENGL_ENABLED)
 	if (gl_manager) {
 		gl_manager->swap_buffers();
 	}
@@ -3710,7 +3710,7 @@ void DisplayServerX11::window_set_vsync_mode(DisplayServer::VSyncMode p_vsync_mo
 	}
 #endif
 
-#if defined(GLES_X11_ENABLED)
+#if defined(OPENGL_ENABLED)
 	if (gl_manager) {
 		gl_manager->set_use_vsync(p_vsync_mode == DisplayServer::VSYNC_ENABLED);
 	}
@@ -3724,7 +3724,7 @@ DisplayServer::VSyncMode DisplayServerX11::window_get_vsync_mode(WindowID p_wind
 		return context_vulkan->get_vsync_mode(p_window);
 	}
 #endif
-#if defined(GLES_X11_ENABLED)
+#if defined(OPENGL_ENABLED)
 	if (gl_manager) {
 		return gl_manager->is_using_vsync() ? DisplayServer::VSYNC_ENABLED : DisplayServer::VSYNC_DISABLED;
 	}
@@ -3738,10 +3738,8 @@ Vector<String> DisplayServerX11::get_rendering_drivers_func() {
 #ifdef VULKAN_ENABLED
 	drivers.push_back("vulkan");
 #endif
-#ifdef GLES_X11_ENABLED
-	//	drivers.push_back("opengl");
-	drivers.push_back("GLES2");
-	drivers.push_back("GLES3");
+#ifdef OPENGL_ENABLED
+	drivers.push_back("opengl");
 #endif
 
 	return drivers;
@@ -3750,7 +3748,7 @@ Vector<String> DisplayServerX11::get_rendering_drivers_func() {
 DisplayServer *DisplayServerX11::create_func(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error) {
 	DisplayServer *ds = memnew(DisplayServerX11(p_rendering_driver, p_mode, p_vsync_mode, p_flags, p_resolution, r_error));
 	if (r_error != OK) {
-		OS::get_singleton()->alert("Your video card driver does not support any of the supported Vulkan versions.\n"
+		OS::get_singleton()->alert("Your video card driver does not support any of the supported Vulkan or OpenGL versions.\n"
 								   "Please update your drivers or if you have a very old or integrated GPU, upgrade it.\n"
 								   "If you have updated your graphics drivers recently, try rebooting.",
 				"Unable to initialize Video driver");
@@ -3926,11 +3924,11 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, V
 			ERR_FAIL_COND_V_MSG(err != OK, INVALID_WINDOW_ID, "Can't create a Vulkan window");
 		}
 #endif
-#ifdef GLES_X11_ENABLED
+#ifdef OPENGL_ENABLED
 		print_line("rendering_driver " + rendering_driver);
 		if (gl_manager) {
 			Error err = gl_manager->window_create(id, wd.x11_window, x11_display, p_rect.size.width, p_rect.size.height);
-			ERR_FAIL_COND_V_MSG(err != OK, INVALID_WINDOW_ID, "Can't create a GLES2 window");
+			ERR_FAIL_COND_V_MSG(err != OK, INVALID_WINDOW_ID, "Can't create an OpenGL window");
 		}
 #endif
 
@@ -4114,15 +4112,13 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 	xdnd_selection = XInternAtom(x11_display, "XdndSelection", False);
 
 	//!!!!!!!!!!!!!!!!!!!!!!!!!!
-	//TODO - do Vulkan and GLES2 support checks, driver selection and fallback
+	//TODO - do Vulkan and OpenGL support checks, driver selection and fallback
 	rendering_driver = p_rendering_driver;
 
 #ifndef _MSC_VER
 //#warning Forcing vulkan rendering driver because OpenGL not implemented yet
 //#warning Forcing opengl rendering driver because selecting properly is too much effort
 #endif
-	//	rendering_driver = "vulkan";
-	//rendering_driver = "GLES2";
 
 	bool driver_found = false;
 #if defined(VULKAN_ENABLED)
@@ -4138,9 +4134,9 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 	}
 #endif
 	// Init context and rendering device
-#if defined(GLES_X11_ENABLED)
+#if defined(OPENGL_ENABLED)
 	print_line("rendering_driver " + rendering_driver);
-	if (rendering_driver == "GLES2") {
+	if (rendering_driver == "opengl") {
 		if (getenv("DRI_PRIME") == nullptr) {
 			int use_prime = -1;
 
@@ -4182,7 +4178,7 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 			}
 		}
 
-		GLManager_X11::ContextType opengl_api_type = GLManager_X11::GLES_2_0_COMPATIBLE;
+		GLManager_X11::ContextType opengl_api_type = GLManager_X11::GLES_3_0_COMPATIBLE;
 
 		gl_manager = memnew(GLManager_X11(p_resolution, opengl_api_type));
 
@@ -4197,9 +4193,9 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 		//		gl_manager->set_use_vsync(current_videomode.use_vsync);
 
 		if (true) {
-			//		if (RasterizerGLES2::is_viable() == OK) {
-			//		RasterizerGLES2::register_config();
-			RasterizerGLES2::make_current();
+			//		if (RasterizerOpenGL::is_viable() == OK) {
+			//		RasterizerOpenGL::register_config();
+			RasterizerOpenGL::make_current();
 		} else {
 			memdelete(gl_manager);
 			gl_manager = nullptr;
@@ -4415,9 +4411,9 @@ DisplayServerX11::~DisplayServerX11() {
 			context_vulkan->window_destroy(E.key);
 		}
 #endif
-#ifdef GLES_X11_ENABLED
-		if (rendering_driver == "GLES2") {
-			gl_manager->window_destroy(E->key());
+#ifdef OPENGL_ENABLED
+		if (rendering_driver == "opengl") {
+			gl_manager->window_destroy(E.key);
 		}
 #endif
 
@@ -4444,7 +4440,7 @@ DisplayServerX11::~DisplayServerX11() {
 	}
 #endif
 
-#ifdef GLES_X11_ENABLED
+#ifdef OPENGL_ENABLED
 	if (gl_manager) {
 		memdelete(gl_manager);
 		gl_manager = nullptr;

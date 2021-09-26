@@ -1,0 +1,14 @@
+#!/usr/bin/env python
+
+Import("env")
+
+if "OpenGL_GLSL" in env["BUILDERS"]:
+    env.OpenGL_GLSL("copy.glsl")
+    env.OpenGL_GLSL("canvas.glsl")
+    env.OpenGL_GLSL("canvas_shadow.glsl")
+    env.OpenGL_GLSL("scene.glsl")
+    env.OpenGL_GLSL("cubemap_filter.glsl")
+    env.OpenGL_GLSL("cube_to_dp.glsl")
+    env.OpenGL_GLSL("effect_blur.glsl")
+    env.OpenGL_GLSL("tonemap.glsl")
+    env.OpenGL_GLSL("lens_distorted.glsl")

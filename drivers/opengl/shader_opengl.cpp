@@ -1,12 +1,12 @@
 /*************************************************************************/
-/*  shader_gles2.cpp                                                     */
+/*  shader_opengl.cpp                                                    */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,23 +28,17 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "shader_gles2.h"
-#include "drivers/gles_common/rasterizer_platforms.h"
-#ifdef GLES2_BACKEND_ENABLED
+#include "shader_opengl.h"
+#include "drivers/opengl/rasterizer_platforms.h"
+#ifdef OPENGL_BACKEND_ENABLED
 
-#include "core/os/memory.h"
-#include "rasterizer_gles2.h"
-#include "rasterizer_storage_gles2.h"
+#include "rasterizer_opengl.h"
+#include "rasterizer_storage_opengl.h"
 
-#ifdef GODOT_3
-#include "core/print_string.h"
-#include "core/project_settings.h"
-#include "core/string_builder.h"
-#else
 #include "core/config/project_settings.h"
+#include "core/os/memory.h"
 #include "core/string/print_string.h"
 #include "core/string/string_builder.h"
-#endif
 
 // #define DEBUG_OPENGL
 
@@ -65,7 +59,7 @@
 
 #endif
 
-ShaderGLES2 *ShaderGLES2::active = NULL;
+ShaderOpenGL *ShaderOpenGL::active = NULL;
 
 //#define DEBUG_SHADER
 
@@ -79,15 +73,13 @@ ShaderGLES2 *ShaderGLES2::active = NULL;
 
 #endif
 
-GLint ShaderGLES2::get_uniform_location(int p_index) const {
+GLint ShaderOpenGL::get_uniform_location(int p_index) const {
 	ERR_FAIL_COND_V(!version, -1);
 
 	return version->uniform_location[p_index];
 }
 
-//#ifdef GODOT_3
-
-bool ShaderGLES2::bind() {
+bool ShaderOpenGL::bind() {
 	if (active != this || !version || new_conditional_version.key != conditional_version.key) {
 		conditional_version = new_conditional_version;
 		version = get_current_version();
@@ -112,7 +104,7 @@ bool ShaderGLES2::bind() {
 	return true;
 }
 
-void ShaderGLES2::unbind() {
+void ShaderOpenGL::unbind() {
 	version = NULL;
 	glUseProgram(0);
 	uniforms_dirty = true;
@@ -142,7 +134,7 @@ static String _mkid(const String &p_id) {
 	return id.replace("__", "_dus_"); //doubleunderscore is reserved in glsl
 }
 
-ShaderGLES2::Version *ShaderGLES2::get_current_version() {
+ShaderOpenGL::Version *ShaderOpenGL::get_current_version() {
 	if (!valid)
 		return nullptr;
 
@@ -201,8 +193,8 @@ ShaderGLES2::Version *ShaderGLES2::get_current_version() {
 	strings.push_back("#define USE_HIGHP_PRECISION\n");
 #endif
 
-	if (GLOBAL_GET("rendering/gles2/compatibility/enable_high_float.Android")) {
-		// enable USE_HIGHP_PRECISION but safeguarded by an availability check as highp support is optional in GLES2
+	if (GLOBAL_GET("rendering/opengl/compatibility/enable_high_float.Android")) {
+		// enable USE_HIGHP_PRECISION but safeguarded by an availability check as highp support is optional in OpenGL
 		// see Section 4.5.4 of the GLSL_ES_Specification_1.00
 		strings.push_back("#ifdef GL_FRAGMENT_PRECISION_HIGH\n  #define USE_HIGHP_PRECISION\n#endif\n");
 	}
@@ -492,12 +484,12 @@ ShaderGLES2::Version *ShaderGLES2::get_current_version() {
 	return &v;
 }
 
-GLint ShaderGLES2::get_uniform_location(const String &p_name) const {
+GLint ShaderOpenGL::get_uniform_location(const String &p_name) const {
 	ERR_FAIL_COND_V(!version, -1);
 	return glGetUniformLocation(version->id, p_name.ascii().get_data());
 }
 
-void ShaderGLES2::setup(
+void ShaderOpenGL::setup(
 		const char **p_conditional_defines,
 		int p_conditional_count,
 		const char **p_uniform_names,
@@ -587,7 +579,7 @@ void ShaderGLES2::setup(
 	valid = true;
 }
 
-void ShaderGLES2::finish() {
+void ShaderOpenGL::finish() {
 	const VersionKey *V = NULL;
 
 	while ((V = version_map.next(V))) {
@@ -601,7 +593,7 @@ void ShaderGLES2::finish() {
 	}
 }
 
-void ShaderGLES2::clear_caches() {
+void ShaderOpenGL::clear_caches() {
 	const VersionKey *V = NULL;
 
 	while ((V = version_map.next(V))) {
@@ -620,13 +612,13 @@ void ShaderGLES2::clear_caches() {
 	uniforms_dirty = true;
 }
 
-uint32_t ShaderGLES2::create_custom_shader() {
+uint32_t ShaderOpenGL::create_custom_shader() {
 	custom_code_map[last_custom_code] = CustomCode();
 	custom_code_map[last_custom_code].version = 1;
 	return last_custom_code++;
 }
 
-void ShaderGLES2::set_custom_shader_code(uint32_t p_code_id,
+void ShaderOpenGL::set_custom_shader_code(uint32_t p_code_id,
 		const String &p_vertex,
 		const String &p_vertex_globals,
 		const String &p_fragment,
@@ -649,11 +641,11 @@ void ShaderGLES2::set_custom_shader_code(uint32_t p_code_id,
 	cc->version++;
 }
 
-void ShaderGLES2::set_custom_shader(uint32_t p_code_id) {
+void ShaderOpenGL::set_custom_shader(uint32_t p_code_id) {
 	new_conditional_version.code_version = p_code_id;
 }
 
-void ShaderGLES2::free_custom_shader(uint32_t p_code_id) {
+void ShaderOpenGL::free_custom_shader(uint32_t p_code_id) {
 	ERR_FAIL_COND(!custom_code_map.has(p_code_id));
 	if (conditional_version.code_version == p_code_id) {
 		conditional_version.code_version = 0; //do not keep using a version that is going away
@@ -679,8 +671,8 @@ void ShaderGLES2::free_custom_shader(uint32_t p_code_id) {
 	custom_code_map.erase(p_code_id);
 }
 
-void ShaderGLES2::use_material(void *p_material) {
-	RasterizerStorageGLES2::Material *material = (RasterizerStorageGLES2::Material *)p_material;
+void ShaderOpenGL::use_material(void *p_material) {
+	RasterizerStorageOpenGL::Material *material = (RasterizerStorageOpenGL::Material *)p_material;
 
 	if (!material) {
 		return;
@@ -989,7 +981,7 @@ void ShaderGLES2::use_material(void *p_material) {
 				case ShaderLanguage::TYPE_SAMPLER3D:
 				case ShaderLanguage::TYPE_ISAMPLER3D:
 				case ShaderLanguage::TYPE_USAMPLER3D: {
-					// Not implemented in GLES2
+					// Not implemented in OpenGL
 				} break;
 
 				case ShaderLanguage::TYPE_VOID: {
@@ -1109,7 +1101,7 @@ void ShaderGLES2::use_material(void *p_material) {
 				case ShaderLanguage::TYPE_SAMPLER3D:
 				case ShaderLanguage::TYPE_ISAMPLER3D:
 				case ShaderLanguage::TYPE_USAMPLER3D: {
-					// Not implemented in GLES2
+					// Not implemented in OpenGL
 				} break;
 
 				case ShaderLanguage::TYPE_VOID: {
@@ -1123,14 +1115,14 @@ void ShaderGLES2::use_material(void *p_material) {
 	}
 }
 
-ShaderGLES2::ShaderGLES2() {
+ShaderOpenGL::ShaderOpenGL() {
 	version = NULL;
 	last_custom_code = 1;
 	uniforms_dirty = true;
 }
 
-ShaderGLES2::~ShaderGLES2() {
+ShaderOpenGL::~ShaderOpenGL() {
 	finish();
 }
 
-#endif // GLES2_BACKEND_ENABLED
+#endif // OPENGL_BACKEND_ENABLED

@@ -5596,14 +5596,9 @@ void EditorNode::_bottom_panel_raise_toggled(bool p_pressed) {
 }
 
 void EditorNode::_update_rendering_driver_color() {
-	// TODO: Probably should de-hardcode this and add to editor settings.
-	//	if (video_driver->get_text() == "GLES2") {
-	//		video_driver->add_theme_color_override("font_color", Color::hex(0x5586a4ff));
-	//	} else if (video_driver->get_text() == "Vulkan") {
-	//		video_driver->add_theme_color_override("font_color", theme_base->get_theme_color(SNAME("vulkan_color"), SNAME("Editor")));
-	if (rendering_driver->get_text() == "GLES2") {
+	if (rendering_driver->get_text() == "opengl") {
 		rendering_driver->add_theme_color_override("font_color", Color::hex(0x5586a4ff));
-	} else if (rendering_driver->get_text() == "Vulkan") {
+	} else if (rendering_driver->get_text() == "vulkan") {
 		rendering_driver->add_theme_color_override("font_color", theme_base->get_theme_color("vulkan_color", "Editor"));
 	}
 }
@@ -6652,8 +6647,6 @@ EditorNode::EditorNode() {
 	rendering_driver->add_theme_font_override("font", gui_base->get_theme_font("bold", "EditorFonts"));
 	rendering_driver->add_theme_font_size_override("font_size", gui_base->get_theme_font_size("bold_size", "EditorFonts"));
 
-	// TODO re-enable when GLES2 is ported
-	//	video_driver->set_disabled(true);
 	right_menu_hb->add_child(rendering_driver);
 
 	// only display the render drivers that are available for this display driver

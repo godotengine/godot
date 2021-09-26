@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  texture_loader_gles2.h                                               */
+/*  rasterizer_platforms.h                                               */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,22 +28,21 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#pragma once
+#ifndef RASTERIZER_PLATFORMS_H
+#define RASTERIZER_PLATFORMS_H
 
-#include "drivers/gles_common/rasterizer_platforms.h"
-#ifdef GLES2_BACKEND_ENABLED
+/////////////////////////////////////////////////////
+// override for intellisense .. ONLY FOR DEVELOPMENT
+//#ifndef X11_ENABLED
+//#define X11_ENABLED
+//#endif
+//#define OPENGL_BACKEND_ENABLED
+/////////////////////////////////////////////////////
 
-#include "core/io/resource_loader.h"
-#include "scene/resources/texture.h"
+#if defined(OPENGL_ENABLED) || defined(GLES_ENABLED)
 
-class ResourceFormatGLES2Texture : public ResourceFormatLoader {
-public:
-	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, bool p_no_cache = false);
-	virtual void get_recognized_extensions(List<String> *p_extensions) const;
-	virtual bool handles_type(const String &p_type) const;
-	virtual String get_resource_type(const String &p_path) const;
+#define OPENGL_BACKEND_ENABLED
 
-	virtual ~ResourceFormatGLES2Texture() {}
-};
+#endif // defined(OPENGL_ENABLED) || defined(GLES_ENABLED)
 
-#endif
+#endif // RASTERIZER_PLATFORMS_H

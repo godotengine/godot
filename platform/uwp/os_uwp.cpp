@@ -161,7 +161,7 @@ Error OS_UWP::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 	outside = true;
 
 	// FIXME: Hardcoded for now, add Vulkan support.
-	p_video_driver = VIDEO_DRIVER_GLES2;
+	p_video_driver = VIDEO_DRIVER_OPENGL;
 	ContextEGL_UWP::Driver opengl_api_type = ContextEGL_UWP::GLES_2_0;
 
 	bool gl_initialization_error = false;
@@ -175,9 +175,9 @@ Error OS_UWP::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 	}
 
 	if (opengl_api_type == ContextEGL_UWP::GLES_2_0) {
-		if (RasterizerGLES2::is_viable() == OK) {
-			RasterizerGLES2::register_config();
-			RasterizerGLES2::make_current();
+		if (RasterizerOpenGLis_viable() == OK) {
+			RasterizerOpenGLregister_config();
+			RasterizerOpenGLmake_current();
 		} else {
 			gl_initialization_error = true;
 		}

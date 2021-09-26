@@ -1599,7 +1599,7 @@
 //public:
 //	virtual void get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) override {
 //		String driver = ProjectSettings::get_singleton()->get("rendering/driver/driver_name");
-//		if (driver == "GLES2") {
+//		if (driver == "OpenGL") {
 //			r_features->push_back("etc");
 //		}
 //		// FIXME: Review what texture formats are used for Vulkan.
@@ -1769,10 +1769,10 @@
 
 //		String tmp_export_path = EditorSettings::get_singleton()->get_cache_dir().plus_file("tmpexport.apk");
 
-//#define CLEANUP_AND_RETURN(m_err)                         \
-//	{                                                     \
-//		DirAccess::remove_file_or_error(tmp_export_path); \
-//		return m_err;                                     \
+//#define CLEANUP_AND_RETURN(m_err)
+//	{
+//		DirAccess::remove_file_or_error(tmp_export_path);
+//		return m_err;
 //	}
 
 //		// Export to temporary APK before sending to device.
@@ -2565,10 +2565,10 @@
 
 //		String tmp_unaligned_path = EditorSettings::get_singleton()->get_cache_dir().plus_file("tmpexport-unaligned.apk");
 
-//#define CLEANUP_AND_RETURN(m_err)                            \
-//	{                                                        \
-//		DirAccess::remove_file_or_error(tmp_unaligned_path); \
-//		return m_err;                                        \
+//#define CLEANUP_AND_RETURN(m_err)
+//	{
+//		DirAccess::remove_file_or_error(tmp_unaligned_path);
+//		return m_err;
 //	}
 
 //		zipFile unaligned_apk = zipOpen2(tmp_unaligned_path.utf8().get_data(), APPEND_STATUS_CREATE, nullptr, &io2);
