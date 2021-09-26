@@ -413,6 +413,12 @@ String ExtendGDScriptParser::parse_documentation(int p_line, bool p_docs_down) {
 				doc_lines.push_front(line_comment);
 			}
 		} else {
+			if (i > 0 && i < lines.size() - 1) {
+				String next_line = lines[i + step].strip_edges(true, false);
+				if (next_line.begins_with("#")) {
+					continue;
+				}
+			}
 			break;
 		}
 	}
