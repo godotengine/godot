@@ -147,7 +147,7 @@ void ScriptEditorDebugger::update_tabs() {
 }
 
 void ScriptEditorDebugger::clear_style() {
-	tabs->add_theme_style_override("panel", nullptr);
+	tabs->remove_theme_style_override("panel");
 }
 
 void ScriptEditorDebugger::save_node(ObjectID p_id, const String &p_file) {
