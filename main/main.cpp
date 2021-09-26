@@ -2317,8 +2317,12 @@ bool Main::start() {
 			if (editor_embed_subwindows) {
 				sml->get_root()->set_embed_subwindows_hint(true);
 			}
-		}
+			DisplayServer::get_singleton()->set_context(DisplayServer::CONTEXT_EDITOR);
+		} else
 #endif
+		{
+			DisplayServer::get_singleton()->set_context(DisplayServer::CONTEXT_ENGINE);
+		}
 
 		String local_game_path;
 		if (game_path != "" && !project_manager) {
@@ -2361,15 +2365,11 @@ bool Main::start() {
 						ERR_PRINT("Failed to load scene");
 					}
 				}
-				DisplayServer::get_singleton()->set_context(DisplayServer::CONTEXT_EDITOR);
 				if (!debug_server_uri.is_empty()) {
 					EditorDebuggerNode::get_singleton()->start(debug_server_uri);
 				}
 			}
 #endif
-			if (!editor) {
-				DisplayServer::get_singleton()->set_context(DisplayServer::CONTEXT_ENGINE);
-			}
 		}
 
 		if (!project_manager && !editor) { // game
