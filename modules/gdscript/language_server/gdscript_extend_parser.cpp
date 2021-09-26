@@ -409,6 +409,10 @@ String ExtendGDScriptParser::parse_documentation(int p_line, bool p_docs_down) {
 				doc_lines.push_front(line_comment);
 			}
 		} else {
+			String next_line = lines[MAX(0, i + step)].strip_edges(true, false);
+			if (next_line.begins_with("#")) {
+				continue;
+			}
 			break;
 		}
 	}
