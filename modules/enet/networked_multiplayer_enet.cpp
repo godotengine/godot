@@ -546,9 +546,10 @@ Error NetworkedMultiplayerENet::put_packet(const uint8_t *p_buffer, int p_buffer
 				packet_flags = ENET_PACKET_FLAG_UNSEQUENCED;
 			}
 			channel = SYSCH_UNRELIABLE;
+			packet_flags |= ENET_PACKET_FLAG_UNRELIABLE_FRAGMENT;
 		} break;
 		case TRANSFER_MODE_UNRELIABLE_ORDERED: {
-			packet_flags = 0;
+			packet_flags = ENET_PACKET_FLAG_UNRELIABLE_FRAGMENT;
 			channel = SYSCH_UNRELIABLE;
 		} break;
 		case TRANSFER_MODE_RELIABLE: {
@@ -560,6 +561,12 @@ Error NetworkedMultiplayerENet::put_packet(const uint8_t *p_buffer, int p_buffer
 	if (transfer_channel > SYSCH_CONFIG) {
 		channel = transfer_channel;
 	}
+
+#ifdef DEBUG_ENABLED
+	if ((packet_flags & ENET_PACKET_FLAG_UNRELIABLE_FRAGMENT) && p_buffer_size + 8 > ENET_HOST_DEFAULT_MTU) {
+		WARN_PRINT_ONCE(vformat("Sending %d bytes unrealiably which is above the MTU (%d), this will result in higher packet loss", p_buffer_size + 8, host->mtu));
+	}
+#endif
 
 	Map<int, ENetPeer *>::Element *E = nullptr;
 
