@@ -1233,7 +1233,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				GD_ERR_BREAK(to_type < 0 || to_type >= Variant::VARIANT_MAX);
 
 #ifdef DEBUG_ENABLED
-				if (src->get_type() == Variant::OBJECT && !src->operator ObjectID().is_ref_counted() && ObjectDB::get_instance(src->operator ObjectID()) == nullptr) {
+				if (src->operator Object *() && !src->get_validated_object()) {
 					err_text = "Trying to cast a freed object.";
 					OPCODE_BREAK;
 				}
@@ -1263,7 +1263,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				GD_ERR_BREAK(!nc);
 
 #ifdef DEBUG_ENABLED
-				if (src->get_type() == Variant::OBJECT && !src->operator ObjectID().is_ref_counted() && ObjectDB::get_instance(src->operator ObjectID()) == nullptr) {
+				if (src->operator Object *() && !src->get_validated_object()) {
 					err_text = "Trying to cast a freed object.";
 					OPCODE_BREAK;
 				}
@@ -1295,7 +1295,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				GD_ERR_BREAK(!base_type);
 
 #ifdef DEBUG_ENABLED
-				if (src->get_type() == Variant::OBJECT && !src->operator ObjectID().is_ref_counted() && ObjectDB::get_instance(src->operator ObjectID()) == nullptr) {
+				if (src->operator Object *() && !src->get_validated_object()) {
 					err_text = "Trying to cast a freed object.";
 					OPCODE_BREAK;
 				}
