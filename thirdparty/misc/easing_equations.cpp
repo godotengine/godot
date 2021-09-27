@@ -312,6 +312,10 @@ Tween::interpolater Tween::interpolaters[Tween::TRANS_COUNT][Tween::EASE_COUNT] 
 };
 
 real_t Tween::_run_equation(TransitionType p_trans_type, EaseType p_ease_type, real_t t, real_t b, real_t c, real_t d) {
+	if (d == 0) {
+		// Special case to avoid dividing by 0 in equations.
+		return b + c;
+	}
 
 	interpolater cb = interpolaters[p_trans_type][p_ease_type];
 	ERR_FAIL_COND_V(cb == NULL, b);

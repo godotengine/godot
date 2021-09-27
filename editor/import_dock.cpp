@@ -127,18 +127,22 @@ void ImportDock::set_edit_path(const String &p_path) {
 		}
 	}
 
-	import_as->add_separator();
-	import_as->add_item(TTR("Keep File (No Import)"));
-	import_as->set_item_metadata(import_as->get_item_count() - 1, "keep");
-	if (importer_name == "keep") {
-		import_as->select(import_as->get_item_count() - 1);
-	}
+	_add_keep_import_option(importer_name);
 
 	import->set_disabled(false);
 	import_as->set_disabled(false);
 	preset->set_disabled(false);
 
 	imported->set_text(p_path.get_file());
+}
+
+void ImportDock::_add_keep_import_option(const String &p_importer_name) {
+	import_as->add_separator();
+	import_as->add_item(TTR("Keep File (No Import)"));
+	import_as->set_item_metadata(import_as->get_item_count() - 1, "keep");
+	if (p_importer_name == "keep") {
+		import_as->select(import_as->get_item_count() - 1);
+	}
 }
 
 void ImportDock::_update_options(const Ref<ConfigFile> &p_config) {
@@ -261,6 +265,8 @@ void ImportDock::set_edit_multiple_paths(const Vector<String> &p_paths) {
 			import_as->select(import_as->get_item_count() - 1);
 		}
 	}
+
+	_add_keep_import_option(params->importer->get_importer_name());
 
 	_update_preset_menu();
 

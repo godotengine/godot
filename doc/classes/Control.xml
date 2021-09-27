@@ -52,6 +52,7 @@
 				* control is obstructed by another [Control] on top of it, which doesn't have [member mouse_filter] set to [constant MOUSE_FILTER_IGNORE];
 				* control's parent has [member mouse_filter] set to [constant MOUSE_FILTER_STOP] or has accepted the event;
 				* it happens outside the parent's rectangle and the parent has either [member rect_clip_content] or [method _clips_input] enabled.
+				[b]Note:[/b] Event position is relative to the control origin.
 			</description>
 		</method>
 		<method name="_make_custom_tooltip" qualifiers="virtual">

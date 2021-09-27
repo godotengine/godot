@@ -320,6 +320,7 @@ RigidBodyBullet::~RigidBodyBullet() {
 
 void RigidBodyBullet::init_kinematic_utilities() {
 	kinematic_utilities = memnew(KinematicUtilities(this));
+	reload_kinematic_shapes();
 }
 
 void RigidBodyBullet::destroy_kinematic_utilities() {

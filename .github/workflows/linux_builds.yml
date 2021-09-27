@@ -4,7 +4,7 @@ on: [push, pull_request]
 # Global Settings
 env:
   GODOT_BASE_BRANCH: 3.x
-  SCONSFLAGS: verbose=yes warnings=all werror=yes debug_symbols=no
+  SCONSFLAGS: verbose=yes warnings=all werror=yes
 
 concurrency:
   group: ci-${{github.actor}}-${{github.head_ref || github.run_number}}-${{github.ref}}-linux
@@ -42,7 +42,7 @@ jobs:
             cache-name: linux-template-mono
             target: release
             tools: false
-            sconsflags: module_mono_enabled=yes mono_glue=no
+            sconsflags: module_mono_enabled=yes mono_glue=no debug_symbols=no
             build-mono: false
             artifact: true
 
@@ -124,6 +124,11 @@ jobs:
           echo -e "If a diff is shown, it means that your code/doc changes are incomplete and you should update the class reference with --doctool.\n\n"
           DRI_PRIME=0 xvfb-run ${{ matrix.bin }} --doctool . 2>&1 > /dev/null || true
           git diff --color --exit-code && ! git ls-files --others --exclude-standard | sed -e 's/^/New doc file missing in PR: /' | grep 'xml$'
+
+      - name: Prepare artifact
+        if: ${{ matrix.artifact }}
+        run: |
+          strip bin/godot.*
 
       - name: Upload artifact
         uses: ./.github/actions/upload-artifact
