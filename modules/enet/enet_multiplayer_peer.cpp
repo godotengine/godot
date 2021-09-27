@@ -173,7 +173,7 @@ bool ENetMultiplayerPeer::_poll_server() {
 
 			emit_signal(SNAME("peer_disconnected"), id);
 			peers.erase(id);
-			if (!server_relay) {
+			if (server_relay) {
 				_notify_peers(id, false);
 			}
 			return false;
