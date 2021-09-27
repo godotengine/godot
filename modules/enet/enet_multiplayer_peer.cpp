@@ -441,11 +441,11 @@ Error ENetMultiplayerPeer::put_packet(const uint8_t *p_buffer, int p_buffer_size
 	} else {
 		switch (get_transfer_mode()) {
 			case Multiplayer::TRANSFER_MODE_UNRELIABLE: {
-				packet_flags = ENET_PACKET_FLAG_UNSEQUENCED;
+				packet_flags = ENET_PACKET_FLAG_UNSEQUENCED | ENET_PACKET_FLAG_UNRELIABLE_FRAGMENT;
 				channel = SYSCH_UNRELIABLE;
 			} break;
 			case Multiplayer::TRANSFER_MODE_UNRELIABLE_ORDERED: {
-				packet_flags = 0;
+				packet_flags = ENET_PACKET_FLAG_UNRELIABLE_FRAGMENT;
 				channel = SYSCH_UNRELIABLE;
 			} break;
 			case Multiplayer::TRANSFER_MODE_RELIABLE: {
@@ -454,6 +454,12 @@ Error ENetMultiplayerPeer::put_packet(const uint8_t *p_buffer, int p_buffer_size
 			} break;
 		}
 	}
+
+#ifdef DEBUG_ENABLED
+	if ((packet_flags & ENET_PACKET_FLAG_UNRELIABLE_FRAGMENT) && p_buffer_size + 8 > ENET_HOST_DEFAULT_MTU) {
+		WARN_PRINT_ONCE(vformat("Sending %d bytes unrealiably which is above the MTU (%d), this will result in higher packet loss", p_buffer_size + 8, ENET_HOST_DEFAULT_MTU));
+	}
+#endif
 
 	ENetPacket *packet = enet_packet_create(nullptr, p_buffer_size + 8, packet_flags);
 	encode_uint32(unique_id, &packet->data[0]); // Source ID
