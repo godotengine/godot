@@ -49,6 +49,7 @@
 				[/codeblocks]
 				See [method execute] if you wish to run an external command and retrieve the results.
 				[b]Note:[/b] This method is implemented on Android, iOS, Linux, macOS and Windows.
+				[b]Note:[/b] On macOS, sandboxed applications are limited to run only embedded helper executables, specified during export.
 			</description>
 		</method>
 		<method name="delay_msec" qualifiers="const">
@@ -119,6 +120,7 @@
 				[/csharp]
 				[/codeblocks]
 				[b]Note:[/b] This method is implemented on Android, iOS, Linux, macOS and Windows.
+				[b]Note:[/b] On macOS, sandboxed applications are limited to run only embedded helper executables, specified during export.
 			</description>
 		</method>
 		<method name="find_keycode_from_string" qualifiers="const">
