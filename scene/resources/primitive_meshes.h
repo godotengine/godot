@@ -285,6 +285,8 @@ protected:
 	virtual void _create_mesh_array(Array &p_arr) const override;
 
 public:
+	virtual uint32_t surface_get_format(int p_idx) const override;
+
 	QuadMesh();
 
 	void set_size(const Size2 &p_size);
