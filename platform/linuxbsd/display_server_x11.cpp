@@ -3711,7 +3711,6 @@ Vector<String> DisplayServerX11::get_rendering_drivers_func() {
 #ifdef GLES_X11_ENABLED
 	//	drivers.push_back("opengl");
 	drivers.push_back("GLES2");
-	drivers.push_back("GLES3");
 #endif
 
 	return drivers;
