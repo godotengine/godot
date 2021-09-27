@@ -535,6 +535,7 @@ void RigidBodyBullet::set_mode(PhysicsServer3D::BodyMode p_mode) {
 			mode = PhysicsServer3D::BODY_MODE_KINEMATIC;
 			reload_axis_lock();
 			_internal_set_mass(0);
+			init_kinematic_utilities();
 			break;
 		case PhysicsServer3D::BODY_MODE_STATIC:
 			mode = PhysicsServer3D::BODY_MODE_STATIC;
