@@ -197,7 +197,7 @@ typedef void (*DEBUGPROCARB)(GLenum source,
 typedef void (*DebugMessageCallbackARB)(DEBUGPROCARB callback, const void *userParam);
 
 void RasterizerGLES2::initialize() {
-	print_verbose("Using GLES2 video driver");
+	print_verbose("Using OpenGL video driver");
 
 	storage._main_thread_id = Thread::get_caller_id();
 
@@ -252,7 +252,7 @@ void RasterizerGLES2::initialize() {
 #endif // GLES_OVER_GL
 #endif // CAN_DEBUG
 
-	print_line("OpenGL ES 2.0 Renderer: " + RS::get_singleton()->get_video_adapter_name());
+	print_line("OpenGL Renderer: " + RS::get_singleton()->get_video_adapter_name());
 	storage.initialize();
 	canvas.initialize();
 	//	scene.initialize();
