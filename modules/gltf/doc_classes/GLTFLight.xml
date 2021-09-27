@@ -9,17 +9,25 @@
 	<methods>
 	</methods>
 	<members>
-		<member name="color" type="Color" setter="set_color" getter="get_color" default="Color( 0, 0, 0, 1 )">
+		<member name="color" type="Color" setter="set_color" getter="get_color" default="Color( 1, 1, 1, 1 )">
+			The [Color] of the light. Defaults to white. A black color causes the light to have no effect.
 		</member>
 		<member name="inner_cone_angle" type="float" setter="set_inner_cone_angle" getter="get_inner_cone_angle" default="0.0">
+			The inner angle of the cone in a spotlight. Must be less than or equal to the outer cone angle.
+			Within this angle, the light is at full brightness. Between the inner and outer cone angles, there is a transition from full brightness to zero brightness. When creating a Godot [SpotLight], the ratio between the inner and outer cone angles is used to calculate the attenuation of the light.
 		</member>
-		<member name="intensity" type="float" setter="set_intensity" getter="get_intensity" default="0.0">
+		<member name="intensity" type="float" setter="set_intensity" getter="get_intensity" default="1.0">
+			The intensity of the light. This is expressed in candelas (lumens per steradian) for point and spot lights, and lux (lumens per m²) for directional lights. When creating a Godot light, this value is converted to a unitless multiplier.
 		</member>
-		<member name="outer_cone_angle" type="float" setter="set_outer_cone_angle" getter="get_outer_cone_angle" default="0.0">
+		<member name="outer_cone_angle" type="float" setter="set_outer_cone_angle" getter="get_outer_cone_angle" default="0.785398">
+			The outer angle of the cone in a spotlight. Must be greater than or equal to the inner angle.
+			At this angle, the light drops off to zero brightness. Between the inner and outer cone angles, there is a transition from full brightness to zero brightness. If this angle is a half turn, then the spotlight emits in all directions. When creating a Godot [SpotLight], the outer cone angle is used as the angle of the spotlight.
 		</member>
-		<member name="range" type="float" setter="set_range" getter="get_range" default="0.0">
+		<member name="range" type="float" setter="set_range" getter="get_range" default="inf">
+			The range of the light, beyond which the light has no effect. GLTF lights with no range defined behave like physical lights (which have infinite range). When creating a Godot light, the range is clamped to 4096.
 		</member>
 		<member name="type" type="String" setter="set_type" getter="get_type" default="&quot;&quot;">
+			The type of the light. The values accepted by Godot are "point", "spot", and "directional", which correspond to Godot's [OmniLight], [SpotLight], and [DirectionalLight] respectively.
 		</member>
 	</members>
 	<constants>
