@@ -36,7 +36,6 @@
  * For use in render drivers, not for general use.
  * TO BE REPLACED by local_vector.
 */
-#include "rasterizer_version.h"
 
 #include "core/os/memory.h"
 #include <string.h>

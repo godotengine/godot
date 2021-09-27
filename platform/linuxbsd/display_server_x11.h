@@ -31,7 +31,7 @@
 #ifndef DISPLAY_SERVER_X11_H
 #define DISPLAY_SERVER_X11_H
 
-#include "drivers/gles_common/rasterizer_platforms.h"
+#include "drivers/gles2/rasterizer_platforms.h"
 
 #ifdef X11_ENABLED
 

@@ -29,7 +29,7 @@
 /*************************************************************************/
 
 #include "shader_gles2.h"
-#include "drivers/gles_common/rasterizer_platforms.h"
+#include "drivers/gles2/rasterizer_platforms.h"
 #ifdef GLES2_BACKEND_ENABLED
 
 #include "rasterizer_gles2.h"

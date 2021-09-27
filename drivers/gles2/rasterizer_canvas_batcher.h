@@ -36,7 +36,6 @@
 #include "rasterizer_array.h"
 #include "rasterizer_asserts.h"
 #include "rasterizer_storage_common.h"
-#include "rasterizer_version.h"
 
 #include "core/config/project_settings.h"
 #include "servers/rendering/renderer_compositor.h"

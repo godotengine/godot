@@ -31,15 +31,14 @@
 #ifndef RASTERIZERSTORAGEGLES2_H
 #define RASTERIZERSTORAGEGLES2_H
 
-#include "drivers/gles_common/rasterizer_platforms.h"
+#include "drivers/gles2/rasterizer_platforms.h"
 #ifdef GLES2_BACKEND_ENABLED
 
 #include "core/templates/local_vector.h"
 #include "core/templates/rid_owner.h"
 #include "core/templates/self_list.h"
-#include "drivers/gles_common/rasterizer_asserts.h"
-#include "drivers/gles_common/rasterizer_common_stubs.h"
-#include "drivers/gles_common/rasterizer_version.h"
+#include "drivers/gles2/rasterizer_asserts.h"
+#include "drivers/gles2/rasterizer_common_stubs.h"
 #include "servers/rendering/renderer_compositor.h"
 #include "servers/rendering/shader_language.h"
 #include "shader_compiler_gles2.h"

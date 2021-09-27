@@ -35,7 +35,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/math/transform_3d.h"
-#include "drivers/gles_common/rasterizer_storage_common.h"
+#include "drivers/gles2/rasterizer_storage_common.h"
 #include "rasterizer_canvas_gles2.h"
 #include "rasterizer_scene_gles2.h"
 #include "servers/rendering/shader_language.h"

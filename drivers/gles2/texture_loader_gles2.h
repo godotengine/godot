@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include "drivers/gles_common/rasterizer_platforms.h"
+#include "drivers/gles2/rasterizer_platforms.h"
 #ifdef GLES2_BACKEND_ENABLED
 
 #include "core/io/resource_loader.h"

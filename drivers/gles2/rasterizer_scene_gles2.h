@@ -31,13 +31,13 @@
 #pragma once
 // dummy
 
-#include "drivers/gles_common/rasterizer_platforms.h"
+#include "drivers/gles2/rasterizer_platforms.h"
 #ifdef GLES2_BACKEND_ENABLED
 
 #include "core/math/camera_matrix.h"
 #include "core/templates/rid_owner.h"
 #include "core/templates/self_list.h"
-#include "drivers/gles_common/rasterizer_common_stubs.h"
+#include "drivers/gles2/rasterizer_common_stubs.h"
 #include "scene/resources/mesh.h"
 #include "servers/rendering/renderer_compositor.h"
 #include "servers/rendering_server.h"
@@ -58,7 +58,6 @@ public:
 #ifdef GODOT_3
 
 /* Must come before shaders or the Windows build fails... */
-#include "drivers/gles_common/rasterizer_version.h"
 #include "rasterizer_storage_gles2.h"
 
 #include "shaders/cube_to_dp.glsl.gen.h"

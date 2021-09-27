@@ -30,12 +30,11 @@
 
 #pragma once
 
-#include "drivers/gles_common/rasterizer_platforms.h"
+#include "drivers/gles2/rasterizer_platforms.h"
 #ifdef GLES2_BACKEND_ENABLED
 
 #include "core/string/string_builder.h"
 #include "core/templates/pair.h"
-#include "drivers/gles_common/rasterizer_version.h"
 #include "servers/rendering/shader_language.h"
 #include "servers/rendering/shader_types.h"
 #include "servers/rendering_server.h"

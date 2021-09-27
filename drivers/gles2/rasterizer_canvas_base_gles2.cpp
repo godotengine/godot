@@ -32,7 +32,7 @@
 #ifdef GLES2_BACKEND_ENABLED
 
 #include "core/os/os.h"
-#include "drivers/gles_common/rasterizer_asserts.h"
+#include "drivers/gles2/rasterizer_asserts.h"
 #include "rasterizer_scene_gles2.h"
 
 #include "core/config/project_settings.h"
