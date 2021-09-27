@@ -1491,15 +1491,15 @@ void EditorExport::add_export_preset(const Ref<EditorExportPreset> &p_preset, in
 }
 
 String EditorExportPlatform::test_etc2() const {
-//	String driver = ProjectSettings::get_singleton()->get("rendering/driver/driver_name");
-//	bool etc_supported = ProjectSettings::get_singleton()->get("rendering/textures/vram_compression/import_etc");
-//	bool etc2_supported = ProjectSettings::get_singleton()->get("rendering/textures/vram_compression/import_etc2");
+	//	String driver = ProjectSettings::get_singleton()->get("rendering/driver/driver_name");
+	//	bool etc_supported = ProjectSettings::get_singleton()->get("rendering/textures/vram_compression/import_etc");
+	//	bool etc2_supported = ProjectSettings::get_singleton()->get("rendering/textures/vram_compression/import_etc2");
 	String driver = ProjectSettings::get_singleton()->get("rendering/driver/driver_name");
 	bool etc_supported = ProjectSettings::get_singleton()->get("rendering/textures/vram_compression/import_etc");
 	bool etc2_supported = ProjectSettings::get_singleton()->get("rendering/textures/vram_compression/import_etc2");
 
-	if (driver == "GLES2" && !etc_supported) {
-		return TTR("Target platform requires 'ETC' texture compression for GLES2. Enable 'Import Etc' in Project Settings.");
+	if (driver == "OpenGL" && !etc_supported) {
+		return TTR("Target platform requires 'ETC' texture compression for OpenGL. Enable 'Import Etc' in Project Settings.");
 	} else if (driver == "Vulkan" && !etc2_supported) {
 		// FIXME: Review if this is true for Vulkan.
 		return TTR("Target platform requires 'ETC2' texture compression for Vulkan. Enable 'Import Etc 2' in Project Settings.");
@@ -1511,12 +1511,12 @@ String EditorExportPlatform::test_etc2_or_pvrtc() const {
 	String driver = ProjectSettings::get_singleton()->get("rendering/driver/driver_name");
 	bool etc2_supported = ProjectSettings::get_singleton()->get("rendering/textures/vram_compression/import_etc2");
 	bool pvrtc_supported = ProjectSettings::get_singleton()->get("rendering/textures/vram_compression/import_pvrtc");
-//	String driver = ProjectSettings::get_singleton()->get("rendering/driver/driver_name");
-//	bool etc2_supported = ProjectSettings::get_singleton()->get("rendering/textures/vram_compression/import_etc2");
-//	bool pvrtc_supported = ProjectSettings::get_singleton()->get("rendering/textures/vram_compression/import_pvrtc");
+	//	String driver = ProjectSettings::get_singleton()->get("rendering/driver/driver_name");
+	//	bool etc2_supported = ProjectSettings::get_singleton()->get("rendering/textures/vram_compression/import_etc2");
+	//	bool pvrtc_supported = ProjectSettings::get_singleton()->get("rendering/textures/vram_compression/import_pvrtc");
 
-	if (driver == "GLES2" && !pvrtc_supported) {
-		return TTR("Target platform requires 'PVRTC' texture compression for GLES2. Enable 'Import Pvrtc' in Project Settings.");
+	if (driver == "OpenGL" && !pvrtc_supported) {
+		return TTR("Target platform requires 'PVRTC' texture compression for OpenGL. Enable 'Import Pvrtc' in Project Settings.");
 	} else if (driver == "Vulkan" && !etc2_supported && !pvrtc_supported) {
 		// FIXME: Review if this is true for Vulkan.
 		return TTR("Target platform requires 'ETC2' or 'PVRTC' texture compression for Vulkan. Enable 'Import Etc 2' or 'Import Pvrtc' in Project Settings.");

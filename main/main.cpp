@@ -1282,7 +1282,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/driver/driver_name",
 			PropertyInfo(Variant::STRING,
 					"rendering/driver/driver_name",
-					PROPERTY_HINT_ENUM, "Vulkan,GLES2"));
+					PROPERTY_HINT_ENUM, "Vulkan,OpenGL"));
 
 	// if not set on the command line
 	if (rendering_driver == "") {

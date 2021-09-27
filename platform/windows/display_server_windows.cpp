@@ -538,7 +538,7 @@ void DisplayServerWindows::delete_sub_window(WindowID p_window) {
 	}
 #endif
 #ifdef GLES_WINDOWS_ENABLED
-	if (rendering_driver == "GLES2") {
+	if (rendering_driver == "opengl") {
 		gl_manager->window_destroy(p_window);
 	}
 #endif
@@ -828,7 +828,7 @@ void DisplayServerWindows::window_set_size(const Size2i p_size, WindowID p_windo
 	}
 #endif
 #if defined(GLES_WINDOWS_ENABLED)
-	if (rendering_driver == "GLES2") {
+	if (rendering_driver == "opengl") {
 		gl_manager->window_resize(p_window, w, h);
 	}
 #endif
@@ -3111,9 +3111,9 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 
 #ifdef GLES_WINDOWS_ENABLED
 		print_line("rendering_driver " + rendering_driver);
-		if (rendering_driver == "GLES2") {
+		if (rendering_driver == "opengl") {
 			Error err = gl_manager->window_create(id, wd.hWnd, hInstance, WindowRect.right - WindowRect.left, WindowRect.bottom - WindowRect.top);
-			ERR_FAIL_COND_V_MSG(err != OK, INVALID_WINDOW_ID, "Can't create a GLES2 window");
+			ERR_FAIL_COND_V_MSG(err != OK, INVALID_WINDOW_ID, "Failed to create an OpenGL window.");
 		}
 #endif
 
@@ -3323,9 +3323,6 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 		use_raw_input = false;
 	}
 
-	// hard coded render drivers...
-	//	rendering_driver = "vulkan";
-	//	rendering_driver = "GLES2";
 	print_line("rendering_driver " + rendering_driver);
 
 #if defined(VULKAN_ENABLED)
@@ -3342,7 +3339,7 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 	// Init context and rendering device
 #if defined(GLES_WINDOWS_ENABLED)
 
-	if (rendering_driver == "GLES2") {
+	if (rendering_driver == "opengl") {
 		GLManager_Windows::ContextType opengl_api_type = GLManager_Windows::GLES_2_0_COMPATIBLE;
 
 		gl_manager = memnew(GLManager_Windows(opengl_api_type));
@@ -3449,7 +3446,7 @@ Vector<String> DisplayServerWindows::get_rendering_drivers_func() {
 	drivers.push_back("vulkan");
 #endif
 #ifdef GLES_WINDOWS_ENABLED
-	drivers.push_back("GLES2");
+	drivers.push_back("opengl");
 #endif
 
 	return drivers;
@@ -3458,7 +3455,7 @@ Vector<String> DisplayServerWindows::get_rendering_drivers_func() {
 DisplayServer *DisplayServerWindows::create_func(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error) {
 	DisplayServer *ds = memnew(DisplayServerWindows(p_rendering_driver, p_mode, p_vsync_mode, p_flags, p_resolution, r_error));
 	if (r_error != OK) {
-		OS::get_singleton()->alert("Your video card driver does not support any of the supported Vulkan versions.\n"
+		OS::get_singleton()->alert("Your video card driver does not support any of the supported Vulkan or OpenGL versions.\n"
 								   "Please update your drivers or if you have a very old or integrated GPU upgrade it.",
 				"Unable to initialize Video driver");
 	}
