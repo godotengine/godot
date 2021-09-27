@@ -896,6 +896,9 @@ ShaderCompilerGLES2::ShaderCompilerGLES2() {
 	actions[RS::SHADER_CANVAS_ITEM].renames["PROJECTION_MATRIX"] = "projection_matrix";
 	actions[RS::SHADER_CANVAS_ITEM].renames["EXTRA_MATRIX"] = "extra_matrix_instance";
 	actions[RS::SHADER_CANVAS_ITEM].renames["TIME"] = "time";
+	actions[RS::SHADER_CANVAS_ITEM].renames["PI"] = _MKSTR(Math_PI);
+	actions[RS::SHADER_CANVAS_ITEM].renames["TAU"] = _MKSTR(Math_TAU);
+	actions[RS::SHADER_CANVAS_ITEM].renames["E"] = _MKSTR(Math_E);
 	actions[RS::SHADER_CANVAS_ITEM].renames["AT_LIGHT_PASS"] = "at_light_pass";
 	actions[RS::SHADER_CANVAS_ITEM].renames["INSTANCE_CUSTOM"] = "instance_custom";
 
@@ -974,6 +977,9 @@ ShaderCompilerGLES2::ShaderCompilerGLES2() {
 	//builtins
 
 	actions[RS::SHADER_SPATIAL].renames["TIME"] = "time";
+	actions[RS::SHADER_SPATIAL].renames["PI"] = _MKSTR(Math_PI);
+	actions[RS::SHADER_SPATIAL].renames["TAU"] = _MKSTR(Math_TAU);
+	actions[RS::SHADER_SPATIAL].renames["E"] = _MKSTR(Math_E);
 	actions[RS::SHADER_SPATIAL].renames["VIEWPORT_SIZE"] = "viewport_size";
 
 	actions[RS::SHADER_SPATIAL].renames["FRAGCOORD"] = "gl_FragCoord";
