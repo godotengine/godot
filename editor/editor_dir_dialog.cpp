@@ -42,6 +42,7 @@ void EditorDirDialog::_update_dir(TreeItem *p_item, EditorFileSystemDirectory *p
 
 	p_item->set_metadata(0, p_dir->get_path());
 	p_item->set_icon(0, get_icon("Folder", "EditorIcons"));
+	p_item->set_icon_modulate(0, get_color("folder_icon_modulate", "FileDialog"));
 
 	if (!p_item->get_parent()) {
 		p_item->set_text(0, "res://");
