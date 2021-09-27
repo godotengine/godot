@@ -163,6 +163,7 @@ EditorAbout::EditorAbout() {
 	TabContainer *tc = memnew(TabContainer);
 	tc->set_custom_minimum_size(Size2(950, 400) * EDSCALE);
 	tc->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	tc->set_clip_contents(true);
 	vbc->add_child(tc);
 
 	// Authors
