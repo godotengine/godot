@@ -846,7 +846,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				*dst = Variant::construct(to_type, (const Variant **)&src, 1, err);
 
 #ifdef DEBUG_ENABLED
-				if (src->get_type() == Variant::OBJECT && !src->is_ref() && ObjectDB::get_instance(src->get_object_instance_id()) == nullptr) {
+				if (src->is_invalid_object()) {
 					err_text = "Trying to cast a deleted object.";
 					OPCODE_BREAK;
 				}
@@ -870,7 +870,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				GD_ERR_BREAK(!nc);
 
 #ifdef DEBUG_ENABLED
-				if (src->get_type() == Variant::OBJECT && !src->is_ref() && ObjectDB::get_instance(src->get_object_instance_id()) == nullptr) {
+				if (src->is_invalid_object()) {
 					err_text = "Trying to cast a deleted object.";
 					OPCODE_BREAK;
 				}
@@ -902,7 +902,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				GD_ERR_BREAK(!base_type);
 
 #ifdef DEBUG_ENABLED
-				if (src->get_type() == Variant::OBJECT && !src->is_ref() && ObjectDB::get_instance(src->get_object_instance_id()) == nullptr) {
+				if (src->is_invalid_object()) {
 					err_text = "Trying to cast a deleted object.";
 					OPCODE_BREAK;
 				}
