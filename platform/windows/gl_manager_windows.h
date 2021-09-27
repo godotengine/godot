@@ -47,7 +47,7 @@ typedef int(APIENTRY *PFNWGLGETSWAPINTERVALEXTPROC)(void);
 class GLManager_Windows {
 public:
 	enum ContextType {
-		GLES_2_0_COMPATIBLE,
+		GLES_3_0_COMPATIBLE,
 	};
 
 private:

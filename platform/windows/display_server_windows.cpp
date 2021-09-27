@@ -3340,7 +3340,7 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 #if defined(GLES_WINDOWS_ENABLED)
 
 	if (rendering_driver == "opengl") {
-		GLManager_Windows::ContextType opengl_api_type = GLManager_Windows::GLES_2_0_COMPATIBLE;
+		GLManager_Windows::ContextType opengl_api_type = GLManager_Windows::GLES_3_0_COMPATIBLE;
 
 		gl_manager = memnew(GLManager_Windows(opengl_api_type));
 

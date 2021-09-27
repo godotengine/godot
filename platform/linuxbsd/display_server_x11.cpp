@@ -4148,7 +4148,7 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 			}
 		}
 
-		GLManager_X11::ContextType opengl_api_type = GLManager_X11::GLES_2_0_COMPATIBLE;
+		GLManager_X11::ContextType opengl_api_type = GLManager_X11::GLES_3_0_COMPATIBLE;
 
 		gl_manager = memnew(GLManager_X11(p_resolution, opengl_api_type));
 
