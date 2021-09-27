@@ -20,8 +20,6 @@ if "x11" in env and env["x11"]:
         "key_mapping_x11.cpp",
     ]
 
-#"context_gl_x11.cpp",
-
 if "vulkan" in env and env["vulkan"]:
     common_linuxbsd.append("vulkan_context_x11.cpp")
 
