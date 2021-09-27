@@ -3573,6 +3573,7 @@ void TextServerAdvanced::shaped_text_overrun_trim_to_width(RID p_shaped_line, re
 		shaped_text_shape(p_shaped_line);
 	}
 
+	sd->text_trimmed = false;
 	sd->overrun_trim_data.ellipsis_glyph_buf.clear();
 
 	bool add_ellipsis = (p_trim_flags & OVERRUN_ADD_ELLIPSIS) == OVERRUN_ADD_ELLIPSIS;
