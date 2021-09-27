@@ -35,12 +35,12 @@ void main() {
 /* clang-format off */
 [fragment]
 
-// texture2DLodEXT and textureCubeLodEXT are fragment shader specific.
+// textureLodEXT and textureCubeLodEXT are fragment shader specific.
 // Do not copy these defines in the vertex section.
 #ifndef USE_GLES_OVER_GL
 #ifdef GL_EXT_shader_texture_lod
 #extension GL_EXT_shader_texture_lod : enable
-#define texture2DLod(img, coord, lod) texture2DLodEXT(img, coord, lod)
+#define textureLod(img, coord, lod) textureLodEXT(img, coord, lod)
 #define textureCubeLod(img, coord, lod) textureCubeLodEXT(img, coord, lod)
 #endif
 #endif // !USE_GLES_OVER_GL
@@ -50,7 +50,7 @@ void main() {
 #endif
 
 #if !defined(GL_EXT_shader_texture_lod) && !defined(GL_ARB_shader_texture_lod)
-#define texture2DLod(img, coord, lod) texture2D(img, coord, lod)
+#define textureLod(img, coord, lod) texture2D(img, coord, lod)
 #define textureCubeLod(img, coord, lod) textureCube(img, coord, lod)
 #endif
 
@@ -129,23 +129,23 @@ void main() {
 #ifdef GLOW_GAUSSIAN_HORIZONTAL
 	vec2 pix_size = pixel_size;
 	pix_size *= 0.5; //reading from larger buffer, so use more samples
-	vec4 color = texture2DLod(source_color, uv_interp + vec2(0.0, 0.0) * pix_size, lod) * 0.174938;
-	color += texture2DLod(source_color, uv_interp + vec2(1.0, 0.0) * pix_size, lod) * 0.165569;
-	color += texture2DLod(source_color, uv_interp + vec2(2.0, 0.0) * pix_size, lod) * 0.140367;
-	color += texture2DLod(source_color, uv_interp + vec2(3.0, 0.0) * pix_size, lod) * 0.106595;
-	color += texture2DLod(source_color, uv_interp + vec2(-1.0, 0.0) * pix_size, lod) * 0.165569;
-	color += texture2DLod(source_color, uv_interp + vec2(-2.0, 0.0) * pix_size, lod) * 0.140367;
-	color += texture2DLod(source_color, uv_interp + vec2(-3.0, 0.0) * pix_size, lod) * 0.106595;
+	vec4 color = textureLod(source_color, uv_interp + vec2(0.0, 0.0) * pix_size, lod) * 0.174938;
+	color += textureLod(source_color, uv_interp + vec2(1.0, 0.0) * pix_size, lod) * 0.165569;
+	color += textureLod(source_color, uv_interp + vec2(2.0, 0.0) * pix_size, lod) * 0.140367;
+	color += textureLod(source_color, uv_interp + vec2(3.0, 0.0) * pix_size, lod) * 0.106595;
+	color += textureLod(source_color, uv_interp + vec2(-1.0, 0.0) * pix_size, lod) * 0.165569;
+	color += textureLod(source_color, uv_interp + vec2(-2.0, 0.0) * pix_size, lod) * 0.140367;
+	color += textureLod(source_color, uv_interp + vec2(-3.0, 0.0) * pix_size, lod) * 0.106595;
 	color *= glow_strength;
 	gl_FragColor = color;
 #endif
 
 #ifdef GLOW_GAUSSIAN_VERTICAL
-	vec4 color = texture2DLod(source_color, uv_interp + vec2(0.0, 0.0) * pixel_size, lod) * 0.288713;
-	color += texture2DLod(source_color, uv_interp + vec2(0.0, 1.0) * pixel_size, lod) * 0.233062;
-	color += texture2DLod(source_color, uv_interp + vec2(0.0, 2.0) * pixel_size, lod) * 0.122581;
-	color += texture2DLod(source_color, uv_interp + vec2(0.0, -1.0) * pixel_size, lod) * 0.233062;
-	color += texture2DLod(source_color, uv_interp + vec2(0.0, -2.0) * pixel_size, lod) * 0.122581;
+	vec4 color = textureLod(source_color, uv_interp + vec2(0.0, 0.0) * pixel_size, lod) * 0.288713;
+	color += textureLod(source_color, uv_interp + vec2(0.0, 1.0) * pixel_size, lod) * 0.233062;
+	color += textureLod(source_color, uv_interp + vec2(0.0, 2.0) * pixel_size, lod) * 0.122581;
+	color += textureLod(source_color, uv_interp + vec2(0.0, -1.0) * pixel_size, lod) * 0.233062;
+	color += textureLod(source_color, uv_interp + vec2(0.0, -2.0) * pixel_size, lod) * 0.122581;
 	color *= glow_strength;
 	gl_FragColor = color;
 #endif
@@ -214,7 +214,7 @@ void main() {
 
 	vec4 color_accum = vec4(0.0);
 
-	float depth = texture2DLod(dof_source_depth, uv_interp, 0.0).r;
+	float depth = textureLod(dof_source_depth, uv_interp, 0.0).r;
 	depth = depth * 2.0 - 1.0;
 #ifdef USE_ORTHOGONAL_PROJECTION
 	depth = ((depth + (camera_z_far + camera_z_near) / (camera_z_far - camera_z_near)) * (camera_z_far - camera_z_near)) / 2.0;
@@ -241,7 +241,7 @@ void main() {
 		float tap_amount = int_ofs == 0 ? 1.0 : smoothstep(dof_begin, dof_end, tap_depth);
 		tap_amount *= tap_amount * tap_amount; //prevent undesired glow effect
 
-		vec4 tap_color = texture2DLod(source_color, tap_uv, 0.0) * tap_k;
+		vec4 tap_color = textureLod(source_color, tap_uv, 0.0) * tap_k;
 
 		k_accum += tap_k * tap_amount;
 		color_accum += tap_color * tap_amount;
@@ -268,7 +268,7 @@ void main() {
 
 		float tap_k = dof_kernel[i];
 
-		vec4 tap_color = texture2DLod(source_color, tap_uv, 0.0);
+		vec4 tap_color = textureLod(source_color, tap_uv, 0.0);
 
 		float tap_depth = texture2D(dof_source_depth, tap_uv, 0.0).r;
 		tap_depth = tap_depth * 2.0 - 1.0;
