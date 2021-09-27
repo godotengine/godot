@@ -172,7 +172,7 @@ ShaderGLES2::Version *ShaderGLES2::get_current_version() {
 	Vector<const char *> strings;
 
 #ifdef GLES_OVER_GL
-	strings.push_back("#version 330\n");
+	strings.push_back("#version 120\n");
 	strings.push_back("#define USE_GLES_OVER_GL\n");
 
 	// test
@@ -187,7 +187,7 @@ ShaderGLES2::Version *ShaderGLES2::get_current_version() {
 	//#endif
 
 #else
-	strings.push_back("#version 300 es\n");
+	strings.push_back("#version 100\n");
 //angle does not like
 #ifdef JAVASCRIPT_ENABLED
 	strings.push_back("#define USE_HIGHP_PRECISION\n");

@@ -175,10 +175,12 @@ Error GLManager_X11::_create_context(GLDisplay &gl_display) {
 
 	switch (context_type) {
 		case GLES_3_0_COMPATIBLE: {
+			// FIXME: Use `GLX_CONTEXT_CORE_PROFILE_BIT_ARB` instead of compatibility profile
+			// once deprecated API usages are fixed.
 			static int context_attribs[] = {
 				GLX_CONTEXT_MAJOR_VERSION_ARB, 3,
 				GLX_CONTEXT_MINOR_VERSION_ARB, 3,
-				GLX_CONTEXT_PROFILE_MASK_ARB, GLX_CONTEXT_CORE_PROFILE_BIT_ARB,
+				GLX_CONTEXT_PROFILE_MASK_ARB, GLX_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB,
 				GLX_CONTEXT_FLAGS_ARB, GLX_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB /*|GLX_CONTEXT_DEBUG_BIT_ARB*/,
 				None
 			};
