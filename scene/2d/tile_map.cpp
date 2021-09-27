@@ -2034,8 +2034,20 @@ bool TileMap::_set(const StringName &p_name, const Variant &p_value) {
 		return false;
 	} else if (components.size() == 2 && components[0].begins_with("layer_") && components[0].trim_prefix("layer_").is_valid_int()) {
 		int index = components[0].trim_prefix("layer_").to_int();
-		if (index < 0 || index >= (int)layers.size()) {
+		if (index < 0) {
 			return false;
+		}
+
+		if (index >= (int)layers.size()) {
+			_clear_internals();
+			while (index >= (int)layers.size()) {
+				layers.push_back(TileMapLayer());
+			}
+			_recreate_internals();
+
+			notify_property_list_changed();
+			emit_signal(SNAME("changed"));
+			update_configuration_warnings();
 		}
 
 		if (components[1] == "name") {
