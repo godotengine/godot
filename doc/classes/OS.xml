@@ -455,11 +455,11 @@
 		</member>
 	</members>
 	<constants>
-		<constant name="VIDEO_DRIVER_GLES2" value="0" enum="VideoDriver">
-			The GLES2 rendering backend. It uses OpenGL ES 2.0 on mobile devices, OpenGL 2.1 on desktop platforms and WebGL 1.0 on the web.
-		</constant>
-		<constant name="VIDEO_DRIVER_VULKAN" value="1" enum="VideoDriver">
+		<constant name="VIDEO_DRIVER_VULKAN" value="0" enum="VideoDriver">
 			The Vulkan rendering backend.
+		</constant>
+		<constant name="VIDEO_DRIVER_OPENGL" value="1" enum="VideoDriver">
+			The OpenGL rendering backend. It uses OpenGL ES 3.0 on mobile devices, OpenGL 3.3 on desktop platforms and WebGL 2.0 on the web.
 		</constant>
 		<constant name="DAY_SUNDAY" value="0" enum="Weekday">
 			Sunday.
