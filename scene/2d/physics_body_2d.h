@@ -310,10 +310,15 @@ public:
 		MOTION_MODE_GROUNDED,
 		MOTION_MODE_FREE,
 	};
+	enum MovingPlatformApplyVelocityOnLeave {
+		PLATFORM_VEL_ON_LEAVE_ALWAYS,
+		PLATFORM_VEL_ON_LEAVE_UPWARD_ONLY,
+		PLATFORM_VEL_ON_LEAVE_NEVER,
+	};
 	bool move_and_slide();
 
-	const Vector2 &get_linear_velocity() const;
-	void set_linear_velocity(const Vector2 &p_velocity);
+	const Vector2 &get_motion_velocity() const;
+	void set_motion_velocity(const Vector2 &p_velocity);
 
 	bool is_on_floor() const;
 	bool is_on_floor_only() const;
@@ -321,9 +326,14 @@ public:
 	bool is_on_wall_only() const;
 	bool is_on_ceiling() const;
 	bool is_on_ceiling_only() const;
-	Vector2 get_floor_normal() const;
+	const Vector2 &get_last_motion() const;
+	Vector2 get_position_delta() const;
+	const Vector2 &get_floor_normal() const;
+	const Vector2 &get_wall_normal() const;
+	const Vector2 &get_real_velocity() const;
+
 	real_t get_floor_angle(const Vector2 &p_up_direction = Vector2(0.0, -1.0)) const;
-	Vector2 get_platform_velocity() const;
+	const Vector2 &get_platform_velocity() const;
 
 	int get_slide_collision_count() const;
 	PhysicsServer2D::MotionResult get_slide_collision(int p_bounce) const;
@@ -334,23 +344,29 @@ public:
 private:
 	real_t margin = 0.08;
 	MotionMode motion_mode = MOTION_MODE_GROUNDED;
+	MovingPlatformApplyVelocityOnLeave moving_platform_apply_velocity_on_leave = PLATFORM_VEL_ON_LEAVE_ALWAYS;
 
 	bool floor_constant_speed = false;
 	bool floor_stop_on_slope = true;
 	bool floor_block_on_wall = true;
 	bool slide_on_ceiling = true;
 	int max_slides = 4;
-	int platform_layer;
+	int platform_layer = 0;
 	real_t floor_max_angle = Math::deg2rad((real_t)45.0);
 	real_t floor_snap_length = 1;
 	real_t free_mode_min_slide_angle = Math::deg2rad((real_t)15.0);
 	Vector2 up_direction = Vector2(0.0, -1.0);
 	uint32_t moving_platform_floor_layers = UINT32_MAX;
 	uint32_t moving_platform_wall_layers = 0;
-	Vector2 linear_velocity;
+	Vector2 motion_velocity;
 
 	Vector2 floor_normal;
 	Vector2 platform_velocity;
+	Vector2 wall_normal;
+	Vector2 last_motion;
+	Vector2 previous_position;
+	Vector2 real_velocity;
+
 	RID platform_rid;
 	bool on_floor = false;
 	bool on_ceiling = false;
@@ -395,6 +411,9 @@ private:
 	void set_motion_mode(MotionMode p_mode);
 	MotionMode get_motion_mode() const;
 
+	void set_moving_platform_apply_velocity_on_leave(MovingPlatformApplyVelocityOnLeave p_on_leave_velocity);
+	MovingPlatformApplyVelocityOnLeave get_moving_platform_apply_velocity_on_leave() const;
+
 	void _move_and_slide_free(double p_delta);
 	void _move_and_slide_grounded(double p_delta, bool p_was_on_floor, const Vector2 &p_prev_platform_velocity);
 
@@ -414,6 +433,7 @@ protected:
 };
 
 VARIANT_ENUM_CAST(CharacterBody2D::MotionMode);
+VARIANT_ENUM_CAST(CharacterBody2D::MovingPlatformApplyVelocityOnLeave);
 
 class KinematicCollision2D : public RefCounted {
 	GDCLASS(KinematicCollision2D, RefCounted);
