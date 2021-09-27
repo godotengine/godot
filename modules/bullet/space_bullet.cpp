@@ -947,7 +947,6 @@ bool SpaceBullet::test_body_motion(RigidBodyBullet *p_body, const Transform3D &p
 
 	if (!p_body->get_kinematic_utilities()) {
 		p_body->init_kinematic_utilities();
-		p_body->reload_kinematic_shapes();
 	}
 
 	btVector3 initial_recover_motion(0, 0, 0);
@@ -1089,7 +1088,6 @@ int SpaceBullet::test_ray_separation(RigidBodyBullet *p_body, const Transform3D 
 
 	if (!p_body->get_kinematic_utilities()) {
 		p_body->init_kinematic_utilities();
-		p_body->reload_kinematic_shapes();
 	}
 
 	btVector3 recover_motion(0, 0, 0);
