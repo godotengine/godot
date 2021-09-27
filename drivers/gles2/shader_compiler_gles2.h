@@ -33,20 +33,12 @@
 #include "drivers/gles_common/rasterizer_platforms.h"
 #ifdef GLES2_BACKEND_ENABLED
 
-#include "drivers/gles_common/rasterizer_version.h"
-#ifdef GODOT_3
-#include "core/pair.h"
-#include "core/string_builder.h"
-#include "servers/visual/shader_language.h"
-#include "servers/visual/shader_types.h"
-#include "servers/visual_server.h"
-#else
 #include "core/string/string_builder.h"
 #include "core/templates/pair.h"
+#include "drivers/gles_common/rasterizer_version.h"
 #include "servers/rendering/shader_language.h"
 #include "servers/rendering/shader_types.h"
 #include "servers/rendering_server.h"
-#endif
 
 class ShaderCompilerGLES2 {
 public:
@@ -98,13 +90,13 @@ private:
 	Set<StringName> used_rmode_defines;
 	Set<StringName> internal_functions;
 
-	DefaultIdentifierActions actions[GD_VS::SHADER_MAX];
+	DefaultIdentifierActions actions[RS::SHADER_MAX];
 
 	// compatibility with godot 4
 	static ShaderLanguage::DataType _get_variable_type(const StringName &p_type);
 
 public:
-	Error compile(GD_VS::ShaderMode p_mode, const String &p_code, IdentifierActions *p_actions, const String &p_path, GeneratedCode &r_gen_code);
+	Error compile(RS::ShaderMode p_mode, const String &p_code, IdentifierActions *p_actions, const String &p_path, GeneratedCode &r_gen_code);
 
 	ShaderCompilerGLES2();
 };

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,19 +32,13 @@
 #include "drivers/gles_common/rasterizer_platforms.h"
 #ifdef GLES2_BACKEND_ENABLED
 
-#include "core/os/memory.h"
 #include "rasterizer_gles2.h"
 #include "rasterizer_storage_gles2.h"
 
-#ifdef GODOT_3
-#include "core/print_string.h"
-#include "core/project_settings.h"
-#include "core/string_builder.h"
-#else
 #include "core/config/project_settings.h"
+#include "core/os/memory.h"
 #include "core/string/print_string.h"
 #include "core/string/string_builder.h"
-#endif
 
 // #define DEBUG_OPENGL
 
@@ -84,8 +78,6 @@ GLint ShaderGLES2::get_uniform_location(int p_index) const {
 
 	return version->uniform_location[p_index];
 }
-
-//#ifdef GODOT_3
 
 bool ShaderGLES2::bind() {
 	if (active != this || !version || new_conditional_version.key != conditional_version.key) {

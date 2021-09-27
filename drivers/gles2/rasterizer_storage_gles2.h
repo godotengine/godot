@@ -267,7 +267,7 @@ public:
 		int width, height, depth;
 		int alloc_width, alloc_height;
 		Image::Format format;
-		GD_RD::TextureType type;
+		RenderingDevice::TextureType type;
 
 		GLenum target;
 		GLenum gl_format_cache;
@@ -297,13 +297,13 @@ public:
 
 		bool redraw_if_visible;
 
-		GD_VS::TextureDetectCallback detect_3d;
+		RS::TextureDetectCallback detect_3d;
 		void *detect_3d_ud;
 
-		GD_VS::TextureDetectCallback detect_srgb;
+		RS::TextureDetectCallback detect_srgb;
 		void *detect_srgb_ud;
 
-		GD_VS::TextureDetectCallback detect_normal;
+		RS::TextureDetectCallback detect_normal;
 		void *detect_normal_ud;
 
 		// some silly opengl shenanigans where
@@ -375,7 +375,7 @@ public:
 			alloc_width = 0;
 			alloc_height = 0;
 			format = Image::FORMAT_L8;
-			type = GD_RD::TEXTURE_TYPE_2D;
+			type = RenderingDevice::TEXTURE_TYPE_2D;
 			target = 0;
 			data_size = 0;
 			total_data_size = 0;
@@ -498,8 +498,8 @@ public:
 private:
 	virtual RID texture_create();
 
-	//virtual void texture_allocate(RID p_texture, int p_width, int p_height, int p_depth_3d, Image::Format p_format, GD_RD::TextureType p_type, uint32_t p_flags = TEXTURE_FLAGS_DEFAULT);
-	void _texture_allocate_internal(RID p_texture, int p_width, int p_height, int p_depth_3d, Image::Format p_format, GD_RD::TextureType p_type, uint32_t p_flags = TEXTURE_FLAGS_DEFAULT);
+	//virtual void texture_allocate(RID p_texture, int p_width, int p_height, int p_depth_3d, Image::Format p_format, RenderingDevice::TextureType p_type, uint32_t p_flags = TEXTURE_FLAGS_DEFAULT);
+	void _texture_allocate_internal(RID p_texture, int p_width, int p_height, int p_depth_3d, Image::Format p_format, RenderingDevice::TextureType p_type, uint32_t p_flags = TEXTURE_FLAGS_DEFAULT);
 
 	virtual void texture_set_data(RID p_texture, const Ref<Image> &p_image, int p_layer = 0);
 	virtual void texture_set_data_partial(RID p_texture, const Ref<Image> &p_image, int src_x, int src_y, int src_w, int src_h, int dst_x, int dst_y, int p_dst_mip, int p_layer = 0);
@@ -507,7 +507,7 @@ private:
 	virtual void texture_set_flags(RID p_texture, uint32_t p_flags);
 	virtual uint32_t texture_get_flags(RID p_texture) const;
 	virtual Image::Format texture_get_format(RID p_texture) const;
-	virtual GD_RD::TextureType texture_get_type(RID p_texture) const;
+	virtual RenderingDevice::TextureType texture_get_type(RID p_texture) const;
 	virtual uint32_t texture_get_texid(RID p_texture) const;
 	virtual uint32_t texture_get_depth(RID p_texture) const;
 	void texture_set_size_override(RID p_texture, int p_width, int p_height) override;
@@ -519,7 +519,7 @@ private:
 
 	virtual void texture_set_shrink_all_x2_on_set_data(bool p_enable);
 
-	virtual void texture_debug_usage(List<GD_VS::TextureInfo> *r_info) override;
+	virtual void texture_debug_usage(List<RS::TextureInfo> *r_info) override;
 
 	virtual RID texture_create_radiance_cubemap(RID p_source, int p_resolution = -1) const;
 
@@ -528,9 +528,9 @@ private:
 	virtual void texture_set_proxy(RID p_texture, RID p_proxy);
 	virtual Size2 texture_size_with_proxy(RID p_texture) override;
 
-	virtual void texture_set_detect_3d_callback(RID p_texture, GD_VS::TextureDetectCallback p_callback, void *p_userdata) override;
-	virtual void texture_set_detect_srgb_callback(RID p_texture, GD_VS::TextureDetectCallback p_callback, void *p_userdata);
-	virtual void texture_set_detect_normal_callback(RID p_texture, GD_VS::TextureDetectCallback p_callback, void *p_userdata) override;
+	virtual void texture_set_detect_3d_callback(RID p_texture, RS::TextureDetectCallback p_callback, void *p_userdata) override;
+	virtual void texture_set_detect_srgb_callback(RID p_texture, RS::TextureDetectCallback p_callback, void *p_userdata);
+	virtual void texture_set_detect_normal_callback(RID p_texture, RS::TextureDetectCallback p_callback, void *p_userdata) override;
 	void texture_set_detect_roughness_callback(RID p_texture, RS::TextureDetectRoughnessCallback p_callback, void *p_userdata) override {}
 
 	virtual void texture_set_force_redraw_if_visible(RID p_texture, bool p_enable) override;
@@ -566,7 +566,7 @@ public:
 	struct Shader {
 		RID self;
 
-		GD_VS::ShaderMode mode;
+		RS::ShaderMode mode;
 		ShaderGLES2 *shader;
 		String code;
 		SelfList<Material>::List materials;
@@ -869,7 +869,7 @@ public:
 		// defer this for faster startup
 		bool allocate_is_dirty = false;
 		bool used_in_frame;
-		GD_VS::ViewportMSAA msaa;
+		RS::ViewportMSAA msaa;
 
 		bool use_fxaa;
 		bool use_debanding;
@@ -895,7 +895,7 @@ public:
 				width(0),
 				height(0),
 				used_in_frame(false),
-				msaa(GD_VS::VIEWPORT_MSAA_DISABLED),
+				msaa(RS::VIEWPORT_MSAA_DISABLED),
 				use_fxaa(false),
 				use_debanding(false),
 				used_dof_blur_near(false),
@@ -924,7 +924,7 @@ public:
 	virtual void render_target_set_flag(RID p_render_target, RenderTargetFlags p_flag, bool p_value) override;
 	virtual bool render_target_was_used(RID p_render_target) override;
 	virtual void render_target_clear_used(RID p_render_target);
-	virtual void render_target_set_msaa(RID p_render_target, GD_VS::ViewportMSAA p_msaa);
+	virtual void render_target_set_msaa(RID p_render_target, RS::ViewportMSAA p_msaa);
 	virtual void render_target_set_use_fxaa(RID p_render_target, bool p_fxaa);
 	virtual void render_target_set_use_debanding(RID p_render_target, bool p_debanding);
 
@@ -972,7 +972,7 @@ public:
 	virtual void canvas_light_occluder_set_polylines(RID p_occluder, const LocalVector<Vector2> &p_lines);
 */
 
-	virtual GD_VS::InstanceType get_base_type(RID p_rid) const override;
+	virtual RS::InstanceType get_base_type(RID p_rid) const override;
 
 	virtual bool free(RID p_rid) override;
 
@@ -1007,9 +1007,9 @@ public:
 
 	//	virtual void render_info_begin_capture() override;
 	//	virtual void render_info_end_capture() override;
-	//	virtual int get_captured_render_info(GD_VS::RenderInfo p_info) override;
+	//	virtual int get_captured_render_info(RS::RenderInfo p_info) override;
 
-	//	virtual int get_render_info(GD_VS::RenderInfo p_info) override;
+	//	virtual int get_render_info(RS::RenderInfo p_info) override;
 	virtual String get_video_adapter_name() const override;
 	virtual String get_video_adapter_vendor() const override;
 

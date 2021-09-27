@@ -42,24 +42,15 @@
 #endif
 
 #include "core/math/camera_matrix.h"
-#ifdef GODOT_3
-#include "core/hash_map.h"
-#include "core/map.h"
-#include "core/pair.h"
-#include "core/variant.h"
-#include "servers/visual/shader_language.h"
-#else
 #include "core/templates/hash_map.h"
 #include "core/templates/map.h"
 #include "core/templates/pair.h"
 #include "core/variant/variant.h"
 #include "servers/rendering/shader_language.h"
-#endif
 
 #include <stdio.h>
 
 class RasterizerStorageGLES2;
-//#ifdef GODOT_3
 
 class ShaderGLES2 {
 protected:

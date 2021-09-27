@@ -121,11 +121,11 @@ PFNGLFRAMEBUFFERTEXTURE2DMULTISAMPLEEXTPROC glFramebufferTexture2DMultisampleEXT
 
 void RasterizerStorageGLES2::bind_quad_array() const {
 	glBindBuffer(GL_ARRAY_BUFFER, resources.quadie);
-	glVertexAttribPointer(GD_VS::ARRAY_VERTEX, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 4, 0);
-	glVertexAttribPointer(GD_VS::ARRAY_TEX_UV, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 4, CAST_INT_TO_UCHAR_PTR(8));
+	glVertexAttribPointer(RS::ARRAY_VERTEX, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 4, 0);
+	glVertexAttribPointer(RS::ARRAY_TEX_UV, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 4, CAST_INT_TO_UCHAR_PTR(8));
 
-	glEnableVertexAttribArray(GD_VS::ARRAY_VERTEX);
-	glEnableVertexAttribArray(GD_VS::ARRAY_TEX_UV);
+	glEnableVertexAttribArray(RS::ARRAY_VERTEX);
+	glEnableVertexAttribArray(RS::ARRAY_TEX_UV);
 }
 
 Ref<Image> RasterizerStorageGLES2::_get_gl_image_and_format(const Ref<Image> &p_image, Image::Format p_format, uint32_t p_flags, Image::Format &r_real_format, GLenum &r_gl_format, GLenum &r_gl_internal_format, GLenum &r_gl_type, bool &r_compressed, bool p_force_decompress) const {
@@ -499,7 +499,7 @@ void RasterizerStorageGLES2::texture_2d_initialize(RID p_texture, const Ref<Imag
 	int w = p_image->get_width();
 	int h = p_image->get_height();
 
-	_texture_allocate_internal(p_texture, w, h, 1, p_image->get_format(), GD_RD::TEXTURE_TYPE_2D, 0);
+	_texture_allocate_internal(p_texture, w, h, 1, p_image->get_format(), RenderingDevice::TEXTURE_TYPE_2D, 0);
 	texture_set_data(p_texture, p_image);
 }
 
@@ -510,7 +510,7 @@ void RasterizerStorageGLES2::texture_2d_initialize(RID p_texture, const Ref<Imag
 //	int w = p_image->get_width();
 //	int h = p_image->get_height();
 
-//	texture_allocate(id, w, h, 1, p_image->get_format(), GD_RD::TEXTURE_TYPE_2D, 0);
+//	texture_allocate(id, w, h, 1, p_image->get_format(), RenderingDevice::TEXTURE_TYPE_2D, 0);
 
 //	texture_set_data(id, p_image);
 
@@ -612,7 +612,7 @@ RID RasterizerStorageGLES2::texture_create() {
 	return texture_owner.make_rid(texture);
 }
 
-void RasterizerStorageGLES2::_texture_allocate_internal(RID p_texture, int p_width, int p_height, int p_depth_3d, Image::Format p_format, GD_RD::TextureType p_type, uint32_t p_flags) {
+void RasterizerStorageGLES2::_texture_allocate_internal(RID p_texture, int p_width, int p_height, int p_depth_3d, Image::Format p_format, RenderingDevice::TextureType p_type, uint32_t p_flags) {
 	//	GLenum format;
 	//	GLenum internal_format;
 	//	GLenum type;
@@ -633,11 +633,11 @@ void RasterizerStorageGLES2::_texture_allocate_internal(RID p_texture, int p_wid
 	texture->type = p_type;
 
 	switch (p_type) {
-		case GD_RD::TEXTURE_TYPE_2D: {
+		case RenderingDevice::TEXTURE_TYPE_2D: {
 			texture->target = GL_TEXTURE_2D;
 			texture->images.resize(1);
 		} break;
-			//		case GD_RD::TEXTURE_TYPE_EXTERNAL: {
+			//		case RenderingDevice::TEXTURE_TYPE_EXTERNAL: {
 			//#ifdef ANDROID_ENABLED
 			//			texture->target = _GL_TEXTURE_EXTERNAL_OES;
 			//#else
@@ -645,12 +645,12 @@ void RasterizerStorageGLES2::_texture_allocate_internal(RID p_texture, int p_wid
 			//#endif
 			//			texture->images.resize(0);
 			//		} break;
-		case GD_RD::TEXTURE_TYPE_CUBE: {
+		case RenderingDevice::TEXTURE_TYPE_CUBE: {
 			texture->target = GL_TEXTURE_CUBE_MAP;
 			texture->images.resize(6);
 		} break;
-		case GD_RD::TEXTURE_TYPE_2D_ARRAY:
-		case GD_RD::TEXTURE_TYPE_3D: {
+		case RenderingDevice::TEXTURE_TYPE_2D_ARRAY:
+		case RenderingDevice::TEXTURE_TYPE_3D: {
 			texture->target = GL_TEXTURE_3D;
 			ERR_PRINT("3D textures and Texture Arrays are not supported in GLES2. Please switch to the GLES3 backend.");
 			return;
@@ -662,8 +662,8 @@ void RasterizerStorageGLES2::_texture_allocate_internal(RID p_texture, int p_wid
 	}
 
 #if 0
-	//		if (p_type != GD_VS::TEXTURE_TYPE_EXTERNAL) {
-	if (p_type == GD_RD::TEXTURE_TYPE_2D) {
+	//		if (p_type != RS::TEXTURE_TYPE_EXTERNAL) {
+	if (p_type == RenderingDevice::TEXTURE_TYPE_2D) {
 		texture->alloc_width = texture->width;
 		texture->alloc_height = texture->height;
 		texture->resize_to_po2 = false;
@@ -715,7 +715,7 @@ void RasterizerStorageGLES2::_texture_allocate_internal(RID p_texture, int p_wid
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(texture->target, texture->tex_id);
 
-	//	if (p_type == GD_VS::TEXTURE_TYPE_EXTERNAL) {
+	//	if (p_type == RS::TEXTURE_TYPE_EXTERNAL) {
 	//		glTexParameteri(texture->target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	//		glTexParameteri(texture->target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	//		glTexParameteri(texture->target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -746,7 +746,7 @@ void RasterizerStorageGLES2::texture_set_data(RID p_texture, const Ref<Image> &p
 	ERR_FAIL_COND(!p_image->get_width());
 	ERR_FAIL_COND(!p_image->get_height());
 
-	//	ERR_FAIL_COND(texture->type == GD_VS::TEXTURE_TYPE_EXTERNAL);
+	//	ERR_FAIL_COND(texture->type == RS::TEXTURE_TYPE_EXTERNAL);
 
 	GLenum type;
 	GLenum format;
@@ -838,7 +838,7 @@ void RasterizerStorageGLES2::texture_set_data(RID p_texture, const Ref<Image> &p
 
 	texture->stored_cube_sides |= (1 << p_layer);
 
-	if ((texture->flags & TEXTURE_FLAG_MIPMAPS) && mipmaps == 1 && !texture->ignore_mipmaps && (texture->type != GD_RD::TEXTURE_TYPE_CUBE || texture->stored_cube_sides == (1 << 6) - 1)) {
+	if ((texture->flags & TEXTURE_FLAG_MIPMAPS) && mipmaps == 1 && !texture->ignore_mipmaps && (texture->type != RenderingDevice::TEXTURE_TYPE_CUBE || texture->stored_cube_sides == (1 << 6) - 1)) {
 		//generate mipmaps if they were requested and the image does not contain them
 		glGenerateMipmap(texture->target);
 	}
@@ -859,7 +859,7 @@ Ref<Image> RasterizerStorageGLES2::texture_get_data(RID p_texture, int p_layer) 
 	ERR_FAIL_COND_V(!texture->active, Ref<Image>());
 	ERR_FAIL_COND_V(texture->data_size == 0 && !texture->render_target, Ref<Image>());
 
-	if (texture->type == GD_VS::TEXTURE_TYPE_CUBEMAP && p_layer < 6 && p_layer >= 0 && !texture->images[p_layer].is_null()) {
+	if (texture->type == RS::TEXTURE_TYPE_CUBEMAP && p_layer < 6 && p_layer >= 0 && !texture->images[p_layer].is_null()) {
 		return texture->images[p_layer];
 	}
 
@@ -1044,10 +1044,10 @@ Image::Format RasterizerStorageGLES2::texture_get_format(RID p_texture) const {
 	return texture->format;
 }
 
-GD_RD::TextureType RasterizerStorageGLES2::texture_get_type(RID p_texture) const {
+RenderingDevice::TextureType RasterizerStorageGLES2::texture_get_type(RID p_texture) const {
 	Texture *texture = texture_owner.getornull(p_texture);
 
-	ERR_FAIL_COND_V(!texture, GD_RD::TEXTURE_TYPE_2D);
+	ERR_FAIL_COND_V(!texture, RenderingDevice::TEXTURE_TYPE_2D);
 
 	return texture->type;
 }
@@ -1120,7 +1120,7 @@ String RasterizerStorageGLES2::texture_get_path(RID p_texture) const {
 	return texture->path;
 }
 
-void RasterizerStorageGLES2::texture_debug_usage(List<GD_VS::TextureInfo> *r_info) {
+void RasterizerStorageGLES2::texture_debug_usage(List<RS::TextureInfo> *r_info) {
 	List<RID> textures;
 	texture_owner.get_owned_list(&textures);
 
@@ -1128,7 +1128,7 @@ void RasterizerStorageGLES2::texture_debug_usage(List<GD_VS::TextureInfo> *r_inf
 		Texture *t = texture_owner.getornull(E->get());
 		if (!t)
 			continue;
-		GD_VS::TextureInfo tinfo;
+		RS::TextureInfo tinfo;
 		tinfo.path = t->path;
 		tinfo.format = t->format;
 		tinfo.width = t->alloc_width;
@@ -1193,7 +1193,7 @@ void RasterizerStorageGLES2::texture_set_force_redraw_if_visible(RID p_texture, 
 	texture->redraw_if_visible = p_enable;
 }
 
-void RasterizerStorageGLES2::texture_set_detect_3d_callback(RID p_texture, GD_VS::TextureDetectCallback p_callback, void *p_userdata) {
+void RasterizerStorageGLES2::texture_set_detect_3d_callback(RID p_texture, RS::TextureDetectCallback p_callback, void *p_userdata) {
 	Texture *texture = texture_owner.getornull(p_texture);
 	ERR_FAIL_COND(!texture);
 
@@ -1201,7 +1201,7 @@ void RasterizerStorageGLES2::texture_set_detect_3d_callback(RID p_texture, GD_VS
 	texture->detect_3d_ud = p_userdata;
 }
 
-void RasterizerStorageGLES2::texture_set_detect_srgb_callback(RID p_texture, GD_VS::TextureDetectCallback p_callback, void *p_userdata) {
+void RasterizerStorageGLES2::texture_set_detect_srgb_callback(RID p_texture, RS::TextureDetectCallback p_callback, void *p_userdata) {
 	Texture *texture = texture_owner.getornull(p_texture);
 	ERR_FAIL_COND(!texture);
 
@@ -1209,7 +1209,7 @@ void RasterizerStorageGLES2::texture_set_detect_srgb_callback(RID p_texture, GD_
 	texture->detect_srgb_ud = p_userdata;
 }
 
-void RasterizerStorageGLES2::texture_set_detect_normal_callback(RID p_texture, GD_VS::TextureDetectCallback p_callback, void *p_userdata) {
+void RasterizerStorageGLES2::texture_set_detect_normal_callback(RID p_texture, RS::TextureDetectCallback p_callback, void *p_userdata) {
 	Texture *texture = texture_owner.getornull(p_texture);
 	ERR_FAIL_COND(!texture);
 
@@ -1257,7 +1257,7 @@ void RasterizerStorageGLES2::sky_set_texture(RID p_sky, RID p_panorama, int p_ra
 		glDisable(GL_SCISSOR_TEST);
 		glDisable(GL_BLEND);
 
-		for (int i = 0; i < GD_VS::ARRAY_MAX - 1; i++) {
+		for (int i = 0; i < RS::ARRAY_MAX - 1; i++) {
 			glDisableVertexAttribArray(i);
 		}
 	}
@@ -1389,7 +1389,7 @@ void RasterizerStorageGLES2::sky_set_texture(RID p_sky, RID p_panorama, int p_ra
 
 RID RasterizerStorageGLES2::shader_allocate() {
 	Shader *shader = memnew(Shader);
-	shader->mode = GD_VS::SHADER_SPATIAL;
+	shader->mode = RS::SHADER_SPATIAL;
 	shader->shader = &scene->state.scene_shader;
 	RID rid = shader_owner.make_rid(shader);
 	_shader_make_dirty(shader);
@@ -1404,7 +1404,7 @@ void RasterizerStorageGLES2::shader_initialize(RID p_rid) {
 
 //RID RasterizerStorageGLES2::shader_create() {
 //	Shader *shader = memnew(Shader);
-//	shader->mode = GD_VS::SHADER_SPATIAL;
+//	shader->mode = RS::SHADER_SPATIAL;
 //	shader->shader = &scene->state.scene_shader;
 //	RID rid = shader_owner.make_rid(shader);
 //	_shader_make_dirty(shader);
@@ -1427,14 +1427,14 @@ void RasterizerStorageGLES2::shader_set_code(RID p_shader, const String &p_code)
 	shader->code = p_code;
 
 	String mode_string = ShaderLanguage::get_shader_type(p_code);
-	GD_VS::ShaderMode mode;
+	RS::ShaderMode mode;
 
 	if (mode_string == "canvas_item")
-		mode = GD_VS::SHADER_CANVAS_ITEM;
+		mode = RS::SHADER_CANVAS_ITEM;
 	else if (mode_string == "particles")
-		mode = GD_VS::SHADER_PARTICLES;
+		mode = RS::SHADER_PARTICLES;
 	else
-		mode = GD_VS::SHADER_SPATIAL;
+		mode = RS::SHADER_SPATIAL;
 
 	if (shader->custom_code_id && mode != shader->mode) {
 		shader->shader->free_custom_shader(shader->custom_code_id);
@@ -1444,10 +1444,10 @@ void RasterizerStorageGLES2::shader_set_code(RID p_shader, const String &p_code)
 	shader->mode = mode;
 
 	// TODO handle all shader types
-	if (mode == GD_VS::SHADER_CANVAS_ITEM) {
+	if (mode == RS::SHADER_CANVAS_ITEM) {
 		shader->shader = &canvas->state.canvas_shader;
 
-	} else if (mode == GD_VS::SHADER_SPATIAL) {
+	} else if (mode == RS::SHADER_SPATIAL) {
 		shader->shader = &scene->state.scene_shader;
 	} else {
 		return;
@@ -1482,7 +1482,7 @@ void RasterizerStorageGLES2::_update_shader(Shader *p_shader) const {
 	ShaderCompilerGLES2::IdentifierActions *actions = NULL;
 
 	switch (p_shader->mode) {
-		case GD_VS::SHADER_CANVAS_ITEM: {
+		case RS::SHADER_CANVAS_ITEM: {
 			p_shader->canvas_item.light_mode = Shader::CanvasItem::LIGHT_MODE_NORMAL;
 			p_shader->canvas_item.blend_mode = Shader::CanvasItem::BLEND_MODE_MIX;
 
@@ -1526,7 +1526,7 @@ void RasterizerStorageGLES2::_update_shader(Shader *p_shader) const {
 			actions->uniforms = &p_shader->uniforms;
 		} break;
 
-		case GD_VS::SHADER_SPATIAL: {
+		case RS::SHADER_SPATIAL: {
 			p_shader->spatial.blend_mode = Shader::Spatial::BLEND_MODE_MIX;
 			p_shader->spatial.depth_draw_mode = Shader::Spatial::DEPTH_DRAW_OPAQUE;
 			p_shader->spatial.cull_mode = Shader::Spatial::CULL_MODE_BACK;
@@ -1618,7 +1618,7 @@ void RasterizerStorageGLES2::_update_shader(Shader *p_shader) const {
 	p_shader->uses_fragment_time = gen_code.uses_fragment_time;
 
 	// some logic for batching
-	if (p_shader->mode == GD_VS::SHADER_CANVAS_ITEM) {
+	if (p_shader->mode == RS::SHADER_CANVAS_ITEM) {
 		if (p_shader->canvas_item.uses_modulate | p_shader->canvas_item.uses_color) {
 			p_shader->canvas_item.batch_flags |= RasterizerStorageCommon::PREVENT_COLOR_BAKING;
 		}
@@ -2039,8 +2039,8 @@ void RasterizerStorageGLES2::material_remove_instance_owner(RID p_material, Depe
 }
 
 void RasterizerStorageGLES2::material_set_render_priority(RID p_material, int priority) {
-	ERR_FAIL_COND(priority < GD_VS::MATERIAL_RENDER_PRIORITY_MIN);
-	ERR_FAIL_COND(priority > GD_VS::MATERIAL_RENDER_PRIORITY_MAX);
+	ERR_FAIL_COND(priority < RS::MATERIAL_RENDER_PRIORITY_MIN);
+	ERR_FAIL_COND(priority > RS::MATERIAL_RENDER_PRIORITY_MAX);
 
 	Material *material = material_owner.getornull(p_material);
 	ERR_FAIL_COND(!material);
@@ -2065,7 +2065,7 @@ void RasterizerStorageGLES2::_update_material(Material *p_material) {
 		bool can_cast_shadow = false;
 		bool is_animated = false;
 
-		if (p_material->shader && p_material->shader->mode == GD_VS::SHADER_SPATIAL) {
+		if (p_material->shader && p_material->shader->mode == RS::SHADER_SPATIAL) {
 			if (p_material->shader->spatial.blend_mode == Shader::Spatial::BLEND_MODE_MIX &&
 					(!p_material->shader->spatial.uses_alpha || p_material->shader->spatial.depth_draw_mode == Shader::Spatial::DEPTH_DRAW_ALPHA_PREPASS)) {
 				can_cast_shadow = true;
@@ -2344,7 +2344,7 @@ void RasterizerStorageGLES2::_render_target_allocate(RenderTarget *rt) {
 	/* For MSAA */
 
 #ifndef JAVASCRIPT_ENABLED
-	if (rt->msaa >= GD_VS::VIEWPORT_MSAA_2X && rt->msaa <= GD_VS::VIEWPORT_MSAA_8X && config.multisample_supported) {
+	if (rt->msaa >= RS::VIEWPORT_MSAA_2X && rt->msaa <= RS::VIEWPORT_MSAA_8X && config.multisample_supported) {
 		rt->multisample_active = true;
 
 		static const int msaa_value[] = { 0, 2, 4, 8, 16 };
@@ -2670,7 +2670,7 @@ RID RasterizerStorageGLES2::render_target_create() {
 	RenderTarget *rt = memnew(RenderTarget);
 	Texture *t = memnew(Texture);
 
-	t->type = GD_RD::TEXTURE_TYPE_2D;
+	t->type = RenderingDevice::TEXTURE_TYPE_2D;
 	t->flags = 0;
 	t->width = 0;
 	t->height = 0;
@@ -2786,7 +2786,7 @@ void RasterizerStorageGLES2::render_target_set_external_texture(RID p_render_tar
 			// allocate a texture
 			t = memnew(Texture);
 
-			t->type = GD_RD::TEXTURE_TYPE_2D;
+			t->type = RenderingDevice::TEXTURE_TYPE_2D;
 			t->flags = 0;
 			t->width = 0;
 			t->height = 0;
@@ -2829,7 +2829,7 @@ void RasterizerStorageGLES2::render_target_set_external_texture(RID p_render_tar
 
 		// Switch our texture on our frame buffer
 #if ANDROID_ENABLED
-		if (rt->msaa >= GD_VS::VIEWPORT_MSAA_2X && rt->msaa <= GD_VS::VIEWPORT_MSAA_4X) {
+		if (rt->msaa >= RS::VIEWPORT_MSAA_2X && rt->msaa <= RS::VIEWPORT_MSAA_4X) {
 			// This code only applies to the Oculus Go and Oculus Quest. Due to the the tiled nature
 			// of the GPU we can do a single render pass by rendering directly into our texture chains
 			// texture and apply MSAA as we render.
@@ -2838,7 +2838,7 @@ void RasterizerStorageGLES2::render_target_set_external_texture(RID p_render_tar
 			// the normal MSAA modes need to be used to enable our two pass approach
 
 			static const int msaa_value[] = { 2, 4 };
-			int msaa = msaa_value[rt->msaa - GD_VS::VIEWPORT_MSAA_2X];
+			int msaa = msaa_value[rt->msaa - RS::VIEWPORT_MSAA_2X];
 
 			if (rt->external.depth == 0) {
 				// create a multisample depth buffer, we're not reusing Godots because Godot's didn't get created..
@@ -2935,7 +2935,7 @@ void RasterizerStorageGLES2::render_target_clear_used(RID p_render_target) {
 	rt->used_in_frame = false;
 }
 
-void RasterizerStorageGLES2::render_target_set_msaa(RID p_render_target, GD_VS::ViewportMSAA p_msaa) {
+void RasterizerStorageGLES2::render_target_set_msaa(RID p_render_target, RS::ViewportMSAA p_msaa) {
 #ifdef GLES2_DISABLE_RENDER_TARGETS
 	return;
 #endif
@@ -3204,24 +3204,24 @@ void RasterizerStorageGLES2::canvas_light_occluder_set_polylines(RID p_occluder,
 }
 */
 
-GD_VS::InstanceType RasterizerStorageGLES2::get_base_type(RID p_rid) const {
-	return GD_VS::INSTANCE_NONE;
+RS::InstanceType RasterizerStorageGLES2::get_base_type(RID p_rid) const {
+	return RS::INSTANCE_NONE;
 
 	/*
 	if (mesh_owner.owns(p_rid)) {
-		return GD_VS::INSTANCE_MESH;
+		return RS::INSTANCE_MESH;
 	} else if (light_owner.owns(p_rid)) {
-		return GD_VS::INSTANCE_LIGHT;
+		return RS::INSTANCE_LIGHT;
 	} else if (multimesh_owner.owns(p_rid)) {
-		return GD_VS::INSTANCE_MULTIMESH;
+		return RS::INSTANCE_MULTIMESH;
 	} else if (immediate_owner.owns(p_rid)) {
-		return GD_VS::INSTANCE_IMMEDIATE;
+		return RS::INSTANCE_IMMEDIATE;
 	} else if (reflection_probe_owner.owns(p_rid)) {
-		return GD_VS::INSTANCE_REFLECTION_PROBE;
+		return RS::INSTANCE_REFLECTION_PROBE;
 	} else if (lightmap_capture_data_owner.owns(p_rid)) {
-		return GD_VS::INSTANCE_LIGHTMAP_CAPTURE;
+		return RS::INSTANCE_LIGHTMAP_CAPTURE;
 	} else {
-		return GD_VS::INSTANCE_NONE;
+		return RS::INSTANCE_NONE;
 	}
 */
 }
@@ -3372,7 +3372,7 @@ bool RasterizerStorageGLES2::free(RID p_rid) {
 			}
 		}
 
-		multimesh_allocate(p_rid, 0, GD_VS::MULTIMESH_TRANSFORM_3D, GD_VS::MULTIMESH_COLOR_NONE);
+		multimesh_allocate(p_rid, 0, RS::MULTIMESH_TRANSFORM_3D, RS::MULTIMESH_COLOR_NONE);
 
 		update_dirty_multimeshes();
 
@@ -3474,31 +3474,31 @@ void RasterizerStorageGLES2::set_debug_generate_wireframes(bool p_generate) {
 //	info.snap._2d_draw_call_count = info.render._2d_draw_call_count - info.snap._2d_draw_call_count;
 //}
 
-//int RasterizerStorageGLES2::get_captured_render_info(GD_VS::RenderInfo p_info) {
+//int RasterizerStorageGLES2::get_captured_render_info(RS::RenderInfo p_info) {
 //	switch (p_info) {
-//		case GD_VS::INFO_OBJECTS_IN_FRAME: {
+//		case RS::INFO_OBJECTS_IN_FRAME: {
 //			return info.snap.object_count;
 //		} break;
-//		case GD_VS::INFO_VERTICES_IN_FRAME: {
+//		case RS::INFO_VERTICES_IN_FRAME: {
 //			return info.snap.vertices_count;
 //		} break;
-//		case GD_VS::INFO_MATERIAL_CHANGES_IN_FRAME: {
+//		case RS::INFO_MATERIAL_CHANGES_IN_FRAME: {
 //			return info.snap.material_switch_count;
 //		} break;
-//		case GD_VS::INFO_SHADER_CHANGES_IN_FRAME: {
+//		case RS::INFO_SHADER_CHANGES_IN_FRAME: {
 //			return info.snap.shader_rebind_count;
 //		} break;
-//		case GD_VS::INFO_SURFACE_CHANGES_IN_FRAME: {
+//		case RS::INFO_SURFACE_CHANGES_IN_FRAME: {
 //			return info.snap.surface_switch_count;
 //		} break;
-//		case GD_VS::INFO_DRAW_CALLS_IN_FRAME: {
+//		case RS::INFO_DRAW_CALLS_IN_FRAME: {
 //			return info.snap.draw_call_count;
 //		} break;
 //			/*
-//		case GD_VS::INFO_2D_ITEMS_IN_FRAME: {
+//		case RS::INFO_2D_ITEMS_IN_FRAME: {
 //			return info.snap._2d_item_count;
 //		} break;
-//		case GD_VS::INFO_2D_DRAW_CALLS_IN_FRAME: {
+//		case RS::INFO_2D_DRAW_CALLS_IN_FRAME: {
 //			return info.snap._2d_draw_call_count;
 //		} break;
 //			*/
@@ -3508,33 +3508,33 @@ void RasterizerStorageGLES2::set_debug_generate_wireframes(bool p_generate) {
 //	}
 //}
 
-//int RasterizerStorageGLES2::get_render_info(GD_VS::RenderInfo p_info) {
+//int RasterizerStorageGLES2::get_render_info(RS::RenderInfo p_info) {
 //	switch (p_info) {
-//		case GD_VS::INFO_OBJECTS_IN_FRAME:
+//		case RS::INFO_OBJECTS_IN_FRAME:
 //			return info.render_final.object_count;
-//		case GD_VS::INFO_VERTICES_IN_FRAME:
+//		case RS::INFO_VERTICES_IN_FRAME:
 //			return info.render_final.vertices_count;
-//		case GD_VS::INFO_MATERIAL_CHANGES_IN_FRAME:
+//		case RS::INFO_MATERIAL_CHANGES_IN_FRAME:
 //			return info.render_final.material_switch_count;
-//		case GD_VS::INFO_SHADER_CHANGES_IN_FRAME:
+//		case RS::INFO_SHADER_CHANGES_IN_FRAME:
 //			return info.render_final.shader_rebind_count;
-//		case GD_VS::INFO_SURFACE_CHANGES_IN_FRAME:
+//		case RS::INFO_SURFACE_CHANGES_IN_FRAME:
 //			return info.render_final.surface_switch_count;
-//		case GD_VS::INFO_DRAW_CALLS_IN_FRAME:
+//		case RS::INFO_DRAW_CALLS_IN_FRAME:
 //			return info.render_final.draw_call_count;
 //			/*
-//		case GD_VS::INFO_2D_ITEMS_IN_FRAME:
+//		case RS::INFO_2D_ITEMS_IN_FRAME:
 //			return info.render_final._2d_item_count;
-//		case GD_VS::INFO_2D_DRAW_CALLS_IN_FRAME:
+//		case RS::INFO_2D_DRAW_CALLS_IN_FRAME:
 //			return info.render_final._2d_draw_call_count;
 //*/
-//		case GD_VS::INFO_USAGE_VIDEO_MEM_TOTAL:
+//		case RS::INFO_USAGE_VIDEO_MEM_TOTAL:
 //			return 0; //no idea
-//		case GD_VS::INFO_VIDEO_MEM_USED:
+//		case RS::INFO_VIDEO_MEM_USED:
 //			return info.vertex_mem + info.texture_mem;
-//		case GD_VS::INFO_TEXTURE_MEM_USED:
+//		case RS::INFO_TEXTURE_MEM_USED:
 //			return info.texture_mem;
-//		case GD_VS::INFO_VERTEX_MEM_USED:
+//		case RS::INFO_VERTEX_MEM_USED:
 //			return info.vertex_mem;
 //		default:
 //			return 0; //no idea either
