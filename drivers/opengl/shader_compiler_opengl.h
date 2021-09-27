@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  shader_compiler_gles2.h                                              */
+/*  shader_compiler_opengl.h                                             */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -30,8 +30,8 @@
 
 #pragma once
 
-#include "drivers/gles2/rasterizer_platforms.h"
-#ifdef GLES2_BACKEND_ENABLED
+#include "drivers/opengl/rasterizer_platforms.h"
+#ifdef OPENGL_BACKEND_ENABLED
 
 #include "core/string/string_builder.h"
 #include "core/templates/pair.h"
@@ -39,7 +39,7 @@
 #include "servers/rendering/shader_types.h"
 #include "servers/rendering_server.h"
 
-class ShaderCompilerGLES2 {
+class ShaderCompilerOpenGL {
 public:
 	struct IdentifierActions {
 		Map<StringName, Pair<int *, int>> render_mode_values;
@@ -97,7 +97,7 @@ private:
 public:
 	Error compile(RS::ShaderMode p_mode, const String &p_code, IdentifierActions *p_actions, const String &p_path, GeneratedCode &r_gen_code);
 
-	ShaderCompilerGLES2();
+	ShaderCompilerOpenGL();
 };
 
-#endif // GLES2_BACKEND_ENABLED
+#endif // OPENGL_BACKEND_ENABLED

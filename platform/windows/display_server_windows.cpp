@@ -39,7 +39,7 @@
 #include <avrt.h>
 
 #if defined(GLES_WINDOWS_ENABLED)
-#include "drivers/gles2/rasterizer_gles2.h"
+#include "drivers/opengl/rasterizer_opengl.h"
 #endif
 
 static String format_error_message(DWORD id) {
@@ -3354,7 +3354,7 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 		//		gl_manager->set_use_vsync(current_videomode.use_vsync);
 
 		if (true) {
-			RasterizerGLES2::make_current();
+			RasterizerOpenGLmake_current();
 		} else {
 			memdelete(gl_manager);
 			gl_manager = nullptr;
@@ -3377,9 +3377,9 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 
 		context_gles2->set_use_vsync(video_mode.use_vsync);
 
-		if (RasterizerGLES2::is_viable() == OK) {
-			RasterizerGLES2::register_config();
-			RasterizerGLES2::make_current();
+		if (RasterizerOpenGLis_viable() == OK) {
+			RasterizerOpenGLregister_config();
+			RasterizerOpenGLmake_current();
 		} else {
 			memdelete(context_gles2);
 			context_gles2 = nullptr;

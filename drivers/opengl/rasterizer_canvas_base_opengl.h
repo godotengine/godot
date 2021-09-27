@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  rasterizer_canvas_base_gles2.h                                       */
+/*  rasterizer_canvas_base_opengl.h                                      */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -30,21 +30,21 @@
 
 #pragma once
 
-#include "drivers/gles2/rasterizer_platforms.h"
-#ifdef GLES2_BACKEND_ENABLED
+#include "drivers/opengl/rasterizer_platforms.h"
+#ifdef OPENGL_BACKEND_ENABLED
 
-#include "drivers/gles2/rasterizer_array.h"
-#include "drivers/gles2/rasterizer_common_stubs.h"
-#include "drivers/gles2/rasterizer_storage_common.h"
-#include "rasterizer_scene_gles2.h"
-#include "rasterizer_storage_gles2.h"
+#include "drivers/opengl/rasterizer_array.h"
+#include "drivers/opengl/rasterizer_common_stubs.h"
+#include "drivers/opengl/rasterizer_storage_common.h"
+#include "rasterizer_scene_opengl.h"
+#include "rasterizer_storage_opengl.h"
 #include "servers/rendering/renderer_compositor.h"
 
 #include "shaders/canvas.glsl.gen.h"
 #include "shaders/canvas_shadow.glsl.gen.h"
 #include "shaders/lens_distorted.glsl.gen.h"
 
-class RasterizerCanvasBaseGLES2 : public StubsCanvas {
+class RasterizerCanvasBaseOpenGL : public StubsCanvas {
 public:
 	enum {
 		INSTANCE_ATTRIB_BASE = 8,
@@ -76,9 +76,9 @@ public:
 	struct State {
 		Uniforms uniforms;
 		bool canvas_texscreen_used;
-		CanvasShaderGLES2 canvas_shader;
-		CanvasShadowShaderGLES2 canvas_shadow_shader;
-		LensDistortedShaderGLES2 lens_shader;
+		CanvasShaderOpenGL canvas_shader;
+		CanvasShadowShaderOpenGL canvas_shadow_shader;
+		LensDistortedShaderOpenGL lens_shader;
 
 		bool using_texture_rect;
 
@@ -95,7 +95,7 @@ public:
 
 		RID current_tex;
 		RID current_normal;
-		RasterizerStorageGLES2::Texture *current_tex_ptr;
+		RasterizerStorageOpenGL::Texture *current_tex_ptr;
 
 		Transform3D vp;
 		Light *using_light;
@@ -110,9 +110,9 @@ public:
 
 	typedef void Texture;
 
-	RasterizerSceneGLES2 *scene_render;
+	RasterizerSceneOpenGL *scene_render;
 
-	RasterizerStorageGLES2 *storage;
+	RasterizerStorageOpenGL *storage;
 
 	// allow user to choose api usage
 	GLenum _buffer_upload_usage_flag;
@@ -127,9 +127,9 @@ public:
 	virtual void canvas_end();
 
 protected:
-	void _legacy_draw_primitive(Item::CommandPrimitive *p_pr, RasterizerStorageGLES2::Material *p_material);
-	void _legacy_draw_line(Item::CommandPrimitive *p_pr, RasterizerStorageGLES2::Material *p_material);
-	void _legacy_draw_poly_triangles(Item::CommandPolygon *p_poly, RasterizerStorageGLES2::Material *p_material);
+	void _legacy_draw_primitive(Item::CommandPrimitive *p_pr, RasterizerStorageOpenGL::Material *p_material);
+	void _legacy_draw_line(Item::CommandPrimitive *p_pr, RasterizerStorageOpenGL::Material *p_material);
+	void _legacy_draw_poly_triangles(Item::CommandPolygon *p_poly, RasterizerStorageOpenGL::Material *p_material);
 
 public:
 	void _draw_gui_primitive(int p_points, const Vector2 *p_vertices, const Color *p_colors, const Vector2 *p_uvs, const float *p_light_angles = nullptr);
@@ -149,7 +149,7 @@ public:
 	virtual void canvas_light_shadow_buffer_update(RID p_buffer, const Transform2D &p_light_xform, int p_light_mask, float p_near, float p_far, LightOccluderInstance *p_occluders, CameraMatrix *p_xform_cache);
 	virtual void canvas_debug_viewport_shadows(Light *p_lights_with_shadow) override;
 
-	RasterizerStorageGLES2::Texture *_bind_canvas_texture(const RID &p_texture, const RID &p_normal_map);
+	RasterizerStorageOpenGL::Texture *_bind_canvas_texture(const RID &p_texture, const RID &p_normal_map);
 	void _set_texture_rect_mode(bool p_texture_rect, bool p_light_angle = false, bool p_modulate = false, bool p_large_vertex = false);
 
 	// NEW API
@@ -169,7 +169,7 @@ public:
 	void initialize();
 	void finalize();
 
-	RasterizerCanvasBaseGLES2();
+	RasterizerCanvasBaseOpenGL();
 };
 
-#endif // GLES2_BACKEND_ENABLED
+#endif // OPENGL_BACKEND_ENABLED

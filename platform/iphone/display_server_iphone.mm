@@ -52,7 +52,7 @@ DisplayServerIPhone::DisplayServerIPhone(const String &p_rendering_driver, Windo
 	rendering_driver = p_rendering_driver;
 
 #if defined(OPENGL_ENABLED)
-	// FIXME: Add support for both GLES2 and Vulkan when GLES2 is implemented
+	// FIXME: Add support for both OpenGL and Vulkan when OpenGL is implemented
 	// again,
 
 	if (rendering_driver == "opengl_es") {
@@ -60,9 +60,9 @@ DisplayServerIPhone::DisplayServerIPhone(const String &p_rendering_driver, Windo
 
 		// FIXME: Add Vulkan support via MoltenVK. Add fallback code back?
 
-		if (RasterizerGLES2::is_viable() == OK) {
-			RasterizerGLES2::register_config();
-			RasterizerGLES2::make_current();
+		if (RasterizerOpenGLis_viable() == OK) {
+			RasterizerOpenGLregister_config();
+			RasterizerOpenGLmake_current();
 		} else {
 			gl_initialization_error = true;
 		}
@@ -83,7 +83,7 @@ DisplayServerIPhone::DisplayServerIPhone(const String &p_rendering_driver, Windo
 
 		// reset this to what it should be, it will have been set to 0 after
 		// rendering_server->init() is called
-		//    RasterizerStorageGLES2::system_fbo = gl_view_base_fb;
+		//    RasterizerStorageOpenGLsystem_fbo = gl_view_base_fb;
 	}
 #endif
 

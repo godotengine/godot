@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  rasterizer_canvas_gles2.h                                            */
+/*  rasterizer_canvas_opengl.h                                           */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,19 +28,19 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef RASTERIZERCANVASGLES2_H
-#define RASTERIZERCANVASGLES2_H
+#ifndef RASTERIZER_CANVAS_OPENGL_H
+#define RASTERIZER_CANVAS_OPENGL_H
 
-#include "drivers/gles2/rasterizer_platforms.h"
-#ifdef GLES2_BACKEND_ENABLED
+#include "drivers/opengl/rasterizer_platforms.h"
+#ifdef OPENGL_BACKEND_ENABLED
 
-#include "drivers/gles2/rasterizer_canvas_batcher.h"
-#include "rasterizer_canvas_base_gles2.h"
+#include "drivers/opengl/rasterizer_canvas_batcher.h"
+#include "rasterizer_canvas_base_opengl.h"
 
-class RasterizerSceneGLES2;
+class RasterizerSceneOpenGL;
 
-class RasterizerCanvasGLES2 : public RasterizerCanvasBaseGLES2, public RasterizerCanvasBatcher<RasterizerCanvasGLES2, RasterizerStorageGLES2> {
-	friend class RasterizerCanvasBatcher<RasterizerCanvasGLES2, RasterizerStorageGLES2>;
+class RasterizerCanvasOpenGL : public RasterizerCanvasBaseOpenGL, public RasterizerCanvasBatcher<RasterizerCanvasOpenGL, RasterizerStorageOpenGL> {
+	friend class RasterizerCanvasBatcher<RasterizerCanvasOpenGL, RasterizerStorageOpenGL>;
 
 public:
 	virtual void canvas_render_items_begin(const Color &p_modulate, Light *p_light, const Transform2D &p_base_transform);
@@ -51,10 +51,6 @@ public:
 
 	void canvas_render_items(RID p_to_render_target, Item *p_item_list, const Color &p_modulate, Light *p_light_list, Light *p_directional_list, const Transform2D &p_canvas_transform, RS::CanvasItemTextureFilter p_default_filter, RS::CanvasItemTextureRepeat p_default_repeat, bool p_snap_2d_vertices_to_pixel, bool &r_sdf_used) override {
 		storage->frame.current_rt = nullptr;
-
-		//if (p_to_render_target.is_valid())
-		//		print_line("canvas_render_items " + itos(p_to_render_target.get_id()) );
-		//		print_line("canvas_render_items ");
 
 		// first set the current render target
 		storage->_set_current_render_target(p_to_render_target);
@@ -81,14 +77,7 @@ private:
 
 	// high level batch funcs
 	void canvas_render_items_implementation(Item *p_item_list, int p_z, const Color &p_modulate, Light *p_light, const Transform2D &p_base_transform);
-	//void render_joined_item(const BItemJoined &p_bij, RenderItemState &r_ris);
-	//bool try_join_item(Item *p_ci, RenderItemState &r_ris, bool &r_batch_break);
-	void render_batches(Item::Command *const *p_commands, Item *p_current_clip, bool &r_reclip, RasterizerStorageGLES2::Material *p_material);
-
-	// low level batch funcs
-	//	void _batch_upload_buffers();
-	//	void _batch_render_generic(const Batch &p_batch, RasterizerStorageGLES2::Material *p_material);
-	//	void _batch_render_lines(const Batch &p_batch, RasterizerStorageGLES2::Material *p_material, bool p_anti_alias);
+	void render_batches(Item::Command *const *p_commands, Item *p_current_clip, bool &r_reclip, RasterizerStorageOpenGL::Material *p_material);
 
 	// funcs used from rasterizer_canvas_batcher template
 	void gl_enable_scissor(int p_x, int p_y, int p_width, int p_height) const;
@@ -96,8 +85,8 @@ private:
 
 public:
 	void initialize();
-	RasterizerCanvasGLES2();
+	RasterizerCanvasOpenGL();
 };
 
-#endif // GLES2_BACKEND_ENABLED
-#endif // RASTERIZERCANVASGLES2_H
+#endif // OPENGL_BACKEND_ENABLED
+#endif // RASTERIZER_CANVAS_OPENGL_H

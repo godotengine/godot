@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  rasterizer_scene_gles2.h                                             */
+/*  rasterizer_scene_opengl.h                                            */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -31,53 +31,41 @@
 #pragma once
 // dummy
 
-#include "drivers/gles2/rasterizer_platforms.h"
-#ifdef GLES2_BACKEND_ENABLED
+#include "drivers/opengl/rasterizer_platforms.h"
+#ifdef OPENGL_BACKEND_ENABLED
 
 #include "core/math/camera_matrix.h"
 #include "core/templates/rid_owner.h"
 #include "core/templates/self_list.h"
-#include "drivers/gles2/rasterizer_common_stubs.h"
+#include "drivers/opengl/rasterizer_common_stubs.h"
 #include "scene/resources/mesh.h"
 #include "servers/rendering/renderer_compositor.h"
 #include "servers/rendering_server.h"
 #include "shaders/scene.glsl.gen.h"
 
-class RasterizerSceneGLES2 : public StubsScene {
+class RasterizerSceneOpenGL : public StubsScene {
 public:
 	struct State {
-		SceneShaderGLES2 scene_shader;
+		SceneShaderOpenGL scene_shader;
 
 	} state;
 
 public:
-	RasterizerSceneGLES2() {}
-	~RasterizerSceneGLES2() {}
+	RasterizerSceneOpenGL() {}
+	~RasterizerSceneOpenGL() {}
 };
 
 #ifdef GODOT_3
 
 /* Must come before shaders or the Windows build fails... */
-#include "rasterizer_storage_gles2.h"
+#include "rasterizer_storage_opengl.h"
 
 #include "shaders/cube_to_dp.glsl.gen.h"
 #include "shaders/effect_blur.glsl.gen.h"
 #include "shaders/scene.glsl.gen.h"
 #include "shaders/tonemap.glsl.gen.h"
-/*
 
-#include "drivers/gles3/shaders/exposure.glsl.gen.h"
-#include "drivers/gles3/shaders/resolve.glsl.gen.h"
-#include "drivers/gles3/shaders/scene.glsl.gen.h"
-#include "drivers/gles3/shaders/screen_space_reflection.glsl.gen.h"
-#include "drivers/gles3/shaders/ssao.glsl.gen.h"
-#include "drivers/gles3/shaders/ssao_blur.glsl.gen.h"
-#include "drivers/gles3/shaders/ssao_minify.glsl.gen.h"
-#include "drivers/gles3/shaders/subsurf_scattering.glsl.gen.h"
-
-*/
-
-class RasterizerSceneGLES2 : public RasterizerScene {
+class RasterizerSceneOpenGL : public RasterizerScene {
 public:
 	enum ShadowFilterMode {
 		SHADOW_FILTER_NEAREST,
@@ -113,7 +101,7 @@ public:
 	uint32_t current_refprobe_index;
 	uint32_t current_shader_index;
 
-	RasterizerStorageGLES2 *storage;
+	RasterizerStorageOpenGL *storage;
 	struct State {
 		bool texscreen_copied;
 		int current_blend_mode;
@@ -122,112 +110,16 @@ public:
 		bool current_depth_test;
 		GLuint current_main_tex;
 
-		SceneShaderGLES2 scene_shader;
-		CubeToDpShaderGLES2 cube_to_dp_shader;
-		TonemapShaderGLES2 tonemap_shader;
-		EffectBlurShaderGLES2 effect_blur_shader;
+		SceneShaderOpenGL scene_shader;
+		CubeToDpShaderOpenGL cube_to_dp_shader;
+		TonemapShaderOpenGL tonemap_shader;
+		EffectBlurShaderOpenGL effect_blur_shader;
 
 		GLuint sky_verts;
 
 		GLuint immediate_buffer;
 		Color default_ambient;
 		Color default_bg;
-
-		// ResolveShaderGLES3 resolve_shader;
-		// ScreenSpaceReflectionShaderGLES3 ssr_shader;
-		// EffectBlurShaderGLES3 effect_blur_shader;
-		// SubsurfScatteringShaderGLES3 sss_shader;
-		// SsaoMinifyShaderGLES3 ssao_minify_shader;
-		// SsaoShaderGLES3 ssao_shader;
-		// SsaoBlurShaderGLES3 ssao_blur_shader;
-		// ExposureShaderGLES3 exposure_shader;
-
-		/*
-		struct SceneDataUBO {
-			//this is a std140 compatible struct. Please read the OpenGL 3.3 Specificaiton spec before doing any changes
-			float projection_matrix[16];
-			float inv_projection_matrix[16];
-			float camera_inverse_matrix[16];
-			float camera_matrix[16];
-			float ambient_light_color[4];
-			float bg_color[4];
-			float fog_color_enabled[4];
-			float fog_sun_color_amount[4];
-
-			float ambient_energy;
-			float bg_energy;
-			float z_offset;
-			float z_slope_scale;
-			float shadow_dual_paraboloid_render_zfar;
-			float shadow_dual_paraboloid_render_side;
-			float viewport_size[2];
-			float screen_pixel_size[2];
-			float shadow_atlas_pixel_size[2];
-			float shadow_directional_pixel_size[2];
-
-			float time;
-			float z_far;
-			float reflection_multiplier;
-			float subsurface_scatter_width;
-			float ambient_occlusion_affect_light;
-
-			uint32_t fog_depth_enabled;
-			float fog_depth_begin;
-			float fog_depth_curve;
-			uint32_t fog_transmit_enabled;
-			float fog_transmit_curve;
-			uint32_t fog_height_enabled;
-			float fog_height_min;
-			float fog_height_max;
-			float fog_height_curve;
-			// make sure this struct is padded to be a multiple of 16 bytes for webgl
-
-		} ubo_data;
-
-		GLuint scene_ubo;
-
-		struct EnvironmentRadianceUBO {
-			float transform[16];
-			float ambient_contribution;
-			uint8_t padding[12];
-
-		} env_radiance_data;
-
-		GLuint env_radiance_ubo;
-
-		GLuint sky_array;
-
-		GLuint directional_ubo;
-
-		GLuint spot_array_ubo;
-		GLuint omni_array_ubo;
-		GLuint reflection_array_ubo;
-
-		GLuint immediate_buffer;
-		GLuint immediate_array;
-
-		uint32_t ubo_light_size;
-		uint8_t *spot_array_tmp;
-		uint8_t *omni_array_tmp;
-		uint8_t *reflection_array_tmp;
-
-		int max_ubo_lights;
-		int max_forward_lights_per_object;
-		int max_ubo_reflections;
-		int max_skeleton_bones;
-
-		bool used_contact_shadows;
-
-		int spot_light_count;
-		int omni_light_count;
-		int directional_light_count;
-		int reflection_probe_count;
-
-		bool used_sss;
-		bool using_contact_shadows;
-
-		VS::ViewportDebugDraw debug_draw;
-		*/
 
 		bool cull_front;
 		bool cull_disabled;
@@ -328,7 +220,7 @@ public:
 	/* REFLECTION PROBE INSTANCE */
 
 	struct ReflectionProbeInstance : public RID_Data {
-		RasterizerStorageGLES2::ReflectionProbe *probe_ptr;
+		RasterizerStorageOpenGLReflectionProbe *probe_ptr;
 		RID probe;
 		RID self;
 		RID atlas;
@@ -533,7 +425,7 @@ public:
 		RID self;
 		RID light;
 
-		RasterizerStorageGLES2::Light *light_ptr;
+		RasterizerStorageOpenGLLight *light_ptr;
 		Transform3D transform;
 
 		Vector3 light_vector;
@@ -592,9 +484,9 @@ public:
 		struct Element {
 			InstanceBaseDependency *instance;
 
-			RasterizerStorageGLES2::Geometry *geometry;
-			RasterizerStorageGLES2::Material *material;
-			RasterizerStorageGLES2::GeometryOwner *owner;
+			RasterizerStorageOpenGLGeometry *geometry;
+			RasterizerStorageOpenGLMaterial *material;
+			RasterizerStorageOpenGLGeometryOwner *owner;
 
 			bool use_accum; //is this an add pass for multipass
 			bool *use_accum_ptr;
@@ -745,8 +637,8 @@ public:
 
 	RenderList render_list;
 
-	void _add_geometry(RasterizerStorageGLES2::Geometry *p_geometry, InstanceBase *p_instance, RasterizerStorageGLES2::GeometryOwner *p_owner, int p_material, bool p_depth_pass, bool p_shadow_pass);
-	void _add_geometry_with_material(RasterizerStorageGLES2::Geometry *p_geometry, InstanceBase *p_instance, RasterizerStorageGLES2::GeometryOwner *p_owner, RasterizerStorageGLES2::Material *p_material, bool p_depth_pass, bool p_shadow_pass);
+	void _add_geometry(RasterizerStorageOpenGLGeometry *p_geometry, InstanceBase *p_instance, RasterizerStorageOpenGLGeometryOwner *p_owner, int p_material, bool p_depth_pass, bool p_shadow_pass);
+	void _add_geometry_with_material(RasterizerStorageOpenGLGeometry *p_geometry, InstanceBase *p_instance, RasterizerStorageOpenGLGeometryOwner *p_owner, RasterizerStorageOpenGLMaterial *p_material, bool p_depth_pass, bool p_shadow_pass);
 
 	void _copy_texture_to_buffer(GLuint p_texture, GLuint p_buffer);
 	void _fill_render_list(InstanceBase **p_cull_result, int p_cull_count, bool p_depth_pass, bool p_shadow_pass);
@@ -762,11 +654,11 @@ public:
 			bool p_alpha_pass,
 			bool p_shadow);
 
-	void _draw_sky(RasterizerStorageGLES2::Sky *p_sky, const CameraMatrix &p_projection, const Transform3D &p_transform, bool p_vflip, float p_custom_fov, float p_energy, const Basis &p_sky_orientation);
+	void _draw_sky(RasterizerStorageOpenGLSky *p_sky, const CameraMatrix &p_projection, const Transform3D &p_transform, bool p_vflip, float p_custom_fov, float p_energy, const Basis &p_sky_orientation);
 
 	_FORCE_INLINE_ void _set_cull(bool p_front, bool p_disabled, bool p_reverse_cull);
-	_FORCE_INLINE_ bool _setup_material(RasterizerStorageGLES2::Material *p_material, bool p_alpha_pass, Size2i p_skeleton_tex_size = Size2i(0, 0));
-	_FORCE_INLINE_ void _setup_geometry(RenderList::Element *p_element, RasterizerStorageGLES2::Skeleton *p_skeleton);
+	_FORCE_INLINE_ bool _setup_material(RasterizerStorageOpenGLMaterial *p_material, bool p_alpha_pass, Size2i p_skeleton_tex_size = Size2i(0, 0));
+	_FORCE_INLINE_ void _setup_geometry(RenderList::Element *p_element, RasterizerStorageOpenGLSkeleton *p_skeleton);
 	_FORCE_INLINE_ void _setup_light_type(LightInstance *p_light, ShadowAtlas *shadow_atlas);
 	_FORCE_INLINE_ void _setup_light(LightInstance *p_light, ShadowAtlas *shadow_atlas, const Transform3D &p_view_transform, bool accum_pass);
 	_FORCE_INLINE_ void _setup_refprobes(ReflectionProbeInstance *p_refprobe1, ReflectionProbeInstance *p_refprobe2, const Transform3D &p_view_transform, Environment *p_env);
@@ -784,9 +676,9 @@ public:
 	void iteration();
 	void initialize();
 	void finalize();
-	RasterizerSceneGLES2();
+	RasterizerSceneOpenGL();
 };
 
 #endif // godot 3
 
-#endif // GLES2_BACKEND_ENABLED
+#endif // OPENGL_BACKEND_ENABLED

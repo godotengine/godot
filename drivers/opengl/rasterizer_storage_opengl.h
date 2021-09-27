@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  rasterizer_storage_gles2.h                                           */
+/*  rasterizer_storage_opengl.h                                          */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,37 +28,37 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef RASTERIZERSTORAGEGLES2_H
-#define RASTERIZERSTORAGEGLES2_H
+#ifndef RASTERIZER_STORAGE_OPENGL_H
+#define RASTERIZER_STORAGE_OPENGL_H
 
-#include "drivers/gles2/rasterizer_platforms.h"
-#ifdef GLES2_BACKEND_ENABLED
+#include "drivers/opengl/rasterizer_platforms.h"
+#ifdef OPENGL_BACKEND_ENABLED
 
 #include "core/templates/local_vector.h"
 #include "core/templates/rid_owner.h"
 #include "core/templates/self_list.h"
-#include "drivers/gles2/rasterizer_asserts.h"
-#include "drivers/gles2/rasterizer_common_stubs.h"
+#include "drivers/opengl/rasterizer_asserts.h"
+#include "drivers/opengl/rasterizer_common_stubs.h"
 #include "servers/rendering/renderer_compositor.h"
 #include "servers/rendering/shader_language.h"
-#include "shader_compiler_gles2.h"
-#include "shader_gles2.h"
+#include "shader_compiler_opengl.h"
+#include "shader_opengl.h"
 
 #include "shaders/copy.glsl.gen.h"
 #include "shaders/cubemap_filter.glsl.gen.h"
 
-class RasterizerCanvasGLES2;
-class RasterizerSceneGLES2;
+class RasterizerCanvasOpenGL;
+class RasterizerSceneOpenGL;
 
-class RasterizerStorageGLES2 : public StubsStorage {
-	friend class RasterizerGLES2;
+class RasterizerStorageOpenGL : public StubsStorage {
+	friend class RasterizerOpenGL;
 
 	Thread::ID _main_thread_id = 0;
 	bool _is_main_thread();
 
 public:
-	RasterizerCanvasGLES2 *canvas;
-	RasterizerSceneGLES2 *scene;
+	RasterizerCanvasOpenGL *canvas;
+	RasterizerSceneOpenGL *scene;
 
 	static GLuint system_fbo;
 
@@ -71,7 +71,7 @@ public:
 		int max_texture_image_units;
 		int max_texture_size;
 
-		// TODO implement wireframe in GLES2
+		// TODO implement wireframe in OpenGL
 		// bool generate_wireframes;
 
 		Set<String> extensions;
@@ -132,14 +132,14 @@ public:
 	} resources;
 
 	mutable struct Shaders {
-		ShaderCompilerGLES2 compiler;
+		ShaderCompilerOpenGL compiler;
 
-		CopyShaderGLES2 copy;
-		CubemapFilterShaderGLES2 cubemap_filter;
+		CopyShaderOpenGL copy;
+		CubemapFilterShaderOpenGL cubemap_filter;
 
-		ShaderCompilerGLES2::IdentifierActions actions_canvas;
-		ShaderCompilerGLES2::IdentifierActions actions_scene;
-		ShaderCompilerGLES2::IdentifierActions actions_particles;
+		ShaderCompilerOpenGL::IdentifierActions actions_canvas;
+		ShaderCompilerOpenGL::IdentifierActions actions_scene;
+		ShaderCompilerOpenGL::IdentifierActions actions_particles;
 
 	} shaders;
 
@@ -242,7 +242,7 @@ public:
 
 	// TEXTURE API
 
-	enum GLESTextureFlags {
+	enum OpenGLTextureFlags {
 		TEXTURE_FLAG_MIPMAPS = 1, /// Enable automatic mipmap generation - when available
 		TEXTURE_FLAG_REPEAT = 2, /// Repeat texture (Tiling), otherwise Clamping
 		TEXTURE_FLAG_FILTER = 4, /// Create texture with linear (or available) filter
@@ -566,7 +566,7 @@ public:
 		RID self;
 
 		RS::ShaderMode mode;
-		ShaderGLES2 *shader;
+		ShaderOpenGL *shader;
 		String code;
 		SelfList<Material>::List materials;
 
@@ -1045,13 +1045,13 @@ public:
 	}
 
 	void bind_framebuffer_system() {
-		glBindFramebuffer(GL_FRAMEBUFFER, RasterizerStorageGLES2::system_fbo);
+		glBindFramebuffer(GL_FRAMEBUFFER, RasterizerStorageOpenGL::system_fbo);
 	}
 
-	RasterizerStorageGLES2();
+	RasterizerStorageOpenGL();
 };
 
-inline bool RasterizerStorageGLES2::safe_buffer_sub_data(unsigned int p_total_buffer_size, GLenum p_target, unsigned int p_offset, unsigned int p_data_size, const void *p_data, unsigned int &r_offset_after) const {
+inline bool RasterizerStorageOpenGL::safe_buffer_sub_data(unsigned int p_total_buffer_size, GLenum p_target, unsigned int p_offset, unsigned int p_data_size, const void *p_data, unsigned int &r_offset_after) const {
 	r_offset_after = p_offset + p_data_size;
 #ifdef DEBUG_ENABLED
 	// we are trying to write across the edge of the buffer
@@ -1064,7 +1064,7 @@ inline bool RasterizerStorageGLES2::safe_buffer_sub_data(unsigned int p_total_bu
 
 // standardize the orphan / upload in one place so it can be changed per platform as necessary, and avoid future
 // bugs causing pipeline stalls
-inline void RasterizerStorageGLES2::buffer_orphan_and_upload(unsigned int p_buffer_size, unsigned int p_offset, unsigned int p_data_size, const void *p_data, GLenum p_target, GLenum p_usage, bool p_optional_orphan) const {
+inline void RasterizerStorageOpenGL::buffer_orphan_and_upload(unsigned int p_buffer_size, unsigned int p_offset, unsigned int p_data_size, const void *p_data, GLenum p_target, GLenum p_usage, bool p_optional_orphan) const {
 	// Orphan the buffer to avoid CPU/GPU sync points caused by glBufferSubData
 	// Was previously #ifndef GLES_OVER_GL however this causes stalls on desktop mac also (and possibly other)
 	if (!p_optional_orphan || (config.should_orphan)) {
@@ -1088,5 +1088,5 @@ inline void RasterizerStorageGLES2::buffer_orphan_and_upload(unsigned int p_buff
 	glBufferSubData(p_target, p_offset, p_data_size, p_data);
 }
 
-#endif // GLES2_BACKEND_ENABLED
-#endif // RASTERIZERSTORAGEGLES2_H
+#endif // OPENGL_BACKEND_ENABLED
+#endif // RASTERIZER_STORAGE_OPENGL_H

@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  texture_loader_gles2.h                                               */
+/*  rasterizer_scene_opengl.cpp                                          */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,22 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#pragma once
+#include "rasterizer_scene_opengl.h"
+#ifdef OPENGL_BACKEND_ENABLED
 
-#include "drivers/gles2/rasterizer_platforms.h"
-#ifdef GLES2_BACKEND_ENABLED
+// TODO: 3D support not implemented yet.
 
-#include "core/io/resource_loader.h"
-#include "scene/resources/texture.h"
-
-class ResourceFormatGLES2Texture : public ResourceFormatLoader {
-public:
-	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, CacheMode p_cache_mode = CACHE_MODE_REUSE);
-	virtual void get_recognized_extensions(List<String> *p_extensions) const;
-	virtual bool handles_type(const String &p_type) const;
-	virtual String get_resource_type(const String &p_path) const;
-
-	virtual ~ResourceFormatGLES2Texture() {}
-};
-
-#endif
+#endif // OPENGL_BACKEND_ENABLED

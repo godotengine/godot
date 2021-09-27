@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  rasterizer_scene_gles2.cpp                                           */
+/*  rasterizer_platforms.h                                               */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,9 +28,42 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "rasterizer_scene_gles2.h"
-#ifdef GLES2_BACKEND_ENABLED
+#pragma once
 
-// TODO: 3D support not implemented yet.
+/////////////////////////////////////////////////////
+// override for intellisense .. ONLY FOR DEVELOPMENT
+//#ifndef X11_ENABLED
+//#define X11_ENABLED
+//#endif
+//#define OPENGL_BACKEND_ENABLED
+/////////////////////////////////////////////////////
 
-#endif // GLES2_BACKEND_ENABLED
+#if defined(OPENGL_ENABLED) || defined(GLES_ENABLED)
+
+// platform specific defines to compile in / out GLES support
+// these can later be made from Scons
+#ifdef X11_ENABLED
+#define GLES_X11_ENABLED
+#endif
+
+#ifdef WINDOWS_ENABLED
+//#define GLES_WINDOWS_ENABLED
+#endif
+
+#ifdef IPHONE_ENABLED
+//#define GLES_IPHONE_ENABLED
+#endif
+
+#ifdef OSX_ENABLED
+//#define GLES_OSX_ENABLED
+#endif
+
+#ifdef ANDROID_ENABLED
+//#define GLES_ANDROID_ENABLED
+#endif
+
+#if defined(GLES_X11_ENABLED) || defined(GLES_WINDOW_ENABLED) || defined(GLES_IPHONE_ENABLED) || defined(GLES_OSX_ENABLED) || defined(GLES_ANDROID_ENABLED)
+#define OPENGL_BACKEND_ENABLED
+#endif
+
+#endif // defined(OPENGL_ENABLED) || defined(GLES_ENABLED)

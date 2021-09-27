@@ -32,7 +32,7 @@
 
 #ifdef X11_ENABLED
 
-#include "drivers/gles2/rasterizer_platforms.h"
+#include "drivers/opengl/rasterizer_platforms.h"
 
 #if defined(GLES_X11_ENABLED)
 

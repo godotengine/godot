@@ -45,7 +45,7 @@
 #endif
 
 #if defined(GLES_X11_ENABLED)
-#include "drivers/gles2/rasterizer_gles2.h"
+#include "drivers/opengl/rasterizer_opengl.h"
 #endif
 
 #include <limits.h>
@@ -3898,7 +3898,7 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, V
 		print_line("rendering_driver " + rendering_driver);
 		if (gl_manager) {
 			Error err = gl_manager->window_create(id, wd.x11_window, x11_display, p_rect.size.width, p_rect.size.height);
-			ERR_FAIL_COND_V_MSG(err != OK, INVALID_WINDOW_ID, "Can't create a GLES2 window");
+			ERR_FAIL_COND_V_MSG(err != OK, INVALID_WINDOW_ID, "Can't create an OpenGL window");
 		}
 #endif
 
@@ -4082,7 +4082,7 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 	xdnd_selection = XInternAtom(x11_display, "XdndSelection", False);
 
 	//!!!!!!!!!!!!!!!!!!!!!!!!!!
-	//TODO - do Vulkan and GLES2 support checks, driver selection and fallback
+	//TODO - do Vulkan and OpenGL support checks, driver selection and fallback
 	rendering_driver = p_rendering_driver;
 
 #ifndef _MSC_VER
@@ -4163,9 +4163,9 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 		//		gl_manager->set_use_vsync(current_videomode.use_vsync);
 
 		if (true) {
-			//		if (RasterizerGLES2::is_viable() == OK) {
-			//		RasterizerGLES2::register_config();
-			RasterizerGLES2::make_current();
+			//		if (RasterizerOpenGL::is_viable() == OK) {
+			//		RasterizerOpenGL::register_config();
+			RasterizerOpenGL::make_current();
 		} else {
 			memdelete(gl_manager);
 			gl_manager = nullptr;

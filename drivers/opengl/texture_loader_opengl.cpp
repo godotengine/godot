@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  texture_loader_gles2.cpp                                             */
+/*  texture_loader_opengl.cpp                                            */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "texture_loader_gles2.h"
-#ifdef GLES2_BACKEND_ENABLED
+#include "texture_loader_opengl.h"
+#ifdef OPENGL_BACKEND_ENABLED
 
 #include "core/io/file_access.h"
 #include "core/string/print_string.h"

@@ -47,13 +47,13 @@
 // which can be cast to whatever vertex format FVF required, and is initially
 // created with enough memory to hold the biggest FVF.
 // This allows multiple FVFs to use the same array.
-class RasterizerUnitArrayGLES2 {
+class RasterizerUnitArrayOpenGL {
 public:
-	RasterizerUnitArrayGLES2() {
+	RasterizerUnitArrayOpenGL() {
 		_list = nullptr;
 		free();
 	}
-	~RasterizerUnitArrayGLES2() { free(); }
+	~RasterizerUnitArrayOpenGL() { free(); }
 
 	uint8_t *get_unit(unsigned int ui) { return &_list[ui * _unit_size_bytes]; }
 	const uint8_t *get_unit(unsigned int ui) const { return &_list[ui * _unit_size_bytes]; }

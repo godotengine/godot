@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  rasterizer_canvas_base_gles2.cpp                                     */
+/*  rasterizer_canvas_base_opengl.cpp                                    */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,12 +28,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "rasterizer_canvas_base_gles2.h"
-#ifdef GLES2_BACKEND_ENABLED
+#include "rasterizer_canvas_base_opengl.h"
+#ifdef OPENGL_BACKEND_ENABLED
 
 #include "core/os/os.h"
-#include "drivers/gles2/rasterizer_asserts.h"
-#include "rasterizer_scene_gles2.h"
+#include "drivers/opengl/rasterizer_asserts.h"
+#include "rasterizer_scene_opengl.h"
 
 #include "core/config/project_settings.h"
 #include "servers/rendering/rendering_server_default.h"
@@ -42,17 +42,17 @@
 #define glClearDepth glClearDepthf
 #endif
 
-RID RasterizerCanvasBaseGLES2::light_internal_create() {
+RID RasterizerCanvasBaseOpenGL::light_internal_create() {
 	return RID();
 }
 
-void RasterizerCanvasBaseGLES2::light_internal_update(RID p_rid, Light *p_light) {
+void RasterizerCanvasBaseOpenGL::light_internal_update(RID p_rid, Light *p_light) {
 }
 
-void RasterizerCanvasBaseGLES2::light_internal_free(RID p_rid) {
+void RasterizerCanvasBaseOpenGL::light_internal_free(RID p_rid) {
 }
 
-void RasterizerCanvasBaseGLES2::canvas_begin() {
+void RasterizerCanvasBaseOpenGL::canvas_begin() {
 	state.using_transparent_rt = false;
 
 	// always start with light_angle unset
@@ -60,9 +60,9 @@ void RasterizerCanvasBaseGLES2::canvas_begin() {
 	state.using_large_vertex = false;
 	state.using_modulate = false;
 
-	state.canvas_shader.set_conditional(CanvasShaderGLES2::USE_ATTRIB_LIGHT_ANGLE, false);
-	state.canvas_shader.set_conditional(CanvasShaderGLES2::USE_ATTRIB_MODULATE, false);
-	state.canvas_shader.set_conditional(CanvasShaderGLES2::USE_ATTRIB_LARGE_VERTEX, false);
+	state.canvas_shader.set_conditional(CanvasShaderOpenGL::USE_ATTRIB_LIGHT_ANGLE, false);
+	state.canvas_shader.set_conditional(CanvasShaderOpenGL::USE_ATTRIB_MODULATE, false);
+	state.canvas_shader.set_conditional(CanvasShaderOpenGL::USE_ATTRIB_LARGE_VERTEX, false);
 	state.canvas_shader.bind();
 
 	int viewport_x, viewport_y, viewport_width, viewport_height;
@@ -167,7 +167,7 @@ void RasterizerCanvasBaseGLES2::canvas_begin() {
 	_bind_quad_buffer();
 }
 
-void RasterizerCanvasBaseGLES2::canvas_end() {
+void RasterizerCanvasBaseOpenGL::canvas_end() {
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 	for (int i = 0; i < RS::ARRAY_MAX; i++) {
@@ -190,38 +190,38 @@ void RasterizerCanvasBaseGLES2::canvas_end() {
 	state.using_transparent_rt = false;
 }
 
-void RasterizerCanvasBaseGLES2::draw_generic_textured_rect(const Rect2 &p_rect, const Rect2 &p_src) {
-	state.canvas_shader.set_uniform(CanvasShaderGLES2::DST_RECT, Color(p_rect.position.x, p_rect.position.y, p_rect.size.x, p_rect.size.y));
-	state.canvas_shader.set_uniform(CanvasShaderGLES2::SRC_RECT, Color(p_src.position.x, p_src.position.y, p_src.size.x, p_src.size.y));
+void RasterizerCanvasBaseOpenGL::draw_generic_textured_rect(const Rect2 &p_rect, const Rect2 &p_src) {
+	state.canvas_shader.set_uniform(CanvasShaderOpenGL::DST_RECT, Color(p_rect.position.x, p_rect.position.y, p_rect.size.x, p_rect.size.y));
+	state.canvas_shader.set_uniform(CanvasShaderOpenGL::SRC_RECT, Color(p_src.position.x, p_src.position.y, p_src.size.x, p_src.size.y));
 
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 }
 
-void RasterizerCanvasBaseGLES2::_set_texture_rect_mode(bool p_texture_rect, bool p_light_angle, bool p_modulate, bool p_large_vertex) {
+void RasterizerCanvasBaseOpenGL::_set_texture_rect_mode(bool p_texture_rect, bool p_light_angle, bool p_modulate, bool p_large_vertex) {
 	// always set this directly (this could be state checked)
-	state.canvas_shader.set_conditional(CanvasShaderGLES2::USE_TEXTURE_RECT, p_texture_rect);
+	state.canvas_shader.set_conditional(CanvasShaderOpenGL::USE_TEXTURE_RECT, p_texture_rect);
 
 	if (state.using_light_angle != p_light_angle) {
 		state.using_light_angle = p_light_angle;
-		state.canvas_shader.set_conditional(CanvasShaderGLES2::USE_ATTRIB_LIGHT_ANGLE, p_light_angle);
+		state.canvas_shader.set_conditional(CanvasShaderOpenGL::USE_ATTRIB_LIGHT_ANGLE, p_light_angle);
 	}
 
 	if (state.using_modulate != p_modulate) {
 		state.using_modulate = p_modulate;
-		state.canvas_shader.set_conditional(CanvasShaderGLES2::USE_ATTRIB_MODULATE, p_modulate);
+		state.canvas_shader.set_conditional(CanvasShaderOpenGL::USE_ATTRIB_MODULATE, p_modulate);
 	}
 
 	if (state.using_large_vertex != p_large_vertex) {
 		state.using_large_vertex = p_large_vertex;
-		state.canvas_shader.set_conditional(CanvasShaderGLES2::USE_ATTRIB_LARGE_VERTEX, p_large_vertex);
+		state.canvas_shader.set_conditional(CanvasShaderOpenGL::USE_ATTRIB_LARGE_VERTEX, p_large_vertex);
 	}
 }
 
-RasterizerStorageGLES2::Texture *RasterizerCanvasBaseGLES2::_bind_canvas_texture(const RID &p_texture, const RID &p_normal_map) {
-	RasterizerStorageGLES2::Texture *tex_return = NULL;
+RasterizerStorageOpenGL::Texture *RasterizerCanvasBaseOpenGL::_bind_canvas_texture(const RID &p_texture, const RID &p_normal_map) {
+	RasterizerStorageOpenGL::Texture *tex_return = NULL;
 
 	if (p_texture.is_valid()) {
-		RasterizerStorageGLES2::Texture *texture = storage->texture_owner.getornull(p_texture);
+		RasterizerStorageOpenGL::Texture *texture = storage->texture_owner.getornull(p_texture);
 
 		if (!texture) {
 			state.current_tex = RID();
@@ -263,16 +263,16 @@ RasterizerStorageGLES2::Texture *RasterizerCanvasBaseGLES2::_bind_canvas_texture
 
 	if (p_normal_map == state.current_normal) {
 		//do none
-		state.canvas_shader.set_uniform(CanvasShaderGLES2::USE_DEFAULT_NORMAL, state.current_normal.is_valid());
+		state.canvas_shader.set_uniform(CanvasShaderOpenGL::USE_DEFAULT_NORMAL, state.current_normal.is_valid());
 
 	} else if (p_normal_map.is_valid()) {
-		RasterizerStorageGLES2::Texture *normal_map = storage->texture_owner.getornull(p_normal_map);
+		RasterizerStorageOpenGL::Texture *normal_map = storage->texture_owner.getornull(p_normal_map);
 
 		if (!normal_map) {
 			state.current_normal = RID();
 			glActiveTexture(GL_TEXTURE0 + storage->config.max_texture_image_units - 2);
 			glBindTexture(GL_TEXTURE_2D, storage->resources.normal_tex);
-			state.canvas_shader.set_uniform(CanvasShaderGLES2::USE_DEFAULT_NORMAL, false);
+			state.canvas_shader.set_uniform(CanvasShaderOpenGL::USE_DEFAULT_NORMAL, false);
 
 		} else {
 			if (normal_map->redraw_if_visible) { //check before proxy, because this is usually used with proxies
@@ -284,21 +284,21 @@ RasterizerStorageGLES2::Texture *RasterizerCanvasBaseGLES2::_bind_canvas_texture
 			glActiveTexture(GL_TEXTURE0 + storage->config.max_texture_image_units - 2);
 			glBindTexture(GL_TEXTURE_2D, normal_map->tex_id);
 			state.current_normal = p_normal_map;
-			state.canvas_shader.set_uniform(CanvasShaderGLES2::USE_DEFAULT_NORMAL, true);
+			state.canvas_shader.set_uniform(CanvasShaderOpenGL::USE_DEFAULT_NORMAL, true);
 		}
 
 	} else {
 		state.current_normal = RID();
 		glActiveTexture(GL_TEXTURE0 + storage->config.max_texture_image_units - 2);
 		glBindTexture(GL_TEXTURE_2D, storage->resources.normal_tex);
-		state.canvas_shader.set_uniform(CanvasShaderGLES2::USE_DEFAULT_NORMAL, false);
+		state.canvas_shader.set_uniform(CanvasShaderOpenGL::USE_DEFAULT_NORMAL, false);
 	}
 
 	return tex_return;
 }
 
 /*
-void RasterizerCanvasBaseGLES2::draw_window_margins(int *black_margin, RID *black_image) {
+void RasterizerCanvasBaseOpenGL::draw_window_margins(int *black_margin, RID *black_image) {
 	return;
 
 	// FTODO
@@ -370,74 +370,74 @@ void RasterizerCanvasBaseGLES2::draw_window_margins(int *black_margin, RID *blac
 }
 */
 
-void RasterizerCanvasBaseGLES2::_bind_quad_buffer() {
+void RasterizerCanvasBaseOpenGL::_bind_quad_buffer() {
 	glBindBuffer(GL_ARRAY_BUFFER, data.canvas_quad_vertices);
 	glEnableVertexAttribArray(RS::ARRAY_VERTEX);
 	glVertexAttribPointer(RS::ARRAY_VERTEX, 2, GL_FLOAT, GL_FALSE, 0, NULL);
 }
 
-void RasterizerCanvasBaseGLES2::_set_uniforms() {
-	state.canvas_shader.set_uniform(CanvasShaderGLES2::PROJECTION_MATRIX, state.uniforms.projection_matrix);
-	state.canvas_shader.set_uniform(CanvasShaderGLES2::MODELVIEW_MATRIX, state.uniforms.modelview_matrix);
-	state.canvas_shader.set_uniform(CanvasShaderGLES2::EXTRA_MATRIX, state.uniforms.extra_matrix);
+void RasterizerCanvasBaseOpenGL::_set_uniforms() {
+	state.canvas_shader.set_uniform(CanvasShaderOpenGL::PROJECTION_MATRIX, state.uniforms.projection_matrix);
+	state.canvas_shader.set_uniform(CanvasShaderOpenGL::MODELVIEW_MATRIX, state.uniforms.modelview_matrix);
+	state.canvas_shader.set_uniform(CanvasShaderOpenGL::EXTRA_MATRIX, state.uniforms.extra_matrix);
 
-	state.canvas_shader.set_uniform(CanvasShaderGLES2::FINAL_MODULATE, state.uniforms.final_modulate);
+	state.canvas_shader.set_uniform(CanvasShaderOpenGL::FINAL_MODULATE, state.uniforms.final_modulate);
 
-	state.canvas_shader.set_uniform(CanvasShaderGLES2::TIME, storage->frame.time[0]);
+	state.canvas_shader.set_uniform(CanvasShaderOpenGL::TIME, storage->frame.time[0]);
 
 	if (storage->frame.current_rt) {
 		Vector2 screen_pixel_size;
 		screen_pixel_size.x = 1.0 / storage->frame.current_rt->width;
 		screen_pixel_size.y = 1.0 / storage->frame.current_rt->height;
 
-		state.canvas_shader.set_uniform(CanvasShaderGLES2::SCREEN_PIXEL_SIZE, screen_pixel_size);
+		state.canvas_shader.set_uniform(CanvasShaderOpenGL::SCREEN_PIXEL_SIZE, screen_pixel_size);
 	}
 
 	if (state.using_skeleton) {
-		state.canvas_shader.set_uniform(CanvasShaderGLES2::SKELETON_TRANSFORM, state.skeleton_transform);
-		state.canvas_shader.set_uniform(CanvasShaderGLES2::SKELETON_TRANSFORM_INVERSE, state.skeleton_transform_inverse);
-		state.canvas_shader.set_uniform(CanvasShaderGLES2::SKELETON_TEXTURE_SIZE, state.skeleton_texture_size);
+		state.canvas_shader.set_uniform(CanvasShaderOpenGL::SKELETON_TRANSFORM, state.skeleton_transform);
+		state.canvas_shader.set_uniform(CanvasShaderOpenGL::SKELETON_TRANSFORM_INVERSE, state.skeleton_transform_inverse);
+		state.canvas_shader.set_uniform(CanvasShaderOpenGL::SKELETON_TEXTURE_SIZE, state.skeleton_texture_size);
 	}
 
 	if (state.using_light) {
 		Light *light = state.using_light;
-		state.canvas_shader.set_uniform(CanvasShaderGLES2::LIGHT_MATRIX, light->light_shader_xform);
+		state.canvas_shader.set_uniform(CanvasShaderOpenGL::LIGHT_MATRIX, light->light_shader_xform);
 		Transform2D basis_inverse = light->light_shader_xform.affine_inverse().orthonormalized();
 		basis_inverse.elements[2] = Vector2();
-		state.canvas_shader.set_uniform(CanvasShaderGLES2::LIGHT_MATRIX_INVERSE, basis_inverse);
-		state.canvas_shader.set_uniform(CanvasShaderGLES2::LIGHT_LOCAL_MATRIX, light->xform_cache.affine_inverse());
-		state.canvas_shader.set_uniform(CanvasShaderGLES2::LIGHT_COLOR, light->color * light->energy);
-		//		state.canvas_shader.set_uniform(CanvasShaderGLES2::LIGHT_POS, light->light_shader_pos);
+		state.canvas_shader.set_uniform(CanvasShaderOpenGL::LIGHT_MATRIX_INVERSE, basis_inverse);
+		state.canvas_shader.set_uniform(CanvasShaderOpenGL::LIGHT_LOCAL_MATRIX, light->xform_cache.affine_inverse());
+		state.canvas_shader.set_uniform(CanvasShaderOpenGL::LIGHT_COLOR, light->color * light->energy);
+		//		state.canvas_shader.set_uniform(CanvasShaderOpenGL::LIGHT_POS, light->light_shader_pos);
 		// FTODO
-		state.canvas_shader.set_uniform(CanvasShaderGLES2::LIGHT_POS, light->light_shader_xform.elements[2]);
-		state.canvas_shader.set_uniform(CanvasShaderGLES2::LIGHT_HEIGHT, light->height);
+		state.canvas_shader.set_uniform(CanvasShaderOpenGL::LIGHT_POS, light->light_shader_xform.elements[2]);
+		state.canvas_shader.set_uniform(CanvasShaderOpenGL::LIGHT_HEIGHT, light->height);
 
 		// FTODO
-		//state.canvas_shader.set_uniform(CanvasShaderGLES2::LIGHT_OUTSIDE_ALPHA, light->mode == RS::CANVAS_LIGHT_MODE_MASK ? 1.0 : 0.0);
-		state.canvas_shader.set_uniform(CanvasShaderGLES2::LIGHT_OUTSIDE_ALPHA, 0.0f);
+		//state.canvas_shader.set_uniform(CanvasShaderOpenGL::LIGHT_OUTSIDE_ALPHA, light->mode == RS::CANVAS_LIGHT_MODE_MASK ? 1.0 : 0.0);
+		state.canvas_shader.set_uniform(CanvasShaderOpenGL::LIGHT_OUTSIDE_ALPHA, 0.0f);
 
 		if (state.using_shadow) {
 			// FTODO
 #if 0
-			RasterizerStorageGLES2::CanvasLightShadow *cls = storage->canvas_light_shadow_owner.get(light->shadow_buffer);
+			RasterizerStorageOpenGL::CanvasLightShadow *cls = storage->canvas_light_shadow_owner.get(light->shadow_buffer);
 			glActiveTexture(GL_TEXTURE0 + storage->config.max_texture_image_units - 5);
 			glBindTexture(GL_TEXTURE_2D, cls->distance);
-			state.canvas_shader.set_uniform(CanvasShaderGLES2::SHADOW_MATRIX, light->shadow_matrix_cache);
-			state.canvas_shader.set_uniform(CanvasShaderGLES2::LIGHT_SHADOW_COLOR, light->shadow_color);
+			state.canvas_shader.set_uniform(CanvasShaderOpenGL::SHADOW_MATRIX, light->shadow_matrix_cache);
+			state.canvas_shader.set_uniform(CanvasShaderOpenGL::LIGHT_SHADOW_COLOR, light->shadow_color);
 
-			state.canvas_shader.set_uniform(CanvasShaderGLES2::SHADOWPIXEL_SIZE, (1.0 / light->shadow_buffer_size) * (1.0 + light->shadow_smooth));
+			state.canvas_shader.set_uniform(CanvasShaderOpenGL::SHADOWPIXEL_SIZE, (1.0 / light->shadow_buffer_size) * (1.0 + light->shadow_smooth));
 			if (light->radius_cache == 0) {
-				state.canvas_shader.set_uniform(CanvasShaderGLES2::SHADOW_GRADIENT, 0.0);
+				state.canvas_shader.set_uniform(CanvasShaderOpenGL::SHADOW_GRADIENT, 0.0);
 			} else {
-				state.canvas_shader.set_uniform(CanvasShaderGLES2::SHADOW_GRADIENT, light->shadow_gradient_length / (light->radius_cache * 1.1));
+				state.canvas_shader.set_uniform(CanvasShaderOpenGL::SHADOW_GRADIENT, light->shadow_gradient_length / (light->radius_cache * 1.1));
 			}
-			state.canvas_shader.set_uniform(CanvasShaderGLES2::SHADOW_DISTANCE_MULT, light->radius_cache * 1.1);
+			state.canvas_shader.set_uniform(CanvasShaderOpenGL::SHADOW_DISTANCE_MULT, light->radius_cache * 1.1);
 #endif
 		}
 	}
 }
 
-void RasterizerCanvasBaseGLES2::reset_canvas() {
+void RasterizerCanvasBaseOpenGL::reset_canvas() {
 	glDisable(GL_CULL_FACE);
 	glDisable(GL_DEPTH_TEST);
 	glDisable(GL_SCISSOR_TEST);
@@ -451,7 +451,7 @@ void RasterizerCanvasBaseGLES2::reset_canvas() {
 	}
 
 	// bind the back buffer to a texture so shaders can use it.
-	// It should probably use texture unit -3 (as GLES2 does as well) but currently that's buggy.
+	// It should probably use texture unit -3 (as OpenGL does as well) but currently that's buggy.
 	// keeping this for now as there's nothing else that uses texture unit 2
 	// TODO ^
 	if (storage->frame.current_rt) {
@@ -463,10 +463,10 @@ void RasterizerCanvasBaseGLES2::reset_canvas() {
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
-void RasterizerCanvasBaseGLES2::canvas_debug_viewport_shadows(Light *p_lights_with_shadow) {
+void RasterizerCanvasBaseOpenGL::canvas_debug_viewport_shadows(Light *p_lights_with_shadow) {
 }
 
-void RasterizerCanvasBaseGLES2::_copy_texscreen(const Rect2 &p_rect) {
+void RasterizerCanvasBaseOpenGL::_copy_texscreen(const Rect2 &p_rect) {
 	state.canvas_texscreen_used = true;
 
 	_copy_screen(p_rect);
@@ -478,7 +478,7 @@ void RasterizerCanvasBaseGLES2::_copy_texscreen(const Rect2 &p_rect) {
 	_set_uniforms();
 }
 
-void RasterizerCanvasBaseGLES2::_draw_polygon(const int *p_indices, int p_index_count, int p_vertex_count, const Vector2 *p_vertices, const Vector2 *p_uvs, const Color *p_colors, bool p_singlecolor, const float *p_weights, const int *p_bones) {
+void RasterizerCanvasBaseOpenGL::_draw_polygon(const int *p_indices, int p_index_count, int p_vertex_count, const Vector2 *p_vertices, const Vector2 *p_uvs, const Color *p_colors, bool p_singlecolor, const float *p_weights, const int *p_bones) {
 	glBindBuffer(GL_ARRAY_BUFFER, data.polygon_buffer);
 
 	uint32_t buffer_ofs = 0;
@@ -559,7 +559,7 @@ void RasterizerCanvasBaseGLES2::_draw_polygon(const int *p_indices, int p_index_
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
-void RasterizerCanvasBaseGLES2::_draw_generic(GLuint p_primitive, int p_vertex_count, const Vector2 *p_vertices, const Vector2 *p_uvs, const Color *p_colors, bool p_singlecolor) {
+void RasterizerCanvasBaseOpenGL::_draw_generic(GLuint p_primitive, int p_vertex_count, const Vector2 *p_vertices, const Vector2 *p_uvs, const Color *p_colors, bool p_singlecolor) {
 	glBindBuffer(GL_ARRAY_BUFFER, data.polygon_buffer);
 
 	uint32_t buffer_ofs = 0;
@@ -602,7 +602,7 @@ void RasterizerCanvasBaseGLES2::_draw_generic(GLuint p_primitive, int p_vertex_c
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
-void RasterizerCanvasBaseGLES2::_draw_generic_indices(GLuint p_primitive, const int *p_indices, int p_index_count, int p_vertex_count, const Vector2 *p_vertices, const Vector2 *p_uvs, const Color *p_colors, bool p_singlecolor) {
+void RasterizerCanvasBaseOpenGL::_draw_generic_indices(GLuint p_primitive, const int *p_indices, int p_index_count, int p_vertex_count, const Vector2 *p_vertices, const Vector2 *p_uvs, const Color *p_colors, bool p_singlecolor) {
 	glBindBuffer(GL_ARRAY_BUFFER, data.polygon_buffer);
 
 	uint32_t buffer_ofs = 0;
@@ -672,7 +672,7 @@ void RasterizerCanvasBaseGLES2::_draw_generic_indices(GLuint p_primitive, const 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
-void RasterizerCanvasBaseGLES2::_legacy_draw_poly_triangles(Item::CommandPolygon *p_poly, RasterizerStorageGLES2::Material *p_material) {
+void RasterizerCanvasBaseOpenGL::_legacy_draw_poly_triangles(Item::CommandPolygon *p_poly, RasterizerStorageOpenGL::Material *p_material) {
 	//	return;
 
 	const PolyData &pd = _polydata[p_poly->polygon.polygon_id];
@@ -685,12 +685,12 @@ void RasterizerCanvasBaseGLES2::_legacy_draw_poly_triangles(Item::CommandPolygon
 	}
 
 	// FTODO
-	//RasterizerStorageGLES2::Texture *texture = _bind_canvas_texture(polygon->texture, polygon->normal_map);
-	RasterizerStorageGLES2::Texture *texture = _bind_canvas_texture(p_poly->texture, RID());
+	//RasterizerStorageOpenGL::Texture *texture = _bind_canvas_texture(polygon->texture, polygon->normal_map);
+	RasterizerStorageOpenGL::Texture *texture = _bind_canvas_texture(p_poly->texture, RID());
 
 	if (texture) {
 		Size2 texpixel_size(1.0 / texture->width, 1.0 / texture->height);
-		state.canvas_shader.set_uniform(CanvasShaderGLES2::COLOR_TEXPIXEL_SIZE, texpixel_size);
+		state.canvas_shader.set_uniform(CanvasShaderOpenGL::COLOR_TEXPIXEL_SIZE, texpixel_size);
 	}
 
 	_draw_polygon(pd.indices.ptr(), pd.indices.size(), pd.points.size(), pd.points.ptr(), pd.uvs.ptr(), pd.colors.ptr(), pd.colors.size() == 1, nullptr, nullptr);
@@ -711,7 +711,7 @@ void RasterizerCanvasBaseGLES2::_legacy_draw_poly_triangles(Item::CommandPolygon
 #endif
 }
 
-void RasterizerCanvasBaseGLES2::_legacy_draw_primitive(Item::CommandPrimitive *p_pr, RasterizerStorageGLES2::Material *p_material) {
+void RasterizerCanvasBaseOpenGL::_legacy_draw_primitive(Item::CommandPrimitive *p_pr, RasterizerStorageOpenGL::Material *p_material) {
 	//	return;
 
 	if (p_pr->point_count != 4)
@@ -729,12 +729,12 @@ void RasterizerCanvasBaseGLES2::_legacy_draw_primitive(Item::CommandPrimitive *p
 	glDisableVertexAttribArray(RS::ARRAY_COLOR);
 	glVertexAttrib4fv(RS::ARRAY_COLOR, p_pr->colors[0].components);
 
-	state.canvas_shader.set_uniform(CanvasShaderGLES2::MODELVIEW_MATRIX, state.uniforms.modelview_matrix);
+	state.canvas_shader.set_uniform(CanvasShaderOpenGL::MODELVIEW_MATRIX, state.uniforms.modelview_matrix);
 
 	_draw_gui_primitive(p_pr->point_count, p_pr->points, NULL, NULL);
 }
 
-void RasterizerCanvasBaseGLES2::_legacy_draw_line(Item::CommandPrimitive *p_pr, RasterizerStorageGLES2::Material *p_material) {
+void RasterizerCanvasBaseOpenGL::_legacy_draw_line(Item::CommandPrimitive *p_pr, RasterizerStorageOpenGL::Material *p_material) {
 	_set_texture_rect_mode(false);
 
 	if (state.canvas_shader.bind()) {
@@ -747,7 +747,7 @@ void RasterizerCanvasBaseGLES2::_legacy_draw_line(Item::CommandPrimitive *p_pr, 
 	glDisableVertexAttribArray(RS::ARRAY_COLOR);
 	glVertexAttrib4fv(RS::ARRAY_COLOR, p_pr->colors[0].components);
 
-	state.canvas_shader.set_uniform(CanvasShaderGLES2::MODELVIEW_MATRIX, state.uniforms.modelview_matrix);
+	state.canvas_shader.set_uniform(CanvasShaderOpenGL::MODELVIEW_MATRIX, state.uniforms.modelview_matrix);
 
 #ifdef GLES_OVER_GL
 //		if (line->antialiased)
@@ -761,7 +761,7 @@ void RasterizerCanvasBaseGLES2::_legacy_draw_line(Item::CommandPrimitive *p_pr, 
 #endif
 }
 
-void RasterizerCanvasBaseGLES2::_draw_gui_primitive(int p_points, const Vector2 *p_vertices, const Color *p_colors, const Vector2 *p_uvs, const float *p_light_angles) {
+void RasterizerCanvasBaseOpenGL::_draw_gui_primitive(int p_points, const Vector2 *p_vertices, const Color *p_colors, const Vector2 *p_uvs, const float *p_light_angles) {
 	static const GLenum prim[5] = { GL_POINTS, GL_POINTS, GL_LINES, GL_TRIANGLES, GL_TRIANGLE_FAN };
 
 	int color_offset = 0;
@@ -845,7 +845,7 @@ void RasterizerCanvasBaseGLES2::_draw_gui_primitive(int p_points, const Vector2 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
-void RasterizerCanvasBaseGLES2::_copy_screen(const Rect2 &p_rect) {
+void RasterizerCanvasBaseOpenGL::_copy_screen(const Rect2 &p_rect) {
 	if (storage->frame.current_rt->flags[RendererStorage::RENDER_TARGET_DIRECT_TO_SCREEN]) {
 		ERR_PRINT_ONCE("Cannot use screen texture copying in render target set to render direct to screen.");
 		return;
@@ -860,17 +860,17 @@ void RasterizerCanvasBaseGLES2::_copy_screen(const Rect2 &p_rect) {
 	Color copy_section(p_rect.position.x / wh.x, p_rect.position.y / wh.y, p_rect.size.x / wh.x, p_rect.size.y / wh.y);
 
 	if (p_rect != Rect2()) {
-		storage->shaders.copy.set_conditional(CopyShaderGLES2::USE_COPY_SECTION, true);
+		storage->shaders.copy.set_conditional(CopyShaderOpenGL::USE_COPY_SECTION, true);
 	}
 
-	storage->shaders.copy.set_conditional(CopyShaderGLES2::USE_NO_ALPHA, !state.using_transparent_rt);
+	storage->shaders.copy.set_conditional(CopyShaderOpenGL::USE_NO_ALPHA, !state.using_transparent_rt);
 
 	storage->bind_framebuffer(storage->frame.current_rt->copy_screen_effect.fbo);
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, storage->frame.current_rt->color);
 
 	storage->shaders.copy.bind();
-	storage->shaders.copy.set_uniform(CopyShaderGLES2::COPY_SECTION, copy_section);
+	storage->shaders.copy.set_uniform(CopyShaderOpenGL::COPY_SECTION, copy_section);
 
 	const Vector2 vertpos[4] = {
 		Vector2(-1, -1),
@@ -893,16 +893,16 @@ void RasterizerCanvasBaseGLES2::_copy_screen(const Rect2 &p_rect) {
 
 	_draw_polygon(indexpos, 6, 4, vertpos, uvpos, NULL, false);
 
-	storage->shaders.copy.set_conditional(CopyShaderGLES2::USE_COPY_SECTION, false);
-	storage->shaders.copy.set_conditional(CopyShaderGLES2::USE_NO_ALPHA, false);
+	storage->shaders.copy.set_conditional(CopyShaderOpenGL::USE_COPY_SECTION, false);
+	storage->shaders.copy.set_conditional(CopyShaderOpenGL::USE_NO_ALPHA, false);
 
 	storage->bind_framebuffer(storage->frame.current_rt->fbo);
 	glEnable(GL_BLEND);
 }
 
-void RasterizerCanvasBaseGLES2::canvas_light_shadow_buffer_update(RID p_buffer, const Transform2D &p_light_xform, int p_light_mask, float p_near, float p_far, LightOccluderInstance *p_occluders, CameraMatrix *p_xform_cache) {
+void RasterizerCanvasBaseOpenGL::canvas_light_shadow_buffer_update(RID p_buffer, const Transform2D &p_light_xform, int p_light_mask, float p_near, float p_far, LightOccluderInstance *p_occluders, CameraMatrix *p_xform_cache) {
 #if 0
-	RasterizerStorageGLES2::CanvasLightShadow *cls = storage->canvas_light_shadow_owner.get(p_buffer);
+	RasterizerStorageOpenGL::CanvasLightShadow *cls = storage->canvas_light_shadow_owner.get(p_buffer);
 	ERR_FAIL_COND(!cls);
 
 	glDisable(GL_BLEND);
@@ -915,7 +915,7 @@ void RasterizerCanvasBaseGLES2::canvas_light_shadow_buffer_update(RID p_buffer, 
 
 	glBindFramebuffer(GL_FRAMEBUFFER, cls->fbo);
 
-	state.canvas_shadow_shader.set_conditional(CanvasShadowShaderGLES2::USE_RGBA_SHADOWS, storage->config.use_rgba_2d_shadows);
+	state.canvas_shadow_shader.set_conditional(CanvasShadowShaderOpenGL::USE_RGBA_SHADOWS, storage->config.use_rgba_2d_shadows);
 	state.canvas_shadow_shader.bind();
 
 	glViewport(0, 0, cls->size, cls->height);
@@ -957,9 +957,9 @@ void RasterizerCanvasBaseGLES2::canvas_light_shadow_buffer_update(RID p_buffer, 
 		Vector3 cam_target = Basis(Vector3(0, 0, Math_PI * 2 * (i / 4.0))).xform(Vector3(0, 1, 0));
 		projection = projection * CameraMatrix(Transform3D().looking_at(cam_target, Vector3(0, 0, -1)).affine_inverse());
 
-		state.canvas_shadow_shader.set_uniform(CanvasShadowShaderGLES2::PROJECTION_MATRIX, projection);
-		state.canvas_shadow_shader.set_uniform(CanvasShadowShaderGLES2::LIGHT_MATRIX, light);
-		state.canvas_shadow_shader.set_uniform(CanvasShadowShaderGLES2::DISTANCE_NORM, 1.0 / p_far);
+		state.canvas_shadow_shader.set_uniform(CanvasShadowShaderOpenGL::PROJECTION_MATRIX, projection);
+		state.canvas_shadow_shader.set_uniform(CanvasShadowShaderOpenGL::LIGHT_MATRIX, light);
+		state.canvas_shadow_shader.set_uniform(CanvasShadowShaderOpenGL::DISTANCE_NORM, 1.0 / p_far);
 
 		if (i == 0)
 			*p_xform_cache = projection;
@@ -969,13 +969,13 @@ void RasterizerCanvasBaseGLES2::canvas_light_shadow_buffer_update(RID p_buffer, 
 		LightOccluderInstance *instance = p_occluders;
 
 		while (instance) {
-			RasterizerStorageGLES2::CanvasOccluder *cc = storage->canvas_occluder_owner.getornull(instance->polygon_buffer);
+			RasterizerStorageOpenGL::CanvasOccluder *cc = storage->canvas_occluder_owner.getornull(instance->polygon_buffer);
 			if (!cc || cc->len == 0 || !(p_light_mask & instance->light_mask)) {
 				instance = instance->next;
 				continue;
 			}
 
-			state.canvas_shadow_shader.set_uniform(CanvasShadowShaderGLES2::WORLD_MATRIX, instance->xform_cache);
+			state.canvas_shadow_shader.set_uniform(CanvasShadowShaderOpenGL::WORLD_MATRIX, instance->xform_cache);
 
 			RS::CanvasOccluderPolygonCullMode transformed_cull_cache = instance->cull_cache;
 
@@ -1022,7 +1022,7 @@ void RasterizerCanvasBaseGLES2::canvas_light_shadow_buffer_update(RID p_buffer, 
 #endif
 }
 
-void RasterizerCanvasBaseGLES2::draw_lens_distortion_rect(const Rect2 &p_rect, float p_k1, float p_k2, const Vector2 &p_eye_center, float p_oversample) {
+void RasterizerCanvasBaseOpenGL::draw_lens_distortion_rect(const Rect2 &p_rect, float p_k1, float p_k2, const Vector2 &p_eye_center, float p_oversample) {
 	Vector2 half_size;
 	if (storage->frame.current_rt) {
 		half_size = Vector2(storage->frame.current_rt->width, storage->frame.current_rt->height);
@@ -1038,13 +1038,13 @@ void RasterizerCanvasBaseGLES2::draw_lens_distortion_rect(const Rect2 &p_rect, f
 
 	// setup our lens shader
 	state.lens_shader.bind();
-	state.lens_shader.set_uniform(LensDistortedShaderGLES2::OFFSET, offset);
-	state.lens_shader.set_uniform(LensDistortedShaderGLES2::SCALE, scale);
-	state.lens_shader.set_uniform(LensDistortedShaderGLES2::K1, p_k1);
-	state.lens_shader.set_uniform(LensDistortedShaderGLES2::K2, p_k2);
-	state.lens_shader.set_uniform(LensDistortedShaderGLES2::EYE_CENTER, p_eye_center);
-	state.lens_shader.set_uniform(LensDistortedShaderGLES2::UPSCALE, p_oversample);
-	state.lens_shader.set_uniform(LensDistortedShaderGLES2::ASPECT_RATIO, aspect_ratio);
+	state.lens_shader.set_uniform(LensDistortedShaderOpenGL::OFFSET, offset);
+	state.lens_shader.set_uniform(LensDistortedShaderOpenGL::SCALE, scale);
+	state.lens_shader.set_uniform(LensDistortedShaderOpenGL::K1, p_k1);
+	state.lens_shader.set_uniform(LensDistortedShaderOpenGL::K2, p_k2);
+	state.lens_shader.set_uniform(LensDistortedShaderOpenGL::EYE_CENTER, p_eye_center);
+	state.lens_shader.set_uniform(LensDistortedShaderOpenGL::UPSCALE, p_oversample);
+	state.lens_shader.set_uniform(LensDistortedShaderOpenGL::ASPECT_RATIO, aspect_ratio);
 
 	// bind our quad buffer
 	_bind_quad_buffer();
@@ -1060,7 +1060,7 @@ void RasterizerCanvasBaseGLES2::draw_lens_distortion_rect(const Rect2 &p_rect, f
 	}
 }
 
-void RasterizerCanvasBaseGLES2::initialize() {
+void RasterizerCanvasBaseOpenGL::initialize() {
 	bool flag_stream = false;
 	//flag_stream = GLOBAL_GET("rendering/options/api_usage_legacy/flag_stream");
 	if (flag_stream)
@@ -1178,20 +1178,20 @@ void RasterizerCanvasBaseGLES2::initialize() {
 	state.canvas_shader.init();
 
 	_set_texture_rect_mode(true);
-	state.canvas_shader.set_conditional(CanvasShaderGLES2::USE_RGBA_SHADOWS, storage->config.use_rgba_2d_shadows);
+	state.canvas_shader.set_conditional(CanvasShaderOpenGL::USE_RGBA_SHADOWS, storage->config.use_rgba_2d_shadows);
 
 	state.canvas_shader.bind();
 
 	state.lens_shader.init();
 
-	state.canvas_shader.set_conditional(CanvasShaderGLES2::USE_PIXEL_SNAP, GLOBAL_DEF("rendering/quality/2d/use_pixel_snap", false));
+	state.canvas_shader.set_conditional(CanvasShaderOpenGL::USE_PIXEL_SNAP, GLOBAL_DEF("rendering/quality/2d/use_pixel_snap", false));
 
 	state.using_light = NULL;
 	state.using_transparent_rt = false;
 	state.using_skeleton = false;
 }
 
-RendererCanvasRender::PolygonID RasterizerCanvasBaseGLES2::request_polygon(const Vector<int> &p_indices, const Vector<Point2> &p_points, const Vector<Color> &p_colors, const Vector<Point2> &p_uvs, const Vector<int> &p_bones, const Vector<float> &p_weights) {
+RendererCanvasRender::PolygonID RasterizerCanvasBaseOpenGL::request_polygon(const Vector<int> &p_indices, const Vector<Point2> &p_points, const Vector<Color> &p_colors, const Vector<Point2> &p_uvs, const Vector<int> &p_bones, const Vector<float> &p_weights) {
 	uint32_t id = _polydata.alloc();
 	PolyData &pd = _polydata[id];
 	pd.indices = p_indices;
@@ -1200,14 +1200,14 @@ RendererCanvasRender::PolygonID RasterizerCanvasBaseGLES2::request_polygon(const
 	pd.uvs = p_uvs;
 	return id;
 }
-void RasterizerCanvasBaseGLES2::free_polygon(PolygonID p_polygon) {
+void RasterizerCanvasBaseOpenGL::free_polygon(PolygonID p_polygon) {
 	_polydata.free(p_polygon);
 }
 
-void RasterizerCanvasBaseGLES2::finalize() {
+void RasterizerCanvasBaseOpenGL::finalize() {
 }
 
-RasterizerCanvasBaseGLES2::RasterizerCanvasBaseGLES2() {
+RasterizerCanvasBaseOpenGL::RasterizerCanvasBaseOpenGL() {
 }
 
-#endif
+#endif // OPENGL_BACKEND_ENABLED

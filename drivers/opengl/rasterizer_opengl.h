@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  rasterizer_gles2.h                                                   */
+/*  rasterizer_opengl.h                                                  */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -30,15 +30,15 @@
 
 #pragma once
 
-#include "drivers/gles2/rasterizer_platforms.h"
-#ifdef GLES2_BACKEND_ENABLED
+#include "drivers/opengl/rasterizer_platforms.h"
+#ifdef OPENGL_BACKEND_ENABLED
 
-#include "rasterizer_canvas_gles2.h"
-#include "rasterizer_scene_gles2.h"
-#include "rasterizer_storage_gles2.h"
+#include "rasterizer_canvas_opengl.h"
+#include "rasterizer_scene_opengl.h"
+#include "rasterizer_storage_opengl.h"
 #include "servers/rendering/renderer_compositor.h"
 
-class RasterizerGLES2 : public RendererCompositor {
+class RasterizerOpenGL : public RendererCompositor {
 private:
 	uint64_t frame = 1;
 	float delta = 0;
@@ -47,9 +47,9 @@ private:
 	double time_scale = 1.0;
 
 protected:
-	RasterizerCanvasGLES2 canvas;
-	RasterizerStorageGLES2 storage;
-	RasterizerSceneGLES2 scene;
+	RasterizerCanvasOpenGL canvas;
+	RasterizerStorageOpenGL storage;
+	RasterizerSceneOpenGL scene;
 
 	void _blit_render_target_to_screen(RID p_render_target, const Rect2 &p_screen_rect);
 
@@ -71,7 +71,7 @@ public:
 	void finalize() {}
 
 	static RendererCompositor *_create_current() {
-		return memnew(RasterizerGLES2);
+		return memnew(RasterizerOpenGL);
 	}
 
 	static void make_current() {
@@ -82,8 +82,8 @@ public:
 	uint64_t get_frame_number() const { return frame; }
 	double get_frame_delta_time() const { return delta; }
 
-	RasterizerGLES2();
-	~RasterizerGLES2() {}
+	RasterizerOpenGL();
+	~RasterizerOpenGL() {}
 };
 
-#endif // GLES2_BACKEND_ENABLED
+#endif // OPENGL_BACKEND_ENABLED

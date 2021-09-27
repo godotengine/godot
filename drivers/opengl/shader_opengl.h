@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  shader_gles2.h                                                       */
+/*  shader_opengl.h                                                      */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -30,15 +30,15 @@
 
 #pragma once
 
-#include "drivers/gles2/rasterizer_platforms.h"
-#ifdef GLES2_BACKEND_ENABLED
+#include "drivers/opengl/rasterizer_platforms.h"
+#ifdef OPENGL_BACKEND_ENABLED
 
 // This must come first to avoid windows.h mess
 #include "platform_config.h"
-#ifndef GLES2_INCLUDE_H
-#include <GLES2/gl2.h>
+#ifndef OPENGL_INCLUDE_H
+#include <GLES3/gl3.h>
 #else
-#include GLES2_INCLUDE_H
+#include OPENGL_INCLUDE_H
 #endif
 
 #include "core/math/camera_matrix.h"
@@ -50,9 +50,9 @@
 
 #include <stdio.h>
 
-class RasterizerStorageGLES2;
+class RasterizerStorageOpenGL;
 
-class ShaderGLES2 {
+class ShaderOpenGL {
 protected:
 	struct Enum {
 		uint64_t mask;
@@ -171,7 +171,7 @@ private:
 
 	Version *get_current_version();
 
-	static ShaderGLES2 *active;
+	static ShaderOpenGL *active;
 
 	int max_image_units;
 
@@ -194,7 +194,7 @@ protected:
 			int p_vertex_code_start,
 			int p_fragment_code_start);
 
-	ShaderGLES2();
+	ShaderOpenGL();
 
 public:
 	enum {
@@ -204,7 +204,7 @@ public:
 	GLint get_uniform_location(const String &p_name) const;
 	GLint get_uniform_location(int p_index) const;
 
-	static _FORCE_INLINE_ ShaderGLES2 *get_active() { return active; }
+	static _FORCE_INLINE_ ShaderOpenGL *get_active() { return active; }
 	bool bind();
 	void unbind();
 
@@ -228,7 +228,7 @@ public:
 
 	uint32_t get_version_key() const { return conditional_version.version; }
 
-	// this void* is actually a RasterizerStorageGLES2::Material, but C++ doesn't
+	// this void* is actually a RasterizerStorageOpenGL::Material, but C++ doesn't
 	// like forward declared nested classes.
 	void use_material(void *p_material);
 
@@ -252,18 +252,18 @@ public:
 		custom_defines.erase(p_define.utf8());
 	}
 
-	virtual ~ShaderGLES2();
+	virtual ~ShaderOpenGL();
 };
 
 // called a lot, made inline
 
-int ShaderGLES2::_get_uniform(int p_which) const {
+int ShaderOpenGL::_get_uniform(int p_which) const {
 	ERR_FAIL_INDEX_V(p_which, uniform_count, -1);
 	ERR_FAIL_COND_V(!version, -1);
 	return version->uniform_location[p_which];
 }
 
-void ShaderGLES2::_set_conditional(int p_which, bool p_value) {
+void ShaderOpenGL::_set_conditional(int p_which, bool p_value) {
 	ERR_FAIL_INDEX(p_which, conditional_count);
 	if (p_value)
 		new_conditional_version.version |= (1 << p_which);
@@ -271,4 +271,4 @@ void ShaderGLES2::_set_conditional(int p_which, bool p_value) {
 		new_conditional_version.version &= ~(1 << p_which);
 }
 
-#endif // GLES2_BACKEND_ENABLED
+#endif // OPENGL_BACKEND_ENABLED

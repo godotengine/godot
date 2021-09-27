@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  rasterizer_platforms.h                                               */
+/*  texture_loader_opengl.h                                              */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -30,44 +30,20 @@
 
 #pragma once
 
-/////////////////////////////////////////////////////
-// override for intellisense .. ONLY FOR DEVELOPMENT
-//#ifndef X11_ENABLED
-//#define X11_ENABLED
-//#endif
-//#define GLES2_BACKEND_ENABLED
-/////////////////////////////////////////////////////
+#include "drivers/opengl/rasterizer_platforms.h"
+#ifdef OPENGL_BACKEND_ENABLED
 
-#if defined(OPENGL_ENABLED) || defined(GLES_ENABLED)
+#include "core/io/resource_loader.h"
+#include "scene/resources/texture.h"
 
-// platform specific defines to compile in / out GLES support
-// these can later be made from Scons
-#ifdef X11_ENABLED
-#define GLES_X11_ENABLED
+class ResourceFormatGLES2Texture : public ResourceFormatLoader {
+public:
+	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, CacheMode p_cache_mode = CACHE_MODE_REUSE);
+	virtual void get_recognized_extensions(List<String> *p_extensions) const;
+	virtual bool handles_type(const String &p_type) const;
+	virtual String get_resource_type(const String &p_path) const;
+
+	virtual ~ResourceFormatGLES2Texture() {}
+};
+
 #endif
-
-#ifdef WINDOWS_ENABLED
-//#define GLES_WINDOWS_ENABLED
-#endif
-
-#ifdef IPHONE_ENABLED
-//#define GLES_IPHONE_ENABLED
-#endif
-
-#ifdef OSX_ENABLED
-//#define GLES_OSX_ENABLED
-#endif
-
-#ifdef ANDROID_ENABLED
-//#define GLES_ANDROID_ENABLED
-#endif
-
-#if defined(GLES_X11_ENABLED) || defined(GLES_WINDOW_ENABLED) || defined(GLES_IPHONE_ENABLED) || defined(GLES_OSX_ENABLED) || defined(GLES_ANDROID_ENABLED)
-#define GLES2_BACKEND_ENABLED
-#endif
-
-#if defined(GLES_X11_ENABLED) || defined(GLES_WINDOW_ENABLED) || defined(GLES_IPHONE_ENABLED) || defined(GLES_OSX_ENABLED) || defined(GLES_ANDROID_ENABLED)
-#define GLES3_BACKEND_ENABLED
-#endif
-
-#endif // defined(OPENGL_ENABLED) || defined(GLES_ENABLED)

@@ -128,10 +128,10 @@
 			The bleed scale of the HDR glow.
 		</member>
 		<member name="glow_hdr_threshold" type="float" setter="set_glow_hdr_bleed_threshold" getter="get_glow_hdr_bleed_threshold" default="1.0">
-			The lower threshold of the HDR glow. When using the GLES2 renderer (which doesn't support HDR), this needs to be below [code]1.0[/code] for glow to be visible. A value of [code]0.9[/code] works well in this case.
+			The lower threshold of the HDR glow. When using the OpenGL renderer (which doesn't support HDR), this needs to be below [code]1.0[/code] for glow to be visible. A value of [code]0.9[/code] works well in this case.
 		</member>
 		<member name="glow_intensity" type="float" setter="set_glow_intensity" getter="get_glow_intensity" default="0.8">
-			The overall brightness multiplier of the glow effect. When using the GLES2 renderer, this should be increased to 1.5 to compensate for the lack of HDR rendering.
+			The overall brightness multiplier of the glow effect. When using the OpenGL renderer, this should be increased to 1.5 to compensate for the lack of HDR rendering.
 		</member>
 		<member name="glow_levels/1" type="float" setter="set_glow_level" getter="get_glow_level" default="0.0">
 			The intensity of the 1st level of glow. This is the most "local" level (least blurry).
@@ -160,7 +160,7 @@
 			If [code]true[/code], glow levels will be normalized so that summed together their intensities equal [code]1.0[/code].
 		</member>
 		<member name="glow_strength" type="float" setter="set_glow_strength" getter="get_glow_strength" default="1.0">
-			The strength of the glow effect. This applies as the glow is blurred across the screen and increases the distance and intensity of the blur. When using the GLES2 renderer, this should be increased to 1.3 to compensate for the lack of HDR rendering.
+			The strength of the glow effect. This applies as the glow is blurred across the screen and increases the distance and intensity of the blur. When using the OpenGL renderer, this should be increased to 1.3 to compensate for the lack of HDR rendering.
 		</member>
 		<member name="reflected_light_source" type="int" setter="set_reflection_source" getter="get_reflection_source" enum="Environment.ReflectionSource" default="0">
 		</member>

@@ -68,11 +68,11 @@
 		</constant>
 		<constant name="AXIS_STRETCH_MODE_TILE" value="1" enum="AxisStretchMode">
 			Repeats the center texture across the NinePatchRect. This won't cause any visible distortion. The texture must be seamless for this to work without displaying artifacts between edges.
-			[b]Note:[/b] Only supported when using the GLES3 renderer. When using the GLES2 renderer, this will behave like [constant AXIS_STRETCH_MODE_STRETCH].
+			[b]Note:[/b] Only supported when using the Vulkan renderer. When using the OpenGL renderer, this will behave like [constant AXIS_STRETCH_MODE_STRETCH].
 		</constant>
 		<constant name="AXIS_STRETCH_MODE_TILE_FIT" value="2" enum="AxisStretchMode">
 			Repeats the center texture across the NinePatchRect, but will also stretch the texture to make sure each tile is visible in full. This may cause the texture to be distorted, but less than [constant AXIS_STRETCH_MODE_STRETCH]. The texture must be seamless for this to work without displaying artifacts between edges.
-			[b]Note:[/b] Only supported when using the GLES3 renderer. When using the GLES2 renderer, this will behave like [constant AXIS_STRETCH_MODE_STRETCH].
+			[b]Note:[/b] Only supported when using the Vulkan renderer. When using the OpenGL renderer, this will behave like [constant AXIS_STRETCH_MODE_STRETCH].
 		</constant>
 	</constants>
 </class>
