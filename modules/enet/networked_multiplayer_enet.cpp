@@ -217,20 +217,23 @@ void NetworkedMultiplayerENet::poll() {
 
 	_pop_current_packet();
 
+	if (!host || !active) { // Might be disconnected
+		return;
+	}
+
 	ENetEvent event;
-	/* Keep servicing until there are no available events left in queue. */
-	while (true) {
-		if (!host || !active) { // Might have been disconnected while emitting a notification
+	int ret = enet_host_service(host, &event, 0);
+
+	if (ret < 0) {
+		ERR_FAIL_MSG("Enet host service error");
+	} else if (ret == 0) {
+		return; // No events
+	}
+
+	/* Keep servicing until there are no available events left in the queue. */
+	do {
+		if (!host || !active) { // Check again after every event
 			return;
-		}
-
-		int ret = enet_host_service(host, &event, 0);
-
-		if (ret < 0) {
-			// Error, do something?
-			break;
-		} else if (ret == 0) {
-			break;
 		}
 
 		switch (event.type) {
@@ -436,7 +439,7 @@ void NetworkedMultiplayerENet::poll() {
 				// Do nothing
 			} break;
 		}
-	}
+	} while (enet_host_check_events(host, &event) > 0);
 }
 
 bool NetworkedMultiplayerENet::is_server() const {
