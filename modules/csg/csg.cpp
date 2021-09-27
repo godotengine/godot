@@ -40,13 +40,13 @@ inline static bool is_snapable(const Vector3 &p_point1, const Vector3 &p_point2,
 	return (p_point1 - p_point2).length_squared() < p_distance * p_distance;
 }
 
-inline static Vector2 interpolate_segment_uv(const Vector2 p_segement_points[2], const Vector2 p_uvs[2], const Vector2 &p_interpolation_point) {
-	float segment_length = (p_segement_points[1] - p_segement_points[0]).length();
-	if (p_segement_points[0].is_equal_approx(p_segement_points[1])) {
+inline static Vector2 interpolate_segment_uv(const Vector2 p_segment_points[2], const Vector2 p_uvs[2], const Vector2 &p_interpolation_point) {
+	float segment_length = (p_segment_points[1] - p_segment_points[0]).length();
+	if (p_segment_points[0].is_equal_approx(p_segment_points[1])) {
 		return p_uvs[0];
 	}
 
-	float distance = (p_interpolation_point - p_segement_points[0]).length();
+	float distance = (p_interpolation_point - p_segment_points[0]).length();
 	float fraction = distance / segment_length;
 
 	return p_uvs[0].lerp(p_uvs[1], fraction);
@@ -162,7 +162,7 @@ inline static bool is_triangle_degenerate(const Vector2 p_vertices[3], real_t p_
 	return det < p_vertex_snap2;
 }
 
-inline static bool are_segements_parallel(const Vector2 p_segment1_points[2], const Vector2 p_segment2_points[2], float p_vertex_snap2) {
+inline static bool are_segments_parallel(const Vector2 p_segment1_points[2], const Vector2 p_segment2_points[2], float p_vertex_snap2) {
 	Vector2 segment1 = p_segment1_points[1] - p_segment1_points[0];
 	Vector2 segment2 = p_segment2_points[1] - p_segment2_points[0];
 	real_t segment1_length2 = segment1.dot(segment1);
@@ -911,7 +911,7 @@ void CSGBrushOperation::Build2DFaces::_merge_faces(const Vector<int> &p_segment_
 				vertices[outer_edge_idx[1]].point,
 				vertices[p_segment_indices[closest_idx]].point
 			};
-			if (are_segements_parallel(edge1, edge2, vertex_snap2)) {
+			if (are_segments_parallel(edge1, edge2, vertex_snap2)) {
 				if (!degenerate_points.find(outer_edge_idx[0])) {
 					degenerate_points.push_back(outer_edge_idx[0]);
 				}
@@ -1056,7 +1056,7 @@ void CSGBrushOperation::Build2DFaces::_find_edge_intersections(const Vector2 p_s
 				}
 
 				// Check if edge exists, by checking if the intersecting segment is parallel to the edge.
-				if (are_segements_parallel(p_segment_points, edge_points, vertex_snap2)) {
+				if (are_segments_parallel(p_segment_points, edge_points, vertex_snap2)) {
 					continue;
 				}
 
@@ -1172,8 +1172,8 @@ int CSGBrushOperation::Build2DFaces::_insert_point(const Vector2 &p_point) {
 				Vector2 split_edge1[2] = { vertices[new_vertex_idx].point, edge_points[0] };
 				Vector2 split_edge2[2] = { vertices[new_vertex_idx].point, edge_points[1] };
 				Vector2 new_edge[2] = { vertices[new_vertex_idx].point, vertices[opposite_vertex_idx].point };
-				if (are_segements_parallel(split_edge1, new_edge, vertex_snap2) &&
-						are_segements_parallel(split_edge2, new_edge, vertex_snap2)) {
+				if (are_segments_parallel(split_edge1, new_edge, vertex_snap2) &&
+						are_segments_parallel(split_edge2, new_edge, vertex_snap2)) {
 					break;
 				}
 
