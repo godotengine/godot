@@ -126,8 +126,7 @@ String ResourceUID::get_id_path(ID p_id) const {
 	MutexLock l(mutex);
 	ERR_FAIL_COND_V(!unique_ids.has(p_id), String());
 	const CharString &cs = unique_ids[p_id].cs;
-	String s(cs.ptr());
-	return s;
+	return String::utf8(cs.ptr());
 }
 void ResourceUID::remove_id(ID p_id) {
 	MutexLock l(mutex);
