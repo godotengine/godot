@@ -485,6 +485,19 @@ void EditorNode::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_READY: {
+			{
+				_initializing_addons = true;
+				Vector<String> addons;
+				if (ProjectSettings::get_singleton()->has_setting("editor_plugins/enabled")) {
+					addons = ProjectSettings::get_singleton()->get("editor_plugins/enabled");
+				}
+
+				for (int i = 0; i < addons.size(); i++) {
+					set_addon_plugin_enabled(addons[i], true);
+				}
+				_initializing_addons = false;
+			}
+
 			VisualServer::get_singleton()->viewport_set_hide_scenario(get_scene_root()->get_viewport_rid(), true);
 			VisualServer::get_singleton()->viewport_set_hide_canvas(get_scene_root()->get_viewport_rid(), true);
 			VisualServer::get_singleton()->viewport_set_disable_environment(get_viewport()->get_viewport_rid(), true);
@@ -836,18 +849,6 @@ void EditorNode::_sources_changed(bool p_exist) {
 			load_scene(defer_load_scene);
 			defer_load_scene = "";
 		}
-
-		// Only enable addons once resources have been imported
-		_initializing_addons = true;
-		Vector<String> addons;
-		if (ProjectSettings::get_singleton()->has_setting("editor_plugins/enabled")) {
-			addons = ProjectSettings::get_singleton()->get("editor_plugins/enabled");
-		}
-
-		for (int i = 0; i < addons.size(); i++) {
-			set_addon_plugin_enabled(addons[i], true);
-		}
-		_initializing_addons = false;
 	}
 }
 
