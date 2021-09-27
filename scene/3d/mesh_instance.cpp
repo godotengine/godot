@@ -390,6 +390,9 @@ void MeshInstance::_update_skinning() {
 	RID skeleton = skin_ref->get_skeleton();
 	ERR_FAIL_COND(!skeleton.is_valid());
 
+	AABB aabb;
+	bool first_vertex = true;
+
 	VisualServer *visual_server = VisualServer::get_singleton();
 
 	// Prepare bone transforms.
@@ -499,10 +502,19 @@ void MeshInstance::_update_skinning() {
 					tangent = transform.basis.xform(tangent_read);
 				}
 			}
+
+			if (first_vertex) {
+				aabb.position = vertex;
+				first_vertex = false;
+			} else {
+				aabb.expand_to(vertex);
+			}
 		}
 
 		visual_server->mesh_surface_update_region(mesh_rid, surface_index, 0, buffer);
 	}
+
+	visual_server->mesh_set_custom_aabb(mesh_rid, aabb);
 
 	software_skinning_flags |= SoftwareSkinning::FLAG_BONES_READY;
 }
