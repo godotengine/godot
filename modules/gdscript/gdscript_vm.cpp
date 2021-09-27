@@ -88,9 +88,9 @@ static String _get_var_type(const Variant *p_var) {
 		Object *bobj = p_var->get_validated_object_with_check(was_freed);
 		if (!bobj) {
 			if (was_freed) {
-				basestr = "null instance";
-			} else {
 				basestr = "previously freed";
+			} else {
+				basestr = "null instance";
 			}
 		} else {
 			basestr = bobj->get_class();
