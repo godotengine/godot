@@ -56,6 +56,17 @@ def disable_warnings(self):
         self.Append(CXXFLAGS=["-w"])
 
 
+def force_optimization_on_debug(self):
+    # 'self' is the environment
+    if self["target"] != "debug":
+        return
+
+    if self.msvc:
+        self.Append(CCFLAGS=["/O2"])
+    else:
+        self.Append(CCFLAGS=["-O3"])
+
+
 def add_module_version_string(self, s):
     self.module_version_string += "." + s
 
