@@ -393,10 +393,16 @@ public:
 	virtual Vector3 get_inverse_inertia() const { return body->get_inv_inertia(); } // get density of this body space
 	virtual Basis get_inverse_inertia_tensor() const { return body->get_inv_inertia_tensor(); } // get density of this body space
 
-	virtual void set_linear_velocity(const Vector3 &p_velocity) { body->set_linear_velocity(p_velocity); }
+	virtual void set_linear_velocity(const Vector3 &p_velocity) {
+		body->wakeup();
+		body->set_linear_velocity(p_velocity);
+	}
 	virtual Vector3 get_linear_velocity() const { return body->get_linear_velocity(); }
 
-	virtual void set_angular_velocity(const Vector3 &p_velocity) { body->set_angular_velocity(p_velocity); }
+	virtual void set_angular_velocity(const Vector3 &p_velocity) {
+		body->wakeup();
+		body->set_angular_velocity(p_velocity);
+	}
 	virtual Vector3 get_angular_velocity() const { return body->get_angular_velocity(); }
 
 	virtual void set_transform(const Transform &p_transform) { body->set_state(PhysicsServer::BODY_STATE_TRANSFORM, p_transform); }
@@ -404,12 +410,30 @@ public:
 
 	virtual Vector3 get_velocity_at_local_position(const Vector3 &p_position) const { return body->get_velocity_in_local_point(p_position); }
 
-	virtual void add_central_force(const Vector3 &p_force) { body->add_central_force(p_force); }
-	virtual void add_force(const Vector3 &p_force, const Vector3 &p_pos) { body->add_force(p_force, p_pos); }
-	virtual void add_torque(const Vector3 &p_torque) { body->add_torque(p_torque); }
-	virtual void apply_central_impulse(const Vector3 &p_j) { body->apply_central_impulse(p_j); }
-	virtual void apply_impulse(const Vector3 &p_pos, const Vector3 &p_j) { body->apply_impulse(p_pos, p_j); }
-	virtual void apply_torque_impulse(const Vector3 &p_j) { body->apply_torque_impulse(p_j); }
+	virtual void add_central_force(const Vector3 &p_force) {
+		body->wakeup();
+		body->add_central_force(p_force);
+	}
+	virtual void add_force(const Vector3 &p_force, const Vector3 &p_pos) {
+		body->wakeup();
+		body->add_force(p_force, p_pos);
+	}
+	virtual void add_torque(const Vector3 &p_torque) {
+		body->wakeup();
+		body->add_torque(p_torque);
+	}
+	virtual void apply_central_impulse(const Vector3 &p_j) {
+		body->wakeup();
+		body->apply_central_impulse(p_j);
+	}
+	virtual void apply_impulse(const Vector3 &p_pos, const Vector3 &p_j) {
+		body->wakeup();
+		body->apply_impulse(p_pos, p_j);
+	}
+	virtual void apply_torque_impulse(const Vector3 &p_j) {
+		body->wakeup();
+		body->apply_torque_impulse(p_j);
+	}
 
 	virtual void set_sleep_state(bool p_enable) { body->set_active(!p_enable); }
 	virtual bool is_sleeping() const { return !body->is_active(); }
