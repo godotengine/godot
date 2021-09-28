@@ -327,8 +327,8 @@ private:
 	real_t margin = 0.08;
 	MotionMode motion_mode = MOTION_MODE_GROUNDED;
 
-	bool floor_stop_on_slope = false;
 	bool floor_constant_speed = false;
+	bool floor_stop_on_slope = true;
 	bool floor_block_on_wall = true;
 	bool slide_on_ceiling = true;
 	int max_slides = 4;
