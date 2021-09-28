@@ -959,6 +959,14 @@ bool AtlasTexture::has_filter_clip() const {
 	return filter_clip;
 }
 
+Ref<Image> AtlasTexture::get_data() const {
+	if (!atlas.is_valid()) {
+		return Ref<Image>();
+	}
+
+	return atlas->get_data()->get_rect(region);
+}
+
 void AtlasTexture::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_atlas", "atlas"), &AtlasTexture::set_atlas);
 	ClassDB::bind_method(D_METHOD("get_atlas"), &AtlasTexture::get_atlas);
