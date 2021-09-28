@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "xr_interface_extension.h"
+#include "servers/rendering/renderer_rd/renderer_storage_rd.h"
 #include "servers/rendering/renderer_storage.h"
 #include "servers/rendering/rendering_server_globals.h"
 
@@ -246,17 +247,21 @@ void XRInterfaceExtension::notification(int p_what) {
 }
 
 RID XRInterfaceExtension::get_render_target_texture(RID p_render_target) {
-	RendererStorage *storage = RSG::storage;
-	ERR_FAIL_NULL_V_MSG(storage, RID(), "Renderer storage not setup");
+	// In due time this will need to be enhance to return the correct INTERNAL RID for the chosen rendering engine.
+	// So once a GLES driver is implemented we'll return that and the implemented plugin needs to handle this correctly too.
+	RendererStorageRD *rd_storage = RendererStorageRD::base_singleton;
+	ERR_FAIL_NULL_V_MSG(rd_storage, RID(), "Renderer storage not setup");
 
-	return storage->render_target_get_texture(p_render_target);
+	return rd_storage->render_target_get_rd_texture(p_render_target);
 }
 
 /*
 RID XRInterfaceExtension::get_render_target_depth(RID p_render_target) {
-	RendererStorage *storage = RSG::storage;
-	ERR_FAIL_NULL_V_MSG(storage, RID(), "Renderer storage not setup");
+	// TODO implement this, the problem is that our depth texture isn't part of our render target as it is used for 3D rendering only
+	// but we don't have access to our render buffers from here....
+	RendererSceneRenderRD * rd_scene = ?????;
+	ERR_FAIL_NULL_V_MSG(rd_scene, RID(), "Renderer scene render not setup");
 
-	return storage->render_target_get_depth(p_render_target);
+	return rd_scene->render_buffers_get_depth_texture(????????????);
 }
 */

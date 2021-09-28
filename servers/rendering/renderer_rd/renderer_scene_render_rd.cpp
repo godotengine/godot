@@ -2415,6 +2415,13 @@ RID RendererSceneRenderRD::render_buffers_get_back_depth_texture(RID p_render_bu
 	return rb->depth_back_texture;
 }
 
+RID RendererSceneRenderRD::render_buffers_get_depth_texture(RID p_render_buffers) {
+	RenderBuffers *rb = render_buffers_owner.getornull(p_render_buffers);
+	ERR_FAIL_COND_V(!rb, RID());
+
+	return rb->depth_texture;
+}
+
 RID RendererSceneRenderRD::render_buffers_get_ao_texture(RID p_render_buffers) {
 	RenderBuffers *rb = render_buffers_owner.getornull(p_render_buffers);
 	ERR_FAIL_COND_V(!rb, RID());
