@@ -214,6 +214,9 @@
 		<member name="minimap_size" type="Vector2" setter="set_minimap_size" getter="get_minimap_size" default="Vector2(240, 160)">
 			The size of the minimap rectangle. The map itself is based on the size of the grid area and is scaled to fit this rectangle.
 		</member>
+		<member name="panning_scheme" type="int" setter="set_panning_scheme" getter="get_panning_scheme" enum="GraphEdit.PanningScheme" default="0">
+			Defines the control scheme for panning with mouse wheel.
+		</member>
 		<member name="rect_clip_content" type="bool" setter="set_clip_contents" getter="is_clipping_contents" overrides="Control" default="true" />
 		<member name="right_disconnects" type="bool" setter="set_right_disconnects" getter="is_right_disconnects_enabled" default="false">
 			If [code]true[/code], enables disconnection of existing connections in the GraphEdit by dragging the right end.
@@ -345,6 +348,14 @@
 			</description>
 		</signal>
 	</signals>
+	<constants>
+		<constant name="SCROLL_ZOOMS" value="0" enum="PanningScheme">
+			[kbd]Mouse Wheel[/kbd] will zoom, [kbd]Ctrl + Mouse Wheel[/kbd] will move the view.
+		</constant>
+		<constant name="SCROLL_PANS" value="1" enum="PanningScheme">
+			[kbd]Mouse Wheel[/kbd] will move the view, [kbd]Ctrl + Mouse Wheel[/kbd] will zoom.
+		</constant>
+	</constants>
 	<theme_items>
 		<theme_item name="activity" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
 		</theme_item>

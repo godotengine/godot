@@ -3209,6 +3209,10 @@ void VisualShaderEditor::_notification(int p_what) {
 		}
 	}
 
+	if (p_what == NOTIFICATION_ENTER_TREE || p_what == EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED) {
+		graph->set_panning_scheme((GraphEdit::PanningScheme)EDITOR_GET("interface/editors/sub_editor_panning_scheme").operator int());
+	}
+
 	if (p_what == NOTIFICATION_DRAG_BEGIN) {
 		Dictionary dd = get_viewport()->gui_get_drag_data();
 		if (members->is_visible_in_tree() && dd.has("id")) {

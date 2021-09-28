@@ -41,6 +41,7 @@
 #include "scene/gui/texture_rect.h"
 
 class GraphEdit;
+class ViewPanner;
 
 class GraphEditFilter : public Control {
 	GDCLASS(GraphEditFilter, Control);
@@ -103,6 +104,12 @@ public:
 		float activity = 0.0;
 	};
 
+	// Should be in sync with ControlScheme in ViewPanner.
+	enum PanningScheme {
+		SCROLL_ZOOMS,
+		SCROLL_PANS,
+	};
+
 private:
 	Label *zoom_label;
 	Button *zoom_minus;
@@ -122,6 +129,11 @@ private:
 	float port_grab_distance_horizontal = 0.0;
 	float port_grab_distance_vertical;
 
+	Ref<ViewPanner> panner;
+	void _scroll_callback(Vector2 p_scroll_vec);
+	void _pan_callback(Vector2 p_scroll_vec);
+	void _zoom_callback(Vector2 p_scroll_vec, Vector2 p_origin);
+
 	bool connecting = false;
 	String connecting_from;
 	bool connecting_out = false;
@@ -136,6 +148,7 @@ private:
 	bool connecting_valid = false;
 	Vector2 click_pos;
 
+	PanningScheme panning_scheme = SCROLL_ZOOMS;
 	bool dragging = false;
 	bool just_selected = false;
 	bool moving_selection = false;
@@ -277,6 +290,9 @@ public:
 	void remove_valid_connection_type(int p_type, int p_with_type);
 	bool is_valid_connection_type(int p_type, int p_with_type) const;
 
+	void set_panning_scheme(PanningScheme p_scheme);
+	PanningScheme get_panning_scheme() const;
+
 	void set_zoom(float p_zoom);
 	void set_zoom_custom(float p_zoom, const Vector2 &p_center);
 	float get_zoom() const;
@@ -337,5 +353,7 @@ public:
 
 	GraphEdit();
 };
+
+VARIANT_ENUM_CAST(GraphEdit::PanningScheme);
 
 #endif // GRAPHEdit_H

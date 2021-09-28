@@ -37,57 +37,31 @@
 #include "scene/gui/label.h"
 #include "scene/gui/panel.h"
 #include "scene/gui/texture_rect.h"
+#include "scene/gui/view_panner.h"
 
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 
 void TileAtlasView::gui_input(const Ref<InputEvent> &p_event) {
-	Ref<InputEventMouseButton> mb = p_event;
-	if (mb.is_valid()) {
-		drag_type = DRAG_TYPE_NONE;
-
-		Vector2i scroll_vec = Vector2((mb->get_button_index() == MouseButton::WHEEL_LEFT) - (mb->get_button_index() == MouseButton::WHEEL_RIGHT), (mb->get_button_index() == MouseButton::WHEEL_UP) - (mb->get_button_index() == MouseButton::WHEEL_DOWN));
-		if (scroll_vec != Vector2()) {
-			if (mb->is_ctrl_pressed()) {
-				if (mb->is_shift_pressed()) {
-					panning.x += 32 * mb->get_factor() * scroll_vec.y;
-					panning.y += 32 * mb->get_factor() * scroll_vec.x;
-				} else {
-					panning.y += 32 * mb->get_factor() * scroll_vec.y;
-					panning.x += 32 * mb->get_factor() * scroll_vec.x;
-				}
-
-				emit_signal(SNAME("transform_changed"), zoom_widget->get_zoom(), panning);
-				_update_zoom_and_panning(true);
-				accept_event();
-
-			} else if (!mb->is_shift_pressed()) {
-				zoom_widget->set_zoom_by_increments(scroll_vec.y * 2);
-				emit_signal(SNAME("transform_changed"), zoom_widget->get_zoom(), panning);
-				_update_zoom_and_panning(true);
-				accept_event();
-			}
-		}
-
-		if (mb->get_button_index() == MouseButton::MIDDLE || mb->get_button_index() == MouseButton::RIGHT) {
-			if (mb->is_pressed()) {
-				drag_type = DRAG_TYPE_PAN;
-			} else {
-				drag_type = DRAG_TYPE_NONE;
-			}
-			accept_event();
-		}
+	if (panner->gui_input(p_event)) {
+		accept_event();
 	}
+}
 
-	Ref<InputEventMouseMotion> mm = p_event;
-	if (mm.is_valid()) {
-		if (drag_type == DRAG_TYPE_PAN) {
-			panning += mm->get_relative();
-			_update_zoom_and_panning();
-			emit_signal(SNAME("transform_changed"), zoom_widget->get_zoom(), panning);
-			accept_event();
-		}
-	}
+void TileAtlasView::_scroll_callback(Vector2 p_scroll_vec) {
+	_pan_callback(-p_scroll_vec * 32);
+}
+
+void TileAtlasView::_pan_callback(Vector2 p_scroll_vec) {
+	panning += p_scroll_vec;
+	emit_signal(SNAME("transform_changed"), zoom_widget->get_zoom(), panning);
+	_update_zoom_and_panning(true);
+}
+
+void TileAtlasView::_zoom_callback(Vector2 p_scroll_vec, Vector2 p_origin) {
+	zoom_widget->set_zoom_by_increments(-p_scroll_vec.y * 2);
+	emit_signal(SNAME("transform_changed"), zoom_widget->get_zoom(), panning);
+	_update_zoom_and_panning(true);
 }
 
 Size2i TileAtlasView::_compute_base_tiles_control_size() {
@@ -548,6 +522,11 @@ void TileAtlasView::update() {
 
 void TileAtlasView::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
+		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED:
+			panner->set_control_scheme((ViewPanner::ControlScheme)EDITOR_GET("interface/editors/sub_editor_panning_scheme").operator int());
+			break;
+
 		case NOTIFICATION_READY:
 			button_center_view->set_icon(get_theme_icon(SNAME("CenterView"), SNAME("EditorIcons")));
 			break;
@@ -560,6 +539,9 @@ void TileAtlasView::_bind_methods() {
 
 TileAtlasView::TileAtlasView() {
 	set_texture_filter(CanvasItem::TEXTURE_FILTER_NEAREST);
+
+	panner.instantiate();
+	panner->set_callbacks(callable_mp(this, &TileAtlasView::_scroll_callback), callable_mp(this, &TileAtlasView::_pan_callback), callable_mp(this, &TileAtlasView::_zoom_callback));
 
 	Panel *panel = memnew(Panel);
 	panel->set_clip_contents(true);
