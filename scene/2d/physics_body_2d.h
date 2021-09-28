@@ -92,7 +92,7 @@ class AnimatableBody2D : public StaticBody2D {
 	GDCLASS(AnimatableBody2D, StaticBody2D);
 
 private:
-	bool sync_to_physics = false;
+	bool sync_to_physics = true;
 
 	Transform2D last_valid_transform;
 
