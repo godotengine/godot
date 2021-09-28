@@ -38,8 +38,8 @@
 #endif
 
 void PhysicsBody3D::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("move_and_collide", "rel_vec", "test_only", "safe_margin", "max_collisions"), &PhysicsBody3D::_move, DEFVAL(false), DEFVAL(0.001), DEFVAL(1));
-	ClassDB::bind_method(D_METHOD("test_move", "from", "rel_vec", "collision", "safe_margin", "max_collisions"), &PhysicsBody3D::test_move, DEFVAL(Variant()), DEFVAL(0.001), DEFVAL(1));
+	ClassDB::bind_method(D_METHOD("move_and_collide", "linear_velocity", "test_only", "safe_margin", "max_collisions"), &PhysicsBody3D::_move, DEFVAL(false), DEFVAL(0.001), DEFVAL(1));
+	ClassDB::bind_method(D_METHOD("test_move", "from", "linear_velocity", "collision", "safe_margin", "max_collisions"), &PhysicsBody3D::test_move, DEFVAL(Variant()), DEFVAL(0.001), DEFVAL(1));
 
 	ClassDB::bind_method(D_METHOD("set_axis_lock", "axis", "lock"), &PhysicsBody3D::set_axis_lock);
 	ClassDB::bind_method(D_METHOD("get_axis_lock", "axis"), &PhysicsBody3D::get_axis_lock);
@@ -97,7 +97,10 @@ void PhysicsBody3D::remove_collision_exception_with(Node *p_node) {
 
 Ref<KinematicCollision3D> PhysicsBody3D::_move(const Vector3 &p_motion, bool p_test_only, real_t p_margin, int p_max_collisions) {
 	PhysicsServer3D::MotionResult result;
-	if (move_and_collide(p_motion, result, p_margin, p_test_only, p_max_collisions)) {
+	// Hack in order to work with calling from _process as well as from _physics_process; calling from thread is risky
+	double delta = Engine::get_singleton()->is_in_physics_frame() ? get_physics_process_delta_time() : get_process_delta_time();
+
+	if (move_and_collide(p_motion * delta, result, p_margin, p_test_only, p_max_collisions)) {
 		// Create a new instance when the cached reference is invalid or still in use in script.
 		if (motion_cache.is_null() || motion_cache->reference_get_count() > 1) {
 			motion_cache.instantiate();
@@ -177,7 +180,10 @@ bool PhysicsBody3D::test_move(const Transform3D &p_from, const Vector3 &p_motion
 		r = const_cast<PhysicsServer3D::MotionResult *>(&r_collision->result);
 	}
 
-	return PhysicsServer3D::get_singleton()->body_test_motion(get_rid(), p_from, p_motion, p_margin, r, p_max_collisions);
+	// Hack in order to work with calling from _process as well as from _physics_process; calling from thread is risky
+	double delta = Engine::get_singleton()->is_in_physics_frame() ? get_physics_process_delta_time() : get_process_delta_time();
+
+	return PhysicsServer3D::get_singleton()->body_test_motion(get_rid(), p_from, p_motion * delta, p_margin, r, p_max_collisions);
 }
 
 void PhysicsBody3D::set_axis_lock(PhysicsServer3D::BodyAxis p_axis, bool p_lock) {

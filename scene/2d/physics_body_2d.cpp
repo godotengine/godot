@@ -34,8 +34,8 @@
 #include "scene/scene_string_names.h"
 
 void PhysicsBody2D::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("move_and_collide", "rel_vec", "test_only", "safe_margin"), &PhysicsBody2D::_move, DEFVAL(false), DEFVAL(0.08));
-	ClassDB::bind_method(D_METHOD("test_move", "from", "rel_vec", "collision", "safe_margin"), &PhysicsBody2D::test_move, DEFVAL(Variant()), DEFVAL(0.08));
+	ClassDB::bind_method(D_METHOD("move_and_collide", "linear_velocity", "test_only", "safe_margin"), &PhysicsBody2D::_move, DEFVAL(false), DEFVAL(0.08));
+	ClassDB::bind_method(D_METHOD("test_move", "from", "linear_velocity", "collision", "safe_margin"), &PhysicsBody2D::test_move, DEFVAL(Variant()), DEFVAL(0.08));
 
 	ClassDB::bind_method(D_METHOD("get_collision_exceptions"), &PhysicsBody2D::get_collision_exceptions);
 	ClassDB::bind_method(D_METHOD("add_collision_exception_with", "body"), &PhysicsBody2D::add_collision_exception_with);
@@ -57,7 +57,10 @@ PhysicsBody2D::~PhysicsBody2D() {
 Ref<KinematicCollision2D> PhysicsBody2D::_move(const Vector2 &p_motion, bool p_test_only, real_t p_margin) {
 	PhysicsServer2D::MotionResult result;
 
-	if (move_and_collide(p_motion, result, p_margin, p_test_only)) {
+	// Hack in order to work with calling from _process as well as from _physics_process; calling from thread is risky.
+	double delta = Engine::get_singleton()->is_in_physics_frame() ? get_physics_process_delta_time() : get_process_delta_time();
+
+	if (move_and_collide(p_motion * delta, result, p_margin, p_test_only)) {
 		// Create a new instance when the cached reference is invalid or still in use in script.
 		if (motion_cache.is_null() || motion_cache->reference_get_count() > 1) {
 			motion_cache.instantiate();
@@ -133,7 +136,10 @@ bool PhysicsBody2D::test_move(const Transform2D &p_from, const Vector2 &p_motion
 		r = const_cast<PhysicsServer2D::MotionResult *>(&r_collision->result);
 	}
 
-	return PhysicsServer2D::get_singleton()->body_test_motion(get_rid(), p_from, p_motion, p_margin, r);
+	// Hack in order to work with calling from _process as well as from _physics_process; calling from thread is risky.
+	double delta = Engine::get_singleton()->is_in_physics_frame() ? get_physics_process_delta_time() : get_process_delta_time();
+
+	return PhysicsServer2D::get_singleton()->body_test_motion(get_rid(), p_from, p_motion * delta, p_margin, r);
 }
 
 TypedArray<PhysicsBody2D> PhysicsBody2D::get_collision_exceptions() {
