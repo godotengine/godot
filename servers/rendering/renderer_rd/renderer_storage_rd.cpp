@@ -4138,6 +4138,7 @@ void RendererStorageRD::particles_set_use_local_coordinates(RID p_particles, boo
 	ERR_FAIL_COND(!particles);
 
 	particles->use_local_coords = p_enable;
+	particles->dependency.changed_notify(DEPENDENCY_CHANGED_PARTICLES);
 }
 
 void RendererStorageRD::particles_set_fixed_fps(RID p_particles, int p_fps) {
@@ -4352,10 +4353,8 @@ AABB RendererStorageRD::particles_get_current_aabb(RID p_particles) {
 		total_amount *= particles->trail_bind_poses.size();
 	}
 
-	Vector<ParticleData> data;
-	data.resize(total_amount);
-
 	Vector<uint8_t> buffer = RD::get_singleton()->buffer_get_data(particles->particle_buffer);
+	ERR_FAIL_COND_V(buffer.size() != (int)(total_amount * sizeof(ParticleData)), AABB());
 
 	Transform3D inv = particles->emission_transform.affine_inverse();
 
@@ -4363,7 +4362,7 @@ AABB RendererStorageRD::particles_get_current_aabb(RID p_particles) {
 	if (buffer.size()) {
 		bool first = true;
 
-		const ParticleData *particle_data = (const ParticleData *)data.ptr();
+		const ParticleData *particle_data = reinterpret_cast<const ParticleData *>(buffer.ptr());
 		for (int i = 0; i < total_amount; i++) {
 			if (particle_data[i].active) {
 				Vector3 pos = Vector3(particle_data[i].xform[12], particle_data[i].xform[13], particle_data[i].xform[14]);
