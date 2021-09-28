@@ -82,7 +82,7 @@ class GroupDialog : public AcceptDialog {
 	void _rename_group_item(const String &p_old_name, const String &p_new_name);
 
 	void _add_group(String p_name);
-	void _delete_group_pressed(Object *p_item, int p_column, int p_id);
+	void _modify_group_pressed(Object *p_item, int p_column, int p_id);
 	void _delete_group_item(const String &p_name);
 
 	bool _can_edit(Node *p_node, String p_group);
@@ -95,6 +95,11 @@ protected:
 	static void _bind_methods();
 
 public:
+	enum ModifyButton {
+		DELETE_GROUP,
+		COPY_GROUP,
+	};
+
 	void edit();
 	void set_undo_redo(UndoRedo *p_undoredo) { undo_redo = p_undoredo; }
 
@@ -116,7 +121,7 @@ class GroupsEditor : public VBoxContainer {
 
 	void update_tree();
 	void _add_group(const String &p_group = "");
-	void _remove_group(Object *p_item, int p_column, int p_id);
+	void _modify_group(Object *p_item, int p_column, int p_id);
 	void _close();
 
 	void _show_group_dialog();
@@ -125,6 +130,11 @@ protected:
 	static void _bind_methods();
 
 public:
+	enum ModifyButton {
+		DELETE_GROUP,
+		COPY_GROUP,
+	};
+
 	void set_undo_redo(UndoRedo *p_undoredo) { undo_redo = p_undoredo; }
 	void set_current(Node *p_node);
 
