@@ -205,7 +205,7 @@ if env["builtin_bullet"]:
     if env["target"] == "debug" or env["target"] == "release_debug":
         env_bullet.Append(CPPDEFINES=["DEBUG"])
 
-    env_bullet.Append(CPPDEFINES=["BT_USE_OLD_DAMPING_METHOD"])
+    env_bullet.Append(CPPDEFINES=["BT_USE_OLD_DAMPING_METHOD", "BT_THREADSAFE"])
 
     env_thirdparty = env_bullet.Clone()
     env_thirdparty.disable_warnings()
