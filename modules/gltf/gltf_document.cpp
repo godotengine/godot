@@ -598,9 +598,9 @@ Error GLTFDocument::_parse_scenes(Ref<GLTFState> state) {
 		}
 
 		if (s.has("name") && !String(s["name"]).empty() && !((String)s["name"]).begins_with("Scene")) {
-			state->scene_name = _gen_unique_name(state, s["name"]);
+			state->scene_name = s["name"];
 		} else {
-			state->scene_name = _gen_unique_name(state, state->filename);
+			state->scene_name = state->filename;
 		}
 	}
 
@@ -4960,6 +4960,9 @@ void GLTFDocument::_assign_scene_names(Ref<GLTFState> state) {
 
 		n->set_name(_gen_unique_name(state, n->get_name()));
 	}
+
+	// Assign a unique name to the scene last to avoid naming conflicts with the root
+	state->scene_name = _gen_unique_name(state, state->scene_name);
 }
 
 BoneAttachment *GLTFDocument::_generate_bone_attachment(Ref<GLTFState> state, Skeleton *skeleton, const GLTFNodeIndex node_index, const GLTFNodeIndex bone_index) {
