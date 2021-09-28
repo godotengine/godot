@@ -1946,6 +1946,11 @@ void TileSetAtlasSourceEditor::_tile_set_atlas_source_changed() {
 	tile_set_atlas_source_changed_needs_update = true;
 }
 
+void TileSetAtlasSourceEditor::_tile_proxy_object_changed(String p_what) {
+	tile_set_atlas_source_changed_needs_update = false; // Avoid updating too many things.
+	_update_atlas_view();
+}
+
 void TileSetAtlasSourceEditor::_atlas_source_proxy_object_changed(String p_what) {
 	if (p_what == "texture" && !atlas_source_proxy_object->get("texture").is_null()) {
 		confirm_auto_create_tiles->popup_centered();
@@ -2206,7 +2211,7 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 	middle_vbox_container->add_child(tile_inspector_label);
 
 	tile_proxy_object = memnew(AtlasTileProxyObject(this));
-	tile_proxy_object->connect("changed", callable_mp(this, &TileSetAtlasSourceEditor::_update_atlas_view).unbind(1));
+	tile_proxy_object->connect("changed", callable_mp(this, &TileSetAtlasSourceEditor::_tile_proxy_object_changed));
 
 	tile_inspector = memnew(EditorInspector);
 	tile_inspector->set_undo_redo(undo_redo);
