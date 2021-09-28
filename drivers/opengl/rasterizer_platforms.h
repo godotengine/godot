@@ -28,7 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#pragma once
+#ifndef RASTERIZER_PLATFORMS_H
+#define RASTERIZER_PLATFORMS_H
 
 /////////////////////////////////////////////////////
 // override for intellisense .. ONLY FOR DEVELOPMENT
@@ -67,3 +68,5 @@
 #endif
 
 #endif // defined(OPENGL_ENABLED) || defined(GLES_ENABLED)
+
+#endif // RASTERIZER_PLATFORMS_H

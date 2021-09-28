@@ -1089,4 +1089,5 @@ inline void RasterizerStorageOpenGL::buffer_orphan_and_upload(unsigned int p_buf
 }
 
 #endif // OPENGL_BACKEND_ENABLED
+
 #endif // RASTERIZER_STORAGE_OPENGL_H

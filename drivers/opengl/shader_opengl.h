@@ -28,7 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#pragma once
+#ifndef SHADER_OPENGL_H
+#define SHADER_OPENGL_H
 
 #include "drivers/opengl/rasterizer_platforms.h"
 #ifdef OPENGL_BACKEND_ENABLED
@@ -272,3 +273,5 @@ void ShaderOpenGL::_set_conditional(int p_which, bool p_value) {
 }
 
 #endif // OPENGL_BACKEND_ENABLED
+
+#endif // SHADER_OPENGL_H

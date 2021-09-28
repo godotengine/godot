@@ -28,13 +28,14 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#pragma once
+#ifndef GL_MANAGER_X11_H
+#define GL_MANAGER_X11_H
 
 #ifdef X11_ENABLED
 
 #include "drivers/opengl/rasterizer_platforms.h"
 
-#if defined(GLES_X11_ENABLED)
+#ifdef GLES_X11_ENABLED
 
 #include "core/os/os.h"
 #include "core/templates/local_vector.h"
@@ -125,3 +126,5 @@ public:
 
 #endif // GLES_X11_ENABLED
 #endif // X11_ENABLED
+
+#endif // GL_MANAGER_X11_H

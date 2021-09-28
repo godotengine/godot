@@ -28,7 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#pragma once
+#ifndef TEXTURE_LOADER_OPENGL_H
+#define TEXTURE_LOADER_OPENGL_H
 
 #include "drivers/opengl/rasterizer_platforms.h"
 #ifdef OPENGL_BACKEND_ENABLED
@@ -46,4 +47,6 @@ public:
 	virtual ~ResourceFormatGLES2Texture() {}
 };
 
-#endif
+#endif // OPENGL_BACKEND_ENABLED
+
+#endif // TEXTURE_LOADER_OPENGL_H

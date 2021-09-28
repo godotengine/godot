@@ -28,7 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#pragma once
+#ifndef SHADER_COMPILER_OPENGL_H
+#define SHADER_COMPILER_OPENGL_H
 
 #include "drivers/opengl/rasterizer_platforms.h"
 #ifdef OPENGL_BACKEND_ENABLED
@@ -101,3 +102,5 @@ public:
 };
 
 #endif // OPENGL_BACKEND_ENABLED
+
+#endif // SHADER_COMPILER_OPENGL_H

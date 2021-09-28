@@ -28,11 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#pragma once
+#ifndef GL_MANAGER_WINDOWS_H
+#define GL_MANAGER_WINDOWS_H
 
-#ifdef WINDOWS_ENABLED
-
-#ifdef GLES_WINDOWS_ENABLED
+#if defined(WINDOWS_ENABLED) && defined(GLES_WINDOWS_ENABLED)
 
 #include "core/error/error_list.h"
 #include "core/os/os.h"
@@ -124,6 +123,6 @@ public:
 	~GLManager_Windows();
 };
 
-#endif // OPENGL_ENABLED
+#endif // defined(WINDOWS_ENABLED) && defined(GLES_WINDOWS_ENABLED)
 
-#endif // WINDOWS
+#endif // GL_MANAGER_WINDOWS_H
