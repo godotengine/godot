@@ -2689,8 +2689,9 @@ void Main::cleanup(bool p_force) {
 	rendering_server->global_variables_clear();
 
 	if (xr_server) {
-		// cleanup now before we pull the rug from underneath...
-		memdelete(xr_server);
+		// Now that we're unregistering properly in plugins we need to keep access to xr_server for a little longer
+		// We do however unset our primary interface
+		xr_server->set_primary_interface(Ref<XRInterface>());
 	}
 
 	unregister_driver_types();
@@ -2705,6 +2706,10 @@ void Main::cleanup(bool p_force) {
 	unregister_platform_apis();
 	unregister_scene_types();
 	unregister_server_types();
+
+	if (xr_server) {
+		memdelete(xr_server);
+	}
 
 	if (audio_server) {
 		audio_server->finish();
