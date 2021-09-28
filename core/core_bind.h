@@ -539,8 +539,7 @@ protected:
 	Variant ret;
 	Variant userdata;
 	SafeFlag active;
-	Object *target_instance = nullptr;
-	StringName target_method;
+	Callable target_callable;
 	::Thread thread;
 	static void _bind_methods();
 	static void _start_func(void *ud);
@@ -553,7 +552,7 @@ public:
 		PRIORITY_MAX
 	};
 
-	Error start(Object *p_instance, const StringName &p_method, const Variant &p_userdata = Variant(), Priority p_priority = PRIORITY_NORMAL);
+	Error start(const Callable &p_callable, const Variant &p_userdata = Variant(), Priority p_priority = PRIORITY_NORMAL);
 	String get_id() const;
 	bool is_active() const;
 	Variant wait_to_finish();
