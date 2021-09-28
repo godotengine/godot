@@ -79,6 +79,7 @@ if env["builtin_embree"]:
             env.Append(LIBS=["psapi"])
 
     env_thirdparty = env_raycast.Clone()
+    env_thirdparty.force_optimization_on_debug()
     env_thirdparty.disable_warnings()
     env_thirdparty.add_source_files(thirdparty_obj, thirdparty_sources)
 
