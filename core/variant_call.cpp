@@ -1438,12 +1438,11 @@ Variant::Type Variant::get_method_return_type(Variant::Type p_type, const String
 }
 
 Vector<Variant> Variant::get_method_default_arguments(Variant::Type p_type, const StringName &p_method) {
+	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, Vector<Variant>());
 	const _VariantCall::TypeFunc &tf = _VariantCall::type_funcs[p_type];
 
 	const Map<StringName, _VariantCall::FuncData>::Element *E = tf.functions.find(p_method);
-	if (!E) {
-		return Vector<Variant>();
-	}
+	ERR_FAIL_COND_V(!E, Vector<Variant>());
 
 	return E->get().default_args;
 }
