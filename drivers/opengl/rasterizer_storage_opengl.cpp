@@ -128,6 +128,10 @@ void RasterizerStorageOpenGL::bind_quad_array() const {
 	glEnableVertexAttribArray(RS::ARRAY_TEX_UV);
 }
 
+bool RasterizerStorageOpenGL::can_create_resources_async() const {
+	return false;
+}
+
 Ref<Image> RasterizerStorageOpenGL::_get_gl_image_and_format(const Ref<Image> &p_image, Image::Format p_format, uint32_t p_flags, Image::Format &r_real_format, GLenum &r_gl_format, GLenum &r_gl_internal_format, GLenum &r_gl_type, bool &r_compressed, bool p_force_decompress) const {
 	r_gl_format = 0;
 	Ref<Image> image = p_image;
@@ -503,6 +507,15 @@ void RasterizerStorageOpenGL::texture_2d_initialize(RID p_texture, const Ref<Ima
 	texture_set_data(p_texture, p_image);
 }
 
+void RasterizerStorageOpenGL::texture_2d_layered_initialize(RID p_texture, const Vector<Ref<Image>> &p_layers, RS::TextureLayeredType p_layered_type) {
+}
+
+void RasterizerStorageOpenGL::texture_3d_initialize(RID p_texture, Image::Format, int p_width, int p_height, int p_depth, bool p_mipmaps, const Vector<Ref<Image>> &p_data) {
+}
+
+void RasterizerStorageOpenGL::texture_proxy_initialize(RID p_texture, RID p_base) {
+}
+
 //RID RasterizerStorageOpenGL::texture_2d_create(const Ref<Image> &p_image) {
 //	RID id = texture_create();
 //	ERR_FAIL_COND_V(id == RID(), id);
@@ -536,9 +549,14 @@ void RasterizerStorageOpenGL::texture_2d_update(RID p_texture, const Ref<Image> 
 	texture_set_data(p_texture, p_image);
 }
 
-//RID RasterizerStorageOpenGL::texture_2d_placeholder_create() {
-//	return RID();
-//}
+void RasterizerStorageOpenGL::texture_2d_placeholder_initialize(RID p_texture) {
+}
+
+void RasterizerStorageOpenGL::texture_2d_layered_placeholder_initialize(RID p_texture, RenderingServer::TextureLayeredType p_layered_type) {
+}
+
+void RasterizerStorageOpenGL::texture_3d_placeholder_initialize(RID p_texture) {
+}
 
 Ref<Image> RasterizerStorageOpenGL::texture_2d_get(RID p_texture) const {
 	Texture *tex = texture_owner.getornull(p_texture);
@@ -1219,6 +1237,24 @@ void RasterizerStorageOpenGL::texture_set_detect_normal_callback(RID p_texture, 
 
 RID RasterizerStorageOpenGL::texture_create_radiance_cubemap(RID p_source, int p_resolution) const {
 	return RID();
+}
+
+RID RasterizerStorageOpenGL::canvas_texture_allocate() {
+	return RID();
+}
+
+void RasterizerStorageOpenGL::canvas_texture_initialize(RID p_rid) {
+}
+
+void RasterizerStorageOpenGL::canvas_texture_set_channel(RID p_canvas_texture, RS::CanvasTextureChannel p_channel, RID p_texture) {
+}
+
+void RasterizerStorageOpenGL::canvas_texture_set_shading_parameters(RID p_canvas_texture, const Color &p_base_color, float p_shininess) {
+}
+
+void RasterizerStorageOpenGL::canvas_texture_set_texture_filter(RID p_item, RS::CanvasItemTextureFilter p_filter) {
+}
+void RasterizerStorageOpenGL::canvas_texture_set_texture_repeat(RID p_item, RS::CanvasItemTextureRepeat p_repeat) {
 }
 
 RID RasterizerStorageOpenGL::sky_create() {
@@ -2162,6 +2198,853 @@ void RasterizerStorageOpenGL::update_dirty_materials() {
 	}
 }
 
+/* MESH API */
+
+RID RasterizerStorageOpenGL::mesh_allocate() {
+	return RID();
+}
+
+void RasterizerStorageOpenGL::mesh_initialize(RID p_rid) {
+}
+
+void RasterizerStorageOpenGL::mesh_set_blend_shape_count(RID p_mesh, int p_blend_shape_count) {
+}
+
+bool RasterizerStorageOpenGL::mesh_needs_instance(RID p_mesh, bool p_has_skeleton) {
+	return false;
+}
+
+RID RasterizerStorageOpenGL::mesh_instance_create(RID p_base) {
+	return RID();
+}
+
+void RasterizerStorageOpenGL::mesh_instance_set_skeleton(RID p_mesh_instance, RID p_skeleton) {
+}
+
+void RasterizerStorageOpenGL::mesh_instance_set_blend_shape_weight(RID p_mesh_instance, int p_shape, float p_weight) {
+}
+
+void RasterizerStorageOpenGL::mesh_instance_check_for_update(RID p_mesh_instance) {
+}
+
+void RasterizerStorageOpenGL::update_mesh_instances() {
+}
+
+void RasterizerStorageOpenGL::reflection_probe_set_lod_threshold(RID p_probe, float p_ratio) {
+}
+
+float RasterizerStorageOpenGL::reflection_probe_get_lod_threshold(RID p_probe) const {
+	return 0.0;
+}
+
+void RasterizerStorageOpenGL::mesh_add_surface(RID p_mesh, const RS::SurfaceData &p_surface) {
+}
+
+int RasterizerStorageOpenGL::mesh_get_blend_shape_count(RID p_mesh) const {
+	return 0;
+}
+
+void RasterizerStorageOpenGL::mesh_set_blend_shape_mode(RID p_mesh, RS::BlendShapeMode p_mode) {
+}
+
+RS::BlendShapeMode RasterizerStorageOpenGL::mesh_get_blend_shape_mode(RID p_mesh) const {
+	return RS::BLEND_SHAPE_MODE_NORMALIZED;
+}
+
+void RasterizerStorageOpenGL::mesh_surface_update_vertex_region(RID p_mesh, int p_surface, int p_offset, const Vector<uint8_t> &p_data) {
+}
+
+void RasterizerStorageOpenGL::mesh_surface_update_attribute_region(RID p_mesh, int p_surface, int p_offset, const Vector<uint8_t> &p_data) {
+}
+
+void RasterizerStorageOpenGL::mesh_surface_update_skin_region(RID p_mesh, int p_surface, int p_offset, const Vector<uint8_t> &p_data) {
+}
+
+void RasterizerStorageOpenGL::mesh_surface_set_material(RID p_mesh, int p_surface, RID p_material) {
+}
+
+RID RasterizerStorageOpenGL::mesh_surface_get_material(RID p_mesh, int p_surface) const {
+	return RID();
+}
+
+RS::SurfaceData RasterizerStorageOpenGL::mesh_get_surface(RID p_mesh, int p_surface) const {
+	return RS::SurfaceData();
+}
+
+int RasterizerStorageOpenGL::mesh_get_surface_count(RID p_mesh) const {
+	return 0;
+}
+
+void RasterizerStorageOpenGL::mesh_set_custom_aabb(RID p_mesh, const AABB &p_aabb) {
+}
+
+AABB RasterizerStorageOpenGL::mesh_get_custom_aabb(RID p_mesh) const {
+	return AABB();
+}
+
+AABB RasterizerStorageOpenGL::mesh_get_aabb(RID p_mesh, RID p_skeleton) {
+	return AABB();
+}
+
+void RasterizerStorageOpenGL::mesh_set_shadow_mesh(RID p_mesh, RID p_shadow_mesh) {
+}
+
+void RasterizerStorageOpenGL::mesh_clear(RID p_mesh) {
+}
+
+/* MULTIMESH API */
+
+RID RasterizerStorageOpenGL::multimesh_allocate() {
+	return RID();
+}
+
+void RasterizerStorageOpenGL::multimesh_initialize(RID p_rid) {
+}
+
+void RasterizerStorageOpenGL::multimesh_allocate_data(RID p_multimesh, int p_instances, RS::MultimeshTransformFormat p_transform_format, bool p_use_colors, bool p_use_custom_data) {
+}
+
+int RasterizerStorageOpenGL::multimesh_get_instance_count(RID p_multimesh) const {
+	return 0;
+}
+
+void RasterizerStorageOpenGL::multimesh_set_mesh(RID p_multimesh, RID p_mesh) {
+}
+
+void RasterizerStorageOpenGL::multimesh_instance_set_transform(RID p_multimesh, int p_index, const Transform3D &p_transform) {
+}
+
+void RasterizerStorageOpenGL::multimesh_instance_set_transform_2d(RID p_multimesh, int p_index, const Transform2D &p_transform) {
+}
+
+void RasterizerStorageOpenGL::multimesh_instance_set_color(RID p_multimesh, int p_index, const Color &p_color) {
+}
+
+void RasterizerStorageOpenGL::multimesh_instance_set_custom_data(RID p_multimesh, int p_index, const Color &p_color) {
+}
+
+RID RasterizerStorageOpenGL::multimesh_get_mesh(RID p_multimesh) const {
+	return RID();
+}
+
+AABB RasterizerStorageOpenGL::multimesh_get_aabb(RID p_multimesh) const {
+	return AABB();
+}
+
+Transform3D RasterizerStorageOpenGL::multimesh_instance_get_transform(RID p_multimesh, int p_index) const {
+	return Transform3D();
+}
+
+Transform2D RasterizerStorageOpenGL::multimesh_instance_get_transform_2d(RID p_multimesh, int p_index) const {
+	return Transform2D();
+}
+
+Color RasterizerStorageOpenGL::multimesh_instance_get_color(RID p_multimesh, int p_index) const {
+	return Color();
+}
+
+Color RasterizerStorageOpenGL::multimesh_instance_get_custom_data(RID p_multimesh, int p_index) const {
+	return Color();
+}
+
+void RasterizerStorageOpenGL::multimesh_set_buffer(RID p_multimesh, const Vector<float> &p_buffer) {
+}
+
+Vector<float> RasterizerStorageOpenGL::multimesh_get_buffer(RID p_multimesh) const {
+	return Vector<float>();
+}
+
+void RasterizerStorageOpenGL::multimesh_set_visible_instances(RID p_multimesh, int p_visible) {
+}
+
+int RasterizerStorageOpenGL::multimesh_get_visible_instances(RID p_multimesh) const {
+	return 0;
+}
+
+/* SKELETON API */
+
+RID RasterizerStorageOpenGL::skeleton_allocate() {
+	return RID();
+}
+
+void RasterizerStorageOpenGL::skeleton_initialize(RID p_rid) {
+}
+
+void RasterizerStorageOpenGL::skeleton_allocate_data(RID p_skeleton, int p_bones, bool p_2d_skeleton) {
+}
+
+void RasterizerStorageOpenGL::skeleton_set_base_transform_2d(RID p_skeleton, const Transform2D &p_base_transform) {
+}
+
+int RasterizerStorageOpenGL::skeleton_get_bone_count(RID p_skeleton) const {
+	return 0;
+}
+
+void RasterizerStorageOpenGL::skeleton_bone_set_transform(RID p_skeleton, int p_bone, const Transform3D &p_transform) {
+}
+
+Transform3D RasterizerStorageOpenGL::skeleton_bone_get_transform(RID p_skeleton, int p_bone) const {
+	return Transform3D();
+}
+
+void RasterizerStorageOpenGL::skeleton_bone_set_transform_2d(RID p_skeleton, int p_bone, const Transform2D &p_transform) {
+}
+
+Transform2D RasterizerStorageOpenGL::skeleton_bone_get_transform_2d(RID p_skeleton, int p_bone) const {
+	return Transform2D();
+}
+
+/* Light API */
+
+RID RasterizerStorageOpenGL::directional_light_allocate() {
+	return RID();
+}
+
+void RasterizerStorageOpenGL::directional_light_initialize(RID p_rid) {
+}
+
+RID RasterizerStorageOpenGL::omni_light_allocate() {
+	return RID();
+}
+
+void RasterizerStorageOpenGL::omni_light_initialize(RID p_rid) {
+}
+
+RID RasterizerStorageOpenGL::spot_light_allocate() {
+	return RID();
+}
+
+void RasterizerStorageOpenGL::spot_light_initialize(RID p_rid) {
+}
+
+RID RasterizerStorageOpenGL::reflection_probe_allocate() {
+	return RID();
+}
+
+void RasterizerStorageOpenGL::reflection_probe_initialize(RID p_rid) {
+}
+
+void RasterizerStorageOpenGL::light_set_color(RID p_light, const Color &p_color) {
+}
+
+void RasterizerStorageOpenGL::light_set_param(RID p_light, RS::LightParam p_param, float p_value) {
+}
+
+void RasterizerStorageOpenGL::light_set_shadow(RID p_light, bool p_enabled) {
+}
+
+void RasterizerStorageOpenGL::light_set_shadow_color(RID p_light, const Color &p_color) {
+}
+
+void RasterizerStorageOpenGL::light_set_projector(RID p_light, RID p_texture) {
+}
+
+void RasterizerStorageOpenGL::light_set_negative(RID p_light, bool p_enable) {
+}
+
+void RasterizerStorageOpenGL::light_set_cull_mask(RID p_light, uint32_t p_mask) {
+}
+
+void RasterizerStorageOpenGL::light_set_reverse_cull_face_mode(RID p_light, bool p_enabled) {
+}
+
+void RasterizerStorageOpenGL::light_set_bake_mode(RID p_light, RS::LightBakeMode p_bake_mode) {
+}
+
+void RasterizerStorageOpenGL::light_set_max_sdfgi_cascade(RID p_light, uint32_t p_cascade) {
+}
+
+void RasterizerStorageOpenGL::light_omni_set_shadow_mode(RID p_light, RS::LightOmniShadowMode p_mode) {
+}
+
+void RasterizerStorageOpenGL::light_directional_set_shadow_mode(RID p_light, RS::LightDirectionalShadowMode p_mode) {
+}
+
+void RasterizerStorageOpenGL::light_directional_set_blend_splits(RID p_light, bool p_enable) {
+}
+
+bool RasterizerStorageOpenGL::light_directional_get_blend_splits(RID p_light) const {
+	return false;
+}
+
+void RasterizerStorageOpenGL::light_directional_set_sky_only(RID p_light, bool p_sky_only) {
+}
+
+bool RasterizerStorageOpenGL::light_directional_is_sky_only(RID p_light) const {
+	return false;
+}
+
+RS::LightDirectionalShadowMode RasterizerStorageOpenGL::light_directional_get_shadow_mode(RID p_light) {
+	return RS::LIGHT_DIRECTIONAL_SHADOW_ORTHOGONAL;
+}
+
+RS::LightOmniShadowMode RasterizerStorageOpenGL::light_omni_get_shadow_mode(RID p_light) {
+	return RS::LIGHT_OMNI_SHADOW_DUAL_PARABOLOID;
+}
+
+bool RasterizerStorageOpenGL::light_has_shadow(RID p_light) const {
+	return false;
+}
+
+bool RasterizerStorageOpenGL::light_has_projector(RID p_light) const {
+	return false;
+}
+
+RS::LightType RasterizerStorageOpenGL::light_get_type(RID p_light) const {
+	return RS::LIGHT_OMNI;
+}
+
+AABB RasterizerStorageOpenGL::light_get_aabb(RID p_light) const {
+	return AABB();
+}
+
+float RasterizerStorageOpenGL::light_get_param(RID p_light, RS::LightParam p_param) {
+	return 0.0;
+}
+
+Color RasterizerStorageOpenGL::light_get_color(RID p_light) {
+	return Color();
+}
+
+RS::LightBakeMode RasterizerStorageOpenGL::light_get_bake_mode(RID p_light) {
+	return RS::LIGHT_BAKE_DISABLED;
+}
+
+uint32_t RasterizerStorageOpenGL::light_get_max_sdfgi_cascade(RID p_light) {
+	return 0;
+}
+
+uint64_t RasterizerStorageOpenGL::light_get_version(RID p_light) const {
+	return 0;
+}
+
+/* PROBE API */
+
+void RasterizerStorageOpenGL::reflection_probe_set_update_mode(RID p_probe, RS::ReflectionProbeUpdateMode p_mode) {
+}
+
+void RasterizerStorageOpenGL::reflection_probe_set_intensity(RID p_probe, float p_intensity) {
+}
+
+void RasterizerStorageOpenGL::reflection_probe_set_ambient_mode(RID p_probe, RS::ReflectionProbeAmbientMode p_mode) {
+}
+
+void RasterizerStorageOpenGL::reflection_probe_set_ambient_color(RID p_probe, const Color &p_color) {
+}
+
+void RasterizerStorageOpenGL::reflection_probe_set_ambient_energy(RID p_probe, float p_energy) {
+}
+
+void RasterizerStorageOpenGL::reflection_probe_set_max_distance(RID p_probe, float p_distance) {
+}
+
+void RasterizerStorageOpenGL::reflection_probe_set_extents(RID p_probe, const Vector3 &p_extents) {
+}
+
+void RasterizerStorageOpenGL::reflection_probe_set_origin_offset(RID p_probe, const Vector3 &p_offset) {
+}
+
+void RasterizerStorageOpenGL::reflection_probe_set_as_interior(RID p_probe, bool p_enable) {
+}
+
+void RasterizerStorageOpenGL::reflection_probe_set_enable_box_projection(RID p_probe, bool p_enable) {
+}
+
+void RasterizerStorageOpenGL::reflection_probe_set_enable_shadows(RID p_probe, bool p_enable) {
+}
+
+void RasterizerStorageOpenGL::reflection_probe_set_cull_mask(RID p_probe, uint32_t p_layers) {
+}
+
+void RasterizerStorageOpenGL::reflection_probe_set_resolution(RID p_probe, int p_resolution) {
+}
+
+AABB RasterizerStorageOpenGL::reflection_probe_get_aabb(RID p_probe) const {
+	return AABB();
+}
+
+RS::ReflectionProbeUpdateMode RasterizerStorageOpenGL::reflection_probe_get_update_mode(RID p_probe) const {
+	return RenderingServer::REFLECTION_PROBE_UPDATE_ONCE;
+}
+
+uint32_t RasterizerStorageOpenGL::reflection_probe_get_cull_mask(RID p_probe) const {
+	return 0;
+}
+
+Vector3 RasterizerStorageOpenGL::reflection_probe_get_extents(RID p_probe) const {
+	return Vector3();
+}
+
+Vector3 RasterizerStorageOpenGL::reflection_probe_get_origin_offset(RID p_probe) const {
+	return Vector3();
+}
+
+float RasterizerStorageOpenGL::reflection_probe_get_origin_max_distance(RID p_probe) const {
+	return 0.0;
+}
+
+bool RasterizerStorageOpenGL::reflection_probe_renders_shadows(RID p_probe) const {
+	return false;
+}
+
+void RasterizerStorageOpenGL::base_update_dependency(RID p_base, DependencyTracker *p_instance) {
+}
+
+void RasterizerStorageOpenGL::skeleton_update_dependency(RID p_base, DependencyTracker *p_instance) {
+}
+
+/* DECAL API */
+
+RID RasterizerStorageOpenGL::decal_allocate() {
+	return RID();
+}
+
+void RasterizerStorageOpenGL::decal_initialize(RID p_rid) {
+}
+
+void RasterizerStorageOpenGL::decal_set_extents(RID p_decal, const Vector3 &p_extents) {
+}
+
+void RasterizerStorageOpenGL::decal_set_texture(RID p_decal, RS::DecalTexture p_type, RID p_texture) {
+}
+
+void RasterizerStorageOpenGL::decal_set_emission_energy(RID p_decal, float p_energy) {
+}
+
+void RasterizerStorageOpenGL::decal_set_albedo_mix(RID p_decal, float p_mix) {
+}
+
+void RasterizerStorageOpenGL::decal_set_modulate(RID p_decal, const Color &p_modulate) {
+}
+
+void RasterizerStorageOpenGL::decal_set_cull_mask(RID p_decal, uint32_t p_layers) {
+}
+
+void RasterizerStorageOpenGL::decal_set_distance_fade(RID p_decal, bool p_enabled, float p_begin, float p_length) {
+}
+
+void RasterizerStorageOpenGL::decal_set_fade(RID p_decal, float p_above, float p_below) {
+}
+
+void RasterizerStorageOpenGL::decal_set_normal_fade(RID p_decal, float p_fade) {
+}
+
+AABB RasterizerStorageOpenGL::decal_get_aabb(RID p_decal) const {
+	return AABB();
+}
+
+/* VOXEL GI API */
+
+RID RasterizerStorageOpenGL::voxel_gi_allocate() {
+	return RID();
+}
+
+void RasterizerStorageOpenGL::voxel_gi_initialize(RID p_rid) {
+}
+
+void RasterizerStorageOpenGL::voxel_gi_allocate_data(RID p_voxel_gi, const Transform3D &p_to_cell_xform, const AABB &p_aabb, const Vector3i &p_octree_size, const Vector<uint8_t> &p_octree_cells, const Vector<uint8_t> &p_data_cells, const Vector<uint8_t> &p_distance_field, const Vector<int> &p_level_counts) {
+}
+
+AABB RasterizerStorageOpenGL::voxel_gi_get_bounds(RID p_voxel_gi) const {
+	return AABB();
+}
+
+Vector3i RasterizerStorageOpenGL::voxel_gi_get_octree_size(RID p_voxel_gi) const {
+	return Vector3i();
+}
+
+Vector<uint8_t> RasterizerStorageOpenGL::voxel_gi_get_octree_cells(RID p_voxel_gi) const {
+	return Vector<uint8_t>();
+}
+
+Vector<uint8_t> RasterizerStorageOpenGL::voxel_gi_get_data_cells(RID p_voxel_gi) const {
+	return Vector<uint8_t>();
+}
+
+Vector<uint8_t> RasterizerStorageOpenGL::voxel_gi_get_distance_field(RID p_voxel_gi) const {
+	return Vector<uint8_t>();
+}
+
+Vector<int> RasterizerStorageOpenGL::voxel_gi_get_level_counts(RID p_voxel_gi) const {
+	return Vector<int>();
+}
+
+Transform3D RasterizerStorageOpenGL::voxel_gi_get_to_cell_xform(RID p_voxel_gi) const {
+	return Transform3D();
+}
+
+void RasterizerStorageOpenGL::voxel_gi_set_dynamic_range(RID p_voxel_gi, float p_range) {
+}
+
+float RasterizerStorageOpenGL::voxel_gi_get_dynamic_range(RID p_voxel_gi) const {
+	return 0;
+}
+
+void RasterizerStorageOpenGL::voxel_gi_set_propagation(RID p_voxel_gi, float p_range) {
+}
+
+float RasterizerStorageOpenGL::voxel_gi_get_propagation(RID p_voxel_gi) const {
+	return 0;
+}
+
+void RasterizerStorageOpenGL::voxel_gi_set_energy(RID p_voxel_gi, float p_range) {
+}
+
+float RasterizerStorageOpenGL::voxel_gi_get_energy(RID p_voxel_gi) const {
+	return 0.0;
+}
+
+void RasterizerStorageOpenGL::voxel_gi_set_bias(RID p_voxel_gi, float p_range) {
+}
+
+float RasterizerStorageOpenGL::voxel_gi_get_bias(RID p_voxel_gi) const {
+	return 0.0;
+}
+
+void RasterizerStorageOpenGL::voxel_gi_set_normal_bias(RID p_voxel_gi, float p_range) {
+}
+
+float RasterizerStorageOpenGL::voxel_gi_get_normal_bias(RID p_voxel_gi) const {
+	return 0.0;
+}
+
+void RasterizerStorageOpenGL::voxel_gi_set_interior(RID p_voxel_gi, bool p_enable) {
+}
+
+bool RasterizerStorageOpenGL::voxel_gi_is_interior(RID p_voxel_gi) const {
+	return false;
+}
+
+void RasterizerStorageOpenGL::voxel_gi_set_use_two_bounces(RID p_voxel_gi, bool p_enable) {
+}
+
+bool RasterizerStorageOpenGL::voxel_gi_is_using_two_bounces(RID p_voxel_gi) const {
+	return false;
+}
+
+void RasterizerStorageOpenGL::voxel_gi_set_anisotropy_strength(RID p_voxel_gi, float p_strength) {
+}
+
+float RasterizerStorageOpenGL::voxel_gi_get_anisotropy_strength(RID p_voxel_gi) const {
+	return 0;
+}
+
+uint32_t RasterizerStorageOpenGL::voxel_gi_get_version(RID p_voxel_gi) {
+	return 0;
+}
+
+/* LIGHTMAP CAPTURE */
+RID RasterizerStorageOpenGL::lightmap_allocate() {
+	return RID();
+}
+
+void RasterizerStorageOpenGL::lightmap_initialize(RID p_rid) {
+}
+
+void RasterizerStorageOpenGL::lightmap_set_textures(RID p_lightmap, RID p_light, bool p_uses_spherical_haromics) {
+}
+
+void RasterizerStorageOpenGL::lightmap_set_probe_bounds(RID p_lightmap, const AABB &p_bounds) {
+}
+
+void RasterizerStorageOpenGL::lightmap_set_probe_interior(RID p_lightmap, bool p_interior) {
+}
+
+void RasterizerStorageOpenGL::lightmap_set_probe_capture_data(RID p_lightmap, const PackedVector3Array &p_points, const PackedColorArray &p_point_sh, const PackedInt32Array &p_tetrahedra, const PackedInt32Array &p_bsp_tree) {
+}
+
+PackedVector3Array RasterizerStorageOpenGL::lightmap_get_probe_capture_points(RID p_lightmap) const {
+	return PackedVector3Array();
+}
+
+PackedColorArray RasterizerStorageOpenGL::lightmap_get_probe_capture_sh(RID p_lightmap) const {
+	return PackedColorArray();
+}
+
+PackedInt32Array RasterizerStorageOpenGL::lightmap_get_probe_capture_tetrahedra(RID p_lightmap) const {
+	return PackedInt32Array();
+}
+
+PackedInt32Array RasterizerStorageOpenGL::lightmap_get_probe_capture_bsp_tree(RID p_lightmap) const {
+	return PackedInt32Array();
+}
+
+AABB RasterizerStorageOpenGL::lightmap_get_aabb(RID p_lightmap) const {
+	return AABB();
+}
+
+void RasterizerStorageOpenGL::lightmap_tap_sh_light(RID p_lightmap, const Vector3 &p_point, Color *r_sh) {
+}
+
+bool RasterizerStorageOpenGL::lightmap_is_interior(RID p_lightmap) const {
+	return false;
+}
+
+void RasterizerStorageOpenGL::lightmap_set_probe_capture_update_speed(float p_speed) {
+}
+
+float RasterizerStorageOpenGL::lightmap_get_probe_capture_update_speed() const {
+	return 0;
+}
+
+/* OCCLUDER */
+
+void RasterizerStorageOpenGL::occluder_set_mesh(RID p_occluder, const PackedVector3Array &p_vertices, const PackedInt32Array &p_indices) {
+}
+
+/* PARTICLES */
+
+RID RasterizerStorageOpenGL::particles_allocate() {
+	return RID();
+}
+
+void RasterizerStorageOpenGL::particles_initialize(RID p_rid) {
+}
+
+void RasterizerStorageOpenGL::particles_set_mode(RID p_particles, RS::ParticlesMode p_mode) {
+}
+
+void RasterizerStorageOpenGL::particles_emit(RID p_particles, const Transform3D &p_transform, const Vector3 &p_velocity, const Color &p_color, const Color &p_custom, uint32_t p_emit_flags) {
+}
+
+void RasterizerStorageOpenGL::particles_set_emitting(RID p_particles, bool p_emitting) {
+}
+
+void RasterizerStorageOpenGL::particles_set_amount(RID p_particles, int p_amount) {
+}
+
+void RasterizerStorageOpenGL::particles_set_lifetime(RID p_particles, double p_lifetime) {
+}
+
+void RasterizerStorageOpenGL::particles_set_one_shot(RID p_particles, bool p_one_shot) {
+}
+
+void RasterizerStorageOpenGL::particles_set_pre_process_time(RID p_particles, double p_time) {
+}
+
+void RasterizerStorageOpenGL::particles_set_explosiveness_ratio(RID p_particles, real_t p_ratio) {
+}
+
+void RasterizerStorageOpenGL::particles_set_randomness_ratio(RID p_particles, real_t p_ratio) {
+}
+
+void RasterizerStorageOpenGL::particles_set_custom_aabb(RID p_particles, const AABB &p_aabb) {
+}
+
+void RasterizerStorageOpenGL::particles_set_speed_scale(RID p_particles, double p_scale) {
+}
+
+void RasterizerStorageOpenGL::particles_set_use_local_coordinates(RID p_particles, bool p_enable) {
+}
+
+void RasterizerStorageOpenGL::particles_set_process_material(RID p_particles, RID p_material) {
+}
+
+void RasterizerStorageOpenGL::particles_set_fixed_fps(RID p_particles, int p_fps) {
+}
+
+void RasterizerStorageOpenGL::particles_set_interpolate(RID p_particles, bool p_enable) {
+}
+
+void RasterizerStorageOpenGL::particles_set_fractional_delta(RID p_particles, bool p_enable) {
+}
+
+void RasterizerStorageOpenGL::particles_set_subemitter(RID p_particles, RID p_subemitter_particles) {
+}
+
+void RasterizerStorageOpenGL::particles_set_view_axis(RID p_particles, const Vector3 &p_axis, const Vector3 &p_up_axis) {
+}
+
+void RasterizerStorageOpenGL::particles_set_collision_base_size(RID p_particles, real_t p_size) {
+}
+
+void RasterizerStorageOpenGL::particles_set_transform_align(RID p_particles, RS::ParticlesTransformAlign p_transform_align) {
+}
+
+void RasterizerStorageOpenGL::particles_set_trails(RID p_particles, bool p_enable, double p_length) {
+}
+
+void RasterizerStorageOpenGL::particles_set_trail_bind_poses(RID p_particles, const Vector<Transform3D> &p_bind_poses) {
+}
+
+void RasterizerStorageOpenGL::particles_restart(RID p_particles) {
+}
+
+void RasterizerStorageOpenGL::particles_set_draw_order(RID p_particles, RS::ParticlesDrawOrder p_order) {
+}
+
+void RasterizerStorageOpenGL::particles_set_draw_passes(RID p_particles, int p_count) {
+}
+
+void RasterizerStorageOpenGL::particles_set_draw_pass_mesh(RID p_particles, int p_pass, RID p_mesh) {
+}
+
+void RasterizerStorageOpenGL::particles_request_process(RID p_particles) {
+}
+
+AABB RasterizerStorageOpenGL::particles_get_current_aabb(RID p_particles) {
+	return AABB();
+}
+
+AABB RasterizerStorageOpenGL::particles_get_aabb(RID p_particles) const {
+	return AABB();
+}
+
+void RasterizerStorageOpenGL::particles_set_emission_transform(RID p_particles, const Transform3D &p_transform) {
+}
+
+bool RasterizerStorageOpenGL::particles_get_emitting(RID p_particles) {
+	return false;
+}
+
+int RasterizerStorageOpenGL::particles_get_draw_passes(RID p_particles) const {
+	return 0;
+}
+
+RID RasterizerStorageOpenGL::particles_get_draw_pass_mesh(RID p_particles, int p_pass) const {
+	return RID();
+}
+
+void RasterizerStorageOpenGL::particles_add_collision(RID p_particles, RID p_instance) {
+}
+
+void RasterizerStorageOpenGL::particles_remove_collision(RID p_particles, RID p_instance) {
+}
+
+void RasterizerStorageOpenGL::particles_set_canvas_sdf_collision(RID p_particles, bool p_enable, const Transform2D &p_xform, const Rect2 &p_to_screen, RID p_texture) {
+}
+
+void RasterizerStorageOpenGL::update_particles() {
+}
+
+/* PARTICLES COLLISION */
+
+RID RasterizerStorageOpenGL::particles_collision_allocate() {
+	return RID();
+}
+
+void RasterizerStorageOpenGL::particles_collision_initialize(RID p_rid) {
+}
+
+void RasterizerStorageOpenGL::particles_collision_set_collision_type(RID p_particles_collision, RS::ParticlesCollisionType p_type) {
+}
+
+void RasterizerStorageOpenGL::particles_collision_set_cull_mask(RID p_particles_collision, uint32_t p_cull_mask) {
+}
+
+void RasterizerStorageOpenGL::particles_collision_set_sphere_radius(RID p_particles_collision, real_t p_radius) {
+}
+
+void RasterizerStorageOpenGL::particles_collision_set_box_extents(RID p_particles_collision, const Vector3 &p_extents) {
+}
+
+void RasterizerStorageOpenGL::particles_collision_set_attractor_strength(RID p_particles_collision, real_t p_strength) {
+}
+
+void RasterizerStorageOpenGL::particles_collision_set_attractor_directionality(RID p_particles_collision, real_t p_directionality) {
+}
+
+void RasterizerStorageOpenGL::particles_collision_set_attractor_attenuation(RID p_particles_collision, real_t p_curve) {
+}
+
+void RasterizerStorageOpenGL::particles_collision_set_field_texture(RID p_particles_collision, RID p_texture) {
+}
+
+void RasterizerStorageOpenGL::particles_collision_height_field_update(RID p_particles_collision) {
+}
+
+void RasterizerStorageOpenGL::particles_collision_set_height_field_resolution(RID p_particles_collision, RS::ParticlesCollisionHeightfieldResolution p_resolution) {
+}
+
+AABB RasterizerStorageOpenGL::particles_collision_get_aabb(RID p_particles_collision) const {
+	return AABB();
+}
+
+bool RasterizerStorageOpenGL::particles_collision_is_heightfield(RID p_particles_collision) const {
+	return false;
+}
+
+RID RasterizerStorageOpenGL::particles_collision_get_heightfield_framebuffer(RID p_particles_collision) const {
+	return RID();
+}
+
+RID RasterizerStorageOpenGL::particles_collision_instance_create(RID p_collision) {
+	return RID();
+}
+
+void RasterizerStorageOpenGL::particles_collision_instance_set_transform(RID p_collision_instance, const Transform3D &p_transform) {
+}
+
+void RasterizerStorageOpenGL::particles_collision_instance_set_active(RID p_collision_instance, bool p_active) {
+}
+
+/* VISIBILITY NOTIFIER */
+RID RasterizerStorageOpenGL::visibility_notifier_allocate() {
+	return RID();
+}
+
+void RasterizerStorageOpenGL::visibility_notifier_initialize(RID p_notifier) {
+}
+
+void RasterizerStorageOpenGL::visibility_notifier_set_aabb(RID p_notifier, const AABB &p_aabb) {
+}
+
+void RasterizerStorageOpenGL::visibility_notifier_set_callbacks(RID p_notifier, const Callable &p_enter_callbable, const Callable &p_exit_callable) {
+}
+
+AABB RasterizerStorageOpenGL::visibility_notifier_get_aabb(RID p_notifier) const {
+	return AABB();
+}
+
+void RasterizerStorageOpenGL::visibility_notifier_call(RID p_notifier, bool p_enter, bool p_deferred) {
+}
+
+/* GLOBAL VARIABLES */
+
+void RasterizerStorageOpenGL::global_variable_add(const StringName &p_name, RS::GlobalVariableType p_type, const Variant &p_value) {
+}
+
+void RasterizerStorageOpenGL::global_variable_remove(const StringName &p_name) {
+}
+
+Vector<StringName> RasterizerStorageOpenGL::global_variable_get_list() const {
+	return Vector<StringName>();
+}
+
+void RasterizerStorageOpenGL::global_variable_set(const StringName &p_name, const Variant &p_value) {
+}
+
+void RasterizerStorageOpenGL::global_variable_set_override(const StringName &p_name, const Variant &p_value) {
+}
+
+Variant RasterizerStorageOpenGL::global_variable_get(const StringName &p_name) const {
+	return Variant();
+}
+
+RS::GlobalVariableType RasterizerStorageOpenGL::global_variable_get_type(const StringName &p_name) const {
+	return RS::GLOBAL_VAR_TYPE_MAX;
+}
+
+void RasterizerStorageOpenGL::global_variables_load_settings(bool p_load_textures) {
+}
+
+void RasterizerStorageOpenGL::global_variables_clear() {
+}
+
+int32_t RasterizerStorageOpenGL::global_variables_instance_allocate(RID p_instance) {
+	return 0;
+}
+
+void RasterizerStorageOpenGL::global_variables_instance_free(RID p_instance) {
+}
+
+void RasterizerStorageOpenGL::global_variables_instance_update(RID p_instance, int p_index, const Variant &p_value) {
+}
+
+bool RasterizerStorageOpenGL::particles_is_inactive(RID p_particles) const {
+	return false;
+}
+
 /* RENDER TARGET */
 
 void RasterizerStorageOpenGL::_set_current_render_target(RID p_render_target) {
@@ -3054,6 +3937,16 @@ void RasterizerStorageOpenGL::render_target_do_clear_request(RID p_render_target
 	*/
 }
 
+void RasterizerStorageOpenGL::render_target_set_sdf_size_and_scale(RID p_render_target, RS::ViewportSDFOversize p_size, RS::ViewportSDFScale p_scale) {
+}
+
+Rect2i RasterizerStorageOpenGL::render_target_get_sdf_rect(RID p_render_target) const {
+	return Rect2i();
+}
+
+void RasterizerStorageOpenGL::render_target_mark_sdf_enabled(RID p_render_target, bool p_enabled) {
+}
+
 /* CANVAS SHADOW */
 
 RID RasterizerStorageOpenGL::canvas_light_shadow_buffer_create(int p_width) {
@@ -3905,6 +4798,13 @@ void RasterizerStorageOpenGL::finalize() {
 void RasterizerStorageOpenGL::_copy_screen() {
 	bind_quad_array();
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+}
+
+void RasterizerStorageOpenGL::update_memory_info() {
+}
+
+uint64_t RasterizerStorageOpenGL::get_rendering_info(RS::RenderingInfo p_info) {
+	return 0;
 }
 
 void RasterizerStorageOpenGL::update_dirty_resources() {

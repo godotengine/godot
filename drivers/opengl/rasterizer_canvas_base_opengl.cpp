@@ -52,6 +52,45 @@ void RasterizerCanvasBaseOpenGL::light_internal_update(RID p_rid, Light *p_light
 void RasterizerCanvasBaseOpenGL::light_internal_free(RID p_rid) {
 }
 
+RID RasterizerCanvasBaseOpenGL::light_create() {
+	return RID();
+}
+
+void RasterizerCanvasBaseOpenGL::light_set_texture(RID p_rid, RID p_texture) {
+}
+
+void RasterizerCanvasBaseOpenGL::light_set_use_shadow(RID p_rid, bool p_enable) {
+}
+
+void RasterizerCanvasBaseOpenGL::light_update_shadow(RID p_rid, int p_shadow_index, const Transform2D &p_light_xform, int p_light_mask, float p_near, float p_far, LightOccluderInstance *p_occluders) {
+}
+
+void RasterizerCanvasBaseOpenGL::light_update_directional_shadow(RID p_rid, int p_shadow_index, const Transform2D &p_light_xform, int p_light_mask, float p_cull_distance, const Rect2 &p_clip_rect, LightOccluderInstance *p_occluders) {
+}
+
+void RasterizerCanvasBaseOpenGL::render_sdf(RID p_render_target, LightOccluderInstance *p_occluders) {
+}
+
+RID RasterizerCanvasBaseOpenGL::occluder_polygon_create() {
+	return RID();
+}
+
+void RasterizerCanvasBaseOpenGL::occluder_polygon_set_shape(RID p_occluder, const Vector<Vector2> &p_points, bool p_closed) {
+}
+
+void RasterizerCanvasBaseOpenGL::occluder_polygon_set_cull_mode(RID p_occluder, RS::CanvasOccluderPolygonCullMode p_mode) {
+}
+
+void RasterizerCanvasBaseOpenGL::set_shadow_texture_size(int p_size) {
+}
+
+bool RasterizerCanvasBaseOpenGL::free(RID p_rid) {
+	return true;
+}
+
+void RasterizerCanvasBaseOpenGL::update() {
+}
+
 void RasterizerCanvasBaseOpenGL::canvas_begin() {
 	state.using_transparent_rt = false;
 

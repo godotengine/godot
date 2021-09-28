@@ -35,17 +35,17 @@
 #ifdef OPENGL_BACKEND_ENABLED
 
 #include "drivers/opengl/rasterizer_array.h"
-#include "drivers/opengl/rasterizer_common_stubs.h"
 #include "drivers/opengl/rasterizer_storage_common.h"
 #include "rasterizer_scene_opengl.h"
 #include "rasterizer_storage_opengl.h"
+#include "servers/rendering/renderer_canvas_render.h"
 #include "servers/rendering/renderer_compositor.h"
 
 #include "shaders/canvas.glsl.gen.h"
 #include "shaders/canvas_shadow.glsl.gen.h"
 #include "shaders/lens_distorted.glsl.gen.h"
 
-class RasterizerCanvasBaseOpenGL : public StubsCanvas {
+class RasterizerCanvasBaseOpenGL : public RendererCanvasRender {
 public:
 	enum {
 		INSTANCE_ATTRIB_BASE = 8,
@@ -148,7 +148,25 @@ public:
 
 	virtual void reset_canvas();
 	virtual void canvas_light_shadow_buffer_update(RID p_buffer, const Transform2D &p_light_xform, int p_light_mask, float p_near, float p_far, LightOccluderInstance *p_occluders, CameraMatrix *p_xform_cache);
+
+	// Copied from RasterizerCanvasDummy:
 	virtual void canvas_debug_viewport_shadows(Light *p_lights_with_shadow) override;
+
+	RID light_create() override;
+	void light_set_texture(RID p_rid, RID p_texture) override;
+	void light_set_use_shadow(RID p_rid, bool p_enable) override;
+	void light_update_shadow(RID p_rid, int p_shadow_index, const Transform2D &p_light_xform, int p_light_mask, float p_near, float p_far, LightOccluderInstance *p_occluders) override;
+	void light_update_directional_shadow(RID p_rid, int p_shadow_index, const Transform2D &p_light_xform, int p_light_mask, float p_cull_distance, const Rect2 &p_clip_rect, LightOccluderInstance *p_occluders) override;
+
+	void render_sdf(RID p_render_target, LightOccluderInstance *p_occluders) override;
+	RID occluder_polygon_create() override;
+	void occluder_polygon_set_shape(RID p_occluder, const Vector<Vector2> &p_points, bool p_closed) override;
+	void occluder_polygon_set_cull_mode(RID p_occluder, RS::CanvasOccluderPolygonCullMode p_mode) override;
+	void set_shadow_texture_size(int p_size) override;
+
+	bool free(RID p_rid) override;
+	void update() override;
+	// End copied from RasterizerCanvasDummy.
 
 	RasterizerStorageOpenGL::Texture *_bind_canvas_texture(const RID &p_texture, const RID &p_normal_map);
 	void _set_texture_rect_mode(bool p_texture_rect, bool p_light_angle = false, bool p_modulate = false, bool p_large_vertex = false);
