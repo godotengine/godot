@@ -105,7 +105,7 @@ private:
 	Vector3 linear_velocity;
 	Vector3 angular_velocity;
 
-	bool sync_to_physics = false;
+	bool sync_to_physics = true;
 
 	Transform3D last_valid_transform;
 
