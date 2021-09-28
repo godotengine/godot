@@ -334,7 +334,7 @@ private:
 	int max_slides = 4;
 	int platform_layer;
 	real_t floor_max_angle = Math::deg2rad((real_t)45.0);
-	real_t floor_snap_length = 0;
+	real_t floor_snap_length = 1;
 	real_t free_mode_min_slide_angle = Math::deg2rad((real_t)15.0);
 	Vector2 up_direction = Vector2(0.0, -1.0);
 	uint32_t moving_platform_floor_layers = UINT32_MAX;

@@ -1146,8 +1146,7 @@ void CharacterBody3D::_move_and_slide_grounded(double p_delta, bool p_was_on_flo
 
 			if (collision_state.floor && floor_stop_on_slope && (linear_velocity.normalized() + up_direction).length() < 0.01) {
 				Transform3D gt = get_global_transform();
-				real_t travel_total = result.travel.length();
-				if (travel_total <= margin + CMP_EPSILON) {
+				if (result.travel.length() <= margin + CMP_EPSILON) {
 					gt.origin -= result.travel;
 				}
 				set_global_transform(gt);
@@ -1186,7 +1185,7 @@ void CharacterBody3D::_move_and_slide_grounded(double p_delta, bool p_was_on_flo
 							Transform3D gt = get_global_transform();
 							real_t travel_total = result.travel.length();
 							real_t cancel_dist_max = MIN(0.1, margin * 20);
-							if (travel_total < margin + CMP_EPSILON) {
+							if (travel_total <= margin + CMP_EPSILON) {
 								gt.origin -= result.travel;
 							} else if (travel_total < cancel_dist_max) { // If the movement is large the body can be prevented from reaching the walls.
 								gt.origin -= result.travel.slide(up_direction);
@@ -1377,7 +1376,9 @@ void CharacterBody3D::_snap_on_floor(bool was_on_floor, bool vel_dir_facing_up) 
 		return;
 	}
 
+	// Snap by at least collision margin to keep floor state consistent.
 	real_t length = MAX(floor_snap_length, margin);
+
 	Transform3D gt = get_global_transform();
 	PhysicsServer3D::MotionResult result;
 	if (move_and_collide(-up_direction * length, result, margin, true, 4, false, true)) {
@@ -1403,12 +1404,15 @@ void CharacterBody3D::_snap_on_floor(bool was_on_floor, bool vel_dir_facing_up) 
 }
 
 bool CharacterBody3D::_on_floor_if_snapped(bool was_on_floor, bool vel_dir_facing_up) {
-	if (Math::is_zero_approx(floor_snap_length) || up_direction == Vector3() || collision_state.floor || !was_on_floor || vel_dir_facing_up) {
+	if (up_direction == Vector3() || collision_state.floor || !was_on_floor || vel_dir_facing_up) {
 		return false;
 	}
 
+	// Snap by at least collision margin to keep floor state consistent.
+	real_t length = MAX(floor_snap_length, margin);
+
 	PhysicsServer3D::MotionResult result;
-	if (move_and_collide(-up_direction * floor_snap_length, result, margin, true, 4, false, true)) {
+	if (move_and_collide(-up_direction * length, result, margin, true, 4, false, true)) {
 		CollisionState result_state;
 		// Don't apply direction for any type.
 		_set_collision_direction(result, result_state, CollisionState());

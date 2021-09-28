@@ -96,7 +96,6 @@ private:
 	real_t contact_max_separation = 0.05;
 	real_t contact_max_allowed_penetration = 0.01;
 	real_t constraint_bias = 0.01;
-	real_t test_motion_min_contact_depth = 0.00001;
 
 	enum {
 		INTERSECTION_QUERY_MAX = 2048

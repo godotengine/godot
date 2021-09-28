@@ -1090,9 +1090,7 @@ void CharacterBody2D::_move_and_slide_grounded(double p_delta, bool p_was_on_flo
 
 			if (on_floor && floor_stop_on_slope && (linear_velocity.normalized() + up_direction).length() < 0.01) {
 				Transform2D gt = get_global_transform();
-				if (result.travel.length() > margin) {
-					gt.elements[2] -= result.travel.slide(up_direction);
-				} else {
+				if (result.travel.length() <= margin + CMP_EPSILON) {
 					gt.elements[2] -= result.travel;
 				}
 				set_global_transform(gt);
@@ -1111,7 +1109,7 @@ void CharacterBody2D::_move_and_slide_grounded(double p_delta, bool p_was_on_flo
 				// Avoid to move forward on a wall if floor_block_on_wall is true.
 				if (p_was_on_floor && !on_floor && !vel_dir_facing_up) {
 					// If the movement is large the body can be prevented from reaching the walls.
-					if (result.travel.length() <= margin) {
+					if (result.travel.length() <= margin + CMP_EPSILON) {
 						// Cancels the motion.
 						Transform2D gt = get_global_transform();
 						gt.elements[2] -= result.travel;
@@ -1240,13 +1238,16 @@ void CharacterBody2D::_move_and_slide_free(double p_delta) {
 }
 
 void CharacterBody2D::_snap_on_floor(bool was_on_floor, bool vel_dir_facing_up) {
-	if (Math::is_equal_approx(floor_snap_length, 0) || on_floor || !was_on_floor || vel_dir_facing_up) {
+	if (on_floor || !was_on_floor || vel_dir_facing_up) {
 		return;
 	}
 
+	// Snap by at least collision margin to keep floor state consistent.
+	real_t length = MAX(floor_snap_length, margin);
+
 	Transform2D gt = get_global_transform();
 	PhysicsServer2D::MotionResult result;
-	if (move_and_collide(up_direction * -floor_snap_length, result, margin, true, false, true)) {
+	if (move_and_collide(-up_direction * length, result, margin, true, false, true)) {
 		bool apply = true;
 		if (result.get_angle(up_direction) <= floor_max_angle + FLOOR_ANGLE_THRESHOLD) {
 			on_floor = true;
@@ -1274,12 +1275,15 @@ void CharacterBody2D::_snap_on_floor(bool was_on_floor, bool vel_dir_facing_up) 
 }
 
 bool CharacterBody2D::_on_floor_if_snapped(bool was_on_floor, bool vel_dir_facing_up) {
-	if (Math::is_equal_approx(floor_snap_length, 0) || up_direction == Vector2() || on_floor || !was_on_floor || vel_dir_facing_up) {
+	if (up_direction == Vector2() || on_floor || !was_on_floor || vel_dir_facing_up) {
 		return false;
 	}
 
+	// Snap by at least collision margin to keep floor state consistent.
+	real_t length = MAX(floor_snap_length, margin);
+
 	PhysicsServer2D::MotionResult result;
-	if (move_and_collide(up_direction * -floor_snap_length, result, margin, true, false, true)) {
+	if (move_and_collide(-up_direction * length, result, margin, true, false, true)) {
 		if (result.get_angle(up_direction) <= floor_max_angle + FLOOR_ANGLE_THRESHOLD) {
 			return true;
 		}
@@ -1568,7 +1572,7 @@ void CharacterBody2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "floor_constant_speed"), "set_floor_constant_speed_enabled", "is_floor_constant_speed_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "floor_block_on_wall"), "set_floor_block_on_wall_enabled", "is_floor_block_on_wall_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "floor_max_angle", PROPERTY_HINT_RANGE, "0,180,0.1,radians"), "set_floor_max_angle", "get_floor_max_angle");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "floor_snap_length", PROPERTY_HINT_RANGE, "0,1000,0.1"), "set_floor_snap_length", "get_floor_snap_length");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "floor_snap_length", PROPERTY_HINT_RANGE, "0,32,0.1,or_greater"), "set_floor_snap_length", "get_floor_snap_length");
 	ADD_GROUP("Moving platform", "moving_platform");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "moving_platform_floor_layers", PROPERTY_HINT_LAYERS_2D_PHYSICS), "set_moving_platform_floor_layers", "get_moving_platform_floor_layers");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "moving_platform_wall_layers", PROPERTY_HINT_LAYERS_2D_PHYSICS), "set_moving_platform_wall_layers", "get_moving_platform_wall_layers");
