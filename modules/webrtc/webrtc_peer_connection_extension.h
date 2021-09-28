@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  packet_peer_gdnative.h                                               */
+/*  webrtc_peer_connection_extension.h                                   */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,32 +28,47 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef PACKET_PEER_GDNATIVE_H
-#define PACKET_PEER_GDNATIVE_H
+#ifndef WEBRTC_PEER_CONNECTION_EXTENSION_H
+#define WEBRTC_PEER_CONNECTION_EXTENSION_H
 
-#include "core/io/packet_peer.h"
-#include "modules/gdnative/gdnative.h"
-#include "modules/gdnative/include/net/godot_net.h"
+#include "webrtc_peer_connection.h"
 
-class PacketPeerGDNative : public PacketPeer {
-	GDCLASS(PacketPeerGDNative, PacketPeer);
+#include "core/object/gdvirtual.gen.inc"
+#include "core/object/script_language.h"
+#include "core/variant/native_ptr.h"
+
+class WebRTCPeerConnectionExtension : public WebRTCPeerConnection {
+	GDCLASS(WebRTCPeerConnectionExtension, WebRTCPeerConnection);
 
 protected:
 	static void _bind_methods();
-	const godot_net_packet_peer *interface;
 
 public:
-	PacketPeerGDNative();
-	~PacketPeerGDNative();
+	void make_default();
 
-	/* Sets the interface implementation from GDNative */
-	void set_native_packet_peer(const godot_net_packet_peer *p_impl);
+	virtual ConnectionState get_connection_state() const override;
 
-	/* Specific to PacketPeer */
-	virtual Error get_packet(const uint8_t **r_buffer, int &r_buffer_size) override;
-	virtual Error put_packet(const uint8_t *p_buffer, int p_buffer_size) override;
-	virtual int get_max_packet_size() const override;
-	virtual int get_available_packet_count() const override;
+	virtual Error initialize(Dictionary p_config = Dictionary()) override;
+	virtual Ref<WebRTCDataChannel> create_data_channel(String p_label, Dictionary p_options = Dictionary()) override;
+	virtual Error create_offer() override;
+	virtual Error set_remote_description(String type, String sdp) override;
+	virtual Error set_local_description(String type, String sdp) override;
+	virtual Error add_ice_candidate(String p_sdp_mid_name, int p_sdp_mline_index, String p_sdp_name) override;
+	virtual Error poll() override;
+	virtual void close() override;
+
+	/** GDExtension **/
+	GDVIRTUAL0RC(int, _get_connection_state);
+	GDVIRTUAL1R(int, _initialize, Dictionary);
+	GDVIRTUAL2R(Object *, _create_data_channel, String, Dictionary);
+	GDVIRTUAL0R(int, _create_offer);
+	GDVIRTUAL2R(int, _set_remote_description, String, String);
+	GDVIRTUAL2R(int, _set_local_description, String, String);
+	GDVIRTUAL3R(int, _add_ice_candidate, String, int, String);
+	GDVIRTUAL0R(int, _poll);
+	GDVIRTUAL0(_close);
+
+	WebRTCPeerConnectionExtension() {}
 };
 
-#endif // PACKET_PEER_GDNATIVE_H
+#endif // WEBRTC_PEER_CONNECTION_EXTENSION_H

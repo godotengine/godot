@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  multiplayer_peer_gdnative.h                                          */
+/*  webrtc_data_channel_extension.h                                      */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,52 +28,71 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef MULTIPLAYER_PEER_GDNATIVE_H
-#define MULTIPLAYER_PEER_GDNATIVE_H
+#ifndef WEBRTC_DATA_CHANNEL_EXTENSION_H
+#define WEBRTC_DATA_CHANNEL_EXTENSION_H
 
-#include "core/multiplayer/multiplayer_peer.h"
-#include "modules/gdnative/gdnative.h"
-#include "modules/gdnative/include/net/godot_net.h"
+#include "webrtc_data_channel.h"
 
-class MultiplayerPeerGDNative : public MultiplayerPeer {
-	GDCLASS(MultiplayerPeerGDNative, MultiplayerPeer);
+#include "core/object/gdvirtual.gen.inc"
+#include "core/object/script_language.h"
+#include "core/variant/native_ptr.h"
+
+class WebRTCDataChannelExtension : public WebRTCDataChannel {
+	GDCLASS(WebRTCDataChannelExtension, WebRTCDataChannel);
 
 protected:
 	static void _bind_methods();
-	const godot_net_multiplayer_peer *interface;
 
 public:
-	MultiplayerPeerGDNative();
-	~MultiplayerPeerGDNative();
+	virtual void set_write_mode(WriteMode mode) override;
+	virtual WriteMode get_write_mode() const override;
+	virtual bool was_string_packet() const override;
 
-	/* Sets the interface implementation from GDNative */
-	void set_native_multiplayer_peer(const godot_net_multiplayer_peer *p_impl);
+	virtual ChannelState get_ready_state() const override;
+	virtual String get_label() const override;
+	virtual bool is_ordered() const override;
+	virtual int get_id() const override;
+	virtual int get_max_packet_life_time() const override;
+	virtual int get_max_retransmits() const override;
+	virtual String get_protocol() const override;
+	virtual bool is_negotiated() const override;
+	virtual int get_buffered_amount() const override;
 
-	/* Specific to PacketPeer */
-	virtual Error get_packet(const uint8_t **r_buffer, int &r_buffer_size) override;
-	virtual Error put_packet(const uint8_t *p_buffer, int p_buffer_size) override;
-	virtual int get_max_packet_size() const override;
+	virtual Error poll() override;
+	virtual void close() override;
+
+	/** Inherited from PacketPeer: **/
 	virtual int get_available_packet_count() const override;
+	virtual Error get_packet(const uint8_t **r_buffer, int &r_buffer_size) override; ///< buffer is GONE after next get_packet
+	virtual Error put_packet(const uint8_t *p_buffer, int p_buffer_size) override;
 
-	/* Specific to MultiplayerPeer */
-	virtual void set_transfer_channel(int p_channel) override;
-	virtual int get_transfer_channel() const override;
-	virtual void set_transfer_mode(Multiplayer::TransferMode p_mode) override;
-	virtual Multiplayer::TransferMode get_transfer_mode() const override;
-	virtual void set_target_peer(int p_peer_id) override;
+	virtual int get_max_packet_size() const override;
 
-	virtual int get_packet_peer() const override;
+	/** GDExtension **/
+	GDVIRTUAL0RC(int, _get_available_packet_count);
+	GDVIRTUAL2R(int, _get_packet, GDNativeConstPtr<const uint8_t *>, GDNativePtr<int>);
+	GDVIRTUAL2R(int, _put_packet, GDNativeConstPtr<const uint8_t>, int);
+	GDVIRTUAL0RC(int, _get_max_packet_size);
 
-	virtual bool is_server() const override;
+	GDVIRTUAL0R(int, _poll);
+	GDVIRTUAL0(_close);
 
-	virtual void poll() override;
+	GDVIRTUAL1(_set_write_mode, int);
+	GDVIRTUAL0RC(int, _get_write_mode);
 
-	virtual int get_unique_id() const override;
+	GDVIRTUAL0RC(bool, _was_string_packet);
 
-	virtual void set_refuse_new_connections(bool p_enable) override;
-	virtual bool is_refusing_new_connections() const override;
+	GDVIRTUAL0RC(int, _get_ready_state);
+	GDVIRTUAL0RC(String, _get_label);
+	GDVIRTUAL0RC(bool, _is_ordered);
+	GDVIRTUAL0RC(int, _get_id);
+	GDVIRTUAL0RC(int, _get_max_packet_life_time);
+	GDVIRTUAL0RC(int, _get_max_retransmits);
+	GDVIRTUAL0RC(String, _get_protocol);
+	GDVIRTUAL0RC(bool, _is_negotiated);
+	GDVIRTUAL0RC(int, _get_buffered_amount);
 
-	virtual ConnectionStatus get_connection_status() const override;
+	WebRTCDataChannelExtension() {}
 };
 
-#endif // MULTIPLAYER_PEER_GDNATIVE_H
+#endif // WEBRTC_DATA_CHANNEL_EXTENSION_H

@@ -105,23 +105,6 @@ Error WebSocketMultiplayerPeer::put_packet(const uint8_t *p_buffer, int p_buffer
 //
 // MultiplayerPeer
 //
-void WebSocketMultiplayerPeer::set_transfer_channel(int p_channel) {
-	// Websocket does not have channels.
-}
-
-int WebSocketMultiplayerPeer::get_transfer_channel() const {
-	return 0;
-}
-
-void WebSocketMultiplayerPeer::set_transfer_mode(Multiplayer::TransferMode p_mode) {
-	// Websocket uses TCP, reliable
-}
-
-Multiplayer::TransferMode WebSocketMultiplayerPeer::get_transfer_mode() const {
-	// Websocket uses TCP, reliable
-	return Multiplayer::TRANSFER_MODE_RELIABLE;
-}
-
 void WebSocketMultiplayerPeer::set_target_peer(int p_target_peer) {
 	_target_peer = p_target_peer;
 }
@@ -135,14 +118,6 @@ int WebSocketMultiplayerPeer::get_packet_peer() const {
 
 int WebSocketMultiplayerPeer::get_unique_id() const {
 	return _peer_id;
-}
-
-void WebSocketMultiplayerPeer::set_refuse_new_connections(bool p_enable) {
-	_refusing = p_enable;
-}
-
-bool WebSocketMultiplayerPeer::is_refusing_new_connections() const {
-	return _refusing;
 }
 
 void WebSocketMultiplayerPeer::_send_sys(Ref<WebSocketPeer> p_peer, uint8_t p_type, int32_t p_peer_id) {

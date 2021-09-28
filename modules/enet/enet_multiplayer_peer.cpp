@@ -33,22 +33,6 @@
 #include "core/io/marshalls.h"
 #include "core/os/os.h"
 
-void ENetMultiplayerPeer::set_transfer_channel(int p_channel) {
-	transfer_channel = p_channel;
-}
-
-int ENetMultiplayerPeer::get_transfer_channel() const {
-	return transfer_channel;
-}
-
-void ENetMultiplayerPeer::set_transfer_mode(Multiplayer::TransferMode p_mode) {
-	transfer_mode = p_mode;
-}
-
-Multiplayer::TransferMode ENetMultiplayerPeer::get_transfer_mode() const {
-	return transfer_mode;
-}
-
 void ENetMultiplayerPeer::set_target_peer(int p_peer) {
 	target_peer = p_peer;
 }
@@ -62,6 +46,7 @@ int ENetMultiplayerPeer::get_packet_peer() const {
 
 Error ENetMultiplayerPeer::create_server(int p_port, int p_max_clients, int p_max_channels, int p_in_bandwidth, int p_out_bandwidth) {
 	ERR_FAIL_COND_V_MSG(_is_active(), ERR_ALREADY_IN_USE, "The multiplayer instance is already active.");
+	set_refuse_new_connections(false);
 	Ref<ENetConnection> host;
 	host.instantiate();
 	Error err = host->create_host_bound(bind_ip, p_port, p_max_clients, 0, p_max_channels > 0 ? p_max_channels + SYSCH_MAX : 0, p_out_bandwidth);
@@ -70,7 +55,6 @@ Error ENetMultiplayerPeer::create_server(int p_port, int p_max_clients, int p_ma
 	}
 
 	active_mode = MODE_SERVER;
-	refuse_connections = false;
 	unique_id = 1;
 	connection_status = CONNECTION_CONNECTED;
 	hosts[0] = host;
@@ -79,6 +63,7 @@ Error ENetMultiplayerPeer::create_server(int p_port, int p_max_clients, int p_ma
 
 Error ENetMultiplayerPeer::create_client(const String &p_address, int p_port, int p_channel_count, int p_in_bandwidth, int p_out_bandwidth, int p_local_port) {
 	ERR_FAIL_COND_V_MSG(_is_active(), ERR_ALREADY_IN_USE, "The multiplayer instance is already active.");
+	set_refuse_new_connections(false);
 	Ref<ENetConnection> host;
 	host.instantiate();
 	Error err;
@@ -102,7 +87,6 @@ Error ENetMultiplayerPeer::create_client(const String &p_address, int p_port, in
 	// Need to wait for CONNECT event.
 	connection_status = CONNECTION_CONNECTING;
 	active_mode = MODE_CLIENT;
-	refuse_connections = false;
 	peers[1] = peer;
 	hosts[0] = host;
 
@@ -113,7 +97,6 @@ Error ENetMultiplayerPeer::create_mesh(int p_id) {
 	ERR_FAIL_COND_V_MSG(p_id <= 0, ERR_INVALID_PARAMETER, "The unique ID must be greater then 0");
 	ERR_FAIL_COND_V_MSG(_is_active(), ERR_ALREADY_IN_USE, "The multiplayer instance is already active.");
 	active_mode = MODE_MESH;
-	refuse_connections = false;
 	unique_id = p_id;
 	connection_status = CONNECTION_CONNECTED;
 	return OK;
@@ -145,7 +128,7 @@ bool ENetMultiplayerPeer::_poll_server() {
 	}
 	switch (ret) {
 		case ENetConnection::EVENT_CONNECT: {
-			if (refuse_connections) {
+			if (is_refusing_new_connections()) {
 				event.peer->reset();
 				return false;
 			}
@@ -423,6 +406,7 @@ void ENetMultiplayerPeer::close_connection(uint32_t wait_usec) {
 	hosts.clear();
 	unique_id = 0;
 	connection_status = CONNECTION_DISCONNECTED;
+	set_refuse_new_connections(false);
 }
 
 int ENetMultiplayerPeer::get_available_packet_count() const {
@@ -451,10 +435,11 @@ Error ENetMultiplayerPeer::put_packet(const uint8_t *p_buffer, int p_buffer_size
 
 	int packet_flags = 0;
 	int channel = SYSCH_RELIABLE;
+	int transfer_channel = get_transfer_channel();
 	if (transfer_channel > 0) {
 		channel = SYSCH_MAX + transfer_channel - 1;
 	} else {
-		switch (transfer_mode) {
+		switch (get_transfer_mode()) {
 			case Multiplayer::TRANSFER_MODE_UNRELIABLE: {
 				packet_flags = ENET_PACKET_FLAG_UNSEQUENCED;
 				channel = SYSCH_UNRELIABLE;
@@ -545,19 +530,15 @@ int ENetMultiplayerPeer::get_unique_id() const {
 	return unique_id;
 }
 
-void ENetMultiplayerPeer::set_refuse_new_connections(bool p_enable) {
-	refuse_connections = p_enable;
+void ENetMultiplayerPeer::set_refuse_new_connections(bool p_enabled) {
 #ifdef GODOT_ENET
 	if (_is_active()) {
 		for (KeyValue<int, Ref<ENetConnection>> &E : hosts) {
-			E.value->refuse_new_connections(p_enable);
+			E.value->refuse_new_connections(p_enabled);
 		}
 	}
 #endif
-}
-
-bool ENetMultiplayerPeer::is_refusing_new_connections() const {
-	return refuse_connections;
+	MultiplayerPeer::set_refuse_new_connections(p_enabled);
 }
 
 void ENetMultiplayerPeer::set_server_relay_enabled(bool p_enabled) {
