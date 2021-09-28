@@ -95,6 +95,9 @@ private:
 		bool expand_right = false;
 		Color icon_color = Color(1, 1, 1);
 
+		Size2i cached_minimum_size;
+		bool cached_minimum_size_dirty = true;
+
 		TextAlign text_align = ALIGN_LEFT;
 
 		Variant meta;
@@ -129,9 +132,6 @@ private:
 	bool collapsed = false; // won't show children
 	bool disable_folding = false;
 	int custom_min_height = 0;
-
-	Size2i cached_minimum_size;
-	bool cached_minimum_size_dirty = true;
 
 	TreeItem *parent = nullptr; // parent item
 	TreeItem *prev = nullptr; // previous in list
