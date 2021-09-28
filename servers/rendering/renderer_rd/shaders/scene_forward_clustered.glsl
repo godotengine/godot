@@ -524,7 +524,7 @@ vec4 fog_process(vec3 vertex) {
 		}
 	}
 
-	float fog_amount = 1.0 - exp(min(0.0, vertex.z * scene_data.fog_density));
+	float fog_amount = 1.0 - exp(min(0.0, -length(vertex) * scene_data.fog_density));
 
 	if (abs(scene_data.fog_height_density) > 0.001) {
 		float y = (scene_data.camera_matrix * vec4(vertex, 1.0)).y;
