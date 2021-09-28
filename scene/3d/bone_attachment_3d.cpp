@@ -110,7 +110,7 @@ TypedArray<String> BoneAttachment3D::get_configuration_warnings() const {
 	} else {
 		Skeleton3D *parent = Object::cast_to<Skeleton3D>(get_parent());
 		if (!parent) {
-			warnings.append(TTR("Parent node is not a Skeleton3D node! Please use an extenral Skeleton3D if you intend to use the BoneAttachment3D without it being a child of a Skeleton3D node."));
+			warnings.append(TTR("Parent node is not a Skeleton3D node! Please use an external Skeleton3D if you intend to use the BoneAttachment3D without it being a child of a Skeleton3D node."));
 		}
 	}
 
