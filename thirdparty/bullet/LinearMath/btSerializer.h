@@ -479,9 +479,9 @@ public:
 			buffer[8] = 'V';
 		}
 
-		buffer[9] = '2';
-		buffer[10] = '8';
-		buffer[11] = '9';
+		buffer[9] = '3';
+		buffer[10] = '1';
+		buffer[11] = '7';
 	}
 
 	virtual void startSerialization()
@@ -499,7 +499,6 @@ public:
 		writeDNA();
 
 		//if we didn't pre-allocate a buffer, we need to create a contiguous buffer now
-		int mysize = 0;
 		if (!m_totalSize)
 		{
 			if (m_buffer)
@@ -511,14 +510,12 @@ public:
 			unsigned char* currentPtr = m_buffer;
 			writeHeader(m_buffer);
 			currentPtr += BT_HEADER_LENGTH;
-			mysize += BT_HEADER_LENGTH;
 			for (int i = 0; i < m_chunkPtrs.size(); i++)
 			{
 				int curLength = sizeof(btChunk) + m_chunkPtrs[i]->m_length;
 				memcpy(currentPtr, m_chunkPtrs[i], curLength);
 				btAlignedFree(m_chunkPtrs[i]);
 				currentPtr += curLength;
-				mysize += curLength;
 			}
 		}
 

@@ -8,13 +8,15 @@ readability.
 ## bullet
 
 - Upstream: https://github.com/bulletphysics/bullet3
-- Version: 2.89 (830f0a9565b1829a07e21e2f16be2aa9966bd28c, 2019)
+- Version: 3.17 (ebe1916b90acae8b13cd8c6b637d8327cdc64e94, 2021)
 - License: zlib
 
 Files extracted from upstream source:
 
-- src/* apart from CMakeLists.txt and premake4.lua files
-- LICENSE.txt
+- `src/*` apart from CMakeLists.txt and premake4.lua files
+- `LICENSE.txt`, and `VERSION` as `VERSION.txt`
+
+Includes a warning fix which should be upstreamed soon (see patch in `patches`).
 
 
 ## certs
