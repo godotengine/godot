@@ -871,6 +871,10 @@ void Translation::add_message(const StringName &p_src_text, const StringName &p_
 	translation_map[p_src_text] = p_xlated_text;
 }
 StringName Translation::get_message(const StringName &p_src_text) const {
+	if (get_script_instance()) {
+		return get_script_instance()->call("_get_message", p_src_text);
+	}
+
 	const Map<StringName, StringName>::Element *E = translation_map.find(p_src_text);
 	if (!E) {
 		return StringName();
@@ -903,6 +907,8 @@ void Translation::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_message_count"), &Translation::get_message_count);
 	ClassDB::bind_method(D_METHOD("_set_messages"), &Translation::_set_messages);
 	ClassDB::bind_method(D_METHOD("_get_messages"), &Translation::_get_messages);
+
+	BIND_VMETHOD(MethodInfo(Variant::STRING, "_get_message", PropertyInfo(Variant::STRING, "src_message")));
 
 	ADD_PROPERTY(PropertyInfo(Variant::POOL_STRING_ARRAY, "messages", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_messages", "_get_messages");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "locale"), "set_locale", "get_locale");
