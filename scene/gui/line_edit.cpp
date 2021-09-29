@@ -1919,8 +1919,6 @@ void LineEdit::_bind_methods() {
 }
 
 LineEdit::LineEdit() {
-	undo_stack_pos = nullptr;
-	_create_undo_state();
 	align = ALIGN_LEFT;
 	cached_width = 0;
 	cached_placeholder_width = 0;
@@ -1937,6 +1935,9 @@ LineEdit::LineEdit() {
 	clear_button_status.pressing_inside = false;
 	shortcut_keys_enabled = true;
 	selecting_enabled = true;
+
+	undo_stack_pos = nullptr;
+	_create_undo_state();
 
 	deselect();
 	set_focus_mode(FOCUS_ALL);
