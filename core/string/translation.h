@@ -32,6 +32,8 @@
 #define TRANSLATION_H
 
 #include "core/io/resource.h"
+#include "core/object/gdvirtual.gen.inc"
+#include "core/object/script_language.h"
 
 class Translation : public Resource {
 	GDCLASS(Translation, Resource);
@@ -47,6 +49,9 @@ class Translation : public Resource {
 
 protected:
 	static void _bind_methods();
+
+	GDVIRTUAL2RC(StringName, _get_message, StringName, StringName);
+	GDVIRTUAL4RC(StringName, _get_plural_message, StringName, StringName, int, StringName);
 
 public:
 	void set_locale(const String &p_locale);
