@@ -511,25 +511,26 @@
 			See [enum DisplayServer.VSyncMode] for possible values and how they affect the behavior of your application.
 			Depending on the platform and used renderer, the engine will fall back to [code]Enabled[/code], if the desired mode is not supported.
 		</member>
-		<member name="editor/node_naming/name_casing" type="int" setter="" getter="" default="0">
-			When creating node names automatically, set the type of casing in this project. This is mostly an editor setting.
+		<member name="editor_only/node_naming/name_casing" type="int" setter="" getter="" default="0">
+			When creating node names automatically, set the type of casing in this project. This is mostly an editor-only setting, although it [i]does[/i] affect the running project when nodes are set to have the same name at run-time.
 		</member>
-		<member name="editor/node_naming/name_num_separator" type="int" setter="" getter="" default="0">
-			What to use to separate node name from number. This is mostly an editor setting.
+		<member name="editor_only/node_naming/name_num_separator" type="int" setter="" getter="" default="0">
+			What to use to separate node name from number. This is mostly an editor-only setting, although it [i]does[/i] affect the running project when nodes are set to have the same name at run-time.
 		</member>
-		<member name="editor/run/main_run_args" type="String" setter="" getter="" default="&quot;&quot;">
+		<member name="editor_only/run/main_run_args" type="String" setter="" getter="" default="&quot;&quot;">
 			The command-line arguments to append to Godot's own command line when running the project. This doesn't affect the editor itself.
 			It is possible to make another executable run Godot by using the [code]%command%[/code] placeholder. The placeholder will be replaced with Godot's own command line. Program-specific arguments should be placed [i]before[/i] the placeholder, whereas Godot-specific arguments should be placed [i]after[/i] the placeholder.
 			For example, this can be used to force the project to run on the dedicated GPU in a NVIDIA Optimus system on Linux:
 			[codeblock]
 			prime-run %command%
 			[/codeblock]
+			[b]Note:[/b] This setting does not affect the exported project or when [url=https://docs.godotengine.org/en/latest/tutorials/editor/command_line_tutorial.html]running the project from the command line without going through the editor[/url].
 		</member>
-		<member name="editor/script/search_in_file_extensions" type="PackedStringArray" setter="" getter="" default="PackedStringArray(&quot;gd&quot;, &quot;gdshader&quot;)">
-			Text-based file extensions to include in the script editor's "Find in Files" feature. You can add e.g. [code]tscn[/code] if you wish to also parse your scene files, especially if you use built-in scripts which are serialized in the scene files.
+		<member name="editor_only/script/search_in_file_extensions" type="PackedStringArray" setter="" getter="" default="PackedStringArray(&quot;gd&quot;, &quot;gdshader&quot;)">
+			Text-based file extensions to include in the script editor's "Find in Files" feature. You can add e.g. [code]tscn[/code] if you wish to also parse your scene files, especially if you use built-in scripts which are serialized in the scene files. This setting only affects the editor.
 		</member>
-		<member name="editor/script/templates_search_path" type="String" setter="" getter="" default="&quot;res://script_templates&quot;">
-			Search path for project-specific script templates. Godot will search for script templates both in the editor-specific path and in this project-specific path.
+		<member name="editor_only/script/templates_search_path" type="String" setter="" getter="" default="&quot;res://script_templates&quot;">
+			Search path for project-specific script templates. Godot will search for script templates both in the editor-specific path and in this project-specific path. This setting only affects the editor.
 		</member>
 		<member name="gui/common/default_scroll_deadzone" type="int" setter="" getter="" default="0">
 			Default value for [member ScrollContainer.scroll_deadzone], which will be used for all [ScrollContainer]s unless overridden.

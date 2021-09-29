@@ -1988,7 +1988,7 @@ void EditorExportTextSceneToBinaryPlugin::_export_file(const String &p_path, con
 		return;
 	}
 
-	bool convert = GLOBAL_GET("editor/export/convert_text_resources_to_binary");
+	bool convert = GLOBAL_GET("editor_only/export/convert_text_resources_to_binary");
 	if (!convert) {
 		return;
 	}
@@ -2008,5 +2008,5 @@ void EditorExportTextSceneToBinaryPlugin::_export_file(const String &p_path, con
 }
 
 EditorExportTextSceneToBinaryPlugin::EditorExportTextSceneToBinaryPlugin() {
-	GLOBAL_DEF("editor/export/convert_text_resources_to_binary", false);
+	GLOBAL_DEF("editor_only/export/convert_text_resources_to_binary", false);
 }

@@ -1004,7 +1004,7 @@ void Node::_generate_serial_child_name(const Node *p_child, StringName &name) co
 
 		name = p_child->get_class();
 		// Adjust casing according to project setting. The current type name is expected to be in PascalCase.
-		switch (ProjectSettings::get_singleton()->get("editor/node_naming/name_casing").operator int()) {
+		switch (ProjectSettings::get_singleton()->get("editor_only/node_naming/name_casing").operator int()) {
 			case NAME_CASING_PASCAL_CASE:
 				break;
 			case NAME_CASING_CAMEL_CASE: {
@@ -2653,10 +2653,10 @@ void Node::unhandled_key_input(const Ref<InputEvent> &p_key_event) {
 }
 
 void Node::_bind_methods() {
-	GLOBAL_DEF("editor/node_naming/name_num_separator", 0);
-	ProjectSettings::get_singleton()->set_custom_property_info("editor/node_naming/name_num_separator", PropertyInfo(Variant::INT, "editor/node_naming/name_num_separator", PROPERTY_HINT_ENUM, "None,Space,Underscore,Dash"));
-	GLOBAL_DEF("editor/node_naming/name_casing", NAME_CASING_PASCAL_CASE);
-	ProjectSettings::get_singleton()->set_custom_property_info("editor/node_naming/name_casing", PropertyInfo(Variant::INT, "editor/node_naming/name_casing", PROPERTY_HINT_ENUM, "PascalCase,camelCase,snake_case"));
+	GLOBAL_DEF("editor_only/node_naming/name_num_separator", 0);
+	ProjectSettings::get_singleton()->set_custom_property_info("editor_only/node_naming/name_num_separator", PropertyInfo(Variant::INT, "editor/node_naming/name_num_separator", PROPERTY_HINT_ENUM, "None,Space,Underscore,Dash"));
+	GLOBAL_DEF("editor_only/node_naming/name_casing", NAME_CASING_PASCAL_CASE);
+	ProjectSettings::get_singleton()->set_custom_property_info("editor_only/node_naming/name_casing", PropertyInfo(Variant::INT, "editor/node_naming/name_casing", PROPERTY_HINT_ENUM, "PascalCase,camelCase,snake_case"));
 
 	ClassDB::bind_method(D_METHOD("add_sibling", "sibling", "legible_unique_name"), &Node::add_sibling, DEFVAL(false));
 
@@ -2863,7 +2863,7 @@ void Node::_bind_methods() {
 }
 
 String Node::_get_name_num_separator() {
-	switch (ProjectSettings::get_singleton()->get("editor/node_naming/name_num_separator").operator int()) {
+	switch (ProjectSettings::get_singleton()->get("editor_only/node_naming/name_num_separator").operator int()) {
 		case 0:
 			return "";
 		case 1:

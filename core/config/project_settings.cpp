@@ -1093,13 +1093,13 @@ ProjectSettings::ProjectSettings() {
 	}
 	extensions.push_back("gdshader");
 
-	GLOBAL_DEF("editor/run/main_run_args", "");
+	GLOBAL_DEF("editor_only/run/main_run_args", "");
 
-	GLOBAL_DEF("editor/script/search_in_file_extensions", extensions);
-	custom_prop_info["editor/script/search_in_file_extensions"] = PropertyInfo(Variant::PACKED_STRING_ARRAY, "editor/script/search_in_file_extensions");
+	GLOBAL_DEF("editor_only/script/search_in_file_extensions", extensions);
+	custom_prop_info["editor_only/script/search_in_file_extensions"] = PropertyInfo(Variant::PACKED_STRING_ARRAY, "editor/script/search_in_file_extensions");
 
-	GLOBAL_DEF("editor/script/templates_search_path", "res://script_templates");
-	custom_prop_info["editor/script/templates_search_path"] = PropertyInfo(Variant::STRING, "editor/script/templates_search_path", PROPERTY_HINT_DIR);
+	GLOBAL_DEF("editor_only/script/templates_search_path", "res://script_templates");
+	custom_prop_info["editor_only/script/templates_search_path"] = PropertyInfo(Variant::STRING, "editor/script/templates_search_path", PROPERTY_HINT_DIR);
 
 	_add_builtin_input_map();
 
