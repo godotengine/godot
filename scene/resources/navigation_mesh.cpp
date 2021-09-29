@@ -41,6 +41,8 @@ void NavigationMesh::create_from_mesh(const Ref<Mesh> &p_mesh) {
 			continue;
 		}
 		Array arr = p_mesh->surface_get_arrays(i);
+		ERR_CONTINUE(arr.size() != Mesh::ARRAY_MAX);
+
 		Vector<Vector3> varr = arr[Mesh::ARRAY_VERTEX];
 		Vector<int> iarr = arr[Mesh::ARRAY_INDEX];
 		if (varr.size() == 0 || iarr.size() == 0) {

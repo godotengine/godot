@@ -369,6 +369,8 @@ void MeshInstance3D::create_debug_tangents() {
 
 	for (int i = 0; i < mesh->get_surface_count(); i++) {
 		Array arrays = mesh->surface_get_arrays(i);
+		ERR_CONTINUE(arrays.size() != Mesh::ARRAY_MAX);
+
 		Vector<Vector3> verts = arrays[Mesh::ARRAY_VERTEX];
 		Vector<Vector3> norms = arrays[Mesh::ARRAY_NORMAL];
 		if (norms.size() == 0) {
