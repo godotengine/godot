@@ -11,6 +11,13 @@
 		<link>https://docs.godotengine.org/en/3.4/tutorials/i18n/locales.html</link>
 	</tutorials>
 	<methods>
+		<method name="_get_message" qualifiers="virtual">
+			<return type="String" />
+			<argument index="0" name="src_message" type="String" />
+			<description>
+				Virtual method to override [method get_message].
+			</description>
+		</method>
 		<method name="add_message">
 			<return type="void" />
 			<argument index="0" name="src_message" type="String" />
