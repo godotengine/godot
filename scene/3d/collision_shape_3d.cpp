@@ -124,8 +124,7 @@ TypedArray<String> CollisionShape3D::get_configuration_warnings() const {
 
 	if (shape.is_valid() &&
 			Object::cast_to<RigidDynamicBody3D>(get_parent()) &&
-			Object::cast_to<ConcavePolygonShape3D>(*shape) &&
-			Object::cast_to<RigidDynamicBody3D>(get_parent())->get_mode() != RigidDynamicBody3D::MODE_STATIC) {
+			Object::cast_to<ConcavePolygonShape3D>(*shape)) {
 		warnings.push_back(TTR("ConcavePolygonShape3D doesn't support RigidDynamicBody3D in another mode than static."));
 	}
 

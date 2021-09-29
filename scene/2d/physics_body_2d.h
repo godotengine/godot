@@ -117,11 +117,9 @@ class RigidDynamicBody2D : public PhysicsBody2D {
 	GDCLASS(RigidDynamicBody2D, PhysicsBody2D);
 
 public:
-	enum Mode {
-		MODE_DYNAMIC,
-		MODE_STATIC,
-		MODE_DYNAMIC_LOCKED,
-		MODE_KINEMATIC,
+	enum FreezeMode {
+		FREEZE_MODE_STATIC,
+		FREEZE_MODE_KINEMATIC,
 	};
 
 	enum CenterOfMassMode {
@@ -137,7 +135,9 @@ public:
 
 private:
 	bool can_sleep = true;
-	Mode mode = MODE_DYNAMIC;
+	bool lock_rotation = false;
+	bool freeze = false;
+	FreezeMode freeze_mode = FREEZE_MODE_STATIC;
 
 	real_t mass = 1.0;
 	real_t inertia = 0.0;
@@ -211,9 +211,17 @@ protected:
 
 	GDVIRTUAL1(_integrate_forces, PhysicsDirectBodyState2D *)
 
+	void _apply_body_mode();
+
 public:
-	void set_mode(Mode p_mode);
-	Mode get_mode() const;
+	void set_lock_rotation_enabled(bool p_lock_rotation);
+	bool is_lock_rotation_enabled() const;
+
+	void set_freeze_enabled(bool p_freeze);
+	bool is_freeze_enabled() const;
+
+	void set_freeze_mode(FreezeMode p_freeze_mode);
+	FreezeMode get_freeze_mode() const;
 
 	void set_mass(real_t p_mass);
 	real_t get_mass() const;
@@ -290,7 +298,7 @@ private:
 	void _reload_physics_characteristics();
 };
 
-VARIANT_ENUM_CAST(RigidDynamicBody2D::Mode);
+VARIANT_ENUM_CAST(RigidDynamicBody2D::FreezeMode);
 VARIANT_ENUM_CAST(RigidDynamicBody2D::CenterOfMassMode);
 VARIANT_ENUM_CAST(RigidDynamicBody2D::CCDMode);
 

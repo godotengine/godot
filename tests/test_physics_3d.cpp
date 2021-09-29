@@ -361,7 +361,7 @@ public:
 
 		RID mesh_instance = vs->instance_create2(capsule_mesh, scenario);
 		character = ps->body_create();
-		ps->body_set_mode(character, PhysicsServer3D::BODY_MODE_DYNAMIC_LOCKED);
+		ps->body_set_mode(character, PhysicsServer3D::BODY_MODE_DYNAMIC_LINEAR);
 		ps->body_set_space(character, space);
 		//todo add space
 		ps->body_add_shape(character, capsule_shape);

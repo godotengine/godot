@@ -5,11 +5,10 @@
 	</brief_description>
 	<description>
 		This node implements simulated 2D physics. You do not control a RigidDynamicBody2D directly. Instead, you apply forces to it (gravity, impulses, etc.) and the physics simulation calculates the resulting movement based on its mass, friction, and other physical properties.
-		A RigidDynamicBody2D has 4 behavior [member mode]s: Dynamic, Static, DynamicLocked, and Kinematic.
+		You can switch the body's behavior using [member lock_rotation], [member freeze], and [member freeze_mode].
 		[b]Note:[/b] You should not change a RigidDynamicBody2D's [code]position[/code] or [code]linear_velocity[/code] every frame or even very often. If you need to directly affect the body's state, use [method _integrate_forces], which allows you to directly access the physics state.
 		Please also keep in mind that physics bodies manage their own transform which overwrites the ones you set. So any direct or indirect transformation (including scaling of the node or its parent) will be visible in the editor only, and immediately reset at runtime.
 		If you need to override the default physics behavior or add a transformation at runtime, you can write a custom force integration. See [member custom_integrator].
-		The center of mass is always located at the node's origin without taking into account the [CollisionShape2D] centroid offsets.
 	</description>
 	<tutorials>
 		<link title="2D Physics Platformer Demo">https://godotengine.org/asset-library/asset/119</link>
@@ -120,6 +119,15 @@
 		<member name="custom_integrator" type="bool" setter="set_use_custom_integrator" getter="is_using_custom_integrator" default="false">
 			If [code]true[/code], internal force integration is disabled for this body. Aside from collision response, the body will only move as determined by the [method _integrate_forces] function.
 		</member>
+		<member name="freeze" type="bool" setter="set_freeze_enabled" getter="is_freeze_enabled" default="false">
+			If [code]true[/code], the body is frozen. Gravity and forces are not applied anymore.
+			See [member freeze_mode] to set the body's behavior when frozen.
+			For a body that is always frozen, use [StaticBody2D] or [AnimatableBody2D] instead.
+		</member>
+		<member name="freeze_mode" type="int" setter="set_freeze_mode" getter="get_freeze_mode" enum="RigidDynamicBody2D.FreezeMode" default="0">
+			The body's freeze mode. Can be used to set the body's behavior when [member freeze] is enabled. See [enum FreezeMode] for possible values.
+			For a body that is always frozen, use [StaticBody2D] or [AnimatableBody2D] instead.
+		</member>
 		<member name="gravity_scale" type="float" setter="set_gravity_scale" getter="get_gravity_scale" default="1.0">
 			Multiplies the gravity applied to the body. The body's gravity is calculated from the [b]Default Gravity[/b] value in [b]Project &gt; Project Settings &gt; Physics &gt; 2d[/b] and/or any additional gravity vector applied by [Area2D]s.
 		</member>
@@ -134,12 +142,11 @@
 		<member name="linear_velocity" type="Vector2" setter="set_linear_velocity" getter="get_linear_velocity" default="Vector2(0, 0)">
 			The body's linear velocity.
 		</member>
+		<member name="lock_rotation" type="bool" setter="set_lock_rotation_enabled" getter="is_lock_rotation_enabled" default="false">
+			If [code]true[/code], the body cannot rotate. Gravity and forces only apply linear movement.
+		</member>
 		<member name="mass" type="float" setter="set_mass" getter="get_mass" default="1.0">
 			The body's mass.
-		</member>
-		<member name="mode" type="int" setter="set_mode" getter="get_mode" enum="RigidDynamicBody2D.Mode" default="0">
-			The body's mode. See [enum Mode] for possible values.
-			For a body that uses only Static or Kinematic mode, use [StaticBody2D] or [AnimatableBody2D] instead.
 		</member>
 		<member name="physics_material_override" type="PhysicsMaterial" setter="set_physics_material_override" getter="get_physics_material_override">
 			The physics material override for the body.
@@ -198,17 +205,11 @@
 		</signal>
 	</signals>
 	<constants>
-		<constant name="MODE_DYNAMIC" value="0" enum="Mode">
-			Dynamic body mode. This is the default mode of a rigid body. It is affected by forces, and can move, rotate, and be affected by user code.
+		<constant name="FREEZE_MODE_STATIC" value="0" enum="FreezeMode">
+			Static body freeze mode (default). The body is not affected by gravity and forces. It can be only moved by user code and doesn't collide with other bodies along its path.
 		</constant>
-		<constant name="MODE_STATIC" value="1" enum="Mode">
-			Static body mode. The body behaves like a [StaticBody2D], and must be moved by code.
-		</constant>
-		<constant name="MODE_DYNAMIC_LOCKED" value="2" enum="Mode">
-			Locked dynamic body mode. Similar to [constant MODE_DYNAMIC], but the body can not rotate.
-		</constant>
-		<constant name="MODE_KINEMATIC" value="3" enum="Mode">
-			Kinematic body mode. The body behaves like a [AnimatableBody2D], and must be moved by code.
+		<constant name="FREEZE_MODE_KINEMATIC" value="1" enum="FreezeMode">
+			Kinematic body freeze mode. Similar to [constant FREEZE_MODE_STATIC], but collides with other bodies along its path when moved. Useful for a frozen body that needs to be animated.
 		</constant>
 		<constant name="CENTER_OF_MASS_MODE_AUTO" value="0" enum="CenterOfMassMode">
 			In this mode, the body's center of mass is calculated automatically based on its shapes.

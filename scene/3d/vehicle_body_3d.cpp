@@ -470,7 +470,7 @@ real_t VehicleBody3D::_ray_cast(int p_idx, PhysicsDirectBodyState3D *s) {
 }
 
 void VehicleBody3D::_update_suspension(PhysicsDirectBodyState3D *s) {
-	real_t chassisMass = mass;
+	real_t chassisMass = get_mass();
 
 	for (int w_it = 0; w_it < wheels.size(); w_it++) {
 		VehicleWheel3D &wheel_info = *wheels[w_it];
@@ -558,7 +558,7 @@ void VehicleBody3D::_resolve_single_bilateral(PhysicsDirectBodyState3D *s, const
 			rel_pos2,
 			normal,
 			s->get_inverse_inertia_tensor().get_main_diagonal(),
-			1.0 / mass,
+			1.0 / get_mass(),
 			b2invinertia,
 			b2invmass);
 
@@ -584,7 +584,7 @@ void VehicleBody3D::_resolve_single_bilateral(PhysicsDirectBodyState3D *s, const
 
 #define ONLY_USE_LINEAR_MASS
 #ifdef ONLY_USE_LINEAR_MASS
-	real_t massTerm = real_t(1.) / ((1.0 / mass) + b2invmass);
+	real_t massTerm = real_t(1.) / ((1.0 / get_mass()) + b2invmass);
 	impulse = -contactDamping * rel_vel * massTerm;
 #else
 	real_t velocityImpulse = -contactDamping * rel_vel * jacDiagABInv;
