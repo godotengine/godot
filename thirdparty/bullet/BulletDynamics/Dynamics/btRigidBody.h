@@ -305,6 +305,9 @@ public:
 	void applyTorque(const btVector3& torque)
 	{
 		m_totalTorque += torque * m_angularFactor;
+		#if defined(BT_CLAMP_VELOCITY_TO) && BT_CLAMP_VELOCITY_TO > 0
+		clampVelocity(m_totalTorque);
+		#endif
 	}
 
 	void applyForce(const btVector3& force, const btVector3& rel_pos)
@@ -316,11 +319,17 @@ public:
 	void applyCentralImpulse(const btVector3& impulse)
 	{
 		m_linearVelocity += impulse * m_linearFactor * m_inverseMass;
+		#if defined(BT_CLAMP_VELOCITY_TO) && BT_CLAMP_VELOCITY_TO > 0
+		clampVelocity(m_linearVelocity);
+		#endif
 	}
 
 	void applyTorqueImpulse(const btVector3& torque)
 	{
 		m_angularVelocity += m_invInertiaTensorWorld * torque * m_angularFactor;
+		#if defined(BT_CLAMP_VELOCITY_TO) && BT_CLAMP_VELOCITY_TO > 0
+		clampVelocity(m_angularVelocity);
+		#endif
 	}
 
 	void applyImpulse(const btVector3& impulse, const btVector3& rel_pos)
@@ -347,12 +356,12 @@ public:
         }
     }
     
-    btVector3 getPushVelocity()
+    btVector3 getPushVelocity() const
     {
         return m_pushVelocity;
     }
     
-    btVector3 getTurnVelocity()
+    btVector3 getTurnVelocity() const
     {
         return m_turnVelocity;
     }
@@ -361,20 +370,46 @@ public:
     {
         m_pushVelocity = v;
     }
-    
+
+    #if defined(BT_CLAMP_VELOCITY_TO) && BT_CLAMP_VELOCITY_TO > 0
+    void clampVelocity(btVector3& v) const {
+        v.setX(
+            fmax(-BT_CLAMP_VELOCITY_TO,
+                 fmin(BT_CLAMP_VELOCITY_TO, v.getX()))
+        );
+        v.setY(
+            fmax(-BT_CLAMP_VELOCITY_TO,
+                 fmin(BT_CLAMP_VELOCITY_TO, v.getY()))
+        );
+        v.setZ(
+            fmax(-BT_CLAMP_VELOCITY_TO,
+                 fmin(BT_CLAMP_VELOCITY_TO, v.getZ()))
+        );
+    }
+    #endif
+
     void setTurnVelocity(const btVector3& v)
     {
         m_turnVelocity = v;
+        #if defined(BT_CLAMP_VELOCITY_TO) && BT_CLAMP_VELOCITY_TO > 0
+        clampVelocity(m_turnVelocity);
+        #endif
     }
     
     void applyCentralPushImpulse(const btVector3& impulse)
     {
         m_pushVelocity += impulse * m_linearFactor * m_inverseMass;
+        #if defined(BT_CLAMP_VELOCITY_TO) && BT_CLAMP_VELOCITY_TO > 0
+        clampVelocity(m_pushVelocity);
+        #endif
     }
     
     void applyTorqueTurnImpulse(const btVector3& torque)
     {
         m_turnVelocity += m_invInertiaTensorWorld * torque * m_angularFactor;
+        #if defined(BT_CLAMP_VELOCITY_TO) && BT_CLAMP_VELOCITY_TO > 0
+        clampVelocity(m_turnVelocity);
+        #endif
     }
 
 	void clearForces()
@@ -408,12 +443,18 @@ public:
 	{
 		m_updateRevision++;
 		m_linearVelocity = lin_vel;
+		#if defined(BT_CLAMP_VELOCITY_TO) && BT_CLAMP_VELOCITY_TO > 0
+		clampVelocity(m_linearVelocity);
+		#endif
 	}
 
 	inline void setAngularVelocity(const btVector3& ang_vel)
 	{
 		m_updateRevision++;
 		m_angularVelocity = ang_vel;
+		#if defined(BT_CLAMP_VELOCITY_TO) && BT_CLAMP_VELOCITY_TO > 0
+		clampVelocity(m_angularVelocity);
+		#endif
 	}
 
 	btVector3 getVelocityInLocalPoint(const btVector3& rel_pos) const
@@ -424,6 +465,12 @@ public:
 		//for kinematic objects, we could also use use:
 		//		return 	(m_worldTransform(rel_pos) - m_interpolationWorldTransform(rel_pos)) / m_kinematicTimeStep;
 	}
+    
+    btVector3 getPushVelocityInLocalPoint(const btVector3& rel_pos) const
+    {
+        //we also calculate lin/ang velocity for kinematic objects
+        return m_pushVelocity + m_turnVelocity.cross(rel_pos);
+    }
 
 	void translate(const btVector3& v)
 	{

@@ -28,6 +28,7 @@ subject to the following restrictions:
 btCollisionDispatcherMt::btCollisionDispatcherMt(btCollisionConfiguration* config, int grainSize)
 	: btCollisionDispatcher(config)
 {
+	m_batchManifoldsPtr.resize(btGetTaskScheduler()->getNumThreads());
 	m_batchUpdating = false;
 	m_grainSize = grainSize;  // iterations per task
 }
@@ -64,6 +65,10 @@ btPersistentManifold* btCollisionDispatcherMt::getNewManifold(const btCollisionO
 		//btAssert( !btThreadsAreRunning() );
 		manifold->m_index1a = m_manifoldsPtr.size();
 		m_manifoldsPtr.push_back(manifold);
+	}
+	else
+	{
+		m_batchManifoldsPtr[btGetCurrentThreadIndex()].push_back(manifold);
 	}
 
 	return manifold;
@@ -121,7 +126,7 @@ struct CollisionDispatcherUpdater : public btIParallelForBody
 
 void btCollisionDispatcherMt::dispatchAllCollisionPairs(btOverlappingPairCache* pairCache, const btDispatcherInfo& info, btDispatcher* dispatcher)
 {
-	int pairCount = pairCache->getNumOverlappingPairs();
+	const int pairCount = pairCache->getNumOverlappingPairs();
 	if (pairCount == 0)
 	{
 		return;
@@ -136,16 +141,17 @@ void btCollisionDispatcherMt::dispatchAllCollisionPairs(btOverlappingPairCache* 
 	btParallelFor(0, pairCount, m_grainSize, updater);
 	m_batchUpdating = false;
 
-	// reconstruct the manifolds array to ensure determinism
-	m_manifoldsPtr.resizeNoInitialize(0);
-
-	btBroadphasePair* pairs = pairCache->getOverlappingPairArrayPtr();
-	for (int i = 0; i < pairCount; ++i)
+	// merge new manifolds, if any
+	for (int i = 0; i < m_batchManifoldsPtr.size(); ++i)
 	{
-		if (btCollisionAlgorithm* algo = pairs[i].m_algorithm)
+		btAlignedObjectArray<btPersistentManifold*>& batchManifoldsPtr = m_batchManifoldsPtr[i];
+
+		for (int j = 0; j < batchManifoldsPtr.size(); ++j)
 		{
-			algo->getAllContactManifolds(m_manifoldsPtr);
+			m_manifoldsPtr.push_back(batchManifoldsPtr[j]);
 		}
+
+		batchManifoldsPtr.resizeNoInitialize(0);
 	}
 
 	// update the indices (used when releasing manifolds)
