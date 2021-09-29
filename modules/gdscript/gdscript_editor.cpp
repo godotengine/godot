@@ -637,7 +637,7 @@ static void _get_directory_contents(EditorFileSystemDirectory *p_dir, Map<String
 }
 
 static void _find_annotation_arguments(const GDScriptParser::AnnotationNode *p_annotation, int p_argument, const String p_quote_style, Map<String, ScriptCodeCompletionOption> &r_result) {
-	if (p_annotation->name == "@export_range" || p_annotation->name == "@export_exp_range") {
+	if (p_annotation->name == "@export_range") {
 		if (p_argument == 3 || p_argument == 4) {
 			// Slider hint.
 			ScriptCodeCompletionOption slider1("or_greater", ScriptCodeCompletionOption::KIND_PLAIN_TEXT);
