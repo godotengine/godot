@@ -175,6 +175,11 @@ Error GDScriptAnalyzer::check_native_member_name_conflict(const StringName &p_me
 		return ERR_PARSE_ERROR;
 	}
 
+	if (GDScriptParser::get_builtin_type(p_member_name) != Variant::VARIANT_MAX) {
+		push_error(vformat(R"(The member "%s" cannot have the same name as a builtin type.)", p_member_name), p_member_node);
+		return ERR_PARSE_ERROR;
+	}
+
 	return OK;
 }
 
