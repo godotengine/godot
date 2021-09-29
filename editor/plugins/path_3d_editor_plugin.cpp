@@ -510,7 +510,14 @@ void Path3DEditorPlugin::_close_curve() {
 	if (c->get_point_count() < 2) {
 		return;
 	}
-	c->add_point(c->get_point_position(0), c->get_point_in(0), c->get_point_out(0));
+	if (c->get_point_position(0) == c->get_point_position(c->get_point_count() - 1)) {
+		return;
+	}
+	UndoRedo *ur = editor->get_undo_redo();
+	ur->create_action(TTR("Close Curve"));
+	ur->add_do_method(c.ptr(), "add_point", c->get_point_position(0), c->get_point_in(0), c->get_point_out(0), -1);
+	ur->add_undo_method(c.ptr(), "remove_point", c->get_point_count());
+	ur->commit_action();
 }
 
 void Path3DEditorPlugin::_handle_option_pressed(int p_option) {
