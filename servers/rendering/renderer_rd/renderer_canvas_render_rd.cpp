@@ -1394,6 +1394,7 @@ void RendererCanvasRenderRD::canvas_render_items(RID p_to_render_target, Item *p
 						update_skeletons = true;
 					}
 				}
+				c = c->next;
 			}
 		}
 
