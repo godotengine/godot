@@ -1560,6 +1560,20 @@ void LineEdit::deselect() {
 	update();
 }
 
+bool LineEdit::has_selection() const {
+	return selection.enabled;
+}
+
+int LineEdit::get_selection_from_column() const {
+	ERR_FAIL_COND_V(!selection.enabled, -1);
+	return selection.begin;
+}
+
+int LineEdit::get_selection_to_column() const {
+	ERR_FAIL_COND_V(!selection.enabled, -1);
+	return selection.end;
+}
+
 void LineEdit::selection_delete() {
 	if (selection.enabled) {
 		delete_text(selection.begin, selection.end);
@@ -2094,6 +2108,9 @@ void LineEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("select", "from", "to"), &LineEdit::select, DEFVAL(0), DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("select_all"), &LineEdit::select_all);
 	ClassDB::bind_method(D_METHOD("deselect"), &LineEdit::deselect);
+	ClassDB::bind_method(D_METHOD("has_selection"), &LineEdit::has_selection);
+	ClassDB::bind_method(D_METHOD("get_selection_from_column"), &LineEdit::get_selection_from_column);
+	ClassDB::bind_method(D_METHOD("get_selection_to_column"), &LineEdit::get_selection_to_column);
 	ClassDB::bind_method(D_METHOD("set_text", "text"), &LineEdit::set_text);
 	ClassDB::bind_method(D_METHOD("get_text"), &LineEdit::get_text);
 	ClassDB::bind_method(D_METHOD("get_draw_control_chars"), &LineEdit::get_draw_control_chars);
