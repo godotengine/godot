@@ -756,7 +756,7 @@ void ExportTemplateManager::_notification(int p_what) {
 			current_missing_label->add_color_override("font_color", get_color("error_color", "Editor"));
 			current_installed_label->add_color_override("font_color", get_color("disabled_font_color", "Editor"));
 
-			mirror_options_button->set_icon(get_icon("GuiTabMenu", "EditorIcons"));
+			mirror_options_button->set_icon(get_icon("GuiTabMenuHl", "EditorIcons"));
 		} break;
 
 		case NOTIFICATION_VISIBILITY_CHANGED: {
