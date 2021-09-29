@@ -30,7 +30,7 @@
 		</method>
 		<method name="_put_data" qualifiers="virtual">
 			<return type="int" />
-			<argument index="0" name="p_data" type="const void*" />
+			<argument index="0" name="p_data" type="const uint8_t*" />
 			<argument index="1" name="p_bytes" type="int" />
 			<argument index="2" name="r_sent" type="int32_t*" />
 			<description>
@@ -38,7 +38,7 @@
 		</method>
 		<method name="_put_partial_data" qualifiers="virtual">
 			<return type="int" />
-			<argument index="0" name="p_data" type="const void*" />
+			<argument index="0" name="p_data" type="const uint8_t*" />
 			<argument index="1" name="p_bytes" type="int" />
 			<argument index="2" name="r_sent" type="int32_t*" />
 			<description>

@@ -55,7 +55,7 @@ struct GDNativePtr {
 
 #define GDVIRTUAL_NATIVE_PTR(m_type)                                  \
 	template <>                                                       \
-	struct GDNativeConstPtr<m_type> {                                 \
+	struct GDNativeConstPtr<const m_type> {                           \
 		const m_type *data = nullptr;                                 \
 		GDNativeConstPtr(const m_type *p_assign) { data = p_assign; } \
 		static const char *get_name() { return "const " #m_type; }    \
