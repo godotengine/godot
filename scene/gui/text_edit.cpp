@@ -2731,7 +2731,10 @@ void TextEdit::insert_line_at(int p_at, const String &p_text) {
 }
 
 void TextEdit::insert_text_at_caret(const String &p_text) {
-	begin_complex_operation();
+	bool had_selection = has_selection();
+	if (had_selection) {
+		begin_complex_operation();
+	}
 
 	delete_selection();
 
@@ -2743,7 +2746,9 @@ void TextEdit::insert_text_at_caret(const String &p_text) {
 	set_caret_column(new_column);
 	update();
 
-	end_complex_operation();
+	if (had_selection) {
+		end_complex_operation();
+	}
 }
 
 void TextEdit::remove_text(int p_from_line, int p_from_column, int p_to_line, int p_to_column) {
