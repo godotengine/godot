@@ -304,7 +304,7 @@ int MainTimerSync::get_average_physics_steps(float &p_min, float &p_max) {
 		const float typical_lower = typical_physics_steps[i];
 		const float current_min = typical_lower / (i + 1);
 		if (current_min > p_max) {
-			return i; // bail out of further restrictions would void the interval
+			return i; // bail out if further restrictions would void the interval
 		} else if (current_min > p_min) {
 			p_min = current_min;
 		}
@@ -352,6 +352,12 @@ MainFrameTime MainTimerSync::advance_core(float p_frame_slice, int p_iterations_
 		}
 	}
 
+#ifdef DEBUG_ENABLED
+	if (max_typical_steps < 0) {
+		WARN_PRINT_ONCE("`max_typical_steps` is negative. This could hint at an engine bug or system timer misconfiguration.");
+	}
+#endif
+
 	// try to keep it consistent with previous iterations
 	if (ret.physics_steps < min_typical_steps) {
 		const int max_possible_steps = floor((time_accum)*p_iterations_per_second + get_physics_jitter_fix());
@@ -369,6 +375,10 @@ MainFrameTime MainTimerSync::advance_core(float p_frame_slice, int p_iterations_
 		} else {
 			ret.physics_steps = max_typical_steps;
 		}
+	}
+
+	if (ret.physics_steps < 0) {
+		ret.physics_steps = 0;
 	}
 
 	time_accum -= ret.physics_steps * p_frame_slice;
@@ -398,6 +408,9 @@ MainFrameTime MainTimerSync::advance_checked(float p_frame_slice, int p_iteratio
 		p_idle_step = 1.0 / fixed_fps;
 	}
 
+	float min_output_step = p_idle_step / 8;
+	min_output_step = MAX(min_output_step, 1E-6);
+
 	// compensate for last deficit
 	p_idle_step += time_deficit;
 
@@ -424,8 +437,36 @@ MainFrameTime MainTimerSync::advance_checked(float p_frame_slice, int p_iteratio
 	// last clamping: make sure time_accum is between 0 and p_frame_slice for consistency between physics and idle
 	ret.clamp_idle(idle_minus_accum, idle_minus_accum + p_frame_slice);
 
+	// all the operations above may have turned ret.idle_step negative or zero, keep a minimal value
+	if (ret.idle_step < min_output_step) {
+		ret.idle_step = min_output_step;
+	}
+
 	// restore time_accum
 	time_accum = ret.idle_step - idle_minus_accum;
+
+	// forcing ret.idle_step to be positive may trigger a violation of the
+	// promise that time_accum is between 0 and p_frame_slice
+#ifdef DEBUG_ENABLED
+	if (time_accum < -1E-7) {
+		WARN_PRINT_ONCE("Intermediate value of `time_accum` is negative. This could hint at an engine bug or system timer misconfiguration.");
+	}
+#endif
+
+	if (time_accum > p_frame_slice) {
+		const int extra_physics_steps = floor(time_accum * p_iterations_per_second);
+		time_accum -= extra_physics_steps * p_frame_slice;
+		ret.physics_steps += extra_physics_steps;
+	}
+
+#ifdef DEBUG_ENABLED
+	if (time_accum < -1E-7) {
+		WARN_PRINT_ONCE("Final value of `time_accum` is negative. It should always be between 0 and `p_physics_step`. This hints at an engine bug.");
+	}
+	if (time_accum > p_frame_slice + 1E-7) {
+		WARN_PRINT_ONCE("Final value of `time_accum` is larger than `p_frame_slice`. It should always be between 0 and `p_frame_slice`. This hints at an engine bug.");
+	}
+#endif
 
 	// track deficit
 	time_deficit = p_idle_step - ret.idle_step;
