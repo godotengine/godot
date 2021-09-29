@@ -875,6 +875,11 @@ void Translation::add_plural_message(const StringName &p_src_text, const Vector<
 }
 
 StringName Translation::get_message(const StringName &p_src_text, const StringName &p_context) const {
+	StringName ret;
+	if (GDVIRTUAL_CALL(_get_message, p_src_text, p_context, ret)) {
+		return ret;
+	}
+
 	if (p_context != StringName()) {
 		WARN_PRINT("Translation class doesn't handle context. Using context in get_message() on a Translation instance is probably a mistake. \nUse a derived Translation class that handles context, such as TranslationPO class");
 	}
@@ -888,6 +893,11 @@ StringName Translation::get_message(const StringName &p_src_text, const StringNa
 }
 
 StringName Translation::get_plural_message(const StringName &p_src_text, const StringName &p_plural_text, int p_n, const StringName &p_context) const {
+	StringName ret;
+	if (GDVIRTUAL_CALL(_get_plural_message, p_src_text, p_plural_text, p_n, p_context, ret)) {
+		return ret;
+	}
+
 	WARN_PRINT("Translation class doesn't handle plural messages. Calling get_plural_message() on a Translation instance is probably a mistake. \nUse a derived Translation class that handles plurals, such as TranslationPO class");
 	return get_message(p_src_text);
 }
@@ -922,6 +932,9 @@ void Translation::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_message_count"), &Translation::get_message_count);
 	ClassDB::bind_method(D_METHOD("_set_messages"), &Translation::_set_messages);
 	ClassDB::bind_method(D_METHOD("_get_messages"), &Translation::_get_messages);
+
+	GDVIRTUAL_BIND(_get_plural_message, "src_message", "src_plural_message", "n", "context");
+	GDVIRTUAL_BIND(_get_message, "src_message", "context");
 
 	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "messages", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_messages", "_get_messages");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "locale"), "set_locale", "get_locale");
