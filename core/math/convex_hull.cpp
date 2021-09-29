@@ -1046,8 +1046,8 @@ void ConvexHullInternal::compute_internal(int32_t p_start, int32_t p_end, Interm
 
 				return;
 			}
+			FALLTHROUGH;
 		}
-		// lint -fallthrough
 		case 1: {
 			Vertex *v = original_vertices[p_start];
 			v->edges = nullptr;
