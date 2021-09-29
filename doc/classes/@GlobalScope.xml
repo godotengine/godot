@@ -23,7 +23,7 @@
 				Returns the absolute value of float parameter [code]x[/code] (i.e. positive value).
 				[codeblock]
 				# a is 1.2
-				a = absf(-1.2)
+				var a = absf(-1.2)
 				[/codeblock]
 			</description>
 		</method>
@@ -34,7 +34,7 @@
 				Returns the absolute value of int parameter [code]x[/code] (i.e. positive value).
 				[codeblock]
 				# a is 1
-				a = absi(-1)
+				var a = absi(-1)
 				[/codeblock]
 			</description>
 		</method>
@@ -45,7 +45,7 @@
 				Returns the arc cosine of [code]x[/code] in radians. Use to get the angle of cosine [code]x[/code]. [code]x[/code] must be between [code]-1.0[/code] and [code]1.0[/code] (inclusive), otherwise, [method acos] will return [constant @GDScript.NAN].
 				[codeblock]
 				# c is 0.523599 or 30 degrees if converted with rad2deg(c)
-				c = acos(0.866025)
+				var c = acos(0.866025)
 				[/codeblock]
 			</description>
 		</method>
@@ -56,7 +56,7 @@
 				Returns the arc sine of [code]x[/code] in radians. Use to get the angle of sine [code]x[/code]. [code]x[/code] must be between [code]-1.0[/code] and [code]1.0[/code] (inclusive), otherwise, [method asin] will return [constant @GDScript.NAN].
 				[codeblock]
 				# s is 0.523599 or 30 degrees if converted with rad2deg(s)
-				s = asin(0.5)
+				var s = asin(0.5)
 				[/codeblock]
 			</description>
 		</method>
@@ -64,11 +64,12 @@
 			<return type="float" />
 			<argument index="0" name="x" type="float" />
 			<description>
-				Returns the arc tangent of [code]x[/code] in radians. Use it to get the angle from an angle's tangent in trigonometry: [code]atan(tan(angle)) == angle[/code].
+				Returns the arc tangent of [code]x[/code] in radians. Use it to get the angle from an angle's tangent in trigonometry.
 				The method cannot know in which quadrant the angle should fall. See [method atan2] if you have both [code]y[/code] and [code]x[/code].
 				[codeblock]
-				a = atan(0.5) # a is 0.463648
+				var a = atan(0.5) # a is 0.463648
 				[/codeblock]
+				If [code]x[/code] is between [code]-PI / 2[/code] and [code]PI / 2[/code] (inclusive), [code]atan(tan(x))[/code] is equal to [code]x[/code].
 			</description>
 		</method>
 		<method name="atan2">
@@ -79,7 +80,7 @@
 				Returns the arc tangent of [code]y/x[/code] in radians. Use to get the angle of tangent [code]y/x[/code]. To compute the value, the method takes into account the sign of both arguments in order to determine the quadrant.
 				Important note: The Y coordinate comes first, by convention.
 				[codeblock]
-				a = atan2(0, -1) # a is 3.141593
+				var a = atan2(0, -1) # a is 3.141593
 				[/codeblock]
 			</description>
 		</method>
@@ -105,8 +106,8 @@
 			<description>
 				Rounds [code]x[/code] upward (towards positive infinity), returning the smallest whole number that is not less than [code]x[/code].
 				[codeblock]
-				i = ceil(1.45)  # i is 2
-				i = ceil(1.001) # i is 2
+				var i = ceil(1.45) # i is 2.0
+				i = ceil(1.001)    # i is 2.0
 				[/codeblock]
 				See also [method floor], [method round], and [method snapped].
 			</description>
@@ -127,9 +128,9 @@
 			<description>
 				Clamps the float [code]value[/code] and returns a value not less than [code]min[/code] and not more than [code]max[/code].
 				[codeblock]
-				speed = 42.1
+				var speed = 42.1
 				# a is 20.0
-				a = clampf(speed, 1.0, 20.0)
+				var a = clampf(speed, 1.0, 20.0)
 
 				speed = -10.0
 				# a is -1.0
@@ -145,9 +146,9 @@
 			<description>
 				Clamps the integer [code]value[/code] and returns a value not less than [code]min[/code] and not more than [code]max[/code].
 				[codeblock]
-				speed = 42
+				var speed = 42
 				# a is 20
-				a = clampi(speed, 1, 20)
+				var a = clampi(speed, 1, 20)
 
 				speed = -10
 				# a is -1
@@ -161,9 +162,9 @@
 			<description>
 				Returns the cosine of angle [code]angle_rad[/code] in radians.
 				[codeblock]
-				# Prints 1 then -1
-				print(cos(PI * 2))
-				print(cos(PI))
+				cos(PI * 2)      # Returns 1.0
+				cos(PI)          # Returns -1.0
+				cos(deg2rad(90)) # Returns 0.0
 				[/codeblock]
 			</description>
 		</method>
@@ -192,7 +193,7 @@
 				Converts an angle expressed in degrees to radians.
 				[codeblock]
 				# r is 3.141593
-				r = deg2rad(180)
+				var r = deg2rad(180)
 				[/codeblock]
 			</description>
 		</method>
@@ -219,7 +220,7 @@
 				[b]e[/b] has an approximate value of 2.71828, and can be obtained with [code]exp(1)[/code].
 				For exponents to other bases use the method [method pow].
 				[codeblock]
-				a = exp(2) # Approximately 7.39
+				var a = exp(2) # Approximately 7.39
 				[/codeblock]
 			</description>
 		</method>
@@ -230,7 +231,7 @@
 				Rounds [code]x[/code] downward (towards negative infinity), returning the largest whole number that is not more than [code]x[/code].
 				[codeblock]
 				# a is 2.0
-				a = floor(2.99)
+				var a = floor(2.99)
 				# a is -3.0
 				a = floor(-2.99)
 				[/codeblock]
@@ -550,7 +551,7 @@
 			<description>
 				Converts one or more arguments of any type to string in the best way possible and prints them to the console.
 				[codeblock]
-				a = [1, 2, 3]
+				var a = [1, 2, 3]
 				print("a", "b", a) # Prints ab[1, 2, 3]
 				[/codeblock]
 				[b]Note:[/b] Consider using [method push_error] and [method push_warning] to print error and warning messages instead of [method print]. This distinguishes them from print messages used for debugging purposes, while also displaying a stack trace when an error or warning is printed.
@@ -729,7 +730,7 @@
 			<description>
 				Sets seed for the random number generator.
 				[codeblock]
-				my_seed = "Godot Rocks"
+				var my_seed = "Godot Rocks"
 				seed(my_seed.hash())
 				[/codeblock]
 			</description>
@@ -770,7 +771,8 @@
 			<description>
 				Returns the sine of angle [code]angle_rad[/code] in radians.
 				[codeblock]
-				sin(0.523599) # Returns 0.5
+				sin(0.523599)    # Returns 0.5
+				sin(deg2rad(90)) # Returns 1.0
 				[/codeblock]
 			</description>
 		</method>
@@ -780,7 +782,7 @@
 			<description>
 				Returns the hyperbolic sine of [code]x[/code].
 				[codeblock]
-				a = log(2.0) # Returns 0.693147
+				var a = log(2.0) # Returns 0.693147
 				sinh(a) # Returns 0.75
 				[/codeblock]
 			</description>
@@ -833,7 +835,7 @@
 				Returns the position of the first non-zero digit, after the decimal point. Note that the maximum return value is 10, which is a design decision in the implementation.
 				[codeblock]
 				# n is 0
-				n = step_decimals(5)
+				var n = step_decimals(5)
 				# n is 4
 				n = step_decimals(1.0005)
 				# n is 9
@@ -853,8 +855,8 @@
 			<description>
 				Converts a formatted string that was returned by [method var2str] to the original value.
 				[codeblock]
-				a = '{ "a": 1, "b": 2 }'
-				b = str2var(a)
+				var a = '{ "a": 1, "b": 2 }'
+				var b = str2var(a)
 				print(b["a"]) # Prints 1
 				[/codeblock]
 			</description>
@@ -875,7 +877,7 @@
 			<description>
 				Returns the hyperbolic tangent of [code]x[/code].
 				[codeblock]
-				a = log(2.0) # Returns 0.693147
+				var a = log(2.0) # Returns 0.693147
 				tanh(a)      # Returns 0.6
 				[/codeblock]
 			</description>
