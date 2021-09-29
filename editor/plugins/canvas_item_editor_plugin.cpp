@@ -4898,8 +4898,7 @@ void CanvasItemEditor::_focus_selection(int p_op) {
 	if (p_op == VIEW_CENTER_TO_SELECTION) {
 		center = rect.get_center();
 		Vector2 offset = viewport->get_size() / 2 - editor->get_scene_root()->get_global_canvas_transform().xform(center);
-		view_offset.x -= Math::round(offset.x / zoom);
-		view_offset.y -= Math::round(offset.y / zoom);
+		view_offset -= (offset / zoom).round();
 		update_viewport();
 
 	} else { // VIEW_FRAME_TO_SELECTION

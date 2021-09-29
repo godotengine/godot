@@ -232,7 +232,7 @@ void SkeletonModification3DFABRIK::chain_backwards() {
 		int current_bone_idx = fabrik_data_chain[i].bone_idx;
 		Transform3D current_trans = stack->skeleton->local_pose_to_global_pose(current_bone_idx, stack->skeleton->get_bone_local_pose_override(current_bone_idx));
 
-		real_t length = fabrik_data_chain[i].length / (next_bone_trans.origin - current_trans.origin).length();
+		real_t length = fabrik_data_chain[i].length / (current_trans.origin.distance_to(next_bone_trans.origin));
 		current_trans.origin = next_bone_trans.origin.lerp(current_trans.origin, length);
 
 		// Apply it back to the skeleton
@@ -253,7 +253,7 @@ void SkeletonModification3DFABRIK::chain_forwards() {
 		int next_bone_idx = fabrik_data_chain[i + 1].bone_idx;
 		Transform3D next_bone_trans = stack->skeleton->local_pose_to_global_pose(next_bone_idx, stack->skeleton->get_bone_local_pose_override(next_bone_idx));
 
-		real_t length = fabrik_data_chain[i].length / (current_trans.origin - next_bone_trans.origin).length();
+		real_t length = fabrik_data_chain[i].length / (next_bone_trans.origin.distance_to(current_trans.origin));
 		next_bone_trans.origin = current_trans.origin.lerp(next_bone_trans.origin, length);
 
 		// Apply it back to the skeleton

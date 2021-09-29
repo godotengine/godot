@@ -1071,10 +1071,7 @@ void GraphEdit::gui_input(const Ref<InputEvent> &p_ev) {
 	if (mm.is_valid() && box_selecting) {
 		box_selecting_to = mm->get_position();
 
-		box_selecting_rect = Rect2(MIN(box_selecting_from.x, box_selecting_to.x),
-				MIN(box_selecting_from.y, box_selecting_to.y),
-				ABS(box_selecting_from.x - box_selecting_to.x),
-				ABS(box_selecting_from.y - box_selecting_to.y));
+		box_selecting_rect = Rect2(box_selecting_from.min(box_selecting_to), (box_selecting_from - box_selecting_to).abs());
 
 		for (int i = get_child_count() - 1; i >= 0; i--) {
 			GraphNode *gn = Object::cast_to<GraphNode>(get_child(i));

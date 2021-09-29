@@ -50,7 +50,7 @@ void draw_margin_line(Control *edit_draw, Vector2 from, Vector2 to) {
 			EditorNode::get_singleton()->get_theme_base()->get_theme_color(SNAME("mono_color"), SNAME("Editor")).inverted() * Color(1, 1, 1, 0.5),
 			Math::round(2 * EDSCALE));
 
-	while ((to - from).length_squared() > 200) {
+	while (from.distance_squared_to(to) > 200) {
 		edit_draw->draw_line(
 				from,
 				from + line,
@@ -674,8 +674,7 @@ void TextureRegionEditor::_zoom_on_position(float p_zoom, Point2 p_position) {
 	draw_zoom = p_zoom;
 	Point2 ofs = p_position;
 	ofs = ofs / prev_zoom - ofs / draw_zoom;
-	draw_ofs.x = Math::round(draw_ofs.x + ofs.x);
-	draw_ofs.y = Math::round(draw_ofs.y + ofs.y);
+	draw_ofs = (draw_ofs + ofs).round();
 
 	edit_draw->update();
 }
