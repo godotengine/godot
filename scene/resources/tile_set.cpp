@@ -3558,8 +3558,7 @@ Vector2i TileSetAtlasSource::get_tile_effective_texture_offset(Vector2i p_atlas_
 	margin = Vector2i(MAX(0, margin.x), MAX(0, margin.y));
 	Vector2i effective_texture_offset = Object::cast_to<TileData>(get_tile_data(p_atlas_coords, p_alternative_tile))->get_texture_offset();
 	if (ABS(effective_texture_offset.x) > margin.x || ABS(effective_texture_offset.y) > margin.y) {
-		effective_texture_offset.x = CLAMP(effective_texture_offset.x, -margin.x, margin.x);
-		effective_texture_offset.y = CLAMP(effective_texture_offset.y, -margin.y, margin.y);
+		effective_texture_offset = effective_texture_offset.clamp(-margin, margin);
 	}
 
 	return effective_texture_offset;

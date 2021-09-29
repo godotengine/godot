@@ -1041,7 +1041,7 @@ Map<Vector2i, TileMapCell> TileMapEditorTilesPlugin::_draw_bucket_fill(Vector2i 
 			TypedArray<Vector2i> to_check;
 			if (source.source_id == TileSet::INVALID_SOURCE) {
 				Rect2i rect = tile_map->get_used_rect();
-				if (rect.size.x <= 0 || rect.size.y <= 0) {
+				if (rect.has_no_area()) {
 					rect = Rect2i(p_coords, Vector2i(1, 1));
 				}
 				for (int x = boundaries.position.x; x < boundaries.get_end().x; x++) {

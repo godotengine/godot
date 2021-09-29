@@ -3757,10 +3757,7 @@ void GLTFDocument::spec_gloss_to_metal_base_color(const Color &p_specular_factor
 	r_base_color.g = Math::lerp(base_color_from_diffuse.g, base_color_from_specular.g, r_metallic * r_metallic);
 	r_base_color.b = Math::lerp(base_color_from_diffuse.b, base_color_from_specular.b, r_metallic * r_metallic);
 	r_base_color.a = p_diffuse.a;
-	r_base_color.r = CLAMP(r_base_color.r, 0.0f, 1.0f);
-	r_base_color.g = CLAMP(r_base_color.g, 0.0f, 1.0f);
-	r_base_color.b = CLAMP(r_base_color.b, 0.0f, 1.0f);
-	r_base_color.a = CLAMP(r_base_color.a, 0.0f, 1.0f);
+	r_base_color = r_base_color.clamp();
 }
 
 GLTFNodeIndex GLTFDocument::_find_highest_node(Ref<GLTFState> state, const Vector<GLTFNodeIndex> &subset) {

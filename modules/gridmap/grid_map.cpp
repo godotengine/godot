@@ -377,10 +377,7 @@ int GridMap::get_cell_item_orientation(const Vector3i &p_position) const {
 }
 
 Vector3i GridMap::world_to_map(const Vector3 &p_world_position) const {
-	Vector3 map_position = p_world_position / cell_size;
-	map_position.x = floor(map_position.x);
-	map_position.y = floor(map_position.y);
-	map_position.z = floor(map_position.z);
+	Vector3 map_position = (p_world_position / cell_size).floor();
 	return Vector3i(map_position);
 }
 

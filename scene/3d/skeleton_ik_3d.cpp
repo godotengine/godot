@@ -99,7 +99,7 @@ bool FabrikInverseKinematic::build_chain(Task *p_task, bool p_force_simple_chain
 				child_ci->current_pos = child_ci->initial_transform.origin;
 
 				if (child_ci->parent_item) {
-					child_ci->length = (child_ci->current_pos - child_ci->parent_item->current_pos).length();
+					child_ci->length = child_ci->parent_item->current_pos.distance_to(child_ci->current_pos);
 				}
 			}
 
@@ -140,7 +140,7 @@ void FabrikInverseKinematic::solve_simple(Task *p_task, bool p_solve_magnet, Vec
 		solve_simple_backwards(p_task->chain, p_solve_magnet);
 		solve_simple_forwards(p_task->chain, p_solve_magnet, p_origin_pos);
 
-		distance_to_goal = (p_task->chain.tips[0].chain_item->current_pos - p_task->chain.tips[0].end_effector->goal_transform.origin).length();
+		distance_to_goal = p_task->chain.tips[0].end_effector->goal_transform.origin.distance_to(p_task->chain.tips[0].chain_item->current_pos);
 	}
 }
 

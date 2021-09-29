@@ -664,7 +664,7 @@ void NavMap::sync() {
 				} else {
 					other1 = other_edge_p1.lerp(other_edge_p2, (1.0 - projected_p1_ratio) / (projected_p2_ratio - projected_p1_ratio));
 				}
-				if ((self1 - other1).length() > edge_connection_margin) {
+				if (other1.distance_to(self1) > edge_connection_margin) {
 					continue;
 				}
 
@@ -675,7 +675,7 @@ void NavMap::sync() {
 				} else {
 					other2 = other_edge_p1.lerp(other_edge_p2, (0.0 - projected_p1_ratio) / (projected_p2_ratio - projected_p1_ratio));
 				}
-				if ((self2 - other2).length() > edge_connection_margin) {
+				if (other2.distance_to(self2) > edge_connection_margin) {
 					continue;
 				}
 

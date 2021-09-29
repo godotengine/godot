@@ -6280,7 +6280,7 @@ void Node3DEditor::update_grid() {
 	// Gets a orthogonal or perspective position correctly (for the grid comparison)
 	const Vector3 camera_position = get_editor_viewport(0)->camera->get_position();
 
-	if (!grid_init_draw || (camera_position - grid_camera_last_update_position).length() >= 10.0f) {
+	if (!grid_init_draw || grid_camera_last_update_position.distance_squared_to(camera_position) >= 100.0f) {
 		_finish_grid();
 		_init_grid();
 		grid_init_draw = true;
