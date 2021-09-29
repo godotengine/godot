@@ -685,6 +685,7 @@ void register_scene_types() {
 	GDREGISTER_VIRTUAL_CLASS(TileSetSource);
 	GDREGISTER_CLASS(TileSetAtlasSource);
 	GDREGISTER_CLASS(TileSetScenesCollectionSource);
+	GDREGISTER_CLASS(TileMapPattern);
 	GDREGISTER_CLASS(TileData);
 	GDREGISTER_CLASS(TileMap);
 	GDREGISTER_CLASS(ParallaxBackground);

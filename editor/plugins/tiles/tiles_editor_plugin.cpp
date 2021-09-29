@@ -30,17 +30,18 @@
 
 #include "tiles_editor_plugin.h"
 
+#include "core/os/mutex.h"
+
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "editor/plugins/canvas_item_editor_plugin.h"
 
 #include "scene/2d/tile_map.h"
-#include "scene/resources/tile_set.h"
-
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/control.h"
 #include "scene/gui/separator.h"
+#include "scene/resources/tile_set.h"
 
 #include "tile_set_editor.h"
 
@@ -65,6 +66,99 @@ void TilesEditor::_notification(int p_what) {
 	}
 }
 
+void TilesEditor::_pattern_preview_done(const Variant &p_udata) {
+	pattern_preview_done.set();
+}
+
+void TilesEditor::_thread_func(void *ud) {
+	TilesEditor *te = (TilesEditor *)ud;
+	te->_thread();
+}
+
+void TilesEditor::_thread() {
+	pattern_thread_exited.clear();
+	while (!pattern_thread_exit.is_set()) {
+		pattern_preview_sem.wait();
+
+		pattern_preview_mutex.lock();
+		if (pattern_preview_queue.size()) {
+			QueueItem item = pattern_preview_queue.front()->get();
+			pattern_preview_queue.pop_front();
+			pattern_preview_mutex.unlock();
+
+			int thumbnail_size = EditorSettings::get_singleton()->get("filesystem/file_dialog/thumbnail_size");
+			thumbnail_size *= EDSCALE;
+			Vector2 thumbnail_size2 = Vector2(thumbnail_size, thumbnail_size);
+
+			if (item.pattern.is_valid() && !item.pattern->is_empty()) {
+				// Generate the pattern preview
+				SubViewport *viewport = memnew(SubViewport);
+				viewport->set_size(thumbnail_size2);
+				viewport->set_disable_input(true);
+				viewport->set_transparent_background(true);
+				viewport->set_update_mode(SubViewport::UPDATE_ONCE);
+
+				TileMap *tile_map = memnew(TileMap);
+				tile_map->set_tileset(item.tile_set);
+				tile_map->set_pattern(0, Vector2(), item.pattern);
+				viewport->add_child(tile_map);
+
+				TypedArray<Vector2i> used_cells = tile_map->get_used_cells(0);
+
+				Rect2 encompassing_rect = Rect2();
+				encompassing_rect.set_position(tile_map->map_to_world(used_cells[0]));
+				for (int i = 0; i < used_cells.size(); i++) {
+					Vector2i cell = used_cells[i];
+					Vector2 world_pos = tile_map->map_to_world(cell);
+					encompassing_rect.expand_to(world_pos);
+
+					// Texture.
+					Ref<TileSetAtlasSource> atlas_source = tile_set->get_source(tile_map->get_cell_source_id(0, cell));
+					if (atlas_source.is_valid()) {
+						Vector2i coords = tile_map->get_cell_atlas_coords(0, cell);
+						int alternative = tile_map->get_cell_alternative_tile(0, cell);
+
+						Vector2 center = world_pos - atlas_source->get_tile_effective_texture_offset(coords, alternative);
+						encompassing_rect.expand_to(center - atlas_source->get_tile_texture_region(coords).size / 2);
+						encompassing_rect.expand_to(center + atlas_source->get_tile_texture_region(coords).size / 2);
+					}
+				}
+
+				Vector2 scale = thumbnail_size2 / MAX(encompassing_rect.size.x, encompassing_rect.size.y);
+				tile_map->set_scale(scale);
+				tile_map->set_position(-(scale * encompassing_rect.get_center()) + thumbnail_size2 / 2);
+
+				// Add the viewport at the lasst moment to avoid rendering too early.
+				EditorNode::get_singleton()->add_child(viewport);
+
+				pattern_preview_done.clear();
+				RS::get_singleton()->request_frame_drawn_callback(const_cast<TilesEditor *>(this), "_pattern_preview_done", Variant());
+
+				while (!pattern_preview_done.is_set()) {
+					OS::get_singleton()->delay_usec(10);
+				}
+
+				Ref<Image> image = viewport->get_texture()->get_image();
+				Ref<ImageTexture> image_texture;
+				image_texture.instantiate();
+				image_texture->create_from_image(image);
+
+				// Find the index for the given pattern. TODO: optimize.
+				Variant args[] = { item.pattern, image_texture };
+				const Variant *args_ptr[] = { &args[0], &args[1] };
+				Variant r;
+				Callable::CallError error;
+				item.callback.call(args_ptr, 2, r, error);
+
+				viewport->queue_delete();
+			} else {
+				pattern_preview_mutex.unlock();
+			}
+		}
+	}
+	pattern_thread_exited.set();
+}
+
 void TilesEditor::_tile_map_changed() {
 	tile_map_changed_needs_update = true;
 }
@@ -83,6 +177,7 @@ void TilesEditor::_update_editors() {
 	// Set editors visibility.
 	tilemap_toolbar->set_visible(!tileset_tilemap_switch_button->is_pressed());
 	tilemap_editor->set_visible(!tileset_tilemap_switch_button->is_pressed());
+	tileset_toolbar->set_visible(tileset_tilemap_switch_button->is_pressed());
 	tileset_editor->set_visible(tileset_tilemap_switch_button->is_pressed());
 
 	// Enable/disable the switch button.
@@ -150,6 +245,16 @@ void TilesEditor::synchronize_atlas_view(Object *p_current) {
 	}
 }
 
+void TilesEditor::queue_pattern_preview(Ref<TileSet> p_tile_set, Ref<TileMapPattern> p_pattern, Callable p_callback) {
+	ERR_FAIL_COND(!p_tile_set.is_valid());
+	ERR_FAIL_COND(!p_pattern.is_valid());
+	{
+		MutexLock lock(pattern_preview_mutex);
+		pattern_preview_queue.push_back({ p_tile_set, p_pattern, p_callback });
+	}
+	pattern_preview_sem.post();
+}
+
 void TilesEditor::edit(Object *p_object) {
 	// Disconnect to changes.
 	TileMap *tile_map = Object::cast_to<TileMap>(ObjectDB::get_instance(tile_map_id));
@@ -192,6 +297,7 @@ void TilesEditor::edit(Object *p_object) {
 }
 
 void TilesEditor::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("_pattern_preview_done", "pattern"), &TilesEditor::_pattern_preview_done);
 }
 
 TilesEditor::TilesEditor(EditorNode *p_editor) {
@@ -229,12 +335,27 @@ TilesEditor::TilesEditor(EditorNode *p_editor) {
 	tileset_editor->hide();
 	add_child(tileset_editor);
 
+	tileset_toolbar = tileset_editor->get_toolbar();
+	toolbar->add_child(tileset_toolbar);
+
+	// Pattern preview generation thread.
+	pattern_preview_thread.start(_thread_func, this);
+
 	// Initialization.
 	_update_switch_button();
 	_update_editors();
 }
 
 TilesEditor::~TilesEditor() {
+	if (pattern_preview_thread.is_started()) {
+		pattern_thread_exit.set();
+		pattern_preview_sem.post();
+		while (!pattern_thread_exited.is_set()) {
+			OS::get_singleton()->delay_usec(10000);
+			RenderingServer::get_singleton()->sync(); //sync pending stuff, as thread may be blocked on visual server
+		}
+		pattern_preview_thread.wait_to_finish();
+	}
 }
 
 ///////////////////////////////////////////////////////////////

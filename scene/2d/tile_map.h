@@ -37,51 +37,6 @@
 
 class TileSetAtlasSource;
 
-union TileMapCell {
-	struct {
-		int32_t source_id : 16;
-		int16_t coord_x : 16;
-		int16_t coord_y : 16;
-		int32_t alternative_tile : 16;
-	};
-
-	uint64_t _u64t;
-	TileMapCell(int p_source_id = -1, Vector2i p_atlas_coords = TileSetSource::INVALID_ATLAS_COORDS, int p_alternative_tile = TileSetSource::INVALID_TILE_ALTERNATIVE) {
-		source_id = p_source_id;
-		set_atlas_coords(p_atlas_coords);
-		alternative_tile = p_alternative_tile;
-	}
-
-	Vector2i get_atlas_coords() const {
-		return Vector2i(coord_x, coord_y);
-	}
-
-	void set_atlas_coords(const Vector2i &r_coords) {
-		coord_x = r_coords.x;
-		coord_y = r_coords.y;
-	}
-
-	bool operator<(const TileMapCell &p_other) const {
-		if (source_id == p_other.source_id) {
-			if (coord_x == p_other.coord_x) {
-				if (coord_y == p_other.coord_y) {
-					return alternative_tile < p_other.alternative_tile;
-				} else {
-					return coord_y < p_other.coord_y;
-				}
-			} else {
-				return coord_x < p_other.coord_x;
-			}
-		} else {
-			return source_id < p_other.source_id;
-		}
-	}
-
-	bool operator!=(const TileMapCell &p_other) const {
-		return !(source_id == p_other.source_id && coord_x == p_other.coord_x && coord_y == p_other.coord_y && alternative_tile == p_other.alternative_tile);
-	}
-};
-
 struct TileMapQuadrant {
 	struct CoordsWorldComparator {
 		_ALWAYS_INLINE_ bool operator()(const Vector2i &p_a, const Vector2i &p_b) const {
@@ -148,32 +103,6 @@ struct TileMapQuadrant {
 	TileMapQuadrant() :
 			dirty_list_element(this) {
 	}
-};
-
-class TileMapPattern : public Object {
-	GDCLASS(TileMapPattern, Object);
-
-	Vector2i size;
-	Map<Vector2i, TileMapCell> pattern;
-
-protected:
-	static void _bind_methods();
-
-public:
-	void set_cell(const Vector2i &p_coords, int p_source_id, const Vector2i p_atlas_coords, int p_alternative_tile = 0);
-	bool has_cell(const Vector2i &p_coords) const;
-	void remove_cell(const Vector2i &p_coords, bool p_update_size = true);
-	int get_cell_source_id(const Vector2i &p_coords) const;
-	Vector2i get_cell_atlas_coords(const Vector2i &p_coords) const;
-	int get_cell_alternative_tile(const Vector2i &p_coords) const;
-
-	TypedArray<Vector2i> get_used_cells() const;
-
-	Vector2i get_size() const;
-	void set_size(const Vector2i &p_size);
-	bool is_empty() const;
-
-	void clear();
 };
 
 class TileMap : public Node2D {
@@ -349,9 +278,9 @@ public:
 	Vector2i get_cell_atlas_coords(int p_layer, const Vector2i &p_coords, bool p_use_proxies = false) const;
 	int get_cell_alternative_tile(int p_layer, const Vector2i &p_coords, bool p_use_proxies = false) const;
 
-	TileMapPattern *get_pattern(int p_layer, TypedArray<Vector2i> p_coords_array);
-	Vector2i map_pattern(Vector2i p_position_in_tilemap, Vector2i p_coords_in_pattern, const TileMapPattern *p_pattern);
-	void set_pattern(int p_layer, Vector2i p_position, const TileMapPattern *p_pattern);
+	Ref<TileMapPattern> get_pattern(int p_layer, TypedArray<Vector2i> p_coords_array);
+	Vector2i map_pattern(Vector2i p_position_in_tilemap, Vector2i p_coords_in_pattern, Ref<TileMapPattern> p_pattern);
+	void set_pattern(int p_layer, Vector2i p_position, const Ref<TileMapPattern> p_pattern);
 
 	// Not exposed to users
 	TileMapCell get_cell(int p_layer, const Vector2i &p_coords, bool p_use_proxies = false) const;

@@ -740,7 +740,7 @@ bool Control::has_point(const Point2 &p_point) const {
 	return Rect2(Point2(), get_size()).has_point(p_point);
 }
 
-void Control::set_drag_forwarding(Node *p_target) {
+void Control::set_drag_forwarding(Object *p_target) {
 	if (p_target) {
 		data.drag_owner = p_target->get_instance_id();
 	} else {

@@ -60,6 +60,84 @@ class TileSetPluginAtlasRendering;
 class TileSetPluginAtlasPhysics;
 class TileSetPluginAtlasNavigation;
 
+union TileMapCell {
+	struct {
+		int32_t source_id : 16;
+		int16_t coord_x : 16;
+		int16_t coord_y : 16;
+		int32_t alternative_tile : 16;
+	};
+
+	uint64_t _u64t;
+	TileMapCell(int p_source_id = -1, Vector2i p_atlas_coords = Vector2i(-1, -1), int p_alternative_tile = -1) { // default are INVALID_SOURCE, INVALID_ATLAS_COORDS, INVALID_TILE_ALTERNATIVE
+		source_id = p_source_id;
+		set_atlas_coords(p_atlas_coords);
+		alternative_tile = p_alternative_tile;
+	}
+
+	Vector2i get_atlas_coords() const {
+		return Vector2i(coord_x, coord_y);
+	}
+
+	void set_atlas_coords(const Vector2i &r_coords) {
+		coord_x = r_coords.x;
+		coord_y = r_coords.y;
+	}
+
+	bool operator<(const TileMapCell &p_other) const {
+		if (source_id == p_other.source_id) {
+			if (coord_x == p_other.coord_x) {
+				if (coord_y == p_other.coord_y) {
+					return alternative_tile < p_other.alternative_tile;
+				} else {
+					return coord_y < p_other.coord_y;
+				}
+			} else {
+				return coord_x < p_other.coord_x;
+			}
+		} else {
+			return source_id < p_other.source_id;
+		}
+	}
+
+	bool operator!=(const TileMapCell &p_other) const {
+		return !(source_id == p_other.source_id && coord_x == p_other.coord_x && coord_y == p_other.coord_y && alternative_tile == p_other.alternative_tile);
+	}
+};
+
+class TileMapPattern : public Resource {
+	GDCLASS(TileMapPattern, Resource);
+
+	Vector2i size;
+	Map<Vector2i, TileMapCell> pattern;
+
+	void _set_tile_data(const Vector<int> &p_data);
+	Vector<int> _get_tile_data() const;
+
+protected:
+	bool _set(const StringName &p_name, const Variant &p_value);
+	bool _get(const StringName &p_name, Variant &r_ret) const;
+	void _get_property_list(List<PropertyInfo> *p_list) const;
+
+	static void _bind_methods();
+
+public:
+	void set_cell(const Vector2i &p_coords, int p_source_id, const Vector2i p_atlas_coords, int p_alternative_tile = 0);
+	bool has_cell(const Vector2i &p_coords) const;
+	void remove_cell(const Vector2i &p_coords, bool p_update_size = true);
+	int get_cell_source_id(const Vector2i &p_coords) const;
+	Vector2i get_cell_atlas_coords(const Vector2i &p_coords) const;
+	int get_cell_alternative_tile(const Vector2i &p_coords) const;
+
+	TypedArray<Vector2i> get_used_cells() const;
+
+	Vector2i get_size() const;
+	void set_size(const Vector2i &p_size);
+	bool is_empty() const;
+
+	void clear();
+};
+
 class TileSet : public Resource {
 	GDCLASS(TileSet, Resource);
 
@@ -245,6 +323,8 @@ private:
 	int next_source_id = 0;
 	// ---------------------
 
+	LocalVector<Ref<TileMapPattern>> patterns;
+
 	void _compute_next_source_id();
 	void _source_changed();
 
@@ -383,6 +463,12 @@ public:
 
 	void cleanup_invalid_tile_proxies();
 	void clear_tile_proxies();
+
+	// Patterns.
+	int add_pattern(Ref<TileMapPattern> p_pattern, int p_index = -1);
+	Ref<TileMapPattern> get_pattern(int p_index);
+	void remove_pattern(int p_index);
+	int get_patterns_count();
 
 	// Helpers
 	Vector<Vector2> get_tile_shape_polygon();

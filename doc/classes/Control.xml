@@ -763,10 +763,10 @@
 		</method>
 		<method name="set_drag_forwarding">
 			<return type="void" />
-			<argument index="0" name="target" type="Node" />
+			<argument index="0" name="target" type="Object" />
 			<description>
-				Forwards the handling of this control's drag and drop to [code]target[/code] node.
-				Forwarding can be implemented in the target node similar to the methods [method _get_drag_data], [method _can_drop_data], and [method _drop_data] but with two differences:
+				Forwards the handling of this control's drag and drop to [code]target[/code] object.
+				Forwarding can be implemented in the target object similar to the methods [method _get_drag_data], [method _can_drop_data], and [method _drop_data] but with two differences:
 				1. The function name must be suffixed with [b]_fw[/b]
 				2. The function must take an extra argument that is the control doing the forwarding
 				[codeblocks]

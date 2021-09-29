@@ -117,6 +117,14 @@
 				Returns the neighboring cell to the one at coordinates [code]coords[/code], indentified by the [code]neighbor[/code] direction. This method takes into account the different layouts a TileMap can take.
 			</description>
 		</method>
+		<method name="get_pattern">
+			<return type="TileMapPattern" />
+			<argument index="0" name="layer" type="int" />
+			<argument index="1" name="coords_array" type="Vector2i[]" />
+			<description>
+				Creates a new [TileMapPattern] from the given layer and set of cells.
+			</description>
+		</method>
 		<method name="get_surrounding_tiles">
 			<return type="Vector2i[]" />
 			<argument index="0" name="coords" type="Vector2i" />
@@ -149,6 +157,15 @@
 			<argument index="0" name="layer" type="int" />
 			<description>
 				Returns if a layer Y-sorts its tiles.
+			</description>
+		</method>
+		<method name="map_pattern">
+			<return type="Vector2i" />
+			<argument index="0" name="position_in_tilemap" type="Vector2i" />
+			<argument index="1" name="coords_in_pattern" type="Vector2i" />
+			<argument index="2" name="pattern" type="TileMapPattern" />
+			<description>
+				Returns for the given coodinate [code]coords_in_pattern[/code] in a [TileMapPattern] the corresponding cell coordinates if the pattern was pasted at the [code]position_in_tilemap[/code] coordinates (see [method set_pattern]). This mapping is required as in half-offset tile shapes, the mapping might not work by calculating [code]position_in_tile_map + coords_in_pattern[/code]
 			</description>
 		</method>
 		<method name="map_to_world" qualifiers="const">
@@ -235,6 +252,15 @@
 			<argument index="1" name="z_index" type="int" />
 			<description>
 				Sets a layers Z-index value. This Z-index is added to each tile's Z-index value.
+			</description>
+		</method>
+		<method name="set_pattern">
+			<return type="void" />
+			<argument index="0" name="layer" type="int" />
+			<argument index="1" name="position" type="Vector2i" />
+			<argument index="2" name="pattern" type="TileMapPattern" />
+			<description>
+				Paste the given [TileMapPattern] at the given [code]position[/code] and [code]layer[/code] in the tile map.
 			</description>
 		</method>
 		<method name="world_to_map" qualifiers="const">
