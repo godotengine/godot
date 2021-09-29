@@ -611,11 +611,13 @@ _FORCE_INLINE_ bool TextServerFallback::_ensure_glyph(FontDataFallback *p_font_d
 			flags |= FT_LOAD_COLOR;
 		}
 
-		FT_Fixed v, h;
-		FT_Get_Advance(fd->face, p_glyph, flags, &h);
-		FT_Get_Advance(fd->face, p_glyph, flags | FT_LOAD_VERTICAL_LAYOUT, &v);
+		int32_t glyph_index = FT_Get_Char_Index(fd->face, p_glyph);
 
-		int error = FT_Load_Glyph(fd->face, p_glyph, flags);
+		FT_Fixed v, h;
+		FT_Get_Advance(fd->face, glyph_index, flags, &h);
+		FT_Get_Advance(fd->face, glyph_index, flags | FT_LOAD_VERTICAL_LAYOUT, &v);
+
+		int error = FT_Load_Glyph(fd->face, glyph_index, flags);
 		if (error) {
 			fd->glyph_map[p_glyph] = FontGlyph();
 			ERR_FAIL_V_MSG(false, "FreeType: Failed to load glyph.");
@@ -1542,7 +1544,7 @@ bool TextServerFallback::font_get_glyph_contours(RID p_font_rid, int p_size, int
 	ERR_FAIL_COND_V(!_ensure_cache_for_size(fd, size), false);
 
 #ifdef MODULE_FREETYPE_ENABLED
-	int error = FT_Load_Glyph(fd->cache[size]->face, p_index, FT_LOAD_NO_BITMAP | (fd->force_autohinter ? FT_LOAD_FORCE_AUTOHINT : 0));
+	int error = FT_Load_Glyph(fd->cache[size]->face, FT_Get_Char_Index(fd->cache[size]->face, p_index), FT_LOAD_NO_BITMAP | (fd->force_autohinter ? FT_LOAD_FORCE_AUTOHINT : 0));
 	ERR_FAIL_COND_V(error, false);
 
 	r_points.clear();
@@ -1636,7 +1638,9 @@ Vector2 TextServerFallback::font_get_kerning(RID p_font_rid, int p_size, const V
 #ifdef MODULE_FREETYPE_ENABLED
 		if (fd->cache[size]->face) {
 			FT_Vector delta;
-			FT_Get_Kerning(fd->cache[size]->face, p_glyph_pair.x, p_glyph_pair.y, FT_KERNING_DEFAULT, &delta);
+			int32_t glyph_a = FT_Get_Char_Index(fd->cache[size]->face, p_glyph_pair.x);
+			int32_t glyph_b = FT_Get_Char_Index(fd->cache[size]->face, p_glyph_pair.y);
+			FT_Get_Kerning(fd->cache[size]->face, glyph_a, glyph_b, FT_KERNING_DEFAULT, &delta);
 			if (fd->msdf) {
 				return Vector2(delta.x, delta.y) * (real_t)p_size / (real_t)fd->msdf_source_size;
 			} else {
@@ -1649,26 +1653,7 @@ Vector2 TextServerFallback::font_get_kerning(RID p_font_rid, int p_size, const V
 }
 
 int32_t TextServerFallback::font_get_glyph_index(RID p_font_rid, int p_size, char32_t p_char, char32_t p_variation_selector) const {
-	FontDataFallback *fd = font_owner.getornull(p_font_rid);
-	ERR_FAIL_COND_V(!fd, 0);
-
-	MutexLock lock(fd->mutex);
-	Vector2i size = _get_size(fd, p_size);
-	ERR_FAIL_COND_V(!_ensure_cache_for_size(fd, size), 0);
-
-#ifdef MODULE_FREETYPE_ENABLED
-	if (fd->cache[size]->face) {
-		if (p_variation_selector) {
-			return FT_Face_GetCharVariantIndex(fd->cache[size]->face, p_char, p_variation_selector);
-		} else {
-			return FT_Get_Char_Index(fd->cache[size]->face, p_char);
-		}
-	} else {
-		return 0;
-	}
-#else
 	return (int32_t)p_char;
-#endif
 }
 
 bool TextServerFallback::font_has_char(RID p_font_rid, char32_t p_char) const {
@@ -1731,12 +1716,6 @@ void TextServerFallback::font_render_range(RID p_font_rid, const Vector2i &p_siz
 	Vector2i size = _get_size_outline(fd, p_size);
 	ERR_FAIL_COND(!_ensure_cache_for_size(fd, size));
 	for (char32_t i = p_start; i <= p_end; i++) {
-#ifdef MODULE_FREETYPE_ENABLED
-		if (fd->cache[size]->face) {
-			_ensure_glyph(fd, size, FT_Get_Char_Index(fd->cache[size]->face, i));
-			continue;
-		}
-#endif
 		_ensure_glyph(fd, size, (int32_t)i);
 	}
 }
