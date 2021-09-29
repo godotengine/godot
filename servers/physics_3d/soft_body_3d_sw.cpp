@@ -249,8 +249,10 @@ void SoftBody3DSW::update_area() {
 
 	// Node area.
 	LocalVector<int> counts;
-	counts.resize(nodes.size());
-	memset(counts.ptr(), 0, counts.size() * sizeof(int));
+	if (nodes.size() > 0) {
+		counts.resize(nodes.size());
+		memset(counts.ptr(), 0, counts.size() * sizeof(int));
+	}
 
 	for (i = 0, ni = nodes.size(); i < ni; ++i) {
 		nodes[i].area = 0.0;
