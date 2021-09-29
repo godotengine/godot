@@ -815,7 +815,7 @@ void BaseMaterial3D::_update_shader() {
 			code += "		particle_frame = mod(particle_frame, particle_total_frames);\n";
 			code += "	}";
 			code += "	UV /= vec2(h_frames, v_frames);\n";
-			code += "	UV += vec2(mod(particle_frame, h_frames) / h_frames, floor(particle_frame / h_frames) / v_frames);\n";
+			code += "	UV += vec2(mod(particle_frame, h_frames) / h_frames, floor((particle_frame + 0.5) / h_frames) / v_frames);\n";
 		} break;
 		case BILLBOARD_MAX:
 			break; // Internal value, skip.
