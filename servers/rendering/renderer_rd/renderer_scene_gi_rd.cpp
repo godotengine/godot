@@ -1450,7 +1450,7 @@ void RendererSceneGIRD::SDFGI::pre_process_gi(const Transform3D &p_transform, Re
 				break;
 			}
 
-			RendererSceneRenderRD::LightInstance *li = p_scene_render->light_instance_owner.getornull(p_scene_render->render_state.sdfgi_update_data->directional_lights->get(j));
+			RendererSceneRenderRD::LightInstance *li = p_scene_render->light_instance_owner.get_or_null(p_scene_render->render_state.sdfgi_update_data->directional_lights->get(j));
 			ERR_CONTINUE(!li);
 
 			if (storage->light_directional_is_sky_only(li->light)) {
@@ -1484,7 +1484,7 @@ void RendererSceneGIRD::SDFGI::pre_process_gi(const Transform3D &p_transform, Re
 				break;
 			}
 
-			RendererSceneRenderRD::LightInstance *li = p_scene_render->light_instance_owner.getornull(p_scene_render->render_state.sdfgi_update_data->positional_light_instances[j]);
+			RendererSceneRenderRD::LightInstance *li = p_scene_render->light_instance_owner.get_or_null(p_scene_render->render_state.sdfgi_update_data->positional_light_instances[j]);
 			ERR_CONTINUE(!li);
 
 			uint32_t max_sdfgi_cascade = storage->light_get_max_sdfgi_cascade(li->light);
@@ -1534,7 +1534,7 @@ void RendererSceneGIRD::SDFGI::pre_process_gi(const Transform3D &p_transform, Re
 
 void RendererSceneGIRD::SDFGI::render_region(RID p_render_buffers, int p_region, const PagedArray<RendererSceneRender::GeometryInstance *> &p_instances, RendererSceneRenderRD *p_scene_render) {
 	//print_line("rendering region " + itos(p_region));
-	RendererSceneRenderRD::RenderBuffers *rb = p_scene_render->render_buffers_owner.getornull(p_render_buffers);
+	RendererSceneRenderRD::RenderBuffers *rb = p_scene_render->render_buffers_owner.get_or_null(p_render_buffers);
 	ERR_FAIL_COND(!rb); // we wouldn't be here if this failed but...
 	AABB bounds;
 	Vector3i from;
@@ -1892,7 +1892,7 @@ void RendererSceneGIRD::SDFGI::render_region(RID p_render_buffers, int p_region,
 }
 
 void RendererSceneGIRD::SDFGI::render_static_lights(RID p_render_buffers, uint32_t p_cascade_count, const uint32_t *p_cascade_indices, const PagedArray<RID> *p_positional_light_cull_result, RendererSceneRenderRD *p_scene_render) {
-	RendererSceneRenderRD::RenderBuffers *rb = p_scene_render->render_buffers_owner.getornull(p_render_buffers);
+	RendererSceneRenderRD::RenderBuffers *rb = p_scene_render->render_buffers_owner.get_or_null(p_render_buffers);
 	ERR_FAIL_COND(!rb); // we wouldn't be here if this failed but...
 
 	RD::get_singleton()->draw_command_begin_label("SDFGI Render Static Lighs");
@@ -1921,7 +1921,7 @@ void RendererSceneGIRD::SDFGI::render_static_lights(RID p_render_buffers, uint32
 					break;
 				}
 
-				RendererSceneRenderRD::LightInstance *li = p_scene_render->light_instance_owner.getornull(p_positional_light_cull_result[i][j]);
+				RendererSceneRenderRD::LightInstance *li = p_scene_render->light_instance_owner.get_or_null(p_positional_light_cull_result[i][j]);
 				ERR_CONTINUE(!li);
 
 				uint32_t max_sdfgi_cascade = storage->light_get_max_sdfgi_cascade(li->light);
@@ -3024,7 +3024,7 @@ void RendererSceneGIRD::setup_voxel_gi_instances(RID p_render_buffers, const Tra
 	r_voxel_gi_instances_used = 0;
 
 	// feels a little dirty to use our container this way but....
-	RendererSceneRenderRD::RenderBuffers *rb = p_scene_render->render_buffers_owner.getornull(p_render_buffers);
+	RendererSceneRenderRD::RenderBuffers *rb = p_scene_render->render_buffers_owner.get_or_null(p_render_buffers);
 	ERR_FAIL_COND(rb == nullptr);
 
 	RID voxel_gi_buffer = p_scene_render->render_buffers_get_voxel_gi_buffer(p_render_buffers);
@@ -3119,9 +3119,9 @@ void RendererSceneGIRD::setup_voxel_gi_instances(RID p_render_buffers, const Tra
 void RendererSceneGIRD::process_gi(RID p_render_buffers, RID p_normal_roughness_buffer, RID p_voxel_gi_buffer, RID p_environment, const CameraMatrix &p_projection, const Transform3D &p_transform, const PagedArray<RID> &p_voxel_gi_instances, RendererSceneRenderRD *p_scene_render) {
 	RD::get_singleton()->draw_command_begin_label("GI Render");
 
-	RendererSceneRenderRD::RenderBuffers *rb = p_scene_render->render_buffers_owner.getornull(p_render_buffers);
+	RendererSceneRenderRD::RenderBuffers *rb = p_scene_render->render_buffers_owner.get_or_null(p_render_buffers);
 	ERR_FAIL_COND(rb == nullptr);
-	RendererSceneEnvironmentRD *env = p_scene_render->environment_owner.getornull(p_environment);
+	RendererSceneEnvironmentRD *env = p_scene_render->environment_owner.get_or_null(p_environment);
 
 	if (rb->ambient_buffer.is_null() || rb->gi.using_half_size_gi != half_resolution) {
 		if (rb->ambient_buffer.is_valid()) {
@@ -3393,7 +3393,7 @@ void RendererSceneGIRD::voxel_gi_update(RID p_probe, bool p_update_light_instanc
 }
 
 void RendererSceneGIRD::debug_voxel_gi(RID p_voxel_gi, RD::DrawListID p_draw_list, RID p_framebuffer, const CameraMatrix &p_camera_with_transform, bool p_lighting, bool p_emission, float p_alpha) {
-	VoxelGIInstance *voxel_gi = voxel_gi_instance_owner.getornull(p_voxel_gi);
+	VoxelGIInstance *voxel_gi = voxel_gi_instance_owner.get_or_null(p_voxel_gi);
 	ERR_FAIL_COND(!voxel_gi);
 
 	voxel_gi->debug(p_draw_list, p_framebuffer, p_camera_with_transform, p_lighting, p_emission, p_alpha);

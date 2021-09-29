@@ -224,7 +224,7 @@ public:
 		return texture_owner.make_rid(texture);
 	}
 	void texture_2d_initialize(RID p_texture, const Ref<Image> &p_image) override {
-		DummyTexture *t = texture_owner.getornull(p_texture);
+		DummyTexture *t = texture_owner.get_or_null(p_texture);
 		ERR_FAIL_COND(!t);
 		t->image = p_image->duplicate();
 	}
@@ -241,7 +241,7 @@ public:
 	void texture_3d_placeholder_initialize(RID p_texture) override {}
 
 	Ref<Image> texture_2d_get(RID p_texture) const override {
-		DummyTexture *t = texture_owner.getornull(p_texture);
+		DummyTexture *t = texture_owner.get_or_null(p_texture);
 		ERR_FAIL_COND_V(!t, Ref<Image>());
 		return t->image;
 	}
@@ -661,7 +661,7 @@ public:
 	bool free(RID p_rid) override {
 		if (texture_owner.owns(p_rid)) {
 			// delete the texture
-			DummyTexture *texture = texture_owner.getornull(p_rid);
+			DummyTexture *texture = texture_owner.get_or_null(p_rid);
 			texture_owner.free(p_rid);
 			memdelete(texture);
 			return true;

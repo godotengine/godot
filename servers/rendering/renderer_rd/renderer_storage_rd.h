@@ -1350,7 +1350,7 @@ public:
 		if (p_texture.is_null()) {
 			return RID();
 		}
-		Texture *tex = texture_owner.getornull(p_texture);
+		Texture *tex = texture_owner.get_or_null(p_texture);
 
 		if (!tex) {
 			return RID();
@@ -1362,7 +1362,7 @@ public:
 		if (p_texture.is_null()) {
 			return Size2i();
 		}
-		Texture *tex = texture_owner.getornull(p_texture);
+		Texture *tex = texture_owner.get_or_null(p_texture);
 
 		if (!tex) {
 			return Size2i();
@@ -1430,12 +1430,12 @@ public:
 	void material_set_data_request_function(ShaderType p_shader_type, MaterialDataRequestFunction p_function);
 
 	_FORCE_INLINE_ uint32_t material_get_shader_id(RID p_material) {
-		Material *material = material_owner.getornull(p_material);
+		Material *material = material_owner.get_or_null(p_material);
 		return material->shader_id;
 	}
 
 	_FORCE_INLINE_ MaterialData *material_get_data(RID p_material, ShaderType p_shader_type) {
-		Material *material = material_owner.getornull(p_material);
+		Material *material = material_owner.get_or_null(p_material);
 		if (!material || material->shader_type != p_shader_type) {
 			return nullptr;
 		} else {
@@ -1488,7 +1488,7 @@ public:
 	virtual void update_mesh_instances();
 
 	_FORCE_INLINE_ const RID *mesh_get_surface_count_and_materials(RID p_mesh, uint32_t &r_surface_count) {
-		Mesh *mesh = mesh_owner.getornull(p_mesh);
+		Mesh *mesh = mesh_owner.get_or_null(p_mesh);
 		ERR_FAIL_COND_V(!mesh, nullptr);
 		r_surface_count = mesh->surface_count;
 		if (r_surface_count == 0) {
@@ -1505,7 +1505,7 @@ public:
 	}
 
 	_FORCE_INLINE_ void *mesh_get_surface(RID p_mesh, uint32_t p_surface_index) {
-		Mesh *mesh = mesh_owner.getornull(p_mesh);
+		Mesh *mesh = mesh_owner.get_or_null(p_mesh);
 		ERR_FAIL_COND_V(!mesh, nullptr);
 		ERR_FAIL_UNSIGNED_INDEX_V(p_surface_index, mesh->surface_count, nullptr);
 
@@ -1513,7 +1513,7 @@ public:
 	}
 
 	_FORCE_INLINE_ RID mesh_get_shadow_mesh(RID p_mesh) {
-		Mesh *mesh = mesh_owner.getornull(p_mesh);
+		Mesh *mesh = mesh_owner.get_or_null(p_mesh);
 		ERR_FAIL_COND_V(!mesh, RID());
 
 		return mesh->shadow_mesh;
@@ -1599,7 +1599,7 @@ public:
 	}
 
 	_FORCE_INLINE_ void mesh_instance_surface_get_vertex_arrays_and_format(RID p_mesh_instance, uint32_t p_surface_index, uint32_t p_input_mask, RID &r_vertex_array_rd, RD::VertexFormatID &r_vertex_format) {
-		MeshInstance *mi = mesh_instance_owner.getornull(p_mesh_instance);
+		MeshInstance *mi = mesh_instance_owner.get_or_null(p_mesh_instance);
 		ERR_FAIL_COND(!mi);
 		Mesh *mesh = mi->mesh;
 		ERR_FAIL_UNSIGNED_INDEX(p_surface_index, mesh->surface_count);
@@ -1640,7 +1640,7 @@ public:
 	}
 
 	_FORCE_INLINE_ uint32_t mesh_surface_get_render_pass_index(RID p_mesh, uint32_t p_surface_index, uint64_t p_render_pass, uint32_t *r_index) {
-		Mesh *mesh = mesh_owner.getornull(p_mesh);
+		Mesh *mesh = mesh_owner.get_or_null(p_mesh);
 		Mesh::Surface *s = mesh->surfaces[p_surface_index];
 
 		if (s->render_pass != p_render_pass) {
@@ -1653,7 +1653,7 @@ public:
 	}
 
 	_FORCE_INLINE_ uint32_t mesh_surface_get_multimesh_render_pass_index(RID p_mesh, uint32_t p_surface_index, uint64_t p_render_pass, uint32_t *r_index) {
-		Mesh *mesh = mesh_owner.getornull(p_mesh);
+		Mesh *mesh = mesh_owner.get_or_null(p_mesh);
 		Mesh::Surface *s = mesh->surfaces[p_surface_index];
 
 		if (s->multimesh_render_pass != p_render_pass) {
@@ -1666,7 +1666,7 @@ public:
 	}
 
 	_FORCE_INLINE_ uint32_t mesh_surface_get_particles_render_pass_index(RID p_mesh, uint32_t p_surface_index, uint64_t p_render_pass, uint32_t *r_index) {
-		Mesh *mesh = mesh_owner.getornull(p_mesh);
+		Mesh *mesh = mesh_owner.get_or_null(p_mesh);
 		Mesh::Surface *s = mesh->surfaces[p_surface_index];
 
 		if (s->particles_render_pass != p_render_pass) {
@@ -1708,22 +1708,22 @@ public:
 	AABB multimesh_get_aabb(RID p_multimesh) const;
 
 	_FORCE_INLINE_ RS::MultimeshTransformFormat multimesh_get_transform_format(RID p_multimesh) const {
-		MultiMesh *multimesh = multimesh_owner.getornull(p_multimesh);
+		MultiMesh *multimesh = multimesh_owner.get_or_null(p_multimesh);
 		return multimesh->xform_format;
 	}
 
 	_FORCE_INLINE_ bool multimesh_uses_colors(RID p_multimesh) const {
-		MultiMesh *multimesh = multimesh_owner.getornull(p_multimesh);
+		MultiMesh *multimesh = multimesh_owner.get_or_null(p_multimesh);
 		return multimesh->uses_colors;
 	}
 
 	_FORCE_INLINE_ bool multimesh_uses_custom_data(RID p_multimesh) const {
-		MultiMesh *multimesh = multimesh_owner.getornull(p_multimesh);
+		MultiMesh *multimesh = multimesh_owner.get_or_null(p_multimesh);
 		return multimesh->uses_custom_data;
 	}
 
 	_FORCE_INLINE_ uint32_t multimesh_get_instances_to_draw(RID p_multimesh) const {
-		MultiMesh *multimesh = multimesh_owner.getornull(p_multimesh);
+		MultiMesh *multimesh = multimesh_owner.get_or_null(p_multimesh);
 		if (multimesh->visible_instances >= 0) {
 			return multimesh->visible_instances;
 		}
@@ -1731,7 +1731,7 @@ public:
 	}
 
 	_FORCE_INLINE_ RID multimesh_get_3d_uniform_set(RID p_multimesh, RID p_shader, uint32_t p_set) const {
-		MultiMesh *multimesh = multimesh_owner.getornull(p_multimesh);
+		MultiMesh *multimesh = multimesh_owner.get_or_null(p_multimesh);
 		if (!multimesh->uniform_set_3d.is_valid()) {
 			Vector<RD::Uniform> uniforms;
 			RD::Uniform u;
@@ -1746,7 +1746,7 @@ public:
 	}
 
 	_FORCE_INLINE_ RID multimesh_get_2d_uniform_set(RID p_multimesh, RID p_shader, uint32_t p_set) const {
-		MultiMesh *multimesh = multimesh_owner.getornull(p_multimesh);
+		MultiMesh *multimesh = multimesh_owner.get_or_null(p_multimesh);
 		if (!multimesh->uniform_set_2d.is_valid()) {
 			Vector<RD::Uniform> uniforms;
 			RD::Uniform u;
@@ -1775,11 +1775,11 @@ public:
 	Transform2D skeleton_bone_get_transform_2d(RID p_skeleton, int p_bone) const;
 
 	_FORCE_INLINE_ bool skeleton_is_valid(RID p_skeleton) {
-		return skeleton_owner.getornull(p_skeleton) != nullptr;
+		return skeleton_owner.get_or_null(p_skeleton) != nullptr;
 	}
 
 	_FORCE_INLINE_ RID skeleton_get_3d_uniform_set(RID p_skeleton, RID p_shader, uint32_t p_set) const {
-		Skeleton *skeleton = skeleton_owner.getornull(p_skeleton);
+		Skeleton *skeleton = skeleton_owner.get_or_null(p_skeleton);
 		ERR_FAIL_COND_V(!skeleton, RID());
 		ERR_FAIL_COND_V(skeleton->size == 0, RID());
 		if (skeleton->use_2d) {
@@ -1833,7 +1833,7 @@ public:
 	RS::LightOmniShadowMode light_omni_get_shadow_mode(RID p_light);
 
 	_FORCE_INLINE_ RS::LightType light_get_type(RID p_light) const {
-		const Light *light = light_owner.getornull(p_light);
+		const Light *light = light_owner.get_or_null(p_light);
 		ERR_FAIL_COND_V(!light, RS::LIGHT_DIRECTIONAL);
 
 		return light->type;
@@ -1841,70 +1841,70 @@ public:
 	AABB light_get_aabb(RID p_light) const;
 
 	_FORCE_INLINE_ float light_get_param(RID p_light, RS::LightParam p_param) {
-		const Light *light = light_owner.getornull(p_light);
+		const Light *light = light_owner.get_or_null(p_light);
 		ERR_FAIL_COND_V(!light, 0);
 
 		return light->param[p_param];
 	}
 
 	_FORCE_INLINE_ RID light_get_projector(RID p_light) {
-		const Light *light = light_owner.getornull(p_light);
+		const Light *light = light_owner.get_or_null(p_light);
 		ERR_FAIL_COND_V(!light, RID());
 
 		return light->projector;
 	}
 
 	_FORCE_INLINE_ Color light_get_color(RID p_light) {
-		const Light *light = light_owner.getornull(p_light);
+		const Light *light = light_owner.get_or_null(p_light);
 		ERR_FAIL_COND_V(!light, Color());
 
 		return light->color;
 	}
 
 	_FORCE_INLINE_ Color light_get_shadow_color(RID p_light) {
-		const Light *light = light_owner.getornull(p_light);
+		const Light *light = light_owner.get_or_null(p_light);
 		ERR_FAIL_COND_V(!light, Color());
 
 		return light->shadow_color;
 	}
 
 	_FORCE_INLINE_ uint32_t light_get_cull_mask(RID p_light) {
-		const Light *light = light_owner.getornull(p_light);
+		const Light *light = light_owner.get_or_null(p_light);
 		ERR_FAIL_COND_V(!light, 0);
 
 		return light->cull_mask;
 	}
 
 	_FORCE_INLINE_ bool light_has_shadow(RID p_light) const {
-		const Light *light = light_owner.getornull(p_light);
+		const Light *light = light_owner.get_or_null(p_light);
 		ERR_FAIL_COND_V(!light, RS::LIGHT_DIRECTIONAL);
 
 		return light->shadow;
 	}
 
 	_FORCE_INLINE_ bool light_has_projector(RID p_light) const {
-		const Light *light = light_owner.getornull(p_light);
+		const Light *light = light_owner.get_or_null(p_light);
 		ERR_FAIL_COND_V(!light, RS::LIGHT_DIRECTIONAL);
 
 		return texture_owner.owns(light->projector);
 	}
 
 	_FORCE_INLINE_ bool light_is_negative(RID p_light) const {
-		const Light *light = light_owner.getornull(p_light);
+		const Light *light = light_owner.get_or_null(p_light);
 		ERR_FAIL_COND_V(!light, RS::LIGHT_DIRECTIONAL);
 
 		return light->negative;
 	}
 
 	_FORCE_INLINE_ float light_get_transmittance_bias(RID p_light) const {
-		const Light *light = light_owner.getornull(p_light);
+		const Light *light = light_owner.get_or_null(p_light);
 		ERR_FAIL_COND_V(!light, 0.0);
 
 		return light->param[RS::LIGHT_PARAM_TRANSMITTANCE_BIAS];
 	}
 
 	_FORCE_INLINE_ float light_get_shadow_volumetric_fog_fade(RID p_light) const {
-		const Light *light = light_owner.getornull(p_light);
+		const Light *light = light_owner.get_or_null(p_light);
 		ERR_FAIL_COND_V(!light, 0.0);
 
 		return light->param[RS::LIGHT_PARAM_SHADOW_VOLUMETRIC_FOG_FADE];
@@ -1971,62 +1971,62 @@ public:
 	virtual void decal_set_normal_fade(RID p_decal, float p_fade);
 
 	_FORCE_INLINE_ Vector3 decal_get_extents(RID p_decal) {
-		const Decal *decal = decal_owner.getornull(p_decal);
+		const Decal *decal = decal_owner.get_or_null(p_decal);
 		return decal->extents;
 	}
 
 	_FORCE_INLINE_ RID decal_get_texture(RID p_decal, RS::DecalTexture p_texture) {
-		const Decal *decal = decal_owner.getornull(p_decal);
+		const Decal *decal = decal_owner.get_or_null(p_decal);
 		return decal->textures[p_texture];
 	}
 
 	_FORCE_INLINE_ Color decal_get_modulate(RID p_decal) {
-		const Decal *decal = decal_owner.getornull(p_decal);
+		const Decal *decal = decal_owner.get_or_null(p_decal);
 		return decal->modulate;
 	}
 
 	_FORCE_INLINE_ float decal_get_emission_energy(RID p_decal) {
-		const Decal *decal = decal_owner.getornull(p_decal);
+		const Decal *decal = decal_owner.get_or_null(p_decal);
 		return decal->emission_energy;
 	}
 
 	_FORCE_INLINE_ float decal_get_albedo_mix(RID p_decal) {
-		const Decal *decal = decal_owner.getornull(p_decal);
+		const Decal *decal = decal_owner.get_or_null(p_decal);
 		return decal->albedo_mix;
 	}
 
 	_FORCE_INLINE_ uint32_t decal_get_cull_mask(RID p_decal) {
-		const Decal *decal = decal_owner.getornull(p_decal);
+		const Decal *decal = decal_owner.get_or_null(p_decal);
 		return decal->cull_mask;
 	}
 
 	_FORCE_INLINE_ float decal_get_upper_fade(RID p_decal) {
-		const Decal *decal = decal_owner.getornull(p_decal);
+		const Decal *decal = decal_owner.get_or_null(p_decal);
 		return decal->upper_fade;
 	}
 
 	_FORCE_INLINE_ float decal_get_lower_fade(RID p_decal) {
-		const Decal *decal = decal_owner.getornull(p_decal);
+		const Decal *decal = decal_owner.get_or_null(p_decal);
 		return decal->lower_fade;
 	}
 
 	_FORCE_INLINE_ float decal_get_normal_fade(RID p_decal) {
-		const Decal *decal = decal_owner.getornull(p_decal);
+		const Decal *decal = decal_owner.get_or_null(p_decal);
 		return decal->normal_fade;
 	}
 
 	_FORCE_INLINE_ bool decal_is_distance_fade_enabled(RID p_decal) {
-		const Decal *decal = decal_owner.getornull(p_decal);
+		const Decal *decal = decal_owner.get_or_null(p_decal);
 		return decal->distance_fade;
 	}
 
 	_FORCE_INLINE_ float decal_get_distance_fade_begin(RID p_decal) {
-		const Decal *decal = decal_owner.getornull(p_decal);
+		const Decal *decal = decal_owner.get_or_null(p_decal);
 		return decal->distance_fade_begin;
 	}
 
 	_FORCE_INLINE_ float decal_get_distance_fade_length(RID p_decal) {
-		const Decal *decal = decal_owner.getornull(p_decal);
+		const Decal *decal = decal_owner.get_or_null(p_decal);
 		return decal->distance_fade_length;
 	}
 
@@ -2101,18 +2101,18 @@ public:
 		return lightmap_probe_capture_update_speed;
 	}
 	_FORCE_INLINE_ RID lightmap_get_texture(RID p_lightmap) const {
-		const Lightmap *lm = lightmap_owner.getornull(p_lightmap);
+		const Lightmap *lm = lightmap_owner.get_or_null(p_lightmap);
 		ERR_FAIL_COND_V(!lm, RID());
 		return lm->light_texture;
 	}
 	_FORCE_INLINE_ int32_t lightmap_get_array_index(RID p_lightmap) const {
 		ERR_FAIL_COND_V(!using_lightmap_array, -1); //only for arrays
-		const Lightmap *lm = lightmap_owner.getornull(p_lightmap);
+		const Lightmap *lm = lightmap_owner.get_or_null(p_lightmap);
 		return lm->array_index;
 	}
 	_FORCE_INLINE_ bool lightmap_uses_spherical_harmonics(RID p_lightmap) const {
 		ERR_FAIL_COND_V(!using_lightmap_array, false); //only for arrays
-		const Lightmap *lm = lightmap_owner.getornull(p_lightmap);
+		const Lightmap *lm = lightmap_owner.get_or_null(p_lightmap);
 		return lm->uses_spherical_harmonics;
 	}
 	_FORCE_INLINE_ uint64_t lightmap_array_get_version() const {
@@ -2181,13 +2181,13 @@ public:
 	virtual bool particles_is_inactive(RID p_particles) const;
 
 	_FORCE_INLINE_ RS::ParticlesMode particles_get_mode(RID p_particles) {
-		Particles *particles = particles_owner.getornull(p_particles);
+		Particles *particles = particles_owner.get_or_null(p_particles);
 		ERR_FAIL_COND_V(!particles, RS::PARTICLES_MODE_2D);
 		return particles->mode;
 	}
 
 	_FORCE_INLINE_ uint32_t particles_get_amount(RID p_particles, uint32_t &r_trail_divisor) {
-		Particles *particles = particles_owner.getornull(p_particles);
+		Particles *particles = particles_owner.get_or_null(p_particles);
 		ERR_FAIL_COND_V(!particles, 0);
 
 		if (particles->trails_enabled && particles->trail_bind_poses.size() > 1) {
@@ -2200,21 +2200,21 @@ public:
 	}
 
 	_FORCE_INLINE_ bool particles_has_collision(RID p_particles) {
-		Particles *particles = particles_owner.getornull(p_particles);
+		Particles *particles = particles_owner.get_or_null(p_particles);
 		ERR_FAIL_COND_V(!particles, 0);
 
 		return particles->has_collision_cache;
 	}
 
 	_FORCE_INLINE_ uint32_t particles_is_using_local_coords(RID p_particles) {
-		Particles *particles = particles_owner.getornull(p_particles);
+		Particles *particles = particles_owner.get_or_null(p_particles);
 		ERR_FAIL_COND_V(!particles, false);
 
 		return particles->use_local_coords;
 	}
 
 	_FORCE_INLINE_ RID particles_get_instance_buffer_uniform_set(RID p_particles, RID p_shader, uint32_t p_set) {
-		Particles *particles = particles_owner.getornull(p_particles);
+		Particles *particles = particles_owner.get_or_null(p_particles);
 		ERR_FAIL_COND_V(!particles, RID());
 		if (particles->particles_transforms_buffer_uniform_set.is_null()) {
 			_particles_update_buffers(particles);

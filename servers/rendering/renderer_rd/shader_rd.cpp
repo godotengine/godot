@@ -292,7 +292,7 @@ void ShaderRD::_compile_variant(uint32_t p_variant, Version *p_version) {
 }
 
 RS::ShaderNativeSourceCode ShaderRD::version_get_native_source_code(RID p_version) {
-	Version *version = version_owner.getornull(p_version);
+	Version *version = version_owner.get_or_null(p_version);
 	RS::ShaderNativeSourceCode source_code;
 	ERR_FAIL_COND_V(!version, source_code);
 
@@ -524,7 +524,7 @@ void ShaderRD::_compile_version(Version *p_version) {
 void ShaderRD::version_set_code(RID p_version, const Map<String, String> &p_code, const String &p_uniforms, const String &p_vertex_globals, const String &p_fragment_globals, const Vector<String> &p_custom_defines) {
 	ERR_FAIL_COND(is_compute);
 
-	Version *version = version_owner.getornull(p_version);
+	Version *version = version_owner.get_or_null(p_version);
 	ERR_FAIL_COND(!version);
 	version->vertex_globals = p_vertex_globals.utf8();
 	version->fragment_globals = p_fragment_globals.utf8();
@@ -549,7 +549,7 @@ void ShaderRD::version_set_code(RID p_version, const Map<String, String> &p_code
 void ShaderRD::version_set_compute_code(RID p_version, const Map<String, String> &p_code, const String &p_uniforms, const String &p_compute_globals, const Vector<String> &p_custom_defines) {
 	ERR_FAIL_COND(!is_compute);
 
-	Version *version = version_owner.getornull(p_version);
+	Version *version = version_owner.get_or_null(p_version);
 	ERR_FAIL_COND(!version);
 
 	version->compute_globals = p_compute_globals.utf8();
@@ -573,7 +573,7 @@ void ShaderRD::version_set_compute_code(RID p_version, const Map<String, String>
 }
 
 bool ShaderRD::version_is_valid(RID p_version) {
-	Version *version = version_owner.getornull(p_version);
+	Version *version = version_owner.get_or_null(p_version);
 	ERR_FAIL_COND_V(!version, false);
 
 	if (version->dirty) {
@@ -585,7 +585,7 @@ bool ShaderRD::version_is_valid(RID p_version) {
 
 bool ShaderRD::version_free(RID p_version) {
 	if (version_owner.owns(p_version)) {
-		Version *version = version_owner.getornull(p_version);
+		Version *version = version_owner.get_or_null(p_version);
 		_clear_version(version);
 		version_owner.free(p_version);
 	} else {

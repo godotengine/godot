@@ -187,7 +187,7 @@ int PhysicsDirectSpaceState3DSW::intersect_shape(const RID &p_shape, const Trans
 		return 0;
 	}
 
-	Shape3DSW *shape = PhysicsServer3DSW::singletonsw->shape_owner.getornull(p_shape);
+	Shape3DSW *shape = PhysicsServer3DSW::singletonsw->shape_owner.get_or_null(p_shape);
 	ERR_FAIL_COND_V(!shape, 0);
 
 	AABB aabb = p_xform.xform(shape->get_aabb());
@@ -238,7 +238,7 @@ int PhysicsDirectSpaceState3DSW::intersect_shape(const RID &p_shape, const Trans
 }
 
 bool PhysicsDirectSpaceState3DSW::cast_motion(const RID &p_shape, const Transform3D &p_xform, const Vector3 &p_motion, real_t p_margin, real_t &p_closest_safe, real_t &p_closest_unsafe, const Set<RID> &p_exclude, uint32_t p_collision_mask, bool p_collide_with_bodies, bool p_collide_with_areas, ShapeRestInfo *r_info) {
-	Shape3DSW *shape = PhysicsServer3DSW::singletonsw->shape_owner.getornull(p_shape);
+	Shape3DSW *shape = PhysicsServer3DSW::singletonsw->shape_owner.get_or_null(p_shape);
 	ERR_FAIL_COND_V(!shape, false);
 
 	AABB aabb = p_xform.xform(shape->get_aabb());
@@ -361,7 +361,7 @@ bool PhysicsDirectSpaceState3DSW::collide_shape(RID p_shape, const Transform3D &
 		return false;
 	}
 
-	Shape3DSW *shape = PhysicsServer3DSW::singletonsw->shape_owner.getornull(p_shape);
+	Shape3DSW *shape = PhysicsServer3DSW::singletonsw->shape_owner.get_or_null(p_shape);
 	ERR_FAIL_COND_V(!shape, 0);
 
 	AABB aabb = p_shape_xform.xform(shape->get_aabb());
@@ -487,7 +487,7 @@ static void _rest_cbk_result(const Vector3 &p_point_A, int p_index_A, const Vect
 }
 
 bool PhysicsDirectSpaceState3DSW::rest_info(RID p_shape, const Transform3D &p_shape_xform, real_t p_margin, ShapeRestInfo *r_info, const Set<RID> &p_exclude, uint32_t p_collision_mask, bool p_collide_with_bodies, bool p_collide_with_areas) {
-	Shape3DSW *shape = PhysicsServer3DSW::singletonsw->shape_owner.getornull(p_shape);
+	Shape3DSW *shape = PhysicsServer3DSW::singletonsw->shape_owner.get_or_null(p_shape);
 	ERR_FAIL_COND_V(!shape, 0);
 
 	real_t min_contact_depth = p_margin * TEST_MOTION_MIN_CONTACT_DEPTH_FACTOR;
@@ -543,9 +543,9 @@ bool PhysicsDirectSpaceState3DSW::rest_info(RID p_shape, const Transform3D &p_sh
 }
 
 Vector3 PhysicsDirectSpaceState3DSW::get_closest_point_to_object_volume(RID p_object, const Vector3 p_point) const {
-	CollisionObject3DSW *obj = PhysicsServer3DSW::singletonsw->area_owner.getornull(p_object);
+	CollisionObject3DSW *obj = PhysicsServer3DSW::singletonsw->area_owner.get_or_null(p_object);
 	if (!obj) {
-		obj = PhysicsServer3DSW::singletonsw->body_owner.getornull(p_object);
+		obj = PhysicsServer3DSW::singletonsw->body_owner.get_or_null(p_object);
 	}
 	ERR_FAIL_COND_V(!obj, Vector3());
 
