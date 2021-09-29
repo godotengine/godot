@@ -261,7 +261,7 @@ int ShaderGLES2::_get_uniform(int p_which) const {
 
 void ShaderGLES2::_set_conditional(int p_which, bool p_value) {
 	ERR_FAIL_INDEX(p_which, conditional_count);
-	ERR_FAIL_INDEX(static_cast<unsigned int>(p_which), sizeof(new_conditional_version.version) * 8);
+	ERR_FAIL_INDEX(p_which, (int)sizeof(new_conditional_version.version) * 8);
 
 	if (p_value) {
 		new_conditional_version.version |= (uint64_t(1) << p_which);
