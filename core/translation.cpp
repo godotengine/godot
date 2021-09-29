@@ -805,9 +805,12 @@ static const char *locale_names[] = {
 // - https://msdn.microsoft.com/en-us/library/windows/desktop/ms693062(v=vs.85).aspx
 
 static const char *locale_renames[][2] = {
-	{ "in", "id" }, //  Indonesian
-	{ "iw", "he" }, //  Hebrew
-	{ "no", "nb" }, //  Norwegian Bokmål
+	{ "in", "id" }, // Indonesian
+	{ "iw", "he" }, // Hebrew
+	{ "no", "nb" }, // Norwegian Bokmål
+	{ "C", "en" }, // "C" is the simple/default/untranslated Computer locale.
+	// ASCII-only, English, no currency symbols. Godot treats this as "en".
+	// See https://unix.stackexchange.com/a/87763/164141 "The C locale is"...
 	{ nullptr, nullptr }
 };
 
