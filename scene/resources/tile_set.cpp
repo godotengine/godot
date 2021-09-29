@@ -1019,20 +1019,25 @@ Vector<Vector2> TileSet::get_tile_shape_polygon() {
 
 void TileSet::draw_tile_shape(CanvasItem *p_canvas_item, Transform2D p_transform, Color p_color, bool p_filled, Ref<Texture2D> p_texture) {
 	if (tile_meshes_dirty) {
-		Vector<Vector2> uvs = get_tile_shape_polygon();
+		Vector<Vector2> shape = get_tile_shape_polygon();
+		Vector<Vector2> uvs;
+		uvs.resize(shape.size());
+		for (int i = 0; i < shape.size(); i++) {
+			uvs.write[i] = shape[i] + Vector2(0.5, 0.5);
+		}
 
 		Vector<Color> colors;
-		colors.resize(uvs.size());
+		colors.resize(shape.size());
 		colors.fill(Color(1.0, 1.0, 1.0, 1.0));
 
 		// Filled mesh.
 		tile_filled_mesh->clear_surfaces();
 		Array a;
 		a.resize(Mesh::ARRAY_MAX);
-		a[Mesh::ARRAY_VERTEX] = uvs;
+		a[Mesh::ARRAY_VERTEX] = shape;
 		a[Mesh::ARRAY_TEX_UV] = uvs;
 		a[Mesh::ARRAY_COLOR] = colors;
-		a[Mesh::ARRAY_INDEX] = Geometry2D::triangulate_polygon(uvs);
+		a[Mesh::ARRAY_INDEX] = Geometry2D::triangulate_polygon(shape);
 		tile_filled_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, a, Array(), Dictionary(), Mesh::ARRAY_FLAG_USE_2D_VERTICES);
 
 		// Lines mesh.
@@ -1040,9 +1045,9 @@ void TileSet::draw_tile_shape(CanvasItem *p_canvas_item, Transform2D p_transform
 		a.clear();
 		a.resize(Mesh::ARRAY_MAX);
 		// Add the first point again when drawing lines.
-		uvs.push_back(uvs[0]);
+		shape.push_back(shape[0]);
 		colors.push_back(colors[0]);
-		a[Mesh::ARRAY_VERTEX] = uvs;
+		a[Mesh::ARRAY_VERTEX] = shape;
 		a[Mesh::ARRAY_COLOR] = colors;
 		tile_lines_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_LINE_STRIP, a, Array(), Dictionary(), Mesh::ARRAY_FLAG_USE_2D_VERTICES);
 
@@ -3520,6 +3525,13 @@ Vector2i TileSetAtlasSource::get_tile_id(int p_index) const {
 }
 
 bool TileSetAtlasSource::has_room_for_tile(Vector2i p_atlas_coords, Vector2i p_size, int p_animation_columns, Vector2i p_animation_separation, int p_frames_count, Vector2i p_ignored_tile) const {
+	if (p_atlas_coords.x < 0 || p_atlas_coords.y < 0) {
+		return false;
+	}
+	if (p_size.x <= 0 || p_size.y <= 0) {
+		return false;
+	}
+	Size2i atlas_grid_size = get_atlas_grid_size();
 	for (int frame = 0; frame < p_frames_count; frame++) {
 		Vector2i frame_coords = p_atlas_coords + (p_size + p_animation_separation) * ((p_animation_columns > 0) ? Vector2i(frame % p_animation_columns, frame / p_animation_columns) : Vector2i(frame, 0));
 		for (int x = 0; x < p_size.x; x++) {
@@ -3527,6 +3539,11 @@ bool TileSetAtlasSource::has_room_for_tile(Vector2i p_atlas_coords, Vector2i p_s
 				Vector2i coords = frame_coords + Vector2i(x, y);
 				if (_coords_mapping_cache.has(coords) && _coords_mapping_cache[coords] != p_ignored_tile) {
 					return false;
+				}
+				if (coords.x >= atlas_grid_size.x || coords.y >= atlas_grid_size.y) {
+					if (!(_coords_mapping_cache.has(coords) && _coords_mapping_cache[coords] == p_ignored_tile)) {
+						return false; // Only accept tiles outside the atlas if they are part of the ignored tile.
+					}
 				}
 			}
 		}
