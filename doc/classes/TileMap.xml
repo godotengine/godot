@@ -29,6 +29,13 @@
 				Clears all cells.
 			</description>
 		</method>
+		<method name="clear_layer">
+			<return type="void" />
+			<argument index="0" name="layer" type="int" />
+			<description>
+				Clears all cells on the given layer.
+			</description>
+		</method>
 		<method name="fix_invalid_tiles">
 			<return type="void" />
 			<description>
@@ -60,6 +67,13 @@
 			<argument index="2" name="use_proxies" type="bool" />
 			<description>
 				Returns the tile source ID of the cell on layer [code]layer[/code] at coordinates [code]coords[/code]. If [code]use_proxies[/code] is [code]false[/code], ignores the [TileSet]'s tile proxies, returning the raw alternative identifier. See [method TileSet.map_tile_proxy].
+			</description>
+		</method>
+		<method name="get_coords_for_body_rid">
+			<return type="Vector2i" />
+			<argument index="0" name="body" type="RID" />
+			<description>
+				Returns the coodinates of the tile for given physics body RID. Such RID can be retrieved from [member KinematicCollision2D.collider_rid], when colliding with a tile.
 			</description>
 		</method>
 		<method name="get_layer_name" qualifiers="const">
@@ -219,6 +233,10 @@
 	<members>
 		<member name="cell_quadrant_size" type="int" setter="set_quadrant_size" getter="get_quadrant_size" default="16">
 			The TileMap's quadrant size. Optimizes drawing by batching, using chunks of this size.
+		</member>
+		<member name="collision_animatable" type="bool" setter="set_collision_animatable" getter="is_collision_animatable" default="false">
+			If enabled, the TileMap will see its collisions synced to the physics tick and change its collision type from static to kinematic. This is required to create TileMap-based moving platform.
+			[b]Note:[/b] Enabling [code]collision_animatable[/code] may have a small performance impact, only do it if the TileMap is moving and has colliding tiles.
 		</member>
 		<member name="collision_visibility_mode" type="int" setter="set_collision_visibility_mode" getter="get_collision_visibility_mode" enum="TileMap.VisibilityMode" default="0">
 			Show or hide the TileMap's collision shapes. If set to [code]VISIBILITY_MODE_DEFAULT[/code], this depends on the show collision debug settings.

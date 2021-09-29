@@ -231,10 +231,14 @@ void GenericTilePolygonEditor::_zoom_changed() {
 
 void GenericTilePolygonEditor::_advanced_menu_item_pressed(int p_item_pressed) {
 	switch (p_item_pressed) {
-		case RESET_TO_DEFAULT_TILE:
+		case RESET_TO_DEFAULT_TILE: {
 			undo_redo->create_action(TTR("Edit Polygons"));
 			undo_redo->add_do_method(this, "clear_polygons");
-			undo_redo->add_do_method(this, "add_polygon", tile_set->get_tile_shape_polygon());
+			Vector<Vector2> polygon = tile_set->get_tile_shape_polygon();
+			for (int i = 0; i < polygon.size(); i++) {
+				polygon.write[i] = polygon[i] * tile_set->get_tile_size();
+			}
+			undo_redo->add_do_method(this, "add_polygon", polygon);
 			undo_redo->add_do_method(base_control, "update");
 			undo_redo->add_do_method(this, "emit_signal", "polygons_changed");
 			undo_redo->add_undo_method(this, "clear_polygons");
@@ -244,8 +248,8 @@ void GenericTilePolygonEditor::_advanced_menu_item_pressed(int p_item_pressed) {
 			undo_redo->add_undo_method(base_control, "update");
 			undo_redo->add_undo_method(this, "emit_signal", "polygons_changed");
 			undo_redo->commit_action(true);
-			break;
-		case CLEAR_TILE:
+		} break;
+		case CLEAR_TILE: {
 			undo_redo->create_action(TTR("Edit Polygons"));
 			undo_redo->add_do_method(this, "clear_polygons");
 			undo_redo->add_do_method(base_control, "update");
@@ -257,7 +261,7 @@ void GenericTilePolygonEditor::_advanced_menu_item_pressed(int p_item_pressed) {
 			undo_redo->add_undo_method(base_control, "update");
 			undo_redo->add_undo_method(this, "emit_signal", "polygons_changed");
 			undo_redo->commit_action(true);
-			break;
+		} break;
 		default:
 			break;
 	}
@@ -308,6 +312,9 @@ void GenericTilePolygonEditor::_snap_to_tile_shape(Point2 &r_point, float &r_cur
 	ERR_FAIL_COND(!tile_set.is_valid());
 
 	Vector<Point2> polygon = tile_set->get_tile_shape_polygon();
+	for (int i = 0; i < polygon.size(); i++) {
+		polygon.write[i] = polygon[i] * tile_set->get_tile_size();
+	}
 	Point2 snapped_point = r_point;
 
 	// Snap to polygon vertices.
@@ -539,7 +546,11 @@ void GenericTilePolygonEditor::set_tile_set(Ref<TileSet> p_tile_set) {
 		// Set the default tile shape
 		clear_polygons();
 		if (p_tile_set.is_valid()) {
-			add_polygon(p_tile_set->get_tile_shape_polygon());
+			Vector<Vector2> polygon = p_tile_set->get_tile_shape_polygon();
+			for (int i = 0; i < polygon.size(); i++) {
+				polygon.write[i] = polygon[i] * p_tile_set->get_tile_size();
+			}
+			add_polygon(polygon);
 		}
 	}
 	tile_set = p_tile_set;
@@ -1265,17 +1276,21 @@ void TileDataCollisionEditor::_polygons_changed() {
 }
 
 Variant TileDataCollisionEditor::_get_painted_value() {
+	Dictionary dict;
+	dict["linear_velocity"] = dummy_object->get("linear_velocity");
+	dict["angular_velocity"] = dummy_object->get("angular_velocity");
 	Array array;
 	for (int i = 0; i < polygon_editor->get_polygon_count(); i++) {
 		ERR_FAIL_COND_V(polygon_editor->get_polygon(i).size() < 3, Variant());
-		Dictionary dict;
-		dict["points"] = polygon_editor->get_polygon(i);
-		dict["one_way"] = dummy_object->get(vformat("polygon_%d_one_way", i));
-		dict["one_way_margin"] = dummy_object->get(vformat("polygon_%d_one_way_margin", i));
-		array.push_back(dict);
+		Dictionary polygon_dict;
+		polygon_dict["points"] = polygon_editor->get_polygon(i);
+		polygon_dict["one_way"] = dummy_object->get(vformat("polygon_%d_one_way", i));
+		polygon_dict["one_way_margin"] = dummy_object->get(vformat("polygon_%d_one_way_margin", i));
+		array.push_back(polygon_dict);
 	}
+	dict["polygons"] = array;
 
-	return array;
+	return dict;
 }
 
 void TileDataCollisionEditor::_set_painted_value(TileSetAtlasSource *p_tile_set_atlas_source, Vector2 p_coords, int p_alternative_tile) {
@@ -1291,6 +1306,8 @@ void TileDataCollisionEditor::_set_painted_value(TileSetAtlasSource *p_tile_set_
 	}
 
 	_polygons_changed();
+	dummy_object->set("linear_velocity", tile_data->get_constant_linear_velocity(physics_layer));
+	dummy_object->set("angular_velocity", tile_data->get_constant_angular_velocity(physics_layer));
 	for (int i = 0; i < tile_data->get_collision_polygons_count(physics_layer); i++) {
 		dummy_object->set(vformat("polygon_%d_one_way", i), tile_data->is_collision_polygon_one_way(physics_layer, i));
 		dummy_object->set(vformat("polygon_%d_one_way_margin", i), tile_data->get_collision_polygon_one_way_margin(physics_layer, i));
@@ -1306,13 +1323,16 @@ void TileDataCollisionEditor::_set_value(TileSetAtlasSource *p_tile_set_atlas_so
 	TileData *tile_data = Object::cast_to<TileData>(p_tile_set_atlas_source->get_tile_data(p_coords, p_alternative_tile));
 	ERR_FAIL_COND(!tile_data);
 
-	Array array = p_value;
+	Dictionary dict = p_value;
+	tile_data->set_constant_linear_velocity(physics_layer, dict["linear_velocity"]);
+	tile_data->set_constant_angular_velocity(physics_layer, dict["angular_velocity"]);
+	Array array = dict["polygons"];
 	tile_data->set_collision_polygons_count(physics_layer, array.size());
 	for (int i = 0; i < array.size(); i++) {
-		Dictionary dict = array[i];
-		tile_data->set_collision_polygon_points(physics_layer, i, dict["points"]);
-		tile_data->set_collision_polygon_one_way(physics_layer, i, dict["one_way"]);
-		tile_data->set_collision_polygon_one_way_margin(physics_layer, i, dict["one_way_margin"]);
+		Dictionary polygon_dict = array[i];
+		tile_data->set_collision_polygon_points(physics_layer, i, polygon_dict["points"]);
+		tile_data->set_collision_polygon_one_way(physics_layer, i, polygon_dict["one_way"]);
+		tile_data->set_collision_polygon_one_way_margin(physics_layer, i, polygon_dict["one_way_margin"]);
 	}
 
 	polygon_editor->set_background(p_tile_set_atlas_source->get_texture(), p_tile_set_atlas_source->get_tile_texture_region(p_coords), p_tile_set_atlas_source->get_tile_effective_texture_offset(p_coords, p_alternative_tile), tile_data->get_flip_h(), tile_data->get_flip_v(), tile_data->get_transpose(), tile_data->get_modulate());
@@ -1322,15 +1342,19 @@ Variant TileDataCollisionEditor::_get_value(TileSetAtlasSource *p_tile_set_atlas
 	TileData *tile_data = Object::cast_to<TileData>(p_tile_set_atlas_source->get_tile_data(p_coords, p_alternative_tile));
 	ERR_FAIL_COND_V(!tile_data, Variant());
 
+	Dictionary dict;
+	dict["linear_velocity"] = tile_data->get_constant_linear_velocity(physics_layer);
+	dict["angular_velocity"] = tile_data->get_constant_angular_velocity(physics_layer);
 	Array array;
 	for (int i = 0; i < tile_data->get_collision_polygons_count(physics_layer); i++) {
-		Dictionary dict;
-		dict["points"] = tile_data->get_collision_polygon_points(physics_layer, i);
-		dict["one_way"] = tile_data->is_collision_polygon_one_way(physics_layer, i);
-		dict["one_way_margin"] = tile_data->get_collision_polygon_one_way_margin(physics_layer, i);
-		array.push_back(dict);
+		Dictionary polygon_dict;
+		polygon_dict["points"] = tile_data->get_collision_polygon_points(physics_layer, i);
+		polygon_dict["one_way"] = tile_data->is_collision_polygon_one_way(physics_layer, i);
+		polygon_dict["one_way_margin"] = tile_data->get_collision_polygon_one_way_margin(physics_layer, i);
+		array.push_back(polygon_dict);
 	}
-	return array;
+	dict["polygons"] = array;
+	return dict;
 }
 
 void TileDataCollisionEditor::_setup_undo_redo_action(TileSetAtlasSource *p_tile_set_atlas_source, Map<TileMapCell, Variant> p_previous_values, Variant p_new_value) {
@@ -1377,6 +1401,27 @@ TileDataCollisionEditor::TileDataCollisionEditor() {
 	polygon_editor->set_multiple_polygon_mode(true);
 	polygon_editor->connect("polygons_changed", callable_mp(this, &TileDataCollisionEditor::_polygons_changed));
 	add_child(polygon_editor);
+
+	dummy_object->add_dummy_property("linear_velocity");
+	dummy_object->set("linear_velocity", Vector2());
+	dummy_object->add_dummy_property("angular_velocity");
+	dummy_object->set("angular_velocity", 0.0);
+
+	EditorProperty *linear_velocity_editor = EditorInspectorDefaultPlugin::get_editor_for_property(dummy_object, Variant::VECTOR2, "linear_velocity", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT);
+	linear_velocity_editor->set_object_and_property(dummy_object, "linear_velocity");
+	linear_velocity_editor->set_label("linear_velocity");
+	linear_velocity_editor->connect("property_changed", callable_mp(this, &TileDataCollisionEditor::_property_value_changed).unbind(1));
+	linear_velocity_editor->update_property();
+	add_child(linear_velocity_editor);
+	property_editors["linear_velocity"] = linear_velocity_editor;
+
+	EditorProperty *angular_velocity_editor = EditorInspectorDefaultPlugin::get_editor_for_property(dummy_object, Variant::FLOAT, "angular_velocity", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT);
+	angular_velocity_editor->set_object_and_property(dummy_object, "angular_velocity");
+	angular_velocity_editor->set_label("angular_velocity");
+	angular_velocity_editor->connect("property_changed", callable_mp(this, &TileDataCollisionEditor::_property_value_changed).unbind(1));
+	angular_velocity_editor->update_property();
+	add_child(angular_velocity_editor);
+	property_editors["angular_velocity"] = linear_velocity_editor;
 
 	_polygons_changed();
 }

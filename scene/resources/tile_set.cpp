@@ -3124,7 +3124,7 @@ Vector2i TileSetAtlasSource::get_atlas_grid_size() const {
 }
 
 bool TileSetAtlasSource::_set(const StringName &p_name, const Variant &p_value) {
-	Vector<String> components = String(p_name).split("/", true, 3);
+	Vector<String> components = String(p_name).split("/", true, 2);
 
 	// Compute the vector2i if we have coordinates.
 	Vector<String> coords_split = components[0].split(":");
@@ -4316,9 +4316,26 @@ Ref<OccluderPolygon2D> TileData::get_occluder(int p_layer_id) const {
 }
 
 // Physics
-int TileData::get_collision_polygons_count(int p_layer_id) const {
-	ERR_FAIL_INDEX_V(p_layer_id, physics.size(), 0);
-	return physics[p_layer_id].polygons.size();
+void TileData::set_constant_linear_velocity(int p_layer_id, const Vector2 &p_velocity) {
+	ERR_FAIL_INDEX(p_layer_id, physics.size());
+	physics.write[p_layer_id].linear_velocity = p_velocity;
+	emit_signal(SNAME("changed"));
+}
+
+Vector2 TileData::get_constant_linear_velocity(int p_layer_id) const {
+	ERR_FAIL_INDEX_V(p_layer_id, physics.size(), Vector2());
+	return physics[p_layer_id].linear_velocity;
+}
+
+void TileData::set_constant_angular_velocity(int p_layer_id, real_t p_velocity) {
+	ERR_FAIL_INDEX(p_layer_id, physics.size());
+	physics.write[p_layer_id].angular_velocity = p_velocity;
+	emit_signal(SNAME("changed"));
+}
+
+real_t TileData::get_constant_angular_velocity(int p_layer_id) const {
+	ERR_FAIL_INDEX_V(p_layer_id, physics.size(), 0.0);
+	return physics[p_layer_id].angular_velocity;
 }
 
 void TileData::set_collision_polygons_count(int p_layer_id, int p_polygons_count) {
@@ -4327,6 +4344,11 @@ void TileData::set_collision_polygons_count(int p_layer_id, int p_polygons_count
 	physics.write[p_layer_id].polygons.resize(p_polygons_count);
 	notify_property_list_changed();
 	emit_signal(SNAME("changed"));
+}
+
+int TileData::get_collision_polygons_count(int p_layer_id) const {
+	ERR_FAIL_INDEX_V(p_layer_id, physics.size(), 0);
+	return physics[p_layer_id].polygons.size();
 }
 
 void TileData::add_collision_polygon(int p_layer_id) {
@@ -4530,11 +4552,7 @@ bool TileData::_set(const StringName &p_name, const Variant &p_value) {
 		// Physics layers.
 		int layer_index = components[0].trim_prefix("physics_layer_").to_int();
 		ERR_FAIL_COND_V(layer_index < 0, false);
-		if (components.size() == 2 && components[1] == "polygons_count") {
-			if (p_value.get_type() != Variant::INT) {
-				return false;
-			}
-
+		if (components.size() == 2) {
 			if (layer_index >= physics.size()) {
 				if (tile_set) {
 					return false;
@@ -4542,8 +4560,19 @@ bool TileData::_set(const StringName &p_name, const Variant &p_value) {
 					physics.resize(layer_index + 1);
 				}
 			}
-			set_collision_polygons_count(layer_index, p_value);
-			return true;
+			if (components[1] == "linear_velocity") {
+				set_constant_linear_velocity(layer_index, p_value);
+				return true;
+			} else if (components[1] == "angular_velocity") {
+				set_constant_angular_velocity(layer_index, p_value);
+				return true;
+			} else if (components[1] == "polygons_count") {
+				if (p_value.get_type() != Variant::INT) {
+					return false;
+				}
+				set_collision_polygons_count(layer_index, p_value);
+				return true;
+			}
 		} else if (components.size() == 3 && components[1].begins_with("polygon_") && components[1].trim_prefix("polygon_").is_valid_int()) {
 			int polygon_index = components[1].trim_prefix("polygon_").to_int();
 			ERR_FAIL_COND_V(polygon_index < 0, false);
@@ -4645,9 +4674,18 @@ bool TileData::_get(const StringName &p_name, Variant &r_ret) const {
 			if (layer_index >= physics.size()) {
 				return false;
 			}
-			if (components.size() == 2 && components[1] == "polygons_count") {
-				r_ret = get_collision_polygons_count(layer_index);
-				return true;
+
+			if (components.size() == 2) {
+				if (components[1] == "linear_velocity") {
+					r_ret = get_constant_linear_velocity(layer_index);
+					return true;
+				} else if (components[1] == "angular_velocity") {
+					r_ret = get_constant_angular_velocity(layer_index);
+					return true;
+				} else if (components[1] == "polygons_count") {
+					r_ret = get_collision_polygons_count(layer_index);
+					return true;
+				}
 			} else if (components.size() == 3 && components[1].begins_with("polygon_") && components[1].trim_prefix("polygon_").is_valid_int()) {
 				int polygon_index = components[1].trim_prefix("polygon_").to_int();
 				ERR_FAIL_COND_V(polygon_index < 0, false);
@@ -4718,6 +4756,8 @@ void TileData::_get_property_list(List<PropertyInfo> *p_list) const {
 		// Physics layers.
 		p_list->push_back(PropertyInfo(Variant::NIL, "Physics", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_GROUP));
 		for (int i = 0; i < physics.size(); i++) {
+			p_list->push_back(PropertyInfo(Variant::VECTOR2, vformat("physics_layer_%d/linear_velocity", i), PROPERTY_HINT_NONE));
+			p_list->push_back(PropertyInfo(Variant::FLOAT, vformat("physics_layer_%d/angular_velocity", i), PROPERTY_HINT_NONE));
 			p_list->push_back(PropertyInfo(Variant::INT, vformat("physics_layer_%d/polygons_count", i), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR));
 
 			for (int j = 0; j < physics[i].polygons.size(); j++) {
@@ -4807,8 +4847,12 @@ void TileData::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_occluder", "layer_id"), &TileData::get_occluder);
 
 	// Physics.
-	ClassDB::bind_method(D_METHOD("get_collision_polygons_count", "layer_id"), &TileData::get_collision_polygons_count);
+	ClassDB::bind_method(D_METHOD("set_constant_linear_velocity", "layer_id", "velocity"), &TileData::set_constant_linear_velocity);
+	ClassDB::bind_method(D_METHOD("get_constant_linear_velocity", "layer_id"), &TileData::get_constant_linear_velocity);
+	ClassDB::bind_method(D_METHOD("set_constant_angular_velocity", "layer_id", "velocity"), &TileData::set_constant_angular_velocity);
+	ClassDB::bind_method(D_METHOD("get_constant_angular_velocity", "layer_id"), &TileData::get_constant_angular_velocity);
 	ClassDB::bind_method(D_METHOD("set_collision_polygons_count", "layer_id", "polygons_count"), &TileData::set_collision_polygons_count);
+	ClassDB::bind_method(D_METHOD("get_collision_polygons_count", "layer_id"), &TileData::get_collision_polygons_count);
 	ClassDB::bind_method(D_METHOD("add_collision_polygon", "layer_id"), &TileData::add_collision_polygon);
 	ClassDB::bind_method(D_METHOD("remove_collision_polygon", "layer_id", "polygon_index"), &TileData::remove_collision_polygon);
 	ClassDB::bind_method(D_METHOD("set_collision_polygon_points", "layer_id", "polygon_index", "polygon"), &TileData::set_collision_polygon_points);
