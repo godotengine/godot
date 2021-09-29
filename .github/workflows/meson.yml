@@ -164,6 +164,12 @@ jobs:
             libxinerama-dev libgl1-mesa-dev libglu-dev libasound2-dev libpulse-dev libdbus-1-dev libudev-dev libxi-dev libxrandr-dev yasm \
             xvfb wget unzip
 
+      - name: Setup MSVC.
+        if: ${{ matrix.platform == 'windows' }}
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: amd64
+
       - name: Compilation (${{ matrix.platform }} ${{ matrix.arch }})
         uses: ./.github/actions/meson_build
         with:
