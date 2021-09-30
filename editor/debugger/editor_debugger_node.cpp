@@ -183,6 +183,11 @@ ScriptEditorDebugger *EditorDebuggerNode::get_default_debugger() const {
 	return Object::cast_to<ScriptEditorDebugger>(tabs->get_tab_control(0));
 }
 
+String EditorDebuggerNode::get_server_uri() const {
+	ERR_FAIL_COND_V(server.is_null(), "");
+	return server->get_uri();
+}
+
 Error EditorDebuggerNode::start(const String &p_uri) {
 	stop();
 	ERR_FAIL_COND_V(p_uri.find("://") < 0, ERR_INVALID_PARAMETER);

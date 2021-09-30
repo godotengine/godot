@@ -2315,8 +2315,6 @@ void EditorNode::_run(bool p_current, const String &p_custom) {
 	play_custom_scene_button->set_icon(gui_base->get_theme_icon(SNAME("PlayCustom"), SNAME("EditorIcons")));
 
 	String run_filename;
-	String args;
-	bool skip_breakpoints;
 
 	if (p_current || (editor_data.get_edited_scene_root() && p_custom != String() && p_custom == editor_data.get_edited_scene_root()->get_scene_file_path())) {
 		Node *scene = editor_data.get_edited_scene_root();
@@ -2371,17 +2369,11 @@ void EditorNode::_run(bool p_current, const String &p_custom) {
 		make_bottom_panel_item_visible(log);
 	}
 
-	List<String> breakpoints;
-	editor_data.get_editor_breakpoints(&breakpoints);
-
-	args = ProjectSettings::get_singleton()->get("editor/run/main_run_args");
-	skip_breakpoints = EditorDebuggerNode::get_singleton()->is_skip_breakpoints();
-
 	EditorDebuggerNode::get_singleton()->start();
-	Error error = editor_run.run(run_filename, args, breakpoints, skip_breakpoints);
+	Error error = editor_run.run(run_filename);
 	if (error != OK) {
 		EditorDebuggerNode::get_singleton()->stop();
-		show_accept(TTR("Could not start subprocess!"), TTR("OK"));
+		show_accept(TTR("Could not start subprocess(es)!"), TTR("OK"));
 		return;
 	}
 
