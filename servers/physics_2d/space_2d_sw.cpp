@@ -105,7 +105,6 @@ int PhysicsDirectSpaceState2DSW::_intersect_point_impl(const Vector2 &p_point, S
 		}
 		r_results[cc].rid = col_obj->get_self();
 		r_results[cc].shape = shape_idx;
-		r_results[cc].metadata = col_obj->get_shape_metadata(shape_idx);
 
 		cc++;
 	}
@@ -193,7 +192,6 @@ bool PhysicsDirectSpaceState2DSW::intersect_ray(const Vector2 &p_from, const Vec
 		r_result.collider = ObjectDB::get_instance(r_result.collider_id);
 	}
 	r_result.normal = res_normal;
-	r_result.metadata = res_obj->get_shape_metadata(res_shape);
 	r_result.position = res_point;
 	r_result.rid = res_obj->get_self();
 	r_result.shape = res_shape;
@@ -242,7 +240,6 @@ int PhysicsDirectSpaceState2DSW::intersect_shape(const RID &p_shape, const Trans
 		}
 		r_results[cc].rid = col_obj->get_self();
 		r_results[cc].shape = shape_idx;
-		r_results[cc].metadata = col_obj->get_shape_metadata(shape_idx);
 
 		cc++;
 	}
@@ -484,7 +481,6 @@ bool PhysicsDirectSpaceState2DSW::rest_info(RID p_shape, const Transform2D &p_sh
 	r_info->normal = rcd.best_normal;
 	r_info->point = rcd.best_contact;
 	r_info->rid = rcd.best_object->get_self();
-	r_info->metadata = rcd.best_object->get_shape_metadata(rcd.best_shape);
 	if (rcd.best_object->get_type() == CollisionObject2DSW::TYPE_BODY) {
 		const Body2DSW *body = static_cast<const Body2DSW *>(rcd.best_object);
 		Vector2 rel_vec = r_info->point - (body->get_transform().get_origin() + body->get_center_of_mass());
@@ -961,7 +957,6 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, co
 				r_result->collision_depth = rcd.best_len;
 				r_result->collision_safe_fraction = safe;
 				r_result->collision_unsafe_fraction = unsafe;
-				r_result->collider_metadata = rcd.best_object->get_shape_metadata(rcd.best_shape);
 
 				const Body2DSW *body = static_cast<const Body2DSW *>(rcd.best_object);
 				Vector2 rel_vec = r_result->collision_point - (body->get_transform().get_origin() + body->get_center_of_mass());

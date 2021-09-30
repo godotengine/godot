@@ -32,13 +32,6 @@
 				Returns the collider ID by index (the latest by default).
 			</description>
 		</method>
-		<method name="get_collider_metadata" qualifiers="const">
-			<return type="Variant" />
-			<argument index="0" name="collision_index" type="int" default="0" />
-			<description>
-				Returns the collider metadata by index (the latest by default).
-			</description>
-		</method>
 		<method name="get_collider_rid" qualifiers="const">
 			<return type="RID" />
 			<argument index="0" name="collision_index" type="int" default="0" />
@@ -95,9 +88,6 @@
 		</member>
 		<member name="collider_id" type="int" setter="" getter="get_best_collider_id" default="0">
 			The colliding body's unique instance ID. See [method Object.get_instance_id].
-		</member>
-		<member name="collider_metadata" type="Variant" setter="" getter="get_best_collider_metadata">
-			The colliding body's metadata. See [Object].
 		</member>
 		<member name="collider_rid" type="RID" setter="" getter="get_best_collider_rid">
 			The colliding body's [RID] used by the [PhysicsServer3D].

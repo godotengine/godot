@@ -61,11 +61,6 @@ void CollisionObject2DSW::set_shape(int p_index, Shape2DSW *p_shape) {
 	}
 }
 
-void CollisionObject2DSW::set_shape_metadata(int p_index, const Variant &p_metadata) {
-	ERR_FAIL_INDEX(p_index, shapes.size());
-	shapes.write[p_index].metadata = p_metadata;
-}
-
 void CollisionObject2DSW::set_shape_transform(int p_index, const Transform2D &p_transform) {
 	ERR_FAIL_INDEX(p_index, shapes.size());
 

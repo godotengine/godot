@@ -169,22 +169,6 @@ Vector2 PhysicsDirectBodyState2DSW::get_contact_collider_velocity_at_position(in
 	return body->contacts[p_contact_idx].collider_velocity_at_pos;
 }
 
-Variant PhysicsDirectBodyState2DSW::get_contact_collider_shape_metadata(int p_contact_idx) const {
-	ERR_FAIL_INDEX_V(p_contact_idx, body->contact_count, Variant());
-
-	if (!PhysicsServer2DSW::singletonsw->body_owner.owns(body->contacts[p_contact_idx].collider)) {
-		return Variant();
-	}
-	Body2DSW *other = PhysicsServer2DSW::singletonsw->body_owner.get_or_null(body->contacts[p_contact_idx].collider);
-
-	int sidx = body->contacts[p_contact_idx].collider_shape;
-	if (sidx < 0 || sidx >= other->get_shape_count()) {
-		return Variant();
-	}
-
-	return other->get_shape_metadata(sidx);
-}
-
 PhysicsDirectSpaceState2D *PhysicsDirectBodyState2DSW::get_space_state() {
 	return body->get_space()->get_direct_state();
 }

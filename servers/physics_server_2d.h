@@ -84,7 +84,6 @@ public:
 	virtual ObjectID get_contact_collider_id(int p_contact_idx) const = 0;
 	virtual Object *get_contact_collider_object(int p_contact_idx) const;
 	virtual int get_contact_collider_shape(int p_contact_idx) const = 0;
-	virtual Variant get_contact_collider_shape_metadata(int p_contact_idx) const = 0;
 	virtual Vector2 get_contact_collider_velocity_at_position(int p_contact_idx) const = 0;
 
 	virtual real_t get_step() const = 0;
@@ -165,7 +164,6 @@ public:
 		ObjectID collider_id;
 		Object *collider = nullptr;
 		int shape = 0;
-		Variant metadata;
 	};
 
 	virtual bool intersect_ray(const Vector2 &p_from, const Vector2 &p_to, RayResult &r_result, const Set<RID> &p_exclude = Set<RID>(), uint32_t p_collision_layer = UINT32_MAX, bool p_collide_with_bodies = true, bool p_collide_with_areas = false) = 0;
@@ -175,7 +173,6 @@ public:
 		ObjectID collider_id;
 		Object *collider = nullptr;
 		int shape = 0;
-		Variant metadata;
 	};
 
 	virtual int intersect_point(const Vector2 &p_point, ShapeResult *r_results, int p_result_max, const Set<RID> &p_exclude = Set<RID>(), uint32_t p_collision_layer = UINT32_MAX, bool p_collide_with_bodies = true, bool p_collide_with_areas = false, bool p_pick_point = false) = 0;
@@ -194,7 +191,6 @@ public:
 		ObjectID collider_id;
 		int shape = 0;
 		Vector2 linear_velocity; //velocity at contact point
-		Variant metadata;
 	};
 
 	virtual bool rest_info(RID p_shape, const Transform2D &p_shape_xform, const Vector2 &p_motion, real_t p_margin, ShapeRestInfo *r_info, const Set<RID> &p_exclude = Set<RID>(), uint32_t p_collision_layer = UINT32_MAX, bool p_collide_with_bodies = true, bool p_collide_with_areas = false) = 0;
@@ -363,12 +359,10 @@ public:
 	virtual void body_add_shape(RID p_body, RID p_shape, const Transform2D &p_transform = Transform2D(), bool p_disabled = false) = 0;
 	virtual void body_set_shape(RID p_body, int p_shape_idx, RID p_shape) = 0;
 	virtual void body_set_shape_transform(RID p_body, int p_shape_idx, const Transform2D &p_transform) = 0;
-	virtual void body_set_shape_metadata(RID p_body, int p_shape_idx, const Variant &p_metadata) = 0;
 
 	virtual int body_get_shape_count(RID p_body) const = 0;
 	virtual RID body_get_shape(RID p_body, int p_shape_idx) const = 0;
 	virtual Transform2D body_get_shape_transform(RID p_body, int p_shape_idx) const = 0;
-	virtual Variant body_get_shape_metadata(RID p_body, int p_shape_idx) const = 0;
 
 	virtual void body_set_shape_disabled(RID p_body, int p_shape, bool p_disabled) = 0;
 	virtual void body_set_shape_as_one_way_collision(RID p_body, int p_shape, bool p_enabled, real_t p_margin = 0) = 0;
@@ -485,7 +479,6 @@ public:
 		ObjectID collider_id;
 		RID collider;
 		int collider_shape = 0;
-		Variant collider_metadata;
 
 		real_t get_angle(Vector2 p_up_direction) const {
 			return Math::acos(collision_normal.dot(p_up_direction));
@@ -503,7 +496,6 @@ public:
 		ObjectID collider_id;
 		RID collider;
 		int collider_shape;
-		Variant collider_metadata;
 	};
 
 	/* JOINT API */

@@ -492,7 +492,6 @@ public:
 		ObjectID collider_id;
 		RID collider;
 		int collider_shape = 0;
-		Variant collider_metadata;
 
 		real_t get_angle(Vector3 p_up_direction) const {
 			return Math::acos(normal.dot(p_up_direction));

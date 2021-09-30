@@ -184,11 +184,9 @@ public:
 	FUNC4(body_add_shape, RID, RID, const Transform2D &, bool);
 	FUNC3(body_set_shape, RID, int, RID);
 	FUNC3(body_set_shape_transform, RID, int, const Transform2D &);
-	FUNC3(body_set_shape_metadata, RID, int, const Variant &);
 
 	FUNC1RC(int, body_get_shape_count, RID);
 	FUNC2RC(Transform2D, body_get_shape_transform, RID, int);
-	FUNC2RC(Variant, body_get_shape_metadata, RID, int);
 	FUNC2RC(RID, body_get_shape, RID, int);
 
 	FUNC3(body_set_shape_disabled, RID, int, bool);
