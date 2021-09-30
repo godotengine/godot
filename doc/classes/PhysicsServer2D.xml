@@ -395,14 +395,6 @@
 				Returns the number of shapes assigned to a body.
 			</description>
 		</method>
-		<method name="body_get_shape_metadata" qualifiers="const">
-			<return type="Variant" />
-			<argument index="0" name="body" type="RID" />
-			<argument index="1" name="shape_idx" type="int" />
-			<description>
-				Returns the metadata of a shape of a body.
-			</description>
-		</method>
 		<method name="body_get_shape_transform" qualifiers="const">
 			<return type="Transform2D" />
 			<argument index="0" name="body" type="RID" />
@@ -560,15 +552,6 @@
 			<argument index="2" name="disabled" type="bool" />
 			<description>
 				Disables shape in body if [code]disable[/code] is [code]true[/code].
-			</description>
-		</method>
-		<method name="body_set_shape_metadata">
-			<return type="void" />
-			<argument index="0" name="body" type="RID" />
-			<argument index="1" name="shape_idx" type="int" />
-			<argument index="2" name="metadata" type="Variant" />
-			<description>
-				Sets metadata of a shape within a body. This metadata is different from [method Object.set_meta], and can be retrieved on shape queries.
 			</description>
 		</method>
 		<method name="body_set_shape_transform">

@@ -485,7 +485,6 @@ public:
 	Object *get_collider_shape(int p_collision_index = 0) const;
 	int get_collider_shape_index(int p_collision_index = 0) const;
 	Vector3 get_collider_velocity(int p_collision_index = 0) const;
-	Variant get_collider_metadata(int p_collision_index = 0) const;
 
 	Vector3 get_best_position() const;
 	Vector3 get_best_normal() const;
@@ -496,7 +495,6 @@ public:
 	Object *get_best_collider_shape() const;
 	int get_best_collider_shape_index() const;
 	Vector3 get_best_collider_velocity() const;
-	Variant get_best_collider_metadata() const;
 };
 
 class PhysicalBone3D : public PhysicsBody3D {

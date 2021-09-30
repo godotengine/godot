@@ -112,7 +112,6 @@ void PhysicsDirectBodyState2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_contact_collider_id", "contact_idx"), &PhysicsDirectBodyState2D::get_contact_collider_id);
 	ClassDB::bind_method(D_METHOD("get_contact_collider_object", "contact_idx"), &PhysicsDirectBodyState2D::get_contact_collider_object);
 	ClassDB::bind_method(D_METHOD("get_contact_collider_shape", "contact_idx"), &PhysicsDirectBodyState2D::get_contact_collider_shape);
-	ClassDB::bind_method(D_METHOD("get_contact_collider_shape_metadata", "contact_idx"), &PhysicsDirectBodyState2D::get_contact_collider_shape_metadata);
 	ClassDB::bind_method(D_METHOD("get_contact_collider_velocity_at_position", "contact_idx"), &PhysicsDirectBodyState2D::get_contact_collider_velocity_at_position);
 	ClassDB::bind_method(D_METHOD("get_step"), &PhysicsDirectBodyState2D::get_step);
 	ClassDB::bind_method(D_METHOD("integrate_forces"), &PhysicsDirectBodyState2D::integrate_forces);
@@ -279,7 +278,6 @@ Dictionary PhysicsDirectSpaceState2D::_intersect_ray(const Vector2 &p_from, cons
 	d["collider"] = inters.collider;
 	d["shape"] = inters.shape;
 	d["rid"] = inters.rid;
-	d["metadata"] = inters.metadata;
 
 	return d;
 }
@@ -298,7 +296,6 @@ Array PhysicsDirectSpaceState2D::_intersect_shape(const Ref<PhysicsShapeQueryPar
 		d["collider_id"] = sr[i].collider_id;
 		d["collider"] = sr[i].collider;
 		d["shape"] = sr[i].shape;
-		d["metadata"] = sr[i].metadata;
 		ret[i] = d;
 	}
 
@@ -348,7 +345,6 @@ Array PhysicsDirectSpaceState2D::_intersect_point_impl(const Vector2 &p_point, i
 		d["collider_id"] = ret[i].collider_id;
 		d["collider"] = ret[i].collider;
 		d["shape"] = ret[i].shape;
-		d["metadata"] = ret[i].metadata;
 		r[i] = d;
 	}
 	return r;
@@ -397,7 +393,6 @@ Dictionary PhysicsDirectSpaceState2D::_get_rest_info(const Ref<PhysicsShapeQuery
 	r["collider_id"] = sri.collider_id;
 	r["shape"] = sri.shape;
 	r["linear_velocity"] = sri.linear_velocity;
-	r["metadata"] = sri.metadata;
 
 	return r;
 }
@@ -578,12 +573,10 @@ void PhysicsServer2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("body_add_shape", "body", "shape", "transform", "disabled"), &PhysicsServer2D::body_add_shape, DEFVAL(Transform2D()), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("body_set_shape", "body", "shape_idx", "shape"), &PhysicsServer2D::body_set_shape);
 	ClassDB::bind_method(D_METHOD("body_set_shape_transform", "body", "shape_idx", "transform"), &PhysicsServer2D::body_set_shape_transform);
-	ClassDB::bind_method(D_METHOD("body_set_shape_metadata", "body", "shape_idx", "metadata"), &PhysicsServer2D::body_set_shape_metadata);
 
 	ClassDB::bind_method(D_METHOD("body_get_shape_count", "body"), &PhysicsServer2D::body_get_shape_count);
 	ClassDB::bind_method(D_METHOD("body_get_shape", "body", "shape_idx"), &PhysicsServer2D::body_get_shape);
 	ClassDB::bind_method(D_METHOD("body_get_shape_transform", "body", "shape_idx"), &PhysicsServer2D::body_get_shape_transform);
-	ClassDB::bind_method(D_METHOD("body_get_shape_metadata", "body", "shape_idx"), &PhysicsServer2D::body_get_shape_metadata);
 
 	ClassDB::bind_method(D_METHOD("body_remove_shape", "body", "shape_idx"), &PhysicsServer2D::body_remove_shape);
 	ClassDB::bind_method(D_METHOD("body_clear_shapes", "body"), &PhysicsServer2D::body_clear_shapes);

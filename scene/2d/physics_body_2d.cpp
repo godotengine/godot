@@ -1778,10 +1778,6 @@ Vector2 KinematicCollision2D::get_collider_velocity() const {
 	return result.collider_velocity;
 }
 
-Variant KinematicCollision2D::get_collider_metadata() const {
-	return Variant();
-}
-
 void KinematicCollision2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_position"), &KinematicCollision2D::get_position);
 	ClassDB::bind_method(D_METHOD("get_normal"), &KinematicCollision2D::get_normal);
@@ -1795,7 +1791,6 @@ void KinematicCollision2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_collider_shape"), &KinematicCollision2D::get_collider_shape);
 	ClassDB::bind_method(D_METHOD("get_collider_shape_index"), &KinematicCollision2D::get_collider_shape_index);
 	ClassDB::bind_method(D_METHOD("get_collider_velocity"), &KinematicCollision2D::get_collider_velocity);
-	ClassDB::bind_method(D_METHOD("get_collider_metadata"), &KinematicCollision2D::get_collider_metadata);
 
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "position"), "", "get_position");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "normal"), "", "get_normal");
@@ -1808,5 +1803,4 @@ void KinematicCollision2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "collider_shape"), "", "get_collider_shape");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collider_shape_index"), "", "get_collider_shape_index");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "collider_velocity"), "", "get_collider_velocity");
-	ADD_PROPERTY(PropertyInfo(Variant::NIL, "collider_metadata", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NIL_IS_VARIANT), "", "get_collider_metadata");
 }

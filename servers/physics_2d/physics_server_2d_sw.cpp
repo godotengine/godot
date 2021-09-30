@@ -606,18 +606,6 @@ void PhysicsServer2DSW::body_set_shape_transform(RID p_body, int p_shape_idx, co
 	body->set_shape_transform(p_shape_idx, p_transform);
 }
 
-void PhysicsServer2DSW::body_set_shape_metadata(RID p_body, int p_shape_idx, const Variant &p_metadata) {
-	Body2DSW *body = body_owner.get_or_null(p_body);
-	ERR_FAIL_COND(!body);
-	body->set_shape_metadata(p_shape_idx, p_metadata);
-}
-
-Variant PhysicsServer2DSW::body_get_shape_metadata(RID p_body, int p_shape_idx) const {
-	Body2DSW *body = body_owner.get_or_null(p_body);
-	ERR_FAIL_COND_V(!body, Variant());
-	return body->get_shape_metadata(p_shape_idx);
-}
-
 int PhysicsServer2DSW::body_get_shape_count(RID p_body) const {
 	Body2DSW *body = body_owner.get_or_null(p_body);
 	ERR_FAIL_COND_V(!body, -1);

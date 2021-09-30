@@ -941,7 +941,6 @@ bool Space3DSW::test_body_motion(Body3DSW *p_body, const Transform3D &p_from, co
 					collision.normal = result.normal;
 					collision.position = result.contact;
 					collision.depth = result.len;
-					//r_result->collider_metadata = result.object->get_shape_metadata(result.shape);
 
 					const Body3DSW *body = static_cast<const Body3DSW *>(result.object);
 

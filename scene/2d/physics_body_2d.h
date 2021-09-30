@@ -459,7 +459,6 @@ public:
 	Object *get_collider_shape() const;
 	int get_collider_shape_index() const;
 	Vector2 get_collider_velocity() const;
-	Variant get_collider_metadata() const;
 };
 
 #endif // PHYSICS_BODY_2D_H

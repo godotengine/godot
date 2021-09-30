@@ -1987,11 +1987,6 @@ Vector3 KinematicCollision3D::get_collider_velocity(int p_collision_index) const
 	return result.collisions[p_collision_index].collider_velocity;
 }
 
-Variant KinematicCollision3D::get_collider_metadata(int p_collision_index) const {
-	ERR_FAIL_INDEX_V(p_collision_index, result.collision_count, Variant());
-	return Variant();
-}
-
 Vector3 KinematicCollision3D::get_best_position() const {
 	return result.collision_count ? get_position() : Vector3();
 }
@@ -2028,10 +2023,6 @@ Vector3 KinematicCollision3D::get_best_collider_velocity() const {
 	return result.collision_count ? get_collider_velocity() : Vector3();
 }
 
-Variant KinematicCollision3D::get_best_collider_metadata() const {
-	return result.collision_count ? get_collider_metadata() : Variant();
-}
-
 void KinematicCollision3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_travel"), &KinematicCollision3D::get_travel);
 	ClassDB::bind_method(D_METHOD("get_remainder"), &KinematicCollision3D::get_remainder);
@@ -2046,7 +2037,6 @@ void KinematicCollision3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_collider_shape", "collision_index"), &KinematicCollision3D::get_collider_shape, DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("get_collider_shape_index", "collision_index"), &KinematicCollision3D::get_collider_shape_index, DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("get_collider_velocity", "collision_index"), &KinematicCollision3D::get_collider_velocity, DEFVAL(0));
-	ClassDB::bind_method(D_METHOD("get_collider_metadata", "collision_index"), &KinematicCollision3D::get_collider_metadata, DEFVAL(0));
 
 	ClassDB::bind_method(D_METHOD("get_best_position"), &KinematicCollision3D::get_best_position);
 	ClassDB::bind_method(D_METHOD("get_best_normal"), &KinematicCollision3D::get_best_normal);
@@ -2057,7 +2047,6 @@ void KinematicCollision3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_best_collider_shape"), &KinematicCollision3D::get_best_collider_shape);
 	ClassDB::bind_method(D_METHOD("get_best_collider_shape_index"), &KinematicCollision3D::get_best_collider_shape_index);
 	ClassDB::bind_method(D_METHOD("get_best_collider_velocity"), &KinematicCollision3D::get_best_collider_velocity);
-	ClassDB::bind_method(D_METHOD("get_best_collider_metadata"), &KinematicCollision3D::get_best_collider_metadata);
 
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "travel"), "", "get_travel");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "remainder"), "", "get_remainder");
@@ -2071,7 +2060,6 @@ void KinematicCollision3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "collider_shape"), "", "get_best_collider_shape");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collider_shape_index"), "", "get_best_collider_shape_index");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "collider_velocity"), "", "get_best_collider_velocity");
-	ADD_PROPERTY(PropertyInfo(Variant::NIL, "collider_metadata", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NIL_IS_VARIANT), "", "get_best_collider_metadata");
 }
 
 ///////////////////////////////////////
