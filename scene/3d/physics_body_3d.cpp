@@ -1131,6 +1131,9 @@ bool CharacterBody3D::move_and_slide() {
 	if (!current_platform_velocity.is_equal_approx(Vector3())) {
 		PhysicsServer3D::MotionParameters parameters(get_global_transform(), current_platform_velocity * delta, margin);
 		parameters.exclude_bodies.insert(platform_rid);
+		if (platform_object_id.is_valid()) {
+			parameters.exclude_objects.insert(platform_object_id);
+		}
 
 		PhysicsServer3D::MotionResult floor_result;
 		if (move_and_collide(parameters, floor_result, false, false)) {
@@ -1169,6 +1172,7 @@ void CharacterBody3D::_move_and_slide_grounded(double p_delta, bool p_was_on_flo
 	Vector3 prev_floor_normal = floor_normal;
 
 	platform_rid = RID();
+	platform_object_id = ObjectID();
 	platform_velocity = Vector3();
 	platform_ceiling_velocity = Vector3();
 	floor_normal = Vector3();
@@ -1416,6 +1420,7 @@ void CharacterBody3D::_move_and_slide_free(double p_delta) {
 	Vector3 motion = motion_velocity * p_delta;
 
 	platform_rid = RID();
+	platform_object_id = ObjectID();
 	floor_normal = Vector3();
 	platform_velocity = Vector3();
 
@@ -1611,6 +1616,7 @@ void CharacterBody3D::_set_collision_direction(const PhysicsServer3D::MotionResu
 
 void CharacterBody3D::_set_platform_data(const PhysicsServer3D::MotionCollision &p_collision) {
 	platform_rid = p_collision.collider;
+	platform_object_id = p_collision.collider_id;
 	platform_velocity = p_collision.collider_velocity;
 	platform_layer = PhysicsServer3D::get_singleton()->body_get_collision_layer(platform_rid);
 }
@@ -1833,6 +1839,7 @@ void CharacterBody3D::_notification(int p_what) {
 			// Reset move_and_slide() data.
 			collision_state.state = 0;
 			platform_rid = RID();
+			platform_object_id = ObjectID();
 			motion_results.clear();
 			platform_velocity = Vector3();
 		} break;

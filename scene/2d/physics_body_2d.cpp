@@ -1089,6 +1089,9 @@ bool CharacterBody2D::move_and_slide() {
 	if (!current_platform_velocity.is_equal_approx(Vector2())) {
 		PhysicsServer2D::MotionParameters parameters(get_global_transform(), current_platform_velocity * delta, margin);
 		parameters.exclude_bodies.insert(platform_rid);
+		if (platform_object_id.is_valid()) {
+			parameters.exclude_objects.insert(platform_object_id);
+		}
 
 		PhysicsServer2D::MotionResult floor_result;
 		if (move_and_collide(parameters, floor_result, false, false)) {
@@ -1125,9 +1128,11 @@ void CharacterBody2D::_move_and_slide_grounded(double p_delta, bool p_was_on_flo
 
 	Vector2 prev_floor_normal = floor_normal;
 	RID prev_platform_rid = platform_rid;
+	ObjectID prev_platform_object_id = platform_object_id;
 	int prev_platform_layer = platform_layer;
 
 	platform_rid = RID();
+	platform_object_id = ObjectID();
 	floor_normal = Vector2();
 	platform_velocity = Vector2();
 
@@ -1199,6 +1204,7 @@ void CharacterBody2D::_move_and_slide_grounded(double p_delta, bool p_was_on_flo
 					}
 					on_floor = true;
 					platform_rid = prev_platform_rid;
+					platform_object_id = prev_platform_object_id;
 					platform_layer = prev_platform_layer;
 					platform_velocity = p_prev_platform_velocity;
 					floor_normal = prev_floor_normal;
@@ -1285,6 +1291,7 @@ void CharacterBody2D::_move_and_slide_free(double p_delta) {
 	Vector2 motion = motion_velocity * p_delta;
 
 	platform_rid = RID();
+	platform_object_id = ObjectID();
 	floor_normal = Vector2();
 	platform_velocity = Vector2();
 
@@ -1402,6 +1409,7 @@ void CharacterBody2D::_set_collision_direction(const PhysicsServer2D::MotionResu
 
 void CharacterBody2D::_set_platform_data(const PhysicsServer2D::MotionResult &p_result) {
 	platform_rid = p_result.collider;
+	platform_object_id = p_result.collider_id;
 	platform_velocity = p_result.collider_velocity;
 	platform_layer = PhysicsServer2D::get_singleton()->body_get_collision_layer(platform_rid);
 }
@@ -1620,6 +1628,7 @@ void CharacterBody2D::_notification(int p_what) {
 			// Reset move_and_slide() data.
 			on_floor = false;
 			platform_rid = RID();
+			platform_object_id = ObjectID();
 			on_ceiling = false;
 			on_wall = false;
 			motion_results.clear();

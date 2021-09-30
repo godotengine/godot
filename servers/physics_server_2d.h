@@ -472,6 +472,7 @@ public:
 		real_t margin = 0.08;
 		bool collide_separation_ray = false;
 		Set<RID> exclude_bodies;
+		Set<ObjectID> exclude_objects;
 
 		MotionParameters() {}
 
@@ -609,6 +610,9 @@ public:
 
 	Vector<RID> get_exclude_bodies() const;
 	void set_exclude_bodies(const Vector<RID> &p_exclude);
+
+	Array get_exclude_objects() const;
+	void set_exclude_objects(const Array &p_exclude);
 };
 
 class PhysicsTestMotionResult2D : public RefCounted {
