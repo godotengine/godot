@@ -1105,7 +1105,7 @@ Error SceneTree::change_scene_to(const Ref<PackedScene> &p_scene) {
 
 Error SceneTree::reload_current_scene() {
 	ERR_FAIL_COND_V(!current_scene, ERR_UNCONFIGURED);
-	String fname = current_scene->get_filename();
+	String fname = current_scene->get_scene_file_path();
 	return change_scene(fname);
 }
 

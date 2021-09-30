@@ -1238,7 +1238,7 @@ void ScriptEditorDebugger::update_live_edit_root() {
 	Array msg;
 	msg.push_back(np);
 	if (editor->get_edited_scene()) {
-		msg.push_back(editor->get_edited_scene()->get_filename());
+		msg.push_back(editor->get_edited_scene()->get_scene_file_path());
 	} else {
 		msg.push_back("");
 	}

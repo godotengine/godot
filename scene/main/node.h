@@ -96,7 +96,7 @@ private:
 	};
 
 	struct Data {
-		String filename;
+		String scene_file_path;
 		Ref<SceneState> instance_state;
 		Ref<SceneState> inherited_state;
 
@@ -353,8 +353,8 @@ public:
 	void print_tree();
 	void print_tree_pretty();
 
-	void set_filename(const String &p_filename);
-	String get_filename() const;
+	void set_scene_file_path(const String &p_scene_file_path);
+	String get_scene_file_path() const;
 
 	void set_editor_description(const String &p_editor_description);
 	String get_editor_description() const;
