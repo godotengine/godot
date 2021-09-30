@@ -1084,6 +1084,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_icon("folded", "CodeEdit", theme->get_icon("GuiTreeArrowRight", "EditorIcons"));
 	theme->set_icon("can_fold", "CodeEdit", theme->get_icon("GuiTreeArrowDown", "EditorIcons"));
 	theme->set_icon("executing_line", "CodeEdit", theme->get_icon("MainPlay", "EditorIcons"));
+	theme->set_icon("breakpoint", "CodeEdit", theme->get_icon("Breakpoint", "EditorIcons"));
 	theme->set_constant("line_spacing", "CodeEdit", EDITOR_DEF("text_editor/appearance/whitespace/line_spacing", 6));
 
 	// H/VSplitContainer

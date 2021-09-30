@@ -477,6 +477,7 @@ private:
 	Vector<GutterInfo> gutters;
 	int gutters_width = 0;
 	int gutter_padding = 0;
+	Vector2i hovered_gutter = Vector2i(-1, -1); // X = gutter index, Y = row.
 
 	void _update_gutter_width();
 

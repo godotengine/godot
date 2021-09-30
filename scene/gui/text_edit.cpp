@@ -1636,6 +1636,32 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 				}
 			}
 		}
+
+		// Check if user is hovering a different gutter, and update if yes.
+		Vector2i current_hovered_gutter = Vector2i(-1, -1);
+
+		int left_margin = style_normal->get_margin(SIDE_LEFT);
+		if (mpos.x <= left_margin + gutters_width + gutter_padding) {
+			int hovered_row = get_line_column_at_pos(mpos).y;
+			for (int i = 0; i < gutters.size(); i++) {
+				if (!gutters[i].draw || gutters[i].width <= 0) {
+					continue;
+				}
+
+				if (mpos.x > left_margin && mpos.x <= (left_margin + gutters[i].width) - 3) {
+					// We are in this gutter i's horizontal area.
+					current_hovered_gutter = Vector2i(i, hovered_row);
+					break;
+				}
+
+				left_margin += gutters[i].width;
+			}
+		}
+
+		if (current_hovered_gutter != hovered_gutter) {
+			hovered_gutter = current_hovered_gutter;
+			update();
+		}
 	}
 
 	if (draw_minimap && !dragging_selection) {

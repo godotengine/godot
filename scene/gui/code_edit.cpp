@@ -1146,13 +1146,20 @@ bool CodeEdit::is_drawing_executing_lines_gutter() const {
 }
 
 void CodeEdit::_main_gutter_draw_callback(int p_line, int p_gutter, const Rect2 &p_region) {
-	if (draw_breakpoints && is_line_breakpointed(p_line)) {
-		int padding = p_region.size.x / 6;
+	if (draw_breakpoints) {
+		bool hovering = p_region.has_point(get_local_mouse_pos());
+		bool breakpointed = is_line_breakpointed(p_line);
 
-		Rect2 breakpoint_region = p_region;
-		breakpoint_region.position += Point2(padding, padding);
-		breakpoint_region.size -= Point2(padding, padding) * 2;
-		breakpoint_icon->draw_rect(get_canvas_item(), breakpoint_region, false, breakpoint_color);
+		if (breakpointed || (hovering && !is_dragging_cursor())) {
+			int padding = p_region.size.x / 6;
+			Rect2 icon_region = p_region;
+			icon_region.position += Point2(padding, padding);
+			icon_region.size -= Point2(padding, padding) * 2;
+
+			// Darken icon when hovering & not yet breakpointed.
+			Color use_color = hovering && !breakpointed ? breakpoint_color.darkened(0.4) : breakpoint_color;
+			breakpoint_icon->draw_rect(get_canvas_item(), icon_region, false, use_color);
+		}
 	}
 
 	if (draw_bookmarks && is_line_bookmarked(p_line)) {
