@@ -960,7 +960,7 @@ bool AtlasTexture::has_filter_clip() const {
 }
 
 Ref<Image> AtlasTexture::get_data() const {
-	if (!atlas.is_valid()) {
+	if (!atlas.is_valid() || !atlas->get_data().is_valid()) {
 		return Ref<Image>();
 	}
 
