@@ -288,6 +288,12 @@ void AnimatableBody2D::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			last_valid_transform = get_global_transform();
+			_update_kinematic_motion();
+		} break;
+
+		case NOTIFICATION_EXIT_TREE: {
+			set_only_update_transform_changes(false);
+			set_notify_local_transform(false);
 		} break;
 
 		case NOTIFICATION_LOCAL_TRANSFORM_CHANGED: {
@@ -313,7 +319,6 @@ void AnimatableBody2D::_bind_methods() {
 
 AnimatableBody2D::AnimatableBody2D() :
 		StaticBody2D(PhysicsServer2D::BODY_MODE_KINEMATIC) {
-	_update_kinematic_motion();
 }
 
 void RigidDynamicBody2D::_body_enter_tree(ObjectID p_id) {

@@ -340,6 +340,12 @@ void AnimatableBody3D::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			last_valid_transform = get_global_transform();
+			_update_kinematic_motion();
+		} break;
+
+		case NOTIFICATION_EXIT_TREE: {
+			set_only_update_transform_changes(false);
+			set_notify_local_transform(false);
 		} break;
 
 		case NOTIFICATION_LOCAL_TRANSFORM_CHANGED: {
@@ -367,8 +373,6 @@ void AnimatableBody3D::_bind_methods() {
 AnimatableBody3D::AnimatableBody3D() :
 		StaticBody3D(PhysicsServer3D::BODY_MODE_KINEMATIC) {
 	PhysicsServer3D::get_singleton()->body_set_state_sync_callback(get_rid(), this, _body_state_changed_callback);
-
-	_update_kinematic_motion();
 }
 
 void RigidDynamicBody3D::_body_enter_tree(ObjectID p_id) {
