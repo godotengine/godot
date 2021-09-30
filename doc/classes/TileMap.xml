@@ -73,7 +73,7 @@
 			<return type="Vector2i" />
 			<argument index="0" name="body" type="RID" />
 			<description>
-				Returns the coodinates of the tile for given physics body RID. Such RID can be retrieved from [member KinematicCollision2D.collider_rid], when colliding with a tile.
+				Returns the coodinates of the tile for given physics body RID. Such RID can be retrieved from [method KinematicCollision2D.get_collider_rid], when colliding with a tile.
 			</description>
 		</method>
 		<method name="get_layer_name" qualifiers="const">
