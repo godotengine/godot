@@ -7171,85 +7171,140 @@ void RasterizerStorageGLES3::_render_target_allocate(RenderTarget *rt) {
 	}
 
 	if (!rt->flags[RENDER_TARGET_NO_SAMPLING] && rt->width >= 2 && rt->height >= 2) {
-		for (int i = 0; i < 2; i++) {
-			ERR_FAIL_COND(rt->effects.mip_maps[i].sizes.size());
+		if (rt->flags[RENDER_TARGET_NO_MIPMAPS]) {
+			ERR_FAIL_COND(rt->effects.mip_maps[0].sizes.size());
 			int w = rt->width;
 			int h = rt->height;
 
-			if (i > 0) {
-				w >>= 1;
-				h >>= 1;
-			}
+			glGenTextures(1, &rt->effects.mip_maps[0].color);
+			glBindTexture(GL_TEXTURE_2D, rt->effects.mip_maps[0].color);
 
-			glGenTextures(1, &rt->effects.mip_maps[i].color);
-			glBindTexture(GL_TEXTURE_2D, rt->effects.mip_maps[i].color);
-
-			int level = 0;
 			int fb_w = w;
 			int fb_h = h;
+			RenderTarget::Effects::MipMaps::Size mm;
+			mm.width = w;
+			mm.height = h;
 
-			while (true) {
-				RenderTarget::Effects::MipMaps::Size mm;
-				mm.width = w;
-				mm.height = h;
-				rt->effects.mip_maps[i].sizes.push_back(mm);
+			glTexStorage2DCustom(GL_TEXTURE_2D, 1, color_internal_format, fb_w, fb_h, color_format, color_type);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-				w >>= 1;
-				h >>= 1;
+			glGenFramebuffers(1, &mm.fbo);
+			glBindFramebuffer(GL_FRAMEBUFFER, mm.fbo);
+			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, rt->effects.mip_maps[0].color, 0);
+			bool used_depth = true;
+			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, rt->depth, 0);
 
-				if (w < 2 || h < 2) {
-					break;
-				}
-
-				level++;
+			GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+			if (status != GL_FRAMEBUFFER_COMPLETE) {
+				_render_target_clear(rt);
+				ERR_FAIL_COND(status != GL_FRAMEBUFFER_COMPLETE);
 			}
 
-			glTexStorage2DCustom(GL_TEXTURE_2D, level + 1, color_internal_format, fb_w, fb_h, color_format, color_type);
+			float zero[4] = { 1, 0, 1, 0 };
+			glViewport(0, 0, w, h);
+			glClearBufferfv(GL_COLOR, 0, zero);
+			if (used_depth) {
+				glClearDepth(1.0);
+				glClear(GL_DEPTH_BUFFER_BIT);
+			}
+			rt->effects.mip_maps[0].sizes.push_back(mm);
 
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, level);
 			glDisable(GL_SCISSOR_TEST);
 			glColorMask(1, 1, 1, 1);
 			if (!rt->buffers.active) {
 				glDepthMask(GL_TRUE);
 			}
 
-			for (int j = 0; j < rt->effects.mip_maps[i].sizes.size(); j++) {
-				RenderTarget::Effects::MipMaps::Size &mm = rt->effects.mip_maps[i].sizes.write[j];
-
-				glGenFramebuffers(1, &mm.fbo);
-				glBindFramebuffer(GL_FRAMEBUFFER, mm.fbo);
-				glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, rt->effects.mip_maps[i].color, j);
-				bool used_depth = false;
-				if (j == 0 && i == 0) { //use always
-					glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, rt->depth, 0);
-					used_depth = true;
-				}
-
-				GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-				if (status != GL_FRAMEBUFFER_COMPLETE) {
-					_render_target_clear(rt);
-					ERR_FAIL_COND(status != GL_FRAMEBUFFER_COMPLETE);
-				}
-
-				float zero[4] = { 1, 0, 1, 0 };
-				glViewport(0, 0, rt->effects.mip_maps[i].sizes[j].width, rt->effects.mip_maps[i].sizes[j].height);
-				glClearBufferfv(GL_COLOR, 0, zero);
-				if (used_depth) {
-					glClearDepth(1.0);
-					glClear(GL_DEPTH_BUFFER_BIT);
-				}
-			}
-
 			glBindFramebuffer(GL_FRAMEBUFFER, RasterizerStorageGLES3::system_fbo);
-			rt->effects.mip_maps[i].levels = level;
+			rt->effects.mip_maps[0].levels = 0;
 
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-			//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-			//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		} else {
+			for (int i = 0; i < 2; i++) {
+				ERR_FAIL_COND(rt->effects.mip_maps[i].sizes.size());
+				int w = rt->width;
+				int h = rt->height;
+
+				if (i > 0) {
+					w >>= 1;
+					h >>= 1;
+				}
+
+				glGenTextures(1, &rt->effects.mip_maps[i].color);
+				glBindTexture(GL_TEXTURE_2D, rt->effects.mip_maps[i].color);
+
+				int level = 0;
+				int fb_w = w;
+				int fb_h = h;
+
+				while (true) {
+					RenderTarget::Effects::MipMaps::Size mm;
+					mm.width = w;
+					mm.height = h;
+					rt->effects.mip_maps[i].sizes.push_back(mm);
+
+					w >>= 1;
+					h >>= 1;
+
+					if (w < 2 || h < 2)
+						break;
+
+					level++;
+				}
+
+				glTexStorage2DCustom(GL_TEXTURE_2D, level + 1, color_internal_format, fb_w, fb_h, color_format, color_type);
+
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, level);
+				glDisable(GL_SCISSOR_TEST);
+				glColorMask(1, 1, 1, 1);
+				if (!rt->buffers.active) {
+					glDepthMask(GL_TRUE);
+				}
+
+				for (int j = 0; j < rt->effects.mip_maps[i].sizes.size(); j++) {
+					RenderTarget::Effects::MipMaps::Size &mm = rt->effects.mip_maps[i].sizes.write[j];
+
+					glGenFramebuffers(1, &mm.fbo);
+					glBindFramebuffer(GL_FRAMEBUFFER, mm.fbo);
+					glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, rt->effects.mip_maps[i].color, j);
+					bool used_depth = false;
+					if (j == 0 && i == 0) { //use always
+						glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, rt->depth, 0);
+						used_depth = true;
+					}
+
+					GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+					if (status != GL_FRAMEBUFFER_COMPLETE) {
+						_render_target_clear(rt);
+						ERR_FAIL_COND(status != GL_FRAMEBUFFER_COMPLETE);
+					}
+
+					float zero[4] = { 1, 0, 1, 0 };
+					glViewport(0, 0, rt->effects.mip_maps[i].sizes[j].width, rt->effects.mip_maps[i].sizes[j].height);
+					glClearBufferfv(GL_COLOR, 0, zero);
+					if (used_depth) {
+						glClearDepth(1.0);
+						glClear(GL_DEPTH_BUFFER_BIT);
+					}
+				}
+
+				glBindFramebuffer(GL_FRAMEBUFFER, RasterizerStorageGLES3::system_fbo);
+				rt->effects.mip_maps[i].levels = level;
+
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+				//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+				//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+				glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+				glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+			}
 		}
 	}
 }
@@ -7451,6 +7506,7 @@ void RasterizerStorageGLES3::render_target_set_flag(RID p_render_target, RenderT
 		case RENDER_TARGET_HDR:
 		case RENDER_TARGET_NO_3D:
 		case RENDER_TARGET_NO_SAMPLING:
+		case RENDER_TARGET_NO_MIPMAPS:
 		case RENDER_TARGET_NO_3D_EFFECTS: {
 			//must reset for these formats
 			_render_target_clear(rt);

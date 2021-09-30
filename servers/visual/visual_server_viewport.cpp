@@ -657,25 +657,42 @@ void VisualServerViewport::viewport_set_usage(RID p_viewport, VS::ViewportUsage 
 			VSG::storage->render_target_set_flag(viewport->render_target, RasterizerStorage::RENDER_TARGET_NO_3D, true);
 			VSG::storage->render_target_set_flag(viewport->render_target, RasterizerStorage::RENDER_TARGET_NO_3D_EFFECTS, true);
 			VSG::storage->render_target_set_flag(viewport->render_target, RasterizerStorage::RENDER_TARGET_NO_SAMPLING, false);
-
+			VSG::storage->render_target_set_flag(viewport->render_target, RasterizerStorage::RENDER_TARGET_NO_MIPMAPS, false);
+			viewport->disable_3d_by_usage = true;
+		} break;
+		case VS::VIEWPORT_USAGE_2D_NO_MIPMAPS: {
+			VSG::storage->render_target_set_flag(viewport->render_target, RasterizerStorage::RENDER_TARGET_NO_3D, true);
+			VSG::storage->render_target_set_flag(viewport->render_target, RasterizerStorage::RENDER_TARGET_NO_3D_EFFECTS, true);
+			VSG::storage->render_target_set_flag(viewport->render_target, RasterizerStorage::RENDER_TARGET_NO_SAMPLING, false);
+			VSG::storage->render_target_set_flag(viewport->render_target, RasterizerStorage::RENDER_TARGET_NO_MIPMAPS, true);
 			viewport->disable_3d_by_usage = true;
 		} break;
 		case VS::VIEWPORT_USAGE_2D_NO_SAMPLING: {
 			VSG::storage->render_target_set_flag(viewport->render_target, RasterizerStorage::RENDER_TARGET_NO_3D, true);
 			VSG::storage->render_target_set_flag(viewport->render_target, RasterizerStorage::RENDER_TARGET_NO_3D_EFFECTS, true);
 			VSG::storage->render_target_set_flag(viewport->render_target, RasterizerStorage::RENDER_TARGET_NO_SAMPLING, true);
+			VSG::storage->render_target_set_flag(viewport->render_target, RasterizerStorage::RENDER_TARGET_NO_MIPMAPS, false);
 			viewport->disable_3d_by_usage = true;
 		} break;
 		case VS::VIEWPORT_USAGE_3D: {
 			VSG::storage->render_target_set_flag(viewport->render_target, RasterizerStorage::RENDER_TARGET_NO_3D, false);
 			VSG::storage->render_target_set_flag(viewport->render_target, RasterizerStorage::RENDER_TARGET_NO_3D_EFFECTS, false);
 			VSG::storage->render_target_set_flag(viewport->render_target, RasterizerStorage::RENDER_TARGET_NO_SAMPLING, false);
+			VSG::storage->render_target_set_flag(viewport->render_target, RasterizerStorage::RENDER_TARGET_NO_MIPMAPS, false);
+			viewport->disable_3d_by_usage = false;
+		} break;
+		case VS::VIEWPORT_USAGE_3D_NO_MIPMAPS: {
+			VSG::storage->render_target_set_flag(viewport->render_target, RasterizerStorage::RENDER_TARGET_NO_3D, false);
+			VSG::storage->render_target_set_flag(viewport->render_target, RasterizerStorage::RENDER_TARGET_NO_3D_EFFECTS, false);
+			VSG::storage->render_target_set_flag(viewport->render_target, RasterizerStorage::RENDER_TARGET_NO_SAMPLING, false);
+			VSG::storage->render_target_set_flag(viewport->render_target, RasterizerStorage::RENDER_TARGET_NO_MIPMAPS, true);
 			viewport->disable_3d_by_usage = false;
 		} break;
 		case VS::VIEWPORT_USAGE_3D_NO_EFFECTS: {
 			VSG::storage->render_target_set_flag(viewport->render_target, RasterizerStorage::RENDER_TARGET_NO_3D, false);
 			VSG::storage->render_target_set_flag(viewport->render_target, RasterizerStorage::RENDER_TARGET_NO_3D_EFFECTS, true);
 			VSG::storage->render_target_set_flag(viewport->render_target, RasterizerStorage::RENDER_TARGET_NO_SAMPLING, false);
+			VSG::storage->render_target_set_flag(viewport->render_target, RasterizerStorage::RENDER_TARGET_NO_MIPMAPS, false);
 			viewport->disable_3d_by_usage = false;
 		} break;
 	}

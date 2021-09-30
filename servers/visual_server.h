@@ -698,6 +698,8 @@ public:
 		VIEWPORT_USAGE_2D_NO_SAMPLING,
 		VIEWPORT_USAGE_3D,
 		VIEWPORT_USAGE_3D_NO_EFFECTS,
+		VIEWPORT_USAGE_2D_NO_MIPMAPS,
+		VIEWPORT_USAGE_3D_NO_MIPMAPS,
 	};
 
 	virtual void viewport_set_hdr(RID p_viewport, bool p_enabled) = 0;

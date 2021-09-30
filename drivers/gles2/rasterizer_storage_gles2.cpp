@@ -5126,7 +5126,7 @@ void RasterizerStorageGLES2::_render_target_allocate(RenderTarget *rt) {
 	}
 
 	// Allocate mipmap chains for post_process effects
-	if (!rt->flags[RasterizerStorage::RENDER_TARGET_NO_3D] && rt->width >= 2 && rt->height >= 2) {
+	if (!rt->flags[RasterizerStorage::RENDER_TARGET_NO_3D] && !rt->flags[RasterizerStorage::RENDER_TARGET_NO_MIPMAPS] && rt->width >= 2 && rt->height >= 2) {
 		for (int i = 0; i < 2; i++) {
 			ERR_FAIL_COND(rt->mip_maps[i].sizes.size());
 			int w = rt->width;
@@ -5585,6 +5585,7 @@ void RasterizerStorageGLES2::render_target_set_flag(RID p_render_target, RenderT
 		case RENDER_TARGET_HDR:
 		case RENDER_TARGET_NO_3D:
 		case RENDER_TARGET_NO_SAMPLING:
+		case RENDER_TARGET_NO_MIPMAPS:
 		case RENDER_TARGET_NO_3D_EFFECTS: {
 			//must reset for these formats
 			_render_target_clear(rt);
