@@ -206,7 +206,7 @@ int PhysicsDirectSpaceState2DSW::intersect_shape(const RID &p_shape, const Trans
 		return 0;
 	}
 
-	Shape2DSW *shape = PhysicsServer2DSW::singletonsw->shape_owner.getornull(p_shape);
+	Shape2DSW *shape = PhysicsServer2DSW::singletonsw->shape_owner.get_or_null(p_shape);
 	ERR_FAIL_COND_V(!shape, 0);
 
 	Rect2 aabb = p_xform.xform(shape->get_aabb());
@@ -251,7 +251,7 @@ int PhysicsDirectSpaceState2DSW::intersect_shape(const RID &p_shape, const Trans
 }
 
 bool PhysicsDirectSpaceState2DSW::cast_motion(const RID &p_shape, const Transform2D &p_xform, const Vector2 &p_motion, real_t p_margin, real_t &p_closest_safe, real_t &p_closest_unsafe, const Set<RID> &p_exclude, uint32_t p_collision_mask, bool p_collide_with_bodies, bool p_collide_with_areas) {
-	Shape2DSW *shape = PhysicsServer2DSW::singletonsw->shape_owner.getornull(p_shape);
+	Shape2DSW *shape = PhysicsServer2DSW::singletonsw->shape_owner.get_or_null(p_shape);
 	ERR_FAIL_COND_V(!shape, false);
 
 	Rect2 aabb = p_xform.xform(shape->get_aabb());
@@ -338,7 +338,7 @@ bool PhysicsDirectSpaceState2DSW::collide_shape(RID p_shape, const Transform2D &
 		return false;
 	}
 
-	Shape2DSW *shape = PhysicsServer2DSW::singletonsw->shape_owner.getornull(p_shape);
+	Shape2DSW *shape = PhysicsServer2DSW::singletonsw->shape_owner.get_or_null(p_shape);
 	ERR_FAIL_COND_V(!shape, 0);
 
 	Rect2 aabb = p_shape_xform.xform(shape->get_aabb());
@@ -435,7 +435,7 @@ static void _rest_cbk_result(const Vector2 &p_point_A, const Vector2 &p_point_B,
 }
 
 bool PhysicsDirectSpaceState2DSW::rest_info(RID p_shape, const Transform2D &p_shape_xform, const Vector2 &p_motion, real_t p_margin, ShapeRestInfo *r_info, const Set<RID> &p_exclude, uint32_t p_collision_mask, bool p_collide_with_bodies, bool p_collide_with_areas) {
-	Shape2DSW *shape = PhysicsServer2DSW::singletonsw->shape_owner.getornull(p_shape);
+	Shape2DSW *shape = PhysicsServer2DSW::singletonsw->shape_owner.get_or_null(p_shape);
 	ERR_FAIL_COND_V(!shape, 0);
 
 	real_t min_contact_depth = p_margin * TEST_MOTION_MIN_CONTACT_DEPTH_FACTOR;

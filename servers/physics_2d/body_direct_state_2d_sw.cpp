@@ -175,7 +175,7 @@ Variant PhysicsDirectBodyState2DSW::get_contact_collider_shape_metadata(int p_co
 	if (!PhysicsServer2DSW::singletonsw->body_owner.owns(body->contacts[p_contact_idx].collider)) {
 		return Variant();
 	}
-	Body2DSW *other = PhysicsServer2DSW::singletonsw->body_owner.getornull(body->contacts[p_contact_idx].collider);
+	Body2DSW *other = PhysicsServer2DSW::singletonsw->body_owner.get_or_null(body->contacts[p_contact_idx].collider);
 
 	int sidx = body->contacts[p_contact_idx].collider_shape;
 	if (sidx < 0 || sidx >= other->get_shape_count()) {

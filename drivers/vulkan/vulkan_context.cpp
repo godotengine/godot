@@ -2084,12 +2084,12 @@ RID VulkanContext::local_device_create() {
 }
 
 VkDevice VulkanContext::local_device_get_vk_device(RID p_local_device) {
-	LocalDevice *ld = local_device_owner.getornull(p_local_device);
+	LocalDevice *ld = local_device_owner.get_or_null(p_local_device);
 	return ld->device;
 }
 
 void VulkanContext::local_device_push_command_buffers(RID p_local_device, const VkCommandBuffer *p_buffers, int p_count) {
-	LocalDevice *ld = local_device_owner.getornull(p_local_device);
+	LocalDevice *ld = local_device_owner.get_or_null(p_local_device);
 	ERR_FAIL_COND(ld->waiting);
 
 	VkSubmitInfo submit_info;
@@ -2119,7 +2119,7 @@ void VulkanContext::local_device_push_command_buffers(RID p_local_device, const 
 }
 
 void VulkanContext::local_device_sync(RID p_local_device) {
-	LocalDevice *ld = local_device_owner.getornull(p_local_device);
+	LocalDevice *ld = local_device_owner.get_or_null(p_local_device);
 	ERR_FAIL_COND(!ld->waiting);
 
 	vkDeviceWaitIdle(ld->device);
@@ -2127,7 +2127,7 @@ void VulkanContext::local_device_sync(RID p_local_device) {
 }
 
 void VulkanContext::local_device_free(RID p_local_device) {
-	LocalDevice *ld = local_device_owner.getornull(p_local_device);
+	LocalDevice *ld = local_device_owner.get_or_null(p_local_device);
 	vkDestroyDevice(ld->device, nullptr);
 	local_device_owner.free(p_local_device);
 }

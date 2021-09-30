@@ -383,7 +383,7 @@ public:
 	mutable RID_Owner<VoxelGIInstance> voxel_gi_instance_owner;
 
 	_FORCE_INLINE_ VoxelGIInstance *get_probe_instance(RID p_probe) const {
-		return voxel_gi_instance_owner.getornull(p_probe);
+		return voxel_gi_instance_owner.get_or_null(p_probe);
 	};
 
 	_FORCE_INLINE_ RID voxel_gi_instance_get_texture(RID p_probe) {

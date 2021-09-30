@@ -48,8 +48,8 @@ void get_vogel_disk(float *r_kernel, int p_sample_count) {
 }
 
 void RendererSceneRenderRD::sdfgi_update(RID p_render_buffers, RID p_environment, const Vector3 &p_world_position) {
-	RendererSceneEnvironmentRD *env = environment_owner.getornull(p_environment);
-	RenderBuffers *rb = render_buffers_owner.getornull(p_render_buffers);
+	RendererSceneEnvironmentRD *env = environment_owner.get_or_null(p_environment);
+	RenderBuffers *rb = render_buffers_owner.get_or_null(p_render_buffers);
 	bool needs_sdfgi = env && env->sdfgi_enabled;
 
 	if (!needs_sdfgi) {
@@ -83,7 +83,7 @@ void RendererSceneRenderRD::sdfgi_update(RID p_render_buffers, RID p_environment
 }
 
 int RendererSceneRenderRD::sdfgi_get_pending_region_count(RID p_render_buffers) const {
-	RenderBuffers *rb = render_buffers_owner.getornull(p_render_buffers);
+	RenderBuffers *rb = render_buffers_owner.get_or_null(p_render_buffers);
 
 	ERR_FAIL_COND_V(rb == nullptr, 0);
 
@@ -113,7 +113,7 @@ AABB RendererSceneRenderRD::sdfgi_get_pending_region_bounds(RID p_render_buffers
 	AABB bounds;
 	Vector3i from;
 	Vector3i size;
-	RenderBuffers *rb = render_buffers_owner.getornull(p_render_buffers);
+	RenderBuffers *rb = render_buffers_owner.get_or_null(p_render_buffers);
 	ERR_FAIL_COND_V(rb == nullptr, AABB());
 	ERR_FAIL_COND_V(rb->sdfgi == nullptr, AABB());
 
@@ -126,7 +126,7 @@ uint32_t RendererSceneRenderRD::sdfgi_get_pending_region_cascade(RID p_render_bu
 	AABB bounds;
 	Vector3i from;
 	Vector3i size;
-	RenderBuffers *rb = render_buffers_owner.getornull(p_render_buffers);
+	RenderBuffers *rb = render_buffers_owner.get_or_null(p_render_buffers);
 	ERR_FAIL_COND_V(rb == nullptr, -1);
 	ERR_FAIL_COND_V(rb->sdfgi == nullptr, -1);
 
@@ -164,139 +164,139 @@ void RendererSceneRenderRD::environment_initialize(RID p_rid) {
 }
 
 void RendererSceneRenderRD::environment_set_background(RID p_env, RS::EnvironmentBG p_bg) {
-	RendererSceneEnvironmentRD *env = environment_owner.getornull(p_env);
+	RendererSceneEnvironmentRD *env = environment_owner.get_or_null(p_env);
 	ERR_FAIL_COND(!env);
 	env->background = p_bg;
 }
 
 void RendererSceneRenderRD::environment_set_sky(RID p_env, RID p_sky) {
-	RendererSceneEnvironmentRD *env = environment_owner.getornull(p_env);
+	RendererSceneEnvironmentRD *env = environment_owner.get_or_null(p_env);
 	ERR_FAIL_COND(!env);
 	env->sky = p_sky;
 }
 
 void RendererSceneRenderRD::environment_set_sky_custom_fov(RID p_env, float p_scale) {
-	RendererSceneEnvironmentRD *env = environment_owner.getornull(p_env);
+	RendererSceneEnvironmentRD *env = environment_owner.get_or_null(p_env);
 	ERR_FAIL_COND(!env);
 	env->sky_custom_fov = p_scale;
 }
 
 void RendererSceneRenderRD::environment_set_sky_orientation(RID p_env, const Basis &p_orientation) {
-	RendererSceneEnvironmentRD *env = environment_owner.getornull(p_env);
+	RendererSceneEnvironmentRD *env = environment_owner.get_or_null(p_env);
 	ERR_FAIL_COND(!env);
 	env->sky_orientation = p_orientation;
 }
 
 void RendererSceneRenderRD::environment_set_bg_color(RID p_env, const Color &p_color) {
-	RendererSceneEnvironmentRD *env = environment_owner.getornull(p_env);
+	RendererSceneEnvironmentRD *env = environment_owner.get_or_null(p_env);
 	ERR_FAIL_COND(!env);
 	env->bg_color = p_color;
 }
 
 void RendererSceneRenderRD::environment_set_bg_energy(RID p_env, float p_energy) {
-	RendererSceneEnvironmentRD *env = environment_owner.getornull(p_env);
+	RendererSceneEnvironmentRD *env = environment_owner.get_or_null(p_env);
 	ERR_FAIL_COND(!env);
 	env->bg_energy = p_energy;
 }
 
 void RendererSceneRenderRD::environment_set_canvas_max_layer(RID p_env, int p_max_layer) {
-	RendererSceneEnvironmentRD *env = environment_owner.getornull(p_env);
+	RendererSceneEnvironmentRD *env = environment_owner.get_or_null(p_env);
 	ERR_FAIL_COND(!env);
 	env->canvas_max_layer = p_max_layer;
 }
 
 void RendererSceneRenderRD::environment_set_ambient_light(RID p_env, const Color &p_color, RS::EnvironmentAmbientSource p_ambient, float p_energy, float p_sky_contribution, RS::EnvironmentReflectionSource p_reflection_source, const Color &p_ao_color) {
-	RendererSceneEnvironmentRD *env = environment_owner.getornull(p_env);
+	RendererSceneEnvironmentRD *env = environment_owner.get_or_null(p_env);
 	ERR_FAIL_COND(!env);
 	env->set_ambient_light(p_color, p_ambient, p_energy, p_sky_contribution, p_reflection_source, p_ao_color);
 }
 
 RS::EnvironmentBG RendererSceneRenderRD::environment_get_background(RID p_env) const {
-	RendererSceneEnvironmentRD *env = environment_owner.getornull(p_env);
+	RendererSceneEnvironmentRD *env = environment_owner.get_or_null(p_env);
 	ERR_FAIL_COND_V(!env, RS::ENV_BG_MAX);
 	return env->background;
 }
 
 RID RendererSceneRenderRD::environment_get_sky(RID p_env) const {
-	RendererSceneEnvironmentRD *env = environment_owner.getornull(p_env);
+	RendererSceneEnvironmentRD *env = environment_owner.get_or_null(p_env);
 	ERR_FAIL_COND_V(!env, RID());
 	return env->sky;
 }
 
 float RendererSceneRenderRD::environment_get_sky_custom_fov(RID p_env) const {
-	RendererSceneEnvironmentRD *env = environment_owner.getornull(p_env);
+	RendererSceneEnvironmentRD *env = environment_owner.get_or_null(p_env);
 	ERR_FAIL_COND_V(!env, 0);
 	return env->sky_custom_fov;
 }
 
 Basis RendererSceneRenderRD::environment_get_sky_orientation(RID p_env) const {
-	RendererSceneEnvironmentRD *env = environment_owner.getornull(p_env);
+	RendererSceneEnvironmentRD *env = environment_owner.get_or_null(p_env);
 	ERR_FAIL_COND_V(!env, Basis());
 	return env->sky_orientation;
 }
 
 Color RendererSceneRenderRD::environment_get_bg_color(RID p_env) const {
-	RendererSceneEnvironmentRD *env = environment_owner.getornull(p_env);
+	RendererSceneEnvironmentRD *env = environment_owner.get_or_null(p_env);
 	ERR_FAIL_COND_V(!env, Color());
 	return env->bg_color;
 }
 
 float RendererSceneRenderRD::environment_get_bg_energy(RID p_env) const {
-	RendererSceneEnvironmentRD *env = environment_owner.getornull(p_env);
+	RendererSceneEnvironmentRD *env = environment_owner.get_or_null(p_env);
 	ERR_FAIL_COND_V(!env, 0);
 	return env->bg_energy;
 }
 
 int RendererSceneRenderRD::environment_get_canvas_max_layer(RID p_env) const {
-	RendererSceneEnvironmentRD *env = environment_owner.getornull(p_env);
+	RendererSceneEnvironmentRD *env = environment_owner.get_or_null(p_env);
 	ERR_FAIL_COND_V(!env, 0);
 	return env->canvas_max_layer;
 }
 
 Color RendererSceneRenderRD::environment_get_ambient_light_color(RID p_env) const {
-	RendererSceneEnvironmentRD *env = environment_owner.getornull(p_env);
+	RendererSceneEnvironmentRD *env = environment_owner.get_or_null(p_env);
 	ERR_FAIL_COND_V(!env, Color());
 	return env->ambient_light;
 }
 
 RS::EnvironmentAmbientSource RendererSceneRenderRD::environment_get_ambient_source(RID p_env) const {
-	RendererSceneEnvironmentRD *env = environment_owner.getornull(p_env);
+	RendererSceneEnvironmentRD *env = environment_owner.get_or_null(p_env);
 	ERR_FAIL_COND_V(!env, RS::ENV_AMBIENT_SOURCE_BG);
 	return env->ambient_source;
 }
 
 float RendererSceneRenderRD::environment_get_ambient_light_energy(RID p_env) const {
-	RendererSceneEnvironmentRD *env = environment_owner.getornull(p_env);
+	RendererSceneEnvironmentRD *env = environment_owner.get_or_null(p_env);
 	ERR_FAIL_COND_V(!env, 0);
 	return env->ambient_light_energy;
 }
 
 float RendererSceneRenderRD::environment_get_ambient_sky_contribution(RID p_env) const {
-	RendererSceneEnvironmentRD *env = environment_owner.getornull(p_env);
+	RendererSceneEnvironmentRD *env = environment_owner.get_or_null(p_env);
 	ERR_FAIL_COND_V(!env, 0);
 	return env->ambient_sky_contribution;
 }
 
 RS::EnvironmentReflectionSource RendererSceneRenderRD::environment_get_reflection_source(RID p_env) const {
-	RendererSceneEnvironmentRD *env = environment_owner.getornull(p_env);
+	RendererSceneEnvironmentRD *env = environment_owner.get_or_null(p_env);
 	ERR_FAIL_COND_V(!env, RS::ENV_REFLECTION_SOURCE_DISABLED);
 	return env->reflection_source;
 }
 
 Color RendererSceneRenderRD::environment_get_ao_color(RID p_env) const {
-	RendererSceneEnvironmentRD *env = environment_owner.getornull(p_env);
+	RendererSceneEnvironmentRD *env = environment_owner.get_or_null(p_env);
 	ERR_FAIL_COND_V(!env, Color());
 	return env->ao_color;
 }
 
 void RendererSceneRenderRD::environment_set_tonemap(RID p_env, RS::EnvironmentToneMapper p_tone_mapper, float p_exposure, float p_white, bool p_auto_exposure, float p_min_luminance, float p_max_luminance, float p_auto_exp_speed, float p_auto_exp_scale) {
-	RendererSceneEnvironmentRD *env = environment_owner.getornull(p_env);
+	RendererSceneEnvironmentRD *env = environment_owner.get_or_null(p_env);
 	ERR_FAIL_COND(!env);
 	env->set_tonemap(p_tone_mapper, p_exposure, p_white, p_auto_exposure, p_min_luminance, p_max_luminance, p_auto_exp_speed, p_auto_exp_scale);
 }
 
 void RendererSceneRenderRD::environment_set_glow(RID p_env, bool p_enable, Vector<float> p_levels, float p_intensity, float p_strength, float p_mix, float p_bloom_threshold, RS::EnvironmentGlowBlendMode p_blend_mode, float p_hdr_bleed_threshold, float p_hdr_bleed_scale, float p_hdr_luminance_cap) {
-	RendererSceneEnvironmentRD *env = environment_owner.getornull(p_env);
+	RendererSceneEnvironmentRD *env = environment_owner.get_or_null(p_env);
 	ERR_FAIL_COND(!env);
 	env->set_glow(p_enable, p_levels, p_intensity, p_strength, p_mix, p_bloom_threshold, p_blend_mode, p_hdr_bleed_threshold, p_hdr_bleed_scale, p_hdr_luminance_cap);
 }
@@ -310,7 +310,7 @@ void RendererSceneRenderRD::environment_glow_set_use_high_quality(bool p_enable)
 }
 
 void RendererSceneRenderRD::environment_set_sdfgi(RID p_env, bool p_enable, RS::EnvironmentSDFGICascades p_cascades, float p_min_cell_size, RS::EnvironmentSDFGIYScale p_y_scale, bool p_use_occlusion, float p_bounce_feedback, bool p_read_sky, float p_energy, float p_normal_bias, float p_probe_bias) {
-	RendererSceneEnvironmentRD *env = environment_owner.getornull(p_env);
+	RendererSceneEnvironmentRD *env = environment_owner.get_or_null(p_env);
 	ERR_FAIL_COND(!env);
 
 	if (!is_dynamic_gi_supported()) {
@@ -321,58 +321,58 @@ void RendererSceneRenderRD::environment_set_sdfgi(RID p_env, bool p_enable, RS::
 }
 
 void RendererSceneRenderRD::environment_set_fog(RID p_env, bool p_enable, const Color &p_light_color, float p_light_energy, float p_sun_scatter, float p_density, float p_height, float p_height_density, float p_fog_aerial_perspective) {
-	RendererSceneEnvironmentRD *env = environment_owner.getornull(p_env);
+	RendererSceneEnvironmentRD *env = environment_owner.get_or_null(p_env);
 	ERR_FAIL_COND(!env);
 
 	env->set_fog(p_enable, p_light_color, p_light_energy, p_sun_scatter, p_density, p_height, p_height_density, p_fog_aerial_perspective);
 }
 
 bool RendererSceneRenderRD::environment_is_fog_enabled(RID p_env) const {
-	const RendererSceneEnvironmentRD *env = environment_owner.getornull(p_env);
+	const RendererSceneEnvironmentRD *env = environment_owner.get_or_null(p_env);
 	ERR_FAIL_COND_V(!env, false);
 
 	return env->fog_enabled;
 }
 Color RendererSceneRenderRD::environment_get_fog_light_color(RID p_env) const {
-	const RendererSceneEnvironmentRD *env = environment_owner.getornull(p_env);
+	const RendererSceneEnvironmentRD *env = environment_owner.get_or_null(p_env);
 	ERR_FAIL_COND_V(!env, Color());
 	return env->fog_light_color;
 }
 float RendererSceneRenderRD::environment_get_fog_light_energy(RID p_env) const {
-	const RendererSceneEnvironmentRD *env = environment_owner.getornull(p_env);
+	const RendererSceneEnvironmentRD *env = environment_owner.get_or_null(p_env);
 	ERR_FAIL_COND_V(!env, 0);
 	return env->fog_light_energy;
 }
 float RendererSceneRenderRD::environment_get_fog_sun_scatter(RID p_env) const {
-	const RendererSceneEnvironmentRD *env = environment_owner.getornull(p_env);
+	const RendererSceneEnvironmentRD *env = environment_owner.get_or_null(p_env);
 	ERR_FAIL_COND_V(!env, 0);
 	return env->fog_sun_scatter;
 }
 float RendererSceneRenderRD::environment_get_fog_density(RID p_env) const {
-	const RendererSceneEnvironmentRD *env = environment_owner.getornull(p_env);
+	const RendererSceneEnvironmentRD *env = environment_owner.get_or_null(p_env);
 	ERR_FAIL_COND_V(!env, 0);
 	return env->fog_density;
 }
 float RendererSceneRenderRD::environment_get_fog_height(RID p_env) const {
-	const RendererSceneEnvironmentRD *env = environment_owner.getornull(p_env);
+	const RendererSceneEnvironmentRD *env = environment_owner.get_or_null(p_env);
 	ERR_FAIL_COND_V(!env, 0);
 
 	return env->fog_height;
 }
 float RendererSceneRenderRD::environment_get_fog_height_density(RID p_env) const {
-	const RendererSceneEnvironmentRD *env = environment_owner.getornull(p_env);
+	const RendererSceneEnvironmentRD *env = environment_owner.get_or_null(p_env);
 	ERR_FAIL_COND_V(!env, 0);
 	return env->fog_height_density;
 }
 
 float RendererSceneRenderRD::environment_get_fog_aerial_perspective(RID p_env) const {
-	const RendererSceneEnvironmentRD *env = environment_owner.getornull(p_env);
+	const RendererSceneEnvironmentRD *env = environment_owner.get_or_null(p_env);
 	ERR_FAIL_COND_V(!env, 0);
 	return env->fog_aerial_perspective;
 }
 
 void RendererSceneRenderRD::environment_set_volumetric_fog(RID p_env, bool p_enable, float p_density, const Color &p_light, float p_light_energy, float p_length, float p_detail_spread, float p_gi_inject, bool p_temporal_reprojection, float p_temporal_reprojection_amount) {
-	RendererSceneEnvironmentRD *env = environment_owner.getornull(p_env);
+	RendererSceneEnvironmentRD *env = environment_owner.get_or_null(p_env);
 	ERR_FAIL_COND(!env);
 
 	if (!is_volumetric_supported()) {
@@ -403,7 +403,7 @@ void RendererSceneRenderRD::environment_set_sdfgi_frames_to_update_light(RS::Env
 }
 
 void RendererSceneRenderRD::environment_set_ssr(RID p_env, bool p_enable, int p_max_steps, float p_fade_int, float p_fade_out, float p_depth_tolerance) {
-	RendererSceneEnvironmentRD *env = environment_owner.getornull(p_env);
+	RendererSceneEnvironmentRD *env = environment_owner.get_or_null(p_env);
 	ERR_FAIL_COND(!env);
 
 	env->set_ssr(p_enable, p_max_steps, p_fade_int, p_fade_out, p_depth_tolerance);
@@ -418,7 +418,7 @@ RS::EnvironmentSSRRoughnessQuality RendererSceneRenderRD::environment_get_ssr_ro
 }
 
 void RendererSceneRenderRD::environment_set_ssao(RID p_env, bool p_enable, float p_radius, float p_intensity, float p_power, float p_detail, float p_horizon, float p_sharpness, float p_light_affect, float p_ao_channel_affect) {
-	RendererSceneEnvironmentRD *env = environment_owner.getornull(p_env);
+	RendererSceneEnvironmentRD *env = environment_owner.get_or_null(p_env);
 	ERR_FAIL_COND(!env);
 
 	env->set_ssao(p_enable, p_radius, p_intensity, p_power, p_detail, p_horizon, p_sharpness, p_light_affect, p_ao_channel_affect);
@@ -434,30 +434,30 @@ void RendererSceneRenderRD::environment_set_ssao_quality(RS::EnvironmentSSAOQual
 }
 
 bool RendererSceneRenderRD::environment_is_ssao_enabled(RID p_env) const {
-	RendererSceneEnvironmentRD *env = environment_owner.getornull(p_env);
+	RendererSceneEnvironmentRD *env = environment_owner.get_or_null(p_env);
 	ERR_FAIL_COND_V(!env, false);
 	return env->ssao_enabled;
 }
 
 float RendererSceneRenderRD::environment_get_ssao_ao_affect(RID p_env) const {
-	RendererSceneEnvironmentRD *env = environment_owner.getornull(p_env);
+	RendererSceneEnvironmentRD *env = environment_owner.get_or_null(p_env);
 	ERR_FAIL_COND_V(!env, 0.0);
 	return env->ssao_ao_channel_affect;
 }
 
 float RendererSceneRenderRD::environment_get_ssao_light_affect(RID p_env) const {
-	RendererSceneEnvironmentRD *env = environment_owner.getornull(p_env);
+	RendererSceneEnvironmentRD *env = environment_owner.get_or_null(p_env);
 	ERR_FAIL_COND_V(!env, 0.0);
 	return env->ssao_direct_light_affect;
 }
 
 bool RendererSceneRenderRD::environment_is_ssr_enabled(RID p_env) const {
-	RendererSceneEnvironmentRD *env = environment_owner.getornull(p_env);
+	RendererSceneEnvironmentRD *env = environment_owner.get_or_null(p_env);
 	ERR_FAIL_COND_V(!env, false);
 	return env->ssr_enabled;
 }
 bool RendererSceneRenderRD::environment_is_sdfgi_enabled(RID p_env) const {
-	RendererSceneEnvironmentRD *env = environment_owner.getornull(p_env);
+	RendererSceneEnvironmentRD *env = environment_owner.get_or_null(p_env);
 	ERR_FAIL_COND_V(!env, false);
 	return env->sdfgi_enabled;
 }
@@ -467,7 +467,7 @@ bool RendererSceneRenderRD::is_environment(RID p_env) const {
 }
 
 Ref<Image> RendererSceneRenderRD::environment_bake_panorama(RID p_env, bool p_bake_irradiance, const Size2i &p_size) {
-	RendererSceneEnvironmentRD *env = environment_owner.getornull(p_env);
+	RendererSceneEnvironmentRD *env = environment_owner.get_or_null(p_env);
 	ERR_FAIL_COND_V(!env, Ref<Image>());
 
 	if (env->background == RS::ENV_BG_CAMERA_FEED || env->background == RS::ENV_BG_CANVAS || env->background == RS::ENV_BG_KEEP) {
@@ -522,7 +522,7 @@ RID RendererSceneRenderRD::reflection_atlas_create() {
 }
 
 void RendererSceneRenderRD::reflection_atlas_set_size(RID p_ref_atlas, int p_reflection_size, int p_reflection_count) {
-	ReflectionAtlas *ra = reflection_atlas_owner.getornull(p_ref_atlas);
+	ReflectionAtlas *ra = reflection_atlas_owner.get_or_null(p_ref_atlas);
 	ERR_FAIL_COND(!ra);
 
 	if (ra->size == p_reflection_size && ra->count == p_reflection_count) {
@@ -557,7 +557,7 @@ void RendererSceneRenderRD::reflection_atlas_set_size(RID p_ref_atlas, int p_ref
 }
 
 int RendererSceneRenderRD::reflection_atlas_get_size(RID p_ref_atlas) const {
-	ReflectionAtlas *ra = reflection_atlas_owner.getornull(p_ref_atlas);
+	ReflectionAtlas *ra = reflection_atlas_owner.get_or_null(p_ref_atlas);
 	ERR_FAIL_COND_V(!ra, 0);
 
 	return ra->size;
@@ -573,7 +573,7 @@ RID RendererSceneRenderRD::reflection_probe_instance_create(RID p_probe) {
 }
 
 void RendererSceneRenderRD::reflection_probe_instance_set_transform(RID p_instance, const Transform3D &p_transform) {
-	ReflectionProbeInstance *rpi = reflection_probe_instance_owner.getornull(p_instance);
+	ReflectionProbeInstance *rpi = reflection_probe_instance_owner.get_or_null(p_instance);
 	ERR_FAIL_COND(!rpi);
 
 	rpi->transform = p_transform;
@@ -581,13 +581,13 @@ void RendererSceneRenderRD::reflection_probe_instance_set_transform(RID p_instan
 }
 
 void RendererSceneRenderRD::reflection_probe_release_atlas_index(RID p_instance) {
-	ReflectionProbeInstance *rpi = reflection_probe_instance_owner.getornull(p_instance);
+	ReflectionProbeInstance *rpi = reflection_probe_instance_owner.get_or_null(p_instance);
 	ERR_FAIL_COND(!rpi);
 
 	if (rpi->atlas.is_null()) {
 		return; //nothing to release
 	}
-	ReflectionAtlas *atlas = reflection_atlas_owner.getornull(rpi->atlas);
+	ReflectionAtlas *atlas = reflection_atlas_owner.get_or_null(rpi->atlas);
 	ERR_FAIL_COND(!atlas);
 	ERR_FAIL_INDEX(rpi->atlas_index, atlas->reflections.size());
 	atlas->reflections.write[rpi->atlas_index].owner = RID();
@@ -596,7 +596,7 @@ void RendererSceneRenderRD::reflection_probe_release_atlas_index(RID p_instance)
 }
 
 bool RendererSceneRenderRD::reflection_probe_instance_needs_redraw(RID p_instance) {
-	ReflectionProbeInstance *rpi = reflection_probe_instance_owner.getornull(p_instance);
+	ReflectionProbeInstance *rpi = reflection_probe_instance_owner.get_or_null(p_instance);
 	ERR_FAIL_COND_V(!rpi, false);
 
 	if (rpi->rendering) {
@@ -615,18 +615,18 @@ bool RendererSceneRenderRD::reflection_probe_instance_needs_redraw(RID p_instanc
 }
 
 bool RendererSceneRenderRD::reflection_probe_instance_has_reflection(RID p_instance) {
-	ReflectionProbeInstance *rpi = reflection_probe_instance_owner.getornull(p_instance);
+	ReflectionProbeInstance *rpi = reflection_probe_instance_owner.get_or_null(p_instance);
 	ERR_FAIL_COND_V(!rpi, false);
 
 	return rpi->atlas.is_valid();
 }
 
 bool RendererSceneRenderRD::reflection_probe_instance_begin_render(RID p_instance, RID p_reflection_atlas) {
-	ReflectionAtlas *atlas = reflection_atlas_owner.getornull(p_reflection_atlas);
+	ReflectionAtlas *atlas = reflection_atlas_owner.get_or_null(p_reflection_atlas);
 
 	ERR_FAIL_COND_V(!atlas, false);
 
-	ReflectionProbeInstance *rpi = reflection_probe_instance_owner.getornull(p_instance);
+	ReflectionProbeInstance *rpi = reflection_probe_instance_owner.get_or_null(p_instance);
 	ERR_FAIL_COND_V(!rpi, false);
 
 	RD::get_singleton()->draw_command_begin_label("Reflection probe render");
@@ -701,7 +701,7 @@ bool RendererSceneRenderRD::reflection_probe_instance_begin_render(RID p_instanc
 			uint64_t pass_min = 0;
 
 			for (int i = 0; i < atlas->reflections.size(); i++) {
-				ReflectionProbeInstance *rpi2 = reflection_probe_instance_owner.getornull(atlas->reflections[i].owner);
+				ReflectionProbeInstance *rpi2 = reflection_probe_instance_owner.get_or_null(atlas->reflections[i].owner);
 				if (rpi2->last_pass < pass_min) {
 					pass_min = rpi2->last_pass;
 					rpi->atlas_index = i;
@@ -733,12 +733,12 @@ RID RendererSceneRenderRD::reflection_probe_create_framebuffer(RID p_color, RID 
 }
 
 bool RendererSceneRenderRD::reflection_probe_instance_postprocess_step(RID p_instance) {
-	ReflectionProbeInstance *rpi = reflection_probe_instance_owner.getornull(p_instance);
+	ReflectionProbeInstance *rpi = reflection_probe_instance_owner.get_or_null(p_instance);
 	ERR_FAIL_COND_V(!rpi, false);
 	ERR_FAIL_COND_V(!rpi->rendering, false);
 	ERR_FAIL_COND_V(rpi->atlas.is_null(), false);
 
-	ReflectionAtlas *atlas = reflection_atlas_owner.getornull(rpi->atlas);
+	ReflectionAtlas *atlas = reflection_atlas_owner.get_or_null(rpi->atlas);
 	if (!atlas || rpi->atlas_index == -1) {
 		//does not belong to an atlas anymore, cancel (was removed from atlas or atlas changed while rendering)
 		rpi->rendering = false;
@@ -779,30 +779,30 @@ bool RendererSceneRenderRD::reflection_probe_instance_postprocess_step(RID p_ins
 }
 
 uint32_t RendererSceneRenderRD::reflection_probe_instance_get_resolution(RID p_instance) {
-	ReflectionProbeInstance *rpi = reflection_probe_instance_owner.getornull(p_instance);
+	ReflectionProbeInstance *rpi = reflection_probe_instance_owner.get_or_null(p_instance);
 	ERR_FAIL_COND_V(!rpi, 0);
 
-	ReflectionAtlas *atlas = reflection_atlas_owner.getornull(rpi->atlas);
+	ReflectionAtlas *atlas = reflection_atlas_owner.get_or_null(rpi->atlas);
 	ERR_FAIL_COND_V(!atlas, 0);
 	return atlas->size;
 }
 
 RID RendererSceneRenderRD::reflection_probe_instance_get_framebuffer(RID p_instance, int p_index) {
-	ReflectionProbeInstance *rpi = reflection_probe_instance_owner.getornull(p_instance);
+	ReflectionProbeInstance *rpi = reflection_probe_instance_owner.get_or_null(p_instance);
 	ERR_FAIL_COND_V(!rpi, RID());
 	ERR_FAIL_INDEX_V(p_index, 6, RID());
 
-	ReflectionAtlas *atlas = reflection_atlas_owner.getornull(rpi->atlas);
+	ReflectionAtlas *atlas = reflection_atlas_owner.get_or_null(rpi->atlas);
 	ERR_FAIL_COND_V(!atlas, RID());
 	return atlas->reflections[rpi->atlas_index].fbs[p_index];
 }
 
 RID RendererSceneRenderRD::reflection_probe_instance_get_depth_framebuffer(RID p_instance, int p_index) {
-	ReflectionProbeInstance *rpi = reflection_probe_instance_owner.getornull(p_instance);
+	ReflectionProbeInstance *rpi = reflection_probe_instance_owner.get_or_null(p_instance);
 	ERR_FAIL_COND_V(!rpi, RID());
 	ERR_FAIL_INDEX_V(p_index, 6, RID());
 
-	ReflectionAtlas *atlas = reflection_atlas_owner.getornull(rpi->atlas);
+	ReflectionAtlas *atlas = reflection_atlas_owner.get_or_null(rpi->atlas);
 	ERR_FAIL_COND_V(!atlas, RID());
 	return atlas->depth_fb;
 }
@@ -829,7 +829,7 @@ void RendererSceneRenderRD::_update_shadow_atlas(ShadowAtlas *shadow_atlas) {
 }
 
 void RendererSceneRenderRD::shadow_atlas_set_size(RID p_atlas, int p_size, bool p_16_bits) {
-	ShadowAtlas *shadow_atlas = shadow_atlas_owner.getornull(p_atlas);
+	ShadowAtlas *shadow_atlas = shadow_atlas_owner.get_or_null(p_atlas);
 	ERR_FAIL_COND(!shadow_atlas);
 	ERR_FAIL_COND(p_size < 0);
 	p_size = next_power_of_2(p_size);
@@ -851,7 +851,7 @@ void RendererSceneRenderRD::shadow_atlas_set_size(RID p_atlas, int p_size, bool 
 
 	//erase shadow atlas reference from lights
 	for (Map<RID, uint32_t>::Element *E = shadow_atlas->shadow_owners.front(); E; E = E->next()) {
-		LightInstance *li = light_instance_owner.getornull(E->key());
+		LightInstance *li = light_instance_owner.get_or_null(E->key());
 		ERR_CONTINUE(!li);
 		li->shadow_atlases.erase(p_atlas);
 	}
@@ -864,7 +864,7 @@ void RendererSceneRenderRD::shadow_atlas_set_size(RID p_atlas, int p_size, bool 
 }
 
 void RendererSceneRenderRD::shadow_atlas_set_quadrant_subdivision(RID p_atlas, int p_quadrant, int p_subdivision) {
-	ShadowAtlas *shadow_atlas = shadow_atlas_owner.getornull(p_atlas);
+	ShadowAtlas *shadow_atlas = shadow_atlas_owner.get_or_null(p_atlas);
 	ERR_FAIL_COND(!shadow_atlas);
 	ERR_FAIL_INDEX(p_quadrant, 4);
 	ERR_FAIL_INDEX(p_subdivision, 16384);
@@ -886,7 +886,7 @@ void RendererSceneRenderRD::shadow_atlas_set_quadrant_subdivision(RID p_atlas, i
 	for (int i = 0; i < shadow_atlas->quadrants[p_quadrant].shadows.size(); i++) {
 		if (shadow_atlas->quadrants[p_quadrant].shadows[i].owner.is_valid()) {
 			shadow_atlas->shadow_owners.erase(shadow_atlas->quadrants[p_quadrant].shadows[i].owner);
-			LightInstance *li = light_instance_owner.getornull(shadow_atlas->quadrants[p_quadrant].shadows[i].owner);
+			LightInstance *li = light_instance_owner.get_or_null(shadow_atlas->quadrants[p_quadrant].shadows[i].owner);
 			ERR_CONTINUE(!li);
 			li->shadow_atlases.erase(p_atlas);
 		}
@@ -947,7 +947,7 @@ bool RendererSceneRenderRD::_shadow_atlas_find_shadow(ShadowAtlas *shadow_atlas,
 				break;
 			}
 
-			LightInstance *sli = light_instance_owner.getornull(sarr[j].owner);
+			LightInstance *sli = light_instance_owner.get_or_null(sarr[j].owner);
 			ERR_CONTINUE(!sli);
 
 			if (sli->last_scene_pass != scene_pass) {
@@ -999,7 +999,7 @@ bool RendererSceneRenderRD::_shadow_atlas_find_omni_shadows(ShadowAtlas *shadow_
 			uint64_t pass = 0;
 
 			if (sarr[j].owner.is_valid()) {
-				LightInstance *sli = light_instance_owner.getornull(sarr[j].owner);
+				LightInstance *sli = light_instance_owner.get_or_null(sarr[j].owner);
 				ERR_CONTINUE(!sli);
 
 				if (sli->last_scene_pass == scene_pass) {
@@ -1014,7 +1014,7 @@ bool RendererSceneRenderRD::_shadow_atlas_find_omni_shadows(ShadowAtlas *shadow_
 			}
 
 			if (sarr[j + 1].owner.is_valid()) {
-				LightInstance *sli = light_instance_owner.getornull(sarr[j + 1].owner);
+				LightInstance *sli = light_instance_owner.get_or_null(sarr[j + 1].owner);
 				ERR_CONTINUE(!sli);
 
 				if (sli->last_scene_pass == scene_pass) {
@@ -1053,10 +1053,10 @@ bool RendererSceneRenderRD::_shadow_atlas_find_omni_shadows(ShadowAtlas *shadow_
 }
 
 bool RendererSceneRenderRD::shadow_atlas_update_light(RID p_atlas, RID p_light_intance, float p_coverage, uint64_t p_light_version) {
-	ShadowAtlas *shadow_atlas = shadow_atlas_owner.getornull(p_atlas);
+	ShadowAtlas *shadow_atlas = shadow_atlas_owner.get_or_null(p_atlas);
 	ERR_FAIL_COND_V(!shadow_atlas, false);
 
-	LightInstance *li = light_instance_owner.getornull(p_light_intance);
+	LightInstance *li = light_instance_owner.get_or_null(p_light_intance);
 	ERR_FAIL_COND_V(!li, false);
 
 	if (shadow_atlas->size == 0 || shadow_atlas->smallest_subdiv == 0) {
@@ -1179,7 +1179,7 @@ bool RendererSceneRenderRD::shadow_atlas_update_light(RID p_atlas, RID p_light_i
 
 void RendererSceneRenderRD::_shadow_atlas_invalidate_shadow(RendererSceneRenderRD::ShadowAtlas::Quadrant::Shadow *p_shadow, RID p_atlas, RendererSceneRenderRD::ShadowAtlas *p_shadow_atlas, uint32_t p_quadrant, uint32_t p_shadow_idx) {
 	if (p_shadow->owner.is_valid()) {
-		LightInstance *sli = light_instance_owner.getornull(p_shadow->owner);
+		LightInstance *sli = light_instance_owner.get_or_null(p_shadow->owner);
 		uint32_t old_key = p_shadow_atlas->shadow_owners[p_shadow->owner];
 
 		if (old_key & ShadowAtlas::OMNI_LIGHT_FLAG) {
@@ -1260,7 +1260,7 @@ int RendererSceneRenderRD::get_directional_light_shadow_size(RID p_light_intance
 
 	Rect2i r = _get_directional_shadow_rect(directional_shadow.size, directional_shadow.light_count, 0);
 
-	LightInstance *light_instance = light_instance_owner.getornull(p_light_intance);
+	LightInstance *light_instance = light_instance_owner.get_or_null(p_light_intance);
 	ERR_FAIL_COND_V(!light_instance, 0);
 
 	switch (storage->light_directional_get_shadow_mode(light_instance->light)) {
@@ -1296,7 +1296,7 @@ void RendererSceneRenderRD::camera_effects_set_dof_blur_bokeh_shape(RS::DOFBokeh
 }
 
 void RendererSceneRenderRD::camera_effects_set_dof_blur(RID p_camera_effects, bool p_far_enable, float p_far_distance, float p_far_transition, bool p_near_enable, float p_near_distance, float p_near_transition, float p_amount) {
-	CameraEffects *camfx = camera_effects_owner.getornull(p_camera_effects);
+	CameraEffects *camfx = camera_effects_owner.get_or_null(p_camera_effects);
 	ERR_FAIL_COND(!camfx);
 
 	camfx->dof_blur_far_enabled = p_far_enable;
@@ -1311,7 +1311,7 @@ void RendererSceneRenderRD::camera_effects_set_dof_blur(RID p_camera_effects, bo
 }
 
 void RendererSceneRenderRD::camera_effects_set_custom_exposure(RID p_camera_effects, bool p_enable, float p_exposure) {
-	CameraEffects *camfx = camera_effects_owner.getornull(p_camera_effects);
+	CameraEffects *camfx = camera_effects_owner.get_or_null(p_camera_effects);
 	ERR_FAIL_COND(!camfx);
 
 	camfx->override_exposure_enabled = p_enable;
@@ -1321,7 +1321,7 @@ void RendererSceneRenderRD::camera_effects_set_custom_exposure(RID p_camera_effe
 RID RendererSceneRenderRD::light_instance_create(RID p_light) {
 	RID li = light_instance_owner.make_rid(LightInstance());
 
-	LightInstance *light_instance = light_instance_owner.getornull(li);
+	LightInstance *light_instance = light_instance_owner.get_or_null(li);
 
 	light_instance->self = li;
 	light_instance->light = p_light;
@@ -1334,21 +1334,21 @@ RID RendererSceneRenderRD::light_instance_create(RID p_light) {
 }
 
 void RendererSceneRenderRD::light_instance_set_transform(RID p_light_instance, const Transform3D &p_transform) {
-	LightInstance *light_instance = light_instance_owner.getornull(p_light_instance);
+	LightInstance *light_instance = light_instance_owner.get_or_null(p_light_instance);
 	ERR_FAIL_COND(!light_instance);
 
 	light_instance->transform = p_transform;
 }
 
 void RendererSceneRenderRD::light_instance_set_aabb(RID p_light_instance, const AABB &p_aabb) {
-	LightInstance *light_instance = light_instance_owner.getornull(p_light_instance);
+	LightInstance *light_instance = light_instance_owner.get_or_null(p_light_instance);
 	ERR_FAIL_COND(!light_instance);
 
 	light_instance->aabb = p_aabb;
 }
 
 void RendererSceneRenderRD::light_instance_set_shadow_transform(RID p_light_instance, const CameraMatrix &p_projection, const Transform3D &p_transform, float p_far, float p_split, int p_pass, float p_shadow_texel_size, float p_bias_scale, float p_range_begin, const Vector2 &p_uv_scale) {
-	LightInstance *light_instance = light_instance_owner.getornull(p_light_instance);
+	LightInstance *light_instance = light_instance_owner.get_or_null(p_light_instance);
 	ERR_FAIL_COND(!light_instance);
 
 	ERR_FAIL_INDEX(p_pass, 6);
@@ -1364,7 +1364,7 @@ void RendererSceneRenderRD::light_instance_set_shadow_transform(RID p_light_inst
 }
 
 void RendererSceneRenderRD::light_instance_mark_visible(RID p_light_instance) {
-	LightInstance *light_instance = light_instance_owner.getornull(p_light_instance);
+	LightInstance *light_instance = light_instance_owner.get_or_null(p_light_instance);
 	ERR_FAIL_COND(!light_instance);
 
 	light_instance->last_scene_pass = scene_pass;
@@ -1407,7 +1407,7 @@ RID RendererSceneRenderRD::decal_instance_create(RID p_decal) {
 }
 
 void RendererSceneRenderRD::decal_instance_set_transform(RID p_decal, const Transform3D &p_transform) {
-	DecalInstance *di = decal_instance_owner.getornull(p_decal);
+	DecalInstance *di = decal_instance_owner.get_or_null(p_decal);
 	ERR_FAIL_COND(!di);
 	di->transform = p_transform;
 }
@@ -1420,7 +1420,7 @@ RID RendererSceneRenderRD::lightmap_instance_create(RID p_lightmap) {
 	return lightmap_instance_owner.make_rid(li);
 }
 void RendererSceneRenderRD::lightmap_instance_set_transform(RID p_lightmap, const Transform3D &p_transform) {
-	LightmapInstance *li = lightmap_instance_owner.getornull(p_lightmap);
+	LightmapInstance *li = lightmap_instance_owner.get_or_null(p_lightmap);
 	ERR_FAIL_COND(!li);
 	li->transform = p_transform;
 }
@@ -1452,7 +1452,7 @@ void RendererSceneRenderRD::voxel_gi_update(RID p_probe, bool p_update_light_ins
 }
 
 void RendererSceneRenderRD::_debug_sdfgi_probes(RID p_render_buffers, RD::DrawListID p_draw_list, RID p_framebuffer, const CameraMatrix &p_camera_with_transform) {
-	RenderBuffers *rb = render_buffers_owner.getornull(p_render_buffers);
+	RenderBuffers *rb = render_buffers_owner.get_or_null(p_render_buffers);
 	ERR_FAIL_COND(!rb);
 
 	if (!rb->sdfgi) {
@@ -1790,7 +1790,7 @@ void RendererSceneRenderRD::_free_render_buffer_data(RenderBuffers *rb) {
 }
 
 void RendererSceneRenderRD::_process_sss(RID p_render_buffers, const CameraMatrix &p_camera) {
-	RenderBuffers *rb = render_buffers_owner.getornull(p_render_buffers);
+	RenderBuffers *rb = render_buffers_owner.get_or_null(p_render_buffers);
 	ERR_FAIL_COND(!rb);
 
 	bool can_use_effects = rb->width >= 8 && rb->height >= 8;
@@ -1808,7 +1808,7 @@ void RendererSceneRenderRD::_process_sss(RID p_render_buffers, const CameraMatri
 }
 
 void RendererSceneRenderRD::_process_ssr(RID p_render_buffers, RID p_dest_framebuffer, RID p_normal_buffer, RID p_specular_buffer, RID p_metallic, const Color &p_metallic_mask, RID p_environment, const CameraMatrix &p_projection, bool p_use_additive) {
-	RenderBuffers *rb = render_buffers_owner.getornull(p_render_buffers);
+	RenderBuffers *rb = render_buffers_owner.get_or_null(p_render_buffers);
 	ERR_FAIL_COND(!rb);
 
 	bool can_use_effects = rb->width >= 8 && rb->height >= 8;
@@ -1819,7 +1819,7 @@ void RendererSceneRenderRD::_process_ssr(RID p_render_buffers, RID p_dest_frameb
 		return;
 	}
 
-	RendererSceneEnvironmentRD *env = environment_owner.getornull(p_environment);
+	RendererSceneEnvironmentRD *env = environment_owner.get_or_null(p_environment);
 	ERR_FAIL_COND(!env);
 
 	ERR_FAIL_COND(!env->ssr_enabled);
@@ -1860,10 +1860,10 @@ void RendererSceneRenderRD::_process_ssr(RID p_render_buffers, RID p_dest_frameb
 }
 
 void RendererSceneRenderRD::_process_ssao(RID p_render_buffers, RID p_environment, RID p_normal_buffer, const CameraMatrix &p_projection) {
-	RenderBuffers *rb = render_buffers_owner.getornull(p_render_buffers);
+	RenderBuffers *rb = render_buffers_owner.get_or_null(p_render_buffers);
 	ERR_FAIL_COND(!rb);
 
-	RendererSceneEnvironmentRD *env = environment_owner.getornull(p_environment);
+	RendererSceneEnvironmentRD *env = environment_owner.get_or_null(p_environment);
 	ERR_FAIL_COND(!env);
 
 	RENDER_TIMESTAMP("Process SSAO");
@@ -2005,7 +2005,7 @@ void RendererSceneRenderRD::_process_ssao(RID p_render_buffers, RID p_environmen
 }
 
 void RendererSceneRenderRD::_render_buffers_copy_screen_texture(const RenderDataRD *p_render_data) {
-	RenderBuffers *rb = render_buffers_owner.getornull(p_render_data->render_buffers);
+	RenderBuffers *rb = render_buffers_owner.get_or_null(p_render_data->render_buffers);
 	ERR_FAIL_COND(!rb);
 
 	RD::get_singleton()->draw_command_begin_label("Copy screen texture");
@@ -2034,7 +2034,7 @@ void RendererSceneRenderRD::_render_buffers_copy_screen_texture(const RenderData
 }
 
 void RendererSceneRenderRD::_render_buffers_copy_depth_texture(const RenderDataRD *p_render_data) {
-	RenderBuffers *rb = render_buffers_owner.getornull(p_render_data->render_buffers);
+	RenderBuffers *rb = render_buffers_owner.get_or_null(p_render_data->render_buffers);
 	ERR_FAIL_COND(!rb);
 
 	RD::get_singleton()->draw_command_begin_label("Copy depth texture");
@@ -2057,12 +2057,12 @@ void RendererSceneRenderRD::_render_buffers_copy_depth_texture(const RenderDataR
 }
 
 void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const RenderDataRD *p_render_data) {
-	RenderBuffers *rb = render_buffers_owner.getornull(p_render_data->render_buffers);
+	RenderBuffers *rb = render_buffers_owner.get_or_null(p_render_data->render_buffers);
 	ERR_FAIL_COND(!rb);
 
-	RendererSceneEnvironmentRD *env = environment_owner.getornull(p_render_data->environment);
+	RendererSceneEnvironmentRD *env = environment_owner.get_or_null(p_render_data->environment);
 	//glow (if enabled)
-	CameraEffects *camfx = camera_effects_owner.getornull(p_render_data->camera_effects);
+	CameraEffects *camfx = camera_effects_owner.get_or_null(p_render_data->camera_effects);
 
 	bool can_use_effects = rb->width >= 8 && rb->height >= 8;
 	bool can_use_storage = _render_buffers_can_be_storage();
@@ -2251,10 +2251,10 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 void RendererSceneRenderRD::_post_process_subpass(RID p_source_texture, RID p_framebuffer, const RenderDataRD *p_render_data) {
 	RD::get_singleton()->draw_command_begin_label("Post Process Subpass");
 
-	RenderBuffers *rb = render_buffers_owner.getornull(p_render_data->render_buffers);
+	RenderBuffers *rb = render_buffers_owner.get_or_null(p_render_data->render_buffers);
 	ERR_FAIL_COND(!rb);
 
-	RendererSceneEnvironmentRD *env = environment_owner.getornull(p_render_data->environment);
+	RendererSceneEnvironmentRD *env = environment_owner.get_or_null(p_render_data->environment);
 
 	bool can_use_effects = rb->width >= 8 && rb->height >= 8;
 
@@ -2311,7 +2311,7 @@ void RendererSceneRenderRD::_post_process_subpass(RID p_source_texture, RID p_fr
 }
 
 void RendererSceneRenderRD::_disable_clear_request(const RenderDataRD *p_render_data) {
-	RenderBuffers *rb = render_buffers_owner.getornull(p_render_data->render_buffers);
+	RenderBuffers *rb = render_buffers_owner.get_or_null(p_render_data->render_buffers);
 	ERR_FAIL_COND(!rb);
 
 	storage->render_target_disable_clear_request(rb->render_target);
@@ -2320,7 +2320,7 @@ void RendererSceneRenderRD::_disable_clear_request(const RenderDataRD *p_render_
 void RendererSceneRenderRD::_render_buffers_debug_draw(RID p_render_buffers, RID p_shadow_atlas, RID p_occlusion_buffer) {
 	EffectsRD *effects = storage->get_effects();
 
-	RenderBuffers *rb = render_buffers_owner.getornull(p_render_buffers);
+	RenderBuffers *rb = render_buffers_owner.get_or_null(p_render_buffers);
 	ERR_FAIL_COND(!rb);
 
 	if (debug_draw == RS::VIEWPORT_DEBUG_DRAW_SHADOW_ATLAS) {
@@ -2386,7 +2386,7 @@ void RendererSceneRenderRD::_render_buffers_debug_draw(RID p_render_buffers, RID
 }
 
 void RendererSceneRenderRD::environment_set_adjustment(RID p_env, bool p_enable, float p_brightness, float p_contrast, float p_saturation, bool p_use_1d_color_correction, RID p_color_correction) {
-	RendererSceneEnvironmentRD *env = environment_owner.getornull(p_env);
+	RendererSceneEnvironmentRD *env = environment_owner.get_or_null(p_env);
 	ERR_FAIL_COND(!env);
 
 	env->adjustments_enabled = p_enable;
@@ -2398,7 +2398,7 @@ void RendererSceneRenderRD::environment_set_adjustment(RID p_env, bool p_enable,
 }
 
 RID RendererSceneRenderRD::render_buffers_get_back_buffer_texture(RID p_render_buffers) {
-	RenderBuffers *rb = render_buffers_owner.getornull(p_render_buffers);
+	RenderBuffers *rb = render_buffers_owner.get_or_null(p_render_buffers);
 	ERR_FAIL_COND_V(!rb, RID());
 	if (!rb->blur[0].texture.is_valid()) {
 		return RID(); //not valid at the moment
@@ -2407,7 +2407,7 @@ RID RendererSceneRenderRD::render_buffers_get_back_buffer_texture(RID p_render_b
 }
 
 RID RendererSceneRenderRD::render_buffers_get_back_depth_texture(RID p_render_buffers) {
-	RenderBuffers *rb = render_buffers_owner.getornull(p_render_buffers);
+	RenderBuffers *rb = render_buffers_owner.get_or_null(p_render_buffers);
 	ERR_FAIL_COND_V(!rb, RID());
 	if (!rb->depth_back_texture.is_valid()) {
 		return RID(); //not valid at the moment
@@ -2416,21 +2416,21 @@ RID RendererSceneRenderRD::render_buffers_get_back_depth_texture(RID p_render_bu
 }
 
 RID RendererSceneRenderRD::render_buffers_get_depth_texture(RID p_render_buffers) {
-	RenderBuffers *rb = render_buffers_owner.getornull(p_render_buffers);
+	RenderBuffers *rb = render_buffers_owner.get_or_null(p_render_buffers);
 	ERR_FAIL_COND_V(!rb, RID());
 
 	return rb->depth_texture;
 }
 
 RID RendererSceneRenderRD::render_buffers_get_ao_texture(RID p_render_buffers) {
-	RenderBuffers *rb = render_buffers_owner.getornull(p_render_buffers);
+	RenderBuffers *rb = render_buffers_owner.get_or_null(p_render_buffers);
 	ERR_FAIL_COND_V(!rb, RID());
 
 	return rb->ssao.ao_final;
 }
 
 RID RendererSceneRenderRD::render_buffers_get_voxel_gi_buffer(RID p_render_buffers) {
-	RenderBuffers *rb = render_buffers_owner.getornull(p_render_buffers);
+	RenderBuffers *rb = render_buffers_owner.get_or_null(p_render_buffers);
 	ERR_FAIL_COND_V(!rb, RID());
 	if (rb->gi.voxel_gi_buffer.is_null()) {
 		rb->gi.voxel_gi_buffer = RD::get_singleton()->uniform_buffer_create(sizeof(RendererSceneGIRD::VoxelGIData) * RendererSceneGIRD::MAX_VOXEL_GI_INSTANCES);
@@ -2443,31 +2443,31 @@ RID RendererSceneRenderRD::render_buffers_get_default_voxel_gi_buffer() {
 }
 
 RID RendererSceneRenderRD::render_buffers_get_gi_ambient_texture(RID p_render_buffers) {
-	RenderBuffers *rb = render_buffers_owner.getornull(p_render_buffers);
+	RenderBuffers *rb = render_buffers_owner.get_or_null(p_render_buffers);
 	ERR_FAIL_COND_V(!rb, RID());
 	return rb->ambient_buffer;
 }
 RID RendererSceneRenderRD::render_buffers_get_gi_reflection_texture(RID p_render_buffers) {
-	RenderBuffers *rb = render_buffers_owner.getornull(p_render_buffers);
+	RenderBuffers *rb = render_buffers_owner.get_or_null(p_render_buffers);
 	ERR_FAIL_COND_V(!rb, RID());
 	return rb->reflection_buffer;
 }
 
 uint32_t RendererSceneRenderRD::render_buffers_get_sdfgi_cascade_count(RID p_render_buffers) const {
-	const RenderBuffers *rb = render_buffers_owner.getornull(p_render_buffers);
+	const RenderBuffers *rb = render_buffers_owner.get_or_null(p_render_buffers);
 	ERR_FAIL_COND_V(!rb, 0);
 	ERR_FAIL_COND_V(!rb->sdfgi, 0);
 
 	return rb->sdfgi->cascades.size();
 }
 bool RendererSceneRenderRD::render_buffers_is_sdfgi_enabled(RID p_render_buffers) const {
-	const RenderBuffers *rb = render_buffers_owner.getornull(p_render_buffers);
+	const RenderBuffers *rb = render_buffers_owner.get_or_null(p_render_buffers);
 	ERR_FAIL_COND_V(!rb, false);
 
 	return rb->sdfgi != nullptr;
 }
 RID RendererSceneRenderRD::render_buffers_get_sdfgi_irradiance_probes(RID p_render_buffers) const {
-	const RenderBuffers *rb = render_buffers_owner.getornull(p_render_buffers);
+	const RenderBuffers *rb = render_buffers_owner.get_or_null(p_render_buffers);
 	ERR_FAIL_COND_V(!rb, RID());
 	ERR_FAIL_COND_V(!rb->sdfgi, RID());
 
@@ -2475,7 +2475,7 @@ RID RendererSceneRenderRD::render_buffers_get_sdfgi_irradiance_probes(RID p_rend
 }
 
 Vector3 RendererSceneRenderRD::render_buffers_get_sdfgi_cascade_offset(RID p_render_buffers, uint32_t p_cascade) const {
-	const RenderBuffers *rb = render_buffers_owner.getornull(p_render_buffers);
+	const RenderBuffers *rb = render_buffers_owner.get_or_null(p_render_buffers);
 	ERR_FAIL_COND_V(!rb, Vector3());
 	ERR_FAIL_COND_V(!rb->sdfgi, Vector3());
 	ERR_FAIL_UNSIGNED_INDEX_V(p_cascade, rb->sdfgi->cascades.size(), Vector3());
@@ -2484,7 +2484,7 @@ Vector3 RendererSceneRenderRD::render_buffers_get_sdfgi_cascade_offset(RID p_ren
 }
 
 Vector3i RendererSceneRenderRD::render_buffers_get_sdfgi_cascade_probe_offset(RID p_render_buffers, uint32_t p_cascade) const {
-	const RenderBuffers *rb = render_buffers_owner.getornull(p_render_buffers);
+	const RenderBuffers *rb = render_buffers_owner.get_or_null(p_render_buffers);
 	ERR_FAIL_COND_V(!rb, Vector3i());
 	ERR_FAIL_COND_V(!rb->sdfgi, Vector3i());
 	ERR_FAIL_UNSIGNED_INDEX_V(p_cascade, rb->sdfgi->cascades.size(), Vector3i());
@@ -2494,14 +2494,14 @@ Vector3i RendererSceneRenderRD::render_buffers_get_sdfgi_cascade_probe_offset(RI
 }
 
 float RendererSceneRenderRD::render_buffers_get_sdfgi_normal_bias(RID p_render_buffers) const {
-	const RenderBuffers *rb = render_buffers_owner.getornull(p_render_buffers);
+	const RenderBuffers *rb = render_buffers_owner.get_or_null(p_render_buffers);
 	ERR_FAIL_COND_V(!rb, 0);
 	ERR_FAIL_COND_V(!rb->sdfgi, 0);
 
 	return rb->sdfgi->normal_bias;
 }
 float RendererSceneRenderRD::render_buffers_get_sdfgi_cascade_probe_size(RID p_render_buffers, uint32_t p_cascade) const {
-	const RenderBuffers *rb = render_buffers_owner.getornull(p_render_buffers);
+	const RenderBuffers *rb = render_buffers_owner.get_or_null(p_render_buffers);
 	ERR_FAIL_COND_V(!rb, 0);
 	ERR_FAIL_COND_V(!rb->sdfgi, 0);
 	ERR_FAIL_UNSIGNED_INDEX_V(p_cascade, rb->sdfgi->cascades.size(), 0);
@@ -2509,7 +2509,7 @@ float RendererSceneRenderRD::render_buffers_get_sdfgi_cascade_probe_size(RID p_r
 	return float(rb->sdfgi->cascade_size) * rb->sdfgi->cascades[p_cascade].cell_size / float(rb->sdfgi->probe_axis_count - 1);
 }
 uint32_t RendererSceneRenderRD::render_buffers_get_sdfgi_cascade_probe_count(RID p_render_buffers) const {
-	const RenderBuffers *rb = render_buffers_owner.getornull(p_render_buffers);
+	const RenderBuffers *rb = render_buffers_owner.get_or_null(p_render_buffers);
 	ERR_FAIL_COND_V(!rb, 0);
 	ERR_FAIL_COND_V(!rb->sdfgi, 0);
 
@@ -2517,7 +2517,7 @@ uint32_t RendererSceneRenderRD::render_buffers_get_sdfgi_cascade_probe_count(RID
 }
 
 uint32_t RendererSceneRenderRD::render_buffers_get_sdfgi_cascade_size(RID p_render_buffers) const {
-	const RenderBuffers *rb = render_buffers_owner.getornull(p_render_buffers);
+	const RenderBuffers *rb = render_buffers_owner.get_or_null(p_render_buffers);
 	ERR_FAIL_COND_V(!rb, 0);
 	ERR_FAIL_COND_V(!rb->sdfgi, 0);
 
@@ -2525,7 +2525,7 @@ uint32_t RendererSceneRenderRD::render_buffers_get_sdfgi_cascade_size(RID p_rend
 }
 
 bool RendererSceneRenderRD::render_buffers_is_sdfgi_using_occlusion(RID p_render_buffers) const {
-	const RenderBuffers *rb = render_buffers_owner.getornull(p_render_buffers);
+	const RenderBuffers *rb = render_buffers_owner.get_or_null(p_render_buffers);
 	ERR_FAIL_COND_V(!rb, false);
 	ERR_FAIL_COND_V(!rb->sdfgi, false);
 
@@ -2533,14 +2533,14 @@ bool RendererSceneRenderRD::render_buffers_is_sdfgi_using_occlusion(RID p_render
 }
 
 float RendererSceneRenderRD::render_buffers_get_sdfgi_energy(RID p_render_buffers) const {
-	const RenderBuffers *rb = render_buffers_owner.getornull(p_render_buffers);
+	const RenderBuffers *rb = render_buffers_owner.get_or_null(p_render_buffers);
 	ERR_FAIL_COND_V(!rb, 0.0);
 	ERR_FAIL_COND_V(!rb->sdfgi, 0.0);
 
 	return rb->sdfgi->energy;
 }
 RID RendererSceneRenderRD::render_buffers_get_sdfgi_occlusion_texture(RID p_render_buffers) const {
-	const RenderBuffers *rb = render_buffers_owner.getornull(p_render_buffers);
+	const RenderBuffers *rb = render_buffers_owner.get_or_null(p_render_buffers);
 	ERR_FAIL_COND_V(!rb, RID());
 	ERR_FAIL_COND_V(!rb->sdfgi, RID());
 
@@ -2548,20 +2548,20 @@ RID RendererSceneRenderRD::render_buffers_get_sdfgi_occlusion_texture(RID p_rend
 }
 
 bool RendererSceneRenderRD::render_buffers_has_volumetric_fog(RID p_render_buffers) const {
-	const RenderBuffers *rb = render_buffers_owner.getornull(p_render_buffers);
+	const RenderBuffers *rb = render_buffers_owner.get_or_null(p_render_buffers);
 	ERR_FAIL_COND_V(!rb, false);
 
 	return rb->volumetric_fog != nullptr;
 }
 RID RendererSceneRenderRD::render_buffers_get_volumetric_fog_texture(RID p_render_buffers) {
-	const RenderBuffers *rb = render_buffers_owner.getornull(p_render_buffers);
+	const RenderBuffers *rb = render_buffers_owner.get_or_null(p_render_buffers);
 	ERR_FAIL_COND_V(!rb || !rb->volumetric_fog, RID());
 
 	return rb->volumetric_fog->fog_map;
 }
 
 RID RendererSceneRenderRD::render_buffers_get_volumetric_fog_sky_uniform_set(RID p_render_buffers) {
-	const RenderBuffers *rb = render_buffers_owner.getornull(p_render_buffers);
+	const RenderBuffers *rb = render_buffers_owner.get_or_null(p_render_buffers);
 	ERR_FAIL_COND_V(!rb, RID());
 
 	if (!rb->volumetric_fog) {
@@ -2572,12 +2572,12 @@ RID RendererSceneRenderRD::render_buffers_get_volumetric_fog_sky_uniform_set(RID
 }
 
 float RendererSceneRenderRD::render_buffers_get_volumetric_fog_end(RID p_render_buffers) {
-	const RenderBuffers *rb = render_buffers_owner.getornull(p_render_buffers);
+	const RenderBuffers *rb = render_buffers_owner.get_or_null(p_render_buffers);
 	ERR_FAIL_COND_V(!rb || !rb->volumetric_fog, 0);
 	return rb->volumetric_fog->length;
 }
 float RendererSceneRenderRD::render_buffers_get_volumetric_fog_detail_spread(RID p_render_buffers) {
-	const RenderBuffers *rb = render_buffers_owner.getornull(p_render_buffers);
+	const RenderBuffers *rb = render_buffers_owner.get_or_null(p_render_buffers);
 	ERR_FAIL_COND_V(!rb || !rb->volumetric_fog, 0);
 	return rb->volumetric_fog->spread;
 }
@@ -2597,7 +2597,7 @@ bool RendererSceneRenderRD::_render_buffers_can_be_storage() {
 void RendererSceneRenderRD::render_buffers_configure(RID p_render_buffers, RID p_render_target, int p_width, int p_height, RS::ViewportMSAA p_msaa, RenderingServer::ViewportScreenSpaceAA p_screen_space_aa, bool p_use_debanding, uint32_t p_view_count) {
 	ERR_FAIL_COND_MSG(p_view_count == 0, "Must have at least 1 view");
 
-	RenderBuffers *rb = render_buffers_owner.getornull(p_render_buffers);
+	RenderBuffers *rb = render_buffers_owner.get_or_null(p_render_buffers);
 
 	// Should we add an overrule per viewport?
 	rb->width = p_width;
@@ -2801,7 +2801,7 @@ bool RendererSceneRenderRD::is_using_radiance_cubemap_array() const {
 }
 
 RendererSceneRenderRD::RenderBufferData *RendererSceneRenderRD::render_buffers_get_data(RID p_render_buffers) {
-	RenderBuffers *rb = render_buffers_owner.getornull(p_render_buffers);
+	RenderBuffers *rb = render_buffers_owner.get_or_null(p_render_buffers);
 	ERR_FAIL_COND_V(!rb, nullptr);
 	return rb->data;
 }
@@ -2814,7 +2814,7 @@ void RendererSceneRenderRD::_setup_reflections(const PagedArray<RID> &p_reflecti
 			break;
 		}
 
-		ReflectionProbeInstance *rpi = reflection_probe_instance_owner.getornull(p_reflections[i]);
+		ReflectionProbeInstance *rpi = reflection_probe_instance_owner.get_or_null(p_reflections[i]);
 		if (!rpi) {
 			continue;
 		}
@@ -2900,7 +2900,7 @@ void RendererSceneRenderRD::_setup_lights(const PagedArray<RID> &p_lights, const
 	r_directional_light_soft_shadows = false;
 
 	for (int i = 0; i < (int)p_lights.size(); i++) {
-		LightInstance *li = light_instance_owner.getornull(p_lights[i]);
+		LightInstance *li = light_instance_owner.get_or_null(p_lights[i]);
 		if (!li) {
 			continue;
 		}
@@ -3129,7 +3129,7 @@ void RendererSceneRenderRD::_setup_lights(const PagedArray<RID> &p_lights, const
 	ShadowAtlas *shadow_atlas = nullptr;
 
 	if (p_shadow_atlas.is_valid() && p_using_shadows) {
-		shadow_atlas = shadow_atlas_owner.getornull(p_shadow_atlas);
+		shadow_atlas = shadow_atlas_owner.get_or_null(p_shadow_atlas);
 	}
 
 	bool using_forward_ids = _uses_forward_ids();
@@ -3312,7 +3312,7 @@ void RendererSceneRenderRD::_setup_decals(const PagedArray<RID> &p_decals, const
 			break;
 		}
 
-		DecalInstance *di = decal_instance_owner.getornull(p_decals[i]);
+		DecalInstance *di = decal_instance_owner.get_or_null(p_decals[i]);
 		if (!di) {
 			continue;
 		}
@@ -3495,9 +3495,9 @@ void RendererSceneRenderRD::_volumetric_fog_erase(RenderBuffers *rb) {
 
 void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_environment, const CameraMatrix &p_cam_projection, const Transform3D &p_cam_transform, RID p_shadow_atlas, int p_directional_light_count, bool p_use_directional_shadows, int p_positional_light_count, int p_voxel_gi_count) {
 	ERR_FAIL_COND(!is_clustered_enabled()); // can't use volumetric fog without clustered
-	RenderBuffers *rb = render_buffers_owner.getornull(p_render_buffers);
+	RenderBuffers *rb = render_buffers_owner.get_or_null(p_render_buffers);
 	ERR_FAIL_COND(!rb);
-	RendererSceneEnvironmentRD *env = environment_owner.getornull(p_environment);
+	RendererSceneEnvironmentRD *env = environment_owner.get_or_null(p_environment);
 
 	float ratio = float(rb->width) / float((rb->width + rb->height) / 2);
 	uint32_t target_width = uint32_t(float(volumetric_fog_size) * ratio);
@@ -3566,7 +3566,7 @@ void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_e
 			RD::Uniform u;
 			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 			u.binding = 1;
-			ShadowAtlas *shadow_atlas = shadow_atlas_owner.getornull(p_shadow_atlas);
+			ShadowAtlas *shadow_atlas = shadow_atlas_owner.get_or_null(p_shadow_atlas);
 			if (shadow_atlas == nullptr || shadow_atlas->depth.is_null()) {
 				u.ids.push_back(storage->texture_rd_get_default(RendererStorageRD::DEFAULT_RD_TEXTURE_BLACK));
 			} else {
@@ -3888,7 +3888,7 @@ void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_e
 
 bool RendererSceneRenderRD::_needs_post_prepass_render(RenderDataRD *p_render_data, bool p_use_gi) {
 	if (p_render_data->render_buffers.is_valid()) {
-		RenderBuffers *rb = render_buffers_owner.getornull(p_render_data->render_buffers);
+		RenderBuffers *rb = render_buffers_owner.get_or_null(p_render_data->render_buffers);
 		if (rb->sdfgi != nullptr) {
 			return true;
 		}
@@ -3899,14 +3899,14 @@ bool RendererSceneRenderRD::_needs_post_prepass_render(RenderDataRD *p_render_da
 void RendererSceneRenderRD::_post_prepass_render(RenderDataRD *p_render_data, bool p_use_gi) {
 	if (p_render_data->render_buffers.is_valid()) {
 		if (p_use_gi) {
-			RenderBuffers *rb = render_buffers_owner.getornull(p_render_data->render_buffers);
+			RenderBuffers *rb = render_buffers_owner.get_or_null(p_render_data->render_buffers);
 			ERR_FAIL_COND(rb == nullptr);
 			if (rb->sdfgi == nullptr) {
 				return;
 			}
 
-			RendererSceneEnvironmentRD *env = environment_owner.getornull(p_render_data->environment);
-			rb->sdfgi->update_probes(env, sky.sky_owner.getornull(env->sky));
+			RendererSceneEnvironmentRD *env = environment_owner.get_or_null(p_render_data->environment);
+			rb->sdfgi->update_probes(env, sky.sky_owner.get_or_null(env->sky));
 		}
 	}
 }
@@ -3923,7 +3923,7 @@ void RendererSceneRenderRD::_pre_opaque_render(RenderDataRD *p_render_data, bool
 	// Render shadows while GI is rendering, due to how barriers are handled, this should happen at the same time
 
 	if (p_render_data->render_buffers.is_valid() && p_use_gi) {
-		RenderBuffers *rb = render_buffers_owner.getornull(p_render_data->render_buffers);
+		RenderBuffers *rb = render_buffers_owner.get_or_null(p_render_data->render_buffers);
 		ERR_FAIL_COND(rb == nullptr);
 		if (rb->sdfgi != nullptr) {
 			rb->sdfgi->store_probes();
@@ -3938,7 +3938,7 @@ void RendererSceneRenderRD::_pre_opaque_render(RenderDataRD *p_render_data, bool
 	float lod_distance_multiplier = p_render_data->cam_projection.get_lod_multiplier();
 	{
 		for (int i = 0; i < render_state.render_shadow_count; i++) {
-			LightInstance *li = light_instance_owner.getornull(render_state.render_shadows[i].light);
+			LightInstance *li = light_instance_owner.get_or_null(render_state.render_shadows[i].light);
 
 			if (storage->light_get_type(li->light) == RS::LIGHT_DIRECTIONAL) {
 				render_state.directional_shadows.push_back(i);
@@ -4058,7 +4058,7 @@ void RendererSceneRenderRD::render_scene(RID p_render_buffers, const CameraData 
 	// getting this here now so we can direct call a bunch of things more easily
 	RenderBuffers *rb = nullptr;
 	if (p_render_buffers.is_valid()) {
-		rb = render_buffers_owner.getornull(p_render_buffers);
+		rb = render_buffers_owner.get_or_null(p_render_buffers);
 		ERR_FAIL_COND(!rb);
 	}
 
@@ -4140,7 +4140,7 @@ void RendererSceneRenderRD::render_scene(RID p_render_buffers, const CameraData 
 	//assign render indices to voxel_gi_instances
 	if (is_dynamic_gi_supported()) {
 		for (uint32_t i = 0; i < (uint32_t)p_voxel_gi_instances.size(); i++) {
-			RendererSceneGIRD::VoxelGIInstance *voxel_gi_inst = gi.voxel_gi_instance_owner.getornull(p_voxel_gi_instances[i]);
+			RendererSceneGIRD::VoxelGIInstance *voxel_gi_inst = gi.voxel_gi_instance_owner.get_or_null(p_voxel_gi_instances[i]);
 			if (voxel_gi_inst) {
 				voxel_gi_inst->render_index = i;
 			}
@@ -4151,8 +4151,8 @@ void RendererSceneRenderRD::render_scene(RID p_render_buffers, const CameraData 
 		// render_data.render_buffers == p_render_buffers so we can use our already retrieved rb
 		current_cluster_builder = rb->cluster_builder;
 	} else if (reflection_probe_instance_owner.owns(render_data.reflection_probe)) {
-		ReflectionProbeInstance *rpi = reflection_probe_instance_owner.getornull(render_data.reflection_probe);
-		ReflectionAtlas *ra = reflection_atlas_owner.getornull(rpi->atlas);
+		ReflectionProbeInstance *rpi = reflection_probe_instance_owner.get_or_null(render_data.reflection_probe);
+		ReflectionAtlas *ra = reflection_atlas_owner.get_or_null(rpi->atlas);
 		if (!ra) {
 			ERR_PRINT("reflection probe has no reflection atlas! Bug?");
 			current_cluster_builder = nullptr;
@@ -4230,7 +4230,7 @@ void RendererSceneRenderRD::_debug_draw_cluster(RID p_render_buffers) {
 }
 
 void RendererSceneRenderRD::_render_shadow_pass(RID p_light, RID p_shadow_atlas, int p_pass, const PagedArray<GeometryInstance *> &p_instances, const Plane &p_camera_plane, float p_lod_distance_multiplier, float p_screen_lod_threshold, bool p_open_pass, bool p_close_pass, bool p_clear_region, RendererScene::RenderInfo *p_render_info) {
-	LightInstance *light_instance = light_instance_owner.getornull(p_light);
+	LightInstance *light_instance = light_instance_owner.get_or_null(p_light);
 	ERR_FAIL_COND(!light_instance);
 
 	Rect2i atlas_rect;
@@ -4301,7 +4301,7 @@ void RendererSceneRenderRD::_render_shadow_pass(RID p_light, RID p_shadow_atlas,
 	} else {
 		//set from shadow atlas
 
-		ShadowAtlas *shadow_atlas = shadow_atlas_owner.getornull(p_shadow_atlas);
+		ShadowAtlas *shadow_atlas = shadow_atlas_owner.get_or_null(p_shadow_atlas);
 		ERR_FAIL_COND(!shadow_atlas);
 		ERR_FAIL_COND(!shadow_atlas->shadow_owners.has(p_light));
 
@@ -4424,7 +4424,7 @@ void RendererSceneRenderRD::render_particle_collider_heightfield(RID p_collider,
 
 bool RendererSceneRenderRD::free(RID p_rid) {
 	if (render_buffers_owner.owns(p_rid)) {
-		RenderBuffers *rb = render_buffers_owner.getornull(p_rid);
+		RenderBuffers *rb = render_buffers_owner.get_or_null(p_rid);
 		_free_render_buffer_data(rb);
 		memdelete(rb->data);
 		if (rb->sdfgi) {
@@ -4447,24 +4447,24 @@ bool RendererSceneRenderRD::free(RID p_rid) {
 		camera_effects_owner.free(p_rid);
 	} else if (reflection_atlas_owner.owns(p_rid)) {
 		reflection_atlas_set_size(p_rid, 0, 0);
-		ReflectionAtlas *ra = reflection_atlas_owner.getornull(p_rid);
+		ReflectionAtlas *ra = reflection_atlas_owner.get_or_null(p_rid);
 		if (ra->cluster_builder) {
 			memdelete(ra->cluster_builder);
 		}
 		reflection_atlas_owner.free(p_rid);
 	} else if (reflection_probe_instance_owner.owns(p_rid)) {
-		ReflectionProbeInstance *rpi = reflection_probe_instance_owner.getornull(p_rid);
+		ReflectionProbeInstance *rpi = reflection_probe_instance_owner.get_or_null(p_rid);
 		_free_forward_id(FORWARD_ID_TYPE_REFLECTION_PROBE, rpi->forward_id);
 		reflection_probe_release_atlas_index(p_rid);
 		reflection_probe_instance_owner.free(p_rid);
 	} else if (decal_instance_owner.owns(p_rid)) {
-		DecalInstance *di = decal_instance_owner.getornull(p_rid);
+		DecalInstance *di = decal_instance_owner.get_or_null(p_rid);
 		_free_forward_id(FORWARD_ID_TYPE_DECAL, di->forward_id);
 		decal_instance_owner.free(p_rid);
 	} else if (lightmap_instance_owner.owns(p_rid)) {
 		lightmap_instance_owner.free(p_rid);
 	} else if (gi.voxel_gi_instance_owner.owns(p_rid)) {
-		RendererSceneGIRD::VoxelGIInstance *voxel_gi = gi.voxel_gi_instance_owner.getornull(p_rid);
+		RendererSceneGIRD::VoxelGIInstance *voxel_gi = gi.voxel_gi_instance_owner.get_or_null(p_rid);
 		if (voxel_gi->texture.is_valid()) {
 			RD::get_singleton()->free(voxel_gi->texture);
 			RD::get_singleton()->free(voxel_gi->write_buffer);
@@ -4480,11 +4480,11 @@ bool RendererSceneRenderRD::free(RID p_rid) {
 		sky.update_dirty_skys();
 		sky.free_sky(p_rid);
 	} else if (light_instance_owner.owns(p_rid)) {
-		LightInstance *light_instance = light_instance_owner.getornull(p_rid);
+		LightInstance *light_instance = light_instance_owner.get_or_null(p_rid);
 
 		//remove from shadow atlases..
 		for (Set<RID>::Element *E = light_instance->shadow_atlases.front(); E; E = E->next()) {
-			ShadowAtlas *shadow_atlas = shadow_atlas_owner.getornull(E->get());
+			ShadowAtlas *shadow_atlas = shadow_atlas_owner.get_or_null(E->get());
 			ERR_CONTINUE(!shadow_atlas->shadow_owners.has(p_rid));
 			uint32_t key = shadow_atlas->shadow_owners[p_rid];
 			uint32_t q = (key >> ShadowAtlas::QUADRANT_SHIFT) & 0x3;

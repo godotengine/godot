@@ -1772,7 +1772,7 @@ void RendererSceneSkyRD::initialize_sky_rid(RID p_rid) {
 }
 
 RendererSceneSkyRD::Sky *RendererSceneSkyRD::get_sky(RID p_sky) const {
-	return sky_owner.getornull(p_sky);
+	return sky_owner.get_or_null(p_sky);
 }
 
 void RendererSceneSkyRD::free_sky(RID p_sky) {

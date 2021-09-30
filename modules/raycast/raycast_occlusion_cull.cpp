@@ -207,7 +207,7 @@ void RaycastOcclusionCull::occluder_initialize(RID p_occluder) {
 }
 
 void RaycastOcclusionCull::occluder_set_mesh(RID p_occluder, const PackedVector3Array &p_vertices, const PackedInt32Array &p_indices) {
-	Occluder *occluder = occluder_owner.getornull(p_occluder);
+	Occluder *occluder = occluder_owner.get_or_null(p_occluder);
 	ERR_FAIL_COND(!occluder);
 
 	occluder->vertices = p_vertices;
@@ -228,7 +228,7 @@ void RaycastOcclusionCull::occluder_set_mesh(RID p_occluder, const PackedVector3
 }
 
 void RaycastOcclusionCull::free_occluder(RID p_occluder) {
-	Occluder *occluder = occluder_owner.getornull(p_occluder);
+	Occluder *occluder = occluder_owner.get_or_null(p_occluder);
 	ERR_FAIL_COND(!occluder);
 	memdelete(occluder);
 	occluder_owner.free(p_occluder);
@@ -268,7 +268,7 @@ void RaycastOcclusionCull::scenario_set_instance(RID p_scenario, RID p_instance,
 	bool changed = false;
 
 	if (instance.occluder != p_occluder) {
-		Occluder *old_occluder = occluder_owner.getornull(instance.occluder);
+		Occluder *old_occluder = occluder_owner.get_or_null(instance.occluder);
 		if (old_occluder) {
 			old_occluder->users.erase(InstanceID(p_scenario, p_instance));
 		}
@@ -276,7 +276,7 @@ void RaycastOcclusionCull::scenario_set_instance(RID p_scenario, RID p_instance,
 		instance.occluder = p_occluder;
 
 		if (p_occluder.is_valid()) {
-			Occluder *occluder = occluder_owner.getornull(p_occluder);
+			Occluder *occluder = occluder_owner.get_or_null(p_occluder);
 			ERR_FAIL_COND(!occluder);
 			occluder->users.insert(InstanceID(p_scenario, p_instance));
 		}
@@ -308,7 +308,7 @@ void RaycastOcclusionCull::scenario_remove_instance(RID p_scenario, RID p_instan
 		OccluderInstance &instance = scenario.instances[p_instance];
 
 		if (!instance.removed) {
-			Occluder *occluder = occluder_owner.getornull(instance.occluder);
+			Occluder *occluder = occluder_owner.get_or_null(instance.occluder);
 			if (occluder) {
 				occluder->users.erase(InstanceID(p_scenario, p_instance));
 			}
@@ -330,7 +330,7 @@ void RaycastOcclusionCull::Scenario::_update_dirty_instance(int p_idx, RID *p_in
 		return;
 	}
 
-	Occluder *occ = raycast_singleton->occluder_owner.getornull(occ_inst->occluder);
+	Occluder *occ = raycast_singleton->occluder_owner.get_or_null(occ_inst->occluder);
 
 	if (!occ) {
 		return;
@@ -446,7 +446,7 @@ bool RaycastOcclusionCull::Scenario::update(ThreadWorkPool &p_thread_pool) {
 	const RID *inst_rid = nullptr;
 	while ((inst_rid = instances.next(inst_rid))) {
 		OccluderInstance *occ_inst = instances.getptr(*inst_rid);
-		Occluder *occ = raycast_singleton->occluder_owner.getornull(occ_inst->occluder);
+		Occluder *occ = raycast_singleton->occluder_owner.get_or_null(occ_inst->occluder);
 
 		if (!occ || !occ_inst->enabled) {
 			continue;

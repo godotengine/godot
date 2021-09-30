@@ -1144,7 +1144,7 @@ void RendererCanvasRenderRD::canvas_render_items(RID p_to_render_target, Item *p
 				continue;
 			}
 
-			CanvasLight *clight = canvas_light_owner.getornull(l->light_internal);
+			CanvasLight *clight = canvas_light_owner.get_or_null(l->light_internal);
 			if (!clight) { //unused or invalid texture
 				l->render_index_cache = -1;
 				l = l->next_ptr;
@@ -1207,7 +1207,7 @@ void RendererCanvasRenderRD::canvas_render_items(RID p_to_render_target, Item *p
 				continue;
 			}
 
-			CanvasLight *clight = canvas_light_owner.getornull(l->light_internal);
+			CanvasLight *clight = canvas_light_owner.get_or_null(l->light_internal);
 			if (!clight) { //unused or invalid texture
 				l->render_index_cache = -1;
 				l = l->next_ptr;
@@ -1481,7 +1481,7 @@ RID RendererCanvasRenderRD::light_create() {
 }
 
 void RendererCanvasRenderRD::light_set_texture(RID p_rid, RID p_texture) {
-	CanvasLight *cl = canvas_light_owner.getornull(p_rid);
+	CanvasLight *cl = canvas_light_owner.get_or_null(p_rid);
 	ERR_FAIL_COND(!cl);
 	if (cl->texture == p_texture) {
 		return;
@@ -1497,7 +1497,7 @@ void RendererCanvasRenderRD::light_set_texture(RID p_rid, RID p_texture) {
 }
 
 void RendererCanvasRenderRD::light_set_use_shadow(RID p_rid, bool p_enable) {
-	CanvasLight *cl = canvas_light_owner.getornull(p_rid);
+	CanvasLight *cl = canvas_light_owner.get_or_null(p_rid);
 	ERR_FAIL_COND(!cl);
 
 	cl->shadow.enabled = p_enable;
@@ -1537,7 +1537,7 @@ void RendererCanvasRenderRD::_update_shadow_atlas() {
 	}
 }
 void RendererCanvasRenderRD::light_update_shadow(RID p_rid, int p_shadow_index, const Transform2D &p_light_xform, int p_light_mask, float p_near, float p_far, LightOccluderInstance *p_occluders) {
-	CanvasLight *cl = canvas_light_owner.getornull(p_rid);
+	CanvasLight *cl = canvas_light_owner.get_or_null(p_rid);
 	ERR_FAIL_COND(!cl->shadow.enabled);
 
 	_update_shadow_atlas();
@@ -1591,7 +1591,7 @@ void RendererCanvasRenderRD::light_update_shadow(RID p_rid, int p_shadow_index, 
 		LightOccluderInstance *instance = p_occluders;
 
 		while (instance) {
-			OccluderPolygon *co = occluder_polygon_owner.getornull(instance->occluder);
+			OccluderPolygon *co = occluder_polygon_owner.get_or_null(instance->occluder);
 
 			if (!co || co->index_array.is_null() || !(p_light_mask & instance->light_mask)) {
 				instance = instance->next;
@@ -1615,7 +1615,7 @@ void RendererCanvasRenderRD::light_update_shadow(RID p_rid, int p_shadow_index, 
 }
 
 void RendererCanvasRenderRD::light_update_directional_shadow(RID p_rid, int p_shadow_index, const Transform2D &p_light_xform, int p_light_mask, float p_cull_distance, const Rect2 &p_clip_rect, LightOccluderInstance *p_occluders) {
-	CanvasLight *cl = canvas_light_owner.getornull(p_rid);
+	CanvasLight *cl = canvas_light_owner.get_or_null(p_rid);
 	ERR_FAIL_COND(!cl->shadow.enabled);
 
 	_update_shadow_atlas();
@@ -1666,7 +1666,7 @@ void RendererCanvasRenderRD::light_update_directional_shadow(RID p_rid, int p_sh
 	LightOccluderInstance *instance = p_occluders;
 
 	while (instance) {
-		OccluderPolygon *co = occluder_polygon_owner.getornull(instance->occluder);
+		OccluderPolygon *co = occluder_polygon_owner.get_or_null(instance->occluder);
 
 		if (!co || co->index_array.is_null() || !(p_light_mask & instance->light_mask)) {
 			instance = instance->next;
@@ -1732,7 +1732,7 @@ void RendererCanvasRenderRD::render_sdf(RID p_render_target, LightOccluderInstan
 	LightOccluderInstance *instance = p_occluders;
 
 	while (instance) {
-		OccluderPolygon *co = occluder_polygon_owner.getornull(instance->occluder);
+		OccluderPolygon *co = occluder_polygon_owner.get_or_null(instance->occluder);
 
 		if (!co || co->sdf_index_array.is_null()) {
 			instance = instance->next;
@@ -1766,7 +1766,7 @@ RID RendererCanvasRenderRD::occluder_polygon_create() {
 }
 
 void RendererCanvasRenderRD::occluder_polygon_set_shape(RID p_occluder, const Vector<Vector2> &p_points, bool p_closed) {
-	OccluderPolygon *oc = occluder_polygon_owner.getornull(p_occluder);
+	OccluderPolygon *oc = occluder_polygon_owner.get_or_null(p_occluder);
 	ERR_FAIL_COND(!oc);
 
 	Vector<Vector2> lines;
@@ -1935,7 +1935,7 @@ void RendererCanvasRenderRD::occluder_polygon_set_shape(RID p_occluder, const Ve
 }
 
 void RendererCanvasRenderRD::occluder_polygon_set_cull_mode(RID p_occluder, RS::CanvasOccluderPolygonCullMode p_mode) {
-	OccluderPolygon *oc = occluder_polygon_owner.getornull(p_occluder);
+	OccluderPolygon *oc = occluder_polygon_owner.get_or_null(p_occluder);
 	ERR_FAIL_COND(!oc);
 	oc->cull_mode = p_mode;
 }
@@ -2611,7 +2611,7 @@ void fragment() {
 
 bool RendererCanvasRenderRD::free(RID p_rid) {
 	if (canvas_light_owner.owns(p_rid)) {
-		CanvasLight *cl = canvas_light_owner.getornull(p_rid);
+		CanvasLight *cl = canvas_light_owner.get_or_null(p_rid);
 		ERR_FAIL_COND_V(!cl, false);
 		light_set_use_shadow(p_rid, false);
 		canvas_light_owner.free(p_rid);
