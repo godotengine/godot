@@ -1394,8 +1394,10 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 		}
 
 #ifdef TOOLS_ENABLED
-		Ref<Image> icon = memnew(Image(app_icon_png));
-		OS::get_singleton()->set_icon(icon);
+		if (OS::get_singleton()->get_bundle_icon_path().empty()) {
+			Ref<Image> icon = memnew(Image(app_icon_png));
+			OS::get_singleton()->set_icon(icon);
+		}
 #endif
 	}
 
@@ -2043,7 +2045,7 @@ bool Main::start() {
 #endif
 	}
 
-	if (!hasicon) {
+	if (!hasicon && OS::get_singleton()->get_bundle_icon_path().empty()) {
 		Ref<Image> icon = memnew(Image(app_icon_png));
 		OS::get_singleton()->set_icon(icon);
 	}
