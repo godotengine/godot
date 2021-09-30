@@ -1249,7 +1249,7 @@ bool AtlasTexture::is_pixel_opaque(int p_x, int p_y) const {
 }
 
 Ref<Image> AtlasTexture::get_image() const {
-	if (!atlas.is_valid()) {
+	if (!atlas.is_valid() || !atlas->get_image().is_valid()) {
 		return Ref<Image>();
 	}
 
