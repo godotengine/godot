@@ -1867,11 +1867,19 @@ void GDScriptAnalyzer::reduce_binary_op(GDScriptParser::BinaryOpNode *p_binary_o
 
 	GDScriptParser::DataType left_type;
 	if (p_binary_op->left_operand) {
-		left_type = p_binary_op->left_operand->get_datatype();
+		if (p_binary_op->left_operand->is_constant) {
+			left_type = type_from_variant(p_binary_op->left_operand->reduced_value, p_binary_op->left_operand);
+		} else {
+			left_type = p_binary_op->left_operand->get_datatype();
+		}
 	}
 	GDScriptParser::DataType right_type;
 	if (p_binary_op->right_operand) {
-		right_type = p_binary_op->right_operand->get_datatype();
+		if (p_binary_op->right_operand->is_constant) {
+			right_type = type_from_variant(p_binary_op->right_operand->reduced_value, p_binary_op->right_operand);
+		} else {
+			right_type = p_binary_op->right_operand->get_datatype();
+		}
 	}
 
 	if (!left_type.is_set() || !right_type.is_set()) {
@@ -2508,7 +2516,10 @@ void GDScriptAnalyzer::reduce_identifier_from_base(GDScriptParser::IdentifierNod
 				result.enum_type = name;
 				p_identifier->set_datatype(result);
 			} else {
-				push_error(vformat(R"(Cannot find value "%s" in "%s".)", name, base.to_string()), p_identifier);
+				// Consider as a Dictionary
+				GDScriptParser::DataType dummy;
+				dummy.kind = GDScriptParser::DataType::VARIANT;
+				p_identifier->set_datatype(dummy);
 			}
 		} else {
 			push_error(R"(Cannot get property from enum value.)", p_identifier);
@@ -3680,6 +3691,11 @@ bool GDScriptAnalyzer::is_type_compatible(const GDScriptParser::DataType &p_targ
 	if (p_target.kind == GDScriptParser::DataType::ENUM) {
 		if (p_source.kind == GDScriptParser::DataType::BUILTIN && p_source.builtin_type == Variant::INT) {
 			return true;
+		}
+		if (p_source.kind == GDScriptParser::DataType::ENUM) {
+			if (p_source.native_type == p_target.native_type) {
+				return true;
+			}
 		}
 		if (p_source.kind == GDScriptParser::DataType::ENUM_VALUE) {
 			if (p_source.native_type == p_target.native_type && p_target.enum_values.has(p_source.enum_type)) {
