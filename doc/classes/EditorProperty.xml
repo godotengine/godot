@@ -66,7 +66,7 @@
 			Used by the inspector, set to [code]true[/code] when the property is checked.
 		</member>
 		<member name="draw_red" type="bool" setter="set_draw_red" getter="is_draw_red" default="false">
-			Used by the inspector, set to [code]true[/code] when the property must draw with error color. This is used for editable children's properties.
+			Used by the inspector, set to [code]true[/code] when the property is drawn with the editor theme's warning color. This is used for editable children's properties.
 		</member>
 		<member name="keying" type="bool" setter="set_keying" getter="is_keying" default="false">
 			Used by the inspector, set to [code]true[/code] when the property can add keys for animation.

@@ -209,7 +209,7 @@ void EditorProperty::_notification(int p_what) {
 
 		Color color;
 		if (draw_red) {
-			color = get_color("error_color");
+			color = get_color("warning_color");
 		} else {
 			color = get_color("property_color");
 		}
