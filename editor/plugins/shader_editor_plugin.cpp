@@ -131,9 +131,9 @@ void ShaderTextEditor::_load_theme_settings() {
 
 	List<String> built_ins;
 	if (shader.is_valid()) {
-		for (const Map<StringName, ShaderLanguage::FunctionInfo>::Element *E = ShaderTypes::get_singleton()->get_functions(RenderingServer::ShaderMode(shader->get_mode())).front(); E; E = E->next()) {
-			for (const Map<StringName, ShaderLanguage::BuiltInInfo>::Element *F = E->get().built_ins.front(); F; F = F->next()) {
-				built_ins.push_back(F->key());
+		for (const KeyValue<StringName, ShaderLanguage::FunctionInfo> &E : ShaderTypes::get_singleton()->get_functions(RenderingServer::ShaderMode(shader->get_mode()))) {
+			for (const KeyValue<StringName, ShaderLanguage::BuiltInInfo> &F : E.value.built_ins) {
+				built_ins.push_back(F.key);
 			}
 		}
 

@@ -756,10 +756,10 @@ Variant TileDataDefaultEditor::_get_value(TileSetAtlasSource *p_tile_set_atlas_s
 }
 
 void TileDataDefaultEditor::_setup_undo_redo_action(TileSetAtlasSource *p_tile_set_atlas_source, Map<TileMapCell, Variant> p_previous_values, Variant p_new_value) {
-	for (Map<TileMapCell, Variant>::Element *E = p_previous_values.front(); E; E = E->next()) {
-		Vector2i coords = E->key().get_atlas_coords();
-		undo_redo->add_undo_property(p_tile_set_atlas_source, vformat("%d:%d/%d/%s", coords.x, coords.y, E->key().alternative_tile, property), E->get());
-		undo_redo->add_do_property(p_tile_set_atlas_source, vformat("%d:%d/%d/%s", coords.x, coords.y, E->key().alternative_tile, property), p_new_value);
+	for (const KeyValue<TileMapCell, Variant> &E : p_previous_values) {
+		Vector2i coords = E.key.get_atlas_coords();
+		undo_redo->add_undo_property(p_tile_set_atlas_source, vformat("%d:%d/%d/%s", coords.x, coords.y, E.key.alternative_tile, property), E.value);
+		undo_redo->add_do_property(p_tile_set_atlas_source, vformat("%d:%d/%d/%s", coords.x, coords.y, E.key.alternative_tile, property), p_new_value);
 	}
 }
 
@@ -1191,10 +1191,10 @@ Variant TileDataOcclusionShapeEditor::_get_value(TileSetAtlasSource *p_tile_set_
 }
 
 void TileDataOcclusionShapeEditor::_setup_undo_redo_action(TileSetAtlasSource *p_tile_set_atlas_source, Map<TileMapCell, Variant> p_previous_values, Variant p_new_value) {
-	for (Map<TileMapCell, Variant>::Element *E = p_previous_values.front(); E; E = E->next()) {
-		Vector2i coords = E->key().get_atlas_coords();
-		undo_redo->add_undo_property(p_tile_set_atlas_source, vformat("%d:%d/%d/occlusion_layer_%d/polygon", coords.x, coords.y, E->key().alternative_tile, occlusion_layer), E->get());
-		undo_redo->add_do_property(p_tile_set_atlas_source, vformat("%d:%d/%d/occlusion_layer_%d/polygon", coords.x, coords.y, E->key().alternative_tile, occlusion_layer), p_new_value);
+	for (const KeyValue<TileMapCell, Variant> &E : p_previous_values) {
+		Vector2i coords = E.key.get_atlas_coords();
+		undo_redo->add_undo_property(p_tile_set_atlas_source, vformat("%d:%d/%d/occlusion_layer_%d/polygon", coords.x, coords.y, E.key.alternative_tile, occlusion_layer), E.value);
+		undo_redo->add_do_property(p_tile_set_atlas_source, vformat("%d:%d/%d/occlusion_layer_%d/polygon", coords.x, coords.y, E.key.alternative_tile, occlusion_layer), p_new_value);
 	}
 }
 
@@ -1312,8 +1312,8 @@ void TileDataCollisionEditor::_set_painted_value(TileSetAtlasSource *p_tile_set_
 		dummy_object->set(vformat("polygon_%d_one_way", i), tile_data->is_collision_polygon_one_way(physics_layer, i));
 		dummy_object->set(vformat("polygon_%d_one_way_margin", i), tile_data->get_collision_polygon_one_way_margin(physics_layer, i));
 	}
-	for (Map<StringName, EditorProperty *>::Element *E = property_editors.front(); E; E = E->next()) {
-		E->get()->update_property();
+	for (const KeyValue<StringName, EditorProperty *> &E : property_editors) {
+		E.value->update_property();
 	}
 
 	polygon_editor->set_background(p_tile_set_atlas_source->get_texture(), p_tile_set_atlas_source->get_tile_texture_region(p_coords), p_tile_set_atlas_source->get_tile_effective_texture_offset(p_coords, p_alternative_tile), tile_data->get_flip_h(), tile_data->get_flip_v(), tile_data->get_transpose(), tile_data->get_modulate());
@@ -1359,24 +1359,24 @@ Variant TileDataCollisionEditor::_get_value(TileSetAtlasSource *p_tile_set_atlas
 
 void TileDataCollisionEditor::_setup_undo_redo_action(TileSetAtlasSource *p_tile_set_atlas_source, Map<TileMapCell, Variant> p_previous_values, Variant p_new_value) {
 	Array new_array = p_new_value;
-	for (Map<TileMapCell, Variant>::Element *E = p_previous_values.front(); E; E = E->next()) {
-		Array old_array = E->get();
+	for (KeyValue<TileMapCell, Variant> &E : p_previous_values) {
+		Array old_array = E.value;
 
-		Vector2i coords = E->key().get_atlas_coords();
-		undo_redo->add_undo_property(p_tile_set_atlas_source, vformat("%d:%d/%d/physics_layer_%d/polygons_count", coords.x, coords.y, E->key().alternative_tile, physics_layer), old_array.size());
+		Vector2i coords = E.key.get_atlas_coords();
+		undo_redo->add_undo_property(p_tile_set_atlas_source, vformat("%d:%d/%d/physics_layer_%d/polygons_count", coords.x, coords.y, E.key.alternative_tile, physics_layer), old_array.size());
 		for (int i = 0; i < old_array.size(); i++) {
 			Dictionary dict = old_array[i];
-			undo_redo->add_undo_property(p_tile_set_atlas_source, vformat("%d:%d/%d/physics_layer_%d/polygon_%d/points", coords.x, coords.y, E->key().alternative_tile, physics_layer, i), dict["points"]);
-			undo_redo->add_undo_property(p_tile_set_atlas_source, vformat("%d:%d/%d/physics_layer_%d/polygon_%d/one_way", coords.x, coords.y, E->key().alternative_tile, physics_layer, i), dict["one_way"]);
-			undo_redo->add_undo_property(p_tile_set_atlas_source, vformat("%d:%d/%d/physics_layer_%d/polygon_%d/one_way_margin", coords.x, coords.y, E->key().alternative_tile, physics_layer, i), dict["one_way_margin"]);
+			undo_redo->add_undo_property(p_tile_set_atlas_source, vformat("%d:%d/%d/physics_layer_%d/polygon_%d/points", coords.x, coords.y, E.key.alternative_tile, physics_layer, i), dict["points"]);
+			undo_redo->add_undo_property(p_tile_set_atlas_source, vformat("%d:%d/%d/physics_layer_%d/polygon_%d/one_way", coords.x, coords.y, E.key.alternative_tile, physics_layer, i), dict["one_way"]);
+			undo_redo->add_undo_property(p_tile_set_atlas_source, vformat("%d:%d/%d/physics_layer_%d/polygon_%d/one_way_margin", coords.x, coords.y, E.key.alternative_tile, physics_layer, i), dict["one_way_margin"]);
 		}
 
-		undo_redo->add_do_property(p_tile_set_atlas_source, vformat("%d:%d/%d/physics_layer_%d/polygons_count", coords.x, coords.y, E->key().alternative_tile, physics_layer), new_array.size());
+		undo_redo->add_do_property(p_tile_set_atlas_source, vformat("%d:%d/%d/physics_layer_%d/polygons_count", coords.x, coords.y, E.key.alternative_tile, physics_layer), new_array.size());
 		for (int i = 0; i < new_array.size(); i++) {
 			Dictionary dict = new_array[i];
-			undo_redo->add_do_property(p_tile_set_atlas_source, vformat("%d:%d/%d/physics_layer_%d/polygon_%d/points", coords.x, coords.y, E->key().alternative_tile, physics_layer, i), dict["points"]);
-			undo_redo->add_do_property(p_tile_set_atlas_source, vformat("%d:%d/%d/physics_layer_%d/polygon_%d/one_way", coords.x, coords.y, E->key().alternative_tile, physics_layer, i), dict["one_way"]);
-			undo_redo->add_do_property(p_tile_set_atlas_source, vformat("%d:%d/%d/physics_layer_%d/polygon_%d/one_way_margin", coords.x, coords.y, E->key().alternative_tile, physics_layer, i), dict["one_way_margin"]);
+			undo_redo->add_do_property(p_tile_set_atlas_source, vformat("%d:%d/%d/physics_layer_%d/polygon_%d/points", coords.x, coords.y, E.key.alternative_tile, physics_layer, i), dict["points"]);
+			undo_redo->add_do_property(p_tile_set_atlas_source, vformat("%d:%d/%d/physics_layer_%d/polygon_%d/one_way", coords.x, coords.y, E.key.alternative_tile, physics_layer, i), dict["one_way"]);
+			undo_redo->add_do_property(p_tile_set_atlas_source, vformat("%d:%d/%d/physics_layer_%d/polygon_%d/one_way_margin", coords.x, coords.y, E.key.alternative_tile, physics_layer, i), dict["one_way_margin"]);
 		}
 	}
 }
@@ -2021,16 +2021,16 @@ void TileDataTerrainsEditor::forward_painting_atlas_gui_input(TileAtlasView *p_t
 					drag_type = DRAG_TYPE_NONE;
 				} else if (drag_type == DRAG_TYPE_PAINT_TERRAIN_SET) {
 					undo_redo->create_action(TTR("Painting Terrain Set"));
-					for (Map<TileMapCell, Variant>::Element *E = drag_modified.front(); E; E = E->next()) {
-						Dictionary dict = E->get();
-						Vector2i coords = E->key().get_atlas_coords();
-						undo_redo->add_do_property(p_tile_set_atlas_source, vformat("%d:%d/%d/terrain_set", coords.x, coords.y, E->key().alternative_tile), drag_painted_value);
-						undo_redo->add_undo_property(p_tile_set_atlas_source, vformat("%d:%d/%d/terrain_set", coords.x, coords.y, E->key().alternative_tile), dict["terrain_set"]);
+					for (KeyValue<TileMapCell, Variant> &E : drag_modified) {
+						Dictionary dict = E.value;
+						Vector2i coords = E.key.get_atlas_coords();
+						undo_redo->add_do_property(p_tile_set_atlas_source, vformat("%d:%d/%d/terrain_set", coords.x, coords.y, E.key.alternative_tile), drag_painted_value);
+						undo_redo->add_undo_property(p_tile_set_atlas_source, vformat("%d:%d/%d/terrain_set", coords.x, coords.y, E.key.alternative_tile), dict["terrain_set"]);
 						Array array = dict["terrain_peering_bits"];
 						for (int i = 0; i < array.size(); i++) {
 							TileSet::CellNeighbor bit = TileSet::CellNeighbor(i);
 							if (tile_set->is_valid_peering_bit_terrain(dict["terrain_set"], bit)) {
-								undo_redo->add_undo_property(p_tile_set_atlas_source, vformat("%d:%d/%d/terrains_peering_bit/" + String(TileSet::CELL_NEIGHBOR_ENUM_TO_TEXT[i]), coords.x, coords.y, E->key().alternative_tile), array[i]);
+								undo_redo->add_undo_property(p_tile_set_atlas_source, vformat("%d:%d/%d/terrains_peering_bit/" + String(TileSet::CELL_NEIGHBOR_ENUM_TO_TEXT[i]), coords.x, coords.y, E.key.alternative_tile), array[i]);
 							}
 						}
 					}
@@ -2041,17 +2041,17 @@ void TileDataTerrainsEditor::forward_painting_atlas_gui_input(TileAtlasView *p_t
 					int terrain_set = int(painted["terrain_set"]);
 					int terrain = int(painted["terrain"]);
 					undo_redo->create_action(TTR("Painting Terrain"));
-					for (Map<TileMapCell, Variant>::Element *E = drag_modified.front(); E; E = E->next()) {
-						Dictionary dict = E->get();
-						Vector2i coords = E->key().get_atlas_coords();
+					for (KeyValue<TileMapCell, Variant> &E : drag_modified) {
+						Dictionary dict = E.value;
+						Vector2i coords = E.key.get_atlas_coords();
 						Array array = dict["terrain_peering_bits"];
 						for (int i = 0; i < array.size(); i++) {
 							TileSet::CellNeighbor bit = TileSet::CellNeighbor(i);
 							if (tile_set->is_valid_peering_bit_terrain(terrain_set, bit)) {
-								undo_redo->add_do_property(p_tile_set_atlas_source, vformat("%d:%d/%d/terrains_peering_bit/" + String(TileSet::CELL_NEIGHBOR_ENUM_TO_TEXT[i]), coords.x, coords.y, E->key().alternative_tile), terrain);
+								undo_redo->add_do_property(p_tile_set_atlas_source, vformat("%d:%d/%d/terrains_peering_bit/" + String(TileSet::CELL_NEIGHBOR_ENUM_TO_TEXT[i]), coords.x, coords.y, E.key.alternative_tile), terrain);
 							}
 							if (tile_set->is_valid_peering_bit_terrain(dict["terrain_set"], bit)) {
-								undo_redo->add_undo_property(p_tile_set_atlas_source, vformat("%d:%d/%d/terrains_peering_bit/" + String(TileSet::CELL_NEIGHBOR_ENUM_TO_TEXT[i]), coords.x, coords.y, E->key().alternative_tile), array[i]);
+								undo_redo->add_undo_property(p_tile_set_atlas_source, vformat("%d:%d/%d/terrains_peering_bit/" + String(TileSet::CELL_NEIGHBOR_ENUM_TO_TEXT[i]), coords.x, coords.y, E.key.alternative_tile), array[i]);
 							}
 						}
 					}
@@ -2304,14 +2304,14 @@ void TileDataTerrainsEditor::forward_painting_alternatives_gui_input(TileAtlasVi
 			} else {
 				if (drag_type == DRAG_TYPE_PAINT_TERRAIN_SET) {
 					undo_redo->create_action(TTR("Painting Tiles Property"));
-					for (Map<TileMapCell, Variant>::Element *E = drag_modified.front(); E; E = E->next()) {
-						Dictionary dict = E->get();
-						Vector2i coords = E->key().get_atlas_coords();
-						undo_redo->add_undo_property(p_tile_set_atlas_source, vformat("%d:%d/%d/terrain_set", coords.x, coords.y, E->key().alternative_tile), dict["terrain_set"]);
-						undo_redo->add_do_property(p_tile_set_atlas_source, vformat("%d:%d/%d/terrain_set", coords.x, coords.y, E->key().alternative_tile), drag_painted_value);
+					for (KeyValue<TileMapCell, Variant> &E : drag_modified) {
+						Dictionary dict = E.value;
+						Vector2i coords = E.key.get_atlas_coords();
+						undo_redo->add_undo_property(p_tile_set_atlas_source, vformat("%d:%d/%d/terrain_set", coords.x, coords.y, E.key.alternative_tile), dict["terrain_set"]);
+						undo_redo->add_do_property(p_tile_set_atlas_source, vformat("%d:%d/%d/terrain_set", coords.x, coords.y, E.key.alternative_tile), drag_painted_value);
 						Array array = dict["terrain_peering_bits"];
 						for (int i = 0; i < array.size(); i++) {
-							undo_redo->add_undo_property(p_tile_set_atlas_source, vformat("%d:%d/%d/terrains_peering_bit/" + String(TileSet::CELL_NEIGHBOR_ENUM_TO_TEXT[i]), coords.x, coords.y, E->key().alternative_tile), array[i]);
+							undo_redo->add_undo_property(p_tile_set_atlas_source, vformat("%d:%d/%d/terrains_peering_bit/" + String(TileSet::CELL_NEIGHBOR_ENUM_TO_TEXT[i]), coords.x, coords.y, E.key.alternative_tile), array[i]);
 						}
 					}
 					undo_redo->commit_action(false);
@@ -2321,17 +2321,17 @@ void TileDataTerrainsEditor::forward_painting_alternatives_gui_input(TileAtlasVi
 					int terrain_set = int(painted["terrain_set"]);
 					int terrain = int(painted["terrain"]);
 					undo_redo->create_action(TTR("Painting Terrain"));
-					for (Map<TileMapCell, Variant>::Element *E = drag_modified.front(); E; E = E->next()) {
-						Dictionary dict = E->get();
-						Vector2i coords = E->key().get_atlas_coords();
+					for (KeyValue<TileMapCell, Variant> &E : drag_modified) {
+						Dictionary dict = E.value;
+						Vector2i coords = E.key.get_atlas_coords();
 						Array array = dict["terrain_peering_bits"];
 						for (int i = 0; i < array.size(); i++) {
 							TileSet::CellNeighbor bit = TileSet::CellNeighbor(i);
 							if (tile_set->is_valid_peering_bit_terrain(terrain_set, bit)) {
-								undo_redo->add_do_property(p_tile_set_atlas_source, vformat("%d:%d/%d/terrains_peering_bit/" + String(TileSet::CELL_NEIGHBOR_ENUM_TO_TEXT[i]), coords.x, coords.y, E->key().alternative_tile), terrain);
+								undo_redo->add_do_property(p_tile_set_atlas_source, vformat("%d:%d/%d/terrains_peering_bit/" + String(TileSet::CELL_NEIGHBOR_ENUM_TO_TEXT[i]), coords.x, coords.y, E.key.alternative_tile), terrain);
 							}
 							if (tile_set->is_valid_peering_bit_terrain(dict["terrain_set"], bit)) {
-								undo_redo->add_undo_property(p_tile_set_atlas_source, vformat("%d:%d/%d/terrains_peering_bit/" + String(TileSet::CELL_NEIGHBOR_ENUM_TO_TEXT[i]), coords.x, coords.y, E->key().alternative_tile), array[i]);
+								undo_redo->add_undo_property(p_tile_set_atlas_source, vformat("%d:%d/%d/terrains_peering_bit/" + String(TileSet::CELL_NEIGHBOR_ENUM_TO_TEXT[i]), coords.x, coords.y, E.key.alternative_tile), array[i]);
 							}
 						}
 					}
@@ -2443,10 +2443,10 @@ Variant TileDataNavigationEditor::_get_value(TileSetAtlasSource *p_tile_set_atla
 }
 
 void TileDataNavigationEditor::_setup_undo_redo_action(TileSetAtlasSource *p_tile_set_atlas_source, Map<TileMapCell, Variant> p_previous_values, Variant p_new_value) {
-	for (Map<TileMapCell, Variant>::Element *E = p_previous_values.front(); E; E = E->next()) {
-		Vector2i coords = E->key().get_atlas_coords();
-		undo_redo->add_undo_property(p_tile_set_atlas_source, vformat("%d:%d/%d/navigation_layer_%d/polygon", coords.x, coords.y, E->key().alternative_tile, navigation_layer), E->get());
-		undo_redo->add_do_property(p_tile_set_atlas_source, vformat("%d:%d/%d/navigation_layer_%d/polygon", coords.x, coords.y, E->key().alternative_tile, navigation_layer), p_new_value);
+	for (const KeyValue<TileMapCell, Variant> &E : p_previous_values) {
+		Vector2i coords = E.key.get_atlas_coords();
+		undo_redo->add_undo_property(p_tile_set_atlas_source, vformat("%d:%d/%d/navigation_layer_%d/polygon", coords.x, coords.y, E.key.alternative_tile, navigation_layer), E.value);
+		undo_redo->add_do_property(p_tile_set_atlas_source, vformat("%d:%d/%d/navigation_layer_%d/polygon", coords.x, coords.y, E.key.alternative_tile, navigation_layer), p_new_value);
 	}
 }
 

@@ -172,8 +172,8 @@ static void test_compiler(const String &p_code, const String &p_script_path, con
 		return;
 	}
 
-	for (const Map<StringName, GDScriptFunction *>::Element *E = script->get_member_functions().front(); E; E = E->next()) {
-		const GDScriptFunction *func = E->value();
+	for (const KeyValue<StringName, GDScriptFunction *> &E : script->get_member_functions()) {
+		const GDScriptFunction *func = E.value;
 
 		String signature = "Disassembling " + func->get_name().operator String() + "(";
 		for (int i = 0; i < func->get_argument_count(); i++) {

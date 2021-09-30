@@ -3546,9 +3546,9 @@ bool ShaderLanguage::_propagate_function_call_sampler_uniform_settings(StringNam
 				arg->tex_argument_check = true;
 				arg->tex_argument_filter = p_filter;
 				arg->tex_argument_repeat = p_repeat;
-				for (Map<StringName, Set<int>>::Element *E = arg->tex_argument_connect.front(); E; E = E->next()) {
-					for (Set<int>::Element *F = E->get().front(); F; F = F->next()) {
-						if (!_propagate_function_call_sampler_uniform_settings(E->key(), F->get(), p_filter, p_repeat)) {
+				for (KeyValue<StringName, Set<int>> &E : arg->tex_argument_connect) {
+					for (Set<int>::Element *F = E.value.front(); F; F = F->next()) {
+						if (!_propagate_function_call_sampler_uniform_settings(E.key, F->get(), p_filter, p_repeat)) {
 							return false;
 						}
 					}
@@ -3580,9 +3580,9 @@ bool ShaderLanguage::_propagate_function_call_sampler_builtin_reference(StringNa
 				arg->tex_builtin_check = true;
 				arg->tex_builtin = p_builtin;
 
-				for (Map<StringName, Set<int>>::Element *E = arg->tex_argument_connect.front(); E; E = E->next()) {
-					for (Set<int>::Element *F = E->get().front(); F; F = F->next()) {
-						if (!_propagate_function_call_sampler_builtin_reference(E->key(), F->get(), p_builtin)) {
+				for (KeyValue<StringName, Set<int>> &E : arg->tex_argument_connect) {
+					for (Set<int>::Element *F = E.value.front(); F; F = F->next()) {
+						if (!_propagate_function_call_sampler_builtin_reference(E.key, F->get(), p_builtin)) {
 							return false;
 						}
 					}
@@ -7712,8 +7712,8 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 				}
 
 				if (p_functions.has("global")) { // Adds global variables: 'TIME'
-					for (Map<StringName, BuiltInInfo>::Element *E = p_functions["global"].built_ins.front(); E; E = E->next()) {
-						builtins.built_ins.insert(E->key(), E->value());
+					for (const KeyValue<StringName, BuiltInInfo> &E : p_functions["global"].built_ins) {
+						builtins.built_ins.insert(E.key, E.value);
 					}
 				}
 
@@ -7985,8 +7985,8 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 }
 
 bool ShaderLanguage::has_builtin(const Map<StringName, ShaderLanguage::FunctionInfo> &p_functions, const StringName &p_name) {
-	for (Map<StringName, ShaderLanguage::FunctionInfo>::Element *E = p_functions.front(); E; E = E->next()) {
-		if (E->get().built_ins.has(p_name)) {
+	for (const KeyValue<StringName, ShaderLanguage::FunctionInfo> &E : p_functions) {
+		if (E.value.built_ins.has(p_name)) {
 			return true;
 		}
 	}
@@ -8126,19 +8126,19 @@ String ShaderLanguage::get_shader_type(const String &p_code) {
 
 #ifdef DEBUG_ENABLED
 void ShaderLanguage::_check_warning_accums() {
-	for (Map<ShaderWarning::Code, Map<StringName, Map<StringName, Usage>> *>::Element *E = warnings_check_map2.front(); E; E = E->next()) {
-		for (Map<StringName, Map<StringName, Usage>>::Element *T = (*E->get()).front(); T; T = T->next()) {
-			for (const Map<StringName, Usage>::Element *U = T->get().front(); U; U = U->next()) {
-				if (!U->get().used) {
-					_add_warning(E->key(), U->get().decl_line, U->key());
+	for (const KeyValue<ShaderWarning::Code, Map<StringName, Map<StringName, Usage>> *> &E : warnings_check_map2) {
+		for (Map<StringName, Map<StringName, Usage>>::Element *T = (*E.value).front(); T; T = T->next()) {
+			for (const KeyValue<StringName, Usage> &U : T->get()) {
+				if (!U.value.used) {
+					_add_warning(E.key, U.value.decl_line, U.key);
 				}
 			}
 		}
 	}
-	for (Map<ShaderWarning::Code, Map<StringName, Usage> *>::Element *E = warnings_check_map.front(); E; E = E->next()) {
-		for (const Map<StringName, Usage>::Element *U = (*E->get()).front(); U; U = U->next()) {
+	for (const KeyValue<ShaderWarning::Code, Map<StringName, Usage> *> &E : warnings_check_map) {
+		for (const Map<StringName, Usage>::Element *U = (*E.value).front(); U; U = U->next()) {
 			if (!U->get().used) {
-				_add_warning(E->key(), U->get().decl_line, U->key());
+				_add_warning(E.key, U->get().decl_line, U->key());
 			}
 		}
 	}
@@ -8221,8 +8221,8 @@ Error ShaderLanguage::complete(const String &p_code, const Map<StringName, Funct
 			return OK;
 		} break;
 		case COMPLETION_MAIN_FUNCTION: {
-			for (const Map<StringName, FunctionInfo>::Element *E = p_functions.front(); E; E = E->next()) {
-				ScriptCodeCompletionOption option(E->key(), ScriptCodeCompletionOption::KIND_FUNCTION);
+			for (const KeyValue<StringName, FunctionInfo> &E : p_functions) {
+				ScriptCodeCompletionOption option(E.key, ScriptCodeCompletionOption::KIND_FUNCTION);
 				r_options->push_back(option);
 			}
 
@@ -8238,9 +8238,9 @@ Error ShaderLanguage::complete(const String &p_code, const Map<StringName, Funct
 			if (completion_class == TAG_GLOBAL) {
 				while (block) {
 					if (comp_ident) {
-						for (const Map<StringName, BlockNode::Variable>::Element *E = block->variables.front(); E; E = E->next()) {
-							if (E->get().line < completion_line) {
-								matches.insert(E->key(), ScriptCodeCompletionOption::KIND_VARIABLE);
+						for (const KeyValue<StringName, BlockNode::Variable> &E : block->variables) {
+							if (E.value.line < completion_line) {
+								matches.insert(E.key, ScriptCodeCompletionOption::KIND_VARIABLE);
 							}
 						}
 					}
@@ -8258,30 +8258,30 @@ Error ShaderLanguage::complete(const String &p_code, const Map<StringName, Funct
 
 				if (comp_ident) {
 					if (p_functions.has("global")) {
-						for (Map<StringName, BuiltInInfo>::Element *E = p_functions["global"].built_ins.front(); E; E = E->next()) {
+						for (const KeyValue<StringName, BuiltInInfo> &E : p_functions["global"].built_ins) {
 							ScriptCodeCompletionOption::Kind kind = ScriptCodeCompletionOption::KIND_MEMBER;
-							if (E->get().constant) {
+							if (E.value.constant) {
 								kind = ScriptCodeCompletionOption::KIND_CONSTANT;
 							}
-							matches.insert(E->key(), kind);
+							matches.insert(E.key, kind);
 						}
 					}
 
 					if (skip_function != StringName() && p_functions.has(skip_function)) {
-						for (Map<StringName, BuiltInInfo>::Element *E = p_functions[skip_function].built_ins.front(); E; E = E->next()) {
+						for (const KeyValue<StringName, BuiltInInfo> &E : p_functions[skip_function].built_ins) {
 							ScriptCodeCompletionOption::Kind kind = ScriptCodeCompletionOption::KIND_MEMBER;
-							if (E->get().constant) {
+							if (E.value.constant) {
 								kind = ScriptCodeCompletionOption::KIND_CONSTANT;
 							}
-							matches.insert(E->key(), kind);
+							matches.insert(E.key, kind);
 						}
 					}
 
-					for (const Map<StringName, ShaderNode::Varying>::Element *E = shader->varyings.front(); E; E = E->next()) {
-						matches.insert(E->key(), ScriptCodeCompletionOption::KIND_VARIABLE);
+					for (const KeyValue<StringName, ShaderNode::Varying> &E : shader->varyings) {
+						matches.insert(E.key, ScriptCodeCompletionOption::KIND_VARIABLE);
 					}
-					for (const Map<StringName, ShaderNode::Uniform>::Element *E = shader->uniforms.front(); E; E = E->next()) {
-						matches.insert(E->key(), ScriptCodeCompletionOption::KIND_MEMBER);
+					for (const KeyValue<StringName, ShaderNode::Uniform> &E : shader->uniforms) {
+						matches.insert(E.key, ScriptCodeCompletionOption::KIND_MEMBER);
 					}
 				}
 
@@ -8296,8 +8296,8 @@ Error ShaderLanguage::complete(const String &p_code, const Map<StringName, Funct
 				bool low_end = RenderingServer::get_singleton()->is_low_end();
 
 				if (stages && stages->has(skip_function)) {
-					for (const Map<StringName, StageFunctionInfo>::Element *E = (*stages)[skip_function].stage_functions.front(); E; E = E->next()) {
-						matches.insert(String(E->key()), ScriptCodeCompletionOption::KIND_FUNCTION);
+					for (const KeyValue<StringName, StageFunctionInfo> &E : (*stages)[skip_function].stage_functions) {
+						matches.insert(String(E.key), ScriptCodeCompletionOption::KIND_FUNCTION);
 					}
 				}
 
@@ -8326,9 +8326,9 @@ Error ShaderLanguage::complete(const String &p_code, const Map<StringName, Funct
 				}
 			}
 
-			for (Map<String, ScriptCodeCompletionOption::Kind>::Element *E = matches.front(); E; E = E->next()) {
-				ScriptCodeCompletionOption option(E->key(), E->value());
-				if (E->value() == ScriptCodeCompletionOption::KIND_FUNCTION) {
+			for (const KeyValue<String, ScriptCodeCompletionOption::Kind> &E : matches) {
+				ScriptCodeCompletionOption option(E.key, E.value);
+				if (E.value == ScriptCodeCompletionOption::KIND_FUNCTION) {
 					option.insert_text += "(";
 				}
 				r_options->push_back(option);
@@ -8420,14 +8420,14 @@ Error ShaderLanguage::complete(const String &p_code, const Map<StringName, Funct
 			bool low_end = RenderingServer::get_singleton()->is_low_end();
 
 			if (stages && stages->has(block_function)) {
-				for (const Map<StringName, StageFunctionInfo>::Element *E = (*stages)[block_function].stage_functions.front(); E; E = E->next()) {
-					if (completion_function == E->key()) {
-						calltip += get_datatype_name(E->get().return_type);
+				for (const KeyValue<StringName, StageFunctionInfo> &E : (*stages)[block_function].stage_functions) {
+					if (completion_function == E.key) {
+						calltip += get_datatype_name(E.value.return_type);
 						calltip += " ";
-						calltip += E->key();
+						calltip += E.key;
 						calltip += "(";
 
-						for (int i = 0; i < E->get().arguments.size(); i++) {
+						for (int i = 0; i < E.value.arguments.size(); i++) {
 							if (i > 0) {
 								calltip += ", ";
 							} else {
@@ -8438,16 +8438,16 @@ Error ShaderLanguage::complete(const String &p_code, const Map<StringName, Funct
 								calltip += char32_t(0xFFFF);
 							}
 
-							calltip += get_datatype_name(E->get().arguments[i].type);
+							calltip += get_datatype_name(E.value.arguments[i].type);
 							calltip += " ";
-							calltip += E->get().arguments[i].name;
+							calltip += E.value.arguments[i].name;
 
 							if (i == completion_argument) {
 								calltip += char32_t(0xFFFF);
 							}
 						}
 
-						if (E->get().arguments.size()) {
+						if (E.value.arguments.size()) {
 							calltip += " ";
 						}
 						calltip += ")";

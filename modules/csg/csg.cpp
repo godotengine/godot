@@ -258,8 +258,8 @@ void CSGBrush::build_from_faces(const Vector<Vector3> &p_vertices, const Vector<
 	}
 
 	materials.resize(material_map.size());
-	for (Map<Ref<Material>, int>::Element *E = material_map.front(); E; E = E->next()) {
-		materials.write[E->get()] = E->key();
+	for (const KeyValue<Ref<Material>, int> &E : material_map) {
+		materials.write[E.value] = E.key;
 	}
 
 	_regen_face_aabbs();
@@ -457,8 +457,8 @@ void CSGBrushOperation::merge_brushes(Operation p_operation, const CSGBrush &p_b
 
 	// Update the list of materials.
 	r_merged_brush.materials.resize(mesh_merge.materials.size());
-	for (const Map<Ref<Material>, int>::Element *E = mesh_merge.materials.front(); E; E = E->next()) {
-		r_merged_brush.materials.write[E->get()] = E->key();
+	for (const KeyValue<Ref<Material>, int> &E : mesh_merge.materials) {
+		r_merged_brush.materials.write[E.value] = E.key;
 	}
 }
 

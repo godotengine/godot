@@ -166,8 +166,8 @@ void LocalDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 
 		} else if (line.begins_with("set")) {
 			if (line.get_slice_count(" ") == 1) {
-				for (Map<String, String>::Element *E = options.front(); E; E = E->next()) {
-					print_line("\t" + E->key() + "=" + E->value());
+				for (const KeyValue<String, String> &E : options) {
+					print_line("\t" + E.key + "=" + E.value);
 				}
 
 			} else {
@@ -249,8 +249,8 @@ void LocalDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 				}
 
 				print_line("Breakpoint(s): " + itos(breakpoints.size()));
-				for (Map<int, Set<StringName>>::Element *E = breakpoints.front(); E; E = E->next()) {
-					print_line("\t" + String(E->value().front()->get()) + ":" + itos(E->key()));
+				for (const KeyValue<int, Set<StringName>> &E : breakpoints) {
+					print_line("\t" + String(E.value.front()->get()) + ":" + itos(E.key));
 				}
 
 			} else {

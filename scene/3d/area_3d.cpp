@@ -262,8 +262,8 @@ void Area3D::_clear_monitoring() {
 		body_map.clear();
 		//disconnect all monitored stuff
 
-		for (Map<ObjectID, BodyState>::Element *E = bmcopy.front(); E; E = E->next()) {
-			Object *obj = ObjectDB::get_instance(E->key());
+		for (const KeyValue<ObjectID, BodyState> &E : bmcopy) {
+			Object *obj = ObjectDB::get_instance(E.key);
 			Node *node = Object::cast_to<Node>(obj);
 
 			if (!node) { //node may have been deleted in previous frame or at other legitimate point
@@ -274,12 +274,12 @@ void Area3D::_clear_monitoring() {
 			node->disconnect(SceneStringNames::get_singleton()->tree_entered, callable_mp(this, &Area3D::_body_enter_tree));
 			node->disconnect(SceneStringNames::get_singleton()->tree_exiting, callable_mp(this, &Area3D::_body_exit_tree));
 
-			if (!E->get().in_tree) {
+			if (!E.value.in_tree) {
 				continue;
 			}
 
-			for (int i = 0; i < E->get().shapes.size(); i++) {
-				emit_signal(SceneStringNames::get_singleton()->body_shape_exited, E->get().rid, node, E->get().shapes[i].body_shape, E->get().shapes[i].area_shape);
+			for (int i = 0; i < E.value.shapes.size(); i++) {
+				emit_signal(SceneStringNames::get_singleton()->body_shape_exited, E.value.rid, node, E.value.shapes[i].body_shape, E.value.shapes[i].area_shape);
 			}
 
 			emit_signal(SceneStringNames::get_singleton()->body_exited, node);
@@ -291,8 +291,8 @@ void Area3D::_clear_monitoring() {
 		area_map.clear();
 		//disconnect all monitored stuff
 
-		for (Map<ObjectID, AreaState>::Element *E = bmcopy.front(); E; E = E->next()) {
-			Object *obj = ObjectDB::get_instance(E->key());
+		for (const KeyValue<ObjectID, AreaState> &E : bmcopy) {
+			Object *obj = ObjectDB::get_instance(E.key);
 			Node *node = Object::cast_to<Node>(obj);
 
 			if (!node) { //node may have been deleted in previous frame or at other legitimate point
@@ -303,12 +303,12 @@ void Area3D::_clear_monitoring() {
 			node->disconnect(SceneStringNames::get_singleton()->tree_entered, callable_mp(this, &Area3D::_area_enter_tree));
 			node->disconnect(SceneStringNames::get_singleton()->tree_exiting, callable_mp(this, &Area3D::_area_exit_tree));
 
-			if (!E->get().in_tree) {
+			if (!E.value.in_tree) {
 				continue;
 			}
 
-			for (int i = 0; i < E->get().shapes.size(); i++) {
-				emit_signal(SceneStringNames::get_singleton()->area_shape_exited, E->get().rid, node, E->get().shapes[i].area_shape, E->get().shapes[i].self_shape);
+			for (int i = 0; i < E.value.shapes.size(); i++) {
+				emit_signal(SceneStringNames::get_singleton()->area_shape_exited, E.value.rid, node, E.value.shapes[i].area_shape, E.value.shapes[i].self_shape);
 			}
 
 			emit_signal(SceneStringNames::get_singleton()->area_exited, obj);
@@ -446,8 +446,8 @@ TypedArray<Node3D> Area3D::get_overlapping_bodies() const {
 	Array ret;
 	ret.resize(body_map.size());
 	int idx = 0;
-	for (const Map<ObjectID, BodyState>::Element *E = body_map.front(); E; E = E->next()) {
-		Object *obj = ObjectDB::get_instance(E->key());
+	for (const KeyValue<ObjectID, BodyState> &E : body_map) {
+		Object *obj = ObjectDB::get_instance(E.key);
 		if (!obj) {
 			ret.resize(ret.size() - 1); //ops
 		} else {
@@ -479,8 +479,8 @@ TypedArray<Area3D> Area3D::get_overlapping_areas() const {
 	Array ret;
 	ret.resize(area_map.size());
 	int idx = 0;
-	for (const Map<ObjectID, AreaState>::Element *E = area_map.front(); E; E = E->next()) {
-		Object *obj = ObjectDB::get_instance(E->key());
+	for (const KeyValue<ObjectID, AreaState> &E : area_map) {
+		Object *obj = ObjectDB::get_instance(E.key);
 		if (!obj) {
 			ret.resize(ret.size() - 1); //ops
 		} else {

@@ -840,8 +840,8 @@ void FindInFilesPanel::_on_replace_all_clicked() {
 
 	PackedStringArray modified_files;
 
-	for (Map<String, TreeItem *>::Element *E = _file_items.front(); E; E = E->next()) {
-		TreeItem *file_item = E->value();
+	for (KeyValue<String, TreeItem *> &E : _file_items) {
+		TreeItem *file_item = E.value;
 		String fpath = file_item->get_metadata(0);
 
 		Vector<Result> locations;

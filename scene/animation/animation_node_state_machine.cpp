@@ -571,9 +571,9 @@ Ref<AnimationNode> AnimationNodeStateMachine::get_node(const StringName &p_name)
 }
 
 StringName AnimationNodeStateMachine::get_node_name(const Ref<AnimationNode> &p_node) const {
-	for (Map<StringName, State>::Element *E = states.front(); E; E = E->next()) {
-		if (E->get().node == p_node) {
-			return E->key();
+	for (const KeyValue<StringName, State> &E : states) {
+		if (E.value.node == p_node) {
+			return E.key;
 		}
 	}
 
@@ -583,8 +583,8 @@ StringName AnimationNodeStateMachine::get_node_name(const Ref<AnimationNode> &p_
 void AnimationNodeStateMachine::get_child_nodes(List<ChildNode> *r_child_nodes) {
 	Vector<StringName> nodes;
 
-	for (Map<StringName, State>::Element *E = states.front(); E; E = E->next()) {
-		nodes.push_back(E->key());
+	for (const KeyValue<StringName, State> &E : states) {
+		nodes.push_back(E.key);
 	}
 
 	nodes.sort_custom<StringName::AlphCompare>();
@@ -674,8 +674,8 @@ void AnimationNodeStateMachine::rename_node(const StringName &p_name, const Stri
 
 void AnimationNodeStateMachine::get_node_list(List<StringName> *r_nodes) const {
 	List<StringName> nodes;
-	for (Map<StringName, State>::Element *E = states.front(); E; E = E->next()) {
-		nodes.push_back(E->key());
+	for (const KeyValue<StringName, State> &E : states) {
+		nodes.push_back(E.key);
 	}
 	nodes.sort_custom<StringName::AlphCompare>();
 
@@ -897,8 +897,8 @@ bool AnimationNodeStateMachine::_get(const StringName &p_name, Variant &r_ret) c
 
 void AnimationNodeStateMachine::_get_property_list(List<PropertyInfo> *p_list) const {
 	List<StringName> names;
-	for (Map<StringName, State>::Element *E = states.front(); E; E = E->next()) {
-		names.push_back(E->key());
+	for (const KeyValue<StringName, State> &E : states) {
+		names.push_back(E.key);
 	}
 	names.sort_custom<StringName::AlphCompare>();
 

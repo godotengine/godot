@@ -1755,8 +1755,8 @@ Error VulkanContext::prepare_buffers() {
 	vkWaitForFences(device, 1, &fences[frame_index], VK_TRUE, UINT64_MAX);
 	vkResetFences(device, 1, &fences[frame_index]);
 
-	for (Map<int, Window>::Element *E = windows.front(); E; E = E->next()) {
-		Window *w = &E->get();
+	for (KeyValue<int, Window> &E : windows) {
+		Window *w = &E.value;
 
 		w->semaphore_acquired = false;
 
@@ -1837,8 +1837,8 @@ Error VulkanContext::swap_buffers() {
 	VkSemaphore *semaphores_to_acquire = (VkSemaphore *)alloca(windows.size() * sizeof(VkSemaphore));
 	uint32_t semaphores_to_acquire_count = 0;
 
-	for (Map<int, Window>::Element *E = windows.front(); E; E = E->next()) {
-		Window *w = &E->get();
+	for (KeyValue<int, Window> &E : windows) {
+		Window *w = &E.value;
 
 		if (w->semaphore_acquired) {
 			semaphores_to_acquire[semaphores_to_acquire_count++] = w->image_acquired_semaphores[frame_index];
@@ -1876,8 +1876,8 @@ Error VulkanContext::swap_buffers() {
 		VkCommandBuffer *cmdbufptr = (VkCommandBuffer *)alloca(sizeof(VkCommandBuffer *) * windows.size());
 		submit_info.pCommandBuffers = cmdbufptr;
 
-		for (Map<int, Window>::Element *E = windows.front(); E; E = E->next()) {
-			Window *w = &E->get();
+		for (KeyValue<int, Window> &E : windows) {
+			Window *w = &E.value;
 
 			if (w->swapchain == VK_NULL_HANDLE) {
 				continue;
@@ -1911,8 +1911,8 @@ Error VulkanContext::swap_buffers() {
 	present.pSwapchains = pSwapchains;
 	present.pImageIndices = pImageIndices;
 
-	for (Map<int, Window>::Element *E = windows.front(); E; E = E->next()) {
-		Window *w = &E->get();
+	for (KeyValue<int, Window> &E : windows) {
+		Window *w = &E.value;
 
 		if (w->swapchain == VK_NULL_HANDLE) {
 			continue;

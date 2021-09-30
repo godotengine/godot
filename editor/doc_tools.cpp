@@ -44,8 +44,8 @@
 #include "modules/modules_enabled.gen.h"
 
 void DocTools::merge_from(const DocTools &p_data) {
-	for (Map<String, DocData::ClassDoc>::Element *E = class_list.front(); E; E = E->next()) {
-		DocData::ClassDoc &c = E->get();
+	for (KeyValue<String, DocData::ClassDoc> &E : class_list) {
+		DocData::ClassDoc &c = E.value;
 
 		if (!p_data.class_list.has(c.name)) {
 			continue;
@@ -185,9 +185,9 @@ void DocTools::merge_from(const DocTools &p_data) {
 }
 
 void DocTools::remove_from(const DocTools &p_data) {
-	for (Map<String, DocData::ClassDoc>::Element *E = p_data.class_list.front(); E; E = E->next()) {
-		if (class_list.has(E->key())) {
-			class_list.erase(E->key());
+	for (const KeyValue<String, DocData::ClassDoc> &E : p_data.class_list) {
+		if (class_list.has(E.key)) {
+			class_list.erase(E.key);
 		}
 	}
 }
@@ -1227,8 +1227,8 @@ static void _write_method_doc(FileAccess *f, const String &p_name, Vector<DocDat
 }
 
 Error DocTools::save_classes(const String &p_default_path, const Map<String, String> &p_class_path) {
-	for (Map<String, DocData::ClassDoc>::Element *E = class_list.front(); E; E = E->next()) {
-		DocData::ClassDoc &c = E->get();
+	for (KeyValue<String, DocData::ClassDoc> &E : class_list) {
+		DocData::ClassDoc &c = E.value;
 
 		String save_path;
 		if (p_class_path.has(c.name)) {

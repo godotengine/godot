@@ -4773,10 +4773,10 @@ void NavigationRegion3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	}
 	Vector<Vector3> lines;
 
-	for (Map<_EdgeKey, bool>::Element *E = edge_map.front(); E; E = E->next()) {
-		if (E->get()) {
-			lines.push_back(E->key().from);
-			lines.push_back(E->key().to);
+	for (const KeyValue<_EdgeKey, bool> &E : edge_map) {
+		if (E.value) {
+			lines.push_back(E.key.from);
+			lines.push_back(E.key.to);
 		}
 	}
 

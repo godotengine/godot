@@ -702,8 +702,8 @@ void VisualScript::rename_custom_signal(const StringName &p_name, const StringNa
 }
 
 void VisualScript::get_custom_signal_list(List<StringName> *r_custom_signals) const {
-	for (const Map<StringName, Vector<Argument>>::Element *E = custom_signals.front(); E; E = E->next()) {
-		r_custom_signals->push_back(E->key());
+	for (const KeyValue<StringName, Vector<Argument>> &E : custom_signals) {
+		r_custom_signals->push_back(E.key);
 	}
 
 	r_custom_signals->sort_custom<StringName::AlphCompare>();
@@ -848,13 +848,13 @@ bool VisualScript::has_script_signal(const StringName &p_signal) const {
 }
 
 void VisualScript::get_script_signal_list(List<MethodInfo> *r_signals) const {
-	for (const Map<StringName, Vector<Argument>>::Element *E = custom_signals.front(); E; E = E->next()) {
+	for (const KeyValue<StringName, Vector<Argument>> &E : custom_signals) {
 		MethodInfo mi;
-		mi.name = E->key();
-		for (int i = 0; i < E->get().size(); i++) {
+		mi.name = E.key;
+		for (int i = 0; i < E.value.size(); i++) {
 			PropertyInfo arg;
-			arg.type = E->get()[i].type;
-			arg.name = E->get()[i].name;
+			arg.type = E.value[i].type;
+			arg.name = E.value[i].name;
 			mi.arguments.push_back(arg);
 		}
 
@@ -1056,13 +1056,13 @@ Dictionary VisualScript::_get_data() const {
 	d["variables"] = vars;
 
 	Array sigs;
-	for (const Map<StringName, Vector<Argument>>::Element *E = custom_signals.front(); E; E = E->next()) {
+	for (const KeyValue<StringName, Vector<Argument>> &E : custom_signals) {
 		Dictionary cs;
-		cs["name"] = E->key();
+		cs["name"] = E.key;
 		Array args;
-		for (int i = 0; i < E->get().size(); i++) {
-			args.push_back(E->get()[i].name);
-			args.push_back(E->get()[i].type);
+		for (int i = 0; i < E.value.size(); i++) {
+			args.push_back(E.value[i].name);
+			args.push_back(E.value[i].type);
 		}
 		cs["arguments"] = args;
 
@@ -2093,8 +2093,8 @@ VisualScriptInstance::~VisualScriptInstance() {
 		script->instances.erase(owner);
 	}
 
-	for (Map<int, VisualScriptNodeInstance *>::Element *E = instances.front(); E; E = E->next()) {
-		memdelete(E->get());
+	for (const KeyValue<int, VisualScriptNodeInstance *> &E : instances) {
+		memdelete(E.value);
 	}
 }
 
@@ -2516,8 +2516,8 @@ Ref<VisualScriptNode> VisualScriptLanguage::create_node_from_name(const String &
 }
 
 void VisualScriptLanguage::get_registered_node_names(List<String> *r_names) {
-	for (Map<String, VisualScriptNodeRegisterFunc>::Element *E = register_funcs.front(); E; E = E->next()) {
-		r_names->push_back(E->key());
+	for (const KeyValue<String, VisualScriptNodeRegisterFunc> &E : register_funcs) {
+		r_names->push_back(E.key);
 	}
 }
 

@@ -47,8 +47,8 @@ void Step3DSW::_populate_island(Body3DSW *p_body, LocalVector<Body3DSW *> &p_bod
 		p_body_island.push_back(p_body);
 	}
 
-	for (Map<Constraint3DSW *, int>::Element *E = p_body->get_constraint_map().front(); E; E = E->next()) {
-		Constraint3DSW *constraint = (Constraint3DSW *)E->key();
+	for (const KeyValue<Constraint3DSW *, int> &E : p_body->get_constraint_map()) {
+		Constraint3DSW *constraint = (Constraint3DSW *)E.key;
 		if (constraint->get_island_step() == _step) {
 			continue; // Already processed.
 		}
@@ -59,7 +59,7 @@ void Step3DSW::_populate_island(Body3DSW *p_body, LocalVector<Body3DSW *> &p_bod
 
 		// Find connected rigid bodies.
 		for (int i = 0; i < constraint->get_body_count(); i++) {
-			if (i == E->get()) {
+			if (i == E.value) {
 				continue;
 			}
 			Body3DSW *other_body = constraint->get_body_ptr()[i];

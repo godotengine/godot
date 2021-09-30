@@ -342,15 +342,15 @@ real_t CollisionObject2D::get_shape_owner_one_way_collision_margin(uint32_t p_ow
 }
 
 void CollisionObject2D::get_shape_owners(List<uint32_t> *r_owners) {
-	for (Map<uint32_t, ShapeData>::Element *E = shapes.front(); E; E = E->next()) {
-		r_owners->push_back(E->key());
+	for (const KeyValue<uint32_t, ShapeData> &E : shapes) {
+		r_owners->push_back(E.key);
 	}
 }
 
 Array CollisionObject2D::_get_shape_owners() {
 	Array ret;
-	for (Map<uint32_t, ShapeData>::Element *E = shapes.front(); E; E = E->next()) {
-		ret.push_back(E->key());
+	for (const KeyValue<uint32_t, ShapeData> &E : shapes) {
+		ret.push_back(E.key);
 	}
 
 	return ret;
@@ -434,10 +434,10 @@ void CollisionObject2D::shape_owner_remove_shape(uint32_t p_owner, int p_shape) 
 
 	shapes[p_owner].shapes.remove(p_shape);
 
-	for (Map<uint32_t, ShapeData>::Element *E = shapes.front(); E; E = E->next()) {
-		for (int i = 0; i < E->get().shapes.size(); i++) {
-			if (E->get().shapes[i].index > index_to_remove) {
-				E->get().shapes.write[i].index -= 1;
+	for (KeyValue<uint32_t, ShapeData> &E : shapes) {
+		for (int i = 0; i < E.value.shapes.size(); i++) {
+			if (E.value.shapes[i].index > index_to_remove) {
+				E.value.shapes.write[i].index -= 1;
 			}
 		}
 	}
@@ -456,10 +456,10 @@ void CollisionObject2D::shape_owner_clear_shapes(uint32_t p_owner) {
 uint32_t CollisionObject2D::shape_find_owner(int p_shape_index) const {
 	ERR_FAIL_INDEX_V(p_shape_index, total_subshapes, 0);
 
-	for (const Map<uint32_t, ShapeData>::Element *E = shapes.front(); E; E = E->next()) {
-		for (int i = 0; i < E->get().shapes.size(); i++) {
-			if (E->get().shapes[i].index == p_shape_index) {
-				return E->key();
+	for (const KeyValue<uint32_t, ShapeData> &E : shapes) {
+		for (int i = 0; i < E.value.shapes.size(); i++) {
+			if (E.value.shapes[i].index == p_shape_index) {
+				return E.key;
 			}
 		}
 	}

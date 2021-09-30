@@ -124,8 +124,8 @@ bool AnimationPlayer::_get(const StringName &p_name, Variant &r_ret) const {
 
 	} else if (name == "blend_times") {
 		Vector<BlendKey> keys;
-		for (Map<BlendKey, float>::Element *E = blend_times.front(); E; E = E->next()) {
-			keys.ordered_insert(E->key());
+		for (const KeyValue<BlendKey, float> &E : blend_times) {
+			keys.ordered_insert(E.key);
 		}
 
 		Array array;
@@ -147,8 +147,8 @@ void AnimationPlayer::_validate_property(PropertyInfo &property) const {
 	if (property.name == "current_animation") {
 		List<String> names;
 
-		for (Map<StringName, AnimationData>::Element *E = animation_set.front(); E; E = E->next()) {
-			names.push_back(E->key());
+		for (const KeyValue<StringName, AnimationData> &E : animation_set) {
+			names.push_back(E.key);
 		}
 		names.sort();
 		names.push_front("[stop]");
@@ -167,10 +167,10 @@ void AnimationPlayer::_validate_property(PropertyInfo &property) const {
 void AnimationPlayer::_get_property_list(List<PropertyInfo> *p_list) const {
 	List<PropertyInfo> anim_names;
 
-	for (Map<StringName, AnimationData>::Element *E = animation_set.front(); E; E = E->next()) {
-		anim_names.push_back(PropertyInfo(Variant::OBJECT, "anims/" + String(E->key()), PROPERTY_HINT_RESOURCE_TYPE, "Animation", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL | PROPERTY_USAGE_DO_NOT_SHARE_ON_DUPLICATE));
-		if (E->get().next != StringName()) {
-			anim_names.push_back(PropertyInfo(Variant::STRING, "next/" + String(E->key()), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL));
+	for (const KeyValue<StringName, AnimationData> &E : animation_set) {
+		anim_names.push_back(PropertyInfo(Variant::OBJECT, "anims/" + String(E.key), PROPERTY_HINT_RESOURCE_TYPE, "Animation", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL | PROPERTY_USAGE_DO_NOT_SHARE_ON_DUPLICATE));
+		if (E.value.next != StringName()) {
+			anim_names.push_back(PropertyInfo(Variant::STRING, "next/" + String(E.key), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL));
 		}
 	}
 
@@ -1019,8 +1019,8 @@ void AnimationPlayer::rename_animation(const StringName &p_name, const StringNam
 
 	List<BlendKey> to_erase;
 	Map<BlendKey, float> to_insert;
-	for (Map<BlendKey, float>::Element *E = blend_times.front(); E; E = E->next()) {
-		BlendKey bk = E->key();
+	for (const KeyValue<BlendKey, float> &E : blend_times) {
+		BlendKey bk = E.key;
 		BlendKey new_bk = bk;
 		bool erase = false;
 		if (bk.from == p_name) {
@@ -1034,7 +1034,7 @@ void AnimationPlayer::rename_animation(const StringName &p_name, const StringNam
 
 		if (erase) {
 			to_erase.push_back(bk);
-			to_insert[new_bk] = E->get();
+			to_insert[new_bk] = E.value;
 		}
 	}
 
@@ -1071,8 +1071,8 @@ Ref<Animation> AnimationPlayer::get_animation(const StringName &p_name) const {
 void AnimationPlayer::get_animation_list(List<StringName> *p_animations) const {
 	List<String> anims;
 
-	for (Map<StringName, AnimationData>::Element *E = animation_set.front(); E; E = E->next()) {
-		anims.push_back(E->key());
+	for (const KeyValue<StringName, AnimationData> &E : animation_set) {
+		anims.push_back(E.key);
 	}
 
 	anims.sort();
@@ -1365,8 +1365,8 @@ void AnimationPlayer::clear_caches() {
 
 	node_cache_map.clear();
 
-	for (Map<StringName, AnimationData>::Element *E = animation_set.front(); E; E = E->next()) {
-		E->get().node_cache.clear();
+	for (KeyValue<StringName, AnimationData> &E : animation_set) {
+		E.value.node_cache.clear();
 	}
 
 	cache_update_size = 0;
@@ -1388,9 +1388,9 @@ bool AnimationPlayer::is_active() const {
 }
 
 StringName AnimationPlayer::find_animation(const Ref<Animation> &p_animation) const {
-	for (Map<StringName, AnimationData>::Element *E = animation_set.front(); E; E = E->next()) {
-		if (E->get().animation == p_animation) {
-			return E->key();
+	for (const KeyValue<StringName, AnimationData> &E : animation_set) {
+		if (E.value.animation == p_animation) {
+			return E.key;
 		}
 	}
 
@@ -1545,12 +1545,12 @@ Ref<AnimatedValuesBackup> AnimationPlayer::backup_animated_values(Node *p_root_o
 				entry.bone_idx = -1;
 				backup->entries.push_back(entry);
 			} else {
-				for (Map<StringName, TrackNodeCache::PropertyAnim>::Element *E = nc->property_anim.front(); E; E = E->next()) {
+				for (const KeyValue<StringName, TrackNodeCache::PropertyAnim> &E : nc->property_anim) {
 					AnimatedValuesBackup::Entry entry;
-					entry.object = E->value().object;
-					entry.subpath = E->value().subpath;
+					entry.object = E.value.object;
+					entry.subpath = E.value.subpath;
 					bool valid;
-					entry.value = E->value().object->get_indexed(E->value().subpath, &valid);
+					entry.value = E.value.object->get_indexed(E.value.subpath, &valid);
 					entry.bone_idx = -1;
 					if (valid) {
 						backup->entries.push_back(entry);

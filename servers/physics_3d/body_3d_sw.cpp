@@ -688,13 +688,13 @@ void BodySW::simulate_motion(const Transform3D& p_xform,real_t p_step) {
 */
 
 void Body3DSW::wakeup_neighbours() {
-	for (Map<Constraint3DSW *, int>::Element *E = constraint_map.front(); E; E = E->next()) {
-		const Constraint3DSW *c = E->key();
+	for (const KeyValue<Constraint3DSW *, int> &E : constraint_map) {
+		const Constraint3DSW *c = E.key;
 		Body3DSW **n = c->get_body_ptr();
 		int bc = c->get_body_count();
 
 		for (int i = 0; i < bc; i++) {
-			if (i == E->get()) {
+			if (i == E.value) {
 				continue;
 			}
 			Body3DSW *b = n[i];

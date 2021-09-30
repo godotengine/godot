@@ -8688,10 +8688,10 @@ void RenderingDeviceVulkan::_free_pending_resources(int p_frame) {
 	while (frames[p_frame].framebuffers_to_dispose_of.front()) {
 		Framebuffer *framebuffer = &frames[p_frame].framebuffers_to_dispose_of.front()->get();
 
-		for (Map<Framebuffer::VersionKey, Framebuffer::Version>::Element *E = framebuffer->framebuffers.front(); E; E = E->next()) {
+		for (const KeyValue<Framebuffer::VersionKey, Framebuffer::Version> &E : framebuffer->framebuffers) {
 			//first framebuffer, then render pass because it depends on it
-			vkDestroyFramebuffer(device, E->get().framebuffer, nullptr);
-			vkDestroyRenderPass(device, E->get().render_pass, nullptr);
+			vkDestroyFramebuffer(device, E.value.framebuffer, nullptr);
+			vkDestroyRenderPass(device, E.value.render_pass, nullptr);
 		}
 
 		frames[p_frame].framebuffers_to_dispose_of.pop_front();

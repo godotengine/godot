@@ -567,8 +567,8 @@ Node3D *EditorSceneImporterFBX::_generate_scene(
 		// this means that the nodes from maya kLocators will be preserved as bones
 		// in the same rig without having to match this across skeletons and merge by detection
 		// we can just merge and undo any parent transforms
-		for (Map<uint64_t, Ref<FBXBone>>::Element *bone_element = state.fbx_bone_map.front(); bone_element; bone_element = bone_element->next()) {
-			Ref<FBXBone> bone = bone_element->value();
+		for (KeyValue<uint64_t, Ref<FBXBone>> &bone_element : state.fbx_bone_map) {
+			Ref<FBXBone> bone = bone_element.value;
 			Ref<FBXSkeleton> fbx_skeleton_inst;
 
 			uint64_t armature_id = bone->armature_id;
@@ -609,8 +609,8 @@ Node3D *EditorSceneImporterFBX::_generate_scene(
 		}
 
 		// setup skeleton instances if required :)
-		for (Map<uint64_t, Ref<FBXSkeleton>>::Element *skeleton_node = state.skeleton_map.front(); skeleton_node; skeleton_node = skeleton_node->next()) {
-			Ref<FBXSkeleton> &skeleton = skeleton_node->value();
+		for (KeyValue<uint64_t, Ref<FBXSkeleton>> &skeleton_node : state.skeleton_map) {
+			Ref<FBXSkeleton> &skeleton = skeleton_node.value;
 			skeleton->init_skeleton(state);
 
 			ERR_CONTINUE_MSG(skeleton->fbx_node.is_null(), "invalid fbx target map, missing skeleton");
@@ -699,9 +699,9 @@ Node3D *EditorSceneImporterFBX::_generate_scene(
 		}
 	}
 
-	for (Map<uint64_t, Ref<FBXMeshData>>::Element *mesh_data = state.renderer_mesh_data.front(); mesh_data; mesh_data = mesh_data->next()) {
-		const uint64_t mesh_id = mesh_data->key();
-		Ref<FBXMeshData> mesh = mesh_data->value();
+	for (KeyValue<uint64_t, Ref<FBXMeshData>> &mesh_data : state.renderer_mesh_data) {
+		const uint64_t mesh_id = mesh_data.key;
+		Ref<FBXMeshData> mesh = mesh_data.value;
 
 		const FBXDocParser::MeshGeometry *mesh_geometry = p_document->GetObject(mesh_id)->Get<FBXDocParser::MeshGeometry>();
 
@@ -765,9 +765,9 @@ Node3D *EditorSceneImporterFBX::_generate_scene(
 	}
 
 	// mesh data iteration for populating skeleton mapping
-	for (Map<uint64_t, Ref<FBXMeshData>>::Element *mesh_data = state.renderer_mesh_data.front(); mesh_data; mesh_data = mesh_data->next()) {
-		Ref<FBXMeshData> mesh = mesh_data->value();
-		const uint64_t mesh_id = mesh_data->key();
+	for (KeyValue<uint64_t, Ref<FBXMeshData>> &mesh_data : state.renderer_mesh_data) {
+		Ref<FBXMeshData> mesh = mesh_data.value;
+		const uint64_t mesh_id = mesh_data.key;
 		EditorSceneImporterMeshNode3D *mesh_instance = mesh->godot_mesh_instance;
 		const int mesh_weights = mesh->max_weight_count;
 		Ref<FBXSkeleton> skeleton;
@@ -1004,13 +1004,13 @@ Node3D *EditorSceneImporterFBX::_generate_scene(
 
 					// target id, [ track name, [time index, vector] ]
 					//std::map<uint64_t, std::map<StringName, FBXTrack > > AnimCurveNodes;
-					for (Map<uint64_t, Map<StringName, FBXTrack>>::Element *track = AnimCurveNodes.front(); track; track = track->next()) {
+					for (KeyValue<uint64_t, Map<StringName, FBXTrack>> &track : AnimCurveNodes) {
 						// 5 tracks
 						// current track index
 						// track count is 5
 						// track count is 5.
 						// next track id is 5.
-						const uint64_t target_id = track->key();
+						const uint64_t target_id = track.key;
 						int track_idx = animation->add_track(Animation::TYPE_TRANSFORM3D);
 
 						// animation->track_set_path(track_idx, node_path);
@@ -1072,7 +1072,7 @@ Node3D *EditorSceneImporterFBX::_generate_scene(
 						const FBXDocParser::Model *model = target_node->fbx_model;
 						const FBXDocParser::PropertyTable *props = dynamic_cast<const FBXDocParser::PropertyTable *>(model);
 
-						Map<StringName, FBXTrack> &track_data = track->value();
+						Map<StringName, FBXTrack> &track_data = track.value;
 						FBXTrack &translation_keys = track_data[StringName("T")];
 						FBXTrack &rotation_keys = track_data[StringName("R")];
 						FBXTrack &scale_keys = track_data[StringName("S")];
@@ -1259,15 +1259,15 @@ Node3D *EditorSceneImporterFBX::_generate_scene(
 	state.fbx_target_map.clear();
 	state.fbx_node_list.clear();
 
-	for (Map<uint64_t, Ref<FBXBone>>::Element *element = state.fbx_bone_map.front(); element; element = element->next()) {
-		Ref<FBXBone> bone = element->value();
+	for (KeyValue<uint64_t, Ref<FBXBone>> &element : state.fbx_bone_map) {
+		Ref<FBXBone> bone = element.value;
 		bone->parent_bone.unref();
 		bone->node.unref();
 		bone->fbx_skeleton.unref();
 	}
 
-	for (Map<uint64_t, Ref<FBXSkeleton>>::Element *element = state.skeleton_map.front(); element; element = element->next()) {
-		Ref<FBXSkeleton> skel = element->value();
+	for (KeyValue<uint64_t, Ref<FBXSkeleton>> &element : state.skeleton_map) {
+		Ref<FBXSkeleton> skel = element.value;
 		skel->fbx_node.unref();
 		skel->skeleton_bones.clear();
 	}

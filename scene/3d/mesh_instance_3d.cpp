@@ -86,8 +86,8 @@ bool MeshInstance3D::_get(const StringName &p_name, Variant &r_ret) const {
 
 void MeshInstance3D::_get_property_list(List<PropertyInfo> *p_list) const {
 	List<String> ls;
-	for (const Map<StringName, BlendShapeTrack>::Element *E = blend_shape_tracks.front(); E; E = E->next()) {
-		ls.push_back(E->key());
+	for (const KeyValue<StringName, BlendShapeTrack> &E : blend_shape_tracks) {
+		ls.push_back(E.key);
 	}
 
 	ls.sort();

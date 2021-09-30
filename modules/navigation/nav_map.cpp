@@ -613,17 +613,17 @@ void NavMap::sync() {
 		}
 
 		Vector<gd::Edge::Connection> free_edges;
-		for (Map<gd::EdgeKey, Vector<gd::Edge::Connection>>::Element *E = connections.front(); E; E = E->next()) {
-			if (E->get().size() == 2) {
+		for (KeyValue<gd::EdgeKey, Vector<gd::Edge::Connection>> &E : connections) {
+			if (E.value.size() == 2) {
 				// Connect edge that are shared in different polygons.
-				gd::Edge::Connection &c1 = E->get().write[0];
-				gd::Edge::Connection &c2 = E->get().write[1];
+				gd::Edge::Connection &c1 = E.value.write[0];
+				gd::Edge::Connection &c2 = E.value.write[1];
 				c1.polygon->edges[c1.edge].connections.push_back(c2);
 				c2.polygon->edges[c2.edge].connections.push_back(c1);
 				// Note: The pathway_start/end are full for those connection and do not need to be modified.
 			} else {
-				CRASH_COND_MSG(E->get().size() != 1, vformat("Number of connection != 1. Found: %d", E->get().size()));
-				free_edges.push_back(E->get()[0]);
+				CRASH_COND_MSG(E.value.size() != 1, vformat("Number of connection != 1. Found: %d", E.value.size()));
+				free_edges.push_back(E.value[0]);
 			}
 		}
 

@@ -1105,8 +1105,8 @@ Array EditorSelection::_get_transformable_selected_nodes() {
 TypedArray<Node> EditorSelection::get_selected_nodes() {
 	TypedArray<Node> ret;
 
-	for (Map<Node *, Object *>::Element *E = selection.front(); E; E = E->next()) {
-		ret.push_back(E->key());
+	for (const KeyValue<Node *, Object *> &E : selection) {
+		ret.push_back(E.key);
 	}
 
 	return ret;
@@ -1133,8 +1133,8 @@ void EditorSelection::_update_nl() {
 
 	selected_node_list.clear();
 
-	for (Map<Node *, Object *>::Element *E = selection.front(); E; E = E->next()) {
-		Node *parent = E->key();
+	for (const KeyValue<Node *, Object *> &E : selection) {
+		Node *parent = E.key;
 		parent = parent->get_parent();
 		bool skip = false;
 		while (parent) {
@@ -1148,7 +1148,7 @@ void EditorSelection::_update_nl() {
 		if (skip) {
 			continue;
 		}
-		selected_node_list.push_back(E->key());
+		selected_node_list.push_back(E.key);
 	}
 
 	nl_changed = true;
@@ -1183,8 +1183,8 @@ List<Node *> &EditorSelection::get_selected_node_list() {
 
 List<Node *> EditorSelection::get_full_selected_node_list() {
 	List<Node *> node_list;
-	for (Map<Node *, Object *>::Element *E = selection.front(); E; E = E->next()) {
-		node_list.push_back(E->key());
+	for (const KeyValue<Node *, Object *> &E : selection) {
+		node_list.push_back(E.key);
 	}
 
 	return node_list;

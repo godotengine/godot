@@ -700,16 +700,15 @@ public:
 			return;
 		}
 
-		for (Map<int, List<float>>::Element *E = key_ofs_map.front(); E; E = E->next()) {
+		for (const KeyValue<int, List<float>> &E : key_ofs_map) {
 			int key = 0;
-			for (float &F : E->value()) {
-				float key_ofs = F;
+			for (const float &key_ofs : E.value) {
 				if (from != key_ofs) {
 					key++;
 					continue;
 				}
 
-				int track = E->key();
+				int track = E.key;
 				key_ofs_map[track][key] = to;
 
 				if (setting) {
@@ -726,10 +725,9 @@ public:
 	bool _set(const StringName &p_name, const Variant &p_value) {
 		bool update_obj = false;
 		bool change_notify_deserved = false;
-		for (Map<int, List<float>>::Element *E = key_ofs_map.front(); E; E = E->next()) {
-			int track = E->key();
-			for (float &F : E->value()) {
-				float key_ofs = F;
+		for (const KeyValue<int, List<float>> &E : key_ofs_map) {
+			int track = E.key;
+			for (const float &key_ofs : E.value) {
 				int key = animation->track_find_key(track, key_ofs, true);
 				ERR_FAIL_COND_V(key == -1, false);
 
@@ -984,10 +982,9 @@ public:
 	}
 
 	bool _get(const StringName &p_name, Variant &r_ret) const {
-		for (Map<int, List<float>>::Element *E = key_ofs_map.front(); E; E = E->next()) {
-			int track = E->key();
-			for (float &F : E->value()) {
-				float key_ofs = F;
+		for (const KeyValue<int, List<float>> &E : key_ofs_map) {
+			int track = E.key;
+			for (const float &key_ofs : E.value) {
 				int key = animation->track_find_key(track, key_ofs, true);
 				ERR_CONTINUE(key == -1);
 
@@ -1119,15 +1116,15 @@ public:
 		bool show_time = true;
 		bool same_track_type = true;
 		bool same_key_type = true;
-		for (Map<int, List<float>>::Element *E = key_ofs_map.front(); E; E = E->next()) {
-			int track = E->key();
+		for (const KeyValue<int, List<float>> &E : key_ofs_map) {
+			int track = E.key;
 			ERR_FAIL_INDEX(track, animation->get_track_count());
 
 			if (first_track < 0) {
 				first_track = track;
 			}
 
-			if (show_time && E->value().size() > 1) {
+			if (show_time && E.value.size() > 1) {
 				show_time = false;
 			}
 
@@ -1137,7 +1134,7 @@ public:
 					same_key_type = false;
 				}
 
-				for (float &F : E->value()) {
+				for (const float &F : E.value) {
 					int key = animation->track_find_key(track, F, true);
 					ERR_FAIL_COND(key == -1);
 					if (first_key < 0) {
@@ -4831,8 +4828,8 @@ void AnimationTrackEditor::_update_key_edit() {
 		Map<int, List<float>> key_ofs_map;
 		Map<int, NodePath> base_map;
 		int first_track = -1;
-		for (Map<SelectedKey, KeyInfo>::Element *E = selection.front(); E; E = E->next()) {
-			int track = E->key().track;
+		for (const KeyValue<SelectedKey, KeyInfo> &E : selection) {
+			int track = E.key.track;
 			if (first_track < 0) {
 				first_track = track;
 			}
@@ -4842,7 +4839,7 @@ void AnimationTrackEditor::_update_key_edit() {
 				base_map[track] = NodePath();
 			}
 
-			key_ofs_map[track].push_back(animation->track_get_key_time(track, E->key().key));
+			key_ofs_map[track].push_back(animation->track_get_key_time(track, E.key.key));
 		}
 		multi_key_edit->key_ofs_map = key_ofs_map;
 		multi_key_edit->base_map = base_map;
@@ -5386,8 +5383,8 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 			float len = -1e20;
 			float pivot = 0;
 
-			for (Map<SelectedKey, KeyInfo>::Element *E = selection.front(); E; E = E->next()) {
-				float t = animation->track_get_key_time(E->key().track, E->key().key);
+			for (const KeyValue<SelectedKey, KeyInfo> &E : selection) {
+				float t = animation->track_get_key_time(E.key.track, E.key.key);
 				if (t < from_t) {
 					from_t = t;
 				}

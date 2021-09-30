@@ -2095,19 +2095,19 @@ void Collada::_merge_skeletons(VisualScene *p_vscene, Node *p_node) {
 }
 
 void Collada::_merge_skeletons2(VisualScene *p_vscene) {
-	for (Map<String, SkinControllerData>::Element *E = state.skin_controller_data_map.front(); E; E = E->next()) {
-		SkinControllerData &cd = E->get();
+	for (KeyValue<String, SkinControllerData> &E : state.skin_controller_data_map) {
+		SkinControllerData &cd = E.value;
 
 		NodeSkeleton *skeleton = nullptr;
 
-		for (Map<String, Transform3D>::Element *F = cd.bone_rest_map.front(); F; F = F->next()) {
+		for (const KeyValue<String, Transform3D> &F : cd.bone_rest_map) {
 			String name;
 
-			if (!state.sid_to_node_map.has(F->key())) {
+			if (!state.sid_to_node_map.has(F.key)) {
 				continue;
 			}
 
-			name = state.sid_to_node_map[F->key()];
+			name = state.sid_to_node_map[F.key];
 
 			ERR_CONTINUE(!state.scene_map.has(name));
 
@@ -2248,9 +2248,9 @@ bool Collada::_move_geometry_to_skeletons(VisualScene *p_vscene, Node *p_node, L
 			p_node->default_transform = skel_inv * (skin.bind_shape /* p_node->get_global_transform()*/); // i honestly have no idea what to do with a previous model xform.. most exporters ignore it
 
 			//make rests relative to the skeleton (they seem to be always relative to world)
-			for (Map<String, Transform3D>::Element *E = skin.bone_rest_map.front(); E; E = E->next()) {
-				E->get() = skel_inv * E->get(); //make the bone rest local to the skeleton
-				state.bone_rest_map[E->key()] = E->get(); // make it remember where the bone is globally, now that it's relative
+			for (KeyValue<String, Transform3D> &E : skin.bone_rest_map) {
+				E.value = skel_inv * E.value; //make the bone rest local to the skeleton
+				state.bone_rest_map[E.key] = E.value; // make it remember where the bone is globally, now that it's relative
 			}
 
 			//but most exporters seem to work only if i do this..
@@ -2302,8 +2302,8 @@ void Collada::_find_morph_nodes(VisualScene *p_vscene, Node *p_node) {
 }
 
 void Collada::_optimize() {
-	for (Map<String, VisualScene>::Element *E = state.visual_scene_map.front(); E; E = E->next()) {
-		VisualScene &vs = E->get();
+	for (KeyValue<String, VisualScene> &E : state.visual_scene_map) {
+		VisualScene &vs = E.value;
 		for (int i = 0; i < vs.root_nodes.size(); i++) {
 			_create_skeletons(&vs.root_nodes.write[i]);
 		}

@@ -674,9 +674,9 @@ void TileSetAtlasSourceEditor::_update_tile_data_editors() {
 #undef ADD_TILE_DATA_EDITOR
 
 	// Add tile data editors as children.
-	for (Map<String, TileDataEditor *>::Element *E = tile_data_editors.front(); E; E = E->next()) {
+	for (KeyValue<String, TileDataEditor *> &E : tile_data_editors) {
 		// Tile Data Editor.
-		TileDataEditor *tile_data_editor = E->get();
+		TileDataEditor *tile_data_editor = E.value;
 		if (!tile_data_editor->is_inside_tree()) {
 			tile_data_painting_editor_container->add_child(tile_data_editor);
 		}
@@ -716,9 +716,9 @@ void TileSetAtlasSourceEditor::_update_current_tile_data_editor() {
 	}
 
 	// Hide all editors but the current one.
-	for (Map<String, TileDataEditor *>::Element *E = tile_data_editors.front(); E; E = E->next()) {
-		E->get()->hide();
-		E->get()->get_toolbar()->hide();
+	for (const KeyValue<String, TileDataEditor *> &E : tile_data_editors) {
+		E.value->hide();
+		E.value->get_toolbar()->hide();
 	}
 	if (tile_data_editors.has(property)) {
 		current_tile_data_editor = tile_data_editors[property];

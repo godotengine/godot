@@ -108,15 +108,15 @@ Vector<String> SpriteFrames::_get_animation_list() const {
 }
 
 void SpriteFrames::get_animation_list(List<StringName> *r_animations) const {
-	for (const Map<StringName, Anim>::Element *E = animations.front(); E; E = E->next()) {
-		r_animations->push_back(E->key());
+	for (const KeyValue<StringName, Anim> &E : animations) {
+		r_animations->push_back(E.key);
 	}
 }
 
 Vector<String> SpriteFrames::get_animation_names() const {
 	Vector<String> names;
-	for (const Map<StringName, Anim>::Element *E = animations.front(); E; E = E->next()) {
-		names.push_back(E->key());
+	for (const KeyValue<StringName, Anim> &E : animations) {
+		names.push_back(E.key);
 	}
 	names.sort();
 	return names;
@@ -164,14 +164,14 @@ Array SpriteFrames::_get_frames() const {
 
 Array SpriteFrames::_get_animations() const {
 	Array anims;
-	for (Map<StringName, Anim>::Element *E = animations.front(); E; E = E->next()) {
+	for (const KeyValue<StringName, Anim> &E : animations) {
 		Dictionary d;
-		d["name"] = E->key();
-		d["speed"] = E->get().speed;
-		d["loop"] = E->get().loop;
+		d["name"] = E.key;
+		d["speed"] = E.value.speed;
+		d["loop"] = E.value.loop;
 		Array frames;
-		for (int i = 0; i < E->get().frames.size(); i++) {
-			frames.push_back(E->get().frames[i]);
+		for (int i = 0; i < E.value.frames.size(); i++) {
+			frames.push_back(E.value.frames[i]);
 		}
 		d["frames"] = frames;
 		anims.push_back(d);

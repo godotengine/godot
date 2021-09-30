@@ -531,8 +531,8 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 
 	memnew_placement(&stack[ADDR_STACK_CLASS], Variant(script));
 
-	for (const Map<int, Variant::Type>::Element *E = temporary_slots.front(); E; E = E->next()) {
-		type_init_function_table[E->get()](&stack[E->key()]);
+	for (const KeyValue<int, Variant::Type> &E : temporary_slots) {
+		type_init_function_table[E.value](&stack[E.key]);
 	}
 
 	String err_text;

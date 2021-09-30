@@ -966,9 +966,9 @@ PackedVector2Array Curve2D::tessellate(int p_max_stages, float p_tolerance) cons
 	int pidx = 0;
 
 	for (int i = 0; i < points.size() - 1; i++) {
-		for (Map<float, Vector2>::Element *E = midpoints[i].front(); E; E = E->next()) {
+		for (const KeyValue<float, Vector2> &E : midpoints[i]) {
 			pidx++;
-			bpw[pidx] = E->get();
+			bpw[pidx] = E.value;
 		}
 
 		pidx++;
@@ -1652,9 +1652,9 @@ PackedVector3Array Curve3D::tessellate(int p_max_stages, float p_tolerance) cons
 	int pidx = 0;
 
 	for (int i = 0; i < points.size() - 1; i++) {
-		for (Map<float, Vector3>::Element *E = midpoints[i].front(); E; E = E->next()) {
+		for (const KeyValue<float, Vector3> &E : midpoints[i]) {
 			pidx++;
-			bpw[pidx] = E->get();
+			bpw[pidx] = E.value;
 		}
 
 		pidx++;

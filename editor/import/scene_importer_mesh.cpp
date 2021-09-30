@@ -966,8 +966,8 @@ Ref<NavigationMesh> EditorSceneImporterMesh::create_navigation_mesh() {
 
 	Vector<Vector3> vertices;
 	vertices.resize(unique_vertices.size());
-	for (Map<Vector3, int>::Element *E = unique_vertices.front(); E; E = E->next()) {
-		vertices.write[E->get()] = E->key();
+	for (const KeyValue<Vector3, int> &E : unique_vertices) {
+		vertices.write[E.value] = E.key;
 	}
 
 	Ref<NavigationMesh> nm;

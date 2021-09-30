@@ -156,8 +156,8 @@ void ResourceFormatLoader::get_dependencies(const String &p_path, List<String> *
 
 Error ResourceFormatLoader::rename_dependencies(const String &p_path, const Map<String, String> &p_map) {
 	Dictionary deps_dict;
-	for (Map<String, String>::Element *E = p_map.front(); E; E = E->next()) {
-		deps_dict[E->key()] = E->value();
+	for (KeyValue<String, String> E : p_map) {
+		deps_dict[E.key] = E.value;
 	}
 
 	int64_t err;

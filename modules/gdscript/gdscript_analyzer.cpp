@@ -2270,10 +2270,10 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool is_awa
 
 	if (get_function_signature(p_call, base_type, p_call->function_name, return_type, par_types, default_arg_count, is_static, is_vararg)) {
 		// If the function require typed arrays we must make literals be typed.
-		for (Map<int, GDScriptParser::ArrayNode *>::Element *E = arrays.front(); E; E = E->next()) {
-			int index = E->key();
+		for (const KeyValue<int, GDScriptParser::ArrayNode *> &E : arrays) {
+			int index = E.key;
 			if (index < par_types.size() && par_types[index].has_container_element_type()) {
-				update_array_literal_element_type(par_types[index], E->get());
+				update_array_literal_element_type(par_types[index], E.value);
 			}
 		}
 		validate_call_arg(par_types, default_arg_count, is_vararg, p_call);

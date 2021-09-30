@@ -1301,11 +1301,11 @@ void FileSystemDock::_update_dependencies_after_move(const Map<String, String> &
 void FileSystemDock::_update_project_settings_after_move(const Map<String, String> &p_renames) const {
 	// Find all project settings of type FILE and replace them if needed.
 	const Map<StringName, PropertyInfo> prop_info = ProjectSettings::get_singleton()->get_custom_property_info();
-	for (const Map<StringName, PropertyInfo>::Element *E = prop_info.front(); E; E = E->next()) {
-		if (E->get().hint == PROPERTY_HINT_FILE) {
-			String old_path = GLOBAL_GET(E->key());
+	for (const KeyValue<StringName, PropertyInfo> &E : prop_info) {
+		if (E.value.hint == PROPERTY_HINT_FILE) {
+			String old_path = GLOBAL_GET(E.key);
 			if (p_renames.has(old_path)) {
-				ProjectSettings::get_singleton()->set_setting(E->key(), p_renames[old_path]);
+				ProjectSettings::get_singleton()->set_setting(E.key, p_renames[old_path]);
 			}
 		};
 	}

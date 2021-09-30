@@ -210,9 +210,9 @@ void RendererViewport::_draw_viewport(Viewport *p_viewport) {
 			RendererCanvasRender::LightOccluderInstance *occluders = nullptr;
 
 			//make list of occluders
-			for (Map<RID, Viewport::CanvasData>::Element *E = p_viewport->canvas_map.front(); E; E = E->next()) {
-				RendererCanvasCull::Canvas *canvas = static_cast<RendererCanvasCull::Canvas *>(E->get().canvas);
-				Transform2D xf = _canvas_get_transform(p_viewport, canvas, &E->get(), clip_rect.size);
+			for (KeyValue<RID, Viewport::CanvasData> &E : p_viewport->canvas_map) {
+				RendererCanvasCull::Canvas *canvas = static_cast<RendererCanvasCull::Canvas *>(E.value.canvas);
+				Transform2D xf = _canvas_get_transform(p_viewport, canvas, &E.value, clip_rect.size);
 
 				for (Set<RendererCanvasRender::LightOccluderInstance *>::Element *F = canvas->occluders.front(); F; F = F->next()) {
 					if (!F->get()->enabled) {
@@ -242,10 +242,10 @@ void RendererViewport::_draw_viewport(Viewport *p_viewport) {
 		int directional_light_count = 0;
 
 		RENDER_TIMESTAMP("Cull Canvas Lights");
-		for (Map<RID, Viewport::CanvasData>::Element *E = p_viewport->canvas_map.front(); E; E = E->next()) {
-			RendererCanvasCull::Canvas *canvas = static_cast<RendererCanvasCull::Canvas *>(E->get().canvas);
+		for (KeyValue<RID, Viewport::CanvasData> &E : p_viewport->canvas_map) {
+			RendererCanvasCull::Canvas *canvas = static_cast<RendererCanvasCull::Canvas *>(E.value.canvas);
 
-			Transform2D xf = _canvas_get_transform(p_viewport, canvas, &E->get(), clip_rect.size);
+			Transform2D xf = _canvas_get_transform(p_viewport, canvas, &E.value, clip_rect.size);
 
 			//find lights in canvas
 
@@ -307,7 +307,7 @@ void RendererViewport::_draw_viewport(Viewport *p_viewport) {
 				}
 			}
 
-			canvas_map[Viewport::CanvasKey(E->key(), E->get().layer, E->get().sublayer)] = &E->get();
+			canvas_map[Viewport::CanvasKey(E.key, E.value.layer, E.value.sublayer)] = &E.value;
 		}
 
 		if (lights_with_shadow) {
@@ -319,9 +319,9 @@ void RendererViewport::_draw_viewport(Viewport *p_viewport) {
 			RENDER_TIMESTAMP("Cull Occluders");
 
 			//make list of occluders
-			for (Map<RID, Viewport::CanvasData>::Element *E = p_viewport->canvas_map.front(); E; E = E->next()) {
-				RendererCanvasCull::Canvas *canvas = static_cast<RendererCanvasCull::Canvas *>(E->get().canvas);
-				Transform2D xf = _canvas_get_transform(p_viewport, canvas, &E->get(), clip_rect.size);
+			for (KeyValue<RID, Viewport::CanvasData> &E : p_viewport->canvas_map) {
+				RendererCanvasCull::Canvas *canvas = static_cast<RendererCanvasCull::Canvas *>(E.value.canvas);
+				Transform2D xf = _canvas_get_transform(p_viewport, canvas, &E.value, clip_rect.size);
 
 				for (Set<RendererCanvasRender::LightOccluderInstance *>::Element *F = canvas->occluders.front(); F; F = F->next()) {
 					if (!F->get()->enabled) {
@@ -400,9 +400,9 @@ void RendererViewport::_draw_viewport(Viewport *p_viewport) {
 
 				//make list of occluders
 				int occ_cullded = 0;
-				for (Map<RID, Viewport::CanvasData>::Element *E = p_viewport->canvas_map.front(); E; E = E->next()) {
-					RendererCanvasCull::Canvas *canvas = static_cast<RendererCanvasCull::Canvas *>(E->get().canvas);
-					Transform2D xf = _canvas_get_transform(p_viewport, canvas, &E->get(), clip_rect.size);
+				for (KeyValue<RID, Viewport::CanvasData> &E : p_viewport->canvas_map) {
+					RendererCanvasCull::Canvas *canvas = static_cast<RendererCanvasCull::Canvas *>(E.value.canvas);
+					Transform2D xf = _canvas_get_transform(p_viewport, canvas, &E.value, clip_rect.size);
 
 					for (Set<RendererCanvasRender::LightOccluderInstance *>::Element *F = canvas->occluders.front(); F; F = F->next()) {
 						if (!F->get()->enabled) {
@@ -439,17 +439,17 @@ void RendererViewport::_draw_viewport(Viewport *p_viewport) {
 			scenario_draw_canvas_bg = false;
 		}
 
-		for (Map<Viewport::CanvasKey, Viewport::CanvasData *>::Element *E = canvas_map.front(); E; E = E->next()) {
-			RendererCanvasCull::Canvas *canvas = static_cast<RendererCanvasCull::Canvas *>(E->get()->canvas);
+		for (const KeyValue<Viewport::CanvasKey, Viewport::CanvasData *> &E : canvas_map) {
+			RendererCanvasCull::Canvas *canvas = static_cast<RendererCanvasCull::Canvas *>(E.value->canvas);
 
-			Transform2D xform = _canvas_get_transform(p_viewport, canvas, E->get(), clip_rect.size);
+			Transform2D xform = _canvas_get_transform(p_viewport, canvas, E.value, clip_rect.size);
 
 			RendererCanvasRender::Light *canvas_lights = nullptr;
 			RendererCanvasRender::Light *canvas_directional_lights = nullptr;
 
 			RendererCanvasRender::Light *ptr = lights;
 			while (ptr) {
-				if (E->get()->layer >= ptr->layer_min && E->get()->layer <= ptr->layer_max) {
+				if (E.value->layer >= ptr->layer_min && E.value->layer <= ptr->layer_max) {
 					ptr->next_ptr = canvas_lights;
 					canvas_lights = ptr;
 				}
@@ -458,7 +458,7 @@ void RendererViewport::_draw_viewport(Viewport *p_viewport) {
 
 			ptr = directional_lights;
 			while (ptr) {
-				if (E->get()->layer >= ptr->layer_min && E->get()->layer <= ptr->layer_max) {
+				if (E.value->layer >= ptr->layer_min && E.value->layer <= ptr->layer_max) {
 					ptr->next_ptr = canvas_directional_lights;
 					canvas_directional_lights = ptr;
 				}
@@ -471,7 +471,7 @@ void RendererViewport::_draw_viewport(Viewport *p_viewport) {
 			}
 			i++;
 
-			if (scenario_draw_canvas_bg && E->key().get_layer() >= scenario_canvas_max_layer) {
+			if (scenario_draw_canvas_bg && E.key.get_layer() >= scenario_canvas_max_layer) {
 				if (!can_draw_3d) {
 					RSG::scene->render_empty_scene(p_viewport->render_buffers, p_viewport->scenario, p_viewport->shadow_atlas);
 				} else {
@@ -660,8 +660,8 @@ void RendererViewport::draw_viewports() {
 	//this needs to be called to make screen swapping more efficient
 	RSG::rasterizer->prepare_for_blitting_render_targets();
 
-	for (Map<int, Vector<BlitToScreen>>::Element *E = blit_to_screen_list.front(); E; E = E->next()) {
-		RSG::rasterizer->blit_render_targets_to_screen(E->key(), E->get().ptr(), E->get().size());
+	for (const KeyValue<int, Vector<BlitToScreen>> &E : blit_to_screen_list) {
+		RSG::rasterizer->blit_render_targets_to_screen(E.key, E.value.ptr(), E.value.size());
 	}
 }
 

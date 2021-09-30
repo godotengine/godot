@@ -110,8 +110,8 @@ PackedData::PackedData() {
 }
 
 void PackedData::_free_packed_dirs(PackedDir *p_dir) {
-	for (Map<String, PackedDir *>::Element *E = p_dir->subdirs.front(); E; E = E->next()) {
-		_free_packed_dirs(E->get());
+	for (const KeyValue<String, PackedDir *> &E : p_dir->subdirs) {
+		_free_packed_dirs(E.value);
 	}
 	memdelete(p_dir);
 }
@@ -395,8 +395,8 @@ Error DirAccessPack::list_dir_begin() {
 	list_dirs.clear();
 	list_files.clear();
 
-	for (Map<String, PackedData::PackedDir *>::Element *E = current->subdirs.front(); E; E = E->next()) {
-		list_dirs.push_back(E->key());
+	for (const KeyValue<String, PackedData::PackedDir *> &E : current->subdirs) {
+		list_dirs.push_back(E.key);
 	}
 
 	for (Set<String>::Element *E = current->files.front(); E; E = E->next()) {

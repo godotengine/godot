@@ -148,8 +148,8 @@ void WebSocketMultiplayerPeer::_send_add(int32_t p_peer_id) {
 	// Then send the server peer (which will trigger connection_succeded in client)
 	_send_sys(get_peer(p_peer_id), SYS_ADD, 1);
 
-	for (Map<int, Ref<WebSocketPeer>>::Element *E = _peer_map.front(); E; E = E->next()) {
-		int32_t id = E->key();
+	for (const KeyValue<int, Ref<WebSocketPeer>> &E : _peer_map) {
+		int32_t id = E.key;
 		if (p_peer_id == id) {
 			continue; // Skip the newly added peer (already confirmed)
 		}
@@ -162,8 +162,8 @@ void WebSocketMultiplayerPeer::_send_add(int32_t p_peer_id) {
 }
 
 void WebSocketMultiplayerPeer::_send_del(int32_t p_peer_id) {
-	for (Map<int, Ref<WebSocketPeer>>::Element *E = _peer_map.front(); E; E = E->next()) {
-		int32_t id = E->key();
+	for (const KeyValue<int, Ref<WebSocketPeer>> &E : _peer_map) {
+		int32_t id = E.key;
 		if (p_peer_id != id) {
 			_send_sys(get_peer(id), SYS_DEL, p_peer_id);
 		}
@@ -186,17 +186,17 @@ Error WebSocketMultiplayerPeer::_server_relay(int32_t p_from, int32_t p_to, cons
 		return OK; // Will not send to self
 
 	} else if (p_to == 0) {
-		for (Map<int, Ref<WebSocketPeer>>::Element *E = _peer_map.front(); E; E = E->next()) {
-			if (E->key() != p_from) {
-				E->get()->put_packet(p_buffer, p_buffer_size);
+		for (KeyValue<int, Ref<WebSocketPeer>> &E : _peer_map) {
+			if (E.key != p_from) {
+				E.value->put_packet(p_buffer, p_buffer_size);
 			}
 		}
 		return OK; // Sent to all but sender
 
 	} else if (p_to < 0) {
-		for (Map<int, Ref<WebSocketPeer>>::Element *E = _peer_map.front(); E; E = E->next()) {
-			if (E->key() != p_from && E->key() != -p_to) {
-				E->get()->put_packet(p_buffer, p_buffer_size);
+		for (KeyValue<int, Ref<WebSocketPeer>> &E : _peer_map) {
+			if (E.key != p_from && E.key != -p_to) {
+				E.value->put_packet(p_buffer, p_buffer_size);
 			}
 		}
 		return OK; // Sent to all but sender and excluded

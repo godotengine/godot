@@ -517,8 +517,8 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 
 				editor_data->get_undo_redo().add_do_method(paste_parent, "add_child", dup);
 
-				for (Map<const Node *, Node *>::Element *E2 = duplimap.front(); E2; E2 = E2->next()) {
-					Node *d = E2->value();
+				for (KeyValue<const Node *, Node *> &E2 : duplimap) {
+					Node *d = E2.value;
 					editor_data->get_undo_redo().add_do_method(d, "set_owner", owner);
 				}
 
@@ -848,8 +848,8 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				break;
 			}
 			Ref<MultiNodeEdit> mne = memnew(MultiNodeEdit);
-			for (const Map<Node *, Object *>::Element *E = editor_selection->get_selection().front(); E; E = E->next()) {
-				mne->add_node(root->get_path_to(E->key()));
+			for (const KeyValue<Node *, Object *> &E : editor_selection->get_selection()) {
+				mne->add_node(root->get_path_to(E.key));
 			}
 
 			EditorNode::get_singleton()->push_item(mne.ptr());

@@ -582,9 +582,9 @@ void GDScriptParser::parse_program() {
 	parse_class_body(true);
 
 #ifdef TOOLS_ENABLED
-	for (Map<int, GDScriptTokenizer::CommentData>::Element *E = tokenizer.get_comments().front(); E; E = E->next()) {
-		if (E->get().new_line && E->get().comment.begins_with("##")) {
-			class_doc_line = MIN(class_doc_line, E->key());
+	for (const KeyValue<int, GDScriptTokenizer::CommentData> &E : tokenizer.get_comments()) {
+		if (E.value.new_line && E.value.comment.begins_with("##")) {
+			class_doc_line = MIN(class_doc_line, E.key);
 		}
 	}
 	if (has_comment(class_doc_line)) {

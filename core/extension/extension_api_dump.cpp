@@ -353,11 +353,11 @@ Dictionary NativeExtensionAPIDump::generate_extension_api() {
 		api_dump["global_constants"] = constants;
 
 		Array enums;
-		for (Map<String, List<Pair<String, int>>>::Element *E = enum_list.front(); E; E = E->next()) {
+		for (const KeyValue<String, List<Pair<String, int>>> &E : enum_list) {
 			Dictionary d1;
-			d1["name"] = E->key();
+			d1["name"] = E.key;
 			Array values;
-			for (const Pair<String, int> &F : E->get()) {
+			for (const Pair<String, int> &F : E.value) {
 				Dictionary d2;
 				d2["name"] = F.first;
 				d2["value"] = F.second;

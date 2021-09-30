@@ -162,11 +162,11 @@ void OptimizedTranslation::generate(const Ref<Translation> &p_from) {
 		btw[btindex++] = t.size();
 		btw[btindex++] = hfunc_table[i];
 
-		for (Map<uint32_t, int>::Element *E = t.front(); E; E = E->next()) {
-			btw[btindex++] = E->key();
-			btw[btindex++] = compressed[E->get()].offset;
-			btw[btindex++] = compressed[E->get()].compressed.size();
-			btw[btindex++] = compressed[E->get()].orig_len;
+		for (const KeyValue<uint32_t, int> &E : t) {
+			btw[btindex++] = E.key;
+			btw[btindex++] = compressed[E.value].offset;
+			btw[btindex++] = compressed[E.value].compressed.size();
+			btw[btindex++] = compressed[E.value].orig_len;
 		}
 	}
 

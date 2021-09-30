@@ -157,8 +157,8 @@ void TriangleMesh::create(const Vector<Vector3> &p_faces) {
 
 		vertices.resize(db.size());
 		Vector3 *vw = vertices.ptrw();
-		for (Map<Vector3, int>::Element *E = db.front(); E; E = E->next()) {
-			vw[E->get()] = E->key();
+		for (const KeyValue<Vector3, int> &E : db) {
+			vw[E.value] = E.key;
 		}
 	}
 

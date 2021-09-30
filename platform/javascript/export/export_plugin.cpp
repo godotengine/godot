@@ -99,8 +99,8 @@ void EditorExportPlatformJavaScript::_replace_strings(Map<String, String> p_repl
 	Vector<String> lines = str_template.split("\n");
 	for (int i = 0; i < lines.size(); i++) {
 		String current_line = lines[i];
-		for (Map<String, String>::Element *E = p_replaces.front(); E; E = E->next()) {
-			current_line = current_line.replace(E->key(), E->get());
+		for (const KeyValue<String, String> &E : p_replaces) {
+			current_line = current_line.replace(E.key, E.value);
 		}
 		out += current_line + "\n";
 	}

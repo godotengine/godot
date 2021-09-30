@@ -56,18 +56,18 @@ void EditorNetworkProfiler::_update_frame() {
 
 	TreeItem *root = counters_display->create_item();
 
-	for (Map<ObjectID, DebuggerMarshalls::MultiplayerNodeInfo>::Element *E = nodes_data.front(); E; E = E->next()) {
+	for (const KeyValue<ObjectID, DebuggerMarshalls::MultiplayerNodeInfo> &E : nodes_data) {
 		TreeItem *node = counters_display->create_item(root);
 
 		for (int j = 0; j < counters_display->get_columns(); ++j) {
 			node->set_text_align(j, j > 0 ? TreeItem::ALIGN_RIGHT : TreeItem::ALIGN_LEFT);
 		}
 
-		node->set_text(0, E->get().node_path);
-		node->set_text(1, E->get().incoming_rpc == 0 ? "-" : itos(E->get().incoming_rpc));
-		node->set_text(2, E->get().incoming_rset == 0 ? "-" : itos(E->get().incoming_rset));
-		node->set_text(3, E->get().outgoing_rpc == 0 ? "-" : itos(E->get().outgoing_rpc));
-		node->set_text(4, E->get().outgoing_rset == 0 ? "-" : itos(E->get().outgoing_rset));
+		node->set_text(0, E.value.node_path);
+		node->set_text(1, E.value.incoming_rpc == 0 ? "-" : itos(E.value.incoming_rpc));
+		node->set_text(2, E.value.incoming_rset == 0 ? "-" : itos(E.value.incoming_rset));
+		node->set_text(3, E.value.outgoing_rpc == 0 ? "-" : itos(E.value.outgoing_rpc));
+		node->set_text(4, E.value.outgoing_rset == 0 ? "-" : itos(E.value.outgoing_rset));
 	}
 }
 

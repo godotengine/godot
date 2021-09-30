@@ -328,9 +328,9 @@ void EditorDebuggerNode::_notification(int p_what) {
 		debugger->set_editor_remote_tree(remote_scene_tree);
 		debugger->start(server->take_connection());
 		// Send breakpoints.
-		for (Map<Breakpoint, bool>::Element *E = breakpoints.front(); E; E = E->next()) {
-			const Breakpoint &bp = E->key();
-			debugger->set_breakpoint(bp.source, bp.line, E->get());
+		for (const KeyValue<Breakpoint, bool> &E : breakpoints) {
+			const Breakpoint &bp = E.key;
+			debugger->set_breakpoint(bp.source, bp.line, E.value);
 		} // Will arrive too late, how does the regular run work?
 
 		debugger->update_live_edit_root();
@@ -497,8 +497,8 @@ void EditorDebuggerNode::set_breakpoints(const String &p_path, Array p_lines) {
 		set_breakpoint(p_path, p_lines[i], true);
 	}
 
-	for (Map<Breakpoint, bool>::Element *E = breakpoints.front(); E; E = E->next()) {
-		Breakpoint b = E->key();
+	for (const KeyValue<Breakpoint, bool> &E : breakpoints) {
+		Breakpoint b = E.key;
 		if (b.source == p_path && !p_lines.has(b.line)) {
 			set_breakpoint(p_path, b.line, false);
 		}

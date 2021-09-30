@@ -1438,8 +1438,8 @@ void RendererStorageRD::shader_set_code(RID p_shader, const String &p_code) {
 		}
 
 		if (shader->data) {
-			for (Map<StringName, RID>::Element *E = shader->default_texture_parameter.front(); E; E = E->next()) {
-				shader->data->set_default_texture_param(E->key(), E->get());
+			for (const KeyValue<StringName, RID> &E : shader->default_texture_parameter) {
+				shader->data->set_default_texture_param(E.key, E.value);
 			}
 		}
 	}
@@ -2136,28 +2136,28 @@ _FORCE_INLINE_ static void _fill_std140_ubo_empty(ShaderLanguage::DataType type,
 void RendererStorageRD::MaterialData::update_uniform_buffer(const Map<StringName, ShaderLanguage::ShaderNode::Uniform> &p_uniforms, const uint32_t *p_uniform_offsets, const Map<StringName, Variant> &p_parameters, uint8_t *p_buffer, uint32_t p_buffer_size, bool p_use_linear_color) {
 	bool uses_global_buffer = false;
 
-	for (Map<StringName, ShaderLanguage::ShaderNode::Uniform>::Element *E = p_uniforms.front(); E; E = E->next()) {
-		if (E->get().order < 0) {
+	for (const KeyValue<StringName, ShaderLanguage::ShaderNode::Uniform> &E : p_uniforms) {
+		if (E.value.order < 0) {
 			continue; // texture, does not go here
 		}
 
-		if (E->get().scope == ShaderLanguage::ShaderNode::Uniform::SCOPE_INSTANCE) {
+		if (E.value.scope == ShaderLanguage::ShaderNode::Uniform::SCOPE_INSTANCE) {
 			continue; //instance uniforms don't appear in the bufferr
 		}
 
-		if (E->get().scope == ShaderLanguage::ShaderNode::Uniform::SCOPE_GLOBAL) {
+		if (E.value.scope == ShaderLanguage::ShaderNode::Uniform::SCOPE_GLOBAL) {
 			//this is a global variable, get the index to it
 			RendererStorageRD *rs = base_singleton;
 
-			GlobalVariables::Variable *gv = rs->global_variables.variables.getptr(E->key());
+			GlobalVariables::Variable *gv = rs->global_variables.variables.getptr(E.key);
 			uint32_t index = 0;
 			if (gv) {
 				index = gv->buffer_index;
 			} else {
-				WARN_PRINT("Shader uses global uniform '" + E->key() + "', but it was removed at some point. Material will not display correctly.");
+				WARN_PRINT("Shader uses global uniform '" + E.key + "', but it was removed at some point. Material will not display correctly.");
 			}
 
-			uint32_t offset = p_uniform_offsets[E->get().order];
+			uint32_t offset = p_uniform_offsets[E.value.order];
 			uint32_t *intptr = (uint32_t *)&p_buffer[offset];
 			*intptr = index;
 			uses_global_buffer = true;
@@ -2165,30 +2165,30 @@ void RendererStorageRD::MaterialData::update_uniform_buffer(const Map<StringName
 		}
 
 		//regular uniform
-		uint32_t offset = p_uniform_offsets[E->get().order];
+		uint32_t offset = p_uniform_offsets[E.value.order];
 #ifdef DEBUG_ENABLED
-		uint32_t size = ShaderLanguage::get_type_size(E->get().type);
+		uint32_t size = ShaderLanguage::get_type_size(E.value.type);
 		ERR_CONTINUE(offset + size > p_buffer_size);
 #endif
 		uint8_t *data = &p_buffer[offset];
-		const Map<StringName, Variant>::Element *V = p_parameters.find(E->key());
+		const Map<StringName, Variant>::Element *V = p_parameters.find(E.key);
 
 		if (V) {
 			//user provided
-			_fill_std140_variant_ubo_value(E->get().type, V->get(), data, p_use_linear_color);
+			_fill_std140_variant_ubo_value(E.value.type, V->get(), data, p_use_linear_color);
 
-		} else if (E->get().default_value.size()) {
+		} else if (E.value.default_value.size()) {
 			//default value
-			_fill_std140_ubo_value(E->get().type, E->get().default_value, data);
-			//value=E->get().default_value;
+			_fill_std140_ubo_value(E.value.type, E.value.default_value, data);
+			//value=E.value.default_value;
 		} else {
 			//zero because it was not provided
-			if (E->get().type == ShaderLanguage::TYPE_VEC4 && E->get().hint == ShaderLanguage::ShaderNode::Uniform::HINT_COLOR) {
+			if (E.value.type == ShaderLanguage::TYPE_VEC4 && E.value.hint == ShaderLanguage::ShaderNode::Uniform::HINT_COLOR) {
 				//colors must be set as black, with alpha as 1.0
-				_fill_std140_variant_ubo_value(E->get().type, Color(0, 0, 0, 1), data, p_use_linear_color);
+				_fill_std140_variant_ubo_value(E.value.type, Color(0, 0, 0, 1), data, p_use_linear_color);
 			} else {
 				//else just zero it out
-				_fill_std140_ubo_empty(E->get().type, data);
+				_fill_std140_ubo_empty(E.value.type, data);
 			}
 		}
 	}
@@ -2215,8 +2215,8 @@ RendererStorageRD::MaterialData::~MaterialData() {
 		//unregister global textures
 		RendererStorageRD *rs = base_singleton;
 
-		for (Map<StringName, uint64_t>::Element *E = used_global_textures.front(); E; E = E->next()) {
-			GlobalVariables::Variable *v = rs->global_variables.variables.getptr(E->key());
+		for (const KeyValue<StringName, uint64_t> &E : used_global_textures) {
+			GlobalVariables::Variable *v = rs->global_variables.variables.getptr(E.key);
 			if (v) {
 				v->texture_materials.erase(self);
 			}
@@ -5298,36 +5298,36 @@ void RendererStorageRD::ParticlesShaderData::set_default_texture_param(const Str
 void RendererStorageRD::ParticlesShaderData::get_param_list(List<PropertyInfo> *p_param_list) const {
 	Map<int, StringName> order;
 
-	for (Map<StringName, ShaderLanguage::ShaderNode::Uniform>::Element *E = uniforms.front(); E; E = E->next()) {
-		if (E->get().scope == ShaderLanguage::ShaderNode::Uniform::SCOPE_GLOBAL || E->get().scope == ShaderLanguage::ShaderNode::Uniform::SCOPE_INSTANCE) {
+	for (const KeyValue<StringName, ShaderLanguage::ShaderNode::Uniform> &E : uniforms) {
+		if (E.value.scope == ShaderLanguage::ShaderNode::Uniform::SCOPE_GLOBAL || E.value.scope == ShaderLanguage::ShaderNode::Uniform::SCOPE_INSTANCE) {
 			continue;
 		}
 
-		if (E->get().texture_order >= 0) {
-			order[E->get().texture_order + 100000] = E->key();
+		if (E.value.texture_order >= 0) {
+			order[E.value.texture_order + 100000] = E.key;
 		} else {
-			order[E->get().order] = E->key();
+			order[E.value.order] = E.key;
 		}
 	}
 
-	for (Map<int, StringName>::Element *E = order.front(); E; E = E->next()) {
-		PropertyInfo pi = ShaderLanguage::uniform_to_property_info(uniforms[E->get()]);
-		pi.name = E->get();
+	for (const KeyValue<int, StringName> &E : order) {
+		PropertyInfo pi = ShaderLanguage::uniform_to_property_info(uniforms[E.value]);
+		pi.name = E.value;
 		p_param_list->push_back(pi);
 	}
 }
 
 void RendererStorageRD::ParticlesShaderData::get_instance_param_list(List<RendererStorage::InstanceShaderParam> *p_param_list) const {
-	for (Map<StringName, ShaderLanguage::ShaderNode::Uniform>::Element *E = uniforms.front(); E; E = E->next()) {
-		if (E->get().scope != ShaderLanguage::ShaderNode::Uniform::SCOPE_INSTANCE) {
+	for (const KeyValue<StringName, ShaderLanguage::ShaderNode::Uniform> &E : uniforms) {
+		if (E.value.scope != ShaderLanguage::ShaderNode::Uniform::SCOPE_INSTANCE) {
 			continue;
 		}
 
 		RendererStorage::InstanceShaderParam p;
-		p.info = ShaderLanguage::uniform_to_property_info(E->get());
-		p.info.name = E->key(); //supply name
-		p.index = E->get().instance_index;
-		p.default_value = ShaderLanguage::constant_value_to_variant(E->get().default_value, E->get().type, E->get().hint);
+		p.info = ShaderLanguage::uniform_to_property_info(E.value);
+		p.info.name = E.key; //supply name
+		p.index = E.value.instance_index;
+		p.default_value = ShaderLanguage::constant_value_to_variant(E.value.default_value, E.value.type, E.value.hint);
 		p_param_list->push_back(p);
 	}
 }

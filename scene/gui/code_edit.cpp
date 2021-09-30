@@ -1620,12 +1620,12 @@ Point2 CodeEdit::get_delimiter_start_position(int p_line, int p_column) const {
 	bool in_region = ((p_line <= 0 || delimiter_cache[p_line - 1].size() < 1) ? -1 : delimiter_cache[p_line - 1].back()->value()) != -1;
 
 	/* Check the keys for this line. */
-	for (Map<int, int>::Element *E = delimiter_cache[p_line].front(); E; E = E->next()) {
-		if (E->key() > p_column) {
+	for (const KeyValue<int, int> &E : delimiter_cache[p_line]) {
+		if (E.key > p_column) {
 			break;
 		}
-		in_region = E->value() != -1;
-		start_position.x = in_region ? E->key() : -1;
+		in_region = E.value != -1;
+		start_position.x = in_region ? E.key : -1;
 	}
 
 	/* Region was found on this line and is not a multiline continuation. */
@@ -1671,12 +1671,12 @@ Point2 CodeEdit::get_delimiter_end_position(int p_line, int p_column) const {
 	int region = (p_line <= 0 || delimiter_cache[p_line - 1].size() < 1) ? -1 : delimiter_cache[p_line - 1].back()->value();
 
 	/* Check the keys for this line. */
-	for (Map<int, int>::Element *E = delimiter_cache[p_line].front(); E; E = E->next()) {
-		end_position.x = (E->value() == -1) ? E->key() : -1;
-		if (E->key() > p_column) {
+	for (const KeyValue<int, int> &E : delimiter_cache[p_line]) {
+		end_position.x = (E.value == -1) ? E.key : -1;
+		if (E.key > p_column) {
 			break;
 		}
-		region = E->value();
+		region = E.value;
 	}
 
 	/* Region was found on this line and is not a multiline continuation. */

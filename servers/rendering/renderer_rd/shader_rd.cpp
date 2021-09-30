@@ -174,8 +174,8 @@ void ShaderRD::_build_variant_code(StringBuilder &builder, uint32_t p_variant, c
 				if (p_version->uniforms.size()) {
 					builder.append("#define MATERIAL_UNIFORMS_USED\n");
 				}
-				for (Map<StringName, CharString>::Element *E = p_version->code_sections.front(); E; E = E->next()) {
-					builder.append(String("#define ") + String(E->key()) + "_CODE_USED\n");
+				for (const KeyValue<StringName, CharString> &E : p_version->code_sections) {
+					builder.append(String("#define ") + String(E.key) + "_CODE_USED\n");
 				}
 			} break;
 			case StageTemplate::Chunk::TYPE_MATERIAL_UNIFORMS: {
@@ -355,8 +355,8 @@ String ShaderRD::_version_get_sha1(Version *p_version) const {
 	hash_build.append(p_version->compute_globals.get_data());
 
 	Vector<StringName> code_sections;
-	for (Map<StringName, CharString>::Element *E = p_version->code_sections.front(); E; E = E->next()) {
-		code_sections.push_back(E->key());
+	for (const KeyValue<StringName, CharString> &E : p_version->code_sections) {
+		code_sections.push_back(E.key);
 	}
 	code_sections.sort_custom<StringName::AlphCompare>();
 
@@ -530,8 +530,8 @@ void ShaderRD::version_set_code(RID p_version, const Map<String, String> &p_code
 	version->fragment_globals = p_fragment_globals.utf8();
 	version->uniforms = p_uniforms.utf8();
 	version->code_sections.clear();
-	for (Map<String, String>::Element *E = p_code.front(); E; E = E->next()) {
-		version->code_sections[StringName(E->key().to_upper())] = E->get().utf8();
+	for (const KeyValue<String, String> &E : p_code) {
+		version->code_sections[StringName(E.key.to_upper())] = E.value.utf8();
 	}
 
 	version->custom_defines.clear();
@@ -556,8 +556,8 @@ void ShaderRD::version_set_compute_code(RID p_version, const Map<String, String>
 	version->uniforms = p_uniforms.utf8();
 
 	version->code_sections.clear();
-	for (Map<String, String>::Element *E = p_code.front(); E; E = E->next()) {
-		version->code_sections[StringName(E->key().to_upper())] = E->get().utf8();
+	for (const KeyValue<String, String> &E : p_code) {
+		version->code_sections[StringName(E.key.to_upper())] = E.value.utf8();
 	}
 
 	version->custom_defines.clear();

@@ -93,8 +93,8 @@ Dictionary Script::_get_script_constant_map() {
 	Dictionary ret;
 	Map<StringName, Variant> map;
 	get_constants(&map);
-	for (Map<StringName, Variant>::Element *E = map.front(); E; E = E->next()) {
-		ret[E->key()] = E->value();
+	for (const KeyValue<StringName, Variant> &E : map) {
+		ret[E.key] = E.value;
 	}
 	return ret;
 }

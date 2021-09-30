@@ -139,10 +139,10 @@ bool EditorSettings::_get(const StringName &p_name, Variant &r_ret) const {
 
 	if (p_name == "shortcuts") {
 		Array arr;
-		for (const Map<String, Ref<Shortcut>>::Element *E = shortcuts.front(); E; E = E->next()) {
-			Ref<Shortcut> sc = E->get();
+		for (const KeyValue<String, Ref<Shortcut>> &E : shortcuts) {
+			Ref<Shortcut> sc = E.value;
 
-			if (builtin_action_overrides.has(E->key())) {
+			if (builtin_action_overrides.has(E.key)) {
 				// This shortcut was auto-generated from built in actions: don't save.
 				continue;
 			}
@@ -158,19 +158,19 @@ bool EditorSettings::_get(const StringName &p_name, Variant &r_ret) const {
 				}
 			}
 
-			arr.push_back(E->key());
+			arr.push_back(E.key);
 			arr.push_back(sc->get_event());
 		}
 		r_ret = arr;
 		return true;
 	} else if (p_name == "builtin_action_overrides") {
 		Array actions_arr;
-		for (Map<String, List<Ref<InputEvent>>>::Element *E = builtin_action_overrides.front(); E; E = E->next()) {
-			List<Ref<InputEvent>> events = E->get();
+		for (const KeyValue<String, List<Ref<InputEvent>>> &E : builtin_action_overrides) {
+			List<Ref<InputEvent>> events = E.value;
 
 			// TODO: skip actions which are the same as the builtin.
 			Dictionary action_dict;
-			action_dict["name"] = E->key();
+			action_dict["name"] = E.key;
 
 			Array events_arr;
 			for (List<Ref<InputEvent>>::Element *I = events.front(); I; I = I->next()) {
@@ -1429,8 +1429,8 @@ Ref<Shortcut> EditorSettings::get_shortcut(const String &p_name) const {
 }
 
 void EditorSettings::get_shortcut_list(List<String> *r_shortcuts) {
-	for (const Map<String, Ref<Shortcut>>::Element *E = shortcuts.front(); E; E = E->next()) {
-		r_shortcuts->push_back(E->key());
+	for (const KeyValue<String, Ref<Shortcut>> &E : shortcuts) {
+		r_shortcuts->push_back(E.key);
 	}
 }
 

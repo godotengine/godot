@@ -4673,8 +4673,8 @@ Error GLTFDocument::_serialize_animations(Ref<GLTFState> state) {
 		Array channels;
 		Array samplers;
 
-		for (Map<int, GLTFAnimation::Track>::Element *track_i = gltf_animation->get_tracks().front(); track_i; track_i = track_i->next()) {
-			GLTFAnimation::Track track = track_i->get();
+		for (KeyValue<int, GLTFAnimation::Track> &track_i : gltf_animation->get_tracks()) {
+			GLTFAnimation::Track track = track_i.value;
 			if (track.position_track.times.size()) {
 				Dictionary t;
 				t["sampler"] = samplers.size();
@@ -4690,7 +4690,7 @@ Error GLTFDocument::_serialize_animations(Ref<GLTFState> state) {
 
 				Dictionary target;
 				target["path"] = "translation";
-				target["node"] = track_i->key();
+				target["node"] = track_i.key;
 
 				t["target"] = target;
 				channels.push_back(t);
@@ -4710,7 +4710,7 @@ Error GLTFDocument::_serialize_animations(Ref<GLTFState> state) {
 
 				Dictionary target;
 				target["path"] = "rotation";
-				target["node"] = track_i->key();
+				target["node"] = track_i.key;
 
 				t["target"] = target;
 				channels.push_back(t);
@@ -4730,7 +4730,7 @@ Error GLTFDocument::_serialize_animations(Ref<GLTFState> state) {
 
 				Dictionary target;
 				target["path"] = "scale";
-				target["node"] = track_i->key();
+				target["node"] = track_i.key;
 
 				t["target"] = target;
 				channels.push_back(t);
@@ -4809,7 +4809,7 @@ Error GLTFDocument::_serialize_animations(Ref<GLTFState> state) {
 
 				Dictionary target;
 				target["path"] = "weights";
-				target["node"] = track_i->key();
+				target["node"] = track_i.key;
 
 				t["target"] = target;
 				channels.push_back(t);
@@ -5800,16 +5800,16 @@ void GLTFDocument::_import_animation(Ref<GLTFState> state, AnimationPlayer *ap, 
 
 	float length = 0.0;
 
-	for (Map<int, GLTFAnimation::Track>::Element *track_i = anim->get_tracks().front(); track_i; track_i = track_i->next()) {
-		const GLTFAnimation::Track &track = track_i->get();
+	for (const KeyValue<int, GLTFAnimation::Track> &track_i : anim->get_tracks()) {
+		const GLTFAnimation::Track &track = track_i.value;
 		//need to find the path: for skeletons, weight tracks will affect the mesh
 		NodePath node_path;
 		//for skeletons, transform tracks always affect bones
 		NodePath transform_node_path;
 
-		GLTFNodeIndex node_index = track_i->key();
+		GLTFNodeIndex node_index = track_i.key;
 
-		const Ref<GLTFNode> gltf_node = state->nodes[track_i->key()];
+		const Ref<GLTFNode> gltf_node = state->nodes[track_i.key];
 
 		Node *root = ap->get_parent();
 		ERR_FAIL_COND(root == nullptr);
@@ -5861,15 +5861,15 @@ void GLTFDocument::_import_animation(Ref<GLTFState> state, AnimationPlayer *ap, 
 			Vector3 base_scale = Vector3(1, 1, 1);
 
 			if (!track.rotation_track.values.size()) {
-				base_rot = state->nodes[track_i->key()]->rotation.normalized();
+				base_rot = state->nodes[track_i.key]->rotation.normalized();
 			}
 
 			if (!track.position_track.values.size()) {
-				base_pos = state->nodes[track_i->key()]->position;
+				base_pos = state->nodes[track_i.key]->position;
 			}
 
 			if (!track.scale_track.values.size()) {
-				base_scale = state->nodes[track_i->key()]->scale;
+				base_scale = state->nodes[track_i.key]->scale;
 			}
 
 			bool last = false;
@@ -6322,9 +6322,9 @@ void GLTFDocument::_convert_animation(Ref<GLTFState> state, AnimationPlayer *ap,
 			const Vector<String> node_suffix = String(orig_track_path).split(":position");
 			const NodePath path = node_suffix[0];
 			const Node *node = ap->get_parent()->get_node_or_null(path);
-			for (Map<GLTFNodeIndex, Node *>::Element *position_scene_node_i = state->scene_nodes.front(); position_scene_node_i; position_scene_node_i = position_scene_node_i->next()) {
-				if (position_scene_node_i->get() == node) {
-					GLTFNodeIndex node_index = position_scene_node_i->key();
+			for (const KeyValue<GLTFNodeIndex, Node *> &position_scene_node_i : state->scene_nodes) {
+				if (position_scene_node_i.value == node) {
+					GLTFNodeIndex node_index = position_scene_node_i.key;
 					Map<int, GLTFAnimation::Track>::Element *position_track_i = gltf_animation->get_tracks().find(node_index);
 					GLTFAnimation::Track track;
 					if (position_track_i) {
@@ -6338,9 +6338,9 @@ void GLTFDocument::_convert_animation(Ref<GLTFState> state, AnimationPlayer *ap,
 			const Vector<String> node_suffix = String(orig_track_path).split(":rotation_degrees");
 			const NodePath path = node_suffix[0];
 			const Node *node = ap->get_parent()->get_node_or_null(path);
-			for (Map<GLTFNodeIndex, Node *>::Element *rotation_degree_scene_node_i = state->scene_nodes.front(); rotation_degree_scene_node_i; rotation_degree_scene_node_i = rotation_degree_scene_node_i->next()) {
-				if (rotation_degree_scene_node_i->get() == node) {
-					GLTFNodeIndex node_index = rotation_degree_scene_node_i->key();
+			for (const KeyValue<GLTFNodeIndex, Node *> &rotation_degree_scene_node_i : state->scene_nodes) {
+				if (rotation_degree_scene_node_i.value == node) {
+					GLTFNodeIndex node_index = rotation_degree_scene_node_i.key;
 					Map<int, GLTFAnimation::Track>::Element *rotation_degree_track_i = gltf_animation->get_tracks().find(node_index);
 					GLTFAnimation::Track track;
 					if (rotation_degree_track_i) {
@@ -6354,9 +6354,9 @@ void GLTFDocument::_convert_animation(Ref<GLTFState> state, AnimationPlayer *ap,
 			const Vector<String> node_suffix = String(orig_track_path).split(":scale");
 			const NodePath path = node_suffix[0];
 			const Node *node = ap->get_parent()->get_node_or_null(path);
-			for (Map<GLTFNodeIndex, Node *>::Element *scale_scene_node_i = state->scene_nodes.front(); scale_scene_node_i; scale_scene_node_i = scale_scene_node_i->next()) {
-				if (scale_scene_node_i->get() == node) {
-					GLTFNodeIndex node_index = scale_scene_node_i->key();
+			for (const KeyValue<GLTFNodeIndex, Node *> &scale_scene_node_i : state->scene_nodes) {
+				if (scale_scene_node_i.value == node) {
+					GLTFNodeIndex node_index = scale_scene_node_i.key;
 					Map<int, GLTFAnimation::Track>::Element *scale_track_i = gltf_animation->get_tracks().find(node_index);
 					GLTFAnimation::Track track;
 					if (scale_track_i) {
@@ -6370,11 +6370,11 @@ void GLTFDocument::_convert_animation(Ref<GLTFState> state, AnimationPlayer *ap,
 			const Vector<String> node_suffix = String(orig_track_path).split(":transform");
 			const NodePath path = node_suffix[0];
 			const Node *node = ap->get_parent()->get_node_or_null(path);
-			for (Map<GLTFNodeIndex, Node *>::Element *transform_track_i = state->scene_nodes.front(); transform_track_i; transform_track_i = transform_track_i->next()) {
-				if (transform_track_i->get() == node) {
+			for (const KeyValue<GLTFNodeIndex, Node *> &transform_track_i : state->scene_nodes) {
+				if (transform_track_i.value == node) {
 					GLTFAnimation::Track track;
-					track = _convert_animation_track(state, track, animation, Transform3D(), track_i, transform_track_i->key());
-					gltf_animation->get_tracks().insert(transform_track_i->key(), track);
+					track = _convert_animation_track(state, track, animation, Transform3D(), track_i, transform_track_i.key);
+					gltf_animation->get_tracks().insert(transform_track_i.key, track);
 				}
 			}
 		} else if (String(orig_track_path).find(":blend_shapes/") != -1) {
@@ -6386,9 +6386,9 @@ void GLTFDocument::_convert_animation(Ref<GLTFState> state, AnimationPlayer *ap,
 			Ref<Mesh> mesh = mi->get_mesh();
 			ERR_CONTINUE(mesh.is_null());
 			int32_t mesh_index = -1;
-			for (Map<GLTFNodeIndex, Node *>::Element *mesh_track_i = state->scene_nodes.front(); mesh_track_i; mesh_track_i = mesh_track_i->next()) {
-				if (mesh_track_i->get() == node) {
-					mesh_index = mesh_track_i->key();
+			for (const KeyValue<GLTFNodeIndex, Node *> &mesh_track_i : state->scene_nodes) {
+				if (mesh_track_i.value == node) {
+					mesh_index = mesh_track_i.key;
 				}
 			}
 			ERR_CONTINUE(mesh_index == -1);
@@ -6469,9 +6469,9 @@ void GLTFDocument::_convert_animation(Ref<GLTFState> state, AnimationPlayer *ap,
 			for (int32_t node_i = 0; node_i < ap->get_parent()->get_child_count(); node_i++) {
 				const Node *child = ap->get_parent()->get_child(node_i);
 				const Node *node = child->get_node_or_null(orig_track_path);
-				for (Map<GLTFNodeIndex, Node *>::Element *scene_node_i = state->scene_nodes.front(); scene_node_i; scene_node_i = scene_node_i->next()) {
-					if (scene_node_i->get() == node) {
-						GLTFNodeIndex node_index = scene_node_i->key();
+				for (const KeyValue<GLTFNodeIndex, Node *> &scene_node_i : state->scene_nodes) {
+					if (scene_node_i.value == node) {
+						GLTFNodeIndex node_index = scene_node_i.key;
 						Map<int, GLTFAnimation::Track>::Element *node_track_i = gltf_animation->get_tracks().find(node_index);
 						GLTFAnimation::Track track;
 						if (node_track_i) {
