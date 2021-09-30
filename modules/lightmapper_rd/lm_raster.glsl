@@ -84,59 +84,6 @@ layout(location = 1) out vec4 normal;
 layout(location = 2) out vec4 unocclude;
 
 void main() {
-	vec3 vertex_pos = vertex_interp;
-
-	{
-		// smooth out vertex position by interpolating its projection in the 3 normal planes (normal plane is created by vertex pos and normal)
-		// because we don't want to interpolate inwards, normals found pointing inwards are pushed out.
-		vec3 pos_a = vertices.data[vertex_indices.x].position;
-		vec3 pos_b = vertices.data[vertex_indices.y].position;
-		vec3 pos_c = vertices.data[vertex_indices.z].position;
-		vec3 center = (pos_a + pos_b + pos_c) * 0.3333333;
-		vec3 norm_a = vec3(vertices.data[vertex_indices.x].normal_xy, vertices.data[vertex_indices.x].normal_z);
-		vec3 norm_b = vec3(vertices.data[vertex_indices.y].normal_xy, vertices.data[vertex_indices.y].normal_z);
-		vec3 norm_c = vec3(vertices.data[vertex_indices.z].normal_xy, vertices.data[vertex_indices.z].normal_z);
-
-		{
-			vec3 dir_a = normalize(pos_a - center);
-			float d_a = dot(dir_a, norm_a);
-			if (d_a < 0) {
-				//pointing inwards
-				norm_a = normalize(norm_a - dir_a * d_a);
-			}
-		}
-		{
-			vec3 dir_b = normalize(pos_b - center);
-			float d_b = dot(dir_b, norm_b);
-			if (d_b < 0) {
-				//pointing inwards
-				norm_b = normalize(norm_b - dir_b * d_b);
-			}
-		}
-		{
-			vec3 dir_c = normalize(pos_c - center);
-			float d_c = dot(dir_c, norm_c);
-			if (d_c < 0) {
-				//pointing inwards
-				norm_c = normalize(norm_c - dir_c * d_c);
-			}
-		}
-
-		float d_a = dot(norm_a, pos_a);
-		float d_b = dot(norm_b, pos_b);
-		float d_c = dot(norm_c, pos_c);
-
-		vec3 proj_a = vertex_pos - norm_a * (dot(norm_a, vertex_pos) - d_a);
-		vec3 proj_b = vertex_pos - norm_b * (dot(norm_b, vertex_pos) - d_b);
-		vec3 proj_c = vertex_pos - norm_c * (dot(norm_c, vertex_pos) - d_c);
-
-		vec3 smooth_position = proj_a * barycentric.x + proj_b * barycentric.y + proj_c * barycentric.z;
-
-		if (dot(face_normal, smooth_position) > dot(face_normal, vertex_pos)) { //only project outwards
-			vertex_pos = smooth_position;
-		}
-	}
-
 	{
 		// unocclusion technique based on:
 		// https://ndotl.wordpress.com/2018/08/29/baking-artifact-free-lightmaps/
@@ -152,6 +99,6 @@ void main() {
 		//continued on lm_compute.glsl
 	}
 
-	position = vec4(vertex_pos, 1.0);
+	position = vec4(vertex_interp, 1.0);
 	normal = vec4(normalize(normal_interp), 1.0);
 }
