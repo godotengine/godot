@@ -3333,7 +3333,7 @@ ThemeEditor::ThemeEditor() {
 	preview_tabs->set_h_size_flags(SIZE_EXPAND_FILL);
 	preview_tabbar_hb->add_child(preview_tabs);
 	preview_tabs->connect("tab_changed", callable_mp(this, &ThemeEditor::_change_preview_tab));
-	preview_tabs->connect("right_button_pressed", callable_mp(this, &ThemeEditor::_remove_preview_tab));
+	preview_tabs->connect("tab_rmb_clicked", callable_mp(this, &ThemeEditor::_remove_preview_tab));
 
 	HBoxContainer *add_preview_button_hb = memnew(HBoxContainer);
 	preview_tabbar_hb->add_child(add_preview_button_hb);
