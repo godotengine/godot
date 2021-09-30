@@ -392,8 +392,10 @@ private:
 	Vector3 motion_velocity;
 	Vector3 floor_normal;
 	Vector3 wall_normal;
+	Vector3 ceiling_normal;
 	Vector3 last_motion;
 	Vector3 platform_velocity;
+	Vector3 platform_ceiling_velocity;
 	Vector3 previous_position;
 	Vector3 real_velocity;
 

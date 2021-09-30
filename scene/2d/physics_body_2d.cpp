@@ -1131,6 +1131,8 @@ void CharacterBody2D::_move_and_slide_grounded(double p_delta, bool p_was_on_flo
 	bool sliding_enabled = !floor_stop_on_slope;
 	// Constant speed can be applied only the first time sliding is enabled.
 	bool can_apply_constant_speed = sliding_enabled;
+	// If the platform's ceiling push down the body.
+	bool apply_ceiling_velocity = false;
 	bool first_slide = true;
 	bool vel_dir_facing_up = motion_velocity.dot(up_direction) > 0;
 	Vector2 last_travel;
@@ -1146,6 +1148,19 @@ void CharacterBody2D::_move_and_slide_grounded(double p_delta, bool p_was_on_flo
 		if (collided) {
 			motion_results.push_back(result);
 			_set_collision_direction(result);
+
+			// If we hit a ceiling platform, we set the vertical motion_velocity to at least the platform one.
+			if (on_ceiling && result.collider_velocity != Vector2() && result.collider_velocity.dot(up_direction) < 0) {
+				// If ceiling sliding is on, only apply when the ceiling is flat or when the motion is upward.
+				if (!slide_on_ceiling || motion.dot(up_direction) < 0 || (result.collision_normal + up_direction).length() < 0.01) {
+					apply_ceiling_velocity = true;
+					Vector2 ceiling_vertical_velocity = up_direction * up_direction.dot(result.collider_velocity);
+					Vector2 motion_vertical_velocity = up_direction * up_direction.dot(motion_velocity);
+					if (motion_vertical_velocity.dot(up_direction) > 0 || ceiling_vertical_velocity.length_squared() > motion_vertical_velocity.length_squared()) {
+						motion_velocity = ceiling_vertical_velocity + motion_velocity.slide(up_direction);
+					}
+				}
+			}
 
 			if (on_floor && floor_stop_on_slope && (motion_velocity.normalized() + up_direction).length() < 0.01) {
 				Transform2D gt = get_global_transform();
@@ -1200,7 +1215,7 @@ void CharacterBody2D::_move_and_slide_grounded(double p_delta, bool p_was_on_flo
 				motion = motion_slide_norm * (motion_slide_up.length() - result.travel.slide(up_direction).length() - last_travel.slide(up_direction).length());
 			}
 			// Regular sliding, the last part of the test handle the case when you don't want to slide on the ceiling.
-			else if ((sliding_enabled || !on_floor) && (!on_ceiling || slide_on_ceiling || !vel_dir_facing_up)) {
+			else if ((sliding_enabled || !on_floor) && (!on_ceiling || slide_on_ceiling || !vel_dir_facing_up) && !apply_ceiling_velocity) {
 				Vector2 slide_motion = result.remainder.slide(result.collision_normal);
 				if (slide_motion.dot(motion_velocity) > 0.0) {
 					motion = slide_motion;
