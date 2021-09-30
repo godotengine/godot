@@ -32,6 +32,7 @@
 #define EDITOR_SCENE_IMPORTER_MESH_H
 
 #include "core/io/resource.h"
+#include "core/templates/local_vector.h"
 #include "scene/resources/concave_polygon_shape_3d.h"
 #include "scene/resources/convex_polygon_shape_3d.h"
 #include "scene/resources/mesh.h"
@@ -55,12 +56,20 @@ class EditorSceneImporterMesh : public Resource {
 		Vector<BlendShape> blend_shape_data;
 		struct LOD {
 			Vector<int> indices;
-			float distance;
+			float distance = 0.0f;
 		};
 		Vector<LOD> lods;
 		Ref<Material> material;
 		String name;
 		uint32_t flags = 0;
+
+		struct LODComparator {
+			_FORCE_INLINE_ bool operator()(const LOD &l, const LOD &r) const {
+				return l.distance < r.distance;
+			}
+		};
+
+		void split_normals(const LocalVector<int> &p_indices, const LocalVector<Vector3> &p_normals);
 	};
 	Vector<Surface> surfaces;
 	Vector<String> blend_shapes;
@@ -71,7 +80,6 @@ class EditorSceneImporterMesh : public Resource {
 	Ref<EditorSceneImporterMesh> shadow_mesh;
 
 	Size2i lightmap_size_hint;
-	Basis compute_rotation_matrix_from_ortho_6d(Vector3 p_x_raw, Vector3 y_raw);
 
 protected:
 	void _set_data(const Dictionary &p_data);
@@ -103,7 +111,7 @@ public:
 
 	void set_surface_material(int p_surface, const Ref<Material> &p_material);
 
-	void generate_lods();
+	void generate_lods(float p_normal_merge_angle, float p_normal_split_angle);
 
 	void create_shadow_mesh();
 	Ref<EditorSceneImporterMesh> get_shadow_mesh() const;

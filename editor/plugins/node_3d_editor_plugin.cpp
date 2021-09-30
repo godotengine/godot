@@ -2601,6 +2601,9 @@ void Node3DEditorViewport::_project_settings_changed() {
 
 	const bool use_occlusion_culling = GLOBAL_GET("rendering/occlusion_culling/use_occlusion_culling");
 	viewport->set_use_occlusion_culling(use_occlusion_culling);
+
+	const float lod_threshold = GLOBAL_GET("rendering/mesh_lod/lod_change/threshold_pixels");
+	viewport->set_lod_threshold(lod_threshold);
 }
 
 void Node3DEditorViewport::_notification(int p_what) {

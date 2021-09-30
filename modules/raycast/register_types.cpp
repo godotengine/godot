@@ -32,12 +32,14 @@
 
 #include "lightmap_raycaster.h"
 #include "raycast_occlusion_cull.h"
+#include "static_raycaster.h"
 
 RaycastOcclusionCull *raycast_occlusion_cull = nullptr;
 
 void register_raycast_types() {
 #ifdef TOOLS_ENABLED
 	LightmapRaycasterEmbree::make_default_raycaster();
+	StaticRaycasterEmbree::make_default_raycaster();
 #endif
 	raycast_occlusion_cull = memnew(RaycastOcclusionCull);
 }
@@ -46,4 +48,7 @@ void unregister_raycast_types() {
 	if (raycast_occlusion_cull) {
 		memdelete(raycast_occlusion_cull);
 	}
+#ifdef TOOLS_ENABLED
+	StaticRaycasterEmbree::free();
+#endif
 }

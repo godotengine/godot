@@ -30,10 +30,98 @@
 
 #include "scene_importer_mesh.h"
 
-#include "core/math/math_defs.h"
+#include "core/math/random_pcg.h"
+#include "core/math/static_raycaster.h"
 #include "scene/resources/surface_tool.h"
 
 #include <cstdint>
+
+void EditorSceneImporterMesh::Surface::split_normals(const LocalVector<int> &p_indices, const LocalVector<Vector3> &p_normals) {
+	ERR_FAIL_COND(arrays.size() != RS::ARRAY_MAX);
+
+	const PackedVector3Array &vertices = arrays[RS::ARRAY_VERTEX];
+	int current_vertex_count = vertices.size();
+	int new_vertex_count = p_indices.size();
+	int final_vertex_count = current_vertex_count + new_vertex_count;
+	const int *indices_ptr = p_indices.ptr();
+
+	for (int i = 0; i < arrays.size(); i++) {
+		if (i == RS::ARRAY_INDEX) {
+			continue;
+		}
+
+		if (arrays[i].get_type() == Variant::NIL) {
+			continue;
+		}
+
+		switch (arrays[i].get_type()) {
+			case Variant::PACKED_VECTOR3_ARRAY: {
+				PackedVector3Array data = arrays[i];
+				data.resize(final_vertex_count);
+				Vector3 *data_ptr = data.ptrw();
+				if (i == RS::ARRAY_NORMAL) {
+					const Vector3 *normals_ptr = p_normals.ptr();
+					memcpy(&data_ptr[current_vertex_count], normals_ptr, sizeof(Vector3) * new_vertex_count);
+				} else {
+					for (int j = 0; j < new_vertex_count; j++) {
+						data_ptr[current_vertex_count + j] = data_ptr[indices_ptr[j]];
+					}
+				}
+				arrays[i] = data;
+			} break;
+			case Variant::PACKED_VECTOR2_ARRAY: {
+				PackedVector2Array data = arrays[i];
+				data.resize(final_vertex_count);
+				Vector2 *data_ptr = data.ptrw();
+				for (int j = 0; j < new_vertex_count; j++) {
+					data_ptr[current_vertex_count + j] = data_ptr[indices_ptr[j]];
+				}
+				arrays[i] = data;
+			} break;
+			case Variant::PACKED_FLOAT32_ARRAY: {
+				PackedFloat32Array data = arrays[i];
+				int elements = data.size() / current_vertex_count;
+				data.resize(final_vertex_count * elements);
+				float *data_ptr = data.ptrw();
+				for (int j = 0; j < new_vertex_count; j++) {
+					memcpy(&data_ptr[(current_vertex_count + j) * elements], &data_ptr[indices_ptr[j] * elements], sizeof(float) * elements);
+				}
+				arrays[i] = data;
+			} break;
+			case Variant::PACKED_INT32_ARRAY: {
+				PackedInt32Array data = arrays[i];
+				int elements = data.size() / current_vertex_count;
+				data.resize(final_vertex_count * elements);
+				int32_t *data_ptr = data.ptrw();
+				for (int j = 0; j < new_vertex_count; j++) {
+					memcpy(&data_ptr[(current_vertex_count + j) * elements], &data_ptr[indices_ptr[j] * elements], sizeof(int32_t) * elements);
+				}
+				arrays[i] = data;
+			} break;
+			case Variant::PACKED_BYTE_ARRAY: {
+				PackedByteArray data = arrays[i];
+				int elements = data.size() / current_vertex_count;
+				data.resize(final_vertex_count * elements);
+				uint8_t *data_ptr = data.ptrw();
+				for (int j = 0; j < new_vertex_count; j++) {
+					memcpy(&data_ptr[(current_vertex_count + j) * elements], &data_ptr[indices_ptr[j] * elements], sizeof(uint8_t) * elements);
+				}
+				arrays[i] = data;
+			} break;
+			case Variant::PACKED_COLOR_ARRAY: {
+				PackedColorArray data = arrays[i];
+				data.resize(final_vertex_count);
+				Color *data_ptr = data.ptrw();
+				for (int j = 0; j < new_vertex_count; j++) {
+					data_ptr[current_vertex_count + j] = data_ptr[indices_ptr[j]];
+				}
+			} break;
+			default: {
+				ERR_FAIL_MSG("Uhandled array type.");
+			} break;
+		}
+	}
+}
 
 void EditorSceneImporterMesh::add_blend_shape(const String &p_name) {
 	ERR_FAIL_COND(surfaces.size() > 0);
@@ -157,29 +245,14 @@ void EditorSceneImporterMesh::set_surface_material(int p_surface, const Ref<Mate
 	mesh.unref();
 }
 
-Basis EditorSceneImporterMesh::compute_rotation_matrix_from_ortho_6d(Vector3 p_x_raw, Vector3 p_y_raw) {
-	Vector3 x = p_x_raw.normalized();
-	Vector3 z = x.cross(p_y_raw);
-	z = z.normalized();
-	Vector3 y = z.cross(x);
-	Basis basis;
-	basis.set_axis(Vector3::AXIS_X, x);
-	basis.set_axis(Vector3::AXIS_Y, y);
-	basis.set_axis(Vector3::AXIS_Z, z);
-	return basis;
-}
-
-void EditorSceneImporterMesh::generate_lods() {
-	if (!SurfaceTool::simplify_func) {
-		return;
-	}
+void EditorSceneImporterMesh::generate_lods(float p_normal_merge_angle, float p_normal_split_angle) {
 	if (!SurfaceTool::simplify_scale_func) {
 		return;
 	}
-	if (!SurfaceTool::simplify_sloppy_func) {
+	if (!SurfaceTool::simplify_with_attrib_func) {
 		return;
 	}
-	if (!SurfaceTool::simplify_with_attrib_func) {
+	if (!SurfaceTool::optimize_vertex_cache_func) {
 		return;
 	}
 
@@ -190,67 +263,343 @@ void EditorSceneImporterMesh::generate_lods() {
 
 		surfaces.write[i].lods.clear();
 		Vector<Vector3> vertices = surfaces[i].arrays[RS::ARRAY_VERTEX];
-		Vector<int> indices = surfaces[i].arrays[RS::ARRAY_INDEX];
-		if (indices.size() == 0) {
+		PackedInt32Array indices = surfaces[i].arrays[RS::ARRAY_INDEX];
+		Vector<Vector3> normals = surfaces[i].arrays[RS::ARRAY_NORMAL];
+		Vector<Vector2> uvs = surfaces[i].arrays[RS::ARRAY_TEX_UV];
+
+		unsigned int index_count = indices.size();
+		unsigned int vertex_count = vertices.size();
+
+		if (index_count == 0) {
 			continue; //no lods if no indices
 		}
-		Vector<Vector3> normals = surfaces[i].arrays[RS::ARRAY_NORMAL];
-		uint32_t vertex_count = vertices.size();
+
 		const Vector3 *vertices_ptr = vertices.ptr();
-		Vector<float> attributes;
-		Vector<float> normal_weights;
-		int32_t attribute_count = 6;
-		if (normals.size()) {
-			attributes.resize(normals.size() * attribute_count);
-			for (int32_t normal_i = 0; normal_i < normals.size(); normal_i++) {
-				Basis basis;
-				basis.set_euler(normals[normal_i]);
-				Vector3 basis_x = basis.get_axis(0);
-				Vector3 basis_y = basis.get_axis(1);
-				basis = compute_rotation_matrix_from_ortho_6d(basis_x, basis_y);
-				basis_x = basis.get_axis(0);
-				basis_y = basis.get_axis(1);
-				attributes.write[normal_i * attribute_count + 0] = basis_x.x;
-				attributes.write[normal_i * attribute_count + 1] = basis_x.y;
-				attributes.write[normal_i * attribute_count + 2] = basis_x.z;
-				attributes.write[normal_i * attribute_count + 3] = basis_y.x;
-				attributes.write[normal_i * attribute_count + 4] = basis_y.y;
-				attributes.write[normal_i * attribute_count + 5] = basis_y.z;
+		const int *indices_ptr = indices.ptr();
+
+		if (normals.is_empty()) {
+			normals.resize(vertices.size());
+			Vector3 *n_ptr = normals.ptrw();
+			for (unsigned int j = 0; j < index_count; j += 3) {
+				const Vector3 &v0 = vertices_ptr[indices_ptr[j + 0]];
+				const Vector3 &v1 = vertices_ptr[indices_ptr[j + 1]];
+				const Vector3 &v2 = vertices_ptr[indices_ptr[j + 2]];
+				Vector3 n = vec3_cross(v0 - v2, v0 - v1).normalized();
+				n_ptr[j + 0] = n;
+				n_ptr[j + 1] = n;
+				n_ptr[j + 2] = n;
 			}
-			normal_weights.resize(vertex_count);
-			for (int32_t weight_i = 0; weight_i < normal_weights.size(); weight_i++) {
-				normal_weights.write[weight_i] = 1.0;
-			}
-		} else {
-			attribute_count = 0;
 		}
-		const int min_indices = 10;
-		const float error_tolerance = 1.44224'95703; // Cube root of 3
-		const float threshold = 1.0 / error_tolerance;
-		int index_target = indices.size() * threshold;
-		float max_mesh_error_percentage = 1e0f;
+
+		float normal_merge_threshold = Math::cos(Math::deg2rad(p_normal_merge_angle));
+		float normal_pre_split_threshold = Math::cos(Math::deg2rad(MIN(180.0f, p_normal_split_angle * 2.0f)));
+		float normal_split_threshold = Math::cos(Math::deg2rad(p_normal_split_angle));
+		const Vector3 *normals_ptr = normals.ptr();
+
+		Map<Vector3, LocalVector<Pair<int, int>>> unique_vertices;
+
+		LocalVector<int> vertex_remap;
+		LocalVector<int> vertex_inverse_remap;
+		LocalVector<Vector3> merged_vertices;
+		LocalVector<Vector3> merged_normals;
+		LocalVector<int> merged_normals_counts;
+		const Vector2 *uvs_ptr = uvs.ptr();
+
+		for (unsigned int j = 0; j < vertex_count; j++) {
+			const Vector3 &v = vertices_ptr[j];
+			const Vector3 &n = normals_ptr[j];
+
+			Map<Vector3, LocalVector<Pair<int, int>>>::Element *E = unique_vertices.find(v);
+
+			if (E) {
+				const LocalVector<Pair<int, int>> &close_verts = E->get();
+
+				bool found = false;
+				for (unsigned int k = 0; k < close_verts.size(); k++) {
+					const Pair<int, int> &idx = close_verts[k];
+
+					// TODO check more attributes?
+					if ((!uvs_ptr || uvs_ptr[j].distance_squared_to(uvs_ptr[idx.second]) < CMP_EPSILON2) && normals[idx.second].dot(n) > normal_merge_threshold) {
+						vertex_remap.push_back(idx.first);
+						merged_normals[idx.first] += normals[idx.second];
+						merged_normals_counts[idx.first]++;
+						found = true;
+						break;
+					}
+				}
+
+				if (!found) {
+					int vcount = merged_vertices.size();
+					unique_vertices[v].push_back(Pair<int, int>(vcount, j));
+					vertex_inverse_remap.push_back(j);
+					merged_vertices.push_back(v);
+					vertex_remap.push_back(vcount);
+					merged_normals.push_back(normals_ptr[j]);
+					merged_normals_counts.push_back(1);
+				}
+			} else {
+				int vcount = merged_vertices.size();
+				unique_vertices[v] = LocalVector<Pair<int, int>>();
+				unique_vertices[v].push_back(Pair<int, int>(vcount, j));
+				vertex_inverse_remap.push_back(j);
+				merged_vertices.push_back(v);
+				vertex_remap.push_back(vcount);
+				merged_normals.push_back(normals_ptr[j]);
+				merged_normals_counts.push_back(1);
+			}
+		}
+
+		LocalVector<int> merged_indices;
+		merged_indices.resize(index_count);
+		for (unsigned int j = 0; j < index_count; j++) {
+			merged_indices[j] = vertex_remap[indices[j]];
+		}
+
+		unsigned int merged_vertex_count = merged_vertices.size();
+		const Vector3 *merged_vertices_ptr = merged_vertices.ptr();
+		const int32_t *merged_indices_ptr = merged_indices.ptr();
+
+		{
+			const int *counts_ptr = merged_normals_counts.ptr();
+			Vector3 *merged_normals_ptrw = merged_normals.ptr();
+			for (unsigned int j = 0; j < merged_vertex_count; j++) {
+				merged_normals_ptrw[j] /= counts_ptr[j];
+			}
+		}
+
+		LocalVector<float> normal_weights;
+		normal_weights.resize(merged_vertex_count);
+		for (unsigned int j = 0; j < merged_vertex_count; j++) {
+			normal_weights[j] = 2.0; // Give some weight to normal preservation, may be worth exposing as an import setting
+		}
+
+		const float max_mesh_error = FLT_MAX; // We don't want to limit by error, just by index target
+		float scale = SurfaceTool::simplify_scale_func((const float *)merged_vertices_ptr, merged_vertex_count, sizeof(Vector3));
 		float mesh_error = 0.0f;
-		float scale = SurfaceTool::simplify_scale_func((const float *)vertices_ptr, vertex_count, sizeof(Vector3));
-		while (index_target > min_indices) {
-			Vector<int> new_indices;
-			new_indices.resize(indices.size());
-			size_t new_len = SurfaceTool::simplify_with_attrib_func((unsigned int *)new_indices.ptrw(), (const unsigned int *)indices.ptr(), indices.size(), (const float *)vertices_ptr, vertex_count, sizeof(Vector3), index_target, max_mesh_error_percentage, &mesh_error, (float *)attributes.ptrw(), normal_weights.ptrw(), attribute_count);
-			if ((int)new_len > (index_target * error_tolerance)) {
+
+		unsigned int index_target = 12; // Start with the smallest target, 4 triangles
+		unsigned int last_index_count = 0;
+
+		int split_vertex_count = vertex_count;
+		LocalVector<Vector3> split_vertex_normals;
+		LocalVector<int> split_vertex_indices;
+		split_vertex_normals.reserve(index_count / 3);
+		split_vertex_indices.reserve(index_count / 3);
+
+		RandomPCG pcg;
+		pcg.seed(123456789); // Keep seed constant across imports
+
+		Ref<StaticRaycaster> raycaster = StaticRaycaster::create();
+		if (raycaster.is_valid()) {
+			raycaster->add_mesh(vertices, indices, 0);
+			raycaster->commit();
+		}
+
+		while (index_target < index_count) {
+			PackedInt32Array new_indices;
+			new_indices.resize(index_count);
+
+			size_t new_index_count = SurfaceTool::simplify_with_attrib_func((unsigned int *)new_indices.ptrw(), (const uint32_t *)merged_indices_ptr, index_count, (const float *)merged_vertices_ptr, merged_vertex_count, sizeof(Vector3), index_target, max_mesh_error, &mesh_error, (float *)merged_normals.ptr(), normal_weights.ptr(), 3);
+
+			if (new_index_count < last_index_count * 1.5f) {
+				index_target = index_target * 1.5f;
+				continue;
+			}
+
+			if (new_index_count <= 0 || (new_index_count >= (index_count * 0.75f))) {
 				break;
 			}
+
+			new_indices.resize(new_index_count);
+
+			LocalVector<LocalVector<int>> vertex_corners;
+			vertex_corners.resize(vertex_count);
+			{
+				int *ptrw = new_indices.ptrw();
+				for (unsigned int j = 0; j < new_index_count; j++) {
+					const int &remapped = vertex_inverse_remap[ptrw[j]];
+					vertex_corners[remapped].push_back(j);
+					ptrw[j] = remapped;
+				}
+			}
+
+			if (raycaster.is_valid()) {
+				float error_factor = 1.0f / (scale * MAX(mesh_error, 0.15));
+				const float ray_bias = 0.05;
+				float ray_length = ray_bias + mesh_error * scale * 3.0f;
+
+				Vector<StaticRaycaster::Ray> rays;
+				LocalVector<Vector2> ray_uvs;
+
+				int32_t *new_indices_ptr = new_indices.ptrw();
+
+				int current_ray_count = 0;
+				for (unsigned int j = 0; j < new_index_count; j += 3) {
+					const Vector3 &v0 = vertices_ptr[new_indices_ptr[j + 0]];
+					const Vector3 &v1 = vertices_ptr[new_indices_ptr[j + 1]];
+					const Vector3 &v2 = vertices_ptr[new_indices_ptr[j + 2]];
+					Vector3 face_normal = vec3_cross(v0 - v2, v0 - v1);
+					float face_area = face_normal.length(); // Actually twice the face area, since it's the same error_factor on all faces, we don't care
+
+					Vector3 dir = face_normal / face_area;
+					int ray_count = CLAMP(5.0 * face_area * error_factor, 16, 64);
+
+					rays.resize(current_ray_count + ray_count);
+					StaticRaycaster::Ray *rays_ptr = rays.ptrw();
+
+					ray_uvs.resize(current_ray_count + ray_count);
+					Vector2 *ray_uvs_ptr = ray_uvs.ptr();
+
+					for (int k = 0; k < ray_count; k++) {
+						float u = pcg.randf();
+						float v = pcg.randf();
+
+						if (u + v >= 1.0f) {
+							u = 1.0f - u;
+							v = 1.0f - v;
+						}
+
+						u = 0.9f * u + 0.05f / 3.0f; // Give barycentric coordinates some padding, we don't want to sample right on the edge
+						v = 0.9f * v + 0.05f / 3.0f; // v = (v - one_third) * 0.95f + one_third;
+						float w = 1.0f - u - v;
+
+						Vector3 org = v0 * w + v1 * u + v2 * v;
+						org -= dir * ray_bias;
+						rays_ptr[current_ray_count + k] = StaticRaycaster::Ray(org, dir, 0.0f, ray_length);
+						rays_ptr[current_ray_count + k].id = j / 3;
+						ray_uvs_ptr[current_ray_count + k] = Vector2(u, v);
+					}
+
+					current_ray_count += ray_count;
+				}
+
+				raycaster->intersect(rays);
+
+				LocalVector<Vector3> ray_normals;
+				LocalVector<float> ray_normal_weights;
+
+				ray_normals.resize(new_index_count);
+				ray_normal_weights.resize(new_index_count);
+
+				for (unsigned int j = 0; j < new_index_count; j++) {
+					ray_normal_weights[j] = 0.0f;
+				}
+
+				const StaticRaycaster::Ray *rp = rays.ptr();
+				for (int j = 0; j < rays.size(); j++) {
+					if (rp[j].geomID != 0) { // Ray missed
+						continue;
+					}
+
+					if (rp[j].normal.normalized().dot(rp[j].dir) > 0.0f) { // Hit a back face.
+						continue;
+					}
+
+					const float &u = rp[j].u;
+					const float &v = rp[j].v;
+					const float w = 1.0f - u - v;
+
+					const unsigned int &hit_tri_id = rp[j].primID;
+					const unsigned int &orig_tri_id = rp[j].id;
+
+					const Vector3 &n0 = normals_ptr[indices_ptr[hit_tri_id * 3 + 0]];
+					const Vector3 &n1 = normals_ptr[indices_ptr[hit_tri_id * 3 + 1]];
+					const Vector3 &n2 = normals_ptr[indices_ptr[hit_tri_id * 3 + 2]];
+					Vector3 normal = n0 * w + n1 * u + n2 * v;
+
+					Vector2 orig_uv = ray_uvs[j];
+					float orig_bary[3] = { 1.0f - orig_uv.x - orig_uv.y, orig_uv.x, orig_uv.y };
+					for (int k = 0; k < 3; k++) {
+						int idx = orig_tri_id * 3 + k;
+						float weight = orig_bary[k];
+						ray_normals[idx] += normal * weight;
+						ray_normal_weights[idx] += weight;
+					}
+				}
+
+				for (unsigned int j = 0; j < new_index_count; j++) {
+					if (ray_normal_weights[j] < 1.0f) { // Not enough data, the new normal would be just a bad guess
+						ray_normals[j] = Vector3();
+					} else {
+						ray_normals[j] /= ray_normal_weights[j];
+					}
+				}
+
+				LocalVector<LocalVector<int>> normal_group_indices;
+				LocalVector<Vector3> normal_group_averages;
+				normal_group_indices.reserve(24);
+				normal_group_averages.reserve(24);
+
+				for (unsigned int j = 0; j < vertex_count; j++) {
+					const LocalVector<int> &corners = vertex_corners[j];
+					const Vector3 &vertex_normal = normals_ptr[j];
+
+					for (unsigned int k = 0; k < corners.size(); k++) {
+						const int &corner_idx = corners[k];
+						const Vector3 &ray_normal = ray_normals[corner_idx];
+
+						if (ray_normal.length_squared() < CMP_EPSILON2) {
+							continue;
+						}
+
+						bool found = false;
+						for (unsigned int l = 0; l < normal_group_indices.size(); l++) {
+							LocalVector<int> &group_indices = normal_group_indices[l];
+							Vector3 n = normal_group_averages[l] / group_indices.size();
+							if (n.dot(ray_normal) > normal_pre_split_threshold) {
+								found = true;
+								group_indices.push_back(corner_idx);
+								normal_group_averages[l] += ray_normal;
+								break;
+							}
+						}
+
+						if (!found) {
+							LocalVector<int> new_group;
+							new_group.push_back(corner_idx);
+							normal_group_indices.push_back(new_group);
+							normal_group_averages.push_back(ray_normal);
+						}
+					}
+
+					for (unsigned int k = 0; k < normal_group_indices.size(); k++) {
+						LocalVector<int> &group_indices = normal_group_indices[k];
+						Vector3 n = normal_group_averages[k] / group_indices.size();
+
+						if (vertex_normal.dot(n) < normal_split_threshold) {
+							split_vertex_indices.push_back(j);
+							split_vertex_normals.push_back(n);
+							int new_idx = split_vertex_count++;
+							for (unsigned int l = 0; l < group_indices.size(); l++) {
+								new_indices_ptr[group_indices[l]] = new_idx;
+							}
+						}
+					}
+
+					normal_group_indices.clear();
+					normal_group_averages.clear();
+				}
+			}
+
 			Surface::LOD lod;
-			lod.distance = mesh_error * scale;
-			if (Math::is_zero_approx(mesh_error)) {
-				break;
-			}
-			if (new_len <= 0) {
-				break;
-			}
-			new_indices.resize(new_len);
+			lod.distance = MAX(mesh_error * scale, CMP_EPSILON2);
 			lod.indices = new_indices;
-			print_line("Lod " + itos(surfaces.write[i].lods.size()) + " begin with " + itos(indices.size() / 3) + " triangles and shoot for " + itos(index_target / 3) + " triangles. Got " + itos(new_len / 3) + " triangles. Lod screen ratio " + rtos(lod.distance));
 			surfaces.write[i].lods.push_back(lod);
-			index_target *= threshold;
+			index_target = MAX(new_index_count, index_target) * 2;
+			last_index_count = new_index_count;
+
+			if (mesh_error == 0.0f) {
+				break;
+			}
+		}
+
+		surfaces.write[i].split_normals(split_vertex_indices, split_vertex_normals);
+		surfaces.write[i].lods.sort_custom<Surface::LODComparator>();
+
+		for (int j = 0; j < surfaces.write[i].lods.size(); j++) {
+			Surface::LOD &lod = surfaces.write[i].lods.write[j];
+			unsigned int *lod_indices_ptr = (unsigned int *)lod.indices.ptrw();
+			SurfaceTool::optimize_vertex_cache_func(lod_indices_ptr, lod_indices_ptr, lod.indices.size(), split_vertex_count);
 		}
 	}
 }
@@ -347,7 +696,7 @@ void EditorSceneImporterMesh::create_shadow_mesh() {
 			Map<Vector3, int> unique_vertices;
 			const Vector3 *vptr = vertices.ptr();
 			for (int j = 0; j < vertex_count; j++) {
-				Vector3 v = vptr[j];
+				const Vector3 &v = vptr[j];
 
 				Map<Vector3, int>::Element *E = unique_vertices.find(v);
 
@@ -397,9 +746,9 @@ void EditorSceneImporterMesh::create_shadow_mesh() {
 				index_wptr = new_indices.ptrw();
 
 				for (int k = 0; k < index_count; k++) {
-					int index = index_rptr[j];
+					int index = index_rptr[k];
 					ERR_FAIL_INDEX(index, vertex_count);
-					index_wptr[j] = vertex_remap[index];
+					index_wptr[k] = vertex_remap[index];
 				}
 
 				lods[surfaces[i].lods[j].distance] = new_indices;
@@ -436,9 +785,9 @@ void EditorSceneImporterMesh::_set_data(const Dictionary &p_data) {
 			if (s.has("lods")) {
 				lods = s["lods"];
 			}
-			Array blend_shapes;
-			if (s.has("blend_shapes")) {
-				blend_shapes = s["blend_shapes"];
+			Array b_shapes;
+			if (s.has("b_shapes")) {
+				b_shapes = s["b_shapes"];
 			}
 			Ref<Material> material;
 			if (s.has("material")) {
@@ -448,7 +797,7 @@ void EditorSceneImporterMesh::_set_data(const Dictionary &p_data) {
 			if (s.has("flags")) {
 				flags = s["flags"];
 			}
-			add_surface(prim, arr, blend_shapes, lods, material, name, flags);
+			add_surface(prim, arr, b_shapes, lods, material, name, flags);
 		}
 	}
 }
