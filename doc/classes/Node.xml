@@ -687,7 +687,7 @@
 			The override to the default [MultiplayerAPI]. Set to [code]null[/code] to use the default [SceneTree] one.
 		</member>
 		<member name="filename" type="String" setter="set_filename" getter="get_filename">
-			When a scene is instanced from a file, its topmost node contains the filename from which it was loaded.
+			If a scene is instantiated from a file, its topmost node contains the absolute file path from which it was loaded in [member filename] (e.g. [code]res://levels/1.tscn[/code]). Otherwise, [member filename] is set to an empty string.
 		</member>
 		<member name="multiplayer" type="MultiplayerAPI" setter="" getter="get_multiplayer">
 			The [MultiplayerAPI] instance associated with this node. Either the [member custom_multiplayer], or the default SceneTree one (if inside tree).
