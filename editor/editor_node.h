@@ -542,6 +542,7 @@ private:
 
 	String import_reload_fn;
 
+	Set<String> textfile_extensions;
 	Set<FileDialog *> file_dialogs;
 	Set<EditorFileDialog *> editor_file_dialogs;
 
