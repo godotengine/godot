@@ -1175,7 +1175,7 @@ void FileSystemDock::_try_move_item(const FileOrFolder &p_item, const String &p_
 				EditorData *ed = &editor->get_editor_data();
 				for (int j = 0; j < ed->get_edited_scene_count(); j++) {
 					if (ed->get_scene_path(j) == file_changed_paths[i]) {
-						ed->get_edited_scene_root(j)->set_filename(new_item_path);
+						ed->get_edited_scene_root(j)->set_scene_file_path(new_item_path);
 						editor->save_layout();
 						break;
 					}
@@ -1260,7 +1260,7 @@ void FileSystemDock::_update_resource_paths_after_move(const Map<String, String>
 				continue;
 			}
 
-			path = get_tree()->get_edited_scene_root()->get_filename();
+			path = get_tree()->get_edited_scene_root()->get_scene_file_path();
 		} else {
 			path = EditorNode::get_editor_data().get_scene_path(i);
 		}
@@ -1270,7 +1270,7 @@ void FileSystemDock::_update_resource_paths_after_move(const Map<String, String>
 		}
 
 		if (i == EditorNode::get_editor_data().get_edited_scene()) {
-			get_tree()->get_edited_scene_root()->set_filename(path);
+			get_tree()->get_edited_scene_root()->set_scene_file_path(path);
 		} else {
 			EditorNode::get_editor_data().set_scene_path(i, path);
 		}

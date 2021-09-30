@@ -114,8 +114,8 @@ void Node::_notification(int p_notification) {
 				memdelete(data.path_cache);
 				data.path_cache = nullptr;
 			}
-			if (data.filename.length()) {
-				get_multiplayer()->scene_enter_exit_notify(data.filename, this, false);
+			if (data.scene_file_path.length()) {
+				get_multiplayer()->scene_enter_exit_notify(data.scene_file_path, this, false);
 			}
 		} break;
 		case NOTIFICATION_PATH_CHANGED: {
@@ -146,9 +146,9 @@ void Node::_notification(int p_notification) {
 
 			GDVIRTUAL_CALL(_ready);
 
-			if (data.filename.length()) {
+			if (data.scene_file_path.length()) {
 				ERR_FAIL_COND(!is_inside_tree());
-				get_multiplayer()->scene_enter_exit_notify(data.filename, this, true);
+				get_multiplayer()->scene_enter_exit_notify(data.scene_file_path, this, true);
 			}
 
 		} break;
@@ -235,7 +235,7 @@ void Node::_propagate_enter_tree() {
 	data.blocked--;
 
 #ifdef DEBUG_ENABLED
-	SceneDebugger::add_to_cache(data.filename, this);
+	SceneDebugger::add_to_cache(data.scene_file_path, this);
 #endif
 	// enter groups
 }
@@ -253,7 +253,7 @@ void Node::_propagate_exit_tree() {
 	//block while removing children
 
 #ifdef DEBUG_ENABLED
-	SceneDebugger::remove_from_cache(data.filename, this);
+	SceneDebugger::remove_from_cache(data.scene_file_path, this);
 #endif
 	data.blocked++;
 
@@ -1846,12 +1846,12 @@ void Node::remove_and_skip() {
 	data.parent->remove_child(this);
 }
 
-void Node::set_filename(const String &p_filename) {
-	data.filename = p_filename;
+void Node::set_scene_file_path(const String &p_scene_file_path) {
+	data.scene_file_path = p_scene_file_path;
 }
 
-String Node::get_filename() const {
-	return data.filename;
+String Node::get_scene_file_path() const {
+	return data.scene_file_path;
 }
 
 void Node::set_editor_description(const String &p_editor_description) {
@@ -1948,8 +1948,8 @@ Node *Node::_duplicate(int p_flags, Map<const Node *, Node *> *r_duplimap) const
 		nip->set_instance_path(ip->get_instance_path());
 		node = nip;
 
-	} else if ((p_flags & DUPLICATE_USE_INSTANCING) && get_filename() != String()) {
-		Ref<PackedScene> res = ResourceLoader::load(get_filename());
+	} else if ((p_flags & DUPLICATE_USE_INSTANCING) && get_scene_file_path() != String()) {
+		Ref<PackedScene> res = ResourceLoader::load(get_scene_file_path());
 		ERR_FAIL_COND_V(res.is_null(), nullptr);
 		PackedScene::GenEditState ges = PackedScene::GEN_EDIT_STATE_DISABLED;
 #ifdef TOOLS_ENABLED
@@ -1972,8 +1972,8 @@ Node *Node::_duplicate(int p_flags, Map<const Node *, Node *> *r_duplimap) const
 		ERR_FAIL_COND_V(!node, nullptr);
 	}
 
-	if (get_filename() != "") { //an instance
-		node->set_filename(get_filename());
+	if (get_scene_file_path() != "") { //an instance
+		node->set_scene_file_path(get_scene_file_path());
 		node->data.editable_instance = data.editable_instance;
 	}
 
@@ -2004,7 +2004,7 @@ Node *Node::_duplicate(int p_flags, Map<const Node *, Node *> *r_duplimap) const
 
 				node_tree.push_back(descendant);
 
-				if (descendant->get_filename() != "" && instance_roots.has(descendant->get_owner())) {
+				if (descendant->get_scene_file_path() != "" && instance_roots.has(descendant->get_owner())) {
 					instance_roots.push_back(descendant);
 				}
 			}
@@ -2313,7 +2313,7 @@ void Node::replace_by(Node *p_node, bool p_keep_groups) {
 		owned_by_owner[i]->set_owner(owner);
 	}
 
-	p_node->set_filename(get_filename());
+	p_node->set_scene_file_path(get_scene_file_path());
 }
 
 void Node::_replace_connections_target(Node *p_new_target) {
@@ -2693,8 +2693,8 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_index", "include_internal"), &Node::get_index, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("print_tree"), &Node::print_tree);
 	ClassDB::bind_method(D_METHOD("print_tree_pretty"), &Node::print_tree_pretty);
-	ClassDB::bind_method(D_METHOD("set_filename", "filename"), &Node::set_filename);
-	ClassDB::bind_method(D_METHOD("get_filename"), &Node::get_filename);
+	ClassDB::bind_method(D_METHOD("set_scene_file_path", "scene_file_path"), &Node::set_scene_file_path);
+	ClassDB::bind_method(D_METHOD("get_scene_file_path"), &Node::get_scene_file_path);
 	ClassDB::bind_method(D_METHOD("propagate_notification", "what"), &Node::propagate_notification);
 	ClassDB::bind_method(D_METHOD("propagate_call", "method", "args", "parent_first"), &Node::propagate_call, DEFVAL(Array()), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("set_physics_process", "enable"), &Node::set_physics_process);
@@ -2839,7 +2839,7 @@ void Node::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("tree_exited"));
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "name", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_name", "get_name");
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "filename", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_filename", "get_filename");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "scene_file_path", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_scene_file_path", "get_scene_file_path");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "owner", PROPERTY_HINT_RESOURCE_TYPE, "Node", PROPERTY_USAGE_NONE), "set_owner", "get_owner");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "multiplayer", PROPERTY_HINT_RESOURCE_TYPE, "MultiplayerAPI", PROPERTY_USAGE_NONE), "", "get_multiplayer");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "custom_multiplayer", PROPERTY_HINT_RESOURCE_TYPE, "MultiplayerAPI", PROPERTY_USAGE_NONE), "set_custom_multiplayer", "get_custom_multiplayer");

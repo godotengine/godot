@@ -66,7 +66,7 @@ void SceneTreeEditor::_cell_button_pressed(Object *p_item, int p_column, int p_i
 				emit_signal(SNAME("open"), n->get_scene_inherited_state()->get_path());
 			}
 		} else {
-			emit_signal(SNAME("open"), n->get_filename());
+			emit_signal(SNAME("open"), n->get_scene_file_path());
 		}
 	} else if (p_id == BUTTON_SCRIPT) {
 		Ref<Script> script_typed = n->get_script();
@@ -302,10 +302,10 @@ bool SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent, bool p_scroll
 		}
 
 		item->set_tooltip(0, tooltip);
-	} else if (p_node != get_scene_node() && p_node->get_filename() != "" && can_open_instance) {
+	} else if (p_node != get_scene_node() && p_node->get_scene_file_path() != "" && can_open_instance) {
 		item->add_button(0, get_theme_icon(SNAME("InstanceOptions"), SNAME("EditorIcons")), BUTTON_SUBSCENE, false, TTR("Open in Editor"));
 
-		String tooltip = String(p_node->get_name()) + "\n" + TTR("Instance:") + " " + p_node->get_filename() + "\n" + TTR("Type:") + " " + p_node->get_class();
+		String tooltip = String(p_node->get_name()) + "\n" + TTR("Instance:") + " " + p_node->get_scene_file_path() + "\n" + TTR("Type:") + " " + p_node->get_class();
 		if (p_node->get_editor_description() != String()) {
 			tooltip += "\n\n" + p_node->get_editor_description();
 		}
@@ -954,7 +954,7 @@ Variant SceneTreeEditor::get_drag_data_fw(const Point2 &p_point, Control *p_from
 		Node *n = get_node(np);
 		if (n) {
 			// Only allow selection if not part of an instantiated scene.
-			if (!n->get_owner() || n->get_owner() == get_scene_node() || n->get_owner()->get_filename() == String()) {
+			if (!n->get_owner() || n->get_owner() == get_scene_node() || n->get_owner()->get_scene_file_path() == String()) {
 				selected.push_back(n);
 				icons.push_back(next->get_icon(0));
 			}

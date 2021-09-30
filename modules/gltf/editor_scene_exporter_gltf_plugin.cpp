@@ -86,7 +86,7 @@ void SceneExporterGLTFPlugin::convert_scene_to_gltf2() {
 		editor->show_accept(TTR("This operation can't be done without a scene."), TTR("OK"));
 		return;
 	}
-	String filename = String(root->get_filename().get_file().get_basename());
+	String filename = String(root->get_scene_file_path().get_file().get_basename());
 	if (filename.is_empty()) {
 		filename = root->get_name();
 	}

@@ -187,8 +187,8 @@ void SceneTreeDock::_perform_instantiate_scenes(const Vector<String> &p_files, N
 			break;
 		}
 
-		if (edited_scene->get_filename() != "") {
-			if (_cyclical_dependency_exists(edited_scene->get_filename(), instantiated_scene)) {
+		if (edited_scene->get_scene_file_path() != "") {
+			if (_cyclical_dependency_exists(edited_scene->get_scene_file_path(), instantiated_scene)) {
 				accept->set_text(vformat(TTR("Cannot instance the scene '%s' because the current scene exists within one of its nodes."), p_files[i]));
 				accept->popup_centered();
 				error = true;
@@ -196,7 +196,7 @@ void SceneTreeDock::_perform_instantiate_scenes(const Vector<String> &p_files, N
 			}
 		}
 
-		instantiated_scene->set_filename(ProjectSettings::get_singleton()->localize_path(p_files[i]));
+		instantiated_scene->set_scene_file_path(ProjectSettings::get_singleton()->localize_path(p_files[i]));
 
 		instances.push_back(instantiated_scene);
 	}
@@ -307,7 +307,7 @@ bool SceneTreeDock::_track_inherit(const String &p_target_scene_path, Node *p_de
 	bool result = false;
 	Vector<Node *> instances;
 	while (true) {
-		if (p->get_filename() == p_target_scene_path) {
+		if (p->get_scene_file_path() == p_target_scene_path) {
 			result = true;
 			break;
 		}
@@ -442,7 +442,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			if (!node_clipboard.is_empty()) {
 				_clear_clipboard();
 			}
-			clipboard_source_scene = editor->get_edited_scene()->get_filename();
+			clipboard_source_scene = editor->get_edited_scene()->get_scene_file_path();
 
 			selection.sort_custom<Node::Comparator>();
 
@@ -465,9 +465,9 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			}
 
 			bool has_cycle = false;
-			if (edited_scene->get_filename() != String()) {
+			if (edited_scene->get_scene_file_path() != String()) {
 				for (Node *E : node_clipboard) {
-					if (edited_scene->get_filename() == E->get_filename()) {
+					if (edited_scene->get_scene_file_path() == E->get_scene_file_path()) {
 						has_cycle = true;
 						break;
 					}
@@ -496,7 +496,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			editor_data->get_undo_redo().add_do_method(editor_selection, "clear");
 
 			Map<RES, RES> resource_remap;
-			String target_scene = editor->get_edited_scene()->get_filename();
+			String target_scene = editor->get_edited_scene()->get_scene_file_path();
 			if (target_scene != clipboard_source_scene) {
 				if (!clipboard_resource_remap.has(target_scene)) {
 					Map<RES, RES> remap;
@@ -808,7 +808,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				return;
 			}
 
-			if (node->get_filename() != String()) {
+			if (node->get_scene_file_path() != String()) {
 				accept->set_text(TTR("Instantiated scenes can't become root"));
 				accept->popup_centered();
 				return;
@@ -818,14 +818,14 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			editor_data->get_undo_redo().add_do_method(node->get_parent(), "remove_child", node);
 			editor_data->get_undo_redo().add_do_method(editor, "set_edited_scene", node);
 			editor_data->get_undo_redo().add_do_method(node, "add_child", root);
-			editor_data->get_undo_redo().add_do_method(node, "set_filename", root->get_filename());
-			editor_data->get_undo_redo().add_do_method(root, "set_filename", String());
+			editor_data->get_undo_redo().add_do_method(node, "set_scene_file_path", root->get_scene_file_path());
+			editor_data->get_undo_redo().add_do_method(root, "set_scene_file_path", String());
 			editor_data->get_undo_redo().add_do_method(node, "set_owner", (Object *)nullptr);
 			editor_data->get_undo_redo().add_do_method(root, "set_owner", node);
 			_node_replace_owner(root, root, node, MODE_DO);
 
-			editor_data->get_undo_redo().add_undo_method(root, "set_filename", root->get_filename());
-			editor_data->get_undo_redo().add_undo_method(node, "set_filename", String());
+			editor_data->get_undo_redo().add_undo_method(root, "set_scene_file_path", root->get_scene_file_path());
+			editor_data->get_undo_redo().add_undo_method(node, "set_scene_file_path", String());
 			editor_data->get_undo_redo().add_undo_method(node, "remove_child", root);
 			editor_data->get_undo_redo().add_undo_method(editor, "set_edited_scene", root);
 			editor_data->get_undo_redo().add_undo_method(node->get_parent(), "add_child", node);
@@ -887,7 +887,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 					Node *node = remove_list[0];
 					if (node == editor_data->get_edited_scene_root()) {
 						msg = vformat(TTR("Delete the root node \"%s\"?"), node->get_name());
-					} else if (node->get_filename() == "" && node->get_child_count() > 0) {
+					} else if (node->get_scene_file_path() == "" && node->get_child_count() > 0) {
 						// Display this message only for non-instantiated scenes
 						msg = vformat(TTR("Delete node \"%s\" and its children?"), node->get_name());
 					} else {
@@ -934,7 +934,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				break;
 			}
 
-			if (tocopy != editor_data->get_edited_scene_root() && tocopy->get_filename() != "") {
+			if (tocopy != editor_data->get_edited_scene_root() && tocopy->get_scene_file_path() != "") {
 				accept->set_text(TTR("Can't save the branch of an already instantiated scene.\nTo create a variation of a scene, you can make an inherited scene based on the instantiated scene using Scene > New Inherited Scene... instead."));
 				accept->popup_centered();
 				break;
@@ -1047,10 +1047,10 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 						break;
 					}
 
-					ERR_FAIL_COND(node->get_filename() == String());
+					ERR_FAIL_COND(node->get_scene_file_path() == String());
 					undo_redo->create_action(TTR("Make Local"));
-					undo_redo->add_do_method(node, "set_filename", "");
-					undo_redo->add_undo_method(node, "set_filename", node->get_filename());
+					undo_redo->add_do_method(node, "set_scene_file_path", "");
+					undo_redo->add_undo_method(node, "set_scene_file_path", node->get_scene_file_path());
 					_node_replace_owner(node, node, root);
 					undo_redo->add_do_method(scene_tree, "update_tree");
 					undo_redo->add_undo_method(scene_tree, "update_tree");
@@ -1064,7 +1064,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			if (e) {
 				Node *node = e->get();
 				if (node) {
-					scene_tree->emit_signal(SNAME("open"), node->get_filename());
+					scene_tree->emit_signal(SNAME("open"), node->get_scene_file_path());
 				}
 			}
 		} break;
@@ -1694,7 +1694,7 @@ bool SceneTreeDock::_validate_no_instance() {
 	List<Node *> selection = editor_selection->get_selected_node_list();
 
 	for (Node *E : selection) {
-		if (E != edited_scene && E->get_filename() != "") {
+		if (E != edited_scene && E->get_scene_file_path() != "") {
 			accept->set_text(TTR("This operation can't be done on instantiated scenes."));
 			accept->popup_centered();
 			return false;
@@ -2753,7 +2753,7 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 
 		bool can_replace = true;
 		for (Node *E : selection) {
-			if (E != edited_scene && (E->get_owner() != edited_scene || E->get_filename() != "")) {
+			if (E != edited_scene && (E->get_owner() != edited_scene || E->get_scene_file_path() != "")) {
 				can_replace = false;
 				break;
 			}
@@ -2785,7 +2785,7 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 			menu->add_icon_shortcut(get_theme_icon(SNAME("CopyNodePath"), SNAME("EditorIcons")), ED_GET_SHORTCUT("scene_tree/copy_node_path"), TOOL_COPY_NODE_PATH);
 		}
 
-		bool is_external = (selection[0]->get_filename() != "");
+		bool is_external = (selection[0]->get_scene_file_path() != "");
 		if (is_external) {
 			bool is_inherited = selection[0]->get_scene_inherited_state() != nullptr;
 			bool is_top_level = selection[0]->get_owner() == nullptr;
@@ -2885,9 +2885,9 @@ void SceneTreeDock::attach_script_to_selected(bool p_extend) {
 
 	Ref<Script> existing = selected->get_script();
 
-	String path = selected->get_filename();
+	String path = selected->get_scene_file_path();
 	if (path == "") {
-		String root_path = editor_data->get_edited_scene_root()->get_filename();
+		String root_path = editor_data->get_edited_scene_root()->get_scene_file_path();
 		if (root_path == "") {
 			path = String("res://").plus_file(selected->get_name());
 		} else {
@@ -2939,7 +2939,7 @@ void SceneTreeDock::attach_shader_to_selected() {
 	if (path == "") {
 		String root_path;
 		if (editor_data->get_edited_scene_root()) {
-			root_path = editor_data->get_edited_scene_root()->get_filename();
+			root_path = editor_data->get_edited_scene_root()->get_scene_file_path();
 		}
 		String shader_name;
 		if (selected_shader_material->get_name().is_empty()) {

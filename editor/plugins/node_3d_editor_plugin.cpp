@@ -3917,7 +3917,7 @@ void Node3DEditorViewport::_remove_preview() {
 }
 
 bool Node3DEditorViewport::_cyclical_dependency_exists(const String &p_target_scene_path, Node *p_desired_node) {
-	if (p_desired_node->get_filename() == p_target_scene_path) {
+	if (p_desired_node->get_scene_file_path() == p_target_scene_path) {
 		return true;
 	}
 
@@ -3959,15 +3959,15 @@ bool Node3DEditorViewport::_create_instance(Node *parent, String &path, const Po
 		return false;
 	}
 
-	if (editor->get_edited_scene()->get_filename() != "") { // cyclical instancing
-		if (_cyclical_dependency_exists(editor->get_edited_scene()->get_filename(), instantiated_scene)) {
+	if (editor->get_edited_scene()->get_scene_file_path() != "") { // cyclical instancing
+		if (_cyclical_dependency_exists(editor->get_edited_scene()->get_scene_file_path(), instantiated_scene)) {
 			memdelete(instantiated_scene);
 			return false;
 		}
 	}
 
 	if (scene != nullptr) {
-		instantiated_scene->set_filename(ProjectSettings::get_singleton()->localize_path(path));
+		instantiated_scene->set_scene_file_path(ProjectSettings::get_singleton()->localize_path(path));
 	}
 
 	editor_data->get_undo_redo().add_do_method(parent, "add_child", instantiated_scene);
