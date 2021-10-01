@@ -143,7 +143,16 @@ void ProjectSettingsEditor::_notification(int p_what) {
 			restart_icon->set_texture(get_icon("StatusWarning", "EditorIcons"));
 			restart_label->add_color_override("font_color", get_color("warning_color", "Editor"));
 
+			// The ImportDefaultsEditor changes settings which must be read by this object when changed
+			ProjectSettings::get_singleton()->connect("project_settings_changed", this, "_settings_changed");
+
 		} break;
+		case NOTIFICATION_EXIT_TREE: {
+			if (ProjectSettings::get_singleton()) {
+				ProjectSettings::get_singleton()->disconnect("project_settings_changed", this, "_settings_changed");
+			}
+		} break;
+
 		case NOTIFICATION_POPUP_HIDE: {
 			EditorSettings::get_singleton()->set_project_metadata("dialog_bounds", "project_settings", get_rect());
 			set_process_unhandled_input(false);
@@ -2141,7 +2150,6 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	import_defaults_editor = memnew(ImportDefaultsEditor);
 	import_defaults_editor->set_name(TTR("Import Defaults"));
 	tab_container->add_child(import_defaults_editor);
-	import_defaults_editor->connect("project_settings_changed", this, "_settings_changed");
 
 	timer = memnew(Timer);
 	timer->set_wait_time(1.5);

@@ -99,8 +99,8 @@ void ImportDefaultsEditor::_save() {
 		} else {
 			ProjectSettings::get_singleton()->set("importer_defaults/" + settings->importer->get_importer_name(), Variant());
 		}
-
-		emit_signal("project_settings_changed");
+		// Calling ProjectSettings::set() causes the signal "project_settings_changed" to be sent to ProjectSettings.
+		// ProjectSettingsEditor subscribes to this and can reads the settings updated here.
 	}
 }
 

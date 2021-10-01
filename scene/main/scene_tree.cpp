@@ -589,6 +589,8 @@ bool SceneTree::idle(float p_time) {
 
 	_call_idle_callbacks();
 
+	ProjectSettings::get_singleton()->update();
+
 #ifdef TOOLS_ENABLED
 
 	if (Engine::get_singleton()->is_editor_hint()) {
