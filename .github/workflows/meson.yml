@@ -171,12 +171,24 @@ jobs:
           arch: amd64
 
       - name: Compilation (${{ matrix.platform }} ${{ matrix.arch }})
+        if: ${{ matrix.platform != 'windows' }}
         uses: ./.github/actions/meson_build
         with:
           mesonflags: ${{ env.MESONFLAGS }} ${{ matrix.mesonflags }}
           buildtype: ${{ matrix.target }}
           meson: ${{ matrix.meson }}meson
           tools: ${{ matrix.tools }}
+
+      # Differnt build for windows due to github/MSVC messing up shell vars.
+      - name: Meson configure (win)
+        if: ${{ matrix.platform == 'windows' }}
+        run: |
+          meson builddir ${{ env.MESONFLAGS }} ${{ matrix.mesonflags }} -Dbuildtype=${{ matrix.target }}  -Dtools=${{ matrix.tools }}
+
+      - name: Meson build (win)
+        if: ${{ matrix.platform == 'windows' }}
+        run: |
+          meson compile -C builddir
 
       # Execute unit tests for the editor
       - name: Unit Tests
