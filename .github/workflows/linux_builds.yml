@@ -18,13 +18,15 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - name: Editor (target=release_debug, tools=yes, tests=yes)
-            cache-name: linux-editor
+          - name: Editor w/ Mono (target=release_debug, tools=yes, tests=yes)
+            cache-name: linux-editor-mono
             target: release_debug
             tools: true
-            tests: true
+            tests: false # Disabled due freeze caused by mix Mono build and CI
+            sconsflags: module_mono_enabled=yes mono_glue=no
             doc-test: true
-            bin: "./bin/godot.linuxbsd.opt.tools.64"
+            bin: "./bin/godot.linuxbsd.opt.tools.64.mono"
+            build-mono: true
             artifact: true
 
           - name: Editor and sanitizers (target=debug, tools=yes, tests=yes, use_asan=yes, use_ubsan=yes)
@@ -36,6 +38,7 @@ jobs:
             proj-test: true
             godot-cpp-test: true
             bin: "./bin/godot.linuxbsd.tools.64s"
+            build-mono: false
             # Skip 2GiB artifact speeding up action.
             artifact: false
 
@@ -45,6 +48,7 @@ jobs:
             tools: false
             tests: false
             sconsflags: module_mono_enabled=yes mono_glue=no debug_symbols=no
+            build-mono: false
             artifact: true
 
     steps:
@@ -80,11 +84,26 @@ jobs:
           tools: ${{ matrix.tools }}
           tests: ${{ matrix.tests }}
 
+      - name: Generate Mono glue
+        if: ${{ matrix.build-mono }}
+        run: |
+          ${{ matrix.bin }} --headless --generate-mono-glue modules/mono/glue || true
+
+      # Rebuild with mono
+      - name: Compilation (mono_glue=yes)
+        uses: ./.github/actions/godot-build
+        if: ${{ matrix.build-mono }}
+        with:
+          sconsflags: ${{ env.SCONSFLAGS }} ${{ matrix.sconsflags }} mono_glue=yes
+          platform: linuxbsd
+          target: ${{ matrix.target }}
+          tools: ${{ matrix.tools }}
+
       # Execute unit tests for the editor
       - name: Unit tests
         if: ${{ matrix.tests }}
         run: |
-          ${{ matrix.bin }} --test
+          ${{ matrix.bin }} --test --headless
 
       # Check class reference
       - name: Check for class reference updates

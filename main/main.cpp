@@ -2051,8 +2051,6 @@ bool Main::start() {
 		GLOBAL_DEF("mono/profiler/args", "log:calls,alloc,sample,output=output.mlpd");
 		GLOBAL_DEF("mono/profiler/enabled", false);
 		GLOBAL_DEF("mono/unhandled_exception_policy", 0);
-		// From editor/csharp_project.cpp.
-		GLOBAL_DEF("mono/project/auto_update_project", true);
 #endif
 
 		DocTools doc;
