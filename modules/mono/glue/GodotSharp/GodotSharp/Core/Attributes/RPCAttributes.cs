@@ -3,7 +3,7 @@ using System;
 namespace Godot
 {
     [AttributeUsage(AttributeTargets.Method)]
-    public class AnyAttribute : Attribute { }
+    public class AnyPeerAttribute : Attribute { }
 
     [AttributeUsage(AttributeTargets.Method)]
     public class AuthorityAttribute : Attribute { }

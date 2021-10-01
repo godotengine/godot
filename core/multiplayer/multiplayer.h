@@ -39,13 +39,13 @@ namespace Multiplayer {
 
 enum TransferMode {
 	TRANSFER_MODE_UNRELIABLE,
-	TRANSFER_MODE_ORDERED,
+	TRANSFER_MODE_UNRELIABLE_ORDERED,
 	TRANSFER_MODE_RELIABLE
 };
 
 enum RPCMode {
 	RPC_MODE_DISABLED, // No rpc for this method, calls to this will be blocked (default)
-	RPC_MODE_ANY, // Any peer can call this RPC
+	RPC_MODE_ANY_PEER, // Any peer can call this RPC
 	RPC_MODE_AUTHORITY, // / Only the node's multiplayer authority (server by default) can call this RPC
 };
 

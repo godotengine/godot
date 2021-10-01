@@ -111,7 +111,7 @@ struct CachedData {
 	GDMonoField *field_ExportAttribute_hintString;
 	GDMonoClass *class_SignalAttribute;
 	GDMonoClass *class_ToolAttribute;
-	GDMonoClass *class_AnyAttribute;
+	GDMonoClass *class_AnyPeerAttribute;
 	GDMonoClass *class_AuthorityAttribute;
 	GDMonoClass *class_GodotMethodAttribute;
 	GDMonoField *field_GodotMethodAttribute_methodName;

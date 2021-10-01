@@ -39,7 +39,7 @@ extern "C" {
 
 typedef enum {
 	GODOT_METHOD_RPC_MODE_DISABLED,
-	GODOT_METHOD_RPC_MODE_ANY,
+	GODOT_METHOD_RPC_MODE_ANY_PEER,
 	GODOT_METHOD_RPC_MODE_AUTHORITY,
 } godot_nativescript_method_rpc_mode;
 

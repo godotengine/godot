@@ -189,7 +189,7 @@ Error WebRTCMultiplayerPeer::initialize(int p_self_id, bool p_server_compat, Arr
 		cfg["ordered"] = true;
 
 		switch (mode) {
-			case Multiplayer::TRANSFER_MODE_ORDERED:
+			case Multiplayer::TRANSFER_MODE_UNRELIABLE_ORDERED:
 				cfg["maxPacketLifetime"] = 1;
 				break;
 			case Multiplayer::TRANSFER_MODE_UNRELIABLE:
@@ -334,7 +334,7 @@ Error WebRTCMultiplayerPeer::put_packet(const uint8_t *p_buffer, int p_buffer_si
 			case Multiplayer::TRANSFER_MODE_RELIABLE:
 				ch = CH_RELIABLE;
 				break;
-			case Multiplayer::TRANSFER_MODE_ORDERED:
+			case Multiplayer::TRANSFER_MODE_UNRELIABLE_ORDERED:
 				ch = CH_ORDERED;
 				break;
 			case Multiplayer::TRANSFER_MODE_UNRELIABLE:

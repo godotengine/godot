@@ -444,7 +444,7 @@ Error ENetMultiplayerPeer::put_packet(const uint8_t *p_buffer, int p_buffer_size
 				packet_flags = ENET_PACKET_FLAG_UNSEQUENCED;
 				channel = SYSCH_UNRELIABLE;
 			} break;
-			case Multiplayer::TRANSFER_MODE_ORDERED: {
+			case Multiplayer::TRANSFER_MODE_UNRELIABLE_ORDERED: {
 				packet_flags = 0;
 				channel = SYSCH_UNRELIABLE;
 			} break;
