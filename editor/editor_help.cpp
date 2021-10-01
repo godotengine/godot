@@ -1922,7 +1922,7 @@ void FindBar::_update_results_count() {
 		return;
 	}
 
-	String full_text = rich_text_label->get_text();
+	String full_text = rich_text_label->get_parsed_text();
 
 	int from_pos = 0;
 
