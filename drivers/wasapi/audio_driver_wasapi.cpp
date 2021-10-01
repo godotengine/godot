@@ -301,7 +301,7 @@ Error AudioDriverWASAPI::audio_device_init(AudioDeviceWASAPI *p_device, bool p_c
 	}
 
 	if (using_audio_client_3) {
-		AudioClientProperties audioProps;
+		AudioClientProperties audioProps{};
 		audioProps.cbSize = sizeof(AudioClientProperties);
 		audioProps.bIsOffload = FALSE;
 		audioProps.eCategory = AudioCategory_GameEffects;
