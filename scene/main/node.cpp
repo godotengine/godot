@@ -41,10 +41,6 @@
 #include "scene/scene_string_names.h"
 #include "viewport.h"
 
-#ifdef TOOLS_ENABLED
-#include "editor/editor_settings.h"
-#endif
-
 #include <stdint.h>
 
 VARIANT_ENUM_CAST(Node::ProcessMode);
@@ -2536,17 +2532,11 @@ NodePath Node::get_import_path() const {
 }
 
 static void _add_nodes_to_options(const Node *p_base, const Node *p_node, List<String> *r_options) {
-#ifdef TOOLS_ENABLED
-	const String quote_style = EDITOR_GET("text_editor/completion/use_single_quotes") ? "'" : "\"";
-#else
-	const String quote_style = "\"";
-#endif
-
 	if (p_node != p_base && !p_node->get_owner()) {
 		return;
 	}
 	String n = p_base->get_path_to(p_node);
-	r_options->push_back(n.quote(quote_style));
+	r_options->push_back(n.quote());
 	for (int i = 0; i < p_node->get_child_count(); i++) {
 		_add_nodes_to_options(p_base, p_node->get_child(i), r_options);
 	}
