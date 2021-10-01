@@ -170,14 +170,14 @@
 			<return type="void" />
 			<argument index="0" name="flip" type="bool" default="false" />
 			<description>
-				Generates normals from vertices so you do not have to do it manually. If [code]flip[/code] is [code]true[/code], the resulting normals will be inverted. [method generate_normals] should be called [i]after[/i] generating geometry and [i]before[/i] committing the mesh using [method commit] or [method commit_to_arrays].
+				Generates normals from vertices so you do not have to do it manually. If [code]flip[/code] is [code]true[/code], the resulting normals will be inverted. [method generate_normals] should be called [i]after[/i] generating geometry and [i]before[/i] committing the mesh using [method commit] or [method commit_to_arrays]. For correct display of normal-mapped surfaces, you will also have to generate tangents using [method generate_tangents].
 				[b]Note:[/b] [method generate_normals] only works if the primitive type to be set to [constant Mesh.PRIMITIVE_TRIANGLES].
 			</description>
 		</method>
 		<method name="generate_tangents">
 			<return type="void" />
 			<description>
-				Generates a tangent vector for each vertex. Requires that each vertex have UVs and normals set already.
+				Generates a tangent vector for each vertex. Requires that each vertex have UVs and normals set already (see [method generate_normals]).
 			</description>
 		</method>
 		<method name="index">
