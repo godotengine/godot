@@ -308,7 +308,7 @@ public:
 	FUNC2(soft_body_set_drag_coefficient, RID, real_t);
 	FUNC1RC(real_t, soft_body_get_drag_coefficient, RID);
 
-	FUNC2(soft_body_set_mesh, RID, const REF &);
+	FUNC2(soft_body_set_mesh, RID, RID);
 
 	FUNC1RC(AABB, soft_body_get_bounds, RID);
 

@@ -33,6 +33,7 @@
 
 #include "core/math/geometry_3d.h"
 #include "core/templates/map.h"
+#include "servers/rendering_server.h"
 
 // Based on Bullet soft body.
 
@@ -127,7 +128,7 @@ void SoftBody3DSW::set_space(Space3DSW *p_space) {
 	}
 }
 
-void SoftBody3DSW::set_mesh(const Ref<Mesh> &p_mesh) {
+void SoftBody3DSW::set_mesh(RID p_mesh) {
 	destroy();
 
 	soft_mesh = p_mesh;
@@ -136,13 +137,11 @@ void SoftBody3DSW::set_mesh(const Ref<Mesh> &p_mesh) {
 		return;
 	}
 
-	Array arrays = soft_mesh->surface_get_arrays(0);
-	ERR_FAIL_COND(!(soft_mesh->surface_get_format(0) & RS::ARRAY_FORMAT_INDEX));
+	Array arrays = RenderingServer::get_singleton()->mesh_surface_get_arrays(soft_mesh, 0);
 
-	bool success = create_from_trimesh(arrays[RS::ARRAY_INDEX], arrays[RS::ARRAY_VERTEX]);
+	bool success = create_from_trimesh(arrays[RenderingServer::ARRAY_INDEX], arrays[RenderingServer::ARRAY_VERTEX]);
 	if (!success) {
 		destroy();
-		soft_mesh = Ref<Mesh>();
 	}
 }
 
@@ -467,6 +466,9 @@ Vector3 SoftBody3DSW::get_face_normal(uint32_t p_face_index) const {
 }
 
 bool SoftBody3DSW::create_from_trimesh(const Vector<int> &p_indices, const Vector<Vector3> &p_vertices) {
+	ERR_FAIL_COND_V(p_indices.is_empty(), false);
+	ERR_FAIL_COND_V(p_vertices.is_empty(), false);
+
 	uint32_t node_count = 0;
 	LocalVector<Vector3> vertices;
 	const int visual_vertex_count(p_vertices.size());
@@ -1227,6 +1229,8 @@ void SoftBody3DSW::deinitialize_shape() {
 }
 
 void SoftBody3DSW::destroy() {
+	soft_mesh = RID();
+
 	map_visual_to_physics.clear();
 
 	node_tree.clear();

@@ -520,7 +520,7 @@ public:
 	virtual void soft_body_set_space(RID p_body, RID p_space) = 0;
 	virtual RID soft_body_get_space(RID p_body) const = 0;
 
-	virtual void soft_body_set_mesh(RID p_body, const REF &p_mesh) = 0;
+	virtual void soft_body_set_mesh(RID p_body, RID p_mesh) = 0;
 
 	virtual AABB soft_body_get_bounds(RID p_body) const = 0;
 

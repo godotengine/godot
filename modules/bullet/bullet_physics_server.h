@@ -265,7 +265,7 @@ public:
 	virtual void soft_body_set_space(RID p_body, RID p_space) override;
 	virtual RID soft_body_get_space(RID p_body) const override;
 
-	virtual void soft_body_set_mesh(RID p_body, const REF &p_mesh) override;
+	virtual void soft_body_set_mesh(RID p_body, RID p_mesh) override;
 
 	virtual AABB soft_body_get_bounds(RID p_body) const override;
 
