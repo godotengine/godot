@@ -502,6 +502,11 @@ void FontData::set_data(const PackedByteArray &p_data) {
 }
 
 PackedByteArray FontData::get_data() const {
+	if (unlikely((size_t)data.size() != data_size)) {
+		PackedByteArray *data_w = const_cast<PackedByteArray *>(&data);
+		data_w->resize(data_size);
+		memcpy(data_w->ptrw(), data_ptr, data_size);
+	}
 	return data;
 }
 
