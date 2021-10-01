@@ -1098,7 +1098,7 @@ real_t PhysicsServer3DSW::soft_body_get_drag_coefficient(RID p_body) const {
 	return soft_body->get_drag_coefficient();
 }
 
-void PhysicsServer3DSW::soft_body_set_mesh(RID p_body, const REF &p_mesh) {
+void PhysicsServer3DSW::soft_body_set_mesh(RID p_body, RID p_mesh) {
 	SoftBody3DSW *soft_body = soft_body_owner.get_or_null(p_body);
 	ERR_FAIL_COND(!soft_body);
 

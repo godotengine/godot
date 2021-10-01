@@ -32,8 +32,9 @@
 
 #include "bullet_types_converter.h"
 #include "bullet_utilities.h"
-#include "scene/3d/soft_body_3d.h"
 #include "space_bullet.h"
+
+#include "servers/rendering_server.h"
 
 SoftBodyBullet::SoftBodyBullet() :
 		CollisionObjectBullet(CollisionObjectBullet::TYPE_SOFT_BODY) {}
@@ -105,24 +106,26 @@ void SoftBodyBullet::update_rendering_server(RenderingServerHandler *p_rendering
 	p_rendering_server_handler->set_aabb(aabb);
 }
 
-void SoftBodyBullet::set_soft_mesh(const Ref<Mesh> &p_mesh) {
-	if (p_mesh.is_null()) {
-		soft_mesh.unref();
-	} else {
-		soft_mesh = p_mesh;
-	}
+void SoftBodyBullet::set_soft_mesh(RID p_mesh) {
+	destroy_soft_body();
+
+	soft_mesh = p_mesh;
 
 	if (soft_mesh.is_null()) {
-		destroy_soft_body();
 		return;
 	}
 
-	Array arrays = soft_mesh->surface_get_arrays(0);
-	ERR_FAIL_COND(!(soft_mesh->surface_get_format(0) & RS::ARRAY_FORMAT_INDEX));
-	set_trimesh_body_shape(arrays[RS::ARRAY_INDEX], arrays[RS::ARRAY_VERTEX]);
+	Array arrays = RenderingServer::get_singleton()->mesh_surface_get_arrays(soft_mesh, 0);
+
+	bool success = set_trimesh_body_shape(arrays[RS::ARRAY_INDEX], arrays[RS::ARRAY_VERTEX]);
+	if (!success) {
+		destroy_soft_body();
+	}
 }
 
 void SoftBodyBullet::destroy_soft_body() {
+	soft_mesh = RID();
+
 	if (!bt_soft_body) {
 		return;
 	}
@@ -289,9 +292,9 @@ void SoftBodyBullet::set_drag_coefficient(real_t p_val) {
 	}
 }
 
-void SoftBodyBullet::set_trimesh_body_shape(Vector<int> p_indices, Vector<Vector3> p_vertices) {
-	/// Assert the current soft body is destroyed
-	destroy_soft_body();
+bool SoftBodyBullet::set_trimesh_body_shape(Vector<int> p_indices, Vector<Vector3> p_vertices) {
+	ERR_FAIL_COND_V(p_indices.is_empty(), false);
+	ERR_FAIL_COND_V(p_vertices.is_empty(), false);
 
 	/// Parse visual server indices to physical indices.
 	/// Merge all overlapping vertices and create a map of physical vertices to visual server
@@ -363,6 +366,8 @@ void SoftBodyBullet::set_trimesh_body_shape(Vector<int> p_indices, Vector<Vector
 		bt_soft_body = btSoftBodyHelpers::CreateFromTriMesh(fake_world_info, &bt_vertices[0], &bt_triangles[0], triangles_size, false);
 		setup_soft_body();
 	}
+
+	return true;
 }
 
 void SoftBodyBullet::setup_soft_body() {

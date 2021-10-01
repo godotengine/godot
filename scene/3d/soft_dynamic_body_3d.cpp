@@ -433,9 +433,9 @@ void SoftDynamicBody3D::prepare_physics_server() {
 #ifdef TOOLS_ENABLED
 	if (Engine::get_singleton()->is_editor_hint()) {
 		if (get_mesh().is_valid()) {
-			PhysicsServer3D::get_singleton()->soft_body_set_mesh(physics_rid, get_mesh());
+			PhysicsServer3D::get_singleton()->soft_body_set_mesh(physics_rid, get_mesh()->get_rid());
 		} else {
-			PhysicsServer3D::get_singleton()->soft_body_set_mesh(physics_rid, nullptr);
+			PhysicsServer3D::get_singleton()->soft_body_set_mesh(physics_rid, RID());
 		}
 
 		return;
@@ -444,10 +444,10 @@ void SoftDynamicBody3D::prepare_physics_server() {
 
 	if (get_mesh().is_valid() && (is_enabled() || (disable_mode != DISABLE_MODE_REMOVE))) {
 		become_mesh_owner();
-		PhysicsServer3D::get_singleton()->soft_body_set_mesh(physics_rid, get_mesh());
+		PhysicsServer3D::get_singleton()->soft_body_set_mesh(physics_rid, get_mesh()->get_rid());
 		RS::get_singleton()->connect("frame_pre_draw", callable_mp(this, &SoftDynamicBody3D::_draw_soft_mesh));
 	} else {
-		PhysicsServer3D::get_singleton()->soft_body_set_mesh(physics_rid, nullptr);
+		PhysicsServer3D::get_singleton()->soft_body_set_mesh(physics_rid, RID());
 		if (RS::get_singleton()->is_connected("frame_pre_draw", callable_mp(this, &SoftDynamicBody3D::_draw_soft_mesh))) {
 			RS::get_singleton()->disconnect("frame_pre_draw", callable_mp(this, &SoftDynamicBody3D::_draw_soft_mesh));
 		}

@@ -40,12 +40,11 @@
 #include "core/templates/local_vector.h"
 #include "core/templates/set.h"
 #include "core/templates/vset.h"
-#include "scene/resources/mesh.h"
 
 class Constraint3DSW;
 
 class SoftBody3DSW : public CollisionObject3DSW {
-	Ref<Mesh> soft_mesh;
+	RID soft_mesh;
 
 	struct Node {
 		Vector3 s; // Source position
@@ -159,7 +158,7 @@ public:
 
 	virtual void set_space(Space3DSW *p_space);
 
-	void set_mesh(const Ref<Mesh> &p_mesh);
+	void set_mesh(RID p_mesh);
 
 	void update_rendering_server(RenderingServerHandler *p_rendering_server_handler);
 

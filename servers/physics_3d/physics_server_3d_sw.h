@@ -291,7 +291,7 @@ public:
 	virtual void soft_body_set_drag_coefficient(RID p_body, real_t p_drag_coefficient) override;
 	virtual real_t soft_body_get_drag_coefficient(RID p_body) const override;
 
-	virtual void soft_body_set_mesh(RID p_body, const REF &p_mesh) override;
+	virtual void soft_body_set_mesh(RID p_body, RID p_mesh) override;
 
 	virtual AABB soft_body_get_bounds(RID p_body) const override;
 

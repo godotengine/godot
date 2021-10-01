@@ -903,7 +903,7 @@ RID BulletPhysicsServer3D::soft_body_get_space(RID p_body) const {
 	return space->get_self();
 }
 
-void BulletPhysicsServer3D::soft_body_set_mesh(RID p_body, const REF &p_mesh) {
+void BulletPhysicsServer3D::soft_body_set_mesh(RID p_body, RID p_mesh) {
 	SoftBodyBullet *body = soft_body_owner.get_or_null(p_body);
 	ERR_FAIL_COND(!body);
 
