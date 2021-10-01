@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  physics_joint_3d.h                                                   */
+/*  joint_3d.h                                                           */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef PHYSICS_JOINT_H
-#define PHYSICS_JOINT_H
+#ifndef JOINT_3D_H
+#define JOINT_3D_H
 
 #include "scene/3d/node_3d.h"
 #include "scene/3d/physics_body_3d.h"
@@ -334,4 +334,4 @@ public:
 VARIANT_ENUM_CAST(Generic6DOFJoint3D::Param);
 VARIANT_ENUM_CAST(Generic6DOFJoint3D::Flag);
 
-#endif // PHYSICS_JOINT_H
+#endif // JOINT_3D_H

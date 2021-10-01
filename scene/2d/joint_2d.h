@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  joints_2d.h                                                          */
+/*  joint_2d.h                                                           */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef JOINTS_2D_H
-#define JOINTS_2D_H
+#ifndef JOINT_2D_H
+#define JOINT_2D_H
 
 #include "node_2d.h"
 
@@ -148,4 +148,4 @@ public:
 	DampedSpringJoint2D();
 };
 
-#endif // JOINTS_2D_H
+#endif // JOINT_2D_H
