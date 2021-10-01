@@ -3063,6 +3063,53 @@ TEST_CASE("[SceneTree][CodeEdit] line length guidelines") {
 	memdelete(code_edit);
 }
 
+TEST_CASE("[SceneTree][CodeEdit] Backspace delete") {
+	CodeEdit *code_edit = memnew(CodeEdit);
+	SceneTree::get_singleton()->get_root()->add_child(code_edit);
+
+	/* Backspace with selection on first line. */
+	code_edit->set_text("");
+	code_edit->insert_text_at_caret("test backspace");
+	code_edit->select(0, 0, 0, 5);
+	code_edit->backspace();
+	CHECK(code_edit->get_line(0) == "backspace");
+
+	/* Backspace with selection on first line and caret at the beginning of file. */
+	code_edit->set_text("");
+	code_edit->insert_text_at_caret("test backspace");
+	code_edit->select(0, 0, 0, 5);
+	code_edit->set_caret_column(0);
+	code_edit->backspace();
+	CHECK(code_edit->get_line(0) == "backspace");
+
+	/* Move caret up to the previous line on backspace if carret is at the first column. */
+	code_edit->set_text("");
+	code_edit->insert_text_at_caret("line 1\nline 2");
+	code_edit->set_caret_line(1);
+	code_edit->set_caret_column(0);
+	code_edit->backspace();
+	CHECK(code_edit->get_line(0) == "line 1line 2");
+	CHECK(code_edit->get_caret_line() == 0);
+	CHECK(code_edit->get_caret_column() == 6);
+
+	/* Backspace delete all text if all text is selected. */
+	code_edit->set_text("");
+	code_edit->insert_text_at_caret("line 1\nline 2\nline 3");
+	code_edit->select_all();
+	code_edit->backspace();
+	CHECK(code_edit->get_text() == "");
+
+	/* Backspace at the beginning without selection has no effect. */
+	code_edit->set_text("");
+	code_edit->insert_text_at_caret("line 1\nline 2\nline 3");
+	code_edit->set_caret_line(0);
+	code_edit->set_caret_column(0);
+	code_edit->backspace();
+	CHECK(code_edit->get_text() == "line 1\nline 2\nline 3");
+
+	memdelete(code_edit);
+}
+
 } // namespace TestCodeEdit
 
 #endif // TEST_CODE_EDIT_H

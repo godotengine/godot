@@ -614,15 +614,15 @@ void CodeEdit::_backspace_internal() {
 		return;
 	}
 
+	if (has_selection()) {
+		delete_selection();
+		return;
+	}
+
 	int cc = get_caret_column();
 	int cl = get_caret_line();
 
 	if (cc == 0 && cl == 0) {
-		return;
-	}
-
-	if (has_selection()) {
-		delete_selection();
 		return;
 	}
 
