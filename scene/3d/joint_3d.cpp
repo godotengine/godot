@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  physics_joint_3d.cpp                                                 */
+/*  joint_3d.cpp                                                         */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "physics_joint_3d.h"
+#include "joint_3d.h"
 
 #include "scene/scene_string_names.h"
 

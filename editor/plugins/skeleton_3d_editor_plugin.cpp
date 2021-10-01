@@ -37,9 +37,9 @@
 #include "editor/plugins/animation_player_editor_plugin.h"
 #include "node_3d_editor_plugin.h"
 #include "scene/3d/collision_shape_3d.h"
+#include "scene/3d/joint_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/3d/physics_body_3d.h"
-#include "scene/3d/physics_joint_3d.h"
 #include "scene/resources/capsule_shape_3d.h"
 #include "scene/resources/sphere_shape_3d.h"
 

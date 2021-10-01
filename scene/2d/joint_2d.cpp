@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  joints_2d.cpp                                                        */
+/*  joint_2d.cpp                                                         */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "joints_2d.h"
+#include "joint_2d.h"
 
 #include "physics_body_2d.h"
 #include "scene/scene_string_names.h"
