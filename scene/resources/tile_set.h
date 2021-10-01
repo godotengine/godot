@@ -646,7 +646,7 @@ private:
 		};
 
 		Vector2 linear_velocity;
-		float angular_velocity;
+		float angular_velocity = 0.0;
 		Vector<PolygonShapeTileData> polygons;
 	};
 	Vector<PhysicsLayerTileData> physics;
