@@ -164,7 +164,7 @@ void Tabs::gui_input(const Ref<InputEvent> &p_event) {
 		if (rb_pressing && !mb->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_LEFT) {
 			if (rb_hover != -1) {
 				//pressed
-				emit_signal(SNAME("right_button_pressed"), rb_hover);
+				emit_signal(SNAME("tab_rmb_clicked"), rb_hover);
 			}
 
 			rb_pressing = false;
@@ -401,7 +401,7 @@ void Tabs::_notification(int p_what) {
 				w += tabs[i].size_text;
 
 				if (tabs[i].right_button.is_valid()) {
-					Ref<StyleBox> style = get_theme_stylebox(SNAME("button"));
+					Ref<StyleBox> style = get_theme_stylebox(SNAME("close_bg_highlight"));
 					Ref<Texture2D> rb = tabs[i].right_button;
 
 					w += get_theme_constant(SNAME("hseparation"));
@@ -433,7 +433,7 @@ void Tabs::_notification(int p_what) {
 				}
 
 				if (cb_displaypolicy == CLOSE_BUTTON_SHOW_ALWAYS || (cb_displaypolicy == CLOSE_BUTTON_SHOW_ACTIVE_ONLY && i == current)) {
-					Ref<StyleBox> style = get_theme_stylebox(SNAME("button"));
+					Ref<StyleBox> style = get_theme_stylebox(SNAME("close_bg_highlight"));
 					Ref<Texture2D> cb = close;
 
 					w += get_theme_constant(SNAME("hseparation"));
@@ -449,7 +449,7 @@ void Tabs::_notification(int p_what) {
 
 					if (!tabs[i].disabled && cb_hover == i) {
 						if (cb_pressing) {
-							get_theme_stylebox(SNAME("button_pressed"))->draw(ci, cb_rect);
+							get_theme_stylebox(SNAME("close_bg_pressed"))->draw(ci, cb_rect);
 						} else {
 							style->draw(ci, cb_rect);
 						}
@@ -886,7 +886,7 @@ void Tabs::drop_data(const Point2 &p_point, const Variant &p_data) {
 				hover_now = get_tab_count() - 1;
 			}
 			move_tab(tab_from_id, hover_now);
-			emit_signal(SNAME("reposition_active_tab_request"), hover_now);
+			emit_signal(SNAME("active_tab_rearranged"), hover_now);
 			set_current_tab(hover_now);
 		} else if (get_tabs_rearrange_group() != -1) {
 			// drag and drop between Tabs
@@ -1165,10 +1165,10 @@ void Tabs::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_select_with_rmb"), &Tabs::get_select_with_rmb);
 
 	ADD_SIGNAL(MethodInfo("tab_changed", PropertyInfo(Variant::INT, "tab")));
-	ADD_SIGNAL(MethodInfo("right_button_pressed", PropertyInfo(Variant::INT, "tab")));
+	ADD_SIGNAL(MethodInfo("tab_rmb_clicked", PropertyInfo(Variant::INT, "tab")));
 	ADD_SIGNAL(MethodInfo("tab_closed", PropertyInfo(Variant::INT, "tab")));
 	ADD_SIGNAL(MethodInfo("tab_hovered", PropertyInfo(Variant::INT, "tab")));
-	ADD_SIGNAL(MethodInfo("reposition_active_tab_request", PropertyInfo(Variant::INT, "idx_to")));
+	ADD_SIGNAL(MethodInfo("active_tab_rearranged", PropertyInfo(Variant::INT, "idx_to")));
 	ADD_SIGNAL(MethodInfo("tab_clicked", PropertyInfo(Variant::INT, "tab")));
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "current_tab", PROPERTY_HINT_RANGE, "-1,4096,1", PROPERTY_USAGE_EDITOR), "set_current_tab", "get_current_tab");
