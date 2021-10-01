@@ -272,7 +272,7 @@
 			If set to a value greater than [code]0.0[/code], contrast-adaptive sharpening will be applied to the 3D viewport. This has a low performance cost and can be used to recover some of the sharpness lost from using FXAA. Values around [code]0.5[/code] generally give the best results. See also [member fxaa].
 		</member>
 		<member name="size" type="Vector2" setter="set_size" getter="get_size" default="Vector2( 0, 0 )">
-			The width and height of viewport.
+			The width and height of viewport. Must be set to a value greater than or equal to 2 pixels on both dimensions. Otherwise, nothing will be displayed.
 		</member>
 		<member name="size_override_stretch" type="bool" setter="set_size_override_stretch" getter="is_size_override_stretch_enabled" default="false">
 			If [code]true[/code], the size override affects stretch as well.
