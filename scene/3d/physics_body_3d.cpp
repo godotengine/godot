@@ -33,10 +33,6 @@
 #include "core/core_string_names.h"
 #include "scene/scene_string_names.h"
 
-#ifdef TOOLS_ENABLED
-#include "editor/plugins/node_3d_editor_plugin.h"
-#endif
-
 void PhysicsBody3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("move_and_collide", "linear_velocity", "test_only", "safe_margin", "max_collisions"), &PhysicsBody3D::_move, DEFVAL(false), DEFVAL(0.001), DEFVAL(1));
 	ClassDB::bind_method(D_METHOD("test_move", "from", "linear_velocity", "collision", "safe_margin", "max_collisions"), &PhysicsBody3D::test_move, DEFVAL(Variant()), DEFVAL(0.001), DEFVAL(1));
@@ -3017,14 +3013,11 @@ void PhysicalBone3D::_on_bone_parent_changed() {
 	_reload_joint();
 }
 
-void PhysicalBone3D::_set_gizmo_move_joint(bool p_move_joint) {
 #ifdef TOOLS_ENABLED
+void PhysicalBone3D::_set_gizmo_move_joint(bool p_move_joint) {
 	gizmo_move_joint = p_move_joint;
-	Node3DEditor::get_singleton()->update_transform_gizmo();
-#endif
 }
 
-#ifdef TOOLS_ENABLED
 Transform3D PhysicalBone3D::get_global_gizmo_transform() const {
 	return gizmo_move_joint ? get_global_transform() * joint_offset : get_global_transform();
 }

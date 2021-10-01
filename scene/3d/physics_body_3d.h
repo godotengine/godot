@@ -664,10 +664,9 @@ private:
 
 public:
 	void _on_bone_parent_changed();
-	void _set_gizmo_move_joint(bool p_move_joint);
 
-public:
 #ifdef TOOLS_ENABLED
+	void _set_gizmo_move_joint(bool p_move_joint);
 	virtual Transform3D get_global_gizmo_transform() const override;
 	virtual Transform3D get_local_gizmo_transform() const override;
 #endif
