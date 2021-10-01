@@ -3891,6 +3891,19 @@ void RichTextLabel::set_text(const String &p_bbcode) {
 }
 
 String RichTextLabel::get_text() const {
+	String text = "";
+	Item *it = main;
+	while (it) {
+		if (it->type == ITEM_TEXT) {
+			ItemText *t = static_cast<ItemText *>(it);
+			text += t->text;
+		} else if (it->type == ITEM_NEWLINE) {
+			text += "\n";
+		} else if (it->type == ITEM_INDENT) {
+			text += "\t";
+		}
+		it = _get_next_item(it, true);
+	}
 	return text;
 }
 
