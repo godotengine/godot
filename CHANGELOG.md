@@ -5,6 +5,69 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 
+## [3.3.4] - 2021-10-01
+
+See the [release announcement](https://godotengine.org/article/maintenance-release-godot-3-3-4) for details.
+
+### Changed
+
+#### Core
+
+- [Compare signal connections by ObjectID, avoids spurious reordering in .tscn files](https://github.com/godotengine/godot/pull/52493).
+
+#### Nodes
+
+- [Remove deprecation warning for `BaseButton.enabled_focus_mode`](https://github.com/godotengine/godot/pull/51993).
+- [LinkButton's text is now automatically translated](https://github.com/godotengine/godot/pull/52138).
+
+### Fixed
+
+#### Core
+
+- [Fix `LocalVector` crash on insert](https://github.com/godotengine/godot/pull/52121).
+- [Quote and escape ConfigFile keys when necessary](https://github.com/godotengine/godot/pull/52180).
+
+#### C#
+
+- [Fix reloading tool scripts in the editor](https://github.com/godotengine/godot/pull/52883).
+
+#### Editor
+
+- [Fix invalid "Too many warnings!" error in remote script debugger](https://github.com/godotengine/godot/pull/52416).
+- [Fix setting NodePath properties on multiple nodes at once](https://github.com/godotengine/godot/pull/51981).
+- [Fix preview grid and preserve source texture margins in SpriteFrames editor](https://github.com/godotengine/godot/pull/52910).
+
+#### GDScript
+
+- [LSP: Fix completion crashing on scene-less scripts](https://github.com/godotengine/godot/pull/51333).
+- [LSP: Report `new()` as `_init` & fix docstrings on multiline functions](https://github.com/godotengine/godot/pull/53094).
+
+#### Nodes
+
+- [CSG: Don't update CSGShape when not inside tree](https://github.com/godotengine/godot/pull/52647).
+- [Fix drawing current tab when it's disabled](https://github.com/godotengine/godot/pull/52299).
+
+#### Porting
+
+- [Android: Fix crash when calling `OS.vibrate_handheld(0)`](https://github.com/godotengine/godot/pull/51953).
+- [HTML5: Fix bug in AudioWorklet when reading output buffer](https://github.com/godotengine/godot/pull/52696).
+- [HTML5: Use browser mix rate by default on the Web](https://github.com/godotengine/godot/pull/52723).
+- [HTML5: Release pressed events when the window is blurred](https://github.com/godotengine/godot/pull/52973).
+- [iOS: Implement missing OS `set`/`get_clipboard()` methods](https://github.com/godotengine/godot/pull/52540).
+- [macOS / C#: Automatically enable JIT entitlements for the Mono exports](https://github.com/godotengine/godot/pull/50317).
+
+#### Rendering
+
+- [GLES3: Fix multimesh being colored by other nodes](https://github.com/godotengine/godot/pull/47582).
+- [GLES3: Properly clear cubemap filter state when texture array environment disabled](https://github.com/godotengine/godot/pull/51938).
+- [GLES3: Fix Light2D UBO initialization](https://github.com/godotengine/godot/pull/52243).
+- [Prevent shaders from generating code before the constructor finishes](https://github.com/godotengine/godot/pull/52475).
+
+#### VisualScript
+
+- [Fix VisualScriptPropertySet value hint](https://github.com/godotengine/godot/pull/52219).
+
+
 ## [3.3.3] - 2021-08-19
 
 See the [release announcement](https://godotengine.org/article/maintenance-release-godot-3-3-3) for details.
@@ -1907,7 +1970,7 @@ See the [release announcement](https://godotengine.org/article/maintenance-relea
 - HTML5 export using asm.js.
   - Only WebAssembly is supported now, since all browsers supporting WebGL 2.0 also support WebAssembly.
 
-
+[3.3.4]: https://downloads.tuxfamily.org/godotengine/3.3.4/Godot_v3.3.4-stable_changelog_chrono.txt
 [3.3.3]: https://downloads.tuxfamily.org/godotengine/3.3.3/Godot_v3.3.3-stable_changelog_chrono.txt
 [3.3.2]: https://downloads.tuxfamily.org/godotengine/3.3.2/Godot_v3.3.2-stable_changelog_chrono.txt
 [3.3.1]: https://downloads.tuxfamily.org/godotengine/3.3.1/Godot_v3.3.1-stable_changelog_chrono.txt
