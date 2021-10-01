@@ -372,6 +372,7 @@ public:
 	virtual void keyboard_set_current_layout(int p_index) override;
 	virtual String keyboard_get_layout_language(int p_index) const override;
 	virtual String keyboard_get_layout_name(int p_index) const override;
+	virtual Key keyboard_get_keycode_from_physical(Key p_keycode) const override;
 
 	virtual void process_events() override;
 

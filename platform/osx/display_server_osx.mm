@@ -930,146 +930,155 @@ static bool isNumpadKey(unsigned int key) {
 	return false;
 }
 
-// Translates a OS X keycode to a Godot keycode
-//
-static Key translateKey(unsigned int key) {
-	// Keyboard symbol translation table
-	static const Key table[128] = {
-		/* 00 */ KEY_A,
-		/* 01 */ KEY_S,
-		/* 02 */ KEY_D,
-		/* 03 */ KEY_F,
-		/* 04 */ KEY_H,
-		/* 05 */ KEY_G,
-		/* 06 */ KEY_Z,
-		/* 07 */ KEY_X,
-		/* 08 */ KEY_C,
-		/* 09 */ KEY_V,
-		/* 0a */ KEY_SECTION, /* ISO Section */
-		/* 0b */ KEY_B,
-		/* 0c */ KEY_Q,
-		/* 0d */ KEY_W,
-		/* 0e */ KEY_E,
-		/* 0f */ KEY_R,
-		/* 10 */ KEY_Y,
-		/* 11 */ KEY_T,
-		/* 12 */ KEY_1,
-		/* 13 */ KEY_2,
-		/* 14 */ KEY_3,
-		/* 15 */ KEY_4,
-		/* 16 */ KEY_6,
-		/* 17 */ KEY_5,
-		/* 18 */ KEY_EQUAL,
-		/* 19 */ KEY_9,
-		/* 1a */ KEY_7,
-		/* 1b */ KEY_MINUS,
-		/* 1c */ KEY_8,
-		/* 1d */ KEY_0,
-		/* 1e */ KEY_BRACERIGHT,
-		/* 1f */ KEY_O,
-		/* 20 */ KEY_U,
-		/* 21 */ KEY_BRACELEFT,
-		/* 22 */ KEY_I,
-		/* 23 */ KEY_P,
-		/* 24 */ KEY_ENTER,
-		/* 25 */ KEY_L,
-		/* 26 */ KEY_J,
-		/* 27 */ KEY_APOSTROPHE,
-		/* 28 */ KEY_K,
-		/* 29 */ KEY_SEMICOLON,
-		/* 2a */ KEY_BACKSLASH,
-		/* 2b */ KEY_COMMA,
-		/* 2c */ KEY_SLASH,
-		/* 2d */ KEY_N,
-		/* 2e */ KEY_M,
-		/* 2f */ KEY_PERIOD,
-		/* 30 */ KEY_TAB,
-		/* 31 */ KEY_SPACE,
-		/* 32 */ KEY_QUOTELEFT,
-		/* 33 */ KEY_BACKSPACE,
-		/* 34 */ KEY_UNKNOWN,
-		/* 35 */ KEY_ESCAPE,
-		/* 36 */ KEY_META,
-		/* 37 */ KEY_META,
-		/* 38 */ KEY_SHIFT,
-		/* 39 */ KEY_CAPSLOCK,
-		/* 3a */ KEY_ALT,
-		/* 3b */ KEY_CTRL,
-		/* 3c */ KEY_SHIFT,
-		/* 3d */ KEY_ALT,
-		/* 3e */ KEY_CTRL,
-		/* 3f */ KEY_UNKNOWN, /* Function */
-		/* 40 */ KEY_UNKNOWN, /* F17 */
-		/* 41 */ KEY_KP_PERIOD,
-		/* 42 */ KEY_UNKNOWN,
-		/* 43 */ KEY_KP_MULTIPLY,
-		/* 44 */ KEY_UNKNOWN,
-		/* 45 */ KEY_KP_ADD,
-		/* 46 */ KEY_UNKNOWN,
-		/* 47 */ KEY_NUMLOCK, /* Really KeypadClear... */
-		/* 48 */ KEY_VOLUMEUP, /* VolumeUp */
-		/* 49 */ KEY_VOLUMEDOWN, /* VolumeDown */
-		/* 4a */ KEY_VOLUMEMUTE, /* Mute */
-		/* 4b */ KEY_KP_DIVIDE,
-		/* 4c */ KEY_KP_ENTER,
-		/* 4d */ KEY_UNKNOWN,
-		/* 4e */ KEY_KP_SUBTRACT,
-		/* 4f */ KEY_UNKNOWN, /* F18 */
-		/* 50 */ KEY_UNKNOWN, /* F19 */
-		/* 51 */ KEY_EQUAL, /* KeypadEqual */
-		/* 52 */ KEY_KP_0,
-		/* 53 */ KEY_KP_1,
-		/* 54 */ KEY_KP_2,
-		/* 55 */ KEY_KP_3,
-		/* 56 */ KEY_KP_4,
-		/* 57 */ KEY_KP_5,
-		/* 58 */ KEY_KP_6,
-		/* 59 */ KEY_KP_7,
-		/* 5a */ KEY_UNKNOWN, /* F20 */
-		/* 5b */ KEY_KP_8,
-		/* 5c */ KEY_KP_9,
-		/* 5d */ KEY_YEN, /* JIS Yen */
-		/* 5e */ KEY_UNDERSCORE, /* JIS Underscore */
-		/* 5f */ KEY_COMMA, /* JIS KeypadComma */
-		/* 60 */ KEY_F5,
-		/* 61 */ KEY_F6,
-		/* 62 */ KEY_F7,
-		/* 63 */ KEY_F3,
-		/* 64 */ KEY_F8,
-		/* 65 */ KEY_F9,
-		/* 66 */ KEY_UNKNOWN, /* JIS Eisu */
-		/* 67 */ KEY_F11,
-		/* 68 */ KEY_UNKNOWN, /* JIS Kana */
-		/* 69 */ KEY_F13,
-		/* 6a */ KEY_F16,
-		/* 6b */ KEY_F14,
-		/* 6c */ KEY_UNKNOWN,
-		/* 6d */ KEY_F10,
-		/* 6e */ KEY_MENU,
-		/* 6f */ KEY_F12,
-		/* 70 */ KEY_UNKNOWN,
-		/* 71 */ KEY_F15,
-		/* 72 */ KEY_INSERT, /* Really Help... */
-		/* 73 */ KEY_HOME,
-		/* 74 */ KEY_PAGEUP,
-		/* 75 */ KEY_DELETE,
-		/* 76 */ KEY_F4,
-		/* 77 */ KEY_END,
-		/* 78 */ KEY_F2,
-		/* 79 */ KEY_PAGEDOWN,
-		/* 7a */ KEY_F1,
-		/* 7b */ KEY_LEFT,
-		/* 7c */ KEY_RIGHT,
-		/* 7d */ KEY_DOWN,
-		/* 7e */ KEY_UP,
-		/* 7f */ KEY_UNKNOWN,
-	};
+// Keyboard symbol translation table
+static const Key _osx_to_godot_table[128] = {
+	/* 00 */ KEY_A,
+	/* 01 */ KEY_S,
+	/* 02 */ KEY_D,
+	/* 03 */ KEY_F,
+	/* 04 */ KEY_H,
+	/* 05 */ KEY_G,
+	/* 06 */ KEY_Z,
+	/* 07 */ KEY_X,
+	/* 08 */ KEY_C,
+	/* 09 */ KEY_V,
+	/* 0a */ KEY_SECTION, /* ISO Section */
+	/* 0b */ KEY_B,
+	/* 0c */ KEY_Q,
+	/* 0d */ KEY_W,
+	/* 0e */ KEY_E,
+	/* 0f */ KEY_R,
+	/* 10 */ KEY_Y,
+	/* 11 */ KEY_T,
+	/* 12 */ KEY_1,
+	/* 13 */ KEY_2,
+	/* 14 */ KEY_3,
+	/* 15 */ KEY_4,
+	/* 16 */ KEY_6,
+	/* 17 */ KEY_5,
+	/* 18 */ KEY_EQUAL,
+	/* 19 */ KEY_9,
+	/* 1a */ KEY_7,
+	/* 1b */ KEY_MINUS,
+	/* 1c */ KEY_8,
+	/* 1d */ KEY_0,
+	/* 1e */ KEY_BRACERIGHT,
+	/* 1f */ KEY_O,
+	/* 20 */ KEY_U,
+	/* 21 */ KEY_BRACELEFT,
+	/* 22 */ KEY_I,
+	/* 23 */ KEY_P,
+	/* 24 */ KEY_ENTER,
+	/* 25 */ KEY_L,
+	/* 26 */ KEY_J,
+	/* 27 */ KEY_APOSTROPHE,
+	/* 28 */ KEY_K,
+	/* 29 */ KEY_SEMICOLON,
+	/* 2a */ KEY_BACKSLASH,
+	/* 2b */ KEY_COMMA,
+	/* 2c */ KEY_SLASH,
+	/* 2d */ KEY_N,
+	/* 2e */ KEY_M,
+	/* 2f */ KEY_PERIOD,
+	/* 30 */ KEY_TAB,
+	/* 31 */ KEY_SPACE,
+	/* 32 */ KEY_QUOTELEFT,
+	/* 33 */ KEY_BACKSPACE,
+	/* 34 */ KEY_UNKNOWN,
+	/* 35 */ KEY_ESCAPE,
+	/* 36 */ KEY_META,
+	/* 37 */ KEY_META,
+	/* 38 */ KEY_SHIFT,
+	/* 39 */ KEY_CAPSLOCK,
+	/* 3a */ KEY_ALT,
+	/* 3b */ KEY_CTRL,
+	/* 3c */ KEY_SHIFT,
+	/* 3d */ KEY_ALT,
+	/* 3e */ KEY_CTRL,
+	/* 3f */ KEY_UNKNOWN, /* Function */
+	/* 40 */ KEY_UNKNOWN, /* F17 */
+	/* 41 */ KEY_KP_PERIOD,
+	/* 42 */ KEY_UNKNOWN,
+	/* 43 */ KEY_KP_MULTIPLY,
+	/* 44 */ KEY_UNKNOWN,
+	/* 45 */ KEY_KP_ADD,
+	/* 46 */ KEY_UNKNOWN,
+	/* 47 */ KEY_NUMLOCK, /* Really KeypadClear... */
+	/* 48 */ KEY_VOLUMEUP, /* VolumeUp */
+	/* 49 */ KEY_VOLUMEDOWN, /* VolumeDown */
+	/* 4a */ KEY_VOLUMEMUTE, /* Mute */
+	/* 4b */ KEY_KP_DIVIDE,
+	/* 4c */ KEY_KP_ENTER,
+	/* 4d */ KEY_UNKNOWN,
+	/* 4e */ KEY_KP_SUBTRACT,
+	/* 4f */ KEY_UNKNOWN, /* F18 */
+	/* 50 */ KEY_UNKNOWN, /* F19 */
+	/* 51 */ KEY_EQUAL, /* KeypadEqual */
+	/* 52 */ KEY_KP_0,
+	/* 53 */ KEY_KP_1,
+	/* 54 */ KEY_KP_2,
+	/* 55 */ KEY_KP_3,
+	/* 56 */ KEY_KP_4,
+	/* 57 */ KEY_KP_5,
+	/* 58 */ KEY_KP_6,
+	/* 59 */ KEY_KP_7,
+	/* 5a */ KEY_UNKNOWN, /* F20 */
+	/* 5b */ KEY_KP_8,
+	/* 5c */ KEY_KP_9,
+	/* 5d */ KEY_YEN, /* JIS Yen */
+	/* 5e */ KEY_UNDERSCORE, /* JIS Underscore */
+	/* 5f */ KEY_COMMA, /* JIS KeypadComma */
+	/* 60 */ KEY_F5,
+	/* 61 */ KEY_F6,
+	/* 62 */ KEY_F7,
+	/* 63 */ KEY_F3,
+	/* 64 */ KEY_F8,
+	/* 65 */ KEY_F9,
+	/* 66 */ KEY_UNKNOWN, /* JIS Eisu */
+	/* 67 */ KEY_F11,
+	/* 68 */ KEY_UNKNOWN, /* JIS Kana */
+	/* 69 */ KEY_F13,
+	/* 6a */ KEY_F16,
+	/* 6b */ KEY_F14,
+	/* 6c */ KEY_UNKNOWN,
+	/* 6d */ KEY_F10,
+	/* 6e */ KEY_MENU,
+	/* 6f */ KEY_F12,
+	/* 70 */ KEY_UNKNOWN,
+	/* 71 */ KEY_F15,
+	/* 72 */ KEY_INSERT, /* Really Help... */
+	/* 73 */ KEY_HOME,
+	/* 74 */ KEY_PAGEUP,
+	/* 75 */ KEY_DELETE,
+	/* 76 */ KEY_F4,
+	/* 77 */ KEY_END,
+	/* 78 */ KEY_F2,
+	/* 79 */ KEY_PAGEDOWN,
+	/* 7a */ KEY_F1,
+	/* 7b */ KEY_LEFT,
+	/* 7c */ KEY_RIGHT,
+	/* 7d */ KEY_DOWN,
+	/* 7e */ KEY_UP,
+	/* 7f */ KEY_UNKNOWN,
+};
 
+// Translates a OS X keycode to a Godot keycode
+static Key translateKey(unsigned int key) {
 	if (key >= 128) {
 		return KEY_UNKNOWN;
 	}
 
-	return table[key];
+	return _osx_to_godot_table[key];
+}
+
+// Translates a Godot keycode back to a OSX keycode
+static unsigned int unmapKey(Key key) {
+	for (int i = 0; i <= 126; i++) {
+		if (_osx_to_godot_table[i] == key) {
+			return i;
+		}
+	}
+	return 127;
 }
 
 struct _KeyCodeMap {
@@ -3198,6 +3207,17 @@ String DisplayServerOSX::keyboard_get_layout_name(int p_index) const {
 
 	ERR_FAIL_INDEX_V(p_index, kbd_layouts.size(), "");
 	return kbd_layouts[p_index].name;
+}
+
+Key DisplayServerOSX::keyboard_get_keycode_from_physical(Key p_keycode) const {
+	if (p_keycode == KEY_PAUSE) {
+		return p_keycode;
+	}
+
+	unsigned int modifiers = p_keycode & KEY_MODIFIER_MASK;
+	unsigned int keycode_no_mod = p_keycode & KEY_CODE_MASK;
+	unsigned int osx_keycode = unmapKey((Key)keycode_no_mod);
+	return (Key)(remapKey(osx_keycode, 0) | modifiers);
 }
 
 void DisplayServerOSX::_push_input(const Ref<InputEvent> &p_event) {
