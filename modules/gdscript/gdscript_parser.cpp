@@ -3481,22 +3481,22 @@ bool GDScriptParser::network_annotations(const AnnotationNode *p_annotation, Nod
 		}
 		for (int i = last; i >= 0; i--) {
 			String mode = p_annotation->resolved_arguments[i].operator String();
-			if (mode == "any") {
-				rpc_config.rpc_mode = Multiplayer::RPC_MODE_ANY;
-			} else if (mode == "auth") {
+			if (mode == "any_peer") {
+				rpc_config.rpc_mode = Multiplayer::RPC_MODE_ANY_PEER;
+			} else if (mode == "authority") {
 				rpc_config.rpc_mode = Multiplayer::RPC_MODE_AUTHORITY;
-			} else if (mode == "sync") {
+			} else if (mode == "call_local") {
 				rpc_config.sync = true;
-			} else if (mode == "nosync") {
+			} else if (mode == "call_remote") {
 				rpc_config.sync = false;
 			} else if (mode == "reliable") {
 				rpc_config.transfer_mode = Multiplayer::TRANSFER_MODE_RELIABLE;
 			} else if (mode == "unreliable") {
 				rpc_config.transfer_mode = Multiplayer::TRANSFER_MODE_UNRELIABLE;
-			} else if (mode == "ordered") {
-				rpc_config.transfer_mode = Multiplayer::TRANSFER_MODE_ORDERED;
+			} else if (mode == "unreliable_ordered") {
+				rpc_config.transfer_mode = Multiplayer::TRANSFER_MODE_UNRELIABLE_ORDERED;
 			} else {
-				push_error(R"(Invalid RPC argument. Must be one of: 'sync'/'nosync' (local calls), 'any'/'auth' (permission), 'reliable'/'unreliable'/'ordered' (transfer mode).)", p_annotation);
+				push_error(R"(Invalid RPC argument. Must be one of: 'call_local'/'no_call_local' (local calls), 'any_peer'/'authority' (permission), 'reliable'/'unreliable'/'unreliable_ordered' (transfer mode).)", p_annotation);
 			}
 		}
 	}

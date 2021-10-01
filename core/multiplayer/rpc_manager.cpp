@@ -99,7 +99,7 @@ _FORCE_INLINE_ bool _can_call_mode(Node *p_node, Multiplayer::RPCMode mode, int 
 		case Multiplayer::RPC_MODE_DISABLED: {
 			return false;
 		} break;
-		case Multiplayer::RPC_MODE_ANY: {
+		case Multiplayer::RPC_MODE_ANY_PEER: {
 			return true;
 		} break;
 		case Multiplayer::RPC_MODE_AUTHORITY: {
