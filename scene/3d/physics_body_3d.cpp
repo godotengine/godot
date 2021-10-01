@@ -1168,14 +1168,18 @@ void CharacterBody3D::_move_and_slide_grounded(double p_delta, bool p_was_on_flo
 
 	platform_rid = RID();
 	platform_velocity = Vector3();
+	platform_ceiling_velocity = Vector3();
 	floor_normal = Vector3();
 	wall_normal = Vector3();
+	ceiling_normal = Vector3();
 
 	// No sliding on first attempt to keep floor motion stable when possible,
 	// When stop on slope is enabled or when there is no up direction.
 	bool sliding_enabled = !floor_stop_on_slope;
 	// Constant speed can be applied only the first time sliding is enabled.
 	bool can_apply_constant_speed = sliding_enabled;
+	// If the platform's ceiling push down the body.
+	bool apply_ceiling_velocity = false;
 	bool first_slide = true;
 	bool vel_dir_facing_up = motion_velocity.dot(up_direction) > 0;
 	Vector3 total_travel;
@@ -1192,6 +1196,19 @@ void CharacterBody3D::_move_and_slide_grounded(double p_delta, bool p_was_on_flo
 
 			CollisionState result_state;
 			_set_collision_direction(result, result_state);
+
+			// If we hit a ceiling platform, we set the vertical motion_velocity to at least the platform one.
+			if (collision_state.ceiling && platform_ceiling_velocity != Vector3() && platform_ceiling_velocity.dot(up_direction) < 0) {
+				// If ceiling sliding is on, only apply when the ceiling is flat or when the motion is upward.
+				if (!slide_on_ceiling || motion.dot(up_direction) < 0 || (ceiling_normal + up_direction).length() < 0.01) {
+					apply_ceiling_velocity = true;
+					Vector3 ceiling_vertical_velocity = up_direction * up_direction.dot(platform_ceiling_velocity);
+					Vector3 motion_vertical_velocity = up_direction * up_direction.dot(motion_velocity);
+					if (motion_vertical_velocity.dot(up_direction) > 0 || ceiling_vertical_velocity.length_squared() > motion_vertical_velocity.length_squared()) {
+						motion_velocity = ceiling_vertical_velocity + motion_velocity.slide(up_direction);
+					}
+				}
+			}
 
 			if (collision_state.floor && floor_stop_on_slope && (motion_velocity.normalized() + up_direction).length() < 0.01) {
 				Transform3D gt = get_global_transform();
@@ -1304,7 +1321,7 @@ void CharacterBody3D::_move_and_slide_grounded(double p_delta, bool p_was_on_flo
 
 			if (apply_default_sliding) {
 				// Regular sliding, the last part of the test handle the case when you don't want to slide on the ceiling.
-				if ((sliding_enabled || !collision_state.floor) && (!collision_state.ceiling || slide_on_ceiling || !vel_dir_facing_up)) {
+				if ((sliding_enabled || !collision_state.floor) && (!collision_state.ceiling || slide_on_ceiling || !vel_dir_facing_up) && !apply_ceiling_velocity) {
 					const PhysicsServer3D::MotionCollision &collision = result.collisions[0];
 
 					Vector3 slide_motion = result.remainder.slide(collision.normal);
@@ -1526,6 +1543,8 @@ void CharacterBody3D::_set_collision_direction(const PhysicsServer3D::MotionResu
 			if (ceiling_angle <= floor_max_angle + FLOOR_ANGLE_THRESHOLD) {
 				r_state.ceiling = true;
 				if (p_apply_state.ceiling) {
+					platform_ceiling_velocity = collision.collider_velocity;
+					ceiling_normal = collision.normal;
 					collision_state.ceiling = true;
 				}
 				continue;
