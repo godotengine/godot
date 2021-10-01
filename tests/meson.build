@@ -3,7 +3,7 @@ if get_option('tests')
 
     _tests_cpp_args = []
     if PLATFORM == 'windows'
-        _tests_cpp_args += '-DDOCTEST_THREAD_LOCAL'
+        _tests_cpp_args += '/bigobj'
     endif
 
     #_tests_incdirs = include_directories('.')

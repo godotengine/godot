@@ -33,6 +33,7 @@ endif
 
 lib_gdscript = library('module_gdscript',
     _module_gdscript_srcs,
+    gdivirtuals_gen,
     cpp_args: _module_gdscript_cpp_args,
     dependencies: _module_gdscript_deps
 )
