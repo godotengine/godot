@@ -37,18 +37,22 @@
 class Shortcut : public Resource {
 	GDCLASS(Shortcut, Resource);
 
-	Ref<InputEvent> event;
+	Array events;
 
 protected:
 	static void _bind_methods();
 
 public:
-	void set_event(const Ref<InputEvent> &p_shortcut);
-	Ref<InputEvent> get_event() const;
+	void set_events(const Array &p_events);
+	Array get_events() const;
+
+	void set_events_list(const List<Ref<InputEvent>> *p_events);
+
 	bool matches_event(const Ref<InputEvent> &p_event) const;
 	bool has_valid_event() const;
 
 	String get_as_text() const;
-};
 
+	static bool is_event_array_equal(const Array &p_event_array1, const Array &p_event_array2);
+};
 #endif // SHORTCUT_H

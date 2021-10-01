@@ -4,8 +4,8 @@
 		A shortcut for binding input.
 	</brief_description>
 	<description>
-		A shortcut for binding input.
 		Shortcuts are commonly used for interacting with a [Control] element from an [InputEvent] (also known as hotkeys).
+		One shortcut can contain multiple [InputEvent]'s, allowing the possibility of triggering one action with multiple different inputs.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -13,27 +13,27 @@
 		<method name="get_as_text" qualifiers="const">
 			<return type="String" />
 			<description>
-				Returns the shortcut's [InputEvent] as a [String].
+				Returns the shortcut's first valid [InputEvent] as a [String].
 			</description>
 		</method>
 		<method name="has_valid_event" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns whether the shortcut has a valid [member event] assigned to it.
+				Returns whether [member events] contains an [InputEvent] which is valid.
 			</description>
 		</method>
 		<method name="matches_event" qualifiers="const">
 			<return type="bool" />
 			<argument index="0" name="event" type="InputEvent" />
 			<description>
-				Returns whether the shortcut's [member event] matches [code]event[/code].
+				Returns whether any [InputEvent] in [member events] equals [code]event[/code].
 			</description>
 		</method>
 	</methods>
 	<members>
-		<member name="event" type="InputEvent" setter="set_event" getter="get_event">
-			The shortcut's [InputEvent].
-			Generally the [InputEvent] is a keyboard key, though it can be any [InputEvent], including an [InputEventAction].
+		<member name="events" type="Array" setter="set_events" getter="get_events" default="[]">
+			The shortcut's [InputEvent] array.
+			Generally the [InputEvent] used is an [InputEventKey], though it can be any [InputEvent], including an [InputEventAction].
 		</member>
 	</members>
 </class>
