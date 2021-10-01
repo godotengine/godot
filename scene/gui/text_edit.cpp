@@ -186,7 +186,7 @@ void TextEdit::Text::_calculate_max_line_width() {
 	max_width = width;
 }
 
-void TextEdit::Text::invalidate_cache(int p_line, int p_column, const String &p_ime_text, const Vector<Vector2i> &p_bidi_override) {
+void TextEdit::Text::invalidate_cache(int p_line, int p_column, const String &p_ime_text, const Array &p_bidi_override) {
 	ERR_FAIL_INDEX(p_line, text.size());
 
 	if (font.is_null() || font_size <= 0) {
@@ -278,14 +278,14 @@ void TextEdit::Text::invalidate_all() {
 
 void TextEdit::Text::clear() {
 	text.clear();
-	insert(0, "", Vector<Vector2i>());
+	insert(0, "", Array());
 }
 
 int TextEdit::Text::get_max_width() const {
 	return max_width;
 }
 
-void TextEdit::Text::set(int p_line, const String &p_text, const Vector<Vector2i> &p_bidi_override) {
+void TextEdit::Text::set(int p_line, const String &p_text, const Array &p_bidi_override) {
 	ERR_FAIL_INDEX(p_line, text.size());
 
 	text.write[p_line].data = p_text;
@@ -293,7 +293,7 @@ void TextEdit::Text::set(int p_line, const String &p_text, const Vector<Vector2i
 	invalidate_cache(p_line);
 }
 
-void TextEdit::Text::insert(int p_at, const String &p_text, const Vector<Vector2i> &p_bidi_override) {
+void TextEdit::Text::insert(int p_at, const String &p_text, const Array &p_bidi_override) {
 	Line line;
 	line.gutters.resize(gutter_count);
 	line.hidden = false;
@@ -1076,9 +1076,8 @@ void TextEdit::_notification(int p_what) {
 
 					ofs_y += (row_height - text_height) / 2;
 
-					const Vector<TextServer::Glyph> visual = TS->shaped_text_get_glyphs(rid);
-					const TextServer::Glyph *glyphs = visual.ptr();
-					int gl_size = visual.size();
+					const Glyph *glyphs = TS->shaped_text_get_glyphs(rid);
+					int gl_size = TS->shaped_text_get_glyph_count(rid);
 
 					ofs_y += ldata->get_line_ascent(line_wrap_index);
 					int char_ofs = 0;
@@ -1185,27 +1184,26 @@ void TextEdit::_notification(int p_what) {
 						caret.draw_pos.y = ofs_y + ldata->get_line_descent(line_wrap_index);
 
 						if (ime_text.length() == 0) {
-							Rect2 l_caret, t_caret;
-							TextServer::Direction l_dir, t_dir;
+							CaretInfo ts_caret;
 							if (str.length() != 0) {
 								// Get carets.
-								TS->shaped_text_get_carets(rid, caret.column, l_caret, l_dir, t_caret, t_dir);
+								ts_caret = TS->shaped_text_get_carets(rid, caret.column);
 							} else {
 								// No carets, add one at the start.
 								int h = font->get_height(font_size);
 								if (rtl) {
-									l_dir = TextServer::DIRECTION_RTL;
-									l_caret = Rect2(Vector2(xmargin_end - char_margin + ofs_x, -h / 2), Size2(caret_width * 4, h));
+									ts_caret.l_dir = TextServer::DIRECTION_RTL;
+									ts_caret.l_caret = Rect2(Vector2(xmargin_end - char_margin + ofs_x, -h / 2), Size2(caret_width * 4, h));
 								} else {
-									l_dir = TextServer::DIRECTION_LTR;
-									l_caret = Rect2(Vector2(char_ofs, -h / 2), Size2(caret_width * 4, h));
+									ts_caret.l_dir = TextServer::DIRECTION_LTR;
+									ts_caret.l_caret = Rect2(Vector2(char_ofs, -h / 2), Size2(caret_width * 4, h));
 								}
 							}
 
-							if ((l_caret != Rect2() && (l_dir == TextServer::DIRECTION_AUTO || l_dir == (TextServer::Direction)input_direction)) || (t_caret == Rect2())) {
-								caret.draw_pos.x = char_margin + ofs_x + l_caret.position.x;
+							if ((ts_caret.l_caret != Rect2() && (ts_caret.l_dir == TextServer::DIRECTION_AUTO || ts_caret.l_dir == (TextServer::Direction)input_direction)) || (ts_caret.t_caret == Rect2())) {
+								caret.draw_pos.x = char_margin + ofs_x + ts_caret.l_caret.position.x;
 							} else {
-								caret.draw_pos.x = char_margin + ofs_x + t_caret.position.x;
+								caret.draw_pos.x = char_margin + ofs_x + ts_caret.t_caret.position.x;
 							}
 
 							if (caret.draw_pos.x >= xmargin_beg && caret.draw_pos.x < xmargin_end) {
@@ -1215,64 +1213,64 @@ void TextEdit::_notification(int p_what) {
 										//Block or underline caret, draw trailing carets at full height.
 										int h = font->get_height(font_size);
 
-										if (t_caret != Rect2()) {
+										if (ts_caret.t_caret != Rect2()) {
 											if (overtype_mode) {
-												t_caret.position.y = TS->shaped_text_get_descent(rid);
-												t_caret.size.y = caret_width;
+												ts_caret.t_caret.position.y = TS->shaped_text_get_descent(rid);
+												ts_caret.t_caret.size.y = caret_width;
 											} else {
-												t_caret.position.y = -TS->shaped_text_get_ascent(rid);
-												t_caret.size.y = h;
+												ts_caret.t_caret.position.y = -TS->shaped_text_get_ascent(rid);
+												ts_caret.t_caret.size.y = h;
 											}
-											t_caret.position += Vector2(char_margin + ofs_x, ofs_y);
-											draw_rect(t_caret, caret_color, overtype_mode);
+											ts_caret.t_caret.position += Vector2(char_margin + ofs_x, ofs_y);
+											draw_rect(ts_caret.t_caret, caret_color, overtype_mode);
 
-											if (l_caret != Rect2() && l_dir != t_dir) {
-												l_caret.position += Vector2(char_margin + ofs_x, ofs_y);
-												l_caret.size.x = caret_width;
-												draw_rect(l_caret, caret_color * Color(1, 1, 1, 0.5));
+											if (ts_caret.l_caret != Rect2() && ts_caret.l_dir != ts_caret.t_dir) {
+												ts_caret.l_caret.position += Vector2(char_margin + ofs_x, ofs_y);
+												ts_caret.l_caret.size.x = caret_width;
+												draw_rect(ts_caret.l_caret, caret_color * Color(1, 1, 1, 0.5));
 											}
 										} else { // End of the line.
 											if (gl_size > 0) {
 												// Adjust for actual line dimensions.
 												if (overtype_mode) {
-													l_caret.position.y = TS->shaped_text_get_descent(rid);
-													l_caret.size.y = caret_width;
+													ts_caret.l_caret.position.y = TS->shaped_text_get_descent(rid);
+													ts_caret.l_caret.size.y = caret_width;
 												} else {
-													l_caret.position.y = -TS->shaped_text_get_ascent(rid);
-													l_caret.size.y = h;
+													ts_caret.l_caret.position.y = -TS->shaped_text_get_ascent(rid);
+													ts_caret.l_caret.size.y = h;
 												}
 											} else if (overtype_mode) {
-												l_caret.position.y += l_caret.size.y;
-												l_caret.size.y = caret_width;
+												ts_caret.l_caret.position.y += ts_caret.l_caret.size.y;
+												ts_caret.l_caret.size.y = caret_width;
 											}
-											if (l_caret.position.x >= TS->shaped_text_get_size(rid).x) {
-												l_caret.size.x = font->get_char_size('m', 0, font_size).x;
+											if (ts_caret.l_caret.position.x >= TS->shaped_text_get_size(rid).x) {
+												ts_caret.l_caret.size.x = font->get_char_size('m', 0, font_size).x;
 											} else {
-												l_caret.size.x = 3 * caret_width;
+												ts_caret.l_caret.size.x = 3 * caret_width;
 											}
-											l_caret.position += Vector2(char_margin + ofs_x, ofs_y);
-											if (l_dir == TextServer::DIRECTION_RTL) {
-												l_caret.position.x -= l_caret.size.x;
+											ts_caret.l_caret.position += Vector2(char_margin + ofs_x, ofs_y);
+											if (ts_caret.l_dir == TextServer::DIRECTION_RTL) {
+												ts_caret.l_caret.position.x -= ts_caret.l_caret.size.x;
 											}
-											draw_rect(l_caret, caret_color, overtype_mode);
+											draw_rect(ts_caret.l_caret, caret_color, overtype_mode);
 										}
 									} else {
 										// Normal caret.
-										if (l_caret != Rect2() && l_dir == TextServer::DIRECTION_AUTO) {
+										if (ts_caret.l_caret != Rect2() && ts_caret.l_dir == TextServer::DIRECTION_AUTO) {
 											// Draw extra marker on top of mid caret.
-											Rect2 trect = Rect2(l_caret.position.x - 3 * caret_width, l_caret.position.y, 6 * caret_width, caret_width);
+											Rect2 trect = Rect2(ts_caret.l_caret.position.x - 3 * caret_width, ts_caret.l_caret.position.y, 6 * caret_width, caret_width);
 											trect.position += Vector2(char_margin + ofs_x, ofs_y);
 											RenderingServer::get_singleton()->canvas_item_add_rect(ci, trect, caret_color);
 										}
-										l_caret.position += Vector2(char_margin + ofs_x, ofs_y);
-										l_caret.size.x = caret_width;
+										ts_caret.l_caret.position += Vector2(char_margin + ofs_x, ofs_y);
+										ts_caret.l_caret.size.x = caret_width;
 
-										draw_rect(l_caret, caret_color);
+										draw_rect(ts_caret.l_caret, caret_color);
 
-										t_caret.position += Vector2(char_margin + ofs_x, ofs_y);
-										t_caret.size.x = caret_width;
+										ts_caret.t_caret.position += Vector2(char_margin + ofs_x, ofs_y);
+										ts_caret.t_caret.size.x = caret_width;
 
-										draw_rect(t_caret, caret_color);
+										draw_rect(ts_caret.t_caret, caret_color);
 									}
 								}
 							}
@@ -1968,10 +1966,10 @@ void TextEdit::_move_caret_left(bool p_select, bool p_move_by_word) {
 			set_caret_line(caret.line - 1);
 			set_caret_column(text[caret.line].length());
 		} else {
-			Vector<Vector2i> words = TS->shaped_text_get_word_breaks(text.get_line_data(caret.line)->get_rid());
-			for (int i = words.size() - 1; i >= 0; i--) {
-				if (words[i].x < cc) {
-					cc = words[i].x;
+			PackedInt32Array words = TS->shaped_text_get_word_breaks(text.get_line_data(caret.line)->get_rid());
+			for (int i = words.size() - 2; i >= 0; i = i - 2) {
+				if (words[i] < cc) {
+					cc = words[i];
 					break;
 				}
 			}
@@ -2019,10 +2017,10 @@ void TextEdit::_move_caret_right(bool p_select, bool p_move_by_word) {
 			set_caret_line(caret.line + 1);
 			set_caret_column(0);
 		} else {
-			Vector<Vector2i> words = TS->shaped_text_get_word_breaks(text.get_line_data(caret.line)->get_rid());
-			for (int i = 0; i < words.size(); i++) {
-				if (words[i].y > cc) {
-					cc = words[i].y;
+			PackedInt32Array words = TS->shaped_text_get_word_breaks(text.get_line_data(caret.line)->get_rid());
+			for (int i = 1; i < words.size(); i = i + 2) {
+				if (words[i] > cc) {
+					cc = words[i];
 					break;
 				}
 			}
@@ -2214,10 +2212,10 @@ void TextEdit::_do_backspace(bool p_word, bool p_all_to_left) {
 		int line = caret.line;
 		int column = caret.column;
 
-		Vector<Vector2i> words = TS->shaped_text_get_word_breaks(text.get_line_data(line)->get_rid());
-		for (int i = words.size() - 1; i >= 0; i--) {
-			if (words[i].x < column) {
-				column = words[i].x;
+		PackedInt32Array words = TS->shaped_text_get_word_breaks(text.get_line_data(line)->get_rid());
+		for (int i = words.size() - 2; i >= 0; i = i - 2) {
+			if (words[i] < column) {
+				column = words[i];
 				break;
 			}
 		}
@@ -2257,10 +2255,10 @@ void TextEdit::_delete(bool p_word, bool p_all_to_right) {
 		int line = caret.line;
 		int column = caret.column;
 
-		Vector<Vector2i> words = TS->shaped_text_get_word_breaks(text.get_line_data(line)->get_rid());
-		for (int i = 0; i < words.size(); i++) {
-			if (words[i].y > column) {
-				column = words[i].y;
+		PackedInt32Array words = TS->shaped_text_get_word_breaks(text.get_line_data(line)->get_rid());
+		for (int i = 1; i < words.size(); i = i + 2) {
+			if (words[i] > column) {
+				column = words[i];
 				break;
 			}
 		}
@@ -3631,10 +3629,10 @@ int TextEdit::get_caret_wrap_index() const {
 }
 
 String TextEdit::get_word_under_caret() const {
-	Vector<Vector2i> words = TS->shaped_text_get_word_breaks(text.get_line_data(caret.line)->get_rid());
-	for (int i = 0; i < words.size(); i++) {
-		if (words[i].x <= caret.column && words[i].y > caret.column) {
-			return text[caret.line].substr(words[i].x, words[i].y - words[i].x);
+	PackedInt32Array words = TS->shaped_text_get_word_breaks(text.get_line_data(caret.line)->get_rid());
+	for (int i = 0; i < words.size(); i = i + 2) {
+		if (words[i] <= caret.column && words[i + 1] > caret.column) {
+			return text[caret.line].substr(words[i], words[i + 1] - words[i]);
 		}
 	}
 	return "";
@@ -3718,11 +3716,11 @@ void TextEdit::select_word_under_caret() {
 
 	int begin = 0;
 	int end = 0;
-	const Vector<Vector2i> words = TS->shaped_text_get_word_breaks(text.get_line_data(caret.line)->get_rid());
-	for (int i = 0; i < words.size(); i++) {
-		if ((words[i].x < caret.column && words[i].y > caret.column) || (i == words.size() - 1 && caret.column == words[i].y)) {
-			begin = words[i].x;
-			end = words[i].y;
+	const PackedInt32Array words = TS->shaped_text_get_word_breaks(text.get_line_data(caret.line)->get_rid());
+	for (int i = 0; i < words.size(); i = i + 2) {
+		if ((words[i] < caret.column && words[i + 1] > caret.column) || (i == words.size() - 2 && caret.column == words[i + 1])) {
+			begin = words[i];
+			end = words[i + 1];
 			break;
 		}
 	}
@@ -5376,14 +5374,12 @@ int TextEdit::_get_column_x_offset_for_line(int p_char, int p_line) const {
 		}
 	}
 
-	Rect2 l_caret, t_caret;
-	TextServer::Direction l_dir, t_dir;
 	RID text_rid = text.get_line_data(p_line)->get_line_rid(row);
-	TS->shaped_text_get_carets(text_rid, caret.column, l_caret, l_dir, t_caret, t_dir);
-	if ((l_caret != Rect2() && (l_dir == TextServer::DIRECTION_AUTO || l_dir == (TextServer::Direction)input_direction)) || (t_caret == Rect2())) {
-		return l_caret.position.x;
+	CaretInfo ts_caret = TS->shaped_text_get_carets(text_rid, caret.column);
+	if ((ts_caret.l_caret != Rect2() && (ts_caret.l_dir == TextServer::DIRECTION_AUTO || ts_caret.l_dir == (TextServer::Direction)input_direction)) || (ts_caret.t_caret == Rect2())) {
+		return ts_caret.l_caret.position.x;
 	} else {
-		return t_caret.position.x;
+		return ts_caret.t_caret.position.x;
 	}
 }
 
@@ -5440,11 +5436,11 @@ void TextEdit::_update_selection_mode_word() {
 	int caret_pos = CLAMP(col, 0, text[line].length());
 	int beg = caret_pos;
 	int end = beg;
-	Vector<Vector2i> words = TS->shaped_text_get_word_breaks(text.get_line_data(line)->get_rid());
-	for (int i = 0; i < words.size(); i++) {
-		if ((words[i].x < caret_pos && words[i].y > caret_pos) || (i == words.size() - 1 && caret_pos == words[i].y)) {
-			beg = words[i].x;
-			end = words[i].y;
+	PackedInt32Array words = TS->shaped_text_get_word_breaks(text.get_line_data(line)->get_rid());
+	for (int i = 0; i < words.size(); i = i + 2) {
+		if ((words[i] < caret_pos && words[i + 1] > caret_pos) || (i == words.size() - 2 && caret_pos == words[i + 1])) {
+			beg = words[i];
+			end = words[i + 1];
 			break;
 		}
 	}
@@ -6032,7 +6028,7 @@ void TextEdit::_base_insert_text(int p_line, int p_char, const String &p_text, i
 	r_end_line = p_line + substrings.size() - 1;
 	r_end_column = text[r_end_line].length() - postinsert_text.length();
 
-	TextServer::Direction dir = TS->shaped_text_get_dominant_direciton_in_range(text.get_line_data(r_end_line)->get_rid(), (r_end_line == p_line) ? caret.column : 0, r_end_column);
+	TextServer::Direction dir = TS->shaped_text_get_dominant_direction_in_range(text.get_line_data(r_end_line)->get_rid(), (r_end_line == p_line) ? caret.column : 0, r_end_column);
 	if (dir != TextServer::DIRECTION_AUTO) {
 		input_direction = (TextDirection)dir;
 	}

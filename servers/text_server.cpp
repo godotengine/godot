@@ -32,122 +32,108 @@
 #include "scene/main/canvas_item.h"
 
 TextServerManager *TextServerManager::singleton = nullptr;
-TextServer *TextServerManager::server = nullptr;
-TextServerManager::TextServerCreate TextServerManager::server_create_functions[TextServerManager::MAX_SERVERS];
-int TextServerManager::server_create_count = 0;
 
 void TextServerManager::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("get_interface_count"), &TextServerManager::_get_interface_count);
-	ClassDB::bind_method(D_METHOD("get_interface_name", "index"), &TextServerManager::_get_interface_name);
-	ClassDB::bind_method(D_METHOD("get_interface_features", "index"), &TextServerManager::_get_interface_features);
-	ClassDB::bind_method(D_METHOD("get_interface", "index"), &TextServerManager::_get_interface);
-	ClassDB::bind_method(D_METHOD("get_interfaces"), &TextServerManager::_get_interfaces);
-	ClassDB::bind_method(D_METHOD("find_interface", "name"), &TextServerManager::_find_interface);
+	ClassDB::bind_method(D_METHOD("add_interface", "interface"), &TextServerManager::add_interface);
+	ClassDB::bind_method(D_METHOD("get_interface_count"), &TextServerManager::get_interface_count);
+	ClassDB::bind_method(D_METHOD("remove_interface", "interface"), &TextServerManager::remove_interface);
+	ClassDB::bind_method(D_METHOD("get_interface", "idx"), &TextServerManager::get_interface);
+	ClassDB::bind_method(D_METHOD("get_interfaces"), &TextServerManager::get_interfaces);
+	ClassDB::bind_method(D_METHOD("find_interface", "name"), &TextServerManager::find_interface);
 
-	ClassDB::bind_method(D_METHOD("set_primary_interface", "index"), &TextServerManager::_set_primary_interface);
+	ClassDB::bind_method(D_METHOD("set_primary_interface", "index"), &TextServerManager::set_primary_interface);
 	ClassDB::bind_method(D_METHOD("get_primary_interface"), &TextServerManager::_get_primary_interface);
+
+	ADD_SIGNAL(MethodInfo("interface_added", PropertyInfo(Variant::STRING_NAME, "interface_name")));
+	ADD_SIGNAL(MethodInfo("interface_removed", PropertyInfo(Variant::STRING_NAME, "interface_name")));
 }
 
-void TextServerManager::register_create_function(const String &p_name, uint32_t p_features, TextServerManager::CreateFunction p_function, void *p_user_data) {
-	ERR_FAIL_COND(server_create_count == MAX_SERVERS);
-	server_create_functions[server_create_count].name = p_name;
-	server_create_functions[server_create_count].create_function = p_function;
-	server_create_functions[server_create_count].user_data = p_user_data;
-	server_create_functions[server_create_count].features = p_features;
-	server_create_count++;
+void TextServerManager::add_interface(const Ref<TextServer> &p_interface) {
+	ERR_FAIL_COND(p_interface.is_null());
+
+	for (int i = 0; i < interfaces.size(); i++) {
+		if (interfaces[i] == p_interface) {
+			ERR_PRINT("TextServer: Interface was already added.");
+			return;
+		};
+	};
+
+	interfaces.push_back(p_interface);
+	print_verbose("TextServer: Added interface \"" + p_interface->get_name() + "\"");
+	emit_signal(SNAME("interface_added"), p_interface->get_name());
 }
 
-int TextServerManager::get_interface_count() {
-	return server_create_count;
+void TextServerManager::remove_interface(const Ref<TextServer> &p_interface) {
+	ERR_FAIL_COND(p_interface.is_null());
+	ERR_FAIL_COND_MSG(p_interface == primary_interface, "TextServer: Can't remove primary interface.");
+
+	int idx = -1;
+	for (int i = 0; i < interfaces.size(); i++) {
+		if (interfaces[i] == p_interface) {
+			idx = i;
+			break;
+		};
+	};
+
+	ERR_FAIL_COND(idx == -1);
+	print_verbose("TextServer: Removed interface \"" + p_interface->get_name() + "\"");
+	emit_signal(SNAME("interface_removed"), p_interface->get_name());
+	interfaces.remove(idx);
 }
 
-String TextServerManager::get_interface_name(int p_index) {
-	ERR_FAIL_INDEX_V(p_index, server_create_count, String());
-	return server_create_functions[p_index].name;
+int TextServerManager::get_interface_count() const {
+	return interfaces.size();
 }
 
-uint32_t TextServerManager::get_interface_features(int p_index) {
-	ERR_FAIL_INDEX_V(p_index, server_create_count, 0);
-	return server_create_functions[p_index].features;
+Ref<TextServer> TextServerManager::get_interface(int p_index) const {
+	ERR_FAIL_INDEX_V(p_index, interfaces.size(), nullptr);
+	return interfaces[p_index];
 }
 
-TextServer *TextServerManager::initialize(int p_index, Error &r_error) {
-	ERR_FAIL_INDEX_V(p_index, server_create_count, nullptr);
-	if (server_create_functions[p_index].instance == nullptr) {
-		server_create_functions[p_index].instance = server_create_functions[p_index].create_function(r_error, server_create_functions[p_index].user_data);
-		if (server_create_functions[p_index].instance != nullptr) {
-			server_create_functions[p_index].instance->load_support_data(""); // Try loading default data.
-		}
-	}
-	if (server_create_functions[p_index].instance != nullptr) {
-		server = server_create_functions[p_index].instance;
-		if (OS::get_singleton()->get_main_loop()) {
-			OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_TEXT_SERVER_CHANGED);
-		}
-	}
-	return server_create_functions[p_index].instance;
+Ref<TextServer> TextServerManager::find_interface(const String &p_name) const {
+	int idx = -1;
+	for (int i = 0; i < interfaces.size(); i++) {
+		if (interfaces[i]->get_name() == p_name) {
+			idx = i;
+			break;
+		};
+	};
+
+	ERR_FAIL_COND_V(idx == -1, nullptr);
+	return interfaces[idx];
 }
 
-TextServer *TextServerManager::get_primary_interface() {
-	return server;
-}
-
-int TextServerManager::_get_interface_count() const {
-	return server_create_count;
-}
-
-String TextServerManager::_get_interface_name(int p_index) const {
-	return get_interface_name(p_index);
-}
-
-uint32_t TextServerManager::_get_interface_features(int p_index) const {
-	return get_interface_features(p_index);
-}
-
-TextServer *TextServerManager::_get_interface(int p_index) const {
-	ERR_FAIL_INDEX_V(p_index, server_create_count, nullptr);
-	if (server_create_functions[p_index].instance == nullptr) {
-		Error error;
-		server_create_functions[p_index].instance = server_create_functions[p_index].create_function(error, server_create_functions[p_index].user_data);
-		if (server_create_functions[p_index].instance != nullptr) {
-			server_create_functions[p_index].instance->load_support_data(""); // Try loading default data.
-		}
-	}
-	return server_create_functions[p_index].instance;
-}
-
-TextServer *TextServerManager::_find_interface(const String &p_name) const {
-	for (int i = 0; i < server_create_count; i++) {
-		if (server_create_functions[i].name == p_name) {
-			return _get_interface(i);
-		}
-	}
-	return nullptr;
-}
-
-Array TextServerManager::_get_interfaces() const {
+Array TextServerManager::get_interfaces() const {
 	Array ret;
 
-	for (int i = 0; i < server_create_count; i++) {
+	for (int i = 0; i < interfaces.size(); i++) {
 		Dictionary iface_info;
 
 		iface_info["id"] = i;
-		iface_info["name"] = server_create_functions[i].name;
+		iface_info["name"] = interfaces[i]->get_name();
 
 		ret.push_back(iface_info);
 	};
 
 	return ret;
-};
-
-bool TextServerManager::_set_primary_interface(int p_index) {
-	Error error;
-	TextServerManager::initialize(p_index, error);
-	return (error == OK);
 }
 
-TextServer *TextServerManager::_get_primary_interface() const {
-	return server;
+Ref<TextServer> TextServerManager::_get_primary_interface() const {
+	return primary_interface;
+}
+
+void TextServerManager::set_primary_interface(const Ref<TextServer> &p_primary_interface) {
+	if (p_primary_interface.is_null()) {
+		print_verbose("TextServer: Clearing primary interface");
+		primary_interface.unref();
+	} else {
+		primary_interface = p_primary_interface;
+		print_verbose("TextServer: Primary interface set to: \"" + primary_interface->get_name() + "\".");
+
+		if (OS::get_singleton()->get_main_loop()) {
+			OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_TEXT_SERVER_CHANGED);
+		}
+	}
 }
 
 TextServerManager::TextServerManager() {
@@ -155,29 +141,29 @@ TextServerManager::TextServerManager() {
 }
 
 TextServerManager::~TextServerManager() {
-	singleton = nullptr;
-	for (int i = 0; i < server_create_count; i++) {
-		if (server_create_functions[i].instance != nullptr) {
-			memdelete(server_create_functions[i].instance);
-			server_create_functions[i].instance = nullptr;
-		}
+	if (primary_interface.is_valid()) {
+		primary_interface.unref();
 	}
+	while (interfaces.size() > 0) {
+		interfaces.remove(0);
+	}
+	singleton = nullptr;
 }
 
 /*************************************************************************/
 
-bool TextServer::Glyph::operator==(const Glyph &p_a) const {
+bool Glyph::operator==(const Glyph &p_a) const {
 	return (p_a.index == index) && (p_a.font_rid == font_rid) && (p_a.font_size == font_size) && (p_a.start == start);
 }
 
-bool TextServer::Glyph::operator!=(const Glyph &p_a) const {
+bool Glyph::operator!=(const Glyph &p_a) const {
 	return (p_a.index != index) || (p_a.font_rid != font_rid) || (p_a.font_size != font_size) || (p_a.start != start);
 }
 
-bool TextServer::Glyph::operator<(const Glyph &p_a) const {
+bool Glyph::operator<(const Glyph &p_a) const {
 	if (p_a.start == start) {
 		if (p_a.count == count) {
-			if ((p_a.flags & GRAPHEME_IS_VIRTUAL) == GRAPHEME_IS_VIRTUAL) {
+			if ((p_a.flags & TextServer::GRAPHEME_IS_VIRTUAL) == TextServer::GRAPHEME_IS_VIRTUAL) {
 				return true;
 			} else {
 				return false;
@@ -188,10 +174,10 @@ bool TextServer::Glyph::operator<(const Glyph &p_a) const {
 	return p_a.start < start;
 }
 
-bool TextServer::Glyph::operator>(const Glyph &p_a) const {
+bool Glyph::operator>(const Glyph &p_a) const {
 	if (p_a.start == start) {
 		if (p_a.count == count) {
-			if ((p_a.flags & GRAPHEME_IS_VIRTUAL) == GRAPHEME_IS_VIRTUAL) {
+			if ((p_a.flags & TextServer::GRAPHEME_IS_VIRTUAL) == TextServer::GRAPHEME_IS_VIRTUAL) {
 				return false;
 			} else {
 				return true;
@@ -205,7 +191,12 @@ bool TextServer::Glyph::operator>(const Glyph &p_a) const {
 void TextServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("has_feature", "feature"), &TextServer::has_feature);
 	ClassDB::bind_method(D_METHOD("get_name"), &TextServer::get_name);
+	ClassDB::bind_method(D_METHOD("get_features"), &TextServer::get_features);
 	ClassDB::bind_method(D_METHOD("load_support_data", "filename"), &TextServer::load_support_data);
+
+	ClassDB::bind_method(D_METHOD("get_support_data_filename"), &TextServer::get_support_data_filename);
+	ClassDB::bind_method(D_METHOD("get_support_data_info"), &TextServer::get_support_data_info);
+	ClassDB::bind_method(D_METHOD("save_support_data", "filename"), &TextServer::save_support_data);
 
 	ClassDB::bind_method(D_METHOD("is_locale_right_to_left", "locale"), &TextServer::is_locale_right_to_left);
 
@@ -219,7 +210,7 @@ void TextServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("create_font"), &TextServer::create_font);
 
-	ClassDB::bind_method(D_METHOD("font_set_data", "data"), &TextServer::font_set_data);
+	ClassDB::bind_method(D_METHOD("font_set_data", "font_rid", "data"), &TextServer::font_set_data);
 
 	ClassDB::bind_method(D_METHOD("font_set_antialiased", "font_rid", "antialiased"), &TextServer::font_set_antialiased);
 	ClassDB::bind_method(D_METHOD("font_is_antialiased", "font_rid"), &TextServer::font_is_antialiased);
@@ -299,7 +290,7 @@ void TextServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("font_get_glyph_texture_idx", "font_rid", "size", "glyph"), &TextServer::font_get_glyph_texture_idx);
 	ClassDB::bind_method(D_METHOD("font_set_glyph_texture_idx", "font_rid", "size", "glyph", "texture_idx"), &TextServer::font_set_glyph_texture_idx);
 
-	ClassDB::bind_method(D_METHOD("font_get_glyph_contours", "font", "size", "index"), &TextServer::_font_get_glyph_contours);
+	ClassDB::bind_method(D_METHOD("font_get_glyph_contours", "font", "size", "index"), &TextServer::font_get_glyph_contours);
 
 	ClassDB::bind_method(D_METHOD("font_get_kerning_list", "font_rid", "size"), &TextServer::font_get_kerning_list);
 	ClassDB::bind_method(D_METHOD("font_clear_kerning_map", "font_rid", "size"), &TextServer::font_clear_kerning_map);
@@ -349,7 +340,7 @@ void TextServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("shaped_text_set_direction", "shaped", "direction"), &TextServer::shaped_text_set_direction, DEFVAL(DIRECTION_AUTO));
 	ClassDB::bind_method(D_METHOD("shaped_text_get_direction", "shaped"), &TextServer::shaped_text_get_direction);
 
-	ClassDB::bind_method(D_METHOD("shaped_text_set_bidi_override", "shaped", "override"), &TextServer::_shaped_text_set_bidi_override);
+	ClassDB::bind_method(D_METHOD("shaped_text_set_bidi_override", "shaped", "override"), &TextServer::shaped_text_set_bidi_override);
 
 	ClassDB::bind_method(D_METHOD("shaped_text_set_orientation", "shaped", "orientation"), &TextServer::shaped_text_set_orientation, DEFVAL(ORIENTATION_HORIZONTAL));
 	ClassDB::bind_method(D_METHOD("shaped_text_get_orientation", "shaped"), &TextServer::shaped_text_get_orientation);
@@ -372,12 +363,19 @@ void TextServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("shaped_text_shape", "shaped"), &TextServer::shaped_text_shape);
 	ClassDB::bind_method(D_METHOD("shaped_text_is_ready", "shaped"), &TextServer::shaped_text_is_ready);
 
-	ClassDB::bind_method(D_METHOD("shaped_text_get_glyphs", "shaped"), &TextServer::_shaped_text_get_glyphs);
+	ClassDB::bind_method(D_METHOD("shaped_text_get_glyphs", "shaped"), &TextServer::_shaped_text_get_glyphs_wrapper);
+	ClassDB::bind_method(D_METHOD("shaped_text_sort_logical", "shaped"), &TextServer::_shaped_text_sort_logical_wrapper);
+	ClassDB::bind_method(D_METHOD("shaped_text_get_glyph_count", "shaped"), &TextServer::shaped_text_get_glyph_count);
 
 	ClassDB::bind_method(D_METHOD("shaped_text_get_range", "shaped"), &TextServer::shaped_text_get_range);
-	ClassDB::bind_method(D_METHOD("shaped_text_get_line_breaks_adv", "shaped", "width", "start", "once", "break_flags"), &TextServer::_shaped_text_get_line_breaks_adv, DEFVAL(0), DEFVAL(true), DEFVAL(BREAK_MANDATORY | BREAK_WORD_BOUND));
-	ClassDB::bind_method(D_METHOD("shaped_text_get_line_breaks", "shaped", "width", "start", "break_flags"), &TextServer::_shaped_text_get_line_breaks, DEFVAL(0), DEFVAL(BREAK_MANDATORY | BREAK_WORD_BOUND));
-	ClassDB::bind_method(D_METHOD("shaped_text_get_word_breaks", "shaped"), &TextServer::_shaped_text_get_word_breaks);
+	ClassDB::bind_method(D_METHOD("shaped_text_get_line_breaks_adv", "shaped", "width", "start", "once", "break_flags"), &TextServer::shaped_text_get_line_breaks_adv, DEFVAL(0), DEFVAL(true), DEFVAL(BREAK_MANDATORY | BREAK_WORD_BOUND));
+	ClassDB::bind_method(D_METHOD("shaped_text_get_line_breaks", "shaped", "width", "start", "break_flags"), &TextServer::shaped_text_get_line_breaks, DEFVAL(0), DEFVAL(BREAK_MANDATORY | BREAK_WORD_BOUND));
+	ClassDB::bind_method(D_METHOD("shaped_text_get_word_breaks", "shaped", "grapheme_flags"), &TextServer::shaped_text_get_word_breaks);
+
+	ClassDB::bind_method(D_METHOD("shaped_text_get_trim_pos", "shaped"), &TextServer::shaped_text_get_trim_pos);
+	ClassDB::bind_method(D_METHOD("shaped_text_get_ellipsis_pos", "shaped"), &TextServer::shaped_text_get_ellipsis_pos);
+	ClassDB::bind_method(D_METHOD("shaped_text_get_ellipsis_glyphs", "shaped"), &TextServer::_shaped_text_get_ellipsis_glyphs_wrapper);
+	ClassDB::bind_method(D_METHOD("shaped_text_get_ellipsis_glyph_count", "shaped"), &TextServer::shaped_text_get_ellipsis_glyph_count);
 
 	ClassDB::bind_method(D_METHOD("shaped_text_overrun_trim_to_width", "shaped", "width", "overrun_trim_flags"), &TextServer::shaped_text_overrun_trim_to_width, DEFVAL(0), DEFVAL(OVERRUN_NO_TRIMMING));
 
@@ -391,8 +389,8 @@ void TextServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("shaped_text_get_underline_position", "shaped"), &TextServer::shaped_text_get_underline_position);
 	ClassDB::bind_method(D_METHOD("shaped_text_get_underline_thickness", "shaped"), &TextServer::shaped_text_get_underline_thickness);
 
-	ClassDB::bind_method(D_METHOD("shaped_text_get_carets", "shaped", "position"), &TextServer::_shaped_text_get_carets);
-	ClassDB::bind_method(D_METHOD("shaped_text_get_selection", "shaped", "start", "end"), &TextServer::_shaped_text_get_selection);
+	ClassDB::bind_method(D_METHOD("shaped_text_get_carets", "shaped", "position"), &TextServer::_shaped_text_get_carets_wrapper);
+	ClassDB::bind_method(D_METHOD("shaped_text_get_selection", "shaped", "start", "end"), &TextServer::shaped_text_get_selection);
 
 	ClassDB::bind_method(D_METHOD("shaped_text_hit_test_grapheme", "shaped", "coords"), &TextServer::shaped_text_hit_test_grapheme);
 	ClassDB::bind_method(D_METHOD("shaped_text_hit_test_position", "shaped", "coords"), &TextServer::shaped_text_hit_test_position);
@@ -403,7 +401,7 @@ void TextServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("shaped_text_draw", "shaped", "canvas", "pos", "clip_l", "clip_r", "color"), &TextServer::shaped_text_draw, DEFVAL(-1), DEFVAL(-1), DEFVAL(Color(1, 1, 1)));
 	ClassDB::bind_method(D_METHOD("shaped_text_draw_outline", "shaped", "canvas", "pos", "clip_l", "clip_r", "outline_size", "color"), &TextServer::shaped_text_draw_outline, DEFVAL(-1), DEFVAL(-1), DEFVAL(1), DEFVAL(Color(1, 1, 1)));
 
-	ClassDB::bind_method(D_METHOD("shaped_text_get_dominant_direciton_in_range", "shaped", "start", "end"), &TextServer::shaped_text_get_dominant_direciton_in_range);
+	ClassDB::bind_method(D_METHOD("shaped_text_get_dominant_direction_in_range", "shaped", "start", "end"), &TextServer::shaped_text_get_dominant_direction_in_range);
 
 	ClassDB::bind_method(D_METHOD("format_number", "number", "language"), &TextServer::format_number, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("parse_number", "number", "language"), &TextServer::parse_number, DEFVAL(""));
@@ -424,12 +422,14 @@ void TextServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(JUSTIFICATION_WORD_BOUND);
 	BIND_ENUM_CONSTANT(JUSTIFICATION_TRIM_EDGE_SPACES);
 	BIND_ENUM_CONSTANT(JUSTIFICATION_AFTER_LAST_TAB);
+	BIND_ENUM_CONSTANT(JUSTIFICATION_CONSTRAIN_ELLIPSIS);
 
 	/* LineBreakFlag */
 	BIND_ENUM_CONSTANT(BREAK_NONE);
 	BIND_ENUM_CONSTANT(BREAK_MANDATORY);
 	BIND_ENUM_CONSTANT(BREAK_WORD_BOUND);
 	BIND_ENUM_CONSTANT(BREAK_GRAPHEME_BOUND);
+	BIND_ENUM_CONSTANT(BREAK_WORD_BOUND_ADAPTIVE);
 
 	/* TextOverrunFlag */
 	BIND_ENUM_CONSTANT(OVERRUN_NO_TRIMMING);
@@ -437,8 +437,10 @@ void TextServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(OVERRUN_TRIM_WORD_ONLY);
 	BIND_ENUM_CONSTANT(OVERRUN_ADD_ELLIPSIS);
 	BIND_ENUM_CONSTANT(OVERRUN_ENFORCE_ELLIPSIS);
+	BIND_ENUM_CONSTANT(OVERRUN_JUSTIFICATION_AWARE);
 
 	/* GraphemeFlag */
+	BIND_ENUM_CONSTANT(GRAPHEME_IS_VALID);
 	BIND_ENUM_CONSTANT(GRAPHEME_IS_RTL);
 	BIND_ENUM_CONSTANT(GRAPHEME_IS_VIRTUAL);
 	BIND_ENUM_CONSTANT(GRAPHEME_IS_SPACE);
@@ -578,6 +580,9 @@ void TextServer::draw_hex_code_box(RID p_canvas, int p_size, const Vector2 &p_po
 	int fnt = (p_size < 20) ? 0 : 1;
 
 	ERR_FAIL_COND(hex_code_box_font_tex[fnt].is_null());
+	if (p_index == 0) {
+		return;
+	}
 
 	uint8_t a = p_index & 0x0F;
 	uint8_t b = (p_index >> 4) & 0x0F;
@@ -592,12 +597,12 @@ void TextServer::draw_hex_code_box(RID p_canvas, int p_size, const Vector2 &p_po
 	real_t w = ((p_index <= 0xFF) ? 1 : ((p_index <= 0xFFFF) ? 2 : 3)) * hex_code_box_font_size[fnt].x;
 	real_t h = 2 * hex_code_box_font_size[fnt].y;
 
-	pos.y -= Math::floor((h + 3 + hex_code_box_font_size[fnt].z) * 0.75);
+	pos.y -= Math::floor((h + 3 + hex_code_box_font_size[fnt].z));
 
 	RenderingServer::get_singleton()->canvas_item_add_rect(p_canvas, Rect2(pos + Point2(0, 0), Size2(1, h + 2 + 2 * hex_code_box_font_size[fnt].z)), p_color);
 	RenderingServer::get_singleton()->canvas_item_add_rect(p_canvas, Rect2(pos + Point2(w + 2, 0), Size2(1, h + 2 + 2 * hex_code_box_font_size[fnt].z)), p_color);
-	RenderingServer::get_singleton()->canvas_item_add_rect(p_canvas, Rect2(pos + Point2(0, 0), Size2(w + 2, 1)), p_color);
-	RenderingServer::get_singleton()->canvas_item_add_rect(p_canvas, Rect2(pos + Point2(0, h + 2 + 2 * hex_code_box_font_size[fnt].z), Size2(w + 2, 1)), p_color);
+	RenderingServer::get_singleton()->canvas_item_add_rect(p_canvas, Rect2(pos + Point2(0, 0), Size2(w + 3, 1)), p_color);
+	RenderingServer::get_singleton()->canvas_item_add_rect(p_canvas, Rect2(pos + Point2(0, h + 2 + 2 * hex_code_box_font_size[fnt].z), Size2(w + 3, 1)), p_color);
 
 	pos += Point2(2, 2);
 	if (p_index <= 0xFF) {
@@ -630,13 +635,12 @@ void TextServer::draw_hex_code_box(RID p_canvas, int p_size, const Vector2 &p_po
 	}
 }
 
-Vector<Vector2i> TextServer::shaped_text_get_line_breaks_adv(RID p_shaped, const Vector<real_t> &p_width, int p_start, bool p_once, uint8_t /*TextBreakFlag*/ p_break_flags) const {
-	Vector<Vector2i> lines;
+PackedInt32Array TextServer::shaped_text_get_line_breaks_adv(RID p_shaped, const PackedFloat32Array &p_width, int p_start, bool p_once, uint16_t /*TextBreakFlag*/ p_break_flags) const {
+	PackedInt32Array lines;
 
 	ERR_FAIL_COND_V(p_width.is_empty(), lines);
 
 	const_cast<TextServer *>(this)->shaped_text_update_breaks(p_shaped);
-	const Vector<Glyph> &logical = const_cast<TextServer *>(this)->shaped_text_sort_logical(p_shaped);
 	const Vector2i &range = shaped_text_get_range(p_shaped);
 
 	real_t width = 0.f;
@@ -644,8 +648,8 @@ Vector<Vector2i> TextServer::shaped_text_get_line_breaks_adv(RID p_shaped, const
 	int last_safe_break = -1;
 	int chunk = 0;
 
-	int l_size = logical.size();
-	const Glyph *l_gl = logical.ptr();
+	int l_size = shaped_text_get_glyph_count(p_shaped);
+	const Glyph *l_gl = const_cast<TextServer *>(this)->shaped_text_sort_logical(p_shaped);
 
 	for (int i = 0; i < l_size; i++) {
 		if (l_gl[i].start < p_start) {
@@ -653,7 +657,8 @@ Vector<Vector2i> TextServer::shaped_text_get_line_breaks_adv(RID p_shaped, const
 		}
 		if (l_gl[i].count > 0) {
 			if ((p_width[chunk] > 0) && (width + l_gl[i].advance > p_width[chunk]) && (last_safe_break >= 0)) {
-				lines.push_back(Vector2i(line_start, l_gl[last_safe_break].end));
+				lines.push_back(line_start);
+				lines.push_back(l_gl[last_safe_break].end);
 				line_start = l_gl[last_safe_break].end;
 				i = last_safe_break;
 				last_safe_break = -1;
@@ -669,7 +674,8 @@ Vector<Vector2i> TextServer::shaped_text_get_line_breaks_adv(RID p_shaped, const
 			}
 			if ((p_break_flags & BREAK_MANDATORY) == BREAK_MANDATORY) {
 				if ((l_gl[i].flags & GRAPHEME_IS_BREAK_HARD) == GRAPHEME_IS_BREAK_HARD) {
-					lines.push_back(Vector2i(line_start, l_gl[i].end));
+					lines.push_back(line_start);
+					lines.push_back(l_gl[i].end);
 					line_start = l_gl[i].end;
 					last_safe_break = -1;
 					width = 0;
@@ -693,27 +699,31 @@ Vector<Vector2i> TextServer::shaped_text_get_line_breaks_adv(RID p_shaped, const
 	}
 
 	if (l_size > 0) {
-		lines.push_back(Vector2i(line_start, range.y));
+		if (lines.size() == 0 || lines[lines.size() - 1] < range.y) {
+			lines.push_back(line_start);
+			lines.push_back(range.y);
+		}
 	} else {
-		lines.push_back(Vector2i(0, 0));
+		lines.push_back(0);
+		lines.push_back(0);
 	}
 
 	return lines;
 }
 
-Vector<Vector2i> TextServer::shaped_text_get_line_breaks(RID p_shaped, real_t p_width, int p_start, uint8_t /*TextBreakFlag*/ p_break_flags) const {
-	Vector<Vector2i> lines;
+PackedInt32Array TextServer::shaped_text_get_line_breaks(RID p_shaped, real_t p_width, int p_start, uint16_t /*TextBreakFlag*/ p_break_flags) const {
+	PackedInt32Array lines;
 
 	const_cast<TextServer *>(this)->shaped_text_update_breaks(p_shaped);
-	const Vector<Glyph> &logical = const_cast<TextServer *>(this)->shaped_text_sort_logical(p_shaped);
 	const Vector2i &range = shaped_text_get_range(p_shaped);
 
 	real_t width = 0.f;
 	int line_start = MAX(p_start, range.x);
 	int last_safe_break = -1;
 	int word_count = 0;
-	int l_size = logical.size();
-	const Glyph *l_gl = logical.ptr();
+
+	int l_size = shaped_text_get_glyph_count(p_shaped);
+	const Glyph *l_gl = const_cast<TextServer *>(this)->shaped_text_sort_logical(p_shaped);
 
 	for (int i = 0; i < l_size; i++) {
 		if (l_gl[i].start < p_start) {
@@ -721,7 +731,8 @@ Vector<Vector2i> TextServer::shaped_text_get_line_breaks(RID p_shaped, real_t p_
 		}
 		if (l_gl[i].count > 0) {
 			if ((p_width > 0) && (width + l_gl[i].advance * l_gl[i].repeat > p_width) && (last_safe_break >= 0)) {
-				lines.push_back(Vector2i(line_start, l_gl[last_safe_break].end));
+				lines.push_back(line_start);
+				lines.push_back(l_gl[last_safe_break].end);
 				line_start = l_gl[last_safe_break].end;
 				i = last_safe_break;
 				last_safe_break = -1;
@@ -731,7 +742,8 @@ Vector<Vector2i> TextServer::shaped_text_get_line_breaks(RID p_shaped, real_t p_
 			}
 			if ((p_break_flags & BREAK_MANDATORY) == BREAK_MANDATORY) {
 				if ((l_gl[i].flags & GRAPHEME_IS_BREAK_HARD) == GRAPHEME_IS_BREAK_HARD) {
-					lines.push_back(Vector2i(line_start, l_gl[i].end));
+					lines.push_back(line_start);
+					lines.push_back(l_gl[i].end);
 					line_start = l_gl[i].end;
 					last_safe_break = -1;
 					width = 0;
@@ -755,51 +767,49 @@ Vector<Vector2i> TextServer::shaped_text_get_line_breaks(RID p_shaped, real_t p_
 	}
 
 	if (l_size > 0) {
-		if (lines.size() == 0 || lines[lines.size() - 1].y < range.y) {
-			lines.push_back(Vector2i(line_start, range.y));
+		if (lines.size() == 0 || lines[lines.size() - 1] < range.y) {
+			lines.push_back(line_start);
+			lines.push_back(range.y);
 		}
 	} else {
-		lines.push_back(Vector2i(0, 0));
+		lines.push_back(0);
+		lines.push_back(0);
 	}
 
 	return lines;
 }
 
-Vector<Vector2i> TextServer::shaped_text_get_word_breaks(RID p_shaped, int p_grapheme_flags) const {
-	Vector<Vector2i> words;
+PackedInt32Array TextServer::shaped_text_get_word_breaks(RID p_shaped, int p_grapheme_flags) const {
+	PackedInt32Array words;
 
 	const_cast<TextServer *>(this)->shaped_text_update_justification_ops(p_shaped);
-	const Vector<Glyph> &logical = const_cast<TextServer *>(this)->shaped_text_sort_logical(p_shaped);
 	const Vector2i &range = shaped_text_get_range(p_shaped);
 
 	int word_start = range.x;
 
-	int l_size = logical.size();
-	const Glyph *l_gl = logical.ptr();
+	int l_size = shaped_text_get_glyph_count(p_shaped);
+	const Glyph *l_gl = const_cast<TextServer *>(this)->shaped_text_sort_logical(p_shaped);
 
 	for (int i = 0; i < l_size; i++) {
 		if (l_gl[i].count > 0) {
 			if ((l_gl[i].flags & p_grapheme_flags) != 0) {
-				words.push_back(Vector2i(word_start, l_gl[i].start));
+				words.push_back(word_start);
+				words.push_back(l_gl[i].start);
 				word_start = l_gl[i].end;
 			}
 		}
 	}
 	if (l_size > 0) {
-		words.push_back(Vector2i(word_start, range.y));
+		words.push_back(word_start);
+		words.push_back(range.y);
 	}
 
 	return words;
 }
 
-TextServer::TrimData TextServer::shaped_text_get_trim_data(RID p_shaped) const {
-	WARN_PRINT("Getting overrun data not supported by this TextServer.");
-	return TrimData();
-}
-
-void TextServer::shaped_text_get_carets(RID p_shaped, int p_position, Rect2 &p_leading_caret, Direction &p_leading_dir, Rect2 &p_trailing_caret, Direction &p_trailing_dir) const {
+CaretInfo TextServer::shaped_text_get_carets(RID p_shaped, int p_position) const {
 	Vector<Rect2> carets;
-	const Vector<TextServer::Glyph> visual = shaped_text_get_glyphs(p_shaped);
+
 	TextServer::Orientation orientation = shaped_text_get_orientation(p_shaped);
 	const Vector2 &range = shaped_text_get_range(p_shaped);
 	real_t ascent = shaped_text_get_ascent(p_shaped);
@@ -807,11 +817,12 @@ void TextServer::shaped_text_get_carets(RID p_shaped, int p_position, Rect2 &p_l
 	real_t height = (ascent + descent) / 2;
 
 	real_t off = 0.0f;
-	p_leading_dir = DIRECTION_AUTO;
-	p_trailing_dir = DIRECTION_AUTO;
+	CaretInfo caret;
+	caret.l_dir = DIRECTION_AUTO;
+	caret.t_dir = DIRECTION_AUTO;
 
-	int v_size = visual.size();
-	const Glyph *glyphs = visual.ptr();
+	int v_size = shaped_text_get_glyph_count(p_shaped);
+	const Glyph *glyphs = shaped_text_get_glyphs(p_shaped);
 
 	for (int i = 0; i < v_size; i++) {
 		if (glyphs[i].count > 0) {
@@ -827,13 +838,13 @@ void TextServer::shaped_text_get_carets(RID p_shaped, int p_position, Rect2 &p_l
 					cr.position.y = -ascent;
 					cr.position.x = off;
 					if ((glyphs[i].flags & GRAPHEME_IS_RTL) == GRAPHEME_IS_RTL) {
-						p_trailing_dir = DIRECTION_RTL;
+						caret.t_dir = DIRECTION_RTL;
 						for (int j = 0; j < glyphs[i].count; j++) {
 							cr.position.x += glyphs[i + j].advance * glyphs[i + j].repeat;
 							cr.size.x -= glyphs[i + j].advance * glyphs[i + j].repeat;
 						}
 					} else {
-						p_trailing_dir = DIRECTION_LTR;
+						caret.t_dir = DIRECTION_LTR;
 						for (int j = 0; j < glyphs[i].count; j++) {
 							cr.size.x += glyphs[i + j].advance * glyphs[i + j].repeat;
 						}
@@ -847,19 +858,19 @@ void TextServer::shaped_text_get_carets(RID p_shaped, int p_position, Rect2 &p_l
 					cr.position.x = -ascent;
 					cr.position.y = off;
 					if ((glyphs[i].flags & GRAPHEME_IS_RTL) == GRAPHEME_IS_RTL) {
-						p_trailing_dir = DIRECTION_RTL;
+						caret.t_dir = DIRECTION_RTL;
 						for (int j = 0; j < glyphs[i].count; j++) {
 							cr.position.y += glyphs[i + j].advance * glyphs[i + j].repeat;
 							cr.size.y -= glyphs[i + j].advance * glyphs[i + j].repeat;
 						}
 					} else {
-						p_trailing_dir = DIRECTION_LTR;
+						caret.t_dir = DIRECTION_LTR;
 						for (int j = 0; j < glyphs[i].count; j++) {
 							cr.size.y += glyphs[i + j].advance * glyphs[i + j].repeat;
 						}
 					}
 				}
-				p_trailing_caret = cr;
+				caret.t_caret = cr;
 			}
 			// Caret after grapheme (bottom / right).
 			if (p_position == glyphs[i].end && ((glyphs[i].flags & GRAPHEME_IS_VIRTUAL) != GRAPHEME_IS_VIRTUAL)) {
@@ -874,13 +885,13 @@ void TextServer::shaped_text_get_carets(RID p_shaped, int p_position, Rect2 &p_l
 					}
 					cr.position.x = off;
 					if ((glyphs[i].flags & GRAPHEME_IS_RTL) != GRAPHEME_IS_RTL) {
-						p_leading_dir = DIRECTION_LTR;
+						caret.l_dir = DIRECTION_LTR;
 						for (int j = 0; j < glyphs[i].count; j++) {
 							cr.position.x += glyphs[i + j].advance * glyphs[i + j].repeat;
 							cr.size.x -= glyphs[i + j].advance * glyphs[i + j].repeat;
 						}
 					} else {
-						p_leading_dir = DIRECTION_RTL;
+						caret.l_dir = DIRECTION_RTL;
 						for (int j = 0; j < glyphs[i].count; j++) {
 							cr.size.x += glyphs[i + j].advance * glyphs[i + j].repeat;
 						}
@@ -896,19 +907,19 @@ void TextServer::shaped_text_get_carets(RID p_shaped, int p_position, Rect2 &p_l
 					}
 					cr.position.y = off;
 					if ((glyphs[i].flags & GRAPHEME_IS_RTL) != GRAPHEME_IS_RTL) {
-						p_leading_dir = DIRECTION_LTR;
+						caret.l_dir = DIRECTION_LTR;
 						for (int j = 0; j < glyphs[i].count; j++) {
 							cr.position.y += glyphs[i + j].advance * glyphs[i + j].repeat;
 							cr.size.y -= glyphs[i + j].advance * glyphs[i + j].repeat;
 						}
 					} else {
-						p_leading_dir = DIRECTION_RTL;
+						caret.l_dir = DIRECTION_RTL;
 						for (int j = 0; j < glyphs[i].count; j++) {
 							cr.size.y += glyphs[i + j].advance * glyphs[i + j].repeat;
 						}
 					}
 				}
-				p_leading_caret = cr;
+				caret.l_caret = cr;
 			}
 			// Caret inside grapheme (middle).
 			if (p_position > glyphs[i].start && p_position < glyphs[i].end && (glyphs[i].flags & GRAPHEME_IS_VIRTUAL) != GRAPHEME_IS_VIRTUAL) {
@@ -937,17 +948,29 @@ void TextServer::shaped_text_get_carets(RID p_shaped, int p_position, Rect2 &p_l
 						cr.position.y = off + char_adv * (p_position - glyphs[i].start);
 					}
 				}
-				p_trailing_caret = cr;
-				p_leading_caret = cr;
+				caret.t_caret = cr;
+				caret.l_caret = cr;
 			}
 		}
 		off += glyphs[i].advance * glyphs[i].repeat;
 	}
+	return caret;
 }
 
-TextServer::Direction TextServer::shaped_text_get_dominant_direciton_in_range(RID p_shaped, int p_start, int p_end) const {
-	const Vector<TextServer::Glyph> visual = shaped_text_get_glyphs(p_shaped);
+Dictionary TextServer::_shaped_text_get_carets_wrapper(RID p_shaped, int p_position) const {
+	Dictionary ret;
 
+	CaretInfo caret = shaped_text_get_carets(p_shaped, p_position);
+
+	ret["leading_rect"] = caret.l_caret;
+	ret["leading_direction"] = caret.l_dir;
+	ret["trailing_rect"] = caret.t_caret;
+	ret["trailing_direction"] = caret.t_dir;
+
+	return ret;
+}
+
+TextServer::Direction TextServer::shaped_text_get_dominant_direction_in_range(RID p_shaped, int p_start, int p_end) const {
 	if (p_start == p_end) {
 		return DIRECTION_AUTO;
 	}
@@ -958,8 +981,8 @@ TextServer::Direction TextServer::shaped_text_get_dominant_direciton_in_range(RI
 	int rtl = 0;
 	int ltr = 0;
 
-	int v_size = visual.size();
-	const Glyph *glyphs = visual.ptr();
+	int v_size = shaped_text_get_glyph_count(p_shaped);
+	const Glyph *glyphs = shaped_text_get_glyphs(p_shaped);
 
 	for (int i = 0; i < v_size; i++) {
 		if ((glyphs[i].end > start) && (glyphs[i].start < end)) {
@@ -983,7 +1006,6 @@ TextServer::Direction TextServer::shaped_text_get_dominant_direciton_in_range(RI
 
 Vector<Vector2> TextServer::shaped_text_get_selection(RID p_shaped, int p_start, int p_end) const {
 	Vector<Vector2> ranges;
-	const Vector<TextServer::Glyph> visual = shaped_text_get_glyphs(p_shaped);
 
 	if (p_start == p_end) {
 		return ranges;
@@ -992,8 +1014,8 @@ Vector<Vector2> TextServer::shaped_text_get_selection(RID p_shaped, int p_start,
 	int start = MIN(p_start, p_end);
 	int end = MAX(p_start, p_end);
 
-	int v_size = visual.size();
-	const Glyph *glyphs = visual.ptr();
+	int v_size = shaped_text_get_glyph_count(p_shaped);
+	const Glyph *glyphs = shaped_text_get_glyphs(p_shaped);
 
 	real_t off = 0.0f;
 	for (int i = 0; i < v_size; i++) {
@@ -1076,13 +1098,11 @@ Vector<Vector2> TextServer::shaped_text_get_selection(RID p_shaped, int p_start,
 }
 
 int TextServer::shaped_text_hit_test_grapheme(RID p_shaped, real_t p_coords) const {
-	const Vector<TextServer::Glyph> visual = shaped_text_get_glyphs(p_shaped);
-
 	// Exact grapheme hit test, return -1 if missed.
 	real_t off = 0.0f;
 
-	int v_size = visual.size();
-	const Glyph *glyphs = visual.ptr();
+	int v_size = shaped_text_get_glyph_count(p_shaped);
+	const Glyph *glyphs = shaped_text_get_glyphs(p_shaped);
 
 	for (int i = 0; i < v_size; i++) {
 		for (int j = 0; j < glyphs[i].repeat; j++) {
@@ -1096,10 +1116,8 @@ int TextServer::shaped_text_hit_test_grapheme(RID p_shaped, real_t p_coords) con
 }
 
 int TextServer::shaped_text_hit_test_position(RID p_shaped, real_t p_coords) const {
-	const Vector<TextServer::Glyph> visual = shaped_text_get_glyphs(p_shaped);
-
-	int v_size = visual.size();
-	const Glyph *glyphs = visual.ptr();
+	int v_size = shaped_text_get_glyph_count(p_shaped);
+	const Glyph *glyphs = shaped_text_get_glyphs(p_shaped);
 
 	// Cursor placement hit test.
 
@@ -1165,10 +1183,9 @@ int TextServer::shaped_text_hit_test_position(RID p_shaped, real_t p_coords) con
 	return 0;
 }
 
-int TextServer::shaped_text_next_grapheme_pos(RID p_shaped, int p_pos) {
-	const Vector<TextServer::Glyph> visual = shaped_text_get_glyphs(p_shaped);
-	int v_size = visual.size();
-	const Glyph *glyphs = visual.ptr();
+int TextServer::shaped_text_next_grapheme_pos(RID p_shaped, int p_pos) const {
+	int v_size = shaped_text_get_glyph_count(p_shaped);
+	const Glyph *glyphs = shaped_text_get_glyphs(p_shaped);
 	for (int i = 0; i < v_size; i++) {
 		if (p_pos >= glyphs[i].start && p_pos < glyphs[i].end) {
 			return glyphs[i].end;
@@ -1177,10 +1194,9 @@ int TextServer::shaped_text_next_grapheme_pos(RID p_shaped, int p_pos) {
 	return p_pos;
 }
 
-int TextServer::shaped_text_prev_grapheme_pos(RID p_shaped, int p_pos) {
-	const Vector<TextServer::Glyph> visual = shaped_text_get_glyphs(p_shaped);
-	int v_size = visual.size();
-	const Glyph *glyphs = visual.ptr();
+int TextServer::shaped_text_prev_grapheme_pos(RID p_shaped, int p_pos) const {
+	int v_size = shaped_text_get_glyph_count(p_shaped);
+	const Glyph *glyphs = shaped_text_get_glyphs(p_shaped);
 	for (int i = 0; i < v_size; i++) {
 		if (p_pos > glyphs[i].start && p_pos <= glyphs[i].end) {
 			return glyphs[i].start;
@@ -1191,26 +1207,30 @@ int TextServer::shaped_text_prev_grapheme_pos(RID p_shaped, int p_pos) {
 }
 
 void TextServer::shaped_text_draw(RID p_shaped, RID p_canvas, const Vector2 &p_pos, real_t p_clip_l, real_t p_clip_r, const Color &p_color) const {
-	const Vector<TextServer::Glyph> visual = shaped_text_get_glyphs(p_shaped);
 	TextServer::Orientation orientation = shaped_text_get_orientation(p_shaped);
 	bool hex_codes = shaped_text_get_preserve_control(p_shaped) || shaped_text_get_preserve_invalid(p_shaped);
 
 	bool rtl = shaped_text_get_direction(p_shaped) == DIRECTION_RTL;
-	TrimData trim_data = shaped_text_get_trim_data(p_shaped);
 
-	int v_size = visual.size();
-	const Glyph *glyphs = visual.ptr();
+	int ellipsis_pos = shaped_text_get_ellipsis_pos(p_shaped);
+	int trim_pos = shaped_text_get_trim_pos(p_shaped);
+
+	const Glyph *ellipsis_glyphs = shaped_text_get_ellipsis_glyphs(p_shaped);
+	int ellipsis_gl_size = shaped_text_get_ellipsis_glyph_count(p_shaped);
+
+	int v_size = shaped_text_get_glyph_count(p_shaped);
+	const Glyph *glyphs = shaped_text_get_glyphs(p_shaped);
 
 	Vector2 ofs = p_pos;
 	// Draw RTL ellipsis string when needed.
-	if (rtl && trim_data.ellipsis_pos >= 0) {
-		for (int i = trim_data.ellipsis_glyph_buf.size() - 1; i >= 0; i--) {
-			for (int j = 0; j < trim_data.ellipsis_glyph_buf[i].repeat; j++) {
-				font_draw_glyph(trim_data.ellipsis_glyph_buf[i].font_rid, p_canvas, trim_data.ellipsis_glyph_buf[i].font_size, ofs + Vector2(trim_data.ellipsis_glyph_buf[i].x_off, trim_data.ellipsis_glyph_buf[i].y_off), trim_data.ellipsis_glyph_buf[i].index, p_color);
+	if (rtl && ellipsis_pos >= 0) {
+		for (int i = ellipsis_gl_size - 1; i >= 0; i--) {
+			for (int j = 0; j < ellipsis_glyphs[i].repeat; j++) {
+				font_draw_glyph(ellipsis_glyphs[i].font_rid, p_canvas, ellipsis_glyphs[i].font_size, ofs + Vector2(ellipsis_glyphs[i].x_off, ellipsis_glyphs[i].y_off), ellipsis_glyphs[i].index, p_color);
 				if (orientation == ORIENTATION_HORIZONTAL) {
-					ofs.x += trim_data.ellipsis_glyph_buf[i].advance;
+					ofs.x += ellipsis_glyphs[i].advance;
 				} else {
-					ofs.y += trim_data.ellipsis_glyph_buf[i].advance;
+					ofs.y += ellipsis_glyphs[i].advance;
 				}
 			}
 		}
@@ -1244,13 +1264,13 @@ void TextServer::shaped_text_draw(RID p_shaped, RID p_canvas, const Vector2 &p_p
 					}
 				}
 			}
-			if (trim_data.trim_pos >= 0) {
+			if (trim_pos >= 0) {
 				if (rtl) {
-					if (i < trim_data.trim_pos && (glyphs[j].flags & TextServer::GRAPHEME_IS_VIRTUAL) != TextServer::GRAPHEME_IS_VIRTUAL) {
+					if (i < trim_pos && (glyphs[j].flags & TextServer::GRAPHEME_IS_VIRTUAL) != TextServer::GRAPHEME_IS_VIRTUAL) {
 						continue;
 					}
 				} else {
-					if (i >= trim_data.trim_pos && (glyphs[j].flags & TextServer::GRAPHEME_IS_VIRTUAL) != TextServer::GRAPHEME_IS_VIRTUAL) {
+					if (i >= trim_pos && (glyphs[j].flags & TextServer::GRAPHEME_IS_VIRTUAL) != TextServer::GRAPHEME_IS_VIRTUAL) {
 						break;
 					}
 				}
@@ -1269,14 +1289,14 @@ void TextServer::shaped_text_draw(RID p_shaped, RID p_canvas, const Vector2 &p_p
 		}
 	}
 	// Draw LTR ellipsis string when needed.
-	if (!rtl && trim_data.ellipsis_pos >= 0) {
-		for (int i = 0; i < trim_data.ellipsis_glyph_buf.size(); i++) {
-			for (int j = 0; j < trim_data.ellipsis_glyph_buf[i].repeat; j++) {
-				font_draw_glyph(trim_data.ellipsis_glyph_buf[i].font_rid, p_canvas, trim_data.ellipsis_glyph_buf[i].font_size, ofs + Vector2(trim_data.ellipsis_glyph_buf[i].x_off, trim_data.ellipsis_glyph_buf[i].y_off), trim_data.ellipsis_glyph_buf[i].index, p_color);
+	if (!rtl && ellipsis_pos >= 0) {
+		for (int i = 0; i < ellipsis_gl_size; i++) {
+			for (int j = 0; j < ellipsis_glyphs[i].repeat; j++) {
+				font_draw_glyph(ellipsis_glyphs[i].font_rid, p_canvas, ellipsis_glyphs[i].font_size, ofs + Vector2(ellipsis_glyphs[i].x_off, ellipsis_glyphs[i].y_off), ellipsis_glyphs[i].index, p_color);
 				if (orientation == ORIENTATION_HORIZONTAL) {
-					ofs.x += trim_data.ellipsis_glyph_buf[i].advance;
+					ofs.x += ellipsis_glyphs[i].advance;
 				} else {
-					ofs.y += trim_data.ellipsis_glyph_buf[i].advance;
+					ofs.y += ellipsis_glyphs[i].advance;
 				}
 			}
 		}
@@ -1284,24 +1304,28 @@ void TextServer::shaped_text_draw(RID p_shaped, RID p_canvas, const Vector2 &p_p
 }
 
 void TextServer::shaped_text_draw_outline(RID p_shaped, RID p_canvas, const Vector2 &p_pos, real_t p_clip_l, real_t p_clip_r, int p_outline_size, const Color &p_color) const {
-	const Vector<TextServer::Glyph> visual = shaped_text_get_glyphs(p_shaped);
 	TextServer::Orientation orientation = shaped_text_get_orientation(p_shaped);
 
 	bool rtl = (shaped_text_get_direction(p_shaped) == DIRECTION_RTL);
-	TrimData trim_data = shaped_text_get_trim_data(p_shaped);
 
-	int v_size = visual.size();
-	const Glyph *glyphs = visual.ptr();
+	int ellipsis_pos = shaped_text_get_ellipsis_pos(p_shaped);
+	int trim_pos = shaped_text_get_trim_pos(p_shaped);
+
+	const Glyph *ellipsis_glyphs = shaped_text_get_ellipsis_glyphs(p_shaped);
+	int ellipsis_gl_size = shaped_text_get_ellipsis_glyph_count(p_shaped);
+
+	int v_size = shaped_text_get_glyph_count(p_shaped);
+	const Glyph *glyphs = shaped_text_get_glyphs(p_shaped);
 	Vector2 ofs = p_pos;
 	// Draw RTL ellipsis string when needed.
-	if (rtl && trim_data.ellipsis_pos >= 0) {
-		for (int i = trim_data.ellipsis_glyph_buf.size() - 1; i >= 0; i--) {
-			for (int j = 0; j < trim_data.ellipsis_glyph_buf[i].repeat; j++) {
-				font_draw_glyph(trim_data.ellipsis_glyph_buf[i].font_rid, p_canvas, trim_data.ellipsis_glyph_buf[i].font_size, ofs + Vector2(trim_data.ellipsis_glyph_buf[i].x_off, trim_data.ellipsis_glyph_buf[i].y_off), trim_data.ellipsis_glyph_buf[i].index, p_color);
+	if (rtl && ellipsis_pos >= 0) {
+		for (int i = ellipsis_gl_size - 1; i >= 0; i--) {
+			for (int j = 0; j < ellipsis_glyphs[i].repeat; j++) {
+				font_draw_glyph(ellipsis_glyphs[i].font_rid, p_canvas, ellipsis_glyphs[i].font_size, ofs + Vector2(ellipsis_glyphs[i].x_off, ellipsis_glyphs[i].y_off), ellipsis_glyphs[i].index, p_color);
 				if (orientation == ORIENTATION_HORIZONTAL) {
-					ofs.x += trim_data.ellipsis_glyph_buf[i].advance;
+					ofs.x += ellipsis_glyphs[i].advance;
 				} else {
-					ofs.y += trim_data.ellipsis_glyph_buf[i].advance;
+					ofs.y += ellipsis_glyphs[i].advance;
 				}
 			}
 		}
@@ -1335,13 +1359,13 @@ void TextServer::shaped_text_draw_outline(RID p_shaped, RID p_canvas, const Vect
 					}
 				}
 			}
-			if (trim_data.trim_pos >= 0) {
+			if (trim_pos >= 0) {
 				if (rtl) {
-					if (i < trim_data.trim_pos) {
+					if (i < trim_pos) {
 						continue;
 					}
 				} else {
-					if (i >= trim_data.trim_pos && (glyphs[j].flags & TextServer::GRAPHEME_IS_VIRTUAL) != TextServer::GRAPHEME_IS_VIRTUAL) {
+					if (i >= trim_pos && (glyphs[j].flags & TextServer::GRAPHEME_IS_VIRTUAL) != TextServer::GRAPHEME_IS_VIRTUAL) {
 						break;
 					}
 				}
@@ -1357,48 +1381,26 @@ void TextServer::shaped_text_draw_outline(RID p_shaped, RID p_canvas, const Vect
 		}
 	}
 	// Draw LTR ellipsis string when needed.
-	if (!rtl && trim_data.ellipsis_pos >= 0) {
-		for (int i = 0; i < trim_data.ellipsis_glyph_buf.size(); i++) {
-			for (int j = 0; j < trim_data.ellipsis_glyph_buf[i].repeat; j++) {
-				font_draw_glyph(trim_data.ellipsis_glyph_buf[i].font_rid, p_canvas, trim_data.ellipsis_glyph_buf[i].font_size, ofs + Vector2(trim_data.ellipsis_glyph_buf[i].x_off, trim_data.ellipsis_glyph_buf[i].y_off), trim_data.ellipsis_glyph_buf[i].index, p_color);
+	if (!rtl && ellipsis_pos >= 0) {
+		for (int i = 0; i < ellipsis_gl_size; i++) {
+			for (int j = 0; j < ellipsis_glyphs[i].repeat; j++) {
+				font_draw_glyph(ellipsis_glyphs[i].font_rid, p_canvas, ellipsis_glyphs[i].font_size, ofs + Vector2(ellipsis_glyphs[i].x_off, ellipsis_glyphs[i].y_off), ellipsis_glyphs[i].index, p_color);
 				if (orientation == ORIENTATION_HORIZONTAL) {
-					ofs.x += trim_data.ellipsis_glyph_buf[i].advance;
+					ofs.x += ellipsis_glyphs[i].advance;
 				} else {
-					ofs.y += trim_data.ellipsis_glyph_buf[i].advance;
+					ofs.y += ellipsis_glyphs[i].advance;
 				}
 			}
 		}
 	}
 }
 
-Dictionary TextServer::_font_get_glyph_contours(RID p_font, int p_size, int32_t p_index) const {
-	Vector<Vector3> points;
-	Vector<int32_t> contours;
-	bool orientation;
-	bool ok = font_get_glyph_contours(p_font, p_size, p_index, points, contours, orientation);
-	Dictionary out;
-
-	if (ok) {
-		out["points"] = points;
-		out["contours"] = contours;
-		out["orientation"] = orientation;
-	}
-	return out;
-}
-
-void TextServer::_shaped_text_set_bidi_override(RID p_shaped, const Array &p_override) {
-	Vector<Vector2i> overrides;
-	for (int i = 0; i < p_override.size(); i++) {
-		overrides.push_back(p_override[i]);
-	}
-	shaped_text_set_bidi_override(p_shaped, overrides);
-}
-
-Array TextServer::_shaped_text_get_glyphs(RID p_shaped) const {
+Array TextServer::_shaped_text_get_glyphs_wrapper(RID p_shaped) const {
 	Array ret;
 
-	Vector<Glyph> glyphs = shaped_text_get_glyphs(p_shaped);
-	for (int i = 0; i < glyphs.size(); i++) {
+	const Glyph *glyphs = shaped_text_get_glyphs(p_shaped);
+	int gl_size = shaped_text_get_glyph_count(p_shaped);
+	for (int i = 0; i < gl_size; i++) {
 		Dictionary glyph;
 
 		glyph["start"] = glyphs[i].start;
@@ -1418,60 +1420,51 @@ Array TextServer::_shaped_text_get_glyphs(RID p_shaped) const {
 	return ret;
 }
 
-Array TextServer::_shaped_text_get_line_breaks_adv(RID p_shaped, const PackedFloat32Array &p_width, int p_start, bool p_once, uint8_t p_break_flags) const {
+Array TextServer::_shaped_text_sort_logical_wrapper(RID p_shaped) {
 	Array ret;
 
-	Vector<Vector2i> lines = shaped_text_get_line_breaks_adv(p_shaped, p_width, p_start, p_once, p_break_flags);
-	for (int i = 0; i < lines.size(); i++) {
-		ret.push_back(lines[i]);
+	const Glyph *glyphs = shaped_text_sort_logical(p_shaped);
+	int gl_size = shaped_text_get_glyph_count(p_shaped);
+	for (int i = 0; i < gl_size; i++) {
+		Dictionary glyph;
+
+		glyph["start"] = glyphs[i].start;
+		glyph["end"] = glyphs[i].end;
+		glyph["repeat"] = glyphs[i].repeat;
+		glyph["count"] = glyphs[i].count;
+		glyph["flags"] = glyphs[i].flags;
+		glyph["offset"] = Vector2(glyphs[i].x_off, glyphs[i].y_off);
+		glyph["advance"] = glyphs[i].advance;
+		glyph["font_rid"] = glyphs[i].font_rid;
+		glyph["font_size"] = glyphs[i].font_size;
+		glyph["index"] = glyphs[i].index;
+
+		ret.push_back(glyph);
 	}
 
 	return ret;
 }
 
-Array TextServer::_shaped_text_get_line_breaks(RID p_shaped, real_t p_width, int p_start, uint8_t p_break_flags) const {
+Array TextServer::_shaped_text_get_ellipsis_glyphs_wrapper(RID p_shaped) const {
 	Array ret;
 
-	Vector<Vector2i> lines = shaped_text_get_line_breaks(p_shaped, p_width, p_start, p_break_flags);
-	for (int i = 0; i < lines.size(); i++) {
-		ret.push_back(lines[i]);
-	}
+	const Glyph *glyphs = shaped_text_get_ellipsis_glyphs(p_shaped);
+	int gl_size = shaped_text_get_ellipsis_glyph_count(p_shaped);
+	for (int i = 0; i < gl_size; i++) {
+		Dictionary glyph;
 
-	return ret;
-}
+		glyph["start"] = glyphs[i].start;
+		glyph["end"] = glyphs[i].end;
+		glyph["repeat"] = glyphs[i].repeat;
+		glyph["count"] = glyphs[i].count;
+		glyph["flags"] = glyphs[i].flags;
+		glyph["offset"] = Vector2(glyphs[i].x_off, glyphs[i].y_off);
+		glyph["advance"] = glyphs[i].advance;
+		glyph["font_rid"] = glyphs[i].font_rid;
+		glyph["font_size"] = glyphs[i].font_size;
+		glyph["index"] = glyphs[i].index;
 
-Array TextServer::_shaped_text_get_word_breaks(RID p_shaped) const {
-	Array ret;
-
-	Vector<Vector2i> words = shaped_text_get_word_breaks(p_shaped);
-	for (int i = 0; i < words.size(); i++) {
-		ret.push_back(words[i]);
-	}
-
-	return ret;
-}
-
-Dictionary TextServer::_shaped_text_get_carets(RID p_shaped, int p_position) const {
-	Dictionary ret;
-
-	Rect2 l_caret, t_caret;
-	Direction l_dir, t_dir;
-	shaped_text_get_carets(p_shaped, p_position, l_caret, l_dir, t_caret, t_dir);
-
-	ret["leading_rect"] = l_caret;
-	ret["leading_direction"] = l_dir;
-	ret["trailing_rect"] = t_caret;
-	ret["trailing_direction"] = t_dir;
-
-	return ret;
-}
-
-Array TextServer::_shaped_text_get_selection(RID p_shaped, int p_start, int p_end) const {
-	Array ret;
-
-	Vector<Vector2> ranges = shaped_text_get_selection(p_shaped, p_start, p_end);
-	for (int i = 0; i < ranges.size(); i++) {
-		ret.push_back(ranges[i]);
+		ret.push_back(glyph);
 	}
 
 	return ret;

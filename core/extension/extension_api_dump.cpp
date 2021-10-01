@@ -841,10 +841,27 @@ Dictionary NativeExtensionAPIDump::generate_extension_api() {
 	{
 		Array native_structures;
 
+		// AudioStream structures
 		{
 			Dictionary d;
 			d["name"] = "AudioFrame";
 			d["format"] = "float left,float right";
+
+			native_structures.push_back(d);
+		}
+
+		// TextServer structures
+		{
+			Dictionary d;
+			d["name"] = "Glyph";
+			d["format"] = "int start,int end,uint8_t count,uint8_t repeat,uint16_t flags,float x_off,float y_off,float advance,RID font_rid,int font_size,int32_t index";
+
+			native_structures.push_back(d);
+		}
+		{
+			Dictionary d;
+			d["name"] = "CaretInfo";
+			d["format"] = "Rect2 leading_caret,Rect2 trailing_caret,TextServer::Direction leading_direction,TextServer::Direction trailing_direction";
 
 			native_structures.push_back(d);
 		}

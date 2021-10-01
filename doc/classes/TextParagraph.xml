@@ -281,7 +281,7 @@
 		<member name="direction" type="int" setter="set_direction" getter="get_direction" enum="TextServer.Direction" default="0">
 			Text writing direction.
 		</member>
-		<member name="flags" type="int" setter="set_flags" getter="get_flags" default="51">
+		<member name="flags" type="int" setter="set_flags" getter="get_flags" default="99">
 			Line breaking and alignment rules. For more info see [TextServer].
 		</member>
 		<member name="max_lines_visible" type="int" setter="set_max_lines_visible" getter="get_max_lines_visible" default="-1">

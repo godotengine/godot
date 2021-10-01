@@ -139,7 +139,7 @@ private:
 			Vector<Gutter> gutters;
 
 			String data;
-			Vector<Vector2i> bidi_override;
+			Array bidi_override;
 			Ref<TextParagraph> data_buf;
 
 			Color background_color = Color(0, 0, 0, 0);
@@ -194,7 +194,7 @@ private:
 		Vector<Vector2i> get_line_wrap_ranges(int p_line) const;
 		const Ref<TextParagraph> get_line_data(int p_line) const;
 
-		void set(int p_line, const String &p_text, const Vector<Vector2i> &p_bidi_override);
+		void set(int p_line, const String &p_text, const Array &p_bidi_override);
 		void set_hidden(int p_line, bool p_hidden) {
 			text.write[p_line].hidden = p_hidden;
 			if (!p_hidden && text[p_line].width > max_width) {
@@ -204,12 +204,12 @@ private:
 			}
 		}
 		bool is_hidden(int p_line) const { return text[p_line].hidden; }
-		void insert(int p_at, const String &p_text, const Vector<Vector2i> &p_bidi_override);
+		void insert(int p_at, const String &p_text, const Array &p_bidi_override);
 		void remove(int p_at);
 		int size() const { return text.size(); }
 		void clear();
 
-		void invalidate_cache(int p_line, int p_column = -1, const String &p_ime_text = String(), const Vector<Vector2i> &p_bidi_override = Vector<Vector2i>());
+		void invalidate_cache(int p_line, int p_column = -1, const String &p_ime_text = String(), const Array &p_bidi_override = Array());
 		void invalidate_all();
 		void invalidate_all_lines();
 

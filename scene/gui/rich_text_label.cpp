@@ -819,9 +819,8 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 			}
 		}
 
-		const Vector<TextServer::Glyph> visual = TS->shaped_text_get_glyphs(rid);
-		const TextServer::Glyph *glyphs = visual.ptr();
-		int gl_size = visual.size();
+		const Glyph *glyphs = TS->shaped_text_get_glyphs(rid);
+		int gl_size = TS->shaped_text_get_glyph_count(rid);
 
 		Vector2 gloff = off;
 		// Draw oulines and shadow.
@@ -1593,18 +1592,18 @@ void RichTextLabel::gui_input(const Ref<InputEvent> &p_event) {
 
 				if (c_frame) {
 					const Line &l = c_frame->lines[c_line];
-					Vector<Vector2i> words = TS->shaped_text_get_word_breaks(l.text_buf->get_rid());
-					for (int i = 0; i < words.size(); i++) {
-						if (c_index >= words[i].x && c_index < words[i].y) {
+					PackedInt32Array words = TS->shaped_text_get_word_breaks(l.text_buf->get_rid());
+					for (int i = 0; i < words.size(); i = i + 2) {
+						if (c_index >= words[i] && c_index < words[i + 1]) {
 							selection.from_frame = c_frame;
 							selection.from_line = c_line;
 							selection.from_item = c_item;
-							selection.from_char = words[i].x;
+							selection.from_char = words[i];
 
 							selection.to_frame = c_frame;
 							selection.to_line = c_line;
 							selection.to_item = c_item;
-							selection.to_char = words[i].y;
+							selection.to_char = words[i + 1];
 
 							selection.active = true;
 							update();

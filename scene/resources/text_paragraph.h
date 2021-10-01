@@ -63,7 +63,7 @@ private:
 	float width = -1.0;
 	int max_lines_visible = -1;
 
-	uint8_t flags = TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND | TextServer::JUSTIFICATION_WORD_BOUND | TextServer::JUSTIFICATION_KASHIDA;
+	uint16_t flags = TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND | TextServer::JUSTIFICATION_WORD_BOUND | TextServer::JUSTIFICATION_KASHIDA;
 	OverrunBehavior overrun_behavior = OVERRUN_NO_TRIMMING;
 
 	HAlign align = HALIGN_LEFT;
@@ -94,7 +94,7 @@ public:
 	void set_preserve_control(bool p_enabled);
 	bool get_preserve_control() const;
 
-	void set_bidi_override(const Vector<Vector2i> &p_override);
+	void set_bidi_override(const Array &p_override);
 
 	bool set_dropcap(const String &p_text, const Ref<Font> &p_fonts, int p_size, const Rect2 &p_dropcap_margins = Rect2(), const Dictionary &p_opentype_features = Dictionary(), const String &p_language = "");
 	void clear_dropcap();
@@ -108,8 +108,8 @@ public:
 
 	void tab_align(const Vector<float> &p_tab_stops);
 
-	void set_flags(uint8_t p_flags);
-	uint8_t get_flags() const;
+	void set_flags(uint16_t p_flags);
+	uint16_t get_flags() const;
 
 	void set_text_overrun_behavior(OverrunBehavior p_behavior);
 	OverrunBehavior get_text_overrun_behavior() const;
@@ -152,8 +152,6 @@ public:
 	void draw_dropcap_outline(RID p_canvas, const Vector2 &p_pos, int p_outline_size = 1, const Color &p_color = Color(1, 1, 1)) const;
 
 	int hit_test(const Point2 &p_coords) const;
-
-	void _set_bidi_override(const Array &p_override);
 
 	TextParagraph(const String &p_text, const Ref<Font> &p_fonts, int p_size, const Dictionary &p_opentype_features = Dictionary(), const String &p_language = "", float p_width = -1.f, TextServer::Direction p_direction = TextServer::DIRECTION_AUTO, TextServer::Orientation p_orientation = TextServer::ORIENTATION_HORIZONTAL);
 	TextParagraph();
