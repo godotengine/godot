@@ -48,6 +48,7 @@
 
 class PopupMenu;
 class ConnectDialogBinds;
+class SpinBox;
 
 class ConnectDialog : public ConfirmationDialog {
 	GDCLASS(ConnectDialog, ConfirmationDialog);
@@ -59,25 +60,45 @@ public:
 		StringName signal;
 		StringName method;
 		uint32_t flags = 0;
+		int unbinds = 0;
 		Vector<Variant> binds;
 
-		ConnectionData() {
-		}
+		ConnectionData() {}
+
 		ConnectionData(const Connection &p_connection) {
 			source = Object::cast_to<Node>(p_connection.signal.get_object());
 			signal = p_connection.signal.get_name();
 			target = Object::cast_to<Node>(p_connection.callable.get_object());
-			method = p_connection.callable.get_method();
 			flags = p_connection.flags;
-			binds = p_connection.binds;
+
+			Callable base_callable;
+			if (p_connection.callable.is_custom()) {
+				CallableCustomBind *ccb = dynamic_cast<CallableCustomBind *>(p_connection.callable.get_custom());
+				if (ccb) {
+					binds = ccb->get_binds();
+					base_callable = ccb->get_callable();
+				}
+
+				CallableCustomUnbind *ccu = dynamic_cast<CallableCustomUnbind *>(p_connection.callable.get_custom());
+				if (ccu) {
+					unbinds = ccu->get_unbinds();
+					base_callable = ccu->get_callable();
+				}
+			} else {
+				base_callable = p_connection.callable;
+			}
+			method = base_callable.get_method();
 		}
-		operator Connection() {
-			Connection c;
-			c.signal = ::Signal(source, signal);
-			c.callable = Callable(target, method);
-			c.flags = flags;
-			c.binds = binds;
-			return c;
+
+		Callable get_callable() {
+			if (unbinds > 0) {
+				return Callable(target, method).unbind(unbinds);
+			} else if (!binds.is_empty()) {
+				const Variant *args = binds.ptr();
+				return Callable(target, method).bind(&args, binds.size());
+			} else {
+				return Callable(target, method);
+			}
 		}
 	};
 
@@ -94,11 +115,13 @@ private:
 
 	SceneTreeEditor *tree;
 	AcceptDialog *error;
+	SpinBox *unbind_count;
 	EditorInspector *bind_editor;
 	OptionButton *type_list;
 	CheckBox *deferred;
 	CheckBox *oneshot;
 	CheckButton *advanced;
+	Vector<Control *> bind_controls;
 
 	Label *error_label;
 
@@ -107,6 +130,7 @@ private:
 	void _item_activated();
 	void _text_submitted(const String &_text);
 	void _tree_node_selected();
+	void _unbind_count_changed(double p_count);
 	void _add_bind();
 	void _remove_bind();
 	void _advanced_pressed();
@@ -123,6 +147,7 @@ public:
 	void set_dst_node(Node *p_node);
 	StringName get_dst_method_name() const;
 	void set_dst_method(const StringName &p_method);
+	int get_unbinds() const;
 	Vector<Variant> get_binds() const;
 
 	bool get_deferred() const;
@@ -176,7 +201,7 @@ class ConnectionsDock : public VBoxContainer {
 	void _filter_changed(const String &p_text);
 
 	void _make_or_edit_connection();
-	void _connect(ConnectDialog::ConnectionData cToMake);
+	void _connect(ConnectDialog::ConnectionData p_connection);
 	void _disconnect(TreeItem &item);
 	void _disconnect_all();
 

@@ -30,6 +30,7 @@
 
 #include "node_dock.h"
 
+#include "connections_dialog.h"
 #include "editor_node.h"
 #include "editor_scale.h"
 

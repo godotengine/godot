@@ -313,6 +313,7 @@ Ref<PackedScene> ResourceLoaderText::_parse_node_tag(VariantParser::ResourcePars
 			StringName method = next_tag.fields["method"];
 			StringName signal = next_tag.fields["signal"];
 			int flags = Object::CONNECT_PERSIST;
+			int unbinds = 0;
 			Array binds;
 
 			if (next_tag.fields.has("flags")) {
@@ -321,6 +322,10 @@ Ref<PackedScene> ResourceLoaderText::_parse_node_tag(VariantParser::ResourcePars
 
 			if (next_tag.fields.has("binds")) {
 				binds = next_tag.fields["binds"];
+			}
+
+			if (next_tag.fields.has("unbinds")) {
+				unbinds = next_tag.fields["unbinds"];
 			}
 
 			Vector<int> bind_ints;
@@ -334,6 +339,7 @@ Ref<PackedScene> ResourceLoaderText::_parse_node_tag(VariantParser::ResourcePars
 					packed_scene->get_state()->add_name(signal),
 					packed_scene->get_state()->add_name(method),
 					flags,
+					unbinds,
 					bind_ints);
 
 			error = VariantParser::parse_tag(&stream, lines, error_text, next_tag, &parser);
@@ -1907,6 +1913,11 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const RES &p_r
 			int flags = state->get_connection_flags(i);
 			if (flags != Object::CONNECT_PERSIST) {
 				connstr += " flags=" + itos(flags);
+			}
+
+			int unbinds = state->get_connection_unbinds(i);
+			if (unbinds > 0) {
+				connstr += " unbinds=" + itos(unbinds);
 			}
 
 			Array binds = state->get_connection_binds(i);

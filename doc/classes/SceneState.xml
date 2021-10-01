@@ -59,6 +59,13 @@
 				Returns the path to the node that owns the method connected to the signal at [code]idx[/code], relative to the root node.
 			</description>
 		</method>
+		<method name="get_connection_unbinds" qualifiers="const">
+			<return type="int" />
+			<argument index="0" name="idx" type="int" />
+			<description>
+				Returns the number of unbound parameters for the signal at [code]idx[/code].
+			</description>
+		</method>
 		<method name="get_node_count" qualifiers="const">
 			<return type="int" />
 			<description>

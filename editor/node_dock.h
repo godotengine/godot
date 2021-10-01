@@ -31,8 +31,9 @@
 #ifndef NODE_DOCK_H
 #define NODE_DOCK_H
 
-#include "connections_dialog.h"
 #include "groups_editor.h"
+
+class ConnectionsDock;
 
 class NodeDock : public VBoxContainer {
 	GDCLASS(NodeDock, VBoxContainer);
