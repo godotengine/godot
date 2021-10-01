@@ -3618,6 +3618,7 @@ void GDScriptParser::_parse_extends(ClassNode *p_class) {
 				p_class->extends_class.push_back(identifier);
 			} break;
 
+			case GDScriptTokenizer::TK_CURSOR:
 			case GDScriptTokenizer::TK_PERIOD:
 				break;
 
