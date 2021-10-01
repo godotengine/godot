@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="VelocityTracker3D" inherits="RefCounted" version="4.0">
 	<brief_description>
+		Tracks a history of [Vector3] positions to calculate a velocity over a period of time.
 	</brief_description>
 	<description>
 	</description>
@@ -10,23 +11,27 @@
 		<method name="get_tracked_linear_velocity" qualifiers="const">
 			<return type="Vector3" />
 			<description>
+				Returns the calculated velocity based on the recorded history.
 			</description>
 		</method>
 		<method name="reset">
 			<return type="void" />
 			<argument index="0" name="position" type="Vector3" />
 			<description>
+				Clears recorded history and sets [code]position[/code], along with the current frame, as the start of the new history.
 			</description>
 		</method>
 		<method name="update_position">
 			<return type="void" />
 			<argument index="0" name="position" type="Vector3" />
 			<description>
+				Appends [code]position[/code], along with the current frame, to the position history
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="track_physics_step" type="bool" setter="set_track_physics_step" getter="is_tracking_physics_step" default="false">
+			If [code]true[/code], [method Engine.get_physics_frames] will be used to track the frame number.
 		</member>
 	</members>
 </class>
