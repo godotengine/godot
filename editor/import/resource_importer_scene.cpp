@@ -608,6 +608,7 @@ void ResourceImporterScene::_create_clips(Node *scene, const Array &p_clips, boo
 	ERR_FAIL_COND(!anim);
 
 	if (!anim->has_animation("default")) {
+		ERR_FAIL_COND_MSG(p_clips.size() > 0, "To create clips, animations must be named \"default\".");
 		return;
 	}
 
