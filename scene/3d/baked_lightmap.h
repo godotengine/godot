@@ -163,6 +163,7 @@ private:
 	int max_atlas_size;
 	bool capture_enabled;
 	int bounces;
+	float bounce_indirect_energy;
 	bool use_denoiser;
 	bool use_hdr;
 	bool use_color;
@@ -202,6 +203,7 @@ protected:
 public:
 	static Lightmapper::BakeStepFunc bake_step_function;
 	static Lightmapper::BakeStepFunc bake_substep_function;
+	static Lightmapper::BakeEndFunc bake_end_function;
 
 	void set_light_data(const Ref<BakedLightmapData> &p_data);
 	Ref<BakedLightmapData> get_light_data() const;
@@ -265,6 +267,9 @@ public:
 
 	void set_bounces(int p_bounces);
 	int get_bounces() const;
+
+	void set_bounce_indirect_energy(float p_indirect_energy);
+	float get_bounce_indirect_energy() const;
 
 	void set_bias(float p_bias);
 	float get_bias() const;

@@ -97,6 +97,11 @@ void VisualServerScene::camera_set_use_vertical_aspect(RID p_camera, bool p_enab
 }
 
 /* SPATIAL PARTITIONING */
+
+VisualServerScene::SpatialPartitioningScene_BVH::SpatialPartitioningScene_BVH() {
+	_bvh.params_set_thread_safe(GLOBAL_GET("rendering/threads/thread_safe_bvh"));
+}
+
 VisualServerScene::SpatialPartitionID VisualServerScene::SpatialPartitioningScene_BVH::create(Instance *p_userdata, const AABB &p_aabb, int p_subindex, bool p_pairable, uint32_t p_pairable_type, uint32_t p_pairable_mask) {
 #if defined(DEBUG_ENABLED) && defined(TOOLS_ENABLED)
 	// we are relying on this instance to be valid in order to pass
@@ -513,7 +518,7 @@ void VisualServerScene::instance_set_base(RID p_instance, RID p_base) {
 			instance->base_data = nullptr;
 		}
 
-		instance->blend_values.clear();
+		instance->blend_values = PoolRealArray();
 
 		for (int i = 0; i < instance->materials.size(); i++) {
 			if (instance->materials[i].is_valid()) {
@@ -709,7 +714,8 @@ void VisualServerScene::instance_set_blend_shape_weight(RID p_instance, int p_sh
 	}
 
 	ERR_FAIL_INDEX(p_shape, instance->blend_values.size());
-	instance->blend_values.write[p_shape] = p_weight;
+	instance->blend_values.write().ptr()[p_shape] = p_weight;
+	VSG::storage->mesh_set_blend_shape_values(instance->base, instance->blend_values);
 }
 
 void VisualServerScene::instance_set_surface_material(RID p_instance, int p_surface, RID p_material) {
@@ -1001,11 +1007,11 @@ void VisualServerScene::portal_set_scenario(RID p_portal, RID p_scenario) {
 	}
 }
 
-void VisualServerScene::portal_set_geometry(RID p_portal, const Vector<Vector3> &p_points, float p_margin) {
+void VisualServerScene::portal_set_geometry(RID p_portal, const Vector<Vector3> &p_points, real_t p_margin) {
 	Portal *portal = portal_owner.getornull(p_portal);
 	ERR_FAIL_COND(!portal);
 	ERR_FAIL_COND(!portal->scenario);
-	portal->scenario->_portal_renderer.portal_set_geometry(portal->scenario_portal_id, p_points);
+	portal->scenario->_portal_renderer.portal_set_geometry(portal->scenario_portal_id, p_points, p_margin);
 }
 
 void VisualServerScene::portal_link(RID p_portal, RID p_room_from, RID p_room_to, bool p_two_way) {
@@ -1151,6 +1157,67 @@ void VisualServerScene::roomgroup_add_room(RID p_roomgroup, RID p_room) {
 	roomgroup->scenario->_portal_renderer.roomgroup_add_room(roomgroup->scenario_roomgroup_id, room->scenario_room_id);
 }
 
+// Occluders
+RID VisualServerScene::occluder_create() {
+	Occluder *ro = memnew(Occluder);
+	ERR_FAIL_COND_V(!ro, RID());
+	RID occluder_rid = occluder_owner.make_rid(ro);
+	return occluder_rid;
+}
+
+void VisualServerScene::occluder_set_scenario(RID p_occluder, RID p_scenario, VisualServer::OccluderType p_type) {
+	Occluder *ro = occluder_owner.getornull(p_occluder);
+	ERR_FAIL_COND(!ro);
+	Scenario *scenario = scenario_owner.getornull(p_scenario);
+
+	// noop?
+	if (ro->scenario == scenario) {
+		return;
+	}
+
+	// if the portal is in a scenario already, remove it
+	if (ro->scenario) {
+		ro->scenario->_portal_renderer.occluder_destroy(ro->scenario_occluder_id);
+		ro->scenario = nullptr;
+		ro->scenario_occluder_id = 0;
+	}
+
+	// create when entering the world
+	if (scenario) {
+		ro->scenario = scenario;
+
+		// defer the actual creation to here
+		ro->scenario_occluder_id = scenario->_portal_renderer.occluder_create((VSOccluder::Type)p_type);
+	}
+}
+
+void VisualServerScene::occluder_set_active(RID p_occluder, bool p_active) {
+	Occluder *ro = occluder_owner.getornull(p_occluder);
+	ERR_FAIL_COND(!ro);
+	ERR_FAIL_COND(!ro->scenario);
+	ro->scenario->_portal_renderer.occluder_set_active(ro->scenario_occluder_id, p_active);
+}
+
+void VisualServerScene::occluder_set_transform(RID p_occluder, const Transform &p_xform) {
+	Occluder *ro = occluder_owner.getornull(p_occluder);
+	ERR_FAIL_COND(!ro);
+	ERR_FAIL_COND(!ro->scenario);
+	ro->scenario->_portal_renderer.occluder_set_transform(ro->scenario_occluder_id, p_xform);
+}
+
+void VisualServerScene::occluder_spheres_update(RID p_occluder, const Vector<Plane> &p_spheres) {
+	Occluder *ro = occluder_owner.getornull(p_occluder);
+	ERR_FAIL_COND(!ro);
+	ERR_FAIL_COND(!ro->scenario);
+	ro->scenario->_portal_renderer.occluder_update_spheres(ro->scenario_occluder_id, p_spheres);
+}
+
+void VisualServerScene::set_use_occlusion_culling(bool p_enable) {
+	// this is not scenario specific, and is global
+	// (mainly for debugging)
+	PortalRenderer::use_occlusion_culling = p_enable;
+}
+
 // Rooms
 void VisualServerScene::callbacks_register(VisualServerCallbacks *p_callbacks) {
 	_visual_server_callbacks = p_callbacks;
@@ -1261,10 +1328,10 @@ void VisualServerScene::rooms_and_portals_clear(RID p_scenario) {
 	scenario->_portal_renderer.rooms_and_portals_clear();
 }
 
-void VisualServerScene::rooms_finalize(RID p_scenario, bool p_generate_pvs, bool p_cull_using_pvs, bool p_use_secondary_pvs, bool p_use_signals, String p_pvs_filename) {
+void VisualServerScene::rooms_finalize(RID p_scenario, bool p_generate_pvs, bool p_cull_using_pvs, bool p_use_secondary_pvs, bool p_use_signals, String p_pvs_filename, bool p_use_simple_pvs, bool p_log_pvs_generation) {
 	Scenario *scenario = scenario_owner.getornull(p_scenario);
 	ERR_FAIL_COND(!scenario);
-	scenario->_portal_renderer.rooms_finalize(p_generate_pvs, p_cull_using_pvs, p_use_secondary_pvs, p_use_signals, p_pvs_filename);
+	scenario->_portal_renderer.rooms_finalize(p_generate_pvs, p_cull_using_pvs, p_use_secondary_pvs, p_use_signals, p_pvs_filename, p_use_simple_pvs, p_log_pvs_generation);
 }
 
 void VisualServerScene::rooms_override_camera(RID p_scenario, bool p_override, const Vector3 &p_point, const Vector<Plane> *p_convex) {
@@ -1301,6 +1368,12 @@ void VisualServerScene::rooms_update_gameplay_monitor(RID p_scenario, const Vect
 	Scenario *scenario = scenario_owner.getornull(p_scenario);
 	ERR_FAIL_COND(!scenario);
 	scenario->_portal_renderer.rooms_update_gameplay_monitor(p_camera_positions);
+}
+
+bool VisualServerScene::rooms_is_loaded(RID p_scenario) const {
+	Scenario *scenario = scenario_owner.getornull(p_scenario);
+	ERR_FAIL_COND_V(!scenario, false);
+	return scenario->_portal_renderer.rooms_is_loaded();
 }
 
 Vector<ObjectID> VisualServerScene::instances_cull_aabb(const AABB &p_aabb, RID p_scenario) const {
@@ -1385,6 +1458,9 @@ int VisualServerScene::_cull_convex_from_point(Scenario *p_scenario, const Vecto
 	// fallback to BVH  / octree if portals not active
 	if (res == -1) {
 		res = p_scenario->sps->cull_convex(p_convex, p_result_array, p_result_max, p_mask);
+
+		// Opportunity for occlusion culling on the main scene. This will be a noop if no occluders.
+		res = p_scenario->_portal_renderer.occlusion_cull(p_point, p_convex, (VSInstance **)p_result_array, res);
 	}
 	return res;
 }
@@ -2547,9 +2623,6 @@ void VisualServerScene::_prepare_scene(const Transform p_cam_transform, const Ca
 
 				geom->gi_probes_dirty = false;
 			}
-			Vector3 aabb_center = ins->transformed_aabb.position + (ins->transformed_aabb.size * 0.5);
-			ins->depth = near_plane.distance_to(aabb_center);
-			ins->depth_layer = CLAMP(int(ins->depth * 16 / z_far), 0, 15);
 		}
 
 		if (!keep) {
@@ -2696,6 +2769,17 @@ void VisualServerScene::_prepare_scene(const Transform p_cam_transform, const Ca
 				//must redraw!
 				light->shadow_dirty = _light_instance_update_shadow(ins, p_cam_transform, p_cam_projection, p_cam_orthogonal, p_shadow_atlas, scenario);
 			}
+		}
+	}
+
+	// Calculate instance->depth from the camera, after shadow calculation has stopped overwriting instance->depth
+	for (int i = 0; i < instance_cull_count; i++) {
+		Instance *ins = instance_cull_result[i];
+
+		if (((1 << ins->base_type) & VS::INSTANCE_GEOMETRY_MASK) && ins->visible && ins->cast_shadows != VS::SHADOW_CASTING_SETTING_SHADOWS_ONLY) {
+			Vector3 aabb_center = ins->transformed_aabb.position + (ins->transformed_aabb.size * 0.5);
+			ins->depth = near_plane.distance_to(aabb_center);
+			ins->depth_layer = CLAMP(int(ins->depth * 16 / z_far), 0, 15);
 		}
 	}
 }
@@ -3787,7 +3871,7 @@ void VisualServerScene::_update_dirty_instance(Instance *p_instance) {
 			if (new_blend_shape_count != p_instance->blend_values.size()) {
 				p_instance->blend_values.resize(new_blend_shape_count);
 				for (int i = 0; i < new_blend_shape_count; i++) {
-					p_instance->blend_values.write[i] = 0;
+					p_instance->blend_values.write().ptr()[i] = 0;
 				}
 			}
 		}
@@ -3991,6 +4075,10 @@ bool VisualServerScene::free(RID p_rid) {
 		RoomGroup *roomgroup = roomgroup_owner.get(p_rid);
 		roomgroup_owner.free(p_rid);
 		memdelete(roomgroup);
+	} else if (occluder_owner.owns(p_rid)) {
+		Occluder *ro = occluder_owner.get(p_rid);
+		occluder_owner.free(p_rid);
+		memdelete(ro);
 	} else {
 		return false;
 	}

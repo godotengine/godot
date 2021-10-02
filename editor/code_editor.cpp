@@ -803,11 +803,9 @@ void CodeTextEditor::_line_col_changed() {
 	}
 
 	StringBuilder sb;
-	sb.append("(");
-	sb.append(itos(text_editor->cursor_get_line() + 1).lpad(3));
-	sb.append(",");
+	sb.append(itos(text_editor->cursor_get_line() + 1).lpad(4));
+	sb.append(" : ");
 	sb.append(itos(positional_column + 1).lpad(3));
-	sb.append(")");
 
 	line_and_col_txt->set_text(sb.as_string());
 }
@@ -1227,7 +1225,9 @@ void CodeTextEditor::_delete_line(int p_line) {
 		text_editor->cursor_set_column(0);
 	}
 	text_editor->backspace_at_cursor();
-	text_editor->unfold_line(p_line);
+	if (p_line < text_editor->get_line_count()) {
+		text_editor->unfold_line(p_line);
+	}
 	text_editor->cursor_set_line(p_line);
 }
 

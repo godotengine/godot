@@ -30,6 +30,7 @@
 
 #include "version_control_editor_plugin.h"
 
+#include "core/os/keyboard.h"
 #include "core/script_language.h"
 #include "editor/editor_file_system.h"
 #include "editor/editor_node.h"
@@ -50,6 +51,7 @@ void VersionControlEditorPlugin::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_load_diff"), &VersionControlEditorPlugin::_load_diff);
 	ClassDB::bind_method(D_METHOD("_display_diff"), &VersionControlEditorPlugin::_display_diff);
 	ClassDB::bind_method(D_METHOD("_item_activated"), &VersionControlEditorPlugin::_item_activated);
+	ClassDB::bind_method(D_METHOD("_commit_message_gui_input"), &VersionControlEditorPlugin::_commit_message_gui_input);
 	ClassDB::bind_method(D_METHOD("popup_vcs_set_up_dialog"), &VersionControlEditorPlugin::popup_vcs_set_up_dialog);
 	ClassDB::bind_method(D_METHOD("_cell_button_pressed"), &VersionControlEditorPlugin::_cell_button_pressed);
 	ClassDB::bind_method(D_METHOD("_discard_all"), &VersionControlEditorPlugin::_discard_all);
@@ -139,7 +141,7 @@ bool VersionControlEditorPlugin::_load_addon(String p_name) {
 	ERR_FAIL_COND_V_MSG(!addon_script_instance, false, "Failed to create plugin script instance.");
 
 	// The addon is attached as a script to the VCS interface as a proxy end-point
-	vcs_interface->set_script_and_instance(script.get_ref_ptr(), addon_script_instance);
+	vcs_interface->set_script_instance(addon_script_instance);
 
 	EditorVCSInterface::set_singleton(vcs_interface);
 
@@ -160,8 +162,8 @@ void VersionControlEditorPlugin::_set_up() {
 }
 
 void VersionControlEditorPlugin::_set_credentials() {
-	if (set_up_username->get_text() == "" || set_up_password->get_text() == "") {
-		WARN_PRINT("Some features will not work without remote credentials.")
+	if (set_up_username->get_text().strip_edges() == "" || set_up_password->get_text().strip_edges() == "") {
+		WARN_PRINT("Some features will not work without remote credentials.");
 	}
 
 	EditorVCSInterface::get_singleton()->set_up_credentials(set_up_username->get_text(), set_up_password->get_text());
@@ -274,6 +276,8 @@ void VersionControlEditorPlugin::_refresh_stage_area() {
 }
 
 void VersionControlEditorPlugin::_discard_file(String p_file_path, EditorVCSInterface::ChangeType change) {
+	CHECK_PLUGIN_INITIALIZED();
+
 	if (change == EditorVCSInterface::CHANGE_TYPE_NEW) {
 		DirAccess *dir = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 		dir->remove(p_file_path);
@@ -659,6 +663,29 @@ void VersionControlEditorPlugin::_display_diff_unified_view(List<EditorVCSInterf
 	diff->pop(); //table
 }
 
+void VersionControlEditorPlugin::_commit_message_gui_input(const Ref<InputEvent> &p_event) {
+	if (!commit_message->has_focus()) {
+		return;
+	}
+	if (commit_message->get_text().strip_edges().empty()) {
+		// Do not allow empty commit messages.
+		return;
+	}
+	const Ref<InputEventKey> k = p_event;
+
+	if (k.is_valid() && k->is_pressed()) {
+		if (ED_IS_SHORTCUT("version_control/commit", p_event)) {
+			if (staged_files->get_child_count() == 0) {
+				// Stage all files only when no files were previously staged.
+				_move_all(unstaged_files);
+			}
+			_commit();
+			commit_message->accept_event();
+			return;
+		}
+	}
+}
+
 void VersionControlEditorPlugin::register_editor() {
 	EditorNode::get_singleton()->add_control_to_dock(EditorNode::DOCK_SLOT_RIGHT_UL, version_commit_dock);
 	dock_vbc = (TabContainer *)version_commit_dock->get_parent_control();
@@ -888,8 +915,10 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	commit_message->set_v_grow_direction(Control::GrowDirection::GROW_DIRECTION_END);
 	commit_message->set_custom_minimum_size(Size2(200, 100));
 	commit_message->set_wrap_enabled(true);
-	commit_message->set_text(TTR("Add a commit message"));
+	commit_message->connect("text_changed", this, "_update_commit_button");
+	commit_message->connect("gui_input", this, "_commit_message_gui_input");
 	commit_area->add_child(commit_message);
+	ED_SHORTCUT("version_control/commit", TTR("Commit"), KEY_MASK_CMD | KEY_ENTER);
 
 	commit_button = memnew(Button);
 	commit_button->set_text(TTR("Commit Changes"));

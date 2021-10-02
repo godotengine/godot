@@ -79,6 +79,7 @@ static const char *locale_list[] = {
 	"ast_ES", //  Asturian (Spain)
 	"ayc_PE", //  Southern Aymara (Peru)
 	"ay_PE", //  Aymara (Peru)
+	"az", //  Azerbaijani
 	"az_AZ", //  Azerbaijani (Azerbaijan)
 	"be", //  Belarusian
 	"be_BY", //  Belarusian (Belarus)
@@ -235,6 +236,7 @@ static const char *locale_list[] = {
 	"ka_GE", //  Georgian (Georgia)
 	"kk_KZ", //  Kazakh (Kazakhstan)
 	"kl_GL", //  Kalaallisut (Greenland)
+	"km", //  Central Khmer
 	"km_KH", //  Central Khmer (Cambodia)
 	"kn_IN", //  Kannada (India)
 	"kok_IN", //  Konkani (India)
@@ -385,6 +387,7 @@ static const char *locale_list[] = {
 	"tr_CY", //  Turkish (Cyprus)
 	"tr_TR", //  Turkish (Turkey)
 	"ts_ZA", //  Tsonga (South Africa)
+	"tt", //  Tatar
 	"tt_RU", //  Tatar (Russia)
 	"tzm", // Central Atlas Tamazight
 	"tzm_MA", // Central Atlas Tamazight (Marrocos)
@@ -453,6 +456,7 @@ static const char *locale_names[] = {
 	"Asturian (Spain)",
 	"Southern Aymara (Peru)",
 	"Aymara (Peru)",
+	"Azerbaijani",
 	"Azerbaijani (Azerbaijan)",
 	"Belarusian",
 	"Belarusian (Belarus)",
@@ -609,6 +613,7 @@ static const char *locale_names[] = {
 	"Georgian (Georgia)",
 	"Kazakh (Kazakhstan)",
 	"Kalaallisut (Greenland)",
+	"Central Khmer",
 	"Central Khmer (Cambodia)",
 	"Kannada (India)",
 	"Konkani (India)",
@@ -759,6 +764,7 @@ static const char *locale_names[] = {
 	"Turkish (Cyprus)",
 	"Turkish (Turkey)",
 	"Tsonga (South Africa)",
+	"Tatar",
 	"Tatar (Russia)",
 	"Central Atlas Tamazight",
 	"Central Atlas Tamazight (Marrocos)",
@@ -865,6 +871,10 @@ void Translation::add_message(const StringName &p_src_text, const StringName &p_
 	translation_map[p_src_text] = p_xlated_text;
 }
 StringName Translation::get_message(const StringName &p_src_text) const {
+	if (get_script_instance()) {
+		return get_script_instance()->call("_get_message", p_src_text);
+	}
+
 	const Map<StringName, StringName>::Element *E = translation_map.find(p_src_text);
 	if (!E) {
 		return StringName();
@@ -897,6 +907,8 @@ void Translation::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_message_count"), &Translation::get_message_count);
 	ClassDB::bind_method(D_METHOD("_set_messages"), &Translation::_set_messages);
 	ClassDB::bind_method(D_METHOD("_get_messages"), &Translation::_get_messages);
+
+	BIND_VMETHOD(MethodInfo(Variant::STRING, "_get_message", PropertyInfo(Variant::STRING, "src_message")));
 
 	ADD_PROPERTY(PropertyInfo(Variant::POOL_STRING_ARRAY, "messages", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_messages", "_get_messages");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "locale"), "set_locale", "get_locale");

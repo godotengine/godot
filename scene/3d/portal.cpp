@@ -44,6 +44,19 @@ bool Portal::_settings_gizmo_show_margins = true;
 Portal::Portal() {
 	clear();
 
+	_settings_active = true;
+	_settings_two_way = true;
+	_internal = false;
+	_linkedroom_ID[0] = -1;
+	_linkedroom_ID[1] = -1;
+	_pts_world.clear();
+	_pts_local.clear();
+	_pts_local_raw.resize(0);
+	_pt_center_world = Vector3();
+	_plane = Plane();
+	_margin = 1.0;
+	_use_default_margin = true;
+
 	// the visual server portal lifetime is linked to the lifetime of this object
 	_portal_rid = VisualServer::get_singleton()->portal_create();
 
@@ -101,6 +114,16 @@ String Portal::get_configuration_warning() const {
 	return warning;
 }
 
+void Portal::set_point(int p_idx, const Vector2 &p_point) {
+	if (p_idx >= _pts_local_raw.size()) {
+		return;
+	}
+
+	_pts_local_raw.set(p_idx, p_point);
+	_sanitize_points();
+	update_gizmo();
+}
+
 void Portal::set_points(const PoolVector<Vector2> &p_points) {
 	_pts_local_raw = p_points;
 	_sanitize_points();
@@ -129,19 +152,10 @@ void Portal::_changed() {
 }
 
 void Portal::clear() {
-	_settings_active = true;
-	_settings_two_way = true;
 	_internal = false;
 	_linkedroom_ID[0] = -1;
 	_linkedroom_ID[1] = -1;
-	_pts_world.clear();
-	_pts_local.clear();
-	_pts_local_raw.resize(0);
-	_pt_center_world = Vector3();
-	_plane = Plane();
-	_margin = 1.0f;
-	_default_margin = 1.0f;
-	_use_default_margin = true;
+	_importing_portal = false;
 }
 
 void Portal::_notification(int p_what) {
@@ -164,6 +178,15 @@ void Portal::_notification(int p_what) {
 		case NOTIFICATION_TRANSFORM_CHANGED: {
 			// keep the world points and the visual server up to date
 			portal_update();
+
+			// In theory we shouldn't need to update the gizmo when the transform
+			// changes .. HOWEVER, the portal margin is displayed in world space units,
+			// back transformed to model space.
+			// If the Z scale is changed by the user, the portal margin length can become incorrect
+			// and needs 'resyncing' to the global scale of the portal node.
+			// We really only need to do this when Z scale is changed, but it is easier codewise
+			// to always change it, unless we have evidence this is a performance problem.
+			update_gizmo();
 		} break;
 	}
 }
@@ -199,10 +222,26 @@ real_t Portal::get_portal_margin() const {
 	return _margin;
 }
 
-void Portal::resolve_links(const RID &p_from_room_rid) {
+void Portal::resolve_links(const LocalVector<Room *, int32_t> &p_rooms, const RID &p_from_room_rid) {
 	Room *linkedroom = nullptr;
 	if (has_node(_settings_path_linkedroom)) {
 		linkedroom = Object::cast_to<Room>(get_node(_settings_path_linkedroom));
+
+		// only allow linking to rooms that are part of the roomlist
+		// (already recognised).
+		// If we don't check this, it will start trying to link to Room nodes that are invalid,
+		// and crash.
+		if (linkedroom && (p_rooms.find(linkedroom) == -1)) {
+			// invalid room
+			WARN_PRINT("Portal attempting to link to Room outside the roomlist : " + linkedroom->get_name());
+			linkedroom = nullptr;
+		}
+
+		// this should not happen, but just in case
+		if (linkedroom && (linkedroom->_room_ID >= p_rooms.size())) {
+			WARN_PRINT("Portal attempting to link to invalid Room : " + linkedroom->get_name());
+			linkedroom = nullptr;
+		}
 	}
 
 	if (linkedroom) {
@@ -249,46 +288,25 @@ bool Portal::try_set_unique_name(const String &p_name) {
 }
 
 void Portal::set_linked_room(const NodePath &link_path) {
-	// change the name of the portal as well, if the link looks legit
+	_settings_path_linkedroom = link_path;
+
+	// see if the link looks legit
 	Room *linkedroom = nullptr;
 	if (has_node(link_path)) {
 		linkedroom = Object::cast_to<Room>(get_node(link_path));
 
 		if (linkedroom) {
 			if (linkedroom != get_parent()) {
-				_settings_path_linkedroom = link_path;
-
-				// change the portal name
-				String string_link_room = RoomManager::_find_name_after(linkedroom, "Room");
-
-				// we need a unique name for the portal
-				String string_name_base = "Portal" + GODOT_PORTAL_DELINEATOR + string_link_room;
-				if (!try_set_unique_name(string_name_base)) {
-					bool success = false;
-					for (int n = 0; n < 128; n++) {
-						String string_name = string_name_base + GODOT_PORTAL_WILDCARD + itos(n);
-						if (try_set_unique_name(string_name)) {
-							success = true;
-							_changed();
-							break;
-						}
-					}
-
-					if (!success) {
-						WARN_PRINT("Could not set portal name, set name manually instead.");
-					}
-				} else {
-					_changed();
-				}
+				// was ok
 			} else {
-				WARN_PRINT("Linked room cannot be portal's parent room, ignoring.");
+				WARN_PRINT("Linked room cannot be the parent room of a portal.");
 			}
 		} else {
-			WARN_PRINT("Linked room path is not a room, ignoring.");
+			WARN_PRINT("Linked room path is not a room.");
 		}
-	} else {
-		WARN_PRINT("Linked room path not found.");
 	}
+
+	_changed();
 }
 
 NodePath Portal::get_linked_room() const {
@@ -342,6 +360,7 @@ bool Portal::create_from_mesh_instance(const MeshInstance *p_mi) {
 
 	Array arrays = rmesh->surface_get_arrays(0);
 	PoolVector<Vector3> vertices = arrays[VS::ARRAY_VERTEX];
+	PoolVector<int> indices = arrays[VS::ARRAY_INDEX];
 
 	// get the model space verts and find center
 	int num_source_points = vertices.size();
@@ -373,9 +392,28 @@ bool Portal::create_from_mesh_instance(const MeshInstance *p_mi) {
 		}
 	}
 
+	ERR_FAIL_COND_V(pts_world.size() < 3, false);
+
+	// create the normal from 3 vertices .. either indexed, or use the first 3
+	Vector3 three_pts[3];
+	if (indices.size() >= 3) {
+		for (int n = 0; n < 3; n++) {
+			ERR_FAIL_COND_V(indices[n] >= num_source_points, false);
+			three_pts[n] = tr_source.xform(vertices[indices[n]]);
+		}
+	} else {
+		for (int n = 0; n < 3; n++) {
+			three_pts[n] = pts_world[n];
+		}
+	}
+	Vector3 normal = Plane(three_pts[0], three_pts[1], three_pts[2]).normal;
+	if (_portal_plane_convention) {
+		normal = -normal;
+	}
+
 	// get the verts sorted with winding, assume that the triangle initial winding
 	// tells us the normal and hence which way the world space portal should be facing
-	_sort_verts_clockwise(_portal_plane_convention, pts_world);
+	_sort_verts_clockwise(normal, pts_world);
 
 	// back calculate the plane from *all* the portal points, this will give us a nice average plane
 	// (in case of wonky portals where artwork isn't bang on)
@@ -383,7 +421,14 @@ bool Portal::create_from_mesh_instance(const MeshInstance *p_mi) {
 
 	// change the portal transform to match our plane and the center of the portal
 	Transform tr_global;
-	tr_global.set_look_at(Vector3(0, 0, 0), _plane.normal, Vector3(0, 1, 0));
+
+	// prevent warnings when poly normal matches the up vector
+	Vector3 up(0, 1, 0);
+	if (Math::abs(_plane.normal.dot(up)) > 0.9) {
+		up = Vector3(1, 0, 0);
+	}
+
+	tr_global.set_look_at(Vector3(0, 0, 0), _plane.normal, up);
 	tr_global.origin = _pt_center_world;
 
 	// We can't directly set this global transform on the portal, because the parent node may already
@@ -489,7 +534,7 @@ void Portal::portal_update() {
 
 real_t Portal::get_active_portal_margin() const {
 	if (_use_default_margin) {
-		return _default_margin;
+		return RoomManager::_get_default_portal_margin();
 	}
 	return _margin;
 }
@@ -540,22 +585,11 @@ void Portal::_sanitize_points() {
 	_update_aabb();
 }
 
-void Portal::_sort_verts_clockwise(bool portal_plane_convention, Vector<Vector3> &r_verts) {
+void Portal::_sort_verts_clockwise(const Vector3 &p_portal_normal, Vector<Vector3> &r_verts) {
 	// cannot sort less than 3 verts
 	if (r_verts.size() < 3) {
 		return;
 	}
-
-	// assume first 3 points determine the desired normal, if these first 3 points are garbage,
-	// the routine will not work.
-	Plane portal_plane;
-	if (portal_plane_convention) {
-		portal_plane = Plane(r_verts[0], r_verts[2], r_verts[1]);
-	} else {
-		portal_plane = Plane(r_verts[0], r_verts[1], r_verts[2]);
-	}
-
-	const Vector3 &portal_normal = portal_plane.normal;
 
 	// find centroid
 	int num_points = r_verts.size();
@@ -572,7 +606,7 @@ void Portal::_sort_verts_clockwise(bool portal_plane_convention, Vector<Vector3>
 		Vector3 a = r_verts[n] - _pt_center_world;
 		a.normalize();
 
-		Plane p = Plane(r_verts[n], _pt_center_world, _pt_center_world + portal_normal);
+		Plane p = Plane(r_verts[n], _pt_center_world, _pt_center_world + p_portal_normal);
 
 		double smallest_angle = -1;
 		int smallest = -1;
@@ -605,7 +639,7 @@ void Portal::_sort_verts_clockwise(bool portal_plane_convention, Vector<Vector3>
 	// the wrong way.
 	Plane plane = Plane(r_verts[0], r_verts[1], r_verts[2]);
 
-	if (portal_normal.dot(plane.normal) < 0.0f) {
+	if (p_portal_normal.dot(plane.normal) < 0.0) {
 		// reverse winding order of verts
 		r_verts.invert();
 	}
@@ -661,6 +695,8 @@ void Portal::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_points", "points"), &Portal::set_points);
 	ClassDB::bind_method(D_METHOD("get_points"), &Portal::get_points);
+
+	ClassDB::bind_method(D_METHOD("set_point", "index", "position"), &Portal::set_point);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "portal_active"), "set_portal_active", "get_portal_active");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "two_way"), "set_two_way", "is_two_way");

@@ -110,6 +110,13 @@ bool WebRTCDataChannelGDNative::is_negotiated() const {
 	return interface->is_negotiated(interface->data);
 }
 
+int WebRTCDataChannelGDNative::get_buffered_amount() const {
+	ERR_FAIL_COND_V(interface == nullptr, 0);
+	ERR_FAIL_COND_V(interface->next == nullptr, 0);
+
+	return ((godot_net_webrtc_data_channel_ext *)interface->next)->get_buffered_amount(interface->data);
+}
+
 Error WebRTCDataChannelGDNative::get_packet(const uint8_t **r_buffer, int &r_buffer_size) {
 	ERR_FAIL_COND_V(interface == nullptr, ERR_UNCONFIGURED);
 	return (Error)interface->get_packet(interface->data, r_buffer, &r_buffer_size);

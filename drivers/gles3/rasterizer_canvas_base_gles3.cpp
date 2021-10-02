@@ -91,7 +91,7 @@ RID RasterizerCanvasBaseGLES3::light_internal_create() {
 
 	glGenBuffers(1, &li->ubo);
 	glBindBuffer(GL_UNIFORM_BUFFER, li->ubo);
-	glBufferData(GL_UNIFORM_BUFFER, sizeof(LightInternal::UBOData), &state.canvas_item_ubo_data, GL_DYNAMIC_DRAW);
+	glBufferData(GL_UNIFORM_BUFFER, sizeof(LightInternal::UBOData), nullptr, GL_DYNAMIC_DRAW);
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
 	return light_internal_owner.make_rid(li);
@@ -717,7 +717,7 @@ void RasterizerCanvasBaseGLES3::render_rect_nvidia_workaround(const Item::Comman
 }
 
 void RasterizerCanvasBaseGLES3::_copy_texscreen(const Rect2 &p_rect) {
-	ERR_FAIL_COND_MSG(storage->frame.current_rt->effects.mip_maps[0].sizes.size() == 0, "Can't use screen texture copying in a render target configured without copy buffers.");
+	ERR_FAIL_COND_MSG(storage->frame.current_rt->effects.mip_maps[0].sizes.size() == 0, "Can't use screen texture copying in a render target configured without copy buffers. To resolve this, change the viewport's Usage property to \"2D\" or \"3D\" instead of \"2D Without Sampling\" or \"3D Without Effects\" respectively.");
 
 	glDisable(GL_BLEND);
 

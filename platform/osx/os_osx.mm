@@ -306,6 +306,8 @@ static NSCursor *cursorFromSelector(SEL selector, SEL fallback = nil) {
 
 	[OS_OSX::singleton->window_object setContentMinSize:NSMakeSize(0, 0)];
 	[OS_OSX::singleton->window_object setContentMaxSize:NSMakeSize(FLT_MAX, FLT_MAX)];
+	// Force window resize event.
+	[self windowDidResize:notification];
 }
 
 - (void)windowDidExitFullScreen:(NSNotification *)notification {
@@ -325,6 +327,9 @@ static NSCursor *cursorFromSelector(SEL selector, SEL fallback = nil) {
 
 	if (OS_OSX::singleton->on_top)
 		[OS_OSX::singleton->window_object setLevel:NSFloatingWindowLevel];
+
+	// Force window resize event.
+	[self windowDidResize:notification];
 }
 
 - (void)windowDidChangeBackingProperties:(NSNotification *)notification {
@@ -1738,7 +1743,7 @@ Error OS_OSX::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 
 	if (gl_initialization_error) {
 		OS::get_singleton()->alert("Your video card driver does not support any of the supported OpenGL versions.\n"
-								   "Please update your drivers or if you have a very old or integrated GPU upgrade it.",
+								   "Please update your drivers or if you have a very old or integrated GPU, upgrade it.",
 				"Unable to initialize Video driver");
 		return ERR_UNAVAILABLE;
 	}
@@ -2280,14 +2285,26 @@ String OS_OSX::get_cache_path() const {
 }
 
 String OS_OSX::get_bundle_resource_dir() const {
-	NSBundle *main = [NSBundle mainBundle];
-	NSString *resourcePath = [main resourcePath];
-
-	char *utfs = strdup([resourcePath UTF8String]);
 	String ret;
-	ret.parse_utf8(utfs);
-	free(utfs);
 
+	NSBundle *main = [NSBundle mainBundle];
+	if (main) {
+		NSString *resourcePath = [main resourcePath];
+		ret.parse_utf8([resourcePath UTF8String]);
+	}
+	return ret;
+}
+
+String OS_OSX::get_bundle_icon_path() const {
+	String ret;
+
+	NSBundle *main = [NSBundle mainBundle];
+	if (main) {
+		NSString *iconPath = [[main infoDictionary] objectForKey:@"CFBundleIconFile"];
+		if (iconPath) {
+			ret.parse_utf8([iconPath UTF8String]);
+		}
+	}
 	return ret;
 }
 
@@ -2296,7 +2313,7 @@ String OS_OSX::get_godot_dir_name() const {
 	return String(VERSION_SHORT_NAME).capitalize();
 }
 
-String OS_OSX::get_system_dir(SystemDir p_dir) const {
+String OS_OSX::get_system_dir(SystemDir p_dir, bool p_shared_storage) const {
 	NSSearchPathDirectory id;
 	bool found = true;
 
@@ -2393,7 +2410,7 @@ Error OS_OSX::shell_open(String p_uri) {
 
 String OS_OSX::get_locale() const {
 	NSString *locale_code = [[NSLocale preferredLanguages] objectAtIndex:0];
-	return [locale_code UTF8String];
+	return String([locale_code UTF8String]).replace("-", "_");
 }
 
 void OS_OSX::swap_buffers() {
@@ -3159,7 +3176,7 @@ void OS_OSX::process_events() {
 	[autoreleasePool drain];
 	autoreleasePool = [[NSAutoreleasePool alloc] init];
 
-	input->flush_accumulated_events();
+	input->flush_buffered_events();
 }
 
 void OS_OSX::process_key_events() {
@@ -3216,7 +3233,7 @@ void OS_OSX::process_key_events() {
 
 void OS_OSX::push_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEvent> ev = p_event;
-	input->accumulate_input_event(ev);
+	input->parse_input_event(ev);
 }
 
 void OS_OSX::force_process_input() {

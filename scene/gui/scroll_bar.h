@@ -51,6 +51,9 @@ class ScrollBar : public Range {
 
 	HighlightStatus highlight;
 
+	bool incr_active = false;
+	bool decr_active = false;
+
 	struct Drag {
 		bool active;
 		float pos_at_click;

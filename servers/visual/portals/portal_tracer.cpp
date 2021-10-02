@@ -167,11 +167,13 @@ void PortalTracer::cull_roamers(const VSRoom &p_room, const LocalVector<Plane> &
 			continue;
 		}
 
-		// mark as done
-		moving.last_tick_hit = _tick;
-
 		if (test_cull_inside(moving.exact_aabb, p_planes)) {
-			_result->visible_roamer_pool_ids.push_back(pool_id);
+			if (!_occlusion_culler.cull_aabb(moving.exact_aabb)) {
+				// mark as done (and on visible list)
+				moving.last_tick_hit = _tick;
+
+				_result->visible_roamer_pool_ids.push_back(pool_id);
+			}
 		}
 	}
 }
@@ -215,6 +217,10 @@ void PortalTracer::cull_statics(const VSRoom &p_room, const LocalVector<Plane> &
 		// print("\t\t\tculling object " + pObj->get_name());
 
 		if (test_cull_inside(bb, p_planes)) {
+			if (_occlusion_culler.cull_aabb(bb)) {
+				continue;
+			}
+
 			// bypass the bitfield for now and just show / hide
 			//stat.show(bShow);
 
@@ -228,36 +234,56 @@ void PortalTracer::cull_statics(const VSRoom &p_room, const LocalVector<Plane> &
 	} // for n through statics
 }
 
-int PortalTracer::trace_globals(const LocalVector<Plane> &p_planes, VSInstance **p_result_array, int first_result, int p_result_max, uint32_t p_mask) {
+int PortalTracer::trace_globals(const LocalVector<Plane> &p_planes, VSInstance **p_result_array, int first_result, int p_result_max, uint32_t p_mask, bool p_override_camera) {
 	uint32_t num_globals = _portal_renderer->get_num_moving_globals();
 	int current_result = first_result;
 
-	for (uint32_t n = 0; n < num_globals; n++) {
-		const PortalRenderer::Moving &moving = _portal_renderer->get_moving_global(n);
+	if (!p_override_camera) {
+		for (uint32_t n = 0; n < num_globals; n++) {
+			const PortalRenderer::Moving &moving = _portal_renderer->get_moving_global(n);
 
 #ifdef PORTAL_RENDERER_STORE_MOVING_RIDS
-		// debug check the instance is valid
-		void *vss_instance = VSG::scene->_instance_get_from_rid(moving.instance_rid);
+			// debug check the instance is valid
+			void *vss_instance = VSG::scene->_instance_get_from_rid(moving.instance_rid);
 
-		if (vss_instance) {
+			if (vss_instance) {
 #endif
-			if (test_cull_inside(moving.exact_aabb, p_planes, false)) {
-				if (VSG::scene->_instance_cull_check(moving.instance, p_mask)) {
-					p_result_array[current_result++] = moving.instance;
+				if (test_cull_inside(moving.exact_aabb, p_planes, false)) {
+					if (VSG::scene->_instance_cull_check(moving.instance, p_mask)) {
+						p_result_array[current_result++] = moving.instance;
 
-					// full up?
-					if (current_result >= p_result_max) {
-						return current_result;
+						// full up?
+						if (current_result >= p_result_max) {
+							return current_result;
+						}
 					}
 				}
-			}
 
 #ifdef PORTAL_RENDERER_STORE_MOVING_RIDS
-		} else {
-			WARN_PRINT("vss instance is null " + PortalRenderer::_addr_to_string(moving.instance));
-		}
+			} else {
+				WARN_PRINT("vss instance is null " + PortalRenderer::_addr_to_string(moving.instance));
+			}
 #endif
-	}
+		}
+	} // if not override camera
+	else {
+		// If we are overriding the camera there is a potential problem in the editor:
+		// gizmos BEHIND the override camera will not be drawn.
+		// As this should be editor only and performance is not critical, we will just disable
+		// frustum culling for global objects when the camera is overriden.
+		for (uint32_t n = 0; n < num_globals; n++) {
+			const PortalRenderer::Moving &moving = _portal_renderer->get_moving_global(n);
+
+			if (VSG::scene->_instance_cull_check(moving.instance, p_mask)) {
+				p_result_array[current_result++] = moving.instance;
+
+				// full up?
+				if (current_result >= p_result_max) {
+					return current_result;
+				}
+			}
+		}
+	} // if override camera
 
 	return current_result;
 }
@@ -318,7 +344,7 @@ void PortalTracer::trace_pvs(int p_source_room_id, const LocalVector<Plane> &p_p
 	}
 }
 
-void PortalTracer::trace_recursive(const TraceParams &p_params, int p_depth, int p_room_id, const LocalVector<Plane> &p_planes) {
+void PortalTracer::trace_recursive(const TraceParams &p_params, int p_depth, int p_room_id, const LocalVector<Plane> &p_planes, int p_from_external_room_id) {
 	// prevent too much depth
 	if (p_depth > _depth_limit) {
 		WARN_PRINT_ONCE("Portal Depth Limit reached (seeing through too many portals)");
@@ -327,6 +353,9 @@ void PortalTracer::trace_recursive(const TraceParams &p_params, int p_depth, int
 
 	// get the room
 	const VSRoom &room = _portal_renderer->get_room(p_room_id);
+
+	// set up the occlusion culler as a one off
+	_occlusion_culler.prepare(*_portal_renderer, room, _trace_start_point, p_planes, &_near_and_far_planes[0]);
 
 	cull_statics(room, p_planes);
 	cull_roamers(room, p_planes);
@@ -414,6 +443,35 @@ void PortalTracer::trace_recursive(const TraceParams &p_params, int p_depth, int
 			continue;
 		}
 
+		// Don't allow portals from internal to external room to be followed
+		// if the external room has already been processed in this trace stack. This prevents
+		// unneeded processing, and also prevents recursive feedback where you
+		// see into internal room -> external room and back into the same internal room
+		// via the same portal.
+		if (portal._internal && (linked_room_id != -1)) {
+			if (outgoing) {
+				if (linked_room_id == p_from_external_room_id) {
+					continue;
+				}
+			} else {
+				// We are entering an internal portal from an external room.
+				// set the external room id, so we can recognise this when we are
+				// later exiting the internal rooms.
+				// Note that as we can only store 1 previous external room, this system
+				// won't work completely correctly when you have 2 levels of internal room
+				// and you can see from roomgroup a -> b -> c. However this should just result
+				// in a little slower culling for that particular view, and hopefully will not break
+				// with recursive loop looking through the same portal multiple times. (don't think this
+				// is possible in this scenario).
+				p_from_external_room_id = p_room_id;
+			}
+		}
+
+		// occlusion culling of portals
+		if (_occlusion_culler.cull_sphere(portal._pt_center, portal._bounding_sphere_radius)) {
+			continue;
+		}
+
 		// hopefully the portal actually leads somewhere...
 		if (linked_room_id != -1) {
 			// we need some new planes
@@ -453,7 +511,7 @@ void PortalTracer::trace_recursive(const TraceParams &p_params, int p_depth, int
 				new_planes.push_back(_near_and_far_planes[1]);
 
 				// go and do the whole lot again in the next room
-				trace_recursive(p_params, p_depth + 1, linked_room_id, new_planes);
+				trace_recursive(p_params, p_depth + 1, linked_room_id, new_planes, p_from_external_room_id);
 
 				// no longer need these planes, return them to the pool
 				_planes_pool.free(pool_mem);
@@ -472,4 +530,39 @@ void PortalTracer::trace_recursive(const TraceParams &p_params, int p_depth, int
 
 		} // if a linked room exists
 	} // for p through portals
+}
+
+int PortalTracer::occlusion_cull(PortalRenderer &p_portal_renderer, const Vector3 &p_point, const Vector<Plane> &p_convex, VSInstance **p_result_array, int p_num_results) {
+	// silly conversion of vector to local vector
+	// can this be avoided? NYI
+	// pretty cheap anyway as it will just copy 6 planes, max a few times per frame...
+	static LocalVector<Plane> local_planes;
+	if ((int)local_planes.size() != p_convex.size()) {
+		local_planes.resize(p_convex.size());
+	}
+	for (int n = 0; n < p_convex.size(); n++) {
+		local_planes[n] = p_convex[n];
+	}
+
+	_occlusion_culler.prepare_generic(p_portal_renderer, p_portal_renderer.get_occluders_active_list(), p_point, local_planes);
+
+	// cull each instance
+	int count = p_num_results;
+	AABB bb;
+
+	for (int n = 0; n < count; n++) {
+		VSInstance *instance = p_result_array[n];
+
+		// this will return false for GLOBAL instances, so we don't occlusion cull gizmos
+		if (VSG::scene->_instance_get_transformed_aabb_for_occlusion(instance, bb)) {
+			if (_occlusion_culler.cull_aabb(bb)) {
+				// remove from list with unordered swap from the end of list
+				p_result_array[n] = p_result_array[count - 1];
+				count--;
+				n--; // repeat this element, as it will have changed
+			}
+		}
+	}
+
+	return count;
 }

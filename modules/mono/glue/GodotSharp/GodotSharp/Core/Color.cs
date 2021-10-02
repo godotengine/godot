@@ -7,11 +7,11 @@ namespace Godot
     /// A color represented by red, green, blue, and alpha (RGBA) components.
     /// The alpha component is often used for transparency.
     /// Values are in floating-point and usually range from 0 to 1.
-    /// Some properties (such as CanvasItem.modulate) may accept values
+    /// Some properties (such as <see cref="CanvasItem.Modulate"/>) may accept values
     /// greater than 1 (overbright or HDR colors).
     ///
     /// If you want to supply values in a range of 0 to 255, you should use
-    /// <see cref="Color8"/> and the `r8`/`g8`/`b8`/`a8` properties.
+    /// <see cref="Color8"/> and the <c>r8</c>/<c>g8</c>/<c>b8</c>/<c>a8</c> properties.
     /// </summary>
     [Serializable]
     [StructLayout(LayoutKind.Sequential)]
@@ -127,11 +127,11 @@ namespace Godot
                 }
                 else if (g == max)
                 {
-                    h = 2 + (b - r) / delta; // Between cyan & yellow
+                    h = 2 + ((b - r) / delta); // Between cyan & yellow
                 }
                 else
                 {
-                    h = 4 + (r - g) / delta; // Between magenta & cyan
+                    h = 4 + ((r - g) / delta); // Between magenta & cyan
                 }
 
                 h /= 6.0f;
@@ -173,7 +173,7 @@ namespace Godot
         /// <summary>
         /// The HSV value (brightness) of this color, on the range 0 to 1.
         /// </summary>
-        /// <value>Getting is equivalent to using `Max()` on the RGB components. Setting uses <see cref="FromHsv"/>.</value>
+        /// <value>Getting is equivalent to using <see cref="Math.Max(float, float)"/> on the RGB components. Setting uses <see cref="FromHsv"/>.</value>
         public float v
         {
             get
@@ -216,7 +216,12 @@ namespace Godot
         /// <summary>
         /// Access color components using their index.
         /// </summary>
-        /// <value>`[0]` is equivalent to `.r`, `[1]` is equivalent to `.g`, `[2]` is equivalent to `.b`, `[3]` is equivalent to `.a`.</value>
+        /// <value>
+        /// <c>[0]</c> is equivalent to <see cref="r"/>,
+        /// <c>[1]</c> is equivalent to <see cref="g"/>,
+        /// <c>[2]</c> is equivalent to <see cref="b"/>,
+        /// <c>[3]</c> is equivalent to <see cref="a"/>.
+        /// </value>
         public float this[int index]
         {
             get
@@ -259,7 +264,7 @@ namespace Godot
 
         /// <summary>
         /// Converts a color to HSV values. This is equivalent to using each of
-        /// the `h`/`s`/`v` properties, but much more efficient.
+        /// the <c>h</c>/<c>s</c>/<c>v</c> properties, but much more efficient.
         /// </summary>
         /// <param name="hue">Output parameter for the HSV hue.</param>
         /// <param name="saturation">Output parameter for the HSV saturation.</param>
@@ -297,7 +302,7 @@ namespace Godot
         /// <summary>
         /// Constructs a color from an HSV profile, with values on the
         /// range of 0 to 1. This is equivalent to using each of
-        /// the `h`/`s`/`v` properties, but much more efficient.
+        /// the <c>h</c>/<c>s</c>/<c>v</c> properties, but much more efficient.
         /// </summary>
         /// <param name="hue">The HSV hue, typically on the range of 0 to 1.</param>
         /// <param name="saturation">The HSV saturation, typically on the range of 0 to 1.</param>
@@ -347,22 +352,22 @@ namespace Godot
         /// The second color may have a range of alpha values.
         /// </summary>
         /// <param name="over">The color to blend over.</param>
-        /// <returns>This color blended over `over`.</returns>
+        /// <returns>This color blended over <paramref name="over"/>.</returns>
         public Color Blend(Color over)
         {
             Color res;
 
             float sa = 1.0f - over.a;
-            res.a = a * sa + over.a;
+            res.a = (a * sa) + over.a;
 
             if (res.a == 0)
             {
                 return new Color(0, 0, 0, 0);
             }
 
-            res.r = (r * a * sa + over.r * over.a) / res.a;
-            res.g = (g * a * sa + over.g * over.a) / res.a;
-            res.b = (b * a * sa + over.b * over.a) / res.a;
+            res.r = ((r * a * sa) + (over.r * over.a)) / res.a;
+            res.g = ((g * a * sa) + (over.g * over.a)) / res.a;
+            res.b = ((b * a * sa) + (over.b * over.a)) / res.a;
 
             return res;
         }
@@ -390,14 +395,14 @@ namespace Godot
         public Color Darkened(float amount)
         {
             Color res = this;
-            res.r = res.r * (1.0f - amount);
-            res.g = res.g * (1.0f - amount);
-            res.b = res.b * (1.0f - amount);
+            res.r *= 1.0f - amount;
+            res.g *= 1.0f - amount;
+            res.b *= 1.0f - amount;
             return res;
         }
 
         /// <summary>
-        /// Returns the inverted color: `(1 - r, 1 - g, 1 - b, a)`.
+        /// Returns the inverted color: <c>(1 - r, 1 - g, 1 - b, a)</c>.
         /// </summary>
         /// <returns>The inverted color.</returns>
         public Color Inverted()
@@ -419,15 +424,15 @@ namespace Godot
         public Color Lightened(float amount)
         {
             Color res = this;
-            res.r = res.r + (1.0f - res.r) * amount;
-            res.g = res.g + (1.0f - res.g) * amount;
-            res.b = res.b + (1.0f - res.b) * amount;
+            res.r += (1.0f - res.r) * amount;
+            res.g += (1.0f - res.g) * amount;
+            res.b += (1.0f - res.b) * amount;
             return res;
         }
 
         /// <summary>
         /// Returns the result of the linear interpolation between
-        /// this color and `to` by amount `weight`.
+        /// this color and <paramref name="to"/> by amount <paramref name="weight"/>.
         /// </summary>
         /// <param name="to">The destination color for interpolation.</param>
         /// <param name="weight">A value on the range of 0.0 to 1.0, representing the amount of interpolation.</param>
@@ -445,7 +450,7 @@ namespace Godot
 
         /// <summary>
         /// Returns the result of the linear interpolation between
-        /// this color and `to` by color amount `weight`.
+        /// this color and <paramref name="to"/> by color amount <paramref name="weight"/>.
         /// </summary>
         /// <param name="to">The destination color for interpolation.</param>
         /// <param name="weight">A color with components on the range of 0.0 to 1.0, representing the amount of interpolation.</param>
@@ -466,7 +471,7 @@ namespace Godot
         /// format (each byte represents a color channel).
         /// ABGR is the reversed version of the default format.
         /// </summary>
-        /// <returns>An int representing this color in ABGR32 format.</returns>
+        /// <returns>A <see langword="int"/> representing this color in ABGR32 format.</returns>
         public int ToAbgr32()
         {
             int c = (byte)Math.Round(a * 255);
@@ -485,7 +490,7 @@ namespace Godot
         /// format (each word represents a color channel).
         /// ABGR is the reversed version of the default format.
         /// </summary>
-        /// <returns>An int representing this color in ABGR64 format.</returns>
+        /// <returns>A <see langword="long"/> representing this color in ABGR64 format.</returns>
         public long ToAbgr64()
         {
             long c = (ushort)Math.Round(a * 65535);
@@ -504,7 +509,7 @@ namespace Godot
         /// format (each byte represents a color channel).
         /// ARGB is more compatible with DirectX, but not used much in Godot.
         /// </summary>
-        /// <returns>An int representing this color in ARGB32 format.</returns>
+        /// <returns>A <see langword="int"/> representing this color in ARGB32 format.</returns>
         public int ToArgb32()
         {
             int c = (byte)Math.Round(a * 255);
@@ -523,7 +528,7 @@ namespace Godot
         /// format (each word represents a color channel).
         /// ARGB is more compatible with DirectX, but not used much in Godot.
         /// </summary>
-        /// <returns>A long representing this color in ARGB64 format.</returns>
+        /// <returns>A <see langword="long"/> representing this color in ARGB64 format.</returns>
         public long ToArgb64()
         {
             long c = (ushort)Math.Round(a * 65535);
@@ -542,7 +547,7 @@ namespace Godot
         /// format (each byte represents a color channel).
         /// RGBA is Godot's default and recommended format.
         /// </summary>
-        /// <returns>An int representing this color in RGBA32 format.</returns>
+        /// <returns>A <see langword="int"/> representing this color in RGBA32 format.</returns>
         public int ToRgba32()
         {
             int c = (byte)Math.Round(r * 255);
@@ -561,7 +566,7 @@ namespace Godot
         /// format (each word represents a color channel).
         /// RGBA is Godot's default and recommended format.
         /// </summary>
-        /// <returns>A long representing this color in RGBA64 format.</returns>
+        /// <returns>A <see langword="long"/> representing this color in RGBA64 format.</returns>
         public long ToRgba64()
         {
             long c = (ushort)Math.Round(r * 65535);
@@ -578,7 +583,9 @@ namespace Godot
         /// <summary>
         /// Returns the color's HTML hexadecimal color string in RGBA format.
         /// </summary>
-        /// <param name="includeAlpha">Whether or not to include alpha. If false, the color is RGB instead of RGBA.</param>
+        /// <param name="includeAlpha">
+        /// Whether or not to include alpha. If <see langword="false"/>, the color is RGB instead of RGBA.
+        /// </param>
         /// <returns>A string for the HTML hexadecimal representation of this color.</returns>
         public string ToHtml(bool includeAlpha = true)
         {
@@ -595,7 +602,7 @@ namespace Godot
         }
 
         /// <summary>
-        /// Constructs a color from RGBA values, typically on the range of 0 to 1.
+        /// Constructs a <see cref="Color"/> from RGBA values, typically on the range of 0 to 1.
         /// </summary>
         /// <param name="r">The color's red component, typically on the range of 0 to 1.</param>
         /// <param name="g">The color's green component, typically on the range of 0 to 1.</param>
@@ -610,7 +617,7 @@ namespace Godot
         }
 
         /// <summary>
-        /// Constructs a color from an existing color and an alpha value.
+        /// Constructs a <see cref="Color"/> from an existing color and an alpha value.
         /// </summary>
         /// <param name="c">The color to construct from. Only its RGB values are used.</param>
         /// <param name="a">The color's alpha (transparency) value, typically on the range of 0 to 1. Default: 1.</param>
@@ -623,10 +630,10 @@ namespace Godot
         }
 
         /// <summary>
-        /// Constructs a color from a 32-bit integer in RGBA format
+        /// Constructs a <see cref="Color"/> from a 32-bit integer in RGBA format
         /// (each byte represents a color channel).
         /// </summary>
-        /// <param name="rgba">The int representing the color.</param>
+        /// <param name="rgba">The <see langword="int"/> representing the color.</param>
         public Color(int rgba)
         {
             a = (rgba & 0xFF) / 255.0f;
@@ -639,10 +646,10 @@ namespace Godot
         }
 
         /// <summary>
-        /// Constructs a color from a 64-bit integer in RGBA format
+        /// Constructs a <see cref="Color"/> from a 64-bit integer in RGBA format
         /// (each word represents a color channel).
         /// </summary>
-        /// <param name="rgba">The long representing the color.</param>
+        /// <param name="rgba">The <see langword="long"/> representing the color.</param>
         public Color(long rgba)
         {
             a = (rgba & 0xFFFF) / 65535.0f;
@@ -762,9 +769,12 @@ namespace Godot
         }
 
         /// <summary>
-        /// Constructs a color from the HTML hexadecimal color string in RGBA format.
+        /// Constructs a <see cref="Color"/> from the HTML hexadecimal color string in RGBA format.
         /// </summary>
         /// <param name="rgba">A string for the HTML hexadecimal representation of this color.</param>
+        /// <exception name="ArgumentOutOfRangeException">
+        /// Thrown when the given <paramref name="rgba"/> color code is invalid.
+        /// </exception>
         public Color(string rgba)
         {
             if (rgba.Length == 0)
@@ -936,6 +946,11 @@ namespace Godot
             return left.r > right.r;
         }
 
+        /// <summary>
+        /// Returns <see langword="true"/> if this color and <paramref name="obj"/> are equal.
+        /// </summary>
+        /// <param name="obj">The other object to compare.</param>
+        /// <returns>Whether or not the color and the other object are equal.</returns>
         public override bool Equals(object obj)
         {
             if (obj is Color)
@@ -946,14 +961,19 @@ namespace Godot
             return false;
         }
 
+        /// <summary>
+        /// Returns <see langword="true"/> if this color and <paramref name="other"/> are equal
+        /// </summary>
+        /// <param name="other">The other color to compare.</param>
+        /// <returns>Whether or not the colors are equal.</returns>
         public bool Equals(Color other)
         {
             return r == other.r && g == other.g && b == other.b && a == other.a;
         }
 
         /// <summary>
-        /// Returns true if this color and `other` are approximately equal, by running
-        /// <see cref="Godot.Mathf.IsEqualApprox(float, float)"/> on each component.
+        /// Returns <see langword="true"/> if this color and <paramref name="other"/> are approximately equal,
+        /// by running <see cref="Mathf.IsEqualApprox(float, float)"/> on each component.
         /// </summary>
         /// <param name="other">The other color to compare.</param>
         /// <returns>Whether or not the colors are approximately equal.</returns>
@@ -962,16 +982,28 @@ namespace Godot
             return Mathf.IsEqualApprox(r, other.r) && Mathf.IsEqualApprox(g, other.g) && Mathf.IsEqualApprox(b, other.b) && Mathf.IsEqualApprox(a, other.a);
         }
 
+        /// <summary>
+        /// Serves as the hash function for <see cref="Color"/>.
+        /// </summary>
+        /// <returns>A hash code for this color.</returns>
         public override int GetHashCode()
         {
             return r.GetHashCode() ^ g.GetHashCode() ^ b.GetHashCode() ^ a.GetHashCode();
         }
 
+        /// <summary>
+        /// Converts this <see cref="Color"/> to a string.
+        /// </summary>
+        /// <returns>A string representation of this color.</returns>
         public override string ToString()
         {
             return String.Format("{0},{1},{2},{3}", r.ToString(), g.ToString(), b.ToString(), a.ToString());
         }
 
+        /// <summary>
+        /// Converts this <see cref="Color"/> to a string with the given <paramref name="format"/>.
+        /// </summary>
+        /// <returns>A string representation of this color.</returns>
         public string ToString(string format)
         {
             return String.Format("{0},{1},{2},{3}", r.ToString(format), g.ToString(format), b.ToString(format), a.ToString(format));

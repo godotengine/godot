@@ -147,9 +147,9 @@ class StyleBoxFlat : public StyleBox {
 	Color shadow_color;
 	Color border_color;
 
-	int border_width[4];
-	int expand_margin[4];
-	int corner_radius[4];
+	real_t border_width[4] = {};
+	real_t expand_margin[4] = {};
+	real_t corner_radius[4] = {};
 
 	bool draw_center;
 	bool blend_border;
@@ -158,34 +158,28 @@ class StyleBoxFlat : public StyleBox {
 	int corner_detail;
 	int shadow_size;
 	Point2 shadow_offset;
-	int aa_size;
+	real_t aa_size;
 
 protected:
 	virtual float get_style_margin(Margin p_margin) const;
 	static void _bind_methods();
 
 public:
-	//Color
 	void set_bg_color(const Color &p_color);
 	Color get_bg_color() const;
 
-	//Border Color
 	void set_border_color(const Color &p_color);
 	Color get_border_color() const;
 
-	//BORDER
-	//width
 	void set_border_width_all(int p_size);
 	int get_border_width_min() const;
 
 	void set_border_width(Margin p_margin, int p_width);
 	int get_border_width(Margin p_margin) const;
 
-	//blend
 	void set_border_blend(bool p_blend);
 	bool get_border_blend() const;
 
-	//CORNER
 	void set_corner_radius_all(int radius);
 	void set_corner_radius_individual(const int radius_top_left, const int radius_top_right, const int radius_bottom_right, const int radius_bottom_left);
 	int get_corner_radius_min() const;
@@ -196,17 +190,14 @@ public:
 	void set_corner_detail(const int &p_corner_detail);
 	int get_corner_detail() const;
 
-	//EXPANDS
 	void set_expand_margin_size(Margin p_expand_margin, float p_size);
 	void set_expand_margin_size_all(float p_expand_margin_size);
 	void set_expand_margin_size_individual(float p_left, float p_top, float p_right, float p_bottom);
 	float get_expand_margin_size(Margin p_expand_margin) const;
 
-	//DRAW CENTER
 	void set_draw_center(bool p_enabled);
 	bool is_draw_center_enabled() const;
 
-	//SHADOW
 	void set_shadow_color(const Color &p_color);
 	Color get_shadow_color() const;
 
@@ -216,12 +207,10 @@ public:
 	void set_shadow_offset(const Point2 &p_offset);
 	Point2 get_shadow_offset() const;
 
-	//ANTI_ALIASING
 	void set_anti_aliased(const bool &p_anti_aliased);
 	bool is_anti_aliased() const;
-	//tempAA
-	void set_aa_size(const int &p_aa_size);
-	int get_aa_size() const;
+	void set_aa_size(const float &p_aa_size);
+	float get_aa_size() const;
 
 	virtual Size2 get_center_size() const;
 
@@ -232,7 +221,7 @@ public:
 	~StyleBoxFlat();
 };
 
-// just used to draw lines.
+// Just used to draw lines.
 class StyleBoxLine : public StyleBox {
 	GDCLASS(StyleBoxLine, StyleBox);
 	Color color;

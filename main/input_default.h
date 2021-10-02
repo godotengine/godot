@@ -54,7 +54,9 @@ class InputDefault : public Input {
 		uint64_t physics_frame;
 		uint64_t idle_frame;
 		bool pressed;
+		bool exact;
 		float strength;
+		float raw_strength;
 	};
 
 	Map<StringName, Action> action_state;
@@ -203,7 +205,8 @@ private:
 
 	void _parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_emulated);
 
-	List<Ref<InputEvent>> accumulated_events;
+	List<Ref<InputEvent>> buffered_events;
+	bool use_input_buffering;
 	bool use_accumulated_input;
 
 protected:
@@ -220,10 +223,11 @@ public:
 	virtual bool is_key_pressed(int p_scancode) const;
 	virtual bool is_mouse_button_pressed(int p_button) const;
 	virtual bool is_joy_button_pressed(int p_device, int p_button) const;
-	virtual bool is_action_pressed(const StringName &p_action) const;
-	virtual bool is_action_just_pressed(const StringName &p_action) const;
-	virtual bool is_action_just_released(const StringName &p_action) const;
-	virtual float get_action_strength(const StringName &p_action) const;
+	virtual bool is_action_pressed(const StringName &p_action, bool p_exact = false) const;
+	virtual bool is_action_just_pressed(const StringName &p_action, bool p_exact = false) const;
+	virtual bool is_action_just_released(const StringName &p_action, bool p_exact = false) const;
+	virtual float get_action_strength(const StringName &p_action, bool p_exact = false) const;
+	virtual float get_action_raw_strength(const StringName &p_action, bool p_exact = false) const;
 
 	virtual float get_joy_axis(int p_device, int p_axis) const;
 	String get_joy_name(int p_idx);
@@ -299,8 +303,9 @@ public:
 	String get_joy_guid_remapped(int p_device) const;
 	void set_fallback_mapping(String p_guid);
 
-	virtual void accumulate_input_event(const Ref<InputEvent> &p_event);
-	virtual void flush_accumulated_events();
+	virtual void flush_buffered_events();
+	virtual bool is_using_input_buffering();
+	virtual void set_use_input_buffering(bool p_enable);
 	virtual void set_use_accumulated_input(bool p_enable);
 
 	virtual void release_pressed_events();

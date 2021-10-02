@@ -138,17 +138,20 @@ struct _ConcaveCollisionInfo {
 	Vector3 close_A, close_B;
 };
 
-void CollisionSolverSW::concave_callback(void *p_userdata, ShapeSW *p_convex) {
+bool CollisionSolverSW::concave_callback(void *p_userdata, ShapeSW *p_convex) {
 	_ConcaveCollisionInfo &cinfo = *(_ConcaveCollisionInfo *)(p_userdata);
 	cinfo.aabb_tests++;
 
 	bool collided = collision_solver(cinfo.shape_A, *cinfo.transform_A, p_convex, *cinfo.transform_B, cinfo.result_callback, cinfo.userdata, cinfo.swap_result, nullptr, cinfo.margin_A, cinfo.margin_B);
 	if (!collided) {
-		return;
+		return false;
 	}
 
 	cinfo.collided = true;
 	cinfo.collisions++;
+
+	// Stop at first collision if contacts are not needed.
+	return !cinfo.result_callback;
 }
 
 bool CollisionSolverSW::solve_concave(const ShapeSW *p_shape_A, const Transform &p_transform_A, const ShapeSW *p_shape_B, const Transform &p_transform_B, CallbackResult p_result_callback, void *p_userdata, bool p_swap_result, real_t p_margin_A, real_t p_margin_B) {
@@ -250,19 +253,18 @@ bool CollisionSolverSW::solve_static(const ShapeSW *p_shape_A, const Transform &
 	}
 }
 
-void CollisionSolverSW::concave_distance_callback(void *p_userdata, ShapeSW *p_convex) {
+bool CollisionSolverSW::concave_distance_callback(void *p_userdata, ShapeSW *p_convex) {
 	_ConcaveCollisionInfo &cinfo = *(_ConcaveCollisionInfo *)(p_userdata);
 	cinfo.aabb_tests++;
-	if (cinfo.collided) {
-		return;
-	}
 
 	Vector3 close_A, close_B;
 	cinfo.collided = !gjk_epa_calculate_distance(cinfo.shape_A, *cinfo.transform_A, p_convex, *cinfo.transform_B, close_A, close_B);
 
 	if (cinfo.collided) {
-		return;
+		// No need to process any more result.
+		return true;
 	}
+
 	if (!cinfo.tested || close_A.distance_squared_to(close_B) < cinfo.close_A.distance_squared_to(cinfo.close_B)) {
 		cinfo.close_A = close_A;
 		cinfo.close_B = close_B;
@@ -270,6 +272,8 @@ void CollisionSolverSW::concave_distance_callback(void *p_userdata, ShapeSW *p_c
 	}
 
 	cinfo.collisions++;
+
+	return false;
 }
 
 bool CollisionSolverSW::solve_distance_plane(const ShapeSW *p_shape_A, const Transform &p_transform_A, const ShapeSW *p_shape_B, const Transform &p_transform_B, Vector3 &r_point_A, Vector3 &r_point_B) {

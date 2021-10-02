@@ -54,11 +54,10 @@ private:
 
 	mutable Map<StringName, Action> input_map;
 
-	List<Ref<InputEvent>>::Element *_find_event(Action &p_action, const Ref<InputEvent> &p_event, bool *p_pressed = nullptr, float *p_strength = nullptr) const;
+	List<Ref<InputEvent>>::Element *_find_event(Action &p_action, const Ref<InputEvent> &p_event, bool p_exact_match = false, bool *p_pressed = nullptr, float *p_strength = nullptr, float *p_raw_strength = nullptr) const;
 
 	Array _get_action_list(const StringName &p_action);
 	Array _get_actions();
-	String _suggest_actions(const StringName &p_action) const;
 
 protected:
 	static void _bind_methods();
@@ -79,12 +78,14 @@ public:
 	void action_erase_events(const StringName &p_action);
 
 	const List<Ref<InputEvent>> *get_action_list(const StringName &p_action);
-	bool event_is_action(const Ref<InputEvent> &p_event, const StringName &p_action) const;
-	bool event_get_action_status(const Ref<InputEvent> &p_event, const StringName &p_action, bool *p_pressed = nullptr, float *p_strength = nullptr) const;
+	bool event_is_action(const Ref<InputEvent> &p_event, const StringName &p_action, bool p_exact_match = false) const;
+	bool event_get_action_status(const Ref<InputEvent> &p_event, const StringName &p_action, bool p_exact_match = false, bool *p_pressed = nullptr, float *p_strength = nullptr, float *p_raw_strength = nullptr) const;
 
 	const Map<StringName, Action> &get_action_map() const;
 	void load_from_globals();
 	void load_default();
+
+	String suggest_actions(const StringName &p_action) const;
 
 	InputMap();
 };

@@ -36,11 +36,17 @@
 #include "core/os/os.h"
 #include "editor/editor_node.h"
 #include "mesh_instance.h"
+#include "multimesh_instance.h"
 #include "portal.h"
 #include "room_group.h"
 #include "scene/3d/camera.h"
 #include "scene/3d/light.h"
+#include "scene/3d/sprite_3d.h"
 #include "visibility_notifier.h"
+
+#ifdef TOOLS_ENABLED
+#include "editor/plugins/spatial_editor_plugin.h"
+#endif
 
 #include "modules/modules_enabled.gen.h"
 #ifdef MODULE_CSG_ENABLED
@@ -53,27 +59,55 @@
 #include "core/math/convex_hull.h"
 #endif
 
+// This needs to be static because it cannot easily be propagated to portals
+// during load (as the RoomManager may be loaded before Portals enter the scene tree)
+real_t RoomManager::_default_portal_margin = 1.0;
+
 #ifdef TOOLS_ENABLED
 RoomManager *RoomManager::active_room_manager = nullptr;
+
+// static versions of functions for use from editor toolbars
+void RoomManager::static_rooms_set_active(bool p_active) {
+	if (active_room_manager) {
+		active_room_manager->rooms_set_active(p_active);
+		active_room_manager->property_list_changed_notify();
+	}
+}
+
+bool RoomManager::static_rooms_get_active() {
+	if (active_room_manager) {
+		return active_room_manager->rooms_get_active();
+	}
+
+	return false;
+}
+
+bool RoomManager::static_rooms_get_active_and_loaded() {
+	if (active_room_manager) {
+		if (active_room_manager->rooms_get_active()) {
+			Ref<World> world = active_room_manager->get_world();
+			RID scenario = world->get_scenario();
+			return active_room_manager->rooms_get_active() && VisualServer::get_singleton()->rooms_is_loaded(scenario);
+		}
+	}
+
+	return false;
+}
+
+void RoomManager::static_rooms_convert() {
+	if (active_room_manager) {
+		return active_room_manager->rooms_convert();
+	}
+}
 #endif
 
 RoomManager::RoomManager() {
 	// some high value, we want room manager to be processed after other
 	// nodes because the camera should be moved first
 	set_process_priority(10000);
-
-#ifdef TOOLS_ENABLED
-	// note this mechanism may fail to work correctly if the user creates two room managers,
-	// but should not create major problems as it is just used to auto update when portals etc
-	// are changed in the editor, and there is a check for nullptr.
-	active_room_manager = this;
-#endif
 }
 
 RoomManager::~RoomManager() {
-#ifdef TOOLS_ENABLED
-	active_room_manager = nullptr;
-#endif
 }
 
 String RoomManager::get_configuration_warning() const {
@@ -86,11 +120,12 @@ String RoomManager::get_configuration_warning() const {
 		warning += TTR("The RoomList has not been assigned.");
 	} else {
 		Spatial *roomlist = _resolve_path<Spatial>(_settings_path_roomlist);
-		if (!roomlist || (roomlist->get_class_name() != StringName("Spatial"))) {
+		if (!roomlist) {
+			// possibly also check (roomlist->get_class_name() != StringName("Spatial"))
 			if (!warning.empty()) {
 				warning += "\n\n";
 			}
-			warning += TTR("The RoomList should be a Spatial.");
+			warning += TTR("The RoomList node should be a Spatial (or derived from Spatial).");
 		}
 	}
 
@@ -101,38 +136,11 @@ String RoomManager::get_configuration_warning() const {
 		warning += TTR("Portal Depth Limit is set to Zero.\nOnly the Room that the Camera is in will render.");
 	}
 
-	auto lambda = [](const Node *p_node) {
-		return static_cast<bool>((Object::cast_to<Room>(p_node) || Object::cast_to<RoomGroup>(p_node) || Object::cast_to<Portal>(p_node) || Object::cast_to<RoomManager>(p_node)));
-	};
-
-	if (Room::detect_nodes_using_lambda(this, lambda)) {
-		if (Room::detect_nodes_of_type<Room>(this)) {
-			if (!warning.empty()) {
-				warning += "\n\n";
-			}
-			warning += TTR("Rooms should not be children of the RoomManager.");
+	if (Room::detect_nodes_of_type<RoomManager>(this)) {
+		if (!warning.empty()) {
+			warning += "\n\n";
 		}
-
-		if (Room::detect_nodes_of_type<RoomGroup>(this)) {
-			if (!warning.empty()) {
-				warning += "\n\n";
-			}
-			warning += TTR("RoomGroups should not be children of the RoomManager.");
-		}
-
-		if (Room::detect_nodes_of_type<Portal>(this)) {
-			if (!warning.empty()) {
-				warning += "\n\n";
-			}
-			warning += TTR("Portals should not be children of the RoomManager.");
-		}
-
-		if (Room::detect_nodes_of_type<RoomManager>(this)) {
-			if (!warning.empty()) {
-				warning += "\n\n";
-			}
-			warning += TTR("There should only be one RoomManager in the SceneTree.");
-		}
+		warning += TTR("There should only be one RoomManager in the SceneTree.");
 	}
 
 	return warning;
@@ -157,11 +165,6 @@ void RoomManager::_preview_camera_update() {
 			bool changed = false;
 			if (camera_pos != _godot_camera_pos) {
 				changed = true;
-
-				// update gameplay monitor
-				Vector<Vector3> camera_positions;
-				camera_positions.push_back(camera_pos);
-				VisualServer::get_singleton()->rooms_update_gameplay_monitor(scenario, camera_positions);
 			}
 			// check planes
 			if (!changed) {
@@ -194,11 +197,32 @@ void RoomManager::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			if (Engine::get_singleton()->is_editor_hint()) {
 				set_process_internal(_godot_preview_camera_ID != (ObjectID)-1);
+#ifdef TOOLS_ENABLED
+				// note this mechanism may fail to work correctly if the user creates two room managers,
+				// but should not create major problems as it is just used to auto update when portals etc
+				// are changed in the editor, and there is a check for nullptr.
+				active_room_manager = this;
+				SpatialEditor *spatial_editor = SpatialEditor::get_singleton();
+				if (spatial_editor) {
+					spatial_editor->update_portal_tools();
+				}
+#endif
 			} else {
 				if (_settings_gameplay_monitor_enabled) {
 					set_process_internal(true);
 				}
 			}
+		} break;
+		case NOTIFICATION_EXIT_TREE: {
+#ifdef TOOLS_ENABLED
+			active_room_manager = nullptr;
+			if (Engine::get_singleton()->is_editor_hint()) {
+				SpatialEditor *spatial_editor = SpatialEditor::get_singleton();
+				if (spatial_editor) {
+					spatial_editor->update_portal_tools();
+				}
+			}
+#endif
 		} break;
 		case NOTIFICATION_INTERNAL_PROCESS: {
 			// can't call visual server if not inside world
@@ -232,9 +256,9 @@ void RoomManager::_notification(int p_what) {
 }
 
 void RoomManager::_bind_methods() {
-	BIND_ENUM_CONSTANT(RoomManager::PVS_MODE_DISABLED);
-	BIND_ENUM_CONSTANT(RoomManager::PVS_MODE_PARTIAL);
-	BIND_ENUM_CONSTANT(RoomManager::PVS_MODE_FULL);
+	BIND_ENUM_CONSTANT(PVS_MODE_DISABLED);
+	BIND_ENUM_CONSTANT(PVS_MODE_PARTIAL);
+	BIND_ENUM_CONSTANT(PVS_MODE_FULL);
 
 	// main functions
 	ClassDB::bind_method(D_METHOD("rooms_convert"), &RoomManager::rooms_convert);
@@ -275,21 +299,17 @@ void RoomManager::_bind_methods() {
 	ADD_GROUP("Gameplay", "");
 	LIMPL_PROPERTY(Variant::BOOL, gameplay_monitor, set_gameplay_monitor_enabled, get_gameplay_monitor_enabled);
 	LIMPL_PROPERTY(Variant::BOOL, use_secondary_pvs, set_use_secondary_pvs, get_use_secondary_pvs);
-	LIMPL_PROPERTY(Variant::BOOL, use_signals, set_use_signals, get_use_signals);
 
 	ADD_GROUP("Optimize", "");
 	LIMPL_PROPERTY(Variant::BOOL, merge_meshes, set_merge_meshes, get_merge_meshes);
-	LIMPL_PROPERTY(Variant::BOOL, remove_danglers, set_remove_danglers, get_remove_danglers);
 
 	ADD_GROUP("Debug", "");
-	LIMPL_PROPERTY(Variant::BOOL, show_debug, set_show_debug, get_show_debug);
 	LIMPL_PROPERTY(Variant::BOOL, show_margins, set_show_margins, get_show_margins);
 	LIMPL_PROPERTY(Variant::BOOL, debug_sprawl, set_debug_sprawl, get_debug_sprawl);
 	LIMPL_PROPERTY_RANGE(Variant::INT, overlap_warning_threshold, set_overlap_warning_threshold, get_overlap_warning_threshold, "1,1000,1");
 	LIMPL_PROPERTY(Variant::NODE_PATH, preview_camera, set_preview_camera_path, get_preview_camera_path);
 
 	ADD_GROUP("Advanced", "");
-	LIMPL_PROPERTY(Variant::BOOL, flip_portal_meshes, set_flip_portal_meshes, get_flip_portal_meshes);
 	LIMPL_PROPERTY_RANGE(Variant::INT, portal_depth_limit, set_portal_depth_limit, get_portal_depth_limit, "0,255,1");
 	LIMPL_PROPERTY_RANGE(Variant::REAL, room_simplify, set_room_simplify, get_room_simplify, "0.0,1.0,0.005");
 	LIMPL_PROPERTY_RANGE(Variant::REAL, default_portal_margin, set_default_portal_margin, get_default_portal_margin, "0.0, 10.0, 0.01");
@@ -298,6 +318,21 @@ void RoomManager::_bind_methods() {
 #undef LIMPL_PROPERTY_RANGE
 #undef LPORTAL_STRINGIFY
 #undef LPORTAL_TOSTRING
+}
+
+void RoomManager::_refresh_from_project_settings() {
+	_settings_use_simple_pvs = GLOBAL_GET("rendering/portals/pvs/use_simple_pvs");
+	_settings_log_pvs_generation = GLOBAL_GET("rendering/portals/pvs/pvs_logging");
+	_settings_use_signals = GLOBAL_GET("rendering/portals/gameplay/use_signals");
+	_settings_remove_danglers = GLOBAL_GET("rendering/portals/optimize/remove_danglers");
+	_show_debug = GLOBAL_GET("rendering/portals/debug/logging");
+	Portal::_portal_plane_convention = GLOBAL_GET("rendering/portals/advanced/flip_imported_portals");
+
+	// force not to show logs when not in editor
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		_show_debug = false;
+		_settings_log_pvs_generation = false;
+	}
 }
 
 void RoomManager::set_roomlist_path(const NodePath &p_path) {
@@ -343,14 +378,6 @@ real_t RoomManager::get_room_simplify() const {
 	return _room_simplify_info._plane_simplify;
 }
 
-void RoomManager::set_flip_portal_meshes(bool p_flip) {
-	Portal::_portal_plane_convention = p_flip;
-}
-
-bool RoomManager::get_flip_portal_meshes() const {
-	return Portal::_portal_plane_convention;
-}
-
 void RoomManager::set_portal_depth_limit(int p_limit) {
 	_settings_portal_depth_limit = p_limit;
 
@@ -368,14 +395,13 @@ void RoomManager::set_default_portal_margin(real_t p_dist) {
 		return;
 	}
 
-	_update_portal_margins(roomlist, _default_portal_margin);
+	_update_portal_gizmos(roomlist);
 }
 
-void RoomManager::_update_portal_margins(Spatial *p_node, real_t p_margin) {
+void RoomManager::_update_portal_gizmos(Spatial *p_node) {
 	Portal *portal = Object::cast_to<Portal>(p_node);
 
 	if (portal) {
-		portal->_default_margin = p_margin;
 		portal->update_gizmo();
 	}
 
@@ -384,7 +410,7 @@ void RoomManager::_update_portal_margins(Spatial *p_node, real_t p_margin) {
 		Spatial *child = Object::cast_to<Spatial>(p_node->get_child(n));
 
 		if (child) {
-			_update_portal_margins(child, p_margin);
+			_update_portal_gizmos(child);
 		}
 	}
 }
@@ -408,19 +434,6 @@ bool RoomManager::get_show_margins() const {
 	return Portal::_settings_gizmo_show_margins;
 }
 
-void RoomManager::set_show_debug(bool p_show) {
-	// force not to show when not in editor
-	if (!Engine::get_singleton()->is_editor_hint()) {
-		p_show = false;
-	}
-
-	_show_debug = p_show;
-}
-
-bool RoomManager::get_show_debug() const {
-	return _show_debug;
-}
-
 void RoomManager::set_debug_sprawl(bool p_enable) {
 	if (is_inside_world() && get_world().is_valid()) {
 		VisualServer::get_singleton()->rooms_set_debug_feature(get_world()->get_scenario(), VisualServer::ROOMS_DEBUG_SPRAWL, p_enable);
@@ -440,20 +453,12 @@ bool RoomManager::get_merge_meshes() const {
 	return _settings_merge_meshes;
 }
 
-void RoomManager::set_remove_danglers(bool p_enable) {
-	_settings_remove_danglers = p_enable;
-}
-
-bool RoomManager::get_remove_danglers() const {
-	return _settings_remove_danglers;
-}
-
 void RoomManager::show_warning(const String &p_string, const String &p_extra_string, bool p_alert) {
 	if (p_extra_string != "") {
 		WARN_PRINT(p_string + " " + p_extra_string);
 #ifdef TOOLS_ENABLED
 		if (p_alert && Engine::get_singleton()->is_editor_hint()) {
-			EditorNode::get_singleton()->show_warning(TTR(p_string + "\n" + p_extra_string));
+			EditorNode::get_singleton()->show_warning(TTRGET(p_string) + "\n" + TTRGET(p_extra_string));
 		}
 #endif
 	} else {
@@ -461,7 +466,7 @@ void RoomManager::show_warning(const String &p_string, const String &p_extra_str
 		// OS::get_singleton()->alert(p_string, p_title);
 #ifdef TOOLS_ENABLED
 		if (p_alert && Engine::get_singleton()->is_editor_hint()) {
-			EditorNode::get_singleton()->show_warning(TTR(p_string));
+			EditorNode::get_singleton()->show_warning(TTRGET(p_string));
 		}
 #endif
 	}
@@ -481,6 +486,15 @@ void RoomManager::rooms_set_active(bool p_active) {
 	if (is_inside_world() && get_world().is_valid()) {
 		VisualServer::get_singleton()->rooms_set_active(get_world()->get_scenario(), p_active);
 		_active = p_active;
+
+#ifdef TOOLS_ENABLED
+		if (Engine::get_singleton()->is_editor_hint()) {
+			SpatialEditor *spatial_editor = SpatialEditor::get_singleton();
+			if (spatial_editor) {
+				spatial_editor->update_portal_tools();
+			}
+		}
+#endif
 	}
 }
 
@@ -524,7 +538,7 @@ void RoomManager::rooms_flip_portals() {
 	_roomlist = _resolve_path<Spatial>(_settings_path_roomlist);
 	if (!_roomlist) {
 		WARN_PRINT("Cannot resolve nodepath");
-		show_warning("RoomList path is invalid.", "Please check the RoomList branch has been assigned in the RoomManager");
+		show_warning(TTR("RoomList path is invalid.\nPlease check the RoomList branch has been assigned in the RoomManager."));
 		return;
 	}
 
@@ -539,10 +553,12 @@ void RoomManager::rooms_convert() {
 	_warning_portal_autolink_failed = false;
 	_warning_room_overlap_detected = false;
 
+	_refresh_from_project_settings();
+
 	_roomlist = _resolve_path<Spatial>(_settings_path_roomlist);
 	if (!_roomlist) {
 		WARN_PRINT("Cannot resolve nodepath");
-		show_warning("RoomList path is invalid.", "Please check the RoomList branch has been assigned in the RoomManager");
+		show_warning(TTR("RoomList path is invalid.\nPlease check the RoomList branch has been assigned in the RoomManager."));
 		return;
 	}
 
@@ -557,9 +573,7 @@ void RoomManager::rooms_convert() {
 
 	// first check that the roomlist is valid, and the user hasn't made
 	// a silly scene tree
-	Node *invalid_node = _check_roomlist_validity_recursive(_roomlist);
-	if (invalid_node) {
-		show_warning("RoomList contains invalid node", "RoomList should only contain Rooms, RoomGroups and Spatials.\nInvalid node : " + invalid_node->get_name());
+	if (!_check_roomlist_validity(_roomlist)) {
 		return;
 	}
 
@@ -571,7 +585,7 @@ void RoomManager::rooms_convert() {
 
 	if (!_rooms.size()) {
 		rooms_clear();
-		show_warning("RoomList contains no Rooms, aborting");
+		show_warning(TTR("RoomList contains no Rooms, aborting."));
 		return;
 	}
 
@@ -585,7 +599,7 @@ void RoomManager::rooms_convert() {
 
 	// autolink portals that are not already manually linked
 	// and finalize the portals
-	_third_pass_portals(_roomlist, portals);
+	_autolink_portals(_roomlist, portals);
 
 	// Find the statics AGAIN and only this time add them to the PortalRenderer.
 	// We need to do this twice because the room points determine the room bound...
@@ -594,6 +608,11 @@ void RoomManager::rooms_convert() {
 	// the static objects will correctly sprawl. It is a chicken and egg situation.
 	// Also finalize the room hulls.
 	_third_pass_rooms(portals);
+
+	// now we run autoplace to place any statics that have not been explicitly placed in rooms.
+	// These will by definition not affect the room bounds, but is convenient for users to edit
+	// levels in a more freeform manner
+	_autoplace_recursive(_roomlist);
 
 	bool generate_pvs = false;
 	bool pvs_cull = false;
@@ -609,10 +628,7 @@ void RoomManager::rooms_convert() {
 		} break;
 	}
 
-	VisualServer::get_singleton()->rooms_finalize(get_world()->get_scenario(), generate_pvs, pvs_cull, _settings_use_secondary_pvs, _settings_use_signals, _pvs_filename);
-
-	// refresh whether to show portals etc
-	set_show_debug(_show_debug);
+	VisualServer::get_singleton()->rooms_finalize(get_world()->get_scenario(), generate_pvs, pvs_cull, _settings_use_secondary_pvs, _settings_use_signals, _pvs_filename, _settings_use_simple_pvs, _settings_log_pvs_generation);
 
 	// refresh portal depth limit
 	set_portal_depth_limit(get_portal_depth_limit());
@@ -626,20 +642,20 @@ void RoomManager::rooms_convert() {
 
 	// display error dialogs
 	if (_warning_misnamed_nodes_detected) {
-		show_warning("Misnamed nodes detected, check output log for details. Aborting.");
+		show_warning(TTR("Misnamed nodes detected, check output log for details. Aborting."));
 		rooms_clear();
 	}
 
 	if (_warning_portal_link_room_not_found) {
-		show_warning("Portal link room not found, check output log for details.");
+		show_warning(TTR("Portal link room not found, check output log for details."));
 	}
 
 	if (_warning_portal_autolink_failed) {
-		show_warning("Portal autolink failed, check output log for details.\nCheck the portal is facing outwards from the source room.");
+		show_warning(TTR("Portal autolink failed, check output log for details.\nCheck the portal is facing outwards from the source room."));
 	}
 
 	if (_warning_room_overlap_detected) {
-		show_warning("Room overlap detected, cameras may work incorrectly in overlapping area.\nCheck output log for details..");
+		show_warning(TTR("Room overlap detected, cameras may work incorrectly in overlapping area.\nCheck output log for details."));
 	}
 }
 
@@ -658,10 +674,10 @@ void RoomManager::_second_pass_room(Room *p_room, const LocalVector<RoomGroup *>
 		Spatial *child = Object::cast_to<Spatial>(p_room->get_child(n));
 
 		if (child) {
-			if (_name_starts_with(child, "GPortal", true) || _node_is_type<Portal>(child)) {
+			if (_node_is_type<Portal>(child) || child->is_queued_for_deletion()) {
 				// the adding of portal points is done after this stage, because
 				// we need to take into account incoming as well as outgoing portals
-			} else if (_name_starts_with(child, "Bound", true)) {
+			} else if (_name_ends_with(child, "-bound")) {
 				manual_bound_found = _convert_manual_bound(p_room, child, p_portals);
 			} else {
 				// don't add the instances to the portal renderer on the first pass of _find_statics,
@@ -795,16 +811,34 @@ void RoomManager::_third_pass_rooms(const LocalVector<Portal *> &p_portals) {
 	for (int n = 0; n < _rooms.size(); n++) {
 		Room *room = _rooms[n];
 
-		String room_short_name = _find_name_after(room, "ROOM");
-		convert_log("ROOM\t" + room_short_name);
+		// no need to do all these string operations if we are not debugging and don't need logs
+		if (_show_debug) {
+			String room_short_name = _find_name_before(room, "-room", true);
+			convert_log("ROOM\t" + room_short_name);
 
-		// log output the portals associated with this room
-		for (int p = 0; p < room->_portals.size(); p++) {
-			const Portal &portal = *p_portals[room->_portals[p]];
+			// log output the portals associated with this room
+			for (int p = 0; p < room->_portals.size(); p++) {
+				const Portal &portal = *p_portals[room->_portals[p]];
 
-			String in_or_out = (portal._linkedroom_ID[0] == room->_room_ID) ? "POUT" : "PIN ";
-			convert_log("\t\t" + in_or_out + "\t" + portal.get_name());
-		}
+				bool portal_links_out = portal._linkedroom_ID[0] == room->_room_ID;
+
+				int linked_room_id = (portal_links_out) ? portal._linkedroom_ID[1] : portal._linkedroom_ID[0];
+
+				// this shouldn't be out of range, but just in case
+				if ((linked_room_id >= 0) && (linked_room_id < _rooms.size())) {
+					Room *linked_room = _rooms[linked_room_id];
+
+					String portal_link_room_name = _find_name_before(linked_room, "-room", true);
+					String in_or_out = (portal_links_out) ? "POUT" : "PIN ";
+
+					// display the name of the room linked to
+					convert_log("\t\t" + in_or_out + "\t" + portal_link_room_name);
+				} else {
+					WARN_PRINT_ONCE("linked_room_id is out of range");
+				}
+			}
+
+		} // if _show_debug
 
 		// do a second pass finding the statics, where they are
 		// finally added to the rooms in the portal_renderer.
@@ -818,29 +852,42 @@ void RoomManager::_third_pass_rooms(const LocalVector<Portal *> &p_portals) {
 			found_errors = true;
 		}
 		room->update_gizmo();
+		room->update_configuration_warning();
 	}
 
 	if (found_errors) {
-		show_warning("ERROR calculating room bounds.", "Ensure all rooms contain geometry or manual bounds.");
+		show_warning(TTR("Error calculating room bounds.\nEnsure all rooms contain geometry or manual bounds."));
 	}
 }
 
 void RoomManager::_second_pass_portals(Spatial *p_roomlist, LocalVector<Portal *> &r_portals) {
-	convert_log("_second_pass_portals");
-
 	for (unsigned int n = 0; n < r_portals.size(); n++) {
 		Portal *portal = r_portals[n];
-		String string_link_room_shortname = _find_name_after(portal, "Portal");
-		String string_link_room = "Room" + GODOT_PORTAL_DELINEATOR + string_link_room_shortname;
 
-		if (string_link_room_shortname != "") {
-			Room *linked_room = Object::cast_to<Room>(p_roomlist->find_node(string_link_room, true, false));
-			if (linked_room) {
-				NodePath path = portal->get_path_to(linked_room);
-				portal->set_linked_room_internal(path);
-			} else {
-				WARN_PRINT("Portal link room : " + string_link_room + " not found.");
-				_warning_portal_link_room_not_found = true;
+		// we have a choice here.
+		// If we are importing, we will try linking using the naming convention method.
+		// We do this by setting the assigned nodepath if we find the link room, then
+		// the resolving links is done in the usual manner from the nodepath.
+		if (portal->_importing_portal) {
+			String string_link_room_shortname = _find_name_before(portal, "-portal");
+			String string_link_room = string_link_room_shortname + "-room";
+
+			if (string_link_room_shortname != "") {
+				// try the room name plus the postfix first, this will be the most common case during import
+				Room *linked_room = Object::cast_to<Room>(p_roomlist->find_node(string_link_room, true, false));
+
+				// try the short name as a last ditch attempt
+				if (!linked_room) {
+					linked_room = Object::cast_to<Room>(p_roomlist->find_node(string_link_room_shortname, true, false));
+				}
+
+				if (linked_room) {
+					NodePath path = portal->get_path_to(linked_room);
+					portal->set_linked_room_internal(path);
+				} else {
+					WARN_PRINT("Portal link room : " + string_link_room + " not found.");
+					_warning_portal_link_room_not_found = true;
+				}
 			}
 		}
 
@@ -848,7 +895,7 @@ void RoomManager::_second_pass_portals(Spatial *p_roomlist, LocalVector<Portal *
 		int room_from_id = portal->_linkedroom_ID[0];
 		if (room_from_id != -1) {
 			Room *room_from = _rooms[room_from_id];
-			portal->resolve_links(room_from->_room_rid);
+			portal->resolve_links(_rooms, room_from->_room_rid);
 
 			// add the portal id to the room from and the room to.
 			// These are used so we can later add the portal geometry to the room bounds.
@@ -866,9 +913,7 @@ void RoomManager::_second_pass_portals(Spatial *p_roomlist, LocalVector<Portal *
 	}
 }
 
-void RoomManager::_third_pass_portals(Spatial *p_roomlist, LocalVector<Portal *> &r_portals) {
-	convert_log("_third_pass_portals");
-
+void RoomManager::_autolink_portals(Spatial *p_roomlist, LocalVector<Portal *> &r_portals) {
 	for (unsigned int n = 0; n < r_portals.size(); n++) {
 		Portal *portal = r_portals[n];
 
@@ -910,6 +955,9 @@ void RoomManager::_third_pass_portals(Spatial *p_roomlist, LocalVector<Portal *>
 
 			Vector3 test_pos = portal->_pt_center_world + (dist * portal->_plane.normal);
 
+			int best_priority = -1000;
+			int best_room = -1;
+
 			for (int r = 0; r < _rooms.size(); r++) {
 				Room *room = _rooms[r];
 				if (room->_room_ID == portal->_linkedroom_ID[0]) {
@@ -932,21 +980,37 @@ void RoomManager::_third_pass_portals(Spatial *p_roomlist, LocalVector<Portal *>
 				} // for through planes
 
 				if (!outside) {
-					// great, we found a linked room!
-					convert_log("\t\tAUTOLINK OK from " + source_room->get_name() + " to " + room->get_name(), 1);
-					portal->_linkedroom_ID[1] = r;
-
-					// add the portal to the portals list for the receiving room
-					room->_portals.push_back(n);
-
-					// send complete link to visual server so the portal will be active in the visual server room system
-					VisualServer::get_singleton()->portal_link(portal->_portal_rid, source_room->_room_rid, room->_room_rid, portal->_settings_two_way);
-
-					autolink_found = true;
-					break;
+					// we found a suitable room, but we want the highest priority in
+					// case there are internal rooms...
+					if (room->_room_priority > best_priority) {
+						best_priority = room->_room_priority;
+						best_room = r;
+					}
 				}
 
 			} // for through rooms
+
+			// found a suitable link room
+			if (best_room != -1) {
+				Room *room = _rooms[best_room];
+
+				// great, we found a linked room!
+				convert_log("\t\tAUTOLINK OK from " + source_room->get_name() + " to " + room->get_name(), 1);
+				portal->_linkedroom_ID[1] = best_room;
+
+				// add the portal to the portals list for the receiving room
+				room->_portals.push_back(n);
+
+				// send complete link to visual server so the portal will be active in the visual server room system
+				VisualServer::get_singleton()->portal_link(portal->_portal_rid, source_room->_room_rid, room->_room_rid, portal->_settings_two_way);
+
+				// make the portal internal if necessary
+				// (this prevents the portal plane clipping the room bound)
+				portal->_internal = source_room->_room_priority > room->_room_priority;
+
+				autolink_found = true;
+				break;
+			}
 
 		} // for attempt
 
@@ -965,54 +1029,19 @@ void RoomManager::_third_pass_portals(Spatial *p_roomlist, LocalVector<Portal *>
 
 // to prevent users creating mistakes for themselves, we limit what can be put into the room list branch.
 // returns invalid node, or NULL
-Node *RoomManager::_check_roomlist_validity_recursive(Node *p_node) {
-	bool ok = false;
-
-	// is this a room?
-	if (_name_starts_with(p_node, "Room") || _node_is_type<Room>(p_node)) {
-		// end the recursion here
-		return nullptr;
-	}
-
-	// is this a roomgroup?
-	if (_name_starts_with(p_node, "RoomGroup") || _node_is_type<RoomGroup>(p_node)) {
-		// end the recursion here
-		return nullptr;
-	}
-
-	// now we are getting dodgy.
-	// is it a Spatial? (and not a derived)
-	if (p_node->get_class_name() == "Spatial") {
-		ok = true;
-	}
-
-	if (!ok) {
-		// return the invalid node
-		return p_node;
-	}
-
-	// recurse
-	for (int n = 0; n < p_node->get_child_count(); n++) {
-		Node *child = p_node->get_child(n);
-		if (child) {
-			Node *invalid_node = _check_roomlist_validity_recursive(child);
-			if (invalid_node) {
-				return invalid_node;
-			}
-		}
-	}
-
-	return nullptr;
+bool RoomManager::_check_roomlist_validity(Node *p_node) {
+	// restrictions lifted here, but we can add more if required
+	return true;
 }
 
 void RoomManager::_convert_rooms_recursive(Spatial *p_node, LocalVector<Portal *> &r_portals, LocalVector<RoomGroup *> &r_roomgroups, int p_roomgroup) {
 	// is this a room?
-	if (_name_starts_with(p_node, "Room") || _node_is_type<Room>(p_node)) {
+	if (_node_is_type<Room>(p_node) || _name_ends_with(p_node, "-room")) {
 		_convert_room(p_node, r_portals, r_roomgroups, p_roomgroup);
 	}
 
 	// is this a roomgroup?
-	if (_name_starts_with(p_node, "RoomGroup") || _node_is_type<RoomGroup>(p_node)) {
+	if (_node_is_type<RoomGroup>(p_node) || _name_ends_with(p_node, "-roomgroup")) {
 		p_roomgroup = _convert_roomgroup(p_node, r_roomgroups);
 	}
 
@@ -1101,7 +1130,7 @@ void RoomManager::_convert_room(Spatial *p_node, LocalVector<Portal *> &r_portal
 
 void RoomManager::_find_portals_recursive(Spatial *p_node, Room *p_room, LocalVector<Portal *> &r_portals) {
 	MeshInstance *mi = Object::cast_to<MeshInstance>(p_node);
-	if ((mi && _name_starts_with(mi, "Portal", true)) || _node_is_type<Portal>(p_node)) {
+	if (_node_is_type<Portal>(p_node) || (mi && _name_ends_with(mi, "-portal"))) {
 		_convert_portal(p_room, p_node, r_portals);
 	}
 
@@ -1159,13 +1188,87 @@ void RoomManager::_check_portal_for_warnings(Portal *p_portal, const AABB &p_roo
 #endif
 }
 
-void RoomManager::_find_statics_recursive(Room *p_room, Spatial *p_node, Vector<Vector3> &r_room_pts, bool p_add_to_portal_renderer) {
-	// don't process portal MeshInstances that are being deleted
-	// (and replaced by proper Portal nodes)
+bool RoomManager::_autoplace_object(VisualInstance *p_vi) {
+	// note we could alternatively use the portal_renderer to do this more efficiently
+	// (as it has a BSP) but at a cost of returning result from the visual server
+	AABB bb = p_vi->get_transformed_aabb();
+	Vector3 centre = bb.get_center();
+
+	// in order to deal with internal rooms, we can't just stop at the first
+	// room the point is within, as there could be later rooms with a higher priority
+	int best_priority = -INT32_MAX;
+	Room *best_room = nullptr;
+
+	// if not set to zero (no preference) this can override a preference
+	// for a certain RoomGroup priority to ensure the instance gets placed in the correct
+	// RoomGroup (e.g. outside, for building exteriors)
+	int preferred_priority = p_vi->get_portal_autoplace_priority();
+
+	for (int n = 0; n < _rooms.size(); n++) {
+		Room *room = _rooms[n];
+
+		if (room->contains_point(centre)) {
+			// the standard routine autoplaces in the highest priority room
+			if (room->_room_priority > best_priority) {
+				best_priority = room->_room_priority;
+				best_room = room;
+			}
+
+			// if we override the preferred priority we always choose this
+			if (preferred_priority && (room->_room_priority == preferred_priority)) {
+				best_room = room;
+				break;
+			}
+		}
+	}
+
+	if (best_room) {
+		// just dummies, we won't use these this time
+		Vector<Vector3> room_pts;
+
+		// we can reuse this function
+		_process_static(best_room, p_vi, room_pts, true);
+		return true;
+	}
+
+	return false;
+}
+
+void RoomManager::_autoplace_recursive(Spatial *p_node) {
 	if (p_node->is_queued_for_deletion()) {
 		return;
 	}
 
+	// as soon as we hit a room, quit the recursion as the objects
+	// will already have been added inside rooms
+	if (Object::cast_to<Room>(p_node)) {
+		return;
+	}
+
+	VisualInstance *vi = Object::cast_to<VisualInstance>(p_node);
+
+	// we are only interested in VIs with static or dynamic mode
+	if (vi) {
+		switch (vi->get_portal_mode()) {
+			default: {
+			} break;
+			case CullInstance::PORTAL_MODE_DYNAMIC:
+			case CullInstance::PORTAL_MODE_STATIC: {
+				_autoplace_object(vi);
+			} break;
+		}
+	}
+
+	for (int n = 0; n < p_node->get_child_count(); n++) {
+		Spatial *child = Object::cast_to<Spatial>(p_node->get_child(n));
+
+		if (child) {
+			_autoplace_recursive(child);
+		}
+	}
+}
+
+void RoomManager::_process_static(Room *p_room, Spatial *p_node, Vector<Vector3> &r_room_pts, bool p_add_to_portal_renderer) {
 	bool ignore = false;
 	VisualInstance *vi = Object::cast_to<VisualInstance>(p_node);
 
@@ -1269,6 +1372,16 @@ void RoomManager::_find_statics_recursive(Room *p_room, Spatial *p_node, Vector<
 		}
 
 	} // if not ignore
+}
+
+void RoomManager::_find_statics_recursive(Room *p_room, Spatial *p_node, Vector<Vector3> &r_room_pts, bool p_add_to_portal_renderer) {
+	// don't process portal MeshInstances that are being deleted
+	// (and replaced by proper Portal nodes)
+	if (p_node->is_queued_for_deletion()) {
+		return;
+	}
+
+	_process_static(p_room, p_node, r_room_pts, p_add_to_portal_renderer);
 
 	for (int n = 0; n < p_node->get_child_count(); n++) {
 		Spatial *child = Object::cast_to<Spatial>(p_node->get_child(n));
@@ -1535,18 +1648,29 @@ bool RoomManager::_add_plane_if_unique(const Room *p_room, LocalVector<Plane, in
 void RoomManager::_convert_portal(Room *p_room, Spatial *p_node, LocalVector<Portal *> &portals) {
 	Portal *portal = Object::cast_to<Portal>(p_node);
 
+	bool importing = false;
+
 	// if not a gportal already, convert the node type
 	if (!portal) {
+		importing = true;
 		portal = _change_node_type<Portal>(p_node, "G", false);
 		portal->create_from_mesh_instance(Object::cast_to<MeshInstance>(p_node));
 
 		p_node->queue_delete();
+
 	} else {
 		// only allow converting once
 		if (portal->_conversion_tick == _conversion_tick) {
 			return;
 		}
 	}
+
+	// make sure to start with fresh internal data each time (for linked rooms etc)
+	portal->clear();
+
+	// mark the portal if we are importing, because we will need to use the naming
+	// prefix system to look for linked rooms in that case
+	portal->_importing_portal = importing;
 
 	// mark so as only to convert once
 	portal->_conversion_tick = _conversion_tick;
@@ -1562,14 +1686,19 @@ void RoomManager::_convert_portal(Room *p_room, Spatial *p_node, LocalVector<Por
 }
 
 bool RoomManager::_bound_findpoints_geom_instance(GeometryInstance *p_gi, Vector<Vector3> &r_room_pts, AABB &r_aabb) {
-#ifdef MODULE_CSG_ENABLED
 	// max opposite extents .. note AABB storing size is rubbish in this aspect
 	// it can fail once mesh min is larger than FLT_MAX / 2.
 	r_aabb.position = Vector3(FLT_MAX / 2, FLT_MAX / 2, FLT_MAX / 2);
 	r_aabb.size = Vector3(-FLT_MAX, -FLT_MAX, -FLT_MAX);
 
+#ifdef MODULE_CSG_ENABLED
 	CSGShape *shape = Object::cast_to<CSGShape>(p_gi);
 	if (shape) {
+		// Shapes will not be up to date on the first frame due to a quirk
+		// of CSG - it defers updates to the next frame. So we need to explicitly
+		// force an update to make sure the CSG is correct on level load.
+		shape->force_update_shape();
+
 		Array arr = shape->get_meshes();
 		if (!arr.size()) {
 			return false;
@@ -1598,21 +1727,98 @@ bool RoomManager::_bound_findpoints_geom_instance(GeometryInstance *p_gi, Vector
 
 			// convert to world space
 			for (int n = 0; n < vertices.size(); n++) {
-				Vector3 ptWorld = trans.xform(vertices[n]);
-				r_room_pts.push_back(ptWorld);
+				Vector3 pt_world = trans.xform(vertices[n]);
+				r_room_pts.push_back(pt_world);
 
 				// keep the bound up to date
-				r_aabb.expand_to(ptWorld);
+				r_aabb.expand_to(pt_world);
 			}
 
 		} // for through the surfaces
 
+		return true;
 	} // if csg shape
-
-	return true;
-#else
-	return false;
 #endif
+
+	// multimesh
+	MultiMeshInstance *mmi = Object::cast_to<MultiMeshInstance>(p_gi);
+	if (mmi) {
+		Ref<MultiMesh> rmm = mmi->get_multimesh();
+		if (!rmm.is_valid()) {
+			return false;
+		}
+
+		// first get the mesh verts in local space
+		LocalVector<Vector3, int32_t> local_verts;
+		Ref<Mesh> rmesh = rmm->get_mesh();
+
+		if (rmesh->get_surface_count() == 0) {
+			String string;
+			string = "MultiMeshInstance '" + mmi->get_name() + "' has no surfaces, ignoring";
+			WARN_PRINT(string);
+			return false;
+		}
+
+		for (int surf = 0; surf < rmesh->get_surface_count(); surf++) {
+			Array arrays = rmesh->surface_get_arrays(surf);
+
+			if (!arrays.size()) {
+				WARN_PRINT_ONCE("MultiMesh mesh surface with no mesh, ignoring");
+				continue;
+			}
+
+			const PoolVector<Vector3> &vertices = arrays[VS::ARRAY_VERTEX];
+
+			int count = local_verts.size();
+			local_verts.resize(local_verts.size() + vertices.size());
+
+			for (int n = 0; n < vertices.size(); n++) {
+				local_verts[count++] = vertices[n];
+			}
+		}
+
+		if (!local_verts.size()) {
+			return false;
+		}
+
+		// now we have the local space verts, add a bunch for each instance, and find the AABB
+		for (int i = 0; i < rmm->get_instance_count(); i++) {
+			Transform trans = rmm->get_instance_transform(i);
+			trans = mmi->get_global_transform() * trans;
+
+			for (int n = 0; n < local_verts.size(); n++) {
+				Vector3 pt_world = trans.xform(local_verts[n]);
+				r_room_pts.push_back(pt_world);
+
+				// keep the bound up to date
+				r_aabb.expand_to(pt_world);
+			}
+		}
+		return true;
+	}
+
+	// Sprite3D
+	SpriteBase3D *sprite = Object::cast_to<SpriteBase3D>(p_gi);
+	if (sprite) {
+		Ref<TriangleMesh> tmesh = sprite->generate_triangle_mesh();
+		PoolVector<Vector3> vertices = tmesh->get_vertices();
+
+		// for converting meshes to world space
+		Transform trans = p_gi->get_global_transform();
+
+		// convert to world space
+		for (int n = 0; n < vertices.size(); n++) {
+			Vector3 pt_world = trans.xform(vertices[n]);
+			r_room_pts.push_back(pt_world);
+
+			// keep the bound up to date
+			r_aabb.expand_to(pt_world);
+		}
+
+		return true;
+	}
+
+	return false;
 }
 
 bool RoomManager::_bound_findpoints_mesh_instance(MeshInstance *p_mi, Vector<Vector3> &r_room_pts, AABB &r_aabb) {
@@ -1643,7 +1849,7 @@ bool RoomManager::_bound_findpoints_mesh_instance(MeshInstance *p_mi, Vector<Vec
 
 		// possible to have a meshinstance with no geometry .. don't want to crash
 		if (!arrays.size()) {
-			WARN_PRINT_ONCE("PConverter::bound_findpoints MeshInstance surface with no mesh, ignoring");
+			WARN_PRINT_ONCE("MeshInstance surface with no mesh, ignoring");
 			continue;
 		}
 
@@ -1828,74 +2034,58 @@ void RoomManager::_set_owner_recursive(Node *p_node, Node *p_owner) {
 	}
 }
 
-void RoomManager::_check_for_misnamed_node(const Node *p_node, String p_start_string) {
-	// don't check the roomlist name, as it often has a conflict with Room
-	if (p_node == _roomlist) {
-		return;
-	}
-
+bool RoomManager::_name_ends_with(const Node *p_node, String p_postfix) const {
+	ERR_FAIL_NULL_V(p_node, false);
 	String name = p_node->get_name();
 
-	int ss_length = p_start_string.length();
+	int pf_l = p_postfix.length();
+	int l = name.length();
 
-	if (name.substr(0, ss_length).to_lower() == p_start_string.to_lower()) {
-		if (p_start_string == "Room") {
-			// do allow RoomGroup and RoomManager
-			if (name.substr(0, 9) == "RoomGroup") {
-				return;
-			}
-
-			if (name.substr(0, 11) == "RoomManager") {
-				return;
-			}
-		} else {
-			if (p_start_string == "RoomGroup") {
-				return;
-			}
-		}
-
-		WARN_PRINT("Possible misnamed node : " + name);
-		_warning_misnamed_nodes_detected = true;
+	if (pf_l > l) {
+		return false;
 	}
-}
 
-bool RoomManager::_name_starts_with(const Node *p_node, String p_search_string, bool p_allow_no_delineator) {
-	String name = p_node->get_name();
-
-	if (p_allow_no_delineator && (name == p_search_string)) {
+	// allow capitalization errors
+	if (name.substr(l - pf_l, pf_l).to_lower() == p_postfix) {
 		return true;
 	}
 
-	String search_string = p_search_string + GODOT_PORTAL_DELINEATOR;
-	int sl = search_string.length();
-
-	if (name.substr(0, sl) == search_string) {
-		return true;
-	}
-
-	_check_for_misnamed_node(p_node, p_search_string);
 	return false;
 }
 
-String RoomManager::_find_name_after(Node *p_node, String p_string_start) {
-	p_string_start += GODOT_PORTAL_DELINEATOR;
-
-	String string_result;
+String RoomManager::_find_name_before(Node *p_node, String p_postfix, bool p_allow_no_postfix) {
+	ERR_FAIL_NULL_V(p_node, String());
 	String name = p_node->get_name();
-	string_result = name.substr(p_string_start.length());
+
+	int pf_l = p_postfix.length();
+	int l = name.length();
+
+	if (pf_l > l) {
+		if (!p_allow_no_postfix) {
+			return String();
+		}
+	} else {
+		if (name.substr(l - pf_l, pf_l) == p_postfix) {
+			name = name.substr(0, l - pf_l);
+		} else {
+			if (!p_allow_no_postfix) {
+				return String();
+			}
+		}
+	}
 
 	// because godot doesn't support multiple nodes with the same name, we will strip e.g. a number
-	// after an @ on the end of the name...
-	// e.g. portal_kitchen@2
-	for (int c = 0; c < string_result.length(); c++) {
-		if (string_result[c] == '*') {
+	// after an * on the end of the name...
+	// e.g. kitchen*2-portal
+	for (int c = 0; c < name.length(); c++) {
+		if (name[c] == GODOT_PORTAL_WILDCARD) {
 			// remove everything after and including this character
-			string_result = string_result.substr(0, c);
+			name = name.substr(0, c);
 			break;
 		}
 	}
 
-	return string_result;
+	return name;
 }
 
 void RoomManager::_merge_meshes_in_room(Room *p_room) {
@@ -2057,7 +2247,7 @@ void RoomManager::_list_mergeable_mesh_instances(Spatial *p_node, LocalVector<Me
 		if (vi && vi->get_portal_mode() == CullInstance::PORTAL_MODE_STATIC) {
 			// disallow for portals or bounds
 			// mesh instance portals should be queued for deletion by this point, we don't want to merge portals!
-			if (!_node_is_type<Portal>(mi) && !_name_starts_with(mi, "Bound", true) && !mi->is_queued_for_deletion()) {
+			if (!_node_is_type<Portal>(mi) && !_name_ends_with(mi, "-bound") && !mi->is_queued_for_deletion()) {
 				// only merge if visible
 				if (mi->is_inside_tree() && mi->is_visible()) {
 					r_list.push_back(mi);

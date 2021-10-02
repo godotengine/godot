@@ -10,7 +10,7 @@ env_bullet = env_modules.Clone()
 thirdparty_obj = []
 
 if env["builtin_bullet"]:
-    # Build only version 2 for now (as of 2.89)
+    # Build only "Bullet2" API (not "Bullet3" folders).
     # Sync file list with relevant upstream CMakeLists.txt for each folder.
     thirdparty_dir = "#thirdparty/bullet/"
 
@@ -177,6 +177,7 @@ if env["builtin_bullet"]:
         "BulletSoftBody/btDeformableContactProjection.cpp",
         "BulletSoftBody/btDeformableMultiBodyDynamicsWorld.cpp",
         "BulletSoftBody/btDeformableContactConstraint.cpp",
+        "BulletSoftBody/poly34.cpp",
         # clew
         "clew/clew.c",
         # LinearMath
@@ -186,6 +187,7 @@ if env["builtin_bullet"]:
         "LinearMath/btGeometryUtil.cpp",
         "LinearMath/btPolarDecomposition.cpp",
         "LinearMath/btQuickprof.cpp",
+        "LinearMath/btReducedVector.cpp",
         "LinearMath/btSerializer.cpp",
         "LinearMath/btSerializer64.cpp",
         "LinearMath/btThreads.cpp",
@@ -197,15 +199,9 @@ if env["builtin_bullet"]:
 
     thirdparty_sources = [thirdparty_dir + file for file in bullet2_src]
 
-    # Treat Bullet headers as system headers to avoid raising warnings. Not supported on MSVC.
-    if not env.msvc:
-        env_bullet.Append(CPPFLAGS=["-isystem", Dir(thirdparty_dir).path])
-    else:
-        env_bullet.Prepend(CPPPATH=[thirdparty_dir])
-    # if env['target'] == "debug" or env['target'] == "release_debug":
-    #     env_bullet.Append(CPPDEFINES=['BT_DEBUG'])
+    env_bullet.Prepend(CPPPATH=[thirdparty_dir])
 
-    env_bullet.Append(CPPDEFINES=["BT_USE_OLD_DAMPING_METHOD"])
+    env_bullet.Append(CPPDEFINES=["BT_USE_OLD_DAMPING_METHOD", "BT_THREADSAFE"])
 
     env_thirdparty = env_bullet.Clone()
     env_thirdparty.disable_warnings()

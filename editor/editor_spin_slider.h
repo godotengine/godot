@@ -77,6 +77,8 @@ class EditorSpinSlider : public Range {
 
 	void _evaluate_input_text();
 
+	void _draw_spin_slider();
+
 protected:
 	void _notification(int p_what);
 	void _gui_input(const Ref<InputEvent> &p_event);

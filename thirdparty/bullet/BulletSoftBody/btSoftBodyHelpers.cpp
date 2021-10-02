@@ -727,7 +727,7 @@ btSoftBody* btSoftBodyHelpers::CreatePatch(btSoftBodyWorldInfo& worldInfo, const
 										   int resy,
 										   int fixeds,
 										   bool gendiags,
-                                           btScalar perturbation)
+										   btScalar perturbation)
 {
 #define IDX(_x_, _y_) ((_y_)*rx + (_x_))
 	/* Create nodes	*/
@@ -747,12 +747,12 @@ btSoftBody* btSoftBodyHelpers::CreatePatch(btSoftBodyWorldInfo& worldInfo, const
 		for (int ix = 0; ix < rx; ++ix)
 		{
 			const btScalar tx = ix / (btScalar)(rx - 1);
-            btScalar pert = perturbation * btScalar(rand())/RAND_MAX;
-            btVector3 temp1 = py1;
-            temp1.setY(py1.getY() + pert);
-            btVector3 temp = py0;
-            pert = perturbation * btScalar(rand())/RAND_MAX;
-            temp.setY(py0.getY() + pert);
+			btScalar pert = perturbation * btScalar(rand()) / RAND_MAX;
+			btVector3 temp1 = py1;
+			temp1.setY(py1.getY() + pert);
+			btVector3 temp = py0;
+			pert = perturbation * btScalar(rand()) / RAND_MAX;
+			temp.setY(py0.getY() + pert);
 			x[IDX(ix, iy)] = lerp(temp, temp1, tx);
 			m[IDX(ix, iy)] = 1;
 		}
@@ -1233,9 +1233,9 @@ if(face&&face[0])
 			}
 		}
 	}
-    psb->initializeDmInverse();
-    psb->m_tetraScratches.resize(psb->m_tetras.size());
-    psb->m_tetraScratchesTn.resize(psb->m_tetras.size());
+	psb->initializeDmInverse();
+	psb->m_tetraScratches.resize(psb->m_tetras.size());
+	psb->m_tetraScratchesTn.resize(psb->m_tetras.size());
 	printf("Nodes:  %u\r\n", psb->m_nodes.size());
 	printf("Links:  %u\r\n", psb->m_links.size());
 	printf("Faces:  %u\r\n", psb->m_faces.size());
@@ -1245,302 +1245,419 @@ if(face&&face[0])
 
 btSoftBody* btSoftBodyHelpers::CreateFromVtkFile(btSoftBodyWorldInfo& worldInfo, const char* vtk_file)
 {
-    std::ifstream fs;
-    fs.open(vtk_file);
-    btAssert(fs);
-    
-    typedef btAlignedObjectArray<int> Index;
-    std::string line;
-    btAlignedObjectArray<btVector3> X;
-    btVector3 position;
-    btAlignedObjectArray<Index> indices;
-    bool reading_points = false;
-    bool reading_tets = false;
-    size_t n_points = 0;
-    size_t n_tets = 0;
-    size_t x_count = 0;
-    size_t indices_count = 0;
-    while (std::getline(fs, line))
-    {
-        std::stringstream ss(line);
-        if (line.size() == (size_t)(0))
-        {
-        }
-        else if (line.substr(0, 6) == "POINTS")
-        {
-            reading_points = true;
-            reading_tets = false;
-            ss.ignore(128, ' '); // ignore "POINTS"
-            ss >> n_points;
-            X.resize(n_points);
-        }
-        else if (line.substr(0, 5) == "CELLS")
-        {
-            reading_points = false;
-            reading_tets = true;
-            ss.ignore(128, ' '); // ignore "CELLS"
-            ss >> n_tets;
-            indices.resize(n_tets);
-        }
-        else if (line.substr(0, 10) == "CELL_TYPES")
-        {
-            reading_points = false;
-            reading_tets = false;
-        }
-        else if (reading_points)
-        {
-            btScalar p;
-            ss >> p;
-            position.setX(p);
-            ss >> p;
-            position.setY(p);
-            ss >> p;
-            position.setZ(p);
-            X[x_count++] = position;
-        }
-        else if (reading_tets)
-        {
-            ss.ignore(128, ' '); // ignore "4"
-            Index tet;
-            tet.resize(4);
-            for (size_t i = 0; i < 4; i++)
-            {
-                ss >> tet[i];
-            }
-            indices[indices_count++] = tet;
-        }
-    }
-    btSoftBody* psb = new btSoftBody(&worldInfo, n_points, &X[0], 0);
-    
-    for (int i = 0; i < n_tets; ++i)
-    {
-        const Index& ni = indices[i];
-        psb->appendTetra(ni[0], ni[1], ni[2], ni[3]);
-        {
-            psb->appendLink(ni[0], ni[1], 0, true);
-            psb->appendLink(ni[1], ni[2], 0, true);
-            psb->appendLink(ni[2], ni[0], 0, true);
-            psb->appendLink(ni[0], ni[3], 0, true);
-            psb->appendLink(ni[1], ni[3], 0, true);
-            psb->appendLink(ni[2], ni[3], 0, true);
-        }
-    }
-    
-    
-    generateBoundaryFaces(psb);
-    psb->initializeDmInverse();
-    psb->m_tetraScratches.resize(psb->m_tetras.size());
-    psb->m_tetraScratchesTn.resize(psb->m_tetras.size());
-    printf("Nodes:  %u\r\n", psb->m_nodes.size());
-    printf("Links:  %u\r\n", psb->m_links.size());
-    printf("Faces:  %u\r\n", psb->m_faces.size());
-    printf("Tetras: %u\r\n", psb->m_tetras.size());
+	std::ifstream fs;
+	fs.open(vtk_file);
+	btAssert(fs);
 
-    fs.close();
-    return psb;
+	typedef btAlignedObjectArray<int> Index;
+	std::string line;
+	btAlignedObjectArray<btVector3> X;
+	btVector3 position;
+	btAlignedObjectArray<Index> indices;
+	bool reading_points = false;
+	bool reading_tets = false;
+	size_t n_points = 0;
+	size_t n_tets = 0;
+	size_t x_count = 0;
+	size_t indices_count = 0;
+	while (std::getline(fs, line))
+	{
+		std::stringstream ss(line);
+		if (line.size() == (size_t)(0))
+		{
+		}
+		else if (line.substr(0, 6) == "POINTS")
+		{
+			reading_points = true;
+			reading_tets = false;
+			ss.ignore(128, ' ');  // ignore "POINTS"
+			ss >> n_points;
+			X.resize(n_points);
+		}
+		else if (line.substr(0, 5) == "CELLS")
+		{
+			reading_points = false;
+			reading_tets = true;
+			ss.ignore(128, ' ');  // ignore "CELLS"
+			ss >> n_tets;
+			indices.resize(n_tets);
+		}
+		else if (line.substr(0, 10) == "CELL_TYPES")
+		{
+			reading_points = false;
+			reading_tets = false;
+		}
+		else if (reading_points)
+		{
+			btScalar p;
+			ss >> p;
+			position.setX(p);
+			ss >> p;
+			position.setY(p);
+			ss >> p;
+			position.setZ(p);
+			//printf("v %f %f %f\n", position.getX(), position.getY(), position.getZ());
+			X[x_count++] = position;
+		}
+		else if (reading_tets)
+		{
+			int d;
+			ss >> d;
+			if (d != 4)
+			{
+				printf("Load deformable failed: Only Tetrahedra are supported in VTK file.\n");
+				fs.close();
+				return 0;
+			}
+			ss.ignore(128, ' ');  // ignore "4"
+			Index tet;
+			tet.resize(4);
+			for (size_t i = 0; i < 4; i++)
+			{
+				ss >> tet[i];
+				//printf("%d ", tet[i]);
+			}
+			//printf("\n");
+			indices[indices_count++] = tet;
+		}
+	}
+	btSoftBody* psb = new btSoftBody(&worldInfo, n_points, &X[0], 0);
+
+	for (int i = 0; i < n_tets; ++i)
+	{
+		const Index& ni = indices[i];
+		psb->appendTetra(ni[0], ni[1], ni[2], ni[3]);
+		{
+			psb->appendLink(ni[0], ni[1], 0, true);
+			psb->appendLink(ni[1], ni[2], 0, true);
+			psb->appendLink(ni[2], ni[0], 0, true);
+			psb->appendLink(ni[0], ni[3], 0, true);
+			psb->appendLink(ni[1], ni[3], 0, true);
+			psb->appendLink(ni[2], ni[3], 0, true);
+		}
+	}
+
+	generateBoundaryFaces(psb);
+	psb->initializeDmInverse();
+	psb->m_tetraScratches.resize(psb->m_tetras.size());
+	psb->m_tetraScratchesTn.resize(psb->m_tetras.size());
+	printf("Nodes:  %u\r\n", psb->m_nodes.size());
+	printf("Links:  %u\r\n", psb->m_links.size());
+	printf("Faces:  %u\r\n", psb->m_faces.size());
+	printf("Tetras: %u\r\n", psb->m_tetras.size());
+
+	fs.close();
+	return psb;
 }
 
 void btSoftBodyHelpers::generateBoundaryFaces(btSoftBody* psb)
 {
-    int counter = 0;
-    for (int i = 0; i < psb->m_nodes.size(); ++i)
-    {
-        psb->m_nodes[i].index = counter++;
-    }
-    typedef btAlignedObjectArray<int> Index;
-    btAlignedObjectArray<Index> indices;
-    indices.resize(psb->m_tetras.size());
-    for (int i = 0; i < indices.size(); ++i)
-    {
-        Index index;
-        index.push_back(psb->m_tetras[i].m_n[0]->index);
-        index.push_back(psb->m_tetras[i].m_n[1]->index);
-        index.push_back(psb->m_tetras[i].m_n[2]->index);
-        index.push_back(psb->m_tetras[i].m_n[3]->index);
-        indices[i] = index;
-    }
-    
-    std::map<std::vector<int>, std::vector<int> > dict;
-    for (int i = 0; i < indices.size(); ++i)
-    {
-        for (int j = 0; j < 4; ++j)
-        {
-            std::vector<int> f;
-            if (j == 0)
-            {
-                f.push_back(indices[i][1]);
-                f.push_back(indices[i][0]);
-                f.push_back(indices[i][2]);
-            }
-            if (j == 1)
-            {
-                f.push_back(indices[i][3]);
-                f.push_back(indices[i][0]);
-                f.push_back(indices[i][1]);
-            }
-            if (j == 2)
-            {
-                f.push_back(indices[i][3]);
-                f.push_back(indices[i][1]);
-                f.push_back(indices[i][2]);
-            }
-            if (j == 3)
-            {
-                f.push_back(indices[i][2]);
-                f.push_back(indices[i][0]);
-                f.push_back(indices[i][3]);
-            }
-            std::vector<int> f_sorted = f;
-            std::sort(f_sorted.begin(), f_sorted.end());
-            if (dict.find(f_sorted) != dict.end())
-            {
-                dict.erase(f_sorted);
-            }
-            else
-            {
-                dict.insert(std::make_pair(f_sorted, f));
-            }
-        }
-    }
-    
-    for (std::map<std::vector<int>, std::vector<int> >::iterator it = dict.begin(); it != dict.end(); ++it)
-    {
-        std::vector<int> f = it->second;
-        psb->appendFace(f[0], f[1], f[2]);
-    }
+	int counter = 0;
+	for (int i = 0; i < psb->m_nodes.size(); ++i)
+	{
+		psb->m_nodes[i].index = counter++;
+	}
+	typedef btAlignedObjectArray<int> Index;
+	btAlignedObjectArray<Index> indices;
+	indices.resize(psb->m_tetras.size());
+	for (int i = 0; i < indices.size(); ++i)
+	{
+		Index index;
+		index.push_back(psb->m_tetras[i].m_n[0]->index);
+		index.push_back(psb->m_tetras[i].m_n[1]->index);
+		index.push_back(psb->m_tetras[i].m_n[2]->index);
+		index.push_back(psb->m_tetras[i].m_n[3]->index);
+		indices[i] = index;
+	}
+
+	std::map<std::vector<int>, std::vector<int> > dict;
+	for (int i = 0; i < indices.size(); ++i)
+	{
+		for (int j = 0; j < 4; ++j)
+		{
+			std::vector<int> f;
+			if (j == 0)
+			{
+				f.push_back(indices[i][1]);
+				f.push_back(indices[i][0]);
+				f.push_back(indices[i][2]);
+			}
+			if (j == 1)
+			{
+				f.push_back(indices[i][3]);
+				f.push_back(indices[i][0]);
+				f.push_back(indices[i][1]);
+			}
+			if (j == 2)
+			{
+				f.push_back(indices[i][3]);
+				f.push_back(indices[i][1]);
+				f.push_back(indices[i][2]);
+			}
+			if (j == 3)
+			{
+				f.push_back(indices[i][2]);
+				f.push_back(indices[i][0]);
+				f.push_back(indices[i][3]);
+			}
+			std::vector<int> f_sorted = f;
+			std::sort(f_sorted.begin(), f_sorted.end());
+			if (dict.find(f_sorted) != dict.end())
+			{
+				dict.erase(f_sorted);
+			}
+			else
+			{
+				dict.insert(std::make_pair(f_sorted, f));
+			}
+		}
+	}
+
+	for (std::map<std::vector<int>, std::vector<int> >::iterator it = dict.begin(); it != dict.end(); ++it)
+	{
+		std::vector<int> f = it->second;
+		psb->appendFace(f[0], f[1], f[2]);
+		//printf("f %d %d %d\n", f[0] + 1, f[1] + 1, f[2] + 1);
+	}
 }
 
+//Write the surface mesh to an obj file.
 void btSoftBodyHelpers::writeObj(const char* filename, const btSoftBody* psb)
 {
-    std::ofstream fs;
-    fs.open(filename);
-    btAssert(fs);
-    for (int i = 0; i < psb->m_nodes.size(); ++i)
-    {
-        fs << "v";
-        for (int d = 0; d < 3; d++)
-        {
-             fs << " " << psb->m_nodes[i].m_x[d];
-        }
-        fs << "\n";
-    }
-    
-    for (int i = 0; i < psb->m_faces.size(); ++i)
-    {
-        fs << "f";
-        for (int n = 0; n < 3; n++)
-        {
-            fs << " " << psb->m_faces[i].m_n[n]->index + 1;
-        }
-        fs << "\n";
-    }
-    fs.close();
+	std::ofstream fs;
+	fs.open(filename);
+	btAssert(fs);
+
+	if (psb->m_tetras.size() > 0)
+	{
+		// For tetrahedron mesh, we need to re-index the surface mesh for it to be in obj file/
+		std::map<int, int> dict;
+		for (int i = 0; i < psb->m_faces.size(); i++)
+		{
+			for (int d = 0; d < 3; d++)
+			{
+				int index = psb->m_faces[i].m_n[d]->index;
+				if (dict.find(index) == dict.end())
+				{
+					int dict_size = dict.size();
+					dict[index] = dict_size;
+					fs << "v";
+					for (int k = 0; k < 3; k++)
+					{
+						fs << " " << psb->m_nodes[index].m_x[k];
+					}
+					fs << "\n";
+				}
+			}
+		}
+		// Write surface mesh.
+		for (int i = 0; i < psb->m_faces.size(); ++i)
+		{
+			fs << "f";
+			for (int n = 0; n < 3; n++)
+			{
+				fs << " " << dict[psb->m_faces[i].m_n[n]->index] + 1;
+			}
+			fs << "\n";
+		}
+	}
+	else
+	{
+		// For trimesh, directly write out all the nodes and faces.xs
+		for (int i = 0; i < psb->m_nodes.size(); ++i)
+		{
+			fs << "v";
+			for (int d = 0; d < 3; d++)
+			{
+				fs << " " << psb->m_nodes[i].m_x[d];
+			}
+			fs << "\n";
+		}
+
+		for (int i = 0; i < psb->m_faces.size(); ++i)
+		{
+			fs << "f";
+			for (int n = 0; n < 3; n++)
+			{
+				fs << " " << psb->m_faces[i].m_n[n]->index + 1;
+			}
+			fs << "\n";
+		}
+	}
+	fs.close();
 }
 
 void btSoftBodyHelpers::duplicateFaces(const char* filename, const btSoftBody* psb)
 {
-    std::ifstream fs_read;
-    fs_read.open(filename);
-    std::string line;
-    btVector3 pos;
-    btAlignedObjectArray<btAlignedObjectArray<int> > additional_faces;
-    while (std::getline(fs_read, line))
-    {
-        std::stringstream ss(line);
-        if (line[0] == 'v')
-        {
-        }
-        else if (line[0] == 'f')
-        {
-            ss.ignore();
-            int id0, id1, id2;
-            ss >> id0;
-            ss >> id1;
-            ss >> id2;
-            btAlignedObjectArray<int> new_face;
-            new_face.push_back(id1);
-            new_face.push_back(id0);
-            new_face.push_back(id2);
-            additional_faces.push_back(new_face);
-        }
-    }
-    fs_read.close();
+	std::ifstream fs_read;
+	fs_read.open(filename);
+	std::string line;
+	btVector3 pos;
+	btAlignedObjectArray<btAlignedObjectArray<int> > additional_faces;
+	while (std::getline(fs_read, line))
+	{
+		std::stringstream ss(line);
+		if (line[0] == 'v')
+		{
+		}
+		else if (line[0] == 'f')
+		{
+			ss.ignore();
+			int id0, id1, id2;
+			ss >> id0;
+			ss >> id1;
+			ss >> id2;
+			btAlignedObjectArray<int> new_face;
+			new_face.push_back(id1);
+			new_face.push_back(id0);
+			new_face.push_back(id2);
+			additional_faces.push_back(new_face);
+		}
+	}
+	fs_read.close();
 
-    std::ofstream fs_write;
-    fs_write.open(filename, std::ios_base::app);
-    for (int i = 0; i < additional_faces.size(); ++i)
-    {
-        fs_write << "f";
-        for (int n = 0; n < 3; n++)
-        {
-            fs_write << " " << additional_faces[i][n];
-        }
-        fs_write << "\n";
-    }
-    fs_write.close();
+	std::ofstream fs_write;
+	fs_write.open(filename, std::ios_base::app);
+	for (int i = 0; i < additional_faces.size(); ++i)
+	{
+		fs_write << "f";
+		for (int n = 0; n < 3; n++)
+		{
+			fs_write << " " << additional_faces[i][n];
+		}
+		fs_write << "\n";
+	}
+	fs_write.close();
 }
 
 // Given a simplex with vertices a,b,c,d, find the barycentric weights of p in this simplex
 void btSoftBodyHelpers::getBarycentricWeights(const btVector3& a, const btVector3& b, const btVector3& c, const btVector3& d, const btVector3& p, btVector4& bary)
 {
-    btVector3 vap = p - a;
-    btVector3 vbp = p - b;
-    
-    btVector3 vab = b - a;
-    btVector3 vac = c - a;
-    btVector3 vad = d - a;
-    
-    btVector3 vbc = c - b;
-    btVector3 vbd = d - b;
-    btScalar va6 = (vbp.cross(vbd)).dot(vbc);
-    btScalar vb6 = (vap.cross(vac)).dot(vad);
-    btScalar vc6 = (vap.cross(vad)).dot(vab);
-    btScalar vd6 = (vap.cross(vab)).dot(vac);
-    btScalar v6 = btScalar(1) / (vab.cross(vac).dot(vad));
-    bary = btVector4(va6*v6, vb6*v6, vc6*v6, vd6*v6);
+	btVector3 vap = p - a;
+	btVector3 vbp = p - b;
+
+	btVector3 vab = b - a;
+	btVector3 vac = c - a;
+	btVector3 vad = d - a;
+
+	btVector3 vbc = c - b;
+	btVector3 vbd = d - b;
+	btScalar va6 = (vbp.cross(vbd)).dot(vbc);
+	btScalar vb6 = (vap.cross(vac)).dot(vad);
+	btScalar vc6 = (vap.cross(vad)).dot(vab);
+	btScalar vd6 = (vap.cross(vab)).dot(vac);
+	btScalar v6 = btScalar(1) / (vab.cross(vac).dot(vad));
+	bary = btVector4(va6 * v6, vb6 * v6, vc6 * v6, vd6 * v6);
+}
+
+// Given a simplex with vertices a,b,c, find the barycentric weights of p in this simplex. bary[3] = 0.
+void btSoftBodyHelpers::getBarycentricWeights(const btVector3& a, const btVector3& b, const btVector3& c, const btVector3& p, btVector4& bary)
+{
+	btVector3 v0 = b - a, v1 = c - a, v2 = p - a;
+	btScalar d00 = btDot(v0, v0);
+	btScalar d01 = btDot(v0, v1);
+	btScalar d11 = btDot(v1, v1);
+	btScalar d20 = btDot(v2, v0);
+	btScalar d21 = btDot(v2, v1);
+	btScalar invDenom = 1.0 / (d00 * d11 - d01 * d01);
+	bary[1] = (d11 * d20 - d01 * d21) * invDenom;
+	bary[2] = (d00 * d21 - d01 * d20) * invDenom;
+	bary[0] = 1.0 - bary[1] - bary[2];
+	bary[3] = 0;
 }
 
 // Iterate through all render nodes to find the simulation tetrahedron that contains the render node and record the barycentric weights
 // If the node is not inside any tetrahedron, assign it to the tetrahedron in which the node has the least negative barycentric weight
 void btSoftBodyHelpers::interpolateBarycentricWeights(btSoftBody* psb)
 {
-    psb->m_renderNodesInterpolationWeights.resize(psb->m_renderNodes.size());
-    psb->m_renderNodesParents.resize(psb->m_renderNodes.size());
-    for (int i = 0; i < psb->m_renderNodes.size(); ++i)
-    {
-        const btVector3& p = psb->m_renderNodes[i].m_x;
-        btVector4 bary;
-        btVector4 optimal_bary;
-        btScalar min_bary_weight = -1e3;
-        btAlignedObjectArray<const btSoftBody::Node*> optimal_parents;
-        bool found = false;
-        for (int j = 0; j < psb->m_tetras.size(); ++j)
-        {
-            const btSoftBody::Tetra& t = psb->m_tetras[j];
-            getBarycentricWeights(t.m_n[0]->m_x, t.m_n[1]->m_x, t.m_n[2]->m_x, t.m_n[3]->m_x, p, bary);
-            btScalar new_min_bary_weight = bary[0];
-            for (int k = 1; k < 4; ++k)
-            {
-                new_min_bary_weight = btMin(new_min_bary_weight, bary[k]);
-            }
-            if (new_min_bary_weight > min_bary_weight)
-            {
-                btAlignedObjectArray<const btSoftBody::Node*> parents;
-                parents.push_back(t.m_n[0]);
-                parents.push_back(t.m_n[1]);
-                parents.push_back(t.m_n[2]);
-                parents.push_back(t.m_n[3]);
-                optimal_parents = parents;
-                optimal_bary = bary;
-                min_bary_weight = new_min_bary_weight;
-                // stop searching if p is inside the tetrahedron at hand
-                if (bary[0]>=0. && bary[1]>=0. && bary[2]>=0. && bary[3]>=0.)
-                {
-                    break;
-                }
-            }
-        }
-        psb->m_renderNodesInterpolationWeights[i] = optimal_bary;
-        psb->m_renderNodesParents[i] = optimal_parents;
-    }
+	psb->m_z.resize(0);
+	psb->m_renderNodesInterpolationWeights.resize(psb->m_renderNodes.size());
+	psb->m_renderNodesParents.resize(psb->m_renderNodes.size());
+	for (int i = 0; i < psb->m_renderNodes.size(); ++i)
+	{
+		const btVector3& p = psb->m_renderNodes[i].m_x;
+		btVector4 bary;
+		btVector4 optimal_bary;
+		btScalar min_bary_weight = -1e3;
+		btAlignedObjectArray<const btSoftBody::Node*> optimal_parents;
+		for (int j = 0; j < psb->m_tetras.size(); ++j)
+		{
+			const btSoftBody::Tetra& t = psb->m_tetras[j];
+			getBarycentricWeights(t.m_n[0]->m_x, t.m_n[1]->m_x, t.m_n[2]->m_x, t.m_n[3]->m_x, p, bary);
+			btScalar new_min_bary_weight = bary[0];
+			for (int k = 1; k < 4; ++k)
+			{
+				new_min_bary_weight = btMin(new_min_bary_weight, bary[k]);
+			}
+			if (new_min_bary_weight > min_bary_weight)
+			{
+				btAlignedObjectArray<const btSoftBody::Node*> parents;
+				parents.push_back(t.m_n[0]);
+				parents.push_back(t.m_n[1]);
+				parents.push_back(t.m_n[2]);
+				parents.push_back(t.m_n[3]);
+				optimal_parents = parents;
+				optimal_bary = bary;
+				min_bary_weight = new_min_bary_weight;
+				// stop searching if p is inside the tetrahedron at hand
+				if (bary[0] >= 0. && bary[1] >= 0. && bary[2] >= 0. && bary[3] >= 0.)
+				{
+					break;
+				}
+			}
+		}
+		psb->m_renderNodesInterpolationWeights[i] = optimal_bary;
+		psb->m_renderNodesParents[i] = optimal_parents;
+	}
+}
+
+// Iterate through all render nodes to find the simulation triangle that's closest to the node in the barycentric sense.
+void btSoftBodyHelpers::extrapolateBarycentricWeights(btSoftBody* psb)
+{
+	psb->m_renderNodesInterpolationWeights.resize(psb->m_renderNodes.size());
+	psb->m_renderNodesParents.resize(psb->m_renderNodes.size());
+	psb->m_z.resize(psb->m_renderNodes.size());
+	for (int i = 0; i < psb->m_renderNodes.size(); ++i)
+	{
+		const btVector3& p = psb->m_renderNodes[i].m_x;
+		btVector4 bary;
+		btVector4 optimal_bary;
+		btScalar min_bary_weight = -SIMD_INFINITY;
+		btAlignedObjectArray<const btSoftBody::Node*> optimal_parents;
+		btScalar dist = 0, optimal_dist = 0;
+		for (int j = 0; j < psb->m_faces.size(); ++j)
+		{
+			const btSoftBody::Face& f = psb->m_faces[j];
+			btVector3 n = btCross(f.m_n[1]->m_x - f.m_n[0]->m_x, f.m_n[2]->m_x - f.m_n[0]->m_x);
+			btVector3 unit_n = n.normalized();
+			dist = (p - f.m_n[0]->m_x).dot(unit_n);
+			btVector3 proj_p = p - dist * unit_n;
+			getBarycentricWeights(f.m_n[0]->m_x, f.m_n[1]->m_x, f.m_n[2]->m_x, proj_p, bary);
+			btScalar new_min_bary_weight = bary[0];
+			for (int k = 1; k < 3; ++k)
+			{
+				new_min_bary_weight = btMin(new_min_bary_weight, bary[k]);
+			}
+
+			// p is out of the current best triangle, we found a traingle that's better
+			bool better_than_closest_outisde = (new_min_bary_weight > min_bary_weight && min_bary_weight < 0.);
+			// p is inside of the current best triangle, we found a triangle that's better
+			bool better_than_best_inside = (new_min_bary_weight >= 0 && min_bary_weight >= 0 && btFabs(dist) < btFabs(optimal_dist));
+
+			if (better_than_closest_outisde || better_than_best_inside)
+			{
+				btAlignedObjectArray<const btSoftBody::Node*> parents;
+				parents.push_back(f.m_n[0]);
+				parents.push_back(f.m_n[1]);
+				parents.push_back(f.m_n[2]);
+				optimal_parents = parents;
+				optimal_bary = bary;
+				optimal_dist = dist;
+				min_bary_weight = new_min_bary_weight;
+			}
+		}
+		psb->m_renderNodesInterpolationWeights[i] = optimal_bary;
+		psb->m_renderNodesParents[i] = optimal_parents;
+		psb->m_z[i] = optimal_dist;
+	}
 }

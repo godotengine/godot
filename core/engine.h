@@ -61,6 +61,7 @@ private:
 	uint64_t _physics_frames;
 	float _physics_interpolation_fraction;
 	bool _portals_active;
+	bool _occlusion_culling_active;
 
 	uint64_t _idle_frames;
 	bool _in_physics;
@@ -100,6 +101,9 @@ public:
 
 	void set_frame_delay(uint32_t p_msec);
 	uint32_t get_frame_delay() const;
+
+	void set_print_error_messages(bool p_enabled);
+	bool is_printing_error_messages() const;
 
 	void add_singleton(const Singleton &p_singleton);
 	void get_singletons(List<Singleton> *p_singletons);

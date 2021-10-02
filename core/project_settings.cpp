@@ -54,11 +54,7 @@ String ProjectSettings::get_resource_path() const {
 };
 
 String ProjectSettings::localize_path(const String &p_path) const {
-	if (resource_path == "") {
-		return p_path; //not initialized yet
-	}
-
-	if (p_path.begins_with("res://") || p_path.begins_with("user://") ||
+	if (resource_path.empty() || p_path.begins_with("res://") || p_path.begins_with("user://") ||
 			(p_path.is_abs_path() && !p_path.begins_with(resource_path))) {
 		return p_path.simplify_path();
 	}
@@ -1024,6 +1020,7 @@ ProjectSettings::ProjectSettings() {
 	if (Engine::get_singleton()->has_singleton("GodotSharp")) {
 		extensions.push_back("cs");
 	}
+	extensions.push_back("gdshader");
 	extensions.push_back("shader");
 
 	GLOBAL_DEF("editor/main_run_args", "");
@@ -1196,6 +1193,9 @@ ProjectSettings::ProjectSettings() {
 	custom_prop_info["rendering/threads/thread_model"] = PropertyInfo(Variant::INT, "rendering/threads/thread_model", PROPERTY_HINT_ENUM, "Single-Unsafe,Single-Safe,Multi-Threaded");
 	custom_prop_info["physics/2d/thread_model"] = PropertyInfo(Variant::INT, "physics/2d/thread_model", PROPERTY_HINT_ENUM, "Single-Unsafe,Single-Safe,Multi-Threaded");
 	custom_prop_info["rendering/quality/intended_usage/framebuffer_allocation"] = PropertyInfo(Variant::INT, "rendering/quality/intended_usage/framebuffer_allocation", PROPERTY_HINT_ENUM, "2D,2D Without Sampling,3D,3D Without Effects");
+
+	GLOBAL_DEF("rendering/quality/filters/sharpen_intensity", 0.0);
+	custom_prop_info["rendering/quality/filters/sharpen_intensity"] = PropertyInfo(Variant::REAL, "rendering/quality/filters/sharpen_intensity", PROPERTY_HINT_RANGE, "0,1");
 
 	GLOBAL_DEF("debug/settings/profiler/max_functions", 16384);
 	custom_prop_info["debug/settings/profiler/max_functions"] = PropertyInfo(Variant::INT, "debug/settings/profiler/max_functions", PROPERTY_HINT_RANGE, "128,65535,1");

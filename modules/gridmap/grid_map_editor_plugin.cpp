@@ -261,6 +261,12 @@ void GridMapEditor::_update_cursor_transform() {
 	cursor_transform.basis *= node->get_cell_scale();
 	cursor_transform = node->get_global_transform() * cursor_transform;
 
+	if (selected_palette >= 0) {
+		if (node && !node->get_mesh_library().is_null()) {
+			cursor_transform *= node->get_mesh_library()->get_item_mesh_transform(selected_palette);
+		}
+	}
+
 	if (cursor_instance.is_valid()) {
 		VisualServer::get_singleton()->instance_set_transform(cursor_instance, cursor_transform);
 		VisualServer::get_singleton()->instance_set_visible(cursor_instance, cursor_visible);
@@ -682,7 +688,7 @@ bool GridMapEditor::forward_spatial_input_event(Camera *p_camera, const Ref<Inpu
 			}
 
 			if (mb->get_button_index() == BUTTON_LEFT && input_action == INPUT_SELECT) {
-				undo_redo->create_action("GridMap Selection");
+				undo_redo->create_action(TTR("GridMap Selection"));
 				undo_redo->add_do_method(this, "_set_selection", selection.active, selection.begin, selection.end);
 				undo_redo->add_undo_method(this, "_set_selection", last_selection.active, last_selection.begin, last_selection.end);
 				undo_redo->commit_action();

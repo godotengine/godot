@@ -81,10 +81,14 @@ public:
 	virtual bool is_key_pressed(int p_scancode) const = 0;
 	virtual bool is_mouse_button_pressed(int p_button) const = 0;
 	virtual bool is_joy_button_pressed(int p_device, int p_button) const = 0;
-	virtual bool is_action_pressed(const StringName &p_action) const = 0;
-	virtual bool is_action_just_pressed(const StringName &p_action) const = 0;
-	virtual bool is_action_just_released(const StringName &p_action) const = 0;
-	virtual float get_action_strength(const StringName &p_action) const = 0;
+	virtual bool is_action_pressed(const StringName &p_action, bool p_exact = false) const = 0;
+	virtual bool is_action_just_pressed(const StringName &p_action, bool p_exact = false) const = 0;
+	virtual bool is_action_just_released(const StringName &p_action, bool p_exact = false) const = 0;
+	virtual float get_action_strength(const StringName &p_action, bool p_exact = false) const = 0;
+	virtual float get_action_raw_strength(const StringName &p_action, bool p_exact = false) const = 0;
+
+	float get_axis(const StringName &p_negative_action, const StringName &p_positive_action) const;
+	Vector2 get_vector(const StringName &p_negative_x, const StringName &p_positive_x, const StringName &p_negative_y, const StringName &p_positive_y, float p_deadzone = -1.0f) const;
 
 	virtual float get_joy_axis(int p_device, int p_axis) const = 0;
 	virtual String get_joy_name(int p_idx) = 0;
@@ -132,8 +136,9 @@ public:
 	virtual int get_joy_axis_index_from_string(String p_axis) = 0;
 
 	virtual void parse_input_event(const Ref<InputEvent> &p_event) = 0;
-	virtual void accumulate_input_event(const Ref<InputEvent> &p_event) = 0;
-	virtual void flush_accumulated_events() = 0;
+	virtual void flush_buffered_events() = 0;
+	virtual bool is_using_input_buffering() = 0;
+	virtual void set_use_input_buffering(bool p_enable) = 0;
 	virtual void set_use_accumulated_input(bool p_enable) = 0;
 
 	Input();

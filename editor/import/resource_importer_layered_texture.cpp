@@ -79,6 +79,7 @@ void ResourceImporterLayeredTexture::get_import_options(List<ImportOption> *r_op
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "flags/repeat", PROPERTY_HINT_ENUM, "Disabled,Enabled,Mirrored"), 0));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "flags/filter"), true));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "flags/mipmaps"), p_preset == PRESET_COLOR_CORRECT ? 0 : 1));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "flags/anisotropic"), false));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "flags/srgb", PROPERTY_HINT_ENUM, "Disable,Enable"), p_preset == PRESET_3D ? 1 : 0));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "slices/horizontal", PROPERTY_HINT_RANGE, "1,256,1"), p_preset == PRESET_COLOR_CORRECT ? 16 : 8));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "slices/vertical", PROPERTY_HINT_RANGE, "1,256,1"), p_preset == PRESET_COLOR_CORRECT ? 1 : 8));
@@ -187,6 +188,7 @@ Error ResourceImporterLayeredTexture::import(const String &p_source_file, const 
 	int repeat = p_options["flags/repeat"];
 	bool filter = p_options["flags/filter"];
 	bool mipmaps = p_options["flags/mipmaps"];
+	bool anisotropic = p_options["flags/anisotropic"];
 	int srgb = p_options["flags/srgb"];
 	int hslices = p_options["slices/horizontal"];
 	int vslices = p_options["slices/vertical"];
@@ -210,6 +212,9 @@ Error ResourceImporterLayeredTexture::import(const String &p_source_file, const 
 	}
 	if (mipmaps || compress_mode == COMPRESS_VIDEO_RAM) {
 		tex_flags |= Texture::FLAG_MIPMAPS;
+	}
+	if (anisotropic) {
+		tex_flags |= Texture::FLAG_ANISOTROPIC_FILTER;
 	}
 	if (srgb == 1) {
 		tex_flags |= Texture::FLAG_CONVERT_TO_LINEAR;

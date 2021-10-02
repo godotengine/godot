@@ -10,40 +10,33 @@
 		[b]Note:[/b] After working on a Particles node, remember to update its [member visibility_aabb] by selecting it, clicking the [b]Particles[/b] menu at the top of the 3D editor viewport then choose [b]Generate Visibility AABB[/b]. Otherwise, particles may suddenly disappear depending on the camera position and angle.
 	</description>
 	<tutorials>
-		<link title="Controlling thousands of fish with Particles">https://docs.godotengine.org/en/3.3/tutorials/3d/vertex_animation/controlling_thousands_of_fish.html</link>
+		<link title="Controlling thousands of fish with Particles">https://docs.godotengine.org/en/3.4/tutorials/3d/vertex_animation/controlling_thousands_of_fish.html</link>
 		<link title="Third Person Shooter Demo">https://godotengine.org/asset-library/asset/678</link>
 	</tutorials>
 	<methods>
 		<method name="capture_aabb" qualifiers="const">
-			<return type="AABB">
-			</return>
+			<return type="AABB" />
 			<description>
 				Returns the axis-aligned bounding box that contains all the particles that are active in the current frame.
 			</description>
 		</method>
 		<method name="get_draw_pass_mesh" qualifiers="const">
-			<return type="Mesh">
-			</return>
-			<argument index="0" name="pass" type="int">
-			</argument>
+			<return type="Mesh" />
+			<argument index="0" name="pass" type="int" />
 			<description>
 				Returns the [Mesh] that is drawn at index [code]pass[/code].
 			</description>
 		</method>
 		<method name="restart">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Restarts the particle emission, clearing existing particles.
 			</description>
 		</method>
 		<method name="set_draw_pass_mesh">
-			<return type="void">
-			</return>
-			<argument index="0" name="pass" type="int">
-			</argument>
-			<argument index="1" name="mesh" type="Mesh">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="pass" type="int" />
+			<argument index="1" name="mesh" type="Mesh" />
 			<description>
 				Sets the [Mesh] that is drawn at index [code]pass[/code].
 			</description>

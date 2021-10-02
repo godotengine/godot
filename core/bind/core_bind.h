@@ -256,6 +256,7 @@ public:
 	Vector<String> get_cmdline_args();
 
 	String get_locale() const;
+	String get_locale_language() const;
 	String get_latin_keyboard_variant() const;
 	int keyboard_get_layout_count() const;
 	int keyboard_get_current_layout() const;
@@ -347,10 +348,9 @@ public:
 		SCREEN_ORIENTATION_SENSOR,
 	};
 
-	String get_system_dir(SystemDir p_dir) const;
+	String get_system_dir(SystemDir p_dir, bool p_shared_storage = true) const;
 
 	String get_user_data_dir() const;
-	String get_external_data_dir() const;
 	String get_config_dir() const;
 	String get_data_dir() const;
 	String get_cache_dir() const;
@@ -373,6 +373,9 @@ public:
 
 	void set_vsync_via_compositor(bool p_enable);
 	bool is_vsync_via_compositor_enabled() const;
+
+	void set_delta_smoothing(bool p_enabled);
+	bool is_delta_smoothing_enabled() const;
 
 	PowerState get_power_state();
 	int get_power_seconds_left();
@@ -739,6 +742,11 @@ public:
 	int get_integer_constant(const StringName &p_class, const StringName &p_name) const;
 	StringName get_category(const StringName &p_node) const;
 
+	bool has_enum(const StringName &p_class, const StringName &p_name, bool p_no_inheritance = false) const;
+	PoolStringArray get_enum_list(const StringName &p_class, bool p_no_inheritance = false) const;
+	PoolStringArray get_enum_constants(const StringName &p_class, const StringName &p_enum, bool p_no_inheritance = false) const;
+	StringName get_integer_constant_enum(const StringName &p_class, const StringName &p_name, bool p_no_inheritance = false) const;
+
 	bool is_class_enabled(StringName p_class) const;
 
 	_ClassDB();
@@ -789,6 +797,9 @@ public:
 
 	void set_editor_hint(bool p_enabled);
 	bool is_editor_hint() const;
+
+	void set_print_error_messages(bool p_enabled);
+	bool is_printing_error_messages() const;
 
 	_Engine();
 };

@@ -49,6 +49,11 @@ bool MultiNodeEdit::_set_impl(const StringName &p_name, const Variant &p_value, 
 		name = "script";
 	}
 
+	Node *node_path_target = nullptr;
+	if (p_value.get_type() == Variant::NODE_PATH && p_value != NodePath()) {
+		node_path_target = es->get_node(p_value);
+	}
+
 	UndoRedo *ur = EditorNode::get_undo_redo();
 
 	ur->create_action(TTR("MultiNode Set") + " " + String(name), UndoRedo::MERGE_ENDS);
@@ -63,9 +68,11 @@ bool MultiNodeEdit::_set_impl(const StringName &p_name, const Variant &p_value, 
 		}
 
 		if (p_value.get_type() == Variant::NODE_PATH) {
-			Node *tonode = n->get_node(p_value);
-			NodePath p_path = n->get_path_to(tonode);
-			ur->add_do_property(n, name, p_path);
+			NodePath path;
+			if (node_path_target) {
+				path = n->get_path_to(node_path_target);
+			}
+			ur->add_do_property(n, name, path);
 		} else {
 			Variant new_value;
 			if (p_field == "") {

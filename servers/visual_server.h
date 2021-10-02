@@ -60,7 +60,7 @@ protected:
 	RID white_texture;
 	RID test_material;
 
-	Error _surface_set_data(Array p_arrays, uint32_t p_format, uint32_t *p_offsets, uint32_t p_stride, PoolVector<uint8_t> &r_vertex_array, int p_vertex_array_len, PoolVector<uint8_t> &r_index_array, int p_index_array_len, AABB &r_aabb, Vector<AABB> &r_bone_aabb);
+	Error _surface_set_data(Array p_arrays, uint32_t p_format, uint32_t *p_offsets, uint32_t *p_stride, PoolVector<uint8_t> &r_vertex_array, int p_vertex_array_len, PoolVector<uint8_t> &r_index_array, int p_index_array_len, AABB &r_aabb, Vector<AABB> &r_bone_aabb);
 
 	static VisualServer *(*create_func)();
 	static void _bind_methods();
@@ -68,6 +68,10 @@ protected:
 public:
 	static VisualServer *get_singleton();
 	static VisualServer *create();
+	static Vector2 norm_to_oct(const Vector3 v);
+	static Vector2 tangent_to_oct(const Vector3 v, const float sign, const bool high_precision);
+	static Vector3 oct_to_norm(const Vector2 v);
+	static Vector3 oct_to_tangent(const Vector2 v, float *out_sign);
 
 	enum {
 
@@ -263,8 +267,9 @@ public:
 		ARRAY_FLAG_USE_2D_VERTICES = ARRAY_COMPRESS_INDEX << 1,
 		ARRAY_FLAG_USE_16_BIT_BONES = ARRAY_COMPRESS_INDEX << 2,
 		ARRAY_FLAG_USE_DYNAMIC_UPDATE = ARRAY_COMPRESS_INDEX << 3,
+		ARRAY_FLAG_USE_OCTAHEDRAL_COMPRESSION = ARRAY_COMPRESS_INDEX << 4,
 
-		ARRAY_COMPRESS_DEFAULT = ARRAY_COMPRESS_NORMAL | ARRAY_COMPRESS_TANGENT | ARRAY_COMPRESS_COLOR | ARRAY_COMPRESS_TEX_UV | ARRAY_COMPRESS_TEX_UV2 | ARRAY_COMPRESS_WEIGHTS
+		ARRAY_COMPRESS_DEFAULT = ARRAY_COMPRESS_NORMAL | ARRAY_COMPRESS_TANGENT | ARRAY_COMPRESS_COLOR | ARRAY_COMPRESS_TEX_UV | ARRAY_COMPRESS_TEX_UV2 | ARRAY_COMPRESS_WEIGHTS | ARRAY_FLAG_USE_OCTAHEDRAL_COMPRESSION
 
 	};
 
@@ -282,9 +287,9 @@ public:
 	virtual RID mesh_create() = 0;
 
 	virtual uint32_t mesh_surface_get_format_offset(uint32_t p_format, int p_vertex_len, int p_index_len, int p_array_index) const;
-	virtual uint32_t mesh_surface_get_format_stride(uint32_t p_format, int p_vertex_len, int p_index_len) const;
+	virtual uint32_t mesh_surface_get_format_stride(uint32_t p_format, int p_vertex_len, int p_index_len, int p_array_index) const;
 	/// Returns stride
-	virtual uint32_t mesh_surface_make_offsets_from_format(uint32_t p_format, int p_vertex_len, int p_index_len, uint32_t *r_offsets) const;
+	virtual void mesh_surface_make_offsets_from_format(uint32_t p_format, int p_vertex_len, int p_index_len, uint32_t *r_offsets, uint32_t *r_strides) const;
 	virtual void mesh_add_surface_from_arrays(RID p_mesh, PrimitiveType p_primitive, const Array &p_arrays, const Array &p_blend_shapes = Array(), uint32_t p_compress_format = ARRAY_COMPRESS_DEFAULT);
 	virtual void mesh_add_surface(RID p_mesh, uint32_t p_format, PrimitiveType p_primitive, const PoolVector<uint8_t> &p_array, int p_vertex_count, const PoolVector<uint8_t> &p_index_array, int p_index_count, const AABB &p_aabb, const Vector<PoolVector<uint8_t>> &p_blend_shapes = Vector<PoolVector<uint8_t>>(), const Vector<AABB> &p_bone_aabbs = Vector<AABB>()) = 0;
 
@@ -686,6 +691,7 @@ public:
 	virtual void viewport_set_msaa(RID p_viewport, ViewportMSAA p_msaa) = 0;
 	virtual void viewport_set_use_fxaa(RID p_viewport, bool p_fxaa) = 0;
 	virtual void viewport_set_use_debanding(RID p_viewport, bool p_debanding) = 0;
+	virtual void viewport_set_sharpen_intensity(RID p_viewport, float p_intensity) = 0;
 
 	enum ViewportUsage {
 		VIEWPORT_USAGE_2D,
@@ -772,7 +778,8 @@ public:
 		ENV_TONE_MAPPER_LINEAR,
 		ENV_TONE_MAPPER_REINHARD,
 		ENV_TONE_MAPPER_FILMIC,
-		ENV_TONE_MAPPER_ACES
+		ENV_TONE_MAPPER_ACES,
+		ENV_TONE_MAPPER_ACES_FITTED
 	};
 
 	virtual void environment_set_tonemap(RID p_env, EnvironmentToneMapper p_tone_mapper, float p_exposure, float p_white, bool p_auto_exposure, float p_min_luminance, float p_max_luminance, float p_auto_exp_speed, float p_auto_exp_grey) = 0;
@@ -874,7 +881,7 @@ public:
 
 	virtual RID portal_create() = 0;
 	virtual void portal_set_scenario(RID p_portal, RID p_scenario) = 0;
-	virtual void portal_set_geometry(RID p_portal, const Vector<Vector3> &p_points, float p_margin) = 0;
+	virtual void portal_set_geometry(RID p_portal, const Vector<Vector3> &p_points, real_t p_margin) = 0;
 	virtual void portal_link(RID p_portal, RID p_room_from, RID p_room_to, bool p_two_way) = 0;
 	virtual void portal_set_active(RID p_portal, bool p_active) = 0;
 
@@ -883,6 +890,20 @@ public:
 	virtual void roomgroup_prepare(RID p_roomgroup, ObjectID p_roomgroup_object_id) = 0;
 	virtual void roomgroup_set_scenario(RID p_roomgroup, RID p_scenario) = 0;
 	virtual void roomgroup_add_room(RID p_roomgroup, RID p_room) = 0;
+
+	// Occluders
+	enum OccluderType {
+		OCCLUDER_TYPE_UNDEFINED,
+		OCCLUDER_TYPE_SPHERE,
+		OCCLUDER_TYPE_NUM_TYPES,
+	};
+
+	virtual RID occluder_create() = 0;
+	virtual void occluder_set_scenario(RID p_occluder, RID p_scenario, VisualServer::OccluderType p_type) = 0;
+	virtual void occluder_spheres_update(RID p_occluder, const Vector<Plane> &p_spheres) = 0;
+	virtual void occluder_set_transform(RID p_occluder, const Transform &p_xform) = 0;
+	virtual void occluder_set_active(RID p_occluder, bool p_active) = 0;
+	virtual void set_use_occlusion_culling(bool p_enable) = 0;
 
 	// Rooms
 	enum RoomsDebugFeature {
@@ -897,12 +918,15 @@ public:
 	virtual void room_prepare(RID p_room, int32_t p_priority) = 0;
 	virtual void rooms_and_portals_clear(RID p_scenario) = 0;
 	virtual void rooms_unload(RID p_scenario) = 0;
-	virtual void rooms_finalize(RID p_scenario, bool p_generate_pvs, bool p_cull_using_pvs, bool p_use_secondary_pvs, bool p_use_signals, String p_pvs_filename) = 0;
+	virtual void rooms_finalize(RID p_scenario, bool p_generate_pvs, bool p_cull_using_pvs, bool p_use_secondary_pvs, bool p_use_signals, String p_pvs_filename, bool p_use_simple_pvs, bool p_log_pvs_generation) = 0;
 	virtual void rooms_override_camera(RID p_scenario, bool p_override, const Vector3 &p_point, const Vector<Plane> *p_convex) = 0;
 	virtual void rooms_set_active(RID p_scenario, bool p_active) = 0;
 	virtual void rooms_set_params(RID p_scenario, int p_portal_depth_limit) = 0;
 	virtual void rooms_set_debug_feature(RID p_scenario, RoomsDebugFeature p_feature, bool p_active) = 0;
 	virtual void rooms_update_gameplay_monitor(RID p_scenario, const Vector<Vector3> &p_camera_positions) = 0;
+
+	// don't use this in a game!
+	virtual bool rooms_is_loaded(RID p_scenario) const = 0;
 
 	// callbacks are used to send messages back from the visual server to scene tree in thread friendly manner
 	virtual void callbacks_register(VisualServerCallbacks *p_callbacks) = 0;

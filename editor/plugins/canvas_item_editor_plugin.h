@@ -211,6 +211,7 @@ private:
 		DRAG_ANCHOR_BOTTOM_RIGHT,
 		DRAG_ANCHOR_BOTTOM_LEFT,
 		DRAG_ANCHOR_ALL,
+		DRAG_QUEUED,
 		DRAG_MOVE,
 		DRAG_SCALE_X,
 		DRAG_SCALE_Y,
@@ -233,6 +234,10 @@ private:
 	HScrollBar *h_scroll;
 	VScrollBar *v_scroll;
 	HBoxContainer *hb;
+	// Used for secondary menu items which are displayed depending on the currently selected node
+	// (such as MeshInstance's "Mesh" menu).
+	PanelContainer *context_menu_container;
+	HBoxContainer *hbc_context_menu;
 
 	ToolButton *zoom_minus;
 	ToolButton *zoom_reset;
@@ -390,6 +395,7 @@ private:
 	Control *top_ruler;
 	Control *left_ruler;
 
+	Point2 drag_start_origin;
 	DragType drag_type;
 	Point2 drag_from;
 	Point2 drag_to;
@@ -417,7 +423,7 @@ private:
 	bool _is_node_locked(const Node *p_node);
 	bool _is_node_movable(const Node *p_node, bool p_popup_warning = false);
 	void _find_canvas_items_at_pos(const Point2 &p_pos, Node *p_node, Vector<_SelectResult> &r_items, const Transform2D &p_parent_xform = Transform2D(), const Transform2D &p_canvas_xform = Transform2D());
-	void _get_canvas_items_at_pos(const Point2 &p_pos, Vector<_SelectResult> &r_items);
+	void _get_canvas_items_at_pos(const Point2 &p_pos, Vector<_SelectResult> &r_items, bool p_allow_locked = false);
 	void _get_bones_at_pos(const Point2 &p_pos, Vector<_SelectResult> &r_items);
 
 	void _find_canvas_items_in_rect(const Rect2 &p_rect, Node *p_node, List<CanvasItem *> *r_items, const Transform2D &p_parent_xform = Transform2D(), const Transform2D &p_canvas_xform = Transform2D());
@@ -561,6 +567,7 @@ private:
 	void _update_bone_list();
 	void _tree_changed(Node *);
 
+	void _update_context_menu_stylebox();
 	void _popup_warning_temporarily(Control *p_control, const float p_duration);
 	void _popup_warning_depop(Control *p_control);
 

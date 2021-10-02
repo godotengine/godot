@@ -58,10 +58,9 @@ def add_module_version_string(self, s):
 
 
 def update_version(module_version_string=""):
-
     build_name = "custom_build"
     if os.getenv("BUILD_NAME") != None:
-        build_name = os.getenv("BUILD_NAME")
+        build_name = str(os.getenv("BUILD_NAME"))
         print("Using custom build name: " + build_name)
 
     import version
@@ -73,7 +72,13 @@ def update_version(module_version_string=""):
     f.write("#define VERSION_MAJOR " + str(version.major) + "\n")
     f.write("#define VERSION_MINOR " + str(version.minor) + "\n")
     f.write("#define VERSION_PATCH " + str(version.patch) + "\n")
-    f.write('#define VERSION_STATUS "' + str(version.status) + '"\n')
+    # For dev snapshots (alpha, beta, RC, etc.) we do not commit status change to Git,
+    # so this define provides a way to override it without having to modify the source.
+    godot_status = str(version.status)
+    if os.getenv("GODOT_VERSION_STATUS") != None:
+        godot_status = str(os.getenv("GODOT_VERSION_STATUS"))
+        print("Using version status '{}', overriding the original '{}'.".format(godot_status, str(version.status)))
+    f.write('#define VERSION_STATUS "' + godot_status + '"\n')
     f.write('#define VERSION_BUILD "' + str(build_name) + '"\n')
     f.write('#define VERSION_MODULE_CONFIG "' + str(version.module_config) + module_version_string + '"\n')
     f.write("#define VERSION_YEAR " + str(version.year) + "\n")
@@ -835,6 +840,10 @@ def using_clang(env):
     return "clang" in os.path.basename(env["CC"])
 
 
+def using_emcc(env):
+    return "emcc" in os.path.basename(env["CC"])
+
+
 def show_progress(env):
     import sys
     from SCons.Script import Progress, Command, AlwaysBuild
@@ -939,9 +948,12 @@ def show_progress(env):
             return total_size
 
     def progress_finish(target, source, env):
-        with open(node_count_data["fname"], "w") as f:
-            f.write("%d\n" % node_count_data["count"])
-        progressor.delete(progressor.file_list())
+        try:
+            with open(node_count_data["fname"], "w") as f:
+                f.write("%d\n" % node_count_data["count"])
+            progressor.delete(progressor.file_list())
+        except Exception:
+            pass
 
     try:
         with open(node_count_data["fname"]) as f:

@@ -32,6 +32,7 @@
 
 #include "core/engine.h"
 #include "core/project_settings.h"
+#include "core/version.h"
 
 #ifdef TOOLS_ENABLED
 #include "editor/editor_settings.h"
@@ -386,7 +387,10 @@ void SpatialMaterial::_update_shader() {
 
 	//must create a shader!
 
-	String code = "shader_type spatial;\nrender_mode ";
+	// Add a comment to describe the shader origin (useful when converting to ShaderMaterial).
+	String code = "// NOTE: Shader automatically converted from " VERSION_NAME " " VERSION_FULL_CONFIG "'s SpatialMaterial.\n\n";
+
+	code += "shader_type spatial;\nrender_mode ";
 	switch (blend_mode) {
 		case BLEND_MODE_MIX:
 			code += "blend_mix";
@@ -643,12 +647,10 @@ void SpatialMaterial::_update_shader() {
 			}
 		} break;
 		case BILLBOARD_FIXED_Y: {
-			code += "\tMODELVIEW_MATRIX = INV_CAMERA_MATRIX * mat4(CAMERA_MATRIX[0],WORLD_MATRIX[1],vec4(normalize(cross(CAMERA_MATRIX[0].xyz,WORLD_MATRIX[1].xyz)), 0.0),WORLD_MATRIX[3]);\n";
+			code += "\tMODELVIEW_MATRIX = INV_CAMERA_MATRIX * mat4(vec4(normalize(cross(vec3(0.0, 1.0, 0.0), CAMERA_MATRIX[2].xyz)),0.0),vec4(0.0, 1.0, 0.0, 0.0),vec4(normalize(cross(CAMERA_MATRIX[0].xyz, vec3(0.0, 1.0, 0.0))),0.0),WORLD_MATRIX[3]);\n";
 
 			if (flags[FLAG_BILLBOARD_KEEP_SCALE]) {
-				code += "\tMODELVIEW_MATRIX = MODELVIEW_MATRIX * mat4(vec4(length(WORLD_MATRIX[0].xyz), 0.0, 0.0, 0.0),vec4(0.0, 1.0, 0.0, 0.0),vec4(0.0, 0.0, length(WORLD_MATRIX[2].xyz), 0.0), vec4(0.0, 0.0, 0.0, 1.0));\n";
-			} else {
-				code += "\tMODELVIEW_MATRIX = MODELVIEW_MATRIX * mat4(vec4(1.0, 0.0, 0.0, 0.0),vec4(0.0, 1.0/length(WORLD_MATRIX[1].xyz), 0.0, 0.0), vec4(0.0, 0.0, 1.0, 0.0),vec4(0.0, 0.0, 0.0 ,1.0));\n";
+				code += "\tMODELVIEW_MATRIX = MODELVIEW_MATRIX * mat4(vec4(length(WORLD_MATRIX[0].xyz), 0.0, 0.0, 0.0),vec4(0.0, length(WORLD_MATRIX[1].xyz), 0.0, 0.0),vec4(0.0, 0.0, length(WORLD_MATRIX[2].xyz), 0.0),vec4(0.0, 0.0, 0.0, 1.0));\n";
 			}
 		} break;
 		case BILLBOARD_PARTICLES: {
@@ -1069,7 +1071,7 @@ void SpatialMaterial::flush_changes() {
 void SpatialMaterial::_queue_shader_change() {
 	material_mutex.lock();
 
-	if (!element.in_list()) {
+	if (is_initialized && !element.in_list()) {
 		dirty_materials->add(&element);
 	}
 
@@ -1398,10 +1400,7 @@ void SpatialMaterial::_validate_property(PropertyInfo &property) const {
 	_validate_feature("refraction", FEATURE_REFRACTION, property);
 	_validate_feature("detail", FEATURE_DETAIL, property);
 
-	_validate_high_end("refraction", property);
 	_validate_high_end("subsurf_scatter", property);
-	_validate_high_end("anisotropy", property);
-	_validate_high_end("clearcoat", property);
 	_validate_high_end("depth", property);
 
 	if (property.name.begins_with("particles_anim_") && billboard_mode != BILLBOARD_PARTICLES) {
@@ -2316,6 +2315,7 @@ SpatialMaterial::SpatialMaterial() :
 
 	current_key.key = 0;
 	current_key.invalid_key = 1;
+	is_initialized = true;
 	_queue_shader_change();
 }
 

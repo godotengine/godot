@@ -178,6 +178,7 @@ void EditorExportPlatformOSX::get_export_options(List<ExportOption> *r_options) 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "codesign/entitlements/calendars"), false));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "codesign/entitlements/photos_library"), false));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "codesign/entitlements/apple_events"), false));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "codesign/entitlements/debugging"), false));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "codesign/entitlements/app_sandbox/enabled"), false));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "codesign/entitlements/app_sandbox/network_server"), false));
@@ -843,6 +844,10 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 				}
 				if ((bool)p_preset->get("codesign/entitlements/apple_events")) {
 					ent_f->store_line("<key>com.apple.security.automation.apple-events</key>");
+					ent_f->store_line("<true/>");
+				}
+				if ((bool)p_preset->get("codesign/entitlements/debugging")) {
+					ent_f->store_line("<key>com.apple.security.get-task-allow</key>");
 					ent_f->store_line("<true/>");
 				}
 

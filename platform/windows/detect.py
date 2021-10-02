@@ -149,7 +149,7 @@ def setup_msvc_auto(env):
     env["TARGET_ARCH"] = None
     if env["bits"] != "default":
         env["TARGET_ARCH"] = {"32": "x86", "64": "x86_64"}[env["bits"]]
-    if env.has_key("msvc_version"):
+    if "msvc_version" in env:
         env["MSVC_VERSION"] = env["msvc_version"]
     env.Tool("msvc")
     env.Tool("mssdk")  # we want the MS SDK
@@ -168,7 +168,6 @@ def setup_mingw(env):
     """Set up env for use with mingw"""
     # Nothing to do here
     print("Using MinGW")
-    pass
 
 
 def configure_msvc(env, manual_msvc_config):

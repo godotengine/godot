@@ -19,9 +19,15 @@
 		</member>
 		<member name="collider_velocity" type="Vector3" setter="" getter="get_collider_velocity" default="Vector3( 0, 0, 0 )">
 		</member>
+		<member name="collision_depth" type="float" setter="" getter="get_collision_depth" default="0.0">
+		</member>
 		<member name="collision_normal" type="Vector3" setter="" getter="get_collision_normal" default="Vector3( 0, 0, 0 )">
 		</member>
 		<member name="collision_point" type="Vector3" setter="" getter="get_collision_point" default="Vector3( 0, 0, 0 )">
+		</member>
+		<member name="collision_safe_fraction" type="float" setter="" getter="get_collision_safe_fraction" default="0.0">
+		</member>
+		<member name="collision_unsafe_fraction" type="float" setter="" getter="get_collision_unsafe_fraction" default="0.0">
 		</member>
 		<member name="motion" type="Vector3" setter="" getter="get_motion" default="Vector3( 0, 0, 0 )">
 		</member>

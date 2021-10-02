@@ -560,17 +560,23 @@ String ShaderCompilerGLES3::_dump_node_code(const SL::Node *p_node, int p_level,
 			}
 
 			for (int i = 0; i < pnode->vconstants.size(); i++) {
+				const SL::ShaderNode::Constant &cnode = pnode->vconstants[i];
 				String gcode;
 				gcode += "const ";
 				if (pnode->vconstants[i].type == SL::TYPE_STRUCT) {
-					gcode += _mkid(pnode->vconstants[i].type_str);
+					gcode += _mkid(cnode.type_str);
 				} else {
-					gcode += _prestr(pnode->vconstants[i].precision);
-					gcode += _typestr(pnode->vconstants[i].type);
+					gcode += _prestr(cnode.precision);
+					gcode += _typestr(cnode.type);
 				}
-				gcode += " " + _mkid(String(pnode->vconstants[i].name));
+				gcode += " " + _mkid(String(cnode.name));
+				if (cnode.array_size > 0) {
+					gcode += "[";
+					gcode += itos(cnode.array_size);
+					gcode += "]";
+				}
 				gcode += "=";
-				gcode += _dump_node_code(pnode->vconstants[i].initializer, p_level, r_gen_code, p_actions, p_default_actions, p_assigning);
+				gcode += _dump_node_code(cnode.initializer, p_level, r_gen_code, p_actions, p_default_actions, p_assigning);
 				gcode += ";\n";
 				r_gen_code.vertex_global += gcode;
 				r_gen_code.fragment_global += gcode;
@@ -677,7 +683,7 @@ String ShaderCompilerGLES3::_dump_node_code(const SL::Node *p_node, int p_level,
 			SL::VariableNode *vnode = (SL::VariableNode *)p_node;
 			bool use_fragment_varying = false;
 
-			if (current_func_name != vertex_name) {
+			if (!vnode->is_local && current_func_name != vertex_name) {
 				if (p_assigning) {
 					if (shader->varyings.has(vnode->name)) {
 						use_fragment_varying = true;
@@ -796,7 +802,7 @@ String ShaderCompilerGLES3::_dump_node_code(const SL::Node *p_node, int p_level,
 			SL::ArrayNode *anode = (SL::ArrayNode *)p_node;
 			bool use_fragment_varying = false;
 
-			if (current_func_name != vertex_name) {
+			if (!anode->is_local && current_func_name != vertex_name) {
 				if (anode->assign_expression != nullptr) {
 					use_fragment_varying = true;
 				} else {
@@ -862,7 +868,29 @@ String ShaderCompilerGLES3::_dump_node_code(const SL::Node *p_node, int p_level,
 		} break;
 		case SL::Node::TYPE_CONSTANT: {
 			SL::ConstantNode *cnode = (SL::ConstantNode *)p_node;
-			return get_constant_text(cnode->datatype, cnode->values);
+
+			if (cnode->array_size == 0) {
+				return get_constant_text(cnode->datatype, cnode->values);
+			} else {
+				if (cnode->get_datatype() == SL::TYPE_STRUCT) {
+					code += _mkid(cnode->struct_name);
+				} else {
+					code += _typestr(cnode->datatype);
+				}
+				code += "[";
+				code += itos(cnode->array_size);
+				code += "]";
+				code += "(";
+				for (int i = 0; i < cnode->array_size; i++) {
+					if (i > 0) {
+						code += ",";
+					} else {
+						code += "";
+					}
+					code += _dump_node_code(cnode->array_declarations[0].initializer[i], p_level, r_gen_code, p_actions, p_default_actions, p_assigning);
+				}
+				code += ")";
+			}
 
 		} break;
 		case SL::Node::TYPE_OPERATOR: {
@@ -1031,7 +1059,13 @@ Error ShaderCompilerGLES3::compile(VS::ShaderMode p_mode, const String &p_code, 
 	if (err != OK) {
 		Vector<String> shader = p_code.split("\n");
 		for (int i = 0; i < shader.size(); i++) {
-			print_line(itos(i + 1) + " " + shader[i]);
+			if (i + 1 == parser.get_error_line()) {
+				// Mark the error line to be visible without having to look at
+				// the trace at the end.
+				print_line(vformat("E%4d-> %s", i + 1, shader[i]));
+			} else {
+				print_line(vformat("%5d | %s", i + 1, shader[i]));
+			}
 		}
 
 		_err_print_error(nullptr, p_path.utf8().get_data(), parser.get_error_line(), parser.get_error_text().utf8().get_data(), ERR_HANDLER_SHADER);

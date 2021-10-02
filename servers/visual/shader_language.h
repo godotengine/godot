@@ -357,11 +357,13 @@ public:
 		virtual DataType get_datatype() const { return datatype_cache; }
 		virtual String get_datatype_name() const { return String(struct_name); }
 		bool is_const;
+		bool is_local;
 
 		VariableNode() :
 				Node(TYPE_VARIABLE),
 				datatype_cache(TYPE_VOID),
-				is_const(false) {}
+				is_const(false),
+				is_local(false) {}
 	};
 
 	struct VariableDeclarationNode : public Node {
@@ -393,6 +395,7 @@ public:
 		Node *call_expression;
 		Node *assign_expression;
 		bool is_const;
+		bool is_local;
 
 		virtual DataType get_datatype() const { return datatype_cache; }
 		virtual String get_datatype_name() const { return String(struct_name); }
@@ -403,7 +406,8 @@ public:
 				index_expression(nullptr),
 				call_expression(nullptr),
 				assign_expression(nullptr),
-				is_const(false) {}
+				is_const(false),
+				is_local(false) {}
 	};
 
 	struct ArrayConstructNode : public Node {
@@ -441,6 +445,8 @@ public:
 
 	struct ConstantNode : public Node {
 		DataType datatype;
+		String struct_name = "";
+		int array_size = 0;
 
 		union Value {
 			bool boolean;
@@ -450,7 +456,9 @@ public:
 		};
 
 		Vector<Value> values;
+		Vector<ArrayDeclarationNode::Declaration> array_declarations;
 		virtual DataType get_datatype() const { return datatype; }
+		virtual String get_datatype_name() const { return struct_name; }
 
 		ConstantNode() :
 				Node(TYPE_CONSTANT),
@@ -570,6 +578,7 @@ public:
 			StringName type_str;
 			DataPrecision precision;
 			ConstantNode *initializer;
+			int array_size;
 		};
 
 		struct Function {
@@ -587,10 +596,9 @@ public:
 		struct Varying {
 			enum Stage {
 				STAGE_UNKNOWN,
-				STAGE_VERTEX, // transition stage to STAGE_VERTEX_TO_FRAGMENT or STAGE_VERTEX_TO_LIGHT, emits error if they are not used
-				STAGE_FRAGMENT, // transition stage to STAGE_FRAGMENT_TO_LIGHT, emits error if it's not used
-				STAGE_VERTEX_TO_FRAGMENT,
-				STAGE_VERTEX_TO_LIGHT,
+				STAGE_VERTEX, // transition stage to STAGE_VERTEX_TO_FRAGMENT_LIGHT, emits warning if it's not used
+				STAGE_FRAGMENT, // transition stage to STAGE_FRAGMENT_TO_LIGHT, emits warning if it's not used
+				STAGE_VERTEX_TO_FRAGMENT_LIGHT,
 				STAGE_FRAGMENT_TO_LIGHT,
 			};
 
@@ -702,6 +710,7 @@ public:
 	static String get_datatype_name(DataType p_type);
 	static bool is_token_nonvoid_datatype(TokenType p_type);
 	static bool is_token_operator(TokenType p_type);
+	static bool is_token_operator_assign(TokenType p_type);
 
 	static bool convert_constant(ConstantNode *p_constant, DataType p_to_type, ConstantNode::Value *p_value = nullptr);
 	static DataType get_scalar_type(DataType p_type);
@@ -751,6 +760,14 @@ private:
 
 	StringName current_function;
 	bool last_const = false;
+
+	struct VaryingUsage {
+		ShaderNode::Varying *var;
+		int line;
+	};
+	List<VaryingUsage> unknown_varying_usages;
+
+	bool _check_varying_usages(int *r_error_line, String *r_error_message) const;
 
 	TkPos _get_tkpos() {
 		TkPos tkp;

@@ -262,6 +262,7 @@ class ScriptEditor : public PanelContainer {
 	int history_pos;
 
 	List<String> previous_scripts;
+	List<int> script_close_queue;
 
 	void _tab_changed(int p_which);
 	void _menu_option(int p_option);
@@ -294,6 +295,7 @@ class ScriptEditor : public PanelContainer {
 	void _close_docs_tab();
 	void _close_other_tabs();
 	void _close_all_tabs();
+	void _queue_close_tabs();
 
 	void _copy_script_path();
 
@@ -303,6 +305,7 @@ class ScriptEditor : public PanelContainer {
 
 	bool pending_auto_reload;
 	bool auto_reload_running_scripts;
+	void _trigger_live_script_reload();
 	void _live_auto_reload_running_scripts();
 
 	void _update_selected_editor_menu();

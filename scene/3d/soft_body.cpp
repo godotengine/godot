@@ -52,9 +52,12 @@ void SoftBodyVisualServerHandler::prepare(RID p_mesh, int p_surface) {
 	const int surface_vertex_len = VS::get_singleton()->mesh_surface_get_array_len(mesh, p_surface);
 	const int surface_index_len = VS::get_singleton()->mesh_surface_get_array_index_len(mesh, p_surface);
 	uint32_t surface_offsets[VS::ARRAY_MAX];
+	uint32_t surface_strides[VS::ARRAY_MAX];
 
 	buffer = VS::get_singleton()->mesh_surface_get_array(mesh, surface);
-	stride = VS::get_singleton()->mesh_surface_make_offsets_from_format(surface_format, surface_vertex_len, surface_index_len, surface_offsets);
+	VS::get_singleton()->mesh_surface_make_offsets_from_format(surface_format, surface_vertex_len, surface_index_len, surface_offsets, surface_strides);
+	ERR_FAIL_COND(surface_strides[VS::ARRAY_VERTEX] != surface_strides[VS::ARRAY_NORMAL]);
+	stride = surface_strides[VS::ARRAY_VERTEX];
 	offset_vertices = surface_offsets[VS::ARRAY_VERTEX];
 	offset_normal = surface_offsets[VS::ARRAY_NORMAL];
 }
@@ -84,7 +87,12 @@ void SoftBodyVisualServerHandler::set_vertex(int p_vertex_id, const void *p_vect
 }
 
 void SoftBodyVisualServerHandler::set_normal(int p_vertex_id, const void *p_vector3) {
-	memcpy(&write_buffer[p_vertex_id * stride + offset_normal], p_vector3, sizeof(float) * 3);
+	Vector2 normal_oct = VisualServer::get_singleton()->norm_to_oct(*(Vector3 *)p_vector3);
+	int16_t v_normal[2] = {
+		(int16_t)CLAMP(normal_oct.x * 32767, -32768, 32767),
+		(int16_t)CLAMP(normal_oct.y * 32767, -32768, 32767),
+	};
+	memcpy(&write_buffer[p_vertex_id * stride + offset_normal], v_normal, sizeof(uint16_t) * 2);
 }
 
 void SoftBodyVisualServerHandler::set_aabb(const AABB &p_aabb) {
@@ -356,6 +364,11 @@ void SoftBody::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_drag_coefficient", "drag_coefficient"), &SoftBody::set_drag_coefficient);
 	ClassDB::bind_method(D_METHOD("get_drag_coefficient"), &SoftBody::get_drag_coefficient);
+
+	ClassDB::bind_method(D_METHOD("get_point_transform", "point_index"), &SoftBody::get_point_transform);
+
+	ClassDB::bind_method(D_METHOD("set_point_pinned", "point_index", "pinned", "attachment_path"), &SoftBody::pin_point, DEFVAL(NodePath()));
+	ClassDB::bind_method(D_METHOD("is_point_pinned", "point_index"), &SoftBody::is_point_pinned);
 
 	ClassDB::bind_method(D_METHOD("set_ray_pickable", "ray_pickable"), &SoftBody::set_ray_pickable);
 	ClassDB::bind_method(D_METHOD("is_ray_pickable"), &SoftBody::is_ray_pickable);

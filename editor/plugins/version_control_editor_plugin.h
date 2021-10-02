@@ -128,6 +128,7 @@ private:
 	void _discard_file(String p_file_path, EditorVCSInterface::ChangeType change);
 	void _cell_button_pressed(Object *p_item, int column, int id);
 	void _add_new_item(Tree *p_tree, String p_file_path, EditorVCSInterface::ChangeType change);
+	void _commit_message_gui_input(const Ref<InputEvent> &p_event);
 
 	friend class EditorVCSInterface;
 

@@ -47,10 +47,12 @@
 // implemented in GLES3 but not GLES2. Layer masks are not yet implemented for directional lights.
 
 #include "bvh_tree.h"
+#include "core/os/mutex.h"
 
 #define BVHTREE_CLASS BVH_Tree<T, 2, MAX_ITEMS, USE_PAIRS, Bounds, Point>
+#define BVH_LOCKED_FUNCTION BVHLockedFunction(&_mutex, BVH_THREAD_SAFE &&_thread_safe);
 
-template <class T, bool USE_PAIRS = false, int MAX_ITEMS = 32, class Bounds = AABB, class Point = Vector3>
+template <class T, bool USE_PAIRS = false, int MAX_ITEMS = 32, class Bounds = AABB, class Point = Vector3, bool BVH_THREAD_SAFE = true>
 class BVH_Manager {
 public:
 	// note we are using uint32_t instead of BVHHandle, losing type safety, but this
@@ -58,9 +60,15 @@ public:
 	typedef void *(*PairCallback)(void *, uint32_t, T *, int, uint32_t, T *, int);
 	typedef void (*UnpairCallback)(void *, uint32_t, T *, int, uint32_t, T *, int, void *);
 
+	// allow locally toggling thread safety if the template has been compiled with BVH_THREAD_SAFE
+	void params_set_thread_safe(bool p_enable) {
+		_thread_safe = p_enable;
+	}
+
 	// these 2 are crucial for fine tuning, and can be applied manually
 	// see the variable declarations for more info.
 	void params_set_node_expansion(real_t p_value) {
+		BVH_LOCKED_FUNCTION
 		if (p_value >= 0.0) {
 			tree._node_expansion = p_value;
 			tree._auto_node_expansion = false;
@@ -70,6 +78,7 @@ public:
 	}
 
 	void params_set_pairing_expansion(real_t p_value) {
+		BVH_LOCKED_FUNCTION
 		if (p_value >= 0.0) {
 			tree._pairing_expansion = p_value;
 			tree._auto_pairing_expansion = false;
@@ -79,15 +88,19 @@ public:
 	}
 
 	void set_pair_callback(PairCallback p_callback, void *p_userdata) {
+		BVH_LOCKED_FUNCTION
 		pair_callback = p_callback;
 		pair_callback_userdata = p_userdata;
 	}
 	void set_unpair_callback(UnpairCallback p_callback, void *p_userdata) {
+		BVH_LOCKED_FUNCTION
 		unpair_callback = p_callback;
 		unpair_callback_userdata = p_userdata;
 	}
 
 	BVHHandle create(T *p_userdata, bool p_active, const Bounds &p_aabb = Bounds(), int p_subindex = 0, bool p_pairable = false, uint32_t p_pairable_type = 0, uint32_t p_pairable_mask = 1) {
+		BVH_LOCKED_FUNCTION
+
 		// not sure if absolutely necessary to flush collisions here. It will cost performance to, instead
 		// of waiting for update, so only uncomment this if there are bugs.
 		if (USE_PAIRS) {
@@ -179,6 +192,7 @@ public:
 	////////////////////////////////////////////////////
 
 	void move(BVHHandle p_handle, const Bounds &p_aabb) {
+		BVH_LOCKED_FUNCTION
 		if (tree.item_move(p_handle, p_aabb)) {
 			if (USE_PAIRS) {
 				_add_changed_item(p_handle, p_aabb);
@@ -187,6 +201,7 @@ public:
 	}
 
 	void erase(BVHHandle p_handle) {
+		BVH_LOCKED_FUNCTION
 		// call unpair and remove all references to the item
 		// before deleting from the tree
 		if (USE_PAIRS) {
@@ -202,6 +217,7 @@ public:
 	// set pairable has never been called.
 	// (deferred collision checks are a workaround for visual server for historical reasons)
 	void force_collision_check(BVHHandle p_handle) {
+		BVH_LOCKED_FUNCTION
 		if (USE_PAIRS) {
 			// the aabb should already be up to date in the BVH
 			Bounds aabb;
@@ -219,6 +235,7 @@ public:
 	// but generically this makes items add or remove from the
 	// tree internally, to speed things up by ignoring inactive items
 	bool activate(BVHHandle p_handle, const Bounds &p_aabb, bool p_delay_collision_check = false) {
+		BVH_LOCKED_FUNCTION
 		// sending the aabb here prevents the need for the BVH to maintain
 		// a redundant copy of the aabb.
 		// returns success
@@ -242,6 +259,7 @@ public:
 	}
 
 	bool deactivate(BVHHandle p_handle) {
+		BVH_LOCKED_FUNCTION
 		// returns success
 		if (tree.item_deactivate(p_handle)) {
 			// call unpair and remove all references to the item
@@ -258,12 +276,14 @@ public:
 		return false;
 	}
 
-	bool get_active(BVHHandle p_handle) const {
+	bool get_active(BVHHandle p_handle) {
+		BVH_LOCKED_FUNCTION
 		return tree.item_get_active(p_handle);
 	}
 
 	// call e.g. once per frame (this does a trickle optimize)
 	void update() {
+		BVH_LOCKED_FUNCTION
 		tree.update();
 		_check_for_collisions();
 #ifdef BVH_INTEGRITY_CHECKS
@@ -273,11 +293,13 @@ public:
 
 	// this can be called more frequently than per frame if necessary
 	void update_collisions() {
+		BVH_LOCKED_FUNCTION
 		_check_for_collisions();
 	}
 
 	// prefer calling this directly as type safe
 	void set_pairable(const BVHHandle &p_handle, bool p_pairable, uint32_t p_pairable_type, uint32_t p_pairable_mask, bool p_force_collision_check = true) {
+		BVH_LOCKED_FUNCTION
 		// Returns true if the pairing state has changed.
 		bool state_changed = tree.item_set_pairable(p_handle, p_pairable, p_pairable_type, p_pairable_mask);
 
@@ -286,7 +308,7 @@ public:
 			// of waiting for update, so only uncomment this if there are bugs.
 			//_check_for_collisions();
 
-			if ((p_force_collision_check || state_changed) && get_active(p_handle)) {
+			if ((p_force_collision_check || state_changed) && tree.item_get_active(p_handle)) {
 				// when the pairable state changes, we need to force a collision check because newly pairable
 				// items may be in collision, and unpairable items might move out of collision.
 				// We cannot depend on waiting for the next update, because that may come much later.
@@ -308,6 +330,7 @@ public:
 
 	// cull tests
 	int cull_aabb(const Bounds &p_aabb, T **p_result_array, int p_result_max, int *p_subindex_array = nullptr, uint32_t p_mask = 0xFFFFFFFF) {
+		BVH_LOCKED_FUNCTION
 		typename BVHTREE_CLASS::CullParams params;
 
 		params.result_count_overall = 0;
@@ -325,6 +348,7 @@ public:
 	}
 
 	int cull_segment(const Point &p_from, const Point &p_to, T **p_result_array, int p_result_max, int *p_subindex_array = nullptr, uint32_t p_mask = 0xFFFFFFFF) {
+		BVH_LOCKED_FUNCTION
 		typename BVHTREE_CLASS::CullParams params;
 
 		params.result_count_overall = 0;
@@ -343,6 +367,7 @@ public:
 	}
 
 	int cull_point(const Point &p_point, T **p_result_array, int p_result_max, int *p_subindex_array = nullptr, uint32_t p_mask = 0xFFFFFFFF) {
+		BVH_LOCKED_FUNCTION
 		typename BVHTREE_CLASS::CullParams params;
 
 		params.result_count_overall = 0;
@@ -359,6 +384,7 @@ public:
 	}
 
 	int cull_convex(const Vector<Plane> &p_convex, T **p_result_array, int p_result_max, uint32_t p_mask = 0xFFFFFFFF) {
+		BVH_LOCKED_FUNCTION
 		if (!p_convex.size()) {
 			return 0;
 		}
@@ -680,6 +706,38 @@ private:
 	LocalVector<BVHHandle, uint32_t, true> changed_items;
 	uint32_t _tick;
 
+	class BVHLockedFunction {
+	public:
+		BVHLockedFunction(Mutex *p_mutex, bool p_thread_safe) {
+			// will be compiled out if not set in template
+			if (p_thread_safe) {
+				_mutex = p_mutex;
+
+				if (_mutex->try_lock() != OK) {
+					WARN_PRINT("Info : multithread BVH access detected (benign)");
+					_mutex->lock();
+				}
+
+			} else {
+				_mutex = nullptr;
+			}
+		}
+		~BVHLockedFunction() {
+			// will be compiled out if not set in template
+			if (_mutex) {
+				_mutex->unlock();
+			}
+		}
+
+	private:
+		Mutex *_mutex;
+	};
+
+	Mutex _mutex;
+
+	// local toggle for turning on and off thread safety in project settings
+	bool _thread_safe;
+
 public:
 	BVH_Manager() {
 		_tick = 1; // start from 1 so items with 0 indicate never updated
@@ -687,6 +745,7 @@ public:
 		unpair_callback = nullptr;
 		pair_callback_userdata = nullptr;
 		unpair_callback_userdata = nullptr;
+		_thread_safe = BVH_THREAD_SAFE;
 	}
 };
 

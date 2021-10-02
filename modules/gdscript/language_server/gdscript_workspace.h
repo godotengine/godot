@@ -43,6 +43,8 @@ class GDScriptWorkspace : public Reference {
 private:
 	void _get_owners(EditorFileSystemDirectory *efsd, String p_path, List<String> &owners);
 	Node *_get_owner_scene_node(String p_path);
+	const lsp::DocumentSymbol *get_parameter_symbol(const lsp::DocumentSymbol *p_parent, const String &symbol_identifier);
+	const lsp::DocumentSymbol *get_local_symbol(const ExtendGDScriptParser *p_parser, const String &p_symbol_identifier);
 
 protected:
 	static void _bind_methods();
@@ -59,6 +61,8 @@ protected:
 	ExtendGDScriptParser *get_parse_result(const String &p_path);
 
 	void list_script_files(const String &p_root_dir, List<String> &r_files);
+
+	void apply_new_signal(Object *obj, String function, PoolStringArray args);
 
 public:
 	String root;
@@ -83,12 +87,13 @@ public:
 	void publish_diagnostics(const String &p_path);
 	void completion(const lsp::CompletionParams &p_params, List<ScriptCodeCompletionOption> *r_options);
 
-	const lsp::DocumentSymbol *resolve_symbol(const lsp::TextDocumentPositionParams &p_doc_pos, const String &p_symbol_name = "", bool p_func_requred = false);
+	const lsp::DocumentSymbol *resolve_symbol(const lsp::TextDocumentPositionParams &p_doc_pos, const String &p_symbol_name = "", bool p_func_required = false);
 	void resolve_related_symbols(const lsp::TextDocumentPositionParams &p_doc_pos, List<const lsp::DocumentSymbol *> &r_list);
 	const lsp::DocumentSymbol *resolve_native_symbol(const lsp::NativeSymbolInspectParams &p_params);
 	void resolve_document_links(const String &p_uri, List<lsp::DocumentLink> &r_list);
 	Dictionary generate_script_api(const String &p_path);
 	Error resolve_signature(const lsp::TextDocumentPositionParams &p_doc_pos, lsp::SignatureHelp &r_signature);
+	Dictionary rename(const lsp::TextDocumentPositionParams &p_doc_pos, const String &new_name);
 
 	void did_delete_files(const Dictionary &p_params);
 

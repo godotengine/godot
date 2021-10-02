@@ -131,6 +131,10 @@ void VisualServerViewport::_draw_viewport(Viewport *p_viewport, ARVRInterface::E
 				if (cl->enabled && cl->texture.is_valid()) {
 					//not super efficient..
 					Size2 tsize = VSG::storage->texture_size_with_proxy(cl->texture);
+					// Skip using lights with texture of 0 size
+					if (!tsize.x || !tsize.y) {
+						continue;
+					}
 					tsize *= cl->scale;
 
 					Vector2 offset = tsize / 2.0;
@@ -628,6 +632,13 @@ void VisualServerViewport::viewport_set_use_debanding(RID p_viewport, bool p_deb
 	ERR_FAIL_COND(!viewport);
 
 	VSG::storage->render_target_set_use_debanding(viewport->render_target, p_debanding);
+}
+
+void VisualServerViewport::viewport_set_sharpen_intensity(RID p_viewport, float p_intensity) {
+	Viewport *viewport = viewport_owner.getornull(p_viewport);
+	ERR_FAIL_COND(!viewport);
+
+	VSG::storage->render_target_set_sharpen_intensity(viewport->render_target, p_intensity);
 }
 
 void VisualServerViewport::viewport_set_hdr(RID p_viewport, bool p_enabled) {

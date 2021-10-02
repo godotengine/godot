@@ -456,6 +456,7 @@ int Skeleton::get_bone_count() const {
 void Skeleton::set_bone_parent(int p_bone, int p_parent) {
 	ERR_FAIL_INDEX(p_bone, bones.size());
 	ERR_FAIL_COND(p_parent != -1 && (p_parent < 0));
+	ERR_FAIL_COND(p_bone == p_parent);
 
 	bones.write[p_bone].parent = p_parent;
 	process_order_dirty = true;

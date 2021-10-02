@@ -56,7 +56,6 @@ private:
 	bool menu_hovered;
 	int highlight_arrow;
 	TabAlign align;
-	Control *_get_tab(int p_idx) const;
 	int _get_top_margin() const;
 	mutable ObjectID popup_obj_id;
 	bool drag_to_rearrange_enabled;
@@ -76,6 +75,7 @@ protected:
 	void _gui_input(const Ref<InputEvent> &p_event);
 	void _notification(int p_what);
 	virtual void add_child_notify(Node *p_child);
+	virtual void move_child_notify(Node *p_child);
 	virtual void remove_child_notify(Node *p_child);
 
 	Variant get_drag_data(const Point2 &p_point);

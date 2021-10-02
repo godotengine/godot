@@ -75,16 +75,15 @@ subject to the following restrictions:
 // -- GODOT end --
 
 #ifdef DEBUG_ENABLED
-#define CHULL_ASSERT(m_cond)                                    \
-	do {                                                        \
-		if (unlikely(!(m_cond))) {                              \
-			ERR_PRINT("Assertion \"" _STR(m_cond) "\" failed.") \
-		}                                                       \
-	} while (0)
+#define CHULL_ASSERT(m_cond)                                 \
+	if (unlikely(!(m_cond))) {                               \
+		ERR_PRINT("Assertion \"" _STR(m_cond) "\" failed."); \
+	} else                                                   \
+		((void)0)
 #else
 #define CHULL_ASSERT(m_cond) \
 	do {                     \
-	} while (0)
+	} while (false)
 #endif
 
 #if defined(DEBUG_CONVEX_HULL) || defined(SHOW_ITERATIONS)
@@ -1047,8 +1046,8 @@ void ConvexHullInternal::compute_internal(int32_t p_start, int32_t p_end, Interm
 
 				return;
 			}
+			FALLTHROUGH;
 		}
-		// lint -fallthrough
 		case 1: {
 			Vertex *v = original_vertices[p_start];
 			v->edges = nullptr;
@@ -2268,10 +2267,21 @@ Error ConvexHullComputer::convex_hull(const Vector3 *p_points, int32_t p_point_c
 
 	r_mesh.vertices = ch.vertices;
 
-	r_mesh.edges.resize(ch.edges.size());
+	// Copy the edges over. There's two "half-edges" for every edge, so we pick only one of them.
+	r_mesh.edges.resize(ch.edges.size() / 2);
+	uint32_t edges_copied = 0;
 	for (uint32_t i = 0; i < ch.edges.size(); i++) {
-		r_mesh.edges.write[i].a = (&ch.edges[i])->get_source_vertex();
-		r_mesh.edges.write[i].b = (&ch.edges[i])->get_target_vertex();
+		uint32_t a = (&ch.edges[i])->get_source_vertex();
+		uint32_t b = (&ch.edges[i])->get_target_vertex();
+		if (a < b) { // Copy only the "canonical" edge. For the reverse edge, this will be false.
+			ERR_BREAK(edges_copied >= (uint32_t)r_mesh.edges.size());
+			r_mesh.edges.write[edges_copied].a = a;
+			r_mesh.edges.write[edges_copied].b = b;
+			edges_copied++;
+		}
+	}
+	if (edges_copied != (uint32_t)r_mesh.edges.size()) {
+		ERR_PRINT("Invalid edge count.");
 	}
 
 	r_mesh.faces.resize(ch.faces.size());
@@ -2286,9 +2296,18 @@ Error ConvexHullComputer::convex_hull(const Vector3 *p_points, int32_t p_point_c
 			e = e->get_next_edge_of_face();
 		} while (e != e_start);
 
+		// reverse indices: Godot wants clockwise, but this is counter-clockwise
+		if (face.indices.size() > 2) {
+			// reverse all but the first index.
+			int *indices = face.indices.ptrw();
+			for (int c = 0; c < (face.indices.size() - 1) / 2; c++) {
+				SWAP(indices[c + 1], indices[face.indices.size() - 1 - c]);
+			}
+		}
+
 		// compute normal
 		if (face.indices.size() >= 3) {
-			face.plane = Plane(r_mesh.vertices[face.indices[0]], r_mesh.vertices[face.indices[2]], r_mesh.vertices[face.indices[1]]);
+			face.plane = Plane(r_mesh.vertices[face.indices[0]], r_mesh.vertices[face.indices[1]], r_mesh.vertices[face.indices[2]]);
 		} else {
 			WARN_PRINT("Too few vertices per face.");
 		}

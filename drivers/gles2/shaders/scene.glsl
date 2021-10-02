@@ -31,10 +31,18 @@ precision highp int;
 
 attribute highp vec4 vertex_attrib; // attrib:0
 /* clang-format on */
+#ifdef ENABLE_OCTAHEDRAL_COMPRESSION
+attribute vec4 normal_tangent_attrib; // attrib:1
+#else
 attribute vec3 normal_attrib; // attrib:1
+#endif
 
 #if defined(ENABLE_TANGENT_INTERP) || defined(ENABLE_NORMALMAP)
+#ifdef ENABLE_OCTAHEDRAL_COMPRESSION
+// packed into normal_attrib zw component
+#else
 attribute vec4 tangent_attrib; // attrib:2
+#endif
 #endif
 
 #if defined(ENABLE_COLOR_INTERP)
@@ -101,6 +109,15 @@ uniform float light_normal_bias;
 #endif
 
 uniform highp int view_index;
+
+#ifdef ENABLE_OCTAHEDRAL_COMPRESSION
+vec3 oct_to_vec3(vec2 e) {
+	vec3 v = vec3(e.xy, 1.0 - abs(e.x) - abs(e.y));
+	float t = max(-v.z, 0.0);
+	v.xy += t * -sign(v.xy);
+	return normalize(v);
+}
+#endif
 
 //
 // varyings
@@ -258,13 +275,13 @@ void light_compute(
 		vec3 H = normalize(V + L);
 		float cNdotH = max(dot(N, H), 0.0);
 		float shininess = exp2(15.0 * (1.0 - roughness) + 1.0) * 0.25;
-		float blinn = pow(cNdotH, shininess) * cNdotL;
-		blinn *= (shininess + 8.0) * (1.0 / (8.0 * M_PI));
+		float blinn = pow(cNdotH, shininess);
+		blinn *= (shininess + 2.0) * (1.0 / (8.0 * M_PI));
 		specular_brdf_NL = blinn;
 #endif
 
 		SRGB_APPROX(specular_brdf_NL)
-		specular_interp += specular_brdf_NL * light_color * attenuation * (1.0 / M_PI);
+		specular_interp += specular_brdf_NL * light_color * attenuation;
 	}
 }
 
@@ -341,11 +358,20 @@ void main() {
 
 #endif
 
+#ifdef ENABLE_OCTAHEDRAL_COMPRESSION
+	vec3 normal = oct_to_vec3(normal_tangent_attrib.xy);
+#else
 	vec3 normal = normal_attrib;
+#endif
 
 #if defined(ENABLE_TANGENT_INTERP) || defined(ENABLE_NORMALMAP)
+#ifdef ENABLE_OCTAHEDRAL_COMPRESSION
+	vec3 tangent = oct_to_vec3(vec2(normal_tangent_attrib.z, abs(normal_tangent_attrib.w) * 2.0 - 1.0));
+	float binormalf = sign(normal_tangent_attrib.w);
+#else
 	vec3 tangent = tangent_attrib.xyz;
 	float binormalf = tangent_attrib.a;
+#endif
 	vec3 binormal = normalize(cross(normal, tangent) * binormalf);
 #endif
 
@@ -1252,6 +1278,11 @@ LIGHT_SHADER_CODE
 	float NdotV = dot(N, V);
 	float cNdotV = max(abs(NdotV), 1e-6);
 
+/* Make a default specular mode SPECULAR_SCHLICK_GGX. */
+#if !defined(SPECULAR_DISABLED) && !defined(SPECULAR_SCHLICK_GGX) && !defined(SPECULAR_BLINN) && !defined(SPECULAR_PHONG) && !defined(SPECULAR_TOON)
+#define SPECULAR_SCHLICK_GGX
+#endif
+
 #if defined(DIFFUSE_BURLEY) || defined(SPECULAR_BLINN) || defined(SPECULAR_SCHLICK_GGX) || defined(LIGHT_USE_CLEARCOAT)
 	vec3 H = normalize(V + L);
 #endif
@@ -1334,7 +1365,7 @@ LIGHT_SHADER_CODE
 
 	if (roughness > 0.0) {
 
-#if defined(SPECULAR_SCHLICK_GGX)
+#if defined(SPECULAR_SCHLICK_GGX) || defined(SPECULAR_BLINN) || defined(SPECULAR_PHONG)
 		vec3 specular_brdf_NL = vec3(0.0);
 #else
 		float specular_brdf_NL = 0.0;
@@ -1344,9 +1375,10 @@ LIGHT_SHADER_CODE
 
 		//normalized blinn
 		float shininess = exp2(15.0 * (1.0 - roughness) + 1.0) * 0.25;
-		float blinn = pow(cNdotH, shininess) * cNdotL;
-		blinn *= (shininess + 8.0) * (1.0 / (8.0 * M_PI));
-		specular_brdf_NL = blinn;
+		float blinn = pow(cNdotH, shininess);
+		blinn *= (shininess + 2.0) * (1.0 / (8.0 * M_PI));
+
+		specular_brdf_NL = blinn * diffuse_color * specular;
 
 #elif defined(SPECULAR_PHONG)
 
@@ -1354,8 +1386,9 @@ LIGHT_SHADER_CODE
 		float cRdotV = max(0.0, dot(R, V));
 		float shininess = exp2(15.0 * (1.0 - roughness) + 1.0) * 0.25;
 		float phong = pow(cRdotV, shininess);
-		phong *= (shininess + 8.0) * (1.0 / (8.0 * M_PI));
-		specular_brdf_NL = (phong) / max(4.0 * cNdotV * cNdotL, 0.75);
+		phong *= (shininess + 1.0) * (1.0 / (8.0 * M_PI));
+
+		specular_brdf_NL = phong * diffuse_color * specular;
 
 #elif defined(SPECULAR_TOON)
 
@@ -1655,11 +1688,13 @@ FRAGMENT_SHADER_CODE
 #ifdef USE_RADIANCE_MAP
 
 	vec3 ref_vec = reflect(-eye_position, N);
+	float horizon = min(1.0 + dot(ref_vec, normal), 1.0);
 	ref_vec = normalize((radiance_inverse_xform * vec4(ref_vec, 0.0)).xyz);
 
 	ref_vec.z *= -1.0;
 
 	specular_light = textureCubeLod(radiance_map, ref_vec, roughness * RADIANCE_MAX_LOD).xyz * bg_energy;
+	specular_light *= horizon * horizon;
 #ifndef USE_LIGHTMAP
 	{
 		vec3 ambient_dir = normalize((radiance_inverse_xform * vec4(normal, 0.0)).xyz);
@@ -2139,8 +2174,7 @@ FRAGMENT_SHADER_CODE
 
 #ifdef USE_VERTEX_LIGHTING
 	//vertex lighting
-
-	specular_light += specular_interp * specular_blob_intensity * light_att;
+	specular_light += specular_interp * albedo * specular * specular_blob_intensity * light_att;
 	diffuse_light += diffuse_interp * albedo * light_att;
 
 #else
@@ -2272,6 +2306,11 @@ FRAGMENT_SHADER_CODE
 #endif // defined(FOG_DEPTH_ENABLED) || defined(FOG_HEIGHT_ENABLED)
 
 #endif //unshaded
+
+#ifdef OUTPUT_LINEAR
+	// sRGB -> linear
+	gl_FragColor.rgb = mix(pow((gl_FragColor.rgb + vec3(0.055)) * (1.0 / (1.0 + 0.055)), vec3(2.4)), gl_FragColor.rgb * (1.0 / 12.92), vec3(lessThan(gl_FragColor.rgb, vec3(0.04045))));
+#endif
 
 #else // not RENDER_DEPTH
 //depth render

@@ -163,7 +163,7 @@ void ExtendGDScriptParser::parse_class_symbol(const GDScriptParser::ClassNode *p
 
 		lsp::DocumentSymbol symbol;
 		symbol.name = m.identifier;
-		symbol.kind = lsp::SymbolKind::Variable;
+		symbol.kind = m.setter == "" && m.getter == "" ? lsp::SymbolKind::Variable : lsp::SymbolKind::Property;
 		symbol.deprecated = false;
 		const int line = LINE_NUMBER_TO_INDEX(m.line);
 		symbol.range.start.line = line;
@@ -289,7 +289,7 @@ void ExtendGDScriptParser::parse_function_symbol(const GDScriptParser::FunctionN
 	const String uri = get_uri();
 
 	r_symbol.name = p_func->name;
-	r_symbol.kind = lsp::SymbolKind::Function;
+	r_symbol.kind = p_func->_static ? lsp::SymbolKind::Function : lsp::SymbolKind::Method;
 	r_symbol.detail = "func " + p_func->name + "(";
 	r_symbol.deprecated = false;
 	const int line = LINE_NUMBER_TO_INDEX(p_func->line);
@@ -409,6 +409,12 @@ String ExtendGDScriptParser::parse_documentation(int p_line, bool p_docs_down) {
 				doc_lines.push_front(line_comment);
 			}
 		} else {
+			if (i > 0 && i < lines.size() - 1) {
+				String next_line = lines[i + step].strip_edges(true, false);
+				if (next_line.begins_with("#")) {
+					continue;
+				}
+			}
 			break;
 		}
 	}
@@ -440,7 +446,7 @@ String ExtendGDScriptParser::get_text_for_completion(const lsp::Position &p_curs
 	return longthing;
 }
 
-String ExtendGDScriptParser::get_text_for_lookup_symbol(const lsp::Position &p_cursor, const String &p_symbol, bool p_func_requred) const {
+String ExtendGDScriptParser::get_text_for_lookup_symbol(const lsp::Position &p_cursor, const String &p_symbol, bool p_func_required) const {
 	String longthing;
 	int len = lines.size();
 	for (int i = 0; i < len; i++) {
@@ -462,7 +468,7 @@ String ExtendGDScriptParser::get_text_for_lookup_symbol(const lsp::Position &p_c
 
 			longthing += first_part;
 			longthing += String::chr(0xFFFF); //not unicode, represents the cursor
-			if (p_func_requred) {
+			if (p_func_required) {
 				longthing += "("; // tell the parser this is a function call
 			}
 			longthing += last_part;
@@ -481,6 +487,9 @@ String ExtendGDScriptParser::get_text_for_lookup_symbol(const lsp::Position &p_c
 String ExtendGDScriptParser::get_identifier_under_position(const lsp::Position &p_position, Vector2i &p_offset) const {
 	ERR_FAIL_INDEX_V(p_position.line, lines.size(), "");
 	String line = lines[p_position.line];
+	if (line.empty()) {
+		return "";
+	}
 	ERR_FAIL_INDEX_V(p_position.character, line.size(), "");
 
 	int start_pos = p_position.character;

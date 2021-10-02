@@ -928,7 +928,7 @@ static Ref<SpatialMaterial> red_mat;
 static Ref<SpatialMaterial> blue_mat;
 #endif
 
-bool SpaceBullet::test_body_motion(RigidBodyBullet *p_body, const Transform &p_from, const Vector3 &p_motion, bool p_infinite_inertia, PhysicsServer::MotionResult *r_result, bool p_exclude_raycast_shapes) {
+bool SpaceBullet::test_body_motion(RigidBodyBullet *p_body, const Transform &p_from, const Vector3 &p_motion, bool p_infinite_inertia, PhysicsServer::MotionResult *r_result, bool p_exclude_raycast_shapes, const Set<RID> &p_exclude) {
 #if debug_test_motion
 	/// Yes I know this is not good, but I've used it as fast debugging hack.
 	/// I'm leaving it here just for speedup the other eventual debugs
@@ -965,10 +965,14 @@ bool SpaceBullet::test_body_motion(RigidBodyBullet *p_body, const Transform &p_f
 	G_TO_B(p_from, body_transform);
 	UNSCALE_BT_BASIS(body_transform);
 
+	if (!p_body->get_kinematic_utilities()) {
+		p_body->init_kinematic_utilities();
+	}
+
 	btVector3 initial_recover_motion(0, 0, 0);
 	{ /// Phase one - multi shapes depenetration using margin
 		for (int t(RECOVERING_MOVEMENT_CYCLES); 0 < t; --t) {
-			if (!recover_from_penetration(p_body, body_transform, RECOVERING_MOVEMENT_SCALE, p_infinite_inertia, initial_recover_motion)) {
+			if (!recover_from_penetration(p_body, body_transform, RECOVERING_MOVEMENT_SCALE, p_infinite_inertia, initial_recover_motion, nullptr, p_exclude)) {
 				break;
 			}
 		}
@@ -978,6 +982,9 @@ bool SpaceBullet::test_body_motion(RigidBodyBullet *p_body, const Transform &p_f
 
 	btVector3 motion;
 	G_TO_B(p_motion, motion);
+	real_t total_length = motion.length();
+	real_t unsafe_fraction = 1.0;
+	real_t safe_fraction = 1.0;
 	{
 		// Phase two - sweep test, from a secure position without margin
 
@@ -1020,13 +1027,22 @@ bool SpaceBullet::test_body_motion(RigidBodyBullet *p_body, const Transform &p_f
 				break;
 			}
 
-			GodotKinClosestConvexResultCallback btResult(shape_world_from.getOrigin(), shape_world_to.getOrigin(), p_body, p_infinite_inertia);
+			GodotKinClosestConvexResultCallback btResult(shape_world_from.getOrigin(), shape_world_to.getOrigin(), p_body, p_infinite_inertia, &p_exclude);
 			btResult.m_collisionFilterGroup = p_body->get_collision_layer();
 			btResult.m_collisionFilterMask = p_body->get_collision_mask();
 
 			dynamicsWorld->convexSweepTest(convex_shape_test, shape_world_from, shape_world_to, btResult, dynamicsWorld->getDispatchInfo().m_allowedCcdPenetration);
 
 			if (btResult.hasHit()) {
+				if (total_length > CMP_EPSILON) {
+					real_t hit_fraction = btResult.m_closestHitFraction * motion.length() / total_length;
+					if (hit_fraction < unsafe_fraction) {
+						unsafe_fraction = hit_fraction;
+						real_t margin = p_body->get_kinematic_utilities()->safe_margin;
+						safe_fraction = MAX(hit_fraction - (1 - ((total_length - margin) / total_length)), 0);
+					}
+				}
+
 				/// Since for each sweep test I fix the motion of new shapes in base the recover result,
 				/// if another shape will hit something it means that has a deepest penetration respect the previous shape
 				motion *= btResult.m_closestHitFraction;
@@ -1043,7 +1059,7 @@ bool SpaceBullet::test_body_motion(RigidBodyBullet *p_body, const Transform &p_f
 		btVector3 __rec(0, 0, 0);
 		RecoverResult r_recover_result;
 
-		has_penetration = recover_from_penetration(p_body, body_transform, 1, p_infinite_inertia, __rec, &r_recover_result);
+		has_penetration = recover_from_penetration(p_body, body_transform, 1, p_infinite_inertia, __rec, &r_recover_result, p_exclude);
 
 		// Parse results
 		if (r_result) {
@@ -1063,6 +1079,9 @@ bool SpaceBullet::test_body_motion(RigidBodyBullet *p_body, const Transform &p_f
 				r_result->collider_id = collisionObject->get_instance_id();
 				r_result->collider_shape = r_recover_result.other_compound_shape_index;
 				r_result->collision_local_shape = r_recover_result.local_shape_most_recovered;
+				r_result->collision_depth = Math::abs(r_recover_result.penetration_distance);
+				r_result->collision_safe_fraction = safe_fraction;
+				r_result->collision_unsafe_fraction = unsafe_fraction;
 
 #if debug_test_motion
 				Vector3 sup_line2;
@@ -1086,6 +1105,10 @@ int SpaceBullet::test_ray_separation(RigidBodyBullet *p_body, const Transform &p
 	btTransform body_transform;
 	G_TO_B(p_transform, body_transform);
 	UNSCALE_BT_BASIS(body_transform);
+
+	if (!p_body->get_kinematic_utilities()) {
+		p_body->init_kinematic_utilities();
+	}
 
 	btVector3 recover_motion(0, 0, 0);
 
@@ -1195,7 +1218,7 @@ public:
 	}
 };
 
-bool SpaceBullet::recover_from_penetration(RigidBodyBullet *p_body, const btTransform &p_body_position, btScalar p_recover_movement_scale, bool p_infinite_inertia, btVector3 &r_delta_recover_movement, RecoverResult *r_recover_result) {
+bool SpaceBullet::recover_from_penetration(RigidBodyBullet *p_body, const btTransform &p_body_position, btScalar p_recover_movement_scale, bool p_infinite_inertia, btVector3 &r_delta_recover_movement, RecoverResult *r_recover_result, const Set<RID> &p_exclude) {
 	// Calculate the cumulative AABB of all shapes of the kinematic body
 	btVector3 aabb_min, aabb_max;
 	bool shapes_found = false;
@@ -1264,6 +1287,12 @@ bool SpaceBullet::recover_from_penetration(RigidBodyBullet *p_body, const btTran
 
 		for (int i = recover_broad_result.results.size() - 1; 0 <= i; --i) {
 			btCollisionObject *otherObject = recover_broad_result.results[i].collision_object;
+
+			CollisionObjectBullet *gObj = static_cast<CollisionObjectBullet *>(otherObject->getUserPointer());
+			if (p_exclude.has(gObj->get_self())) {
+				continue;
+			}
+
 			if (p_infinite_inertia && !otherObject->isStaticOrKinematicObject()) {
 				otherObject->activate(); // Force activation of hitten rigid, soft body
 				continue;

@@ -96,8 +96,9 @@ public:
 		ARRAY_FLAG_USE_2D_VERTICES = ARRAY_COMPRESS_INDEX << 1,
 		ARRAY_FLAG_USE_16_BIT_BONES = ARRAY_COMPRESS_INDEX << 2,
 		ARRAY_FLAG_USE_DYNAMIC_UPDATE = ARRAY_COMPRESS_INDEX << 3,
+		ARRAY_FLAG_USE_OCTAHEDRAL_COMPRESSION = ARRAY_COMPRESS_INDEX << 4,
 
-		ARRAY_COMPRESS_DEFAULT = ARRAY_COMPRESS_NORMAL | ARRAY_COMPRESS_TANGENT | ARRAY_COMPRESS_COLOR | ARRAY_COMPRESS_TEX_UV | ARRAY_COMPRESS_TEX_UV2 | ARRAY_COMPRESS_WEIGHTS
+		ARRAY_COMPRESS_DEFAULT = ARRAY_COMPRESS_NORMAL | ARRAY_COMPRESS_TANGENT | ARRAY_COMPRESS_COLOR | ARRAY_COMPRESS_TEX_UV | ARRAY_COMPRESS_TEX_UV2 | ARRAY_COMPRESS_WEIGHTS | ARRAY_FLAG_USE_OCTAHEDRAL_COMPRESSION
 
 	};
 
@@ -147,9 +148,9 @@ public:
 	Size2 get_lightmap_size_hint() const;
 	void clear_cache() const;
 
-	typedef Vector<Vector<Face3>> (*ConvexDecompositionFunc)(const Vector<Face3> &p_faces, int p_max_convex_hulls);
+	typedef Vector<PoolVector<Vector3>> (*ConvexDecompositionFunc)(const real_t *p_vertices, int p_vertex_count, const uint32_t *p_triangles, int p_triangle_count, int p_max_convex_hulls, Vector<PoolVector<uint32_t>> *r_convex_indices);
 
-	static ConvexDecompositionFunc convex_composition_function;
+	static ConvexDecompositionFunc convex_decomposition_function;
 
 	Vector<Ref<Shape>> convex_decompose(int p_max_convex_hulls = -1) const;
 

@@ -144,6 +144,7 @@ void VisualServerWrapMT::finish() {
 	roomgroup_free_cached_ids();
 	portal_free_cached_ids();
 	ghost_free_cached_ids();
+	occluder_free_cached_ids();
 }
 
 void VisualServerWrapMT::set_use_vsync_callback(bool p_enable) {

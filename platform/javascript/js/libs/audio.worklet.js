@@ -29,15 +29,16 @@
 /*************************************************************************/
 
 class RingBuffer {
-	constructor(p_buffer, p_state) {
+	constructor(p_buffer, p_state, p_threads) {
 		this.buffer = p_buffer;
 		this.avail = p_state;
+		this.threads = p_threads;
 		this.rpos = 0;
 		this.wpos = 0;
 	}
 
 	data_left() {
-		return Atomics.load(this.avail, 0);
+		return this.threads ? Atomics.load(this.avail, 0) : this.avail;
 	}
 
 	space_left() {
@@ -55,10 +56,16 @@ class RingBuffer {
 			to_write -= high;
 			this.rpos = 0;
 		}
-		output.set(this.buffer.subarray(this.rpos, this.rpos + to_write), from);
+		if (to_write) {
+			output.set(this.buffer.subarray(this.rpos, this.rpos + to_write), from);
+		}
 		this.rpos += to_write;
-		Atomics.add(this.avail, 0, -output.length);
-		Atomics.notify(this.avail, 0);
+		if (this.threads) {
+			Atomics.add(this.avail, 0, -output.length);
+			Atomics.notify(this.avail, 0);
+		} else {
+			this.avail -= output.length;
+		}
 	}
 
 	write(p_buffer) {
@@ -66,25 +73,30 @@ class RingBuffer {
 		const mw = this.buffer.length - this.wpos;
 		if (mw >= to_write) {
 			this.buffer.set(p_buffer, this.wpos);
+			this.wpos += to_write;
+			if (mw === to_write) {
+				this.wpos = 0;
+			}
 		} else {
-			const high = p_buffer.subarray(0, to_write - mw);
-			const low = p_buffer.subarray(to_write - mw);
+			const high = p_buffer.subarray(0, mw);
+			const low = p_buffer.subarray(mw);
 			this.buffer.set(high, this.wpos);
 			this.buffer.set(low);
+			this.wpos = low.length;
 		}
-		let diff = to_write;
-		if (this.wpos + diff >= this.buffer.length) {
-			diff -= this.buffer.length;
+		if (this.threads) {
+			Atomics.add(this.avail, 0, to_write);
+			Atomics.notify(this.avail, 0);
+		} else {
+			this.avail += to_write;
 		}
-		this.wpos += diff;
-		Atomics.add(this.avail, 0, to_write);
-		Atomics.notify(this.avail, 0);
 	}
 }
 
 class GodotProcessor extends AudioWorkletProcessor {
 	constructor() {
 		super();
+		this.threads = false;
 		this.running = true;
 		this.lock = null;
 		this.notifier = null;
@@ -100,24 +112,31 @@ class GodotProcessor extends AudioWorkletProcessor {
 	}
 
 	process_notify() {
-		Atomics.add(this.notifier, 0, 1);
-		Atomics.notify(this.notifier, 0);
+		if (this.notifier) {
+			Atomics.add(this.notifier, 0, 1);
+			Atomics.notify(this.notifier, 0);
+		}
 	}
 
 	parse_message(p_cmd, p_data) {
 		if (p_cmd === 'start' && p_data) {
 			const state = p_data[0];
 			let idx = 0;
+			this.threads = true;
 			this.lock = state.subarray(idx, ++idx);
 			this.notifier = state.subarray(idx, ++idx);
 			const avail_in = state.subarray(idx, ++idx);
 			const avail_out = state.subarray(idx, ++idx);
-			this.input = new RingBuffer(p_data[1], avail_in);
-			this.output = new RingBuffer(p_data[2], avail_out);
+			this.input = new RingBuffer(p_data[1], avail_in, true);
+			this.output = new RingBuffer(p_data[2], avail_out, true);
 		} else if (p_cmd === 'stop') {
-			this.runing = false;
+			this.running = false;
 			this.output = null;
 			this.input = null;
+		} else if (p_cmd === 'start_nothreads') {
+			this.output = new RingBuffer(p_data[0], p_data[0].length, false);
+		} else if (p_cmd === 'chunk') {
+			this.output.write(p_data);
 		}
 	}
 
@@ -139,7 +158,10 @@ class GodotProcessor extends AudioWorkletProcessor {
 			if (this.input_buffer.length !== chunk) {
 				this.input_buffer = new Float32Array(chunk);
 			}
-			if (this.input.space_left() >= chunk) {
+			if (!this.threads) {
+				GodotProcessor.write_input(this.input_buffer, input);
+				this.port.postMessage({ 'cmd': 'input', 'data': this.input_buffer });
+			} else if (this.input.space_left() >= chunk) {
 				GodotProcessor.write_input(this.input_buffer, input);
 				this.input.write(this.input_buffer);
 			} else {
@@ -156,6 +178,9 @@ class GodotProcessor extends AudioWorkletProcessor {
 			if (this.output.data_left() >= chunk) {
 				this.output.read(this.output_buffer);
 				GodotProcessor.write_output(output, this.output_buffer);
+				if (!this.threads) {
+					this.port.postMessage({ 'cmd': 'read', 'data': chunk });
+				}
 			} else {
 				this.port.postMessage('Output buffer has not enough frames! Skipping output frame.');
 			}

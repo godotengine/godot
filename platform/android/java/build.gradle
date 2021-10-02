@@ -115,7 +115,7 @@ task zipCustomBuild(type: Zip) {
     doFirst {
         logger.lifecycle("Generating Godot custom build template")
     }
-    from(fileTree(dir: 'app', excludes: ['**/build/**', '**/.gradle/**', '**/*.iml']), fileTree(dir: '.', includes: ['gradle.properties', 'gradlew', 'gradlew.bat', 'gradle/**']))
+    from(fileTree(dir: 'app', excludes: ['**/build/**', '**/.gradle/**', '**/*.iml']), fileTree(dir: '.', includes: ['gradlew', 'gradlew.bat', 'gradle/**']))
     include '**/*'
     archiveFileName = 'android_source.zip'
     destinationDirectory = file(binDir)

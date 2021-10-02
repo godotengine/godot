@@ -1439,6 +1439,7 @@ VisualShaderNode *VisualShaderEditor::_add_node(int p_idx, int p_op_idx) {
 		position += graph->get_size() * 0.5;
 		position /= EDSCALE;
 	}
+	position /= graph->get_zoom();
 	saved_node_pos_dirty = false;
 
 	VisualShader::Type type = VisualShader::Type(edit_type->get_selected());
@@ -3030,7 +3031,7 @@ public:
 		UndoRedo *undo_redo = EditorNode::get_singleton()->get_undo_redo();
 
 		updating = true;
-		undo_redo->create_action(TTR("Edit Visual Property") + ": " + prop, UndoRedo::MERGE_ENDS);
+		undo_redo->create_action(TTR("Edit Visual Property:") + " " + prop, UndoRedo::MERGE_ENDS);
 		undo_redo->add_do_property(node.ptr(), prop, p_value);
 		undo_redo->add_undo_property(node.ptr(), prop, node->get(prop));
 

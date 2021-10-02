@@ -527,6 +527,10 @@ String _OS::get_locale() const {
 	return OS::get_singleton()->get_locale();
 }
 
+String _OS::get_locale_language() const {
+	return OS::get_singleton()->get_locale_language();
+}
+
 String _OS::get_latin_keyboard_variant() const {
 	switch (OS::get_singleton()->get_latin_keyboard_variant()) {
 		case OS::LATIN_KEYBOARD_QWERTY:
@@ -594,6 +598,14 @@ void _OS::set_vsync_via_compositor(bool p_enable) {
 
 bool _OS::is_vsync_via_compositor_enabled() const {
 	return OS::get_singleton()->is_vsync_via_compositor_enabled();
+}
+
+void _OS::set_delta_smoothing(bool p_enabled) {
+	OS::get_singleton()->set_delta_smoothing(p_enabled);
+}
+
+bool _OS::is_delta_smoothing_enabled() const {
+	return OS::get_singleton()->is_delta_smoothing_enabled();
 }
 
 _OS::PowerState _OS::get_power_state() {
@@ -960,7 +972,7 @@ void _OS::print_all_textures_by_size() {
 		ResourceCache::get_cached_resources(&rsrc);
 
 		for (List<Ref<Resource>>::Element *E = rsrc.front(); E; E = E->next()) {
-			if (!E->get()->is_class("ImageTexture")) {
+			if (!E->get()->is_class("Texture")) {
 				continue;
 			}
 
@@ -980,14 +992,30 @@ void _OS::print_all_textures_by_size() {
 
 	imgs.sort();
 
-	for (List<_OSCoreBindImg>::Element *E = imgs.front(); E; E = E->next()) {
-		total -= E->get().vram;
+	if (imgs.size() == 0) {
+		print_line("No textures seem used in this project.");
+	} else {
+		print_line("Textures currently in use, sorted by VRAM usage:\n"
+				   "Path - VRAM usage (Dimensions)");
 	}
+
+	for (List<_OSCoreBindImg>::Element *E = imgs.front(); E; E = E->next()) {
+		print_line(vformat("%s - %s %s",
+				E->get().path,
+				String::humanize_size(E->get().vram),
+				E->get().size));
+	}
+
+	print_line(vformat("Total VRAM usage: %s.", String::humanize_size(total)));
 }
 
 void _OS::print_resources_by_type(const Vector<String> &p_types) {
-	Map<String, int> type_count;
+	ERR_FAIL_COND_MSG(p_types.size() == 0,
+			"At least one type should be provided to print resources by type.");
 
+	print_line(vformat("Resources currently in use for the following types: %s", p_types));
+
+	Map<String, int> type_count;
 	List<Ref<Resource>> resources;
 	ResourceCache::get_cached_resources(&resources);
 
@@ -1010,8 +1038,20 @@ void _OS::print_resources_by_type(const Vector<String> &p_types) {
 		}
 
 		type_count[r->get_class()]++;
+
+		print_line(vformat("%s: %s", r->get_class(), r->get_path()));
+
+		List<String> metas;
+		r->get_meta_list(&metas);
+		for (List<String>::Element *F = metas.front(); F; F = F->next()) {
+			print_line(vformat("  %s: %s", F->get(), r->get_meta(F->get())));
+		}
 	}
-};
+
+	for (Map<String, int>::Element *E = type_count.front(); E; E = E->next()) {
+		print_line(vformat("%s count: %d", E->key(), E->get()));
+	}
+}
 
 bool _OS::has_virtual_keyboard() const {
 	return OS::get_singleton()->has_virtual_keyboard();
@@ -1044,10 +1084,6 @@ void _OS::dump_resources_to_file(const String &p_file) {
 String _OS::get_user_data_dir() const {
 	return OS::get_singleton()->get_user_data_dir();
 };
-
-String _OS::get_external_data_dir() const {
-	return OS::get_singleton()->get_external_data_dir();
-}
 
 Error _OS::native_video_play(String p_path, float p_volume, String p_audio_track, String p_subtitle_track) {
 	return OS::get_singleton()->native_video_play(p_path, p_volume, p_audio_track, p_subtitle_track);
@@ -1124,8 +1160,8 @@ bool _OS::is_keep_screen_on() const {
 	return OS::get_singleton()->is_keep_screen_on();
 }
 
-String _OS::get_system_dir(SystemDir p_dir) const {
-	return OS::get_singleton()->get_system_dir(OS::SystemDir(p_dir));
+String _OS::get_system_dir(SystemDir p_dir, bool p_shared_storage) const {
+	return OS::get_singleton()->get_system_dir(OS::SystemDir(p_dir), p_shared_storage);
 }
 
 String _OS::get_scancode_string(uint32_t p_code) const {
@@ -1301,6 +1337,7 @@ void _OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_ticks_usec"), &_OS::get_ticks_usec);
 	ClassDB::bind_method(D_METHOD("get_splash_tick_msec"), &_OS::get_splash_tick_msec);
 	ClassDB::bind_method(D_METHOD("get_locale"), &_OS::get_locale);
+	ClassDB::bind_method(D_METHOD("get_locale_language"), &_OS::get_locale_language);
 	ClassDB::bind_method(D_METHOD("get_latin_keyboard_variant"), &_OS::get_latin_keyboard_variant);
 	ClassDB::bind_method(D_METHOD("get_model_name"), &_OS::get_model_name);
 
@@ -1334,8 +1371,7 @@ void _OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_dynamic_memory_usage"), &_OS::get_dynamic_memory_usage);
 
 	ClassDB::bind_method(D_METHOD("get_user_data_dir"), &_OS::get_user_data_dir);
-	ClassDB::bind_method(D_METHOD("get_external_data_dir"), &_OS::get_external_data_dir);
-	ClassDB::bind_method(D_METHOD("get_system_dir", "dir"), &_OS::get_system_dir);
+	ClassDB::bind_method(D_METHOD("get_system_dir", "dir", "shared_storage"), &_OS::get_system_dir, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("get_config_dir"), &_OS::get_config_dir);
 	ClassDB::bind_method(D_METHOD("get_data_dir"), &_OS::get_data_dir);
 	ClassDB::bind_method(D_METHOD("get_cache_dir"), &_OS::get_cache_dir);
@@ -1369,6 +1405,9 @@ void _OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_vsync_via_compositor", "enable"), &_OS::set_vsync_via_compositor);
 	ClassDB::bind_method(D_METHOD("is_vsync_via_compositor_enabled"), &_OS::is_vsync_via_compositor_enabled);
 
+	ClassDB::bind_method(D_METHOD("set_delta_smoothing", "delta_smoothing_enabled"), &_OS::set_delta_smoothing);
+	ClassDB::bind_method(D_METHOD("is_delta_smoothing_enabled"), &_OS::is_delta_smoothing_enabled);
+
 	ClassDB::bind_method(D_METHOD("has_feature", "tag_name"), &_OS::has_feature);
 
 	ClassDB::bind_method(D_METHOD("get_power_state"), &_OS::get_power_state);
@@ -1391,6 +1430,7 @@ void _OS::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "exit_code"), "set_exit_code", "get_exit_code");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "vsync_enabled"), "set_use_vsync", "is_vsync_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "vsync_via_compositor"), "set_vsync_via_compositor", "is_vsync_via_compositor_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "delta_smoothing"), "set_delta_smoothing", "is_delta_smoothing_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "low_processor_usage_mode"), "set_low_processor_usage_mode", "is_in_low_processor_usage_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "low_processor_usage_mode_sleep_usec"), "set_low_processor_usage_mode_sleep_usec", "get_low_processor_usage_mode_sleep_usec");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "keep_screen_on"), "set_keep_screen_on", "is_keep_screen_on");
@@ -2377,15 +2417,17 @@ Error _Directory::copy(String p_from, String p_to) {
 }
 Error _Directory::rename(String p_from, String p_to) {
 	ERR_FAIL_COND_V_MSG(!d, ERR_UNCONFIGURED, "Directory must be opened before use.");
+	ERR_FAIL_COND_V_MSG(p_from.empty() || p_from == "." || p_from == "..", ERR_INVALID_PARAMETER, "Invalid path to rename.");
+
 	if (!p_from.is_rel_path()) {
 		DirAccess *d = DirAccess::create_for_path(p_from);
-		ERR_FAIL_COND_V_MSG(!d->file_exists(p_from), ERR_DOES_NOT_EXIST, "File does not exist.");
+		ERR_FAIL_COND_V_MSG(!d->file_exists(p_from) && !d->dir_exists(p_from), ERR_DOES_NOT_EXIST, "File or directory does not exist.");
 		Error err = d->rename(p_from, p_to);
 		memdelete(d);
 		return err;
 	}
 
-	ERR_FAIL_COND_V_MSG(!d->file_exists(p_from), ERR_DOES_NOT_EXIST, "File does not exist.");
+	ERR_FAIL_COND_V_MSG(!d->file_exists(p_from) && !d->dir_exists(p_from), ERR_DOES_NOT_EXIST, "File or directory does not exist.");
 	return d->rename(p_from, p_to);
 }
 Error _Directory::remove(String p_name) {
@@ -2577,7 +2619,36 @@ void _Thread::_start_func(void *ud) {
 	memdelete(tud);
 	Variant::CallError ce;
 	const Variant *arg[1] = { &t->userdata };
-	int argc = (int)(arg[0]->get_type() != Variant::NIL);
+	int argc = 0;
+	if (arg[0]->get_type() != Variant::NIL) {
+		// Just pass to the target function whatever came as user data
+		argc = 1;
+	} else {
+		// There are two cases of null user data:
+		// a) The target function has zero parameters and the caller is just honoring that.
+		// b) The target function has at least one parameter with no default and the caller is
+		//    leveraging the fact that user data defaults to null in Thread.start().
+		//    We care about the case of more than one parameter because, even if a thread
+		//    function can have one at most, out mindset here is to do our best with the
+		//    only/first one and let the call handle any other error conditions, like too
+		//    much arguments.
+		// We must check if we are in case b).
+		int target_param_count = 0;
+		int target_default_arg_count = 0;
+		Ref<Script> script = t->target_instance->get_script();
+		if (script.is_valid()) {
+			MethodInfo mi = script->get_method_info(t->target_method);
+			target_param_count = mi.arguments.size();
+			target_default_arg_count = mi.default_arguments.size();
+		} else {
+			MethodBind *method = ClassDB::get_method(t->target_instance->get_class_name(), t->target_method);
+			target_param_count = method->get_argument_count();
+			target_default_arg_count = method->get_default_argument_count();
+		}
+		if (target_param_count >= 1 && target_default_arg_count < target_param_count) {
+			argc = 1;
+		}
+	}
 
 	Thread::set_name(t->target_method);
 
@@ -2820,6 +2891,42 @@ StringName _ClassDB::get_category(const StringName &p_node) const {
 	return ClassDB::get_category(p_node);
 }
 
+bool _ClassDB::has_enum(const StringName &p_class, const StringName &p_name, bool p_no_inheritance) const {
+	return ClassDB::has_enum(p_class, p_name, p_no_inheritance);
+}
+
+PoolStringArray _ClassDB::get_enum_list(const StringName &p_class, bool p_no_inheritance) const {
+	List<StringName> enums;
+	ClassDB::get_enum_list(p_class, &enums, p_no_inheritance);
+
+	PoolStringArray ret;
+	ret.resize(enums.size());
+	int idx = 0;
+	for (List<StringName>::Element *E = enums.front(); E; E = E->next()) {
+		ret.set(idx++, E->get());
+	}
+
+	return ret;
+}
+
+PoolStringArray _ClassDB::get_enum_constants(const StringName &p_class, const StringName &p_enum, bool p_no_inheritance) const {
+	List<StringName> constants;
+	ClassDB::get_enum_constants(p_class, p_enum, &constants, p_no_inheritance);
+
+	PoolStringArray ret;
+	ret.resize(constants.size());
+	int idx = 0;
+	for (List<StringName>::Element *E = constants.front(); E; E = E->next()) {
+		ret.set(idx++, E->get());
+	}
+
+	return ret;
+}
+
+StringName _ClassDB::get_integer_constant_enum(const StringName &p_class, const StringName &p_name, bool p_no_inheritance) const {
+	return ClassDB::get_integer_constant_enum(p_class, p_name, p_no_inheritance);
+}
+
 bool _ClassDB::is_class_enabled(StringName p_class) const {
 	return ClassDB::is_class_enabled(p_class);
 }
@@ -2849,6 +2956,11 @@ void _ClassDB::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("class_has_integer_constant", "class", "name"), &_ClassDB::has_integer_constant);
 	ClassDB::bind_method(D_METHOD("class_get_integer_constant", "class", "name"), &_ClassDB::get_integer_constant);
+
+	ClassDB::bind_method(D_METHOD("class_has_enum", "class", "name", "no_inheritance"), &_ClassDB::has_enum, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("class_get_enum_list", "class", "no_inheritance"), &_ClassDB::get_enum_list, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("class_get_enum_constants", "class", "enum", "no_inheritance"), &_ClassDB::get_enum_constants, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("class_get_integer_constant_enum", "class", "name", "no_inheritance"), &_ClassDB::get_integer_constant_enum, DEFVAL(false));
 
 	ClassDB::bind_method(D_METHOD("class_get_category", "class"), &_ClassDB::get_category);
 	ClassDB::bind_method(D_METHOD("is_class_enabled", "class"), &_ClassDB::is_class_enabled);
@@ -2960,6 +3072,14 @@ bool _Engine::is_editor_hint() const {
 	return Engine::get_singleton()->is_editor_hint();
 }
 
+void _Engine::set_print_error_messages(bool p_enabled) {
+	Engine::get_singleton()->set_print_error_messages(p_enabled);
+}
+
+bool _Engine::is_printing_error_messages() const {
+	return Engine::get_singleton()->is_printing_error_messages();
+}
+
 void _Engine::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_iterations_per_second", "iterations_per_second"), &_Engine::set_iterations_per_second);
 	ClassDB::bind_method(D_METHOD("get_iterations_per_second"), &_Engine::get_iterations_per_second);
@@ -2994,7 +3114,11 @@ void _Engine::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_editor_hint", "enabled"), &_Engine::set_editor_hint);
 	ClassDB::bind_method(D_METHOD("is_editor_hint"), &_Engine::is_editor_hint);
 
+	ClassDB::bind_method(D_METHOD("set_print_error_messages", "enabled"), &_Engine::set_print_error_messages);
+	ClassDB::bind_method(D_METHOD("is_printing_error_messages"), &_Engine::is_printing_error_messages);
+
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "editor_hint"), "set_editor_hint", "is_editor_hint");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "print_error_messages"), "set_print_error_messages", "is_printing_error_messages");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "iterations_per_second"), "set_iterations_per_second", "get_iterations_per_second");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "target_fps"), "set_target_fps", "get_target_fps");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "time_scale"), "set_time_scale", "get_time_scale");

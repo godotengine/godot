@@ -11,75 +11,58 @@
 	</tutorials>
 	<methods>
 		<method name="add_piece">
-			<return type="int">
-			</return>
-			<argument index="0" name="ofs" type="Vector2">
-			</argument>
-			<argument index="1" name="texture" type="Texture">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="ofs" type="Vector2" />
+			<argument index="1" name="texture" type="Texture" />
 			<description>
 				Adds [code]texture[/code] to this [LargeTexture], starting on offset [code]ofs[/code].
 			</description>
 		</method>
 		<method name="clear">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Clears the [LargeTexture].
 			</description>
 		</method>
 		<method name="get_piece_count" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the number of pieces currently in this [LargeTexture].
 			</description>
 		</method>
 		<method name="get_piece_offset" qualifiers="const">
-			<return type="Vector2">
-			</return>
-			<argument index="0" name="idx" type="int">
-			</argument>
+			<return type="Vector2" />
+			<argument index="0" name="idx" type="int" />
 			<description>
 				Returns the offset of the piece with the index [code]idx[/code].
 			</description>
 		</method>
 		<method name="get_piece_texture" qualifiers="const">
-			<return type="Texture">
-			</return>
-			<argument index="0" name="idx" type="int">
-			</argument>
+			<return type="Texture" />
+			<argument index="0" name="idx" type="int" />
 			<description>
 				Returns the [Texture] of the piece with the index [code]idx[/code].
 			</description>
 		</method>
 		<method name="set_piece_offset">
-			<return type="void">
-			</return>
-			<argument index="0" name="idx" type="int">
-			</argument>
-			<argument index="1" name="ofs" type="Vector2">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="idx" type="int" />
+			<argument index="1" name="ofs" type="Vector2" />
 			<description>
 				Sets the offset of the piece with the index [code]idx[/code] to [code]ofs[/code].
 			</description>
 		</method>
 		<method name="set_piece_texture">
-			<return type="void">
-			</return>
-			<argument index="0" name="idx" type="int">
-			</argument>
-			<argument index="1" name="texture" type="Texture">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="idx" type="int" />
+			<argument index="1" name="texture" type="Texture" />
 			<description>
 				Sets the [Texture] of the piece with index [code]idx[/code] to [code]texture[/code].
 			</description>
 		</method>
 		<method name="set_size">
-			<return type="void">
-			</return>
-			<argument index="0" name="size" type="Vector2">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="size" type="Vector2" />
 			<description>
 				Sets the size of this [LargeTexture].
 			</description>

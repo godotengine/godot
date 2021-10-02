@@ -108,12 +108,38 @@ Room::~Room() {
 	}
 }
 
+bool Room::contains_point(const Vector3 &p_pt) const {
+	if (!_aabb.has_point(p_pt)) {
+		return false;
+	}
+
+	for (int n = 0; n < _planes.size(); n++) {
+		if (_planes[n].is_point_over(p_pt)) {
+			return false;
+		}
+	}
+
+	return true;
+}
+
 void Room::set_room_simplify(real_t p_value) {
 	_simplify_info.set_simplify(p_value, _aabb.get_longest_axis_size());
 }
 
 void Room::set_use_default_simplify(bool p_use) {
 	_use_default_simplify = p_use;
+}
+
+void Room::set_point(int p_idx, const Vector3 &p_point) {
+	if (p_idx >= _bound_pts.size()) {
+		return;
+	}
+
+	_bound_pts.set(p_idx, p_point);
+
+#ifdef TOOLS_ENABLED
+	_changed(true);
+#endif
 }
 
 void Room::set_points(const PoolVector<Vector3> &p_points) {
@@ -211,6 +237,13 @@ String Room::get_configuration_warning() const {
 		}
 	}
 
+	if (_planes.size() > 80) {
+		if (!warning.empty()) {
+			warning += "\n\n";
+		}
+		warning += TTR("Room convex hull contains a large number of planes.\nConsider simplifying the room bound in order to increase performance.");
+	}
+
 	return warning;
 }
 
@@ -251,6 +284,8 @@ void Room::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_points", "points"), &Room::set_points);
 	ClassDB::bind_method(D_METHOD("get_points"), &Room::get_points);
+
+	ClassDB::bind_method(D_METHOD("set_point", "index", "position"), &Room::set_point);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_default_simplify"), "set_use_default_simplify", "get_use_default_simplify");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "room_simplify", PROPERTY_HINT_RANGE, "0.0,1.0,0.005"), "set_room_simplify", "get_room_simplify");

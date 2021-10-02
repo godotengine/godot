@@ -31,6 +31,7 @@
 #ifndef SHAPE_SW_H
 #define SHAPE_SW_H
 
+#include "core/local_vector.h"
 #include "core/math/bsp_tree.h"
 #include "core/math/geometry.h"
 #include "servers/physics_server.h"
@@ -112,11 +113,13 @@ public:
 
 class ConcaveShapeSW : public ShapeSW {
 public:
+	// Returns true to stop the query.
+	typedef bool (*QueryCallback)(void *p_userdata, ShapeSW *p_convex);
+
 	virtual bool is_concave() const { return true; }
-	typedef void (*Callback)(void *p_userdata, ShapeSW *p_convex);
 	virtual void get_supports(const Vector3 &p_normal, int p_max, Vector3 *r_supports, int &r_amount, FeatureType &r_type) const { r_amount = 0; }
 
-	virtual void cull(const AABB &p_local_aabb, Callback p_callback, void *p_userdata) const = 0;
+	virtual void cull(const AABB &p_local_aabb, QueryCallback p_callback, void *p_userdata) const = 0;
 
 	ConcaveShapeSW() {}
 };
@@ -335,7 +338,7 @@ struct ConcavePolygonShapeSW : public ConcaveShapeSW {
 
 	struct _CullParams {
 		AABB aabb;
-		Callback callback;
+		QueryCallback callback;
 		void *userdata;
 		const Face *faces;
 		const Vector3 *vertices;
@@ -358,7 +361,7 @@ struct ConcavePolygonShapeSW : public ConcaveShapeSW {
 	};
 
 	void _cull_segment(int p_idx, _SegmentCullParams *p_params) const;
-	void _cull(int p_idx, _CullParams *p_params) const;
+	bool _cull(int p_idx, _CullParams *p_params) const;
 
 	void _fill_bvh(_VolumeSW_BVH *p_bvh_tree, BVH *p_bvh_array, int &p_idx);
 
@@ -376,7 +379,7 @@ public:
 	virtual bool intersect_point(const Vector3 &p_point) const;
 	virtual Vector3 get_closest_point_to(const Vector3 &p_point) const;
 
-	virtual void cull(const AABB &p_local_aabb, Callback p_callback, void *p_userdata) const;
+	virtual void cull(const AABB &p_local_aabb, QueryCallback p_callback, void *p_userdata) const;
 
 	virtual Vector3 get_moment_of_inertia(real_t p_mass) const;
 
@@ -394,6 +397,21 @@ struct HeightMapShapeSW : public ConcaveShapeSW {
 	int depth;
 	Vector3 local_origin;
 
+	// Accelerator.
+	struct Range {
+		float min = 0.0;
+		float max = 0.0;
+	};
+	LocalVector<Range> bounds_grid;
+	int bounds_grid_width = 0;
+	int bounds_grid_depth = 0;
+
+	static const int BOUNDS_CHUNK_SIZE = 16;
+
+	_FORCE_INLINE_ const Range &_get_bounds_chunk(int p_x, int p_z) const {
+		return bounds_grid[(p_z * bounds_grid_width) + p_x];
+	}
+
 	_FORCE_INLINE_ real_t _get_height(int p_x, int p_z) const {
 		return heights[(p_z * width) + p_x];
 	}
@@ -405,6 +423,11 @@ struct HeightMapShapeSW : public ConcaveShapeSW {
 	}
 
 	void _get_cell(const Vector3 &p_point, int &r_x, int &r_y, int &r_z) const;
+
+	void _build_accelerator();
+
+	template <typename ProcessFunction>
+	bool _intersect_grid_segment(ProcessFunction &p_process, const Vector3 &p_begin, const Vector3 &p_end, int p_width, int p_depth, const Vector3 &offset, Vector3 &r_point, Vector3 &r_normal) const;
 
 	void _setup(const PoolVector<real_t> &p_heights, int p_width, int p_depth, real_t p_min_height, real_t p_max_height);
 
@@ -421,7 +444,7 @@ public:
 	virtual bool intersect_point(const Vector3 &p_point) const;
 
 	virtual Vector3 get_closest_point_to(const Vector3 &p_point) const;
-	virtual void cull(const AABB &p_local_aabb, Callback p_callback, void *p_userdata) const;
+	virtual void cull(const AABB &p_local_aabb, QueryCallback p_callback, void *p_userdata) const;
 
 	virtual Vector3 get_moment_of_inertia(real_t p_mass) const;
 

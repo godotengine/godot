@@ -78,7 +78,7 @@ void Texture::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_data"), &Texture::get_data);
 
 	ADD_GROUP("Flags", "");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "flags", PROPERTY_HINT_FLAGS, "Mipmaps,Repeat,Filter,Anisotropic Linear,Convert to Linear,Mirrored Repeat,Video Surface"), "set_flags", "get_flags");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "flags", PROPERTY_HINT_FLAGS, "Mipmaps,Repeat,Filter,Anisotropic Filter,Convert to Linear,Mirrored Repeat,Video Surface"), "set_flags", "get_flags");
 	ADD_GROUP("", "");
 
 	BIND_ENUM_CONSTANT(FLAGS_DEFAULT);
@@ -554,15 +554,20 @@ Error StreamTexture::_load_data(const String &p_path, int &tw, int &th, int &tw_
 			}
 
 			Ref<Image> img;
-			if (df & FORMAT_BIT_PNG) {
+			bool is_png = df & FORMAT_BIT_PNG;
+			if (is_png && Image::png_unpacker) {
 				img = Image::png_unpacker(pv);
-			} else {
+			} else if (!is_png && Image::webp_unpacker) {
 				img = Image::webp_unpacker(pv);
 			}
 
 			if (img.is_null() || img->empty()) {
 				memdelete(f);
 				ERR_FAIL_COND_V(img.is_null() || img->empty(), ERR_FILE_CORRUPT);
+			}
+
+			if (i != 0) {
+				img->convert(mipmap_images[0]->get_format()); // ensure the same format for all mipmaps
 			}
 
 			total_size += img->get_data().size();
@@ -952,6 +957,14 @@ void AtlasTexture::set_filter_clip(const bool p_enable) {
 
 bool AtlasTexture::has_filter_clip() const {
 	return filter_clip;
+}
+
+Ref<Image> AtlasTexture::get_data() const {
+	if (!atlas.is_valid() || !atlas->get_data().is_valid()) {
+		return Ref<Image>();
+	}
+
+	return atlas->get_data()->get_rect(region);
 }
 
 void AtlasTexture::_bind_methods() {
@@ -2376,7 +2389,6 @@ void TextureLayered::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_height"), &TextureLayered::get_height);
 	ClassDB::bind_method(D_METHOD("get_depth"), &TextureLayered::get_depth);
 
-	ClassDB::bind_method(D_METHOD("create", "width", "height", "depth", "format", "flags"), &TextureLayered::create, DEFVAL(FLAGS_DEFAULT));
 	ClassDB::bind_method(D_METHOD("set_layer_data", "image", "layer"), &TextureLayered::set_layer_data);
 	ClassDB::bind_method(D_METHOD("get_layer_data", "layer"), &TextureLayered::get_layer_data);
 	ClassDB::bind_method(D_METHOD("set_data_partial", "image", "x_offset", "y_offset", "layer", "mipmap"), &TextureLayered::set_data_partial, DEFVAL(0));
@@ -2384,19 +2396,21 @@ void TextureLayered::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_set_data", "data"), &TextureLayered::_set_data);
 	ClassDB::bind_method(D_METHOD("_get_data"), &TextureLayered::_get_data);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "flags", PROPERTY_HINT_FLAGS, "Mipmaps,Repeat,Filter"), "set_flags", "get_flags");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "flags", PROPERTY_HINT_FLAGS, "Mipmaps,Repeat,Filter,Anisotropic Filter"), "set_flags", "get_flags");
 	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "_set_data", "_get_data");
 
+	BIND_ENUM_CONSTANT(FLAGS_DEFAULT_TEXTURE_ARRAY);
+	BIND_ENUM_CONSTANT(FLAGS_DEFAULT_TEXTURE_3D);
 	BIND_ENUM_CONSTANT(FLAG_MIPMAPS);
 	BIND_ENUM_CONSTANT(FLAG_REPEAT);
 	BIND_ENUM_CONSTANT(FLAG_FILTER);
-	BIND_ENUM_CONSTANT(FLAGS_DEFAULT);
+	BIND_ENUM_CONSTANT(FLAG_ANISOTROPIC_FILTER);
 }
 
 TextureLayered::TextureLayered(bool p_3d) {
 	is_3d = p_3d;
+	flags = p_3d ? FLAGS_DEFAULT_TEXTURE_3D : FLAGS_DEFAULT_TEXTURE_ARRAY;
 	format = Image::FORMAT_MAX;
-	flags = FLAGS_DEFAULT;
 
 	width = 0;
 	height = 0;
@@ -2409,6 +2423,14 @@ TextureLayered::~TextureLayered() {
 	if (texture.is_valid()) {
 		VS::get_singleton()->free(texture);
 	}
+}
+
+void Texture3D::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("create", "width", "height", "depth", "format", "flags"), &Texture3D::create, DEFVAL(FLAGS_DEFAULT_TEXTURE_3D));
+}
+
+void TextureArray::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("create", "width", "height", "depth", "format", "flags"), &TextureArray::create, DEFVAL(FLAGS_DEFAULT_TEXTURE_ARRAY));
 }
 
 RES ResourceFormatLoaderTextureLayered::load(const String &p_path, const String &p_original_path, Error *r_error) {
@@ -2605,15 +2627,14 @@ void ExternalTexture::set_flags(uint32_t p_flags) {
 }
 
 uint32_t ExternalTexture::get_flags() const {
-	// not supported
-	return 0;
+	return Texture::FLAG_VIDEO_SURFACE;
 }
 
 ExternalTexture::ExternalTexture() {
 	size = Size2(1.0, 1.0);
 	texture = VisualServer::get_singleton()->texture_create();
 
-	VisualServer::get_singleton()->texture_allocate(texture, size.width, size.height, 0, Image::FORMAT_RGBA8, VS::TEXTURE_TYPE_EXTERNAL, 0);
+	VisualServer::get_singleton()->texture_allocate(texture, size.width, size.height, 0, Image::FORMAT_RGBA8, VS::TEXTURE_TYPE_EXTERNAL, Texture::FLAG_VIDEO_SURFACE);
 	_change_notify();
 	emit_changed();
 }

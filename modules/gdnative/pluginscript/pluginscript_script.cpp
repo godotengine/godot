@@ -136,6 +136,24 @@ bool PluginScript::can_instance() const {
 	return can;
 }
 
+bool PluginScript::inherits_script(const Ref<Script> &p_script) const {
+	Ref<PluginScript> ps = p_script;
+	if (ps.is_null()) {
+		return false;
+	}
+
+	const PluginScript *s = this;
+
+	while (s) {
+		if (s == p_script.ptr()) {
+			return true;
+		}
+		s = Object::cast_to<PluginScript>(s->_ref_base_parent.ptr());
+	}
+
+	return false;
+}
+
 Ref<Script> PluginScript::get_base_script() const {
 	if (_ref_base_parent.is_valid()) {
 		return Ref<PluginScript>(_ref_base_parent);

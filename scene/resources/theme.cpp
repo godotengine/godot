@@ -1182,6 +1182,82 @@ void Theme::copy_theme(const Ref<Theme> &p_other) {
 	_unfreeze_and_propagate_changes();
 }
 
+void Theme::merge_with(const Ref<Theme> &p_other) {
+	if (p_other.is_null()) {
+		return;
+	}
+
+	_freeze_change_propagation();
+
+	// Colors.
+	{
+		const StringName *K = nullptr;
+		while ((K = p_other->color_map.next(K))) {
+			const StringName *L = nullptr;
+			while ((L = p_other->color_map[*K].next(L))) {
+				set_color(*L, *K, p_other->color_map[*K][*L]);
+			}
+		}
+	}
+
+	// Constants.
+	{
+		const StringName *K = nullptr;
+		while ((K = p_other->constant_map.next(K))) {
+			const StringName *L = nullptr;
+			while ((L = p_other->constant_map[*K].next(L))) {
+				set_constant(*L, *K, p_other->constant_map[*K][*L]);
+			}
+		}
+	}
+
+	// Fonts.
+	{
+		const StringName *K = nullptr;
+		while ((K = p_other->font_map.next(K))) {
+			const StringName *L = nullptr;
+			while ((L = p_other->font_map[*K].next(L))) {
+				set_font(*L, *K, p_other->font_map[*K][*L]);
+			}
+		}
+	}
+
+	// Icons.
+	{
+		const StringName *K = nullptr;
+		while ((K = p_other->icon_map.next(K))) {
+			const StringName *L = nullptr;
+			while ((L = p_other->icon_map[*K].next(L))) {
+				set_icon(*L, *K, p_other->icon_map[*K][*L]);
+			}
+		}
+	}
+
+	// Shaders.
+	{
+		const StringName *K = nullptr;
+		while ((K = p_other->shader_map.next(K))) {
+			const StringName *L = nullptr;
+			while ((L = p_other->shader_map[*K].next(L))) {
+				set_shader(*L, *K, p_other->shader_map[*K][*L]);
+			}
+		}
+	}
+
+	// Styleboxes.
+	{
+		const StringName *K = nullptr;
+		while ((K = p_other->style_map.next(K))) {
+			const StringName *L = nullptr;
+			while ((L = p_other->style_map[*K].next(L))) {
+				set_stylebox(*L, *K, p_other->style_map[*K][*L]);
+			}
+		}
+	}
+
+	_unfreeze_and_propagate_changes();
+}
+
 void Theme::get_type_list(List<StringName> *p_list) const {
 	ERR_FAIL_NULL(p_list);
 
@@ -1281,6 +1357,7 @@ void Theme::_bind_methods() {
 
 	ClassDB::bind_method("copy_default_theme", &Theme::copy_default_theme);
 	ClassDB::bind_method(D_METHOD("copy_theme", "other"), &Theme::copy_theme);
+	ClassDB::bind_method(D_METHOD("merge_with", "other"), &Theme::merge_with);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "default_font", PROPERTY_HINT_RESOURCE_TYPE, "Font"), "set_default_font", "get_default_font");
 

@@ -191,6 +191,7 @@
 #include "scene/3d/multimesh_instance.h"
 #include "scene/3d/navigation.h"
 #include "scene/3d/navigation_mesh.h"
+#include "scene/3d/occluder.h"
 #include "scene/3d/particles.h"
 #include "scene/3d/path.h"
 #include "scene/3d/physics_body.h"
@@ -213,12 +214,15 @@
 #include "scene/animation/skeleton_ik.h"
 #include "scene/resources/environment.h"
 #include "scene/resources/mesh_library.h"
+#include "scene/resources/occluder_shape.h"
 #endif
 
 static Ref<ResourceFormatSaverText> resource_saver_text;
 static Ref<ResourceFormatLoaderText> resource_loader_text;
 
+#ifdef MODULE_FREETYPE_ENABLED
 static Ref<ResourceFormatLoaderDynamicFont> resource_loader_dynamic_font;
+#endif // MODULE_FREETYPE_ENABLED
 
 static Ref<ResourceFormatLoaderStreamTexture> resource_loader_stream_texture;
 static Ref<ResourceFormatLoaderTextureLayered> resource_loader_texture_layered;
@@ -235,8 +239,10 @@ void register_scene_types() {
 
 	Node::init_node_hrcr();
 
+#ifdef MODULE_FREETYPE_ENABLED
 	resource_loader_dynamic_font.instance();
 	ResourceLoader::add_resource_format_loader(resource_loader_dynamic_font);
+#endif // MODULE_FREETYPE_ENABLED
 
 	resource_loader_stream_texture.instance();
 	ResourceLoader::add_resource_format_loader(resource_loader_stream_texture);
@@ -434,6 +440,7 @@ void register_scene_types() {
 	ClassDB::register_class<Room>();
 	ClassDB::register_class<RoomGroup>();
 	ClassDB::register_class<RoomManager>();
+	ClassDB::register_class<Occluder>();
 	ClassDB::register_class<Portal>();
 
 	ClassDB::register_class<RootMotionView>();
@@ -645,6 +652,8 @@ void register_scene_types() {
 	ClassDB::register_class<PlaneShape>();
 	ClassDB::register_class<ConvexPolygonShape>();
 	ClassDB::register_class<ConcavePolygonShape>();
+	ClassDB::register_virtual_class<OccluderShape>();
+	ClassDB::register_class<OccluderShapeSphere>();
 
 	OS::get_singleton()->yield(); //may take time to init
 
@@ -681,10 +690,12 @@ void register_scene_types() {
 
 	ClassDB::register_class<TextFile>();
 
+#ifdef MODULE_FREETYPE_ENABLED
 	ClassDB::register_class<DynamicFontData>();
 	ClassDB::register_class<DynamicFont>();
 
 	DynamicFont::initialize_dynamic_fonts();
+#endif // MODULE_FREETYPE_ENABLED
 
 	ClassDB::register_virtual_class<StyleBox>();
 	ClassDB::register_class<StyleBoxEmpty>();
@@ -745,8 +756,11 @@ void register_scene_types() {
 
 	for (int i = 0; i < 20; i++) {
 		GLOBAL_DEF("layer_names/2d_render/layer_" + itos(i + 1), "");
-		GLOBAL_DEF("layer_names/2d_physics/layer_" + itos(i + 1), "");
 		GLOBAL_DEF("layer_names/3d_render/layer_" + itos(i + 1), "");
+	}
+
+	for (int i = 0; i < 32; i++) {
+		GLOBAL_DEF("layer_names/2d_physics/layer_" + itos(i + 1), "");
 		GLOBAL_DEF("layer_names/3d_physics/layer_" + itos(i + 1), "");
 	}
 
@@ -784,16 +798,18 @@ void register_scene_types() {
 void unregister_scene_types() {
 	clear_default_theme();
 
+#ifdef MODULE_FREETYPE_ENABLED
 	ResourceLoader::remove_resource_format_loader(resource_loader_dynamic_font);
 	resource_loader_dynamic_font.unref();
+
+	DynamicFont::finish_dynamic_fonts();
+#endif // MODULE_FREETYPE_ENABLED
 
 	ResourceLoader::remove_resource_format_loader(resource_loader_texture_layered);
 	resource_loader_texture_layered.unref();
 
 	ResourceLoader::remove_resource_format_loader(resource_loader_stream_texture);
 	resource_loader_stream_texture.unref();
-
-	DynamicFont::finish_dynamic_fonts();
 
 	ResourceSaver::remove_resource_format_saver(resource_saver_text);
 	resource_saver_text.unref();

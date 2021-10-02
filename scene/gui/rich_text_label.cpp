@@ -180,7 +180,6 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 	}
 
 	int wofs = margin;
-	int spaces_size = 0;
 	int align_ofs = 0;
 
 	if (p_mode != PROCESS_CACHE && align != ALIGN_FILL) {
@@ -248,7 +247,6 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 		line_ascent = 0;                                                                                                                                        \
 		line_descent = 0;                                                                                                                                       \
 		spaces = 0;                                                                                                                                             \
-		spaces_size = 0;                                                                                                                                        \
 		wofs = begin;                                                                                                                                           \
 		align_ofs = 0;                                                                                                                                          \
 		if (p_mode != PROCESS_CACHE) {                                                                                                                          \
@@ -449,9 +447,7 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 					fh = line_ascent + line_descent;
 
 					if (end && c[end - 1] == ' ') {
-						if (p_mode == PROCESS_CACHE) {
-							spaces_size += font->get_char_size(' ').width;
-						} else if (align == ALIGN_FILL) {
+						if (align == ALIGN_FILL && p_mode != PROCESS_CACHE) {
 							int ln = MIN(l.offset_caches.size() - 1, line);
 							if (l.space_caches[ln]) {
 								align_ofs = spaces * l.offset_caches[ln] / l.space_caches[ln];
@@ -1094,7 +1090,7 @@ void RichTextLabel::_find_click(ItemFrame *p_frame, const Point2i &p_click, Item
 
 Control::CursorShape RichTextLabel::get_cursor_shape(const Point2 &p_pos) const {
 	if (!underline_meta) {
-		return CURSOR_ARROW;
+		return get_default_cursor_shape();
 	}
 
 	if (selection.click) {
@@ -1102,10 +1098,11 @@ Control::CursorShape RichTextLabel::get_cursor_shape(const Point2 &p_pos) const 
 	}
 
 	if (main->first_invalid_line < main->lines.size()) {
-		return CURSOR_ARROW; //invalid
+		return get_default_cursor_shape(); //invalid
 	}
 
 	int line = 0;
+
 	Item *item = nullptr;
 	bool outside;
 	((RichTextLabel *)(this))->_find_click(main, p_pos, &item, &line, &outside);
@@ -1114,7 +1111,7 @@ Control::CursorShape RichTextLabel::get_cursor_shape(const Point2 &p_pos) const 
 		return CURSOR_POINTING_HAND;
 	}
 
-	return CURSOR_ARROW;
+	return get_default_cursor_shape();
 }
 
 void RichTextLabel::_gui_input(Ref<InputEvent> p_event) {

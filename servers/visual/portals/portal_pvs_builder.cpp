@@ -35,7 +35,7 @@
 #include "core/print_string.h"
 #include "portal_renderer.h"
 
-bool PVSBuilder::_log_active = false;
+bool PVSBuilder::_log_active = true;
 
 void PVSBuilder::find_neighbors(LocalVector<Neighbours> &r_neighbors) {
 	// first find the neighbors
@@ -233,9 +233,12 @@ void PVSBuilder::save_pvs(String p_filename) {
 
 #endif
 
-void PVSBuilder::calculate_pvs(PortalRenderer &p_portal_renderer, String p_filename) {
+void PVSBuilder::calculate_pvs(PortalRenderer &p_portal_renderer, String p_filename, int p_depth_limit, bool p_use_simple_pvs, bool p_log_pvs_generation) {
 	_portal_renderer = &p_portal_renderer;
 	_pvs = &p_portal_renderer.get_pvs();
+	_depth_limit = p_depth_limit;
+
+	_log_active = p_log_pvs_generation;
 
 	// attempt to load from file rather than create each time
 #ifdef GODOT_PVS_SUPPORT_SAVE_FILE
@@ -271,7 +274,11 @@ void PVSBuilder::calculate_pvs(PortalRenderer &p_portal_renderer, String p_filen
 
 		log("pvs from room : " + itos(n));
 
-		trace_rooms_recursive(0, n, n, -1, false, -1, dummy_planes, bf);
+		if (p_use_simple_pvs) {
+			trace_rooms_recursive_simple(0, n, n, -1, false, -1, dummy_planes, bf);
+		} else {
+			trace_rooms_recursive(0, n, n, -1, false, -1, dummy_planes, bf);
+		}
 
 		create_secondary_pvs(n, neighbors, bf);
 
@@ -308,7 +315,9 @@ void PVSBuilder::calculate_pvs(PortalRenderer &p_portal_renderer, String p_filen
 }
 
 void PVSBuilder::logd(int p_depth, String p_string) {
-	return;
+	if (!_log_active) {
+		return;
+	}
 
 	String string_long;
 	for (int n = 0; n < p_depth; n++) {
@@ -324,9 +333,214 @@ void PVSBuilder::log(String p_string) {
 	}
 }
 
-void PVSBuilder::trace_rooms_recursive(int p_depth, int p_source_room_id, int p_room_id, int p_first_portal_id, bool p_first_portal_outgoing, int p_previous_portal_id, const LocalVector<Plane, int32_t> &p_planes, BitFieldDynamic &r_bitfield_rooms) {
+// The full routine deals with re-entrant rooms. I.e. more than one portal path can lead into a room.
+// This makes the logic more complex, because we cannot terminate on the second entry to a room,
+// and have to account for internal rooms, and the possibility of portal paths going back on themselves.
+void PVSBuilder::trace_rooms_recursive(int p_depth, int p_source_room_id, int p_room_id, int p_first_portal_id, bool p_first_portal_outgoing, int p_previous_portal_id, const LocalVector<Plane, int32_t> &p_planes, BitFieldDynamic &r_bitfield_rooms, int p_from_external_room_id) {
+	// prevent too much depth
+	if (p_depth > _depth_limit) {
+		WARN_PRINT_ONCE("PVS Depth Limit reached (seeing through too many portals)");
+		return;
+	}
+
+	// is this room hit first time?
+	if (r_bitfield_rooms.check_and_set(p_room_id)) {
+		// only add to the room PVS of the source room once
+		VSRoom &source_room = _portal_renderer->get_room(p_source_room_id);
+		_pvs->add_to_pvs(p_room_id);
+		source_room._pvs_size += 1;
+	}
+
+	logd(p_depth, "trace_rooms_recursive room " + itos(p_room_id));
+
+	// get the room
+	const VSRoom &room = _portal_renderer->get_room(p_room_id);
+
+	// go through each portal
+	int num_portals = room._portal_ids.size();
+
+	for (int p = 0; p < num_portals; p++) {
+		int portal_id = room._portal_ids[p];
+		const VSPortal &portal = _portal_renderer->get_portal(portal_id);
+
+		// everything depends on whether the portal is incoming or outgoing.
+		// if incoming we reverse the logic.
+		int outgoing = 1;
+
+		int room_a_id = portal._linkedroom_ID[0];
+		if (room_a_id != p_room_id) {
+			outgoing = 0;
+			DEV_ASSERT(portal._linkedroom_ID[1] == p_room_id);
+		}
+
+		// trace through this portal to the next room
+		int linked_room_id = portal._linkedroom_ID[outgoing];
+
+		// not relevant, portal doesn't go anywhere
+		if (linked_room_id == -1)
+			continue;
+
+		// For pvs there is no real start point, but we will use the centre of the first portal.
+		// This is used for checking portals are pointing outward from start point.
+		if (p_source_room_id == p_room_id) {
+			_trace_start_point = portal._pt_center;
+
+			// We will use a small epsilon because we don't want to trace out
+			// to coplanar portals for the first to second portals, before planes
+			// have been added. So we will place the trace start point slightly
+			// behind the first portal plane (e.g. slightly in the source room).
+			// The epsilon must balance being enough in not to cause numerical error
+			// at large distances from the origin, but too large and this will also
+			// prevent the PVS entering portals that are very closely aligned
+			// to the portal in.
+			// Closely aligned portals should not happen in normal level design,
+			// and will usually be a design error.
+			// Watch for bugs here though, caused by closely aligned portals.
+
+			// The epsilon should be BEHIND the way we are going through the portal,
+			// so depends whether it is outgoing or not
+			if (outgoing) {
+				_trace_start_point -= portal._plane.normal * 0.1;
+			} else {
+				_trace_start_point += portal._plane.normal * 0.1;
+			}
+
+		} else {
+			// much better way of culling portals by direction to camera...
+			// instead of using dot product with a varying view direction, we simply find which side of the portal
+			// plane the camera is on! If it is behind, the portal can be seen through, if in front, it can't
+			real_t dist_cam = portal._plane.distance_to(_trace_start_point);
+
+			if (!outgoing) {
+				dist_cam = -dist_cam;
+			}
+
+			if (dist_cam >= 0.0) {
+				// logd(p_depth + 2, "portal WRONG DIRECTION");
+				continue;
+			}
+		}
+
+		logd(p_depth + 1, "portal to room " + itos(linked_room_id));
+
+		// is it culled by the planes?
+		VSPortal::ClipResult overall_res = VSPortal::ClipResult::CLIP_INSIDE;
+
+		// while clipping to the planes we maintain a list of partial planes, so we can add them to the
+		// recursive next iteration of planes to check
+		static LocalVector<int> partial_planes;
+		partial_planes.clear();
+
+		for (int32_t l = 0; l < p_planes.size(); l++) {
+			VSPortal::ClipResult res = portal.clip_with_plane(p_planes[l]);
+
+			switch (res) {
+				case VSPortal::ClipResult::CLIP_OUTSIDE: {
+					overall_res = res;
+				} break;
+				case VSPortal::ClipResult::CLIP_PARTIAL: {
+					// if the portal intersects one of the planes, we should take this plane into account
+					// in the next call of this recursive trace, because it can be used to cull out more objects
+					overall_res = res;
+					partial_planes.push_back(l);
+				} break;
+				default: // suppress warning
+					break;
+			}
+
+			// if the portal was totally outside the 'frustum' then we can ignore it
+			if (overall_res == VSPortal::ClipResult::CLIP_OUTSIDE)
+				break;
+		}
+
+		// this portal is culled
+		if (overall_res == VSPortal::ClipResult::CLIP_OUTSIDE) {
+			logd(p_depth + 2, "portal CLIP_OUTSIDE");
+			continue;
+		}
+
+		// Don't allow portals from internal to external room to be followed
+		// if the external room has already been processed in this trace stack. This prevents
+		// unneeded processing, and also prevents recursive feedback where you
+		// see into internal room -> external room and back into the same internal room
+		// via the same portal.
+		if (portal._internal && (linked_room_id != -1)) {
+			if (outgoing) {
+				if (linked_room_id == p_from_external_room_id) {
+					continue;
+				}
+			} else {
+				// We are entering an internal portal from an external room.
+				// set the external room id, so we can recognise this when we are
+				// later exiting the internal rooms.
+				// Note that as we can only store 1 previous external room, this system
+				// won't work completely correctly when you have 2 levels of internal room
+				// and you can see from roomgroup a -> b -> c. However this should just result
+				// in a little slower culling for that particular view, and hopefully will not break
+				// with recursive loop looking through the same portal multiple times. (don't think this
+				// is possible in this scenario).
+				p_from_external_room_id = p_room_id;
+			}
+		}
+
+		// construct new planes
+		LocalVector<Plane, int32_t> planes;
+
+		if (p_first_portal_id != -1) {
+			// add new planes
+			const VSPortal &first_portal = _portal_renderer->get_portal(p_first_portal_id);
+			portal.add_pvs_planes(first_portal, p_first_portal_outgoing, planes, outgoing != 0);
+
+//#define GODOT_PVS_EXTRA_REJECT_TEST
+#ifdef GODOT_PVS_EXTRA_REJECT_TEST
+			// extra reject test for pvs - was the previous portal points outside the planes formed by the new portal?
+			// not fully tested and not yet found a situation where needed, but will leave in in case testers find
+			// such a situation.
+			if (p_previous_portal_id != -1) {
+				const VSPortal &prev_portal = _portal_renderer->get_portal(p_previous_portal_id);
+				if (prev_portal._pvs_is_outside_planes(planes)) {
+					continue;
+				}
+			}
+#endif
+		}
+
+		// if portal is totally inside the planes, don't copy the old planes ..
+		// i.e. we can now cull using the portal and forget about the rest of the frustum (yay)
+		if (overall_res != VSPortal::ClipResult::CLIP_INSIDE) {
+			// if it WASNT totally inside the existing frustum, we also need to add any existing planes
+			// that cut the portal.
+			for (uint32_t n = 0; n < partial_planes.size(); n++)
+				planes.push_back(p_planes[partial_planes[n]]);
+		}
+
+		// hopefully the portal actually leads somewhere...
+		if (linked_room_id != -1) {
+			// we either pass on the first portal id, or we start
+			// it here, because we are looking through the first portal
+			int first_portal_id = p_first_portal_id;
+			if (first_portal_id == -1) {
+				first_portal_id = portal_id;
+				p_first_portal_outgoing = outgoing != 0;
+			}
+
+			trace_rooms_recursive(p_depth + 1, p_source_room_id, linked_room_id, first_portal_id, p_first_portal_outgoing, portal_id, planes, r_bitfield_rooms, p_from_external_room_id);
+		} // linked room is valid
+	}
+}
+
+// This simpler routine was the first used. It is reliable and no epsilons, and fast.
+// But it will not create the correct result where there are multiple portal paths
+// through a room when building the PVS.
+void PVSBuilder::trace_rooms_recursive_simple(int p_depth, int p_source_room_id, int p_room_id, int p_first_portal_id, bool p_first_portal_outgoing, int p_previous_portal_id, const LocalVector<Plane, int32_t> &p_planes, BitFieldDynamic &r_bitfield_rooms) {
 	// has this room been done already?
 	if (!r_bitfield_rooms.check_and_set(p_room_id)) {
+		return;
+	}
+
+	// prevent too much depth
+	if (p_depth > _depth_limit) {
+		WARN_PRINT_ONCE("Portal Depth Limit reached (seeing through too many portals)");
 		return;
 	}
 
@@ -414,7 +628,6 @@ void PVSBuilder::trace_rooms_recursive(int p_depth, int p_source_room_id, int p_
 			const VSPortal &first_portal = _portal_renderer->get_portal(p_first_portal_id);
 			portal.add_pvs_planes(first_portal, p_first_portal_outgoing, planes, outgoing != 0);
 
-//#define GODOT_PVS_EXTRA_REJECT_TEST
 #ifdef GODOT_PVS_EXTRA_REJECT_TEST
 			// extra reject test for pvs - was the previous portal points outside the planes formed by the new portal?
 			// not fully tested and not yet found a situation where needed, but will leave in in case testers find

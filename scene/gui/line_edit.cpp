@@ -51,6 +51,11 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 
 	if (b.is_valid()) {
 		if (b->is_pressed() && b->get_button_index() == BUTTON_RIGHT && context_menu_enabled) {
+			if (editable) {
+				menu->set_item_disabled(menu->get_item_index(MENU_UNDO), !has_undo());
+				menu->set_item_disabled(menu->get_item_index(MENU_REDO), !has_redo());
+			}
+
 			menu->set_position(get_global_transform().xform(get_local_mouse_position()));
 			menu->set_size(Vector2(1, 1));
 			menu->set_scale(get_global_transform().get_scale());
@@ -376,13 +381,17 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 					FALLTHROUGH;
 				}
 				case KEY_LEFT: {
-#ifdef APPLE_STYLE_KEYS
-					shift_selection_check_pre(k->get_shift());
-#else
-					if (!k->get_alt()) {
-						shift_selection_check_pre(k->get_shift());
-					}
+#ifndef APPLE_STYLE_KEYS
+					if (!k->get_alt())
 #endif
+					{
+						shift_selection_check_pre(k->get_shift());
+						if (selection.enabled && !k->get_shift()) {
+							set_cursor_position(selection.begin);
+							deselect();
+							break;
+						}
+					}
 
 #ifdef APPLE_STYLE_KEYS
 					if (k->get_command()) {
@@ -425,8 +434,13 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 					FALLTHROUGH;
 				}
 				case KEY_RIGHT: {
-					shift_selection_check_pre(k->get_shift());
-
+					if (selection.enabled && !k->get_shift()) {
+						set_cursor_position(selection.end);
+						deselect();
+						break;
+					} else {
+						shift_selection_check_pre(k->get_shift());
+					}
 #ifdef APPLE_STYLE_KEYS
 					if (k->get_command()) {
 						set_cursor_position(text.length());
@@ -553,6 +567,11 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 				} break;
 				case KEY_MENU: {
 					if (context_menu_enabled) {
+						if (editable) {
+							menu->set_item_disabled(menu->get_item_index(MENU_UNDO), !has_undo());
+							menu->set_item_disabled(menu->get_item_index(MENU_REDO), !has_redo());
+						}
+
 						Point2 pos = Point2(get_cursor_pixel_pos(), (get_size().y + get_font("font")->get_height()) / 2);
 						menu->set_position(get_global_transform().xform(pos));
 						menu->set_size(Vector2(1, 1));
@@ -992,6 +1011,17 @@ void LineEdit::paste_text() {
 			text_changed_dirty = true;
 		}
 	}
+}
+
+bool LineEdit::has_undo() const {
+	if (undo_stack_pos == nullptr) {
+		return undo_stack.size() > 1;
+	}
+	return undo_stack_pos != undo_stack.front();
+}
+
+bool LineEdit::has_redo() const {
+	return undo_stack_pos != nullptr && undo_stack_pos != undo_stack.back();
 }
 
 void LineEdit::undo() {
@@ -1889,8 +1919,6 @@ void LineEdit::_bind_methods() {
 }
 
 LineEdit::LineEdit() {
-	undo_stack_pos = nullptr;
-	_create_undo_state();
 	align = ALIGN_LEFT;
 	cached_width = 0;
 	cached_placeholder_width = 0;
@@ -1907,6 +1935,9 @@ LineEdit::LineEdit() {
 	clear_button_status.pressing_inside = false;
 	shortcut_keys_enabled = true;
 	selecting_enabled = true;
+
+	undo_stack_pos = nullptr;
+	_create_undo_state();
 
 	deselect();
 	set_focus_mode(FOCUS_ALL);

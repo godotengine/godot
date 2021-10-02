@@ -179,6 +179,9 @@ class VisualScriptEditor : public ScriptEditorBase {
 
 	void _port_action_menu(int p_option, const StringName &p_func);
 
+	NodePath drop_path;
+	Node *drop_node = nullptr;
+	Vector2 drop_position;
 	void connect_data(Ref<VisualScriptNode> vnode_old, Ref<VisualScriptNode> vnode, int new_id);
 
 	void _selected_connect_node(const String &p_text, const String &p_category, const bool p_connecting = true);

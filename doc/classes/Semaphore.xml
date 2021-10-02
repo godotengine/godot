@@ -7,19 +7,17 @@
 		A synchronization semaphore which can be used to synchronize multiple [Thread]s. Initialized to zero on creation. Be careful to avoid deadlocks. For a binary version, see [Mutex].
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/3.3/tutorials/threads/using_multiple_threads.html</link>
+		<link>https://docs.godotengine.org/en/3.4/tutorials/threads/using_multiple_threads.html</link>
 	</tutorials>
 	<methods>
 		<method name="post">
-			<return type="int" enum="Error">
-			</return>
+			<return type="int" enum="Error" />
 			<description>
 				Lowers the [Semaphore], allowing one more thread in. Returns [constant OK] on success, [constant ERR_BUSY] otherwise.
 			</description>
 		</method>
 		<method name="wait">
-			<return type="int" enum="Error">
-			</return>
+			<return type="int" enum="Error" />
 			<description>
 				Tries to wait for the [Semaphore], if its value is zero, blocks until non-zero. Returns [constant OK] on success, [constant ERR_BUSY] otherwise.
 			</description>

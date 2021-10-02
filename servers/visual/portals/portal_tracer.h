@@ -33,6 +33,7 @@
 
 #include "core/bitfield_dynamic.h"
 #include "core/local_vector.h"
+#include "portal_occlusion_culler.h"
 #include "portal_types.h"
 
 #ifdef TOOLS_ENABLED
@@ -105,13 +106,18 @@ public:
 	void trace(PortalRenderer &p_portal_renderer, const Vector3 &p_pos, const LocalVector<Plane> &p_planes, int p_start_room_id, TraceResult &r_result);
 
 	// globals are handled separately as they don't care about the rooms
-	int trace_globals(const LocalVector<Plane> &p_planes, VSInstance **p_result_array, int first_result, int p_result_max, uint32_t p_mask);
+	int trace_globals(const LocalVector<Plane> &p_planes, VSInstance **p_result_array, int first_result, int p_result_max, uint32_t p_mask, bool p_override_camera);
 
 	void set_depth_limit(int p_limit) { _depth_limit = p_limit; }
+	int get_depth_limit() const { return _depth_limit; }
+
+	// special function for occlusion culling only that does not use portals / rooms,
+	// but allows using occluders with the main scene
+	int occlusion_cull(PortalRenderer &p_portal_renderer, const Vector3 &p_point, const Vector<Plane> &p_convex, VSInstance **p_result_array, int p_num_results);
 
 private:
 	// main tracing function is recursive
-	void trace_recursive(const TraceParams &p_params, int p_depth, int p_room_id, const LocalVector<Plane> &p_planes);
+	void trace_recursive(const TraceParams &p_params, int p_depth, int p_room_id, const LocalVector<Plane> &p_planes, int p_from_external_room_id = -1);
 
 	// use pvs to cull instead of dynamically using portals
 	// this is a faster trace but less accurate. Only possible if PVS has been generated.
@@ -155,6 +161,7 @@ private:
 
 	PlanesPool _planes_pool;
 	int _depth_limit = 16;
+	PortalOcclusionCuller _occlusion_culler;
 
 	// keep a tick count for each trace, to avoid adding a visible
 	// object to the hit list more than once per tick

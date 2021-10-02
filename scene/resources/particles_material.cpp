@@ -30,6 +30,8 @@
 
 #include "particles_material.h"
 
+#include "core/version.h"
+
 Mutex ParticlesMaterial::material_mutex;
 SelfList<ParticlesMaterial>::List *ParticlesMaterial::dirty_materials = nullptr;
 Map<ParticlesMaterial::MaterialKey, ParticlesMaterial::ShaderData> ParticlesMaterial::shader_map;
@@ -138,7 +140,10 @@ void ParticlesMaterial::_update_shader() {
 
 	//must create a shader!
 
-	String code = "shader_type particles;\n";
+	// Add a comment to describe the shader origin (useful when converting to ShaderMaterial).
+	String code = "// NOTE: Shader automatically converted from " VERSION_NAME " " VERSION_FULL_CONFIG "'s ParticlesMaterial.\n\n";
+
+	code += "shader_type particles;\n";
 
 	code += "uniform vec3 direction;\n";
 	code += "uniform float spread;\n";
@@ -332,30 +337,34 @@ void ParticlesMaterial::_update_shader() {
 	code += "		float spread_rad = spread * degree_to_rad;\n";
 
 	if (flags[FLAG_DISABLE_Z]) {
-		code += "		float angle1_rad = rand_from_seed_m1_p1(alt_seed) * spread_rad;\n";
-		code += "		angle1_rad += direction.x != 0.0 ? atan(direction.y, direction.x) : sign(direction.y) * (pi / 2.0);\n";
-		code += "		vec3 rot = vec3(cos(angle1_rad), sin(angle1_rad), 0.0);\n";
-		code += "		VELOCITY = rot * initial_linear_velocity * mix(1.0, rand_from_seed(alt_seed), initial_linear_velocity_random);\n";
+		code += "		{\n";
+		code += "			float angle1_rad = rand_from_seed_m1_p1(alt_seed) * spread_rad;\n";
+		code += "			angle1_rad += direction.x != 0.0 ? atan(direction.y, direction.x) : sign(direction.y) * (pi / 2.0);\n";
+		code += "			vec3 rot = vec3(cos(angle1_rad), sin(angle1_rad), 0.0);\n";
+		code += "			VELOCITY = rot * initial_linear_velocity * mix(1.0, rand_from_seed(alt_seed), initial_linear_velocity_random);\n";
+		code += "		}\n";
 
 	} else {
 		//initiate velocity spread in 3D
-		code += "		float angle1_rad = rand_from_seed_m1_p1(alt_seed) * spread_rad;\n";
-		code += "		float angle2_rad = rand_from_seed_m1_p1(alt_seed) * spread_rad * (1.0 - flatness);\n";
-		code += "		vec3 direction_xz = vec3(sin(angle1_rad), 0.0, cos(angle1_rad));\n";
-		code += "		vec3 direction_yz = vec3(0.0, sin(angle2_rad), cos(angle2_rad));\n";
-		code += "		direction_yz.z = direction_yz.z / max(0.0001,sqrt(abs(direction_yz.z))); // better uniform distribution\n";
-		code += "		vec3 spread_direction = vec3(direction_xz.x * direction_yz.z, direction_yz.y, direction_xz.z * direction_yz.z);\n";
-		code += "		vec3 direction_nrm = normalize(direction);\n";
-		code += "		// rotate spread to direction\n";
-		code += "		vec3 binormal = cross(vec3(0.0, 1.0, 0.0), direction_nrm);\n";
-		code += "		if (length(binormal) < 0.0001) {\n";
-		code += "			// direction is parallel to Y. Choose Z as the binormal.\n";
-		code += "			binormal = vec3(0.0, 0.0, 1.0);\n";
+		code += "		{\n";
+		code += "			float angle1_rad = rand_from_seed_m1_p1(alt_seed) * spread_rad;\n";
+		code += "			float angle2_rad = rand_from_seed_m1_p1(alt_seed) * spread_rad * (1.0 - flatness);\n";
+		code += "			vec3 direction_xz = vec3(sin(angle1_rad), 0.0, cos(angle1_rad));\n";
+		code += "			vec3 direction_yz = vec3(0.0, sin(angle2_rad), cos(angle2_rad));\n";
+		code += "			direction_yz.z = direction_yz.z / max(0.0001,sqrt(abs(direction_yz.z))); // better uniform distribution\n";
+		code += "			vec3 spread_direction = vec3(direction_xz.x * direction_yz.z, direction_yz.y, direction_xz.z * direction_yz.z);\n";
+		code += "			vec3 direction_nrm = length(direction) > 0.0 ? normalize(direction) : vec3(0.0, 0.0, 1.0);\n";
+		code += "			// rotate spread to direction\n";
+		code += "			vec3 binormal = cross(vec3(0.0, 1.0, 0.0), direction_nrm);\n";
+		code += "			if (length(binormal) < 0.0001) {\n";
+		code += "				// direction is parallel to Y. Choose Z as the binormal.\n";
+		code += "				binormal = vec3(0.0, 0.0, 1.0);\n";
+		code += "			}\n";
+		code += "			binormal = normalize(binormal);\n";
+		code += "			vec3 normal = cross(binormal, direction_nrm);\n";
+		code += "			spread_direction = binormal * spread_direction.x + normal * spread_direction.y + direction_nrm * spread_direction.z;\n";
+		code += "			VELOCITY = spread_direction * initial_linear_velocity * mix(1.0, rand_from_seed(alt_seed), initial_linear_velocity_random);\n";
 		code += "		}\n";
-		code += "		binormal = normalize(binormal);\n";
-		code += "		vec3 normal = cross(binormal, direction_nrm);\n";
-		code += "		spread_direction = binormal * spread_direction.x + normal * spread_direction.y + direction_nrm * spread_direction.z;\n";
-		code += "		VELOCITY = spread_direction * initial_linear_velocity * mix(1.0, rand_from_seed(alt_seed), initial_linear_velocity_random);\n";
 	}
 
 	code += "		float base_angle = (initial_angle + tex_angle) * mix(1.0, angle_rand, initial_angle_random);\n";
@@ -383,16 +392,20 @@ void ParticlesMaterial::_update_shader() {
 
 			if (emission_shape == EMISSION_SHAPE_DIRECTED_POINTS) {
 				if (flags[FLAG_DISABLE_Z]) {
-					code += "		mat2 rotm;";
-					code += "		rotm[0] = texelFetch(emission_texture_normal, emission_tex_ofs, 0).xy;\n";
-					code += "		rotm[1] = rotm[0].yx * vec2(1.0, -1.0);\n";
-					code += "		VELOCITY.xy = rotm * VELOCITY.xy;\n";
+					code += "		{\n";
+					code += "			mat2 rotm;";
+					code += "			rotm[0] = texelFetch(emission_texture_normal, emission_tex_ofs, 0).xy;\n";
+					code += "			rotm[1] = rotm[0].yx * vec2(1.0, -1.0);\n";
+					code += "			VELOCITY.xy = rotm * VELOCITY.xy;\n";
+					code += "		}\n";
 				} else {
-					code += "		vec3 normal = texelFetch(emission_texture_normal, emission_tex_ofs, 0).xyz;\n";
-					code += "		vec3 v0 = abs(normal.z) < 0.999 ? vec3(0.0, 0.0, 1.0) : vec3(0.0, 1.0, 0.0);\n";
-					code += "		vec3 tangent = normalize(cross(v0, normal));\n";
-					code += "		vec3 bitangent = normalize(cross(tangent, normal));\n";
-					code += "		VELOCITY = mat3(tangent, bitangent, normal) * VELOCITY;\n";
+					code += "		{\n";
+					code += "			vec3 normal = texelFetch(emission_texture_normal, emission_tex_ofs, 0).xyz;\n";
+					code += "			vec3 v0 = abs(normal.z) < 0.999 ? vec3(0.0, 0.0, 1.0) : vec3(0.0, 1.0, 0.0);\n";
+					code += "			vec3 tangent = normalize(cross(v0, normal));\n";
+					code += "			vec3 bitangent = normalize(cross(tangent, normal));\n";
+					code += "			VELOCITY = mat3(tangent, bitangent, normal) * VELOCITY;\n";
+					code += "		}\n";
 				}
 			}
 		} break;
@@ -626,7 +639,7 @@ void ParticlesMaterial::_update_shader() {
 		}
 		// turn particle by rotation in Y
 		if (flags[FLAG_ROTATE_Y]) {
-			code += "	TRANSFORM = mat4(vec4(cos(CUSTOM.x), 0.0, -sin(CUSTOM.x), 0.0), vec4(0.0, 1.0, 0.0, 0.0), vec4(sin(CUSTOM.x), 0.0, cos(CUSTOM.x), 0.0), vec4(0.0, 0.0, 0.0, 1.0));\n";
+			code += "	TRANSFORM = mat4(vec4(cos(CUSTOM.x), 0.0, -sin(CUSTOM.x), 0.0), vec4(0.0, 1.0, 0.0, 0.0), vec4(sin(CUSTOM.x), 0.0, cos(CUSTOM.x), 0.0), TRANSFORM[3]);\n";
 		}
 	}
 	//scale by scale
@@ -677,7 +690,7 @@ void ParticlesMaterial::flush_changes() {
 void ParticlesMaterial::_queue_shader_change() {
 	material_mutex.lock();
 
-	if (!element.in_list()) {
+	if (is_initialized && !element.in_list()) {
 		dirty_materials->add(&element);
 	}
 
@@ -1354,6 +1367,7 @@ ParticlesMaterial::ParticlesMaterial() :
 	current_key.key = 0;
 	current_key.invalid_key = 1;
 
+	is_initialized = true;
 	_queue_shader_change();
 }
 

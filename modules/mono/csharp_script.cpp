@@ -39,9 +39,11 @@
 #include "core/project_settings.h"
 
 #ifdef TOOLS_ENABLED
+#include "core/os/keyboard.h"
 #include "editor/bindings_generator.h"
 #include "editor/csharp_project.h"
 #include "editor/editor_node.h"
+#include "editor/editor_settings.h"
 #include "editor/node_dock.h"
 #endif
 
@@ -783,6 +785,12 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 
 	for (List<Ref<CSharpScript>>::Element *E = scripts.front(); E; E = E->next()) {
 		Ref<CSharpScript> &script = E->get();
+		// If someone removes a script from a node, deletes the script, builds, adds a script to the
+		// same node, then builds again, the script might have no path and also no script_class. In
+		// that case, we can't (and don't need to) reload it.
+		if (script->get_path().empty() && !script->script_class) {
+			continue;
+		}
 
 		to_reload.push_back(script);
 
@@ -1172,6 +1180,7 @@ void CSharpLanguage::_editor_init_callback() {
 
 	// Enable it as a plugin
 	EditorNode::add_editor_plugin(godotsharp_editor);
+	ED_SHORTCUT("mono/build_solution", TTR("Build Solution"), KEY_MASK_ALT | KEY_B);
 	godotsharp_editor->enable_plugin();
 
 	get_singleton()->godotsharp_editor = godotsharp_editor;
@@ -1624,6 +1633,28 @@ Variant::Type CSharpInstance::get_property_type(const StringName &p_name, bool *
 	return Variant::NIL;
 }
 
+void CSharpInstance::get_method_list(List<MethodInfo> *p_list) const {
+	if (!script->is_valid() || !script->script_class)
+		return;
+
+	GD_MONO_SCOPE_THREAD_ATTACH;
+
+	// TODO: We're filtering out constructors but there may be other methods unsuitable for explicit calls.
+	GDMonoClass *top = script->script_class;
+
+	while (top && top != script->native) {
+		const Vector<GDMonoMethod *> &methods = top->get_all_methods();
+		for (int i = 0; i < methods.size(); ++i) {
+			MethodInfo minfo = methods[i]->get_method_info();
+			if (minfo.name != CACHED_STRING_NAME(dotctor)) {
+				p_list->push_back(minfo);
+			}
+		}
+
+		top = top->get_parent_class();
+	}
+}
+
 bool CSharpInstance::has_method(const StringName &p_method) const {
 	if (!script.is_valid())
 		return false;
@@ -1644,8 +1675,7 @@ bool CSharpInstance::has_method(const StringName &p_method) const {
 }
 
 Variant CSharpInstance::call(const StringName &p_method, const Variant **p_args, int p_argcount, Variant::CallError &r_error) {
-	if (!script.is_valid())
-		ERR_FAIL_V(Variant());
+	ERR_FAIL_COND_V(!script.is_valid(), Variant());
 
 	GD_MONO_SCOPE_THREAD_ATTACH;
 
@@ -2644,12 +2674,24 @@ int CSharpScript::_try_get_member_export_hint(IMonoClassMember *p_member, Manage
 
 		ERR_FAIL_COND_V_MSG(elem_variant_type == Variant::NIL, -1, "Unknown array element type.");
 
-		int hint_res = _try_get_member_export_hint(p_member, elem_type, elem_variant_type, /* allow_generics: */ false, elem_hint, elem_hint_string);
+		bool preset_hint = false;
+		if (elem_variant_type == Variant::STRING) {
+			MonoObject *attr = p_member->get_attribute(CACHED_CLASS(ExportAttribute));
+			if (PropertyHint(CACHED_FIELD(ExportAttribute, hint)->get_int_value(attr)) == PROPERTY_HINT_ENUM) {
+				r_hint_string = itos(elem_variant_type) + "/" + itos(PROPERTY_HINT_ENUM) + ":" + CACHED_FIELD(ExportAttribute, hintString)->get_string_value(attr);
+				preset_hint = true;
+			}
+		}
 
-		ERR_FAIL_COND_V_MSG(hint_res == -1, -1, "Error while trying to determine information about the array element type.");
+		if (!preset_hint) {
+			int hint_res = _try_get_member_export_hint(p_member, elem_type, elem_variant_type, /* allow_generics: */ false, elem_hint, elem_hint_string);
 
-		// Format: type/hint:hint_string
-		r_hint_string = itos(elem_variant_type) + "/" + itos(elem_hint) + ":" + elem_hint_string;
+			ERR_FAIL_COND_V_MSG(hint_res == -1, -1, "Error while trying to determine information about the array element type.");
+
+			// Format: type/hint:hint_string
+			r_hint_string = itos(elem_variant_type) + "/" + itos(elem_hint) + ":" + elem_hint_string;
+		}
+
 		r_hint = PROPERTY_HINT_TYPE_STRING;
 
 	} else if (p_allow_generics && p_variant_type == Variant::DICTIONARY) {
@@ -2665,6 +2707,7 @@ int CSharpScript::_try_get_member_export_hint(IMonoClassMember *p_member, Manage
 void CSharpScript::_clear() {
 	tool = false;
 	valid = false;
+	reload_invalidated = true;
 
 	base = NULL;
 	native = NULL;
@@ -2768,6 +2811,7 @@ void CSharpScript::initialize_for_managed_type(Ref<CSharpScript> p_script, GDMon
 
 	p_script->valid = true;
 	p_script->tool = p_script->script_class->has_attribute(CACHED_CLASS(ToolAttribute));
+	p_script->reload_invalidated = false;
 
 	if (!p_script->tool) {
 		GDMonoClass *nesting_class = p_script->script_class->get_nesting_class();
@@ -3028,10 +3072,19 @@ void CSharpScript::get_script_method_list(List<MethodInfo> *p_list) const {
 
 	GD_MONO_SCOPE_THREAD_ATTACH;
 
-	// TODO: Filter out things unsuitable for explicit calls, like constructors.
-	const Vector<GDMonoMethod *> &methods = script_class->get_all_methods();
-	for (int i = 0; i < methods.size(); ++i) {
-		p_list->push_back(methods[i]->get_method_info());
+	// TODO: We're filtering out constructors but there may be other methods unsuitable for explicit calls.
+	GDMonoClass *top = script_class;
+
+	while (top && top != native) {
+		const Vector<GDMonoMethod *> &methods = top->get_all_methods();
+		for (int i = 0; i < methods.size(); ++i) {
+			MethodInfo minfo = methods[i]->get_method_info();
+			if (minfo.name != CACHED_STRING_NAME(dotctor)) {
+				p_list->push_back(methods[i]->get_method_info());
+			}
+		}
+
+		top = top->get_parent_class();
 	}
 }
 
@@ -3065,13 +3118,12 @@ MethodInfo CSharpScript::get_method_info(const StringName &p_method) const {
 }
 
 Error CSharpScript::reload(bool p_keep_state) {
-	bool has_instances;
-	{
-		MutexLock lock(CSharpLanguage::get_singleton()->script_instances_mutex);
-		has_instances = instances.size();
+	if (!reload_invalidated) {
+		return OK;
 	}
-
-	ERR_FAIL_COND_V(!p_keep_state && has_instances, ERR_ALREADY_IN_USE);
+	// In the case of C#, reload doesn't really do any script reloading.
+	// That's done separately via domain reloading.
+	reload_invalidated = false;
 
 	GD_MONO_SCOPE_THREAD_ATTACH;
 
@@ -3203,6 +3255,23 @@ void CSharpScript::get_script_signal_list(List<MethodInfo> *r_signals) const {
 		}
 		r_signals->push_back(mi);
 	}
+}
+
+bool CSharpScript::inherits_script(const Ref<Script> &p_script) const {
+	Ref<CSharpScript> cs = p_script;
+	if (cs.is_null()) {
+		return false;
+	}
+
+	if (script_class == nullptr || cs->script_class == nullptr) {
+		return false;
+	}
+
+	if (script_class == cs->script_class) {
+		return true;
+	}
+
+	return cs->script_class->is_assignable_from(script_class);
 }
 
 Ref<Script> CSharpScript::get_base_script() const {

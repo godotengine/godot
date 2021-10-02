@@ -300,7 +300,8 @@ void CreateDialog::_update_search() {
 	search_options->clear();
 	favorite->set_disabled(true);
 
-	help_bit->set_text("");
+	help_bit->set_text(vformat(TTR("No results for \"%s\"."), search_box->get_text()));
+	help_bit->get_rich_text()->set_self_modulate(Color(1, 1, 1, 0.5));
 
 	search_options_types.clear();
 
@@ -554,7 +555,17 @@ void CreateDialog::_item_selected() {
 		return;
 	}
 
-	help_bit->set_text(EditorHelp::get_doc_data()->class_list[name].brief_description);
+	if (EditorHelp::get_doc_data()->class_list.has(name) && !EditorHelp::get_doc_data()->class_list[name].brief_description.empty()) {
+		help_bit->set_text(EditorHelp::get_doc_data()->class_list[name].brief_description);
+		// Display both class name and description, since the help bit may be displayed
+		// far away from the location (especially if the dialog was resized to be taller).
+		help_bit->set_text(vformat("[b]%s[/b]: %s", name, EditorHelp::get_doc_data()->class_list[name].brief_description.strip_edges()));
+		help_bit->get_rich_text()->set_self_modulate(Color(1, 1, 1, 1));
+	} else {
+		// Use nested `vformat()` as translators shouldn't interfere with BBCode tags.
+		help_bit->set_text(vformat(TTR("No description available for %s."), vformat("[b]%s[/b]", name)));
+		help_bit->get_rich_text()->set_self_modulate(Color(1, 1, 1, 0.5));
+	}
 
 	get_ok()->set_disabled(false);
 }

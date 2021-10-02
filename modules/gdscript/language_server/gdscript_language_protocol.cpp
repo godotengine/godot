@@ -284,6 +284,23 @@ void GDScriptLanguageProtocol::notify_client(const String &p_method, const Varia
 	peer->res_queue.push_back(msg.utf8());
 }
 
+void GDScriptLanguageProtocol::request_client(const String &p_method, const Variant &p_params, int p_client_id) {
+	if (p_client_id == -1) {
+		ERR_FAIL_COND_MSG(latest_client_id == -1,
+				"GDScript LSP: Can't notify client as none was connected.");
+		p_client_id = latest_client_id;
+	}
+	ERR_FAIL_COND(!clients.has(p_client_id));
+	Ref<LSPeer> peer = clients.get(p_client_id);
+	ERR_FAIL_COND(peer == nullptr);
+
+	Dictionary message = make_request(p_method, p_params, next_server_id);
+	next_server_id++;
+	String msg = JSON::print(message);
+	msg = format_output(msg);
+	peer->res_queue.push_back(msg.utf8());
+}
+
 bool GDScriptLanguageProtocol::is_smart_resolve_enabled() const {
 	return bool(_EDITOR_GET("network/language_server/enable_smart_resolve"));
 }

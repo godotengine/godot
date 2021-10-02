@@ -33,14 +33,11 @@
 void BakedLightmapEditorPlugin::_bake_select_file(const String &p_file) {
 	if (lightmap) {
 		BakedLightmap::BakeError err;
-		uint32_t time_started = OS::get_singleton()->get_ticks_msec();
 		if (get_tree()->get_edited_scene_root() && get_tree()->get_edited_scene_root() == lightmap) {
 			err = lightmap->bake(lightmap, p_file);
 		} else {
 			err = lightmap->bake(lightmap->get_parent(), p_file);
 		}
-
-		bake_func_end(time_started);
 
 		switch (err) {
 			case BakedLightmap::BAKE_ERROR_NO_SAVE_PATH: {
@@ -135,11 +132,17 @@ void BakedLightmapEditorPlugin::bake_func_end(uint32_t p_time_started) {
 	}
 
 	const int time_taken = (OS::get_singleton()->get_ticks_msec() - p_time_started) * 0.001;
-	print_line(vformat("Done baking lightmaps in %02d:%02d:%02d.", time_taken / 3600, (time_taken % 3600) / 60, time_taken % 60));
-	// Request attention in case the user was doing something else.
-	// Baking lightmaps is likely the editor task that can take the most time,
-	// so only request the attention for baking lightmaps.
-	OS::get_singleton()->request_attention();
+	if (time_taken >= 1) {
+		// Only print a message and request attention if baking lightmaps took at least 1 second.
+		// Otherwise, attempting to bake in an erroneous situation (e.g. no meshes to bake)
+		// would print the "done baking lightmaps" message and request attention for no good reason.
+		print_line(vformat("Done baking lightmaps in %02d:%02d:%02d.", time_taken / 3600, (time_taken % 3600) / 60, time_taken % 60));
+
+		// Request attention in case the user was doing something else.
+		// Baking lightmaps is likely the editor task that can take the most time,
+		// so only request the attention for baking lightmaps.
+		OS::get_singleton()->request_attention();
+	}
 }
 
 void BakedLightmapEditorPlugin::_bind_methods() {
@@ -167,6 +170,7 @@ BakedLightmapEditorPlugin::BakedLightmapEditorPlugin(EditorNode *p_node) {
 
 	BakedLightmap::bake_step_function = bake_func_step;
 	BakedLightmap::bake_substep_function = bake_func_substep;
+	BakedLightmap::bake_end_function = bake_func_end;
 }
 
 BakedLightmapEditorPlugin::~BakedLightmapEditorPlugin() {

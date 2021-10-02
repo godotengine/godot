@@ -488,6 +488,7 @@ public:
 	BIND2(viewport_set_msaa, RID, ViewportMSAA)
 	BIND2(viewport_set_use_fxaa, RID, bool)
 	BIND2(viewport_set_use_debanding, RID, bool)
+	BIND2(viewport_set_sharpen_intensity, RID, float)
 	BIND2(viewport_set_hdr, RID, bool)
 	BIND2(viewport_set_usage, RID, ViewportUsage)
 
@@ -567,7 +568,7 @@ public:
 
 	BIND0R(RID, portal_create)
 	BIND2(portal_set_scenario, RID, RID)
-	BIND3(portal_set_geometry, RID, const Vector<Vector3> &, float)
+	BIND3(portal_set_geometry, RID, const Vector<Vector3> &, real_t)
 	BIND4(portal_link, RID, RID, RID, bool)
 	BIND2(portal_set_active, RID, bool)
 
@@ -576,6 +577,14 @@ public:
 	BIND2(roomgroup_prepare, RID, ObjectID)
 	BIND2(roomgroup_set_scenario, RID, RID)
 	BIND2(roomgroup_add_room, RID, RID)
+
+	// Occluders
+	BIND0R(RID, occluder_create)
+	BIND3(occluder_set_scenario, RID, RID, OccluderType)
+	BIND2(occluder_spheres_update, RID, const Vector<Plane> &)
+	BIND2(occluder_set_transform, RID, const Transform &)
+	BIND2(occluder_set_active, RID, bool)
+	BIND1(set_use_occlusion_culling, bool)
 
 	// Rooms
 	BIND0R(RID, room_create)
@@ -586,12 +595,15 @@ public:
 	BIND2(room_prepare, RID, int32_t)
 	BIND1(rooms_and_portals_clear, RID)
 	BIND1(rooms_unload, RID)
-	BIND6(rooms_finalize, RID, bool, bool, bool, bool, String)
+	BIND8(rooms_finalize, RID, bool, bool, bool, bool, String, bool, bool)
 	BIND4(rooms_override_camera, RID, bool, const Vector3 &, const Vector<Plane> *)
 	BIND2(rooms_set_active, RID, bool)
 	BIND2(rooms_set_params, RID, int)
 	BIND3(rooms_set_debug_feature, RID, RoomsDebugFeature, bool)
 	BIND2(rooms_update_gameplay_monitor, RID, const Vector<Vector3> &)
+
+	// don't use this in a game
+	BIND1RC(bool, rooms_is_loaded, RID)
 
 	// Callbacks
 	BIND1(callbacks_register, VisualServerCallbacks *)

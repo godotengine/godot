@@ -30,6 +30,8 @@
 
 #include "scene_tree.h"
 
+#include "modules/modules_enabled.gen.h"
+
 #include "core/io/marshalls.h"
 #include "core/io/resource_loader.h"
 #include "core/message_queue.h"
@@ -493,10 +495,12 @@ bool SceneTree::iteration(float p_time) {
 }
 
 void SceneTree::_update_font_oversampling(float p_ratio) {
+#ifdef MODULE_FREETYPE_ENABLED
 	if (use_font_oversampling) {
 		DynamicFontAtSize::font_oversampling = p_ratio;
 		DynamicFont::update_oversampling();
 	}
+#endif // MODULE_FREETYPE_ENABLED
 }
 
 bool SceneTree::idle(float p_time) {
@@ -2061,6 +2065,9 @@ SceneTree::SceneTree() {
 
 	const bool use_debanding = GLOBAL_DEF("rendering/quality/filters/use_debanding", false);
 	root->set_use_debanding(use_debanding);
+
+	const float sharpen_intensity = GLOBAL_GET("rendering/quality/filters/sharpen_intensity");
+	root->set_sharpen_intensity(sharpen_intensity);
 
 	GLOBAL_DEF_RST("rendering/quality/depth/hdr", true);
 	GLOBAL_DEF("rendering/quality/depth/hdr.mobile", false);

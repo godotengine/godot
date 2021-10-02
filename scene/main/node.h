@@ -64,6 +64,12 @@ public:
 #endif
 	};
 
+	enum NameCasing {
+		NAME_CASING_PASCAL_CASE,
+		NAME_CASING_CAMEL_CASE,
+		NAME_CASING_SNAKE_CASE
+	};
+
 	struct Comparator {
 		bool operator()(const Node *p_a, const Node *p_b) const { return p_b->is_greater_than(p_a); }
 	};
@@ -137,12 +143,6 @@ private:
 		mutable NodePath *path_cache;
 
 	} data;
-
-	enum NameCasing {
-		NAME_CASING_PASCAL_CASE,
-		NAME_CASING_CAMEL_CASE,
-		NAME_CASING_SNAKE_CASE
-	};
 
 	Ref<MultiplayerAPI> multiplayer;
 
@@ -313,6 +313,8 @@ public:
 	void set_editable_instance(Node *p_node, bool p_editable);
 	bool is_editable_instance(const Node *p_node) const;
 	Node *get_deepest_editable_node(Node *start_node) const;
+
+	virtual String to_string();
 
 	/* NOTIFICATIONS */
 

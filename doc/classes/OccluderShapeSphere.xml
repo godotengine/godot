@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="OccluderShapeSphere" inherits="OccluderShape" version="3.4">
+	<brief_description>
+		Spherical occlusion primitive for use with the [Occluder] node.
+	</brief_description>
+	<description>
+		[OccluderShape]s are resources used by [Occluder] nodes, allowing geometric occlusion culling.
+		This shape can include multiple spheres. These can be created and deleted either in the Editor inspector or by calling [code]set_spheres[/code]. The sphere positions can be set by dragging the handle in the Editor viewport. The radius can be set with the smaller handle.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="set_sphere_position">
+			<return type="void" />
+			<argument index="0" name="index" type="int" />
+			<argument index="1" name="position" type="Vector3" />
+			<description>
+				Sets an individual sphere's position.
+			</description>
+		</method>
+		<method name="set_sphere_radius">
+			<return type="void" />
+			<argument index="0" name="index" type="int" />
+			<argument index="1" name="radius" type="float" />
+			<description>
+				Sets an individual sphere's radius.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="spheres" type="Array" setter="set_spheres" getter="get_spheres" default="[  ]">
+			The sphere data can be accessed as an array of [Plane]s. The position of each sphere is stored in the [code]normal[/code], and the radius is stored in the [code]d[/code] value of the plane.
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

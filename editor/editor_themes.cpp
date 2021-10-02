@@ -156,6 +156,7 @@ void editor_register_and_generate_icons(Ref<Theme> p_theme, bool p_dark_theme = 
 		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#a5b7f3", "#3d64dd"); // 2d
 		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#708cea", "#1a3eac"); // 2d dark
 		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#a5efac", "#2fa139"); // control
+		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#ffdd65", "#ca8a04"); // node warning
 
 		// rainbow
 		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#ff7070", "#ff2929"); // red
@@ -231,7 +232,6 @@ void editor_register_and_generate_icons(Ref<Theme> p_theme, bool p_dark_theme = 
 		exceptions.insert("StatusError");
 		exceptions.insert("StatusSuccess");
 		exceptions.insert("StatusWarning");
-		exceptions.insert("NodeWarning");
 		exceptions.insert("OverbrightIndicator");
 	}
 
@@ -381,6 +381,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	const Color font_color = mono_color.linear_interpolate(base_color, 0.25);
 	const Color font_color_hl = mono_color.linear_interpolate(base_color, 0.15);
 	const Color font_color_disabled = Color(mono_color.r, mono_color.g, mono_color.b, 0.3);
+	const Color font_color_readonly = Color(mono_color.r, mono_color.g, mono_color.b, 0.65);
 	const Color font_color_selection = accent_color * Color(1, 1, 1, 0.4);
 	const Color color_disabled = mono_color.inverted().linear_interpolate(base_color, 0.7);
 	const Color color_disabled_bg = mono_color.inverted().linear_interpolate(base_color, 0.9);
@@ -569,6 +570,11 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	style_menu->set_border_width_all(0);
 	theme->set_stylebox("panel", "PanelContainer", style_menu);
 	theme->set_stylebox("MenuPanel", "EditorStyles", style_menu);
+
+	// CanvasItem Editor
+	Ref<StyleBoxFlat> style_canvas_editor_info = make_flat_stylebox(Color(0.0, 0.0, 0.0, 0.2));
+	style_canvas_editor_info->set_expand_margin_size_all(4 * EDSCALE);
+	theme->set_stylebox("CanvasItemInfoOverlay", "EditorStyles", style_canvas_editor_info);
 
 	// Script Editor
 	theme->set_stylebox("ScriptEditorPanel", "EditorStyles", make_empty_stylebox(default_margin_size, 0, default_margin_size, default_margin_size));
@@ -957,6 +963,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("read_only", "LineEdit", font_color_disabled);
 	theme->set_color("font_color", "LineEdit", font_color);
 	theme->set_color("font_color_selected", "LineEdit", mono_color);
+	theme->set_color("font_color_uneditable", "LineEdit", font_color_readonly);
 	theme->set_color("cursor_color", "LineEdit", font_color);
 	theme->set_color("selection_color", "LineEdit", font_color_selection);
 	theme->set_color("clear_button_color", "LineEdit", font_color);
@@ -972,6 +979,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_icon("folded", "TextEdit", theme->get_icon("GuiTreeArrowRight", "EditorIcons"));
 	theme->set_icon("fold", "TextEdit", theme->get_icon("GuiTreeArrowDown", "EditorIcons"));
 	theme->set_color("font_color", "TextEdit", font_color);
+	theme->set_color("font_color_readonly", "TextEdit", font_color_readonly);
 	theme->set_color("caret_color", "TextEdit", font_color);
 	theme->set_color("selection_color", "TextEdit", font_color_selection);
 
@@ -1029,8 +1037,10 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 
 	theme->set_icon("increment", "HScrollBar", empty_icon);
 	theme->set_icon("increment_highlight", "HScrollBar", empty_icon);
+	theme->set_icon("increment_pressed", "HScrollBar", empty_icon);
 	theme->set_icon("decrement", "HScrollBar", empty_icon);
 	theme->set_icon("decrement_highlight", "HScrollBar", empty_icon);
+	theme->set_icon("decrement_pressed", "HScrollBar", empty_icon);
 
 	// VScrollBar
 	theme->set_stylebox("scroll", "VScrollBar", make_stylebox(theme->get_icon("GuiScrollBg", "EditorIcons"), 5, 5, 5, 5, 0, 0, 0, 0));
@@ -1041,8 +1051,10 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 
 	theme->set_icon("increment", "VScrollBar", empty_icon);
 	theme->set_icon("increment_highlight", "VScrollBar", empty_icon);
+	theme->set_icon("increment_pressed", "VScrollBar", empty_icon);
 	theme->set_icon("decrement", "VScrollBar", empty_icon);
 	theme->set_icon("decrement_highlight", "VScrollBar", empty_icon);
+	theme->set_icon("decrement_pressed", "VScrollBar", empty_icon);
 
 	// HSlider
 	theme->set_icon("grabber_highlight", "HSlider", theme->get_icon("GuiSliderGrabberHl", "EditorIcons"));
@@ -1373,15 +1385,14 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 }
 
 Ref<Theme> create_custom_theme(const Ref<Theme> p_theme) {
-	Ref<Theme> theme;
+	Ref<Theme> theme = create_editor_theme(p_theme);
 
-	const String custom_theme = EditorSettings::get_singleton()->get("interface/theme/custom_theme");
-	if (custom_theme != "") {
-		theme = ResourceLoader::load(custom_theme);
-	}
-
-	if (!theme.is_valid()) {
-		theme = create_editor_theme(p_theme);
+	const String custom_theme_path = EditorSettings::get_singleton()->get("interface/theme/custom_theme");
+	if (custom_theme_path != "") {
+		Ref<Theme> custom_theme = ResourceLoader::load(custom_theme_path);
+		if (custom_theme.is_valid()) {
+			theme->merge_with(custom_theme);
+		}
 	}
 
 	return theme;

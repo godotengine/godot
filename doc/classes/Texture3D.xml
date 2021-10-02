@@ -9,9 +9,21 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="create">
+			<return type="void" />
+			<argument index="0" name="width" type="int" />
+			<argument index="1" name="height" type="int" />
+			<argument index="2" name="depth" type="int" />
+			<argument index="3" name="format" type="int" enum="Image.Format" />
+			<argument index="4" name="flags" type="int" default="4" />
+			<description>
+				Creates the Texture3D with specified [code]width[/code], [code]height[/code], and [code]depth[/code]. See [enum Image.Format] for [code]format[/code] options. See [enum TextureLayered.Flags] enumerator for [code]flags[/code] options.
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="data" type="Dictionary" setter="_set_data" getter="_get_data" override="true" default="{&quot;depth&quot;: 0,&quot;flags&quot;: 4,&quot;format&quot;: 37,&quot;height&quot;: 0,&quot;layers&quot;: [  ],&quot;width&quot;: 0}" />
+		<member name="flags" type="int" setter="set_flags" getter="get_flags" override="true" default="4" />
 	</members>
 	<constants>
 	</constants>

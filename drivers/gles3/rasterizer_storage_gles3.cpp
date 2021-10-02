@@ -2066,6 +2066,7 @@ void RasterizerStorageGLES3::sky_set_texture(RID p_sky, RID p_panorama, int p_ra
 		}
 		shaders.cubemap_filter.set_conditional(CubemapFilterShaderGLES3::USE_DUAL_PARABOLOID, false);
 		shaders.cubemap_filter.set_conditional(CubemapFilterShaderGLES3::USE_SOURCE_PANORAMA, false);
+		shaders.cubemap_filter.set_conditional(CubemapFilterShaderGLES3::USE_SOURCE_DUAL_PARABOLOID, false);
 
 		//restore ranges
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
@@ -3349,10 +3350,13 @@ void RasterizerStorageGLES3::mesh_add_surface(RID p_mesh, uint32_t p_format, VS:
 	}
 
 	//bool has_morph = p_blend_shapes.size();
+	bool use_split_stream = GLOBAL_GET("rendering/mesh_storage/split_stream") && !(p_format & VS::ARRAY_FLAG_USE_DYNAMIC_UPDATE);
 
 	Surface::Attrib attribs[VS::ARRAY_MAX];
 
-	int stride = 0;
+	int attributes_base_offset = 0;
+	int attributes_stride = 0;
+	int positions_stride = 0;
 
 	for (int i = 0; i < VS::ARRAY_MAX; i++) {
 		attribs[i].index = i;
@@ -3364,7 +3368,7 @@ void RasterizerStorageGLES3::mesh_add_surface(RID p_mesh, uint32_t p_format, VS:
 		}
 
 		attribs[i].enabled = true;
-		attribs[i].offset = stride;
+		attribs[i].offset = attributes_base_offset + attributes_stride;
 		attribs[i].integer = false;
 
 		switch (i) {
@@ -3377,40 +3381,71 @@ void RasterizerStorageGLES3::mesh_add_surface(RID p_mesh, uint32_t p_format, VS:
 
 				if (p_format & VS::ARRAY_COMPRESS_VERTEX) {
 					attribs[i].type = GL_HALF_FLOAT;
-					stride += attribs[i].size * 2;
+					positions_stride += attribs[i].size * 2;
 				} else {
 					attribs[i].type = GL_FLOAT;
-					stride += attribs[i].size * 4;
+					positions_stride += attribs[i].size * 4;
 				}
 
 				attribs[i].normalized = GL_FALSE;
 
+				if (use_split_stream) {
+					attributes_base_offset = positions_stride * p_vertex_count;
+				} else {
+					attributes_base_offset = positions_stride;
+				}
+
 			} break;
 			case VS::ARRAY_NORMAL: {
-				attribs[i].size = 3;
-
-				if (p_format & VS::ARRAY_COMPRESS_NORMAL) {
-					attribs[i].type = GL_BYTE;
-					stride += 4; //pad extra byte
+				if (p_format & VS::ARRAY_FLAG_USE_OCTAHEDRAL_COMPRESSION) {
+					// Always pack normal and tangent into vec4
+					// normal will be xy tangent will be zw
+					// normal will always be oct32 (4 byte) encoded
+					// UNLESS tangent exists and is also compressed
+					// then it will be oct16 encoded along with tangent
 					attribs[i].normalized = GL_TRUE;
+					attribs[i].size = 4;
+					attribs[i].type = GL_SHORT;
+					attributes_stride += 4;
 				} else {
-					attribs[i].type = GL_FLOAT;
-					stride += 12;
-					attribs[i].normalized = GL_FALSE;
+					attribs[i].size = 3;
+
+					if (p_format & VS::ARRAY_COMPRESS_NORMAL) {
+						attribs[i].type = GL_BYTE;
+						attributes_stride += 4; //pad extra byte
+						attribs[i].normalized = GL_TRUE;
+					} else {
+						attribs[i].type = GL_FLOAT;
+						attributes_stride += 12;
+						attribs[i].normalized = GL_FALSE;
+					}
 				}
 
 			} break;
 			case VS::ARRAY_TANGENT: {
-				attribs[i].size = 4;
-
-				if (p_format & VS::ARRAY_COMPRESS_TANGENT) {
-					attribs[i].type = GL_BYTE;
-					stride += 4;
-					attribs[i].normalized = GL_TRUE;
+				if (p_format & VS::ARRAY_FLAG_USE_OCTAHEDRAL_COMPRESSION) {
+					attribs[i].enabled = false;
+					if (p_format & VS::ARRAY_COMPRESS_TANGENT && p_format & VS::ARRAY_COMPRESS_NORMAL) {
+						// normal and tangent will each be oct16 (2 bytes each)
+						// pack into single vec4<GL_BYTE> for memory bandwidth
+						// savings while keeping 4 byte alignment
+						attribs[VS::ARRAY_NORMAL].type = GL_BYTE;
+					} else {
+						// normal and tangent will each be oct32 (4 bytes each)
+						attributes_stride += 4;
+					}
 				} else {
-					attribs[i].type = GL_FLOAT;
-					stride += 16;
-					attribs[i].normalized = GL_FALSE;
+					attribs[i].size = 4;
+
+					if (p_format & VS::ARRAY_COMPRESS_TANGENT) {
+						attribs[i].type = GL_BYTE;
+						attributes_stride += 4;
+						attribs[i].normalized = GL_TRUE;
+					} else {
+						attribs[i].type = GL_FLOAT;
+						attributes_stride += 16;
+						attribs[i].normalized = GL_FALSE;
+					}
 				}
 
 			} break;
@@ -3419,11 +3454,11 @@ void RasterizerStorageGLES3::mesh_add_surface(RID p_mesh, uint32_t p_format, VS:
 
 				if (p_format & VS::ARRAY_COMPRESS_COLOR) {
 					attribs[i].type = GL_UNSIGNED_BYTE;
-					stride += 4;
+					attributes_stride += 4;
 					attribs[i].normalized = GL_TRUE;
 				} else {
 					attribs[i].type = GL_FLOAT;
-					stride += 16;
+					attributes_stride += 16;
 					attribs[i].normalized = GL_FALSE;
 				}
 
@@ -3433,10 +3468,10 @@ void RasterizerStorageGLES3::mesh_add_surface(RID p_mesh, uint32_t p_format, VS:
 
 				if (p_format & VS::ARRAY_COMPRESS_TEX_UV) {
 					attribs[i].type = GL_HALF_FLOAT;
-					stride += 4;
+					attributes_stride += 4;
 				} else {
 					attribs[i].type = GL_FLOAT;
-					stride += 8;
+					attributes_stride += 8;
 				}
 
 				attribs[i].normalized = GL_FALSE;
@@ -3447,10 +3482,10 @@ void RasterizerStorageGLES3::mesh_add_surface(RID p_mesh, uint32_t p_format, VS:
 
 				if (p_format & VS::ARRAY_COMPRESS_TEX_UV2) {
 					attribs[i].type = GL_HALF_FLOAT;
-					stride += 4;
+					attributes_stride += 4;
 				} else {
 					attribs[i].type = GL_FLOAT;
-					stride += 8;
+					attributes_stride += 8;
 				}
 				attribs[i].normalized = GL_FALSE;
 
@@ -3460,10 +3495,10 @@ void RasterizerStorageGLES3::mesh_add_surface(RID p_mesh, uint32_t p_format, VS:
 
 				if (p_format & VS::ARRAY_FLAG_USE_16_BIT_BONES) {
 					attribs[i].type = GL_UNSIGNED_SHORT;
-					stride += 8;
+					attributes_stride += 8;
 				} else {
 					attribs[i].type = GL_UNSIGNED_BYTE;
-					stride += 4;
+					attributes_stride += 4;
 				}
 
 				attribs[i].normalized = GL_FALSE;
@@ -3475,11 +3510,11 @@ void RasterizerStorageGLES3::mesh_add_surface(RID p_mesh, uint32_t p_format, VS:
 
 				if (p_format & VS::ARRAY_COMPRESS_WEIGHTS) {
 					attribs[i].type = GL_UNSIGNED_SHORT;
-					stride += 8;
+					attributes_stride += 8;
 					attribs[i].normalized = GL_TRUE;
 				} else {
 					attribs[i].type = GL_FLOAT;
-					stride += 16;
+					attributes_stride += 16;
 					attribs[i].normalized = GL_FALSE;
 				}
 
@@ -3501,12 +3536,20 @@ void RasterizerStorageGLES3::mesh_add_surface(RID p_mesh, uint32_t p_format, VS:
 		}
 	}
 
-	for (int i = 0; i < VS::ARRAY_MAX - 1; i++) {
-		attribs[i].stride = stride;
+	if (use_split_stream) {
+		attribs[VS::ARRAY_VERTEX].stride = positions_stride;
+		for (int i = 1; i < VS::ARRAY_MAX - 1; i++) {
+			attribs[i].stride = attributes_stride;
+		}
+	} else {
+		for (int i = 0; i < VS::ARRAY_MAX - 1; i++) {
+			attribs[i].stride = positions_stride + attributes_stride;
+		}
 	}
 
 	//validate sizes
 
+	int stride = positions_stride + attributes_stride;
 	int array_size = stride * p_vertex_count;
 	int index_array_size = 0;
 	if (array.size() != array_size && array.size() + p_vertex_count * 2 == array_size) {
@@ -3805,6 +3848,18 @@ VS::BlendShapeMode RasterizerStorageGLES3::mesh_get_blend_shape_mode(RID p_mesh)
 	ERR_FAIL_COND_V(!mesh, VS::BLEND_SHAPE_MODE_NORMALIZED);
 
 	return mesh->blend_shape_mode;
+}
+
+void RasterizerStorageGLES3::mesh_set_blend_shape_values(RID p_mesh, PoolVector<float> p_values) {
+	Mesh *mesh = mesh_owner.getornull(p_mesh);
+	ERR_FAIL_COND(!mesh);
+	mesh->blend_shape_values = p_values;
+}
+
+PoolVector<float> RasterizerStorageGLES3::mesh_get_blend_shape_values(RID p_mesh) const {
+	const Mesh *mesh = mesh_owner.getornull(p_mesh);
+	ERR_FAIL_COND_V(!mesh, PoolVector<float>());
+	return mesh->blend_shape_values;
 }
 
 void RasterizerStorageGLES3::mesh_surface_update_region(RID p_mesh, int p_surface, int p_offset, const PoolVector<uint8_t> &p_data) {
@@ -7445,6 +7500,13 @@ void RasterizerStorageGLES3::render_target_set_use_debanding(RID p_render_target
 	ERR_FAIL_COND(!rt);
 
 	rt->use_debanding = p_debanding;
+}
+
+void RasterizerStorageGLES3::render_target_set_sharpen_intensity(RID p_render_target, float p_intensity) {
+	RenderTarget *rt = render_target_owner.getornull(p_render_target);
+	ERR_FAIL_COND(!rt);
+
+	rt->sharpen_intensity = p_intensity;
 }
 
 /* CANVAS SHADOW */

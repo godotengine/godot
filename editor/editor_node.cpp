@@ -161,6 +161,7 @@
 #include "editor/plugins/tile_map_editor_plugin.h"
 #include "editor/plugins/tile_set_editor_plugin.h"
 #include "editor/plugins/version_control_editor_plugin.h"
+#include "editor/plugins/viewport_preview_editor_plugin.h"
 #include "editor/plugins/visual_shader_editor_plugin.h"
 #include "editor/progress_dialog.h"
 #include "editor/project_export.h"
@@ -358,14 +359,16 @@ void EditorNode::_version_control_menu_option(int p_idx) {
 }
 
 void EditorNode::_update_title() {
-	String appname = ProjectSettings::get_singleton()->get("application/config/name");
-	String title = appname.empty() ? String(VERSION_FULL_NAME) : String(VERSION_NAME + String(" - ") + appname);
-	String edited = editor_data.get_edited_scene_root() ? editor_data.get_edited_scene_root()->get_filename() : String();
+	const String appname = ProjectSettings::get_singleton()->get("application/config/name");
+	String title = (appname.empty() ? "Unnamed Project" : appname) + String(" - ") + VERSION_NAME;
+	const String edited = editor_data.get_edited_scene_root() ? editor_data.get_edited_scene_root()->get_filename() : String();
 	if (!edited.empty()) {
-		title += " - " + String(edited.get_file());
+		// Display the edited scene name before the program name so that it can be seen in the OS task bar.
+		title = vformat("%s - %s", edited.get_file(), title);
 	}
 	if (unsaved_cache) {
-		title += " (*)";
+		// Display the "modified" mark before anything else so that it can always be seen in the OS task bar.
+		title = vformat("(*) %s", title);
 	}
 
 	OS::get_singleton()->set_window_title(title);
@@ -509,8 +512,10 @@ void EditorNode::_notification(int p_what) {
 
 			_update_debug_options();
 
-			// Save the project after opening to mark it as last modified.
-			ProjectSettings::get_singleton()->save();
+			// Save the project after opening to mark it as last modified, except in headless mode.
+			if (OS::get_singleton()->can_draw() && !OS::get_singleton()->is_no_window_mode_enabled()) {
+				ProjectSettings::get_singleton()->save();
+			}
 
 			/* DO NOT LOAD SCENES HERE, WAIT FOR FILE SCANNING AND REIMPORT TO COMPLETE */
 		} break;
@@ -628,10 +633,25 @@ void EditorNode::_notification(int p_what) {
 void EditorNode::_update_update_spinner() {
 	update_spinner->set_visible(EditorSettings::get_singleton()->get("interface/editor/show_update_spinner"));
 
-	bool update_continuously = EditorSettings::get_singleton()->get("interface/editor/update_continuously");
+	const bool update_continuously = EditorSettings::get_singleton()->get("interface/editor/update_continuously");
 	PopupMenu *update_popup = update_spinner->get_popup();
 	update_popup->set_item_checked(update_popup->get_item_index(SETTINGS_UPDATE_CONTINUOUSLY), update_continuously);
 	update_popup->set_item_checked(update_popup->get_item_index(SETTINGS_UPDATE_WHEN_CHANGED), !update_continuously);
+
+	if (update_continuously) {
+		update_spinner->set_tooltip(TTR("Spins when the editor window redraws.\nUpdate Continuously is enabled, which can increase power usage. Click to disable it."));
+
+		// Use a different color for the update spinner when Update Continuously is enabled,
+		// as this feature should only be enabled for troubleshooting purposes.
+		// Make the icon modulate color overbright because icons are not completely white on a dark theme.
+		// On a light theme, icons are dark, so we need to modulate them with an even brighter color.
+		const bool dark_theme = EditorSettings::get_singleton()->is_dark_theme();
+		update_spinner->set_self_modulate(
+				gui_base->get_color("error_color", "Editor") * (dark_theme ? Color(1.1, 1.1, 1.1) : Color(4.25, 4.25, 4.25)));
+	} else {
+		update_spinner->set_tooltip(TTR("Spins when the editor window redraws."));
+		update_spinner->set_self_modulate(Color(1, 1, 1));
+	}
 
 	OS::get_singleton()->set_low_processor_usage_mode(!update_continuously);
 }
@@ -1469,7 +1489,9 @@ static void _reset_animation_players(Node *p_node, List<Ref<AnimatedValuesBackup
 		AnimationPlayer *player = Object::cast_to<AnimationPlayer>(p_node->get_child(i));
 		if (player && player->is_reset_on_save_enabled() && player->can_apply_reset()) {
 			Ref<AnimatedValuesBackup> old_values = player->apply_reset();
-			r_anim_backups->push_back(old_values);
+			if (old_values.is_valid()) {
+				r_anim_backups->push_back(old_values);
+			}
 		}
 		_reset_animation_players(p_node->get_child(i), r_anim_backups);
 	}
@@ -1591,13 +1613,15 @@ void EditorNode::restart_editor() {
 void EditorNode::_save_all_scenes() {
 	for (int i = 0; i < editor_data.get_edited_scene_count(); i++) {
 		Node *scene = editor_data.get_edited_scene_root(i);
-		if (scene && scene->get_filename() != "") {
+		if (scene && scene->get_filename() != "" && DirAccess::exists(scene->get_filename().get_base_dir())) {
 			if (i != editor_data.get_edited_scene()) {
 				_save_scene(scene->get_filename(), i);
 			} else {
 				_save_scene_with_preview(scene->get_filename());
 			}
-		} // else: ignore new scenes
+		} else {
+			show_warning(TTR("Could not save one or more scenes!"), TTR("Save All Scenes"));
+		}
 	}
 
 	_save_default_environment();
@@ -1705,7 +1729,7 @@ void EditorNode::_dialog_action(String p_file) {
 				ml = Ref<MeshLibrary>(memnew(MeshLibrary));
 			}
 
-			MeshLibraryEditor::update_library_file(editor_data.get_edited_scene_root(), ml, true);
+			MeshLibraryEditor::update_library_file(editor_data.get_edited_scene_root(), ml, true, file_export_lib_apply_xforms->is_pressed());
 
 			Error err = ResourceSaver::save(p_file, ml);
 			if (err) {
@@ -1963,7 +1987,6 @@ void EditorNode::_edit_current() {
 
 	Object *prev_inspected_object = get_inspector()->get_edited_object();
 
-	bool capitalize = bool(EDITOR_GET("interface/inspector/capitalize_properties"));
 	bool disable_folding = bool(EDITOR_GET("interface/inspector/disable_folding"));
 	bool is_resource = current_obj->is_class("Resource");
 	bool is_node = current_obj->is_class("Node");
@@ -2021,7 +2044,6 @@ void EditorNode::_edit_current() {
 
 		if (current_obj->is_class("ScriptEditorDebuggerInspectedObject")) {
 			editable_warning = TTR("This is a remote object, so changes to it won't be kept.\nPlease read the documentation relevant to debugging to better understand this workflow.");
-			capitalize = false;
 			disable_folding = true;
 		} else if (current_obj->is_class("MultiNodeEdit")) {
 			Node *scene = get_edited_scene();
@@ -2057,10 +2079,6 @@ void EditorNode::_edit_current() {
 	}
 
 	inspector_dock->set_warning(editable_warning);
-
-	if (get_inspector()->is_capitalize_paths_enabled() != capitalize) {
-		get_inspector()->set_enable_capitalize_paths(capitalize);
-	}
 
 	if (get_inspector()->is_using_folding() == disable_folding) {
 		get_inspector()->set_use_folding(!disable_folding);
@@ -2222,6 +2240,10 @@ void EditorNode::_run(bool p_current, const String &p_custom) {
 	_playing_edited = p_current;
 }
 
+void EditorNode::_android_build_source_selected(const String &p_file) {
+	export_template_manager->install_android_template_from_file(p_file);
+}
+
 void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 	if (!p_confirmed) { //this may be a hack..
 		current_option = (MenuOptions)p_option;
@@ -2325,20 +2347,22 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 		case SCENE_TAB_CLOSE:
 		case FILE_SAVE_SCENE: {
 			int scene_idx = (p_option == FILE_SAVE_SCENE) ? -1 : tab_closing;
-
 			Node *scene = editor_data.get_edited_scene_root(scene_idx);
 			if (scene && scene->get_filename() != "") {
-				if (scene_idx != editor_data.get_edited_scene()) {
-					_save_scene_with_preview(scene->get_filename(), scene_idx);
+				if (DirAccess::exists(scene->get_filename().get_base_dir())) {
+					if (scene_idx != editor_data.get_edited_scene()) {
+						_save_scene_with_preview(scene->get_filename(), scene_idx);
+					} else {
+						_save_scene_with_preview(scene->get_filename());
+					}
+
+					if (scene_idx != -1) {
+						_discard_changes();
+					}
+					save_layout();
 				} else {
-					_save_scene_with_preview(scene->get_filename());
+					show_save_accept(vformat(TTR("%s no longer exists! Please specify a new save location."), scene->get_filename().get_base_dir()), TTR("OK"));
 				}
-
-				if (scene_idx != -1) {
-					_discard_changes();
-				}
-				save_layout();
-
 				break;
 			}
 			FALLTHROUGH;
@@ -2477,26 +2501,26 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 
 		case EDIT_UNDO: {
 			if (Input::get_singleton()->get_mouse_button_mask() & 0x7) {
-				log->add_message("Can't undo while mouse buttons are pressed.", EditorLog::MSG_TYPE_EDITOR);
+				log->add_message(TTR("Can't undo while mouse buttons are pressed."), EditorLog::MSG_TYPE_EDITOR);
 			} else {
 				String action = editor_data.get_undo_redo().get_current_action_name();
 
 				if (!editor_data.get_undo_redo().undo()) {
-					log->add_message("Nothing to undo.", EditorLog::MSG_TYPE_EDITOR);
+					log->add_message(TTR("Nothing to undo."), EditorLog::MSG_TYPE_EDITOR);
 				} else if (action != "") {
-					log->add_message("Undo: " + action, EditorLog::MSG_TYPE_EDITOR);
+					log->add_message(vformat(TTR("Undo: %s"), action), EditorLog::MSG_TYPE_EDITOR);
 				}
 			}
 		} break;
 		case EDIT_REDO: {
 			if (Input::get_singleton()->get_mouse_button_mask() & 0x7) {
-				log->add_message("Can't redo while mouse buttons are pressed.", EditorLog::MSG_TYPE_EDITOR);
+				log->add_message(TTR("Can't redo while mouse buttons are pressed."), EditorLog::MSG_TYPE_EDITOR);
 			} else {
 				if (!editor_data.get_undo_redo().redo()) {
-					log->add_message("Nothing to redo.", EditorLog::MSG_TYPE_EDITOR);
+					log->add_message(TTR("Nothing to redo."), EditorLog::MSG_TYPE_EDITOR);
 				} else {
 					String action = editor_data.get_undo_redo().get_current_action_name();
-					log->add_message("Redo: " + action, EditorLog::MSG_TYPE_EDITOR);
+					log->add_message(vformat(TTR("Redo: %s"), action), EditorLog::MSG_TYPE_EDITOR);
 				}
 			}
 		} break;
@@ -2752,6 +2776,10 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			export_template_manager->popup_manager();
 
 		} break;
+		case SETTINGS_INSTALL_ANDROID_BUILD_TEMPLATE: {
+			custom_build_manage_templates->hide();
+			file_android_build_source->popup_centered_ratio();
+		} break;
 		case SETTINGS_MANAGE_FEATURE_PROFILES: {
 			feature_profile_manager->popup_centered_clamped(Size2(900, 800) * EDSCALE, 0.8);
 		} break;
@@ -2998,8 +3026,13 @@ void EditorNode::_update_file_menu_opened() {
 	close_scene_sc->set_name(TTR("Close Scene"));
 	Ref<ShortCut> reopen_closed_scene_sc = ED_GET_SHORTCUT("editor/reopen_closed_scene");
 	reopen_closed_scene_sc->set_name(TTR("Reopen Closed Scene"));
+
 	PopupMenu *pop = file_menu->get_popup();
 	pop->set_item_disabled(pop->get_item_index(FILE_OPEN_PREV), previous_scenes.empty());
+
+	const UndoRedo &undo_redo = editor_data.get_undo_redo();
+	pop->set_item_disabled(pop->get_item_index(EDIT_UNDO), !undo_redo.has_undo());
+	pop->set_item_disabled(pop->get_item_index(EDIT_REDO), !undo_redo.has_redo());
 }
 
 void EditorNode::_update_file_menu_closed() {
@@ -3244,10 +3277,6 @@ void EditorNode::_remove_edited_scene(bool p_change_tab) {
 	} else {
 		editor_data.add_edited_scene(-1);
 		new_index = 1;
-	}
-
-	if (editor_data.get_scene_path(old_index) != String()) {
-		ScriptEditor::get_singleton()->close_builtin_scripts_from_scene(editor_data.get_scene_path(old_index));
 	}
 
 	if (p_change_tab) {
@@ -3802,6 +3831,8 @@ void EditorNode::register_editor_types() {
 
 void EditorNode::unregister_editor_types() {
 	_init_callbacks.clear();
+
+	EditorResourcePicker::clear_caches();
 }
 
 void EditorNode::stop_child_process() {
@@ -4102,6 +4133,13 @@ void EditorNode::show_accept(const String &p_text, const String &p_title) {
 	accept->get_ok()->set_text(p_title);
 	accept->set_text(p_text);
 	accept->popup_centered_minsize();
+}
+
+void EditorNode::show_save_accept(const String &p_text, const String &p_title) {
+	current_option = -1;
+	save_accept->get_ok()->set_text(p_title);
+	save_accept->set_text(p_text);
+	save_accept->popup_centered();
 }
 
 void EditorNode::show_warning(const String &p_text, const String &p_title) {
@@ -4854,6 +4892,16 @@ void EditorNode::_scene_tab_input(const Ref<InputEvent> &p_input) {
 			scene_tabs_context_menu->set_position(mb->get_global_position());
 			scene_tabs_context_menu->popup();
 		}
+		if (mb->get_button_index() == BUTTON_WHEEL_UP && mb->is_pressed()) {
+			int previous_tab = editor_data.get_edited_scene() - 1;
+			previous_tab = previous_tab >= 0 ? previous_tab : editor_data.get_edited_scene_count() - 1;
+			_scene_tab_changed(previous_tab);
+		}
+		if (mb->get_button_index() == BUTTON_WHEEL_DOWN && mb->is_pressed()) {
+			int next_tab = editor_data.get_edited_scene() + 1;
+			next_tab %= editor_data.get_edited_scene_count();
+			_scene_tab_changed(next_tab);
+		}
 	}
 }
 
@@ -5512,6 +5560,7 @@ void EditorNode::_bind_methods() {
 	ClassDB::bind_method("_unhandled_input", &EditorNode::_unhandled_input);
 	ClassDB::bind_method("_update_file_menu_opened", &EditorNode::_update_file_menu_opened);
 	ClassDB::bind_method("_update_file_menu_closed", &EditorNode::_update_file_menu_closed);
+	ClassDB::bind_method("_android_build_source_selected", &EditorNode::_android_build_source_selected);
 
 	ClassDB::bind_method(D_METHOD("push_item", "object", "property", "inspector_only"), &EditorNode::push_item, DEFVAL(""), DEFVAL(false));
 
@@ -6140,6 +6189,10 @@ EditorNode::EditorNode() {
 	gui_base->add_child(accept);
 	accept->connect("confirmed", this, "_menu_confirm_current");
 
+	save_accept = memnew(AcceptDialog);
+	gui_base->add_child(save_accept);
+	save_accept->connect("confirmed", this, "_menu_option", make_binds((int)MenuOptions::FILE_SAVE_AS_SCENE));
+
 	project_export = memnew(ProjectExportDialog);
 	gui_base->add_child(project_export);
 
@@ -6261,7 +6314,7 @@ EditorNode::EditorNode() {
 	tool_menu->add_item(TTR("Orphan Resource Explorer..."), TOOLS_ORPHAN_RESOURCES);
 
 	p->add_separator();
-	p->add_item(TTR("Reload Current Project"), RUN_RELOAD_CURRENT_PROJECT);
+	p->add_shortcut(ED_SHORTCUT("editor/reload_current_project", TTR("Reload Current Project")), RUN_RELOAD_CURRENT_PROJECT);
 #ifdef OSX_ENABLED
 	p->add_shortcut(ED_SHORTCUT("editor/quit_to_project_list", TTR("Quit to Project List"), KEY_MASK_SHIFT + KEY_MASK_ALT + KEY_Q), RUN_PROJECT_MANAGER, true);
 #else
@@ -6505,7 +6558,6 @@ EditorNode::EditorNode() {
 	layout_dialog->connect("name_confirmed", this, "_dialog_action");
 
 	update_spinner = memnew(MenuButton);
-	update_spinner->set_tooltip(TTR("Spins when the editor window redraws."));
 	right_menu_hb->add_child(update_spinner);
 	update_spinner->set_icon(gui_base->get_icon("Progress1", "EditorIcons"));
 	update_spinner->get_popup()->connect("id_pressed", this, "_menu_option");
@@ -6659,8 +6711,17 @@ EditorNode::EditorNode() {
 	custom_build_manage_templates = memnew(ConfirmationDialog);
 	custom_build_manage_templates->set_text(TTR("Android build template is missing, please install relevant templates."));
 	custom_build_manage_templates->get_ok()->set_text(TTR("Manage Templates"));
+	custom_build_manage_templates->add_button(TTR("Install from file"))->connect("pressed", this, "_menu_option", varray(SETTINGS_INSTALL_ANDROID_BUILD_TEMPLATE));
 	custom_build_manage_templates->connect("confirmed", this, "_menu_option", varray(SETTINGS_MANAGE_EXPORT_TEMPLATES));
 	gui_base->add_child(custom_build_manage_templates);
+
+	file_android_build_source = memnew(EditorFileDialog);
+	file_android_build_source->set_title(TTR("Select android sources file"));
+	file_android_build_source->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
+	file_android_build_source->set_mode(EditorFileDialog::MODE_OPEN_FILE);
+	file_android_build_source->add_filter("*.zip");
+	file_android_build_source->connect("file_selected", this, "_android_build_source_selected");
+	gui_base->add_child(file_android_build_source);
 
 	install_android_build_template = memnew(ConfirmationDialog);
 	install_android_build_template->set_text(TTR("This will set up your project for custom Android builds by installing the source template to \"res://android/build\".\nYou can then apply modifications and build your own custom APK on export (adding modules, changing the AndroidManifest.xml, etc.).\nNote that in order to make custom builds instead of using pre-built APKs, the \"Use Custom Build\" option should be enabled in the Android export preset."));
@@ -6695,6 +6756,10 @@ EditorNode::EditorNode() {
 	file_export_lib_merge->set_text(TTR("Merge With Existing"));
 	file_export_lib_merge->set_pressed(true);
 	file_export_lib->get_vbox()->add_child(file_export_lib_merge);
+	file_export_lib_apply_xforms = memnew(CheckBox);
+	file_export_lib_apply_xforms->set_text(TTR("Apply MeshInstance Transforms"));
+	file_export_lib_apply_xforms->set_pressed(false);
+	file_export_lib->get_vbox()->add_child(file_export_lib_apply_xforms);
 	gui_base->add_child(file_export_lib);
 
 	file_script = memnew(EditorFileDialog);
@@ -6801,6 +6866,8 @@ EditorNode::EditorNode() {
 	add_editor_plugin(memnew(BakedLightmapEditorPlugin(this)));
 	add_editor_plugin(memnew(RoomManagerEditorPlugin(this)));
 	add_editor_plugin(memnew(RoomEditorPlugin(this)));
+	add_editor_plugin(memnew(OccluderEditorPlugin(this)));
+	add_editor_plugin(memnew(PortalEditorPlugin(this)));
 	add_editor_plugin(memnew(Path2DEditorPlugin(this)));
 	add_editor_plugin(memnew(PathEditorPlugin(this)));
 	add_editor_plugin(memnew(Line2DEditorPlugin(this)));
@@ -6818,6 +6885,7 @@ EditorNode::EditorNode() {
 	add_editor_plugin(memnew(PhysicalBonePlugin(this)));
 	add_editor_plugin(memnew(MeshEditorPlugin(this)));
 	add_editor_plugin(memnew(MaterialEditorPlugin(this)));
+	add_editor_plugin(memnew(ViewportPreviewEditorPlugin(this)));
 
 	for (int i = 0; i < EditorPlugins::get_plugin_count(); i++) {
 		add_editor_plugin(EditorPlugins::create(i, this));

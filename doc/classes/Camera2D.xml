@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		Camera node for 2D scenes. It forces the screen (current layer) to scroll following this node. This makes it easier (and faster) to program scrollable scenes than manually changing the position of [CanvasItem]-based nodes.
-		This node is intended to be a simple helper to get things going quickly and it may happen that more functionality is desired to change how the camera works. To make your own custom camera node, inherit from [Node2D] and change the transform of the canvas by setting [member Viewport.canvas_transform] in [Viewport] (you can obtain the current [Viewport] by using [method Node.get_viewport]).
+		This node is intended to be a simple helper to get things going quickly, but more functionality may be desired to change how the camera works. To make your own custom camera node, inherit it from [Node2D] and change the transform of the canvas by setting [member Viewport.canvas_transform] in [Viewport] (you can obtain the current [Viewport] by using [method Node.get_viewport]).
 		Note that the [Camera2D] node's [code]position[/code] doesn't represent the actual position of the screen, which may differ due to applied smoothing or limits. You can use [method get_camera_screen_center] to get the real position.
 	</description>
 	<tutorials>
@@ -15,91 +15,74 @@
 	</tutorials>
 	<methods>
 		<method name="align">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Aligns the camera to the tracked node.
 			</description>
 		</method>
 		<method name="clear_current">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Removes any [Camera2D] from the ancestor [Viewport]'s internal currently-assigned camera.
 			</description>
 		</method>
 		<method name="force_update_scroll">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Forces the camera to update scroll immediately.
 			</description>
 		</method>
 		<method name="get_camera_position" qualifiers="const">
-			<return type="Vector2">
-			</return>
+			<return type="Vector2" />
 			<description>
 				Returns the camera position.
 			</description>
 		</method>
 		<method name="get_camera_screen_center" qualifiers="const">
-			<return type="Vector2">
-			</return>
+			<return type="Vector2" />
 			<description>
 				Returns the location of the [Camera2D]'s screen-center, relative to the origin.
 			</description>
 		</method>
 		<method name="get_drag_margin" qualifiers="const">
-			<return type="float">
-			</return>
-			<argument index="0" name="margin" type="int" enum="Margin">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="margin" type="int" enum="Margin" />
 			<description>
 				Returns the specified margin. See also [member drag_margin_bottom], [member drag_margin_top], [member drag_margin_left], and [member drag_margin_right].
 			</description>
 		</method>
 		<method name="get_limit" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="margin" type="int" enum="Margin">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="margin" type="int" enum="Margin" />
 			<description>
 				Returns the specified camera limit. See also [member limit_bottom], [member limit_top], [member limit_left], and [member limit_right].
 			</description>
 		</method>
 		<method name="make_current">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Make this the current 2D camera for the scene (viewport and layer), in case there are many cameras in the scene.
 			</description>
 		</method>
 		<method name="reset_smoothing">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Sets the camera's position immediately to its current smoothing destination.
 				This has no effect if smoothing is disabled.
 			</description>
 		</method>
 		<method name="set_drag_margin">
-			<return type="void">
-			</return>
-			<argument index="0" name="margin" type="int" enum="Margin">
-			</argument>
-			<argument index="1" name="drag_margin" type="float">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="margin" type="int" enum="Margin" />
+			<argument index="1" name="drag_margin" type="float" />
 			<description>
 				Sets the specified margin. See also [member drag_margin_bottom], [member drag_margin_top], [member drag_margin_left], and [member drag_margin_right].
 			</description>
 		</method>
 		<method name="set_limit">
-			<return type="void">
-			</return>
-			<argument index="0" name="margin" type="int" enum="Margin">
-			</argument>
-			<argument index="1" name="limit" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="margin" type="int" enum="Margin" />
+			<argument index="1" name="limit" type="int" />
 			<description>
 				Sets the specified camera limit. See also [member limit_bottom], [member limit_top], [member limit_left], and [member limit_right].
 			</description>

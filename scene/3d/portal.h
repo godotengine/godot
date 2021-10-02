@@ -31,11 +31,13 @@
 #ifndef PORTAL_H
 #define PORTAL_H
 
+#include "core/local_vector.h"
 #include "core/rid.h"
 #include "spatial.h"
 
 class RoomManager;
 class MeshInstance;
+class Room;
 
 class Portal : public Spatial {
 	GDCLASS(Portal, Spatial);
@@ -44,6 +46,8 @@ class Portal : public Spatial {
 
 	friend class RoomManager;
 	friend class PortalGizmoPlugin;
+	friend class PortalEditorPlugin;
+	friend class PortalSpatialGizmo;
 
 public:
 	// ui interface .. will have no effect after room conversion
@@ -61,6 +65,7 @@ public:
 	}
 	bool is_two_way() const { return _settings_two_way; }
 
+	// call during each conversion
 	void clear();
 
 	// whether to use the room manager default
@@ -78,6 +83,9 @@ public:
 	// to edit the geometry of the portal at runtime (they can also just change the portal node transform)
 	void set_points(const PoolVector<Vector2> &p_points);
 	PoolVector<Vector2> get_points() const;
+
+	// primarily for the gizmo
+	void set_point(int p_idx, const Vector2 &p_point);
 
 	String get_configuration_warning() const;
 
@@ -101,10 +109,10 @@ private:
 	void flip();
 	void _sanitize_points();
 	void _update_aabb();
-	Vector3 _vec2to3(const Vector2 &p_pt) const { return Vector3(p_pt.x, p_pt.y, 0.0); }
-	void _sort_verts_clockwise(bool portal_plane_convention, Vector<Vector3> &r_verts);
+	static Vector3 _vec2to3(const Vector2 &p_pt) { return Vector3(p_pt.x, p_pt.y, 0.0); }
+	void _sort_verts_clockwise(const Vector3 &p_portal_normal, Vector<Vector3> &r_verts);
 	Plane _plane_from_points_newell(const Vector<Vector3> &p_pts);
-	void resolve_links(const RID &p_from_room_rid);
+	void resolve_links(const LocalVector<Room *, int32_t> &p_rooms, const RID &p_from_room_rid);
 	void _changed();
 
 	// nodepath to the room this outgoing portal leads to
@@ -148,8 +156,14 @@ private:
 
 	// extension margin
 	real_t _margin;
-	real_t _default_margin;
 	bool _use_default_margin;
+
+	// during conversion, we need to know
+	// whether this portal is being imported from a mesh
+	// and is using an explicitly named link room with prefix.
+	// If this is not the case, and it is already a Godot Portal node,
+	// we will either use the assigned nodepath, or autolink.
+	bool _importing_portal = false;
 
 	// for editing
 #ifdef TOOLS_ENABLED

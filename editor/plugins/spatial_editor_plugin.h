@@ -207,7 +207,18 @@ class SpatialEditorViewport : public Control {
 		VIEW_DISPLAY_SHADELESS,
 		VIEW_LOCK_ROTATION,
 		VIEW_CINEMATIC_PREVIEW,
-		VIEW_AUTO_ORTHOGONAL
+		VIEW_AUTO_ORTHOGONAL,
+		VIEW_PORTAL_CULLING,
+	};
+
+	enum ViewType {
+		VIEW_TYPE_USER,
+		VIEW_TYPE_TOP,
+		VIEW_TYPE_BOTTOM,
+		VIEW_TYPE_LEFT,
+		VIEW_TYPE_RIGHT,
+		VIEW_TYPE_FRONT,
+		VIEW_TYPE_REAR,
 	};
 
 public:
@@ -232,7 +243,7 @@ public:
 
 private:
 	int index;
-	String name;
+	ViewType view_type;
 	void _menu_option(int p_option);
 	void _set_auto_orthogonal();
 	Spatial *preview_node;
@@ -285,7 +296,7 @@ private:
 	void _update_name();
 	void _compute_edit(const Point2 &p_point);
 	void _clear_selected();
-	void _select_clicked(bool p_append, bool p_single);
+	void _select_clicked(bool p_append, bool p_single, bool p_allow_locked = false);
 	void _select(Node *p_node, bool p_append, bool p_single);
 	ObjectID _select_ray(const Point2 &p_pos, bool p_append, bool &r_includes_current, int *r_gizmo_handle = nullptr, bool p_alt_select = false);
 	void _find_items_at_pos(const Point2 &p_pos, bool &r_includes_current, Vector<_RayResult> &results, bool p_alt_select = false);
@@ -357,6 +368,7 @@ private:
 		Vector3 orig_gizmo_pos;
 		int edited_gizmo;
 		Point2 mouse_pos;
+		Point2 original_mouse_pos;
 		bool snap;
 		Ref<EditorSpatialGizmo> gizmo;
 		int gizmo_handle;
@@ -544,6 +556,7 @@ public:
 		TOOL_UNLOCK_SELECTED,
 		TOOL_GROUP_SELECTED,
 		TOOL_UNGROUP_SELECTED,
+		TOOL_CONVERT_ROOMS,
 		TOOL_MAX
 	};
 
@@ -623,6 +636,7 @@ private:
 		MENU_TOOL_LOCAL_COORDS,
 		MENU_TOOL_USE_SNAP,
 		MENU_TOOL_OVERRIDE_CAMERA,
+		MENU_TOOL_CONVERT_ROOMS,
 		MENU_TRANSFORM_CONFIGURE_SNAP,
 		MENU_TRANSFORM_DIALOG,
 		MENU_VIEW_USE_1_VIEWPORT,
@@ -633,6 +647,8 @@ private:
 		MENU_VIEW_USE_4_VIEWPORTS,
 		MENU_VIEW_ORIGIN,
 		MENU_VIEW_GRID,
+		MENU_VIEW_PORTAL_CULLING,
+		MENU_VIEW_OCCLUSION_CULLING,
 		MENU_VIEW_GIZMOS_3D_ICONS,
 		MENU_VIEW_CAMERA_SETTINGS,
 		MENU_LOCK_SELECTED,
@@ -647,7 +663,7 @@ private:
 
 	MenuButton *transform_menu;
 	PopupMenu *gizmos_menu;
-	MenuButton *view_menu;
+	MenuButton *view_menu = nullptr;
 
 	AcceptDialog *accept;
 
@@ -682,6 +698,10 @@ private:
 	void _update_camera_override_viewport(Object *p_viewport);
 
 	HBoxContainer *hbc_menu;
+	// Used for secondary menu items which are displayed depending on the currently selected node
+	// (such as MeshInstance's "Mesh" menu).
+	PanelContainer *context_menu_container;
+	HBoxContainer *hbc_context_menu;
 
 	void _generate_selection_boxes();
 	UndoRedo *undo_redo;
@@ -689,6 +709,7 @@ private:
 	int camera_override_viewport_id;
 
 	void _init_indicators();
+	void _update_context_menu_stylebox();
 	void _update_gizmos_menu();
 	void _update_gizmos_menu_theme();
 	void _init_grid();
@@ -756,6 +777,8 @@ public:
 
 	void update_grid();
 	void update_transform_gizmo();
+	void update_portal_tools();
+	void show_advanced_portal_tools(bool p_show);
 	void update_all_gizmos(Node *p_node = nullptr);
 	void snap_selected_nodes_to_floor();
 	void select_gizmo_highlight_axis(int p_axis);
@@ -847,7 +870,7 @@ protected:
 public:
 	void create_material(const String &p_name, const Color &p_color, bool p_billboard = false, bool p_on_top = false, bool p_use_vertex_color = false);
 	void create_icon_material(const String &p_name, const Ref<Texture> &p_texture, bool p_on_top = false, const Color &p_albedo = Color(1, 1, 1, 1));
-	void create_handle_material(const String &p_name, bool p_billboard = false);
+	void create_handle_material(const String &p_name, bool p_billboard = false, const Ref<Texture> &p_icon = nullptr);
 	void add_material(const String &p_name, Ref<SpatialMaterial> p_material);
 
 	Ref<SpatialMaterial> get_material(const String &p_name, const Ref<EditorSpatialGizmo> &p_gizmo = Ref<EditorSpatialGizmo>());

@@ -67,6 +67,11 @@ MonoString *godot_icall_String_sha256_text(MonoString *p_str) {
 	return GDMonoMarshal::mono_string_from_godot(ret);
 }
 
+MonoString *godot_icall_String_simplify_path(MonoString *p_str) {
+	String ret = GDMonoMarshal::mono_string_to_godot(p_str).simplify_path();
+	return GDMonoMarshal::mono_string_from_godot(ret);
+}
+
 void godot_register_string_icalls() {
 	GDMonoUtils::add_internal_call("Godot.StringExtensions::godot_icall_String_md5_buffer", godot_icall_String_md5_buffer);
 	GDMonoUtils::add_internal_call("Godot.StringExtensions::godot_icall_String_md5_text", godot_icall_String_md5_text);
@@ -74,6 +79,7 @@ void godot_register_string_icalls() {
 	GDMonoUtils::add_internal_call("Godot.StringExtensions::godot_icall_String_rfindn", godot_icall_String_rfindn);
 	GDMonoUtils::add_internal_call("Godot.StringExtensions::godot_icall_String_sha256_buffer", godot_icall_String_sha256_buffer);
 	GDMonoUtils::add_internal_call("Godot.StringExtensions::godot_icall_String_sha256_text", godot_icall_String_sha256_text);
+	GDMonoUtils::add_internal_call("Godot.StringExtensions::godot_icall_String_simplify_path", godot_icall_String_simplify_path);
 }
 
 #endif // MONO_GLUE_ENABLED

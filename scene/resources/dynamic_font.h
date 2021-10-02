@@ -232,7 +232,7 @@ private:
 	Color outline_color;
 
 protected:
-	void _reload_cache();
+	void _reload_cache(const char *p_triggering_property = "");
 
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
@@ -307,6 +307,6 @@ public:
 	virtual String get_resource_type(const String &p_path) const;
 };
 
-#endif
+#endif // MODULE_FREETYPE_ENABLED
 
-#endif
+#endif // DYNAMIC_FONT_H

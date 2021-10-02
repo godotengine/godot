@@ -4,34 +4,32 @@
 		Float built-in type.
 	</brief_description>
 	<description>
-		Float built-in type.
+		The [float] built-in type is a 64-bit double-precision floating-point number, equivalent to [code]double[/code] in C++. This type has 14 reliable decimal digits of precision. The [float] type can be stored in [Variant], which is the generic type used by the engine. The maximum value of [float] is approximately [code]1.79769e308[/code], and the minimum is approximately [code]-1.79769e308[/code].
+		Most methods and properties in the engine use 32-bit single-precision floating-point numbers instead, equivalent to [code]float[/code] in C++, which have 6 reliable decimal digits of precision. For data structures such as [Vector2] and [Vector3], Godot uses 32-bit floating-point numbers.
+		Math done using the [float] type is not guaranteed to be exact or deterministic, and will often result in small errors. You should usually use the [method @GDScript.is_equal_approx] and [method @GDScript.is_zero_approx] methods instead of [code]==[/code] to compare [float] values for equality.
 	</description>
 	<tutorials>
+		<link title="Wikipedia: Double-precision floating-point format">https://en.wikipedia.org/wiki/Double-precision_floating-point_format</link>
+		<link title="Wikipedia: Single-precision floating-point format">https://en.wikipedia.org/wiki/Single-precision_floating-point_format</link>
 	</tutorials>
 	<methods>
 		<method name="float">
-			<return type="float">
-			</return>
-			<argument index="0" name="from" type="bool">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="from" type="bool" />
 			<description>
 				Cast a [bool] value to a floating-point value, [code]float(true)[/code] will be equal to 1.0 and [code]float(false)[/code] will be equal to 0.0.
 			</description>
 		</method>
 		<method name="float">
-			<return type="float">
-			</return>
-			<argument index="0" name="from" type="int">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="from" type="int" />
 			<description>
 				Cast an [int] value to a floating-point value, [code]float(1)[/code] will be equal to 1.0.
 			</description>
 		</method>
 		<method name="float">
-			<return type="float">
-			</return>
-			<argument index="0" name="from" type="String">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="from" type="String" />
 			<description>
 				Cast a [String] value to a floating-point value. This method accepts float value strings like [code]"1.23"[/code] and exponential notation strings for its parameter so calling [code]float("1e3")[/code] will return 1000.0 and calling [code]float("1e-3")[/code] will return 0.001. Calling this method with an invalid float string will return 0. This method stops parsing at the first invalid character and will return the parsed result so far, so calling [code]float("1a3")[/code] will return 1 while calling [code]float("1e3a2")[/code] will return 1000.0.
 			</description>

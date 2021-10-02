@@ -376,7 +376,7 @@ String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterf
 					xml_output.append(link_target);
 					xml_output.append("</c>");
 				}
-			} else if (link_tag == "const") {
+			} else if (link_tag == "constant") {
 				if (!target_itype || !target_itype->is_object_type) {
 					if (OS::get_singleton()->is_stdout_verbose()) {
 						if (target_itype) {
@@ -939,7 +939,7 @@ Error BindingsGenerator::generate_cs_core_project(const String &p_proj_dir) {
 #define ADD_INTERNAL_CALL(m_icall)                                                               \
 	if (!m_icall.editor_only) {                                                                  \
 		cs_icalls_content.append(MEMBER_BEGIN "[MethodImpl(MethodImplOptions.InternalCall)]\n"); \
-		cs_icalls_content.append(INDENT2 "internal extern static ");                             \
+		cs_icalls_content.append(INDENT2 "internal static extern ");                             \
 		cs_icalls_content.append(m_icall.im_type_out + " ");                                     \
 		cs_icalls_content.append(m_icall.name + "(");                                            \
 		cs_icalls_content.append(m_icall.im_sig + ");\n");                                       \
@@ -1043,7 +1043,7 @@ Error BindingsGenerator::generate_cs_editor_project(const String &p_proj_dir) {
 #define ADD_INTERNAL_CALL(m_icall)                                                               \
 	if (m_icall.editor_only) {                                                                   \
 		cs_icalls_content.append(MEMBER_BEGIN "[MethodImpl(MethodImplOptions.InternalCall)]\n"); \
-		cs_icalls_content.append(INDENT2 "internal extern static ");                             \
+		cs_icalls_content.append(INDENT2 "internal static extern ");                             \
 		cs_icalls_content.append(m_icall.im_type_out + " ");                                     \
 		cs_icalls_content.append(m_icall.name + "(");                                            \
 		cs_icalls_content.append(m_icall.im_sig + ");\n");                                       \
@@ -1584,7 +1584,12 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 			else
 				cs_in_statements += " : ";
 
-			String def_arg = sformat(iarg.default_argument, arg_type->cs_type);
+			String cs_type = arg_type->cs_type;
+			if (cs_type.ends_with("[]")) {
+				cs_type = cs_type.substr(0, cs_type.length() - 2);
+			}
+
+			String def_arg = sformat(iarg.default_argument, cs_type);
 
 			cs_in_statements += def_arg;
 			cs_in_statements += ";\n" INDENT3;
@@ -1593,8 +1598,10 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 
 			// Apparently the name attribute must not include the @
 			String param_tag_name = iarg.name.begins_with("@") ? iarg.name.substr(1, iarg.name.length()) : iarg.name;
+			// Escape < and > in the attribute default value
+			String param_def_arg = def_arg.replacen("<", "&lt;").replacen(">", "&gt;");
 
-			default_args_doc.append(MEMBER_BEGIN "/// <param name=\"" + param_tag_name + "\">If the parameter is null, then the default value is " + def_arg + "</param>");
+			default_args_doc.append(MEMBER_BEGIN "/// <param name=\"" + param_tag_name + "\">If the parameter is null, then the default value is " + param_def_arg + "</param>");
 		} else {
 			icall_params += arg_type->cs_in.empty() ? iarg.name : sformat(arg_type->cs_in, iarg.name);
 		}
@@ -2570,7 +2577,13 @@ bool BindingsGenerator::_arg_default_value_from_variant(const Variant &p_val, Ar
 			break;
 		case Variant::STRING:
 		case Variant::NODE_PATH:
-			r_iarg.default_argument = "\"" + r_iarg.default_argument + "\"";
+			if (r_iarg.type.cname == name_cache.type_NodePath) {
+				r_iarg.default_argument = "(%s)\"" + r_iarg.default_argument + "\"";
+				r_iarg.def_param_mode = ArgumentInterface::NULLABLE_REF;
+			} else {
+				CRASH_COND(r_iarg.type.cname != name_cache.type_String);
+				r_iarg.default_argument = "\"" + r_iarg.default_argument + "\"";
+			}
 			break;
 		case Variant::PLANE: {
 			Plane plane = p_val.operator Plane();
@@ -2619,6 +2632,9 @@ bool BindingsGenerator::_arg_default_value_from_variant(const Variant &p_val, Ar
 			r_iarg.default_argument = "null";
 			break;
 		case Variant::ARRAY:
+			r_iarg.default_argument = "new %s { }";
+			r_iarg.def_param_mode = ArgumentInterface::NULLABLE_REF;
+			break;
 		case Variant::POOL_BYTE_ARRAY:
 		case Variant::POOL_INT_ARRAY:
 		case Variant::POOL_REAL_ARRAY:
@@ -2626,7 +2642,7 @@ bool BindingsGenerator::_arg_default_value_from_variant(const Variant &p_val, Ar
 		case Variant::POOL_VECTOR2_ARRAY:
 		case Variant::POOL_VECTOR3_ARRAY:
 		case Variant::POOL_COLOR_ARRAY:
-			r_iarg.default_argument = "new %s {}";
+			r_iarg.default_argument = "Array.Empty<%s>()";
 			r_iarg.def_param_mode = ArgumentInterface::NULLABLE_REF;
 			break;
 		case Variant::TRANSFORM2D: {

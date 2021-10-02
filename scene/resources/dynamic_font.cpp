@@ -95,7 +95,8 @@ void DynamicFontData::_bind_methods() {
 	BIND_ENUM_CONSTANT(HINTING_LIGHT);
 	BIND_ENUM_CONSTANT(HINTING_NORMAL);
 
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "font_path", PROPERTY_HINT_FILE, "*.ttf,*.otf"), "set_font_path", "get_font_path");
+	// Only WOFF1 is supported as WOFF2 requires a Brotli decompression library to be linked.
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "font_path", PROPERTY_HINT_FILE, "*.ttf,*.otf,*.woff"), "set_font_path", "get_font_path");
 }
 
 DynamicFontData::DynamicFontData() {
@@ -669,7 +670,7 @@ DynamicFontAtSize::~DynamicFontAtSize() {
 
 /////////////////////////
 
-void DynamicFont::_reload_cache() {
+void DynamicFont::_reload_cache(const char *p_triggering_property) {
 	ERR_FAIL_COND(cache_id.size < 1);
 	if (!data.is_valid()) {
 		data_at_size.unref();
@@ -697,15 +698,12 @@ void DynamicFont::_reload_cache() {
 	}
 
 	emit_changed();
-	_change_notify();
+	_change_notify(p_triggering_property);
 }
 
 void DynamicFont::set_font_data(const Ref<DynamicFontData> &p_data) {
 	data = p_data;
-	_reload_cache();
-
-	emit_changed();
-	_change_notify();
+	_reload_cache(); // not passing the prop name as clearing the font data also clears fallbacks
 }
 
 Ref<DynamicFontData> DynamicFont::get_font_data() const {
@@ -718,7 +716,7 @@ void DynamicFont::set_size(int p_size) {
 	}
 	cache_id.size = p_size;
 	outline_cache_id.size = p_size;
-	_reload_cache();
+	_reload_cache("size");
 }
 
 int DynamicFont::get_size() const {
@@ -731,7 +729,7 @@ void DynamicFont::set_outline_size(int p_size) {
 	}
 	ERR_FAIL_COND(p_size < 0 || p_size > UINT8_MAX);
 	outline_cache_id.outline_size = p_size;
-	_reload_cache();
+	_reload_cache("outline_size");
 }
 
 int DynamicFont::get_outline_size() const {
@@ -742,7 +740,7 @@ void DynamicFont::set_outline_color(Color p_color) {
 	if (p_color != outline_color) {
 		outline_color = p_color;
 		emit_changed();
-		_change_notify();
+		_change_notify("outline_color");
 	}
 }
 
@@ -815,16 +813,19 @@ int DynamicFont::get_spacing(int p_type) const {
 void DynamicFont::set_spacing(int p_type, int p_value) {
 	if (p_type == SPACING_TOP) {
 		spacing_top = p_value;
+		_change_notify("extra_spacing_top");
 	} else if (p_type == SPACING_BOTTOM) {
 		spacing_bottom = p_value;
+		_change_notify("extra_spacing_bottom");
 	} else if (p_type == SPACING_CHAR) {
 		spacing_char = p_value;
+		_change_notify("extra_spacing_char");
 	} else if (p_type == SPACING_SPACE) {
 		spacing_space = p_value;
+		_change_notify("extra_spacing_space");
 	}
 
 	emit_changed();
-	_change_notify();
 }
 
 float DynamicFont::get_height() const {
@@ -928,7 +929,6 @@ void DynamicFont::add_fallback(const Ref<DynamicFontData> &p_data) {
 		fallback_outline_data_at_size.push_back(fallbacks.write[fallbacks.size() - 1]->_get_dynamic_font_at_size(outline_cache_id));
 	}
 
-	_change_notify();
 	emit_changed();
 	_change_notify();
 }
@@ -1137,6 +1137,8 @@ RES ResourceFormatLoaderDynamicFont::load(const String &p_path, const String &p_
 void ResourceFormatLoaderDynamicFont::get_recognized_extensions(List<String> *p_extensions) const {
 	p_extensions->push_back("ttf");
 	p_extensions->push_back("otf");
+	// Only WOFF1 is supported as WOFF2 requires a Brotli decompression library to be linked.
+	p_extensions->push_back("woff");
 }
 
 bool ResourceFormatLoaderDynamicFont::handles_type(const String &p_type) const {
@@ -1145,7 +1147,7 @@ bool ResourceFormatLoaderDynamicFont::handles_type(const String &p_type) const {
 
 String ResourceFormatLoaderDynamicFont::get_resource_type(const String &p_path) const {
 	String el = p_path.get_extension().to_lower();
-	if (el == "ttf" || el == "otf") {
+	if (el == "ttf" || el == "otf" || el == "woff") {
 		return "DynamicFontData";
 	}
 	return "";

@@ -255,6 +255,72 @@ struct TextEdit {
 };
 
 /**
+ * The edits to be applied.
+ */
+struct WorkspaceEdit {
+	/**
+	 * Holds changes to existing resources.
+	 */
+	Map<String, Vector<TextEdit>> changes;
+
+	_FORCE_INLINE_ void add_edit(const String &uri, const TextEdit &edit) {
+		if (changes.has(uri)) {
+			changes[uri].push_back(edit);
+		} else {
+			Vector<TextEdit> edits;
+			edits.push_back(edit);
+			changes[uri] = edits;
+		}
+	}
+
+	_FORCE_INLINE_ Dictionary to_json() const {
+		Dictionary dict;
+
+		Dictionary out_changes;
+		for (Map<String, Vector<TextEdit>>::Element *E = changes.front(); E; E = E->next()) {
+			Array edits;
+			for (int i = 0; i < E->get().size(); ++i) {
+				Dictionary text_edit;
+				text_edit["range"] = E->get()[i].range.to_json();
+				text_edit["newText"] = E->get()[i].newText;
+				edits.push_back(text_edit);
+			}
+			out_changes[E->key()] = edits;
+		}
+		dict["changes"] = out_changes;
+
+		return dict;
+	}
+
+	_FORCE_INLINE_ void add_change(const String &uri, const int &line, const int &start_character, const int &end_character, const String &new_text) {
+		if (Map<String, Vector<TextEdit>>::Element *E = changes.find(uri)) {
+			Vector<TextEdit> edit_list = E->value();
+			for (int i = 0; i < edit_list.size(); ++i) {
+				TextEdit edit = edit_list[i];
+				if (edit.range.start.character == start_character) {
+					return;
+				}
+			}
+		}
+
+		TextEdit new_edit;
+		new_edit.newText = new_text;
+		new_edit.range.start.line = line;
+		new_edit.range.start.character = start_character;
+		new_edit.range.end.line = line;
+		new_edit.range.end.character = end_character;
+
+		if (Map<String, Vector<TextEdit>>::Element *E = changes.find(uri)) {
+			E->value().push_back(new_edit);
+		} else {
+			Vector<TextEdit> edit_list;
+			edit_list.push_back(new_edit);
+			changes.insert(uri, edit_list);
+		}
+	}
+};
+
+/**
  * Represents a reference to a command.
  * Provides a title which will be used to represent a command in the UI.
  * Commands are identified by a string identifier.
@@ -486,7 +552,7 @@ struct TextDocumentSyncOptions {
 	 * If present save notifications are sent to the server. If omitted the notification should not be
 	 * sent.
 	 */
-	bool save = false;
+	SaveOptions save;
 
 	Dictionary to_json() {
 		Dictionary dict;
@@ -494,7 +560,7 @@ struct TextDocumentSyncOptions {
 		dict["willSave"] = willSave;
 		dict["openClose"] = openClose;
 		dict["change"] = change;
-		dict["save"] = save;
+		dict["save"] = save.to_json();
 		return dict;
 	}
 };
@@ -1018,32 +1084,32 @@ struct CompletionList {
  * A symbol kind.
  */
 namespace SymbolKind {
-static const int File = 0;
-static const int Module = 1;
-static const int Namespace = 2;
-static const int Package = 3;
-static const int Class = 4;
-static const int Method = 5;
-static const int Property = 6;
-static const int Field = 7;
-static const int Constructor = 8;
-static const int Enum = 9;
-static const int Interface = 10;
-static const int Function = 11;
-static const int Variable = 12;
-static const int Constant = 13;
-static const int String = 14;
-static const int Number = 15;
-static const int Boolean = 16;
-static const int Array = 17;
-static const int Object = 18;
-static const int Key = 19;
-static const int Null = 20;
-static const int EnumMember = 21;
-static const int Struct = 22;
-static const int Event = 23;
-static const int Operator = 24;
-static const int TypeParameter = 25;
+static const int File = 1;
+static const int Module = 2;
+static const int Namespace = 3;
+static const int Package = 4;
+static const int Class = 5;
+static const int Method = 6;
+static const int Property = 7;
+static const int Field = 8;
+static const int Constructor = 9;
+static const int Enum = 10;
+static const int Interface = 11;
+static const int Function = 12;
+static const int Variable = 13;
+static const int Constant = 14;
+static const int String = 15;
+static const int Number = 16;
+static const int Boolean = 17;
+static const int Array = 18;
+static const int Object = 19;
+static const int Key = 20;
+static const int Null = 21;
+static const int EnumMember = 22;
+static const int Struct = 23;
+static const int Event = 24;
+static const int Operator = 25;
+static const int TypeParameter = 26;
 }; // namespace SymbolKind
 
 /**
@@ -1263,6 +1329,18 @@ struct DocumentSymbol {
 		}
 
 		return item;
+	}
+};
+
+struct ApplyWorkspaceEditParams {
+	WorkspaceEdit edit;
+
+	Dictionary to_json() {
+		Dictionary dict;
+
+		dict["edit"] = edit.to_json();
+
+		return dict;
 	}
 };
 

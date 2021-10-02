@@ -38,7 +38,7 @@ extern "C" {
 #endif
 
 #define GODOT_NET_WEBRTC_API_MAJOR 3
-#define GODOT_NET_WEBRTC_API_MINOR 2
+#define GODOT_NET_WEBRTC_API_MINOR 4
 
 /* Library Interface (used to set default GDNative WebRTC implementation */
 typedef struct {
@@ -107,6 +107,13 @@ typedef struct {
 
 	void *next; /* For extension? */
 } godot_net_webrtc_data_channel;
+
+/* Extensions to WebRTCDataChannel */
+typedef struct {
+	int (*get_buffered_amount)(const void *);
+
+	void *next; /* For extension? */
+} godot_net_webrtc_data_channel_ext;
 
 /* Set the default GDNative library */
 godot_error GDAPI godot_net_set_webrtc_library(const godot_net_webrtc_library *);

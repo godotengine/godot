@@ -325,11 +325,11 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	hints["interface/editor/font_hinting"] = PropertyInfo(Variant::INT, "interface/editor/font_hinting", PROPERTY_HINT_ENUM, "Auto (Light),None,Light,Normal", PROPERTY_USAGE_DEFAULT);
 #endif
 	_initial_set("interface/editor/main_font", "");
-	hints["interface/editor/main_font"] = PropertyInfo(Variant::STRING, "interface/editor/main_font", PROPERTY_HINT_GLOBAL_FILE, "*.ttf,*.otf", PROPERTY_USAGE_DEFAULT);
+	hints["interface/editor/main_font"] = PropertyInfo(Variant::STRING, "interface/editor/main_font", PROPERTY_HINT_GLOBAL_FILE, "*.ttf,*.otf,*.woff", PROPERTY_USAGE_DEFAULT);
 	_initial_set("interface/editor/main_font_bold", "");
-	hints["interface/editor/main_font_bold"] = PropertyInfo(Variant::STRING, "interface/editor/main_font_bold", PROPERTY_HINT_GLOBAL_FILE, "*.ttf,*.otf", PROPERTY_USAGE_DEFAULT);
+	hints["interface/editor/main_font_bold"] = PropertyInfo(Variant::STRING, "interface/editor/main_font_bold", PROPERTY_HINT_GLOBAL_FILE, "*.ttf,*.otf,*.woff", PROPERTY_USAGE_DEFAULT);
 	_initial_set("interface/editor/code_font", "");
-	hints["interface/editor/code_font"] = PropertyInfo(Variant::STRING, "interface/editor/code_font", PROPERTY_HINT_GLOBAL_FILE, "*.ttf,*.otf", PROPERTY_USAGE_DEFAULT);
+	hints["interface/editor/code_font"] = PropertyInfo(Variant::STRING, "interface/editor/code_font", PROPERTY_HINT_GLOBAL_FILE, "*.ttf,*.otf,*.woff", PROPERTY_USAGE_DEFAULT);
 	_initial_set("interface/editor/dim_editor_on_dialog_popup", true);
 	_initial_set("interface/editor/low_processor_mode_sleep_usec", 6900); // ~144 FPS
 	hints["interface/editor/low_processor_mode_sleep_usec"] = PropertyInfo(Variant::REAL, "interface/editor/low_processor_mode_sleep_usec", PROPERTY_HINT_RANGE, "1,100000,1", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED);
@@ -564,24 +564,20 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("editors/3d/navigation/warped_mouse_panning", true);
 
 	// 3D: Navigation feel
-	_initial_set("editors/3d/navigation_feel/orbit_sensitivity", 0.4);
-	hints["editors/3d/navigation_feel/orbit_sensitivity"] = PropertyInfo(Variant::REAL, "editors/3d/navigation_feel/orbit_sensitivity", PROPERTY_HINT_RANGE, "0.0, 2, 0.01");
-	_initial_set("editors/3d/navigation_feel/orbit_inertia", 0.05);
-	hints["editors/3d/navigation_feel/orbit_inertia"] = PropertyInfo(Variant::REAL, "editors/3d/navigation_feel/orbit_inertia", PROPERTY_HINT_RANGE, "0.0, 1, 0.01");
-	_initial_set("editors/3d/navigation_feel/translation_inertia", 0.15);
-	hints["editors/3d/navigation_feel/translation_inertia"] = PropertyInfo(Variant::REAL, "editors/3d/navigation_feel/translation_inertia", PROPERTY_HINT_RANGE, "0.0, 1, 0.01");
-	_initial_set("editors/3d/navigation_feel/zoom_inertia", 0.075);
-	hints["editors/3d/navigation_feel/zoom_inertia"] = PropertyInfo(Variant::REAL, "editors/3d/navigation_feel/zoom_inertia", PROPERTY_HINT_RANGE, "0.0, 1, 0.01");
-	_initial_set("editors/3d/navigation_feel/manipulation_orbit_inertia", 0.075);
-	hints["editors/3d/navigation_feel/manipulation_orbit_inertia"] = PropertyInfo(Variant::REAL, "editors/3d/navigation_feel/manipulation_orbit_inertia", PROPERTY_HINT_RANGE, "0.0, 1, 0.01");
-	_initial_set("editors/3d/navigation_feel/manipulation_translation_inertia", 0.075);
-	hints["editors/3d/navigation_feel/manipulation_translation_inertia"] = PropertyInfo(Variant::REAL, "editors/3d/navigation_feel/manipulation_translation_inertia", PROPERTY_HINT_RANGE, "0.0, 1, 0.01");
+	_initial_set("editors/3d/navigation_feel/orbit_sensitivity", 0.25);
+	hints["editors/3d/navigation_feel/orbit_sensitivity"] = PropertyInfo(Variant::REAL, "editors/3d/navigation_feel/orbit_sensitivity", PROPERTY_HINT_RANGE, "0.01, 2, 0.001");
+	_initial_set("editors/3d/navigation_feel/orbit_inertia", 0.0);
+	hints["editors/3d/navigation_feel/orbit_inertia"] = PropertyInfo(Variant::REAL, "editors/3d/navigation_feel/orbit_inertia", PROPERTY_HINT_RANGE, "0, 1, 0.001");
+	_initial_set("editors/3d/navigation_feel/translation_inertia", 0.05);
+	hints["editors/3d/navigation_feel/translation_inertia"] = PropertyInfo(Variant::REAL, "editors/3d/navigation_feel/translation_inertia", PROPERTY_HINT_RANGE, "0, 1, 0.001");
+	_initial_set("editors/3d/navigation_feel/zoom_inertia", 0.05);
+	hints["editors/3d/navigation_feel/zoom_inertia"] = PropertyInfo(Variant::REAL, "editors/3d/navigation_feel/zoom_inertia", PROPERTY_HINT_RANGE, "0, 1, 0.001");
 
 	// 3D: Freelook
 	_initial_set("editors/3d/freelook/freelook_navigation_scheme", false);
 	hints["editors/3d/freelook/freelook_navigation_scheme"] = PropertyInfo(Variant::INT, "editors/3d/freelook/freelook_navigation_scheme", PROPERTY_HINT_ENUM, "Default,Partially Axis-Locked (id Tech),Fully Axis-Locked (Minecraft)");
-	_initial_set("editors/3d/freelook/freelook_inertia", 0.1);
-	hints["editors/3d/freelook/freelook_inertia"] = PropertyInfo(Variant::REAL, "editors/3d/freelook/freelook_inertia", PROPERTY_HINT_RANGE, "0.0, 1, 0.01");
+	_initial_set("editors/3d/freelook/freelook_inertia", 0.0);
+	hints["editors/3d/freelook/freelook_inertia"] = PropertyInfo(Variant::REAL, "editors/3d/freelook/freelook_inertia", PROPERTY_HINT_RANGE, "0, 1, 0.001");
 	_initial_set("editors/3d/freelook/freelook_base_speed", 5.0);
 	hints["editors/3d/freelook/freelook_base_speed"] = PropertyInfo(Variant::REAL, "editors/3d/freelook/freelook_base_speed", PROPERTY_HINT_RANGE, "0.0, 10, 0.01");
 	_initial_set("editors/3d/freelook/freelook_activation_modifier", 0);

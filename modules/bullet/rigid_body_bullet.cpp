@@ -114,6 +114,16 @@ Transform BulletPhysicsDirectBodyState::get_transform() const {
 	return body->get_transform();
 }
 
+Vector3 BulletPhysicsDirectBodyState::get_velocity_at_local_position(const Vector3 &p_position) const {
+	btVector3 local_position;
+	G_TO_B(p_position, local_position);
+
+	Vector3 velocity;
+	B_TO_G(body->btBody->getVelocityInLocalPoint(local_position), velocity);
+
+	return velocity;
+}
+
 void BulletPhysicsDirectBodyState::add_central_force(const Vector3 &p_force) {
 	body->apply_central_force(p_force);
 }
@@ -310,6 +320,7 @@ RigidBodyBullet::~RigidBodyBullet() {
 
 void RigidBodyBullet::init_kinematic_utilities() {
 	kinematic_utilities = memnew(KinematicUtilities(this));
+	reload_kinematic_shapes();
 }
 
 void RigidBodyBullet::destroy_kinematic_utilities() {
@@ -320,7 +331,7 @@ void RigidBodyBullet::destroy_kinematic_utilities() {
 }
 
 void RigidBodyBullet::main_shape_changed() {
-	CRASH_COND(!get_main_shape())
+	CRASH_COND(!get_main_shape());
 	btBody->setCollisionShape(get_main_shape());
 	set_continuous_collision_detection(is_continuous_collision_detection_enabled()); // Reset
 }

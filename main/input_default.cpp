@@ -90,21 +90,19 @@ bool InputDefault::is_joy_button_pressed(int p_device, int p_button) const {
 	return joy_buttons_pressed.has(_combine_device(p_button, p_device));
 }
 
-bool InputDefault::is_action_pressed(const StringName &p_action) const {
-#ifdef DEBUG_ENABLED
-	bool has_action = InputMap::get_singleton()->has_action(p_action);
-	ERR_FAIL_COND_V_MSG(!has_action, false, "Request for nonexistent InputMap action '" + String(p_action) + "'.");
-#endif
-	return action_state.has(p_action) && action_state[p_action].pressed;
+bool InputDefault::is_action_pressed(const StringName &p_action, bool p_exact) const {
+	ERR_FAIL_COND_V_MSG(!InputMap::get_singleton()->has_action(p_action), false, InputMap::get_singleton()->suggest_actions(p_action));
+	return action_state.has(p_action) && action_state[p_action].pressed && (p_exact ? action_state[p_action].exact : true);
 }
 
-bool InputDefault::is_action_just_pressed(const StringName &p_action) const {
-#ifdef DEBUG_ENABLED
-	bool has_action = InputMap::get_singleton()->has_action(p_action);
-	ERR_FAIL_COND_V_MSG(!has_action, false, "Request for nonexistent InputMap action '" + String(p_action) + "'.");
-#endif
+bool InputDefault::is_action_just_pressed(const StringName &p_action, bool p_exact) const {
+	ERR_FAIL_COND_V_MSG(!InputMap::get_singleton()->has_action(p_action), false, InputMap::get_singleton()->suggest_actions(p_action));
 	const Map<StringName, Action>::Element *E = action_state.find(p_action);
 	if (!E) {
+		return false;
+	}
+
+	if (p_exact && E->get().exact == false) {
 		return false;
 	}
 
@@ -115,13 +113,14 @@ bool InputDefault::is_action_just_pressed(const StringName &p_action) const {
 	}
 }
 
-bool InputDefault::is_action_just_released(const StringName &p_action) const {
-#ifdef DEBUG_ENABLED
-	bool has_action = InputMap::get_singleton()->has_action(p_action);
-	ERR_FAIL_COND_V_MSG(!has_action, false, "Request for nonexistent InputMap action '" + String(p_action) + "'.");
-#endif
+bool InputDefault::is_action_just_released(const StringName &p_action, bool p_exact) const {
+	ERR_FAIL_COND_V_MSG(!InputMap::get_singleton()->has_action(p_action), false, InputMap::get_singleton()->suggest_actions(p_action));
 	const Map<StringName, Action>::Element *E = action_state.find(p_action);
 	if (!E) {
+		return false;
+	}
+
+	if (p_exact && E->get().exact == false) {
 		return false;
 	}
 
@@ -132,17 +131,63 @@ bool InputDefault::is_action_just_released(const StringName &p_action) const {
 	}
 }
 
-float InputDefault::get_action_strength(const StringName &p_action) const {
-#ifdef DEBUG_ENABLED
-	bool has_action = InputMap::get_singleton()->has_action(p_action);
-	ERR_FAIL_COND_V_MSG(!has_action, false, "Request for nonexistent InputMap action '" + String(p_action) + "'.");
-#endif
+float InputDefault::get_action_strength(const StringName &p_action, bool p_exact) const {
+	ERR_FAIL_COND_V_MSG(!InputMap::get_singleton()->has_action(p_action), 0.0, InputMap::get_singleton()->suggest_actions(p_action));
 	const Map<StringName, Action>::Element *E = action_state.find(p_action);
 	if (!E) {
 		return 0.0f;
 	}
 
+	if (p_exact && E->get().exact == false) {
+		return 0.0f;
+	}
+
 	return E->get().strength;
+}
+
+float InputDefault::get_action_raw_strength(const StringName &p_action, bool p_exact) const {
+	ERR_FAIL_COND_V_MSG(!InputMap::get_singleton()->has_action(p_action), 0.0, InputMap::get_singleton()->suggest_actions(p_action));
+	const Map<StringName, Action>::Element *E = action_state.find(p_action);
+	if (!E) {
+		return 0.0f;
+	}
+
+	if (p_exact && E->get().exact == false) {
+		return 0.0f;
+	}
+
+	return E->get().raw_strength;
+}
+
+float Input::get_axis(const StringName &p_negative_action, const StringName &p_positive_action) const {
+	return get_action_strength(p_positive_action) - get_action_strength(p_negative_action);
+}
+
+Vector2 Input::get_vector(const StringName &p_negative_x, const StringName &p_positive_x, const StringName &p_negative_y, const StringName &p_positive_y, float p_deadzone) const {
+	Vector2 vector = Vector2(
+			get_action_raw_strength(p_positive_x) - get_action_raw_strength(p_negative_x),
+			get_action_raw_strength(p_positive_y) - get_action_raw_strength(p_negative_y));
+
+	if (p_deadzone < 0.0f) {
+		// If the deadzone isn't specified, get it from the average of the actions.
+		p_deadzone = (InputMap::get_singleton()->action_get_deadzone(p_positive_x) +
+							 InputMap::get_singleton()->action_get_deadzone(p_negative_x) +
+							 InputMap::get_singleton()->action_get_deadzone(p_positive_y) +
+							 InputMap::get_singleton()->action_get_deadzone(p_negative_y)) /
+					 4;
+	}
+
+	// Circular length limiting and deadzone.
+	float length = vector.length();
+	if (length <= p_deadzone) {
+		return Vector2();
+	} else if (length > 1.0f) {
+		return vector / length;
+	} else {
+		// Inverse lerp length to map (p_deadzone, 1) to (0, 1).
+		return vector * (Math::inverse_lerp(p_deadzone, 1.0f, length) / length);
+	}
+	return vector;
 }
 
 float InputDefault::get_joy_axis(int p_device, int p_axis) const {
@@ -255,10 +300,6 @@ Vector3 InputDefault::get_gyroscope() const {
 	return gyroscope;
 }
 
-void InputDefault::parse_input_event(const Ref<InputEvent> &p_event) {
-	_parse_input_event_impl(p_event, false);
-}
-
 void InputDefault::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_emulated) {
 	// Notes on mouse-touch emulation:
 	// - Emulated mouse events are parsed, that is, re-routed to this method, so they make the same effects
@@ -266,8 +307,6 @@ void InputDefault::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool 
 	//   emulated back to touch events in an endless loop.
 	// - Emulated touch events are handed right to the main loop (i.e., the SceneTree) because they don't
 	//   require additional handling by this class.
-
-	_THREAD_SAFE_METHOD_
 
 	Ref<InputEventKey> k = p_event;
 	if (k.is_valid() && !k->is_echo() && k->get_scancode() != 0) {
@@ -418,16 +457,19 @@ void InputDefault::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool 
 
 	for (const Map<StringName, InputMap::Action>::Element *E = InputMap::get_singleton()->get_action_map().front(); E; E = E->next()) {
 		if (InputMap::get_singleton()->event_is_action(p_event, E->key())) {
-			// Save the action's state
-			if (!p_event->is_echo() && is_action_pressed(E->key()) != p_event->is_action_pressed(E->key())) {
+			// If not echo and action pressed state has changed
+			if (!p_event->is_echo() && is_action_pressed(E->key(), false) != p_event->is_action_pressed(E->key())) {
 				Action action;
 				action.physics_frame = Engine::get_singleton()->get_physics_frames();
 				action.idle_frame = Engine::get_singleton()->get_idle_frames();
 				action.pressed = p_event->is_action_pressed(E->key());
-				action.strength = 0.f;
+				action.strength = 0.0f;
+				action.raw_strength = 0.0f;
+				action.exact = InputMap::get_singleton()->event_is_action(p_event, E->key(), true);
 				action_state[E->key()] = action;
 			}
 			action_state[E->key()].strength = p_event->get_action_strength(E->key());
+			action_state[E->key()].raw_strength = p_event->get_action_raw_strength(E->key());
 		}
 	}
 
@@ -634,24 +676,36 @@ void InputDefault::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_sh
 	OS::get_singleton()->set_custom_mouse_cursor(p_cursor, (OS::CursorShape)p_shape, p_hotspot);
 }
 
-void InputDefault::accumulate_input_event(const Ref<InputEvent> &p_event) {
+void InputDefault::parse_input_event(const Ref<InputEvent> &p_event) {
+	_THREAD_SAFE_METHOD_
+
 	ERR_FAIL_COND(p_event.is_null());
 
-	if (!use_accumulated_input) {
-		parse_input_event(p_event);
-		return;
+	if (use_accumulated_input) {
+		if (buffered_events.empty() || !buffered_events.back()->get()->accumulate(p_event)) {
+			buffered_events.push_back(p_event);
+		}
+	} else if (use_input_buffering) {
+		buffered_events.push_back(p_event);
+	} else {
+		_parse_input_event_impl(p_event, false);
 	}
-	if (!accumulated_events.empty() && accumulated_events.back()->get()->accumulate(p_event)) {
-		return; //event was accumulated, exit
-	}
-
-	accumulated_events.push_back(p_event);
 }
-void InputDefault::flush_accumulated_events() {
-	while (accumulated_events.front()) {
-		parse_input_event(accumulated_events.front()->get());
-		accumulated_events.pop_front();
+void InputDefault::flush_buffered_events() {
+	_THREAD_SAFE_METHOD_
+
+	while (buffered_events.front()) {
+		_parse_input_event_impl(buffered_events.front()->get(), false);
+		buffered_events.pop_front();
 	}
+}
+
+bool InputDefault::is_using_input_buffering() {
+	return use_input_buffering;
+}
+
+void InputDefault::set_use_input_buffering(bool p_enable) {
+	use_input_buffering = p_enable;
 }
 
 void InputDefault::set_use_accumulated_input(bool p_enable) {
@@ -659,7 +713,7 @@ void InputDefault::set_use_accumulated_input(bool p_enable) {
 }
 
 void InputDefault::release_pressed_events() {
-	flush_accumulated_events(); // this is needed to release actions strengths
+	flush_buffered_events(); // this is needed to release actions strengths
 
 	keys_pressed.clear();
 	joy_buttons_pressed.clear();
@@ -673,7 +727,8 @@ void InputDefault::release_pressed_events() {
 }
 
 InputDefault::InputDefault() {
-	use_accumulated_input = true;
+	use_input_buffering = false;
+	use_accumulated_input = false;
 	mouse_button_mask = 0;
 	emulate_touch_from_mouse = false;
 	emulate_mouse_from_touch = false;

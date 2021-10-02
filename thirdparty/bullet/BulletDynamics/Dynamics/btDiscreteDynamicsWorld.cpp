@@ -800,6 +800,14 @@ public:
 		///don't do CCD when the collision filters are not matching
 		if (!ClosestConvexResultCallback::needsCollision(proxy0))
 			return false;
+		if (m_pairCache->getOverlapFilterCallback()) {
+			btBroadphaseProxy* proxy1 = m_me->getBroadphaseHandle();
+			bool collides = m_pairCache->needsBroadphaseCollision(proxy0, proxy1);
+			if (!collides)
+			{
+				return false;
+			}
+		}
 
 		btCollisionObject* otherObj = (btCollisionObject*)proxy0->m_clientObject;
 

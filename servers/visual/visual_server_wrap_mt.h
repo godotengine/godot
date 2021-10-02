@@ -416,6 +416,7 @@ public:
 	FUNC2(viewport_set_msaa, RID, ViewportMSAA)
 	FUNC2(viewport_set_use_fxaa, RID, bool)
 	FUNC2(viewport_set_use_debanding, RID, bool)
+	FUNC2(viewport_set_sharpen_intensity, RID, float)
 	FUNC2(viewport_set_hdr, RID, bool)
 	FUNC2(viewport_set_usage, RID, ViewportUsage)
 
@@ -490,7 +491,7 @@ public:
 
 	FUNCRID(portal)
 	FUNC2(portal_set_scenario, RID, RID)
-	FUNC3(portal_set_geometry, RID, const Vector<Vector3> &, float)
+	FUNC3(portal_set_geometry, RID, const Vector<Vector3> &, real_t)
 	FUNC4(portal_link, RID, RID, RID, bool)
 	FUNC2(portal_set_active, RID, bool)
 
@@ -499,6 +500,14 @@ public:
 	FUNC2(roomgroup_prepare, RID, ObjectID)
 	FUNC2(roomgroup_set_scenario, RID, RID)
 	FUNC2(roomgroup_add_room, RID, RID)
+
+	// Occluders
+	FUNCRID(occluder)
+	FUNC3(occluder_set_scenario, RID, RID, OccluderType)
+	FUNC2(occluder_spheres_update, RID, const Vector<Plane> &)
+	FUNC2(occluder_set_transform, RID, const Transform &)
+	FUNC2(occluder_set_active, RID, bool)
+	FUNC1(set_use_occlusion_culling, bool)
 
 	// Rooms
 	FUNCRID(room)
@@ -509,12 +518,15 @@ public:
 	FUNC2(room_prepare, RID, int32_t)
 	FUNC1(rooms_and_portals_clear, RID)
 	FUNC1(rooms_unload, RID)
-	FUNC6(rooms_finalize, RID, bool, bool, bool, bool, String)
+	FUNC8(rooms_finalize, RID, bool, bool, bool, bool, String, bool, bool)
 	FUNC4(rooms_override_camera, RID, bool, const Vector3 &, const Vector<Plane> *)
 	FUNC2(rooms_set_active, RID, bool)
 	FUNC2(rooms_set_params, RID, int)
 	FUNC3(rooms_set_debug_feature, RID, RoomsDebugFeature, bool)
 	FUNC2(rooms_update_gameplay_monitor, RID, const Vector<Vector3> &)
+
+	// don't use this in a game
+	FUNC1RC(bool, rooms_is_loaded, RID)
 
 	// Callbacks
 	FUNC1(callbacks_register, VisualServerCallbacks *)

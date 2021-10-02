@@ -974,7 +974,7 @@ void VisualScriptEditor::_change_port_type(int p_select, int p_id, int p_port, b
 		return;
 	}
 
-	undo_redo->create_action("Change Port Type");
+	undo_redo->create_action(TTR("Change Port Type"));
 	if (is_input) {
 		undo_redo->add_do_method(vsn.ptr(), "set_input_data_port_type", p_port, Variant::Type(p_select));
 		undo_redo->add_undo_method(vsn.ptr(), "set_input_data_port_type", p_port, vsn->get_input_value_port_info(p_port).type);
@@ -1007,7 +1007,7 @@ void VisualScriptEditor::_port_name_focus_out(const Node *p_name_box, int p_id, 
 		return;
 	}
 
-	undo_redo->create_action("Change Port Name");
+	undo_redo->create_action(TTR("Change Port Name"));
 	if (is_input) {
 		undo_redo->add_do_method(vsn.ptr(), "set_input_data_port_name", p_port, text);
 		undo_redo->add_undo_method(vsn.ptr(), "set_input_data_port_name", p_port, vsn->get_input_value_port_info(p_port).name);
@@ -2180,6 +2180,11 @@ void VisualScriptEditor::drop_data_fw(const Point2 &p_point, const Variant &p_da
 	}
 
 	if (String(d["type"]) == "files") {
+#ifdef OSX_ENABLED
+		bool use_preload = Input::get_singleton()->is_key_pressed(KEY_META);
+#else
+		bool use_preload = Input::get_singleton()->is_key_pressed(KEY_CONTROL);
+#endif
 		Vector2 pos = _get_pos_in_graph(p_point);
 
 		Array files = d["files"];
@@ -2188,20 +2193,29 @@ void VisualScriptEditor::drop_data_fw(const Point2 &p_point, const Variant &p_da
 		int new_id = script->get_available_id();
 
 		if (files.size()) {
-			undo_redo->create_action(TTR("Add Preload Node"));
+			undo_redo->create_action(TTR("Add Node(s)"));
 
 			for (int i = 0; i < files.size(); i++) {
 				Ref<Resource> res = ResourceLoader::load(files[i]);
 				if (!res.is_valid()) {
 					continue;
 				}
+				Ref<Script> drop_script = ResourceLoader::load(files[i]);
+				if (drop_script.is_valid() && drop_script->is_tool() && drop_script->get_instance_base_type() == "VisualScriptCustomNode" && !use_preload) {
+					Ref<VisualScriptCustomNode> vscn;
+					vscn.instance();
+					vscn->set_script(drop_script.get_ref_ptr());
 
-				Ref<VisualScriptPreload> prnode;
-				prnode.instance();
-				prnode->set_preload(res);
+					undo_redo->add_do_method(script.ptr(), "add_node", default_func, new_id, vscn, pos);
+					undo_redo->add_undo_method(script.ptr(), "remove_node", default_func, new_id);
+				} else {
+					Ref<VisualScriptPreload> prnode;
+					prnode.instance();
+					prnode->set_preload(res);
 
-				undo_redo->add_do_method(script.ptr(), "add_node", default_func, new_id, prnode, pos);
-				undo_redo->add_undo_method(script.ptr(), "remove_node", default_func, new_id);
+					undo_redo->add_do_method(script.ptr(), "add_node", default_func, new_id, prnode, pos);
+					undo_redo->add_undo_method(script.ptr(), "remove_node", default_func, new_id);
+				}
 				new_ids.push_back(new_id);
 				new_id++;
 				pos += Vector2(20, 20);
@@ -2242,41 +2256,33 @@ void VisualScriptEditor::drop_data_fw(const Point2 &p_point, const Variant &p_da
 		undo_redo->create_action(TTR("Add Node(s) From Tree"));
 		int base_id = script->get_available_id();
 
-		if (nodes.size() > 1) {
-			use_node = true;
-		}
+		if (use_node || nodes.size() > 1) {
+			for (int i = 0; i < nodes.size(); i++) {
+				NodePath np = nodes[i];
+				Node *node = get_node(np);
+				if (!node) {
+					continue;
+				}
 
-		for (int i = 0; i < nodes.size(); i++) {
-			NodePath np = nodes[i];
-			Node *node = get_node(np);
-			if (!node) {
-				continue;
-			}
-
-			Ref<VisualScriptNode> n;
-
-			if (use_node) {
+				Ref<VisualScriptNode> n;
 				Ref<VisualScriptSceneNode> scene_node;
 				scene_node.instance();
 				scene_node->set_node_path(sn->get_path_to(node));
 				n = scene_node;
-			} else {
-				// ! Doesn't work properly
-				Ref<VisualScriptFunctionCall> call;
-				call.instance();
-				call->set_call_mode(VisualScriptFunctionCall::CALL_MODE_NODE_PATH);
-				call->set_base_path(sn->get_path_to(node));
-				call->set_base_type(node->get_class());
-				n = call;
-				method_select->select_from_instance(node, "", true, node->get_class());
-				selecting_method_id = base_id;
+
+				undo_redo->add_do_method(script.ptr(), "add_node", default_func, base_id, n, pos);
+				undo_redo->add_undo_method(script.ptr(), "remove_node", default_func, base_id);
+
+				base_id++;
+				pos += Vector2(25, 25);
 			}
-
-			undo_redo->add_do_method(script.ptr(), "add_node", default_func, base_id, n, pos);
-			undo_redo->add_undo_method(script.ptr(), "remove_node", default_func, base_id);
-
-			base_id++;
-			pos += Vector2(25, 25);
+		} else {
+			NodePath np = nodes[0];
+			Node *node = get_node(np);
+			drop_position = pos;
+			drop_node = node;
+			drop_path = sn->get_path_to(node);
+			new_connect_node_select->select_from_instance(node, "", false, node->get_class());
 		}
 		undo_redo->add_do_method(this, "_update_graph");
 		undo_redo->add_undo_method(this, "_update_graph");
@@ -2322,10 +2328,6 @@ void VisualScriptEditor::drop_data_fw(const Point2 &p_point, const Variant &p_da
 				pset.instance();
 				pset->set_call_mode(VisualScriptPropertySet::CALL_MODE_INSTANCE);
 				pset->set_base_type(obj->get_class());
-				/*if (use_value) {
-						pset->set_use_builtin_value(true);
-						pset->set_builtin_value(d["value"]);
-					}*/
 				vnode = pset;
 			} else {
 				Ref<VisualScriptPropertyGet> pget;
@@ -2863,6 +2865,20 @@ void VisualScriptEditor::_graph_connected(const String &p_from, int p_from_slot,
 
 	ERR_FAIL_COND(from_seq != to_seq);
 
+	// Checking to prevent warnings.
+	if (from_seq) {
+		if (script->has_sequence_connection(from_func, p_from.to_int(), from_port, p_to.to_int())) {
+			return;
+		}
+	} else if (script->has_data_connection(from_func, p_from.to_int(), from_port, p_to.to_int(), to_port)) {
+		return;
+	}
+
+	// Preventing connection to itself.
+	if (p_from.to_int() == p_to.to_int()) {
+		return;
+	}
+
 	// Do all the checks here
 	StringName func; // this the func where we store the one the nodes at the end of the resolution on having multiple nodes
 
@@ -3351,7 +3367,7 @@ VisualScriptNode::TypeGuess VisualScriptEditor::_guess_output_type(int p_port_ac
 
 	Ref<VisualScriptNode> node = script->get_node(func, p_port_action_node);
 
-	if (!node.is_valid()) {
+	if (!node.is_valid() || node->get_output_value_port_count() <= p_port_action_output) {
 		return tg;
 	}
 
@@ -3485,6 +3501,11 @@ void VisualScriptEditor::_selected_connect_node(const String &p_text, const Stri
 
 	Set<int> vn;
 
+	if (drop_position != Vector2()) {
+		pos = drop_position;
+	}
+	drop_position = Vector2();
+
 	bool port_node_exists = true;
 
 	StringName func = _get_function_of_node(port_action_node);
@@ -3539,18 +3560,63 @@ void VisualScriptEditor::_selected_connect_node(const String &p_text, const Stri
 	if (p_category == String("method")) {
 		Ref<VisualScriptFunctionCall> n;
 		n.instance();
+
+		if (!drop_path.is_empty()) {
+			if (drop_path == String(".")) {
+				n->set_call_mode(VisualScriptFunctionCall::CALL_MODE_SELF);
+			} else {
+				n->set_call_mode(VisualScriptFunctionCall::CALL_MODE_NODE_PATH);
+				n->set_base_path(drop_path);
+			}
+		}
+		if (drop_node) {
+			n->set_base_type(drop_node->get_class());
+			if (drop_node->get_script_instance()) {
+				n->set_base_script(drop_node->get_script_instance()->get_script()->get_path());
+			}
+		}
 		vnode = n;
 	} else if (p_category == String("set")) {
 		Ref<VisualScriptPropertySet> n;
 		n.instance();
+		if (!drop_path.is_empty()) {
+			if (drop_path == String(".")) {
+				n->set_call_mode(VisualScriptPropertySet::CALL_MODE_SELF);
+			} else {
+				n->set_call_mode(VisualScriptPropertySet::CALL_MODE_NODE_PATH);
+				n->set_base_path(drop_path);
+			}
+		}
+		if (drop_node) {
+			n->set_base_type(drop_node->get_class());
+			if (drop_node->get_script_instance()) {
+				n->set_base_script(drop_node->get_script_instance()->get_script()->get_path());
+			}
+		}
 		vnode = n;
 		script_prop_set = n;
 	} else if (p_category == String("get")) {
 		Ref<VisualScriptPropertyGet> n;
 		n.instance();
 		n->set_property(p_text);
+		if (!drop_path.is_empty()) {
+			if (drop_path == String(".")) {
+				n->set_call_mode(VisualScriptPropertyGet::CALL_MODE_SELF);
+			} else {
+				n->set_call_mode(VisualScriptPropertyGet::CALL_MODE_NODE_PATH);
+				n->set_base_path(drop_path);
+			}
+		}
+		if (drop_node) {
+			n->set_base_type(drop_node->get_class());
+			if (drop_node->get_script_instance()) {
+				n->set_base_script(drop_node->get_script_instance()->get_script()->get_path());
+			}
+		}
 		vnode = n;
 	}
+	drop_path = String();
+	drop_node = nullptr;
 
 	if (p_category == String("action")) {
 		if (p_text == "VisualScriptCondition") {

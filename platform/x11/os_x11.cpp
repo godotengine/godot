@@ -350,7 +350,10 @@ Error OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 
 	if (gl_initialization_error) {
 		OS::get_singleton()->alert("Your video card driver does not support any of the supported OpenGL versions.\n"
-								   "Please update your drivers or if you have a very old or integrated GPU upgrade it.",
+								   "Please update your drivers or if you have a very old or integrated GPU, upgrade it.\n"
+								   "If you have updated your graphics drivers recently, try rebooting.\n"
+								   "Alternatively, you can force software rendering by running Godot with the `LIBGL_ALWAYS_SOFTWARE=1`\n"
+								   "environment variable set, but this will be very slow.",
 				"Unable to initialize Video driver");
 		return ERR_UNAVAILABLE;
 	}
@@ -1926,7 +1929,7 @@ void OS_X11::_handle_key_event(XKeyEvent *p_event, LocalVector<XEvent> &p_events
 					k->set_shift(true);
 				}
 
-				input->accumulate_input_event(k);
+				input->parse_input_event(k);
 			}
 			memfree(utf8string);
 			return;
@@ -2073,7 +2076,7 @@ void OS_X11::_handle_key_event(XKeyEvent *p_event, LocalVector<XEvent> &p_events
 	}
 
 	//printf("key: %x\n",k->get_scancode());
-	input->accumulate_input_event(k);
+	input->parse_input_event(k);
 }
 
 Atom OS_X11::_process_selection_request_target(Atom p_target, Window p_requestor, Atom p_property) const {
@@ -2489,13 +2492,13 @@ void OS_X11::process_xevents() {
 								// in a spurious mouse motion event being sent to Godot; remember it to be able to filter it out
 								xi.mouse_pos_to_filter = pos;
 							}
-							input->accumulate_input_event(st);
+							input->parse_input_event(st);
 						} else {
 							if (!xi.state.has(index)) { // Defensive
 								break;
 							}
 							xi.state.erase(index);
-							input->accumulate_input_event(st);
+							input->parse_input_event(st);
 						}
 					} break;
 
@@ -2511,7 +2514,7 @@ void OS_X11::process_xevents() {
 							sd->set_index(index);
 							sd->set_position(pos);
 							sd->set_relative(pos - curr_pos_elem->value());
-							input->accumulate_input_event(sd);
+							input->parse_input_event(sd);
 
 							curr_pos_elem->value() = pos;
 						}
@@ -2605,7 +2608,7 @@ void OS_X11::process_xevents() {
 					st.instance();
 					st->set_index(E->key());
 					st->set_position(E->get());
-					input->accumulate_input_event(st);
+					input->parse_input_event(st);
 				}
 				xi.state.clear();
 #endif
@@ -2666,7 +2669,7 @@ void OS_X11::process_xevents() {
 					}
 				}
 
-				input->accumulate_input_event(mb);
+				input->parse_input_event(mb);
 
 			} break;
 			case MotionNotify: {
@@ -2781,7 +2784,7 @@ void OS_X11::process_xevents() {
 				// this is so that the relative motion doesn't get messed up
 				// after we regain focus.
 				if (window_has_focus || !mouse_mode_grab) {
-					input->accumulate_input_event(mm);
+					input->parse_input_event(mm);
 				}
 
 			} break;
@@ -2902,7 +2905,7 @@ void OS_X11::process_xevents() {
 		*/
 	}
 
-	input->flush_accumulated_events();
+	input->flush_buffered_events();
 }
 
 MainLoop *OS_X11::get_main_loop() const {
@@ -3248,7 +3251,7 @@ String OS_X11::get_cache_path() const {
 	return get_config_path();
 }
 
-String OS_X11::get_system_dir(SystemDir p_dir) const {
+String OS_X11::get_system_dir(SystemDir p_dir, bool p_shared_storage) const {
 	String xdgparam;
 
 	switch (p_dir) {

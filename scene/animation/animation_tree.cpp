@@ -138,7 +138,7 @@ void AnimationNode::make_invalid(const String &p_reason) {
 	if (state->invalid_reasons != String()) {
 		state->invalid_reasons += "\n";
 	}
-	state->invalid_reasons += "- " + p_reason;
+	state->invalid_reasons += String::utf8("• ") + p_reason;
 }
 
 float AnimationNode::blend_input(int p_input, float p_time, bool p_seek, float p_blend, FilterAction p_filter, bool p_optimize) {
@@ -954,7 +954,7 @@ void AnimationTree::_process_graph(float p_delta) {
 
 							Variant::interpolate(t->value, value, blend, t->value);
 
-						} else if (delta != 0) {
+						} else {
 							List<int> indices;
 							a->value_track_get_key_indices(i, time, delta, &indices);
 

@@ -157,7 +157,7 @@ Error NetworkedMultiplayerENet::create_client(const String &p_address, int p_por
 	ERR_FAIL_COND_V_MSG(!host, ERR_CANT_CREATE, "Couldn't create the ENet client host.");
 #ifdef GODOT_ENET
 	if (dtls_enabled) {
-		enet_host_dtls_client_setup(host, dtls_cert.ptr(), dtls_verify, p_address.utf8().get_data());
+		enet_host_dtls_client_setup(host, dtls_cert.ptr(), dtls_verify, dtls_hostname.empty() ? p_address.utf8().get_data() : dtls_hostname.utf8().get_data());
 	}
 	enet_host_refuse_new_connections(host, refuse_connections);
 #endif
@@ -174,14 +174,20 @@ Error NetworkedMultiplayerENet::create_client(const String &p_address, int p_por
 		ip = IP::get_singleton()->resolve_hostname(p_address, IP::TYPE_IPV4);
 #endif
 
-		ERR_FAIL_COND_V_MSG(!ip.is_valid(), ERR_CANT_RESOLVE, "Couldn't resolve the server IP address or domain name.");
+		if (!ip.is_valid()) {
+			enet_host_destroy(host);
+			ERR_FAIL_V_MSG(ERR_CANT_RESOLVE, "Couldn't resolve the server IP address or domain name.");
+		}
 	}
 
 	ENetAddress address;
 #ifdef GODOT_ENET
 	enet_address_set_ip(&address, ip.get_ipv6(), 16);
 #else
-	ERR_FAIL_COND_V_MSG(!ip.is_ipv4(), ERR_INVALID_PARAMETER, "Connecting to an IPv6 server isn't supported when using vanilla ENet. Recompile Godot with the bundled ENet library.");
+	if (!ip.is_ipv4()) {
+		enet_host_destroy(host);
+		ERR_FAIL_V_MSG(ERR_INVALID_PARAMETER, "Connecting to an IPv6 server isn't supported when using vanilla ENet. Recompile Godot with the bundled ENet library.");
+	}
 	address.host = *(uint32_t *)ip.get_ipv4();
 #endif
 	address.port = p_port;
@@ -193,7 +199,7 @@ Error NetworkedMultiplayerENet::create_client(const String &p_address, int p_por
 
 	if (peer == nullptr) {
 		enet_host_destroy(host);
-		ERR_FAIL_COND_V_MSG(!peer, ERR_CANT_CREATE, "Couldn't connect to the ENet multiplayer server.");
+		ERR_FAIL_V_MSG(ERR_CANT_CREATE, "Couldn't connect to the ENet multiplayer server.");
 	}
 
 	// Technically safe to ignore the peer or anything else.
@@ -440,7 +446,9 @@ bool NetworkedMultiplayerENet::is_server() const {
 }
 
 void NetworkedMultiplayerENet::close_connection(uint32_t wait_usec) {
-	ERR_FAIL_COND_MSG(!active, "The multiplayer instance isn't currently active.");
+	if (!active) {
+		return;
+	}
 
 	_pop_current_packet();
 
@@ -845,6 +853,8 @@ void NetworkedMultiplayerENet::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_dtls_certificate", "certificate"), &NetworkedMultiplayerENet::set_dtls_certificate);
 	ClassDB::bind_method(D_METHOD("set_dtls_verify_enabled", "enabled"), &NetworkedMultiplayerENet::set_dtls_verify_enabled);
 	ClassDB::bind_method(D_METHOD("is_dtls_verify_enabled"), &NetworkedMultiplayerENet::is_dtls_verify_enabled);
+	ClassDB::bind_method(D_METHOD("set_dtls_hostname", "hostname"), &NetworkedMultiplayerENet::set_dtls_hostname);
+	ClassDB::bind_method(D_METHOD("get_dtls_hostname"), &NetworkedMultiplayerENet::get_dtls_hostname);
 	ClassDB::bind_method(D_METHOD("get_peer_address", "id"), &NetworkedMultiplayerENet::get_peer_address);
 	ClassDB::bind_method(D_METHOD("get_peer_port", "id"), &NetworkedMultiplayerENet::get_peer_port);
 	ClassDB::bind_method(D_METHOD("set_peer_timeout", "id", "timeout_limit", "timeout_min", "timeout_max"), &NetworkedMultiplayerENet::set_peer_timeout);
@@ -866,6 +876,7 @@ void NetworkedMultiplayerENet::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "always_ordered"), "set_always_ordered", "is_always_ordered");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "server_relay"), "set_server_relay_enabled", "is_server_relay_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "dtls_verify"), "set_dtls_verify_enabled", "is_dtls_verify_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "dtls_hostname"), "set_dtls_hostname", "get_dtls_hostname");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_dtls"), "set_dtls_enabled", "is_dtls_enabled");
 
 	BIND_ENUM_CONSTANT(COMPRESS_NONE);
@@ -888,7 +899,7 @@ NetworkedMultiplayerENet::NetworkedMultiplayerENet() {
 	transfer_channel = -1;
 	always_ordered = false;
 	connection_status = CONNECTION_DISCONNECTED;
-	compression_mode = COMPRESS_NONE;
+	compression_mode = COMPRESS_RANGE_CODER;
 	enet_compressor.context = this;
 	enet_compressor.compress = enet_compress;
 	enet_compressor.decompress = enet_decompress;
@@ -940,4 +951,13 @@ void NetworkedMultiplayerENet::set_dtls_key(Ref<CryptoKey> p_key) {
 void NetworkedMultiplayerENet::set_dtls_certificate(Ref<X509Certificate> p_cert) {
 	ERR_FAIL_COND(active);
 	dtls_cert = p_cert;
+}
+
+void NetworkedMultiplayerENet::set_dtls_hostname(const String &p_hostname) {
+	ERR_FAIL_COND(active);
+	dtls_hostname = p_hostname;
+}
+
+String NetworkedMultiplayerENet::get_dtls_hostname() const {
+	return dtls_hostname;
 }

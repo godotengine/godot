@@ -25,9 +25,17 @@ ARRAY_INDEX=8,
 
 layout(location = 0) in highp vec4 vertex_attrib;
 /* clang-format on */
+#ifdef ENABLE_OCTAHEDRAL_COMPRESSION
+layout(location = 1) in vec4 normal_tangent_attrib;
+#else
 layout(location = 1) in vec3 normal_attrib;
+#endif
 #if defined(ENABLE_TANGENT_INTERP) || defined(ENABLE_NORMALMAP) || defined(LIGHT_USE_ANISOTROPY)
+#ifdef ENABLE_OCTAHEDRAL_COMPRESSION
+// packed into normal_attrib zw component
+#else
 layout(location = 2) in vec4 tangent_attrib;
+#endif
 #endif
 
 #if defined(ENABLE_COLOR_INTERP)
@@ -217,12 +225,12 @@ void light_compute(vec3 N, vec3 L, vec3 V, vec3 light_color, float roughness, in
 		vec3 H = normalize(V + L);
 		float cNdotH = max(dot(N, H), 0.0);
 		float shininess = exp2(15.0 * (1.0 - roughness) + 1.0) * 0.25;
-		float blinn = pow(cNdotH, shininess) * cNdotL;
-		blinn *= (shininess + 8.0) * (1.0 / (8.0 * M_PI));
+		float blinn = pow(cNdotH, shininess);
+		blinn *= (shininess + 2.0) * (1.0 / (8.0 * M_PI));
 		specular_brdf_NL = blinn;
 #endif
 
-		specular += specular_brdf_NL * light_color * (1.0 / M_PI);
+		specular += specular_brdf_NL * light_color;
 	}
 }
 
@@ -249,6 +257,15 @@ void light_process_spot(int idx, vec3 vertex, vec3 eye_vec, vec3 normal, float r
 	light_compute(normal, normalize(light_rel_vec), eye_vec, spot_lights[idx].light_color_energy.rgb * light_attenuation, roughness, diffuse, specular);
 }
 
+#endif
+
+#ifdef ENABLE_OCTAHEDRAL_COMPRESSION
+vec3 oct_to_vec3(vec2 e) {
+	vec3 v = vec3(e.xy, 1.0 - abs(e.x) - abs(e.y));
+	float t = max(-v.z, 0.0);
+	v.xy += t * -sign(v.xy);
+	return normalize(v);
+}
 #endif
 
 /* Varyings */
@@ -322,11 +339,20 @@ void main() {
 	}
 #endif
 
+#ifdef ENABLE_OCTAHEDRAL_COMPRESSION
+	vec3 normal = oct_to_vec3(normal_tangent_attrib.xy);
+#else
 	vec3 normal = normal_attrib;
+#endif
 
 #if defined(ENABLE_TANGENT_INTERP) || defined(ENABLE_NORMALMAP) || defined(LIGHT_USE_ANISOTROPY)
+#ifdef ENABLE_OCTAHEDRAL_COMPRESSION
+	vec3 tangent = oct_to_vec3(vec2(normal_tangent_attrib.z, abs(normal_tangent_attrib.w) * 2.0 - 1.0));
+	float binormalf = sign(normal_tangent_attrib.w);
+#else
 	vec3 tangent = tangent_attrib.xyz;
 	float binormalf = tangent_attrib.a;
+#endif
 #endif
 
 #if defined(ENABLE_COLOR_INTERP)
@@ -338,7 +364,6 @@ void main() {
 #endif
 
 #if defined(ENABLE_TANGENT_INTERP) || defined(ENABLE_NORMALMAP) || defined(LIGHT_USE_ANISOTROPY)
-
 	vec3 binormal = normalize(cross(normal, tangent) * binormalf);
 #endif
 
@@ -692,12 +717,6 @@ MATERIAL_UNIFORMS
 
 #endif
 
-/* clang-format off */
-
-FRAGMENT_SHADER_GLOBALS
-
-/* clang-format on */
-
 layout(std140) uniform SceneData {
 	highp mat4 projection_matrix;
 	highp mat4 inv_projection_matrix;
@@ -746,7 +765,13 @@ layout(std140) uniform SceneData {
 	int view_index;
 };
 
-	//directional light data
+/* clang-format off */
+
+FRAGMENT_SHADER_GLOBALS
+
+/* clang-format on */
+
+//directional light data
 
 #ifdef USE_LIGHT_DIRECTIONAL
 
@@ -1011,6 +1036,11 @@ LIGHT_SHADER_CODE
 	float NdotV = dot(N, V);
 	float cNdotV = max(NdotV, 0.0);
 
+/* Make a default specular mode SPECULAR_SCHLICK_GGX. */
+#if !defined(SPECULAR_DISABLED) && !defined(SPECULAR_SCHLICK_GGX) && !defined(SPECULAR_BLINN) && !defined(SPECULAR_PHONG) && !defined(SPECULAR_TOON)
+#define SPECULAR_SCHLICK_GGX
+#endif
+
 #if defined(DIFFUSE_BURLEY) || defined(SPECULAR_BLINN) || defined(SPECULAR_SCHLICK_GGX) || defined(LIGHT_USE_CLEARCOAT)
 	vec3 H = normalize(V + L);
 #endif
@@ -1097,11 +1127,11 @@ LIGHT_SHADER_CODE
 
 		//normalized blinn
 		float shininess = exp2(15.0 * (1.0 - roughness) + 1.0) * 0.25;
-		float blinn = pow(cNdotH, shininess) * cNdotL;
-		blinn *= (shininess + 8.0) * (1.0 / (8.0 * M_PI));
+		float blinn = pow(cNdotH, shininess);
+		blinn *= (shininess + 2.0) * (1.0 / (8.0 * M_PI)); // Normalized NDF and Geometric term
 		float intensity = blinn;
 
-		specular_light += light_color * intensity * specular_blob_intensity * attenuation;
+		specular_light += light_color * intensity * specular_blob_intensity * attenuation * diffuse_color * specular;
 
 #elif defined(SPECULAR_PHONG)
 
@@ -1109,10 +1139,10 @@ LIGHT_SHADER_CODE
 		float cRdotV = max(0.0, dot(R, V));
 		float shininess = exp2(15.0 * (1.0 - roughness) + 1.0) * 0.25;
 		float phong = pow(cRdotV, shininess);
-		phong *= (shininess + 8.0) * (1.0 / (8.0 * M_PI));
-		float intensity = (phong) / max(4.0 * cNdotV * cNdotL, 0.75);
+		phong *= (shininess + 1.0) * (1.0 / (8.0 * M_PI)); // Normalized NDF and Geometric term
+		float intensity = phong;
 
-		specular_light += light_color * intensity * specular_blob_intensity * attenuation;
+		specular_light += light_color * intensity * specular_blob_intensity * attenuation * diffuse_color * specular;
 
 #elif defined(SPECULAR_TOON)
 
@@ -1854,9 +1884,11 @@ FRAGMENT_SHADER_CODE
 		{ //read radiance from dual paraboloid
 
 			vec3 ref_vec = reflect(-eye_vec, normal);
+			float horizon = min(1.0 + dot(ref_vec, normal), 1.0);
 			ref_vec = normalize((radiance_inverse_xform * vec4(ref_vec, 0.0)).xyz);
 			vec3 radiance = textureDualParaboloid(radiance_map, ref_vec, roughness) * bg_energy;
 			env_reflection_light = radiance;
+			env_reflection_light *= horizon * horizon;
 		}
 	}
 #ifndef USE_LIGHTMAP

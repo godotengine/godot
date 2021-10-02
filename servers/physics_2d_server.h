@@ -60,6 +60,8 @@ public:
 	virtual void set_transform(const Transform2D &p_transform) = 0;
 	virtual Transform2D get_transform() const = 0;
 
+	virtual Vector2 get_velocity_at_local_position(const Vector2 &p_position) const = 0;
+
 	virtual void add_central_force(const Vector2 &p_force) = 0;
 	virtual void add_force(const Vector2 &p_offset, const Vector2 &p_force) = 0;
 	virtual void add_torque(real_t p_torque) = 0;
@@ -469,6 +471,9 @@ public:
 		Vector2 collision_point;
 		Vector2 collision_normal;
 		Vector2 collider_velocity;
+		real_t collision_depth = 0.0;
+		real_t collision_safe_fraction = 0.0;
+		real_t collision_unsafe_fraction = 0.0;
 		int collision_local_shape = 0;
 		ObjectID collider_id = 0;
 		RID collider;
@@ -594,6 +599,9 @@ public:
 	RID get_collider_rid() const;
 	Object *get_collider() const;
 	int get_collider_shape() const;
+	real_t get_collision_depth() const;
+	real_t get_collision_safe_fraction() const;
+	real_t get_collision_unsafe_fraction() const;
 };
 
 typedef Physics2DServer *(*CreatePhysics2DServerCallback)();

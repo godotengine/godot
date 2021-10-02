@@ -62,6 +62,7 @@ class OS {
 	bool _allow_layered;
 	bool _use_vsync;
 	bool _vsync_via_compositor;
+	bool _delta_smoothing_enabled;
 
 	char *last_error;
 
@@ -426,6 +427,7 @@ public:
 	RenderThreadMode get_render_thread_mode() const { return _render_thread_mode; }
 
 	virtual String get_locale() const;
+	String get_locale_language() const;
 
 	String get_safe_dir_name(const String &p_dir_name, bool p_allow_dir_separator = false) const;
 	virtual String get_godot_dir_name() const;
@@ -434,9 +436,9 @@ public:
 	virtual String get_config_path() const;
 	virtual String get_cache_path() const;
 	virtual String get_bundle_resource_dir() const;
+	virtual String get_bundle_icon_path() const;
 
 	virtual String get_user_data_dir() const;
-	virtual String get_external_data_dir() const;
 	virtual String get_resource_dir() const;
 
 	enum SystemDir {
@@ -450,7 +452,7 @@ public:
 		SYSTEM_DIR_RINGTONES,
 	};
 
-	virtual String get_system_dir(SystemDir p_dir) const;
+	virtual String get_system_dir(SystemDir p_dir, bool p_shared_storage = true) const;
 
 	virtual Error move_to_trash(const String &p_path) { return FAILED; }
 
@@ -547,6 +549,9 @@ public:
 
 	void set_vsync_via_compositor(bool p_enable);
 	bool is_vsync_via_compositor_enabled() const;
+
+	void set_delta_smoothing(bool p_enabled);
+	bool is_delta_smoothing_enabled() const;
 
 	virtual OS::PowerState get_power_state();
 	virtual int get_power_seconds_left();

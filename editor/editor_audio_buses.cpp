@@ -62,7 +62,8 @@ void EditorAudioBus::_update_visible_channels() {
 
 void EditorAudioBus::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_READY: {
+		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_THEME_CHANGED: {
 			for (int i = 0; i < CHANNELS_MAX; i++) {
 				channel[i].vu_l->set_under_texture(get_icon("BusVuEmpty", "EditorIcons"));
 				channel[i].vu_l->set_progress_texture(get_icon("BusVuFull", "EditorIcons"));
@@ -86,6 +87,12 @@ void EditorAudioBus::_notification(int p_what) {
 
 			bus_options->set_icon(get_icon("GuiTabMenuHl", "EditorIcons"));
 
+			audio_value_preview_label->add_color_override("font_color", get_color("font_color", "TooltipLabel"));
+			audio_value_preview_label->add_color_override("font_color_shadow", get_color("font_color_shadow", "TooltipLabel"));
+			audio_value_preview_box->add_style_override("panel", get_stylebox("panel", "TooltipPanel"));
+		} break;
+
+		case NOTIFICATION_READY: {
 			update_bus();
 			set_process(true);
 		} break;
@@ -157,26 +164,7 @@ void EditorAudioBus::_notification(int p_what) {
 
 			set_process(is_visible_in_tree());
 		} break;
-		case NOTIFICATION_THEME_CHANGED: {
-			for (int i = 0; i < CHANNELS_MAX; i++) {
-				channel[i].vu_l->set_under_texture(get_icon("BusVuEmpty", "EditorIcons"));
-				channel[i].vu_l->set_progress_texture(get_icon("BusVuFull", "EditorIcons"));
-				channel[i].vu_r->set_under_texture(get_icon("BusVuEmpty", "EditorIcons"));
-				channel[i].vu_r->set_progress_texture(get_icon("BusVuFull", "EditorIcons"));
-				channel[i].prev_active = true;
-			}
 
-			disabled_vu = get_icon("BusVuFrozen", "EditorIcons");
-
-			solo->set_icon(get_icon("AudioBusSolo", "EditorIcons"));
-			mute->set_icon(get_icon("AudioBusMute", "EditorIcons"));
-			bypass->set_icon(get_icon("AudioBusBypass", "EditorIcons"));
-
-			bus_options->set_icon(get_icon("GuiTabMenuHl", "EditorIcons"));
-
-			audio_value_preview_box->add_color_override("font_color", get_color("font_color", "TooltipLabel"));
-			audio_value_preview_box->add_style_override("panel", get_stylebox("panel", "TooltipPanel"));
-		} break;
 		case NOTIFICATION_MOUSE_EXIT:
 		case NOTIFICATION_DRAG_END: {
 			if (hovering_drop) {
@@ -855,6 +843,11 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 	slider->set_clip_contents(false);
 
 	audio_value_preview_box = memnew(Panel);
+	slider->add_child(audio_value_preview_box);
+	audio_value_preview_box->set_as_toplevel(true);
+	audio_value_preview_box->set_mouse_filter(MOUSE_FILTER_PASS);
+	audio_value_preview_box->hide();
+
 	HBoxContainer *audioprev_hbc = memnew(HBoxContainer);
 	audioprev_hbc->set_v_size_flags(SIZE_EXPAND_FILL);
 	audioprev_hbc->set_h_size_flags(SIZE_EXPAND_FILL);
@@ -865,15 +858,7 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 	audio_value_preview_label->set_v_size_flags(SIZE_EXPAND_FILL);
 	audio_value_preview_label->set_h_size_flags(SIZE_EXPAND_FILL);
 	audio_value_preview_label->set_mouse_filter(MOUSE_FILTER_PASS);
-	audio_value_preview_box->add_color_override("font_color", get_color("font_color", "TooltipLabel"));
-
 	audioprev_hbc->add_child(audio_value_preview_label);
-
-	slider->add_child(audio_value_preview_box);
-	audio_value_preview_box->set_as_toplevel(true);
-	audio_value_preview_box->add_style_override("panel", get_stylebox("panel", "TooltipPanel"));
-	audio_value_preview_box->set_mouse_filter(MOUSE_FILTER_PASS);
-	audio_value_preview_box->hide();
 
 	preview_timer = memnew(Timer);
 	preview_timer->set_wait_time(0.8f);

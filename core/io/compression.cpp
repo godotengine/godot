@@ -235,6 +235,7 @@ int Compression::decompress_dynamic(PoolVector<uint8_t> *p_dst, int p_max_dst_si
 			switch (ret) {
 				case Z_NEED_DICT:
 					ret = Z_DATA_ERROR;
+					FALLTHROUGH;
 				case Z_DATA_ERROR:
 				case Z_MEM_ERROR:
 				case Z_STREAM_ERROR:

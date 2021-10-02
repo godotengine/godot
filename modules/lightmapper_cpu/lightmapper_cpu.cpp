@@ -897,7 +897,7 @@ void LightmapperCPU::_compute_indirect_light(uint32_t p_idx, void *r_lightmap) {
 
 			color += throughput * sample.emission;
 			throughput *= sample.albedo;
-			color += throughput * sample.direct_light;
+			color += throughput * sample.direct_light * parameters.bounce_indirect_energy;
 
 			// Russian Roulette
 			// https://computergraphics.stackexchange.com/questions/2316/is-russian-roulette-really-the-answer
@@ -1256,7 +1256,7 @@ void LightmapperCPU::_blit_lightmap(const Vector<Vector3> &p_src, const Vector2i
 	p_dst->unlock();
 }
 
-LightmapperCPU::BakeError LightmapperCPU::bake(BakeQuality p_quality, bool p_use_denoiser, int p_bounces, float p_bias, bool p_generate_atlas, int p_max_texture_size, const Ref<Image> &p_environment_panorama, const Basis &p_environment_transform, BakeStepFunc p_step_function, void *p_bake_userdata, BakeStepFunc p_substep_function) {
+LightmapperCPU::BakeError LightmapperCPU::bake(BakeQuality p_quality, bool p_use_denoiser, int p_bounces, float p_bounce_indirect_energy, float p_bias, bool p_generate_atlas, int p_max_texture_size, const Ref<Image> &p_environment_panorama, const Basis &p_environment_transform, BakeStepFunc p_step_function, void *p_bake_userdata, BakeStepFunc p_substep_function) {
 	if (p_step_function) {
 		bool cancelled = p_step_function(0.0, TTR("Begin Bake"), p_bake_userdata, true);
 		if (cancelled) {
@@ -1272,6 +1272,7 @@ LightmapperCPU::BakeError LightmapperCPU::bake(BakeQuality p_quality, bool p_use
 	parameters.use_denoiser = p_use_denoiser;
 	parameters.bias = p_bias;
 	parameters.bounces = p_bounces;
+	parameters.bounce_indirect_energy = p_bounce_indirect_energy;
 	parameters.environment_transform = p_environment_transform;
 	parameters.environment_panorama = p_environment_panorama;
 

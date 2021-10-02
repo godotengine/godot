@@ -8,44 +8,31 @@
 	</tutorials>
 	<methods>
 		<method name="can_drop_data_fw" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="arg0" type="Vector2">
-			</argument>
-			<argument index="1" name="arg1" type="Variant">
-			</argument>
-			<argument index="2" name="arg2" type="Control">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="arg0" type="Vector2" />
+			<argument index="1" name="arg1" type="Variant" />
+			<argument index="2" name="arg2" type="Control" />
 			<description>
 			</description>
 		</method>
 		<method name="drop_data_fw">
-			<return type="void">
-			</return>
-			<argument index="0" name="arg0" type="Vector2">
-			</argument>
-			<argument index="1" name="arg1" type="Variant">
-			</argument>
-			<argument index="2" name="arg2" type="Control">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="arg0" type="Vector2" />
+			<argument index="1" name="arg1" type="Variant" />
+			<argument index="2" name="arg2" type="Control" />
 			<description>
 			</description>
 		</method>
 		<method name="get_drag_data_fw">
-			<return type="Variant">
-			</return>
-			<argument index="0" name="arg0" type="Vector2">
-			</argument>
-			<argument index="1" name="arg1" type="Control">
-			</argument>
+			<return type="Variant" />
+			<argument index="0" name="arg0" type="Vector2" />
+			<argument index="1" name="arg1" type="Control" />
 			<description>
 			</description>
 		</method>
 		<method name="navigate_to_path">
-			<return type="void">
-			</return>
-			<argument index="0" name="arg0" type="String">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="arg0" type="String" />
 			<description>
 			</description>
 		</method>
@@ -56,42 +43,34 @@
 			</description>
 		</signal>
 		<signal name="file_removed">
-			<argument index="0" name="file" type="String">
-			</argument>
+			<argument index="0" name="file" type="String" />
 			<description>
 			</description>
 		</signal>
 		<signal name="files_moved">
-			<argument index="0" name="old_file" type="String">
-			</argument>
-			<argument index="1" name="new_file" type="String">
-			</argument>
+			<argument index="0" name="old_file" type="String" />
+			<argument index="1" name="new_file" type="String" />
 			<description>
 			</description>
 		</signal>
 		<signal name="folder_moved">
-			<argument index="0" name="old_folder" type="String">
-			</argument>
-			<argument index="1" name="new_file" type="String">
-			</argument>
+			<argument index="0" name="old_folder" type="String" />
+			<argument index="1" name="new_file" type="String" />
 			<description>
 			</description>
 		</signal>
 		<signal name="folder_removed">
-			<argument index="0" name="folder" type="String">
-			</argument>
+			<argument index="0" name="folder" type="String" />
 			<description>
 			</description>
 		</signal>
 		<signal name="inherit">
-			<argument index="0" name="file" type="String">
-			</argument>
+			<argument index="0" name="file" type="String" />
 			<description>
 			</description>
 		</signal>
 		<signal name="instance">
-			<argument index="0" name="files" type="PoolStringArray">
-			</argument>
+			<argument index="0" name="files" type="PoolStringArray" />
 			<description>
 			</description>
 		</signal>

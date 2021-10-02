@@ -1266,7 +1266,7 @@ void RasterizerSceneGLES3::_setup_geometry(RenderList::Element *e, const Transfo
 
 			if (s->blend_shapes.size() && e->instance->blend_values.size()) {
 				//blend shapes, use transform feedback
-				storage->mesh_render_blend_shapes(s, e->instance->blend_values.ptr());
+				storage->mesh_render_blend_shapes(s, e->instance->blend_values.read().ptr());
 				//rebind shader
 				state.scene_shader.bind();
 #ifdef DEBUG_ENABLED
@@ -1944,6 +1944,7 @@ void RasterizerSceneGLES3::_render_list(RenderList::Element **p_elements, int p_
 
 	bool first = true;
 	bool prev_use_instancing = false;
+	bool prev_octahedral_compression = false;
 
 	storage->info.render.draw_call_count += p_element_count;
 	bool prev_opaque_prepass = false;
@@ -2108,6 +2109,12 @@ void RasterizerSceneGLES3::_render_list(RenderList::Element **p_elements, int p_
 			}
 		}
 
+		bool octahedral_compression = ((RasterizerStorageGLES3::Surface *)e->geometry)->format & VisualServer::ArrayFormat::ARRAY_FLAG_USE_OCTAHEDRAL_COMPRESSION;
+		if (octahedral_compression != prev_octahedral_compression) {
+			state.scene_shader.set_conditional(SceneShaderGLES3::ENABLE_OCTAHEDRAL_COMPRESSION, octahedral_compression);
+			rebind = true;
+		}
+
 		if (material != prev_material || rebind) {
 			storage->info.render.material_switch_count++;
 
@@ -2140,12 +2147,14 @@ void RasterizerSceneGLES3::_render_list(RenderList::Element **p_elements, int p_
 		prev_shading = shading;
 		prev_skeleton = skeleton;
 		prev_use_instancing = use_instancing;
+		prev_octahedral_compression = octahedral_compression;
 		prev_opaque_prepass = use_opaque_prepass;
 		first = false;
 	}
 
 	glBindVertexArray(0);
 
+	state.scene_shader.set_conditional(SceneShaderGLES3::ENABLE_OCTAHEDRAL_COMPRESSION, false);
 	state.scene_shader.set_conditional(SceneShaderGLES3::USE_INSTANCING, false);
 	state.scene_shader.set_conditional(SceneShaderGLES3::USE_SKELETON, false);
 	state.scene_shader.set_conditional(SceneShaderGLES3::USE_RADIANCE_MAP, false);
@@ -3503,7 +3512,7 @@ void RasterizerSceneGLES3::_post_process(Environment *env, const CameraMatrix &p
 		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 	}
 
-	if ((!env || storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_TRANSPARENT] || storage->frame.current_rt->width < 4 || storage->frame.current_rt->height < 4) && !storage->frame.current_rt->use_fxaa && !storage->frame.current_rt->use_debanding) { //no post process on small render targets
+	if ((!env || storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_TRANSPARENT] || storage->frame.current_rt->width < 4 || storage->frame.current_rt->height < 4) && !storage->frame.current_rt->use_fxaa && !storage->frame.current_rt->use_debanding && storage->frame.current_rt->sharpen_intensity < 0.001) { //no post process on small render targets
 		//no environment or transparent render, simply return and convert to SRGB
 		if (storage->frame.current_rt->external.fbo != 0) {
 			glBindFramebuffer(GL_FRAMEBUFFER, storage->frame.current_rt->external.fbo);
@@ -3854,6 +3863,7 @@ void RasterizerSceneGLES3::_post_process(Environment *env, const CameraMatrix &p
 	if (env) {
 		state.tonemap_shader.set_conditional(TonemapShaderGLES3::USE_FILMIC_TONEMAPPER, env->tone_mapper == VS::ENV_TONE_MAPPER_FILMIC);
 		state.tonemap_shader.set_conditional(TonemapShaderGLES3::USE_ACES_TONEMAPPER, env->tone_mapper == VS::ENV_TONE_MAPPER_ACES);
+		state.tonemap_shader.set_conditional(TonemapShaderGLES3::USE_ACES_FITTED_TONEMAPPER, env->tone_mapper == VS::ENV_TONE_MAPPER_ACES_FITTED);
 		state.tonemap_shader.set_conditional(TonemapShaderGLES3::USE_REINHARD_TONEMAPPER, env->tone_mapper == VS::ENV_TONE_MAPPER_REINHARD);
 		state.tonemap_shader.set_conditional(TonemapShaderGLES3::USE_AUTO_EXPOSURE, env->auto_exposure);
 		state.tonemap_shader.set_conditional(TonemapShaderGLES3::USE_GLOW_FILTER_BICUBIC, env->glow_bicubic_upscale);
@@ -3862,6 +3872,7 @@ void RasterizerSceneGLES3::_post_process(Environment *env, const CameraMatrix &p
 	state.tonemap_shader.set_conditional(TonemapShaderGLES3::KEEP_3D_LINEAR, storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_KEEP_3D_LINEAR]);
 	state.tonemap_shader.set_conditional(TonemapShaderGLES3::USE_FXAA, storage->frame.current_rt->use_fxaa);
 	state.tonemap_shader.set_conditional(TonemapShaderGLES3::USE_DEBANDING, storage->frame.current_rt->use_debanding);
+	state.tonemap_shader.set_conditional(TonemapShaderGLES3::USE_SHARPENING, storage->frame.current_rt->sharpen_intensity >= 0.001);
 
 	if (env && max_glow_level >= 0) {
 		for (int i = 0; i < (max_glow_level + 1); i++) {
@@ -3941,14 +3952,20 @@ void RasterizerSceneGLES3::_post_process(Environment *env, const CameraMatrix &p
 		state.tonemap_shader.set_uniform(TonemapShaderGLES3::PIXEL_SIZE, Vector2(1.0 / storage->frame.current_rt->width, 1.0 / storage->frame.current_rt->height));
 	}
 
+	if (storage->frame.current_rt->sharpen_intensity >= 0.001) {
+		state.tonemap_shader.set_uniform(TonemapShaderGLES3::SHARPEN_INTENSITY, storage->frame.current_rt->sharpen_intensity);
+	}
+
 	_copy_screen(true, true);
 
 	//turn off everything used
 	state.tonemap_shader.set_conditional(TonemapShaderGLES3::USE_FXAA, false);
 	state.tonemap_shader.set_conditional(TonemapShaderGLES3::USE_DEBANDING, false);
+	state.tonemap_shader.set_conditional(TonemapShaderGLES3::USE_SHARPENING, false);
 	state.tonemap_shader.set_conditional(TonemapShaderGLES3::USE_AUTO_EXPOSURE, false);
 	state.tonemap_shader.set_conditional(TonemapShaderGLES3::USE_FILMIC_TONEMAPPER, false);
 	state.tonemap_shader.set_conditional(TonemapShaderGLES3::USE_ACES_TONEMAPPER, false);
+	state.tonemap_shader.set_conditional(TonemapShaderGLES3::USE_ACES_FITTED_TONEMAPPER, false);
 	state.tonemap_shader.set_conditional(TonemapShaderGLES3::USE_REINHARD_TONEMAPPER, false);
 	state.tonemap_shader.set_conditional(TonemapShaderGLES3::USE_GLOW_LEVEL1, false);
 	state.tonemap_shader.set_conditional(TonemapShaderGLES3::USE_GLOW_LEVEL2, false);

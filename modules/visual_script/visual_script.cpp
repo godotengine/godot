@@ -294,6 +294,7 @@ void VisualScript::_node_ports_changed(int p_id) {
 void VisualScript::add_node(const StringName &p_func, int p_id, const Ref<VisualScriptNode> &p_node, const Point2 &p_pos) {
 	ERR_FAIL_COND(instances.size());
 	ERR_FAIL_COND(!functions.has(p_func));
+	ERR_FAIL_COND(p_node.is_null());
 
 	for (Map<StringName, Function>::Element *E = functions.front(); E; E = E->next()) {
 		ERR_FAIL_COND(E->get().nodes.has(p_id)); //id can exist only one in script, even for different functions
@@ -1263,6 +1264,10 @@ void VisualScript::_bind_methods() {
 VisualScript::VisualScript() {
 	base_type = "Object";
 	is_tool_script = false;
+}
+
+bool VisualScript::inherits_script(const Ref<Script> &p_script) const {
+	return this == p_script.ptr(); //there is no inheritance in visual scripts, so this is enough
 }
 
 StringName VisualScript::get_default_func() const {

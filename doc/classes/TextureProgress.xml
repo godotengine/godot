@@ -10,20 +10,15 @@
 	</tutorials>
 	<methods>
 		<method name="get_stretch_margin" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="margin" type="int" enum="Margin">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="margin" type="int" enum="Margin" />
 			<description>
 			</description>
 		</method>
 		<method name="set_stretch_margin">
-			<return type="void">
-			</return>
-			<argument index="0" name="margin" type="int" enum="Margin">
-			</argument>
-			<argument index="1" name="value" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="margin" type="int" enum="Margin" />
+			<argument index="1" name="value" type="int" />
 			<description>
 			</description>
 		</method>
@@ -64,6 +59,9 @@
 		<member name="texture_progress" type="Texture" setter="set_progress_texture" getter="get_progress_texture">
 			[Texture] that clips based on the node's [code]value[/code] and [member fill_mode]. As [code]value[/code] increased, the texture fills up. It shows entirely when [code]value[/code] reaches [code]max_value[/code]. It doesn't show at all if [code]value[/code] is equal to [code]min_value[/code].
 			The [code]value[/code] property comes from [Range]. See [member Range.value], [member Range.min_value], [member Range.max_value].
+		</member>
+		<member name="texture_progress_offset" type="Vector2" setter="set_texture_progress_offset" getter="get_texture_progress_offset" default="Vector2( 0, 0 )">
+			The offset of [member texture_progress]. Useful for [member texture_over] and [member texture_under] with fancy borders, to avoid transparent margins in your progress texture.
 		</member>
 		<member name="texture_under" type="Texture" setter="set_under_texture" getter="get_under_texture">
 			[Texture] that draws under the progress bar. The bar's background.

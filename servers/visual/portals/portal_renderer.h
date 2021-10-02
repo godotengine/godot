@@ -31,6 +31,7 @@
 #ifndef PORTAL_RENDERER_H
 #define PORTAL_RENDERER_H
 
+#include "core/math/plane.h"
 #include "core/pooled_list.h"
 #include "core/vector.h"
 #include "portal_gameplay_monitor.h"
@@ -38,6 +39,8 @@
 #include "portal_rooms_bsp.h"
 #include "portal_tracer.h"
 #include "portal_types.h"
+
+class Transform;
 
 struct VSStatic {
 	// the lifetime of statics is not strictly monitored like moving objects
@@ -74,6 +77,7 @@ public:
 	// in which case, deleting such an instance should deactivate the portal system to prevent
 	// crashes due to dangling references to instances.
 	static const uint32_t OCCLUSION_HANDLE_ROOM_BIT = 1 << 31;
+	static bool use_occlusion_culling;
 
 	struct MovingBase {
 		// when the rooms_and_portals_clear message is sent,
@@ -132,7 +136,7 @@ public:
 
 	PortalHandle portal_create();
 	void portal_destroy(PortalHandle p_portal);
-	void portal_set_geometry(PortalHandle p_portal, const Vector<Vector3> &p_points);
+	void portal_set_geometry(PortalHandle p_portal, const Vector<Vector3> &p_points, real_t p_margin);
 	void portal_link(PortalHandle p_portal, RoomHandle p_room_from, RoomHandle p_room_to, bool p_two_way);
 	void portal_set_active(PortalHandle p_portal, bool p_active);
 
@@ -149,7 +153,7 @@ public:
 	void room_set_bound(RoomHandle p_room, ObjectID p_room_object_id, const Vector<Plane> &p_convex, const AABB &p_aabb, const Vector<Vector3> &p_verts);
 	void room_prepare(RoomHandle p_room, int32_t p_priority);
 	void rooms_and_portals_clear();
-	void rooms_finalize(bool p_generate_pvs, bool p_cull_using_pvs, bool p_use_secondary_pvs, bool p_use_signals, String p_pvs_filename);
+	void rooms_finalize(bool p_generate_pvs, bool p_cull_using_pvs, bool p_use_secondary_pvs, bool p_use_signals, String p_pvs_filename, bool p_use_simple_pvs, bool p_log_pvs_generation);
 	void rooms_override_camera(bool p_override, const Vector3 &p_point, const Vector<Plane> *p_convex);
 	void rooms_set_active(bool p_active) { _active = p_active; }
 	void rooms_set_params(int p_portal_depth_limit) { _tracer.set_depth_limit(p_portal_depth_limit); }
@@ -159,6 +163,7 @@ public:
 	// for use in the editor only, to allow a cheap way of turning off portals
 	// if there has been a change, e.g. moving a room etc.
 	void rooms_unload() { _ensure_unloaded(); }
+	bool rooms_is_loaded() const { return _loaded; }
 
 	// debugging
 	void set_debug_sprawl(bool p_active) { _debug_sprawl = p_active; }
@@ -173,6 +178,13 @@ public:
 	void rghost_update(RGhostHandle p_handle, const AABB &p_aabb, bool p_force_reinsert = false);
 	void rghost_destroy(RGhostHandle p_handle);
 
+	// occluders
+	OccluderHandle occluder_create(VSOccluder::Type p_type);
+	void occluder_update_spheres(OccluderHandle p_handle, const Vector<Plane> &p_spheres);
+	void occluder_set_transform(OccluderHandle p_handle, const Transform &p_xform);
+	void occluder_set_active(OccluderHandle p_handle, bool p_active);
+	void occluder_destroy(OccluderHandle p_handle);
+
 	// note that this relies on a 'frustum' type cull, from a point, and that the planes are specified as in
 	// CameraMatrix, i.e.
 	// order PLANE_NEAR,PLANE_FAR,PLANE_LEFT,PLANE_TOP,PLANE_RIGHT,PLANE_BOTTOM
@@ -184,6 +196,16 @@ public:
 	}
 
 	int cull_convex_implementation(const Vector3 &p_point, const Vector<Plane> &p_convex, VSInstance **p_result_array, int p_result_max, uint32_t p_mask, int32_t &r_previous_room_id_hint);
+
+	// special function for occlusion culling only that does not use portals / rooms,
+	// but allows using occluders with the main scene
+	int occlusion_cull(const Vector3 &p_point, const Vector<Plane> &p_convex, VSInstance **p_result_array, int p_num_results) {
+		// inactive?
+		if (!_occluder_pool.active_size() || !use_occlusion_culling) {
+			return p_num_results;
+		}
+		return _tracer.occlusion_cull(*this, p_point, p_convex, p_result_array, p_num_results);
+	}
 
 	bool is_active() const { return _active && _loaded; }
 
@@ -207,6 +229,11 @@ public:
 	RGhost &get_pool_rghost(uint32_t p_pool_id) { return _rghost_pool[p_pool_id]; }
 	const RGhost &get_pool_rghost(uint32_t p_pool_id) const { return _rghost_pool[p_pool_id]; }
 
+	const VSOccluder &get_pool_occluder(uint32_t p_pool_id) const { return _occluder_pool[p_pool_id]; }
+	VSOccluder &get_pool_occluder(uint32_t p_pool_id) { return _occluder_pool[p_pool_id]; }
+	const VSOccluder_Sphere &get_pool_occluder_sphere(uint32_t p_pool_id) const { return _occluder_sphere_pool[p_pool_id]; }
+	const LocalVector<uint32_t, uint32_t> &get_occluders_active_list() const { return _occluder_pool.get_active_list(); }
+
 	VSStaticGhost &get_static_ghost(uint32_t p_id) { return _static_ghosts[p_id]; }
 
 	VSRoomGroup &get_roomgroup(uint32_t p_pool_id) { return _roomgroup_pool[p_pool_id]; }
@@ -229,6 +256,7 @@ private:
 	void sprawl_roaming(uint32_t p_mover_pool_id, MovingBase &r_moving, int p_room_id, bool p_moving_or_ghost);
 	void _moving_remove_from_rooms(uint32_t p_moving_pool_id);
 	void _rghost_remove_from_rooms(uint32_t p_pool_id);
+	void _occluder_remove_from_rooms(uint32_t p_pool_id);
 	void _ensure_unloaded();
 	void _rooms_add_portals_to_convex_hulls();
 	void _add_portal_to_convex_hull(LocalVector<Plane, int32_t> &p_planes, const Plane &p);
@@ -257,6 +285,10 @@ private:
 	TrackedPooledList<RGhost> _rghost_pool;
 	LocalVector<uint32_t, int32_t> _moving_list_global;
 	LocalVector<uint32_t, int32_t> _moving_list_roaming;
+
+	// occluders
+	TrackedPooledList<VSOccluder> _occluder_pool;
+	TrackedPooledList<VSOccluder_Sphere> _occluder_sphere_pool;
 
 	PVS _pvs;
 
@@ -287,6 +319,49 @@ private:
 public:
 	static String _rid_to_string(RID p_rid);
 	static String _addr_to_string(const void *p_addr);
+
+	void occluder_ensure_up_to_date_sphere(VSOccluder &r_occluder);
+	void occluder_refresh_room_within(uint32_t p_occluder_pool_id);
 };
+
+inline void PortalRenderer::occluder_ensure_up_to_date_sphere(VSOccluder &r_occluder) {
+	if (!r_occluder.dirty) {
+		return;
+	}
+	r_occluder.dirty = false;
+
+	const Transform &tr = r_occluder.xform;
+
+	Vector3 scale3 = tr.basis.get_scale_abs();
+	real_t scale = (scale3.x + scale3.y + scale3.z) / 3.0;
+
+	// update the AABB
+	Vector3 bb_min = Vector3(FLT_MAX, FLT_MAX, FLT_MAX);
+	Vector3 bb_max = Vector3(-FLT_MAX, -FLT_MAX, -FLT_MAX);
+
+	// transform spheres
+	for (int n = 0; n < r_occluder.list_ids.size(); n++) {
+		uint32_t pool_id = r_occluder.list_ids[n];
+		VSOccluder_Sphere &osphere = _occluder_sphere_pool[pool_id];
+
+		// transform position and radius
+		osphere.world.pos = tr.xform(osphere.local.pos);
+		osphere.world.radius = osphere.local.radius * scale;
+
+		Vector3 bradius = Vector3(osphere.world.radius, osphere.world.radius, osphere.world.radius);
+		Vector3 bmin = osphere.world.pos - bradius;
+		Vector3 bmax = osphere.world.pos + bradius;
+
+		bb_min.x = MIN(bb_min.x, bmin.x);
+		bb_min.y = MIN(bb_min.y, bmin.y);
+		bb_min.z = MIN(bb_min.z, bmin.z);
+		bb_max.x = MAX(bb_max.x, bmax.x);
+		bb_max.y = MAX(bb_max.y, bmax.y);
+		bb_max.z = MAX(bb_max.z, bmax.z);
+	}
+
+	r_occluder.aabb.position = bb_min;
+	r_occluder.aabb.size = bb_max - bb_min;
+}
 
 #endif

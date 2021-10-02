@@ -212,6 +212,7 @@ void OS_Windows::initialize_core() {
 	crash_handler.initialize();
 
 	last_button_state = 0;
+	restore_mouse_trails = 0;
 
 	//RedirectIOToConsole();
 	maximized = false;
@@ -283,7 +284,7 @@ void OS_Windows::_touch_event(bool p_pressed, float p_x, float p_y, int idx) {
 	event->set_position(Vector2(p_x, p_y));
 
 	if (main_loop) {
-		input->accumulate_input_event(event);
+		input->parse_input_event(event);
 	}
 };
 
@@ -303,7 +304,7 @@ void OS_Windows::_drag_event(float p_x, float p_y, int idx) {
 	event->set_relative(Vector2(p_x, p_y) - curr->get());
 
 	if (main_loop)
-		input->accumulate_input_event(event);
+		input->parse_input_event(event);
 
 	curr->get() = Vector2(p_x, p_y);
 };
@@ -487,7 +488,7 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 				}
 
 				if (window_has_focus && main_loop && mm->get_relative() != Vector2())
-					input->accumulate_input_event(mm);
+					input->parse_input_event(mm);
 			}
 			delete[] lpb;
 		} break;
@@ -575,7 +576,7 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 					old_x = mm->get_position().x;
 					old_y = mm->get_position().y;
 					if (window_has_focus && main_loop)
-						input->accumulate_input_event(mm);
+						input->parse_input_event(mm);
 				}
 				return 0;
 			}
@@ -719,7 +720,7 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 			old_x = mm->get_position().x;
 			old_y = mm->get_position().y;
 			if (window_has_focus && main_loop)
-				input->accumulate_input_event(mm);
+				input->parse_input_event(mm);
 			return 0;
 		} break;
 		case WM_MOUSEMOVE: {
@@ -821,7 +822,7 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 			old_x = mm->get_position().x;
 			old_y = mm->get_position().y;
 			if (window_has_focus && main_loop)
-				input->accumulate_input_event(mm);
+				input->parse_input_event(mm);
 
 		} break;
 		case WM_LBUTTONDOWN:
@@ -895,11 +896,12 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 					if (!motion)
 						return 0;
 
-					if (motion > 0)
+					if (motion > 0) {
 						mb->set_button_index(BUTTON_WHEEL_UP);
-					else
+					} else {
 						mb->set_button_index(BUTTON_WHEEL_DOWN);
-
+					}
+					mb->set_factor(fabs((double)motion / (double)WHEEL_DELTA));
 				} break;
 				case WM_MOUSEHWHEEL: {
 					mb->set_pressed(true);
@@ -909,11 +911,10 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 
 					if (motion < 0) {
 						mb->set_button_index(BUTTON_WHEEL_LEFT);
-						mb->set_factor(fabs((double)motion / (double)WHEEL_DELTA));
 					} else {
 						mb->set_button_index(BUTTON_WHEEL_RIGHT);
-						mb->set_factor(fabs((double)motion / (double)WHEEL_DELTA));
 					}
+					mb->set_factor(fabs((double)motion / (double)WHEEL_DELTA));
 				} break;
 				case WM_XBUTTONDOWN: {
 					mb->set_pressed(true);
@@ -984,14 +985,14 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 			mb->set_global_position(mb->get_position());
 
 			if (main_loop) {
-				input->accumulate_input_event(mb);
+				input->parse_input_event(mb);
 				if (mb->is_pressed() && mb->get_button_index() > 3 && mb->get_button_index() < 8) {
 					//send release for mouse wheel
 					Ref<InputEventMouseButton> mbd = mb->duplicate();
 					last_button_state &= ~(1 << (mbd->get_button_index() - 1));
 					mbd->set_button_mask(last_button_state);
 					mbd->set_pressed(false);
-					input->accumulate_input_event(mbd);
+					input->parse_input_event(mbd);
 				}
 			}
 		} break;
@@ -1222,7 +1223,7 @@ void OS_Windows::process_key_events() {
 					if (k->get_unicode() < 32)
 						k->set_unicode(0);
 
-					input->accumulate_input_event(k);
+					input->parse_input_event(k);
 				}
 
 				//do nothing
@@ -1261,7 +1262,7 @@ void OS_Windows::process_key_events() {
 
 				k->set_echo((ke.uMsg == WM_KEYDOWN && (ke.lParam & (1 << 30))));
 
-				input->accumulate_input_event(k);
+				input->parse_input_event(k);
 
 			} break;
 		}
@@ -1426,6 +1427,13 @@ Error OS_Windows::initialize(const VideoMode &p_desired, int p_video_driver, int
 			video_mode.fullscreen=false;
 		}*/
 		pre_fs_valid = false;
+
+		// If the user has mouse trails enabled in windows, then sometimes the cursor disappears in fullscreen mode.
+		// Save number of trails so we can restore when exiting, then turn off mouse trails
+		SystemParametersInfoA(SPI_GETMOUSETRAILS, 0, &restore_mouse_trails, 0);
+		if (restore_mouse_trails > 1) {
+			SystemParametersInfoA(SPI_SETMOUSETRAILS, 0, 0, 0);
+		}
 	}
 
 	DWORD dwExStyle;
@@ -1594,7 +1602,7 @@ Error OS_Windows::initialize(const VideoMode &p_desired, int p_video_driver, int
 
 	if (gl_initialization_error) {
 		OS::get_singleton()->alert("Your video card driver does not support any of the supported OpenGL versions.\n"
-								   "Please update your drivers or if you have a very old or integrated GPU upgrade it.",
+								   "Please update your drivers or if you have a very old or integrated GPU, upgrade it.",
 				"Unable to initialize Video driver");
 		return ERR_UNAVAILABLE;
 	}
@@ -1770,6 +1778,10 @@ void OS_Windows::finalize() {
 	if (user_proc) {
 		SetWindowLongPtr(hWnd, GWLP_WNDPROC, (LONG_PTR)user_proc);
 	};
+
+	if (restore_mouse_trails > 1) {
+		SystemParametersInfoA(SPI_SETMOUSETRAILS, restore_mouse_trails, 0, 0);
+	}
 }
 
 void OS_Windows::finalize_core() {
@@ -2124,6 +2136,10 @@ void OS_Windows::set_window_fullscreen(bool p_enabled) {
 
 		MoveWindow(hWnd, pos.x, pos.y, size.width, size.height, TRUE);
 
+		SystemParametersInfoA(SPI_GETMOUSETRAILS, 0, &restore_mouse_trails, 0);
+		if (restore_mouse_trails > 1) {
+			SystemParametersInfoA(SPI_SETMOUSETRAILS, 0, 0, 0);
+		}
 	} else {
 		RECT rect;
 
@@ -2143,6 +2159,10 @@ void OS_Windows::set_window_fullscreen(bool p_enabled) {
 		MoveWindow(hWnd, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, TRUE);
 
 		pre_fs_valid = true;
+
+		if (restore_mouse_trails > 1) {
+			SystemParametersInfoA(SPI_SETMOUSETRAILS, restore_mouse_trails, 0, 0);
+		}
 	}
 }
 bool OS_Windows::is_window_fullscreen() const {
@@ -2529,7 +2549,7 @@ void OS_Windows::process_events() {
 
 	if (!drop_events) {
 		process_key_events();
-		input->flush_accumulated_events();
+		input->flush_buffered_events();
 	}
 }
 
@@ -3063,8 +3083,27 @@ void OS_Windows::move_window_to_foreground() {
 }
 
 Error OS_Windows::shell_open(String p_uri) {
-	ShellExecuteW(NULL, NULL, p_uri.c_str(), NULL, NULL, SW_SHOWNORMAL);
-	return OK;
+	INT_PTR ret = (INT_PTR)ShellExecuteW(nullptr, nullptr, p_uri.c_str(), nullptr, nullptr, SW_SHOWNORMAL);
+	if (ret > 32) {
+		return OK;
+	} else {
+		switch (ret) {
+			case ERROR_FILE_NOT_FOUND:
+			case SE_ERR_DLLNOTFOUND:
+				return ERR_FILE_NOT_FOUND;
+			case ERROR_PATH_NOT_FOUND:
+				return ERR_FILE_BAD_PATH;
+			case ERROR_BAD_FORMAT:
+				return ERR_FILE_CORRUPT;
+			case SE_ERR_ACCESSDENIED:
+				return ERR_UNAUTHORIZED;
+			case 0:
+			case SE_ERR_OOM:
+				return ERR_OUT_OF_MEMORY;
+			default:
+				return FAILED;
+		}
+	}
 }
 
 String OS_Windows::get_locale() const {
@@ -3072,21 +3111,21 @@ String OS_Windows::get_locale() const {
 
 	LANGID langid = GetUserDefaultUILanguage();
 	String neutral;
-	int lang = langid & ((1 << 9) - 1);
-	int sublang = langid & ~((1 << 9) - 1);
+	int lang = PRIMARYLANGID(langid);
+	int sublang = SUBLANGID(langid);
 
 	while (wl->locale) {
 		if (wl->main_lang == lang && wl->sublang == SUBLANG_NEUTRAL)
 			neutral = wl->locale;
 
 		if (lang == wl->main_lang && sublang == wl->sublang)
-			return wl->locale;
+			return String(wl->locale).replace("-", "_");
 
 		wl++;
 	}
 
 	if (neutral != "")
-		return neutral;
+		return String(neutral).replace("-", "_");
 
 	return "en";
 }
@@ -3362,7 +3401,7 @@ String OS_Windows::get_godot_dir_name() const {
 	return String(VERSION_SHORT_NAME).capitalize();
 }
 
-String OS_Windows::get_system_dir(SystemDir p_dir) const {
+String OS_Windows::get_system_dir(SystemDir p_dir, bool p_shared_storage) const {
 	KNOWNFOLDERID id;
 
 	switch (p_dir) {

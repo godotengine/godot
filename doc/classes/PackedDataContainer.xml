@@ -8,16 +8,13 @@
 	</tutorials>
 	<methods>
 		<method name="pack">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="value" type="Variant">
-			</argument>
+			<return type="int" enum="Error" />
+			<argument index="0" name="value" type="Variant" />
 			<description>
 			</description>
 		</method>
 		<method name="size" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 			</description>
 		</method>

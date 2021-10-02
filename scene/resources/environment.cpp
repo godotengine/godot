@@ -919,7 +919,7 @@ void Environment::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_tonemap_auto_exposure_grey"), &Environment::get_tonemap_auto_exposure_grey);
 
 	ADD_GROUP("Tonemap", "tonemap_");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "tonemap_mode", PROPERTY_HINT_ENUM, "Linear,Reinhard,Filmic,ACES"), "set_tonemapper", "get_tonemapper");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "tonemap_mode", PROPERTY_HINT_ENUM, "Linear,Reinhard,Filmic,ACES,ACES Fitted"), "set_tonemapper", "get_tonemapper");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "tonemap_exposure", PROPERTY_HINT_RANGE, "0,16,0.01"), "set_tonemap_exposure", "get_tonemap_exposure");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "tonemap_white", PROPERTY_HINT_RANGE, "0,16,0.01"), "set_tonemap_white", "get_tonemap_white");
 	ADD_GROUP("Auto Exposure", "auto_exposure_");
@@ -1138,6 +1138,7 @@ void Environment::_bind_methods() {
 	BIND_ENUM_CONSTANT(TONE_MAPPER_REINHARDT);
 	BIND_ENUM_CONSTANT(TONE_MAPPER_FILMIC);
 	BIND_ENUM_CONSTANT(TONE_MAPPER_ACES);
+	BIND_ENUM_CONSTANT(TONE_MAPPER_ACES_FITTED);
 
 	BIND_ENUM_CONSTANT(DOF_BLUR_QUALITY_LOW);
 	BIND_ENUM_CONSTANT(DOF_BLUR_QUALITY_MEDIUM);

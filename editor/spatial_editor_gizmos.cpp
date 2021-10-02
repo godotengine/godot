@@ -42,6 +42,7 @@
 #include "scene/3d/listener.h"
 #include "scene/3d/mesh_instance.h"
 #include "scene/3d/navigation_mesh.h"
+#include "scene/3d/occluder.h"
 #include "scene/3d/particles.h"
 #include "scene/3d/physics_joint.h"
 #include "scene/3d/portal.h"
@@ -60,6 +61,7 @@
 #include "scene/resources/convex_polygon_shape.h"
 #include "scene/resources/cylinder_shape.h"
 #include "scene/resources/height_map_shape.h"
+#include "scene/resources/occluder_shape.h"
 #include "scene/resources/plane_shape.h"
 #include "scene/resources/primitive_meshes.h"
 #include "scene/resources/ray_shape.h"
@@ -1219,6 +1221,29 @@ void AudioStreamPlayer3DSpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) 
 		p_gizmo->add_handles(handles, get_material("handles"));
 	}
 
+	p_gizmo->add_unscaled_billboard(icon, 0.05);
+}
+
+//////
+
+ListenerSpatialGizmoPlugin::ListenerSpatialGizmoPlugin() {
+	create_icon_material("listener_icon", SpatialEditor::get_singleton()->get_icon("GizmoListener", "EditorIcons"));
+}
+
+bool ListenerSpatialGizmoPlugin::has_gizmo(Spatial *p_spatial) {
+	return Object::cast_to<Listener>(p_spatial) != nullptr;
+}
+
+String ListenerSpatialGizmoPlugin::get_name() const {
+	return "Listener";
+}
+
+int ListenerSpatialGizmoPlugin::get_priority() const {
+	return -1;
+}
+
+void ListenerSpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
+	const Ref<Material> icon = get_material("listener_icon", p_gizmo);
 	p_gizmo->add_unscaled_billboard(icon, 0.05);
 }
 
@@ -4436,8 +4461,24 @@ void JointSpatialGizmoPlugin::CreateGeneric6DOFJointGizmo(
 ////
 
 RoomGizmoPlugin::RoomGizmoPlugin() {
-	create_material("room", Color(0.5, 1.0, 0.0), false, true, false);
-	create_material("room_overlap", Color(1.0, 0.0, 0.0), false, false, false);
+	Color color_room = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/room_edge", Color(0.5, 1.0, 0.0));
+	Color color_overlap = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/room_overlap", Color(1.0, 0.0, 0.0));
+
+	create_material("room", color_room, false, true, false);
+	create_material("room_overlap", color_overlap, false, false, false);
+
+	create_handle_material("room_handle");
+}
+
+Ref<EditorSpatialGizmo> RoomGizmoPlugin::create_gizmo(Spatial *p_spatial) {
+	Ref<RoomSpatialGizmo> ref;
+
+	Room *room = Object::cast_to<Room>(p_spatial);
+	if (room) {
+		ref = Ref<RoomSpatialGizmo>(memnew(RoomSpatialGizmo(room)));
+	}
+
+	return ref;
 }
 
 bool RoomGizmoPlugin::has_gizmo(Spatial *p_spatial) {
@@ -4456,71 +4497,195 @@ int RoomGizmoPlugin::get_priority() const {
 	return -1;
 }
 
-void RoomGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
-	p_gizmo->clear();
+//////////////////////
 
-	Room *room = Object::cast_to<Room>(p_gizmo->get_spatial_node());
+String RoomSpatialGizmo::get_handle_name(int p_idx) const {
+	return "Point " + itos(p_idx);
+}
 
-	if (room) {
-		const Geometry::MeshData &md = room->_bound_mesh_data;
-		if (!md.edges.size())
-			return;
+Variant RoomSpatialGizmo::get_handle_value(int p_idx) {
+	if (!_room) {
+		return Vector3(0, 0, 0);
+	}
 
-		Vector<Vector3> lines;
-		Transform tr = room->get_global_transform();
-		tr.affine_invert();
+	int num_points = _room->_bound_pts.size();
+	if (p_idx >= num_points) {
+		return Vector3(0, 0, 0);
+	}
 
-		Ref<Material> material = get_material("room", p_gizmo);
-		Ref<Material> material_overlap = get_material("room_overlap", p_gizmo);
-		Color color(1, 1, 1, 1);
+	return _room->_bound_pts[p_idx];
+}
 
-		for (int n = 0; n < md.edges.size(); n++) {
-			Vector3 a = md.vertices[md.edges[n].a];
-			Vector3 b = md.vertices[md.edges[n].b];
+void RoomSpatialGizmo::set_handle(int p_idx, Camera *p_camera, const Point2 &p_point) {
+	if (!_room || (p_idx >= _room->_bound_pts.size())) {
+		return;
+	}
 
-			// xform
-			a = tr.xform(a);
-			b = tr.xform(b);
+	Transform tr = _room->get_global_transform();
+	Transform tr_inv = tr.affine_inverse();
 
-			lines.push_back(a);
-			lines.push_back(b);
+	Vector3 pt_world = _room->_bound_pts[p_idx];
+	pt_world = tr.xform(pt_world);
+
+	Vector3 ray_from = p_camera->project_ray_origin(p_point);
+	Vector3 ray_dir = p_camera->project_ray_normal(p_point);
+
+	Vector3 camera_dir = p_camera->get_transform().basis.get_axis(2);
+
+	// find the smallest camera axis, we will only transform the handles on 2 axes max,
+	// to try and make things more user friendly (it is confusing trying to change 3d position
+	// from a 2d view)
+	int biggest_axis = 0;
+	real_t biggest = 0.0;
+	for (int n = 0; n < 3; n++) {
+		real_t val = Math::abs(camera_dir.get_axis(n));
+		if (val > biggest) {
+			biggest = val;
+			biggest_axis = n;
 		}
+	}
 
-		p_gizmo->add_lines(lines, material, false, color);
+	{
+		Plane plane(pt_world, camera_dir);
+		Vector3 inters;
 
-		// overlap zones
-		for (int z = 0; z < room->_gizmo_overlap_zones.size(); z++) {
-			const Geometry::MeshData &md_overlap = room->_gizmo_overlap_zones[z];
-			Vector<Vector3> pts;
+		if (plane.intersects_ray(ray_from, ray_dir, &inters)) {
+			if (SpatialEditor::get_singleton()->is_snap_enabled()) {
+				float snap = SpatialEditor::get_singleton()->get_translate_snap();
+				inters.snap(Vector3(snap, snap, snap));
+			}
 
-			for (int f = 0; f < md_overlap.faces.size(); f++) {
-				const Geometry::MeshData::Face &face = md_overlap.faces[f];
-
-				for (int c = 0; c < face.indices.size() - 2; c++) {
-					pts.push_back(tr.xform(md_overlap.vertices[face.indices[0]]));
-					pts.push_back(tr.xform(md_overlap.vertices[face.indices[c + 1]]));
-					pts.push_back(tr.xform(md_overlap.vertices[face.indices[c + 2]]));
+			for (int n = 0; n < 3; n++) {
+				if (n != biggest_axis) {
+					pt_world.set_axis(n, inters.get_axis(n));
 				}
 			}
 
-			Ref<ArrayMesh> mesh = memnew(ArrayMesh);
-			Array array;
-			array.resize(Mesh::ARRAY_MAX);
-			array[Mesh::ARRAY_VERTEX] = pts;
-			mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, array);
-			p_gizmo->add_mesh(mesh, false, Ref<SkinReference>(), material_overlap);
+			Vector3 pt_local = tr_inv.xform(pt_world);
+			_room->set_point(p_idx, pt_local);
 		}
+
+		return;
 	}
+}
+
+void RoomSpatialGizmo::commit_handle(int p_idx, const Variant &p_restore, bool p_cancel) {
+	if (!_room || (p_idx >= _room->_bound_pts.size())) {
+		return;
+	}
+
+	UndoRedo *ur = SpatialEditor::get_singleton()->get_undo_redo();
+
+	ur->create_action(TTR("Set Room Point Position"));
+	ur->add_do_method(_room, "set_point", p_idx, _room->_bound_pts[p_idx]);
+	ur->add_undo_method(_room, "set_point", p_idx, p_restore);
+	ur->commit_action();
+
+	_room->property_list_changed_notify();
+}
+
+void RoomSpatialGizmo::redraw() {
+	clear();
+
+	if (!_room) {
+		return;
+	}
+
+	const Geometry::MeshData &md = _room->_bound_mesh_data;
+	if (!md.edges.size())
+		return;
+
+	Vector<Vector3> lines;
+	Transform tr = _room->get_global_transform();
+	Transform tr_inv = tr.affine_inverse();
+
+	Ref<Material> material = gizmo_plugin->get_material("room", this);
+	Ref<Material> material_overlap = gizmo_plugin->get_material("room_overlap", this);
+	Color color(1, 1, 1, 1);
+
+	for (int n = 0; n < md.edges.size(); n++) {
+		Vector3 a = md.vertices[md.edges[n].a];
+		Vector3 b = md.vertices[md.edges[n].b];
+
+		// xform
+		a = tr_inv.xform(a);
+		b = tr_inv.xform(b);
+
+		lines.push_back(a);
+		lines.push_back(b);
+	}
+
+	if (lines.size()) {
+		add_lines(lines, material, false, color);
+	}
+
+	// overlap zones
+	for (int z = 0; z < _room->_gizmo_overlap_zones.size(); z++) {
+		const Geometry::MeshData &md_overlap = _room->_gizmo_overlap_zones[z];
+		Vector<Vector3> pts;
+
+		for (int f = 0; f < md_overlap.faces.size(); f++) {
+			const Geometry::MeshData::Face &face = md_overlap.faces[f];
+
+			for (int c = 0; c < face.indices.size() - 2; c++) {
+				pts.push_back(tr_inv.xform(md_overlap.vertices[face.indices[0]]));
+				pts.push_back(tr_inv.xform(md_overlap.vertices[face.indices[c + 1]]));
+				pts.push_back(tr_inv.xform(md_overlap.vertices[face.indices[c + 2]]));
+			}
+		}
+
+		Ref<ArrayMesh> mesh = memnew(ArrayMesh);
+		Array array;
+		array.resize(Mesh::ARRAY_MAX);
+		array[Mesh::ARRAY_VERTEX] = pts;
+		mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, array);
+		add_mesh(mesh, false, Ref<SkinReference>(), material_overlap);
+	}
+
+	Vector<Vector3> handles;
+	// draw the handles separately because these must correspond to the raw points
+	// for editing
+	for (int n = 0; n < _room->_bound_pts.size(); n++) {
+		handles.push_back(_room->_bound_pts[n]);
+	}
+
+	// handles
+	if (handles.size()) {
+		Ref<Material> material_handle = gizmo_plugin->get_material("room_handle", this);
+		add_handles(handles, material_handle);
+	}
+}
+
+RoomSpatialGizmo::RoomSpatialGizmo(Room *p_room) {
+	_room = p_room;
+	set_spatial_node(p_room);
 }
 
 ////
 
 PortalGizmoPlugin::PortalGizmoPlugin() {
+	Color color_portal_margin = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/portal_margin", Color(1.0, 0.1, 0.1, 0.3));
+	Color color_portal_edge = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/portal_edge", Color(0.0, 0.0, 0.0, 0.3));
+	Color color_portal_arrow = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/portal_arrow", Color(1.0, 1.0, 1.0, 1.0));
+
 	create_icon_material("portal_icon", SpatialEditor::get_singleton()->get_icon("GizmoPortal", "EditorIcons"), true);
 	create_material("portal", Color(1.0, 1.0, 1.0, 1.0), false, false, true);
-	create_material("portal_margin", Color(1.0, 0.1, 0.1, 0.3), false, false, false);
-	create_material("portal_edge", Color(0.0, 0.0, 0.0, 0.3), false, false, false);
-	create_material("portal_arrow", Color(1.0, 1.0, 1.0, 1.0), false, false, false);
+	create_material("portal_margin", color_portal_margin, false, false, false);
+	create_material("portal_edge", color_portal_edge, false, false, false);
+	create_material("portal_arrow", color_portal_arrow, false, false, false);
+
+	create_handle_material("portal_handle");
+}
+
+Ref<EditorSpatialGizmo> PortalGizmoPlugin::create_gizmo(Spatial *p_spatial) {
+	Ref<PortalSpatialGizmo> ref;
+
+	Portal *portal = Object::cast_to<Portal>(p_spatial);
+	if (portal) {
+		ref = Ref<PortalSpatialGizmo>(memnew(PortalSpatialGizmo(portal)));
+	}
+
+	return ref;
 }
 
 bool PortalGizmoPlugin::has_gizmo(Spatial *p_spatial) {
@@ -4539,170 +4704,533 @@ int PortalGizmoPlugin::get_priority() const {
 	return -1;
 }
 
-void PortalGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
-	p_gizmo->clear();
+//////////////////////
 
-	Portal *portal = Object::cast_to<Portal>(p_gizmo->get_spatial_node());
+String PortalSpatialGizmo::get_handle_name(int p_idx) const {
+	return "Point " + itos(p_idx);
+}
 
-	if (portal) {
-		// warnings
-		if (portal->_warning_outside_room_aabb || portal->_warning_facing_wrong_way || portal->_warning_autolink_failed) {
-			Ref<Material> icon = get_material("portal_icon", p_gizmo);
-			p_gizmo->add_unscaled_billboard(icon, 0.05);
+Variant PortalSpatialGizmo::get_handle_value(int p_idx) {
+	if (!_portal) {
+		return Vector2(0, 0);
+	}
+
+	int num_points = _portal->_pts_local_raw.size();
+	if (p_idx >= num_points) {
+		return Vector2(0, 0);
+	}
+
+	return _portal->_pts_local_raw[p_idx];
+}
+
+void PortalSpatialGizmo::set_handle(int p_idx, Camera *p_camera, const Point2 &p_point) {
+	if (!_portal || (p_idx >= _portal->_pts_local_raw.size())) {
+		return;
+	}
+
+	Transform tr = _portal->get_global_transform();
+	Transform tr_inv = tr.affine_inverse();
+
+	Vector3 pt_local = Portal::_vec2to3(_portal->_pts_local_raw[p_idx]);
+	Vector3 pt_world = tr.xform(pt_local);
+
+	Vector3 ray_from = p_camera->project_ray_origin(p_point);
+	Vector3 ray_dir = p_camera->project_ray_normal(p_point);
+
+	// get a normal from the global transform
+	Plane plane(Vector3(0, 0, 0), Vector3(0, 0, 1));
+	plane = tr.xform(plane);
+
+	// construct the plane that the 2d portal is defined in
+	plane = Plane(pt_world, plane.normal);
+
+	Vector3 inters;
+
+	if (plane.intersects_ray(ray_from, ray_dir, &inters)) {
+		// back calculate from the 3d intersection to the 2d portal plane
+		inters = tr_inv.xform(inters);
+
+		// snapping will be in 2d for portals, and the scale may make less sense,
+		// but better to offer at least some functionality
+		if (SpatialEditor::get_singleton()->is_snap_enabled()) {
+			float snap = SpatialEditor::get_singleton()->get_translate_snap();
+			inters.snap(Vector3(snap, snap, snap));
 		}
 
-		Transform tr = portal->get_global_transform();
-		tr.affine_invert();
+		_portal->set_point(p_idx, Vector2(inters.x, inters.y));
 
-		Ref<Material> material_portal = get_material("portal", p_gizmo);
-		Ref<Material> material_margin = get_material("portal_margin", p_gizmo);
-		Ref<Material> material_edge = get_material("portal_edge", p_gizmo);
-		Ref<Material> material_arrow = get_material("portal_arrow", p_gizmo);
-		Color color(1, 1, 1, 1);
-		Color color_portal_front(0.05, 0.05, 1.0, 0.3);
-		Color color_portal_back(1.0, 1.0, 0.0, 0.15);
+		return;
+	}
+}
 
-		// make sure world points are up to date
-		portal->portal_update();
+void PortalSpatialGizmo::commit_handle(int p_idx, const Variant &p_restore, bool p_cancel) {
+	if (!_portal || (p_idx >= _portal->_pts_local_raw.size())) {
+		return;
+	}
 
-		int num_points = portal->_pts_world.size();
+	UndoRedo *ur = SpatialEditor::get_singleton()->get_undo_redo();
 
-		// prevent compiler warnings later on
-		if (num_points < 3) {
+	ur->create_action(TTR("Set Portal Point Position"));
+	ur->add_do_method(_portal, "set_point", p_idx, _portal->_pts_local_raw[p_idx]);
+	ur->add_undo_method(_portal, "set_point", p_idx, p_restore);
+	ur->commit_action();
+
+	_portal->property_list_changed_notify();
+}
+
+void PortalSpatialGizmo::redraw() {
+	clear();
+
+	if (!_portal) {
+		return;
+	}
+
+	// warnings
+	if (_portal->_warning_outside_room_aabb || _portal->_warning_facing_wrong_way || _portal->_warning_autolink_failed) {
+		Ref<Material> icon = gizmo_plugin->get_material("portal_icon", this);
+		add_unscaled_billboard(icon, 0.05);
+	}
+
+	Transform tr = _portal->get_global_transform();
+	Transform tr_inv = tr.affine_inverse();
+
+	Ref<Material> material_portal = gizmo_plugin->get_material("portal", this);
+	Ref<Material> material_margin = gizmo_plugin->get_material("portal_margin", this);
+	Ref<Material> material_edge = gizmo_plugin->get_material("portal_edge", this);
+	Ref<Material> material_arrow = gizmo_plugin->get_material("portal_arrow", this);
+	Color color(1, 1, 1, 1);
+
+	// make sure world points are up to date
+	_portal->portal_update();
+
+	int num_points = _portal->_pts_world.size();
+
+	// prevent compiler warnings later on
+	if (num_points < 3) {
+		return;
+	}
+
+	// margins
+	real_t margin = _portal->get_active_portal_margin();
+	bool show_margins = Portal::_settings_gizmo_show_margins;
+
+	if (margin < 0.05f) {
+		show_margins = false;
+	}
+
+	PoolVector<Vector3> pts_portal;
+	PoolVector<Color> cols_portal;
+	PoolVector<Vector3> pts_margin;
+	Vector<Vector3> edge_pts;
+
+	Vector<Vector3> handles;
+
+	Vector3 portal_normal_world_space = _portal->_plane.normal;
+	portal_normal_world_space *= margin;
+
+	// this may not be necessary, dealing with non uniform scales,
+	// possible the affine_invert dealt with this earlier .. but it's just for
+	// the editor so not performance critical
+	Basis normal_basis = tr_inv.basis;
+
+	Vector3 portal_normal = normal_basis.xform(portal_normal_world_space);
+	Vector3 pt_portal_first = tr_inv.xform(_portal->_pts_world[0]);
+
+	for (int n = 0; n < num_points; n++) {
+		Vector3 pt = _portal->_pts_world[n];
+		pt = tr_inv.xform(pt);
+
+		// CI for visual studio can't seem to get around the possibility
+		// that this could cause a divide by zero, so using a local to preclude the
+		// possibility of aliasing from another thread
+		int m = (n + 1) % num_points;
+		Vector3 pt_next = _portal->_pts_world[m];
+		pt_next = tr_inv.xform(pt_next);
+
+		// don't need the first and last triangles
+		if ((n != 0) && (n != (num_points - 1))) {
+			pts_portal.push_back(pt_portal_first);
+			pts_portal.push_back(pt);
+			pts_portal.push_back(pt_next);
+			cols_portal.push_back(_color_portal_front);
+			cols_portal.push_back(_color_portal_front);
+			cols_portal.push_back(_color_portal_front);
+
+			pts_portal.push_back(pt_next);
+			pts_portal.push_back(pt);
+			pts_portal.push_back(pt_portal_first);
+			cols_portal.push_back(_color_portal_back);
+			cols_portal.push_back(_color_portal_back);
+			cols_portal.push_back(_color_portal_back);
+		}
+
+		if (show_margins) {
+			Vector3 pt0 = pt - portal_normal;
+			Vector3 pt1 = pt + portal_normal;
+			Vector3 pt2 = pt_next - portal_normal;
+			Vector3 pt3 = pt_next + portal_normal;
+
+			pts_margin.push_back(pt0);
+			pts_margin.push_back(pt2);
+			pts_margin.push_back(pt1);
+
+			pts_margin.push_back(pt2);
+			pts_margin.push_back(pt3);
+			pts_margin.push_back(pt1);
+
+			edge_pts.push_back(pt0);
+			edge_pts.push_back(pt2);
+			edge_pts.push_back(pt1);
+			edge_pts.push_back(pt3);
+		}
+	}
+
+	// draw the handles separately because these must correspond to the raw points
+	// for editing
+	for (int n = 0; n < _portal->_pts_local_raw.size(); n++) {
+		Vector3 pt = Portal::_vec2to3(_portal->_pts_local_raw[n]);
+		handles.push_back(pt);
+	}
+
+	// portal itself
+	{
+		Ref<ArrayMesh> mesh = memnew(ArrayMesh);
+		Array array;
+		array.resize(Mesh::ARRAY_MAX);
+		array[Mesh::ARRAY_VERTEX] = pts_portal;
+		array[Mesh::ARRAY_COLOR] = cols_portal;
+		mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, array);
+		add_mesh(mesh, false, Ref<SkinReference>(), material_portal);
+
+		// handles
+		Ref<Material> material_handle = gizmo_plugin->get_material("portal_handle", this);
+		add_handles(handles, material_handle);
+	}
+
+	if (show_margins) {
+		Ref<ArrayMesh> mesh = memnew(ArrayMesh);
+		Array array;
+		array.resize(Mesh::ARRAY_MAX);
+		array[Mesh::ARRAY_VERTEX] = pts_margin;
+		mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, array);
+		add_mesh(mesh, false, Ref<SkinReference>(), material_margin);
+
+		// lines around the outside of mesh
+		add_lines(edge_pts, material_edge, false, color);
+	} // only if the margin is sufficient to be worth drawing
+
+	// arrow
+	if (show_margins) {
+		const int arrow_points = 7;
+		const float arrow_length = 0.5; // 1.5
+		const float arrow_width = 0.1; // 0.3
+		const float arrow_barb = 0.27; // 0.8
+
+		Vector3 arrow[arrow_points] = {
+			Vector3(0, 0, -1),
+			Vector3(0, arrow_barb, 0),
+			Vector3(0, arrow_width, 0),
+			Vector3(0, arrow_width, arrow_length),
+			Vector3(0, -arrow_width, arrow_length),
+			Vector3(0, -arrow_width, 0),
+			Vector3(0, -arrow_barb, 0)
+		};
+
+		int arrow_sides = 2;
+
+		Vector<Vector3> lines;
+
+		for (int i = 0; i < arrow_sides; i++) {
+			for (int j = 0; j < arrow_points; j++) {
+				Basis ma(Vector3(0, 0, 1), Math_PI * i / arrow_sides);
+
+				Vector3 v1 = arrow[j] - Vector3(0, 0, arrow_length);
+				Vector3 v2 = arrow[(j + 1) % arrow_points] - Vector3(0, 0, arrow_length);
+
+				lines.push_back(ma.xform(v1));
+				lines.push_back(ma.xform(v2));
+			}
+		}
+
+		add_lines(lines, material_arrow, false, color);
+	}
+}
+
+PortalSpatialGizmo::PortalSpatialGizmo(Portal *p_portal) {
+	_portal = p_portal;
+	set_spatial_node(p_portal);
+
+	_color_portal_front = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/portal_front", Color(0.05, 0.05, 1.0, 0.3));
+	_color_portal_back = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/portal_back", Color(1.0, 1.0, 0.0, 0.15));
+}
+
+/////////////////////
+
+OccluderGizmoPlugin::OccluderGizmoPlugin() {
+	Color color_occluder = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/occluder", Color(1.0, 0.0, 1.0));
+	create_material("occluder", color_occluder, false, true, false);
+
+	create_handle_material("occluder_handle");
+	create_handle_material("extra_handle", false, SpatialEditor::get_singleton()->get_icon("EditorInternalHandle", "EditorIcons"));
+}
+
+Ref<EditorSpatialGizmo> OccluderGizmoPlugin::create_gizmo(Spatial *p_spatial) {
+	Ref<OccluderSpatialGizmo> ref;
+
+	Occluder *occluder = Object::cast_to<Occluder>(p_spatial);
+	if (occluder) {
+		ref = Ref<OccluderSpatialGizmo>(memnew(OccluderSpatialGizmo(occluder)));
+	}
+
+	return ref;
+}
+
+bool OccluderGizmoPlugin::has_gizmo(Spatial *p_spatial) {
+	if (Object::cast_to<Occluder>(p_spatial)) {
+		return true;
+	}
+
+	return false;
+}
+
+String OccluderGizmoPlugin::get_name() const {
+	return "Occluder";
+}
+
+int OccluderGizmoPlugin::get_priority() const {
+	return -1;
+}
+
+//////////////////////
+
+String OccluderSpatialGizmo::get_handle_name(int p_idx) const {
+	const OccluderShapeSphere *occ_sphere = get_occluder_shape_sphere();
+	if (occ_sphere) {
+		int num_spheres = occ_sphere->get_spheres().size();
+
+		if (p_idx >= num_spheres) {
+			p_idx -= num_spheres;
+			return "Radius " + itos(p_idx);
+		} else {
+			return "Sphere " + itos(p_idx);
+		}
+	}
+
+	return "Unknown";
+}
+
+Variant OccluderSpatialGizmo::get_handle_value(int p_idx) {
+	const OccluderShapeSphere *occ_sphere = get_occluder_shape_sphere();
+	if (occ_sphere) {
+		Vector<Plane> spheres = occ_sphere->get_spheres();
+		int num_spheres = spheres.size();
+
+		if (p_idx >= num_spheres) {
+			p_idx -= num_spheres;
+			return spheres[p_idx].d;
+		} else {
+			return spheres[p_idx].normal;
+		}
+	}
+
+	return 0;
+}
+
+void OccluderSpatialGizmo::set_handle(int p_idx, Camera *p_camera, const Point2 &p_point) {
+	if (!_occluder) {
+		return;
+	}
+
+	Transform tr = _occluder->get_global_transform();
+	Transform tr_inv = tr.affine_inverse();
+
+	// selection ray
+	Vector3 ray_from = p_camera->project_ray_origin(p_point);
+	Vector3 ray_dir = p_camera->project_ray_normal(p_point);
+	Vector3 camera_dir = p_camera->get_transform().basis.get_axis(2);
+
+	// find the smallest camera axis, we will only transform the handles on 2 axes max,
+	// to try and make things more user friendly (it is confusing trying to change 3d position
+	// from a 2d view)
+	int biggest_axis = 0;
+	real_t biggest = 0.0;
+	for (int n = 0; n < 3; n++) {
+		real_t val = Math::abs(camera_dir.get_axis(n));
+		if (val > biggest) {
+			biggest = val;
+			biggest_axis = n;
+		}
+	}
+
+	// find world space of selected point
+	OccluderShapeSphere *occ_sphere = get_occluder_shape_sphere();
+	if (occ_sphere) {
+		Vector<Plane> spheres = occ_sphere->get_spheres();
+		int num_spheres = spheres.size();
+
+		// radius?
+		bool is_radius = false;
+
+		if (p_idx >= num_spheres) {
+			p_idx -= num_spheres;
+			is_radius = true;
+		}
+
+		Vector3 pt_world = spheres[p_idx].normal;
+		pt_world = tr.xform(pt_world);
+		Vector3 pt_world_center = pt_world;
+
+		// a plane between the radius point and the centre
+		Plane plane;
+		if (is_radius) {
+			plane = Plane(Vector3(0, 0, 1), pt_world.z);
+		} else {
+			plane = Plane(pt_world, camera_dir);
+		}
+
+		Vector3 inters;
+		if (plane.intersects_ray(ray_from, ray_dir, &inters)) {
+			if (SpatialEditor::get_singleton()->is_snap_enabled()) {
+				float snap = SpatialEditor::get_singleton()->get_translate_snap();
+				inters.snap(Vector3(snap, snap, snap));
+			}
+
+			if (is_radius) {
+				pt_world = inters;
+
+				// new radius is simply the dist between this point and the centre of the sphere
+				real_t radius = (pt_world - pt_world_center).length();
+				occ_sphere->set_sphere_radius(p_idx, radius);
+			} else {
+				for (int n = 0; n < 3; n++) {
+					if (n != biggest_axis) {
+						pt_world.set_axis(n, inters.get_axis(n));
+					}
+				}
+
+				Vector3 pt_local = tr_inv.xform(pt_world);
+				occ_sphere->set_sphere_position(p_idx, pt_local);
+			}
+
+			return;
+		}
+	}
+}
+
+void OccluderSpatialGizmo::commit_handle(int p_idx, const Variant &p_restore, bool p_cancel) {
+	OccluderShapeSphere *occ_sphere = get_occluder_shape_sphere();
+	if (occ_sphere) {
+		Vector<Plane> spheres = occ_sphere->get_spheres();
+		int num_spheres = spheres.size();
+
+		UndoRedo *ur = SpatialEditor::get_singleton()->get_undo_redo();
+
+		if (p_idx >= num_spheres) {
+			p_idx -= num_spheres;
+
+			ur->create_action(TTR("Set Occluder Sphere Radius"));
+			ur->add_do_method(occ_sphere, "set_sphere_radius", p_idx, spheres[p_idx].d);
+			ur->add_undo_method(occ_sphere, "set_sphere_radius", p_idx, p_restore);
+		} else {
+			ur->create_action(TTR("Set Occluder Sphere Position"));
+			ur->add_do_method(occ_sphere, "set_sphere_position", p_idx, spheres[p_idx].normal);
+			ur->add_undo_method(occ_sphere, "set_sphere_position", p_idx, p_restore);
+		}
+
+		ur->commit_action();
+		_occluder->property_list_changed_notify();
+	}
+}
+
+OccluderShapeSphere *OccluderSpatialGizmo::get_occluder_shape_sphere() {
+	if (!_occluder) {
+		return nullptr;
+	}
+
+	Ref<OccluderShape> rshape = _occluder->get_shape();
+	if (rshape.is_null() || !rshape.is_valid()) {
+		return nullptr;
+	}
+
+	OccluderShape *shape = rshape.ptr();
+	OccluderShapeSphere *occ_sphere = Object::cast_to<OccluderShapeSphere>(shape);
+	return occ_sphere;
+}
+
+const OccluderShapeSphere *OccluderSpatialGizmo::get_occluder_shape_sphere() const {
+	if (!_occluder) {
+		return nullptr;
+	}
+
+	Ref<OccluderShape> rshape = _occluder->get_shape();
+	if (rshape.is_null() || !rshape.is_valid()) {
+		return nullptr;
+	}
+
+	const OccluderShape *shape = rshape.ptr();
+	const OccluderShapeSphere *occ_sphere = Object::cast_to<OccluderShapeSphere>(shape);
+	return occ_sphere;
+}
+
+void OccluderSpatialGizmo::redraw() {
+	clear();
+
+	if (!_occluder) {
+		return;
+	}
+
+	Ref<Material> material_occluder = gizmo_plugin->get_material("occluder", this);
+	Color color(1, 1, 1, 1);
+
+	const OccluderShapeSphere *occ_sphere = get_occluder_shape_sphere();
+	if (occ_sphere) {
+		Vector<Plane> spheres = occ_sphere->get_spheres();
+		if (!spheres.size()) {
 			return;
 		}
 
-		// margins
-		real_t margin = portal->get_active_portal_margin();
-		bool show_margins = Portal::_settings_gizmo_show_margins;
+		Vector<Vector3> points;
+		Vector<Vector3> handles;
+		Vector<Vector3> radius_handles;
 
-		if (margin < 0.05f) {
-			show_margins = false;
-		}
+		for (int n = 0; n < spheres.size(); n++) {
+			const Plane &p = spheres[n];
 
-		PoolVector<Vector3> pts_portal;
-		PoolVector<Color> cols_portal;
-		PoolVector<Vector3> pts_margin;
-		Vector<Vector3> edge_pts;
+			real_t r = p.d;
+			Vector3 offset = p.normal;
+			handles.push_back(offset);
 
-		Vector3 portal_normal_world_space = portal->_plane.normal;
-		portal_normal_world_space *= margin;
+			// add a handle for the radius
+			radius_handles.push_back(offset + Vector3(r, 0, 0));
 
-		// this may not be necessary, dealing with non uniform scales,
-		// possible the affine_invert dealt with this earlier .. but it's just for
-		// the editor so not performance critical
-		Basis normal_basis = tr.basis;
+			const int deg_change = 4;
 
-		Vector3 portal_normal = normal_basis.xform(portal_normal_world_space);
-		Vector3 pt_portal_first = tr.xform(portal->_pts_world[0]);
+			for (int i = 0; i <= 360; i += deg_change) {
+				real_t ra = Math::deg2rad((real_t)i);
+				real_t rb = Math::deg2rad((real_t)i + deg_change);
+				Point2 a = Vector2(Math::sin(ra), Math::cos(ra)) * r;
+				Point2 b = Vector2(Math::sin(rb), Math::cos(rb)) * r;
 
-		for (int n = 0; n < num_points; n++) {
-			Vector3 pt = portal->_pts_world[n];
-			pt = tr.xform(pt);
-
-			// CI for visual studio can't seem to get around the possibility
-			// that this could cause a divide by zero, so using a local to preclude the
-			// possibility of aliasing from another thread
-			int m = (n + 1) % num_points;
-			Vector3 pt_next = portal->_pts_world[m];
-			pt_next = tr.xform(pt_next);
-
-			// don't need the first and last triangles
-			if ((n != 0) && (n != (num_points - 1))) {
-				pts_portal.push_back(pt_portal_first);
-				pts_portal.push_back(pt);
-				pts_portal.push_back(pt_next);
-				cols_portal.push_back(color_portal_front);
-				cols_portal.push_back(color_portal_front);
-				cols_portal.push_back(color_portal_front);
-
-				pts_portal.push_back(pt_next);
-				pts_portal.push_back(pt);
-				pts_portal.push_back(pt_portal_first);
-				cols_portal.push_back(color_portal_back);
-				cols_portal.push_back(color_portal_back);
-				cols_portal.push_back(color_portal_back);
+				points.push_back(offset + Vector3(a.x, 0, a.y));
+				points.push_back(offset + Vector3(b.x, 0, b.y));
+				points.push_back(offset + Vector3(0, a.x, a.y));
+				points.push_back(offset + Vector3(0, b.x, b.y));
+				points.push_back(offset + Vector3(a.x, a.y, 0));
+				points.push_back(offset + Vector3(b.x, b.y, 0));
 			}
+		} // for n through spheres
 
-			if (show_margins) {
-				Vector3 pt0 = pt - portal_normal;
-				Vector3 pt1 = pt + portal_normal;
-				Vector3 pt2 = pt_next - portal_normal;
-				Vector3 pt3 = pt_next + portal_normal;
+		add_lines(points, material_occluder, false, color);
 
-				pts_margin.push_back(pt0);
-				pts_margin.push_back(pt2);
-				pts_margin.push_back(pt1);
+		// handles
+		Ref<Material> material_handle = gizmo_plugin->get_material("occluder_handle", this);
+		Ref<Material> material_extra_handle = gizmo_plugin->get_material("extra_handle", this);
+		add_handles(handles, material_handle);
+		add_handles(radius_handles, material_extra_handle, false, true);
+	}
+}
 
-				pts_margin.push_back(pt2);
-				pts_margin.push_back(pt3);
-				pts_margin.push_back(pt1);
-
-				edge_pts.push_back(pt0);
-				edge_pts.push_back(pt2);
-				edge_pts.push_back(pt1);
-				edge_pts.push_back(pt3);
-			}
-		}
-
-		// portal itself
-		{
-			Ref<ArrayMesh> mesh = memnew(ArrayMesh);
-			Array array;
-			array.resize(Mesh::ARRAY_MAX);
-			array[Mesh::ARRAY_VERTEX] = pts_portal;
-			array[Mesh::ARRAY_COLOR] = cols_portal;
-			mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, array);
-			p_gizmo->add_mesh(mesh, false, Ref<SkinReference>(), material_portal);
-		}
-
-		if (show_margins) {
-			Ref<ArrayMesh> mesh = memnew(ArrayMesh);
-			Array array;
-			array.resize(Mesh::ARRAY_MAX);
-			array[Mesh::ARRAY_VERTEX] = pts_margin;
-			mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, array);
-			p_gizmo->add_mesh(mesh, false, Ref<SkinReference>(), material_margin);
-
-			// lines around the outside of mesh
-			p_gizmo->add_lines(edge_pts, material_edge, false, color);
-		} // only if the margin is sufficient to be worth drawing
-
-		// arrow
-		if (show_margins) {
-			const int arrow_points = 7;
-			const float arrow_length = 0.5; // 1.5
-			const float arrow_width = 0.1; // 0.3
-			const float arrow_barb = 0.27; // 0.8
-
-			Vector3 arrow[arrow_points] = {
-				Vector3(0, 0, -1),
-				Vector3(0, arrow_barb, 0),
-				Vector3(0, arrow_width, 0),
-				Vector3(0, arrow_width, arrow_length),
-				Vector3(0, -arrow_width, arrow_length),
-				Vector3(0, -arrow_width, 0),
-				Vector3(0, -arrow_barb, 0)
-			};
-
-			int arrow_sides = 2;
-
-			Vector<Vector3> lines;
-
-			for (int i = 0; i < arrow_sides; i++) {
-				for (int j = 0; j < arrow_points; j++) {
-					Basis ma(Vector3(0, 0, 1), Math_PI * i / arrow_sides);
-
-					Vector3 v1 = arrow[j] - Vector3(0, 0, arrow_length);
-					Vector3 v2 = arrow[(j + 1) % arrow_points] - Vector3(0, 0, arrow_length);
-
-					lines.push_back(ma.xform(v1));
-					lines.push_back(ma.xform(v2));
-				}
-			}
-
-			p_gizmo->add_lines(lines, material_arrow, false, color);
-		}
-
-	} // was portal
+OccluderSpatialGizmo::OccluderSpatialGizmo(Occluder *p_occluder) {
+	_occluder = p_occluder;
+	set_spatial_node(p_occluder);
 }

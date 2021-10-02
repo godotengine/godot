@@ -528,6 +528,33 @@ void TextEdit::_update_selection_mode_line() {
 	click_select_held->start();
 }
 
+void TextEdit::_update_minimap_hover() {
+	const Point2 mp = get_local_mouse_position();
+	const int xmargin_end = get_size().width - cache.style_normal->get_margin(MARGIN_RIGHT);
+
+	const bool hovering_sidebar = mp.x > xmargin_end - minimap_width && mp.x < xmargin_end;
+	if (!hovering_sidebar) {
+		if (hovering_minimap) {
+			// Only redraw if the hovering status changed.
+			hovering_minimap = false;
+			update();
+		}
+
+		// Return early to avoid running the operations below when not needed.
+		return;
+	}
+
+	int row;
+	_get_minimap_mouse_row(Point2i(mp.x, mp.y), row);
+
+	const bool new_hovering_minimap = row >= get_first_visible_line() && row <= get_last_full_visible_line();
+	if (new_hovering_minimap != hovering_minimap) {
+		// Only redraw if the hovering status changed.
+		hovering_minimap = new_hovering_minimap;
+		update();
+	}
+}
+
 void TextEdit::_update_minimap_click() {
 	Point2 mp = get_local_mouse_position();
 
@@ -916,8 +943,19 @@ void TextEdit::_notification(int p_what) {
 				}
 				int minimap_draw_amount = minimap_visible_lines + times_line_wraps(minimap_line + 1);
 
-				// draw the minimap
-				Color viewport_color = (cache.background_color.get_v() < 0.5) ? Color(1, 1, 1, 0.1) : Color(0, 0, 0, 0.1);
+				// Draw the minimap.
+
+				// Add visual feedback when dragging or hovering the the visible area rectangle.
+				float viewport_alpha;
+				if (dragging_minimap) {
+					viewport_alpha = 0.25;
+				} else if (hovering_minimap) {
+					viewport_alpha = 0.175;
+				} else {
+					viewport_alpha = 0.1;
+				}
+
+				const Color viewport_color = (cache.background_color.get_v() < 0.5) ? Color(1, 1, 1, viewport_alpha) : Color(0, 0, 0, viewport_alpha);
 				VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2((xmargin_end + 2), viewport_offset_y, cache.minimap_width, viewport_height), viewport_color);
 				for (int i = 0; i < minimap_draw_amount; i++) {
 					minimap_line++;
@@ -2016,7 +2054,7 @@ void TextEdit::backspace_at_cursor() {
 		}
 	}
 
-	cursor_set_line(prev_line, true, true);
+	cursor_set_line(prev_line, false, true);
 	cursor_set_column(prev_column);
 }
 
@@ -2477,7 +2515,10 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 					selection.selecting_column = col;
 				}
 
-				if (!mb->is_doubleclick() && (OS::get_singleton()->get_ticks_msec() - last_dblclk) < 600 && cursor.line == prev_line) {
+				const int triple_click_timeout = 600;
+				const int triple_click_tolerance = 5;
+
+				if (!mb->is_doubleclick() && (OS::get_singleton()->get_ticks_msec() - last_dblclk) < triple_click_timeout && mb->get_position().distance_to(last_dblclk_pos) < triple_click_tolerance) {
 					// Triple-click select line.
 					selection.selecting_mode = Selection::MODE_LINE;
 					_update_selection_mode_line();
@@ -2487,6 +2528,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 					selection.selecting_mode = Selection::MODE_WORD;
 					_update_selection_mode_word();
 					last_dblclk = OS::get_singleton()->get_ticks_msec();
+					last_dblclk_pos = mb->get_position();
 				}
 
 				update();
@@ -2514,6 +2556,11 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 						cursor_set_line(row, true, false);
 						cursor_set_column(col);
 					}
+				}
+
+				if (!readonly) {
+					menu->set_item_disabled(menu->get_item_index(MENU_UNDO), !has_undo());
+					menu->set_item_disabled(menu->get_item_index(MENU_REDO), !has_redo());
 				}
 
 				menu->set_position(get_global_transform().xform(get_local_mouse_position()));
@@ -2575,6 +2622,10 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 					update();
 				}
 			}
+		}
+
+		if (draw_minimap && !dragging_selection) {
+			_update_minimap_hover();
 		}
 
 		if (mm->get_button_mask() & BUTTON_MASK_LEFT && get_viewport()->gui_get_drag_data() == Variant()) { // Ignore if dragging.
@@ -2808,7 +2859,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 
 		_reset_caret_blink_timer();
 
-		// Save here for insert mode, just in case it is cleared in the following section.
+		// Save here for insert mode as well as arrow navigation, just in case it is cleared in the following section.
 		bool had_selection = selection.active;
 
 		// Stuff to do when selection is active.
@@ -2882,7 +2933,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 				selection.active = false;
 				update();
 				_remove_text(selection.from_line, selection.from_column, selection.to_line, selection.to_column);
-				cursor_set_line(selection.from_line, true, false);
+				cursor_set_line(selection.from_line, false, false);
 				cursor_set_column(selection.from_column);
 				update();
 			}
@@ -3164,6 +3215,11 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 			case KEY_LEFT: {
 				if (k->get_shift()) {
 					_pre_shift_selection();
+				} else if (had_selection && !k->get_command() && !k->get_alt()) {
+					cursor_set_line(selection.from_line);
+					cursor_set_column(selection.from_column);
+					deselect();
+					break;
 #ifdef APPLE_STYLE_KEYS
 				} else {
 #else
@@ -3241,6 +3297,11 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 			case KEY_RIGHT: {
 				if (k->get_shift()) {
 					_pre_shift_selection();
+				} else if (had_selection && !k->get_command() && !k->get_alt()) {
+					cursor_set_line(selection.to_line);
+					cursor_set_column(selection.to_column);
+					deselect();
+					break;
 #ifdef APPLE_STYLE_KEYS
 				} else {
 #else
@@ -3783,6 +3844,11 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 
 			case KEY_MENU: {
 				if (context_menu_enabled) {
+					if (!readonly) {
+						menu->set_item_disabled(menu->get_item_index(MENU_UNDO), !has_undo());
+						menu->set_item_disabled(menu->get_item_index(MENU_REDO), !has_redo());
+					}
+
 					menu->set_position(get_global_transform().xform(_get_cursor_pixel_pos()));
 					menu->set_size(Vector2(1, 1));
 					menu->set_scale(get_global_transform().get_scale());
@@ -4216,7 +4282,7 @@ void TextEdit::_insert_text_at_cursor(const String &p_text) {
 	int new_column, new_line;
 	_insert_text(cursor.line, cursor.column, p_text, &new_line, &new_column);
 	_update_scrollbars();
-	cursor_set_line(new_line);
+	cursor_set_line(new_line, false);
 	cursor_set_column(new_column);
 
 	update();
@@ -4812,7 +4878,7 @@ int TextEdit::get_column_x_offset(int p_char, String p_str) const {
 
 void TextEdit::insert_text_at_cursor(const String &p_text) {
 	if (selection.active) {
-		cursor_set_line(selection.from_line);
+		cursor_set_line(selection.from_line, false);
 		cursor_set_column(selection.from_column);
 
 		_remove_text(selection.from_line, selection.from_column, selection.to_line, selection.to_column);
@@ -5271,7 +5337,7 @@ void TextEdit::cut() {
 		OS::get_singleton()->set_clipboard(clipboard);
 
 		_remove_text(selection.from_line, selection.from_column, selection.to_line, selection.to_column);
-		cursor_set_line(selection.from_line); // Set afterwards else it causes the view to be offset.
+		cursor_set_line(selection.from_line, false); // Set afterwards else it causes the view to be offset.
 		cursor_set_column(selection.from_column);
 
 		selection.active = false;
@@ -5303,7 +5369,7 @@ void TextEdit::paste() {
 		selection.active = false;
 		selection.selecting_mode = Selection::MODE_NONE;
 		_remove_text(selection.from_line, selection.from_column, selection.to_line, selection.to_column);
-		cursor_set_line(selection.from_line);
+		cursor_set_line(selection.from_line, false);
 		cursor_set_column(selection.from_column);
 
 	} else if (!cut_copy_line.empty() && cut_copy_line == clipboard) {
@@ -6106,6 +6172,18 @@ void TextEdit::_clear_redo() {
 	}
 }
 
+bool TextEdit::has_undo() const {
+	if (undo_stack_pos == nullptr) {
+		int pending = current_op.type == TextOperation::TYPE_NONE ? 0 : 1;
+		return undo_stack.size() + pending > 0;
+	}
+	return undo_stack_pos != undo_stack.front();
+}
+
+bool TextEdit::has_redo() const {
+	return undo_stack_pos != nullptr;
+}
+
 void TextEdit::undo() {
 	_push_current_op();
 
@@ -6146,11 +6224,11 @@ void TextEdit::undo() {
 
 	_update_scrollbars();
 	if (undo_stack_pos->get().type == TextOperation::TYPE_REMOVE) {
-		cursor_set_line(undo_stack_pos->get().to_line);
+		cursor_set_line(undo_stack_pos->get().to_line, false);
 		cursor_set_column(undo_stack_pos->get().to_column);
 		_cancel_code_hint();
 	} else {
-		cursor_set_line(undo_stack_pos->get().from_line);
+		cursor_set_line(undo_stack_pos->get().from_line, false);
 		cursor_set_column(undo_stack_pos->get().from_column);
 	}
 	update();
@@ -6182,7 +6260,7 @@ void TextEdit::redo() {
 	}
 
 	_update_scrollbars();
-	cursor_set_line(undo_stack_pos->get().to_line);
+	cursor_set_line(undo_stack_pos->get().to_line, false);
 	cursor_set_column(undo_stack_pos->get().to_column);
 	undo_stack_pos = undo_stack_pos->next();
 	update();
@@ -7084,6 +7162,8 @@ void TextEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_word_under_cursor"), &TextEdit::get_word_under_cursor);
 	ClassDB::bind_method(D_METHOD("search", "key", "flags", "from_line", "from_column"), &TextEdit::_search_bind);
 
+	ClassDB::bind_method(D_METHOD("has_undo"), &TextEdit::has_undo);
+	ClassDB::bind_method(D_METHOD("has_redo"), &TextEdit::has_redo);
 	ClassDB::bind_method(D_METHOD("undo"), &TextEdit::undo);
 	ClassDB::bind_method(D_METHOD("redo"), &TextEdit::redo);
 	ClassDB::bind_method(D_METHOD("clear_undo_history"), &TextEdit::clear_undo_history);
@@ -7314,6 +7394,7 @@ TextEdit::TextEdit() {
 	smooth_scroll_enabled = false;
 	scrolling = false;
 	minimap_clicked = false;
+	hovering_minimap = false;
 	dragging_minimap = false;
 	can_drag_minimap = false;
 	minimap_scroll_ratio = 0;

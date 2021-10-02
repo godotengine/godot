@@ -2098,22 +2098,36 @@ static PoolVector<uint8_t> _unpack_half_floats(const PoolVector<uint8_t> &array,
 
 			} break;
 			case VS::ARRAY_NORMAL: {
-				if (p_format & VS::ARRAY_COMPRESS_NORMAL) {
+				if (p_format & VS::ARRAY_FLAG_USE_OCTAHEDRAL_COMPRESSION) {
 					src_size[i] = 4;
 					dst_size[i] = 4;
 				} else {
-					src_size[i] = 12;
-					dst_size[i] = 12;
+					if (p_format & VS::ARRAY_COMPRESS_NORMAL) {
+						src_size[i] = 4;
+						dst_size[i] = 4;
+					} else {
+						src_size[i] = 12;
+						dst_size[i] = 12;
+					}
 				}
 
 			} break;
 			case VS::ARRAY_TANGENT: {
-				if (p_format & VS::ARRAY_COMPRESS_TANGENT) {
-					src_size[i] = 4;
-					dst_size[i] = 4;
+				if (p_format & VS::ARRAY_FLAG_USE_OCTAHEDRAL_COMPRESSION) {
+					if (!(p_format & VS::ARRAY_COMPRESS_TANGENT && p_format & VS::ARRAY_COMPRESS_NORMAL)) {
+						src_size[VS::ARRAY_NORMAL] = 8;
+						dst_size[VS::ARRAY_NORMAL] = 8;
+					}
+					src_size[i] = 0;
+					dst_size[i] = 0;
 				} else {
-					src_size[i] = 16;
-					dst_size[i] = 16;
+					if (p_format & VS::ARRAY_COMPRESS_TANGENT) {
+						src_size[i] = 4;
+						dst_size[i] = 4;
+					} else {
+						src_size[i] = 16;
+						dst_size[i] = 16;
+					}
 				}
 
 			} break;
@@ -2240,10 +2254,13 @@ void RasterizerStorageGLES2::mesh_add_surface(RID p_mesh, uint32_t p_format, VS:
 	}
 
 	//bool has_morph = p_blend_shapes.size();
+	bool use_split_stream = GLOBAL_GET("rendering/mesh_storage/split_stream") && !(p_format & VS::ARRAY_FLAG_USE_DYNAMIC_UPDATE);
 
 	Surface::Attrib attribs[VS::ARRAY_MAX];
 
-	int stride = 0;
+	int attributes_base_offset = 0;
+	int attributes_stride = 0;
+	int positions_stride = 0;
 	bool uses_half_float = false;
 
 	for (int i = 0; i < VS::ARRAY_MAX; i++) {
@@ -2256,7 +2273,7 @@ void RasterizerStorageGLES2::mesh_add_surface(RID p_mesh, uint32_t p_format, VS:
 		}
 
 		attribs[i].enabled = true;
-		attribs[i].offset = stride;
+		attribs[i].offset = attributes_base_offset + attributes_stride;
 		attribs[i].integer = false;
 
 		switch (i) {
@@ -2269,41 +2286,71 @@ void RasterizerStorageGLES2::mesh_add_surface(RID p_mesh, uint32_t p_format, VS:
 
 				if (p_format & VS::ARRAY_COMPRESS_VERTEX) {
 					attribs[i].type = _GL_HALF_FLOAT_OES;
-					stride += attribs[i].size * 2;
-					uses_half_float = true;
+					positions_stride += attribs[i].size * 2;
 				} else {
 					attribs[i].type = GL_FLOAT;
-					stride += attribs[i].size * 4;
+					positions_stride += attribs[i].size * 4;
 				}
 
 				attribs[i].normalized = GL_FALSE;
 
+				if (use_split_stream) {
+					attributes_base_offset = positions_stride * p_vertex_count;
+				} else {
+					attributes_base_offset = positions_stride;
+				}
+
 			} break;
 			case VS::ARRAY_NORMAL: {
-				attribs[i].size = 3;
-
-				if (p_format & VS::ARRAY_COMPRESS_NORMAL) {
-					attribs[i].type = GL_BYTE;
-					stride += 4; //pad extra byte
+				if (p_format & VS::ARRAY_FLAG_USE_OCTAHEDRAL_COMPRESSION) {
+					// Always pack normal and tangent into vec4
+					// normal will be xy tangent will be zw
+					// normal will always be oct32 encoded
+					// UNLESS tangent exists and is also compressed
+					// then it will be oct16 encoded along with tangent
 					attribs[i].normalized = GL_TRUE;
+					attribs[i].size = 4;
+					attribs[i].type = GL_SHORT;
+					attributes_stride += 4;
 				} else {
-					attribs[i].type = GL_FLOAT;
-					stride += 12;
-					attribs[i].normalized = GL_FALSE;
+					attribs[i].size = 3;
+
+					if (p_format & VS::ARRAY_COMPRESS_NORMAL) {
+						attribs[i].type = GL_BYTE;
+						attributes_stride += 4; //pad extra byte
+						attribs[i].normalized = GL_TRUE;
+					} else {
+						attribs[i].type = GL_FLOAT;
+						attributes_stride += 12;
+						attribs[i].normalized = GL_FALSE;
+					}
 				}
 
 			} break;
 			case VS::ARRAY_TANGENT: {
-				attribs[i].size = 4;
-
-				if (p_format & VS::ARRAY_COMPRESS_TANGENT) {
-					attribs[i].type = GL_BYTE;
-					stride += 4;
-					attribs[i].normalized = GL_TRUE;
+				if (p_format & VS::ARRAY_FLAG_USE_OCTAHEDRAL_COMPRESSION) {
+					attribs[i].enabled = false;
+					if (p_format & VS::ARRAY_COMPRESS_TANGENT && p_format & VS::ARRAY_COMPRESS_NORMAL) {
+						// normal and tangent will each be oct16 (2 bytes each)
+						// pack into single vec4<GL_BYTE> for memory bandwidth
+						// savings while keeping 4 byte alignment
+						attribs[VS::ARRAY_NORMAL].type = GL_BYTE;
+					} else {
+						// normal and tangent will each be oct32 (4 bytes each)
+						attributes_stride += 4;
+					}
 				} else {
-					attribs[i].type = GL_FLOAT;
-					stride += 16;
-					attribs[i].normalized = GL_FALSE;
+					attribs[i].size = 4;
+
+					if (p_format & VS::ARRAY_COMPRESS_TANGENT) {
+						attribs[i].type = GL_BYTE;
+						attributes_stride += 4;
+						attribs[i].normalized = GL_TRUE;
+					} else {
+						attribs[i].type = GL_FLOAT;
+						attributes_stride += 16;
+						attribs[i].normalized = GL_FALSE;
+					}
 				}
 
 			} break;
@@ -2312,11 +2359,11 @@ void RasterizerStorageGLES2::mesh_add_surface(RID p_mesh, uint32_t p_format, VS:
 
 				if (p_format & VS::ARRAY_COMPRESS_COLOR) {
 					attribs[i].type = GL_UNSIGNED_BYTE;
-					stride += 4;
+					attributes_stride += 4;
 					attribs[i].normalized = GL_TRUE;
 				} else {
 					attribs[i].type = GL_FLOAT;
-					stride += 16;
+					attributes_stride += 16;
 					attribs[i].normalized = GL_FALSE;
 				}
 
@@ -2326,11 +2373,11 @@ void RasterizerStorageGLES2::mesh_add_surface(RID p_mesh, uint32_t p_format, VS:
 
 				if (p_format & VS::ARRAY_COMPRESS_TEX_UV) {
 					attribs[i].type = _GL_HALF_FLOAT_OES;
-					stride += 4;
+					attributes_stride += 4;
 					uses_half_float = true;
 				} else {
 					attribs[i].type = GL_FLOAT;
-					stride += 8;
+					attributes_stride += 8;
 				}
 
 				attribs[i].normalized = GL_FALSE;
@@ -2341,11 +2388,11 @@ void RasterizerStorageGLES2::mesh_add_surface(RID p_mesh, uint32_t p_format, VS:
 
 				if (p_format & VS::ARRAY_COMPRESS_TEX_UV2) {
 					attribs[i].type = _GL_HALF_FLOAT_OES;
-					stride += 4;
+					attributes_stride += 4;
 					uses_half_float = true;
 				} else {
 					attribs[i].type = GL_FLOAT;
-					stride += 8;
+					attributes_stride += 8;
 				}
 				attribs[i].normalized = GL_FALSE;
 
@@ -2355,10 +2402,10 @@ void RasterizerStorageGLES2::mesh_add_surface(RID p_mesh, uint32_t p_format, VS:
 
 				if (p_format & VS::ARRAY_FLAG_USE_16_BIT_BONES) {
 					attribs[i].type = GL_UNSIGNED_SHORT;
-					stride += 8;
+					attributes_stride += 8;
 				} else {
 					attribs[i].type = GL_UNSIGNED_BYTE;
-					stride += 4;
+					attributes_stride += 4;
 				}
 
 				attribs[i].normalized = GL_FALSE;
@@ -2370,11 +2417,11 @@ void RasterizerStorageGLES2::mesh_add_surface(RID p_mesh, uint32_t p_format, VS:
 
 				if (p_format & VS::ARRAY_COMPRESS_WEIGHTS) {
 					attribs[i].type = GL_UNSIGNED_SHORT;
-					stride += 8;
+					attributes_stride += 8;
 					attribs[i].normalized = GL_TRUE;
 				} else {
 					attribs[i].type = GL_FLOAT;
-					stride += 16;
+					attributes_stride += 16;
 					attribs[i].normalized = GL_FALSE;
 				}
 
@@ -2396,13 +2443,21 @@ void RasterizerStorageGLES2::mesh_add_surface(RID p_mesh, uint32_t p_format, VS:
 		}
 	}
 
-	for (int i = 0; i < VS::ARRAY_MAX - 1; i++) {
-		attribs[i].stride = stride;
+	if (use_split_stream) {
+		attribs[VS::ARRAY_VERTEX].stride = positions_stride;
+		for (int i = 1; i < VS::ARRAY_MAX - 1; i++) {
+			attribs[i].stride = attributes_stride;
+		}
+	} else {
+		for (int i = 0; i < VS::ARRAY_MAX - 1; i++) {
+			attribs[i].stride = positions_stride + attributes_stride;
+		}
 	}
 
 	//validate sizes
 	PoolVector<uint8_t> array = p_array;
 
+	int stride = positions_stride + attributes_stride;
 	int array_size = stride * p_vertex_count;
 	int index_array_size = 0;
 	if (array.size() != array_size && array.size() + p_vertex_count * 2 == array_size) {
@@ -2505,24 +2560,11 @@ void RasterizerStorageGLES2::mesh_add_surface(RID p_mesh, uint32_t p_format, VS:
 		}
 
 		// TODO generate wireframes
-	}
 
-	{
-		// blend shapes
-
-		for (int i = 0; i < p_blend_shapes.size(); i++) {
-			Surface::BlendShape mt;
-
-			PoolVector<uint8_t>::Read vr = p_blend_shapes[i].read();
-
-			surface->total_data_size += array_size;
-
-			glGenBuffers(1, &mt.vertex_id);
-			glBindBuffer(GL_ARRAY_BUFFER, mt.vertex_id);
-			glBufferData(GL_ARRAY_BUFFER, array_size, vr.ptr(), GL_STATIC_DRAW);
-			glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-			surface->blend_shapes.push_back(mt);
+		// Make one blend shape buffer per surface
+		{
+			surface->blend_shape_buffer_size = 0;
+			glGenBuffers(1, &surface->blend_shape_buffer_id);
 		}
 	}
 
@@ -2541,6 +2583,9 @@ void RasterizerStorageGLES2::mesh_set_blend_shape_count(RID p_mesh, int p_amount
 
 	mesh->blend_shape_count = p_amount;
 	mesh->instance_change_notify(true, false);
+	if (!mesh->update_list.in_list()) {
+		blend_shapes_update_list.add(&mesh->update_list);
+	}
 }
 
 int RasterizerStorageGLES2::mesh_get_blend_shape_count(RID p_mesh) const {
@@ -2554,6 +2599,9 @@ void RasterizerStorageGLES2::mesh_set_blend_shape_mode(RID p_mesh, VS::BlendShap
 	ERR_FAIL_COND(!mesh);
 
 	mesh->blend_shape_mode = p_mode;
+	if (!mesh->update_list.in_list()) {
+		blend_shapes_update_list.add(&mesh->update_list);
+	}
 }
 
 VS::BlendShapeMode RasterizerStorageGLES2::mesh_get_blend_shape_mode(RID p_mesh) const {
@@ -2561,6 +2609,23 @@ VS::BlendShapeMode RasterizerStorageGLES2::mesh_get_blend_shape_mode(RID p_mesh)
 	ERR_FAIL_COND_V(!mesh, VS::BLEND_SHAPE_MODE_NORMALIZED);
 
 	return mesh->blend_shape_mode;
+}
+
+void RasterizerStorageGLES2::mesh_set_blend_shape_values(RID p_mesh, PoolVector<float> p_values) {
+	Mesh *mesh = mesh_owner.getornull(p_mesh);
+	ERR_FAIL_COND(!mesh);
+
+	mesh->blend_shape_values = p_values;
+	if (!mesh->update_list.in_list()) {
+		blend_shapes_update_list.add(&mesh->update_list);
+	}
+}
+
+PoolVector<float> RasterizerStorageGLES2::mesh_get_blend_shape_values(RID p_mesh) const {
+	const Mesh *mesh = mesh_owner.getornull(p_mesh);
+	ERR_FAIL_COND_V(!mesh, PoolVector<float>());
+
+	return mesh->blend_shape_values;
 }
 
 void RasterizerStorageGLES2::mesh_surface_update_region(RID p_mesh, int p_surface, int p_offset, const PoolVector<uint8_t> &p_data) {
@@ -2701,9 +2766,7 @@ void RasterizerStorageGLES2::mesh_remove_surface(RID p_mesh, int p_surface) {
 		glDeleteBuffers(1, &surface->index_id);
 	}
 
-	for (int i = 0; i < surface->blend_shapes.size(); i++) {
-		glDeleteBuffers(1, &surface->blend_shapes[i].vertex_id);
-	}
+	glDeleteBuffers(1, &surface->blend_shape_buffer_id);
 
 	info.vertex_mem -= surface->total_data_size;
 
@@ -3685,23 +3748,233 @@ void RasterizerStorageGLES2::skeleton_set_base_transform_2d(RID p_skeleton, cons
 	skeleton->base_transform_2d = p_base_transform;
 }
 
-void RasterizerStorageGLES2::_update_blend_shape_transform_buffer(const PoolVector<float> &p_data, size_t p_size) {
-	glBindBuffer(GL_ARRAY_BUFFER, resources.blend_shape_transform_buffer);
+void RasterizerStorageGLES2::update_dirty_blend_shapes() {
+	while (blend_shapes_update_list.first()) {
+		Mesh *mesh = blend_shapes_update_list.first()->self();
+		for (int is = 0; is < mesh->surfaces.size(); is++) {
+			RasterizerStorageGLES2::Surface *s = mesh->surfaces[is];
+			if (!s->blend_shape_data.empty()) {
+				PoolVector<float> &transform_buffer = resources.blend_shape_transform_cpu_buffer;
+				size_t buffer_size = s->array_len * 8 * 4;
+				if (resources.blend_shape_transform_cpu_buffer_size < buffer_size) {
+					resources.blend_shape_transform_cpu_buffer_size = buffer_size;
+					transform_buffer.resize(buffer_size);
+				}
 
-	uint32_t buffer_size = p_size * sizeof(float);
+				PoolVector<uint8_t>::Read read = s->data.read();
+				PoolVector<float>::Write write = transform_buffer.write();
+				float base_weight = 1.0;
 
-	if (p_size > resources.blend_shape_transform_buffer_size) {
-		// new requested buffer is bigger, so resizing the GPU buffer
+				if (s->mesh->blend_shape_mode == VS::BLEND_SHAPE_MODE_NORMALIZED) {
+					for (int ti = 0; ti < mesh->blend_shape_values.size(); ti++) {
+						base_weight -= mesh->blend_shape_values.get(ti);
+					}
+				}
 
-		resources.blend_shape_transform_buffer_size = p_size;
+				for (int i = 0; i < VS::ARRAY_MAX - 1; i++) {
+					if (s->attribs[i].enabled) {
+						// Read all attributes
+						for (int j = 0; j < s->array_len; j++) {
+							size_t offset = s->attribs[i].offset + (j * s->attribs[i].stride);
+							const float *rd = (const float *)(read.ptr() + offset);
 
-		glBufferData(GL_ARRAY_BUFFER, buffer_size, p_data.read().ptr(), GL_DYNAMIC_DRAW);
-	} else {
-		// this may not be best, it could be better to use glBufferData in both cases.
-		buffer_orphan_and_upload(resources.blend_shape_transform_buffer_size, 0, buffer_size, p_data.read().ptr(), GL_ARRAY_BUFFER, true);
+							size_t offset_write = i * 4 + (j * 8 * 4);
+							float *wr = (float *)(write.ptr() + offset_write);
+
+							// Set the base
+							switch (i) {
+								case VS::ARRAY_VERTEX: {
+									if (s->format & VS::ARRAY_COMPRESS_VERTEX) {
+										wr[0] = Math::halfptr_to_float(&((uint16_t *)rd)[0]) * base_weight;
+										wr[1] = Math::halfptr_to_float(&((uint16_t *)rd)[1]) * base_weight;
+										wr[2] = Math::halfptr_to_float(&((uint16_t *)rd)[2]) * base_weight;
+									} else {
+										float a[3] = { 0 };
+										a[0] = wr[0] = rd[0] * base_weight;
+										a[1] = wr[1] = rd[1] * base_weight;
+										a[2] = wr[2] = rd[2] * base_weight;
+										memcpy(&write[offset_write], a, sizeof(float) * s->attribs[i].size);
+									}
+								} break;
+								case VS::ARRAY_NORMAL: {
+									if (s->format & VS::ARRAY_COMPRESS_NORMAL) {
+										wr[0] = (((int8_t *)rd)[0] / 127.0) * base_weight;
+										wr[1] = (((int8_t *)rd)[1] / 127.0) * base_weight;
+										wr[2] = (((int8_t *)rd)[2] / 127.0) * base_weight;
+									} else {
+										wr[0] = rd[0] * base_weight;
+										wr[1] = rd[1] * base_weight;
+										wr[2] = rd[2] * base_weight;
+									}
+								} break;
+								case VS::ARRAY_TANGENT: {
+									if (s->format & VS::ARRAY_COMPRESS_TANGENT) {
+										wr[0] = (((int8_t *)rd)[0] / 127.0) * base_weight;
+										wr[1] = (((int8_t *)rd)[1] / 127.0) * base_weight;
+										wr[2] = (((int8_t *)rd)[2] / 127.0) * base_weight;
+										wr[3] = (((int8_t *)rd)[3] / 127.0) * base_weight;
+									} else {
+										wr[0] = rd[0] * base_weight;
+										wr[1] = rd[1] * base_weight;
+										wr[2] = rd[2] * base_weight;
+										wr[3] = rd[3] * base_weight;
+									}
+								} break;
+								case VS::ARRAY_COLOR: {
+									if (s->format & VS::ARRAY_COMPRESS_COLOR) {
+										wr[0] = (((uint8_t *)rd)[0] / 255.0) * base_weight;
+										wr[1] = (((uint8_t *)rd)[1] / 255.0) * base_weight;
+										wr[2] = (((uint8_t *)rd)[2] / 255.0) * base_weight;
+										wr[3] = (((uint8_t *)rd)[3] / 255.0) * base_weight;
+									} else {
+										wr[0] = rd[0] * base_weight;
+										wr[1] = rd[1] * base_weight;
+										wr[2] = rd[2] * base_weight;
+										wr[3] = rd[3] * base_weight;
+									}
+								} break;
+								case VS::ARRAY_TEX_UV: {
+									if (s->format & VS::ARRAY_COMPRESS_TEX_UV) {
+										wr[0] = Math::halfptr_to_float(&((uint16_t *)rd)[0]) * base_weight;
+										wr[1] = Math::halfptr_to_float(&((uint16_t *)rd)[1]) * base_weight;
+									} else {
+										wr[0] = rd[0] * base_weight;
+										wr[1] = rd[1] * base_weight;
+									}
+								} break;
+								case VS::ARRAY_TEX_UV2: {
+									if (s->format & VS::ARRAY_COMPRESS_TEX_UV2) {
+										wr[0] = Math::halfptr_to_float(&((uint16_t *)rd)[0]) * base_weight;
+										wr[1] = Math::halfptr_to_float(&((uint16_t *)rd)[1]) * base_weight;
+									} else {
+										wr[0] = rd[0] * base_weight;
+										wr[1] = rd[1] * base_weight;
+									}
+								} break;
+								case VS::ARRAY_WEIGHTS: {
+									if (s->format & VS::ARRAY_COMPRESS_WEIGHTS) {
+										wr[0] = (((uint16_t *)rd)[0] / 65535.0) * base_weight;
+										wr[1] = (((uint16_t *)rd)[1] / 65535.0) * base_weight;
+										wr[2] = (((uint16_t *)rd)[2] / 65535.0) * base_weight;
+										wr[3] = (((uint16_t *)rd)[3] / 65535.0) * base_weight;
+									} else {
+										wr[0] = rd[0] * base_weight;
+										wr[1] = rd[1] * base_weight;
+										wr[2] = rd[2] * base_weight;
+										wr[3] = rd[3] * base_weight;
+									}
+								} break;
+							}
+
+							// Add all blend shapes
+							for (int ti = 0; ti < mesh->blend_shape_values.size(); ti++) {
+								PoolVector<uint8_t>::Read blend = s->blend_shape_data[ti].read();
+								const float *br = (const float *)(blend.ptr() + offset);
+
+								float weight = mesh->blend_shape_values.get(ti);
+								if (Math::is_zero_approx(weight)) {
+									continue;
+								}
+
+								switch (i) {
+									case VS::ARRAY_VERTEX: {
+										if (s->format & VS::ARRAY_COMPRESS_VERTEX) {
+											wr[0] += Math::halfptr_to_float(&((uint16_t *)br)[0]) * weight;
+											wr[1] += Math::halfptr_to_float(&((uint16_t *)br)[1]) * weight;
+											wr[2] += Math::halfptr_to_float(&((uint16_t *)br)[2]) * weight;
+										} else {
+											wr[0] += br[0] * weight;
+											wr[1] += br[1] * weight;
+											wr[2] += br[2] * weight;
+										}
+									} break;
+									case VS::ARRAY_NORMAL: {
+										if (s->format & VS::ARRAY_COMPRESS_NORMAL) {
+											wr[0] += (float(((int8_t *)br)[0]) / 127.0) * weight;
+											wr[1] += (float(((int8_t *)br)[1]) / 127.0) * weight;
+											wr[2] += (float(((int8_t *)br)[2]) / 127.0) * weight;
+										} else {
+											wr[0] += br[0] * weight;
+											wr[1] += br[1] * weight;
+											wr[2] += br[2] * weight;
+										}
+									} break;
+									case VS::ARRAY_TANGENT: {
+										if (s->format & VS::ARRAY_COMPRESS_TANGENT) {
+											wr[0] += (float(((int8_t *)br)[0]) / 127.0) * weight;
+											wr[1] += (float(((int8_t *)br)[1]) / 127.0) * weight;
+											wr[2] += (float(((int8_t *)br)[2]) / 127.0) * weight;
+											wr[3] = (float(((int8_t *)br)[3]) / 127.0);
+										} else {
+											wr[0] += br[0] * weight;
+											wr[1] += br[1] * weight;
+											wr[2] += br[2] * weight;
+											wr[3] = br[3];
+										}
+									} break;
+									case VS::ARRAY_COLOR: {
+										if (s->format & VS::ARRAY_COMPRESS_COLOR) {
+											wr[0] += (((uint8_t *)br)[0] / 255.0) * weight;
+											wr[1] += (((uint8_t *)br)[1] / 255.0) * weight;
+											wr[2] += (((uint8_t *)br)[2] / 255.0) * weight;
+											wr[3] += (((uint8_t *)br)[3] / 255.0) * weight;
+										} else {
+											wr[0] += br[0] * weight;
+											wr[1] += br[1] * weight;
+											wr[2] += br[2] * weight;
+											wr[3] += br[3] * weight;
+										}
+									} break;
+									case VS::ARRAY_TEX_UV: {
+										if (s->format & VS::ARRAY_COMPRESS_TEX_UV) {
+											wr[0] += Math::halfptr_to_float(&((uint16_t *)br)[0]) * weight;
+											wr[1] += Math::halfptr_to_float(&((uint16_t *)br)[1]) * weight;
+										} else {
+											wr[0] += br[0] * weight;
+											wr[1] += br[1] * weight;
+										}
+									} break;
+									case VS::ARRAY_TEX_UV2: {
+										if (s->format & VS::ARRAY_COMPRESS_TEX_UV2) {
+											wr[0] += Math::halfptr_to_float(&((uint16_t *)br)[0]) * weight;
+											wr[1] += Math::halfptr_to_float(&((uint16_t *)br)[1]) * weight;
+										} else {
+											wr[0] += br[0] * weight;
+											wr[1] += br[1] * weight;
+										}
+									} break;
+									case VS::ARRAY_WEIGHTS: {
+										if (s->format & VS::ARRAY_COMPRESS_WEIGHTS) {
+											wr[0] += (((uint16_t *)br)[0] / 65535.0) * weight;
+											wr[1] += (((uint16_t *)br)[1] / 65535.0) * weight;
+											wr[2] += (((uint16_t *)br)[2] / 65535.0) * weight;
+											wr[3] += (((uint16_t *)br)[3] / 65535.0) * weight;
+										} else {
+											wr[0] += br[0] * weight;
+											wr[1] += br[1] * weight;
+											wr[2] += br[2] * weight;
+											wr[3] += br[3] * weight;
+										}
+									} break;
+								}
+							}
+						}
+					}
+				}
+
+				// Store size and send changed blend shape render to GL
+				glBindBuffer(GL_ARRAY_BUFFER, s->blend_shape_buffer_id);
+				if (buffer_size > s->blend_shape_buffer_size) {
+					s->blend_shape_buffer_size = buffer_size;
+					glBufferData(GL_ARRAY_BUFFER, buffer_size * sizeof(float), transform_buffer.read().ptr(), GL_DYNAMIC_DRAW);
+				} else {
+					buffer_orphan_and_upload(s->blend_shape_buffer_size, 0, buffer_size * sizeof(float), transform_buffer.read().ptr(), GL_ARRAY_BUFFER, true);
+				}
+				glBindBuffer(GL_ARRAY_BUFFER, 0);
+			}
+		}
+		blend_shapes_update_list.remove(blend_shapes_update_list.first());
 	}
-
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
 void RasterizerStorageGLES2::_update_skeleton_transform_buffer(const PoolVector<float> &p_data, size_t p_size) {
@@ -5367,10 +5640,21 @@ void RasterizerStorageGLES2::render_target_set_use_debanding(RID p_render_target
 	ERR_FAIL_COND(!rt);
 
 	if (p_debanding) {
-		WARN_PRINT_ONCE("Debanding is not supported in the GLES2 backend. Switch to the GLES3 backend and make sure HDR is enabled.");
+		WARN_PRINT_ONCE("Debanding is not supported in the GLES2 backend. To use debanding, switch to the GLES3 backend and make sure HDR is enabled.");
 	}
 
 	rt->use_debanding = p_debanding;
+}
+
+void RasterizerStorageGLES2::render_target_set_sharpen_intensity(RID p_render_target, float p_intensity) {
+	RenderTarget *rt = render_target_owner.getornull(p_render_target);
+	ERR_FAIL_COND(!rt);
+
+	if (p_intensity >= 0.001) {
+		WARN_PRINT_ONCE("Sharpening is not supported in the GLES2 backend. To use sharpening, switch to the GLES3 backend.");
+	}
+
+	rt->sharpen_intensity = p_intensity;
 }
 
 /* CANVAS SHADOW */
@@ -6165,10 +6449,10 @@ void RasterizerStorageGLES2::initialize() {
 		resources.skeleton_transform_buffer_size = 0;
 		glGenBuffers(1, &resources.skeleton_transform_buffer);
 	}
-	// blend shape buffer
+
+	// blend buffer
 	{
-		resources.blend_shape_transform_buffer_size = 0;
-		glGenBuffers(1, &resources.blend_shape_transform_buffer);
+		resources.blend_shape_transform_cpu_buffer_size = 0;
 	}
 
 	// radical inverse vdc cache texture
@@ -6249,6 +6533,7 @@ void RasterizerStorageGLES2::_copy_screen() {
 void RasterizerStorageGLES2::update_dirty_resources() {
 	update_dirty_shaders();
 	update_dirty_materials();
+	update_dirty_blend_shapes();
 	update_dirty_skeletons();
 	update_dirty_multimeshes();
 	update_dirty_captures();

@@ -392,6 +392,7 @@ private:
 	bool smooth_scroll_enabled;
 	bool scrolling;
 	bool dragging_selection;
+	bool hovering_minimap;
 	bool dragging_minimap;
 	bool can_drag_minimap;
 	bool minimap_clicked;
@@ -403,6 +404,7 @@ private:
 	String highlighted_word;
 
 	uint64_t last_dblclk;
+	Vector2 last_dblclk_pos;
 
 	Timer *idle_detect;
 	Timer *click_select_held;
@@ -475,6 +477,7 @@ private:
 	void _update_selection_mode_word();
 	void _update_selection_mode_line();
 
+	void _update_minimap_hover();
 	void _update_minimap_click();
 	void _update_minimap_drag();
 	void _scroll_up(real_t p_delta);
@@ -703,6 +706,8 @@ public:
 
 	bool search(const String &p_key, uint32_t p_search_flags, int p_from_line, int p_from_column, int &r_line, int &r_column) const;
 
+	bool has_undo() const;
+	bool has_redo() const;
 	void undo();
 	void redo();
 	void clear_undo_history();

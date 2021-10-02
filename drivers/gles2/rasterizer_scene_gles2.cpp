@@ -1385,239 +1385,6 @@ bool RasterizerSceneGLES2::_setup_material(RasterizerStorageGLES2::Material *p_m
 	return shader_rebind;
 }
 
-void static _calculate_blend_shape_buffer(RasterizerSceneGLES2::RenderList::Element *p_element, PoolVector<float> &transform_buffer) {
-	RasterizerStorageGLES2::Surface *s = static_cast<RasterizerStorageGLES2::Surface *>(p_element->geometry);
-	if (!s->blend_shape_data.empty()) {
-		if (transform_buffer.size() < s->array_byte_size) {
-			transform_buffer.resize(s->array_byte_size);
-		}
-		for (int i = 0; i < VS::ARRAY_MAX - 1; i++) {
-			if (s->attribs[i].enabled) {
-				const float *p_weights = p_element->instance->blend_values.ptr();
-
-				PoolVector<float>::Write write = transform_buffer.write();
-				PoolVector<uint8_t>::Read read = s->data.read();
-				float attrib_array[4] = { 0.0 };
-
-				// Read all attributes
-				for (int j = 0; j < s->array_len; j++) {
-					size_t offset = s->attribs[i].offset + (j * s->attribs[i].stride);
-					float base_weight = 1.0;
-
-					if (s->mesh->blend_shape_mode == VS::BLEND_SHAPE_MODE_NORMALIZED) {
-						for (int ti = 0; ti < s->blend_shape_data.size(); ti++) {
-							base_weight -= p_weights[ti];
-						}
-					}
-
-					// Set the base
-					switch (i) {
-						case VS::ARRAY_VERTEX: {
-							if (s->format & VS::ARRAY_COMPRESS_VERTEX) {
-								const uint16_t *v = (const uint16_t *)(read.ptr() + offset);
-								attrib_array[0] = Math::halfptr_to_float(&v[0]) * base_weight;
-								attrib_array[1] = Math::halfptr_to_float(&v[1]) * base_weight;
-								attrib_array[2] = Math::halfptr_to_float(&v[2]) * base_weight;
-							} else {
-								const float *v = (const float *)(read.ptr() + offset);
-								attrib_array[0] = v[0] * base_weight;
-								attrib_array[1] = v[1] * base_weight;
-								attrib_array[2] = v[2] * base_weight;
-							}
-						} break;
-						case VS::ARRAY_NORMAL: {
-							if (s->format & VS::ARRAY_COMPRESS_NORMAL) {
-								const int8_t *v = (const int8_t *)(read.ptr() + offset);
-								attrib_array[0] = (v[0] / 127.0) * base_weight;
-								attrib_array[1] = (v[1] / 127.0) * base_weight;
-								attrib_array[2] = (v[2] / 127.0) * base_weight;
-							} else {
-								const float *v = (const float *)(read.ptr() + offset);
-								attrib_array[0] = v[0] * base_weight;
-								attrib_array[1] = v[1] * base_weight;
-								attrib_array[2] = v[2] * base_weight;
-							}
-						} break;
-						case VS::ARRAY_TANGENT: {
-							if (s->format & VS::ARRAY_COMPRESS_TANGENT) {
-								const int8_t *v = (const int8_t *)(read.ptr() + offset);
-								attrib_array[0] = (v[0] / 127.0) * base_weight;
-								attrib_array[1] = (v[1] / 127.0) * base_weight;
-								attrib_array[2] = (v[2] / 127.0) * base_weight;
-								attrib_array[3] = (v[3] / 127.0) * base_weight;
-							} else {
-								const float *v = (const float *)(read.ptr() + offset);
-								attrib_array[0] = v[0] * base_weight;
-								attrib_array[1] = v[1] * base_weight;
-								attrib_array[2] = v[2] * base_weight;
-								attrib_array[3] = v[3] * base_weight;
-							}
-						} break;
-						case VS::ARRAY_COLOR: {
-							if (s->format & VS::ARRAY_COMPRESS_COLOR) {
-								const uint8_t *v = (const uint8_t *)(read.ptr() + offset);
-								attrib_array[0] = (v[0] / 255.0) * base_weight;
-								attrib_array[1] = (v[1] / 255.0) * base_weight;
-								attrib_array[2] = (v[2] / 255.0) * base_weight;
-								attrib_array[3] = (v[3] / 255.0) * base_weight;
-							} else {
-								const float *v = (const float *)(read.ptr() + offset);
-								attrib_array[0] = v[0] * base_weight;
-								attrib_array[1] = v[1] * base_weight;
-								attrib_array[2] = v[2] * base_weight;
-								attrib_array[3] = v[3] * base_weight;
-							}
-						} break;
-						case VS::ARRAY_TEX_UV: {
-							if (s->format & VS::ARRAY_COMPRESS_TEX_UV) {
-								const uint16_t *v = (const uint16_t *)(read.ptr() + offset);
-								attrib_array[0] = Math::halfptr_to_float(&v[0]) * base_weight;
-								attrib_array[1] = Math::halfptr_to_float(&v[1]) * base_weight;
-							} else {
-								const float *v = (const float *)(read.ptr() + offset);
-								attrib_array[0] = v[0] * base_weight;
-								attrib_array[1] = v[1] * base_weight;
-							}
-						} break;
-						case VS::ARRAY_TEX_UV2: {
-							if (s->format & VS::ARRAY_COMPRESS_TEX_UV2) {
-								const uint16_t *v = (const uint16_t *)(read.ptr() + offset);
-								attrib_array[0] = Math::halfptr_to_float(&v[0]) * base_weight;
-								attrib_array[1] = Math::halfptr_to_float(&v[1]) * base_weight;
-							} else {
-								const float *v = (const float *)(read.ptr() + offset);
-								attrib_array[0] = v[0] * base_weight;
-								attrib_array[1] = v[1] * base_weight;
-							}
-						} break;
-						case VS::ARRAY_WEIGHTS: {
-							if (s->format & VS::ARRAY_COMPRESS_WEIGHTS) {
-								const uint16_t *v = (const uint16_t *)(read.ptr() + offset);
-								attrib_array[0] = (v[0] / 65535.0) * base_weight;
-								attrib_array[1] = (v[1] / 65535.0) * base_weight;
-								attrib_array[2] = (v[2] / 65535.0) * base_weight;
-								attrib_array[3] = (v[3] / 65535.0) * base_weight;
-							} else {
-								const float *v = (const float *)(read.ptr() + offset);
-								attrib_array[0] = v[0] * base_weight;
-								attrib_array[1] = v[1] * base_weight;
-								attrib_array[2] = v[2] * base_weight;
-								attrib_array[3] = v[3] * base_weight;
-							}
-						} break;
-					}
-
-					// Add all blend shapes
-					for (int ti = 0; ti < s->blend_shape_data.size(); ti++) {
-						PoolVector<uint8_t>::Read blend = s->blend_shape_data[ti].read();
-						float weight = p_weights[ti];
-						if (Math::is_zero_approx(weight)) {
-							continue;
-						}
-
-						switch (i) {
-							case VS::ARRAY_VERTEX: {
-								if (s->format & VS::ARRAY_COMPRESS_VERTEX) {
-									const uint16_t *v = (const uint16_t *)(blend.ptr() + offset);
-									attrib_array[0] += Math::halfptr_to_float(&v[0]) * weight;
-									attrib_array[1] += Math::halfptr_to_float(&v[1]) * weight;
-									attrib_array[2] += Math::halfptr_to_float(&v[2]) * weight;
-								} else {
-									const float *v = (const float *)(blend.ptr() + offset);
-									attrib_array[0] += v[0] * weight;
-									attrib_array[1] += v[1] * weight;
-									attrib_array[2] += v[2] * weight;
-								}
-							} break;
-							case VS::ARRAY_NORMAL: {
-								if (s->format & VS::ARRAY_COMPRESS_NORMAL) {
-									const int8_t *v = (const int8_t *)(blend.ptr() + offset);
-									attrib_array[0] += (float(v[0]) / 127.0) * weight;
-									attrib_array[1] += (float(v[1]) / 127.0) * weight;
-									attrib_array[2] += (float(v[2]) / 127.0) * weight;
-								} else {
-									const float *v = (const float *)(blend.ptr() + offset);
-									attrib_array[0] += v[0] * weight;
-									attrib_array[1] += v[1] * weight;
-									attrib_array[2] += v[2] * weight;
-								}
-							} break;
-							case VS::ARRAY_TANGENT: {
-								if (s->format & VS::ARRAY_COMPRESS_TANGENT) {
-									const int8_t *v = (const int8_t *)(read.ptr() + offset);
-									attrib_array[0] += (float(v[0]) / 127.0) * weight;
-									attrib_array[1] += (float(v[1]) / 127.0) * weight;
-									attrib_array[2] += (float(v[2]) / 127.0) * weight;
-									attrib_array[3] = (float(v[3]) / 127.0);
-								} else {
-									const float *v = (const float *)(read.ptr() + offset);
-									attrib_array[0] += v[0] * weight;
-									attrib_array[1] += v[1] * weight;
-									attrib_array[2] += v[2] * weight;
-									attrib_array[3] = v[3];
-								}
-							} break;
-							case VS::ARRAY_COLOR: {
-								if (s->format & VS::ARRAY_COMPRESS_COLOR) {
-									const uint8_t *v = (const uint8_t *)(blend.ptr() + offset);
-									attrib_array[0] += (v[0] / 255.0) * weight;
-									attrib_array[1] += (v[1] / 255.0) * weight;
-									attrib_array[2] += (v[2] / 255.0) * weight;
-									attrib_array[3] += (v[3] / 255.0) * weight;
-								} else {
-									const float *v = (const float *)(blend.ptr() + offset);
-									attrib_array[0] += v[0] * weight;
-									attrib_array[1] += v[1] * weight;
-									attrib_array[2] += v[2] * weight;
-									attrib_array[3] += v[3] * weight;
-								}
-							} break;
-							case VS::ARRAY_TEX_UV: {
-								if (s->format & VS::ARRAY_COMPRESS_TEX_UV) {
-									const uint16_t *v = (const uint16_t *)(blend.ptr() + offset);
-									attrib_array[0] += Math::halfptr_to_float(&v[0]) * weight;
-									attrib_array[1] += Math::halfptr_to_float(&v[1]) * weight;
-								} else {
-									const float *v = (const float *)(blend.ptr() + offset);
-									attrib_array[0] += v[0] * weight;
-									attrib_array[1] += v[1] * weight;
-								}
-							} break;
-							case VS::ARRAY_TEX_UV2: {
-								if (s->format & VS::ARRAY_COMPRESS_TEX_UV2) {
-									const uint16_t *v = (const uint16_t *)(blend.ptr() + offset);
-									attrib_array[0] += Math::halfptr_to_float(&v[0]) * weight;
-									attrib_array[1] += Math::halfptr_to_float(&v[1]) * weight;
-								} else {
-									const float *v = (const float *)(blend.ptr() + offset);
-									attrib_array[0] += v[0] * weight;
-									attrib_array[1] += v[1] * weight;
-								}
-							} break;
-							case VS::ARRAY_WEIGHTS: {
-								if (s->format & VS::ARRAY_COMPRESS_WEIGHTS) {
-									const uint16_t *v = (const uint16_t *)(blend.ptr() + offset);
-									attrib_array[0] += (v[0] / 65535.0) * weight;
-									attrib_array[1] += (v[1] / 65535.0) * weight;
-									attrib_array[2] += (v[2] / 65535.0) * weight;
-									attrib_array[3] += (v[3] / 65535.0) * weight;
-								} else {
-									const float *v = (const float *)(blend.ptr() + offset);
-									attrib_array[0] += v[0] * weight;
-									attrib_array[1] += v[1] * weight;
-									attrib_array[2] += v[2] * weight;
-									attrib_array[3] += v[3] * weight;
-								}
-							} break;
-						}
-					}
-					memcpy(&write[offset], attrib_array, sizeof(float) * s->attribs[i].size);
-				}
-			}
-		}
-	}
-}
-
 void RasterizerSceneGLES2::_setup_geometry(RenderList::Element *p_element, RasterizerStorageGLES2::Skeleton *p_skeleton) {
 	switch (p_element->instance->base_type) {
 		case VS::INSTANCE_MESH: {
@@ -1627,25 +1394,16 @@ void RasterizerSceneGLES2::_setup_geometry(RenderList::Element *p_element, Raste
 				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, s->index_id);
 			}
 
-			if (!s->blend_shape_data.empty()) {
-				_calculate_blend_shape_buffer(p_element, storage->resources.blend_shapes_transform_cpu_buffer);
-				storage->_update_blend_shape_transform_buffer(storage->resources.blend_shapes_transform_cpu_buffer, s->array_byte_size);
-			}
-
 			for (int i = 0; i < VS::ARRAY_MAX - 1; i++) {
 				if (s->attribs[i].enabled) {
-					if (!s->blend_shape_data.empty() && (i != VS::ARRAY_BONES)) {
-						glBindBuffer(GL_ARRAY_BUFFER, storage->resources.blend_shape_transform_buffer);
+					glEnableVertexAttribArray(i);
 
-						glEnableVertexAttribArray(i);
-
-						glVertexAttribPointer(s->attribs[i].index, s->attribs[i].size, GL_FLOAT, GL_FALSE, s->attribs[i].stride * sizeof(float), CAST_INT_TO_UCHAR_PTR(s->attribs[i].offset * sizeof(float)));
+					if (!s->blend_shape_data.empty() && i != VS::ARRAY_BONES && s->blend_shape_buffer_size > 0) {
+						glBindBuffer(GL_ARRAY_BUFFER, s->blend_shape_buffer_id);
+						glVertexAttribPointer(s->attribs[i].index, s->attribs[i].size, GL_FLOAT, GL_FALSE, 8 * 4 * sizeof(float), CAST_INT_TO_UCHAR_PTR(i * 4 * sizeof(float)));
 
 					} else {
 						glBindBuffer(GL_ARRAY_BUFFER, s->vertex_id);
-
-						glEnableVertexAttribArray(i);
-
 						glVertexAttribPointer(s->attribs[i].index, s->attribs[i].size, s->attribs[i].type, s->attribs[i].normalized, s->attribs[i].stride, CAST_INT_TO_UCHAR_PTR(s->attribs[i].offset));
 					}
 				} else {
@@ -2417,6 +2175,8 @@ void RasterizerSceneGLES2::_render_render_list(RenderList::Element **p_elements,
 	RasterizerStorageGLES2::Skeleton *prev_skeleton = nullptr;
 	RasterizerStorageGLES2::GeometryOwner *prev_owner = nullptr;
 
+	bool prev_octahedral_compression = false;
+
 	Transform view_transform_inverse = p_view_transform.inverse();
 	CameraMatrix projection_inverse = p_projection.inverse();
 
@@ -2666,6 +2426,12 @@ void RasterizerSceneGLES2::_render_render_list(RenderList::Element **p_elements,
 			storage->info.render.surface_switch_count++;
 		}
 
+		bool octahedral_compression = ((RasterizerStorageGLES2::Surface *)e->geometry)->format & VisualServer::ArrayFormat::ARRAY_FLAG_USE_OCTAHEDRAL_COMPRESSION;
+		if (octahedral_compression != prev_octahedral_compression) {
+			state.scene_shader.set_conditional(SceneShaderGLES2::ENABLE_OCTAHEDRAL_COMPRESSION, octahedral_compression);
+			rebind = true;
+		}
+
 		bool shader_rebind = false;
 		if (rebind || material != prev_material) {
 			storage->info.render.material_switch_count++;
@@ -2783,6 +2549,7 @@ void RasterizerSceneGLES2::_render_render_list(RenderList::Element **p_elements,
 		prev_material = material;
 		prev_skeleton = skeleton;
 		prev_instancing = instancing;
+		prev_octahedral_compression = octahedral_compression;
 		prev_light = light;
 		prev_refprobe_1 = refprobe_1;
 		prev_refprobe_2 = refprobe_2;
@@ -2791,6 +2558,7 @@ void RasterizerSceneGLES2::_render_render_list(RenderList::Element **p_elements,
 	}
 
 	_setup_light_type(nullptr, nullptr); //clear light stuff
+	state.scene_shader.set_conditional(SceneShaderGLES2::ENABLE_OCTAHEDRAL_COMPRESSION, false);
 	state.scene_shader.set_conditional(SceneShaderGLES2::USE_SKELETON, false);
 	state.scene_shader.set_conditional(SceneShaderGLES2::SHADELESS, false);
 	state.scene_shader.set_conditional(SceneShaderGLES2::BASE_PASS, false);
@@ -2887,6 +2655,11 @@ void RasterizerSceneGLES2::_draw_sky(RasterizerStorageGLES2::Sky *p_sky, const C
 	storage->shaders.copy.set_conditional(CopyShaderGLES2::USE_CUBEMAP, false);
 	storage->shaders.copy.set_conditional(CopyShaderGLES2::USE_COPY_SECTION, false);
 	storage->shaders.copy.set_conditional(CopyShaderGLES2::USE_CUSTOM_ALPHA, false);
+	if (storage->frame.current_rt) {
+		storage->shaders.copy.set_conditional(CopyShaderGLES2::OUTPUT_LINEAR, storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_KEEP_3D_LINEAR]);
+	} else {
+		storage->shaders.copy.set_conditional(CopyShaderGLES2::OUTPUT_LINEAR, false);
+	}
 	storage->shaders.copy.bind();
 	storage->shaders.copy.set_uniform(CopyShaderGLES2::MULTIPLIER, p_energy);
 
@@ -2910,6 +2683,7 @@ void RasterizerSceneGLES2::_draw_sky(RasterizerStorageGLES2::Sky *p_sky, const C
 	storage->shaders.copy.set_conditional(CopyShaderGLES2::USE_PANORAMA, false);
 	storage->shaders.copy.set_conditional(CopyShaderGLES2::USE_MULTIPLIER, false);
 	storage->shaders.copy.set_conditional(CopyShaderGLES2::USE_CUBEMAP, false);
+	storage->shaders.copy.set_conditional(CopyShaderGLES2::OUTPUT_LINEAR, false);
 }
 
 void RasterizerSceneGLES2::_post_process(Environment *env, const CameraMatrix &p_cam_projection) {
@@ -2932,21 +2706,19 @@ void RasterizerSceneGLES2::_post_process(Environment *env, const CameraMatrix &p
 	}
 	use_post_process = use_post_process || storage->frame.current_rt->use_fxaa;
 
-	GLuint next_buffer;
-
-	if (use_post_process) {
-		next_buffer = storage->frame.current_rt->mip_maps[0].sizes[0].fbo;
-	} else if (storage->frame.current_rt->external.fbo != 0) {
-		next_buffer = storage->frame.current_rt->external.fbo;
-	} else {
-		// set next_buffer to front buffer so multisample blit can happen if needed
-		next_buffer = storage->frame.current_rt->fbo;
-	}
-
 	// If using multisample buffer, resolve to post_process_effect buffer or to front buffer
 	if (storage->frame.current_rt && storage->frame.current_rt->multisample_active) {
-#ifdef GLES_OVER_GL
+		GLuint next_buffer;
+		if (use_post_process) {
+			next_buffer = storage->frame.current_rt->mip_maps[0].sizes[0].fbo;
+		} else if (storage->frame.current_rt->external.fbo != 0) {
+			next_buffer = storage->frame.current_rt->external.fbo;
+		} else {
+			// set next_buffer to front buffer so multisample blit can happen if needed
+			next_buffer = storage->frame.current_rt->fbo;
+		}
 
+#ifdef GLES_OVER_GL
 		glBindFramebuffer(GL_READ_FRAMEBUFFER, storage->frame.current_rt->multisample_fbo);
 		glReadBuffer(GL_COLOR_ATTACHMENT0);
 		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, next_buffer);
@@ -2968,6 +2740,7 @@ void RasterizerSceneGLES2::_post_process(Environment *env, const CameraMatrix &p
 		_copy_texture_to_buffer(storage->frame.current_rt->multisample_color, next_buffer);
 #else
 		// TODO: any other platform not supported? this will fail.. maybe we should just call _copy_texture_to_buffer here as well?
+		(void)next_buffer; // Silence warning as it's unused.
 #endif
 	} else if (use_post_process) {
 		if (storage->frame.current_rt->external.fbo != 0) {
@@ -3545,7 +3318,15 @@ void RasterizerSceneGLES2::render_scene(const Transform &p_cam_transform, const 
 	}
 
 	if (!env || env->bg_mode != VS::ENV_BG_KEEP) {
-		glClearColor(clear_color.r, clear_color.g, clear_color.b, clear_color.a);
+		if (storage->frame.current_rt && storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_KEEP_3D_LINEAR]) {
+			// convert to linear here
+			Color linear_color = clear_color.to_linear();
+			glClearColor(linear_color.r, linear_color.g, linear_color.b, linear_color.a);
+
+			// leave clear_color in sRGB as most of the render pipeline remains in sRGB color space until writing out to frag_color
+		} else {
+			glClearColor(clear_color.r, clear_color.g, clear_color.b, clear_color.a);
+		}
 		glClear(GL_COLOR_BUFFER_BIT);
 	}
 
@@ -3647,6 +3428,13 @@ void RasterizerSceneGLES2::render_scene(const Transform &p_cam_transform, const 
 		env_radiance_tex = 0; //do not use radiance texture on interiors
 		state.default_ambient = Color(0, 0, 0, 1); //black as default ambient for interior
 		state.default_bg = Color(0, 0, 0, 1); //black as default background for interior
+	}
+
+	// make sure we set our output mode correctly
+	if (storage->frame.current_rt) {
+		state.scene_shader.set_conditional(SceneShaderGLES2::OUTPUT_LINEAR, storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_KEEP_3D_LINEAR]);
+	} else {
+		state.scene_shader.set_conditional(SceneShaderGLES2::OUTPUT_LINEAR, false);
 	}
 
 	// render opaque things first
@@ -3752,6 +3540,9 @@ void RasterizerSceneGLES2::render_scene(const Transform &p_cam_transform, const 
 		storage->_copy_screen();
 	}
 #endif
+
+	// return to default
+	state.scene_shader.set_conditional(SceneShaderGLES2::OUTPUT_LINEAR, false);
 }
 
 void RasterizerSceneGLES2::render_shadow(RID p_light, RID p_shadow_atlas, int p_pass, InstanceBase **p_cull_result, int p_cull_count) {
@@ -3969,6 +3760,7 @@ void RasterizerSceneGLES2::render_shadow(RID p_light, RID p_shadow_atlas, int p_
 	}
 
 	state.scene_shader.set_conditional(SceneShaderGLES2::RENDER_DEPTH, true);
+	state.scene_shader.set_conditional(SceneShaderGLES2::OUTPUT_LINEAR, false); // just in case, should be false already
 
 	_render_render_list(render_list.elements, render_list.element_count, light_transform, light_projection, 0, RID(), nullptr, 0, bias, normal_bias, flip_facing, false, true);
 

@@ -110,8 +110,6 @@ int OSIPhone::get_current_video_driver() const {
 }
 
 void OSIPhone::start() {
-	godot_ios_plugins_initialize();
-
 	Main::start();
 
 	if (joypad_iphone) {
@@ -337,8 +335,6 @@ void OSIPhone::finalize() {
 		memdelete(ios);
 	}
 
-	godot_ios_plugins_deinitialize();
-
 	visual_server->finish();
 	memdelete(visual_server);
 	//	memdelete(rasterizer);
@@ -486,6 +482,16 @@ String OSIPhone::get_user_data_dir() const {
 
 String OSIPhone::get_name() const {
 	return "iOS";
+}
+
+void OSIPhone::set_clipboard(const String &p_text) {
+	[UIPasteboard generalPasteboard].string = [NSString stringWithUTF8String:p_text.utf8()];
+}
+
+String OSIPhone::get_clipboard() const {
+	NSString *text = [UIPasteboard generalPasteboard].string;
+
+	return String::utf8([text UTF8String]);
 }
 
 String OSIPhone::get_model_name() const {

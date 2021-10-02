@@ -62,7 +62,7 @@ private:
 
 	MainLoop *main_loop;
 	int video_driver_index;
-	AudioDriverJavaScript *audio_driver_javascript;
+	List<AudioDriverJavaScript *> audio_drivers;
 	VisualServer *visual_server;
 
 	bool swap_ok_cancel;
@@ -72,6 +72,7 @@ private:
 
 	static Point2 compute_position_in_canvas(int x, int y);
 	static EM_BOOL fullscreen_change_callback(int p_event_type, const EmscriptenFullscreenChangeEvent *p_event, void *p_user_data);
+	static EM_BOOL blur_callback(int p_event_type, const EmscriptenFocusEvent *p_event, void *p_user_data);
 
 	static EM_BOOL keydown_callback(int p_event_type, const EmscriptenKeyboardEvent *p_event, void *p_user_data);
 	static EM_BOOL keypress_callback(int p_event_type, const EmscriptenKeyboardEvent *p_event, void *p_user_data);

@@ -79,6 +79,17 @@ public:
 		}
 	};
 
+	struct ThemeItemDoc {
+		String name;
+		String type;
+		String data_type;
+		String description;
+		String default_value;
+		bool operator<(const ThemeItemDoc &p_theme_item) const {
+			return name < p_theme_item.name;
+		}
+	};
+
 	struct TutorialDoc {
 		String link;
 		String title;
@@ -95,7 +106,7 @@ public:
 		Vector<MethodDoc> signals;
 		Vector<ConstantDoc> constants;
 		Vector<PropertyDoc> properties;
-		Vector<PropertyDoc> theme_properties;
+		Vector<ThemeItemDoc> theme_properties;
 	};
 
 	String version;

@@ -12,6 +12,14 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="set_point">
+			<return type="void" />
+			<argument index="0" name="index" type="int" />
+			<argument index="1" name="position" type="Vector2" />
+			<description>
+				Sets individual points. Primarily for use by the editor.
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="linked_room" type="NodePath" setter="set_linked_room" getter="get_linked_room" default="NodePath(&quot;&quot;)">

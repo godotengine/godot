@@ -38,6 +38,12 @@
 #include "scene/main/viewport.h"
 #include "scene/resources/dynamic_font.h"
 
+HashMap<StringName, List<StringName>> EditorResourcePicker::allowed_types_cache;
+
+void EditorResourcePicker::clear_caches() {
+	allowed_types_cache.clear();
+}
+
 void EditorResourcePicker::_update_resource() {
 	preview_rect->set_texture(Ref<Texture>());
 	assign_button->set_custom_minimum_size(Size2(1, 1));
@@ -131,6 +137,10 @@ void EditorResourcePicker::_file_selected(const String &p_path) {
 	_update_resource();
 }
 
+void EditorResourcePicker::_file_quick_selected() {
+	_file_selected(quick_open->get_selected());
+}
+
 void EditorResourcePicker::_update_menu() {
 	_update_menu_items();
 
@@ -148,7 +158,10 @@ void EditorResourcePicker::_update_menu_items() {
 	// Add options for creating specific subtypes of the base resource type.
 	set_create_options(edit_menu);
 
-	// Add an option to load a resource from a file.
+	// Add an option to load a resource from a file using the QuickOpen dialog.
+	edit_menu->add_icon_item(get_icon("Load", "EditorIcons"), TTR("Quick Load"), OBJ_MENU_QUICKLOAD);
+
+	// Add an option to load a resource from a file using the regular file dialog.
 	edit_menu->add_icon_item(get_icon("Load", "EditorIcons"), TTR("Load"), OBJ_MENU_LOAD);
 
 	// Add options for changing existing value of the resource.
@@ -239,6 +252,17 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 			}
 
 			file_dialog->popup_centered_ratio();
+		} break;
+
+		case OBJ_MENU_QUICKLOAD: {
+			if (!quick_open) {
+				quick_open = memnew(EditorQuickOpen);
+				add_child(quick_open);
+				quick_open->connect("quick_open", this, "_file_quick_selected");
+			}
+
+			quick_open->popup_dialog(base_type);
+			quick_open->set_title(TTR("Resource"));
 		} break;
 
 		case OBJ_MENU_EDIT: {
@@ -464,17 +488,31 @@ void EditorResourcePicker::_get_allowed_types(bool p_with_convert, Set<String> *
 		String base = allowed_types[i].strip_edges();
 		p_vector->insert(base);
 
-		List<StringName> inheriters;
-
-		ClassDB::get_inheriters_from_class(base, &inheriters);
-		for (List<StringName>::Element *E = inheriters.front(); E; E = E->next()) {
-			p_vector->insert(E->get());
-		}
-
-		for (List<StringName>::Element *E = global_classes.front(); E; E = E->next()) {
-			if (EditorNode::get_editor_data().script_class_is_parent(E->get(), base)) {
+		// If we hit a familiar base type, take all the data from cache.
+		if (allowed_types_cache.has(base)) {
+			List<StringName> allowed_subtypes = allowed_types_cache[base];
+			for (List<StringName>::Element *E = allowed_subtypes.front(); E; E = E->next()) {
 				p_vector->insert(E->get());
 			}
+		} else {
+			List<StringName> allowed_subtypes;
+
+			List<StringName> inheriters;
+			ClassDB::get_inheriters_from_class(base, &inheriters);
+			for (List<StringName>::Element *E = inheriters.front(); E; E = E->next()) {
+				p_vector->insert(E->get());
+				allowed_subtypes.push_back(E->get());
+			}
+
+			for (List<StringName>::Element *E = global_classes.front(); E; E = E->next()) {
+				if (EditorNode::get_editor_data().script_class_is_parent(E->get(), base)) {
+					p_vector->insert(E->get());
+					allowed_subtypes.push_back(E->get());
+				}
+			}
+
+			// Store the subtypes of the base type in the cache for future use.
+			allowed_types_cache[base] = allowed_subtypes;
 		}
 
 		if (p_with_convert) {
@@ -505,7 +543,9 @@ bool EditorResourcePicker::_is_drop_valid(const Dictionary &p_drag_data) const {
 	Ref<Resource> res;
 	if (drag_data.has("type") && String(drag_data["type"]) == "script_list_element") {
 		ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(drag_data["script_list_element"]);
-		res = se->get_edited_resource();
+		if (se) {
+			res = se->get_edited_resource();
+		}
 	} else if (drag_data.has("type") && String(drag_data["type"]) == "resource") {
 		res = drag_data["resource"];
 	}
@@ -572,7 +612,9 @@ void EditorResourcePicker::drop_data_fw(const Point2 &p_point, const Variant &p_
 	Ref<Resource> dropped_resource;
 	if (drag_data.has("type") && String(drag_data["type"]) == "script_list_element") {
 		ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(drag_data["script_list_element"]);
-		dropped_resource = se->get_edited_resource();
+		if (se) {
+			dropped_resource = se->get_edited_resource();
+		}
 	} else if (drag_data.has("type") && String(drag_data["type"]) == "resource") {
 		dropped_resource = drag_data["resource"];
 	}
@@ -620,6 +662,7 @@ void EditorResourcePicker::drop_data_fw(const Point2 &p_point, const Variant &p_
 void EditorResourcePicker::_bind_methods() {
 	// Internal binds.
 	ClassDB::bind_method(D_METHOD("_file_selected"), &EditorResourcePicker::_file_selected);
+	ClassDB::bind_method(D_METHOD("_file_quick_selected"), &EditorResourcePicker::_file_quick_selected);
 	ClassDB::bind_method(D_METHOD("_resource_selected"), &EditorResourcePicker::_resource_selected);
 	ClassDB::bind_method(D_METHOD("_button_draw"), &EditorResourcePicker::_button_draw);
 	ClassDB::bind_method(D_METHOD("_button_input"), &EditorResourcePicker::_button_input);
@@ -706,6 +749,10 @@ void EditorResourcePicker::set_base_type(const String &p_base_type) {
 			String class_str = (custom_class == StringName() ? edited_resource->get_class() : vformat("%s (%s)", custom_class, edited_resource->get_class()));
 			WARN_PRINT(vformat("Value mismatch between the new base type of this EditorResourcePicker, '%s', and the type of the value it already has, '%s'.", base_type, class_str));
 		}
+	} else {
+		// Call the method to build the cache immediately.
+		Set<String> allowed_types;
+		_get_allowed_types(false, &allowed_types);
 	}
 }
 

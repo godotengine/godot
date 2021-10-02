@@ -549,7 +549,7 @@ String ShaderCompilerGLES2::_dump_node_code(const SL::Node *p_node, int p_level,
 			SL::VariableNode *var_node = (SL::VariableNode *)p_node;
 			bool use_fragment_varying = false;
 
-			if (current_func_name != vertex_name) {
+			if (!var_node->is_local && current_func_name != vertex_name) {
 				if (p_assigning) {
 					if (shader->varyings.has(var_node->name)) {
 						use_fragment_varying = true;
@@ -650,7 +650,7 @@ String ShaderCompilerGLES2::_dump_node_code(const SL::Node *p_node, int p_level,
 			SL::ArrayNode *arr_node = (SL::ArrayNode *)p_node;
 			bool use_fragment_varying = false;
 
-			if (current_func_name != vertex_name) {
+			if (!arr_node->is_local && current_func_name != vertex_name) {
 				if (arr_node->assign_expression != nullptr) {
 					use_fragment_varying = true;
 				} else {
@@ -987,7 +987,13 @@ Error ShaderCompilerGLES2::compile(VS::ShaderMode p_mode, const String &p_code, 
 	if (err != OK) {
 		Vector<String> shader = p_code.split("\n");
 		for (int i = 0; i < shader.size(); i++) {
-			print_line(itos(i + 1) + " " + shader[i]);
+			if (i + 1 == parser.get_error_line()) {
+				// Mark the error line to be visible without having to look at
+				// the trace at the end.
+				print_line(vformat("E%4d-> %s", i + 1, shader[i]));
+			} else {
+				print_line(vformat("%5d | %s", i + 1, shader[i]));
+			}
 		}
 
 		_err_print_error(nullptr, p_path.utf8().get_data(), parser.get_error_line(), parser.get_error_text().utf8().get_data(), ERR_HANDLER_SHADER);

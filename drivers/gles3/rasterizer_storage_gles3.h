@@ -715,6 +715,7 @@ public:
 		Vector<Surface *> surfaces;
 		int blend_shape_count;
 		VS::BlendShapeMode blend_shape_mode;
+		PoolRealArray blend_shape_values;
 		AABB custom_aabb;
 		mutable uint64_t last_pass;
 		SelfList<MultiMesh>::List multimeshes;
@@ -745,6 +746,9 @@ public:
 
 	virtual void mesh_set_blend_shape_mode(RID p_mesh, VS::BlendShapeMode p_mode);
 	virtual VS::BlendShapeMode mesh_get_blend_shape_mode(RID p_mesh) const;
+
+	virtual void mesh_set_blend_shape_values(RID p_mesh, PoolVector<float> p_values);
+	virtual PoolVector<float> mesh_get_blend_shape_values(RID p_mesh) const;
 
 	virtual void mesh_surface_update_region(RID p_mesh, int p_surface, int p_offset, const PoolVector<uint8_t> &p_data);
 
@@ -1383,6 +1387,7 @@ public:
 		VS::ViewportMSAA msaa;
 		bool use_fxaa;
 		bool use_debanding;
+		float sharpen_intensity;
 
 		RID texture;
 
@@ -1395,7 +1400,8 @@ public:
 				used_in_frame(false),
 				msaa(VS::VIEWPORT_MSAA_DISABLED),
 				use_fxaa(false),
-				use_debanding(false) {
+				use_debanding(false),
+				sharpen_intensity(0.0) {
 			exposure.fbo = 0;
 			buffers.fbo = 0;
 			external.fbo = 0;
@@ -1426,6 +1432,7 @@ public:
 	virtual void render_target_set_msaa(RID p_render_target, VS::ViewportMSAA p_msaa);
 	virtual void render_target_set_use_fxaa(RID p_render_target, bool p_fxaa);
 	virtual void render_target_set_use_debanding(RID p_render_target, bool p_debanding);
+	virtual void render_target_set_sharpen_intensity(RID p_render_target, float p_intensity);
 
 	/* CANVAS SHADOW */
 

@@ -159,6 +159,8 @@ public:
 		}
 	}
 
+	const LocalVector<uint32_t, uint32_t> &get_active_list() const { return _active_list; }
+
 private:
 	PooledList<T, force_trivial> _pool;
 	LocalVector<uint32_t, uint32_t> _active_map;

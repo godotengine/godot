@@ -275,6 +275,10 @@ public:
 		Vector3 remainder;
 		Vector3 travel;
 		int local_shape;
+
+		real_t get_angle(const Vector3 &p_up_direction) const {
+			return Math::acos(normal.dot(p_up_direction));
+		}
 	};
 
 private:
@@ -293,20 +297,22 @@ private:
 	Vector<Ref<KinematicCollision>> slide_colliders;
 	Ref<KinematicCollision> motion_cache;
 
-	_FORCE_INLINE_ bool _ignores_mode(PhysicsServer::BodyMode) const;
-
 	Ref<KinematicCollision> _move(const Vector3 &p_motion, bool p_infinite_inertia = true, bool p_exclude_raycast_shapes = true, bool p_test_only = false);
 	Ref<KinematicCollision> _get_slide_collision(int p_bounce);
+	Ref<KinematicCollision> _get_last_slide_collision();
 
 	Transform last_valid_transform;
 	void _direct_state_changed(Object *p_state);
+
+	Vector3 _move_and_slide_internal(const Vector3 &p_linear_velocity, const Vector3 &p_snap, const Vector3 &p_up_direction = Vector3(0, 0, 0), bool p_stop_on_slope = false, int p_max_slides = 4, float p_floor_max_angle = Math::deg2rad((float)45), bool p_infinite_inertia = true);
+	void _set_collision_direction(const Collision &p_collision, const Vector3 &p_up_direction, float p_floor_max_angle);
 
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
-	bool move_and_collide(const Vector3 &p_motion, bool p_infinite_inertia, Collision &r_collision, bool p_exclude_raycast_shapes = true, bool p_test_only = false);
+	bool move_and_collide(const Vector3 &p_motion, bool p_infinite_inertia, Collision &r_collision, bool p_exclude_raycast_shapes = true, bool p_test_only = false, bool p_cancel_sliding = true, const Set<RID> &p_exclude = Set<RID>());
 	bool test_move(const Transform &p_from, const Vector3 &p_motion, bool p_infinite_inertia);
 
 	bool separate_raycast_shapes(bool p_infinite_inertia, Collision &r_collision);
@@ -323,6 +329,7 @@ public:
 	bool is_on_wall() const;
 	bool is_on_ceiling() const;
 	Vector3 get_floor_normal() const;
+	real_t get_floor_angle(const Vector3 &p_up_direction = Vector3(0.0, 1.0, 0.0)) const;
 	Vector3 get_floor_velocity() const;
 
 	int get_slide_count() const;
@@ -350,6 +357,7 @@ public:
 	Vector3 get_normal() const;
 	Vector3 get_travel() const;
 	Vector3 get_remainder() const;
+	real_t get_angle(const Vector3 &p_up_direction = Vector3(0.0, 1.0, 0.0)) const;
 	Object *get_local_shape() const;
 	Object *get_collider() const;
 	ObjectID get_collider_id() const;

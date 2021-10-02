@@ -52,6 +52,10 @@ uniform vec3 bcs;
 uniform vec2 pixel_size;
 #endif
 
+#ifdef USE_SHARPENING
+uniform float sharpen_intensity;
+#endif
+
 #ifdef USE_COLOR_CORRECTION
 uniform sampler2D color_correction; //texunit:3
 #endif
@@ -159,11 +163,38 @@ vec3 tonemap_aces(vec3 color, float white) {
 	return clamp(color_tonemapped / white_tonemapped, vec3(0.0f), vec3(1.0f));
 }
 
-vec3 tonemap_reinhard(vec3 color, float white) {
-	// Ensure color values are positive.
-	// They can be negative in the case of negative lights, which leads to undesired behavior.
-	color = max(vec3(0.0), color);
+// Adapted from https://github.com/TheRealMJP/BakingLab/blob/master/BakingLab/ACES.hlsl
+// (MIT License).
+vec3 tonemap_aces_fitted(vec3 color, float white) {
+	const float exposure_bias = 1.8f;
+	const float A = 0.0245786f;
+	const float B = 0.000090537f;
+	const float C = 0.983729f;
+	const float D = 0.432951f;
+	const float E = 0.238081f;
 
+	// Exposure bias baked into transform to save shader instructions. Equivalent to `color *= exposure_bias`
+	const mat3 rgb_to_rrt = mat3(
+			vec3(0.59719f * exposure_bias, 0.35458f * exposure_bias, 0.04823f * exposure_bias),
+			vec3(0.07600f * exposure_bias, 0.90834f * exposure_bias, 0.01566f * exposure_bias),
+			vec3(0.02840f * exposure_bias, 0.13383f * exposure_bias, 0.83777f * exposure_bias));
+
+	const mat3 odt_to_rgb = mat3(
+			vec3(1.60475f, -0.53108f, -0.07367f),
+			vec3(-0.10208f, 1.10813f, -0.00605f),
+			vec3(-0.00327f, -0.07276f, 1.07602f));
+
+	color *= rgb_to_rrt;
+	vec3 color_tonemapped = (color * (color + A) - B) / (color * (C * color + D) + E);
+	color_tonemapped *= odt_to_rgb;
+
+	white *= exposure_bias;
+	float white_tonemapped = (white * (white + A) - B) / (white * (C * white + D) + E);
+
+	return clamp(color_tonemapped / white_tonemapped, vec3(0.0f), vec3(1.0f));
+}
+
+vec3 tonemap_reinhard(vec3 color, float white) {
 	return clamp((white * color + color) / (color * white + white), vec3(0.0f), vec3(1.0f));
 }
 
@@ -174,6 +205,12 @@ vec3 linear_to_srgb(vec3 color) { // convert linear rgb to srgb, assumes clamped
 
 // inputs are LINEAR, If Linear tonemapping is selected no transform is performed else outputs are clamped [0, 1] color
 vec3 apply_tonemapping(vec3 color, float white) {
+	// Ensure color values are positive.
+	// They can be negative in the case of negative lights, which leads to undesired behavior.
+#if defined(USE_REINHARD_TONEMAPPER) || defined(USE_FILMIC_TONEMAPPER) || defined(USE_ACES_TONEMAPPER) || defined(USE_ACES_FITTED_TONEMAPPER)
+	color = max(vec3(0.0f), color);
+#endif
+
 #ifdef USE_REINHARD_TONEMAPPER
 	return tonemap_reinhard(color, white);
 #endif
@@ -184,6 +221,10 @@ vec3 apply_tonemapping(vec3 color, float white) {
 
 #ifdef USE_ACES_TONEMAPPER
 	return tonemap_aces(color, white);
+#endif
+
+#ifdef USE_ACES_FITTED_TONEMAPPER
+	return tonemap_aces_fitted(color, white);
 #endif
 
 	return color; // no other selected -> linear: no color transform applied
@@ -323,6 +364,54 @@ vec3 screen_space_dither(vec2 frag_coord) {
 	return (dither.rgb - 0.5) / 255.0;
 }
 
+// Adapted from https://github.com/DadSchoorse/vkBasalt/blob/b929505ba71dea21d6c32a5a59f2d241592b30c4/src/shader/cas.frag.glsl
+// (MIT license).
+vec3 apply_cas(vec3 color, float exposure, vec2 uv_interp, float sharpen_intensity) {
+	// Fetch a 3x3 neighborhood around the pixel 'e',
+	//  a b c
+	//  d(e)f
+	//  g h i
+	vec3 a = textureLodOffset(source, uv_interp, 0.0, ivec2(-1, -1)).rgb * exposure;
+	vec3 b = textureLodOffset(source, uv_interp, 0.0, ivec2(0, -1)).rgb * exposure;
+	vec3 c = textureLodOffset(source, uv_interp, 0.0, ivec2(1, -1)).rgb * exposure;
+	vec3 d = textureLodOffset(source, uv_interp, 0.0, ivec2(-1, 0)).rgb * exposure;
+	vec3 e = color.rgb;
+	vec3 f = textureLodOffset(source, uv_interp, 0.0, ivec2(1, 0)).rgb * exposure;
+	vec3 g = textureLodOffset(source, uv_interp, 0.0, ivec2(-1, 1)).rgb * exposure;
+	vec3 h = textureLodOffset(source, uv_interp, 0.0, ivec2(0, 1)).rgb * exposure;
+	vec3 i = textureLodOffset(source, uv_interp, 0.0, ivec2(1, 1)).rgb * exposure;
+
+	// Soft min and max.
+	//  a b c             b
+	//  d e f * 0.5  +  d e f * 0.5
+	//  g h i             h
+	// These are 2.0x bigger (factored out the extra multiply).
+	vec3 min_rgb = min(min(min(d, e), min(f, b)), h);
+	vec3 min_rgb2 = min(min(min(min_rgb, a), min(g, c)), i);
+	min_rgb += min_rgb2;
+
+	vec3 max_rgb = max(max(max(d, e), max(f, b)), h);
+	vec3 max_rgb2 = max(max(max(max_rgb, a), max(g, c)), i);
+	max_rgb += max_rgb2;
+
+	// Smooth minimum distance to signal limit divided by smooth max.
+	vec3 rcp_max_rgb = vec3(1.0) / max_rgb;
+	vec3 amp_rgb = clamp((min(min_rgb, 2.0 - max_rgb) * rcp_max_rgb), 0.0, 1.0);
+
+	// Shaping amount of sharpening.
+	amp_rgb = inversesqrt(amp_rgb);
+	float peak = 8.0 - 3.0 * sharpen_intensity;
+	vec3 w_rgb = -vec3(1) / (amp_rgb * peak);
+	vec3 rcp_weight_rgb = vec3(1.0) / (1.0 + 4.0 * w_rgb);
+
+	//                          0 w 0
+	//  Filter shape:           w 1 w
+	//                          0 w 0
+	vec3 window = b + d + f + h;
+
+	return max(vec3(0.0), (window * w_rgb + e) * rcp_weight_rgb);
+}
+
 void main() {
 	vec3 color = textureLod(source, uv_interp, 0.0f).rgb;
 
@@ -340,6 +429,12 @@ void main() {
 	color = apply_fxaa(color, full_exposure, uv_interp, pixel_size);
 #endif
 
+#ifdef USE_SHARPENING
+	// CAS gives best results when applied after tonemapping, but `source` isn't tonemapped.
+	// As a workaround, apply CAS before tonemapping so that the image still has a correct appearance when tonemapped.
+	color = apply_cas(color, full_exposure, uv_interp, sharpen_intensity);
+#endif
+
 #ifdef USE_DEBANDING
 	// For best results, debanding should be done before tonemapping.
 	// Otherwise, we're adding noise to an already-quantized image.
@@ -347,7 +442,6 @@ void main() {
 #endif
 
 	// Early Tonemap & SRGB Conversion; note that Linear tonemapping does not clamp to [0, 1]; some operations below expect a [0, 1] range and will clamp
-
 	color = apply_tonemapping(color, white);
 
 #ifdef KEEP_3D_LINEAR

@@ -41,9 +41,13 @@ void UndoRedo::_discard_redo() {
 	for (int i = current_action + 1; i < actions.size(); i++) {
 		for (List<Operation>::Element *E = actions.write[i].do_ops.front(); E; E = E->next()) {
 			if (E->get().type == Operation::TYPE_REFERENCE) {
-				Object *obj = ObjectDB::get_instance(E->get().object);
-				if (obj) {
-					memdelete(obj);
+				if (E->get().ref.is_valid()) {
+					E->get().ref.unref();
+				} else {
+					Object *obj = ObjectDB::get_instance(E->get().object);
+					if (obj) {
+						memdelete(obj);
+					}
 				}
 			}
 		}
@@ -221,9 +225,13 @@ void UndoRedo::_pop_history_tail() {
 
 	for (List<Operation>::Element *E = actions.write[0].undo_ops.front(); E; E = E->next()) {
 		if (E->get().type == Operation::TYPE_REFERENCE) {
-			Object *obj = ObjectDB::get_instance(E->get().object);
-			if (obj) {
-				memdelete(obj);
+			if (E->get().ref.is_valid()) {
+				E->get().ref.unref();
+			} else {
+				Object *obj = ObjectDB::get_instance(E->get().object);
+				if (obj) {
+					memdelete(obj);
+				}
 			}
 		}
 	}
@@ -369,11 +377,11 @@ String UndoRedo::get_current_action_name() const {
 	return actions[current_action].name;
 }
 
-bool UndoRedo::has_undo() {
+bool UndoRedo::has_undo() const {
 	return current_action >= 0;
 }
 
-bool UndoRedo::has_redo() {
+bool UndoRedo::has_redo() const {
 	return (current_action + 1) < actions.size();
 }
 
