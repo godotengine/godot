@@ -36,9 +36,6 @@
 #include "core/templates/rid.h"
 #include "core/variant/native_ptr.h"
 #include "core/variant/variant.h"
-#include "scene/resources/texture.h"
-
-class CanvasTexture;
 
 struct Glyph;
 struct CaretInfo;
@@ -128,6 +125,8 @@ public:
 		SPACING_BOTTOM,
 	};
 
+	void _draw_hex_code_box_number(RID p_canvas, int p_size, const Vector2 &p_pos, uint8_t p_index, const Color &p_color) const;
+
 protected:
 	struct TrimData {
 		int trim_pos = -1;
@@ -197,13 +196,7 @@ protected:
 
 	static void _bind_methods();
 
-	static Vector3 hex_code_box_font_size[2];
-	static Ref<CanvasTexture> hex_code_box_font_tex[2];
-
 public:
-	static void initialize_hex_code_box_fonts();
-	static void finish_hex_code_box_fonts();
-
 	virtual bool has_feature(Feature p_feature) const = 0;
 	virtual String get_name() const = 0;
 	virtual uint32_t get_features() const = 0;
