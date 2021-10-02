@@ -37,7 +37,6 @@
 
 #ifdef TOOLS_ENABLED
 #include "editor/editor_node.h"
-#include "editor/editor_scale.h"
 #include "scene/main/window.h" // Only used to check for more modals when dimming the editor.
 #endif
 
@@ -363,8 +362,7 @@ Button *ConfirmationDialog::get_cancel_button() {
 
 ConfirmationDialog::ConfirmationDialog() {
 	set_title(TTRC("Please Confirm..."));
-#ifdef TOOLS_ENABLED
-	set_min_size(Size2(200, 70) * EDSCALE);
-#endif
+	set_min_size(Size2(200, 70));
+
 	cancel = add_cancel_button();
 }

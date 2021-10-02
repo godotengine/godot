@@ -36,10 +36,6 @@
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 
-#ifdef TOOLS_ENABLED
-#include "editor/editor_scale.h"
-#endif
-
 constexpr int MINIMAP_OFFSET = 12;
 constexpr int MINIMAP_PADDING = 5;
 
@@ -436,6 +432,8 @@ void GraphEdit::_notification(int p_what) {
 		snap_button->set_icon(get_theme_icon(SNAME("snap")));
 		minimap_button->set_icon(get_theme_icon(SNAME("minimap")));
 		layout_button->set_icon(get_theme_icon(SNAME("layout")));
+
+		zoom_label->set_custom_minimum_size(Size2(48, 0) * get_theme_default_base_scale());
 	}
 	if (p_what == NOTIFICATION_READY) {
 		Size2 hmin = h_scroll->get_combined_minimum_size();
@@ -816,11 +814,7 @@ void GraphEdit::_draw_connection_line(CanvasItem *p_where, const Vector2 &p_from
 		scaled_points.push_back(points[i] * p_zoom);
 	}
 
-#ifdef TOOLS_ENABLED
-	p_where->draw_polyline_colors(scaled_points, colors, Math::floor(p_width * EDSCALE), lines_antialiased);
-#else
-	p_where->draw_polyline_colors(scaled_points, colors, p_width, lines_antialiased);
-#endif
+	p_where->draw_polyline_colors(scaled_points, colors, Math::floor(p_width * get_theme_default_base_scale()), lines_antialiased);
 }
 
 void GraphEdit::_connections_layer_draw() {
@@ -2272,11 +2266,7 @@ GraphEdit::GraphEdit() {
 	zoom_label->set_visible(false);
 	zoom_label->set_v_size_flags(Control::SIZE_SHRINK_CENTER);
 	zoom_label->set_align(Label::ALIGN_CENTER);
-#ifdef TOOLS_ENABLED
-	zoom_label->set_custom_minimum_size(Size2(48, 0) * EDSCALE);
-#else
 	zoom_label->set_custom_minimum_size(Size2(48, 0));
-#endif
 	_update_zoom_label();
 
 	zoom_minus = memnew(Button);
