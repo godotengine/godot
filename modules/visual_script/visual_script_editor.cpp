@@ -1746,6 +1746,9 @@ void VisualScriptEditor::_on_nodes_paste() {
 		}
 	}
 
+	bool first_paste = true;
+	Vector2 position_offset = Vector2(0, 0);
+
 	for (KeyValue<int, Ref<VisualScriptNode>> &E : clipboard->nodes) {
 		Ref<VisualScriptNode> node = E.value->duplicate();
 
@@ -1755,6 +1758,13 @@ void VisualScriptEditor::_on_nodes_paste() {
 		remap[E.key] = new_id;
 
 		Vector2 paste_pos = clipboard->nodes_positions[E.key];
+
+		if (first_paste) {
+			position_offset = _get_pos_in_graph(mouse_up_position) - paste_pos;
+			first_paste = false;
+		}
+
+		paste_pos += position_offset;
 
 		while (existing_positions.has(paste_pos.snapped(Vector2(2, 2)))) {
 			paste_pos += Vector2(20, 20) * EDSCALE;
