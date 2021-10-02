@@ -292,7 +292,8 @@ void editor_register_and_generate_icons(Ref<Theme> p_theme, bool p_dark_theme = 
 Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	Ref<Theme> theme = Ref<Theme>(memnew(Theme));
 
-	const float default_contrast = 0.3;
+	// Controls may rely on the scale for their internal drawing logic.
+	theme->set_default_theme_base_scale(EDSCALE);
 
 	// Theme settings
 	Color accent_color = EDITOR_GET("interface/theme/accent_color");
@@ -309,6 +310,8 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	Color preset_accent_color;
 	Color preset_base_color;
 	float preset_contrast = 0;
+
+	const float default_contrast = 0.3;
 
 	// Please use alphabetical order if you're adding a new theme here
 	// (after "Custom")

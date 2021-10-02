@@ -36,6 +36,7 @@ Ref<Theme> Theme::default_theme;
 Ref<Theme> Theme::project_default_theme;
 
 // Universal default values, final fallback for every theme.
+float Theme::default_base_scale = 1.0;
 Ref<Texture2D> Theme::default_icon;
 Ref<StyleBox> Theme::default_style;
 Ref<Font> Theme::default_font;
@@ -219,6 +220,10 @@ void Theme::set_project_default(const Ref<Theme> &p_project_default) {
 }
 
 // Universal fallback values for theme item types.
+void Theme::set_default_base_scale(float p_base_scale) {
+	default_base_scale = p_base_scale;
+}
+
 void Theme::set_default_icon(const Ref<Texture2D> &p_icon) {
 	default_icon = p_icon;
 }
@@ -236,6 +241,24 @@ void Theme::set_default_font_size(int p_font_size) {
 }
 
 // Fallback values for theme item types, configurable per theme.
+void Theme::set_default_theme_base_scale(float p_base_scale) {
+	if (default_theme_base_scale == p_base_scale) {
+		return;
+	}
+
+	default_theme_base_scale = p_base_scale;
+
+	_emit_theme_changed();
+}
+
+float Theme::get_default_theme_base_scale() const {
+	return default_theme_base_scale;
+}
+
+bool Theme::has_default_theme_base_scale() const {
+	return default_theme_base_scale > 0.0;
+}
+
 void Theme::set_default_theme_font(const Ref<Font> &p_default_font) {
 	if (default_theme_font == p_default_font) {
 		return;
@@ -258,6 +281,10 @@ Ref<Font> Theme::get_default_theme_font() const {
 	return default_theme_font;
 }
 
+bool Theme::has_default_theme_font() const {
+	return default_theme_font.is_valid();
+}
+
 void Theme::set_default_theme_font_size(int p_font_size) {
 	if (default_theme_font_size == p_font_size) {
 		return;
@@ -270,6 +297,10 @@ void Theme::set_default_theme_font_size(int p_font_size) {
 
 int Theme::get_default_theme_font_size() const {
 	return default_theme_font_size;
+}
+
+bool Theme::has_default_theme_font_size() const {
+	return default_theme_font_size > 0;
 }
 
 // Icons.
@@ -460,7 +491,7 @@ void Theme::set_font(const StringName &p_name, const StringName &p_theme_type, c
 Ref<Font> Theme::get_font(const StringName &p_name, const StringName &p_theme_type) const {
 	if (font_map.has(p_theme_type) && font_map[p_theme_type].has(p_name) && font_map[p_theme_type][p_name].is_valid()) {
 		return font_map[p_theme_type][p_name];
-	} else if (default_theme_font.is_valid()) {
+	} else if (has_default_theme_font()) {
 		return default_theme_font;
 	} else {
 		return default_font;
@@ -468,7 +499,7 @@ Ref<Font> Theme::get_font(const StringName &p_name, const StringName &p_theme_ty
 }
 
 bool Theme::has_font(const StringName &p_name, const StringName &p_theme_type) const {
-	return ((font_map.has(p_theme_type) && font_map[p_theme_type].has(p_name) && font_map[p_theme_type][p_name].is_valid()) || default_theme_font.is_valid());
+	return ((font_map.has(p_theme_type) && font_map[p_theme_type].has(p_name) && font_map[p_theme_type][p_name].is_valid()) || has_default_theme_font());
 }
 
 bool Theme::has_font_nocheck(const StringName &p_name, const StringName &p_theme_type) const {
@@ -539,7 +570,7 @@ void Theme::set_font_size(const StringName &p_name, const StringName &p_theme_ty
 int Theme::get_font_size(const StringName &p_name, const StringName &p_theme_type) const {
 	if (font_size_map.has(p_theme_type) && font_size_map[p_theme_type].has(p_name) && (font_size_map[p_theme_type][p_name] > 0)) {
 		return font_size_map[p_theme_type][p_name];
-	} else if (default_theme_font_size > 0) {
+	} else if (has_default_theme_font_size()) {
 		return default_theme_font_size;
 	} else {
 		return default_font_size;
@@ -547,7 +578,7 @@ int Theme::get_font_size(const StringName &p_name, const StringName &p_theme_typ
 }
 
 bool Theme::has_font_size(const StringName &p_name, const StringName &p_theme_type) const {
-	return ((font_size_map.has(p_theme_type) && font_size_map[p_theme_type].has(p_name) && (font_size_map[p_theme_type][p_name] > 0)) || (default_theme_font_size > 0));
+	return ((font_size_map.has(p_theme_type) && font_size_map[p_theme_type].has(p_name) && (font_size_map[p_theme_type][p_name] > 0)) || has_default_theme_font_size());
 }
 
 bool Theme::has_font_size_nocheck(const StringName &p_name, const StringName &p_theme_type) const {
@@ -1580,11 +1611,17 @@ void Theme::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_constant_list", "theme_type"), &Theme::_get_constant_list);
 	ClassDB::bind_method(D_METHOD("get_constant_type_list"), &Theme::_get_constant_type_list);
 
+	ClassDB::bind_method(D_METHOD("set_default_base_scale", "font_size"), &Theme::set_default_theme_base_scale);
+	ClassDB::bind_method(D_METHOD("get_default_base_scale"), &Theme::get_default_theme_base_scale);
+	ClassDB::bind_method(D_METHOD("has_default_base_scale"), &Theme::has_default_theme_base_scale);
+
 	ClassDB::bind_method(D_METHOD("set_default_font", "font"), &Theme::set_default_theme_font);
 	ClassDB::bind_method(D_METHOD("get_default_font"), &Theme::get_default_theme_font);
+	ClassDB::bind_method(D_METHOD("has_default_font"), &Theme::has_default_theme_font);
 
 	ClassDB::bind_method(D_METHOD("set_default_font_size", "font_size"), &Theme::set_default_theme_font_size);
 	ClassDB::bind_method(D_METHOD("get_default_font_size"), &Theme::get_default_theme_font_size);
+	ClassDB::bind_method(D_METHOD("has_default_font_size"), &Theme::has_default_theme_font_size);
 
 	ClassDB::bind_method(D_METHOD("set_theme_item", "data_type", "name", "theme_type", "value"), &Theme::set_theme_item);
 	ClassDB::bind_method(D_METHOD("get_theme_item", "data_type", "name", "theme_type"), &Theme::get_theme_item);
@@ -1605,6 +1642,7 @@ void Theme::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("merge_with", "other"), &Theme::merge_with);
 	ClassDB::bind_method(D_METHOD("clear"), &Theme::clear);
 
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "default_base_scale", PROPERTY_HINT_RANGE, "0.0,2.0,0.01,or_greater"), "set_default_base_scale", "get_default_base_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "default_font", PROPERTY_HINT_RESOURCE_TYPE, "Font"), "set_default_font", "get_default_font");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "default_font_size"), "set_default_font_size", "get_default_font_size");
 

@@ -273,6 +273,24 @@
 				Returns [code]false[/code] if the theme does not have [code]theme_type[/code].
 			</description>
 		</method>
+		<method name="has_default_base_scale" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if this theme has a valid [member default_base_scale] value.
+			</description>
+		</method>
+		<method name="has_default_font" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if this theme has a valid [member default_font] value.
+			</description>
+		</method>
+		<method name="has_default_font_size" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if this theme has a valid [member default_font_size] value.
+			</description>
+		</method>
 		<method name="has_font" qualifiers="const">
 			<return type="bool" />
 			<argument index="0" name="name" type="StringName" />
@@ -484,11 +502,17 @@
 		</method>
 	</methods>
 	<members>
+		<member name="default_base_scale" type="float" setter="set_default_base_scale" getter="get_default_base_scale" default="0.0">
+			The default base scale factor of this [Theme] resource. Used by some controls to scale their visual properties based on a global scale factor. If this value is set to [code]0.0[/code], the global scale factor is used.
+			Use [method has_default_base_scale] to check if this value is valid.
+		</member>
 		<member name="default_font" type="Font" setter="set_default_font" getter="get_default_font">
-			The theme's default font.
+			The default font of this [Theme] resource. Used as a fallback value for font items defined in this theme, but having invalid values. If this value is also invalid, the global default value is used.
+			Use [method has_default_font] to check if this value is valid.
 		</member>
 		<member name="default_font_size" type="int" setter="set_default_font_size" getter="get_default_font_size" default="-1">
-			The theme's default font size. Set to [code]-1[/code] to ignore and use global default.
+			The default font size of this [Theme] resource. Used as a fallback value for font size items defined in this theme, but having invalid values. If this value is set to [code]-1[/code], the global default value is used.
+			Use [method has_default_font_size] to check if this value is valid.
 		</member>
 	</members>
 	<constants>

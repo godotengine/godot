@@ -59,6 +59,21 @@
 			<description>
 			</description>
 		</method>
+		<method name="get_theme_default_base_scale" qualifiers="const">
+			<return type="float" />
+			<description>
+			</description>
+		</method>
+		<method name="get_theme_default_font" qualifiers="const">
+			<return type="Font" />
+			<description>
+			</description>
+		</method>
+		<method name="get_theme_default_font_size" qualifiers="const">
+			<return type="int" />
+			<description>
+			</description>
+		</method>
 		<method name="get_theme_font" qualifiers="const">
 			<return type="Font" />
 			<argument index="0" name="name" type="StringName" />

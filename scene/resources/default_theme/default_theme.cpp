@@ -1036,9 +1036,16 @@ void make_default_theme(bool p_hidpi, Ref<Font> p_font) {
 	}
 
 	Ref<Font> large_font = default_font;
-	fill_default_theme(t, default_font, large_font, default_icon, default_style, p_hidpi ? 2.0 : 1.0);
+
+	float default_scale = 1.0;
+	if (p_hidpi) {
+		default_scale = 2.0;
+	}
+
+	fill_default_theme(t, default_font, large_font, default_icon, default_style, default_scale);
 
 	Theme::set_default(t);
+	Theme::set_default_base_scale(default_scale);
 	Theme::set_default_icon(default_icon);
 	Theme::set_default_style(default_style);
 	Theme::set_default_font(default_font);
