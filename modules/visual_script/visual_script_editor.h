@@ -253,6 +253,8 @@ class VisualScriptEditor : public ScriptEditorBase {
 	void _node_item_selected();
 	void _node_item_unselected();
 
+	void _on_nodes_copy();
+	void _on_nodes_paste();
 	void _on_nodes_delete();
 	void _on_nodes_duplicate();
 
