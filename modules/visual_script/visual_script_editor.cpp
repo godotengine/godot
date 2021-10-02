@@ -3861,7 +3861,7 @@ void VisualScriptEditor::_menu_option(int p_what) {
 		case EDIT_FIND_NODE_TYPE: {
 			_generic_search(script->get_instance_base_type());
 		} break;
-		case EDIT_COPY_NODES:{
+		case EDIT_COPY_NODES: {
 			_on_nodes_copy();
 		} break;
 		case EDIT_CUT_NODES: {
