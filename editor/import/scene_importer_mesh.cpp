@@ -115,9 +115,10 @@ void EditorSceneImporterMesh::Surface::split_normals(const LocalVector<int> &p_i
 				for (int j = 0; j < new_vertex_count; j++) {
 					data_ptr[current_vertex_count + j] = data_ptr[indices_ptr[j]];
 				}
+				arrays[i] = data;
 			} break;
 			default: {
-				ERR_FAIL_MSG("Uhandled array type.");
+				ERR_FAIL_MSG("Unhandled array type.");
 			} break;
 		}
 	}
@@ -258,6 +259,9 @@ void EditorSceneImporterMesh::generate_lods(float p_normal_merge_angle, float p_
 
 	for (int i = 0; i < surfaces.size(); i++) {
 		if (surfaces[i].primitive != Mesh::PRIMITIVE_TRIANGLES) {
+			continue;
+		}
+		if (get_blend_shape_count()) {
 			continue;
 		}
 
