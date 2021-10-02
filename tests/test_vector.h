@@ -31,11 +31,27 @@
 #ifndef TEST_VECTOR_H
 #define TEST_VECTOR_H
 
+#include "core/object/ref_counted.h"
 #include "core/templates/vector.h"
+#include "core/variant/callable.h"
 
 #include "tests/test_macros.h"
 
 namespace TestVector {
+
+class IntDescComparator : public RefCounted {
+	GDCLASS(IntDescComparator, RefCounted);
+
+protected:
+	static void _bind_methods() {
+		ClassDB::bind_method(D_METHOD("compare"), &IntDescComparator::compare);
+	}
+
+public:
+	bool compare(int left, int right) const {
+		return right < left;
+	}
+};
 
 TEST_CASE("[Vector] Push back and append") {
 	Vector<int> vector;
@@ -472,6 +488,28 @@ TEST_CASE("[Vector] Sort custom") {
 	CHECK(vector[7] == "World");
 }
 
+TEST_CASE("[Vector] Sort custom callable") {
+	Ref<IntDescComparator> comparator = memnew(IntDescComparator);
+	Callable func(comparator.ptr(), "compare");
+
+	Vector<int> vector;
+	vector.push_back(1);
+	vector.push_back(2);
+	vector.push_back(4);
+	vector.push_back(8);
+	vector.push_back(16);
+	vector.push_back(32);
+	vector.sort_custom<CallableComparator, true>(func);
+
+	CHECK(vector.size() == 6);
+	CHECK(vector[0] == 32);
+	CHECK(vector[1] == 16);
+	CHECK(vector[2] == 8);
+	CHECK(vector[3] == 4);
+	CHECK(vector[4] == 2);
+	CHECK(vector[5] == 1);
+}
+
 TEST_CASE("[Vector] Search") {
 	Vector<int> vector;
 	vector.push_back(1);
@@ -479,10 +517,32 @@ TEST_CASE("[Vector] Search") {
 	vector.push_back(3);
 	vector.push_back(5);
 	vector.push_back(8);
+
+	CHECK(vector.size() == 5);
 	CHECK(vector.bsearch(2, true) == 1);
 	CHECK(vector.bsearch(2, false) == 2);
 	CHECK(vector.bsearch(5, true) == 3);
 	CHECK(vector.bsearch(5, false) == 4);
+}
+
+TEST_CASE("[Vector] Search custom callable") {
+	Ref<IntDescComparator> comparator = memnew(IntDescComparator);
+	Callable func(comparator.ptr(), "compare");
+
+	Vector<int> vector;
+	vector.push_back(32);
+	vector.push_back(16);
+	vector.push_back(8);
+	vector.push_back(4);
+	vector.push_back(2);
+	vector.push_back(1);
+	vector.sort_custom<CallableComparator>(func);
+
+	CHECK(vector.size() == 6);
+	CHECK(vector.bsearch_custom<CallableComparator>(32, false, func) == 1);
+	CHECK(vector.bsearch_custom<CallableComparator>(16, true, func) == 1);
+	CHECK(vector.bsearch_custom<CallableComparator>(8, false, func) == 3);
+	CHECK(vector.bsearch_custom<CallableComparator>(4, true, func) == 3);
 }
 
 TEST_CASE("[Vector] Operators") {

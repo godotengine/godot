@@ -873,6 +873,78 @@ struct _VariantCall {
 		return len;
 	}
 
+	static void func_PackedByteArray_sort_custom(PackedByteArray *p_instance, const Callable &p_func) {
+		p_instance->sort_custom<CallableComparator, true>(p_func);
+	}
+
+	static int func_PackedByteArray_bsearch_custom(PackedByteArray *p_instance, const Variant &p_value, const Callable &p_func, bool p_before) {
+		return p_instance->bsearch_custom<CallableComparator>(p_value, p_before, p_func);
+	}
+
+	static void func_PackedInt32Array_sort_custom(PackedInt32Array *p_instance, const Callable &p_func) {
+		p_instance->sort_custom<CallableComparator, true>(p_func);
+	}
+
+	static int func_PackedInt32Array_bsearch_custom(PackedInt32Array *p_instance, const Variant &p_value, const Callable &p_func, bool p_before) {
+		return p_instance->bsearch_custom<CallableComparator>(p_value, p_before, p_func);
+	}
+
+	static void func_PackedInt64Array_sort_custom(PackedInt64Array *p_instance, const Callable &p_func) {
+		p_instance->sort_custom<CallableComparator, true>(p_func);
+	}
+
+	static int func_PackedInt64Array_bsearch_custom(PackedInt64Array *p_instance, const Variant &p_value, const Callable &p_func, bool p_before) {
+		return p_instance->bsearch_custom<CallableComparator>(p_value, p_before, p_func);
+	}
+
+	static void func_PackedFloat32Array_sort_custom(PackedFloat32Array *p_instance, const Callable &p_func) {
+		p_instance->sort_custom<CallableComparator, true>(p_func);
+	}
+
+	static int func_PackedFloat32Array_bsearch_custom(PackedFloat32Array *p_instance, const Variant &p_value, const Callable &p_func, bool p_before) {
+		return p_instance->bsearch_custom<CallableComparator>(p_value, p_before, p_func);
+	}
+
+	static void func_PackedFloat64Array_sort_custom(PackedFloat64Array *p_instance, const Callable &p_func) {
+		p_instance->sort_custom<CallableComparator, true>(p_func);
+	}
+
+	static int func_PackedFloat64Array_bsearch_custom(PackedFloat64Array *p_instance, const Variant &p_value, const Callable &p_func, bool p_before) {
+		return p_instance->bsearch_custom<CallableComparator>(p_value, p_before, p_func);
+	}
+
+	static void func_PackedStringArray_sort_custom(PackedStringArray *p_instance, const Callable &p_func) {
+		p_instance->sort_custom<CallableComparator, true>(p_func);
+	}
+
+	static int func_PackedStringArray_bsearch_custom(PackedStringArray *p_instance, const Variant &p_value, const Callable &p_func, bool p_before) {
+		return p_instance->bsearch_custom<CallableComparator>(p_value, p_before, p_func);
+	}
+
+	static void func_PackedVector2Array_sort_custom(PackedVector2Array *p_instance, const Callable &p_func) {
+		p_instance->sort_custom<CallableComparator, true>(p_func);
+	}
+
+	static int func_PackedVector2Array_bsearch_custom(PackedVector2Array *p_instance, const Variant &p_value, const Callable &p_func, bool p_before) {
+		return p_instance->bsearch_custom<CallableComparator>(p_value, p_before, p_func);
+	}
+
+	static void func_PackedVector3Array_sort_custom(PackedVector3Array *p_instance, const Callable &p_func) {
+		p_instance->sort_custom<CallableComparator, true>(p_func);
+	}
+
+	static int func_PackedVector3Array_bsearch_custom(PackedVector3Array *p_instance, const Variant &p_value, const Callable &p_func, bool p_before) {
+		return p_instance->bsearch_custom<CallableComparator>(p_value, p_before, p_func);
+	}
+
+	static void func_PackedColorArray_sort_custom(PackedColorArray *p_instance, const Callable &p_func) {
+		p_instance->sort_custom<CallableComparator, true>(p_func);
+	}
+
+	static int func_PackedColorArray_bsearch_custom(PackedColorArray *p_instance, const Variant &p_value, const Callable &p_func, bool p_before) {
+		return p_instance->bsearch_custom<CallableComparator>(p_value, p_before, p_func);
+	}
+
 	static void func_Callable_call(Variant *v, const Variant **p_args, int p_argcount, Variant &r_ret, Callable::CallError &r_error) {
 		Callable *callable = VariantGetInternalPtr<Callable>::get_ptr(v);
 		callable->call(p_args, p_argcount, r_ret, r_error);
@@ -1845,7 +1917,9 @@ static void _register_variant_builtin_methods() {
 	bind_method(PackedByteArray, reverse, sarray(), varray());
 	bind_method(PackedByteArray, subarray, sarray("from", "to"), varray());
 	bind_method(PackedByteArray, sort, sarray(), varray());
+	bind_functionnc(PackedByteArray, sort_custom, _VariantCall::func_PackedByteArray_sort_custom, sarray("func"), varray());
 	bind_method(PackedByteArray, bsearch, sarray("value", "before"), varray(true));
+	bind_function(PackedByteArray, bsearch_custom, _VariantCall::func_PackedByteArray_bsearch_custom, sarray("value", "func", "before"), varray(true));
 	bind_method(PackedByteArray, duplicate, sarray(), varray());
 
 	bind_function(PackedByteArray, get_string_from_ascii, _VariantCall::func_PackedByteArray_get_string_from_ascii, sarray(), varray());
@@ -1907,7 +1981,9 @@ static void _register_variant_builtin_methods() {
 	bind_method(PackedInt32Array, subarray, sarray("from", "to"), varray());
 	bind_method(PackedInt32Array, to_byte_array, sarray(), varray());
 	bind_method(PackedInt32Array, sort, sarray(), varray());
+	bind_functionnc(PackedInt32Array, sort_custom, _VariantCall::func_PackedInt32Array_sort_custom, sarray("func"), varray());
 	bind_method(PackedInt32Array, bsearch, sarray("value", "before"), varray(true));
+	bind_function(PackedInt32Array, bsearch_custom, _VariantCall::func_PackedInt32Array_bsearch_custom, sarray("value", "func", "before"), varray(true));
 	bind_method(PackedInt32Array, duplicate, sarray(), varray());
 
 	/* Int64 Array */
@@ -1927,7 +2003,9 @@ static void _register_variant_builtin_methods() {
 	bind_method(PackedInt64Array, subarray, sarray("from", "to"), varray());
 	bind_method(PackedInt64Array, to_byte_array, sarray(), varray());
 	bind_method(PackedInt64Array, sort, sarray(), varray());
+	bind_functionnc(PackedInt64Array, sort_custom, _VariantCall::func_PackedInt64Array_sort_custom, sarray("func"), varray());
 	bind_method(PackedInt64Array, bsearch, sarray("value", "before"), varray(true));
+	bind_function(PackedInt64Array, bsearch_custom, _VariantCall::func_PackedInt64Array_bsearch_custom, sarray("value", "func", "before"), varray(true));
 	bind_method(PackedInt64Array, duplicate, sarray(), varray());
 
 	/* Float32 Array */
@@ -1947,7 +2025,9 @@ static void _register_variant_builtin_methods() {
 	bind_method(PackedFloat32Array, subarray, sarray("from", "to"), varray());
 	bind_method(PackedFloat32Array, to_byte_array, sarray(), varray());
 	bind_method(PackedFloat32Array, sort, sarray(), varray());
+	bind_functionnc(PackedFloat32Array, sort_custom, _VariantCall::func_PackedFloat32Array_sort_custom, sarray("func"), varray());
 	bind_method(PackedFloat32Array, bsearch, sarray("value", "before"), varray(true));
+	bind_function(PackedFloat32Array, bsearch_custom, _VariantCall::func_PackedFloat32Array_bsearch_custom, sarray("value", "func", "before"), varray(true));
 	bind_method(PackedFloat32Array, duplicate, sarray(), varray());
 
 	/* Float64 Array */
@@ -1967,7 +2047,9 @@ static void _register_variant_builtin_methods() {
 	bind_method(PackedFloat64Array, subarray, sarray("from", "to"), varray());
 	bind_method(PackedFloat64Array, to_byte_array, sarray(), varray());
 	bind_method(PackedFloat64Array, sort, sarray(), varray());
+	bind_functionnc(PackedFloat64Array, sort_custom, _VariantCall::func_PackedFloat64Array_sort_custom, sarray("func"), varray());
 	bind_method(PackedFloat64Array, bsearch, sarray("value", "before"), varray(true));
+	bind_function(PackedFloat64Array, bsearch_custom, _VariantCall::func_PackedFloat64Array_bsearch_custom, sarray("value", "func", "before"), varray(true));
 	bind_method(PackedFloat64Array, duplicate, sarray(), varray());
 
 	/* String Array */
@@ -1987,7 +2069,9 @@ static void _register_variant_builtin_methods() {
 	bind_method(PackedStringArray, subarray, sarray("from", "to"), varray());
 	bind_method(PackedStringArray, to_byte_array, sarray(), varray());
 	bind_method(PackedStringArray, sort, sarray(), varray());
+	bind_functionnc(PackedStringArray, sort_custom, _VariantCall::func_PackedStringArray_sort_custom, sarray("func"), varray());
 	bind_method(PackedStringArray, bsearch, sarray("value", "before"), varray(true));
+	bind_function(PackedStringArray, bsearch_custom, _VariantCall::func_PackedStringArray_bsearch_custom, sarray("value", "func", "before"), varray(true));
 	bind_method(PackedStringArray, duplicate, sarray(), varray());
 
 	/* Vector2 Array */
@@ -2007,7 +2091,9 @@ static void _register_variant_builtin_methods() {
 	bind_method(PackedVector2Array, subarray, sarray("from", "to"), varray());
 	bind_method(PackedVector2Array, to_byte_array, sarray(), varray());
 	bind_method(PackedVector2Array, sort, sarray(), varray());
+	bind_functionnc(PackedVector2Array, sort_custom, _VariantCall::func_PackedVector2Array_sort_custom, sarray("func"), varray());
 	bind_method(PackedVector2Array, bsearch, sarray("value", "before"), varray(true));
+	bind_function(PackedVector2Array, bsearch_custom, _VariantCall::func_PackedVector2Array_bsearch_custom, sarray("value", "func", "before"), varray(true));
 	bind_method(PackedVector2Array, duplicate, sarray(), varray());
 
 	/* Vector3 Array */
@@ -2027,7 +2113,9 @@ static void _register_variant_builtin_methods() {
 	bind_method(PackedVector3Array, subarray, sarray("from", "to"), varray());
 	bind_method(PackedVector3Array, to_byte_array, sarray(), varray());
 	bind_method(PackedVector3Array, sort, sarray(), varray());
+	bind_functionnc(PackedVector3Array, sort_custom, _VariantCall::func_PackedVector3Array_sort_custom, sarray("func"), varray());
 	bind_method(PackedVector3Array, bsearch, sarray("value", "before"), varray(true));
+	bind_function(PackedVector3Array, bsearch_custom, _VariantCall::func_PackedVector3Array_bsearch_custom, sarray("value", "func", "before"), varray(true));
 	bind_method(PackedVector3Array, duplicate, sarray(), varray());
 
 	/* Color Array */
@@ -2047,7 +2135,9 @@ static void _register_variant_builtin_methods() {
 	bind_method(PackedColorArray, subarray, sarray("from", "to"), varray());
 	bind_method(PackedColorArray, to_byte_array, sarray(), varray());
 	bind_method(PackedColorArray, sort, sarray(), varray());
+	bind_functionnc(PackedColorArray, sort_custom, _VariantCall::func_PackedColorArray_sort_custom, sarray("func"), varray());
 	bind_method(PackedColorArray, bsearch, sarray("value", "before"), varray(true));
+	bind_function(PackedColorArray, bsearch_custom, _VariantCall::func_PackedColorArray_bsearch_custom, sarray("value", "func", "before"), varray(true));
 	bind_method(PackedColorArray, duplicate, sarray(), varray());
 
 	/* Register constants */
