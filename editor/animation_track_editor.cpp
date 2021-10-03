@@ -3421,7 +3421,7 @@ Ref<Animation> AnimationTrackEditor::get_current_animation() const {
 	return animation;
 }
 
-void AnimationTrackEditor::_root_removed(Node *p_root) {
+void AnimationTrackEditor::_root_removed() {
 	root = nullptr;
 }
 
