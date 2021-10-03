@@ -2617,6 +2617,12 @@ void _Thread::_start_func(void *ud) {
 	Ref<_Thread> *tud = (Ref<_Thread> *)ud;
 	Ref<_Thread> t = *tud;
 	memdelete(tud);
+
+	Object *target_instance = ObjectDB::get_instance(t->target_instance_id);
+	if (!target_instance) {
+		ERR_FAIL_MSG(vformat("Could not call function '%s' on previously freed instance to start thread %s.", t->target_method, t->get_id()));
+	}
+
 	Variant::CallError ce;
 	const Variant *arg[1] = { &t->userdata };
 	int argc = 0;
@@ -2635,15 +2641,17 @@ void _Thread::_start_func(void *ud) {
 		// We must check if we are in case b).
 		int target_param_count = 0;
 		int target_default_arg_count = 0;
-		Ref<Script> script = t->target_instance->get_script();
+		Ref<Script> script = target_instance->get_script();
 		if (script.is_valid()) {
 			MethodInfo mi = script->get_method_info(t->target_method);
 			target_param_count = mi.arguments.size();
 			target_default_arg_count = mi.default_arguments.size();
 		} else {
-			MethodBind *method = ClassDB::get_method(t->target_instance->get_class_name(), t->target_method);
-			target_param_count = method->get_argument_count();
-			target_default_arg_count = method->get_default_argument_count();
+			MethodBind *method = ClassDB::get_method(target_instance->get_class_name(), t->target_method);
+			if (method) {
+				target_param_count = method->get_argument_count();
+				target_default_arg_count = method->get_default_argument_count();
+			}
 		}
 		if (target_param_count >= 1 && target_default_arg_count < target_param_count) {
 			argc = 1;
@@ -2652,7 +2660,7 @@ void _Thread::_start_func(void *ud) {
 
 	Thread::set_name(t->target_method);
 
-	t->ret = t->target_instance->call(t->target_method, arg, argc, ce);
+	t->ret = target_instance->call(t->target_method, arg, argc, ce);
 	if (ce.error != Variant::CallError::CALL_OK) {
 		String reason;
 		switch (ce.error) {
@@ -2684,7 +2692,7 @@ Error _Thread::start(Object *p_instance, const StringName &p_method, const Varia
 
 	ret = Variant();
 	target_method = p_method;
-	target_instance = p_instance;
+	target_instance_id = p_instance->get_instance_id();
 	userdata = p_userdata;
 	active.set();
 
@@ -2709,7 +2717,7 @@ Variant _Thread::wait_to_finish() {
 	thread.wait_to_finish();
 	Variant r = ret;
 	target_method = StringName();
-	target_instance = nullptr;
+	target_instance_id = ObjectID();
 	userdata = Variant();
 	active.clear();
 
@@ -2727,7 +2735,7 @@ void _Thread::_bind_methods() {
 	BIND_ENUM_CONSTANT(PRIORITY_HIGH);
 }
 _Thread::_Thread() {
-	target_instance = nullptr;
+	target_instance_id = ObjectID();
 }
 
 _Thread::~_Thread() {
