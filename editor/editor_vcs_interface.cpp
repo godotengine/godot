@@ -74,6 +74,11 @@ Array EditorVCSInterface::_get_branch_list() {
 	return Array();
 }
 
+String EditorVCSInterface::_get_current_branch_name(bool p_full_ref) {
+	_not_implemented_function(__FUNCTION__);
+	return "";
+}
+
 bool EditorVCSInterface::_checkout_branch(String p_branch) {
 	_not_implemented_function(__FUNCTION__);
 	return false;
@@ -99,23 +104,19 @@ String EditorVCSInterface::_get_vcs_name() {
 	return "";
 }
 
-void EditorVCSInterface::_pull() {
+void EditorVCSInterface::_pull(String p_remote, String p_username, String p_password) {
 	_not_implemented_function(__FUNCTION__);
 	return;
 }
 
-void EditorVCSInterface::_push() {
+void EditorVCSInterface::_push(String p_remote, String p_username, String p_password) {
 	_not_implemented_function(__FUNCTION__);
 	return;
 }
 
-void EditorVCSInterface::_fetch() {
+void EditorVCSInterface::_fetch(String p_remote, String p_username, String p_password) {
 	_not_implemented_function(__FUNCTION__);
 	return;
-}
-
-void EditorVCSInterface::_set_up_credentials(String p_username, String p_password) {
-	_not_implemented_function(__FUNCTION__);
 }
 
 Array EditorVCSInterface::_get_line_diff(String p_file_path, String p_text) {
@@ -124,7 +125,7 @@ Array EditorVCSInterface::_get_line_diff(String p_file_path, String p_text) {
 }
 
 void EditorVCSInterface::popup_error(String p_msg) {
-	EditorNode::get_singleton()->show_warning(p_msg, get_vcs_name() + TTR(": Error"));
+	EditorNode::get_singleton()->show_warning(p_msg + "\n", get_vcs_name() + TTR(" Error"));
 }
 
 bool EditorVCSInterface::initialize(String p_project_root_path) {
@@ -211,6 +212,13 @@ List<String> EditorVCSInterface::get_branch_list() {
 	return branch_list;
 }
 
+String EditorVCSInterface::get_current_branch_name(bool p_full_ref) {
+	if (is_plugin_ready()) {
+		return call("_get_current_branch_name", p_full_ref);
+	}
+	return "";
+}
+
 bool EditorVCSInterface::checkout_branch(String p_branch) {
 	if (is_plugin_ready()) {
 		return call("_checkout_branch", p_branch);
@@ -218,21 +226,21 @@ bool EditorVCSInterface::checkout_branch(String p_branch) {
 	return false;
 }
 
-void EditorVCSInterface::pull() {
+void EditorVCSInterface::pull(String p_remote, String p_username, String p_password) {
 	if (is_plugin_ready()) {
-		call("_pull");
+		call("_pull", p_remote, p_username, p_password);
 	}
 }
 
-void EditorVCSInterface::push() {
+void EditorVCSInterface::push(String p_remote, String p_username, String p_password) {
 	if (is_plugin_ready()) {
-		call("_push");
+		call("_push", p_remote, p_username, p_password);
 	}
 }
 
-void EditorVCSInterface::fetch() {
+void EditorVCSInterface::fetch(String p_remote, String p_username, String p_password) {
 	if (is_plugin_ready()) {
-		call("_fetch");
+		call("_fetch", p_remote, p_username, p_password);
 	}
 }
 
@@ -258,10 +266,6 @@ String EditorVCSInterface::get_project_name() {
 
 String EditorVCSInterface::get_vcs_name() {
 	return call("_get_vcs_name");
-}
-
-void EditorVCSInterface::set_up_credentials(String p_username, String p_password) {
-	call("_set_up_credentials", p_username, p_password);
 }
 
 Dictionary EditorVCSInterface::create_diff_line(int new_line_no, int old_line_no, String p_content, String p_status) {
@@ -314,7 +318,7 @@ Dictionary EditorVCSInterface::add_diff_hunks_into_diff_file(Dictionary p_diff_f
 Dictionary EditorVCSInterface::create_status_file(String p_file_path, ChangeType p_change, TreeArea p_area) {
 	Dictionary sf;
 	sf["file_path"] = p_file_path;
-	sf["chanage_type"] = p_change;
+	sf["change_type"] = p_change;
 	sf["area"] = p_area;
 	return sf;
 }
@@ -368,17 +372,17 @@ EditorVCSInterface::Commit EditorVCSInterface::_convert_commit(Dictionary p_comm
 EditorVCSInterface::StatusFile EditorVCSInterface::_convert_status_file(Dictionary p_status_file) {
 	StatusFile sf;
 	sf.file_path = p_status_file["file_path"];
-	sf.change_type = (ChangeType)(int)p_status_file["chanage_type"];
+	sf.change_type = (ChangeType)(int)p_status_file["change_type"];
 	sf.area = (TreeArea)(int)p_status_file["area"];
 	return sf;
 }
 
 void EditorVCSInterface::_not_implemented_function(String p_function) {
-	ERR_PRINT(vformat("The selected VCS plugin does not implement the \"%s\" function.", p_function));
+	popup_error(vformat("The selected VCS plugin does not implement the \"%s\" function.", p_function));
 }
 
 void EditorVCSInterface::_bind_methods() {
-	// Proxy end points that act as fallbacks to unavailability of a function in the VCS addon
+	// Proxy end points that act as fallbacks to unavailability of a function in the VCS plugin
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::BOOL, "_initialize", PropertyInfo(Variant::STRING, "project_root_path")));
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::BOOL, "_is_vcs_initialized"));
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::STRING, "_get_vcs_name"));
@@ -392,11 +396,11 @@ void EditorVCSInterface::_bind_methods() {
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo("_discard_file", PropertyInfo(Variant::STRING, "file_path")));
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::ARRAY, "_get_previous_commits"));
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::ARRAY, "_get_branch_list"));
+	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::STRING, "_get_current_branch_name", PropertyInfo(Variant::BOOL, "full_ref")));
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::BOOL, "_checkout_branch", PropertyInfo(Variant::STRING, "branch")));
-	ClassDB::add_virtual_method(get_class_static(), MethodInfo("_push"));
-	ClassDB::add_virtual_method(get_class_static(), MethodInfo("_pull"));
-	ClassDB::add_virtual_method(get_class_static(), MethodInfo("_fetch"));
-	ClassDB::add_virtual_method(get_class_static(), MethodInfo("_set_up_credentials", PropertyInfo(Variant::STRING, "username"), PropertyInfo(Variant::STRING, "password")));
+	ClassDB::add_virtual_method(get_class_static(), MethodInfo("_push", PropertyInfo(Variant::STRING, "remote"), PropertyInfo(Variant::STRING, "username"), PropertyInfo(Variant::STRING, "password")));
+	ClassDB::add_virtual_method(get_class_static(), MethodInfo("_pull", PropertyInfo(Variant::STRING, "remote"), PropertyInfo(Variant::STRING, "username"), PropertyInfo(Variant::STRING, "password")));
+	ClassDB::add_virtual_method(get_class_static(), MethodInfo("_fetch", PropertyInfo(Variant::STRING, "remote"), PropertyInfo(Variant::STRING, "username"), PropertyInfo(Variant::STRING, "password")));
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::ARRAY, "_get_line_diff", PropertyInfo(Variant::STRING, "file_path"), PropertyInfo(Variant::STRING, "text")));
 
 	ClassDB::bind_method(D_METHOD("is_plugin_ready"), &EditorVCSInterface::is_plugin_ready);

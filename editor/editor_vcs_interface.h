@@ -100,7 +100,7 @@ protected:
 
 	static void _bind_methods();
 
-	// Implemented by addons as end points for the proxy functions
+	// Implemented by plugins as end points for the proxy functions
 	virtual bool _initialize(String p_project_root_path);
 	virtual bool _is_vcs_initialized();
 	virtual Array _get_modified_files_data();
@@ -114,11 +114,11 @@ protected:
 	virtual String _get_vcs_name();
 	virtual Array _get_previous_commits();
 	virtual Array _get_branch_list();
-	virtual void _pull();
-	virtual void _push();
-	virtual void _fetch();
+	virtual String _get_current_branch_name(bool p_full_ref);
+	virtual void _pull(String p_remote, String p_username, String p_password);
+	virtual void _push(String p_remote, String p_username, String p_password);
+	virtual void _fetch(String p_remote, String p_username, String p_password);
 	virtual bool _checkout_branch(String p_branch);
-	virtual void _set_up_credentials(String p_username, String p_password);
 	virtual Array _get_line_diff(String p_file_path, String p_text);
 
 	DiffLine _convert_diff_line(Dictionary p_diff_line);
@@ -147,11 +147,11 @@ public:
 	String get_vcs_name();
 	List<Commit> get_previous_commits();
 	List<String> get_branch_list();
+	String get_current_branch_name(bool p_full_ref);
 	bool checkout_branch(String p_branch);
-	void pull();
-	void push();
-	void fetch();
-	void set_up_credentials(String p_username, String p_password);
+	void pull(String p_remote, String p_username, String p_password);
+	void push(String p_remote, String p_username, String p_password);
+	void fetch(String p_remote, String p_username, String p_password);
 	List<DiffHunk> get_line_diff(String p_file_path, String p_text);
 
 	// Helper functions to create and convert Dictionary into data structures

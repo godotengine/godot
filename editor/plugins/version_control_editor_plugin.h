@@ -58,13 +58,13 @@ public:
 private:
 	static VersionControlEditorPlugin *singleton;
 
-	List<StringName> available_addons;
+	List<StringName> available_plugins;
 
 	PopupMenu *version_control_actions;
 	AcceptDialog *set_up_dialog;
 	OptionButton *set_up_choice;
-	PanelContainer *set_up_init_settings;
 	Button *set_up_init_button;
+	LineEdit *set_up_remote_name;
 	LineEdit *set_up_username;
 	LineEdit *set_up_password;
 
@@ -100,11 +100,9 @@ private:
 
 	void _notification(int p_what);
 	void _initialize_vcs();
-	void _selected_a_vcs(int p_id);
 	void _populate_available_vcs_names();
-	bool _load_addon(String p_path);
+	bool _load_plugin(String p_path);
 	void _set_up();
-	void _set_credentials();
 	void _update_opened_tabs();
 
 	void _pull();
@@ -121,13 +119,14 @@ private:
 	void _clear_diff();
 	int _get_item_count(Tree *p_tree);
 	void _item_activated(Object *p_tree);
-	void _branch_item_selected(int index);
+	void _branch_item_selected(int p_index);
 	void _move_item(Tree *p_tree, TreeItem *p_itme);
 	void _display_diff_split_view(List<EditorVCSInterface::DiffLine> &p_diff_content);
 	void _display_diff_unified_view(List<EditorVCSInterface::DiffLine> &p_diff_content);
 	void _discard_file(String p_file_path, EditorVCSInterface::ChangeType change);
-	void _cell_button_pressed(Object *p_item, int column, int id);
-	void _add_new_item(Tree *p_tree, String p_file_path, EditorVCSInterface::ChangeType change);
+	void _cell_button_pressed(Object *p_item, int p_column, int p_id);
+	void _add_new_item(Tree *p_tree, String p_file_path, EditorVCSInterface::ChangeType p_change);
+	void _update_commit_button();
 	void _commit_message_gui_input(const Ref<InputEvent> &p_event);
 
 	friend class EditorVCSInterface;
@@ -145,12 +144,12 @@ public:
 	VBoxContainer *get_version_commit_dock() const { return version_commit_dock; }
 	VBoxContainer *get_version_control_dock() const { return version_control_dock; }
 
-	List<StringName> get_available_vcs_names() const { return available_addons; }
+	List<StringName> get_available_vcs_names() const { return available_plugins; }
 	bool is_vcs_initialized() const;
 	const String get_vcs_name() const;
 
 	void register_editor();
-	void fetch_available_vcs_addon_names();
+	void fetch_available_vcs_plugin_names();
 	void shut_down();
 
 	VersionControlEditorPlugin();
