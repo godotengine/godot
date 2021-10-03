@@ -31,7 +31,7 @@
 #include "gl_manager_x11.h"
 
 #ifdef X11_ENABLED
-#if defined(GLES_X11_ENABLED)
+#if defined(OPENGL_X11_ENABLED)
 
 #include <stdio.h>
 #include <stdlib.h>

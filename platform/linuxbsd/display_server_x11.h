@@ -48,7 +48,7 @@
 #include "servers/rendering/renderer_compositor.h"
 #include "servers/rendering_server.h"
 
-#if defined(GLES_X11_ENABLED)
+#if defined(OPENGL_X11_ENABLED)
 #include "gl_manager_x11.h"
 #endif
 
@@ -101,7 +101,7 @@ class DisplayServerX11 : public DisplayServer {
 	Atom requested;
 	int xdnd_version;
 
-#if defined(GLES_X11_ENABLED)
+#if defined(OPENGL_X11_ENABLED)
 	GLManager_X11 *gl_manager = nullptr;
 #endif
 #if defined(VULKAN_ENABLED)
