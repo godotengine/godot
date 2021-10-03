@@ -1120,13 +1120,16 @@
 			<argument index="0" name="env" type="RID" />
 			<argument index="1" name="enable" type="bool" />
 			<argument index="2" name="density" type="float" />
-			<argument index="3" name="light" type="Color" />
-			<argument index="4" name="light_energy" type="float" />
-			<argument index="5" name="length" type="float" />
-			<argument index="6" name="p_detail_spread" type="float" />
-			<argument index="7" name="gi_inject" type="float" />
-			<argument index="8" name="temporal_reprojection" type="bool" />
-			<argument index="9" name="temporal_reprojection_amount" type="float" />
+			<argument index="3" name="albedo" type="Color" />
+			<argument index="4" name="emission" type="Color" />
+			<argument index="5" name="emission_energy" type="float" />
+			<argument index="6" name="anisotropy" type="float" />
+			<argument index="7" name="length" type="float" />
+			<argument index="8" name="p_detail_spread" type="float" />
+			<argument index="9" name="gi_inject" type="float" />
+			<argument index="10" name="temporal_reprojection" type="bool" />
+			<argument index="11" name="temporal_reprojection_amount" type="float" />
+			<argument index="12" name="ambient_inject" type="float" />
 			<description>
 			</description>
 		</method>
@@ -1134,6 +1137,7 @@
 			<return type="void" />
 			<argument index="0" name="active" type="bool" />
 			<description>
+				Enables filtering of the volumetric fog scattering buffer. This results in much smoother volumes with very few under-sampling artifacts.
 			</description>
 		</method>
 		<method name="environment_set_volumetric_fog_volume_size">
@@ -1141,6 +1145,37 @@
 			<argument index="0" name="size" type="int" />
 			<argument index="1" name="depth" type="int" />
 			<description>
+				Sets the resolution of the volumetric fog's froxel buffer. [code]size[/code] is modified by the screen's aspect ratio and then used to set the width and height of the buffer. While [code]depth[/code] is directly used to set the depth of the buffer.
+			</description>
+		</method>
+		<method name="fog_volume_create">
+			<return type="RID" />
+			<description>
+				Creates a new fog volume and allocates an RID.
+			</description>
+		</method>
+		<method name="fog_volume_set_extents">
+			<return type="void" />
+			<argument index="0" name="fog_volume" type="RID" />
+			<argument index="1" name="extents" type="Vector3" />
+			<description>
+				Sets the size of the fog volume when shape is [constant FOG_VOLUME_SHAPE_ELLIPSOID] or [constant FOG_VOLUME_SHAPE_BOX].
+			</description>
+		</method>
+		<method name="fog_volume_set_material">
+			<return type="void" />
+			<argument index="0" name="fog_volume" type="RID" />
+			<argument index="1" name="material" type="RID" />
+			<description>
+				Sets the [Material] of the fog volume. Can be either a [FogMaterial] or a custom [ShaderMaterial].
+			</description>
+		</method>
+		<method name="fog_volume_set_shape">
+			<return type="void" />
+			<argument index="0" name="fog_volume" type="RID" />
+			<argument index="1" name="shape" type="int" enum="RenderingServer.FogVolumeShape" />
+			<description>
+				Sets the shape of the fog volume to either [constant RenderingServer.FOG_VOLUME_SHAPE_ELLIPSOID], [constant RenderingServer.FOG_VOLUME_SHAPE_BOX], or [constant RenderingServer.FOG_VOLUME_SHAPE_ELLIPSOID] or [constant RenderingServer.FOG_VOLUME_SHAPE_WORLD].
 			</description>
 		</method>
 		<method name="force_draw">
@@ -1428,6 +1463,13 @@
 			<argument index="1" name="margin" type="float" />
 			<description>
 				Sets a margin to increase the size of the AABB when culling objects from the view frustum. This allows you to avoid culling objects that fall outside the view frustum. Equivalent to [member GeometryInstance3D.extra_cull_margin].
+			</description>
+		</method>
+		<method name="instance_set_ignore_culling">
+			<return type="void" />
+			<argument index="0" name="instance" type="RID" />
+			<argument index="1" name="enabled" type="bool" />
+			<description>
 			</description>
 		</method>
 		<method name="instance_set_layer_mask">
@@ -3417,7 +3459,10 @@
 		<constant name="SHADER_SKY" value="3" enum="ShaderMode">
 			Shader is a sky shader.
 		</constant>
-		<constant name="SHADER_MAX" value="4" enum="ShaderMode">
+		<constant name="SHADER_FOG" value="4" enum="ShaderMode">
+			Shader is a fog shader.
+		</constant>
+		<constant name="SHADER_MAX" value="5" enum="ShaderMode">
 			Represents the size of the [enum ShaderMode] enum.
 		</constant>
 		<constant name="MATERIAL_RENDER_PRIORITY_MIN" value="-128">
@@ -3789,6 +3834,15 @@
 		</constant>
 		<constant name="PARTICLES_COLLISION_HEIGHTFIELD_RESOLUTION_MAX" value="6" enum="ParticlesCollisionHeightfieldResolution">
 		</constant>
+		<constant name="FOG_VOLUME_SHAPE_ELLIPSOID" value="0" enum="FogVolumeShape">
+			[FogVolume] will be shaped like an ellipsoid.
+		</constant>
+		<constant name="FOG_VOLUME_SHAPE_BOX" value="1" enum="FogVolumeShape">
+			[FogVolume] will be shaped like a box.
+		</constant>
+		<constant name="FOG_VOLUME_SHAPE_WORLD" value="2" enum="FogVolumeShape">
+			[FogVolume] will have no shape, will cover the whole world and will not be culled.
+		</constant>
 		<constant name="VIEWPORT_UPDATE_DISABLED" value="0" enum="ViewportUpdateMode">
 			Do not update the viewport.
 		</constant>
@@ -4155,7 +4209,9 @@
 		</constant>
 		<constant name="INSTANCE_VISIBLITY_NOTIFIER" value="11" enum="InstanceType">
 		</constant>
-		<constant name="INSTANCE_MAX" value="12" enum="InstanceType">
+		<constant name="INSTANCE_FOG_VOLUME" value="12" enum="InstanceType">
+		</constant>
+		<constant name="INSTANCE_MAX" value="13" enum="InstanceType">
 			Represents the size of the [enum InstanceType] enum.
 		</constant>
 		<constant name="INSTANCE_GEOMETRY_MASK" value="14" enum="InstanceType">

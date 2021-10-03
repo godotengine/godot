@@ -41,6 +41,7 @@
 #include "scene/3d/collision_shape_3d.h"
 #include "scene/3d/cpu_particles_3d.h"
 #include "scene/3d/decal.h"
+#include "scene/3d/fog_volume.h"
 #include "scene/3d/gpu_particles_3d.h"
 #include "scene/3d/gpu_particles_collision_3d.h"
 #include "scene/3d/joint_3d.h"
@@ -5272,3 +5273,119 @@ void Joint3DGizmoPlugin::CreateGeneric6DOFJointGizmo(
 
 #undef ADD_VTX
 }
+
+////
+
+FogVolumeGizmoPlugin::FogVolumeGizmoPlugin() {
+	Color gizmo_color = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/fog_volume", Color(0.5, 0.7, 1));
+	create_material("shape_material", gizmo_color);
+	gizmo_color.a = 0.15;
+	create_material("shape_material_internal", gizmo_color);
+
+	create_handle_material("handles");
+}
+
+bool FogVolumeGizmoPlugin::has_gizmo(Node3D *p_spatial) {
+	return (Object::cast_to<FogVolume>(p_spatial) != nullptr);
+}
+
+String FogVolumeGizmoPlugin::get_gizmo_name() const {
+	return "FogVolume";
+}
+
+int FogVolumeGizmoPlugin::get_priority() const {
+	return -1;
+}
+
+String FogVolumeGizmoPlugin::get_handle_name(const EditorNode3DGizmo *p_gizmo, int p_id) const {
+	return "Extents";
+}
+
+Variant FogVolumeGizmoPlugin::get_handle_value(const EditorNode3DGizmo *p_gizmo, int p_id) const {
+	return Vector3(p_gizmo->get_spatial_node()->call("get_extents"));
+}
+
+void FogVolumeGizmoPlugin::set_handle(const EditorNode3DGizmo *p_gizmo, int p_id, Camera3D *p_camera, const Point2 &p_point) {
+	Node3D *sn = p_gizmo->get_spatial_node();
+
+	Transform3D gt = sn->get_global_transform();
+	Transform3D gi = gt.affine_inverse();
+
+	Vector3 ray_from = p_camera->project_ray_origin(p_point);
+	Vector3 ray_dir = p_camera->project_ray_normal(p_point);
+
+	Vector3 sg[2] = { gi.xform(ray_from), gi.xform(ray_from + ray_dir * 4096) };
+
+	Vector3 axis;
+	axis[p_id] = 1.0;
+	Vector3 ra, rb;
+	Geometry3D::get_closest_points_between_segments(Vector3(), axis * 4096, sg[0], sg[1], ra, rb);
+	float d = ra[p_id];
+	if (Node3DEditor::get_singleton()->is_snap_enabled()) {
+		d = Math::snapped(d, Node3DEditor::get_singleton()->get_translate_snap());
+	}
+
+	if (d < 0.001) {
+		d = 0.001;
+	}
+
+	Vector3 he = sn->call("get_extents");
+	he[p_id] = d;
+	sn->call("set_extents", he);
+}
+
+void FogVolumeGizmoPlugin::commit_handle(const EditorNode3DGizmo *p_gizmo, int p_id, const Variant &p_restore, bool p_cancel) {
+	Node3D *sn = p_gizmo->get_spatial_node();
+
+	if (p_cancel) {
+		sn->call("set_extents", p_restore);
+		return;
+	}
+
+	UndoRedo *ur = Node3DEditor::get_singleton()->get_undo_redo();
+	ur->create_action(TTR("Change Fog Volume Extents"));
+	ur->add_do_method(sn, "set_extents", sn->call("get_extents"));
+	ur->add_undo_method(sn, "set_extents", p_restore);
+	ur->commit_action();
+}
+
+void FogVolumeGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
+	Node3D *cs = p_gizmo->get_spatial_node();
+
+	p_gizmo->clear();
+
+	if (RS::FogVolumeShape(int(p_gizmo->get_spatial_node()->call("get_shape"))) != RS::FOG_VOLUME_SHAPE_WORLD) {
+		const Ref<Material> material =
+				get_material("shape_material", p_gizmo);
+		const Ref<Material> material_internal =
+				get_material("shape_material_internal", p_gizmo);
+
+		Ref<Material> handles_material = get_material("handles");
+
+		Vector<Vector3> lines;
+		AABB aabb;
+		aabb.position = -cs->call("get_extents").operator Vector3();
+		aabb.size = aabb.position * -2;
+
+		for (int i = 0; i < 12; i++) {
+			Vector3 a, b;
+			aabb.get_edge(i, a, b);
+			lines.push_back(a);
+			lines.push_back(b);
+		}
+
+		Vector<Vector3> handles;
+
+		for (int i = 0; i < 3; i++) {
+			Vector3 ax;
+			ax[i] = cs->call("get_extents").operator Vector3()[i];
+			handles.push_back(ax);
+		}
+
+		p_gizmo->add_lines(lines, material);
+		p_gizmo->add_collision_segments(lines);
+		p_gizmo->add_handles(handles, handles_material);
+	}
+}
+
+/////

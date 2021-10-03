@@ -540,6 +540,10 @@ void RendererSceneCull::instance_set_base(RID p_instance, RID p_base) {
 				InstanceParticlesCollisionData *collision = static_cast<InstanceParticlesCollisionData *>(instance->base_data);
 				RSG::storage->free(collision->instance);
 			} break;
+			case RS::INSTANCE_FOG_VOLUME: {
+				InstanceFogVolumeData *volume = static_cast<InstanceFogVolumeData *>(instance->base_data);
+				scene_render->free(volume->instance);
+			} break;
 			case RS::INSTANCE_VISIBLITY_NOTIFIER: {
 				//none
 			} break;
@@ -656,6 +660,12 @@ void RendererSceneCull::instance_set_base(RID p_instance, RID p_base) {
 				collision->instance = RSG::storage->particles_collision_instance_create(p_base);
 				RSG::storage->particles_collision_instance_set_active(collision->instance, instance->visible);
 				instance->base_data = collision;
+			} break;
+			case RS::INSTANCE_FOG_VOLUME: {
+				InstanceFogVolumeData *volume = memnew(InstanceFogVolumeData);
+				volume->instance = scene_render->fog_volume_instance_create(p_base);
+				scene_render->fog_volume_instance_set_active(volume->instance, instance->visible);
+				instance->base_data = volume;
 			} break;
 			case RS::INSTANCE_VISIBLITY_NOTIFIER: {
 				InstanceVisibilityNotifierData *vnd = memnew(InstanceVisibilityNotifierData);
@@ -930,6 +940,11 @@ void RendererSceneCull::instance_set_visible(RID p_instance, bool p_visible) {
 		RSG::storage->particles_collision_instance_set_active(collision->instance, p_visible);
 	}
 
+	if (instance->base_type == RS::INSTANCE_FOG_VOLUME) {
+		InstanceFogVolumeData *volume = static_cast<InstanceFogVolumeData *>(instance->base_data);
+		scene_render->fog_volume_instance_set_active(volume->instance, p_visible);
+	}
+
 	if (instance->base_type == RS::INSTANCE_OCCLUDER) {
 		if (instance->scenario) {
 			RendererSceneOcclusionCull::get_singleton()->scenario_set_instance(instance->scenario->self, p_instance, instance->base, instance->transform, p_visible);
@@ -997,6 +1012,21 @@ void RendererSceneCull::instance_set_extra_visibility_margin(RID p_instance, rea
 
 	instance->extra_margin = p_margin;
 	_instance_queue_update(instance, true, false);
+}
+
+void RendererSceneCull::instance_set_ignore_culling(RID p_instance, bool p_enabled) {
+	Instance *instance = instance_owner.get_or_null(p_instance);
+	ERR_FAIL_COND(!instance);
+	instance->ignore_all_culling = p_enabled;
+
+	if (instance->scenario && instance->array_index >= 0) {
+		InstanceData &idata = instance->scenario->instance_data[instance->array_index];
+		if (instance->ignore_all_culling) {
+			idata.flags |= InstanceData::FLAG_IGNORE_ALL_CULLING;
+		} else {
+			idata.flags &= ~uint32_t(InstanceData::FLAG_IGNORE_ALL_CULLING);
+		}
+	}
 }
 
 Vector<ObjectID> RendererSceneCull::instances_cull_aabb(const AABB &p_aabb, RID p_scenario) const {
@@ -1491,6 +1521,9 @@ void RendererSceneCull::_update_instance(Instance *p_instance) {
 			heightfield_particle_colliders_update_list.insert(p_instance);
 		}
 		RSG::storage->particles_collision_instance_set_transform(collision->instance, p_instance->transform);
+	} else if (p_instance->base_type == RS::INSTANCE_FOG_VOLUME) {
+		InstanceFogVolumeData *volume = static_cast<InstanceFogVolumeData *>(p_instance->base_data);
+		scene_render->fog_volume_instance_set_transform(volume->instance, p_instance->transform);
 	} else if (p_instance->base_type == RS::INSTANCE_OCCLUDER) {
 		if (p_instance->scenario) {
 			RendererSceneOcclusionCull::get_singleton()->scenario_set_instance(p_instance->scenario->self, p_instance->self, p_instance->base, p_instance->transform, p_instance->visible);
@@ -1612,6 +1645,9 @@ void RendererSceneCull::_update_instance(Instance *p_instance) {
 			case RS::INSTANCE_VOXEL_GI: {
 				idata.instance_data_rid = static_cast<InstanceVoxelGIData *>(p_instance->base_data)->probe_instance.get_id();
 			} break;
+			case RS::INSTANCE_FOG_VOLUME: {
+				idata.instance_data_rid = static_cast<InstanceFogVolumeData *>(p_instance->base_data)->instance.get_id();
+			} break;
 			case RS::INSTANCE_VISIBLITY_NOTIFIER: {
 				idata.visibility_notifier = static_cast<InstanceVisibilityNotifierData *>(p_instance->base_data);
 			} break;
@@ -1641,6 +1677,9 @@ void RendererSceneCull::_update_instance(Instance *p_instance) {
 		}
 		if (p_instance->ignore_occlusion_culling) {
 			idata.flags |= InstanceData::FLAG_IGNORE_OCCLUSION_CULLING;
+		}
+		if (p_instance->ignore_all_culling) {
+			idata.flags |= InstanceData::FLAG_IGNORE_ALL_CULLING;
 		}
 
 		p_instance->scenario->instance_data.push_back(idata);
@@ -1815,6 +1854,9 @@ void RendererSceneCull::_update_instance_aabb(Instance *p_instance) {
 		case RenderingServer::INSTANCE_PARTICLES_COLLISION: {
 			new_aabb = RSG::storage->particles_collision_get_aabb(p_instance->base);
 
+		} break;
+		case RenderingServer::INSTANCE_FOG_VOLUME: {
+			new_aabb = RSG::storage->fog_volume_get_aabb(p_instance->base);
 		} break;
 		case RenderingServer::INSTANCE_VISIBLITY_NOTIFIER: {
 			new_aabb = RSG::storage->visibility_notifier_get_aabb(p_instance->base);
@@ -2590,7 +2632,7 @@ void RendererSceneCull::_scene_cull(CullData &cull_data, InstanceCullResult &cul
 #define OCCLUSION_CULLED (cull_data.occlusion_buffer != nullptr && (cull_data.scenario->instance_data[i].flags & InstanceData::FLAG_IGNORE_OCCLUSION_CULLING) == 0 && cull_data.occlusion_buffer->is_occluded(cull_data.scenario->instance_aabbs[i].bounds, cull_data.cam_transform.origin, inv_cam_transform, *cull_data.camera_matrix, z_near))
 
 		if (!HIDDEN_BY_VISIBILITY_CHECKS) {
-			if (LAYER_CHECK && IN_FRUSTUM(cull_data.cull->frustum) && VIS_CHECK && !OCCLUSION_CULLED) {
+			if ((LAYER_CHECK && IN_FRUSTUM(cull_data.cull->frustum) && VIS_CHECK && !OCCLUSION_CULLED) || (cull_data.scenario->instance_data[i].flags & InstanceData::FLAG_IGNORE_ALL_CULLING)) {
 				uint32_t base_type = idata.flags & InstanceData::FLAG_BASE_TYPE_MASK;
 				if (base_type == RS::INSTANCE_LIGHT) {
 					cull_result.lights.push_back(idata.instance);
@@ -2633,6 +2675,8 @@ void RendererSceneCull::_scene_cull(CullData &cull_data, InstanceCullResult &cul
 
 				} else if (base_type == RS::INSTANCE_LIGHTMAP) {
 					cull_result.lightmaps.push_back(RID::from_uint64(idata.instance_data_rid));
+				} else if (base_type == RS::INSTANCE_FOG_VOLUME) {
+					cull_result.fog_volumes.push_back(RID::from_uint64(idata.instance_data_rid));
 				} else if (base_type == RS::INSTANCE_VISIBLITY_NOTIFIER) {
 					InstanceVisibilityNotifierData *vnd = idata.visibility_notifier;
 					if (!vnd->list_element.in_list()) {
@@ -3157,7 +3201,7 @@ void RendererSceneCull::_render_scene(const RendererSceneRender::CameraData *p_c
 	}
 
 	RENDER_TIMESTAMP("Render Scene ");
-	scene_render->render_scene(p_render_buffers, p_camera_data, scene_cull_result.geometry_instances, scene_cull_result.light_instances, scene_cull_result.reflections, scene_cull_result.voxel_gi_instances, scene_cull_result.decals, scene_cull_result.lightmaps, p_environment, camera_effects, p_shadow_atlas, occluders_tex, p_reflection_probe.is_valid() ? RID() : scenario->reflection_atlas, p_reflection_probe, p_reflection_probe_pass, p_screen_lod_threshold, render_shadow_data, max_shadows_used, render_sdfgi_data, cull.sdfgi.region_count, &sdfgi_update_data, r_render_info);
+	scene_render->render_scene(p_render_buffers, p_camera_data, scene_cull_result.geometry_instances, scene_cull_result.light_instances, scene_cull_result.reflections, scene_cull_result.voxel_gi_instances, scene_cull_result.decals, scene_cull_result.lightmaps, scene_cull_result.fog_volumes, p_environment, camera_effects, p_shadow_atlas, occluders_tex, p_reflection_probe.is_valid() ? RID() : scenario->reflection_atlas, p_reflection_probe, p_reflection_probe_pass, p_screen_lod_threshold, render_shadow_data, max_shadows_used, render_sdfgi_data, cull.sdfgi.region_count, &sdfgi_update_data, r_render_info);
 
 	for (uint32_t i = 0; i < max_shadows_used; i++) {
 		render_shadow_data[i].instances.clear();
@@ -3207,7 +3251,7 @@ void RendererSceneCull::render_empty_scene(RID p_render_buffers, RID p_scenario,
 	RendererSceneRender::CameraData camera_data;
 	camera_data.set_camera(Transform3D(), CameraMatrix(), true, false);
 
-	scene_render->render_scene(p_render_buffers, &camera_data, PagedArray<RendererSceneRender::GeometryInstance *>(), PagedArray<RID>(), PagedArray<RID>(), PagedArray<RID>(), PagedArray<RID>(), PagedArray<RID>(), RID(), RID(), p_shadow_atlas, RID(), scenario->reflection_atlas, RID(), 0, 0, nullptr, 0, nullptr, 0, nullptr);
+	scene_render->render_scene(p_render_buffers, &camera_data, PagedArray<RendererSceneRender::GeometryInstance *>(), PagedArray<RID>(), PagedArray<RID>(), PagedArray<RID>(), PagedArray<RID>(), PagedArray<RID>(), PagedArray<RID>(), RID(), RID(), p_shadow_atlas, RID(), scenario->reflection_atlas, RID(), 0, 0, nullptr, 0, nullptr, 0, nullptr);
 #endif
 }
 

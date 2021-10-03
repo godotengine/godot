@@ -487,6 +487,14 @@ public:
 	FUNC1(particles_collision_height_field_update, RID)
 	FUNC2(particles_collision_set_height_field_resolution, RID, ParticlesCollisionHeightfieldResolution)
 
+	/* FOG VOLUME */
+
+	FUNCRIDSPLIT(fog_volume)
+
+	FUNC2(fog_volume_set_shape, RID, FogVolumeShape)
+	FUNC2(fog_volume_set_extents, RID, const Vector3 &)
+	FUNC2(fog_volume_set_material, RID, RID)
+
 	/* VISIBILITY_NOTIFIER */
 
 	FUNCRIDSPLIT(visibility_notifier)
@@ -629,7 +637,7 @@ public:
 	FUNC7(environment_set_adjustment, RID, bool, float, float, float, bool, RID)
 
 	FUNC9(environment_set_fog, RID, bool, const Color &, float, float, float, float, float, float)
-	FUNC10(environment_set_volumetric_fog, RID, bool, float, const Color &, float, float, float, float, bool, float)
+	FUNC13(environment_set_volumetric_fog, RID, bool, float, const Color &, const Color &, float, float, float, float, float, bool, float, float)
 
 	FUNC2(environment_set_volumetric_fog_volume_size, int, int)
 	FUNC1(environment_set_volumetric_fog_filter_active, bool)
@@ -692,6 +700,8 @@ public:
 
 	FUNC2(instance_set_extra_visibility_margin, RID, real_t)
 	FUNC2(instance_set_visibility_parent, RID, RID)
+
+	FUNC2(instance_set_ignore_culling, RID, bool)
 
 	// don't use these in a game!
 	FUNC2RC(Vector<ObjectID>, instances_cull_aabb, const AABB &, RID)

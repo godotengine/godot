@@ -7645,7 +7645,7 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 				bool uniform = tk.type == TK_UNIFORM;
 
 				if (!uniform) {
-					if (shader_type_identifier == "particles" || shader_type_identifier == "sky") {
+					if (shader_type_identifier == "particles" || shader_type_identifier == "sky" || shader_type_identifier == "fog") {
 						_set_error(vformat("Varyings cannot be used in '%s' shaders!", shader_type_identifier));
 						return ERR_PARSE_ERROR;
 					}
