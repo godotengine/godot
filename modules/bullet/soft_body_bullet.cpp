@@ -228,7 +228,7 @@ void SoftBodyBullet::reset_all_node_mass() {
 }
 
 void SoftBodyBullet::reset_all_node_positions() {
-	if (soft_mesh.is_null()) {
+	if (soft_mesh.is_null() || !bt_soft_body) {
 		return;
 	}
 
@@ -246,6 +246,10 @@ void SoftBodyBullet::reset_all_node_positions() {
 }
 
 void SoftBodyBullet::set_activation_state(bool p_active) {
+	if (!bt_soft_body) {
+		return;
+	}
+
 	if (p_active) {
 		bt_soft_body->setActivationState(ACTIVE_TAG);
 	} else {
