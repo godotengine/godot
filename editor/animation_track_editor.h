@@ -376,7 +376,7 @@ class AnimationTrackEditor : public VBoxContainer {
 	TrackIndices _confirm_insert(InsertData p_id, TrackIndices p_next_tracks, bool p_create_reset, Ref<Animation> p_reset_anim, bool p_create_beziers);
 	void _insert_delay(bool p_create_reset, bool p_create_beziers);
 
-	void _root_removed(Node *p_root);
+	void _root_removed();
 
 	PropertyInfo _find_hint_for_track(int p_idx, NodePath &r_base_path, Variant *r_current_val = nullptr);
 
