@@ -471,12 +471,14 @@ void TextEdit::_notification(int p_what) {
 					char32_t c = text[caret.line][caret.column];
 					char32_t closec = 0;
 
-					if (c == '[') {
-						closec = ']';
-					} else if (c == '{') {
-						closec = '}';
-					} else if (c == '(') {
-						closec = ')';
+					if (is_in_comment(caret.line, caret.column) == -1) {
+						if (c == '[') {
+							closec = ']';
+						} else if (c == '{') {
+							closec = '}';
+						} else if (c == '(') {
+							closec = ')';
+						}
 					}
 
 					if (closec != 0) {
@@ -508,6 +510,8 @@ void TextEdit::_notification(int p_what) {
 											}
 										}
 									} while (cc != quotation);
+								} else if (is_in_comment(i, j) != -1) {
+									continue;
 								} else if (cc == c) {
 									stack++;
 								} else if (cc == closec) {
@@ -537,12 +541,14 @@ void TextEdit::_notification(int p_what) {
 					char32_t c = text[caret.line][caret.column - 1];
 					char32_t closec = 0;
 
-					if (c == ']') {
-						closec = '[';
-					} else if (c == '}') {
-						closec = '{';
-					} else if (c == ')') {
-						closec = '(';
+					if (is_in_comment(caret.line, caret.column - 1) == -1) {
+						if (c == ']') {
+							closec = '[';
+						} else if (c == '}') {
+							closec = '{';
+						} else if (c == ')') {
+							closec = '(';
+						}
 					}
 
 					if (closec != 0) {
@@ -574,6 +580,8 @@ void TextEdit::_notification(int p_what) {
 											}
 										}
 									} while (cc != quotation);
+								} else if (is_in_comment(i, j) != -1) {
+									continue;
 								} else if (cc == c) {
 									stack++;
 								} else if (cc == closec) {
@@ -2432,6 +2440,11 @@ void TextEdit::set_tooltip_request_func(Object *p_obj, const StringName &p_funct
 	tooltip_obj = p_obj;
 	tooltip_func = p_function;
 	tooltip_ud = p_udata;
+}
+
+int TextEdit::is_in_comment(int p_line, int p_column) const {
+	// comments cannot be verified here, override this method
+	return -1;
 }
 
 /* Text */

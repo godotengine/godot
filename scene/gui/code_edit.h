@@ -374,7 +374,7 @@ public:
 	void clear_comment_delimiters();
 	TypedArray<String> get_comment_delimiters() const;
 
-	int is_in_comment(int p_line, int p_column = -1) const;
+	int is_in_comment(int p_line, int p_column = -1) const override;
 
 	String get_delimiter_start_key(int p_delimiter_idx) const;
 	String get_delimiter_end_key(int p_delimiter_idx) const;

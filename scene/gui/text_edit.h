@@ -601,6 +601,7 @@ public:
 	virtual CursorShape get_cursor_shape(const Point2 &p_pos = Point2i()) const override;
 	virtual String get_tooltip(const Point2 &p_pos) const override;
 	void set_tooltip_request_func(Object *p_obj, const StringName &p_function, const Variant &p_udata);
+	virtual int is_in_comment(int p_line, int p_column = -1) const;
 
 	/* Text */
 	// Text properties.
