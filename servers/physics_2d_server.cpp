@@ -188,7 +188,7 @@ Vector<RID> Physics2DShapeQueryParameters::get_exclude() const {
 	ret.resize(exclude.size());
 	int idx = 0;
 	for (Set<RID>::Element *E = exclude.front(); E; E = E->next()) {
-		ret.write[idx] = E->get();
+		ret.write[idx++] = E->get();
 	}
 	return ret;
 }
