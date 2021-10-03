@@ -169,6 +169,7 @@ void SoftBodyBullet::set_node_position(int p_node_index, const Vector3 &p_global
 
 void SoftBodyBullet::set_node_position(int p_node_index, const btVector3 &p_global_position) {
 	if (bt_soft_body) {
+		ERR_FAIL_INDEX(p_node_index, bt_soft_body->m_nodes.size());
 		bt_soft_body->m_nodes[p_node_index].m_q = bt_soft_body->m_nodes[p_node_index].m_x;
 		bt_soft_body->m_nodes[p_node_index].m_x = p_global_position;
 	}
@@ -176,6 +177,7 @@ void SoftBodyBullet::set_node_position(int p_node_index, const btVector3 &p_glob
 
 void SoftBodyBullet::get_node_position(int p_node_index, Vector3 &r_position) const {
 	if (bt_soft_body) {
+		ERR_FAIL_INDEX(p_node_index, bt_soft_body->m_nodes.size());
 		B_TO_G(bt_soft_body->m_nodes[p_node_index].m_x, r_position);
 	}
 }
