@@ -96,7 +96,7 @@ Rect2 AnimatedSprite::_get_rect() const {
 
 	Point2 ofs = offset;
 	if (centered) {
-		ofs -= Size2(s) / 2;
+		ofs -= s / 2;
 	}
 
 	if (s == Size2(0, 0)) {
@@ -436,8 +436,7 @@ void AnimatedSprite::_notification(int p_what) {
 
 			RID ci = get_canvas_item();
 
-			Size2i s;
-			s = texture->get_size();
+			Size2 s = texture->get_size();
 			Point2 ofs = offset;
 			if (centered) {
 				ofs -= s / 2;
