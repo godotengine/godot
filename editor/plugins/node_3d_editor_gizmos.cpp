@@ -1840,47 +1840,6 @@ void Camera3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 
 	p_gizmo->add_lines(lines, material);
 	p_gizmo->add_handles(handles, get_material("handles"));
-
-	ClippedCamera3D *clipcam = Object::cast_to<ClippedCamera3D>(camera);
-	if (clipcam) {
-		Node3D *parent = Object::cast_to<Node3D>(camera->get_parent());
-		if (!parent) {
-			return;
-		}
-		Vector3 cam_normal = -camera->get_global_transform().basis.get_axis(Vector3::AXIS_Z).normalized();
-		Vector3 cam_x = camera->get_global_transform().basis.get_axis(Vector3::AXIS_X).normalized();
-		Vector3 cam_y = camera->get_global_transform().basis.get_axis(Vector3::AXIS_Y).normalized();
-		Vector3 cam_pos = camera->get_global_transform().origin;
-		Vector3 parent_pos = parent->get_global_transform().origin;
-
-		Plane parent_plane(parent_pos, cam_normal);
-		Vector3 ray_from = parent_plane.project(cam_pos);
-
-		lines.clear();
-		lines.push_back(ray_from + cam_x * 0.5 + cam_y * 0.5);
-		lines.push_back(ray_from + cam_x * 0.5 + cam_y * -0.5);
-
-		lines.push_back(ray_from + cam_x * 0.5 + cam_y * -0.5);
-		lines.push_back(ray_from + cam_x * -0.5 + cam_y * -0.5);
-
-		lines.push_back(ray_from + cam_x * -0.5 + cam_y * -0.5);
-		lines.push_back(ray_from + cam_x * -0.5 + cam_y * 0.5);
-
-		lines.push_back(ray_from + cam_x * -0.5 + cam_y * 0.5);
-		lines.push_back(ray_from + cam_x * 0.5 + cam_y * 0.5);
-
-		if (parent_plane.distance_to(cam_pos) < 0) {
-			lines.push_back(ray_from);
-			lines.push_back(cam_pos);
-		}
-
-		Transform3D local = camera->get_global_transform().affine_inverse();
-		for (int i = 0; i < lines.size(); i++) {
-			lines.write[i] = local.xform(lines[i]);
-		}
-
-		p_gizmo->add_lines(lines, material);
-	}
 }
 
 //////
