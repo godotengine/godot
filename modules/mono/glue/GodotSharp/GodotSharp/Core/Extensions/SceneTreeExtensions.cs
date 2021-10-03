@@ -1,4 +1,4 @@
-using System;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using Godot.Collections;
 using Godot.NativeInterop;
@@ -7,14 +7,58 @@ namespace Godot
 {
     public partial class SceneTree
     {
-        public Array<T> GetNodesInGroup<T>(StringName group) where T : class
+        public unsafe Array<T> GetNodesInGroup<T>(StringName group) where T : class
         {
-            godot_array array;
-            godot_icall_SceneTree_get_nodes_in_group_Generic(GetPtr(this), ref group.NativeValue, typeof(T), out array);
-            return Array<T>.CreateTakingOwnershipOfDisposableValue(array);
-        }
+            var array = GetNodesInGroup(group);
 
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void godot_icall_SceneTree_get_nodes_in_group_Generic(IntPtr obj, ref godot_string_name group, Type elemType, out godot_array dest);
+            if (array.Count == 0)
+                return new Array<T>(array);
+
+            var typeOfT = typeof(T);
+            bool nativeBase = InternalIsClassNativeBase(typeOfT);
+
+            if (nativeBase)
+            {
+                // Native type
+                var field = typeOfT.GetField("NativeName",
+                    BindingFlags.DeclaredOnly | BindingFlags.Static |
+                    BindingFlags.Public | BindingFlags.NonPublic);
+
+                var nativeName = (StringName)field!.GetValue(null);
+                godot_string_name nativeNameAux = nativeName.NativeValue;
+                godot_array inputAux = array.NativeValue;
+                godot_array filteredArray;
+                NativeFuncs.godotsharp_array_filter_godot_objects_by_native(
+                    &nativeNameAux, &inputAux, &filteredArray);
+                return Array<T>.CreateTakingOwnershipOfDisposableValue(filteredArray);
+            }
+            else
+            {
+                // Custom derived type
+                godot_array inputAux = array.NativeValue;
+                godot_array filteredArray;
+                NativeFuncs.godotsharp_array_filter_godot_objects_by_non_native(&inputAux, &filteredArray);
+
+                var filteredArrayWrapped = Array.CreateTakingOwnershipOfDisposableValue(filteredArray);
+
+                // Re-use first array as its size is the same or greater than the filtered one
+                var resWrapped = new Array<T>(array);
+
+                int j = 0;
+                for (int i = 0; i < filteredArrayWrapped.Count; i++)
+                {
+                    if (filteredArrayWrapped[i] is T t)
+                    {
+                        resWrapped[j] = t;
+                        j++;
+                    }
+                }
+
+                // Remove trailing elements, since this was re-used
+                resWrapped.Resize(j);
+
+                return resWrapped;
+            }
+        }
     }
 }

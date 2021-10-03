@@ -6,7 +6,7 @@ namespace Godot
 {
     public sealed class StringName : IDisposable
     {
-        internal godot_string_name NativeValue;
+        public godot_string_name NativeValue;
 
         ~StringName()
         {
@@ -57,7 +57,7 @@ namespace Godot
             godot_string_name src = NativeValue;
             NativeFuncs.godotsharp_string_name_as_string(&dest, &src);
             using (dest)
-                return Marshaling.mono_string_from_godot(&dest);
+                return Marshaling.mono_string_from_godot(dest);
         }
 
         public bool IsEmpty => godot_string_name.IsEmpty(in NativeValue);

@@ -1,31 +1,41 @@
-using System;
-using System.Diagnostics.CodeAnalysis;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 #if REAL_T_IS_DOUBLE
 using real_t = System.Double;
 #else
 using real_t = System.Single;
-
 #endif
+using System;
+using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 namespace Godot.NativeInterop
 {
-    [StructLayout(LayoutKind.Sequential)]
-    // ReSharper disable once InconsistentNaming
-    internal struct godot_bool
+    internal static class GodotBoolExtensions
     {
-        public byte _value;
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static unsafe godot_bool ToGodotBool(this bool @bool)
+        {
+            return *(godot_bool*)&@bool;
+        }
 
-        public unsafe godot_bool(bool value) => _value = *(byte*)&value;
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static unsafe bool ToBool(this godot_bool godotBool)
+        {
+            return *(bool*)&godotBool;
+        }
+    }
 
-        public static unsafe implicit operator bool(godot_bool godotBool) => *(bool*)&godotBool._value;
-        public static implicit operator godot_bool(bool @bool) => new godot_bool(@bool);
+    // Apparently a struct with a byte is not blittable? It crashes when calling a UnmanagedCallersOnly function ptr.
+    // ReSharper disable once InconsistentNaming
+    public enum godot_bool : byte
+    {
+        True = 1,
+        False = 0
     }
 
     [StructLayout(LayoutKind.Sequential)]
     // ReSharper disable once InconsistentNaming
-    internal struct godot_ref : IDisposable
+    public struct godot_ref : IDisposable
     {
         internal IntPtr _reference;
 
@@ -36,10 +46,12 @@ namespace Godot.NativeInterop
             NativeFuncs.godotsharp_ref_destroy(ref this);
             _reference = IntPtr.Zero;
         }
+
+        public bool IsNull => _reference == IntPtr.Zero;
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming")]
-    internal enum godot_variant_call_error_error
+    public enum godot_variant_call_error_error
     {
         GODOT_CALL_ERROR_CALL_OK = 0,
         GODOT_CALL_ERROR_CALL_ERROR_INVALID_METHOD,
@@ -51,16 +63,16 @@ namespace Godot.NativeInterop
 
     [StructLayout(LayoutKind.Sequential)]
     // ReSharper disable once InconsistentNaming
-    internal struct godot_variant_call_error
+    public struct godot_variant_call_error
     {
-        godot_variant_call_error_error error;
-        int argument;
-        Godot.Variant.Type expected;
+        public godot_variant_call_error_error error;
+        public int argument;
+        public Godot.Variant.Type expected;
     }
 
     [StructLayout(LayoutKind.Explicit)]
     // ReSharper disable once InconsistentNaming
-    internal struct godot_variant : IDisposable
+    public struct godot_variant : IDisposable
     {
         [FieldOffset(0)] public Godot.Variant.Type _type;
 
@@ -150,7 +162,7 @@ namespace Godot.NativeInterop
 
     [StructLayout(LayoutKind.Sequential)]
     // ReSharper disable once InconsistentNaming
-    internal struct godot_string : IDisposable
+    public struct godot_string : IDisposable
     {
         internal IntPtr _ptr;
 
@@ -161,11 +173,14 @@ namespace Godot.NativeInterop
             NativeFuncs.godotsharp_string_destroy(ref this);
             _ptr = IntPtr.Zero;
         }
+
+        // Size including the null termination character
+        public unsafe int Size => _ptr != IntPtr.Zero ? *((int*)_ptr - 1) : 0;
     }
 
     [StructLayout(LayoutKind.Sequential)]
     // ReSharper disable once InconsistentNaming
-    internal struct godot_string_name : IDisposable
+    public struct godot_string_name : IDisposable
     {
         internal IntPtr _data;
 
@@ -186,7 +201,7 @@ namespace Godot.NativeInterop
 
     [StructLayout(LayoutKind.Sequential)]
     // ReSharper disable once InconsistentNaming
-    internal struct godot_node_path : IDisposable
+    public struct godot_node_path : IDisposable
     {
         internal IntPtr _data;
 
@@ -207,7 +222,7 @@ namespace Godot.NativeInterop
 
     [StructLayout(LayoutKind.Explicit)]
     // ReSharper disable once InconsistentNaming
-    internal struct godot_signal : IDisposable
+    public struct godot_signal : IDisposable
     {
         [FieldOffset(0)] public godot_string_name _name;
 
@@ -226,7 +241,7 @@ namespace Godot.NativeInterop
 
     [StructLayout(LayoutKind.Explicit)]
     // ReSharper disable once InconsistentNaming
-    internal struct godot_callable : IDisposable
+    public struct godot_callable : IDisposable
     {
         [FieldOffset(0)] public godot_string_name _method;
 
@@ -250,16 +265,36 @@ namespace Godot.NativeInterop
     // be re-assigned a new value (the copy constructor checks if `_p` is null so that's fine).
     [StructLayout(LayoutKind.Sequential)]
     // ReSharper disable once InconsistentNaming
-    internal struct godot_array : IDisposable
+    public struct godot_array : IDisposable
     {
-        internal IntPtr _p;
+        internal unsafe ArrayPrivate* _p;
 
-        public void Dispose()
+        [StructLayout(LayoutKind.Sequential)]
+        internal struct ArrayPrivate
         {
-            if (_p == IntPtr.Zero)
+            private uint _safeRefCount;
+
+            internal VariantVector _arrayVector;
+            // There's more here, but we don't care as we never store this in C#
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        internal struct VariantVector
+        {
+            internal IntPtr _writeProxy;
+            internal unsafe godot_variant* _ptr;
+
+            public unsafe int Size => _ptr != null ? *((int*)_ptr - 1) : 0;
+        }
+
+        public unsafe int Size => _p != null ? _p->_arrayVector.Size : 0;
+
+        public unsafe void Dispose()
+        {
+            if (_p == null)
                 return;
             NativeFuncs.godotsharp_array_destroy(ref this);
-            _p = IntPtr.Zero;
+            _p = null;
         }
     }
 
@@ -269,7 +304,7 @@ namespace Godot.NativeInterop
     // be re-assigned a new value (the copy constructor checks if `_p` is null so that's fine).
     [StructLayout(LayoutKind.Sequential)]
     // ReSharper disable once InconsistentNaming
-    internal struct godot_dictionary : IDisposable
+    public struct godot_dictionary : IDisposable
     {
         internal IntPtr _p;
 
@@ -284,145 +319,163 @@ namespace Godot.NativeInterop
 
     [StructLayout(LayoutKind.Sequential)]
     // ReSharper disable once InconsistentNaming
-    internal struct godot_packed_byte_array : IDisposable
+    public struct godot_packed_byte_array : IDisposable
     {
         internal IntPtr _writeProxy;
-        internal IntPtr _ptr;
+        internal unsafe byte* _ptr;
 
-        public void Dispose()
+        public unsafe void Dispose()
         {
-            if (_ptr == IntPtr.Zero)
+            if (_ptr == null)
                 return;
             NativeFuncs.godotsharp_packed_byte_array_destroy(ref this);
-            _ptr = IntPtr.Zero;
+            _ptr = null;
         }
+
+        public unsafe int Size => _ptr != null ? *((int*)_ptr - 1) : 0;
     }
 
     [StructLayout(LayoutKind.Sequential)]
     // ReSharper disable once InconsistentNaming
-    internal struct godot_packed_int32_array : IDisposable
+    public struct godot_packed_int32_array : IDisposable
     {
         internal IntPtr _writeProxy;
-        internal IntPtr _ptr;
+        internal unsafe int* _ptr;
 
-        public void Dispose()
+        public unsafe void Dispose()
         {
-            if (_ptr == IntPtr.Zero)
+            if (_ptr == null)
                 return;
             NativeFuncs.godotsharp_packed_int32_array_destroy(ref this);
-            _ptr = IntPtr.Zero;
+            _ptr = null;
         }
+
+        public unsafe int Size => _ptr != null ? *(_ptr - 1) : 0;
     }
 
     [StructLayout(LayoutKind.Sequential)]
     // ReSharper disable once InconsistentNaming
-    internal struct godot_packed_int64_array : IDisposable
+    public struct godot_packed_int64_array : IDisposable
     {
         internal IntPtr _writeProxy;
-        internal IntPtr _ptr;
+        internal unsafe long* _ptr;
 
-        public void Dispose()
+        public unsafe void Dispose()
         {
-            if (_ptr == IntPtr.Zero)
+            if (_ptr == null)
                 return;
             NativeFuncs.godotsharp_packed_int64_array_destroy(ref this);
-            _ptr = IntPtr.Zero;
+            _ptr = null;
         }
+
+        public unsafe int Size => _ptr != null ? *((int*)_ptr - 1) : 0;
     }
 
     [StructLayout(LayoutKind.Sequential)]
     // ReSharper disable once InconsistentNaming
-    internal struct godot_packed_float32_array : IDisposable
+    public struct godot_packed_float32_array : IDisposable
     {
         internal IntPtr _writeProxy;
-        internal IntPtr _ptr;
+        internal unsafe float* _ptr;
 
-        public void Dispose()
+        public unsafe void Dispose()
         {
-            if (_ptr == IntPtr.Zero)
+            if (_ptr == null)
                 return;
             NativeFuncs.godotsharp_packed_float32_array_destroy(ref this);
-            _ptr = IntPtr.Zero;
+            _ptr = null;
         }
+
+        public unsafe int Size => _ptr != null ? *((int*)_ptr - 1) : 0;
     }
 
     [StructLayout(LayoutKind.Sequential)]
     // ReSharper disable once InconsistentNaming
-    internal struct godot_packed_float64_array : IDisposable
+    public struct godot_packed_float64_array : IDisposable
     {
         internal IntPtr _writeProxy;
-        internal IntPtr _ptr;
+        internal unsafe double* _ptr;
 
-        public void Dispose()
+        public unsafe void Dispose()
         {
-            if (_ptr == IntPtr.Zero)
+            if (_ptr == null)
                 return;
             NativeFuncs.godotsharp_packed_float64_array_destroy(ref this);
-            _ptr = IntPtr.Zero;
+            _ptr = null;
         }
+
+        public unsafe int Size => _ptr != null ? *((int*)_ptr - 1) : 0;
     }
 
     [StructLayout(LayoutKind.Sequential)]
     // ReSharper disable once InconsistentNaming
-    internal struct godot_packed_string_array : IDisposable
+    public struct godot_packed_string_array : IDisposable
     {
         internal IntPtr _writeProxy;
-        internal IntPtr _ptr;
+        internal unsafe godot_string* _ptr;
 
-        public void Dispose()
+        public unsafe void Dispose()
         {
-            if (_ptr == IntPtr.Zero)
+            if (_ptr == null)
                 return;
             NativeFuncs.godotsharp_packed_string_array_destroy(ref this);
-            _ptr = IntPtr.Zero;
+            _ptr = null;
         }
+
+        public unsafe int Size => _ptr != null ? *((int*)_ptr - 1) : 0;
     }
 
     [StructLayout(LayoutKind.Sequential)]
     // ReSharper disable once InconsistentNaming
-    internal struct godot_packed_vector2_array : IDisposable
+    public struct godot_packed_vector2_array : IDisposable
     {
         internal IntPtr _writeProxy;
-        internal IntPtr _ptr;
+        internal unsafe Vector2* _ptr;
 
-        public void Dispose()
+        public unsafe void Dispose()
         {
-            if (_ptr == IntPtr.Zero)
+            if (_ptr == null)
                 return;
             NativeFuncs.godotsharp_packed_vector2_array_destroy(ref this);
-            _ptr = IntPtr.Zero;
+            _ptr = null;
         }
+
+        public unsafe int Size => _ptr != null ? *((int*)_ptr - 1) : 0;
     }
 
     [StructLayout(LayoutKind.Sequential)]
     // ReSharper disable once InconsistentNaming
-    internal struct godot_packed_vector3_array : IDisposable
+    public struct godot_packed_vector3_array : IDisposable
     {
         internal IntPtr _writeProxy;
-        internal IntPtr _ptr;
+        internal unsafe Vector3* _ptr;
 
-        public void Dispose()
+        public unsafe void Dispose()
         {
-            if (_ptr == IntPtr.Zero)
+            if (_ptr == null)
                 return;
             NativeFuncs.godotsharp_packed_vector3_array_destroy(ref this);
-            _ptr = IntPtr.Zero;
+            _ptr = null;
         }
+
+        public unsafe int Size => _ptr != null ? *((int*)_ptr - 1) : 0;
     }
 
     [StructLayout(LayoutKind.Sequential)]
     // ReSharper disable once InconsistentNaming
-    internal struct godot_packed_color_array : IDisposable
+    public struct godot_packed_color_array : IDisposable
     {
         internal IntPtr _writeProxy;
-        internal IntPtr _ptr;
+        internal unsafe Color* _ptr;
 
-        public void Dispose()
+        public unsafe void Dispose()
         {
-            if (_ptr == IntPtr.Zero)
+            if (_ptr == null)
                 return;
             NativeFuncs.godotsharp_packed_color_array_destroy(ref this);
-            _ptr = IntPtr.Zero;
+            _ptr = null;
         }
+
+        public unsafe int Size => _ptr != null ? *((int*)_ptr - 1) : 0;
     }
 }

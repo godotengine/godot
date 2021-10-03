@@ -11,42 +11,56 @@ namespace Godot
 {
     internal static class DelegateUtils
     {
-        // TODO: Move somewhere else once we need to for things other than delegates
-        internal static void FreeGCHandle(IntPtr delegateGCHandle)
-            => GCHandle.FromIntPtr(delegateGCHandle).Free();
-
-        internal static bool DelegateEquals(IntPtr delegateGCHandleA, IntPtr delegateGCHandleB)
+        [UnmanagedCallersOnly]
+        internal static godot_bool DelegateEquals(IntPtr delegateGCHandleA, IntPtr delegateGCHandleB)
         {
-            var @delegateA = (Delegate)GCHandle.FromIntPtr(delegateGCHandleA).Target;
-            var @delegateB = (Delegate)GCHandle.FromIntPtr(delegateGCHandleB).Target;
-            return @delegateA == @delegateB;
+            try
+            {
+                var @delegateA = (Delegate)GCHandle.FromIntPtr(delegateGCHandleA).Target;
+                var @delegateB = (Delegate)GCHandle.FromIntPtr(delegateGCHandleB).Target;
+                return (@delegateA == @delegateB).ToGodotBool();
+            }
+            catch (Exception e)
+            {
+                ExceptionUtils.DebugUnhandledException(e);
+                return false.ToGodotBool();
+            }
         }
 
-        internal static unsafe void InvokeWithVariantArgs(IntPtr delegateGCHandle, godot_variant** args, uint argc, godot_variant* ret)
+        [UnmanagedCallersOnly]
+        internal static unsafe void InvokeWithVariantArgs(IntPtr delegateGCHandle, godot_variant** args, uint argc,
+            godot_variant* outRet)
         {
-            // TODO: Optimize
-            var @delegate = (Delegate)GCHandle.FromIntPtr(delegateGCHandle).Target;
-            var managedArgs = new object[argc];
-
-            var parameterInfos = @delegate.Method.GetParameters();
-
-            var paramsLength = parameterInfos.Length;
-
-            if (argc != paramsLength)
+            try
             {
-                throw new InvalidOperationException(
-                    $"The delegate expects {paramsLength} arguments, but received {argc}.");
-            }
+                // TODO: Optimize
+                var @delegate = (Delegate)GCHandle.FromIntPtr(delegateGCHandle).Target;
+                var managedArgs = new object[argc];
 
-            for (uint i = 0; i < argc; i++)
+                var parameterInfos = @delegate!.Method.GetParameters();
+                var paramsLength = parameterInfos.Length;
+
+                if (argc != paramsLength)
+                {
+                    throw new InvalidOperationException(
+                        $"The delegate expects {paramsLength} arguments, but received {argc}.");
+                }
+
+                for (uint i = 0; i < argc; i++)
+                {
+                    managedArgs[i] = Marshaling.variant_to_mono_object_of_type(
+                        args[i], parameterInfos[i].ParameterType);
+                }
+
+                object invokeRet = @delegate.DynamicInvoke(managedArgs);
+
+                *outRet = Marshaling.mono_object_to_variant(invokeRet);
+            }
+            catch (Exception e)
             {
-                managedArgs[i] = Marshaling.variant_to_mono_object_of_type(
-                    args[i], parameterInfos[i].ParameterType);
+                ExceptionUtils.DebugPrintUnhandledException(e);
+                *outRet = default;
             }
-
-            object invokeRet = @delegate.DynamicInvoke(managedArgs);
-
-            *ret = Marshaling.mono_object_to_variant(invokeRet);
         }
 
         // TODO: Check if we should be using BindingFlags.DeclaredOnly (would give better reflection performance).
@@ -260,7 +274,8 @@ namespace Godot
             }
         }
 
-        private static bool TryDeserializeDelegateWithGCHandle(Collections.Array serializedData, out IntPtr delegateGCHandle)
+        private static bool TryDeserializeDelegateWithGCHandle(Collections.Array serializedData,
+            out IntPtr delegateGCHandle)
         {
             bool res = TryDeserializeDelegate(serializedData, out Delegate @delegate);
             delegateGCHandle = GCHandle.ToIntPtr(GCHandle.Alloc(@delegate));
@@ -368,7 +383,8 @@ namespace Godot
                             int valueBufferLength = reader.ReadInt32();
                             byte[] valueBuffer = reader.ReadBytes(valueBufferLength);
 
-                            FieldInfo fieldInfo = targetType.GetField(name, BindingFlags.Instance | BindingFlags.Public);
+                            FieldInfo fieldInfo =
+                                targetType.GetField(name, BindingFlags.Instance | BindingFlags.Public);
                             fieldInfo?.SetValue(recreatedTarget, GD.Bytes2Var(valueBuffer));
                         }
 

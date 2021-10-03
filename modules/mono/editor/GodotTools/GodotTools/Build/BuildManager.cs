@@ -1,9 +1,9 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Threading.Tasks;
 using GodotTools.Ides.Rider;
 using GodotTools.Internals;
-using JetBrains.Annotations;
 using static GodotTools.Internals.Globals;
 using File = GodotTools.Utils.File;
 using OS = GodotTools.Utils.OS;
@@ -159,7 +159,7 @@ namespace GodotTools.Build
             }
         }
 
-        public static bool BuildProjectBlocking(string config, [CanBeNull] string[] targets = null, [CanBeNull] string platform = null)
+        public static bool BuildProjectBlocking(string config, [MaybeNull] string[] targets = null, [MaybeNull] string platform = null)
         {
             var buildInfo = new BuildInfo(GodotSharpDirs.ProjectSlnPath, targets ?? new[] {"Build"}, config, restore: true);
 
@@ -177,17 +177,6 @@ namespace GodotTools.Build
         {
             if (!File.Exists(buildInfo.Solution))
                 return true; // No solution to build
-
-            // Make sure the API assemblies are up to date before building the project.
-            // We may not have had the chance to update the release API assemblies, and the debug ones
-            // may have been deleted by the user at some point after they were loaded by the Godot editor.
-            string apiAssembliesUpdateError = Internal.UpdateApiAssembliesFromPrebuilt(buildInfo.Configuration == "ExportRelease" ? "Release" : "Debug");
-
-            if (!string.IsNullOrEmpty(apiAssembliesUpdateError))
-            {
-                ShowBuildErrorDialog("Failed to update the Godot API assemblies");
-                return false;
-            }
 
             using (var pr = new EditorProgress("mono_project_debug_build", "Building project solution...", 1))
             {

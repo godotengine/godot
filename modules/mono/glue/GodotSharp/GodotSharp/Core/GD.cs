@@ -5,7 +5,6 @@ using real_t = System.Single;
 #endif
 using System;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 using Godot.NativeInterop;
 
 // TODO: Add comments describing what this class does. It is not obvious.
@@ -17,12 +16,17 @@ namespace Godot
         public static unsafe object Bytes2Var(byte[] bytes, bool allowObjects = false)
         {
             using var varBytes = Marshaling.mono_array_to_PackedByteArray(bytes);
-            return godot_icall_GD_bytes2var(&varBytes, allowObjects);
+            using godot_variant ret = default;
+            NativeFuncs.godotsharp_bytes2var(&varBytes, allowObjects.ToGodotBool(), &ret);
+            return Marshaling.variant_to_mono_object(&ret);
         }
 
-        public static object Convert(object what, Variant.Type type)
+        public static unsafe object Convert(object what, Variant.Type type)
         {
-            return godot_icall_GD_convert(what, type);
+            using var whatVariant = Marshaling.mono_object_to_variant(what);
+            using godot_variant ret = default;
+            NativeFuncs.godotsharp_convert(&whatVariant, type, &ret);
+            return Marshaling.variant_to_mono_object(&ret);
         }
 
         public static real_t Db2Linear(real_t db)
@@ -30,7 +34,7 @@ namespace Godot
             return (real_t)Math.Exp(db * 0.11512925464970228420089957273422);
         }
 
-        private static object[] GetPrintParams(object[] parameters)
+        private static string[] GetPrintParams(object[] parameters)
         {
             if (parameters == null)
             {
@@ -40,14 +44,15 @@ namespace Godot
             return Array.ConvertAll(parameters, x => x?.ToString() ?? "null");
         }
 
-        public static int Hash(object var)
+        public static unsafe int Hash(object var)
         {
-            return godot_icall_GD_hash(var);
+            using var variant = Marshaling.mono_object_to_variant(var);
+            return NativeFuncs.godotsharp_hash(&variant);
         }
 
         public static Object InstanceFromId(ulong instanceId)
         {
-            return godot_icall_GD_instance_from_id(instanceId);
+            return InteropUtils.UnmanagedGetManaged(NativeFuncs.godotsharp_instance_from_id(instanceId));
         }
 
         public static real_t Linear2Db(real_t linear)
@@ -65,19 +70,23 @@ namespace Godot
             return ResourceLoader.Load<T>(path);
         }
 
-        public static void PushError(string message)
+        public static unsafe void PushError(string message)
         {
-            godot_icall_GD_pusherror(message);
+            using var godotStr = Marshaling.mono_string_to_godot(message);
+            NativeFuncs.godotsharp_pusherror(&godotStr);
         }
 
-        public static void PushWarning(string message)
+        public static unsafe void PushWarning(string message)
         {
-            godot_icall_GD_pushwarning(message);
+            using var godotStr = Marshaling.mono_string_to_godot(message);
+            NativeFuncs.godotsharp_pushwarning(&godotStr);
         }
 
-        public static void Print(params object[] what)
+        public static unsafe void Print(params object[] what)
         {
-            godot_icall_GD_print(GetPrintParams(what));
+            string str = string.Concat(GetPrintParams(what));
+            using var godotStr = Marshaling.mono_string_to_godot(str);
+            NativeFuncs.godotsharp_print(&godotStr);
         }
 
         public static void PrintStack()
@@ -85,54 +94,62 @@ namespace Godot
             Print(System.Environment.StackTrace);
         }
 
-        public static void PrintErr(params object[] what)
+        public static unsafe void PrintErr(params object[] what)
         {
-            godot_icall_GD_printerr(GetPrintParams(what));
+            string str = string.Concat(GetPrintParams(what));
+            using var godotStr = Marshaling.mono_string_to_godot(str);
+            NativeFuncs.godotsharp_printerr(&godotStr);
         }
 
-        public static void PrintRaw(params object[] what)
+        public static unsafe void PrintRaw(params object[] what)
         {
-            godot_icall_GD_printraw(GetPrintParams(what));
+            string str = string.Concat(GetPrintParams(what));
+            using var godotStr = Marshaling.mono_string_to_godot(str);
+            NativeFuncs.godotsharp_printraw(&godotStr);
         }
 
-        public static void PrintS(params object[] what)
+        public static unsafe void PrintS(params object[] what)
         {
-            godot_icall_GD_prints(GetPrintParams(what));
+            string str = string.Join(' ', GetPrintParams(what));
+            using var godotStr = Marshaling.mono_string_to_godot(str);
+            NativeFuncs.godotsharp_prints(&godotStr);
         }
 
-        public static void PrintT(params object[] what)
+        public static unsafe void PrintT(params object[] what)
         {
-            godot_icall_GD_printt(GetPrintParams(what));
+            string str = string.Join('\t', GetPrintParams(what));
+            using var godotStr = Marshaling.mono_string_to_godot(str);
+            NativeFuncs.godotsharp_printt(&godotStr);
         }
 
         public static float Randf()
         {
-            return godot_icall_GD_randf();
+            return NativeFuncs.godotsharp_randf();
         }
 
         public static uint Randi()
         {
-            return godot_icall_GD_randi();
+            return NativeFuncs.godotsharp_randi();
         }
 
         public static void Randomize()
         {
-            godot_icall_GD_randomize();
+            NativeFuncs.godotsharp_randomize();
         }
 
         public static double RandRange(double from, double to)
         {
-            return godot_icall_GD_randf_range(from, to);
+            return NativeFuncs.godotsharp_randf_range(from, to);
         }
 
         public static int RandRange(int from, int to)
         {
-            return godot_icall_GD_randi_range(from, to);
+            return NativeFuncs.godotsharp_randi_range(from, to);
         }
 
         public static uint RandFromSeed(ref ulong seed)
         {
-            return godot_icall_GD_rand_seed(seed, out seed);
+            return NativeFuncs.godotsharp_rand_from_seed(seed, out seed);
         }
 
         public static IEnumerable<int> Range(int end)
@@ -167,114 +184,45 @@ namespace Godot
 
         public static void Seed(ulong seed)
         {
-            godot_icall_GD_seed(seed);
+            NativeFuncs.godotsharp_seed(seed);
         }
 
-        public static string Str(params object[] what)
+        public static unsafe string Str(params object[] what)
         {
-            return godot_icall_GD_str(what);
+            using var whatGodotArray = Marshaling.mono_array_to_Array(what);
+            using godot_string ret = default;
+            NativeFuncs.godotsharp_str(&whatGodotArray, &ret);
+            return Marshaling.mono_string_from_godot(ret);
         }
 
-        public static object Str2Var(string str)
+        public static unsafe object Str2Var(string str)
         {
-            return godot_icall_GD_str2var(str);
-        }
-
-        public static bool TypeExists(StringName type)
-        {
-            return godot_icall_GD_type_exists(ref type.NativeValue);
+            using var godotStr = Marshaling.mono_string_to_godot(str);
+            using godot_variant ret = default;
+            NativeFuncs.godotsharp_str2var(&godotStr, &ret);
+            return Marshaling.variant_to_mono_object(&ret);
         }
 
         public static unsafe byte[] Var2Bytes(object var, bool fullObjects = false)
         {
-            godot_packed_byte_array varBytes;
-            godot_icall_GD_var2bytes(var, fullObjects, &varBytes);
+            using var variant = Marshaling.mono_object_to_variant(var);
+            using godot_packed_byte_array varBytes = default;
+            NativeFuncs.godotsharp_var2bytes(&variant, fullObjects.ToGodotBool(), &varBytes);
             using (varBytes)
-            {
                 return Marshaling.PackedByteArray_to_mono_array(&varBytes);
-            }
         }
 
-        public static string Var2Str(object var)
+        public static unsafe string Var2Str(object var)
         {
-            return godot_icall_GD_var2str(var);
+            using var variant = Marshaling.mono_object_to_variant(var);
+            using godot_string ret = default;
+            NativeFuncs.godotsharp_var2str(&variant, &ret);
+            return Marshaling.mono_string_from_godot(ret);
         }
 
         public static Variant.Type TypeToVariantType(Type type)
         {
-            return godot_icall_TypeToVariantType(type);
+            return Marshaling.managed_to_variant_type(type, out bool _);
         }
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern unsafe object godot_icall_GD_bytes2var(godot_packed_byte_array* bytes, bool allowObjects);
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern object godot_icall_GD_convert(object what, Variant.Type type);
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern int godot_icall_GD_hash(object var);
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern Object godot_icall_GD_instance_from_id(ulong instanceId);
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void godot_icall_GD_print(object[] what);
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void godot_icall_GD_printerr(object[] what);
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void godot_icall_GD_printraw(object[] what);
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void godot_icall_GD_prints(object[] what);
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void godot_icall_GD_printt(object[] what);
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern float godot_icall_GD_randf();
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern uint godot_icall_GD_randi();
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void godot_icall_GD_randomize();
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern double godot_icall_GD_randf_range(double from, double to);
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern int godot_icall_GD_randi_range(int from, int to);
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern uint godot_icall_GD_rand_seed(ulong seed, out ulong newSeed);
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void godot_icall_GD_seed(ulong seed);
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern string godot_icall_GD_str(object[] what);
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern object godot_icall_GD_str2var(string str);
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern bool godot_icall_GD_type_exists(ref godot_string_name type);
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern unsafe void godot_icall_GD_var2bytes(object what, bool fullObjects, godot_packed_byte_array* bytes);
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern string godot_icall_GD_var2str(object var);
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void godot_icall_GD_pusherror(string type);
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void godot_icall_GD_pushwarning(string type);
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern Variant.Type godot_icall_TypeToVariantType(Type type);
     }
 }

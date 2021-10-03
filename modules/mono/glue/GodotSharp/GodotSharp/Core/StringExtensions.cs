@@ -5,6 +5,7 @@ using System.Runtime.CompilerServices;
 using System.Security;
 using System.Text;
 using System.Text.RegularExpressions;
+using Godot.NativeInterop;
 
 namespace Godot
 {
@@ -157,6 +158,7 @@ namespace Godot
                 {
                     return 0;
                 }
+
                 if (from == 0 && to == len)
                 {
                     str = instance;
@@ -355,7 +357,8 @@ namespace Godot
         /// <returns>The starting position of the substring, or -1 if not found.</returns>
         public static int Find(this string instance, string what, int from = 0, bool caseSensitive = true)
         {
-            return instance.IndexOf(what, from, caseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase);
+            return instance.IndexOf(what, from,
+                caseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>
@@ -366,7 +369,8 @@ namespace Godot
         {
             // TODO: Could be more efficient if we get a char version of `IndexOf`.
             // See https://github.com/dotnet/runtime/issues/44116
-            return instance.IndexOf(what.ToString(), from, caseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase);
+            return instance.IndexOf(what.ToString(), from,
+                caseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>Find the last occurrence of a substring.</summary>
@@ -380,7 +384,8 @@ namespace Godot
         /// <returns>The starting position of the substring, or -1 if not found.</returns>
         public static int FindLast(this string instance, string what, int from, bool caseSensitive = true)
         {
-            return instance.LastIndexOf(what, from, caseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase);
+            return instance.LastIndexOf(what, from,
+                caseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>
@@ -623,6 +628,7 @@ namespace Godot
                 {
                     match = instance[source] == text[target];
                 }
+
                 if (match)
                 {
                     source++;
@@ -682,9 +688,9 @@ namespace Godot
                 }
 
                 bool validChar = instance[i] >= '0' &&
-                                  instance[i] <= '9' || instance[i] >= 'a' &&
-                                  instance[i] <= 'z' || instance[i] >= 'A' &&
-                                  instance[i] <= 'Z' || instance[i] == '_';
+                    instance[i] <= '9' || instance[i] >= 'a' &&
+                    instance[i] <= 'z' || instance[i] >= 'A' &&
+                    instance[i] <= 'Z' || instance[i] == '_';
 
                 if (!validChar)
                     return false;
@@ -808,15 +814,18 @@ namespace Godot
             switch (expr[0])
             {
                 case '*':
-                    return ExprMatch(instance, expr.Substring(1), caseSensitive) || (instance.Length > 0 && ExprMatch(instance.Substring(1), expr, caseSensitive));
+                    return ExprMatch(instance, expr.Substring(1), caseSensitive) || (instance.Length > 0 &&
+                        ExprMatch(instance.Substring(1), expr, caseSensitive));
                 case '?':
-                    return instance.Length > 0 && instance[0] != '.' && ExprMatch(instance.Substring(1), expr.Substring(1), caseSensitive);
+                    return instance.Length > 0 && instance[0] != '.' &&
+                           ExprMatch(instance.Substring(1), expr.Substring(1), caseSensitive);
                 default:
                     if (instance.Length == 0)
                         return false;
                     if (caseSensitive)
                         return instance[0] == expr[0];
-                    return (char.ToUpper(instance[0]) == char.ToUpper(expr[0])) && ExprMatch(instance.Substring(1), expr.Substring(1), caseSensitive);
+                    return (char.ToUpper(instance[0]) == char.ToUpper(expr[0])) &&
+                           ExprMatch(instance.Substring(1), expr.Substring(1), caseSensitive);
             }
         }
 
@@ -847,24 +856,24 @@ namespace Godot
         /// <summary>
         /// Return the MD5 hash of the string as an array of bytes.
         /// </summary>
-        public static byte[] MD5Buffer(this string instance)
+        public static unsafe byte[] MD5Buffer(this string instance)
         {
-            return godot_icall_String_md5_buffer(instance);
+            using godot_string instanceStr = Marshaling.mono_string_to_godot(instance);
+            using godot_packed_byte_array md5Buffer = default;
+            NativeFuncs.godotsharp_string_md5_buffer(&instanceStr, &md5Buffer);
+            return Marshaling.PackedByteArray_to_mono_array(&md5Buffer);
         }
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static byte[] godot_icall_String_md5_buffer(string str);
 
         /// <summary>
         /// Return the MD5 hash of the string as a string.
         /// </summary>
-        public static string MD5Text(this string instance)
+        public static unsafe string MD5Text(this string instance)
         {
-            return godot_icall_String_md5_text(instance);
+            using godot_string instanceStr = Marshaling.mono_string_to_godot(instance);
+            using godot_string md5Text = default;
+            NativeFuncs.godotsharp_string_md5_text(&instanceStr, &md5Text);
+            return Marshaling.mono_string_from_godot(md5Text);
         }
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static string godot_icall_String_md5_text(string str);
 
         /// <summary>
         /// Perform a case-insensitive comparison to another string, return -1 if less, 0 if equal and +1 if greater.
@@ -981,25 +990,23 @@ namespace Godot
         /// <summary>
         /// Perform a search for a substring, but start from the end of the string instead of the beginning.
         /// </summary>
-        public static int RFind(this string instance, string what, int from = -1)
+        public static unsafe int RFind(this string instance, string what, int from = -1)
         {
-            return godot_icall_String_rfind(instance, what, from);
+            using godot_string instanceStr = Marshaling.mono_string_to_godot(instance);
+            using godot_string whatStr = Marshaling.mono_string_to_godot(instance);
+            return NativeFuncs.godotsharp_string_rfind(&instanceStr, &whatStr, from);
         }
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static int godot_icall_String_rfind(string str, string what, int from);
 
         /// <summary>
         /// Perform a search for a substring, but start from the end of the string instead of the beginning.
         /// Also search case-insensitive.
         /// </summary>
-        public static int RFindN(this string instance, string what, int from = -1)
+        public static unsafe int RFindN(this string instance, string what, int from = -1)
         {
-            return godot_icall_String_rfindn(instance, what, from);
+            using godot_string instanceStr = Marshaling.mono_string_to_godot(instance);
+            using godot_string whatStr = Marshaling.mono_string_to_godot(instance);
+            return NativeFuncs.godotsharp_string_rfindn(&instanceStr, &whatStr, from);
         }
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static int godot_icall_String_rfindn(string str, string what, int from);
 
         /// <summary>
         /// Return the right side of the string from a given position.
@@ -1042,24 +1049,24 @@ namespace Godot
             return instance.Substr(0, end + 1);
         }
 
-        public static byte[] SHA256Buffer(this string instance)
+        public static unsafe byte[] SHA256Buffer(this string instance)
         {
-            return godot_icall_String_sha256_buffer(instance);
+            using godot_string instanceStr = Marshaling.mono_string_to_godot(instance);
+            using godot_packed_byte_array sha256Buffer = default;
+            NativeFuncs.godotsharp_string_sha256_buffer(&instanceStr, &sha256Buffer);
+            return Marshaling.PackedByteArray_to_mono_array(&sha256Buffer);
         }
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static byte[] godot_icall_String_sha256_buffer(string str);
 
         /// <summary>
         /// Return the SHA-256 hash of the string as a string.
         /// </summary>
-        public static string SHA256Text(this string instance)
+        public static unsafe string SHA256Text(this string instance)
         {
-            return godot_icall_String_sha256_text(instance);
+            using godot_string instanceStr = Marshaling.mono_string_to_godot(instance);
+            using godot_string sha256Text = default;
+            NativeFuncs.godotsharp_string_sha256_text(&instanceStr, &sha256Text);
+            return Marshaling.mono_string_from_godot(sha256Text);
         }
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static string godot_icall_String_sha256_text(string str);
 
         /// <summary>
         /// Return the similarity index of the text compared to this string.
@@ -1072,6 +1079,7 @@ namespace Godot
                 // Equal strings are totally similar
                 return 1.0f;
             }
+
             if (instance.Length < 2 || text.Length < 2)
             {
                 // No way to calculate similarity without a single bigram
@@ -1108,7 +1116,8 @@ namespace Godot
         /// </summary>
         public static string[] Split(this string instance, string divisor, bool allowEmpty = true)
         {
-            return instance.Split(new[] { divisor }, allowEmpty ? StringSplitOptions.None : StringSplitOptions.RemoveEmptyEntries);
+            return instance.Split(new[] { divisor },
+                allowEmpty ? StringSplitOptions.None : StringSplitOptions.RemoveEmptyEntries);
         }
 
         /// <summary>
@@ -1137,7 +1146,8 @@ namespace Godot
             return ret.ToArray();
         }
 
-        private static readonly char[] _nonPrintable = {
+        private static readonly char[] _nonPrintable =
+        {
             (char)00, (char)01, (char)02, (char)03, (char)04, (char)05,
             (char)06, (char)07, (char)08, (char)09, (char)10, (char)11,
             (char)12, (char)13, (char)14, (char)15, (char)16, (char)17,

@@ -1,114 +1,189 @@
+using System;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using Godot;
+using Godot.NativeInterop;
 using GodotTools.IdeMessaging.Requests;
 
 namespace GodotTools.Internals
 {
-    public static class Internal
+    internal static class Internal
     {
         public const string CSharpLanguageType = "CSharpScript";
         public const string CSharpLanguageExtension = ".cs";
 
-        public static string UpdateApiAssembliesFromPrebuilt(string config) =>
-            internal_UpdateApiAssembliesFromPrebuilt(config);
+        public static string FullTemplatesDir
+        {
+            get
+            {
+                godot_icall_Internal_FullTemplatesDir(out godot_string dest);
+                using (dest)
+                    return Marshaling.mono_string_from_godot(dest);
+            }
+        }
 
-        public static string FullTemplatesDir =>
-            internal_FullTemplatesDir();
+        public static string SimplifyGodotPath(this string path)
+        {
+            using godot_string pathIn = Marshaling.mono_string_to_godot(path);
+            godot_icall_Internal_SimplifyGodotPath(pathIn, out godot_string dest);
+            using (dest)
+                return Marshaling.mono_string_from_godot(dest);
+        }
 
-        public static string SimplifyGodotPath(this string path) => internal_SimplifyGodotPath(path);
+        public static bool IsOsxAppBundleInstalled(string bundleId)
+        {
+            using godot_string bundleIdIn = Marshaling.mono_string_to_godot(bundleId);
+            return godot_icall_Internal_IsOsxAppBundleInstalled(bundleIdIn);
+        }
 
-        public static bool IsOsxAppBundleInstalled(string bundleId) => internal_IsOsxAppBundleInstalled(bundleId);
+        public static bool GodotIs32Bits() => godot_icall_Internal_GodotIs32Bits();
 
-        public static bool GodotIs32Bits() => internal_GodotIs32Bits();
+        public static bool GodotIsRealTDouble() => godot_icall_Internal_GodotIsRealTDouble();
 
-        public static bool GodotIsRealTDouble() => internal_GodotIsRealTDouble();
+        public static void GodotMainIteration() => godot_icall_Internal_GodotMainIteration();
 
-        public static void GodotMainIteration() => internal_GodotMainIteration();
+        public static bool IsAssembliesReloadingNeeded() => godot_icall_Internal_IsAssembliesReloadingNeeded();
 
-        public static ulong GetCoreApiHash() => internal_GetCoreApiHash();
+        public static void ReloadAssemblies(bool softReload) => godot_icall_Internal_ReloadAssemblies(softReload);
 
-        public static ulong GetEditorApiHash() => internal_GetEditorApiHash();
-
-        public static bool IsAssembliesReloadingNeeded() => internal_IsAssembliesReloadingNeeded();
-
-        public static void ReloadAssemblies(bool softReload) => internal_ReloadAssemblies(softReload);
-
-        public static void EditorDebuggerNodeReloadScripts() => internal_EditorDebuggerNodeReloadScripts();
+        public static void EditorDebuggerNodeReloadScripts() => godot_icall_Internal_EditorDebuggerNodeReloadScripts();
 
         public static bool ScriptEditorEdit(Resource resource, int line, int col, bool grabFocus = true) =>
-            internal_ScriptEditorEdit(resource, line, col, grabFocus);
+            godot_icall_Internal_ScriptEditorEdit(resource.NativeInstance, line, col, grabFocus);
 
-        public static void EditorNodeShowScriptScreen() => internal_EditorNodeShowScriptScreen();
+        public static void EditorNodeShowScriptScreen() => godot_icall_Internal_EditorNodeShowScriptScreen();
 
-        public static string MonoWindowsInstallRoot => internal_MonoWindowsInstallRoot();
+        public static string MonoWindowsInstallRoot
+        {
+            get
+            {
+                godot_icall_Internal_MonoWindowsInstallRoot(out godot_string dest);
+                using (dest)
+                    return Marshaling.mono_string_from_godot(dest);
+            }
+        }
 
-        public static void EditorRunPlay() => internal_EditorRunPlay();
+        public static void EditorRunPlay() => godot_icall_Internal_EditorRunPlay();
 
-        public static void EditorRunStop() => internal_EditorRunStop();
+        public static void EditorRunStop() => godot_icall_Internal_EditorRunStop();
 
-        public static void ScriptEditorDebugger_ReloadScripts() => internal_ScriptEditorDebugger_ReloadScripts();
+        public static void ScriptEditorDebugger_ReloadScripts() =>
+            godot_icall_Internal_ScriptEditorDebugger_ReloadScripts();
 
-        public static string[] CodeCompletionRequest(CodeCompletionRequest.CompletionKind kind, string scriptFile) =>
-            internal_CodeCompletionRequest((int)kind, scriptFile);
+        public static unsafe string[] CodeCompletionRequest(CodeCompletionRequest.CompletionKind kind,
+            string scriptFile)
+        {
+            using godot_string scriptFileIn = Marshaling.mono_string_to_godot(scriptFile);
+            godot_icall_Internal_CodeCompletionRequest((int)kind, scriptFileIn, out godot_packed_string_array res);
+            using (res)
+                return Marshaling.PackedStringArray_to_mono_array(&res);
+        }
 
         #region Internal
 
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern string internal_UpdateApiAssembliesFromPrebuilt(string config);
+        private const string GodotDllName = "__Internal";
 
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern string internal_FullTemplatesDir();
+        [DllImport(GodotDllName)]
+        public static extern void godot_icall_GodotSharpDirs_ResMetadataDir(out godot_string r_dest);
 
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern string internal_SimplifyGodotPath(this string path);
+        [DllImport(GodotDllName)]
+        public static extern void godot_icall_GodotSharpDirs_ResTempAssembliesBaseDir(out godot_string r_dest);
 
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern bool internal_IsOsxAppBundleInstalled(string bundleId);
+        [DllImport(GodotDllName)]
+        public static extern void godot_icall_GodotSharpDirs_MonoUserDir(out godot_string r_dest);
 
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern bool internal_GodotIs32Bits();
+        [DllImport(GodotDllName)]
+        public static extern void godot_icall_GodotSharpDirs_BuildLogsDirs(out godot_string r_dest);
 
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern bool internal_GodotIsRealTDouble();
+        [DllImport(GodotDllName)]
+        public static extern void godot_icall_GodotSharpDirs_ProjectSlnPath(out godot_string r_dest);
 
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern void internal_GodotMainIteration();
+        [DllImport(GodotDllName)]
+        public static extern void godot_icall_GodotSharpDirs_ProjectCsProjPath(out godot_string r_dest);
 
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern ulong internal_GetCoreApiHash();
+        [DllImport(GodotDllName)]
+        public static extern void godot_icall_GodotSharpDirs_DataEditorToolsDir(out godot_string r_dest);
 
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern ulong internal_GetEditorApiHash();
+        [DllImport(GodotDllName)]
+        public static extern void godot_icall_EditorProgress_Create(in godot_string task, in godot_string label,
+            int amount, bool canCancel);
 
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern bool internal_IsAssembliesReloadingNeeded();
+        [DllImport(GodotDllName)]
+        public static extern void godot_icall_EditorProgress_Dispose(in godot_string task);
 
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern void internal_ReloadAssemblies(bool softReload);
+        [DllImport(GodotDllName)]
+        public static extern bool godot_icall_EditorProgress_Step(in godot_string task, in godot_string state, int step,
+            bool forceRefresh);
 
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern void internal_EditorDebuggerNodeReloadScripts();
+        [DllImport(GodotDllName)]
+        private static extern void godot_icall_Internal_FullTemplatesDir(out godot_string dest);
 
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern bool internal_ScriptEditorEdit(Resource resource, int line, int col, bool grabFocus);
+        [DllImport(GodotDllName)]
+        private static extern void godot_icall_Internal_SimplifyGodotPath(in godot_string path, out godot_string dest);
 
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern void internal_EditorNodeShowScriptScreen();
+        [DllImport(GodotDllName)]
+        private static extern bool godot_icall_Internal_IsOsxAppBundleInstalled(in godot_string bundleId);
 
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern string internal_MonoWindowsInstallRoot();
+        [DllImport(GodotDllName)]
+        private static extern bool godot_icall_Internal_GodotIs32Bits();
 
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern void internal_EditorRunPlay();
+        [DllImport(GodotDllName)]
+        private static extern bool godot_icall_Internal_GodotIsRealTDouble();
 
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern void internal_EditorRunStop();
+        [DllImport(GodotDllName)]
+        private static extern void godot_icall_Internal_GodotMainIteration();
 
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern void internal_ScriptEditorDebugger_ReloadScripts();
+        [DllImport(GodotDllName)]
+        private static extern bool godot_icall_Internal_IsAssembliesReloadingNeeded();
 
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern string[] internal_CodeCompletionRequest(int kind, string scriptFile);
+        [DllImport(GodotDllName)]
+        private static extern void godot_icall_Internal_ReloadAssemblies(bool softReload);
+
+        [DllImport(GodotDllName)]
+        private static extern void godot_icall_Internal_EditorDebuggerNodeReloadScripts();
+
+        [DllImport(GodotDllName)]
+        private static extern bool godot_icall_Internal_ScriptEditorEdit(IntPtr resource, int line, int col,
+            bool grabFocus);
+
+        [DllImport(GodotDllName)]
+        private static extern void godot_icall_Internal_EditorNodeShowScriptScreen();
+
+        [DllImport(GodotDllName)]
+        private static extern void godot_icall_Internal_MonoWindowsInstallRoot(out godot_string dest);
+
+        [DllImport(GodotDllName)]
+        private static extern void godot_icall_Internal_EditorRunPlay();
+
+        [DllImport(GodotDllName)]
+        private static extern void godot_icall_Internal_EditorRunStop();
+
+        [DllImport(GodotDllName)]
+        private static extern void godot_icall_Internal_ScriptEditorDebugger_ReloadScripts();
+
+        [DllImport(GodotDllName)]
+        private static extern void godot_icall_Internal_CodeCompletionRequest(int kind, in godot_string scriptFile,
+            out godot_packed_string_array res);
+
+        [DllImport(GodotDllName)]
+        public static extern float godot_icall_Globals_EditorScale();
+
+        [DllImport(GodotDllName)]
+        public static extern void godot_icall_Globals_GlobalDef(in godot_string setting, in godot_variant defaultValue,
+            bool restartIfChanged, out godot_variant result);
+
+        [DllImport(GodotDllName)]
+        public static extern void godot_icall_Globals_EditorDef(in godot_string setting, in godot_variant defaultValue,
+            bool restartIfChanged, out godot_variant result);
+
+        [DllImport(GodotDllName)]
+        public static extern void godot_icall_Globals_TTR(in godot_string text, out godot_string dest);
+
+        [DllImport(GodotDllName)]
+        public static extern void godot_icall_Utils_OS_GetPlatformName(out godot_string dest);
+
+        [DllImport(GodotDllName)]
+        public static extern bool godot_icall_Utils_OS_UnixFileHasExecutableAccess(in godot_string filePath);
 
         #endregion
     }

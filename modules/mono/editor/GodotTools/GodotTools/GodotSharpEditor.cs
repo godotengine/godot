@@ -50,9 +50,10 @@ namespace GodotTools
             }
         }
 
+        [UsedImplicitly]
         private bool CreateProjectSolution()
         {
-            using (var pr = new EditorProgress("create_csharp_solution", "Generating solution...".TTR(), 3))
+            using (var pr = new EditorProgress("create_csharp_solution", "Generating solution...".TTR(), 2))
             {
                 pr.Step("Generating C# project...".TTR());
 
@@ -74,7 +75,7 @@ namespace GodotTools
                     {
                         Guid = guid,
                         PathRelativeToSolution = name + ".csproj",
-                        Configs = new List<string> {"Debug", "ExportDebug", "ExportRelease"}
+                        Configs = new List<string> { "Debug", "ExportDebug", "ExportRelease" }
                     };
 
                     solution.AddNewProject(name, projectInfo);
@@ -86,24 +87,6 @@ namespace GodotTools
                     catch (IOException e)
                     {
                         ShowErrorDialog("Failed to save solution. Exception message: ".TTR() + e.Message);
-                        return false;
-                    }
-
-                    pr.Step("Updating Godot API assemblies...".TTR());
-
-                    string debugApiAssembliesError = Internal.UpdateApiAssembliesFromPrebuilt("Debug");
-
-                    if (!string.IsNullOrEmpty(debugApiAssembliesError))
-                    {
-                        ShowErrorDialog("Failed to update the Godot API assemblies: " + debugApiAssembliesError);
-                        return false;
-                    }
-
-                    string releaseApiAssembliesError = Internal.UpdateApiAssembliesFromPrebuilt("Release");
-
-                    if (!string.IsNullOrEmpty(releaseApiAssembliesError))
-                    {
-                        ShowErrorDialog("Failed to update the Godot API assemblies: " + releaseApiAssembliesError);
                         return false;
                     }
 
@@ -140,7 +123,8 @@ namespace GodotTools
                     try
                     {
                         string fallbackFolder = NuGetUtils.GodotFallbackFolderPath;
-                        NuGetUtils.AddFallbackFolderToUserNuGetConfigs(NuGetUtils.GodotFallbackFolderName, fallbackFolder);
+                        NuGetUtils.AddFallbackFolderToUserNuGetConfigs(NuGetUtils.GodotFallbackFolderName,
+                            fallbackFolder);
                         NuGetUtils.AddBundledPackagesToFallbackFolder(fallbackFolder);
                     }
                     catch (Exception e)
@@ -218,13 +202,15 @@ namespace GodotTools
                     try
                     {
                         if (Godot.OS.IsStdoutVerbose())
-                            Console.WriteLine($"Running: \"{command}\" {string.Join(" ", args.Select(a => $"\"{a}\""))}");
+                            Console.WriteLine(
+                                $"Running: \"{command}\" {string.Join(" ", args.Select(a => $"\"{a}\""))}");
 
                         OS.RunProcess(command, args);
                     }
                     catch (Exception e)
                     {
-                        GD.PushError($"Error when trying to run code editor: VisualStudio. Exception message: '{e.Message}'");
+                        GD.PushError(
+                            $"Error when trying to run code editor: VisualStudio. Exception message: '{e.Message}'");
                     }
 
                     break;
@@ -395,6 +381,8 @@ namespace GodotTools
         {
             base._EnablePlugin();
 
+            ProjectUtils.MSBuildLocatorRegisterDefaults();
+
             if (Instance != null)
                 throw new InvalidOperationException();
             Instance = this;
@@ -410,7 +398,7 @@ namespace GodotTools
             MSBuildPanel = new MSBuildPanel();
             bottomPanelBtn = AddControlToBottomPanel(MSBuildPanel, "MSBuild".TTR());
 
-            AddChild(new HotReloadAssemblyWatcher {Name = "HotReloadAssemblyWatcher"});
+            AddChild(new HotReloadAssemblyWatcher { Name = "HotReloadAssemblyWatcher" });
 
             menuPopup = new PopupMenu();
             menuPopup.Hide();
@@ -482,7 +470,8 @@ namespace GodotTools
             try
             {
                 // At startup we make sure NuGet.Config files have our Godot NuGet fallback folder included
-                NuGetUtils.AddFallbackFolderToUserNuGetConfigs(NuGetUtils.GodotFallbackFolderName, NuGetUtils.GodotFallbackFolderPath);
+                NuGetUtils.AddFallbackFolderToUserNuGetConfigs(NuGetUtils.GodotFallbackFolderName,
+                    NuGetUtils.GodotFallbackFolderPath);
             }
             catch (Exception e)
             {
@@ -528,8 +517,9 @@ namespace GodotTools
         public static GodotSharpEditor Instance { get; private set; }
 
         [UsedImplicitly]
-        private GodotSharpEditor()
+        private static IntPtr InternalCreateInstance()
         {
+            return new GodotSharpEditor().NativeInstance;
         }
     }
 }

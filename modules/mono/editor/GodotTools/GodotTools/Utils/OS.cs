@@ -1,3 +1,4 @@
+using Godot.NativeInterop;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -5,19 +6,13 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using JetBrains.Annotations;
+using GodotTools.Internals;
 
 namespace GodotTools.Utils
 {
     [SuppressMessage("ReSharper", "InconsistentNaming")]
     public static class OS
     {
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        static extern string GetPlatformName();
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        static extern bool UnixFileHasExecutableAccess(string filePath);
-
         public static class Names
         {
             public const string Windows = "Windows";
@@ -63,14 +58,24 @@ namespace GodotTools.Utils
             [Names.HTML5] = Platforms.HTML5
         };
 
-        private static bool IsOS(string name)
+        private static unsafe bool IsOS(string name)
         {
-            return name.Equals(GetPlatformName(), StringComparison.OrdinalIgnoreCase);
+            Internal.godot_icall_Utils_OS_GetPlatformName(out godot_string dest);
+            using (dest)
+            {
+                string platformName = Marshaling.mono_string_from_godot(dest);
+                return name.Equals(platformName, StringComparison.OrdinalIgnoreCase);
+            }
         }
 
-        private static bool IsAnyOS(IEnumerable<string> names)
+        private static unsafe bool IsAnyOS(IEnumerable<string> names)
         {
-            return names.Any(p => p.Equals(GetPlatformName(), StringComparison.OrdinalIgnoreCase));
+            Internal.godot_icall_Utils_OS_GetPlatformName(out godot_string dest);
+            using (dest)
+            {
+                string platformName = Marshaling.mono_string_from_godot(dest);
+                return names.Any(p => p.Equals(platformName, StringComparison.OrdinalIgnoreCase));
+            }
         }
 
         private static readonly IEnumerable<string> LinuxBSDPlatforms =
@@ -91,14 +96,23 @@ namespace GodotTools.Utils
         private static readonly Lazy<bool> _isHTML5 = new Lazy<bool>(() => IsOS(Names.HTML5));
         private static readonly Lazy<bool> _isUnixLike = new Lazy<bool>(() => IsAnyOS(UnixLikePlatforms));
 
+        // TODO SupportedOSPlatformGuard once we target .NET 6
+        // [SupportedOSPlatformGuard("windows")]
         public static bool IsWindows => _isWindows.Value || IsUWP;
+        // [SupportedOSPlatformGuard("osx")]
         public static bool IsMacOS => _isMacOS.Value;
+        // [SupportedOSPlatformGuard("linux")]
         public static bool IsLinuxBSD => _isLinuxBSD.Value;
+        // [SupportedOSPlatformGuard("linux")]
         public static bool IsServer => _isServer.Value;
+        // [SupportedOSPlatformGuard("windows")]
         public static bool IsUWP => _isUWP.Value;
         public static bool IsHaiku => _isHaiku.Value;
+        // [SupportedOSPlatformGuard("android")]
         public static bool IsAndroid => _isAndroid.Value;
+        // [SupportedOSPlatformGuard("ios")]
         public static bool IsiOS => _isiOS.Value;
+        // [SupportedOSPlatformGuard("browser")]
         public static bool IsHTML5 => _isHTML5.Value;
         public static bool IsUnixLike => _isUnixLike.Value;
 
@@ -111,7 +125,8 @@ namespace GodotTools.Utils
 
         private static string PathWhichWindows([NotNull] string name)
         {
-            string[] windowsExts = Environment.GetEnvironmentVariable("PATHEXT")?.Split(PathSep) ?? Array.Empty<string>();
+            string[] windowsExts =
+                Environment.GetEnvironmentVariable("PATHEXT")?.Split(PathSep) ?? Array.Empty<string>();
             string[] pathDirs = Environment.GetEnvironmentVariable("PATH")?.Split(PathSep);
             char[] invalidPathChars = Path.GetInvalidPathChars();
 
@@ -129,7 +144,8 @@ namespace GodotTools.Utils
             }
 
             string nameExt = Path.GetExtension(name);
-            bool hasPathExt = !string.IsNullOrEmpty(nameExt) && windowsExts.Contains(nameExt, StringComparer.OrdinalIgnoreCase);
+            bool hasPathExt = !string.IsNullOrEmpty(nameExt) &&
+                              windowsExts.Contains(nameExt, StringComparer.OrdinalIgnoreCase);
 
             searchDirs.Add(System.IO.Directory.GetCurrentDirectory()); // last in the list
 
@@ -137,10 +153,10 @@ namespace GodotTools.Utils
                 return searchDirs.Select(dir => Path.Combine(dir, name)).FirstOrDefault(File.Exists);
 
             return (from dir in searchDirs
-                    select Path.Combine(dir, name)
+                select Path.Combine(dir, name)
                 into path
-                    from ext in windowsExts
-                    select path + ext).FirstOrDefault(File.Exists);
+                from ext in windowsExts
+                select path + ext).FirstOrDefault(File.Exists);
         }
 
         private static string PathWhichUnix([NotNull] string name)
@@ -164,7 +180,11 @@ namespace GodotTools.Utils
             searchDirs.Add(System.IO.Directory.GetCurrentDirectory()); // last in the list
 
             return searchDirs.Select(dir => Path.Combine(dir, name))
-                .FirstOrDefault(path => File.Exists(path) && UnixFileHasExecutableAccess(path));
+                .FirstOrDefault(path =>
+                {
+                    using godot_string pathIn = Marshaling.mono_string_to_godot(path);
+                    return File.Exists(path) && Internal.godot_icall_Utils_OS_UnixFileHasExecutableAccess(pathIn);
+                });
         }
 
         public static void RunProcess(string command, IEnumerable<string> arguments)

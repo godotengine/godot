@@ -12,6 +12,10 @@ jobs:
     runs-on: "ubuntu-20.04"
     name: Editor (target=release_debug, tools=yes, tests=yes)
 
+    env:
+      DOTNET_NOLOGO: true
+      DOTNET_CLI_TELEMETRY_OPTOUT: false
+
     steps:
       - uses: actions/checkout@v2
 
@@ -58,18 +62,31 @@ jobs:
           python --version
           scons --version
 
+      - name: Set up .NET Sdk
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: '5.0.x'
+
       # We should always be explicit with our flags usage here since it's gonna be sure to always set those flags
       - name: Compilation
         env:
           SCONS_CACHE: ${{github.workspace}}/.scons_cache/
         run: |
-          scons tools=yes tests=yes target=release_debug
+          scons tools=yes tests=yes target=release_debug module_mono_enabled=yes
           ls -l bin/
+
+      - name: Generate C# glue
+        run: |
+          ./bin/godot.linuxbsd.opt.tools.64.mono --generate-mono-glue ./modules/mono/glue
+
+      - name: Build .NET solutions
+        run: |
+          ./modules/mono/build_scripts/build_assemblies.py --godot-output-dir=./bin --godot-target=release_debug --godot-platform=linuxbsd
 
       # Execute unit tests for the editor
       - name: Unit Tests
         run: |
-          ./bin/godot.linuxbsd.opt.tools.64 --test
+          ./bin/godot.linuxbsd.opt.tools.64.mono --test
 
       # Download, unzip and setup SwiftShader library [4466040]
       - name: Download SwiftShader
@@ -85,7 +102,7 @@ jobs:
         run: |
           echo "Running --doctool to see if this changes the public API without updating the documentation."
           echo -e "If a diff is shown, it means that your code/doc changes are incomplete and you should update the class reference with --doctool.\n\n"
-          VK_ICD_FILENAMES=$(pwd)/vk_swiftshader_icd.json DRI_PRIME=0 xvfb-run bin/godot.linuxbsd.opt.tools.64 --doctool . 2>&1 > /dev/null || true
+          VK_ICD_FILENAMES=$(pwd)/vk_swiftshader_icd.json DRI_PRIME=0 xvfb-run bin/godot.linuxbsd.opt.tools.64.mono --doctool . 2>&1 > /dev/null || true
           git diff --color --exit-code && ! git ls-files --others --exclude-standard | sed -e 's/^/New doc file missing in PR: /' | grep 'xml$'
 
       - uses: actions/upload-artifact@v2
@@ -190,6 +207,10 @@ jobs:
     runs-on: "ubuntu-20.04"
     name: Template w/ Mono (target=release, tools=no)
 
+    env:
+      DOTNET_NOLOGO: true
+      DOTNET_CLI_TELEMETRY_OPTOUT: false
+
     steps:
       - uses: actions/checkout@v2
 
@@ -236,11 +257,16 @@ jobs:
           python --version
           scons --version
 
+      - name: Set up .NET Sdk
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: '5.0.x'
+
       - name: Compilation
         env:
           SCONS_CACHE: ${{github.workspace}}/.scons_cache/
         run: |
-          scons target=release tools=no module_mono_enabled=yes mono_glue=no
+          scons target=release tools=no module_mono_enabled=yes
           ls -l bin/
 
       - uses: actions/upload-artifact@v2

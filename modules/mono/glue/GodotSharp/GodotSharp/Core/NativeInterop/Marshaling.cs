@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
@@ -10,16 +11,12 @@ namespace Godot.NativeInterop
 {
     // We want to use full name qualifiers here even if redundant for clarity
     [SuppressMessage("ReSharper", "RedundantNameQualifier")]
-    internal static class Marshaling
+    public static class Marshaling
     {
-        public static unsafe void SetFieldValue(FieldInfo fieldInfo, object obj, godot_variant* value)
+        public static Variant.Type managed_to_variant_type(Type type, out bool r_nil_is_variant)
         {
-            var valueObj = variant_to_mono_object_of_type(value, fieldInfo.FieldType);
-            fieldInfo.SetValue(obj, valueObj);
-        }
+            r_nil_is_variant = false;
 
-        public static Variant.Type managed_to_variant_type(Type type, ref bool r_nil_is_variant)
-        {
             switch (Type.GetTypeCode(type))
             {
                 case TypeCode.Boolean:
@@ -152,7 +149,8 @@ namespace Godot.NativeInterop
                         if (genericTypeDefinition == typeof(IDictionary<,>))
                             return Variant.Type.Dictionary;
 
-                        if (genericTypeDefinition == typeof(ICollection<>) || genericTypeDefinition == typeof(IEnumerable<>))
+                        if (genericTypeDefinition == typeof(ICollection<>) ||
+                            genericTypeDefinition == typeof(IEnumerable<>))
                             return Variant.Type.Array;
                     }
                     else if (type == typeof(object))
@@ -188,8 +186,6 @@ namespace Godot.NativeInterop
                     break;
                 }
             }
-
-            r_nil_is_variant = false;
 
             // Unknown
             return Variant.Type.Nil;
@@ -231,10 +227,6 @@ namespace Godot.NativeInterop
         {
             return mono_object_to_variant_impl(p_obj);
         }
-
-        // TODO: Only called from C++. Remove once no longer needed.
-        private static unsafe void mono_object_to_variant_out(object p_obj, bool p_fail_with_err, godot_variant* r_ret)
-            => *r_ret = mono_object_to_variant_impl(p_obj, p_fail_with_err);
 
         private static unsafe godot_variant mono_object_to_variant_impl(object p_obj, bool p_fail_with_err = true)
         {
@@ -414,42 +406,18 @@ namespace Godot.NativeInterop
                         if (genericTypeDefinition == typeof(System.Collections.Generic.Dictionary<,>))
                         {
                             // TODO: Validate key and value types are compatible with Variant
-#if NET
-                            Collections.IGenericGodotDictionary genericGodotDictionary = IDictionaryToGenericGodotDictionary((dynamic)p_obj);
-#else
-                            var genericArguments = type.GetGenericArguments();
+                            var godotDict = new Collections.Dictionary();
 
-                            // With .NET Standard we need a package reference for Microsoft.CSharp in order to
-                            // use dynamic, so we have this workaround for now until we switch to .NET 5/6.
-                            var method = typeof(Marshaling).GetMethod(nameof(IDictionaryToGenericGodotDictionary),
-                                    BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.DeclaredOnly)!
-                                .MakeGenericMethod(genericArguments[0], genericArguments[1]);
+                            foreach (KeyValuePair<object, object> entry in (IDictionary)p_obj)
+                                godotDict.Add(entry.Key, entry.Value);
 
-                            var genericGodotDictionary = (Collections.IGenericGodotDictionary)method
-                                .Invoke(null, new[] {p_obj});
-#endif
-
-                            var godotDict = genericGodotDictionary.UnderlyingDictionary;
-                            if (godotDict == null)
-                                return new godot_variant();
                             return VariantUtils.CreateFromDictionary(godotDict.NativeValue);
                         }
 
                         if (genericTypeDefinition == typeof(System.Collections.Generic.List<>))
                         {
                             // TODO: Validate element type is compatible with Variant
-#if NET
-                            var nativeGodotArray = mono_array_to_Array(System.Runtime.InteropServices.CollectionsMarshal.AsSpan((dynamic)p_obj));
-#else
-                            // With .NET Standard we need a package reference for Microsoft.CSharp in order to
-                            // use dynamic, so we have this workaround for now until we switch to .NET 5/6.
-                            // Also CollectionsMarshal.AsSpan is not available with .NET Standard.
-
-                            var collection = (System.Collections.ICollection)p_obj;
-                            var array = new object[collection.Count];
-                            collection.CopyTo(array, 0);
-                            var nativeGodotArray = mono_array_to_Array(array);
-#endif
+                            var nativeGodotArray = mono_array_to_Array((IList)p_obj);
                             return VariantUtils.CreateFromArray(&nativeGodotArray);
                         }
                     }
@@ -470,9 +438,6 @@ namespace Godot.NativeInterop
             }
         }
 
-        private static Collections.Dictionary<TKey, TValue> IDictionaryToGenericGodotDictionary<TKey, TValue>
-            (IDictionary<TKey, TValue> dictionary) => new(dictionary);
-
         public static unsafe string variant_to_mono_string(godot_variant* p_var)
         {
             switch ((*p_var)._type)
@@ -482,12 +447,12 @@ namespace Godot.NativeInterop
                 case Variant.Type.String:
                 {
                     // We avoid the internal call if the stored type is the same we want.
-                    return mono_string_from_godot(&(*p_var)._data._m_string);
+                    return mono_string_from_godot((*p_var)._data._m_string);
                 }
                 default:
                 {
                     using godot_string godotString = NativeFuncs.godotsharp_variant_as_string(p_var);
-                    return mono_string_from_godot(&godotString);
+                    return mono_string_from_godot(godotString);
                 }
             }
         }
@@ -599,8 +564,9 @@ namespace Godot.NativeInterop
                                 return VariantUtils.ConvertToUInt64(p_var);
                             default:
                             {
-                                GD.PushError("Attempted to convert Variant to enum value of unsupported underlying type. Name: " +
-                                             type.FullName + " : " + enumUnderlyingType.FullName + ".");
+                                GD.PushError(
+                                    "Attempted to convert Variant to enum value of unsupported underlying type. Name: " +
+                                    type.FullName + " : " + enumUnderlyingType.FullName + ".");
                                 return null;
                             }
                         }
@@ -683,7 +649,7 @@ namespace Godot.NativeInterop
             if (typeof(Godot.Object[]).IsAssignableFrom(type))
             {
                 using var godotArray = NativeFuncs.godotsharp_variant_as_array(p_var);
-                return Array_to_mono_array_of_type(&godotArray, type);
+                return Array_to_mono_array_of_godot_object_type(&godotArray, type);
             }
 
             if (type == typeof(object[]))
@@ -753,7 +719,7 @@ namespace Godot.NativeInterop
                     VariantUtils.ConvertToDictionary(p_var));
                 return Activator.CreateInstance(fullType,
                     BindingFlags.Public | BindingFlags.Instance, null,
-                    args: new object[] {underlyingDict}, null);
+                    args: new object[] { underlyingDict }, null);
             }
 
             static object variant_to_generic_godot_collections_array(godot_variant* p_var, Type fullType)
@@ -762,7 +728,7 @@ namespace Godot.NativeInterop
                     VariantUtils.ConvertToArray(p_var));
                 return Activator.CreateInstance(fullType,
                     BindingFlags.Public | BindingFlags.Instance, null,
-                    args: new object[] {underlyingArray}, null);
+                    args: new object[] { underlyingArray }, null);
             }
 
             var genericTypeDefinition = type.GetGenericTypeDefinition();
@@ -837,7 +803,7 @@ namespace Godot.NativeInterop
             switch ((*p_var)._type)
             {
                 case Variant.Type.Bool:
-                    return (bool)(*p_var)._data._bool;
+                    return (*p_var)._data._bool.ToBool();
                 case Variant.Type.Int:
                     return (*p_var)._data._int;
                 case Variant.Type.Float:
@@ -849,7 +815,7 @@ namespace Godot.NativeInterop
 #endif
                 }
                 case Variant.Type.String:
-                    return mono_string_from_godot(&(*p_var)._data._m_string);
+                    return mono_string_from_godot((*p_var)._data._m_string);
                 case Variant.Type.Vector2:
                     return (*p_var)._data._m_vector2;
                 case Variant.Type.Vector2i:
@@ -973,14 +939,14 @@ namespace Godot.NativeInterop
             }
         }
 
-        public static unsafe string mono_string_from_godot(godot_string* p_string)
+        public static unsafe string mono_string_from_godot(in godot_string p_string)
         {
-            if ((*p_string)._ptr == IntPtr.Zero)
+            if (p_string._ptr == IntPtr.Zero)
                 return string.Empty;
 
             const int sizeOfChar32 = 4;
-            byte* bytes = (byte*)(*p_string)._ptr;
-            int size = *((int*)(*p_string)._ptr - 1);
+            byte* bytes = (byte*)p_string._ptr;
+            int size = p_string.Size;
             if (size == 0)
                 return string.Empty;
             size -= 1; // zero at the end
@@ -1034,7 +1000,7 @@ namespace Godot.NativeInterop
             godot_string_name name;
 
             if (NativeFuncs.godotsharp_callable_get_data_for_marshalling(
-                p_callable, &delegateGCHandle, &godotObject, &name))
+                p_callable, &delegateGCHandle, &godotObject, &name).ToBool())
             {
                 if (delegateGCHandle != IntPtr.Zero)
                 {
@@ -1102,7 +1068,7 @@ namespace Godot.NativeInterop
             return ret;
         }
 
-        public static unsafe object Array_to_mono_array_of_type(godot_array* p_array, Type type)
+        public static unsafe object Array_to_mono_array_of_godot_object_type(godot_array* p_array, Type type)
         {
             var array = Collections.Array.CreateTakingOwnershipOfDisposableValue(
                 NativeFuncs.godotsharp_array_new_copy(p_array));
@@ -1110,24 +1076,44 @@ namespace Godot.NativeInterop
             int length = array.Count;
             object ret = Activator.CreateInstance(type, length);
 
-            array.CopyTo((object[])ret, 0); // variant_to_mono_object handled by Collections.Array
+            // variant_to_mono_object handled by Collections.Array
+            // variant_to_mono_object_of_type is not needed because target element types are Godot.Object (or derived)
+            array.CopyTo((object[])ret, 0);
 
             return ret;
         }
 
-        public static godot_array mono_array_to_Array(Span<object> p_array)
+        public static godot_array mono_array_to_Array(object[] p_array)
         {
-            if (p_array.IsEmpty)
-            {
-                godot_array ret;
-                Collections.Array.godot_icall_Array_Ctor(out ret);
-                return ret;
-            }
+            int length = p_array.Length;
+
+            if (length == 0)
+                return NativeFuncs.godotsharp_array_new();
 
             using var array = new Collections.Array();
-            array.Resize(p_array.Length);
+            array.Resize(length);
 
-            for (int i = 0; i < p_array.Length; i++)
+            for (int i = 0; i < length; i++)
+                array[i] = p_array[i];
+
+            godot_array src = array.NativeValue;
+            unsafe
+            {
+                return NativeFuncs.godotsharp_array_new_copy(&src);
+            }
+        }
+
+        public static godot_array mono_array_to_Array(IList p_array)
+        {
+            int length = p_array.Count;
+
+            if (length == 0)
+                return NativeFuncs.godotsharp_array_new();
+
+            using var array = new Collections.Array();
+            array.Resize(length);
+
+            for (int i = 0; i < length; i++)
                 array[i] = p_array[i];
 
             godot_array src = array.NativeValue;
@@ -1141,8 +1127,8 @@ namespace Godot.NativeInterop
 
         public static unsafe byte[] PackedByteArray_to_mono_array(godot_packed_byte_array* p_array)
         {
-            byte* buffer = (byte*)(*p_array)._ptr;
-            int size = *((int*)(*p_array)._ptr - 1);
+            byte* buffer = (*p_array)._ptr;
+            int size = (*p_array).Size;
             var array = new byte[size];
             fixed (byte* dest = array)
                 Buffer.MemoryCopy(buffer, dest, size, size);
@@ -1161,8 +1147,8 @@ namespace Godot.NativeInterop
 
         public static unsafe int[] PackedInt32Array_to_mono_array(godot_packed_int32_array* p_array)
         {
-            int* buffer = (int*)(*p_array)._ptr;
-            int size = *((int*)(*p_array)._ptr - 1);
+            int* buffer = (*p_array)._ptr;
+            int size = (*p_array).Size;
             int sizeInBytes = size * sizeof(int);
             var array = new int[size];
             fixed (int* dest = array)
@@ -1182,8 +1168,8 @@ namespace Godot.NativeInterop
 
         public static unsafe long[] PackedInt64Array_to_mono_array(godot_packed_int64_array* p_array)
         {
-            long* buffer = (long*)(*p_array)._ptr;
-            int size = *((int*)(*p_array)._ptr - 1);
+            long* buffer = (*p_array)._ptr;
+            int size = (*p_array).Size;
             int sizeInBytes = size * sizeof(long);
             var array = new long[size];
             fixed (long* dest = array)
@@ -1203,8 +1189,8 @@ namespace Godot.NativeInterop
 
         public static unsafe float[] PackedFloat32Array_to_mono_array(godot_packed_float32_array* p_array)
         {
-            float* buffer = (float*)(*p_array)._ptr;
-            int size = *((int*)(*p_array)._ptr - 1);
+            float* buffer = (*p_array)._ptr;
+            int size = (*p_array).Size;
             int sizeInBytes = size * sizeof(float);
             var array = new float[size];
             fixed (float* dest = array)
@@ -1224,8 +1210,8 @@ namespace Godot.NativeInterop
 
         public static unsafe double[] PackedFloat64Array_to_mono_array(godot_packed_float64_array* p_array)
         {
-            double* buffer = (double*)(*p_array)._ptr;
-            int size = *((int*)(*p_array)._ptr - 1);
+            double* buffer = (*p_array)._ptr;
+            int size = (*p_array).Size;
             int sizeInBytes = size * sizeof(double);
             var array = new double[size];
             fixed (double* dest = array)
@@ -1245,13 +1231,13 @@ namespace Godot.NativeInterop
 
         public static unsafe string[] PackedStringArray_to_mono_array(godot_packed_string_array* p_array)
         {
-            godot_string* buffer = (godot_string*)(*p_array)._ptr;
+            godot_string* buffer = (*p_array)._ptr;
             if (buffer == null)
                 return new string[] { };
-            int size = *((int*)(*p_array)._ptr - 1);
+            int size = (*p_array).Size;
             var array = new string[size];
             for (int i = 0; i < size; i++)
-                array[i] = mono_string_from_godot(&buffer[i]);
+                array[i] = mono_string_from_godot(buffer[i]);
             return array;
         }
 
@@ -1278,8 +1264,8 @@ namespace Godot.NativeInterop
 
         public static unsafe Vector2[] PackedVector2Array_to_mono_array(godot_packed_vector2_array* p_array)
         {
-            Vector2* buffer = (Vector2*)(*p_array)._ptr;
-            int size = *((int*)(*p_array)._ptr - 1);
+            Vector2* buffer = (*p_array)._ptr;
+            int size = (*p_array).Size;
             int sizeInBytes = size * sizeof(Vector2);
             var array = new Vector2[size];
             fixed (Vector2* dest = array)
@@ -1299,8 +1285,8 @@ namespace Godot.NativeInterop
 
         public static unsafe Vector3[] PackedVector3Array_to_mono_array(godot_packed_vector3_array* p_array)
         {
-            Vector3* buffer = (Vector3*)(*p_array)._ptr;
-            int size = *((int*)(*p_array)._ptr - 1);
+            Vector3* buffer = (*p_array)._ptr;
+            int size = (*p_array).Size;
             int sizeInBytes = size * sizeof(Vector3);
             var array = new Vector3[size];
             fixed (Vector3* dest = array)
@@ -1320,8 +1306,8 @@ namespace Godot.NativeInterop
 
         public static unsafe Color[] PackedColorArray_to_mono_array(godot_packed_color_array* p_array)
         {
-            Color* buffer = (Color*)(*p_array)._ptr;
-            int size = *((int*)(*p_array)._ptr - 1);
+            Color* buffer = (*p_array)._ptr;
+            int size = (*p_array).Size;
             int sizeInBytes = size * sizeof(Color);
             var array = new Color[size];
             fixed (Color* dest = array)

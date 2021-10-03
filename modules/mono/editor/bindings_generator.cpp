@@ -96,9 +96,9 @@ StringBuilder &operator<<(StringBuilder &r_sb, const char *p_cstring) {
 
 #define C_CLASS_NATIVE_FUNCS "NativeFuncs"
 #define C_NS_MONOUTILS "InteropUtils"
-#define C_METHOD_TIE_MANAGED_TO_UNMANAGED "NativeInterop." C_NS_MONOUTILS ".TieManagedToUnmanaged"
+#define C_METHOD_TIE_MANAGED_TO_UNMANAGED C_NS_MONOUTILS ".TieManagedToUnmanaged"
 #define C_METHOD_UNMANAGED_GET_MANAGED C_NS_MONOUTILS ".UnmanagedGetManaged"
-#define C_METHOD_ENGINE_GET_SINGLETON "NativeInterop." C_NS_MONOUTILS ".EngineGetSingleton"
+#define C_METHOD_ENGINE_GET_SINGLETON C_NS_MONOUTILS ".EngineGetSingleton"
 
 #define C_NS_MONOMARSHAL "Marshaling"
 #define C_METHOD_MANAGED_TO_VARIANT C_NS_MONOMARSHAL ".mono_object_to_variant"
@@ -1050,9 +1050,7 @@ Error BindingsGenerator::generate_cs_core_project(const String &p_proj_dir) {
 	cs_icalls_content.append(INDENT1 "[SuppressMessage(\"ReSharper\", \"InconsistentNaming\")]\n");
 	cs_icalls_content.append(INDENT1 "[SuppressMessage(\"ReSharper\", \"RedundantUnsafeContext\")]\n");
 	cs_icalls_content.append(INDENT1 "[SuppressMessage(\"ReSharper\", \"RedundantNameQualifier\")]\n");
-	cs_icalls_content.append("#if NET\n");
 	cs_icalls_content.append(INDENT1 "[System.Runtime.CompilerServices.SkipLocalsInit]\n");
-	cs_icalls_content.append("#endif\n");
 	cs_icalls_content.append(INDENT1 "internal static class " BINDINGS_CLASS_NATIVECALLS "\n" INDENT1 "{");
 
 	cs_icalls_content.append(MEMBER_BEGIN "internal static ulong godot_api_hash = ");
@@ -1157,9 +1155,7 @@ Error BindingsGenerator::generate_cs_editor_project(const String &p_proj_dir) {
 	cs_icalls_content.append(INDENT1 "[SuppressMessage(\"ReSharper\", \"InconsistentNaming\")]\n");
 	cs_icalls_content.append(INDENT1 "[SuppressMessage(\"ReSharper\", \"RedundantUnsafeContext\")]\n");
 	cs_icalls_content.append(INDENT1 "[SuppressMessage(\"ReSharper\", \"RedundantNameQualifier\")]\n");
-	cs_icalls_content.append("#if NET\n");
 	cs_icalls_content.append(INDENT1 "[System.Runtime.CompilerServices.SkipLocalsInit]\n");
-	cs_icalls_content.append("#endif\n");
 	cs_icalls_content.append(INDENT1 "internal static class " BINDINGS_CLASS_NATIVECALLS_EDITOR "\n" OPEN_BLOCK_L1);
 
 	cs_icalls_content.append(INDENT2 "internal static ulong godot_api_hash = ");
@@ -1278,6 +1274,7 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 
 	output.append("using System;\n"); // IntPtr
 	output.append("using System.Diagnostics;\n"); // DebuggerBrowsable
+	output.append("using Godot.NativeInterop;\n");
 
 	output.append("\n"
 				  "#pragma warning disable CS1591 // Disable warning: "
@@ -1310,7 +1307,11 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 	if (itype.is_singleton) {
 		output.append("static partial class ");
 	} else {
-		output.append(itype.is_instantiable ? "partial class " : "abstract partial class ");
+		// Even if the class is not instantiable, we can't declare it abstract because
+		// the engine can still instantiate them and return them via the scripting API.
+		// Example: `SceneTreeTimer` returned from `SceneTree.create_timer`.
+		// See the reverted commit: ef5672d3f94a7321ed779c922088bb72adbb1521
+		output.append("partial class ");
 	}
 	output.append(itype.proxy_name);
 
@@ -1430,6 +1431,10 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 
 		// Add native name static field
 
+		if (is_derived_type) {
+			output << MEMBER_BEGIN "private static readonly System.Type _cachedType = typeof(" << itype.proxy_name << ");\n";
+		}
+
 		output.append(MEMBER_BEGIN "private static readonly StringName " BINDINGS_NATIVE_NAME_FIELD " = \"");
 		output.append(itype.name);
 		output.append("\";\n");
@@ -1437,29 +1442,10 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 		if (itype.is_instantiable) {
 			// Add native constructor static field
 
-			String get_constructor_method = ICALL_CLASSDB_GET_CONSTRUCTOR;
-
-			if (itype.is_singleton) {
-				// Singletons are static classes. They don't derive Godot.Object,
-				// so we need to specify the type to call the static method.
-				get_constructor_method = "Object." + get_constructor_method;
-			}
-
 			output << MEMBER_BEGIN << "[DebuggerBrowsable(DebuggerBrowsableState.Never)]\n"
-
-				   << "#if NET\n"
-
 				   << INDENT2 "private static unsafe readonly delegate* unmanaged<IntPtr> "
-				   << CS_STATIC_FIELD_NATIVE_CTOR " = " << get_constructor_method
-				   << "(" BINDINGS_NATIVE_NAME_FIELD ");\n"
-
-				   << "#else\n"
-
-				   // Get rid of this one once we switch to .NET 5/6
-				   << INDENT2 "private static readonly IntPtr " CS_STATIC_FIELD_NATIVE_CTOR
-				   << " = " << get_constructor_method << "(" BINDINGS_NATIVE_NAME_FIELD ");\n"
-
-				   << "#endif\n";
+				   << CS_STATIC_FIELD_NATIVE_CTOR " = " ICALL_CLASSDB_GET_CONSTRUCTOR
+				   << "(" BINDINGS_NATIVE_NAME_FIELD ");\n";
 		}
 
 		if (is_derived_type) {
@@ -1472,22 +1458,15 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 				// The engine will initialize the pointer field of the managed side before calling the constructor
 				// This is why we only allocate a new native object from the constructor if the pointer field is not set
 				output << INDENT3 "if (" BINDINGS_PTR_FIELD " == IntPtr.Zero)\n" OPEN_BLOCK_L3
-
-					   << "#if NET\n"
-
 					   << INDENT4 "unsafe\n" INDENT4 OPEN_BLOCK
 					   << INDENT5 BINDINGS_PTR_FIELD " = " CS_STATIC_FIELD_NATIVE_CTOR "();\n"
 					   << CLOSE_BLOCK_L4
-
-					   << "#else\n"
-
-					   // Get rid of this one once we switch to .NET 5/6
-					   << INDENT4 BINDINGS_PTR_FIELD " = _gd__invoke_class_constructor(" CS_STATIC_FIELD_NATIVE_CTOR ");\n"
-
-					   << "#endif\n"
-
-					   << INDENT4 C_METHOD_TIE_MANAGED_TO_UNMANAGED "(this, " BINDINGS_PTR_FIELD ");\n"
-					   << CLOSE_BLOCK_L3
+					   << INDENT4 C_METHOD_TIE_MANAGED_TO_UNMANAGED "(this, " BINDINGS_PTR_FIELD ", "
+					   << BINDINGS_NATIVE_NAME_FIELD << ", refCounted: " << (itype.is_ref_counted ? "true" : "false")
+					   << ", ((object)this).GetType(), _cachedType);\n" CLOSE_BLOCK_L3
+					   << INDENT3 "else\n" INDENT3 OPEN_BLOCK
+					   << INDENT4 "InteropUtils.TieManagedToUnmanagedWithPreSetup(this, "
+					   << BINDINGS_PTR_FIELD ");\n" CLOSE_BLOCK_L3
 					   << INDENT3 "_InitializeGodotScriptInstanceInternals();\n" CLOSE_BLOCK_L2;
 			} else {
 				// Hide the constructor
@@ -1503,6 +1482,8 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 		}
 	}
 
+	// Methods
+
 	int method_bind_count = 0;
 	for (const MethodInterface &imethod : itype.methods) {
 		Error method_err = _generate_cs_method(itype, imethod, method_bind_count, output);
@@ -1510,10 +1491,80 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 				"Failed to generate method '" + imethod.name + "' for class '" + itype.name + "'.");
 	}
 
+	// Signals
+
 	for (const SignalInterface &isignal : itype.signals_) {
 		Error method_err = _generate_cs_signal(itype, isignal, output);
 		ERR_FAIL_COND_V_MSG(method_err != OK, method_err,
 				"Failed to generate signal '" + isignal.name + "' for class '" + itype.name + "'.");
+	}
+
+	// Script calls
+
+	if (!itype.is_singleton && (is_derived_type || itype.has_virtual_methods)) {
+		// TODO: string is ok for now. But should be replaced with StringName in the future for performance.
+
+		output << MEMBER_BEGIN "internal " << (is_derived_type ? "override" : "virtual")
+			   << " unsafe bool InternalGodotScriptCall(string method, godot_variant** args, "
+			   << "int argCount, out godot_variant ret)\n"
+			   << INDENT2 "{\n";
+
+		for (const MethodInterface &imethod : itype.methods) {
+			if (!imethod.is_virtual) {
+				continue;
+			}
+
+			// TODO:
+			//  Compare with cached StringName. We already have a cached StringName
+			//  field for the proxy name. We need one for the original snake_case name.
+			output << INDENT3 "if ((method == nameof(" << imethod.proxy_name << ") || method == \"" << imethod.name
+				   << "\") && argCount == " << itos(imethod.arguments.size()) << ")\n"
+				   << INDENT3 "{\n";
+
+			if (imethod.return_type.cname != name_cache.type_void) {
+				output << INDENT4 "object retBoxed = ";
+			} else {
+				output << INDENT4;
+			}
+
+			output << imethod.proxy_name << "(";
+
+			for (int i = 0; i < imethod.arguments.size(); i++) {
+				const ArgumentInterface &iarg = imethod.arguments[i];
+
+				const TypeInterface *arg_type = _get_type_or_null(iarg.type);
+				ERR_FAIL_NULL_V(arg_type, ERR_BUG); // Argument type not found
+
+				if (i != 0) {
+					output << ", ";
+				}
+
+				// TODO: static marshaling (no reflection, no runtime type checks)
+				output << "(" << arg_type->cs_type << ")Marshaling.variant_to_mono_object_of_type(args["
+					   << itos(i) << "], typeof(" << arg_type->cs_type << "))";
+			}
+
+			output << ");\n";
+
+			if (imethod.return_type.cname != name_cache.type_void) {
+				// TODO: static marshaling (no reflection, no runtime type checks)
+				output << INDENT4 "ret = Marshaling.mono_object_to_variant(retBoxed);\n";
+				output << INDENT4 "return true;\n";
+			} else {
+				output << INDENT4 "ret = default;\n";
+				output << INDENT4 "return true;\n";
+			}
+
+			output << INDENT3 "}\n";
+		}
+
+		if (is_derived_type) {
+			output << INDENT3 "return base.InternalGodotScriptCall(method, args, argCount, out ret);\n";
+		} else {
+			output << INDENT3 "return InternalGodotScriptCallViaReflection(method, args, argCount, out ret);\n";
+		}
+
+		output << INDENT2 "}\n";
 	}
 
 	output.append(INDENT1 CLOSE_BLOCK /* class */
@@ -2556,6 +2607,7 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 
 			if (method_info.flags & METHOD_FLAG_VIRTUAL) {
 				imethod.is_virtual = true;
+				itype.has_virtual_methods = true;
 			}
 
 			PropertyInfo return_info = method_info.return_val;
@@ -2689,7 +2741,7 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 			ERR_FAIL_COND_V_MSG(itype.find_property_by_name(imethod.cname), false,
 					"Method name conflicts with property: '" + itype.name + "." + imethod.name + "'.");
 
-			// Classes starting with an underscore are ignored unless they're used as a property setter or getter
+			// Methods starting with an underscore are ignored unless they're used as a property setter or getter
 			if (!imethod.is_virtual && imethod.name[0] == '_') {
 				for (const PropertyInterface &iprop : itype.properties) {
 					if (iprop.setter == imethod.name || iprop.getter == imethod.name) {
@@ -3057,6 +3109,8 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 
 	// bool
 	itype = TypeInterface::create_value_type(String("bool"));
+	itype.cs_in = "%s.ToGodotBool()";
+	itype.cs_out = "%5return %0(%1).ToBool();";
 	itype.c_type = "godot_bool";
 	itype.c_type_in = itype.c_type;
 	itype.c_type_out = itype.c_type;
@@ -3140,7 +3194,7 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 	itype.proxy_name = "string";
 	itype.cs_type = itype.proxy_name;
 	itype.c_in = "%5using %0 %1_in = " C_METHOD_MONOSTR_TO_GODOT "(%1);\n";
-	itype.c_out = "%5return " C_METHOD_MONOSTR_FROM_GODOT "(&%1);\n";
+	itype.c_out = "%5return " C_METHOD_MONOSTR_FROM_GODOT "(%1);\n";
 	itype.c_arg_in = "&%s_in";
 	itype.c_type = "godot_string";
 	itype.c_type_in = itype.cs_type;
