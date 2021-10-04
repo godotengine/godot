@@ -91,7 +91,7 @@ static int _get_datatype_size(SL::DataType p_type) {
 		case SL::TYPE_VEC4:
 			return 16;
 		case SL::TYPE_MAT2:
-			return 32; //4 * 4 + 4 * 4
+			return 32; // 4 * 4 + 4 * 4
 		case SL::TYPE_MAT3:
 			return 48; // 4 * 4 + 4 * 4 + 4 * 4
 		case SL::TYPE_MAT4:
@@ -608,7 +608,7 @@ String ShaderCompilerRD::_dump_node_code(const SL::Node *p_node, int p_level, Ge
 					continue; // Instances are indexed directly, don't need index uniforms.
 				}
 				if (SL::is_sampler_type(uniform.type)) {
-					ucode = "layout(set = " + itos(actions.texture_layout_set) + ", binding = " + itos(actions.base_texture_binding_index + uniform.texture_order) + ") uniform ";
+					ucode = "layout(set = " + itos(actions.texture_layout_set) + ", binding = " + itos(actions.base_texture_binding_index + uniform.texture_binding) + ") uniform ";
 				}
 
 				bool is_buffer_global = !SL::is_sampler_type(uniform.type) && uniform.scope == SL::ShaderNode::Uniform::SCOPE_GLOBAL;
@@ -622,6 +622,11 @@ String ShaderCompilerRD::_dump_node_code(const SL::Node *p_node, int p_level, Ge
 				}
 
 				ucode += " " + _mkid(uniform_name);
+				if (uniform.array_size > 0) {
+					ucode += "[";
+					ucode += itos(uniform.array_size);
+					ucode += "]";
+				}
 				ucode += ";\n";
 				if (SL::is_sampler_type(uniform.type)) {
 					for (int j = 0; j < STAGE_MAX; j++) {
@@ -635,6 +640,7 @@ String ShaderCompilerRD::_dump_node_code(const SL::Node *p_node, int p_level, Ge
 					texture.filter = uniform.filter;
 					texture.repeat = uniform.repeat;
 					texture.global = uniform.scope == ShaderLanguage::ShaderNode::Uniform::SCOPE_GLOBAL;
+					texture.array_size = uniform.array_size;
 					if (texture.global) {
 						r_gen_code.uses_global_textures = true;
 					}
@@ -650,7 +656,16 @@ String ShaderCompilerRD::_dump_node_code(const SL::Node *p_node, int p_level, Ge
 						uniform_sizes.write[uniform.order] = _get_datatype_size(ShaderLanguage::TYPE_UINT);
 						uniform_alignments.write[uniform.order] = _get_datatype_alignment(ShaderLanguage::TYPE_UINT);
 					} else {
-						uniform_sizes.write[uniform.order] = _get_datatype_size(uniform.type);
+						if (uniform.array_size > 0) {
+							int size = _get_datatype_size(uniform.type) * uniform.array_size;
+							int m = (16 * uniform.array_size);
+							if ((size % m) != 0) {
+								size += m - (size % m);
+							}
+							uniform_sizes.write[uniform.order] = size;
+						} else {
+							uniform_sizes.write[uniform.order] = _get_datatype_size(uniform.type);
+						}
 						uniform_alignments.write[uniform.order] = _get_datatype_alignment(uniform.type);
 					}
 				}
@@ -1074,10 +1089,32 @@ String ShaderCompilerRD::_dump_node_code(const SL::Node *p_node, int p_level, Ge
 			if (p_default_actions.renames.has(anode->name)) {
 				code = p_default_actions.renames[anode->name];
 			} else {
-				if (use_fragment_varying) {
-					code = "frag_to_light.";
+				if (shader->uniforms.has(anode->name)) {
+					//its a uniform!
+					const ShaderLanguage::ShaderNode::Uniform &u = shader->uniforms[anode->name];
+					if (u.texture_order >= 0) {
+						code = _mkid(anode->name); //texture, use as is
+					} else {
+						//a scalar or vector
+						if (u.scope == ShaderLanguage::ShaderNode::Uniform::SCOPE_GLOBAL) {
+							code = actions.base_uniform_string + _mkid(anode->name); //texture, use as is
+							//global variable, this means the code points to an index to the global table
+							code = _get_global_variable_from_type_and_index(p_default_actions.global_buffer_array_variable, code, u.type);
+						} else if (u.scope == ShaderLanguage::ShaderNode::Uniform::SCOPE_INSTANCE) {
+							//instance variable, index it as such
+							code = "(" + p_default_actions.instance_uniform_index_variable + "+" + itos(u.instance_index) + ")";
+							code = _get_global_variable_from_type_and_index(p_default_actions.global_buffer_array_variable, code, u.type);
+						} else {
+							//regular uniform, index from UBO
+							code = actions.base_uniform_string + _mkid(anode->name);
+						}
+					}
+				} else {
+					if (use_fragment_varying) {
+						code = "frag_to_light.";
+					}
+					code += _mkid(anode->name);
 				}
-				code += _mkid(anode->name);
 			}
 
 			if (anode->call_expression != nullptr) {
@@ -1193,46 +1230,63 @@ String ShaderCompilerRD::_dump_node_code(const SL::Node *p_node, int p_level, Ge
 							code += ", ";
 						}
 						String node_code = _dump_node_code(onode->arguments[i], p_level, r_gen_code, p_actions, p_default_actions, p_assigning);
-						if (is_texture_func && i == 1 && onode->arguments[i]->type == SL::Node::TYPE_VARIABLE) {
+						if (is_texture_func && i == 1 && (onode->arguments[i]->type == SL::Node::TYPE_VARIABLE || onode->arguments[i]->type == SL::Node::TYPE_OPERATOR)) {
 							//need to map from texture to sampler in order to sample
-							const SL::VariableNode *varnode = static_cast<const SL::VariableNode *>(onode->arguments[i]);
+							StringName texture_uniform;
+							bool correct_texture_uniform = false;
 
-							StringName texture_uniform = varnode->name;
-							is_screen_texture = (texture_uniform == "SCREEN_TEXTURE");
-
-							String sampler_name;
-
-							if (actions.custom_samplers.has(texture_uniform)) {
-								sampler_name = actions.custom_samplers[texture_uniform];
-							} else {
-								if (shader->uniforms.has(texture_uniform)) {
-									sampler_name = _get_sampler_name(shader->uniforms[texture_uniform].filter, shader->uniforms[texture_uniform].repeat);
-								} else {
-									bool found = false;
-
-									for (int j = 0; j < function->arguments.size(); j++) {
-										if (function->arguments[j].name == texture_uniform) {
-											if (function->arguments[j].tex_builtin_check) {
-												ERR_CONTINUE(!actions.custom_samplers.has(function->arguments[j].tex_builtin));
-												sampler_name = actions.custom_samplers[function->arguments[j].tex_builtin];
-												found = true;
-												break;
-											}
-											if (function->arguments[j].tex_argument_check) {
-												sampler_name = _get_sampler_name(function->arguments[j].tex_argument_filter, function->arguments[j].tex_argument_repeat);
-												found = true;
-												break;
-											}
-										}
-									}
-									if (!found) {
-										//function was most likely unused, so use anything (compiler will remove it anyway)
-										sampler_name = _get_sampler_name(ShaderLanguage::FILTER_DEFAULT, ShaderLanguage::REPEAT_DEFAULT);
-									}
+							if (onode->arguments[i]->type == SL::Node::TYPE_VARIABLE) {
+								const SL::VariableNode *varnode = static_cast<const SL::VariableNode *>(onode->arguments[i]);
+								texture_uniform = varnode->name;
+								correct_texture_uniform = true;
+							} else { // array indexing operator handling
+								const SL::OperatorNode *opnode = static_cast<const SL::OperatorNode *>(onode->arguments[i]);
+								if (opnode->op == SL::Operator::OP_INDEX && opnode->arguments[0]->type == SL::Node::TYPE_ARRAY) {
+									const SL::ArrayNode *anode = static_cast<const SL::ArrayNode *>(opnode->arguments[0]);
+									texture_uniform = anode->name;
+									correct_texture_uniform = true;
 								}
 							}
 
-							code += ShaderLanguage::get_datatype_name(onode->arguments[i]->get_datatype()) + "(" + node_code + ", " + sampler_name + ")";
+							if (correct_texture_uniform) {
+								is_screen_texture = (texture_uniform == "SCREEN_TEXTURE");
+
+								String sampler_name;
+
+								if (actions.custom_samplers.has(texture_uniform)) {
+									sampler_name = actions.custom_samplers[texture_uniform];
+								} else {
+									if (shader->uniforms.has(texture_uniform)) {
+										sampler_name = _get_sampler_name(shader->uniforms[texture_uniform].filter, shader->uniforms[texture_uniform].repeat);
+									} else {
+										bool found = false;
+
+										for (int j = 0; j < function->arguments.size(); j++) {
+											if (function->arguments[j].name == texture_uniform) {
+												if (function->arguments[j].tex_builtin_check) {
+													ERR_CONTINUE(!actions.custom_samplers.has(function->arguments[j].tex_builtin));
+													sampler_name = actions.custom_samplers[function->arguments[j].tex_builtin];
+													found = true;
+													break;
+												}
+												if (function->arguments[j].tex_argument_check) {
+													sampler_name = _get_sampler_name(function->arguments[j].tex_argument_filter, function->arguments[j].tex_argument_repeat);
+													found = true;
+													break;
+												}
+											}
+										}
+										if (!found) {
+											//function was most likely unused, so use anything (compiler will remove it anyway)
+											sampler_name = _get_sampler_name(ShaderLanguage::FILTER_DEFAULT, ShaderLanguage::REPEAT_DEFAULT);
+										}
+									}
+								}
+
+								code += ShaderLanguage::get_datatype_name(onode->arguments[i]->get_datatype()) + "(" + node_code + ", " + sampler_name + ")";
+							} else {
+								code += node_code;
+							}
 						} else {
 							code += node_code;
 						}
