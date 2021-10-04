@@ -246,11 +246,9 @@ void TilesEditorPlugin::make_visible(bool p_visible) {
 	if (p_visible) {
 		tiles_editor_button->show();
 		editor_node->make_bottom_panel_item_visible(tiles_editor);
-		//get_tree()->connect_compat("idle_frame", tileset_editor, "_on_workspace_process");
 	} else {
 		editor_node->hide_bottom_panel();
 		tiles_editor_button->hide();
-		//get_tree()->disconnect_compat("idle_frame", tileset_editor, "_on_workspace_process");
 	}
 }
 
