@@ -2118,6 +2118,17 @@ void EditorNode::_dialog_action(String p_file) {
 	}
 }
 
+void EditorNode::_long_load_action(bool p_disable_restore, const Control *p_dont_ask) {
+	bool dont_ask = Object::cast_to<CheckBox>(p_dont_ask)->is_pressed();
+	if (dont_ask) {
+		EditorSettings::get_singleton()->set_project_metadata("editor_metadata", "dont_ask_long_load", true);
+	}
+
+	if (p_disable_restore) {
+		EditorSettings::get_singleton()->set("interface/scene_tabs/restore_scenes_on_load", false);
+	}
+}
+
 bool EditorNode::_is_class_editor_disabled_by_feature_profile(const StringName &p_class) {
 	Ref<EditorFeatureProfile> profile = EditorFeatureProfileManager::get_singleton()->get_current_profile();
 	if (profile.is_null()) {
@@ -5389,6 +5400,7 @@ void EditorNode::_load_open_scenes_from_config(Ref<ConfigFile> p_layout) {
 		return;
 	}
 
+	double current_time = OS::get_singleton()->get_unix_time();
 	restoring_scenes = true;
 
 	PackedStringArray scenes = p_layout->get_value(EDITOR_NODE_CONFIG_SECTION, "open_scenes");
@@ -5407,6 +5419,10 @@ void EditorNode::_load_open_scenes_from_config(Ref<ConfigFile> p_layout) {
 	save_editor_layout_delayed();
 
 	restoring_scenes = false;
+
+	if (OS::get_singleton()->get_unix_time() - current_time > 15 && !EditorSettings::get_singleton()->get_project_metadata("editor_metadata", "dont_ask_long_load", false)) {
+		long_load_dialog->popup_centered();
+	}
 }
 
 bool EditorNode::has_scenes_in_session() {
@@ -8118,6 +8134,28 @@ EditorNode::EditorNode() {
 	load_error_dialog->set_unparent_when_invisible(true);
 	load_error_dialog->add_child(load_errors);
 	load_error_dialog->set_title(TTR("Load Errors"));
+
+	long_load_dialog = memnew(ConfirmationDialog);
+	{
+		VBoxContainer *vbc = memnew(VBoxContainer);
+		long_load_dialog->add_child(vbc);
+
+		Label *dl = memnew(Label);
+		dl->set_text(TTR("Your project seems to have been loading for a long time due to previously opened scenes. Do you want to disable scene restoring in future editor sessions?"));
+		dl->set_autowrap_mode(TextServer::AUTOWRAP_WORD);
+		vbc->add_child(dl);
+
+		CheckBox *dont_ask_again = memnew(CheckBox);
+		dont_ask_again->set_text(TTR("Don't ask again"));
+		vbc->add_child(dont_ask_again);
+
+		long_load_dialog->set_min_size(Vector2i(600, 0));
+		long_load_dialog->set_title(TTR("Long Loading Time"));
+		long_load_dialog->get_ok_button()->set_text(TTR("Disable"));
+		long_load_dialog->connect("confirmed", callable_mp(this, &EditorNode::_long_load_action).bind(true, dont_ask_again));
+		long_load_dialog->connect("canceled", callable_mp(this, &EditorNode::_long_load_action).bind(false, dont_ask_again));
+	}
+	gui_base->add_child(long_load_dialog);
 
 	execute_outputs = memnew(RichTextLabel);
 	execute_outputs->set_selection_enabled(true);

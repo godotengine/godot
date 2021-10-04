@@ -361,6 +361,7 @@ private:
 
 	RichTextLabel *load_errors = nullptr;
 	AcceptDialog *load_error_dialog = nullptr;
+	AcceptDialog *long_load_dialog = nullptr;
 
 	RichTextLabel *execute_outputs = nullptr;
 	AcceptDialog *execute_output_dialog = nullptr;
@@ -534,6 +535,7 @@ private:
 	void _enable_pending_addons();
 
 	void _dialog_action(String p_file);
+	void _long_load_action(bool p_disable_restore, const Control *p_dont_ask);
 
 	void _edit_current(bool p_skip_foreign = false);
 	void _dialog_display_save_error(String p_file, Error p_error);
