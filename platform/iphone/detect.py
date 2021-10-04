@@ -62,7 +62,7 @@ def configure(env):
 
     elif env["target"] == "debug":
         env.Append(CCFLAGS=["-gdwarf-2", "-O0"])
-        env.Append(CPPDEFINES=["_DEBUG", ("DEBUG", 1), "DEBUG_ENABLED"])
+        env.Append(CPPDEFINES=["_DEBUG", ("DEBUG", 1), "DEBUG_ENABLED", "DEV_ENABLED"])
 
     if env["use_lto"]:
         env.Append(CCFLAGS=["-flto"])
