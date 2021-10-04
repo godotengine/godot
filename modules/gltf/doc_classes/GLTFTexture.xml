@@ -10,6 +10,9 @@
 	<methods>
 	</methods>
 	<members>
+		<member name="sampler" type="int" setter="set_sampler" getter="get_sampler" default="-1">
+			ID of the texture sampler to use when sampling the image. If -1, then the default texture sampler is used (linear filtering, and repeat wrapping in both axes).
+		</member>
 		<member name="src_image" type="int" setter="set_src_image" getter="get_src_image" default="0">
 		</member>
 	</members>
