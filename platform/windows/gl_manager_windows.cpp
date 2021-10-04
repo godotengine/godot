@@ -31,7 +31,7 @@
 #include "gl_manager_windows.h"
 
 #ifdef WINDOWS_ENABLED
-#ifdef OPENGL_WINDOWS_ENABLED
+#ifdef OPENGL_ENABLED
 
 #include <stdio.h>
 #include <stdlib.h>

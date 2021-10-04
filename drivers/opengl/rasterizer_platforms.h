@@ -41,31 +41,7 @@
 
 #if defined(OPENGL_ENABLED) || defined(GLES_ENABLED)
 
-// platform specific defines to compile in / out GLES support
-// these can later be made from Scons
-#ifdef X11_ENABLED
-#define OPENGL_X11_ENABLED
-#endif
-
-#ifdef WINDOWS_ENABLED
-#define OPENGL_WINDOWS_ENABLED
-#endif
-
-#ifdef IPHONE_ENABLED
-//#define OPENGL_IPHONE_ENABLED
-#endif
-
-#ifdef OSX_ENABLED
-//#define OPENGL_OSX_ENABLED
-#endif
-
-#ifdef ANDROID_ENABLED
-//#define OPENGL_ANDROID_ENABLED
-#endif
-
-#if defined(OPENGL_X11_ENABLED) || defined(OPENGL_WINDOWS_ENABLED) || defined(OPENGL_IPHONE_ENABLED) || defined(OPENGL_OSX_ENABLED) || defined(OPENGL_ANDROID_ENABLED)
 #define OPENGL_BACKEND_ENABLED
-#endif
 
 #endif // defined(OPENGL_ENABLED) || defined(GLES_ENABLED)
 

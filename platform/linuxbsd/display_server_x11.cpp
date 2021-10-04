@@ -44,7 +44,7 @@
 #include "servers/rendering/renderer_rd/renderer_compositor_rd.h"
 #endif
 
-#if defined(OPENGL_X11_ENABLED)
+#if defined(OPENGL_ENABLED)
 #include "drivers/opengl/rasterizer_opengl.h"
 #endif
 
@@ -875,7 +875,7 @@ void DisplayServerX11::delete_sub_window(WindowID p_id) {
 		context_vulkan->window_destroy(p_id);
 	}
 #endif
-#ifdef OPENGL_X11_ENABLED
+#ifdef OPENGL_ENABLED
 	if (gl_manager) {
 		gl_manager->window_destroy(p_id);
 	}
@@ -1041,7 +1041,7 @@ int DisplayServerX11::window_get_current_screen(WindowID p_window) const {
 }
 
 void DisplayServerX11::gl_window_make_current(DisplayServer::WindowID p_window_id) {
-#if defined(OPENGL_X11_ENABLED)
+#if defined(OPENGL_ENABLED)
 	if (gl_manager)
 		gl_manager->window_make_current(p_window_id);
 #endif
@@ -2643,7 +2643,7 @@ void DisplayServerX11::_window_changed(XEvent *event) {
 		context_vulkan->window_resize(window_id, wd.size.width, wd.size.height);
 	}
 #endif
-#if defined(OPENGL_X11_ENABLED)
+#if defined(OPENGL_ENABLED)
 	if (gl_manager) {
 		gl_manager->window_resize(window_id, wd.size.width, wd.size.height);
 	}
@@ -3517,19 +3517,19 @@ void DisplayServerX11::process_events() {
 }
 
 void DisplayServerX11::release_rendering_thread() {
-#if defined(OPENGL_X11_ENABLED)
+#if defined(OPENGL_ENABLED)
 //	gl_manager->release_current();
 #endif
 }
 
 void DisplayServerX11::make_rendering_thread() {
-#if defined(OPENGL_X11_ENABLED)
+#if defined(OPENGL_ENABLED)
 //	gl_manager->make_current();
 #endif
 }
 
 void DisplayServerX11::swap_buffers() {
-#if defined(OPENGL_X11_ENABLED)
+#if defined(OPENGL_ENABLED)
 	if (gl_manager) {
 		gl_manager->swap_buffers();
 	}
@@ -3680,7 +3680,7 @@ void DisplayServerX11::window_set_vsync_mode(DisplayServer::VSyncMode p_vsync_mo
 	}
 #endif
 
-#if defined(OPENGL_X11_ENABLED)
+#if defined(OPENGL_ENABLED)
 	if (gl_manager) {
 		gl_manager->set_use_vsync(p_vsync_mode == DisplayServer::VSYNC_ENABLED);
 	}
@@ -3694,7 +3694,7 @@ DisplayServer::VSyncMode DisplayServerX11::window_get_vsync_mode(WindowID p_wind
 		return context_vulkan->get_vsync_mode(p_window);
 	}
 #endif
-#if defined(OPENGL_X11_ENABLED)
+#if defined(OPENGL_ENABLED)
 	if (gl_manager) {
 		return gl_manager->is_using_vsync() ? DisplayServer::VSYNC_ENABLED : DisplayServer::VSYNC_DISABLED;
 	}
@@ -3708,7 +3708,7 @@ Vector<String> DisplayServerX11::get_rendering_drivers_func() {
 #ifdef VULKAN_ENABLED
 	drivers.push_back("vulkan");
 #endif
-#ifdef OPENGL_X11_ENABLED
+#ifdef OPENGL_ENABLED
 	drivers.push_back("opengl");
 #endif
 
@@ -3894,7 +3894,7 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, V
 			ERR_FAIL_COND_V_MSG(err != OK, INVALID_WINDOW_ID, "Can't create a Vulkan window");
 		}
 #endif
-#ifdef OPENGL_X11_ENABLED
+#ifdef OPENGL_ENABLED
 		print_line("rendering_driver " + rendering_driver);
 		if (gl_manager) {
 			Error err = gl_manager->window_create(id, wd.x11_window, x11_display, p_rect.size.width, p_rect.size.height);
@@ -4104,7 +4104,7 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 	}
 #endif
 	// Init context and rendering device
-#if defined(OPENGL_X11_ENABLED)
+#if defined(OPENGL_ENABLED)
 	print_line("rendering_driver " + rendering_driver);
 	if (rendering_driver == "opengl") {
 		if (getenv("DRI_PRIME") == nullptr) {
@@ -4398,7 +4398,7 @@ DisplayServerX11::~DisplayServerX11() {
 			context_vulkan->window_destroy(E.key);
 		}
 #endif
-#ifdef OPENGL_X11_ENABLED
+#ifdef OPENGL_ENABLED
 		if (rendering_driver == "opengl") {
 			gl_manager->window_destroy(E->key());
 		}
@@ -4427,7 +4427,7 @@ DisplayServerX11::~DisplayServerX11() {
 	}
 #endif
 
-#ifdef OPENGL_X11_ENABLED
+#ifdef OPENGL_ENABLED
 	if (gl_manager) {
 		memdelete(gl_manager);
 		gl_manager = nullptr;

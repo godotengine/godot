@@ -31,7 +31,7 @@
 #ifndef GL_MANAGER_WINDOWS_H
 #define GL_MANAGER_WINDOWS_H
 
-#if defined(WINDOWS_ENABLED) && defined(OPENGL_WINDOWS_ENABLED)
+#if defined(WINDOWS_ENABLED) && defined(OPENGL_ENABLED)
 
 #include "core/error/error_list.h"
 #include "core/os/os.h"
@@ -123,6 +123,6 @@ public:
 	~GLManager_Windows();
 };
 
-#endif // defined(WINDOWS_ENABLED) && defined(OPENGL_WINDOWS_ENABLED)
+#endif // defined(WINDOWS_ENABLED) && defined(OPENGL_ENABLED)
 
 #endif // GL_MANAGER_WINDOWS_H
