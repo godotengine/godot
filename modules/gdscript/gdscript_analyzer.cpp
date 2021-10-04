@@ -1035,7 +1035,10 @@ void GDScriptAnalyzer::resolve_function_signature(GDScriptParser::FunctionNode *
 		return_type.is_meta_type = false;
 		p_function->set_datatype(return_type);
 		if (p_function->return_type) {
-			push_error("Constructor cannot have an explicit return type.", p_function->return_type);
+			GDScriptParser::DataType declared_return = resolve_datatype(p_function->return_type);
+			if (declared_return.kind != GDScriptParser::DataType::BUILTIN || declared_return.builtin_type != Variant::NIL) {
+				push_error("Constructor cannot have an explicit return type.", p_function->return_type);
+			}
 		}
 	} else {
 		GDScriptParser::DataType return_type = resolve_datatype(p_function->return_type);
