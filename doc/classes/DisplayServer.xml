@@ -556,6 +556,7 @@
 			<return type="int" enum="DisplayServer.WindowMode" />
 			<argument index="0" name="window_id" type="int" default="0" />
 			<description>
+				Returns the current window's mode.
 			</description>
 		</method>
 		<method name="window_get_position" qualifiers="const">
@@ -666,6 +667,8 @@
 			<argument index="0" name="mode" type="int" enum="DisplayServer.WindowMode" />
 			<argument index="1" name="window_id" type="int" default="0" />
 			<description>
+				Sets window mode for the given window to [code]mode[/code]. See [enum WindowMode] for possible values and how each mode behaves.
+				[b]Note:[/b] Setting the window to fullscreen forcibly sets the borderless flag to [code]true[/code], so make sure to set it back to [code]false[/code] when not wanted.
 			</description>
 		</method>
 		<method name="window_set_mouse_passthrough">
