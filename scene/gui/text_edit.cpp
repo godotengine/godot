@@ -5072,10 +5072,12 @@ void TextEdit::_cut_internal() {
 	}
 
 	int cl = get_caret_line();
+	int cc = get_caret_column();
+	int indent_level = get_indent_level(cl);
+	double hscroll = get_h_scroll();
 
 	String clipboard = text[cl];
 	DisplayServer::get_singleton()->clipboard_set(clipboard);
-	set_caret_line(cl);
 	set_caret_column(0);
 
 	if (cl == 0 && get_line_count() > 1) {
@@ -5085,6 +5087,17 @@ void TextEdit::_cut_internal() {
 		backspace();
 		set_caret_line(get_caret_line() + 1);
 	}
+
+	// Correct the visualy perceived caret column taking care of identation level of the lines.
+	int diff_indent = indent_level - get_indent_level(get_caret_line());
+	cc += diff_indent;
+	if (diff_indent != 0) {
+		cc += diff_indent > 0 ? -1 : 1;
+	}
+
+	// Restore horizontal scroll and caret column modified by the backspace() call.
+	set_h_scroll(hscroll);
+	set_caret_column(cc);
 
 	cut_copy_line = clipboard;
 }
