@@ -238,6 +238,12 @@
 				Returns [code]false[/code] if the theme does not have [code]node_type[/code].
 			</description>
 		</method>
+		<method name="has_default_font" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if this theme has a valid [member default_font] value.
+			</description>
+		</method>
 		<method name="has_font" qualifiers="const">
 			<return type="bool" />
 			<argument index="0" name="name" type="String" />
@@ -403,7 +409,8 @@
 	</methods>
 	<members>
 		<member name="default_font" type="Font" setter="set_default_font" getter="get_default_font">
-			The theme's default font.
+			The default font of this [Theme] resource. Used as a fallback value for font items defined in this theme, but having invalid values. If this value is also invalid, the global default value is used.
+			Use [method has_default_font] to check if this value is valid.
 		</member>
 	</members>
 	<constants>

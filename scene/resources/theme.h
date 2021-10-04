@@ -120,6 +120,7 @@ public:
 
 	void set_default_theme_font(const Ref<Font> &p_default_font);
 	Ref<Font> get_default_theme_font() const;
+	bool has_default_theme_font() const;
 
 	void set_icon(const StringName &p_name, const StringName &p_node_type, const Ref<Texture> &p_icon);
 	Ref<Texture> get_icon(const StringName &p_name, const StringName &p_node_type) const;

@@ -1299,6 +1299,37 @@ bool Control::has_constant(const StringName &p_name, const StringName &p_theme_t
 	return Theme::get_default()->has_constant(p_name, type);
 }
 
+Ref<Font> Control::get_theme_default_font() const {
+	// First, look through each control or window node in the branch, until no valid parent can be found.
+	// Only nodes with a theme resource attached are considered.
+	// For each theme resource see if their assigned theme has the default value defined and valid.
+	Control *theme_owner = data.theme_owner;
+
+	while (theme_owner) {
+		if (theme_owner && theme_owner->data.theme->has_default_theme_font()) {
+			return theme_owner->data.theme->get_default_theme_font();
+		}
+
+		Node *parent = theme_owner->get_parent();
+		Control *parent_c = Object::cast_to<Control>(parent);
+		if (parent_c) {
+			theme_owner = parent_c->data.theme_owner;
+		} else {
+			theme_owner = nullptr;
+		}
+	}
+
+	// Secondly, check the project-defined Theme resource.
+	if (Theme::get_project_default().is_valid()) {
+		if (Theme::get_project_default()->has_default_theme_font()) {
+			return Theme::get_project_default()->get_default_theme_font();
+		}
+	}
+
+	// Lastly, fall back on the default Theme.
+	return Theme::get_default()->get_default_theme_font();
+}
+
 Rect2 Control::get_parent_anchorable_rect() const {
 	if (!is_inside_tree()) {
 		return Rect2();
@@ -2793,6 +2824,8 @@ void Control::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("has_color", "name", "theme_type"), &Control::has_color, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("has_constant", "name", "theme_type"), &Control::has_constant, DEFVAL(""));
 
+	ClassDB::bind_method(D_METHOD("get_theme_default_font"), &Control::get_theme_default_font);
+
 	ClassDB::bind_method(D_METHOD("get_parent_control"), &Control::get_parent_control);
 
 	ClassDB::bind_method(D_METHOD("set_h_grow_direction", "direction"), &Control::set_h_grow_direction);
@@ -2991,6 +3024,7 @@ void Control::_bind_methods() {
 
 	BIND_VMETHOD(MethodInfo(Variant::BOOL, "has_point", PropertyInfo(Variant::VECTOR2, "point")));
 }
+
 Control::Control() {
 	data.parent = nullptr;
 

@@ -221,6 +221,10 @@ Ref<Font> Theme::get_default_theme_font() const {
 	return default_theme_font;
 }
 
+bool Theme::has_default_theme_font() const {
+	return default_theme_font.is_valid();
+}
+
 // Icons.
 void Theme::set_icon(const StringName &p_name, const StringName &p_node_type, const Ref<Texture> &p_icon) {
 	if (icon_map[p_node_type].has(p_name) && icon_map[p_node_type][p_name].is_valid()) {
@@ -451,7 +455,7 @@ void Theme::set_font(const StringName &p_name, const StringName &p_node_type, co
 Ref<Font> Theme::get_font(const StringName &p_name, const StringName &p_node_type) const {
 	if (font_map.has(p_node_type) && font_map[p_node_type].has(p_name) && font_map[p_node_type][p_name].is_valid()) {
 		return font_map[p_node_type][p_name];
-	} else if (default_theme_font.is_valid()) {
+	} else if (has_default_theme_font()) {
 		return default_theme_font;
 	} else {
 		return default_font;
@@ -1354,10 +1358,9 @@ void Theme::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_constant_list", "node_type"), &Theme::_get_constant_list);
 	ClassDB::bind_method(D_METHOD("get_constant_types"), &Theme::_get_constant_types);
 
-	ClassDB::bind_method(D_METHOD("clear"), &Theme::clear);
-
 	ClassDB::bind_method(D_METHOD("set_default_font", "font"), &Theme::set_default_theme_font);
 	ClassDB::bind_method(D_METHOD("get_default_font"), &Theme::get_default_theme_font);
+	ClassDB::bind_method(D_METHOD("has_default_font"), &Theme::has_default_theme_font);
 
 	ClassDB::bind_method(D_METHOD("set_theme_item", "data_type", "name", "node_type", "value"), &Theme::set_theme_item);
 	ClassDB::bind_method(D_METHOD("get_theme_item", "data_type", "name", "node_type"), &Theme::get_theme_item);
@@ -1374,6 +1377,7 @@ void Theme::_bind_methods() {
 	ClassDB::bind_method("copy_default_theme", &Theme::copy_default_theme);
 	ClassDB::bind_method(D_METHOD("copy_theme", "other"), &Theme::copy_theme);
 	ClassDB::bind_method(D_METHOD("merge_with", "other"), &Theme::merge_with);
+	ClassDB::bind_method(D_METHOD("clear"), &Theme::clear);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "default_font", PROPERTY_HINT_RESOURCE_TYPE, "Font"), "set_default_font", "get_default_font");
 
