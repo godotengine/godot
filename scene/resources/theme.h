@@ -61,7 +61,7 @@ public:
 private:
 	bool no_change_propagation = false;
 
-	void _emit_theme_changed();
+	void _emit_theme_changed(bool p_notify_list_changed = false);
 
 	HashMap<StringName, HashMap<StringName, Ref<Texture>>> icon_map;
 	HashMap<StringName, HashMap<StringName, Ref<StyleBox>>> style_map;
@@ -90,12 +90,16 @@ protected:
 	bool _get(const StringName &p_name, Variant &r_ret) const;
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 
-	static Ref<Theme> project_default_theme;
+	// Universal Theme resources used when no other theme has the item.
 	static Ref<Theme> default_theme;
+	static Ref<Theme> project_default_theme;
+
+	// Universal default values, final fallback for every theme.
 	static Ref<Texture> default_icon;
 	static Ref<StyleBox> default_style;
 	static Ref<Font> default_font;
 
+	// Default values configurable for each individual theme.
 	Ref<Font> default_theme_font;
 
 	static void _bind_methods();
@@ -116,6 +120,7 @@ public:
 
 	void set_default_theme_font(const Ref<Font> &p_default_font);
 	Ref<Font> get_default_theme_font() const;
+	bool has_default_theme_font() const;
 
 	void set_icon(const StringName &p_name, const StringName &p_node_type, const Ref<Texture> &p_icon);
 	Ref<Texture> get_icon(const StringName &p_name, const StringName &p_node_type) const;

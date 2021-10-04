@@ -446,6 +446,8 @@ public:
 	bool has_color(const StringName &p_name, const StringName &p_theme_type = StringName()) const;
 	bool has_constant(const StringName &p_name, const StringName &p_theme_type = StringName()) const;
 
+	Ref<Font> get_theme_default_font() const;
+
 	/* TOOLTIP */
 
 	void set_tooltip(const String &p_tooltip);

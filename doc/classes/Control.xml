@@ -362,6 +362,13 @@
 				See [method get_color] for details.
 			</description>
 		</method>
+		<method name="get_theme_default_font" qualifiers="const">
+			<return type="Font" />
+			<description>
+				Returns the default font from the first matching [Theme] in the tree if that [Theme] has a valid [member Theme.default_font] value.
+				See [method get_color] for details.
+			</description>
+		</method>
 		<method name="get_tooltip" qualifiers="const">
 			<return type="String" />
 			<argument index="0" name="at_position" type="Vector2" default="Vector2( 0, 0 )" />
