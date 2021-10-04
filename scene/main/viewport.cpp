@@ -720,6 +720,7 @@ void Viewport::set_size(const Size2 &p_size) {
 	VS::get_singleton()->viewport_set_size(viewport, size.width, size.height);
 
 	_update_stretch_transform();
+	update_configuration_warning();
 
 	emit_signal("size_changed");
 }
@@ -2935,11 +2936,11 @@ String Viewport::get_configuration_warning() const {
 
 	String warning = Node::get_configuration_warning();
 
-	if (size.x == 0 || size.y == 0) {
+	if (size.x <= 1 || size.y <= 1) {
 		if (warning != String()) {
 			warning += "\n\n";
 		}
-		warning += TTR("Viewport size must be greater than 0 to render anything.");
+		warning += TTR("The Viewport size must be greater than or equal to 2 pixels on both dimensions to render anything.");
 	}
 	return warning;
 }
