@@ -42,10 +42,6 @@
 
 #include "scene/main/window.h"
 
-#ifdef TOOLS_ENABLED
-#include "editor/editor_scale.h"
-#endif
-
 static bool _is_text_char(char32_t c) {
 	return !is_symbol(c);
 }
@@ -1173,12 +1169,8 @@ void TextEdit::_notification(int p_what) {
 						}
 					}
 
-					// Carets
-#ifdef TOOLS_ENABLED
-					int caret_width = Math::round(EDSCALE);
-#else
-					int caret_width = 1;
-#endif
+					// Carets.
+					int caret_width = Math::round(1 * get_theme_default_base_scale());
 
 					if (!clipped && caret.line == line && line_wrap_index == caret_wrap_index) {
 						caret.draw_pos.y = ofs_y + ldata->get_line_descent(line_wrap_index);

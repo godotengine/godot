@@ -46,6 +46,13 @@ class GradientEdit : public Control {
 	int grabbed = -1;
 	Vector<Gradient::Point> points;
 
+	// Make sure to use the scaled value below.
+	const int BASE_SPACING = 3;
+	const int BASE_POINT_WIDTH = 8;
+
+	int draw_spacing = BASE_SPACING;
+	int draw_point_width = BASE_POINT_WIDTH;
+
 	void _draw_checker(int x, int y, int w, int h);
 	void _color_changed(const Color &p_color);
 	int _get_point_from_pos(int x);

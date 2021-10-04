@@ -516,6 +516,8 @@ private:
 		Color custom_button_font_highlight;
 		Color font_outline_color;
 
+		float base_scale = 1.0;
+
 		int hseparation = 0;
 		int vseparation = 0;
 		int item_margin = 0;
