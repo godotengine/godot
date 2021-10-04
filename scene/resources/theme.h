@@ -61,7 +61,7 @@ public:
 private:
 	bool no_change_propagation = false;
 
-	void _emit_theme_changed();
+	void _emit_theme_changed(bool p_notify_list_changed = false);
 
 	HashMap<StringName, HashMap<StringName, Ref<Texture2D>>> icon_map;
 	HashMap<StringName, HashMap<StringName, Ref<StyleBox>>> style_map;
