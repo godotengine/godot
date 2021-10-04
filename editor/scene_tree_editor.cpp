@@ -737,17 +737,18 @@ void SceneTreeEditor::set_selected(Node *p_node, bool p_emit_selected) {
 	TreeItem *item = p_node ? _find(tree->get_root(), p_node->get_path()) : nullptr;
 
 	if (item) {
-		// make visible when it's collapsed
-		TreeItem *node = item->get_parent();
-		while (node && node != tree->get_root()) {
-			node->set_collapsed(false);
-			node = node->get_parent();
+		if (auto_expand_selected) {
+			// Make visible when it's collapsed.
+			TreeItem *node = item->get_parent();
+			while (node && node != tree->get_root()) {
+				node->set_collapsed(false);
+				node = node->get_parent();
+			}
+			item->select(0);
+			item->set_as_cursor(0);
+			selected = p_node;
+			tree->ensure_cursor_is_visible();
 		}
-		item->select(0);
-		item->set_as_cursor(0);
-		selected = p_node;
-		tree->ensure_cursor_is_visible();
-
 	} else {
 		if (!p_node) {
 			selected = nullptr;
@@ -1127,9 +1128,17 @@ void SceneTreeEditor::_rmb_select(const Vector2 &p_pos) {
 void SceneTreeEditor::update_warning() {
 	_warning_changed(nullptr);
 }
+
 void SceneTreeEditor::_warning_changed(Node *p_for_node) {
 	//should use a timer
 	update_timer->start();
+}
+
+void SceneTreeEditor::set_auto_expand_selected(bool p_auto, bool p_update_settings) {
+	if (p_update_settings) {
+		EditorSettings::get_singleton()->set("docks/scene_tree/auto_expand_to_selected", p_auto);
+	}
+	auto_expand_selected = p_auto;
 }
 
 void SceneTreeEditor::set_connect_to_script_mode(bool p_enable) {

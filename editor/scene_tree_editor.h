@@ -64,6 +64,7 @@ class SceneTreeEditor : public Control {
 	AcceptDialog *error;
 	AcceptDialog *warning;
 
+	bool auto_expand_selected = true;
 	bool connect_to_script_mode;
 	bool connecting_signal;
 
@@ -152,6 +153,7 @@ public:
 
 	void update_tree() { _update_tree(); }
 
+	void set_auto_expand_selected(bool p_auto, bool p_update_settings);
 	void set_connect_to_script_mode(bool p_enable);
 	void set_connecting_signal(bool p_enable);
 
