@@ -1620,6 +1620,10 @@ GDScriptParser::ForNode *GDScriptParser::parse_for() {
 
 	n_for->list = parse_expression(false);
 
+	if (!n_for->list) {
+		push_error(R"(Expected a list or range after "in".)");
+	}
+
 	consume(GDScriptTokenizer::Token::COLON, R"(Expected ":" after "for" condition.)");
 
 	// Save break/continue state.
