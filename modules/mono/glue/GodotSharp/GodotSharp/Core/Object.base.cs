@@ -117,7 +117,7 @@ namespace Godot
         /// {
         ///     for (int i = 0; i &lt; 100; i++)
         ///     {
-        ///         await ToSignal(GetTree(), "idle_frame");
+        ///         await ToSignal(GetTree(), "process_frame");
         ///         GD.Print($"Frame {i}");
         ///     }
         /// }
