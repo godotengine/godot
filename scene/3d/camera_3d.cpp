@@ -492,6 +492,7 @@ void Camera3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_frustum"), &Camera3D::get_frustum);
 	ClassDB::bind_method(D_METHOD("is_position_in_frustum", "world_point"), &Camera3D::is_position_in_frustum);
 	ClassDB::bind_method(D_METHOD("get_camera_rid"), &Camera3D::get_camera);
+	ClassDB::bind_method(D_METHOD("get_pyramid_shape_rid"), &Camera3D::get_pyramid_shape_rid);
 
 	ClassDB::bind_method(D_METHOD("set_cull_mask_value", "layer_number", "value"), &Camera3D::set_cull_mask_value);
 	ClassDB::bind_method(D_METHOD("get_cull_mask_value", "layer_number"), &Camera3D::get_cull_mask_value);
@@ -654,6 +655,33 @@ Vector3 Camera3D::get_doppler_tracked_velocity() const {
 	}
 }
 
+RID Camera3D::get_pyramid_shape_rid() {
+	if (pyramid_shape == RID()) {
+		pyramid_shape_points = get_near_plane_points();
+		pyramid_shape = PhysicsServer3D::get_singleton()->convex_polygon_shape_create();
+		PhysicsServer3D::get_singleton()->shape_set_data(pyramid_shape, pyramid_shape_points);
+
+	} else { //check if points changed
+		Vector<Vector3> local_points = get_near_plane_points();
+
+		bool all_equal = true;
+
+		for (int i = 0; i < 5; i++) {
+			if (local_points[i] != pyramid_shape_points[i]) {
+				all_equal = false;
+				break;
+			}
+		}
+
+		if (!all_equal) {
+			PhysicsServer3D::get_singleton()->shape_set_data(pyramid_shape, local_points);
+			pyramid_shape_points = local_points;
+		}
+	}
+
+	return pyramid_shape;
+}
+
 Camera3D::Camera3D() {
 	camera = RenderingServer::get_singleton()->camera_create();
 	set_perspective(75.0, 0.05, 4000.0);
@@ -666,221 +694,7 @@ Camera3D::Camera3D() {
 
 Camera3D::~Camera3D() {
 	RenderingServer::get_singleton()->free(camera);
-}
-
-////////////////////////////////////////
-
-void ClippedCamera3D::set_margin(real_t p_margin) {
-	margin = p_margin;
-}
-
-real_t ClippedCamera3D::get_margin() const {
-	return margin;
-}
-
-void ClippedCamera3D::set_process_callback(ClipProcessCallback p_mode) {
-	if (process_callback == p_mode) {
-		return;
+	if (pyramid_shape.is_valid()) {
+		PhysicsServer3D::get_singleton()->free(pyramid_shape);
 	}
-	process_callback = p_mode;
-	set_process_internal(process_callback == CLIP_PROCESS_IDLE);
-	set_physics_process_internal(process_callback == CLIP_PROCESS_PHYSICS);
-}
-
-ClippedCamera3D::ClipProcessCallback ClippedCamera3D::get_process_callback() const {
-	return process_callback;
-}
-
-Transform3D ClippedCamera3D::get_camera_transform() const {
-	Transform3D t = Camera3D::get_camera_transform();
-	t.origin += -t.basis.get_axis(Vector3::AXIS_Z).normalized() * clip_offset;
-	return t;
-}
-
-void ClippedCamera3D::_notification(int p_what) {
-	if (p_what == NOTIFICATION_INTERNAL_PROCESS || p_what == NOTIFICATION_INTERNAL_PHYSICS_PROCESS) {
-		Node3D *parent = Object::cast_to<Node3D>(get_parent());
-		if (!parent) {
-			return;
-		}
-
-		PhysicsDirectSpaceState3D *dspace = get_world_3d()->get_direct_space_state();
-		ERR_FAIL_COND(!dspace); // most likely physics set to threads
-
-		Vector3 cam_fw = -get_global_transform().basis.get_axis(Vector3::AXIS_Z).normalized();
-		Vector3 cam_pos = get_global_transform().origin;
-		Vector3 parent_pos = parent->get_global_transform().origin;
-
-		Plane parent_plane(parent_pos, cam_fw);
-
-		if (parent_plane.is_point_over(cam_pos)) {
-			//cam is beyond parent plane
-			return;
-		}
-
-		Vector3 ray_from = parent_plane.project(cam_pos);
-
-		clip_offset = 0; //reset by default
-
-		{ //check if points changed
-			Vector<Vector3> local_points = get_near_plane_points();
-
-			bool all_equal = true;
-
-			for (int i = 0; i < 5; i++) {
-				if (points[i] != local_points[i]) {
-					all_equal = false;
-					break;
-				}
-			}
-
-			if (!all_equal) {
-				PhysicsServer3D::get_singleton()->shape_set_data(pyramid_shape, local_points);
-				points = local_points;
-			}
-		}
-
-		Transform3D xf = get_global_transform();
-		xf.origin = ray_from;
-		xf.orthonormalize();
-
-		real_t closest_safe = 1.0f, closest_unsafe = 1.0f;
-		if (dspace->cast_motion(pyramid_shape, xf, cam_pos - ray_from, margin, closest_safe, closest_unsafe, exclude, collision_mask, clip_to_bodies, clip_to_areas)) {
-			clip_offset = cam_pos.distance_to(ray_from + (cam_pos - ray_from) * closest_safe);
-		}
-
-		_update_camera();
-	}
-
-	if (p_what == NOTIFICATION_LOCAL_TRANSFORM_CHANGED) {
-		update_gizmos();
-	}
-}
-
-void ClippedCamera3D::set_collision_mask(uint32_t p_mask) {
-	collision_mask = p_mask;
-}
-
-uint32_t ClippedCamera3D::get_collision_mask() const {
-	return collision_mask;
-}
-
-void ClippedCamera3D::set_collision_mask_value(int p_layer_number, bool p_value) {
-	ERR_FAIL_COND_MSG(p_layer_number < 1, "Collision layer number must be between 1 and 32 inclusive.");
-	ERR_FAIL_COND_MSG(p_layer_number > 32, "Collision layer number must be between 1 and 32 inclusive.");
-	uint32_t mask = get_collision_mask();
-	if (p_value) {
-		mask |= 1 << (p_layer_number - 1);
-	} else {
-		mask &= ~(1 << (p_layer_number - 1));
-	}
-	set_collision_mask(mask);
-}
-
-bool ClippedCamera3D::get_collision_mask_value(int p_layer_number) const {
-	ERR_FAIL_COND_V_MSG(p_layer_number < 1, false, "Collision layer number must be between 1 and 32 inclusive.");
-	ERR_FAIL_COND_V_MSG(p_layer_number > 32, false, "Collision layer number must be between 1 and 32 inclusive.");
-	return get_collision_mask() & (1 << (p_layer_number - 1));
-}
-
-void ClippedCamera3D::add_exception_rid(const RID &p_rid) {
-	exclude.insert(p_rid);
-}
-
-void ClippedCamera3D::add_exception(const Object *p_object) {
-	ERR_FAIL_NULL(p_object);
-	const CollisionObject3D *co = Object::cast_to<CollisionObject3D>(p_object);
-	if (!co) {
-		return;
-	}
-	add_exception_rid(co->get_rid());
-}
-
-void ClippedCamera3D::remove_exception_rid(const RID &p_rid) {
-	exclude.erase(p_rid);
-}
-
-void ClippedCamera3D::remove_exception(const Object *p_object) {
-	ERR_FAIL_NULL(p_object);
-	const CollisionObject3D *co = Object::cast_to<CollisionObject3D>(p_object);
-	if (!co) {
-		return;
-	}
-	remove_exception_rid(co->get_rid());
-}
-
-void ClippedCamera3D::clear_exceptions() {
-	exclude.clear();
-}
-
-real_t ClippedCamera3D::get_clip_offset() const {
-	return clip_offset;
-}
-
-void ClippedCamera3D::set_clip_to_areas(bool p_clip) {
-	clip_to_areas = p_clip;
-}
-
-bool ClippedCamera3D::is_clip_to_areas_enabled() const {
-	return clip_to_areas;
-}
-
-void ClippedCamera3D::set_clip_to_bodies(bool p_clip) {
-	clip_to_bodies = p_clip;
-}
-
-bool ClippedCamera3D::is_clip_to_bodies_enabled() const {
-	return clip_to_bodies;
-}
-
-void ClippedCamera3D::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_margin", "margin"), &ClippedCamera3D::set_margin);
-	ClassDB::bind_method(D_METHOD("get_margin"), &ClippedCamera3D::get_margin);
-
-	ClassDB::bind_method(D_METHOD("set_process_callback", "process_callback"), &ClippedCamera3D::set_process_callback);
-	ClassDB::bind_method(D_METHOD("get_process_callback"), &ClippedCamera3D::get_process_callback);
-
-	ClassDB::bind_method(D_METHOD("set_collision_mask", "mask"), &ClippedCamera3D::set_collision_mask);
-	ClassDB::bind_method(D_METHOD("get_collision_mask"), &ClippedCamera3D::get_collision_mask);
-
-	ClassDB::bind_method(D_METHOD("set_collision_mask_value", "layer_number", "value"), &ClippedCamera3D::set_collision_mask_value);
-	ClassDB::bind_method(D_METHOD("get_collision_mask_value", "layer_number"), &ClippedCamera3D::get_collision_mask_value);
-
-	ClassDB::bind_method(D_METHOD("add_exception_rid", "rid"), &ClippedCamera3D::add_exception_rid);
-	ClassDB::bind_method(D_METHOD("add_exception", "node"), &ClippedCamera3D::add_exception);
-
-	ClassDB::bind_method(D_METHOD("remove_exception_rid", "rid"), &ClippedCamera3D::remove_exception_rid);
-	ClassDB::bind_method(D_METHOD("remove_exception", "node"), &ClippedCamera3D::remove_exception);
-
-	ClassDB::bind_method(D_METHOD("set_clip_to_areas", "enable"), &ClippedCamera3D::set_clip_to_areas);
-	ClassDB::bind_method(D_METHOD("is_clip_to_areas_enabled"), &ClippedCamera3D::is_clip_to_areas_enabled);
-
-	ClassDB::bind_method(D_METHOD("get_clip_offset"), &ClippedCamera3D::get_clip_offset);
-
-	ClassDB::bind_method(D_METHOD("set_clip_to_bodies", "enable"), &ClippedCamera3D::set_clip_to_bodies);
-	ClassDB::bind_method(D_METHOD("is_clip_to_bodies_enabled"), &ClippedCamera3D::is_clip_to_bodies_enabled);
-
-	ClassDB::bind_method(D_METHOD("clear_exceptions"), &ClippedCamera3D::clear_exceptions);
-
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "margin", PROPERTY_HINT_RANGE, "0,32,0.01"), "set_margin", "get_margin");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "process_callback", PROPERTY_HINT_ENUM, "Physics,Idle"), "set_process_callback", "get_process_callback");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_mask", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_collision_mask", "get_collision_mask");
-
-	ADD_GROUP("Clip To", "clip_to");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "clip_to_areas", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_clip_to_areas", "is_clip_to_areas_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "clip_to_bodies", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_clip_to_bodies", "is_clip_to_bodies_enabled");
-
-	BIND_ENUM_CONSTANT(CLIP_PROCESS_PHYSICS);
-	BIND_ENUM_CONSTANT(CLIP_PROCESS_IDLE);
-}
-
-ClippedCamera3D::ClippedCamera3D() {
-	set_physics_process_internal(true);
-	set_notify_local_transform(Engine::get_singleton()->is_editor_hint());
-	points.resize(5);
-	pyramid_shape = PhysicsServer3D::get_singleton()->shape_create(PhysicsServer3D::SHAPE_CONVEX_POLYGON);
-}
-
-ClippedCamera3D::~ClippedCamera3D() {
-	PhysicsServer3D::get_singleton()->free(pyramid_shape);
 }

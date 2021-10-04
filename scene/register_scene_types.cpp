@@ -448,7 +448,6 @@ void register_scene_types() {
 	GDREGISTER_VIRTUAL_CLASS(VisualInstance3D);
 	GDREGISTER_VIRTUAL_CLASS(GeometryInstance3D);
 	GDREGISTER_CLASS(Camera3D);
-	GDREGISTER_CLASS(ClippedCamera3D);
 	GDREGISTER_CLASS(AudioListener3D);
 	GDREGISTER_CLASS(XRCamera3D);
 	GDREGISTER_CLASS(XRController3D);
