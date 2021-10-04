@@ -95,7 +95,6 @@ static BOOL CALLBACK _MonitorEnumProcSize(HMONITOR hMonitor, HDC hdcMonitor, LPR
 	return TRUE;
 }
 
-#ifdef DEBUG_ENABLED
 static String format_error_message(DWORD id) {
 	LPWSTR messageBuffer = NULL;
 	size_t size = FormatMessageW(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
@@ -107,7 +106,6 @@ static String format_error_message(DWORD id) {
 
 	return msg;
 }
-#endif // DEBUG_ENABLED
 
 extern HINSTANCE godot_hinstance;
 
