@@ -200,13 +200,13 @@ static bool _teststr(const String &p_what, const String &p_str) {
 		what = what.substr(0, what.length() - 1);
 	}
 
-	if (what.findn("$" + p_str) != -1) { //blender and other stuff
+	if (what.findn("$" + p_str) != -1) { // For Blender and others.
 		return true;
 	}
-	if (what.to_lower().ends_with("-" + p_str)) { //collada only supports "_" and "-" besides letters
+	if (what.to_lower().ends_with("-" + p_str)) { // Legacy Godot only supports "_" and "-" besides letters.
 		return true;
 	}
-	if (what.to_lower().ends_with("_" + p_str)) { //collada only supports "_" and "-" besides letters
+	if (what.to_lower().ends_with("_" + p_str)) { // Legacy Godot only supports "_" and "-" besides letters.
 		return true;
 	}
 	return false;
@@ -222,13 +222,13 @@ static String _fixstr(const String &p_what, const String &p_str) {
 
 	String end = p_what.substr(what.length(), p_what.length() - what.length());
 
-	if (what.findn("$" + p_str) != -1) { //blender and other stuff
+	if (what.findn("$" + p_str) != -1) { // For Blender and others.
 		return what.replace("$" + p_str, "") + end;
 	}
-	if (what.to_lower().ends_with("-" + p_str)) { //collada only supports "_" and "-" besides letters
+	if (what.to_lower().ends_with("-" + p_str)) { // Legacy Godot only supports "_" and "-" besides letters.
 		return what.substr(0, what.length() - (p_str.length() + 1)) + end;
 	}
-	if (what.to_lower().ends_with("_" + p_str)) { //collada only supports "_" and "-" besides letters
+	if (what.to_lower().ends_with("_" + p_str)) { // Legacy Godot only supports "_" and "-" besides letters.
 		return what.substr(0, what.length() - (p_str.length() + 1)) + end;
 	}
 	return what;

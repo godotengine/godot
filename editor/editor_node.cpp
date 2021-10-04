@@ -99,7 +99,6 @@
 #include "editor/export_template_manager.h"
 #include "editor/filesystem_dock.h"
 #include "editor/import/dynamicfont_import_settings.h"
-#include "editor/import/editor_import_collada.h"
 #include "editor/import/resource_importer_bitmask.h"
 #include "editor/import/resource_importer_bmfont.h"
 #include "editor/import/resource_importer_csv_translation.h"
@@ -5929,10 +5928,6 @@ EditorNode::EditorNode() {
 		ResourceFormatImporter::get_singleton()->add_importer(import_scene);
 
 		{
-			Ref<EditorSceneImporterCollada> import_collada;
-			import_collada.instantiate();
-			import_scene->add_importer(import_collada);
-
 			Ref<EditorOBJImporter> import_obj2;
 			import_obj2.instantiate();
 			import_scene->add_importer(import_obj2);

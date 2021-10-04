@@ -37,7 +37,7 @@
 #include "core/templates/vector.h"
 
 /*
-  Based on irrXML (see their zlib license). Added mainly for compatibility with their Collada loader.
+  Based on irrXML (see their zlib license).
 */
 
 class XMLParser : public RefCounted {
