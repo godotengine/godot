@@ -38,7 +38,6 @@
 #include "core/os/os.h"
 #include "core/string/print_string.h"
 #include "core/string/translation.h"
-
 #include "scene/gui/label.h"
 #include "scene/gui/panel.h"
 #include "scene/main/canvas_layer.h"
@@ -48,7 +47,6 @@
 #include "servers/text_server.h"
 
 #ifdef TOOLS_ENABLED
-#include "editor/editor_settings.h"
 #include "editor/plugins/canvas_item_editor_plugin.h"
 #endif
 
@@ -2762,12 +2760,6 @@ bool Control::is_visibility_clip_disabled() const {
 }
 
 void Control::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
-#ifdef TOOLS_ENABLED
-	const String quote_style = EDITOR_GET("text_editor/completion/use_single_quotes") ? "'" : "\"";
-#else
-	const String quote_style = "\"";
-#endif
-
 	Node::get_argument_options(p_function, p_idx, r_options);
 
 	if (p_idx == 0) {
@@ -2787,7 +2779,7 @@ void Control::get_argument_options(const StringName &p_function, int p_idx, List
 
 		sn.sort_custom<StringName::AlphCompare>();
 		for (const StringName &name : sn) {
-			r_options->push_back(String(name).quote(quote_style));
+			r_options->push_back(String(name).quote());
 		}
 	}
 }
