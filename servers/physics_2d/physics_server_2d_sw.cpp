@@ -948,7 +948,7 @@ void PhysicsServer2DSW::body_set_pickable(RID p_body, bool p_pickable) {
 	body->set_pickable(p_pickable);
 }
 
-bool PhysicsServer2DSW::body_test_motion(RID p_body, const Transform2D &p_from, const Vector2 &p_motion, real_t p_margin, MotionResult *r_result, bool p_collide_separation_ray, const Set<RID> &p_exclude) {
+bool PhysicsServer2DSW::body_test_motion(RID p_body, const MotionParameters &p_parameters, MotionResult *r_result) {
 	Body2DSW *body = body_owner.get_or_null(p_body);
 	ERR_FAIL_COND_V(!body, false);
 	ERR_FAIL_COND_V(!body->get_space(), false);
@@ -956,7 +956,7 @@ bool PhysicsServer2DSW::body_test_motion(RID p_body, const Transform2D &p_from, 
 
 	_update_shapes();
 
-	return body->get_space()->test_body_motion(body, p_from, p_motion, p_margin, r_result, p_collide_separation_ray, p_exclude);
+	return body->get_space()->test_body_motion(body, p_parameters, r_result);
 }
 
 PhysicsDirectBodyState2D *PhysicsServer2DSW::body_get_direct_state(RID p_body) {

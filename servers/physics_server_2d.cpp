@@ -412,6 +412,49 @@ void PhysicsDirectSpaceState2D::_bind_methods() {
 
 ///////////////////////////////
 
+Vector<RID> PhysicsTestMotionParameters2D::get_exclude_bodies() const {
+	Vector<RID> exclude;
+	exclude.resize(parameters.exclude_bodies.size());
+
+	int body_index = 0;
+	for (RID body : parameters.exclude_bodies) {
+		exclude.write[body_index++] = body;
+	}
+
+	return exclude;
+}
+
+void PhysicsTestMotionParameters2D::set_exclude_bodies(const Vector<RID> &p_exclude) {
+	for (RID body : p_exclude) {
+		parameters.exclude_bodies.insert(body);
+	}
+}
+
+void PhysicsTestMotionParameters2D::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("get_from"), &PhysicsTestMotionParameters2D::get_from);
+	ClassDB::bind_method(D_METHOD("set_from"), &PhysicsTestMotionParameters2D::set_from);
+
+	ClassDB::bind_method(D_METHOD("get_motion"), &PhysicsTestMotionParameters2D::get_motion);
+	ClassDB::bind_method(D_METHOD("set_motion"), &PhysicsTestMotionParameters2D::set_motion);
+
+	ClassDB::bind_method(D_METHOD("get_margin"), &PhysicsTestMotionParameters2D::get_margin);
+	ClassDB::bind_method(D_METHOD("set_margin"), &PhysicsTestMotionParameters2D::set_margin);
+
+	ClassDB::bind_method(D_METHOD("is_collide_separation_ray_enabled"), &PhysicsTestMotionParameters2D::is_collide_separation_ray_enabled);
+	ClassDB::bind_method(D_METHOD("set_collide_separation_ray_enabled"), &PhysicsTestMotionParameters2D::set_collide_separation_ray_enabled);
+
+	ClassDB::bind_method(D_METHOD("get_exclude_bodies"), &PhysicsTestMotionParameters2D::get_exclude_bodies);
+	ClassDB::bind_method(D_METHOD("set_exclude_bodies"), &PhysicsTestMotionParameters2D::set_exclude_bodies);
+
+	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM2D, "from"), "set_from", "get_from");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "motion"), "set_motion", "get_motion");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "margin"), "set_margin", "get_margin");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "collide_separation_ray"), "set_collide_separation_ray_enabled", "is_collide_separation_ray_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "exclude_bodies"), "set_exclude_bodies", "get_exclude_bodies");
+}
+
+///////////////////////////////
+
 Vector2 PhysicsTestMotionResult2D::get_travel() const {
 	return result.travel;
 }
@@ -448,6 +491,10 @@ int PhysicsTestMotionResult2D::get_collider_shape() const {
 	return result.collider_shape;
 }
 
+int PhysicsTestMotionResult2D::get_collision_local_shape() const {
+	return result.collision_local_shape;
+}
+
 real_t PhysicsTestMotionResult2D::get_collision_depth() const {
 	return result.collision_depth;
 }
@@ -470,36 +517,23 @@ void PhysicsTestMotionResult2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_collider_rid"), &PhysicsTestMotionResult2D::get_collider_rid);
 	ClassDB::bind_method(D_METHOD("get_collider"), &PhysicsTestMotionResult2D::get_collider);
 	ClassDB::bind_method(D_METHOD("get_collider_shape"), &PhysicsTestMotionResult2D::get_collider_shape);
+	ClassDB::bind_method(D_METHOD("get_collision_local_shape"), &PhysicsTestMotionResult2D::get_collision_local_shape);
 	ClassDB::bind_method(D_METHOD("get_collision_depth"), &PhysicsTestMotionResult2D::get_collision_depth);
 	ClassDB::bind_method(D_METHOD("get_collision_safe_fraction"), &PhysicsTestMotionResult2D::get_collision_safe_fraction);
 	ClassDB::bind_method(D_METHOD("get_collision_unsafe_fraction"), &PhysicsTestMotionResult2D::get_collision_unsafe_fraction);
-
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "travel"), "", "get_travel");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "remainder"), "", "get_remainder");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "collision_point"), "", "get_collision_point");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "collision_normal"), "", "get_collision_normal");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "collider_velocity"), "", "get_collider_velocity");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "collider_id", PROPERTY_HINT_OBJECT_ID), "", "get_collider_id");
-	ADD_PROPERTY(PropertyInfo(Variant::RID, "collider_rid"), "", "get_collider_rid");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "collider"), "", "get_collider");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "collider_shape"), "", "get_collider_shape");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "collision_depth"), "", "get_collision_depth");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "collision_safe_fraction"), "", "get_collision_safe_fraction");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "collision_unsafe_fraction"), "", "get_collision_unsafe_fraction");
 }
 
 ///////////////////////////////////////
 
-bool PhysicsServer2D::_body_test_motion(RID p_body, const Transform2D &p_from, const Vector2 &p_motion, real_t p_margin, const Ref<PhysicsTestMotionResult2D> &p_result, bool p_collide_separation_ray, const Vector<RID> &p_exclude) {
-	MotionResult *r = nullptr;
+bool PhysicsServer2D::_body_test_motion(RID p_body, const Ref<PhysicsTestMotionParameters2D> &p_parameters, const Ref<PhysicsTestMotionResult2D> &p_result) {
+	ERR_FAIL_COND_V(!p_parameters.is_valid(), false);
+
+	MotionResult *result_ptr = nullptr;
 	if (p_result.is_valid()) {
-		r = p_result->get_result_ptr();
+		result_ptr = p_result->get_result_ptr();
 	}
-	Set<RID> exclude;
-	for (int i = 0; i < p_exclude.size(); i++) {
-		exclude.insert(p_exclude[i]);
-	}
-	return body_test_motion(p_body, p_from, p_motion, p_margin, r, p_collide_separation_ray, exclude);
+
+	return body_test_motion(p_body, p_parameters->get_parameters(), result_ptr);
 }
 
 void PhysicsServer2D::_bind_methods() {
@@ -626,7 +660,7 @@ void PhysicsServer2D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("body_set_force_integration_callback", "body", "callable", "userdata"), &PhysicsServer2D::body_set_force_integration_callback, DEFVAL(Variant()));
 
-	ClassDB::bind_method(D_METHOD("body_test_motion", "body", "from", "motion", "margin", "result", "collide_separation_ray", "exclude"), &PhysicsServer2D::_body_test_motion, DEFVAL(0.08), DEFVAL(Variant()), DEFVAL(false), DEFVAL(Array()));
+	ClassDB::bind_method(D_METHOD("body_test_motion", "body", "parameters", "result"), &PhysicsServer2D::_body_test_motion, DEFVAL(Variant()));
 
 	ClassDB::bind_method(D_METHOD("body_get_direct_state", "body"), &PhysicsServer2D::body_get_direct_state);
 

@@ -868,7 +868,7 @@ void PhysicsServer3DSW::body_set_ray_pickable(RID p_body, bool p_enable) {
 	body->set_ray_pickable(p_enable);
 }
 
-bool PhysicsServer3DSW::body_test_motion(RID p_body, const Transform3D &p_from, const Vector3 &p_motion, real_t p_margin, MotionResult *r_result, int p_max_collisions, bool p_collide_separation_ray, const Set<RID> &p_exclude) {
+bool PhysicsServer3DSW::body_test_motion(RID p_body, const MotionParameters &p_parameters, MotionResult *r_result) {
 	Body3DSW *body = body_owner.get_or_null(p_body);
 	ERR_FAIL_COND_V(!body, false);
 	ERR_FAIL_COND_V(!body->get_space(), false);
@@ -876,7 +876,7 @@ bool PhysicsServer3DSW::body_test_motion(RID p_body, const Transform3D &p_from, 
 
 	_update_shapes();
 
-	return body->get_space()->test_body_motion(body, p_from, p_motion, p_margin, r_result, p_max_collisions, p_collide_separation_ray, p_exclude);
+	return body->get_space()->test_body_motion(body, p_parameters, r_result);
 }
 
 PhysicsDirectBodyState3D *PhysicsServer3DSW::body_get_direct_state(RID p_body) {
