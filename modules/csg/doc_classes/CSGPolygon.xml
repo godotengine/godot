@@ -26,6 +26,9 @@
 		<member name="path_interval" type="float" setter="set_path_interval" getter="get_path_interval">
 			When [member mode] is [constant MODE_PATH], the path interval or ratio of path points to extrusions.
 		</member>
+		<member name="path_interval_type" type="int" setter="set_path_interval_type" getter="get_path_interval_type" enum="CSGPolygon.PathIntervalType">
+			When [member mode] is [constant MODE_PATH], this will determine if the interval should be by distance ([constant PATH_INTERVAL_DISTANCE]) or subdivision fractions ([constant PATH_INTERVAL_SUBDIVIDE]).
+		</member>
 		<member name="path_joined" type="bool" setter="set_path_joined" getter="is_path_joined">
 			When [member mode] is [constant MODE_PATH], if [code]true[/code] the ends of the path are joined, by adding an extrusion between the last and first points of the path.
 		</member>
@@ -37,6 +40,12 @@
 		</member>
 		<member name="path_rotation" type="int" setter="set_path_rotation" getter="get_path_rotation" enum="CSGPolygon.PathRotation">
 			When [member mode] is [constant MODE_PATH], the [enum PathRotation] method used to rotate the [member polygon] as it is extruded.
+		</member>
+		<member name="path_simplify_angle" type="float" setter="set_path_simplify_angle" getter="get_path_simplify_angle">
+			When [member mode] is [constant MODE_PATH], extrusions that are less than this angle, will be merged together to reduce polygon count.
+		</member>
+		<member name="path_u_distance" type="float" setter="set_path_u_distance" getter="get_path_u_distance">
+			When [member mode] is [constant MODE_PATH], this is the distance along the path, in meters, the texture coordinates will tile. When set to 0, texture coordinates will match geometry exactly with no tiling.
 		</member>
 		<member name="polygon" type="PoolVector2Array" setter="set_polygon" getter="get_polygon" default="PoolVector2Array( 0, 0, 0, 1, 1, 1, 1, 0 )">
 			The point array that defines the 2D polygon that is extruded.
@@ -71,6 +80,12 @@
 		</constant>
 		<constant name="PATH_ROTATION_PATH_FOLLOW" value="2" enum="PathRotation">
 			The [member polygon] shape follows the path and its rotations around the path axis.
+		</constant>
+		<constant name="PATH_INTERVAL_DISTANCE" value="0" enum="PathIntervalType">
+			When [member mode] is set to [constant MODE_PATH], [member path_interval] will determine the distance, in meters, each interval of the path will extrude.
+		</constant>
+		<constant name="PATH_INTERVAL_SUBDIVIDE" value="1" enum="PathIntervalType">
+			When [member mode] is set to [constant MODE_PATH], [member path_interval] will subdivide the polygons along the path.
 		</constant>
 	</constants>
 </class>

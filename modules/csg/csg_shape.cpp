@@ -1796,6 +1796,7 @@ CSGBrush *CSGPolygon::_build_brush() {
 	int extrusion_face_count = shape_sides * 2;
 	int end_count = 0;
 	int shape_face_count = shape_faces.size() / 3;
+	real_t curve_length = 1.0;
 	switch (mode) {
 		case MODE_DEPTH:
 			extrusions = 1;
@@ -1808,7 +1809,12 @@ CSGBrush *CSGPolygon::_build_brush() {
 			}
 			break;
 		case MODE_PATH: {
-			extrusions = Math::ceil(1.0 * curve->get_point_count() / path_interval);
+			curve_length = curve->get_baked_length();
+			if (path_interval_type == PATH_INTERVAL_DISTANCE) {
+				extrusions = MAX(1, Math::ceil(curve_length / path_interval)) + 1;
+			} else {
+				extrusions = Math::ceil(1.0 * curve->get_point_count() / path_interval);
+			}
 			if (!path_joined) {
 				end_count = 2;
 				extrusions -= 1;
@@ -1831,212 +1837,245 @@ CSGBrush *CSGPolygon::_build_brush() {
 	smooth.resize(face_count);
 	materials.resize(face_count);
 	invert.resize(face_count);
+	int faces_removed = 0;
 
-	PoolVector<Vector3>::Write facesw = faces.write();
-	PoolVector<Vector2>::Write uvsw = uvs.write();
-	PoolVector<bool>::Write smoothw = smooth.write();
-	PoolVector<Ref<Material>>::Write materialsw = materials.write();
-	PoolVector<bool>::Write invertw = invert.write();
+	{
+		PoolVector<Vector3>::Write facesw = faces.write();
+		PoolVector<Vector2>::Write uvsw = uvs.write();
+		PoolVector<bool>::Write smoothw = smooth.write();
+		PoolVector<Ref<Material>>::Write materialsw = materials.write();
+		PoolVector<bool>::Write invertw = invert.write();
 
-	int face = 0;
-	Transform base_xform;
-	Transform current_xform;
-	Transform previous_xform;
-	double u_step = 1.0 / extrusions;
-	double v_step = 1.0 / shape_sides;
-	double spin_step = Math::deg2rad(spin_degrees / spin_sides);
-	double extrusion_step = 1.0 / extrusions;
-	if (mode == MODE_PATH) {
-		if (path_joined) {
-			extrusion_step = 1.0 / (extrusions - 1);
+		int face = 0;
+		Transform base_xform;
+		Transform current_xform;
+		Transform previous_xform;
+		Transform previous_previous_xform;
+		double u_step = 1.0 / extrusions;
+		if (path_u_distance > 0.0) {
+			u_step *= curve_length / path_u_distance;
 		}
-		extrusion_step *= curve->get_baked_length();
-	}
-
-	if (mode == MODE_PATH) {
-		if (!path_local) {
-			base_xform = path->get_global_transform();
-		}
-
-		Vector3 current_point = curve->interpolate_baked(0);
-		Vector3 next_point = curve->interpolate_baked(extrusion_step);
-		Vector3 current_up = Vector3(0, 1, 0);
-		Vector3 direction = next_point - current_point;
-
-		if (path_joined) {
-			Vector3 last_point = curve->interpolate_baked(curve->get_baked_length());
-			direction = next_point - last_point;
+		double v_step = 1.0 / shape_sides;
+		double spin_step = Math::deg2rad(spin_degrees / spin_sides);
+		double extrusion_step = 1.0 / extrusions;
+		if (mode == MODE_PATH) {
+			if (path_joined) {
+				extrusion_step = 1.0 / (extrusions - 1);
+			}
+			extrusion_step *= curve_length;
 		}
 
-		switch (path_rotation) {
-			case PATH_ROTATION_POLYGON:
-				direction = Vector3(0, 0, -1);
-				break;
-			case PATH_ROTATION_PATH:
-				break;
-			case PATH_ROTATION_PATH_FOLLOW:
-				current_up = curve->interpolate_baked_up_vector(0);
-				break;
-		}
-
-		Transform facing = Transform().looking_at(direction, current_up);
-		current_xform = base_xform.translated(current_point) * facing;
-	}
-
-	// Create the mesh.
-	if (end_count > 0) {
-		// Add front end face.
-		for (int face_idx = 0; face_idx < shape_face_count; face_idx++) {
-			for (int face_vertex_idx = 0; face_vertex_idx < 3; face_vertex_idx++) {
-				// We need to reverse the rotation of the shape face vertices.
-				int index = shape_faces[face_idx * 3 + 2 - face_vertex_idx];
-				Point2 p = shape_polygon[index];
-				Point2 uv = (p - shape_rect.position) / shape_rect.size;
-
-				// Use the left side of the bottom half of the y-inverted texture.
-				uv.x = uv.x / 2;
-				uv.y = 1 - (uv.y / 2);
-
-				facesw[face * 3 + face_vertex_idx] = current_xform.xform(Vector3(p.x, p.y, 0));
-				uvsw[face * 3 + face_vertex_idx] = uv;
+		if (mode == MODE_PATH) {
+			if (!path_local) {
+				base_xform = path->get_global_transform();
 			}
 
-			smoothw[face] = false;
-			materialsw[face] = material;
-			invertw[face] = invert_faces;
-			face++;
+			Vector3 current_point = curve->interpolate_baked(0);
+			Vector3 next_point = curve->interpolate_baked(extrusion_step);
+			Vector3 current_up = Vector3(0, 1, 0);
+			Vector3 direction = next_point - current_point;
+
+			if (path_joined) {
+				Vector3 last_point = curve->interpolate_baked(curve->get_baked_length());
+				direction = next_point - last_point;
+			}
+
+			switch (path_rotation) {
+				case PATH_ROTATION_POLYGON:
+					direction = Vector3(0, 0, -1);
+					break;
+				case PATH_ROTATION_PATH:
+					break;
+				case PATH_ROTATION_PATH_FOLLOW:
+					current_up = curve->interpolate_baked_up_vector(0);
+					break;
+			}
+
+			Transform facing = Transform().looking_at(direction, current_up);
+			current_xform = base_xform.translated(current_point) * facing;
 		}
-	}
 
-	// Add extrusion faces.
-	for (int x0 = 0; x0 < extrusions; x0++) {
-		previous_xform = current_xform;
+		// Create the mesh.
+		if (end_count > 0) {
+			// Add front end face.
+			for (int face_idx = 0; face_idx < shape_face_count; face_idx++) {
+				for (int face_vertex_idx = 0; face_vertex_idx < 3; face_vertex_idx++) {
+					// We need to reverse the rotation of the shape face vertices.
+					int index = shape_faces[face_idx * 3 + 2 - face_vertex_idx];
+					Point2 p = shape_polygon[index];
+					Point2 uv = (p - shape_rect.position) / shape_rect.size;
 
-		switch (mode) {
-			case MODE_DEPTH: {
-				current_xform.translate(Vector3(0, 0, -depth));
-			} break;
-			case MODE_SPIN: {
-				current_xform.rotate(Vector3(0, 1, 0), spin_step);
-			} break;
-			case MODE_PATH: {
-				double previous_offset = x0 * extrusion_step;
-				double current_offset = (x0 + 1) * extrusion_step;
-				double next_offset = (x0 + 2) * extrusion_step;
-				if (x0 == extrusions - 1) {
-					if (path_joined) {
-						current_offset = 0;
-						next_offset = extrusion_step;
-					} else {
-						next_offset = current_offset;
+					// Use the left side of the bottom half of the y-inverted texture.
+					uv.x = uv.x / 2;
+					uv.y = 1 - (uv.y / 2);
+
+					facesw[face * 3 + face_vertex_idx] = current_xform.xform(Vector3(p.x, p.y, 0));
+					uvsw[face * 3 + face_vertex_idx] = uv;
+				}
+
+				smoothw[face] = false;
+				materialsw[face] = material;
+				invertw[face] = invert_faces;
+				face++;
+			}
+		}
+
+		real_t angle_simplify_dot = Math::cos(Math::deg2rad(path_simplify_angle));
+		Vector3 previous_simplify_dir = Vector3(0, 0, 0);
+		int faces_combined = 0;
+
+		// Add extrusion faces.
+		for (int x0 = 0; x0 < extrusions; x0++) {
+			previous_previous_xform = previous_xform;
+			previous_xform = current_xform;
+
+			switch (mode) {
+				case MODE_DEPTH: {
+					current_xform.translate(Vector3(0, 0, -depth));
+				} break;
+				case MODE_SPIN: {
+					current_xform.rotate(Vector3(0, 1, 0), spin_step);
+				} break;
+				case MODE_PATH: {
+					double previous_offset = x0 * extrusion_step;
+					double current_offset = (x0 + 1) * extrusion_step;
+					double next_offset = (x0 + 2) * extrusion_step;
+					if (x0 == extrusions - 1) {
+						if (path_joined) {
+							current_offset = 0;
+							next_offset = extrusion_step;
+						} else {
+							next_offset = current_offset;
+						}
 					}
-				}
 
-				Vector3 previous_point = curve->interpolate_baked(previous_offset);
-				Vector3 current_point = curve->interpolate_baked(current_offset);
-				Vector3 next_point = curve->interpolate_baked(next_offset);
-				Vector3 current_up = Vector3(0, 1, 0);
-				Vector3 direction = next_point - previous_point;
+					Vector3 previous_point = curve->interpolate_baked(previous_offset);
+					Vector3 current_point = curve->interpolate_baked(current_offset);
+					Vector3 next_point = curve->interpolate_baked(next_offset);
+					Vector3 current_up = Vector3(0, 1, 0);
+					Vector3 direction = next_point - previous_point;
+					Vector3 current_dir = (current_point - previous_point).normalized();
 
-				switch (path_rotation) {
-					case PATH_ROTATION_POLYGON:
-						direction = Vector3(0, 0, -1);
-						break;
-					case PATH_ROTATION_PATH:
-						break;
-					case PATH_ROTATION_PATH_FOLLOW:
-						current_up = curve->interpolate_baked_up_vector(current_offset);
-						break;
-				}
+					// If the angles are similar, remove the previous face and replace it with this one.
+					if (path_simplify_angle > 0.0 && x0 > 0 && previous_simplify_dir.dot(current_dir) > angle_simplify_dot) {
+						faces_combined += 1;
+						previous_xform = previous_previous_xform;
+						face -= extrusion_face_count;
+						faces_removed += extrusion_face_count;
+					} else {
+						faces_combined = 0;
+						previous_simplify_dir = current_dir;
+					}
 
-				Transform facing = Transform().looking_at(direction, current_up);
-				current_xform = base_xform.translated(current_point) * facing;
-			} break;
-		}
+					switch (path_rotation) {
+						case PATH_ROTATION_POLYGON:
+							direction = Vector3(0, 0, -1);
+							break;
+						case PATH_ROTATION_PATH:
+							break;
+						case PATH_ROTATION_PATH_FOLLOW:
+							current_up = curve->interpolate_baked_up_vector(current_offset);
+							break;
+					}
 
-		double u0 = x0 * u_step;
-		double u1 = ((x0 + 1) * u_step);
-		if (mode == MODE_PATH && !path_continuous_u) {
-			u0 = 0.0;
-			u1 = 1.0;
-		}
-
-		for (int y0 = 0; y0 < shape_sides; y0++) {
-			int y1 = (y0 + 1) % shape_sides;
-			// Use the top half of the texture.
-			double v0 = (y0 * v_step) / 2;
-			double v1 = ((y0 + 1) * v_step) / 2;
-
-			Vector3 v[4] = {
-				previous_xform.xform(Vector3(shape_polygon[y0].x, shape_polygon[y0].y, 0)),
-				current_xform.xform(Vector3(shape_polygon[y0].x, shape_polygon[y0].y, 0)),
-				current_xform.xform(Vector3(shape_polygon[y1].x, shape_polygon[y1].y, 0)),
-				previous_xform.xform(Vector3(shape_polygon[y1].x, shape_polygon[y1].y, 0)),
-			};
-
-			Vector2 u[4] = {
-				Vector2(u0, v0),
-				Vector2(u1, v0),
-				Vector2(u1, v1),
-				Vector2(u0, v1),
-			};
-
-			// Face 1
-			facesw[face * 3 + 0] = v[0];
-			facesw[face * 3 + 1] = v[1];
-			facesw[face * 3 + 2] = v[2];
-
-			uvsw[face * 3 + 0] = u[0];
-			uvsw[face * 3 + 1] = u[1];
-			uvsw[face * 3 + 2] = u[2];
-
-			smoothw[face] = smooth_faces;
-			invertw[face] = invert_faces;
-			materialsw[face] = material;
-
-			face++;
-
-			// Face 2
-			facesw[face * 3 + 0] = v[2];
-			facesw[face * 3 + 1] = v[3];
-			facesw[face * 3 + 2] = v[0];
-
-			uvsw[face * 3 + 0] = u[2];
-			uvsw[face * 3 + 1] = u[3];
-			uvsw[face * 3 + 2] = u[0];
-
-			smoothw[face] = smooth_faces;
-			invertw[face] = invert_faces;
-			materialsw[face] = material;
-
-			face++;
-		}
-	}
-
-	if (end_count > 1) {
-		// Add back end face.
-		for (int face_idx = 0; face_idx < shape_face_count; face_idx++) {
-			for (int face_vertex_idx = 0; face_vertex_idx < 3; face_vertex_idx++) {
-				int index = shape_faces[face_idx * 3 + face_vertex_idx];
-				Point2 p = shape_polygon[index];
-				Point2 uv = (p - shape_rect.position) / shape_rect.size;
-
-				// Use the x-inverted ride side of the bottom half of the y-inverted texture.
-				uv.x = 1 - uv.x / 2;
-				uv.y = 1 - (uv.y / 2);
-
-				facesw[face * 3 + face_vertex_idx] = current_xform.xform(Vector3(p.x, p.y, 0));
-				uvsw[face * 3 + face_vertex_idx] = uv;
+					Transform facing = Transform().looking_at(direction, current_up);
+					current_xform = base_xform.translated(current_point) * facing;
+				} break;
 			}
 
-			smoothw[face] = false;
-			materialsw[face] = material;
-			invertw[face] = invert_faces;
-			face++;
+			double u0 = (x0 - faces_combined) * u_step;
+			double u1 = ((x0 + 1) * u_step);
+			if (mode == MODE_PATH && !path_continuous_u) {
+				u0 = 0.0;
+				u1 = 1.0;
+			}
+
+			for (int y0 = 0; y0 < shape_sides; y0++) {
+				int y1 = (y0 + 1) % shape_sides;
+				// Use the top half of the texture.
+				double v0 = (y0 * v_step) / 2;
+				double v1 = ((y0 + 1) * v_step) / 2;
+
+				Vector3 v[4] = {
+					previous_xform.xform(Vector3(shape_polygon[y0].x, shape_polygon[y0].y, 0)),
+					current_xform.xform(Vector3(shape_polygon[y0].x, shape_polygon[y0].y, 0)),
+					current_xform.xform(Vector3(shape_polygon[y1].x, shape_polygon[y1].y, 0)),
+					previous_xform.xform(Vector3(shape_polygon[y1].x, shape_polygon[y1].y, 0)),
+				};
+
+				Vector2 u[4] = {
+					Vector2(u0, v0),
+					Vector2(u1, v0),
+					Vector2(u1, v1),
+					Vector2(u0, v1),
+				};
+
+				// Face 1
+				facesw[face * 3 + 0] = v[0];
+				facesw[face * 3 + 1] = v[1];
+				facesw[face * 3 + 2] = v[2];
+
+				uvsw[face * 3 + 0] = u[0];
+				uvsw[face * 3 + 1] = u[1];
+				uvsw[face * 3 + 2] = u[2];
+
+				smoothw[face] = smooth_faces;
+				invertw[face] = invert_faces;
+				materialsw[face] = material;
+
+				face++;
+
+				// Face 2
+				facesw[face * 3 + 0] = v[2];
+				facesw[face * 3 + 1] = v[3];
+				facesw[face * 3 + 2] = v[0];
+
+				uvsw[face * 3 + 0] = u[2];
+				uvsw[face * 3 + 1] = u[3];
+				uvsw[face * 3 + 2] = u[0];
+
+				smoothw[face] = smooth_faces;
+				invertw[face] = invert_faces;
+				materialsw[face] = material;
+
+				face++;
+			}
 		}
+
+		if (end_count > 1) {
+			// Add back end face.
+			for (int face_idx = 0; face_idx < shape_face_count; face_idx++) {
+				for (int face_vertex_idx = 0; face_vertex_idx < 3; face_vertex_idx++) {
+					int index = shape_faces[face_idx * 3 + face_vertex_idx];
+					Point2 p = shape_polygon[index];
+					Point2 uv = (p - shape_rect.position) / shape_rect.size;
+
+					// Use the x-inverted ride side of the bottom half of the y-inverted texture.
+					uv.x = 1 - uv.x / 2;
+					uv.y = 1 - (uv.y / 2);
+
+					facesw[face * 3 + face_vertex_idx] = current_xform.xform(Vector3(p.x, p.y, 0));
+					uvsw[face * 3 + face_vertex_idx] = uv;
+				}
+
+				smoothw[face] = false;
+				materialsw[face] = material;
+				invertw[face] = invert_faces;
+				face++;
+			}
+		}
+
+		face_count -= faces_removed;
+		ERR_FAIL_COND_V_MSG(face != face_count, brush, "Bug: Failed to create the CSGPolygon mesh correctly.");
 	}
 
-	ERR_FAIL_COND_V_MSG(face != face_count, brush, "Bug: Failed to create the CSGPolygon mesh correctly.");
+	if (faces_removed > 0) {
+		faces.resize(face_count * 3);
+		uvs.resize(face_count * 3);
+		smooth.resize(face_count);
+		materials.resize(face_count);
+		invert.resize(face_count);
+	}
 
 	brush->build_from_faces(faces, uvs, smooth, materials, invert);
 
@@ -2095,8 +2134,14 @@ void CSGPolygon::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_path_node", "path"), &CSGPolygon::set_path_node);
 	ClassDB::bind_method(D_METHOD("get_path_node"), &CSGPolygon::get_path_node);
 
+	ClassDB::bind_method(D_METHOD("set_path_interval_type", "interval_type"), &CSGPolygon::set_path_interval_type);
+	ClassDB::bind_method(D_METHOD("get_path_interval_type"), &CSGPolygon::get_path_interval_type);
+
 	ClassDB::bind_method(D_METHOD("set_path_interval", "path_interval"), &CSGPolygon::set_path_interval);
 	ClassDB::bind_method(D_METHOD("get_path_interval"), &CSGPolygon::get_path_interval);
+
+	ClassDB::bind_method(D_METHOD("set_path_simplify_angle", "degrees"), &CSGPolygon::set_path_simplify_angle);
+	ClassDB::bind_method(D_METHOD("get_path_simplify_angle"), &CSGPolygon::get_path_simplify_angle);
 
 	ClassDB::bind_method(D_METHOD("set_path_rotation", "path_rotation"), &CSGPolygon::set_path_rotation);
 	ClassDB::bind_method(D_METHOD("get_path_rotation"), &CSGPolygon::get_path_rotation);
@@ -2106,6 +2151,9 @@ void CSGPolygon::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_path_continuous_u", "enable"), &CSGPolygon::set_path_continuous_u);
 	ClassDB::bind_method(D_METHOD("is_path_continuous_u"), &CSGPolygon::is_path_continuous_u);
+
+	ClassDB::bind_method(D_METHOD("set_path_u_distance", "distance"), &CSGPolygon::set_path_u_distance);
+	ClassDB::bind_method(D_METHOD("get_path_u_distance"), &CSGPolygon::get_path_u_distance);
 
 	ClassDB::bind_method(D_METHOD("set_path_joined", "enable"), &CSGPolygon::set_path_joined);
 	ClassDB::bind_method(D_METHOD("is_path_joined"), &CSGPolygon::is_path_joined);
@@ -2128,10 +2176,13 @@ void CSGPolygon::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "spin_degrees", PROPERTY_HINT_RANGE, "1,360,0.1"), "set_spin_degrees", "get_spin_degrees");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "spin_sides", PROPERTY_HINT_RANGE, "3,64,1"), "set_spin_sides", "get_spin_sides");
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "path_node", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Path"), "set_path_node", "get_path_node");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "path_interval", PROPERTY_HINT_RANGE, "0.1,1.0,0.05"), "set_path_interval", "get_path_interval");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "path_interval_type", PROPERTY_HINT_ENUM, "Distance,Subdivide"), "set_path_interval_type", "get_path_interval_type");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "path_interval", PROPERTY_HINT_RANGE, "0.01,1.0,0.01,exp,or_greater"), "set_path_interval", "get_path_interval");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "path_simplify_angle", PROPERTY_HINT_EXP_RANGE, "0.0,180.0,0.0,or_greater"), "set_path_simplify_angle", "get_path_simplify_angle");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "path_rotation", PROPERTY_HINT_ENUM, "Polygon,Path,PathFollow"), "set_path_rotation", "get_path_rotation");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "path_local"), "set_path_local", "is_path_local");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "path_continuous_u"), "set_path_continuous_u", "is_path_continuous_u");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "path_u_distance", PROPERTY_HINT_RANGE, "0.0,10.0,0.01,or_greater"), "set_path_u_distance", "get_path_u_distance");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "path_joined"), "set_path_joined", "is_path_joined");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "smooth_faces"), "set_smooth_faces", "get_smooth_faces");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "material", PROPERTY_HINT_RESOURCE_TYPE, "SpatialMaterial,ShaderMaterial"), "set_material", "get_material");
@@ -2143,6 +2194,9 @@ void CSGPolygon::_bind_methods() {
 	BIND_ENUM_CONSTANT(PATH_ROTATION_POLYGON);
 	BIND_ENUM_CONSTANT(PATH_ROTATION_PATH);
 	BIND_ENUM_CONSTANT(PATH_ROTATION_PATH_FOLLOW);
+
+	BIND_ENUM_CONSTANT(PATH_INTERVAL_DISTANCE);
+	BIND_ENUM_CONSTANT(PATH_INTERVAL_SUBDIVIDE);
 }
 
 void CSGPolygon::set_polygon(const Vector<Vector2> &p_polygon) {
@@ -2186,6 +2240,16 @@ bool CSGPolygon::is_path_continuous_u() const {
 	return path_continuous_u;
 }
 
+void CSGPolygon::set_path_u_distance(real_t p_path_u_distance) {
+	path_u_distance = p_path_u_distance;
+	_make_dirty();
+	update_gizmo();
+}
+
+real_t CSGPolygon::get_path_u_distance() const {
+	return path_u_distance;
+}
+
 void CSGPolygon::set_spin_degrees(const float p_spin_degrees) {
 	ERR_FAIL_COND(p_spin_degrees < 0.01 || p_spin_degrees > 360);
 	spin_degrees = p_spin_degrees;
@@ -2218,8 +2282,17 @@ NodePath CSGPolygon::get_path_node() const {
 	return path_node;
 }
 
+void CSGPolygon::set_path_interval_type(PathIntervalType p_interval_type) {
+	path_interval_type = p_interval_type;
+	_make_dirty();
+	update_gizmo();
+}
+
+CSGPolygon::PathIntervalType CSGPolygon::get_path_interval_type() const {
+	return path_interval_type;
+}
+
 void CSGPolygon::set_path_interval(float p_interval) {
-	ERR_FAIL_COND_MSG(p_interval <= 0 || p_interval > 1, "Path interval must be greater than 0 and less than or equal to 1.0.");
 	path_interval = p_interval;
 	_make_dirty();
 	update_gizmo();
@@ -2227,6 +2300,16 @@ void CSGPolygon::set_path_interval(float p_interval) {
 
 float CSGPolygon::get_path_interval() const {
 	return path_interval;
+}
+
+void CSGPolygon::set_path_simplify_angle(float angle) {
+	path_simplify_angle = angle;
+	_make_dirty();
+	update_gizmo();
+}
+
+float CSGPolygon::get_path_simplify_angle() const {
+	return path_simplify_angle;
 }
 
 void CSGPolygon::set_path_rotation(PathRotation p_rotation) {
@@ -2296,10 +2379,13 @@ CSGPolygon::CSGPolygon() {
 	spin_degrees = 360;
 	spin_sides = 8;
 	smooth_faces = false;
+	path_interval_type = PATH_INTERVAL_DISTANCE;
 	path_interval = 1.0;
+	path_simplify_angle = 0.0;
 	path_rotation = PATH_ROTATION_PATH_FOLLOW;
 	path_local = false;
 	path_continuous_u = true;
+	path_u_distance = 1.0;
 	path_joined = false;
 	path = nullptr;
 }
