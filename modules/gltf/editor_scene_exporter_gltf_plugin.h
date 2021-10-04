@@ -31,7 +31,9 @@
 #ifndef EDITOR_SCENE_EXPORTER_GLTF_PLUGIN_H
 #define EDITOR_SCENE_EXPORTER_GLTF_PLUGIN_H
 
+#if TOOLS_ENABLED
 #include "editor/editor_plugin.h"
+
 #include "editor_scene_importer_gltf.h"
 
 class SceneExporterGLTFPlugin : public EditorPlugin {
@@ -47,5 +49,5 @@ public:
 	bool has_main_screen() const override;
 	SceneExporterGLTFPlugin(class EditorNode *p_node);
 };
-
+#endif // TOOLS_ENABLED
 #endif // EDITOR_SCENE_EXPORTER_GLTF_PLUGIN_H

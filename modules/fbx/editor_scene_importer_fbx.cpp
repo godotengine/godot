@@ -40,9 +40,9 @@
 #include "editor/editor_log.h"
 #include "editor/editor_node.h"
 #include "editor/import/resource_importer_scene.h"
-#include "editor/import/scene_importer_mesh_node_3d.h"
 #include "scene/3d/bone_attachment_3d.h"
 #include "scene/3d/camera_3d.h"
+#include "scene/3d/importer_mesh_instance_3d.h"
 #include "scene/3d/light_3d.h"
 #include "scene/main/node.h"
 #include "scene/resources/material.h"
@@ -627,7 +627,7 @@ Node3D *EditorSceneImporterFBX::_generate_scene(
 				node_element;
 				node_element = node_element->next()) {
 			Ref<FBXNode> fbx_node = node_element->get();
-			EditorSceneImporterMeshNode3D *mesh_node = nullptr;
+			ImporterMeshInstance3D *mesh_node = nullptr;
 			Ref<FBXMeshData> mesh_data_precached;
 
 			// check for valid geometry
@@ -768,7 +768,7 @@ Node3D *EditorSceneImporterFBX::_generate_scene(
 	for (KeyValue<uint64_t, Ref<FBXMeshData>> &mesh_data : state.renderer_mesh_data) {
 		Ref<FBXMeshData> mesh = mesh_data.value;
 		const uint64_t mesh_id = mesh_data.key;
-		EditorSceneImporterMeshNode3D *mesh_instance = mesh->godot_mesh_instance;
+		ImporterMeshInstance3D *mesh_instance = mesh->godot_mesh_instance;
 		const int mesh_weights = mesh->max_weight_count;
 		Ref<FBXSkeleton> skeleton;
 		const bool valid_armature = mesh->valid_armature_id;

@@ -34,9 +34,9 @@
 #include "editor/editor_node.h"
 #include "editor/import/editor_importer_bake_reset.h"
 #include "editor/import/scene_import_settings.h"
-#include "editor/import/scene_importer_mesh_node_3d.h"
 #include "scene/3d/area_3d.h"
 #include "scene/3d/collision_shape_3d.h"
+#include "scene/3d/importer_mesh_instance_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/3d/navigation_region_3d.h"
 #include "scene/3d/physics_body_3d.h"
@@ -44,6 +44,7 @@
 #include "scene/animation/animation_player.h"
 #include "scene/resources/animation.h"
 #include "scene/resources/box_shape_3d.h"
+#include "scene/resources/importer_mesh.h"
 #include "scene/resources/packed_scene.h"
 #include "scene/resources/resource_format_text.h"
 #include "scene/resources/separation_ray_shape_3d.h"
@@ -233,7 +234,7 @@ static String _fixstr(const String &p_what, const String &p_str) {
 	return what;
 }
 
-static void _pre_gen_shape_list(Ref<EditorSceneImporterMesh> &mesh, Vector<Ref<Shape3D>> &r_shape_list, bool p_convex) {
+static void _pre_gen_shape_list(Ref<ImporterMesh> &mesh, Vector<Ref<Shape3D>> &r_shape_list, bool p_convex) {
 	ERR_FAIL_NULL_MSG(mesh, "Cannot generate shape list with null mesh value");
 	if (!p_convex) {
 		Ref<Shape3D> shape = mesh->create_trimesh_shape();
@@ -249,7 +250,7 @@ static void _pre_gen_shape_list(Ref<EditorSceneImporterMesh> &mesh, Vector<Ref<S
 	}
 }
 
-Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, Map<Ref<EditorSceneImporterMesh>, Vector<Ref<Shape3D>>> &collision_map) {
+Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, Map<Ref<ImporterMesh>, Vector<Ref<Shape3D>>> &collision_map) {
 	// children first
 	for (int i = 0; i < p_node->get_child_count(); i++) {
 		Node *r = _pre_fix_node(p_node->get_child(i), p_root, collision_map);
@@ -267,10 +268,10 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, Map<Ref<E
 		return nullptr;
 	}
 
-	if (Object::cast_to<EditorSceneImporterMeshNode3D>(p_node)) {
-		EditorSceneImporterMeshNode3D *mi = Object::cast_to<EditorSceneImporterMeshNode3D>(p_node);
+	if (Object::cast_to<ImporterMeshInstance3D>(p_node)) {
+		ImporterMeshInstance3D *mi = Object::cast_to<ImporterMeshInstance3D>(p_node);
 
-		Ref<EditorSceneImporterMesh> m = mi->get_mesh();
+		Ref<ImporterMesh> m = mi->get_mesh();
 
 		if (m.is_valid()) {
 			for (int i = 0; i < m->get_surface_count(); i++) {
@@ -331,9 +332,9 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, Map<Ref<E
 		if (isroot) {
 			return p_node;
 		}
-		EditorSceneImporterMeshNode3D *mi = Object::cast_to<EditorSceneImporterMeshNode3D>(p_node);
+		ImporterMeshInstance3D *mi = Object::cast_to<ImporterMeshInstance3D>(p_node);
 		if (mi) {
-			Ref<EditorSceneImporterMesh> mesh = mi->get_mesh();
+			Ref<ImporterMesh> mesh = mi->get_mesh();
 
 			if (mesh.is_valid()) {
 				Vector<Ref<Shape3D>> shapes;
@@ -398,13 +399,13 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, Map<Ref<E
 			colshape->set_owner(sb->get_owner());
 		}
 
-	} else if (_teststr(name, "rigid") && Object::cast_to<EditorSceneImporterMeshNode3D>(p_node)) {
+	} else if (_teststr(name, "rigid") && Object::cast_to<ImporterMeshInstance3D>(p_node)) {
 		if (isroot) {
 			return p_node;
 		}
 
-		EditorSceneImporterMeshNode3D *mi = Object::cast_to<EditorSceneImporterMeshNode3D>(p_node);
-		Ref<EditorSceneImporterMesh> mesh = mi->get_mesh();
+		ImporterMeshInstance3D *mi = Object::cast_to<ImporterMeshInstance3D>(p_node);
+		Ref<ImporterMesh> mesh = mi->get_mesh();
 
 		if (mesh.is_valid()) {
 			Vector<Ref<Shape3D>> shapes;
@@ -426,10 +427,10 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, Map<Ref<E
 			_add_shapes(rigid_body, shapes);
 		}
 
-	} else if ((_teststr(name, "col") || (_teststr(name, "convcol"))) && Object::cast_to<EditorSceneImporterMeshNode3D>(p_node)) {
-		EditorSceneImporterMeshNode3D *mi = Object::cast_to<EditorSceneImporterMeshNode3D>(p_node);
+	} else if ((_teststr(name, "col") || (_teststr(name, "convcol"))) && Object::cast_to<ImporterMeshInstance3D>(p_node)) {
+		ImporterMeshInstance3D *mi = Object::cast_to<ImporterMeshInstance3D>(p_node);
 
-		Ref<EditorSceneImporterMesh> mesh = mi->get_mesh();
+		Ref<ImporterMesh> mesh = mi->get_mesh();
 
 		if (mesh.is_valid()) {
 			Vector<Ref<Shape3D>> shapes;
@@ -465,14 +466,14 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, Map<Ref<E
 			}
 		}
 
-	} else if (_teststr(name, "navmesh") && Object::cast_to<EditorSceneImporterMeshNode3D>(p_node)) {
+	} else if (_teststr(name, "navmesh") && Object::cast_to<ImporterMeshInstance3D>(p_node)) {
 		if (isroot) {
 			return p_node;
 		}
 
-		EditorSceneImporterMeshNode3D *mi = Object::cast_to<EditorSceneImporterMeshNode3D>(p_node);
+		ImporterMeshInstance3D *mi = Object::cast_to<ImporterMeshInstance3D>(p_node);
 
-		Ref<EditorSceneImporterMesh> mesh = mi->get_mesh();
+		Ref<ImporterMesh> mesh = mi->get_mesh();
 		ERR_FAIL_COND_V(mesh.is_null(), nullptr);
 		NavigationRegion3D *nmi = memnew(NavigationRegion3D);
 
@@ -484,12 +485,12 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, Map<Ref<E
 		memdelete(p_node);
 		p_node = nmi;
 
-	} else if (Object::cast_to<EditorSceneImporterMeshNode3D>(p_node)) {
+	} else if (Object::cast_to<ImporterMeshInstance3D>(p_node)) {
 		//last attempt, maybe collision inside the mesh data
 
-		EditorSceneImporterMeshNode3D *mi = Object::cast_to<EditorSceneImporterMeshNode3D>(p_node);
+		ImporterMeshInstance3D *mi = Object::cast_to<ImporterMeshInstance3D>(p_node);
 
-		Ref<EditorSceneImporterMesh> mesh = mi->get_mesh();
+		Ref<ImporterMesh> mesh = mi->get_mesh();
 		if (!mesh.is_null()) {
 			Vector<Ref<Shape3D>> shapes;
 			if (collision_map.has(mesh)) {
@@ -517,7 +518,7 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, Map<Ref<E
 	return p_node;
 }
 
-Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, Map<Ref<EditorSceneImporterMesh>, Vector<Ref<Shape3D>>> &collision_map, Set<Ref<EditorSceneImporterMesh>> &r_scanned_meshes, const Dictionary &p_node_data, const Dictionary &p_material_data, const Dictionary &p_animation_data, float p_animation_fps) {
+Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, Map<Ref<ImporterMesh>, Vector<Ref<Shape3D>>> &collision_map, Set<Ref<ImporterMesh>> &r_scanned_meshes, const Dictionary &p_node_data, const Dictionary &p_material_data, const Dictionary &p_animation_data, float p_animation_fps) {
 	// children first
 	for (int i = 0; i < p_node->get_child_count(); i++) {
 		Node *r = _post_fix_node(p_node->get_child(i), p_root, collision_map, r_scanned_meshes, p_node_data, p_material_data, p_animation_data, p_animation_fps);
@@ -546,10 +547,10 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, Map<Ref<
 		return nullptr;
 	}
 
-	if (Object::cast_to<EditorSceneImporterMeshNode3D>(p_node)) {
-		EditorSceneImporterMeshNode3D *mi = Object::cast_to<EditorSceneImporterMeshNode3D>(p_node);
+	if (Object::cast_to<ImporterMeshInstance3D>(p_node)) {
+		ImporterMeshInstance3D *mi = Object::cast_to<ImporterMeshInstance3D>(p_node);
 
-		Ref<EditorSceneImporterMesh> m = mi->get_mesh();
+		Ref<ImporterMesh> m = mi->get_mesh();
 
 		if (m.is_valid()) {
 			if (!r_scanned_meshes.has(m)) {
@@ -669,10 +670,10 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, Map<Ref<
 	}
 
 	//navmesh (node may have changed type above)
-	if (Object::cast_to<EditorSceneImporterMeshNode3D>(p_node)) {
-		EditorSceneImporterMeshNode3D *mi = Object::cast_to<EditorSceneImporterMeshNode3D>(p_node);
+	if (Object::cast_to<ImporterMeshInstance3D>(p_node)) {
+		ImporterMeshInstance3D *mi = Object::cast_to<ImporterMeshInstance3D>(p_node);
 
-		Ref<EditorSceneImporterMesh> m = mi->get_mesh();
+		Ref<ImporterMesh> m = mi->get_mesh();
 
 		if (m.is_valid()) {
 			if (node_settings.has("generate/navmesh")) {
@@ -1247,7 +1248,7 @@ Ref<Animation> ResourceImporterScene::import_animation_from_other_importer(Edito
 }
 
 void ResourceImporterScene::_generate_meshes(Node *p_node, const Dictionary &p_mesh_data, bool p_generate_lods, bool p_create_shadow_meshes, LightBakeMode p_light_bake_mode, float p_lightmap_texel_size, const Vector<uint8_t> &p_src_lightmap_cache, Vector<Vector<uint8_t>> &r_lightmap_caches) {
-	EditorSceneImporterMeshNode3D *src_mesh_node = Object::cast_to<EditorSceneImporterMeshNode3D>(p_node);
+	ImporterMeshInstance3D *src_mesh_node = Object::cast_to<ImporterMeshInstance3D>(p_node);
 	if (src_mesh_node) {
 		//is mesh
 		MeshInstance3D *mesh_node = memnew(MeshInstance3D);
@@ -1452,7 +1453,7 @@ Node *ResourceImporterScene::pre_import(const String &p_source_file) {
 		return nullptr;
 	}
 
-	Map<Ref<EditorSceneImporterMesh>, Vector<Ref<Shape3D>>> collision_map;
+	Map<Ref<ImporterMesh>, Vector<Ref<Shape3D>>> collision_map;
 
 	_pre_fix_node(scene, scene, collision_map);
 
@@ -1527,8 +1528,8 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 		animation_data = subresources["animations"];
 	}
 
-	Set<Ref<EditorSceneImporterMesh>> scanned_meshes;
-	Map<Ref<EditorSceneImporterMesh>, Vector<Ref<Shape3D>>> collision_map;
+	Set<Ref<ImporterMesh>> scanned_meshes;
+	Map<Ref<ImporterMesh>, Vector<Ref<Shape3D>>> collision_map;
 
 	_pre_fix_node(scene, scene, collision_map);
 	_post_fix_node(scene, scene, collision_map, scanned_meshes, node_data, material_data, animation_data, fps);
