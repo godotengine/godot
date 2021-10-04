@@ -567,7 +567,7 @@ bool SoftBody3DSW::create_from_trimesh(const Vector<int> &p_indices, const Vecto
 	for (uint32_t i = 0; i < pinned_count; ++i) {
 		int pinned_vertex = pinned_vertices[i];
 
-		ERR_CONTINUE(pinned_vertex >= visual_vertex_count);
+		ERR_CONTINUE(pinned_vertex < 0 || pinned_vertex >= visual_vertex_count);
 		uint32_t node_index = map_visual_to_physics[pinned_vertex];
 
 		ERR_CONTINUE(node_index >= node_count);
