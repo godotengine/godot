@@ -1765,17 +1765,18 @@ void DisplayServerWindows::set_icon(const Ref<Image> &p_icon) {
 void DisplayServerWindows::window_set_vsync_mode(DisplayServer::VSyncMode p_vsync_mode, WindowID p_window) {
 	_THREAD_SAFE_METHOD_
 #if defined(VULKAN_ENABLED)
-	context_vulkan->set_vsync_mode(p_window, p_vsync_mode);
+	// TODO disabling for now
+	//context_vulkan->set_vsync_mode(p_window, p_vsync_mode);
 #endif
 }
 
 DisplayServer::VSyncMode DisplayServerWindows::window_get_vsync_mode(WindowID p_window) const {
 	_THREAD_SAFE_METHOD_
 #if defined(VULKAN_ENABLED)
-	return context_vulkan->get_vsync_mode(p_window);
-#else
-	return DisplayServer::VSYNC_ENABLED;
+	//TODO disabling for now
+	//return context_vulkan->get_vsync_mode(p_window);
 #endif
+	return DisplayServer::VSYNC_ENABLED;
 }
 
 void DisplayServerWindows::set_context(Context p_context) {
@@ -3246,6 +3247,8 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 	mouse_mode = MOUSE_MODE_VISIBLE;
 
 	outside = true;
+
+	rendering_driver = p_rendering_driver;
 
 	// Note: Wacom WinTab driver API for pen input, for devices incompatible with Windows Ink.
 	HMODULE wintab_lib = LoadLibraryW(L"wintab32.dll");

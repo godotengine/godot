@@ -356,10 +356,7 @@ Ref<Image> RasterizerStorageOpenGL::_get_gl_image_and_format(const Ref<Image> &p
 				need_decompress = true;
 			}
 		} break;
-#if 0
-		// these have changed in the enum, no idea about PVR formats so left out for now
-		// FTODO
-		case Image::FORMAT_PVRTC2: {
+		case Image::FORMAT_PVRTC1_2: {
 			if (config.pvrtc_supported) {
 				r_gl_internal_format = _EXT_COMPRESSED_RGB_PVRTC_2BPPV1_IMG;
 				r_gl_format = GL_RGBA;
@@ -370,7 +367,7 @@ Ref<Image> RasterizerStorageOpenGL::_get_gl_image_and_format(const Ref<Image> &p
 				need_decompress = true;
 			}
 		} break;
-		case Image::FORMAT_PVRTC2A: {
+		case Image::FORMAT_PVRTC1_2A: {
 			if (config.pvrtc_supported) {
 				r_gl_internal_format = _EXT_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG;
 				r_gl_format = GL_RGBA;
@@ -382,7 +379,7 @@ Ref<Image> RasterizerStorageOpenGL::_get_gl_image_and_format(const Ref<Image> &p
 			}
 
 		} break;
-		case Image::FORMAT_PVRTC4: {
+		case Image::FORMAT_PVRTC1_4: {
 			if (config.pvrtc_supported) {
 				r_gl_internal_format = _EXT_COMPRESSED_RGB_PVRTC_4BPPV1_IMG;
 				r_gl_format = GL_RGBA;
@@ -394,7 +391,7 @@ Ref<Image> RasterizerStorageOpenGL::_get_gl_image_and_format(const Ref<Image> &p
 			}
 
 		} break;
-		case Image::FORMAT_PVRTC4A: {
+		case Image::FORMAT_PVRTC1_4A: {
 			if (config.pvrtc_supported) {
 				r_gl_internal_format = _EXT_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG;
 				r_gl_format = GL_RGBA;
@@ -406,7 +403,6 @@ Ref<Image> RasterizerStorageOpenGL::_get_gl_image_and_format(const Ref<Image> &p
 			}
 
 		} break;
-#endif
 		case Image::FORMAT_ETC: {
 			if (config.etc1_supported) {
 				r_gl_internal_format = _EXT_ETC1_RGB8_OES;
@@ -439,7 +435,7 @@ Ref<Image> RasterizerStorageOpenGL::_get_gl_image_and_format(const Ref<Image> &p
 			need_decompress = true;
 		} break;
 		default: {
-			ERR_FAIL_V(Ref<Image>());
+			ERR_FAIL_V(p_image);
 		}
 	}
 
@@ -497,8 +493,8 @@ RID RasterizerStorageOpenGL::texture_allocate() {
 }
 
 void RasterizerStorageOpenGL::texture_2d_initialize(RID p_texture, const Ref<Image> &p_image) {
-	//	Texture *tex = texture_owner.getornull(p_texture);
-	//	ERR_FAIL_COND(!tex);
+	Texture *tex = texture_owner.getornull(p_texture);
+	ERR_FAIL_COND(!tex);
 
 	int w = p_image->get_width();
 	int h = p_image->get_height();
