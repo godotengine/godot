@@ -90,12 +90,16 @@ protected:
 	bool _get(const StringName &p_name, Variant &r_ret) const;
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 
-	static Ref<Theme> project_default_theme;
+	// Universal Theme resources used when no other theme has the item.
 	static Ref<Theme> default_theme;
+	static Ref<Theme> project_default_theme;
+
+	// Universal default values, final fallback for every theme.
 	static Ref<Texture> default_icon;
 	static Ref<StyleBox> default_style;
 	static Ref<Font> default_font;
 
+	// Default values configurable for each individual theme.
 	Ref<Font> default_theme_font;
 
 	static void _bind_methods();
