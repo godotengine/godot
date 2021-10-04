@@ -75,6 +75,9 @@ void Material::_validate_property(PropertyInfo &property) const {
 	if (!_can_do_next_pass() && property.name == "next_pass") {
 		property.usage = PROPERTY_USAGE_NONE;
 	}
+	if (!_can_use_render_priority() && property.name == "render_priority") {
+		property.usage = PROPERTY_USAGE_NONE;
+	}
 }
 
 void Material::inspect_native_shader_code() {
@@ -277,6 +280,10 @@ void ShaderMaterial::get_argument_options(const StringName &p_function, int p_id
 }
 
 bool ShaderMaterial::_can_do_next_pass() const {
+	return shader.is_valid() && shader->get_mode() == Shader::MODE_SPATIAL;
+}
+
+bool ShaderMaterial::_can_use_render_priority() const {
 	return shader.is_valid() && shader->get_mode() == Shader::MODE_SPATIAL;
 }
 

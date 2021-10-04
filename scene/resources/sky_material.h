@@ -58,7 +58,6 @@ private:
 
 protected:
 	static void _bind_methods();
-	virtual bool _can_do_next_pass() const override;
 
 public:
 	void set_sky_top_color(const Color &p_sky_top);
@@ -117,7 +116,6 @@ private:
 
 protected:
 	static void _bind_methods();
-	virtual bool _can_do_next_pass() const override;
 
 public:
 	void set_panorama(const Ref<Texture2D> &p_panorama);
@@ -159,7 +157,6 @@ private:
 
 protected:
 	static void _bind_methods();
-	virtual bool _can_do_next_pass() const override;
 
 public:
 	void set_rayleigh_coefficient(float p_rayleigh);
