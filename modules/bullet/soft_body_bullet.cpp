@@ -190,22 +190,24 @@ void SoftBodyBullet::get_node_position(int p_node_index, Vector3 &r_position) co
 	}
 }
 
-void SoftBodyBullet::set_node_mass(int node_index, btScalar p_mass) {
+void SoftBodyBullet::set_node_mass(int p_node_index, btScalar p_mass) {
 	if (0 >= p_mass) {
-		pin_node(node_index);
+		pin_node(p_node_index);
 	} else {
-		unpin_node(node_index);
+		unpin_node(p_node_index);
 	}
 	if (bt_soft_body) {
-		bt_soft_body->setMass(node_index, p_mass);
+		ERR_FAIL_INDEX(p_node_index, bt_soft_body->m_nodes.size());
+		bt_soft_body->setMass(p_node_index, p_mass);
 	}
 }
 
-btScalar SoftBodyBullet::get_node_mass(int node_index) const {
+btScalar SoftBodyBullet::get_node_mass(int p_node_index) const {
 	if (bt_soft_body) {
-		return bt_soft_body->getMass(node_index);
+		ERR_FAIL_INDEX_V(p_node_index, bt_soft_body->m_nodes.size(), 1);
+		return bt_soft_body->getMass(p_node_index);
 	} else {
-		return -1 == search_node_pinned(node_index) ? 1 : 0;
+		return -1 == search_node_pinned(p_node_index) ? 1 : 0;
 	}
 }
 
@@ -418,17 +420,25 @@ void SoftBodyBullet::setup_soft_body() {
 
 	// Set pinned nodes
 	for (int i = pinned_nodes.size() - 1; 0 <= i; --i) {
-		bt_soft_body->setMass(pinned_nodes[i], 0);
+		const int node_index = pinned_nodes[i];
+		ERR_CONTINUE(0 > node_index || bt_soft_body->m_nodes.size() <= node_index);
+		bt_soft_body->setMass(node_index, 0);
 	}
 }
 
 void SoftBodyBullet::pin_node(int p_node_index) {
+	if (bt_soft_body) {
+		ERR_FAIL_INDEX(p_node_index, bt_soft_body->m_nodes.size());
+	}
 	if (-1 == search_node_pinned(p_node_index)) {
 		pinned_nodes.push_back(p_node_index);
 	}
 }
 
 void SoftBodyBullet::unpin_node(int p_node_index) {
+	if (bt_soft_body) {
+		ERR_FAIL_INDEX(p_node_index, bt_soft_body->m_nodes.size());
+	}
 	const int id = search_node_pinned(p_node_index);
 	if (-1 != id) {
 		pinned_nodes.remove(id);
