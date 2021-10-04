@@ -28,11 +28,15 @@ void _split_leaf_sort_groups_simple(int &num_a, int &num_b, uint16_t *group_a, u
 	Point centre = full_bound.calculate_centre();
 	Point size = full_bound.calculate_size();
 
-	int order[3];
+	int order[Point::AXIS_COUNT];
 
 	order[0] = size.min_axis();
-	order[2] = size.max_axis();
-	order[1] = 3 - (order[0] + order[2]);
+	order[Point::AXIS_COUNT - 1] = size.max_axis();
+
+	static_assert(Point::AXIS_COUNT <= 3, "BVH Point::AXIS_COUNT has unexpected size");
+	if (Point::AXIS_COUNT == 3) {
+		order[1] = 3 - (order[0] + order[2]);
+	}
 
 	// simplest case, split on the longest axis
 	int split_axis = order[0];
@@ -54,7 +58,7 @@ void _split_leaf_sort_groups_simple(int &num_a, int &num_b, uint16_t *group_a, u
 
 	// detect when split on longest axis failed
 	int min_threshold = MAX_ITEMS / 4;
-	int min_group_size[3];
+	int min_group_size[Point::AXIS_COUNT];
 	min_group_size[0] = MIN(num_a, num_b);
 	if (min_group_size[0] < min_threshold) {
 		// slow but sure .. first move everything back into a
@@ -64,7 +68,7 @@ void _split_leaf_sort_groups_simple(int &num_a, int &num_b, uint16_t *group_a, u
 		num_b = 0;
 
 		// now calculate the best split
-		for (int axis = 1; axis < 3; axis++) {
+		for (int axis = 1; axis < Point::AXIS_COUNT; axis++) {
 			split_axis = order[axis];
 			int count = 0;
 
@@ -82,7 +86,7 @@ void _split_leaf_sort_groups_simple(int &num_a, int &num_b, uint16_t *group_a, u
 		// best axis
 		int best_axis = 0;
 		int best_min = min_group_size[0];
-		for (int axis = 1; axis < 3; axis++) {
+		for (int axis = 1; axis < Point::AXIS_COUNT; axis++) {
 			if (min_group_size[axis] > best_min) {
 				best_min = min_group_size[axis];
 				best_axis = axis;
