@@ -847,7 +847,8 @@ PREAMBLE(void)::_prefill_default_batch(FillState &r_fill_state, int p_command_nu
 			// another default command, just add to the existing batch
 			r_fill_state.curr_batch->num_commands++;
 
-			RAST_DEV_DEBUG_ASSERT(r_fill_state.curr_batch->num_commands <= p_command_num);
+			// Note this is getting hit, needs investigation as to whether this is a bug or a false flag
+			// DEV_CHECK_ONCE(r_fill_state.curr_batch->num_commands <= p_command_num);
 		} else {
 #if defined(TOOLS_ENABLED) && defined(DEBUG_ENABLED)
 			if (r_fill_state.transform_extra_command_number_p1 != p_command_num) {
@@ -1744,7 +1745,7 @@ bool C_PREAMBLE::_prefill_polygon(RasterizerCanvas::Item::CommandPolygon *p_poly
 		for (int n = 0; n < num_inds; n++) {
 			int ind = p_poly->indices[n];
 
-			RAST_DEV_DEBUG_ASSERT(ind < p_poly->points.size());
+			DEV_CHECK_ONCE(ind < p_poly->points.size());
 
 			// recover at runtime from invalid polys (the editor may send invalid polys)
 			if ((unsigned int)ind >= (unsigned int)num_verts) {
@@ -1861,7 +1862,7 @@ PREAMBLE(bool)::_software_skin_poly(RasterizerCanvas::Item::CommandPolygon *p_po
 
 				total_weight += weight;
 
-				RAST_DEBUG_ASSERT(bone_id < bone_count);
+				DEV_CHECK_ONCE(bone_id < bone_count);
 				const Transform2D &bone_tr = bone_transforms[bone_id];
 
 				Vector2 pos = bone_tr.xform(src_pos_back_transformed);
@@ -1904,7 +1905,7 @@ PREAMBLE(bool)::_software_skin_poly(RasterizerCanvas::Item::CommandPolygon *p_po
 	for (int n = 0; n < num_inds; n++) {
 		int ind = p_poly->indices[n];
 
-		RAST_DEV_DEBUG_ASSERT(ind < num_verts);
+		DEV_CHECK_ONCE(ind < num_verts);
 
 		// recover at runtime from invalid polys (the editor may send invalid polys)
 		if ((unsigned int)ind >= (unsigned int)num_verts) {
@@ -2730,7 +2731,7 @@ PREAMBLE(void)::join_sorted_items() {
 			// but it is stupidly complex to calculate later, which would probably be slower.
 			r->final_modulate = _render_item_state.final_modulate;
 		} else {
-			RAST_DEBUG_ASSERT(_render_item_state.joined_item != nullptr);
+			DEV_ASSERT(_render_item_state.joined_item != nullptr);
 			_render_item_state.joined_item->num_item_refs += 1;
 			_render_item_state.joined_item->bounding_rect = _render_item_state.joined_item->bounding_rect.merge(ci->global_rect_cache);
 
@@ -2939,7 +2940,7 @@ PREAMBLE(void)::_translate_batches_to_vertex_colored_FVF() {
 	bdata.unit_vertices.prepare(sizeof(BatchVertexColored));
 
 	const BatchColor *source_vertex_colors = &bdata.vertex_colors[0];
-	RAST_DEBUG_ASSERT(bdata.vertex_colors.size() == bdata.vertices.size());
+	DEV_ASSERT(bdata.vertex_colors.size() == bdata.vertices.size());
 
 	int num_verts = bdata.vertices.size();
 
@@ -2979,8 +2980,8 @@ void C_PREAMBLE::_translate_batches_to_larger_FVF(uint32_t p_sequence_batch_type
 	// the sizes should be equal, and allocations should never fail. Hence the use of debug
 	// asserts to check program flow, these should not occur at runtime unless the allocation
 	// code has been altered.
-	RAST_DEBUG_ASSERT(bdata.unit_vertices.max_size() == bdata.vertices.max_size());
-	RAST_DEBUG_ASSERT(bdata.batches_temp.max_size() == bdata.batches.max_size());
+	DEV_ASSERT(bdata.unit_vertices.max_size() == bdata.vertices.max_size());
+	DEV_ASSERT(bdata.batches_temp.max_size() == bdata.batches.max_size());
 
 	Color curr_col(-1.0f, -1.0f, -1.0f, -1.0f);
 

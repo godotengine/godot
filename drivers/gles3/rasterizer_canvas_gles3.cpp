@@ -500,7 +500,7 @@ void RasterizerCanvasGLES3::render_batches(Item *p_current_clip, bool &r_reclip,
 			default: {
 				int end_command = batch.first_command + batch.num_commands;
 
-				RAST_DEV_DEBUG_ASSERT(batch.item);
+				DEV_ASSERT(batch.item);
 				RasterizerCanvas::Item::Command *const *commands = batch.item->commands.ptr();
 
 				for (int i = batch.first_command; i < end_command; i++) {
