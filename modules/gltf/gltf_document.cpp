@@ -6887,7 +6887,8 @@ TypedArray<GLTFDocumentExtension> GLTFDocument::get_extensions() const {
 }
 
 GLTFDocument::GLTFDocument() {
-	if (!::Engine::get_singleton()->is_editor_hint()) {
+	bool is_editor = ::Engine::get_singleton()->is_editor_hint();
+	if (is_editor) {
 		return;
 	}
 	Ref<GLTFDocumentExtensionConvertImporterMesh> extension_editor;
