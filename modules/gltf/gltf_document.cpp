@@ -131,26 +131,26 @@ Error GLTFDocument::serialize(Ref<GLTFState> state, Node *p_root, const String &
 		return Error::FAILED;
 	}
 
-	/* STEP 7 SERIALIZE ANIMATIONS */
+	/* STEP 7 SERIALIZE TEXTURE SAMPLERS */
+	err = _serialize_texture_samplers(state);
+	if (err != OK) {
+		return Error::FAILED;
+	}
+
+	/* STEP 8 SERIALIZE ANIMATIONS */
 	err = _serialize_animations(state);
 	if (err != OK) {
 		return Error::FAILED;
 	}
 
-	/* STEP 8 SERIALIZE ACCESSORS */
+	/* STEP 9 SERIALIZE ACCESSORS */
 	err = _encode_accessors(state);
 	if (err != OK) {
 		return Error::FAILED;
 	}
 
-	/* STEP 9 SERIALIZE IMAGES */
+	/* STEP 10 SERIALIZE IMAGES */
 	err = _serialize_images(state, p_path);
-	if (err != OK) {
-		return Error::FAILED;
-	}
-
-	/* STEP 10 SERIALIZE TEXTURES */
-	err = _serialize_textures(state);
 	if (err != OK) {
 		return Error::FAILED;
 	}
@@ -159,43 +159,43 @@ Error GLTFDocument::serialize(Ref<GLTFState> state, Node *p_root, const String &
 		state->buffer_views.write[i]->buffer = 0;
 	}
 
-	/* STEP 11 SERIALIZE BUFFER VIEWS */
+	/* STEP 12 SERIALIZE BUFFER VIEWS */
 	err = _encode_buffer_views(state);
 	if (err != OK) {
 		return Error::FAILED;
 	}
 
-	/* STEP 12 SERIALIZE NODES */
+	/* STEP 13 SERIALIZE NODES */
 	err = _serialize_nodes(state);
 	if (err != OK) {
 		return Error::FAILED;
 	}
 
-	/* STEP 13 SERIALIZE SCENE */
+	/* STEP 15 SERIALIZE SCENE */
 	err = _serialize_scenes(state);
 	if (err != OK) {
 		return Error::FAILED;
 	}
 
-	/* STEP 14 SERIALIZE SCENE */
+	/* STEP 16 SERIALIZE SCENE */
 	err = _serialize_lights(state);
 	if (err != OK) {
 		return Error::FAILED;
 	}
 
-	/* STEP 15 SERIALIZE EXTENSIONS */
+	/* STEP 17 SERIALIZE EXTENSIONS */
 	err = _serialize_extensions(state);
 	if (err != OK) {
 		return Error::FAILED;
 	}
 
-	/* STEP 16 SERIALIZE VERSION */
+	/* STEP 18 SERIALIZE VERSION */
 	err = _serialize_version(state);
 	if (err != OK) {
 		return Error::FAILED;
 	}
 
-	/* STEP 17 SERIALIZE FILE */
+	/* STEP 19 SERIALIZE FILE */
 	err = _serialize_file(state, p_path);
 	if (err != OK) {
 		return Error::FAILED;
@@ -2946,7 +2946,7 @@ Error GLTFDocument::_serialize_images(Ref<GLTFState> state, const String &p_path
 
 		ERR_CONTINUE(state->images[i].is_null());
 
-		Ref<Image> image = state->images[i]->get_data();
+		Ref<Image> image = state->images[i];
 		ERR_CONTINUE(image.is_null());
 
 		if (p_path.to_lower().ends_with("glb")) {
@@ -3151,11 +3151,7 @@ Error GLTFDocument::_parse_images(Ref<GLTFState> state, const String &p_base_pat
 			continue;
 		}
 
-		Ref<ImageTexture> t;
-		t.instance();
-		t->create_from_image(img);
-
-		state->images.push_back(t);
+		state->images.push_back(img);
 	}
 
 	print_verbose("glTF: Total images: " + itos(state->images.size()));
@@ -3174,6 +3170,11 @@ Error GLTFDocument::_serialize_textures(Ref<GLTFState> state) {
 		Ref<GLTFTexture> t = state->textures[i];
 		ERR_CONTINUE(t->get_src_image() == -1);
 		d["source"] = t->get_src_image();
+
+		GLTFTextureSamplerIndex sampler_index = t->get_sampler();
+		if (sampler_index != -1) {
+			d["sampler"] = sampler_index;
+		}
 		textures.push_back(d);
 	}
 	state->json["textures"] = textures;
@@ -3195,7 +3196,24 @@ Error GLTFDocument::_parse_textures(Ref<GLTFState> state) {
 		Ref<GLTFTexture> t;
 		t.instance();
 		t->set_src_image(d["source"]);
+		if (d.has("sampler")) {
+			t->set_sampler(d["sampler"]);
+		} else {
+			t->set_sampler(-1);
+		}
 		state->textures.push_back(t);
+
+		// Create and cache the texture used in the engine
+		Ref<ImageTexture> imgTex;
+		imgTex.instance();
+		imgTex->create_from_image(state->images[t->get_src_image()]);
+
+		// Set texture filter and repeat based on sampler settings
+		const Ref<GLTFTextureSampler> sampler = _get_sampler_for_texture(state, t->get_sampler());
+		Texture::Flags flags = sampler->get_texture_flags();
+		imgTex->set_flags(flags);
+
+		state->texture_cache.insert(i, imgTex);
 	}
 
 	return OK;
@@ -3203,24 +3221,124 @@ Error GLTFDocument::_parse_textures(Ref<GLTFState> state) {
 
 GLTFTextureIndex GLTFDocument::_set_texture(Ref<GLTFState> state, Ref<Texture> p_texture) {
 	ERR_FAIL_COND_V(p_texture.is_null(), -1);
+	ERR_FAIL_COND_V(p_texture->get_data().is_null(), -1);
+
+	// Create GLTF data structures for the new texture
 	Ref<GLTFTexture> gltf_texture;
 	gltf_texture.instance();
-	ERR_FAIL_COND_V(p_texture->get_data().is_null(), -1);
 	GLTFImageIndex gltf_src_image_i = state->images.size();
-	state->images.push_back(p_texture);
+
+	state->images.push_back(p_texture->get_data());
+
+	GLTFTextureSamplerIndex gltf_sampler_i = _set_sampler_for_mode(state, p_texture->get_flags());
+
 	gltf_texture->set_src_image(gltf_src_image_i);
+	gltf_texture->set_sampler(gltf_sampler_i);
+
 	GLTFTextureIndex gltf_texture_i = state->textures.size();
 	state->textures.push_back(gltf_texture);
+	state->texture_cache[gltf_texture_i] = p_texture;
 	return gltf_texture_i;
 }
 
 Ref<Texture> GLTFDocument::_get_texture(Ref<GLTFState> state, const GLTFTextureIndex p_texture) {
 	ERR_FAIL_INDEX_V(p_texture, state->textures.size(), Ref<Texture>());
-	const GLTFImageIndex image = state->textures[p_texture]->get_src_image();
+	return state->texture_cache[p_texture];
+}
 
-	ERR_FAIL_INDEX_V(image, state->images.size(), Ref<Texture>());
+GLTFTextureSamplerIndex GLTFDocument::_set_sampler_for_mode(Ref<GLTFState> state, uint32_t p_mode) {
+	for (int i = 0; i < state->texture_samplers.size(); ++i) {
+		if (state->texture_samplers[i]->get_texture_flags() == p_mode) {
+			return i;
+		}
+	}
 
-	return state->images[image];
+	GLTFTextureSamplerIndex gltf_sampler_i = state->texture_samplers.size();
+	Ref<GLTFTextureSampler> gltf_sampler;
+	gltf_sampler.instance();
+	gltf_sampler->set_texture_flags(p_mode);
+	state->texture_samplers.push_back(gltf_sampler);
+	return gltf_sampler_i;
+}
+
+Ref<GLTFTextureSampler> GLTFDocument::_get_sampler_for_texture(Ref<GLTFState> state, const GLTFTextureIndex p_texture) {
+	ERR_FAIL_INDEX_V(p_texture, state->textures.size(), Ref<Texture>());
+	const GLTFTextureSamplerIndex sampler = state->textures[p_texture]->get_sampler();
+
+	if (sampler == -1) {
+		return state->default_texture_sampler;
+	} else {
+		ERR_FAIL_INDEX_V(sampler, state->texture_samplers.size(), Ref<GLTFTextureSampler>());
+
+		return state->texture_samplers[sampler];
+	}
+}
+
+Error GLTFDocument::_serialize_texture_samplers(Ref<GLTFState> state) {
+	if (!state->texture_samplers.size()) {
+		return OK;
+	}
+
+	Array samplers;
+	for (int32_t i = 0; i < state->texture_samplers.size(); ++i) {
+		Dictionary d;
+		Ref<GLTFTextureSampler> s = state->texture_samplers[i];
+		d["magFilter"] = s->get_mag_filter();
+		d["minFilter"] = s->get_min_filter();
+		d["wrapS"] = s->get_wrap_s();
+		d["wrapT"] = s->get_wrap_t();
+		samplers.push_back(d);
+	}
+	state->json["samplers"] = samplers;
+
+	return OK;
+}
+
+Error GLTFDocument::_parse_texture_samplers(Ref<GLTFState> state) {
+	state->default_texture_sampler.instance();
+	state->default_texture_sampler->set_min_filter(GLTFTextureSampler::FilterMode::LINEAR_MIPMAP_LINEAR);
+	state->default_texture_sampler->set_mag_filter(GLTFTextureSampler::FilterMode::LINEAR);
+	state->default_texture_sampler->set_wrap_s(GLTFTextureSampler::WrapMode::REPEAT);
+	state->default_texture_sampler->set_wrap_t(GLTFTextureSampler::WrapMode::REPEAT);
+
+	if (!state->json.has("samplers")) {
+		return OK;
+	}
+
+	const Array &samplers = state->json["samplers"];
+	for (int i = 0; i < samplers.size(); ++i) {
+		const Dictionary &d = samplers[i];
+
+		Ref<GLTFTextureSampler> sampler;
+		sampler.instance();
+
+		if (d.has("minFilter")) {
+			sampler->set_min_filter(d["minFilter"]);
+		} else {
+			sampler->set_min_filter(GLTFTextureSampler::FilterMode::LINEAR_MIPMAP_LINEAR);
+		}
+		if (d.has("magFilter")) {
+			sampler->set_mag_filter(d["magFilter"]);
+		} else {
+			sampler->set_mag_filter(GLTFTextureSampler::FilterMode::LINEAR);
+		}
+
+		if (d.has("wrapS")) {
+			sampler->set_wrap_s(d["wrapS"]);
+		} else {
+			sampler->set_wrap_s(GLTFTextureSampler::WrapMode::REPEAT);
+		}
+
+		if (d.has("wrapT")) {
+			sampler->set_wrap_t(d["wrapT"]);
+		} else {
+			sampler->set_wrap_t(GLTFTextureSampler::WrapMode::REPEAT);
+		}
+
+		state->texture_samplers.push_back(sampler);
+	}
+
+	return OK;
 }
 
 Error GLTFDocument::_serialize_materials(Ref<GLTFState> state) {
@@ -6645,13 +6763,19 @@ Error GLTFDocument::parse(Ref<GLTFState> state, String p_path, bool p_read_binar
 		return Error::FAILED;
 	}
 
+	/* PARSE TEXTURE SAMPLERS */
+	err = _parse_texture_samplers(state);
+	if (err != OK) {
+		return Error::FAILED;
+	}
+
 	/* PARSE TEXTURES */
 	err = _parse_textures(state);
 	if (err != OK) {
 		return Error::FAILED;
 	}
 
-	/* PARSE TEXTURES */
+	/* PARSE MATERIALS */
 	err = _parse_materials(state);
 	if (err != OK) {
 		return Error::FAILED;

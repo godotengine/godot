@@ -22,6 +22,7 @@ def get_doc_classes():
         "GLTFSpecGloss",
         "GLTFState",
         "GLTFTexture",
+        "GLTFTextureSampler",
         "PackedSceneGLTF",
     ]
 

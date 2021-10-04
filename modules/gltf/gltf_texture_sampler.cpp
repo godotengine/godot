@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  gltf_texture.cpp                                                     */
+/*  gltf_texture_sampler.cpp                                             */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,30 +28,20 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "gltf_texture.h"
+#include "gltf_texture_sampler.h"
 
-void GLTFTexture::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("get_src_image"), &GLTFTexture::get_src_image);
-	ClassDB::bind_method(D_METHOD("set_src_image", "src_image"), &GLTFTexture::set_src_image);
-	ClassDB::bind_method(D_METHOD("get_sampler"), &GLTFTexture::get_sampler);
-	ClassDB::bind_method(D_METHOD("set_sampler", "sampler"), &GLTFTexture::set_sampler);
+void GLTFTextureSampler::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("get_mag_filter"), &GLTFTextureSampler::get_mag_filter);
+	ClassDB::bind_method(D_METHOD("set_mag_filter", "filter_mode"), &GLTFTextureSampler::set_mag_filter);
+	ClassDB::bind_method(D_METHOD("get_min_filter"), &GLTFTextureSampler::get_min_filter);
+	ClassDB::bind_method(D_METHOD("set_min_filter", "filter_mode"), &GLTFTextureSampler::set_min_filter);
+	ClassDB::bind_method(D_METHOD("get_wrap_s"), &GLTFTextureSampler::get_wrap_s);
+	ClassDB::bind_method(D_METHOD("set_wrap_s", "wrap_mode"), &GLTFTextureSampler::set_wrap_s);
+	ClassDB::bind_method(D_METHOD("get_wrap_t"), &GLTFTextureSampler::get_wrap_t);
+	ClassDB::bind_method(D_METHOD("set_wrap_t", "wrap_mode"), &GLTFTextureSampler::set_wrap_t);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "src_image"), "set_src_image", "get_src_image"); // int
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "sampler"), "set_sampler", "get_sampler"); // int
-}
-
-GLTFImageIndex GLTFTexture::get_src_image() const {
-	return src_image;
-}
-
-void GLTFTexture::set_src_image(GLTFImageIndex val) {
-	src_image = val;
-}
-
-GLTFTextureSamplerIndex GLTFTexture::get_sampler() const {
-	return sampler;
-}
-
-void GLTFTexture::set_sampler(GLTFTextureSamplerIndex val) {
-	sampler = val;
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "mag_filter"), "set_mag_filter", "get_mag_filter");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "min_filter"), "set_min_filter", "get_min_filter");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "wrap_s"), "set_wrap_s", "get_wrap_s");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "wrap_t"), "set_wrap_t", "get_wrap_t");
 }
