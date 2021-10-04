@@ -227,7 +227,9 @@ bool Theme::has_default_theme_font() const {
 
 // Icons.
 void Theme::set_icon(const StringName &p_name, const StringName &p_node_type, const Ref<Texture> &p_icon) {
+	bool existing = false;
 	if (icon_map[p_node_type].has(p_name) && icon_map[p_node_type][p_name].is_valid()) {
+		existing = true;
 		icon_map[p_node_type][p_name]->disconnect("changed", this, "_emit_theme_changed");
 	}
 
@@ -237,7 +239,7 @@ void Theme::set_icon(const StringName &p_name, const StringName &p_node_type, co
 		icon_map[p_node_type][p_name]->connect("changed", this, "_emit_theme_changed", varray(), CONNECT_REFERENCE_COUNTED);
 	}
 
-	_emit_theme_changed();
+	_emit_theme_changed(!existing);
 }
 
 Ref<Texture> Theme::get_icon(const StringName &p_name, const StringName &p_node_type) const {
@@ -264,7 +266,7 @@ void Theme::rename_icon(const StringName &p_old_name, const StringName &p_name, 
 	icon_map[p_node_type][p_name] = icon_map[p_node_type][p_old_name];
 	icon_map[p_node_type].erase(p_old_name);
 
-	_emit_theme_changed();
+	_emit_theme_changed(true);
 }
 
 void Theme::clear_icon(const StringName &p_name, const StringName &p_node_type) {
@@ -277,7 +279,7 @@ void Theme::clear_icon(const StringName &p_name, const StringName &p_node_type) 
 
 	icon_map[p_node_type].erase(p_name);
 
-	_emit_theme_changed();
+	_emit_theme_changed(true);
 }
 
 void Theme::get_icon_list(StringName p_node_type, List<StringName> *p_list) const {
@@ -312,9 +314,10 @@ void Theme::get_icon_types(List<StringName> *p_list) const {
 
 // Shaders.
 void Theme::set_shader(const StringName &p_name, const StringName &p_node_type, const Ref<Shader> &p_shader) {
+	bool existing = (shader_map.has(p_node_type) && shader_map[p_node_type].has(p_name));
 	shader_map[p_node_type][p_name] = p_shader;
 
-	_emit_theme_changed();
+	_emit_theme_changed(!existing);
 }
 
 Ref<Shader> Theme::get_shader(const StringName &p_name, const StringName &p_node_type) const {
@@ -335,7 +338,7 @@ void Theme::clear_shader(const StringName &p_name, const StringName &p_node_type
 
 	shader_map[p_node_type].erase(p_name);
 
-	_emit_theme_changed();
+	_emit_theme_changed(true);
 }
 
 void Theme::get_shader_list(const StringName &p_node_type, List<StringName> *p_list) const {
@@ -354,7 +357,9 @@ void Theme::get_shader_list(const StringName &p_node_type, List<StringName> *p_l
 
 // Styleboxes.
 void Theme::set_stylebox(const StringName &p_name, const StringName &p_node_type, const Ref<StyleBox> &p_style) {
+	bool existing = false;
 	if (style_map[p_node_type].has(p_name) && style_map[p_node_type][p_name].is_valid()) {
+		existing = true;
 		style_map[p_node_type][p_name]->disconnect("changed", this, "_emit_theme_changed");
 	}
 
@@ -364,7 +369,7 @@ void Theme::set_stylebox(const StringName &p_name, const StringName &p_node_type
 		style_map[p_node_type][p_name]->connect("changed", this, "_emit_theme_changed", varray(), CONNECT_REFERENCE_COUNTED);
 	}
 
-	_emit_theme_changed();
+	_emit_theme_changed(!existing);
 }
 
 Ref<StyleBox> Theme::get_stylebox(const StringName &p_name, const StringName &p_node_type) const {
@@ -391,7 +396,7 @@ void Theme::rename_stylebox(const StringName &p_old_name, const StringName &p_na
 	style_map[p_node_type][p_name] = style_map[p_node_type][p_old_name];
 	style_map[p_node_type].erase(p_old_name);
 
-	_emit_theme_changed();
+	_emit_theme_changed(true);
 }
 
 void Theme::clear_stylebox(const StringName &p_name, const StringName &p_node_type) {
@@ -404,7 +409,7 @@ void Theme::clear_stylebox(const StringName &p_name, const StringName &p_node_ty
 
 	style_map[p_node_type].erase(p_name);
 
-	_emit_theme_changed();
+	_emit_theme_changed(true);
 }
 
 void Theme::get_stylebox_list(StringName p_node_type, List<StringName> *p_list) const {
@@ -439,7 +444,9 @@ void Theme::get_stylebox_types(List<StringName> *p_list) const {
 
 // Fonts.
 void Theme::set_font(const StringName &p_name, const StringName &p_node_type, const Ref<Font> &p_font) {
+	bool existing = false;
 	if (font_map[p_node_type][p_name].is_valid()) {
+		existing = true;
 		font_map[p_node_type][p_name]->disconnect("changed", this, "_emit_theme_changed");
 	}
 
@@ -449,7 +456,7 @@ void Theme::set_font(const StringName &p_name, const StringName &p_node_type, co
 		font_map[p_node_type][p_name]->connect("changed", this, "_emit_theme_changed", varray(), CONNECT_REFERENCE_COUNTED);
 	}
 
-	_emit_theme_changed();
+	_emit_theme_changed(!existing);
 }
 
 Ref<Font> Theme::get_font(const StringName &p_name, const StringName &p_node_type) const {
@@ -478,7 +485,7 @@ void Theme::rename_font(const StringName &p_old_name, const StringName &p_name, 
 	font_map[p_node_type][p_name] = font_map[p_node_type][p_old_name];
 	font_map[p_node_type].erase(p_old_name);
 
-	_emit_theme_changed();
+	_emit_theme_changed(true);
 }
 
 void Theme::clear_font(const StringName &p_name, const StringName &p_node_type) {
@@ -491,7 +498,7 @@ void Theme::clear_font(const StringName &p_name, const StringName &p_node_type) 
 
 	font_map[p_node_type].erase(p_name);
 
-	_emit_theme_changed();
+	_emit_theme_changed(true);
 }
 
 void Theme::get_font_list(StringName p_node_type, List<StringName> *p_list) const {
@@ -526,9 +533,10 @@ void Theme::get_font_types(List<StringName> *p_list) const {
 
 // Colors.
 void Theme::set_color(const StringName &p_name, const StringName &p_node_type, const Color &p_color) {
+	bool existing = has_color_nocheck(p_name, p_node_type);
 	color_map[p_node_type][p_name] = p_color;
 
-	_emit_theme_changed();
+	_emit_theme_changed(!existing);
 }
 
 Color Theme::get_color(const StringName &p_name, const StringName &p_node_type) const {
@@ -555,7 +563,7 @@ void Theme::rename_color(const StringName &p_old_name, const StringName &p_name,
 	color_map[p_node_type][p_name] = color_map[p_node_type][p_old_name];
 	color_map[p_node_type].erase(p_old_name);
 
-	_emit_theme_changed();
+	_emit_theme_changed(true);
 }
 
 void Theme::clear_color(const StringName &p_name, const StringName &p_node_type) {
@@ -564,7 +572,7 @@ void Theme::clear_color(const StringName &p_name, const StringName &p_node_type)
 
 	color_map[p_node_type].erase(p_name);
 
-	_emit_theme_changed();
+	_emit_theme_changed(true);
 }
 
 void Theme::get_color_list(StringName p_node_type, List<StringName> *p_list) const {
@@ -599,9 +607,10 @@ void Theme::get_color_types(List<StringName> *p_list) const {
 
 // Theme constants.
 void Theme::set_constant(const StringName &p_name, const StringName &p_node_type, int p_constant) {
+	bool existing = has_constant_nocheck(p_name, p_node_type);
 	constant_map[p_node_type][p_name] = p_constant;
 
-	_emit_theme_changed();
+	_emit_theme_changed(!existing);
 }
 
 int Theme::get_constant(const StringName &p_name, const StringName &p_node_type) const {
@@ -628,7 +637,7 @@ void Theme::rename_constant(const StringName &p_old_name, const StringName &p_na
 	constant_map[p_node_type][p_name] = constant_map[p_node_type][p_old_name];
 	constant_map[p_node_type].erase(p_old_name);
 
-	_emit_theme_changed();
+	_emit_theme_changed(true);
 }
 
 void Theme::clear_constant(const StringName &p_name, const StringName &p_node_type) {
@@ -637,7 +646,7 @@ void Theme::clear_constant(const StringName &p_name, const StringName &p_node_ty
 
 	constant_map[p_node_type].erase(p_name);
 
-	_emit_theme_changed();
+	_emit_theme_changed(true);
 }
 
 void Theme::get_constant_list(StringName p_node_type, List<StringName> *p_list) const {
@@ -1120,12 +1129,14 @@ PoolVector<String> Theme::_get_type_list(const String &p_node_type) const {
 }
 
 // Theme bulk manipulations.
-void Theme::_emit_theme_changed() {
+void Theme::_emit_theme_changed(bool p_notify_list_changed) {
 	if (no_change_propagation) {
 		return;
 	}
 
-	_change_notify();
+	if (p_notify_list_changed) {
+		_change_notify();
+	}
 	emit_changed();
 }
 
@@ -1135,7 +1146,7 @@ void Theme::_freeze_change_propagation() {
 
 void Theme::_unfreeze_and_propagate_changes() {
 	no_change_propagation = false;
-	_emit_theme_changed();
+	_emit_theme_changed(true);
 }
 
 void Theme::copy_default_theme() {
@@ -1314,7 +1325,7 @@ void Theme::clear() {
 	color_map.clear();
 	constant_map.clear();
 
-	_emit_theme_changed();
+	_emit_theme_changed(true);
 }
 
 void Theme::_bind_methods() {
@@ -1372,7 +1383,7 @@ void Theme::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_type_list", "node_type"), &Theme::_get_type_list);
 
-	ClassDB::bind_method(D_METHOD("_emit_theme_changed"), &Theme::_emit_theme_changed);
+	ClassDB::bind_method(D_METHOD("_emit_theme_changed", "notify_list_changed"), &Theme::_emit_theme_changed, DEFVAL(false));
 
 	ClassDB::bind_method("copy_default_theme", &Theme::copy_default_theme);
 	ClassDB::bind_method(D_METHOD("copy_theme", "other"), &Theme::copy_theme);
