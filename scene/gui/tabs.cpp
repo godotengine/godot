@@ -131,6 +131,7 @@ void Tabs::_gui_input(const Ref<InputEvent> &p_event) {
 			if (scrolling_enabled && buttons_visible) {
 				if (missing_right) {
 					offset++;
+					_ensure_no_over_offset(); // Avoid overreaching when scrolling fast.
 					update();
 				}
 			}
