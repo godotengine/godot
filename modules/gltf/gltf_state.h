@@ -45,6 +45,7 @@
 #include "gltf_skeleton.h"
 #include "gltf_skin.h"
 #include "gltf_texture.h"
+#include "gltf_texture_sampler.h"
 #include "scene/animation/animation_player.h"
 #include "scene/resources/texture.h"
 
@@ -76,6 +77,7 @@ class GLTFState : public Resource {
 	String scene_name;
 	Vector<int> root_nodes;
 	Vector<Ref<GLTFTexture>> textures;
+	Vector<Ref<GLTFTextureSampler>> texture_samplers;
 	Vector<Ref<Texture>> images;
 
 	Vector<Ref<GLTFSkin>> skins;
@@ -134,6 +136,9 @@ public:
 
 	Array get_textures();
 	void set_textures(Array p_textures);
+
+	Array get_texture_samplers();
+	void set_texture_samplers(Array p_texture_samplers);
 
 	Array get_images();
 	void set_images(Array p_images);

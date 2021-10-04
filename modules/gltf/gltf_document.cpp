@@ -128,13 +128,20 @@ Error GLTFDocument::serialize(Ref<GLTFState> state, Node *p_root, const String &
 		return Error::FAILED;
 	}
 
-	// /* STEP 9 SERIALIZE ANIMATIONS */
+	/* STEP 9 SERIALIZE TEXTURE SAMPLERS */
+	err = _serialize_texture_samplers(state);
+	if (err != OK)
+	{
+		return Error::FAILED;
+	}
+
+	// /* STEP 10 SERIALIZE ANIMATIONS */
 	err = _serialize_animations(state);
 	if (err != OK) {
 		return Error::FAILED;
 	}
 
-	/* STEP 10 SERIALIZE ACCESSORS */
+	/* STEP 11 SERIALIZE ACCESSORS */
 	err = _encode_accessors(state);
 	if (err != OK) {
 		return Error::FAILED;
@@ -144,43 +151,43 @@ Error GLTFDocument::serialize(Ref<GLTFState> state, Node *p_root, const String &
 		state->buffer_views.write[i]->buffer = 0;
 	}
 
-	/* STEP 11 SERIALIZE BUFFER VIEWS */
+	/* STEP 12 SERIALIZE BUFFER VIEWS */
 	err = _encode_buffer_views(state);
 	if (err != OK) {
 		return Error::FAILED;
 	}
 
-	/* STEP 12 SERIALIZE NODES */
+	/* STEP 13 SERIALIZE NODES */
 	err = _serialize_nodes(state);
 	if (err != OK) {
 		return Error::FAILED;
 	}
 
-	/* STEP 13 SERIALIZE SCENE */
+	/* STEP 15 SERIALIZE SCENE */
 	err = _serialize_scenes(state);
 	if (err != OK) {
 		return Error::FAILED;
 	}
 
-	/* STEP 14 SERIALIZE SCENE */
+	/* STEP 16 SERIALIZE SCENE */
 	err = _serialize_lights(state);
 	if (err != OK) {
 		return Error::FAILED;
 	}
 
-	/* STEP 15 SERIALIZE EXTENSIONS */
+	/* STEP 17 SERIALIZE EXTENSIONS */
 	err = _serialize_extensions(state);
 	if (err != OK) {
 		return Error::FAILED;
 	}
 
-	/* STEP 16 SERIALIZE VERSION */
+	/* STEP 18 SERIALIZE VERSION */
 	err = _serialize_version(state);
 	if (err != OK) {
 		return Error::FAILED;
 	}
 
-	/* STEP 17 SERIALIZE FILE */
+	/* STEP 19 SERIALIZE FILE */
 	err = _serialize_file(state, p_path);
 	if (err != OK) {
 		return Error::FAILED;
@@ -3196,6 +3203,62 @@ Ref<Texture> GLTFDocument::_get_texture(Ref<GLTFState> state, const GLTFTextureI
 	ERR_FAIL_INDEX_V(image, state->images.size(), Ref<Texture>());
 
 	return state->images[image];
+}
+
+Error GLTFDocument::_serialize_texture_samplers(Ref<GLTFState> state) {
+	if (!state->texture_samplers.size()) {
+		return OK;
+	}
+
+	Array samplers;
+	for (int32_t i = 0; i < state->texture_samplers.size(); ++i) {
+		Dictionary d;
+		Ref<GLTFTextureSampler> s = state->texture_samplers[i];
+		d["magFilter"] = (int32_t) s->get_mag_filter();
+		d["minFilter"] = (int32_t) s->get_min_filter();
+		d["wrapS"] = (int32_t) s->get_wrap_s();
+		d["wrapT"] = (int32_t) s->get_wrap_t();
+		samplers.push_back(d);
+	}
+	state->json["samplers"] = samplers;
+
+	return OK;
+}
+
+Error GLTFDocument::_parse_texture_samplers(Ref<GLTFState> state) {
+	if (!state->json.has("samplers")) {
+		return OK;
+	}
+
+	const Array &samplers = state->json["samplers"];
+	for (int i = 0; i < samplers.size(); ++i) {
+		const Dictionary &d = samplers[i];
+		
+		ERR_FAIL_COND_V(!d.has("minFilter"), ERR_PARSE_ERROR);
+		ERR_FAIL_COND_V(!d.has("magFilter"), ERR_PARSE_ERROR);
+
+		Ref<GLTFTextureSampler> sampler;
+		sampler.instance();
+		sampler->set_min_filter((GLTFTextureSampler::MinFilter) (int) d["minFilter"]);
+		sampler->set_mag_filter((GLTFTextureSampler::MagFilter) (int) d["magFilter"]);
+		
+		//Wrapping modes are optional and have default values.
+		if (d.has("wrapS")) {
+			sampler->set_wrap_s((GLTFTextureSampler::WrapMode) (int) d["wrapS"]);
+		} else {
+			sampler->set_wrap_s(GLTFTextureSampler::WrapMode::DEFAULT);
+		}
+
+		if (d.has("wrapT")) {
+			sampler->set_wrap_t((GLTFTextureSampler::WrapMode) (int) d["wrapT"]);
+		} else {
+			sampler->set_wrap_t(GLTFTextureSampler::WrapMode::DEFAULT);
+		}
+
+		state->texture_samplers.push_back(sampler);
+	}
+
+	return OK;
 }
 
 Error GLTFDocument::_serialize_materials(Ref<GLTFState> state) {
@@ -6584,7 +6647,13 @@ Error GLTFDocument::parse(Ref<GLTFState> state, String p_path, bool p_read_binar
 		return Error::FAILED;
 	}
 
-	/* STEP 7 PARSE TEXTURES */
+	/* STEP 7 PARSE TEXTURE SAMPLERS */
+	err = _parse_texture_samplers(state);
+	if (err != OK) {
+		return Error::FAILED;
+	}
+
+	/* STEP 8 PARSE MATERIALS */
 	err = _parse_materials(state);
 	if (err != OK) {
 		return Error::FAILED;
