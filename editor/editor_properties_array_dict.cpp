@@ -35,6 +35,7 @@
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "editor_properties.h"
+#include "scene/main/viewport.h"
 
 bool EditorPropertyArrayObject::_set(const StringName &p_name, const Variant &p_value) {
 	String name = p_name;
@@ -417,7 +418,104 @@ void EditorPropertyArray::_remove_pressed(int p_index) {
 	update_property();
 }
 
+void EditorPropertyArray::_button_draw() {
+	if (dropping) {
+		Color color = get_color("accent_color", "Editor");
+		edit->draw_rect(Rect2(Point2(), edit->get_size()), color, false);
+	}
+}
+
+bool EditorPropertyArray::_is_drop_valid(const Dictionary &p_drag_data) const {
+	String allowed_type = Variant::get_type_name(subtype);
+
+	// When the subtype is of type Object, an additional subtype may be specified in the hint string
+	// (e.g. Resource, Texture2D, ShaderMaterial, etc). We want the allowed type to be that, not just "Object".
+	if (subtype == Variant::OBJECT && subtype_hint_string != "") {
+		allowed_type = subtype_hint_string;
+	}
+
+	Dictionary drag_data = p_drag_data;
+
+	if (drag_data.has("type") && String(drag_data["type"]) == "files") {
+		Vector<String> files = drag_data["files"];
+
+		for (int i = 0; i < files.size(); i++) {
+			String file = files[i];
+			String ftype = EditorFileSystem::get_singleton()->get_file_type(file);
+
+			for (int j = 0; j < allowed_type.get_slice_count(","); j++) {
+				String at = allowed_type.get_slice(",", j).strip_edges();
+				// Fail if one of the files is not of allowed type
+				if (!ClassDB::is_parent_class(ftype, at)) {
+					return false;
+				}
+			}
+		}
+
+		// If no files fail, drop is valid
+		return true;
+	}
+
+	return false;
+}
+
+bool EditorPropertyArray::can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const {
+	return _is_drop_valid(p_data);
+}
+
+void EditorPropertyArray::drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) {
+	ERR_FAIL_COND(!_is_drop_valid(p_data));
+
+	Dictionary drag_data = p_data;
+
+	if (drag_data.has("type") && String(drag_data["type"]) == "files") {
+		Vector<String> files = drag_data["files"];
+
+		Variant array = object->get_array();
+
+		// Handle the case where array is not initialised yet.
+		if (!array.is_array()) {
+			Variant::CallError ce;
+			array = Variant::construct(array_type, nullptr, 0, ce);
+		}
+
+		// Loop the file array and add to existing array.
+		for (int i = 0; i < files.size(); i++) {
+			String file = files[i];
+
+			RES res = ResourceLoader::load(file);
+			if (res.is_valid()) {
+				array.call("push_back", res);
+			}
+		}
+
+		if (array.get_type() == Variant::ARRAY) {
+			array = array.call("duplicate");
+		}
+
+		emit_changed(get_edited_property(), array, "", false);
+		object->set_array(array);
+
+		update_property();
+	}
+}
+
 void EditorPropertyArray::_notification(int p_what) {
+	if (p_what == NOTIFICATION_DRAG_BEGIN) {
+		if (is_visible_in_tree()) {
+			if (_is_drop_valid(get_viewport()->gui_get_drag_data())) {
+				dropping = true;
+				edit->update();
+			}
+		}
+	}
+
+	if (p_what == NOTIFICATION_DRAG_END) {
+		if (dropping) {
+			dropping = false;
+			edit->update();
+		}
+	}
 }
 
 void EditorPropertyArray::_edit_pressed() {
@@ -576,6 +674,9 @@ void EditorPropertyArray::_bind_methods() {
 	ClassDB::bind_method("_reorder_button_gui_input", &EditorPropertyArray::_reorder_button_gui_input);
 	ClassDB::bind_method("_reorder_button_down", &EditorPropertyArray::_reorder_button_down);
 	ClassDB::bind_method("_reorder_button_up", &EditorPropertyArray::_reorder_button_up);
+	ClassDB::bind_method("_button_draw", &EditorPropertyArray::_button_draw);
+	ClassDB::bind_method(D_METHOD("can_drop_data_fw"), &EditorPropertyArray::can_drop_data_fw);
+	ClassDB::bind_method(D_METHOD("drop_data_fw"), &EditorPropertyArray::drop_data_fw);
 }
 
 EditorPropertyArray::EditorPropertyArray() {
@@ -587,6 +688,8 @@ EditorPropertyArray::EditorPropertyArray() {
 	edit->set_clip_text(true);
 	edit->connect("pressed", this, "_edit_pressed");
 	edit->set_toggle_mode(true);
+	edit->set_drag_forwarding(this);
+	edit->connect("draw", this, "_button_draw");
 	add_child(edit);
 	add_focusable(edit);
 	vbox = nullptr;
@@ -608,6 +711,8 @@ EditorPropertyArray::EditorPropertyArray() {
 	subtype = Variant::NIL;
 	subtype_hint = PROPERTY_HINT_NONE;
 	subtype_hint_string = "";
+
+	dropping = false;
 }
 
 ///////////////////// DICTIONARY ///////////////////////////

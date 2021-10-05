@@ -33,6 +33,7 @@
 
 #include "editor/editor_inspector.h"
 #include "editor/editor_spin_slider.h"
+#include "editor/filesystem_dock.h"
 #include "scene/gui/button.h"
 
 class EditorPropertyArrayObject : public Reference {
@@ -80,6 +81,7 @@ class EditorPropertyArray : public EditorProperty {
 
 	PopupMenu *change_type;
 	bool updating;
+	bool dropping;
 
 	Ref<EditorPropertyArrayObject> object;
 	int page_length = 20;
@@ -114,6 +116,11 @@ class EditorPropertyArray : public EditorProperty {
 	void _reorder_button_gui_input(const Ref<InputEvent> &p_event);
 	void _reorder_button_down(int p_index);
 	void _reorder_button_up();
+
+	void _button_draw();
+	bool _is_drop_valid(const Dictionary &p_drag_data) const;
+	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
+	void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
 
 protected:
 	static void _bind_methods();
