@@ -836,7 +836,7 @@
 		<method name="split_spaces" qualifiers="const">
 			<return type="PackedStringArray" />
 			<description>
-				Splits the string using whitespace as a delimeter.
+				Splits the string using whitespace as a delimiter.
 				For example, splitting [code]"0\t1 2"[/code] will return [code][0,1,2][/code].
 			</description>
 		</method>
