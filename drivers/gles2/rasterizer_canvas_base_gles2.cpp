@@ -641,7 +641,7 @@ void RasterizerCanvasBaseGLES2::_draw_gui_primitive(int p_points, const Vector2 
 		stride += 1;
 	}
 
-	RAST_DEV_DEBUG_ASSERT(p_points <= 4);
+	DEV_ASSERT(p_points <= 4);
 	float buffer_data[(2 + 2 + 4 + 1) * 4];
 
 	for (int i = 0; i < p_points; i++) {

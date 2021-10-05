@@ -1535,7 +1535,7 @@ inline void RasterizerStorageGLES3::buffer_orphan_and_upload(unsigned int p_buff
 		}
 #endif
 	}
-	RAST_DEV_DEBUG_ASSERT((p_offset + p_data_size) <= p_buffer_size);
+	DEV_ASSERT((p_offset + p_data_size) <= p_buffer_size);
 	glBufferSubData(p_target, p_offset, p_data_size, p_data);
 }
 

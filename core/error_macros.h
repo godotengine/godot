@@ -298,23 +298,6 @@ void _err_print_index_error(const char *p_function, const char *p_file, int p_li
 		((void)0)
 
 /**
- * Should assert only if making a build with dev asserts.
- * This should be a 'free' check for program flow and should not be needed in any releases,
- *  only used in dev builds.
- */
-// #define DEV_ASSERTS_ENABLED
-#ifdef DEV_ASSERTS_ENABLED
-#define DEV_ASSERT(m_cond)                                                                                              \
-	if (unlikely(!(m_cond))) {                                                                                          \
-		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "FATAL: DEV_ASSERT failed  \"" _STR(m_cond) "\" is false."); \
-		GENERATE_TRAP                                                                                                   \
-	} else                                                                                                              \
-		((void)0)
-#else
-#define DEV_ASSERT(m_cond)
-#endif
-
-/**
  * If `m_cond` evaluates to `true`, crashes the engine immediately with a generic error message.
  * Only use this if there's no sensible fallback (i.e. the error is unrecoverable).
  */
@@ -527,4 +510,43 @@ void _err_print_index_error(const char *p_function, const char *p_file, int p_li
 	} else                                                                                                                                                        \
 		((void)0)
 
+#endif
+
+/**
+ * This should be a 'free' assert for program flow and should not be needed in any releases,
+ *  only used in dev builds.
+ */
+#ifdef DEV_ENABLED
+#define DEV_ASSERT(m_cond)                                                                                              \
+	if (unlikely(!(m_cond))) {                                                                                          \
+		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "FATAL: DEV_ASSERT failed  \"" _STR(m_cond) "\" is false."); \
+		GENERATE_TRAP                                                                                                   \
+	} else                                                                                                              \
+		((void)0)
+#else
+#define DEV_ASSERT(m_cond)
+#endif
+
+/**
+ * These should be 'free' checks for program flow and should not be needed in any releases,
+ *  only used in dev builds.
+ */
+#ifdef DEV_ENABLED
+#define DEV_CHECK(m_cond)                                              \
+	if (unlikely(!(m_cond))) {                                         \
+		ERR_PRINT("DEV_CHECK failed  \"" _STR(m_cond) "\" is false."); \
+	} else                                                             \
+		((void)0)
+#else
+#define DEV_CHECK(m_cond)
+#endif
+
+#ifdef DEV_ENABLED
+#define DEV_CHECK_ONCE(m_cond)                                                   \
+	if (unlikely(!(m_cond))) {                                                   \
+		ERR_PRINT_ONCE("DEV_CHECK_ONCE failed  \"" _STR(m_cond) "\" is false."); \
+	} else                                                                       \
+		((void)0)
+#else
+#define DEV_CHECK_ONCE(m_cond)
 #endif

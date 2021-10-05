@@ -64,10 +64,6 @@ OcclusionHandle PortalRenderer::instance_moving_create(VSInstance *p_instance, R
 }
 
 void PortalRenderer::instance_moving_update(OcclusionHandle p_handle, const AABB &p_aabb, bool p_force_reinsert) {
-	// we can ignore these, they are statics / dynamics, and don't need updating
-	// .. these should have been filtered out before calling the visual server...
-	DEV_ASSERT(!_occlusion_handle_is_in_room(p_handle));
-
 	p_handle--;
 	Moving &moving = _moving_pool[p_handle];
 	moving.exact_aabb = p_aabb;
@@ -76,6 +72,10 @@ void PortalRenderer::instance_moving_update(OcclusionHandle p_handle, const AABB
 	if (!_loaded || moving.global) {
 		return;
 	}
+
+	// we can ignore these, they are statics / dynamics, and don't need updating
+	// .. these should have been filtered out before calling the visual server...
+	DEV_CHECK_ONCE(!_occlusion_handle_is_in_room(p_handle));
 
 	// quick reject for most roaming cases
 	if (!p_force_reinsert && moving.expanded_aabb.encloses(p_aabb)) {
