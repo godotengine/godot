@@ -232,7 +232,7 @@
 		</member>
 		<member name="metallic_specular" type="float" setter="set_specular" getter="get_specular" default="0.5">
 			Sets the size of the specular lobe. The specular lobe is the bright spot that is reflected from light sources.
-			[b]Note:[/b] unlike [member metallic], this is not energy-conserving, so it should be left at [code]0.5[/code] in most cases. See also [member roughness].
+			[b]Note:[/b] Unlike [member metallic], this is not energy-conserving, so it should be left at [code]0.5[/code] in most cases. See also [member roughness].
 		</member>
 		<member name="metallic_texture" type="Texture2D" setter="set_texture" getter="get_texture">
 			Texture used to specify metallic for an object. This is multiplied by [member metallic].
@@ -352,7 +352,7 @@
 		</member>
 		<member name="use_point_size" type="bool" setter="set_flag" getter="get_flag" default="false">
 			If [code]true[/code], render point size can be changed.
-			[b]Note:[/b] this is only effective for objects whose geometry is point-based rather than triangle-based. See also [member point_size].
+			[b]Note:[/b] This is only effective for objects whose geometry is point-based rather than triangle-based. See also [member point_size].
 		</member>
 		<member name="uv1_offset" type="Vector3" setter="set_uv1_offset" getter="get_uv1_offset" default="Vector3(0, 0, 0)">
 			How much to offset the [code]UV[/code] coordinates. This amount will be added to [code]UV[/code] in the vertex function. This can be used to offset a texture.

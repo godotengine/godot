@@ -95,7 +95,7 @@
 			<argument index="1" name="peer_id" type="int" default="0" />
 			<description>
 				Manually request a sync for all the instances of the scene identified by [code]scene_id[/code]. This function will trigger the default sync behaviour, or call your send custom send callable if specified in [method sync_config].
-				Note: The default implementation only allow syncing from server to clients.
+				[b]Note:[/b] The default implementation only allow syncing from server to clients.
 			</description>
 		</method>
 		<method name="sync_config">
