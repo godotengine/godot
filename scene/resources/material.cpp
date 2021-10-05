@@ -672,7 +672,7 @@ void SpatialMaterial::_update_shader() {
 			code += "\t\tparticle_frame = mod(particle_frame, particle_total_frames);\n";
 			code += "\t}";
 			code += "\tUV /= vec2(h_frames, v_frames);\n";
-			code += "\tUV += vec2(mod(particle_frame, h_frames) / h_frames, floor(particle_frame / h_frames) / v_frames);\n";
+			code += "\tUV += vec2(mod(particle_frame, h_frames) / h_frames, floor((particle_frame + 0.5) / h_frames) / v_frames);\n";
 		} break;
 	}
 
