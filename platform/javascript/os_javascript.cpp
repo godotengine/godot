@@ -108,9 +108,8 @@ void OS_JavaScript::fullscreen_change_callback(int p_fullscreen) {
 	}
 }
 
-EM_BOOL OS_JavaScript::blur_callback(int p_event_type, const EmscriptenFocusEvent *p_event, void *p_user_data) {
+void OS_JavaScript::window_blur_callback() {
 	get_singleton()->input->release_pressed_events();
-	return false;
 }
 
 void OS_JavaScript::set_video_mode(const VideoMode &p_video_mode, int p_screen) {
@@ -803,28 +802,13 @@ Error OS_JavaScript::initialize(const VideoMode &p_desired, int p_video_driver, 
 #endif
 	input = memnew(InputDefault);
 
-	EMSCRIPTEN_RESULT result;
-#define EM_CHECK(ev)                         \
-	if (result != EMSCRIPTEN_RESULT_SUCCESS) \
-		ERR_PRINT("Error while setting " #ev " callback: Code " + itos(result));
-#define SET_EM_CALLBACK(target, ev, cb)                               \
-	result = emscripten_set_##ev##_callback(target, NULL, true, &cb); \
-	EM_CHECK(ev)
-#define SET_EM_WINDOW_CALLBACK(ev, cb)                                                         \
-	result = emscripten_set_##ev##_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, NULL, false, &cb); \
-	EM_CHECK(ev)
-	// These callbacks from Emscripten's html5.h suffice to access most
-	// JavaScript APIs.
-	SET_EM_WINDOW_CALLBACK(blur, blur_callback)
-#undef SET_EM_CALLBACK
-#undef EM_CHECK
-
 	godot_js_display_mouse_button_cb(&OS_JavaScript::mouse_button_callback);
 	godot_js_display_mouse_move_cb(&OS_JavaScript::mouse_move_callback);
 	godot_js_display_mouse_wheel_cb(&OS_JavaScript::mouse_wheel_callback);
 	godot_js_display_touch_cb(&OS_JavaScript::touch_callback, touch_event.identifier, touch_event.coords);
 	godot_js_display_key_cb(&OS_JavaScript::key_callback, key_event.code, key_event.key);
 	godot_js_display_fullscreen_cb(&OS_JavaScript::fullscreen_change_callback);
+	godot_js_display_window_blur_cb(&window_blur_callback);
 	godot_js_display_notification_cb(&OS_JavaScript::send_notification_callback,
 			MainLoop::NOTIFICATION_WM_MOUSE_ENTER,
 			MainLoop::NOTIFICATION_WM_MOUSE_EXIT,

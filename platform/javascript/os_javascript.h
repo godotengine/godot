@@ -82,8 +82,6 @@ private:
 	bool idb_needs_sync;
 	bool idb_is_syncing;
 
-	static EM_BOOL blur_callback(int p_event_type, const EmscriptenFocusEvent *p_event, void *p_user_data);
-
 	static void fullscreen_change_callback(int p_fullscreen);
 	static int mouse_button_callback(int p_pressed, int p_button, double p_x, double p_y, int p_modifiers);
 	static void mouse_move_callback(double p_x, double p_y, double p_rel_x, double p_rel_y, int p_modifiers);
@@ -98,6 +96,7 @@ private:
 	static void file_access_close_callback(const String &p_file, int p_flags);
 
 	static void request_quit_callback();
+	static void window_blur_callback();
 	static void drop_files_callback(char **p_filev, int p_filec);
 	static void send_notification_callback(int p_notification);
 	static void fs_sync_callback();
