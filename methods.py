@@ -1,5 +1,6 @@
 import os
 import re
+import sys
 import glob
 import subprocess
 from collections import OrderedDict
@@ -979,3 +980,73 @@ def dump(env):
 
     with open(".scons_env.json", "w") as f:
         dump(env.Dictionary(), f, indent=4, default=non_serializable)
+
+
+# uses the graph/topo sort from:
+# https://www.geeksforgeeks.org/python-program-for-topological-sorting/
+# albeit highly modified
+class ModuleDepGraph:
+    def __init__(self, modules: OrderedDict, dependencies: OrderedDict):
+        self.graph = dict()
+        self.vertices = [name for name in modules]
+
+        # construct the edges
+        for name, deps in dependencies.items():
+            self.graph[name] = []
+            for dep_name in deps:
+                self.graph[name].append(dep_name)
+
+    # A recursive function used by dependency_sort
+    def topological_sort_util(self, v, visited, stack):
+
+        # Mark the current node as visited.
+        visited[v] = True
+
+        # Recur for all the vertices adjacent to this vertex
+        for i in self.graph[v]:
+            if i in visited and visited[i] == False:
+                self.topological_sort_util(i, visited, stack)
+
+        # Push current vertex to stack which stores result
+        stack.insert(0, v)
+
+    # The function to performs a topological sort, and then reverses it to obtain the dependency sort.
+    def dependency_sort(self) -> []:
+        # Mark all the vertices as not visited
+        visited = dict()
+        for v in self.vertices:
+            visited[v] = False
+
+        stack = []
+
+        # Call the recursive helper function to store Topological
+        # Sort starting from all vertices one by one
+        for v in self.vertices:
+            if visited[v] == False:
+                self.topological_sort_util(v, visited, stack)
+
+        # reverse the topological sort
+        stack.reverse()
+
+        return stack
+
+
+def sort_modules_dependencies(modules):
+    out = OrderedDict()
+    deps = {}
+    for name, path in modules.items():
+        sys.path.insert(0, path)
+        import config
+
+        try:
+            deps[name] = config.get_module_dependencies()
+        except AttributeError:
+            deps[name] = {}
+        sys.path.remove(path)
+        sys.modules.pop("config")
+
+    graph = ModuleDepGraph(modules, deps)
+    dep_sorted_names = graph.dependency_sort()
+    for n in dep_sorted_names:
+        modules.move_to_end(n)
+    return out

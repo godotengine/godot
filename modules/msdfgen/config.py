@@ -4,3 +4,9 @@ def can_build(env, platform):
 
 def configure(env):
     pass
+
+
+def get_module_dependencies():
+    return [
+        "freetype",
+    ]
