@@ -219,7 +219,7 @@
 			<argument index="1" name="slice_index" type="int" />
 			<description>
 				Returns a slice of the string given a [code]delimeter[/code] and a [code]slice_index[/code].
-				For example, [code]print("0|1|2".get_slice("|", 0))[/code] will print [code]0[/code].
+				For example, [code]print("a|b|c".get_slice("|", 1))[/code] will print [code]b[/code].
 			</description>
 		</method>
 		<method name="hash" qualifiers="const">
