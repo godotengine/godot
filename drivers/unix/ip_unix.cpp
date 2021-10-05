@@ -36,9 +36,9 @@
 
 #ifdef WINDOWS_ENABLED
 #include <stdio.h>
-#include <winsock2.h>
-// Needs to be included after winsocks2.h
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
+#include <winsock2.h>
 #include <ws2tcpip.h>
 #ifndef UWP_ENABLED
 #include <iphlpapi.h>
