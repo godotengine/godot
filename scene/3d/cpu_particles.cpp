@@ -30,6 +30,7 @@
 
 #include "cpu_particles.h"
 
+#include "core/os/os.h"
 #include "scene/3d/camera.h"
 #include "scene/3d/particles.h"
 #include "scene/resources/particles_material.h"
@@ -1152,14 +1153,16 @@ void CPUParticles::_set_redraw(bool p_redraw) {
 }
 
 void CPUParticles::_update_render_thread() {
-	update_mutex.lock();
+	if (OS::get_singleton()->is_update_pending(true)) {
+		update_mutex.lock();
 
-	if (can_update.is_set()) {
-		VS::get_singleton()->multimesh_set_as_bulk_array(multimesh, particle_data);
-		can_update.clear(); //wait for next time
+		if (can_update.is_set()) {
+			VS::get_singleton()->multimesh_set_as_bulk_array(multimesh, particle_data);
+			can_update.clear(); //wait for next time
+		}
+
+		update_mutex.unlock();
 	}
-
-	update_mutex.unlock();
 }
 
 void CPUParticles::_notification(int p_what) {

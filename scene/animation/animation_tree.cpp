@@ -1236,12 +1236,14 @@ void AnimationTree::advance(float p_time) {
 }
 
 void AnimationTree::_notification(int p_what) {
-	if (active && p_what == NOTIFICATION_INTERNAL_PHYSICS_PROCESS && process_mode == ANIMATION_PROCESS_PHYSICS) {
-		_process_graph(get_physics_process_delta_time());
-	}
+	if (active && OS::get_singleton()->is_update_pending()) {
+		if (p_what == NOTIFICATION_INTERNAL_PHYSICS_PROCESS && process_mode == ANIMATION_PROCESS_PHYSICS) {
+			_process_graph(get_physics_process_delta_time());
+		}
 
-	if (active && p_what == NOTIFICATION_INTERNAL_PROCESS && process_mode == ANIMATION_PROCESS_IDLE) {
-		_process_graph(get_process_delta_time());
+		if (p_what == NOTIFICATION_INTERNAL_PROCESS && process_mode == ANIMATION_PROCESS_IDLE) {
+			_process_graph(get_process_delta_time());
+		}
 	}
 
 	if (p_what == NOTIFICATION_EXIT_TREE) {

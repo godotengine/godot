@@ -657,7 +657,7 @@ public:
 	virtual void finish();
 	virtual void draw(bool p_swap_buffers, double frame_step);
 	virtual void sync();
-	FUNC0RC(bool, has_changed)
+	FUNC1RC(bool, has_changed, ChangedPriority)
 
 	/* RENDER INFO */
 

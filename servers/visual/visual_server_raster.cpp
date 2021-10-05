@@ -40,7 +40,7 @@
 
 // careful, these may run in different threads than the visual server
 
-int VisualServerRaster::changes = 0;
+int VisualServerRaster::changes[2] = { 0 };
 
 /* BLACK BARS */
 
@@ -98,7 +98,8 @@ void VisualServerRaster::draw(bool p_swap_buffers, double frame_step) {
 	//needs to be done before changes is reset to 0, to not force the editor to redraw
 	VS::get_singleton()->emit_signal("frame_pre_draw");
 
-	changes = 0;
+	changes[0] = 0;
+	changes[1] = 0;
 
 	VSG::rasterizer->begin_frame(frame_step);
 
@@ -127,8 +128,19 @@ void VisualServerRaster::draw(bool p_swap_buffers, double frame_step) {
 }
 void VisualServerRaster::sync() {
 }
-bool VisualServerRaster::has_changed() const {
-	return changes > 0;
+
+bool VisualServerRaster::has_changed(ChangedPriority p_priority) const {
+	switch (p_priority) {
+		default: {
+			return (changes[0] > 0) || (changes[1] > 0);
+		} break;
+		case CHANGED_PRIORITY_LOW: {
+			return changes[0] > 0;
+		} break;
+		case CHANGED_PRIORITY_HIGH: {
+			return changes[1] > 0;
+		} break;
+	}
 }
 void VisualServerRaster::init() {
 	VSG::rasterizer->initialize();

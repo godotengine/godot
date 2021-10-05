@@ -1103,9 +1103,15 @@ public:
 
 	/* EVENT QUEUING */
 
+	enum ChangedPriority {
+		CHANGED_PRIORITY_ANY = 0,
+		CHANGED_PRIORITY_LOW,
+		CHANGED_PRIORITY_HIGH,
+	};
+
 	virtual void draw(bool p_swap_buffers = true, double frame_step = 0.0) = 0;
 	virtual void sync() = 0;
-	virtual bool has_changed() const = 0;
+	virtual bool has_changed(ChangedPriority p_priority = CHANGED_PRIORITY_ANY) const = 0;
 	virtual void init() = 0;
 	virtual void finish() = 0;
 
@@ -1220,6 +1226,7 @@ VARIANT_ENUM_CAST(VisualServer::EnvironmentSSAOBlur);
 VARIANT_ENUM_CAST(VisualServer::InstanceFlags);
 VARIANT_ENUM_CAST(VisualServer::ShadowCastingSetting);
 VARIANT_ENUM_CAST(VisualServer::TextureType);
+VARIANT_ENUM_CAST(VisualServer::ChangedPriority);
 
 //typedef VisualServer VS; // makes it easier to use
 #define VS VisualServer

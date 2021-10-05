@@ -1292,6 +1292,19 @@ void EditorSettings::load_favorites() {
 	}
 }
 
+// The logic for this is rather convoluted as it takes into account whether
+// vital updates only is selected.
+bool EditorSettings::is_caret_blink_active() const {
+	bool blink = get("text_editor/cursor/caret_blink");
+	bool vital_only = get("interface/editor/update_vital_only");
+	bool continuous = get("interface/editor/update_continuously");
+
+	if (vital_only && !continuous) {
+		blink = false;
+	}
+	return blink;
+}
+
 bool EditorSettings::is_dark_theme() {
 	int AUTO_COLOR = 0;
 	int LIGHT_COLOR = 2;
