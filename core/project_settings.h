@@ -131,9 +131,9 @@ public:
 
 	void set_initial_value(const String &p_name, const Variant &p_value);
 	void set_restart_if_changed(const String &p_name, bool p_restart);
+	void set_hide_from_editor(const String &p_name, bool p_hide_from_editor);
 	void set_ignore_value_in_docs(const String &p_name, bool p_ignore);
 	bool get_ignore_value_in_docs(const String &p_name) const;
-
 	bool property_can_revert(const String &p_name);
 	Variant property_get_revert(const String &p_name);
 
