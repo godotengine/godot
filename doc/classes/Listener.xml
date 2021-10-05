@@ -5,7 +5,6 @@
 	</brief_description>
 	<description>
 		Once added to the scene tree and enabled using [method make_current], this node will override the location sounds are heard from. This can be used to listen from a location different from the [Camera].
-		[b]Note:[/b] There is no 2D equivalent for this node yet.
 	</description>
 	<tutorials>
 	</tutorials>
