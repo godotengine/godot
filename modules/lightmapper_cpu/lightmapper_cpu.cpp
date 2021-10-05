@@ -36,6 +36,10 @@
 #include "core/project_settings.h"
 #include "modules/raycast/lightmap_raycaster.h"
 
+#ifdef TOOLS_ENABLED
+#include "editor/editor_settings.h"
+#endif
+
 Error LightmapperCPU::_layout_atlas(int p_max_size, Vector2i *r_atlas_size, int *r_atlas_slices) {
 	Vector2i atlas_size;
 	for (unsigned int i = 0; i < mesh_instances.size(); i++) {
@@ -205,7 +209,12 @@ Error LightmapperCPU::_layout_atlas(int p_max_size, Vector2i *r_atlas_size, int 
 
 void LightmapperCPU::_thread_func_callback(void *p_thread_data) {
 	ThreadData *thread_data = reinterpret_cast<ThreadData *>(p_thread_data);
-	thread_process_array(thread_data->count, thread_data->instance, &LightmapperCPU::_thread_func_wrapper, thread_data);
+#ifdef TOOLS_ENABLED
+	const int num_threads = EDITOR_GET("editors/3d/lightmap_baking_number_of_cpu_threads");
+#else
+	const int num_threads = 0;
+#endif
+	thread_process_array(thread_data->count, thread_data->instance, &LightmapperCPU::_thread_func_wrapper, thread_data, num_threads);
 }
 
 void LightmapperCPU::_thread_func_wrapper(uint32_t p_idx, ThreadData *p_thread_data) {
