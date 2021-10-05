@@ -217,9 +217,9 @@
 			<argument index="0" name="mode" type="int" enum="SceneTree.StretchMode" />
 			<argument index="1" name="aspect" type="int" enum="SceneTree.StretchAspect" />
 			<argument index="2" name="minsize" type="Vector2" />
-			<argument index="3" name="shrink" type="float" default="1" />
+			<argument index="3" name="scale" type="float" default="1" />
 			<description>
-				Configures screen stretching to the given [enum StretchMode], [enum StretchAspect], minimum size and [code]shrink[/code] ratio.
+				Configures screen stretching to the given [enum StretchMode], [enum StretchAspect], minimum size and [code]scale[/code].
 			</description>
 		</method>
 	</methods>
