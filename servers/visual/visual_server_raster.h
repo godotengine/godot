@@ -594,7 +594,7 @@ public:
 	BIND5(room_set_bound, RID, ObjectID, const Vector<Plane> &, const AABB &, const Vector<Vector3> &)
 	BIND2(room_prepare, RID, int32_t)
 	BIND1(rooms_and_portals_clear, RID)
-	BIND1(rooms_unload, RID)
+	BIND2(rooms_unload, RID, String)
 	BIND8(rooms_finalize, RID, bool, bool, bool, bool, String, bool, bool)
 	BIND4(rooms_override_camera, RID, bool, const Vector3 &, const Vector<Plane> *)
 	BIND2(rooms_set_active, RID, bool)

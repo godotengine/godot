@@ -518,10 +518,10 @@ String RoomManager::get_pvs_filename() const {
 	return _pvs_filename;
 }
 
-void RoomManager::_rooms_changed() {
+void RoomManager::_rooms_changed(String p_reason) {
 	_rooms.clear();
 	if (is_inside_world() && get_world().is_valid()) {
-		VisualServer::get_singleton()->rooms_unload(get_world()->get_scenario());
+		VisualServer::get_singleton()->rooms_unload(get_world()->get_scenario(), p_reason);
 	}
 }
 
@@ -543,7 +543,7 @@ void RoomManager::rooms_flip_portals() {
 	}
 
 	_flip_portals_recursive(_roomlist);
-	_rooms_changed();
+	_rooms_changed("flipped Portals");
 }
 
 void RoomManager::rooms_convert() {

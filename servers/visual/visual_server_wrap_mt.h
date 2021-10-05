@@ -517,7 +517,7 @@ public:
 	FUNC5(room_set_bound, RID, ObjectID, const Vector<Plane> &, const AABB &, const Vector<Vector3> &)
 	FUNC2(room_prepare, RID, int32_t)
 	FUNC1(rooms_and_portals_clear, RID)
-	FUNC1(rooms_unload, RID)
+	FUNC2(rooms_unload, RID, String)
 	FUNC8(rooms_finalize, RID, bool, bool, bool, bool, String, bool, bool)
 	FUNC4(rooms_override_camera, RID, bool, const Vector3 &, const Vector<Plane> *)
 	FUNC2(rooms_set_active, RID, bool)

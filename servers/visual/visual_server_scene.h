@@ -664,7 +664,7 @@ public:
 	virtual void room_set_bound(RID p_room, ObjectID p_room_object_id, const Vector<Plane> &p_convex, const AABB &p_aabb, const Vector<Vector3> &p_verts);
 	virtual void room_prepare(RID p_room, int32_t p_priority);
 	virtual void rooms_and_portals_clear(RID p_scenario);
-	virtual void rooms_unload(RID p_scenario);
+	virtual void rooms_unload(RID p_scenario, String p_reason);
 	virtual void rooms_finalize(RID p_scenario, bool p_generate_pvs, bool p_cull_using_pvs, bool p_use_secondary_pvs, bool p_use_signals, String p_pvs_filename, bool p_use_simple_pvs, bool p_log_pvs_generation);
 	virtual void rooms_override_camera(RID p_scenario, bool p_override, const Vector3 &p_point, const Vector<Plane> *p_convex);
 	virtual void rooms_set_active(RID p_scenario, bool p_active);

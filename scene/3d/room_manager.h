@@ -109,7 +109,7 @@ public:
 	// for internal use in the editor..
 	// either we can clear the rooms and unload,
 	// or reconvert.
-	void _rooms_changed();
+	void _rooms_changed(String p_reason);
 
 #ifdef TOOLS_ENABLED
 	// for a preview, we allow the editor to change the bound

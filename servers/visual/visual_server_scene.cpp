@@ -1316,10 +1316,10 @@ void VisualServerScene::room_set_bound(RID p_room, ObjectID p_room_object_id, co
 	room->scenario->_portal_renderer.room_set_bound(room->scenario_room_id, p_room_object_id, p_convex, p_aabb, p_verts);
 }
 
-void VisualServerScene::rooms_unload(RID p_scenario) {
+void VisualServerScene::rooms_unload(RID p_scenario, String p_reason) {
 	Scenario *scenario = scenario_owner.getornull(p_scenario);
 	ERR_FAIL_COND(!scenario);
-	scenario->_portal_renderer.rooms_unload();
+	scenario->_portal_renderer.rooms_unload(p_reason);
 }
 
 void VisualServerScene::rooms_and_portals_clear(RID p_scenario) {

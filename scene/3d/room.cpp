@@ -259,7 +259,7 @@ void Room::_changed(bool p_regenerate_bounds) {
 	if (p_regenerate_bounds) {
 		rm->_room_regenerate_bound(this);
 	}
-	rm->_rooms_changed();
+	rm->_rooms_changed("changed Room " + get_name());
 #endif
 }
 
