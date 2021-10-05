@@ -32,6 +32,8 @@
 #define VULKAN_DEVICE_WIN_H
 
 #include "drivers/vulkan/vulkan_context.h"
+
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
 class VulkanContextWindows : public VulkanContext {
