@@ -860,7 +860,7 @@ def rstize_text(text, state):  # type: (str, State) -> str
                 inside_url = True
                 url_has_name = False
             elif cmd == "/url":
-                tag_text = ("" if url_has_name else url_link) + " <" + url_link + ">`_"
+                tag_text = ("" if url_has_name else url_link) + " <" + url_link + ">`__"
                 tag_depth -= 1
                 escape_post = True
                 inside_url = False
@@ -1091,9 +1091,9 @@ def make_link(url, title):  # type: (str, str) -> str
         # External link, for example:
         # `http://enet.bespin.org/usergroup0.html`
         if title != "":
-            return "`" + title + " <" + url + ">`_"
+            return "`" + title + " <" + url + ">`__"
         else:
-            return "`" + url + " <" + url + ">`_"
+            return "`" + url + " <" + url + ">`__"
 
 
 if __name__ == "__main__":
