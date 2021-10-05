@@ -48,11 +48,22 @@ ProjectSettings *ProjectSettings::get_singleton() {
 	return singleton;
 }
 
+String ProjectSettings::get_project_data_dir_name() const {
+	return ".godot";
+}
+
+String ProjectSettings::get_project_data_path() const {
+	String project_data_dir_name = get_project_data_dir_name();
+	return "res://" + project_data_dir_name;
+}
+
 String ProjectSettings::get_resource_path() const {
 	return resource_path;
 }
 
-const String ProjectSettings::IMPORTED_FILES_PATH("res://.godot/imported");
+String ProjectSettings::get_imported_files_path() const {
+	return get_project_data_path().plus_file("imported");
+}
 
 String ProjectSettings::localize_path(const String &p_path) const {
 	if (resource_path.is_empty() || p_path.begins_with("res://") || p_path.begins_with("user://") ||

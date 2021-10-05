@@ -2163,6 +2163,10 @@ Error EditorFileSystem::_resource_import(const String &p_path) {
 }
 
 bool EditorFileSystem::_should_skip_directory(const String &p_path) {
+	if (p_path == ProjectSettings::get_singleton()->get_project_data_path()) {
+		return true;
+	}
+
 	if (FileAccess::exists(p_path.plus_file("project.godot"))) {
 		// skip if another project inside this
 		return true;
@@ -2228,7 +2232,7 @@ void EditorFileSystem::move_group_file(const String &p_path, const String &p_new
 }
 
 ResourceUID::ID EditorFileSystem::_resource_saver_get_resource_id_for_path(const String &p_path, bool p_generate) {
-	if (!p_path.is_resource_file() || p_path.begins_with("res://.godot")) {
+	if (!p_path.is_resource_file() || p_path.begins_with(ProjectSettings::get_singleton()->get_project_data_path())) {
 		//saved externally (configuration file) or internal file, do not assign an ID.
 		return ResourceUID::INVALID_ID;
 	}
@@ -2286,17 +2290,18 @@ bool EditorFileSystem::_scan_extensions() {
 		}
 	}
 
+	String extension_list_config_file = NativeExtension::get_extension_list_config_file();
 	if (extensions.size()) {
 		if (extensions_added.size() || extensions_removed.size()) { //extensions were added or removed
-			FileAccessRef f = FileAccess::open(NativeExtension::EXTENSION_LIST_CONFIG_FILE, FileAccess::WRITE);
+			FileAccessRef f = FileAccess::open(extension_list_config_file, FileAccess::WRITE);
 			for (const String &E : extensions) {
 				f->store_line(E);
 			}
 		}
 	} else {
-		if (loaded_extensions.size() || FileAccess::exists(NativeExtension::EXTENSION_LIST_CONFIG_FILE)) { //extensions were removed
+		if (loaded_extensions.size() || FileAccess::exists(extension_list_config_file)) { //extensions were removed
 			DirAccessRef da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
-			da->remove(NativeExtension::EXTENSION_LIST_CONFIG_FILE);
+			da->remove(extension_list_config_file);
 		}
 	}
 
