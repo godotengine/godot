@@ -188,6 +188,67 @@ void EditorSpinSlider::_grabber_gui_input(const Ref<InputEvent> &p_event) {
 	}
 }
 
+void EditorSpinSlider::_value_input_gui_input(const Ref<InputEvent> &p_event) {
+	Ref<InputEventKey> k = p_event;
+	if (k.is_valid() && k->is_pressed()) {
+		double step = get_step();
+		double real_step = step;
+		if (step < 1) {
+			double divisor = 1.0 / get_step();
+
+			if (trunc(divisor) == divisor) {
+				step = 1.0;
+			}
+		}
+
+#ifdef APPLE_STYLE_KEYS
+		if (k->get_command()) {
+#else
+		if (k->get_control()) {
+#endif
+			step *= 100.0;
+		} else if (k->get_shift()) {
+			step *= 10.0;
+#ifdef APPLE_STYLE_KEYS
+		} else if (k->get_metakey()) {
+#else
+		} else if (k->get_alt()) {
+#endif
+			step *= 0.1;
+		}
+
+		uint32_t code = k->get_scancode();
+		switch (code) {
+			case KEY_UP: {
+				_evaluate_input_text();
+
+				double last_value = get_value();
+				set_value(last_value + step);
+				double new_value = get_value();
+
+				if (new_value < CLAMP(last_value + step, get_min(), get_max())) {
+					set_value(last_value + real_step);
+				}
+
+				value_input->set_text(get_text_value());
+			} break;
+			case KEY_DOWN: {
+				_evaluate_input_text();
+
+				double last_value = get_value();
+				set_value(last_value - step);
+				double new_value = get_value();
+
+				if (new_value > CLAMP(last_value - step, get_min(), get_max())) {
+					set_value(last_value - real_step);
+				}
+
+				value_input->set_text(get_text_value());
+			} break;
+		}
+	}
+}
+
 void EditorSpinSlider::_draw_spin_slider() {
 	updown_offset = -1;
 
@@ -485,6 +546,7 @@ void EditorSpinSlider::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_flat"), &EditorSpinSlider::is_flat);
 
 	ClassDB::bind_method(D_METHOD("_gui_input"), &EditorSpinSlider::_gui_input);
+	ClassDB::bind_method(D_METHOD("_value_input_gui_input"), &EditorSpinSlider::_value_input_gui_input);
 	ClassDB::bind_method(D_METHOD("_grabber_mouse_entered"), &EditorSpinSlider::_grabber_mouse_entered);
 	ClassDB::bind_method(D_METHOD("_grabber_mouse_exited"), &EditorSpinSlider::_grabber_mouse_exited);
 	ClassDB::bind_method(D_METHOD("_grabber_gui_input"), &EditorSpinSlider::_grabber_gui_input);
@@ -526,6 +588,7 @@ EditorSpinSlider::EditorSpinSlider() {
 	value_input->connect("modal_closed", this, "_value_input_closed");
 	value_input->connect("text_entered", this, "_value_input_entered");
 	value_input->connect("focus_exited", this, "_value_focus_exited");
+	value_input->connect("gui_input", this, "_value_input_gui_input");
 	value_input_just_closed = false;
 	hide_slider = false;
 	read_only = false;
