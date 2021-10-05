@@ -41,23 +41,32 @@
 
 class OS_JavaScript : public OS_Unix {
 private:
+	struct JSTouchEvent {
+		uint32_t identifier[32] = { 0 };
+		double coords[64] = { 0 };
+	};
+	JSTouchEvent touch_event;
+
+	struct JSKeyEvent {
+		char code[32] = { 0 };
+		char key[32] = { 0 };
+		uint8_t modifiers[4] = { 0 };
+	};
+	JSKeyEvent key_event;
+
 	VideoMode video_mode;
-	bool window_maximized;
-	bool entering_fullscreen;
-	bool just_exited_fullscreen;
 	bool transparency_enabled;
 
 	EMSCRIPTEN_WEBGL_CONTEXT_HANDLE webgl_ctx;
 
 	InputDefault *input;
-	Ref<InputEventKey> deferred_key_event;
 	CursorShape cursor_shape;
 	Point2 touches[32];
 
 	char canvas_id[256];
 	bool cursor_inside_canvas;
 	Point2i last_click_pos;
-	double last_click_ms;
+	uint64_t last_click_ms;
 	int last_click_button_index;
 
 	MainLoop *main_loop;
@@ -70,21 +79,12 @@ private:
 	bool idb_needs_sync;
 	bool idb_is_syncing;
 
-	static Point2 compute_position_in_canvas(int x, int y);
-	static EM_BOOL fullscreen_change_callback(int p_event_type, const EmscriptenFullscreenChangeEvent *p_event, void *p_user_data);
-	static EM_BOOL blur_callback(int p_event_type, const EmscriptenFocusEvent *p_event, void *p_user_data);
-
-	static EM_BOOL keydown_callback(int p_event_type, const EmscriptenKeyboardEvent *p_event, void *p_user_data);
-	static EM_BOOL keypress_callback(int p_event_type, const EmscriptenKeyboardEvent *p_event, void *p_user_data);
-	static EM_BOOL keyup_callback(int p_event_type, const EmscriptenKeyboardEvent *p_event, void *p_user_data);
-
-	static EM_BOOL mousemove_callback(int p_event_type, const EmscriptenMouseEvent *p_event, void *p_user_data);
-	static EM_BOOL mouse_button_callback(int p_event_type, const EmscriptenMouseEvent *p_event, void *p_user_data);
-
-	static EM_BOOL wheel_callback(int p_event_type, const EmscriptenWheelEvent *p_event, void *p_user_data);
-
-	static EM_BOOL touch_press_callback(int p_event_type, const EmscriptenTouchEvent *p_event, void *p_user_data);
-	static EM_BOOL touchmove_callback(int p_event_type, const EmscriptenTouchEvent *p_event, void *p_user_data);
+	static void fullscreen_change_callback(int p_fullscreen);
+	static int mouse_button_callback(int p_pressed, int p_button, double p_x, double p_y, int p_modifiers);
+	static void mouse_move_callback(double p_x, double p_y, double p_rel_x, double p_rel_y, int p_modifiers);
+	static int mouse_wheel_callback(double p_delta_x, double p_delta_y);
+	static void key_callback(int p_pressed, int p_repeat, int p_modifiers);
+	static void touch_callback(int p_type, int p_count);
 
 	static void gamepad_callback(int p_index, int p_connected, const char *p_id, const char *p_guid);
 	static void input_text_callback(const char *p_text, int p_cursor);
@@ -93,6 +93,7 @@ private:
 	static void file_access_close_callback(const String &p_file, int p_flags);
 
 	static void request_quit_callback();
+	static void window_blur_callback();
 	static void drop_files_callback(char **p_filev, int p_filec);
 	static void send_notification_callback(int p_notification);
 	static void fs_sync_callback();
