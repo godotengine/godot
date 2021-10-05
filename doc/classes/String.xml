@@ -89,7 +89,7 @@
 			<return type="String" />
 			<argument index="0" name="lowercase" type="bool" default="true" />
 			<description>
-				Returns a copy of the string in which the occurences of [code]CamelCase[/code] text have been spaced out with underscores. If [code]lowercase[/code] is [code]true[/code], the returned formatting style convention is equivalent to [code]snake_case[/code].
+				Returns a copy of the string in which the occurrences of [code]camelCase[/code] text have been spaced out with underscores. If [code]lowercase[/code] is [code]true[/code], the returned formatting style convention is equivalent to [code]snake_case[/code].
 			</description>
 		</method>
 		<method name="capitalize" qualifiers="const">
