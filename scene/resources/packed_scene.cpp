@@ -386,7 +386,7 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Map
 		editable_instances.push_back(p_owner->get_path_to(p_node));
 		// Node is the root of an editable instance.
 		is_editable_instance = true;
-	} else if (p_node->get_owner() && p_node->get_owner() != p_owner && p_owner->is_editable_instance(p_node->get_owner())) {
+	} else if (p_node->get_owner() && p_owner->is_a_parent_of(p_node->get_owner()) && p_owner->is_editable_instance(p_node->get_owner())) {
 		// Node is part of an editable instance.
 		is_editable_instance = true;
 	}
