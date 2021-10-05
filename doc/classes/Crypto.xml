@@ -88,7 +88,7 @@
 			<argument index="1" name="ciphertext" type="PackedByteArray" />
 			<description>
 				Decrypt the given [code]ciphertext[/code] with the provided private [code]key[/code].
-				[b]Note[/b]: The maximum size of accepted ciphertext is limited by the key size.
+				[b]Note:[/b] The maximum size of accepted ciphertext is limited by the key size.
 			</description>
 		</method>
 		<method name="encrypt">
@@ -97,7 +97,7 @@
 			<argument index="1" name="plaintext" type="PackedByteArray" />
 			<description>
 				Encrypt the given [code]plaintext[/code] with the provided public [code]key[/code].
-				[b]Note[/b]: The maximum size of accepted plaintext is limited by the key size.
+				[b]Note:[/b] The maximum size of accepted plaintext is limited by the key size.
 			</description>
 		</method>
 		<method name="generate_random_bytes">

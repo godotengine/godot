@@ -21,8 +21,8 @@
 			<argument index="1" name="orientation" type="int" enum="TextServer.Orientation" default="0" />
 			<description>
 				Creates new buffer for complex text layout, with the given [code]direction[/code] and [code]orientation[/code]. To free the resulting buffer, use [method free_rid] method.
-				Note: Direction is ignored if server does not support [code]FEATURE_BIDI_LAYOUT[/code] feature.
-				Note: Orientation is ignored if server does not support [code]FEATURE_VERTICAL_LAYOUT[/code] feature.
+				[b]Note:[/b] Direction is ignored if server does not support [code]FEATURE_BIDI_LAYOUT[/code] feature.
+				[b]Note:[/b] Orientation is ignored if server does not support [code]FEATURE_VERTICAL_LAYOUT[/code] feature.
 			</description>
 		</method>
 		<method name="draw_hex_code_box" qualifiers="const">
@@ -41,7 +41,8 @@
 			<argument index="0" name="font_rid" type="RID" />
 			<argument index="1" name="size" type="Vector2i" />
 			<description>
-				Removes all rendered glyphs information from the cache entry. Note: This function will not remove textures associated with the glyphs, use [method font_remove_texture] to remove them manually.
+				Removes all rendered glyphs information from the cache entry.
+				[b]Note:[/b] This function will not remove textures associated with the glyphs, use [method font_remove_texture] to remove them manually.
 			</description>
 		</method>
 		<method name="font_clear_kerning_map">
@@ -64,7 +65,8 @@
 			<argument index="0" name="font_rid" type="RID" />
 			<argument index="1" name="size" type="Vector2i" />
 			<description>
-				Removes all textures from font cache entry. Note: This function will not remove glyphs associated with the texture, use [method font_remove_glyph] to remove them manually.
+				Removes all textures from font cache entry.
+				[b]Note:[/b] This function will not remove glyphs associated with the texture, use [method font_remove_glyph] to remove them manually.
 			</description>
 		</method>
 		<method name="font_draw_glyph" qualifiers="const">
@@ -77,7 +79,7 @@
 			<argument index="5" name="color" type="Color" default="Color(1, 1, 1, 1)" />
 			<description>
 				Draws single glyph into a canvas item at the position, using [code]font_rid[/code] at the size [code]size[/code].
-				Note: Glyph index is specific to the font, use glyphs indices returned by [method shaped_text_get_glyphs] or [method font_get_glyph_index].
+				[b]Note:[/b] Glyph index is specific to the font, use glyphs indices returned by [method shaped_text_get_glyphs] or [method font_get_glyph_index].
 			</description>
 		</method>
 		<method name="font_draw_glyph_outline" qualifiers="const">
@@ -91,7 +93,7 @@
 			<argument index="6" name="color" type="Color" default="Color(1, 1, 1, 1)" />
 			<description>
 				Draws single glyph outline of size [code]outline_size[/code] into a canvas item at the position, using [code]font_rid[/code] at the size [code]size[/code].
-				Note: Glyph index is specific to the font, use glyphs indices returned by [method shaped_text_get_glyphs] or [method font_get_glyph_index].
+				[b]Note:[/b] Glyph index is specific to the font, use glyphs indices returned by [method shaped_text_get_glyphs] or [method font_get_glyph_index].
 			</description>
 		</method>
 		<method name="font_get_ascent" qualifiers="const">
@@ -129,7 +131,8 @@
 			<argument index="1" name="size" type="int" />
 			<argument index="2" name="glyph" type="int" />
 			<description>
-				Returns glyph advance (offset of the next glyph). Note: advance for glyphs outlines is the same as the base glyph advance and is not saved.
+				Returns glyph advance (offset of the next glyph).
+				[b]Note:[/b] Advance for glyphs outlines is the same as the base glyph advance and is not saved.
 			</description>
 		</method>
 		<method name="font_get_glyph_contours" qualifiers="const">
@@ -404,7 +407,8 @@
 			<argument index="1" name="size" type="Vector2i" />
 			<argument index="2" name="glyph" type="int" />
 			<description>
-				Removes specified rendered glyph information from the cache entry. Note: This function will not remove textures associated with the glyphs, use [method font_remove_texture] to remove them manually.
+				Removes specified rendered glyph information from the cache entry.
+				[b]Note:[/b] This function will not remove textures associated with the glyphs, use [method font_remove_texture] to remove them manually.
 			</description>
 		</method>
 		<method name="font_remove_kerning">
@@ -446,7 +450,8 @@
 			<argument index="1" name="size" type="Vector2i" />
 			<argument index="2" name="texture_index" type="int" />
 			<description>
-				Removes specified texture from font cache entry. Note: This function will not remove glyphs associated with the texture, remove them manually, using [method font_remove_glyph].
+				Removes specified texture from font cache entry.
+				[b]Note:[/b] This function will not remove glyphs associated with the texture, remove them manually, using [method font_remove_glyph].
 			</description>
 		</method>
 		<method name="font_render_glyph">
@@ -523,7 +528,7 @@
 			<argument index="0" name="oversampling" type="float" />
 			<description>
 				Sets oversampling factor, shared by all font in the TextServer.
-				Note: This value can be automaticaly changed by display server.
+				[b]Note:[/b] This value can be automaticaly changed by display server.
 			</description>
 		</method>
 		<method name="font_set_glyph_advance">
@@ -533,7 +538,8 @@
 			<argument index="2" name="glyph" type="int" />
 			<argument index="3" name="advance" type="Vector2" />
 			<description>
-				Sets glyph advance (offset of the next glyph). Note: advance for glyphs outlines is the same as the base glyph advance and is not saved.
+				Sets glyph advance (offset of the next glyph).
+				[b]Note:[/b] Advance for glyphs outlines is the same as the base glyph advance and is not saved.
 			</description>
 		</method>
 		<method name="font_set_glyph_offset">
@@ -797,7 +803,7 @@
 			<argument index="0" name="filename" type="String" />
 			<description>
 				Loads optional TextServer database (e.g. ICU break iterators and dictionaries).
-				Note: This function should be called before any other TextServer functions used, otherwise it won't have any effect.
+				[b]Note:[/b] This function should be called before any other TextServer functions used, otherwise it won't have any effect.
 			</description>
 		</method>
 		<method name="name_to_tag" qualifiers="const">
@@ -827,7 +833,7 @@
 			<argument index="0" name="filename" type="String" />
 			<description>
 				Saves optional TextServer database (e.g. ICU break iterators and dictionaries) to the file.
-				Note: This function is used by during project export, to include TextServer database.
+				[b]Note:[/b] This function is used by during project export, to include TextServer database.
 			</description>
 		</method>
 		<method name="shaped_text_add_object">
@@ -900,7 +906,7 @@
 			<argument index="0" name="shaped" type="RID" />
 			<description>
 				Returns the text ascent (number of pixels above the baseline for horizontal layout or to the left of baseline for vertical).
-				Note: overall ascent can be higher than font ascent, if some glyphs are displaced from the baseline.
+				[b]Note:[/b] Overall ascent can be higher than font ascent, if some glyphs are displaced from the baseline.
 			</description>
 		</method>
 		<method name="shaped_text_get_carets" qualifiers="const">
@@ -916,7 +922,7 @@
 			<argument index="0" name="shaped" type="RID" />
 			<description>
 				Returns the text descent (number of pixels below the baseline for horizontal layout or to the right of baseline for vertical).
-				Note: overall descent can be higher than font descent, if some glyphs are displaced from the baseline.
+				[b]Note:[/b] Overall descent can be higher than font descent, if some glyphs are displaced from the baseline.
 			</description>
 		</method>
 		<method name="shaped_text_get_direction" qualifiers="const">
@@ -1032,7 +1038,7 @@
 			<argument index="0" name="shaped" type="RID" />
 			<description>
 				Returns [code]true[/code] if text buffer is configured to display hexadecimal codes in place of invalid characters.
-				Note: If set to [code]false[/code], nothing is displayed in place of invalid characters.
+				[b]Note:[/b] If set to [code]false[/code], nothing is displayed in place of invalid characters.
 			</description>
 		</method>
 		<method name="shaped_text_get_range" qualifiers="const">
@@ -1167,7 +1173,7 @@
 			<argument index="1" name="direction" type="int" enum="TextServer.Direction" default="0" />
 			<description>
 				Sets desired text direction. If set to [code]TEXT_DIRECTION_AUTO[/code], direction will be detected based on the buffer contents and current locale.
-				Note: Direction is ignored if server does not support [code]FEATURE_BIDI_LAYOUT[/code] feature.
+				[b]Note:[/b] Direction is ignored if server does not support [code]FEATURE_BIDI_LAYOUT[/code] feature.
 			</description>
 		</method>
 		<method name="shaped_text_set_orientation">
@@ -1176,7 +1182,7 @@
 			<argument index="1" name="orientation" type="int" enum="TextServer.Orientation" default="0" />
 			<description>
 				Sets desired text orientation.
-				Note: Orientation is ignored if server does not support [code]FEATURE_VERTICAL_LAYOUT[/code] feature.
+				[b]Note:[/b] Orientation is ignored if server does not support [code]FEATURE_VERTICAL_LAYOUT[/code] feature.
 			</description>
 		</method>
 		<method name="shaped_text_set_preserve_control">
@@ -1200,7 +1206,7 @@
 			<argument index="0" name="shaped" type="RID" />
 			<description>
 				Shapes buffer if it's not shaped. Returns [code]true[/code] if the string is shaped successfully.
-				Note: It is not necessary to call this function manually, buffer will be shaped automatically as soon as any of its output data is requested.
+				[b]Note:[/b] It is not necessary to call this function manually, buffer will be shaped automatically as soon as any of its output data is requested.
 			</description>
 		</method>
 		<method name="shaped_text_sort_logical">

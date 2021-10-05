@@ -497,7 +497,7 @@
 				Marks [code]theme_type[/code] as being a variation of [code]base_type[/code].
 				This adds [code]theme_type[/code] as a suggested option for [member Control.theme_type_variation] on a [Control] that is of the [code]base_type[/code] class.
 				Variations can also be nested, i.e. [code]base_type[/code] can be another variation. If a chain of variations ends with a [code]base_type[/code] matching a class of a [Control], the whole chain is going to be suggested as options.
-				Note: Suggestions only show up if this [Theme] is set as the project default theme. See [member ProjectSettings.gui/theme/custom].
+				[b]Note:[/b] Suggestions only show up if this [Theme] is set as the project default theme. See [member ProjectSettings.gui/theme/custom].
 			</description>
 		</method>
 	</methods>
