@@ -7238,10 +7238,6 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 				tk = _get_token();
 
 				if (tk.type == TK_BRACKET_OPEN) {
-					if (uniform) {
-						_set_error(vformat("Uniform arrays are not yet implemented!"));
-						return ERR_PARSE_ERROR;
-					}
 					tk = _get_token();
 
 					if (tk.type == TK_INT_CONSTANT && tk.constant > 0) {
