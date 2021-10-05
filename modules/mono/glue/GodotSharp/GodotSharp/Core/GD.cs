@@ -78,6 +78,7 @@ namespace Godot
         /// </param>
         /// <param name="step">Times the <paramref name="value"/> will be decreased by <paramref name="amount"/></param>
         /// <returns>The decreased value.</returns>
+        [Obsolete("DecTime has been deprecated and will be removed in Godot 4.0, use Mathf.MoveToward instead.")]
         public static real_t DecTime(real_t value, real_t amount, real_t step)
         {
             real_t sgn = Mathf.Sign(value);
