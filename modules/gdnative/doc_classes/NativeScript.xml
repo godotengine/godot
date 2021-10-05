@@ -38,7 +38,7 @@
 			<return type="Variant" />
 			<description>
 				Constructs a new object of the base type with a script of this type already attached.
-				[i]Note[/i]: Any arguments passed to this function will be ignored and not passed to the native constructor function. This will change with in a future API extension.
+				[b]Note:[/b] Any arguments passed to this function will be ignored and not passed to the native constructor function. This will change with in a future API extension.
 			</description>
 		</method>
 	</methods>

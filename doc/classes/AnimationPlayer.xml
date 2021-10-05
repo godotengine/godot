@@ -188,7 +188,7 @@
 		</member>
 		<member name="current_animation" type="String" setter="set_current_animation" getter="get_current_animation" default="&quot;&quot;">
 			The name of the currently playing animation. If no animation is playing, the property's value is an empty string. Changing this value does not restart the animation. See [method play] for more information on playing animations.
-			[b]Note[/b]: while this property appears in the inspector, it's not meant to be edited, and it's not saved in the scene. This property is mainly used to get the currently playing animation, and internally for animation playback tracks. For more information, see [Animation].
+			[b]Note:[/b] While this property appears in the inspector, it's not meant to be edited, and it's not saved in the scene. This property is mainly used to get the currently playing animation, and internally for animation playback tracks. For more information, see [Animation].
 		</member>
 		<member name="current_animation_length" type="float" setter="" getter="get_current_animation_length">
 			The length (in seconds) of the currently being played animation.

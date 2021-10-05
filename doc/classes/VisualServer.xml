@@ -2317,7 +2317,8 @@
 			<argument index="0" name="particles" type="RID" />
 			<argument index="1" name="material" type="RID" />
 			<description>
-				Sets the material for processing the particles. Note: this is not the material used to draw the materials. Equivalent to [member Particles.process_material].
+				Sets the material for processing the particles.
+				[b]Note:[/b] This is not the material used to draw the materials. Equivalent to [member Particles.process_material].
 			</description>
 		</method>
 		<method name="particles_set_randomness_ratio">

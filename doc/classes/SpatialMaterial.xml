@@ -199,7 +199,7 @@
 		</member>
 		<member name="flags_use_point_size" type="bool" setter="set_flag" getter="get_flag" default="false">
 			If [code]true[/code], render point size can be changed.
-			[b]Note:[/b] this is only effective for objects whose geometry is point-based rather than triangle-based. See also [member params_point_size].
+			[b]Note:[/b] This is only effective for objects whose geometry is point-based rather than triangle-based. See also [member params_point_size].
 		</member>
 		<member name="flags_use_shadow_to_opacity" type="bool" setter="set_flag" getter="get_flag" default="false">
 			If [code]true[/code], enables the "shadow to opacity" render mode where lighting modifies the alpha so shadowed areas are opaque and non-shadowed areas are transparent. Useful for overlaying shadows onto a camera feed in AR.
@@ -215,7 +215,7 @@
 		</member>
 		<member name="metallic_specular" type="float" setter="set_specular" getter="get_specular" default="0.5">
 			Sets the size of the specular lobe. The specular lobe is the bright spot that is reflected from light sources.
-			[b]Note:[/b] unlike [member metallic], this is not energy-conserving, so it should be left at [code]0.5[/code] in most cases. See also [member roughness].
+			[b]Note:[/b] Unlike [member metallic], this is not energy-conserving, so it should be left at [code]0.5[/code] in most cases. See also [member roughness].
 		</member>
 		<member name="metallic_texture" type="Texture" setter="set_texture" getter="get_texture">
 			Texture used to specify metallic for an object. This is multiplied by [member metallic].

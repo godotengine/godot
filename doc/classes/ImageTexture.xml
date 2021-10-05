@@ -61,7 +61,7 @@
 			<argument index="0" name="path" type="String" />
 			<description>
 				Loads an image from a file path and creates a texture from it.
-				[b]Note:[/b] the method is deprecated and will be removed in Godot 4.0, use [method Image.load] and [method create_from_image] instead.
+				[b]Note:[/b] This method is deprecated and will be removed in Godot 4.0, use [method Image.load] and [method create_from_image] instead.
 			</description>
 		</method>
 		<method name="set_data">

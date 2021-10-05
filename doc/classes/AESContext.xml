@@ -50,7 +50,7 @@
 			<return type="PoolByteArray" />
 			<description>
 				Get the current IV state for this context (IV gets updated when calling [method update]). You normally don't need this function.
-				Note: This function only makes sense when the context is started with [constant MODE_CBC_ENCRYPT] or [constant MODE_CBC_DECRYPT].
+				[b]Note:[/b] This function only makes sense when the context is started with [constant MODE_CBC_ENCRYPT] or [constant MODE_CBC_DECRYPT].
 			</description>
 		</method>
 		<method name="start">
@@ -67,7 +67,7 @@
 			<argument index="0" name="src" type="PoolByteArray" />
 			<description>
 				Run the desired operation for this AES context. Will return a [PoolByteArray] containing the result of encrypting (or decrypting) the given [code]src[/code]. See [method start] for mode of operation.
-				Note: The size of [code]src[/code] must be a multiple of 16. Apply some padding if needed.
+				[b]Note:[/b] The size of [code]src[/code] must be a multiple of 16. Apply some padding if needed.
 			</description>
 		</method>
 	</methods>

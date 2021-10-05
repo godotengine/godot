@@ -30,7 +30,7 @@
 		</member>
 		<member name="passby_press" type="bool" setter="set_passby_press" getter="is_passby_press_enabled" default="false">
 			If [code]true[/code], the [signal pressed] and [signal released] signals are emitted whenever a pressed finger goes in and out of the button, even if the pressure started outside the active area of the button.
-			[b]Note:[/b] this is a "pass-by" (not "bypass") press mode.
+			[b]Note:[/b] This is a "pass-by" (not "bypass") press mode.
 		</member>
 		<member name="pressed" type="Texture" setter="set_texture_pressed" getter="get_texture_pressed">
 			The button's texture for the pressed state.

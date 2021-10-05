@@ -75,7 +75,7 @@
 			<argument index="0" name="udp_peer" type="PacketPeerUDP" />
 			<description>
 				Try to initiate the DTLS handshake with the given [code]udp_peer[/code] which must be already connected (see [method PacketPeerUDP.connect_to_host]).
-				[b]Note[/b]: You must check that the state of the return PacketPeerUDP is [constant PacketPeerDTLS.STATUS_HANDSHAKING], as it is normal that 50% of the new connections will be invalid due to cookie exchange.
+				[b]Note:[/b] You must check that the state of the return PacketPeerUDP is [constant PacketPeerDTLS.STATUS_HANDSHAKING], as it is normal that 50% of the new connections will be invalid due to cookie exchange.
 			</description>
 		</method>
 	</methods>

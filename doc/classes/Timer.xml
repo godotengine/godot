@@ -22,7 +22,7 @@
 			<argument index="0" name="time_sec" type="float" default="-1" />
 			<description>
 				Starts the timer. Sets [code]wait_time[/code] to [code]time_sec[/code] if [code]time_sec &gt; 0[/code]. This also resets the remaining time to [code]wait_time[/code].
-				[b]Note:[/b] this method will not resume a paused timer. See [member paused].
+				[b]Note:[/b] This method will not resume a paused timer. See [member paused].
 			</description>
 		</method>
 		<method name="stop">

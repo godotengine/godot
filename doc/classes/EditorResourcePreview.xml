@@ -32,7 +32,7 @@
 			<argument index="3" name="userdata" type="Variant" />
 			<description>
 				Queue the [code]resource[/code] being edited for preview. Once the preview is ready, the [code]receiver[/code]'s [code]receiver_func[/code] will be called. The [code]receiver_func[/code] must take the following four arguments: [String] path, [Texture] preview, [Texture] thumbnail_preview, [Variant] userdata. [code]userdata[/code] can be anything, and will be returned when [code]receiver_func[/code] is called.
-				[b]Note[/b]: If it was not possible to create the preview the [code]receiver_func[/code] will still be called, but the preview will be null.
+				[b]Note:[/b] If it was not possible to create the preview the [code]receiver_func[/code] will still be called, but the preview will be null.
 			</description>
 		</method>
 		<method name="queue_resource_preview">
@@ -43,7 +43,7 @@
 			<argument index="3" name="userdata" type="Variant" />
 			<description>
 				Queue a resource file located at [code]path[/code] for preview. Once the preview is ready, the [code]receiver[/code]'s [code]receiver_func[/code] will be called. The [code]receiver_func[/code] must take the following four arguments: [String] path, [Texture] preview, [Texture] thumbnail_preview, [Variant] userdata. [code]userdata[/code] can be anything, and will be returned when [code]receiver_func[/code] is called.
-				[b]Note[/b]: If it was not possible to create the preview the [code]receiver_func[/code] will still be called, but the preview will be null.
+				[b]Note:[/b] If it was not possible to create the preview the [code]receiver_func[/code] will still be called, but the preview will be null.
 			</description>
 		</method>
 		<method name="remove_preview_generator">

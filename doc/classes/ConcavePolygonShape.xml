@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		Concave polygon shape resource, which can be set into a [PhysicsBody] or area. This shape is created by feeding a list of triangles.
-		Note: when used for collision, [ConcavePolygonShape] is intended to work with static [PhysicsBody] nodes like [StaticBody] and will not work with [KinematicBody] or [RigidBody] with a mode other than Static.
+		[b]Note:[/b] When used for collision, [ConcavePolygonShape] is intended to work with static [PhysicsBody] nodes like [StaticBody] and will not work with [KinematicBody] or [RigidBody] with a mode other than Static.
 	</description>
 	<tutorials>
 		<link title="3D Physics Tests Demo">https://godotengine.org/asset-library/asset/675</link>

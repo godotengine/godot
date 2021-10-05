@@ -27,8 +27,8 @@
 		</member>
 		<member name="points" type="PoolVector2Array" setter="set_points" getter="get_points" default="PoolVector2Array( 1, -1, 1, 1, -1, 1, -1, -1 )">
 			The points defining the shape of the [Portal] polygon (which should be convex).
-			These are defined in 2D, with [code]0,0[/code] being the origin of the [Portal] node's [code]global_transform[/code].
-			[code]Note:[/code] These raw points are sanitized for winding order internally.
+			These are defined in 2D, with [code]0,0[/code] being the origin of the [Portal] node's [member Spatial.global_transform].
+			[b]Note:[/b] These raw points are sanitized for winding order internally.
 		</member>
 		<member name="portal_active" type="bool" setter="set_portal_active" getter="get_portal_active" default="true">
 			Visibility through [Portal]s can be turned on and off at runtime - this is useful for having closable doors.
@@ -41,7 +41,7 @@
 		</member>
 		<member name="use_default_margin" type="bool" setter="set_use_default_margin" getter="get_use_default_margin" default="true">
 			In most cases you will want to use the default [Portal] margin in your portals (this is set in the [RoomManager]).
-			If you want to override this default, set this value to [code]false[/code], and the local [code]portal_margin[/code] will take effect.
+			If you want to override this default, set this value to [code]false[/code], and the local [member portal_margin] will take effect.
 		</member>
 	</members>
 	<constants>

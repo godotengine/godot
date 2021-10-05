@@ -4,7 +4,8 @@
 		A node to be used for advanced animation transitions in an [AnimationPlayer].
 	</brief_description>
 	<description>
-		Note: When linked with an [AnimationPlayer], several properties and methods of the corresponding [AnimationPlayer] will not function as expected. Playback and transitions should be handled using only the [AnimationTree] and its constituent [AnimationNode](s). The [AnimationPlayer] node should be used solely for adding, deleting, and editing animations.
+		A node to be used for advanced animation transitions in an [AnimationPlayer].
+		[b]Note:[/b] When linked with an [AnimationPlayer], several properties and methods of the corresponding [AnimationPlayer] will not function as expected. Playback and transitions should be handled using only the [AnimationTree] and its constituent [AnimationNode](s). The [AnimationPlayer] node should be used solely for adding, deleting, and editing animations.
 	</description>
 	<tutorials>
 		<link title="Using AnimationTree">https://docs.godotengine.org/en/3.4/tutorials/animation/animation_tree.html</link>

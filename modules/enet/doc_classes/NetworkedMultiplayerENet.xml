@@ -137,7 +137,7 @@
 		<member name="transfer_mode" type="int" setter="set_transfer_mode" getter="get_transfer_mode" override="true" enum="NetworkedMultiplayerPeer.TransferMode" default="2" />
 		<member name="use_dtls" type="bool" setter="set_dtls_enabled" getter="is_dtls_enabled" default="false">
 			When enabled, the client or server created by this peer, will use [PacketPeerDTLS] instead of raw UDP sockets for communicating with the remote peer. This will make the communication encrypted with DTLS at the cost of higher resource usage and potentially larger packet size.
-			Note: When creating a DTLS server, make sure you setup the key/certificate pair via [method set_dtls_key] and [method set_dtls_certificate]. For DTLS clients, have a look at the [member dtls_verify] option, and configure the certificate accordingly via [method set_dtls_certificate].
+			[b]Note:[/b] When creating a DTLS server, make sure you setup the key/certificate pair via [method set_dtls_key] and [method set_dtls_certificate]. For DTLS clients, have a look at the [member dtls_verify] option, and configure the certificate accordingly via [method set_dtls_certificate].
 		</member>
 	</members>
 	<constants>
