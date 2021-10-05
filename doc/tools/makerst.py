@@ -1053,6 +1053,11 @@ def make_method_signature(
         ret_type = method_def.return_type.to_rst(state)
         ref_type = "method"
 
+    # FIXME: Need to add proper support for operator methods, but generating a unique
+    # and valid ref for them is not trivial.
+    if method_def.name.startswith("operator "):
+        make_ref = False
+
     out = ""
 
     if make_ref:
