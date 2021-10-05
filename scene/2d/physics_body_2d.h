@@ -368,6 +368,7 @@ private:
 	Vector2 real_velocity;
 
 	RID platform_rid;
+	ObjectID platform_object_id;
 	bool on_floor = false;
 	bool on_ceiling = false;
 	bool on_wall = false;

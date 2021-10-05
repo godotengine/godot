@@ -16,6 +16,9 @@
 		<member name="exclude_bodies" type="Array" setter="set_exclude_bodies" getter="get_exclude_bodies" default="[]">
 			Optional array of body [RID] to exclude from collision.
 		</member>
+		<member name="exclude_objects" type="Array" setter="set_exclude_objects" getter="get_exclude_objects" default="[]">
+			Optional array of object unique instance ID to exclude from collision. See [method Object.get_instance_id].
+		</member>
 		<member name="from" type="Transform3D" setter="set_from" getter="get_from" default="Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)">
 			Transform in global space where the motion should start. Usually set to [member Node3D.global_transform] for the current body's transform.
 		</member>

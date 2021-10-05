@@ -615,6 +615,9 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const PhysicsServer2D::Motion
 					if (p_parameters.exclude_bodies.has(col_obj->get_self())) {
 						continue;
 					}
+					if (p_parameters.exclude_objects.has(col_obj->get_instance_id())) {
+						continue;
+					}
 
 					int shape_idx = intersection_query_subindex_results[i];
 
@@ -745,6 +748,9 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const PhysicsServer2D::Motion
 			for (int i = 0; i < amount; i++) {
 				const CollisionObject2DSW *col_obj = intersection_query_results[i];
 				if (p_parameters.exclude_bodies.has(col_obj->get_self())) {
+					continue;
+				}
+				if (p_parameters.exclude_objects.has(col_obj->get_instance_id())) {
 					continue;
 				}
 
@@ -894,6 +900,9 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const PhysicsServer2D::Motion
 			for (int i = 0; i < amount; i++) {
 				const CollisionObject2DSW *col_obj = intersection_query_results[i];
 				if (p_parameters.exclude_bodies.has(col_obj->get_self())) {
+					continue;
+				}
+				if (p_parameters.exclude_objects.has(col_obj->get_instance_id())) {
 					continue;
 				}
 

@@ -383,6 +383,7 @@ private:
 	int max_slides = 6;
 	int platform_layer = 0;
 	RID platform_rid;
+	ObjectID platform_object_id;
 	uint32_t moving_platform_floor_layers = UINT32_MAX;
 	uint32_t moving_platform_wall_layers = 0;
 	real_t floor_snap_length = 0.1;

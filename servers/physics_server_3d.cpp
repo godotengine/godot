@@ -380,6 +380,26 @@ void PhysicsTestMotionParameters3D::set_exclude_bodies(const Vector<RID> &p_excl
 	}
 }
 
+Array PhysicsTestMotionParameters3D::get_exclude_objects() const {
+	Array exclude;
+	exclude.resize(parameters.exclude_objects.size());
+
+	int object_index = 0;
+	for (ObjectID object_id : parameters.exclude_objects) {
+		exclude[object_index++] = object_id;
+	}
+
+	return exclude;
+}
+
+void PhysicsTestMotionParameters3D::set_exclude_objects(const Array &p_exclude) {
+	for (int i = 0; i < p_exclude.size(); ++i) {
+		ObjectID object_id = p_exclude[i];
+		ERR_CONTINUE(object_id.is_null());
+		parameters.exclude_objects.insert(object_id);
+	}
+}
+
 void PhysicsTestMotionParameters3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_from"), &PhysicsTestMotionParameters3D::get_from);
 	ClassDB::bind_method(D_METHOD("set_from"), &PhysicsTestMotionParameters3D::set_from);
@@ -399,12 +419,16 @@ void PhysicsTestMotionParameters3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_exclude_bodies"), &PhysicsTestMotionParameters3D::get_exclude_bodies);
 	ClassDB::bind_method(D_METHOD("set_exclude_bodies"), &PhysicsTestMotionParameters3D::set_exclude_bodies);
 
+	ClassDB::bind_method(D_METHOD("get_exclude_objects"), &PhysicsTestMotionParameters3D::get_exclude_objects);
+	ClassDB::bind_method(D_METHOD("set_exclude_objects"), &PhysicsTestMotionParameters3D::set_exclude_objects);
+
 	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM3D, "from"), "set_from", "get_from");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "motion"), "set_motion", "get_motion");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "margin"), "set_margin", "get_margin");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_collisions"), "set_max_collisions", "get_max_collisions");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "collide_separation_ray"), "set_collide_separation_ray_enabled", "is_collide_separation_ray_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "exclude_bodies"), "set_exclude_bodies", "get_exclude_bodies");
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "exclude_objects"), "set_exclude_objects", "get_exclude_objects");
 }
 
 ///////////////////////////////
