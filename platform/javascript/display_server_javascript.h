@@ -85,9 +85,6 @@ private:
 	static void touch_callback(int p_type, int p_count);
 	static void key_callback(int p_pressed, int p_repeat, int p_modifiers);
 	static void vk_input_text_callback(const char *p_text, int p_cursor);
-
-	static EM_BOOL blur_callback(int p_event_type, const EmscriptenFocusEvent *p_event, void *p_user_data);
-
 	static void gamepad_callback(int p_index, int p_connected, const char *p_id, const char *p_guid);
 	void process_joypads();
 
@@ -97,6 +94,7 @@ private:
 	static void _dispatch_input_event(const Ref<InputEvent> &p_event);
 
 	static void request_quit_callback();
+	static void window_blur_callback();
 	static void update_clipboard_callback(const char *p_text);
 	static void send_window_event_callback(int p_notification);
 	static void drop_files_js_callback(char **p_filev, int p_filec);

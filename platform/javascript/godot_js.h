@@ -95,6 +95,7 @@ extern void godot_js_display_mouse_wheel_cb(int (*p_callback)(double p_delta_x, 
 extern void godot_js_display_touch_cb(void (*p_callback)(int p_type, int p_count), uint32_t *r_identifiers, double *r_coords);
 extern void godot_js_display_key_cb(void (*p_callback)(int p_type, int p_repeat, int p_modifiers), char r_code[32], char r_key[32]);
 extern void godot_js_display_fullscreen_cb(void (*p_callback)(int p_fullscreen));
+extern void godot_js_display_window_blur_cb(void (*p_callback)());
 extern void godot_js_display_notification_cb(void (*p_callback)(int p_notification), int p_enter, int p_exit, int p_in, int p_out);
 extern void godot_js_display_paste_cb(void (*p_callback)(const char *p_text));
 extern void godot_js_display_drop_files_cb(void (*p_callback)(char **p_filev, int p_filec));

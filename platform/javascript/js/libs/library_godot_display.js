@@ -867,6 +867,14 @@ const GodotDisplay = {
 		GodotDisplayListeners.add(document, 'webkitfullscreenchange', change_cb, false);
 	},
 
+	godot_js_display_window_blur_cb__sig: 'vi',
+	godot_js_display_window_blur_cb: function (callback) {
+		const func = GodotRuntime.get_func(callback);
+		GodotDisplayListeners.add(window, 'blur', function () {
+			func();
+		}, false);
+	},
+
 	godot_js_display_notification_cb__sig: 'viiiii',
 	godot_js_display_notification_cb: function (callback, p_enter, p_exit, p_in, p_out) {
 		const canvas = GodotConfig.canvas;
