@@ -876,7 +876,6 @@ private:
 
 	StringName current_function;
 	bool last_const = false;
-	bool pass_array = false;
 	StringName last_name;
 
 	VaryingFunctionNames varying_function_names;
