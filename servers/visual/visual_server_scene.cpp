@@ -2633,7 +2633,7 @@ void VisualServerScene::_prepare_scene(const Transform p_cam_transform, const Ca
 			InstanceGeometryData *geom = static_cast<InstanceGeometryData *>(ins->base_data);
 
 			if (ins->redraw_if_visible) {
-				VisualServerRaster::redraw_request();
+				VisualServerRaster::redraw_request(false);
 			}
 
 			if (ins->base_type == VS::INSTANCE_PARTICLES) {
@@ -2642,9 +2642,11 @@ void VisualServerScene::_prepare_scene(const Transform p_cam_transform, const Ca
 					//but if nothing is going on, don't do it.
 					keep = false;
 				} else {
-					VSG::storage->particles_request_process(ins->base);
-					//particles visible? request redraw
-					VisualServerRaster::redraw_request();
+					if (OS::get_singleton()->is_update_pending(true)) {
+						VSG::storage->particles_request_process(ins->base);
+						//particles visible? request redraw
+						VisualServerRaster::redraw_request(false);
+					}
 				}
 			}
 

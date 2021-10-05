@@ -1242,7 +1242,7 @@ void RasterizerSceneGLES2::_add_geometry_with_material(RasterizerStorageGLES2::G
 	// do not add anything here, as lights are duplicated elements..
 
 	if (p_material->shader->spatial.uses_time) {
-		VisualServerRaster::redraw_request();
+		VisualServerRaster::redraw_request(false);
 	}
 }
 

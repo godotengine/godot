@@ -50,6 +50,8 @@ class OS {
 	bool _keep_screen_on;
 	bool low_processor_usage_mode;
 	int low_processor_usage_mode_sleep_usec;
+	bool _update_vital_only;
+	bool _update_pending;
 	bool _verbose_stdout;
 	bool _debug_stdout;
 	String _local_clipboard;
@@ -287,6 +289,27 @@ public:
 	virtual bool is_in_low_processor_usage_mode() const;
 	virtual void set_low_processor_usage_mode_sleep_usec(int p_usec);
 	virtual int get_low_processor_usage_mode_sleep_usec() const;
+	virtual void set_update_vital_only(bool p_enabled);
+	virtual void set_update_pending(bool p_pending) { _update_pending = p_pending; }
+
+	// Convenience easy switch for turning this off outside tools builds, without littering calling code
+	// with #ifdefs. It will also hopefully be compiled out in release.
+#ifdef TOOLS_ENABLED
+	// This function is used to throttle back updates of animations and particle systems when using UPDATE_VITAL_ONLY mode.
+
+	// CASE 1) We are not in UPDATE_VITAL_ONLY mode - always return true and update.
+	// CASE 2) We are in UPDATE_VITAL_ONLY mode -
+
+	// In most cases this will return false and prevent animations etc updating.
+	// The exception is that we can also choose to receive a true
+	// each time a frame is redrawn as a result of moving the mouse, clicking etc.
+	// This enables us to keep e.g. particle systems processing, but ONLY when other
+	// events have caused a redraw.
+	virtual bool is_update_pending(bool p_include_redraws = false) const { return !_update_vital_only || (_update_pending && p_include_redraws); }
+#else
+	// Always update when outside the editor, UPDATE_VITAL_ONLY has no effect outside the editor.
+	virtual bool is_update_pending(bool p_include_redraws = false) const { return true; }
+#endif
 
 	virtual String get_executable_path() const;
 	virtual Error execute(const String &p_path, const List<String> &p_arguments, bool p_blocking = true, ProcessID *r_child_id = nullptr, String *r_pipe = nullptr, int *r_exitcode = nullptr, bool read_stderr = false, Mutex *p_pipe_mutex = nullptr, bool p_open_console = false) = 0;
