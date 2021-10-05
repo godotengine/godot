@@ -49,6 +49,15 @@ ProjectSettings *ProjectSettings::get_singleton() {
 	return singleton;
 }
 
+String ProjectSettings::get_project_data_dir_name() const {
+	return ".import";
+}
+
+String ProjectSettings::get_project_data_path() const {
+	String project_data_dir_name = get_project_data_dir_name();
+	return "res://" + project_data_dir_name;
+}
+
 String ProjectSettings::get_resource_path() const {
 	return resource_path;
 };

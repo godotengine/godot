@@ -238,8 +238,9 @@ void FindInFiles::_scan_dir(String path, PoolStringArray &out_folders) {
 			break;
 		}
 
-		// Ignore special dirs (such as .git and .import)
-		if (file == "." || file == ".." || file.begins_with(".")) {
+		// Ignore special dirs (such as .git and project data directory)
+		String project_data_dir_name = ProjectSettings::get_singleton()->get_project_data_dir_name();
+		if (file.begins_with(".") || file == project_data_dir_name) {
 			continue;
 		}
 		if (dir->current_is_hidden()) {

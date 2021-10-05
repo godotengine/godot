@@ -2080,7 +2080,8 @@ void ProjectManager::_run_project_confirm() {
 		const String &selected = selected_list[i].project_key;
 		String path = EditorSettings::get_singleton()->get("projects/" + selected);
 
-		if (!DirAccess::exists(path + "/.import")) {
+		String project_data_dir_name = ProjectSettings::get_singleton()->get_project_data_dir_name();
+		if (!DirAccess::exists(path + "/" + project_data_dir_name)) {
 			run_error_diag->set_text(TTR("Can't run project: Assets need to be imported.\nPlease edit the project to trigger the initial import."));
 			run_error_diag->popup_centered();
 			continue;
