@@ -490,7 +490,9 @@ public:
 	bool last_xform_dirty;
 	Spatial *sp;
 	RID sbox_instance;
+	RID sbox_instance_offset;
 	RID sbox_instance_xray;
+	RID sbox_instance_xray_offset;
 
 	SpatialEditorSelectedItem() {
 		sp = nullptr;
