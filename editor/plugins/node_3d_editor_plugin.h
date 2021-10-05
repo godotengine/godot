@@ -431,7 +431,9 @@ public:
 	bool last_xform_dirty;
 	Node3D *sp;
 	RID sbox_instance;
+	RID sbox_instance_offset;
 	RID sbox_instance_xray;
+	RID sbox_instance_xray_offset;
 	Ref<EditorNode3DGizmo> gizmo;
 	Map<int, Transform3D> subgizmos; // map ID -> initial transform
 

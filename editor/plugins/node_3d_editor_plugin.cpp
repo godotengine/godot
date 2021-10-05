@@ -2697,15 +2697,28 @@ void Node3DEditorViewport::_notification(int p_what) {
 
 			se->aabb = new_aabb;
 
-			t.translate(se->aabb.position);
+			Transform3D t_offset = t;
 
 			// apply AABB scaling before item's global transform
-			Basis aabb_s;
-			aabb_s.scale(se->aabb.size);
-			t.basis = t.basis * aabb_s;
+			{
+				const Vector3 offset(0.005, 0.005, 0.005);
+				Basis aabb_s;
+				aabb_s.scale(se->aabb.size + offset);
+				t.translate(se->aabb.position - offset / 2);
+				t.basis = t.basis * aabb_s;
+			}
+			{
+				const Vector3 offset(0.01, 0.01, 0.01);
+				Basis aabb_s;
+				aabb_s.scale(se->aabb.size + offset);
+				t_offset.translate(se->aabb.position - offset / 2);
+				t_offset.basis = t_offset.basis * aabb_s;
+			}
 
 			RenderingServer::get_singleton()->instance_set_transform(se->sbox_instance, t);
+			RenderingServer::get_singleton()->instance_set_transform(se->sbox_instance_offset, t_offset);
 			RenderingServer::get_singleton()->instance_set_transform(se->sbox_instance_xray, t);
+			RenderingServer::get_singleton()->instance_set_transform(se->sbox_instance_xray_offset, t_offset);
 		}
 
 		if (changed || (spatial_editor->is_gizmo_visible() && !exist)) {
@@ -4731,8 +4744,14 @@ Node3DEditorSelectedItem::~Node3DEditorSelectedItem() {
 	if (sbox_instance.is_valid()) {
 		RenderingServer::get_singleton()->free(sbox_instance);
 	}
+	if (sbox_instance_offset.is_valid()) {
+		RenderingServer::get_singleton()->free(sbox_instance_offset);
+	}
 	if (sbox_instance_xray.is_valid()) {
 		RenderingServer::get_singleton()->free(sbox_instance_xray);
+	}
+	if (sbox_instance_xray_offset.is_valid()) {
+		RenderingServer::get_singleton()->free(sbox_instance_xray_offset);
 	}
 }
 
@@ -4836,23 +4855,39 @@ Object *Node3DEditor::_get_editor_data(Object *p_what) {
 	si->sbox_instance = RenderingServer::get_singleton()->instance_create2(
 			selection_box->get_rid(),
 			sp->get_world_3d()->get_scenario());
+	si->sbox_instance_offset = RenderingServer::get_singleton()->instance_create2(
+			selection_box->get_rid(),
+			sp->get_world_3d()->get_scenario());
 	RS::get_singleton()->instance_geometry_set_cast_shadows_setting(
 			si->sbox_instance,
+			RS::SHADOW_CASTING_SETTING_OFF);
+	RS::get_singleton()->instance_geometry_set_cast_shadows_setting(
+			si->sbox_instance_offset,
 			RS::SHADOW_CASTING_SETTING_OFF);
 	// Use the Edit layer to hide the selection box when View Gizmos is disabled, since it is a bit distracting.
 	// It's still possible to approximately guess what is selected by looking at the manipulation gizmo position.
 	RS::get_singleton()->instance_set_layer_mask(si->sbox_instance, 1 << Node3DEditorViewport::GIZMO_EDIT_LAYER);
+	RS::get_singleton()->instance_set_layer_mask(si->sbox_instance_offset, 1 << Node3DEditorViewport::GIZMO_EDIT_LAYER);
 	RS::get_singleton()->instance_geometry_set_flag(si->sbox_instance, RS::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, true);
+	RS::get_singleton()->instance_geometry_set_flag(si->sbox_instance_offset, RS::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, true);
 	si->sbox_instance_xray = RenderingServer::get_singleton()->instance_create2(
+			selection_box_xray->get_rid(),
+			sp->get_world_3d()->get_scenario());
+	si->sbox_instance_xray_offset = RenderingServer::get_singleton()->instance_create2(
 			selection_box_xray->get_rid(),
 			sp->get_world_3d()->get_scenario());
 	RS::get_singleton()->instance_geometry_set_cast_shadows_setting(
 			si->sbox_instance_xray,
 			RS::SHADOW_CASTING_SETTING_OFF);
+	RS::get_singleton()->instance_geometry_set_cast_shadows_setting(
+			si->sbox_instance_xray_offset,
+			RS::SHADOW_CASTING_SETTING_OFF);
 	// Use the Edit layer to hide the selection box when View Gizmos is disabled, since it is a bit distracting.
 	// It's still possible to approximately guess what is selected by looking at the manipulation gizmo position.
 	RS::get_singleton()->instance_set_layer_mask(si->sbox_instance_xray, 1 << Node3DEditorViewport::GIZMO_EDIT_LAYER);
-	RS::get_singleton()->instance_geometry_set_flag(si->sbox_instance, RS::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, true);
+	RS::get_singleton()->instance_set_layer_mask(si->sbox_instance_xray_offset, 1 << Node3DEditorViewport::GIZMO_EDIT_LAYER);
+	RS::get_singleton()->instance_geometry_set_flag(si->sbox_instance_xray, RS::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, true);
+	RS::get_singleton()->instance_geometry_set_flag(si->sbox_instance_xray_offset, RS::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, true);
 
 	return si;
 }
@@ -4860,10 +4895,6 @@ Object *Node3DEditor::_get_editor_data(Object *p_what) {
 void Node3DEditor::_generate_selection_boxes() {
 	// Use two AABBs to create the illusion of a slightly thicker line.
 	AABB aabb(Vector3(), Vector3(1, 1, 1));
-	AABB aabb_offset(Vector3(), Vector3(1, 1, 1));
-	// Grow the bounding boxes slightly to avoid Z-fighting with the mesh's edges.
-	aabb.grow_by(0.005);
-	aabb_offset.grow_by(0.01);
 
 	// Create a x-ray (visible through solid surfaces) and standard version of the selection box.
 	// Both will be drawn at the same position, but with different opacity.
@@ -4876,16 +4907,6 @@ void Node3DEditor::_generate_selection_boxes() {
 	for (int i = 0; i < 12; i++) {
 		Vector3 a, b;
 		aabb.get_edge(i, a, b);
-
-		st->add_vertex(a);
-		st->add_vertex(b);
-		st_xray->add_vertex(a);
-		st_xray->add_vertex(b);
-	}
-
-	for (int i = 0; i < 12; i++) {
-		Vector3 a, b;
-		aabb_offset.get_edge(i, a, b);
 
 		st->add_vertex(a);
 		st->add_vertex(b);
