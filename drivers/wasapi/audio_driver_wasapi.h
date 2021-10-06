@@ -73,6 +73,8 @@ class AudioDriverWASAPI : public AudioDriver {
 	int mix_rate = 0;
 	int buffer_frames = 0;
 	int target_latency_ms = 0;
+	float real_latency = 0.0;
+	bool using_audio_client_3 = false;
 
 	bool thread_exited = false;
 	mutable bool exit_thread = false;
@@ -99,6 +101,7 @@ public:
 	virtual Error init();
 	virtual void start();
 	virtual int get_mix_rate() const;
+	virtual float get_latency();
 	virtual SpeakerMode get_speaker_mode() const;
 	virtual Array get_device_list();
 	virtual String get_device();
