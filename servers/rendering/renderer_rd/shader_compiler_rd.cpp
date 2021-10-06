@@ -1230,22 +1230,24 @@ String ShaderCompilerRD::_dump_node_code(const SL::Node *p_node, int p_level, Ge
 							code += ", ";
 						}
 						String node_code = _dump_node_code(onode->arguments[i], p_level, r_gen_code, p_actions, p_default_actions, p_assigning);
-						if (is_texture_func && i == 1 && (onode->arguments[i]->type == SL::Node::TYPE_VARIABLE || onode->arguments[i]->type == SL::Node::TYPE_OPERATOR)) {
+						if (is_texture_func && i == 1) {
 							//need to map from texture to sampler in order to sample
 							StringName texture_uniform;
 							bool correct_texture_uniform = false;
 
-							if (onode->arguments[i]->type == SL::Node::TYPE_VARIABLE) {
-								const SL::VariableNode *varnode = static_cast<const SL::VariableNode *>(onode->arguments[i]);
-								texture_uniform = varnode->name;
-								correct_texture_uniform = true;
-							} else { // array indexing operator handling
-								const SL::OperatorNode *opnode = static_cast<const SL::OperatorNode *>(onode->arguments[i]);
-								if (opnode->op == SL::Operator::OP_INDEX && opnode->arguments[0]->type == SL::Node::TYPE_ARRAY) {
-									const SL::ArrayNode *anode = static_cast<const SL::ArrayNode *>(opnode->arguments[0]);
+							switch (onode->arguments[i]->type) {
+								case SL::Node::TYPE_VARIABLE: {
+									const SL::VariableNode *varnode = static_cast<const SL::VariableNode *>(onode->arguments[i]);
+									texture_uniform = varnode->name;
+									correct_texture_uniform = true;
+								} break;
+								case SL::Node::TYPE_ARRAY: {
+									const SL::ArrayNode *anode = static_cast<const SL::ArrayNode *>(onode->arguments[i]);
 									texture_uniform = anode->name;
 									correct_texture_uniform = true;
-								}
+								} break;
+								default:
+									break;
 							}
 
 							if (correct_texture_uniform) {
