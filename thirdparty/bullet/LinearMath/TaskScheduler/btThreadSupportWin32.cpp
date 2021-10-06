@@ -82,6 +82,11 @@ typedef BOOL(WINAPI* Pfn_GetLogicalProcessorInformation)(PSYSTEM_LOGICAL_PROCESS
 void getProcessorInformation(btProcessorInfo* procInfo)
 {
 	memset(procInfo, 0, sizeof(*procInfo));
+#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP) && \
+    !WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
+	// Can't dlopen libraries on UWP.
+	return;
+#else
 	Pfn_GetLogicalProcessorInformation getLogicalProcInfo =
 		(Pfn_GetLogicalProcessorInformation)GetProcAddress(GetModuleHandle(TEXT("kernel32")), "GetLogicalProcessorInformation");
 	if (getLogicalProcInfo == NULL)
@@ -160,6 +165,7 @@ void getProcessorInformation(btProcessorInfo* procInfo)
 		}
 	}
 	free(buf);
+#endif
 }
 
 ///btThreadSupportWin32 helps to initialize/shutdown libspe2, start/stop SPU tasks and communication
