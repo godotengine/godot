@@ -412,7 +412,7 @@ private:
 	VScrollBar *v_scroll;
 	bool updating_scrolls;
 
-	Object *tooltip_obj;
+	ObjectID tooltip_obj_id;
 	StringName tooltip_func;
 	Variant tooltip_ud;
 
