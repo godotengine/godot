@@ -1208,7 +1208,7 @@ void DisplayServerWindows::cursor_set_shape(CursorShape p_shape) {
 		IDC_CROSS,
 		IDC_WAIT,
 		IDC_APPSTARTING,
-		IDC_ARROW,
+		IDC_SIZEALL,
 		IDC_ARROW,
 		IDC_NO,
 		IDC_SIZENS,

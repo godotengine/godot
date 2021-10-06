@@ -386,6 +386,7 @@
 		</constant>
 		<constant name="CURSOR_DRAG" value="6" enum="CursorShape">
 			Drag cursor. Usually displayed when dragging something.
+			[b]Note:[/b] Windows lacks a dragging cursor, so [constant CURSOR_DRAG] is the same as [constant CURSOR_MOVE] for this platform.
 		</constant>
 		<constant name="CURSOR_CAN_DROP" value="7" enum="CursorShape">
 			Can drop cursor. Usually displayed when dragging something to indicate that it can be dropped at the current position.
