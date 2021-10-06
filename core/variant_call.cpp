@@ -1400,6 +1400,7 @@ bool Variant::has_method(const StringName &p_method) const {
 }
 
 Vector<Variant::Type> Variant::get_method_argument_types(Variant::Type p_type, const StringName &p_method) {
+	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, Vector<Variant::Type>());
 	const _VariantCall::TypeFunc &tf = _VariantCall::type_funcs[p_type];
 
 	const Map<StringName, _VariantCall::FuncData>::Element *E = tf.functions.find(p_method);
@@ -1411,6 +1412,7 @@ Vector<Variant::Type> Variant::get_method_argument_types(Variant::Type p_type, c
 }
 
 bool Variant::is_method_const(Variant::Type p_type, const StringName &p_method) {
+	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, false);
 	const _VariantCall::TypeFunc &tf = _VariantCall::type_funcs[p_type];
 
 	const Map<StringName, _VariantCall::FuncData>::Element *E = tf.functions.find(p_method);
@@ -1422,6 +1424,7 @@ bool Variant::is_method_const(Variant::Type p_type, const StringName &p_method) 
 }
 
 Vector<StringName> Variant::get_method_argument_names(Variant::Type p_type, const StringName &p_method) {
+	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, Vector<StringName>());
 	const _VariantCall::TypeFunc &tf = _VariantCall::type_funcs[p_type];
 
 	const Map<StringName, _VariantCall::FuncData>::Element *E = tf.functions.find(p_method);
@@ -1433,6 +1436,7 @@ Vector<StringName> Variant::get_method_argument_names(Variant::Type p_type, cons
 }
 
 Variant::Type Variant::get_method_return_type(Variant::Type p_type, const StringName &p_method, bool *r_has_return) {
+	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, Variant::NIL);
 	const _VariantCall::TypeFunc &tf = _VariantCall::type_funcs[p_type];
 
 	const Map<StringName, _VariantCall::FuncData>::Element *E = tf.functions.find(p_method);
