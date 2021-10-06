@@ -244,6 +244,7 @@ Error GDScriptAnalyzer::resolve_inheritance(GDScriptParser::ClassNode *p_class, 
 	class_type.kind = GDScriptParser::DataType::CLASS;
 	class_type.class_type = p_class;
 	class_type.script_path = parser->script_path;
+	class_type.builtin_type = Variant::OBJECT;
 	p_class->set_datatype(class_type);
 
 	if (!p_class->extends_used) {
@@ -3061,6 +3062,9 @@ void GDScriptAnalyzer::reduce_subscript(GDScriptParser::SubscriptNode *p_subscri
 				result_type.kind = GDScriptParser::DataType::BUILTIN;
 				result_type.type_source = base_type.is_hard_type() ? GDScriptParser::DataType::ANNOTATED_INFERRED : GDScriptParser::DataType::INFERRED;
 
+				if (base_type.kind != GDScriptParser::DataType::BUILTIN) {
+					base_type.builtin_type = Variant::OBJECT;
+				}
 				switch (base_type.builtin_type) {
 					// Can't index at all.
 					case Variant::RID:
@@ -3121,6 +3125,7 @@ void GDScriptAnalyzer::reduce_subscript(GDScriptParser::SubscriptNode *p_subscri
 					case Variant::PLANE:
 					case Variant::COLOR:
 					case Variant::DICTIONARY:
+					case Variant::OBJECT:
 						result_type.kind = GDScriptParser::DataType::VARIANT;
 						result_type.type_source = GDScriptParser::DataType::UNDETECTED;
 						break;
@@ -3135,7 +3140,6 @@ void GDScriptAnalyzer::reduce_subscript(GDScriptParser::SubscriptNode *p_subscri
 						}
 						break;
 					// Here for completeness.
-					case Variant::OBJECT:
 					case Variant::VARIANT_MAX:
 						break;
 				}
