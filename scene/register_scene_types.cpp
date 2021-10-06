@@ -74,6 +74,7 @@
 #include "scene/animation/animation_node_state_machine.h"
 #include "scene/animation/animation_player.h"
 #include "scene/animation/animation_tree.h"
+#include "scene/animation/importer_animation_container.h"
 #include "scene/animation/root_motion_view.h"
 #include "scene/animation/tween.h"
 #include "scene/audio/audio_stream_player.h"
@@ -430,6 +431,9 @@ void register_scene_types() {
 	GDREGISTER_CLASS(AnimationNodeTimeScale);
 	GDREGISTER_CLASS(AnimationNodeTimeSeek);
 	GDREGISTER_CLASS(AnimationNodeTransition);
+
+	GDREGISTER_CLASS(ImporterAnimation);
+	GDREGISTER_CLASS(ImporterAnimationContainer);
 
 	GDREGISTER_CLASS(ShaderGlobalsOverride); //can be used in any shader
 

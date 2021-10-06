@@ -42,6 +42,7 @@
 #include "scene/3d/physics_body_3d.h"
 #include "scene/3d/vehicle_body_3d.h"
 #include "scene/animation/animation_player.h"
+#include "scene/animation/importer_animation_container.h"
 #include "scene/resources/animation.h"
 #include "scene/resources/box_shape_3d.h"
 #include "scene/resources/importer_mesh.h"
@@ -293,22 +294,21 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, Map<Ref<I
 		}
 	}
 
-	if (Object::cast_to<AnimationPlayer>(p_node)) {
+	if (Object::cast_to<ImporterAnimationContainer>(p_node)) {
 		//remove animations referencing non-importable nodes
-		AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(p_node);
+		ImporterAnimationContainer *ac = Object::cast_to<ImporterAnimationContainer>(p_node);
 
-		List<StringName> anims;
-		ap->get_animation_list(&anims);
+		Vector<StringName> anims = ac->get_animation_list();
 		for (const StringName &E : anims) {
-			Ref<Animation> anim = ap->get_animation(E);
+			Ref<ImporterAnimation> anim = ac->get_animation(E);
 			ERR_CONTINUE(anim.is_null());
-			for (int i = 0; i < anim->get_track_count(); i++) {
-				NodePath path = anim->track_get_path(i);
+			for (int i = 0; i < anim->get_node_count(); i++) {
+				NodePath path = anim->node_get_path(i);
 
 				for (int j = 0; j < path.get_name_count(); j++) {
 					String node = path.get_name(j);
 					if (_teststr(node, "noimp")) {
-						anim->remove_track(i);
+						anim->remove_node(i);
 						i--;
 						break;
 					}
@@ -320,9 +320,9 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, Map<Ref<I
 			static const char *loop_strings[loop_string_count] = { "loops", "loop", "cycle" };
 			for (int i = 0; i < loop_string_count; i++) {
 				if (_teststr(animname, loop_strings[i])) {
-					anim->set_loop(true);
+					anim->set_loop_mode(ImporterAnimation::LOOP_MODE_FORWARD);
 					animname = _fixstr(animname, loop_strings[i]);
-					ap->rename_animation(E, animname);
+					ac->rename_animation(E, animname);
 				}
 			}
 		}

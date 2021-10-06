@@ -73,6 +73,8 @@ using GLTFSkeletonIndex = int;
 using GLTFSkinIndex = int;
 using GLTFTextureIndex = int;
 
+class ImporterAnimationContainer;
+
 class GLTFDocument : public Resource {
 	GDCLASS(GLTFDocument, Resource);
 	friend class GLTFState;
@@ -390,8 +392,8 @@ public:
 			Node3D *scene_root,
 			const GLTFNodeIndex node_index);
 	void _generate_skeleton_bone_node(Ref<GLTFState> state, Node *scene_parent, Node3D *scene_root, const GLTFNodeIndex node_index);
-	void _import_animation(Ref<GLTFState> state, AnimationPlayer *ap,
-			const GLTFAnimationIndex index, const int bake_fps);
+	void _import_animation(Ref<GLTFState> state, ImporterAnimationContainer *ac,
+			const GLTFAnimationIndex index);
 	void _convert_mesh_instances(Ref<GLTFState> state);
 	GLTFCameraIndex _convert_camera(Ref<GLTFState> state, Camera3D *p_camera);
 	void _convert_light_to_gltf(Light3D *light, Ref<GLTFState> state, Ref<GLTFNode> gltf_node);

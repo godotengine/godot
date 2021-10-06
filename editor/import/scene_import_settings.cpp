@@ -205,7 +205,7 @@ void SceneImportSettings::_fill_mesh(Tree *p_tree, const Ref<Mesh> &p_mesh, Tree
 	}
 }
 
-void SceneImportSettings::_fill_animation(Tree *p_tree, const Ref<Animation> &p_anim, const String &p_name, TreeItem *p_parent) {
+void SceneImportSettings::_fill_animation(Tree *p_tree, const Ref<ImporterAnimation> &p_anim, const String &p_name, TreeItem *p_parent) {
 	if (!animation_map.has(p_name)) {
 		AnimationData ad;
 		ad.animation = p_anim;
@@ -291,7 +291,7 @@ void SceneImportSettings::_fill_scene(Node *p_node, TreeItem *p_parent_item) {
 			ResourceImporterScene::InternalImportCategory category;
 			if (src_mesh_node) {
 				category = ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_MESH_3D_NODE;
-			} else if (Object::cast_to<AnimationPlayer>(p_node)) {
+			} else if (Object::cast_to<ImporterAnimationContainer>(p_node)) {
 				category = ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_ANIMATION_NODE;
 			} else {
 				category = ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_NODE;
@@ -307,10 +307,9 @@ void SceneImportSettings::_fill_scene(Node *p_node, TreeItem *p_parent_item) {
 	node_data.node = p_node;
 	node_data.scene_node = item;
 
-	AnimationPlayer *anim_node = Object::cast_to<AnimationPlayer>(p_node);
+	ImporterAnimationContainer *anim_node = Object::cast_to<ImporterAnimationContainer>(p_node);
 	if (anim_node) {
-		List<StringName> animations;
-		anim_node->get_animation_list(&animations);
+		Vector<StringName> animations = anim_node->get_animation_list();
 		for (const StringName &E : animations) {
 			_fill_animation(scene_tree, anim_node->get_animation(E), E, item);
 		}
@@ -577,7 +576,7 @@ void SceneImportSettings::_select(Tree *p_from, String p_type, String p_id) {
 			scene_import_settings_data->settings = &nd.settings;
 			if (mi) {
 				scene_import_settings_data->category = ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_MESH_3D_NODE;
-			} else if (Object::cast_to<AnimationPlayer>(nd.node)) {
+			} else if (Object::cast_to<ImporterAnimationContainer>(nd.node)) {
 				scene_import_settings_data->category = ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_ANIMATION_NODE;
 			} else {
 				scene_import_settings_data->category = ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_NODE;

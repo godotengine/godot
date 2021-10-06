@@ -37,6 +37,7 @@
 #include "scene/3d/camera_3d.h"
 #include "scene/3d/light_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
+#include "scene/animation/importer_animation_container.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/item_list.h"
 #include "scene/gui/menu_button.h"
@@ -121,7 +122,7 @@ class SceneImportSettings : public ConfirmationDialog {
 	Map<String, MeshData> mesh_map;
 
 	struct AnimationData {
-		Ref<Animation> animation;
+		Ref<ImporterAnimation> animation;
 		TreeItem *scene_node;
 		Map<StringName, Variant> settings;
 	};
@@ -136,7 +137,7 @@ class SceneImportSettings : public ConfirmationDialog {
 
 	void _fill_material(Tree *p_tree, const Ref<Material> &p_material, TreeItem *p_parent);
 	void _fill_mesh(Tree *p_tree, const Ref<Mesh> &p_mesh, TreeItem *p_parent);
-	void _fill_animation(Tree *p_tree, const Ref<Animation> &p_anim, const String &p_name, TreeItem *p_parent);
+	void _fill_animation(Tree *p_tree, const Ref<ImporterAnimation> &p_anim, const String &p_name, TreeItem *p_parent);
 	void _fill_scene(Node *p_node, TreeItem *p_parent_item);
 
 	Set<Ref<Mesh>> mesh_set;

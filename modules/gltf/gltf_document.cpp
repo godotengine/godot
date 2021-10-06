@@ -58,17 +58,17 @@
 #include "core/version_hash.gen.h"
 #include "drivers/png/png_driver_common.h"
 #include "editor/import/resource_importer_scene.h"
+#include "modules/modules_enabled.gen.h"
 #include "scene/2d/node_2d.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/3d/multimesh_instance_3d.h"
 #include "scene/animation/animation_player.h"
+#include "scene/animation/importer_animation_container.h"
 #include "scene/resources/importer_mesh.h"
 #include "scene/resources/mesh.h"
 #include "scene/resources/multimesh.h"
 #include "scene/resources/surface_tool.h"
-
-#include "modules/modules_enabled.gen.h"
 
 #ifdef MODULE_CSG_ENABLED
 #include "modules/csg/csg_shape.h"
@@ -5801,7 +5801,7 @@ T GLTFDocument::_interpolate_track(const Vector<float> &p_times, const Vector<T>
 	ERR_FAIL_V(p_values[0]);
 }
 
-void GLTFDocument::_import_animation(Ref<GLTFState> state, AnimationPlayer *ap, const GLTFAnimationIndex index, const int bake_fps) {
+void GLTFDocument::_import_animation(Ref<GLTFState> state, ImporterAnimationContainer *ac, const GLTFAnimationIndex index) {
 	Ref<GLTFAnimation> anim = state->animations[index];
 
 	String name = anim->get_name();
@@ -5810,12 +5810,12 @@ void GLTFDocument::_import_animation(Ref<GLTFState> state, AnimationPlayer *ap, 
 		name = _gen_unique_name(state, "Animation");
 	}
 
-	Ref<Animation> animation;
+	Ref<ImporterAnimation> animation;
 	animation.instantiate();
 	animation->set_name(name);
 
 	if (anim->get_loop()) {
-		animation->set_loop(true);
+		animation->set_loop_mode(ImporterAnimation::LOOP_MODE_FORWARD);
 	}
 
 	float length = 0.0;
@@ -5831,7 +5831,7 @@ void GLTFDocument::_import_animation(Ref<GLTFState> state, AnimationPlayer *ap, 
 
 		const Ref<GLTFNode> gltf_node = state->nodes[track_i.key];
 
-		Node *root = ap->get_parent();
+		Node *root = ac->get_parent();
 		ERR_FAIL_COND(root == nullptr);
 		Map<GLTFNodeIndex, Node *>::Element *node_element = state->scene_nodes.find(node_index);
 		ERR_CONTINUE_MSG(node_element == nullptr, vformat("Unable to find node %d for animation", node_index));
@@ -5841,7 +5841,7 @@ void GLTFDocument::_import_animation(Ref<GLTFState> state, AnimationPlayer *ap, 
 			const Skeleton3D *sk = state->skeletons[gltf_node->skeleton]->godot_skeleton;
 			ERR_FAIL_COND(sk == nullptr);
 
-			const String path = ap->get_parent()->get_path_to(sk);
+			const String path = ac->get_parent()->get_path_to(sk);
 			const String bone = gltf_node->get_name();
 			transform_node_path = path + ":" + bone;
 		} else {
@@ -5864,118 +5864,134 @@ void GLTFDocument::_import_animation(Ref<GLTFState> state, AnimationPlayer *ap, 
 			}
 		}
 
+		static ImporterAnimation::InterpolationMode gltf_interpolation_mode[4] = {
+			ImporterAnimation::INTERPOLATION_MODE_LINEAR,
+			ImporterAnimation::INTERPOLATION_MODE_NEAREST,
+			ImporterAnimation::INTERPOLATION_MODE_CATMULL_ROM_SPLINE,
+			ImporterAnimation::INTERPOLATION_MODE_GLTF2_SPLINE,
+		};
 		// Animated TRS properties will not affect a skinned mesh.
 		const bool transform_affects_skinned_mesh_instance = gltf_node->skeleton < 0 && gltf_node->skin >= 0;
-		if ((track.rotation_track.values.size() || track.position_track.values.size() || track.scale_track.values.size()) && !transform_affects_skinned_mesh_instance) {
+		if (((track.rotation_track.values.size() || track.position_track.values.size() || track.scale_track.values.size()) && !transform_affects_skinned_mesh_instance) || track.weight_tracks.size()) {
 			//make transform track
-			int track_idx = animation->get_track_count();
-			animation->add_track(Animation::TYPE_TRANSFORM3D);
-			animation->track_set_path(track_idx, transform_node_path);
-			//first determine animation length
+			int track_idx = animation->get_node_count();
 
-			const double increment = 1.0 / bake_fps;
-			double time = 0.0;
+			animation->add_node(node_path);
 
-			Vector3 base_pos;
-			Quaternion base_rot;
-			Vector3 base_scale = Vector3(1, 1, 1);
+			if (!transform_affects_skinned_mesh_instance) {
+				if (track.position_track.values.size()) {
+					int key_count = track.position_track.times.size();
+					for (int i = 0; i < key_count; i++) {
+						float t = track.position_track.times[i];
 
-			if (!track.rotation_track.values.size()) {
-				base_rot = state->nodes[track_i.key]->rotation.normalized();
-			}
+						if (track.position_track.interpolation == GLTFAnimation::INTERP_CUBIC_SPLINE) {
+							//gltf is just weird
+							Vector3 a = track.position_track.values[i * 3 + 0];
+							Vector3 b = track.position_track.values[i * 3 + 1];
+							Vector3 c = track.position_track.values[i * 3 + 3];
 
-			if (!track.position_track.values.size()) {
-				base_pos = state->nodes[track_i.key]->position;
-			}
+							for (int j = 0; j < 3; j++) {
+								animation->node_track_add_axis_key(track_idx, ImporterAnimation::TRACK_TYPE_TRANSLATION, Vector3::Axis(j), t, b[j], 0, a[j], 0, c[j]);
+							}
+						} else if (track.position_track.interpolation == GLTFAnimation::INTERP_CUBIC_SPLINE || track.position_track.interpolation == GLTFAnimation::INTERP_CATMULLROMSPLINE) {
+							//gltf is just weird
+							Vector3 a = track.position_track.values[i];
+							Vector3 pre = i > 0 ? track.position_track.values[i - 1] : a;
+							Vector3 post = i < (key_count - 1) ? track.position_track.values[i + 1] : a;
 
-			if (!track.scale_track.values.size()) {
-				base_scale = state->nodes[track_i.key]->scale;
-			}
+							for (int j = 0; j < 3; j++) {
+								animation->node_track_add_axis_key(track_idx, ImporterAnimation::TRACK_TYPE_TRANSLATION, Vector3::Axis(j), t, a[j], 0, pre[j], 0, post[j]);
+							}
 
-			bool last = false;
-			while (true) {
-				Vector3 pos = base_pos;
-				Quaternion rot = base_rot;
-				Vector3 scale = base_scale;
-
-				if (track.position_track.times.size()) {
-					pos = _interpolate_track<Vector3>(track.position_track.times, track.position_track.values, time, track.position_track.interpolation);
-				}
-
-				if (track.rotation_track.times.size()) {
-					rot = _interpolate_track<Quaternion>(track.rotation_track.times, track.rotation_track.values, time, track.rotation_track.interpolation);
-				}
-
-				if (track.scale_track.times.size()) {
-					scale = _interpolate_track<Vector3>(track.scale_track.times, track.scale_track.values, time, track.scale_track.interpolation);
-				}
-
-				if (gltf_node->skeleton >= 0) {
-					Transform3D xform;
-					xform.basis.set_quaternion_scale(rot, scale);
-					xform.origin = pos;
-
-					const Skeleton3D *skeleton = state->skeletons[gltf_node->skeleton]->godot_skeleton;
-					const int bone_idx = skeleton->find_bone(gltf_node->get_name());
-					xform = skeleton->get_bone_rest(bone_idx).affine_inverse() * xform;
-
-					rot = xform.basis.get_rotation_quaternion();
-					rot.normalize();
-					scale = xform.basis.get_scale();
-					pos = xform.origin;
-				}
-
-				animation->transform_track_insert_key(track_idx, time, pos, rot, scale);
-
-				if (last) {
-					break;
-				}
-				time += increment;
-				if (time >= length) {
-					last = true;
-					time = length;
-				}
-			}
-		}
-
-		for (int i = 0; i < track.weight_tracks.size(); i++) {
-			ERR_CONTINUE(gltf_node->mesh < 0 || gltf_node->mesh >= state->meshes.size());
-			Ref<GLTFMesh> mesh = state->meshes[gltf_node->mesh];
-			ERR_CONTINUE(mesh.is_null());
-			ERR_CONTINUE(mesh->get_mesh().is_null());
-			ERR_CONTINUE(mesh->get_mesh()->get_mesh().is_null());
-			const String prop = "blend_shapes/" + mesh->get_mesh()->get_blend_shape_name(i);
-
-			const String blend_path = String(node_path) + ":" + prop;
-
-			const int track_idx = animation->get_track_count();
-			animation->add_track(Animation::TYPE_VALUE);
-			animation->track_set_path(track_idx, blend_path);
-
-			// Only LINEAR and STEP (NEAREST) can be supported out of the box by Godot's Animation,
-			// the other modes have to be baked.
-			GLTFAnimation::Interpolation gltf_interp = track.weight_tracks[i].interpolation;
-			if (gltf_interp == GLTFAnimation::INTERP_LINEAR || gltf_interp == GLTFAnimation::INTERP_STEP) {
-				animation->track_set_interpolation_type(track_idx, gltf_interp == GLTFAnimation::INTERP_STEP ? Animation::INTERPOLATION_NEAREST : Animation::INTERPOLATION_LINEAR);
-				for (int j = 0; j < track.weight_tracks[i].times.size(); j++) {
-					const float t = track.weight_tracks[i].times[j];
-					const float attribs = track.weight_tracks[i].values[j];
-					animation->track_insert_key(track_idx, t, attribs);
-				}
-			} else {
-				// CATMULLROMSPLINE or CUBIC_SPLINE have to be baked, apologies.
-				const double increment = 1.0 / bake_fps;
-				double time = 0.0;
-				bool last = false;
-				while (true) {
-					_interpolate_track<float>(track.weight_tracks[i].times, track.weight_tracks[i].values, time, gltf_interp);
-					if (last) {
-						break;
+						} else {
+							Vector3 v = track.position_track.values[i];
+							for (int j = 0; j < 3; j++) {
+								animation->node_track_add_axis_key(track_idx, ImporterAnimation::TRACK_TYPE_TRANSLATION, Vector3::Axis(j), t, v[j]);
+							}
+						}
 					}
-					time += increment;
-					if (time >= length) {
-						last = true;
-						time = length;
+
+					for (int j = 0; j < 3; j++) {
+						animation->node_track_set_axis_channel_interpolation_mode(track_idx, ImporterAnimation::TRACK_TYPE_TRANSLATION, Vector3::Axis(j), gltf_interpolation_mode[track.position_track.interpolation]);
+					}
+				}
+
+				if (track.scale_track.values.size()) {
+					int key_count = track.scale_track.times.size();
+					for (int i = 0; i < key_count; i++) {
+						float t = track.scale_track.times[i];
+
+						if (track.scale_track.interpolation == GLTFAnimation::INTERP_CUBIC_SPLINE) {
+							//gltf is just weird
+							Vector3 a = track.scale_track.values[i * 3 + 0];
+							Vector3 b = track.scale_track.values[i * 3 + 1];
+							Vector3 c = track.scale_track.values[i * 3 + 3];
+
+							for (int j = 0; j < 3; j++) {
+								animation->node_track_add_axis_key(track_idx, ImporterAnimation::TRACK_TYPE_SCALE, Vector3::Axis(j), t, b[j], 0, a[j], 0, c[j]);
+							}
+						} else {
+							Vector3 v = track.scale_track.values[i];
+							for (int j = 0; j < 3; j++) {
+								animation->node_track_add_axis_key(track_idx, ImporterAnimation::TRACK_TYPE_SCALE, Vector3::Axis(j), t, v[j]);
+							}
+						}
+					}
+
+					for (int j = 0; j < 3; j++) {
+						animation->node_track_set_axis_channel_interpolation_mode(track_idx, ImporterAnimation::TRACK_TYPE_SCALE, Vector3::Axis(j), gltf_interpolation_mode[track.scale_track.interpolation]);
+					}
+				}
+
+				if (track.rotation_track.values.size()) {
+					int key_count = track.rotation_track.times.size();
+					for (int i = 0; i < key_count; i++) {
+						float t = track.rotation_track.times[i];
+
+						if (track.rotation_track.interpolation == GLTFAnimation::INTERP_CUBIC_SPLINE) {
+							//gltf is just weird
+							Quaternion a = track.rotation_track.values[i * 3 + 0];
+							Quaternion b = track.rotation_track.values[i * 3 + 1];
+							Quaternion c = track.rotation_track.values[i * 3 + 3];
+
+							animation->node_track_add_quaternion_key(track_idx, ImporterAnimation::TRACK_TYPE_ROTATION, t, b, a, c);
+						} else {
+							Quaternion q = track.rotation_track.values[i];
+							animation->node_track_add_quaternion_key(track_idx, ImporterAnimation::TRACK_TYPE_ROTATION, t, q);
+						}
+					}
+
+					animation->node_track_set_quaternion_channel_interpolation_mode(track_idx, ImporterAnimation::TRACK_TYPE_ROTATION, gltf_interpolation_mode[track.rotation_track.interpolation]);
+				}
+			}
+
+			if (track.weight_tracks.size()) {
+				animation->node_set_blend_shape_track_count(track_idx, track.weight_tracks.size());
+				Ref<GLTFMesh> mesh = state->meshes[gltf_node->mesh];
+				for (int weight_i = 0; weight_i < track.weight_tracks.size(); weight_i++) {
+					const GLTFAnimation::Channel<float> &ch = track.weight_tracks[weight_i];
+
+					animation->node_set_blend_shape_track_name(track_idx, weight_i, mesh->get_mesh()->get_blend_shape_name(weight_i));
+
+					if (ch.values.size()) {
+						int key_count = ch.times.size();
+						for (int i = 0; i < key_count; i++) {
+							float t = ch.times[i];
+
+							if (ch.interpolation == GLTFAnimation::INTERP_CUBIC_SPLINE) {
+								//gltf is just weird
+								float a = ch.values[i * 3 + 0];
+								float b = ch.values[i * 3 + 1];
+								float c = ch.values[i * 3 + 3];
+
+								animation->node_track_add_axis_key(track_idx, ImporterAnimation::TRACK_TYPE_BLEND_SHAPE_KEY_0 + weight_i, Vector3::AXIS_X, t, b, 0, a, 0, c);
+							} else {
+								float v = ch.values[i];
+								animation->node_track_add_axis_key(track_idx, ImporterAnimation::TRACK_TYPE_BLEND_SHAPE_KEY_0 + weight_i, Vector3::AXIS_X, t, v);
+							}
+						}
+
+						animation->node_track_set_axis_channel_interpolation_mode(track_idx, ImporterAnimation::TRACK_TYPE_BLEND_SHAPE_KEY_0 + weight_i, Vector3::AXIS_X, gltf_interpolation_mode[ch.interpolation]);
 					}
 				}
 			}
@@ -5984,7 +6000,7 @@ void GLTFDocument::_import_animation(Ref<GLTFState> state, AnimationPlayer *ap, 
 
 	animation->set_length(length);
 
-	ap->add_animation(name, animation);
+	ac->add_animation(name, animation);
 }
 
 void GLTFDocument::_convert_mesh_instances(Ref<GLTFState> state) {
@@ -6820,11 +6836,11 @@ Node *GLTFDocument::import_scene_gltf(const String &p_path, uint32_t p_flags, in
 	}
 	gltf_document->_process_mesh_instances(r_state, root);
 	if (r_state->animations.size()) {
-		AnimationPlayer *ap = memnew(AnimationPlayer);
-		root->add_child(ap);
-		ap->set_owner(root);
+		ImporterAnimationContainer *ac = memnew(ImporterAnimationContainer);
+		root->add_child(ac);
+		ac->set_owner(root);
 		for (int i = 0; i < r_state->animations.size(); i++) {
-			gltf_document->_import_animation(r_state, ap, i, p_bake_fps);
+			gltf_document->_import_animation(r_state, ac, i);
 		}
 	}
 	for (int32_t ext_i = 0; ext_i < document_extensions.size(); ext_i++) {
