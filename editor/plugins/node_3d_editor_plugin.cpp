@@ -1291,13 +1291,17 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 		return; //do NONE
 	}
 
+	EditorPlugin::AfterGUIInput after = EditorPlugin::AFTER_GUI_INPUT_PASS;
 	{
 		EditorNode *en = editor;
 		EditorPluginList *force_input_forwarding_list = en->get_editor_plugins_force_input_forwarding();
 		if (!force_input_forwarding_list->is_empty()) {
-			bool discard = force_input_forwarding_list->forward_spatial_gui_input(camera, p_event, true);
-			if (discard) {
+			EditorPlugin::AfterGUIInput discard = force_input_forwarding_list->forward_spatial_gui_input(camera, p_event, true);
+			if (discard == EditorPlugin::AFTER_GUI_INPUT_STOP) {
 				return;
+			}
+			if (discard == EditorPlugin::AFTER_GUI_INPUT_DESELECT) {
+				after = EditorPlugin::AFTER_GUI_INPUT_DESELECT;
 			}
 		}
 	}
@@ -1305,9 +1309,12 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 		EditorNode *en = editor;
 		EditorPluginList *over_plugin_list = en->get_editor_plugins_over();
 		if (!over_plugin_list->is_empty()) {
-			bool discard = over_plugin_list->forward_spatial_gui_input(camera, p_event, false);
-			if (discard) {
+			EditorPlugin::AfterGUIInput discard = over_plugin_list->forward_spatial_gui_input(camera, p_event, false);
+			if (discard == EditorPlugin::AFTER_GUI_INPUT_STOP) {
 				return;
+			}
+			if (discard == EditorPlugin::AFTER_GUI_INPUT_DESELECT) {
+				after = EditorPlugin::AFTER_GUI_INPUT_DESELECT;
 			}
 		}
 	}
@@ -1573,17 +1580,19 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 						break;
 					}
 
-					clicked = _select_ray(b->get_position());
+					if (after != EditorPlugin::AFTER_GUI_INPUT_DESELECT) {
+						clicked = _select_ray(b->get_position());
 
-					//clicking is always deferred to either move or release
+						//clicking is always deferred to either move or release
 
-					clicked_wants_append = b->is_shift_pressed();
+						clicked_wants_append = b->is_shift_pressed();
 
-					if (clicked.is_null()) {
-						//default to regionselect
-						cursor.region_select = true;
-						cursor.region_begin = b->get_position();
-						cursor.region_end = b->get_position();
+						if (clicked.is_null()) {
+							//default to regionselect
+							cursor.region_select = true;
+							cursor.region_begin = b->get_position();
+							cursor.region_end = b->get_position();
+						}
 					}
 
 					surface->update();
@@ -1594,14 +1603,16 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 						break;
 					}
 
-					if (clicked.is_valid()) {
-						_select_clicked(false);
-					}
+					if (after != EditorPlugin::AFTER_GUI_INPUT_DESELECT) {
+						if (clicked.is_valid()) {
+							_select_clicked(false);
+						}
 
-					if (cursor.region_select) {
-						_select_region();
-						cursor.region_select = false;
-						surface->update();
+						if (cursor.region_select) {
+							_select_region();
+							cursor.region_select = false;
+							surface->update();
+						}
 					}
 
 					if (_edit.mode != TRANSFORM_NONE) {
@@ -2237,7 +2248,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 				return;
 			}
 
-			if (!AnimationPlayerEditor::singleton->get_track_editor()->has_keying()) {
+			if (!AnimationPlayerEditor::get_singleton()->get_track_editor()->has_keying()) {
 				set_message(TTR("Keying is disabled (no key inserted)."));
 				return;
 			}
@@ -6757,6 +6768,33 @@ void Node3DEditor::_request_gizmo(Object *p_obj) {
 	}
 }
 
+void Node3DEditor::_set_subgizmo_selection(Object *p_obj, Ref<Node3DGizmo> p_gizmo, int p_id, Transform3D p_transform) {
+	if (p_id == -1) {
+		_clear_subgizmo_selection(p_obj);
+		return;
+	}
+
+	Node3D *sp = nullptr;
+	if (p_obj) {
+		sp = Object::cast_to<Node3D>(p_obj);
+	} else {
+		sp = selected;
+	}
+
+	if (!sp) {
+		return;
+	}
+
+	Node3DEditorSelectedItem *se = editor_selection->get_node_editor_data<Node3DEditorSelectedItem>(sp);
+	if (se) {
+		se->subgizmos.clear();
+		se->subgizmos.insert(p_id, p_transform);
+		se->gizmo = p_gizmo;
+		sp->update_gizmos();
+		update_transform_gizmo();
+	}
+}
+
 void Node3DEditor::_clear_subgizmo_selection(Object *p_obj) {
 	Node3D *sp = nullptr;
 	if (p_obj) {
@@ -6882,7 +6920,6 @@ void Node3DEditor::_register_all_gizmos() {
 	add_gizmo_plugin(Ref<OccluderInstance3DGizmoPlugin>(memnew(OccluderInstance3DGizmoPlugin)));
 	add_gizmo_plugin(Ref<SoftDynamicBody3DGizmoPlugin>(memnew(SoftDynamicBody3DGizmoPlugin)));
 	add_gizmo_plugin(Ref<Sprite3DGizmoPlugin>(memnew(Sprite3DGizmoPlugin)));
-	add_gizmo_plugin(Ref<Skeleton3DGizmoPlugin>(memnew(Skeleton3DGizmoPlugin)));
 	add_gizmo_plugin(Ref<Position3DGizmoPlugin>(memnew(Position3DGizmoPlugin)));
 	add_gizmo_plugin(Ref<RayCast3DGizmoPlugin>(memnew(RayCast3DGizmoPlugin)));
 	add_gizmo_plugin(Ref<SpringArm3DGizmoPlugin>(memnew(SpringArm3DGizmoPlugin)));
@@ -6907,6 +6944,7 @@ void Node3DEditor::_register_all_gizmos() {
 void Node3DEditor::_bind_methods() {
 	ClassDB::bind_method("_get_editor_data", &Node3DEditor::_get_editor_data);
 	ClassDB::bind_method("_request_gizmo", &Node3DEditor::_request_gizmo);
+	ClassDB::bind_method("_set_subgizmo_selection", &Node3DEditor::_set_subgizmo_selection);
 	ClassDB::bind_method("_clear_subgizmo_selection", &Node3DEditor::_clear_subgizmo_selection);
 	ClassDB::bind_method("_refresh_menu_icons", &Node3DEditor::_refresh_menu_icons);
 
@@ -7731,6 +7769,13 @@ Vector3 Node3DEditor::snap_point(Vector3 p_target, Vector3 p_start) const {
 		p_target.z = Math::snap_scalar(0.0, get_translate_snap(), p_target.z);
 	}
 	return p_target;
+}
+
+bool Node3DEditor::is_gizmo_visible() const {
+	if (selected) {
+		return gizmo.visible && selected->is_transform_gizmo_visible();
+	}
+	return gizmo.visible;
 }
 
 double Node3DEditor::get_translate_snap() const {

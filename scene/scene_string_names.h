@@ -100,6 +100,8 @@ public:
 
 	StringName pose_updated;
 	StringName bone_pose_changed;
+	StringName bone_enabled_changed;
+	StringName show_rest_only_changed;
 
 	StringName body_shape_entered;
 	StringName body_entered;
@@ -155,6 +157,7 @@ public:
 
 	StringName _spatial_editor_group;
 	StringName _request_gizmo;
+	StringName _set_subgizmo_selection;
 	StringName _clear_subgizmo_selection;
 
 	StringName offset;

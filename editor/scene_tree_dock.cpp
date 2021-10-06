@@ -1835,8 +1835,8 @@ void SceneTreeDock::_do_reparent(Node *p_new_parent, int p_position_in_parent, V
 
 		editor_data->get_undo_redo().add_do_method(this, "_set_owners", edited_scene, owners);
 
-		if (AnimationPlayerEditor::singleton->get_track_editor()->get_root() == node) {
-			editor_data->get_undo_redo().add_do_method(AnimationPlayerEditor::singleton->get_track_editor(), "set_root", node);
+		if (AnimationPlayerEditor::get_singleton()->get_track_editor()->get_root() == node) {
+			editor_data->get_undo_redo().add_do_method(AnimationPlayerEditor::get_singleton()->get_track_editor(), "set_root", node);
 		}
 
 		editor_data->get_undo_redo().add_undo_method(new_parent, "remove_child", node);
@@ -1861,8 +1861,8 @@ void SceneTreeDock::_do_reparent(Node *p_new_parent, int p_position_in_parent, V
 		editor_data->get_undo_redo().add_undo_method(node->get_parent(), "add_child", node);
 		editor_data->get_undo_redo().add_undo_method(node->get_parent(), "move_child", node, child_pos);
 		editor_data->get_undo_redo().add_undo_method(this, "_set_owners", edited_scene, owners);
-		if (AnimationPlayerEditor::singleton->get_track_editor()->get_root() == node) {
-			editor_data->get_undo_redo().add_undo_method(AnimationPlayerEditor::singleton->get_track_editor(), "set_root", node);
+		if (AnimationPlayerEditor::get_singleton()->get_track_editor()->get_root() == node) {
+			editor_data->get_undo_redo().add_undo_method(AnimationPlayerEditor::get_singleton()->get_track_editor(), "set_root", node);
 		}
 
 		if (p_keep_global_xform) {
@@ -2073,8 +2073,8 @@ void SceneTreeDock::_delete_confirm(bool p_cut) {
 			editor_data->get_undo_redo().add_do_method(n->get_parent(), "remove_child", n);
 			editor_data->get_undo_redo().add_undo_method(n->get_parent(), "add_child", n);
 			editor_data->get_undo_redo().add_undo_method(n->get_parent(), "move_child", n, n->get_index());
-			if (AnimationPlayerEditor::singleton->get_track_editor()->get_root() == n) {
-				editor_data->get_undo_redo().add_undo_method(AnimationPlayerEditor::singleton->get_track_editor(), "set_root", n);
+			if (AnimationPlayerEditor::get_singleton()->get_track_editor()->get_root() == n) {
+				editor_data->get_undo_redo().add_undo_method(AnimationPlayerEditor::get_singleton()->get_track_editor(), "set_root", n);
 			}
 			editor_data->get_undo_redo().add_undo_method(this, "_set_owners", edited_scene, owners);
 			editor_data->get_undo_redo().add_undo_reference(n);

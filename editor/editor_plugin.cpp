@@ -593,14 +593,14 @@ int EditorPlugin::update_overlays() const {
 	}
 }
 
-bool EditorPlugin::forward_spatial_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event) {
-	bool success;
+EditorPlugin::AfterGUIInput EditorPlugin::forward_spatial_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event) {
+	int success;
 
 	if (GDVIRTUAL_CALL(_forward_3d_gui_input, p_camera, p_event, success)) {
-		return success;
+		return static_cast<EditorPlugin::AfterGUIInput>(success);
 	}
 
-	return false;
+	return EditorPlugin::AFTER_GUI_INPUT_PASS;
 }
 
 void EditorPlugin::forward_spatial_draw_over_viewport(Control *p_overlay) {
