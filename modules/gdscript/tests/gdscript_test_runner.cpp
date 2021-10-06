@@ -133,13 +133,12 @@ GDScriptTestRunner::GDScriptTestRunner(const String &p_source_dir, bool p_init_l
 
 	if (do_init_languages) {
 		init_language(p_source_dir);
-
-		// Enable all warnings for GDScript, so we can test them.
-		ProjectSettings::get_singleton()->set_setting("debug/gdscript/warnings/enable", true);
-		for (int i = 0; i < (int)GDScriptWarning::WARNING_MAX; i++) {
-			String warning = GDScriptWarning::get_name_from_code((GDScriptWarning::Code)i).to_lower();
-			ProjectSettings::get_singleton()->set_setting("debug/gdscript/warnings/" + warning, true);
-		}
+	}
+	// Enable all warnings for GDScript, so we can test them.
+	ProjectSettings::get_singleton()->set_setting("debug/gdscript/warnings/enable", true);
+	for (int i = 0; i < (int)GDScriptWarning::WARNING_MAX; i++) {
+		String warning = GDScriptWarning::get_name_from_code((GDScriptWarning::Code)i).to_lower();
+		ProjectSettings::get_singleton()->set_setting("debug/gdscript/warnings/" + warning, true);
 	}
 
 	// Enable printing to show results
