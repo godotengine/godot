@@ -330,7 +330,7 @@ private:
 	int _get_column_pos_of_word(const String &p_key, const String &p_search, uint32_t p_search_flags, int p_from_column) const;
 
 	/* Tooltip. */
-	Object *tooltip_obj = nullptr;
+	ObjectID tooltip_obj_id;
 	StringName tooltip_func;
 	Variant tooltip_ud;
 
