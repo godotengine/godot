@@ -348,6 +348,12 @@ public:
 		MODE_PATH
 	};
 
+	enum SpinFixNeg {
+		SPIN_FIX_NEG_OFF,
+		SPIN_FIX_NEG_INVERT_FACES,
+		SPIN_FIX_NEG_REMOVE_FACES
+	};
+
 	enum PathIntervalType {
 		PATH_INTERVAL_DISTANCE,
 		PATH_INTERVAL_SUBDIVIDE
@@ -371,6 +377,7 @@ private:
 
 	float spin_degrees;
 	int spin_sides;
+	SpinFixNeg spin_fix_neg;
 
 	NodePath path_node;
 	PathIntervalType path_interval_type;
@@ -386,11 +393,17 @@ private:
 	real_t path_u_distance;
 	bool path_joined;
 
+	bool interpolation;
+	Vector<Vector2> polygon2;
+	Ref<Curve> interpolate_curve;
+
 	bool _is_editable_3d_polygon() const;
 	bool _has_editable_3d_polygon_no_depth() const;
 
 	void _path_changed();
 	void _path_exited();
+
+	void _interpolate_curve_changed();
 
 protected:
 	static void _bind_methods();
@@ -412,6 +425,9 @@ public:
 
 	void set_spin_sides(int p_spin_sides);
 	int get_spin_sides() const;
+
+	void set_spin_fix_neg(SpinFixNeg p_spin_fix_neg);
+	SpinFixNeg get_spin_fix_neg() const;
 
 	void set_path_node(const NodePath &p_path);
 	NodePath get_path_node() const;
@@ -443,6 +459,15 @@ public:
 	void set_smooth_faces(bool p_smooth_faces);
 	bool get_smooth_faces() const;
 
+	void set_interpolation(bool p_enable);
+	bool is_interpolation() const;
+
+	void set_polygon2(const Vector<Vector2> &p_polygon2);
+	Vector<Vector2> get_polygon2() const;
+
+	void set_interpolate_curve(const Ref<Curve> &p_interpolate_curve);
+	Ref<Curve> get_interpolate_curve() const;
+
 	void set_material(const Ref<Material> &p_material);
 	Ref<Material> get_material() const;
 
@@ -450,6 +475,7 @@ public:
 };
 
 VARIANT_ENUM_CAST(CSGPolygon::Mode)
+VARIANT_ENUM_CAST(CSGPolygon::SpinFixNeg)
 VARIANT_ENUM_CAST(CSGPolygon::PathRotation)
 VARIANT_ENUM_CAST(CSGPolygon::PathIntervalType)
 

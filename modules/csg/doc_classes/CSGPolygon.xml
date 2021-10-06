@@ -16,6 +16,14 @@
 		<member name="depth" type="float" setter="set_depth" getter="get_depth" default="1.0">
 			When [member mode] is [constant MODE_DEPTH], the depth of the extrusion.
 		</member>
+		<member name="interpolate_curve" type="Curve" setter="set_interpolate_curve" getter="get_interpolate_curve">
+			The curve to use for interpolation when [member interpolation] is enable.
+		</member>
+		<member name="interpolation" type="bool" setter="set_interpolation" getter="is_interpolation" default="false">
+			If [code]true[/code], an interpolation of the 2D polygon is extruded by the [member interpolate_curve] between [member polygon] and [member polygon2].
+			This property can scale, expand or move each extrusion steep using the [member interpolate_curve].
+			[b]Note:[/b] By default, when [member polygon] is equal with [member polygon2], a scaling mode is active.
+		</member>
 		<member name="material" type="Material" setter="set_material" getter="get_material">
 			Material to use for the resulting mesh. The UV maps the top half of the material to the extruded shape (U along the the length of the extrusions and V around the outline of the [member polygon]), the bottom-left quarter to the front end face, and the bottom-right quarter to the back end face.
 		</member>
@@ -53,11 +61,18 @@
 			The point array that defines the 2D polygon that is extruded. This can be a convex or concave polygon with 3 or more points. The polygon must [i]not[/i] have any intersecting edges. Otherwise, triangulation will fail and no mesh will be generated.
 			[b]Note:[/b] If only 1 or 2 points are defined in [member polygon], no mesh will be generated.
 		</member>
+		<member name="polygon2" type="PoolVector2Array" setter="set_polygon2" getter="get_polygon2" default="PoolVector2Array(  )">
+			The second point array using for interpolation.
+			[b]Note:[/b] When the polygon2 is empty, enabling the [member interpolation] copy the [member polygon] in [member polygon2]. The both polygon size mush be the same.
+		</member>
 		<member name="smooth_faces" type="bool" setter="set_smooth_faces" getter="get_smooth_faces" default="false">
 			If [code]true[/code], applies smooth shading to the extrusions.
 		</member>
 		<member name="spin_degrees" type="float" setter="set_spin_degrees" getter="get_spin_degrees">
 			When [member mode] is [constant MODE_SPIN], the total number of degrees the [member polygon] is rotated when extruding.
+		</member>
+		<member name="spin_fix_neg" type="int" setter="set_spin_fix_neg" getter="get_spin_fix_neg" enum="CSGPolygon.SpinFixNeg">
+			When [member mode] is [constant MODE_SPIN] and when [member interpolation] is enable, the faces from negative interpolation will be inverted or removed.
 		</member>
 		<member name="spin_sides" type="int" setter="set_spin_sides" getter="get_spin_sides">
 			When [member mode] is [constant MODE_SPIN], the number of extrusions made.
@@ -72,6 +87,15 @@
 		</constant>
 		<constant name="MODE_PATH" value="2" enum="Mode">
 			The [member polygon] shape is extruded along the [Path] specified in [member path_node].
+		</constant>
+		<constant name="SPIN_FIX_NEG_OFF" value="0" enum="SpinFixNeg">
+			The negative interpolated faces doesn't have modification.
+		</constant>
+		<constant name="SPIN_FIX_NEG_INVERT_FACES" value="1" enum="SpinFixNeg">
+			The negative interpolated faces are inverted.
+		</constant>
+		<constant name="SPIN_FIX_NEG_REMOVE_FACES" value="2" enum="SpinFixNeg">
+			The negative interpolated faces are removed.
 		</constant>
 		<constant name="PATH_ROTATION_POLYGON" value="0" enum="PathRotation">
 			The [member polygon] shape is not rotated.
