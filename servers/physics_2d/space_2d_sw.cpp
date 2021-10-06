@@ -565,7 +565,7 @@ int Space2DSW::test_body_ray_separation(Body2DSW *p_body, const Transform2D &p_t
 
 	for (int i = 0; i < p_result_max; i++) {
 		//reset results
-		r_results[i].collision_depth = 0;
+		r_results[i].collision_depth = -1.0;
 	}
 
 	int rays_found = 0;
@@ -665,13 +665,24 @@ int Space2DSW::test_body_ray_separation(Body2DSW *p_body, const Transform2D &p_t
 								Vector2 a = sr[k * 2 + 0];
 								Vector2 b = sr[k * 2 + 1];
 
-								recover_motion += (b - a) / cbk.amount;
+								// Compute plane on b towards a.
+								Vector2 n = (a - b).normalized();
+								float d = n.dot(b);
 
-								float depth = a.distance_to(b);
+								// Compute depth on recovered motion.
+								float depth = n.dot(a + recover_motion) - d;
+
+								// Apply recovery without margin.
+								float separation_depth = depth - p_margin;
+								if (separation_depth > 0.0) {
+									// Only recover if there is penetration.
+									recover_motion -= n * separation_depth;
+								}
+
 								if (depth > result.collision_depth) {
 									result.collision_depth = depth;
 									result.collision_point = b;
-									result.collision_normal = (b - a).normalized();
+									result.collision_normal = -n;
 									result.collision_local_shape = j;
 									result.collider_shape = shape_idx;
 									result.collider = col_obj->get_self();
@@ -699,14 +710,6 @@ int Space2DSW::test_body_ray_separation(Body2DSW *p_body, const Transform2D &p_t
 
 			recover_attempts--;
 		} while (recover_attempts);
-	}
-
-	//optimize results (remove non colliding)
-	for (int i = 0; i < rays_found; i++) {
-		if (r_results[i].collision_depth == 0) {
-			rays_found--;
-			SWAP(r_results[i], r_results[rays_found]);
-		}
 	}
 
 	r_recover_motion = body_transform.elements[2] - p_transform.elements[2];
