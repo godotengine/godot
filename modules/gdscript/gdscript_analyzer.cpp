@@ -1742,7 +1742,7 @@ void GDScriptAnalyzer::reduce_assignment(GDScriptParser::AssignmentNode *p_assig
 		push_error("Cannot assign a new value to a constant.", p_assignment->assignee);
 	}
 
-	if (!assignee_type.is_variant() && !assigned_value_type.is_variant()) {
+	if (!assignee_type.is_variant() && assigned_value_type.is_hard_type()) {
 		bool compatible = true;
 		GDScriptParser::DataType op_type = assigned_value_type;
 		if (p_assignment->operation != GDScriptParser::AssignmentNode::OP_NONE) {
@@ -1794,27 +1794,24 @@ void GDScriptAnalyzer::reduce_assignment(GDScriptParser::AssignmentNode *p_assig
 			case GDScriptParser::IdentifierNode::FUNCTION_PARAMETER: {
 				GDScriptParser::DataType id_type = identifier->parameter_source->get_datatype();
 				if (!id_type.is_hard_type()) {
-					id_type = assigned_value_type;
-					id_type.type_source = GDScriptParser::DataType::INFERRED;
-					id_type.is_constant = false;
+					id_type.kind = GDScriptParser::DataType::VARIANT;
+					id_type.type_source = GDScriptParser::DataType::UNDETECTED;
 					identifier->parameter_source->set_datatype(id_type);
 				}
 			} break;
 			case GDScriptParser::IdentifierNode::LOCAL_VARIABLE: {
 				GDScriptParser::DataType id_type = identifier->variable_source->get_datatype();
 				if (!id_type.is_hard_type()) {
-					id_type = assigned_value_type;
-					id_type.type_source = GDScriptParser::DataType::INFERRED;
-					id_type.is_constant = false;
+					id_type.kind = GDScriptParser::DataType::VARIANT;
+					id_type.type_source = GDScriptParser::DataType::UNDETECTED;
 					identifier->variable_source->set_datatype(id_type);
 				}
 			} break;
 			case GDScriptParser::IdentifierNode::LOCAL_ITERATOR: {
 				GDScriptParser::DataType id_type = identifier->bind_source->get_datatype();
 				if (!id_type.is_hard_type()) {
-					id_type = assigned_value_type;
-					id_type.type_source = GDScriptParser::DataType::INFERRED;
-					id_type.is_constant = false;
+					id_type.kind = GDScriptParser::DataType::VARIANT;
+					id_type.type_source = GDScriptParser::DataType::UNDETECTED;
 					identifier->variable_source->set_datatype(id_type);
 				}
 			} break;
@@ -2941,7 +2938,7 @@ void GDScriptAnalyzer::reduce_subscript(GDScriptParser::SubscriptNode *p_subscri
 		} else {
 			GDScriptParser::DataType base_type = p_subscript->base->get_datatype();
 
-			if (base_type.is_variant()) {
+			if (base_type.is_variant() || !base_type.is_hard_type()) {
 				result_type.kind = GDScriptParser::DataType::VARIANT;
 				mark_node_unsafe(p_subscript);
 			} else {
