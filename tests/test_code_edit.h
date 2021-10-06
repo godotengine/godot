@@ -284,6 +284,26 @@ TEST_CASE("[SceneTree][CodeEdit] line gutters") {
 			CHECK_FALSE(code_edit->is_line_breakpointed(1));
 			ERR_PRINT_ON;
 			SIGNAL_CHECK("breakpoint_toggled", args);
+
+			/* Backspace above breakpointed line moves it. */
+			((Array)args[0])[0] = 2;
+
+			code_edit->set_text("\n\n");
+			code_edit->set_line_as_breakpoint(2, true);
+			CHECK(code_edit->is_line_breakpointed(2));
+			SIGNAL_CHECK("breakpoint_toggled", args);
+
+			code_edit->set_caret_line(1);
+
+			Array arg2;
+			arg2.push_back(1);
+			args.push_back(arg2);
+			SEND_GUI_ACTION(code_edit, "ui_text_backspace");
+			ERR_PRINT_OFF;
+			CHECK_FALSE(code_edit->is_line_breakpointed(2));
+			ERR_PRINT_ON;
+			CHECK(code_edit->is_line_breakpointed(1));
+			SIGNAL_CHECK("breakpoint_toggled", args);
 		}
 
 		SUBCASE("[CodeEdit] breakpoints and delete") {
@@ -312,6 +332,26 @@ TEST_CASE("[SceneTree][CodeEdit] line gutters") {
 			CHECK_FALSE(code_edit->is_line_breakpointed(1));
 			ERR_PRINT_ON;
 			SIGNAL_CHECK("breakpoint_toggled", args);
+
+			/* Delete above breakpointed line moves it. */
+			((Array)args[0])[0] = 2;
+
+			code_edit->set_text("\n\n");
+			code_edit->set_line_as_breakpoint(2, true);
+			CHECK(code_edit->is_line_breakpointed(2));
+			SIGNAL_CHECK("breakpoint_toggled", args);
+
+			code_edit->set_caret_line(0);
+
+			Array arg2;
+			arg2.push_back(1);
+			args.push_back(arg2);
+			SEND_GUI_ACTION(code_edit, "ui_text_delete");
+			ERR_PRINT_OFF;
+			CHECK_FALSE(code_edit->is_line_breakpointed(2));
+			ERR_PRINT_ON;
+			CHECK(code_edit->is_line_breakpointed(1));
+			SIGNAL_CHECK("breakpoint_toggled", args);
 		}
 
 		SUBCASE("[CodeEdit] breakpoints and delete selection") {
@@ -329,6 +369,41 @@ TEST_CASE("[SceneTree][CodeEdit] line gutters") {
 			code_edit->delete_selection();
 			MessageQueue::get_singleton()->flush();
 			CHECK_FALSE(code_edit->is_line_breakpointed(0));
+			SIGNAL_CHECK("breakpoint_toggled", args);
+
+			/* Should handle breakpoint move when deleting selection by adding less text then removed. */
+			((Array)args[0])[0] = 9;
+
+			code_edit->set_text("\n\n\n\n\n\n\n\n\n");
+			code_edit->set_line_as_breakpoint(9, true);
+			CHECK(code_edit->is_line_breakpointed(9));
+			SIGNAL_CHECK("breakpoint_toggled", args);
+
+			code_edit->select(0, 0, 6, 0);
+
+			Array arg2;
+			arg2.push_back(4);
+			args.push_back(arg2);
+			SEND_GUI_ACTION(code_edit, "ui_text_newline");
+			ERR_PRINT_OFF;
+			CHECK_FALSE(code_edit->is_line_breakpointed(9));
+			ERR_PRINT_ON;
+			CHECK(code_edit->is_line_breakpointed(4));
+			SIGNAL_CHECK("breakpoint_toggled", args);
+
+			/* Should handle breakpoint move when deleting selection by adding more text then removed. */
+			((Array)args[0])[0] = 9;
+			((Array)args[1])[0] = 14;
+
+			code_edit->insert_text_at_caret("\n\n\n\n\n");
+			MessageQueue::get_singleton()->flush();
+			SIGNAL_DISCARD("breakpoint_toggled")
+			CHECK(code_edit->is_line_breakpointed(9));
+
+			code_edit->select(0, 0, 6, 0);
+			code_edit->insert_text_at_caret("\n\n\n\n\n\n\n\n\n\n\n");
+			MessageQueue::get_singleton()->flush();
+			CHECK(code_edit->is_line_breakpointed(14));
 			SIGNAL_CHECK("breakpoint_toggled", args);
 		}
 

@@ -2937,6 +2937,7 @@ void CodeEdit::_lines_edited_from(int p_from_line, int p_to_line) {
 		return;
 	}
 
+	lines_edited_changed += p_to_line - p_from_line;
 	lines_edited_from = (lines_edited_from == -1) ? MIN(p_from_line, p_to_line) : MIN(lines_edited_from, MIN(p_from_line, p_to_line));
 	lines_edited_to = (lines_edited_to == -1) ? MAX(p_from_line, p_to_line) : MAX(lines_edited_from, MAX(p_from_line, p_to_line));
 }
@@ -2963,7 +2964,6 @@ void CodeEdit::_text_changed() {
 	}
 
 	lc = get_line_count();
-	int line_change_size = (lines_edited_to - lines_edited_from);
 	List<int> breakpoints;
 	breakpointed_lines.get_key_list(&breakpoints);
 	for (const int &line : breakpoints) {
@@ -2974,8 +2974,8 @@ void CodeEdit::_text_changed() {
 		breakpointed_lines.erase(line);
 		emit_signal(SNAME("breakpoint_toggled"), line);
 
-		int next_line = line + line_change_size;
-		if (next_line < lc && is_line_breakpointed(next_line)) {
+		int next_line = line + lines_edited_changed;
+		if (next_line > -1 && next_line < lc && is_line_breakpointed(next_line)) {
 			emit_signal(SNAME("breakpoint_toggled"), next_line);
 			breakpointed_lines[next_line] = true;
 			continue;
@@ -2984,6 +2984,7 @@ void CodeEdit::_text_changed() {
 
 	lines_edited_from = -1;
 	lines_edited_to = -1;
+	lines_edited_changed = 0;
 }
 
 CodeEdit::CodeEdit() {
