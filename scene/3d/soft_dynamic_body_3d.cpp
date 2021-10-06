@@ -411,8 +411,9 @@ void SoftDynamicBody3D::_draw_soft_mesh() {
 		return;
 	}
 
-	if (!rendering_server_handler.is_ready()) {
-		rendering_server_handler.prepare(get_mesh()->get_rid(), 0);
+	const RID mesh_rid = get_mesh()->get_rid();
+	if (!rendering_server_handler.is_ready(mesh_rid)) {
+		rendering_server_handler.prepare(mesh_rid, 0);
 
 		/// Necessary in order to render the mesh correctly (Soft body nodes are in global space)
 		simulation_started = true;
