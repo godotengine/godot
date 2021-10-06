@@ -683,7 +683,7 @@ class _Thread : public Reference {
 protected:
 	Variant ret;
 	Variant userdata;
-	SafeFlag active;
+	SafeFlag running;
 	ObjectID target_instance_id;
 	StringName target_method;
 	Thread thread;
@@ -702,6 +702,7 @@ public:
 	Error start(Object *p_instance, const StringName &p_method, const Variant &p_userdata = Variant(), Priority p_priority = PRIORITY_NORMAL);
 	String get_id() const;
 	bool is_active() const;
+	bool is_alive() const;
 	Variant wait_to_finish();
 
 	_Thread();
