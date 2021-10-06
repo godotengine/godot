@@ -49,7 +49,7 @@ class SoftBodyVisualServerHandler {
 
 private:
 	SoftBodyVisualServerHandler();
-	bool is_ready() { return mesh.is_valid(); }
+	bool is_ready(RID p_mesh_rid) const { return mesh.is_valid() && mesh == p_mesh_rid; }
 	void prepare(RID p_mesh_rid, int p_surface);
 	void clear();
 	void open();
