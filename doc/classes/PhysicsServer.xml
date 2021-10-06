@@ -1297,8 +1297,6 @@
 		<constant name="SPACE_PARAM_CONSTRAINT_DEFAULT_BIAS" value="7" enum="SpaceParameter">
 			Constant to set/get the default solver bias for all physics constraints. A solver bias is a factor controlling how much two objects "rebound", after violating a constraint, to avoid leaving them in that state because of numerical imprecision.
 		</constant>
-		<constant name="SPACE_PARAM_TEST_MOTION_MIN_CONTACT_DEPTH" value="8" enum="SpaceParameter">
-		</constant>
 		<constant name="BODY_AXIS_LINEAR_X" value="1" enum="BodyAxis">
 		</constant>
 		<constant name="BODY_AXIS_LINEAR_Y" value="2" enum="BodyAxis">

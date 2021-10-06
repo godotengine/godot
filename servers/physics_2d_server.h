@@ -261,7 +261,6 @@ public:
 		SPACE_PARAM_BODY_ANGULAR_VELOCITY_SLEEP_THRESHOLD,
 		SPACE_PARAM_BODY_TIME_TO_SLEEP,
 		SPACE_PARAM_CONSTRAINT_DEFAULT_BIAS,
-		SPACE_PARAM_TEST_MOTION_MIN_CONTACT_DEPTH,
 	};
 
 	virtual void space_set_param(RID p_space, SpaceParameter p_param, real_t p_value) = 0;
