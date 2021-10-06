@@ -2178,7 +2178,7 @@ void CSGPolygon::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "path_node", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Path"), "set_path_node", "get_path_node");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "path_interval_type", PROPERTY_HINT_ENUM, "Distance,Subdivide"), "set_path_interval_type", "get_path_interval_type");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "path_interval", PROPERTY_HINT_RANGE, "0.01,1.0,0.01,exp,or_greater"), "set_path_interval", "get_path_interval");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "path_simplify_angle", PROPERTY_HINT_EXP_RANGE, "0.0,180.0,0.0,or_greater"), "set_path_simplify_angle", "get_path_simplify_angle");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "path_simplify_angle", PROPERTY_HINT_EXP_RANGE, "0.0,180.0,0.1,or_greater"), "set_path_simplify_angle", "get_path_simplify_angle");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "path_rotation", PROPERTY_HINT_ENUM, "Polygon,Path,PathFollow"), "set_path_rotation", "get_path_rotation");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "path_local"), "set_path_local", "is_path_local");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "path_continuous_u"), "set_path_continuous_u", "is_path_continuous_u");
