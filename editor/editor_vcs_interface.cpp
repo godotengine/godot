@@ -109,7 +109,7 @@ void EditorVCSInterface::_pull(String p_remote, String p_username, String p_pass
 	return;
 }
 
-void EditorVCSInterface::_push(String p_remote, String p_username, String p_password) {
+void EditorVCSInterface::_push(String p_remote, String p_username, String p_password, bool p_force) {
 	_not_implemented_function(__FUNCTION__);
 	return;
 }
@@ -125,7 +125,7 @@ Array EditorVCSInterface::_get_line_diff(String p_file_path, String p_text) {
 }
 
 void EditorVCSInterface::popup_error(String p_msg) {
-	EditorNode::get_singleton()->show_warning(p_msg + "\n", get_vcs_name() + TTR(" Error"));
+	EditorNode::get_singleton()->show_warning(p_msg.strip_edges(), get_vcs_name() + TTR(" Error"));
 }
 
 bool EditorVCSInterface::initialize(String p_project_root_path) {
@@ -232,9 +232,9 @@ void EditorVCSInterface::pull(String p_remote, String p_username, String p_passw
 	}
 }
 
-void EditorVCSInterface::push(String p_remote, String p_username, String p_password) {
+void EditorVCSInterface::push(String p_remote, String p_username, String p_password, bool p_force) {
 	if (is_plugin_ready()) {
-		call("_push", p_remote, p_username, p_password);
+		call("_push", p_remote, p_username, p_password, p_force);
 	}
 }
 
@@ -268,22 +268,22 @@ String EditorVCSInterface::get_vcs_name() {
 	return call("_get_vcs_name");
 }
 
-Dictionary EditorVCSInterface::create_diff_line(int new_line_no, int old_line_no, String p_content, String p_status) {
+Dictionary EditorVCSInterface::create_diff_line(int p_new_line_no, int p_old_line_no, String p_content, String p_status) {
 	Dictionary diff_line;
-	diff_line["new_line_no"] = new_line_no;
-	diff_line["old_line_no"] = old_line_no;
+	diff_line["new_line_no"] = p_new_line_no;
+	diff_line["old_line_no"] = p_old_line_no;
 	diff_line["content"] = p_content;
 	diff_line["status"] = p_status;
 
 	return diff_line;
 }
 
-Dictionary EditorVCSInterface::create_diff_hunk(int old_start, int new_start, int old_lines, int new_lines) {
+Dictionary EditorVCSInterface::create_diff_hunk(int p_old_start, int p_new_start, int p_old_lines, int p_new_lines) {
 	Dictionary diff_hunk;
-	diff_hunk["new_lines"] = new_lines;
-	diff_hunk["old_lines"] = old_lines;
-	diff_hunk["new_start"] = new_start;
-	diff_hunk["old_start"] = old_start;
+	diff_hunk["new_lines"] = p_new_lines;
+	diff_hunk["old_lines"] = p_old_lines;
+	diff_hunk["new_start"] = p_new_start;
+	diff_hunk["old_start"] = p_old_start;
 	diff_hunk["diff_lines"] = Array();
 	return diff_hunk;
 }
@@ -398,7 +398,7 @@ void EditorVCSInterface::_bind_methods() {
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::ARRAY, "_get_branch_list"));
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::STRING, "_get_current_branch_name", PropertyInfo(Variant::BOOL, "full_ref")));
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::BOOL, "_checkout_branch", PropertyInfo(Variant::STRING, "branch")));
-	ClassDB::add_virtual_method(get_class_static(), MethodInfo("_push", PropertyInfo(Variant::STRING, "remote"), PropertyInfo(Variant::STRING, "username"), PropertyInfo(Variant::STRING, "password")));
+	ClassDB::add_virtual_method(get_class_static(), MethodInfo("_push", PropertyInfo(Variant::STRING, "remote"), PropertyInfo(Variant::STRING, "username"), PropertyInfo(Variant::STRING, "password"), PropertyInfo(Variant::BOOL, "force")));
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo("_pull", PropertyInfo(Variant::STRING, "remote"), PropertyInfo(Variant::STRING, "username"), PropertyInfo(Variant::STRING, "password")));
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo("_fetch", PropertyInfo(Variant::STRING, "remote"), PropertyInfo(Variant::STRING, "username"), PropertyInfo(Variant::STRING, "password")));
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::ARRAY, "_get_line_diff", PropertyInfo(Variant::STRING, "file_path"), PropertyInfo(Variant::STRING, "text")));

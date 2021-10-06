@@ -83,6 +83,7 @@ private:
 	ToolButton *fetch_button;
 	ToolButton *pull_button;
 	ToolButton *push_button;
+	CheckBox *force_push_box;
 
 	ToolButton *stage_all_button;
 	ToolButton *unstage_all_button;

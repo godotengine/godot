@@ -116,7 +116,7 @@ protected:
 	virtual Array _get_branch_list();
 	virtual String _get_current_branch_name(bool p_full_ref);
 	virtual void _pull(String p_remote, String p_username, String p_password);
-	virtual void _push(String p_remote, String p_username, String p_password);
+	virtual void _push(String p_remote, String p_username, String p_password, bool p_force);
 	virtual void _fetch(String p_remote, String p_username, String p_password);
 	virtual bool _checkout_branch(String p_branch);
 	virtual Array _get_line_diff(String p_file_path, String p_text);
@@ -150,13 +150,13 @@ public:
 	String get_current_branch_name(bool p_full_ref);
 	bool checkout_branch(String p_branch);
 	void pull(String p_remote, String p_username, String p_password);
-	void push(String p_remote, String p_username, String p_password);
+	void push(String p_remote, String p_username, String p_password, bool p_force);
 	void fetch(String p_remote, String p_username, String p_password);
 	List<DiffHunk> get_line_diff(String p_file_path, String p_text);
 
 	// Helper functions to create and convert Dictionary into data structures
-	Dictionary create_diff_line(int new_line_no, int old_line_no, String p_content, String p_status);
-	Dictionary create_diff_hunk(int old_start, int new_start, int old_lines, int new_lines);
+	Dictionary create_diff_line(int p_new_line_no, int p_old_line_no, String p_content, String p_status);
+	Dictionary create_diff_hunk(int p_old_start, int p_new_start, int p_old_lines, int p_new_lines);
 	Dictionary create_diff_file(String p_new_file, String p_old_file);
 	Dictionary create_commit(String p_msg, String p_author, String p_hex_id, int16_t p_time);
 	Dictionary create_status_file(String p_file_path, ChangeType p_change, TreeArea p_area);

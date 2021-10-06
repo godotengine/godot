@@ -51,6 +51,8 @@ void VersionControlEditorPlugin::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_display_diff"), &VersionControlEditorPlugin::_display_diff);
 	ClassDB::bind_method(D_METHOD("_item_activated"), &VersionControlEditorPlugin::_item_activated);
 	ClassDB::bind_method(D_METHOD("_update_commit_button"), &VersionControlEditorPlugin::_update_commit_button);
+	ClassDB::bind_method(D_METHOD("_refresh_branch_list"), &VersionControlEditorPlugin::_refresh_branch_list);
+	ClassDB::bind_method(D_METHOD("_refresh_commit_list"), &VersionControlEditorPlugin::_refresh_commit_list);
 	ClassDB::bind_method(D_METHOD("_commit_message_gui_input"), &VersionControlEditorPlugin::_commit_message_gui_input);
 	ClassDB::bind_method(D_METHOD("_cell_button_pressed"), &VersionControlEditorPlugin::_cell_button_pressed);
 	ClassDB::bind_method(D_METHOD("_discard_all"), &VersionControlEditorPlugin::_discard_all);
@@ -337,7 +339,8 @@ void VersionControlEditorPlugin::_pull() {
 void VersionControlEditorPlugin::_push() {
 	CHECK_PLUGIN_INITIALIZED();
 
-	EditorVCSInterface::get_singleton()->push(set_up_remote_name->get_text(), set_up_username->get_text(), set_up_password->get_text());
+	EditorVCSInterface::get_singleton()->push(set_up_remote_name->get_text(), set_up_username->get_text(), set_up_password->get_text(), force_push_box->is_pressed());
+	force_push_box->set_pressed(false);
 }
 
 void VersionControlEditorPlugin::_update_opened_tabs() {
@@ -779,7 +782,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	Label *remote_login = memnew(Label);
 	remote_login->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	remote_login->set_align(Label::ALIGN_CENTER);
-	remote_login->set_text(TTR("VCS Settings"));
+	remote_login->set_text(TTR("Remote Settings"));
 	set_up_vbc->add_child(remote_login);
 
 	HBoxContainer *set_up_remote_name_input = memnew(HBoxContainer);
@@ -845,6 +848,8 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	refresh_button->set_flat(true);
 	refresh_button->set_icon(EditorNode::get_singleton()->get_gui_base()->get_icon("Refresh", "EditorIcons"));
 	refresh_button->connect("pressed", this, "_refresh_stage_area");
+	refresh_button->connect("pressed", this, "_refresh_commit_list");
+	refresh_button->connect("pressed", this, "_refresh_branch_list");
 	unstage_title->add_child(refresh_button);
 
 	discard_all_button = memnew(ToolButton);
@@ -958,6 +963,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	branch_select = memnew(OptionButton);
 	branch_select->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	branch_select->connect("item_selected", this, "_branch_item_selected");
+	branch_select->connect("pressed", this, "_refresh_branch_list");
 	menu_bar->add_child(branch_select);
 
 	fetch_button = memnew(ToolButton);
@@ -977,6 +983,11 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	push_button->set_icon(EditorNode::get_singleton()->get_gui_base()->get_icon("MoveUp", "EditorIcons"));
 	push_button->connect("pressed", this, "_push");
 	menu_bar->add_child(push_button);
+
+	force_push_box = memnew(CheckBox);
+	force_push_box->set_text(TTR("Force"));
+	menu_bar->add_child(force_push_box);
+
 	version_commit_dock->add_child(menu_bar);
 
 	change_type_to_strings[EditorVCSInterface::CHANGE_TYPE_NEW] = TTR("New");
