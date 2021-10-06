@@ -259,12 +259,13 @@ void Camera2D::_notification(int p_what) {
 
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
+			const bool viewport_valid = !custom_viewport || ObjectDB::get_instance(custom_viewport_id);
 			if (is_current()) {
-				if (viewport && !(custom_viewport && !ObjectDB::get_instance(custom_viewport_id))) {
+				if (viewport && viewport_valid) {
 					viewport->set_canvas_transform(Transform2D());
 				}
 			}
-			if (viewport) {
+			if (viewport && viewport_valid) {
 				viewport->disconnect("size_changed", this, "_update_scroll");
 			}
 			remove_from_group(group_name);
