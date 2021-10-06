@@ -1174,7 +1174,6 @@ bool CanvasItemEditor::_gui_input_zoom_or_pan(const Ref<InputEvent> &p_event, bo
 		if (!panning) {
 			if (b->is_pressed() &&
 					(b->get_button_index() == MOUSE_BUTTON_MIDDLE ||
-							b->get_button_index() == MOUSE_BUTTON_RIGHT ||
 							(b->get_button_index() == MOUSE_BUTTON_LEFT && tool == TOOL_PAN) ||
 							(b->get_button_index() == MOUSE_BUTTON_LEFT && !EditorSettings::get_singleton()->get("editors/2d/simple_panning") && pan_pressed))) {
 				// Pan the viewport
@@ -1232,8 +1231,9 @@ bool CanvasItemEditor::_gui_input_zoom_or_pan(const Ref<InputEvent> &p_event, bo
 			}
 		}
 
-		if (is_pan_key) {
+		if (is_pan_key && pan_pressed != k->is_pressed()) {
 			pan_pressed = k->is_pressed();
+			_update_cursor();
 		}
 	}
 
@@ -2615,7 +2615,19 @@ void CanvasItemEditor::_update_cursor() {
 		c = CURSOR_HSIZE;
 	}
 
-	viewport->set_default_cursor_shape(c);
+	if (pan_pressed) {
+		c = CURSOR_DRAG;
+	}
+
+	if (c != viewport->get_default_cursor_shape()) {
+		viewport->set_default_cursor_shape(c);
+
+		// Force refresh cursor if it's over the viewport.
+		if (viewport->get_global_rect().has_point(get_global_mouse_position())) {
+			DisplayServer::CursorShape ds_cursor_shape = (DisplayServer::CursorShape)viewport->get_default_cursor_shape();
+			DisplayServer::get_singleton()->cursor_set_shape(ds_cursor_shape);
+		}
+	}
 }
 
 void CanvasItemEditor::_draw_text_at_position(Point2 p_position, String p_string, Side p_side) {
@@ -4254,10 +4266,6 @@ void CanvasItemEditor::_button_tool_select(int p_index) {
 
 	viewport->update();
 	_update_cursor();
-
-	// Request immediate refresh of cursor when using hot-keys to switch between tools
-	DisplayServer::CursorShape ds_cursor_shape = (DisplayServer::CursorShape)viewport->get_default_cursor_shape();
-	DisplayServer::get_singleton()->cursor_set_shape(ds_cursor_shape);
 }
 
 void CanvasItemEditor::_insert_animation_keys(bool p_location, bool p_rotation, bool p_scale, bool p_on_existing) {
@@ -5384,7 +5392,7 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	pan_button->connect("pressed", callable_mp(this, &CanvasItemEditor::_button_tool_select), make_binds(TOOL_PAN));
 	pan_button->set_shortcut(ED_SHORTCUT("canvas_item_editor/pan_mode", TTR("Pan Mode"), KEY_G));
 	pan_button->set_shortcut_context(this);
-	pan_button->set_tooltip(TTR("Pan Mode"));
+	pan_button->set_tooltip(TTR("You can also use Pan View shortcut (Space by default) to pan in any mode."));
 
 	ruler_button = memnew(Button);
 	ruler_button->set_flat(true);
