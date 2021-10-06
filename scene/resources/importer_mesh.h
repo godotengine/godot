@@ -70,6 +70,7 @@ class ImporterMesh : public Resource {
 		};
 
 		void split_normals(const LocalVector<int> &p_indices, const LocalVector<Vector3> &p_normals);
+		static void _split_normals(Array &r_arrays, const LocalVector<int> &p_indices, const LocalVector<Vector3> &p_normals);
 	};
 	Vector<Surface> surfaces;
 	Vector<String> blend_shapes;

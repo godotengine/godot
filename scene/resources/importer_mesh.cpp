@@ -37,26 +37,34 @@
 #include <cstdint>
 
 void ImporterMesh::Surface::split_normals(const LocalVector<int> &p_indices, const LocalVector<Vector3> &p_normals) {
-	ERR_FAIL_COND(arrays.size() != RS::ARRAY_MAX);
+	_split_normals(arrays, p_indices, p_normals);
 
-	const PackedVector3Array &vertices = arrays[RS::ARRAY_VERTEX];
+	for (BlendShape &blend_shape : blend_shape_data) {
+		_split_normals(blend_shape.arrays, p_indices, p_normals);
+	}
+}
+
+void ImporterMesh::Surface::_split_normals(Array &r_arrays, const LocalVector<int> &p_indices, const LocalVector<Vector3> &p_normals) {
+	ERR_FAIL_COND(r_arrays.size() != RS::ARRAY_MAX);
+
+	const PackedVector3Array &vertices = r_arrays[RS::ARRAY_VERTEX];
 	int current_vertex_count = vertices.size();
 	int new_vertex_count = p_indices.size();
 	int final_vertex_count = current_vertex_count + new_vertex_count;
 	const int *indices_ptr = p_indices.ptr();
 
-	for (int i = 0; i < arrays.size(); i++) {
+	for (int i = 0; i < r_arrays.size(); i++) {
 		if (i == RS::ARRAY_INDEX) {
 			continue;
 		}
 
-		if (arrays[i].get_type() == Variant::NIL) {
+		if (r_arrays[i].get_type() == Variant::NIL) {
 			continue;
 		}
 
-		switch (arrays[i].get_type()) {
+		switch (r_arrays[i].get_type()) {
 			case Variant::PACKED_VECTOR3_ARRAY: {
-				PackedVector3Array data = arrays[i];
+				PackedVector3Array data = r_arrays[i];
 				data.resize(final_vertex_count);
 				Vector3 *data_ptr = data.ptrw();
 				if (i == RS::ARRAY_NORMAL) {
@@ -67,55 +75,55 @@ void ImporterMesh::Surface::split_normals(const LocalVector<int> &p_indices, con
 						data_ptr[current_vertex_count + j] = data_ptr[indices_ptr[j]];
 					}
 				}
-				arrays[i] = data;
+				r_arrays[i] = data;
 			} break;
 			case Variant::PACKED_VECTOR2_ARRAY: {
-				PackedVector2Array data = arrays[i];
+				PackedVector2Array data = r_arrays[i];
 				data.resize(final_vertex_count);
 				Vector2 *data_ptr = data.ptrw();
 				for (int j = 0; j < new_vertex_count; j++) {
 					data_ptr[current_vertex_count + j] = data_ptr[indices_ptr[j]];
 				}
-				arrays[i] = data;
+				r_arrays[i] = data;
 			} break;
 			case Variant::PACKED_FLOAT32_ARRAY: {
-				PackedFloat32Array data = arrays[i];
+				PackedFloat32Array data = r_arrays[i];
 				int elements = data.size() / current_vertex_count;
 				data.resize(final_vertex_count * elements);
 				float *data_ptr = data.ptrw();
 				for (int j = 0; j < new_vertex_count; j++) {
 					memcpy(&data_ptr[(current_vertex_count + j) * elements], &data_ptr[indices_ptr[j] * elements], sizeof(float) * elements);
 				}
-				arrays[i] = data;
+				r_arrays[i] = data;
 			} break;
 			case Variant::PACKED_INT32_ARRAY: {
-				PackedInt32Array data = arrays[i];
+				PackedInt32Array data = r_arrays[i];
 				int elements = data.size() / current_vertex_count;
 				data.resize(final_vertex_count * elements);
 				int32_t *data_ptr = data.ptrw();
 				for (int j = 0; j < new_vertex_count; j++) {
 					memcpy(&data_ptr[(current_vertex_count + j) * elements], &data_ptr[indices_ptr[j] * elements], sizeof(int32_t) * elements);
 				}
-				arrays[i] = data;
+				r_arrays[i] = data;
 			} break;
 			case Variant::PACKED_BYTE_ARRAY: {
-				PackedByteArray data = arrays[i];
+				PackedByteArray data = r_arrays[i];
 				int elements = data.size() / current_vertex_count;
 				data.resize(final_vertex_count * elements);
 				uint8_t *data_ptr = data.ptrw();
 				for (int j = 0; j < new_vertex_count; j++) {
 					memcpy(&data_ptr[(current_vertex_count + j) * elements], &data_ptr[indices_ptr[j] * elements], sizeof(uint8_t) * elements);
 				}
-				arrays[i] = data;
+				r_arrays[i] = data;
 			} break;
 			case Variant::PACKED_COLOR_ARRAY: {
-				PackedColorArray data = arrays[i];
+				PackedColorArray data = r_arrays[i];
 				data.resize(final_vertex_count);
 				Color *data_ptr = data.ptrw();
 				for (int j = 0; j < new_vertex_count; j++) {
 					data_ptr[current_vertex_count + j] = data_ptr[indices_ptr[j]];
 				}
-				arrays[i] = data;
+				r_arrays[i] = data;
 			} break;
 			default: {
 				ERR_FAIL_MSG("Unhandled array type.");
@@ -259,9 +267,6 @@ void ImporterMesh::generate_lods(float p_normal_merge_angle, float p_normal_spli
 
 	for (int i = 0; i < surfaces.size(); i++) {
 		if (surfaces[i].primitive != Mesh::PRIMITIVE_TRIANGLES) {
-			continue;
-		}
-		if (get_blend_shape_count()) {
 			continue;
 		}
 
