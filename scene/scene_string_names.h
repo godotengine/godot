@@ -89,6 +89,7 @@ public:
 	StringName focus_entered;
 	StringName focus_exited;
 
+	StringName pre_sort_children;
 	StringName sort_children;
 
 	StringName finished;
