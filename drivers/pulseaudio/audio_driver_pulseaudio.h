@@ -73,8 +73,7 @@ class AudioDriverPulseAudio : public AudioDriver {
 	bool active = false;
 	bool thread_exited = false;
 	mutable bool exit_thread = false;
-
-	float latency = 0;
+	float real_latency = 0;
 
 	static void pa_state_cb(pa_context *c, void *userdata);
 	static void pa_sink_info_cb(pa_context *c, const pa_sink_info *l, int eol, void *userdata);

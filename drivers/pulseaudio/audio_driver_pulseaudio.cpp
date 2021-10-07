@@ -219,6 +219,8 @@ Error AudioDriverPulseAudio::init_device() {
 
 	int latency = GLOBAL_GET("audio/driver/output_latency");
 	buffer_frames = closest_power_of_2(latency * mix_rate / 1000);
+	real_latency = (float)buffer_frames / (float)mix_rate;
+
 	pa_buffer_size = buffer_frames * pa_map.channels;
 
 	print_verbose("PulseAudio: detected " + itos(pa_map.channels) + " channels");
@@ -343,28 +345,7 @@ Error AudioDriverPulseAudio::init() {
 }
 
 float AudioDriverPulseAudio::get_latency() {
-	if (latency == 0) { //only do this once since it's approximate anyway
-		lock();
-
-		pa_usec_t palat = 0;
-		if (pa_stream_get_state(pa_str) == PA_STREAM_READY) {
-			int negative = 0;
-
-			if (pa_stream_get_latency(pa_str, &palat, &negative) >= 0) {
-				if (negative) {
-					palat = 0;
-				}
-			}
-		}
-
-		if (palat > 0) {
-			latency = double(palat) / 1000000.0;
-		}
-
-		unlock();
-	}
-
-	return latency;
+	return real_latency;
 }
 
 void AudioDriverPulseAudio::thread_func(void *p_udata) {
