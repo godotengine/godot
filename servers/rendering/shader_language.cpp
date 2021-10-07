@@ -4626,8 +4626,8 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 							return nullptr;
 						}
 
-						if (index_expression->get_datatype() != TYPE_INT && index_expression->get_datatype() != TYPE_UINT) {
-							_set_error("Only integer expressions are allowed for indexing");
+						if (index_expression->get_array_size() != 0 || (index_expression->get_datatype() != TYPE_INT && index_expression->get_datatype() != TYPE_UINT)) {
+							_set_error("Only integer expressions are allowed for indexing.");
 							return nullptr;
 						}
 
@@ -5050,8 +5050,8 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 							return nullptr;
 						}
 
-						if (index_expression->get_datatype() != TYPE_INT && index_expression->get_datatype() != TYPE_UINT) {
-							_set_error("Only integer expressions are allowed for indexing");
+						if (index_expression->get_array_size() != 0 || (index_expression->get_datatype() != TYPE_INT && index_expression->get_datatype() != TYPE_UINT)) {
+							_set_error("Only integer expressions are allowed for indexing.");
 							return nullptr;
 						}
 
@@ -5096,8 +5096,8 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 					return nullptr;
 				}
 
-				if (index->get_datatype() != TYPE_INT && index->get_datatype() != TYPE_UINT) {
-					_set_error("Only integer datatypes are allowed for indexing");
+				if (index->get_array_size() != 0 || (index->get_datatype() != TYPE_INT && index->get_datatype() != TYPE_UINT)) {
+					_set_error("Only integer expressions are allowed for indexing.");
 					return nullptr;
 				}
 
