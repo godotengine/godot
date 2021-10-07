@@ -239,7 +239,8 @@ void Variant::set_named(const StringName &p_member, const Variant &p_value, bool
 			*v = p_value;
 			r_valid = true;
 		} else {
-			r_valid = false;
+			VariantGetInternalPtr<Dictionary>::get_ptr(this)->operator[](p_member) = p_value;
+			r_valid = true;
 		}
 
 	} else {
