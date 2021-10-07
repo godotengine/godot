@@ -1863,6 +1863,11 @@ Variant Variant::duplicate(bool deep) const {
 	}
 }
 
+template <class T>
+static _ALWAYS_INLINE_ T ilerp(T a, T b, float c) {
+	return T(Math::round(a + (b - a) * c));
+}
+
 void Variant::blend(const Variant &a, const Variant &b, float c, Variant &r_dst) {
 	if (a.type != b.type) {
 		if (a.is_num() && b.is_num()) {
@@ -1883,7 +1888,7 @@ void Variant::blend(const Variant &a, const Variant &b, float c, Variant &r_dst)
 		case INT: {
 			int64_t va = a._data._int;
 			int64_t vb = b._data._int;
-			r_dst = int(va + vb * c + 0.5);
+			r_dst = ilerp(va, vb, c);
 		}
 			return;
 		case FLOAT: {
@@ -1901,7 +1906,7 @@ void Variant::blend(const Variant &a, const Variant &b, float c, Variant &r_dst)
 			int32_t vbx = reinterpret_cast<const Vector2i *>(b._data._mem)->x;
 			int32_t vay = reinterpret_cast<const Vector2i *>(a._data._mem)->y;
 			int32_t vby = reinterpret_cast<const Vector2i *>(b._data._mem)->y;
-			r_dst = Vector2i(int32_t(vax + vbx * c + 0.5), int32_t(vay + vby * c + 0.5));
+			r_dst = Vector2i(ilerp(vax, vbx, c), ilerp(vay, vby, c));
 		}
 			return;
 		case RECT2: {
@@ -1916,14 +1921,15 @@ void Variant::blend(const Variant &a, const Variant &b, float c, Variant &r_dst)
 
 			int32_t vax = ra->position.x;
 			int32_t vay = ra->position.y;
-			int32_t vbx = ra->size.x;
-			int32_t vby = ra->size.y;
-			int32_t vcx = rb->position.x;
-			int32_t vcy = rb->position.y;
-			int32_t vdx = rb->size.x;
-			int32_t vdy = rb->size.y;
+			int32_t vaw = ra->size.x;
+			int32_t vah = ra->size.y;
 
-			r_dst = Rect2i(int32_t(vax + vbx * c + 0.5), int32_t(vay + vby * c + 0.5), int32_t(vcx + vdx * c + 0.5), int32_t(vcy + vdy * c + 0.5));
+			int32_t vbx = rb->position.x;
+			int32_t vby = rb->position.y;
+			int32_t vbw = rb->size.x;
+			int32_t vbh = rb->size.y;
+
+			r_dst = Rect2i(ilerp(vax, vbx, c), ilerp(vay, vby, c), ilerp(vaw, vbw, c), ilerp(vah, vbh, c));
 		}
 			return;
 		case VECTOR3: {
@@ -1937,7 +1943,7 @@ void Variant::blend(const Variant &a, const Variant &b, float c, Variant &r_dst)
 			int32_t vby = reinterpret_cast<const Vector3i *>(b._data._mem)->y;
 			int32_t vaz = reinterpret_cast<const Vector3i *>(a._data._mem)->z;
 			int32_t vbz = reinterpret_cast<const Vector3i *>(b._data._mem)->z;
-			r_dst = Vector3i(int32_t(vax + vbx * c + 0.5), int32_t(vay + vby * c + 0.5), int32_t(vaz + vbz * c + 0.5));
+			r_dst = Vector3i(ilerp(vax, vbx, c), ilerp(vay, vby, c), ilerp(vaz, vbz, c));
 		}
 			return;
 		case AABB: {
@@ -2000,7 +2006,7 @@ void Variant::interpolate(const Variant &a, const Variant &b, float c, Variant &
 		case INT: {
 			int64_t va = a._data._int;
 			int64_t vb = b._data._int;
-			r_dst = int(va + (vb - va) * c);
+			r_dst = ilerp(va, vb, c);
 		}
 			return;
 		case FLOAT: {
@@ -2058,7 +2064,7 @@ void Variant::interpolate(const Variant &a, const Variant &b, float c, Variant &
 			int32_t vbx = reinterpret_cast<const Vector2i *>(b._data._mem)->x;
 			int32_t vay = reinterpret_cast<const Vector2i *>(a._data._mem)->y;
 			int32_t vby = reinterpret_cast<const Vector2i *>(b._data._mem)->y;
-			r_dst = Vector2i(int32_t(vax + vbx * c + 0.5), int32_t(vay + vby * c + 0.5));
+			r_dst = Vector2i(ilerp(vax, vbx, c), ilerp(vay, vby, c));
 		}
 			return;
 
@@ -2072,14 +2078,15 @@ void Variant::interpolate(const Variant &a, const Variant &b, float c, Variant &
 
 			int32_t vax = ra->position.x;
 			int32_t vay = ra->position.y;
-			int32_t vbx = ra->size.x;
-			int32_t vby = ra->size.y;
-			int32_t vcx = rb->position.x;
-			int32_t vcy = rb->position.y;
-			int32_t vdx = rb->size.x;
-			int32_t vdy = rb->size.y;
+			int32_t vaw = ra->size.x;
+			int32_t vah = ra->size.y;
 
-			r_dst = Rect2i(int32_t(vax + vbx * c + 0.5), int32_t(vay + vby * c + 0.5), int32_t(vcx + vdx * c + 0.5), int32_t(vcy + vdy * c + 0.5));
+			int32_t vbx = rb->position.x;
+			int32_t vby = rb->position.y;
+			int32_t vbw = rb->size.x;
+			int32_t vbh = rb->size.y;
+
+			r_dst = Rect2i(ilerp(vax, vbx, c), ilerp(vay, vby, c), ilerp(vaw, vbw, c), ilerp(vah, vbh, c));
 		}
 			return;
 
@@ -2094,7 +2101,7 @@ void Variant::interpolate(const Variant &a, const Variant &b, float c, Variant &
 			int32_t vby = reinterpret_cast<const Vector3i *>(b._data._mem)->y;
 			int32_t vaz = reinterpret_cast<const Vector3i *>(a._data._mem)->z;
 			int32_t vbz = reinterpret_cast<const Vector3i *>(b._data._mem)->z;
-			r_dst = Vector3i(int32_t(vax + vbx * c + 0.5), int32_t(vay + vby * c + 0.5), int32_t(vaz + vbz * c + 0.5));
+			r_dst = Vector3i(ilerp(vax, vbx, c), ilerp(vay, vby, c), ilerp(vaz, vbz, c));
 		}
 			return;
 
