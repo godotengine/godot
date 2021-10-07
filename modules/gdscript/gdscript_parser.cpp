@@ -4496,7 +4496,7 @@ void GDScriptParser::TreePrinter::print_tree(const GDScriptParser &p_parser) {
 	}
 	print_class(p_parser.get_tree());
 
-	print_line(printed);
+	print_line(String(printed));
 }
 
 #endif // DEBUG_ENABLED
