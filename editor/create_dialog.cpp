@@ -247,7 +247,7 @@ void CreateDialog::add_type(const String &p_type, HashMap<String, TreeItem *> &p
 		item->set_collapsed(collapse);
 	}
 
-	const String &description = EditorHelp::get_doc_data()->class_list[p_type].brief_description;
+	const String &description = DTR(EditorHelp::get_doc_data()->class_list[p_type].brief_description);
 	item->set_tooltip(0, description);
 
 	String icon_fallback = has_icon(base_type, "EditorIcons") ? base_type : "Object";
@@ -555,11 +555,11 @@ void CreateDialog::_item_selected() {
 		return;
 	}
 
-	if (EditorHelp::get_doc_data()->class_list.has(name) && !EditorHelp::get_doc_data()->class_list[name].brief_description.empty()) {
-		help_bit->set_text(EditorHelp::get_doc_data()->class_list[name].brief_description);
+	const String brief_desc = DTR(EditorHelp::get_doc_data()->class_list[name].brief_description);
+	if (!brief_desc.empty()) {
 		// Display both class name and description, since the help bit may be displayed
 		// far away from the location (especially if the dialog was resized to be taller).
-		help_bit->set_text(vformat("[b]%s[/b]: %s", name, EditorHelp::get_doc_data()->class_list[name].brief_description.strip_edges()));
+		help_bit->set_text(vformat("[b]%s[/b]: %s", name, brief_desc));
 		help_bit->get_rich_text()->set_self_modulate(Color(1, 1, 1, 1));
 	} else {
 		// Use nested `vformat()` as translators shouldn't interfere with BBCode tags.

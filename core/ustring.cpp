@@ -4469,6 +4469,16 @@ String TTR(const String &p_text) {
 	return p_text;
 }
 
+String DTR(const String &p_text) {
+	// Comes straight from the XML, so remove indentation and any trailing whitespace.
+	const String text = p_text.dedent().strip_edges();
+
+	if (TranslationServer::get_singleton()) {
+		return TranslationServer::get_singleton()->doc_translate(text);
+	}
+
+	return text;
+}
 #endif
 
 String RTR(const String &p_text) {
