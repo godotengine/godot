@@ -302,7 +302,7 @@ int Environment::get_ssr_max_steps() const {
 }
 
 void Environment::set_ssr_fade_in(float p_fade_in) {
-	ssr_fade_in = p_fade_in;
+	ssr_fade_in = MAX(p_fade_in, 0.0f);
 	_update_ssr();
 }
 
@@ -311,7 +311,7 @@ float Environment::get_ssr_fade_in() const {
 }
 
 void Environment::set_ssr_fade_out(float p_fade_out) {
-	ssr_fade_out = p_fade_out;
+	ssr_fade_out = MAX(p_fade_out, 0.0f);
 	_update_ssr();
 }
 
