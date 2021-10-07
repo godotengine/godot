@@ -873,7 +873,7 @@ public:
 	virtual void environment_set_bg_color(RID p_env, const Color &p_color) override;
 	virtual void environment_set_bg_energy(RID p_env, float p_energy) override;
 	virtual void environment_set_canvas_max_layer(RID p_env, int p_max_layer) override;
-	virtual void environment_set_ambient_light(RID p_env, const Color &p_color, RS::EnvironmentAmbientSource p_ambient = RS::ENV_AMBIENT_SOURCE_BG, float p_energy = 1.0, float p_sky_contribution = 0.0, RS::EnvironmentReflectionSource p_reflection_source = RS::ENV_REFLECTION_SOURCE_BG, const Color &p_ao_color = Color()) override;
+	virtual void environment_set_ambient_light(RID p_env, const Color &p_color, RS::EnvironmentAmbientSource p_ambient = RS::ENV_AMBIENT_SOURCE_BG, float p_energy = 1.0, float p_sky_contribution = 0.0, RS::EnvironmentReflectionSource p_reflection_source = RS::ENV_REFLECTION_SOURCE_BG) override;
 
 	virtual RS::EnvironmentBG environment_get_background(RID p_env) const override;
 	RID environment_get_sky(RID p_env) const;
@@ -887,7 +887,6 @@ public:
 	float environment_get_ambient_light_energy(RID p_env) const;
 	float environment_get_ambient_sky_contribution(RID p_env) const;
 	RS::EnvironmentReflectionSource environment_get_reflection_source(RID p_env) const;
-	Color environment_get_ao_color(RID p_env) const;
 
 	virtual bool is_environment(RID p_env) const override;
 

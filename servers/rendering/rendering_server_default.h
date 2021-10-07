@@ -608,7 +608,7 @@ public:
 	FUNC2(environment_set_bg_color, RID, const Color &)
 	FUNC2(environment_set_bg_energy, RID, float)
 	FUNC2(environment_set_canvas_max_layer, RID, int)
-	FUNC7(environment_set_ambient_light, RID, const Color &, EnvironmentAmbientSource, float, float, EnvironmentReflectionSource, const Color &)
+	FUNC6(environment_set_ambient_light, RID, const Color &, EnvironmentAmbientSource, float, float, EnvironmentReflectionSource)
 
 // FIXME: Disabled during Vulkan refactoring, should be ported.
 #if 0
