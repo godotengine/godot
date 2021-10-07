@@ -114,6 +114,7 @@ protected:
 	virtual String _get_vcs_name();
 	virtual Array _get_previous_commits();
 	virtual Array _get_branch_list();
+	virtual void _create_branch(String p_branch_name);
 	virtual String _get_current_branch_name(bool p_full_ref);
 	virtual void _pull(String p_remote, String p_username, String p_password);
 	virtual void _push(String p_remote, String p_username, String p_password, bool p_force);
@@ -147,6 +148,7 @@ public:
 	String get_vcs_name();
 	List<Commit> get_previous_commits();
 	List<String> get_branch_list();
+	void create_branch(String p_branch_name);
 	String get_current_branch_name(bool p_full_ref);
 	bool checkout_branch(String p_branch);
 	void pull(String p_remote, String p_username, String p_password);

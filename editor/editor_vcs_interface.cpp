@@ -74,6 +74,10 @@ Array EditorVCSInterface::_get_branch_list() {
 	return Array();
 }
 
+void EditorVCSInterface::_create_branch(String p_branch_name) {
+	_not_implemented_function(__FUNCTION__);
+}
+
 String EditorVCSInterface::_get_current_branch_name(bool p_full_ref) {
 	_not_implemented_function(__FUNCTION__);
 	return "";
@@ -210,6 +214,12 @@ List<String> EditorVCSInterface::get_branch_list() {
 		}
 	}
 	return branch_list;
+}
+
+void EditorVCSInterface::create_branch(String p_branch_name) {
+	if (is_plugin_ready()) {
+		call("_create_branch", p_branch_name);
+	}
 }
 
 String EditorVCSInterface::get_current_branch_name(bool p_full_ref) {
@@ -396,6 +406,7 @@ void EditorVCSInterface::_bind_methods() {
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo("_discard_file", PropertyInfo(Variant::STRING, "file_path")));
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::ARRAY, "_get_previous_commits"));
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::ARRAY, "_get_branch_list"));
+	ClassDB::add_virtual_method(get_class_static(), MethodInfo("_create_branch", PropertyInfo(Variant::STRING, "branch_name")));
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::STRING, "_get_current_branch_name", PropertyInfo(Variant::BOOL, "full_ref")));
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::BOOL, "_checkout_branch", PropertyInfo(Variant::STRING, "branch")));
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo("_push", PropertyInfo(Variant::STRING, "remote"), PropertyInfo(Variant::STRING, "username"), PropertyInfo(Variant::STRING, "password"), PropertyInfo(Variant::BOOL, "force")));

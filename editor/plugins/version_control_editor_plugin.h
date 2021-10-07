@@ -68,6 +68,10 @@ private:
 	LineEdit *set_up_username;
 	LineEdit *set_up_password;
 
+	AcceptDialog *branch_create_dialog;
+	LineEdit *branch_create_name_input;
+	Button *branch_create_ok;
+
 	HashMap<EditorVCSInterface::ChangeType, String> change_type_to_strings;
 	HashMap<EditorVCSInterface::ChangeType, Color> change_type_to_color;
 	HashMap<EditorVCSInterface::ChangeType, Ref<Texture>> change_type_to_icon;
@@ -114,17 +118,19 @@ private:
 	void _refresh_stage_area();
 	void _refresh_branch_list();
 	void _refresh_commit_list();
-	void _display_diff(int idx);
+	void _display_diff(int p_idx);
 	void _move_all(Object *p_tree);
 	void _load_diff(Object *p_tree);
 	void _clear_diff();
 	int _get_item_count(Tree *p_tree);
 	void _item_activated(Object *p_tree);
+	void _create_branch();
+	void _update_branch_create_button(String p_new_text);
 	void _branch_item_selected(int p_index);
 	void _move_item(Tree *p_tree, TreeItem *p_itme);
 	void _display_diff_split_view(List<EditorVCSInterface::DiffLine> &p_diff_content);
 	void _display_diff_unified_view(List<EditorVCSInterface::DiffLine> &p_diff_content);
-	void _discard_file(String p_file_path, EditorVCSInterface::ChangeType change);
+	void _discard_file(String p_file_path, EditorVCSInterface::ChangeType p_change);
 	void _cell_button_pressed(Object *p_item, int p_column, int p_id);
 	void _add_new_item(Tree *p_tree, String p_file_path, EditorVCSInterface::ChangeType p_change);
 	void _update_commit_button();

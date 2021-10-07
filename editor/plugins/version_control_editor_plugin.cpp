@@ -50,12 +50,14 @@ void VersionControlEditorPlugin::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_load_diff"), &VersionControlEditorPlugin::_load_diff);
 	ClassDB::bind_method(D_METHOD("_display_diff"), &VersionControlEditorPlugin::_display_diff);
 	ClassDB::bind_method(D_METHOD("_item_activated"), &VersionControlEditorPlugin::_item_activated);
+	ClassDB::bind_method(D_METHOD("_update_branch_create_button"), &VersionControlEditorPlugin::_update_branch_create_button);
 	ClassDB::bind_method(D_METHOD("_update_commit_button"), &VersionControlEditorPlugin::_update_commit_button);
 	ClassDB::bind_method(D_METHOD("_refresh_branch_list"), &VersionControlEditorPlugin::_refresh_branch_list);
 	ClassDB::bind_method(D_METHOD("_refresh_commit_list"), &VersionControlEditorPlugin::_refresh_commit_list);
 	ClassDB::bind_method(D_METHOD("_commit_message_gui_input"), &VersionControlEditorPlugin::_commit_message_gui_input);
 	ClassDB::bind_method(D_METHOD("_cell_button_pressed"), &VersionControlEditorPlugin::_cell_button_pressed);
 	ClassDB::bind_method(D_METHOD("_discard_all"), &VersionControlEditorPlugin::_discard_all);
+	ClassDB::bind_method(D_METHOD("_create_branch"), &VersionControlEditorPlugin::_create_branch);
 	ClassDB::bind_method(D_METHOD("_branch_item_selected"), &VersionControlEditorPlugin::_branch_item_selected);
 	ClassDB::bind_method(D_METHOD("_fetch"), &VersionControlEditorPlugin::_fetch);
 	ClassDB::bind_method(D_METHOD("_pull"), &VersionControlEditorPlugin::_pull);
@@ -165,18 +167,21 @@ void VersionControlEditorPlugin::_refresh_branch_list() {
 
 	String current_branch = EditorVCSInterface::get_singleton()->get_current_branch_name(false);
 
-	int current_branch_id = 0;
+	int current_branch_id = MAX(0, branch_list.size() - 2); // -2 for not picking the New branch option
 	for (int i = 0; i < branch_list.size(); i++) {
 		if (branch_list[i] == current_branch) {
 			current_branch_id = i;
 		}
 
-		branch_select->add_item(branch_list[i], i);
+		branch_select->add_icon_item(EditorNode::get_singleton()->get_gui_base()->get_icon("Tree", "EditorIcons"), branch_list[i], i);
 	}
 
-	// TODO: Add a create new branch feature.
-	// branch_select->add_separator();
-	// branch_select->add_item("New Branch");
+	if (branch_list.size() > 0) {
+		branch_select->add_separator();
+	}
+
+	branch_select->add_icon_item(EditorNode::get_singleton()->get_gui_base()->get_icon("Add", "EditorIcons"), TTR("New Branch"));
+
 	branch_select->select(current_branch_id);
 }
 
@@ -219,17 +224,41 @@ void VersionControlEditorPlugin::_commit() {
 void VersionControlEditorPlugin::_branch_item_selected(int p_index) {
 	CHECK_PLUGIN_INITIALIZED();
 
+	// If creating a new branch
+	if (p_index == branch_select->get_item_count() - 1) {
+		branch_create_dialog->popup_centered();
+		_refresh_branch_list();
+		return;
+	}
+
 	String branch_name = branch_select->get_item_text(p_index);
 	EditorVCSInterface::get_singleton()->checkout_branch(branch_name);
-	EditorFileSystem::get_singleton()->scan();
+
+	EditorFileSystem::get_singleton()->scan_changes();
+	ScriptEditor::get_singleton()->reload_scripts();
+
 	_refresh_branch_list();
 	_refresh_commit_list();
 	_refresh_stage_area();
 	_clear_diff();
 
-	// FIXIT: Editor is not adopting new changes
-	// EditorFileSystem::get_singleton()->scan_changes();
 	_update_opened_tabs();
+}
+
+void VersionControlEditorPlugin::_create_branch() {
+	CHECK_PLUGIN_INITIALIZED();
+
+	String new_branch_name = branch_create_name_input->get_text().strip_edges();
+
+	EditorVCSInterface::get_singleton()->create_branch(new_branch_name);
+	EditorVCSInterface::get_singleton()->checkout_branch(new_branch_name);
+
+	branch_create_name_input->clear();
+	_refresh_branch_list();
+}
+
+void VersionControlEditorPlugin::_update_branch_create_button(String p_new_text) {
+	branch_create_ok->set_disabled(p_new_text.strip_edges().empty());
 }
 
 int VersionControlEditorPlugin::_get_item_count(Tree *p_tree) {
@@ -437,7 +466,7 @@ void VersionControlEditorPlugin::_cell_button_pressed(Object *p_item, int p_colu
 	}
 }
 
-void VersionControlEditorPlugin::_display_diff(int idx) {
+void VersionControlEditorPlugin::_display_diff(int p_idx) {
 	DiffViewType diff_view = (DiffViewType)diff_view_type_select->get_selected();
 
 	diff->clear();
@@ -790,15 +819,17 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 
 	HBoxContainer *set_up_remote_name_input = memnew(HBoxContainer);
 	set_up_remote_name_input->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	set_up_vbc->add_child(set_up_remote_name_input);
+
 	Label *set_up_remote_name_label = memnew(Label);
 	set_up_remote_name_label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	set_up_remote_name_label->set_text(TTR("Remote Name"));
 	set_up_remote_name_input->add_child(set_up_remote_name_label);
+
 	set_up_remote_name = memnew(LineEdit);
 	set_up_remote_name->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	set_up_remote_name->set_text("origin");
 	set_up_remote_name_input->add_child(set_up_remote_name);
-	set_up_vbc->add_child(set_up_remote_name_input);
 
 	HBoxContainer *set_up_username_input = memnew(HBoxContainer);
 	set_up_username_input->set_h_size_flags(Control::SIZE_EXPAND_FILL);
@@ -806,6 +837,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	set_up_username_label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	set_up_username_label->set_text(TTR("Username"));
 	set_up_username_input->add_child(set_up_username_label);
+
 	set_up_username = memnew(LineEdit);
 	set_up_username->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	set_up_username_input->add_child(set_up_username);
@@ -817,6 +849,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	set_up_password_label->set_text(TTR("Password"));
 	set_up_password_label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	set_up_password_input->add_child(set_up_password_label);
+
 	set_up_password = memnew(LineEdit);
 	set_up_password->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	set_up_password->set_secret(true);
@@ -890,6 +923,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	stage_label->set_text(TTR("Staged Changes"));
 	stage_label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	stage_title->add_child(stage_label);
+
 	unstage_all_button = memnew(ToolButton);
 	unstage_all_button->set_flat(true);
 	unstage_all_button->set_icon(EditorNode::get_singleton()->get_gui_base()->get_icon("MoveUp", "EditorIcons"));
@@ -968,6 +1002,35 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	branch_select->connect("item_selected", this, "_branch_item_selected");
 	branch_select->connect("pressed", this, "_refresh_branch_list");
 	menu_bar->add_child(branch_select);
+
+	branch_create_dialog = memnew(AcceptDialog);
+	branch_create_dialog->set_title(TTR("Create Branch"));
+	branch_create_dialog->set_custom_minimum_size(Size2(400, 100));
+	branch_create_dialog->set_hide_on_ok(true);
+	version_commit_dock->add_child(branch_create_dialog);
+
+	branch_create_ok = branch_create_dialog->get_ok();
+	branch_create_ok->set_text(TTR("Create"));
+	branch_create_ok->set_disabled(true);
+	branch_create_ok->connect("pressed", this, "_create_branch");
+
+	VBoxContainer *branch_create_vbc = memnew(VBoxContainer);
+	branch_create_vbc->set_alignment(VBoxContainer::ALIGN_CENTER);
+	branch_create_dialog->add_child(branch_create_vbc);
+
+	HBoxContainer *branch_create_hbc = memnew(HBoxContainer);
+	branch_create_hbc->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	branch_create_vbc->add_child(branch_create_hbc);
+
+	Label *branch_create_name_label = memnew(Label);
+	branch_create_name_label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	branch_create_name_label->set_text(TTR("Branch Name"));
+	branch_create_hbc->add_child(branch_create_name_label);
+
+	branch_create_name_input = memnew(LineEdit);
+	branch_create_name_input->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	branch_create_name_input->connect("text_changed", this, "_update_branch_create_button");
+	branch_create_hbc->add_child(branch_create_name_input);
 
 	fetch_button = memnew(ToolButton);
 	fetch_button->set_tooltip(TTR("Fetch"));
