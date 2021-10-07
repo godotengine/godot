@@ -1188,8 +1188,8 @@ static bool _guess_identifier_type(GDScriptCompletionContext &p_context, const S
 			}
 		}
 
-		for (const List<GDScriptParser::Node *>::Element *E = blk->statements.front(); E; E = E->next()) {
-			const GDScriptParser::Node *expr = E->get();
+		for (int z = 0; z < blk->statements.size(); z++) {
+			const GDScriptParser::Node *expr = blk->statements[z];
 			if (expr->line > p_context.line || expr->type != GDScriptParser::Node::TYPE_OPERATOR) {
 				continue;
 			}

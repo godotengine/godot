@@ -2793,8 +2793,8 @@ void GDScriptParser::_transform_match_statment(MatchNode *p_match_statement) {
 			op->arguments.push_back(local_var->assign);
 			local_var->assign_op = op;
 
-			branch->body->statements.push_front(op);
-			branch->body->statements.push_front(local_var);
+			branch->body->statements.insert(0, op);
+			branch->body->statements.insert(0, local_var);
 		}
 
 		compiled_branch.body = branch->body;
@@ -8252,8 +8252,8 @@ void GDScriptParser::_check_block_types(BlockNode *p_block) {
 	Node *last_var_assign = nullptr;
 
 	// Check each statement
-	for (List<Node *>::Element *E = p_block->statements.front(); E; E = E->next()) {
-		Node *statement = E->get();
+	for (int z = 0; z < p_block->statements.size(); z++) {
+		Node *statement = p_block->statements[z];
 		switch (statement->type) {
 			case Node::TYPE_NEWLINE:
 			case Node::TYPE_BREAKPOINT: {

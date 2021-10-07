@@ -234,7 +234,7 @@ public:
 	struct BlockNode : public Node {
 		ClassNode *parent_class;
 		BlockNode *parent_block;
-		List<Node *> statements;
+		Vector<Node *> statements;
 		Map<StringName, LocalVarNode *> variables;
 		bool has_return = false;
 		bool can_break = false;
