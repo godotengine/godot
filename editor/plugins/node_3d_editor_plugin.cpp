@@ -357,8 +357,8 @@ int Node3DEditorViewport::get_selected_count() const {
 
 	int count = 0;
 
-	for (Map<Node *, Object *>::Element *E = selection.front(); E; E = E->next()) {
-		Node3D *sp = Object::cast_to<Node3D>(E->key());
+	for (const KeyValue<Node *, Object *> &E : selection) {
+		Node3D *sp = Object::cast_to<Node3D>(E.key);
 		if (!sp) {
 			continue;
 		}
@@ -864,8 +864,8 @@ void Node3DEditorViewport::_compute_edit(const Point2 &p_point) {
 	Node3DEditorSelectedItem *se = selected ? editor_selection->get_node_editor_data<Node3DEditorSelectedItem>(selected) : nullptr;
 
 	if (se && se->gizmo.is_valid()) {
-		for (Map<int, Transform3D>::Element *E = se->subgizmos.front(); E; E = E->next()) {
-			int subgizmo_id = E->key();
+		for (const KeyValue<int, Transform3D> &E : se->subgizmos) {
+			int subgizmo_id = E.key;
 			se->subgizmos[subgizmo_id] = se->gizmo->get_subgizmo_transform(subgizmo_id);
 		}
 		se->original_local = selected->get_transform();
@@ -1291,13 +1291,17 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 		return; //do NONE
 	}
 
+	EditorPlugin::AfterGUIInput after = EditorPlugin::AFTER_GUI_INPUT_PASS;
 	{
 		EditorNode *en = editor;
 		EditorPluginList *force_input_forwarding_list = en->get_editor_plugins_force_input_forwarding();
 		if (!force_input_forwarding_list->is_empty()) {
-			bool discard = force_input_forwarding_list->forward_spatial_gui_input(camera, p_event, true);
-			if (discard) {
+			EditorPlugin::AfterGUIInput discard = force_input_forwarding_list->forward_spatial_gui_input(camera, p_event, true);
+			if (discard == EditorPlugin::AFTER_GUI_INPUT_STOP) {
 				return;
+			}
+			if (discard == EditorPlugin::AFTER_GUI_INPUT_DESELECT) {
+				after = EditorPlugin::AFTER_GUI_INPUT_DESELECT;
 			}
 		}
 	}
@@ -1305,9 +1309,12 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 		EditorNode *en = editor;
 		EditorPluginList *over_plugin_list = en->get_editor_plugins_over();
 		if (!over_plugin_list->is_empty()) {
-			bool discard = over_plugin_list->forward_spatial_gui_input(camera, p_event, false);
-			if (discard) {
+			EditorPlugin::AfterGUIInput discard = over_plugin_list->forward_spatial_gui_input(camera, p_event, false);
+			if (discard == EditorPlugin::AFTER_GUI_INPUT_STOP) {
 				return;
+			}
+			if (discard == EditorPlugin::AFTER_GUI_INPUT_DESELECT) {
+				after = EditorPlugin::AFTER_GUI_INPUT_DESELECT;
 			}
 		}
 	}
@@ -1374,9 +1381,9 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 							Vector<int> ids;
 							Vector<Transform3D> restore;
 
-							for (Map<int, Transform3D>::Element *GE = se->subgizmos.front(); GE; GE = GE->next()) {
-								ids.push_back(GE->key());
-								restore.push_back(GE->value());
+							for (const KeyValue<int, Transform3D> &GE : se->subgizmos) {
+								ids.push_back(GE.key);
+								restore.push_back(GE.value);
 							}
 
 							se->gizmo->commit_subgizmos(ids, restore, true);
@@ -1573,17 +1580,19 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 						break;
 					}
 
-					clicked = _select_ray(b->get_position());
+					if (after != EditorPlugin::AFTER_GUI_INPUT_DESELECT) {
+						clicked = _select_ray(b->get_position());
 
-					//clicking is always deferred to either move or release
+						//clicking is always deferred to either move or release
 
-					clicked_wants_append = b->is_shift_pressed();
+						clicked_wants_append = b->is_shift_pressed();
 
-					if (clicked.is_null()) {
-						//default to regionselect
-						cursor.region_select = true;
-						cursor.region_begin = b->get_position();
-						cursor.region_end = b->get_position();
+						if (clicked.is_null()) {
+							//default to regionselect
+							cursor.region_select = true;
+							cursor.region_begin = b->get_position();
+							cursor.region_end = b->get_position();
+						}
 					}
 
 					surface->update();
@@ -1594,14 +1603,16 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 						break;
 					}
 
-					if (clicked.is_valid()) {
-						_select_clicked(false);
-					}
+					if (after != EditorPlugin::AFTER_GUI_INPUT_DESELECT) {
+						if (clicked.is_valid()) {
+							_select_clicked(false);
+						}
 
-					if (cursor.region_select) {
-						_select_region();
-						cursor.region_select = false;
-						surface->update();
+						if (cursor.region_select) {
+							_select_region();
+							cursor.region_select = false;
+							surface->update();
+						}
 					}
 
 					if (_edit.mode != TRANSFORM_NONE) {
@@ -1612,9 +1623,9 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 							Vector<int> ids;
 							Vector<Transform3D> restore;
 
-							for (Map<int, Transform3D>::Element *GE = se->subgizmos.front(); GE; GE = GE->next()) {
-								ids.push_back(GE->key());
-								restore.push_back(GE->value());
+							for (const KeyValue<int, Transform3D> &GE : se->subgizmos) {
+								ids.push_back(GE.key);
+								restore.push_back(GE.value);
 							}
 
 							se->gizmo->commit_subgizmos(ids, restore, false);
@@ -1845,13 +1856,13 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 							}
 
 							if (se->gizmo.is_valid()) {
-								for (Map<int, Transform3D>::Element *GE = se->subgizmos.front(); GE; GE = GE->next()) {
-									Transform3D xform = GE->get();
+								for (KeyValue<int, Transform3D> &GE : se->subgizmos) {
+									Transform3D xform = GE.value;
 									Transform3D new_xform = _compute_transform(TRANSFORM_SCALE, se->original * xform, xform, motion, snap, local_coords);
 									if (!local_coords) {
 										new_xform = se->original.affine_inverse() * new_xform;
 									}
-									se->gizmo->set_subgizmo_transform(GE->key(), new_xform);
+									se->gizmo->set_subgizmo_transform(GE.key, new_xform);
 								}
 							} else {
 								Transform3D new_xform = _compute_transform(TRANSFORM_SCALE, se->original, se->original_local, motion, snap, local_coords);
@@ -1944,11 +1955,11 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 							}
 
 							if (se->gizmo.is_valid()) {
-								for (Map<int, Transform3D>::Element *GE = se->subgizmos.front(); GE; GE = GE->next()) {
-									Transform3D xform = GE->get();
+								for (KeyValue<int, Transform3D> &GE : se->subgizmos) {
+									Transform3D xform = GE.value;
 									Transform3D new_xform = _compute_transform(TRANSFORM_TRANSLATE, se->original * xform, xform, motion, snap, local_coords);
 									new_xform = se->original.affine_inverse() * new_xform;
-									se->gizmo->set_subgizmo_transform(GE->key(), new_xform);
+									se->gizmo->set_subgizmo_transform(GE.key, new_xform);
 								}
 							} else {
 								Transform3D new_xform = _compute_transform(TRANSFORM_TRANSLATE, se->original, se->original_local, motion, snap, local_coords);
@@ -2030,14 +2041,14 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 
 							Vector3 compute_axis = local_coords ? axis : plane.normal;
 							if (se->gizmo.is_valid()) {
-								for (Map<int, Transform3D>::Element *GE = se->subgizmos.front(); GE; GE = GE->next()) {
-									Transform3D xform = GE->get();
+								for (KeyValue<int, Transform3D> &GE : se->subgizmos) {
+									Transform3D xform = GE.value;
 
 									Transform3D new_xform = _compute_transform(TRANSFORM_ROTATE, se->original * xform, xform, compute_axis, angle, local_coords);
 									if (!local_coords) {
 										new_xform = se->original.affine_inverse() * new_xform;
 									}
-									se->gizmo->set_subgizmo_transform(GE->key(), new_xform);
+									se->gizmo->set_subgizmo_transform(GE.key, new_xform);
 								}
 							} else {
 								Transform3D new_xform = _compute_transform(TRANSFORM_ROTATE, se->original, se->original_local, compute_axis, angle, local_coords);
@@ -2237,7 +2248,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 				return;
 			}
 
-			if (!AnimationPlayerEditor::singleton->get_track_editor()->has_keying()) {
+			if (!AnimationPlayerEditor::get_singleton()->get_track_editor()->has_keying()) {
 				set_message(TTR("Keying is disabled (no key inserted)."));
 				return;
 			}
@@ -2483,8 +2494,14 @@ static bool is_shortcut_pressed(const String &p_path) {
 	if (shortcut.is_null()) {
 		return false;
 	}
-	InputEventKey *k = Object::cast_to<InputEventKey>(shortcut->get_event().ptr());
-	if (k == nullptr) {
+
+	const Array shortcuts = shortcut->get_events();
+	Ref<InputEventKey> k;
+	if (shortcuts.size() > 0) {
+		k = shortcuts.front();
+	}
+
+	if (k.is_null()) {
 		return false;
 	}
 	const Input &input = *Input::get_singleton();
@@ -2601,6 +2618,9 @@ void Node3DEditorViewport::_project_settings_changed() {
 
 	const bool use_occlusion_culling = GLOBAL_GET("rendering/occlusion_culling/use_occlusion_culling");
 	viewport->set_use_occlusion_culling(use_occlusion_culling);
+
+	const float lod_threshold = GLOBAL_GET("rendering/mesh_lod/lod_change/threshold_pixels");
+	viewport->set_lod_threshold(lod_threshold);
 }
 
 void Node3DEditorViewport::_notification(int p_what) {
@@ -2663,8 +2683,8 @@ void Node3DEditorViewport::_notification(int p_what) {
 		bool changed = false;
 		bool exist = false;
 
-		for (Map<Node *, Object *>::Element *E = selection.front(); E; E = E->next()) {
-			Node3D *sp = Object::cast_to<Node3D>(E->key());
+		for (const KeyValue<Node *, Object *> &E : selection) {
+			Node3D *sp = Object::cast_to<Node3D>(E.key);
 			if (!sp) {
 				continue;
 			}
@@ -2688,15 +2708,28 @@ void Node3DEditorViewport::_notification(int p_what) {
 
 			se->aabb = new_aabb;
 
-			t.translate(se->aabb.position);
+			Transform3D t_offset = t;
 
 			// apply AABB scaling before item's global transform
-			Basis aabb_s;
-			aabb_s.scale(se->aabb.size);
-			t.basis = t.basis * aabb_s;
+			{
+				const Vector3 offset(0.005, 0.005, 0.005);
+				Basis aabb_s;
+				aabb_s.scale(se->aabb.size + offset);
+				t.translate(se->aabb.position - offset / 2);
+				t.basis = t.basis * aabb_s;
+			}
+			{
+				const Vector3 offset(0.01, 0.01, 0.01);
+				Basis aabb_s;
+				aabb_s.scale(se->aabb.size + offset);
+				t_offset.translate(se->aabb.position - offset / 2);
+				t_offset.basis = t_offset.basis * aabb_s;
+			}
 
 			RenderingServer::get_singleton()->instance_set_transform(se->sbox_instance, t);
+			RenderingServer::get_singleton()->instance_set_transform(se->sbox_instance_offset, t_offset);
 			RenderingServer::get_singleton()->instance_set_transform(se->sbox_instance_xray, t);
+			RenderingServer::get_singleton()->instance_set_transform(se->sbox_instance_xray_offset, t_offset);
 		}
 
 		if (changed || (spatial_editor->is_gizmo_visible() && !exist)) {
@@ -3806,8 +3839,8 @@ void Node3DEditorViewport::focus_selection() {
 		}
 
 		if (se->gizmo.is_valid()) {
-			for (Map<int, Transform3D>::Element *GE = se->subgizmos.front(); GE; GE = GE->next()) {
-				center += se->gizmo->get_subgizmo_transform(GE->key()).origin;
+			for (const KeyValue<int, Transform3D> &GE : se->subgizmos) {
+				center += se->gizmo->get_subgizmo_transform(GE.key).origin;
 				count++;
 			}
 		}
@@ -3917,7 +3950,7 @@ void Node3DEditorViewport::_remove_preview() {
 }
 
 bool Node3DEditorViewport::_cyclical_dependency_exists(const String &p_target_scene_path, Node *p_desired_node) {
-	if (p_desired_node->get_filename() == p_target_scene_path) {
+	if (p_desired_node->get_scene_file_path() == p_target_scene_path) {
 		return true;
 	}
 
@@ -3959,15 +3992,15 @@ bool Node3DEditorViewport::_create_instance(Node *parent, String &path, const Po
 		return false;
 	}
 
-	if (editor->get_edited_scene()->get_filename() != "") { // cyclical instancing
-		if (_cyclical_dependency_exists(editor->get_edited_scene()->get_filename(), instantiated_scene)) {
+	if (editor->get_edited_scene()->get_scene_file_path() != "") { // cyclical instancing
+		if (_cyclical_dependency_exists(editor->get_edited_scene()->get_scene_file_path(), instantiated_scene)) {
 			memdelete(instantiated_scene);
 			return false;
 		}
 	}
 
 	if (scene != nullptr) {
-		instantiated_scene->set_filename(ProjectSettings::get_singleton()->localize_path(path));
+		instantiated_scene->set_scene_file_path(ProjectSettings::get_singleton()->localize_path(path));
 	}
 
 	editor_data->get_undo_redo().add_do_method(parent, "add_child", instantiated_scene);
@@ -4722,8 +4755,14 @@ Node3DEditorSelectedItem::~Node3DEditorSelectedItem() {
 	if (sbox_instance.is_valid()) {
 		RenderingServer::get_singleton()->free(sbox_instance);
 	}
+	if (sbox_instance_offset.is_valid()) {
+		RenderingServer::get_singleton()->free(sbox_instance_offset);
+	}
 	if (sbox_instance_xray.is_valid()) {
 		RenderingServer::get_singleton()->free(sbox_instance_xray);
+	}
+	if (sbox_instance_xray_offset.is_valid()) {
+		RenderingServer::get_singleton()->free(sbox_instance_xray_offset);
 	}
 }
 
@@ -4747,8 +4786,8 @@ void Node3DEditor::update_transform_gizmo() {
 	Node3DEditorSelectedItem *se = selected ? editor_selection->get_node_editor_data<Node3DEditorSelectedItem>(selected) : nullptr;
 
 	if (se && se->gizmo.is_valid()) {
-		for (Map<int, Transform3D>::Element *E = se->subgizmos.front(); E; E = E->next()) {
-			Transform3D xf = se->sp->get_global_transform() * se->gizmo->get_subgizmo_transform(E->key());
+		for (const KeyValue<int, Transform3D> &E : se->subgizmos) {
+			Transform3D xf = se->sp->get_global_transform() * se->gizmo->get_subgizmo_transform(E.key);
 			gizmo_center += xf.origin;
 			if (count == 0 && local_gizmo_coords) {
 				gizmo_basis = xf.basis;
@@ -4827,23 +4866,39 @@ Object *Node3DEditor::_get_editor_data(Object *p_what) {
 	si->sbox_instance = RenderingServer::get_singleton()->instance_create2(
 			selection_box->get_rid(),
 			sp->get_world_3d()->get_scenario());
+	si->sbox_instance_offset = RenderingServer::get_singleton()->instance_create2(
+			selection_box->get_rid(),
+			sp->get_world_3d()->get_scenario());
 	RS::get_singleton()->instance_geometry_set_cast_shadows_setting(
 			si->sbox_instance,
+			RS::SHADOW_CASTING_SETTING_OFF);
+	RS::get_singleton()->instance_geometry_set_cast_shadows_setting(
+			si->sbox_instance_offset,
 			RS::SHADOW_CASTING_SETTING_OFF);
 	// Use the Edit layer to hide the selection box when View Gizmos is disabled, since it is a bit distracting.
 	// It's still possible to approximately guess what is selected by looking at the manipulation gizmo position.
 	RS::get_singleton()->instance_set_layer_mask(si->sbox_instance, 1 << Node3DEditorViewport::GIZMO_EDIT_LAYER);
+	RS::get_singleton()->instance_set_layer_mask(si->sbox_instance_offset, 1 << Node3DEditorViewport::GIZMO_EDIT_LAYER);
 	RS::get_singleton()->instance_geometry_set_flag(si->sbox_instance, RS::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, true);
+	RS::get_singleton()->instance_geometry_set_flag(si->sbox_instance_offset, RS::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, true);
 	si->sbox_instance_xray = RenderingServer::get_singleton()->instance_create2(
+			selection_box_xray->get_rid(),
+			sp->get_world_3d()->get_scenario());
+	si->sbox_instance_xray_offset = RenderingServer::get_singleton()->instance_create2(
 			selection_box_xray->get_rid(),
 			sp->get_world_3d()->get_scenario());
 	RS::get_singleton()->instance_geometry_set_cast_shadows_setting(
 			si->sbox_instance_xray,
 			RS::SHADOW_CASTING_SETTING_OFF);
+	RS::get_singleton()->instance_geometry_set_cast_shadows_setting(
+			si->sbox_instance_xray_offset,
+			RS::SHADOW_CASTING_SETTING_OFF);
 	// Use the Edit layer to hide the selection box when View Gizmos is disabled, since it is a bit distracting.
 	// It's still possible to approximately guess what is selected by looking at the manipulation gizmo position.
 	RS::get_singleton()->instance_set_layer_mask(si->sbox_instance_xray, 1 << Node3DEditorViewport::GIZMO_EDIT_LAYER);
-	RS::get_singleton()->instance_geometry_set_flag(si->sbox_instance, RS::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, true);
+	RS::get_singleton()->instance_set_layer_mask(si->sbox_instance_xray_offset, 1 << Node3DEditorViewport::GIZMO_EDIT_LAYER);
+	RS::get_singleton()->instance_geometry_set_flag(si->sbox_instance_xray, RS::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, true);
+	RS::get_singleton()->instance_geometry_set_flag(si->sbox_instance_xray_offset, RS::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, true);
 
 	return si;
 }
@@ -4851,10 +4906,6 @@ Object *Node3DEditor::_get_editor_data(Object *p_what) {
 void Node3DEditor::_generate_selection_boxes() {
 	// Use two AABBs to create the illusion of a slightly thicker line.
 	AABB aabb(Vector3(), Vector3(1, 1, 1));
-	AABB aabb_offset(Vector3(), Vector3(1, 1, 1));
-	// Grow the bounding boxes slightly to avoid Z-fighting with the mesh's edges.
-	aabb.grow_by(0.005);
-	aabb_offset.grow_by(0.01);
 
 	// Create a x-ray (visible through solid surfaces) and standard version of the selection box.
 	// Both will be drawn at the same position, but with different opacity.
@@ -4867,16 +4918,6 @@ void Node3DEditor::_generate_selection_boxes() {
 	for (int i = 0; i < 12; i++) {
 		Vector3 a, b;
 		aabb.get_edge(i, a, b);
-
-		st->add_vertex(a);
-		st->add_vertex(b);
-		st_xray->add_vertex(a);
-		st_xray->add_vertex(b);
-	}
-
-	for (int i = 0; i < 12; i++) {
-		Vector3 a, b;
-		aabb_offset.get_edge(i, a, b);
 
 		st->add_vertex(a);
 		st->add_vertex(b);
@@ -6280,7 +6321,7 @@ void Node3DEditor::update_grid() {
 	// Gets a orthogonal or perspective position correctly (for the grid comparison)
 	const Vector3 camera_position = get_editor_viewport(0)->camera->get_position();
 
-	if (!grid_init_draw || (camera_position - grid_camera_last_update_position).length() >= 10.0f) {
+	if (!grid_init_draw || grid_camera_last_update_position.distance_squared_to(camera_position) >= 100.0f) {
 		_finish_grid();
 		_init_grid();
 		grid_init_draw = true;
@@ -6674,8 +6715,8 @@ Vector<int> Node3DEditor::get_subgizmo_selection() {
 
 	Vector<int> ret;
 	if (se) {
-		for (Map<int, Transform3D>::Element *E = se->subgizmos.front(); E; E = E->next()) {
-			ret.push_back(E->key());
+		for (const KeyValue<int, Transform3D> &E : se->subgizmos) {
+			ret.push_back(E.key);
 		}
 	}
 	return ret;
@@ -6724,6 +6765,33 @@ void Node3DEditor::_request_gizmo(Object *p_obj) {
 			}
 		}
 		sp->update_gizmos();
+	}
+}
+
+void Node3DEditor::_set_subgizmo_selection(Object *p_obj, Ref<Node3DGizmo> p_gizmo, int p_id, Transform3D p_transform) {
+	if (p_id == -1) {
+		_clear_subgizmo_selection(p_obj);
+		return;
+	}
+
+	Node3D *sp = nullptr;
+	if (p_obj) {
+		sp = Object::cast_to<Node3D>(p_obj);
+	} else {
+		sp = selected;
+	}
+
+	if (!sp) {
+		return;
+	}
+
+	Node3DEditorSelectedItem *se = editor_selection->get_node_editor_data<Node3DEditorSelectedItem>(sp);
+	if (se) {
+		se->subgizmos.clear();
+		se->subgizmos.insert(p_id, p_transform);
+		se->gizmo = p_gizmo;
+		sp->update_gizmos();
+		update_transform_gizmo();
 	}
 }
 
@@ -6852,7 +6920,6 @@ void Node3DEditor::_register_all_gizmos() {
 	add_gizmo_plugin(Ref<OccluderInstance3DGizmoPlugin>(memnew(OccluderInstance3DGizmoPlugin)));
 	add_gizmo_plugin(Ref<SoftDynamicBody3DGizmoPlugin>(memnew(SoftDynamicBody3DGizmoPlugin)));
 	add_gizmo_plugin(Ref<Sprite3DGizmoPlugin>(memnew(Sprite3DGizmoPlugin)));
-	add_gizmo_plugin(Ref<Skeleton3DGizmoPlugin>(memnew(Skeleton3DGizmoPlugin)));
 	add_gizmo_plugin(Ref<Position3DGizmoPlugin>(memnew(Position3DGizmoPlugin)));
 	add_gizmo_plugin(Ref<RayCast3DGizmoPlugin>(memnew(RayCast3DGizmoPlugin)));
 	add_gizmo_plugin(Ref<SpringArm3DGizmoPlugin>(memnew(SpringArm3DGizmoPlugin)));
@@ -6877,6 +6944,7 @@ void Node3DEditor::_register_all_gizmos() {
 void Node3DEditor::_bind_methods() {
 	ClassDB::bind_method("_get_editor_data", &Node3DEditor::_get_editor_data);
 	ClassDB::bind_method("_request_gizmo", &Node3DEditor::_request_gizmo);
+	ClassDB::bind_method("_set_subgizmo_selection", &Node3DEditor::_set_subgizmo_selection);
 	ClassDB::bind_method("_clear_subgizmo_selection", &Node3DEditor::_clear_subgizmo_selection);
 	ClassDB::bind_method("_refresh_menu_icons", &Node3DEditor::_refresh_menu_icons);
 
@@ -7701,6 +7769,13 @@ Vector3 Node3DEditor::snap_point(Vector3 p_target, Vector3 p_start) const {
 		p_target.z = Math::snap_scalar(0.0, get_translate_snap(), p_target.z);
 	}
 	return p_target;
+}
+
+bool Node3DEditor::is_gizmo_visible() const {
+	if (selected) {
+		return gizmo.visible && selected->is_transform_gizmo_visible();
+	}
+	return gizmo.visible;
 }
 
 double Node3DEditor::get_translate_snap() const {

@@ -645,6 +645,8 @@ private:
 			float one_way_margin = 1.0;
 		};
 
+		Vector2 linear_velocity;
+		float angular_velocity = 0.0;
 		Vector<PolygonShapeTileData> polygons;
 	};
 	Vector<PhysicsLayerTileData> physics;
@@ -718,8 +720,12 @@ public:
 	Ref<OccluderPolygon2D> get_occluder(int p_layer_id) const;
 
 	// Physics
-	int get_collision_polygons_count(int p_layer_id) const;
+	void set_constant_linear_velocity(int p_layer_id, const Vector2 &p_velocity);
+	Vector2 get_constant_linear_velocity(int p_layer_id) const;
+	void set_constant_angular_velocity(int p_layer_id, real_t p_velocity);
+	real_t get_constant_angular_velocity(int p_layer_id) const;
 	void set_collision_polygons_count(int p_layer_id, int p_shapes_count);
+	int get_collision_polygons_count(int p_layer_id) const;
 	void add_collision_polygon(int p_layer_id);
 	void remove_collision_polygon(int p_layer_id, int p_polygon_index);
 	void set_collision_polygon_points(int p_layer_id, int p_polygon_index, Vector<Vector2> p_polygon);

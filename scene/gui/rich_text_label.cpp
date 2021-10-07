@@ -41,10 +41,6 @@
 #include "modules/regex/regex.h"
 #endif
 
-#ifdef TOOLS_ENABLED
-#include "editor/editor_scale.h"
-#endif
-
 RichTextLabel::Item *RichTextLabel::_get_next_item(Item *p_item, bool p_free) const {
 	if (p_free) {
 		if (p_item->subitems.size()) {
@@ -819,9 +815,8 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 			}
 		}
 
-		const Vector<TextServer::Glyph> visual = TS->shaped_text_get_glyphs(rid);
-		const TextServer::Glyph *glyphs = visual.ptr();
-		int gl_size = visual.size();
+		const Glyph *glyphs = TS->shaped_text_get_glyphs(rid);
+		int gl_size = TS->shaped_text_get_glyph_count(rid);
 
 		Vector2 gloff = off;
 		// Draw oulines and shadow.
@@ -996,19 +991,13 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 				Color uc = font_color;
 				uc.a *= 0.5;
 				float y_off = TS->shaped_text_get_underline_position(rid);
-				float underline_width = TS->shaped_text_get_underline_thickness(rid);
-#ifdef TOOLS_ENABLED
-				underline_width *= EDSCALE;
-#endif
+				float underline_width = TS->shaped_text_get_underline_thickness(rid) * get_theme_default_base_scale();
 				draw_line(p_ofs + Vector2(off.x, off.y + y_off), p_ofs + Vector2(off.x + glyphs[i].advance * glyphs[i].repeat, off.y + y_off), uc, underline_width);
 			} else if (_find_strikethrough(it)) {
 				Color uc = font_color;
 				uc.a *= 0.5;
 				float y_off = -TS->shaped_text_get_ascent(rid) + TS->shaped_text_get_size(rid).y / 2;
-				float underline_width = TS->shaped_text_get_underline_thickness(rid);
-#ifdef TOOLS_ENABLED
-				underline_width *= EDSCALE;
-#endif
+				float underline_width = TS->shaped_text_get_underline_thickness(rid) * get_theme_default_base_scale();
 				draw_line(p_ofs + Vector2(off.x, off.y + y_off), p_ofs + Vector2(off.x + glyphs[i].advance * glyphs[i].repeat, off.y + y_off), uc, underline_width);
 			}
 
@@ -1593,18 +1582,18 @@ void RichTextLabel::gui_input(const Ref<InputEvent> &p_event) {
 
 				if (c_frame) {
 					const Line &l = c_frame->lines[c_line];
-					Vector<Vector2i> words = TS->shaped_text_get_word_breaks(l.text_buf->get_rid());
-					for (int i = 0; i < words.size(); i++) {
-						if (c_index >= words[i].x && c_index < words[i].y) {
+					PackedInt32Array words = TS->shaped_text_get_word_breaks(l.text_buf->get_rid());
+					for (int i = 0; i < words.size(); i = i + 2) {
+						if (c_index >= words[i] && c_index < words[i + 1]) {
 							selection.from_frame = c_frame;
 							selection.from_line = c_line;
 							selection.from_item = c_item;
-							selection.from_char = words[i].x;
+							selection.from_char = words[i];
 
 							selection.to_frame = c_frame;
 							selection.to_line = c_line;
 							selection.to_item = c_item;
-							selection.to_char = words[i].y;
+							selection.to_char = words[i + 1];
 
 							selection.active = true;
 							update();

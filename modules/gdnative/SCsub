@@ -18,7 +18,6 @@ Export("env_gdnative")
 
 SConscript("pluginscript/SCsub")
 SConscript("videodecoder/SCsub")
-SConscript("text/SCsub")
 
 
 import gdnative_builders

@@ -43,12 +43,12 @@
 #include <embree3/rtcore.h>
 
 class RaycastOcclusionCull : public RendererSceneOcclusionCull {
-	typedef RTCRayHit16 RayPacket;
+	typedef RTCRayHit16 CameraRayTile;
 
 public:
 	class RaycastHZBuffer : public HZBuffer {
 	private:
-		Size2i packs_size;
+		Size2i tile_grid_size;
 
 		struct CameraRayThreadData {
 			int thread_count;
@@ -67,7 +67,9 @@ public:
 		void _generate_camera_rays(const CameraRayThreadData *p_data, int p_from, int p_to);
 
 	public:
-		LocalVector<RayPacket> camera_rays;
+		unsigned int camera_rays_tile_count = 0;
+		uint8_t *camera_rays_unaligned_buffer = nullptr;
+		CameraRayTile *camera_rays = nullptr;
 		LocalVector<uint32_t> camera_ray_masks;
 		RID scenario_rid;
 
@@ -75,6 +77,8 @@ public:
 		virtual void resize(const Size2i &p_size) override;
 		void sort_rays(const Vector3 &p_camera_dir, bool p_orthogonal);
 		void update_camera_rays(const Transform3D &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, ThreadWorkPool &p_thread_work_pool);
+
+		~RaycastHZBuffer();
 	};
 
 private:
@@ -111,7 +115,7 @@ private:
 
 	struct Scenario {
 		struct RaycastThreadData {
-			RayPacket *rays;
+			CameraRayTile *rays;
 			const uint32_t *masks;
 		};
 
@@ -144,7 +148,7 @@ private:
 		bool update(ThreadWorkPool &p_thread_pool);
 
 		void _raycast(uint32_t p_thread, const RaycastThreadData *p_raycast_data) const;
-		void raycast(LocalVector<RayPacket> &r_rays, const LocalVector<uint32_t> p_valid_masks, ThreadWorkPool &p_thread_pool) const;
+		void raycast(CameraRayTile *r_rays, const uint32_t *p_valid_masks, uint32_t p_tile_count, ThreadWorkPool &p_thread_pool) const;
 	};
 
 	static RaycastOcclusionCull *raycast_singleton;

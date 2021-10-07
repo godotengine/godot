@@ -15,7 +15,7 @@
 		In 2D, all visible objects are some form of canvas item. In order to be visible, a canvas item needs to be the child of a canvas attached to a viewport, or it needs to be the child of another canvas item that is eventually attached to the canvas.
 	</description>
 	<tutorials>
-		<link title="Optimization using Servers">https://docs.godotengine.org/en/latest/tutorials/optimization/using_servers.html</link>
+		<link title="Optimization using Servers">https://docs.godotengine.org/en/latest/tutorials/performance/using_servers.html</link>
 	</tutorials>
 	<methods>
 		<method name="bake_render_uv2">
@@ -182,6 +182,18 @@
 			<argument index="2" name="transform" type="Transform2D" default="Transform2D(1, 0, 0, 1, 0, 0)" />
 			<argument index="3" name="modulate" type="Color" default="Color(1, 1, 1, 1)" />
 			<argument index="4" name="texture" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="canvas_item_add_msdf_texture_rect_region">
+			<return type="void" />
+			<argument index="0" name="item" type="RID" />
+			<argument index="1" name="rect" type="Rect2" />
+			<argument index="2" name="texture" type="RID" />
+			<argument index="3" name="src_rect" type="Rect2" />
+			<argument index="4" name="modulate" type="Color" default="Color(1, 1, 1, 1)" />
+			<argument index="5" name="outline_size" type="int" default="0" />
+			<argument index="6" name="px_range" type="float" default="1.0" />
 			<description>
 			</description>
 		</method>
@@ -2339,7 +2351,8 @@
 			<argument index="0" name="particles" type="RID" />
 			<argument index="1" name="material" type="RID" />
 			<description>
-				Sets the material for processing the particles. Note: this is not the material used to draw the materials. Equivalent to [member GPUParticles3D.process_material].
+				Sets the material for processing the particles.
+				[b]Note:[/b] This is not the material used to draw the materials. Equivalent to [member GPUParticles3D.process_material].
 			</description>
 		</method>
 		<method name="particles_set_randomness_ratio">

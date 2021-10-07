@@ -20,13 +20,15 @@ Files extracted from upstream source:
 ## bullet
 
 - Upstream: https://github.com/bulletphysics/bullet3
-- Version: 3.08 (df09fd9ed37e365ceae884ca7f620b61607dae2e, 2020)
+- Version: 3.17 (ebe1916b90acae8b13cd8c6b637d8327cdc64e94, 2021)
 - License: zlib
 
 Files extracted from upstream source:
 
-- src/* apart from CMakeLists.txt and premake4.lua files
-- LICENSE.txt
+- `src/*` apart from CMakeLists.txt and premake4.lua files
+- `LICENSE.txt`, and `VERSION` as `VERSION.txt`
+
+Includes some patches in the `patches` folder which have been sent upstream.
 
 
 ## certs
@@ -136,11 +138,6 @@ Files extracted from upstream source:
   * Upstream: https://fonts.google.com/specimen/Open+Sans
   * Version: 1.10 (downloaded from Google Fonts in February 2021)
   * License: Apache 2.0
-- `Tamsyn*.png`:
-  * Upstream: http://www.fial.com/~scott/tamsyn-font/
-  * Version: 1.11 (2015)
-  * License: Tamsyn
-  * Comment: Extracted "0..9,A..F" characters for hex code printing.
 
 
 ## freetype
@@ -371,7 +368,9 @@ Files extracted from upstream repository:
 - `LICENSE.md`.
 
 An [experimental upstream feature](https://github.com/zeux/meshoptimizer/tree/simplify-attr),
-has been backported, see patch in `patches` directory.
+has been backported. On top of that, it was modified to report only distance error metrics 
+instead of a combination of distance and attribute errors. Patches for both changes can be
+found in the `patches` directory.
 
 
 ## miniupnpc

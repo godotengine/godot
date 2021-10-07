@@ -168,7 +168,7 @@ void LightmapRaycasterEmbree::clear_mesh_filter() {
 	filter_meshes.clear();
 }
 
-void embree_error_handler(void *p_user_data, RTCError p_code, const char *p_str) {
+void embree_lm_error_handler(void *p_user_data, RTCError p_code, const char *p_str) {
 	print_error("Embree error: " + String(p_str));
 }
 
@@ -179,16 +179,11 @@ LightmapRaycasterEmbree::LightmapRaycasterEmbree() {
 #endif
 
 	embree_device = rtcNewDevice(nullptr);
-	rtcSetDeviceErrorFunction(embree_device, &embree_error_handler, nullptr);
+	rtcSetDeviceErrorFunction(embree_device, &embree_lm_error_handler, nullptr);
 	embree_scene = rtcNewScene(embree_device);
 }
 
 LightmapRaycasterEmbree::~LightmapRaycasterEmbree() {
-#ifdef __SSE2__
-	_MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_OFF);
-	_MM_SET_DENORMALS_ZERO_MODE(_MM_DENORMALS_ZERO_OFF);
-#endif
-
 	if (embree_scene != nullptr) {
 		rtcReleaseScene(embree_scene);
 	}

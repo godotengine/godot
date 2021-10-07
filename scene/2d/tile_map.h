@@ -202,6 +202,7 @@ private:
 	// Properties.
 	Ref<TileSet> tile_set;
 	int quadrant_size = 16;
+	bool collision_animatable = false;
 	VisibilityMode collision_visibility_mode = VISIBILITY_MODE_DEFAULT;
 	VisibilityMode navigation_visibility_mode = VISIBILITY_MODE_DEFAULT;
 
@@ -228,6 +229,9 @@ private:
 	};
 	LocalVector<TileMapLayer> layers;
 	int selected_layer = -1;
+
+	// Mapping for RID to coords.
+	Map<RID, Vector2i> bodies_coords;
 
 	// Quadrants and internals management.
 	Vector2i _coords_to_quadrant_coords(int p_layer, const Vector2i &p_coords) const;
@@ -259,9 +263,10 @@ private:
 	void _rendering_cleanup_quadrant(TileMapQuadrant *p_quadrant);
 	void _rendering_draw_quadrant_debug(TileMapQuadrant *p_quadrant);
 
+	Transform2D last_valid_transform;
+	Transform2D new_transform;
 	void _physics_notification(int p_what);
 	void _physics_update_dirty_quadrants(SelfList<TileMapQuadrant>::List &r_dirty_quadrant_list);
-	void _physics_create_quadrant(TileMapQuadrant *p_quadrant);
 	void _physics_cleanup_quadrant(TileMapQuadrant *p_quadrant);
 	void _physics_draw_quadrant_debug(TileMapQuadrant *p_quadrant);
 
@@ -325,6 +330,9 @@ public:
 	void set_selected_layer(int p_layer_id); // For editor use.
 	int get_selected_layer() const;
 
+	void set_collision_animatable(bool p_enabled);
+	bool is_collision_animatable() const;
+
 	void set_collision_visibility_mode(VisibilityMode p_show_collision);
 	VisibilityMode get_collision_visibility_mode();
 
@@ -363,6 +371,9 @@ public:
 	virtual void set_use_parent_material(bool p_use_parent_material) override;
 	virtual void set_texture_filter(CanvasItem::TextureFilter p_texture_filter) override;
 	virtual void set_texture_repeat(CanvasItem::TextureRepeat p_texture_repeat) override;
+
+	// For finding tiles from collision.
+	Vector2i get_coords_for_body_rid(RID p_physics_body);
 
 	// Fixing a nclearing methods.
 	void fix_invalid_tiles();

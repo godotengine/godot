@@ -151,7 +151,7 @@ public:
 		return _allocate_rid();
 	}
 
-	_FORCE_INLINE_ T *getornull(const RID &p_rid, bool p_initialize = false) {
+	_FORCE_INLINE_ T *get_or_null(const RID &p_rid, bool p_initialize = false) {
 		if (p_rid == RID()) {
 			return nullptr;
 		}
@@ -210,12 +210,12 @@ public:
 		return ptr;
 	}
 	void initialize_rid(RID p_rid) {
-		T *mem = getornull(p_rid, true);
+		T *mem = get_or_null(p_rid, true);
 		ERR_FAIL_COND(!mem);
 		memnew_placement(mem, T);
 	}
 	void initialize_rid(RID p_rid, const T &p_value) {
-		T *mem = getornull(p_rid, true);
+		T *mem = get_or_null(p_rid, true);
 		ERR_FAIL_COND(!mem);
 		memnew_placement(mem, T(p_value));
 	}
@@ -399,8 +399,8 @@ public:
 		alloc.initialize_rid(p_rid, p_ptr);
 	}
 
-	_FORCE_INLINE_ T *getornull(const RID &p_rid) {
-		T **ptr = alloc.getornull(p_rid);
+	_FORCE_INLINE_ T *get_or_null(const RID &p_rid) {
+		T **ptr = alloc.get_or_null(p_rid);
 		if (unlikely(!ptr)) {
 			return nullptr;
 		}
@@ -408,7 +408,7 @@ public:
 	}
 
 	_FORCE_INLINE_ void replace(const RID &p_rid, T *p_new_ptr) {
-		T **ptr = alloc.getornull(p_rid);
+		T **ptr = alloc.get_or_null(p_rid);
 		ERR_FAIL_COND(!ptr);
 		*ptr = p_new_ptr;
 	}
@@ -469,8 +469,8 @@ public:
 		alloc.initialize_rid(p_rid, p_ptr);
 	}
 
-	_FORCE_INLINE_ T *getornull(const RID &p_rid) {
-		return alloc.getornull(p_rid);
+	_FORCE_INLINE_ T *get_or_null(const RID &p_rid) {
+		return alloc.get_or_null(p_rid);
 	}
 
 	_FORCE_INLINE_ bool owns(const RID &p_rid) {

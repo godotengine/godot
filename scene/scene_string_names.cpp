@@ -64,6 +64,8 @@ SceneStringNames::SceneStringNames() {
 
 	pose_updated = StaticCString::create("pose_updated");
 	bone_pose_changed = StaticCString::create("bone_pose_changed");
+	bone_enabled_changed = StaticCString::create("bone_enabled_changed");
+	show_rest_only_changed = StaticCString::create("show_rest_only_changed");
 
 	mouse_entered = StaticCString::create("mouse_entered");
 	mouse_exited = StaticCString::create("mouse_exited");
@@ -73,6 +75,7 @@ SceneStringNames::SceneStringNames() {
 	focus_entered = StaticCString::create("focus_entered");
 	focus_exited = StaticCString::create("focus_exited");
 
+	pre_sort_children = StaticCString::create("pre_sort_children");
 	sort_children = StaticCString::create("sort_children");
 
 	body_shape_entered = StaticCString::create("body_shape_entered");
@@ -134,6 +137,7 @@ SceneStringNames::SceneStringNames() {
 
 	_spatial_editor_group = StaticCString::create("_spatial_editor_group");
 	_request_gizmo = StaticCString::create("_request_gizmo");
+	_set_subgizmo_selection = StaticCString::create("_set_subgizmo_selection");
 	_clear_subgizmo_selection = StaticCString::create("_clear_subgizmo_selection");
 
 	offset = StaticCString::create("offset");

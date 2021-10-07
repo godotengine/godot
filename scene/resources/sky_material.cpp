@@ -125,10 +125,6 @@ float ProceduralSkyMaterial::get_sun_curve() const {
 	return sun_curve;
 }
 
-bool ProceduralSkyMaterial::_can_do_next_pass() const {
-	return false;
-}
-
 Shader::Mode ProceduralSkyMaterial::get_shader_mode() const {
 	return Shader::MODE_SKY;
 }
@@ -312,10 +308,6 @@ Ref<Texture2D> PanoramaSkyMaterial::get_panorama() const {
 	return panorama;
 }
 
-bool PanoramaSkyMaterial::_can_do_next_pass() const {
-	return false;
-}
-
 Shader::Mode PanoramaSkyMaterial::get_shader_mode() const {
 	return Shader::MODE_SKY;
 }
@@ -480,10 +472,6 @@ void PhysicalSkyMaterial::set_night_sky(const Ref<Texture2D> &p_night_sky) {
 
 Ref<Texture2D> PhysicalSkyMaterial::get_night_sky() const {
 	return night_sky;
-}
-
-bool PhysicalSkyMaterial::_can_do_next_pass() const {
-	return false;
 }
 
 Shader::Mode PhysicalSkyMaterial::get_shader_mode() const {

@@ -28,6 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
+#if TOOLS_ENABLED
 #include "editor_scene_exporter_gltf_plugin.h"
 #include "core/config/project_settings.h"
 #include "core/error/error_list.h"
@@ -86,10 +87,12 @@ void SceneExporterGLTFPlugin::convert_scene_to_gltf2() {
 		editor->show_accept(TTR("This operation can't be done without a scene."), TTR("OK"));
 		return;
 	}
-	String filename = String(root->get_filename().get_file().get_basename());
+	String filename = String(root->get_scene_file_path().get_file().get_basename());
 	if (filename.is_empty()) {
 		filename = root->get_name();
 	}
 	file_export_lib->set_current_file(filename + String(".gltf"));
 	file_export_lib->popup_centered_ratio();
 }
+
+#endif // TOOLS_ENABLED

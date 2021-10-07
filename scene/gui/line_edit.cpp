@@ -40,7 +40,6 @@
 #include "servers/display_server.h"
 #include "servers/text_server.h"
 #ifdef TOOLS_ENABLED
-#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #endif
 #include "scene/main/window.h"
@@ -67,10 +66,10 @@ void LineEdit::_move_caret_left(bool p_select, bool p_move_by_word) {
 	if (p_move_by_word) {
 		int cc = caret_column;
 
-		Vector<Vector2i> words = TS->shaped_text_get_word_breaks(text_rid);
-		for (int i = words.size() - 1; i >= 0; i--) {
-			if (words[i].x < cc) {
-				cc = words[i].x;
+		PackedInt32Array words = TS->shaped_text_get_word_breaks(text_rid);
+		for (int i = words.size() - 2; i >= 0; i = i - 2) {
+			if (words[i] < cc) {
+				cc = words[i];
 				break;
 			}
 		}
@@ -99,10 +98,10 @@ void LineEdit::_move_caret_right(bool p_select, bool p_move_by_word) {
 	if (p_move_by_word) {
 		int cc = caret_column;
 
-		Vector<Vector2i> words = TS->shaped_text_get_word_breaks(text_rid);
-		for (int i = 0; i < words.size(); i++) {
-			if (words[i].y > cc) {
-				cc = words[i].y;
+		PackedInt32Array words = TS->shaped_text_get_word_breaks(text_rid);
+		for (int i = 1; i < words.size(); i = i + 2) {
+			if (words[i] > cc) {
+				cc = words[i];
 				break;
 			}
 		}
@@ -151,10 +150,10 @@ void LineEdit::_backspace(bool p_word, bool p_all_to_left) {
 	if (p_word) {
 		int cc = caret_column;
 
-		Vector<Vector2i> words = TS->shaped_text_get_word_breaks(text_rid);
-		for (int i = words.size() - 1; i >= 0; i--) {
-			if (words[i].x < cc) {
-				cc = words[i].x;
+		PackedInt32Array words = TS->shaped_text_get_word_breaks(text_rid);
+		for (int i = words.size() - 2; i >= 0; i = i - 2) {
+			if (words[i] < cc) {
+				cc = words[i];
 				break;
 			}
 		}
@@ -194,10 +193,10 @@ void LineEdit::_delete(bool p_word, bool p_all_to_right) {
 
 	if (p_word) {
 		int cc = caret_column;
-		Vector<Vector2i> words = TS->shaped_text_get_word_breaks(text_rid);
-		for (int i = 0; i < words.size(); i++) {
-			if (words[i].y > cc) {
-				cc = words[i].y;
+		PackedInt32Array words = TS->shaped_text_get_word_breaks(text_rid);
+		for (int i = 1; i < words.size(); i = i + 2) {
+			if (words[i] > cc) {
+				cc = words[i];
 				break;
 			}
 		}
@@ -276,12 +275,12 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 						// Double-click select word.
 						last_dblclk = OS::get_singleton()->get_ticks_msec();
 						last_dblclk_pos = b->get_position();
-						Vector<Vector2i> words = TS->shaped_text_get_word_breaks(text_rid);
-						for (int i = 0; i < words.size(); i++) {
-							if ((words[i].x < caret_column && words[i].y > caret_column) || (i == words.size() - 1 && caret_column == words[i].y)) {
+						PackedInt32Array words = TS->shaped_text_get_word_breaks(text_rid);
+						for (int i = 0; i < words.size(); i = i + 2) {
+							if ((words[i] < caret_column && words[i + 1] > caret_column) || (i == words.size() - 2 && caret_column == words[i + 1])) {
 								selection.enabled = true;
-								selection.begin = words[i].x;
-								selection.end = words[i].y;
+								selection.begin = words[i];
+								selection.end = words[i + 1];
 								selection.double_click = true;
 								caret_column = selection.end;
 								break;
@@ -713,11 +712,7 @@ void LineEdit::_notification(int p_what) {
 				ofs_max -= r_icon->get_width();
 			}
 
-#ifdef TOOLS_ENABLED
-			int caret_width = Math::round(EDSCALE);
-#else
-			int caret_width = 1;
-#endif
+			int caret_width = Math::round(1 * get_theme_default_base_scale());
 
 			// Draw selections rects.
 			Vector2 ofs = Point2(x_ofs + scroll_offset, y_ofs);
@@ -737,9 +732,8 @@ void LineEdit::_notification(int p_what) {
 					RenderingServer::get_singleton()->canvas_item_add_rect(ci, rect, selection_color);
 				}
 			}
-			const Vector<TextServer::Glyph> visual = TS->shaped_text_get_glyphs(text_rid);
-			const TextServer::Glyph *glyphs = visual.ptr();
-			int gl_size = visual.size();
+			const Glyph *glyphs = TS->shaped_text_get_glyphs(text_rid);
+			int gl_size = TS->shaped_text_get_glyph_count(text_rid);
 
 			// Draw text.
 			ofs.y += TS->shaped_text_get_ascent(text_rid);
@@ -783,38 +777,36 @@ void LineEdit::_notification(int p_what) {
 			if (draw_caret) {
 				if (ime_text.length() == 0) {
 					// Normal caret.
-					Rect2 l_caret, t_caret;
-					TextServer::Direction l_dir, t_dir;
-					TS->shaped_text_get_carets(text_rid, caret_column, l_caret, l_dir, t_caret, t_dir);
+					CaretInfo caret = TS->shaped_text_get_carets(text_rid, caret_column);
 
-					if (l_caret == Rect2() && t_caret == Rect2()) {
+					if (caret.l_caret == Rect2() && caret.t_caret == Rect2()) {
 						// No carets, add one at the start.
 						int h = get_theme_font(SNAME("font"))->get_height(get_theme_font_size(SNAME("font_size")));
 						int y = style->get_offset().y + (y_area - h) / 2;
 						if (rtl) {
-							l_dir = TextServer::DIRECTION_RTL;
-							l_caret = Rect2(Vector2(ofs_max, y), Size2(caret_width, h));
+							caret.l_dir = TextServer::DIRECTION_RTL;
+							caret.l_caret = Rect2(Vector2(ofs_max, y), Size2(caret_width, h));
 						} else {
-							l_dir = TextServer::DIRECTION_LTR;
-							l_caret = Rect2(Vector2(x_ofs, y), Size2(caret_width, h));
+							caret.l_dir = TextServer::DIRECTION_LTR;
+							caret.l_caret = Rect2(Vector2(x_ofs, y), Size2(caret_width, h));
 						}
-						RenderingServer::get_singleton()->canvas_item_add_rect(ci, l_caret, caret_color);
+						RenderingServer::get_singleton()->canvas_item_add_rect(ci, caret.l_caret, caret_color);
 					} else {
-						if (l_caret != Rect2() && l_dir == TextServer::DIRECTION_AUTO) {
+						if (caret.l_caret != Rect2() && caret.l_dir == TextServer::DIRECTION_AUTO) {
 							// Draw extra marker on top of mid caret.
-							Rect2 trect = Rect2(l_caret.position.x - 3 * caret_width, l_caret.position.y, 6 * caret_width, caret_width);
+							Rect2 trect = Rect2(caret.l_caret.position.x - 3 * caret_width, caret.l_caret.position.y, 6 * caret_width, caret_width);
 							trect.position += ofs;
 							RenderingServer::get_singleton()->canvas_item_add_rect(ci, trect, caret_color);
 						}
 
-						l_caret.position += ofs;
-						l_caret.size.x = caret_width;
-						RenderingServer::get_singleton()->canvas_item_add_rect(ci, l_caret, caret_color);
+						caret.l_caret.position += ofs;
+						caret.l_caret.size.x = caret_width;
+						RenderingServer::get_singleton()->canvas_item_add_rect(ci, caret.l_caret, caret_color);
 
-						t_caret.position += ofs;
-						t_caret.size.x = caret_width;
+						caret.t_caret.position += ofs;
+						caret.t_caret.size.x = caret_width;
 
-						RenderingServer::get_singleton()->canvas_item_add_rect(ci, t_caret, caret_color);
+						RenderingServer::get_singleton()->canvas_item_add_rect(ci, caret.t_caret, caret_color);
 					}
 				} else {
 					{
@@ -1114,32 +1106,31 @@ Vector2i LineEdit::get_caret_pixel_pos() {
 	}
 
 	Vector2i ret;
-	Rect2 l_caret, t_caret;
-	TextServer::Direction l_dir, t_dir;
+	CaretInfo caret;
 	// Get position of the start of caret.
 	if (ime_text.length() != 0 && ime_selection.x != 0) {
-		TS->shaped_text_get_carets(text_rid, caret_column + ime_selection.x, l_caret, l_dir, t_caret, t_dir);
+		caret = TS->shaped_text_get_carets(text_rid, caret_column + ime_selection.x);
 	} else {
-		TS->shaped_text_get_carets(text_rid, caret_column, l_caret, l_dir, t_caret, t_dir);
+		caret = TS->shaped_text_get_carets(text_rid, caret_column);
 	}
 
-	if ((l_caret != Rect2() && (l_dir == TextServer::DIRECTION_AUTO || l_dir == (TextServer::Direction)input_direction)) || (t_caret == Rect2())) {
-		ret.x = x_ofs + l_caret.position.x + scroll_offset;
+	if ((caret.l_caret != Rect2() && (caret.l_dir == TextServer::DIRECTION_AUTO || caret.l_dir == (TextServer::Direction)input_direction)) || (caret.t_caret == Rect2())) {
+		ret.x = x_ofs + caret.l_caret.position.x + scroll_offset;
 	} else {
-		ret.x = x_ofs + t_caret.position.x + scroll_offset;
+		ret.x = x_ofs + caret.t_caret.position.x + scroll_offset;
 	}
 
 	// Get position of the end of caret.
 	if (ime_text.length() != 0) {
 		if (ime_selection.y != 0) {
-			TS->shaped_text_get_carets(text_rid, caret_column + ime_selection.x + ime_selection.y, l_caret, l_dir, t_caret, t_dir);
+			caret = TS->shaped_text_get_carets(text_rid, caret_column + ime_selection.x + ime_selection.y);
 		} else {
-			TS->shaped_text_get_carets(text_rid, caret_column + ime_text.size(), l_caret, l_dir, t_caret, t_dir);
+			caret = TS->shaped_text_get_carets(text_rid, caret_column + ime_text.size());
 		}
-		if ((l_caret != Rect2() && (l_dir == TextServer::DIRECTION_AUTO || l_dir == (TextServer::Direction)input_direction)) || (t_caret == Rect2())) {
-			ret.y = x_ofs + l_caret.position.x + scroll_offset;
+		if ((caret.l_caret != Rect2() && (caret.l_dir == TextServer::DIRECTION_AUTO || caret.l_dir == (TextServer::Direction)input_direction)) || (caret.t_caret == Rect2())) {
+			ret.y = x_ofs + caret.l_caret.position.x + scroll_offset;
 		} else {
-			ret.y = x_ofs + t_caret.position.x + scroll_offset;
+			ret.y = x_ofs + caret.t_caret.position.x + scroll_offset;
 		}
 	} else {
 		ret.y = ret.x;
@@ -1502,7 +1493,7 @@ void LineEdit::insert_text_at_caret(String p_text) {
 	String post = text.substr(caret_column, text.length() - caret_column);
 	text = pre + p_text + post;
 	_shape();
-	TextServer::Direction dir = TS->shaped_text_get_dominant_direciton_in_range(text_rid, caret_column, caret_column + p_text.length());
+	TextServer::Direction dir = TS->shaped_text_get_dominant_direction_in_range(text_rid, caret_column, caret_column + p_text.length());
 	if (dir != TextServer::DIRECTION_AUTO) {
 		input_direction = (TextDirection)dir;
 	}
@@ -1558,6 +1549,20 @@ void LineEdit::deselect() {
 	selection.creating = false;
 	selection.double_click = false;
 	update();
+}
+
+bool LineEdit::has_selection() const {
+	return selection.enabled;
+}
+
+int LineEdit::get_selection_from_column() const {
+	ERR_FAIL_COND_V(!selection.enabled, -1);
+	return selection.begin;
+}
+
+int LineEdit::get_selection_to_column() const {
+	ERR_FAIL_COND_V(!selection.enabled, -1);
+	return selection.end;
 }
 
 void LineEdit::selection_delete() {
@@ -2094,6 +2099,9 @@ void LineEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("select", "from", "to"), &LineEdit::select, DEFVAL(0), DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("select_all"), &LineEdit::select_all);
 	ClassDB::bind_method(D_METHOD("deselect"), &LineEdit::deselect);
+	ClassDB::bind_method(D_METHOD("has_selection"), &LineEdit::has_selection);
+	ClassDB::bind_method(D_METHOD("get_selection_from_column"), &LineEdit::get_selection_from_column);
+	ClassDB::bind_method(D_METHOD("get_selection_to_column"), &LineEdit::get_selection_to_column);
 	ClassDB::bind_method(D_METHOD("set_text", "text"), &LineEdit::set_text);
 	ClassDB::bind_method(D_METHOD("get_text"), &LineEdit::get_text);
 	ClassDB::bind_method(D_METHOD("get_draw_control_chars"), &LineEdit::get_draw_control_chars);

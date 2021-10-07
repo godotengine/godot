@@ -26,7 +26,7 @@
 		<method name="get_camera_transform" qualifiers="const">
 			<return type="Transform3D" />
 			<description>
-				Returns the transform of the camera plus the vertical ([member v_offset]) and horizontal ([member h_offset]) offsets; and any other adjustments made to the position and orientation of the camera by subclassed cameras such as [ClippedCamera3D] and [XRCamera3D].
+				Returns the transform of the camera plus the vertical ([member v_offset]) and horizontal ([member h_offset]) offsets; and any other adjustments made to the position and orientation of the camera by subclassed cameras such as [XRCamera3D].
 			</description>
 		</method>
 		<method name="get_cull_mask_value" qualifiers="const">
@@ -40,6 +40,12 @@
 			<return type="Array" />
 			<description>
 				Returns the camera's frustum planes in world space units as an array of [Plane]s in the following order: near, far, left, top, right, bottom. Not to be confused with [member frustum_offset].
+			</description>
+		</method>
+		<method name="get_pyramid_shape_rid">
+			<return type="RID" />
+			<description>
+				Returns the RID of a pyramid shape encompassing the camera's view frustum, ignoring the camera's near plane. The tip of the pyramid represents the position of the camera.
 			</description>
 		</method>
 		<method name="is_position_behind" qualifiers="const">

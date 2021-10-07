@@ -38,7 +38,6 @@
 
 #include <avrt.h>
 
-#ifdef DEBUG_ENABLED
 static String format_error_message(DWORD id) {
 	LPWSTR messageBuffer = nullptr;
 	size_t size = FormatMessageW(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
@@ -50,7 +49,6 @@ static String format_error_message(DWORD id) {
 
 	return msg;
 }
-#endif // DEBUG_ENABLED
 
 bool DisplayServerWindows::has_feature(Feature p_feature) const {
 	switch (p_feature) {
@@ -454,8 +452,8 @@ Vector<DisplayServer::WindowID> DisplayServerWindows::get_window_list() const {
 	_THREAD_SAFE_METHOD_
 
 	Vector<DisplayServer::WindowID> ret;
-	for (Map<WindowID, WindowData>::Element *E = windows.front(); E; E = E->next()) {
-		ret.push_back(E->key());
+	for (const KeyValue<WindowID, WindowData> &E : windows) {
+		ret.push_back(E.key);
 	}
 	return ret;
 }
@@ -465,9 +463,9 @@ DisplayServer::WindowID DisplayServerWindows::get_window_at_screen_position(cons
 	p.x = p_position.x;
 	p.y = p_position.y;
 	HWND hwnd = WindowFromPoint(p);
-	for (Map<WindowID, WindowData>::Element *E = windows.front(); E; E = E->next()) {
-		if (E->get().hWnd == hwnd) {
-			return E->key();
+	for (const KeyValue<WindowID, WindowData> &E : windows) {
+		if (E.value.hWnd == hwnd) {
+			return E.key;
 		}
 	}
 
@@ -1131,8 +1129,8 @@ bool DisplayServerWindows::window_can_draw(WindowID p_window) const {
 bool DisplayServerWindows::can_any_window_draw() const {
 	_THREAD_SAFE_METHOD_
 
-	for (Map<WindowID, WindowData>::Element *E = windows.front(); E; E = E->next()) {
-		if (!E->get().minimized) {
+	for (const KeyValue<WindowID, WindowData> &E : windows) {
+		if (!E.value.minimized) {
 			return true;
 		}
 	}
@@ -1210,7 +1208,7 @@ void DisplayServerWindows::cursor_set_shape(CursorShape p_shape) {
 		IDC_CROSS,
 		IDC_WAIT,
 		IDC_APPSTARTING,
-		IDC_ARROW,
+		IDC_SIZEALL,
 		IDC_ARROW,
 		IDC_NO,
 		IDC_SIZENS,
@@ -1474,6 +1472,42 @@ String DisplayServerWindows::keyboard_get_layout_language(int p_index) const {
 	memfree(layouts);
 
 	return String::utf16((const char16_t *)buf).substr(0, 2);
+}
+
+Key DisplayServerWindows::keyboard_get_keycode_from_physical(Key p_keycode) const {
+	unsigned int modifiers = p_keycode & KEY_MODIFIER_MASK;
+	Key keycode_no_mod = (Key)(p_keycode & KEY_CODE_MASK);
+
+	if (keycode_no_mod == KEY_PRINT ||
+			keycode_no_mod == KEY_KP_ADD ||
+			keycode_no_mod == KEY_KP_5 ||
+			(keycode_no_mod >= KEY_0 && keycode_no_mod <= KEY_9)) {
+		return p_keycode;
+	}
+
+	unsigned int scancode = KeyMappingWindows::get_scancode(keycode_no_mod);
+	if (scancode == 0) {
+		return p_keycode;
+	}
+
+	HKL current_layout = GetKeyboardLayout(0);
+	UINT vk = MapVirtualKeyEx(scancode, MAPVK_VSC_TO_VK, current_layout);
+	if (vk == 0) {
+		return p_keycode;
+	}
+
+	UINT char_code = MapVirtualKeyEx(vk, MAPVK_VK_TO_CHAR, current_layout) & 0x7FFF;
+	// Unlike a similar Linux/BSD check which matches full Latin-1 range,
+	// we limit these to ASCII to fix some layouts, including Arabic ones
+	if (char_code >= 32 && char_code <= 127) {
+		// Godot uses 'braces' instead of 'brackets'
+		if (char_code == KEY_BRACKETLEFT || char_code == KEY_BRACKETRIGHT) {
+			char_code += 32;
+		}
+		return (Key)(char_code | modifiers);
+	}
+
+	return (Key)(KeyMappingWindows::get_keysym(vk) | modifiers);
 }
 
 String _get_full_layout_name_from_registry(HKL p_layout) {
@@ -1816,8 +1850,8 @@ void DisplayServerWindows::_dispatch_input_event(const Ref<InputEvent> &p_event)
 		callable.call((const Variant **)&evp, 1, ret, ce);
 	} else {
 		// Send to all windows.
-		for (Map<WindowID, WindowData>::Element *E = windows.front(); E; E = E->next()) {
-			Callable callable = E->get().input_event_callback;
+		for (const KeyValue<WindowID, WindowData> &E : windows) {
+			const Callable callable = E.value.input_event_callback;
 			if (callable.is_null()) {
 				continue;
 			}
@@ -1844,9 +1878,9 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 	bool window_created = false;
 
 	// Check whether window exists.
-	for (Map<WindowID, WindowData>::Element *E = windows.front(); E; E = E->next()) {
-		if (E->get().hWnd == hWnd) {
-			window_id = E->key();
+	for (const KeyValue<WindowID, WindowData> &E : windows) {
+		if (E.value.hWnd == hWnd) {
+			window_id = E.key;
 			window_created = true;
 			break;
 		}
@@ -1882,8 +1916,8 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			ReleaseCapture();
 
 			// Release every touch to avoid sticky points.
-			for (Map<int, Vector2>::Element *E = touch_state.front(); E; E = E->next()) {
-				_touch_event(window_id, false, E->get().x, E->get().y, E->key());
+			for (const KeyValue<int, Vector2> &E : touch_state) {
+				_touch_event(window_id, false, E.value.x, E.value.y, E.key);
 			}
 			touch_state.clear();
 
@@ -2943,8 +2977,8 @@ void DisplayServerWindows::_process_key_events() {
 }
 
 void DisplayServerWindows::_update_tablet_ctx(const String &p_old_driver, const String &p_new_driver) {
-	for (Map<WindowID, WindowData>::Element *E = windows.front(); E; E = E->next()) {
-		WindowData &wd = E->get();
+	for (KeyValue<WindowID, WindowData> &E : windows) {
+		WindowData &wd = E.value;
 		wd.block_mm = false;
 		if ((p_old_driver == "wintab") && wintab_available && wd.wtctx) {
 			wintab_WTEnable(wd.wtctx, false);

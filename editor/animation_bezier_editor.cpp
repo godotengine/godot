@@ -398,17 +398,17 @@ void AnimationBezierTrackEdit::_notification(int p_what) {
 
 			float scale = timeline->get_zoom_scale();
 			Ref<Texture2D> point = get_theme_icon(SNAME("KeyValue"), SNAME("EditorIcons"));
-			for (Map<int, Color>::Element *E = subtrack_colors.front(); E; E = E->next()) {
-				_draw_track(E->key(), E->get());
+			for (const KeyValue<int, Color> &E : subtrack_colors) {
+				_draw_track(E.key, E.value);
 
-				for (int i = 0; i < animation->track_get_key_count(E->key()); i++) {
-					float offset = animation->track_get_key_time(E->key(), i);
-					float value = animation->bezier_track_get_key_value(E->key(), i);
+				for (int i = 0; i < animation->track_get_key_count(E.key); i++) {
+					float offset = animation->track_get_key_time(E.key, i);
+					float value = animation->bezier_track_get_key_value(E.key, i);
 
 					Vector2 pos((offset - timeline->get_value()) * scale + limit, _bezier_h_to_pixel(value));
 
 					if (pos.x >= limit && pos.x <= right_limit) {
-						draw_texture(point, pos - point->get_size() / 2, E->get());
+						draw_texture(point, pos - point->get_size() / 2, E.value);
 					}
 				}
 			}
@@ -680,9 +680,9 @@ void AnimationBezierTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 			emit_signal(SNAME("close_request"));
 			return;
 		}
-		for (Map<int, Rect2>::Element *E = subtracks.front(); E; E = E->next()) {
-			if (E->get().has_point(mb->get_position())) {
-				set_animation_and_track(animation, E->key());
+		for (const KeyValue<int, Rect2> &E : subtracks) {
+			if (E.value.has_point(mb->get_position())) {
+				set_animation_and_track(animation, E.key);
 				_clear_selection();
 				return;
 			}

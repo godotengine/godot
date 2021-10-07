@@ -41,19 +41,10 @@ namespace TestTextServer {
 
 TEST_SUITE("[[TextServer]") {
 	TEST_CASE("[TextServer] Init, font loading and shaping") {
-		TextServerManager *tsman = memnew(TextServerManager);
-		Error err = OK;
-
-		SUBCASE("[TextServer] Init") {
-			for (int i = 0; i < TextServerManager::get_interface_count(); i++) {
-				TextServer *ts = TextServerManager::initialize(i, err);
-				TEST_FAIL_COND((err != OK || ts == nullptr), "Text server ", TextServerManager::get_interface_name(i), " init failed.");
-			}
-		}
-
 		SUBCASE("[TextServer] Loading fonts") {
-			for (int i = 0; i < TextServerManager::get_interface_count(); i++) {
-				TextServer *ts = TextServerManager::initialize(i, err);
+			for (int i = 0; i < TextServerManager::get_singleton()->get_interface_count(); i++) {
+				Ref<TextServer> ts = TextServerManager::get_singleton()->get_interface(i);
+				TEST_FAIL_COND(ts.is_null(), "Invalid TS interface.");
 
 				RID font = ts->create_font();
 				ts->font_set_data_ptr(font, _font_NotoSans_Regular, _font_NotoSans_Regular_size);
@@ -63,8 +54,9 @@ TEST_SUITE("[[TextServer]") {
 		}
 
 		SUBCASE("[TextServer] Text layout: Font fallback") {
-			for (int i = 0; i < TextServerManager::get_interface_count(); i++) {
-				TextServer *ts = TextServerManager::initialize(i, err);
+			for (int i = 0; i < TextServerManager::get_singleton()->get_interface_count(); i++) {
+				Ref<TextServer> ts = TextServerManager::get_singleton()->get_interface(i);
+				TEST_FAIL_COND(ts.is_null(), "Invalid TS interface.");
 
 				RID font1 = ts->create_font();
 				ts->font_set_data_ptr(font1, _font_NotoSans_Regular, _font_NotoSans_Regular_size);
@@ -83,9 +75,10 @@ TEST_SUITE("[[TextServer]") {
 				bool ok = ts->shaped_text_add_string(ctx, test, font, 16);
 				TEST_FAIL_COND(!ok, "Adding text to the buffer failed.");
 
-				Vector<TextServer::Glyph> glyphs = ts->shaped_text_get_glyphs(ctx);
-				TEST_FAIL_COND(glyphs.size() == 0, "Shaping failed");
-				for (int j = 0; j < glyphs.size(); j++) {
+				const Glyph *glyphs = ts->shaped_text_get_glyphs(ctx);
+				int gl_size = ts->shaped_text_get_glyph_count(ctx);
+				TEST_FAIL_COND(gl_size == 0, "Shaping failed");
+				for (int j = 0; j < gl_size; j++) {
 					if (glyphs[j].start < 6) {
 						TEST_FAIL_COND(glyphs[j].font_rid != font[1], "Incorrect font selected.");
 					}
@@ -110,8 +103,9 @@ TEST_SUITE("[[TextServer]") {
 		}
 
 		SUBCASE("[TextServer] Text layout: BiDi") {
-			for (int i = 0; i < TextServerManager::get_interface_count(); i++) {
-				TextServer *ts = TextServerManager::initialize(i, err);
+			for (int i = 0; i < TextServerManager::get_singleton()->get_interface_count(); i++) {
+				Ref<TextServer> ts = TextServerManager::get_singleton()->get_interface(i);
+				TEST_FAIL_COND(ts.is_null(), "Invalid TS interface.");
 
 				if (!ts->has_feature(TextServer::FEATURE_BIDI_LAYOUT)) {
 					continue;
@@ -134,9 +128,10 @@ TEST_SUITE("[[TextServer]") {
 				bool ok = ts->shaped_text_add_string(ctx, test, font, 16);
 				TEST_FAIL_COND(!ok, "Adding text to the buffer failed.");
 
-				Vector<TextServer::Glyph> glyphs = ts->shaped_text_get_glyphs(ctx);
-				TEST_FAIL_COND(glyphs.size() == 0, "Shaping failed");
-				for (int j = 0; j < glyphs.size(); j++) {
+				const Glyph *glyphs = ts->shaped_text_get_glyphs(ctx);
+				int gl_size = ts->shaped_text_get_glyph_count(ctx);
+				TEST_FAIL_COND(gl_size == 0, "Shaping failed");
+				for (int j = 0; j < gl_size; j++) {
 					if (glyphs[j].count > 0) {
 						if (glyphs[j].start < 7) {
 							TEST_FAIL_COND(((glyphs[j].flags & TextServer::GRAPHEME_IS_RTL) == TextServer::GRAPHEME_IS_RTL), "Incorrect direction.");
@@ -160,8 +155,9 @@ TEST_SUITE("[[TextServer]") {
 		}
 
 		SUBCASE("[TextServer] Text layout: Line breaking") {
-			for (int i = 0; i < TextServerManager::get_interface_count(); i++) {
-				TextServer *ts = TextServerManager::initialize(i, err);
+			for (int i = 0; i < TextServerManager::get_singleton()->get_interface_count(); i++) {
+				Ref<TextServer> ts = TextServerManager::get_singleton()->get_interface(i);
+				TEST_FAIL_COND(ts.is_null(), "Invalid TS interface.");
 
 				String test_1 = U"test test test";
 				//                   5^  10^
@@ -180,12 +176,17 @@ TEST_SUITE("[[TextServer]") {
 				bool ok = ts->shaped_text_add_string(ctx, test_1, font, 16);
 				TEST_FAIL_COND(!ok, "Adding text to the buffer failed.");
 
-				Vector<Vector2i> brks = ts->shaped_text_get_line_breaks(ctx, 1);
-				TEST_FAIL_COND(brks.size() != 3, "Invalid line breaks number.");
-				if (brks.size() == 3) {
-					TEST_FAIL_COND(brks[0] != Vector2i(0, 5), "Invalid line break position.");
-					TEST_FAIL_COND(brks[1] != Vector2i(5, 10), "Invalid line break position.");
-					TEST_FAIL_COND(brks[2] != Vector2i(10, 14), "Invalid line break position.");
+				PackedInt32Array brks = ts->shaped_text_get_line_breaks(ctx, 1);
+				TEST_FAIL_COND(brks.size() != 6, "Invalid line breaks number.");
+				if (brks.size() == 6) {
+					TEST_FAIL_COND(brks[0] != 0, "Invalid line break position.");
+					TEST_FAIL_COND(brks[1] != 5, "Invalid line break position.");
+
+					TEST_FAIL_COND(brks[2] != 5, "Invalid line break position.");
+					TEST_FAIL_COND(brks[3] != 10, "Invalid line break position.");
+
+					TEST_FAIL_COND(brks[4] != 10, "Invalid line break position.");
+					TEST_FAIL_COND(brks[5] != 14, "Invalid line break position.");
 				}
 
 				ts->free(ctx);
@@ -198,8 +199,9 @@ TEST_SUITE("[[TextServer]") {
 		}
 
 		SUBCASE("[TextServer] Text layout: Justification") {
-			for (int i = 0; i < TextServerManager::get_interface_count(); i++) {
-				TextServer *ts = TextServerManager::initialize(i, err);
+			for (int i = 0; i < TextServerManager::get_singleton()->get_interface_count(); i++) {
+				Ref<TextServer> ts = TextServerManager::get_singleton()->get_interface(i);
+				TEST_FAIL_COND(ts.is_null(), "Invalid TS interface.");
 
 				RID font1 = ts->create_font();
 				ts->font_set_data_ptr(font1, _font_NotoSans_Regular, _font_NotoSans_Regular_size);
@@ -263,7 +265,6 @@ TEST_SUITE("[[TextServer]") {
 				font.clear();
 			}
 		}
-		memdelete(tsman);
 	}
 }
 }; // namespace TestTextServer

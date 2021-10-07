@@ -1768,6 +1768,13 @@ void Thread::_start_func(void *ud) {
 	Ref<Thread> *tud = (Ref<Thread> *)ud;
 	Ref<Thread> t = *tud;
 	memdelete(tud);
+
+	Object *target_instance = t->target_callable.get_object();
+	if (!target_instance) {
+		t->running.clear();
+		ERR_FAIL_MSG(vformat("Could not call function '%s' on previously freed instance to start thread %s.", t->target_callable.get_method(), t->get_id()));
+	}
+
 	Callable::CallError ce;
 	const Variant *arg[1] = { &t->userdata };
 	int argc = 0;
@@ -1786,15 +1793,17 @@ void Thread::_start_func(void *ud) {
 		// We must check if we are in case b).
 		int target_param_count = 0;
 		int target_default_arg_count = 0;
-		Ref<Script> script = t->target_callable.get_object()->get_script();
+		Ref<Script> script = target_instance->get_script();
 		if (script.is_valid()) {
 			MethodInfo mi = script->get_method_info(t->target_callable.get_method());
 			target_param_count = mi.arguments.size();
 			target_default_arg_count = mi.default_arguments.size();
 		} else {
-			MethodBind *method = ClassDB::get_method(t->target_callable.get_object()->get_class_name(), t->target_callable.get_method());
-			target_param_count = method->get_argument_count();
-			target_default_arg_count = method->get_default_argument_count();
+			MethodBind *method = ClassDB::get_method(target_instance->get_class_name(), t->target_callable.get_method());
+			if (method) {
+				target_param_count = method->get_argument_count();
+				target_default_arg_count = method->get_default_argument_count();
+			}
 		}
 		if (target_param_count >= 1 && target_default_arg_count < target_param_count) {
 			argc = 1;
@@ -1805,19 +1814,22 @@ void Thread::_start_func(void *ud) {
 
 	t->target_callable.call(arg, argc, t->ret, ce);
 	if (ce.error != Callable::CallError::CALL_OK) {
+		t->running.clear();
 		ERR_FAIL_MSG("Could not call function '" + t->target_callable.get_method().operator String() + "' to start thread " + t->get_id() + ": " + Variant::get_callable_error_text(t->target_callable, arg, argc, ce) + ".");
 	}
+
+	t->running.clear();
 }
 
 Error Thread::start(const Callable &p_callable, const Variant &p_userdata, Priority p_priority) {
-	ERR_FAIL_COND_V_MSG(active.is_set(), ERR_ALREADY_IN_USE, "Thread already started.");
+	ERR_FAIL_COND_V_MSG(is_started(), ERR_ALREADY_IN_USE, "Thread already started.");
 	ERR_FAIL_COND_V(p_callable.is_null(), ERR_INVALID_PARAMETER);
 	ERR_FAIL_INDEX_V(p_priority, PRIORITY_MAX, ERR_INVALID_PARAMETER);
 
 	ret = Variant();
 	target_callable = p_callable;
 	userdata = p_userdata;
-	active.set();
+	running.set();
 
 	Ref<Thread> *ud = memnew(Ref<Thread>(this));
 
@@ -1832,15 +1844,18 @@ String Thread::get_id() const {
 	return itos(thread.get_id());
 }
 
-bool Thread::is_active() const {
-	return active.is_set();
+bool Thread::is_started() const {
+	return thread.is_started();
+}
+
+bool Thread::is_alive() const {
+	return running.is_set();
 }
 
 Variant Thread::wait_to_finish() {
-	ERR_FAIL_COND_V_MSG(!active.is_set(), Variant(), "Thread must be active to wait for its completion.");
+	ERR_FAIL_COND_V_MSG(!is_started(), Variant(), "Thread must have been started to wait for its completion.");
 	thread.wait_to_finish();
 	Variant r = ret;
-	active.clear();
 	target_callable = Callable();
 	userdata = Variant();
 
@@ -1850,7 +1865,8 @@ Variant Thread::wait_to_finish() {
 void Thread::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("start", "callable", "userdata", "priority"), &Thread::start, DEFVAL(Variant()), DEFVAL(PRIORITY_NORMAL));
 	ClassDB::bind_method(D_METHOD("get_id"), &Thread::get_id);
-	ClassDB::bind_method(D_METHOD("is_active"), &Thread::is_active);
+	ClassDB::bind_method(D_METHOD("is_started"), &Thread::is_started);
+	ClassDB::bind_method(D_METHOD("is_alive"), &Thread::is_alive);
 	ClassDB::bind_method(D_METHOD("wait_to_finish"), &Thread::wait_to_finish);
 
 	BIND_ENUM_CONSTANT(PRIORITY_LOW);
@@ -2411,12 +2427,12 @@ Error EngineDebugger::call_capture(void *p_user, const String &p_cmd, const Arra
 }
 
 EngineDebugger::~EngineDebugger() {
-	for (Map<StringName, Callable>::Element *E = captures.front(); E; E = E->next()) {
-		::EngineDebugger::unregister_message_capture(E->key());
+	for (const KeyValue<StringName, Callable> &E : captures) {
+		::EngineDebugger::unregister_message_capture(E.key);
 	}
 	captures.clear();
-	for (Map<StringName, ProfilerCallable>::Element *E = profilers.front(); E; E = E->next()) {
-		::EngineDebugger::unregister_profiler(E->key());
+	for (const KeyValue<StringName, ProfilerCallable> &E : profilers) {
+		::EngineDebugger::unregister_profiler(E.key);
 	}
 	profilers.clear();
 }

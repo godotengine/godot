@@ -284,6 +284,26 @@ TEST_CASE("[SceneTree][CodeEdit] line gutters") {
 			CHECK_FALSE(code_edit->is_line_breakpointed(1));
 			ERR_PRINT_ON;
 			SIGNAL_CHECK("breakpoint_toggled", args);
+
+			/* Backspace above breakpointed line moves it. */
+			((Array)args[0])[0] = 2;
+
+			code_edit->set_text("\n\n");
+			code_edit->set_line_as_breakpoint(2, true);
+			CHECK(code_edit->is_line_breakpointed(2));
+			SIGNAL_CHECK("breakpoint_toggled", args);
+
+			code_edit->set_caret_line(1);
+
+			Array arg2;
+			arg2.push_back(1);
+			args.push_back(arg2);
+			SEND_GUI_ACTION(code_edit, "ui_text_backspace");
+			ERR_PRINT_OFF;
+			CHECK_FALSE(code_edit->is_line_breakpointed(2));
+			ERR_PRINT_ON;
+			CHECK(code_edit->is_line_breakpointed(1));
+			SIGNAL_CHECK("breakpoint_toggled", args);
 		}
 
 		SUBCASE("[CodeEdit] breakpoints and delete") {
@@ -312,6 +332,26 @@ TEST_CASE("[SceneTree][CodeEdit] line gutters") {
 			CHECK_FALSE(code_edit->is_line_breakpointed(1));
 			ERR_PRINT_ON;
 			SIGNAL_CHECK("breakpoint_toggled", args);
+
+			/* Delete above breakpointed line moves it. */
+			((Array)args[0])[0] = 2;
+
+			code_edit->set_text("\n\n");
+			code_edit->set_line_as_breakpoint(2, true);
+			CHECK(code_edit->is_line_breakpointed(2));
+			SIGNAL_CHECK("breakpoint_toggled", args);
+
+			code_edit->set_caret_line(0);
+
+			Array arg2;
+			arg2.push_back(1);
+			args.push_back(arg2);
+			SEND_GUI_ACTION(code_edit, "ui_text_delete");
+			ERR_PRINT_OFF;
+			CHECK_FALSE(code_edit->is_line_breakpointed(2));
+			ERR_PRINT_ON;
+			CHECK(code_edit->is_line_breakpointed(1));
+			SIGNAL_CHECK("breakpoint_toggled", args);
 		}
 
 		SUBCASE("[CodeEdit] breakpoints and delete selection") {
@@ -329,6 +369,41 @@ TEST_CASE("[SceneTree][CodeEdit] line gutters") {
 			code_edit->delete_selection();
 			MessageQueue::get_singleton()->flush();
 			CHECK_FALSE(code_edit->is_line_breakpointed(0));
+			SIGNAL_CHECK("breakpoint_toggled", args);
+
+			/* Should handle breakpoint move when deleting selection by adding less text then removed. */
+			((Array)args[0])[0] = 9;
+
+			code_edit->set_text("\n\n\n\n\n\n\n\n\n");
+			code_edit->set_line_as_breakpoint(9, true);
+			CHECK(code_edit->is_line_breakpointed(9));
+			SIGNAL_CHECK("breakpoint_toggled", args);
+
+			code_edit->select(0, 0, 6, 0);
+
+			Array arg2;
+			arg2.push_back(4);
+			args.push_back(arg2);
+			SEND_GUI_ACTION(code_edit, "ui_text_newline");
+			ERR_PRINT_OFF;
+			CHECK_FALSE(code_edit->is_line_breakpointed(9));
+			ERR_PRINT_ON;
+			CHECK(code_edit->is_line_breakpointed(4));
+			SIGNAL_CHECK("breakpoint_toggled", args);
+
+			/* Should handle breakpoint move when deleting selection by adding more text then removed. */
+			((Array)args[0])[0] = 9;
+			((Array)args[1])[0] = 14;
+
+			code_edit->insert_text_at_caret("\n\n\n\n\n");
+			MessageQueue::get_singleton()->flush();
+			SIGNAL_DISCARD("breakpoint_toggled")
+			CHECK(code_edit->is_line_breakpointed(9));
+
+			code_edit->select(0, 0, 6, 0);
+			code_edit->insert_text_at_caret("\n\n\n\n\n\n\n\n\n\n\n");
+			MessageQueue::get_singleton()->flush();
+			CHECK(code_edit->is_line_breakpointed(14));
 			SIGNAL_CHECK("breakpoint_toggled", args);
 		}
 
@@ -3059,6 +3134,53 @@ TEST_CASE("[SceneTree][CodeEdit] line length guidelines") {
 	code_edit->set_line_length_guidelines(guide_lines);
 	CHECK((int)code_edit->get_line_length_guidelines()[0] == 80);
 	CHECK((int)code_edit->get_line_length_guidelines()[1] == 120);
+
+	memdelete(code_edit);
+}
+
+TEST_CASE("[SceneTree][CodeEdit] Backspace delete") {
+	CodeEdit *code_edit = memnew(CodeEdit);
+	SceneTree::get_singleton()->get_root()->add_child(code_edit);
+
+	/* Backspace with selection on first line. */
+	code_edit->set_text("");
+	code_edit->insert_text_at_caret("test backspace");
+	code_edit->select(0, 0, 0, 5);
+	code_edit->backspace();
+	CHECK(code_edit->get_line(0) == "backspace");
+
+	/* Backspace with selection on first line and caret at the beginning of file. */
+	code_edit->set_text("");
+	code_edit->insert_text_at_caret("test backspace");
+	code_edit->select(0, 0, 0, 5);
+	code_edit->set_caret_column(0);
+	code_edit->backspace();
+	CHECK(code_edit->get_line(0) == "backspace");
+
+	/* Move caret up to the previous line on backspace if carret is at the first column. */
+	code_edit->set_text("");
+	code_edit->insert_text_at_caret("line 1\nline 2");
+	code_edit->set_caret_line(1);
+	code_edit->set_caret_column(0);
+	code_edit->backspace();
+	CHECK(code_edit->get_line(0) == "line 1line 2");
+	CHECK(code_edit->get_caret_line() == 0);
+	CHECK(code_edit->get_caret_column() == 6);
+
+	/* Backspace delete all text if all text is selected. */
+	code_edit->set_text("");
+	code_edit->insert_text_at_caret("line 1\nline 2\nline 3");
+	code_edit->select_all();
+	code_edit->backspace();
+	CHECK(code_edit->get_text() == "");
+
+	/* Backspace at the beginning without selection has no effect. */
+	code_edit->set_text("");
+	code_edit->insert_text_at_caret("line 1\nline 2\nline 3");
+	code_edit->set_caret_line(0);
+	code_edit->set_caret_column(0);
+	code_edit->backspace();
+	CHECK(code_edit->get_text() == "line 1\nline 2\nline 3");
 
 	memdelete(code_edit);
 }

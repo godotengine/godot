@@ -36,7 +36,6 @@
 #include "core/io/file_access.h"
 #include "core/os/midi_driver.h"
 #include "core/version_generated.gen.h"
-#include "servers/audio_server.h"
 
 #include <stdarg.h>
 
@@ -280,6 +279,11 @@ String OS::get_cache_path() const {
 // Path to macOS .app bundle resources
 String OS::get_bundle_resource_dir() const {
 	return ".";
+}
+
+// Path to macOS .app bundle embedded icon
+String OS::get_bundle_icon_path() const {
+	return String();
 }
 
 // OS specific path for user://

@@ -82,6 +82,24 @@
 				Returns the scroll offset due to [member caret_column], as a number of characters.
 			</description>
 		</method>
+		<method name="get_selection_from_column" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the selection begin column.
+			</description>
+		</method>
+		<method name="get_selection_to_column" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the selection end column.
+			</description>
+		</method>
+		<method name="has_selection" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the user has selected text.
+			</description>
+		</method>
 		<method name="insert_text_at_caret">
 			<return type="void" />
 			<argument index="0" name="text" type="String" />
@@ -157,7 +175,7 @@
 		</member>
 		<member name="caret_mid_grapheme" type="bool" setter="set_caret_mid_grapheme_enabled" getter="is_caret_mid_grapheme_enabled" default="false">
 			Allow moving caret, selecting and removing the individual composite character components.
-			Note: [kbd]Backspace[/kbd] is always removing individual composite character components.
+			[b]Note:[/b] [kbd]Backspace[/kbd] is always removing individual composite character components.
 		</member>
 		<member name="clear_button_enabled" type="bool" setter="set_clear_button_enabled" getter="is_clear_button_enabled" default="false">
 			If [code]true[/code], the [LineEdit] will show a clear button if [code]text[/code] is not empty, which can be used to clear the text quickly.

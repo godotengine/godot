@@ -862,6 +862,9 @@ void EditorFileSystem::_scan_new_dir(EditorFileSystemDirectory *p_dir, DirAccess
 			} else {
 				//new or modified time
 				fi->type = ResourceLoader::get_resource_type(path);
+				if (fi->type == "" && textfile_extensions.has(ext)) {
+					fi->type = "TextFile";
+				}
 				fi->uid = ResourceLoader::get_resource_uid(path);
 				fi->script_class_name = _get_global_script_class(fi->type, path, &fi->script_class_extends, &fi->script_class_icon_path);
 				fi->deps = _get_dependencies(path);
@@ -984,6 +987,9 @@ void EditorFileSystem::_scan_fs_changes(EditorFileSystemDirectory *p_dir, const 
 					fi->modified_time = FileAccess::get_modified_time(path);
 					fi->import_modified_time = 0;
 					fi->type = ResourceLoader::get_resource_type(path);
+					if (fi->type == "" && textfile_extensions.has(ext)) {
+						fi->type = "TextFile";
+					}
 					fi->script_class_name = _get_global_script_class(fi->type, path, &fi->script_class_extends, &fi->script_class_icon_path);
 					fi->import_valid = ResourceLoader::is_import_valid(path);
 					fi->import_group_file = ResourceLoader::get_import_group_file(path);
@@ -1539,6 +1545,9 @@ void EditorFileSystem::update_file(const String &p_file) {
 	}
 
 	String type = ResourceLoader::get_resource_type(p_file);
+	if (type == "" && textfile_extensions.has(p_file.get_extension())) {
+		type = "TextFile";
+	}
 	ResourceUID::ID uid = ResourceLoader::get_resource_uid(p_file);
 
 	if (cpos == -1) {
@@ -1556,7 +1565,7 @@ void EditorFileSystem::update_file(const String &p_file) {
 		EditorFileSystemDirectory::FileInfo *fi = memnew(EditorFileSystemDirectory::FileInfo);
 		fi->file = file_name;
 		fi->import_modified_time = 0;
-		fi->import_valid = ResourceLoader::is_import_valid(p_file);
+		fi->import_valid = type == "TextFile" ? true : ResourceLoader::is_import_valid(p_file);
 
 		if (idx == fs->files.size()) {
 			fs->files.push_back(fi);
@@ -1577,7 +1586,7 @@ void EditorFileSystem::update_file(const String &p_file) {
 	fs->files[cpos]->import_group_file = ResourceLoader::get_import_group_file(p_file);
 	fs->files[cpos]->modified_time = FileAccess::get_modified_time(p_file);
 	fs->files[cpos]->deps = _get_dependencies(p_file);
-	fs->files[cpos]->import_valid = ResourceLoader::is_import_valid(p_file);
+	fs->files[cpos]->import_valid = type == "TextFile" ? true : ResourceLoader::is_import_valid(p_file);
 
 	if (uid != ResourceUID::INVALID_ID) {
 		if (ResourceUID::get_singleton()->has_id(uid)) {
@@ -1654,8 +1663,8 @@ Error EditorFileSystem::_reimport_group(const String &p_group_file, const Vector
 	Error err = importer->import_group_file(p_group_file, source_file_options, base_paths);
 
 	//all went well, overwrite config files with proper remaps and md5s
-	for (Map<String, Map<StringName, Variant>>::Element *E = source_file_options.front(); E; E = E->next()) {
-		const String &file = E->key();
+	for (const KeyValue<String, Map<StringName, Variant>> &E : source_file_options) {
+		const String &file = E.key;
 		String base_path = ResourceFormatImporter::get_singleton()->get_import_base_path(file);
 		FileAccessRef f = FileAccess::open(file + ".import", FileAccess::WRITE);
 		ERR_FAIL_COND_V_MSG(!f, ERR_FILE_CANT_OPEN, "Cannot open import file '" + file + ".import'.");
@@ -1740,6 +1749,9 @@ Error EditorFileSystem::_reimport_group(const String &p_group_file, const Vector
 		fs->files[cpos]->import_modified_time = FileAccess::get_modified_time(file + ".import");
 		fs->files[cpos]->deps = _get_dependencies(file);
 		fs->files[cpos]->type = importer->get_resource_type();
+		if (fs->files[cpos]->type == "" && textfile_extensions.has(file.get_extension())) {
+			fs->files[cpos]->type = "TextFile";
+		}
 		fs->files[cpos]->import_valid = err == OK;
 
 		//if file is currently up, maybe the source it was loaded from changed, so import math must be updated for it
@@ -2121,10 +2133,10 @@ void EditorFileSystem::reimport_files(const Vector<String> &p_files) {
 	if (groups_to_reimport.size()) {
 		Map<String, Vector<String>> group_files;
 		_find_group_files(filesystem, group_files, groups_to_reimport);
-		for (Map<String, Vector<String>>::Element *E = group_files.front(); E; E = E->next()) {
-			Error err = _reimport_group(E->key(), E->get());
+		for (const KeyValue<String, Vector<String>> &E : group_files) {
+			Error err = _reimport_group(E.key, E.value);
 			if (err == OK) {
-				_reimport_file(E->key());
+				_reimport_file(E.key);
 			}
 		}
 	}
@@ -2151,6 +2163,10 @@ Error EditorFileSystem::_resource_import(const String &p_path) {
 }
 
 bool EditorFileSystem::_should_skip_directory(const String &p_path) {
+	if (p_path == ProjectSettings::get_singleton()->get_project_data_path()) {
+		return true;
+	}
+
 	if (FileAccess::exists(p_path.plus_file("project.godot"))) {
 		// skip if another project inside this
 		return true;
@@ -2216,7 +2232,7 @@ void EditorFileSystem::move_group_file(const String &p_path, const String &p_new
 }
 
 ResourceUID::ID EditorFileSystem::_resource_saver_get_resource_id_for_path(const String &p_path, bool p_generate) {
-	if (!p_path.is_resource_file() || p_path.begins_with("res://.godot")) {
+	if (!p_path.is_resource_file() || p_path.begins_with(ProjectSettings::get_singleton()->get_project_data_path())) {
 		//saved externally (configuration file) or internal file, do not assign an ID.
 		return ResourceUID::INVALID_ID;
 	}
@@ -2274,17 +2290,18 @@ bool EditorFileSystem::_scan_extensions() {
 		}
 	}
 
+	String extension_list_config_file = NativeExtension::get_extension_list_config_file();
 	if (extensions.size()) {
 		if (extensions_added.size() || extensions_removed.size()) { //extensions were added or removed
-			FileAccessRef f = FileAccess::open(NativeExtension::EXTENSION_LIST_CONFIG_FILE, FileAccess::WRITE);
+			FileAccessRef f = FileAccess::open(extension_list_config_file, FileAccess::WRITE);
 			for (const String &E : extensions) {
 				f->store_line(E);
 			}
 		}
 	} else {
-		if (loaded_extensions.size() || FileAccess::exists(NativeExtension::EXTENSION_LIST_CONFIG_FILE)) { //extensions were removed
+		if (loaded_extensions.size() || FileAccess::exists(extension_list_config_file)) { //extensions were removed
 			DirAccessRef da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
-			da->remove(NativeExtension::EXTENSION_LIST_CONFIG_FILE);
+			da->remove(extension_list_config_file);
 		}
 	}
 
@@ -2329,11 +2346,21 @@ void EditorFileSystem::_bind_methods() {
 void EditorFileSystem::_update_extensions() {
 	valid_extensions.clear();
 	import_extensions.clear();
+	textfile_extensions.clear();
 
 	List<String> extensionsl;
 	ResourceLoader::get_recognized_extensions_for_type("", &extensionsl);
 	for (const String &E : extensionsl) {
 		valid_extensions.insert(E);
+	}
+
+	const Vector<String> textfile_ext = ((String)(EditorSettings::get_singleton()->get("docks/filesystem/textfile_extensions"))).split(",", false);
+	for (const String &E : textfile_ext) {
+		if (valid_extensions.has(E)) {
+			continue;
+		}
+		valid_extensions.insert(E);
+		textfile_extensions.insert(E);
 	}
 
 	extensionsl.clear();

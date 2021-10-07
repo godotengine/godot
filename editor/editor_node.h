@@ -308,6 +308,7 @@ private:
 	ConfirmationDialog *pick_main_scene;
 	Button *select_current_scene_button;
 	AcceptDialog *accept;
+	AcceptDialog *save_accept;
 	EditorAbout *about;
 	AcceptDialog *warning;
 
@@ -541,6 +542,7 @@ private:
 
 	String import_reload_fn;
 
+	Set<String> textfile_extensions;
 	Set<FileDialog *> file_dialogs;
 	Set<EditorFileDialog *> editor_file_dialogs;
 
@@ -814,6 +816,7 @@ public:
 	Ref<Texture2D> get_class_icon(const String &p_class, const String &p_fallback = "Object") const;
 
 	void show_accept(const String &p_text, const String &p_title);
+	void show_save_accept(const String &p_text, const String &p_title);
 	void show_warning(const String &p_text, const String &p_title = TTR("Warning!"));
 
 	void _copy_warning(const String &p_str);
@@ -939,7 +942,7 @@ public:
 	bool forward_gui_input(const Ref<InputEvent> &p_event);
 	void forward_canvas_draw_over_viewport(Control *p_overlay);
 	void forward_canvas_force_draw_over_viewport(Control *p_overlay);
-	bool forward_spatial_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event, bool serve_when_force_input_enabled);
+	EditorPlugin::AfterGUIInput forward_spatial_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event, bool serve_when_force_input_enabled);
 	void forward_spatial_draw_over_viewport(Control *p_overlay);
 	void forward_spatial_force_draw_over_viewport(Control *p_overlay);
 	void add_plugin(EditorPlugin *p_plugin);

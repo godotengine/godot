@@ -11,6 +11,24 @@
 		<link title="Locales">https://docs.godotengine.org/en/latest/tutorials/i18n/locales.html</link>
 	</tutorials>
 	<methods>
+		<method name="_get_message" qualifiers="virtual const">
+			<return type="StringName" />
+			<argument index="0" name="src_message" type="StringName" />
+			<argument index="1" name="context" type="StringName" />
+			<description>
+				Virtual method to override [method get_message].
+			</description>
+		</method>
+		<method name="_get_plural_message" qualifiers="virtual const">
+			<return type="StringName" />
+			<argument index="0" name="src_message" type="StringName" />
+			<argument index="1" name="src_plural_message" type="StringName" />
+			<argument index="2" name="n" type="int" />
+			<argument index="3" name="context" type="StringName" />
+			<description>
+				Virtual method to override [method get_plural_message].
+			</description>
+		</method>
 		<method name="add_message">
 			<return type="void" />
 			<argument index="0" name="src_message" type="StringName" />

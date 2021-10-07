@@ -43,6 +43,7 @@ void PhysicalBone3DEditor::_on_toggle_button_transform_joint(bool p_is_pressed) 
 void PhysicalBone3DEditor::_set_move_joint() {
 	if (selected) {
 		selected->_set_gizmo_move_joint(button_transform_joint->is_pressed());
+		Node3DEditor::get_singleton()->update_transform_gizmo();
 	}
 }
 

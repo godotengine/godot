@@ -582,9 +582,9 @@ void GDScriptParser::parse_program() {
 	parse_class_body(true);
 
 #ifdef TOOLS_ENABLED
-	for (Map<int, GDScriptTokenizer::CommentData>::Element *E = tokenizer.get_comments().front(); E; E = E->next()) {
-		if (E->get().new_line && E->get().comment.begins_with("##")) {
-			class_doc_line = MIN(class_doc_line, E->key());
+	for (const KeyValue<int, GDScriptTokenizer::CommentData> &E : tokenizer.get_comments()) {
+		if (E.value.new_line && E.value.comment.begins_with("##")) {
+			class_doc_line = MIN(class_doc_line, E.key);
 		}
 	}
 	if (has_comment(class_doc_line)) {
@@ -1619,6 +1619,10 @@ GDScriptParser::ForNode *GDScriptParser::parse_for() {
 	consume(GDScriptTokenizer::Token::IN, R"(Expected "in" after "for" variable name.)");
 
 	n_for->list = parse_expression(false);
+
+	if (!n_for->list) {
+		push_error(R"(Expected a list or range after "in".)");
+	}
 
 	consume(GDScriptTokenizer::Token::COLON, R"(Expected ":" after "for" condition.)");
 
@@ -3481,22 +3485,22 @@ bool GDScriptParser::network_annotations(const AnnotationNode *p_annotation, Nod
 		}
 		for (int i = last; i >= 0; i--) {
 			String mode = p_annotation->resolved_arguments[i].operator String();
-			if (mode == "any") {
-				rpc_config.rpc_mode = Multiplayer::RPC_MODE_ANY;
-			} else if (mode == "auth") {
+			if (mode == "any_peer") {
+				rpc_config.rpc_mode = Multiplayer::RPC_MODE_ANY_PEER;
+			} else if (mode == "authority") {
 				rpc_config.rpc_mode = Multiplayer::RPC_MODE_AUTHORITY;
-			} else if (mode == "sync") {
+			} else if (mode == "call_local") {
 				rpc_config.sync = true;
-			} else if (mode == "nosync") {
+			} else if (mode == "call_remote") {
 				rpc_config.sync = false;
 			} else if (mode == "reliable") {
 				rpc_config.transfer_mode = Multiplayer::TRANSFER_MODE_RELIABLE;
 			} else if (mode == "unreliable") {
 				rpc_config.transfer_mode = Multiplayer::TRANSFER_MODE_UNRELIABLE;
-			} else if (mode == "ordered") {
-				rpc_config.transfer_mode = Multiplayer::TRANSFER_MODE_ORDERED;
+			} else if (mode == "unreliable_ordered") {
+				rpc_config.transfer_mode = Multiplayer::TRANSFER_MODE_UNRELIABLE_ORDERED;
 			} else {
-				push_error(R"(Invalid RPC argument. Must be one of: 'sync'/'nosync' (local calls), 'any'/'auth' (permission), 'reliable'/'unreliable'/'ordered' (transfer mode).)", p_annotation);
+				push_error(R"(Invalid RPC argument. Must be one of: 'call_local'/'no_call_local' (local calls), 'any_peer'/'authority' (permission), 'reliable'/'unreliable'/'unreliable_ordered' (transfer mode).)", p_annotation);
 			}
 		}
 	}

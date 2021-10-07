@@ -61,7 +61,8 @@ btScalar btMultiBodyConstraint::fillMultiBodyConstraint(btMultiBodySolverConstra
 														btScalar lowerLimit, btScalar upperLimit,
 														bool angConstraint,
 														btScalar relaxation,
-														bool isFriction, btScalar desiredVelocity, btScalar cfmSlip)
+														bool isFriction, btScalar desiredVelocity, btScalar cfmSlip,
+														btScalar damping)
 {
 	solverConstraint.m_multiBodyA = m_bodyA;
 	solverConstraint.m_multiBodyB = m_bodyB;
@@ -348,7 +349,7 @@ btScalar btMultiBodyConstraint::fillMultiBodyConstraint(btMultiBodySolverConstra
 
 	{
 		btScalar positionalError = 0.f;
-		btScalar velocityError = desiredVelocity - rel_vel;  // * damping;
+		btScalar velocityError = (desiredVelocity - rel_vel) * damping;
 
 		btScalar erp = infoGlobal.m_erp2;
 

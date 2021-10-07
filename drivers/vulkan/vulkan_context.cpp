@@ -1755,8 +1755,8 @@ Error VulkanContext::prepare_buffers() {
 	vkWaitForFences(device, 1, &fences[frame_index], VK_TRUE, UINT64_MAX);
 	vkResetFences(device, 1, &fences[frame_index]);
 
-	for (Map<int, Window>::Element *E = windows.front(); E; E = E->next()) {
-		Window *w = &E->get();
+	for (KeyValue<int, Window> &E : windows) {
+		Window *w = &E.value;
 
 		w->semaphore_acquired = false;
 
@@ -1837,8 +1837,8 @@ Error VulkanContext::swap_buffers() {
 	VkSemaphore *semaphores_to_acquire = (VkSemaphore *)alloca(windows.size() * sizeof(VkSemaphore));
 	uint32_t semaphores_to_acquire_count = 0;
 
-	for (Map<int, Window>::Element *E = windows.front(); E; E = E->next()) {
-		Window *w = &E->get();
+	for (KeyValue<int, Window> &E : windows) {
+		Window *w = &E.value;
 
 		if (w->semaphore_acquired) {
 			semaphores_to_acquire[semaphores_to_acquire_count++] = w->image_acquired_semaphores[frame_index];
@@ -1876,8 +1876,8 @@ Error VulkanContext::swap_buffers() {
 		VkCommandBuffer *cmdbufptr = (VkCommandBuffer *)alloca(sizeof(VkCommandBuffer *) * windows.size());
 		submit_info.pCommandBuffers = cmdbufptr;
 
-		for (Map<int, Window>::Element *E = windows.front(); E; E = E->next()) {
-			Window *w = &E->get();
+		for (KeyValue<int, Window> &E : windows) {
+			Window *w = &E.value;
 
 			if (w->swapchain == VK_NULL_HANDLE) {
 				continue;
@@ -1911,8 +1911,8 @@ Error VulkanContext::swap_buffers() {
 	present.pSwapchains = pSwapchains;
 	present.pImageIndices = pImageIndices;
 
-	for (Map<int, Window>::Element *E = windows.front(); E; E = E->next()) {
-		Window *w = &E->get();
+	for (KeyValue<int, Window> &E : windows) {
+		Window *w = &E.value;
 
 		if (w->swapchain == VK_NULL_HANDLE) {
 			continue;
@@ -2084,12 +2084,12 @@ RID VulkanContext::local_device_create() {
 }
 
 VkDevice VulkanContext::local_device_get_vk_device(RID p_local_device) {
-	LocalDevice *ld = local_device_owner.getornull(p_local_device);
+	LocalDevice *ld = local_device_owner.get_or_null(p_local_device);
 	return ld->device;
 }
 
 void VulkanContext::local_device_push_command_buffers(RID p_local_device, const VkCommandBuffer *p_buffers, int p_count) {
-	LocalDevice *ld = local_device_owner.getornull(p_local_device);
+	LocalDevice *ld = local_device_owner.get_or_null(p_local_device);
 	ERR_FAIL_COND(ld->waiting);
 
 	VkSubmitInfo submit_info;
@@ -2119,7 +2119,7 @@ void VulkanContext::local_device_push_command_buffers(RID p_local_device, const 
 }
 
 void VulkanContext::local_device_sync(RID p_local_device) {
-	LocalDevice *ld = local_device_owner.getornull(p_local_device);
+	LocalDevice *ld = local_device_owner.get_or_null(p_local_device);
 	ERR_FAIL_COND(!ld->waiting);
 
 	vkDeviceWaitIdle(ld->device);
@@ -2127,7 +2127,7 @@ void VulkanContext::local_device_sync(RID p_local_device) {
 }
 
 void VulkanContext::local_device_free(RID p_local_device) {
-	LocalDevice *ld = local_device_owner.getornull(p_local_device);
+	LocalDevice *ld = local_device_owner.get_or_null(p_local_device);
 	vkDestroyDevice(ld->device, nullptr);
 	local_device_owner.free(p_local_device);
 }

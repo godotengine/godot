@@ -306,11 +306,11 @@ void DisplayServerX11::mouse_set_mode(MouseMode p_mode) {
 	// The only modes that show a cursor are VISIBLE and CONFINED
 	bool showCursor = (p_mode == MOUSE_MODE_VISIBLE || p_mode == MOUSE_MODE_CONFINED);
 
-	for (Map<WindowID, WindowData>::Element *E = windows.front(); E; E = E->next()) {
+	for (const KeyValue<WindowID, WindowData> &E : windows) {
 		if (showCursor) {
-			XDefineCursor(x11_display, E->get().x11_window, cursors[current_cursor]); // show cursor
+			XDefineCursor(x11_display, E.value.x11_window, cursors[current_cursor]); // show cursor
 		} else {
-			XDefineCursor(x11_display, E->get().x11_window, null_cursor); // hide cursor
+			XDefineCursor(x11_display, E.value.x11_window, null_cursor); // hide cursor
 		}
 	}
 	mouse_mode = p_mode;
@@ -785,8 +785,8 @@ Vector<DisplayServer::WindowID> DisplayServerX11::get_window_list() const {
 	_THREAD_SAFE_METHOD_
 
 	Vector<int> ret;
-	for (Map<WindowID, WindowData>::Element *E = windows.front(); E; E = E->next()) {
-		ret.push_back(E->key());
+	for (const KeyValue<WindowID, WindowData> &E : windows) {
+		ret.push_back(E.key);
 	}
 	return ret;
 }
@@ -864,8 +864,8 @@ DisplayServerX11::WindowID DisplayServerX11::get_window_at_screen_position(const
 	WindowID found_window = INVALID_WINDOW_ID;
 	WindowID parent_window = INVALID_WINDOW_ID;
 	unsigned int focus_order = 0;
-	for (Map<WindowID, WindowData>::Element *E = windows.front(); E; E = E->next()) {
-		const WindowData &wd = E->get();
+	for (const KeyValue<WindowID, WindowData> &E : windows) {
+		const WindowData &wd = E.value;
 
 		// Discard windows with no focus.
 		if (wd.focus_order == 0) {
@@ -873,7 +873,7 @@ DisplayServerX11::WindowID DisplayServerX11::get_window_at_screen_position(const
 		}
 
 		// Find topmost window which contains the given position.
-		WindowID window_id = E->key();
+		WindowID window_id = E.key;
 		Rect2i win_rect = Rect2i(window_get_position(window_id), window_get_size(window_id));
 		if (win_rect.has_point(p_position)) {
 			// For siblings, pick the window which was focused last.
@@ -1768,8 +1768,8 @@ bool DisplayServerX11::window_can_draw(WindowID p_window) const {
 bool DisplayServerX11::can_any_window_draw() const {
 	_THREAD_SAFE_METHOD_
 
-	for (Map<WindowID, WindowData>::Element *E = windows.front(); E; E = E->next()) {
-		if (window_get_mode(E->key()) != WINDOW_MODE_MINIMIZED) {
+	for (const KeyValue<WindowID, WindowData> &E : windows) {
+		if (window_get_mode(E.key) != WINDOW_MODE_MINIMIZED) {
 			return true;
 		}
 	}
@@ -1841,12 +1841,12 @@ void DisplayServerX11::cursor_set_shape(CursorShape p_shape) {
 
 	if (mouse_mode == MOUSE_MODE_VISIBLE || mouse_mode == MOUSE_MODE_CONFINED) {
 		if (cursors[p_shape] != None) {
-			for (Map<WindowID, WindowData>::Element *E = windows.front(); E; E = E->next()) {
-				XDefineCursor(x11_display, E->get().x11_window, cursors[p_shape]);
+			for (const KeyValue<WindowID, WindowData> &E : windows) {
+				XDefineCursor(x11_display, E.value.x11_window, cursors[p_shape]);
 			}
 		} else if (cursors[CURSOR_ARROW] != None) {
-			for (Map<WindowID, WindowData>::Element *E = windows.front(); E; E = E->next()) {
-				XDefineCursor(x11_display, E->get().x11_window, cursors[CURSOR_ARROW]);
+			for (const KeyValue<WindowID, WindowData> &E : windows) {
+				XDefineCursor(x11_display, E.value.x11_window, cursors[CURSOR_ARROW]);
 			}
 		}
 	}
@@ -1944,8 +1944,8 @@ void DisplayServerX11::cursor_set_custom_image(const RES &p_cursor, CursorShape 
 
 		if (p_shape == current_cursor) {
 			if (mouse_mode == MOUSE_MODE_VISIBLE || mouse_mode == MOUSE_MODE_CONFINED) {
-				for (Map<WindowID, WindowData>::Element *E = windows.front(); E; E = E->next()) {
-					XDefineCursor(x11_display, E->get().x11_window, cursors[p_shape]);
+				for (const KeyValue<WindowID, WindowData> &E : windows) {
+					XDefineCursor(x11_display, E.value.x11_window, cursors[p_shape]);
 				}
 			}
 		}
@@ -2066,6 +2066,24 @@ String DisplayServerX11::keyboard_get_layout_name(int p_index) const {
 		XkbFreeKeyboard(kbd, 0, true);
 	}
 	return ret;
+}
+
+Key DisplayServerX11::keyboard_get_keycode_from_physical(Key p_keycode) const {
+	unsigned int modifiers = p_keycode & KEY_MODIFIER_MASK;
+	unsigned int keycode_no_mod = p_keycode & KEY_CODE_MASK;
+	unsigned int xkeycode = KeyMappingX11::get_xlibcode((Key)keycode_no_mod);
+	KeySym xkeysym = XkbKeycodeToKeysym(x11_display, xkeycode, 0, 0);
+	if (xkeysym >= 'a' && xkeysym <= 'z') {
+		xkeysym -= ('a' - 'A');
+	}
+
+	Key key = KeyMappingX11::get_keycode(xkeysym);
+	// If not found, fallback to QWERTY.
+	// This should match the behavior of the event pump
+	if (key == KEY_NONE) {
+		return p_keycode;
+	}
+	return (Key)(key | modifiers);
 }
 
 DisplayServerX11::Property DisplayServerX11::_read_property(Display *p_display, Window p_window, Atom p_property) {
@@ -2517,8 +2535,8 @@ void DisplayServerX11::_xim_destroy_callback(::XIM im, ::XPointer client_data,
 	DisplayServerX11 *ds = reinterpret_cast<DisplayServerX11 *>(client_data);
 	ds->xim = nullptr;
 
-	for (Map<WindowID, WindowData>::Element *E = ds->windows.front(); E; E = E->next()) {
-		E->get().xic = nullptr;
+	for (KeyValue<WindowID, WindowData> &E : ds->windows) {
+		E.value.xic = nullptr;
 	}
 }
 
@@ -2526,9 +2544,9 @@ void DisplayServerX11::_window_changed(XEvent *event) {
 	WindowID window_id = MAIN_WINDOW_ID;
 
 	// Assign the event to the relevant window
-	for (Map<WindowID, WindowData>::Element *E = windows.front(); E; E = E->next()) {
-		if (event->xany.window == E->get().x11_window) {
-			window_id = E->key();
+	for (const KeyValue<WindowID, WindowData> &E : windows) {
+		if (event->xany.window == E.value.x11_window) {
+			window_id = E.key;
 			break;
 		}
 	}
@@ -2602,8 +2620,8 @@ void DisplayServerX11::_dispatch_input_event(const Ref<InputEvent> &p_event) {
 		callable.call((const Variant **)&evp, 1, ret, ce);
 	} else {
 		//send to all windows
-		for (Map<WindowID, WindowData>::Element *E = windows.front(); E; E = E->next()) {
-			Callable callable = E->get().input_event_callback;
+		for (KeyValue<WindowID, WindowData> &E : windows) {
+			Callable callable = E.value.input_event_callback;
 			if (callable.is_null()) {
 				continue;
 			}
@@ -2703,8 +2721,8 @@ void DisplayServerX11::process_events() {
 	if (app_focused) {
 		//verify that one of the windows has focus, else send focus out notification
 		bool focus_found = false;
-		for (Map<WindowID, WindowData>::Element *E = windows.front(); E; E = E->next()) {
-			if (E->get().focused) {
+		for (const KeyValue<WindowID, WindowData> &E : windows) {
+			if (E.value.focused) {
 				focus_found = true;
 				break;
 			}
@@ -2749,9 +2767,9 @@ void DisplayServerX11::process_events() {
 		WindowID window_id = MAIN_WINDOW_ID;
 
 		// Assign the event to the relevant window
-		for (Map<WindowID, WindowData>::Element *E = windows.front(); E; E = E->next()) {
-			if (event.xany.window == E->get().x11_window) {
-				window_id = E->key();
+		for (const KeyValue<WindowID, WindowData> &E : windows) {
+			if (event.xany.window == E.value.x11_window) {
+				window_id = E.key;
 				break;
 			}
 		}
@@ -2990,17 +3008,17 @@ void DisplayServerX11::process_events() {
 				if (mouse_mode_grab) {
 					// Show and update the cursor if confined and the window regained focus.
 
-					for (Map<WindowID, WindowData>::Element *E = windows.front(); E; E = E->next()) {
+					for (const KeyValue<WindowID, WindowData> &E : windows) {
 						if (mouse_mode == MOUSE_MODE_CONFINED) {
-							XUndefineCursor(x11_display, E->get().x11_window);
+							XUndefineCursor(x11_display, E.value.x11_window);
 						} else if (mouse_mode == MOUSE_MODE_CAPTURED || mouse_mode == MOUSE_MODE_CONFINED_HIDDEN) { // Or re-hide it.
-							XDefineCursor(x11_display, E->get().x11_window, null_cursor);
+							XDefineCursor(x11_display, E.value.x11_window, null_cursor);
 						}
 
 						XGrabPointer(
-								x11_display, E->get().x11_window, True,
+								x11_display, E.value.x11_window, True,
 								ButtonPressMask | ButtonReleaseMask | PointerMotionMask,
-								GrabModeAsync, GrabModeAsync, E->get().x11_window, None, CurrentTime);
+								GrabModeAsync, GrabModeAsync, E.value.x11_window, None, CurrentTime);
 					}
 				}
 #ifdef TOUCH_ENABLED
@@ -3036,11 +3054,11 @@ void DisplayServerX11::process_events() {
 				_send_window_event(wd, WINDOW_EVENT_FOCUS_OUT);
 
 				if (mouse_mode_grab) {
-					for (Map<WindowID, WindowData>::Element *E = windows.front(); E; E = E->next()) {
+					for (const KeyValue<WindowID, WindowData> &E : windows) {
 						//dear X11, I try, I really try, but you never work, you do whathever you want.
 						if (mouse_mode == MOUSE_MODE_CAPTURED) {
 							// Show the cursor if we're in captured mode so it doesn't look weird.
-							XUndefineCursor(x11_display, E->get().x11_window);
+							XUndefineCursor(x11_display, E.value.x11_window);
 						}
 					}
 					XUngrabPointer(x11_display, CurrentTime);
@@ -3052,12 +3070,12 @@ void DisplayServerX11::process_events() {
 				}*/
 
 				// Release every pointer to avoid sticky points
-				for (Map<int, Vector2>::Element *E = xi.state.front(); E; E = E->next()) {
+				for (const KeyValue<int, Vector2> &E : xi.state) {
 					Ref<InputEventScreenTouch> st;
 					st.instantiate();
-					st->set_index(E->key());
+					st->set_index(E.key);
 					st->set_window_id(window_id);
-					st->set_position(E->get());
+					st->set_position(E.value);
 					Input::get_singleton()->parse_input_event(st);
 				}
 				xi.state.clear();
@@ -3144,9 +3162,9 @@ void DisplayServerX11::process_events() {
 						// Note: This is needed for drag & drop to work between windows,
 						// because the engine expects events to keep being processed
 						// on the same window dragging started.
-						for (Map<WindowID, WindowData>::Element *E = windows.front(); E; E = E->next()) {
-							const WindowData &wd_other = E->get();
-							WindowID window_id_other = E->key();
+						for (const KeyValue<WindowID, WindowData> &E : windows) {
+							const WindowData &wd_other = E.value;
+							WindowID window_id_other = E.key;
 							if (wd_other.focused) {
 								if (window_id_other != window_id) {
 									int x, y;
@@ -3287,8 +3305,8 @@ void DisplayServerX11::process_events() {
 					// Note: This is needed for drag & drop to work between windows,
 					// because the engine expects events to keep being processed
 					// on the same window dragging started.
-					for (Map<WindowID, WindowData>::Element *E = windows.front(); E; E = E->next()) {
-						const WindowData &wd_other = E->get();
+					for (const KeyValue<WindowID, WindowData> &E : windows) {
+						const WindowData &wd_other = E.value;
 						if (wd_other.focused) {
 							int x, y;
 							Window child;
@@ -3296,7 +3314,7 @@ void DisplayServerX11::process_events() {
 
 							Point2i pos_focused(x, y);
 
-							mm->set_window_id(E->key());
+							mm->set_window_id(E.key);
 							mm->set_position(pos_focused);
 							mm->set_global_position(pos_focused);
 							mm->set_speed(Input::get_singleton()->get_last_mouse_speed());
@@ -3487,8 +3505,8 @@ void DisplayServerX11::set_context(Context p_context) {
 
 	context = p_context;
 
-	for (Map<WindowID, WindowData>::Element *E = windows.front(); E; E = E->next()) {
-		_update_context(E->get());
+	for (KeyValue<WindowID, WindowData> &E : windows) {
+		_update_context(E.value);
 	}
 }
 
@@ -4268,14 +4286,14 @@ DisplayServerX11::~DisplayServerX11() {
 	events_thread.wait_to_finish();
 
 	//destroy all windows
-	for (Map<WindowID, WindowData>::Element *E = windows.front(); E; E = E->next()) {
+	for (KeyValue<WindowID, WindowData> &E : windows) {
 #ifdef VULKAN_ENABLED
 		if (rendering_driver == "vulkan") {
-			context_vulkan->window_destroy(E->key());
+			context_vulkan->window_destroy(E.key);
 		}
 #endif
 
-		WindowData &wd = E->get();
+		WindowData &wd = E.value;
 		if (wd.xic) {
 			XDestroyIC(wd.xic);
 			wd.xic = nullptr;

@@ -1960,8 +1960,8 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const RES &p
 	Vector<RES> save_order;
 	save_order.resize(external_resources.size());
 
-	for (Map<RES, int>::Element *E = external_resources.front(); E; E = E->next()) {
-		save_order.write[E->get()] = E->key();
+	for (const KeyValue<RES, int> &E : external_resources) {
+		save_order.write[E.value] = E.key;
 	}
 
 	for (int i = 0; i < save_order.size(); i++) {

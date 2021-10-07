@@ -105,7 +105,6 @@ int PhysicsDirectSpaceState2DSW::_intersect_point_impl(const Vector2 &p_point, S
 		}
 		r_results[cc].rid = col_obj->get_self();
 		r_results[cc].shape = shape_idx;
-		r_results[cc].metadata = col_obj->get_shape_metadata(shape_idx);
 
 		cc++;
 	}
@@ -193,7 +192,6 @@ bool PhysicsDirectSpaceState2DSW::intersect_ray(const Vector2 &p_from, const Vec
 		r_result.collider = ObjectDB::get_instance(r_result.collider_id);
 	}
 	r_result.normal = res_normal;
-	r_result.metadata = res_obj->get_shape_metadata(res_shape);
 	r_result.position = res_point;
 	r_result.rid = res_obj->get_self();
 	r_result.shape = res_shape;
@@ -206,7 +204,7 @@ int PhysicsDirectSpaceState2DSW::intersect_shape(const RID &p_shape, const Trans
 		return 0;
 	}
 
-	Shape2DSW *shape = PhysicsServer2DSW::singletonsw->shape_owner.getornull(p_shape);
+	Shape2DSW *shape = PhysicsServer2DSW::singletonsw->shape_owner.get_or_null(p_shape);
 	ERR_FAIL_COND_V(!shape, 0);
 
 	Rect2 aabb = p_xform.xform(shape->get_aabb());
@@ -242,7 +240,6 @@ int PhysicsDirectSpaceState2DSW::intersect_shape(const RID &p_shape, const Trans
 		}
 		r_results[cc].rid = col_obj->get_self();
 		r_results[cc].shape = shape_idx;
-		r_results[cc].metadata = col_obj->get_shape_metadata(shape_idx);
 
 		cc++;
 	}
@@ -251,7 +248,7 @@ int PhysicsDirectSpaceState2DSW::intersect_shape(const RID &p_shape, const Trans
 }
 
 bool PhysicsDirectSpaceState2DSW::cast_motion(const RID &p_shape, const Transform2D &p_xform, const Vector2 &p_motion, real_t p_margin, real_t &p_closest_safe, real_t &p_closest_unsafe, const Set<RID> &p_exclude, uint32_t p_collision_mask, bool p_collide_with_bodies, bool p_collide_with_areas) {
-	Shape2DSW *shape = PhysicsServer2DSW::singletonsw->shape_owner.getornull(p_shape);
+	Shape2DSW *shape = PhysicsServer2DSW::singletonsw->shape_owner.get_or_null(p_shape);
 	ERR_FAIL_COND_V(!shape, false);
 
 	Rect2 aabb = p_xform.xform(shape->get_aabb());
@@ -338,7 +335,7 @@ bool PhysicsDirectSpaceState2DSW::collide_shape(RID p_shape, const Transform2D &
 		return false;
 	}
 
-	Shape2DSW *shape = PhysicsServer2DSW::singletonsw->shape_owner.getornull(p_shape);
+	Shape2DSW *shape = PhysicsServer2DSW::singletonsw->shape_owner.get_or_null(p_shape);
 	ERR_FAIL_COND_V(!shape, 0);
 
 	Rect2 aabb = p_shape_xform.xform(shape->get_aabb());
@@ -435,7 +432,7 @@ static void _rest_cbk_result(const Vector2 &p_point_A, const Vector2 &p_point_B,
 }
 
 bool PhysicsDirectSpaceState2DSW::rest_info(RID p_shape, const Transform2D &p_shape_xform, const Vector2 &p_motion, real_t p_margin, ShapeRestInfo *r_info, const Set<RID> &p_exclude, uint32_t p_collision_mask, bool p_collide_with_bodies, bool p_collide_with_areas) {
-	Shape2DSW *shape = PhysicsServer2DSW::singletonsw->shape_owner.getornull(p_shape);
+	Shape2DSW *shape = PhysicsServer2DSW::singletonsw->shape_owner.get_or_null(p_shape);
 	ERR_FAIL_COND_V(!shape, 0);
 
 	real_t min_contact_depth = p_margin * TEST_MOTION_MIN_CONTACT_DEPTH_FACTOR;
@@ -484,7 +481,6 @@ bool PhysicsDirectSpaceState2DSW::rest_info(RID p_shape, const Transform2D &p_sh
 	r_info->normal = rcd.best_normal;
 	r_info->point = rcd.best_contact;
 	r_info->rid = rcd.best_object->get_self();
-	r_info->metadata = rcd.best_object->get_shape_metadata(rcd.best_shape);
 	if (rcd.best_object->get_type() == CollisionObject2DSW::TYPE_BODY) {
 		const Body2DSW *body = static_cast<const Body2DSW *>(rcd.best_object);
 		Vector2 rel_vec = r_info->point - (body->get_transform().get_origin() + body->get_center_of_mass());
@@ -529,7 +525,7 @@ int Space2DSW::_cull_aabb_for_body(Body2DSW *p_body, const Rect2 &p_aabb) {
 	return amount;
 }
 
-bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, const Vector2 &p_motion, real_t p_margin, PhysicsServer2D::MotionResult *r_result, bool p_collide_separation_ray, const Set<RID> &p_exclude) {
+bool Space2DSW::test_body_motion(Body2DSW *p_body, const PhysicsServer2D::MotionParameters &p_parameters, PhysicsServer2D::MotionResult *r_result) {
 	//give me back regular physics engine logic
 	//this is madness
 	//and most people using this function will think
@@ -561,25 +557,25 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, co
 	if (!shapes_found) {
 		if (r_result) {
 			*r_result = PhysicsServer2D::MotionResult();
-			r_result->travel = p_motion;
+			r_result->travel = p_parameters.motion;
 		}
 		return false;
 	}
 
 	// Undo the currently transform the physics server is aware of and apply the provided one
-	body_aabb = p_from.xform(p_body->get_inv_transform().xform(body_aabb));
-	body_aabb = body_aabb.grow(p_margin);
+	body_aabb = p_parameters.from.xform(p_body->get_inv_transform().xform(body_aabb));
+	body_aabb = body_aabb.grow(p_parameters.margin);
 
 	static const int max_excluded_shape_pairs = 32;
 	ExcludedShapeSW excluded_shape_pairs[max_excluded_shape_pairs];
 	int excluded_shape_pair_count = 0;
 
-	real_t min_contact_depth = p_margin * TEST_MOTION_MIN_CONTACT_DEPTH_FACTOR;
+	real_t min_contact_depth = p_parameters.margin * TEST_MOTION_MIN_CONTACT_DEPTH_FACTOR;
 
-	real_t motion_length = p_motion.length();
-	Vector2 motion_normal = p_motion / motion_length;
+	real_t motion_length = p_parameters.motion.length();
+	Vector2 motion_normal = p_parameters.motion / motion_length;
 
-	Transform2D body_transform = p_from;
+	Transform2D body_transform = p_parameters.from;
 
 	bool recovered = false;
 
@@ -616,7 +612,10 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, co
 
 				for (int i = 0; i < amount; i++) {
 					const CollisionObject2DSW *col_obj = intersection_query_results[i];
-					if (p_exclude.has(col_obj->get_self())) {
+					if (p_parameters.exclude_bodies.has(col_obj->get_self())) {
+						continue;
+					}
+					if (p_parameters.exclude_objects.has(col_obj->get_instance_id())) {
 						continue;
 					}
 
@@ -628,7 +627,7 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, co
 						cbk.valid_dir = col_obj_shape_xform.get_axis(1).normalized();
 
 						real_t owc_margin = col_obj->get_shape_one_way_collision_margin(shape_idx);
-						cbk.valid_depth = MAX(owc_margin, p_margin); //user specified, but never less than actual margin or it won't work
+						cbk.valid_depth = MAX(owc_margin, p_parameters.margin); //user specified, but never less than actual margin or it won't work
 						cbk.invalid_by_dir = 0;
 
 						if (col_obj->get_type() == CollisionObject2DSW::TYPE_BODY) {
@@ -653,7 +652,7 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, co
 					bool did_collide = false;
 
 					Shape2DSW *against_shape = col_obj->get_shape(shape_idx);
-					if (CollisionSolver2DSW::solve(body_shape, body_shape_xform, Vector2(), against_shape, col_obj_shape_xform, Vector2(), cbkres, cbkptr, nullptr, p_margin)) {
+					if (CollisionSolver2DSW::solve(body_shape, body_shape_xform, Vector2(), against_shape, col_obj_shape_xform, Vector2(), cbkres, cbkptr, nullptr, p_parameters.margin)) {
 						did_collide = cbk.passed > current_passed; //more passed, so collision actually existed
 					}
 
@@ -718,7 +717,7 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, co
 		// STEP 2 ATTEMPT MOTION
 
 		Rect2 motion_aabb = body_aabb;
-		motion_aabb.position += p_motion;
+		motion_aabb.position += p_parameters.motion;
 		motion_aabb = motion_aabb.merge(body_aabb);
 
 		int amount = _cull_aabb_for_body(p_body, motion_aabb);
@@ -732,7 +731,7 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, co
 
 			// Colliding separation rays allows to properly snap to the ground,
 			// otherwise it's not needed in regular motion.
-			if (!p_collide_separation_ray && (body_shape->get_type() == PhysicsServer2D::SHAPE_SEPARATION_RAY)) {
+			if (!p_parameters.collide_separation_ray && (body_shape->get_type() == PhysicsServer2D::SHAPE_SEPARATION_RAY)) {
 				// When slide on slope is on, separation ray shape acts like a regular shape.
 				if (!static_cast<SeparationRayShape2DSW *>(body_shape)->get_slide_on_slope()) {
 					continue;
@@ -748,9 +747,13 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, co
 
 			for (int i = 0; i < amount; i++) {
 				const CollisionObject2DSW *col_obj = intersection_query_results[i];
-				if (p_exclude.has(col_obj->get_self())) {
+				if (p_parameters.exclude_bodies.has(col_obj->get_self())) {
 					continue;
 				}
+				if (p_parameters.exclude_objects.has(col_obj->get_instance_id())) {
+					continue;
+				}
+
 				int col_shape_idx = intersection_query_subindex_results[i];
 				Shape2DSW *against_shape = col_obj->get_shape(col_shape_idx);
 
@@ -769,7 +772,7 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, co
 
 				Transform2D col_obj_shape_xform = col_obj->get_transform() * col_obj->get_shape_transform(col_shape_idx);
 				//test initial overlap, does it collide if going all the way?
-				if (!CollisionSolver2DSW::solve(body_shape, body_shape_xform, p_motion, against_shape, col_obj_shape_xform, Vector2(), nullptr, nullptr, nullptr, 0)) {
+				if (!CollisionSolver2DSW::solve(body_shape, body_shape_xform, p_parameters.motion, against_shape, col_obj_shape_xform, Vector2(), nullptr, nullptr, nullptr, 0)) {
 					continue;
 				}
 
@@ -794,7 +797,7 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, co
 					real_t fraction = low + (hi - low) * fraction_coeff;
 
 					Vector2 sep = motion_normal; //important optimization for this to work fast enough
-					bool collided = CollisionSolver2DSW::solve(body_shape, body_shape_xform, p_motion * fraction, against_shape, col_obj_shape_xform, Vector2(), nullptr, nullptr, &sep, 0);
+					bool collided = CollisionSolver2DSW::solve(body_shape, body_shape_xform, p_parameters.motion * fraction, against_shape, col_obj_shape_xform, Vector2(), nullptr, nullptr, &sep, 0);
 
 					if (collided) {
 						hi = fraction;
@@ -831,7 +834,7 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, co
 					cbk.valid_depth = 10e20;
 
 					Vector2 sep = motion_normal; //important optimization for this to work fast enough
-					bool collided = CollisionSolver2DSW::solve(body_shape, body_shape_xform, p_motion * (hi + contact_max_allowed_penetration), col_obj->get_shape(col_shape_idx), col_obj_shape_xform, Vector2(), PhysicsServer2DSW::_shape_col_cbk, &cbk, &sep, 0);
+					bool collided = CollisionSolver2DSW::solve(body_shape, body_shape_xform, p_parameters.motion * (hi + contact_max_allowed_penetration), col_obj->get_shape(col_shape_idx), col_obj_shape_xform, Vector2(), PhysicsServer2DSW::_shape_col_cbk, &cbk, &sep, 0);
 					if (!collided || cbk.amount == 0) {
 						continue;
 					}
@@ -869,7 +872,7 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, co
 
 		//it collided, let's get the rest info in unsafe advance
 		Transform2D ugt = body_transform;
-		ugt.elements[2] += p_motion * unsafe;
+		ugt.elements[2] += p_parameters.motion * unsafe;
 
 		_RestCallbackData2D rcd;
 		rcd.best_len = 0;
@@ -890,13 +893,16 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, co
 			Transform2D body_shape_xform = ugt * p_body->get_shape_transform(j);
 			Shape2DSW *body_shape = p_body->get_shape(j);
 
-			body_aabb.position += p_motion * unsafe;
+			body_aabb.position += p_parameters.motion * unsafe;
 
 			int amount = _cull_aabb_for_body(p_body, body_aabb);
 
 			for (int i = 0; i < amount; i++) {
 				const CollisionObject2DSW *col_obj = intersection_query_results[i];
-				if (p_exclude.has(col_obj->get_self())) {
+				if (p_parameters.exclude_bodies.has(col_obj->get_self())) {
+					continue;
+				}
+				if (p_parameters.exclude_objects.has(col_obj->get_instance_id())) {
 					continue;
 				}
 
@@ -921,7 +927,7 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, co
 					rcd.valid_dir = col_obj_shape_xform.get_axis(1).normalized();
 
 					real_t owc_margin = col_obj->get_shape_one_way_collision_margin(shape_idx);
-					rcd.valid_depth = MAX(owc_margin, p_margin); //user specified, but never less than actual margin or it won't work
+					rcd.valid_depth = MAX(owc_margin, p_parameters.margin); //user specified, but never less than actual margin or it won't work
 
 					if (col_obj->get_type() == CollisionObject2DSW::TYPE_BODY) {
 						const Body2DSW *b = static_cast<const Body2DSW *>(col_obj);
@@ -943,7 +949,7 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, co
 				rcd.object = col_obj;
 				rcd.shape = shape_idx;
 				rcd.local_shape = j;
-				bool sc = CollisionSolver2DSW::solve(body_shape, body_shape_xform, Vector2(), against_shape, col_obj_shape_xform, Vector2(), _rest_cbk_result, &rcd, nullptr, p_margin);
+				bool sc = CollisionSolver2DSW::solve(body_shape, body_shape_xform, Vector2(), against_shape, col_obj_shape_xform, Vector2(), _rest_cbk_result, &rcd, nullptr, p_parameters.margin);
 				if (!sc) {
 					continue;
 				}
@@ -961,15 +967,14 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, co
 				r_result->collision_depth = rcd.best_len;
 				r_result->collision_safe_fraction = safe;
 				r_result->collision_unsafe_fraction = unsafe;
-				r_result->collider_metadata = rcd.best_object->get_shape_metadata(rcd.best_shape);
 
 				const Body2DSW *body = static_cast<const Body2DSW *>(rcd.best_object);
 				Vector2 rel_vec = r_result->collision_point - (body->get_transform().get_origin() + body->get_center_of_mass());
 				r_result->collider_velocity = Vector2(-body->get_angular_velocity() * rel_vec.y, body->get_angular_velocity() * rel_vec.x) + body->get_linear_velocity();
 
-				r_result->travel = safe * p_motion;
-				r_result->remainder = p_motion - safe * p_motion;
-				r_result->travel += (body_transform.get_origin() - p_from.get_origin());
+				r_result->travel = safe * p_parameters.motion;
+				r_result->remainder = p_parameters.motion - safe * p_parameters.motion;
+				r_result->travel += (body_transform.get_origin() - p_parameters.from.get_origin());
 			}
 
 			collided = true;
@@ -977,9 +982,9 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, co
 	}
 
 	if (!collided && r_result) {
-		r_result->travel = p_motion;
+		r_result->travel = p_parameters.motion;
 		r_result->remainder = Vector2();
-		r_result->travel += (body_transform.get_origin() - p_from.get_origin());
+		r_result->travel += (body_transform.get_origin() - p_parameters.from.get_origin());
 	}
 
 	return collided;

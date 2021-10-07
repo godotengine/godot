@@ -137,7 +137,14 @@ void btMultiBodyDynamicsWorld::updateActivationState(btScalar timeStep)
 				btMultiBodyLinkCollider* col = body->getBaseCollider();
 				if (col && col->getActivationState() == ACTIVE_TAG)
 				{
-					col->setActivationState(WANTS_DEACTIVATION);
+                    if (body->hasFixedBase())
+					{
+                        col->setActivationState(FIXED_BASE_MULTI_BODY);
+                    } else
+					{
+                        col->setActivationState(WANTS_DEACTIVATION);
+                    }
+					
 					col->setDeactivationTime(0.f);
 				}
 				for (int b = 0; b < body->getNumLinks(); b++)

@@ -1011,9 +1011,10 @@ void DynamicFontImportSettings::_glyph_text_selected() {
 	if (text_rid.is_valid()) {
 		TS->shaped_text_add_string(text_rid, text_edit->get_text(), font_main->get_rids(), 16, ftrs, text_edit->get_language());
 		TS->shaped_text_shape(text_rid);
-		const Vector<TextServer::Glyph> &gl = TS->shaped_text_get_glyphs(text_rid);
+		const Glyph *gl = TS->shaped_text_get_glyphs(text_rid);
+		const int gl_size = TS->shaped_text_get_glyph_count(text_rid);
 
-		for (int i = 0; i < gl.size(); i++) {
+		for (int i = 0; i < gl_size; i++) {
 			if (gl[i].font_rid.is_valid() && gl[i].index != 0) {
 				selected_glyphs.insert(gl[i].index);
 			}

@@ -61,8 +61,8 @@ subject to the following restrictions:
 void Shape3DSW::configure(const AABB &p_aabb) {
 	aabb = p_aabb;
 	configured = true;
-	for (Map<ShapeOwner3DSW *, int>::Element *E = owners.front(); E; E = E->next()) {
-		ShapeOwner3DSW *co = (ShapeOwner3DSW *)E->key();
+	for (const KeyValue<ShapeOwner3DSW *, int> &E : owners) {
+		ShapeOwner3DSW *co = (ShapeOwner3DSW *)E.key;
 		co->_shape_changed();
 	}
 }

@@ -36,8 +36,8 @@
 void Shape2DSW::configure(const Rect2 &p_aabb) {
 	aabb = p_aabb;
 	configured = true;
-	for (Map<ShapeOwner2DSW *, int>::Element *E = owners.front(); E; E = E->next()) {
-		ShapeOwner2DSW *co = (ShapeOwner2DSW *)E->key();
+	for (const KeyValue<ShapeOwner2DSW *, int> &E : owners) {
+		ShapeOwner2DSW *co = (ShapeOwner2DSW *)E.key;
 		co->_shape_changed();
 	}
 }
@@ -875,9 +875,9 @@ void ConcavePolygonShape2DSW::set_data(const Variant &p_data) {
 
 		points.resize(pointmap.size());
 		aabb.position = pointmap.front()->key();
-		for (Map<Point2, int>::Element *E = pointmap.front(); E; E = E->next()) {
-			aabb.expand_to(E->key());
-			points.write[E->get()] = E->key();
+		for (const KeyValue<Point2, int> &E : pointmap) {
+			aabb.expand_to(E.key);
+			points.write[E.value] = E.key;
 		}
 
 		Vector<BVH> main_vbh;

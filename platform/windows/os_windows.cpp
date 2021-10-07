@@ -28,15 +28,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-// Must include Winsock before windows.h (included by os_windows.h)
-#include "drivers/unix/net_socket_posix.h"
-
 #include "os_windows.h"
 
 #include "core/debugger/engine_debugger.h"
 #include "core/debugger/script_debugger.h"
 #include "core/io/marshalls.h"
 #include "core/version_generated.gen.h"
+#include "drivers/unix/net_socket_posix.h"
 #include "drivers/windows/dir_access_windows.h"
 #include "drivers/windows/file_access_windows.h"
 #include "joypad_windows.h"
@@ -75,7 +73,6 @@ __declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 1;
 #define GetProcAddress (void *)GetProcAddress
 #endif
 
-#ifdef DEBUG_ENABLED
 static String format_error_message(DWORD id) {
 	LPWSTR messageBuffer = nullptr;
 	size_t size = FormatMessageW(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
@@ -87,7 +84,6 @@ static String format_error_message(DWORD id) {
 
 	return msg;
 }
-#endif // DEBUG_ENABLED
 
 void RedirectIOToConsole() {
 	int hConHandle;

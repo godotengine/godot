@@ -50,12 +50,28 @@ extern int godot_js_os_execute(const char *p_json);
 extern void godot_js_os_shell_open(const char *p_uri);
 extern int godot_js_os_hw_concurrency_get();
 
+// Input
+extern void godot_js_input_mouse_button_cb(int (*p_callback)(int p_pressed, int p_button, double p_x, double p_y, int p_modifiers));
+extern void godot_js_input_mouse_move_cb(void (*p_callback)(double p_x, double p_y, double p_rel_x, double p_rel_y, int p_modifiers));
+extern void godot_js_input_mouse_wheel_cb(int (*p_callback)(double p_delta_x, double p_delta_y));
+extern void godot_js_input_touch_cb(void (*p_callback)(int p_type, int p_count), uint32_t *r_identifiers, double *r_coords);
+extern void godot_js_input_key_cb(void (*p_callback)(int p_type, int p_repeat, int p_modifiers), char r_code[32], char r_key[32]);
+
+// Input gamepad
+extern void godot_js_input_gamepad_cb(void (*p_on_change)(int p_index, int p_connected, const char *p_id, const char *p_guid));
+extern int godot_js_input_gamepad_sample();
+extern int godot_js_input_gamepad_sample_count();
+extern int godot_js_input_gamepad_sample_get(int p_idx, float r_btns[16], int32_t *r_btns_num, float r_axes[10], int32_t *r_axes_num, int32_t *r_standard);
+extern void godot_js_input_paste_cb(void (*p_callback)(const char *p_text));
+extern void godot_js_input_drop_files_cb(void (*p_callback)(char **p_filev, int p_filec));
+
 // Display
 extern int godot_js_display_screen_dpi_get();
 extern double godot_js_display_pixel_ratio_get();
 extern void godot_js_display_alert(const char *p_text);
 extern int godot_js_display_touchscreen_is_available();
 extern int godot_js_display_is_swap_ok_cancel();
+extern void godot_js_display_setup_canvas(int p_width, int p_height, int p_fullscreen, int p_hidpi);
 
 // Display canvas
 extern void godot_js_display_canvas_focus();
@@ -68,7 +84,6 @@ extern void godot_js_display_window_size_get(int32_t *p_x, int32_t *p_y);
 extern void godot_js_display_screen_size_get(int32_t *p_x, int32_t *p_y);
 extern int godot_js_display_fullscreen_request();
 extern int godot_js_display_fullscreen_exit();
-extern void godot_js_display_compute_position(int p_x, int p_y, int32_t *r_x, int32_t *r_y);
 extern void godot_js_display_window_title_set(const char *p_text);
 extern void godot_js_display_window_icon_set(const uint8_t *p_ptr, int p_len);
 extern int godot_js_display_has_webgl(int p_version);
@@ -82,18 +97,13 @@ extern void godot_js_display_cursor_set_shape(const char *p_cursor);
 extern int godot_js_display_cursor_is_hidden();
 extern void godot_js_display_cursor_set_custom_shape(const char *p_shape, const uint8_t *p_ptr, int p_len, int p_hotspot_x, int p_hotspot_y);
 extern void godot_js_display_cursor_set_visible(int p_visible);
-
-// Display gamepad
-extern void godot_js_display_gamepad_cb(void (*p_on_change)(int p_index, int p_connected, const char *p_id, const char *p_guid));
-extern int godot_js_display_gamepad_sample();
-extern int godot_js_display_gamepad_sample_count();
-extern int godot_js_display_gamepad_sample_get(int p_idx, float r_btns[16], int32_t *r_btns_num, float r_axes[10], int32_t *r_axes_num, int32_t *r_standard);
+extern void godot_js_display_cursor_lock_set(int p_lock);
+extern int godot_js_display_cursor_is_locked();
 
 // Display listeners
+extern void godot_js_display_fullscreen_cb(void (*p_callback)(int p_fullscreen));
+extern void godot_js_display_window_blur_cb(void (*p_callback)());
 extern void godot_js_display_notification_cb(void (*p_callback)(int p_notification), int p_enter, int p_exit, int p_in, int p_out);
-extern void godot_js_display_paste_cb(void (*p_callback)(const char *p_text));
-extern void godot_js_display_drop_files_cb(void (*p_callback)(char **p_filev, int p_filec));
-extern void godot_js_display_setup_canvas(int p_width, int p_height, int p_fullscreen, int p_hidpi);
 
 // Display Virtual Keyboard
 extern int godot_js_display_vk_available();

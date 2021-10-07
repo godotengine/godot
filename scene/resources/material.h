@@ -53,6 +53,7 @@ protected:
 	_FORCE_INLINE_ RID _get_material() const { return material; }
 	static void _bind_methods();
 	virtual bool _can_do_next_pass() const { return false; }
+	virtual bool _can_use_render_priority() const { return false; }
 
 	void _validate_property(PropertyInfo &property) const override;
 
@@ -93,6 +94,7 @@ protected:
 	void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
 
 	virtual bool _can_do_next_pass() const override;
+	virtual bool _can_use_render_priority() const override;
 
 	void _shader_changed();
 
@@ -535,6 +537,7 @@ protected:
 	static void _bind_methods();
 	void _validate_property(PropertyInfo &property) const override;
 	virtual bool _can_do_next_pass() const override { return true; }
+	virtual bool _can_use_render_priority() const override { return true; }
 
 public:
 	void set_albedo(const Color &p_albedo);

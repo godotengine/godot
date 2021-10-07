@@ -473,8 +473,8 @@ void EditorAutoloadSettings::update_autoload() {
 	}
 
 	// Remove deleted/changed autoloads
-	for (Map<String, AutoLoadInfo>::Element *E = to_remove.front(); E; E = E->next()) {
-		AutoLoadInfo &info = E->get();
+	for (KeyValue<String, AutoLoadInfo> &E : to_remove) {
+		AutoLoadInfo &info = E.value;
 		if (info.is_singleton) {
 			for (int i = 0; i < ScriptServer::get_language_count(); i++) {
 				ScriptServer::get_language(i)->remove_named_global_constant(info.name);

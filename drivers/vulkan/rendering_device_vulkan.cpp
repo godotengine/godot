@@ -47,7 +47,7 @@
 RenderingDeviceVulkan::Buffer *RenderingDeviceVulkan::_get_buffer_from_owner(RID p_buffer, VkPipelineStageFlags &r_stage_mask, VkAccessFlags &r_access_mask, uint32_t p_post_barrier) {
 	Buffer *buffer = nullptr;
 	if (vertex_buffer_owner.owns(p_buffer)) {
-		buffer = vertex_buffer_owner.getornull(p_buffer);
+		buffer = vertex_buffer_owner.get_or_null(p_buffer);
 
 		r_stage_mask |= VK_PIPELINE_STAGE_VERTEX_INPUT_BIT;
 		r_access_mask |= VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT;
@@ -64,7 +64,7 @@ RenderingDeviceVulkan::Buffer *RenderingDeviceVulkan::_get_buffer_from_owner(RID
 	} else if (index_buffer_owner.owns(p_buffer)) {
 		r_stage_mask |= VK_PIPELINE_STAGE_VERTEX_INPUT_BIT;
 		r_access_mask |= VK_ACCESS_INDEX_READ_BIT;
-		buffer = index_buffer_owner.getornull(p_buffer);
+		buffer = index_buffer_owner.get_or_null(p_buffer);
 	} else if (uniform_buffer_owner.owns(p_buffer)) {
 		if (p_post_barrier & BARRIER_MASK_RASTER) {
 			r_stage_mask |= VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
@@ -73,7 +73,7 @@ RenderingDeviceVulkan::Buffer *RenderingDeviceVulkan::_get_buffer_from_owner(RID
 			r_stage_mask |= VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
 		}
 		r_access_mask |= VK_ACCESS_UNIFORM_READ_BIT;
-		buffer = uniform_buffer_owner.getornull(p_buffer);
+		buffer = uniform_buffer_owner.get_or_null(p_buffer);
 	} else if (texture_buffer_owner.owns(p_buffer)) {
 		if (p_post_barrier & BARRIER_MASK_RASTER) {
 			r_stage_mask |= VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
@@ -84,9 +84,9 @@ RenderingDeviceVulkan::Buffer *RenderingDeviceVulkan::_get_buffer_from_owner(RID
 			r_access_mask |= VK_ACCESS_SHADER_READ_BIT;
 		}
 
-		buffer = &texture_buffer_owner.getornull(p_buffer)->buffer;
+		buffer = &texture_buffer_owner.get_or_null(p_buffer)->buffer;
 	} else if (storage_buffer_owner.owns(p_buffer)) {
-		buffer = storage_buffer_owner.getornull(p_buffer);
+		buffer = storage_buffer_owner.get_or_null(p_buffer);
 		if (p_post_barrier & BARRIER_MASK_RASTER) {
 			r_stage_mask |= VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
 			r_access_mask |= VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
@@ -2048,12 +2048,12 @@ RID RenderingDeviceVulkan::texture_create(const TextureFormat &p_format, const T
 RID RenderingDeviceVulkan::texture_create_shared(const TextureView &p_view, RID p_with_texture) {
 	_THREAD_SAFE_METHOD_
 
-	Texture *src_texture = texture_owner.getornull(p_with_texture);
+	Texture *src_texture = texture_owner.get_or_null(p_with_texture);
 	ERR_FAIL_COND_V(!src_texture, RID());
 
 	if (src_texture->owner.is_valid()) { //ahh this is a share
 		p_with_texture = src_texture->owner;
-		src_texture = texture_owner.getornull(src_texture->owner);
+		src_texture = texture_owner.get_or_null(src_texture->owner);
 		ERR_FAIL_COND_V(!src_texture, RID()); //this is a bug
 	}
 
@@ -2173,12 +2173,12 @@ RID RenderingDeviceVulkan::texture_create_shared(const TextureView &p_view, RID 
 RID RenderingDeviceVulkan::texture_create_shared_from_slice(const TextureView &p_view, RID p_with_texture, uint32_t p_layer, uint32_t p_mipmap, TextureSliceType p_slice_type) {
 	_THREAD_SAFE_METHOD_
 
-	Texture *src_texture = texture_owner.getornull(p_with_texture);
+	Texture *src_texture = texture_owner.get_or_null(p_with_texture);
 	ERR_FAIL_COND_V(!src_texture, RID());
 
 	if (src_texture->owner.is_valid()) { //ahh this is a share
 		p_with_texture = src_texture->owner;
-		src_texture = texture_owner.getornull(src_texture->owner);
+		src_texture = texture_owner.get_or_null(src_texture->owner);
 		ERR_FAIL_COND_V(!src_texture, RID()); //this is a bug
 	}
 
@@ -2299,12 +2299,12 @@ Error RenderingDeviceVulkan::_texture_update(RID p_texture, uint32_t p_layer, co
 	ERR_FAIL_COND_V_MSG((draw_list || compute_list) && !p_use_setup_queue, ERR_INVALID_PARAMETER,
 			"Updating textures is forbidden during creation of a draw or compute list");
 
-	Texture *texture = texture_owner.getornull(p_texture);
+	Texture *texture = texture_owner.get_or_null(p_texture);
 	ERR_FAIL_COND_V(!texture, ERR_INVALID_PARAMETER);
 
 	if (texture->owner != RID()) {
 		p_texture = texture->owner;
-		texture = texture_owner.getornull(texture->owner);
+		texture = texture_owner.get_or_null(texture->owner);
 		ERR_FAIL_COND_V(!texture, ERR_BUG); //this is a bug
 	}
 
@@ -2601,7 +2601,7 @@ Vector<uint8_t> RenderingDeviceVulkan::_texture_get_data_from_image(Texture *tex
 Vector<uint8_t> RenderingDeviceVulkan::texture_get_data(RID p_texture, uint32_t p_layer) {
 	_THREAD_SAFE_METHOD_
 
-	Texture *tex = texture_owner.getornull(p_texture);
+	Texture *tex = texture_owner.get_or_null(p_texture);
 	ERR_FAIL_COND_V(!tex, Vector<uint8_t>());
 
 	ERR_FAIL_COND_V_MSG(tex->bound, Vector<uint8_t>(),
@@ -2731,7 +2731,7 @@ Vector<uint8_t> RenderingDeviceVulkan::texture_get_data(RID p_texture, uint32_t 
 bool RenderingDeviceVulkan::texture_is_shared(RID p_texture) {
 	_THREAD_SAFE_METHOD_
 
-	Texture *tex = texture_owner.getornull(p_texture);
+	Texture *tex = texture_owner.get_or_null(p_texture);
 	ERR_FAIL_COND_V(!tex, false);
 	return tex->owner.is_valid();
 }
@@ -2743,7 +2743,7 @@ bool RenderingDeviceVulkan::texture_is_valid(RID p_texture) {
 Size2i RenderingDeviceVulkan::texture_size(RID p_texture) {
 	_THREAD_SAFE_METHOD_
 
-	Texture *tex = texture_owner.getornull(p_texture);
+	Texture *tex = texture_owner.get_or_null(p_texture);
 	ERR_FAIL_COND_V(!tex, Size2i());
 	return Size2i(tex->width, tex->height);
 }
@@ -2751,7 +2751,7 @@ Size2i RenderingDeviceVulkan::texture_size(RID p_texture) {
 Error RenderingDeviceVulkan::texture_copy(RID p_from_texture, RID p_to_texture, const Vector3 &p_from, const Vector3 &p_to, const Vector3 &p_size, uint32_t p_src_mipmap, uint32_t p_dst_mipmap, uint32_t p_src_layer, uint32_t p_dst_layer, uint32_t p_post_barrier) {
 	_THREAD_SAFE_METHOD_
 
-	Texture *src_tex = texture_owner.getornull(p_from_texture);
+	Texture *src_tex = texture_owner.get_or_null(p_from_texture);
 	ERR_FAIL_COND_V(!src_tex, ERR_INVALID_PARAMETER);
 
 	ERR_FAIL_COND_V_MSG(src_tex->bound, ERR_INVALID_PARAMETER,
@@ -2772,7 +2772,7 @@ Error RenderingDeviceVulkan::texture_copy(RID p_from_texture, RID p_to_texture, 
 	ERR_FAIL_COND_V(p_src_mipmap >= src_tex->mipmaps, ERR_INVALID_PARAMETER);
 	ERR_FAIL_COND_V(p_src_layer >= src_layer_count, ERR_INVALID_PARAMETER);
 
-	Texture *dst_tex = texture_owner.getornull(p_to_texture);
+	Texture *dst_tex = texture_owner.get_or_null(p_to_texture);
 	ERR_FAIL_COND_V(!dst_tex, ERR_INVALID_PARAMETER);
 
 	ERR_FAIL_COND_V_MSG(dst_tex->bound, ERR_INVALID_PARAMETER,
@@ -2939,7 +2939,7 @@ Error RenderingDeviceVulkan::texture_copy(RID p_from_texture, RID p_to_texture, 
 Error RenderingDeviceVulkan::texture_resolve_multisample(RID p_from_texture, RID p_to_texture, uint32_t p_post_barrier) {
 	_THREAD_SAFE_METHOD_
 
-	Texture *src_tex = texture_owner.getornull(p_from_texture);
+	Texture *src_tex = texture_owner.get_or_null(p_from_texture);
 	ERR_FAIL_COND_V(!src_tex, ERR_INVALID_PARAMETER);
 
 	ERR_FAIL_COND_V_MSG(src_tex->bound, ERR_INVALID_PARAMETER,
@@ -2950,7 +2950,7 @@ Error RenderingDeviceVulkan::texture_resolve_multisample(RID p_from_texture, RID
 	ERR_FAIL_COND_V_MSG(src_tex->type != TEXTURE_TYPE_2D, ERR_INVALID_PARAMETER, "Source texture must be 2D (or a slice of a 3D/Cube texture)");
 	ERR_FAIL_COND_V_MSG(src_tex->samples == TEXTURE_SAMPLES_1, ERR_INVALID_PARAMETER, "Source texture must be multisampled.");
 
-	Texture *dst_tex = texture_owner.getornull(p_to_texture);
+	Texture *dst_tex = texture_owner.get_or_null(p_to_texture);
 	ERR_FAIL_COND_V(!dst_tex, ERR_INVALID_PARAMETER);
 
 	ERR_FAIL_COND_V_MSG(dst_tex->bound, ERR_INVALID_PARAMETER,
@@ -3110,7 +3110,7 @@ Error RenderingDeviceVulkan::texture_resolve_multisample(RID p_from_texture, RID
 Error RenderingDeviceVulkan::texture_clear(RID p_texture, const Color &p_color, uint32_t p_base_mipmap, uint32_t p_mipmaps, uint32_t p_base_layer, uint32_t p_layers, uint32_t p_post_barrier) {
 	_THREAD_SAFE_METHOD_
 
-	Texture *src_tex = texture_owner.getornull(p_texture);
+	Texture *src_tex = texture_owner.get_or_null(p_texture);
 	ERR_FAIL_COND_V(!src_tex, ERR_INVALID_PARAMETER);
 
 	ERR_FAIL_COND_V_MSG(src_tex->bound, ERR_INVALID_PARAMETER,
@@ -3880,7 +3880,7 @@ RID RenderingDeviceVulkan::framebuffer_create(const Vector<RID> &p_texture_attac
 	FramebufferPass pass;
 
 	for (int i = 0; i < p_texture_attachments.size(); i++) {
-		Texture *texture = texture_owner.getornull(p_texture_attachments[i]);
+		Texture *texture = texture_owner.get_or_null(p_texture_attachments[i]);
 		ERR_FAIL_COND_V_MSG(!texture, RID(), "Texture index supplied for framebuffer (" + itos(i) + ") is not a valid texture.");
 
 		ERR_FAIL_COND_V_MSG(texture->layers != p_view_count, RID(), "Layers of our texture doesn't match view count for this framebuffer");
@@ -3905,7 +3905,7 @@ RID RenderingDeviceVulkan::framebuffer_create_multipass(const Vector<RID> &p_tex
 	Size2i size;
 
 	for (int i = 0; i < p_texture_attachments.size(); i++) {
-		Texture *texture = texture_owner.getornull(p_texture_attachments[i]);
+		Texture *texture = texture_owner.get_or_null(p_texture_attachments[i]);
 		ERR_FAIL_COND_V_MSG(!texture, RID(), "Texture index supplied for framebuffer (" + itos(i) + ") is not a valid texture.");
 
 		ERR_FAIL_COND_V_MSG(texture->layers != p_view_count, RID(), "Layers of our texture doesn't match view count for this framebuffer");
@@ -3951,7 +3951,7 @@ RID RenderingDeviceVulkan::framebuffer_create_multipass(const Vector<RID> &p_tex
 RenderingDevice::FramebufferFormatID RenderingDeviceVulkan::framebuffer_get_format(RID p_framebuffer) {
 	_THREAD_SAFE_METHOD_
 
-	Framebuffer *framebuffer = framebuffer_owner.getornull(p_framebuffer);
+	Framebuffer *framebuffer = framebuffer_owner.get_or_null(p_framebuffer);
 	ERR_FAIL_COND_V(!framebuffer, INVALID_ID);
 
 	return framebuffer->format_id;
@@ -4101,7 +4101,7 @@ RID RenderingDeviceVulkan::vertex_array_create(uint32_t p_vertex_count, VertexFo
 	vertex_array.description = p_vertex_format;
 	vertex_array.max_instances_allowed = 0xFFFFFFFF; //by default as many as you want
 	for (int i = 0; i < p_src_buffers.size(); i++) {
-		Buffer *buffer = vertex_buffer_owner.getornull(p_src_buffers[i]);
+		Buffer *buffer = vertex_buffer_owner.get_or_null(p_src_buffers[i]);
 
 		//validate with buffer
 		{
@@ -4197,7 +4197,7 @@ RID RenderingDeviceVulkan::index_array_create(RID p_index_buffer, uint32_t p_ind
 
 	ERR_FAIL_COND_V(!index_buffer_owner.owns(p_index_buffer), RID());
 
-	IndexBuffer *index_buffer = index_buffer_owner.getornull(p_index_buffer);
+	IndexBuffer *index_buffer = index_buffer_owner.get_or_null(p_index_buffer);
 
 	ERR_FAIL_COND_V(p_index_count == 0, RID());
 	ERR_FAIL_COND_V(p_index_offset + p_index_count > index_buffer->index_count, RID());
@@ -4241,7 +4241,7 @@ static VkShaderStageFlagBits shader_stage_masks[RenderingDevice::SHADER_STAGE_MA
 
 String RenderingDeviceVulkan::_shader_uniform_debug(RID p_shader, int p_set) {
 	String ret;
-	const Shader *shader = shader_owner.getornull(p_shader);
+	const Shader *shader = shader_owner.get_or_null(p_shader);
 	ERR_FAIL_COND_V(!shader, String());
 	for (int i = 0; i < shader->sets.size(); i++) {
 		if (p_set >= 0 && i != p_set) {
@@ -5272,7 +5272,7 @@ RID RenderingDeviceVulkan::shader_create_from_bytecode(const Vector<uint8_t> &p_
 uint32_t RenderingDeviceVulkan::shader_get_vertex_input_attribute_mask(RID p_shader) {
 	_THREAD_SAFE_METHOD_
 
-	const Shader *shader = shader_owner.getornull(p_shader);
+	const Shader *shader = shader_owner.get_or_null(p_shader);
 	ERR_FAIL_COND_V(!shader, 0);
 	return shader->vertex_input_mask;
 }
@@ -5494,7 +5494,7 @@ RID RenderingDeviceVulkan::uniform_set_create(const Vector<Uniform> &p_uniforms,
 
 	ERR_FAIL_COND_V(p_uniforms.size() == 0, RID());
 
-	Shader *shader = shader_owner.getornull(p_shader);
+	Shader *shader = shader_owner.get_or_null(p_shader);
 	ERR_FAIL_COND_V(!shader, RID());
 
 	ERR_FAIL_COND_V_MSG(p_shader_set >= (uint32_t)shader->sets.size() || shader->sets[p_shader_set].uniform_info.size() == 0, RID(),
@@ -5563,7 +5563,7 @@ RID RenderingDeviceVulkan::uniform_set_create(const Vector<Uniform> &p_uniforms,
 				Vector<VkDescriptorImageInfo> image_info;
 
 				for (int j = 0; j < uniform.ids.size(); j++) {
-					VkSampler *sampler = sampler_owner.getornull(uniform.ids[j]);
+					VkSampler *sampler = sampler_owner.get_or_null(uniform.ids[j]);
 					ERR_FAIL_COND_V_MSG(!sampler, RID(), "Sampler (binding: " + itos(uniform.binding) + ", index " + itos(j) + ") is not a valid sampler.");
 
 					VkDescriptorImageInfo img_info;
@@ -5596,10 +5596,10 @@ RID RenderingDeviceVulkan::uniform_set_create(const Vector<Uniform> &p_uniforms,
 				Vector<VkDescriptorImageInfo> image_info;
 
 				for (int j = 0; j < uniform.ids.size(); j += 2) {
-					VkSampler *sampler = sampler_owner.getornull(uniform.ids[j + 0]);
+					VkSampler *sampler = sampler_owner.get_or_null(uniform.ids[j + 0]);
 					ERR_FAIL_COND_V_MSG(!sampler, RID(), "SamplerBuffer (binding: " + itos(uniform.binding) + ", index " + itos(j + 1) + ") is not a valid sampler.");
 
-					Texture *texture = texture_owner.getornull(uniform.ids[j + 1]);
+					Texture *texture = texture_owner.get_or_null(uniform.ids[j + 1]);
 					ERR_FAIL_COND_V_MSG(!texture, RID(), "Texture (binding: " + itos(uniform.binding) + ", index " + itos(j) + ") is not a valid texture.");
 
 					ERR_FAIL_COND_V_MSG(!(texture->usage_flags & TEXTURE_USAGE_SAMPLING_BIT), RID(),
@@ -5621,7 +5621,7 @@ RID RenderingDeviceVulkan::uniform_set_create(const Vector<Uniform> &p_uniforms,
 						mutable_sampled_textures.push_back(texture);
 					}
 					if (texture->owner.is_valid()) {
-						texture = texture_owner.getornull(texture->owner);
+						texture = texture_owner.get_or_null(texture->owner);
 						ERR_FAIL_COND_V(!texture, RID()); //bug, should never happen
 					}
 
@@ -5652,7 +5652,7 @@ RID RenderingDeviceVulkan::uniform_set_create(const Vector<Uniform> &p_uniforms,
 				Vector<VkDescriptorImageInfo> image_info;
 
 				for (int j = 0; j < uniform.ids.size(); j++) {
-					Texture *texture = texture_owner.getornull(uniform.ids[j]);
+					Texture *texture = texture_owner.get_or_null(uniform.ids[j]);
 					ERR_FAIL_COND_V_MSG(!texture, RID(), "Texture (binding: " + itos(uniform.binding) + ", index " + itos(j) + ") is not a valid texture.");
 
 					ERR_FAIL_COND_V_MSG(!(texture->usage_flags & TEXTURE_USAGE_SAMPLING_BIT), RID(),
@@ -5675,7 +5675,7 @@ RID RenderingDeviceVulkan::uniform_set_create(const Vector<Uniform> &p_uniforms,
 					}
 
 					if (texture->owner.is_valid()) {
-						texture = texture_owner.getornull(texture->owner);
+						texture = texture_owner.get_or_null(texture->owner);
 						ERR_FAIL_COND_V(!texture, RID()); //bug, should never happen
 					}
 
@@ -5705,7 +5705,7 @@ RID RenderingDeviceVulkan::uniform_set_create(const Vector<Uniform> &p_uniforms,
 				Vector<VkDescriptorImageInfo> image_info;
 
 				for (int j = 0; j < uniform.ids.size(); j++) {
-					Texture *texture = texture_owner.getornull(uniform.ids[j]);
+					Texture *texture = texture_owner.get_or_null(uniform.ids[j]);
 
 					ERR_FAIL_COND_V_MSG(!texture, RID(),
 							"Image (binding: " + itos(uniform.binding) + ", index " + itos(j) + ") is not a valid texture.");
@@ -5723,7 +5723,7 @@ RID RenderingDeviceVulkan::uniform_set_create(const Vector<Uniform> &p_uniforms,
 					}
 
 					if (texture->owner.is_valid()) {
-						texture = texture_owner.getornull(texture->owner);
+						texture = texture_owner.get_or_null(texture->owner);
 						ERR_FAIL_COND_V(!texture, RID()); //bug, should never happen
 					}
 
@@ -5755,7 +5755,7 @@ RID RenderingDeviceVulkan::uniform_set_create(const Vector<Uniform> &p_uniforms,
 				Vector<VkBufferView> buffer_view;
 
 				for (int j = 0; j < uniform.ids.size(); j++) {
-					TextureBuffer *buffer = texture_buffer_owner.getornull(uniform.ids[j]);
+					TextureBuffer *buffer = texture_buffer_owner.get_or_null(uniform.ids[j]);
 					ERR_FAIL_COND_V_MSG(!buffer, RID(), "Texture Buffer (binding: " + itos(uniform.binding) + ", index " + itos(j) + ") is not a valid texture buffer.");
 
 					buffer_info.push_back(buffer->buffer.buffer_info);
@@ -5786,10 +5786,10 @@ RID RenderingDeviceVulkan::uniform_set_create(const Vector<Uniform> &p_uniforms,
 				Vector<VkBufferView> buffer_view;
 
 				for (int j = 0; j < uniform.ids.size(); j += 2) {
-					VkSampler *sampler = sampler_owner.getornull(uniform.ids[j + 0]);
+					VkSampler *sampler = sampler_owner.get_or_null(uniform.ids[j + 0]);
 					ERR_FAIL_COND_V_MSG(!sampler, RID(), "SamplerBuffer (binding: " + itos(uniform.binding) + ", index " + itos(j + 1) + ") is not a valid sampler.");
 
-					TextureBuffer *buffer = texture_buffer_owner.getornull(uniform.ids[j + 1]);
+					TextureBuffer *buffer = texture_buffer_owner.get_or_null(uniform.ids[j + 1]);
 
 					VkDescriptorImageInfo img_info;
 					img_info.sampler = *sampler;
@@ -5821,7 +5821,7 @@ RID RenderingDeviceVulkan::uniform_set_create(const Vector<Uniform> &p_uniforms,
 				ERR_FAIL_COND_V_MSG(uniform.ids.size() != 1, RID(),
 						"Uniform buffer supplied (binding: " + itos(uniform.binding) + ") must provide one ID (" + itos(uniform.ids.size()) + " provided).");
 
-				Buffer *buffer = uniform_buffer_owner.getornull(uniform.ids[0]);
+				Buffer *buffer = uniform_buffer_owner.get_or_null(uniform.ids[0]);
 				ERR_FAIL_COND_V_MSG(!buffer, RID(), "Uniform buffer supplied (binding: " + itos(uniform.binding) + ") is invalid.");
 
 				ERR_FAIL_COND_V_MSG(buffer->size != (uint32_t)set_uniform.length, RID(),
@@ -5842,9 +5842,9 @@ RID RenderingDeviceVulkan::uniform_set_create(const Vector<Uniform> &p_uniforms,
 				Buffer *buffer = nullptr;
 
 				if (storage_buffer_owner.owns(uniform.ids[0])) {
-					buffer = storage_buffer_owner.getornull(uniform.ids[0]);
+					buffer = storage_buffer_owner.get_or_null(uniform.ids[0]);
 				} else if (vertex_buffer_owner.owns(uniform.ids[0])) {
-					buffer = vertex_buffer_owner.getornull(uniform.ids[0]);
+					buffer = vertex_buffer_owner.get_or_null(uniform.ids[0]);
 
 					ERR_FAIL_COND_V_MSG(!(buffer->usage & VK_BUFFER_USAGE_STORAGE_BUFFER_BIT), RID(), "Vertex buffer supplied (binding: " + itos(uniform.binding) + ") was not created with storage flag.");
 				}
@@ -5875,7 +5875,7 @@ RID RenderingDeviceVulkan::uniform_set_create(const Vector<Uniform> &p_uniforms,
 				Vector<VkDescriptorImageInfo> image_info;
 
 				for (int j = 0; j < uniform.ids.size(); j++) {
-					Texture *texture = texture_owner.getornull(uniform.ids[j]);
+					Texture *texture = texture_owner.get_or_null(uniform.ids[j]);
 
 					ERR_FAIL_COND_V_MSG(!texture, RID(),
 							"InputAttachment (binding: " + itos(uniform.binding) + ", index " + itos(j) + ") is not a valid texture.");
@@ -5888,7 +5888,7 @@ RID RenderingDeviceVulkan::uniform_set_create(const Vector<Uniform> &p_uniforms,
 					img_info.imageView = texture->view;
 
 					if (texture->owner.is_valid()) {
-						texture = texture_owner.getornull(texture->owner);
+						texture = texture_owner.get_or_null(texture->owner);
 						ERR_FAIL_COND_V(!texture, RID()); //bug, should never happen
 					}
 
@@ -5977,7 +5977,7 @@ bool RenderingDeviceVulkan::uniform_set_is_valid(RID p_uniform_set) {
 }
 
 void RenderingDeviceVulkan::uniform_set_set_invalidation_callback(RID p_uniform_set, UniformSetInvalidatedCallback p_callback, void *p_userdata) {
-	UniformSet *us = uniform_set_owner.getornull(p_uniform_set);
+	UniformSet *us = uniform_set_owner.get_or_null(p_uniform_set);
 	ERR_FAIL_COND(!us);
 	us->invalidated_callback = p_callback;
 	us->invalidated_callback_userdata = p_userdata;
@@ -6126,7 +6126,7 @@ RID RenderingDeviceVulkan::render_pipeline_create(RID p_shader, FramebufferForma
 	_THREAD_SAFE_METHOD_
 
 	//needs a shader
-	Shader *shader = shader_owner.getornull(p_shader);
+	Shader *shader = shader_owner.get_or_null(p_shader);
 	ERR_FAIL_COND_V(!shader, RID());
 
 	ERR_FAIL_COND_V_MSG(shader->is_compute, RID(),
@@ -6568,7 +6568,7 @@ RID RenderingDeviceVulkan::compute_pipeline_create(RID p_shader, const Vector<Pi
 	_THREAD_SAFE_METHOD_
 
 	//needs a shader
-	Shader *shader = shader_owner.getornull(p_shader);
+	Shader *shader = shader_owner.get_or_null(p_shader);
 	ERR_FAIL_COND_V(!shader, RID());
 
 	ERR_FAIL_COND_V_MSG(!shader->is_compute, RID(),
@@ -6779,7 +6779,7 @@ Error RenderingDeviceVulkan::_draw_list_setup_framebuffer(Framebuffer *p_framebu
 		framebuffer_create_info.renderPass = version.render_pass;
 		Vector<VkImageView> attachments;
 		for (int i = 0; i < p_framebuffer->texture_ids.size(); i++) {
-			Texture *texture = texture_owner.getornull(p_framebuffer->texture_ids[i]);
+			Texture *texture = texture_owner.get_or_null(p_framebuffer->texture_ids[i]);
 			ERR_FAIL_COND_V(!texture, ERR_BUG);
 			attachments.push_back(texture->view);
 			ERR_FAIL_COND_V(texture->width != p_framebuffer->size.width, ERR_BUG);
@@ -6831,7 +6831,7 @@ Error RenderingDeviceVulkan::_draw_list_render_pass_begin(Framebuffer *framebuff
 	{
 		int color_index = 0;
 		for (int i = 0; i < framebuffer->texture_ids.size(); i++) {
-			Texture *texture = texture_owner.getornull(framebuffer->texture_ids[i]);
+			Texture *texture = texture_owner.get_or_null(framebuffer->texture_ids[i]);
 			VkClearValue clear_value;
 
 			if (color_index < p_clear_colors.size() && texture->usage_flags & TEXTURE_USAGE_COLOR_ATTACHMENT_BIT) {
@@ -6859,7 +6859,7 @@ Error RenderingDeviceVulkan::_draw_list_render_pass_begin(Framebuffer *framebuff
 	render_pass_begin.pClearValues = clear_values.ptr();
 
 	for (int i = 0; i < p_storage_textures.size(); i++) {
-		Texture *texture = texture_owner.getornull(p_storage_textures[i]);
+		Texture *texture = texture_owner.get_or_null(p_storage_textures[i]);
 		ERR_CONTINUE_MSG(!(texture->usage_flags & TEXTURE_USAGE_STORAGE_BIT), "Supplied storage texture " + itos(i) + " for draw list is not set to be used for storage.");
 
 		if (texture->usage_flags & TEXTURE_USAGE_SAMPLING_BIT) {
@@ -6897,7 +6897,7 @@ Error RenderingDeviceVulkan::_draw_list_render_pass_begin(Framebuffer *framebuff
 	draw_list_unbind_depth_textures = p_final_depth_action != FINAL_ACTION_CONTINUE;
 
 	for (int i = 0; i < framebuffer->texture_ids.size(); i++) {
-		Texture *texture = texture_owner.getornull(framebuffer->texture_ids[i]);
+		Texture *texture = texture_owner.get_or_null(framebuffer->texture_ids[i]);
 		texture->bound = true;
 		draw_list_bound_textures.push_back(framebuffer->texture_ids[i]);
 	}
@@ -6909,7 +6909,7 @@ void RenderingDeviceVulkan::_draw_list_insert_clear_region(DrawList *draw_list, 
 	Vector<VkClearAttachment> clear_attachments;
 	int color_index = 0;
 	for (int i = 0; i < framebuffer->texture_ids.size(); i++) {
-		Texture *texture = texture_owner.getornull(framebuffer->texture_ids[i]);
+		Texture *texture = texture_owner.get_or_null(framebuffer->texture_ids[i]);
 		VkClearAttachment clear_at = {};
 
 		if (p_clear_color && texture->usage_flags & TEXTURE_USAGE_COLOR_ATTACHMENT_BIT) {
@@ -6952,7 +6952,7 @@ RenderingDevice::DrawListID RenderingDeviceVulkan::draw_list_begin(RID p_framebu
 	ERR_FAIL_COND_V_MSG(draw_list != nullptr, INVALID_ID, "Only one draw list can be active at the same time.");
 	ERR_FAIL_COND_V_MSG(compute_list != nullptr && !compute_list->state.allow_draw_overlap, INVALID_ID, "Only one draw/compute list can be active at the same time.");
 
-	Framebuffer *framebuffer = framebuffer_owner.getornull(p_framebuffer);
+	Framebuffer *framebuffer = framebuffer_owner.get_or_null(p_framebuffer);
 	ERR_FAIL_COND_V(!framebuffer, INVALID_ID);
 
 	Point2i viewport_offset;
@@ -6993,7 +6993,7 @@ RenderingDevice::DrawListID RenderingDeviceVulkan::draw_list_begin(RID p_framebu
 
 		int color_count = 0;
 		for (int i = 0; i < framebuffer->texture_ids.size(); i++) {
-			Texture *texture = texture_owner.getornull(framebuffer->texture_ids[i]);
+			Texture *texture = texture_owner.get_or_null(framebuffer->texture_ids[i]);
 
 			if (texture->usage_flags & TEXTURE_USAGE_COLOR_ATTACHMENT_BIT) {
 				color_count++;
@@ -7056,7 +7056,7 @@ Error RenderingDeviceVulkan::draw_list_begin_split(RID p_framebuffer, uint32_t p
 
 	ERR_FAIL_COND_V(p_splits < 1, ERR_INVALID_DECLARATION);
 
-	Framebuffer *framebuffer = framebuffer_owner.getornull(p_framebuffer);
+	Framebuffer *framebuffer = framebuffer_owner.get_or_null(p_framebuffer);
 	ERR_FAIL_COND_V(!framebuffer, ERR_INVALID_DECLARATION);
 
 	Point2i viewport_offset;
@@ -7091,7 +7091,7 @@ Error RenderingDeviceVulkan::draw_list_begin_split(RID p_framebuffer, uint32_t p
 
 		int color_count = 0;
 		for (int i = 0; i < framebuffer->texture_ids.size(); i++) {
-			Texture *texture = texture_owner.getornull(framebuffer->texture_ids[i]);
+			Texture *texture = texture_owner.get_or_null(framebuffer->texture_ids[i]);
 
 			if (texture->usage_flags & TEXTURE_USAGE_COLOR_ATTACHMENT_BIT) {
 				color_count++;
@@ -7192,7 +7192,7 @@ void RenderingDeviceVulkan::draw_list_bind_render_pipeline(DrawListID p_list, RI
 	ERR_FAIL_COND_MSG(!dl->validation.active, "Submitted Draw Lists can no longer be modified.");
 #endif
 
-	const RenderPipeline *pipeline = render_pipeline_owner.getornull(p_render_pipeline);
+	const RenderPipeline *pipeline = render_pipeline_owner.get_or_null(p_render_pipeline);
 	ERR_FAIL_COND(!pipeline);
 #ifdef DEBUG_ENABLED
 	ERR_FAIL_COND(pipeline->validation.framebuffer_format != draw_list_framebuffer_format && pipeline->validation.render_pass != draw_list_current_subpass);
@@ -7267,7 +7267,7 @@ void RenderingDeviceVulkan::draw_list_bind_uniform_set(DrawListID p_list, RID p_
 	ERR_FAIL_COND_MSG(!dl->validation.active, "Submitted Draw Lists can no longer be modified.");
 #endif
 
-	const UniformSet *uniform_set = uniform_set_owner.getornull(p_uniform_set);
+	const UniformSet *uniform_set = uniform_set_owner.get_or_null(p_uniform_set);
 	ERR_FAIL_COND(!uniform_set);
 
 	if (p_index > dl->state.set_count) {
@@ -7315,7 +7315,7 @@ void RenderingDeviceVulkan::draw_list_bind_vertex_array(DrawListID p_list, RID p
 	ERR_FAIL_COND_MSG(!dl->validation.active, "Submitted Draw Lists can no longer be modified.");
 #endif
 
-	const VertexArray *vertex_array = vertex_array_owner.getornull(p_vertex_array);
+	const VertexArray *vertex_array = vertex_array_owner.get_or_null(p_vertex_array);
 	ERR_FAIL_COND(!vertex_array);
 
 	if (dl->state.vertex_array == p_vertex_array) {
@@ -7339,7 +7339,7 @@ void RenderingDeviceVulkan::draw_list_bind_index_array(DrawListID p_list, RID p_
 	ERR_FAIL_COND_MSG(!dl->validation.active, "Submitted Draw Lists can no longer be modified.");
 #endif
 
-	const IndexArray *index_array = index_array_owner.getornull(p_index_array);
+	const IndexArray *index_array = index_array_owner.get_or_null(p_index_array);
 	ERR_FAIL_COND(!index_array);
 
 	if (dl->state.index_array == p_index_array) {
@@ -7425,7 +7425,7 @@ void RenderingDeviceVulkan::draw_list_draw(DrawListID p_list, bool p_use_indices
 			if (dl->state.sets[i].uniform_set_format == 0) {
 				ERR_FAIL_MSG("Uniforms were never supplied for set (" + itos(i) + ") at the time of drawing, which are required by the pipeline");
 			} else if (uniform_set_owner.owns(dl->state.sets[i].uniform_set)) {
-				UniformSet *us = uniform_set_owner.getornull(dl->state.sets[i].uniform_set);
+				UniformSet *us = uniform_set_owner.get_or_null(dl->state.sets[i].uniform_set);
 				ERR_FAIL_MSG("Uniforms supplied for set (" + itos(i) + "):\n" + _shader_uniform_debug(us->shader_id, us->shader_set) + "\nare not the same format as required by the pipeline shader. Pipeline shader requires the following bindings:\n" + _shader_uniform_debug(dl->state.pipeline_shader));
 			} else {
 				ERR_FAIL_MSG("Uniforms supplied for set (" + itos(i) + ", which was was just freed) are not the same format as required by the pipeline shader. Pipeline shader requires the following bindings:\n" + _shader_uniform_debug(dl->state.pipeline_shader));
@@ -7696,7 +7696,7 @@ void RenderingDeviceVulkan::draw_list_end(uint32_t p_post_barrier) {
 	vkCmdEndRenderPass(frames[frame].draw_command_buffer);
 
 	for (int i = 0; i < draw_list_bound_textures.size(); i++) {
-		Texture *texture = texture_owner.getornull(draw_list_bound_textures[i]);
+		Texture *texture = texture_owner.get_or_null(draw_list_bound_textures[i]);
 		ERR_CONTINUE(!texture); //wtf
 		if (draw_list_unbind_color_textures && (texture->usage_flags & TEXTURE_USAGE_COLOR_ATTACHMENT_BIT)) {
 			texture->bound = false;
@@ -7744,7 +7744,7 @@ void RenderingDeviceVulkan::draw_list_end(uint32_t p_post_barrier) {
 	}
 
 	for (uint32_t i = 0; i < image_barrier_count; i++) {
-		Texture *texture = texture_owner.getornull(draw_list_storage_textures[i]);
+		Texture *texture = texture_owner.get_or_null(draw_list_storage_textures[i]);
 
 		VkImageMemoryBarrier &image_memory_barrier = image_barriers[i];
 		image_memory_barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
@@ -7810,7 +7810,7 @@ void RenderingDeviceVulkan::compute_list_bind_compute_pipeline(ComputeListID p_l
 
 	ComputeList *cl = compute_list;
 
-	const ComputePipeline *pipeline = compute_pipeline_owner.getornull(p_compute_pipeline);
+	const ComputePipeline *pipeline = compute_pipeline_owner.get_or_null(p_compute_pipeline);
 	ERR_FAIL_COND(!pipeline);
 
 	if (p_compute_pipeline == cl->state.pipeline) {
@@ -7883,7 +7883,7 @@ void RenderingDeviceVulkan::compute_list_bind_uniform_set(ComputeListID p_list, 
 	ERR_FAIL_COND_MSG(!cl->validation.active, "Submitted Compute Lists can no longer be modified.");
 #endif
 
-	UniformSet *uniform_set = uniform_set_owner.getornull(p_uniform_set);
+	UniformSet *uniform_set = uniform_set_owner.get_or_null(p_uniform_set);
 	ERR_FAIL_COND(!uniform_set);
 
 	if (p_index > cl->state.set_count) {
@@ -8082,7 +8082,7 @@ void RenderingDeviceVulkan::compute_list_dispatch(ComputeListID p_list, uint32_t
 			if (cl->state.sets[i].uniform_set_format == 0) {
 				ERR_FAIL_MSG("Uniforms were never supplied for set (" + itos(i) + ") at the time of drawing, which are required by the pipeline");
 			} else if (uniform_set_owner.owns(cl->state.sets[i].uniform_set)) {
-				UniformSet *us = uniform_set_owner.getornull(cl->state.sets[i].uniform_set);
+				UniformSet *us = uniform_set_owner.get_or_null(cl->state.sets[i].uniform_set);
 				ERR_FAIL_MSG("Uniforms supplied for set (" + itos(i) + "):\n" + _shader_uniform_debug(us->shader_id, us->shader_set) + "\nare not the same format as required by the pipeline shader. Pipeline shader requires the following bindings:\n" + _shader_uniform_debug(cl->state.pipeline_shader));
 			} else {
 				ERR_FAIL_MSG("Uniforms supplied for set (" + itos(i) + ", which was was just freed) are not the same format as required by the pipeline shader. Pipeline shader requires the following bindings:\n" + _shader_uniform_debug(cl->state.pipeline_shader));
@@ -8125,7 +8125,7 @@ void RenderingDeviceVulkan::compute_list_dispatch_indirect(ComputeListID p_list,
 	ERR_FAIL_COND(!compute_list);
 
 	ComputeList *cl = compute_list;
-	Buffer *buffer = storage_buffer_owner.getornull(p_buffer);
+	Buffer *buffer = storage_buffer_owner.get_or_null(p_buffer);
 	ERR_FAIL_COND(!buffer);
 
 	ERR_FAIL_COND_MSG(!(buffer->usage & STORAGE_BUFFER_USAGE_DISPATCH_INDIRECT), "Buffer provided was not created to do indirect dispatch.");
@@ -8159,7 +8159,7 @@ void RenderingDeviceVulkan::compute_list_dispatch_indirect(ComputeListID p_list,
 			if (cl->state.sets[i].uniform_set_format == 0) {
 				ERR_FAIL_MSG("Uniforms were never supplied for set (" + itos(i) + ") at the time of drawing, which are required by the pipeline");
 			} else if (uniform_set_owner.owns(cl->state.sets[i].uniform_set)) {
-				UniformSet *us = uniform_set_owner.getornull(cl->state.sets[i].uniform_set);
+				UniformSet *us = uniform_set_owner.get_or_null(cl->state.sets[i].uniform_set);
 				ERR_FAIL_MSG("Uniforms supplied for set (" + itos(i) + "):\n" + _shader_uniform_debug(us->shader_id, us->shader_set) + "\nare not the same format as required by the pipeline shader. Pipeline shader requires the following bindings:\n" + _shader_uniform_debug(cl->state.pipeline_shader));
 			} else {
 				ERR_FAIL_MSG("Uniforms supplied for set (" + itos(i) + ", which was was just freed) are not the same format as required by the pipeline shader. Pipeline shader requires the following bindings:\n" + _shader_uniform_debug(cl->state.pipeline_shader));
@@ -8371,25 +8371,25 @@ void RenderingDeviceVulkan::draw_list_render_secondary_to_framebuffer(ID p_frame
 void RenderingDeviceVulkan::_free_internal(RID p_id) {
 	//push everything so it's disposed of next time this frame index is processed (means, it's safe to do it)
 	if (texture_owner.owns(p_id)) {
-		Texture *texture = texture_owner.getornull(p_id);
+		Texture *texture = texture_owner.get_or_null(p_id);
 		frames[frame].textures_to_dispose_of.push_back(*texture);
 		texture_owner.free(p_id);
 	} else if (framebuffer_owner.owns(p_id)) {
-		Framebuffer *framebuffer = framebuffer_owner.getornull(p_id);
+		Framebuffer *framebuffer = framebuffer_owner.get_or_null(p_id);
 		frames[frame].framebuffers_to_dispose_of.push_back(*framebuffer);
 		framebuffer_owner.free(p_id);
 	} else if (sampler_owner.owns(p_id)) {
-		VkSampler *sampler = sampler_owner.getornull(p_id);
+		VkSampler *sampler = sampler_owner.get_or_null(p_id);
 		frames[frame].samplers_to_dispose_of.push_back(*sampler);
 		sampler_owner.free(p_id);
 	} else if (vertex_buffer_owner.owns(p_id)) {
-		Buffer *vertex_buffer = vertex_buffer_owner.getornull(p_id);
+		Buffer *vertex_buffer = vertex_buffer_owner.get_or_null(p_id);
 		frames[frame].buffers_to_dispose_of.push_back(*vertex_buffer);
 		vertex_buffer_owner.free(p_id);
 	} else if (vertex_array_owner.owns(p_id)) {
 		vertex_array_owner.free(p_id);
 	} else if (index_buffer_owner.owns(p_id)) {
-		IndexBuffer *index_buffer = index_buffer_owner.getornull(p_id);
+		IndexBuffer *index_buffer = index_buffer_owner.get_or_null(p_id);
 		Buffer b;
 		b.allocation = index_buffer->allocation;
 		b.buffer = index_buffer->buffer;
@@ -8400,24 +8400,24 @@ void RenderingDeviceVulkan::_free_internal(RID p_id) {
 	} else if (index_array_owner.owns(p_id)) {
 		index_array_owner.free(p_id);
 	} else if (shader_owner.owns(p_id)) {
-		Shader *shader = shader_owner.getornull(p_id);
+		Shader *shader = shader_owner.get_or_null(p_id);
 		frames[frame].shaders_to_dispose_of.push_back(*shader);
 		shader_owner.free(p_id);
 	} else if (uniform_buffer_owner.owns(p_id)) {
-		Buffer *uniform_buffer = uniform_buffer_owner.getornull(p_id);
+		Buffer *uniform_buffer = uniform_buffer_owner.get_or_null(p_id);
 		frames[frame].buffers_to_dispose_of.push_back(*uniform_buffer);
 		uniform_buffer_owner.free(p_id);
 	} else if (texture_buffer_owner.owns(p_id)) {
-		TextureBuffer *texture_buffer = texture_buffer_owner.getornull(p_id);
+		TextureBuffer *texture_buffer = texture_buffer_owner.get_or_null(p_id);
 		frames[frame].buffers_to_dispose_of.push_back(texture_buffer->buffer);
 		frames[frame].buffer_views_to_dispose_of.push_back(texture_buffer->view);
 		texture_buffer_owner.free(p_id);
 	} else if (storage_buffer_owner.owns(p_id)) {
-		Buffer *storage_buffer = storage_buffer_owner.getornull(p_id);
+		Buffer *storage_buffer = storage_buffer_owner.get_or_null(p_id);
 		frames[frame].buffers_to_dispose_of.push_back(*storage_buffer);
 		storage_buffer_owner.free(p_id);
 	} else if (uniform_set_owner.owns(p_id)) {
-		UniformSet *uniform_set = uniform_set_owner.getornull(p_id);
+		UniformSet *uniform_set = uniform_set_owner.get_or_null(p_id);
 		frames[frame].uniform_sets_to_dispose_of.push_back(*uniform_set);
 		if (uniform_set->invalidated_callback != nullptr) {
 			uniform_set->invalidated_callback(p_id, uniform_set->invalidated_callback_userdata);
@@ -8425,11 +8425,11 @@ void RenderingDeviceVulkan::_free_internal(RID p_id) {
 
 		uniform_set_owner.free(p_id);
 	} else if (render_pipeline_owner.owns(p_id)) {
-		RenderPipeline *pipeline = render_pipeline_owner.getornull(p_id);
+		RenderPipeline *pipeline = render_pipeline_owner.get_or_null(p_id);
 		frames[frame].render_pipelines_to_dispose_of.push_back(*pipeline);
 		render_pipeline_owner.free(p_id);
 	} else if (compute_pipeline_owner.owns(p_id)) {
-		ComputePipeline *pipeline = compute_pipeline_owner.getornull(p_id);
+		ComputePipeline *pipeline = compute_pipeline_owner.get_or_null(p_id);
 		frames[frame].compute_pipelines_to_dispose_of.push_back(*pipeline);
 		compute_pipeline_owner.free(p_id);
 	} else {
@@ -8448,49 +8448,49 @@ void RenderingDeviceVulkan::free(RID p_id) {
 // We just expose the resources that are owned and can be accessed easily.
 void RenderingDeviceVulkan::set_resource_name(RID p_id, const String p_name) {
 	if (texture_owner.owns(p_id)) {
-		Texture *texture = texture_owner.getornull(p_id);
+		Texture *texture = texture_owner.get_or_null(p_id);
 		if (texture->owner.is_null()) {
 			// Don't set the source texture's name when calling on a texture view
 			context->set_object_name(VK_OBJECT_TYPE_IMAGE, uint64_t(texture->image), p_name);
 		}
 		context->set_object_name(VK_OBJECT_TYPE_IMAGE_VIEW, uint64_t(texture->view), p_name + " View");
 	} else if (framebuffer_owner.owns(p_id)) {
-		//Framebuffer *framebuffer = framebuffer_owner.getornull(p_id);
+		//Framebuffer *framebuffer = framebuffer_owner.get_or_null(p_id);
 		// Not implemented for now as the relationship between Framebuffer and RenderPass is very complex
 	} else if (sampler_owner.owns(p_id)) {
-		VkSampler *sampler = sampler_owner.getornull(p_id);
+		VkSampler *sampler = sampler_owner.get_or_null(p_id);
 		context->set_object_name(VK_OBJECT_TYPE_SAMPLER, uint64_t(*sampler), p_name);
 	} else if (vertex_buffer_owner.owns(p_id)) {
-		Buffer *vertex_buffer = vertex_buffer_owner.getornull(p_id);
+		Buffer *vertex_buffer = vertex_buffer_owner.get_or_null(p_id);
 		context->set_object_name(VK_OBJECT_TYPE_BUFFER, uint64_t(vertex_buffer->buffer), p_name);
 	} else if (index_buffer_owner.owns(p_id)) {
-		IndexBuffer *index_buffer = index_buffer_owner.getornull(p_id);
+		IndexBuffer *index_buffer = index_buffer_owner.get_or_null(p_id);
 		context->set_object_name(VK_OBJECT_TYPE_BUFFER, uint64_t(index_buffer->buffer), p_name);
 	} else if (shader_owner.owns(p_id)) {
-		Shader *shader = shader_owner.getornull(p_id);
+		Shader *shader = shader_owner.get_or_null(p_id);
 		context->set_object_name(VK_OBJECT_TYPE_PIPELINE_LAYOUT, uint64_t(shader->pipeline_layout), p_name + " Pipeline Layout");
 		for (int i = 0; i < shader->sets.size(); i++) {
 			context->set_object_name(VK_OBJECT_TYPE_DESCRIPTOR_SET_LAYOUT, uint64_t(shader->sets[i].descriptor_set_layout), p_name);
 		}
 	} else if (uniform_buffer_owner.owns(p_id)) {
-		Buffer *uniform_buffer = uniform_buffer_owner.getornull(p_id);
+		Buffer *uniform_buffer = uniform_buffer_owner.get_or_null(p_id);
 		context->set_object_name(VK_OBJECT_TYPE_BUFFER, uint64_t(uniform_buffer->buffer), p_name);
 	} else if (texture_buffer_owner.owns(p_id)) {
-		TextureBuffer *texture_buffer = texture_buffer_owner.getornull(p_id);
+		TextureBuffer *texture_buffer = texture_buffer_owner.get_or_null(p_id);
 		context->set_object_name(VK_OBJECT_TYPE_BUFFER, uint64_t(texture_buffer->buffer.buffer), p_name);
 		context->set_object_name(VK_OBJECT_TYPE_BUFFER_VIEW, uint64_t(texture_buffer->view), p_name + " View");
 	} else if (storage_buffer_owner.owns(p_id)) {
-		Buffer *storage_buffer = storage_buffer_owner.getornull(p_id);
+		Buffer *storage_buffer = storage_buffer_owner.get_or_null(p_id);
 		context->set_object_name(VK_OBJECT_TYPE_BUFFER, uint64_t(storage_buffer->buffer), p_name);
 	} else if (uniform_set_owner.owns(p_id)) {
-		UniformSet *uniform_set = uniform_set_owner.getornull(p_id);
+		UniformSet *uniform_set = uniform_set_owner.get_or_null(p_id);
 		context->set_object_name(VK_OBJECT_TYPE_DESCRIPTOR_SET, uint64_t(uniform_set->descriptor_set), p_name);
 	} else if (render_pipeline_owner.owns(p_id)) {
-		RenderPipeline *pipeline = render_pipeline_owner.getornull(p_id);
+		RenderPipeline *pipeline = render_pipeline_owner.get_or_null(p_id);
 		context->set_object_name(VK_OBJECT_TYPE_PIPELINE, uint64_t(pipeline->pipeline), p_name);
 		context->set_object_name(VK_OBJECT_TYPE_PIPELINE_LAYOUT, uint64_t(pipeline->pipeline_layout), p_name + " Layout");
 	} else if (compute_pipeline_owner.owns(p_id)) {
-		ComputePipeline *pipeline = compute_pipeline_owner.getornull(p_id);
+		ComputePipeline *pipeline = compute_pipeline_owner.get_or_null(p_id);
 		context->set_object_name(VK_OBJECT_TYPE_PIPELINE, uint64_t(pipeline->pipeline), p_name);
 		context->set_object_name(VK_OBJECT_TYPE_PIPELINE_LAYOUT, uint64_t(pipeline->pipeline_layout), p_name + " Layout");
 	} else {
@@ -8688,10 +8688,10 @@ void RenderingDeviceVulkan::_free_pending_resources(int p_frame) {
 	while (frames[p_frame].framebuffers_to_dispose_of.front()) {
 		Framebuffer *framebuffer = &frames[p_frame].framebuffers_to_dispose_of.front()->get();
 
-		for (Map<Framebuffer::VersionKey, Framebuffer::Version>::Element *E = framebuffer->framebuffers.front(); E; E = E->next()) {
+		for (const KeyValue<Framebuffer::VersionKey, Framebuffer::Version> &E : framebuffer->framebuffers) {
 			//first framebuffer, then render pass because it depends on it
-			vkDestroyFramebuffer(device, E->get().framebuffer, nullptr);
-			vkDestroyRenderPass(device, E->get().render_pass, nullptr);
+			vkDestroyFramebuffer(device, E.value.framebuffer, nullptr);
+			vkDestroyRenderPass(device, E.value.render_pass, nullptr);
 		}
 
 		frames[p_frame].framebuffers_to_dispose_of.pop_front();
@@ -9037,31 +9037,31 @@ uint64_t RenderingDeviceVulkan::get_driver_resource(DriverResource p_resource, R
 			return context->get_graphics_queue_family_index();
 		}; break;
 		case DRIVER_RESOURCE_VULKAN_IMAGE: {
-			Texture *tex = texture_owner.getornull(p_rid);
+			Texture *tex = texture_owner.get_or_null(p_rid);
 			ERR_FAIL_NULL_V(tex, 0);
 
 			return (uint64_t)tex->image;
 		}; break;
 		case DRIVER_RESOURCE_VULKAN_IMAGE_VIEW: {
-			Texture *tex = texture_owner.getornull(p_rid);
+			Texture *tex = texture_owner.get_or_null(p_rid);
 			ERR_FAIL_NULL_V(tex, 0);
 
 			return (uint64_t)tex->view;
 		}; break;
 		case DRIVER_RESOURCE_VULKAN_IMAGE_NATIVE_TEXTURE_FORMAT: {
-			Texture *tex = texture_owner.getornull(p_rid);
+			Texture *tex = texture_owner.get_or_null(p_rid);
 			ERR_FAIL_NULL_V(tex, 0);
 
 			return vulkan_formats[tex->format];
 		}; break;
 		case DRIVER_RESOURCE_VULKAN_SAMPLER: {
-			VkSampler *sampler = sampler_owner.getornull(p_rid);
+			VkSampler *sampler = sampler_owner.get_or_null(p_rid);
 			ERR_FAIL_NULL_V(sampler, 0);
 
 			return uint64_t(*sampler);
 		}; break;
 		case DRIVER_RESOURCE_VULKAN_DESCRIPTOR_SET: {
-			UniformSet *uniform_set = uniform_set_owner.getornull(p_rid);
+			UniformSet *uniform_set = uniform_set_owner.get_or_null(p_rid);
 			ERR_FAIL_NULL_V(uniform_set, 0);
 
 			return uint64_t(uniform_set->descriptor_set);
@@ -9069,15 +9069,15 @@ uint64_t RenderingDeviceVulkan::get_driver_resource(DriverResource p_resource, R
 		case DRIVER_RESOURCE_VULKAN_BUFFER: {
 			Buffer *buffer = nullptr;
 			if (vertex_buffer_owner.owns(p_rid)) {
-				buffer = vertex_buffer_owner.getornull(p_rid);
+				buffer = vertex_buffer_owner.get_or_null(p_rid);
 			} else if (index_buffer_owner.owns(p_rid)) {
-				buffer = index_buffer_owner.getornull(p_rid);
+				buffer = index_buffer_owner.get_or_null(p_rid);
 			} else if (uniform_buffer_owner.owns(p_rid)) {
-				buffer = uniform_buffer_owner.getornull(p_rid);
+				buffer = uniform_buffer_owner.get_or_null(p_rid);
 			} else if (texture_buffer_owner.owns(p_rid)) {
-				buffer = &texture_buffer_owner.getornull(p_rid)->buffer;
+				buffer = &texture_buffer_owner.get_or_null(p_rid)->buffer;
 			} else if (storage_buffer_owner.owns(p_rid)) {
-				buffer = storage_buffer_owner.getornull(p_rid);
+				buffer = storage_buffer_owner.get_or_null(p_rid);
 			}
 
 			ERR_FAIL_NULL_V(buffer, 0);
@@ -9085,13 +9085,13 @@ uint64_t RenderingDeviceVulkan::get_driver_resource(DriverResource p_resource, R
 			return uint64_t(buffer->buffer);
 		}; break;
 		case DRIVER_RESOURCE_VULKAN_COMPUTE_PIPELINE: {
-			ComputePipeline *compute_pipeline = compute_pipeline_owner.getornull(p_rid);
+			ComputePipeline *compute_pipeline = compute_pipeline_owner.get_or_null(p_rid);
 			ERR_FAIL_NULL_V(compute_pipeline, 0);
 
 			return uint64_t(compute_pipeline->pipeline);
 		}; break;
 		case DRIVER_RESOURCE_VULKAN_RENDER_PIPELINE: {
-			RenderPipeline *render_pipeline = render_pipeline_owner.getornull(p_rid);
+			RenderPipeline *render_pipeline = render_pipeline_owner.get_or_null(p_rid);
 			ERR_FAIL_NULL_V(render_pipeline, 0);
 
 			return uint64_t(render_pipeline->pipeline);

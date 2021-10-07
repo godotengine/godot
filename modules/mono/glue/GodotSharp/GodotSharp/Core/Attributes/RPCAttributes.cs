@@ -3,8 +3,8 @@ using System;
 namespace Godot
 {
     [AttributeUsage(AttributeTargets.Method)]
-    public class RemoteAttribute : Attribute { }
+    public class AnyPeerAttribute : Attribute { }
 
     [AttributeUsage(AttributeTargets.Method)]
-    public class PuppetAttribute : Attribute { }
+    public class AuthorityAttribute : Attribute { }
 }

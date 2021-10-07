@@ -90,13 +90,6 @@
 				Returns the collider's shape index.
 			</description>
 		</method>
-		<method name="get_contact_collider_shape_metadata" qualifiers="const">
-			<return type="Variant" />
-			<argument index="0" name="contact_idx" type="int" />
-			<description>
-				Returns the collided shape's metadata. This metadata is different from [method Object.get_meta], and is set with [method PhysicsServer2D.shape_set_data].
-			</description>
-		</method>
 		<method name="get_contact_collider_velocity_at_position" qualifiers="const">
 			<return type="Vector2" />
 			<argument index="0" name="contact_idx" type="int" />

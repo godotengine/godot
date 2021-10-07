@@ -871,7 +871,7 @@ def rstize_text(text, state):  # type: (str, State) -> str
                 inside_url = True
                 url_has_name = False
             elif cmd == "/url":
-                tag_text = ("" if url_has_name else url_link) + " <" + url_link + ">`_"
+                tag_text = ("" if url_has_name else url_link) + " <" + url_link + ">`__"
                 tag_depth -= 1
                 escape_post = True
                 inside_url = False
@@ -1053,6 +1053,11 @@ def make_method_signature(
         ret_type = method_def.return_type.to_rst(state)
         ref_type = "method"
 
+    # FIXME: Need to add proper support for operator methods, but generating a unique
+    # and valid ref for them is not trivial.
+    if method_def.name.startswith("operator "):
+        make_ref = False
+
     out = ""
 
     if make_ref:
@@ -1102,6 +1107,7 @@ def make_footer():  # type: () -> str
         ".. |const| replace:: :abbr:`const (This method has no side effects. It doesn't modify any of the instance's member variables.)`\n"
         ".. |vararg| replace:: :abbr:`vararg (This method accepts any number of arguments after the ones described here.)`\n"
         ".. |constructor| replace:: :abbr:`constructor (This method is used to construct a type.)`\n"
+        ".. |static| replace:: :abbr:`static (This method doesn't need an instance to be called, so it can be called directly using the class name.)`\n"
         ".. |operator| replace:: :abbr:`operator (This method describes a valid operator to use with this type as left-hand operand.)`\n"
     )
     # fmt: on
@@ -1126,9 +1132,9 @@ def make_link(url, title):  # type: (str, str) -> str
         # External link, for example:
         # `http://enet.bespin.org/usergroup0.html`
         if title != "":
-            return "`" + title + " <" + url + ">`_"
+            return "`" + title + " <" + url + ">`__"
         else:
-            return "`" + url + " <" + url + ">`_"
+            return "`" + url + " <" + url + ">`__"
 
 
 if __name__ == "__main__":

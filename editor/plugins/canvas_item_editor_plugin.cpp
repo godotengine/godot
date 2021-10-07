@@ -513,7 +513,7 @@ Object *CanvasItemEditor::_get_editor_data(Object *p_what) {
 }
 
 void CanvasItemEditor::_keying_changed() {
-	if (AnimationPlayerEditor::singleton->get_track_editor()->is_visible_in_tree()) {
+	if (AnimationPlayerEditor::get_singleton()->get_track_editor()->is_visible_in_tree()) {
 		animation_hb->show();
 	} else {
 		animation_hb->hide();
@@ -748,8 +748,8 @@ bool CanvasItemEditor::_select_click_on_item(CanvasItem *item, Point2 p_click_po
 
 List<CanvasItem *> CanvasItemEditor::_get_edited_canvas_items(bool retreive_locked, bool remove_canvas_item_if_parent_in_selection) {
 	List<CanvasItem *> selection;
-	for (Map<Node *, Object *>::Element *E = editor_selection->get_selection().front(); E; E = E->next()) {
-		CanvasItem *canvas_item = Object::cast_to<CanvasItem>(E->key());
+	for (const KeyValue<Node *, Object *> &E : editor_selection->get_selection()) {
+		CanvasItem *canvas_item = Object::cast_to<CanvasItem>(E.key);
 		if (canvas_item && canvas_item->is_visible_in_tree() && canvas_item->get_viewport() == EditorNode::get_singleton()->get_scene_root() && (retreive_locked || !_is_node_locked(canvas_item))) {
 			CanvasItemEditorSelectedItem *se = editor_selection->get_node_editor_data<CanvasItemEditorSelectedItem>(canvas_item);
 			if (se) {
@@ -1460,8 +1460,8 @@ bool CanvasItemEditor::_gui_input_open_scene_on_double_click(const Ref<InputEven
 		List<CanvasItem *> selection = _get_edited_canvas_items();
 		if (selection.size() == 1) {
 			CanvasItem *canvas_item = selection[0];
-			if (canvas_item->get_filename() != "" && canvas_item != editor->get_edited_scene()) {
-				editor->open_request(canvas_item->get_filename());
+			if (canvas_item->get_scene_file_path() != "" && canvas_item != editor->get_edited_scene()) {
+				editor->open_request(canvas_item->get_scene_file_path());
 				return true;
 			}
 		}
@@ -3782,8 +3782,8 @@ void CanvasItemEditor::_notification(int p_what) {
 		}
 
 		// Update the viewport if bones changes
-		for (Map<BoneKey, BoneList>::Element *E = bone_list.front(); E; E = E->next()) {
-			Object *b = ObjectDB::get_instance(E->key().from);
+		for (KeyValue<BoneKey, BoneList> &E : bone_list) {
+			Object *b = ObjectDB::get_instance(E.key.from);
 			if (!b) {
 				viewport->update();
 				break;
@@ -3796,14 +3796,14 @@ void CanvasItemEditor::_notification(int p_what) {
 
 			Transform2D global_xform = b2->get_global_transform();
 
-			if (global_xform != E->get().xform) {
-				E->get().xform = global_xform;
+			if (global_xform != E.value.xform) {
+				E.value.xform = global_xform;
 				viewport->update();
 			}
 
 			Bone2D *bone = Object::cast_to<Bone2D>(b);
-			if (bone && bone->get_length() != E->get().length) {
-				E->get().length = bone->get_length();
+			if (bone && bone->get_length() != E.value.length) {
+				E.value.length = bone->get_length();
 				viewport->update();
 			}
 		}
@@ -3816,7 +3816,7 @@ void CanvasItemEditor::_notification(int p_what) {
 			select_sb->set_default_margin(Side(i), 4);
 		}
 
-		AnimationPlayerEditor::singleton->get_track_editor()->connect("visibility_changed", callable_mp(this, &CanvasItemEditor::_keying_changed));
+		AnimationPlayerEditor::get_singleton()->get_track_editor()->connect("visibility_changed", callable_mp(this, &CanvasItemEditor::_keying_changed));
 		_keying_changed();
 
 	} else if (p_what == EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED) {
@@ -4263,8 +4263,8 @@ void CanvasItemEditor::_button_tool_select(int p_index) {
 void CanvasItemEditor::_insert_animation_keys(bool p_location, bool p_rotation, bool p_scale, bool p_on_existing) {
 	Map<Node *, Object *> &selection = editor_selection->get_selection();
 
-	for (Map<Node *, Object *>::Element *E = selection.front(); E; E = E->next()) {
-		CanvasItem *canvas_item = Object::cast_to<CanvasItem>(E->key());
+	for (const KeyValue<Node *, Object *> &E : selection) {
+		CanvasItem *canvas_item = Object::cast_to<CanvasItem>(E.key);
 		if (!canvas_item || !canvas_item->is_visible_in_tree()) {
 			continue;
 		}
@@ -4277,13 +4277,13 @@ void CanvasItemEditor::_insert_animation_keys(bool p_location, bool p_rotation, 
 			Node2D *n2d = Object::cast_to<Node2D>(canvas_item);
 
 			if (key_pos && p_location) {
-				AnimationPlayerEditor::singleton->get_track_editor()->insert_node_value_key(n2d, "position", n2d->get_position(), p_on_existing);
+				AnimationPlayerEditor::get_singleton()->get_track_editor()->insert_node_value_key(n2d, "position", n2d->get_position(), p_on_existing);
 			}
 			if (key_rot && p_rotation) {
-				AnimationPlayerEditor::singleton->get_track_editor()->insert_node_value_key(n2d, "rotation", n2d->get_rotation(), p_on_existing);
+				AnimationPlayerEditor::get_singleton()->get_track_editor()->insert_node_value_key(n2d, "rotation", n2d->get_rotation(), p_on_existing);
 			}
 			if (key_scale && p_scale) {
-				AnimationPlayerEditor::singleton->get_track_editor()->insert_node_value_key(n2d, "scale", n2d->get_scale(), p_on_existing);
+				AnimationPlayerEditor::get_singleton()->get_track_editor()->insert_node_value_key(n2d, "scale", n2d->get_scale(), p_on_existing);
 			}
 
 			if (n2d->has_meta("_edit_bone_") && n2d->get_parent_item()) {
@@ -4309,13 +4309,13 @@ void CanvasItemEditor::_insert_animation_keys(bool p_location, bool p_rotation, 
 				if (has_chain && ik_chain.size()) {
 					for (Node2D *&F : ik_chain) {
 						if (key_pos) {
-							AnimationPlayerEditor::singleton->get_track_editor()->insert_node_value_key(F, "position", F->get_position(), p_on_existing);
+							AnimationPlayerEditor::get_singleton()->get_track_editor()->insert_node_value_key(F, "position", F->get_position(), p_on_existing);
 						}
 						if (key_rot) {
-							AnimationPlayerEditor::singleton->get_track_editor()->insert_node_value_key(F, "rotation", F->get_rotation(), p_on_existing);
+							AnimationPlayerEditor::get_singleton()->get_track_editor()->insert_node_value_key(F, "rotation", F->get_rotation(), p_on_existing);
 						}
 						if (key_scale) {
-							AnimationPlayerEditor::singleton->get_track_editor()->insert_node_value_key(F, "scale", F->get_scale(), p_on_existing);
+							AnimationPlayerEditor::get_singleton()->get_track_editor()->insert_node_value_key(F, "scale", F->get_scale(), p_on_existing);
 						}
 					}
 				}
@@ -4325,13 +4325,13 @@ void CanvasItemEditor::_insert_animation_keys(bool p_location, bool p_rotation, 
 			Control *ctrl = Object::cast_to<Control>(canvas_item);
 
 			if (key_pos) {
-				AnimationPlayerEditor::singleton->get_track_editor()->insert_node_value_key(ctrl, "rect_position", ctrl->get_position(), p_on_existing);
+				AnimationPlayerEditor::get_singleton()->get_track_editor()->insert_node_value_key(ctrl, "rect_position", ctrl->get_position(), p_on_existing);
 			}
 			if (key_rot) {
-				AnimationPlayerEditor::singleton->get_track_editor()->insert_node_value_key(ctrl, "rect_rotation", ctrl->get_rotation(), p_on_existing);
+				AnimationPlayerEditor::get_singleton()->get_track_editor()->insert_node_value_key(ctrl, "rect_rotation", ctrl->get_rotation(), p_on_existing);
 			}
 			if (key_scale) {
-				AnimationPlayerEditor::singleton->get_track_editor()->insert_node_value_key(ctrl, "rect_size", ctrl->get_size(), p_on_existing);
+				AnimationPlayerEditor::get_singleton()->get_track_editor()->insert_node_value_key(ctrl, "rect_size", ctrl->get_size(), p_on_existing);
 			}
 		}
 	}
@@ -4695,8 +4695,8 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 
 			Map<Node *, Object *> &selection = editor_selection->get_selection();
 
-			for (Map<Node *, Object *>::Element *E = selection.front(); E; E = E->next()) {
-				CanvasItem *canvas_item = Object::cast_to<CanvasItem>(E->key());
+			for (const KeyValue<Node *, Object *> &E : selection) {
+				CanvasItem *canvas_item = Object::cast_to<CanvasItem>(E.key);
 				if (!canvas_item || !canvas_item->is_visible_in_tree()) {
 					continue;
 				}
@@ -4741,8 +4741,8 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 		case ANIM_CLEAR_POSE: {
 			Map<Node *, Object *> &selection = editor_selection->get_selection();
 
-			for (Map<Node *, Object *>::Element *E = selection.front(); E; E = E->next()) {
-				CanvasItem *canvas_item = Object::cast_to<CanvasItem>(E->key());
+			for (const KeyValue<Node *, Object *> &E : selection) {
+				CanvasItem *canvas_item = Object::cast_to<CanvasItem>(E.key);
 				if (!canvas_item || !canvas_item->is_visible_in_tree()) {
 					continue;
 				}
@@ -4771,7 +4771,7 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 					}
 					/*
                                    if (key_scale)
-				   AnimationPlayerEditor::singleton->get_track_editor()->insert_node_value_key(ctrl,"rect/size",ctrl->get_size());
+				   AnimationPlayerEditor::get_singleton()->get_track_editor()->insert_node_value_key(ctrl,"rect/size",ctrl->get_size());
                                    */
 				}
 			}
@@ -4816,8 +4816,8 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 			Node *editor_root = EditorNode::get_singleton()->get_edited_scene()->get_tree()->get_edited_scene_root();
 
 			undo_redo->create_action(TTR("Create Custom Bone2D(s) from Node(s)"));
-			for (Map<Node *, Object *>::Element *E = selection.front(); E; E = E->next()) {
-				Node2D *n2d = Object::cast_to<Node2D>(E->key());
+			for (const KeyValue<Node *, Object *> &E : selection) {
+				Node2D *n2d = Object::cast_to<Node2D>(E.key);
 
 				Bone2D *new_bone = memnew(Bone2D);
 				String new_bone_name = n2d->get_name();
@@ -4861,8 +4861,8 @@ void CanvasItemEditor::_focus_selection(int p_op) {
 	int count = 0;
 
 	Map<Node *, Object *> &selection = editor_selection->get_selection();
-	for (Map<Node *, Object *>::Element *E = selection.front(); E; E = E->next()) {
-		CanvasItem *canvas_item = Object::cast_to<CanvasItem>(E->key());
+	for (const KeyValue<Node *, Object *> &E : selection) {
+		CanvasItem *canvas_item = Object::cast_to<CanvasItem>(E.key);
 		if (!canvas_item) {
 			continue;
 		}
@@ -4898,8 +4898,7 @@ void CanvasItemEditor::_focus_selection(int p_op) {
 	if (p_op == VIEW_CENTER_TO_SELECTION) {
 		center = rect.get_center();
 		Vector2 offset = viewport->get_size() / 2 - editor->get_scene_root()->get_global_canvas_transform().xform(center);
-		view_offset.x -= Math::round(offset.x / zoom);
-		view_offset.y -= Math::round(offset.y / zoom);
+		view_offset -= (offset / zoom).round();
 		update_viewport();
 
 	} else { // VIEW_FRAME_TO_SELECTION
@@ -5801,7 +5800,7 @@ void CanvasItemEditorViewport::_remove_preview() {
 }
 
 bool CanvasItemEditorViewport::_cyclical_dependency_exists(const String &p_target_scene_path, Node *p_desired_node) {
-	if (p_desired_node->get_filename() == p_target_scene_path) {
+	if (p_desired_node->get_scene_file_path() == p_target_scene_path) {
 		return true;
 	}
 
@@ -5898,14 +5897,14 @@ bool CanvasItemEditorViewport::_create_instance(Node *parent, String &path, cons
 		return false;
 	}
 
-	if (editor->get_edited_scene()->get_filename() != "") { // cyclical instancing
-		if (_cyclical_dependency_exists(editor->get_edited_scene()->get_filename(), instantiated_scene)) {
+	if (editor->get_edited_scene()->get_scene_file_path() != "") { // cyclical instancing
+		if (_cyclical_dependency_exists(editor->get_edited_scene()->get_scene_file_path(), instantiated_scene)) {
 			memdelete(instantiated_scene);
 			return false;
 		}
 	}
 
-	instantiated_scene->set_filename(ProjectSettings::get_singleton()->localize_path(path));
+	instantiated_scene->set_scene_file_path(ProjectSettings::get_singleton()->localize_path(path));
 
 	editor_data->get_undo_redo().add_do_method(parent, "add_child", instantiated_scene);
 	editor_data->get_undo_redo().add_do_method(instantiated_scene, "set_owner", editor->get_edited_scene());

@@ -154,7 +154,7 @@ void Body3DSW::update_mass_properties() {
 			_inv_inertia = Vector3();
 			_inv_mass = 0;
 		} break;
-		case PhysicsServer3D::BODY_MODE_DYNAMIC_LOCKED: {
+		case PhysicsServer3D::BODY_MODE_DYNAMIC_LINEAR: {
 			_inv_inertia_tensor.set_zero();
 			_inv_mass = 1.0 / mass;
 
@@ -310,7 +310,7 @@ void Body3DSW::set_mode(PhysicsServer3D::BodyMode p_mode) {
 			set_active(true);
 
 		} break;
-		case PhysicsServer3D::BODY_MODE_DYNAMIC_LOCKED: {
+		case PhysicsServer3D::BODY_MODE_DYNAMIC_LINEAR: {
 			_inv_mass = mass > 0 ? (1.0 / mass) : 0;
 			_inv_inertia = Vector3();
 			angular_velocity = Vector3();
@@ -688,13 +688,13 @@ void BodySW::simulate_motion(const Transform3D& p_xform,real_t p_step) {
 */
 
 void Body3DSW::wakeup_neighbours() {
-	for (Map<Constraint3DSW *, int>::Element *E = constraint_map.front(); E; E = E->next()) {
-		const Constraint3DSW *c = E->key();
+	for (const KeyValue<Constraint3DSW *, int> &E : constraint_map) {
+		const Constraint3DSW *c = E.key;
 		Body3DSW **n = c->get_body_ptr();
 		int bc = c->get_body_count();
 
 		for (int i = 0; i < bc; i++) {
-			if (i == E->get()) {
+			if (i == E.value) {
 				continue;
 			}
 			Body3DSW *b = n[i];

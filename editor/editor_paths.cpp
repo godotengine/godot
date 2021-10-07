@@ -87,6 +87,8 @@ void EditorPaths::_bind_methods() {
 EditorPaths::EditorPaths() {
 	singleton = this;
 
+	project_data_dir = ProjectSettings::get_singleton()->get_project_data_path();
+
 	// Self-contained mode if a `._sc_` or `_sc_` file is present in executable dir.
 	String exe_path = OS::get_singleton()->get_executable_path().get_base_dir();
 	{
@@ -183,7 +185,7 @@ EditorPaths::EditorPaths() {
 		}
 	}
 
-	// Validate or create project-specific editor data dir (`res://.godot`),
+	// Validate or create project-specific editor data dir,
 	// including shader cache subdir.
 
 	if (Main::is_project_manager() || Main::is_cmdline_tool()) {
@@ -205,8 +207,9 @@ EditorPaths::EditorPaths() {
 			dir_res->make_dir("editor");
 		}
 		// Imported assets dir.
-		if (!dir_res->dir_exists(ProjectSettings::IMPORTED_FILES_PATH)) {
-			dir_res->make_dir(ProjectSettings::IMPORTED_FILES_PATH);
+		String imported_files_path = ProjectSettings::get_singleton()->get_imported_files_path();
+		if (!dir_res->dir_exists(imported_files_path)) {
+			dir_res->make_dir(imported_files_path);
 		}
 	}
 }

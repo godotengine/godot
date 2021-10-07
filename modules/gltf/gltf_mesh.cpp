@@ -29,7 +29,7 @@
 /*************************************************************************/
 
 #include "gltf_mesh.h"
-#include "editor/import/scene_importer_mesh.h"
+#include "scene/resources/importer_mesh.h"
 
 void GLTFMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_mesh"), &GLTFMesh::get_mesh);
@@ -41,11 +41,11 @@ void GLTFMesh::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_FLOAT32_ARRAY, "blend_weights"), "set_blend_weights", "get_blend_weights"); // Vector<float>
 }
 
-Ref<EditorSceneImporterMesh> GLTFMesh::get_mesh() {
+Ref<ImporterMesh> GLTFMesh::get_mesh() {
 	return mesh;
 }
 
-void GLTFMesh::set_mesh(Ref<EditorSceneImporterMesh> p_mesh) {
+void GLTFMesh::set_mesh(Ref<ImporterMesh> p_mesh) {
 	mesh = p_mesh;
 }
 

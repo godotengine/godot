@@ -433,7 +433,7 @@ void CodeEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 			return;
 		}
 		if (k->is_action("ui_end", true)) {
-			code_completion_current_selected = MIN(code_completion_options.size() - 1, code_completion_current_selected + code_completion_max_lines);
+			code_completion_current_selected = code_completion_options.size() - 1;
 			update();
 			accept_event();
 			return;
@@ -614,15 +614,15 @@ void CodeEdit::_backspace_internal() {
 		return;
 	}
 
+	if (has_selection()) {
+		delete_selection();
+		return;
+	}
+
 	int cc = get_caret_column();
 	int cl = get_caret_line();
 
 	if (cc == 0 && cl == 0) {
-		return;
-	}
-
-	if (has_selection()) {
-		delete_selection();
 		return;
 	}
 
@@ -1146,13 +1146,20 @@ bool CodeEdit::is_drawing_executing_lines_gutter() const {
 }
 
 void CodeEdit::_main_gutter_draw_callback(int p_line, int p_gutter, const Rect2 &p_region) {
-	if (draw_breakpoints && is_line_breakpointed(p_line)) {
-		int padding = p_region.size.x / 6;
+	if (draw_breakpoints) {
+		bool hovering = p_region.has_point(get_local_mouse_pos());
+		bool breakpointed = is_line_breakpointed(p_line);
 
-		Rect2 breakpoint_region = p_region;
-		breakpoint_region.position += Point2(padding, padding);
-		breakpoint_region.size -= Point2(padding, padding) * 2;
-		breakpoint_icon->draw_rect(get_canvas_item(), breakpoint_region, false, breakpoint_color);
+		if (breakpointed || (hovering && !is_dragging_cursor())) {
+			int padding = p_region.size.x / 6;
+			Rect2 icon_region = p_region;
+			icon_region.position += Point2(padding, padding);
+			icon_region.size -= Point2(padding, padding) * 2;
+
+			// Darken icon when hovering & not yet breakpointed.
+			Color use_color = hovering && !breakpointed ? breakpoint_color.darkened(0.4) : breakpoint_color;
+			breakpoint_icon->draw_rect(get_canvas_item(), icon_region, false, use_color);
+		}
 	}
 
 	if (draw_bookmarks && is_line_bookmarked(p_line)) {
@@ -1613,12 +1620,12 @@ Point2 CodeEdit::get_delimiter_start_position(int p_line, int p_column) const {
 	bool in_region = ((p_line <= 0 || delimiter_cache[p_line - 1].size() < 1) ? -1 : delimiter_cache[p_line - 1].back()->value()) != -1;
 
 	/* Check the keys for this line. */
-	for (Map<int, int>::Element *E = delimiter_cache[p_line].front(); E; E = E->next()) {
-		if (E->key() > p_column) {
+	for (const KeyValue<int, int> &E : delimiter_cache[p_line]) {
+		if (E.key > p_column) {
 			break;
 		}
-		in_region = E->value() != -1;
-		start_position.x = in_region ? E->key() : -1;
+		in_region = E.value != -1;
+		start_position.x = in_region ? E.key : -1;
 	}
 
 	/* Region was found on this line and is not a multiline continuation. */
@@ -1664,12 +1671,12 @@ Point2 CodeEdit::get_delimiter_end_position(int p_line, int p_column) const {
 	int region = (p_line <= 0 || delimiter_cache[p_line - 1].size() < 1) ? -1 : delimiter_cache[p_line - 1].back()->value();
 
 	/* Check the keys for this line. */
-	for (Map<int, int>::Element *E = delimiter_cache[p_line].front(); E; E = E->next()) {
-		end_position.x = (E->value() == -1) ? E->key() : -1;
-		if (E->key() > p_column) {
+	for (const KeyValue<int, int> &E : delimiter_cache[p_line]) {
+		end_position.x = (E.value == -1) ? E.key : -1;
+		if (E.key > p_column) {
 			break;
 		}
-		region = E->value();
+		region = E.value;
 	}
 
 	/* Region was found on this line and is not a multiline continuation. */
@@ -2930,6 +2937,7 @@ void CodeEdit::_lines_edited_from(int p_from_line, int p_to_line) {
 		return;
 	}
 
+	lines_edited_changed += p_to_line - p_from_line;
 	lines_edited_from = (lines_edited_from == -1) ? MIN(p_from_line, p_to_line) : MIN(lines_edited_from, MIN(p_from_line, p_to_line));
 	lines_edited_to = (lines_edited_to == -1) ? MAX(p_from_line, p_to_line) : MAX(lines_edited_from, MAX(p_from_line, p_to_line));
 }
@@ -2956,7 +2964,6 @@ void CodeEdit::_text_changed() {
 	}
 
 	lc = get_line_count();
-	int line_change_size = (lines_edited_to - lines_edited_from);
 	List<int> breakpoints;
 	breakpointed_lines.get_key_list(&breakpoints);
 	for (const int &line : breakpoints) {
@@ -2967,8 +2974,8 @@ void CodeEdit::_text_changed() {
 		breakpointed_lines.erase(line);
 		emit_signal(SNAME("breakpoint_toggled"), line);
 
-		int next_line = line + line_change_size;
-		if (next_line < lc && is_line_breakpointed(next_line)) {
+		int next_line = line + lines_edited_changed;
+		if (next_line > -1 && next_line < lc && is_line_breakpointed(next_line)) {
 			emit_signal(SNAME("breakpoint_toggled"), next_line);
 			breakpointed_lines[next_line] = true;
 			continue;
@@ -2977,6 +2984,7 @@ void CodeEdit::_text_changed() {
 
 	lines_edited_from = -1;
 	lines_edited_to = -1;
+	lines_edited_changed = 0;
 }
 
 CodeEdit::CodeEdit() {

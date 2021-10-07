@@ -177,12 +177,10 @@ public:
 	virtual void body_add_shape(RID p_body, RID p_shape, const Transform2D &p_transform = Transform2D(), bool p_disabled = false) override;
 	virtual void body_set_shape(RID p_body, int p_shape_idx, RID p_shape) override;
 	virtual void body_set_shape_transform(RID p_body, int p_shape_idx, const Transform2D &p_transform) override;
-	virtual void body_set_shape_metadata(RID p_body, int p_shape_idx, const Variant &p_metadata) override;
 
 	virtual int body_get_shape_count(RID p_body) const override;
 	virtual RID body_get_shape(RID p_body, int p_shape_idx) const override;
 	virtual Transform2D body_get_shape_transform(RID p_body, int p_shape_idx) const override;
-	virtual Variant body_get_shape_metadata(RID p_body, int p_shape_idx) const override;
 
 	virtual void body_remove_shape(RID p_body, int p_shape_idx) override;
 	virtual void body_clear_shapes(RID p_body) override;
@@ -248,7 +246,7 @@ public:
 
 	virtual void body_set_pickable(RID p_body, bool p_pickable) override;
 
-	virtual bool body_test_motion(RID p_body, const Transform2D &p_from, const Vector2 &p_motion, real_t p_margin = 0.08, MotionResult *r_result = nullptr, bool p_collide_separation_ray = false, const Set<RID> &p_exclude = Set<RID>()) override;
+	virtual bool body_test_motion(RID p_body, const MotionParameters &p_parameters, MotionResult *r_result = nullptr) override;
 
 	// this function only works on physics process, errors and returns null otherwise
 	virtual PhysicsDirectBodyState2D *body_get_direct_state(RID p_body) override;

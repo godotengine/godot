@@ -299,8 +299,8 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 		}
 	}
 
-	for (Map<Ref<Resource>, Ref<Resource>>::Element *E = resources_local_to_scene.front(); E; E = E->next()) {
-		E->get()->setup_local_to_scene();
+	for (KeyValue<Ref<Resource>, Ref<Resource>> &E : resources_local_to_scene) {
+		E.value->setup_local_to_scene();
 	}
 
 	//do connections
@@ -384,11 +384,11 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Map
 
 	// save the child instantiated scenes that are chosen as editable, so they can be restored
 	// upon load back
-	if (p_node != p_owner && p_node->get_filename() != String() && p_owner->is_editable_instance(p_node)) {
+	if (p_node != p_owner && p_node->get_scene_file_path() != String() && p_owner->is_editable_instance(p_node)) {
 		editable_instances.push_back(p_owner->get_path_to(p_node));
 		// Node is the root of an editable instance.
 		is_editable_instance = true;
-	} else if (p_node->get_owner() && p_node->get_owner() != p_owner && p_owner->is_editable_instance(p_node->get_owner())) {
+	} else if (p_node->get_owner() && p_owner->is_ancestor_of(p_node->get_owner()) && p_owner->is_editable_instance(p_node->get_owner())) {
 		// Node is part of an editable instance.
 		is_editable_instance = true;
 	}
@@ -437,14 +437,14 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Map
 					}
 				}
 
-				if (p_node->get_filename() != String() && p_node->get_owner() == p_owner && instantiated_by_owner) {
+				if (p_node->get_scene_file_path() != String() && p_node->get_owner() == p_owner && instantiated_by_owner) {
 					if (p_node->get_scene_instance_load_placeholder()) {
 						//it's a placeholder, use the placeholder path
-						nd.instance = _vm_get_variant(p_node->get_filename(), variant_map);
+						nd.instance = _vm_get_variant(p_node->get_scene_file_path(), variant_map);
 						nd.instance |= FLAG_INSTANCE_IS_PLACEHOLDER;
 					} else {
 						//must instance ourselves
-						Ref<PackedScene> instance = ResourceLoader::load(p_node->get_filename());
+						Ref<PackedScene> instance = ResourceLoader::load(p_node->get_scene_file_path());
 						if (!instance.is_valid()) {
 							return ERR_CANT_OPEN;
 						}
@@ -454,7 +454,7 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Map
 				}
 				n = nullptr;
 			} else {
-				if (n->get_filename() != String()) {
+				if (n->get_scene_file_path() != String()) {
 					//is an instance
 					Ref<SceneState> state = n->get_scene_instance_state();
 					if (state.is_valid()) {
@@ -714,7 +714,7 @@ Error SceneState::_parse_connections(Node *p_owner, Node *p_node, Map<StringName
 
 			ERR_CONTINUE(!common_parent);
 
-			if (common_parent != p_owner && common_parent->get_filename() == String()) {
+			if (common_parent != p_owner && common_parent->get_scene_file_path() == String()) {
 				common_parent = common_parent->get_owner();
 			}
 
@@ -774,7 +774,7 @@ Error SceneState::_parse_connections(Node *p_owner, Node *p_node, Map<StringName
 
 						nl = nullptr;
 					} else {
-						if (nl->get_filename() != String()) {
+						if (nl->get_scene_file_path() != String()) {
 							//is an instance
 							Ref<SceneState> state = nl->get_scene_instance_state();
 							if (state.is_valid()) {
@@ -887,8 +887,8 @@ Error SceneState::pack(Node *p_scene) {
 
 	names.resize(name_map.size());
 
-	for (Map<StringName, int>::Element *E = name_map.front(); E; E = E->next()) {
-		names.write[E->get()] = E->key();
+	for (const KeyValue<StringName, int> &E : name_map) {
+		names.write[E.value] = E.key;
 	}
 
 	variants.resize(variant_map.size());
@@ -899,14 +899,14 @@ Error SceneState::pack(Node *p_scene) {
 	}
 
 	node_paths.resize(nodepath_map.size());
-	for (Map<Node *, int>::Element *E = nodepath_map.front(); E; E = E->next()) {
-		node_paths.write[E->get()] = scene->get_path_to(E->key());
+	for (const KeyValue<Node *, int> &E : nodepath_map) {
+		node_paths.write[E.value] = scene->get_path_to(E.key);
 	}
 
 	if (Engine::get_singleton()->is_editor_hint()) {
 		// Build node path cache
-		for (Map<Node *, int>::Element *E = node_map.front(); E; E = E->next()) {
-			node_path_cache[scene->get_path_to(E->key())] = E->get();
+		for (const KeyValue<Node *, int> &E : node_map) {
+			node_path_cache[scene->get_path_to(E.key)] = E.value;
 		}
 	}
 
@@ -977,9 +977,9 @@ int SceneState::find_node_by_path(const NodePath &p_node) const {
 }
 
 int SceneState::_find_base_scene_node_remap_key(int p_idx) const {
-	for (Map<int, int>::Element *E = base_scene_node_remap.front(); E; E = E->next()) {
-		if (E->value() == p_idx) {
-			return E->key();
+	for (const KeyValue<int, int> &E : base_scene_node_remap) {
+		if (E.value == p_idx) {
+			return E.key;
 		}
 	}
 	return -1;
@@ -1652,7 +1652,7 @@ Node *PackedScene::instantiate(GenEditState p_edit_state) const {
 	}
 
 	if (get_path() != "" && get_path().find("::") == -1) {
-		s->set_filename(get_path());
+		s->set_scene_file_path(get_path());
 	}
 
 	s->notification(Node::NOTIFICATION_INSTANCED);

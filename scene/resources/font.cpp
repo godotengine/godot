@@ -502,6 +502,11 @@ void FontData::set_data(const PackedByteArray &p_data) {
 }
 
 PackedByteArray FontData::get_data() const {
+	if (unlikely((size_t)data.size() != data_size)) {
+		PackedByteArray *data_w = const_cast<PackedByteArray *>(&data);
+		data_w->resize(data_size);
+		memcpy(data_w->ptrw(), data_ptr, data_size);
+	}
 	return data;
 }
 
@@ -1399,7 +1404,7 @@ real_t Font::get_underline_thickness(int p_size) const {
 	return ret;
 }
 
-Size2 Font::get_string_size(const String &p_text, int p_size, HAlign p_align, real_t p_width, uint8_t p_flags) const {
+Size2 Font::get_string_size(const String &p_text, int p_size, HAlign p_align, real_t p_width, uint16_t p_flags) const {
 	ERR_FAIL_COND_V(data.is_empty(), Size2());
 
 	int size = (p_size <= 0) ? base_size : p_size;
@@ -1426,7 +1431,7 @@ Size2 Font::get_string_size(const String &p_text, int p_size, HAlign p_align, re
 	return buffer->get_size();
 }
 
-Size2 Font::get_multiline_string_size(const String &p_text, real_t p_width, int p_size, uint8_t p_flags) const {
+Size2 Font::get_multiline_string_size(const String &p_text, real_t p_width, int p_size, uint16_t p_flags) const {
 	ERR_FAIL_COND_V(data.is_empty(), Size2());
 
 	int size = (p_size <= 0) ? base_size : p_size;
@@ -1465,7 +1470,7 @@ Size2 Font::get_multiline_string_size(const String &p_text, real_t p_width, int 
 	return ret;
 }
 
-void Font::draw_string(RID p_canvas_item, const Point2 &p_pos, const String &p_text, HAlign p_align, real_t p_width, int p_size, const Color &p_modulate, int p_outline_size, const Color &p_outline_modulate, uint8_t p_flags) const {
+void Font::draw_string(RID p_canvas_item, const Point2 &p_pos, const String &p_text, HAlign p_align, real_t p_width, int p_size, const Color &p_modulate, int p_outline_size, const Color &p_outline_modulate, uint16_t p_flags) const {
 	ERR_FAIL_COND(data.is_empty());
 
 	int size = (p_size <= 0) ? base_size : p_size;
@@ -1507,7 +1512,7 @@ void Font::draw_string(RID p_canvas_item, const Point2 &p_pos, const String &p_t
 	buffer->draw(p_canvas_item, ofs, p_modulate);
 }
 
-void Font::draw_multiline_string(RID p_canvas_item, const Point2 &p_pos, const String &p_text, HAlign p_align, float p_width, int p_max_lines, int p_size, const Color &p_modulate, int p_outline_size, const Color &p_outline_modulate, uint8_t p_flags) const {
+void Font::draw_multiline_string(RID p_canvas_item, const Point2 &p_pos, const String &p_text, HAlign p_align, float p_width, int p_max_lines, int p_size, const Color &p_modulate, int p_outline_size, const Color &p_outline_modulate, uint16_t p_flags) const {
 	ERR_FAIL_COND(data.is_empty());
 
 	int size = (p_size <= 0) ? base_size : p_size;

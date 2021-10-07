@@ -34,6 +34,7 @@
 #include "core/object/class_db.h"
 #include "core/object/script_language.h"
 #include "core/templates/hashfuncs.h"
+#include "core/templates/search_array.h"
 #include "core/templates/vector.h"
 #include "core/variant/callable.h"
 #include "core/variant/variant.h"
@@ -484,44 +485,19 @@ void Array::shuffle() {
 	}
 }
 
-template <typename Less>
-_FORCE_INLINE_ int bisect(const Vector<Variant> &p_array, const Variant &p_value, bool p_before, const Less &p_less) {
-	int lo = 0;
-	int hi = p_array.size();
-	if (p_before) {
-		while (lo < hi) {
-			const int mid = (lo + hi) / 2;
-			if (p_less(p_array.get(mid), p_value)) {
-				lo = mid + 1;
-			} else {
-				hi = mid;
-			}
-		}
-	} else {
-		while (lo < hi) {
-			const int mid = (lo + hi) / 2;
-			if (p_less(p_value, p_array.get(mid))) {
-				hi = mid;
-			} else {
-				lo = mid + 1;
-			}
-		}
-	}
-	return lo;
-}
-
 int Array::bsearch(const Variant &p_value, bool p_before) {
 	ERR_FAIL_COND_V(!_p->typed.validate(p_value, "binary search"), -1);
-	return bisect(_p->array, p_value, p_before, _ArrayVariantSort());
+	SearchArray<Variant, _ArrayVariantSort> avs;
+	return avs.bisect(_p->array.ptrw(), _p->array.size(), p_value, p_before);
 }
 
 int Array::bsearch_custom(const Variant &p_value, Callable p_callable, bool p_before) {
 	ERR_FAIL_COND_V(!_p->typed.validate(p_value, "custom binary search"), -1);
 
-	_ArrayVariantSortCustom less;
-	less.func = p_callable;
+	SearchArray<Variant, _ArrayVariantSortCustom> avs;
+	avs.compare.func = p_callable;
 
-	return bisect(_p->array, p_value, p_before, less);
+	return avs.bisect(_p->array.ptrw(), _p->array.size(), p_value, p_before);
 }
 
 void Array::reverse() {

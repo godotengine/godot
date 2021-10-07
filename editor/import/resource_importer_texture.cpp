@@ -86,28 +86,28 @@ void ResourceImporterTexture::update_imports() {
 			return;
 		}
 
-		for (Map<StringName, MakeInfo>::Element *E = make_flags.front(); E; E = E->next()) {
+		for (const KeyValue<StringName, MakeInfo> &E : make_flags) {
 			Ref<ConfigFile> cf;
 			cf.instantiate();
-			String src_path = String(E->key()) + ".import";
+			String src_path = String(E.key) + ".import";
 
 			Error err = cf->load(src_path);
 			ERR_CONTINUE(err != OK);
 
 			bool changed = false;
 
-			if (E->get().flags & MAKE_NORMAL_FLAG && int(cf->get_value("params", "compress/normal_map")) == 0) {
+			if (E.value.flags & MAKE_NORMAL_FLAG && int(cf->get_value("params", "compress/normal_map")) == 0) {
 				cf->set_value("params", "compress/normal_map", 1);
 				changed = true;
 			}
 
-			if (E->get().flags & MAKE_ROUGHNESS_FLAG && int(cf->get_value("params", "roughness/mode")) == 0) {
-				cf->set_value("params", "roughness/mode", E->get().channel_for_roughness + 2);
-				cf->set_value("params", "roughness/src_normal", E->get().normal_path_for_roughness);
+			if (E.value.flags & MAKE_ROUGHNESS_FLAG && int(cf->get_value("params", "roughness/mode")) == 0) {
+				cf->set_value("params", "roughness/mode", E.value.channel_for_roughness + 2);
+				cf->set_value("params", "roughness/src_normal", E.value.normal_path_for_roughness);
 				changed = true;
 			}
 
-			if (E->get().flags & MAKE_3D_FLAG && bool(cf->get_value("params", "detect_3d/compress_to"))) {
+			if (E.value.flags & MAKE_3D_FLAG && bool(cf->get_value("params", "detect_3d/compress_to"))) {
 				int compress_to = cf->get_value("params", "detect_3d/compress_to");
 				cf->set_value("params", "detect_3d/compress_to", 0);
 				if (compress_to == 1) {
@@ -121,7 +121,7 @@ void ResourceImporterTexture::update_imports() {
 
 			if (changed) {
 				cf->save(src_path);
-				to_reimport.push_back(E->key());
+				to_reimport.push_back(E.key);
 			}
 		}
 

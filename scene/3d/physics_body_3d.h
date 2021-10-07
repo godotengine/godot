@@ -50,11 +50,11 @@ protected:
 
 	uint16_t locked_axis = 0;
 
-	Ref<KinematicCollision3D> _move(const Vector3 &p_motion, bool p_test_only = false, real_t p_margin = 0.001, int p_max_collisions = 1);
+	Ref<KinematicCollision3D> _move(const Vector3 &p_linear_velocity, bool p_test_only = false, real_t p_margin = 0.001, int p_max_collisions = 1);
 
 public:
-	bool move_and_collide(const Vector3 &p_motion, PhysicsServer3D::MotionResult &r_result, real_t p_margin, bool p_test_only = false, int p_max_collisions = 1, bool p_cancel_sliding = true, bool p_collide_separation_ray = false, const Set<RID> &p_exclude = Set<RID>());
-	bool test_move(const Transform3D &p_from, const Vector3 &p_motion, const Ref<KinematicCollision3D> &r_collision = Ref<KinematicCollision3D>(), real_t p_margin = 0.001, int p_max_collisions = 1);
+	bool move_and_collide(const PhysicsServer3D::MotionParameters &p_parameters, PhysicsServer3D::MotionResult &r_result, bool p_test_only = false, bool p_cancel_sliding = true);
+	bool test_move(const Transform3D &p_from, const Vector3 &p_linear_velocity, const Ref<KinematicCollision3D> &r_collision = Ref<KinematicCollision3D>(), real_t p_margin = 0.001, int p_max_collisions = 1);
 
 	void set_axis_lock(PhysicsServer3D::BodyAxis p_axis, bool p_lock);
 	bool get_axis_lock(PhysicsServer3D::BodyAxis p_axis) const;
@@ -133,11 +133,9 @@ class RigidDynamicBody3D : public PhysicsBody3D {
 	GDCLASS(RigidDynamicBody3D, PhysicsBody3D);
 
 public:
-	enum Mode {
-		MODE_DYNAMIC,
-		MODE_STATIC,
-		MODE_DYNAMIC_LOCKED,
-		MODE_KINEMATIC,
+	enum FreezeMode {
+		FREEZE_MODE_STATIC,
+		FREEZE_MODE_KINEMATIC,
 	};
 
 	enum CenterOfMassMode {
@@ -145,11 +143,11 @@ public:
 		CENTER_OF_MASS_MODE_CUSTOM,
 	};
 
-	GDVIRTUAL1(_integrate_forces, PhysicsDirectBodyState3D *)
-
-protected:
+private:
 	bool can_sleep = true;
-	Mode mode = MODE_DYNAMIC;
+	bool lock_rotation = false;
+	bool freeze = false;
+	FreezeMode freeze_mode = FREEZE_MODE_STATIC;
 
 	real_t mass = 1.0;
 	Vector3 inertia;
@@ -214,16 +212,28 @@ protected:
 
 	void _body_inout(int p_status, const RID &p_body, ObjectID p_instance, int p_body_shape, int p_local_shape);
 	static void _body_state_changed_callback(void *p_instance, PhysicsDirectBodyState3D *p_state);
-	virtual void _body_state_changed(PhysicsDirectBodyState3D *p_state);
 
+protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
 	virtual void _validate_property(PropertyInfo &property) const override;
 
+	GDVIRTUAL1(_integrate_forces, PhysicsDirectBodyState3D *)
+
+	virtual void _body_state_changed(PhysicsDirectBodyState3D *p_state);
+
+	void _apply_body_mode();
+
 public:
-	void set_mode(Mode p_mode);
-	Mode get_mode() const;
+	void set_lock_rotation_enabled(bool p_lock_rotation);
+	bool is_lock_rotation_enabled() const;
+
+	void set_freeze_enabled(bool p_freeze);
+	bool is_freeze_enabled() const;
+
+	void set_freeze_mode(FreezeMode p_freeze_mode);
+	FreezeMode get_freeze_mode() const;
 
 	void set_mass(real_t p_mass);
 	real_t get_mass() const;
@@ -298,7 +308,7 @@ private:
 	void _reload_physics_characteristics();
 };
 
-VARIANT_ENUM_CAST(RigidDynamicBody3D::Mode);
+VARIANT_ENUM_CAST(RigidDynamicBody3D::FreezeMode);
 VARIANT_ENUM_CAST(RigidDynamicBody3D::CenterOfMassMode);
 
 class KinematicCollision3D;
@@ -318,8 +328,8 @@ public:
 	};
 	bool move_and_slide();
 
-	virtual Vector3 get_linear_velocity() const override;
-	void set_linear_velocity(const Vector3 &p_velocity);
+	const Vector3 &get_motion_velocity() const;
+	void set_motion_velocity(const Vector3 &p_velocity);
 
 	bool is_on_floor() const;
 	bool is_on_floor_only() const;
@@ -327,13 +337,15 @@ public:
 	bool is_on_wall_only() const;
 	bool is_on_ceiling() const;
 	bool is_on_ceiling_only() const;
-	Vector3 get_last_motion() const;
+	const Vector3 &get_last_motion() const;
 	Vector3 get_position_delta() const;
-	Vector3 get_floor_normal() const;
-	Vector3 get_wall_normal() const;
-	Vector3 get_real_velocity() const;
+	const Vector3 &get_floor_normal() const;
+	const Vector3 &get_wall_normal() const;
+	const Vector3 &get_real_velocity() const;
 	real_t get_floor_angle(const Vector3 &p_up_direction = Vector3(0.0, 1.0, 0.0)) const;
-	Vector3 get_platform_velocity() const;
+	const Vector3 &get_platform_velocity() const;
+
+	virtual Vector3 get_linear_velocity() const override;
 
 	int get_slide_collision_count() const;
 	PhysicsServer3D::MotionResult get_slide_collision(int p_bounce) const;
@@ -369,19 +381,22 @@ private:
 	bool floor_block_on_wall = true;
 	bool slide_on_ceiling = true;
 	int max_slides = 6;
-	int platform_layer;
+	int platform_layer = 0;
 	RID platform_rid;
+	ObjectID platform_object_id;
 	uint32_t moving_platform_floor_layers = UINT32_MAX;
 	uint32_t moving_platform_wall_layers = 0;
 	real_t floor_snap_length = 0.1;
 	real_t floor_max_angle = Math::deg2rad((real_t)45.0);
 	real_t wall_min_slide_angle = Math::deg2rad((real_t)15.0);
 	Vector3 up_direction = Vector3(0.0, 1.0, 0.0);
-	Vector3 linear_velocity;
+	Vector3 motion_velocity;
 	Vector3 floor_normal;
 	Vector3 wall_normal;
+	Vector3 ceiling_normal;
 	Vector3 last_motion;
 	Vector3 platform_velocity;
+	Vector3 platform_ceiling_velocity;
 	Vector3 previous_position;
 	Vector3 real_velocity;
 
@@ -473,18 +488,6 @@ public:
 	Object *get_collider_shape(int p_collision_index = 0) const;
 	int get_collider_shape_index(int p_collision_index = 0) const;
 	Vector3 get_collider_velocity(int p_collision_index = 0) const;
-	Variant get_collider_metadata(int p_collision_index = 0) const;
-
-	Vector3 get_best_position() const;
-	Vector3 get_best_normal() const;
-	Object *get_best_local_shape() const;
-	Object *get_best_collider() const;
-	ObjectID get_best_collider_id() const;
-	RID get_best_collider_rid() const;
-	Object *get_best_collider_shape() const;
-	int get_best_collider_shape_index() const;
-	Vector3 get_best_collider_velocity() const;
-	Variant get_best_collider_metadata() const;
 };
 
 class PhysicalBone3D : public PhysicsBody3D {
@@ -652,10 +655,9 @@ private:
 
 public:
 	void _on_bone_parent_changed();
-	void _set_gizmo_move_joint(bool p_move_joint);
 
-public:
 #ifdef TOOLS_ENABLED
+	void _set_gizmo_move_joint(bool p_move_joint);
 	virtual Transform3D get_global_gizmo_transform() const override;
 	virtual Transform3D get_local_gizmo_transform() const override;
 #endif

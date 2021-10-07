@@ -394,8 +394,8 @@ void EditorHelp::_update_doc() {
 		bool prev = false;
 
 		class_desc->push_font(doc_font);
-		for (Map<String, DocData::ClassDoc>::Element *E = doc->class_list.front(); E; E = E->next()) {
-			if (E->get().inherits == cd.name) {
+		for (const KeyValue<String, DocData::ClassDoc> &E : doc->class_list) {
+			if (E.value.inherits == cd.name) {
 				if (!found) {
 					class_desc->push_color(title_color);
 					class_desc->add_text(TTR("Inherited by:") + " ");
@@ -406,7 +406,7 @@ void EditorHelp::_update_doc() {
 					class_desc->add_text(" , ");
 				}
 
-				_add_type(E->get().name);
+				_add_type(E.value.name);
 				prev = true;
 			}
 		}
@@ -876,14 +876,14 @@ void EditorHelp::_update_doc() {
 
 			class_desc->add_newline();
 
-			for (Map<String, Vector<DocData::ConstantDoc>>::Element *E = enums.front(); E; E = E->next()) {
-				enum_line[E->key()] = class_desc->get_line_count() - 2;
+			for (KeyValue<String, Vector<DocData::ConstantDoc>> &E : enums) {
+				enum_line[E.key] = class_desc->get_line_count() - 2;
 
 				class_desc->push_font(doc_code_font);
 				class_desc->push_color(title_color);
 				class_desc->add_text("enum  ");
 				class_desc->pop();
-				String e = E->key();
+				String e = E.key;
 				if ((e.get_slice_count(".") > 1) && (e.get_slice(".", 0) == edited_class)) {
 					e = e.get_slice(".", 1);
 				}
@@ -913,10 +913,10 @@ void EditorHelp::_update_doc() {
 				}
 
 				class_desc->push_indent(1);
-				Vector<DocData::ConstantDoc> enum_list = E->get();
+				Vector<DocData::ConstantDoc> enum_list = E.value;
 
 				Map<String, int> enumValuesContainer;
-				int enumStartingLine = enum_line[E->key()];
+				int enumStartingLine = enum_line[E.key];
 
 				for (int i = 0; i < enum_list.size(); i++) {
 					if (cd.name == "@GlobalScope") {
@@ -955,7 +955,7 @@ void EditorHelp::_update_doc() {
 				}
 
 				if (cd.name == "@GlobalScope") {
-					enum_values_line[E->key()] = enumValuesContainer;
+					enum_values_line[E.key] = enumValuesContainer;
 				}
 
 				class_desc->pop();
@@ -1922,7 +1922,7 @@ void FindBar::_update_results_count() {
 		return;
 	}
 
-	String full_text = rich_text_label->get_text();
+	String full_text = rich_text_label->get_parsed_text();
 
 	int from_pos = 0;
 

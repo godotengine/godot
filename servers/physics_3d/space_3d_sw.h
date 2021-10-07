@@ -207,7 +207,7 @@ public:
 	void set_elapsed_time(ElapsedTime p_time, uint64_t p_msec) { elapsed_time[p_time] = p_msec; }
 	uint64_t get_elapsed_time(ElapsedTime p_time) const { return elapsed_time[p_time]; }
 
-	bool test_body_motion(Body3DSW *p_body, const Transform3D &p_from, const Vector3 &p_motion, real_t p_margin, PhysicsServer3D::MotionResult *r_result, int p_max_collisions = 1, bool p_collide_separation_ray = false, const Set<RID> &p_exclude = Set<RID>());
+	bool test_body_motion(Body3DSW *p_body, const PhysicsServer3D::MotionParameters &p_parameters, PhysicsServer3D::MotionResult *r_result);
 
 	Space3DSW();
 	~Space3DSW();

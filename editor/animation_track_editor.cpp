@@ -700,16 +700,15 @@ public:
 			return;
 		}
 
-		for (Map<int, List<float>>::Element *E = key_ofs_map.front(); E; E = E->next()) {
+		for (const KeyValue<int, List<float>> &E : key_ofs_map) {
 			int key = 0;
-			for (float &F : E->value()) {
-				float key_ofs = F;
+			for (const float &key_ofs : E.value) {
 				if (from != key_ofs) {
 					key++;
 					continue;
 				}
 
-				int track = E->key();
+				int track = E.key;
 				key_ofs_map[track][key] = to;
 
 				if (setting) {
@@ -726,10 +725,9 @@ public:
 	bool _set(const StringName &p_name, const Variant &p_value) {
 		bool update_obj = false;
 		bool change_notify_deserved = false;
-		for (Map<int, List<float>>::Element *E = key_ofs_map.front(); E; E = E->next()) {
-			int track = E->key();
-			for (float &F : E->value()) {
-				float key_ofs = F;
+		for (const KeyValue<int, List<float>> &E : key_ofs_map) {
+			int track = E.key;
+			for (const float &key_ofs : E.value) {
 				int key = animation->track_find_key(track, key_ofs, true);
 				ERR_FAIL_COND_V(key == -1, false);
 
@@ -984,10 +982,9 @@ public:
 	}
 
 	bool _get(const StringName &p_name, Variant &r_ret) const {
-		for (Map<int, List<float>>::Element *E = key_ofs_map.front(); E; E = E->next()) {
-			int track = E->key();
-			for (float &F : E->value()) {
-				float key_ofs = F;
+		for (const KeyValue<int, List<float>> &E : key_ofs_map) {
+			int track = E.key;
+			for (const float &key_ofs : E.value) {
 				int key = animation->track_find_key(track, key_ofs, true);
 				ERR_CONTINUE(key == -1);
 
@@ -1119,15 +1116,15 @@ public:
 		bool show_time = true;
 		bool same_track_type = true;
 		bool same_key_type = true;
-		for (Map<int, List<float>>::Element *E = key_ofs_map.front(); E; E = E->next()) {
-			int track = E->key();
+		for (const KeyValue<int, List<float>> &E : key_ofs_map) {
+			int track = E.key;
 			ERR_FAIL_INDEX(track, animation->get_track_count());
 
 			if (first_track < 0) {
 				first_track = track;
 			}
 
-			if (show_time && E->value().size() > 1) {
+			if (show_time && E.value.size() > 1) {
 				show_time = false;
 			}
 
@@ -1137,7 +1134,7 @@ public:
 					same_key_type = false;
 				}
 
-				for (float &F : E->value()) {
+				for (const float &F : E.value) {
 					int key = animation->track_find_key(track, F, true);
 					ERR_FAIL_COND(key == -1);
 					if (first_key < 0) {
@@ -3362,7 +3359,7 @@ void AnimationTrackEditor::_query_insert(const InsertData &p_id) {
 	insert_data.push_back(p_id);
 
 	bool reset_allowed = true;
-	AnimationPlayer *player = AnimationPlayerEditor::singleton->get_player();
+	AnimationPlayer *player = AnimationPlayerEditor::get_singleton()->get_player();
 	if (player->has_animation("RESET") && player->get_animation("RESET") == animation) {
 		// Avoid messing with the reset animation itself
 		reset_allowed = false;
@@ -3531,6 +3528,31 @@ void AnimationTrackEditor::insert_transform_key(Node3D *p_node, const String &p_
 	_query_insert(id);
 }
 
+bool AnimationTrackEditor::has_transform_track(Node3D *p_node, const String &p_sub) {
+	if (!keying) {
+		return false;
+	}
+	if (!animation.is_valid()) {
+		return false;
+	}
+	if (!root) {
+		return false;
+	}
+
+	//let's build a node path
+	String path = root->get_path_to(p_node);
+	if (p_sub != "") {
+		path += ":" + p_sub;
+	}
+	int track_id = animation->find_track(path);
+	if (track_id >= 0) {
+		if (animation->track_get_type(track_id) == Animation::TYPE_TRANSFORM3D) {
+			return true;
+		}
+	}
+	return false;
+}
+
 void AnimationTrackEditor::_insert_animation_key(NodePath p_path, const Variant &p_value) {
 	String path = p_path;
 
@@ -3574,7 +3596,7 @@ void AnimationTrackEditor::insert_node_value_key(Node *p_node, const String &p_p
 	String path = root->get_path_to(node);
 
 	if (Object::cast_to<AnimationPlayer>(node) && p_property == "current_animation") {
-		if (node == AnimationPlayerEditor::singleton->get_player()) {
+		if (node == AnimationPlayerEditor::get_singleton()->get_player()) {
 			EditorNode::get_singleton()->show_warning(TTR("AnimationPlayer can't animate itself, only other players."));
 			return;
 		}
@@ -3675,7 +3697,7 @@ void AnimationTrackEditor::insert_value_key(const String &p_property, const Vari
 	String path = root->get_path_to(node);
 
 	if (Object::cast_to<AnimationPlayer>(node) && p_property == "current_animation") {
-		if (node == AnimationPlayerEditor::singleton->get_player()) {
+		if (node == AnimationPlayerEditor::get_singleton()->get_player()) {
 			EditorNode::get_singleton()->show_warning(TTR("AnimationPlayer can't animate itself, only other players."));
 			return;
 		}
@@ -3755,7 +3777,7 @@ void AnimationTrackEditor::insert_value_key(const String &p_property, const Vari
 }
 
 Ref<Animation> AnimationTrackEditor::_create_and_get_reset_animation() {
-	AnimationPlayer *player = AnimationPlayerEditor::singleton->get_player();
+	AnimationPlayer *player = AnimationPlayerEditor::get_singleton()->get_player();
 	if (player->has_animation("RESET")) {
 		return player->get_animation("RESET");
 	} else {
@@ -3763,9 +3785,9 @@ Ref<Animation> AnimationTrackEditor::_create_and_get_reset_animation() {
 		reset_anim.instantiate();
 		reset_anim->set_length(ANIM_MIN_LENGTH);
 		undo_redo->add_do_method(player, "add_animation", "RESET", reset_anim);
-		undo_redo->add_do_method(AnimationPlayerEditor::singleton, "_animation_player_changed", player);
+		undo_redo->add_do_method(AnimationPlayerEditor::get_singleton(), "_animation_player_changed", player);
 		undo_redo->add_undo_method(player, "remove_animation", "RESET");
-		undo_redo->add_undo_method(AnimationPlayerEditor::singleton, "_animation_player_changed", player);
+		undo_redo->add_undo_method(AnimationPlayerEditor::get_singleton(), "_animation_player_changed", player);
 		return reset_anim;
 	}
 }
@@ -4449,7 +4471,7 @@ void AnimationTrackEditor::_new_track_node_selected(NodePath p_path) {
 				return;
 			}
 
-			if (node == AnimationPlayerEditor::singleton->get_player()) {
+			if (node == AnimationPlayerEditor::get_singleton()->get_player()) {
 				EditorNode::get_singleton()->show_warning(TTR("AnimationPlayer can't animate itself, only other players."));
 				return;
 			}
@@ -4831,8 +4853,8 @@ void AnimationTrackEditor::_update_key_edit() {
 		Map<int, List<float>> key_ofs_map;
 		Map<int, NodePath> base_map;
 		int first_track = -1;
-		for (Map<SelectedKey, KeyInfo>::Element *E = selection.front(); E; E = E->next()) {
-			int track = E->key().track;
+		for (const KeyValue<SelectedKey, KeyInfo> &E : selection) {
+			int track = E.key.track;
 			if (first_track < 0) {
 				first_track = track;
 			}
@@ -4842,7 +4864,7 @@ void AnimationTrackEditor::_update_key_edit() {
 				base_map[track] = NodePath();
 			}
 
-			key_ofs_map[track].push_back(animation->track_get_key_time(track, E->key().key));
+			key_ofs_map[track].push_back(animation->track_get_key_time(track, E.key.key));
 		}
 		multi_key_edit->key_ofs_map = key_ofs_map;
 		multi_key_edit->base_map = base_map;
@@ -5176,7 +5198,7 @@ void AnimationTrackEditor::_anim_duplicate_keys(bool transpose) {
 }
 
 void AnimationTrackEditor::_edit_menu_about_to_popup() {
-	AnimationPlayer *player = AnimationPlayerEditor::singleton->get_player();
+	AnimationPlayer *player = AnimationPlayerEditor::get_singleton()->get_player();
 	edit->get_popup()->set_item_disabled(edit->get_popup()->get_item_index(EDIT_APPLY_RESET), !player->can_apply_reset());
 }
 
@@ -5386,8 +5408,8 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 			float len = -1e20;
 			float pivot = 0;
 
-			for (Map<SelectedKey, KeyInfo>::Element *E = selection.front(); E; E = E->next()) {
-				float t = animation->track_get_key_time(E->key().track, E->key().key);
+			for (const KeyValue<SelectedKey, KeyInfo> &E : selection) {
+				float t = animation->track_get_key_time(E.key.track, E.key.key);
 				if (t < from_t) {
 					from_t = t;
 				}
@@ -5520,7 +5542,7 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 			goto_prev_step(false);
 		} break;
 		case EDIT_APPLY_RESET: {
-			AnimationPlayerEditor::singleton->get_player()->apply_reset(true);
+			AnimationPlayerEditor::get_singleton()->get_player()->apply_reset(true);
 
 		} break;
 		case EDIT_OPTIMIZE_ANIMATION: {
@@ -5540,9 +5562,9 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 		case EDIT_CLEAN_UP_ANIMATION_CONFIRM: {
 			if (cleanup_all->is_pressed()) {
 				List<StringName> names;
-				AnimationPlayerEditor::singleton->get_player()->get_animation_list(&names);
+				AnimationPlayerEditor::get_singleton()->get_player()->get_animation_list(&names);
 				for (const StringName &E : names) {
-					_cleanup_animation(AnimationPlayerEditor::singleton->get_player()->get_animation(E));
+					_cleanup_animation(AnimationPlayerEditor::get_singleton()->get_player()->get_animation(E));
 				}
 			} else {
 				_cleanup_animation(animation);

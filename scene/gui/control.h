@@ -283,7 +283,7 @@ protected:
 
 	//virtual void _window_gui_input(InputEvent p_event);
 
-	virtual Vector<Vector2i> structured_text_parser(StructuredTextParser p_theme_type, const Array &p_args, const String p_text) const;
+	virtual Array structured_text_parser(StructuredTextParser p_theme_type, const Array &p_args, const String p_text) const;
 
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
@@ -355,7 +355,7 @@ public:
 	virtual Size2 get_minimum_size() const;
 	virtual Size2 get_combined_minimum_size() const;
 	virtual bool has_point(const Point2 &p_point) const;
-	virtual void set_drag_forwarding(Control *p_target);
+	virtual void set_drag_forwarding(Node *p_target);
 	virtual Variant get_drag_data(const Point2 &p_point);
 	virtual bool can_drop_data(const Point2 &p_point, const Variant &p_data) const;
 	virtual void drop_data(const Point2 &p_point, const Variant &p_data);
@@ -508,6 +508,14 @@ public:
 	bool has_theme_font_size(const StringName &p_name, const StringName &p_theme_type = StringName()) const;
 	bool has_theme_color(const StringName &p_name, const StringName &p_theme_type = StringName()) const;
 	bool has_theme_constant(const StringName &p_name, const StringName &p_theme_type = StringName()) const;
+
+	static float fetch_theme_default_base_scale(Control *p_theme_owner, Window *p_theme_owner_window);
+	static Ref<Font> fetch_theme_default_font(Control *p_theme_owner, Window *p_theme_owner_window);
+	static int fetch_theme_default_font_size(Control *p_theme_owner, Window *p_theme_owner_window);
+
+	float get_theme_default_base_scale() const;
+	Ref<Font> get_theme_default_font() const;
+	int get_theme_default_font_size() const;
 
 	/* TOOLTIP */
 

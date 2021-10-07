@@ -692,8 +692,10 @@ public:
 
 			int order = 0;
 			int texture_order = 0;
+			int texture_binding = 0;
 			DataType type = TYPE_VOID;
 			DataPrecision precision = PRECISION_DEFAULT;
+			int array_size = 0;
 			Vector<ConstantNode::Value> default_value;
 			Scope scope = SCOPE_LOCAL;
 			Hint hint = HINT_NONE;
@@ -776,7 +778,7 @@ public:
 	static bool is_scalar_type(DataType p_type);
 	static bool is_float_type(DataType p_type);
 	static bool is_sampler_type(DataType p_type);
-	static Variant constant_value_to_variant(const Vector<ShaderLanguage::ConstantNode::Value> &p_value, DataType p_type, ShaderLanguage::ShaderNode::Uniform::Hint p_hint = ShaderLanguage::ShaderNode::Uniform::HINT_NONE);
+	static Variant constant_value_to_variant(const Vector<ShaderLanguage::ConstantNode::Value> &p_value, DataType p_type, int p_array_size, ShaderLanguage::ShaderNode::Uniform::Hint p_hint = ShaderLanguage::ShaderNode::Uniform::HINT_NONE);
 	static PropertyInfo uniform_to_property_info(const ShaderNode::Uniform &p_uniform);
 	static uint32_t get_type_size(DataType p_type);
 
@@ -874,7 +876,6 @@ private:
 
 	StringName current_function;
 	bool last_const = false;
-	bool pass_array = false;
 	StringName last_name;
 
 	VaryingFunctionNames varying_function_names;

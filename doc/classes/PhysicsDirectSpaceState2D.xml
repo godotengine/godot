@@ -36,7 +36,6 @@
 				[b]Note:[/b] This method does not take into account the [code]motion[/code] property of the object. The returned object is a dictionary containing the following fields:
 				[code]collider_id[/code]: The colliding object's ID.
 				[code]linear_velocity[/code]: The colliding object's velocity [Vector2]. If the object is an [Area2D], the result is [code](0, 0)[/code].
-				[code]metadata[/code]: The intersecting shape's metadata. This metadata is different from [method Object.get_meta], and is set with [method PhysicsServer2D.shape_set_data].
 				[code]normal[/code]: The object's surface normal at the intersection point.
 				[code]point[/code]: The intersection point.
 				[code]rid[/code]: The intersecting object's [RID].
@@ -55,7 +54,6 @@
 				Checks whether a point is inside any solid shape. The shapes the point is inside of are returned in an array containing dictionaries with the following fields:
 				[code]collider[/code]: The colliding object.
 				[code]collider_id[/code]: The colliding object's ID.
-				[code]metadata[/code]: The intersecting shape's metadata. This metadata is different from [method Object.get_meta], and is set with [method PhysicsServer2D.shape_set_data].
 				[code]rid[/code]: The intersecting object's [RID].
 				[code]shape[/code]: The shape index of the colliding shape.
 				Additionally, the method can take an [code]exclude[/code] array of objects or [RID]s that are to be excluded from collisions, a [code]collision_mask[/code] bitmask representing the physics layers to detect (all layers by default), or booleans to determine if the ray should collide with [PhysicsBody2D]s or [Area2D]s, respectively.
@@ -75,7 +73,6 @@
 				Checks whether a point is inside any solid shape, in a specific canvas layer given by [code]canvas_instance_id[/code]. The shapes the point is inside of are returned in an array containing dictionaries with the following fields:
 				[code]collider[/code]: The colliding object.
 				[code]collider_id[/code]: The colliding object's ID.
-				[code]metadata[/code]: The intersecting shape's metadata. This metadata is different from [method Object.get_meta], and is set with [method PhysicsServer2D.shape_set_data].
 				[code]rid[/code]: The intersecting object's [RID].
 				[code]shape[/code]: The shape index of the colliding shape.
 				Additionally, the method can take an [code]exclude[/code] array of objects or [RID]s that are to be excluded from collisions, a [code]collision_mask[/code] bitmask representing the physics layers to detect (all layers by default), or booleans to determine if the ray should collide with [PhysicsBody2D]s or [Area2D]s, respectively.
@@ -94,7 +91,6 @@
 				Intersects a ray in a given space. The returned object is a dictionary with the following fields:
 				[code]collider[/code]: The colliding object.
 				[code]collider_id[/code]: The colliding object's ID.
-				[code]metadata[/code]: The intersecting shape's metadata. This metadata is different from [method Object.get_meta], and is set with [method PhysicsServer2D.shape_set_data].
 				[code]normal[/code]: The object's surface normal at the intersection point.
 				[code]position[/code]: The intersection point.
 				[code]rid[/code]: The intersecting object's [RID].
@@ -112,7 +108,6 @@
 				[b]Note:[/b] This method does not take into account the [code]motion[/code] property of the object. The intersected shapes are returned in an array containing dictionaries with the following fields:
 				[code]collider[/code]: The colliding object.
 				[code]collider_id[/code]: The colliding object's ID.
-				[code]metadata[/code]: The intersecting shape's metadata. This metadata is different from [method Object.get_meta], and is set with [method PhysicsServer2D.shape_set_data].
 				[code]rid[/code]: The intersecting object's [RID].
 				[code]shape[/code]: The shape index of the colliding shape.
 				The number of intersections can be limited with the [code]max_results[/code] parameter, to reduce the processing time.

@@ -81,6 +81,7 @@ class SceneTreeDock : public VBoxContainer {
 		TOOL_COPY_NODE_PATH,
 		TOOL_BUTTON_MAX,
 		TOOL_OPEN_DOCUMENTATION,
+		TOOL_AUTO_EXPAND,
 		TOOL_SCENE_EDITABLE_CHILDREN,
 		TOOL_SCENE_USE_PLACEHOLDER,
 		TOOL_SCENE_MAKE_LOCAL,
@@ -115,6 +116,7 @@ class SceneTreeDock : public VBoxContainer {
 	Button *button_instance;
 	Button *button_create_script;
 	Button *button_detach_script;
+	Button *button_tree_menu;
 
 	Button *button_2d;
 	Button *button_3d;
@@ -237,6 +239,7 @@ class SceneTreeDock : public VBoxContainer {
 	void _quick_open();
 
 	void _tree_rmb(const Vector2 &p_menu_pos);
+	void _open_tree_menu();
 
 	void _filter_changed(const String &p_filter);
 

@@ -7,7 +7,7 @@
 		Plugins are used by the editor to extend functionality. The most common types of plugins are those which edit a given node or resource type, import plugins and export plugins. See also [EditorScript] to add functions to the editor.
 	</description>
 	<tutorials>
-		<link title="Editor plugins tutorial index">https://docs.godotengine.org/en/latest/tutorials/plugins/editor/index.html</link>
+		<link title="Editor plugins documentation index">https://docs.godotengine.org/en/latest/tutorials/plugins/editor/index.html</link>
 	</tutorials>
 	<methods>
 		<method name="_apply_changes" qualifiers="virtual">
@@ -96,7 +96,7 @@
 			</description>
 		</method>
 		<method name="_forward_3d_gui_input" qualifiers="virtual">
-			<return type="bool" />
+			<return type="int" />
 			<argument index="0" name="viewport_camera" type="Camera3D" />
 			<argument index="1" name="event" type="InputEvent" />
 			<description>
@@ -105,13 +105,13 @@
 				[gdscript]
 				# Prevents the InputEvent to reach other Editor classes.
 				func _forward_3d_gui_input(camera, event):
-				    return true
+				    return EditorPlugin.AFTER_GUI_INPUT_STOP
 				[/gdscript]
 				[csharp]
 				// Prevents the InputEvent to reach other Editor classes.
 				public override bool _Forward3dGuiInput(Camera3D camera, InputEvent @event)
 				{
-				    return true;
+				    return EditorPlugin.AFTER_GUI_INPUT_STOP;
 				}
 				[/csharp]
 				[/codeblocks]
@@ -185,12 +185,12 @@
 				Called when there is a root node in the current edited scene, [method _handles] is implemented and an [InputEvent] happens in the 2D viewport. Intercepts the [InputEvent], if [code]return true[/code] [EditorPlugin] consumes the [code]event[/code], otherwise forwards [code]event[/code] to other Editor classes. Example:
 				[codeblocks]
 				[gdscript]
-				# Prevents the InputEvent to reach other Editor classes
+				# Prevents the InputEvent to reach other Editor classes.
 				func _forward_canvas_gui_input(event):
 				    return true
 				[/gdscript]
 				[csharp]
-				// Prevents the InputEvent to reach other Editor classes
+				// Prevents the InputEvent to reach other Editor classes.
 				public override bool ForwardCanvasGuiInput(InputEvent @event)
 				{
 				    return true;
@@ -202,13 +202,18 @@
 				[gdscript]
 				# Consumes InputEventMouseMotion and forwards other InputEvent types.
 				func _forward_canvas_gui_input(event):
-				    return event is InputEventMouseMotion
+				    if (event is InputEventMouseMotion):
+				        return true
+				    return false
 				[/gdscript]
 				[csharp]
 				// Consumes InputEventMouseMotion and forwards other InputEvent types.
 				public override bool ForwardCanvasGuiInput(InputEvent @event)
 				{
-				    return @event is InputEventMouseMotion;
+				    if (@event is InputEventMouseMotion) {
+				        return true;
+				    }
+				    return false
 				}
 				[/csharp]
 				[/codeblocks]

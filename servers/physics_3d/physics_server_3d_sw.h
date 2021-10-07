@@ -242,7 +242,7 @@ public:
 
 	virtual void body_set_ray_pickable(RID p_body, bool p_enable) override;
 
-	virtual bool body_test_motion(RID p_body, const Transform3D &p_from, const Vector3 &p_motion, real_t p_margin = 0.001, MotionResult *r_result = nullptr, int p_max_collisions = 1, bool p_collide_separation_ray = false, const Set<RID> &p_exclude = Set<RID>()) override;
+	virtual bool body_test_motion(RID p_body, const MotionParameters &p_parameters, MotionResult *r_result = nullptr) override;
 
 	// this function only works on physics process, errors and returns null otherwise
 	virtual PhysicsDirectBodyState3D *body_get_direct_state(RID p_body) override;
@@ -291,7 +291,7 @@ public:
 	virtual void soft_body_set_drag_coefficient(RID p_body, real_t p_drag_coefficient) override;
 	virtual real_t soft_body_get_drag_coefficient(RID p_body) const override;
 
-	virtual void soft_body_set_mesh(RID p_body, const REF &p_mesh) override;
+	virtual void soft_body_set_mesh(RID p_body, RID p_mesh) override;
 
 	virtual AABB soft_body_get_bounds(RID p_body) const override;
 

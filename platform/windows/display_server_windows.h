@@ -63,6 +63,7 @@
 #include <fcntl.h>
 #include <io.h>
 #include <stdio.h>
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <windowsx.h>
 
@@ -543,6 +544,7 @@ public:
 	virtual void keyboard_set_current_layout(int p_index) override;
 	virtual String keyboard_get_layout_language(int p_index) const override;
 	virtual String keyboard_get_layout_name(int p_index) const override;
+	virtual Key keyboard_get_keycode_from_physical(Key p_keycode) const override;
 
 	virtual int tablet_get_driver_count() const override;
 	virtual String tablet_get_driver_name(int p_driver) const override;

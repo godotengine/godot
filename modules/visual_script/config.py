@@ -17,6 +17,7 @@ def get_doc_classes():
         "VisualScriptConstant",
         "VisualScriptConstructor",
         "VisualScriptCustomNode",
+        "VisualScriptCustomNodes",
         "VisualScriptDeconstruct",
         "VisualScriptEditor",
         "VisualScriptEmitSignal",

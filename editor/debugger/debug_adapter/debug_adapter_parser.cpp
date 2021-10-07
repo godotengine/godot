@@ -306,8 +306,8 @@ Dictionary DebugAdapterParser::req_stackTrace(const Dictionary &p_params) const 
 
 	Array arr;
 	DebugAdapterProtocol *dap = DebugAdapterProtocol::get_singleton();
-	for (Map<DAP::StackFrame, List<int>>::Element *E = dap->stackframe_list.front(); E; E = E->next()) {
-		DAP::StackFrame sf = E->key();
+	for (const KeyValue<DAP::StackFrame, List<int>> &E : dap->stackframe_list) {
+		DAP::StackFrame sf = E.key;
 		if (!lines_at_one) {
 			sf.line--;
 		}

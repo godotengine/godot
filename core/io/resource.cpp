@@ -540,9 +540,9 @@ void ResourceCache::dump(const char *p_file, bool p_short) {
 		}
 	}
 
-	for (Map<String, int>::Element *E = type_count.front(); E; E = E->next()) {
+	for (const KeyValue<String, int> &E : type_count) {
 		if (f) {
-			f->store_line(E->key() + " count: " + itos(E->get()));
+			f->store_line(E.key + " count: " + itos(E.value));
 		}
 	}
 	if (f) {

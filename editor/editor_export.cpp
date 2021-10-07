@@ -451,6 +451,9 @@ void EditorExportPlatform::_export_find_resources(EditorFileSystemDirectory *p_d
 	}
 
 	for (int i = 0; i < p_dir->get_file_count(); i++) {
+		if (p_dir->get_file_type(i) == "TextFile") {
+			continue;
+		}
 		p_paths.insert(p_dir->get_file_path(i));
 	}
 }
@@ -1043,17 +1046,19 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 			return err;
 		}
 	}
-	if (FileAccess::exists(ResourceUID::CACHE_FILE)) {
-		Vector<uint8_t> array = FileAccess::get_file_as_array(ResourceUID::CACHE_FILE);
-		err = p_func(p_udata, ResourceUID::CACHE_FILE, array, idx, total, enc_in_filters, enc_ex_filters, key);
+	String resource_cache_file = ResourceUID::get_cache_file();
+	if (FileAccess::exists(resource_cache_file)) {
+		Vector<uint8_t> array = FileAccess::get_file_as_array(resource_cache_file);
+		err = p_func(p_udata, resource_cache_file, array, idx, total, enc_in_filters, enc_ex_filters, key);
 		if (err != OK) {
 			return err;
 		}
 	}
 
-	if (FileAccess::exists(NativeExtension::EXTENSION_LIST_CONFIG_FILE)) {
-		Vector<uint8_t> array = FileAccess::get_file_as_array(NativeExtension::EXTENSION_LIST_CONFIG_FILE);
-		err = p_func(p_udata, NativeExtension::EXTENSION_LIST_CONFIG_FILE, array, idx, total, enc_in_filters, enc_ex_filters, key);
+	String extension_list_config_file = NativeExtension::get_extension_list_config_file();
+	if (FileAccess::exists(extension_list_config_file)) {
+		Vector<uint8_t> array = FileAccess::get_file_as_array(extension_list_config_file);
+		err = p_func(p_udata, extension_list_config_file, array, idx, total, enc_in_filters, enc_ex_filters, key);
 		if (err != OK) {
 			return err;
 		}
@@ -1814,9 +1819,9 @@ bool EditorExportPlatformPC::can_export(const Ref<EditorExportPreset> &p_preset,
 
 List<String> EditorExportPlatformPC::get_binary_extensions(const Ref<EditorExportPreset> &p_preset) const {
 	List<String> list;
-	for (Map<String, String>::Element *E = extensions.front(); E; E = E->next()) {
-		if (p_preset->get(E->key())) {
-			list.push_back(extensions[E->key()]);
+	for (const KeyValue<String, String> &E : extensions) {
+		if (p_preset->get(E.key)) {
+			list.push_back(extensions[E.key]);
 			return list;
 		}
 	}

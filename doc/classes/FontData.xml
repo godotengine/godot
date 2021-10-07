@@ -23,7 +23,8 @@
 			<argument index="0" name="cache_index" type="int" />
 			<argument index="1" name="size" type="Vector2i" />
 			<description>
-				Removes all rendered glyphs information from the cache entry. Note: This function will not remove textures associated with the glyphs, use [method remove_texture] to remove them manually.
+				Removes all rendered glyphs information from the cache entry.
+				[b]Note:[/b] This function will not remove textures associated with the glyphs, use [method remove_texture] to remove them manually.
 			</description>
 		</method>
 		<method name="clear_kerning_map">
@@ -46,7 +47,8 @@
 			<argument index="0" name="cache_index" type="int" />
 			<argument index="1" name="size" type="Vector2i" />
 			<description>
-				Removes all textures from font cache entry. Note: This function will not remove glyphs associated with the texture, use [method remove_glyph] to remove them manually.
+				Removes all textures from font cache entry.
+				[b]Note:[/b] This function will not remove glyphs associated with the texture, use [method remove_glyph] to remove them manually.
 			</description>
 		</method>
 		<method name="find_cache" qualifiers="const">
@@ -97,7 +99,8 @@
 			<argument index="1" name="size" type="int" />
 			<argument index="2" name="glyph" type="int" />
 			<description>
-				Returns glyph advance (offset of the next glyph). Note: advance for glyphs outlines is the same as the base glyph advance and is not saved.
+				Returns glyph advance (offset of the next glyph).
+				[b]Note:[/b] Advance for glyphs outlines is the same as the base glyph advance and is not saved.
 			</description>
 		</method>
 		<method name="get_glyph_index" qualifiers="const">
@@ -364,7 +367,8 @@
 			<argument index="1" name="size" type="Vector2i" />
 			<argument index="2" name="glyph" type="int" />
 			<description>
-				Removes specified rendered glyph information from the cache entry. Note: This function will not remove textures associated with the glyphs, use [method remove_texture] to remove them manually.
+				Removes specified rendered glyph information from the cache entry.
+				[b]Note:[/b] This function will not remove textures associated with the glyphs, use [method remove_texture] to remove them manually.
 			</description>
 		</method>
 		<method name="remove_kerning">
@@ -404,7 +408,8 @@
 			<argument index="1" name="size" type="Vector2i" />
 			<argument index="2" name="texture_index" type="int" />
 			<description>
-				Removes specified texture from font cache entry. Note: This function will not remove glyphs associated with the texture, remove them manually, using [method remove_glyph].
+				Removes specified texture from font cache entry.
+				[b]Note:[/b] This function will not remove glyphs associated with the texture, remove them manually, using [method remove_glyph].
 			</description>
 		</method>
 		<method name="render_glyph">
@@ -472,7 +477,8 @@
 			<argument index="2" name="glyph" type="int" />
 			<argument index="3" name="advance" type="Vector2" />
 			<description>
-				Sets glyph advance (offset of the next glyph). Note: advance for glyphs outlines is the same as the base glyph advance and is not saved.
+				Sets glyph advance (offset of the next glyph).
+				[b]Note:[/b] Advance for glyphs outlines is the same as the base glyph advance and is not saved.
 			</description>
 		</method>
 		<method name="set_glyph_offset">

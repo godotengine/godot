@@ -37,6 +37,7 @@
 
 #include <stdio.h>
 #include <wchar.h>
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
 /*
@@ -256,6 +257,11 @@ Error DirAccessWindows::rename(String p_path, String p_new_path) {
 
 	// If we're only changing file name case we need to do a little juggling
 	if (p_path.to_lower() == p_new_path.to_lower()) {
+		if (dir_exists(p_path)) {
+			// The path is a dir; just rename
+			return ::_wrename((LPCWSTR)(p_path.utf16().get_data()), (LPCWSTR)(p_new_path.utf16().get_data())) == 0 ? OK : FAILED;
+		}
+		// The path is a file; juggle
 		WCHAR tmpfile[MAX_PATH];
 
 		if (!GetTempFileNameW((LPCWSTR)(fix_path(get_current_dir()).utf16().get_data()), nullptr, 0, tmpfile)) {

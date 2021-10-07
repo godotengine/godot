@@ -74,16 +74,16 @@ void DependencyEditor::_fix_and_find(EditorFileSystemDirectory *efsd, Map<String
 
 		String path = efsd->get_file_path(i);
 
-		for (Map<String, String>::Element *E = candidates[file].front(); E; E = E->next()) {
-			if (E->get() == String()) {
-				E->get() = path;
+		for (KeyValue<String, String> &E : candidates[file]) {
+			if (E.value == String()) {
+				E.value = path;
 				continue;
 			}
 
 			//must match the best, using subdirs
-			String existing = E->get().replace_first("res://", "");
+			String existing = E.value.replace_first("res://", "");
 			String current = path.replace_first("res://", "");
-			String lost = E->key().replace_first("res://", "");
+			String lost = E.key.replace_first("res://", "");
 
 			Vector<String> existingv = existing.split("/");
 			existingv.reverse();
@@ -107,7 +107,7 @@ void DependencyEditor::_fix_and_find(EditorFileSystemDirectory *efsd, Map<String
 			if (current_score > existing_score) {
 				//if it was the same, could track distance to new path but..
 
-				E->get() = path; //replace by more accurate
+				E.value = path; //replace by more accurate
 			}
 		}
 	}
@@ -133,10 +133,10 @@ void DependencyEditor::_fix_all() {
 
 	Map<String, String> remaps;
 
-	for (Map<String, Map<String, String>>::Element *E = candidates.front(); E; E = E->next()) {
-		for (Map<String, String>::Element *F = E->get().front(); F; F = F->next()) {
-			if (F->get() != String()) {
-				remaps[F->key()] = F->get();
+	for (KeyValue<String, Map<String, String>> &E : candidates) {
+		for (const KeyValue<String, String> &F : E.value) {
+			if (F.value != String()) {
+				remaps[F.key] = F.value;
 			}
 		}
 	}

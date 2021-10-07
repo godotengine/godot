@@ -58,7 +58,6 @@ private:
 		BroadPhase2DSW::ID bpid = 0;
 		Rect2 aabb_cache; //for rayqueries
 		Shape2DSW *shape = nullptr;
-		Variant metadata;
 		bool disabled = false;
 		bool one_way_collision = false;
 		real_t one_way_collision_margin = 0.0;
@@ -110,7 +109,6 @@ public:
 	void add_shape(Shape2DSW *p_shape, const Transform2D &p_transform = Transform2D(), bool p_disabled = false);
 	void set_shape(int p_index, Shape2DSW *p_shape);
 	void set_shape_transform(int p_index, const Transform2D &p_transform);
-	void set_shape_metadata(int p_index, const Variant &p_metadata);
 
 	_FORCE_INLINE_ int get_shape_count() const { return shapes.size(); }
 	_FORCE_INLINE_ Shape2DSW *get_shape(int p_index) const {
@@ -128,10 +126,6 @@ public:
 	_FORCE_INLINE_ const Rect2 &get_shape_aabb(int p_index) const {
 		CRASH_BAD_INDEX(p_index, shapes.size());
 		return shapes[p_index].aabb_cache;
-	}
-	_FORCE_INLINE_ const Variant &get_shape_metadata(int p_index) const {
-		CRASH_BAD_INDEX(p_index, shapes.size());
-		return shapes[p_index].metadata;
 	}
 
 	_FORCE_INLINE_ const Transform2D &get_transform() const { return transform; }

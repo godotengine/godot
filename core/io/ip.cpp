@@ -288,8 +288,8 @@ Array IP::_get_local_interfaces() const {
 	Array results;
 	Map<String, Interface_Info> interfaces;
 	get_local_interfaces(&interfaces);
-	for (Map<String, Interface_Info>::Element *E = interfaces.front(); E; E = E->next()) {
-		Interface_Info &c = E->get();
+	for (KeyValue<String, Interface_Info> &E : interfaces) {
+		Interface_Info &c = E.value;
 		Dictionary rc;
 		rc["name"] = c.name;
 		rc["friendly"] = c.name_friendly;
@@ -310,8 +310,8 @@ Array IP::_get_local_interfaces() const {
 void IP::get_local_addresses(List<IPAddress> *r_addresses) const {
 	Map<String, Interface_Info> interfaces;
 	get_local_interfaces(&interfaces);
-	for (Map<String, Interface_Info>::Element *E = interfaces.front(); E; E = E->next()) {
-		for (const IPAddress &F : E->get().ip_addresses) {
+	for (const KeyValue<String, Interface_Info> &E : interfaces) {
+		for (const IPAddress &F : E.value.ip_addresses) {
 			r_addresses->push_front(F);
 		}
 	}

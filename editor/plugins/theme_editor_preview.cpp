@@ -126,8 +126,8 @@ void ThemeEditorPreview::_draw_picker_overlay() {
 		highlight_label_rect.size.x += margin_left + margin_right;
 		highlight_label_rect.size.y += margin_top + margin_bottom;
 
-		highlight_label_rect.position.x = CLAMP(highlight_label_rect.position.x, 0.0, picker_overlay->get_size().width);
-		highlight_label_rect.position.y = CLAMP(highlight_label_rect.position.y, 0.0, picker_overlay->get_size().height);
+		highlight_label_rect.position = highlight_label_rect.position.clamp(Vector2(), picker_overlay->get_size());
+
 		picker_overlay->draw_style_box(theme_cache.preview_picker_label, highlight_label_rect);
 
 		Point2 label_pos = highlight_label_rect.position;

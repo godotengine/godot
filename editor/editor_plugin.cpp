@@ -219,7 +219,7 @@ Array EditorInterface::get_open_scenes() const {
 		if (scenes[idx_scn].root == nullptr) {
 			continue;
 		}
-		ret.push_back(scenes[idx_scn].root->get_filename());
+		ret.push_back(scenes[idx_scn].root->get_scene_file_path());
 	}
 	return ret;
 }
@@ -291,11 +291,11 @@ Error EditorInterface::save_scene() {
 	if (!get_edited_scene_root()) {
 		return ERR_CANT_CREATE;
 	}
-	if (get_edited_scene_root()->get_filename() == String()) {
+	if (get_edited_scene_root()->get_scene_file_path() == String()) {
 		return ERR_CANT_CREATE;
 	}
 
-	save_scene_as(get_edited_scene_root()->get_filename());
+	save_scene_as(get_edited_scene_root()->get_scene_file_path());
 	return OK;
 }
 
@@ -593,14 +593,14 @@ int EditorPlugin::update_overlays() const {
 	}
 }
 
-bool EditorPlugin::forward_spatial_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event) {
-	bool success;
+EditorPlugin::AfterGUIInput EditorPlugin::forward_spatial_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event) {
+	int success;
 
 	if (GDVIRTUAL_CALL(_forward_3d_gui_input, p_camera, p_event, success)) {
-		return success;
+		return static_cast<EditorPlugin::AfterGUIInput>(success);
 	}
 
-	return false;
+	return EditorPlugin::AFTER_GUI_INPUT_PASS;
 }
 
 void EditorPlugin::forward_spatial_draw_over_viewport(Control *p_overlay) {

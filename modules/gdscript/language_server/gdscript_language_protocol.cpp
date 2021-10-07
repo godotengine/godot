@@ -212,11 +212,11 @@ void GDScriptLanguageProtocol::initialized(const Variant &p_params) {
 	lsp::GodotCapabilities capabilities;
 
 	DocTools *doc = EditorHelp::get_doc_data();
-	for (Map<String, DocData::ClassDoc>::Element *E = doc->class_list.front(); E; E = E->next()) {
+	for (const KeyValue<String, DocData::ClassDoc> &E : doc->class_list) {
 		lsp::GodotNativeClassInfo gdclass;
-		gdclass.name = E->get().name;
-		gdclass.class_doc = &(E->get());
-		if (ClassDB::ClassInfo *ptr = ClassDB::classes.getptr(StringName(E->get().name))) {
+		gdclass.name = E.value.name;
+		gdclass.class_doc = &(E.value);
+		if (ClassDB::ClassInfo *ptr = ClassDB::classes.getptr(StringName(E.value.name))) {
 			gdclass.class_info = ptr;
 		}
 		capabilities.native_classes.push_back(gdclass);

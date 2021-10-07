@@ -59,7 +59,7 @@ real_t PhysicsDirectBodyState2DSW::get_inverse_inertia() const {
 }
 
 void PhysicsDirectBodyState2DSW::set_linear_velocity(const Vector2 &p_velocity) {
-	body->set_active(true);
+	body->wakeup();
 	body->set_linear_velocity(p_velocity);
 }
 
@@ -68,7 +68,7 @@ Vector2 PhysicsDirectBodyState2DSW::get_linear_velocity() const {
 }
 
 void PhysicsDirectBodyState2DSW::set_angular_velocity(real_t p_velocity) {
-	body->set_active(true);
+	body->wakeup();
 	body->set_angular_velocity(p_velocity);
 }
 
@@ -89,32 +89,32 @@ Vector2 PhysicsDirectBodyState2DSW::get_velocity_at_local_position(const Vector2
 }
 
 void PhysicsDirectBodyState2DSW::add_central_force(const Vector2 &p_force) {
-	body->set_active(true);
+	body->wakeup();
 	body->add_central_force(p_force);
 }
 
 void PhysicsDirectBodyState2DSW::add_force(const Vector2 &p_force, const Vector2 &p_position) {
-	body->set_active(true);
+	body->wakeup();
 	body->add_force(p_force, p_position);
 }
 
 void PhysicsDirectBodyState2DSW::add_torque(real_t p_torque) {
-	body->set_active(true);
+	body->wakeup();
 	body->add_torque(p_torque);
 }
 
 void PhysicsDirectBodyState2DSW::apply_central_impulse(const Vector2 &p_impulse) {
-	body->set_active(true);
+	body->wakeup();
 	body->apply_central_impulse(p_impulse);
 }
 
 void PhysicsDirectBodyState2DSW::apply_impulse(const Vector2 &p_impulse, const Vector2 &p_position) {
-	body->set_active(true);
+	body->wakeup();
 	body->apply_impulse(p_impulse, p_position);
 }
 
 void PhysicsDirectBodyState2DSW::apply_torque_impulse(real_t p_torque) {
-	body->set_active(true);
+	body->wakeup();
 	body->apply_torque_impulse(p_torque);
 }
 
@@ -167,22 +167,6 @@ int PhysicsDirectBodyState2DSW::get_contact_collider_shape(int p_contact_idx) co
 Vector2 PhysicsDirectBodyState2DSW::get_contact_collider_velocity_at_position(int p_contact_idx) const {
 	ERR_FAIL_INDEX_V(p_contact_idx, body->contact_count, Vector2());
 	return body->contacts[p_contact_idx].collider_velocity_at_pos;
-}
-
-Variant PhysicsDirectBodyState2DSW::get_contact_collider_shape_metadata(int p_contact_idx) const {
-	ERR_FAIL_INDEX_V(p_contact_idx, body->contact_count, Variant());
-
-	if (!PhysicsServer2DSW::singletonsw->body_owner.owns(body->contacts[p_contact_idx].collider)) {
-		return Variant();
-	}
-	Body2DSW *other = PhysicsServer2DSW::singletonsw->body_owner.getornull(body->contacts[p_contact_idx].collider);
-
-	int sidx = body->contacts[p_contact_idx].collider_shape;
-	if (sidx < 0 || sidx >= other->get_shape_count()) {
-		return Variant();
-	}
-
-	return other->get_shape_metadata(sidx);
 }
 
 PhysicsDirectSpaceState2D *PhysicsDirectBodyState2DSW::get_space_state() {

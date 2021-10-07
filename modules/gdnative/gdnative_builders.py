@@ -22,7 +22,6 @@ def _build_gdnative_api_struct_header(api):
         "#include <nativescript/godot_nativescript.h>",
         "#include <pluginscript/godot_pluginscript.h>",
         "#include <videodecoder/godot_videodecoder.h>",
-        "#include <text/godot_text.h>",
         "",
         "#ifdef __cplusplus",
         'extern "C" {',

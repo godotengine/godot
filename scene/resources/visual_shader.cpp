@@ -197,9 +197,9 @@ Vector<StringName> VisualShaderNode::get_editable_properties() const {
 
 Array VisualShaderNode::get_default_input_values() const {
 	Array ret;
-	for (Map<int, Variant>::Element *E = default_input_values.front(); E; E = E->next()) {
-		ret.push_back(E->key());
-		ret.push_back(E->get());
+	for (const KeyValue<int, Variant> &E : default_input_values) {
+		ret.push_back(E.key);
+		ret.push_back(E.value);
 	}
 	return ret;
 }
@@ -460,14 +460,14 @@ Dictionary VisualShader::get_engine_version() const {
 void VisualShader::update_engine_version(const Dictionary &p_new_version) {
 	if (engine_version.is_empty()) { // before 4.0
 		for (int i = 0; i < TYPE_MAX; i++) {
-			for (Map<int, Node>::Element *E = graph[i].nodes.front(); E; E = E->next()) {
-				Ref<VisualShaderNodeInput> input = Object::cast_to<VisualShaderNodeInput>(E->get().node.ptr());
+			for (KeyValue<int, Node> &E : graph[i].nodes) {
+				Ref<VisualShaderNodeInput> input = Object::cast_to<VisualShaderNodeInput>(E.value.node.ptr());
 				if (input.is_valid()) {
 					if (input->get_input_name() == "side") {
 						input->set_input_name("front_facing");
 					}
 				}
-				Ref<VisualShaderNodeExpression> expression = Object::cast_to<VisualShaderNodeExpression>(E->get().node.ptr());
+				Ref<VisualShaderNodeExpression> expression = Object::cast_to<VisualShaderNodeExpression>(E.value.node.ptr());
 				if (expression.is_valid()) {
 					for (int j = 0; j < expression->get_input_port_count(); j++) {
 						int type = expression->get_input_port_type(j);
@@ -484,7 +484,7 @@ void VisualShader::update_engine_version(const Dictionary &p_new_version) {
 						expression->set_output_port_type(j, type);
 					}
 				}
-				Ref<VisualShaderNodeCompare> compare = Object::cast_to<VisualShaderNodeCompare>(E->get().node.ptr());
+				Ref<VisualShaderNodeCompare> compare = Object::cast_to<VisualShaderNodeCompare>(E.value.node.ptr());
 				if (compare.is_valid()) {
 					int ctype = int(compare->get_comparison_type());
 					if (int(ctype) > 0) { // + PORT_TYPE_SCALAR_INT
@@ -561,8 +561,8 @@ Vector<int> VisualShader::get_node_list(Type p_type) const {
 	const Graph *g = &graph[p_type];
 
 	Vector<int> ret;
-	for (Map<int, Node>::Element *E = g->nodes.front(); E; E = E->next()) {
-		ret.push_back(E->key());
+	for (const KeyValue<int, Node> &E : g->nodes) {
+		ret.push_back(E.key);
 	}
 
 	return ret;
@@ -575,9 +575,9 @@ int VisualShader::get_valid_node_id(Type p_type) const {
 }
 
 int VisualShader::find_node_id(Type p_type, const Ref<VisualShaderNode> &p_node) const {
-	for (const Map<int, Node>::Element *E = graph[p_type].nodes.front(); E; E = E->next()) {
-		if (E->get().node == p_node) {
-			return E->key();
+	for (const KeyValue<int, Node> &E : graph[p_type].nodes) {
+		if (E.value.node == p_node) {
+			return E.key;
 		}
 	}
 
@@ -819,8 +819,8 @@ void VisualShader::set_mode(Mode p_mode) {
 	flags.clear();
 	shader_mode = p_mode;
 	for (int i = 0; i < TYPE_MAX; i++) {
-		for (Map<int, Node>::Element *E = graph[i].nodes.front(); E; E = E->next()) {
-			Ref<VisualShaderNodeInput> input = E->get().node;
+		for (KeyValue<int, Node> &E : graph[i].nodes) {
+			Ref<VisualShaderNodeInput> input = E.value.node;
 			if (input.is_valid()) {
 				input->shader_mode = shader_mode;
 				//input->input_index = 0;
@@ -1041,8 +1041,8 @@ String VisualShader::validate_uniform_name(const String &p_name, const Ref<Visua
 	while (true) {
 		bool exists = false;
 		for (int i = 0; i < TYPE_MAX; i++) {
-			for (const Map<int, Node>::Element *E = graph[i].nodes.front(); E; E = E->next()) {
-				Ref<VisualShaderNodeUniform> node = E->get().node;
+			for (const KeyValue<int, Node> &E : graph[i].nodes) {
+				Ref<VisualShaderNodeUniform> node = E.value.node;
 				if (node == p_uniform) { //do not test on self
 					continue;
 				}
@@ -1271,8 +1271,8 @@ void VisualShader::_get_property_list(List<PropertyInfo> *p_list) const {
 		}
 	}
 
-	for (Map<String, String>::Element *E = blend_mode_enums.front(); E; E = E->next()) {
-		p_list->push_back(PropertyInfo(Variant::INT, "modes/" + E->key(), PROPERTY_HINT_ENUM, E->get()));
+	for (const KeyValue<String, String> &E : blend_mode_enums) {
+		p_list->push_back(PropertyInfo(Variant::INT, "modes/" + E.key, PROPERTY_HINT_ENUM, E.value));
 	}
 
 	for (Set<String>::Element *E = toggles.front(); E; E = E->next()) {
@@ -1280,22 +1280,22 @@ void VisualShader::_get_property_list(List<PropertyInfo> *p_list) const {
 	}
 
 	for (int i = 0; i < TYPE_MAX; i++) {
-		for (Map<int, Node>::Element *E = graph[i].nodes.front(); E; E = E->next()) {
+		for (const KeyValue<int, Node> &E : graph[i].nodes) {
 			String prop_name = "nodes/";
 			prop_name += type_string[i];
-			prop_name += "/" + itos(E->key());
+			prop_name += "/" + itos(E.key);
 
-			if (E->key() != NODE_ID_OUTPUT) {
+			if (E.key != NODE_ID_OUTPUT) {
 				p_list->push_back(PropertyInfo(Variant::OBJECT, prop_name + "/node", PROPERTY_HINT_RESOURCE_TYPE, "VisualShaderNode", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_DO_NOT_SHARE_ON_DUPLICATE));
 			}
 			p_list->push_back(PropertyInfo(Variant::VECTOR2, prop_name + "/position", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
 
-			if (Object::cast_to<VisualShaderNodeGroupBase>(E->get().node.ptr()) != nullptr) {
+			if (Object::cast_to<VisualShaderNodeGroupBase>(E.value.node.ptr()) != nullptr) {
 				p_list->push_back(PropertyInfo(Variant::VECTOR2, prop_name + "/size", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
 				p_list->push_back(PropertyInfo(Variant::STRING, prop_name + "/input_ports", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
 				p_list->push_back(PropertyInfo(Variant::STRING, prop_name + "/output_ports", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
 			}
-			if (Object::cast_to<VisualShaderNodeExpression>(E->get().node.ptr()) != nullptr) {
+			if (Object::cast_to<VisualShaderNodeExpression>(E.value.node.ptr()) != nullptr) {
 				p_list->push_back(PropertyInfo(Variant::STRING, prop_name + "/expression", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
 			}
 		}
@@ -1716,9 +1716,9 @@ void VisualShader::_update_shader() const {
 					emitters.insert(i, List<int>());
 				}
 
-				for (Map<int, Node>::Element *M = graph[i].nodes.front(); M; M = M->next()) {
-					if (M->get().node == emit_particle.ptr()) {
-						emitters[i].push_back(M->key());
+				for (const KeyValue<int, Node> &M : graph[i].nodes) {
+					if (M.value.node == emit_particle.ptr()) {
+						emitters[i].push_back(M.key);
 						break;
 					}
 				}

@@ -66,7 +66,7 @@ void SceneTreeEditor::_cell_button_pressed(Object *p_item, int p_column, int p_i
 				emit_signal(SNAME("open"), n->get_scene_inherited_state()->get_path());
 			}
 		} else {
-			emit_signal(SNAME("open"), n->get_filename());
+			emit_signal(SNAME("open"), n->get_scene_file_path());
 		}
 	} else if (p_id == BUTTON_SCRIPT) {
 		Ref<Script> script_typed = n->get_script();
@@ -102,7 +102,7 @@ void SceneTreeEditor::_cell_button_pressed(Object *p_item, int p_column, int p_i
 		undo_redo->commit_action();
 	} else if (p_id == BUTTON_PIN) {
 		if (n->is_class("AnimationPlayer")) {
-			AnimationPlayerEditor::singleton->unpin();
+			AnimationPlayerEditor::get_singleton()->unpin();
 			_update_tree();
 		}
 
@@ -302,10 +302,10 @@ bool SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent, bool p_scroll
 		}
 
 		item->set_tooltip(0, tooltip);
-	} else if (p_node != get_scene_node() && p_node->get_filename() != "" && can_open_instance) {
+	} else if (p_node != get_scene_node() && p_node->get_scene_file_path() != "" && can_open_instance) {
 		item->add_button(0, get_theme_icon(SNAME("InstanceOptions"), SNAME("EditorIcons")), BUTTON_SUBSCENE, false, TTR("Open in Editor"));
 
-		String tooltip = String(p_node->get_name()) + "\n" + TTR("Instance:") + " " + p_node->get_filename() + "\n" + TTR("Type:") + " " + p_node->get_class();
+		String tooltip = String(p_node->get_name()) + "\n" + TTR("Instance:") + " " + p_node->get_scene_file_path() + "\n" + TTR("Type:") + " " + p_node->get_class();
 		if (p_node->get_editor_description() != String()) {
 			tooltip += "\n\n" + p_node->get_editor_description();
 		}
@@ -386,7 +386,7 @@ bool SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent, bool p_scroll
 
 			_update_visibility_color(p_node, item);
 		} else if (p_node->is_class("AnimationPlayer")) {
-			bool is_pinned = AnimationPlayerEditor::singleton->get_player() == p_node && AnimationPlayerEditor::singleton->is_pinned();
+			bool is_pinned = AnimationPlayerEditor::get_singleton()->get_player() == p_node && AnimationPlayerEditor::get_singleton()->is_pinned();
 
 			if (is_pinned) {
 				item->add_button(0, get_theme_icon(SNAME("Pin"), SNAME("EditorIcons")), BUTTON_PIN, false, TTR("AnimationPlayer is pinned.\nClick to unpin."));
@@ -737,17 +737,18 @@ void SceneTreeEditor::set_selected(Node *p_node, bool p_emit_selected) {
 	TreeItem *item = p_node ? _find(tree->get_root(), p_node->get_path()) : nullptr;
 
 	if (item) {
-		// make visible when it's collapsed
-		TreeItem *node = item->get_parent();
-		while (node && node != tree->get_root()) {
-			node->set_collapsed(false);
-			node = node->get_parent();
+		if (auto_expand_selected) {
+			// Make visible when it's collapsed.
+			TreeItem *node = item->get_parent();
+			while (node && node != tree->get_root()) {
+				node->set_collapsed(false);
+				node = node->get_parent();
+			}
+			item->select(0);
+			item->set_as_cursor(0);
+			selected = p_node;
+			tree->ensure_cursor_is_visible();
 		}
-		item->select(0);
-		item->set_as_cursor(0);
-		selected = p_node;
-		tree->ensure_cursor_is_visible();
-
 	} else {
 		if (!p_node) {
 			selected = nullptr;
@@ -954,7 +955,7 @@ Variant SceneTreeEditor::get_drag_data_fw(const Point2 &p_point, Control *p_from
 		Node *n = get_node(np);
 		if (n) {
 			// Only allow selection if not part of an instantiated scene.
-			if (!n->get_owner() || n->get_owner() == get_scene_node() || n->get_owner()->get_filename() == String()) {
+			if (!n->get_owner() || n->get_owner() == get_scene_node() || n->get_owner()->get_scene_file_path() == String()) {
 				selected.push_back(n);
 				icons.push_back(next->get_icon(0));
 			}
@@ -1127,9 +1128,17 @@ void SceneTreeEditor::_rmb_select(const Vector2 &p_pos) {
 void SceneTreeEditor::update_warning() {
 	_warning_changed(nullptr);
 }
+
 void SceneTreeEditor::_warning_changed(Node *p_for_node) {
 	//should use a timer
 	update_timer->start();
+}
+
+void SceneTreeEditor::set_auto_expand_selected(bool p_auto, bool p_update_settings) {
+	if (p_update_settings) {
+		EditorSettings::get_singleton()->set("docks/scene_tree/auto_expand_to_selected", p_auto);
+	}
+	auto_expand_selected = p_auto;
 }
 
 void SceneTreeEditor::set_connect_to_script_mode(bool p_enable) {

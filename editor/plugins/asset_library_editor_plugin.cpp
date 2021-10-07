@@ -830,9 +830,9 @@ void EditorAssetLibrary::_update_image_queue() {
 	int current_images = 0;
 
 	List<int> to_delete;
-	for (Map<int, ImageQueue>::Element *E = image_queue.front(); E; E = E->next()) {
-		if (!E->get().active && current_images < max_images) {
-			String cache_filename_base = EditorPaths::get_singleton()->get_cache_dir().plus_file("assetimage_" + E->get().image_url.md5_text());
+	for (KeyValue<int, ImageQueue> &E : image_queue) {
+		if (!E.value.active && current_images < max_images) {
+			String cache_filename_base = EditorPaths::get_singleton()->get_cache_dir().plus_file("assetimage_" + E.value.image_url.md5_text());
 			Vector<String> headers;
 
 			if (FileAccess::exists(cache_filename_base + ".etag") && FileAccess::exists(cache_filename_base + ".data")) {
@@ -844,14 +844,14 @@ void EditorAssetLibrary::_update_image_queue() {
 				}
 			}
 
-			Error err = E->get().request->request(E->get().image_url, headers);
+			Error err = E.value.request->request(E.value.image_url, headers);
 			if (err != OK) {
-				to_delete.push_back(E->key());
+				to_delete.push_back(E.key);
 			} else {
-				E->get().active = true;
+				E.value.active = true;
 			}
 			current_images++;
-		} else if (E->get().active) {
+		} else if (E.value.active) {
 			current_images++;
 		}
 	}

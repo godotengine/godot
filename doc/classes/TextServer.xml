@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="TextServer" inherits="Object" version="4.0">
+<class name="TextServer" inherits="RefCounted" version="4.0">
 	<brief_description>
 		Interface for the fonts and complex text layouts.
 	</brief_description>
@@ -21,8 +21,8 @@
 			<argument index="1" name="orientation" type="int" enum="TextServer.Orientation" default="0" />
 			<description>
 				Creates new buffer for complex text layout, with the given [code]direction[/code] and [code]orientation[/code]. To free the resulting buffer, use [method free_rid] method.
-				Note: Direction is ignored if server does not support [code]FEATURE_BIDI_LAYOUT[/code] feature.
-				Note: Orientation is ignored if server does not support [code]FEATURE_VERTICAL_LAYOUT[/code] feature.
+				[b]Note:[/b] Direction is ignored if server does not support [code]FEATURE_BIDI_LAYOUT[/code] feature.
+				[b]Note:[/b] Orientation is ignored if server does not support [code]FEATURE_VERTICAL_LAYOUT[/code] feature.
 			</description>
 		</method>
 		<method name="draw_hex_code_box" qualifiers="const">
@@ -41,7 +41,8 @@
 			<argument index="0" name="font_rid" type="RID" />
 			<argument index="1" name="size" type="Vector2i" />
 			<description>
-				Removes all rendered glyphs information from the cache entry. Note: This function will not remove textures associated with the glyphs, use [method font_remove_texture] to remove them manually.
+				Removes all rendered glyphs information from the cache entry.
+				[b]Note:[/b] This function will not remove textures associated with the glyphs, use [method font_remove_texture] to remove them manually.
 			</description>
 		</method>
 		<method name="font_clear_kerning_map">
@@ -64,7 +65,8 @@
 			<argument index="0" name="font_rid" type="RID" />
 			<argument index="1" name="size" type="Vector2i" />
 			<description>
-				Removes all textures from font cache entry. Note: This function will not remove glyphs associated with the texture, use [method font_remove_glyph] to remove them manually.
+				Removes all textures from font cache entry.
+				[b]Note:[/b] This function will not remove glyphs associated with the texture, use [method font_remove_glyph] to remove them manually.
 			</description>
 		</method>
 		<method name="font_draw_glyph" qualifiers="const">
@@ -77,7 +79,7 @@
 			<argument index="5" name="color" type="Color" default="Color(1, 1, 1, 1)" />
 			<description>
 				Draws single glyph into a canvas item at the position, using [code]font_rid[/code] at the size [code]size[/code].
-				Note: Glyph index is specific to the font, use glyphs indices returned by [method shaped_text_get_glyphs] or [method font_get_glyph_index].
+				[b]Note:[/b] Glyph index is specific to the font, use glyphs indices returned by [method shaped_text_get_glyphs] or [method font_get_glyph_index].
 			</description>
 		</method>
 		<method name="font_draw_glyph_outline" qualifiers="const">
@@ -91,7 +93,7 @@
 			<argument index="6" name="color" type="Color" default="Color(1, 1, 1, 1)" />
 			<description>
 				Draws single glyph outline of size [code]outline_size[/code] into a canvas item at the position, using [code]font_rid[/code] at the size [code]size[/code].
-				Note: Glyph index is specific to the font, use glyphs indices returned by [method shaped_text_get_glyphs] or [method font_get_glyph_index].
+				[b]Note:[/b] Glyph index is specific to the font, use glyphs indices returned by [method shaped_text_get_glyphs] or [method font_get_glyph_index].
 			</description>
 		</method>
 		<method name="font_get_ascent" qualifiers="const">
@@ -129,7 +131,8 @@
 			<argument index="1" name="size" type="int" />
 			<argument index="2" name="glyph" type="int" />
 			<description>
-				Returns glyph advance (offset of the next glyph). Note: advance for glyphs outlines is the same as the base glyph advance and is not saved.
+				Returns glyph advance (offset of the next glyph).
+				[b]Note:[/b] Advance for glyphs outlines is the same as the base glyph advance and is not saved.
 			</description>
 		</method>
 		<method name="font_get_glyph_contours" qualifiers="const">
@@ -404,7 +407,8 @@
 			<argument index="1" name="size" type="Vector2i" />
 			<argument index="2" name="glyph" type="int" />
 			<description>
-				Removes specified rendered glyph information from the cache entry. Note: This function will not remove textures associated with the glyphs, use [method font_remove_texture] to remove them manually.
+				Removes specified rendered glyph information from the cache entry.
+				[b]Note:[/b] This function will not remove textures associated with the glyphs, use [method font_remove_texture] to remove them manually.
 			</description>
 		</method>
 		<method name="font_remove_kerning">
@@ -446,7 +450,8 @@
 			<argument index="1" name="size" type="Vector2i" />
 			<argument index="2" name="texture_index" type="int" />
 			<description>
-				Removes specified texture from font cache entry. Note: This function will not remove glyphs associated with the texture, remove them manually, using [method font_remove_glyph].
+				Removes specified texture from font cache entry.
+				[b]Note:[/b] This function will not remove glyphs associated with the texture, remove them manually, using [method font_remove_glyph].
 			</description>
 		</method>
 		<method name="font_render_glyph">
@@ -487,8 +492,8 @@
 		</method>
 		<method name="font_set_data">
 			<return type="void" />
-			<argument index="0" name="data" type="RID" />
-			<argument index="1" name="arg1" type="PackedByteArray" />
+			<argument index="0" name="font_rid" type="RID" />
+			<argument index="1" name="data" type="PackedByteArray" />
 			<description>
 				Sets font source data, e.g contents of the dynamic font source file.
 			</description>
@@ -523,7 +528,7 @@
 			<argument index="0" name="oversampling" type="float" />
 			<description>
 				Sets oversampling factor, shared by all font in the TextServer.
-				Note: This value can be automaticaly changed by display server.
+				[b]Note:[/b] This value can be automaticaly changed by display server.
 			</description>
 		</method>
 		<method name="font_set_glyph_advance">
@@ -533,7 +538,8 @@
 			<argument index="2" name="glyph" type="int" />
 			<argument index="3" name="advance" type="Vector2" />
 			<description>
-				Sets glyph advance (offset of the next glyph). Note: advance for glyphs outlines is the same as the base glyph advance and is not saved.
+				Sets glyph advance (offset of the next glyph).
+				[b]Note:[/b] Advance for glyphs outlines is the same as the base glyph advance and is not saved.
 			</description>
 		</method>
 		<method name="font_set_glyph_offset">
@@ -714,12 +720,14 @@
 			<return type="Dictionary" />
 			<argument index="0" name="font_rid" type="RID" />
 			<description>
+				Returns the dictionary of the supported OpenType features.
 			</description>
 		</method>
 		<method name="font_supported_variation_list" qualifiers="const">
 			<return type="Dictionary" />
 			<argument index="0" name="font_rid" type="RID" />
 			<description>
+				Returns the dictionary of the supported OpenType variation coordinates.
 			</description>
 		</method>
 		<method name="format_number" qualifiers="const">
@@ -737,6 +745,12 @@
 				Frees an object created by this [TextServer].
 			</description>
 		</method>
+		<method name="get_features" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns text server features, see [enum Feature].
+			</description>
+		</method>
 		<method name="get_hex_code_box_size" qualifiers="const">
 			<return type="Vector2" />
 			<argument index="0" name="size" type="int" />
@@ -751,6 +765,18 @@
 				Returns the name of the server interface.
 			</description>
 		</method>
+		<method name="get_support_data_filename" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns default TextServer database (e.g. ICU break iterators and dictionaries) filename.
+			</description>
+		</method>
+		<method name="get_support_data_info" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns TextServer database (e.g. ICU break iterators and dictionaries) description.
+			</description>
+		</method>
 		<method name="has">
 			<return type="bool" />
 			<argument index="0" name="rid" type="RID" />
@@ -758,14 +784,14 @@
 				Returns [code]true[/code] if [code]rid[/code] is valid resource owned by this text server.
 			</description>
 		</method>
-		<method name="has_feature">
+		<method name="has_feature" qualifiers="const">
 			<return type="bool" />
 			<argument index="0" name="feature" type="int" enum="TextServer.Feature" />
 			<description>
 				Returns [code]true[/code] if the server supports a feature.
 			</description>
 		</method>
-		<method name="is_locale_right_to_left">
+		<method name="is_locale_right_to_left" qualifiers="const">
 			<return type="bool" />
 			<argument index="0" name="locale" type="String" />
 			<description>
@@ -777,7 +803,7 @@
 			<argument index="0" name="filename" type="String" />
 			<description>
 				Loads optional TextServer database (e.g. ICU break iterators and dictionaries).
-				Note: This function should be called before any other TextServer functions used, otherwise it won't have any effect.
+				[b]Note:[/b] This function should be called before any other TextServer functions used, otherwise it won't have any effect.
 			</description>
 		</method>
 		<method name="name_to_tag" qualifiers="const">
@@ -800,6 +826,14 @@
 			<argument index="0" name="language" type="String" default="&quot;&quot;" />
 			<description>
 				Returns percent sign used in the [code]language[/code].
+			</description>
+		</method>
+		<method name="save_support_data" qualifiers="const">
+			<return type="bool" />
+			<argument index="0" name="filename" type="String" />
+			<description>
+				Saves optional TextServer database (e.g. ICU break iterators and dictionaries) to the file.
+				[b]Note:[/b] This function is used by during project export, to include TextServer database.
 			</description>
 		</method>
 		<method name="shaped_text_add_object">
@@ -872,7 +906,7 @@
 			<argument index="0" name="shaped" type="RID" />
 			<description>
 				Returns the text ascent (number of pixels above the baseline for horizontal layout or to the left of baseline for vertical).
-				Note: overall ascent can be higher than font ascent, if some glyphs are displaced from the baseline.
+				[b]Note:[/b] Overall ascent can be higher than font ascent, if some glyphs are displaced from the baseline.
 			</description>
 		</method>
 		<method name="shaped_text_get_carets" qualifiers="const">
@@ -888,7 +922,7 @@
 			<argument index="0" name="shaped" type="RID" />
 			<description>
 				Returns the text descent (number of pixels below the baseline for horizontal layout or to the right of baseline for vertical).
-				Note: overall descent can be higher than font descent, if some glyphs are displaced from the baseline.
+				[b]Note:[/b] Overall descent can be higher than font descent, if some glyphs are displaced from the baseline.
 			</description>
 		</method>
 		<method name="shaped_text_get_direction" qualifiers="const">
@@ -898,7 +932,7 @@
 				Returns direction of the text.
 			</description>
 		</method>
-		<method name="shaped_text_get_dominant_direciton_in_range" qualifiers="const">
+		<method name="shaped_text_get_dominant_direction_in_range" qualifiers="const">
 			<return type="int" enum="TextServer.Direction" />
 			<argument index="0" name="shaped" type="RID" />
 			<argument index="1" name="start" type="int" />
@@ -907,30 +941,58 @@
 				Returns dominant direction of in the range of text.
 			</description>
 		</method>
+		<method name="shaped_text_get_ellipsis_glyph_count" qualifiers="const">
+			<return type="int" />
+			<argument index="0" name="shaped" type="RID" />
+			<description>
+				Returns number of glyphs in the ellipsis.
+			</description>
+		</method>
+		<method name="shaped_text_get_ellipsis_glyphs" qualifiers="const">
+			<return type="Array" />
+			<argument index="0" name="shaped" type="RID" />
+			<description>
+				Returns array of the glyphs in the ellipsis.
+			</description>
+		</method>
+		<method name="shaped_text_get_ellipsis_pos" qualifiers="const">
+			<return type="int" />
+			<argument index="0" name="shaped" type="RID" />
+			<description>
+				Returns position of the ellipsis.
+			</description>
+		</method>
+		<method name="shaped_text_get_glyph_count" qualifiers="const">
+			<return type="int" />
+			<argument index="0" name="shaped" type="RID" />
+			<description>
+				Returns number of glyphs in the buffer.
+			</description>
+		</method>
 		<method name="shaped_text_get_glyphs" qualifiers="const">
 			<return type="Array" />
 			<argument index="0" name="shaped" type="RID" />
 			<description>
-				Returns text glyphs.
+				Returns text glyphs in the visual order.
 			</description>
 		</method>
 		<method name="shaped_text_get_line_breaks" qualifiers="const">
-			<return type="Array" />
+			<return type="PackedInt32Array" />
 			<argument index="0" name="shaped" type="RID" />
 			<argument index="1" name="width" type="float" />
 			<argument index="2" name="start" type="int" default="0" />
-			<argument index="3" name="break_flags" type="int" default="48" />
+			<argument index="3" name="break_flags" type="int" default="96" />
 			<description>
 				Breaks text to the lines and returns character ranges for each line.
 			</description>
 		</method>
 		<method name="shaped_text_get_line_breaks_adv" qualifiers="const">
-			<return type="Array" />
+			<return type="PackedInt32Array" />
 			<argument index="0" name="shaped" type="RID" />
 			<argument index="1" name="width" type="PackedFloat32Array" />
 			<argument index="2" name="start" type="int" default="0" />
 			<argument index="3" name="once" type="bool" default="true" />
-			<argument index="4" name="break_flags" type="int" default="48" />
+			<argument index="4" name="break_flags" type="int" default="96" />
 			<description>
 				Breaks text to the lines and columns. Returns character ranges for each segment.
 			</description>
@@ -976,7 +1038,7 @@
 			<argument index="0" name="shaped" type="RID" />
 			<description>
 				Returns [code]true[/code] if text buffer is configured to display hexadecimal codes in place of invalid characters.
-				Note: If set to [code]false[/code], nothing is displayed in place of invalid characters.
+				[b]Note:[/b] If set to [code]false[/code], nothing is displayed in place of invalid characters.
 			</description>
 		</method>
 		<method name="shaped_text_get_range" qualifiers="const">
@@ -987,7 +1049,7 @@
 			</description>
 		</method>
 		<method name="shaped_text_get_selection" qualifiers="const">
-			<return type="Array" />
+			<return type="PackedVector2Array" />
 			<argument index="0" name="shaped" type="RID" />
 			<argument index="1" name="start" type="int" />
 			<argument index="2" name="end" type="int" />
@@ -1000,6 +1062,13 @@
 			<argument index="0" name="shaped" type="RID" />
 			<description>
 				Returns size of the text.
+			</description>
+		</method>
+		<method name="shaped_text_get_trim_pos" qualifiers="const">
+			<return type="int" />
+			<argument index="0" name="shaped" type="RID" />
+			<description>
+				Returns position of the trim.
 			</description>
 		</method>
 		<method name="shaped_text_get_underline_position" qualifiers="const">
@@ -1024,8 +1093,9 @@
 			</description>
 		</method>
 		<method name="shaped_text_get_word_breaks" qualifiers="const">
-			<return type="Array" />
+			<return type="PackedInt32Array" />
 			<argument index="0" name="shaped" type="RID" />
+			<argument index="1" name="grapheme_flags" type="int" />
 			<description>
 				Breaks text into words and returns array of character ranges.
 			</description>
@@ -1053,7 +1123,7 @@
 				Returns [code]true[/code] if buffer is successfully shaped.
 			</description>
 		</method>
-		<method name="shaped_text_next_grapheme_pos">
+		<method name="shaped_text_next_grapheme_pos" qualifiers="const">
 			<return type="int" />
 			<argument index="0" name="shaped" type="RID" />
 			<argument index="1" name="pos" type="int" />
@@ -1070,7 +1140,7 @@
 				Trims text if it exceeds the given width.
 			</description>
 		</method>
-		<method name="shaped_text_prev_grapheme_pos">
+		<method name="shaped_text_prev_grapheme_pos" qualifiers="const">
 			<return type="int" />
 			<argument index="0" name="shaped" type="RID" />
 			<argument index="1" name="pos" type="int" />
@@ -1103,7 +1173,7 @@
 			<argument index="1" name="direction" type="int" enum="TextServer.Direction" default="0" />
 			<description>
 				Sets desired text direction. If set to [code]TEXT_DIRECTION_AUTO[/code], direction will be detected based on the buffer contents and current locale.
-				Note: Direction is ignored if server does not support [code]FEATURE_BIDI_LAYOUT[/code] feature.
+				[b]Note:[/b] Direction is ignored if server does not support [code]FEATURE_BIDI_LAYOUT[/code] feature.
 			</description>
 		</method>
 		<method name="shaped_text_set_orientation">
@@ -1112,7 +1182,7 @@
 			<argument index="1" name="orientation" type="int" enum="TextServer.Orientation" default="0" />
 			<description>
 				Sets desired text orientation.
-				Note: Orientation is ignored if server does not support [code]FEATURE_VERTICAL_LAYOUT[/code] feature.
+				[b]Note:[/b] Orientation is ignored if server does not support [code]FEATURE_VERTICAL_LAYOUT[/code] feature.
 			</description>
 		</method>
 		<method name="shaped_text_set_preserve_control">
@@ -1136,7 +1206,14 @@
 			<argument index="0" name="shaped" type="RID" />
 			<description>
 				Shapes buffer if it's not shaped. Returns [code]true[/code] if the string is shaped successfully.
-				Note: It is not necessary to call this function manually, buffer will be shaped automatically as soon as any of its output data is requested.
+				[b]Note:[/b] It is not necessary to call this function manually, buffer will be shaped automatically as soon as any of its output data is requested.
+			</description>
+		</method>
+		<method name="shaped_text_sort_logical">
+			<return type="Array" />
+			<argument index="0" name="shaped" type="RID" />
+			<description>
+				Returns text glyphs in the logical order.
 			</description>
 		</method>
 		<method name="shaped_text_substr" qualifiers="const">
@@ -1196,17 +1273,23 @@
 		<constant name="JUSTIFICATION_AFTER_LAST_TAB" value="8" enum="JustificationFlag">
 			Only apply justification to the part of the text after the last tab.
 		</constant>
+		<constant name="JUSTIFICATION_CONSTRAIN_ELLIPSIS" value="16" enum="JustificationFlag">
+			Apply justification to the trimmed line with ellipsis.
+		</constant>
 		<constant name="BREAK_NONE" value="0" enum="LineBreakFlag">
 			Do not break the line.
 		</constant>
-		<constant name="BREAK_MANDATORY" value="16" enum="LineBreakFlag">
+		<constant name="BREAK_MANDATORY" value="32" enum="LineBreakFlag">
 			Break the line at the line mandatory break characters (e.g. [code]"\n"[/code]).
 		</constant>
-		<constant name="BREAK_WORD_BOUND" value="32" enum="LineBreakFlag">
+		<constant name="BREAK_WORD_BOUND" value="64" enum="LineBreakFlag">
 			Break the line between the words.
 		</constant>
-		<constant name="BREAK_GRAPHEME_BOUND" value="64" enum="LineBreakFlag">
+		<constant name="BREAK_GRAPHEME_BOUND" value="128" enum="LineBreakFlag">
 			Break the line between any unconnected graphemes.
+		</constant>
+		<constant name="BREAK_WORD_BOUND_ADAPTIVE" value="320" enum="LineBreakFlag">
+			Break the line between the words, or any unconnected graphemes if line is too short to fit the whole word.
 		</constant>
 		<constant name="OVERRUN_NO_TRIMMING" value="0" enum="TextOverrunFlag">
 			No trimming is performed.
@@ -1222,6 +1305,11 @@
 		</constant>
 		<constant name="OVERRUN_ENFORCE_ELLIPSIS" value="8" enum="TextOverrunFlag">
 			Determines whether the ellipsis at the end of the text is enforced and may not be hidden.
+		</constant>
+		<constant name="OVERRUN_JUSTIFICATION_AWARE" value="16" enum="TextOverrunFlag">
+		</constant>
+		<constant name="GRAPHEME_IS_VALID" value="1" enum="GraphemeFlag">
+			Grapheme is supprted by the font, and can be drawn.
 		</constant>
 		<constant name="GRAPHEME_IS_RTL" value="2" enum="GraphemeFlag">
 			Grapheme is part of right-to-left or bottom-to-top run.

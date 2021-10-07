@@ -31,6 +31,7 @@
 #include "fbx_mesh_data.h"
 
 #include "core/templates/local_vector.h"
+#include "scene/resources/importer_mesh.h"
 #include "scene/resources/mesh.h"
 #include "scene/resources/surface_tool.h"
 
@@ -101,7 +102,7 @@ HashMap<int, Vector2> collect_uv(const Vector<VertexData<Vector2>> *p_data, Hash
 	return collection;
 }
 
-EditorSceneImporterMeshNode3D *FBXMeshData::create_fbx_mesh(const ImportState &state, const FBXDocParser::MeshGeometry *p_mesh_geometry, const FBXDocParser::Model *model, bool use_compression) {
+ImporterMeshInstance3D *FBXMeshData::create_fbx_mesh(const ImportState &state, const FBXDocParser::MeshGeometry *p_mesh_geometry, const FBXDocParser::Model *model, bool use_compression) {
 	mesh_geometry = p_mesh_geometry;
 	// todo: make this just use a uint64_t FBX ID this is a copy of our original materials unfortunately.
 	const std::vector<const FBXDocParser::Material *> &material_lookup = model->GetMaterials();
@@ -344,7 +345,7 @@ EditorSceneImporterMeshNode3D *FBXMeshData::create_fbx_mesh(const ImportState &s
 	}
 
 	// Phase 6. Compose the mesh and return it.
-	Ref<EditorSceneImporterMesh> mesh;
+	Ref<ImporterMesh> mesh;
 	mesh.instantiate();
 
 	// Add blend shape info.
@@ -380,7 +381,7 @@ EditorSceneImporterMeshNode3D *FBXMeshData::create_fbx_mesh(const ImportState &s
 		in_mesh_surface_id += 1;
 	}
 
-	EditorSceneImporterMeshNode3D *godot_mesh = memnew(EditorSceneImporterMeshNode3D);
+	ImporterMeshInstance3D *godot_mesh = memnew(ImporterMeshInstance3D);
 	godot_mesh->set_mesh(mesh);
 	const String name = ImportUtils::FBXNodeToName(model->Name());
 	godot_mesh->set_name(name); // hurry up compiling >.<

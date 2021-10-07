@@ -44,7 +44,7 @@ public:
 		INVALID_ID = -1
 	};
 
-	static const char *CACHE_FILE;
+	static String get_cache_file();
 
 private:
 	mutable Ref<Crypto> crypto;
