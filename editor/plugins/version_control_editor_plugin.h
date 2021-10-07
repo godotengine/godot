@@ -129,6 +129,7 @@ private:
 	void _add_new_item(Tree *p_tree, String p_file_path, EditorVCSInterface::ChangeType p_change);
 	void _update_commit_button();
 	void _commit_message_gui_input(const Ref<InputEvent> &p_event);
+	bool _is_staging_area_empty();
 
 	friend class EditorVCSInterface;
 

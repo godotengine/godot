@@ -203,8 +203,6 @@ void VersionControlEditorPlugin::_refresh_commit_list() {
 void VersionControlEditorPlugin::_commit() {
 	CHECK_PLUGIN_INITIALIZED();
 
-	ERR_FAIL_COND_MSG(_get_item_count(staged_files) == 0, TTR("No files added to stage."));
-
 	String msg = commit_message->get_text().strip_edges();
 
 	ERR_FAIL_COND_MSG(msg.empty(), TTR("No commit message was provided."));
@@ -428,6 +426,7 @@ void VersionControlEditorPlugin::_cell_button_pressed(Object *p_item, int p_colu
 			EditorNode::get_singleton()->open_request(file_path);
 		} else if (file_path.ends_with(".gd")) {
 			EditorNode::get_singleton()->load_resource(file_path);
+			ScriptEditor::get_singleton()->reload_scripts();
 		} else {
 			EditorNode::get_singleton()->get_filesystem_dock()->navigate_to_path(file_path);
 		}
@@ -666,6 +665,10 @@ void VersionControlEditorPlugin::_update_commit_button() {
 	commit_button->set_disabled(commit_message->get_text().strip_edges().empty());
 }
 
+bool VersionControlEditorPlugin::_is_staging_area_empty() {
+	return staged_files->get_last_item() == staged_files->get_root();
+}
+
 void VersionControlEditorPlugin::_commit_message_gui_input(const Ref<InputEvent> &p_event) {
 	if (!commit_message->has_focus()) {
 		return;
@@ -678,7 +681,7 @@ void VersionControlEditorPlugin::_commit_message_gui_input(const Ref<InputEvent>
 
 	if (k.is_valid() && k->is_pressed()) {
 		if (ED_IS_SHORTCUT("version_control/commit", p_event)) {
-			if (staged_files->get_last_item() == staged_files->get_root()) {
+			if (_is_staging_area_empty()) {
 				// Stage all files only when no files were previously staged.
 				_move_all(unstaged_files);
 			}
