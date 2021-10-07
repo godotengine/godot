@@ -34,9 +34,9 @@
 
 void ProximityGroup::_clear_groups() {
 	Map<StringName, uint32_t>::Element *E;
+	const int size = 16;
 
-	{
-		const int size = 16;
+	do {
 		StringName remove_list[size];
 		E = groups.front();
 		int num = 0;
@@ -50,11 +50,7 @@ void ProximityGroup::_clear_groups() {
 		for (int i = 0; i < num; i++) {
 			groups.erase(remove_list[i]);
 		}
-	}
-
-	if (E) {
-		_clear_groups(); // call until we go through the whole list
-	}
+	} while (E);
 }
 
 void ProximityGroup::_update_groups() {
