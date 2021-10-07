@@ -1036,11 +1036,7 @@ void RendererSceneSkyRD::setup(RendererSceneEnvironmentRD *p_env, RID p_render_b
 
 	SkyShaderData *shader_data = nullptr;
 
-	RS::EnvironmentBG background = p_env->background;
-
-	if (!(background == RS::ENV_BG_CLEAR_COLOR || background == RS::ENV_BG_COLOR) || sky) {
-		// !BAS! Possibly silently fail here, we now get error spam when you select sky as the background but haven't setup the sky yet.
-		ERR_FAIL_COND(!sky);
+	if (sky) {
 		sky_material = sky_get_material(p_env->sky);
 
 		if (sky_material.is_valid()) {
@@ -1060,9 +1056,7 @@ void RendererSceneSkyRD::setup(RendererSceneEnvironmentRD *p_env, RID p_render_b
 		shader_data = material->shader_data;
 
 		ERR_FAIL_COND(!shader_data);
-	}
 
-	if (sky) {
 		// Invalidate supbass buffers if screen size changes
 		if (sky->screen_size != p_screen_size) {
 			sky->screen_size = p_screen_size;
@@ -1371,7 +1365,6 @@ void RendererSceneSkyRD::draw(RendererSceneEnvironmentRD *p_env, bool p_can_cont
 	ERR_FAIL_COND(p_view_count > RendererSceneRender::MAX_RENDER_VIEWS);
 
 	Sky *sky = get_sky(p_env->sky);
-	ERR_FAIL_COND(!sky);
 
 	SkyMaterialData *material = nullptr;
 	RID sky_material;
@@ -1483,27 +1476,17 @@ void RendererSceneSkyRD::update_res_buffers(RendererSceneEnvironmentRD *p_env, u
 	SkyMaterialData *material = nullptr;
 	RID sky_material;
 
-	RS::EnvironmentBG background = p_env->background;
+	sky_material = sky_get_material(p_env->sky);
 
-	if (!(background == RS::ENV_BG_CLEAR_COLOR || background == RS::ENV_BG_COLOR) || sky) {
-		ERR_FAIL_COND(!sky);
-		sky_material = sky_get_material(p_env->sky);
-
-		if (sky_material.is_valid()) {
-			material = (SkyMaterialData *)storage->material_get_data(sky_material, RendererStorageRD::SHADER_TYPE_SKY);
-			if (!material || !material->shader_data->valid) {
-				material = nullptr;
-			}
-		}
-
-		if (!material) {
-			sky_material = sky_shader.default_material;
-			material = (SkyMaterialData *)storage->material_get_data(sky_material, RendererStorageRD::SHADER_TYPE_SKY);
+	if (sky_material.is_valid()) {
+		material = (SkyMaterialData *)storage->material_get_data(sky_material, RendererStorageRD::SHADER_TYPE_SKY);
+		if (!material || !material->shader_data->valid) {
+			material = nullptr;
 		}
 	}
 
-	if (background == RS::ENV_BG_CLEAR_COLOR || background == RS::ENV_BG_COLOR) {
-		sky_material = sky_scene_state.fog_material;
+	if (!material) {
+		sky_material = sky_shader.default_material;
 		material = (SkyMaterialData *)storage->material_get_data(sky_material, RendererStorageRD::SHADER_TYPE_SKY);
 	}
 
@@ -1572,7 +1555,6 @@ void RendererSceneSkyRD::draw(RD::DrawListID p_draw_list, RendererSceneEnvironme
 	ERR_FAIL_COND(p_view_count > RendererSceneRender::MAX_RENDER_VIEWS);
 
 	Sky *sky = get_sky(p_env->sky);
-	ERR_FAIL_COND(!sky);
 
 	SkyMaterialData *material = nullptr;
 	RID sky_material;
