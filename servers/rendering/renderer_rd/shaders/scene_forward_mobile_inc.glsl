@@ -170,8 +170,6 @@ layout(set = 1, binding = 0, std140) uniform SceneData {
 	mediump float roughness_limiter_limit;
 	uvec2 roughness_limiter_pad;
 
-	mediump vec4 ao_color;
-
 	bool fog_enabled;
 	highp float fog_density;
 	highp float fog_height;

@@ -209,8 +209,6 @@ layout(set = 1, binding = 0, std140) uniform SceneData {
 	float roughness_limiter_limit;
 	uvec2 roughness_limiter_pad;
 
-	vec4 ao_color;
-
 	mat4 sdf_to_bounds;
 
 	ivec3 sdf_offset;

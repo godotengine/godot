@@ -97,12 +97,10 @@ layout(push_constant, binding = 0, std430) uniform Params {
 
 	vec4 proj_info;
 
-	vec3 ao_color;
 	uint max_voxel_gi_instances;
-
 	bool high_quality_vct;
 	bool orthogonal;
-	uint pad[2];
+	uint pad;
 
 	mat3x4 cam_rotation;
 }
