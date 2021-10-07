@@ -2715,8 +2715,7 @@ void RendererStorageRD::MaterialData::update_textures(const Map<StringName, Vari
 					p_textures[k++] = rd_texture;
 				}
 			} else {
-				p_textures[k] = rd_texture;
-				++k;
+				p_textures[k++] = rd_texture;
 			}
 		} else {
 			bool srgb = p_use_linear_color && (p_texture_uniforms[i].hint == ShaderLanguage::ShaderNode::Uniform::HINT_ALBEDO || p_texture_uniforms[i].hint == ShaderLanguage::ShaderNode::Uniform::HINT_BLACK_ALBEDO);
