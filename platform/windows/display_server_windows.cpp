@@ -994,7 +994,7 @@ void DisplayServerWindows::window_set_mode(WindowMode p_mode, WindowID p_window)
 		wd.maximized = false;
 		wd.minimized = false;
 
-		_update_window_style(false);
+		_update_window_style(p_window, false);
 
 		MoveWindow(wd.hWnd, pos.x, pos.y, size.width, size.height, TRUE);
 
@@ -3073,6 +3073,8 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 		}
 		if (p_mode != WINDOW_MODE_FULLSCREEN) {
 			wd.pre_fs_valid = true;
+		} else {
+			wd.fullscreen = true;
 		}
 
 #ifdef VULKAN_ENABLED

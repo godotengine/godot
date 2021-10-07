@@ -547,8 +547,12 @@ void Window::_update_window_size() {
 }
 
 void Window::_update_viewport_size() {
-	//update the viewport part
+	if (window_id != DisplayServer::INVALID_WINDOW_ID) {
+		// always refresh, current size might be outdated or invalid
+		size = DisplayServer::get_singleton()->window_get_size(window_id);
+	}
 
+	//update the viewport part
 	Size2i final_size;
 	Size2i final_size_override;
 	Rect2i attach_to_screen_rect(Point2i(), size);
