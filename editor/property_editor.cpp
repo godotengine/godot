@@ -445,8 +445,8 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 				type_button->get_popup()->add_item(TTR("Ease Out"), EASING_EASE_OUT);
 				if (hint_text != "attenuation") {
 					type_button->get_popup()->add_item(TTR("Zero"), EASING_ZERO);
-					type_button->get_popup()->add_item(TTR("Easing In-Out"), EASING_IN_OUT);
-					type_button->get_popup()->add_item(TTR("Easing Out-In"), EASING_OUT_IN);
+					type_button->get_popup()->add_item(TTR("Ease In-Out"), EASING_IN_OUT);
+					type_button->get_popup()->add_item(TTR("Ease Out-In"), EASING_OUT_IN);
 				}
 
 				type_button->show();
