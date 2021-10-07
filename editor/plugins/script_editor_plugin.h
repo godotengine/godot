@@ -382,6 +382,7 @@ class ScriptEditor : public PanelContainer {
 	void _script_created(Ref<Script> p_script);
 	void _set_breakpoint(REF p_scrpt, int p_line, bool p_enabled);
 	void _clear_breakpoints();
+	Array _get_cached_breakpoints_for_script(const String &p_path) const;
 
 	ScriptEditorBase *_get_current_editor() const;
 	Array _get_open_script_editors() const;
