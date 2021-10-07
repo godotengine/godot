@@ -382,13 +382,17 @@ class ScriptEditor : public PanelContainer {
 	void _script_created(Ref<Script> p_script);
 	void _set_breakpoint(REF p_scrpt, int p_line, bool p_enabled);
 	void _clear_breakpoints();
+	Array _get_cached_breakpoints_for_script(const String &p_path) const;
 
 	ScriptEditorBase *_get_current_editor() const;
 	Array _get_open_script_editors() const;
 
+	Ref<ConfigFile> script_editor_cache;
+	void _save_editor_state(ScriptEditorBase *p_editor);
 	void _save_layout();
 	void _editor_settings_changed();
 	void _filesystem_changed();
+	void _files_moved(const String &p_old_file, const String &p_new_file);
 	void _file_removed(const String &p_file);
 	void _autosave_scripts();
 	void _update_autosave_timer();

@@ -1707,7 +1707,6 @@ void ScriptTextEditor::_enable_code_editor() {
 	code_editor->connect("show_warnings_panel", callable_mp(this, &ScriptTextEditor::_show_warnings_panel));
 	code_editor->connect("validate_script", callable_mp(this, &ScriptTextEditor::_validate_script));
 	code_editor->connect("load_theme_settings", callable_mp(this, &ScriptTextEditor::_load_theme_settings));
-	code_editor->get_text_editor()->connect("breakpoint_toggled", callable_mp(this, &ScriptTextEditor::_breakpoint_toggled));
 	code_editor->get_text_editor()->connect("symbol_lookup", callable_mp(this, &ScriptTextEditor::_lookup_symbol));
 	code_editor->get_text_editor()->connect("symbol_validate", callable_mp(this, &ScriptTextEditor::_validate_symbol));
 	code_editor->get_text_editor()->connect("gutter_added", callable_mp(this, &ScriptTextEditor::_update_gutter_indexes));
@@ -1847,6 +1846,7 @@ ScriptTextEditor::ScriptTextEditor() {
 
 	code_editor->get_text_editor()->set_draw_breakpoints_gutter(true);
 	code_editor->get_text_editor()->set_draw_executing_lines_gutter(true);
+	code_editor->get_text_editor()->connect("breakpoint_toggled", callable_mp(this, &ScriptTextEditor::_breakpoint_toggled));
 
 	connection_gutter = 1;
 	code_editor->get_text_editor()->add_gutter(connection_gutter);
