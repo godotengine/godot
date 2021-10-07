@@ -434,6 +434,7 @@ void Skeleton3DEditor::insert_keys(bool p_all_bones) {
 	String path = root->get_path_to(skeleton);
 
 	AnimationTrackEditor *te = AnimationPlayerEditor::get_singleton()->get_track_editor();
+	te->make_insert_queue();
 	for (int i = 0; i < bone_len; i++) {
 		const String name = skeleton->get_bone_name(i);
 
@@ -448,6 +449,7 @@ void Skeleton3DEditor::insert_keys(bool p_all_bones) {
 		Transform3D tform = skeleton->get_bone_pose(i);
 		te->insert_transform_key(skeleton, name, tform);
 	}
+	te->commit_insert_queue();
 }
 
 void Skeleton3DEditor::pose_to_rest() {
