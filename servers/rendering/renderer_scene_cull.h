@@ -1158,4 +1158,4 @@ public:
 	virtual ~RendererSceneCull();
 };
 
-#endif // VISUALSERVERSCENE_H
+#endif // RENDERING_SERVER_SCENE_CULL_H

@@ -71,7 +71,7 @@ void SoftBodyBullet::update_rendering_server(RenderingServerHandler *p_rendering
 		return;
 	}
 
-	/// Update visual server vertices
+	/// Update rendering server vertices
 	const btSoftBody::tNodeArray &nodes(bt_soft_body->m_nodes);
 	const int nodes_count = nodes.size();
 
@@ -298,11 +298,11 @@ bool SoftBodyBullet::set_trimesh_body_shape(Vector<int> p_indices, Vector<Vector
 	ERR_FAIL_COND_V(p_indices.is_empty(), false);
 	ERR_FAIL_COND_V(p_vertices.is_empty(), false);
 
-	/// Parse visual server indices to physical indices.
-	/// Merge all overlapping vertices and create a map of physical vertices to visual server
+	/// Parse rendering server indices to physical indices.
+	/// Merge all overlapping vertices and create a map of physical vertices to rendering server
 
 	{
-		/// This is the map of visual server indices to physics indices (So it's the inverse of idices_map), Thanks to it I don't need make a heavy search in the indices_map
+		/// This is the map of rendering server indices to physics indices (So it's the inverse of idices_map), Thanks to it I don't need make a heavy search in the indices_map
 		Vector<int> vs_indices_to_physics_table;
 
 		{ // Map vertices

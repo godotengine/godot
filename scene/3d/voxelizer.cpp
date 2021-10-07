@@ -661,7 +661,7 @@ void Voxelizer::end_bake() {
 	_fixup_plot(0, 0);
 }
 
-//create the data for visual server
+//create the data for rendering server
 
 int Voxelizer::get_voxel_gi_octree_depth() const {
 	return cell_subdiv;

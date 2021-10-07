@@ -311,7 +311,7 @@ void VideoStreamPlaybackWebm::update(float p_delta) {
 
 						if (converted) {
 							Ref<Image> img = memnew(Image(image.w, image.h, 0, Image::FORMAT_RGBA8, frame_data));
-							texture->update(img); //Zero copy send to visual server
+							texture->update(img); //Zero copy send to rendering server
 							video_frame_done = true;
 						}
 					}
