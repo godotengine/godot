@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef VISUALSERVERVIEWPORT_H
-#define VISUALSERVERVIEWPORT_H
+#ifndef RENDERER_VIEWPORT_H
+#define RENDERER_VIEWPORT_H
 
 #include "core/templates/local_vector.h"
 #include "core/templates/rid_owner.h"
@@ -282,4 +282,4 @@ public:
 	virtual ~RendererViewport() {}
 };
 
-#endif // VISUALSERVERVIEWPORT_H
+#endif // RENDERER_VIEWPORT_H
