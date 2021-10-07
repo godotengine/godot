@@ -55,7 +55,7 @@ void AnimationTreeEditor::edit(AnimationTree *p_tree) {
 	tree = p_tree;
 
 	Vector<String> path;
-	if (tree->has_meta("_tree_edit_path")) {
+	if (tree && tree->has_meta("_tree_edit_path")) {
 		path = tree->get_meta("_tree_edit_path");
 		edit_path(path);
 	} else {
