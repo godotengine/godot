@@ -44,6 +44,19 @@
 				Returns a locale's language and its variant (e.g. [code]"en_US"[/code] would return [code]"English (United States)"[/code]).
 			</description>
 		</method>
+		<method name="pseudolocalize" qualifiers="const">
+			<return type="String" />
+			<argument index="0" name="message" type="String" />
+			<description>
+				Returns the pseudolocalized string based on the [code]p_message[/code] passed in.
+			</description>
+		</method>
+		<method name="reload_pseudolocalization">
+			<return type="void" />
+			<description>
+				Reparses the pseudolocalization options and reloads the translation.
+			</description>
+		</method>
 		<method name="remove_translation">
 			<return type="void" />
 			<argument index="0" name="translation" type="Translation" />
@@ -67,6 +80,11 @@
 			</description>
 		</method>
 	</methods>
+	<members>
+		<member name="pseudolocalization_enabled" type="bool" setter="set_pseudolocalization_enabled" getter="is_pseudolocalization_enabled" default="false">
+			If [code]true[/code], enables the use of pseudolocalization. See [member ProjectSettings.internationalization/pseudolocalization/use_pseudolocalization] for details.
+		</member>
+	</members>
 	<constants>
 	</constants>
 </class>
