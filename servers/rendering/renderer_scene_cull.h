@@ -1078,7 +1078,7 @@ public:
 	PASS2(environment_set_bg_color, RID, const Color &)
 	PASS2(environment_set_bg_energy, RID, float)
 	PASS2(environment_set_canvas_max_layer, RID, int)
-	PASS7(environment_set_ambient_light, RID, const Color &, RS::EnvironmentAmbientSource, float, float, RS::EnvironmentReflectionSource, const Color &)
+	PASS6(environment_set_ambient_light, RID, const Color &, RS::EnvironmentAmbientSource, float, float, RS::EnvironmentReflectionSource)
 
 	PASS6(environment_set_ssr, RID, bool, int, float, float, float)
 	PASS1(environment_set_ssr_roughness_quality, RS::EnvironmentSSRRoughnessQuality)
@@ -1158,4 +1158,4 @@ public:
 	virtual ~RendererSceneCull();
 };
 
-#endif // VISUALSERVERSCENE_H
+#endif // RENDERING_SERVER_SCENE_CULL_H

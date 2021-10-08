@@ -932,7 +932,6 @@
 			<argument index="3" name="energy" type="float" default="1.0" />
 			<argument index="4" name="sky_contibution" type="float" default="0.0" />
 			<argument index="5" name="reflection_source" type="int" enum="RenderingServer.EnvironmentReflectionSource" default="0" />
-			<argument index="6" name="ao_color" type="Color" default="Color(0, 0, 0, 1)" />
 			<description>
 			</description>
 		</method>

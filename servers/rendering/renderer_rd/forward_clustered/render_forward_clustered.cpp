@@ -753,12 +753,6 @@ void RenderForwardClustered::_setup_environment(const RenderDataRD *p_render_dat
 		scene_state.ubo.ssao_ao_affect = environment_get_ssao_ao_affect(p_render_data->environment);
 		scene_state.ubo.ssao_light_affect = environment_get_ssao_light_affect(p_render_data->environment);
 
-		Color ao_color = environment_get_ao_color(p_render_data->environment).to_linear();
-		scene_state.ubo.ao_color[0] = ao_color.r;
-		scene_state.ubo.ao_color[1] = ao_color.g;
-		scene_state.ubo.ao_color[2] = ao_color.b;
-		scene_state.ubo.ao_color[3] = ao_color.a;
-
 		scene_state.ubo.fog_enabled = environment_is_fog_enabled(p_render_data->environment);
 		scene_state.ubo.fog_density = environment_get_fog_density(p_render_data->environment);
 		scene_state.ubo.fog_height = environment_get_fog_height(p_render_data->environment);

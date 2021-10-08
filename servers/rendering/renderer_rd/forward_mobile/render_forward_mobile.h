@@ -294,8 +294,6 @@ protected:
 			float roughness_limiter_limit;
 			uint32_t roughness_limiter_pad[2];
 
-			float ao_color[4];
-
 			// Fog
 			uint32_t fog_enabled;
 			float fog_density;

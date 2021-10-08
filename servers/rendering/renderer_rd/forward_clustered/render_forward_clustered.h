@@ -257,8 +257,6 @@ class RenderForwardClustered : public RendererSceneRenderRD {
 			float roughness_limiter_limit;
 			uint32_t roughness_limiter_pad[2];
 
-			float ao_color[4];
-
 			float sdf_to_bounds[16];
 
 			int32_t sdf_offset[3];

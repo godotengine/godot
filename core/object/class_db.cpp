@@ -37,8 +37,6 @@
 #define OBJTYPE_RLOCK RWLockRead _rw_lockr_(lock);
 #define OBJTYPE_WLOCK RWLockWrite _rw_lockw_(lock);
 
-#ifdef DEBUG_METHODS_ENABLED
-
 MethodDefinition D_METHOD(const char *p_name) {
 	MethodDefinition md;
 	md.name = StaticCString::create(p_name);
@@ -225,8 +223,6 @@ MethodDefinition D_METHOD(const char *p_name, const char *p_arg1, const char *p_
 	md.args.write[12] = StaticCString::create(p_arg13);
 	return md;
 }
-
-#endif
 
 ClassDB::APIType ClassDB::current_api = API_CORE;
 
@@ -589,7 +585,6 @@ void ClassDB::_add_class2(const StringName &p_class, const StringName &p_inherit
 	}
 }
 
-#ifdef DEBUG_METHODS_ENABLED
 static MethodInfo info_from_bind(MethodBind *p_method) {
 	MethodInfo minfo;
 	minfo.name = p_method->get_name();
@@ -610,7 +605,6 @@ static MethodInfo info_from_bind(MethodBind *p_method) {
 
 	return minfo;
 }
-#endif
 
 void ClassDB::get_method_list(const StringName &p_class, List<MethodInfo> *p_methods, bool p_no_inheritance, bool p_exclude_from_properties) {
 	OBJTYPE_RLOCK;
@@ -650,9 +644,8 @@ void ClassDB::get_method_list(const StringName &p_class, List<MethodInfo> *p_met
 
 		while ((K = type->method_map.next(K))) {
 			MethodBind *m = type->method_map[*K];
-			MethodInfo mi;
-			mi.name = m->get_name();
-			p_methods->push_back(mi);
+			MethodInfo minfo = info_from_bind(m);
+			p_methods->push_back(minfo);
 		}
 
 #endif
@@ -698,9 +691,8 @@ bool ClassDB::get_method_info(const StringName &p_class, const StringName &p_met
 		if (type->method_map.has(p_method)) {
 			if (r_info) {
 				MethodBind *m = type->method_map[p_method];
-				MethodInfo mi;
-				mi.name = m->get_name();
-				*r_info = mi;
+				MethodInfo minfo = info_from_bind(m);
+				*r_info = minfo;
 			}
 			return true;
 		}
@@ -1411,13 +1403,8 @@ void ClassDB::bind_method_custom(const StringName &p_class, MethodBind *p_method
 	type->method_map[p_method->get_name()] = p_method;
 }
 
-#ifdef DEBUG_METHODS_ENABLED
 MethodBind *ClassDB::bind_methodfi(uint32_t p_flags, MethodBind *p_bind, const MethodDefinition &method_name, const Variant **p_defs, int p_defcount) {
 	StringName mdname = method_name.name;
-#else
-MethodBind *ClassDB::bind_methodfi(uint32_t p_flags, MethodBind *p_bind, const char *method_name, const Variant **p_defs, int p_defcount) {
-	StringName mdname = StaticCString::create(method_name);
-#endif
 
 	OBJTYPE_WLOCK;
 	ERR_FAIL_COND_V(!p_bind, nullptr);

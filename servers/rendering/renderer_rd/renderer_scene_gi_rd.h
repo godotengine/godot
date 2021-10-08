@@ -623,12 +623,11 @@ public:
 		float z_far;
 
 		float proj_info[4];
-		float ao_color[3];
-		uint32_t max_voxel_gi_instances;
 
+		uint32_t max_voxel_gi_instances;
 		uint32_t high_quality_vct;
 		uint32_t orthogonal;
-		uint32_t pad[2];
+		uint32_t pad;
 
 		float cam_rotation[12];
 	};
