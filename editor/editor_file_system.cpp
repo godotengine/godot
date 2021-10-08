@@ -2174,6 +2174,15 @@ bool EditorFileSystem::_should_skip_directory(const String &p_path) {
 
 	if (FileAccess::exists(p_path.plus_file(".gdignore"))) {
 		// skip if a `.gdignore` file is inside this
+
+		FileAccessRef f = FileAccess::open(p_path.plus_file(".gdignore"), FileAccess::READ);
+		if (f->get_length() >= 5) {
+			// Warn if file is non-empty, as `.gdignore` does not work like `.gitignore` files.
+			// Its contents are ignored by the editor.
+			// The size +threshold is chosen to allow CRLF line endings and BOM.
+			WARN_PRINT(vformat("The ignore file at path \"%s\" is non-empty, but its contents are ignored by the Godot editor. To resolve this, make the `.gdignore` file empty or contain only one blank line.", p_path.plus_file(".gdignore")));
+		}
+		f->close();
 		return true;
 	}
 
