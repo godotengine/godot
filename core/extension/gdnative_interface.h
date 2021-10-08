@@ -182,11 +182,11 @@ typedef void *(*GDNativeInstanceBindingCreateCallback)(void *p_token, void *p_in
 typedef void (*GDNativeInstanceBindingFreeCallback)(void *p_token, void *p_instance, void *p_binding);
 typedef GDNativeBool (*GDNativeInstanceBindingReferenceCallback)(void *p_token, void *p_binding, GDNativeBool p_reference);
 
-struct GDNativeInstanceBindingCallbacks {
+typedef struct {
 	GDNativeInstanceBindingCreateCallback create_callback;
 	GDNativeInstanceBindingFreeCallback free_callback;
 	GDNativeInstanceBindingReferenceCallback reference_callback;
-};
+} GDNativeInstanceBindingCallbacks;
 
 /* EXTENSION CLASSES */
 
