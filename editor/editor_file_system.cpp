@@ -1078,8 +1078,8 @@ void EditorFileSystem::_scan_fs_changes(EditorFileSystemDirectory *p_dir, const 
 	}
 
 	for (int i = 0; i < p_dir->subdirs.size(); i++) {
-		if (updated_dir && !p_dir->subdirs[i]->verified) {
-			//this directory was removed, add action to remove it
+		if ((updated_dir && !p_dir->subdirs[i]->verified) || _should_skip_directory(p_dir->subdirs[i]->get_path())) {
+			//this directory was removed or ignored, add action to remove it
 			ItemAction ia;
 			ia.action = ItemAction::ACTION_DIR_REMOVE;
 			ia.dir = p_dir->subdirs[i];
