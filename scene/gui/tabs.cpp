@@ -223,7 +223,7 @@ void Tabs::gui_input(const Ref<InputEvent> &p_event) {
 			}
 
 			int found = -1;
-			for (int i = offset; i < tabs.size(); i++) {
+			for (int i = offset; i <= max_drawn_tab; i++) {
 				if (tabs[i].rb_rect.has_point(pos)) {
 					rb_pressing = true;
 					update();
@@ -914,7 +914,7 @@ void Tabs::drop_data(const Point2 &p_point, const Variant &p_data) {
 
 int Tabs::get_tab_idx_at_point(const Point2 &p_point) const {
 	int hover_now = -1;
-	for (int i = offset; i < tabs.size(); i++) {
+	for (int i = offset; i <= max_drawn_tab; i++) {
 		Rect2 rect = get_tab_rect(i);
 		if (rect.has_point(p_point)) {
 			hover_now = i;
