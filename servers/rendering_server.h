@@ -752,19 +752,10 @@ public:
 		CANVAS_ITEM_TEXTURE_REPEAT_MAX,
 	};
 
-	enum ViewportScale3D {
-		VIEWPORT_SCALE_3D_DISABLED,
-		VIEWPORT_SCALE_3D_75_PERCENT,
-		VIEWPORT_SCALE_3D_50_PERCENT,
-		VIEWPORT_SCALE_3D_33_PERCENT,
-		VIEWPORT_SCALE_3D_25_PERCENT,
-		VIEWPORT_SCALE_3D_MAX,
-	};
-
 	virtual RID viewport_create() = 0;
 
 	virtual void viewport_set_use_xr(RID p_viewport, bool p_use_xr) = 0;
-	virtual void viewport_set_scale_3d(RID p_viewport, ViewportScale3D p_scale_3d) = 0;
+	virtual void viewport_set_scale_3d(RID p_viewport, float p_scale_3d) = 0;
 	virtual void viewport_set_size(RID p_viewport, int p_width, int p_height) = 0;
 	virtual void viewport_set_active(RID p_viewport, bool p_active) = 0;
 	virtual void viewport_set_parent_viewport(RID p_viewport, RID p_parent_viewport) = 0;
@@ -1553,7 +1544,6 @@ VARIANT_ENUM_CAST(RenderingServer::ViewportDebugDraw);
 VARIANT_ENUM_CAST(RenderingServer::ViewportOcclusionCullingBuildQuality);
 VARIANT_ENUM_CAST(RenderingServer::ViewportSDFOversize);
 VARIANT_ENUM_CAST(RenderingServer::ViewportSDFScale);
-VARIANT_ENUM_CAST(RenderingServer::ViewportScale3D);
 VARIANT_ENUM_CAST(RenderingServer::SkyMode);
 VARIANT_ENUM_CAST(RenderingServer::EnvironmentBG);
 VARIANT_ENUM_CAST(RenderingServer::EnvironmentAmbientSource);

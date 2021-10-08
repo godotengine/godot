@@ -77,33 +77,17 @@ void RendererViewport::_configure_3d_render_buffers(Viewport *p_viewport) {
 			RSG::scene->free(p_viewport->render_buffers);
 			p_viewport->render_buffers = RID();
 		} else {
-			RS::ViewportScale3D scale_3d = p_viewport->scale_3d;
-			if (Engine::get_singleton()->is_editor_hint()) { // ignore this inside of the editor
-				scale_3d = RS::VIEWPORT_SCALE_3D_DISABLED;
+			float scale_3d = p_viewport->scale_3d;
+			if (Engine::get_singleton()->is_editor_hint()) {
+				// Ignore the 3D viewport render scaling inside of the editor.
+				// The Half Resolution 3D editor viewport option should be used instead.
+				scale_3d = 1.0;
 			}
 
-			int width = p_viewport->size.width;
-			int height = p_viewport->size.height;
-			switch (scale_3d) {
-				case RS::VIEWPORT_SCALE_3D_75_PERCENT: {
-					width = (width * 3) / 4;
-					height = (height * 3) / 4;
-				}; break;
-				case RS::VIEWPORT_SCALE_3D_50_PERCENT: {
-					width = width >> 1;
-					height = height >> 1;
-				}; break;
-				case RS::VIEWPORT_SCALE_3D_33_PERCENT: {
-					width = width / 3;
-					height = height / 3;
-				}; break;
-				case RS::VIEWPORT_SCALE_3D_25_PERCENT: {
-					width = width >> 2;
-					height = height >> 2;
-				}; break;
-				default:
-					break;
-			}
+			// Clamp 3D rendering resolution to reasonable values supported on most hardware.
+			// This prevents freezing the engine or outright crashing on lower-end GPUs.
+			const int width = CLAMP(p_viewport->size.width * scale_3d, 1, 16384);
+			const int height = CLAMP(p_viewport->size.height * scale_3d, 1, 16384);
 			RSG::scene->render_buffers_configure(p_viewport->render_buffers, p_viewport->render_target, width, height, p_viewport->msaa, p_viewport->screen_space_aa, p_viewport->use_debanding, p_viewport->get_view_count());
 		}
 	}
@@ -690,15 +674,18 @@ void RendererViewport::viewport_set_use_xr(RID p_viewport, bool p_use_xr) {
 	_configure_3d_render_buffers(viewport);
 }
 
-void RendererViewport::viewport_set_scale_3d(RID p_viewport, RenderingServer::ViewportScale3D p_scale_3d) {
+void RendererViewport::viewport_set_scale_3d(RID p_viewport, float p_scale_3d) {
 	Viewport *viewport = viewport_owner.get_or_null(p_viewport);
 	ERR_FAIL_COND(!viewport);
 
-	if (viewport->scale_3d == p_scale_3d) {
+	// Clamp to reasonable values that are actually useful.
+	// Values above 2.0 don't serve a practical purpose since the viewport
+	// isn't displayed with mipmaps.
+	if (viewport->scale_3d == CLAMP(p_scale_3d, 0.1, 2.0)) {
 		return;
 	}
 
-	viewport->scale_3d = p_scale_3d;
+	viewport->scale_3d = CLAMP(p_scale_3d, 0.1, 2.0);
 	_configure_3d_render_buffers(viewport);
 }
 

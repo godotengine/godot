@@ -3102,7 +3102,7 @@
 		<method name="viewport_set_scale_3d">
 			<return type="void" />
 			<argument index="0" name="viewport" type="RID" />
-			<argument index="1" name="scale" type="int" enum="RenderingServer.ViewportScale3D" />
+			<argument index="1" name="scale" type="float" />
 			<description>
 				Sets the scale at which we render 3D contents.
 			</description>
@@ -3917,16 +3917,6 @@
 		<constant name="VIEWPORT_DEBUG_DRAW_CLUSTER_REFLECTION_PROBES" value="22" enum="ViewportDebugDraw">
 		</constant>
 		<constant name="VIEWPORT_DEBUG_DRAW_OCCLUDERS" value="23" enum="ViewportDebugDraw">
-		</constant>
-		<constant name="VIEWPORT_SCALE_3D_DISABLED" value="0" enum="ViewportScale3D">
-		</constant>
-		<constant name="VIEWPORT_SCALE_3D_75_PERCENT" value="1" enum="ViewportScale3D">
-		</constant>
-		<constant name="VIEWPORT_SCALE_3D_50_PERCENT" value="2" enum="ViewportScale3D">
-		</constant>
-		<constant name="VIEWPORT_SCALE_3D_33_PERCENT" value="3" enum="ViewportScale3D">
-		</constant>
-		<constant name="VIEWPORT_SCALE_3D_25_PERCENT" value="4" enum="ViewportScale3D">
 		</constant>
 		<constant name="SKY_MODE_AUTOMATIC" value="0" enum="SkyMode">
 		</constant>
