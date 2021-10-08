@@ -46,8 +46,8 @@ uint32_t GDScriptRPCCallable::hash() const {
 }
 
 String GDScriptRPCCallable::get_as_text() const {
-	String class_name = node->get_class();
-	Ref<Script> script = node->get_script();
+	String class_name = object->get_class();
+	Ref<Script> script = object->get_script();
 	return class_name + "(" + script->get_path().get_file() + ")::" + String(method) + " (rpc)";
 }
 
@@ -60,21 +60,27 @@ CallableCustom::CompareLessFunc GDScriptRPCCallable::get_compare_less_func() con
 }
 
 ObjectID GDScriptRPCCallable::get_object() const {
-	return node->get_instance_id();
+	return object->get_instance_id();
 }
 
 void GDScriptRPCCallable::call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, Callable::CallError &r_call_error) const {
-	r_return_value = node->call(method, p_arguments, p_argcount, r_call_error);
+	r_return_value = object->call(method, p_arguments, p_argcount, r_call_error);
 }
 
-GDScriptRPCCallable::GDScriptRPCCallable(Object *p_node, const StringName &p_method) {
-	node = Object::cast_to<Node>(p_node);
+GDScriptRPCCallable::GDScriptRPCCallable(Object *p_object, const StringName &p_method) {
+	object = p_object;
 	method = p_method;
 	h = method.hash();
-	h = hash_djb2_one_64(node->get_instance_id(), h);
+	h = hash_djb2_one_64(object->get_instance_id(), h);
+	node = Object::cast_to<Node>(object);
+	ERR_FAIL_COND_MSG(!node, "RPC can only be defined on class that extends Node.");
 }
 
 void GDScriptRPCCallable::rpc(int p_peer_id, const Variant **p_arguments, int p_argcount, Callable::CallError &r_call_error) const {
+	if (unlikely(!node)) {
+		r_call_error.error = Callable::CallError::CALL_ERROR_INSTANCE_IS_NULL;
+		return;
+	}
 	r_call_error.error = Callable::CallError::CALL_OK;
 	node->rpcp(p_peer_id, method, p_arguments, p_argcount);
 }
