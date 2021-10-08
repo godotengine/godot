@@ -7934,6 +7934,9 @@ bool RasterizerStorageGLES3::has_os_feature(const String &p_feature) const {
 		return config.pvrtc_supported;
 	}
 
+	if (p_feature == "skinning_fallback")
+		return config.use_skeleton_software;
+
 	return false;
 }
 
@@ -8166,6 +8169,8 @@ void RasterizerStorageGLES3::initialize() {
 	glGetIntegerv(GL_MAX_CUBE_MAP_TEXTURE_SIZE, &config.max_cubemap_texture_size);
 
 	config.use_rgba_2d_shadows = !config.framebuffer_float_supported;
+
+	config.use_skeleton_software = !config.texture_float_linear_supported;
 
 	//generic quadie for copying
 
