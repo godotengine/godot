@@ -599,7 +599,7 @@ void HTTPRequest::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_timeout", "timeout"), &HTTPRequest::set_timeout);
 	ClassDB::bind_method(D_METHOD("get_timeout"), &HTTPRequest::get_timeout);
 
-	ClassDB::bind_method(D_METHOD("set_download_chunk_size"), &HTTPRequest::set_download_chunk_size);
+	ClassDB::bind_method(D_METHOD("set_download_chunk_size", "chunk_size"), &HTTPRequest::set_download_chunk_size);
 	ClassDB::bind_method(D_METHOD("get_download_chunk_size"), &HTTPRequest::get_download_chunk_size);
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "download_file", PROPERTY_HINT_FILE), "set_download_file", "get_download_file");

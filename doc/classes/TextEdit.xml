@@ -936,7 +936,7 @@
 		<member name="language" type="String" setter="set_language" getter="get_language" default="&quot;&quot;">
 			Language code used for line-breaking and text shaping algorithms, if left empty current locale is used instead.
 		</member>
-		<member name="minimap_draw" type="bool" setter="draw_minimap" getter="is_drawing_minimap" default="false">
+		<member name="minimap_draw" type="bool" setter="set_draw_minimap" getter="is_drawing_minimap" default="false">
 			If [code]true[/code], a minimap is shown, providing an outline of your source code.
 		</member>
 		<member name="minimap_width" type="int" setter="set_minimap_width" getter="get_minimap_width" default="80">

@@ -832,7 +832,7 @@ void EditorNode3DGizmo::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_plugin"), &EditorNode3DGizmo::get_plugin);
 	ClassDB::bind_method(D_METHOD("clear"), &EditorNode3DGizmo::clear);
 	ClassDB::bind_method(D_METHOD("set_hidden", "hidden"), &EditorNode3DGizmo::set_hidden);
-	ClassDB::bind_method(D_METHOD("is_subgizmo_selected"), &EditorNode3DGizmo::is_subgizmo_selected);
+	ClassDB::bind_method(D_METHOD("is_subgizmo_selected", "id"), &EditorNode3DGizmo::is_subgizmo_selected);
 	ClassDB::bind_method(D_METHOD("get_subgizmo_selection"), &EditorNode3DGizmo::get_subgizmo_selection);
 
 	GDVIRTUAL_BIND(_redraw);

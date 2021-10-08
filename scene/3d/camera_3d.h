@@ -44,8 +44,10 @@ public:
 		PROJECTION_FRUSTUM
 	};
 
-	enum KeepAspect { KEEP_WIDTH,
-		KEEP_HEIGHT };
+	enum KeepAspect {
+		KEEP_WIDTH,
+		KEEP_HEIGHT
+	};
 
 	enum DopplerTracking {
 		DOPPLER_TRACKING_DISABLED,
@@ -112,7 +114,7 @@ public:
 
 	void make_current();
 	void clear_current(bool p_enable_next = true);
-	void set_current(bool p_current);
+	void set_current(bool p_enabled);
 	bool is_current() const;
 
 	RID get_camera() const;

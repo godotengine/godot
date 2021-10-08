@@ -402,25 +402,25 @@ void PhysicsTestMotionParameters3D::set_exclude_objects(const Array &p_exclude) 
 
 void PhysicsTestMotionParameters3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_from"), &PhysicsTestMotionParameters3D::get_from);
-	ClassDB::bind_method(D_METHOD("set_from"), &PhysicsTestMotionParameters3D::set_from);
+	ClassDB::bind_method(D_METHOD("set_from", "from"), &PhysicsTestMotionParameters3D::set_from);
 
 	ClassDB::bind_method(D_METHOD("get_motion"), &PhysicsTestMotionParameters3D::get_motion);
-	ClassDB::bind_method(D_METHOD("set_motion"), &PhysicsTestMotionParameters3D::set_motion);
+	ClassDB::bind_method(D_METHOD("set_motion", "motion"), &PhysicsTestMotionParameters3D::set_motion);
 
 	ClassDB::bind_method(D_METHOD("get_margin"), &PhysicsTestMotionParameters3D::get_margin);
-	ClassDB::bind_method(D_METHOD("set_margin"), &PhysicsTestMotionParameters3D::set_margin);
+	ClassDB::bind_method(D_METHOD("set_margin", "margin"), &PhysicsTestMotionParameters3D::set_margin);
 
 	ClassDB::bind_method(D_METHOD("get_max_collisions"), &PhysicsTestMotionParameters3D::get_max_collisions);
-	ClassDB::bind_method(D_METHOD("set_max_collisions"), &PhysicsTestMotionParameters3D::set_max_collisions);
+	ClassDB::bind_method(D_METHOD("set_max_collisions", "max_collisions"), &PhysicsTestMotionParameters3D::set_max_collisions);
 
 	ClassDB::bind_method(D_METHOD("is_collide_separation_ray_enabled"), &PhysicsTestMotionParameters3D::is_collide_separation_ray_enabled);
-	ClassDB::bind_method(D_METHOD("set_collide_separation_ray_enabled"), &PhysicsTestMotionParameters3D::set_collide_separation_ray_enabled);
+	ClassDB::bind_method(D_METHOD("set_collide_separation_ray_enabled", "enabled"), &PhysicsTestMotionParameters3D::set_collide_separation_ray_enabled);
 
 	ClassDB::bind_method(D_METHOD("get_exclude_bodies"), &PhysicsTestMotionParameters3D::get_exclude_bodies);
-	ClassDB::bind_method(D_METHOD("set_exclude_bodies"), &PhysicsTestMotionParameters3D::set_exclude_bodies);
+	ClassDB::bind_method(D_METHOD("set_exclude_bodies", "exclude_list"), &PhysicsTestMotionParameters3D::set_exclude_bodies);
 
 	ClassDB::bind_method(D_METHOD("get_exclude_objects"), &PhysicsTestMotionParameters3D::get_exclude_objects);
-	ClassDB::bind_method(D_METHOD("set_exclude_objects"), &PhysicsTestMotionParameters3D::set_exclude_objects);
+	ClassDB::bind_method(D_METHOD("set_exclude_objects", "exclude_list"), &PhysicsTestMotionParameters3D::set_exclude_objects);
 
 	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM3D, "from"), "set_from", "get_from");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "motion"), "set_motion", "get_motion");
