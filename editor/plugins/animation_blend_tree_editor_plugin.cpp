@@ -176,6 +176,8 @@ void AnimationNodeBlendTreeEditor::_update_graph() {
 			}
 		}
 
+		// TODO: add parameters without base path
+
 		node->connect("dragged", callable_mp(this, &AnimationNodeBlendTreeEditor::_node_dragged), varray(E));
 
 		if (AnimationTreeEditor::get_singleton()->can_edit(agnode)) {

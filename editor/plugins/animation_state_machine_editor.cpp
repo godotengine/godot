@@ -684,7 +684,7 @@ void AnimationNodeStateMachineEditor::_state_machine_draw() {
 		Ref<AnimationNodeStateMachineTransition> tr = state_machine->get_transition(i);
 		tl.disabled = tr->is_disabled();
 		tl.auto_advance = tr->has_auto_advance();
-		tl.advance_condition_name = tr->get_advance_condition_name();
+		//tl.advance_condition_name = tr->get_advance_condition_name();
 		tl.advance_condition_state = false;
 		tl.mode = tr->get_switch_mode();
 		tl.width = tr_bidi_offset;
@@ -726,11 +726,11 @@ void AnimationNodeStateMachineEditor::_state_machine_draw() {
 		}
 
 		bool auto_advance = tl.auto_advance;
-		StringName fullpath = AnimationTreeEditor::get_singleton()->get_base_path() + String(tl.advance_condition_name);
+		/*StringName fullpath = AnimationTreeEditor::get_singleton()->get_base_path() + String(tl.advance_condition_name);
 		if (tl.advance_condition_name != StringName() && bool(AnimationTreeEditor::get_singleton()->get_tree()->get(fullpath))) {
 			tl.advance_condition_state = true;
 			auto_advance = true;
-		}
+		}*/
 		_connection_draw(tl.from, tl.to, tl.mode, !tl.disabled, selected, travel, auto_advance);
 
 		transition_lines.push_back(tl);
@@ -957,22 +957,24 @@ void AnimationNodeStateMachineEditor::_notification(int p_what) {
 				break;
 			}
 
+			/*
 			if (transition_lines[i].advance_condition_name != state_machine->get_transition(tidx)->get_advance_condition_name()) {
 				state_machine_draw->update();
 				break;
 			}
+			*/
 
 			if (transition_lines[i].mode != state_machine->get_transition(tidx)->get_switch_mode()) {
 				state_machine_draw->update();
 				break;
 			}
 
-			bool acstate = transition_lines[i].advance_condition_name != StringName() && bool(AnimationTreeEditor::get_singleton()->get_tree()->get(AnimationTreeEditor::get_singleton()->get_base_path() + String(transition_lines[i].advance_condition_name)));
+			//bool acstate = transition_lines[i].advance_condition_name != StringName() && bool(AnimationTreeEditor::get_singleton()->get_tree()->get(AnimationTreeEditor::get_singleton()->get_base_path() + String(transition_lines[i].advance_condition_name)));
 
-			if (transition_lines[i].advance_condition_state != acstate) {
+			/*if (transition_lines[i].advance_condition_state != acstate) {
 				state_machine_draw->update();
 				break;
-			}
+			}*/
 		}
 
 		bool same_travel_path = true;

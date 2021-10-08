@@ -33,6 +33,54 @@
 
 #include "scene/animation/animation_tree.h"
 
+class AnimationNodeStateMachineTransitionCondition : public Resource {
+	GDCLASS(AnimationNodeStateMachineTransitionCondition, Resource);
+
+private:
+	StringName advance_condition;
+
+protected:
+	static void _bind_methods();
+
+public:
+	enum VariantType {
+		VARIANT_TYPE_BOOL,
+		VARIANT_TYPE_INT,
+		VARIANT_TYPE_FLOAT,
+		VARIANT_TYPES_MAX
+	};
+
+	enum ComparisonOperator {
+		OPERATOR_EQUALS,
+		OPERATOR_NOT,
+		OPERATOR_GREATER_THAN,
+		OPERATOR_LESS_THAN,
+		OPERATOR_EQUAL_OR_GREATER_THAN,
+		OPERATOR_EQUAL_OR_LESS_THAN,
+		OPERATORS_MAX
+	};
+
+	VariantType variant_type = VARIANT_TYPE_BOOL;
+	ComparisonOperator comparison_operator = OPERATOR_EQUALS;
+	Variant comparison_value = true;
+
+	void set_advance_condition(const StringName &p_condition);
+	StringName get_advance_condition() const;
+
+	void set_advance_variant_type(const VariantType p_type);
+	VariantType get_advance_variant_type() const;
+
+	void set_advance_comparison_operator(const ComparisonOperator p_operator);
+	ComparisonOperator get_advance_comparison_operator() const;
+
+	void set_advance_comparison_value(const Variant &p_value);
+	Variant get_advance_comparison_value() const;
+
+	bool test_parameter(const Variant &p_parameter);
+
+	AnimationNodeStateMachineTransitionCondition();
+};
+
 class AnimationNodeStateMachineTransition : public Resource {
 	GDCLASS(AnimationNodeStateMachineTransition, Resource);
 
@@ -46,8 +94,7 @@ public:
 private:
 	SwitchMode switch_mode = SWITCH_MODE_IMMEDIATE;
 	bool auto_advance = false;
-	StringName advance_condition;
-	StringName advance_condition_name;
+	Array advance_conditions;
 	float xfade = 0.0;
 	bool disabled = false;
 	int priority = 1;
@@ -62,10 +109,8 @@ public:
 	void set_auto_advance(bool p_enable);
 	bool has_auto_advance() const;
 
-	void set_advance_condition(const StringName &p_condition);
-	StringName get_advance_condition() const;
-
-	StringName get_advance_condition_name() const;
+	Array get_advance_conditions() const;
+	void set_advance_conditions(const Array &p_advance_conditions);
 
 	void set_xfade_time(float p_xfade);
 	float get_xfade_time() const;
@@ -175,6 +220,7 @@ protected:
 
 public:
 	virtual void get_parameter_list(List<PropertyInfo> *r_list) const override;
+	virtual void get_custom_parameter_list(List<PropertyInfo> *r_list) const override;
 	virtual Variant get_parameter_default_value(const StringName &p_parameter) const override;
 
 	void add_node(const StringName &p_name, Ref<AnimationNode> p_node, const Vector2 &p_position = Vector2());

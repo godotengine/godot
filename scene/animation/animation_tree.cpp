@@ -47,6 +47,18 @@ void AnimationNode::get_parameter_list(List<PropertyInfo> *r_list) const {
 	}
 }
 
+void AnimationNode::get_custom_parameter_list(List<PropertyInfo> *r_list) const {
+	Array parameters;
+
+	if (GDVIRTUAL_CALL(_get_custom_parameter_list, parameters)) {
+		for (int i = 0; i < parameters.size(); i++) {
+			Dictionary d = parameters[i];
+			ERR_CONTINUE(d.is_empty());
+			r_list->push_back(PropertyInfo::from_dict(d));
+		}
+	}
+}
+
 Variant AnimationNode::get_parameter_default_value(const StringName &p_parameter) const {
 	Variant ret;
 	if (GDVIRTUAL_CALL(_get_parameter_default_value, p_parameter, ret)) {
@@ -70,6 +82,15 @@ Variant AnimationNode::get_parameter(const StringName &p_name) const {
 	ERR_FAIL_COND_V(!state->tree->property_parent_map[base_path].has(p_name), Variant());
 
 	StringName path = state->tree->property_parent_map[base_path][p_name];
+	return state->tree->property_map[path];
+}
+
+Variant AnimationNode::get_custom_parameter(const StringName &p_name) const {
+	ERR_FAIL_COND_V(!state, Variant());
+	ERR_FAIL_COND_V(!state->tree->property_parent_map.has("parameters/custom/"), Variant());
+	ERR_FAIL_COND_V(!state->tree->property_parent_map["parameters/custom/"].has(p_name), Variant());
+
+	StringName path = state->tree->property_parent_map["parameters/custom/"][p_name];
 	return state->tree->property_map[path];
 }
 
@@ -424,12 +445,14 @@ void AnimationNode::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_parameter", "name", "value"), &AnimationNode::set_parameter);
 	ClassDB::bind_method(D_METHOD("get_parameter", "name"), &AnimationNode::get_parameter);
+	ClassDB::bind_method(D_METHOD("get_custom_parameter", "name"), &AnimationNode::get_custom_parameter);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "filter_enabled", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_filter_enabled", "is_filter_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "filters", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_filters", "_get_filters");
 
 	GDVIRTUAL_BIND(_get_child_nodes);
 	GDVIRTUAL_BIND(_get_parameter_list);
+	GDVIRTUAL_BIND(_get_custom_parameter_list);
 	GDVIRTUAL_BIND(_get_child_by_name, "name");
 	GDVIRTUAL_BIND(_get_parameter_default_value, "parameter");
 	GDVIRTUAL_BIND(_process, "time", "seek");
@@ -1579,6 +1602,7 @@ void AnimationTree::_update_properties_for_node(const String &p_base_path, Ref<A
 	}
 
 	List<PropertyInfo> plist;
+	// Parameters with the base path
 	node->get_parameter_list(&plist);
 	for (PropertyInfo &pinfo : plist) {
 		StringName key = pinfo.name;
@@ -1590,6 +1614,22 @@ void AnimationTree::_update_properties_for_node(const String &p_base_path, Ref<A
 		property_parent_map[p_base_path][key] = p_base_path + key;
 
 		pinfo.name = p_base_path + key;
+		properties.push_back(pinfo);
+	}
+
+	List<PropertyInfo> plist_custom;
+	// Parameters without the base path
+	node->get_custom_parameter_list(&plist_custom);
+	for (PropertyInfo &pinfo : plist_custom) {
+		StringName key = pinfo.name;
+
+		if (!property_map.has("parameters/custom/" + key)) {
+			property_map["parameters/custom/" + key] = node->get_parameter_default_value(key);
+		}
+
+		property_parent_map["parameters/custom/"][key] = "parameters/custom/" + key;
+
+		pinfo.name = "parameters/custom/" + key;
 		properties.push_back(pinfo);
 	}
 
