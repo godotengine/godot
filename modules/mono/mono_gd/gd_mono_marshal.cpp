@@ -133,6 +133,12 @@ Variant::Type managed_to_variant_type(const ManagedType &p_type) {
 			if (array_type->eklass == CACHED_CLASS_RAW(Color))
 				return Variant::POOL_COLOR_ARRAY;
 
+			if (array_type->eklass == CACHED_CLASS_RAW(NodePath))
+				return Variant::ARRAY;
+
+			if (array_type->eklass == CACHED_CLASS_RAW(RID))
+				return Variant::ARRAY;
+
 			GDMonoClass *array_type_class = GDMono::get_singleton()->get_class(array_type->eklass);
 			if (CACHED_CLASS(GodotObject)->is_assignable_from(array_type_class))
 				return Variant::ARRAY;
@@ -511,6 +517,12 @@ MonoObject *variant_to_mono_object(const Variant *p_var, const ManagedType &p_ty
 			if (array_type->eklass == CACHED_CLASS_RAW(Color))
 				return (MonoObject *)PoolColorArray_to_mono_array(p_var->operator PoolColorArray());
 
+			if (array_type->eklass == CACHED_CLASS_RAW(NodePath))
+				return (MonoObject *)Array_to_mono_array(p_var->operator Array());
+
+			if (array_type->eklass == CACHED_CLASS_RAW(RID))
+				return (MonoObject *)Array_to_mono_array(p_var->operator Array());
+
 			GDMonoClass *array_type_class = GDMono::get_singleton()->get_class(array_type->eklass);
 			if (CACHED_CLASS(GodotObject)->is_assignable_from(array_type_class))
 				return (MonoObject *)Array_to_mono_array(p_var->operator Array(), array_type_class);
@@ -793,6 +805,12 @@ Variant mono_object_to_variant_impl(MonoObject *p_obj, const ManagedType &p_type
 
 			if (array_type->eklass == CACHED_CLASS_RAW(Color))
 				return mono_array_to_PoolColorArray((MonoArray *)p_obj);
+
+			if (array_type->eklass == CACHED_CLASS_RAW(NodePath))
+				return mono_array_to_Array((MonoArray *)p_obj);
+
+			if (array_type->eklass == CACHED_CLASS_RAW(RID))
+				return mono_array_to_Array((MonoArray *)p_obj);
 
 			GDMonoClass *array_type_class = GDMono::get_singleton()->get_class(array_type->eklass);
 			if (CACHED_CLASS(GodotObject)->is_assignable_from(array_type_class))
