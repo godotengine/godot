@@ -52,7 +52,7 @@ enum RPCMode {
 struct RPCConfig {
 	StringName name;
 	RPCMode rpc_mode = RPC_MODE_DISABLED;
-	bool sync = false;
+	bool call_local = false;
 	TransferMode transfer_mode = TRANSFER_MODE_RELIABLE;
 	int channel = 0;
 
