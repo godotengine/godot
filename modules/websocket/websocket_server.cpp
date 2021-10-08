@@ -50,19 +50,19 @@ void WebSocketServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("disconnect_peer", "id", "code", "reason"), &WebSocketServer::disconnect_peer, DEFVAL(1000), DEFVAL(""));
 
 	ClassDB::bind_method(D_METHOD("get_bind_ip"), &WebSocketServer::get_bind_ip);
-	ClassDB::bind_method(D_METHOD("set_bind_ip"), &WebSocketServer::set_bind_ip);
+	ClassDB::bind_method(D_METHOD("set_bind_ip", "ip"), &WebSocketServer::set_bind_ip);
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "bind_ip"), "set_bind_ip", "get_bind_ip");
 
 	ClassDB::bind_method(D_METHOD("get_private_key"), &WebSocketServer::get_private_key);
-	ClassDB::bind_method(D_METHOD("set_private_key"), &WebSocketServer::set_private_key);
+	ClassDB::bind_method(D_METHOD("set_private_key", "key"), &WebSocketServer::set_private_key);
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "private_key", PROPERTY_HINT_RESOURCE_TYPE, "CryptoKey", PROPERTY_USAGE_NONE), "set_private_key", "get_private_key");
 
 	ClassDB::bind_method(D_METHOD("get_ssl_certificate"), &WebSocketServer::get_ssl_certificate);
-	ClassDB::bind_method(D_METHOD("set_ssl_certificate"), &WebSocketServer::set_ssl_certificate);
+	ClassDB::bind_method(D_METHOD("set_ssl_certificate", "cert"), &WebSocketServer::set_ssl_certificate);
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "ssl_certificate", PROPERTY_HINT_RESOURCE_TYPE, "X509Certificate", PROPERTY_USAGE_NONE), "set_ssl_certificate", "get_ssl_certificate");
 
 	ClassDB::bind_method(D_METHOD("get_ca_chain"), &WebSocketServer::get_ca_chain);
-	ClassDB::bind_method(D_METHOD("set_ca_chain"), &WebSocketServer::set_ca_chain);
+	ClassDB::bind_method(D_METHOD("set_ca_chain", "ca_chain"), &WebSocketServer::set_ca_chain);
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "ca_chain", PROPERTY_HINT_RESOURCE_TYPE, "X509Certificate", PROPERTY_USAGE_NONE), "set_ca_chain", "get_ca_chain");
 
 	ClassDB::bind_method(D_METHOD("get_handshake_timeout"), &WebSocketServer::get_handshake_timeout);

@@ -238,8 +238,8 @@ void Camera3D::clear_current(bool p_enable_next) {
 	}
 }
 
-void Camera3D::set_current(bool p_current) {
-	if (p_current) {
+void Camera3D::set_current(bool p_enabled) {
+	if (p_enabled) {
 		make_current();
 	} else {
 		clear_current();
@@ -460,7 +460,7 @@ void Camera3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_frustum", "size", "offset", "z_near", "z_far"), &Camera3D::set_frustum);
 	ClassDB::bind_method(D_METHOD("make_current"), &Camera3D::make_current);
 	ClassDB::bind_method(D_METHOD("clear_current", "enable_next"), &Camera3D::clear_current, DEFVAL(true));
-	ClassDB::bind_method(D_METHOD("set_current"), &Camera3D::set_current);
+	ClassDB::bind_method(D_METHOD("set_current", "enabled"), &Camera3D::set_current);
 	ClassDB::bind_method(D_METHOD("is_current"), &Camera3D::is_current);
 	ClassDB::bind_method(D_METHOD("get_camera_transform"), &Camera3D::get_camera_transform);
 	ClassDB::bind_method(D_METHOD("get_fov"), &Camera3D::get_fov);
@@ -468,13 +468,13 @@ void Camera3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_size"), &Camera3D::get_size);
 	ClassDB::bind_method(D_METHOD("get_far"), &Camera3D::get_far);
 	ClassDB::bind_method(D_METHOD("get_near"), &Camera3D::get_near);
-	ClassDB::bind_method(D_METHOD("set_fov"), &Camera3D::set_fov);
-	ClassDB::bind_method(D_METHOD("set_frustum_offset"), &Camera3D::set_frustum_offset);
-	ClassDB::bind_method(D_METHOD("set_size"), &Camera3D::set_size);
-	ClassDB::bind_method(D_METHOD("set_far"), &Camera3D::set_far);
-	ClassDB::bind_method(D_METHOD("set_near"), &Camera3D::set_near);
+	ClassDB::bind_method(D_METHOD("set_fov", "fov"), &Camera3D::set_fov);
+	ClassDB::bind_method(D_METHOD("set_frustum_offset", "offset"), &Camera3D::set_frustum_offset);
+	ClassDB::bind_method(D_METHOD("set_size", "size"), &Camera3D::set_size);
+	ClassDB::bind_method(D_METHOD("set_far", "far"), &Camera3D::set_far);
+	ClassDB::bind_method(D_METHOD("set_near", "near"), &Camera3D::set_near);
 	ClassDB::bind_method(D_METHOD("get_projection"), &Camera3D::get_projection);
-	ClassDB::bind_method(D_METHOD("set_projection"), &Camera3D::set_projection);
+	ClassDB::bind_method(D_METHOD("set_projection", "mode"), &Camera3D::set_projection);
 	ClassDB::bind_method(D_METHOD("set_h_offset", "ofs"), &Camera3D::set_h_offset);
 	ClassDB::bind_method(D_METHOD("get_h_offset"), &Camera3D::get_h_offset);
 	ClassDB::bind_method(D_METHOD("set_v_offset", "ofs"), &Camera3D::set_v_offset);

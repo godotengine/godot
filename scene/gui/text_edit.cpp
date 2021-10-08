@@ -103,11 +103,11 @@ void TextEdit::Text::set_direction_and_language(TextServer::Direction p_directio
 	is_dirty = true;
 }
 
-void TextEdit::Text::set_draw_control_chars(bool p_draw_control_chars) {
-	if (draw_control_chars == p_draw_control_chars) {
+void TextEdit::Text::set_draw_control_chars(bool p_enabled) {
+	if (draw_control_chars == p_enabled) {
 		return;
 	}
-	draw_control_chars = p_draw_control_chars;
+	draw_control_chars = p_enabled;
 	is_dirty = true;
 }
 
@@ -2572,8 +2572,8 @@ bool TextEdit::is_overtype_mode_enabled() const {
 	return overtype_mode;
 }
 
-void TextEdit::set_context_menu_enabled(bool p_enable) {
-	context_menu_enabled = p_enable;
+void TextEdit::set_context_menu_enabled(bool p_enabled) {
+	context_menu_enabled = p_enabled;
 }
 
 bool TextEdit::is_context_menu_enabled() const {
@@ -2588,8 +2588,8 @@ bool TextEdit::is_shortcut_keys_enabled() const {
 	return shortcut_keys_enabled;
 }
 
-void TextEdit::set_virtual_keyboard_enabled(bool p_enable) {
-	virtual_keyboard_enabled = p_enable;
+void TextEdit::set_virtual_keyboard_enabled(bool p_enabled) {
+	virtual_keyboard_enabled = p_enabled;
 }
 
 bool TextEdit::is_virtual_keyboard_enabled() const {
@@ -3504,8 +3504,8 @@ void TextEdit::set_caret_blink_speed(const float p_speed) {
 	caret_blink_timer->set_wait_time(p_speed);
 }
 
-void TextEdit::set_move_caret_on_right_click_enabled(const bool p_enable) {
-	move_caret_on_right_click = p_enable;
+void TextEdit::set_move_caret_on_right_click_enabled(const bool p_enabled) {
+	move_caret_on_right_click = p_enabled;
 }
 
 bool TextEdit::is_move_caret_on_right_click_enabled() const {
@@ -3913,9 +3913,9 @@ Vector<String> TextEdit::get_line_wrapped_text(int p_line) const {
 
 /* Viewport */
 // Scrolling.
-void TextEdit::set_smooth_scroll_enabled(const bool p_enable) {
-	v_scroll->set_smooth_scroll_enabled(p_enable);
-	smooth_scroll_enabled = p_enable;
+void TextEdit::set_smooth_scroll_enabled(const bool p_enabled) {
+	v_scroll->set_smooth_scroll_enabled(p_enabled);
+	smooth_scroll_enabled = p_enabled;
 }
 
 bool TextEdit::is_smooth_scroll_enabled() const {
@@ -4174,9 +4174,9 @@ void TextEdit::center_viewport_to_caret() {
 }
 
 /* Minimap */
-void TextEdit::set_draw_minimap(bool p_draw) {
-	if (draw_minimap != p_draw) {
-		draw_minimap = p_draw;
+void TextEdit::set_draw_minimap(bool p_enabled) {
+	if (draw_minimap != p_enabled) {
+		draw_minimap = p_enabled;
 		_update_wrap_at_column();
 	}
 	update();
@@ -4457,9 +4457,9 @@ bool TextEdit::is_highlight_all_occurrences_enabled() const {
 	return highlight_all_occurrences;
 }
 
-void TextEdit::set_draw_control_chars(bool p_draw_control_chars) {
-	if (draw_control_chars != p_draw_control_chars) {
-		draw_control_chars = p_draw_control_chars;
+void TextEdit::set_draw_control_chars(bool p_enabled) {
+	if (draw_control_chars != p_enabled) {
+		draw_control_chars = p_enabled;
 		if (menu) {
 			menu->set_item_checked(menu->get_item_index(MENU_DISPLAY_UCC), draw_control_chars);
 		}
@@ -4473,8 +4473,8 @@ bool TextEdit::get_draw_control_chars() const {
 	return draw_control_chars;
 }
 
-void TextEdit::set_draw_tabs(bool p_draw) {
-	draw_tabs = p_draw;
+void TextEdit::set_draw_tabs(bool p_enabled) {
+	draw_tabs = p_enabled;
 	update();
 }
 
@@ -4482,8 +4482,8 @@ bool TextEdit::is_drawing_tabs() const {
 	return draw_tabs;
 }
 
-void TextEdit::set_draw_spaces(bool p_draw) {
-	draw_spaces = p_draw;
+void TextEdit::set_draw_spaces(bool p_enabled) {
+	draw_spaces = p_enabled;
 	update();
 }
 
@@ -4500,7 +4500,7 @@ void TextEdit::_bind_methods() {
 	// Text properties
 	ClassDB::bind_method(D_METHOD("has_ime_text"), &TextEdit::has_ime_text);
 
-	ClassDB::bind_method(D_METHOD("set_editable", "enable"), &TextEdit::set_editable);
+	ClassDB::bind_method(D_METHOD("set_editable", "enabled"), &TextEdit::set_editable);
 	ClassDB::bind_method(D_METHOD("is_editable"), &TextEdit::is_editable);
 
 	ClassDB::bind_method(D_METHOD("set_text_direction", "direction"), &TextEdit::set_text_direction);
@@ -4525,13 +4525,13 @@ void TextEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_overtype_mode_enabled", "enabled"), &TextEdit::set_overtype_mode_enabled);
 	ClassDB::bind_method(D_METHOD("is_overtype_mode_enabled"), &TextEdit::is_overtype_mode_enabled);
 
-	ClassDB::bind_method(D_METHOD("set_context_menu_enabled", "enable"), &TextEdit::set_context_menu_enabled);
+	ClassDB::bind_method(D_METHOD("set_context_menu_enabled", "enabled"), &TextEdit::set_context_menu_enabled);
 	ClassDB::bind_method(D_METHOD("is_context_menu_enabled"), &TextEdit::is_context_menu_enabled);
 
-	ClassDB::bind_method(D_METHOD("set_shortcut_keys_enabled", "enable"), &TextEdit::set_shortcut_keys_enabled);
+	ClassDB::bind_method(D_METHOD("set_shortcut_keys_enabled", "enabled"), &TextEdit::set_shortcut_keys_enabled);
 	ClassDB::bind_method(D_METHOD("is_shortcut_keys_enabled"), &TextEdit::is_shortcut_keys_enabled);
 
-	ClassDB::bind_method(D_METHOD("set_virtual_keyboard_enabled", "enable"), &TextEdit::set_virtual_keyboard_enabled);
+	ClassDB::bind_method(D_METHOD("set_virtual_keyboard_enabled", "enabled"), &TextEdit::set_virtual_keyboard_enabled);
 	ClassDB::bind_method(D_METHOD("is_virtual_keyboard_enabled"), &TextEdit::is_virtual_keyboard_enabled);
 
 	// Text manipulation
@@ -4766,7 +4766,7 @@ void TextEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("center_viewport_to_caret"), &TextEdit::center_viewport_to_caret);
 
 	// Minimap
-	ClassDB::bind_method(D_METHOD("draw_minimap", "draw"), &TextEdit::set_draw_minimap);
+	ClassDB::bind_method(D_METHOD("set_draw_minimap", "enabled"), &TextEdit::set_draw_minimap);
 	ClassDB::bind_method(D_METHOD("is_drawing_minimap"), &TextEdit::is_drawing_minimap);
 
 	ClassDB::bind_method(D_METHOD("set_minimap_width", "width"), &TextEdit::set_minimap_width);
@@ -4822,16 +4822,16 @@ void TextEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_highlight_current_line", "enabled"), &TextEdit::set_highlight_current_line);
 	ClassDB::bind_method(D_METHOD("is_highlight_current_line_enabled"), &TextEdit::is_highlight_current_line_enabled);
 
-	ClassDB::bind_method(D_METHOD("set_highlight_all_occurrences", "enable"), &TextEdit::set_highlight_all_occurrences);
+	ClassDB::bind_method(D_METHOD("set_highlight_all_occurrences", "enabled"), &TextEdit::set_highlight_all_occurrences);
 	ClassDB::bind_method(D_METHOD("is_highlight_all_occurrences_enabled"), &TextEdit::is_highlight_all_occurrences_enabled);
 
 	ClassDB::bind_method(D_METHOD("get_draw_control_chars"), &TextEdit::get_draw_control_chars);
-	ClassDB::bind_method(D_METHOD("set_draw_control_chars", "enable"), &TextEdit::set_draw_control_chars);
+	ClassDB::bind_method(D_METHOD("set_draw_control_chars", "enabled"), &TextEdit::set_draw_control_chars);
 
-	ClassDB::bind_method(D_METHOD("set_draw_tabs"), &TextEdit::set_draw_tabs);
+	ClassDB::bind_method(D_METHOD("set_draw_tabs", "enabled"), &TextEdit::set_draw_tabs);
 	ClassDB::bind_method(D_METHOD("is_drawing_tabs"), &TextEdit::is_drawing_tabs);
 
-	ClassDB::bind_method(D_METHOD("set_draw_spaces"), &TextEdit::set_draw_spaces);
+	ClassDB::bind_method(D_METHOD("set_draw_spaces", "enabled"), &TextEdit::set_draw_spaces);
 	ClassDB::bind_method(D_METHOD("is_drawing_spaces"), &TextEdit::is_drawing_spaces);
 
 	ClassDB::bind_method(D_METHOD("get_menu"), &TextEdit::get_menu);
@@ -4868,7 +4868,7 @@ void TextEdit::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "scroll_horizontal"), "set_h_scroll", "get_h_scroll");
 
 	ADD_GROUP("Minimap", "minimap_");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "minimap_draw"), "draw_minimap", "is_drawing_minimap");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "minimap_draw"), "set_draw_minimap", "is_drawing_minimap");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "minimap_width"), "set_minimap_width", "get_minimap_width");
 
 	ADD_GROUP("Caret", "caret_");

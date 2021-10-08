@@ -250,7 +250,7 @@ public:
 
 	// Physical bone API
 
-	void set_animate_physical_bones(bool p_animate);
+	void set_animate_physical_bones(bool p_enabled);
 	bool get_animate_physical_bones() const;
 
 	void bind_physical_bone_to_bone(int p_bone, PhysicalBone3D *p_physical_bone);

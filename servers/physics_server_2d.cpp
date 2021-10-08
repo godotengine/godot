@@ -452,22 +452,22 @@ void PhysicsTestMotionParameters2D::set_exclude_objects(const Array &p_exclude) 
 
 void PhysicsTestMotionParameters2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_from"), &PhysicsTestMotionParameters2D::get_from);
-	ClassDB::bind_method(D_METHOD("set_from"), &PhysicsTestMotionParameters2D::set_from);
+	ClassDB::bind_method(D_METHOD("set_from", "from"), &PhysicsTestMotionParameters2D::set_from);
 
 	ClassDB::bind_method(D_METHOD("get_motion"), &PhysicsTestMotionParameters2D::get_motion);
-	ClassDB::bind_method(D_METHOD("set_motion"), &PhysicsTestMotionParameters2D::set_motion);
+	ClassDB::bind_method(D_METHOD("set_motion", "motion"), &PhysicsTestMotionParameters2D::set_motion);
 
 	ClassDB::bind_method(D_METHOD("get_margin"), &PhysicsTestMotionParameters2D::get_margin);
-	ClassDB::bind_method(D_METHOD("set_margin"), &PhysicsTestMotionParameters2D::set_margin);
+	ClassDB::bind_method(D_METHOD("set_margin", "margin"), &PhysicsTestMotionParameters2D::set_margin);
 
 	ClassDB::bind_method(D_METHOD("is_collide_separation_ray_enabled"), &PhysicsTestMotionParameters2D::is_collide_separation_ray_enabled);
-	ClassDB::bind_method(D_METHOD("set_collide_separation_ray_enabled"), &PhysicsTestMotionParameters2D::set_collide_separation_ray_enabled);
+	ClassDB::bind_method(D_METHOD("set_collide_separation_ray_enabled", "enabled"), &PhysicsTestMotionParameters2D::set_collide_separation_ray_enabled);
 
 	ClassDB::bind_method(D_METHOD("get_exclude_bodies"), &PhysicsTestMotionParameters2D::get_exclude_bodies);
-	ClassDB::bind_method(D_METHOD("set_exclude_bodies"), &PhysicsTestMotionParameters2D::set_exclude_bodies);
+	ClassDB::bind_method(D_METHOD("set_exclude_bodies", "exclude_list"), &PhysicsTestMotionParameters2D::set_exclude_bodies);
 
 	ClassDB::bind_method(D_METHOD("get_exclude_objects"), &PhysicsTestMotionParameters2D::get_exclude_objects);
-	ClassDB::bind_method(D_METHOD("set_exclude_objects"), &PhysicsTestMotionParameters2D::set_exclude_objects);
+	ClassDB::bind_method(D_METHOD("set_exclude_objects", "exclude_list"), &PhysicsTestMotionParameters2D::set_exclude_objects);
 
 	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM2D, "from"), "set_from", "get_from");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "motion"), "set_motion", "get_motion");

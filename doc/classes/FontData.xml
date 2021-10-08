@@ -105,9 +105,9 @@
 		</method>
 		<method name="get_glyph_index" qualifiers="const">
 			<return type="int" />
-			<argument index="0" name="char" type="int" />
-			<argument index="1" name="variation_selector" type="int" />
-			<argument index="2" name="arg2" type="int" />
+			<argument index="0" name="size" type="int" />
+			<argument index="1" name="char" type="int" />
+			<argument index="2" name="variation_selector" type="int" />
 			<description>
 				Returns the glyph index of a [code]char[/code], optionally modified by the [code]variation_selector[/code].
 			</description>
@@ -242,7 +242,7 @@
 			<return type="int" />
 			<argument index="0" name="cache_index" type="int" />
 			<argument index="1" name="size" type="int" />
-			<argument index="2" name="arg2" type="int" enum="TextServer.SpacingType" />
+			<argument index="2" name="spacing_type" type="int" enum="TextServer.SpacingType" />
 			<description>
 				Returns extra spacing added between glyphs in pixels.
 			</description>
@@ -596,8 +596,8 @@
 			<return type="void" />
 			<argument index="0" name="cache_index" type="int" />
 			<argument index="1" name="size" type="int" />
-			<argument index="2" name="spacing" type="int" enum="TextServer.SpacingType" />
-			<argument index="3" name="arg3" type="int" />
+			<argument index="2" name="spacing_type" type="int" enum="TextServer.SpacingType" />
+			<argument index="3" name="value" type="int" />
 			<description>
 				Sets extra spacing added between glyphs in pixels.
 			</description>

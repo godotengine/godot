@@ -718,8 +718,8 @@ void Skeleton3D::localize_rests() {
 	}
 }
 
-void Skeleton3D::set_animate_physical_bones(bool p_animate) {
-	animate_physical_bones = p_animate;
+void Skeleton3D::set_animate_physical_bones(bool p_enabled) {
+	animate_physical_bones = p_enabled;
 
 	if (Engine::get_singleton()->is_editor_hint() == false) {
 		bool sim = false;
@@ -731,7 +731,7 @@ void Skeleton3D::set_animate_physical_bones(bool p_animate) {
 				}
 			}
 		}
-		set_physics_process_internal(sim == false && p_animate);
+		set_physics_process_internal(sim == false && p_enabled);
 	}
 }
 
@@ -1221,10 +1221,10 @@ void Skeleton3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("local_pose_to_global_pose", "bone_idx", "local_pose"), &Skeleton3D::local_pose_to_global_pose);
 	ClassDB::bind_method(D_METHOD("global_pose_z_forward_to_bone_forward", "bone_idx", "basis"), &Skeleton3D::global_pose_z_forward_to_bone_forward);
 
-	ClassDB::bind_method(D_METHOD("set_show_rest_only"), &Skeleton3D::set_show_rest_only);
+	ClassDB::bind_method(D_METHOD("set_show_rest_only", "enabled"), &Skeleton3D::set_show_rest_only);
 	ClassDB::bind_method(D_METHOD("is_show_rest_only"), &Skeleton3D::is_show_rest_only);
 
-	ClassDB::bind_method(D_METHOD("set_animate_physical_bones"), &Skeleton3D::set_animate_physical_bones);
+	ClassDB::bind_method(D_METHOD("set_animate_physical_bones", "enabled"), &Skeleton3D::set_animate_physical_bones);
 	ClassDB::bind_method(D_METHOD("get_animate_physical_bones"), &Skeleton3D::get_animate_physical_bones);
 
 	ClassDB::bind_method(D_METHOD("physical_bones_stop_simulation"), &Skeleton3D::physical_bones_stop_simulation);

@@ -178,7 +178,7 @@
 		</method>
 		<method name="is_subgizmo_selected" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="arg0" type="int" />
+			<argument index="0" name="id" type="int" />
 			<description>
 				Returns [code]true[/code] if the given subgizmo is currently selected. Can be used to highlight selected elements during [method _redraw].
 			</description>
