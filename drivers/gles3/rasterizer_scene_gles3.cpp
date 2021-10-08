@@ -2112,6 +2112,8 @@ void RasterizerSceneGLES3::_render_list(RenderList::Element **p_elements, int p_
 			}
 		}
 
+		state.scene_shader.set_conditional(SceneShaderGLES3::USE_PHYSICAL_LIGHT_ATTENUATION, storage->config.use_physical_light_attenuation);
+
 		bool octahedral_compression = ((RasterizerStorageGLES3::Surface *)e->geometry)->format & VisualServer::ArrayFormat::ARRAY_FLAG_USE_OCTAHEDRAL_COMPRESSION;
 		if (octahedral_compression != prev_octahedral_compression) {
 			state.scene_shader.set_conditional(SceneShaderGLES3::ENABLE_OCTAHEDRAL_COMPRESSION, octahedral_compression);

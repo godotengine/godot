@@ -2636,6 +2636,8 @@ VisualServer::VisualServer() {
 
 	GLOBAL_DEF_RST("rendering/misc/mesh_storage/split_stream", false);
 
+	GLOBAL_DEF_RST("rendering/quality/shading/use_physical_light_attenuation", false);
+
 	GLOBAL_DEF("rendering/quality/depth_prepass/enable", true);
 	GLOBAL_DEF("rendering/quality/depth_prepass/disable_for_vendors", "PowerVR,Mali,Adreno,Apple");
 

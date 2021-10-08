@@ -85,6 +85,7 @@ class LightmapperCPU : public Lightmapper {
 		float bounce_indirect_energy;
 		int samples;
 		bool use_denoiser = true;
+		bool use_physical_light_attenuation = false;
 		Ref<Image> environment_panorama;
 		Basis environment_transform;
 	};
@@ -150,6 +151,8 @@ class LightmapperCPU : public Lightmapper {
 	Color _bilinear_sample(const Ref<Image> &p_img, const Vector2 &p_uv, bool p_clamp_x = false, bool p_clamp_y = false);
 	Vector3 _fix_sample_position(const Vector3 &p_position, const Vector3 &p_texel_center, const Vector3 &p_normal, const Vector3 &p_tangent, const Vector3 &p_bitangent, const Vector2 &p_texel_size);
 	void _plot_triangle(const Vector2 *p_vertices, const Vector3 *p_positions, const Vector3 *p_normals, const Vector2 *p_uvs, const Ref<Image> &p_albedo_texture, const Ref<Image> &p_emission_texture, Vector2i p_size, LocalVector<LightmapTexel> &r_texels, LocalVector<int> &r_lightmap_indices);
+
+	float _get_omni_attenuation(float distance, float inv_range, float decay) const;
 
 	void _compute_direct_light(uint32_t p_idx, void *r_lightmap);
 

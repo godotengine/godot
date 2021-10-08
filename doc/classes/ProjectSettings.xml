@@ -1377,6 +1377,10 @@
 		<member name="rendering/quality/shading/force_vertex_shading.mobile" type="bool" setter="" getter="" default="true">
 			Lower-end override for [member rendering/quality/shading/force_vertex_shading] on mobile devices, due to performance concerns or driver support.
 		</member>
+		<member name="rendering/quality/shading/use_physical_light_attenuation" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], enables new physical light attenuation for [OmniLight]s and [SpotLight]s. This results in more realistic lighting appearance with a very small performance cost. When physical light attenuation is enabled, lights will appear to be darker as a result of the new attenuation formula. This can be compensated by adjusting the lights' energy or attenuation values.
+			Changes to this setting will only be applied upon restarting the application.
+		</member>
 		<member name="rendering/quality/shadow_atlas/cubemap_size" type="int" setter="" getter="" default="512">
 			Size for cubemap into which the shadow is rendered before being copied into the shadow atlas. A higher number can result in higher resolution shadows when used with a higher [member rendering/quality/shadow_atlas/size]. Setting higher than a quarter of the [member rendering/quality/shadow_atlas/size] will not result in a perceptible increase in visual quality.
 		</member>

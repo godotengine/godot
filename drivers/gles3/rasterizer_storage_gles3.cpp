@@ -8252,6 +8252,8 @@ void RasterizerStorageGLES3::initialize() {
 	GLOBAL_DEF("rendering/quality/lightmapping/use_bicubic_sampling.mobile", false);
 	config.use_lightmap_filter_bicubic = GLOBAL_GET("rendering/quality/lightmapping/use_bicubic_sampling");
 
+	config.use_physical_light_attenuation = GLOBAL_GET("rendering/quality/shading/use_physical_light_attenuation");
+
 	config.use_depth_prepass = bool(GLOBAL_GET("rendering/quality/depth_prepass/enable"));
 	if (config.use_depth_prepass) {
 		String vendors = GLOBAL_GET("rendering/quality/depth_prepass/disable_for_vendors");

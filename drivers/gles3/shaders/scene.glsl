@@ -234,11 +234,27 @@ void light_compute(vec3 N, vec3 L, vec3 V, vec3 light_color, float roughness, in
 	}
 }
 
+#ifdef USE_PHYSICAL_LIGHT_ATTENUATION
+float get_omni_attenuation(float distance, float inv_range, float decay) {
+	float nd = distance * inv_range;
+	nd *= nd;
+	nd *= nd; // nd^4
+	nd = max(1.0 - nd, 0.0);
+	nd *= nd; // nd^2
+	return nd * pow(max(distance, 0.0001), -decay);
+}
+#endif
+
 void light_process_omni(int idx, vec3 vertex, vec3 eye_vec, vec3 normal, float roughness, inout vec3 diffuse, inout vec3 specular) {
 	vec3 light_rel_vec = omni_lights[idx].light_pos_inv_radius.xyz - vertex;
 	float light_length = length(light_rel_vec);
+
+#ifdef USE_PHYSICAL_LIGHT_ATTENUATION
+	vec3 light_attenuation = vec3(get_omni_attenuation(light_length, omni_lights[idx].light_pos_inv_radius.w, omni_lights[idx].light_direction_attenuation.w));
+#else
 	float normalized_distance = light_length * omni_lights[idx].light_pos_inv_radius.w;
 	vec3 light_attenuation = vec3(pow(max(1.0 - normalized_distance, 0.0), omni_lights[idx].light_direction_attenuation.w));
+#endif
 
 	light_compute(normal, normalize(light_rel_vec), eye_vec, omni_lights[idx].light_color_energy.rgb * light_attenuation, roughness, diffuse, specular);
 }
@@ -246,8 +262,14 @@ void light_process_omni(int idx, vec3 vertex, vec3 eye_vec, vec3 normal, float r
 void light_process_spot(int idx, vec3 vertex, vec3 eye_vec, vec3 normal, float roughness, inout vec3 diffuse, inout vec3 specular) {
 	vec3 light_rel_vec = spot_lights[idx].light_pos_inv_radius.xyz - vertex;
 	float light_length = length(light_rel_vec);
+
+#ifdef USE_PHYSICAL_LIGHT_ATTENUATION
+	vec3 light_attenuation = vec3(get_omni_attenuation(light_length, spot_lights[idx].light_pos_inv_radius.w, spot_lights[idx].light_direction_attenuation.w));
+#else
 	float normalized_distance = light_length * spot_lights[idx].light_pos_inv_radius.w;
 	vec3 light_attenuation = vec3(pow(max(1.0 - normalized_distance, 0.001), spot_lights[idx].light_direction_attenuation.w));
+#endif
+
 	vec3 spot_dir = spot_lights[idx].light_direction_attenuation.xyz;
 	float spot_cutoff = spot_lights[idx].light_params.y;
 	float scos = max(dot(-normalize(light_rel_vec), spot_dir), spot_cutoff);
@@ -1250,13 +1272,28 @@ in highp float dp_clip;
 
 #endif
 
+#ifdef USE_PHYSICAL_LIGHT_ATTENUATION
+float get_omni_attenuation(float distance, float inv_range, float decay) {
+	float nd = distance * inv_range;
+	nd *= nd;
+	nd *= nd; // nd^4
+	nd = max(1.0 - nd, 0.0);
+	nd *= nd; // nd^2
+	return nd * pow(max(distance, 0.0001), -decay);
+}
+#endif
+
 void light_process_omni(int idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 binormal, vec3 tangent, vec3 albedo, vec3 transmission, float roughness, float metallic, float specular, float rim, float rim_tint, float clearcoat, float clearcoat_gloss, float anisotropy, float p_blob_intensity, inout vec3 diffuse_light, inout vec3 specular_light, inout float alpha) {
 	vec3 light_rel_vec = omni_lights[idx].light_pos_inv_radius.xyz - vertex;
 	float light_length = length(light_rel_vec);
 	float normalized_distance = light_length * omni_lights[idx].light_pos_inv_radius.w;
 	float omni_attenuation;
 	if (normalized_distance < 1.0) {
+#ifdef USE_PHYSICAL_LIGHT_ATTENUATION
+		omni_attenuation = get_omni_attenuation(light_length, omni_lights[idx].light_pos_inv_radius.w, omni_lights[idx].light_direction_attenuation.w);
+#else
 		omni_attenuation = pow(1.0 - normalized_distance, omni_lights[idx].light_direction_attenuation.w);
+#endif
 	} else {
 		omni_attenuation = 0.0;
 	}
@@ -1316,7 +1353,11 @@ void light_process_spot(int idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 bi
 	float normalized_distance = light_length * spot_lights[idx].light_pos_inv_radius.w;
 	float spot_attenuation;
 	if (normalized_distance < 1.0) {
-		spot_attenuation = pow(1.0 - normalized_distance, spot_lights[idx].light_direction_attenuation.w);
+#ifdef USE_PHYSICAL_LIGHT_ATTENUATION
+		spot_attenuation = get_omni_attenuation(light_length, spot_lights[idx].light_pos_inv_radius.w, spot_lights[idx].light_direction_attenuation.w);
+#else
+		spot_attenuation = pow(1.0 - normalized_distance, omni_lights[idx].light_direction_attenuation.w);
+#endif
 	} else {
 		spot_attenuation = 0.0;
 	}

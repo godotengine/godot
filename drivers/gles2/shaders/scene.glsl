@@ -206,6 +206,15 @@ uniform highp float light_spot_attenuation;
 uniform highp float light_spot_range;
 uniform highp float light_spot_angle;
 
+float get_omni_attenuation(float distance, float inv_range, float decay) {
+	float nd = distance * inv_range;
+	nd *= nd;
+	nd *= nd; // nd^4
+	nd = max(1.0 - nd, 0.0);
+	nd *= nd; // nd^2
+	return nd * pow(max(distance, 0.0001), -decay);
+}
+
 void light_compute(
 		vec3 N,
 		vec3 L,
@@ -546,9 +555,12 @@ VERTEX_SHADER_CODE
 	float normalized_distance = light_length / light_range;
 
 	if (normalized_distance < 1.0) {
+#ifdef USE_PHYSICAL_LIGHT_ATTENUATION
+		float omni_attenuation = get_omni_attenuation(light_length, 1.0 / light_range, light_attenuation);
+#else
 		float omni_attenuation = pow(1.0 - normalized_distance, light_attenuation);
+#endif
 
-		vec3 attenuation = vec3(omni_attenuation);
 		light_att = vec3(omni_attenuation);
 	} else {
 		light_att = vec3(0.0);
@@ -565,7 +577,12 @@ VERTEX_SHADER_CODE
 	float normalized_distance = light_length / light_range;
 
 	if (normalized_distance < 1.0) {
+#ifdef USE_PHYSICAL_LIGHT_ATTENUATION
+		float spot_attenuation = get_omni_attenuation(light_length, 1.0 / light_range, light_attenuation);
+#else
 		float spot_attenuation = pow(1.0 - normalized_distance, light_attenuation);
+#endif
+
 		vec3 spot_dir = light_direction;
 
 		float spot_cutoff = light_spot_angle;
@@ -1222,6 +1239,17 @@ float GTR1(float NdotH, float a) {
 	return (a2 - 1.0) / (M_PI * log(a2) * t);
 }
 
+#ifdef USE_PHYSICAL_LIGHT_ATTENUATION
+float get_omni_attenuation(float distance, float inv_range, float decay) {
+	float nd = distance * inv_range;
+	nd *= nd;
+	nd *= nd; // nd^4
+	nd = max(1.0 - nd, 0.0);
+	nd *= nd; // nd^2
+	return nd * pow(max(distance, 0.0001), -decay);
+}
+#endif
+
 void light_compute(
 		vec3 N,
 		vec3 L,
@@ -1852,7 +1880,11 @@ FRAGMENT_SHADER_CODE
 
 	float normalized_distance = light_length / light_range;
 	if (normalized_distance < 1.0) {
+#ifdef USE_PHYSICAL_LIGHT_ATTENUATION
+		float omni_attenuation = get_omni_attenuation(light_length, 1.0 / light_range, light_attenuation);
+#else
 		float omni_attenuation = pow(1.0 - normalized_distance, light_attenuation);
+#endif
 
 		light_att = vec3(omni_attenuation);
 	} else {
@@ -2134,7 +2166,12 @@ FRAGMENT_SHADER_CODE
 	float normalized_distance = light_length / light_range;
 
 	if (normalized_distance < 1.0) {
+#ifdef USE_PHYSICAL_LIGHT_ATTENUATION
+		float spot_attenuation = get_omni_attenuation(light_length, 1.0 / light_range, light_attenuation);
+#else
 		float spot_attenuation = pow(1.0 - normalized_distance, light_attenuation);
+#endif
+
 		vec3 spot_dir = light_direction;
 
 		float spot_cutoff = light_spot_angle;
