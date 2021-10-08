@@ -35,7 +35,12 @@ EditorVCSInterface *EditorVCSInterface::singleton = nullptr;
 
 bool EditorVCSInterface::_initialize(String p_project_root_path) {
 	_not_implemented_function(__FUNCTION__);
-	return true;
+	return false;
+}
+
+Array EditorVCSInterface::_get_remotes() {
+	_not_implemented_function(__FUNCTION__);
+	return {};
 }
 
 bool EditorVCSInterface::_is_vcs_initialized() {
@@ -78,6 +83,10 @@ void EditorVCSInterface::_create_branch(String p_branch_name) {
 	_not_implemented_function(__FUNCTION__);
 }
 
+void EditorVCSInterface::_create_remote(String p_remote_name, String p_remote_url) {
+	_not_implemented_function(__FUNCTION__);
+}
+
 String EditorVCSInterface::_get_current_branch_name(bool p_full_ref) {
 	_not_implemented_function(__FUNCTION__);
 	return "";
@@ -110,17 +119,14 @@ String EditorVCSInterface::_get_vcs_name() {
 
 void EditorVCSInterface::_pull(String p_remote, String p_username, String p_password) {
 	_not_implemented_function(__FUNCTION__);
-	return;
 }
 
 void EditorVCSInterface::_push(String p_remote, String p_username, String p_password, bool p_force) {
 	_not_implemented_function(__FUNCTION__);
-	return;
 }
 
 void EditorVCSInterface::_fetch(String p_remote, String p_username, String p_password) {
 	_not_implemented_function(__FUNCTION__);
-	return;
 }
 
 Array EditorVCSInterface::_get_line_diff(String p_file_path, String p_text) {
@@ -135,6 +141,17 @@ void EditorVCSInterface::popup_error(String p_msg) {
 bool EditorVCSInterface::initialize(String p_project_root_path) {
 	is_initialized = call("_initialize", p_project_root_path);
 	return is_initialized;
+}
+
+List<String> EditorVCSInterface::get_remotes() {
+	List<String> remotes;
+
+	Array result = call("_get_remotes");
+	for (int i = 0; i < result.size(); i++) {
+		remotes.push_back(result[i]);
+	}
+
+	return remotes;
 }
 
 bool EditorVCSInterface::is_vcs_initialized() {
@@ -219,6 +236,12 @@ List<String> EditorVCSInterface::get_branch_list() {
 void EditorVCSInterface::create_branch(String p_branch_name) {
 	if (is_plugin_ready()) {
 		call("_create_branch", p_branch_name);
+	}
+}
+
+void EditorVCSInterface::create_remote(String p_remote_name, String p_remote_url) {
+	if (is_plugin_ready()) {
+		call("_create_remote", p_remote_name, p_remote_url);
 	}
 }
 
@@ -394,6 +417,7 @@ void EditorVCSInterface::_not_implemented_function(String p_function) {
 void EditorVCSInterface::_bind_methods() {
 	// Proxy end points that act as fallbacks to unavailability of a function in the VCS plugin
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::BOOL, "_initialize", PropertyInfo(Variant::STRING, "project_root_path")));
+	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::ARRAY, "_get_remotes"));
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::BOOL, "_is_vcs_initialized"));
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::STRING, "_get_vcs_name"));
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::BOOL, "_shut_down"));
@@ -407,6 +431,7 @@ void EditorVCSInterface::_bind_methods() {
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::ARRAY, "_get_previous_commits"));
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::ARRAY, "_get_branch_list"));
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo("_create_branch", PropertyInfo(Variant::STRING, "branch_name")));
+	ClassDB::add_virtual_method(get_class_static(), MethodInfo("_create_remote", PropertyInfo(Variant::STRING, "remote_name"), PropertyInfo(Variant::STRING, "remote_url")));
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::STRING, "_get_current_branch_name", PropertyInfo(Variant::BOOL, "full_ref")));
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::BOOL, "_checkout_branch", PropertyInfo(Variant::STRING, "branch")));
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo("_push", PropertyInfo(Variant::STRING, "remote"), PropertyInfo(Variant::STRING, "username"), PropertyInfo(Variant::STRING, "password"), PropertyInfo(Variant::BOOL, "force")));

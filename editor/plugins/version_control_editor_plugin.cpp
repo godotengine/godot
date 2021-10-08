@@ -44,6 +44,7 @@ VersionControlEditorPlugin *VersionControlEditorPlugin::singleton = nullptr;
 
 void VersionControlEditorPlugin::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_initialize_vcs"), &VersionControlEditorPlugin::_initialize_vcs);
+	ClassDB::bind_method(D_METHOD("_update_set_up_warning"), &VersionControlEditorPlugin::_update_set_up_warning);
 	ClassDB::bind_method(D_METHOD("_commit"), &VersionControlEditorPlugin::_commit);
 	ClassDB::bind_method(D_METHOD("_refresh_stage_area"), &VersionControlEditorPlugin::_refresh_stage_area);
 	ClassDB::bind_method(D_METHOD("_move_all"), &VersionControlEditorPlugin::_move_all);
@@ -51,14 +52,20 @@ void VersionControlEditorPlugin::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_display_diff"), &VersionControlEditorPlugin::_display_diff);
 	ClassDB::bind_method(D_METHOD("_item_activated"), &VersionControlEditorPlugin::_item_activated);
 	ClassDB::bind_method(D_METHOD("_update_branch_create_button"), &VersionControlEditorPlugin::_update_branch_create_button);
+	ClassDB::bind_method(D_METHOD("_update_remote_create_button"), &VersionControlEditorPlugin::_update_remote_create_button);
 	ClassDB::bind_method(D_METHOD("_update_commit_button"), &VersionControlEditorPlugin::_update_commit_button);
 	ClassDB::bind_method(D_METHOD("_refresh_branch_list"), &VersionControlEditorPlugin::_refresh_branch_list);
 	ClassDB::bind_method(D_METHOD("_refresh_commit_list"), &VersionControlEditorPlugin::_refresh_commit_list);
+	ClassDB::bind_method(D_METHOD("_refresh_remote_list"), &VersionControlEditorPlugin::_refresh_remote_list);
 	ClassDB::bind_method(D_METHOD("_commit_message_gui_input"), &VersionControlEditorPlugin::_commit_message_gui_input);
 	ClassDB::bind_method(D_METHOD("_cell_button_pressed"), &VersionControlEditorPlugin::_cell_button_pressed);
 	ClassDB::bind_method(D_METHOD("_discard_all"), &VersionControlEditorPlugin::_discard_all);
 	ClassDB::bind_method(D_METHOD("_create_branch"), &VersionControlEditorPlugin::_create_branch);
+	ClassDB::bind_method(D_METHOD("_create_remote"), &VersionControlEditorPlugin::_create_remote);
 	ClassDB::bind_method(D_METHOD("_branch_item_selected"), &VersionControlEditorPlugin::_branch_item_selected);
+	ClassDB::bind_method(D_METHOD("_remote_selected"), &VersionControlEditorPlugin::_remote_selected);
+	ClassDB::bind_method(D_METHOD("_popup_create_branch"), &VersionControlEditorPlugin::_popup_create_branch);
+	ClassDB::bind_method(D_METHOD("_popup_create_remote"), &VersionControlEditorPlugin::_popup_create_remote);
 	ClassDB::bind_method(D_METHOD("_fetch"), &VersionControlEditorPlugin::_fetch);
 	ClassDB::bind_method(D_METHOD("_pull"), &VersionControlEditorPlugin::_pull);
 	ClassDB::bind_method(D_METHOD("_push"), &VersionControlEditorPlugin::_push);
@@ -157,6 +164,18 @@ void VersionControlEditorPlugin::_set_up() {
 	_refresh_stage_area();
 	_refresh_commit_list();
 	_refresh_branch_list();
+	_refresh_remote_list();
+}
+
+void VersionControlEditorPlugin::_update_set_up_warning(String p_new_text) {
+	bool empty_settings = set_up_username->get_text().strip_edges().empty() || set_up_password->get_text().strip_edges().empty();
+
+	if (empty_settings) {
+		set_up_warning_text->add_color_override("font_color", EditorNode::get_singleton()->get_gui_base()->get_color("warning_color", "Editor"));
+		set_up_warning_text->set_text(TTR("Remote settings are empty. VCS features that use the network may not work."));
+	} else {
+		set_up_warning_text->set_text("");
+	}
 }
 
 void VersionControlEditorPlugin::_refresh_branch_list() {
@@ -167,22 +186,13 @@ void VersionControlEditorPlugin::_refresh_branch_list() {
 
 	String current_branch = EditorVCSInterface::get_singleton()->get_current_branch_name(false);
 
-	int current_branch_id = MAX(0, branch_list.size() - 2); // -2 for not picking the New branch option
 	for (int i = 0; i < branch_list.size(); i++) {
-		if (branch_list[i] == current_branch) {
-			current_branch_id = i;
-		}
-
 		branch_select->add_icon_item(EditorNode::get_singleton()->get_gui_base()->get_icon("Tree", "EditorIcons"), branch_list[i], i);
+
+		if (branch_list[i] == current_branch) {
+			branch_select->select(i);
+		}
 	}
-
-	if (branch_list.size() > 0) {
-		branch_select->add_separator();
-	}
-
-	branch_select->add_icon_item(EditorNode::get_singleton()->get_gui_base()->get_icon("Add", "EditorIcons"), TTR("New Branch"));
-
-	branch_select->select(current_branch_id);
 }
 
 void VersionControlEditorPlugin::_refresh_commit_list() {
@@ -205,6 +215,24 @@ void VersionControlEditorPlugin::_refresh_commit_list() {
 	}
 }
 
+void VersionControlEditorPlugin::_refresh_remote_list() {
+	CHECK_PLUGIN_INITIALIZED();
+
+	List<String> remotes = EditorVCSInterface::get_singleton()->get_remotes();
+
+	String current_remote = remote_select->get_selected_metadata();
+	remote_select->clear();
+
+	for (int i = 0; i < remotes.size(); i++) {
+		remote_select->add_icon_item(EditorNode::get_singleton()->get_gui_base()->get_icon("ArrowUp", "EditorIcons"), remotes[i], i);
+		remote_select->set_item_metadata(i, remotes[i]);
+
+		if (remotes[i] == current_remote) {
+			remote_select->select(i);
+		}
+	}
+}
+
 void VersionControlEditorPlugin::_commit() {
 	CHECK_PLUGIN_INITIALIZED();
 
@@ -224,13 +252,6 @@ void VersionControlEditorPlugin::_commit() {
 void VersionControlEditorPlugin::_branch_item_selected(int p_index) {
 	CHECK_PLUGIN_INITIALIZED();
 
-	// If creating a new branch
-	if (p_index == branch_select->get_item_count() - 1) {
-		branch_create_dialog->popup_centered();
-		_refresh_branch_list();
-		return;
-	}
-
 	String branch_name = branch_select->get_item_text(p_index);
 	EditorVCSInterface::get_singleton()->checkout_branch(branch_name);
 
@@ -245,6 +266,12 @@ void VersionControlEditorPlugin::_branch_item_selected(int p_index) {
 	_update_opened_tabs();
 }
 
+void VersionControlEditorPlugin::_remote_selected(int p_index) {
+	CHECK_PLUGIN_INITIALIZED();
+
+	_refresh_remote_list();
+}
+
 void VersionControlEditorPlugin::_create_branch() {
 	CHECK_PLUGIN_INITIALIZED();
 
@@ -257,8 +284,33 @@ void VersionControlEditorPlugin::_create_branch() {
 	_refresh_branch_list();
 }
 
+void VersionControlEditorPlugin::_popup_create_branch() {
+	branch_create_dialog->popup_centered();
+}
+
+void VersionControlEditorPlugin::_popup_create_remote() {
+	remote_create_dialog->popup_centered();
+}
+
+void VersionControlEditorPlugin::_create_remote() {
+	CHECK_PLUGIN_INITIALIZED();
+
+	String new_remote_name = remote_create_name_input->get_text().strip_edges();
+	String new_remote_url = remote_create_url_input->get_text().strip_edges();
+
+	EditorVCSInterface::get_singleton()->create_remote(new_remote_name, new_remote_url);
+
+	remote_create_name_input->clear();
+	remote_create_url_input->clear();
+	_refresh_remote_list();
+}
+
 void VersionControlEditorPlugin::_update_branch_create_button(String p_new_text) {
 	branch_create_ok->set_disabled(p_new_text.strip_edges().empty());
+}
+
+void VersionControlEditorPlugin::_update_remote_create_button(String p_new_text) {
+	remote_create_ok->set_disabled(p_new_text.strip_edges().empty());
 }
 
 int VersionControlEditorPlugin::_get_item_count(Tree *p_tree) {
@@ -348,14 +400,14 @@ void VersionControlEditorPlugin::_add_new_item(Tree *p_tree, String p_file_path,
 void VersionControlEditorPlugin::_fetch() {
 	CHECK_PLUGIN_INITIALIZED();
 
-	EditorVCSInterface::get_singleton()->fetch(set_up_remote_name->get_text(), set_up_username->get_text(), set_up_password->get_text());
+	EditorVCSInterface::get_singleton()->fetch(remote_select->get_selected_metadata(), set_up_username->get_text(), set_up_password->get_text());
 	_refresh_branch_list();
 }
 
 void VersionControlEditorPlugin::_pull() {
 	CHECK_PLUGIN_INITIALIZED();
 
-	EditorVCSInterface::get_singleton()->pull(set_up_remote_name->get_text(), set_up_username->get_text(), set_up_password->get_text());
+	EditorVCSInterface::get_singleton()->pull(remote_select->get_selected_metadata(), set_up_username->get_text(), set_up_password->get_text());
 	_refresh_stage_area();
 	_refresh_branch_list();
 	_refresh_commit_list();
@@ -366,7 +418,7 @@ void VersionControlEditorPlugin::_pull() {
 void VersionControlEditorPlugin::_push() {
 	CHECK_PLUGIN_INITIALIZED();
 
-	EditorVCSInterface::get_singleton()->push(set_up_remote_name->get_text(), set_up_username->get_text(), set_up_password->get_text(), force_push_box->is_pressed());
+	EditorVCSInterface::get_singleton()->push(remote_select->get_selected_metadata(), set_up_username->get_text(), set_up_password->get_text(), force_push_box->is_pressed());
 	force_push_box->set_pressed(false);
 }
 
@@ -784,11 +836,11 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 
 	set_up_dialog = memnew(AcceptDialog);
 	set_up_dialog->set_title(TTR("Set Up Version Control"));
-	set_up_dialog->set_custom_minimum_size(Size2(400, 100));
+	set_up_dialog->set_custom_minimum_size(Size2(600, 100));
 	set_up_dialog->set_hide_on_ok(true);
 	version_control_actions->add_child(set_up_dialog);
 
-	VBoxContainer *set_up_vbc = memnew(VBoxContainer);
+	set_up_vbc = memnew(VBoxContainer);
 	set_up_vbc->set_alignment(VBoxContainer::ALIGN_CENTER);
 	set_up_dialog->add_child(set_up_vbc);
 
@@ -796,11 +848,8 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	set_up_hbc->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	set_up_vbc->add_child(set_up_hbc);
 
-	RichTextLabel *set_up_vcs_status = memnew(RichTextLabel);
-	set_up_vcs_status->set_text(TTR("VCS Plugin is not initialized"));
-	set_up_vbc->add_child(set_up_vcs_status);
-
 	Label *set_up_vcs_label = memnew(Label);
+	set_up_vcs_label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	set_up_vcs_label->set_text(TTR("Version Control System"));
 	set_up_hbc->add_child(set_up_vcs_label);
 
@@ -809,30 +858,28 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	set_up_choice->connect("item_selected", this, "_selected_a_vcs");
 	set_up_hbc->add_child(set_up_choice);
 
+	set_up_init_button = memnew(Button);
+	set_up_init_button->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	set_up_init_button->set_text(TTR("Initialize"));
+	set_up_init_button->connect("pressed", this, "_initialize_vcs");
+	set_up_vbc->add_child(set_up_init_button);
+
 	set_up_vbc->add_child(memnew(HSeparator));
+
+	set_up_settings_vbc = memnew(VBoxContainer);
+	set_up_settings_vbc->set_alignment(VBoxContainer::ALIGN_CENTER);
+	set_up_vbc->add_child(set_up_settings_vbc);
 
 	Label *remote_login = memnew(Label);
 	remote_login->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	remote_login->set_align(Label::ALIGN_CENTER);
-	remote_login->set_text(TTR("Remote Settings"));
-	set_up_vbc->add_child(remote_login);
-
-	HBoxContainer *set_up_remote_name_input = memnew(HBoxContainer);
-	set_up_remote_name_input->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	set_up_vbc->add_child(set_up_remote_name_input);
-
-	Label *set_up_remote_name_label = memnew(Label);
-	set_up_remote_name_label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	set_up_remote_name_label->set_text(TTR("Remote Name"));
-	set_up_remote_name_input->add_child(set_up_remote_name_label);
-
-	set_up_remote_name = memnew(LineEdit);
-	set_up_remote_name->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	set_up_remote_name->set_text("origin");
-	set_up_remote_name_input->add_child(set_up_remote_name);
+	remote_login->set_text(TTR("Remote Login"));
+	set_up_settings_vbc->add_child(remote_login);
 
 	HBoxContainer *set_up_username_input = memnew(HBoxContainer);
 	set_up_username_input->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	set_up_settings_vbc->add_child(set_up_username_input);
+
 	Label *set_up_username_label = memnew(Label);
 	set_up_username_label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	set_up_username_label->set_text(TTR("Username"));
@@ -840,11 +887,13 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 
 	set_up_username = memnew(LineEdit);
 	set_up_username->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	set_up_username->connect("text_changed", this, "_update_set_up_warning");
 	set_up_username_input->add_child(set_up_username);
-	set_up_vbc->add_child(set_up_username_input);
 
 	HBoxContainer *set_up_password_input = memnew(HBoxContainer);
 	set_up_password_input->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	set_up_settings_vbc->add_child(set_up_password_input);
+
 	Label *set_up_password_label = memnew(Label);
 	set_up_password_label->set_text(TTR("Password"));
 	set_up_password_label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
@@ -853,14 +902,13 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	set_up_password = memnew(LineEdit);
 	set_up_password->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	set_up_password->set_secret(true);
+	set_up_password->connect("text_changed", this, "_update_set_up_warning");
 	set_up_password_input->add_child(set_up_password);
-	set_up_vbc->add_child(set_up_password_input);
 
-	set_up_vbc->add_child(memnew(HSeparator));
-
-	set_up_init_button = set_up_dialog->get_ok();
-	set_up_init_button->set_text(TTR("Initialize"));
-	set_up_init_button->connect("pressed", this, "_initialize_vcs");
+	set_up_warning_text = memnew(Label);
+	set_up_warning_text->set_align(Label::ALIGN_CENTER);
+	set_up_warning_text->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	set_up_settings_vbc->add_child(set_up_warning_text);
 
 	version_control_actions->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	version_control_actions->set_h_size_flags(Control::SIZE_EXPAND_FILL);
@@ -874,6 +922,8 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	version_commit_dock->add_child(unstage_area);
 
 	HBoxContainer *unstage_title = memnew(HBoxContainer);
+	unstage_area->add_child(unstage_title);
+
 	Label *unstage_label = memnew(Label);
 	unstage_label->set_text(TTR("Unstaged Changes"));
 	unstage_label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
@@ -886,6 +936,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	refresh_button->connect("pressed", this, "_refresh_stage_area");
 	refresh_button->connect("pressed", this, "_refresh_commit_list");
 	refresh_button->connect("pressed", this, "_refresh_branch_list");
+	refresh_button->connect("pressed", this, "_refresh_remote_list");
 	unstage_title->add_child(refresh_button);
 
 	discard_all_button = memnew(ToolButton);
@@ -900,7 +951,6 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	stage_all_button->set_icon(EditorNode::get_singleton()->get_gui_base()->get_icon("MoveDown", "EditorIcons"));
 	stage_all_button->set_tooltip(TTR("Stage all changes"));
 	unstage_title->add_child(stage_all_button);
-	unstage_area->add_child(unstage_title);
 
 	unstaged_files = memnew(Tree);
 	unstaged_files->set_h_size_flags(Tree::SIZE_EXPAND_FILL);
@@ -919,6 +969,8 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	version_commit_dock->add_child(stage_area);
 
 	HBoxContainer *stage_title = memnew(HBoxContainer);
+	stage_area->add_child(stage_title);
+
 	Label *stage_label = memnew(Label);
 	stage_label->set_text(TTR("Staged Changes"));
 	stage_label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
@@ -929,7 +981,6 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	unstage_all_button->set_icon(EditorNode::get_singleton()->get_gui_base()->get_icon("MoveUp", "EditorIcons"));
 	unstage_all_button->set_tooltip(TTR("Unstage all changes"));
 	stage_title->add_child(unstage_all_button);
-	stage_area->add_child(stage_title);
 
 	staged_files = memnew(Tree);
 	staged_files->set_h_size_flags(Tree::SIZE_EXPAND_FILL);
@@ -946,8 +997,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	unstage_all_button->connect("pressed", this, "_move_all", varray(staged_files));
 	stage_all_button->connect("pressed", this, "_move_all", varray(unstaged_files));
 
-	HSeparator *hs = memnew(HSeparator);
-	version_commit_dock->add_child(hs);
+	version_commit_dock->add_child(memnew(HSeparator));
 
 	VBoxContainer *commit_area = memnew(VBoxContainer);
 	version_commit_dock->add_child(commit_area);
@@ -966,6 +1016,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	commit_message->connect("text_changed", this, "_update_commit_button");
 	commit_message->connect("gui_input", this, "_commit_message_gui_input");
 	commit_area->add_child(commit_message);
+
 	ED_SHORTCUT("version_control/commit", TTR("Commit"), KEY_MASK_CMD | KEY_ENTER);
 
 	commit_button = memnew(Button);
@@ -974,8 +1025,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	commit_button->connect("pressed", this, "_commit");
 	commit_area->add_child(commit_button);
 
-	HSeparator *hs_1 = memnew(HSeparator);
-	version_commit_dock->add_child(hs_1);
+	version_commit_dock->add_child(memnew(HSeparator));
 
 	commit_list = memnew(Tree);
 	commit_list->set_h_size_flags(Control::SIZE_EXPAND_FILL);
@@ -990,21 +1040,28 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	commit_list->connect("item_selected", this, "_load_diff", varray(commit_list));
 	version_commit_dock->add_child(commit_list);
 
-	HSeparator *hs_2 = memnew(HSeparator);
-	version_commit_dock->add_child(hs_2);
+	version_commit_dock->add_child(memnew(HSeparator));
 
 	HBoxContainer *menu_bar = memnew(HBoxContainer);
 	menu_bar->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	menu_bar->set_v_size_flags(Control::SIZE_FILL);
+	version_commit_dock->add_child(menu_bar);
 
 	branch_select = memnew(OptionButton);
+	branch_select->set_tooltip(TTR("Branches"));
 	branch_select->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	branch_select->connect("item_selected", this, "_branch_item_selected");
 	branch_select->connect("pressed", this, "_refresh_branch_list");
 	menu_bar->add_child(branch_select);
 
+	Button *branch_create_button = memnew(Button);
+	branch_create_button->set_icon(EditorNode::get_singleton()->get_gui_base()->get_icon("Add", "EditorIcons"));
+	branch_create_button->connect("pressed", this, "_popup_create_branch");
+	branch_create_button->set_tooltip(TTR("Create New Branch"));
+	menu_bar->add_child(branch_create_button);
+
 	branch_create_dialog = memnew(AcceptDialog);
-	branch_create_dialog->set_title(TTR("Create Branch"));
+	branch_create_dialog->set_title(TTR("Create New Branch"));
 	branch_create_dialog->set_custom_minimum_size(Size2(400, 100));
 	branch_create_dialog->set_hide_on_ok(true);
 	version_commit_dock->add_child(branch_create_dialog);
@@ -1032,6 +1089,62 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	branch_create_name_input->connect("text_changed", this, "_update_branch_create_button");
 	branch_create_hbc->add_child(branch_create_name_input);
 
+	remote_select = memnew(OptionButton);
+	remote_select->set_tooltip(TTR("Remotes"));
+	remote_select->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	remote_select->connect("item_selected", this, "_remote_selected");
+	remote_select->connect("pressed", this, "_refresh_remote_list");
+	menu_bar->add_child(remote_select);
+
+	Button *remote_create_button = memnew(Button);
+	remote_create_button->set_icon(EditorNode::get_singleton()->get_gui_base()->get_icon("Add", "EditorIcons"));
+	remote_create_button->connect("pressed", this, "_popup_create_remote");
+	remote_create_button->set_tooltip(TTR("Create New Remote"));
+	menu_bar->add_child(remote_create_button);
+
+	remote_create_dialog = memnew(AcceptDialog);
+	remote_create_dialog->set_title(TTR("Create New Remote"));
+	remote_create_dialog->set_custom_minimum_size(Size2(400, 100));
+	remote_create_dialog->set_hide_on_ok(true);
+	version_commit_dock->add_child(remote_create_dialog);
+
+	remote_create_ok = remote_create_dialog->get_ok();
+	remote_create_ok->set_text(TTR("Create"));
+	remote_create_ok->set_disabled(true);
+	remote_create_ok->connect("pressed", this, "_create_remote");
+
+	VBoxContainer *remote_create_vbc = memnew(VBoxContainer);
+	remote_create_vbc->set_alignment(VBoxContainer::ALIGN_CENTER);
+	remote_create_dialog->add_child(remote_create_vbc);
+
+	HBoxContainer *remote_create_name_hbc = memnew(HBoxContainer);
+	remote_create_name_hbc->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	remote_create_vbc->add_child(remote_create_name_hbc);
+
+	Label *remote_create_name_label = memnew(Label);
+	remote_create_name_label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	remote_create_name_label->set_text(TTR("Remote Name"));
+	remote_create_name_hbc->add_child(remote_create_name_label);
+
+	remote_create_name_input = memnew(LineEdit);
+	remote_create_name_input->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	remote_create_name_input->connect("text_changed", this, "_update_remote_create_button");
+	remote_create_name_hbc->add_child(remote_create_name_input);
+
+	HBoxContainer *remote_url_create_hbc = memnew(HBoxContainer);
+	remote_url_create_hbc->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	remote_create_vbc->add_child(remote_url_create_hbc);
+
+	Label *remote_create_url_label = memnew(Label);
+	remote_create_url_label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	remote_create_url_label->set_text(TTR("Remote URL"));
+	remote_url_create_hbc->add_child(remote_create_url_label);
+
+	remote_create_url_input = memnew(LineEdit);
+	remote_create_url_input->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	remote_create_url_input->connect("text_changed", this, "_update_remote_create_button");
+	remote_url_create_hbc->add_child(remote_create_url_input);
+
 	fetch_button = memnew(ToolButton);
 	fetch_button->set_tooltip(TTR("Fetch"));
 	fetch_button->set_icon(EditorNode::get_singleton()->get_gui_base()->get_icon("Refresh", "EditorIcons"));
@@ -1053,8 +1166,6 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	force_push_box = memnew(CheckBox);
 	force_push_box->set_text(TTR("Force"));
 	menu_bar->add_child(force_push_box);
-
-	version_commit_dock->add_child(menu_bar);
 
 	change_type_to_strings[EditorVCSInterface::CHANGE_TYPE_NEW] = TTR("New");
 	change_type_to_strings[EditorVCSInterface::CHANGE_TYPE_MODIFIED] = TTR("Modified");
@@ -1108,6 +1219,8 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 
 	GLOBAL_DEF("version_control/autoload_on_startup", false);
 	GLOBAL_DEF("version_control/plugin_name", "");
+
+	_update_set_up_warning("");
 }
 
 VersionControlEditorPlugin::~VersionControlEditorPlugin() {

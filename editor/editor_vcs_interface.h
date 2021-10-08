@@ -103,6 +103,7 @@ protected:
 	// Implemented by plugins as end points for the proxy functions
 	virtual bool _initialize(String p_project_root_path);
 	virtual bool _is_vcs_initialized();
+	virtual Array _get_remotes();
 	virtual Array _get_modified_files_data();
 	virtual void _stage_file(String p_file_path);
 	virtual void _discard_file(String p_file_path);
@@ -115,6 +116,7 @@ protected:
 	virtual Array _get_previous_commits();
 	virtual Array _get_branch_list();
 	virtual void _create_branch(String p_branch_name);
+	virtual void _create_remote(String p_remote_name, String p_remote_url);
 	virtual String _get_current_branch_name(bool p_full_ref);
 	virtual void _pull(String p_remote, String p_username, String p_password);
 	virtual void _push(String p_remote, String p_username, String p_password, bool p_force);
@@ -148,7 +150,9 @@ public:
 	String get_vcs_name();
 	List<Commit> get_previous_commits();
 	List<String> get_branch_list();
+	List<String> get_remotes();
 	void create_branch(String p_branch_name);
+	void create_remote(String p_remote_name, String p_remote_url);
 	String get_current_branch_name(bool p_full_ref);
 	bool checkout_branch(String p_branch);
 	void pull(String p_remote, String p_username, String p_password);

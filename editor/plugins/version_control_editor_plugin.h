@@ -61,16 +61,26 @@ private:
 	List<StringName> available_plugins;
 
 	PopupMenu *version_control_actions;
+
 	AcceptDialog *set_up_dialog;
 	OptionButton *set_up_choice;
 	Button *set_up_init_button;
-	LineEdit *set_up_remote_name;
+	VBoxContainer *set_up_vbc;
+	VBoxContainer *set_up_settings_vbc;
 	LineEdit *set_up_username;
 	LineEdit *set_up_password;
+	Label *set_up_warning_text;
+
+	Control *set_up_vcs_settings = nullptr;
 
 	AcceptDialog *branch_create_dialog;
 	LineEdit *branch_create_name_input;
 	Button *branch_create_ok;
+
+	AcceptDialog *remote_create_dialog;
+	LineEdit *remote_create_name_input;
+	LineEdit *remote_create_url_input;
+	Button *remote_create_ok;
 
 	HashMap<EditorVCSInterface::ChangeType, String> change_type_to_strings;
 	HashMap<EditorVCSInterface::ChangeType, Color> change_type_to_color;
@@ -87,6 +97,7 @@ private:
 	ToolButton *fetch_button;
 	ToolButton *pull_button;
 	ToolButton *push_button;
+	OptionButton *remote_select;
 	CheckBox *force_push_box;
 
 	ToolButton *stage_all_button;
@@ -107,6 +118,8 @@ private:
 	void _initialize_vcs();
 	void _populate_available_vcs_names();
 	bool _load_plugin(String p_path);
+	void _update_remotes_list();
+	void _update_set_up_warning(String p_new_text);
 	void _set_up();
 	void _update_opened_tabs();
 
@@ -118,6 +131,7 @@ private:
 	void _refresh_stage_area();
 	void _refresh_branch_list();
 	void _refresh_commit_list();
+	void _refresh_remote_list();
 	void _display_diff(int p_idx);
 	void _move_all(Object *p_tree);
 	void _load_diff(Object *p_tree);
@@ -125,8 +139,13 @@ private:
 	int _get_item_count(Tree *p_tree);
 	void _item_activated(Object *p_tree);
 	void _create_branch();
+	void _create_remote();
 	void _update_branch_create_button(String p_new_text);
+	void _update_remote_create_button(String p_new_text);
 	void _branch_item_selected(int p_index);
+	void _remote_selected(int p_index);
+	void _popup_create_branch();
+	void _popup_create_remote();
 	void _move_item(Tree *p_tree, TreeItem *p_itme);
 	void _display_diff_split_view(List<EditorVCSInterface::DiffLine> &p_diff_content);
 	void _display_diff_unified_view(List<EditorVCSInterface::DiffLine> &p_diff_content);
