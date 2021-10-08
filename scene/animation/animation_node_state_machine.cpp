@@ -68,6 +68,38 @@ Variant AnimationNodeStateMachineTransitionCondition::get_advance_comparison_val
 	return comparison_value;
 }
 
+String AnimationNodeStateMachineTransitionCondition::get_variant_type_name(const VariantType &p_type) {
+	switch (p_type) {
+		case VARIANT_TYPE_BOOL:
+			return "Bool";
+		case VARIANT_TYPE_INT:
+			return "Int";
+		case VARIANT_TYPE_FLOAT:
+			return "Float";
+		default:
+			return "Invalid";
+	}
+}
+
+String AnimationNodeStateMachineTransitionCondition::get_operator_name(const ComparisonOperator &p_op) {
+	switch (p_op) {
+		case OPERATOR_EQUALS:
+			return "Are Equal";
+		case OPERATOR_NOT:
+			return "Are Not Equal";
+		case OPERATOR_GREATER_THAN:
+			return "Greater Than";
+		case OPERATOR_LESS_THAN:
+			return "Less Than";
+		case OPERATOR_EQUAL_OR_GREATER_THAN:
+			return "Greater Than or Equal";
+		case OPERATOR_EQUAL_OR_LESS_THAN:
+			return "Less Than or Equal";
+		default:
+			return "Invalid";
+	}
+}
+
 bool AnimationNodeStateMachineTransitionCondition::test_parameter(const Variant &p_parameter) {
 	switch (variant_type) {
 		case VariantType::VARIANT_TYPE_BOOL:
@@ -118,6 +150,8 @@ bool AnimationNodeStateMachineTransitionCondition::test_parameter(const Variant 
 					return float(p_parameter) <= float(comparison_value);
 			}
 			break;
+		default:
+			return false;
 	}
 }
 
@@ -125,14 +159,32 @@ void AnimationNodeStateMachineTransitionCondition::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_advance_condition", "name"), &AnimationNodeStateMachineTransitionCondition::set_advance_condition);
 	ClassDB::bind_method(D_METHOD("get_advance_condition"), &AnimationNodeStateMachineTransitionCondition::get_advance_condition);
 
-	//ClassDB::bind_method(D_METHOD("set_advance_comparison_operator", "operator"), &AnimationNodeStateMachineTransitionCondition::set_advance_comparison_operator);
-	//ClassDB::bind_method(D_METHOD("get_advance_comparison_operator"), &AnimationNodeStateMachineTransitionCondition::get_advance_comparison_operator);
+	ClassDB::bind_method(D_METHOD("set_advance_comparison_operator", "operator"), &AnimationNodeStateMachineTransitionCondition::set_advance_comparison_operator);
+	ClassDB::bind_method(D_METHOD("get_advance_comparison_operator"), &AnimationNodeStateMachineTransitionCondition::get_advance_comparison_operator);
+
+	ClassDB::bind_method(D_METHOD("set_advance_variant_type", "type"), &AnimationNodeStateMachineTransitionCondition::set_advance_variant_type);
+	ClassDB::bind_method(D_METHOD("get_advance_variant_type"), &AnimationNodeStateMachineTransitionCondition::get_advance_variant_type);
 
 	ClassDB::bind_method(D_METHOD("set_advance_comparison_value", "value"), &AnimationNodeStateMachineTransitionCondition::set_advance_comparison_value);
 	ClassDB::bind_method(D_METHOD("get_advance_comparison_value"), &AnimationNodeStateMachineTransitionCondition::get_advance_comparison_value);
 
+	String types;
+	for (int i = 0; i < OPERATORS_MAX; i++) {
+		if (i > 0) {
+			types += ",";
+		}
+		types += get_operator_name(static_cast<ComparisonOperator>(i));
+	}
+
+	String argt = "Any";
+	for (int i = 1; i < VARIANT_TYPES_MAX; i++) {
+		argt += "," + get_variant_type_name(VariantType(i));
+	}
+
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "advance_condition"), "set_advance_condition", "get_advance_condition");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "advance_comparison_value"), "set_advance_comparison_value", "get_advance_comparison_value");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "advance_comparison_operator", PROPERTY_HINT_ENUM, types), "set_advance_comparison_operator", "get_advance_comparison_operator");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "advance_comparison_variant_type", PROPERTY_HINT_ENUM, argt), "set_advance_variant_type", "get_advance_variant_type");
 }
 
 AnimationNodeStateMachineTransitionCondition::AnimationNodeStateMachineTransitionCondition() {

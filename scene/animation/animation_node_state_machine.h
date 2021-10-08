@@ -43,13 +43,6 @@ protected:
 	static void _bind_methods();
 
 public:
-	enum VariantType {
-		VARIANT_TYPE_BOOL,
-		VARIANT_TYPE_INT,
-		VARIANT_TYPE_FLOAT,
-		VARIANT_TYPES_MAX
-	};
-
 	enum ComparisonOperator {
 		OPERATOR_EQUALS,
 		OPERATOR_NOT,
@@ -60,6 +53,13 @@ public:
 		OPERATORS_MAX
 	};
 
+	enum VariantType {
+		VARIANT_TYPE_BOOL,
+		VARIANT_TYPE_INT,
+		VARIANT_TYPE_FLOAT,
+		VARIANT_TYPES_MAX
+	};
+
 	VariantType variant_type = VARIANT_TYPE_BOOL;
 	ComparisonOperator comparison_operator = OPERATOR_EQUALS;
 	Variant comparison_value = true;
@@ -67,19 +67,25 @@ public:
 	void set_advance_condition(const StringName &p_condition);
 	StringName get_advance_condition() const;
 
+	void set_advance_comparison_operator(ComparisonOperator p_operator);
+	ComparisonOperator get_advance_comparison_operator() const;
+
 	void set_advance_variant_type(const VariantType p_type);
 	VariantType get_advance_variant_type() const;
 
-	void set_advance_comparison_operator(const ComparisonOperator p_operator);
-	ComparisonOperator get_advance_comparison_operator() const;
-
 	void set_advance_comparison_value(const Variant &p_value);
 	Variant get_advance_comparison_value() const;
+
+	static String get_variant_type_name(const VariantType &p_type);
+	static String get_operator_name(const ComparisonOperator &p_op);
 
 	bool test_parameter(const Variant &p_parameter);
 
 	AnimationNodeStateMachineTransitionCondition();
 };
+
+VARIANT_ENUM_CAST(AnimationNodeStateMachineTransitionCondition::ComparisonOperator);
+VARIANT_ENUM_CAST(AnimationNodeStateMachineTransitionCondition::VariantType);
 
 class AnimationNodeStateMachineTransition : public Resource {
 	GDCLASS(AnimationNodeStateMachineTransition, Resource);
