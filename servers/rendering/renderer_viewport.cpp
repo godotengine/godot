@@ -104,7 +104,7 @@ void RendererViewport::_configure_3d_render_buffers(Viewport *p_viewport) {
 				default:
 					break;
 			}
-			RSG::scene->render_buffers_configure(p_viewport->render_buffers, p_viewport->render_target, width, height, p_viewport->msaa, p_viewport->screen_space_aa, p_viewport->use_debanding, p_viewport->get_view_count());
+			RSG::scene->render_buffers_configure(p_viewport->render_buffers, p_viewport->render_target, width, height, p_viewport->msaa, p_viewport->screen_space_aa, p_viewport->use_debanding, p_viewport->use_32_bpc_depth, p_viewport->get_view_count());
 		}
 	}
 }
@@ -979,6 +979,17 @@ void RendererViewport::viewport_set_use_debanding(RID p_viewport, bool p_use_deb
 		return;
 	}
 	viewport->use_debanding = p_use_debanding;
+	_configure_3d_render_buffers(viewport);
+}
+
+void RendererViewport::viewport_set_use_32_bpc_depth(RID p_viewport, bool p_use_32_bpc_depth) {
+	Viewport *viewport = viewport_owner.getornull(p_viewport);
+	ERR_FAIL_COND(!viewport);
+
+	if (viewport->use_32_bpc_depth == p_use_32_bpc_depth) {
+		return;
+	}
+	viewport->use_32_bpc_depth = p_use_32_bpc_depth;
 	_configure_3d_render_buffers(viewport);
 }
 

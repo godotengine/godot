@@ -2809,6 +2809,19 @@ bool Viewport::is_using_debanding() const {
 	return use_debanding;
 }
 
+void Viewport::set_use_32_bpc_depth(bool p_enable) {
+	if (use_32_bpc_depth == p_enable) {
+		return;
+	}
+
+	use_32_bpc_depth = p_enable;
+	RS::get_singleton()->viewport_set_use_32_bpc_depth(viewport, p_enable);
+}
+
+bool Viewport::is_using_32_bpc_depth() const {
+	return use_32_bpc_depth;
+}
+
 void Viewport::set_lod_threshold(float p_pixels) {
 	lod_threshold = p_pixels;
 	RS::get_singleton()->viewport_set_lod_threshold(viewport, lod_threshold);
@@ -3480,6 +3493,9 @@ void Viewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_use_debanding", "enable"), &Viewport::set_use_debanding);
 	ClassDB::bind_method(D_METHOD("is_using_debanding"), &Viewport::is_using_debanding);
 
+	ClassDB::bind_method(D_METHOD("set_use_32_bpc_depth", "enable"), &Viewport::set_use_32_bpc_depth);
+	ClassDB::bind_method(D_METHOD("get_use_32_bpc_depth"), &Viewport::is_using_32_bpc_depth);
+
 	ClassDB::bind_method(D_METHOD("set_use_occlusion_culling", "enable"), &Viewport::set_use_occlusion_culling);
 	ClassDB::bind_method(D_METHOD("is_using_occlusion_culling"), &Viewport::is_using_occlusion_culling);
 
@@ -3596,6 +3612,7 @@ void Viewport::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "msaa", PROPERTY_HINT_ENUM, String::utf8("Disabled (Fastest),2× (Average),4× (Slow),8× (Slowest)")), "set_msaa", "get_msaa");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "screen_space_aa", PROPERTY_HINT_ENUM, "Disabled (Fastest),FXAA (Fast)"), "set_screen_space_aa", "get_screen_space_aa");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_debanding"), "set_use_debanding", "is_using_debanding");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_32_bpc_depth"), "set_use_32_bpc_depth", "get_use_32_bpc_depth");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_occlusion_culling"), "set_use_occlusion_culling", "is_using_occlusion_culling");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "lod_threshold", PROPERTY_HINT_RANGE, "0,1024,0.1"), "set_lod_threshold", "get_lod_threshold");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "debug_draw", PROPERTY_HINT_ENUM, "Disabled,Unshaded,Overdraw,Wireframe"), "set_debug_draw", "get_debug_draw");

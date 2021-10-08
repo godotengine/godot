@@ -1348,6 +1348,9 @@ SceneTree::SceneTree() {
 	const bool use_debanding = GLOBAL_DEF("rendering/anti_aliasing/quality/use_debanding", false);
 	root->set_use_debanding(use_debanding);
 
+	const bool use_32_bpc_depth = GLOBAL_DEF("rendering/anti_aliasing/quality/use_32_bpc_depth", false);
+	root->set_use_32_bpc_depth(use_32_bpc_depth);
+
 	const bool use_occlusion_culling = GLOBAL_DEF("rendering/occlusion_culling/use_occlusion_culling", false);
 	root->set_use_occlusion_culling(use_occlusion_culling);
 

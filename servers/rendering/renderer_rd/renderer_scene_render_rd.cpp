@@ -2588,7 +2588,7 @@ bool RendererSceneRenderRD::_render_buffers_can_be_storage() {
 	return true;
 }
 
-void RendererSceneRenderRD::render_buffers_configure(RID p_render_buffers, RID p_render_target, int p_width, int p_height, RS::ViewportMSAA p_msaa, RenderingServer::ViewportScreenSpaceAA p_screen_space_aa, bool p_use_debanding, uint32_t p_view_count) {
+void RendererSceneRenderRD::render_buffers_configure(RID p_render_buffers, RID p_render_target, int p_width, int p_height, RS::ViewportMSAA p_msaa, RenderingServer::ViewportScreenSpaceAA p_screen_space_aa, bool p_use_debanding, bool p_use_32_bpc_depth, uint32_t p_view_count) {
 	ERR_FAIL_COND_MSG(p_view_count == 0, "Must have at least 1 view");
 
 	RenderBuffers *rb = render_buffers_owner.get_or_null(p_render_buffers);
@@ -2616,7 +2616,14 @@ void RendererSceneRenderRD::render_buffers_configure(RID p_render_buffers, RID p
 		if (rb->view_count > 1) {
 			tf.texture_type = RD::TEXTURE_TYPE_2D_ARRAY;
 		}
-		tf.format = _render_buffers_get_color_format();
+		if (p_use_32_bpc_depth) {
+			// 32 bpc. Can be useful for advanced shaders, but should not be used
+			// for general-purpose rendering as it's slower.
+			tf.format = RD::DATA_FORMAT_R32G32B32A32_SFLOAT;
+		} else {
+			// 16 bpc. This is the default HDR mode.
+			tf.format = RD::DATA_FORMAT_R16G16B16A16_SFLOAT;
+		}
 		tf.width = rb->width;
 		tf.height = rb->height;
 		tf.array_layers = rb->view_count; // create a layer for every view
@@ -2663,7 +2670,7 @@ void RendererSceneRenderRD::render_buffers_configure(RID p_render_buffers, RID p
 	}
 
 	RID target_texture = storage->render_target_get_rd_texture(rb->render_target);
-	rb->data->configure(rb->texture, rb->depth_texture, target_texture, rb->width, rb->height, p_msaa, p_view_count);
+	rb->data->configure(rb->texture, rb->depth_texture, target_texture, rb->width, rb->height, p_msaa, p_use_32_bpc_depth, p_view_count);
 
 	if (is_clustered_enabled()) {
 		rb->cluster_builder->setup(Size2i(rb->width, rb->height), max_cluster_elements, rb->depth_texture, storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED), rb->texture);

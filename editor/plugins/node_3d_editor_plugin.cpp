@@ -2615,6 +2615,8 @@ void Node3DEditorViewport::_project_settings_changed() {
 	viewport->set_screen_space_aa(Viewport::ScreenSpaceAA(ssaa_mode));
 	const bool use_debanding = GLOBAL_GET("rendering/anti_aliasing/quality/use_debanding");
 	viewport->set_use_debanding(use_debanding);
+	const bool use_32_bpc_depth = GLOBAL_GET("rendering/anti_aliasing/quality/use_32_bpc_depth");
+	viewport->set_use_32_bpc_depth(use_32_bpc_depth);
 
 	const bool use_occlusion_culling = GLOBAL_GET("rendering/occlusion_culling/use_occlusion_culling");
 	viewport->set_use_occlusion_culling(use_occlusion_culling);

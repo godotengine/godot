@@ -83,7 +83,7 @@ void RenderForwardMobile::RenderBufferDataForwardMobile::clear() {
 	}
 }
 
-void RenderForwardMobile::RenderBufferDataForwardMobile::configure(RID p_color_buffer, RID p_depth_buffer, RID p_target_buffer, int p_width, int p_height, RS::ViewportMSAA p_msaa, uint32_t p_view_count) {
+void RenderForwardMobile::RenderBufferDataForwardMobile::configure(RID p_color_buffer, RID p_depth_buffer, RID p_target_buffer, int p_width, int p_height, RS::ViewportMSAA p_msaa, bool p_use_32_bpc_depth, uint32_t p_view_count) {
 	clear();
 
 	msaa = p_msaa;
@@ -97,6 +97,10 @@ void RenderForwardMobile::RenderBufferDataForwardMobile::configure(RID p_color_b
 
 	color = p_color_buffer;
 	depth = p_depth_buffer;
+
+	if (p_use_32_bpc_depth) {
+		WARN_PRINT_ONCE("32 BPC depth is only supported when using the Vulkan clustered renderer, not the Vulkan mobile renderer. Falling back to lower precision.");
+	}
 
 	// We are creating 4 configurations here for our framebuffers.
 
