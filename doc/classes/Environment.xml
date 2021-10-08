@@ -199,6 +199,9 @@
 		<member name="glow_hdr_threshold" type="float" setter="set_glow_hdr_bleed_threshold" getter="get_glow_hdr_bleed_threshold" default="1.0">
 			The lower threshold of the HDR glow. When using the GLES2 renderer (which doesn't support HDR), this needs to be below [code]1.0[/code] for glow to be visible. A value of [code]0.9[/code] works well in this case.
 		</member>
+		<member name="glow_high_quality" type="bool" setter="set_glow_high_quality" getter="is_glow_high_quality_enabled" default="false">
+			Takes more samples during downsample pass of glow. This ensures that single pixels are captured by glow which makes the glow look smoother and more stable during movement. However, it is very expensive and makes the glow post process take twice as long.
+		</member>
 		<member name="glow_intensity" type="float" setter="set_glow_intensity" getter="get_glow_intensity" default="0.8">
 			The glow intensity. When using the GLES2 renderer, this should be increased to 1.5 to compensate for the lack of HDR rendering.
 		</member>

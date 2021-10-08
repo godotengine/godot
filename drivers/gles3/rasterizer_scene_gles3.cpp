@@ -838,7 +838,7 @@ void RasterizerSceneGLES3::environment_set_dof_blur_near(RID p_env, bool p_enabl
 	env->dof_blur_near_quality = p_quality;
 }
 
-void RasterizerSceneGLES3::environment_set_glow(RID p_env, bool p_enable, int p_level_flags, float p_intensity, float p_strength, float p_bloom_threshold, VS::EnvironmentGlowBlendMode p_blend_mode, float p_hdr_bleed_threshold, float p_hdr_bleed_scale, float p_hdr_luminance_cap, bool p_bicubic_upscale) {
+void RasterizerSceneGLES3::environment_set_glow(RID p_env, bool p_enable, int p_level_flags, float p_intensity, float p_strength, float p_bloom_threshold, VS::EnvironmentGlowBlendMode p_blend_mode, float p_hdr_bleed_threshold, float p_hdr_bleed_scale, float p_hdr_luminance_cap, bool p_bicubic_upscale, bool p_high_quality) {
 	Environment *env = environment_owner.getornull(p_env);
 	ERR_FAIL_COND(!env);
 
@@ -852,6 +852,7 @@ void RasterizerSceneGLES3::environment_set_glow(RID p_env, bool p_enable, int p_
 	env->glow_hdr_bleed_scale = p_hdr_bleed_scale;
 	env->glow_hdr_luminance_cap = p_hdr_luminance_cap;
 	env->glow_bicubic_upscale = p_bicubic_upscale;
+	env->glow_high_quality = p_high_quality;
 }
 void RasterizerSceneGLES3::environment_set_fog(RID p_env, bool p_enable, float p_begin, float p_end, RID p_gradient_texture) {
 }
@@ -3807,6 +3808,7 @@ void RasterizerSceneGLES3::_post_process(Environment *env, const CameraMatrix &p
 			}
 
 			state.effect_blur_shader.set_conditional(EffectBlurShaderGLES3::GLOW_GAUSSIAN_HORIZONTAL, true);
+			state.effect_blur_shader.set_conditional(EffectBlurShaderGLES3::USE_GLOW_HIGH_QUALITY, env->glow_high_quality);
 			state.effect_blur_shader.bind();
 			state.effect_blur_shader.set_uniform(EffectBlurShaderGLES3::PIXEL_SIZE, Vector2(1.0 / vp_w, 1.0 / vp_h));
 			state.effect_blur_shader.set_uniform(EffectBlurShaderGLES3::LOD, float(i));

@@ -140,6 +140,31 @@ void main() {
 #ifdef GLOW_GAUSSIAN_HORIZONTAL
 	vec2 pix_size = pixel_size;
 	pix_size *= 0.5; //reading from larger buffer, so use more samples
+
+#ifdef USE_GLOW_HIGH_QUALITY
+	// Sample from two lines to capture single-pixel features.
+	// This is significantly slower, but looks better and is more stable for moving objects.
+	vec4 color = textureLod(source_color, uv_interp + vec2(0.0, 0.0) * pix_size, lod) * 0.152781;
+	color += textureLod(source_color, uv_interp + vec2(1.0, 0.0) * pix_size, lod) * 0.144599;
+	color += textureLod(source_color, uv_interp + vec2(2.0, 0.0) * pix_size, lod) * 0.122589;
+	color += textureLod(source_color, uv_interp + vec2(3.0, 0.0) * pix_size, lod) * 0.093095;
+	color += textureLod(source_color, uv_interp + vec2(4.0, 0.0) * pix_size, lod) * 0.063327;
+	color += textureLod(source_color, uv_interp + vec2(-1.0, 0.0) * pix_size, lod) * 0.144599;
+	color += textureLod(source_color, uv_interp + vec2(-2.0, 0.0) * pix_size, lod) * 0.122589;
+	color += textureLod(source_color, uv_interp + vec2(-3.0, 0.0) * pix_size, lod) * 0.093095;
+	color += textureLod(source_color, uv_interp + vec2(-4.0, 0.0) * pix_size, lod) * 0.063327;
+
+	color += textureLod(source_color, uv_interp + vec2(0.0, 1.0) * pix_size, lod) * 0.152781;
+	color += textureLod(source_color, uv_interp + vec2(1.0, 1.0) * pix_size, lod) * 0.144599;
+	color += textureLod(source_color, uv_interp + vec2(2.0, 1.0) * pix_size, lod) * 0.122589;
+	color += textureLod(source_color, uv_interp + vec2(3.0, 1.0) * pix_size, lod) * 0.093095;
+	color += textureLod(source_color, uv_interp + vec2(4.0, 1.0) * pix_size, lod) * 0.063327;
+	color += textureLod(source_color, uv_interp + vec2(-1.0, 1.0) * pix_size, lod) * 0.144599;
+	color += textureLod(source_color, uv_interp + vec2(-2.0, 1.0) * pix_size, lod) * 0.122589;
+	color += textureLod(source_color, uv_interp + vec2(-3.0, 1.0) * pix_size, lod) * 0.093095;
+	color += textureLod(source_color, uv_interp + vec2(-4.0, 1.0) * pix_size, lod) * 0.063327;
+	color *= 0.5;
+#else
 	vec4 color = textureLod(source_color, uv_interp + vec2(0.0, 0.0) * pix_size, lod) * 0.174938;
 	color += textureLod(source_color, uv_interp + vec2(1.0, 0.0) * pix_size, lod) * 0.165569;
 	color += textureLod(source_color, uv_interp + vec2(2.0, 0.0) * pix_size, lod) * 0.140367;
@@ -147,9 +172,11 @@ void main() {
 	color += textureLod(source_color, uv_interp + vec2(-1.0, 0.0) * pix_size, lod) * 0.165569;
 	color += textureLod(source_color, uv_interp + vec2(-2.0, 0.0) * pix_size, lod) * 0.140367;
 	color += textureLod(source_color, uv_interp + vec2(-3.0, 0.0) * pix_size, lod) * 0.106595;
+#endif //USE_GLOW_HIGH_QUALITY
+
 	color *= glow_strength;
 	frag_color = color;
-#endif
+#endif //GLOW_GAUSSIAN_HORIZONTAL
 
 #ifdef GLOW_GAUSSIAN_VERTICAL
 	vec4 color = textureLod(source_color, uv_interp + vec2(0.0, 0.0) * pixel_size, lod) * 0.288713;

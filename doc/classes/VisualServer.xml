@@ -861,6 +861,7 @@
 			<argument index="8" name="hdr_bleed_scale" type="float" />
 			<argument index="9" name="hdr_luminance_cap" type="float" />
 			<argument index="10" name="bicubic_upscale" type="bool" />
+			<argument index="11" name="high_quality" type="bool" />
 			<description>
 				Sets the variables to be used with the "glow" post-process effect. See [Environment] for more details.
 			</description>
