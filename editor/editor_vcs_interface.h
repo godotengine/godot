@@ -38,10 +38,6 @@
 class EditorVCSInterface : public Object {
 	GDCLASS(EditorVCSInterface, Object)
 
-	bool is_initialized = false;
-
-	void _not_implemented_function(String p_function);
-
 public:
 	enum ChangeType {
 		CHANGE_TYPE_NEW = 0,
@@ -85,9 +81,8 @@ public:
 	struct Commit {
 		String author;
 		String msg;
-		String hex_id;
-		String time;
-		int offset;
+		String id;
+		String date;
 	};
 
 	struct StatusFile {
@@ -101,30 +96,6 @@ protected:
 
 	static void _bind_methods();
 
-	// Implemented by plugins as end points for the proxy functions
-	virtual bool _initialize(String p_project_root_path);
-	virtual bool _is_vcs_initialized();
-	virtual Array _get_remotes();
-	virtual Array _get_modified_files_data();
-	virtual void _stage_file(String p_file_path);
-	virtual void _discard_file(String p_file_path);
-	virtual void _unstage_file(String p_file_path);
-	virtual void _commit(String p_msg);
-	virtual Array _get_file_diff(String p_identifier, TreeArea p_area);
-	virtual bool _shut_down();
-	virtual String _get_project_name();
-	virtual String _get_vcs_name();
-	virtual Array _get_previous_commits();
-	virtual Array _get_branch_list();
-	virtual void _create_branch(String p_branch_name);
-	virtual void _create_remote(String p_remote_name, String p_remote_url);
-	virtual String _get_current_branch_name(bool p_full_ref);
-	virtual void _pull(String p_remote, String p_username, String p_password);
-	virtual void _push(String p_remote, String p_username, String p_password, bool p_force);
-	virtual void _fetch(String p_remote, String p_username, String p_password);
-	virtual bool _checkout_branch(String p_branch);
-	virtual Array _get_line_diff(String p_file_path, String p_text);
-
 	DiffLine _convert_diff_line(Dictionary p_diff_line);
 	DiffHunk _convert_diff_hunk(Dictionary p_diff_hunk);
 	DiffFile _convert_diff_file(Dictionary p_diff_file);
@@ -135,27 +106,23 @@ public:
 	static EditorVCSInterface *get_singleton();
 	static void set_singleton(EditorVCSInterface *p_singleton);
 
-	bool is_plugin_ready();
-
 	// Proxy functions to the editor for use
-	bool initialize(String p_project_root_path);
-	bool is_vcs_initialized();
+	bool initialize(String p_project_path);
 	List<StatusFile> get_modified_files_data();
 	void stage_file(String p_file_path);
 	void unstage_file(String p_file_path);
 	void discard_file(String p_file_path);
 	void commit(String p_msg);
-	List<DiffFile> get_file_diff(String p_identifier, TreeArea p_area);
+	List<DiffFile> get_diff(String p_identifier, TreeArea p_area);
 	bool shut_down();
-	String get_project_name();
 	String get_vcs_name();
-	List<Commit> get_previous_commits();
+	List<Commit> get_previous_commits(int p_max_commits);
 	List<String> get_branch_list();
 	List<String> get_remotes();
 	void create_branch(String p_branch_name);
 	void create_remote(String p_remote_name, String p_remote_url);
-	String get_current_branch_name(bool p_full_ref);
-	bool checkout_branch(String p_branch);
+	String get_current_branch_name();
+	bool checkout_branch(String p_branch_name);
 	void pull(String p_remote, String p_username, String p_password);
 	void push(String p_remote, String p_username, String p_password, bool p_force);
 	void fetch(String p_remote, String p_username, String p_password);
@@ -165,15 +132,12 @@ public:
 	Dictionary create_diff_line(int p_new_line_no, int p_old_line_no, String p_content, String p_status);
 	Dictionary create_diff_hunk(int p_old_start, int p_new_start, int p_old_lines, int p_new_lines);
 	Dictionary create_diff_file(String p_new_file, String p_old_file);
-	Dictionary create_commit(String p_msg, String p_author, String p_hex_id, String p_time, int p_offset);
+	Dictionary create_commit(String p_msg, String p_author, String p_id, String p_date);
 	Dictionary create_status_file(String p_file_path, ChangeType p_change, TreeArea p_area);
 	Dictionary add_line_diffs_into_diff_hunk(Dictionary p_diff_hunk, Array p_line_diffs);
 	Dictionary add_diff_hunks_into_diff_file(Dictionary p_diff_file, Array p_diff_hunks);
 
 	void popup_error(String p_msg);
-
-	EditorVCSInterface();
-	virtual ~EditorVCSInterface();
 };
 
 VARIANT_ENUM_CAST(EditorVCSInterface::ChangeType);

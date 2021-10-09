@@ -33,114 +33,12 @@
 
 EditorVCSInterface *EditorVCSInterface::singleton = nullptr;
 
-bool EditorVCSInterface::_initialize(String p_project_root_path) {
-	_not_implemented_function(__FUNCTION__);
-	return false;
-}
-
-Array EditorVCSInterface::_get_remotes() {
-	_not_implemented_function(__FUNCTION__);
-	return {};
-}
-
-bool EditorVCSInterface::_is_vcs_initialized() {
-	_not_implemented_function(__FUNCTION__);
-	return false;
-}
-
-Array EditorVCSInterface::_get_modified_files_data() {
-	_not_implemented_function(__FUNCTION__);
-	return Array();
-}
-
-void EditorVCSInterface::_stage_file(String p_file_path) {
-	_not_implemented_function(__FUNCTION__);
-}
-
-void EditorVCSInterface::_unstage_file(String p_file_path) {
-	_not_implemented_function(__FUNCTION__);
-}
-
-void EditorVCSInterface::_commit(String p_msg) {
-	_not_implemented_function(__FUNCTION__);
-}
-
-void EditorVCSInterface::_discard_file(String p_file_path) {
-	_not_implemented_function(__FUNCTION__);
-}
-
-Array EditorVCSInterface::_get_file_diff(String p_identifier, TreeArea p_area) {
-	_not_implemented_function(__FUNCTION__);
-	return Array();
-}
-
-Array EditorVCSInterface::_get_branch_list() {
-	_not_implemented_function(__FUNCTION__);
-	return Array();
-}
-
-void EditorVCSInterface::_create_branch(String p_branch_name) {
-	_not_implemented_function(__FUNCTION__);
-}
-
-void EditorVCSInterface::_create_remote(String p_remote_name, String p_remote_url) {
-	_not_implemented_function(__FUNCTION__);
-}
-
-String EditorVCSInterface::_get_current_branch_name(bool p_full_ref) {
-	_not_implemented_function(__FUNCTION__);
-	return "";
-}
-
-bool EditorVCSInterface::_checkout_branch(String p_branch) {
-	_not_implemented_function(__FUNCTION__);
-	return false;
-}
-
-Array EditorVCSInterface::_get_previous_commits() {
-	_not_implemented_function(__FUNCTION__);
-	return Array();
-}
-
-bool EditorVCSInterface::_shut_down() {
-	_not_implemented_function(__FUNCTION__);
-	return false;
-}
-
-String EditorVCSInterface::_get_project_name() {
-	_not_implemented_function(__FUNCTION__);
-	return String();
-}
-
-String EditorVCSInterface::_get_vcs_name() {
-	_not_implemented_function(__FUNCTION__);
-	return "";
-}
-
-void EditorVCSInterface::_pull(String p_remote, String p_username, String p_password) {
-	_not_implemented_function(__FUNCTION__);
-}
-
-void EditorVCSInterface::_push(String p_remote, String p_username, String p_password, bool p_force) {
-	_not_implemented_function(__FUNCTION__);
-}
-
-void EditorVCSInterface::_fetch(String p_remote, String p_username, String p_password) {
-	_not_implemented_function(__FUNCTION__);
-}
-
-Array EditorVCSInterface::_get_line_diff(String p_file_path, String p_text) {
-	_not_implemented_function(__FUNCTION__);
-	return Array();
-}
-
 void EditorVCSInterface::popup_error(String p_msg) {
 	EditorNode::get_singleton()->show_warning(p_msg.strip_edges(), get_vcs_name() + TTR(" Error"));
 }
 
-bool EditorVCSInterface::initialize(String p_project_root_path) {
-	is_initialized = call("_initialize", p_project_root_path);
-	return is_initialized;
+bool EditorVCSInterface::initialize(String p_project_path) {
+	return call("_initialize", p_project_path);
 }
 
 List<String> EditorVCSInterface::get_remotes() {
@@ -152,10 +50,6 @@ List<String> EditorVCSInterface::get_remotes() {
 	}
 
 	return remotes;
-}
-
-bool EditorVCSInterface::is_vcs_initialized() {
-	return call("_is_vcs_initialized");
 }
 
 List<EditorVCSInterface::StatusFile> EditorVCSInterface::get_modified_files_data() {
@@ -170,120 +64,88 @@ List<EditorVCSInterface::StatusFile> EditorVCSInterface::get_modified_files_data
 }
 
 void EditorVCSInterface::stage_file(String p_file_path) {
-	if (is_plugin_ready()) {
-		call("_stage_file", p_file_path);
-	}
+	call("_stage_file", p_file_path);
 }
 
 void EditorVCSInterface::unstage_file(String p_file_path) {
-	if (is_plugin_ready()) {
-		call("_unstage_file", p_file_path);
-	}
+	call("_unstage_file", p_file_path);
 }
 
 void EditorVCSInterface::discard_file(String p_file_path) {
-	if (is_plugin_ready()) {
-		call("_discard_file", p_file_path);
-	}
-}
-
-bool EditorVCSInterface::is_plugin_ready() {
-	return is_initialized;
+	call("_discard_file", p_file_path);
 }
 
 void EditorVCSInterface::commit(String p_msg) {
-	if (is_plugin_ready()) {
-		call("_commit", p_msg);
-	}
+	call("_commit", p_msg);
 }
 
-List<EditorVCSInterface::DiffFile> EditorVCSInterface::get_file_diff(String p_identifier, TreeArea p_area) {
+List<EditorVCSInterface::DiffFile> EditorVCSInterface::get_diff(String p_identifier, TreeArea p_area) {
 	List<DiffFile> diff_files;
 
-	if (is_plugin_ready()) {
-		Array result = call("_get_file_diff", p_identifier, p_area);
-		for (int i = 0; i < result.size(); i++) {
-			diff_files.push_back(_convert_diff_file(result[i]));
-		}
+	Array result = call("_get_diff", p_identifier, p_area);
+	for (int i = 0; i < result.size(); i++) {
+		diff_files.push_back(_convert_diff_file(result[i]));
 	}
 
 	return diff_files;
 }
 
-List<EditorVCSInterface::Commit> EditorVCSInterface::get_previous_commits() {
+List<EditorVCSInterface::Commit> EditorVCSInterface::get_previous_commits(int p_max_commits) {
 	List<EditorVCSInterface::Commit> commits;
-	if (is_plugin_ready()) {
-		Array result = call("_get_previous_commits");
-		for (int i = 0; i < result.size(); i++) {
-			commits.push_back(_convert_commit(result[i]));
-		}
+
+	Array result = call("_get_previous_commits", p_max_commits);
+	for (int i = 0; i < result.size(); i++) {
+		commits.push_back(_convert_commit(result[i]));
 	}
+
 	return commits;
 }
 
 List<String> EditorVCSInterface::get_branch_list() {
 	List<String> branch_list;
 
-	if (is_plugin_ready()) {
-		Array result = call("_get_branch_list");
-		for (int i = 0; i < result.size(); i++) {
-			branch_list.push_back(result[i]);
-		}
+	Array result = call("_get_branch_list");
+	for (int i = 0; i < result.size(); i++) {
+		branch_list.push_back(result[i]);
 	}
+
 	return branch_list;
 }
 
 void EditorVCSInterface::create_branch(String p_branch_name) {
-	if (is_plugin_ready()) {
-		call("_create_branch", p_branch_name);
-	}
+	call("_create_branch", p_branch_name);
 }
 
 void EditorVCSInterface::create_remote(String p_remote_name, String p_remote_url) {
-	if (is_plugin_ready()) {
-		call("_create_remote", p_remote_name, p_remote_url);
-	}
+	call("_create_remote", p_remote_name, p_remote_url);
 }
 
-String EditorVCSInterface::get_current_branch_name(bool p_full_ref) {
-	if (is_plugin_ready()) {
-		return call("_get_current_branch_name", p_full_ref);
-	}
-	return "";
+String EditorVCSInterface::get_current_branch_name() {
+	return call("_get_current_branch_name");
 }
 
-bool EditorVCSInterface::checkout_branch(String p_branch) {
-	if (is_plugin_ready()) {
-		return call("_checkout_branch", p_branch);
-	}
-	return false;
+bool EditorVCSInterface::checkout_branch(String p_branch_name) {
+	return call("_checkout_branch", p_branch_name);
 }
 
 void EditorVCSInterface::pull(String p_remote, String p_username, String p_password) {
-	if (is_plugin_ready()) {
-		call("_pull", p_remote, p_username, p_password);
-	}
+	call("_pull", p_remote, p_username, p_password);
 }
 
 void EditorVCSInterface::push(String p_remote, String p_username, String p_password, bool p_force) {
-	if (is_plugin_ready()) {
-		call("_push", p_remote, p_username, p_password, p_force);
-	}
+	call("_push", p_remote, p_username, p_password, p_force);
 }
 
 void EditorVCSInterface::fetch(String p_remote, String p_username, String p_password) {
-	if (is_plugin_ready()) {
-		call("_fetch", p_remote, p_username, p_password);
-	}
+	call("_fetch", p_remote, p_username, p_password);
 }
 
 List<EditorVCSInterface::DiffHunk> EditorVCSInterface::get_line_diff(String p_file_path, String p_text) {
 	List<DiffHunk> diff_hunks;
-	if (is_plugin_ready()) {
-		Array result = call("_get_line_diff", p_file_path, p_text);
-		for (int i = 0; i < result.size(); i++) {
-			diff_hunks.push_back(_convert_diff_hunk(result[i]));
-		}
+
+	Array result = call("_get_line_diff", p_file_path, p_text);
+	for (int i = 0; i < result.size(); i++) {
+		diff_hunks.push_back(_convert_diff_hunk(result[i]));
 	}
 
 	return diff_hunks;
@@ -291,10 +153,6 @@ List<EditorVCSInterface::DiffHunk> EditorVCSInterface::get_line_diff(String p_fi
 
 bool EditorVCSInterface::shut_down() {
 	return call("_shut_down");
-}
-
-String EditorVCSInterface::get_project_name() {
-	return call("_get_project_name");
 }
 
 String EditorVCSInterface::get_vcs_name() {
@@ -334,13 +192,12 @@ Dictionary EditorVCSInterface::create_diff_file(String p_new_file, String p_old_
 	return file_diff;
 }
 
-Dictionary EditorVCSInterface::create_commit(String p_msg, String p_author, String p_hex_id, String p_when, int p_offset) {
+Dictionary EditorVCSInterface::create_commit(String p_msg, String p_author, String p_id, String p_date) {
 	Dictionary commit_info;
 	commit_info["message"] = p_msg;
 	commit_info["author"] = p_author;
-	commit_info["when"] = p_when; // Epoch time in seconds
-	commit_info["offset"] = p_offset;
-	commit_info["id"] = p_hex_id;
+	commit_info["date"] = p_date;
+	commit_info["id"] = p_id;
 	return commit_info;
 }
 
@@ -372,7 +229,6 @@ EditorVCSInterface::DiffHunk EditorVCSInterface::_convert_diff_hunk(Dictionary p
 	dh.old_lines = p_diff_hunk["old_lines"];
 	dh.new_start = p_diff_hunk["new_start"];
 	dh.old_start = p_diff_hunk["old_start"];
-	dh.diff_lines = List<DiffLine>();
 	Array diff_lines = p_diff_hunk["diff_lines"];
 	for (int i = 0; i < diff_lines.size(); i++) {
 		DiffLine dl = _convert_diff_line(diff_lines[i]);
@@ -385,7 +241,6 @@ EditorVCSInterface::DiffFile EditorVCSInterface::_convert_diff_file(Dictionary p
 	DiffFile df;
 	df.new_file = p_diff_file["new_file"];
 	df.old_file = p_diff_file["old_file"];
-	df.diff_hunks = List<DiffHunk>();
 	Array diff_hunks = p_diff_file["diff_hunks"];
 	for (int i = 0; i < diff_hunks.size(); i++) {
 		DiffHunk dh = _convert_diff_hunk(diff_hunks[i]);
@@ -398,9 +253,8 @@ EditorVCSInterface::Commit EditorVCSInterface::_convert_commit(Dictionary p_comm
 	EditorVCSInterface::Commit c;
 	c.msg = p_commit["message"];
 	c.author = p_commit["author"];
-	c.time = p_commit["when"]; // Epoch time in seconds
-	c.offset = p_commit["offset"];
-	c.hex_id = p_commit["id"];
+	c.date = p_commit["date"];
+	c.id = p_commit["id"];
 	return c;
 }
 
@@ -412,40 +266,33 @@ EditorVCSInterface::StatusFile EditorVCSInterface::_convert_status_file(Dictiona
 	return sf;
 }
 
-void EditorVCSInterface::_not_implemented_function(String p_function) {
-	popup_error(vformat("The selected VCS plugin does not implement the \"%s\" function.", p_function));
-}
-
 void EditorVCSInterface::_bind_methods() {
-	// Proxy end points that act as fallbacks to unavailability of a function in the VCS plugin
-	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::BOOL, "_initialize", PropertyInfo(Variant::STRING, "project_root_path")));
+	// Proxy end points that implement the VCS specific operations that the editor demands
+	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::BOOL, "_initialize", PropertyInfo(Variant::STRING, "project_path")));
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::ARRAY, "_get_remotes"));
-	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::BOOL, "_is_vcs_initialized"));
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::STRING, "_get_vcs_name"));
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::BOOL, "_shut_down"));
-	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::STRING, "_get_project_name"));
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::ARRAY, "_get_modified_files_data"));
-	ClassDB::add_virtual_method(get_class_static(), MethodInfo("_commit", PropertyInfo(Variant::STRING, "message")));
-	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::ARRAY, "_get_file_diff", PropertyInfo(Variant::STRING, "identifier"), PropertyInfo(Variant::INT, "area")));
+	ClassDB::add_virtual_method(get_class_static(), MethodInfo("_commit", PropertyInfo(Variant::STRING, "msg")));
+	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::ARRAY, "_get_diff", PropertyInfo(Variant::STRING, "identifier"), PropertyInfo(Variant::INT, "area")));
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo("_stage_file", PropertyInfo(Variant::STRING, "file_path")));
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo("_unstage_file", PropertyInfo(Variant::STRING, "file_path")));
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo("_discard_file", PropertyInfo(Variant::STRING, "file_path")));
-	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::ARRAY, "_get_previous_commits"));
+	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::ARRAY, "_get_previous_commits", PropertyInfo(Variant::INT, "max_commits")));
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::ARRAY, "_get_branch_list"));
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo("_create_branch", PropertyInfo(Variant::STRING, "branch_name")));
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo("_create_remote", PropertyInfo(Variant::STRING, "remote_name"), PropertyInfo(Variant::STRING, "remote_url")));
-	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::STRING, "_get_current_branch_name", PropertyInfo(Variant::BOOL, "full_ref")));
-	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::BOOL, "_checkout_branch", PropertyInfo(Variant::STRING, "branch")));
+	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::STRING, "_get_current_branch_name"));
+	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::BOOL, "_checkout_branch", PropertyInfo(Variant::STRING, "branch_name")));
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo("_push", PropertyInfo(Variant::STRING, "remote"), PropertyInfo(Variant::STRING, "username"), PropertyInfo(Variant::STRING, "password"), PropertyInfo(Variant::BOOL, "force")));
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo("_pull", PropertyInfo(Variant::STRING, "remote"), PropertyInfo(Variant::STRING, "username"), PropertyInfo(Variant::STRING, "password")));
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo("_fetch", PropertyInfo(Variant::STRING, "remote"), PropertyInfo(Variant::STRING, "username"), PropertyInfo(Variant::STRING, "password")));
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::ARRAY, "_get_line_diff", PropertyInfo(Variant::STRING, "file_path"), PropertyInfo(Variant::STRING, "text")));
 
-	ClassDB::bind_method(D_METHOD("is_plugin_ready"), &EditorVCSInterface::is_plugin_ready);
 	ClassDB::bind_method(D_METHOD("create_diff_line", "new_line_no", "old_line_no", "content", "status"), &EditorVCSInterface::create_diff_line);
 	ClassDB::bind_method(D_METHOD("create_diff_hunk", "old_start", "new_start", "old_lines", "new_lines"), &EditorVCSInterface::create_diff_hunk);
 	ClassDB::bind_method(D_METHOD("create_diff_file", "new_file", "old_file"), &EditorVCSInterface::create_diff_file);
-	ClassDB::bind_method(D_METHOD("create_commit", "msg", "author", "hex_id", "time", "offset"), &EditorVCSInterface::create_commit);
+	ClassDB::bind_method(D_METHOD("create_commit", "msg", "author", "id", "date"), &EditorVCSInterface::create_commit);
 	ClassDB::bind_method(D_METHOD("create_status_file", "file_path", "change_type", "area"), &EditorVCSInterface::create_status_file);
 	ClassDB::bind_method(D_METHOD("add_diff_hunks_into_diff_file", "diff_hunk", "line_diffs"), &EditorVCSInterface::add_diff_hunks_into_diff_file);
 	ClassDB::bind_method(D_METHOD("add_line_diffs_into_diff_hunk", "diff_files", "diff_hunks"), &EditorVCSInterface::add_line_diffs_into_diff_hunk);
@@ -463,13 +310,6 @@ void EditorVCSInterface::_bind_methods() {
 	BIND_ENUM_CONSTANT(TREE_AREA_COMMIT);
 	BIND_ENUM_CONSTANT(TREE_AREA_STAGED);
 	BIND_ENUM_CONSTANT(TREE_AREA_UNSTAGED);
-}
-
-EditorVCSInterface::EditorVCSInterface() {
-	is_initialized = false;
-}
-
-EditorVCSInterface::~EditorVCSInterface() {
 }
 
 EditorVCSInterface *EditorVCSInterface::get_singleton() {

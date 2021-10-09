@@ -112,6 +112,7 @@ private:
 	Label *diff_title;
 	RichTextLabel *diff;
 	OptionButton *diff_view_type_select;
+	bool show_commit_diff_header = false;
 	List<EditorVCSInterface::DiffFile> diff_content;
 
 	void _notification(int p_what);
@@ -172,8 +173,6 @@ public:
 	VBoxContainer *get_version_control_dock() const { return version_control_dock; }
 
 	List<StringName> get_available_vcs_names() const { return available_plugins; }
-	bool is_vcs_initialized() const;
-	const String get_vcs_name() const;
 
 	void register_editor();
 	void fetch_available_vcs_plugin_names();
