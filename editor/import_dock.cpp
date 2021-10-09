@@ -130,6 +130,7 @@ void ImportDock::set_edit_path(const String &p_path) {
 	_add_keep_import_option(importer_name);
 
 	import->set_disabled(false);
+	_set_dirty(false);
 	import_as->set_disabled(false);
 	preset->set_disabled(false);
 
@@ -280,6 +281,7 @@ void ImportDock::set_edit_multiple_paths(const Vector<String> &p_paths) {
 
 	params->paths = p_paths;
 	import->set_disabled(false);
+	_set_dirty(false);
 	import_as->set_disabled(false);
 	preset->set_disabled(false);
 
@@ -533,6 +535,8 @@ void ImportDock::_reimport() {
 
 	EditorFileSystem::get_singleton()->reimport_files(params->paths);
 	EditorFileSystem::get_singleton()->emit_signal(SNAME("filesystem_changed")); //it changed, so force emitting the signal
+
+	_set_dirty(false);
 }
 
 void ImportDock::_notification(int p_what) {
@@ -545,6 +549,24 @@ void ImportDock::_notification(int p_what) {
 			import_opts->edit(params);
 			label_warning->add_theme_color_override("font_color", get_theme_color(SNAME("warning_color"), SNAME("Editor")));
 		} break;
+	}
+}
+
+void ImportDock::_property_edited(const StringName &p_prop) {
+	_set_dirty(true);
+}
+
+void ImportDock::_set_dirty(bool p_dirty) {
+	if (p_dirty) {
+		// Add a dirty marker to notify the user that they should reimport the selected resource to see changes.
+		import->set_text(TTR("Reimport") + " (*)");
+		import->add_theme_color_override("font_color", get_theme_color(SNAME("warning_color"), SNAME("Editor")));
+		import->set_tooltip(TTR("You have pending changes that haven't been applied yet. Click Reimport to apply changes made to the import options.\nSelecting another resource in the FileSystem dock without clicking Reimport first will discard changes made in the Import dock."));
+	} else {
+		// Remove the dirty marker on the Reimport button.
+		import->set_text(TTR("Reimport"));
+		import->remove_theme_color_override("font_color");
+		import->set_tooltip("");
 	}
 }
 
@@ -588,6 +610,7 @@ ImportDock::ImportDock() {
 	import_opts = memnew(EditorInspector);
 	add_child(import_opts);
 	import_opts->set_v_size_flags(SIZE_EXPAND_FILL);
+	import_opts->connect("property_edited", callable_mp(this, &ImportDock::_property_edited));
 	import_opts->connect("property_toggled", callable_mp(this, &ImportDock::_property_toggled));
 
 	hb = memnew(HBoxContainer);
