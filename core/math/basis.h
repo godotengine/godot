@@ -123,6 +123,9 @@ public:
 	void scale_local(const Vector3 &p_scale);
 	Basis scaled_local(const Vector3 &p_scale) const;
 
+	void scale_orthogonal(const Vector3 &p_scale);
+	Basis scaled_orthogonal(const Vector3 &p_scale) const;
+
 	void make_scale_uniform();
 	float get_uniform_scale() const;
 
@@ -168,6 +171,7 @@ public:
 	bool is_diagonal() const;
 	bool is_rotation() const;
 
+	Basis lerp(const Basis &p_to, const real_t &p_weight) const;
 	Basis slerp(const Basis &p_to, const real_t &p_weight) const;
 	void rotate_sh(real_t *p_values);
 
@@ -232,6 +236,9 @@ public:
 
 	void orthonormalize();
 	Basis orthonormalized() const;
+
+	void orthogonalize();
+	Basis orthogonalized() const;
 
 #ifdef MATH_CHECKS
 	bool is_symmetric() const;
