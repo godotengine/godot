@@ -551,6 +551,7 @@
 			<argument index="0" name="node" type="Node" />
 			<description>
 				Removes a child node. The node is NOT deleted and must be deleted manually.
+				[b]Note:[/b] This function may set the [member owner] of the removed Node (or its descendants) to be [code]null[/code], if that [member owner] is no longer a parent or ancestor.
 			</description>
 		</method>
 		<method name="remove_from_group">
