@@ -73,6 +73,8 @@ public:
 
 	float get_time_left() const;
 
+	String get_configuration_warning() const;
+
 	void set_timer_process_mode(TimerProcessMode p_mode);
 	TimerProcessMode get_timer_process_mode() const;
 	Timer();
