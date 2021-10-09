@@ -82,6 +82,7 @@ void Timer::_notification(int p_what) {
 void Timer::set_wait_time(double p_time) {
 	ERR_FAIL_COND_MSG(p_time <= 0, "Time should be greater than zero.");
 	wait_time = p_time;
+	update_configuration_warnings();
 }
 
 double Timer::get_wait_time() const {
@@ -177,6 +178,16 @@ void Timer::_set_process(bool p_process, bool p_force) {
 			break;
 	}
 	processing = p_process;
+}
+
+TypedArray<String> Timer::get_configuration_warnings() const {
+	TypedArray<String> warnings = Node::get_configuration_warnings();
+
+	if (wait_time < 0.05 - CMP_EPSILON) {
+		warnings.push_back(TTR("Very low timer wait times (< 0.05 seconds) may behave in significantly different ways depending on the rendered or physics frame rate.\nConsider using a script's process loop instead of relying on a Timer for very low wait times."));
+	}
+
+	return warnings;
 }
 
 void Timer::_bind_methods() {
