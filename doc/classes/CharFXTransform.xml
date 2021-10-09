@@ -28,7 +28,7 @@
 			The color the character will be drawn with.
 		</member>
 		<member name="elapsed_time" type="float" setter="set_elapsed_time" getter="get_elapsed_time" default="0.0">
-			The time elapsed since the [RichTextLabel] was added to the scene tree (in seconds). Time stops when the project is paused, unless the [RichTextLabel]'s [member Node.pause_mode] is set to [constant Node.PAUSE_MODE_PROCESS].
+			The time elapsed since the [RichTextLabel] was added to the scene tree (in seconds). Time stops when the [RichTextLabel] is paused (see [member Node.pause_mode]). Resets when the text in the [RichTextLabel] is changed.
 			[b]Note:[/b] Time still passes while the [RichTextLabel] is hidden.
 		</member>
 		<member name="env" type="Dictionary" setter="set_environment" getter="get_environment" default="{}">
