@@ -51,7 +51,8 @@
 			[b]Note:[/b] You cannot set this value. To change the timer's remaining time, use [method start].
 		</member>
 		<member name="wait_time" type="float" setter="set_wait_time" getter="get_wait_time" default="1.0">
-			Wait time in seconds.
+			The wait time in seconds.
+			[b]Note:[/b] Timers can only emit once per rendered frame at most (or once per physics frame if [member process_mode] is [constant TIMER_PROCESS_PHYSICS]). This means very low wait times (lower than 0.05 seconds) will behave in significantly different ways depending on the rendered framerate. For very low wait times, it is recommended to use a process loop in a script instead of using a Timer node.
 		</member>
 	</members>
 	<signals>
