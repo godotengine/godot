@@ -130,6 +130,7 @@ void ImportDock::set_edit_path(const String &p_path) {
 	_add_keep_import_option(importer_name);
 
 	import->set_disabled(false);
+	_set_dirty(false);
 	import_as->set_disabled(false);
 	preset->set_disabled(false);
 
@@ -272,6 +273,7 @@ void ImportDock::set_edit_multiple_paths(const Vector<String> &p_paths) {
 
 	params->paths = p_paths;
 	import->set_disabled(false);
+	_set_dirty(false);
 	import_as->set_disabled(false);
 	preset->set_disabled(false);
 
@@ -511,6 +513,8 @@ void ImportDock::_reimport() {
 
 	EditorFileSystem::get_singleton()->reimport_files(params->paths);
 	EditorFileSystem::get_singleton()->emit_signal("filesystem_changed"); //it changed, so force emitting the signal
+
+	_set_dirty(false);
 }
 
 void ImportDock::_notification(int p_what) {
@@ -526,6 +530,24 @@ void ImportDock::_notification(int p_what) {
 	}
 }
 
+void ImportDock::_property_edited(const StringName &p_prop) {
+	_set_dirty(true);
+}
+
+void ImportDock::_set_dirty(bool p_dirty) {
+	if (p_dirty) {
+		// Add a dirty marker to notify the user that they should reimport the selected resource to see changes.
+		import->set_text(TTR("Reimport") + " (*)");
+		import->add_color_override("font_color", get_color("warning_color", "Editor"));
+		import->set_tooltip(TTR("You have pending changes that haven't been applied yet. Click Reimport to apply changes made to the import options.\nSelecting another resource in the FileSystem dock without clicking Reimport first will discard changes made in the Import dock."));
+	} else {
+		// Remove the dirty marker on the Reimport button.
+		import->set_text(TTR("Reimport"));
+		import->add_color_override("font_color", get_color("font_color", "Editor"));
+		import->set_tooltip("");
+	}
+}
+
 void ImportDock::_property_toggled(const StringName &p_prop, bool p_checked) {
 	if (p_checked) {
 		params->checked.insert(p_prop);
@@ -537,6 +559,7 @@ void ImportDock::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_reimport"), &ImportDock::_reimport);
 	ClassDB::bind_method(D_METHOD("_preset_selected"), &ImportDock::_preset_selected);
 	ClassDB::bind_method(D_METHOD("_importer_selected"), &ImportDock::_importer_selected);
+	ClassDB::bind_method(D_METHOD("_property_edited"), &ImportDock::_property_edited);
 	ClassDB::bind_method(D_METHOD("_property_toggled"), &ImportDock::_property_toggled);
 	ClassDB::bind_method(D_METHOD("_reimport_and_restart"), &ImportDock::_reimport_and_restart);
 	ClassDB::bind_method(D_METHOD("_reimport_attempt"), &ImportDock::_reimport_attempt);
@@ -570,6 +593,7 @@ ImportDock::ImportDock() {
 	import_opts = memnew(EditorInspector);
 	add_child(import_opts);
 	import_opts->set_v_size_flags(SIZE_EXPAND_FILL);
+	import_opts->connect("property_edited", this, "_property_edited");
 	import_opts->connect("property_toggled", this, "_property_toggled");
 
 	hb = memnew(HBoxContainer);
