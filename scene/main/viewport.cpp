@@ -1079,8 +1079,11 @@ Transform2D Viewport::_get_input_pre_xform() const {
 }
 
 Ref<InputEvent> Viewport::_make_input_local(const Ref<InputEvent> &ev) {
-	Transform2D ai = get_final_transform().affine_inverse() * _get_input_pre_xform();
+	if (ev.is_null()) {
+		return ev; // No transformation defined for null event
+	}
 
+	Transform2D ai = get_final_transform().affine_inverse() * _get_input_pre_xform();
 	return ev->xformed_by(ai);
 }
 
