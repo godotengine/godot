@@ -59,6 +59,7 @@ class Range : public Control {
 
 	void _value_changed_notify();
 	void _changed_notify(const char *p_what = "");
+	void _validate_values();
 
 protected:
 	virtual void _value_changed(double) {}
