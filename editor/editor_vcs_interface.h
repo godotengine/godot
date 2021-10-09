@@ -86,7 +86,8 @@ public:
 		String author;
 		String msg;
 		String hex_id;
-		int64_t time;
+		String time;
+		int offset;
 	};
 
 	struct StatusFile {
@@ -164,7 +165,7 @@ public:
 	Dictionary create_diff_line(int p_new_line_no, int p_old_line_no, String p_content, String p_status);
 	Dictionary create_diff_hunk(int p_old_start, int p_new_start, int p_old_lines, int p_new_lines);
 	Dictionary create_diff_file(String p_new_file, String p_old_file);
-	Dictionary create_commit(String p_msg, String p_author, String p_hex_id, int16_t p_time);
+	Dictionary create_commit(String p_msg, String p_author, String p_hex_id, String p_time, int p_offset);
 	Dictionary create_status_file(String p_file_path, ChangeType p_change, TreeArea p_area);
 	Dictionary add_line_diffs_into_diff_hunk(Dictionary p_diff_hunk, Array p_line_diffs);
 	Dictionary add_diff_hunks_into_diff_file(Dictionary p_diff_file, Array p_diff_hunks);

@@ -30,6 +30,7 @@
 
 #include "version_control_editor_plugin.h"
 
+#include "core/bind/core_bind.h"
 #include "core/os/keyboard.h"
 #include "core/script_language.h"
 #include "editor/editor_file_system.h"
@@ -206,12 +207,35 @@ void VersionControlEditorPlugin::_refresh_commit_list() {
 		EditorVCSInterface::Commit commit = e->get();
 		TreeItem *item = commit_list->create_item(commit_list->get_root());
 
-		// Only display the first line of a commit message
-		String commit_display_msg = commit.msg.substr(0, commit.msg.find_char('\n'));
+		Dictionary commit_datetime = _OS::get_singleton()->get_datetime_from_unix_time(commit.time.to_int64());
+		String date = ((int)commit_datetime["month"] < 10 ? "0" : "") + (String)commit_datetime["month"];
+		date = date + "-" + ((int)commit_datetime["day"] < 10 ? "0" : "") + (String)commit_datetime["day"];
+		String time = ((int)commit_datetime["hour"] < 10 ? "0" : "") + (String)commit_datetime["hour"];
+		time = time + ":" + ((int)commit_datetime["minute"] < 10 ? "0" : "") + (String)commit_datetime["minute"];
 
-		item->set_text(0, commit_display_msg.strip_edges());
-		item->set_text(1, commit.author.strip_edges());
-		item->set_metadata(0, commit.hex_id);
+		String sign = commit.offset < 0 ? "-" : "+";
+		int64_t offset = abs(commit.offset);
+		int64_t hours_int = offset / 60;
+		int64_t minutes_int = offset % 60;
+		String hours = (hours_int < 10 ? "0" : "") + String::num_int64(hours_int);
+		String minutes = (minutes_int < 10 ? "0" : "") + String::num_int64(minutes_int);
+		String commit_date = (String)commit_datetime["year"] + "-" + date + " " + time + " UTC" + sign + hours + minutes;
+
+		// Only display the first line of a commit message
+		int line_ending = commit.msg.find_char('\n');
+		String commit_display_msg = commit.msg.substr(0, line_ending);
+
+		Dictionary meta_data;
+		meta_data["commit_id"] = commit.hex_id;
+		meta_data["commit_title"] = commit_display_msg;
+		meta_data["commit_subtitle"] = commit.msg.substr(line_ending).strip_edges();
+		meta_data["commit_date"] = commit_date;
+		meta_data["commit_author"] = commit.author;
+
+		item->set_text(0, commit_display_msg);
+		item->set_text(1, commit_date.strip_edges());
+		item->set_text(2, commit.author.strip_edges());
+		item->set_metadata(0, meta_data);
 	}
 }
 
@@ -450,21 +474,41 @@ void VersionControlEditorPlugin::_load_diff(Object *p_tree) {
 	CHECK_PLUGIN_INITIALIZED();
 
 	version_control_dock_button->set_pressed(true);
+
+	diff->clear();
+
 	Tree *tree = Object::cast_to<Tree>(p_tree);
 	if (tree == staged_files) {
 		String file_path = tree->get_selected()->get_meta("file_path");
-		diff_title->set_text("Staged Changes");
+		diff_title->set_text(TTR("Staged Changes"));
 		diff_content = EditorVCSInterface::get_singleton()->get_file_diff(file_path, EditorVCSInterface::TREE_AREA_STAGED);
 	} else if (tree == unstaged_files) {
 		String file_path = tree->get_selected()->get_meta("file_path");
-		diff_title->set_text("Unstaged Changes");
+		diff_title->set_text(TTR("Unstaged Changes"));
 		diff_content = EditorVCSInterface::get_singleton()->get_file_diff(file_path, EditorVCSInterface::TREE_AREA_UNSTAGED);
 	} else if (tree == commit_list) {
-		String commit_id = tree->get_selected()->get_metadata(0);
-		diff_title->set_text(tree->get_selected()->get_text(0));
+		Dictionary meta_data = tree->get_selected()->get_metadata(0);
+		String commit_id = meta_data["commit_id"];
+		String commit_title = meta_data["commit_title"];
+		String commit_subtitle = meta_data["commit_subtitle"];
+		String commit_date = meta_data["commit_date"];
+		String commit_author = meta_data["commit_author"];
+
+		diff->push_font(EditorNode::get_singleton()->get_gui_base()->get_font("doc_bold", "EditorFonts"));
+		diff->push_color(EditorNode::get_singleton()->get_gui_base()->get_color("accent_color", "Editor"));
+		diff->add_text(TTR("Commit") + ": " + commit_id + "\n");
+		diff->add_text(TTR("Author") + ": " + commit_author + "\n");
+		diff->add_text(TTR("Date") + ": " + commit_date + "\n");
+		if (!commit_subtitle.empty()) {
+			diff->add_text("Subtitle: " + commit_subtitle + "\n");
+		}
+		diff->pop();
+		diff->pop();
+
+		diff_title->set_text(commit_title);
 		diff_content = EditorVCSInterface::get_singleton()->get_file_diff(commit_id, EditorVCSInterface::TREE_AREA_COMMIT);
 	}
-	_display_diff(0);
+	_display_diff(-1);
 }
 
 void VersionControlEditorPlugin::_clear_diff() {
@@ -521,13 +565,17 @@ void VersionControlEditorPlugin::_cell_button_pressed(Object *p_item, int p_colu
 void VersionControlEditorPlugin::_display_diff(int p_idx) {
 	DiffViewType diff_view = (DiffViewType)diff_view_type_select->get_selected();
 
-	diff->clear();
+	// If not displaying diff through the VCS areas
+	if (p_idx != -1) {
+		diff->clear();
+	}
+
 	for (int i = 0; i < diff_content.size(); i++) {
 		EditorVCSInterface::DiffFile diff_file = diff_content[i];
 
 		diff->push_font(EditorNode::get_singleton()->get_gui_base()->get_font("doc_bold", "EditorFonts"));
 		diff->push_color(EditorNode::get_singleton()->get_gui_base()->get_color("accent_color", "Editor"));
-		diff->add_text("File: " + diff_file.new_file);
+		diff->add_text(TTR("File") + ": " + diff_file.new_file);
 		diff->pop();
 		diff->pop();
 
@@ -1034,9 +1082,10 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	commit_list->create_item();
 	commit_list->set_hide_root(true);
 	commit_list->set_select_mode(Tree::SELECT_ROW);
-	commit_list->set_columns(2); // Commit msg, author
-	commit_list->set_column_min_width(0, 75);
-	commit_list->set_column_min_width(1, 25);
+	commit_list->set_columns(3); // Commit msg, id, author
+	commit_list->set_column_min_width(0, 40);
+	commit_list->set_column_min_width(1, 20);
+	commit_list->set_column_min_width(2, 20);
 	commit_list->connect("item_selected", this, "_load_diff", varray(commit_list));
 	version_commit_dock->add_child(commit_list);
 

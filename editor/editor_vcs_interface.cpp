@@ -334,11 +334,12 @@ Dictionary EditorVCSInterface::create_diff_file(String p_new_file, String p_old_
 	return file_diff;
 }
 
-Dictionary EditorVCSInterface::create_commit(String p_msg, String p_author, String p_hex_id, int16_t p_when) {
+Dictionary EditorVCSInterface::create_commit(String p_msg, String p_author, String p_hex_id, String p_when, int p_offset) {
 	Dictionary commit_info;
 	commit_info["message"] = p_msg;
 	commit_info["author"] = p_author;
 	commit_info["when"] = p_when; // Epoch time in seconds
+	commit_info["offset"] = p_offset;
 	commit_info["id"] = p_hex_id;
 	return commit_info;
 }
@@ -398,6 +399,7 @@ EditorVCSInterface::Commit EditorVCSInterface::_convert_commit(Dictionary p_comm
 	c.msg = p_commit["message"];
 	c.author = p_commit["author"];
 	c.time = p_commit["when"]; // Epoch time in seconds
+	c.offset = p_commit["offset"];
 	c.hex_id = p_commit["id"];
 	return c;
 }
@@ -443,7 +445,7 @@ void EditorVCSInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("create_diff_line", "new_line_no", "old_line_no", "content", "status"), &EditorVCSInterface::create_diff_line);
 	ClassDB::bind_method(D_METHOD("create_diff_hunk", "old_start", "new_start", "old_lines", "new_lines"), &EditorVCSInterface::create_diff_hunk);
 	ClassDB::bind_method(D_METHOD("create_diff_file", "new_file", "old_file"), &EditorVCSInterface::create_diff_file);
-	ClassDB::bind_method(D_METHOD("create_commit", "msg", "author", "hex_id", "time"), &EditorVCSInterface::create_commit);
+	ClassDB::bind_method(D_METHOD("create_commit", "msg", "author", "hex_id", "time", "offset"), &EditorVCSInterface::create_commit);
 	ClassDB::bind_method(D_METHOD("create_status_file", "file_path", "change_type", "area"), &EditorVCSInterface::create_status_file);
 	ClassDB::bind_method(D_METHOD("add_diff_hunks_into_diff_file", "diff_hunk", "line_diffs"), &EditorVCSInterface::add_diff_hunks_into_diff_file);
 	ClassDB::bind_method(D_METHOD("add_line_diffs_into_diff_hunk", "diff_files", "diff_hunks"), &EditorVCSInterface::add_line_diffs_into_diff_hunk);
