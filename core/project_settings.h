@@ -56,6 +56,10 @@ protected:
 		bool hide_from_editor;
 		bool overridden;
 		bool restart_if_changed;
+#ifdef DEBUG_METHODS_ENABLED
+		bool ignore_value_in_docs = false;
+#endif
+
 		VariantContainer() :
 				order(0),
 				persist(false),
@@ -124,6 +128,9 @@ public:
 
 	void set_initial_value(const String &p_name, const Variant &p_value);
 	void set_restart_if_changed(const String &p_name, bool p_restart);
+	void set_ignore_value_in_docs(const String &p_name, bool p_ignore);
+	bool get_ignore_value_in_docs(const String &p_name) const;
+
 	bool property_can_revert(const String &p_name);
 	Variant property_get_revert(const String &p_name);
 
@@ -163,10 +170,12 @@ public:
 };
 
 //not a macro any longer
-Variant _GLOBAL_DEF(const String &p_var, const Variant &p_default, bool p_restart_if_changed = false);
+Variant _GLOBAL_DEF(const String &p_var, const Variant &p_default, bool p_restart_if_changed = false, bool p_ignore_value_in_docs = false);
 Variant _GLOBAL_DEF_ALIAS(const String &p_var, const String &p_old_name, const Variant &p_default, bool p_restart_if_changed = false);
 #define GLOBAL_DEF(m_var, m_value) _GLOBAL_DEF(m_var, m_value)
 #define GLOBAL_DEF_RST(m_var, m_value) _GLOBAL_DEF(m_var, m_value, true)
+#define GLOBAL_DEF_NOVAL(m_var, m_value) _GLOBAL_DEF(m_var, m_value, false, true)
+#define GLOBAL_DEF_RST_NOVAL(m_var, m_value) _GLOBAL_DEF(m_var, m_value, true, true)
 #define GLOBAL_DEF_ALIAS(m_var, m_old_name, m_value) _GLOBAL_DEF_ALIAS(m_var, m_old_name, m_value)
 #define GLOBAL_DEF_ALIAS_RST(m_var, m_old_name, m_value) _GLOBAL_DEF(m_var, m_old_name, m_value, true)
 #define GLOBAL_GET(m_var) ProjectSettings::get_singleton()->get(m_var)
