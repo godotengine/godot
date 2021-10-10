@@ -30,6 +30,7 @@
 			<return type="LineEdit" />
 			<description>
 				Returns the [LineEdit] instance from this [SpinBox]. You can use it to access properties and methods of [LineEdit].
+				[b]Warning:[/b] This is a required internal node, removing and freeing it may cause a crash. If you wish to hide it or any of its children, use their [member CanvasItem.visible] property.
 			</description>
 		</method>
 	</methods>

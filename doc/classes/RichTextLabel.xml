@@ -70,6 +70,7 @@
 			<return type="VScrollBar" />
 			<description>
 				Returns the vertical scrollbar.
+				[b]Warning:[/b] This is a required internal node, removing and freeing it may cause a crash. If you wish to hide it or any of its children, use their [member CanvasItem.visible] property.
 			</description>
 		</method>
 		<method name="get_visible_line_count" qualifiers="const">

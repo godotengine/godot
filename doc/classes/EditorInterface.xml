@@ -28,6 +28,7 @@
 			<return type="Control" />
 			<description>
 				Returns the main container of Godot editor's window. For example, you can use it to retrieve the size of the container and place your controls accordingly.
+				[b]Warning:[/b] Removing and freeing this node will render the editor useless and may cause a crash.
 			</description>
 		</method>
 		<method name="get_current_path" qualifiers="const">
@@ -60,18 +61,21 @@
 			<description>
 				Returns the main editor control. Use this as a parent for main screens.
 				[b]Note:[/b] This returns the main editor control containing the whole editor, not the 2D or 3D viewports specifically.
+				[b]Warning:[/b] Removing and freeing this node will render a part of the editor useless and may cause a crash.
 			</description>
 		</method>
 		<method name="get_file_system_dock">
 			<return type="FileSystemDock" />
 			<description>
 				Returns the editor's [FileSystemDock] instance.
+				[b]Warning:[/b] Removing and freeing this node will render a part of the editor useless and may cause a crash.
 			</description>
 		</method>
 		<method name="get_inspector" qualifiers="const">
 			<return type="EditorInspector" />
 			<description>
 				Returns the editor's [EditorInspector] instance.
+				[b]Warning:[/b] Removing and freeing this node will render a part of the editor useless and may cause a crash.
 			</description>
 		</method>
 		<method name="get_open_scenes" qualifiers="const">
@@ -102,6 +106,7 @@
 			<return type="ScriptEditor" />
 			<description>
 				Returns the editor's [ScriptEditor] instance.
+				[b]Warning:[/b] Removing and freeing this node will render a part of the editor useless and may cause a crash.
 			</description>
 		</method>
 		<method name="get_selected_path" qualifiers="const">
