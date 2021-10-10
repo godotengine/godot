@@ -282,7 +282,7 @@ void AudioStreamPlayer3D::_notification(int p_what) {
 			ERR_FAIL_COND_MSG(new_playback.is_null(), "Failed to instantiate playback.");
 			Map<StringName, Vector<AudioFrame>> bus_map;
 			bus_map[_get_actual_bus()] = volume_vector;
-			AudioServer::get_singleton()->start_playback_stream(new_playback, bus_map, setplay.get(), linear_attenuation, attenuation_filter_cutoff_hz, actual_pitch_scale);
+			AudioServer::get_singleton()->start_playback_stream(new_playback, bus_map, setplay.get(), actual_pitch_scale, linear_attenuation, attenuation_filter_cutoff_hz);
 			stream_playbacks.push_back(new_playback);
 			setplay.set(-1);
 		}

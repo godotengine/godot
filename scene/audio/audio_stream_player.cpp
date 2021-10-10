@@ -135,7 +135,7 @@ void AudioStreamPlayer::play(float p_from_pos) {
 	Ref<AudioStreamPlayback> stream_playback = stream->instance_playback();
 	ERR_FAIL_COND_MSG(stream_playback.is_null(), "Failed to instantiate playback.");
 
-	AudioServer::get_singleton()->start_playback_stream(stream_playback, bus, _get_volume_vector(), p_from_pos);
+	AudioServer::get_singleton()->start_playback_stream(stream_playback, bus, _get_volume_vector(), p_from_pos, pitch_scale);
 	stream_playbacks.push_back(stream_playback);
 	active.set();
 	set_process_internal(true);
