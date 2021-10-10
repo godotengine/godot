@@ -2335,9 +2335,14 @@ void CodeEdit::_gutter_clicked(int p_line, int p_gutter) {
 	}
 
 	if (p_gutter == line_number_gutter) {
-		set_selection_mode(TextEdit::SelectionMode::SELECTION_MODE_LINE, p_line, 0);
-		select(p_line, 0, p_line + 1, 0);
-		set_caret_line(p_line + 1);
+		if (!get_line(p_line).is_empty()) {
+			set_selection_mode(TextEdit::SelectionMode::SELECTION_MODE_LINE, p_line, 0);
+			select(p_line, 0, p_line + 1, 0);
+			set_caret_line(p_line + 1);
+		} else {
+			deselect();
+			set_caret_line(p_line);
+		}
 		set_caret_column(0);
 		return;
 	}
