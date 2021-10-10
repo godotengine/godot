@@ -108,6 +108,7 @@ public:
 
 	// Proxy functions to the editor for use
 	bool initialize(String p_project_path);
+	void set_credentials(String p_username, String p_password, String p_ssh_public_key_path, String p_ssh_private_key_path, String p_ssh_passphrase);
 	List<StatusFile> get_modified_files_data();
 	void stage_file(String p_file_path);
 	void unstage_file(String p_file_path);
@@ -123,9 +124,9 @@ public:
 	void create_remote(String p_remote_name, String p_remote_url);
 	String get_current_branch_name();
 	bool checkout_branch(String p_branch_name);
-	void pull(String p_remote, String p_username, String p_password);
-	void push(String p_remote, String p_username, String p_password, bool p_force);
-	void fetch(String p_remote, String p_username, String p_password);
+	void pull(String p_remote);
+	void push(String p_remote, bool p_force);
+	void fetch(String p_remote);
 	List<DiffHunk> get_line_diff(String p_file_path, String p_text);
 
 	// Helper functions to create and convert Dictionary into data structures

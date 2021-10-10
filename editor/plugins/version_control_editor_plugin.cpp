@@ -45,6 +45,7 @@ VersionControlEditorPlugin *VersionControlEditorPlugin::singleton = nullptr;
 
 void VersionControlEditorPlugin::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_initialize_vcs"), &VersionControlEditorPlugin::_initialize_vcs);
+	ClassDB::bind_method(D_METHOD("_set_credentials"), &VersionControlEditorPlugin::_set_credentials);
 	ClassDB::bind_method(D_METHOD("_update_set_up_warning"), &VersionControlEditorPlugin::_update_set_up_warning);
 	ClassDB::bind_method(D_METHOD("_commit"), &VersionControlEditorPlugin::_commit);
 	ClassDB::bind_method(D_METHOD("_refresh_stage_area"), &VersionControlEditorPlugin::_refresh_stage_area);
@@ -58,6 +59,8 @@ void VersionControlEditorPlugin::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_refresh_branch_list"), &VersionControlEditorPlugin::_refresh_branch_list);
 	ClassDB::bind_method(D_METHOD("_refresh_commit_list"), &VersionControlEditorPlugin::_refresh_commit_list);
 	ClassDB::bind_method(D_METHOD("_refresh_remote_list"), &VersionControlEditorPlugin::_refresh_remote_list);
+	ClassDB::bind_method(D_METHOD("_ssh_public_key_selected"), &VersionControlEditorPlugin::_ssh_public_key_selected);
+	ClassDB::bind_method(D_METHOD("_ssh_private_key_selected"), &VersionControlEditorPlugin::_ssh_private_key_selected);
 	ClassDB::bind_method(D_METHOD("_commit_message_gui_input"), &VersionControlEditorPlugin::_commit_message_gui_input);
 	ClassDB::bind_method(D_METHOD("_cell_button_pressed"), &VersionControlEditorPlugin::_cell_button_pressed);
 	ClassDB::bind_method(D_METHOD("_discard_all"), &VersionControlEditorPlugin::_discard_all);
@@ -135,6 +138,17 @@ void VersionControlEditorPlugin::_initialize_vcs() {
 	}
 }
 
+void VersionControlEditorPlugin::_set_credentials() {
+	CHECK_PLUGIN_INITIALIZED();
+
+	EditorVCSInterface::get_singleton()->set_credentials(
+			set_up_username->get_text(),
+			set_up_password->get_text(),
+			set_up_ssh_public_key_path->get_text(),
+			set_up_ssh_private_key_path->get_text(),
+			set_up_ssh_passphrase->get_text());
+}
+
 bool VersionControlEditorPlugin::_load_plugin(String p_name) {
 	String path = ScriptServer::get_global_class_path(p_name);
 	Ref<Script> script = ResourceLoader::load(path);
@@ -146,7 +160,7 @@ bool VersionControlEditorPlugin::_load_plugin(String p_name) {
 
 	ERR_FAIL_COND_V_MSG(!plugin_script_instance, false, "Failed to create plugin script instance.");
 
-	// The plugin is attached as a script to the VCS interface as a proxy end-point
+	// The plugin is attached as a script to the VCS interface singleton as a proxy end-point
 	vcs_interface->set_script_instance(plugin_script_instance);
 
 	EditorVCSInterface::set_singleton(vcs_interface);
@@ -169,7 +183,11 @@ void VersionControlEditorPlugin::_set_up() {
 }
 
 void VersionControlEditorPlugin::_update_set_up_warning(String p_new_text) {
-	bool empty_settings = set_up_username->get_text().strip_edges().empty() || set_up_password->get_text().strip_edges().empty();
+	bool empty_settings = set_up_username->get_text().strip_edges().empty() &&
+						  set_up_password->get_text().strip_edges().empty() &&
+						  set_up_ssh_public_key_path->get_text().strip_edges().empty() &&
+						  set_up_ssh_private_key_path->get_text().strip_edges().empty() &&
+						  set_up_ssh_passphrase->get_text().strip_edges().empty();
 
 	if (empty_settings) {
 		set_up_warning_text->add_color_override("font_color", EditorNode::get_singleton()->get_gui_base()->get_color("warning_color", "Editor"));
@@ -281,9 +299,15 @@ void VersionControlEditorPlugin::_branch_item_selected(int p_index) {
 }
 
 void VersionControlEditorPlugin::_remote_selected(int p_index) {
-	CHECK_PLUGIN_INITIALIZED();
-
 	_refresh_remote_list();
+}
+
+void VersionControlEditorPlugin::_ssh_public_key_selected(String p_path) {
+	set_up_ssh_public_key_path->set_text(p_path);
+}
+
+void VersionControlEditorPlugin::_ssh_private_key_selected(String p_path) {
+	set_up_ssh_private_key_path->set_text(p_path);
 }
 
 void VersionControlEditorPlugin::_create_branch() {
@@ -414,14 +438,14 @@ void VersionControlEditorPlugin::_add_new_item(Tree *p_tree, String p_file_path,
 void VersionControlEditorPlugin::_fetch() {
 	CHECK_PLUGIN_INITIALIZED();
 
-	EditorVCSInterface::get_singleton()->fetch(remote_select->get_selected_metadata(), set_up_username->get_text(), set_up_password->get_text());
+	EditorVCSInterface::get_singleton()->fetch(remote_select->get_selected_metadata());
 	_refresh_branch_list();
 }
 
 void VersionControlEditorPlugin::_pull() {
 	CHECK_PLUGIN_INITIALIZED();
 
-	EditorVCSInterface::get_singleton()->pull(remote_select->get_selected_metadata(), set_up_username->get_text(), set_up_password->get_text());
+	EditorVCSInterface::get_singleton()->pull(remote_select->get_selected_metadata());
 	_refresh_stage_area();
 	_refresh_branch_list();
 	_refresh_commit_list();
@@ -432,7 +456,7 @@ void VersionControlEditorPlugin::_pull() {
 void VersionControlEditorPlugin::_push() {
 	CHECK_PLUGIN_INITIALIZED();
 
-	EditorVCSInterface::get_singleton()->push(remote_select->get_selected_metadata(), set_up_username->get_text(), set_up_password->get_text(), force_push_box->is_pressed());
+	EditorVCSInterface::get_singleton()->push(remote_select->get_selected_metadata(), force_push_box->is_pressed());
 	force_push_box->set_pressed(false);
 }
 
@@ -489,7 +513,7 @@ void VersionControlEditorPlugin::_load_diff(Object *p_tree) {
 
 void VersionControlEditorPlugin::_clear_diff() {
 	diff->clear();
-	diff_content = List<EditorVCSInterface::DiffFile>();
+	diff_content.clear();
 	diff_title->set_text("");
 }
 
@@ -871,6 +895,10 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	set_up_dialog->set_hide_on_ok(true);
 	version_control_actions->add_child(set_up_dialog);
 
+	Button *set_up_apply_button = set_up_dialog->get_ok();
+	set_up_apply_button->set_text(TTR("Apply"));
+	set_up_apply_button->connect("pressed", this, "_set_credentials");
+
 	set_up_vbc = memnew(VBoxContainer);
 	set_up_vbc->set_alignment(VBoxContainer::ALIGN_CENTER);
 	set_up_dialog->add_child(set_up_vbc);
@@ -935,6 +963,90 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	set_up_password->set_secret(true);
 	set_up_password->connect("text_changed", this, "_update_set_up_warning");
 	set_up_password_input->add_child(set_up_password);
+
+	HBoxContainer *set_up_ssh_public_key_input = memnew(HBoxContainer);
+	set_up_ssh_public_key_input->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	set_up_settings_vbc->add_child(set_up_ssh_public_key_input);
+
+	Label *set_up_ssh_public_key_label = memnew(Label);
+	set_up_ssh_public_key_label->set_text(TTR("SSH Public Key Path"));
+	set_up_ssh_public_key_label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	set_up_ssh_public_key_input->add_child(set_up_ssh_public_key_label);
+
+	HBoxContainer *set_up_ssh_public_key_input_hbc = memnew(HBoxContainer);
+	set_up_ssh_public_key_input_hbc->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	set_up_ssh_public_key_input->add_child(set_up_ssh_public_key_input_hbc);
+
+	set_up_ssh_public_key_path = memnew(LineEdit);
+	set_up_ssh_public_key_path->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	set_up_ssh_public_key_path->connect("text_changed", this, "_update_set_up_warning");
+	set_up_ssh_public_key_input_hbc->add_child(set_up_ssh_public_key_path);
+
+	set_up_ssh_public_key_file_dialog = memnew(FileDialog);
+	set_up_ssh_public_key_file_dialog->set_access(FileDialog::ACCESS_FILESYSTEM);
+	set_up_ssh_public_key_file_dialog->set_mode(FileDialog::MODE_OPEN_FILE);
+	set_up_ssh_public_key_file_dialog->set_show_hidden_files(true);
+	// TODO: Make this start at the user's home folder
+	DirAccess *d = DirAccess::open(OS::get_singleton()->get_system_dir(OS::SystemDir::SYSTEM_DIR_DOCUMENTS));
+	d->change_dir("../");
+	set_up_ssh_public_key_file_dialog->set_current_dir(d->get_current_dir());
+	set_up_ssh_public_key_file_dialog->connect("file_selected", this, "_ssh_public_key_selected");
+	set_up_ssh_public_key_input_hbc->add_child(set_up_ssh_public_key_file_dialog);
+
+	Button *select_public_path_button = memnew(Button);
+	select_public_path_button->set_icon(EditorNode::get_singleton()->get_gui_base()->get_icon("TextFile", "EditorIcons"));
+	select_public_path_button->connect("pressed", set_up_ssh_public_key_file_dialog, "popup_centered_ratio");
+	select_public_path_button->set_tooltip(TTR("Select SSH Public Key Path"));
+	set_up_ssh_public_key_input_hbc->add_child(select_public_path_button);
+
+	HBoxContainer *set_up_ssh_private_key_input = memnew(HBoxContainer);
+	set_up_ssh_private_key_input->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	set_up_settings_vbc->add_child(set_up_ssh_private_key_input);
+
+	Label *set_up_ssh_private_key_label = memnew(Label);
+	set_up_ssh_private_key_label->set_text(TTR("SSH Private Key Path"));
+	set_up_ssh_private_key_label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	set_up_ssh_private_key_input->add_child(set_up_ssh_private_key_label);
+
+	HBoxContainer *set_up_ssh_private_key_input_hbc = memnew(HBoxContainer);
+	set_up_ssh_private_key_input_hbc->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	set_up_ssh_private_key_input->add_child(set_up_ssh_private_key_input_hbc);
+
+	set_up_ssh_private_key_path = memnew(LineEdit);
+	set_up_ssh_private_key_path->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	set_up_ssh_private_key_path->connect("text_changed", this, "_update_set_up_warning");
+	set_up_ssh_private_key_input_hbc->add_child(set_up_ssh_private_key_path);
+
+	set_up_ssh_private_key_file_dialog = memnew(FileDialog);
+	set_up_ssh_private_key_file_dialog->set_access(FileDialog::ACCESS_FILESYSTEM);
+	set_up_ssh_private_key_file_dialog->set_mode(FileDialog::MODE_OPEN_FILE);
+	set_up_ssh_private_key_file_dialog->set_show_hidden_files(true);
+	// TODO: Make this start at the user's home folder
+	set_up_ssh_private_key_file_dialog->set_current_dir(d->get_current_dir());
+	memdelete(d);
+	set_up_ssh_private_key_file_dialog->connect("file_selected", this, "_ssh_private_key_selected");
+	set_up_ssh_private_key_input_hbc->add_child(set_up_ssh_private_key_file_dialog);
+
+	Button *select_private_path_button = memnew(Button);
+	select_private_path_button->set_icon(EditorNode::get_singleton()->get_gui_base()->get_icon("TextFile", "EditorIcons"));
+	select_private_path_button->connect("pressed", set_up_ssh_private_key_file_dialog, "popup_centered_ratio");
+	select_private_path_button->set_tooltip(TTR("Select SSH Private Key Path"));
+	set_up_ssh_private_key_input_hbc->add_child(select_private_path_button);
+
+	HBoxContainer *set_up_ssh_passphrase_input = memnew(HBoxContainer);
+	set_up_ssh_passphrase_input->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	set_up_settings_vbc->add_child(set_up_ssh_passphrase_input);
+
+	Label *set_up_ssh_passphrase_label = memnew(Label);
+	set_up_ssh_passphrase_label->set_text(TTR("SSH Passphrase"));
+	set_up_ssh_passphrase_label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	set_up_ssh_passphrase_input->add_child(set_up_ssh_passphrase_label);
+
+	set_up_ssh_passphrase = memnew(LineEdit);
+	set_up_ssh_passphrase->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	set_up_ssh_passphrase->set_secret(true);
+	set_up_ssh_passphrase->connect("text_changed", this, "_update_set_up_warning");
+	set_up_ssh_passphrase_input->add_child(set_up_ssh_passphrase);
 
 	set_up_warning_text = memnew(Label);
 	set_up_warning_text->set_align(Label::ALIGN_CENTER);

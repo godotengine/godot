@@ -41,6 +41,10 @@ bool EditorVCSInterface::initialize(String p_project_path) {
 	return call("_initialize", p_project_path);
 }
 
+void EditorVCSInterface::set_credentials(String p_username, String p_password, String p_ssh_public_key, String p_ssh_private_key, String p_ssh_passphrase) {
+	call("_set_credentials", p_username, p_password, p_ssh_public_key, p_ssh_private_key, p_ssh_passphrase);
+}
+
 List<String> EditorVCSInterface::get_remotes() {
 	List<String> remotes;
 
@@ -128,16 +132,16 @@ bool EditorVCSInterface::checkout_branch(String p_branch_name) {
 	return call("_checkout_branch", p_branch_name);
 }
 
-void EditorVCSInterface::pull(String p_remote, String p_username, String p_password) {
-	call("_pull", p_remote, p_username, p_password);
+void EditorVCSInterface::pull(String p_remote) {
+	call("_pull", p_remote);
 }
 
-void EditorVCSInterface::push(String p_remote, String p_username, String p_password, bool p_force) {
-	call("_push", p_remote, p_username, p_password, p_force);
+void EditorVCSInterface::push(String p_remote, bool p_force) {
+	call("_push", p_remote, p_force);
 }
 
-void EditorVCSInterface::fetch(String p_remote, String p_username, String p_password) {
-	call("_fetch", p_remote, p_username, p_password);
+void EditorVCSInterface::fetch(String p_remote) {
+	call("_fetch", p_remote);
 }
 
 List<EditorVCSInterface::DiffHunk> EditorVCSInterface::get_line_diff(String p_file_path, String p_text) {
@@ -269,6 +273,7 @@ EditorVCSInterface::StatusFile EditorVCSInterface::_convert_status_file(Dictiona
 void EditorVCSInterface::_bind_methods() {
 	// Proxy end points that implement the VCS specific operations that the editor demands
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::BOOL, "_initialize", PropertyInfo(Variant::STRING, "project_path")));
+	ClassDB::add_virtual_method(get_class_static(), MethodInfo("_set_credentials", PropertyInfo(Variant::STRING, "username"), PropertyInfo(Variant::STRING, "password"), PropertyInfo(Variant::STRING, "ssh_public_key_path"), PropertyInfo(Variant::STRING, "ssh_private_key_path"), PropertyInfo(Variant::STRING, "ssh_passphrase")));
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::ARRAY, "_get_remotes"));
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::STRING, "_get_vcs_name"));
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::BOOL, "_shut_down"));
@@ -284,9 +289,9 @@ void EditorVCSInterface::_bind_methods() {
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo("_create_remote", PropertyInfo(Variant::STRING, "remote_name"), PropertyInfo(Variant::STRING, "remote_url")));
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::STRING, "_get_current_branch_name"));
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::BOOL, "_checkout_branch", PropertyInfo(Variant::STRING, "branch_name")));
-	ClassDB::add_virtual_method(get_class_static(), MethodInfo("_push", PropertyInfo(Variant::STRING, "remote"), PropertyInfo(Variant::STRING, "username"), PropertyInfo(Variant::STRING, "password"), PropertyInfo(Variant::BOOL, "force")));
-	ClassDB::add_virtual_method(get_class_static(), MethodInfo("_pull", PropertyInfo(Variant::STRING, "remote"), PropertyInfo(Variant::STRING, "username"), PropertyInfo(Variant::STRING, "password")));
-	ClassDB::add_virtual_method(get_class_static(), MethodInfo("_fetch", PropertyInfo(Variant::STRING, "remote"), PropertyInfo(Variant::STRING, "username"), PropertyInfo(Variant::STRING, "password")));
+	ClassDB::add_virtual_method(get_class_static(), MethodInfo("_push", PropertyInfo(Variant::STRING, "remote"), PropertyInfo(Variant::BOOL, "force")));
+	ClassDB::add_virtual_method(get_class_static(), MethodInfo("_pull", PropertyInfo(Variant::STRING, "remote")));
+	ClassDB::add_virtual_method(get_class_static(), MethodInfo("_fetch", PropertyInfo(Variant::STRING, "remote")));
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::ARRAY, "_get_line_diff", PropertyInfo(Variant::STRING, "file_path"), PropertyInfo(Variant::STRING, "text")));
 
 	ClassDB::bind_method(D_METHOD("create_diff_line", "new_line_no", "old_line_no", "content", "status"), &EditorVCSInterface::create_diff_line);

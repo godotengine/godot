@@ -34,6 +34,7 @@
 #include "editor/editor_plugin.h"
 #include "editor/editor_vcs_interface.h"
 #include "scene/gui/container.h"
+#include "scene/gui/file_dialog.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/rich_text_label.h"
 #include "scene/gui/tab_container.h"
@@ -69,9 +70,12 @@ private:
 	VBoxContainer *set_up_settings_vbc;
 	LineEdit *set_up_username;
 	LineEdit *set_up_password;
+	LineEdit *set_up_ssh_public_key_path;
+	LineEdit *set_up_ssh_private_key_path;
+	LineEdit *set_up_ssh_passphrase;
+	FileDialog *set_up_ssh_public_key_file_dialog;
+	FileDialog *set_up_ssh_private_key_file_dialog;
 	Label *set_up_warning_text;
-
-	Control *set_up_vcs_settings = nullptr;
 
 	AcceptDialog *branch_create_dialog;
 	LineEdit *branch_create_name_input;
@@ -117,12 +121,16 @@ private:
 
 	void _notification(int p_what);
 	void _initialize_vcs();
+	void _set_credentials();
+	void _ssh_public_key_selected(String p_path);
+	void _ssh_private_key_selected(String p_path);
 	void _populate_available_vcs_names();
-	bool _load_plugin(String p_path);
 	void _update_remotes_list();
 	void _update_set_up_warning(String p_new_text);
-	void _set_up();
 	void _update_opened_tabs();
+
+	bool _load_plugin(String p_path);
+	void _set_up();
 
 	void _pull();
 	void _push();
