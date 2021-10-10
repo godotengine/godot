@@ -774,7 +774,7 @@ void BaseMaterial3D::_update_shader() {
 	if (!flags[FLAG_UV1_USE_TRIPLANAR]) {
 		code += "	UV=UV*uv1_scale.xy+uv1_offset.xy;\n";
 		code += "	if (determinant(mat3(WORLD_MATRIX)) < 0.0) {";
-		code += "		NORMAL = -NORMAL;"
+		code += "		NORMAL = -NORMAL;";
 		code += "	}";
 	}
 
