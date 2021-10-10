@@ -59,6 +59,7 @@ public:
 	struct ConstantDoc {
 		String name;
 		String value;
+		bool is_value_valid;
 		String enumeration;
 		String description;
 	};

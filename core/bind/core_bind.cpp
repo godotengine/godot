@@ -1451,6 +1451,7 @@ void _OS::_bind_methods() {
 	// to avoid using values from the documentation writer's own OS instance.
 	ADD_PROPERTY_DEFAULT("clipboard", "");
 	ADD_PROPERTY_DEFAULT("current_screen", 0);
+	ADD_PROPERTY_DEFAULT("tablet_driver", "");
 	ADD_PROPERTY_DEFAULT("exit_code", 0);
 	ADD_PROPERTY_DEFAULT("vsync_enabled", true);
 	ADD_PROPERTY_DEFAULT("vsync_via_compositor", false);

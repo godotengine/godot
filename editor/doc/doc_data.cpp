@@ -297,8 +297,10 @@ void DocData::generate(bool p_basic_types) {
 					continue;
 				}
 				if (E->get().usage & PROPERTY_USAGE_EDITOR) {
-					default_value = ProjectSettings::get_singleton()->property_get_revert(E->get().name);
-					default_value_valid = true;
+					if (!ProjectSettings::get_singleton()->get_ignore_value_in_docs(E->get().name)) {
+						default_value = ProjectSettings::get_singleton()->property_get_revert(E->get().name);
+						default_value_valid = true;
+					}
 				}
 			} else {
 				default_value = get_documentation_default_value(name, E->get().name, default_value_valid);
@@ -450,6 +452,7 @@ void DocData::generate(bool p_basic_types) {
 			ConstantDoc constant;
 			constant.name = E->get();
 			constant.value = itos(ClassDB::get_integer_constant(name, E->get()));
+			constant.is_value_valid = true;
 			constant.enumeration = ClassDB::get_integer_constant_enum(name, E->get());
 			c.constants.push_back(constant);
 		}
@@ -598,6 +601,7 @@ void DocData::generate(bool p_basic_types) {
 			constant.name = E->get();
 			Variant value = Variant::get_constant_value(Variant::Type(i), E->get());
 			constant.value = value.get_type() == Variant::INT ? itos(value) : value.get_construct_string();
+			constant.is_value_valid = true;
 			c.constants.push_back(constant);
 		}
 	}
@@ -613,7 +617,12 @@ void DocData::generate(bool p_basic_types) {
 		for (int i = 0; i < GlobalConstants::get_global_constant_count(); i++) {
 			ConstantDoc cd;
 			cd.name = GlobalConstants::get_global_constant_name(i);
-			cd.value = itos(GlobalConstants::get_global_constant_value(i));
+			if (!GlobalConstants::get_ignore_value_in_docs(i)) {
+				cd.value = itos(GlobalConstants::get_global_constant_value(i));
+				cd.is_value_valid = true;
+			} else {
+				cd.is_value_valid = false;
+			}
 			cd.enumeration = GlobalConstants::get_global_constant_enum(i);
 			c.constants.push_back(cd);
 		}
@@ -693,6 +702,7 @@ void DocData::generate(bool p_basic_types) {
 				ConstantDoc cd;
 				cd.name = E->get().first;
 				cd.value = E->get().second;
+				cd.is_value_valid = true;
 				c.constants.push_back(cd);
 			}
 
@@ -967,6 +977,7 @@ Error DocData::_load(Ref<XMLParser> parser) {
 								constant2.name = parser->get_attribute_value("name");
 								ERR_FAIL_COND_V(!parser->has_attribute("value"), ERR_FILE_CORRUPT);
 								constant2.value = parser->get_attribute_value("value");
+								constant2.is_value_valid = true;
 								if (parser->has_attribute("enum")) {
 									constant2.enumeration = parser->get_attribute_value("enum");
 								}
@@ -1152,10 +1163,18 @@ Error DocData::save_classes(const String &p_default_path, const Map<String, Stri
 
 		for (int i = 0; i < c.constants.size(); i++) {
 			const ConstantDoc &k = c.constants[i];
-			if (k.enumeration != String()) {
-				_write_string(f, 2, "<constant name=\"" + k.name + "\" value=\"" + k.value + "\" enum=\"" + k.enumeration + "\">");
+			if (k.is_value_valid) {
+				if (k.enumeration != String()) {
+					_write_string(f, 2, "<constant name=\"" + k.name + "\" value=\"" + k.value + "\" enum=\"" + k.enumeration + "\">");
+				} else {
+					_write_string(f, 2, "<constant name=\"" + k.name + "\" value=\"" + k.value + "\">");
+				}
 			} else {
-				_write_string(f, 2, "<constant name=\"" + k.name + "\" value=\"" + k.value + "\">");
+				if (k.enumeration != String()) {
+					_write_string(f, 2, "<constant name=\"" + k.name + "\" value=\"platform-dependent\" enum=\"" + k.enumeration + "\">");
+				} else {
+					_write_string(f, 2, "<constant name=\"" + k.name + "\" value=\"platform-dependent\">");
+				}
 			}
 			_write_string(f, 3, k.description.strip_edges().xml_escape());
 			_write_string(f, 2, "</constant>");
