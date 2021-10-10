@@ -409,6 +409,23 @@ bool TileMap::is_layer_enabled(int p_layer) const {
 	return layers[p_layer].enabled;
 }
 
+void TileMap::set_layer_physics_override(int p_layer, int p_override) {
+	ERR_FAIL_INDEX(p_layer, (int)layers.size());
+	if (tile_set.is_valid()) {
+		p_override = MIN(p_override, tile_set->get_physics_layers_count() - 1);
+	}
+
+	layers[p_layer].physics_override = p_override;
+	_clear_internals();
+	_recreate_internals();
+	emit_signal(SNAME("changed"));
+}
+
+int TileMap::get_layer_physics_override(int p_layer) const {
+	ERR_FAIL_INDEX_V(p_layer, (int)layers.size(), false);
+	return layers[p_layer].physics_override;
+}
+
 void TileMap::set_layer_y_sort_enabled(int p_layer, bool p_y_sort_enabled) {
 	ERR_FAIL_INDEX(p_layer, (int)layers.size());
 	layers[p_layer].y_sort_enabled = p_y_sort_enabled;
@@ -1183,6 +1200,7 @@ void TileMap::_physics_update_dirty_quadrants(SelfList<TileMapQuadrant>::List &r
 	SelfList<TileMapQuadrant> *q_list_element = r_dirty_quadrant_list.first();
 	while (q_list_element) {
 		TileMapQuadrant &q = *q_list_element->self();
+		int physics_override = get_layer_physics_override(q.layer);
 
 		// Clear bodies.
 		for (RID body : q.bodies) {
@@ -1208,9 +1226,11 @@ void TileMap::_physics_update_dirty_quadrants(SelfList<TileMapQuadrant>::List &r
 					TileData *tile_data = Object::cast_to<TileData>(atlas_source->get_tile_data(c.get_atlas_coords(), c.alternative_tile));
 
 					for (int tile_set_physics_layer = 0; tile_set_physics_layer < tile_set->get_physics_layers_count(); tile_set_physics_layer++) {
-						Ref<PhysicsMaterial> physics_material = tile_set->get_physics_layer_physics_material(tile_set_physics_layer);
-						uint32_t physics_layer = tile_set->get_physics_layer_collision_layer(tile_set_physics_layer);
-						uint32_t physics_mask = tile_set->get_physics_layer_collision_mask(tile_set_physics_layer);
+						int used_layer = physics_override >= 0 ? physics_override : tile_set_physics_layer;
+
+						Ref<PhysicsMaterial> physics_material = tile_set->get_physics_layer_physics_material(used_layer);
+						uint32_t physics_layer = tile_set->get_physics_layer_collision_layer(used_layer);
+						uint32_t physics_mask = tile_set->get_physics_layer_collision_mask(used_layer);
 
 						// Create the body.
 						RID body = ps->body_create();
@@ -1227,8 +1247,8 @@ void TileMap::_physics_update_dirty_quadrants(SelfList<TileMapQuadrant>::List &r
 						ps->body_set_collision_layer(body, physics_layer);
 						ps->body_set_collision_mask(body, physics_mask);
 						ps->body_set_pickable(body, false);
-						ps->body_set_state(body, PhysicsServer2D::BODY_STATE_LINEAR_VELOCITY, tile_data->get_constant_linear_velocity(tile_set_physics_layer));
-						ps->body_set_state(body, PhysicsServer2D::BODY_STATE_ANGULAR_VELOCITY, tile_data->get_constant_angular_velocity(tile_set_physics_layer));
+						ps->body_set_state(body, PhysicsServer2D::BODY_STATE_LINEAR_VELOCITY, tile_data->get_constant_linear_velocity(used_layer));
+						ps->body_set_state(body, PhysicsServer2D::BODY_STATE_ANGULAR_VELOCITY, tile_data->get_constant_angular_velocity(used_layer));
 
 						if (!physics_material.is_valid()) {
 							ps->body_set_param(body, PhysicsServer2D::BODY_PARAM_BOUNCE, 0);
@@ -2083,6 +2103,9 @@ bool TileMap::_set(const StringName &p_name, const Variant &p_value) {
 		} else if (components[1] == "enabled") {
 			set_layer_enabled(index, p_value);
 			return true;
+		} else if (components[1] == "physics_override") {
+			set_layer_physics_override(index, p_value);
+			return true;
 		} else if (components[1] == "y_sort_enabled") {
 			set_layer_y_sort_enabled(index, p_value);
 			return true;
@@ -2119,6 +2142,9 @@ bool TileMap::_get(const StringName &p_name, Variant &r_ret) const {
 		} else if (components[1] == "enabled") {
 			r_ret = is_layer_enabled(index);
 			return true;
+		} else if (components[1] == "physics_override") {
+			r_ret = get_layer_physics_override(index);
+			return true;
 		} else if (components[1] == "y_sort_enabled") {
 			r_ret = is_layer_y_sort_enabled(index);
 			return true;
@@ -2144,6 +2170,7 @@ void TileMap::_get_property_list(List<PropertyInfo> *p_list) const {
 	for (unsigned int i = 0; i < layers.size(); i++) {
 		p_list->push_back(PropertyInfo(Variant::STRING, vformat("layer_%d/name", i), PROPERTY_HINT_NONE));
 		p_list->push_back(PropertyInfo(Variant::BOOL, vformat("layer_%d/enabled", i), PROPERTY_HINT_NONE));
+		p_list->push_back(PropertyInfo(Variant::INT, vformat("layer_%d/physics_override", i), PROPERTY_HINT_NONE));
 		p_list->push_back(PropertyInfo(Variant::BOOL, vformat("layer_%d/y_sort_enabled", i), PROPERTY_HINT_NONE));
 		p_list->push_back(PropertyInfo(Variant::INT, vformat("layer_%d/y_sort_origin", i), PROPERTY_HINT_NONE));
 		p_list->push_back(PropertyInfo(Variant::INT, vformat("layer_%d/z_index", i), PROPERTY_HINT_NONE));
