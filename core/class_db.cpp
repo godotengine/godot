@@ -248,6 +248,7 @@ ClassDB::ClassInfo::ClassInfo() {
 	inherits_ptr = nullptr;
 	disabled = false;
 	exposed = false;
+	class_ptr = nullptr;
 }
 
 ClassDB::ClassInfo::~ClassInfo() {

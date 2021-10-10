@@ -296,6 +296,8 @@ Error FileAccessEncrypted::_set_unix_permissions(const String &p_file, uint32_t 
 
 FileAccessEncrypted::FileAccessEncrypted() {
 	file = nullptr;
+	base = 0;
+	length = 0;
 	pos = 0;
 	eofed = false;
 	mode = MODE_MAX;

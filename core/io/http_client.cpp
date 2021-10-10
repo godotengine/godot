@@ -835,6 +835,7 @@ HTTPClient::HTTPClient() {
 	chunk_trailer_part = false;
 	response_num = 0;
 	ssl = false;
+	ssl_verify_host = false;
 	blocking = false;
 	handshaking = false;
 	// 64 KiB by default (favors fast download speeds at the cost of memory usage).

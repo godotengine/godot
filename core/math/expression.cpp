@@ -2226,6 +2226,8 @@ void Expression::_bind_methods() {
 Expression::Expression() :
 		output_type(Variant::NIL),
 		sequenced(false),
+		str_ofs(0),
+		expression_dirty(false),
 		error_set(true),
 		root(nullptr),
 		nodes(nullptr),

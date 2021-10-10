@@ -181,4 +181,6 @@ void FileAccessMemory::store_buffer(const uint8_t *p_src, uint64_t p_length) {
 
 FileAccessMemory::FileAccessMemory() {
 	data = nullptr;
+	length = 0;
+	pos = 0;
 }

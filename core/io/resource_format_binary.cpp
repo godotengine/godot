@@ -937,7 +937,9 @@ String ResourceInteractiveLoaderBinary::recognize(FileAccess *p_f) {
 
 ResourceInteractiveLoaderBinary::ResourceInteractiveLoaderBinary() :
 		translation_remapped(false),
+		ver_format(0),
 		f(nullptr),
+		importmd_ofs(0),
 		error(OK),
 		stage(0) {
 }

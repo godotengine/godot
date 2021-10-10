@@ -400,4 +400,5 @@ int PackedDataContainerRef::size() const {
 };
 
 PackedDataContainerRef::PackedDataContainerRef() {
+	offset = 0;
 }
