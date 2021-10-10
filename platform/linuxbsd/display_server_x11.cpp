@@ -4400,7 +4400,7 @@ DisplayServerX11::~DisplayServerX11() {
 #endif
 #ifdef OPENGL_ENABLED
 		if (rendering_driver == "opengl") {
-			gl_manager->window_destroy(E->key());
+			gl_manager->window_destroy(E.key);
 		}
 #endif
 

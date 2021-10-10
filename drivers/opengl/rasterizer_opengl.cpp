@@ -277,7 +277,7 @@ void RasterizerOpenGL::_blit_render_target_to_screen(RID p_render_target, const 
 
 	//	print_line("_blit_render_target_to_screen " + itos (p_screen) + ", rect " + String(Variant(p_screen_rect)));
 
-	RasterizerStorageOpenGL::RenderTarget *rt = storage.render_target_owner.getornull(p_render_target);
+	RasterizerStorageOpenGL::RenderTarget *rt = storage.render_target_owner.get_or_null(p_render_target);
 	ERR_FAIL_COND(!rt);
 
 	canvas._set_texture_rect_mode(true);
@@ -362,7 +362,7 @@ void RasterizerOpenGL::set_boot_image(const Ref<Image> &p_image, const Color &p_
 		screenrect.position += ((Size2(window_w, window_h) - screenrect.size) / 2.0).floor();
 	}
 
-	RasterizerStorageOpenGL::Texture *t = storage.texture_owner.getornull(texture);
+	RasterizerStorageOpenGL::Texture *t = storage.texture_owner.get_or_null(texture);
 	glActiveTexture(GL_TEXTURE0 + storage.config.max_texture_image_units - 1);
 	glBindTexture(GL_TEXTURE_2D, t->tex_id);
 	canvas.draw_generic_textured_rect(screenrect, Rect2(0, 0, 1, 1));

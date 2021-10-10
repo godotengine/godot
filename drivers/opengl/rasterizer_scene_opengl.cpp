@@ -193,7 +193,7 @@ void RasterizerSceneOpenGL::environment_set_bg_energy(RID p_env, float p_energy)
 void RasterizerSceneOpenGL::environment_set_canvas_max_layer(RID p_env, int p_max_layer) {
 }
 
-void RasterizerSceneOpenGL::environment_set_ambient_light(RID p_env, const Color &p_color, RS::EnvironmentAmbientSource p_ambient, float p_energy, float p_sky_contribution, RS::EnvironmentReflectionSource p_reflection_source, const Color &p_ao_color) {
+void RasterizerSceneOpenGL::environment_set_ambient_light(RID p_env, const Color &p_color, RS::EnvironmentAmbientSource p_ambient, float p_energy, float p_sky_contribution, RS::EnvironmentReflectionSource p_reflection_source) {
 }
 
 void RasterizerSceneOpenGL::environment_set_glow(RID p_env, bool p_enable, Vector<float> p_levels, float p_intensity, float p_strength, float p_mix, float p_bloom_threshold, RS::EnvironmentGlowBlendMode p_blend_mode, float p_hdr_bleed_threshold, float p_hdr_bleed_scale, float p_hdr_luminance_cap) {

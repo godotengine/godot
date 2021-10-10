@@ -606,7 +606,7 @@ protected:
 
 	typename T_STORAGE::Texture *_get_canvas_texture(const RID &p_texture) const {
 		if (p_texture.is_valid()) {
-			typename T_STORAGE::Texture *texture = get_storage()->texture_owner.getornull(p_texture);
+			typename T_STORAGE::Texture *texture = get_storage()->texture_owner.get_or_null(p_texture);
 
 			if (texture) {
 				return texture->get_ptr();

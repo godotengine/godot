@@ -413,7 +413,7 @@ void RasterizerCanvasOpenGL::render_batches(Item::Command *const *p_commands, It
 
 							// very inefficient, improve this
 							if (r->texture.is_valid()) {
-								RasterizerStorageOpenGL::Texture *texture = storage->texture_owner.getornull(r->texture);
+								RasterizerStorageOpenGL::Texture *texture = storage->texture_owner.get_or_null(r->texture);
 
 								if (texture) {
 									if (texture->is_upside_down())
@@ -424,7 +424,7 @@ void RasterizerCanvasOpenGL::render_batches(Item::Command *const *p_commands, It
 							if (r->texture.is_valid() && r->flags & CANVAS_RECT_TILE && !storage->config.support_npot_repeat_mipmap) {
 								// workaround for when setting tiling does not work due to hardware limitation
 
-								RasterizerStorageOpenGL::Texture *texture = storage->texture_owner.getornull(r->texture);
+								RasterizerStorageOpenGL::Texture *texture = storage->texture_owner.get_or_null(r->texture);
 
 								if (texture) {
 									texture = texture->get_ptr();
@@ -883,7 +883,7 @@ void RasterizerCanvasOpenGL::render_batches(Item::Command *const *p_commands, It
 								state.canvas_shader.set_uniform(CanvasShaderOpenGL::COLOR_TEXPIXEL_SIZE, texpixel_size);
 							}
 
-							RasterizerStorageOpenGL::Mesh *mesh_data = storage->mesh_owner.getornull(mesh->mesh);
+							RasterizerStorageOpenGL::Mesh *mesh_data = storage->mesh_owner.get_or_null(mesh->mesh);
 							if (mesh_data) {
 								for (int j = 0; j < mesh_data->surfaces.size(); j++) {
 									RasterizerStorageOpenGL::Surface *s = mesh_data->surfaces[j];
@@ -932,12 +932,12 @@ void RasterizerCanvasOpenGL::render_batches(Item::Command *const *p_commands, It
 						case Item::Command::TYPE_MULTIMESH: {
 							Item::CommandMultiMesh *mmesh = static_cast<Item::CommandMultiMesh *>(command);
 
-							RasterizerStorageOpenGL::MultiMesh *multi_mesh = storage->multimesh_owner.getornull(mmesh->multimesh);
+							RasterizerStorageOpenGL::MultiMesh *multi_mesh = storage->multimesh_owner.get_or_null(mmesh->multimesh);
 
 							if (!multi_mesh)
 								break;
 
-							RasterizerStorageOpenGL::Mesh *mesh_data = storage->mesh_owner.getornull(multi_mesh->mesh);
+							RasterizerStorageOpenGL::Mesh *mesh_data = storage->mesh_owner.get_or_null(multi_mesh->mesh);
 
 							if (!mesh_data)
 								break;
@@ -1360,7 +1360,7 @@ void RasterizerCanvasOpenGL::_legacy_canvas_render_item(Item *p_ci, RenderItemSt
 	Item *material_owner = p_ci->material_owner ? p_ci->material_owner : p_ci;
 
 	RID material = material_owner->material;
-	RasterizerStorageOpenGL::Material *material_ptr = storage->material_owner.getornull(material);
+	RasterizerStorageOpenGL::Material *material_ptr = storage->material_owner.get_or_null(material);
 
 	if (material != r_ris.canvas_last_material || r_ris.rebind_shader) {
 		RasterizerStorageOpenGL::Shader *shader_ptr = NULL;
@@ -1406,7 +1406,7 @@ void RasterizerCanvasOpenGL::_legacy_canvas_render_item(Item *p_ci, RenderItemSt
 			for (int i = 0; i < tc; i++) {
 				glActiveTexture(GL_TEXTURE0 + i);
 
-				RasterizerStorageOpenGL::Texture *t = storage->texture_owner.getornull(textures[i].second);
+				RasterizerStorageOpenGL::Texture *t = storage->texture_owner.get_or_null(textures[i].second);
 
 				if (!t) {
 					switch (texture_hints[i]) {
@@ -1587,7 +1587,7 @@ void RasterizerCanvasOpenGL::_legacy_canvas_render_item(Item *p_ci, RenderItemSt
 				state.canvas_shader.use_material((void *)material_ptr);
 
 				glActiveTexture(GL_TEXTURE0 + storage->config.max_texture_image_units - 6);
-				RasterizerStorageOpenGL::Texture *t = storage->texture_owner.getornull(light->texture);
+				RasterizerStorageOpenGL::Texture *t = storage->texture_owner.get_or_null(light->texture);
 				if (!t) {
 					glBindTexture(GL_TEXTURE_2D, storage->resources.white_tex);
 				} else {
