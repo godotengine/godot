@@ -1089,6 +1089,15 @@ static void _find_identifiers(GDScriptParser::CompletionContext &p_context, bool
 		kwa++;
 	}
 
+	List<StringName> utility_func_names;
+	Variant::get_utility_function_list(&utility_func_names);
+
+	for (List<StringName>::Element *E = utility_func_names.front(); E; E = E->next()) {
+		ScriptCodeCompletionOption option(E->get(), ScriptCodeCompletionOption::KIND_FUNCTION);
+		option.insert_text += "(";
+		r_result.insert(option.display, option);
+	}
+
 	OrderedHashMap<StringName, ProjectSettings::AutoloadInfo> autoloads = ProjectSettings::get_singleton()->get_autoload_list();
 	for (OrderedHashMap<StringName, ProjectSettings::AutoloadInfo>::Element E = autoloads.front(); E; E = E.next()) {
 		if (!E.value().is_singleton) {
@@ -2325,7 +2334,11 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 
 	GDScriptCompletionIdentifier connect_base;
 
-	if (GDScriptUtilityFunctions::function_exists(call->function_name)) {
+	if (Variant::has_utility_function(call->function_name)) {
+		MethodInfo info = Variant::get_utility_function_info(call->function_name);
+		r_arghint = _make_arguments_hint(info, p_argidx);
+		return;
+	} else if (GDScriptUtilityFunctions::function_exists(call->function_name)) {
 		MethodInfo info = GDScriptUtilityFunctions::get_function_info(call->function_name);
 		r_arghint = _make_arguments_hint(info, p_argidx);
 		return;

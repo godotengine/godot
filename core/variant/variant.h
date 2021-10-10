@@ -641,6 +641,7 @@ public:
 
 	static UtilityFunctionType get_utility_function_type(const StringName &p_name);
 
+	static MethodInfo get_utility_function_info(const StringName &p_name);
 	static int get_utility_function_argument_count(const StringName &p_name);
 	static Variant::Type get_utility_function_argument_type(const StringName &p_name, int p_arg);
 	static String get_utility_function_argument_name(const StringName &p_name, int p_arg);
