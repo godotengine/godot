@@ -36,7 +36,7 @@
 class ArrayPropertyEdit : public Reference {
 	GDCLASS(ArrayPropertyEdit, Reference);
 
-	int page;
+	int page = 0;
 	ObjectID obj;
 	StringName property;
 	String vtypes;

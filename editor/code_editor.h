@@ -43,10 +43,10 @@
 class GotoLineDialog : public ConfirmationDialog {
 	GDCLASS(GotoLineDialog, ConfirmationDialog);
 
-	Label *line_label;
-	LineEdit *line;
+	Label *line_label = nullptr;
+	LineEdit *line = nullptr;
 
-	TextEdit *text_editor;
+	TextEdit *text_editor = nullptr;
 
 	virtual void ok_pressed();
 
@@ -61,31 +61,31 @@ public:
 class FindReplaceBar : public HBoxContainer {
 	GDCLASS(FindReplaceBar, HBoxContainer);
 
-	LineEdit *search_text;
-	Label *matches_label;
-	ToolButton *find_prev;
-	ToolButton *find_next;
-	CheckBox *case_sensitive;
-	CheckBox *whole_words;
-	TextureButton *hide_button;
+	LineEdit *search_text = nullptr;
+	Label *matches_label = nullptr;
+	ToolButton *find_prev = nullptr;
+	ToolButton *find_next = nullptr;
+	CheckBox *case_sensitive = nullptr;
+	CheckBox *whole_words = nullptr;
+	TextureButton *hide_button = nullptr;
 
-	LineEdit *replace_text;
-	Button *replace;
-	Button *replace_all;
-	CheckBox *selection_only;
+	LineEdit *replace_text = nullptr;
+	Button *replace = nullptr;
+	Button *replace_all = nullptr;
+	CheckBox *selection_only = nullptr;
 
-	VBoxContainer *vbc_lineedit;
-	HBoxContainer *hbc_button_replace;
-	HBoxContainer *hbc_option_replace;
+	VBoxContainer *vbc_lineedit = nullptr;
+	HBoxContainer *hbc_button_replace = nullptr;
+	HBoxContainer *hbc_option_replace = nullptr;
 
-	TextEdit *text_edit;
+	TextEdit *text_edit = nullptr;
 
-	int result_line;
-	int result_col;
-	int results_count;
+	int result_line = 0;
+	int result_col = 0;
+	int results_count = 0;
 
-	bool replace_all_mode;
-	bool preserve_cursor;
+	bool replace_all_mode = false;
+	bool preserve_cursor = false;
 
 	void _get_search_from(int &r_line, int &r_col);
 	void _update_results_count();
@@ -138,27 +138,27 @@ typedef void (*CodeTextEditorCodeCompleteFunc)(void *p_ud, const String &p_code,
 class CodeTextEditor : public VBoxContainer {
 	GDCLASS(CodeTextEditor, VBoxContainer);
 
-	TextEdit *text_editor;
-	FindReplaceBar *find_replace_bar;
-	HBoxContainer *status_bar;
+	TextEdit *text_editor = nullptr;
+	FindReplaceBar *find_replace_bar = nullptr;
+	HBoxContainer *status_bar = nullptr;
 
-	ToolButton *toggle_scripts_button;
-	ToolButton *warning_button;
-	Label *warning_count_label;
+	ToolButton *toggle_scripts_button = nullptr;
+	ToolButton *warning_button = nullptr;
+	Label *warning_count_label = nullptr;
 
-	Label *line_and_col_txt;
+	Label *line_and_col_txt = nullptr;
 
-	Label *info;
-	Timer *idle;
-	Timer *code_complete_timer;
+	Label *info = nullptr;
+	Timer *idle = nullptr;
+	Timer *code_complete_timer = nullptr;
 
-	Timer *font_resize_timer;
-	int font_resize_val;
+	Timer *font_resize_timer = nullptr;
+	int font_resize_val = 0;
 	real_t font_size;
 
-	Label *error;
-	int error_line;
-	int error_column;
+	Label *error = nullptr;
+	int error_line = 0;
+	int error_column = 0;
 
 	void _on_settings_change();
 
@@ -176,7 +176,7 @@ class CodeTextEditor : public VBoxContainer {
 	void _reset_zoom();
 
 	CodeTextEditorCodeCompleteFunc code_complete_func;
-	void *code_complete_ud;
+	void *code_complete_ud = nullptr;
 
 	void _warning_label_gui_input(const Ref<InputEvent> &p_event);
 	void _warning_button_pressed();
@@ -198,7 +198,7 @@ protected:
 	void _notification(int);
 	static void _bind_methods();
 
-	bool is_warnings_panel_opened;
+	bool is_warnings_panel_opened = false;
 
 public:
 	void trim_trailing_whitespace();

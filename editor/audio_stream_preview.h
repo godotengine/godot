@@ -40,7 +40,7 @@ class AudioStreamPreview : public Reference {
 	GDCLASS(AudioStreamPreview, Reference);
 	friend class AudioStream;
 	Vector<uint8_t> preview;
-	float length;
+	float length = 0.0;
 
 	friend class AudioStreamPreviewGenerator;
 
@@ -63,7 +63,7 @@ class AudioStreamPreviewGenerator : public Node {
 		Ref<AudioStreamPlayback> playback;
 		SafeFlag generating;
 		ObjectID id;
-		Thread *thread;
+		Thread *thread = nullptr;
 
 		// Needed for the bookkeeping of the Map
 		Preview &operator=(const Preview &p_rhs) {

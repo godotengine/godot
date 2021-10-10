@@ -49,16 +49,16 @@ class AnimationBezierTrackEdit : public Control {
 	};
 
 	HandleMode handle_mode;
-	OptionButton *handle_mode_option;
+	OptionButton *handle_mode_option = nullptr;
 
-	AnimationTimelineEdit *timeline;
-	UndoRedo *undo_redo;
-	Node *root;
-	Control *play_position; //separate control used to draw so updates for only position changed are much faster
-	float play_position_pos;
+	AnimationTimelineEdit *timeline = nullptr;
+	UndoRedo *undo_redo = nullptr;
+	Node *root = nullptr;
+	Control *play_position = nullptr; //separate control used to draw so updates for only position changed are much faster
+	float play_position_pos = 0.0;
 
 	Ref<Animation> animation;
-	int track;
+	int track = 0;
 
 	Vector<Rect2> view_rects;
 
@@ -70,37 +70,37 @@ class AnimationBezierTrackEdit : public Control {
 
 	Map<int, Rect2> subtracks;
 
-	float v_scroll;
-	float v_zoom;
+	float v_scroll = 0.0;
+	float v_zoom = 0.0;
 
-	PopupMenu *menu;
+	PopupMenu *menu = nullptr;
 
 	void _zoom_changed();
 
 	void _gui_input(const Ref<InputEvent> &p_event);
 	void _menu_selected(int p_index);
 
-	bool *block_animation_update_ptr; //used to block all tracks re-gen (speed up)
+	bool *block_animation_update_ptr = nullptr; //used to block all tracks re-gen (speed up)
 
 	void _play_position_draw();
 
 	Vector2 insert_at_pos;
 
-	bool moving_selection_attempt;
-	int select_single_attempt;
-	bool moving_selection;
-	int moving_selection_from_key;
+	bool moving_selection_attempt = false;
+	int select_single_attempt = 0;
+	bool moving_selection = false;
+	int moving_selection_from_key = 0;
 
 	Vector2 moving_selection_offset;
 
-	bool box_selecting_attempt;
-	bool box_selecting;
-	bool box_selecting_add;
+	bool box_selecting_attempt = false;
+	bool box_selecting = false;
+	bool box_selecting_add = false;
 	Vector2 box_selection_from;
 	Vector2 box_selection_to;
 
-	int moving_handle; //0 no move -1 or +1 out
-	int moving_handle_key;
+	int moving_handle = 0; //0 no move -1 or +1 out
+	int moving_handle_key = 0;
 	Vector2 moving_handle_left;
 	Vector2 moving_handle_right;
 
@@ -111,13 +111,13 @@ class AnimationBezierTrackEdit : public Control {
 	Vector2 menu_insert_key;
 
 	struct AnimMoveRestore {
-		int track;
-		float time;
+		int track = 0;
+		float time = 0.0;
 		Variant key;
-		float transition;
+		float transition = 0.0;
 	};
 
-	AnimationTrackEditor *editor;
+	AnimationTrackEditor *editor = nullptr;
 
 	struct EditPoint {
 		Rect2 point_rect;
@@ -129,9 +129,9 @@ class AnimationBezierTrackEdit : public Control {
 
 	Set<int> selection;
 
-	bool panning_timeline;
-	float panning_timeline_from;
-	float panning_timeline_at;
+	bool panning_timeline = false;
+	float panning_timeline_from = 0.0;
+	float panning_timeline_at = 0.0;
 
 	void _draw_line_clipped(const Vector2 &p_from, const Vector2 &p_to, const Color &p_color, int p_clip_left, int p_clip_right);
 	void _draw_track(int p_track, const Color &p_color);
