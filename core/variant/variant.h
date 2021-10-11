@@ -265,6 +265,8 @@ private:
 	}
 
 	static void _register_variant_operators();
+	static void _register_variant_operators2();
+	static void _register_variant_operators3();
 	static void _unregister_variant_operators();
 	static void _register_variant_methods();
 	static void _unregister_variant_methods();
