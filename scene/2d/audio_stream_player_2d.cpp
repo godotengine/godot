@@ -68,7 +68,7 @@ void AudioStreamPlayer2D::_notification(int p_what) {
 			active.set();
 			Ref<AudioStreamPlayback> new_playback = stream->instance_playback();
 			ERR_FAIL_COND_MSG(new_playback.is_null(), "Failed to instantiate playback.");
-			AudioServer::get_singleton()->start_playback_stream(new_playback, _get_actual_bus(), volume_vector, setplay.get());
+			AudioServer::get_singleton()->start_playback_stream(new_playback, _get_actual_bus(), volume_vector, setplay.get(), pitch_scale);
 			stream_playbacks.push_back(new_playback);
 			setplay.set(-1);
 		}
