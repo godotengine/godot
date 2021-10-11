@@ -1423,6 +1423,8 @@ void TileMapEditorTilesPlugin::_update_tileset_selection_from_selection_pattern(
 		}
 	}
 	_update_bottom_panel();
+	tile_atlas_control->update();
+	alternative_tiles_control->update();
 }
 
 void TileMapEditorTilesPlugin::_tile_atlas_control_draw() {
