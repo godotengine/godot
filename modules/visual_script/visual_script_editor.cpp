@@ -4262,8 +4262,6 @@ void VisualScriptEditor::_bind_methods() {
 	ClassDB::bind_method("_update_members", &VisualScriptEditor::_update_members);
 
 	ClassDB::bind_method("_generic_search", &VisualScriptEditor::_generic_search);
-
-	ClassDB::bind_method(D_METHOD("add_syntax_highlighter", "highlighter"), &VisualScriptEditor::add_syntax_highlighter);
 }
 
 VisualScriptEditor::VisualScriptEditor() {
