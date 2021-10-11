@@ -2376,6 +2376,14 @@ void DisplayServerX11::window_set_ime_position(const Point2i &p_pos, WindowID p_
 	XFree(preedit_attr);
 }
 
+Point2i DisplayServerX11::ime_get_selection() const {
+	return im_selection;
+}
+
+String DisplayServerX11::ime_get_text() const {
+	return im_text;
+}
+
 void DisplayServerX11::cursor_set_shape(CursorShape p_shape) {
 	_THREAD_SAFE_METHOD_
 
@@ -3074,6 +3082,62 @@ void DisplayServerX11::_handle_selection_request_event(XSelectionRequestEvent *p
 
 	XSendEvent(x11_display, p_event->requestor, True, NoEventMask, &respond);
 	XFlush(x11_display);
+}
+
+int DisplayServerX11::_xim_preedit_start_callback(::XIM xim, ::XPointer client_data,
+		::XPointer call_data) {
+	// Allow preedit strings of any length (no limit).
+	return -1;
+}
+
+void DisplayServerX11::_xim_preedit_done_callback(::XIM xim, ::XPointer client_data,
+		::XPointer call_data) {
+}
+
+void DisplayServerX11::_xim_preedit_draw_callback(::XIM xim, ::XPointer client_data,
+		::XIMPreeditDrawCallbackStruct *call_data) {
+	DisplayServerX11 *ds = reinterpret_cast<DisplayServerX11 *>(client_data);
+	XIMText *xim_text = call_data->text;
+	if (xim_text != nullptr) {
+		String changed_text;
+		if (xim_text->encoding_is_wchar) {
+			changed_text = String(xim_text->string.wide_char);
+		} else {
+			changed_text.parse_utf8(xim_text->string.multi_byte);
+		}
+
+		if (call_data->chg_length < 0) {
+			ds->im_text = ds->im_text.substr(0, call_data->chg_first) + changed_text;
+		} else {
+			ds->im_text = ds->im_text.substr(0, call_data->chg_first) + changed_text + ds->im_text.substr(call_data->chg_length);
+		}
+
+		// Find the start and end of the selection.
+		int start = 0, count = 0;
+		for (int i = 0; i < xim_text->length; i++) {
+			if (xim_text->feedback[i] & XIMReverse) {
+				if (count == 0) {
+					start = i;
+					count = 1;
+				} else {
+					count++;
+				}
+			}
+		}
+		if (count > 0) {
+			ds->im_selection = Point2i(start + call_data->chg_first, count);
+		} else {
+			ds->im_selection = Point2i();
+		}
+	} else {
+		ds->im_text = String();
+		ds->im_selection = Point2i();
+	}
+	OS_Unix::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_OS_IME_UPDATE);
+}
+
+void DisplayServerX11::_xim_preedit_caret_callback(::XIM xim, ::XPointer client_data,
+		::XIMPreeditCaretCallbackStruct *call_data) {
 }
 
 void DisplayServerX11::_xim_destroy_callback(::XIM im, ::XPointer client_data,
@@ -4501,7 +4565,45 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, V
 			// because it triggers some event polling internally.
 			MutexLock mutex_lock(events_mutex);
 
-			wd.xic = XCreateIC(xim, XNInputStyle, xim_style, XNClientWindow, wd.x11_window, XNFocusWindow, wd.x11_window, (char *)nullptr);
+			if ((xim_style & XIMPreeditCallbacks) != 0) {
+				::XIMCallback preedit_start_callback;
+				preedit_start_callback.client_data = (::XPointer)(this);
+				preedit_start_callback.callback = (::XIMProc)(void *)(_xim_preedit_start_callback);
+
+				::XIMCallback preedit_done_callback;
+				preedit_done_callback.client_data = (::XPointer)(this);
+				preedit_done_callback.callback = (::XIMProc)(_xim_preedit_done_callback);
+
+				::XIMCallback preedit_draw_callback;
+				preedit_draw_callback.client_data = (::XPointer)(this);
+				preedit_draw_callback.callback = (::XIMProc)(_xim_preedit_draw_callback);
+
+				::XIMCallback preedit_caret_callback;
+				preedit_caret_callback.client_data = (::XPointer)(this);
+				preedit_caret_callback.callback = (::XIMProc)(_xim_preedit_caret_callback);
+
+				::XVaNestedList preedit_attributes = XVaCreateNestedList(0,
+						XNPreeditStartCallback, &preedit_start_callback,
+						XNPreeditDoneCallback, &preedit_done_callback,
+						XNPreeditDrawCallback, &preedit_draw_callback,
+						XNPreeditCaretCallback, &preedit_caret_callback,
+						(char *)nullptr);
+
+				wd.xic = XCreateIC(xim,
+						XNInputStyle, xim_style,
+						XNClientWindow, wd.x11_window,
+						XNFocusWindow, wd.x11_window,
+						XNPreeditAttributes, preedit_attributes,
+						(char *)nullptr);
+				XFree(preedit_attributes);
+			} else {
+				wd.xic = XCreateIC(xim,
+						XNInputStyle, xim_style,
+						XNClientWindow, wd.x11_window,
+						XNFocusWindow, wd.x11_window,
+						(char *)nullptr);
+			}
+
 			if (XGetICValues(wd.xic, XNFilterEvents, &im_event_mask, nullptr) != nullptr) {
 				WARN_PRINT("XGetICValues couldn't obtain XNFilterEvents value");
 				XDestroyIC(wd.xic);
@@ -4591,6 +4693,63 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, V
 	}
 
 	return id;
+}
+
+static bool _is_xim_style_supported(const ::XIMStyle &p_style) {
+	const ::XIMStyle supported_preedit = XIMPreeditCallbacks | XIMPreeditNothing | XIMPreeditNone;
+	const ::XIMStyle supported_status = XIMStatusNothing | XIMStatusNone;
+
+	// Check preedit style is supported
+	if ((p_style & supported_preedit) == 0) {
+		return false;
+	}
+
+	// Check status style is supported
+	if ((p_style & supported_status) == 0) {
+		return false;
+	}
+
+	return true;
+}
+
+static ::XIMStyle _get_best_xim_style(const ::XIMStyle &p_style_a, const ::XIMStyle &p_style_b) {
+	if (p_style_a == 0) {
+		return p_style_b;
+	}
+	if (p_style_b == 0) {
+		return p_style_a;
+	}
+
+	const ::XIMStyle preedit = XIMPreeditArea | XIMPreeditCallbacks | XIMPreeditPosition | XIMPreeditNothing | XIMPreeditNone;
+	const ::XIMStyle status = XIMStatusArea | XIMStatusCallbacks | XIMStatusNothing | XIMStatusNone;
+
+	::XIMStyle a = p_style_a & preedit;
+	::XIMStyle b = p_style_b & preedit;
+	if (a != b) {
+		// Compare preedit styles.
+		if ((a | b) & XIMPreeditCallbacks) {
+			return a == XIMPreeditCallbacks ? p_style_a : p_style_b;
+		} else if ((a | b) & XIMPreeditPosition) {
+			return a == XIMPreeditPosition ? p_style_a : p_style_b;
+		} else if ((a | b) & XIMPreeditArea) {
+			return a == XIMPreeditArea ? p_style_a : p_style_b;
+		} else if ((a | b) & XIMPreeditNothing) {
+			return a == XIMPreeditNothing ? p_style_a : p_style_b;
+		}
+	} else {
+		// Preedit styles are the same, compare status styles.
+		a = p_style_a & status;
+		b = p_style_b & status;
+
+		if ((a | b) & XIMStatusCallbacks) {
+			return a == XIMStatusCallbacks ? p_style_a : p_style_b;
+		} else if ((a | b) & XIMStatusArea) {
+			return a == XIMStatusArea ? p_style_a : p_style_b;
+		} else if ((a | b) & XIMStatusNothing) {
+			return a == XIMStatusNothing ? p_style_a : p_style_b;
+		}
+	}
+	return p_style_a;
 }
 
 DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error) {
@@ -4700,11 +4859,13 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 		if (xim_styles) {
 			xim_style = 0L;
 			for (int i = 0; i < xim_styles->count_styles; i++) {
-				if (xim_styles->supported_styles[i] ==
-						(XIMPreeditNothing | XIMStatusNothing)) {
-					xim_style = xim_styles->supported_styles[i];
-					break;
+				const ::XIMStyle &style = xim_styles->supported_styles[i];
+
+				if (!_is_xim_style_supported(style)) {
+					continue;
 				}
+
+				xim_style = _get_best_xim_style(xim_style, style);
 			}
 
 			XFree(xim_styles);
