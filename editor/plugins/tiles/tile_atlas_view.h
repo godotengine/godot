@@ -93,9 +93,6 @@ private:
 	Control *base_tiles_shape_grid;
 	void _draw_base_tiles_shape_grid();
 
-	Control *base_tiles_dark;
-	void _draw_base_tiles_dark();
-
 	Size2i _compute_base_tiles_control_size();
 
 	// Right side.
@@ -124,7 +121,6 @@ public:
 
 	// Left side.
 	void set_texture_grid_visible(bool p_visible) { base_tiles_texture_grid->set_visible(p_visible); };
-	void set_dark_visible(bool p_visible) { base_tiles_dark->set_visible(p_visible); };
 	void set_tile_shape_grid_visible(bool p_visible) { base_tiles_shape_grid->set_visible(p_visible); };
 
 	Vector2i get_atlas_tile_coords_at_pos(const Vector2 p_pos) const;

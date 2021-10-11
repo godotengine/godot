@@ -78,6 +78,7 @@ private:
 		int get_id();
 
 		void edit(Ref<TileSet> p_tile_set, TileSetAtlasSource *p_tile_set_atlas_source, int p_source_id);
+		TileSetAtlasSource *get_edited() { return tile_set_atlas_source; };
 	};
 
 	// -- Proxy object for a tile, needed by the inspector --
@@ -189,7 +190,6 @@ private:
 		TILE_CREATE_ALTERNATIVE,
 		TILE_DELETE,
 
-		ADVANCED_CLEANUP_TILES_OUTSIDE_TEXTURE,
 		ADVANCED_AUTO_CREATE_TILES,
 		ADVANCED_AUTO_REMOVE_TILES,
 	};
