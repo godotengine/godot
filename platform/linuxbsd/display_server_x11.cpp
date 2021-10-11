@@ -4565,6 +4565,12 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, V
 			// because it triggers some event polling internally.
 			MutexLock mutex_lock(events_mutex);
 
+			// Force on-the-spot for the over-the-spot style.
+			if ((xim_style & XIMPreeditPosition) != 0) {
+				xim_style &= ~XIMPreeditPosition;
+				xim_style |= XIMPreeditCallbacks;
+			}
+
 			if ((xim_style & XIMPreeditCallbacks) != 0) {
 				::XIMCallback preedit_start_callback;
 				preedit_start_callback.client_data = (::XPointer)(this);
@@ -4696,7 +4702,7 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, V
 }
 
 static bool _is_xim_style_supported(const ::XIMStyle &p_style) {
-	const ::XIMStyle supported_preedit = XIMPreeditCallbacks | XIMPreeditNothing | XIMPreeditNone;
+	const ::XIMStyle supported_preedit = XIMPreeditCallbacks | XIMPreeditPosition | XIMPreeditNothing | XIMPreeditNone;
 	const ::XIMStyle supported_status = XIMStatusNothing | XIMStatusNone;
 
 	// Check preedit style is supported
