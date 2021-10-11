@@ -197,13 +197,16 @@ private:
 		Skeleton3D *skeleton = nullptr;
 #endif // _3D_DISABLED
 		int bone_idx = -1;
+		bool loc_used = false;
+		bool rot_used = false;
+		bool scale_used = false;
 		Vector3 loc;
 		Quaternion rot;
 		real_t rot_blend_accum = 0.0;
 		Vector3 scale;
 
 		TrackCacheTransform() {
-			type = Animation::TYPE_TRANSFORM3D;
+			type = Animation::TYPE_POSITION_3D;
 		}
 	};
 

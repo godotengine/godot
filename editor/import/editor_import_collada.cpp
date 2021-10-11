@@ -91,8 +91,8 @@ struct ColladaImport {
 	Error _create_mesh_surfaces(bool p_optimize, Ref<ImporterMesh> &p_mesh, const Map<String, Collada::NodeGeometry::Material> &p_material_map, const Collada::MeshData &meshdata, const Transform3D &p_local_xform, const Vector<int> &bone_remap, const Collada::SkinControllerData *p_skin_controller, const Collada::MorphControllerData *p_morph_data, Vector<Ref<ImporterMesh>> p_morph_meshes = Vector<Ref<ImporterMesh>>(), bool p_use_compression = false, bool p_use_mesh_material = false);
 	Error load(const String &p_path, int p_flags, bool p_force_make_tangents = false, bool p_use_compression = false);
 	void _fix_param_animation_tracks();
-	void create_animation(int p_clip, bool p_make_tracks_in_all_bones, bool p_import_value_tracks);
-	void create_animations(bool p_make_tracks_in_all_bones, bool p_import_value_tracks);
+	void create_animation(int p_clip, bool p_import_value_tracks);
+	void create_animations(bool p_import_value_tracks);
 
 	Set<String> tracks_in_clips;
 	Vector<String> missing_textures;
@@ -1384,7 +1384,7 @@ void ColladaImport::_fix_param_animation_tracks() {
 	}
 }
 
-void ColladaImport::create_animations(bool p_make_tracks_in_all_bones, bool p_import_value_tracks) {
+void ColladaImport::create_animations(bool p_import_value_tracks) {
 	_fix_param_animation_tracks();
 	for (int i = 0; i < collada.state.animation_clips.size(); i++) {
 		for (int j = 0; j < collada.state.animation_clips[i].tracks.size(); j++) {
@@ -1417,13 +1417,13 @@ void ColladaImport::create_animations(bool p_make_tracks_in_all_bones, bool p_im
 		}
 	}
 
-	create_animation(-1, p_make_tracks_in_all_bones, p_import_value_tracks);
+	create_animation(-1, p_import_value_tracks);
 	for (int i = 0; i < collada.state.animation_clips.size(); i++) {
-		create_animation(i, p_make_tracks_in_all_bones, p_import_value_tracks);
+		create_animation(i, p_import_value_tracks);
 	}
 }
 
-void ColladaImport::create_animation(int p_clip, bool p_make_tracks_in_all_bones, bool p_import_value_tracks) {
+void ColladaImport::create_animation(int p_clip, bool p_import_value_tracks) {
 	Ref<Animation> animation = Ref<Animation>(memnew(Animation));
 
 	if (p_clip == -1) {
@@ -1522,10 +1522,55 @@ void ColladaImport::create_animation(int p_clip, bool p_make_tracks_in_all_bones
 			continue;
 		}
 
-		animation->add_track(Animation::TYPE_TRANSFORM3D);
-		int track = animation->get_track_count() - 1;
-		animation->track_set_path(track, path);
-		animation->track_set_imported(track, true); //helps merging later
+		bool has_position = false;
+		bool has_rotation = false;
+		bool has_scale = false;
+
+		for (int i = 0; cn->xform_list.size(); i++) {
+			switch (cn->xform_list[i].op) {
+				case Collada::Node::XForm::OP_ROTATE: {
+					has_rotation = true;
+				} break;
+				case Collada::Node::XForm::OP_SCALE: {
+					has_scale = true;
+				} break;
+				case Collada::Node::XForm::OP_TRANSLATE: {
+					has_position = true;
+				} break;
+				case Collada::Node::XForm::OP_MATRIX: {
+					has_position = true;
+					has_rotation = true;
+					has_scale = true;
+				} break;
+				case Collada::Node::XForm::OP_VISIBILITY: {
+				} break;
+			}
+		}
+
+		int base_track = animation->get_track_count();
+		int position_idx = -1;
+		if (has_position) {
+			position_idx = animation->get_track_count();
+			animation->add_track(Animation::TYPE_POSITION_3D);
+			animation->track_set_path(position_idx, path);
+			animation->track_set_imported(position_idx, true); //helps merging later
+		}
+
+		int rotation_idx = -1;
+		if (has_rotation) {
+			rotation_idx = animation->get_track_count();
+			animation->add_track(Animation::TYPE_ROTATION_3D);
+			animation->track_set_path(rotation_idx, path);
+			animation->track_set_imported(rotation_idx, true); //helps merging later
+		}
+
+		int scale_idx = -1;
+		if (has_scale) {
+			scale_idx = animation->get_track_count();
+			animation->add_track(Animation::TYPE_SCALE_3D);
+			animation->track_set_path(scale_idx, path);
+			animation->track_set_imported(scale_idx, true); //helps merging later
+		}
 
 		Vector<real_t> snapshots = base_snapshots;
 
@@ -1606,10 +1651,19 @@ void ColladaImport::create_animation(int p_clip, bool p_make_tracks_in_all_bones
 
 			Vector3 s = xform.basis.get_scale();
 			bool singular_matrix = Math::is_zero_approx(s.x) || Math::is_zero_approx(s.y) || Math::is_zero_approx(s.z);
-			Quaternion q = singular_matrix ? Quaternion() : xform.basis.get_rotation_quaternion();
+			Quaternion q = singular_matrix ? Quaternion() :
+											   xform.basis.get_rotation_quaternion();
 			Vector3 l = xform.origin;
 
-			animation->transform_track_insert_key(track, snapshots[i], l, q, s);
+			if (position_idx >= 0) {
+				animation->position_track_insert_key(position_idx, snapshots[i], l);
+			}
+			if (rotation_idx >= 0) {
+				animation->rotation_track_insert_key(rotation_idx, snapshots[i], q);
+			}
+			if (scale_idx >= 0) {
+				animation->scale_track_insert_key(scale_idx, snapshots[i], s);
+			}
 		}
 
 		if (nm.bone >= 0) {
@@ -1621,48 +1675,15 @@ void ColladaImport::create_animation(int p_clip, bool p_make_tracks_in_all_bones
 		if (found_anim) {
 			tracks_found = true;
 		} else {
-			animation->remove_track(track);
-		}
-	}
-
-	if (p_make_tracks_in_all_bones) {
-		//some bones may lack animation, but since we don't store pose as a property, we must add keyframes!
-		for (const KeyValue<String, bool> &E : bones_with_animation) {
-			if (E.value) {
-				continue;
+			if (position_idx >= 0) {
+				animation->remove_track(base_track);
 			}
-
-			NodeMap &nm = node_map[E.key];
-			String path = scene->get_path_to(nm.node);
-			ERR_CONTINUE(nm.bone < 0);
-			Skeleton3D *sk = static_cast<Skeleton3D *>(nm.node);
-			String name = sk->get_bone_name(nm.bone);
-			path = path + ":" + name;
-
-			Collada::Node *cn = collada.state.scene_map[E.key];
-			if (cn->ignore_anim) {
-				WARN_PRINT("Collada: Ignoring animation on node: " + path);
-				continue;
+			if (rotation_idx >= 0) {
+				animation->remove_track(base_track);
 			}
-
-			animation->add_track(Animation::TYPE_TRANSFORM3D);
-			int track = animation->get_track_count() - 1;
-			animation->track_set_path(track, path);
-			animation->track_set_imported(track, true); //helps merging later
-
-			Transform3D xform = cn->compute_transform(collada);
-			xform = collada.fix_transform(xform) * cn->post_transform;
-
-			xform = sk->get_bone_rest(nm.bone).affine_inverse() * xform;
-
-			Vector3 s = xform.basis.get_scale();
-			bool singular_matrix = Math::is_zero_approx(s.x) || Math::is_zero_approx(s.y) || Math::is_zero_approx(s.z);
-			Quaternion q = singular_matrix ? Quaternion() : xform.basis.get_rotation_quaternion();
-			Vector3 l = xform.origin;
-
-			animation->transform_track_insert_key(track, 0, l, q, s);
-
-			tracks_found = true;
+			if (scale_idx >= 0) {
+				animation->remove_track(base_track);
+			}
 		}
 	}
 
@@ -1773,7 +1794,7 @@ Node *EditorSceneImporterCollada::import_scene(const String &p_path, uint32_t p_
 	}
 
 	if (p_flags & IMPORT_ANIMATION) {
-		state.create_animations(true, true);
+		state.create_animations(true);
 		AnimationPlayer *ap = memnew(AnimationPlayer);
 		for (int i = 0; i < state.animations.size(); i++) {
 			String name;
@@ -1800,7 +1821,7 @@ Ref<Animation> EditorSceneImporterCollada::import_animation(const String &p_path
 	Error err = state.load(p_path, Collada::IMPORT_FLAG_ANIMATION, p_flags & EditorSceneImporter::IMPORT_GENERATE_TANGENT_ARRAYS);
 	ERR_FAIL_COND_V_MSG(err != OK, RES(), "Cannot load animation from file '" + p_path + "'.");
 
-	state.create_animations(true, true);
+	state.create_animations(true);
 	if (state.scene) {
 		memdelete(state.scene);
 	}

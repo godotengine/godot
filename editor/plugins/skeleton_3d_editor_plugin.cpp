@@ -1305,7 +1305,9 @@ void Skeleton3DGizmoPlugin::set_subgizmo_transform(const EditorNode3DGizmo *p_gi
 	t.origin = orig + to_local.xform(sub);
 
 	// Apply transform.
-	skeleton->set_bone_pose(p_id, t);
+	skeleton->set_bone_pose_position(p_id, t.origin);
+	skeleton->set_bone_pose_rotation(p_id, t.basis.operator Quaternion());
+	skeleton->set_bone_pose_scale(p_id, t.basis.get_scale());
 }
 
 void Skeleton3DGizmoPlugin::commit_subgizmos(const EditorNode3DGizmo *p_gizmo, const Vector<int> &p_ids, const Vector<Transform3D> &p_restore, bool p_cancel) {
