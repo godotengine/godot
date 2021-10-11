@@ -215,7 +215,7 @@ private:
 
 	NodePath root;
 
-	void _animation_process_animation(AnimationData *p_anim, double p_time, double p_delta, float p_interp, bool p_is_current = true, bool p_seeked = false, bool p_started = false, int p_pingponged = 0);
+	void _animation_process_animation(AnimationData *p_anim, double p_time, double p_delta, float p_interp, bool p_is_current = true, bool p_seeked = false, bool p_started = false);
 
 	void _ensure_node_caches(AnimationData *p_anim, Node *p_root_override = nullptr);
 	void _animation_process_data(PlaybackData &cd, double p_delta, float p_blend, bool p_seeked, bool p_started);

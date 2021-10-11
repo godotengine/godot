@@ -5815,7 +5815,7 @@ void GLTFDocument::_import_animation(Ref<GLTFState> state, AnimationPlayer *ap, 
 	animation->set_name(name);
 
 	if (anim->get_loop()) {
-		animation->set_loop_mode(Animation::LOOP_LINEAR);
+		animation->set_loop(true);
 	}
 
 	float length = 0.0;

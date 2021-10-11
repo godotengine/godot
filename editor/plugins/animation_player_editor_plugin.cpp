@@ -41,7 +41,6 @@
 #include "editor/plugins/canvas_item_editor_plugin.h" // For onion skinning.
 #include "editor/plugins/node_3d_editor_plugin.h" // For onion skinning.
 #include "scene/main/window.h"
-#include "scene/resources/animation.h"
 #include "servers/rendering_server.h"
 
 void AnimationPlayerEditor::_node_removed(Node *p_node) {
@@ -73,7 +72,7 @@ void AnimationPlayerEditor::_notification(int p_what) {
 					if (player->has_animation(animname)) {
 						Ref<Animation> anim = player->get_animation(animname);
 						if (!anim.is_null()) {
-							frame->set_max((double)anim->get_length());
+							frame->set_max(anim->get_length());
 						}
 					}
 				}
@@ -290,7 +289,7 @@ void AnimationPlayerEditor::_animation_selected(int p_which) {
 				track_editor->set_root(root);
 			}
 		}
-		frame->set_max((double)anim->get_length());
+		frame->set_max(anim->get_length());
 
 	} else {
 		track_editor->set_animation(Ref<Animation>());
@@ -1015,7 +1014,7 @@ void AnimationPlayerEditor::_seek_value_changed(float p_value, bool p_set, bool 
 	Ref<Animation> anim;
 	anim = player->get_animation(current);
 
-	float pos = CLAMP((double)anim->get_length() * (p_value / frame->get_max()), 0, (double)anim->get_length());
+	float pos = CLAMP(anim->get_length() * (p_value / frame->get_max()), 0, anim->get_length());
 	if (track_editor->is_snap_enabled()) {
 		pos = Math::snapped(pos, _get_editor_step());
 	}
@@ -1425,7 +1424,7 @@ void AnimationPlayerEditor::_prepare_onion_layers_2() {
 
 		float pos = cpos + step_off * anim->get_step();
 
-		bool valid = anim->get_loop_mode() != Animation::LoopMode::LOOP_NONE || (pos >= 0 && pos <= anim->get_length());
+		bool valid = anim->has_loop() || (pos >= 0 && pos <= anim->get_length());
 		onion.captures_valid.write[cidx] = valid;
 		if (valid) {
 			player->seek(pos, true);

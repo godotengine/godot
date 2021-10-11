@@ -272,7 +272,7 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 				if (loop_type == 0x00) {
 					loop = AudioStreamSample::LOOP_FORWARD;
 				} else if (loop_type == 0x01) {
-					loop = AudioStreamSample::LOOP_PINGPONG;
+					loop = AudioStreamSample::LOOP_PING_PONG;
 				} else if (loop_type == 0x02) {
 					loop = AudioStreamSample::LOOP_BACKWARD;
 				}
