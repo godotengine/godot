@@ -61,7 +61,7 @@
 		<constant name="LOOP_FORWARD" value="1" enum="LoopMode">
 			Audio loops the data between [member loop_begin] and [member loop_end], playing forward only.
 		</constant>
-		<constant name="LOOP_PING_PONG" value="2" enum="LoopMode">
+		<constant name="LOOP_PINGPONG" value="2" enum="LoopMode">
 			Audio loops the data between [member loop_begin] and [member loop_end], playing back and forth.
 		</constant>
 		<constant name="LOOP_BACKWARD" value="3" enum="LoopMode">

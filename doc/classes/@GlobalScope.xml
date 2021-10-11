@@ -525,6 +525,26 @@
 				[b]Warning:[/b] Due to the way it is implemented, this function returns [code]0[/code] rather than [code]1[/code] for non-positive values of [code]value[/code] (in reality, 1 is the smallest integer power of 2).
 			</description>
 		</method>
+		<method name="pingpong">
+			<return type="float" />
+			<argument index="0" name="value" type="float" />
+			<argument index="1" name="length" type="float" />
+			<description>
+				Returns the [code]value[/code] wrapped between [code]0[/code] and the [code]length[/code]. If the limit is reached, the next value the function returned is decreased to the [code]0[/code] side or increased to the [code]length[/code] side (like a triangle wave). If [code]length[/code] is less than zero, it becomes positive.
+				[codeblock]
+				pingpong(-3.0, 3.0) # Returns 3
+				pingpong(-2.0, 3.0) # Returns 2
+				pingpong(-1.0, 3.0) # Returns 1
+				pingpong(0.0, 3.0) # Returns 0
+				pingpong(1.0, 3.0) # Returns 1
+				pingpong(2.0, 3.0) # Returns 2
+				pingpong(3.0, 3.0) # Returns 3
+				pingpong(4.0, 3.0) # Returns 2
+				pingpong(5.0, 3.0) # Returns 1
+				pingpong(6.0, 3.0) # Returns 0
+				[/codeblock]
+			</description>
+		</method>
 		<method name="posmod">
 			<return type="int" />
 			<argument index="0" name="x" type="int" />
