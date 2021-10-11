@@ -104,7 +104,7 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 
 	String get_package_name(const String &p_package) const;
 
-	String get_assets_directory(const Ref<EditorExportPreset> &p_preset) const;
+	String get_assets_directory(const Ref<EditorExportPreset> &p_preset, int p_export_format) const;
 
 	bool is_package_name_valid(const String &p_package, String *r_error = nullptr) const;
 
