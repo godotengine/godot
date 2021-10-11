@@ -49,6 +49,10 @@
 #include "tests/gdscript_test_runner.h"
 #endif
 
+#ifdef TOOLS_ENABLED
+#include "editor/editor_settings.h"
+#endif
+
 ///////////////////////////
 
 GDScriptNativeClass::GDScriptNativeClass(const StringName &p_name) {
@@ -817,10 +821,16 @@ Error GDScript::reload(bool p_keep_state) {
 		basedir = basedir.get_base_dir();
 	}
 
-	if (source.find("%BASE%") != -1) {
-		//loading a template, don't parse
+// Loading a template, don't parse.
+#ifdef TOOLS_ENABLED
+	if (basedir.begins_with(EditorSettings::get_singleton()->get_project_script_templates_dir())) {
 		return OK;
 	}
+#else
+	if (source.find("_BASE_") != -1) {
+		return OK;
+	}
+#endif
 
 	{
 		String source_path = path;

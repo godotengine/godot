@@ -274,13 +274,32 @@ public:
 		String message;
 	};
 
+	enum TemplateLocation {
+		TEMPLATE_BUILT_IN,
+		TEMPLATE_EDITOR,
+		TEMPLATE_PROJECT
+	};
+
+	struct ScriptTemplate {
+		String inherit = "Object";
+		String name;
+		String description;
+		String content;
+		int id = 0;
+		TemplateLocation origin = TemplateLocation::TEMPLATE_BUILT_IN;
+
+		String get_hash() const {
+			return itos(origin) + inherit + name;
+		}
+	};
+
 	void get_core_type_words(List<String> *p_core_type_words) const;
 	virtual void get_reserved_words(List<String> *p_words) const = 0;
 	virtual bool is_control_flow_keyword(String p_string) const = 0;
 	virtual void get_comment_delimiters(List<String> *p_delimiters) const = 0;
 	virtual void get_string_delimiters(List<String> *p_delimiters) const = 0;
-	virtual Ref<Script> get_template(const String &p_class_name, const String &p_base_class_name) const = 0;
-	virtual void make_template(const String &p_class_name, const String &p_base_class_name, Ref<Script> &p_script) {}
+	virtual Ref<Script> make_template(const String &p_template, const String &p_class_name, const String &p_base_class_name) const { return Ref<Script>(); }
+	virtual Vector<ScriptTemplate> get_built_in_templates(StringName p_object) { return Vector<ScriptTemplate>(); }
 	virtual bool is_using_templates() { return false; }
 	virtual bool validate(const String &p_script, const String &p_path = "", List<String> *r_functions = nullptr, List<ScriptError> *r_errors = nullptr, List<Warning> *r_warnings = nullptr, Set<int> *r_safe_lines = nullptr) const = 0;
 	virtual String validate_path(const String &p_path) const { return ""; }

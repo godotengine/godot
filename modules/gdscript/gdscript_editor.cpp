@@ -33,6 +33,7 @@
 #include "core/config/engine.h"
 #include "core/core_constants.h"
 #include "core/io/file_access.h"
+#include "editor_templates/templates.gen.h"
 #include "gdscript_analyzer.h"
 #include "gdscript_compiler.h"
 #include "gdscript_parser.h"
@@ -55,68 +56,44 @@ void GDScriptLanguage::get_string_delimiters(List<String> *p_delimiters) const {
 	p_delimiters->push_back("\"\"\" \"\"\"");
 }
 
-String GDScriptLanguage::_get_processed_template(const String &p_template, const String &p_base_class_name) const {
-	String processed_template = p_template;
-
-#ifdef TOOLS_ENABLED
-	if (EDITOR_DEF("text_editor/completion/add_type_hints", false)) {
-		processed_template = processed_template.replace("%INT_TYPE%", ": int");
-		processed_template = processed_template.replace("%STRING_TYPE%", ": String");
-		processed_template = processed_template.replace("%FLOAT_TYPE%", ": float");
-		processed_template = processed_template.replace("%VOID_RETURN%", " -> void");
-	} else {
-		processed_template = processed_template.replace("%INT_TYPE%", "");
-		processed_template = processed_template.replace("%STRING_TYPE%", "");
-		processed_template = processed_template.replace("%FLOAT_TYPE%", "");
-		processed_template = processed_template.replace("%VOID_RETURN%", "");
-	}
-#else
-	processed_template = processed_template.replace("%INT_TYPE%", "");
-	processed_template = processed_template.replace("%STRING_TYPE%", "");
-	processed_template = processed_template.replace("%FLOAT_TYPE%", "");
-	processed_template = processed_template.replace("%VOID_RETURN%", "");
-#endif
-
-	processed_template = processed_template.replace("%BASE%", p_base_class_name);
-	processed_template = processed_template.replace("%TS%", _get_indentation());
-
-	return processed_template;
-}
-
-Ref<Script> GDScriptLanguage::get_template(const String &p_class_name, const String &p_base_class_name) const {
-	String _template = "extends %BASE%\n"
-					   "\n"
-					   "\n"
-					   "# Declare member variables here. Examples:\n"
-					   "# var a%INT_TYPE% = 2\n"
-					   "# var b%STRING_TYPE% = \"text\"\n"
-					   "\n"
-					   "\n"
-					   "# Called when the node enters the scene tree for the first time.\n"
-					   "func _ready()%VOID_RETURN%:\n"
-					   "%TS%pass # Replace with function body.\n"
-					   "\n"
-					   "\n"
-					   "# Called every frame. 'delta' is the elapsed time since the previous frame.\n"
-					   "#func _process(delta%FLOAT_TYPE%)%VOID_RETURN%:\n"
-					   "#%TS%pass\n";
-
-	_template = _get_processed_template(_template, p_base_class_name);
-
-	Ref<GDScript> script;
-	script.instantiate();
-	script->set_source_code(_template);
-
-	return script;
-}
-
 bool GDScriptLanguage::is_using_templates() {
 	return true;
 }
 
-void GDScriptLanguage::make_template(const String &p_class_name, const String &p_base_class_name, Ref<Script> &p_script) {
-	String _template = _get_processed_template(p_script->get_source_code(), p_base_class_name);
-	p_script->set_source_code(_template);
+Ref<Script> GDScriptLanguage::make_template(const String &p_template, const String &p_class_name, const String &p_base_class_name) const {
+	Ref<GDScript> script;
+	script.instantiate();
+	String processed_template = p_template;
+#ifdef TOOLS_ENABLED
+	if (!EDITOR_DEF("text_editor/completion/add_type_hints", false)) {
+		processed_template = processed_template.replace(": int", "")
+									 .replace(": String", "")
+									 .replace(": float", "")
+									 .replace(":=", "=")
+									 .replace(" -> void", "");
+	}
+#else
+	processed_template = processed_template.replace(": int", "")
+								 .replace(": String", "")
+								 .replace(": float", "")
+								 .replace(" -> void", "");
+#endif
+
+	processed_template = processed_template.replace("_BASE_", p_base_class_name)
+								 .replace("_CLASS_", p_class_name)
+								 .replace("_TS_", _get_indentation());
+	script->set_source_code(processed_template);
+	return script;
+}
+
+Vector<ScriptLanguage::ScriptTemplate> GDScriptLanguage::get_built_in_templates(StringName p_object) {
+	Vector<ScriptLanguage::ScriptTemplate> templates;
+	for (int i = 0; i < TEMPLATES_ARRAY_SIZE; i++) {
+		if (TEMPLATES[i].inherit == p_object) {
+			templates.append(TEMPLATES[i]);
+		}
+	}
+	return templates;
 }
 
 static void get_function_names_recursively(const GDScriptParser::ClassNode *p_class, const String &p_prefix, Map<int, String> &r_funcs) {
@@ -236,7 +213,7 @@ Script *GDScriptLanguage::create_script() const {
 /* DEBUGGER FUNCTIONS */
 
 bool GDScriptLanguage::debug_break_parse(const String &p_file, int p_line, const String &p_error) {
-	//break because of parse error
+	// break because of parse error
 
 	if (EngineDebugger::is_active() && Thread::get_caller_id() == Thread::get_main_id()) {
 		_debug_parse_err_line = p_line;
@@ -1383,8 +1360,8 @@ static bool _guess_expression_type(GDScriptParser::CompletionContext &p_context,
 														}
 
 														if (!script.ends_with(".gd")) {
-															//not a script, try find the script anyway,
-															//may have some success
+															// not a script, try find the script anyway,
+															// may have some success
 															script = script.get_basename() + ".gd";
 														}
 
@@ -2770,7 +2747,7 @@ void GDScriptLanguage::auto_indent_code(String &p_code, int p_from_line, int p_t
 			}
 
 			if (indent_stack.size() && indent_stack.back()->get() != tc) {
-				indent_stack.push_back(tc); //this is not right but gets the job done
+				indent_stack.push_back(tc); // this is not right but gets the job done
 			}
 		}
 

@@ -781,43 +781,6 @@ bool EditorSettings::_is_default_text_editor_theme(String p_theme_name) {
 	return p_theme_name == "default" || p_theme_name == "godot 2" || p_theme_name == "custom";
 }
 
-static Dictionary _get_builtin_script_templates() {
-	Dictionary templates;
-
-	// No Comments
-	templates["no_comments.gd"] =
-			"extends %BASE%\n"
-			"\n"
-			"\n"
-			"func _ready()%VOID_RETURN%:\n"
-			"%TS%pass\n";
-
-	// Empty
-	templates["empty.gd"] =
-			"extends %BASE%"
-			"\n"
-			"\n";
-
-	return templates;
-}
-
-static void _create_script_templates(const String &p_path) {
-	Dictionary templates = _get_builtin_script_templates();
-	List<Variant> keys;
-	templates.get_key_list(&keys);
-	FileAccessRef file = FileAccess::create(FileAccess::ACCESS_FILESYSTEM);
-	DirAccessRef dir = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-	dir->change_dir(p_path);
-	for (int i = 0; i < keys.size(); i++) {
-		if (!dir->file_exists(keys[i])) {
-			Error err = file->reopen(p_path.plus_file((String)keys[i]), FileAccess::WRITE);
-			ERR_FAIL_COND(err != OK);
-			file->store_string(templates[keys[i]]);
-			file->close();
-		}
-	}
-}
-
 // PUBLIC METHODS
 
 EditorSettings *EditorSettings::get_singleton() {
@@ -852,10 +815,7 @@ void EditorSettings::create() {
 	}
 
 	if (EditorPaths::get_singleton()->are_paths_valid()) {
-		_create_script_templates(EditorPaths::get_singleton()->get_config_dir().plus_file("script_templates"));
-
 		// Validate editor config file.
-
 		DirAccessRef dir = DirAccess::open(EditorPaths::get_singleton()->get_config_dir());
 		String config_file_name = "editor_settings-" + itos(VERSION_MAJOR) + ".tres";
 		config_file_path = EditorPaths::get_singleton()->get_config_dir().plus_file(config_file_name);

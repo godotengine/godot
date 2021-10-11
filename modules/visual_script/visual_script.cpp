@@ -2241,20 +2241,15 @@ void VisualScriptLanguage::get_comment_delimiters(List<String> *p_delimiters) co
 void VisualScriptLanguage::get_string_delimiters(List<String> *p_delimiters) const {
 }
 
-Ref<Script> VisualScriptLanguage::get_template(const String &p_class_name, const String &p_base_class_name) const {
+bool VisualScriptLanguage::is_using_templates() {
+	return false;
+}
+
+Ref<Script> VisualScriptLanguage::make_template(const String &p_template, const String &p_class_name, const String &p_base_class_name) const {
 	Ref<VisualScript> script;
 	script.instantiate();
 	script->set_instance_base_type(p_base_class_name);
 	return script;
-}
-
-bool VisualScriptLanguage::is_using_templates() {
-	return true;
-}
-
-void VisualScriptLanguage::make_template(const String &p_class_name, const String &p_base_class_name, Ref<Script> &p_script) {
-	Ref<VisualScript> script = p_script;
-	script->set_instance_base_type(p_base_class_name);
 }
 
 bool VisualScriptLanguage::validate(const String &p_script, const String &p_path, List<String> *r_functions, List<ScriptLanguage::ScriptError> *r_errors, List<ScriptLanguage::Warning> *r_warnings, Set<int> *r_safe_lines) const {

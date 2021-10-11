@@ -21,3 +21,5 @@ if env["tools"]:
 if env["tests"]:
     env_gdscript.Append(CPPDEFINES=["TESTS_ENABLED"])
     env_gdscript.add_source_files(env.modules_sources, "./tests/*.cpp")
+
+SConscript("editor_templates/SCsub")

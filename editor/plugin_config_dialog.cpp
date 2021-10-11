@@ -36,12 +36,6 @@
 #include "editor/editor_plugin.h"
 #include "editor/editor_scale.h"
 #include "editor/project_settings_editor.h"
-#include "scene/gui/grid_container.h"
-
-#include "modules/modules_enabled.gen.h" // For gdscript.
-#ifdef MODULE_GDSCRIPT_ENABLED
-#include "modules/gdscript/gdscript.h"
-#endif
 
 void PluginConfigDialog::_clear_fields() {
 	name_edit->set_text("");
@@ -76,42 +70,16 @@ void PluginConfigDialog::_on_confirmed() {
 		String lang_name = ScriptServer::get_language(lang_idx)->get_name();
 
 		Ref<Script> script;
-
-		// TODO Use script templates. Right now, this code won't add the 'tool' annotation to other languages.
-		// TODO Better support script languages with named classes (has_named_classes).
-
-		// FIXME: It's hacky to have hardcoded access to the GDScript module here.
-		// The editor code should not have to know what languages are enabled.
-#ifdef MODULE_GDSCRIPT_ENABLED
-		if (lang_name == GDScriptLanguage::get_singleton()->get_name()) {
-			// Hard-coded GDScript template to keep usability until we use script templates.
-			Ref<Script> gdscript = memnew(GDScript);
-			gdscript->set_source_code(
-					"@tool\n"
-					"extends EditorPlugin\n"
-					"\n"
-					"\n"
-					"func _enter_tree()%VOID_RETURN%:\n"
-					"%TS%pass\n"
-					"\n"
-					"\n"
-					"func _exit_tree()%VOID_RETURN%:\n"
-					"%TS%pass\n");
-			GDScriptLanguage::get_singleton()->make_template("", "", gdscript);
-			String script_path = path.plus_file(script_edit->get_text());
-			gdscript->set_path(script_path);
-			ResourceSaver::save(script_path, gdscript);
-			script = gdscript;
-		} else {
-#endif
-			String script_path = path.plus_file(script_edit->get_text());
-			String class_name = script_path.get_file().get_basename();
-			script = ScriptServer::get_language(lang_idx)->get_template(class_name, "EditorPlugin");
-			script->set_path(script_path);
-			ResourceSaver::save(script_path, script);
-#ifdef MODULE_GDSCRIPT_ENABLED
+		String script_path = path.plus_file(script_edit->get_text());
+		String class_name = script_path.get_file().get_basename();
+		String template_content = "";
+		Vector<ScriptLanguage::ScriptTemplate> templates = ScriptServer::get_language(lang_idx)->get_built_in_templates("EditorPlugin");
+		if (templates.size() > 0) {
+			template_content = templates.get(0).content;
 		}
-#endif
+		script = ScriptServer::get_language(lang_idx)->make_template(template_content, class_name, "EditorPlugin");
+		script->set_path(script_path);
+		ResourceSaver::save(script_path, script);
 
 		emit_signal(SNAME("plugin_ready"), script.operator->(), active_edit->is_pressed() ? _to_absolute_plugin_path(subfolder_edit->get_text()) : "");
 	} else {
@@ -331,11 +299,9 @@ PluginConfigDialog::PluginConfigDialog() {
 	for (int i = 0; i < ScriptServer::get_language_count(); i++) {
 		ScriptLanguage *lang = ScriptServer::get_language(i);
 		script_option_edit->add_item(lang->get_name());
-#ifdef MODULE_GDSCRIPT_ENABLED
-		if (lang == GDScriptLanguage::get_singleton()) {
+		if (lang->get_name() == "GDScript") {
 			default_lang = i;
 		}
-#endif
 	}
 	script_option_edit->select(default_lang);
 	grid->add_child(script_option_edit);

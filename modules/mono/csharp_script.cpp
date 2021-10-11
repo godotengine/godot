@@ -55,6 +55,7 @@
 #endif
 
 #include "editor/editor_internal_calls.h"
+#include "editor_templates/templates.gen.h"
 #include "godotsharp_dirs.h"
 #include "mono_gd/gd_mono_cache.h"
 #include "mono_gd/gd_mono_class.h"
@@ -351,57 +352,33 @@ static String get_base_class_name(const String &p_base_class_name, const String 
 	return base_class;
 }
 
-Ref<Script> CSharpLanguage::get_template(const String &p_class_name, const String &p_base_class_name) const {
-	String script_template = "using " BINDINGS_NAMESPACE ";\n"
-							 "using System;\n"
-							 "\n"
-							 "public partial class %CLASS% : %BASE%\n"
-							 "{\n"
-							 "    // Declare member variables here. Examples:\n"
-							 "    // private int a = 2;\n"
-							 "    // private string b = \"text\";\n"
-							 "\n"
-							 "    // Called when the node enters the scene tree for the first time.\n"
-							 "    public override void _Ready()\n"
-							 "    {\n"
-							 "        \n"
-							 "    }\n"
-							 "\n"
-							 "//  // Called every frame. 'delta' is the elapsed time since the previous frame.\n"
-							 "//  public override void _Process(float delta)\n"
-							 "//  {\n"
-							 "//      \n"
-							 "//  }\n"
-							 "}\n";
-
-	// Replaces all spaces in p_class_name with underscores to prevent
-	// invalid C# Script templates from being generated when the object name
-	// has spaces in it.
-	String class_name_no_spaces = p_class_name.replace(" ", "_");
-	String base_class_name = get_base_class_name(p_base_class_name, class_name_no_spaces);
-	script_template = script_template.replace("%BASE%", base_class_name)
-							  .replace("%CLASS%", class_name_no_spaces);
-
-	Ref<CSharpScript> script;
-	script.instantiate();
-	script->set_source_code(script_template);
-	script->set_name(class_name_no_spaces);
-
-	return script;
-}
-
 bool CSharpLanguage::is_using_templates() {
 	return true;
 }
 
-void CSharpLanguage::make_template(const String &p_class_name, const String &p_base_class_name, Ref<Script> &p_script) {
-	String src = p_script->get_source_code();
+Ref<Script> CSharpLanguage::make_template(const String &p_template, const String &p_class_name, const String &p_base_class_name) const {
+	Ref<CSharpScript> script;
+	script.instantiate();
+
 	String class_name_no_spaces = p_class_name.replace(" ", "_");
 	String base_class_name = get_base_class_name(p_base_class_name, class_name_no_spaces);
-	src = src.replace("%BASE%", base_class_name)
-				  .replace("%CLASS%", class_name_no_spaces)
-				  .replace("%TS%", _get_indentation());
-	p_script->set_source_code(src);
+	String processed_template = p_template;
+	processed_template = processed_template.replace("_BINDINGS_NAMESPACE_", BINDINGS_NAMESPACE)
+								 .replace("_BASE_", base_class_name)
+								 .replace("_CLASS_", class_name_no_spaces)
+								 .replace("_TS_", _get_indentation());
+	script->set_source_code(processed_template);
+	return script;
+}
+
+Vector<ScriptLanguage::ScriptTemplate> CSharpLanguage::get_built_in_templates(StringName p_object) {
+	Vector<ScriptLanguage::ScriptTemplate> templates;
+	for (int i = 0; i < TEMPLATES_ARRAY_SIZE; i++) {
+		if (TEMPLATES[i].inherit == p_object) {
+			templates.append(TEMPLATES[i]);
+		}
+	}
+	return templates;
 }
 
 String CSharpLanguage::validate_path(const String &p_path) const {
