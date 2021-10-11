@@ -1109,12 +1109,12 @@ public:
 
 		PropertyStyle property = PROP_NONE;
 		union {
-			SuiteNode *setter = nullptr;
+			FunctionNode *setter = nullptr;
 			IdentifierNode *setter_pointer;
 		};
 		IdentifierNode *setter_parameter = nullptr;
 		union {
-			SuiteNode *getter = nullptr;
+			FunctionNode *getter = nullptr;
 			IdentifierNode *getter_pointer;
 		};
 

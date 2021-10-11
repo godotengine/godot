@@ -947,7 +947,7 @@ GDScriptParser::VariableNode *GDScriptParser::parse_property(VariableNode *p_var
 
 void GDScriptParser::parse_property_setter(VariableNode *p_variable) {
 	switch (p_variable->property) {
-		case VariableNode::PROP_INLINE:
+		case VariableNode::PROP_INLINE: {
 			consume(GDScriptTokenizer::Token::PARENTHESIS_OPEN, R"(Expected "(" after "set".)");
 			if (consume(GDScriptTokenizer::Token::IDENTIFIER, R"(Expected parameter name after "(".)")) {
 				p_variable->setter_parameter = parse_identifier();
@@ -955,9 +955,30 @@ void GDScriptParser::parse_property_setter(VariableNode *p_variable) {
 			consume(GDScriptTokenizer::Token::PARENTHESIS_CLOSE, R"*(Expected ")" after parameter name.)*");
 			consume(GDScriptTokenizer::Token::COLON, R"*(Expected ":" after ")".)*");
 
-			p_variable->setter = parse_suite("setter definition");
-			break;
+			IdentifierNode *identifier = alloc_node<IdentifierNode>();
+			identifier->name = "@" + p_variable->identifier->name + "_setter";
 
+			FunctionNode *function = alloc_node<FunctionNode>();
+			function->identifier = identifier;
+
+			FunctionNode *previous_function = current_function;
+			current_function = function;
+
+			ParameterNode *parameter = alloc_node<ParameterNode>();
+			parameter->identifier = p_variable->setter_parameter;
+
+			function->parameters_indices[parameter->identifier->name] = 0;
+			function->parameters.push_back(parameter);
+
+			SuiteNode *body = alloc_node<SuiteNode>();
+			body->add_local(parameter, function);
+
+			function->body = parse_suite("setter declaration", body);
+
+			p_variable->setter = function;
+			current_function = previous_function;
+			break;
+		}
 		case VariableNode::PROP_SETGET:
 			consume(GDScriptTokenizer::Token::EQUAL, R"(Expected "=" after "set")");
 			make_completion_context(COMPLETION_PROPERTY_METHOD, p_variable);
@@ -972,11 +993,25 @@ void GDScriptParser::parse_property_setter(VariableNode *p_variable) {
 
 void GDScriptParser::parse_property_getter(VariableNode *p_variable) {
 	switch (p_variable->property) {
-		case VariableNode::PROP_INLINE:
+		case VariableNode::PROP_INLINE: {
 			consume(GDScriptTokenizer::Token::COLON, R"(Expected ":" after "get".)");
 
-			p_variable->getter = parse_suite("getter definition");
+			IdentifierNode *identifier = alloc_node<IdentifierNode>();
+			identifier->name = "@" + p_variable->identifier->name + "_getter";
+
+			FunctionNode *function = alloc_node<FunctionNode>();
+			function->identifier = identifier;
+
+			FunctionNode *previous_function = current_function;
+			current_function = function;
+
+			SuiteNode *body = alloc_node<SuiteNode>();
+			function->body = parse_suite("getter declaration", body);
+
+			p_variable->getter = function;
+			current_function = previous_function;
 			break;
+		}
 		case VariableNode::PROP_SETGET:
 			consume(GDScriptTokenizer::Token::EQUAL, R"(Expected "=" after "get")");
 			make_completion_context(COMPLETION_PROPERTY_METHOD, p_variable);
@@ -4437,7 +4472,7 @@ void GDScriptParser::TreePrinter::print_variable(VariableNode *p_variable) {
 			if (p_variable->property == VariableNode::PROP_INLINE) {
 				push_line(":");
 				increase_indent();
-				print_suite(p_variable->getter);
+				print_suite(p_variable->getter->body);
 				decrease_indent();
 			} else {
 				push_line(" =");
@@ -4457,7 +4492,7 @@ void GDScriptParser::TreePrinter::print_variable(VariableNode *p_variable) {
 				}
 				push_line("):");
 				increase_indent();
-				print_suite(p_variable->setter);
+				print_suite(p_variable->setter->body);
 				decrease_indent();
 			} else {
 				push_line(" =");
