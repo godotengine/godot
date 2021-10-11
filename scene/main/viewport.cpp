@@ -2881,9 +2881,8 @@ bool Viewport::gui_is_dragging() const {
 
 void Viewport::set_input_as_handled() {
 	_drop_physics_mouseover();
-	if (handle_input_locally) {
-		local_input_handled = true;
-	} else {
+
+	if (!handle_input_locally) {
 		ERR_FAIL_COND(!is_inside_tree());
 		Viewport *vp = this;
 		while (true) {
@@ -2895,16 +2894,19 @@ void Viewport::set_input_as_handled() {
 			}
 			vp = vp->get_parent()->get_viewport();
 		}
-		vp->set_input_as_handled();
+		if (vp != this) {
+			vp->set_input_as_handled();
+			return;
+		}
 	}
+
+	local_input_handled = true;
 }
 
 bool Viewport::is_input_handled() const {
-	if (handle_input_locally) {
-		return local_input_handled;
-	} else {
-		const Viewport *vp = this;
+	if (!handle_input_locally) {
 		ERR_FAIL_COND_V(!is_inside_tree(), false);
+		const Viewport *vp = this;
 		while (true) {
 			if (Object::cast_to<Window>(vp)) {
 				break;
@@ -2914,8 +2916,11 @@ bool Viewport::is_input_handled() const {
 			}
 			vp = vp->get_parent()->get_viewport();
 		}
-		return vp->is_input_handled();
+		if (vp != this) {
+			return vp->is_input_handled();
+		}
 	}
+	return local_input_handled;
 }
 
 void Viewport::set_handle_input_locally(bool p_enable) {
