@@ -429,9 +429,8 @@ String EditorExportPlatformAndroid::get_package_name(const String &p_package) co
 	return pname;
 }
 
-String EditorExportPlatformAndroid::get_assets_directory(const Ref<EditorExportPreset> &p_preset) const {
-	int export_format = int(p_preset->get("custom_template/export_format"));
-	return export_format == EXPORT_FORMAT_AAB ? AAB_ASSETS_DIRECTORY : APK_ASSETS_DIRECTORY;
+String EditorExportPlatformAndroid::get_assets_directory(const Ref<EditorExportPreset> &p_preset, int p_export_format) const {
+	return p_export_format == EXPORT_FORMAT_AAB ? AAB_ASSETS_DIRECTORY : APK_ASSETS_DIRECTORY;
 }
 
 bool EditorExportPlatformAndroid::is_package_name_valid(const String &p_package, String *r_error) const {
@@ -2477,7 +2476,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 				return ERR_UNCONFIGURED;
 			}
 		}
-		const String assets_directory = get_assets_directory(p_preset);
+		const String assets_directory = get_assets_directory(p_preset, export_format);
 		String sdk_path = EDITOR_GET("export/android/android_sdk_path");
 		ERR_FAIL_COND_V_MSG(sdk_path.is_empty(), ERR_UNCONFIGURED, "Android SDK path must be configured in Editor Settings at 'export/android/android_sdk_path'.");
 		print_verbose("Android sdk path: " + sdk_path);
