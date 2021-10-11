@@ -42,12 +42,12 @@ class AnimationNodeAnimation : public AnimationRootNode {
 	uint64_t last_version = 0;
 	bool skip = false;
 
-public:
-	enum PlayMode {
-		PLAY_MODE_FORWARD,
-		PLAY_MODE_BACKWARD
-	};
+protected:
+	void _validate_property(PropertyInfo &property) const override;
 
+	static void _bind_methods();
+
+public:
 	void get_parameter_list(List<PropertyInfo> *r_list) const override;
 
 	static Vector<String> (*get_editable_animation_list)();
@@ -58,24 +58,8 @@ public:
 	void set_animation(const StringName &p_name);
 	StringName get_animation() const;
 
-	void set_play_mode(PlayMode p_play_mode);
-	PlayMode get_play_mode() const;
-
-	void set_backward(bool p_backward);
-	bool is_backward() const;
-
 	AnimationNodeAnimation();
-
-protected:
-	void _validate_property(PropertyInfo &property) const override;
-	static void _bind_methods();
-
-private:
-	PlayMode play_mode = PLAY_MODE_FORWARD;
-	bool backward = false;
 };
-
-VARIANT_ENUM_CAST(AnimationNodeAnimation::PlayMode)
 
 class AnimationNodeOneShot : public AnimationNode {
 	GDCLASS(AnimationNodeOneShot, AnimationNode);

@@ -299,7 +299,7 @@ int AudioStreamPlaybackSample::mix(AudioFrame *p_buffer, float p_rate_scale, int
 
 			if (loop_format != AudioStreamSample::LOOP_DISABLED && offset < loop_begin_fp) {
 				/* loopstart reached */
-				if (loop_format == AudioStreamSample::LOOP_PINGPONG) {
+				if (loop_format == AudioStreamSample::LOOP_PING_PONG) {
 					/* bounce ping pong */
 					offset = loop_begin_fp + (loop_begin_fp - offset);
 					increment = -increment;
@@ -320,7 +320,7 @@ int AudioStreamPlaybackSample::mix(AudioFrame *p_buffer, float p_rate_scale, int
 			if (loop_format != AudioStreamSample::LOOP_DISABLED && offset >= loop_end_fp) {
 				/* loopend reached */
 
-				if (loop_format == AudioStreamSample::LOOP_PINGPONG) {
+				if (loop_format == AudioStreamSample::LOOP_PING_PONG) {
 					/* bounce ping pong */
 					offset = loop_end_fp - (offset - loop_end_fp);
 					increment = -increment;
@@ -650,7 +650,7 @@ void AudioStreamSample::_bind_methods() {
 
 	BIND_ENUM_CONSTANT(LOOP_DISABLED);
 	BIND_ENUM_CONSTANT(LOOP_FORWARD);
-	BIND_ENUM_CONSTANT(LOOP_PINGPONG);
+	BIND_ENUM_CONSTANT(LOOP_PING_PONG);
 	BIND_ENUM_CONSTANT(LOOP_BACKWARD);
 }
 

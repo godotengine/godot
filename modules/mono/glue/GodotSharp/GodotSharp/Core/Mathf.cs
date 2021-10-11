@@ -693,23 +693,5 @@ namespace Godot
             }
             return min + ((((value - min) % range) + range) % range);
         }
-
-        private static real_t Fract(real_t value)
-        {
-            return value - (real_t)Math.Floor(value);
-        }
-
-        /// <summary>
-        /// Returns the [code]value[/code] wrapped between [code]0[/code] and the [code]length[/code].
-        /// If the limit is reached, the next value the function returned is decreased to the [code]0[/code] side or increased to the [code]length[/code] side (like a triangle wave).
-        /// If [code]length[/code] is less than zero, it becomes positive.
-        /// </summary>
-        /// <param name="value">The value to pingpong.</param>
-        /// <param name="length">The maximum value of the function.</param>
-        /// <returns>The ping-ponged value.</returns>
-        public static real_t PingPong(real_t value, real_t length)
-        {
-            return (length != 0.0) ? Math.Abs(Mathf.Fract((value - length) / (length * 2.0)) * length * 2.0 - length) : 0.0;
-        }
     }
 }

@@ -30,7 +30,6 @@
 
 #include "animation_blend_tree.h"
 
-#include "scene/resources/animation.h"
 #include "scene/scene_string_names.h"
 
 void AnimationNodeAnimation::set_animation(const StringName &p_name) {
@@ -84,55 +83,30 @@ double AnimationNodeAnimation::process(double p_time, bool p_seek) {
 	}
 
 	Ref<Animation> anim = ap->get_animation(animation);
-	double anim_size = (double)anim->get_length();
-	double step = 0.0;
-	double prev_time = time;
-	int pingponged = 0;
-	bool current_backward = signbit(p_time);
+
+	double step;
 
 	if (p_seek) {
-		step = p_time - time;
 		time = p_time;
+		step = 0;
 	} else {
-		p_time *= backward ? -1.0 : 1.0;
-		if (!(time == anim_size && !current_backward) && !(time == 0 && current_backward)) {
-			time = time + p_time;
-			step = p_time;
-		}
+		time = MAX(0, time + p_time);
+		step = p_time;
 	}
 
-	if (anim->get_loop_mode() == Animation::LoopMode::LOOP_PINGPONG) {
+	double anim_size = anim->get_length();
+
+	if (anim->has_loop()) {
 		if (anim_size) {
-			if ((int)Math::floor(abs(time - prev_time) / anim_size) % 2 == 0) {
-				if (prev_time > 0 && time <= 0) {
-					backward = !backward;
-					pingponged = -1;
-				}
-				if (prev_time < anim_size && time >= anim_size) {
-					backward = !backward;
-					pingponged = 1;
-				}
-			}
-			time = Math::pingpong(time, anim_size);
+			time = Math::fposmod(time, anim_size);
 		}
-	} else {
-		if (anim->get_loop_mode() == Animation::LoopMode::LOOP_LINEAR) {
-			if (anim_size) {
-				time = Math::fposmod(time, anim_size);
-			}
-		} else if (time < 0) {
-			time = 0;
-		} else if (time > anim_size) {
-			time = anim_size;
-		}
-		backward = false;
+
+	} else if (time > anim_size) {
+		time = anim_size;
 	}
 
-	if (play_mode == PLAY_MODE_FORWARD) {
-		blend_animation(animation, time, step, p_seek, 1.0, pingponged);
-	} else {
-		blend_animation(animation, anim_size - time, -step, p_seek, 1.0, pingponged);
-	}
+	blend_animation(animation, time, step, p_seek, 1.0);
+
 	set_parameter(this->time, time);
 
 	return anim_size - time;
@@ -142,34 +116,11 @@ String AnimationNodeAnimation::get_caption() const {
 	return "Animation";
 }
 
-void AnimationNodeAnimation::set_play_mode(PlayMode p_play_mode) {
-	play_mode = p_play_mode;
-}
-
-AnimationNodeAnimation::PlayMode AnimationNodeAnimation::get_play_mode() const {
-	return play_mode;
-}
-
-void AnimationNodeAnimation::set_backward(bool p_backward) {
-	backward = p_backward;
-}
-
-bool AnimationNodeAnimation::is_backward() const {
-	return backward;
-}
-
 void AnimationNodeAnimation::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_animation", "name"), &AnimationNodeAnimation::set_animation);
 	ClassDB::bind_method(D_METHOD("get_animation"), &AnimationNodeAnimation::get_animation);
 
-	ClassDB::bind_method(D_METHOD("set_play_mode", "mode"), &AnimationNodeAnimation::set_play_mode);
-	ClassDB::bind_method(D_METHOD("get_play_mode"), &AnimationNodeAnimation::get_play_mode);
-
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "animation"), "set_animation", "get_animation");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "play_mode", PROPERTY_HINT_ENUM, "Forward,Backward"), "set_play_mode", "get_play_mode");
-
-	BIND_ENUM_CONSTANT(PLAY_MODE_FORWARD);
-	BIND_ENUM_CONSTANT(PLAY_MODE_BACKWARD);
 }
 
 AnimationNodeAnimation::AnimationNodeAnimation() {
@@ -582,7 +533,7 @@ AnimationNodeBlend3::AnimationNodeBlend3() {
 /////////////////////////////////
 
 void AnimationNodeTimeScale::get_parameter_list(List<PropertyInfo> *r_list) const {
-	r_list->push_back(PropertyInfo(Variant::FLOAT, scale, PROPERTY_HINT_RANGE, "-32,32,0.01,or_lesser,or_greater"));
+	r_list->push_back(PropertyInfo(Variant::FLOAT, scale, PROPERTY_HINT_RANGE, "0,32,0.01,or_greater"));
 }
 
 Variant AnimationNodeTimeScale::get_parameter_default_value(const StringName &p_parameter) const {

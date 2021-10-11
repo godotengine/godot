@@ -30,7 +30,6 @@
 
 #include "animation_blend_space_2d.h"
 
-#include "animation_blend_tree.h"
 #include "core/math/geometry_2d.h"
 
 void AnimationNodeBlendSpace2D::get_parameter_list(List<PropertyInfo> *r_list) const {
@@ -532,12 +531,6 @@ double AnimationNodeBlendSpace2D::process(double p_time, bool p_seek) {
 		if (new_closest != closest && new_closest != -1) {
 			float from = 0.0;
 			if (blend_mode == BLEND_MODE_DISCRETE_CARRY && closest != -1) {
-				//for ping-pong loop
-				Ref<AnimationNodeAnimation> na_c = static_cast<Ref<AnimationNodeAnimation>>(blend_points[closest].node);
-				Ref<AnimationNodeAnimation> na_n = static_cast<Ref<AnimationNodeAnimation>>(blend_points[new_closest].node);
-				if (!na_c.is_null() && !na_n.is_null()) {
-					na_n->set_backward(na_c->is_backward());
-				}
 				//see how much animation remains
 				from = length_internal - blend_node(blend_points[closest].name, blend_points[closest].node, p_time, false, 0.0, FILTER_IGNORE, false);
 			}
