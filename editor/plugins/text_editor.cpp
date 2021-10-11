@@ -407,10 +407,6 @@ void TextEditor::_convert_case(CodeTextEditor::CaseStyle p_case) {
 	code_editor->convert_case(p_case);
 }
 
-void TextEditor::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("add_syntax_highlighter", "highlighter"), &TextEditor::add_syntax_highlighter);
-}
-
 static ScriptEditorBase *create_editor(const RES &p_resource) {
 	if (Object::cast_to<TextFile>(*p_resource)) {
 		return memnew(TextEditor);

@@ -87,8 +87,6 @@ private:
 	};
 
 protected:
-	static void _bind_methods();
-
 	void _edit_option(int p_op);
 	void _make_context_menu(bool p_selection, bool p_can_fold, bool p_is_folded, Vector2 p_position);
 	void _text_edit_gui_input(const Ref<InputEvent> &ev);
