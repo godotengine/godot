@@ -171,6 +171,8 @@ void TileSet::set_source_id(int p_source_id, int p_new_source_id) {
 	source_ids.append(p_new_source_id);
 	source_ids.sort();
 
+	_compute_next_source_id();
+
 	emit_changed();
 }
 
