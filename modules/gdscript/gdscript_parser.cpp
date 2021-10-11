@@ -4675,7 +4675,7 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 										first = false;
 									}
 
-									current_export.hint_string += E->get().operator String().camelcase_to_underscore(true).capitalize().xml_escape();
+									current_export.hint_string += E->get().operator String().capitalize().xml_escape();
 									if (!is_flags) {
 										current_export.hint_string += ":";
 										current_export.hint_string += enum_values[E->get()].operator String().xml_escape();
