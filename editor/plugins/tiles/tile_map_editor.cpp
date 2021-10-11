@@ -465,6 +465,7 @@ bool TileMapEditorTilesPlugin::forward_canvas_gui_input(const Ref<InputEvent> &p
 					}
 					tile_map->set_cell(tile_map_layer, coords, E.value.source_id, E.value.get_atlas_coords(), E.value.alternative_tile);
 				}
+				_fix_invalid_tiles_in_tile_map_selection();
 			} break;
 			case DRAG_TYPE_BUCKET: {
 				Vector<Vector2i> line = TileMapEditor::get_line(tile_map, tile_map->world_to_map(drag_last_mouse_pos), tile_map->world_to_map(mpos));
@@ -483,6 +484,7 @@ bool TileMapEditorTilesPlugin::forward_canvas_gui_input(const Ref<InputEvent> &p
 						}
 					}
 				}
+				_fix_invalid_tiles_in_tile_map_selection();
 			} break;
 			default:
 				break;
@@ -508,6 +510,7 @@ bool TileMapEditorTilesPlugin::forward_canvas_gui_input(const Ref<InputEvent> &p
 					drag_start_mouse_pos = mpos;
 					if (tile_map_selection.has(tile_map->world_to_map(drag_start_mouse_pos)) && !mb->is_shift_pressed()) {
 						// Move the selection
+						_update_selection_pattern_from_tilemap_selection(); // Make sure the pattern is up to date before moving.
 						drag_type = DRAG_TYPE_MOVE;
 						drag_modified.clear();
 						for (Set<Vector2i>::Element *E = tile_map_selection.front(); E; E = E->next()) {
@@ -541,6 +544,7 @@ bool TileMapEditorTilesPlugin::forward_canvas_gui_input(const Ref<InputEvent> &p
 								}
 								tile_map->set_cell(tile_map_layer, coords, E.value.source_id, E.value.get_atlas_coords(), E.value.alternative_tile);
 							}
+							_fix_invalid_tiles_in_tile_map_selection();
 						} else if (tool_buttons_group->get_pressed_button() == line_tool_button) {
 							drag_type = DRAG_TYPE_LINE;
 							drag_start_mouse_pos = mpos;
@@ -569,6 +573,7 @@ bool TileMapEditorTilesPlugin::forward_canvas_gui_input(const Ref<InputEvent> &p
 									}
 								}
 							}
+							_fix_invalid_tiles_in_tile_map_selection();
 						}
 					}
 				}
@@ -1320,6 +1325,25 @@ void TileMapEditorTilesPlugin::_update_fix_selected_and_hovered() {
 		_update_selection_pattern_from_tilemap_selection();
 	} else {
 		_update_selection_pattern_from_tileset_selection();
+	}
+}
+
+void TileMapEditorTilesPlugin::_fix_invalid_tiles_in_tile_map_selection() {
+	TileMap *tile_map = Object::cast_to<TileMap>(ObjectDB::get_instance(tile_map_id));
+	if (!tile_map) {
+		return;
+	}
+
+	Set<Vector2i> to_remove;
+	for (Vector2i selected : tile_map_selection) {
+		TileMapCell cell = tile_map->get_cell(tile_map_layer, selected);
+		if (cell.source_id == TileSet::INVALID_SOURCE && cell.get_atlas_coords() == TileSetSource::INVALID_ATLAS_COORDS && cell.alternative_tile == TileSetAtlasSource::INVALID_TILE_ALTERNATIVE) {
+			to_remove.insert(selected);
+		}
+	}
+
+	for (Vector2i cell : to_remove) {
+		tile_map_selection.erase(cell);
 	}
 }
 

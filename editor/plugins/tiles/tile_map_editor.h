@@ -124,6 +124,7 @@ private:
 	void _update_selection_pattern_from_tileset_selection();
 	void _update_tileset_selection_from_selection_pattern();
 	void _update_fix_selected_and_hovered();
+	void _fix_invalid_tiles_in_tile_map_selection();
 
 	///// Bottom panel. ////.
 	Label *missing_source_label;
