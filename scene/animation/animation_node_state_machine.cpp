@@ -150,9 +150,9 @@ bool AnimationNodeStateMachineTransitionCondition::test_parameter(const Variant 
 					return float(p_parameter) <= float(comparison_value);
 			}
 			break;
-		default:
-			return false;
 	}
+
+	return false;
 }
 
 void AnimationNodeStateMachineTransitionCondition::_bind_methods() {
