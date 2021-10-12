@@ -104,14 +104,6 @@ void UndoRedo::create_action(const String &p_name, MergeMode p_mode) {
 							memdelete(obj);
 						}
 					}
-					String s = "removed " + E->get().name + ": ";
-					for (int j = 0; j < VARIANT_ARG_MAX; j++) {
-						if (E->get().args[j].get_type() == Variant::NIL) {
-							break;
-						}
-						s += String(E->get().args[j]);
-					}
-					print_line(s);
 					E->erase();
 				}
 			}
