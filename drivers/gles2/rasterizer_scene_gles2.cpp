@@ -2132,7 +2132,7 @@ void RasterizerSceneGLES2::_setup_refprobes(ReflectionProbeInstance *p_refprobe1
 		state.scene_shader.set_uniform(SceneShaderGLES2::REFPROBE2_USE_BOX_PROJECT, p_refprobe2->probe_ptr->box_projection);
 		state.scene_shader.set_uniform(SceneShaderGLES2::REFPROBE2_BOX_EXTENTS, p_refprobe2->probe_ptr->extents);
 		state.scene_shader.set_uniform(SceneShaderGLES2::REFPROBE2_BOX_OFFSET, p_refprobe2->probe_ptr->origin_offset);
-		state.scene_shader.set_uniform(SceneShaderGLES2::REFPROBE2_EXTERIOR, p_refprobe2->probe_ptr->interior);
+		state.scene_shader.set_uniform(SceneShaderGLES2::REFPROBE2_EXTERIOR, !p_refprobe2->probe_ptr->interior);
 		state.scene_shader.set_uniform(SceneShaderGLES2::REFPROBE2_INTENSITY, p_refprobe2->probe_ptr->intensity);
 
 		Color ambient;
