@@ -61,6 +61,7 @@ private:
 		};
 
 		Type type;
+		bool force_keep_in_merge_ends;
 		Ref<RefCounted> ref;
 		ObjectID object;
 		StringName name;
@@ -76,6 +77,7 @@ private:
 
 	Vector<Action> actions;
 	int current_action = -1;
+	bool force_keep_in_merge_ends = false;
 	int action_level = 0;
 	MergeMode merge_mode = MERGE_DISABLE;
 	bool merging = false;
@@ -108,6 +110,9 @@ public:
 	void add_undo_property(Object *p_object, const StringName &p_property, const Variant &p_value);
 	void add_do_reference(Object *p_object);
 	void add_undo_reference(Object *p_object);
+
+	void start_force_keep_in_merge_ends();
+	void end_force_keep_in_merge_ends();
 
 	bool is_committing_action() const;
 	void commit_action(bool p_execute = true);

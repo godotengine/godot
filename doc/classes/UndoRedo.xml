@@ -134,6 +134,12 @@
 				The way actions are merged is dictated by the [code]merge_mode[/code] argument. See [enum MergeMode] for details.
 			</description>
 		</method>
+		<method name="end_force_keep_in_merge_ends">
+			<return type="void" />
+			<description>
+				Stops marking operations as to be processed even if the action gets merged with another in the [constant MERGE_ENDS] mode. See [method start_force_keep_in_merge_ends].
+			</description>
+		</method>
 		<method name="get_action_name">
 			<return type="String" />
 			<argument index="0" name="id" type="int" />
@@ -190,6 +196,12 @@
 				Redo the last action.
 			</description>
 		</method>
+		<method name="start_force_keep_in_merge_ends">
+			<return type="void" />
+			<description>
+				Marks the next "do" and "undo" operations to be processed even if the action gets merged with another in the [constant MERGE_ENDS] mode. Return to normal operation using [method end_force_keep_in_merge_ends].
+			</description>
+		</method>
 		<method name="undo">
 			<return type="bool" />
 			<description>
@@ -209,7 +221,7 @@
 			Makes "do"/"undo" operations stay in separate actions.
 		</constant>
 		<constant name="MERGE_ENDS" value="1" enum="MergeMode">
-			Makes so that the action's "do" operation is from the first action created and the "undo" operation is from the last subsequent action with the same name.
+			Makes so that the action's "undo" operations are from the first action created and the "do" operations are from the last subsequent action with the same name.
 		</constant>
 		<constant name="MERGE_ALL" value="2" enum="MergeMode">
 			Makes subsequent actions with the same name be merged into one.
