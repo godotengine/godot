@@ -1611,19 +1611,25 @@ void EditorNode::restart_editor() {
 }
 
 void EditorNode::_save_all_scenes() {
+	bool all_saved = true;
 	for (int i = 0; i < editor_data.get_edited_scene_count(); i++) {
 		Node *scene = editor_data.get_edited_scene_root(i);
-		if (scene && scene->get_filename() != "" && DirAccess::exists(scene->get_filename().get_base_dir())) {
-			if (i != editor_data.get_edited_scene()) {
-				_save_scene(scene->get_filename(), i);
+		if (scene) {
+			if (scene->get_filename() != "" && DirAccess::exists(scene->get_filename().get_base_dir())) {
+				if (i != editor_data.get_edited_scene()) {
+					_save_scene(scene->get_filename(), i);
+				} else {
+					_save_scene_with_preview(scene->get_filename());
+				}
 			} else {
-				_save_scene_with_preview(scene->get_filename());
+				all_saved = false;
 			}
-		} else {
-			show_warning(TTR("Could not save one or more scenes!"), TTR("Save All Scenes"));
 		}
 	}
 
+	if (!all_saved) {
+		show_warning(TTR("Could not save one or more scenes!"), TTR("Save All Scenes"));
+	}
 	_save_default_environment();
 }
 
