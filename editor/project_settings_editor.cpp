@@ -771,9 +771,7 @@ void ProjectSettingsEditor::_update_actions() {
 			if (jb.is_valid()) {
 				String str = _get_device_string(jb->get_device()) + ", " + TTR("Button") + " " + itos(jb->get_button_index());
 				if (jb->get_button_index() >= 0 && jb->get_button_index() < JOY_BUTTON_MAX) {
-					str += String() + " (" + _button_names[jb->get_button_index()] + ").";
-				} else {
-					str += ".";
+					str += String() + " (" + _button_names[jb->get_button_index()] + ")";
 				}
 
 				action2->set_text(0, str);
@@ -786,22 +784,22 @@ void ProjectSettingsEditor::_update_actions() {
 				String str = _get_device_string(mb->get_device()) + ", ";
 				switch (mb->get_button_index()) {
 					case BUTTON_LEFT:
-						str += TTR("Left Button.");
+						str += TTR("Left Button");
 						break;
 					case BUTTON_RIGHT:
-						str += TTR("Right Button.");
+						str += TTR("Right Button");
 						break;
 					case BUTTON_MIDDLE:
-						str += TTR("Middle Button.");
+						str += TTR("Middle Button");
 						break;
 					case BUTTON_WHEEL_UP:
-						str += TTR("Wheel Up.");
+						str += TTR("Wheel Up");
 						break;
 					case BUTTON_WHEEL_DOWN:
-						str += TTR("Wheel Down.");
+						str += TTR("Wheel Down");
 						break;
 					default:
-						str += TTR("Button") + " " + itos(mb->get_button_index()) + ".";
+						str += TTR("Button") + " " + itos(mb->get_button_index());
 				}
 
 				action2->set_text(0, str);
@@ -814,7 +812,7 @@ void ProjectSettingsEditor::_update_actions() {
 				int ax = jm->get_axis();
 				int n = 2 * ax + (jm->get_axis_value() < 0 ? 0 : 1);
 				String desc = _axis_names[n];
-				String str = _get_device_string(jm->get_device()) + ", " + TTR("Axis") + " " + itos(ax) + " " + (jm->get_axis_value() < 0 ? "-" : "+") + desc + ".";
+				String str = _get_device_string(jm->get_device()) + ", " + TTR("Axis") + " " + itos(ax) + " " + (jm->get_axis_value() < 0 ? "-" : "+") + desc;
 				action2->set_text(0, str);
 				action2->set_icon(0, get_icon("JoyAxis", "EditorIcons"));
 			}
