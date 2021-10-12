@@ -50,6 +50,7 @@
 #include <unicode/udata.h>
 #include <unicode/uiter.h>
 #include <unicode/uloc.h>
+#include <unicode/unorm2.h>
 #include <unicode/uscript.h>
 #include <unicode/ustring.h>
 #include <unicode/utypes.h>
@@ -500,6 +501,8 @@ public:
 	virtual String format_number(const String &p_string, const String &p_language = "") const override;
 	virtual String parse_number(const String &p_string, const String &p_language = "") const override;
 	virtual String percent_sign(const String &p_language = "") const override;
+
+	virtual String strip_diacritics(const String &p_string) const override;
 
 	TextServerAdvanced();
 	~TextServerAdvanced();

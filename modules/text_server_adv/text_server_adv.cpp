@@ -4924,6 +4924,39 @@ String TextServerAdvanced::percent_sign(const String &p_language) const {
 	return "%";
 }
 
+String TextServerAdvanced::strip_diacritics(const String &p_string) const {
+	UErrorCode err = U_ZERO_ERROR;
+
+	// Get NFKD normalizer singleton.
+	const UNormalizer2 *unorm = unorm2_getNFKDInstance(&err);
+	ERR_FAIL_COND_V_MSG(U_FAILURE(err), TextServer::strip_diacritics(p_string), u_errorName(err));
+
+	// Convert to UTF-16.
+	Char16String utf16 = p_string.utf16();
+
+	// Normalize.
+	Char16String normalized;
+	err = U_ZERO_ERROR;
+	int32_t len = unorm2_normalize(unorm, utf16.ptr(), -1, nullptr, 0, &err);
+	ERR_FAIL_COND_V_MSG(err != U_BUFFER_OVERFLOW_ERROR, TextServer::strip_diacritics(p_string), u_errorName(err));
+	normalized.resize(len);
+	err = U_ZERO_ERROR;
+	unorm2_normalize(unorm, utf16.ptr(), -1, normalized.ptrw(), len, &err);
+	ERR_FAIL_COND_V_MSG(U_FAILURE(err), TextServer::strip_diacritics(p_string), u_errorName(err));
+
+	// Convert back to UTF-32.
+	String normalized_string = String::utf16(normalized.ptr(), len);
+
+	// Strip combining characters.
+	String result;
+	for (int i = 0; i < normalized_string.length(); i++) {
+		if (u_getCombiningClass(normalized_string[i]) == 0) {
+			result += normalized_string[i];
+		}
+	}
+	return result;
+}
+
 TextServerAdvanced::TextServerAdvanced() {
 	_insert_num_systems_lang();
 	_insert_feature_sets();

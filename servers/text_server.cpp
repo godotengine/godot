@@ -42,7 +42,7 @@ void TextServerManager::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("find_interface", "name"), &TextServerManager::find_interface);
 
 	ClassDB::bind_method(D_METHOD("set_primary_interface", "index"), &TextServerManager::set_primary_interface);
-	ClassDB::bind_method(D_METHOD("get_primary_interface"), &TextServerManager::_get_primary_interface);
+	ClassDB::bind_method(D_METHOD("get_primary_interface"), &TextServerManager::get_primary_interface);
 
 	ADD_SIGNAL(MethodInfo("interface_added", PropertyInfo(Variant::STRING_NAME, "interface_name")));
 	ADD_SIGNAL(MethodInfo("interface_removed", PropertyInfo(Variant::STRING_NAME, "interface_name")));
@@ -116,10 +116,6 @@ Array TextServerManager::get_interfaces() const {
 	};
 
 	return ret;
-}
-
-Ref<TextServer> TextServerManager::_get_primary_interface() const {
-	return primary_interface;
 }
 
 void TextServerManager::set_primary_interface(const Ref<TextServer> &p_primary_interface) {
@@ -406,6 +402,8 @@ void TextServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("format_number", "number", "language"), &TextServer::format_number, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("parse_number", "number", "language"), &TextServer::parse_number, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("percent_sign", "language"), &TextServer::percent_sign, DEFVAL(""));
+
+	ClassDB::bind_method(D_METHOD("strip_diacritics", "string"), &TextServer::strip_diacritics);
 
 	/* Direction */
 	BIND_ENUM_CONSTANT(DIRECTION_AUTO);
@@ -1317,6 +1315,134 @@ void TextServer::shaped_text_draw_outline(RID p_shaped, RID p_canvas, const Vect
 	}
 }
 
+void TextServer::_diacritics_map_add(const String &p_from, char32_t p_to) {
+	for (int i = 0; i < p_from.size(); i++) {
+		diacritics_map[p_from[i]] = p_to;
+	}
+}
+
+void TextServer::_init_diacritics_map() {
+	diacritics_map.clear();
+
+	// Latin.
+	_diacritics_map_add(U"ÀÁÂÃÄÅĀĂĄǍǞǠǺȀȂȦḀẠẢẤẦẨẪẬẮẰẲẴẶ", U'A');
+	_diacritics_map_add(U"àáâãäåāăąǎǟǡǻȁȃȧḁẚạảấầẩẫậắằẳẵặ", U'a');
+	_diacritics_map_add(U"ǢǼ", U'Æ');
+	_diacritics_map_add(U"ǣǽ", U'æ');
+	_diacritics_map_add(U"ḂḄḆ", U'B');
+	_diacritics_map_add(U"ḃḅḇ", U'b');
+	_diacritics_map_add(U"ÇĆĈĊČḈ", U'C');
+	_diacritics_map_add(U"çćĉċčḉ", U'c');
+	_diacritics_map_add(U"ĎḊḌḎḐḒ", U'D');
+	_diacritics_map_add(U"ďḋḍḏḑḓ", U'd');
+	_diacritics_map_add(U"ÈÉÊËĒĔĖĘĚȆȨḔḖḘḚḜẸẺẼẾỀỂỄỆ", U'E');
+	_diacritics_map_add(U"èéêëēĕėęěȇȩḕḗḙḛḝẹẻẽếềểễệ", U'e');
+	_diacritics_map_add(U"Ḟ", U'F');
+	_diacritics_map_add(U"ḟ", U'f');
+	_diacritics_map_add(U"ĜĞĠĢǦǴḠ", U'G');
+	_diacritics_map_add(U"ĝğġģǧǵḡ", U'g');
+	_diacritics_map_add(U"ĤȞḢḤḦḨḪ", U'H');
+	_diacritics_map_add(U"ĥȟḣḥḧḩḫẖ", U'h');
+	_diacritics_map_add(U"ÌÍÎÏĨĪĬĮİǏȈȊḬḮỈỊ", U'I');
+	_diacritics_map_add(U"ìíîïĩīĭįıǐȉȋḭḯỉị", U'i');
+	_diacritics_map_add(U"Ĵ", U'J');
+	_diacritics_map_add(U"ĵ", U'j');
+	_diacritics_map_add(U"ĶǨḰḲḴ", U'K');
+	_diacritics_map_add(U"ķĸǩḱḳḵ", U'k');
+	_diacritics_map_add(U"ĹĻĽĿḶḸḺḼ", U'L');
+	_diacritics_map_add(U"ĺļľŀḷḹḻḽ", U'l');
+	_diacritics_map_add(U"ḾṀṂ", U'M');
+	_diacritics_map_add(U"ḿṁṃ", U'm');
+	_diacritics_map_add(U"ÑŃŅŇǸṄṆṈṊ", U'N');
+	_diacritics_map_add(U"ñńņňŉǹṅṇṉṋ", U'n');
+	_diacritics_map_add(U"ÒÓÔÕÖŌŎŐƠǑǪǬȌȎȪȬȮȰṌṎṐṒỌỎỐỒỔỖỘỚỜỞỠỢ", U'O');
+	_diacritics_map_add(U"òóôõöōŏőơǒǫǭȍȏȫȭȯȱṍṏṑṓọỏốồổỗộớờởỡợ", U'o');
+	_diacritics_map_add(U"ṔṖ", U'P');
+	_diacritics_map_add(U"ṗṕ", U'p');
+	_diacritics_map_add(U"ŔŖŘȐȒṘṚṜṞ", U'R');
+	_diacritics_map_add(U"ŕŗřȑȓṙṛṝṟ", U'r');
+	_diacritics_map_add(U"ŚŜŞŠȘṠṢṤṦṨ", U'S');
+	_diacritics_map_add(U"śŝşšſșṡṣṥṧṩẛẜẝ", U's');
+	_diacritics_map_add(U"ŢŤȚṪṬṮṰ", U'T');
+	_diacritics_map_add(U"ţťțṫṭṯṱẗ", U't');
+	_diacritics_map_add(U"ÙÚÛÜŨŪŬŮŰŲƯǓǕǗǙǛȔȖṲṴṶṸṺỤỦỨỪỬỮỰ", U'U');
+	_diacritics_map_add(U"ùúûüũūŭůűųưǔǖǘǚǜȕȗṳṵṷṹṻụủứừửữự", U'u');
+	_diacritics_map_add(U"ṼṾ", U'V');
+	_diacritics_map_add(U"ṽṿ", U'v');
+	_diacritics_map_add(U"ŴẀẂẄẆẈ", U'W');
+	_diacritics_map_add(U"ŵẁẃẅẇẉẘ", U'w');
+	_diacritics_map_add(U"ẊẌ", U'X');
+	_diacritics_map_add(U"ẋẍ", U'x');
+	_diacritics_map_add(U"ÝŶẎỲỴỶỸỾ", U'Y');
+	_diacritics_map_add(U"ýÿŷẏẙỳỵỷỹỿ", U'y');
+	_diacritics_map_add(U"ŹŻŽẐẒẔ", U'Z');
+	_diacritics_map_add(U"źżžẑẓẕ", U'z');
+
+	// Greek.
+	_diacritics_map_add(U"ΆἈἉἊἋἌἍἎἏᾈᾉᾊᾋᾌᾍᾎᾏᾸᾹᾺΆᾼ", U'Α');
+	_diacritics_map_add(U"άἀἁἂἃἄἅἆἇὰάᾀᾁᾂᾃᾄᾅᾆᾇᾰᾱᾲᾳᾴᾶᾷ", U'α');
+	_diacritics_map_add(U"ΈἘἙἚἛἜἝῈΈ", U'Ε');
+	_diacritics_map_add(U"έἐἑἒἓἔἕὲέ", U'ε');
+	_diacritics_map_add(U"ΉἨἩἪἫἬἭἮἯᾘᾙᾚᾛᾜᾝᾞᾟῊΉῌ", U'Η');
+	_diacritics_map_add(U"ήἠἡἢἣἤἥἦἧὴήᾐᾑᾒᾓᾔᾕᾖᾗῂῃῄῆῇ", U'η');
+	_diacritics_map_add(U"ΊΪἸἹἺἻἼἽἾἿῘῙῚΊ", U'Ι');
+	_diacritics_map_add(U"ίΐϊἰἱἲἳἴἵἶἷὶίῐῑῒΐῖῗ", U'ι');
+	_diacritics_map_add(U"ΌὈὉὊὋὌὍῸΌ", U'Ο');
+	_diacritics_map_add(U"όὀὁὂὃὄὅὸό", U'ο');
+	_diacritics_map_add(U"Ῥ", U'Ρ');
+	_diacritics_map_add(U"ῤῥ", U'ρ');
+	_diacritics_map_add(U"ΎΫϓϔὙὛὝὟῨῩῪΎ", U'Υ');
+	_diacritics_map_add(U"ΰϋύὐὑὒὓὔὕὖὗὺύῠῡῢΰῦῧ", U'υ');
+	_diacritics_map_add(U"ΏὨὩὪὫὬὭὮὯᾨᾩᾪᾫᾬᾭᾮᾯῺΏῼ", U'Ω');
+	_diacritics_map_add(U"ώὠὡὢὣὤὥὦὧὼώᾠᾡᾢᾣᾤᾥᾦᾧῲῳῴῶῷ", U'ω');
+
+	// Cyrillic.
+	_diacritics_map_add(U"ӐӒ", U'А');
+	_diacritics_map_add(U"ӑӓ", U'а');
+	_diacritics_map_add(U"ЀЁӖ", U'Е');
+	_diacritics_map_add(U"ѐёӗ", U'е');
+	_diacritics_map_add(U"Ӛ", U'Ә');
+	_diacritics_map_add(U"ӛ", U'ә');
+	_diacritics_map_add(U"Ӝ", U'Ж');
+	_diacritics_map_add(U"ӝ", U'ж');
+	_diacritics_map_add(U"Ӟ", U'З');
+	_diacritics_map_add(U"ӟ", U'з');
+	_diacritics_map_add(U"Ѓ", U'Г');
+	_diacritics_map_add(U"ѓ", U'г');
+	_diacritics_map_add(U"Ї", U'І');
+	_diacritics_map_add(U"ї", U'і');
+	_diacritics_map_add(U"ЍӢӤЙ", U'И');
+	_diacritics_map_add(U"ѝӣӥй", U'и');
+	_diacritics_map_add(U"Ќ", U'К');
+	_diacritics_map_add(U"ќ", U'к');
+	_diacritics_map_add(U"Ӧ", U'О');
+	_diacritics_map_add(U"ӧ", U'о');
+	_diacritics_map_add(U"Ӫ", U'Ө');
+	_diacritics_map_add(U"ӫ", U'ө');
+	_diacritics_map_add(U"Ӭ", U'Э');
+	_diacritics_map_add(U"ӭ", U'э');
+	_diacritics_map_add(U"ЎӮӰӲ", U'У');
+	_diacritics_map_add(U"ўӯӱӳ", U'у');
+	_diacritics_map_add(U"Ӵ", U'Ч');
+	_diacritics_map_add(U"ӵ", U'ч');
+	_diacritics_map_add(U"Ӹ", U'Ы');
+	_diacritics_map_add(U"ӹ", U'ы');
+}
+
+String TextServer::strip_diacritics(const String &p_string) const {
+	String result;
+	for (int i = 0; i < p_string.length(); i++) {
+		if (p_string[i] < 0x02B0 || p_string[i] > 0x036F) { // Skip combining diacritics.
+			if (diacritics_map.has(p_string[i])) {
+				result += diacritics_map[p_string[i]];
+			} else {
+				result += p_string[i];
+			}
+		}
+	}
+	return result;
+}
+
 Array TextServer::_shaped_text_get_glyphs_wrapper(RID p_shaped) const {
 	Array ret;
 
@@ -1393,6 +1519,7 @@ Array TextServer::_shaped_text_get_ellipsis_glyphs_wrapper(RID p_shaped) const {
 }
 
 TextServer::TextServer() {
+	_init_diacritics_map();
 }
 
 TextServer::~TextServer() {
