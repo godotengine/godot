@@ -420,20 +420,22 @@ void main() {
 
 			light = textureLod(sampler2DArray(source_light, linear_sampler), uvw, 0.0).rgb;
 			active_rays += 1.0;
-		} else if (trace_result == RAY_MISS && params.env_transform[0][3] == 0.0) { // Use env_transform[0][3] to indicate when we are computing the first bounce
-			// Did not hit a triangle, reach out for the sky
-			vec3 sky_dir = normalize(mat3(params.env_transform) * ray_dir);
+		} else if (trace_result == RAY_MISS) {
+			if (params.env_transform[0][3] == 0.0) { // Use env_transform[0][3] to indicate when we are computing the first bounce
+				// Did not hit a triangle, reach out for the sky
+				vec3 sky_dir = normalize(mat3(params.env_transform) * ray_dir);
 
-			vec2 st = vec2(
-					atan(sky_dir.x, sky_dir.z),
-					acos(sky_dir.y));
+				vec2 st = vec2(
+						atan(sky_dir.x, sky_dir.z),
+						acos(sky_dir.y));
 
-			if (st.x < 0.0)
-				st.x += PI * 2.0;
+				if (st.x < 0.0)
+					st.x += PI * 2.0;
 
-			st /= vec2(PI * 2.0, PI);
+				st /= vec2(PI * 2.0, PI);
 
-			light = textureLod(sampler2D(environment, linear_sampler), st, 0.0).rgb;
+				light = textureLod(sampler2D(environment, linear_sampler), st, 0.0).rgb;
+			}
 			active_rays += 1.0;
 		}
 
