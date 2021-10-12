@@ -116,6 +116,10 @@ public:
 	virtual Vector3 get_accelerometer() const = 0;
 	virtual Vector3 get_magnetometer() const = 0;
 	virtual Vector3 get_gyroscope() const = 0;
+	virtual void set_gravity(const Vector3 &p_gravity) = 0;
+	virtual void set_accelerometer(const Vector3 &p_accel) = 0;
+	virtual void set_magnetometer(const Vector3 &p_magnetometer) = 0;
+	virtual void set_gyroscope(const Vector3 &p_gyroscope) = 0;
 
 	virtual void action_press(const StringName &p_action, float p_strength = 1.f) = 0;
 	virtual void action_release(const StringName &p_action) = 0;
