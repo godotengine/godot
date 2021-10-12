@@ -390,14 +390,14 @@ Vector<AudioFrame> AudioStreamPlayer3D::_update_panning() {
 
 	PhysicsDirectSpaceState3D *space_state = PhysicsServer3D::get_singleton()->space_get_direct_state(world_3d->get_space());
 
-	for (Camera3D *camera : cameras) {
+	for (const Camera3D *camera : world_3d->get_cameras()) {
 		Viewport *vp = camera->get_viewport();
 		if (!vp->is_audio_listener_3d()) {
 			continue;
 		}
 
 		bool listener_is_camera = true;
-		Node3D *listener_node = camera;
+		const Node3D *listener_node = camera;
 
 		AudioListener3D *listener = vp->get_audio_listener_3d();
 		if (listener) {
