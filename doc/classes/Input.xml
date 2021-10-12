@@ -269,6 +269,14 @@
 				Removes all mappings from the internal database that match the given GUID.
 			</description>
 		</method>
+		<method name="set_accelerometer">
+			<return type="void" />
+			<argument index="0" name="value" type="Vector3" />
+			<description>
+				Sets the acceleration value of the accelerometer sensor. Can be used for debugging on devices without a hardware sensor, for example in an editor on a PC.
+				[b]Note:[/b] This value can be immediately overwritten by the hardware sensor value on Android and iOS.
+			</description>
+		</method>
 		<method name="set_custom_mouse_cursor">
 			<return type="void" />
 			<argument index="0" name="image" type="Resource" />
@@ -289,6 +297,30 @@
 				Sets the default cursor shape to be used in the viewport instead of [constant CURSOR_ARROW].
 				[b]Note:[/b] If you want to change the default cursor shape for [Control]'s nodes, use [member Control.mouse_default_cursor_shape] instead.
 				[b]Note:[/b] This method generates an [InputEventMouseMotion] to update cursor immediately.
+			</description>
+		</method>
+		<method name="set_gravity">
+			<return type="void" />
+			<argument index="0" name="value" type="Vector3" />
+			<description>
+				Sets the gravity value of the accelerometer sensor. Can be used for debugging on devices without a hardware sensor, for example in an editor on a PC.
+				[b]Note:[/b] This value can be immediately overwritten by the hardware sensor value on Android and iOS.
+			</description>
+		</method>
+		<method name="set_gyroscope">
+			<return type="void" />
+			<argument index="0" name="value" type="Vector3" />
+			<description>
+				Sets the value of the rotation rate of the gyroscope sensor. Can be used for debugging on devices without a hardware sensor, for example in an editor on a PC.
+				[b]Note:[/b] This value can be immediately overwritten by the hardware sensor value on Android and iOS.
+			</description>
+		</method>
+		<method name="set_magnetometer">
+			<return type="void" />
+			<argument index="0" name="value" type="Vector3" />
+			<description>
+				Sets the value of the magnetic field of the magnetometer sensor. Can be used for debugging on devices without a hardware sensor, for example in an editor on a PC.
+				[b]Note:[/b] This value can be immediately overwritten by the hardware sensor value on Android and iOS.
 			</description>
 		</method>
 		<method name="set_mouse_mode">
