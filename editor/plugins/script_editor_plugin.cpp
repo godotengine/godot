@@ -1080,7 +1080,6 @@ void ScriptEditor::_file_dialog_action(String p_file) {
 			memdelete(file);
 
 			if (EditorFileSystem::get_singleton()) {
-				const Vector<String> textfile_extensions = ((String)(EditorSettings::get_singleton()->get("docks/filesystem/textfile_extensions"))).split(",", false);
 				if (textfile_extensions.has(p_file.get_extension())) {
 					EditorFileSystem::get_singleton()->update_file(p_file);
 				}
@@ -1168,9 +1167,8 @@ void ScriptEditor::_menu_option(int p_option) {
 			file_dialog_option = FILE_NEW_TEXTFILE;
 
 			file_dialog->clear_filters();
-			const Vector<String> textfile_ext = ((String)(EditorSettings::get_singleton()->get("docks/filesystem/textfile_extensions"))).split(",", false);
-			for (int i = 0; i < textfile_ext.size(); i++) {
-				file_dialog->add_filter("*." + textfile_ext[i] + " ; " + textfile_ext[i].to_upper());
+			for (const String &E : textfile_extensions) {
+				file_dialog->add_filter("*." + E + " ; " + E.to_upper());
 			}
 			file_dialog->popup_file_dialog();
 			file_dialog->set_title(TTR("New Text File..."));
@@ -1188,9 +1186,8 @@ void ScriptEditor::_menu_option(int p_option) {
 				file_dialog->add_filter("*." + extensions[i] + " ; " + extensions[i].to_upper());
 			}
 
-			const Vector<String> textfile_ext = ((String)(EditorSettings::get_singleton()->get("docks/filesystem/textfile_extensions"))).split(",", false);
-			for (int i = 0; i < textfile_ext.size(); i++) {
-				file_dialog->add_filter("*." + textfile_ext[i] + " ; " + textfile_ext[i].to_upper());
+			for (const String &E : textfile_extensions) {
+				file_dialog->add_filter("*." + E + " ; " + E.to_upper());
 			}
 
 			file_dialog->popup_file_dialog();
@@ -1543,6 +1540,7 @@ void ScriptEditor::_notification(int p_what) {
 
 			EditorSettings::get_singleton()->connect("settings_changed", callable_mp(this, &ScriptEditor::_editor_settings_changed));
 			EditorFileSystem::get_singleton()->connect("filesystem_changed", callable_mp(this, &ScriptEditor::_filesystem_changed));
+			_editor_settings_changed();
 			[[fallthrough]];
 		}
 		case NOTIFICATION_TRANSLATION_CHANGED:
@@ -2118,7 +2116,7 @@ void ScriptEditor::_update_script_connections() {
 	}
 }
 
-Ref<TextFile> ScriptEditor::_load_text_file(const String &p_path, Error *r_error) {
+Ref<TextFile> ScriptEditor::_load_text_file(const String &p_path, Error *r_error) const {
 	if (r_error) {
 		*r_error = ERR_FILE_CANT_OPEN;
 	}
@@ -2602,6 +2600,12 @@ void ScriptEditor::_save_layout() {
 }
 
 void ScriptEditor::_editor_settings_changed() {
+	textfile_extensions.clear();
+	const Vector<String> textfile_ext = ((String)(EditorSettings::get_singleton()->get("docks/filesystem/textfile_extensions"))).split(",", false);
+	for (const String &E : textfile_ext) {
+		textfile_extensions.insert(E);
+	}
+
 	trim_trailing_whitespace_on_save = EditorSettings::get_singleton()->get("text_editor/behavior/files/trim_trailing_whitespace_on_save");
 	convert_indent_on_save = EditorSettings::get_singleton()->get("text_editor/behavior/files/convert_indent_on_save");
 	use_space_indentation = EditorSettings::get_singleton()->get("text_editor/behavior/indent/type");
@@ -2808,12 +2812,22 @@ bool ScriptEditor::can_drop_data_fw(const Point2 &p_point, const Variant &p_data
 			if (file == "" || !FileAccess::exists(file)) {
 				continue;
 			}
-			Ref<Script> scr = ResourceLoader::load(file);
-			if (scr.is_valid()) {
-				return true;
+			if (ResourceLoader::exists(file, "Script")) {
+				Ref<Script> scr = ResourceLoader::load(file);
+				if (scr.is_valid()) {
+					return true;
+				}
+			}
+
+			if (textfile_extensions.has(file.get_extension())) {
+				Error err;
+				Ref<TextFile> text_file = _load_text_file(file, &err);
+				if (text_file.is_valid() && err == OK) {
+					return true;
+				}
 			}
 		}
-		return true;
+		return false;
 	}
 
 	return false;
@@ -2878,9 +2892,13 @@ void ScriptEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data, Co
 			if (file == "" || !FileAccess::exists(file)) {
 				continue;
 			}
-			Ref<Script> scr = ResourceLoader::load(file);
-			if (scr.is_valid()) {
-				edit(scr);
+
+			if (!ResourceLoader::exists(file, "Script") && !textfile_extensions.has(file.get_extension())) {
+				continue;
+			}
+
+			RES res = open_file(file);
+			if (res.is_valid()) {
 				if (tab_container->get_child_count() > num_tabs_before) {
 					tab_container->move_child(tab_container->get_child(tab_container->get_child_count() - 1), new_index);
 					num_tabs_before = tab_container->get_child_count();
