@@ -1644,10 +1644,12 @@ void EditorExportPlatformAndroid::get_export_options(List<ExportOption> *r_optio
 	}
 	plugins_changed.clear();
 
-	Vector<String> abis = get_abis();
+	const Vector<String> abis = get_abis();
 	for (int i = 0; i < abis.size(); ++i) {
-		String abi = abis[i];
-		bool is_default = (abi == "armeabi-v7a" || abi == "arm64-v8a");
+		const String abi = abis[i];
+		// All Android devices supporting Vulkan run 64-bit Android,
+		// so there is usually no point in exporting for 32-bit Android.
+		const bool is_default = abi == "arm64-v8a";
 		r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "architectures/" + abi), is_default));
 	}
 
