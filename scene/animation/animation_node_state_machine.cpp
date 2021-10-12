@@ -42,7 +42,7 @@ StringName AnimationNodeStateMachineTransitionCondition::get_advance_condition()
 }
 
 void AnimationNodeStateMachineTransitionCondition::set_advance_variant_type(const VariantType p_type) {
-	ERR_FAIL_COND(comparison_operator >= VARIANT_TYPES_MAX);
+	ERR_FAIL_COND(p_type >= VARIANT_TYPES_MAX);
 	variant_type = p_type;
 }
 
@@ -51,7 +51,7 @@ AnimationNodeStateMachineTransitionCondition::VariantType AnimationNodeStateMach
 }
 
 void AnimationNodeStateMachineTransitionCondition::set_advance_comparison_operator(const ComparisonOperator p_operator) {
-	ERR_FAIL_COND(comparison_operator >= OPERATORS_MAX);
+	ERR_FAIL_COND(p_operator >= OPERATORS_MAX);
 	comparison_operator = p_operator;
 }
 
@@ -116,6 +116,8 @@ bool AnimationNodeStateMachineTransitionCondition::test_parameter(const Variant 
 					return bool(p_parameter) >= bool(comparison_value);
 				case ComparisonOperator::OPERATOR_EQUAL_OR_LESS_THAN:
 					return bool(p_parameter) <= bool(comparison_value);
+				default:
+					return false;
 			}
 			break;
 		case VariantType::VARIANT_TYPE_INT:
@@ -132,6 +134,8 @@ bool AnimationNodeStateMachineTransitionCondition::test_parameter(const Variant 
 					return int(p_parameter) >= int(comparison_value);
 				case ComparisonOperator::OPERATOR_EQUAL_OR_LESS_THAN:
 					return int(p_parameter) <= int(comparison_value);
+				default:
+					return false;
 			}
 			break;
 		case VariantType::VARIANT_TYPE_FLOAT:
@@ -148,8 +152,12 @@ bool AnimationNodeStateMachineTransitionCondition::test_parameter(const Variant 
 					return float(p_parameter) >= float(comparison_value);
 				case ComparisonOperator::OPERATOR_EQUAL_OR_LESS_THAN:
 					return float(p_parameter) <= float(comparison_value);
+				default:
+					return false;
 			}
 			break;
+		default:
+			return false;
 	}
 
 	return false;
