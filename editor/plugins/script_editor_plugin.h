@@ -453,7 +453,8 @@ class ScriptEditor : public PanelContainer {
 	Ref<Script> _get_current_script();
 	Array _get_open_scripts() const;
 
-	Ref<TextFile> _load_text_file(const String &p_path, Error *r_error);
+	Set<String> textfile_extensions;
+	Ref<TextFile> _load_text_file(const String &p_path, Error *r_error) const;
 	Error _save_text_file(Ref<TextFile> p_text_file, const String &p_path);
 
 	void _on_find_in_files_requested(String text);
