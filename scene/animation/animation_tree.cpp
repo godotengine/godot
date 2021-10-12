@@ -455,8 +455,6 @@ bool AnimationNode::_set(const StringName &p_name, const Variant &p_value) {
 
 					for (PropertyInfo &pinfo : plist) {
 						if (parameter_name == pinfo.name) {
-							Vector<String> current_base_path = AnimationTree::get_tree_edited_path();
-
 							String parameter_path = full_path + parameter_name;
 							tree->set(parameter_path, p_value);
 							return true;
