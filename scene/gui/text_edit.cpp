@@ -1534,6 +1534,10 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 				update();
 			}
 
+			if (is_middle_mouse_paste_enabled() && mb->get_button_index() == MOUSE_BUTTON_MIDDLE) {
+				paste_primary_clipboard();
+			}
+
 			if (mb->get_button_index() == MOUSE_BUTTON_RIGHT && context_menu_enabled) {
 				_reset_caret_blink_timer();
 
@@ -1571,6 +1575,7 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 				dragging_selection = false;
 				can_drag_minimap = false;
 				click_select_held->stop();
+				DisplayServer::get_singleton()->clipboard_set_primary(get_selected_text());
 			}
 
 			// Notify to show soft keyboard.
@@ -2596,6 +2601,14 @@ bool TextEdit::is_virtual_keyboard_enabled() const {
 	return virtual_keyboard_enabled;
 }
 
+void TextEdit::set_middle_mouse_paste_enabled(bool p_enabled) {
+	middle_mouse_paste_enabled = p_enabled;
+}
+
+bool TextEdit::is_middle_mouse_paste_enabled() const {
+	return middle_mouse_paste_enabled;
+}
+
 // Text manipulation
 void TextEdit::clear() {
 	setting_text = true;
@@ -2913,6 +2926,13 @@ void TextEdit::paste() {
 		return;
 	}
 	_paste_internal();
+}
+
+void TextEdit::paste_primary_clipboard() {
+	if (GDVIRTUAL_CALL(_paste_primary_clipboard)) {
+		return;
+	}
+	_paste_primary_clipboard_internal();
 }
 
 // Context menu.
@@ -4534,6 +4554,9 @@ void TextEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_virtual_keyboard_enabled", "enabled"), &TextEdit::set_virtual_keyboard_enabled);
 	ClassDB::bind_method(D_METHOD("is_virtual_keyboard_enabled"), &TextEdit::is_virtual_keyboard_enabled);
 
+	ClassDB::bind_method(D_METHOD("set_middle_mouse_paste_enabled", "enabled"), &TextEdit::set_middle_mouse_paste_enabled);
+	ClassDB::bind_method(D_METHOD("is_middle_mouse_paste_enabled"), &TextEdit::is_middle_mouse_paste_enabled);
+
 	// Text manipulation
 	ClassDB::bind_method(D_METHOD("clear"), &TextEdit::clear);
 
@@ -4573,6 +4596,7 @@ void TextEdit::_bind_methods() {
 	GDVIRTUAL_BIND(_cut)
 	GDVIRTUAL_BIND(_copy)
 	GDVIRTUAL_BIND(_paste)
+	GDVIRTUAL_BIND(_paste_primary_clipboard)
 
 	// Context Menu
 	BIND_ENUM_CONSTANT(MENU_CUT);
@@ -4848,6 +4872,7 @@ void TextEdit::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "shortcut_keys_enabled"), "set_shortcut_keys_enabled", "is_shortcut_keys_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "selecting_enabled"), "set_selecting_enabled", "is_selecting_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "virtual_keyboard_enabled"), "set_virtual_keyboard_enabled", "is_virtual_keyboard_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "middle_mouse_paste_enabled"), "set_middle_mouse_paste_enabled", "is_middle_mouse_paste_enabled");
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "wrap_mode", PROPERTY_HINT_ENUM, "None,Boundary"), "set_line_wrapping_mode", "get_line_wrapping_mode");
 
@@ -5137,6 +5162,24 @@ void TextEdit::_paste_internal() {
 
 	insert_text_at_caret(clipboard);
 	end_complex_operation();
+}
+
+void TextEdit::_paste_primary_clipboard_internal() {
+	if (!is_editable()) {
+		return;
+	}
+
+	String paste_buffer = DisplayServer::get_singleton()->clipboard_get_primary();
+
+	Point2i pos = get_line_column_at_pos(get_local_mouse_pos());
+	deselect();
+	set_caret_line(pos.y, true, false);
+	set_caret_column(pos.x);
+	if (!paste_buffer.is_empty()) {
+		insert_text_at_caret(paste_buffer);
+	}
+
+	grab_focus();
 }
 
 /* Text. */
@@ -5475,6 +5518,8 @@ void TextEdit::_update_selection_mode_word() {
 		}
 	}
 
+	DisplayServer::get_singleton()->clipboard_set_primary(get_selected_text());
+
 	update();
 
 	click_select_held->start();
@@ -5502,6 +5547,8 @@ void TextEdit::_update_selection_mode_line() {
 	set_caret_column(0);
 
 	select(selection.selecting_line, selection.selecting_column, line, col);
+	DisplayServer::get_singleton()->clipboard_set_primary(get_selected_text());
+
 	update();
 
 	click_select_held->start();

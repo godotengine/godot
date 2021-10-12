@@ -13,11 +13,26 @@
 				Returns the user's clipboard as a string if possible.
 			</description>
 		</method>
+		<method name="clipboard_get_primary" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the user's primary clipboard as a string if possible.
+				[b]Note:[/b] This method is only implemented on Linux.
+			</description>
+		</method>
 		<method name="clipboard_set">
 			<return type="void" />
 			<argument index="0" name="clipboard" type="String" />
 			<description>
 				Sets the user's clipboard content to the given string.
+			</description>
+		</method>
+		<method name="clipboard_set_primary">
+			<return type="void" />
+			<argument index="0" name="clipboard_primary" type="String" />
+			<description>
+				Sets the user's primary clipboard content to the given string.
+				[b]Note:[/b] This method is only implemented on Linux.
 			</description>
 		</method>
 		<method name="console_set_visible">

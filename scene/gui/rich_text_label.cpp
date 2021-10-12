@@ -1596,12 +1596,16 @@ void RichTextLabel::gui_input(const Ref<InputEvent> &p_event) {
 							selection.to_char = words[i + 1];
 
 							selection.active = true;
+							DisplayServer::get_singleton()->clipboard_set_primary(get_selected_text());
 							update();
 							break;
 						}
 					}
 				}
 			} else if (!b->is_pressed()) {
+				if (selection.enabled) {
+					DisplayServer::get_singleton()->clipboard_set_primary(get_selected_text());
+				}
 				selection.click_item = nullptr;
 
 				if (!b->is_double_click() && !scroll_updated) {
@@ -1719,6 +1723,7 @@ void RichTextLabel::gui_input(const Ref<InputEvent> &p_event) {
 					swap = true;
 				} else if (selection.from_char == selection.to_char) {
 					selection.active = false;
+					update();
 					return;
 				}
 			}
