@@ -54,12 +54,18 @@
 #include FT_BBOX_H
 #endif
 
+#define OT_TAG(c1, c2, c3, c4) ((int32_t)((((uint32_t)(c1)&0xFF) << 24) | (((uint32_t)(c2)&0xFF) << 16) | (((uint32_t)(c3)&0xFF) << 8) | ((uint32_t)(c4)&0xFF)))
+
 class TextServerFallback : public TextServer {
 	GDCLASS(TextServerFallback, TextServer);
 	_THREAD_SAFE_CLASS_
 
 	static String interface_name;
 	static uint32_t interface_features;
+
+	Map<StringName, int32_t> feature_sets;
+
+	void _insert_feature_sets();
 
 	// Font cache data.
 
