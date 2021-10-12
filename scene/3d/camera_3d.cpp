@@ -656,6 +656,7 @@ Vector3 Camera3D::get_doppler_tracked_velocity() const {
 }
 
 RID Camera3D::get_pyramid_shape_rid() {
+	ERR_FAIL_COND_V_MSG(!is_inside_tree(), RID(), "Camera is not inside scene.");
 	if (pyramid_shape == RID()) {
 		pyramid_shape_points = get_near_plane_points();
 		pyramid_shape = PhysicsServer3D::get_singleton()->convex_polygon_shape_create();
