@@ -110,7 +110,7 @@ void IPUnix::_resolve_hostname(List<IPAddress> &r_addresses, const String &p_hos
 	struct addrinfo *next = result;
 
 	do {
-		if (next->ai_addr == NULL) {
+		if (next->ai_addr == nullptr) {
 			next = next->ai_next;
 			continue;
 		}

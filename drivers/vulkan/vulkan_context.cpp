@@ -525,7 +525,7 @@ Error VulkanContext::_check_capabilities() {
 		// check our extended features
 		VkPhysicalDeviceMultiviewFeatures multiview_features;
 		multiview_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_FEATURES;
-		multiview_features.pNext = NULL;
+		multiview_features.pNext = nullptr;
 
 		VkPhysicalDeviceFeatures2 device_features;
 		device_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;

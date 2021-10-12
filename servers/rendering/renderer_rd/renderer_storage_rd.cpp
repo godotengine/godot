@@ -9970,6 +9970,6 @@ RendererStorageRD::~RendererStorageRD() {
 
 	if (effects) {
 		memdelete(effects);
-		effects = NULL;
+		effects = nullptr;
 	}
 }
