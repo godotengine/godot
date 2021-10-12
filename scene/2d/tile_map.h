@@ -219,6 +219,7 @@ private:
 	struct TileMapLayer {
 		String name;
 		bool enabled = true;
+		Color modulate = Color(1, 1, 1, 1);
 		bool y_sort_enabled = false;
 		int y_sort_origin = 0;
 		int z_index = 0;
@@ -321,6 +322,8 @@ public:
 	String get_layer_name(int p_layer) const;
 	void set_layer_enabled(int p_layer, bool p_visible);
 	bool is_layer_enabled(int p_layer) const;
+	void set_layer_modulate(int p_layer, Color p_modulate);
+	Color get_layer_modulate(int p_layer) const;
 	void set_layer_y_sort_enabled(int p_layer, bool p_enabled);
 	bool is_layer_y_sort_enabled(int p_layer) const;
 	void set_layer_y_sort_origin(int p_layer, int p_y_sort_origin);

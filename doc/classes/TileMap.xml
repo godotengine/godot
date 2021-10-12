@@ -76,6 +76,13 @@
 				Returns the coodinates of the tile for given physics body RID. Such RID can be retrieved from [method KinematicCollision2D.get_collider_rid], when colliding with a tile.
 			</description>
 		</method>
+		<method name="get_layer_modulate" qualifiers="const">
+			<return type="Color" />
+			<argument index="0" name="layer" type="int" />
+			<description>
+				Returns a TileMap layer's modulate.
+			</description>
+		</method>
 		<method name="get_layer_name" qualifiers="const">
 			<return type="String" />
 			<argument index="0" name="layer" type="int" />
@@ -186,6 +193,14 @@
 			<argument index="1" name="enabled" type="bool" />
 			<description>
 				Enables or disables the layer [code]layer[/code]. A disabled layer is not processed at all (no rendering, no physics, etc...).
+			</description>
+		</method>
+		<method name="set_layer_modulate">
+			<return type="void" />
+			<argument index="0" name="layer" type="int" />
+			<argument index="1" name="enabled" type="Color" />
+			<description>
+				Sets a layer's color. It will be multiplied by tile's color and TileMap's modulate.
 			</description>
 		</method>
 		<method name="set_layer_name">

@@ -409,6 +409,19 @@ bool TileMap::is_layer_enabled(int p_layer) const {
 	return layers[p_layer].enabled;
 }
 
+void TileMap::set_layer_modulate(int p_layer, Color p_modulate) {
+	ERR_FAIL_INDEX(p_layer, (int)layers.size());
+	layers[p_layer].modulate = p_modulate;
+	_clear_internals();
+	_recreate_internals();
+	emit_signal(SNAME("changed"));
+}
+
+Color TileMap::get_layer_modulate(int p_layer) const {
+	ERR_FAIL_INDEX_V(p_layer, (int)layers.size(), Color());
+	return layers[p_layer].modulate;
+}
+
 void TileMap::set_layer_y_sort_enabled(int p_layer, bool p_y_sort_enabled) {
 	ERR_FAIL_INDEX(p_layer, (int)layers.size());
 	layers[p_layer].y_sort_enabled = p_y_sort_enabled;
@@ -832,6 +845,17 @@ void TileMap::_rendering_update_dirty_quadrants(SelfList<TileMapQuadrant>::List 
 		int prev_z_index = 0;
 		RID prev_canvas_item;
 
+		Color modulate = get_self_modulate();
+		modulate *= get_layer_modulate(q.layer);
+		if (selected_layer >= 0) {
+			if (q.layer < selected_layer) {
+				modulate = modulate.darkened(0.5);
+			} else if (q.layer > selected_layer) {
+				modulate = modulate.darkened(0.5);
+				modulate.a *= 0.3;
+			}
+		}
+
 		// Iterate over the cells of the quadrant.
 		for (const KeyValue<Vector2i, Vector2i> &E_cell : q.world_to_map) {
 			TileMapCell c = get_cell(q.layer, E_cell.value, true);
@@ -894,15 +918,6 @@ void TileMap::_rendering_update_dirty_quadrants(SelfList<TileMapQuadrant>::List 
 					}
 
 					// Drawing the tile in the canvas item.
-					Color modulate = get_self_modulate();
-					if (selected_layer >= 0) {
-						if (q.layer < selected_layer) {
-							modulate = modulate.darkened(0.5);
-						} else if (q.layer > selected_layer) {
-							modulate = modulate.darkened(0.5);
-							modulate.a *= 0.3;
-						}
-					}
 					draw_tile(canvas_item, E_cell.key - position, tile_set, c.source_id, c.get_atlas_coords(), c.alternative_tile, -1, modulate);
 
 					// --- Occluders ---
@@ -2083,6 +2098,9 @@ bool TileMap::_set(const StringName &p_name, const Variant &p_value) {
 		} else if (components[1] == "enabled") {
 			set_layer_enabled(index, p_value);
 			return true;
+		} else if (components[1] == "modulate") {
+			set_layer_modulate(index, p_value);
+			return true;
 		} else if (components[1] == "y_sort_enabled") {
 			set_layer_y_sort_enabled(index, p_value);
 			return true;
@@ -2119,6 +2137,9 @@ bool TileMap::_get(const StringName &p_name, Variant &r_ret) const {
 		} else if (components[1] == "enabled") {
 			r_ret = is_layer_enabled(index);
 			return true;
+		} else if (components[1] == "modulate") {
+			r_ret = get_layer_modulate(index);
+			return true;
 		} else if (components[1] == "y_sort_enabled") {
 			r_ret = is_layer_y_sort_enabled(index);
 			return true;
@@ -2144,6 +2165,7 @@ void TileMap::_get_property_list(List<PropertyInfo> *p_list) const {
 	for (unsigned int i = 0; i < layers.size(); i++) {
 		p_list->push_back(PropertyInfo(Variant::STRING, vformat("layer_%d/name", i), PROPERTY_HINT_NONE));
 		p_list->push_back(PropertyInfo(Variant::BOOL, vformat("layer_%d/enabled", i), PROPERTY_HINT_NONE));
+		p_list->push_back(PropertyInfo(Variant::COLOR, vformat("layer_%d/modulate", i), PROPERTY_HINT_NONE));
 		p_list->push_back(PropertyInfo(Variant::BOOL, vformat("layer_%d/y_sort_enabled", i), PROPERTY_HINT_NONE));
 		p_list->push_back(PropertyInfo(Variant::INT, vformat("layer_%d/y_sort_origin", i), PROPERTY_HINT_NONE));
 		p_list->push_back(PropertyInfo(Variant::INT, vformat("layer_%d/z_index", i), PROPERTY_HINT_NONE));
@@ -3027,6 +3049,8 @@ void TileMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_layer_name", "layer"), &TileMap::get_layer_name);
 	ClassDB::bind_method(D_METHOD("set_layer_enabled", "layer", "enabled"), &TileMap::set_layer_enabled);
 	ClassDB::bind_method(D_METHOD("is_layer_enabled", "layer"), &TileMap::is_layer_enabled);
+	ClassDB::bind_method(D_METHOD("set_layer_modulate", "layer", "enabled"), &TileMap::set_layer_modulate);
+	ClassDB::bind_method(D_METHOD("get_layer_modulate", "layer"), &TileMap::get_layer_modulate);
 	ClassDB::bind_method(D_METHOD("set_layer_y_sort_enabled", "layer", "y_sort_enabled"), &TileMap::set_layer_y_sort_enabled);
 	ClassDB::bind_method(D_METHOD("is_layer_y_sort_enabled", "layer"), &TileMap::is_layer_y_sort_enabled);
 	ClassDB::bind_method(D_METHOD("set_layer_y_sort_origin", "layer", "y_sort_origin"), &TileMap::set_layer_y_sort_origin);
