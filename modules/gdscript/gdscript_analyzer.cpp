@@ -470,6 +470,7 @@ GDScriptParser::DataType GDScriptAnalyzer::resolve_datatype(GDScriptParser::Type
 			GDScriptParser::DataType container_type = resolve_datatype(p_type->container_type);
 
 			if (container_type.kind != GDScriptParser::DataType::VARIANT) {
+				container_type.is_meta_type = false;
 				result.set_container_element_type(container_type);
 			}
 		}
