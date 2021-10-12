@@ -2681,12 +2681,15 @@ void _Thread::_start_func(void *ud) {
 			}
 		}
 
+		t->running.clear();
 		ERR_FAIL_MSG("Could not call function '" + t->target_method.operator String() + "' to start thread " + t->get_id() + ": " + reason + ".");
 	}
+
+	t->running.clear();
 }
 
 Error _Thread::start(Object *p_instance, const StringName &p_method, const Variant &p_userdata, Priority p_priority) {
-	ERR_FAIL_COND_V_MSG(active.is_set(), ERR_ALREADY_IN_USE, "Thread already started.");
+	ERR_FAIL_COND_V_MSG(is_active(), ERR_ALREADY_IN_USE, "Thread already started.");
 	ERR_FAIL_COND_V(!p_instance, ERR_INVALID_PARAMETER);
 	ERR_FAIL_COND_V(p_method == StringName(), ERR_INVALID_PARAMETER);
 	ERR_FAIL_INDEX_V(p_priority, PRIORITY_MAX, ERR_INVALID_PARAMETER);
@@ -2695,7 +2698,7 @@ Error _Thread::start(Object *p_instance, const StringName &p_method, const Varia
 	target_method = p_method;
 	target_instance_id = p_instance->get_instance_id();
 	userdata = p_userdata;
-	active.set();
+	running.set();
 
 	Ref<_Thread> *ud = memnew(Ref<_Thread>(this));
 
@@ -2711,16 +2714,20 @@ String _Thread::get_id() const {
 }
 
 bool _Thread::is_active() const {
-	return active.is_set();
+	return thread.is_started();
 }
+
+bool _Thread::is_alive() const {
+	return running.is_set();
+}
+
 Variant _Thread::wait_to_finish() {
-	ERR_FAIL_COND_V_MSG(!active.is_set(), Variant(), "Thread must be active to wait for its completion.");
+	ERR_FAIL_COND_V_MSG(!is_active(), Variant(), "Thread must have been started to wait for its completion.");
 	thread.wait_to_finish();
 	Variant r = ret;
 	target_method = StringName();
 	target_instance_id = ObjectID();
 	userdata = Variant();
-	active.clear();
 
 	return r;
 }
@@ -2729,6 +2736,7 @@ void _Thread::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("start", "instance", "method", "userdata", "priority"), &_Thread::start, DEFVAL(Variant()), DEFVAL(PRIORITY_NORMAL));
 	ClassDB::bind_method(D_METHOD("get_id"), &_Thread::get_id);
 	ClassDB::bind_method(D_METHOD("is_active"), &_Thread::is_active);
+	ClassDB::bind_method(D_METHOD("is_alive"), &_Thread::is_alive);
 	ClassDB::bind_method(D_METHOD("wait_to_finish"), &_Thread::wait_to_finish);
 
 	BIND_ENUM_CONSTANT(PRIORITY_LOW);
@@ -2740,7 +2748,7 @@ _Thread::_Thread() {
 }
 
 _Thread::~_Thread() {
-	ERR_FAIL_COND_MSG(active.is_set(), "Reference to a Thread object was lost while the thread is still running...");
+	ERR_FAIL_COND_MSG(is_active(), "Reference to a Thread object was lost while the thread is still running...");
 }
 
 /////////////////////////////////////

@@ -22,7 +22,14 @@
 		<method name="is_active" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code] if this [Thread] is currently active. An active [Thread] cannot start work on a new method but can be joined with [method wait_to_finish].
+				Returns [code]true[/code] if this [Thread] has been started. Once started, this will return [code]true[/code] until it is joined using [method wait_to_finish]. For checking if a [Thread] is still executing its task, use [method is_alive].
+			</description>
+		</method>
+		<method name="is_alive" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if this [Thread] is currently running. This is useful for determining if [method wait_to_finish] can be called without blocking the calling thread.
+				To check if a [Thread] is joinable, use [method is_active].
 			</description>
 		</method>
 		<method name="start">
@@ -39,8 +46,9 @@
 		<method name="wait_to_finish">
 			<return type="Variant" />
 			<description>
-				Joins the [Thread] and waits for it to finish. Returns what the method called returned.
+				Joins the [Thread] and waits for it to finish. Returns the output of the method passed to [method start].
 				Should either be used when you want to retrieve the value returned from the method called by the [Thread] or before freeing the instance that contains the [Thread].
+				To determine if this can be called without blocking the calling thread, check if [method is_alive] is [code]false[/code].
 				[b]Note:[/b] After the [Thread] finishes joining it will be disposed. If you want to use it again you will have to create a new instance of it.
 			</description>
 		</method>
