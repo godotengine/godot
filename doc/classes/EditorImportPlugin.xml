@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		EditorImportPlugins provide a way to extend the editor's resource import functionality. Use them to import resources from custom files or to provide alternatives to the editor's existing importers. Register your [EditorPlugin] with [method EditorPlugin.add_import_plugin].
-		EditorImportPlugins work by associating with specific file extensions and a resource type. See [method _get_recognized_extensions] and [method _get_resource_type]. They may optionally specify some import presets that affect the import process. EditorImportPlugins are responsible for creating the resources and saving them in the [code].godot/imported[/code] directory.
+		EditorImportPlugins work by associating with specific file extensions and a resource type. See [method _get_recognized_extensions] and [method _get_resource_type]. They may optionally specify some import presets that affect the import process. EditorImportPlugins are responsible for creating the resources and saving them in the [code].godot/imported[/code] directory (see [member ProjectSettings.application/config/project_data_dir_name]).
 		Below is an example EditorImportPlugin that imports a [Mesh] from a file with the extension ".special" or ".spec":
 		[codeblocks]
 		[gdscript]
@@ -197,7 +197,7 @@
 		<method name="_get_save_extension" qualifiers="virtual const">
 			<return type="String" />
 			<description>
-				Gets the extension used to save this resource in the [code].godot/imported[/code] directory.
+				Gets the extension used to save this resource in the [code].godot/imported[/code] directory (see [member ProjectSettings.application/config/project_data_dir_name]).
 			</description>
 		</method>
 		<method name="_get_visible_name" qualifiers="virtual const">
