@@ -178,10 +178,9 @@ Quaternion Quaternion::cubic_slerp(const Quaternion &p_b, const Quaternion &p_pr
 	ERR_FAIL_COND_V_MSG(!is_normalized(), Quaternion(), "The start quaternion must be normalized.");
 	ERR_FAIL_COND_V_MSG(!p_b.is_normalized(), Quaternion(), "The end quaternion must be normalized.");
 #endif
-	//the only way to do slerp :|
 	real_t t2 = (1.0 - p_weight) * p_weight * 2;
-	Quaternion sp = this->slerp(p_b, p_weight);
-	Quaternion sq = p_pre_a.slerpni(p_post_b, p_weight);
+	Quaternion sp = p_pre_a.slerp(p_post_b, p_weight);
+	Quaternion sq = this->slerpni(p_b, p_weight);
 	return sp.slerpni(sq, t2);
 }
 
