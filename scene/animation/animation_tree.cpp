@@ -35,6 +35,9 @@
 #include "scene/scene_string_names.h"
 #include "servers/audio/audio_stream.h"
 
+AnimationTree *(*AnimationTree::get_current_tree)() = nullptr;
+Vector<String> (*AnimationTree::get_tree_edited_path)() = nullptr;
+
 void AnimationNode::get_parameter_list(List<PropertyInfo> *r_list) const {
 	Array parameters;
 
@@ -421,6 +424,103 @@ Ref<AnimationNode> AnimationNode::get_child_by_name(const StringName &p_name) {
 		return ret;
 	}
 	return Ref<AnimationNode>();
+}
+
+bool AnimationNode::_set(const StringName &p_name, const Variant &p_value) {
+	if (String(p_name).begins_with("parameters/") && String(p_name).ends_with("/value")) {
+		if (AnimationTree::get_current_tree && AnimationTree::get_tree_edited_path) {
+			AnimationTree *tree = AnimationTree::get_current_tree();
+			if (tree) {
+				List<PropertyInfo> plist;
+				// Parameters with the base path
+				get_parameter_list(&plist);
+				if (plist.size()) {
+					String full_path = "parameters/";
+					String parameter_name = String(p_name).trim_prefix("parameters/").trim_suffix("/value");
+					Vector<String> current_base_path = AnimationTree::get_tree_edited_path();
+
+					Ref<AnimationNode> cur_node = tree->get_tree_root();
+					if (cur_node.ptr() != this) {
+						for (int i = 0; i < current_base_path.size(); i++) {
+							cur_node = cur_node->get_child_by_name(current_base_path[i]);
+							full_path += current_base_path[i] + "/";
+						}
+
+						String current_node_name = "";
+						if (cur_node->has_method("get_node_name")) {
+							current_node_name = cur_node->call("get_node_name", Ref<AnimationNode>(this));
+							full_path += current_node_name + "/";
+						}
+					}
+
+					for (PropertyInfo &pinfo : plist) {
+						if (parameter_name == pinfo.name) {
+							Vector<String> current_base_path = AnimationTree::get_tree_edited_path();
+
+							String parameter_path = full_path + parameter_name;
+							tree->set(parameter_path, p_value);
+							return true;
+						}
+					}
+				}
+			}
+		}
+	}
+	return false;
+}
+
+bool AnimationNode::_get(const StringName &p_name, Variant &r_ret) const {
+	if (String(p_name).begins_with("parameters/") && String(p_name).ends_with("/value")) {
+		if (AnimationTree::get_current_tree && AnimationTree::get_tree_edited_path) {
+			AnimationTree *tree = AnimationTree::get_current_tree();
+			if (tree) {
+				List<PropertyInfo> plist;
+				// Parameters with the base path
+				get_parameter_list(&plist);
+				if (plist.size()) {
+					String full_path = "parameters/";
+					String parameter_name = String(p_name).trim_prefix("parameters/").trim_suffix("/value");
+					Vector<String> current_base_path = AnimationTree::get_tree_edited_path();
+
+					Ref<AnimationNode> cur_node = tree->get_tree_root();
+					if (cur_node.ptr() != this) {
+						for (int i = 0; i < current_base_path.size(); i++) {
+							cur_node = cur_node->get_child_by_name(current_base_path[i]);
+							full_path += current_base_path[i] + "/";
+						}
+
+						String current_node_name = "";
+						if (cur_node->has_method("get_node_name")) {
+							current_node_name = cur_node->call("get_node_name", Ref<AnimationNode>(this));
+							full_path += current_node_name + "/";
+						}
+					}
+
+					for (PropertyInfo &pinfo : plist) {
+						if (parameter_name == pinfo.name) {
+							String parameter_path = full_path + parameter_name;
+							r_ret = tree->get(parameter_path);
+							return true;
+						}
+					}
+				}
+			}
+		}
+	}
+
+	return false;
+}
+
+void AnimationNode::_get_property_list(List<PropertyInfo> *p_list) const {
+	List<PropertyInfo> plist;
+	// Parameters with the base path
+	get_parameter_list(&plist);
+	for (PropertyInfo &pinfo : plist) {
+		StringName key = pinfo.name;
+
+		pinfo.name = "parameters/" + key + "/value";
+		p_list->push_back(pinfo);
+	}
 }
 
 void AnimationNode::_bind_methods() {

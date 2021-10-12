@@ -67,6 +67,8 @@ class AnimationTreeEditor : public VBoxContainer {
 	void _path_button_pressed(int p_path);
 
 	static Vector<String> get_animation_list();
+	static AnimationTree *get_current_tree();
+	static Vector<String> get_tree_edited_path();
 
 protected:
 	void _notification(int p_what);

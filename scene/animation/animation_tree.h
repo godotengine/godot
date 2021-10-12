@@ -106,6 +106,10 @@ protected:
 	real_t blend_input(int p_input, real_t p_time, bool p_seek, real_t p_blend, FilterAction p_filter = FILTER_IGNORE, bool p_optimize = true);
 	void make_invalid(const String &p_reason);
 
+	bool _set(const StringName &p_name, const Variant &p_value);
+	bool _get(const StringName &p_name, Variant &r_ret) const;
+	void _get_property_list(List<PropertyInfo> *p_list) const;
+
 	static void _bind_methods();
 
 	void _validate_property(PropertyInfo &property) const override;
@@ -311,6 +315,9 @@ protected:
 	static void _bind_methods();
 
 public:
+	static AnimationTree *(*get_current_tree)();
+	static Vector<String> (*get_tree_edited_path)();
+
 	void set_tree_root(const Ref<AnimationNode> &p_root);
 	Ref<AnimationNode> get_tree_root() const;
 

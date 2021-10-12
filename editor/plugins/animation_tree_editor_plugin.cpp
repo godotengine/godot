@@ -42,6 +42,7 @@
 #include "editor/editor_scale.h"
 #include "scene/animation/animation_blend_tree.h"
 #include "scene/animation/animation_player.h"
+#include "scene/animation/animation_tree.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/panel.h"
 #include "scene/main/window.h"
@@ -187,6 +188,14 @@ String AnimationTreeEditor::get_base_path() {
 	return path;
 }
 
+Vector<String> AnimationTreeEditor::get_tree_edited_path() {
+	if (!singleton->is_visible()) {
+		return Vector<String>();
+	}
+
+	return singleton->edited_path;
+}
+
 bool AnimationTreeEditor::can_edit(const Ref<AnimationNode> &p_node) const {
 	for (int i = 0; i < editors.size(); i++) {
 		if (editors[i]->can_edit(p_node)) {
@@ -222,8 +231,18 @@ Vector<String> AnimationTreeEditor::get_animation_list() {
 	return ret;
 }
 
+AnimationTree *AnimationTreeEditor::get_current_tree() {
+	if (!singleton->is_visible()) {
+		return nullptr;
+	}
+
+	return singleton->tree;
+}
+
 AnimationTreeEditor::AnimationTreeEditor() {
 	AnimationNodeAnimation::get_editable_animation_list = get_animation_list;
+	AnimationTree::get_current_tree = get_current_tree;
+	AnimationTree::get_tree_edited_path = get_tree_edited_path;
 	path_edit = memnew(ScrollContainer);
 	add_child(path_edit);
 	path_edit->set_enable_h_scroll(true);

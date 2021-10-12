@@ -158,6 +158,8 @@ void AnimationNodeBlendTreeEditor::_update_graph() {
 			node->set_slot(base + i, true, 0, get_theme_color(SNAME("font_color"), SNAME("Label")), false, 0, Color());
 		}
 
+		bool found_valid_parameter = false;
+
 		List<PropertyInfo> pinfo;
 		agnode->get_parameter_list(&pinfo);
 		for (const PropertyInfo &F : pinfo) {
@@ -167,6 +169,16 @@ void AnimationNodeBlendTreeEditor::_update_graph() {
 			String base_path = AnimationTreeEditor::get_singleton()->get_base_path() + String(E) + "/" + F.name;
 			EditorProperty *prop = EditorInspector::instantiate_property_editor(AnimationTreeEditor::get_singleton()->get_tree(), F.type, base_path, F.hint, F.hint_string, F.usage);
 			if (prop) {
+				if (!found_valid_parameter) {
+					HSeparator *seperator = memnew(HSeparator);
+					node->add_child(seperator);
+					found_valid_parameter = true;
+				}
+
+				Label *label = memnew(Label);
+				label->set_text(F.name);
+				node->add_child(label);
+
 				prop->set_object_and_property(AnimationTreeEditor::get_singleton()->get_tree(), base_path);
 				prop->update_property();
 				prop->set_name_split_ratio(0);
