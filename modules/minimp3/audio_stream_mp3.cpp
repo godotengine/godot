@@ -112,7 +112,7 @@ void AudioStreamPlaybackMP3::seek(float p_time) {
 	}
 
 	frames_mixed = uint32_t(mp3_stream->sample_rate * p_time);
-	mp3dec_ex_seek(mp3d, frames_mixed * mp3_stream->channels);
+	mp3dec_ex_seek(mp3d, (uint64_t)frames_mixed * mp3_stream->channels);
 }
 
 AudioStreamPlaybackMP3::~AudioStreamPlaybackMP3() {
