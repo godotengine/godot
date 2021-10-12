@@ -1074,6 +1074,31 @@ void ActionMapEditor::update_action_list(const Vector<ActionInfo> &p_action_info
 			event_item->set_meta("__event", event);
 			event_item->set_meta("__index", evnt_idx);
 
+			// First Column - Icon
+			Ref<InputEventKey> k = event;
+			if (k.is_valid()) {
+				if (k->get_physical_keycode() == 0) {
+					event_item->set_icon(0, action_tree->get_theme_icon(SNAME("Keyboard"), SNAME("EditorIcons")));
+				} else {
+					event_item->set_icon(0, action_tree->get_theme_icon(SNAME("KeyboardPhysical"), SNAME("EditorIcons")));
+				}
+			}
+
+			Ref<InputEventMouseButton> mb = event;
+			if (mb.is_valid()) {
+				event_item->set_icon(0, action_tree->get_theme_icon(SNAME("Mouse"), SNAME("EditorIcons")));
+			}
+
+			Ref<InputEventJoypadButton> jb = event;
+			if (jb.is_valid()) {
+				event_item->set_icon(0, action_tree->get_theme_icon(SNAME("JoyButton"), SNAME("EditorIcons")));
+			}
+
+			Ref<InputEventJoypadMotion> jm = event;
+			if (jm.is_valid()) {
+				event_item->set_icon(0, action_tree->get_theme_icon(SNAME("JoyAxis"), SNAME("EditorIcons")));
+			}
+
 			// Third Column - Buttons
 			event_item->add_button(2, action_tree->get_theme_icon(SNAME("Edit"), SNAME("EditorIcons")), BUTTON_EDIT_EVENT, false, TTR("Edit Event"));
 			event_item->add_button(2, action_tree->get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")), BUTTON_REMOVE_EVENT, false, TTR("Remove Event"));
