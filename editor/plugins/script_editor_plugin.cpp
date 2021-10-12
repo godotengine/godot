@@ -763,20 +763,24 @@ void ScriptEditor::_close_tab(int p_idx, bool p_save, bool p_history_back) {
 
 	ScriptEditorBase *current = Object::cast_to<ScriptEditorBase>(tselected);
 	if (current) {
-		Ref<Script> script = current->get_edited_resource();
-		if (p_save && script.is_valid()) {
+		RES file = current->get_edited_resource();
+		if (p_save && file.is_valid()) {
 			// Do not try to save internal scripts, but prompt to save in-memory
 			// scripts which are not saved to disk yet (have empty path).
-			if (script->get_path().find("local://") == -1 && script->get_path().find("::") == -1) {
+			if (file->get_path().find("local://") == -1 && file->get_path().find("::") == -1) {
 				save_current_script();
 			}
 		}
-		if (script.is_valid()) {
-			if (!script->get_path().is_empty()) {
+		if (file.is_valid()) {
+			if (!file->get_path().is_empty()) {
 				// Only saved scripts can be restored.
-				previous_scripts.push_back(script->get_path());
+				previous_scripts.push_back(file->get_path());
 			}
-			notify_script_close(script);
+
+			Ref<Script> script = file;
+			if (script.is_valid()) {
+				notify_script_close(script);
+			}
 		}
 	}
 
