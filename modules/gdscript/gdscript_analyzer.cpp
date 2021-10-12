@@ -893,11 +893,13 @@ void GDScriptAnalyzer::resolve_class_body(GDScriptParser::ClassNode *p_class) {
 					resolve_function_body(member.variable->getter);
 				}
 				if (member.variable->setter != nullptr) {
+					resolve_function_signature(member.variable->setter);
+
 					if (member.variable->setter->parameters.size() > 0) {
 						member.variable->setter->parameters[0]->datatype_specifier = member.variable->datatype_specifier;
+						member.variable->setter->parameters[0]->set_datatype(member.get_datatype());
 					}
 
-					resolve_function_signature(member.variable->setter);
 					resolve_function_body(member.variable->setter);
 				}
 			}
