@@ -44,8 +44,8 @@ class ProjectSettingsEditor : public AcceptDialog {
 	GDCLASS(ProjectSettingsEditor, AcceptDialog);
 
 	enum InputType {
-		INPUT_KEY,
 		INPUT_KEY_PHYSICAL,
+		INPUT_KEY,
 		INPUT_JOY_BUTTON,
 		INPUT_JOY_MOTION,
 		INPUT_MOUSE_BUTTON
