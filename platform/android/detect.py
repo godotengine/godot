@@ -27,8 +27,7 @@ def get_opts():
         ("ANDROID_NDK_ROOT", "Path to the Android NDK", get_android_ndk_root()),
         ("ANDROID_SDK_ROOT", "Path to the Android SDK", get_android_sdk_root()),
         ("ndk_platform", 'Target platform (android-<api>, e.g. "android-24")', "android-24"),
-        EnumVariable("android_arch", "Target architecture", "armv7", ("armv7", "arm64v8", "x86", "x86_64")),
-        BoolVariable("android_neon", "Enable NEON support (armv7 only)", True),
+        EnumVariable("android_arch", "Target architecture", "arm64v8", ("armv7", "arm64v8", "x86", "x86_64")),
     ]
 
 
@@ -143,10 +142,7 @@ def configure(env):
     if env["android_arch"] not in ["armv7", "arm64v8", "x86", "x86_64"]:
         env["android_arch"] = "armv7"
 
-    neon_text = ""
-    if env["android_arch"] == "armv7" and env["android_neon"]:
-        neon_text = " (with NEON)"
-    print("Building for Android, platform " + env["ndk_platform"] + " (" + env["android_arch"] + ")" + neon_text)
+    print("Building for Android, platform " + env["ndk_platform"] + " (" + env["android_arch"] + ")")
 
     can_vectorize = True
     if env["android_arch"] == "x86":
@@ -174,10 +170,7 @@ def configure(env):
         target_subpath = "arm-linux-androideabi-4.9"
         abi_subpath = "arm-linux-androideabi"
         arch_subpath = "armeabi-v7a"
-        if env["android_neon"]:
-            env.extra_suffix = ".armv7.neon" + env.extra_suffix
-        else:
-            env.extra_suffix = ".armv7" + env.extra_suffix
+        env.extra_suffix = ".armv7" + env.extra_suffix
     elif env["android_arch"] == "arm64v8":
         if get_platform(env["ndk_platform"]) < 21:
             print(
@@ -288,7 +281,6 @@ def configure(env):
     if get_platform(env["ndk_platform"]) >= 24:
         env.Append(CPPDEFINES=[("_FILE_OFFSET_BITS", 64)])
 
-    env["neon_enabled"] = False
     if env["android_arch"] == "x86":
         target_opts = ["-target", "i686-none-linux-android"]
         # The NDK adds this if targeting API < 21, so we can drop it when Godot targets it at least
@@ -301,12 +293,9 @@ def configure(env):
         target_opts = ["-target", "armv7-none-linux-androideabi"]
         env.Append(CCFLAGS="-march=armv7-a -mfloat-abi=softfp".split())
         env.Append(CPPDEFINES=["__ARM_ARCH_7__", "__ARM_ARCH_7A__"])
-        if env["android_neon"]:
-            env["neon_enabled"] = True
-            env.Append(CCFLAGS=["-mfpu=neon"])
-            env.Append(CPPDEFINES=["__ARM_NEON__"])
-        else:
-            env.Append(CCFLAGS=["-mfpu=vfpv3-d16"])
+        # Enable ARM NEON instructions to compile more optimized code.
+        env.Append(CCFLAGS=["-mfpu=neon"])
+        env.Append(CPPDEFINES=["__ARM_NEON__"])
 
     elif env["android_arch"] == "arm64v8":
         target_opts = ["-target", "aarch64-none-linux-android"]
