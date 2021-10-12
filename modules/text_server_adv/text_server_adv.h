@@ -79,6 +79,19 @@ class TextServerAdvanced : public TextServer {
 	static String interface_name;
 	static uint32_t interface_features;
 
+	struct NumSystemData {
+		Set<StringName> lang;
+		String digits;
+		String percent_sign;
+		String exp;
+	};
+
+	Vector<NumSystemData> num_systems;
+	Map<StringName, int32_t> feature_sets;
+
+	void _insert_num_systems_lang();
+	void _insert_feature_sets();
+
 	// ICU support data.
 
 	uint8_t *icu_data = nullptr;
@@ -258,24 +271,24 @@ class TextServerAdvanced : public TextServer {
 
 	static hb_font_funcs_t *funcs;
 
-	struct hb_bmp_font_t {
+	struct bmp_font_t {
 		TextServerAdvanced::FontDataForSizeAdvanced *face = nullptr;
 		bool unref = false; /* Whether to destroy bm_face when done. */
 	};
 
-	static hb_bmp_font_t *_hb_bmp_font_create(TextServerAdvanced::FontDataForSizeAdvanced *p_face, bool p_unref);
-	static void _hb_bmp_font_destroy(void *p_data);
-	static hb_bool_t hb_bmp_get_nominal_glyph(hb_font_t *p_font, void *p_font_data, hb_codepoint_t p_unicode, hb_codepoint_t *r_glyph, void *p_user_data);
-	static hb_position_t hb_bmp_get_glyph_h_advance(hb_font_t *p_font, void *p_font_data, hb_codepoint_t p_glyph, void *p_user_data);
-	static hb_position_t hb_bmp_get_glyph_v_advance(hb_font_t *p_font, void *p_font_data, hb_codepoint_t p_glyph, void *p_user_data);
-	static hb_position_t hb_bmp_get_glyph_h_kerning(hb_font_t *p_font, void *p_font_data, hb_codepoint_t p_left_glyph, hb_codepoint_t p_right_glyph, void *p_user_data);
-	static hb_bool_t hb_bmp_get_glyph_v_origin(hb_font_t *p_font, void *p_font_data, hb_codepoint_t p_glyph, hb_position_t *r_x, hb_position_t *r_y, void *p_user_data);
-	static hb_bool_t hb_bmp_get_glyph_extents(hb_font_t *p_font, void *p_font_data, hb_codepoint_t p_glyph, hb_glyph_extents_t *r_extents, void *p_user_data);
-	static hb_bool_t hb_bmp_get_font_h_extents(hb_font_t *p_font, void *p_font_data, hb_font_extents_t *r_metrics, void *p_user_data);
-	static void hb_bmp_create_font_funcs();
-	static void hb_bmp_free_font_funcs();
-	static void _hb_bmp_font_set_funcs(hb_font_t *p_font, TextServerAdvanced::FontDataForSizeAdvanced *p_face, bool p_unref);
-	static hb_font_t *hb_bmp_font_create(TextServerAdvanced::FontDataForSizeAdvanced *p_face, hb_destroy_func_t p_destroy);
+	static bmp_font_t *_bmp_font_create(TextServerAdvanced::FontDataForSizeAdvanced *p_face, bool p_unref);
+	static void _bmp_font_destroy(void *p_data);
+	static hb_bool_t _bmp_get_nominal_glyph(hb_font_t *p_font, void *p_font_data, hb_codepoint_t p_unicode, hb_codepoint_t *r_glyph, void *p_user_data);
+	static hb_position_t _bmp_get_glyph_h_advance(hb_font_t *p_font, void *p_font_data, hb_codepoint_t p_glyph, void *p_user_data);
+	static hb_position_t _bmp_get_glyph_v_advance(hb_font_t *p_font, void *p_font_data, hb_codepoint_t p_glyph, void *p_user_data);
+	static hb_position_t _bmp_get_glyph_h_kerning(hb_font_t *p_font, void *p_font_data, hb_codepoint_t p_left_glyph, hb_codepoint_t p_right_glyph, void *p_user_data);
+	static hb_bool_t _bmp_get_glyph_v_origin(hb_font_t *p_font, void *p_font_data, hb_codepoint_t p_glyph, hb_position_t *r_x, hb_position_t *r_y, void *p_user_data);
+	static hb_bool_t _bmp_get_glyph_extents(hb_font_t *p_font, void *p_font_data, hb_codepoint_t p_glyph, hb_glyph_extents_t *r_extents, void *p_user_data);
+	static hb_bool_t _bmp_get_font_h_extents(hb_font_t *p_font, void *p_font_data, hb_font_extents_t *r_metrics, void *p_user_data);
+	static void _bmp_create_font_funcs();
+	static void _bmp_free_font_funcs();
+	static void _bmp_font_set_funcs(hb_font_t *p_font, TextServerAdvanced::FontDataForSizeAdvanced *p_face, bool p_unref);
+	static hb_font_t *_bmp_font_create(TextServerAdvanced::FontDataForSizeAdvanced *p_face, hb_destroy_func_t p_destroy);
 
 protected:
 	static void _bind_methods(){};

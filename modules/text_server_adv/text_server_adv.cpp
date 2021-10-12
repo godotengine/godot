@@ -46,13 +46,13 @@
 #endif
 
 /*************************************************************************/
-/*  hb_bmp_font_t HarfBuzz Bitmap font interface                         */
+/*  bmp_font_t HarfBuzz Bitmap font interface                            */
 /*************************************************************************/
 
 hb_font_funcs_t *TextServerAdvanced::funcs = nullptr;
 
-TextServerAdvanced::hb_bmp_font_t *TextServerAdvanced::_hb_bmp_font_create(TextServerAdvanced::FontDataForSizeAdvanced *p_face, bool p_unref) {
-	hb_bmp_font_t *bm_font = memnew(hb_bmp_font_t);
+TextServerAdvanced::bmp_font_t *TextServerAdvanced::_bmp_font_create(TextServerAdvanced::FontDataForSizeAdvanced *p_face, bool p_unref) {
+	bmp_font_t *bm_font = memnew(bmp_font_t);
 
 	if (!bm_font) {
 		return nullptr;
@@ -64,13 +64,13 @@ TextServerAdvanced::hb_bmp_font_t *TextServerAdvanced::_hb_bmp_font_create(TextS
 	return bm_font;
 }
 
-void TextServerAdvanced::_hb_bmp_font_destroy(void *p_data) {
-	hb_bmp_font_t *bm_font = reinterpret_cast<hb_bmp_font_t *>(p_data);
+void TextServerAdvanced::_bmp_font_destroy(void *p_data) {
+	bmp_font_t *bm_font = reinterpret_cast<bmp_font_t *>(p_data);
 	memdelete(bm_font);
 }
 
-hb_bool_t TextServerAdvanced::hb_bmp_get_nominal_glyph(hb_font_t *p_font, void *p_font_data, hb_codepoint_t p_unicode, hb_codepoint_t *r_glyph, void *p_user_data) {
-	const hb_bmp_font_t *bm_font = reinterpret_cast<const hb_bmp_font_t *>(p_font_data);
+hb_bool_t TextServerAdvanced::_bmp_get_nominal_glyph(hb_font_t *p_font, void *p_font_data, hb_codepoint_t p_unicode, hb_codepoint_t *r_glyph, void *p_user_data) {
+	const bmp_font_t *bm_font = reinterpret_cast<const bmp_font_t *>(p_font_data);
 
 	if (!bm_font->face) {
 		return false;
@@ -89,8 +89,8 @@ hb_bool_t TextServerAdvanced::hb_bmp_get_nominal_glyph(hb_font_t *p_font, void *
 	return true;
 }
 
-hb_position_t TextServerAdvanced::hb_bmp_get_glyph_h_advance(hb_font_t *p_font, void *p_font_data, hb_codepoint_t p_glyph, void *p_user_data) {
-	const hb_bmp_font_t *bm_font = reinterpret_cast<const hb_bmp_font_t *>(p_font_data);
+hb_position_t TextServerAdvanced::_bmp_get_glyph_h_advance(hb_font_t *p_font, void *p_font_data, hb_codepoint_t p_glyph, void *p_user_data) {
+	const bmp_font_t *bm_font = reinterpret_cast<const bmp_font_t *>(p_font_data);
 
 	if (!bm_font->face) {
 		return 0;
@@ -103,8 +103,8 @@ hb_position_t TextServerAdvanced::hb_bmp_get_glyph_h_advance(hb_font_t *p_font, 
 	return bm_font->face->glyph_map[p_glyph].advance.x * 64;
 }
 
-hb_position_t TextServerAdvanced::hb_bmp_get_glyph_v_advance(hb_font_t *p_font, void *p_font_data, hb_codepoint_t p_glyph, void *p_user_data) {
-	const hb_bmp_font_t *bm_font = reinterpret_cast<const hb_bmp_font_t *>(p_font_data);
+hb_position_t TextServerAdvanced::_bmp_get_glyph_v_advance(hb_font_t *p_font, void *p_font_data, hb_codepoint_t p_glyph, void *p_user_data) {
+	const bmp_font_t *bm_font = reinterpret_cast<const bmp_font_t *>(p_font_data);
 
 	if (!bm_font->face) {
 		return 0;
@@ -117,8 +117,8 @@ hb_position_t TextServerAdvanced::hb_bmp_get_glyph_v_advance(hb_font_t *p_font, 
 	return -bm_font->face->glyph_map[p_glyph].advance.y * 64;
 }
 
-hb_position_t TextServerAdvanced::hb_bmp_get_glyph_h_kerning(hb_font_t *p_font, void *p_font_data, hb_codepoint_t p_left_glyph, hb_codepoint_t p_right_glyph, void *p_user_data) {
-	const hb_bmp_font_t *bm_font = reinterpret_cast<const hb_bmp_font_t *>(p_font_data);
+hb_position_t TextServerAdvanced::_bmp_get_glyph_h_kerning(hb_font_t *p_font, void *p_font_data, hb_codepoint_t p_left_glyph, hb_codepoint_t p_right_glyph, void *p_user_data) {
+	const bmp_font_t *bm_font = reinterpret_cast<const bmp_font_t *>(p_font_data);
 
 	if (!bm_font->face) {
 		return 0;
@@ -131,8 +131,8 @@ hb_position_t TextServerAdvanced::hb_bmp_get_glyph_h_kerning(hb_font_t *p_font, 
 	return bm_font->face->kerning_map[Vector2i(p_left_glyph, p_right_glyph)].x * 64;
 }
 
-hb_bool_t TextServerAdvanced::hb_bmp_get_glyph_v_origin(hb_font_t *p_font, void *p_font_data, hb_codepoint_t p_glyph, hb_position_t *r_x, hb_position_t *r_y, void *p_user_data) {
-	const hb_bmp_font_t *bm_font = reinterpret_cast<const hb_bmp_font_t *>(p_font_data);
+hb_bool_t TextServerAdvanced::_bmp_get_glyph_v_origin(hb_font_t *p_font, void *p_font_data, hb_codepoint_t p_glyph, hb_position_t *r_x, hb_position_t *r_y, void *p_user_data) {
+	const bmp_font_t *bm_font = reinterpret_cast<const bmp_font_t *>(p_font_data);
 
 	if (!bm_font->face) {
 		return false;
@@ -148,8 +148,8 @@ hb_bool_t TextServerAdvanced::hb_bmp_get_glyph_v_origin(hb_font_t *p_font, void 
 	return true;
 }
 
-hb_bool_t TextServerAdvanced::hb_bmp_get_glyph_extents(hb_font_t *p_font, void *p_font_data, hb_codepoint_t p_glyph, hb_glyph_extents_t *r_extents, void *p_user_data) {
-	const hb_bmp_font_t *bm_font = reinterpret_cast<const hb_bmp_font_t *>(p_font_data);
+hb_bool_t TextServerAdvanced::_bmp_get_glyph_extents(hb_font_t *p_font, void *p_font_data, hb_codepoint_t p_glyph, hb_glyph_extents_t *r_extents, void *p_user_data) {
+	const bmp_font_t *bm_font = reinterpret_cast<const bmp_font_t *>(p_font_data);
 
 	if (!bm_font->face) {
 		return false;
@@ -167,8 +167,8 @@ hb_bool_t TextServerAdvanced::hb_bmp_get_glyph_extents(hb_font_t *p_font, void *
 	return true;
 }
 
-hb_bool_t TextServerAdvanced::hb_bmp_get_font_h_extents(hb_font_t *p_font, void *p_font_data, hb_font_extents_t *r_metrics, void *p_user_data) {
-	const hb_bmp_font_t *bm_font = reinterpret_cast<const hb_bmp_font_t *>(p_font_data);
+hb_bool_t TextServerAdvanced::_bmp_get_font_h_extents(hb_font_t *p_font, void *p_font_data, hb_font_extents_t *r_metrics, void *p_user_data) {
+	const bmp_font_t *bm_font = reinterpret_cast<const bmp_font_t *>(p_font_data);
 
 	if (!bm_font->face) {
 		return false;
@@ -181,40 +181,40 @@ hb_bool_t TextServerAdvanced::hb_bmp_get_font_h_extents(hb_font_t *p_font, void 
 	return true;
 }
 
-void TextServerAdvanced::hb_bmp_create_font_funcs() {
+void TextServerAdvanced::_bmp_create_font_funcs() {
 	if (funcs == nullptr) {
 		funcs = hb_font_funcs_create();
 
-		hb_font_funcs_set_font_h_extents_func(funcs, hb_bmp_get_font_h_extents, nullptr, nullptr);
-		hb_font_funcs_set_nominal_glyph_func(funcs, hb_bmp_get_nominal_glyph, nullptr, nullptr);
-		hb_font_funcs_set_glyph_h_advance_func(funcs, hb_bmp_get_glyph_h_advance, nullptr, nullptr);
-		hb_font_funcs_set_glyph_v_advance_func(funcs, hb_bmp_get_glyph_v_advance, nullptr, nullptr);
-		hb_font_funcs_set_glyph_v_origin_func(funcs, hb_bmp_get_glyph_v_origin, nullptr, nullptr);
-		hb_font_funcs_set_glyph_h_kerning_func(funcs, hb_bmp_get_glyph_h_kerning, nullptr, nullptr);
-		hb_font_funcs_set_glyph_extents_func(funcs, hb_bmp_get_glyph_extents, nullptr, nullptr);
+		hb_font_funcs_set_font_h_extents_func(funcs, _bmp_get_font_h_extents, nullptr, nullptr);
+		hb_font_funcs_set_nominal_glyph_func(funcs, _bmp_get_nominal_glyph, nullptr, nullptr);
+		hb_font_funcs_set_glyph_h_advance_func(funcs, _bmp_get_glyph_h_advance, nullptr, nullptr);
+		hb_font_funcs_set_glyph_v_advance_func(funcs, _bmp_get_glyph_v_advance, nullptr, nullptr);
+		hb_font_funcs_set_glyph_v_origin_func(funcs, _bmp_get_glyph_v_origin, nullptr, nullptr);
+		hb_font_funcs_set_glyph_h_kerning_func(funcs, _bmp_get_glyph_h_kerning, nullptr, nullptr);
+		hb_font_funcs_set_glyph_extents_func(funcs, _bmp_get_glyph_extents, nullptr, nullptr);
 
 		hb_font_funcs_make_immutable(funcs);
 	}
 }
 
-void TextServerAdvanced::hb_bmp_free_font_funcs() {
+void TextServerAdvanced::_bmp_free_font_funcs() {
 	if (funcs != nullptr) {
 		hb_font_funcs_destroy(funcs);
 		funcs = nullptr;
 	}
 }
 
-void TextServerAdvanced::_hb_bmp_font_set_funcs(hb_font_t *p_font, TextServerAdvanced::FontDataForSizeAdvanced *p_face, bool p_unref) {
-	hb_font_set_funcs(p_font, funcs, _hb_bmp_font_create(p_face, p_unref), _hb_bmp_font_destroy);
+void TextServerAdvanced::_bmp_font_set_funcs(hb_font_t *p_font, TextServerAdvanced::FontDataForSizeAdvanced *p_face, bool p_unref) {
+	hb_font_set_funcs(p_font, funcs, _bmp_font_create(p_face, p_unref), _bmp_font_destroy);
 }
 
-hb_font_t *TextServerAdvanced::hb_bmp_font_create(TextServerAdvanced::FontDataForSizeAdvanced *p_face, hb_destroy_func_t p_destroy) {
+hb_font_t *TextServerAdvanced::_bmp_font_create(TextServerAdvanced::FontDataForSizeAdvanced *p_face, hb_destroy_func_t p_destroy) {
 	hb_font_t *font;
 	hb_face_t *face = hb_face_create(nullptr, 0);
 
 	font = hb_font_create(face);
 	hb_face_destroy(face);
-	_hb_bmp_font_set_funcs(font, p_face, false);
+	_bmp_font_set_funcs(font, p_face, false);
 	return font;
 }
 
@@ -442,9 +442,7 @@ bool TextServerAdvanced::is_locale_right_to_left(const String &p_locale) const {
 	}
 }
 
-static Map<StringName, int32_t> feature_sets;
-
-static void _insert_feature_sets() {
+void TextServerAdvanced::_insert_feature_sets() {
 	// Registered OpenType feature tags.
 	feature_sets.insert("access_all_alternates", HB_TAG('a', 'a', 'l', 't'));
 	feature_sets.insert("above_base_forms", HB_TAG('a', 'b', 'v', 'f'));
@@ -956,7 +954,6 @@ _FORCE_INLINE_ TextServerAdvanced::FontGlyph TextServerAdvanced::rasterize_msdf(
 
 		edgeColoringSimple(shape, 3.0); // Max. angle.
 		msdfgen::Bitmap<float, 4> image(w, h); // Texture size.
-		//msdfgen::generateMTSDF(image, shape, p_pixel_range, 1.0, msdfgen::Vector2(-bounds.l, -bounds.b)); // Range, scale, translation.
 
 		DistancePixelConversion distancePixelConversion(p_pixel_range);
 		msdfgen::Projection projection(msdfgen::Vector2(1.0, 1.0), msdfgen::Vector2(-bounds.l, -bounds.b));
@@ -986,10 +983,6 @@ _FORCE_INLINE_ TextServerAdvanced::FontGlyph TextServerAdvanced::rasterize_msdf(
 					wr[ofs + 1] = (uint8_t)(CLAMP(image(j, i)[1] * 256.f, 0.f, 255.f));
 					wr[ofs + 2] = (uint8_t)(CLAMP(image(j, i)[2] * 256.f, 0.f, 255.f));
 					wr[ofs + 3] = (uint8_t)(CLAMP(image(j, i)[3] * 256.f, 0.f, 255.f));
-					//wr[ofs + 0] = 100;
-					//wr[ofs + 1] = 100;
-					//wr[ofs + 2] = 100;
-					//wr[ofs + 3] = 100;
 				}
 			}
 		}
@@ -1054,13 +1047,12 @@ _FORCE_INLINE_ TextServerAdvanced::FontGlyph TextServerAdvanced::rasterize_bitma
 					case FT_PIXEL_MODE_MONO: {
 						int byte = i * bitmap.pitch + (j >> 3);
 						int bit = 1 << (7 - (j % 8));
-						wr[ofs + 0] = 255; //grayscale as 1
+						wr[ofs + 0] = 255; // grayscale as 1
 						wr[ofs + 1] = (bitmap.buffer[byte] & bit) ? 255 : 0;
 					} break;
 					case FT_PIXEL_MODE_GRAY:
-						wr[ofs + 0] = 255; //grayscale as 1
+						wr[ofs + 0] = 255; // grayscale as 1
 						wr[ofs + 1] = bitmap.buffer[i * bitmap.pitch + j];
-						//wr[ofs + 1] = 100;
 						break;
 					case FT_PIXEL_MODE_BGRA: {
 						int ofs_color = i * bitmap.pitch + (j << 2);
@@ -1594,7 +1586,7 @@ _FORCE_INLINE_ bool TextServerAdvanced::_ensure_cache_for_size(FontDataAdvanced 
 #endif
 	} else {
 		// Init bitmap font.
-		fd->hb_handle = hb_bmp_font_create(fd, nullptr);
+		fd->hb_handle = _bmp_font_create(fd, nullptr);
 	}
 	p_font_data->cache[p_size] = fd;
 	return true;
@@ -3161,7 +3153,7 @@ bool TextServerAdvanced::shaped_text_resize_object(RID p_shaped, Variant p_key, 
 							E.value.rect.position.y -= E.value.rect.size.y / 2;
 						} break;
 						case INLINE_ALIGN_TOP_TO: {
-							//NOP
+							// NOP
 						} break;
 					}
 					full_ascent = MAX(full_ascent, -E.value.rect.position.y);
@@ -3189,7 +3181,7 @@ bool TextServerAdvanced::shaped_text_resize_object(RID p_shaped, Variant p_key, 
 							E.value.rect.position.x -= E.value.rect.size.x / 2;
 						} break;
 						case INLINE_ALIGN_TOP_TO: {
-							//NOP
+							// NOP
 						} break;
 					}
 					full_ascent = MAX(full_ascent, -E.value.rect.position.x);
@@ -3351,7 +3343,7 @@ RID TextServerAdvanced::shaped_text_substr(RID p_shaped, int p_start, int p_leng
 							E.value.rect.position.y -= E.value.rect.size.y / 2;
 						} break;
 						case INLINE_ALIGN_TOP_TO: {
-							//NOP
+							// NOP
 						} break;
 					}
 					full_ascent = MAX(full_ascent, -E.value.rect.position.y);
@@ -3379,7 +3371,7 @@ RID TextServerAdvanced::shaped_text_substr(RID p_shaped, int p_start, int p_leng
 							E.value.rect.position.x -= E.value.rect.size.x / 2;
 						} break;
 						case INLINE_ALIGN_TOP_TO: {
-							//NOP
+							// NOP
 						} break;
 					}
 					full_ascent = MAX(full_ascent, -E.value.rect.position.x);
@@ -4485,7 +4477,7 @@ bool TextServerAdvanced::shaped_text_shape(RID p_shaped) {
 					E.value.rect.position.y -= E.value.rect.size.y / 2;
 				} break;
 				case INLINE_ALIGN_TOP_TO: {
-					//NOP
+					// NOP
 				} break;
 			}
 			full_ascent = MAX(full_ascent, -E.value.rect.position.y);
@@ -4513,7 +4505,7 @@ bool TextServerAdvanced::shaped_text_shape(RID p_shaped) {
 					E.value.rect.position.x -= E.value.rect.size.x / 2;
 				} break;
 				case INLINE_ALIGN_TOP_TO: {
-					//NOP
+					// NOP
 				} break;
 			}
 			full_ascent = MAX(full_ascent, -E.value.rect.position.x);
@@ -4679,76 +4671,186 @@ float TextServerAdvanced::shaped_text_get_underline_thickness(RID p_shaped) cons
 	return sd->uthk;
 }
 
-struct num_system_data {
-	Set<String> lang;
-	String digits;
-	String percent_sign;
-	String exp;
-};
+void TextServerAdvanced::_insert_num_systems_lang() {
+	// Eastern Arabic numerals.
+	{
+		NumSystemData ar;
+		ar.lang.insert(StringName("ar")); // Arabic
+		ar.lang.insert(StringName("ar_AE"));
+		ar.lang.insert(StringName("ar_BH"));
+		ar.lang.insert(StringName("ar_DJ"));
+		ar.lang.insert(StringName("ar_EG"));
+		ar.lang.insert(StringName("ar_ER"));
+		ar.lang.insert(StringName("ar_IL"));
+		ar.lang.insert(StringName("ar_IQ"));
+		ar.lang.insert(StringName("ar_JO"));
+		ar.lang.insert(StringName("ar_KM"));
+		ar.lang.insert(StringName("ar_KW"));
+		ar.lang.insert(StringName("ar_LB"));
+		ar.lang.insert(StringName("ar_MR"));
+		ar.lang.insert(StringName("ar_OM"));
+		ar.lang.insert(StringName("ar_PS"));
+		ar.lang.insert(StringName("ar_QA"));
+		ar.lang.insert(StringName("ar_SA"));
+		ar.lang.insert(StringName("ar_SD"));
+		ar.lang.insert(StringName("ar_SO"));
+		ar.lang.insert(StringName("ar_SS"));
+		ar.lang.insert(StringName("ar_SY"));
+		ar.lang.insert(StringName("ar_TD"));
+		ar.lang.insert(StringName("ar_YE"));
+		ar.lang.insert(StringName("ckb")); // Central Kurdish
+		ar.lang.insert(StringName("ckb_IQ"));
+		ar.lang.insert(StringName("ckb_IR"));
+		ar.lang.insert(StringName("sd")); // Sindhi
+		ar.lang.insert(StringName("sd_PK"));
+		ar.lang.insert(StringName("sd_Arab"));
+		ar.lang.insert(StringName("sd_Arab_PK"));
+		ar.digits = U"٠١٢٣٤٥٦٧٨٩٫";
+		ar.percent_sign = U"٪";
+		ar.exp = U"اس";
+		num_systems.push_back(ar);
+	}
 
-static num_system_data num_systems[]{
-	{ Set<String>(), U"٠١٢٣٤٥٦٧٨٩٫", U"٪", U"اس" },
-	{ Set<String>(), U"۰۱۲۳۴۵۶۷۸۹٫", U"٪", U"اس" },
-	{ Set<String>(), U"০১২৩৪৫৬৭৮৯.", U"%", U"e" },
-	{ Set<String>(), U"०१२३४५६७८९.", U"%", U"e" },
-	{ Set<String>(), U"༠༡༢༣༤༥༦༧༨༩.", U"%", U"e" },
-	{ Set<String>(), U"᱐᱑᱒᱓᱔᱕᱖᱗᱘᱙.", U"%", U"e" },
-	{ Set<String>(), U"၀၁၂၃၄၅၆၇၈၉.", U"%", U"e" },
-	{ Set<String>(), String(), String(), String() },
-};
+	// Persian and Urdu numerals.
+	{
+		NumSystemData pr;
+		pr.lang.insert(StringName("fa")); // Persian
+		pr.lang.insert(StringName("fa_AF"));
+		pr.lang.insert(StringName("fa_IR"));
+		pr.lang.insert(StringName("ks")); // Kashmiri
+		pr.lang.insert(StringName("ks_IN"));
+		pr.lang.insert(StringName("ks_Arab"));
+		pr.lang.insert(StringName("ks_Arab_IN"));
+		pr.lang.insert(StringName("lrc")); // Northern Luri
+		pr.lang.insert(StringName("lrc_IQ"));
+		pr.lang.insert(StringName("lrc_IR"));
+		pr.lang.insert(StringName("mzn")); // Mazanderani
+		pr.lang.insert(StringName("mzn_IR"));
+		pr.lang.insert(StringName("pa_PK")); // Panjabi
+		pr.lang.insert(StringName("pa_Arab"));
+		pr.lang.insert(StringName("pa_Arab_PK"));
+		pr.lang.insert(StringName("ps")); // Pushto
+		pr.lang.insert(StringName("ps_AF"));
+		pr.lang.insert(StringName("ps_PK"));
+		pr.lang.insert(StringName("ur_IN")); // Urdu
+		pr.lang.insert(StringName("uz_AF")); // Uzbek
+		pr.lang.insert(StringName("uz_Arab"));
+		pr.lang.insert(StringName("uz_Arab_AF"));
+		pr.digits = U"۰۱۲۳۴۵۶۷۸۹٫";
+		pr.percent_sign = U"٪";
+		pr.exp = U"اس";
+		num_systems.push_back(pr);
+	}
 
-static void _insert_num_systems_lang() {
-	num_systems[0].lang.insert(StringName("ar"));
-	num_systems[0].lang.insert(StringName("ar_AR"));
-	num_systems[0].lang.insert(StringName("ar_BH"));
-	num_systems[0].lang.insert(StringName("ar_DJ"));
-	num_systems[0].lang.insert(StringName("ar_EG"));
-	num_systems[0].lang.insert(StringName("ar_ER"));
-	num_systems[0].lang.insert(StringName("ar_IL"));
-	num_systems[0].lang.insert(StringName("ar_IQ"));
-	num_systems[0].lang.insert(StringName("ar_JO"));
-	num_systems[0].lang.insert(StringName("ar_KM"));
-	num_systems[0].lang.insert(StringName("ar_KW"));
-	num_systems[0].lang.insert(StringName("ar_LB"));
-	num_systems[0].lang.insert(StringName("ar_MR"));
-	num_systems[0].lang.insert(StringName("ar_OM"));
-	num_systems[0].lang.insert(StringName("ar_PS"));
-	num_systems[0].lang.insert(StringName("ar_QA"));
-	num_systems[0].lang.insert(StringName("ar_SA"));
-	num_systems[0].lang.insert(StringName("ar_SD"));
-	num_systems[0].lang.insert(StringName("ar_SO"));
-	num_systems[0].lang.insert(StringName("ar_SS"));
-	num_systems[0].lang.insert(StringName("ar_SY"));
-	num_systems[0].lang.insert(StringName("ar_TD"));
-	num_systems[0].lang.insert(StringName("ar_YE"));
+	// Bengali numerals.
+	{
+		NumSystemData bn;
+		bn.lang.insert(StringName("as")); // Assamese
+		bn.lang.insert(StringName("as_IN"));
+		bn.lang.insert(StringName("bn")); // Bengali
+		bn.lang.insert(StringName("bn_BD"));
+		bn.lang.insert(StringName("bn_IN"));
+		bn.lang.insert(StringName("mni")); // Manipuri
+		bn.lang.insert(StringName("mni_IN"));
+		bn.lang.insert(StringName("mni_Beng"));
+		bn.lang.insert(StringName("mni_Beng_IN"));
+		bn.digits = U"০১২৩৪৫৬৭৮৯.";
+		bn.percent_sign = U"%";
+		bn.exp = U"e";
+		num_systems.push_back(bn);
+	}
 
-	num_systems[1].lang.insert(StringName("fa"));
-	num_systems[1].lang.insert(StringName("ks"));
-	num_systems[1].lang.insert(StringName("pa_Arab"));
-	num_systems[1].lang.insert(StringName("ug"));
-	num_systems[1].lang.insert(StringName("ur_IN"));
-	num_systems[1].lang.insert(StringName("ur"));
-	num_systems[1].lang.insert(StringName("uz_Arab"));
+	// Devanagari numerals.
+	{
+		NumSystemData mr;
+		mr.lang.insert(StringName("mr")); // Marathi
+		mr.lang.insert(StringName("mr_IN"));
+		mr.lang.insert(StringName("ne")); // Nepali
+		mr.lang.insert(StringName("ne_IN"));
+		mr.lang.insert(StringName("ne_NP"));
+		mr.lang.insert(StringName("sa")); // Sanskrit
+		mr.lang.insert(StringName("sa_IN"));
+		mr.digits = U"०१२३४५६७८९.";
+		mr.percent_sign = U"%";
+		mr.exp = U"e";
+		num_systems.push_back(mr);
+	}
 
-	num_systems[2].lang.insert(StringName("as"));
-	num_systems[2].lang.insert(StringName("bn"));
-	num_systems[2].lang.insert(StringName("mni"));
+	// Dzongkha numerals.
+	{
+		NumSystemData dz;
+		dz.lang.insert(StringName("dz")); // Dzongkha
+		dz.lang.insert(StringName("dz_BT"));
+		dz.digits = U"༠༡༢༣༤༥༦༧༨༩.";
+		dz.percent_sign = U"%";
+		dz.exp = U"e";
+		num_systems.push_back(dz);
+	}
 
-	num_systems[3].lang.insert(StringName("mr"));
-	num_systems[3].lang.insert(StringName("ne"));
+	// Santali numerals.
+	{
+		NumSystemData sat;
+		sat.lang.insert(StringName("sat")); // Santali
+		sat.lang.insert(StringName("sat_IN"));
+		sat.lang.insert(StringName("sat_Olck"));
+		sat.lang.insert(StringName("sat_Olck_IN"));
+		sat.digits = U"᱐᱑᱒᱓᱔᱕᱖᱗᱘᱙.";
+		sat.percent_sign = U"%";
+		sat.exp = U"e";
+		num_systems.push_back(sat);
+	}
 
-	num_systems[4].lang.insert(StringName("dz"));
+	// Burmese numerals.
+	{
+		NumSystemData my;
+		my.lang.insert(StringName("my")); // Burmese
+		my.lang.insert(StringName("my_MM"));
+		my.digits = U"၀၁၂၃၄၅၆၇၈၉.";
+		my.percent_sign = U"%";
+		my.exp = U"e";
+		num_systems.push_back(my);
+	}
 
-	num_systems[5].lang.insert(StringName("sat"));
+	// Chakma numerals.
+	{
+		NumSystemData ccp;
+		ccp.lang.insert(StringName("ccp")); // Chakma
+		ccp.lang.insert(StringName("ccp_BD"));
+		ccp.lang.insert(StringName("ccp_IN"));
+		ccp.digits = U"𑄶𑄷𑄸𑄹𑄺𑄻𑄼𑄽𑄾𑄿.";
+		ccp.percent_sign = U"%";
+		ccp.exp = U"e";
+		num_systems.push_back(ccp);
+	}
 
-	num_systems[6].lang.insert(StringName("my"));
+	// Adlam numerals.
+	{
+		NumSystemData ff;
+		ff.lang.insert(StringName("ff")); // Fulah
+		ff.lang.insert(StringName("ff_Adlm_BF"));
+		ff.lang.insert(StringName("ff_Adlm_CM"));
+		ff.lang.insert(StringName("ff_Adlm_GH"));
+		ff.lang.insert(StringName("ff_Adlm_GM"));
+		ff.lang.insert(StringName("ff_Adlm_GN"));
+		ff.lang.insert(StringName("ff_Adlm_GW"));
+		ff.lang.insert(StringName("ff_Adlm_LR"));
+		ff.lang.insert(StringName("ff_Adlm_MR"));
+		ff.lang.insert(StringName("ff_Adlm_NE"));
+		ff.lang.insert(StringName("ff_Adlm_NG"));
+		ff.lang.insert(StringName("ff_Adlm_SL"));
+		ff.lang.insert(StringName("ff_Adlm_SN"));
+		ff.digits = U"𞥐𞥑𞥒𞥓𞥔𞥕𞥖𞥗𞥘𞥙.";
+		ff.percent_sign = U"%";
+		ff.exp = U"e";
+		num_systems.push_back(ff);
+	}
 }
 
 String TextServerAdvanced::format_number(const String &p_string, const String &p_language) const {
 	const StringName lang = (p_language == "") ? TranslationServer::get_singleton()->get_tool_locale() : p_language;
 
 	String res = p_string;
-	for (int i = 0; num_systems[i].lang.size() != 0; i++) {
+	for (int i = 0; i < num_systems.size(); i++) {
 		if (num_systems[i].lang.has(lang)) {
 			if (num_systems[i].digits == String()) {
 				return p_string;
@@ -4773,7 +4875,7 @@ String TextServerAdvanced::parse_number(const String &p_string, const String &p_
 	const StringName lang = (p_language == "") ? TranslationServer::get_singleton()->get_tool_locale() : p_language;
 
 	String res = p_string;
-	for (int i = 0; num_systems[i].lang.size() != 0; i++) {
+	for (int i = 0; i < num_systems.size(); i++) {
 		if (num_systems[i].lang.has(lang)) {
 			if (num_systems[i].digits == String()) {
 				return p_string;
@@ -4800,7 +4902,7 @@ String TextServerAdvanced::parse_number(const String &p_string, const String &p_
 String TextServerAdvanced::percent_sign(const String &p_language) const {
 	const StringName lang = (p_language == "") ? TranslationServer::get_singleton()->get_tool_locale() : p_language;
 
-	for (int i = 0; num_systems[i].lang.size() != 0; i++) {
+	for (int i = 0; i < num_systems.size(); i++) {
 		if (num_systems[i].lang.has(lang)) {
 			if (num_systems[i].percent_sign == String()) {
 				return "%";
@@ -4814,11 +4916,11 @@ String TextServerAdvanced::percent_sign(const String &p_language) const {
 TextServerAdvanced::TextServerAdvanced() {
 	_insert_num_systems_lang();
 	_insert_feature_sets();
-	hb_bmp_create_font_funcs();
+	_bmp_create_font_funcs();
 }
 
 TextServerAdvanced::~TextServerAdvanced() {
-	hb_bmp_free_font_funcs();
+	_bmp_free_font_funcs();
 	if (library != nullptr) {
 		FT_Done_FreeType(library);
 	}
