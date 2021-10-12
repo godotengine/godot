@@ -2682,6 +2682,11 @@ void GDScriptAnalyzer::reduce_identifier_from_base(GDScriptParser::IdentifierNod
 						p_identifier->is_constant = false;
 						return;
 					} break;
+					case GDScriptParser::ClassNode::Member::CLASS: {
+						resolve_class_interface(member.m_class);
+						p_identifier->set_datatype(member.m_class->get_datatype());
+						return;
+					} break;
 					default:
 						break;
 				}
