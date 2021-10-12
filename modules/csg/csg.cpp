@@ -408,7 +408,7 @@ void CSGBrushOperation::merge_brushes(Operation p_operation, const CSGBrush &p_b
 
 		} break;
 
-		case OPERATION_SUBSTRACTION: {
+		case OPERATION_SUBTRACTION: {
 			int face_count = 0;
 
 			for (int i = 0; i < mesh_merge.faces.size(); i++) {

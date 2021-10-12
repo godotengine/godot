@@ -192,7 +192,7 @@ CSGBrush *CSGShape3D::_get_brush() {
 						bop.merge_brushes(CSGBrushOperation::OPERATION_INTERSECTION, *n, *nn2, *nn, snap);
 						break;
 					case CSGShape3D::OPERATION_SUBTRACTION:
-						bop.merge_brushes(CSGBrushOperation::OPERATION_SUBSTRACTION, *n, *nn2, *nn, snap);
+						bop.merge_brushes(CSGBrushOperation::OPERATION_SUBTRACTION, *n, *nn2, *nn, snap);
 						break;
 				}
 				memdelete(n);
