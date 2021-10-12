@@ -572,7 +572,7 @@ Error MultiplayerReplicator::_spawn_despawn(ResourceUID::ID p_scene_id, Object *
 		args[0] = p_peer;
 		args[1] = p_scene_id;
 		args[2] = p_obj;
-		args[3] = true;
+		args[3] = p_spawn;
 		const Variant *argp[] = { &args[0], &args[1], &args[2], &args[3] };
 		Callable::CallError ce;
 		Variant ret;
