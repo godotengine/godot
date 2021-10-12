@@ -568,7 +568,7 @@ void EditorFileDialog::_item_list_item_rmb_selected(int p_item, const Vector2 &p
 			continue;
 		}
 		Dictionary item_meta = item_list->get_item_metadata(i);
-		if (item_meta["path"] == ProjectSettings::get_singleton()->get_project_data_path()) {
+		if (String(item_meta["path"]).begins_with(ProjectSettings::get_singleton()->get_project_data_path())) {
 			allow_delete = false;
 			break;
 		}

@@ -193,6 +193,7 @@ class EditorFileSystem : public Node {
 
 	void _scan_fs_changes(EditorFileSystemDirectory *p_dir, const ScanProgress &p_progress);
 
+	void _create_project_data_dir_if_necessary();
 	void _delete_internal_files(String p_file);
 
 	Set<String> valid_extensions;
