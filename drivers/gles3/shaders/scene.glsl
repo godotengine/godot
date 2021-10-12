@@ -1356,7 +1356,7 @@ void light_process_spot(int idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 bi
 #ifdef USE_PHYSICAL_LIGHT_ATTENUATION
 		spot_attenuation = get_omni_attenuation(light_length, spot_lights[idx].light_pos_inv_radius.w, spot_lights[idx].light_direction_attenuation.w);
 #else
-		spot_attenuation = pow(1.0 - normalized_distance, omni_lights[idx].light_direction_attenuation.w);
+		spot_attenuation = pow(1.0 - normalized_distance, spot_lights[idx].light_direction_attenuation.w);
 #endif
 	} else {
 		spot_attenuation = 0.0;
