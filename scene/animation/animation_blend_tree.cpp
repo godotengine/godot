@@ -1152,6 +1152,8 @@ void AnimationNodeBlendTree::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_graph_offset", "offset"), &AnimationNodeBlendTree::set_graph_offset);
 	ClassDB::bind_method(D_METHOD("get_graph_offset"), &AnimationNodeBlendTree::get_graph_offset);
 
+	ClassDB::bind_method(D_METHOD("get_node_name"), &AnimationNodeBlendTree::get_node_name);
+
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "graph_offset", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_graph_offset", "get_graph_offset");
 
 	BIND_CONSTANT(CONNECTION_OK);
