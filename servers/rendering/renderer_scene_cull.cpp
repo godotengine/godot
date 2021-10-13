@@ -644,6 +644,12 @@ void RendererSceneCull::instance_set_base(RID p_instance, RID p_base) {
 					scene_render->geometry_instance_set_lightmap_capture(geom->geometry_instance, instance->lightmap_sh.ptr());
 				}
 
+				for (Set<Instance *>::Element *E = instance->visibility_dependencies.front(); E; E = E->next()) {
+					Instance *dep_instance = E->get();
+					ERR_CONTINUE(dep_instance->array_index == -1);
+					ERR_CONTINUE(dep_instance->scenario->instance_data[dep_instance->array_index].parent_array_index != -1);
+					dep_instance->scenario->instance_data[dep_instance->array_index].parent_array_index = instance->array_index;
+				}
 			} break;
 			case RS::INSTANCE_PARTICLES_COLLISION: {
 				InstanceParticlesCollisionData *collision = memnew(InstanceParticlesCollisionData);
@@ -1199,53 +1205,48 @@ void RendererSceneCull::instance_set_visibility_parent(RID p_instance, RID p_par
 
 	Instance *old_parent = instance->visibility_parent;
 	if (old_parent) {
-		if ((1 << old_parent->base_type) & RS::INSTANCE_GEOMETRY_MASK && old_parent->base_data) {
-			InstanceGeometryData *old_parent_geom = static_cast<InstanceGeometryData *>(old_parent->base_data);
-			old_parent_geom->visibility_dependencies.erase(instance);
-			_update_instance_visibility_depth(old_parent);
-		}
+		old_parent->visibility_dependencies.erase(instance);
 		instance->visibility_parent = nullptr;
+		_update_instance_visibility_depth(old_parent);
 	}
 
 	Instance *parent = instance_owner.get_or_null(p_parent_instance);
 	ERR_FAIL_COND(p_parent_instance.is_valid() && !parent);
 
 	if (parent) {
-		if ((1 << parent->base_type) & RS::INSTANCE_GEOMETRY_MASK && parent->base_data) {
-			InstanceGeometryData *parent_geom = static_cast<InstanceGeometryData *>(parent->base_data);
-			parent_geom->visibility_dependencies.insert(instance);
-			_update_instance_visibility_depth(parent);
-		}
+		parent->visibility_dependencies.insert(instance);
 		instance->visibility_parent = parent;
+
+		bool cycle_detected = _update_instance_visibility_depth(parent);
+		if (cycle_detected) {
+			ERR_PRINT("Cycle detected in the visibility dependencies tree. The latest change to visibility_parent will have no effect.");
+			parent->visibility_dependencies.erase(instance);
+			instance->visibility_parent = nullptr;
+		}
 	}
 
 	_update_instance_visibility_dependencies(instance);
 }
 
-void RendererSceneCull::_update_instance_visibility_depth(Instance *p_instance) {
+bool RendererSceneCull::_update_instance_visibility_depth(Instance *p_instance) {
 	bool cycle_detected = false;
 	Set<Instance *> traversed_nodes;
 
 	{
 		Instance *instance = p_instance;
-		while (instance && ((1 << instance->base_type) & RS::INSTANCE_GEOMETRY_MASK) && instance->base_data) {
-			InstanceGeometryData *geom = static_cast<InstanceGeometryData *>(instance->base_data);
-			if (!geom->visibility_dependencies.is_empty()) {
+		while (instance) {
+			if (!instance->visibility_dependencies.is_empty()) {
 				uint32_t depth = 0;
-				for (Set<Instance *>::Element *E = geom->visibility_dependencies.front(); E; E = E->next()) {
-					if (((1 << E->get()->base_type) & RS::INSTANCE_GEOMETRY_MASK) == 0 || !E->get()->base_data) {
-						continue;
-					}
-					InstanceGeometryData *child_geom = static_cast<InstanceGeometryData *>(E->get()->base_data);
-					depth = MAX(depth, child_geom->visibility_dependencies_depth);
+				for (Set<Instance *>::Element *E = instance->visibility_dependencies.front(); E; E = E->next()) {
+					depth = MAX(depth, E->get()->visibility_dependencies_depth);
 				}
-				geom->visibility_dependencies_depth = depth + 1;
+				instance->visibility_dependencies_depth = depth + 1;
 			} else {
-				geom->visibility_dependencies_depth = 0;
+				instance->visibility_dependencies_depth = 0;
 			}
 
 			if (instance->scenario && instance->visibility_index != -1) {
-				instance->scenario->instance_visibility.move(instance->visibility_index, geom->visibility_dependencies_depth);
+				instance->scenario->instance_visibility.move(instance->visibility_index, instance->visibility_dependencies_depth);
 			}
 
 			traversed_nodes.insert(instance);
@@ -1258,17 +1259,7 @@ void RendererSceneCull::_update_instance_visibility_depth(Instance *p_instance) 
 		}
 	}
 
-	if (cycle_detected) {
-		ERR_PRINT("Cycle detected in the visibility dependencies tree.");
-		for (Set<Instance *>::Element *E = traversed_nodes.front(); E; E = E->next()) {
-			Instance *instance = E->get();
-			InstanceGeometryData *geom = static_cast<InstanceGeometryData *>(instance->base_data);
-			geom->visibility_dependencies_depth = 0;
-			if (instance->scenario && instance->visibility_index != -1) {
-				instance->scenario->instance_visibility.move(instance->visibility_index, geom->visibility_dependencies_depth);
-			}
-		}
-	}
+	return cycle_detected;
 }
 
 void RendererSceneCull::_update_instance_visibility_dependencies(Instance *p_instance) {
@@ -1289,15 +1280,13 @@ void RendererSceneCull::_update_instance_visibility_dependencies(Instance *p_ins
 		vd.position = p_instance->transformed_aabb.get_center();
 		vd.array_index = p_instance->array_index;
 
-		InstanceGeometryData *geom_data = static_cast<InstanceGeometryData *>(p_instance->base_data);
-		p_instance->scenario->instance_visibility.insert(vd, geom_data->visibility_dependencies_depth);
+		p_instance->scenario->instance_visibility.insert(vd, p_instance->visibility_dependencies_depth);
 	}
 
 	if (p_instance->scenario && p_instance->array_index != -1) {
 		p_instance->scenario->instance_data[p_instance->array_index].visibility_index = p_instance->visibility_index;
 
-		InstanceGeometryData *geom_data = static_cast<InstanceGeometryData *>(p_instance->base_data);
-		if ((has_visibility_range || p_instance->visibility_parent) && (p_instance->visibility_index == -1 || (geom_data && geom_data->visibility_dependencies_depth == 0))) {
+		if ((has_visibility_range || p_instance->visibility_parent) && (p_instance->visibility_index == -1 || p_instance->visibility_dependencies_depth == 0)) {
 			p_instance->scenario->instance_data[p_instance->array_index].flags |= InstanceData::FLAG_VISIBILITY_DEPENDENCY_NEEDS_CHECK;
 		} else {
 			p_instance->scenario->instance_data[p_instance->array_index].flags &= ~InstanceData::FLAG_VISIBILITY_DEPENDENCY_NEEDS_CHECK;
@@ -1559,19 +1548,19 @@ void RendererSceneCull::_update_instance(Instance *p_instance) {
 		idata.parent_array_index = p_instance->visibility_parent ? p_instance->visibility_parent->array_index : -1;
 		idata.visibility_index = p_instance->visibility_index;
 
+		for (Set<Instance *>::Element *E = p_instance->visibility_dependencies.front(); E; E = E->next()) {
+			Instance *dep_instance = E->get();
+			if (dep_instance->array_index != -1) {
+				dep_instance->scenario->instance_data[dep_instance->array_index].parent_array_index = p_instance->array_index;
+			}
+		}
+
 		switch (p_instance->base_type) {
 			case RS::INSTANCE_MESH:
 			case RS::INSTANCE_MULTIMESH:
 			case RS::INSTANCE_PARTICLES: {
 				InstanceGeometryData *geom = static_cast<InstanceGeometryData *>(p_instance->base_data);
 				idata.instance_geometry = geom->geometry_instance;
-
-				for (Set<Instance *>::Element *E = geom->visibility_dependencies.front(); E; E = E->next()) {
-					Instance *dep_instance = E->get();
-					if (dep_instance->array_index != -1) {
-						dep_instance->scenario->instance_data[dep_instance->array_index].parent_array_index = p_instance->array_index;
-					}
-				}
 			} break;
 			case RS::INSTANCE_LIGHT: {
 				InstanceLightData *light_data = static_cast<InstanceLightData *>(p_instance->base_data);
@@ -1721,13 +1710,10 @@ void RendererSceneCull::_unpair_instance(Instance *p_instance) {
 			swapped_instance->scenario->instance_visibility[swapped_instance->visibility_index].array_index = swapped_instance->array_index;
 		}
 
-		if ((1 << swapped_instance->base_type) & RS::INSTANCE_GEOMETRY_MASK) {
-			InstanceGeometryData *geom = static_cast<InstanceGeometryData *>(swapped_instance->base_data);
-			for (Set<Instance *>::Element *E = geom->visibility_dependencies.front(); E; E = E->next()) {
-				Instance *dep_instance = E->get();
-				if (dep_instance != p_instance && dep_instance->array_index != -1) {
-					dep_instance->scenario->instance_data[dep_instance->array_index].parent_array_index = swapped_instance->array_index;
-				}
+		for (Set<Instance *>::Element *E = swapped_instance->visibility_dependencies.front(); E; E = E->next()) {
+			Instance *dep_instance = E->get();
+			if (dep_instance != p_instance && dep_instance->array_index != -1) {
+				dep_instance->scenario->instance_data[dep_instance->array_index].parent_array_index = swapped_instance->array_index;
 			}
 		}
 	}
@@ -1746,12 +1732,12 @@ void RendererSceneCull::_unpair_instance(Instance *p_instance) {
 		scene_render->geometry_instance_pair_reflection_probe_instances(geom->geometry_instance, nullptr, 0);
 		scene_render->geometry_instance_pair_decal_instances(geom->geometry_instance, nullptr, 0);
 		scene_render->geometry_instance_pair_voxel_gi_instances(geom->geometry_instance, nullptr, 0);
+	}
 
-		for (Set<Instance *>::Element *E = geom->visibility_dependencies.front(); E; E = E->next()) {
-			Instance *dep_instance = E->get();
-			if (dep_instance->array_index != -1) {
-				dep_instance->scenario->instance_data[dep_instance->array_index].parent_array_index = -1;
-			}
+	for (Set<Instance *>::Element *E = p_instance->visibility_dependencies.front(); E; E = E->next()) {
+		Instance *dep_instance = E->get();
+		if (dep_instance->array_index != -1) {
+			dep_instance->scenario->instance_data[dep_instance->array_index].parent_array_index = -1;
 		}
 	}
 

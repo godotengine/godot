@@ -441,6 +441,8 @@ public:
 		float visibility_range_begin_margin;
 		float visibility_range_end_margin;
 		Instance *visibility_parent = nullptr;
+		Set<Instance *> visibility_dependencies;
+		uint32_t visibility_dependencies_depth;
 		Scenario *scenario;
 		SelfList<Instance> scenario_item;
 
@@ -583,8 +585,6 @@ public:
 		Set<Instance *> reflection_probes;
 		Set<Instance *> voxel_gi_instances;
 		Set<Instance *> lightmap_captures;
-		Set<Instance *> visibility_dependencies;
-		uint32_t visibility_dependencies_depth = 0;
 
 		InstanceGeometryData() {
 			can_cast_shadows = true;
@@ -929,7 +929,7 @@ public:
 
 	virtual void instance_set_visibility_parent(RID p_instance, RID p_parent_instance);
 
-	void _update_instance_visibility_depth(Instance *p_instance);
+	bool _update_instance_visibility_depth(Instance *p_instance);
 	void _update_instance_visibility_dependencies(Instance *p_instance);
 
 	// don't use these in a game!
