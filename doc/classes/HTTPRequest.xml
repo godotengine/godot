@@ -65,10 +65,6 @@
 		    add_child(texture_rect)
 		    texture_rect.texture = texture
 		[/codeblock]
-		[b]Gzipped response bodies[/b]
-		HttpRequest will automatically handle decompression of response bodies.
-		A "Accept-Encoding" header will be automatically added to each of your requests, unless one is already specified.
-		Any response with a "Content-Encoding: gzip" header will automatically be decompressed and delivered to you as a uncompressed bytes.
 	</description>
 	<tutorials>
 		<link>https://docs.godotengine.org/en/3.4/tutorials/networking/http_request_class.html</link>
@@ -127,14 +123,8 @@
 		</method>
 	</methods>
 	<members>
-		<member name="accept_gzip" type="bool" setter="set_accept_gzip" getter="is_accepting_gzip" default="true">
-			If [code]true[/code], this header will be added to each request: [code]Accept-Encoding: gzip, deflate[/code] telling servers that it's okay to compress response bodies.
-			Any Reponse body declaring a [code]Content-Encoding[/code] of either [code]gzip[/code] or [code]deflate[/code] will then be automatically decompressed, and the uncompressed bytes will be delivered via [code]request_completed[/code].
-			If the user has specified their own [code]Accept-Encoding[/code] header, then no header will be added regaurdless of [code]accept_gzip[/code].
-			If [code]false[/code] no header will be added, and no decompression will be performed on response bodies. The raw bytes of the response body will be returned via [code]request_completed[/code].
-		</member>
 		<member name="body_size_limit" type="int" setter="set_body_size_limit" getter="get_body_size_limit" default="-1">
-			Maximum allowed size for response bodies. If the response body is compressed, this will be used as the maximum allowed size for the decompressed body.
+			Maximum allowed size for response bodies.
 		</member>
 		<member name="download_chunk_size" type="int" setter="set_download_chunk_size" getter="get_download_chunk_size" default="65536">
 			The size of the buffer used and maximum bytes to read per iteration. See [member HTTPClient.read_chunk_size].
@@ -184,24 +174,22 @@
 		<constant name="RESULT_NO_RESPONSE" value="6" enum="Result">
 			Request does not have a response (yet).
 		</constant>
-		<constant name="RESULT_BODY_DECOMPRESS_FAILED" value="8" enum="Result">
-		</constant>
 		<constant name="RESULT_BODY_SIZE_LIMIT_EXCEEDED" value="7" enum="Result">
 			Request exceeded its maximum size limit, see [member body_size_limit].
 		</constant>
-		<constant name="RESULT_REQUEST_FAILED" value="9" enum="Result">
+		<constant name="RESULT_REQUEST_FAILED" value="8" enum="Result">
 			Request failed (currently unused).
 		</constant>
-		<constant name="RESULT_DOWNLOAD_FILE_CANT_OPEN" value="10" enum="Result">
+		<constant name="RESULT_DOWNLOAD_FILE_CANT_OPEN" value="9" enum="Result">
 			HTTPRequest couldn't open the download file.
 		</constant>
-		<constant name="RESULT_DOWNLOAD_FILE_WRITE_ERROR" value="11" enum="Result">
+		<constant name="RESULT_DOWNLOAD_FILE_WRITE_ERROR" value="10" enum="Result">
 			HTTPRequest couldn't write to the download file.
 		</constant>
-		<constant name="RESULT_REDIRECT_LIMIT_REACHED" value="12" enum="Result">
+		<constant name="RESULT_REDIRECT_LIMIT_REACHED" value="11" enum="Result">
 			Request reached its maximum redirect limit, see [member max_redirects].
 		</constant>
-		<constant name="RESULT_TIMEOUT" value="13" enum="Result">
+		<constant name="RESULT_TIMEOUT" value="12" enum="Result">
 		</constant>
 	</constants>
 </class>
