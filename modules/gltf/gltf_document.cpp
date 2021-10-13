@@ -6222,10 +6222,6 @@ void GLTFDocument::_process_mesh_instances(Ref<GLTFState> state, Node *scene_roo
 }
 
 GLTFAnimation::Track GLTFDocument::_convert_animation_track(Ref<GLTFState> state, GLTFAnimation::Track p_track, Ref<Animation> p_animation, Transform3D p_bone_rest, int32_t p_track_i, GLTFNodeIndex p_node_i) {
-#ifndef _MSC_VER
-#warning this needs to be redone
-#endif
-#if 0
 	Animation::InterpolationType interpolation = p_animation->track_get_interpolation_type(p_track_i);
 
 	GLTFAnimation::Interpolation gltf_interpolation = GLTFAnimation::INTERP_LINEAR;
@@ -6244,35 +6240,44 @@ GLTFAnimation::Track GLTFDocument::_convert_animation_track(Ref<GLTFState> state
 	for (int32_t key_i = 0; key_i < key_count; key_i++) {
 		times.write[key_i] = p_animation->track_get_key_time(p_track_i, key_i);
 	}
-
-
-	if (track_type == Animation::TYPE_TRANSFORM3D) {
-		p_track.position_track.times = times;
-		p_track.position_track.interpolation = gltf_interpolation;
-		p_track.rotation_track.times = times;
-		p_track.rotation_track.interpolation = gltf_interpolation;
+	if (track_type == Animation::TYPE_SCALE_3D) {
 		p_track.scale_track.times = times;
 		p_track.scale_track.interpolation = gltf_interpolation;
-
 		p_track.scale_track.values.resize(key_count);
-		p_track.scale_track.interpolation = gltf_interpolation;
-		p_track.position_track.values.resize(key_count);
-		p_track.position_track.interpolation = gltf_interpolation;
-		p_track.rotation_track.values.resize(key_count);
-		p_track.rotation_track.interpolation = gltf_interpolation;
 		for (int32_t key_i = 0; key_i < key_count; key_i++) {
-			Vector3 position;
-			Quaternion rotation;
 			Vector3 scale;
-			Error err = p_animation->transform_track_get_key(p_track_i, key_i, &position, &rotation, &scale);
+			Error err = p_animation->scale_track_get_key(p_track_i, key_i, &scale);
 			ERR_CONTINUE(err != OK);
 			Transform3D xform;
-			xform.basis.set_quaternion_scale(rotation, scale);
+			xform.basis.set_quaternion_scale(Basis(), scale);
+			xform = p_bone_rest * xform;
+			p_track.scale_track.values.write[key_i] = xform.basis.get_scale();
+		}
+	} else if (track_type == Animation::TYPE_POSITION_3D) {
+		p_track.position_track.times = times;
+		p_track.position_track.values.resize(key_count);
+		p_track.position_track.interpolation = gltf_interpolation;
+		for (int32_t key_i = 0; key_i < key_count; key_i++) {
+			Vector3 position;
+			Error err = p_animation->position_track_get_key(p_track_i, key_i, &position);
+			ERR_CONTINUE(err != OK);
+			Transform3D xform;
 			xform.origin = position;
 			xform = p_bone_rest * xform;
 			p_track.position_track.values.write[key_i] = xform.get_origin();
+		}
+	} else if (track_type == Animation::TYPE_ROTATION_3D) {
+		p_track.rotation_track.times = times;
+		p_track.rotation_track.interpolation = gltf_interpolation;
+		p_track.rotation_track.values.resize(key_count);
+		for (int32_t key_i = 0; key_i < key_count; key_i++) {
+			Quaternion rotation;
+			Error err = p_animation->rotation_track_get_key(p_track_i, key_i, &rotation);
+			ERR_CONTINUE(err != OK);
+			Transform3D xform;
+			xform.basis.set_quaternion_scale(rotation, Vector3(1.0f, 1.0f, 1.0f));
+			xform = p_bone_rest * xform;
 			p_track.rotation_track.values.write[key_i] = xform.basis.get_rotation_quaternion();
-			p_track.scale_track.values.write[key_i] = xform.basis.get_scale();
 		}
 	} else if (path.find(":transform") != -1) {
 		p_track.position_track.times = times;
@@ -6405,7 +6410,6 @@ GLTFAnimation::Track GLTFDocument::_convert_animation_track(Ref<GLTFState> state
 			}
 		}
 	}
-#endif
 	return p_track;
 }
 
@@ -6568,21 +6572,18 @@ void GLTFDocument::_convert_animation(Ref<GLTFState> state, AnimationPlayer *ap,
 			}
 		} else if (String(orig_track_path).find(":") == -1) {
 			ERR_CONTINUE(!ap->get_parent());
-			for (int32_t node_i = 0; node_i < ap->get_parent()->get_child_count(); node_i++) {
-				const Node *child = ap->get_parent()->get_child(node_i);
-				const Node *node = child->get_node_or_null(orig_track_path);
-				for (const KeyValue<GLTFNodeIndex, Node *> &scene_node_i : state->scene_nodes) {
-					if (scene_node_i.value == node) {
-						GLTFNodeIndex node_index = scene_node_i.key;
-						Map<int, GLTFAnimation::Track>::Element *node_track_i = gltf_animation->get_tracks().find(node_index);
-						GLTFAnimation::Track track;
-						if (node_track_i) {
-							track = node_track_i->get();
-						}
-						track = _convert_animation_track(state, track, animation, Transform3D(), track_i, node_index);
-						gltf_animation->get_tracks().insert(node_index, track);
-						break;
+			Node *godot_node = ap->get_parent()->get_node_or_null(orig_track_path);
+			for (const KeyValue<GLTFNodeIndex, Node *> &scene_node_i : state->scene_nodes) {
+				if (scene_node_i.value == godot_node) {
+					GLTFNodeIndex node_i = scene_node_i.key;
+					Map<int, GLTFAnimation::Track>::Element *node_track_i = gltf_animation->get_tracks().find(node_i);
+					GLTFAnimation::Track track;
+					if (node_track_i) {
+						track = node_track_i->get();
 					}
+					track = _convert_animation_track(state, track, animation, Transform3D(), track_i, node_i);					
+					gltf_animation->get_tracks()[node_i] = track;
+					break;
 				}
 			}
 		}
