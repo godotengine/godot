@@ -173,16 +173,70 @@ Quaternion Quaternion::slerpni(const Quaternion &p_to, const real_t &p_weight) c
 			invFactor * from.w + newFactor * p_to.w);
 }
 
-Quaternion Quaternion::cubic_slerp(const Quaternion &p_b, const Quaternion &p_pre_a, const Quaternion &p_post_b, const real_t &p_weight) const {
+Quaternion Quaternion::cubic_slerp(const Quaternion &p_q, const Quaternion &p_prep, const Quaternion &p_postq, const real_t &p_t) const {
 #ifdef MATH_CHECKS
 	ERR_FAIL_COND_V_MSG(!is_normalized(), Quaternion(), "The start quaternion must be normalized.");
-	ERR_FAIL_COND_V_MSG(!p_b.is_normalized(), Quaternion(), "The end quaternion must be normalized.");
+	ERR_FAIL_COND_V_MSG(!p_q.is_normalized(), Quaternion(), "The end quaternion must be normalized.");
 #endif
-	//the only way to do slerp :|
-	real_t t2 = (1.0 - p_weight) * p_weight * 2;
-	Quaternion sp = this->slerp(p_b, p_weight);
-	Quaternion sq = p_pre_a.slerpni(p_post_b, p_weight);
-	return sp.slerpni(sq, t2);
+	// Squad (Spherical Spline Quaternions, Shoemake 1987), modified by Vegard Myklebust.
+	// Made available under Creative Commons license CC0.
+	// https://creativecommons.org/publicdomain/zero/1.0/legalcode.txt
+	// https://gist.github.com/usefulslug
+	const Quaternion q_a = p_prep.intermediate(*this, p_q);
+	const Quaternion q_b = intermediate(p_q, p_postq);
+
+	const float slerp_t = 2.0 * p_t * (1.0 - p_t);
+	const Quaternion slerp_1 = slerp(p_q, p_t);
+	const Quaternion slerp_2 = q_a.slerp(q_b, p_t);
+	return slerp_1.slerp(slerp_2, slerp_t);
+}
+
+Quaternion Quaternion::log() const {
+	Quaternion result = *this;
+	float a_0 = result.w;
+	result.w = 0.0;
+	if (Math::abs(a_0) < 1.0) {
+		float angle = Math::acos(a_0);
+		float sin_angle = Math::sin(angle);
+		if (sin_angle >= 1.0e-15) {
+			float coeff = angle / sin_angle;
+			result.x *= coeff;
+			result.y *= coeff;
+			result.z *= coeff;
+		}
+	}
+	return result;
+}
+
+Quaternion Quaternion::exp() const {
+	float angle = Math::sqrt(x * x + y * y + z * z);
+	float sin_angle = Math::sin(angle);
+	Quaternion result;
+	result.w = Math::cos(angle);
+	if (sin_angle >= 1.0e-15) {
+		float coeff = sin_angle / angle;
+		result.x *= coeff;
+		result.y *= coeff;
+		result.z *= coeff;
+	}
+	return result;
+}
+
+Quaternion Quaternion::intermediate(Quaternion p_1, Quaternion p_2) const {
+	Quaternion a_inv = p_1.inverse();
+	Quaternion c_1 = a_inv * p_2;
+	Quaternion c_2 = a_inv * (*this);
+	c_1 = c_1.log();
+	c_2 = c_2.log();
+	Quaternion c_3 = c_2 + c_1;
+	constexpr real_t scale = -0.25f;
+	c_3.x *= scale;
+	c_3.y *= scale;
+	c_3.z *= scale;
+	c_3.w *= scale;
+	c_3 = c_3.exp();
+	Quaternion r = p_1 * c_3;
+	return r.normalized();
 }
 
 Quaternion::operator String() const {

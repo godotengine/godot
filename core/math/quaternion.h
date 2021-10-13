@@ -83,6 +83,11 @@ public:
 	void operator*=(const Quaternion &p_q);
 	Quaternion operator*(const Quaternion &p_q) const;
 
+	Quaternion log() const;
+	Quaternion exp() const;
+
+	// Tries to compute sensible tangent values for the quaternion
+	Quaternion intermediate(Quaternion p_a, Quaternion p_b) const;
 	Quaternion operator*(const Vector3 &v) const {
 		return Quaternion(w * v.x + y * v.z - z * v.y,
 				w * v.y + z * v.x - x * v.z,
