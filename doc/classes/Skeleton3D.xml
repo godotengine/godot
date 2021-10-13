@@ -144,6 +144,24 @@
 				Returns the pose transform of the specified bone. Pose is applied on top of the custom pose, which is applied on top the rest pose.
 			</description>
 		</method>
+		<method name="get_bone_pose_position" qualifiers="const">
+			<return type="Vector3" />
+			<argument index="0" name="bone_idx" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="get_bone_pose_rotation" qualifiers="const">
+			<return type="Quaternion" />
+			<argument index="0" name="bone_idx" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="get_bone_pose_scale" qualifiers="const">
+			<return type="Vector3" />
+			<argument index="0" name="bone_idx" type="int" />
+			<description>
+			</description>
+		</method>
 		<method name="get_bone_rest" qualifiers="const">
 			<return type="Transform3D" />
 			<argument index="0" name="bone_idx" type="int" />
@@ -337,13 +355,25 @@
 				[b]Note:[/b] [code]parent_idx[/code] must be less than [code]bone_idx[/code].
 			</description>
 		</method>
-		<method name="set_bone_pose">
+		<method name="set_bone_pose_position">
 			<return type="void" />
 			<argument index="0" name="bone_idx" type="int" />
-			<argument index="1" name="pose" type="Transform3D" />
+			<argument index="1" name="position" type="Vector3" />
 			<description>
-				Sets the pose transform for bone [code]bone_idx[/code].
-				[b]Note:[/b] The pose transform needs to be in bone space. Use [method world_transform_to_global_pose] to convert a world transform, like one you can get from a [Node3D], to bone space.
+			</description>
+		</method>
+		<method name="set_bone_pose_rotation">
+			<return type="void" />
+			<argument index="0" name="bone_idx" type="int" />
+			<argument index="1" name="rotation" type="Quaternion" />
+			<description>
+			</description>
+		</method>
+		<method name="set_bone_pose_scale">
+			<return type="void" />
+			<argument index="0" name="bone_idx" type="int" />
+			<argument index="1" name="scale" type="Vector3" />
+			<description>
 			</description>
 		</method>
 		<method name="set_bone_rest">

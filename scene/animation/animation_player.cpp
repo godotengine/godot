@@ -60,7 +60,12 @@ void AnimatedValuesBackup::restore() const {
 		if (entry->bone_idx == -1) {
 			entry->object->set_indexed(entry->subpath, entry->value);
 		} else {
-			Object::cast_to<Skeleton3D>(entry->object)->set_bone_pose(entry->bone_idx, entry->value);
+			Array arr = entry->value;
+			if (arr.size() == 3) {
+				Object::cast_to<Skeleton3D>(entry->object)->set_bone_pose_position(entry->bone_idx, arr[0]);
+				Object::cast_to<Skeleton3D>(entry->object)->set_bone_pose_rotation(entry->bone_idx, arr[1]);
+				Object::cast_to<Skeleton3D>(entry->object)->set_bone_pose_scale(entry->bone_idx, arr[0]);
+			}
 		}
 	}
 }
@@ -242,6 +247,8 @@ void AnimationPlayer::_ensure_node_caches(AnimationData *p_anim, Node *p_root_ov
 
 	p_anim->node_cache.resize(a->get_track_count());
 
+	setup_pass++;
+
 	for (int i = 0; i < a->get_track_count(); i++) {
 		p_anim->node_cache.write[i] = nullptr;
 		RES resource;
@@ -275,46 +282,68 @@ void AnimationPlayer::_ensure_node_caches(AnimationData *p_anim, Node *p_root_ov
 			node_cache_map[key] = TrackNodeCache();
 		}
 
-		p_anim->node_cache.write[i] = &node_cache_map[key];
-		p_anim->node_cache[i]->path = a->track_get_path(i);
-		p_anim->node_cache[i]->node = child;
-		p_anim->node_cache[i]->resource = resource;
-		p_anim->node_cache[i]->node_2d = Object::cast_to<Node2D>(child);
+		TrackNodeCache *node_cache = &node_cache_map[key];
+		p_anim->node_cache.write[i] = node_cache;
+
+		node_cache->path = a->track_get_path(i);
+		node_cache->node = child;
+		node_cache->resource = resource;
+		node_cache->node_2d = Object::cast_to<Node2D>(child);
 #ifndef _3D_DISABLED
-		if (a->track_get_type(i) == Animation::TYPE_TRANSFORM3D) {
+		if (a->track_get_type(i) == Animation::TYPE_POSITION_3D || a->track_get_type(i) == Animation::TYPE_ROTATION_3D || a->track_get_type(i) == Animation::TYPE_SCALE_3D) {
 			// special cases and caches for transform tracks
 
+			if (node_cache->last_setup_pass != setup_pass) {
+				node_cache->loc_used = false;
+				node_cache->rot_used = false;
+				node_cache->scale_used = false;
+			}
+
 			// cache node_3d
-			p_anim->node_cache[i]->node_3d = Object::cast_to<Node3D>(child);
+			node_cache->node_3d = Object::cast_to<Node3D>(child);
 			// cache skeleton
-			p_anim->node_cache[i]->skeleton = Object::cast_to<Skeleton3D>(child);
-			if (p_anim->node_cache[i]->skeleton) {
+			node_cache->skeleton = Object::cast_to<Skeleton3D>(child);
+			if (node_cache->skeleton) {
 				if (a->track_get_path(i).get_subname_count() == 1) {
 					StringName bone_name = a->track_get_path(i).get_subname(0);
 
-					p_anim->node_cache[i]->bone_idx = p_anim->node_cache[i]->skeleton->find_bone(bone_name);
-					if (p_anim->node_cache[i]->bone_idx < 0) {
+					node_cache->bone_idx = node_cache->skeleton->find_bone(bone_name);
+					if (node_cache->bone_idx < 0) {
 						// broken track (nonexistent bone)
-						p_anim->node_cache[i]->skeleton = nullptr;
-						p_anim->node_cache[i]->node_3d = nullptr;
-						ERR_CONTINUE(p_anim->node_cache[i]->bone_idx < 0);
+						node_cache->skeleton = nullptr;
+						node_cache->node_3d = nullptr;
+						ERR_CONTINUE(node_cache->bone_idx < 0);
 					}
 				} else {
 					// no property, just use spatialnode
-					p_anim->node_cache[i]->skeleton = nullptr;
+					node_cache->skeleton = nullptr;
+				}
+			}
+
+			switch (a->track_get_type(i)) {
+				case Animation::TYPE_POSITION_3D: {
+					node_cache->loc_used = true;
+				} break;
+				case Animation::TYPE_ROTATION_3D: {
+					node_cache->rot_used = true;
+				} break;
+				case Animation::TYPE_SCALE_3D: {
+					node_cache->scale_used = true;
+				} break;
+				default: {
 				}
 			}
 		}
 #endif // _3D_DISABLED
 
 		if (a->track_get_type(i) == Animation::TYPE_VALUE) {
-			if (!p_anim->node_cache[i]->property_anim.has(a->track_get_path(i).get_concatenated_subnames())) {
+			if (!node_cache->property_anim.has(a->track_get_path(i).get_concatenated_subnames())) {
 				TrackNodeCache::PropertyAnim pa;
 				pa.subpath = leftover_path;
 				pa.object = resource.is_valid() ? (Object *)resource.ptr() : (Object *)child;
 				pa.special = SP_NONE;
 				pa.owner = p_anim->node_cache[i];
-				if (false && p_anim->node_cache[i]->node_2d) {
+				if (false && node_cache->node_2d) {
 					if (leftover_path.size() == 1 && leftover_path[0] == SceneStringNames::get_singleton()->transform_pos) {
 						pa.special = SP_NODE2D_POS;
 					} else if (leftover_path.size() == 1 && leftover_path[0] == SceneStringNames::get_singleton()->transform_rot) {
@@ -323,20 +352,22 @@ void AnimationPlayer::_ensure_node_caches(AnimationData *p_anim, Node *p_root_ov
 						pa.special = SP_NODE2D_SCALE;
 					}
 				}
-				p_anim->node_cache[i]->property_anim[a->track_get_path(i).get_concatenated_subnames()] = pa;
+				node_cache->property_anim[a->track_get_path(i).get_concatenated_subnames()] = pa;
 			}
 		}
 
 		if (a->track_get_type(i) == Animation::TYPE_BEZIER && leftover_path.size()) {
-			if (!p_anim->node_cache[i]->bezier_anim.has(a->track_get_path(i).get_concatenated_subnames())) {
+			if (!node_cache->bezier_anim.has(a->track_get_path(i).get_concatenated_subnames())) {
 				TrackNodeCache::BezierAnim ba;
 				ba.bezier_property = leftover_path;
 				ba.object = resource.is_valid() ? (Object *)resource.ptr() : (Object *)child;
 				ba.owner = p_anim->node_cache[i];
 
-				p_anim->node_cache[i]->bezier_anim[a->track_get_path(i).get_concatenated_subnames()] = ba;
+				node_cache->bezier_anim[a->track_get_path(i).get_concatenated_subnames()] = ba;
 			}
 		}
+
+		node_cache->last_setup_pass = setup_pass;
 	}
 }
 
@@ -369,17 +400,15 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, double
 		}
 
 		switch (a->track_get_type(i)) {
-			case Animation::TYPE_TRANSFORM3D: {
+			case Animation::TYPE_POSITION_3D: {
 #ifndef _3D_DISABLED
 				if (!nc->node_3d) {
 					continue;
 				}
 
 				Vector3 loc;
-				Quaternion rot;
-				Vector3 scale;
 
-				Error err = a->transform_track_interpolate(i, p_time, &loc, &rot, &scale);
+				Error err = a->position_track_interpolate(i, p_time, &loc);
 				//ERR_CONTINUE(err!=OK); //used for testing, should be removed
 
 				if (err != OK) {
@@ -391,12 +420,63 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, double
 					cache_update[cache_update_size++] = nc;
 					nc->accum_pass = accum_pass;
 					nc->loc_accum = loc;
-					nc->rot_accum = rot;
-					nc->scale_accum = scale;
-
+					nc->rot_accum = Quaternion();
+					nc->scale_accum = Vector3();
 				} else {
 					nc->loc_accum = nc->loc_accum.lerp(loc, p_interp);
+				}
+#endif // _3D_DISABLED
+			} break;
+			case Animation::TYPE_ROTATION_3D: {
+#ifndef _3D_DISABLED
+				if (!nc->node_3d) {
+					continue;
+				}
+
+				Quaternion rot;
+
+				Error err = a->rotation_track_interpolate(i, p_time, &rot);
+				//ERR_CONTINUE(err!=OK); //used for testing, should be removed
+
+				if (err != OK) {
+					continue;
+				}
+
+				if (nc->accum_pass != accum_pass) {
+					ERR_CONTINUE(cache_update_size >= NODE_CACHE_UPDATE_MAX);
+					cache_update[cache_update_size++] = nc;
+					nc->accum_pass = accum_pass;
+					nc->loc_accum = Vector3();
+					nc->rot_accum = rot;
+					nc->scale_accum = Vector3();
+				} else {
 					nc->rot_accum = nc->rot_accum.slerp(rot, p_interp);
+				}
+#endif // _3D_DISABLED
+			} break;
+			case Animation::TYPE_SCALE_3D: {
+#ifndef _3D_DISABLED
+				if (!nc->node_3d) {
+					continue;
+				}
+
+				Vector3 scale;
+
+				Error err = a->scale_track_interpolate(i, p_time, &scale);
+				//ERR_CONTINUE(err!=OK); //used for testing, should be removed
+
+				if (err != OK) {
+					continue;
+				}
+
+				if (nc->accum_pass != accum_pass) {
+					ERR_CONTINUE(cache_update_size >= NODE_CACHE_UPDATE_MAX);
+					cache_update[cache_update_size++] = nc;
+					nc->accum_pass = accum_pass;
+					nc->loc_accum = Vector3();
+					nc->rot_accum = Quaternion();
+					nc->scale_accum = scale;
+				} else {
 					nc->scale_accum = nc->scale_accum.lerp(scale, p_interp);
 				}
 #endif // _3D_DISABLED
@@ -855,15 +935,30 @@ void AnimationPlayer::_animation_update_transforms() {
 			TrackNodeCache *nc = cache_update[i];
 
 			ERR_CONTINUE(nc->accum_pass != accum_pass);
-
-			t.origin = nc->loc_accum;
-			t.basis.set_quaternion_scale(nc->rot_accum, nc->scale_accum);
 #ifndef _3D_DISABLED
 			if (nc->skeleton && nc->bone_idx >= 0) {
-				nc->skeleton->set_bone_pose(nc->bone_idx, t);
+				if (nc->loc_used) {
+					nc->skeleton->set_bone_pose_position(nc->bone_idx, nc->loc_accum);
+				}
+				if (nc->rot_used) {
+					nc->skeleton->set_bone_pose_rotation(nc->bone_idx, nc->rot_accum);
+				}
+				if (nc->scale_used) {
+					nc->skeleton->set_bone_pose_scale(nc->bone_idx, nc->scale_accum);
+				}
+
 			} else if (nc->node_3d) {
-				nc->node_3d->set_transform(t);
+				if (nc->loc_used) {
+					nc->node_3d->set_position(nc->loc_accum);
+				}
+				if (nc->rot_used) {
+					nc->node_3d->set_rotation(nc->rot_accum.get_euler());
+				}
+				if (nc->scale_used) {
+					nc->node_3d->set_scale(nc->scale_accum);
+				}
 			}
+
 #endif // _3D_DISABLED
 		}
 	}
@@ -1527,7 +1622,12 @@ Ref<AnimatedValuesBackup> AnimationPlayer::backup_animated_values(Node *p_root_o
 			AnimatedValuesBackup::Entry entry;
 			entry.object = nc->skeleton;
 			entry.bone_idx = nc->bone_idx;
-			entry.value = nc->skeleton->get_bone_pose(nc->bone_idx);
+			Array arr;
+			arr.resize(3);
+			arr[0] = nc->skeleton->get_bone_pose_position(nc->bone_idx);
+			arr[1] = nc->skeleton->get_bone_pose_rotation(nc->bone_idx);
+			arr[2] = nc->skeleton->get_bone_pose_scale(nc->bone_idx);
+			entry.value = nc;
 			backup->entries.push_back(entry);
 		} else {
 			if (nc->node_3d) {

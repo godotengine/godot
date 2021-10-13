@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   height="10"
+   viewBox="0 0 10 10"
+   width="10"
+   version="1.1"
+   id="svg12"
+   sodipodi:docname="KeyTrackRotation.svg"
+   inkscape:version="1.1 (1:1.1+202106031931+af4d65493e)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs16" />
+  <sodipodi:namedview
+     id="namedview14"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     showgrid="false"
+     inkscape:zoom="42.2"
+     inkscape:cx="1.9075829"
+     inkscape:cy="5.8175355"
+     inkscape:window-width="1848"
+     inkscape:window-height="1016"
+     inkscape:window-x="72"
+     inkscape:window-y="27"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg12" />
+  <ellipse
+     style="fill:none;fill-opacity:0.401212;stroke:none;stroke-width:4.7811;stroke-linejoin:round"
+     id="path921"
+     cx="-0.88986981"
+     cy="6.0959954"
+     rx="1.2495773"
+     ry="1.0867468" />
+  <path
+     d="m 5.0711986,0.88214062 a 4.1086779,4.1086779 0 0 0 -0.178839,0.00115 4.1086779,4.1086779 0 0 0 -0.409265,0.033245 A 4.1086779,4.1086779 0 0 0 0.99001362,4.1883346 4.1086779,4.1086779 0 0 0 2.1467236,7.9244144 h -0.648877 v 1.1739077 h 2.347816 a 0.58701268,0.58701268 0 0 0 0.569756,-0.729119 l -0.586953,-2.3478164 -1.139514,0.2854534 0.165082,0.6580347 a 2.9347699,2.9347699 0 0 1 -0.769204,-1.9752178 2.9347699,2.9347699 0 0 1 2.93477,-2.93477 2.9347699,2.9347699 0 0 1 2.93477,2.93477 2.9347699,2.9347699 0 0 1 -0.860944,2.0738257 l 0.831127,0.8311266 A 4.1086779,4.1086779 0 0 0 8.7040866,3.1726236 4.1086779,4.1086779 0 0 0 5.0711336,0.88215292 Z m -0.05159,2.93359608 a 1.173908,1.173908 0 0 0 -1.173907,1.173908 1.173908,1.173908 0 0 0 1.173907,1.173908 1.173908,1.173908 0 0 0 1.173909,-1.173908 1.173908,1.173908 0 0 0 -1.173909,-1.173908 z"
+     fill="#e0e0e0"
+     fill-opacity="0.99608"
+     id="path1165"
+     style="fill:#ff2b88;fill-opacity:1;stroke-width:0.586954" />
+</svg>

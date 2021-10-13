@@ -253,11 +253,35 @@
 				Returns the arguments values to be called on a method track for a given key in a given track.
 			</description>
 		</method>
+		<method name="position_track_insert_key">
+			<return type="int" />
+			<argument index="0" name="track_idx" type="int" />
+			<argument index="1" name="time" type="float" />
+			<argument index="2" name="position" type="Vector3" />
+			<description>
+			</description>
+		</method>
 		<method name="remove_track">
 			<return type="void" />
 			<argument index="0" name="track_idx" type="int" />
 			<description>
 				Removes a track by specifying the track index.
+			</description>
+		</method>
+		<method name="rotation_track_insert_key">
+			<return type="int" />
+			<argument index="0" name="track_idx" type="int" />
+			<argument index="1" name="time" type="float" />
+			<argument index="2" name="rotation" type="Quaternion" />
+			<description>
+			</description>
+		</method>
+		<method name="scale_track_insert_key">
+			<return type="int" />
+			<argument index="0" name="track_idx" type="int" />
+			<argument index="1" name="time" type="float" />
+			<argument index="2" name="scale" type="Vector3" />
+			<description>
 			</description>
 		</method>
 		<method name="track_find_key" qualifiers="const">
@@ -466,25 +490,6 @@
 				Swaps the track [code]idx[/code]'s index position with the track [code]with_idx[/code].
 			</description>
 		</method>
-		<method name="transform_track_insert_key">
-			<return type="int" />
-			<argument index="0" name="track_idx" type="int" />
-			<argument index="1" name="time" type="float" />
-			<argument index="2" name="location" type="Vector3" />
-			<argument index="3" name="rotation" type="Quaternion" />
-			<argument index="4" name="scale" type="Vector3" />
-			<description>
-				Insert a transform key for a transform track.
-			</description>
-		</method>
-		<method name="transform_track_interpolate" qualifiers="const">
-			<return type="Array" />
-			<argument index="0" name="track_idx" type="int" />
-			<argument index="1" name="time_sec" type="float" />
-			<description>
-				Returns the interpolated value of a transform track at a given time (in seconds). An array consisting of 3 elements: position ([Vector3]), rotation ([Quaternion]) and scale ([Vector3]).
-			</description>
-		</method>
 		<method name="value_track_get_key_indices" qualifiers="const">
 			<return type="PackedInt32Array" />
 			<argument index="0" name="track_idx" type="int" />
@@ -541,19 +546,22 @@
 		<constant name="TYPE_VALUE" value="0" enum="TrackType">
 			Value tracks set values in node properties, but only those which can be Interpolated.
 		</constant>
-		<constant name="TYPE_TRANSFORM3D" value="1" enum="TrackType">
-			Transform3D tracks are used to change node local transforms or skeleton pose bones of 3D nodes. Transitions are interpolated.
+		<constant name="TYPE_POSITION_3D" value="1" enum="TrackType">
 		</constant>
-		<constant name="TYPE_METHOD" value="2" enum="TrackType">
+		<constant name="TYPE_ROTATION_3D" value="2" enum="TrackType">
+		</constant>
+		<constant name="TYPE_SCALE_3D" value="3" enum="TrackType">
+		</constant>
+		<constant name="TYPE_METHOD" value="4" enum="TrackType">
 			Method tracks call functions with given arguments per key.
 		</constant>
-		<constant name="TYPE_BEZIER" value="3" enum="TrackType">
+		<constant name="TYPE_BEZIER" value="5" enum="TrackType">
 			Bezier tracks are used to interpolate a value using custom curves. They can also be used to animate sub-properties of vectors and colors (e.g. alpha value of a [Color]).
 		</constant>
-		<constant name="TYPE_AUDIO" value="4" enum="TrackType">
+		<constant name="TYPE_AUDIO" value="6" enum="TrackType">
 			Audio tracks are used to play an audio stream with either type of [AudioStreamPlayer]. The stream can be trimmed and previewed in the animation.
 		</constant>
-		<constant name="TYPE_ANIMATION" value="5" enum="TrackType">
+		<constant name="TYPE_ANIMATION" value="7" enum="TrackType">
 			Animation tracks play animations in other [AnimationPlayer] nodes.
 		</constant>
 		<constant name="INTERPOLATION_NEAREST" value="0" enum="InterpolationType">

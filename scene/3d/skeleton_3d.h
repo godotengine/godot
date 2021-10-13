@@ -79,7 +79,19 @@ private:
 		bool disable_rest = false;
 		Transform3D rest;
 
-		Transform3D pose;
+		_FORCE_INLINE_ void update_pose_cache() {
+			if (pose_cache_dirty) {
+				pose_cache.basis.set_quaternion_scale(pose_rotation, pose_scale);
+				pose_cache.origin = pose_position;
+				pose_cache_dirty = false;
+			}
+		}
+		bool pose_cache_dirty = true;
+		Transform3D pose_cache;
+		Vector3 pose_position;
+		Quaternion pose_rotation;
+		Vector3 pose_scale = Vector3(1, 1, 1);
+
 		Transform3D pose_global;
 		Transform3D pose_global_no_override;
 
@@ -206,8 +218,15 @@ public:
 
 	// posing api
 
-	void set_bone_pose(int p_bone, const Transform3D &p_pose);
+	void set_bone_pose_position(int p_bone, const Vector3 &p_position);
+	void set_bone_pose_rotation(int p_bone, const Quaternion &p_rotation);
+	void set_bone_pose_scale(int p_bone, const Vector3 &p_scale);
+
 	Transform3D get_bone_pose(int p_bone) const;
+
+	Vector3 get_bone_pose_position(int p_bone) const;
+	Quaternion get_bone_pose_rotation(int p_bone) const;
+	Vector3 get_bone_pose_scale(int p_bone) const;
 
 	void set_bone_custom_pose(int p_bone, const Transform3D &p_custom_pose);
 	Transform3D get_bone_custom_pose(int p_bone) const;

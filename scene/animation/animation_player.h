@@ -88,6 +88,8 @@ private:
 		SP_NODE2D_SCALE,
 	};
 
+	uint32_t setup_pass = 1;
+
 	struct TrackNodeCache {
 		NodePath path;
 		uint32_t id = 0;
@@ -100,6 +102,10 @@ private:
 #endif // _3D_DISABLED
 		int bone_idx = -1;
 		// accumulated transforms
+
+		bool loc_used = false;
+		bool rot_used = false;
+		bool scale_used = false;
 
 		Vector3 loc_accum;
 		Quaternion rot_accum;
@@ -134,6 +140,7 @@ private:
 
 		Map<StringName, BezierAnim> bezier_anim;
 
+		uint32_t last_setup_pass = 0;
 		TrackNodeCache() {}
 	};
 
