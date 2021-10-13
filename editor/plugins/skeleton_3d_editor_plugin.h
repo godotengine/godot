@@ -102,13 +102,12 @@ public:
 	void set_label(const String &p_label) { label = p_label; }
 
 	void _update_properties();
-	void _update_custom_pose_properties();
 	void _update_transform_properties(Transform3D p_transform);
 
 	// Transform can be keyed, whether or not to show the button.
 	void set_keyable(const bool p_keyable);
 
-	// When rest mode, pose and custom_pose editor are diasbled.
+	// When rest mode, pose editor are diasbled.
 	void set_properties_read_only(const bool p_readonly);
 	void set_transform_read_only(const bool p_readonly);
 
@@ -151,7 +150,6 @@ class Skeleton3DEditor : public VBoxContainer {
 	Tree *joint_tree = nullptr;
 	BoneTransformEditor *rest_editor = nullptr;
 	BoneTransformEditor *pose_editor = nullptr;
-	BoneTransformEditor *custom_pose_editor = nullptr;
 
 	VSeparator *separator;
 	MenuButton *skeleton_options = nullptr;
