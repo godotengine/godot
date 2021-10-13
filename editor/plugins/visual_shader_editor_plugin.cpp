@@ -777,7 +777,7 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id) {
 				expand->connect("pressed", callable_mp(VisualShaderEditor::get_singleton(), &VisualShaderEditor::_expand_output_port), varray(p_id, i, !vsnode->_is_output_port_expanded(i)), CONNECT_DEFERRED);
 				hb->add_child(expand);
 			}
-			if (visual_shader->get_shader_type() == VisualShader::TYPE_FRAGMENT && port_right != VisualShaderNode::PORT_TYPE_TRANSFORM && port_right != VisualShaderNode::PORT_TYPE_SAMPLER) {
+			if (vsnode->has_output_port_preview(i) && port_right != VisualShaderNode::PORT_TYPE_TRANSFORM && port_right != VisualShaderNode::PORT_TYPE_SAMPLER) {
 				TextureButton *preview = memnew(TextureButton);
 				preview->set_toggle_mode(true);
 				preview->set_normal_texture(VisualShaderEditor::get_singleton()->get_theme_icon(SNAME("GuiVisibilityHidden"), SNAME("EditorIcons")));
