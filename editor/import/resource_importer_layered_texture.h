@@ -33,9 +33,29 @@
 
 #include "core/io/image.h"
 #include "core/io/resource_importer.h"
+#include "core/object/ref_counted.h"
 
 class StreamTexture2D;
 
+class LayeredTextureImport : public RefCounted {
+	GDCLASS(LayeredTextureImport, RefCounted);
+
+public:
+	Image::CompressSource *csource = nullptr;
+	String save_path;
+	Map<StringName, Variant> options;
+	List<String> *platform_variants = nullptr;
+	Ref<Image> image = nullptr;
+	Array formats_imported;
+	Vector<Ref<Image>> *slices = nullptr;
+	int compress_mode = 0;
+	float lossy = 1.0;
+	int hdr_compression = 0;
+	int bptc_ldr = 0;
+	bool mipmaps = true;
+	Image::UsedChannels used_channels = Image::USED_CHANNELS_RGBA;
+	virtual ~LayeredTextureImport() {}
+};
 class ResourceImporterLayeredTexture : public ResourceImporter {
 	GDCLASS(ResourceImporterLayeredTexture, ResourceImporter);
 
@@ -66,6 +86,8 @@ protected:
 	static ResourceImporterLayeredTexture *singleton;
 
 public:
+	void _check_compress_stex(Ref<LayeredTextureImport> r_texture_import);
+
 	static ResourceImporterLayeredTexture *get_singleton() { return singleton; }
 	virtual String get_importer_name() const override;
 	virtual String get_visible_name() const override;
