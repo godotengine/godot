@@ -949,8 +949,16 @@ private:
 	};
 
 	struct BuiltinFuncOutArgs { //arguments used as out in built in functions
+		enum { MAX_ARGS = 2 };
 		const char *name;
-		int argument;
+		const int arguments[MAX_ARGS];
+	};
+
+	struct BuiltinFuncConstArgs {
+		const char *name;
+		int arg;
+		int min;
+		int max;
 	};
 
 	CompletionType completion_type;
@@ -966,6 +974,7 @@ private:
 	bool _get_completable_identifier(BlockNode *p_block, CompletionType p_type, StringName &identifier);
 	static const BuiltinFuncDef builtin_func_defs[];
 	static const BuiltinFuncOutArgs builtin_func_out_args[];
+	static const BuiltinFuncConstArgs builtin_func_const_args[];
 
 	Error _validate_datatype(DataType p_type);
 	bool _compare_datatypes(DataType p_datatype_a, String p_datatype_name_a, int p_array_size_a, DataType p_datatype_b, String p_datatype_name_b, int p_array_size_b);
