@@ -848,9 +848,11 @@ void TileMap::_rendering_update_dirty_quadrants(SelfList<TileMapQuadrant>::List 
 		Color modulate = get_self_modulate();
 		modulate *= get_layer_modulate(q.layer);
 		if (selected_layer >= 0) {
-			if (q.layer < selected_layer) {
+			int z1 = get_layer_z_index(q.layer);
+			int z2 = get_layer_z_index(selected_layer);
+			if (z1 < z2 || (z1 == z2 && q.layer < selected_layer)) {
 				modulate = modulate.darkened(0.5);
-			} else if (q.layer > selected_layer) {
+			} else if (z1 > z2 || (z1 == z2 && q.layer > selected_layer)) {
 				modulate = modulate.darkened(0.5);
 				modulate.a *= 0.3;
 			}
