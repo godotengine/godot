@@ -195,10 +195,10 @@ void VersionControlEditorPlugin::_set_up() {
 
 void VersionControlEditorPlugin::_update_set_up_warning(String p_new_text) {
 	bool empty_settings = set_up_username->get_text().strip_edges().empty() &&
-						  set_up_password->get_text().strip_edges().empty() &&
+						  set_up_password->get_text().empty() &&
 						  set_up_ssh_public_key_path->get_text().strip_edges().empty() &&
 						  set_up_ssh_private_key_path->get_text().strip_edges().empty() &&
-						  set_up_ssh_passphrase->get_text().strip_edges().empty();
+						  set_up_ssh_passphrase->get_text().empty();
 
 	if (empty_settings) {
 		set_up_warning_text->add_color_override("font_color", EditorNode::get_singleton()->get_gui_base()->get_color("warning_color", "Editor"));
