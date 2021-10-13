@@ -763,7 +763,11 @@ void TileSetAtlasSourceEditor::_update_tile_data_editors() {
 	// Update visibility.
 	bool is_visible = tools_button_group->get_pressed_button() == tool_paint_button;
 	tile_data_editor_dropdown_button->set_visible(is_visible);
-	tile_data_editor_dropdown_button->set_text(TTR("Select a property editor"));
+	if (tile_data_editors_tree->get_selected()) {
+		tile_data_editor_dropdown_button->set_text(tile_data_editors_tree->get_selected()->get_text(0));
+	} else {
+		tile_data_editor_dropdown_button->set_text(TTR("Select a property editor"));
+	}
 	tile_data_editors_label->set_visible(is_visible);
 }
 
@@ -959,7 +963,7 @@ void TileSetAtlasSourceEditor::_tile_atlas_control_gui_input(const Ref<InputEven
 			current_tile_data_editor->forward_painting_atlas_gui_input(tile_atlas_view, tile_set_atlas_source, p_event);
 		}
 		// Update only what's needed.
-		tile_set_atlas_source_changed_needs_update = false;
+		tile_set_changed_needs_update = false;
 
 		tile_atlas_control->update();
 		tile_atlas_control_unscaled->update();
@@ -1061,7 +1065,7 @@ void TileSetAtlasSourceEditor::_tile_atlas_control_gui_input(const Ref<InputEven
 					drag_current_tile = coords;
 
 					// Update only what's needed.
-					tile_set_atlas_source_changed_needs_update = false;
+					tile_set_changed_needs_update = false;
 					_update_tile_inspector();
 					_update_atlas_view();
 					_update_tile_id_label();
@@ -1101,7 +1105,7 @@ void TileSetAtlasSourceEditor::_tile_atlas_control_gui_input(const Ref<InputEven
 					drag_current_tile = new_rect.position;
 
 					// Update only what's needed.
-					tile_set_atlas_source_changed_needs_update = false;
+					tile_set_changed_needs_update = false;
 					_update_tile_inspector();
 					_update_atlas_view();
 					_update_tile_id_label();
@@ -2012,12 +2016,12 @@ void TileSetAtlasSourceEditor::_tile_alternatives_control_unscaled_draw() {
 	}
 }
 
-void TileSetAtlasSourceEditor::_tile_set_atlas_source_changed() {
-	tile_set_atlas_source_changed_needs_update = true;
+void TileSetAtlasSourceEditor::_tile_set_changed() {
+	tile_set_changed_needs_update = true;
 }
 
 void TileSetAtlasSourceEditor::_tile_proxy_object_changed(String p_what) {
-	tile_set_atlas_source_changed_needs_update = false; // Avoid updating too many things.
+	tile_set_changed_needs_update = false; // Avoid updating too many things.
 	_update_atlas_view();
 }
 
@@ -2073,8 +2077,8 @@ void TileSetAtlasSourceEditor::edit(Ref<TileSet> p_tile_set, TileSetAtlasSource 
 	}
 
 	// Remove listener for old objects.
-	if (tile_set_atlas_source) {
-		tile_set_atlas_source->disconnect("changed", callable_mp(this, &TileSetAtlasSourceEditor::_tile_set_atlas_source_changed));
+	if (tile_set.is_valid()) {
+		tile_set->disconnect("changed", callable_mp(this, &TileSetAtlasSourceEditor::_tile_set_changed));
 	}
 
 	// Clear the selection.
@@ -2086,8 +2090,8 @@ void TileSetAtlasSourceEditor::edit(Ref<TileSet> p_tile_set, TileSetAtlasSource 
 	tile_set_atlas_source_id = p_source_id;
 
 	// Add the listener again.
-	if (tile_set_atlas_source) {
-		tile_set_atlas_source->connect("changed", callable_mp(this, &TileSetAtlasSourceEditor::_tile_set_atlas_source_changed));
+	if (tile_set.is_valid()) {
+		tile_set->connect("changed", callable_mp(this, &TileSetAtlasSourceEditor::_tile_set_changed));
 	}
 
 	// Update everything.
@@ -2228,7 +2232,7 @@ void TileSetAtlasSourceEditor::_notification(int p_what) {
 			resize_handle_disabled = get_theme_icon(SNAME("EditorHandleDisabled"), SNAME("EditorIcons"));
 			break;
 		case NOTIFICATION_INTERNAL_PROCESS:
-			if (tile_set_atlas_source_changed_needs_update) {
+			if (tile_set_changed_needs_update) {
 				// Update everything.
 				_update_source_inspector();
 
@@ -2241,7 +2245,7 @@ void TileSetAtlasSourceEditor::_notification(int p_what) {
 				_update_tile_data_editors();
 				_update_current_tile_data_editor();
 
-				tile_set_atlas_source_changed_needs_update = false;
+				tile_set_changed_needs_update = false;
 			}
 			break;
 		default:
