@@ -520,9 +520,6 @@ void TileSetAtlasSourceEditor::_update_tile_id_label() {
 void TileSetAtlasSourceEditor::_update_source_inspector() {
 	// Update the proxy object.
 	atlas_source_proxy_object->edit(tile_set, tile_set_atlas_source, tile_set_atlas_source_id);
-
-	// Update the "clear outside texture" button.
-	tool_advanced_menu_buttom->get_popup()->set_item_disabled(0, !tile_set_atlas_source->has_tiles_outside_texture());
 }
 
 void TileSetAtlasSourceEditor::_update_fix_selected_and_hovered_tiles() {
@@ -1600,9 +1597,6 @@ void TileSetAtlasSourceEditor::_menu_option(int p_option) {
 			undo_redo->commit_action();
 			_update_tile_id_label();
 		} break;
-		case ADVANCED_CLEANUP_TILES_OUTSIDE_TEXTURE: {
-			tile_set_atlas_source->clear_tiles_outside_texture();
-		} break;
 		case ADVANCED_AUTO_CREATE_TILES: {
 			_auto_create_tiles();
 		} break;
@@ -2035,30 +2029,66 @@ void TileSetAtlasSourceEditor::_undo_redo_inspector_callback(Object *p_undo_redo
 
 #define ADD_UNDO(obj, property) undo_redo->add_undo_property(obj, property, obj->get(property));
 
-	AtlasTileProxyObject *tile_data = Object::cast_to<AtlasTileProxyObject>(p_edited);
-	if (tile_data) {
+	undo_redo->start_force_keep_in_merge_ends();
+	AtlasTileProxyObject *tile_data_proxy = Object::cast_to<AtlasTileProxyObject>(p_edited);
+	if (tile_data_proxy) {
 		Vector<String> components = String(p_property).split("/", true, 2);
 		if (components.size() == 2 && components[1] == "polygons_count") {
 			int layer_index = components[0].trim_prefix("physics_layer_").to_int();
 			int new_polygons_count = p_new_value;
-			int old_polygons_count = tile_data->get(vformat("physics_layer_%d/polygons_count", layer_index));
+			int old_polygons_count = tile_data_proxy->get(vformat("physics_layer_%d/polygons_count", layer_index));
 			if (new_polygons_count < old_polygons_count) {
 				for (int i = new_polygons_count - 1; i < old_polygons_count; i++) {
-					ADD_UNDO(tile_data, vformat("physics_layer_%d/polygon_%d/points", layer_index, i));
-					ADD_UNDO(tile_data, vformat("physics_layer_%d/polygon_%d/one_way", layer_index, i));
-					ADD_UNDO(tile_data, vformat("physics_layer_%d/polygon_%d/one_way_margin", layer_index, i));
+					ADD_UNDO(tile_data_proxy, vformat("physics_layer_%d/polygon_%d/points", layer_index, i));
+					ADD_UNDO(tile_data_proxy, vformat("physics_layer_%d/polygon_%d/one_way", layer_index, i));
+					ADD_UNDO(tile_data_proxy, vformat("physics_layer_%d/polygon_%d/one_way_margin", layer_index, i));
 				}
 			}
 		} else if (p_property == "terrain_set") {
-			int current_terrain_set = tile_data->get("terrain_set");
+			int current_terrain_set = tile_data_proxy->get("terrain_set");
 			for (int i = 0; i < TileSet::CELL_NEIGHBOR_MAX; i++) {
 				TileSet::CellNeighbor bit = TileSet::CellNeighbor(i);
 				if (tile_set->is_valid_peering_bit_terrain(current_terrain_set, bit)) {
-					ADD_UNDO(tile_data, "terrains_peering_bit/" + String(TileSet::CELL_NEIGHBOR_ENUM_TO_TEXT[i]));
+					ADD_UNDO(tile_data_proxy, "terrains_peering_bit/" + String(TileSet::CELL_NEIGHBOR_ENUM_TO_TEXT[i]));
 				}
 			}
 		}
 	}
+
+	TileSetAtlasSourceProxyObject *atlas_source_proxy = Object::cast_to<TileSetAtlasSourceProxyObject>(p_edited);
+	if (atlas_source_proxy) {
+		TileSetAtlasSource *atlas_source = atlas_source_proxy->get_edited();
+		ERR_FAIL_COND(!atlas_source);
+
+		PackedVector2Array arr;
+		if (p_property == "texture") {
+			arr = atlas_source->get_tiles_to_be_removed_on_change(p_new_value, atlas_source->get_margins(), atlas_source->get_separation(), atlas_source->get_texture_region_size());
+		} else if (p_property == "margins") {
+			arr = atlas_source->get_tiles_to_be_removed_on_change(atlas_source->get_texture(), p_new_value, atlas_source->get_separation(), atlas_source->get_texture_region_size());
+		} else if (p_property == "separation") {
+			arr = atlas_source->get_tiles_to_be_removed_on_change(atlas_source->get_texture(), atlas_source->get_margins(), p_new_value, atlas_source->get_texture_region_size());
+		} else if (p_property == "texture_region_size") {
+			arr = atlas_source->get_tiles_to_be_removed_on_change(atlas_source->get_texture(), atlas_source->get_margins(), atlas_source->get_separation(), p_new_value);
+		}
+
+		if (!arr.is_empty()) {
+			// Get all properties assigned to a tile.
+			List<PropertyInfo> properties;
+			atlas_source->get_property_list(&properties);
+
+			for (int i = 0; i < arr.size(); i++) {
+				Vector2i coords = arr[i];
+				String prefix = vformat("%d:%d/", coords.x, coords.y);
+				for (PropertyInfo pi : properties) {
+					if (pi.name.begins_with(prefix)) {
+						ADD_UNDO(atlas_source, pi.name);
+					}
+				}
+			}
+		}
+	}
+	undo_redo->end_force_keep_in_merge_ends();
+
 #undef ADD_UNDO
 }
 
@@ -2406,8 +2436,6 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 
 	tool_advanced_menu_buttom = memnew(MenuButton);
 	tool_advanced_menu_buttom->set_flat(true);
-	tool_advanced_menu_buttom->get_popup()->add_item(TTR("Cleanup Tiles Outside Texture"), ADVANCED_CLEANUP_TILES_OUTSIDE_TEXTURE);
-	tool_advanced_menu_buttom->get_popup()->set_item_disabled(0, true);
 	tool_advanced_menu_buttom->get_popup()->add_item(TTR("Create Tiles in Non-Transparent Texture Regions"), ADVANCED_AUTO_CREATE_TILES);
 	tool_advanced_menu_buttom->get_popup()->add_item(TTR("Remove Tiles in Fully Transparent Texture Regions"), ADVANCED_AUTO_REMOVE_TILES);
 	tool_advanced_menu_buttom->get_popup()->connect("id_pressed", callable_mp(this, &TileSetAtlasSourceEditor::_menu_option));
@@ -2481,6 +2509,8 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 	tile_atlas_view_missing_source_label->set_v_size_flags(SIZE_EXPAND_FILL);
 	tile_atlas_view_missing_source_label->hide();
 	right_panel->add_child(tile_atlas_view_missing_source_label);
+
+	EditorNode::get_singleton()->get_editor_data().add_undo_redo_inspector_hook_callback(callable_mp(this, &TileSetAtlasSourceEditor::_undo_redo_inspector_callback));
 }
 
 TileSetAtlasSourceEditor::~TileSetAtlasSourceEditor() {

@@ -479,8 +479,10 @@ private:
 
 	void _compute_next_alternative_id(const Vector2i p_atlas_coords);
 
-	void _create_coords_mapping_cache(Vector2i p_atlas_coords);
 	void _clear_coords_mapping_cache(Vector2i p_atlas_coords);
+	void _create_coords_mapping_cache(Vector2i p_atlas_coords);
+
+	void _clear_tiles_outside_texture();
 
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
@@ -534,7 +536,7 @@ public:
 	virtual Vector2i get_tile_id(int p_index) const override;
 
 	bool has_room_for_tile(Vector2i p_atlas_coords, Vector2i p_size, int p_animation_columns, Vector2i p_animation_separation, int p_frames_count, Vector2i p_ignored_tile = INVALID_ATLAS_COORDS) const;
-
+	PackedVector2Array get_tiles_to_be_removed_on_change(Ref<Texture2D> p_texture, Vector2i p_margins, Vector2i p_separation, Vector2i p_texture_region_size);
 	Vector2i get_tile_at_coords(Vector2i p_atlas_coords) const;
 
 	// Animation.
@@ -565,8 +567,6 @@ public:
 
 	// Helpers.
 	Vector2i get_atlas_grid_size() const;
-	bool has_tiles_outside_texture();
-	void clear_tiles_outside_texture();
 	Rect2i get_tile_texture_region(Vector2i p_atlas_coords, int p_frame = 0) const;
 	Vector2i get_tile_effective_texture_offset(Vector2i p_atlas_coords, int p_alternative_tile) const;
 
