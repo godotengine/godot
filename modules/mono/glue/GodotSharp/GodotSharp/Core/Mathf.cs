@@ -74,7 +74,7 @@ namespace Godot
         /// </returns>
         public static real_t Acos(real_t s)
         {
-            return (real_t)Math.Acos(s);
+            return (real_t)Math.Round(Math.Acos(s),6);
         }
 
         /// <summary>
@@ -87,7 +87,7 @@ namespace Godot
         /// </returns>
         public static real_t Asin(real_t s)
         {
-            return (real_t)Math.Asin(s);
+            return (real_t)Math.Round(Math.Asin(s),6);
         }
 
         /// <summary>
@@ -103,7 +103,7 @@ namespace Godot
         /// </returns>
         public static real_t Atan(real_t s)
         {
-            return (real_t)Math.Atan(s);
+            return (real_t)Math.Round(Math.Atan(s),6);
         }
 
         /// <summary>
@@ -120,7 +120,7 @@ namespace Godot
         /// </returns>
         public static real_t Atan2(real_t y, real_t x)
         {
-            return (real_t)Math.Atan2(y, x);
+            return (real_t)Math.Round(Math.Atan2(y, x),6);
         }
 
         /// <summary>
@@ -179,7 +179,7 @@ namespace Godot
         /// <returns>The cosine of that angle.</returns>
         public static real_t Cos(real_t s)
         {
-            return (real_t)Math.Cos(s);
+            return (real_t)Math.Round(Math.Cos(s),6);
         }
 
         /// <summary>
@@ -189,7 +189,7 @@ namespace Godot
         /// <returns>The hyperbolic cosine of that angle.</returns>
         public static real_t Cosh(real_t s)
         {
-            return (real_t)Math.Cosh(s);
+            return (real_t)Math.Round(Math.Cosh(s),6);
         }
 
         /// <summary>
@@ -254,7 +254,7 @@ namespace Godot
         /// <returns><c>e</c> raised to the power of <paramref name="s"/>.</returns>
         public static real_t Exp(real_t s)
         {
-            return (real_t)Math.Exp(s);
+            return (real_t)Math.Round(Math.Exp(s),6);
         }
 
         /// <summary>
@@ -376,7 +376,7 @@ namespace Godot
         /// <returns>The natural log of <paramref name="s"/>.</returns>
         public static real_t Log(real_t s)
         {
-            return (real_t)Math.Log(s);
+            return (real_t)Math.Round(Math.Log(s),6);
         }
 
         /// <summary>
@@ -511,7 +511,7 @@ namespace Godot
         /// <returns><paramref name="x"/> raised to the power of <paramref name="y"/>.</returns>
         public static real_t Pow(real_t x, real_t y)
         {
-            return (real_t)Math.Pow(x, y);
+            return (real_t)Math.Round(Math.Pow(x, y),6);
         }
 
         /// <summary>
@@ -568,7 +568,7 @@ namespace Godot
         /// <returns>The sine of that angle.</returns>
         public static real_t Sin(real_t s)
         {
-            return (real_t)Math.Sin(s);
+            return (real_t)Math.Round(Math.Sin(s),6);
         }
 
         /// <summary>
@@ -578,7 +578,7 @@ namespace Godot
         /// <returns>The hyperbolic sine of that angle.</returns>
         public static real_t Sinh(real_t s)
         {
-            return (real_t)Math.Sinh(s);
+            return (real_t)Math.Round(Math.Sinh(s),6);
         }
 
         /// <summary>
@@ -609,7 +609,7 @@ namespace Godot
         /// <returns>The square root of <paramref name="s"/>.</returns>
         public static real_t Sqrt(real_t s)
         {
-            return (real_t)Math.Sqrt(s);
+            return (real_t)Math.Round(Math.Sqrt(s),6);
         }
 
         /// <summary>
@@ -669,7 +669,7 @@ namespace Godot
         /// <returns>The tangent of that angle.</returns>
         public static real_t Tan(real_t s)
         {
-            return (real_t)Math.Tan(s);
+            return (real_t)Math.Round(Math.Tan(s),6);
         }
 
         /// <summary>
@@ -679,7 +679,7 @@ namespace Godot
         /// <returns>The hyperbolic tangent of that angle.</returns>
         public static real_t Tanh(real_t s)
         {
-            return (real_t)Math.Tanh(s);
+            return (real_t)Math.Round(Math.Tanh(s),6);
         }
 
         /// <summary>
