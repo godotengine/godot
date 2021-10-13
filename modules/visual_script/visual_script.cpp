@@ -2232,6 +2232,7 @@ Variant VisualScriptFunctionState::_signal_callback(const Variant **p_args, int 
 }
 
 void VisualScriptFunctionState::connect_to_signal(Object *p_obj, const String &p_signal, Array p_binds) {
+	ERR_FAIL_NULL(p_obj);
 	Vector<Variant> binds;
 	for (int i = 0; i < p_binds.size(); i++) {
 		binds.push_back(p_binds[i]);
