@@ -46,20 +46,18 @@
 			Scale factor for the generated baked lightmap. Useful for adding detail to certain mesh instances.
 		</member>
 		<member name="lod_max_distance" type="float" setter="set_lod_max_distance" getter="get_lod_max_distance" default="0.0">
-			The GeometryInstance's max LOD distance.
-			[b]Note:[/b] This property currently has no effect.
+			The GeometryInstance's maximum level of detail (LOD) distance. The [GeometryInstance] will not be drawn if the camera is further away than [member lod_max_distance] units from the [GeometryInstance]'s origin. Use this to improve performance by hiding [GeometryInstance]s when they don't contribute much to the scene's visual output. See also [member lod_max_hysteresis].
+			[b]Note:[/b] LOD is currently not applied to shadow rendering.
 		</member>
 		<member name="lod_max_hysteresis" type="float" setter="set_lod_max_hysteresis" getter="get_lod_max_hysteresis" default="0.0">
-			The GeometryInstance's max LOD margin.
-			[b]Note:[/b] This property currently has no effect.
+			The [GeometryInstance]'s maximum level of detail (LOD) margin. Margins are symmetrical around [member lod_max_distance]. This can be set to a value greater than [code]0.0[/code] to prevent LOD levels from "flip-flopping" when the camera moves back and forth (at the cost of less effective LOD levels being chosen at a given distance). See also [member lod_max_distance].
 		</member>
 		<member name="lod_min_distance" type="float" setter="set_lod_min_distance" getter="get_lod_min_distance" default="0.0">
-			The GeometryInstance's min LOD distance.
-			[b]Note:[/b] This property currently has no effect.
+			The GeometryInstance's minimum level of detail (LOD) distance. The [GeometryInstance] will not be drawn if the camera is closer than [member lod_max_distance] units from the [GeometryInstance]'s origin. Use this to improve performance by hiding [GeometryInstance]s when they don't contribute much to the scene's visual output.
+			[b]Note:[/b] LOD is currently not applied to shadow rendering. See also [member lod_min_hysteresis].
 		</member>
 		<member name="lod_min_hysteresis" type="float" setter="set_lod_min_hysteresis" getter="get_lod_min_hysteresis" default="0.0">
-			The GeometryInstance's min LOD margin.
-			[b]Note:[/b] This property currently has no effect.
+			The [GeometryInstance]'s minimum level of detail (LOD) margin. Margins are symmetrical around [member lod_max_distance]. This can be set to a value greater than [code]0.0[/code] to prevent LOD levels from "flip-flopping" when the camera moves back and forth (at the cost of less effective LOD levels being chosen at a given distance). See also [member lod_min_distance].
 		</member>
 		<member name="material_overlay" type="Material" setter="set_material_overlay" getter="get_material_overlay">
 			The material overlay for the whole geometry.

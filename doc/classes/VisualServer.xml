@@ -1364,7 +1364,7 @@
 			<argument index="3" name="min_margin" type="float" />
 			<argument index="4" name="max_margin" type="float" />
 			<description>
-				Not implemented in Godot 3.x.
+				Sets the level of detail (LOD) thresholds on the specified [code]instance[/code]. See also [member GeometryInstance.lod_min_distance], [member GeometryInstance.lod_max_distance], [member GeometryInstance.lod_min_hysteresis] and [member GeometryInstance.lod_max_hysteresis].
 			</description>
 		</method>
 		<method name="instance_geometry_set_flag">
