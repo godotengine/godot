@@ -46,6 +46,7 @@ layout(location = 0) out vec4 frag_color;
 #ifdef SSAO_MERGE
 
 uniform vec4 ssao_color;
+uniform float ssao_max_obscurance;
 
 #endif
 
@@ -312,7 +313,9 @@ void main() {
 	vec4 color = textureLod(source_color, uv_interp, 0.0);
 	float ssao = textureLod(source_ssao, uv_interp, 0.0).r;
 
-	frag_color = vec4(mix(color.rgb, color.rgb * mix(ssao_color.rgb, vec3(1.0), ssao), color.a), 1.0);
+	// Prevent SSAO from darkening the final image too much with the max obscurance setting.
+	// This prevents SSAO from creating dark artifacts when getting close to materials with the camera.
+	frag_color = vec4(mix(color.rgb, color.rgb * mix(ssao_color.rgb, vec3(1.0), max(1.0 - ssao_max_obscurance, ssao)), color.a), 1.0);
 
 #endif
 }

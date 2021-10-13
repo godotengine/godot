@@ -281,6 +281,9 @@
 		<member name="ssao_light_affect" type="float" setter="set_ssao_direct_light_affect" getter="get_ssao_direct_light_affect" default="0.0">
 			The screen-space ambient occlusion intensity in direct light. In real life, ambient occlusion only applies to indirect light, which means its effects can't be seen in direct light. Values higher than [code]0[/code] will make the SSAO effect visible in direct light.
 		</member>
+		<member name="ssao_max_obscurance" type="float" setter="set_ssao_max_obscurance" getter="get_ssao_max_obscurance" default="1.0">
+			The maximum obscurance factor that can be applied by the SSAO effect (anything higher will be clamped). This can be set to a value lower than [code]1.0[/code] to prevent areas close to the camera from getting too dark ([code]0.5[/code] is a good starting point).
+		</member>
 		<member name="ssao_quality" type="int" setter="set_ssao_quality" getter="get_ssao_quality" enum="Environment.SSAOQuality" default="1">
 			The screen-space ambient occlusion quality. Higher qualities will make better use of small objects for ambient occlusion, but are slower.
 		</member>

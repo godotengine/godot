@@ -450,7 +450,7 @@ public:
 	FUNC4(environment_set_ambient_light, RID, const Color &, float, float)
 	FUNC2(environment_set_camera_feed_id, RID, int)
 	FUNC7(environment_set_ssr, RID, bool, int, float, float, float, bool)
-	FUNC13(environment_set_ssao, RID, bool, float, float, float, float, float, float, float, const Color &, EnvironmentSSAOQuality, EnvironmentSSAOBlur, float)
+	FUNC14(environment_set_ssao, RID, bool, float, float, float, float, float, float, float, const Color &, EnvironmentSSAOQuality, EnvironmentSSAOBlur, float, float)
 
 	FUNC6(environment_set_dof_blur_near, RID, bool, float, float, float, EnvironmentDOFBlurQuality)
 	FUNC6(environment_set_dof_blur_far, RID, bool, float, float, float, EnvironmentDOFBlurQuality)

@@ -929,6 +929,7 @@
 			<argument index="10" name="quality" type="int" enum="VisualServer.EnvironmentSSAOQuality" />
 			<argument index="11" name="blur" type="int" enum="VisualServer.EnvironmentSSAOBlur" />
 			<argument index="12" name="bilateral_sharpness" type="float" />
+			<argument index="13" name="max_obscurance" type="float" />
 			<description>
 				Sets the variables to be used with the "Screen Space Ambient Occlusion (SSAO)" post-process effect. See [Environment] for more details.
 			</description>
