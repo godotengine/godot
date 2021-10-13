@@ -272,27 +272,27 @@ EditorVCSInterface::StatusFile EditorVCSInterface::_convert_status_file(Dictiona
 
 void EditorVCSInterface::_bind_methods() {
 	// Proxy end points that implement the VCS specific operations that the editor demands
-	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::BOOL, "_initialize", PropertyInfo(Variant::STRING, "project_path")));
-	ClassDB::add_virtual_method(get_class_static(), MethodInfo("_set_credentials", PropertyInfo(Variant::STRING, "username"), PropertyInfo(Variant::STRING, "password"), PropertyInfo(Variant::STRING, "ssh_public_key_path"), PropertyInfo(Variant::STRING, "ssh_private_key_path"), PropertyInfo(Variant::STRING, "ssh_passphrase")));
-	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::ARRAY, "_get_remotes"));
-	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::STRING, "_get_vcs_name"));
-	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::BOOL, "_shut_down"));
-	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::ARRAY, "_get_modified_files_data"));
-	ClassDB::add_virtual_method(get_class_static(), MethodInfo("_commit", PropertyInfo(Variant::STRING, "msg")));
-	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::ARRAY, "_get_diff", PropertyInfo(Variant::STRING, "identifier"), PropertyInfo(Variant::INT, "area")));
-	ClassDB::add_virtual_method(get_class_static(), MethodInfo("_stage_file", PropertyInfo(Variant::STRING, "file_path")));
-	ClassDB::add_virtual_method(get_class_static(), MethodInfo("_unstage_file", PropertyInfo(Variant::STRING, "file_path")));
-	ClassDB::add_virtual_method(get_class_static(), MethodInfo("_discard_file", PropertyInfo(Variant::STRING, "file_path")));
-	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::ARRAY, "_get_previous_commits", PropertyInfo(Variant::INT, "max_commits")));
-	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::ARRAY, "_get_branch_list"));
-	ClassDB::add_virtual_method(get_class_static(), MethodInfo("_create_branch", PropertyInfo(Variant::STRING, "branch_name")));
-	ClassDB::add_virtual_method(get_class_static(), MethodInfo("_create_remote", PropertyInfo(Variant::STRING, "remote_name"), PropertyInfo(Variant::STRING, "remote_url")));
-	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::STRING, "_get_current_branch_name"));
-	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::BOOL, "_checkout_branch", PropertyInfo(Variant::STRING, "branch_name")));
-	ClassDB::add_virtual_method(get_class_static(), MethodInfo("_push", PropertyInfo(Variant::STRING, "remote"), PropertyInfo(Variant::BOOL, "force")));
-	ClassDB::add_virtual_method(get_class_static(), MethodInfo("_pull", PropertyInfo(Variant::STRING, "remote")));
-	ClassDB::add_virtual_method(get_class_static(), MethodInfo("_fetch", PropertyInfo(Variant::STRING, "remote")));
-	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::ARRAY, "_get_line_diff", PropertyInfo(Variant::STRING, "file_path"), PropertyInfo(Variant::STRING, "text")));
+	BIND_VMETHOD(MethodInfo(Variant::BOOL, "_initialize", PropertyInfo(Variant::STRING, "project_path")));
+	BIND_VMETHOD(MethodInfo("_set_credentials", PropertyInfo(Variant::STRING, "username"), PropertyInfo(Variant::STRING, "password"), PropertyInfo(Variant::STRING, "ssh_public_key_path"), PropertyInfo(Variant::STRING, "ssh_private_key_path"), PropertyInfo(Variant::STRING, "ssh_passphrase")));
+	BIND_VMETHOD(MethodInfo(Variant::ARRAY, "_get_remotes"));
+	BIND_VMETHOD(MethodInfo(Variant::STRING, "_get_vcs_name"));
+	BIND_VMETHOD(MethodInfo(Variant::BOOL, "_shut_down"));
+	BIND_VMETHOD(MethodInfo(Variant::ARRAY, "_get_modified_files_data"));
+	BIND_VMETHOD(MethodInfo("_commit", PropertyInfo(Variant::STRING, "msg")));
+	BIND_VMETHOD(MethodInfo(Variant::ARRAY, "_get_diff", PropertyInfo(Variant::STRING, "identifier"), PropertyInfo(Variant::INT, "area")));
+	BIND_VMETHOD(MethodInfo("_stage_file", PropertyInfo(Variant::STRING, "file_path")));
+	BIND_VMETHOD(MethodInfo("_unstage_file", PropertyInfo(Variant::STRING, "file_path")));
+	BIND_VMETHOD(MethodInfo("_discard_file", PropertyInfo(Variant::STRING, "file_path")));
+	BIND_VMETHOD(MethodInfo(Variant::ARRAY, "_get_previous_commits", PropertyInfo(Variant::INT, "max_commits")));
+	BIND_VMETHOD(MethodInfo(Variant::ARRAY, "_get_branch_list"));
+	BIND_VMETHOD(MethodInfo("_create_branch", PropertyInfo(Variant::STRING, "branch_name")));
+	BIND_VMETHOD(MethodInfo("_create_remote", PropertyInfo(Variant::STRING, "remote_name"), PropertyInfo(Variant::STRING, "remote_url")));
+	BIND_VMETHOD(MethodInfo(Variant::STRING, "_get_current_branch_name"));
+	BIND_VMETHOD(MethodInfo(Variant::BOOL, "_checkout_branch", PropertyInfo(Variant::STRING, "branch_name")));
+	BIND_VMETHOD(MethodInfo("_push", PropertyInfo(Variant::STRING, "remote"), PropertyInfo(Variant::BOOL, "force")));
+	BIND_VMETHOD(MethodInfo("_pull", PropertyInfo(Variant::STRING, "remote")));
+	BIND_VMETHOD(MethodInfo("_fetch", PropertyInfo(Variant::STRING, "remote")));
+	BIND_VMETHOD(MethodInfo(Variant::ARRAY, "_get_line_diff", PropertyInfo(Variant::STRING, "file_path"), PropertyInfo(Variant::STRING, "text")));
 
 	ClassDB::bind_method(D_METHOD("create_diff_line", "new_line_no", "old_line_no", "content", "status"), &EditorVCSInterface::create_diff_line);
 	ClassDB::bind_method(D_METHOD("create_diff_hunk", "old_start", "new_start", "old_lines", "new_lines"), &EditorVCSInterface::create_diff_hunk);
@@ -302,8 +302,6 @@ void EditorVCSInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_diff_hunks_into_diff_file", "diff_hunk", "line_diffs"), &EditorVCSInterface::add_diff_hunks_into_diff_file);
 	ClassDB::bind_method(D_METHOD("add_line_diffs_into_diff_hunk", "diff_files", "diff_hunks"), &EditorVCSInterface::add_line_diffs_into_diff_hunk);
 	ClassDB::bind_method(D_METHOD("popup_error", "msg"), &EditorVCSInterface::popup_error);
-
-	ADD_SIGNAL(MethodInfo("stage_area_refreshed"));
 
 	BIND_ENUM_CONSTANT(CHANGE_TYPE_NEW);
 	BIND_ENUM_CONSTANT(CHANGE_TYPE_MODIFIED);

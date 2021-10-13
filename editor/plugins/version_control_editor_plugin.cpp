@@ -79,8 +79,8 @@ void VersionControlEditorPlugin::_bind_methods() {
 
 void VersionControlEditorPlugin::_notification(int p_what) {
 	if (p_what == NOTIFICATION_READY) {
-		String installed_plugin = GLOBAL_GET("version_control/plugin_name");
-		bool has_autoload_enable = GLOBAL_GET("version_control/autoload_on_startup");
+		String installed_plugin = GLOBAL_GET("editor/version_control/plugin_name");
+		bool has_autoload_enable = GLOBAL_GET("editor/version_control/autoload_on_startup");
 
 		if (installed_plugin != "" && has_autoload_enable) {
 			if (_load_plugin(installed_plugin)) {
@@ -132,8 +132,9 @@ void VersionControlEditorPlugin::_initialize_vcs() {
 
 	if (_load_plugin(selected_plugin)) {
 		_set_up();
-		ProjectSettings::get_singleton()->set("version_control/autoload_on_startup", true);
-		ProjectSettings::get_singleton()->set("version_control/plugin_name", selected_plugin);
+
+		ProjectSettings::get_singleton()->set("editor/version_control/autoload_on_startup", true);
+		ProjectSettings::get_singleton()->set("editor/version_control/plugin_name", selected_plugin);
 		ProjectSettings::get_singleton()->save();
 	}
 }
@@ -141,12 +142,22 @@ void VersionControlEditorPlugin::_initialize_vcs() {
 void VersionControlEditorPlugin::_set_credentials() {
 	CHECK_PLUGIN_INITIALIZED();
 
+	String username = set_up_username->get_text();
+	String password = set_up_password->get_text();
+	String ssh_public_key = set_up_ssh_public_key_path->get_text();
+	String ssh_private_key = set_up_ssh_private_key_path->get_text();
+	String ssh_passphrase = set_up_ssh_passphrase->get_text();
+
 	EditorVCSInterface::get_singleton()->set_credentials(
-			set_up_username->get_text(),
-			set_up_password->get_text(),
-			set_up_ssh_public_key_path->get_text(),
-			set_up_ssh_private_key_path->get_text(),
-			set_up_ssh_passphrase->get_text());
+			username,
+			password,
+			ssh_public_key,
+			ssh_private_key,
+			ssh_passphrase);
+
+	EditorSettings::get_singleton()->set_setting("version_control/username", username);
+	EditorSettings::get_singleton()->set_setting("version_control/ssh_public_key_path", ssh_public_key);
+	EditorSettings::get_singleton()->set_setting("version_control/ssh_private_key_path", ssh_private_key);
 }
 
 bool VersionControlEditorPlugin::_load_plugin(String p_name) {
@@ -946,6 +957,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 
 	set_up_username = memnew(LineEdit);
 	set_up_username->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	set_up_username->set_text(EDITOR_GET("version_control/username"));
 	set_up_username->connect("text_changed", this, "_update_set_up_warning");
 	set_up_username_input->add_child(set_up_username);
 
@@ -979,6 +991,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 
 	set_up_ssh_public_key_path = memnew(LineEdit);
 	set_up_ssh_public_key_path->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	set_up_ssh_public_key_path->set_text(EDITOR_GET("version_control/ssh_public_key_path"));
 	set_up_ssh_public_key_path->connect("text_changed", this, "_update_set_up_warning");
 	set_up_ssh_public_key_input_hbc->add_child(set_up_ssh_public_key_path);
 
@@ -994,7 +1007,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	set_up_ssh_public_key_input_hbc->add_child(set_up_ssh_public_key_file_dialog);
 
 	Button *select_public_path_button = memnew(Button);
-	select_public_path_button->set_icon(EditorNode::get_singleton()->get_gui_base()->get_icon("TextFile", "EditorIcons"));
+	select_public_path_button->set_icon(EditorNode::get_singleton()->get_gui_base()->get_icon("Folder", "EditorIcons"));
 	select_public_path_button->connect("pressed", set_up_ssh_public_key_file_dialog, "popup_centered_ratio");
 	select_public_path_button->set_tooltip(TTR("Select SSH Public Key Path"));
 	set_up_ssh_public_key_input_hbc->add_child(select_public_path_button);
@@ -1014,6 +1027,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 
 	set_up_ssh_private_key_path = memnew(LineEdit);
 	set_up_ssh_private_key_path->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	set_up_ssh_private_key_path->set_text(EDITOR_GET("version_control/ssh_private_key_path"));
 	set_up_ssh_private_key_path->connect("text_changed", this, "_update_set_up_warning");
 	set_up_ssh_private_key_input_hbc->add_child(set_up_ssh_private_key_path);
 
@@ -1028,7 +1042,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	set_up_ssh_private_key_input_hbc->add_child(set_up_ssh_private_key_file_dialog);
 
 	Button *select_private_path_button = memnew(Button);
-	select_private_path_button->set_icon(EditorNode::get_singleton()->get_gui_base()->get_icon("TextFile", "EditorIcons"));
+	select_private_path_button->set_icon(EditorNode::get_singleton()->get_gui_base()->get_icon("Folder", "EditorIcons"));
 	select_private_path_button->connect("pressed", set_up_ssh_private_key_file_dialog, "popup_centered_ratio");
 	select_private_path_button->set_tooltip(TTR("Select SSH Private Key Path"));
 	set_up_ssh_private_key_input_hbc->add_child(select_private_path_button);
@@ -1360,9 +1374,6 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	diff->set_v_size_flags(TextEdit::SIZE_EXPAND_FILL);
 	diff->set_selection_enabled(true);
 	version_control_dock->add_child(diff);
-
-	GLOBAL_DEF("version_control/autoload_on_startup", false);
-	GLOBAL_DEF("version_control/plugin_name", "");
 
 	_update_set_up_warning("");
 }

@@ -412,6 +412,13 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("docks/property_editor/subresource_hue_tint", 0.75);
 	hints["docks/property_editor/subresource_hue_tint"] = PropertyInfo(Variant::REAL, "docks/property_editor/subresource_hue_tint", PROPERTY_HINT_RANGE, "0,1,0.01", PROPERTY_USAGE_DEFAULT);
 
+	// Version Control
+	_initial_set("docks/version_control/username", "");
+	_initial_set("docks/version_control/ssh_public_key_path", "");
+	hints["docks/version_control/ssh_public_key_path"] = PropertyInfo(Variant::STRING, "docks/version_control/ssh_public_key_path", PROPERTY_HINT_GLOBAL_FILE);
+	_initial_set("docks/version_control/ssh_private_key_path", "");
+	hints["docks/version_control/ssh_private_key_path"] = PropertyInfo(Variant::STRING, "docks/version_control/ssh_private_key_path", PROPERTY_HINT_GLOBAL_FILE);
+
 	/* Text editor */
 
 	// Theme
