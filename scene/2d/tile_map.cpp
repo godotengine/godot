@@ -798,8 +798,9 @@ void TileMap::_rendering_cleanup_layer(int p_layer) {
 	ERR_FAIL_INDEX(p_layer, (int)layers.size());
 
 	RenderingServer *rs = RenderingServer::get_singleton();
-	if (!layers[p_layer].canvas_item.is_valid()) {
+	if (layers[p_layer].canvas_item.is_valid()) {
 		rs->free(layers[p_layer].canvas_item);
+		layers[p_layer].canvas_item = RID();
 	}
 }
 
