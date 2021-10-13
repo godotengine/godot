@@ -22,7 +22,7 @@
 		<method name="get_root_motion_transform" qualifiers="const">
 			<return type="Transform3D" />
 			<description>
-				Retrieve the motion of the [member root_motion_track] as a [Transform3D] that can be used elsewhere. If [member root_motion_track] is not a path to a track of type [constant Animation.TYPE_TRANSFORM3D], returns an identity transformation. See also [member root_motion_track] and [RootMotionView].
+				Retrieve the motion of the [member root_motion_track] as a [Transform3D] that can be used elsewhere. If [member root_motion_track] is not a path to a track of type [constant Animation.TYPE_POSITION_3D], [constant Animation.TYPE_SCALE_3D] or [constant Animation.TYPE_ROTATION_3D], returns an identity transformation. See also [member root_motion_track] and [RootMotionView].
 			</description>
 		</method>
 		<method name="rename_parameter">
@@ -45,7 +45,7 @@
 		</member>
 		<member name="root_motion_track" type="NodePath" setter="set_root_motion_track" getter="get_root_motion_track" default="NodePath(&quot;&quot;)">
 			The path to the Animation track used for root motion. Paths must be valid scene-tree paths to a node, and must be specified starting from the parent node of the node that will reproduce the animation. To specify a track that controls properties or bones, append its name after the path, separated by [code]":"[/code]. For example, [code]"character/skeleton:ankle"[/code] or [code]"character/mesh:transform/local"[/code].
-			If the track has type [constant Animation.TYPE_TRANSFORM3D], the transformation will be cancelled visually, and the animation will appear to stay in place. See also [method get_root_motion_transform] and [RootMotionView].
+			If the track has type [constant Animation.TYPE_POSITION_3D], [constant Animation.TYPE_ROTATION_3D] or [constant Animation.TYPE_SCALE_3D] the transformation will be cancelled visually, and the animation will appear to stay in place. See also [method get_root_motion_transform] and [RootMotionView].
 		</member>
 		<member name="tree_root" type="AnimationNode" setter="set_tree_root" getter="get_tree_root">
 			The root animation node of this [AnimationTree]. See [AnimationNode].

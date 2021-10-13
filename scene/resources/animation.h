@@ -42,7 +42,9 @@ class Animation : public Resource {
 public:
 	enum TrackType {
 		TYPE_VALUE, ///< Set a value in a property, can be interpolated.
-		TYPE_TRANSFORM3D, ///< Transform a node or a bone.
+		TYPE_POSITION_3D, ///< Position 3D track
+		TYPE_ROTATION_3D, ///< Rotation 3D track
+		TYPE_SCALE_3D, ///< Scale 3D track
 		TYPE_METHOD, ///< Call any method on a specific node.
 		TYPE_BEZIER, ///< Bezier curve
 		TYPE_AUDIO,
@@ -86,21 +88,31 @@ private:
 		T value;
 	};
 
-	struct TransformKey {
-		Vector3 loc;
-		Quaternion rot;
-		Vector3 scale;
+	const int32_t POSITION_TRACK_SIZE = 5;
+	const int32_t ROTATION_TRACK_SIZE = 6;
+	const int32_t SCALE_TRACK_SIZE = 5;
+
+	/* POSITION TRACK */
+
+	struct PositionTrack : public Track {
+		Vector<TKey<Vector3>> positions;
+
+		PositionTrack() { type = TYPE_POSITION_3D; }
 	};
 
-	// Not necessarily the same size as Transform3D. The amount of numbers in Animation::Key and TransformKey.
-	const int32_t TRANSFORM_TRACK_SIZE = 12;
+	/* ROTATION TRACK */
 
-	/* TRANSFORM TRACK */
+	struct RotationTrack : public Track {
+		Vector<TKey<Quaternion>> rotations;
 
-	struct TransformTrack : public Track {
-		Vector<TKey<TransformKey>> transforms;
+		RotationTrack() { type = TYPE_ROTATION_3D; }
+	};
 
-		TransformTrack() { type = TYPE_TRANSFORM3D; }
+	/* SCALE TRACK */
+
+	struct ScaleTrack : public Track {
+		Vector<TKey<Vector3>> scales;
+		ScaleTrack() { type = TYPE_SCALE_3D; }
 	};
 
 	/* PROPERTY VALUE TRACK */
@@ -186,14 +198,11 @@ private:
 	template <class K>
 	inline int _find(const Vector<K> &p_keys, double p_time) const;
 
-	_FORCE_INLINE_ Animation::TransformKey _interpolate(const Animation::TransformKey &p_a, const Animation::TransformKey &p_b, real_t p_c) const;
-
 	_FORCE_INLINE_ Vector3 _interpolate(const Vector3 &p_a, const Vector3 &p_b, real_t p_c) const;
 	_FORCE_INLINE_ Quaternion _interpolate(const Quaternion &p_a, const Quaternion &p_b, real_t p_c) const;
 	_FORCE_INLINE_ Variant _interpolate(const Variant &p_a, const Variant &p_b, real_t p_c) const;
 	_FORCE_INLINE_ real_t _interpolate(const real_t &p_a, const real_t &p_b, real_t p_c) const;
 
-	_FORCE_INLINE_ Animation::TransformKey _cubic_interpolate(const Animation::TransformKey &p_pre_a, const Animation::TransformKey &p_a, const Animation::TransformKey &p_b, const Animation::TransformKey &p_post_b, real_t p_c) const;
 	_FORCE_INLINE_ Vector3 _cubic_interpolate(const Vector3 &p_pre_a, const Vector3 &p_a, const Vector3 &p_b, const Vector3 &p_post_b, real_t p_c) const;
 	_FORCE_INLINE_ Quaternion _cubic_interpolate(const Quaternion &p_pre_a, const Quaternion &p_a, const Quaternion &p_b, const Quaternion &p_post_b, real_t p_c) const;
 	_FORCE_INLINE_ Variant _cubic_interpolate(const Variant &p_pre_a, const Variant &p_a, const Variant &p_b, const Variant &p_post_b, real_t p_c) const;
@@ -214,18 +223,6 @@ private:
 
 	// bind helpers
 private:
-	Array _transform_track_interpolate(int p_track, double p_time) const {
-		Vector3 loc;
-		Quaternion rot;
-		Vector3 scale;
-		transform_track_interpolate(p_track, p_time, &loc, &rot, &scale);
-		Array ret;
-		ret.push_back(loc);
-		ret.push_back(rot);
-		ret.push_back(scale);
-		return ret;
-	}
-
 	Vector<int> _value_track_get_key_indices(int p_track, double p_time, double p_delta) const {
 		List<int> idxs;
 		value_track_get_key_indices(p_track, p_time, p_delta, &idxs);
@@ -247,8 +244,13 @@ private:
 		return idxr;
 	}
 
-	bool _transform_track_optimize_key(const TKey<TransformKey> &t0, const TKey<TransformKey> &t1, const TKey<TransformKey> &t2, real_t p_alowed_linear_err, real_t p_alowed_angular_err, real_t p_max_optimizable_angle, const Vector3 &p_norm);
-	void _transform_track_optimize(int p_idx, real_t p_allowed_linear_err = 0.05, real_t p_allowed_angular_err = 0.01, real_t p_max_optimizable_angle = Math_PI * 0.125);
+	bool _position_track_optimize_key(const TKey<Vector3> &t0, const TKey<Vector3> &t1, const TKey<Vector3> &t2, real_t p_alowed_linear_err, real_t p_allowed_angular_error, const Vector3 &p_norm);
+	bool _rotation_track_optimize_key(const TKey<Quaternion> &t0, const TKey<Quaternion> &t1, const TKey<Quaternion> &t2, real_t p_allowed_angular_error, float p_max_optimizable_angle);
+	bool _scale_track_optimize_key(const TKey<Vector3> &t0, const TKey<Vector3> &t1, const TKey<Vector3> &t2, real_t p_allowed_linear_error);
+
+	void _position_track_optimize(int p_idx, real_t p_allowed_linear_err, real_t p_allowed_angular_err);
+	void _rotation_track_optimize(int p_idx, real_t p_allowed_angular_err, real_t p_max_optimizable_angle);
+	void _scale_track_optimize(int p_idx, real_t p_allowed_linear_err);
 
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
@@ -294,8 +296,18 @@ public:
 	double track_get_key_time(int p_track, int p_key_idx) const;
 	real_t track_get_key_transition(int p_track, int p_key_idx) const;
 
-	int transform_track_insert_key(int p_track, double p_time, const Vector3 &p_loc, const Quaternion &p_rot = Quaternion(), const Vector3 &p_scale = Vector3());
-	Error transform_track_get_key(int p_track, int p_key, Vector3 *r_loc, Quaternion *r_rot, Vector3 *r_scale) const;
+	int position_track_insert_key(int p_track, double p_time, const Vector3 &p_position);
+	Error position_track_get_key(int p_track, int p_key, Vector3 *r_position) const;
+	Error position_track_interpolate(int p_track, double p_time, Vector3 *r_interpolation) const;
+
+	int rotation_track_insert_key(int p_track, double p_time, const Quaternion &p_rotation);
+	Error rotation_track_get_key(int p_track, int p_key, Quaternion *r_rotation) const;
+	Error rotation_track_interpolate(int p_track, double p_time, Quaternion *r_interpolation) const;
+
+	int scale_track_insert_key(int p_track, double p_time, const Vector3 &p_scale);
+	Error scale_track_get_key(int p_track, int p_key, Vector3 *r_scale) const;
+	Error scale_track_interpolate(int p_track, double p_time, Vector3 *r_interpolation) const;
+
 	void track_set_interpolation_type(int p_track, InterpolationType p_interp);
 	InterpolationType track_get_interpolation_type(int p_track) const;
 
@@ -323,8 +335,6 @@ public:
 
 	void track_set_interpolation_loop_wrap(int p_track, bool p_enable);
 	bool track_get_interpolation_loop_wrap(int p_track) const;
-
-	Error transform_track_interpolate(int p_track, double p_time, Vector3 *r_loc, Quaternion *r_rot, Vector3 *r_scale) const;
 
 	Variant value_track_interpolate(int p_track, double p_time) const;
 	void value_track_get_key_indices(int p_track, double p_time, double p_delta, List<int> *p_indices) const;

@@ -35,7 +35,7 @@
 #include "editor/editor_spin_slider.h"
 #include "editor/property_editor.h"
 #include "editor/property_selector.h"
-#include "scene/animation/animation_cache.h"
+
 #include "scene/gui/control.h"
 #include "scene/gui/file_dialog.h"
 #include "scene/gui/menu_button.h"
