@@ -96,6 +96,7 @@ public:
 		Element(const TKey &p_key) :
 				pair(p_key) {}
 		Element(const Element &p_other) :
+				hash(p_other.hash),
 				pair(p_other.pair.key, p_other.pair.data) {}
 	};
 
