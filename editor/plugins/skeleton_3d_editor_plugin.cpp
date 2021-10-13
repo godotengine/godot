@@ -200,12 +200,7 @@ void BoneTransformEditor::_value_changed_transform(const String p_property_name,
 }
 
 void BoneTransformEditor::_change_transform(Transform3D p_new_transform) {
-	if (property.get_slicec('/', 0) == "bones" && property.get_slicec('/', 2) == "custom_pose") {
-		undo_redo->create_action(TTR("Set Custom Bone Pose Transform"), UndoRedo::MERGE_ENDS);
-		undo_redo->add_undo_method(skeleton, "set_bone_custom_pose", property.get_slicec('/', 1).to_int(), skeleton->get_bone_custom_pose(property.get_slicec('/', 1).to_int()));
-		undo_redo->add_do_method(skeleton, "set_bone_custom_pose", property.get_slicec('/', 1).to_int(), p_new_transform);
-		undo_redo->commit_action();
-	} else if (property.get_slicec('/', 0) == "bones") {
+	if (property.get_slicec('/', 0) == "bones") {
 		undo_redo->create_action(TTR("Set Bone Transform"), UndoRedo::MERGE_ENDS);
 		undo_redo->add_undo_property(skeleton, property, skeleton->get(property));
 		undo_redo->add_do_property(skeleton, property, p_new_transform);
@@ -233,21 +228,6 @@ void BoneTransformEditor::_update_properties() {
 	updating = true;
 
 	Transform3D tform = skeleton->get(property);
-	_update_transform_properties(tform);
-}
-
-void BoneTransformEditor::_update_custom_pose_properties() {
-	if (updating) {
-		return;
-	}
-
-	if (!skeleton) {
-		return;
-	}
-
-	updating = true;
-
-	Transform3D tform = skeleton->get_bone_custom_pose(property.to_int());
 	_update_transform_properties(tform);
 }
 
@@ -463,9 +443,7 @@ void Skeleton3DEditor::pose_to_rest() {
 
 	ur->add_do_method(skeleton, "set_bone_pose", selected_bone, Transform3D());
 	ur->add_undo_method(skeleton, "set_bone_pose", selected_bone, skeleton->get_bone_pose(selected_bone));
-	ur->add_do_method(skeleton, "set_bone_custom_pose", selected_bone, Transform3D());
-	ur->add_undo_method(skeleton, "set_bone_custom_pose", selected_bone, skeleton->get_bone_custom_pose(selected_bone));
-	ur->add_do_method(skeleton, "set_bone_rest", selected_bone, skeleton->get_bone_rest(selected_bone) * skeleton->get_bone_custom_pose(selected_bone) * skeleton->get_bone_pose(selected_bone));
+	ur->add_do_method(skeleton, "set_bone_rest", selected_bone, skeleton->get_bone_rest(selected_bone) * skeleton->get_bone_pose(selected_bone));
 	ur->add_undo_method(skeleton, "set_bone_rest", selected_bone, skeleton->get_bone_rest(selected_bone));
 
 	ur->commit_action();
@@ -654,11 +632,9 @@ void Skeleton3DEditor::_joint_tree_selection_changed() {
 
 			pose_editor->set_target(bone_path + "pose");
 			rest_editor->set_target(bone_path + "rest");
-			custom_pose_editor->set_target(bone_path + "custom_pose");
 
 			pose_editor->set_visible(true);
 			rest_editor->set_visible(true);
-			custom_pose_editor->set_visible(true);
 
 			selected_bone = b_idx;
 		}
@@ -678,9 +654,6 @@ void Skeleton3DEditor::_update_properties() {
 	}
 	if (pose_editor) {
 		pose_editor->_update_properties();
-	}
-	if (custom_pose_editor) {
-		custom_pose_editor->_update_custom_pose_properties();
 	}
 	_update_gizmo_transform();
 }
@@ -820,12 +793,6 @@ void Skeleton3DEditor::create_editors() {
 	rest_editor->set_visible(false);
 	add_child(rest_editor);
 	rest_editor->set_transform_read_only(true);
-
-	custom_pose_editor = memnew(BoneTransformEditor(skeleton));
-	custom_pose_editor->set_label(TTR("Bone Custom Pose"));
-	custom_pose_editor->set_visible(false);
-	add_child(custom_pose_editor);
-	custom_pose_editor->set_transform_read_only(true);
 }
 
 void Skeleton3DEditor::_notification(int p_what) {
@@ -1289,7 +1256,6 @@ void Skeleton3DGizmoPlugin::set_subgizmo_transform(const EditorNode3DGizmo *p_gi
 	if (parent_idx >= 0) {
 		original_to_local = original_to_local * skeleton->get_bone_global_pose(parent_idx);
 	}
-	original_to_local = original_to_local * skeleton->get_bone_rest(p_id) * skeleton->get_bone_custom_pose(p_id);
 	Basis to_local = original_to_local.get_basis().inverse();
 
 	// Prepare transform.
@@ -1518,5 +1484,5 @@ void Skeleton3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	}
 
 	Ref<ArrayMesh> m = surface_tool->commit();
-	p_gizmo->add_mesh(m, Ref<Material>(), Transform3D(), skeleton->register_skin(Ref<Skin>()));
+	p_gizmo->add_mesh(m, Ref<Material>(), Transform3D(), skeleton->register_skin(skeleton->create_skin_from_rest_transforms()));
 }

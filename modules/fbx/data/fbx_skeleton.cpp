@@ -104,6 +104,13 @@ void FBXSkeleton::init_skeleton(const ImportState &state) {
 		print_verbose("working on bone: " + itos(bone_index) + " bone name:" + bone->bone_name);
 
 		skeleton->set_bone_rest(bone->godot_bone_id, get_unscaled_transform(bone->node->pivot_transform->LocalTransform, state.scale));
+		{
+			Transform3D base_xform = bone->node->pivot_transform->LocalTransform;
+
+			skeleton->set_bone_pose_position(bone_index, base_xform.origin);
+			skeleton->set_bone_pose_rotation(bone_index, base_xform.basis.get_rotation_quaternion());
+			skeleton->set_bone_pose_scale(bone_index, base_xform.basis.get_scale());
+		}
 
 		// lookup parent ID
 		if (bone->valid_parent && state.fbx_bone_map.has(bone->parent_bone_id)) {

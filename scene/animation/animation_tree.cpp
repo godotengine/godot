@@ -1360,9 +1360,6 @@ void AnimationTree::_process_graph(real_t p_delta) {
 
 						root_motion_transform = xform;
 
-						if (t->skeleton && t->bone_idx >= 0) {
-							root_motion_transform = (t->skeleton->get_bone_rest(t->bone_idx) * root_motion_transform) * t->skeleton->get_bone_rest(t->bone_idx).affine_inverse();
-						}
 					} else if (t->skeleton && t->bone_idx >= 0) {
 						if (t->loc_used) {
 							t->skeleton->set_bone_pose_position(t->bone_idx, t->loc);

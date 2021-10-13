@@ -168,7 +168,7 @@ void SkeletonModification3DFABRIK::_execute(real_t p_delta) {
 		// Apply magnet positions:
 		if (stack->skeleton->get_bone_parent(fabrik_data_chain[i].bone_idx) >= 0) {
 			int parent_bone_idx = stack->skeleton->get_bone_parent(fabrik_data_chain[i].bone_idx);
-			Transform3D conversion_transform = (stack->skeleton->get_bone_global_pose(parent_bone_idx) * stack->skeleton->get_bone_rest(parent_bone_idx));
+			Transform3D conversion_transform = (stack->skeleton->get_bone_global_pose(parent_bone_idx));
 			local_pose_override.origin += conversion_transform.basis.xform_inv(fabrik_data_chain[i].magnet_position);
 		} else {
 			local_pose_override.origin += fabrik_data_chain[i].magnet_position;

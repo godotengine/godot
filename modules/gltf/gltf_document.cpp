@@ -4319,6 +4319,9 @@ Error GLTFDocument::_create_skeletons(Ref<GLTFState> state) {
 
 			skeleton->add_bone(node->get_name());
 			skeleton->set_bone_rest(bone_index, node->xform);
+			skeleton->set_bone_pose_position(bone_index, node->position);
+			skeleton->set_bone_pose_rotation(bone_index, node->rotation.normalized());
+			skeleton->set_bone_pose_scale(bone_index, node->scale);
 
 			if (node->parent >= 0 && state->nodes[node->parent]->skeleton == skel_i) {
 				const int bone_parent = skeleton->find_bone(state->nodes[node->parent]->get_name());
@@ -5470,7 +5473,7 @@ void GLTFDocument::_convert_skeleton_to_gltf(Skeleton3D *p_skeleton3d, Ref<GLTFS
 		// Note that we cannot use _gen_unique_bone_name here, because glTF spec requires all node
 		// names to be unique regardless of whether or not they are used as joints.
 		joint_node->set_name(_gen_unique_name(state, skeleton->get_bone_name(bone_i)));
-		Transform3D xform = skeleton->get_bone_rest(bone_i) * skeleton->get_bone_pose(bone_i);
+		Transform3D xform = skeleton->get_bone_pose(bone_i);
 		joint_node->scale = xform.basis.get_scale();
 		joint_node->rotation = xform.basis.get_rotation_quaternion();
 		joint_node->position = xform.origin;
@@ -5958,38 +5961,16 @@ void GLTFDocument::_import_animation(Ref<GLTFState> state, AnimationPlayer *ap, 
 
 				if (position_idx >= 0) {
 					pos = _interpolate_track<Vector3>(track.position_track.times, track.position_track.values, time, track.position_track.interpolation);
+					animation->position_track_insert_key(position_idx, time, pos);
 				}
 
 				if (rotation_idx >= 0) {
 					rot = _interpolate_track<Quaternion>(track.rotation_track.times, track.rotation_track.values, time, track.rotation_track.interpolation);
+					animation->rotation_track_insert_key(rotation_idx, time, rot);
 				}
 
 				if (scale_idx >= 0) {
 					scale = _interpolate_track<Vector3>(track.scale_track.times, track.scale_track.values, time, track.scale_track.interpolation);
-				}
-
-				if (gltf_node->skeleton >= 0) {
-					Transform3D xform;
-					xform.basis.set_quaternion_scale(rot, scale);
-					xform.origin = pos;
-
-					const Skeleton3D *skeleton = state->skeletons[gltf_node->skeleton]->godot_skeleton;
-					const int bone_idx = skeleton->find_bone(gltf_node->get_name());
-					xform = skeleton->get_bone_rest(bone_idx).affine_inverse() * xform;
-
-					rot = xform.basis.get_rotation_quaternion();
-					rot.normalize();
-					scale = xform.basis.get_scale();
-					pos = xform.origin;
-				}
-
-				if (position_idx >= 0) {
-					animation->position_track_insert_key(position_idx, time, pos);
-				}
-				if (rotation_idx >= 0) {
-					animation->rotation_track_insert_key(rotation_idx, time, rot);
-				}
-				if (scale_idx >= 0) {
 					animation->scale_track_insert_key(scale_idx, time, scale);
 				}
 
@@ -6108,7 +6089,7 @@ void GLTFDocument::_convert_mesh_instances(Ref<GLTFState> state) {
 			} else {
 				if (skin.is_null()) {
 					// Note that gltf_skin_key should remain null, so these can share a reference.
-					skin = skeleton->register_skin(nullptr)->get_skin();
+					skin = skeleton->create_skin_from_rest_transforms();
 				}
 				gltf_skin.instantiate();
 				gltf_skin->godot_skin = skin;

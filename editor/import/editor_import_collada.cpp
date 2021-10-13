@@ -120,6 +120,15 @@ Error ColladaImport::_populate_skeleton(Skeleton3D *p_skeleton, Collada::Node *p
 
 	skeleton_bone_map[p_skeleton][joint->sid] = r_bone;
 
+	{
+		Transform3D xform = joint->compute_transform(collada);
+		collada.fix_transform(xform) * joint->post_transform;
+
+		p_skeleton->set_bone_pose_position(r_bone, xform.origin);
+		p_skeleton->set_bone_pose_rotation(r_bone, xform.basis.get_rotation_quaternion());
+		p_skeleton->set_bone_pose_scale(r_bone, xform.basis.get_scale());
+	}
+
 	if (collada.state.bone_rest_map.has(joint->sid)) {
 		p_skeleton->set_bone_rest(r_bone, collada.fix_transform(collada.state.bone_rest_map[joint->sid]));
 		//should map this bone to something for animation?
@@ -1638,16 +1647,6 @@ void ColladaImport::create_animation(int p_clip, bool p_import_value_tracks) {
 
 			Transform3D xform = cn->compute_transform(collada);
 			xform = collada.fix_transform(xform) * cn->post_transform;
-
-			if (nm.bone >= 0) {
-				//make bone transform relative to rest (in case of skeleton)
-				Skeleton3D *sk = Object::cast_to<Skeleton3D>(nm.node);
-				if (sk) {
-					xform = sk->get_bone_rest(nm.bone).affine_inverse() * xform;
-				} else {
-					ERR_PRINT("Collada: Invalid skeleton");
-				}
-			}
 
 			Vector3 s = xform.basis.get_scale();
 			bool singular_matrix = Math::is_zero_approx(s.x) || Math::is_zero_approx(s.y) || Math::is_zero_approx(s.z);

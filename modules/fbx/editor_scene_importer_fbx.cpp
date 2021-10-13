@@ -1227,20 +1227,6 @@ Node3D *EditorSceneImporterFBX::_generate_scene(
 										AssetImportAnimation::INTERP_LINEAR);
 							}
 
-							// node animations must also include pivots
-							if (skeleton_bone >= 0) {
-								Transform3D xform = Transform3D();
-								xform.basis.set_quaternion_scale(rot, scale);
-								xform.origin = pos;
-								const Transform3D t = bone_rest.affine_inverse() * xform;
-
-								// populate	this again
-								rot = t.basis.get_rotation_quaternion();
-								rot.normalize();
-								scale = t.basis.get_scale();
-								pos = t.origin;
-							}
-
 							if (position_idx >= 0) {
 								animation->position_track_insert_key(position_idx, time, pos);
 							}

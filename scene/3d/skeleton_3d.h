@@ -76,7 +76,6 @@ private:
 		bool enabled;
 		int parent;
 
-		bool disable_rest = false;
 		Transform3D rest;
 
 		_FORCE_INLINE_ void update_pose_cache() {
@@ -94,9 +93,6 @@ private:
 
 		Transform3D pose_global;
 		Transform3D pose_global_no_override;
-
-		bool custom_pose_enable = false;
-		Transform3D custom_pose;
 
 		real_t global_pose_override_amount = 0.0;
 		bool global_pose_override_reset = false;
@@ -119,8 +115,6 @@ private:
 		Bone() {
 			parent = -1;
 			enabled = true;
-			disable_rest = false;
-			custom_pose_enable = false;
 			global_pose_override_amount = 0;
 			global_pose_override_reset = false;
 #ifndef _3D_DISABLED
@@ -199,9 +193,6 @@ public:
 	void remove_bone_child(int p_bone, int p_child);
 	Vector<int> get_parentless_bones();
 
-	void set_bone_disable_rest(int p_bone, bool p_disable);
-	bool is_bone_rest_disabled(int p_bone) const;
-
 	int get_bone_count() const;
 
 	void set_bone_rest(int p_bone, const Transform3D &p_rest);
@@ -228,9 +219,6 @@ public:
 	Quaternion get_bone_pose_rotation(int p_bone) const;
 	Vector3 get_bone_pose_scale(int p_bone) const;
 
-	void set_bone_custom_pose(int p_bone, const Transform3D &p_custom_pose);
-	Transform3D get_bone_custom_pose(int p_bone) const;
-
 	void clear_bones_global_pose_override();
 	Transform3D get_bone_global_pose_override(int p_bone) const;
 	void set_bone_global_pose_override(int p_bone, const Transform3D &p_pose, real_t p_amount, bool p_persistent = false);
@@ -240,6 +228,8 @@ public:
 	void set_bone_local_pose_override(int p_bone, const Transform3D &p_pose, real_t p_amount, bool p_persistent = false);
 
 	void localize_rests(); // used for loaders and tools
+
+	Ref<Skin> create_skin_from_rest_transforms();
 
 	Ref<SkinReference> register_skin(const Ref<Skin> &p_skin);
 
