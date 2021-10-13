@@ -2456,6 +2456,23 @@ const ShaderLanguage::BuiltinFuncDef ShaderLanguage::builtin_func_defs[] = {
 	{ "textureGrad", TYPE_VEC4, { TYPE_SAMPLERCUBE, TYPE_VEC3, TYPE_VEC3, TYPE_VEC3, TYPE_VOID }, { "sampler", "coords", "dPdx", "dPdy" }, TAG_GLOBAL, true },
 	{ "textureGrad", TYPE_VEC4, { TYPE_SAMPLERCUBEARRAY, TYPE_VEC4, TYPE_VEC3, TYPE_VEC3, TYPE_VOID }, { "sampler", "coords", "dPdx", "dPdy" }, TAG_GLOBAL, true },
 
+	// textureGather
+
+	{ "textureGather", TYPE_VEC4, { TYPE_SAMPLER2D, TYPE_VEC2, TYPE_VOID }, { "sampler", "coords" }, TAG_GLOBAL, true },
+	{ "textureGather", TYPE_IVEC4, { TYPE_ISAMPLER2D, TYPE_VEC2, TYPE_VOID }, { "sampler", "coords" }, TAG_GLOBAL, true },
+	{ "textureGather", TYPE_UVEC4, { TYPE_USAMPLER2D, TYPE_VEC2, TYPE_VOID }, { "sampler", "coords" }, TAG_GLOBAL, true },
+	{ "textureGather", TYPE_VEC4, { TYPE_SAMPLER2D, TYPE_VEC2, TYPE_INT, TYPE_VOID }, { "sampler", "coords", "comp" }, TAG_GLOBAL, true },
+	{ "textureGather", TYPE_IVEC4, { TYPE_ISAMPLER2D, TYPE_VEC2, TYPE_INT, TYPE_VOID }, { "sampler", "coords", "comp" }, TAG_GLOBAL, true },
+	{ "textureGather", TYPE_UVEC4, { TYPE_USAMPLER2D, TYPE_VEC2, TYPE_INT, TYPE_VOID }, { "sampler", "coords", "comp" }, TAG_GLOBAL, true },
+	{ "textureGather", TYPE_VEC4, { TYPE_SAMPLER2DARRAY, TYPE_VEC3, TYPE_VOID }, { "sampler", "coords" }, TAG_GLOBAL, true },
+	{ "textureGather", TYPE_IVEC4, { TYPE_ISAMPLER2DARRAY, TYPE_VEC3, TYPE_VOID }, { "sampler", "coords" }, TAG_GLOBAL, true },
+	{ "textureGather", TYPE_UVEC4, { TYPE_USAMPLER2DARRAY, TYPE_VEC3, TYPE_VOID }, { "sampler", "coords" }, TAG_GLOBAL, true },
+	{ "textureGather", TYPE_VEC4, { TYPE_SAMPLER2DARRAY, TYPE_VEC3, TYPE_INT, TYPE_VOID }, { "sampler", "coords", "comp" }, TAG_GLOBAL, true },
+	{ "textureGather", TYPE_IVEC4, { TYPE_ISAMPLER2DARRAY, TYPE_VEC3, TYPE_INT, TYPE_VOID }, { "sampler", "coords", "comp" }, TAG_GLOBAL, true },
+	{ "textureGather", TYPE_UVEC4, { TYPE_USAMPLER2DARRAY, TYPE_VEC3, TYPE_INT, TYPE_VOID }, { "sampler", "coords", "comp" }, TAG_GLOBAL, true },
+	{ "textureGather", TYPE_VEC4, { TYPE_SAMPLERCUBE, TYPE_VEC3, TYPE_VOID }, { "sampler", "coords" }, TAG_GLOBAL, true },
+	{ "textureGather", TYPE_VEC4, { TYPE_SAMPLERCUBE, TYPE_VEC3, TYPE_INT, TYPE_VOID }, { "sampler", "coords", "comp" }, TAG_GLOBAL, true },
+
 	// dFdx
 
 	{ "dFdx", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID }, { "p" }, TAG_GLOBAL, true },
@@ -2576,6 +2593,20 @@ const ShaderLanguage::BuiltinFuncDef ShaderLanguage::builtin_func_defs[] = {
 	{ "findMSB", TYPE_UVEC3, { TYPE_UVEC3, TYPE_VOID }, { "value" }, TAG_GLOBAL, true },
 	{ "findMSB", TYPE_UVEC4, { TYPE_UVEC4, TYPE_VOID }, { "value" }, TAG_GLOBAL, true },
 
+	// umulExtended
+
+	{ "umulExtended", TYPE_VOID, { TYPE_UINT, TYPE_UINT, TYPE_UINT, TYPE_UINT, TYPE_VOID }, { "x", "y", "msb", "lsb" }, TAG_GLOBAL, true },
+	{ "umulExtended", TYPE_VOID, { TYPE_UVEC2, TYPE_UVEC2, TYPE_UVEC2, TYPE_UVEC2, TYPE_VOID }, { "x", "y", "msb", "lsb" }, TAG_GLOBAL, true },
+	{ "umulExtended", TYPE_VOID, { TYPE_UVEC3, TYPE_UVEC3, TYPE_UVEC3, TYPE_UVEC3, TYPE_VOID }, { "x", "y", "msb", "lsb" }, TAG_GLOBAL, true },
+	{ "umulExtended", TYPE_VOID, { TYPE_UVEC4, TYPE_UVEC4, TYPE_UVEC4, TYPE_UVEC4, TYPE_VOID }, { "x", "y", "msb", "lsb" }, TAG_GLOBAL, true },
+
+	// imulExtended
+
+	{ "imulExtended", TYPE_VOID, { TYPE_INT, TYPE_INT, TYPE_INT, TYPE_INT, TYPE_VOID }, { "x", "y", "msb", "lsb" }, TAG_GLOBAL, true },
+	{ "imulExtended", TYPE_VOID, { TYPE_IVEC2, TYPE_IVEC2, TYPE_IVEC2, TYPE_IVEC2, TYPE_VOID }, { "x", "y", "msb", "lsb" }, TAG_GLOBAL, true },
+	{ "imulExtended", TYPE_VOID, { TYPE_IVEC3, TYPE_IVEC3, TYPE_IVEC3, TYPE_IVEC3, TYPE_VOID }, { "x", "y", "msb", "lsb" }, TAG_GLOBAL, true },
+	{ "imulExtended", TYPE_VOID, { TYPE_IVEC4, TYPE_IVEC4, TYPE_IVEC4, TYPE_IVEC4, TYPE_VOID }, { "x", "y", "msb", "lsb" }, TAG_GLOBAL, true },
+
 	// uaddCarry
 
 	{ "uaddCarry", TYPE_UINT, { TYPE_UINT, TYPE_UINT, TYPE_UINT, TYPE_VOID }, { "x", "y", "carry" }, TAG_GLOBAL, true },
@@ -2590,15 +2621,37 @@ const ShaderLanguage::BuiltinFuncDef ShaderLanguage::builtin_func_defs[] = {
 	{ "usubBorrow", TYPE_UVEC3, { TYPE_UVEC3, TYPE_UVEC3, TYPE_UVEC3, TYPE_VOID }, { "x", "y", "borrow" }, TAG_GLOBAL, true },
 	{ "usubBorrow", TYPE_UVEC4, { TYPE_UVEC4, TYPE_UVEC4, TYPE_UVEC4, TYPE_VOID }, { "x", "y", "borrow" }, TAG_GLOBAL, true },
 
+	// ldexp
+
+	{ "ldexp", TYPE_FLOAT, { TYPE_FLOAT, TYPE_INT, TYPE_VOID }, { "x", "exp" }, TAG_GLOBAL, true },
+	{ "ldexp", TYPE_VEC2, { TYPE_VEC2, TYPE_IVEC2, TYPE_VOID }, { "x", "exp" }, TAG_GLOBAL, true },
+	{ "ldexp", TYPE_VEC3, { TYPE_VEC3, TYPE_IVEC3, TYPE_VOID }, { "x", "exp" }, TAG_GLOBAL, true },
+	{ "ldexp", TYPE_VEC4, { TYPE_VEC4, TYPE_IVEC4, TYPE_VOID }, { "x", "exp" }, TAG_GLOBAL, true },
+
+	// frexp
+
+	{ "frexp", TYPE_FLOAT, { TYPE_FLOAT, TYPE_INT, TYPE_VOID }, { "x", "exp" }, TAG_GLOBAL, true },
+	{ "frexp", TYPE_VEC2, { TYPE_VEC2, TYPE_IVEC2, TYPE_VOID }, { "x", "exp" }, TAG_GLOBAL, true },
+	{ "frexp", TYPE_VEC3, { TYPE_VEC3, TYPE_IVEC3, TYPE_VOID }, { "x", "exp" }, TAG_GLOBAL, true },
+	{ "frexp", TYPE_VEC4, { TYPE_VEC4, TYPE_IVEC4, TYPE_VOID }, { "x", "exp" }, TAG_GLOBAL, true },
+
 	{ nullptr, TYPE_VOID, { TYPE_VOID }, { "" }, TAG_GLOBAL, false }
 };
 
 const ShaderLanguage::BuiltinFuncOutArgs ShaderLanguage::builtin_func_out_args[] = {
-	//constructors
-	{ "modf", 1 },
-	{ "uaddCarry", 2 },
-	{ "usubBorrow", 2 },
-	{ nullptr, 0 }
+	{ "modf", { 1, -1 } },
+	{ "umulExtended", { 2, 3 } },
+	{ "imulExtended", { 2, 3 } },
+	{ "uaddCarry", { 2, -1 } },
+	{ "usubBorrow", { 2, -1 } },
+	{ "ldexp", { 1, -1 } },
+	{ "frexp", { 1, -1 } },
+	{ nullptr, { 0, -1 } }
+};
+
+const ShaderLanguage::BuiltinFuncConstArgs ShaderLanguage::builtin_func_const_args[] = {
+	{ "textureGather", 2, 0, 3 },
+	{ nullptr, 0, 0, 0 }
 };
 
 bool ShaderLanguage::_validate_function_call(BlockNode *p_block, const FunctionInfo &p_function_info, OperatorNode *p_func, DataType *r_ret_type, StringName *r_ret_type_str) {
@@ -2692,100 +2745,152 @@ bool ShaderLanguage::_validate_function_call(BlockNode *p_block, const FunctionI
 				}
 
 				if (!fail) {
+					{
+						int constarg_idx = 0;
+						while (builtin_func_const_args[constarg_idx].name) {
+							if (String(name) == builtin_func_const_args[constarg_idx].name) {
+								int arg = builtin_func_const_args[constarg_idx].arg + 1;
+								if (p_func->arguments.size() <= arg) {
+									break;
+								}
+
+								int min = builtin_func_const_args[constarg_idx].min;
+								int max = builtin_func_const_args[constarg_idx].max;
+
+								bool error = false;
+								if (p_func->arguments[arg]->type == Node::TYPE_VARIABLE) {
+									const VariableNode *vn = (VariableNode *)p_func->arguments[arg];
+
+									bool is_const = false;
+									ConstantNode::Value value;
+
+									_find_identifier(p_block, false, p_function_info, vn->name, nullptr, nullptr, &is_const, nullptr, nullptr, &value);
+									if (!is_const || value.sint < min || value.sint > max) {
+										error = true;
+									}
+								} else {
+									if (p_func->arguments[arg]->type == Node::TYPE_CONSTANT) {
+										ConstantNode *cn = (ConstantNode *)p_func->arguments[arg];
+
+										if (cn->get_datatype() == TYPE_INT && cn->values.size() == 1) {
+											int value = cn->values[0].sint;
+
+											if (value < min || value > max) {
+												error = true;
+											}
+										} else {
+											error = true;
+										}
+									} else {
+										error = true;
+									}
+								}
+								if (error) {
+									_set_error(vformat("Expected integer constant within %s..%s range.", min, max));
+									return false;
+								}
+							}
+							constarg_idx++;
+						}
+					}
+
 					//make sure its not an out argument used in the wrong way
 					int outarg_idx = 0;
 					while (builtin_func_out_args[outarg_idx].name) {
 						if (String(name) == builtin_func_out_args[outarg_idx].name) {
-							int arg_idx = builtin_func_out_args[outarg_idx].argument;
-
-							if (arg_idx < argcount) {
-								if (p_func->arguments[arg_idx + 1]->type != Node::TYPE_VARIABLE && p_func->arguments[arg_idx + 1]->type != Node::TYPE_MEMBER && p_func->arguments[arg_idx + 1]->type != Node::TYPE_ARRAY) {
-									_set_error("Argument " + itos(arg_idx + 1) + " of function '" + String(name) + "' is not a variable, array or member.");
-									return false;
+							for (int arg = 0; arg < BuiltinFuncOutArgs::MAX_ARGS; arg++) {
+								int arg_idx = builtin_func_out_args[outarg_idx].arguments[arg];
+								if (arg_idx == -1) {
+									break;
 								}
+								if (arg_idx < argcount) {
+									if (p_func->arguments[arg_idx + 1]->type != Node::TYPE_VARIABLE && p_func->arguments[arg_idx + 1]->type != Node::TYPE_MEMBER && p_func->arguments[arg_idx + 1]->type != Node::TYPE_ARRAY) {
+										_set_error("Argument " + itos(arg_idx + 1) + " of function '" + String(name) + "' is not a variable, array or member.");
+										return false;
+									}
 
-								if (p_func->arguments[arg_idx + 1]->type == Node::TYPE_ARRAY) {
-									ArrayNode *mn = static_cast<ArrayNode *>(p_func->arguments[arg_idx + 1]);
-									if (mn->is_const) {
-										fail = true;
-									}
-								} else if (p_func->arguments[arg_idx + 1]->type == Node::TYPE_MEMBER) {
-									MemberNode *mn = static_cast<MemberNode *>(p_func->arguments[arg_idx + 1]);
-									if (mn->basetype_const) {
-										fail = true;
-									}
-								} else { // TYPE_VARIABLE
-									VariableNode *vn = static_cast<VariableNode *>(p_func->arguments[arg_idx + 1]);
-									if (vn->is_const) {
-										fail = true;
-									} else {
-										StringName varname = vn->name;
-										if (shader->uniforms.has(varname)) {
+									if (p_func->arguments[arg_idx + 1]->type == Node::TYPE_ARRAY) {
+										ArrayNode *mn = static_cast<ArrayNode *>(p_func->arguments[arg_idx + 1]);
+										if (mn->is_const) {
+											fail = true;
+										}
+									} else if (p_func->arguments[arg_idx + 1]->type == Node::TYPE_MEMBER) {
+										MemberNode *mn = static_cast<MemberNode *>(p_func->arguments[arg_idx + 1]);
+										if (mn->basetype_const) {
+											fail = true;
+										}
+									} else { // TYPE_VARIABLE
+										VariableNode *vn = static_cast<VariableNode *>(p_func->arguments[arg_idx + 1]);
+										if (vn->is_const) {
 											fail = true;
 										} else {
-											if (shader->varyings.has(varname)) {
-												_set_error(vformat("Varyings cannot be passed for '%s' parameter!", "out"));
-												return false;
-											}
-											if (p_function_info.built_ins.has(varname)) {
-												BuiltInInfo info = p_function_info.built_ins[varname];
-												if (info.constant) {
-													fail = true;
+											StringName varname = vn->name;
+											if (shader->uniforms.has(varname)) {
+												fail = true;
+											} else {
+												if (shader->varyings.has(varname)) {
+													_set_error(vformat("Varyings cannot be passed for '%s' parameter!", "out"));
+													return false;
+												}
+												if (p_function_info.built_ins.has(varname)) {
+													BuiltInInfo info = p_function_info.built_ins[varname];
+													if (info.constant) {
+														fail = true;
+													}
 												}
 											}
 										}
 									}
-								}
-								if (fail) {
-									_set_error(vformat("Constant value cannot be passed for '%s' parameter!", "out"));
-									return false;
-								}
-
-								StringName var_name;
-								if (p_func->arguments[arg_idx + 1]->type == Node::TYPE_ARRAY) {
-									var_name = static_cast<const ArrayNode *>(p_func->arguments[arg_idx + 1])->name;
-								} else if (p_func->arguments[arg_idx + 1]->type == Node::TYPE_MEMBER) {
-									Node *n = static_cast<const MemberNode *>(p_func->arguments[arg_idx + 1])->owner;
-									while (n->type == Node::TYPE_MEMBER) {
-										n = static_cast<const MemberNode *>(n)->owner;
-									}
-									if (n->type != Node::TYPE_VARIABLE && n->type != Node::TYPE_ARRAY) {
-										_set_error("Argument " + itos(arg_idx + 1) + " of function '" + String(name) + "' is not a variable, array or member.");
+									if (fail) {
+										_set_error(vformat("Constant value cannot be passed for '%s' parameter!", "out"));
 										return false;
 									}
-									if (n->type == Node::TYPE_VARIABLE) {
-										var_name = static_cast<const VariableNode *>(n)->name;
-									} else { // TYPE_ARRAY
-										var_name = static_cast<const ArrayNode *>(n)->name;
+
+									StringName var_name;
+									if (p_func->arguments[arg_idx + 1]->type == Node::TYPE_ARRAY) {
+										var_name = static_cast<const ArrayNode *>(p_func->arguments[arg_idx + 1])->name;
+									} else if (p_func->arguments[arg_idx + 1]->type == Node::TYPE_MEMBER) {
+										Node *n = static_cast<const MemberNode *>(p_func->arguments[arg_idx + 1])->owner;
+										while (n->type == Node::TYPE_MEMBER) {
+											n = static_cast<const MemberNode *>(n)->owner;
+										}
+										if (n->type != Node::TYPE_VARIABLE && n->type != Node::TYPE_ARRAY) {
+											_set_error("Argument " + itos(arg_idx + 1) + " of function '" + String(name) + "' is not a variable, array or member.");
+											return false;
+										}
+										if (n->type == Node::TYPE_VARIABLE) {
+											var_name = static_cast<const VariableNode *>(n)->name;
+										} else { // TYPE_ARRAY
+											var_name = static_cast<const ArrayNode *>(n)->name;
+										}
+									} else { // TYPE_VARIABLE
+										var_name = static_cast<const VariableNode *>(p_func->arguments[arg_idx + 1])->name;
 									}
-								} else { // TYPE_VARIABLE
-									var_name = static_cast<const VariableNode *>(p_func->arguments[arg_idx + 1])->name;
-								}
-								const BlockNode *b = p_block;
-								bool valid = false;
-								while (b) {
-									if (b->variables.has(var_name) || p_function_info.built_ins.has(var_name)) {
-										valid = true;
-										break;
-									}
-									if (b->parent_function) {
-										for (int i = 0; i < b->parent_function->arguments.size(); i++) {
-											if (b->parent_function->arguments[i].name == var_name) {
-												valid = true;
-												break;
+									const BlockNode *b = p_block;
+									bool valid = false;
+									while (b) {
+										if (b->variables.has(var_name) || p_function_info.built_ins.has(var_name)) {
+											valid = true;
+											break;
+										}
+										if (b->parent_function) {
+											for (int i = 0; i < b->parent_function->arguments.size(); i++) {
+												if (b->parent_function->arguments[i].name == var_name) {
+													valid = true;
+													break;
+												}
 											}
 										}
+										b = b->parent_block;
 									}
-									b = b->parent_block;
-								}
 
-								if (!valid) {
-									_set_error("Argument " + itos(arg_idx + 1) + " of function '" + String(name) + "' can only take a local variable, array or member.");
-									return false;
+									if (!valid) {
+										_set_error("Argument " + itos(arg_idx + 1) + " of function '" + String(name) + "' can only take a local variable, array or member.");
+										return false;
+									}
 								}
 							}
 						}
-
 						outarg_idx++;
 					}
 					//implicitly convert values if possible
@@ -9157,10 +9262,16 @@ Error ShaderLanguage::complete(const String &p_code, const Map<StringName, Funct
 				}
 
 				int idx2 = 0;
-				int out_arg = -1;
+				Set<int> out_args;
 				while (builtin_func_out_args[idx2].name != nullptr) {
 					if (builtin_func_out_args[idx2].name == builtin_func_defs[idx].name) {
-						out_arg = builtin_func_out_args[idx2].argument;
+						for (int i = 0; i < BuiltinFuncOutArgs::MAX_ARGS; i++) {
+							int arg = builtin_func_out_args[idx2].arguments[i];
+							if (arg == -1) {
+								break;
+							}
+							out_args.insert(arg);
+						}
 						break;
 					}
 					idx2++;
@@ -9197,7 +9308,7 @@ Error ShaderLanguage::complete(const String &p_code, const Map<StringName, Funct
 							calltip += char32_t(0xFFFF);
 						}
 
-						if (out_arg >= 0 && i == out_arg) {
+						if (out_args.has(i)) {
 							calltip += "out ";
 						}
 
