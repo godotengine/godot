@@ -148,7 +148,7 @@ uint trace_ray(vec3 p_from, vec3 p_to
 	ivec3 icell = ivec3(from_cell);
 	ivec3 iendcell = ivec3(to_cell);
 	vec3 dir_cell = normalize(rel_cell);
-	vec3 delta = abs(1.0 / dir_cell); //vec3(length(rel_cell)) / rel_cell);
+	vec3 delta = min(abs(1.0 / dir_cell), params.grid_size); // use params.grid_size as max to prevent infinity values
 	ivec3 step = ivec3(sign(rel_cell));
 	vec3 side = (sign(rel_cell) * (vec3(icell) - from_cell) + (sign(rel_cell) * 0.5) + 0.5) * delta;
 
