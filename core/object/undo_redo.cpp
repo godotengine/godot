@@ -110,15 +110,16 @@ void UndoRedo::create_action(const String &p_name, MergeMode p_mode) {
 
 			actions.write[actions.size() - 1].last_tick = ticks;
 
+			merge_mode = p_mode;
 			merging = true;
 		} else {
 			Action new_action;
 			new_action.name = p_name;
 			new_action.last_tick = ticks;
 			actions.push_back(new_action);
-		}
 
-		merge_mode = p_mode;
+			merge_mode = MERGE_DISABLE;
+		}
 	}
 
 	action_level++;
