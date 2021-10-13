@@ -1323,6 +1323,19 @@ Variant::operator String() const {
 	return stringify(stack);
 }
 
+template <class T>
+String stringify_vector(const T &vec, List<const void *> &stack) {
+	String str("[");
+	for (int i = 0; i < vec.size(); i++) {
+		if (i > 0) {
+			str += ", ";
+		}
+		str = str + Variant(vec[i]).stringify(stack);
+	}
+	str += "]";
+	return str;
+}
+
 String Variant::stringify(List<const void *> &stack) const {
 	switch (type) {
 		case NIL:
@@ -1419,64 +1432,25 @@ String Variant::stringify(List<const void *> &stack) const {
 			return str;
 		} break;
 		case POOL_VECTOR2_ARRAY: {
-			PoolVector<Vector2> vec = operator PoolVector<Vector2>();
-			String str("[");
-			for (int i = 0; i < vec.size(); i++) {
-				if (i > 0) {
-					str += ", ";
-				}
-				str = str + Variant(vec[i]);
-			}
-			str += "]";
-			return str;
+			return stringify_vector(operator PoolVector<Vector2>(), stack);
 		} break;
 		case POOL_VECTOR3_ARRAY: {
-			PoolVector<Vector3> vec = operator PoolVector<Vector3>();
-			String str("[");
-			for (int i = 0; i < vec.size(); i++) {
-				if (i > 0) {
-					str += ", ";
-				}
-				str = str + Variant(vec[i]);
-			}
-			str += "]";
-			return str;
+			return stringify_vector(operator PoolVector<Vector3>(), stack);
+		} break;
+		case POOL_COLOR_ARRAY: {
+			return stringify_vector(operator PoolVector<Color>(), stack);
 		} break;
 		case POOL_STRING_ARRAY: {
-			PoolVector<String> vec = operator PoolVector<String>();
-			String str("[");
-			for (int i = 0; i < vec.size(); i++) {
-				if (i > 0) {
-					str += ", ";
-				}
-				str = str + vec[i];
-			}
-			str += "]";
-			return str;
+			return stringify_vector(operator PoolVector<String>(), stack);
+		} break;
+		case POOL_BYTE_ARRAY: {
+			return stringify_vector(operator PoolVector<uint8_t>(), stack);
 		} break;
 		case POOL_INT_ARRAY: {
-			PoolVector<int> vec = operator PoolVector<int>();
-			String str("[");
-			for (int i = 0; i < vec.size(); i++) {
-				if (i > 0) {
-					str += ", ";
-				}
-				str = str + itos(vec[i]);
-			}
-			str += "]";
-			return str;
+			return stringify_vector(operator PoolVector<int>(), stack);
 		} break;
 		case POOL_REAL_ARRAY: {
-			PoolVector<real_t> vec = operator PoolVector<real_t>();
-			String str("[");
-			for (int i = 0; i < vec.size(); i++) {
-				if (i > 0) {
-					str += ", ";
-				}
-				str = str + rtos(vec[i]);
-			}
-			str += "]";
-			return str;
+			return stringify_vector(operator PoolVector<real_t>(), stack);
 		} break;
 		case ARRAY: {
 			Array arr = operator Array();
@@ -1484,17 +1458,7 @@ String Variant::stringify(List<const void *> &stack) const {
 				return "[...]";
 			}
 			stack.push_back(arr.id());
-
-			String str("[");
-			for (int i = 0; i < arr.size(); i++) {
-				if (i) {
-					str += ", ";
-				}
-
-				str += arr[i].stringify(stack);
-			}
-
-			str += "]";
+			String str = stringify_vector(arr, stack);
 			stack.erase(arr.id());
 			return str;
 
