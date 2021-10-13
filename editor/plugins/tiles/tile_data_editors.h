@@ -45,7 +45,9 @@ class TileDataEditor : public VBoxContainer {
 	GDCLASS(TileDataEditor, VBoxContainer);
 
 private:
-	void _call_tile_set_changed();
+	bool _tile_set_changed_update_needed = false;
+	void _tile_set_changed_plan_update();
+	void _tile_set_changed_deferred_update();
 
 protected:
 	Ref<TileSet> tile_set;

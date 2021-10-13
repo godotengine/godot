@@ -285,6 +285,8 @@ private:
 	Vector<int> _get_tile_data(int p_layer) const;
 
 	void _tile_set_changed();
+	bool _tile_set_changed_deferred_update_needed = false;
+	void _tile_set_changed_deferred_update();
 
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
