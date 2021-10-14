@@ -3268,7 +3268,7 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 	wc.hInstance = hInstance ? hInstance : GetModuleHandle(nullptr);
 	wc.hIcon = LoadIcon(nullptr, IDI_WINLOGO);
 	wc.hCursor = nullptr; //LoadCursor(nullptr, IDC_ARROW);
-	wc.hbrBackground = nullptr;
+	wc.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH);
 	wc.lpszMenuName = nullptr;
 	wc.lpszClassName = L"Engine";
 
