@@ -120,27 +120,27 @@
 		<signal name="area_shape_entered">
 			<argument index="0" name="area_rid" type="RID" />
 			<argument index="1" name="area" type="Area3D" />
-			<argument index="2" name="area_shape" type="int" />
-			<argument index="3" name="local_shape" type="int" />
+			<argument index="2" name="area_shape_index" type="int" />
+			<argument index="3" name="local_shape_index" type="int" />
 			<description>
 				Emitted when one of another Area3D's [Shape3D]s enters one of this Area3D's [Shape3D]s. Requires [member monitoring] to be set to [code]true[/code].
-				[code]area_id[/code] the [RID] of the other Area3D's [CollisionObject3D] used by the [PhysicsServer3D].
+				[code]area_rid[/code] the [RID] of the other Area3D's [CollisionObject3D] used by the [PhysicsServer3D].
 				[code]area[/code] the other Area3D.
-				[code]area_shape[/code] the index of the [Shape3D] of the other Area3D used by the [PhysicsServer3D].
-				[code]local_shape[/code] the index of the [Shape3D] of this Area3D used by the [PhysicsServer3D].
+				[code]area_shape_index[/code] the index of the [Shape3D] of the other Area3D used by the [PhysicsServer3D]. Get the [CollisionShape3D] node with [code]area.shape_owner_get_owner(area_shape_index)[/code].
+				[code]local_shape_index[/code] the index of the [Shape3D] of this Area3D used by the [PhysicsServer3D]. Get the [CollisionShape3D] node with [code]self.shape_owner_get_owner(local_shape_index)[/code].
 			</description>
 		</signal>
 		<signal name="area_shape_exited">
 			<argument index="0" name="area_rid" type="RID" />
 			<argument index="1" name="area" type="Area3D" />
-			<argument index="2" name="area_shape" type="int" />
-			<argument index="3" name="local_shape" type="int" />
+			<argument index="2" name="area_shape_index" type="int" />
+			<argument index="3" name="local_shape_index" type="int" />
 			<description>
 				Emitted when one of another Area3D's [Shape3D]s enters one of this Area3D's [Shape3D]s. Requires [member monitoring] to be set to [code]true[/code].
-				[code]area_id[/code] the [RID] of the other Area3D's [CollisionObject3D] used by the [PhysicsServer3D].
+				[code]area_rid[/code] the [RID] of the other Area3D's [CollisionObject3D] used by the [PhysicsServer3D].
 				[code]area[/code] the other Area3D.
-				[code]area_shape[/code] the index of the [Shape3D] of the other Area3D used by the [PhysicsServer3D].
-				[code]local_shape[/code] the index of the [Shape3D] of this Area3D used by the [PhysicsServer3D].
+				[code]area_shape_index[/code] the index of the [Shape3D] of the other Area3D used by the [PhysicsServer3D]. Get the [CollisionShape3D] node with [code]area.shape_owner_get_owner(area_shape_index)[/code].
+				[code]local_shape_index[/code] the index of the [Shape3D] of this Area3D used by the [PhysicsServer3D]. Get the [CollisionShape3D] node with [code]self.shape_owner_get_owner(local_shape_index)[/code].
 			</description>
 		</signal>
 		<signal name="body_entered">
@@ -160,27 +160,27 @@
 		<signal name="body_shape_entered">
 			<argument index="0" name="body_rid" type="RID" />
 			<argument index="1" name="body" type="Node3D" />
-			<argument index="2" name="body_shape" type="int" />
-			<argument index="3" name="local_shape" type="int" />
+			<argument index="2" name="body_shape_index" type="int" />
+			<argument index="3" name="local_shape_index" type="int" />
 			<description>
 				Emitted when one of a [PhysicsBody3D] or [GridMap]'s [Shape3D]s enters one of this Area3D's [Shape3D]s. Requires [member monitoring] to be set to [code]true[/code]. [GridMap]s are detected if the [MeshLibrary] has Collision [Shape3D]s.
-				[code]body_id[/code] the [RID] of the [PhysicsBody3D] or [MeshLibrary]'s [CollisionObject3D] used by the [PhysicsServer3D].
+				[code]body_rid[/code] the [RID] of the [PhysicsBody3D] or [MeshLibrary]'s [CollisionObject3D] used by the [PhysicsServer3D].
 				[code]body[/code] the [Node], if it exists in the tree, of the [PhysicsBody3D] or [GridMap].
-				[code]body_shape[/code] the index of the [Shape3D] of the [PhysicsBody3D] or [GridMap] used by the [PhysicsServer3D].
-				[code]local_shape[/code] the index of the [Shape3D] of this Area3D used by the [PhysicsServer3D].
+				[code]body_shape_index[/code] the index of the [Shape3D] of the [PhysicsBody3D] or [GridMap] used by the [PhysicsServer3D]. Get the [CollisionShape3D] node with [code]body.shape_owner_get_owner(body_shape_index)[/code].
+				[code]local_shape_index[/code] the index of the [Shape3D] of this Area3D used by the [PhysicsServer3D]. Get the [CollisionShape3D] node with [code]self.shape_owner_get_owner(local_shape_index)[/code].
 			</description>
 		</signal>
 		<signal name="body_shape_exited">
 			<argument index="0" name="body_rid" type="RID" />
 			<argument index="1" name="body" type="Node3D" />
-			<argument index="2" name="body_shape" type="int" />
-			<argument index="3" name="local_shape" type="int" />
+			<argument index="2" name="body_shape_index" type="int" />
+			<argument index="3" name="local_shape_index" type="int" />
 			<description>
 				Emitted when one of a [PhysicsBody3D] or [GridMap]'s [Shape3D]s enters one of this Area3D's [Shape3D]s. Requires [member monitoring] to be set to [code]true[/code]. [GridMap]s are detected if the [MeshLibrary] has Collision [Shape3D]s.
-				[code]body_id[/code] the [RID] of the [PhysicsBody3D] or [MeshLibrary]'s [CollisionObject3D] used by the [PhysicsServer3D].
+				[code]body_rid[/code] the [RID] of the [PhysicsBody3D] or [MeshLibrary]'s [CollisionObject3D] used by the [PhysicsServer3D].
 				[code]body[/code] the [Node], if it exists in the tree, of the [PhysicsBody3D] or [GridMap].
-				[code]body_shape[/code] the index of the [Shape3D] of the [PhysicsBody3D] or [GridMap] used by the [PhysicsServer3D].
-				[code]local_shape[/code] the index of the [Shape3D] of this Area3D used by the [PhysicsServer3D].
+				[code]body_shape_index[/code] the index of the [Shape3D] of the [PhysicsBody3D] or [GridMap] used by the [PhysicsServer3D]. Get the [CollisionShape3D] node with [code]body.shape_owner_get_owner(body_shape_index)[/code].
+				[code]local_shape_index[/code] the index of the [Shape3D] of this Area3D used by the [PhysicsServer3D]. Get the [CollisionShape3D] node with [code]self.shape_owner_get_owner(local_shape_index)[/code].
 			</description>
 		</signal>
 	</signals>
