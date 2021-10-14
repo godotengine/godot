@@ -104,12 +104,14 @@ private:
 	Vector2 drag_start_mouse_pos;
 	Vector2 drag_last_mouse_pos;
 	Map<Vector2i, TileMapCell> drag_modified;
+	bool rmb_erasing = false;
 
 	TileMapCell _pick_random_tile(const TileMapPattern *p_pattern);
 	Map<Vector2i, TileMapCell> _draw_line(Vector2 p_start_drag_mouse_pos, Vector2 p_from_mouse_pos, Vector2 p_to_mouse_pos);
 	Map<Vector2i, TileMapCell> _draw_rect(Vector2i p_start_cell, Vector2i p_end_cell);
 	Map<Vector2i, TileMapCell> _draw_bucket_fill(Vector2i p_coords, bool p_contiguous);
 	void _stop_dragging();
+	bool _is_erasing() const;
 
 	///// Selection system. /////
 	Set<Vector2i> tile_map_selection;
