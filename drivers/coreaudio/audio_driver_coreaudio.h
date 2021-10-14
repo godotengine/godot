@@ -44,16 +44,16 @@ class AudioDriverCoreAudio : public AudioDriver {
 	AudioComponentInstance audio_unit;
 	AudioComponentInstance input_unit;
 
-	bool active;
+	bool active = false;
 	Mutex mutex;
 
 	String device_name;
 	String capture_device_name;
 
-	int mix_rate;
-	unsigned int channels;
-	unsigned int capture_channels;
-	unsigned int buffer_frames;
+	int mix_rate = 0;
+	unsigned int channels = 0;
+	unsigned int capture_channels = 0;
+	unsigned int buffer_frames = 0;
 
 	Vector<int32_t> samples_in;
 	Vector<int16_t> input_buf;

@@ -47,7 +47,7 @@ class MIDIDriverALSAMidi : public MIDIDriver {
 
 	Vector<snd_rawmidi_t *> connected_inputs;
 
-	bool exit_thread;
+	bool exit_thread = false;
 
 	static void thread_func(void *p_udata);
 

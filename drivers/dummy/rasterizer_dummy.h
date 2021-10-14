@@ -122,21 +122,21 @@ class RasterizerStorageDummy : public RasterizerStorage {
 public:
 	/* TEXTURE API */
 	struct DummyTexture : public RID_Data {
-		int width;
-		int height;
-		uint32_t flags;
+		int width = 0;
+		int height = 0;
+		uint32_t flags = 0;
 		Image::Format format;
 		Ref<Image> image;
 		String path;
 	};
 
 	struct DummySurface {
-		uint32_t format;
+		uint32_t format = 0;
 		VS::PrimitiveType primitive;
 		PoolVector<uint8_t> array;
-		int vertex_count;
+		int vertex_count = 0;
 		PoolVector<uint8_t> index_array;
-		int index_count;
+		int index_count = 0;
 		AABB aabb;
 		Vector<PoolVector<uint8_t>> blend_shapes;
 		Vector<AABB> bone_aabbs;
@@ -144,7 +144,7 @@ public:
 
 	struct DummyMesh : public RID_Data {
 		Vector<DummySurface> surfaces;
-		int blend_shape_count;
+		int blend_shape_count = 0;
 		VS::BlendShapeMode blend_shape_mode;
 		PoolRealArray blend_shape_values;
 	};
