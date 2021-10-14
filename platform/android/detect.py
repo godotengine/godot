@@ -203,6 +203,7 @@ def configure(env):
         env.Append(LINKFLAGS=["-O0"])
         env.Append(CCFLAGS=["-O0", "-g", "-fno-limit-debug-info"])
         env.Append(CPPDEFINES=["_DEBUG", "DEBUG_ENABLED"])
+        env.Append(CPPDEFINES=["DEV_ENABLED"])
         env.Append(CPPFLAGS=["-UNDEBUG"])
 
     # Compiler configuration
