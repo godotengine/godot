@@ -270,11 +270,13 @@ File extracted from upstream release tarball:
 - All `*.h` from `include/mbedtls/` to `thirdparty/mbedtls/include/mbedtls/`.
 - All `*.c` from `library/` to `thirdparty/mbedtls/library/`.
 - `LICENSE` and `apache-2.0.txt` files.
-- Applied the patch in `thirdparty/mbedtls/patches/1453.diff` (upstream PR:
+- Applied the patch in `patches/1453.diff` (upstream PR:
   https://github.com/ARMmbed/mbedtls/pull/1453).
-- Applied the patch in `thirdparty/mbedtls/patches/padlock.diff`. This disables
-  VIA padlock support which defines a symbol `unsupported` which clashes with
-  a pre-defined symbol.
+- Applied the patch in `patches/padlock.diff`. This disables VIA padlock
+  support which defines a symbol `unsupported` which clashes with a
+  pre-defined symbol.
+- Applied the patch in `patches/pr4948-fix-clang12-opt.patch`. Upstream bugfix
+  from PR 4948 to fix a bug caused by Clang 12 optimizations.
 - Added 2 files `godot_core_mbedtls_platform.c` and `godot_core_mbedtls_config.h`
   providing configuration for light bundling with core.
 

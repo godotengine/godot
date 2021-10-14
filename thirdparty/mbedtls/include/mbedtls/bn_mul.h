@@ -256,9 +256,9 @@
         "addq   $8, %%rdi\n"
 
 #define MULADDC_STOP                        \
-        : "+c" (c), "+D" (d), "+S" (s)      \
-        : "b" (b)                           \
-        : "rax", "rdx", "r8"                \
+        : "+c" (c), "+D" (d), "+S" (s), "+m" (*(uint64_t (*)[16]) d) \
+        : "b" (b), "m" (*(const uint64_t (*)[16]) s)                 \
+        : "rax", "rdx", "r8"                                         \
     );
 
 #endif /* AMD64 */
