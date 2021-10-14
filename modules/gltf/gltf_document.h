@@ -357,7 +357,7 @@ private:
 	String interpolation_to_string(const GLTFAnimation::Interpolation p_interp);
 	GLTFAnimation::Track _convert_animation_track(Ref<GLTFState> state,
 			GLTFAnimation::Track p_track,
-			Ref<Animation> p_animation, Transform3D p_bone_rest,
+			Ref<Animation> p_animation,
 			int32_t p_track_i,
 			GLTFNodeIndex p_node_i);
 	Error _encode_buffer_bins(Ref<GLTFState> state, const String &p_path);
