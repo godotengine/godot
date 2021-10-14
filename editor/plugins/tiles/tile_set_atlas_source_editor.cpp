@@ -66,10 +66,15 @@ int TileSetAtlasSourceEditor::TileSetAtlasSourceProxyObject::get_id() {
 }
 
 bool TileSetAtlasSourceEditor::TileSetAtlasSourceProxyObject::_set(const StringName &p_name, const Variant &p_value) {
+	String name = p_name;
+	if (name == "name") {
+		// Use the resource_name property to store the source's name.
+		name = "resource_name";
+	}
 	bool valid = false;
-	tile_set_atlas_source->set(p_name, p_value, &valid);
+	tile_set_atlas_source->set(name, p_value, &valid);
 	if (valid) {
-		emit_signal(SNAME("changed"), String(p_name).utf8().get_data());
+		emit_signal(SNAME("changed"), String(name).utf8().get_data());
 	}
 	return valid;
 }
@@ -78,12 +83,18 @@ bool TileSetAtlasSourceEditor::TileSetAtlasSourceProxyObject::_get(const StringN
 	if (!tile_set_atlas_source) {
 		return false;
 	}
+	String name = p_name;
+	if (name == "name") {
+		// Use the resource_name property to store the source's name.
+		name = "resource_name";
+	}
 	bool valid = false;
-	r_ret = tile_set_atlas_source->get(p_name, &valid);
+	r_ret = tile_set_atlas_source->get(name, &valid);
 	return valid;
 }
 
 void TileSetAtlasSourceEditor::TileSetAtlasSourceProxyObject::_get_property_list(List<PropertyInfo> *p_list) const {
+	p_list->push_back(PropertyInfo(Variant::STRING, "name", PROPERTY_HINT_NONE, ""));
 	p_list->push_back(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"));
 	p_list->push_back(PropertyInfo(Variant::VECTOR2I, "margins", PROPERTY_HINT_NONE, ""));
 	p_list->push_back(PropertyInfo(Variant::VECTOR2I, "separation", PROPERTY_HINT_NONE, ""));
@@ -105,6 +116,10 @@ void TileSetAtlasSourceEditor::TileSetAtlasSourceProxyObject::edit(Ref<TileSet> 
 	ERR_FAIL_COND(!p_tile_set_atlas_source);
 	ERR_FAIL_COND(p_source_id < 0);
 	ERR_FAIL_COND(p_tile_set->get_source(p_source_id) != p_tile_set_atlas_source);
+
+	if (p_tile_set == tile_set && p_tile_set_atlas_source == tile_set_atlas_source && p_source_id == source_id) {
+		return;
+	}
 
 	// Disconnect to changes.
 	if (tile_set_atlas_source) {
