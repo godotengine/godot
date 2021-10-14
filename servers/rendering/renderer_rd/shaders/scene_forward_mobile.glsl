@@ -552,12 +552,12 @@ vec4 fog_process(vec3 vertex) {
 
 	float fog_amount = 1.0 - exp(min(0.0, -length(vertex) * scene_data.fog_density));
 
-	if (abs(scene_data.fog_height_density) > 0.001) {
+	if (abs(scene_data.fog_height_density) >= 0.0001) {
 		float y = (scene_data.camera_matrix * vec4(vertex, 1.0)).y;
 
-		float y_dist = scene_data.fog_height - y;
+		float y_dist = y - scene_data.fog_height;
 
-		float vfog_amount = clamp(exp(y_dist * scene_data.fog_height_density), 0.0, 1.0);
+		float vfog_amount = clamp(1.0 - exp(y_dist * scene_data.fog_height_density), 0.0, 1.0);
 
 		fog_amount = max(vfog_amount, fog_amount);
 	}
