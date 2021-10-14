@@ -4,301 +4,257 @@
 		Version Control System (VCS) interface which reads and writes to the local VCS in use.
 	</brief_description>
 	<description>
-		Used by the editor to display VCS extracted information in the editor. The implementation of this API is included in VCS plugins, which are essentially GDNative plugins. These VCS plugins are scripts that are attached (on demand) to the object instance of [code]EditorVCSInterface[/code]. All the virtual functions listed below, instead of performing the task themselves, call the internally defined functions in the VCS plugins to provide a plug-n-play experience. VCS plugin is supposed to override and implement them.
+		Defines the API which is used by the editor to display information extracted from the VCS inside the editor. The implementation of this API is included in VCS plugins, which are scripts that inherit [code]EditorVCSInterface[/code] and are attached (on demand) to the object instance of [code]EditorVCSInterface[/code]. All the virtual functions listed below are, instead of performing the task themselves, calling the internally overriden functions in the VCS plugins to provide a plug-n-play experience. A VCS plugin is supposed to inherit from [code]EditorVCSInterface[/code] and override these virtual functions.
 	</description>
 	<tutorials>
 	</tutorials>
 	<methods>
 		<method name="_checkout_branch" qualifiers="virtual">
-			<return type="bool">
-			</return>
-			<argument index="0" name="branch" type="String">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="branch_name" type="String" />
 			<description>
-				called to checkout a [code]branch[/code] in the VCS.
+				Checks out a [code]branch_name[/code] in the VCS.
 			</description>
 		</method>
 		<method name="_commit" qualifiers="virtual">
-			<return type="void">
-			</return>
-			<argument index="0" name="message" type="String">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="msg" type="String" />
 			<description>
-				This method is called to commit staged changes.
+				Commits the currently staged changes and applies the commit [code]msg[/code] to the resulting commit.
+			</description>
+		</method>
+		<method name="_create_branch" qualifiers="virtual">
+			<return type="void" />
+			<argument index="0" name="branch_name" type="String" />
+			<description>
+				Creates a new branch named [code]branch_name[/code] in the VCS.
+			</description>
+		</method>
+		<method name="_create_remote" qualifiers="virtual">
+			<return type="void" />
+			<argument index="0" name="remote_name" type="String" />
+			<argument index="1" name="remote_url" type="String" />
+			<description>
+				Creates a new remote destination with name [code]remote_name[/code] and points it to [code]remote_url[/code]. This can be both an HTTPS remote or a SSH remote.
 			</description>
 		</method>
 		<method name="_discard_file" qualifiers="virtual">
-			<return type="void">
-			</return>
-			<argument index="0" name="file_path" type="String">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="file_path" type="String" />
 			<description>
-				Called to discards the changes made in file present at [code]file_path[/code].
+				Discards the changes made in file present at [code]file_path[/code].
 			</description>
 		</method>
 		<method name="_fetch" qualifiers="virtual">
-			<return type="void">
-			</return>
+			<return type="void" />
+			<argument index="0" name="remote" type="String" />
 			<description>
-				Fetches changes from the remote. Equivalent to [code]git fetch[/code].
+				Fetch new changes from the [code]remote[/code] to local system.
 			</description>
 		</method>
 		<method name="_get_branch_list" qualifiers="virtual">
-			<return type="Array">
-			</return>
+			<return type="Array" />
 			<description>
-				Returns an Array of available branch names.
+				Gets an instance of an [Array] of [String] objects containing available branch names in the VCS.
 			</description>
 		</method>
-		<method name="_get_file_diff" qualifiers="virtual">
-			<return type="Array">
-			</return>
-			<argument index="0" name="identifier" type="String">
-			</argument>
-			<argument index="1" name="area" type="int">
-			</argument>
+		<method name="_get_current_branch_name" qualifiers="virtual">
+			<return type="String" />
 			<description>
-				Returns an Array of Dictionary objects (see [method create_diff_file] and [method add_diff_hunks_into_diff_file]) containing the changes in a file or a commit hash. The [code]identifier[/code] can be commit hash or file path based on value of area (see [enum TreeArea]).
+				Gets the current branch name defined in the VCS.
+			</description>
+		</method>
+		<method name="_get_diff" qualifiers="virtual">
+			<return type="Array" />
+			<argument index="0" name="identifier" type="String" />
+			<argument index="1" name="area" type="int" />
+			<description>
+				Returns an [Array] of [Dictionary] objects (see [method create_diff_file], [method create_diff_hunk], [method create_diff_line], [method add_line_diffs_into_diff_hunk] and [method add_diff_hunks_into_diff_file]), each containing information about a diff. If [code]identifier[/code] is a file path, returns a file diff, and if it is a commit identifier, then returns a commit diff.
 			</description>
 		</method>
 		<method name="_get_line_diff" qualifiers="virtual">
-			<return type="Array">
-			</return>
-			<argument index="0" name="file_path" type="String">
-			</argument>
-			<argument index="1" name="text" type="String">
-			</argument>
+			<return type="Array" />
+			<argument index="0" name="file_path" type="String" />
+			<argument index="1" name="text" type="String" />
 			<description>
-				Returns an Array of Dictionary objects, each containing a line diff between file at [code]file_path[/code] and [code]text[/code]. Returns Array of Dictionary (see [method create_diff_hunk]).
+				Returns an [Array] of [Dictionary] objects (see [method create_diff_hunk]), each containing a line diff between a file at [code]file_path[/code] and the [code]text[/code] which is passed in.
 			</description>
 		</method>
 		<method name="_get_modified_files_data" qualifiers="virtual">
-			<return type="Array">
-			</return>
+			<return type="Array" />
 			<description>
-				Returns Array of Dictionary (see [method create_status_file]) objects, each containing the status data of a modified file. Equivalent to running plain [code]git status[/code].
+				Returns an [Array] of [Dictionary] objects (see [method create_status_file]), each containing the status data of every modified file in the project folder.
 			</description>
 		</method>
 		<method name="_get_previous_commits" qualifiers="virtual">
-			<return type="Array">
-			</return>
+			<return type="Array" />
+			<argument index="0" name="max_commits" type="int" />
 			<description>
-				Returns Array of Dictionary (see [method create_commit]) objects, each containing the data for a past commit.
 			</description>
 		</method>
-		<method name="_get_project_name" qualifiers="virtual">
-			<return type="String">
-			</return>
+		<method name="_get_remotes" qualifiers="virtual">
+			<return type="Array" />
 			<description>
-				Virtual function to get project name or path as name.
+				Returns an [Array] of [String] objects, each containing the name of a remote configured in the VCS.
 			</description>
 		</method>
 		<method name="_get_vcs_name" qualifiers="virtual">
-			<return type="String">
-			</return>
+			<return type="String" />
 			<description>
-				Virtual function to get name of VCS plugin.
+				Returns the name of the underlying VCS provider.
 			</description>
 		</method>
 		<method name="_initialize" qualifiers="virtual">
-			<return type="bool">
-			</return>
-			<argument index="0" name="project_root_path" type="String">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="project_path" type="String" />
 			<description>
-				Called when initializing the VCS plugin from the editor. Returns whether or not the plugin was successfully initialized.
-			</description>
-		</method>
-		<method name="_is_vcs_initialized" qualifiers="virtual">
-			<return type="bool">
-			</return>
-			<description>
-				Returns whether the VCS plugin has been initialized.
+				Initializes the VCS plugin when called from the editor. Returns whether or not the plugin was successfully initialized. A VCS project is initialized at [code]project_path[/code].
 			</description>
 		</method>
 		<method name="_pull" qualifiers="virtual">
-			<return type="void">
-			</return>
+			<return type="void" />
+			<argument index="0" name="remote" type="String" />
 			<description>
-				Pulls changes from the remote.
+				Pulls new commits from [code]remote[/code] into the current branch. This operation can give rise to merge conflicts.
 			</description>
 		</method>
 		<method name="_push" qualifiers="virtual">
-			<return type="void">
-			</return>
+			<return type="void" />
+			<argument index="0" name="remote" type="String" />
+			<argument index="1" name="force" type="bool" />
 			<description>
-				Pushes changes to the remote.
+				Pushes new code changes from the current branch to the [code]remote[/code]. This operation uses forced updates if [code]force[/code] is set.
 			</description>
 		</method>
-		<method name="_set_up_credentials" qualifiers="virtual">
-			<return type="void">
-			</return>
-			<argument index="0" name="username" type="String">
-			</argument>
-			<argument index="1" name="password" type="String">
-			</argument>
+		<method name="_set_credentials" qualifiers="virtual">
+			<return type="void" />
+			<argument index="0" name="username" type="String" />
+			<argument index="1" name="password" type="String" />
+			<argument index="2" name="ssh_public_key_path" type="String" />
+			<argument index="3" name="ssh_private_key_path" type="String" />
+			<argument index="4" name="ssh_passphrase" type="String" />
 			<description>
-				Called after initializing the plugin. The plugin should save the sent account credentials for future use while performing remote operations.
+				Sets the credentials into the VCS plugin instance for use with HTTPS and SSH. If you are using only HTTPS remotes, then SSH credentials can be empty, and vice versa.
 			</description>
 		</method>
 		<method name="_shut_down" qualifiers="virtual">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Shuts down VCS plugin instance. Called when the user either closes the editor or shuts down the VCS plugin through the editor UI.
 			</description>
 		</method>
 		<method name="_stage_file" qualifiers="virtual">
-			<return type="void">
-			</return>
-			<argument index="0" name="file_path" type="String">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="file_path" type="String" />
 			<description>
-				Stage file present at [code]file_path[/code] to the staged area.
+				Stages the file present at [code]file_path[/code] to the staged area.
 			</description>
 		</method>
 		<method name="_unstage_file" qualifiers="virtual">
-			<return type="void">
-			</return>
-			<argument index="0" name="file_path" type="String">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="file_path" type="String" />
 			<description>
-				Unstage file present at [code]file_path[/code] from the staged area to the unstaged area.
+				Unstages the file present at [code]file_path[/code] from the staged area to the unstaged area.
 			</description>
 		</method>
 		<method name="add_diff_hunks_into_diff_file">
-			<return type="Dictionary">
-			</return>
-			<argument index="0" name="diff_hunk" type="Dictionary">
-			</argument>
-			<argument index="1" name="line_diffs" type="Array">
-			</argument>
+			<return type="Dictionary" />
+			<argument index="0" name="diff_file" type="Dictionary" />
+			<argument index="1" name="diff_hunks" type="Array" />
 			<description>
-				Helper function to add a diff hunk in a diff file. Appends [code]diff_hunk[/code] at the end in [code]diff_file[/code].
+				Helper function to add an array of [code]diff_hunks[/code] into a [code]diff_file[/code].
 			</description>
 		</method>
 		<method name="add_line_diffs_into_diff_hunk">
-			<return type="Dictionary">
-			</return>
-			<argument index="0" name="diff_files" type="Dictionary">
-			</argument>
-			<argument index="1" name="diff_hunks" type="Array">
-			</argument>
+			<return type="Dictionary" />
+			<argument index="0" name="diff_hunk" type="Dictionary" />
+			<argument index="1" name="line_diffs" type="Array" />
 			<description>
-				Helper function to add a diff line in a diff hunk. Appends [code]diff_line[/code] at the end in [code]diff_hunk[/code].
+				Helper function to add an array of [code]line_diffs[/code] into a [code]diff_hunk[/code].
 			</description>
 		</method>
 		<method name="create_commit">
-			<return type="Dictionary">
-			</return>
-			<argument index="0" name="msg" type="String">
-			</argument>
-			<argument index="1" name="author" type="String">
-			</argument>
-			<argument index="2" name="hex_id" type="String">
-			</argument>
-			<argument index="3" name="time" type="int">
-			</argument>
+			<return type="Dictionary" />
+			<argument index="0" name="msg" type="String" />
+			<argument index="1" name="author" type="String" />
+			<argument index="2" name="id" type="String" />
+			<argument index="3" name="date" type="String" />
 			<description>
-				Helper function to create a [code]Dictionary[/code] for commit data.
+				Helper function to create a commit [Dictionary] object. [code]msg[/code] is the commit message of the commit. [code]author[/code] is a human readable string containing the details of the author e.g. the email and name configured in the VCS. [code]id[/code] is the identifier of the commit, in whichever format that your VCS may provide an identifier to commits. [code]date[/code] is directly added to the commit object and hence, it can be a well-formatted, human readable date string.
 			</description>
 		</method>
 		<method name="create_diff_file">
-			<return type="Dictionary">
-			</return>
-			<argument index="0" name="new_file" type="String">
-			</argument>
-			<argument index="1" name="old_file" type="String">
-			</argument>
+			<return type="Dictionary" />
+			<argument index="0" name="new_file" type="String" />
+			<argument index="1" name="old_file" type="String" />
 			<description>
-				Helper function to create a [code]Dictionary[/code] for diff file data.
+				Helper function to create a [code]Dictionary[/code] for storing old and new diff file paths.
 			</description>
 		</method>
 		<method name="create_diff_hunk">
-			<return type="Dictionary">
-			</return>
-			<argument index="0" name="old_start" type="int">
-			</argument>
-			<argument index="1" name="new_start" type="int">
-			</argument>
-			<argument index="2" name="old_lines" type="int">
-			</argument>
-			<argument index="3" name="new_lines" type="int">
-			</argument>
+			<return type="Dictionary" />
+			<argument index="0" name="old_start" type="int" />
+			<argument index="1" name="new_start" type="int" />
+			<argument index="2" name="old_lines" type="int" />
+			<argument index="3" name="new_lines" type="int" />
 			<description>
-				Helper function to create a [code]Dictionary[/code] for diff hunk data in diff file.
+				Helper function to create a [code]Dictionary[/code] for storing diff hunk data. [code]old_start[/code] is the starting line number in old file. [code]new_start[/code] is the starting line number in new file. [code]old_lines[/code] is the number of lines in the old file. [code]new_lines[/code] is the number of lines in the new file.
 			</description>
 		</method>
 		<method name="create_diff_line">
-			<return type="Dictionary">
-			</return>
-			<argument index="0" name="new_line_no" type="int">
-			</argument>
-			<argument index="1" name="old_line_no" type="int">
-			</argument>
-			<argument index="2" name="content" type="String">
-			</argument>
-			<argument index="3" name="status" type="String">
-			</argument>
+			<return type="Dictionary" />
+			<argument index="0" name="new_line_no" type="int" />
+			<argument index="1" name="old_line_no" type="int" />
+			<argument index="2" name="content" type="String" />
+			<argument index="3" name="status" type="String" />
 			<description>
-				Helper function to create a [code]Dictionary[/code] for line diff.
+				Helper function to create a [code]Dictionary[/code] for storing a line diff. [code]new_line_no[/code] is the line number in the new file (can be [code]-1[/code] if the line is deleted). [code]old_line_no[/code] is the line number in the old file (can be [code]-1[/code] if the line is added). [code]content[/code] is the diff text. [code]content[/code] is the diff text. [code]status[/code] is a single character string which stores the line origin.
 			</description>
 		</method>
 		<method name="create_status_file">
-			<return type="Dictionary">
-			</return>
-			<argument index="0" name="file_path" type="String">
-			</argument>
-			<argument index="1" name="change_type" type="int" enum="EditorVCSInterface.ChangeType">
-			</argument>
-			<argument index="2" name="area" type="int" enum="EditorVCSInterface.TreeArea">
-			</argument>
+			<return type="Dictionary" />
+			<argument index="0" name="file_path" type="String" />
+			<argument index="1" name="change_type" type="int" enum="EditorVCSInterface.ChangeType" />
+			<argument index="2" name="area" type="int" enum="EditorVCSInterface.TreeArea" />
 			<description>
 				Helper function to create a [code]Dictionary[/code] used by editor to read the status of a file.
 			</description>
 		</method>
-		<method name="is_plugin_ready">
-			<return type="bool">
-			</return>
-			<description>
-				Returns [code]true[/code] if the addon is ready to respond to function calls, else returns [code]false[/code].
-			</description>
-		</method>
 		<method name="popup_error">
-			<return type="void">
-			</return>
-			<argument index="0" name="msg" type="String">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="msg" type="String" />
 			<description>
-				shows an error message while performing a VCS operation.
+				Pops up an error message in the edior.
 			</description>
 		</method>
 	</methods>
-	<signals>
-		<signal name="stage_area_refreshed">
-			<description>
-				Emitted when the stage area is refreshed by the editor.
-			</description>
-		</signal>
-	</signals>
 	<constants>
 		<constant name="CHANGE_TYPE_NEW" value="0" enum="ChangeType">
+			A new file has been added.
 		</constant>
 		<constant name="CHANGE_TYPE_MODIFIED" value="1" enum="ChangeType">
+			An earlier added file has been modified.
 		</constant>
 		<constant name="CHANGE_TYPE_RENAMED" value="2" enum="ChangeType">
+			An earlier added file has been renamed.
 		</constant>
 		<constant name="CHANGE_TYPE_DELETED" value="3" enum="ChangeType">
+			An earlier added file has been deleted.
 		</constant>
 		<constant name="CHANGE_TYPE_TYPECHANGE" value="4" enum="ChangeType">
+			An earlier added file has been typechanged.
 		</constant>
 		<constant name="CHANGE_TYPE_UNMERGED" value="5" enum="ChangeType">
+			A file is left unmerged.
 		</constant>
 		<constant name="TREE_AREA_COMMIT" value="0" enum="TreeArea">
+			A commit is encountered from the commit area.
 		</constant>
 		<constant name="TREE_AREA_STAGED" value="1" enum="TreeArea">
+			A file is encountered from the staged area.
 		</constant>
 		<constant name="TREE_AREA_UNSTAGED" value="2" enum="TreeArea">
+			A file is encountered from the unstaged area.
 		</constant>
 	</constants>
 </class>
