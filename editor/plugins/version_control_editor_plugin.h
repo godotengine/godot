@@ -77,6 +77,8 @@ private:
 	FileDialog *set_up_ssh_private_key_file_dialog;
 	Label *set_up_warning_text;
 
+	OptionButton *commit_list_size_button;
+
 	AcceptDialog *branch_create_dialog;
 	LineEdit *branch_create_name_input;
 	Button *branch_create_ok;

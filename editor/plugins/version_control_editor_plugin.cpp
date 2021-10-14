@@ -230,7 +230,7 @@ void VersionControlEditorPlugin::_refresh_commit_list() {
 
 	commit_list->get_root()->clear_children();
 
-	List<EditorVCSInterface::Commit> commit_info_list = EditorVCSInterface::get_singleton()->get_previous_commits(10);
+	List<EditorVCSInterface::Commit> commit_info_list = EditorVCSInterface::get_singleton()->get_previous_commits(commit_list_size_button->get_selected_metadata());
 
 	for (List<EditorVCSInterface::Commit>::Element *e = commit_info_list.front(); e; e = e->next()) {
 		EditorVCSInterface::Commit commit = e->get();
@@ -289,6 +289,7 @@ void VersionControlEditorPlugin::_commit() {
 
 	_refresh_stage_area();
 	_refresh_commit_list();
+	_refresh_branch_list();
 	_clear_diff();
 }
 
@@ -1183,6 +1184,25 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	commit_area->add_child(commit_button);
 
 	version_commit_dock->add_child(memnew(HSeparator));
+
+	HBoxContainer *commit_list_hbc = memnew(HBoxContainer);
+	version_commit_dock->add_child(commit_list_hbc);
+
+	Label *commit_list_label = memnew(Label);
+	commit_list_label->set_text(TTR("Commit List"));
+	commit_list_label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	commit_list_hbc->add_child(commit_list_label);
+
+	commit_list_size_button = memnew(OptionButton);
+	commit_list_size_button->set_tooltip(TTR("Commit List Size"));
+	commit_list_size_button->add_item(TTR("10"));
+	commit_list_size_button->set_item_metadata(0, 10);
+	commit_list_size_button->add_item(TTR("20"));
+	commit_list_size_button->set_item_metadata(0, 20);
+	commit_list_size_button->add_item(TTR("30"));
+	commit_list_size_button->set_item_metadata(0, 30);
+	commit_list_size_button->connect("pressed", this, "_refresh_commit_list");
+	commit_list_hbc->add_child(commit_list_size_button);
 
 	commit_list = memnew(Tree);
 	commit_list->set_h_size_flags(Control::SIZE_EXPAND_FILL);

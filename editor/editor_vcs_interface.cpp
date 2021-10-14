@@ -299,8 +299,8 @@ void EditorVCSInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("create_diff_file", "new_file", "old_file"), &EditorVCSInterface::create_diff_file);
 	ClassDB::bind_method(D_METHOD("create_commit", "msg", "author", "id", "date"), &EditorVCSInterface::create_commit);
 	ClassDB::bind_method(D_METHOD("create_status_file", "file_path", "change_type", "area"), &EditorVCSInterface::create_status_file);
-	ClassDB::bind_method(D_METHOD("add_diff_hunks_into_diff_file", "diff_hunk", "line_diffs"), &EditorVCSInterface::add_diff_hunks_into_diff_file);
-	ClassDB::bind_method(D_METHOD("add_line_diffs_into_diff_hunk", "diff_files", "diff_hunks"), &EditorVCSInterface::add_line_diffs_into_diff_hunk);
+	ClassDB::bind_method(D_METHOD("add_diff_hunks_into_diff_file", "diff_file", "diff_hunks"), &EditorVCSInterface::add_diff_hunks_into_diff_file);
+	ClassDB::bind_method(D_METHOD("add_line_diffs_into_diff_hunk", "diff_hunk", "line_diffs"), &EditorVCSInterface::add_line_diffs_into_diff_hunk);
 	ClassDB::bind_method(D_METHOD("popup_error", "msg"), &EditorVCSInterface::popup_error);
 
 	BIND_ENUM_CONSTANT(CHANGE_TYPE_NEW);
