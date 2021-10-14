@@ -315,7 +315,7 @@ private:
 
 	struct Cursor {
 		Vector3 pos;
-		real_t x_rot, y_rot, distance;
+		real_t x_rot, y_rot, distance, fov_scale;
 		Vector3 eye_pos; // Used in freelook mode
 		bool region_select;
 		Point2 region_begin, region_end;
@@ -325,6 +325,7 @@ private:
 			x_rot = 0.5;
 			y_rot = -0.5;
 			distance = 4;
+			fov_scale = 1.0;
 			region_select = false;
 		}
 	};
@@ -333,6 +334,8 @@ private:
 	Cursor cursor; // Immediate cursor
 	Cursor camera_cursor; // That one may be interpolated (don't modify this one except for smoothing purposes)
 
+	void scale_fov(real_t p_fov_offset);
+	void reset_fov();
 	void scale_cursor_distance(real_t scale);
 
 	void set_freelook_active(bool active_now);
@@ -349,6 +352,7 @@ private:
 
 	void set_message(String p_message, float p_time = 5);
 
+	void _view_settings_confirmed(real_t p_interp_delta);
 	void _update_camera(real_t p_interp_delta);
 	Transform3D to_camera_transform(const Cursor &p_cursor) const;
 	void _draw();
