@@ -51,7 +51,6 @@ public:
 		RESULT_SSL_HANDSHAKE_ERROR,
 		RESULT_NO_RESPONSE,
 		RESULT_BODY_SIZE_LIMIT_EXCEEDED,
-		RESULT_BODY_DECOMPRESS_FAILED,
 		RESULT_REQUEST_FAILED,
 		RESULT_DOWNLOAD_FILE_CANT_OPEN,
 		RESULT_DOWNLOAD_FILE_WRITE_ERROR,
@@ -77,7 +76,6 @@ private:
 	PoolByteArray body;
 	SafeFlag use_threads;
 
-	bool accept_gzip;
 	bool got_response;
 	int response_code;
 	PoolVector<String> response_headers;
@@ -105,9 +103,6 @@ private:
 	Error _parse_url(const String &p_url);
 	Error _request();
 
-	bool has_header(const Vector<String> &p_headers, const String &p_header_name);
-	String get_header_value(const PoolStringArray &p_headers, const String &header_name);
-
 	SafeFlag thread_done;
 	SafeFlag thread_request_quit;
 
@@ -124,14 +119,10 @@ public:
 	Error request(const String &p_url, const Vector<String> &p_custom_headers = Vector<String>(), bool p_ssl_validate_domain = true, HTTPClient::Method p_method = HTTPClient::METHOD_GET, const String &p_request_data = ""); //connects to a full url and perform request
 	Error request_raw(const String &p_url, const Vector<String> &p_custom_headers = Vector<String>(), bool p_ssl_validate_domain = true, HTTPClient::Method p_method = HTTPClient::METHOD_GET, const PoolVector<uint8_t> &p_request_data_raw = PoolVector<uint8_t>()); //connects to a full url and perform request
 	void cancel_request();
-
 	HTTPClient::Status get_http_client_status() const;
 
 	void set_use_threads(bool p_use);
 	bool is_using_threads() const;
-
-	void set_accept_gzip(bool p_gzip);
-	bool is_accepting_gzip() const;
 
 	void set_download_file(const String &p_file);
 	String get_download_file() const;
