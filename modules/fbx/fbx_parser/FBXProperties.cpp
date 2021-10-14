@@ -94,7 +94,7 @@ Property::~Property() {
 namespace {
 
 // ------------------------------------------------------------------------------------------------
-// read a typed property out of a FBX element. The return value is NULL if the property cannot be read.
+// read a typed property out of a FBX element. The return value is nullptr if the property cannot be read.
 PropertyPtr ReadTypedProperty(const ElementPtr element) {
 	//ai_assert(element.KeyToken().StringContents() == "P");
 

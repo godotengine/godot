@@ -55,7 +55,7 @@ struct hb_shape_plan_key_t
 			 unsigned int                   num_coords,
 			 const char * const            *shaper_list);
 
-  HB_INTERNAL void free () { ::free ((void *) user_features); }
+  HB_INTERNAL void fini () { hb_free ((void *) user_features); }
 
   HB_INTERNAL bool user_features_match (const hb_shape_plan_key_t *other);
 

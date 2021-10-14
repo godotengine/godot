@@ -93,6 +93,8 @@ Error ResourceFormatImporter::_get_path_and_type(const String &p_path, PathAndTy
 				r_path_and_type.type = ClassDB::get_compatibility_remapped_class(value);
 			} else if (assign == "importer") {
 				r_path_and_type.importer = value;
+			} else if (assign == "uid") {
+				r_path_and_type.uid = ResourceUID::get_singleton()->text_to_id(value);
 			} else if (assign == "group_file") {
 				r_path_and_type.group_file = value;
 			} else if (assign == "metadata") {
@@ -146,10 +148,10 @@ void ResourceFormatImporter::get_recognized_extensions(List<String> *p_extension
 	for (int i = 0; i < importers.size(); i++) {
 		List<String> local_exts;
 		importers[i]->get_recognized_extensions(&local_exts);
-		for (List<String>::Element *F = local_exts.front(); F; F = F->next()) {
-			if (!found.has(F->get())) {
-				p_extensions->push_back(F->get());
-				found.insert(F->get());
+		for (const String &F : local_exts) {
+			if (!found.has(F)) {
+				p_extensions->push_back(F);
+				found.insert(F);
 			}
 		}
 	}
@@ -175,10 +177,10 @@ void ResourceFormatImporter::get_recognized_extensions_for_type(const String &p_
 
 		List<String> local_exts;
 		importers[i]->get_recognized_extensions(&local_exts);
-		for (List<String>::Element *F = local_exts.front(); F; F = F->next()) {
-			if (!found.has(F->get())) {
-				p_extensions->push_back(F->get());
-				found.insert(F->get());
+		for (const String &F : local_exts) {
+			if (!found.has(F)) {
+				p_extensions->push_back(F);
+				found.insert(F);
 			}
 		}
 	}
@@ -336,6 +338,17 @@ String ResourceFormatImporter::get_resource_type(const String &p_path) const {
 	return pat.type;
 }
 
+ResourceUID::ID ResourceFormatImporter::get_resource_uid(const String &p_path) const {
+	PathAndType pat;
+	Error err = _get_path_and_type(p_path, pat);
+
+	if (err != OK) {
+		return ResourceUID::INVALID_ID;
+	}
+
+	return pat.uid;
+}
+
 Variant ResourceFormatImporter::get_resource_metadata(const String &p_path) const {
 	PathAndType pat;
 	Error err = _get_path_and_type(p_path, pat);
@@ -372,8 +385,8 @@ void ResourceFormatImporter::get_importers_for_extension(const String &p_extensi
 	for (int i = 0; i < importers.size(); i++) {
 		List<String> local_exts;
 		importers[i]->get_recognized_extensions(&local_exts);
-		for (List<String>::Element *F = local_exts.front(); F; F = F->next()) {
-			if (p_extension.to_lower() == F->get()) {
+		for (const String &F : local_exts) {
+			if (p_extension.to_lower() == F) {
 				r_importers->push_back(importers[i]);
 			}
 		}
@@ -393,8 +406,8 @@ Ref<ResourceImporter> ResourceFormatImporter::get_importer_by_extension(const St
 	for (int i = 0; i < importers.size(); i++) {
 		List<String> local_exts;
 		importers[i]->get_recognized_extensions(&local_exts);
-		for (List<String>::Element *F = local_exts.front(); F; F = F->next()) {
-			if (p_extension.to_lower() == F->get() && importers[i]->get_priority() > priority) {
+		for (const String &F : local_exts) {
+			if (p_extension.to_lower() == F && importers[i]->get_priority() > priority) {
 				importer = importers[i];
 				priority = importers[i]->get_priority();
 			}
@@ -405,7 +418,7 @@ Ref<ResourceImporter> ResourceFormatImporter::get_importer_by_extension(const St
 }
 
 String ResourceFormatImporter::get_import_base_path(const String &p_for_file) const {
-	return ProjectSettings::IMPORTED_FILES_PATH.plus_file(p_for_file.get_file() + "-" + p_for_file.md5_text());
+	return ProjectSettings::get_singleton()->get_imported_files_path().plus_file(p_for_file.get_file() + "-" + p_for_file.md5_text());
 }
 
 bool ResourceFormatImporter::are_import_settings_valid(const String &p_path) const {
@@ -444,4 +457,9 @@ ResourceFormatImporter *ResourceFormatImporter::singleton = nullptr;
 
 ResourceFormatImporter::ResourceFormatImporter() {
 	singleton = this;
+}
+
+void ResourceImporter::_bind_methods() {
+	BIND_ENUM_CONSTANT(IMPORT_ORDER_DEFAULT);
+	BIND_ENUM_CONSTANT(IMPORT_ORDER_SCENE);
 }

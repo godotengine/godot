@@ -31,6 +31,7 @@
 #ifndef SOFT_BODY_3D_SW_H
 #define SOFT_BODY_3D_SW_H
 
+#include "area_3d_sw.h"
 #include "collision_object_3d_sw.h"
 
 #include "core/math/aabb.h"
@@ -39,12 +40,11 @@
 #include "core/templates/local_vector.h"
 #include "core/templates/set.h"
 #include "core/templates/vset.h"
-#include "scene/resources/mesh.h"
 
 class Constraint3DSW;
 
 class SoftBody3DSW : public CollisionObject3DSW {
-	Ref<Mesh> soft_mesh;
+	RID soft_mesh;
 
 	struct Node {
 		Vector3 s; // Source position
@@ -70,6 +70,7 @@ class SoftBody3DSW : public CollisionObject3DSW {
 	};
 
 	struct Face {
+		Vector3 centroid;
 		Node *n[3] = { nullptr, nullptr, nullptr }; // Node pointers
 		Vector3 normal; // Normal
 		real_t ra = 0.0; // Rest area
@@ -100,11 +101,20 @@ class SoftBody3DSW : public CollisionObject3DSW {
 	real_t drag_coefficient = 0.0; // [0,1]
 	LocalVector<int> pinned_vertices;
 
+	Vector3 gravity;
+
 	SelfList<SoftBody3DSW> active_list;
 
 	Set<Constraint3DSW *> constraints;
 
+	Vector<AreaCMP> areas;
+
 	VSet<RID> exceptions;
+
+	uint64_t island_step = 0;
+
+	_FORCE_INLINE_ void _compute_area_gravity(const Area3DSW *p_area);
+	_FORCE_INLINE_ Vector3 _compute_area_windforce(const Area3DSW *p_area, const Face *p_face);
 
 public:
 	SoftBody3DSW();
@@ -124,9 +134,31 @@ public:
 	_FORCE_INLINE_ bool has_exception(const RID &p_exception) const { return exceptions.has(p_exception); }
 	_FORCE_INLINE_ const VSet<RID> &get_exceptions() const { return exceptions; }
 
+	_FORCE_INLINE_ uint64_t get_island_step() const { return island_step; }
+	_FORCE_INLINE_ void set_island_step(uint64_t p_step) { island_step = p_step; }
+
+	_FORCE_INLINE_ void add_area(Area3DSW *p_area) {
+		int index = areas.find(AreaCMP(p_area));
+		if (index > -1) {
+			areas.write[index].refCount += 1;
+		} else {
+			areas.ordered_insert(AreaCMP(p_area));
+		}
+	}
+
+	_FORCE_INLINE_ void remove_area(Area3DSW *p_area) {
+		int index = areas.find(AreaCMP(p_area));
+		if (index > -1) {
+			areas.write[index].refCount -= 1;
+			if (areas[index].refCount < 1) {
+				areas.remove(index);
+			}
+		}
+	}
+
 	virtual void set_space(Space3DSW *p_space);
 
-	void set_mesh(const Ref<Mesh> &p_mesh);
+	void set_mesh(RID p_mesh);
 
 	void update_rendering_server(RenderingServerHandler *p_rendering_server_handler);
 
@@ -189,18 +221,18 @@ protected:
 	virtual void _shapes_changed();
 
 private:
-	void update_normals();
+	void update_normals_and_centroids();
 	void update_bounds();
 	void update_constants();
 	void update_area();
 	void reset_link_rest_lengths();
 	void update_link_constants();
 
-	void apply_nodes_transform(const Transform &p_transform);
+	void apply_nodes_transform(const Transform3D &p_transform);
 
 	void add_velocity(const Vector3 &p_velocity);
 
-	void apply_forces();
+	void apply_forces(bool p_has_wind_forces);
 
 	bool create_from_trimesh(const Vector<int> &p_indices, const Vector<Vector3> &p_vertices);
 	void generate_bending_constraints(int p_distance);
@@ -226,7 +258,7 @@ public:
 	SoftBody3DSW *get_soft_body() const { return soft_body; }
 
 	virtual PhysicsServer3D::ShapeType get_type() const { return PhysicsServer3D::SHAPE_SOFT_BODY; }
-	virtual void project_range(const Vector3 &p_normal, const Transform &p_transform, real_t &r_min, real_t &r_max) const { r_min = r_max = 0.0; }
+	virtual void project_range(const Vector3 &p_normal, const Transform3D &p_transform, real_t &r_min, real_t &r_max) const { r_min = r_max = 0.0; }
 	virtual Vector3 get_support(const Vector3 &p_normal) const { return Vector3(); }
 	virtual void get_supports(const Vector3 &p_normal, int p_max, Vector3 *r_supports, int &r_amount, FeatureType &r_type) const { r_amount = 0; }
 

@@ -72,8 +72,9 @@ public:
 	void append_array(const Array &p_array);
 	Error resize(int p_new_size);
 
-	void insert(int p_pos, const Variant &p_value);
+	Error insert(int p_pos, const Variant &p_value);
 	void remove(int p_pos);
+	void fill(const Variant &p_value);
 
 	Variant front() const;
 	Variant back() const;
@@ -96,10 +97,14 @@ public:
 	void push_front(const Variant &p_value);
 	Variant pop_back();
 	Variant pop_front();
+	Variant pop_at(int p_pos);
 
 	Array duplicate(bool p_deep = false) const;
 
 	Array slice(int p_begin, int p_end, int p_step = 1, bool p_deep = false) const;
+	Array filter(const Callable &p_callable) const;
+	Array map(const Callable &p_callable) const;
+	Variant reduce(const Callable &p_callable, const Variant &p_accum) const;
 
 	bool operator<(const Array &p_array) const;
 	bool operator<=(const Array &p_array) const;

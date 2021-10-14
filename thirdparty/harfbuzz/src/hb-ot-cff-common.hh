@@ -126,7 +126,7 @@ struct CFFIndex
     else
     {
       /* serialize CFFIndex header */
-      if (unlikely (!c->extend_min (*this))) return_trace (false);
+      if (unlikely (!c->extend_min (this))) return_trace (false);
       this->count = byteArray.length;
       this->offSize = offSize_;
       if (unlikely (!c->allocate_size<HBUINT8> (offSize_ * (byteArray.length + 1))))
@@ -214,7 +214,7 @@ struct CFFIndex
     unsigned off_size = calcOffSize (total);
 
     /* serialize CFFIndex header */
-    if (unlikely (!c->extend_min (*this))) return_trace (false);
+    if (unlikely (!c->extend_min (this))) return_trace (false);
     this->count = it.len ();
     this->offSize = off_size;
     if (unlikely (!c->allocate_size<HBUINT8> (off_size * (it.len () + 1))))
@@ -335,7 +335,7 @@ struct CFFIndexOf : CFFIndex<COUNT>
   {
     TRACE_SERIALIZE (this);
     /* serialize CFFIndex header */
-    if (unlikely (!c->extend_min (*this))) return_trace (false);
+    if (unlikely (!c->extend_min (this))) return_trace (false);
     this->count = dataArrayLen;
     this->offSize = offSize_;
     if (unlikely (!c->allocate_size<HBUINT8> (offSize_ * (dataArrayLen + 1))))

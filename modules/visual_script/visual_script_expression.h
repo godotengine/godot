@@ -273,7 +273,7 @@ public:
 	virtual String get_text() const override;
 	virtual String get_category() const override { return "operators"; }
 
-	virtual VisualScriptNodeInstance *instance(VisualScriptInstance *p_instance) override;
+	virtual VisualScriptNodeInstance *instantiate(VisualScriptInstance *p_instance) override;
 
 	VisualScriptExpression();
 	~VisualScriptExpression();

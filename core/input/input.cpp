@@ -35,10 +35,6 @@
 #include "core/input/input_map.h"
 #include "core/os/os.h"
 
-#ifdef TOOLS_ENABLED
-#include "editor/editor_settings.h"
-#endif
-
 static const char *_joy_buttons[JOY_BUTTON_SDL_MAX] = {
 	"a",
 	"b",
@@ -85,7 +81,7 @@ Input *Input::get_singleton() {
 }
 
 void Input::set_mouse_mode(MouseMode p_mode) {
-	ERR_FAIL_INDEX((int)p_mode, 4);
+	ERR_FAIL_INDEX((int)p_mode, 5);
 	set_mouse_mode_func(p_mode);
 }
 
@@ -101,7 +97,7 @@ void Input::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_action_just_pressed", "action", "exact_match"), &Input::is_action_just_pressed, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("is_action_just_released", "action", "exact_match"), &Input::is_action_just_released, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("get_action_strength", "action", "exact_match"), &Input::get_action_strength, DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("get_action_raw_strength", "action", "exact_match"), &Input::get_action_strength, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("get_action_raw_strength", "action", "exact_match"), &Input::get_action_raw_strength, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("get_axis", "negative_action", "positive_action"), &Input::get_axis);
 	ClassDB::bind_method(D_METHOD("get_vector", "negative_x", "positive_x", "negative_y", "positive_y", "deadzone"), &Input::get_vector, DEFVAL(-1.0f));
 	ClassDB::bind_method(D_METHOD("add_joy_mapping", "mapping", "update_existing"), &Input::add_joy_mapping, DEFVAL(false));
@@ -138,6 +134,7 @@ void Input::_bind_methods() {
 	BIND_ENUM_CONSTANT(MOUSE_MODE_HIDDEN);
 	BIND_ENUM_CONSTANT(MOUSE_MODE_CAPTURED);
 	BIND_ENUM_CONSTANT(MOUSE_MODE_CONFINED);
+	BIND_ENUM_CONSTANT(MOUSE_MODE_CONFINED_HIDDEN);
 
 	BIND_ENUM_CONSTANT(CURSOR_ARROW);
 	BIND_ENUM_CONSTANT(CURSOR_IBEAM);
@@ -161,29 +158,23 @@ void Input::_bind_methods() {
 }
 
 void Input::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
-#ifdef TOOLS_ENABLED
-
-	const String quote_style = EDITOR_DEF("text_editor/completion/use_single_quotes", 0) ? "'" : "\"";
-
 	String pf = p_function;
 	if (p_idx == 0 && (pf == "is_action_pressed" || pf == "action_press" || pf == "action_release" ||
 							  pf == "is_action_just_pressed" || pf == "is_action_just_released" ||
-							  pf == "get_action_strength" || pf == "get_axis" || pf == "get_vector")) {
+							  pf == "get_action_strength" || pf == "get_action_raw_strength" ||
+							  pf == "get_axis" || pf == "get_vector")) {
 		List<PropertyInfo> pinfo;
 		ProjectSettings::get_singleton()->get_property_list(&pinfo);
 
-		for (List<PropertyInfo>::Element *E = pinfo.front(); E; E = E->next()) {
-			const PropertyInfo &pi = E->get();
-
+		for (const PropertyInfo &pi : pinfo) {
 			if (!pi.name.begins_with("input/")) {
 				continue;
 			}
 
 			String name = pi.name.substr(pi.name.find("/") + 1, pi.name.length());
-			r_options->push_back(quote_style + name + quote_style);
+			r_options->push_back(name.quote());
 		}
 	}
-#endif
 }
 
 void Input::SpeedTrack::update(const Vector2 &p_delta_p) {
@@ -221,12 +212,12 @@ Input::SpeedTrack::SpeedTrack() {
 	reset();
 }
 
-bool Input::is_key_pressed(int p_keycode) const {
+bool Input::is_key_pressed(Key p_keycode) const {
 	_THREAD_SAFE_METHOD_
 	return keys_pressed.has(p_keycode);
 }
 
-bool Input::is_mouse_button_pressed(int p_button) const {
+bool Input::is_mouse_button_pressed(MouseButton p_button) const {
 	_THREAD_SAFE_METHOD_
 	return (mouse_button_mask & (1 << (p_button - 1))) != 0;
 }
@@ -235,24 +226,18 @@ static int _combine_device(int p_value, int p_device) {
 	return p_value | (p_device << 20);
 }
 
-bool Input::is_joy_button_pressed(int p_device, int p_button) const {
+bool Input::is_joy_button_pressed(int p_device, JoyButton p_button) const {
 	_THREAD_SAFE_METHOD_
 	return joy_buttons_pressed.has(_combine_device(p_button, p_device));
 }
 
 bool Input::is_action_pressed(const StringName &p_action, bool p_exact) const {
-#ifdef DEBUG_ENABLED
-	bool has_action = InputMap::get_singleton()->has_action(p_action);
-	ERR_FAIL_COND_V_MSG(!has_action, false, "Request for nonexistent InputMap action '" + String(p_action) + "'.");
-#endif
+	ERR_FAIL_COND_V_MSG(!InputMap::get_singleton()->has_action(p_action), false, InputMap::get_singleton()->suggest_actions(p_action));
 	return action_state.has(p_action) && action_state[p_action].pressed && (p_exact ? action_state[p_action].exact : true);
 }
 
 bool Input::is_action_just_pressed(const StringName &p_action, bool p_exact) const {
-#ifdef DEBUG_ENABLED
-	bool has_action = InputMap::get_singleton()->has_action(p_action);
-	ERR_FAIL_COND_V_MSG(!has_action, false, "Request for nonexistent InputMap action '" + String(p_action) + "'.");
-#endif
+	ERR_FAIL_COND_V_MSG(!InputMap::get_singleton()->has_action(p_action), false, InputMap::get_singleton()->suggest_actions(p_action));
 	const Map<StringName, Action>::Element *E = action_state.find(p_action);
 	if (!E) {
 		return false;
@@ -270,10 +255,7 @@ bool Input::is_action_just_pressed(const StringName &p_action, bool p_exact) con
 }
 
 bool Input::is_action_just_released(const StringName &p_action, bool p_exact) const {
-#ifdef DEBUG_ENABLED
-	bool has_action = InputMap::get_singleton()->has_action(p_action);
-	ERR_FAIL_COND_V_MSG(!has_action, false, "Request for nonexistent InputMap action '" + String(p_action) + "'.");
-#endif
+	ERR_FAIL_COND_V_MSG(!InputMap::get_singleton()->has_action(p_action), false, InputMap::get_singleton()->suggest_actions(p_action));
 	const Map<StringName, Action>::Element *E = action_state.find(p_action);
 	if (!E) {
 		return false;
@@ -291,10 +273,7 @@ bool Input::is_action_just_released(const StringName &p_action, bool p_exact) co
 }
 
 float Input::get_action_strength(const StringName &p_action, bool p_exact) const {
-#ifdef DEBUG_ENABLED
-	bool has_action = InputMap::get_singleton()->has_action(p_action);
-	ERR_FAIL_COND_V_MSG(!has_action, false, "Request for nonexistent InputMap action '" + String(p_action) + "'.");
-#endif
+	ERR_FAIL_COND_V_MSG(!InputMap::get_singleton()->has_action(p_action), 0.0, InputMap::get_singleton()->suggest_actions(p_action));
 	const Map<StringName, Action>::Element *E = action_state.find(p_action);
 	if (!E) {
 		return 0.0f;
@@ -351,7 +330,7 @@ Vector2 Input::get_vector(const StringName &p_negative_x, const StringName &p_po
 	return vector;
 }
 
-float Input::get_joy_axis(int p_device, int p_axis) const {
+float Input::get_joy_axis(int p_device, JoyAxis p_axis) const {
 	_THREAD_SAFE_METHOD_
 	int c = _combine_device(p_axis, p_device);
 	if (_joy_axis.has(c)) {
@@ -432,12 +411,12 @@ void Input::joy_connection_changed(int p_idx, bool p_connected, String p_name, S
 			joy_buttons_pressed.erase(c);
 		}
 		for (int i = 0; i < JOY_AXIS_MAX; i++) {
-			set_joy_axis(p_idx, i, 0.0f);
+			set_joy_axis(p_idx, (JoyAxis)i, 0.0f);
 		}
 	}
 	joy_names[p_idx] = js;
 
-	emit_signal("joy_connection_changed", p_idx, p_connected);
+	emit_signal(SNAME("joy_connection_changed"), p_idx, p_connected);
 }
 
 Vector3 Input::get_gravity() const {
@@ -460,10 +439,6 @@ Vector3 Input::get_gyroscope() const {
 	return gyroscope;
 }
 
-void Input::parse_input_event(const Ref<InputEvent> &p_event) {
-	_parse_input_event_impl(p_event, false);
-}
-
 void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_emulated) {
 	// Notes on mouse-touch emulation:
 	// - Emulated mouse events are parsed, that is, re-routed to this method, so they make the same effects
@@ -471,8 +446,6 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 	//   emulated back to touch events in an endless loop.
 	// - Emulated touch events are handed right to the main loop (i.e., the SceneTree) because they don't
 	//   require additional handling by this class.
-
-	_THREAD_SAFE_METHOD_
 
 	Ref<InputEventKey> k = p_event;
 	if (k.is_valid() && !k->is_echo() && k->get_keycode() != 0) {
@@ -487,9 +460,9 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 
 	if (mb.is_valid()) {
 		if (mb->is_pressed()) {
-			mouse_button_mask |= (1 << (mb->get_button_index() - 1));
+			mouse_button_mask |= (MouseButton)(1 << (mb->get_button_index() - 1));
 		} else {
-			mouse_button_mask &= ~(1 << (mb->get_button_index() - 1));
+			mouse_button_mask &= (MouseButton) ~(1 << (mb->get_button_index() - 1));
 		}
 
 		Point2 pos = mb->get_global_position();
@@ -499,7 +472,7 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 
 		if (event_dispatch_function && emulate_touch_from_mouse && !p_is_emulated && mb->get_button_index() == 1) {
 			Ref<InputEventScreenTouch> touch_event;
-			touch_event.instance();
+			touch_event.instantiate();
 			touch_event->set_pressed(mb->is_pressed());
 			touch_event->set_position(mb->get_position());
 			event_dispatch_function(touch_event);
@@ -516,7 +489,7 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 
 		if (event_dispatch_function && emulate_touch_from_mouse && !p_is_emulated && mm->get_button_mask() & 1) {
 			Ref<InputEventScreenDrag> drag_event;
-			drag_event.instance();
+			drag_event.instantiate();
 
 			drag_event->set_position(mm->get_position());
 			drag_event->set_relative(mm->get_relative());
@@ -554,7 +527,7 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 
 			if (translate) {
 				Ref<InputEventMouseButton> button_event;
-				button_event.instance();
+				button_event.instantiate();
 
 				button_event->set_device(InputEvent::DEVICE_ID_TOUCH_MOUSE);
 				button_event->set_position(st->get_position());
@@ -562,9 +535,9 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 				button_event->set_pressed(st->is_pressed());
 				button_event->set_button_index(MOUSE_BUTTON_LEFT);
 				if (st->is_pressed()) {
-					button_event->set_button_mask(mouse_button_mask | (1 << (MOUSE_BUTTON_LEFT - 1)));
+					button_event->set_button_mask(MouseButton(mouse_button_mask | MOUSE_BUTTON_MASK_LEFT));
 				} else {
-					button_event->set_button_mask(mouse_button_mask & ~(1 << (MOUSE_BUTTON_LEFT - 1)));
+					button_event->set_button_mask(MouseButton(mouse_button_mask & ~MOUSE_BUTTON_MASK_LEFT));
 				}
 
 				_parse_input_event_impl(button_event, true);
@@ -581,7 +554,7 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 
 		if (emulate_mouse_from_touch && sd->get_index() == mouse_from_touch_index) {
 			Ref<InputEventMouseMotion> motion_event;
-			motion_event.instance();
+			motion_event.instantiate();
 
 			motion_event->set_device(InputEvent::DEVICE_ID_TOUCH_MOUSE);
 			motion_event->set_position(sd->get_position());
@@ -643,7 +616,7 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 	}
 }
 
-void Input::set_joy_axis(int p_device, int p_axis, float p_value) {
+void Input::set_joy_axis(int p_device, JoyAxis p_axis, float p_value) {
 	_THREAD_SAFE_METHOD_
 	int c = _combine_device(p_axis, p_device);
 	_joy_axis[c] = p_value;
@@ -786,14 +759,14 @@ void Input::ensure_touch_mouse_raised() {
 		mouse_from_touch_index = -1;
 
 		Ref<InputEventMouseButton> button_event;
-		button_event.instance();
+		button_event.instantiate();
 
 		button_event->set_device(InputEvent::DEVICE_ID_TOUCH_MOUSE);
 		button_event->set_position(mouse_pos);
 		button_event->set_global_position(mouse_pos);
 		button_event->set_pressed(false);
 		button_event->set_button_index(MOUSE_BUTTON_LEFT);
-		button_event->set_button_mask(mouse_button_mask & ~(1 << (MOUSE_BUTTON_LEFT - 1)));
+		button_event->set_button_mask(MouseButton(mouse_button_mask & ~MOUSE_BUTTON_MASK_LEFT));
 
 		_parse_input_event_impl(button_event, true);
 	}
@@ -820,7 +793,7 @@ void Input::set_default_cursor_shape(CursorShape p_shape) {
 	// The default shape is set in Viewport::_gui_input_event. To instantly
 	// see the shape in the viewport we need to trigger a mouse motion event.
 	Ref<InputEventMouseMotion> mm;
-	mm.instance();
+	mm.instantiate();
 	mm->set_position(mouse_pos);
 	mm->set_global_position(mouse_pos);
 	parse_input_event(mm);
@@ -838,25 +811,37 @@ void Input::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, co
 	set_custom_mouse_cursor_func(p_cursor, p_shape, p_hotspot);
 }
 
-void Input::accumulate_input_event(const Ref<InputEvent> &p_event) {
+void Input::parse_input_event(const Ref<InputEvent> &p_event) {
+	_THREAD_SAFE_METHOD_
+
 	ERR_FAIL_COND(p_event.is_null());
 
-	if (!use_accumulated_input) {
-		parse_input_event(p_event);
-		return;
+	if (use_accumulated_input) {
+		if (buffered_events.is_empty() || !buffered_events.back()->get()->accumulate(p_event)) {
+			buffered_events.push_back(p_event);
+		}
+	} else if (use_input_buffering) {
+		buffered_events.push_back(p_event);
+	} else {
+		_parse_input_event_impl(p_event, false);
 	}
-	if (!accumulated_events.is_empty() && accumulated_events.back()->get()->accumulate(p_event)) {
-		return; //event was accumulated, exit
-	}
-
-	accumulated_events.push_back(p_event);
 }
 
-void Input::flush_accumulated_events() {
-	while (accumulated_events.front()) {
-		parse_input_event(accumulated_events.front()->get());
-		accumulated_events.pop_front();
+void Input::flush_buffered_events() {
+	_THREAD_SAFE_METHOD_
+
+	while (buffered_events.front()) {
+		_parse_input_event_impl(buffered_events.front()->get(), false);
+		buffered_events.pop_front();
 	}
+}
+
+bool Input::is_using_input_buffering() {
+	return use_input_buffering;
+}
+
+void Input::set_use_input_buffering(bool p_enable) {
+	use_input_buffering = p_enable;
 }
 
 void Input::set_use_accumulated_input(bool p_enable) {
@@ -864,15 +849,15 @@ void Input::set_use_accumulated_input(bool p_enable) {
 }
 
 void Input::release_pressed_events() {
-	flush_accumulated_events(); // this is needed to release actions strengths
+	flush_buffered_events(); // this is needed to release actions strengths
 
 	keys_pressed.clear();
 	joy_buttons_pressed.clear();
 	_joy_axis.clear();
 
-	for (Map<StringName, Input::Action>::Element *E = action_state.front(); E; E = E->next()) {
-		if (E->get().pressed) {
-			action_release(E->key());
+	for (const KeyValue<StringName, Input::Action> &E : action_state) {
+		if (E.value.pressed) {
+			action_release(E.key);
 		}
 	}
 }
@@ -881,7 +866,7 @@ void Input::set_event_dispatch_function(EventDispatchFunc p_function) {
 	event_dispatch_function = p_function;
 }
 
-void Input::joy_button(int p_device, int p_button, bool p_pressed) {
+void Input::joy_button(int p_device, JoyButton p_button, bool p_pressed) {
 	_THREAD_SAFE_METHOD_;
 	Joypad &joy = joy_names[p_device];
 	//printf("got button %i, mapping is %i\n", p_button, joy.mapping);
@@ -897,17 +882,17 @@ void Input::joy_button(int p_device, int p_button, bool p_pressed) {
 	JoyEvent map = _get_mapped_button_event(map_db[joy.mapping], p_button);
 
 	if (map.type == TYPE_BUTTON) {
-		_button_event(p_device, map.index, p_pressed);
+		_button_event(p_device, (JoyButton)map.index, p_pressed);
 		return;
 	}
 
 	if (map.type == TYPE_AXIS) {
-		_axis_event(p_device, map.index, p_pressed ? map.value : 0.0);
+		_axis_event(p_device, (JoyAxis)map.index, p_pressed ? map.value : 0.0);
 	}
 	// no event?
 }
 
-void Input::joy_axis(int p_device, int p_axis, const JoyAxisValue &p_value) {
+void Input::joy_axis(int p_device, JoyAxis p_axis, const JoyAxisValue &p_value) {
 	_THREAD_SAFE_METHOD_;
 
 	ERR_FAIL_INDEX(p_axis, JOY_AXIS_MAX);
@@ -948,7 +933,7 @@ void Input::joy_axis(int p_device, int p_axis, const JoyAxisValue &p_value) {
 			// Button already pressed or released; so ignore.
 			return;
 		}
-		_button_event(p_device, map.index, pressed);
+		_button_event(p_device, (JoyButton)map.index, pressed);
 
 		// Ensure opposite D-Pad button is also released.
 		switch (map.index) {
@@ -980,7 +965,7 @@ void Input::joy_axis(int p_device, int p_axis, const JoyAxisValue &p_value) {
 	}
 
 	if (map.type == TYPE_AXIS) {
-		_axis_event(p_device, map.index, map.value);
+		_axis_event(p_device, (JoyAxis)map.index, map.value);
 		return;
 	}
 	//printf("invalid mapping\n");
@@ -992,24 +977,24 @@ void Input::joy_hat(int p_device, int p_val) {
 
 	JoyEvent map[HAT_MAX];
 
-	map[HAT_UP].type = TYPE_BUTTON;
-	map[HAT_UP].index = JOY_BUTTON_DPAD_UP;
-	map[HAT_UP].value = 0;
+	map[HatDir::HAT_UP].type = TYPE_BUTTON;
+	map[HatDir::HAT_UP].index = JOY_BUTTON_DPAD_UP;
+	map[HatDir::HAT_UP].value = 0;
 
-	map[HAT_RIGHT].type = TYPE_BUTTON;
-	map[HAT_RIGHT].index = JOY_BUTTON_DPAD_RIGHT;
-	map[HAT_RIGHT].value = 0;
+	map[HatDir::HAT_RIGHT].type = TYPE_BUTTON;
+	map[HatDir::HAT_RIGHT].index = JOY_BUTTON_DPAD_RIGHT;
+	map[HatDir::HAT_RIGHT].value = 0;
 
-	map[HAT_DOWN].type = TYPE_BUTTON;
-	map[HAT_DOWN].index = JOY_BUTTON_DPAD_DOWN;
-	map[HAT_DOWN].value = 0;
+	map[HatDir::HAT_DOWN].type = TYPE_BUTTON;
+	map[HatDir::HAT_DOWN].index = JOY_BUTTON_DPAD_DOWN;
+	map[HatDir::HAT_DOWN].value = 0;
 
-	map[HAT_LEFT].type = TYPE_BUTTON;
-	map[HAT_LEFT].index = JOY_BUTTON_DPAD_LEFT;
-	map[HAT_LEFT].value = 0;
+	map[HatDir::HAT_LEFT].type = TYPE_BUTTON;
+	map[HatDir::HAT_LEFT].index = JOY_BUTTON_DPAD_LEFT;
+	map[HatDir::HAT_LEFT].value = 0;
 
 	if (joy.mapping != -1) {
-		_get_mapped_hat_events(map_db[joy.mapping], 0, map);
+		_get_mapped_hat_events(map_db[joy.mapping], (HatDir)0, map);
 	}
 
 	int cur_val = joy_names[p_device].hat_current;
@@ -1017,10 +1002,10 @@ void Input::joy_hat(int p_device, int p_val) {
 	for (int hat_direction = 0, hat_mask = 1; hat_direction < HAT_MAX; hat_direction++, hat_mask <<= 1) {
 		if ((p_val & hat_mask) != (cur_val & hat_mask)) {
 			if (map[hat_direction].type == TYPE_BUTTON) {
-				_button_event(p_device, map[hat_direction].index, p_val & hat_mask);
+				_button_event(p_device, (JoyButton)map[hat_direction].index, p_val & hat_mask);
 			}
 			if (map[hat_direction].type == TYPE_AXIS) {
-				_axis_event(p_device, map[hat_direction].index, (p_val & hat_mask) ? map[hat_direction].value : 0.0);
+				_axis_event(p_device, (JoyAxis)map[hat_direction].index, (p_val & hat_mask) ? map[hat_direction].value : 0.0);
 			}
 		}
 	}
@@ -1028,9 +1013,9 @@ void Input::joy_hat(int p_device, int p_val) {
 	joy_names[p_device].hat_current = p_val;
 }
 
-void Input::_button_event(int p_device, int p_index, bool p_pressed) {
+void Input::_button_event(int p_device, JoyButton p_index, bool p_pressed) {
 	Ref<InputEventJoypadButton> ievent;
-	ievent.instance();
+	ievent.instantiate();
 	ievent->set_device(p_device);
 	ievent->set_button_index(p_index);
 	ievent->set_pressed(p_pressed);
@@ -1038,9 +1023,9 @@ void Input::_button_event(int p_device, int p_index, bool p_pressed) {
 	parse_input_event(ievent);
 }
 
-void Input::_axis_event(int p_device, int p_axis, float p_value) {
+void Input::_axis_event(int p_device, JoyAxis p_axis, float p_value) {
 	Ref<InputEventJoypadMotion> ievent;
-	ievent.instance();
+	ievent.instantiate();
 	ievent->set_device(p_device);
 	ievent->set_axis(p_axis);
 	ievent->set_axis_value(p_value);
@@ -1048,7 +1033,7 @@ void Input::_axis_event(int p_device, int p_axis, float p_value) {
 	parse_input_event(ievent);
 }
 
-Input::JoyEvent Input::_get_mapped_button_event(const JoyDeviceMapping &mapping, int p_button) {
+Input::JoyEvent Input::_get_mapped_button_event(const JoyDeviceMapping &mapping, JoyButton p_button) {
 	JoyEvent event;
 	event.type = TYPE_MAX;
 
@@ -1084,7 +1069,7 @@ Input::JoyEvent Input::_get_mapped_button_event(const JoyDeviceMapping &mapping,
 	return event;
 }
 
-Input::JoyEvent Input::_get_mapped_axis_event(const JoyDeviceMapping &mapping, int p_axis, float p_value) {
+Input::JoyEvent Input::_get_mapped_axis_event(const JoyDeviceMapping &mapping, JoyAxis p_axis, float p_value) {
 	JoyEvent event;
 	event.type = TYPE_MAX;
 
@@ -1155,23 +1140,23 @@ Input::JoyEvent Input::_get_mapped_axis_event(const JoyDeviceMapping &mapping, i
 	return event;
 }
 
-void Input::_get_mapped_hat_events(const JoyDeviceMapping &mapping, int p_hat, JoyEvent r_events[]) {
+void Input::_get_mapped_hat_events(const JoyDeviceMapping &mapping, HatDir p_hat, JoyEvent r_events[]) {
 	for (int i = 0; i < mapping.bindings.size(); i++) {
 		const JoyBinding binding = mapping.bindings[i];
 		if (binding.inputType == TYPE_HAT && binding.input.hat.hat == p_hat) {
 			int hat_direction;
 			switch (binding.input.hat.hat_mask) {
-				case HAT_MASK_UP:
-					hat_direction = HAT_UP;
+				case HatMask::HAT_MASK_UP:
+					hat_direction = HatDir::HAT_UP;
 					break;
-				case HAT_MASK_RIGHT:
-					hat_direction = HAT_RIGHT;
+				case HatMask::HAT_MASK_RIGHT:
+					hat_direction = HatDir::HAT_RIGHT;
 					break;
-				case HAT_MASK_DOWN:
-					hat_direction = HAT_DOWN;
+				case HatMask::HAT_MASK_DOWN:
+					hat_direction = HatDir::HAT_DOWN;
 					break;
-				case HAT_MASK_LEFT:
-					hat_direction = HAT_LEFT;
+				case HatMask::HAT_MASK_LEFT:
+					hat_direction = HatDir::HAT_LEFT;
 					break;
 				default:
 					ERR_PRINT_ONCE("Joypad button mapping error.");
@@ -1262,16 +1247,16 @@ void Input::parse_mapping(String p_mapping) {
 			} else if (output[0] == '-') {
 				output_range = NEGATIVE_HALF_AXIS;
 			}
-			output = output.right(1);
+			output = output.substr(1);
 		}
 
 		JoyAxisRange input_range = FULL_AXIS;
 		if (input[0] == '+') {
 			input_range = POSITIVE_HALF_AXIS;
-			input = input.right(1);
+			input = input.substr(1);
 		} else if (input[0] == '-') {
 			input_range = NEGATIVE_HALF_AXIS;
-			input = input.right(1);
+			input = input.substr(1);
 		}
 		bool invert_axis = false;
 		if (input[input.length() - 1] == '~') {
@@ -1299,11 +1284,11 @@ void Input::parse_mapping(String p_mapping) {
 		switch (input[0]) {
 			case 'b':
 				binding.inputType = TYPE_BUTTON;
-				binding.input.button = input.right(1).to_int();
+				binding.input.button = (JoyButton)input.substr(1).to_int();
 				break;
 			case 'a':
 				binding.inputType = TYPE_AXIS;
-				binding.input.axis.axis = input.right(1).to_int();
+				binding.input.axis.axis = (JoyAxis)input.substr(1).to_int();
 				binding.input.axis.range = input_range;
 				binding.input.axis.invert = invert_axis;
 				break;
@@ -1311,8 +1296,8 @@ void Input::parse_mapping(String p_mapping) {
 				ERR_CONTINUE_MSG(input.length() != 4 || input[2] != '.',
 						String(entry[idx] + "\nInvalid hat input: " + input));
 				binding.inputType = TYPE_HAT;
-				binding.input.hat.hat = input.substr(1, 1).to_int();
-				binding.input.hat.hat_mask = static_cast<HatMask>(input.right(3).to_int());
+				binding.input.hat.hat = (HatDir)input.substr(1, 1).to_int();
+				binding.input.hat.hat_mask = static_cast<HatMask>(input.substr(3).to_int());
 				break;
 			default:
 				ERR_CONTINUE_MSG(true, String(entry[idx] + "\nUnrecognised input string: " + input));
@@ -1329,8 +1314,8 @@ void Input::add_joy_mapping(String p_mapping, bool p_update_existing) {
 	if (p_update_existing) {
 		Vector<String> entry = p_mapping.split(",");
 		String uid = entry[0];
-		for (Map<int, Joypad>::Element *E = joy_names.front(); E; E = E->next()) {
-			Joypad &joy = E->get();
+		for (KeyValue<int, Joypad> &E : joy_names) {
+			Joypad &joy = E.value;
 			if (joy.uid == uid) {
 				joy.mapping = map_db.size() - 1;
 			}
@@ -1344,8 +1329,8 @@ void Input::remove_joy_mapping(String p_guid) {
 			map_db.remove(i);
 		}
 	}
-	for (Map<int, Joypad>::Element *E = joy_names.front(); E; E = E->next()) {
-		Joypad &joy = E->get();
+	for (KeyValue<int, Joypad> &E : joy_names) {
+		Joypad &joy = E.value;
 		if (joy.uid == p_guid) {
 			joy.mapping = -1;
 		}

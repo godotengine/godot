@@ -72,46 +72,11 @@ static _FORCE_INLINE_ real_t atan2fast(real_t y, real_t x) {
 	return (y < 0.0f) ? -angle : angle;
 }
 
-void SliderJoint3DSW::initParams() {
-	m_lowerLinLimit = real_t(1.0);
-	m_upperLinLimit = real_t(-1.0);
-	m_lowerAngLimit = real_t(0.);
-	m_upperAngLimit = real_t(0.);
-	m_softnessDirLin = SLIDER_CONSTRAINT_DEF_SOFTNESS;
-	m_restitutionDirLin = SLIDER_CONSTRAINT_DEF_RESTITUTION;
-	m_dampingDirLin = real_t(0.);
-	m_softnessDirAng = SLIDER_CONSTRAINT_DEF_SOFTNESS;
-	m_restitutionDirAng = SLIDER_CONSTRAINT_DEF_RESTITUTION;
-	m_dampingDirAng = real_t(0.);
-	m_softnessOrthoLin = SLIDER_CONSTRAINT_DEF_SOFTNESS;
-	m_restitutionOrthoLin = SLIDER_CONSTRAINT_DEF_RESTITUTION;
-	m_dampingOrthoLin = SLIDER_CONSTRAINT_DEF_DAMPING;
-	m_softnessOrthoAng = SLIDER_CONSTRAINT_DEF_SOFTNESS;
-	m_restitutionOrthoAng = SLIDER_CONSTRAINT_DEF_RESTITUTION;
-	m_dampingOrthoAng = SLIDER_CONSTRAINT_DEF_DAMPING;
-	m_softnessLimLin = SLIDER_CONSTRAINT_DEF_SOFTNESS;
-	m_restitutionLimLin = SLIDER_CONSTRAINT_DEF_RESTITUTION;
-	m_dampingLimLin = SLIDER_CONSTRAINT_DEF_DAMPING;
-	m_softnessLimAng = SLIDER_CONSTRAINT_DEF_SOFTNESS;
-	m_restitutionLimAng = SLIDER_CONSTRAINT_DEF_RESTITUTION;
-	m_dampingLimAng = SLIDER_CONSTRAINT_DEF_DAMPING;
-
-	m_poweredLinMotor = false;
-	m_targetLinMotorVelocity = real_t(0.);
-	m_maxLinMotorForce = real_t(0.);
-	m_accumulatedLinMotorImpulse = real_t(0.0);
-
-	m_poweredAngMotor = false;
-	m_targetAngMotorVelocity = real_t(0.);
-	m_maxAngMotorForce = real_t(0.);
-	m_accumulatedAngMotorImpulse = real_t(0.0);
-} // SliderJointSW::initParams()
-
 //-----------------------------------------------------------------------------
 
 //-----------------------------------------------------------------------------
 
-SliderJoint3DSW::SliderJoint3DSW(Body3DSW *rbA, Body3DSW *rbB, const Transform &frameInA, const Transform &frameInB) :
+SliderJoint3DSW::SliderJoint3DSW(Body3DSW *rbA, Body3DSW *rbB, const Transform3D &frameInA, const Transform3D &frameInB) :
 		Joint3DSW(_arr, 2),
 		m_frameInA(frameInA),
 		m_frameInB(frameInB) {
@@ -120,14 +85,15 @@ SliderJoint3DSW::SliderJoint3DSW(Body3DSW *rbA, Body3DSW *rbB, const Transform &
 
 	A->add_constraint(this, 0);
 	B->add_constraint(this, 1);
-
-	initParams();
 } // SliderJointSW::SliderJointSW()
 
 //-----------------------------------------------------------------------------
 
 bool SliderJoint3DSW::setup(real_t p_step) {
-	if ((A->get_mode() <= PhysicsServer3D::BODY_MODE_KINEMATIC) && (B->get_mode() <= PhysicsServer3D::BODY_MODE_KINEMATIC)) {
+	dynamic_A = (A->get_mode() > PhysicsServer3D::BODY_MODE_KINEMATIC);
+	dynamic_B = (B->get_mode() > PhysicsServer3D::BODY_MODE_KINEMATIC);
+
+	if (!dynamic_A && !dynamic_B) {
 		return false;
 	}
 
@@ -197,11 +163,15 @@ void SliderJoint3DSW::solve(real_t p_step) {
 		real_t softness = (i) ? m_softnessOrthoLin : (m_solveLinLim ? m_softnessLimLin : m_softnessDirLin);
 		real_t restitution = (i) ? m_restitutionOrthoLin : (m_solveLinLim ? m_restitutionLimLin : m_restitutionDirLin);
 		real_t damping = (i) ? m_dampingOrthoLin : (m_solveLinLim ? m_dampingLimLin : m_dampingDirLin);
-		// calcutate and apply impulse
+		// Calculate and apply impulse.
 		real_t normalImpulse = softness * (restitution * depth / p_step - damping * rel_vel) * m_jacLinDiagABInv[i];
 		Vector3 impulse_vector = normal * normalImpulse;
-		A->apply_impulse(impulse_vector, m_relPosA);
-		B->apply_impulse(-impulse_vector, m_relPosB);
+		if (dynamic_A) {
+			A->apply_impulse(impulse_vector, m_relPosA);
+		}
+		if (dynamic_B) {
+			B->apply_impulse(-impulse_vector, m_relPosB);
+		}
 		if (m_poweredLinMotor && (!i)) { // apply linear motor
 			if (m_accumulatedLinMotorImpulse < m_maxLinMotorForce) {
 				real_t desiredMotorVel = m_targetLinMotorVelocity;
@@ -221,8 +191,12 @@ void SliderJoint3DSW::solve(real_t p_step) {
 				m_accumulatedLinMotorImpulse = new_acc;
 				// apply clamped impulse
 				impulse_vector = normal * normalImpulse;
-				A->apply_impulse(impulse_vector, m_relPosA);
-				B->apply_impulse(-impulse_vector, m_relPosB);
+				if (dynamic_A) {
+					A->apply_impulse(impulse_vector, m_relPosA);
+				}
+				if (dynamic_B) {
+					B->apply_impulse(-impulse_vector, m_relPosB);
+				}
 			}
 		}
 	}
@@ -256,8 +230,12 @@ void SliderJoint3DSW::solve(real_t p_step) {
 		angularError *= (real_t(1.) / denom2) * m_restitutionOrthoAng * m_softnessOrthoAng;
 	}
 	// apply impulse
-	A->apply_torque_impulse(-velrelOrthog + angularError);
-	B->apply_torque_impulse(velrelOrthog - angularError);
+	if (dynamic_A) {
+		A->apply_torque_impulse(-velrelOrthog + angularError);
+	}
+	if (dynamic_B) {
+		B->apply_torque_impulse(velrelOrthog - angularError);
+	}
 	real_t impulseMag;
 	//solve angular limits
 	if (m_solveAngLim) {
@@ -268,8 +246,12 @@ void SliderJoint3DSW::solve(real_t p_step) {
 		impulseMag *= m_kAngle * m_softnessDirAng;
 	}
 	Vector3 impulse = axisA * impulseMag;
-	A->apply_torque_impulse(impulse);
-	B->apply_torque_impulse(-impulse);
+	if (dynamic_A) {
+		A->apply_torque_impulse(impulse);
+	}
+	if (dynamic_B) {
+		B->apply_torque_impulse(-impulse);
+	}
 	//apply angular motor
 	if (m_poweredAngMotor) {
 		if (m_accumulatedAngMotorImpulse < m_maxAngMotorForce) {
@@ -294,8 +276,12 @@ void SliderJoint3DSW::solve(real_t p_step) {
 			m_accumulatedAngMotorImpulse = new_acc;
 			// apply clamped impulse
 			Vector3 motorImp = angImpulse * axisA;
-			A->apply_torque_impulse(motorImp);
-			B->apply_torque_impulse(-motorImp);
+			if (dynamic_A) {
+				A->apply_torque_impulse(motorImp);
+			}
+			if (dynamic_B) {
+				B->apply_torque_impulse(-motorImp);
+			}
 		}
 	}
 } // SliderJointSW::solveConstraint()

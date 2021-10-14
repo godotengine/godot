@@ -31,8 +31,6 @@
 #include "gdscript_language_protocol.h"
 
 #include "core/config/project_settings.h"
-#include "core/io/json.h"
-#include "core/os/copymem.h"
 #include "editor/doc_tools.h"
 #include "editor/editor_log.h"
 #include "editor/editor_node.h"
@@ -130,13 +128,13 @@ Error GDScriptLanguageProtocol::on_client_connected() {
 	peer->connection = tcp_peer;
 	clients.set(next_client_id, peer);
 	next_client_id++;
-	EditorNode::get_log()->add_message("Connection Taken", EditorLog::MSG_TYPE_EDITOR);
+	EditorNode::get_log()->add_message("[LSP] Connection Taken", EditorLog::MSG_TYPE_EDITOR);
 	return OK;
 }
 
 void GDScriptLanguageProtocol::on_client_disconnected(const int &p_client_id) {
 	clients.erase(p_client_id);
-	EditorNode::get_log()->add_message("Disconnected", EditorLog::MSG_TYPE_EDITOR);
+	EditorNode::get_log()->add_message("[LSP] Disconnected", EditorLog::MSG_TYPE_EDITOR);
 }
 
 String GDScriptLanguageProtocol::process_message(const String &p_text) {
@@ -195,7 +193,7 @@ Dictionary GDScriptLanguageProtocol::initialize(const Dictionary &p_params) {
 				vformat("GDScriptLanguageProtocol: Can't initialize invalid peer '%d'.", latest_client_id));
 		Ref<LSPeer> peer = clients.get(latest_client_id);
 		if (peer != nullptr) {
-			String msg = JSON::print(request);
+			String msg = Variant(request).to_json_string();
 			msg = format_output(msg);
 			(*peer)->res_queue.push_back(msg.utf8());
 		}
@@ -214,11 +212,11 @@ void GDScriptLanguageProtocol::initialized(const Variant &p_params) {
 	lsp::GodotCapabilities capabilities;
 
 	DocTools *doc = EditorHelp::get_doc_data();
-	for (Map<String, DocData::ClassDoc>::Element *E = doc->class_list.front(); E; E = E->next()) {
+	for (const KeyValue<String, DocData::ClassDoc> &E : doc->class_list) {
 		lsp::GodotNativeClassInfo gdclass;
-		gdclass.name = E->get().name;
-		gdclass.class_doc = &(E->get());
-		if (ClassDB::ClassInfo *ptr = ClassDB::classes.getptr(StringName(E->get().name))) {
+		gdclass.name = E.value.name;
+		gdclass.class_doc = &(E.value);
+		if (ClassDB::ClassInfo *ptr = ClassDB::classes.getptr(StringName(E.value.name))) {
 			gdclass.class_info = ptr;
 		}
 		capabilities.native_classes.push_back(gdclass);
@@ -256,7 +254,7 @@ void GDScriptLanguageProtocol::poll() {
 	}
 }
 
-Error GDScriptLanguageProtocol::start(int p_port, const IP_Address &p_bind_ip) {
+Error GDScriptLanguageProtocol::start(int p_port, const IPAddress &p_bind_ip) {
 	return server->listen(p_port, p_bind_ip);
 }
 
@@ -281,7 +279,24 @@ void GDScriptLanguageProtocol::notify_client(const String &p_method, const Varia
 	ERR_FAIL_COND(peer == nullptr);
 
 	Dictionary message = make_notification(p_method, p_params);
-	String msg = JSON::print(message);
+	String msg = Variant(message).to_json_string();
+	msg = format_output(msg);
+	peer->res_queue.push_back(msg.utf8());
+}
+
+void GDScriptLanguageProtocol::request_client(const String &p_method, const Variant &p_params, int p_client_id) {
+	if (p_client_id == -1) {
+		ERR_FAIL_COND_MSG(latest_client_id == -1,
+				"GDScript LSP: Can't notify client as none was connected.");
+		p_client_id = latest_client_id;
+	}
+	ERR_FAIL_COND(!clients.has(p_client_id));
+	Ref<LSPeer> peer = clients.get(p_client_id);
+	ERR_FAIL_COND(peer == nullptr);
+
+	Dictionary message = make_request(p_method, p_params, next_server_id);
+	next_server_id++;
+	String msg = Variant(message).to_json_string();
 	msg = format_output(msg);
 	peer->res_queue.push_back(msg.utf8());
 }
@@ -295,10 +310,10 @@ bool GDScriptLanguageProtocol::is_goto_native_symbols_enabled() const {
 }
 
 GDScriptLanguageProtocol::GDScriptLanguageProtocol() {
-	server.instance();
+	server.instantiate();
 	singleton = this;
-	workspace.instance();
-	text_document.instance();
+	workspace.instantiate();
+	text_document.instantiate();
 	set_scope("textDocument", text_document.ptr());
 	set_scope("completionItem", text_document.ptr());
 	set_scope("workspace", workspace.ptr());

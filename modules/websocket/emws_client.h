@@ -45,6 +45,7 @@ private:
 	bool _is_connecting = false;
 	int _in_buf_size = DEF_BUF_SHIFT;
 	int _in_pkt_size = DEF_PKT_SHIFT;
+	int _out_buf_size = DEF_BUF_SHIFT;
 
 	static void _esws_on_connect(void *obj, char *proto);
 	static void _esws_on_message(void *obj, const uint8_t *p_data, int p_data_size, int p_is_string);
@@ -56,7 +57,7 @@ public:
 	Error connect_to_host(String p_host, String p_path, uint16_t p_port, bool p_ssl, const Vector<String> p_protocol = Vector<String>(), const Vector<String> p_custom_headers = Vector<String>());
 	Ref<WebSocketPeer> get_peer(int p_peer_id) const;
 	void disconnect_from_host(int p_code = 1000, String p_reason = "");
-	IP_Address get_connected_host() const;
+	IPAddress get_connected_host() const;
 	uint16_t get_connected_port() const;
 	virtual ConnectionStatus get_connection_status() const;
 	int get_max_packet_size() const;

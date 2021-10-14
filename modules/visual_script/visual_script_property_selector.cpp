@@ -55,11 +55,11 @@ void VisualScriptPropertySelector::_sbox_input(const Ref<InputEvent> &p_ie) {
 			case KEY_DOWN:
 			case KEY_PAGEUP:
 			case KEY_PAGEDOWN: {
-				search_options->call("_gui_input", k);
+				search_options->gui_input(k);
 				search_box->accept_event();
 
 				TreeItem *root = search_options->get_root();
-				if (!root->get_children()) {
+				if (!root->get_first_child()) {
 					break;
 				}
 
@@ -74,6 +74,8 @@ void VisualScriptPropertySelector::_sbox_input(const Ref<InputEvent> &p_ie) {
 				current->select(0);
 
 			} break;
+			default:
+				break;
 		}
 	}
 }
@@ -93,43 +95,49 @@ void VisualScriptPropertySelector::_update_search() {
 		base = ClassDB::get_parent_class_nocheck(base);
 	}
 
-	for (List<StringName>::Element *E = base_list.front(); E; E = E->next()) {
+	for (const StringName &E : base_list) {
 		List<MethodInfo> methods;
 		List<PropertyInfo> props;
 		TreeItem *category = nullptr;
 		Ref<Texture2D> type_icons[Variant::VARIANT_MAX] = {
-			vbc->get_theme_icon("Variant", "EditorIcons"),
-			vbc->get_theme_icon("bool", "EditorIcons"),
-			vbc->get_theme_icon("int", "EditorIcons"),
-			vbc->get_theme_icon("float", "EditorIcons"),
-			vbc->get_theme_icon("String", "EditorIcons"),
-			vbc->get_theme_icon("Vector2", "EditorIcons"),
-			vbc->get_theme_icon("Rect2", "EditorIcons"),
-			vbc->get_theme_icon("Vector3", "EditorIcons"),
-			vbc->get_theme_icon("Transform2D", "EditorIcons"),
-			vbc->get_theme_icon("Plane", "EditorIcons"),
-			vbc->get_theme_icon("Quat", "EditorIcons"),
-			vbc->get_theme_icon("AABB", "EditorIcons"),
-			vbc->get_theme_icon("Basis", "EditorIcons"),
-			vbc->get_theme_icon("Transform", "EditorIcons"),
-			vbc->get_theme_icon("Color", "EditorIcons"),
-			vbc->get_theme_icon("Path", "EditorIcons"),
-			vbc->get_theme_icon("RID", "EditorIcons"),
-			vbc->get_theme_icon("Object", "EditorIcons"),
-			vbc->get_theme_icon("Dictionary", "EditorIcons"),
-			vbc->get_theme_icon("Array", "EditorIcons"),
-			vbc->get_theme_icon("PackedByteArray", "EditorIcons"),
-			vbc->get_theme_icon("PackedInt32Array", "EditorIcons"),
-			vbc->get_theme_icon("PackedFloat32Array", "EditorIcons"),
-			vbc->get_theme_icon("PackedInt64Array", "EditorIcons"),
-			vbc->get_theme_icon("PackedFloat64Array", "EditorIcons"),
-			vbc->get_theme_icon("PackedStringArray", "EditorIcons"),
-			vbc->get_theme_icon("PackedVector2Array", "EditorIcons"),
-			vbc->get_theme_icon("PackedVector3Array", "EditorIcons"),
-			vbc->get_theme_icon("PackedColorArray", "EditorIcons")
+			vbc->get_theme_icon(SNAME("Variant"), SNAME("EditorIcons")),
+			vbc->get_theme_icon(SNAME("bool"), SNAME("EditorIcons")),
+			vbc->get_theme_icon(SNAME("int"), SNAME("EditorIcons")),
+			vbc->get_theme_icon(SNAME("float"), SNAME("EditorIcons")),
+			vbc->get_theme_icon(SNAME("String"), SNAME("EditorIcons")),
+			vbc->get_theme_icon(SNAME("Vector2"), SNAME("EditorIcons")),
+			vbc->get_theme_icon(SNAME("Vector2i"), SNAME("EditorIcons")),
+			vbc->get_theme_icon(SNAME("Rect2"), SNAME("EditorIcons")),
+			vbc->get_theme_icon(SNAME("Rect2i"), SNAME("EditorIcons")),
+			vbc->get_theme_icon(SNAME("Vector3"), SNAME("EditorIcons")),
+			vbc->get_theme_icon(SNAME("Vector3i"), SNAME("EditorIcons")),
+			vbc->get_theme_icon(SNAME("Transform2D"), SNAME("EditorIcons")),
+			vbc->get_theme_icon(SNAME("Plane"), SNAME("EditorIcons")),
+			vbc->get_theme_icon(SNAME("Quaternion"), SNAME("EditorIcons")),
+			vbc->get_theme_icon(SNAME("AABB"), SNAME("EditorIcons")),
+			vbc->get_theme_icon(SNAME("Basis"), SNAME("EditorIcons")),
+			vbc->get_theme_icon(SNAME("Transform3D"), SNAME("EditorIcons")),
+			vbc->get_theme_icon(SNAME("Color"), SNAME("EditorIcons")),
+			vbc->get_theme_icon(SNAME("StringName"), SNAME("EditorIcons")),
+			vbc->get_theme_icon(SNAME("NodePath"), SNAME("EditorIcons")),
+			vbc->get_theme_icon(SNAME("RID"), SNAME("EditorIcons")),
+			vbc->get_theme_icon(SNAME("MiniObject"), SNAME("EditorIcons")),
+			vbc->get_theme_icon(SNAME("Callable"), SNAME("EditorIcons")),
+			vbc->get_theme_icon(SNAME("Signal"), SNAME("EditorIcons")),
+			vbc->get_theme_icon(SNAME("Dictionary"), SNAME("EditorIcons")),
+			vbc->get_theme_icon(SNAME("Array"), SNAME("EditorIcons")),
+			vbc->get_theme_icon(SNAME("PackedByteArray"), SNAME("EditorIcons")),
+			vbc->get_theme_icon(SNAME("PackedInt32Array"), SNAME("EditorIcons")),
+			vbc->get_theme_icon(SNAME("PackedInt64Array"), SNAME("EditorIcons")),
+			vbc->get_theme_icon(SNAME("PackedFloat32Array"), SNAME("EditorIcons")),
+			vbc->get_theme_icon(SNAME("PackedFloat64Array"), SNAME("EditorIcons")),
+			vbc->get_theme_icon(SNAME("PackedStringArray"), SNAME("EditorIcons")),
+			vbc->get_theme_icon(SNAME("PackedVector2Array"), SNAME("EditorIcons")),
+			vbc->get_theme_icon(SNAME("PackedVector3Array"), SNAME("EditorIcons")),
+			vbc->get_theme_icon(SNAME("PackedColorArray"), SNAME("EditorIcons"))
 		};
 		{
-			String b = String(E->get());
+			String b = String(E);
 			category = search_options->create_item(root);
 			if (category) {
 				category->set_text(0, b.replace_first("*", ""));
@@ -148,30 +156,30 @@ void VisualScriptPropertySelector::_update_search() {
 				if (Object::cast_to<Script>(obj)) {
 					Object::cast_to<Script>(obj)->get_script_property_list(&props);
 				} else {
-					ClassDB::get_property_list(E->get(), &props, true);
+					ClassDB::get_property_list(E, &props, true);
 				}
 			}
-			for (List<PropertyInfo>::Element *F = props.front(); F; F = F->next()) {
-				if (!(F->get().usage & PROPERTY_USAGE_EDITOR) && !(F->get().usage & PROPERTY_USAGE_SCRIPT_VARIABLE)) {
+			for (const PropertyInfo &F : props) {
+				if (!(F.usage & PROPERTY_USAGE_EDITOR) && !(F.usage & PROPERTY_USAGE_SCRIPT_VARIABLE)) {
 					continue;
 				}
 
-				if (type_filter.size() && type_filter.find(F->get().type) == -1) {
+				if (type_filter.size() && type_filter.find(F.type) == -1) {
 					continue;
 				}
 
 				// capitalize() also converts underscore to space, we'll match again both possible styles
-				String get_text_raw = String(vformat(TTR("Get %s"), F->get().name));
+				String get_text_raw = String(vformat(TTR("Get %s"), F.name));
 				String get_text = get_text_raw.capitalize();
-				String set_text_raw = String(vformat(TTR("Set %s"), F->get().name));
+				String set_text_raw = String(vformat(TTR("Set %s"), F.name));
 				String set_text = set_text_raw.capitalize();
 				String input = search_box->get_text().capitalize();
 
 				if (input == String() || get_text_raw.findn(input) != -1 || get_text.findn(input) != -1) {
 					TreeItem *item = search_options->create_item(category ? category : root);
 					item->set_text(0, get_text);
-					item->set_metadata(0, F->get().name);
-					item->set_icon(0, type_icons[F->get().type]);
+					item->set_metadata(0, F.name);
+					item->set_icon(0, type_icons[F.type]);
 					item->set_metadata(1, "get");
 					item->set_collapsed(true);
 					item->set_selectable(0, true);
@@ -183,8 +191,8 @@ void VisualScriptPropertySelector::_update_search() {
 				if (input == String() || set_text_raw.findn(input) != -1 || set_text.findn(input) != -1) {
 					TreeItem *item = search_options->create_item(category ? category : root);
 					item->set_text(0, set_text);
-					item->set_metadata(0, F->get().name);
-					item->set_icon(0, type_icons[F->get().type]);
+					item->set_metadata(0, F.name);
+					item->set_icon(0, type_icons[F.type]);
 					item->set_metadata(1, "set");
 					item->set_selectable(0, true);
 					item->set_selectable(1, false);
@@ -205,7 +213,7 @@ void VisualScriptPropertySelector::_update_search() {
 					Object::cast_to<Script>(obj)->get_script_method_list(&methods);
 				}
 
-				ClassDB::get_method_list(E->get(), &methods, true, true);
+				ClassDB::get_method_list(E, &methods, true, true);
 			}
 		}
 		for (List<MethodInfo>::Element *M = methods.front(); M; M = M->next()) {
@@ -253,7 +261,7 @@ void VisualScriptPropertySelector::_update_search() {
 
 			TreeItem *item = search_options->create_item(category ? category : root);
 			item->set_text(0, desc);
-			item->set_icon(0, vbc->get_theme_icon("MemberMethod", "EditorIcons"));
+			item->set_icon(0, vbc->get_theme_icon(SNAME("MemberMethod"), SNAME("EditorIcons")));
 			item->set_metadata(0, name);
 			item->set_selectable(0, true);
 
@@ -265,7 +273,7 @@ void VisualScriptPropertySelector::_update_search() {
 			item->set_metadata(2, connecting);
 		}
 
-		if (category && category->get_children() == nullptr) {
+		if (category && category->get_first_child() == nullptr) {
 			memdelete(category); //old category was unused
 		}
 	}
@@ -310,14 +318,14 @@ void VisualScriptPropertySelector::_update_search() {
 		found = true;
 	}
 
-	get_ok_button()->set_disabled(root->get_children() == nullptr);
+	get_ok_button()->set_disabled(root->get_first_child() == nullptr);
 }
 
 void VisualScriptPropertySelector::create_visualscript_item(const String &name, TreeItem *const root, const String &search_input, const String &text) {
 	if (search_input == String() || text.findn(search_input) != -1) {
 		TreeItem *item = search_options->create_item(root);
 		item->set_text(0, text);
-		item->set_icon(0, vbc->get_theme_icon("VisualScript", "EditorIcons"));
+		item->set_icon(0, vbc->get_theme_icon(SNAME("VisualScript"), SNAME("EditorIcons")));
 		item->set_metadata(0, name);
 		item->set_metadata(1, "action");
 		item->set_selectable(0, true);
@@ -334,11 +342,11 @@ void VisualScriptPropertySelector::get_visual_node_names(const String &root_filt
 	List<String> fnodes;
 	VisualScriptLanguage::singleton->get_registered_node_names(&fnodes);
 
-	for (List<String>::Element *E = fnodes.front(); E; E = E->next()) {
-		if (!E->get().begins_with(root_filter)) {
+	for (const String &E : fnodes) {
+		if (!E.begins_with(root_filter)) {
 			continue;
 		}
-		Vector<String> path = E->get().split("/");
+		Vector<String> path = E.split("/");
 
 		// check if the name has the filter
 		bool in_filter = false;
@@ -349,7 +357,7 @@ void VisualScriptPropertySelector::get_visual_node_names(const String &root_filt
 			} else {
 				in_filter = false;
 			}
-			if (E->get().findn(tx_filters[i]) != -1) {
+			if (E.findn(tx_filters[i]) != -1) {
 				in_filter = true;
 				break;
 			}
@@ -360,7 +368,7 @@ void VisualScriptPropertySelector::get_visual_node_names(const String &root_filt
 
 		bool in_modifier = p_modifiers.is_empty();
 		for (Set<String>::Element *F = p_modifiers.front(); F && in_modifier; F = F->next()) {
-			if (E->get().findn(F->get()) != -1) {
+			if (E.findn(F->get()) != -1) {
 				in_modifier = true;
 			}
 		}
@@ -369,7 +377,7 @@ void VisualScriptPropertySelector::get_visual_node_names(const String &root_filt
 		}
 
 		TreeItem *item = search_options->create_item(root);
-		Ref<VisualScriptNode> vnode = VisualScriptLanguage::singleton->create_node_from_name(E->get());
+		Ref<VisualScriptNode> vnode = VisualScriptLanguage::singleton->create_node_from_name(E);
 		Ref<VisualScriptOperator> vnode_operator = vnode;
 		String type_name;
 		if (vnode_operator.is_valid()) {
@@ -401,9 +409,9 @@ void VisualScriptPropertySelector::get_visual_node_names(const String &root_filt
 		}
 
 		item->set_text(0, type_name + String("").join(desc));
-		item->set_icon(0, vbc->get_theme_icon("VisualScript", "EditorIcons"));
+		item->set_icon(0, vbc->get_theme_icon(SNAME("VisualScript"), SNAME("EditorIcons")));
 		item->set_selectable(0, true);
-		item->set_metadata(0, E->get());
+		item->set_metadata(0, E);
 		item->set_selectable(0, true);
 		item->set_metadata(1, "visualscript");
 		item->set_selectable(1, false);
@@ -417,7 +425,7 @@ void VisualScriptPropertySelector::_confirmed() {
 	if (!ti) {
 		return;
 	}
-	emit_signal("selected", ti->get_metadata(0), ti->get_metadata(1), ti->get_metadata(2));
+	emit_signal(SNAME("selected"), ti->get_metadata(0), ti->get_metadata(1), ti->get_metadata(2));
 	set_visible(false);
 }
 
@@ -469,10 +477,11 @@ void VisualScriptPropertySelector::_item_selected() {
 
 		at_class = ClassDB::get_parent_class_nocheck(at_class);
 	}
-	Map<String, DocData::ClassDoc>::Element *T = dd->class_list.find(class_type);
+	Vector<String> functions = name.rsplit("/", false);
+	at_class = functions.size() > 3 ? functions[functions.size() - 2] : class_type;
+	Map<String, DocData::ClassDoc>::Element *T = dd->class_list.find(at_class);
 	if (T) {
 		for (int i = 0; i < T->get().methods.size(); i++) {
-			Vector<String> functions = name.rsplit("/", false, 1);
 			if (T->get().methods[i].name == functions[functions.size() - 1]) {
 				text = DTR(T->get().methods[i].description);
 			}

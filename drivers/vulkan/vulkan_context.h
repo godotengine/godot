@@ -38,7 +38,11 @@
 #include "core/templates/rid_owner.h"
 #include "servers/display_server.h"
 
+#ifdef USE_VOLK
+#include <volk.h>
+#else
 #include <vulkan/vulkan.h>
+#endif
 
 class VulkanContext {
 public:
@@ -54,6 +58,14 @@ public:
 		String supported_operations_desc() const;
 	};
 
+	struct MultiviewCapabilities {
+		bool is_supported;
+		bool geometry_shader_is_supported;
+		bool tessellation_shader_is_supported;
+		uint32_t max_view_count;
+		uint32_t max_instance_count;
+	};
+
 private:
 	enum {
 		MAX_EXTENSIONS = 128,
@@ -62,7 +74,6 @@ private:
 	};
 
 	VkInstance inst = VK_NULL_HANDLE;
-	VkSurfaceKHR surface = VK_NULL_HANDLE;
 	VkPhysicalDevice gpu = VK_NULL_HANDLE;
 	VkPhysicalDeviceProperties gpu_props;
 	uint32_t queue_family_count = 0;
@@ -74,7 +85,9 @@ private:
 	// Vulkan 1.0 doesn't return version info so we assume this by default until we know otherwise
 	uint32_t vulkan_major = 1;
 	uint32_t vulkan_minor = 0;
+	uint32_t vulkan_patch = 0;
 	SubgroupCapabilities subgroup_capabilities;
+	MultiviewCapabilities multiview_capabilities;
 
 	String device_vendor;
 	String device_name;
@@ -92,7 +105,6 @@ private:
 	VkQueue present_queue = VK_NULL_HANDLE;
 	VkColorSpaceKHR color_space;
 	VkFormat format;
-	VkSemaphore image_acquired_semaphores[FRAME_LAG];
 	VkSemaphore draw_complete_semaphores[FRAME_LAG];
 	VkSemaphore image_ownership_semaphores[FRAME_LAG];
 	int frame_index = 0;
@@ -112,9 +124,12 @@ private:
 		VkSwapchainKHR swapchain = VK_NULL_HANDLE;
 		SwapchainImageResources *swapchain_image_resources = VK_NULL_HANDLE;
 		VkPresentModeKHR presentMode = VK_PRESENT_MODE_FIFO_KHR;
+		VkSemaphore image_acquired_semaphores[FRAME_LAG];
+		bool semaphore_acquired = false;
 		uint32_t current_buffer = 0;
 		int width = 0;
 		int height = 0;
+		DisplayServer::VSyncMode vsync_mode = DisplayServer::VSYNC_ENABLED;
 		VkCommandPool present_cmd_pool = VK_NULL_HANDLE; // For separate present queue.
 		VkRenderPass render_pass = VK_NULL_HANDLE;
 	};
@@ -199,7 +214,7 @@ private:
 
 	Error _create_physical_device();
 
-	Error _initialize_queues(VkSurfaceKHR surface);
+	Error _initialize_queues(VkSurfaceKHR p_surface);
 
 	Error _create_device();
 
@@ -213,25 +228,24 @@ private:
 protected:
 	virtual const char *_get_platform_surface_extension() const = 0;
 
-	virtual Error _window_create(DisplayServer::WindowID p_window_id, VkSurfaceKHR p_surface, int p_width, int p_height);
+	virtual Error _window_create(DisplayServer::WindowID p_window_id, DisplayServer::VSyncMode p_vsync_mode, VkSurfaceKHR p_surface, int p_width, int p_height);
 
 	virtual bool _use_validation_layers();
 
 	Error _get_preferred_validation_layers(uint32_t *count, const char *const **names);
 
-	VkInstance _get_instance() {
-		return inst;
-	}
-
 public:
 	uint32_t get_vulkan_major() const { return vulkan_major; };
 	uint32_t get_vulkan_minor() const { return vulkan_minor; };
 	SubgroupCapabilities get_subgroup_capabilities() const { return subgroup_capabilities; };
+	MultiviewCapabilities get_multiview_capabilities() const { return multiview_capabilities; };
 
 	VkDevice get_device();
 	VkPhysicalDevice get_physical_device();
+	VkInstance get_instance() { return inst; }
 	int get_swapchain_image_count() const;
-	uint32_t get_graphics_queue() const;
+	VkQueue get_graphics_queue() const;
+	uint32_t get_graphics_queue_family_index() const;
 
 	void window_resize(DisplayServer::WindowID p_window_id, int p_width, int p_height);
 	int window_get_width(DisplayServer::WindowID p_window = 0);
@@ -265,6 +279,9 @@ public:
 	String get_device_vendor_name() const;
 	String get_device_name() const;
 	String get_device_pipeline_cache_uuid() const;
+
+	void set_vsync_mode(DisplayServer::WindowID p_window, DisplayServer::VSyncMode p_mode);
+	DisplayServer::VSyncMode get_vsync_mode(DisplayServer::WindowID p_window = 0) const;
 
 	VulkanContext();
 	virtual ~VulkanContext();

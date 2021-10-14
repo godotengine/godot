@@ -67,7 +67,7 @@ static void plane_space(const Vector3 &n, Vector3 &p, Vector3 &q) {
 	}
 }
 
-HingeJoint3DSW::HingeJoint3DSW(Body3DSW *rbA, Body3DSW *rbB, const Transform &frameA, const Transform &frameB) :
+HingeJoint3DSW::HingeJoint3DSW(Body3DSW *rbA, Body3DSW *rbB, const Transform3D &frameA, const Transform3D &frameB) :
 		Joint3DSW(_arr, 2) {
 	A = rbA;
 	B = rbB;
@@ -78,21 +78,6 @@ HingeJoint3DSW::HingeJoint3DSW(Body3DSW *rbA, Body3DSW *rbB, const Transform &fr
 	m_rbBFrame.basis[0][2] *= real_t(-1.);
 	m_rbBFrame.basis[1][2] *= real_t(-1.);
 	m_rbBFrame.basis[2][2] *= real_t(-1.);
-
-	//start with free
-	m_lowerLimit = Math_PI;
-	m_upperLimit = -Math_PI;
-
-	m_useLimit = false;
-	m_biasFactor = 0.3f;
-	m_relaxationFactor = 1.0f;
-	m_limitSoftness = 0.9f;
-	m_solveLimit = false;
-
-	tau = 0.3;
-
-	m_angularOnly = false;
-	m_enableAngularMotor = false;
 
 	A->add_constraint(this, 0);
 	B->add_constraint(this, 1);
@@ -126,7 +111,7 @@ HingeJoint3DSW::HingeJoint3DSW(Body3DSW *rbA, Body3DSW *rbB, const Vector3 &pivo
 			rbAxisA1.y, rbAxisA2.y, axisInA.y,
 			rbAxisA1.z, rbAxisA2.z, axisInA.z);
 
-	Quat rotationArc = Quat(axisInA, axisInB);
+	Quaternion rotationArc = Quaternion(axisInA, axisInB);
 	Vector3 rbAxisB1 = rotationArc.xform(rbAxisA1);
 	Vector3 rbAxisB2 = axisInB.cross(rbAxisB1);
 
@@ -135,27 +120,15 @@ HingeJoint3DSW::HingeJoint3DSW(Body3DSW *rbA, Body3DSW *rbB, const Vector3 &pivo
 			rbAxisB1.y, rbAxisB2.y, -axisInB.y,
 			rbAxisB1.z, rbAxisB2.z, -axisInB.z);
 
-	//start with free
-	m_lowerLimit = Math_PI;
-	m_upperLimit = -Math_PI;
-
-	m_useLimit = false;
-	m_biasFactor = 0.3f;
-	m_relaxationFactor = 1.0f;
-	m_limitSoftness = 0.9f;
-	m_solveLimit = false;
-
-	tau = 0.3;
-
-	m_angularOnly = false;
-	m_enableAngularMotor = false;
-
 	A->add_constraint(this, 0);
 	B->add_constraint(this, 1);
 }
 
 bool HingeJoint3DSW::setup(real_t p_step) {
-	if ((A->get_mode() <= PhysicsServer3D::BODY_MODE_KINEMATIC) && (B->get_mode() <= PhysicsServer3D::BODY_MODE_KINEMATIC)) {
+	dynamic_A = (A->get_mode() > PhysicsServer3D::BODY_MODE_KINEMATIC);
+	dynamic_B = (B->get_mode() > PhysicsServer3D::BODY_MODE_KINEMATIC);
+
+	if (!dynamic_A && !dynamic_B) {
 		return false;
 	}
 
@@ -279,8 +252,12 @@ void HingeJoint3DSW::solve(real_t p_step) {
 			real_t impulse = depth * tau / p_step * jacDiagABInv - rel_vel * jacDiagABInv;
 			m_appliedImpulse += impulse;
 			Vector3 impulse_vector = normal * impulse;
-			A->apply_impulse(impulse_vector, pivotAInW - A->get_transform().origin);
-			B->apply_impulse(-impulse_vector, pivotBInW - B->get_transform().origin);
+			if (dynamic_A) {
+				A->apply_impulse(impulse_vector, pivotAInW - A->get_transform().origin);
+			}
+			if (dynamic_B) {
+				B->apply_impulse(-impulse_vector, pivotBInW - B->get_transform().origin);
+			}
 		}
 	}
 
@@ -322,8 +299,12 @@ void HingeJoint3DSW::solve(real_t p_step) {
 				angularError *= (real_t(1.) / denom2) * relaxation;
 			}
 
-			A->apply_torque_impulse(-velrelOrthog + angularError);
-			B->apply_torque_impulse(velrelOrthog - angularError);
+			if (dynamic_A) {
+				A->apply_torque_impulse(-velrelOrthog + angularError);
+			}
+			if (dynamic_B) {
+				B->apply_torque_impulse(velrelOrthog - angularError);
+			}
 
 			// solve limit
 			if (m_solveLimit) {
@@ -337,8 +318,12 @@ void HingeJoint3DSW::solve(real_t p_step) {
 				impulseMag = m_accLimitImpulse - temp;
 
 				Vector3 impulse = axisA * impulseMag * m_limitSign;
-				A->apply_torque_impulse(impulse);
-				B->apply_torque_impulse(-impulse);
+				if (dynamic_A) {
+					A->apply_torque_impulse(impulse);
+				}
+				if (dynamic_B) {
+					B->apply_torque_impulse(-impulse);
+				}
 			}
 		}
 
@@ -359,8 +344,12 @@ void HingeJoint3DSW::solve(real_t p_step) {
 			clippedMotorImpulse = clippedMotorImpulse < -m_maxMotorImpulse ? -m_maxMotorImpulse : clippedMotorImpulse;
 			Vector3 motorImp = clippedMotorImpulse * axisA;
 
-			A->apply_torque_impulse(motorImp + angularLimit);
-			B->apply_torque_impulse(-motorImp - angularLimit);
+			if (dynamic_A) {
+				A->apply_torque_impulse(motorImp + angularLimit);
+			}
+			if (dynamic_B) {
+				B->apply_torque_impulse(-motorImp - angularLimit);
+			}
 		}
 	}
 }

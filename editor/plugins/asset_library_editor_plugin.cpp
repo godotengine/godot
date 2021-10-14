@@ -58,7 +58,7 @@ void EditorAssetLibraryItem::set_image(int p_type, int p_index, const Ref<Textur
 
 void EditorAssetLibraryItem::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE) {
-		icon->set_normal_texture(get_theme_icon("ProjectIconLoading", "EditorIcons"));
+		icon->set_normal_texture(get_theme_icon(SNAME("ProjectIconLoading"), SNAME("EditorIcons")));
 		category->add_theme_color_override("font_color", Color(0.5, 0.5, 0.5));
 		author->add_theme_color_override("font_color", Color(0.5, 0.5, 0.5));
 		price->add_theme_color_override("font_color", Color(0.5, 0.5, 0.5));
@@ -66,15 +66,15 @@ void EditorAssetLibraryItem::_notification(int p_what) {
 }
 
 void EditorAssetLibraryItem::_asset_clicked() {
-	emit_signal("asset_selected", asset_id);
+	emit_signal(SNAME("asset_selected"), asset_id);
 }
 
 void EditorAssetLibraryItem::_category_clicked() {
-	emit_signal("category_selected", category_id);
+	emit_signal(SNAME("category_selected"), category_id);
 }
 
 void EditorAssetLibraryItem::_author_clicked() {
-	emit_signal("author_selected", author_id);
+	emit_signal(SNAME("author_selected"), author_id);
 }
 
 void EditorAssetLibraryItem::_bind_methods() {
@@ -86,7 +86,7 @@ void EditorAssetLibraryItem::_bind_methods() {
 
 EditorAssetLibraryItem::EditorAssetLibraryItem() {
 	Ref<StyleBoxEmpty> border;
-	border.instance();
+	border.instantiate();
 	border->set_default_margin(SIDE_LEFT, 5 * EDSCALE);
 	border->set_default_margin(SIDE_RIGHT, 5 * EDSCALE);
 	border->set_default_margin(SIDE_BOTTOM, 5 * EDSCALE);
@@ -144,7 +144,7 @@ void EditorAssetLibraryItemDescription::set_image(int p_type, int p_index, const
 			for (int i = 0; i < preview_images.size(); i++) {
 				if (preview_images[i].id == p_index) {
 					if (preview_images[i].is_video) {
-						Ref<Image> overlay = previews->get_theme_icon("PlayOverlay", "EditorIcons")->get_image();
+						Ref<Image> overlay = previews->get_theme_icon(SNAME("PlayOverlay"), SNAME("EditorIcons"))->get_image();
 						Ref<Image> thumbnail = p_image->get_image();
 						thumbnail = thumbnail->duplicate();
 						Point2 overlay_pos = Point2((thumbnail->get_width() - overlay->get_width()) / 2, (thumbnail->get_height() - overlay->get_height()) / 2);
@@ -155,7 +155,7 @@ void EditorAssetLibraryItemDescription::set_image(int p_type, int p_index, const
 						thumbnail->blend_rect(overlay, overlay->get_used_rect(), overlay_pos);
 
 						Ref<ImageTexture> tex;
-						tex.instance();
+						tex.instantiate();
 						tex->create_from_image(thumbnail);
 
 						preview_images[i].button->set_icon(tex);
@@ -185,7 +185,7 @@ void EditorAssetLibraryItemDescription::set_image(int p_type, int p_index, const
 void EditorAssetLibraryItemDescription::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
-			previews_bg->add_theme_style_override("panel", previews->get_theme_stylebox("normal", "TextEdit"));
+			previews_bg->add_theme_style_override("panel", previews->get_theme_stylebox(SNAME("normal"), SNAME("TextEdit")));
 		} break;
 	}
 }
@@ -230,7 +230,7 @@ void EditorAssetLibraryItemDescription::configure(const String &p_title, int p_a
 	description->add_text(TTR("View Files"));
 	description->pop();
 	description->add_text("\n" + TTR("Description:") + "\n\n");
-	description->append_bbcode(p_description);
+	description->append_text(p_description);
 	set_title(p_title);
 }
 
@@ -240,13 +240,12 @@ void EditorAssetLibraryItemDescription::add_preview(int p_id, bool p_video, cons
 	preview.video_link = p_url;
 	preview.is_video = p_video;
 	preview.button = memnew(Button);
-	preview.button->set_flat(true);
-	preview.button->set_icon(previews->get_theme_icon("ThumbnailWait", "EditorIcons"));
+	preview.button->set_icon(previews->get_theme_icon(SNAME("ThumbnailWait"), SNAME("EditorIcons")));
 	preview.button->set_toggle_mode(true);
 	preview.button->connect("pressed", callable_mp(this, &EditorAssetLibraryItemDescription::_preview_click), varray(p_id));
 	preview_hb->add_child(preview.button);
 	if (!p_video) {
-		preview.image = previews->get_theme_icon("ThumbnailWait", "EditorIcons");
+		preview.image = previews->get_theme_icon(SNAME("ThumbnailWait"), SNAME("EditorIcons"));
 	}
 	preview_images.push_back(preview);
 	if (preview_images.size() == 1 && !p_video) {
@@ -370,6 +369,9 @@ void EditorAssetLibraryItemDownload::_http_download_completed(int p_status, int 
 	progress->set_modulate(Color(0, 0, 0, 0));
 
 	set_process(false);
+
+	// Automatically prompt for installation once the download is completed.
+	_install();
 }
 
 void EditorAssetLibraryItemDownload::configure(const String &p_title, int p_asset_id, const Ref<Texture2D> &p_preview, const String &p_download_url, const String &p_sha256_hash) {
@@ -377,7 +379,7 @@ void EditorAssetLibraryItemDownload::configure(const String &p_title, int p_asse
 	icon->set_texture(p_preview);
 	asset_id = p_asset_id;
 	if (!p_preview.is_valid()) {
-		icon->set_texture(get_theme_icon("FileBrokenBigThumb", "EditorIcons"));
+		icon->set_texture(get_theme_icon(SNAME("FileBrokenBigThumb"), SNAME("EditorIcons")));
 	}
 	host = p_download_url;
 	sha256 = p_sha256_hash;
@@ -388,8 +390,8 @@ void EditorAssetLibraryItemDownload::_notification(int p_what) {
 	switch (p_what) {
 		// FIXME: The editor crashes if 'NOTICATION_THEME_CHANGED' is used.
 		case NOTIFICATION_ENTER_TREE: {
-			add_theme_style_override("panel", get_theme_stylebox("panel", "TabContainer"));
-			dismiss->set_normal_texture(get_theme_icon("Close", "EditorIcons"));
+			add_theme_style_override("panel", get_theme_stylebox(SNAME("panel"), SNAME("TabContainer")));
+			dismiss->set_normal_texture(get_theme_icon(SNAME("Close"), SNAME("EditorIcons")));
 		} break;
 		case NOTIFICATION_PROCESS: {
 			// Make the progress bar visible again when retrying the download.
@@ -453,10 +455,11 @@ void EditorAssetLibraryItemDownload::_install() {
 	String file = download->get_download_file();
 
 	if (external_install) {
-		emit_signal("install_asset", file, title->get_text());
+		emit_signal(SNAME("install_asset"), file, title->get_text());
 		return;
 	}
 
+	asset_installer->set_asset_name(title->get_text());
 	asset_installer->open(file, 1);
 }
 
@@ -465,7 +468,7 @@ void EditorAssetLibraryItemDownload::_make_request() {
 	retry->hide();
 
 	download->cancel_request();
-	download->set_download_file(EditorSettings::get_singleton()->get_cache_dir().plus_file("tmp_asset_" + itos(asset_id)) + ".zip");
+	download->set_download_file(EditorPaths::get_singleton()->get_cache_dir().plus_file("tmp_asset_" + itos(asset_id)) + ".zip");
 
 	Error err = download->request(host);
 	if (err != OK) {
@@ -550,8 +553,8 @@ EditorAssetLibraryItemDownload::EditorAssetLibraryItemDownload() {
 void EditorAssetLibrary::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_READY: {
-			error_tr->set_texture(get_theme_icon("Error", "EditorIcons"));
-			filter->set_right_icon(get_theme_icon("Search", "EditorIcons"));
+			error_tr->set_texture(get_theme_icon(SNAME("Error"), SNAME("EditorIcons")));
+			filter->set_right_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
 			filter->set_clear_button_enabled(true);
 
 			error_label->raise();
@@ -585,10 +588,10 @@ void EditorAssetLibrary::_notification(int p_what) {
 
 		} break;
 		case NOTIFICATION_THEME_CHANGED: {
-			library_scroll_bg->add_theme_style_override("panel", get_theme_stylebox("bg", "Tree"));
-			downloads_scroll->add_theme_style_override("bg", get_theme_stylebox("bg", "Tree"));
-			error_tr->set_texture(get_theme_icon("Error", "EditorIcons"));
-			filter->set_right_icon(get_theme_icon("Search", "EditorIcons"));
+			library_scroll_bg->add_theme_style_override("panel", get_theme_stylebox(SNAME("bg"), SNAME("Tree")));
+			downloads_scroll->add_theme_style_override("bg", get_theme_stylebox(SNAME("bg"), SNAME("Tree")));
+			error_tr->set_texture(get_theme_icon(SNAME("Error"), SNAME("EditorIcons")));
+			filter->set_right_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
 			filter->set_clear_button_enabled(true);
 		} break;
 
@@ -600,19 +603,18 @@ void EditorAssetLibrary::_notification(int p_what) {
 
 void EditorAssetLibrary::_update_repository_options() {
 	Dictionary default_urls;
-	default_urls["godotengine.org"] = "https://godotengine.org/asset-library/api";
-	default_urls["localhost"] = "http://127.0.0.1/asset-library/api";
+	default_urls["godotengine.org (Official)"] = "https://godotengine.org/asset-library/api";
 	Dictionary available_urls = _EDITOR_DEF("asset_library/available_urls", default_urls, true);
 	repository->clear();
 	Array keys = available_urls.keys();
-	for (int i = 0; i < available_urls.size(); i++) {
+	for (int i = 0; i < keys.size(); i++) {
 		String key = keys[i];
 		repository->add_item(key);
 		repository->set_item_metadata(i, available_urls[key]);
 	}
 }
 
-void EditorAssetLibrary::_unhandled_key_input(const Ref<InputEvent> &p_event) {
+void EditorAssetLibrary::unhandled_key_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
 	const Ref<InputEventKey> key = p_event;
@@ -703,7 +705,7 @@ void EditorAssetLibrary::_image_update(bool use_cache, bool final, const PackedB
 		PackedByteArray image_data = p_data;
 
 		if (use_cache) {
-			String cache_filename_base = EditorSettings::get_singleton()->get_cache_dir().plus_file("assetimage_" + image_queue[p_queue_id].image_url.md5_text());
+			String cache_filename_base = EditorPaths::get_singleton()->get_cache_dir().plus_file("assetimage_" + image_queue[p_queue_id].image_url.md5_text());
 
 			FileAccess *file = FileAccess::open(cache_filename_base + ".data", FileAccess::READ);
 
@@ -762,7 +764,7 @@ void EditorAssetLibrary::_image_update(bool use_cache, bool final, const PackedB
 			}
 
 			Ref<ImageTexture> tex;
-			tex.instance();
+			tex.instantiate();
 			tex->create_from_image(image);
 
 			obj->call("set_image", image_queue[p_queue_id].image_type, image_queue[p_queue_id].image_index, tex);
@@ -770,7 +772,7 @@ void EditorAssetLibrary::_image_update(bool use_cache, bool final, const PackedB
 		}
 
 		if (!image_set && final) {
-			obj->call("set_image", image_queue[p_queue_id].image_type, image_queue[p_queue_id].image_index, get_theme_icon("FileBrokenBigThumb", "EditorIcons"));
+			obj->call("set_image", image_queue[p_queue_id].image_type, image_queue[p_queue_id].image_index, get_theme_icon(SNAME("FileBrokenBigThumb"), SNAME("EditorIcons")));
 		}
 	}
 }
@@ -782,7 +784,7 @@ void EditorAssetLibrary::_image_request_completed(int p_status, int p_code, cons
 		if (p_code != HTTPClient::RESPONSE_NOT_MODIFIED) {
 			for (int i = 0; i < headers.size(); i++) {
 				if (headers[i].findn("ETag:") == 0) { // Save etag
-					String cache_filename_base = EditorSettings::get_singleton()->get_cache_dir().plus_file("assetimage_" + image_queue[p_queue_id].image_url.md5_text());
+					String cache_filename_base = EditorPaths::get_singleton()->get_cache_dir().plus_file("assetimage_" + image_queue[p_queue_id].image_url.md5_text());
 					String new_etag = headers[i].substr(headers[i].find(":") + 1, headers[i].length()).strip_edges();
 					FileAccess *file;
 
@@ -813,7 +815,7 @@ void EditorAssetLibrary::_image_request_completed(int p_status, int p_code, cons
 		WARN_PRINT("Error getting image file from URL: " + image_queue[p_queue_id].image_url);
 		Object *obj = ObjectDB::get_instance(image_queue[p_queue_id].target);
 		if (obj) {
-			obj->call("set_image", image_queue[p_queue_id].image_type, image_queue[p_queue_id].image_index, get_theme_icon("FileBrokenBigThumb", "EditorIcons"));
+			obj->call("set_image", image_queue[p_queue_id].image_type, image_queue[p_queue_id].image_index, get_theme_icon(SNAME("FileBrokenBigThumb"), SNAME("EditorIcons")));
 		}
 	}
 
@@ -828,9 +830,9 @@ void EditorAssetLibrary::_update_image_queue() {
 	int current_images = 0;
 
 	List<int> to_delete;
-	for (Map<int, ImageQueue>::Element *E = image_queue.front(); E; E = E->next()) {
-		if (!E->get().active && current_images < max_images) {
-			String cache_filename_base = EditorSettings::get_singleton()->get_cache_dir().plus_file("assetimage_" + E->get().image_url.md5_text());
+	for (KeyValue<int, ImageQueue> &E : image_queue) {
+		if (!E.value.active && current_images < max_images) {
+			String cache_filename_base = EditorPaths::get_singleton()->get_cache_dir().plus_file("assetimage_" + E.value.image_url.md5_text());
 			Vector<String> headers;
 
 			if (FileAccess::exists(cache_filename_base + ".etag") && FileAccess::exists(cache_filename_base + ".data")) {
@@ -842,14 +844,14 @@ void EditorAssetLibrary::_update_image_queue() {
 				}
 			}
 
-			Error err = E->get().request->request(E->get().image_url, headers);
+			Error err = E.value.request->request(E.value.image_url, headers);
 			if (err != OK) {
-				to_delete.push_back(E->key());
+				to_delete.push_back(E.key);
 			} else {
-				E->get().active = true;
+				E.value.active = true;
 			}
 			current_images++;
-		} else if (E->get().active) {
+		} else if (E.value.active) {
 			current_images++;
 		}
 	}
@@ -1099,11 +1101,9 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 
 	Dictionary d;
 	{
-		Variant js;
-		String errs;
-		int errl;
-		JSON::parse(str, js, errs, errl);
-		d = js;
+		JSON json;
+		json.parse(str);
+		d = json.get_data();
 	}
 
 	RequestType requested = requesting;
@@ -1299,6 +1299,7 @@ void EditorAssetLibrary::_asset_file_selected(const String &p_file) {
 	}
 
 	asset_installer = memnew(EditorAssetInstaller);
+	asset_installer->set_asset_name(p_file.get_basename());
 	add_child(asset_installer);
 	asset_installer->open(p_file);
 }
@@ -1313,7 +1314,7 @@ void EditorAssetLibrary::_manage_plugins() {
 }
 
 void EditorAssetLibrary::_install_external_asset(String p_zip_path, String p_title) {
-	emit_signal("install_asset", p_zip_path, p_title);
+	emit_signal(SNAME("install_asset"), p_zip_path, p_title);
 }
 
 void EditorAssetLibrary::disable_community_support() {
@@ -1321,8 +1322,6 @@ void EditorAssetLibrary::disable_community_support() {
 }
 
 void EditorAssetLibrary::_bind_methods() {
-	ClassDB::bind_method("_unhandled_key_input", &EditorAssetLibrary::_unhandled_key_input);
-
 	ADD_SIGNAL(MethodInfo("install_asset", PropertyInfo(Variant::STRING, "zip_path"), PropertyInfo(Variant::STRING, "name")));
 }
 
@@ -1438,7 +1437,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	library_scroll_bg->add_child(library_scroll);
 
 	Ref<StyleBoxEmpty> border2;
-	border2.instance();
+	border2.instantiate();
 	border2->set_default_margin(SIDE_LEFT, 15 * EDSCALE);
 	border2->set_default_margin(SIDE_RIGHT, 35 * EDSCALE);
 	border2->set_default_margin(SIDE_BOTTOM, 15 * EDSCALE);
@@ -1488,7 +1487,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	error_hb = memnew(HBoxContainer);
 	library_main->add_child(error_hb);
 	error_label = memnew(Label);
-	error_label->add_theme_color_override("color", get_theme_color("error_color", "Editor"));
+	error_label->add_theme_color_override("color", get_theme_color(SNAME("error_color"), SNAME("Editor")));
 	error_hb->add_child(error_label);
 	error_tr = memnew(TextureRect);
 	error_tr->set_v_size_flags(Control::SIZE_SHRINK_CENTER);

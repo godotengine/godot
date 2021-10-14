@@ -56,7 +56,7 @@ void PhysicsServer3DWrapMT::thread_loop() {
 	step_thread_up = true;
 	while (!exit) {
 		// flush commands one by one, until exit is requested
-		command_queue.wait_and_flush_one();
+		command_queue.wait_and_flush();
 	}
 
 	command_queue.flush_all(); // flush all
@@ -119,8 +119,6 @@ PhysicsServer3DWrapMT::PhysicsServer3DWrapMT(PhysicsServer3D *p_contained, bool 
 		command_queue(p_create_thread) {
 	physics_3d_server = p_contained;
 	create_thread = p_create_thread;
-	step_pending = 0;
-	step_thread_up = false;
 
 	pool_max_size = GLOBAL_GET("memory/limits/multithreaded_server/rid_pool_prealloc");
 
@@ -131,7 +129,6 @@ PhysicsServer3DWrapMT::PhysicsServer3DWrapMT(PhysicsServer3D *p_contained, bool 
 	}
 
 	main_thread = Thread::get_caller_id();
-	first_frame = true;
 }
 
 PhysicsServer3DWrapMT::~PhysicsServer3DWrapMT() {

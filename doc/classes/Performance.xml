@@ -14,14 +14,10 @@
 	</tutorials>
 	<methods>
 		<method name="add_custom_monitor">
-			<return type="void">
-			</return>
-			<argument index="0" name="id" type="StringName">
-			</argument>
-			<argument index="1" name="callable" type="Callable">
-			</argument>
-			<argument index="2" name="arguments" type="Array" default="[  ]">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="id" type="StringName" />
+			<argument index="1" name="callable" type="Callable" />
+			<argument index="2" name="arguments" type="Array" default="[]" />
 			<description>
 				Adds a custom monitor with name same as id. You can specify the category of monitor using '/' in id. If there are more than one '/' then default category is used. Default category is "Custom".
 				[codeblocks]
@@ -77,27 +73,22 @@
 			</description>
 		</method>
 		<method name="get_custom_monitor">
-			<return type="Variant">
-			</return>
-			<argument index="0" name="id" type="StringName">
-			</argument>
+			<return type="Variant" />
+			<argument index="0" name="id" type="StringName" />
 			<description>
 				Returns the value of custom monitor with given id. The callable is called to get the value of custom monitor.
 				[b]Note:[/b] It throws an error if the given id is absent.
 			</description>
 		</method>
 		<method name="get_custom_monitor_names">
-			<return type="Array">
-			</return>
+			<return type="Array" />
 			<description>
 				Returns the names of active custom monitors in an array.
 			</description>
 		</method>
 		<method name="get_monitor" qualifiers="const">
-			<return type="float">
-			</return>
-			<argument index="0" name="monitor" type="int" enum="Performance.Monitor">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="monitor" type="int" enum="Performance.Monitor" />
 			<description>
 				Returns the value of one of the available monitors. You should provide one of the [enum Monitor] constants as the argument, like this:
 				[codeblocks]
@@ -111,26 +102,21 @@
 			</description>
 		</method>
 		<method name="get_monitor_modification_time">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the last tick in which custom monitor was added/removed.
 			</description>
 		</method>
 		<method name="has_custom_monitor">
-			<return type="bool">
-			</return>
-			<argument index="0" name="id" type="StringName">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="id" type="StringName" />
 			<description>
 				Returns true if custom monitor with the given id is present otherwise returns false.
 			</description>
 		</method>
 		<method name="remove_custom_monitor">
-			<return type="void">
-			</return>
-			<argument index="0" name="id" type="StringName">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="id" type="StringName" />
 			<description>
 				Removes the custom monitor with given id.
 				[b]Note:[/b] It throws an error if the given id is already absent.
@@ -157,69 +143,53 @@
 			Largest amount of memory the message queue buffer has used, in bytes. The message queue is used for deferred functions calls and notifications.
 		</constant>
 		<constant name="OBJECT_COUNT" value="6" enum="Monitor">
-			Number of objects currently instanced (including nodes).
+			Number of objects currently instantiated (including nodes).
 		</constant>
 		<constant name="OBJECT_RESOURCE_COUNT" value="7" enum="Monitor">
 			Number of resources currently used.
 		</constant>
 		<constant name="OBJECT_NODE_COUNT" value="8" enum="Monitor">
-			Number of nodes currently instanced in the scene tree. This also includes the root node.
+			Number of nodes currently instantiated in the scene tree. This also includes the root node.
 		</constant>
 		<constant name="OBJECT_ORPHAN_NODE_COUNT" value="9" enum="Monitor">
 			Number of orphan nodes, i.e. nodes which are not parented to a node of the scene tree.
 		</constant>
-		<constant name="RENDER_OBJECTS_IN_FRAME" value="10" enum="Monitor">
-			3D objects drawn per frame.
+		<constant name="RENDER_TOTAL_OBJECTS_IN_FRAME" value="10" enum="Monitor">
 		</constant>
-		<constant name="RENDER_VERTICES_IN_FRAME" value="11" enum="Monitor">
-			Vertices drawn per frame. 3D only.
+		<constant name="RENDER_TOTAL_PRIMITIVES_IN_FRAME" value="11" enum="Monitor">
 		</constant>
-		<constant name="RENDER_MATERIAL_CHANGES_IN_FRAME" value="12" enum="Monitor">
-			Material changes per frame. 3D only.
+		<constant name="RENDER_TOTAL_DRAW_CALLS_IN_FRAME" value="12" enum="Monitor">
 		</constant>
-		<constant name="RENDER_SHADER_CHANGES_IN_FRAME" value="13" enum="Monitor">
-			Shader changes per frame. 3D only.
-		</constant>
-		<constant name="RENDER_SURFACE_CHANGES_IN_FRAME" value="14" enum="Monitor">
-			Render surface changes per frame. 3D only.
-		</constant>
-		<constant name="RENDER_DRAW_CALLS_IN_FRAME" value="15" enum="Monitor">
-			Draw calls per frame. 3D only.
-		</constant>
-		<constant name="RENDER_VIDEO_MEM_USED" value="16" enum="Monitor">
+		<constant name="RENDER_VIDEO_MEM_USED" value="13" enum="Monitor">
 			The amount of video memory used, i.e. texture and vertex memory combined.
 		</constant>
-		<constant name="RENDER_TEXTURE_MEM_USED" value="17" enum="Monitor">
+		<constant name="RENDER_TEXTURE_MEM_USED" value="14" enum="Monitor">
 			The amount of texture memory used.
 		</constant>
-		<constant name="RENDER_VERTEX_MEM_USED" value="18" enum="Monitor">
-			The amount of vertex memory used.
+		<constant name="RENDER_BUFFER_MEM_USED" value="15" enum="Monitor">
 		</constant>
-		<constant name="RENDER_USAGE_VIDEO_MEM_TOTAL" value="19" enum="Monitor">
-			Unimplemented in the GLES2 rendering backend, always returns 0.
+		<constant name="PHYSICS_2D_ACTIVE_OBJECTS" value="16" enum="Monitor">
+			Number of active [RigidDynamicBody2D] nodes in the game.
 		</constant>
-		<constant name="PHYSICS_2D_ACTIVE_OBJECTS" value="20" enum="Monitor">
-			Number of active [RigidBody2D] nodes in the game.
-		</constant>
-		<constant name="PHYSICS_2D_COLLISION_PAIRS" value="21" enum="Monitor">
+		<constant name="PHYSICS_2D_COLLISION_PAIRS" value="17" enum="Monitor">
 			Number of collision pairs in the 2D physics engine.
 		</constant>
-		<constant name="PHYSICS_2D_ISLAND_COUNT" value="22" enum="Monitor">
+		<constant name="PHYSICS_2D_ISLAND_COUNT" value="18" enum="Monitor">
 			Number of islands in the 2D physics engine.
 		</constant>
-		<constant name="PHYSICS_3D_ACTIVE_OBJECTS" value="23" enum="Monitor">
-			Number of active [RigidBody3D] and [VehicleBody3D] nodes in the game.
+		<constant name="PHYSICS_3D_ACTIVE_OBJECTS" value="19" enum="Monitor">
+			Number of active [RigidDynamicBody3D] and [VehicleBody3D] nodes in the game.
 		</constant>
-		<constant name="PHYSICS_3D_COLLISION_PAIRS" value="24" enum="Monitor">
+		<constant name="PHYSICS_3D_COLLISION_PAIRS" value="20" enum="Monitor">
 			Number of collision pairs in the 3D physics engine.
 		</constant>
-		<constant name="PHYSICS_3D_ISLAND_COUNT" value="25" enum="Monitor">
+		<constant name="PHYSICS_3D_ISLAND_COUNT" value="21" enum="Monitor">
 			Number of islands in the 3D physics engine.
 		</constant>
-		<constant name="AUDIO_OUTPUT_LATENCY" value="26" enum="Monitor">
+		<constant name="AUDIO_OUTPUT_LATENCY" value="22" enum="Monitor">
 			Output latency of the [AudioServer].
 		</constant>
-		<constant name="MONITOR_MAX" value="27" enum="Monitor">
+		<constant name="MONITOR_MAX" value="23" enum="Monitor">
 			Represents the size of the [enum Monitor] enum.
 		</constant>
 	</constants>

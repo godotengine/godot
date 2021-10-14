@@ -35,7 +35,7 @@
 #include "scene/resources/mesh.h"
 #include "servers/physics_server_3d.h"
 
-void Shape3D::add_vertices_to_array(Vector<Vector3> &array, const Transform &p_xform) {
+void Shape3D::add_vertices_to_array(Vector<Vector3> &array, const Transform3D &p_xform) {
 	Vector<Vector3> toadd = get_debug_mesh_lines();
 
 	if (toadd.size()) {
@@ -101,6 +101,8 @@ void Shape3D::_update_shape() {
 void Shape3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_margin", "margin"), &Shape3D::set_margin);
 	ClassDB::bind_method(D_METHOD("get_margin"), &Shape3D::get_margin);
+
+	ClassDB::bind_method(D_METHOD("get_debug_mesh"), &Shape3D::get_debug_mesh);
 
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "margin", PROPERTY_HINT_RANGE, "0.001,10,0.001"), "set_margin", "get_margin");
 }

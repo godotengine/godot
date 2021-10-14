@@ -61,7 +61,7 @@ TEST_CASE("[Rect2] Constructor methods") {
 TEST_CASE("[Rect2] String conversion") {
 	// Note: This also depends on the Vector2 string representation.
 	CHECK_MESSAGE(
-			String(Rect2(0, 100, 1280, 720)) == "0, 100, 1280, 720",
+			String(Rect2(0, 100, 1280, 720)) == "[P: (0, 100), S: (1280, 720)]",
 			"The string representation should match the expected value.");
 }
 
@@ -76,6 +76,12 @@ TEST_CASE("[Rect2] Basic getters") {
 	CHECK_MESSAGE(
 			rect.get_end().is_equal_approx(Vector2(1280, 820)),
 			"get_end() should return the expected value.");
+	CHECK_MESSAGE(
+			rect.get_center().is_equal_approx(Vector2(640, 460)),
+			"get_center() should return the expected value.");
+	CHECK_MESSAGE(
+			Rect2(0, 100, 1281, 721).get_center().is_equal_approx(Vector2(640.5, 460.5)),
+			"get_center() should return the expected value.");
 }
 
 TEST_CASE("[Rect2] Basic setters") {
@@ -144,7 +150,7 @@ TEST_CASE("[Rect2] Absolute coordinates") {
 			"abs() should return the expected Rect2.");
 }
 
-TEST_CASE("[Rect2] Intersecton") {
+TEST_CASE("[Rect2] Intersection") {
 	CHECK_MESSAGE(
 			Rect2(0, 100, 1280, 720).intersection(Rect2(0, 300, 100, 100)).is_equal_approx(Rect2(0, 300, 100, 100)),
 			"intersection() with fully enclosed Rect2 should return the expected result.");
@@ -273,7 +279,7 @@ TEST_CASE("[Rect2i] Constructor methods") {
 TEST_CASE("[Rect2i] String conversion") {
 	// Note: This also depends on the Vector2 string representation.
 	CHECK_MESSAGE(
-			String(Rect2i(0, 100, 1280, 720)) == "0, 100, 1280, 720",
+			String(Rect2i(0, 100, 1280, 720)) == "[P: (0, 100), S: (1280, 720)]",
 			"The string representation should match the expected value.");
 }
 
@@ -288,6 +294,12 @@ TEST_CASE("[Rect2i] Basic getters") {
 	CHECK_MESSAGE(
 			rect.get_end() == Vector2i(1280, 820),
 			"get_end() should return the expected value.");
+	CHECK_MESSAGE(
+			rect.get_center() == Vector2i(640, 460),
+			"get_center() should return the expected value.");
+	CHECK_MESSAGE(
+			Rect2i(0, 100, 1281, 721).get_center() == Vector2i(640, 460),
+			"get_center() should return the expected value.");
 }
 
 TEST_CASE("[Rect2i] Basic setters") {
@@ -312,19 +324,19 @@ TEST_CASE("[Rect2i] Basic setters") {
 
 TEST_CASE("[Rect2i] Area getters") {
 	CHECK_MESSAGE(
-			Math::is_equal_approx(Rect2i(0, 100, 1280, 720).get_area(), 921'600),
+			Rect2i(0, 100, 1280, 720).get_area() == 921'600,
 			"get_area() should return the expected value.");
 	CHECK_MESSAGE(
-			Math::is_equal_approx(Rect2i(0, 100, -1280, -720).get_area(), 921'600),
+			Rect2i(0, 100, -1280, -720).get_area() == 921'600,
 			"get_area() should return the expected value.");
 	CHECK_MESSAGE(
-			Math::is_equal_approx(Rect2i(0, 100, 1280, -720).get_area(), -921'600),
+			Rect2i(0, 100, 1280, -720).get_area() == -921'600,
 			"get_area() should return the expected value.");
 	CHECK_MESSAGE(
-			Math::is_equal_approx(Rect2i(0, 100, -1280, 720).get_area(), -921'600),
+			Rect2i(0, 100, -1280, 720).get_area() == -921'600,
 			"get_area() should return the expected value.");
 	CHECK_MESSAGE(
-			Math::is_zero_approx(Rect2i(0, 100, 0, 720).get_area()),
+			Rect2i(0, 100, 0, 720).get_area() == 0,
 			"get_area() should return the expected value.");
 
 	CHECK_MESSAGE(

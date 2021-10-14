@@ -11,58 +11,44 @@
 	</tutorials>
 	<methods>
 		<method name="add_preview_generator">
-			<return type="void">
-			</return>
-			<argument index="0" name="generator" type="EditorResourcePreviewGenerator">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="generator" type="EditorResourcePreviewGenerator" />
 			<description>
 				Create an own, custom preview generator.
 			</description>
 		</method>
 		<method name="check_for_invalidation">
-			<return type="void">
-			</return>
-			<argument index="0" name="path" type="String">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="path" type="String" />
 			<description>
 				Check if the resource changed, if so, it will be invalidated and the corresponding signal emitted.
 			</description>
 		</method>
 		<method name="queue_edited_resource_preview">
-			<return type="void">
-			</return>
-			<argument index="0" name="resource" type="Resource">
-			</argument>
-			<argument index="1" name="receiver" type="Object">
-			</argument>
-			<argument index="2" name="receiver_func" type="StringName">
-			</argument>
-			<argument index="3" name="userdata" type="Variant">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="resource" type="Resource" />
+			<argument index="1" name="receiver" type="Object" />
+			<argument index="2" name="receiver_func" type="StringName" />
+			<argument index="3" name="userdata" type="Variant" />
 			<description>
-				Queue a resource being edited for preview (using an instance). Once the preview is ready, your receiver.receiver_func will be called either containing the preview texture or an empty texture (if no preview was possible). Callback must have the format: (path,texture,userdata). Userdata can be anything.
+				Queue the [code]resource[/code] being edited for preview. Once the preview is ready, the [code]receiver[/code]'s [code]receiver_func[/code] will be called. The [code]receiver_func[/code] must take the following four arguments: [String] path, [Texture2D] preview, [Texture2D] thumbnail_preview, [Variant] userdata. [code]userdata[/code] can be anything, and will be returned when [code]receiver_func[/code] is called.
+				[b]Note:[/b] If it was not possible to create the preview the [code]receiver_func[/code] will still be called, but the preview will be null.
 			</description>
 		</method>
 		<method name="queue_resource_preview">
-			<return type="void">
-			</return>
-			<argument index="0" name="path" type="String">
-			</argument>
-			<argument index="1" name="receiver" type="Object">
-			</argument>
-			<argument index="2" name="receiver_func" type="StringName">
-			</argument>
-			<argument index="3" name="userdata" type="Variant">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="path" type="String" />
+			<argument index="1" name="receiver" type="Object" />
+			<argument index="2" name="receiver_func" type="StringName" />
+			<argument index="3" name="userdata" type="Variant" />
 			<description>
-				Queue a resource file for preview (using a path). Once the preview is ready, your receiver.receiver_func will be called either containing the preview texture or an empty texture (if no preview was possible). Callback must have the format: (path,texture,userdata). Userdata can be anything.
+				Queue a resource file located at [code]path[/code] for preview. Once the preview is ready, the [code]receiver[/code]'s [code]receiver_func[/code] will be called. The [code]receiver_func[/code] must take the following four arguments: [String] path, [Texture2D] preview, [Texture2D] thumbnail_preview, [Variant] userdata. [code]userdata[/code] can be anything, and will be returned when [code]receiver_func[/code] is called.
+				[b]Note:[/b] If it was not possible to create the preview the [code]receiver_func[/code] will still be called, but the preview will be null.
 			</description>
 		</method>
 		<method name="remove_preview_generator">
-			<return type="void">
-			</return>
-			<argument index="0" name="generator" type="EditorResourcePreviewGenerator">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="generator" type="EditorResourcePreviewGenerator" />
 			<description>
 				Removes a custom preview generator.
 			</description>
@@ -70,13 +56,10 @@
 	</methods>
 	<signals>
 		<signal name="preview_invalidated">
-			<argument index="0" name="path" type="String">
-			</argument>
+			<argument index="0" name="path" type="String" />
 			<description>
 				Emitted if a preview was invalidated (changed). [code]path[/code] corresponds to the path of the preview.
 			</description>
 		</signal>
 	</signals>
-	<constants>
-	</constants>
 </class>

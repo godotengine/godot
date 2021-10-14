@@ -255,6 +255,72 @@ struct TextEdit {
 };
 
 /**
+ * The edits to be applied.
+ */
+struct WorkspaceEdit {
+	/**
+	 * Holds changes to existing resources.
+	 */
+	Map<String, Vector<TextEdit>> changes;
+
+	_FORCE_INLINE_ void add_edit(const String &uri, const TextEdit &edit) {
+		if (changes.has(uri)) {
+			changes[uri].push_back(edit);
+		} else {
+			Vector<TextEdit> edits;
+			edits.push_back(edit);
+			changes[uri] = edits;
+		}
+	}
+
+	_FORCE_INLINE_ Dictionary to_json() const {
+		Dictionary dict;
+
+		Dictionary out_changes;
+		for (const KeyValue<String, Vector<TextEdit>> &E : changes) {
+			Array edits;
+			for (int i = 0; i < E.value.size(); ++i) {
+				Dictionary text_edit;
+				text_edit["range"] = E.value[i].range.to_json();
+				text_edit["newText"] = E.value[i].newText;
+				edits.push_back(text_edit);
+			}
+			out_changes[E.key] = edits;
+		}
+		dict["changes"] = out_changes;
+
+		return dict;
+	}
+
+	_FORCE_INLINE_ void add_change(const String &uri, const int &line, const int &start_character, const int &end_character, const String &new_text) {
+		if (Map<String, Vector<TextEdit>>::Element *E = changes.find(uri)) {
+			Vector<TextEdit> edit_list = E->value();
+			for (int i = 0; i < edit_list.size(); ++i) {
+				TextEdit edit = edit_list[i];
+				if (edit.range.start.character == start_character) {
+					return;
+				}
+			}
+		}
+
+		TextEdit new_edit;
+		new_edit.newText = new_text;
+		new_edit.range.start.line = line;
+		new_edit.range.start.character = start_character;
+		new_edit.range.end.line = line;
+		new_edit.range.end.character = end_character;
+
+		if (Map<String, Vector<TextEdit>>::Element *E = changes.find(uri)) {
+			E->value().push_back(new_edit);
+		} else {
+			Vector<TextEdit> edit_list;
+			edit_list.push_back(new_edit);
+			changes.insert(uri, edit_list);
+		}
+	}
+};
+
+/**
  * Represents a reference to a command.
  * Provides a title which will be used to represent a command in the UI.
  * Commands are identified by a string identifier.
@@ -486,7 +552,7 @@ struct TextDocumentSyncOptions {
 	 * If present save notifications are sent to the server. If omitted the notification should not be
 	 * sent.
 	 */
-	bool save = false;
+	SaveOptions save;
 
 	Dictionary to_json() {
 		Dictionary dict;
@@ -494,7 +560,7 @@ struct TextDocumentSyncOptions {
 		dict["willSave"] = willSave;
 		dict["openClose"] = openClose;
 		dict["change"] = change;
-		dict["save"] = save;
+		dict["save"] = save.to_json();
 		return dict;
 	}
 };
@@ -766,7 +832,7 @@ struct MarkupContent {
 
 // Use namespace instead of enumeration to follow the LSP specifications
 // lsp::EnumName::EnumValue is OK but lsp::EnumValue is not
-// And here C++ compilers are unhappy with our enumeration name like Color, File, Reference etc.
+// And here C++ compilers are unhappy with our enumeration name like Color, File, RefCounted etc.
 /**
  * The kind of a completion entry.
  */
@@ -788,7 +854,7 @@ static const int Keyword = 14;
 static const int Snippet = 15;
 static const int Color = 16;
 static const int File = 17;
-static const int Reference = 18;
+static const int RefCounted = 18;
 static const int Folder = 19;
 static const int EnumMember = 20;
 static const int Constant = 21;
@@ -1018,32 +1084,32 @@ struct CompletionList {
  * A symbol kind.
  */
 namespace SymbolKind {
-static const int File = 0;
-static const int Module = 1;
-static const int Namespace = 2;
-static const int Package = 3;
-static const int Class = 4;
-static const int Method = 5;
-static const int Property = 6;
-static const int Field = 7;
-static const int Constructor = 8;
-static const int Enum = 9;
-static const int Interface = 10;
-static const int Function = 11;
-static const int Variable = 12;
-static const int Constant = 13;
-static const int String = 14;
-static const int Number = 15;
-static const int Boolean = 16;
-static const int Array = 17;
-static const int Object = 18;
-static const int Key = 19;
-static const int Null = 20;
-static const int EnumMember = 21;
-static const int Struct = 22;
-static const int Event = 23;
-static const int Operator = 24;
-static const int TypeParameter = 25;
+static const int File = 1;
+static const int Module = 2;
+static const int Namespace = 3;
+static const int Package = 4;
+static const int Class = 5;
+static const int Method = 6;
+static const int Property = 7;
+static const int Field = 8;
+static const int Constructor = 9;
+static const int Enum = 10;
+static const int Interface = 11;
+static const int Function = 12;
+static const int Variable = 13;
+static const int Constant = 14;
+static const int String = 15;
+static const int Number = 16;
+static const int Boolean = 17;
+static const int Array = 18;
+static const int Object = 19;
+static const int Key = 20;
+static const int Null = 21;
+static const int EnumMember = 22;
+static const int Struct = 23;
+static const int Event = 24;
+static const int Operator = 25;
+static const int TypeParameter = 26;
 }; // namespace SymbolKind
 
 /**
@@ -1263,6 +1329,18 @@ struct DocumentSymbol {
 		}
 
 		return item;
+	}
+};
+
+struct ApplyWorkspaceEditParams {
+	WorkspaceEdit edit;
+
+	Dictionary to_json() {
+		Dictionary dict;
+
+		dict["edit"] = edit.to_json();
+
+		return dict;
 	}
 };
 
@@ -1528,6 +1606,114 @@ struct SignatureHelp {
 	}
 };
 
+/**
+ * A pattern to describe in which file operation requests or notifications
+ * the server is interested in.
+ */
+struct FileOperationPattern {
+	/**
+	 * The glob pattern to match.
+	 */
+	String glob = "**/*.gd";
+
+	/**
+	 * Whether to match `file`s or `folder`s with this pattern.
+	 *
+	 * Matches both if undefined.
+	 */
+	String matches = "file";
+
+	Dictionary to_json() const {
+		Dictionary dict;
+
+		dict["glob"] = glob;
+		dict["matches"] = matches;
+
+		return dict;
+	}
+};
+
+/**
+ * A filter to describe in which file operation requests or notifications
+ * the server is interested in.
+ */
+struct FileOperationFilter {
+	/**
+	 * The actual file operation pattern.
+	 */
+	FileOperationPattern pattern;
+
+	Dictionary to_json() const {
+		Dictionary dict;
+
+		dict["pattern"] = pattern.to_json();
+
+		return dict;
+	}
+};
+
+/**
+ * The options to register for file operations.
+ */
+struct FileOperationRegistrationOptions {
+	/**
+	 * The actual filters.
+	 */
+	Vector<FileOperationFilter> filters;
+
+	FileOperationRegistrationOptions() {
+		filters.push_back(FileOperationFilter());
+	}
+
+	Dictionary to_json() const {
+		Dictionary dict;
+
+		Array filts;
+		for (int i = 0; i < filters.size(); i++) {
+			filts.push_back(filters[i].to_json());
+		}
+		dict["filters"] = filts;
+
+		return dict;
+	}
+};
+
+/**
+ * The server is interested in file notifications/requests.
+ */
+struct FileOperations {
+	/**
+	 * The server is interested in receiving didDeleteFiles file notifications.
+	 */
+	FileOperationRegistrationOptions didDelete;
+
+	Dictionary to_json() const {
+		Dictionary dict;
+
+		dict["didDelete"] = didDelete.to_json();
+
+		return dict;
+	}
+};
+
+/**
+ * Workspace specific server capabilities
+ */
+struct Workspace {
+	/**
+	 * The server is interested in file notifications/requests.
+	 */
+	FileOperations fileOperations;
+
+	Dictionary to_json() const {
+		Dictionary dict;
+
+		dict["fileOperations"] = fileOperations.to_json();
+
+		return dict;
+	}
+};
+
 struct ServerCapabilities {
 	/**
 	 * Defines how text documents are synced. Is either a detailed structure defining each notification or
@@ -1588,6 +1774,11 @@ struct ServerCapabilities {
 	 * The server provides workspace symbol support.
 	 */
 	bool workspaceSymbolProvider = true;
+
+	/**
+	 * The server supports workspace folder.
+	 */
+	Workspace workspace;
 
 	/**
 	 * The server provides code actions. The `CodeActionOptions` return type is only
@@ -1676,6 +1867,7 @@ struct ServerCapabilities {
 		dict["documentHighlightProvider"] = documentHighlightProvider;
 		dict["documentSymbolProvider"] = documentSymbolProvider;
 		dict["workspaceSymbolProvider"] = workspaceSymbolProvider;
+		dict["workspace"] = workspace.to_json();
 		dict["codeActionProvider"] = codeActionProvider;
 		dict["documentFormattingProvider"] = documentFormattingProvider;
 		dict["documentRangeFormattingProvider"] = documentRangeFormattingProvider;

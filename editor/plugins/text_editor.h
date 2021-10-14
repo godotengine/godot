@@ -66,7 +66,7 @@ private:
 		EDIT_INDENT_RIGHT,
 		EDIT_INDENT_LEFT,
 		EDIT_DELETE_LINE,
-		EDIT_CLONE_DOWN,
+		EDIT_DUPLICATE_SELECTION,
 		EDIT_TO_UPPERCASE,
 		EDIT_TO_LOWERCASE,
 		EDIT_CAPITALIZE,
@@ -87,11 +87,10 @@ private:
 	};
 
 protected:
-	static void _bind_methods();
-
 	void _edit_option(int p_op);
 	void _make_context_menu(bool p_selection, bool p_can_fold, bool p_is_folded, Vector2 p_position);
 	void _text_edit_gui_input(const Ref<InputEvent> &ev);
+	void _prepare_edit_menu();
 
 	Map<String, Ref<EditorSyntaxHighlighter>> highlighters;
 	void _change_syntax_highlighter(int p_idx);
@@ -120,6 +119,8 @@ public:
 	virtual void set_edit_state(const Variant &p_state) override;
 	virtual Vector<String> get_functions() override;
 	virtual Array get_breakpoints() override;
+	virtual void set_breakpoint(int p_line, bool p_enabled) override{};
+	virtual void clear_breakpoints() override{};
 	virtual void goto_line(int p_line, bool p_with_error = false) override;
 	void goto_line_selection(int p_line, int p_begin, int p_end);
 	virtual void set_executing_line(int p_line) override;
@@ -136,11 +137,15 @@ public:
 	virtual void set_debugger_active(bool p_active) override;
 	virtual void set_tooltip_request_func(String p_method, Object *p_obj) override;
 	virtual void add_callback(const String &p_function, PackedStringArray p_args) override;
+	void update_toggle_scripts_button() override;
 
 	virtual Control *get_edit_menu() override;
 	virtual void clear_edit_menu() override;
+	virtual void set_find_replace_bar(FindReplaceBar *p_bar) override;
 
 	virtual void validate() override;
+
+	virtual Control *get_base_editor() const override;
 
 	static void register_editor();
 

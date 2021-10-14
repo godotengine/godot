@@ -11,19 +11,15 @@
 	</tutorials>
 	<methods>
 		<method name="fit_child_in_rect">
-			<return type="void">
-			</return>
-			<argument index="0" name="child" type="Control">
-			</argument>
-			<argument index="1" name="rect" type="Rect2">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="child" type="Control" />
+			<argument index="1" name="rect" type="Rect2" />
 			<description>
 				Fit a child control in a given rect. This is mainly a helper for creating custom container classes.
 			</description>
 		</method>
 		<method name="queue_sort">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Queue resort of the contained children. This is called automatically anyway, but can be called upon request.
 			</description>
@@ -33,6 +29,11 @@
 		<member name="mouse_filter" type="int" setter="set_mouse_filter" getter="get_mouse_filter" override="true" enum="Control.MouseFilter" default="1" />
 	</members>
 	<signals>
+		<signal name="pre_sort_children">
+			<description>
+				Emitted when children are going to be sorted.
+			</description>
+		</signal>
 		<signal name="sort_children">
 			<description>
 				Emitted when sorting the children is needed.
@@ -40,7 +41,10 @@
 		</signal>
 	</signals>
 	<constants>
-		<constant name="NOTIFICATION_SORT_CHILDREN" value="50">
+		<constant name="NOTIFICATION_PRE_SORT_CHILDREN" value="50">
+			Notification just before children are going to be sorted, in case there's something to process beforehand.
+		</constant>
+		<constant name="NOTIFICATION_SORT_CHILDREN" value="51">
 			Notification for when sorting the children, it must be obeyed immediately.
 		</constant>
 	</constants>

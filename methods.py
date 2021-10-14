@@ -56,15 +56,25 @@ def disable_warnings(self):
         self.Append(CXXFLAGS=["-w"])
 
 
+def force_optimization_on_debug(self):
+    # 'self' is the environment
+    if self["target"] != "debug":
+        return
+
+    if self.msvc:
+        self.Append(CCFLAGS=["/O2"])
+    else:
+        self.Append(CCFLAGS=["-O3"])
+
+
 def add_module_version_string(self, s):
     self.module_version_string += "." + s
 
 
 def update_version(module_version_string=""):
-
     build_name = "custom_build"
     if os.getenv("BUILD_NAME") != None:
-        build_name = os.getenv("BUILD_NAME")
+        build_name = str(os.getenv("BUILD_NAME"))
         print("Using custom build name: " + build_name)
 
     import version
@@ -79,7 +89,13 @@ def update_version(module_version_string=""):
     f.write("#define VERSION_MAJOR " + str(version.major) + "\n")
     f.write("#define VERSION_MINOR " + str(version.minor) + "\n")
     f.write("#define VERSION_PATCH " + str(version.patch) + "\n")
-    f.write('#define VERSION_STATUS "' + str(version.status) + '"\n')
+    # For dev snapshots (alpha, beta, RC, etc.) we do not commit status change to Git,
+    # so this define provides a way to override it without having to modify the source.
+    godot_status = str(version.status)
+    if os.getenv("GODOT_VERSION_STATUS") != None:
+        godot_status = str(os.getenv("GODOT_VERSION_STATUS"))
+        print("Using version status '{}', overriding the original '{}'.".format(godot_status, str(version.status)))
+    f.write('#define VERSION_STATUS "' + godot_status + '"\n')
     f.write('#define VERSION_BUILD "' + str(build_name) + '"\n')
     f.write('#define VERSION_MODULE_CONFIG "' + str(version.module_config) + module_version_string + '"\n')
     f.write("#define VERSION_YEAR " + str(version.year) + "\n")
@@ -231,6 +247,18 @@ def is_module(path):
     return True
 
 
+def write_disabled_classes(class_list):
+    f = open("core/disabled_classes.gen.h", "w")
+    f.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
+    f.write("#ifndef DISABLED_CLASSES_GEN_H\n")
+    f.write("#define DISABLED_CLASSES_GEN_H\n\n")
+    for c in class_list:
+        cs = c.strip()
+        if cs != "":
+            f.write("#define ClassDB_Disable_" + cs + " 1\n")
+    f.write("\n#endif\n")
+
+
 def write_modules(modules):
     includes_cpp = ""
     preregister_cpp = ""
@@ -302,7 +330,7 @@ def disable_module(self):
     self.disabled_modules.append(self.current_module)
 
 
-def module_check_dependencies(self, module, dependencies):
+def module_check_dependencies(self, module, dependencies, silent=False):
     """
     Checks if module dependencies are enabled for a given module,
     and prints a warning if they aren't.
@@ -316,11 +344,12 @@ def module_check_dependencies(self, module, dependencies):
             missing_deps.append(dep)
 
     if missing_deps != []:
-        print(
-            "Disabling '{}' module as the following dependencies are not satisfied: {}".format(
-                module, ", ".join(missing_deps)
+        if not silent:
+            print(
+                "Disabling '{}' module as the following dependencies are not satisfied: {}".format(
+                    module, ", ".join(missing_deps)
+                )
             )
-        )
         return False
     else:
         return True
@@ -787,9 +816,18 @@ def get_compiler_version(env):
             return None
     else:  # TODO: Implement for MSVC
         return None
-    match = re.search("[0-9]+\.[0-9.]+", version)
+    match = re.search(
+        "(?:(?<=version )|(?<=\) )|(?<=^))"
+        "(?P<major>\d+)"
+        "(?:\.(?P<minor>\d*))?"
+        "(?:\.(?P<patch>\d*))?"
+        "(?:-(?P<metadata1>[0-9a-zA-Z-]*))?"
+        "(?:\+(?P<metadata2>[0-9a-zA-Z-]*))?"
+        "(?: (?P<date>[0-9]{8}|[0-9]{6})(?![0-9a-zA-Z]))?",
+        version,
+    )
     if match is not None:
-        return list(map(int, match.group().split(".")))
+        return match.groupdict()
     else:
         return None
 
@@ -800,6 +838,10 @@ def using_gcc(env):
 
 def using_clang(env):
     return "clang" in os.path.basename(env["CC"])
+
+
+def using_emcc(env):
+    return "emcc" in os.path.basename(env["CC"])
 
 
 def show_progress(env):
@@ -904,9 +946,12 @@ def show_progress(env):
 
     def progress_finish(target, source, env):
         nonlocal node_count, progressor
-        with open(node_count_fname, "w") as f:
-            f.write("%d\n" % node_count)
-        progressor.delete(progressor.file_list())
+        try:
+            with open(node_count_fname, "w") as f:
+                f.write("%d\n" % node_count)
+            progressor.delete(progressor.file_list())
+        except Exception:
+            pass
 
     try:
         with open(node_count_fname) as f:

@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="LightmapGIData" inherits="Resource" version="4.0">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="add_user">
+			<return type="void" />
+			<argument index="0" name="path" type="NodePath" />
+			<argument index="1" name="uv_scale" type="Rect2" />
+			<argument index="2" name="slice_index" type="int" />
+			<argument index="3" name="sub_instance" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="clear_users">
+			<return type="void" />
+			<description>
+			</description>
+		</method>
+		<method name="get_user_count" qualifiers="const">
+			<return type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="get_user_path" qualifiers="const">
+			<return type="NodePath" />
+			<argument index="0" name="user_idx" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="is_using_spherical_harmonics" qualifiers="const">
+			<return type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="set_uses_spherical_harmonics">
+			<return type="void" />
+			<argument index="0" name="uses_spherical_harmonics" type="bool" />
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="light_texture" type="TextureLayered" setter="set_light_texture" getter="get_light_texture">
+		</member>
+	</members>
+</class>

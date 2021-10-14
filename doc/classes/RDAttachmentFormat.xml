@@ -1,13 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="RDAttachmentFormat" inherits="Reference" version="4.0">
+<class name="RDAttachmentFormat" inherits="RefCounted" version="4.0">
 	<brief_description>
 	</brief_description>
 	<description>
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="format" type="int" setter="set_format" getter="get_format" enum="RenderingDevice.DataFormat" default="36">
 		</member>
@@ -16,6 +14,4 @@
 		<member name="usage_flags" type="int" setter="set_usage_flags" getter="get_usage_flags" default="0">
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

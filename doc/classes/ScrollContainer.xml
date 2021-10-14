@@ -11,16 +11,21 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="ensure_control_visible">
+			<return type="void" />
+			<argument index="0" name="control" type="Control" />
+			<description>
+				Ensures the given [code]control[/code] is visible (must be a direct or indirect child of the ScrollContainer). Used by [member follow_focus].
+			</description>
+		</method>
 		<method name="get_h_scrollbar">
-			<return type="HScrollBar">
-			</return>
+			<return type="HScrollBar" />
 			<description>
 				Returns the horizontal scrollbar [HScrollBar] of this [ScrollContainer].
 			</description>
 		</method>
 		<method name="get_v_scrollbar">
-			<return type="VScrollBar">
-			</return>
+			<return type="VScrollBar" />
 			<description>
 				Returns the vertical scrollbar [VScrollBar] of this [ScrollContainer].
 			</description>
@@ -39,11 +44,17 @@
 		<member name="scroll_horizontal_enabled" type="bool" setter="set_enable_h_scroll" getter="is_h_scroll_enabled" default="true">
 			If [code]true[/code], enables horizontal scrolling.
 		</member>
+		<member name="scroll_horizontal_visible" type="bool" setter="set_h_scroll_visible" getter="is_h_scroll_visible" default="true">
+			If [code]false[/code], hides the horizontal scrollbar.
+		</member>
 		<member name="scroll_vertical" type="int" setter="set_v_scroll" getter="get_v_scroll" default="0">
 			The current vertical scroll value.
 		</member>
 		<member name="scroll_vertical_enabled" type="bool" setter="set_enable_v_scroll" getter="is_v_scroll_enabled" default="true">
 			If [code]true[/code], enables vertical scrolling.
+		</member>
+		<member name="scroll_vertical_visible" type="bool" setter="set_v_scroll_visible" getter="is_v_scroll_visible" default="true">
+			If [code]false[/code], hides the vertical scrollbar.
 		</member>
 	</members>
 	<signals>
@@ -58,10 +69,8 @@
 			</description>
 		</signal>
 	</signals>
-	<constants>
-	</constants>
 	<theme_items>
-		<theme_item name="bg" type="StyleBox">
+		<theme_item name="bg" data_type="style" type="StyleBox">
 			The background [StyleBox] of the [ScrollContainer].
 		</theme_item>
 	</theme_items>

@@ -522,12 +522,12 @@ GDMonoClass::~GDMonoClass() {
 		mono_custom_attrs_free(attributes);
 	}
 
-	for (Map<StringName, GDMonoField *>::Element *E = fields.front(); E; E = E->next()) {
-		memdelete(E->value());
+	for (const KeyValue<StringName, GDMonoField *> &E : fields) {
+		memdelete(E.value);
 	}
 
-	for (Map<StringName, GDMonoProperty *>::Element *E = properties.front(); E; E = E->next()) {
-		memdelete(E->value());
+	for (const KeyValue<StringName, GDMonoProperty *> &E : properties) {
+		memdelete(E.value);
 	}
 
 	{

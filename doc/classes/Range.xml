@@ -10,17 +10,14 @@
 	</tutorials>
 	<methods>
 		<method name="share">
-			<return type="void">
-			</return>
-			<argument index="0" name="with" type="Node">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="with" type="Node" />
 			<description>
 				Binds two ranges together along with any ranges previously grouped with either of them. When any of range's member variables change, it will share the new value with all other ranges in its group.
 			</description>
 		</method>
 		<method name="unshare">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Stops range from sharing its member variables with any other.
 			</description>
@@ -65,13 +62,10 @@
 			</description>
 		</signal>
 		<signal name="value_changed">
-			<argument index="0" name="value" type="float">
-			</argument>
+			<argument index="0" name="value" type="float" />
 			<description>
 				Emitted when [member value] changes.
 			</description>
 		</signal>
 	</signals>
-	<constants>
-	</constants>
 </class>

@@ -48,6 +48,27 @@ TEST_SUITE("[Modules][GDScript]") {
 	}
 }
 
+TEST_CASE("[Modules][GDScript] Load source code dynamically and run it") {
+	Ref<GDScript> gdscript = memnew(GDScript);
+	gdscript->set_source_code(R"(
+extends RefCounted
+
+func _init():
+	set_meta("result", 42)
+)");
+	// A spurious `Condition "err" is true` message is printed (despite parsing being successful and returning `OK`).
+	// Silence it.
+	ERR_PRINT_OFF;
+	const Error error = gdscript->reload();
+	ERR_PRINT_ON;
+	CHECK_MESSAGE(error == OK, "The script should parse successfully.");
+
+	// Run the script by assigning it to a reference-counted object.
+	Ref<RefCounted> ref_counted = memnew(RefCounted);
+	ref_counted->set_script(gdscript);
+	CHECK_MESSAGE(int(ref_counted->get_meta("result")) == 42, "The script should assign object metadata successfully.");
+}
+
 } // namespace GDScriptTests
 
 #endif // GDSCRIPT_TEST_RUNNER_SUITE_H

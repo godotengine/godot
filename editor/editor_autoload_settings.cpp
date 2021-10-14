@@ -46,26 +46,30 @@ void EditorAutoloadSettings::_notification(int p_what) {
 		ResourceLoader::get_recognized_extensions_for_type("Script", &afn);
 		ResourceLoader::get_recognized_extensions_for_type("PackedScene", &afn);
 
-		for (List<String>::Element *E = afn.front(); E; E = E->next()) {
-			file_dialog->add_filter("*." + E->get());
+		for (const String &E : afn) {
+			file_dialog->add_filter("*." + E);
 		}
 
-		for (List<AutoLoadInfo>::Element *E = autoload_cache.front(); E; E = E->next()) {
-			AutoLoadInfo &info = E->get();
+		for (const AutoLoadInfo &info : autoload_cache) {
 			if (info.node && info.in_editor) {
-				get_tree()->get_root()->call_deferred("add_child", info.node);
+				get_tree()->get_root()->call_deferred(SNAME("add_child"), info.node);
 			}
 		}
-		browse_button->set_icon(get_theme_icon("Folder", "EditorIcons"));
+		browse_button->set_icon(get_theme_icon(SNAME("Folder"), SNAME("EditorIcons")));
 	} else if (p_what == NOTIFICATION_THEME_CHANGED) {
-		browse_button->set_icon(get_theme_icon("Folder", "EditorIcons"));
+		browse_button->set_icon(get_theme_icon(SNAME("Folder"), SNAME("EditorIcons")));
 	}
 }
 
 bool EditorAutoloadSettings::_autoload_name_is_valid(const String &p_name, String *r_error) {
 	if (!p_name.is_valid_identifier()) {
 		if (r_error) {
-			*r_error = TTR("Invalid name.") + "\n" + TTR("Valid characters:") + " a-z, A-Z, 0-9 or _";
+			*r_error = TTR("Invalid name.") + " ";
+			if (p_name.size() > 0 && p_name.left(1).is_numeric()) {
+				*r_error += TTR("Cannot begin with a digit.");
+			} else {
+				*r_error += TTR("Valid characters:") + " a-z, A-Z, 0-9 or _";
+			}
 		}
 
 		return false;
@@ -73,7 +77,15 @@ bool EditorAutoloadSettings::_autoload_name_is_valid(const String &p_name, Strin
 
 	if (ClassDB::class_exists(p_name)) {
 		if (r_error) {
-			*r_error = TTR("Invalid name.") + "\n" + TTR("Must not collide with an existing engine class name.");
+			*r_error = TTR("Invalid name.") + " " + TTR("Must not collide with an existing engine class name.");
+		}
+
+		return false;
+	}
+
+	if (ScriptServer::is_global_class(p_name)) {
+		if (r_error) {
+			*r_error = TTR("Invalid name.") + "\n" + TTR("Must not collide with an existing global script class name.");
 		}
 
 		return false;
@@ -82,7 +94,7 @@ bool EditorAutoloadSettings::_autoload_name_is_valid(const String &p_name, Strin
 	for (int i = 0; i < Variant::VARIANT_MAX; i++) {
 		if (Variant::get_type_name(Variant::Type(i)) == p_name) {
 			if (r_error) {
-				*r_error = TTR("Invalid name.") + "\n" + TTR("Must not collide with an existing built-in type name.");
+				*r_error = TTR("Invalid name.") + " " + TTR("Must not collide with an existing built-in type name.");
 			}
 
 			return false;
@@ -92,7 +104,7 @@ bool EditorAutoloadSettings::_autoload_name_is_valid(const String &p_name, Strin
 	for (int i = 0; i < CoreConstants::get_global_constant_count(); i++) {
 		if (CoreConstants::get_global_constant_name(i) == p_name) {
 			if (r_error) {
-				*r_error = TTR("Invalid name.") + "\n" + TTR("Must not collide with an existing global constant name.");
+				*r_error = TTR("Invalid name.") + " " + TTR("Must not collide with an existing global constant name.");
 			}
 
 			return false;
@@ -102,10 +114,10 @@ bool EditorAutoloadSettings::_autoload_name_is_valid(const String &p_name, Strin
 	for (int i = 0; i < ScriptServer::get_language_count(); i++) {
 		List<String> keywords;
 		ScriptServer::get_language(i)->get_reserved_words(&keywords);
-		for (List<String>::Element *E = keywords.front(); E; E = E->next()) {
-			if (E->get() == p_name) {
+		for (const String &E : keywords) {
+			if (E == p_name) {
 				if (r_error) {
-					*r_error = TTR("Invalid name.") + "\n" + TTR("Keyword cannot be used as an autoload name.");
+					*r_error = TTR("Invalid name.") + " " + TTR("Keyword cannot be used as an autoload name.");
 				}
 
 				return false;
@@ -327,7 +339,7 @@ void EditorAutoloadSettings::_autoload_file_callback(const String &p_path) {
 	add_autoload->set_disabled(false);
 }
 
-void EditorAutoloadSettings::_autoload_text_entered(const String p_name) {
+void EditorAutoloadSettings::_autoload_text_submitted(const String p_name) {
 	if (autoload_add_path->get_text() != "" && _autoload_name_is_valid(p_name, nullptr)) {
 		_autoload_add();
 	}
@@ -339,8 +351,11 @@ void EditorAutoloadSettings::_autoload_path_text_changed(const String p_path) {
 }
 
 void EditorAutoloadSettings::_autoload_text_changed(const String p_name) {
-	add_autoload->set_disabled(
-			autoload_add_path->get_text() == "" || !_autoload_name_is_valid(p_name, nullptr));
+	String error_string;
+	bool is_name_valid = _autoload_name_is_valid(p_name, &error_string);
+	add_autoload->set_disabled(autoload_add_path->get_text() == "" || !is_name_valid);
+	error_message->set_text(error_string);
+	error_message->set_visible(autoload_add_name->get_text() != "" && !is_name_valid);
 }
 
 Node *EditorAutoloadSettings::_create_autoload(const String &p_path) {
@@ -349,14 +364,14 @@ Node *EditorAutoloadSettings::_create_autoload(const String &p_path) {
 	Node *n = nullptr;
 	if (res->is_class("PackedScene")) {
 		Ref<PackedScene> ps = res;
-		n = ps->instance();
+		n = ps->instantiate();
 	} else if (res->is_class("Script")) {
 		Ref<Script> s = res;
 		StringName ibt = s->get_instance_base_type();
 		bool valid_type = ClassDB::is_parent_class(ibt, "Node");
 		ERR_FAIL_COND_V_MSG(!valid_type, nullptr, "Script does not inherit a Node: " + p_path + ".");
 
-		Object *obj = ClassDB::instance(ibt);
+		Object *obj = ClassDB::instantiate(ibt);
 
 		ERR_FAIL_COND_V_MSG(obj == nullptr, nullptr, "Cannot instance script for autoload, expected 'Node' inheritance, got: " + String(ibt) + ".");
 
@@ -379,8 +394,7 @@ void EditorAutoloadSettings::update_autoload() {
 	Map<String, AutoLoadInfo> to_remove;
 	List<AutoLoadInfo *> to_add;
 
-	for (List<AutoLoadInfo>::Element *E = autoload_cache.front(); E; E = E->next()) {
-		AutoLoadInfo &info = E->get();
+	for (const AutoLoadInfo &info : autoload_cache) {
 		to_remove.insert(info.name, info);
 	}
 
@@ -392,9 +406,7 @@ void EditorAutoloadSettings::update_autoload() {
 	List<PropertyInfo> props;
 	ProjectSettings::get_singleton()->get_property_list(&props);
 
-	for (List<PropertyInfo>::Element *E = props.front(); E; E = E->next()) {
-		const PropertyInfo &pi = E->get();
-
+	for (const PropertyInfo &pi : props) {
 		if (!pi.name.begins_with("autoload/")) {
 			continue;
 		}
@@ -453,16 +465,16 @@ void EditorAutoloadSettings::update_autoload() {
 		item->set_editable(2, true);
 		item->set_text(2, TTR("Enable"));
 		item->set_checked(2, info.is_singleton);
-		item->add_button(3, get_theme_icon("Load", "EditorIcons"), BUTTON_OPEN);
-		item->add_button(3, get_theme_icon("MoveUp", "EditorIcons"), BUTTON_MOVE_UP);
-		item->add_button(3, get_theme_icon("MoveDown", "EditorIcons"), BUTTON_MOVE_DOWN);
-		item->add_button(3, get_theme_icon("Remove", "EditorIcons"), BUTTON_DELETE);
+		item->add_button(3, get_theme_icon(SNAME("Load"), SNAME("EditorIcons")), BUTTON_OPEN);
+		item->add_button(3, get_theme_icon(SNAME("MoveUp"), SNAME("EditorIcons")), BUTTON_MOVE_UP);
+		item->add_button(3, get_theme_icon(SNAME("MoveDown"), SNAME("EditorIcons")), BUTTON_MOVE_DOWN);
+		item->add_button(3, get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")), BUTTON_DELETE);
 		item->set_selectable(3, false);
 	}
 
 	// Remove deleted/changed autoloads
-	for (Map<String, AutoLoadInfo>::Element *E = to_remove.front(); E; E = E->next()) {
-		AutoLoadInfo &info = E->get();
+	for (KeyValue<String, AutoLoadInfo> &E : to_remove) {
+		AutoLoadInfo &info = E.value;
 		if (info.is_singleton) {
 			for (int i = 0; i < ScriptServer::get_language_count(); i++) {
 				ScriptServer::get_language(i)->remove_named_global_constant(info.name);
@@ -470,7 +482,7 @@ void EditorAutoloadSettings::update_autoload() {
 		}
 		if (info.in_editor) {
 			ERR_CONTINUE(!info.node);
-			get_tree()->get_root()->call_deferred("remove_child", info.node);
+			get_tree()->get_root()->call_deferred(SNAME("remove_child"), info.node);
 		}
 
 		if (info.node) {
@@ -483,9 +495,7 @@ void EditorAutoloadSettings::update_autoload() {
 
 	// Load new/changed autoloads
 	List<Node *> nodes_to_add;
-	for (List<AutoLoadInfo *>::Element *E = to_add.front(); E; E = E->next()) {
-		AutoLoadInfo *info = E->get();
-
+	for (AutoLoadInfo *info : to_add) {
 		info->node = _create_autoload(info->path);
 
 		ERR_CONTINUE(!info->node);
@@ -518,8 +528,8 @@ void EditorAutoloadSettings::update_autoload() {
 		}
 	}
 
-	for (List<Node *>::Element *E = nodes_to_add.front(); E; E = E->next()) {
-		get_tree()->get_root()->add_child(E->get());
+	for (Node *E : nodes_to_add) {
+		get_tree()->get_root()->add_child(E);
 	}
 
 	updating_autoload = false;
@@ -649,8 +659,8 @@ void EditorAutoloadSettings::drop_data_fw(const Point2 &p_point, const Variant &
 
 	int i = 0;
 
-	for (List<AutoLoadInfo>::Element *F = autoload_cache.front(); F; F = F->next()) {
-		orders.write[i++] = F->get().order;
+	for (const AutoLoadInfo &F : autoload_cache) {
+		orders.write[i++] = F.order;
 	}
 
 	orders.sort();
@@ -661,9 +671,9 @@ void EditorAutoloadSettings::drop_data_fw(const Point2 &p_point, const Variant &
 
 	i = 0;
 
-	for (List<AutoLoadInfo>::Element *F = autoload_cache.front(); F; F = F->next()) {
-		undo_redo->add_do_method(ProjectSettings::get_singleton(), "set_order", "autoload/" + F->get().name, orders[i++]);
-		undo_redo->add_undo_method(ProjectSettings::get_singleton(), "set_order", "autoload/" + F->get().name, F->get().order);
+	for (const AutoLoadInfo &F : autoload_cache) {
+		undo_redo->add_do_method(ProjectSettings::get_singleton(), "set_order", "autoload/" + F.name, orders[i++]);
+		undo_redo->add_undo_method(ProjectSettings::get_singleton(), "set_order", "autoload/" + F.name, F.order);
 	}
 
 	orders.clear();
@@ -749,9 +759,9 @@ void EditorAutoloadSettings::autoload_remove(const String &p_name) {
 void EditorAutoloadSettings::_bind_methods() {
 	ClassDB::bind_method("_autoload_open", &EditorAutoloadSettings::_autoload_open);
 
-	ClassDB::bind_method("get_drag_data_fw", &EditorAutoloadSettings::get_drag_data_fw);
-	ClassDB::bind_method("can_drop_data_fw", &EditorAutoloadSettings::can_drop_data_fw);
-	ClassDB::bind_method("drop_data_fw", &EditorAutoloadSettings::drop_data_fw);
+	ClassDB::bind_method("_get_drag_data_fw", &EditorAutoloadSettings::get_drag_data_fw);
+	ClassDB::bind_method("_can_drop_data_fw", &EditorAutoloadSettings::can_drop_data_fw);
+	ClassDB::bind_method("_drop_data_fw", &EditorAutoloadSettings::drop_data_fw);
 
 	ClassDB::bind_method("update_autoload", &EditorAutoloadSettings::update_autoload);
 	ClassDB::bind_method("autoload_add", &EditorAutoloadSettings::autoload_add);
@@ -764,9 +774,7 @@ EditorAutoloadSettings::EditorAutoloadSettings() {
 	// Make first cache
 	List<PropertyInfo> props;
 	ProjectSettings::get_singleton()->get_property_list(&props);
-	for (List<PropertyInfo>::Element *E = props.front(); E; E = E->next()) {
-		const PropertyInfo &pi = E->get();
-
+	for (const PropertyInfo &pi : props) {
 		if (!pi.name.begins_with("autoload/")) {
 			continue;
 		}
@@ -799,9 +807,7 @@ EditorAutoloadSettings::EditorAutoloadSettings() {
 		autoload_cache.push_back(info);
 	}
 
-	for (List<AutoLoadInfo>::Element *E = autoload_cache.front(); E; E = E->next()) {
-		AutoLoadInfo &info = E->get();
-
+	for (AutoLoadInfo &info : autoload_cache) {
 		info.node = _create_autoload(info.path);
 
 		if (info.node) {
@@ -829,6 +835,12 @@ EditorAutoloadSettings::EditorAutoloadSettings() {
 
 	HBoxContainer *hbc = memnew(HBoxContainer);
 	add_child(hbc);
+
+	error_message = memnew(Label);
+	error_message->hide();
+	error_message->set_align(Label::Align::ALIGN_RIGHT);
+	error_message->add_theme_color_override("font_color", EditorNode::get_singleton()->get_gui_base()->get_theme_color(SNAME("error_color"), SNAME("Editor")));
+	add_child(error_message);
 
 	Label *l = memnew(Label);
 	l->set_text(TTR("Path:"));
@@ -859,7 +871,7 @@ EditorAutoloadSettings::EditorAutoloadSettings() {
 
 	autoload_add_name = memnew(LineEdit);
 	autoload_add_name->set_h_size_flags(SIZE_EXPAND_FILL);
-	autoload_add_name->connect("text_entered", callable_mp(this, &EditorAutoloadSettings::_autoload_text_entered));
+	autoload_add_name->connect("text_submitted", callable_mp(this, &EditorAutoloadSettings::_autoload_text_submitted));
 	autoload_add_name->connect("text_changed", callable_mp(this, &EditorAutoloadSettings::_autoload_text_changed));
 	hbc->add_child(autoload_add_name);
 
@@ -882,18 +894,17 @@ EditorAutoloadSettings::EditorAutoloadSettings() {
 
 	tree->set_column_title(0, TTR("Name"));
 	tree->set_column_expand(0, true);
-	tree->set_column_min_width(0, 100);
+	tree->set_column_expand_ratio(0, 1);
 
 	tree->set_column_title(1, TTR("Path"));
 	tree->set_column_expand(1, true);
-	tree->set_column_min_width(1, 100);
+	tree->set_column_clip_content(1, true);
+	tree->set_column_expand_ratio(1, 2);
 
-	tree->set_column_title(2, TTR("Singleton"));
+	tree->set_column_title(2, TTR("Global Variable"));
 	tree->set_column_expand(2, false);
-	tree->set_column_min_width(2, 80 * EDSCALE);
 
 	tree->set_column_expand(3, false);
-	tree->set_column_min_width(3, 120 * EDSCALE);
 
 	tree->connect("cell_selected", callable_mp(this, &EditorAutoloadSettings::_autoload_selected));
 	tree->connect("item_edited", callable_mp(this, &EditorAutoloadSettings::_autoload_edited));
@@ -905,8 +916,7 @@ EditorAutoloadSettings::EditorAutoloadSettings() {
 }
 
 EditorAutoloadSettings::~EditorAutoloadSettings() {
-	for (List<AutoLoadInfo>::Element *E = autoload_cache.front(); E; E = E->next()) {
-		AutoLoadInfo &info = E->get();
+	for (const AutoLoadInfo &info : autoload_cache) {
 		if (info.node && !info.in_editor) {
 			memdelete(info.node);
 		}
@@ -915,7 +925,7 @@ EditorAutoloadSettings::~EditorAutoloadSettings() {
 
 void EditorAutoloadSettings::_set_autoload_add_path(const String &p_text) {
 	autoload_add_path->set_text(p_text);
-	autoload_add_path->emit_signal("text_entered", p_text);
+	autoload_add_path->emit_signal(SNAME("text_submitted"), p_text);
 }
 
 void EditorAutoloadSettings::_browse_autoload_add_path() {

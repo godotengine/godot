@@ -32,9 +32,9 @@
 
 #include "core/templates/sort_array.h"
 
-int TriangleMesh::_create_bvh(BVH *p_bvh, BVH **p_bb, int p_from, int p_size, int p_depth, int &max_depth, int &max_alloc) {
-	if (p_depth > max_depth) {
-		max_depth = p_depth;
+int TriangleMesh::_create_bvh(BVH *p_bvh, BVH **p_bb, int p_from, int p_size, int p_depth, int &r_max_depth, int &r_max_alloc) {
+	if (p_depth > r_max_depth) {
+		r_max_depth = p_depth;
 	}
 
 	if (p_size == 1) {
@@ -70,13 +70,13 @@ int TriangleMesh::_create_bvh(BVH *p_bvh, BVH **p_bb, int p_from, int p_size, in
 		} break;
 	}
 
-	int left = _create_bvh(p_bvh, p_bb, p_from, p_size / 2, p_depth + 1, max_depth, max_alloc);
-	int right = _create_bvh(p_bvh, p_bb, p_from + p_size / 2, p_size - p_size / 2, p_depth + 1, max_depth, max_alloc);
+	int left = _create_bvh(p_bvh, p_bb, p_from, p_size / 2, p_depth + 1, r_max_depth, r_max_alloc);
+	int right = _create_bvh(p_bvh, p_bb, p_from + p_size / 2, p_size - p_size / 2, p_depth + 1, r_max_depth, r_max_alloc);
 
-	int index = max_alloc++;
+	int index = r_max_alloc++;
 	BVH *_new = &p_bvh[index];
 	_new->aabb = aabb;
-	_new->center = aabb.position + aabb.size * 0.5;
+	_new->center = aabb.get_center();
 	_new->face_index = -1;
 	_new->left = left;
 	_new->right = right;
@@ -152,13 +152,13 @@ void TriangleMesh::create(const Vector<Vector3> &p_faces) {
 			bw[i].left = -1;
 			bw[i].right = -1;
 			bw[i].face_index = i;
-			bw[i].center = bw[i].aabb.position + bw[i].aabb.size * 0.5;
+			bw[i].center = bw[i].aabb.get_center();
 		}
 
 		vertices.resize(db.size());
 		Vector3 *vw = vertices.ptrw();
-		for (Map<Vector3, int>::Element *E = db.front(); E; E = E->next()) {
-			vw[E->get()] = E->key();
+		for (const KeyValue<Vector3, int> &E : db) {
+			vw[E.value] = E.key;
 		}
 	}
 
@@ -600,7 +600,7 @@ bool TriangleMesh::inside_convex_shape(const Plane *p_planes, int p_plane_count,
 	const Vector3 *vertexptr = vertices.ptr();
 	const BVH *bvhptr = bvh.ptr();
 
-	Transform scale(Basis().scaled(p_scale));
+	Transform3D scale(Basis().scaled(p_scale));
 
 	int pos = bvh.size() - 1;
 

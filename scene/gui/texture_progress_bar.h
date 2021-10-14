@@ -54,11 +54,15 @@ public:
 		FILL_COUNTER_CLOCKWISE,
 		FILL_BILINEAR_LEFT_AND_RIGHT,
 		FILL_BILINEAR_TOP_AND_BOTTOM,
-		FILL_CLOCKWISE_AND_COUNTER_CLOCKWISE
+		FILL_CLOCKWISE_AND_COUNTER_CLOCKWISE,
+		FILL_MODE_MAX,
 	};
 
 	void set_fill_mode(int p_fill);
 	int get_fill_mode();
+
+	void set_progress_offset(Point2 p_offset);
+	Point2 get_progress_offset() const;
 
 	void set_radial_initial_angle(float p_angle);
 	float get_radial_initial_angle();
@@ -99,6 +103,7 @@ public:
 
 private:
 	FillMode mode = FILL_LEFT_TO_RIGHT;
+	Point2 progress_offset;
 	float rad_init_angle = 0.0;
 	float rad_max_degrees = 360.0;
 	Point2 rad_center_off;

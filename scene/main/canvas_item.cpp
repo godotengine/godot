@@ -30,292 +30,17 @@
 
 #include "canvas_item.h"
 
-#include "core/input/input.h"
 #include "core/object/message_queue.h"
 #include "scene/2d/canvas_group.h"
 #include "scene/main/canvas_layer.h"
-#include "scene/main/viewport.h"
 #include "scene/main/window.h"
+#include "scene/resources/canvas_item_material.h"
 #include "scene/resources/font.h"
+#include "scene/resources/multimesh.h"
 #include "scene/resources/style_box.h"
-#include "scene/resources/texture.h"
+#include "scene/resources/world_2d.h"
 #include "scene/scene_string_names.h"
-#include "servers/rendering_server.h"
 
-Mutex CanvasItemMaterial::material_mutex;
-SelfList<CanvasItemMaterial>::List *CanvasItemMaterial::dirty_materials = nullptr;
-Map<CanvasItemMaterial::MaterialKey, CanvasItemMaterial::ShaderData> CanvasItemMaterial::shader_map;
-CanvasItemMaterial::ShaderNames *CanvasItemMaterial::shader_names = nullptr;
-
-void CanvasItemMaterial::init_shaders() {
-	dirty_materials = memnew(SelfList<CanvasItemMaterial>::List);
-
-	shader_names = memnew(ShaderNames);
-
-	shader_names->particles_anim_h_frames = "particles_anim_h_frames";
-	shader_names->particles_anim_v_frames = "particles_anim_v_frames";
-	shader_names->particles_anim_loop = "particles_anim_loop";
-}
-
-void CanvasItemMaterial::finish_shaders() {
-	memdelete(dirty_materials);
-	memdelete(shader_names);
-	dirty_materials = nullptr;
-}
-
-void CanvasItemMaterial::_update_shader() {
-	dirty_materials->remove(&element);
-
-	MaterialKey mk = _compute_key();
-	if (mk.key == current_key.key) {
-		return; //no update required in the end
-	}
-
-	if (shader_map.has(current_key)) {
-		shader_map[current_key].users--;
-		if (shader_map[current_key].users == 0) {
-			//deallocate shader, as it's no longer in use
-			RS::get_singleton()->free(shader_map[current_key].shader);
-			shader_map.erase(current_key);
-		}
-	}
-
-	current_key = mk;
-
-	if (shader_map.has(mk)) {
-		RS::get_singleton()->material_set_shader(_get_material(), shader_map[mk].shader);
-		shader_map[mk].users++;
-		return;
-	}
-
-	//must create a shader!
-
-	String code = "shader_type canvas_item;\nrender_mode ";
-	switch (blend_mode) {
-		case BLEND_MODE_MIX:
-			code += "blend_mix";
-			break;
-		case BLEND_MODE_ADD:
-			code += "blend_add";
-			break;
-		case BLEND_MODE_SUB:
-			code += "blend_sub";
-			break;
-		case BLEND_MODE_MUL:
-			code += "blend_mul";
-			break;
-		case BLEND_MODE_PREMULT_ALPHA:
-			code += "blend_premul_alpha";
-			break;
-		case BLEND_MODE_DISABLED:
-			code += "blend_disabled";
-			break;
-	}
-
-	switch (light_mode) {
-		case LIGHT_MODE_NORMAL:
-			break;
-		case LIGHT_MODE_UNSHADED:
-			code += ",unshaded";
-			break;
-		case LIGHT_MODE_LIGHT_ONLY:
-			code += ",light_only";
-			break;
-	}
-
-	code += ";\n";
-
-	if (particles_animation) {
-		code += "uniform int particles_anim_h_frames;\n";
-		code += "uniform int particles_anim_v_frames;\n";
-		code += "uniform bool particles_anim_loop;\n";
-
-		code += "void vertex() {\n";
-
-		code += "\tfloat h_frames = float(particles_anim_h_frames);\n";
-		code += "\tfloat v_frames = float(particles_anim_v_frames);\n";
-
-		code += "\tVERTEX.xy /= vec2(h_frames, v_frames);\n";
-
-		code += "\tfloat particle_total_frames = float(particles_anim_h_frames * particles_anim_v_frames);\n";
-		code += "\tfloat particle_frame = floor(INSTANCE_CUSTOM.z * float(particle_total_frames));\n";
-		code += "\tif (!particles_anim_loop) {\n";
-		code += "\t\tparticle_frame = clamp(particle_frame, 0.0, particle_total_frames - 1.0);\n";
-		code += "\t} else {\n";
-		code += "\t\tparticle_frame = mod(particle_frame, particle_total_frames);\n";
-		code += "\t}";
-		code += "\tUV /= vec2(h_frames, v_frames);\n";
-		code += "\tUV += vec2(mod(particle_frame, h_frames) / h_frames, floor(particle_frame / h_frames) / v_frames);\n";
-		code += "}\n";
-	}
-
-	ShaderData shader_data;
-	shader_data.shader = RS::get_singleton()->shader_create();
-	shader_data.users = 1;
-
-	RS::get_singleton()->shader_set_code(shader_data.shader, code);
-
-	shader_map[mk] = shader_data;
-
-	RS::get_singleton()->material_set_shader(_get_material(), shader_data.shader);
-}
-
-void CanvasItemMaterial::flush_changes() {
-	MutexLock lock(material_mutex);
-
-	while (dirty_materials->first()) {
-		dirty_materials->first()->self()->_update_shader();
-	}
-}
-
-void CanvasItemMaterial::_queue_shader_change() {
-	MutexLock lock(material_mutex);
-
-	if (!element.in_list()) {
-		dirty_materials->add(&element);
-	}
-}
-
-bool CanvasItemMaterial::_is_shader_dirty() const {
-	MutexLock lock(material_mutex);
-
-	return element.in_list();
-}
-
-void CanvasItemMaterial::set_blend_mode(BlendMode p_blend_mode) {
-	blend_mode = p_blend_mode;
-	_queue_shader_change();
-}
-
-CanvasItemMaterial::BlendMode CanvasItemMaterial::get_blend_mode() const {
-	return blend_mode;
-}
-
-void CanvasItemMaterial::set_light_mode(LightMode p_light_mode) {
-	light_mode = p_light_mode;
-	_queue_shader_change();
-}
-
-CanvasItemMaterial::LightMode CanvasItemMaterial::get_light_mode() const {
-	return light_mode;
-}
-
-void CanvasItemMaterial::set_particles_animation(bool p_particles_anim) {
-	particles_animation = p_particles_anim;
-	_queue_shader_change();
-	notify_property_list_changed();
-}
-
-bool CanvasItemMaterial::get_particles_animation() const {
-	return particles_animation;
-}
-
-void CanvasItemMaterial::set_particles_anim_h_frames(int p_frames) {
-	particles_anim_h_frames = p_frames;
-	RS::get_singleton()->material_set_param(_get_material(), shader_names->particles_anim_h_frames, p_frames);
-}
-
-int CanvasItemMaterial::get_particles_anim_h_frames() const {
-	return particles_anim_h_frames;
-}
-
-void CanvasItemMaterial::set_particles_anim_v_frames(int p_frames) {
-	particles_anim_v_frames = p_frames;
-	RS::get_singleton()->material_set_param(_get_material(), shader_names->particles_anim_v_frames, p_frames);
-}
-
-int CanvasItemMaterial::get_particles_anim_v_frames() const {
-	return particles_anim_v_frames;
-}
-
-void CanvasItemMaterial::set_particles_anim_loop(bool p_loop) {
-	particles_anim_loop = p_loop;
-	RS::get_singleton()->material_set_param(_get_material(), shader_names->particles_anim_loop, particles_anim_loop);
-}
-
-bool CanvasItemMaterial::get_particles_anim_loop() const {
-	return particles_anim_loop;
-}
-
-void CanvasItemMaterial::_validate_property(PropertyInfo &property) const {
-	if (property.name.begins_with("particles_anim_") && !particles_animation) {
-		property.usage = 0;
-	}
-}
-
-RID CanvasItemMaterial::get_shader_rid() const {
-	ERR_FAIL_COND_V(!shader_map.has(current_key), RID());
-	return shader_map[current_key].shader;
-}
-
-Shader::Mode CanvasItemMaterial::get_shader_mode() const {
-	return Shader::MODE_CANVAS_ITEM;
-}
-
-void CanvasItemMaterial::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_blend_mode", "blend_mode"), &CanvasItemMaterial::set_blend_mode);
-	ClassDB::bind_method(D_METHOD("get_blend_mode"), &CanvasItemMaterial::get_blend_mode);
-
-	ClassDB::bind_method(D_METHOD("set_light_mode", "light_mode"), &CanvasItemMaterial::set_light_mode);
-	ClassDB::bind_method(D_METHOD("get_light_mode"), &CanvasItemMaterial::get_light_mode);
-
-	ClassDB::bind_method(D_METHOD("set_particles_animation", "particles_anim"), &CanvasItemMaterial::set_particles_animation);
-	ClassDB::bind_method(D_METHOD("get_particles_animation"), &CanvasItemMaterial::get_particles_animation);
-
-	ClassDB::bind_method(D_METHOD("set_particles_anim_h_frames", "frames"), &CanvasItemMaterial::set_particles_anim_h_frames);
-	ClassDB::bind_method(D_METHOD("get_particles_anim_h_frames"), &CanvasItemMaterial::get_particles_anim_h_frames);
-
-	ClassDB::bind_method(D_METHOD("set_particles_anim_v_frames", "frames"), &CanvasItemMaterial::set_particles_anim_v_frames);
-	ClassDB::bind_method(D_METHOD("get_particles_anim_v_frames"), &CanvasItemMaterial::get_particles_anim_v_frames);
-
-	ClassDB::bind_method(D_METHOD("set_particles_anim_loop", "loop"), &CanvasItemMaterial::set_particles_anim_loop);
-	ClassDB::bind_method(D_METHOD("get_particles_anim_loop"), &CanvasItemMaterial::get_particles_anim_loop);
-
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "blend_mode", PROPERTY_HINT_ENUM, "Mix,Add,Sub,Mul,Premult Alpha"), "set_blend_mode", "get_blend_mode");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "light_mode", PROPERTY_HINT_ENUM, "Normal,Unshaded,Light Only"), "set_light_mode", "get_light_mode");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "particles_animation"), "set_particles_animation", "get_particles_animation");
-
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "particles_anim_h_frames", PROPERTY_HINT_RANGE, "1,128,1"), "set_particles_anim_h_frames", "get_particles_anim_h_frames");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "particles_anim_v_frames", PROPERTY_HINT_RANGE, "1,128,1"), "set_particles_anim_v_frames", "get_particles_anim_v_frames");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "particles_anim_loop"), "set_particles_anim_loop", "get_particles_anim_loop");
-
-	BIND_ENUM_CONSTANT(BLEND_MODE_MIX);
-	BIND_ENUM_CONSTANT(BLEND_MODE_ADD);
-	BIND_ENUM_CONSTANT(BLEND_MODE_SUB);
-	BIND_ENUM_CONSTANT(BLEND_MODE_MUL);
-	BIND_ENUM_CONSTANT(BLEND_MODE_PREMULT_ALPHA);
-
-	BIND_ENUM_CONSTANT(LIGHT_MODE_NORMAL);
-	BIND_ENUM_CONSTANT(LIGHT_MODE_UNSHADED);
-	BIND_ENUM_CONSTANT(LIGHT_MODE_LIGHT_ONLY);
-}
-
-CanvasItemMaterial::CanvasItemMaterial() :
-		element(this) {
-	set_particles_anim_h_frames(1);
-	set_particles_anim_v_frames(1);
-	set_particles_anim_loop(false);
-
-	current_key.invalid_key = 1;
-	_queue_shader_change();
-}
-
-CanvasItemMaterial::~CanvasItemMaterial() {
-	MutexLock lock(material_mutex);
-
-	if (shader_map.has(current_key)) {
-		shader_map[current_key].users--;
-		if (shader_map[current_key].users == 0) {
-			//deallocate shader, as it's no longer in use
-			RS::get_singleton()->free(shader_map[current_key].shader);
-			shader_map.erase(current_key);
-		}
-
-		RS::get_singleton()->material_set_shader(_get_material(), RID());
-	}
-}
-
-///////////////////////////////////////////////////////////////////
 #ifdef TOOLS_ENABLED
 bool CanvasItem::_edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const {
 	if (_edit_use_rect()) {
@@ -426,9 +151,7 @@ void CanvasItem::_update_callback() {
 		current_item_drawn = this;
 		notification(NOTIFICATION_DRAW);
 		emit_signal(SceneStringNames::get_singleton()->draw);
-		if (get_script_instance()) {
-			get_script_instance()->call(SceneStringNames::get_singleton()->_draw);
-		}
+		GDVIRTUAL_CALL(_draw);
 		current_item_drawn = nullptr;
 		drawing = false;
 	}
@@ -526,7 +249,7 @@ void CanvasItem::_enter_canvas() {
 			get_viewport()->gui_reset_canvas_sort_index();
 		}
 
-		get_tree()->call_group_flags(SceneTree::GROUP_CALL_UNIQUE, group, "_top_level_raise_self");
+		get_tree()->call_group_flags(SceneTree::GROUP_CALL_UNIQUE, group, SNAME("_top_level_raise_self"));
 
 	} else {
 		CanvasItem *parent = get_parent_item();
@@ -545,7 +268,7 @@ void CanvasItem::_exit_canvas() {
 	notification(NOTIFICATION_EXIT_CANVAS, true); //reverse the notification
 	RenderingServer::get_singleton()->canvas_item_set_parent(canvas_item, RID());
 	canvas_layer = nullptr;
-	group = "";
+	group = StringName();
 }
 
 void CanvasItem::_notification(int p_what) {
@@ -591,7 +314,7 @@ void CanvasItem::_notification(int p_what) {
 				break;
 			}
 
-			if (group != "") {
+			if (group != StringName()) {
 				get_tree()->call_group_flags(SceneTree::GROUP_CALL_UNIQUE, group, "_top_level_raise_self");
 			} else {
 				CanvasItem *p = get_parent_item();
@@ -651,7 +374,7 @@ void CanvasItem::update() {
 
 	pending_update = true;
 
-	MessageQueue::get_singleton()->push_call(this, "_update_callback");
+	MessageQueue::get_singleton()->push_call(this, SNAME("_update_callback"));
 }
 
 void CanvasItem::set_modulate(const Color &p_modulate) {
@@ -848,6 +571,12 @@ void CanvasItem::draw_texture_rect_region(const Ref<Texture2D> &p_texture, const
 	p_texture->draw_rect_region(canvas_item, p_rect, p_src_rect, p_modulate, p_transpose, p_clip_uv);
 }
 
+void CanvasItem::draw_msdf_texture_rect_region(const Ref<Texture2D> &p_texture, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate, double p_outline, double p_pixel_range) {
+	ERR_FAIL_COND_MSG(!drawing, "Drawing is only allowed inside NOTIFICATION_DRAW, _draw() function or 'draw' signal.");
+	ERR_FAIL_COND(p_texture.is_null());
+	RenderingServer::get_singleton()->canvas_item_add_msdf_texture_rect_region(canvas_item, p_rect, p_texture->get_rid(), p_src_rect, p_modulate, p_outline, p_pixel_range);
+}
+
 void CanvasItem::draw_style_box(const Ref<StyleBox> &p_style_box, const Rect2 &p_rect) {
 	ERR_FAIL_COND_MSG(!drawing, "Drawing is only allowed inside NOTIFICATION_DRAW, _draw() function or 'draw' signal.");
 
@@ -875,6 +604,17 @@ void CanvasItem::draw_set_transform_matrix(const Transform2D &p_matrix) {
 	ERR_FAIL_COND_MSG(!drawing, "Drawing is only allowed inside NOTIFICATION_DRAW, _draw() function or 'draw' signal.");
 
 	RenderingServer::get_singleton()->canvas_item_add_set_transform(canvas_item, p_matrix);
+}
+void CanvasItem::draw_animation_slice(double p_animation_length, double p_slice_begin, double p_slice_end, double p_offset) {
+	ERR_FAIL_COND_MSG(!drawing, "Drawing is only allowed inside NOTIFICATION_DRAW, _draw() function or 'draw' signal.");
+
+	RenderingServer::get_singleton()->canvas_item_add_animation_slice(canvas_item, p_animation_length, p_slice_begin, p_slice_end, p_offset);
+}
+
+void CanvasItem::draw_end_animation() {
+	ERR_FAIL_COND_MSG(!drawing, "Drawing is only allowed inside NOTIFICATION_DRAW, _draw() function or 'draw' signal.");
+
+	RenderingServer::get_singleton()->canvas_item_add_animation_slice(canvas_item, 1, 0, 2, 0);
 }
 
 void CanvasItem::draw_polygon(const Vector<Point2> &p_points, const Vector<Color> &p_colors, const Vector<Point2> &p_uvs, Ref<Texture2D> p_texture) {
@@ -907,13 +647,13 @@ void CanvasItem::draw_multimesh(const Ref<MultiMesh> &p_multimesh, const Ref<Tex
 	RenderingServer::get_singleton()->canvas_item_add_multimesh(canvas_item, p_multimesh->get_rid(), texture_rid);
 }
 
-void CanvasItem::draw_string(const Ref<Font> &p_font, const Point2 &p_pos, const String &p_text, HAlign p_align, real_t p_width, int p_size, const Color &p_modulate, int p_outline_size, const Color &p_outline_modulate, uint8_t p_flags) const {
+void CanvasItem::draw_string(const Ref<Font> &p_font, const Point2 &p_pos, const String &p_text, HAlign p_align, real_t p_width, int p_size, const Color &p_modulate, int p_outline_size, const Color &p_outline_modulate, uint16_t p_flags) const {
 	ERR_FAIL_COND_MSG(!drawing, "Drawing is only allowed inside NOTIFICATION_DRAW, _draw() function or 'draw' signal.");
 	ERR_FAIL_COND(p_font.is_null());
 	p_font->draw_string(canvas_item, p_pos, p_text, p_align, p_width, p_size, p_modulate, p_outline_size, p_outline_modulate, p_flags);
 }
 
-void CanvasItem::draw_multiline_string(const Ref<Font> &p_font, const Point2 &p_pos, const String &p_text, HAlign p_align, real_t p_width, int p_max_lines, int p_size, const Color &p_modulate, int p_outline_size, const Color &p_outline_modulate, uint8_t p_flags) const {
+void CanvasItem::draw_multiline_string(const Ref<Font> &p_font, const Point2 &p_pos, const String &p_text, HAlign p_align, real_t p_width, int p_max_lines, int p_size, const Color &p_modulate, int p_outline_size, const Color &p_outline_modulate, uint16_t p_flags) const {
 	ERR_FAIL_COND_MSG(!drawing, "Drawing is only allowed inside NOTIFICATION_DRAW, _draw() function or 'draw' signal.");
 	ERR_FAIL_COND(p_font.is_null());
 	p_font->draw_multiline_string(canvas_item, p_pos, p_text, p_align, p_width, p_max_lines, p_size, p_modulate, p_outline_size, p_outline_modulate, p_flags);
@@ -948,8 +688,7 @@ void CanvasItem::_notify_transform(CanvasItem *p_node) {
 		}
 	}
 
-	for (List<CanvasItem *>::Element *E = p_node->children_items.front(); E; E = E->next()) {
-		CanvasItem *ci = E->get();
+	for (CanvasItem *ci : p_node->children_items) {
 		if (ci->top_level) {
 			continue;
 		}
@@ -1148,6 +887,7 @@ void CanvasItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("draw_texture", "texture", "position", "modulate"), &CanvasItem::draw_texture, DEFVAL(Color(1, 1, 1, 1)));
 	ClassDB::bind_method(D_METHOD("draw_texture_rect", "texture", "rect", "tile", "modulate", "transpose"), &CanvasItem::draw_texture_rect, DEFVAL(Color(1, 1, 1, 1)), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("draw_texture_rect_region", "texture", "rect", "src_rect", "modulate", "transpose", "clip_uv"), &CanvasItem::draw_texture_rect_region, DEFVAL(Color(1, 1, 1, 1)), DEFVAL(false), DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("draw_msdf_texture_rect_region", "texture", "rect", "src_rect", "modulate", "outline", "pixel_range"), &CanvasItem::draw_msdf_texture_rect_region, DEFVAL(Color(1, 1, 1, 1)), DEFVAL(0.0), DEFVAL(4.0));
 	ClassDB::bind_method(D_METHOD("draw_style_box", "style_box", "rect"), &CanvasItem::draw_style_box);
 	ClassDB::bind_method(D_METHOD("draw_primitive", "points", "colors", "uvs", "texture", "width"), &CanvasItem::draw_primitive, DEFVAL(Ref<Texture2D>()), DEFVAL(1.0));
 	ClassDB::bind_method(D_METHOD("draw_polygon", "points", "colors", "uvs", "texture"), &CanvasItem::draw_polygon, DEFVAL(PackedVector2Array()), DEFVAL(Ref<Texture2D>()));
@@ -1159,6 +899,8 @@ void CanvasItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("draw_multimesh", "multimesh", "texture"), &CanvasItem::draw_multimesh);
 	ClassDB::bind_method(D_METHOD("draw_set_transform", "position", "rotation", "scale"), &CanvasItem::draw_set_transform, DEFVAL(0.0), DEFVAL(Size2(1.0, 1.0)));
 	ClassDB::bind_method(D_METHOD("draw_set_transform_matrix", "xform"), &CanvasItem::draw_set_transform_matrix);
+	ClassDB::bind_method(D_METHOD("draw_animation_slice", "animation_length", "slice_begin", "slice_end", "offset"), &CanvasItem::draw_animation_slice, DEFVAL(0.0));
+	ClassDB::bind_method(D_METHOD("draw_end_animation"), &CanvasItem::draw_end_animation);
 	ClassDB::bind_method(D_METHOD("get_transform"), &CanvasItem::get_transform);
 	ClassDB::bind_method(D_METHOD("get_global_transform"), &CanvasItem::get_global_transform);
 	ClassDB::bind_method(D_METHOD("get_global_transform_with_canvas"), &CanvasItem::get_global_transform_with_canvas);
@@ -1197,7 +939,7 @@ void CanvasItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_clip_children", "enable"), &CanvasItem::set_clip_children);
 	ClassDB::bind_method(D_METHOD("is_clipping_children"), &CanvasItem::is_clipping_children);
 
-	BIND_VMETHOD(MethodInfo("_draw"));
+	GDVIRTUAL_BIND(_draw);
 
 	ADD_GROUP("Visibility", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "visible"), "set_visible", "is_visible");
@@ -1205,16 +947,16 @@ void CanvasItem::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "self_modulate"), "set_self_modulate", "get_self_modulate");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "show_behind_parent"), "set_draw_behind_parent", "is_draw_behind_parent_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "top_level"), "set_as_top_level", "is_set_as_top_level");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "show_on_top", PROPERTY_HINT_NONE, "", 0), "_set_on_top", "_is_on_top"); //compatibility
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "show_on_top", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "_set_on_top", "_is_on_top"); //compatibility
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "clip_children"), "set_clip_children", "is_clipping_children");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "light_mask", PROPERTY_HINT_LAYERS_2D_RENDER), "set_light_mask", "get_light_mask");
 
 	ADD_GROUP("Texture", "texture_");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "texture_filter", PROPERTY_HINT_ENUM, "Inherit,Nearest,Linear,MipmapNearest,MipmapLinear,MipmapNearestAniso,MipmapLinearAniso"), "set_texture_filter", "get_texture_filter");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "texture_filter", PROPERTY_HINT_ENUM, "Inherit,Nearest,Linear,Nearest Mipmap,Linear Mipmap,Nearest Mipmap Aniso.,Linear Mipmap Aniso."), "set_texture_filter", "get_texture_filter");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "texture_repeat", PROPERTY_HINT_ENUM, "Inherit,Disabled,Enabled,Mirror"), "set_texture_repeat", "get_texture_repeat");
 
 	ADD_GROUP("Material", "");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "material", PROPERTY_HINT_RESOURCE_TYPE, "ShaderMaterial,CanvasItemMaterial"), "set_material", "get_material");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "material", PROPERTY_HINT_RESOURCE_TYPE, "CanvasItemMaterial,ShaderMaterial"), "set_material", "get_material");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_parent_material"), "set_use_parent_material", "get_use_parent_material");
 	// ADD_PROPERTY(PropertyInfo(Variant::BOOL,"transform/notify"),"set_transform_notify","is_transform_notify_enabled");
 
@@ -1324,9 +1066,9 @@ void CanvasItem::_update_texture_filter_changed(bool p_propagate) {
 	update();
 
 	if (p_propagate) {
-		for (List<CanvasItem *>::Element *E = children_items.front(); E; E = E->next()) {
-			if (!E->get()->top_level && E->get()->texture_filter == TEXTURE_FILTER_PARENT_NODE) {
-				E->get()->_update_texture_filter_changed(true);
+		for (CanvasItem *E : children_items) {
+			if (!E->top_level && E->texture_filter == TEXTURE_FILTER_PARENT_NODE) {
+				E->_update_texture_filter_changed(true);
 			}
 		}
 	}
@@ -1364,9 +1106,9 @@ void CanvasItem::_update_texture_repeat_changed(bool p_propagate) {
 	RS::get_singleton()->canvas_item_set_default_texture_repeat(get_canvas_item(), texture_repeat_cache);
 	update();
 	if (p_propagate) {
-		for (List<CanvasItem *>::Element *E = children_items.front(); E; E = E->next()) {
-			if (!E->get()->top_level && E->get()->texture_repeat == TEXTURE_REPEAT_PARENT_NODE) {
-				E->get()->_update_texture_repeat_changed(true);
+		for (CanvasItem *E : children_items) {
+			if (!E->top_level && E->texture_repeat == TEXTURE_REPEAT_PARENT_NODE) {
+				E->_update_texture_repeat_changed(true);
 			}
 		}
 	}
@@ -1414,7 +1156,7 @@ CanvasItem::~CanvasItem() {
 ///////////////////////////////////////////////////////////////////
 
 void CanvasTexture::set_diffuse_texture(const Ref<Texture2D> &p_diffuse) {
-	ERR_FAIL_COND_MSG(Object::cast_to<CanvasTexture>(p_diffuse.ptr()) != nullptr, "Cant self-assign a CanvasTexture");
+	ERR_FAIL_COND_MSG(Object::cast_to<CanvasTexture>(p_diffuse.ptr()) != nullptr, "Can't self-assign a CanvasTexture");
 	diffuse_texture = p_diffuse;
 
 	RID tex_rid = diffuse_texture.is_valid() ? diffuse_texture->get_rid() : RID();
@@ -1426,7 +1168,7 @@ Ref<Texture2D> CanvasTexture::get_diffuse_texture() const {
 }
 
 void CanvasTexture::set_normal_texture(const Ref<Texture2D> &p_normal) {
-	ERR_FAIL_COND_MSG(Object::cast_to<CanvasTexture>(p_normal.ptr()) != nullptr, "Cant self-assign a CanvasTexture");
+	ERR_FAIL_COND_MSG(Object::cast_to<CanvasTexture>(p_normal.ptr()) != nullptr, "Can't self-assign a CanvasTexture");
 	normal_texture = p_normal;
 	RID tex_rid = normal_texture.is_valid() ? normal_texture->get_rid() : RID();
 	RS::get_singleton()->canvas_texture_set_channel(canvas_texture, RS::CANVAS_TEXTURE_CHANNEL_NORMAL, tex_rid);
@@ -1436,7 +1178,7 @@ Ref<Texture2D> CanvasTexture::get_normal_texture() const {
 }
 
 void CanvasTexture::set_specular_texture(const Ref<Texture2D> &p_specular) {
-	ERR_FAIL_COND_MSG(Object::cast_to<CanvasTexture>(p_specular.ptr()) != nullptr, "Cant self-assign a CanvasTexture");
+	ERR_FAIL_COND_MSG(Object::cast_to<CanvasTexture>(p_specular.ptr()) != nullptr, "Can't self-assign a CanvasTexture");
 	specular_texture = p_specular;
 	RID tex_rid = specular_texture.is_valid() ? specular_texture->get_rid() : RID();
 	RS::get_singleton()->canvas_texture_set_channel(canvas_texture, RS::CANVAS_TEXTURE_CHANNEL_SPECULAR, tex_rid);
@@ -1554,7 +1296,7 @@ void CanvasTexture::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "specular_color", PROPERTY_HINT_COLOR_NO_ALPHA), "set_specular_color", "get_specular_color");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "specular_shininess", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_specular_shininess", "get_specular_shininess");
 	ADD_GROUP("Texture", "texture_");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "texture_filter", PROPERTY_HINT_ENUM, "Inherit,Nearest,Linear,MipmapNearest,MipmapLinear,MipmapNearestAniso,MipmapLinearAniso"), "set_texture_filter", "get_texture_filter");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "texture_filter", PROPERTY_HINT_ENUM, "Inherit,Nearest,Linear,Nearest Mipmap,Linear Mipmap,Nearest Mipmap Aniso.,Linear Mipmap Aniso."), "set_texture_filter", "get_texture_filter");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "texture_repeat", PROPERTY_HINT_ENUM, "Inherit,Disabled,Enabled,Mirror"), "set_texture_repeat", "get_texture_repeat");
 }
 

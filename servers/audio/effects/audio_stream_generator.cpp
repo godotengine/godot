@@ -48,7 +48,7 @@ float AudioStreamGenerator::get_buffer_length() const {
 
 Ref<AudioStreamPlayback> AudioStreamGenerator::instance_playback() {
 	Ref<AudioStreamGeneratorPlayback> playback;
-	playback.instance();
+	playback.instantiate();
 	playback->generator = this;
 	int target_buffer_size = mix_rate * buffer_len;
 	playback->buffer.resize(nearest_shift(target_buffer_size));
@@ -62,6 +62,10 @@ String AudioStreamGenerator::get_stream_name() const {
 
 float AudioStreamGenerator::get_length() const {
 	return 0;
+}
+
+bool AudioStreamGenerator::is_monophonic() const {
+	return true;
 }
 
 void AudioStreamGenerator::_bind_methods() {
@@ -138,7 +142,7 @@ void AudioStreamGeneratorPlayback::clear_buffer() {
 	mixed = 0;
 }
 
-void AudioStreamGeneratorPlayback::_mix_internal(AudioFrame *p_buffer, int p_frames) {
+int AudioStreamGeneratorPlayback::_mix_internal(AudioFrame *p_buffer, int p_frames) {
 	int read_amount = buffer.data_left();
 	if (p_frames < read_amount) {
 		read_amount = p_frames;
@@ -156,6 +160,7 @@ void AudioStreamGeneratorPlayback::_mix_internal(AudioFrame *p_buffer, int p_fra
 	}
 
 	mixed += p_frames / generator->get_mix_rate();
+	return read_amount < p_frames ? read_amount : p_frames;
 }
 
 float AudioStreamGeneratorPlayback::get_stream_sampling_rate() {

@@ -45,6 +45,7 @@
 #include <fcntl.h>
 #include <io.h>
 #include <stdio.h>
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
 class OS_UWP : public OS {
@@ -58,7 +59,7 @@ public:
 		bool alt = false, shift = false, control = false;
 		MessageType type = KEY_EVENT_MESSAGE;
 		bool pressed = false;
-		unsigned int keycode = 0;
+		Key keycode = KEY_NONE;
 		unsigned int physical_keycode = 0;
 		unsigned int unicode = 0;
 		bool echo = false;
@@ -106,7 +107,7 @@ private:
 	bool control_mem;
 	bool meta_mem;
 	bool force_quit;
-	uint32_t last_button_state;
+	MouseButton last_button_state = MOUSE_BUTTON_NONE;
 
 	CursorShape cursor_shape;
 
@@ -173,7 +174,7 @@ public:
 	MouseMode get_mouse_mode() const;
 
 	virtual Point2 get_mouse_position() const;
-	virtual int get_mouse_button_state() const;
+	virtual MouseButton get_mouse_button_state() const;
 	virtual void set_window_title(const String &p_title);
 
 	virtual void set_video_mode(const VideoMode &p_video_mode, int p_screen = 0);

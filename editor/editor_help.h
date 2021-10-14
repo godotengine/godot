@@ -61,7 +61,7 @@ class FindBar : public HBoxContainer {
 	void _hide_bar();
 
 	void _search_text_changed(const String &p_text);
-	void _search_text_entered(const String &p_text);
+	void _search_text_submitted(const String &p_text);
 
 	void _update_results_count();
 	void _update_matches_label();
@@ -70,7 +70,7 @@ class FindBar : public HBoxContainer {
 
 protected:
 	void _notification(int p_what);
-	void _unhandled_input(const Ref<InputEvent> &p_event);
+	virtual void unhandled_input(const Ref<InputEvent> &p_event) override;
 
 	bool _search(bool p_search_previous = false);
 
@@ -123,6 +123,8 @@ class EditorHelp : public VBoxContainer {
 	ConfirmationDialog *search_dialog;
 	LineEdit *search;
 	FindBar *find_bar;
+	HBoxContainer *status_bar;
+	Button *toggle_scripts_button;
 
 	String base_path;
 
@@ -159,6 +161,7 @@ class EditorHelp : public VBoxContainer {
 	void _search(bool p_search_previous = false);
 
 	String _fix_constant(const String &p_constant) const;
+	void _toggle_scripts_pressed();
 
 protected:
 	void _notification(int p_what);
@@ -184,6 +187,8 @@ public:
 
 	int get_scroll() const;
 	void set_scroll(int p_scroll);
+
+	void update_toggle_scripts_button();
 
 	EditorHelp();
 	~EditorHelp();

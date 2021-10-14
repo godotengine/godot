@@ -65,6 +65,7 @@ public:
 			ShaderLanguage::TextureFilter filter;
 			ShaderLanguage::TextureRepeat repeat;
 			bool global;
+			int array_size;
 		};
 
 		Vector<Texture> texture_uniforms;
@@ -95,6 +96,7 @@ public:
 		String global_buffer_array_variable;
 		String instance_uniform_index_variable;
 		uint32_t base_varying_index = 0;
+		bool apply_luminance_multiplier = false;
 	};
 
 private:

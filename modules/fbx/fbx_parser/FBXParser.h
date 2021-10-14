@@ -81,7 +81,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <memory>
 
 #include "core/math/color.h"
-#include "core/math/transform.h"
+#include "core/math/transform_3d.h"
 #include "core/math/vector2.h"
 #include "core/math/vector3.h"
 
@@ -160,7 +160,7 @@ public:
 	}
 
 	ElementPtr FindElementCaseInsensitive(const std::string &elementName) const {
-		for (auto element = elements.begin(); element != elements.end(); ++element) {
+		for (FBXDocParser::ElementMap::const_iterator element = elements.begin(); element != elements.end(); ++element) {
 			if (element->first.compare(elementName)) {
 				return element->second;
 			}
@@ -264,7 +264,7 @@ TokenPtr GetRequiredToken(const ElementPtr el, unsigned int index);
 
 // ------------------------------------------------------------------------------------------------
 // read a 4x4 matrix from an array of 16 floats
-Transform ReadMatrix(const ElementPtr element);
+Transform3D ReadMatrix(const ElementPtr element);
 } // namespace FBXDocParser
 
 #endif // FBX_PARSER_H

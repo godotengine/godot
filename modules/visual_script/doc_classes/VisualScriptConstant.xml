@@ -12,8 +12,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="type" type="int" setter="set_constant_type" getter="get_constant_type" enum="Variant.Type" default="0">
 			The constant's type.
@@ -22,6 +20,4 @@
 			The constant's value.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

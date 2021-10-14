@@ -49,10 +49,10 @@ void OpenTypeFeaturesEditor::update_property() {
 
 void OpenTypeFeaturesEditor::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
-		Color base = get_theme_color("accent_color", "Editor");
+		Color base = get_theme_color(SNAME("accent_color"), SNAME("Editor"));
 
-		button->set_icon(get_theme_icon("Remove", "EditorIcons"));
-		button->set_size(get_theme_icon("Remove", "EditorIcons")->get_size());
+		button->set_icon(get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")));
+		button->set_size(get_theme_icon(SNAME("Remove"), SNAME("EditorIcons"))->get_size());
 		spin->set_custom_label_color(true, base);
 	}
 }
@@ -106,7 +106,7 @@ void OpenTypeFeaturesAdd::update_property() {
 	bool have_ss = false;
 	bool have_cv = false;
 	bool have_cu = false;
-	Dictionary features = Object::cast_to<Control>(get_edited_object())->get_theme_font("font")->get_feature_list();
+	Dictionary features = Object::cast_to<Control>(get_edited_object())->get_theme_font(SNAME("font"))->get_feature_list();
 	for (const Variant *ftr = features.next(nullptr); ftr != nullptr; ftr = features.next(ftr)) {
 		String ftr_name = TS->tag_to_name(*ftr);
 		if (ftr_name.begins_with("stylistic_set_")) {
@@ -142,8 +142,8 @@ void OpenTypeFeaturesAdd::_features_menu() {
 void OpenTypeFeaturesAdd::_notification(int p_what) {
 	if (p_what == NOTIFICATION_THEME_CHANGED || p_what == NOTIFICATION_ENTER_TREE) {
 		set_label("");
-		button->set_icon(get_theme_icon("Add", "EditorIcons"));
-		button->set_size(get_theme_icon("Add", "EditorIcons")->get_size());
+		button->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
+		button->set_size(get_theme_icon(SNAME("Add"), SNAME("EditorIcons"))->get_size());
 	}
 }
 
@@ -191,7 +191,7 @@ void EditorInspectorPluginOpenTypeFeatures::parse_begin(Object *p_object) {
 void EditorInspectorPluginOpenTypeFeatures::parse_category(Object *p_object, const String &p_parse_category) {
 }
 
-bool EditorInspectorPluginOpenTypeFeatures::parse_property(Object *p_object, Variant::Type p_type, const String &p_path, PropertyHint p_hint, const String &p_hint_text, int p_usage, bool p_wide) {
+bool EditorInspectorPluginOpenTypeFeatures::parse_property(Object *p_object, const Variant::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const uint32_t p_usage, const bool p_wide) {
 	if (p_path == "opentype_features/_new") {
 		OpenTypeFeaturesAdd *editor = memnew(OpenTypeFeaturesAdd);
 		add_property_editor(p_path, editor);
@@ -208,6 +208,6 @@ bool EditorInspectorPluginOpenTypeFeatures::parse_property(Object *p_object, Var
 
 OpenTypeFeaturesEditorPlugin::OpenTypeFeaturesEditorPlugin(EditorNode *p_node) {
 	Ref<EditorInspectorPluginOpenTypeFeatures> ftr_plugin;
-	ftr_plugin.instance();
+	ftr_plugin.instantiate();
 	EditorInspector::add_inspector_plugin(ftr_plugin);
 }

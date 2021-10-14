@@ -28,6 +28,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
+// Define PLATFORM_THREAD_OVERRIDE in your platform's `platform_config.h`
+// to use a custom Thread implementation defined in `platform/[your_platform]/platform_thread.h`
+// Overriding the platform implementation is required in some proprietary platforms
+#ifdef PLATFORM_THREAD_OVERRIDE
+#include "platform_thread.h"
+#else
 #ifndef THREAD_H
 #define THREAD_H
 
@@ -116,3 +122,4 @@ public:
 };
 
 #endif // THREAD_H
+#endif // PLATFORM_THREAD_OVERRIDE

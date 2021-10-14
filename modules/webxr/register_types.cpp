@@ -33,15 +33,34 @@
 #include "webxr_interface.h"
 #include "webxr_interface_js.h"
 
+#ifdef JAVASCRIPT_ENABLED
+Ref<WebXRInterfaceJS> webxr;
+#endif
+
 void register_webxr_types() {
-	ClassDB::register_virtual_class<WebXRInterface>();
+	GDREGISTER_VIRTUAL_CLASS(WebXRInterface);
 
 #ifdef JAVASCRIPT_ENABLED
-	Ref<WebXRInterfaceJS> webxr;
-	webxr.instance();
+	webxr.instantiate();
 	XRServer::get_singleton()->add_interface(webxr);
 #endif
 }
 
 void unregister_webxr_types() {
+#ifdef JAVASCRIPT_ENABLED
+	if (webxr.is_valid()) {
+		// uninitialise our interface if it is initialised
+		if (webxr->is_initialized()) {
+			webxr->uninitialize();
+		}
+
+		// unregister our interface from the XR server
+		if (XRServer::get_singleton()) {
+			XRServer::get_singleton()->remove_interface(webxr);
+		}
+
+		// and release
+		webxr.unref();
+	}
+#endif
 }

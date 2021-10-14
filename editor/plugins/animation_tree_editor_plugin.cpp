@@ -55,7 +55,7 @@ void AnimationTreeEditor::edit(AnimationTree *p_tree) {
 	tree = p_tree;
 
 	Vector<String> path;
-	if (tree->has_meta("_tree_edit_path")) {
+	if (tree && tree->has_meta("_tree_edit_path")) {
 		path = tree->get_meta("_tree_edit_path");
 		edit_path(path);
 	} else {
@@ -76,10 +76,10 @@ void AnimationTreeEditor::_update_path() {
 	}
 
 	Ref<ButtonGroup> group;
-	group.instance();
+	group.instantiate();
 
 	Button *b = memnew(Button);
-	b->set_text("Root");
+	b->set_text(TTR("Root"));
 	b->set_toggle_mode(true);
 	b->set_button_group(group);
 	b->set_pressed(true);
@@ -215,8 +215,8 @@ Vector<String> AnimationTreeEditor::get_animation_list() {
 	List<StringName> anims;
 	ap->get_animation_list(&anims);
 	Vector<String> ret;
-	for (List<StringName>::Element *E = anims.front(); E; E = E->next()) {
-		ret.push_back(E->get());
+	for (const StringName &E : anims) {
+		ret.push_back(E);
 	}
 
 	return ret;

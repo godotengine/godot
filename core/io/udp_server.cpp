@@ -34,6 +34,7 @@ void UDPServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("listen", "port", "bind_address"), &UDPServer::listen, DEFVAL("*"));
 	ClassDB::bind_method(D_METHOD("poll"), &UDPServer::poll);
 	ClassDB::bind_method(D_METHOD("is_connection_available"), &UDPServer::is_connection_available);
+	ClassDB::bind_method(D_METHOD("get_local_port"), &UDPServer::get_local_port);
 	ClassDB::bind_method(D_METHOD("is_listening"), &UDPServer::is_listening);
 	ClassDB::bind_method(D_METHOD("take_connection"), &UDPServer::take_connection);
 	ClassDB::bind_method(D_METHOD("stop"), &UDPServer::stop);
@@ -49,7 +50,7 @@ Error UDPServer::poll() {
 	}
 	Error err;
 	int read;
-	IP_Address ip;
+	IPAddress ip;
 	uint16_t port;
 	while (true) {
 		err = _sock->recvfrom(recv_buffer, sizeof(recv_buffer), read, ip, port);
@@ -86,7 +87,7 @@ Error UDPServer::poll() {
 	return OK;
 }
 
-Error UDPServer::listen(uint16_t p_port, const IP_Address &p_bind_address) {
+Error UDPServer::listen(uint16_t p_port, const IPAddress &p_bind_address) {
 	ERR_FAIL_COND_V(!_sock.is_valid(), ERR_UNAVAILABLE);
 	ERR_FAIL_COND_V(_sock->is_open(), ERR_ALREADY_IN_USE);
 	ERR_FAIL_COND_V(!p_bind_address.is_valid() && !p_bind_address.is_wildcard(), ERR_INVALID_PARAMETER);
@@ -112,9 +113,13 @@ Error UDPServer::listen(uint16_t p_port, const IP_Address &p_bind_address) {
 		stop();
 		return err;
 	}
-	bind_address = p_bind_address;
-	bind_port = p_port;
 	return OK;
+}
+
+int UDPServer::get_local_port() const {
+	uint16_t local_port;
+	_sock->get_socket_address(nullptr, &local_port);
+	return local_port;
 }
 
 bool UDPServer::is_listening() const {
@@ -162,7 +167,7 @@ Ref<PacketPeerUDP> UDPServer::take_connection() {
 	return peer.peer;
 }
 
-void UDPServer::remove_peer(IP_Address p_ip, int p_port) {
+void UDPServer::remove_peer(IPAddress p_ip, int p_port) {
 	Peer peer;
 	peer.ip = p_ip;
 	peer.port = p_port;
@@ -176,8 +181,6 @@ void UDPServer::stop() {
 	if (_sock.is_valid()) {
 		_sock->close();
 	}
-	bind_port = 0;
-	bind_address = IP_Address();
 	List<Peer>::Element *E = peers.front();
 	while (E) {
 		E->get().peer->disconnect_shared_socket();

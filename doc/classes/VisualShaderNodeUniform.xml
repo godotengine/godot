@@ -8,8 +8,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="qualifier" type="int" setter="set_qualifier" getter="get_qualifier" enum="VisualShaderNodeUniform.Qualifier" default="0">
 		</member>
@@ -23,6 +21,9 @@
 		<constant name="QUAL_GLOBAL" value="1" enum="Qualifier">
 		</constant>
 		<constant name="QUAL_INSTANCE" value="2" enum="Qualifier">
+		</constant>
+		<constant name="QUAL_MAX" value="3" enum="Qualifier">
+			Represents the size of the [enum Qualifier] enum.
 		</constant>
 	</constants>
 </class>

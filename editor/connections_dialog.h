@@ -105,7 +105,7 @@ private:
 	void ok_pressed() override;
 	void _cancel_pressed();
 	void _item_activated();
-	void _text_entered(const String &_text);
+	void _text_submitted(const String &_text);
 	void _tree_node_selected();
 	void _add_bind();
 	void _remove_bind();

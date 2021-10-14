@@ -67,6 +67,7 @@ public:
 		String qualifiers;
 		String description;
 		Vector<ArgumentDoc> arguments;
+		Vector<int> errors_returned;
 		bool operator<(const MethodDoc &p_method) const {
 			if (name == p_method.name) {
 				// Must be a constructor since there is no overloading.
@@ -116,6 +117,17 @@ public:
 		}
 	};
 
+	struct ThemeItemDoc {
+		String name;
+		String type;
+		String data_type;
+		String description;
+		String default_value;
+		bool operator<(const ThemeItemDoc &p_theme_item) const {
+			return name < p_theme_item.name;
+		}
+	};
+
 	struct TutorialDoc {
 		String link;
 		String title;
@@ -133,7 +145,7 @@ public:
 		Vector<ConstantDoc> constants;
 		Map<String, String> enums;
 		Vector<PropertyDoc> properties;
-		Vector<PropertyDoc> theme_properties;
+		Vector<ThemeItemDoc> theme_properties;
 		bool is_script_doc = false;
 		String script_path;
 		bool operator<(const ClassDoc &p_class) const {

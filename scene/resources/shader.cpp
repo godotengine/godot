@@ -30,7 +30,7 @@
 
 #include "shader.h"
 
-#include "core/os/file_access.h"
+#include "core/io/file_access.h"
 #include "scene/scene_string_names.h"
 #include "servers/rendering/shader_language.h"
 #include "servers/rendering_server.h"
@@ -72,13 +72,13 @@ void Shader::get_param_list(List<PropertyInfo> *p_params) const {
 	params_cache.clear();
 	params_cache_dirty = false;
 
-	for (List<PropertyInfo>::Element *E = local.front(); E; E = E->next()) {
-		PropertyInfo pi = E->get();
+	for (PropertyInfo &pi : local) {
 		if (default_textures.has(pi.name)) { //do not show default textures
 			continue;
 		}
+		String original_name = pi.name;
 		pi.name = "shader_param/" + pi.name;
-		params_cache[pi.name] = E->get().name;
+		params_cache[pi.name] = original_name;
 		if (p_params) {
 			//small little hack
 			if (pi.type == Variant::RID) {
@@ -116,8 +116,8 @@ Ref<Texture2D> Shader::get_default_texture_param(const StringName &p_param) cons
 }
 
 void Shader::get_default_texture_param_list(List<StringName> *r_textures) const {
-	for (const Map<StringName, Ref<Texture2D>>::Element *E = default_textures.front(); E; E = E->next()) {
-		r_textures->push_back(E->key());
+	for (const KeyValue<StringName, Ref<Texture2D>> &E : default_textures) {
+		r_textures->push_back(E.key);
 	}
 }
 
@@ -167,7 +167,7 @@ RES ResourceFormatLoaderShader::load(const String &p_path, const String &p_origi
 	}
 
 	Ref<Shader> shader;
-	shader.instance();
+	shader.instantiate();
 
 	Vector<uint8_t> buffer = FileAccess::get_file_as_array(p_path);
 
@@ -184,7 +184,7 @@ RES ResourceFormatLoaderShader::load(const String &p_path, const String &p_origi
 }
 
 void ResourceFormatLoaderShader::get_recognized_extensions(List<String> *p_extensions) const {
-	p_extensions->push_back("shader");
+	p_extensions->push_back("gdshader");
 }
 
 bool ResourceFormatLoaderShader::handles_type(const String &p_type) const {
@@ -193,7 +193,7 @@ bool ResourceFormatLoaderShader::handles_type(const String &p_type) const {
 
 String ResourceFormatLoaderShader::get_resource_type(const String &p_path) const {
 	String el = p_path.get_extension().to_lower();
-	if (el == "shader") {
+	if (el == "gdshader") {
 		return "Shader";
 	}
 	return "";
@@ -224,7 +224,7 @@ Error ResourceFormatSaverShader::save(const String &p_path, const RES &p_resourc
 void ResourceFormatSaverShader::get_recognized_extensions(const RES &p_resource, List<String> *p_extensions) const {
 	if (const Shader *shader = Object::cast_to<Shader>(*p_resource)) {
 		if (shader->is_text_shader()) {
-			p_extensions->push_back("shader");
+			p_extensions->push_back("gdshader");
 		}
 	}
 }

@@ -1,0 +1,2 @@
+GDTEST_PARSER_ERROR
+"yield" was removed in Godot 4.0. Use "await" instead.

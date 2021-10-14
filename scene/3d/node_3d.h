@@ -32,10 +32,9 @@
 #define NODE_3D_H
 
 #include "scene/main/node.h"
-#include "scene/main/scene_tree.h"
 
-class Node3DGizmo : public Reference {
-	GDCLASS(Node3DGizmo, Reference);
+class Node3DGizmo : public RefCounted {
+	GDCLASS(Node3DGizmo, RefCounted);
 
 public:
 	virtual void create() = 0;
@@ -62,8 +61,8 @@ class Node3D : public Node {
 	mutable SelfList<Node> xform_change;
 
 	struct Data {
-		mutable Transform global_transform;
-		mutable Transform local_transform;
+		mutable Transform3D global_transform;
+		mutable Transform3D local_transform;
 		mutable Vector3 rotation;
 		mutable Vector3 scale = Vector3(1, 1, 1);
 
@@ -74,6 +73,8 @@ class Node3D : public Node {
 		bool top_level_active = false;
 		bool top_level = false;
 		bool inside_world = false;
+
+		RID visibility_parent;
 
 		int children_lock = 0;
 		Node3D *parent = nullptr;
@@ -88,18 +89,24 @@ class Node3D : public Node {
 		bool disable_scale = false;
 
 #ifdef TOOLS_ENABLED
-		Ref<Node3DGizmo> gizmo;
-		bool gizmo_disabled = false;
-		bool gizmo_dirty = false;
+		Vector<Ref<Node3DGizmo>> gizmos;
+		bool gizmos_disabled = false;
+		bool gizmos_dirty = false;
+		bool transform_gizmo_visible = true;
 #endif
 
 	} data;
 
-	void _update_gizmo();
+	NodePath visibility_parent_path;
+
+	void _update_gizmos();
 	void _notify_dirty();
 	void _propagate_transform_changed(Node3D *p_origin);
 
 	void _propagate_visibility_changed();
+
+	void _propagate_visibility_parent();
+	void _update_visibility_parent(bool p_update_root);
 
 protected:
 	_FORCE_INLINE_ void set_ignore_transform_notification(bool p_ignore) { data.ignore_notification = p_ignore; }
@@ -118,29 +125,29 @@ public:
 		NOTIFICATION_LOCAL_TRANSFORM_CHANGED = 44,
 	};
 
-	Node3D *get_parent_spatial() const;
+	Node3D *get_parent_node_3d() const;
 
 	Ref<World3D> get_world_3d() const;
 
-	void set_translation(const Vector3 &p_translation);
+	void set_position(const Vector3 &p_position);
 	void set_rotation(const Vector3 &p_euler_rad);
-	void set_rotation_degrees(const Vector3 &p_euler_deg);
 	void set_scale(const Vector3 &p_scale);
 
-	Vector3 get_translation() const;
+	Vector3 get_position() const;
 	Vector3 get_rotation() const;
-	Vector3 get_rotation_degrees() const;
 	Vector3 get_scale() const;
 
-	void set_transform(const Transform &p_transform);
-	void set_global_transform(const Transform &p_transform);
+	void set_transform(const Transform3D &p_transform);
+	void set_global_transform(const Transform3D &p_transform);
 
-	Transform get_transform() const;
-	Transform get_global_transform() const;
+	Transform3D get_transform() const;
+	Transform3D get_global_transform() const;
 
 #ifdef TOOLS_ENABLED
-	virtual Transform get_global_gizmo_transform() const;
-	virtual Transform get_local_gizmo_transform() const;
+	virtual Transform3D get_global_gizmo_transform() const;
+	virtual Transform3D get_local_gizmo_transform() const;
+	virtual void set_transform_gizmo_visible(bool p_enabled) { data.transform_gizmo_visible = p_enabled; };
+	virtual bool is_transform_gizmo_visible() const { return data.transform_gizmo_visible; };
 #endif
 
 	void set_as_top_level(bool p_enabled);
@@ -149,27 +156,32 @@ public:
 	void set_disable_scale(bool p_enabled);
 	bool is_scale_disabled() const;
 
-	void set_disable_gizmo(bool p_enabled);
-	void update_gizmo();
-	void set_gizmo(const Ref<Node3DGizmo> &p_gizmo);
-	Ref<Node3DGizmo> get_gizmo() const;
+	void set_disable_gizmos(bool p_enabled);
+	void update_gizmos();
+	void set_subgizmo_selection(Ref<Node3DGizmo> p_gizmo, int p_id, Transform3D p_transform = Transform3D());
+	void clear_subgizmo_selection();
+	Vector<Ref<Node3DGizmo>> get_gizmos() const;
+	Array get_gizmos_bind() const;
+	void add_gizmo(Ref<Node3DGizmo> p_gizmo);
+	void remove_gizmo(Ref<Node3DGizmo> p_gizmo);
+	void clear_gizmos();
 
 	_FORCE_INLINE_ bool is_inside_world() const { return data.inside_world; }
 
-	Transform get_relative_transform(const Node *p_parent) const;
+	Transform3D get_relative_transform(const Node *p_parent) const;
 
-	void rotate(const Vector3 &p_axis, float p_angle);
-	void rotate_x(float p_angle);
-	void rotate_y(float p_angle);
-	void rotate_z(float p_angle);
+	void rotate(const Vector3 &p_axis, real_t p_angle);
+	void rotate_x(real_t p_angle);
+	void rotate_y(real_t p_angle);
+	void rotate_z(real_t p_angle);
 	void translate(const Vector3 &p_offset);
 	void scale(const Vector3 &p_ratio);
 
-	void rotate_object_local(const Vector3 &p_axis, float p_angle);
+	void rotate_object_local(const Vector3 &p_axis, real_t p_angle);
 	void scale_object_local(const Vector3 &p_scale);
 	void translate_object_local(const Vector3 &p_offset);
 
-	void global_rotate(const Vector3 &p_axis, float p_angle);
+	void global_rotate(const Vector3 &p_axis, real_t p_angle);
 	void global_scale(const Vector3 &p_scale);
 	void global_translate(const Vector3 &p_offset);
 
@@ -195,6 +207,9 @@ public:
 	bool is_visible_in_tree() const;
 
 	void force_update_transform();
+
+	void set_visibility_parent(const NodePath &p_path);
+	NodePath get_visibility_parent() const;
 
 	Node3D();
 };

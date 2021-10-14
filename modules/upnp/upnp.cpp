@@ -92,7 +92,7 @@ int UPNP::discover(int timeout, int ttl, const String &device_filter) {
 
 void UPNP::add_device_to_list(UPNPDev *dev, UPNPDev *devlist) {
 	Ref<UPNPDevice> new_device;
-	new_device.instance();
+	new_device.instantiate();
 
 	new_device->set_description_url(dev->descURL);
 	new_device->set_service_type(dev->st);

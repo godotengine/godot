@@ -31,9 +31,9 @@
 #include "pck_packer.h"
 
 #include "core/crypto/crypto_core.h"
+#include "core/io/file_access.h"
 #include "core/io/file_access_encrypted.h"
 #include "core/io/file_access_pack.h" // PACK_HEADER_MAGIC, PACK_FORMAT_VERSION
-#include "core/os/file_access.h"
 #include "core/version.h"
 
 static int _get_pad(int p_alignment, int p_n) {
@@ -120,7 +120,7 @@ Error PCKPacker::add_file(const String &p_file, const String &p_src, bool p_encr
 	pf.path = p_file;
 	pf.src_path = p_src;
 	pf.ofs = ofs;
-	pf.size = f->get_len();
+	pf.size = f->get_length();
 
 	Vector<uint8_t> data = FileAccess::get_file_as_array(p_src);
 	{
@@ -236,7 +236,7 @@ Error PCKPacker::flush(bool p_verbose) {
 		}
 
 		while (to_write > 0) {
-			int read = src->get_buffer(buf, MIN(to_write, buf_max));
+			uint64_t read = src->get_buffer(buf, MIN(to_write, buf_max));
 			ftmp->store_buffer(buf, read);
 			to_write -= read;
 		}

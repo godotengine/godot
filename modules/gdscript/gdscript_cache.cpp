@@ -30,7 +30,7 @@
 
 #include "gdscript_cache.h"
 
-#include "core/os/file_access.h"
+#include "core/io/file_access.h"
 #include "core/templates/vector.h"
 #include "gdscript.h"
 #include "gdscript_analyzer.h"
@@ -51,32 +51,34 @@ GDScriptParser *GDScriptParserRef::get_parser() const {
 Error GDScriptParserRef::raise_status(Status p_new_status) {
 	ERR_FAIL_COND_V(parser == nullptr, ERR_INVALID_DATA);
 
-	Error result = OK;
+	if (result != OK) {
+		return result;
+	}
 
 	while (p_new_status > status) {
 		switch (status) {
 			case EMPTY:
-				result = parser->parse(GDScriptCache::get_source_code(path), path, false);
 				status = PARSED;
+				result = parser->parse(GDScriptCache::get_source_code(path), path, false);
 				break;
 			case PARSED: {
 				analyzer = memnew(GDScriptAnalyzer(parser));
-				Error inheritance_result = analyzer->resolve_inheritance();
 				status = INHERITANCE_SOLVED;
+				Error inheritance_result = analyzer->resolve_inheritance();
 				if (result == OK) {
 					result = inheritance_result;
 				}
 			} break;
 			case INHERITANCE_SOLVED: {
-				Error interface_result = analyzer->resolve_interface();
 				status = INTERFACE_SOLVED;
+				Error interface_result = analyzer->resolve_interface();
 				if (result == OK) {
 					result = interface_result;
 				}
 			} break;
 			case INTERFACE_SOLVED: {
-				Error body_result = analyzer->resolve_body();
 				status = FULLY_SOLVED;
+				Error body_result = analyzer->resolve_body();
 				if (result == OK) {
 					result = body_result;
 				}
@@ -86,14 +88,6 @@ Error GDScriptParserRef::raise_status(Status p_new_status) {
 			}
 		}
 		if (result != OK) {
-			if (parser != nullptr) {
-				memdelete(parser);
-				parser = nullptr;
-			}
-			if (analyzer != nullptr) {
-				memdelete(analyzer);
-				analyzer = nullptr;
-			}
 			return result;
 		}
 	}
@@ -134,7 +128,7 @@ Ref<GDScriptParserRef> GDScriptCache::get_parser(const String &p_path, GDScriptP
 			return ref;
 		}
 		GDScriptParser *parser = memnew(GDScriptParser);
-		ref.instance();
+		ref.instantiate();
 		ref->parser = parser;
 		ref->path = p_path;
 		singleton->parser_map[p_path] = ref.ptr();
@@ -153,9 +147,9 @@ String GDScriptCache::get_source_code(const String &p_path) {
 		ERR_FAIL_COND_V(err, "");
 	}
 
-	int len = f->get_len();
+	uint64_t len = f->get_length();
 	source_file.resize(len + 1);
-	int r = f->get_buffer(source_file.ptrw(), len);
+	uint64_t r = f->get_buffer(source_file.ptrw(), len);
 	f->close();
 	ERR_FAIL_COND_V(r != len, "");
 	source_file.write[len] = 0;
@@ -180,7 +174,7 @@ Ref<GDScript> GDScriptCache::get_shallow_script(const String &p_path, const Stri
 	}
 
 	Ref<GDScript> script;
-	script.instance();
+	script.instantiate();
 	script->set_path(p_path, true);
 	script->set_script_path(p_path);
 	script->load_source_code(p_path);
@@ -200,7 +194,9 @@ Ref<GDScript> GDScriptCache::get_full_script(const String &p_path, Error &r_erro
 	if (singleton->full_gdscript_cache.has(p_path)) {
 		return singleton->full_gdscript_cache[p_path];
 	}
+
 	Ref<GDScript> script = get_shallow_script(p_path);
+	ERR_FAIL_COND_V(script.is_null(), Ref<GDScript>());
 
 	r_error = script->load_source_code(p_path);
 

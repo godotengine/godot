@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="VisualScriptOperator" inherits="VisualScriptNode" version="4.0">
 	<brief_description>
+		A Visual Script node that performs an operation on two values.
 	</brief_description>
 	<description>
 		[b]Input Ports:[/b]
@@ -11,14 +12,12 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="operator" type="int" setter="set_operator" getter="get_operator" enum="Variant.Operator" default="6">
+			The operation to be performed. See [enum Variant.Operator] for available options.
 		</member>
 		<member name="type" type="int" setter="set_typed" getter="get_typed" enum="Variant.Type" default="0">
+			The type of the values for this operation. See [enum Variant.Type] for available options.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

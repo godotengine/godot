@@ -50,8 +50,8 @@ String Collada::Effect::get_texture_path(const String &p_source, Collada &state)
 	return state.state.image_map[image].path;
 }
 
-Transform Collada::get_root_transform() const {
-	Transform unit_scale_transform;
+Transform3D Collada::get_root_transform() const {
+	Transform3D unit_scale_transform;
 #ifndef COLLADA_IMPORT_SCALE_SCENE
 	unit_scale_transform.scale(Vector3(state.unit_scale, state.unit_scale, state.unit_scale));
 #endif
@@ -74,8 +74,8 @@ static String _uri_to_id(const String &p_uri) {
 
 /** HELPER FUNCTIONS **/
 
-Transform Collada::fix_transform(const Transform &p_transform) {
-	Transform tr = p_transform;
+Transform3D Collada::fix_transform(const Transform3D &p_transform) {
+	Transform3D tr = p_transform;
 
 #ifndef NO_UP_AXIS_SWAP
 
@@ -102,8 +102,8 @@ Transform Collada::fix_transform(const Transform &p_transform) {
 	//return state.matrix_fix * p_transform;
 }
 
-static Transform _read_transform_from_array(const Vector<float> &array, int ofs = 0) {
-	Transform tr;
+static Transform3D _read_transform_from_array(const Vector<float> &array, int ofs = 0) {
+	Transform3D tr;
 	// i wonder why collada matrices are transposed, given that's opposed to opengl..
 	tr.basis.elements[0][0] = array[0 + ofs];
 	tr.basis.elements[0][1] = array[1 + ofs];
@@ -122,11 +122,11 @@ static Transform _read_transform_from_array(const Vector<float> &array, int ofs 
 
 /* STRUCTURES */
 
-Transform Collada::Node::compute_transform(Collada &state) const {
-	Transform xform;
+Transform3D Collada::Node::compute_transform(Collada &state) const {
+	Transform3D xform;
 
 	for (int i = 0; i < xform_list.size(); i++) {
-		Transform xform_step;
+		Transform3D xform_step;
 		const XForm &xf = xform_list[i];
 		switch (xf.op) {
 			case XForm::OP_ROTATE: {
@@ -165,11 +165,11 @@ Transform Collada::Node::compute_transform(Collada &state) const {
 	return xform;
 }
 
-Transform Collada::Node::get_transform() const {
+Transform3D Collada::Node::get_transform() const {
 	return default_transform;
 }
 
-Transform Collada::Node::get_global_transform() const {
+Transform3D Collada::Node::get_global_transform() const {
 	if (parent) {
 		return parent->get_global_transform() * default_transform;
 	} else {
@@ -201,14 +201,14 @@ Vector<float> Collada::AnimationTrack::get_value_at_time(float p_time) const {
 
 			if (keys[i].data.size() == 16) {
 				//interpolate a matrix
-				Transform src = _read_transform_from_array(keys[i - 1].data);
-				Transform dst = _read_transform_from_array(keys[i].data);
+				Transform3D src = _read_transform_from_array(keys[i - 1].data);
+				Transform3D dst = _read_transform_from_array(keys[i].data);
 
-				Transform interp = c < 0.001 ? src : src.interpolate_with(dst, c);
+				Transform3D interp = c < 0.001 ? src : src.interpolate_with(dst, c);
 
 				Vector<float> ret;
 				ret.resize(16);
-				Transform tr;
+				Transform3D tr;
 				// i wonder why collada matrices are transposed, given that's opposed to opengl..
 				ret.write[0] = interp.basis.elements[0][0];
 				ret.write[1] = interp.basis.elements[0][1];
@@ -287,7 +287,7 @@ void Collada::_parse_image(XMLParser &parser) {
 	if (state.version < State::Version(1, 4, 0)) {
 		/* <1.4 */
 		String path = parser.get_attribute_value("source").strip_edges();
-		if (path.find("://") == -1 && path.is_rel_path()) {
+		if (path.find("://") == -1 && path.is_relative_path()) {
 			// path is relative to file being loaded, so convert to a resource path
 			image.path = ProjectSettings::get_singleton()->localize_path(state.local_path.get_base_dir().plus_file(path.uri_decode()));
 		}
@@ -300,7 +300,7 @@ void Collada::_parse_image(XMLParser &parser) {
 					parser.read();
 					String path = parser.get_node_data().strip_edges().uri_decode();
 
-					if (path.find("://") == -1 && path.is_rel_path()) {
+					if (path.find("://") == -1 && path.is_relative_path()) {
 						// path is relative to file being loaded, so convert to a resource path
 						path = ProjectSettings::get_singleton()->localize_path(state.local_path.get_base_dir().plus_file(path));
 
@@ -410,10 +410,9 @@ Vector<String> Collada::_read_string_array(XMLParser &parser) {
 	return array;
 }
 
-Transform Collada::_read_transform(XMLParser &parser) {
-	if (parser.is_empty()) {
-		return Transform();
-	}
+Transform3D Collada::_read_transform(XMLParser &parser) {
+	if (parser.is_empty())
+		return Transform3D();
 
 	Vector<String> array;
 	while (parser.read() == OK) {
@@ -429,7 +428,7 @@ Transform Collada::_read_transform(XMLParser &parser) {
 		}
 	}
 
-	ERR_FAIL_COND_V(array.size() != 16, Transform());
+	ERR_FAIL_COND_V(array.size() != 16, Transform3D());
 	Vector<float> farr;
 	farr.resize(16);
 	for (int i = 0; i < 16; i++) {
@@ -961,12 +960,17 @@ void Collada::_parse_mesh_geometry(XMLParser &parser, String p_id, String p_name
 			} else if (section == "vertices") {
 				MeshData::Vertices vert;
 				String id = parser.get_attribute_value("id");
+				int last_ref = 0;
 
 				while (parser.read() == OK) {
 					if (parser.get_node_type() == XMLParser::NODE_ELEMENT) {
 						if (parser.get_node_name() == "input") {
 							String semantic = parser.get_attribute_value("semantic");
 							String source = _uri_to_id(parser.get_attribute_value("source"));
+
+							if (semantic == "TEXCOORD") {
+								semantic = "TEXCOORD" + itos(last_ref++);
+							}
 
 							vert.sources[semantic] = source;
 
@@ -1197,7 +1201,7 @@ void Collada::_parse_skin_controller(XMLParser &parser, String p_id) {
 
 	/* STORE REST MATRICES */
 
-	Vector<Transform> rests;
+	Vector<Transform3D> rests;
 	ERR_FAIL_COND(!skindata.joints.sources.has("JOINT"));
 	ERR_FAIL_COND(!skindata.joints.sources.has("INV_BIND_MATRIX"));
 
@@ -1214,7 +1218,7 @@ void Collada::_parse_skin_controller(XMLParser &parser, String p_id) {
 
 	for (int i = 0; i < joint_source.sarray.size(); i++) {
 		String name = joint_source.sarray[i];
-		Transform xform = _read_transform_from_array(ibm_source.array, i * 16); //<- this is a mistake, it must be applied to vertices
+		Transform3D xform = _read_transform_from_array(ibm_source.array, i * 16); //<- this is a mistake, it must be applied to vertices
 		xform.affine_invert(); // inverse for rest, because it's an inverse
 #ifdef COLLADA_IMPORT_SCALE_SCENE
 		xform.origin *= state.unit_scale;
@@ -2091,19 +2095,19 @@ void Collada::_merge_skeletons(VisualScene *p_vscene, Node *p_node) {
 }
 
 void Collada::_merge_skeletons2(VisualScene *p_vscene) {
-	for (Map<String, SkinControllerData>::Element *E = state.skin_controller_data_map.front(); E; E = E->next()) {
-		SkinControllerData &cd = E->get();
+	for (KeyValue<String, SkinControllerData> &E : state.skin_controller_data_map) {
+		SkinControllerData &cd = E.value;
 
 		NodeSkeleton *skeleton = nullptr;
 
-		for (Map<String, Transform>::Element *F = cd.bone_rest_map.front(); F; F = F->next()) {
+		for (const KeyValue<String, Transform3D> &F : cd.bone_rest_map) {
 			String name;
 
-			if (!state.sid_to_node_map.has(F->key())) {
+			if (!state.sid_to_node_map.has(F.key)) {
 				continue;
 			}
 
-			name = state.sid_to_node_map[F->key()];
+			name = state.sid_to_node_map[F.key];
 
 			ERR_CONTINUE(!state.scene_map.has(name));
 
@@ -2240,19 +2244,19 @@ bool Collada::_move_geometry_to_skeletons(VisualScene *p_vscene, Node *p_node, L
 			//this should be correct
 			ERR_FAIL_COND_V(!state.skin_controller_data_map.has(ng->source), false);
 			SkinControllerData &skin = state.skin_controller_data_map[ng->source];
-			Transform skel_inv = sk->get_global_transform().affine_inverse();
+			Transform3D skel_inv = sk->get_global_transform().affine_inverse();
 			p_node->default_transform = skel_inv * (skin.bind_shape /* p_node->get_global_transform()*/); // i honestly have no idea what to do with a previous model xform.. most exporters ignore it
 
 			//make rests relative to the skeleton (they seem to be always relative to world)
-			for (Map<String, Transform>::Element *E = skin.bone_rest_map.front(); E; E = E->next()) {
-				E->get() = skel_inv * E->get(); //make the bone rest local to the skeleton
-				state.bone_rest_map[E->key()] = E->get(); // make it remember where the bone is globally, now that it's relative
+			for (KeyValue<String, Transform3D> &E : skin.bone_rest_map) {
+				E.value = skel_inv * E.value; //make the bone rest local to the skeleton
+				state.bone_rest_map[E.key] = E.value; // make it remember where the bone is globally, now that it's relative
 			}
 
 			//but most exporters seem to work only if i do this..
 			//p_node->default_transform = p_node->get_global_transform();
 
-			//p_node->default_transform=Transform(); //this seems to be correct, because bind shape makes the object local to the skeleton
+			//p_node->default_transform=Transform3D(); //this seems to be correct, because bind shape makes the object local to the skeleton
 			p_node->ignore_anim = true; // collada may animate this later, if it does, then this is not supported (redo your original asset and don't animate the base mesh)
 			p_node->parent = sk;
 			//sk->children.push_back(0,p_node); //avoid INFINITE loop
@@ -2298,8 +2302,8 @@ void Collada::_find_morph_nodes(VisualScene *p_vscene, Node *p_node) {
 }
 
 void Collada::_optimize() {
-	for (Map<String, VisualScene>::Element *E = state.visual_scene_map.front(); E; E = E->next()) {
-		VisualScene &vs = E->get();
+	for (KeyValue<String, VisualScene> &E : state.visual_scene_map) {
+		VisualScene &vs = E.value;
 		for (int i = 0; i < vs.root_nodes.size(); i++) {
 			_create_skeletons(&vs.root_nodes.write[i]);
 		}

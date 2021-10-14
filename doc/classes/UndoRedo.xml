@@ -63,171 +63,147 @@
 	</tutorials>
 	<methods>
 		<method name="add_do_method" qualifiers="vararg">
-			<return type="void">
-			</return>
-			<argument index="0" name="object" type="Object">
-			</argument>
-			<argument index="1" name="method" type="StringName">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="object" type="Object" />
+			<argument index="1" name="method" type="StringName" />
 			<description>
 				Register a method that will be called when the action is committed.
 			</description>
 		</method>
 		<method name="add_do_property">
-			<return type="void">
-			</return>
-			<argument index="0" name="object" type="Object">
-			</argument>
-			<argument index="1" name="property" type="StringName">
-			</argument>
-			<argument index="2" name="value" type="Variant">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="object" type="Object" />
+			<argument index="1" name="property" type="StringName" />
+			<argument index="2" name="value" type="Variant" />
 			<description>
 				Register a property value change for "do".
 			</description>
 		</method>
 		<method name="add_do_reference">
-			<return type="void">
-			</return>
-			<argument index="0" name="object" type="Object">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="object" type="Object" />
 			<description>
 				Register a reference for "do" that will be erased if the "do" history is lost. This is useful mostly for new nodes created for the "do" call. Do not use for resources.
 			</description>
 		</method>
 		<method name="add_undo_method" qualifiers="vararg">
-			<return type="void">
-			</return>
-			<argument index="0" name="object" type="Object">
-			</argument>
-			<argument index="1" name="method" type="StringName">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="object" type="Object" />
+			<argument index="1" name="method" type="StringName" />
 			<description>
 				Register a method that will be called when the action is undone.
 			</description>
 		</method>
 		<method name="add_undo_property">
-			<return type="void">
-			</return>
-			<argument index="0" name="object" type="Object">
-			</argument>
-			<argument index="1" name="property" type="StringName">
-			</argument>
-			<argument index="2" name="value" type="Variant">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="object" type="Object" />
+			<argument index="1" name="property" type="StringName" />
+			<argument index="2" name="value" type="Variant" />
 			<description>
 				Register a property value change for "undo".
 			</description>
 		</method>
 		<method name="add_undo_reference">
-			<return type="void">
-			</return>
-			<argument index="0" name="object" type="Object">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="object" type="Object" />
 			<description>
 				Register a reference for "undo" that will be erased if the "undo" history is lost. This is useful mostly for nodes removed with the "do" call (not the "undo" call!).
 			</description>
 		</method>
 		<method name="clear_history">
-			<return type="void">
-			</return>
-			<argument index="0" name="increase_version" type="bool" default="true">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="increase_version" type="bool" default="true" />
 			<description>
 				Clear the undo/redo history and associated references.
 				Passing [code]false[/code] to [code]increase_version[/code] will prevent the version number to be increased from this.
 			</description>
 		</method>
 		<method name="commit_action">
-			<return type="void">
-			</return>
-			<argument index="0" name="execute" type="bool" default="true">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="execute" type="bool" default="true" />
 			<description>
 				Commit the action. If [code]execute[/code] is true (default), all "do" methods/properties are called/set when this function is called.
 			</description>
 		</method>
 		<method name="create_action">
-			<return type="void">
-			</return>
-			<argument index="0" name="name" type="String">
-			</argument>
-			<argument index="1" name="merge_mode" type="int" enum="UndoRedo.MergeMode" default="0">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="name" type="String" />
+			<argument index="1" name="merge_mode" type="int" enum="UndoRedo.MergeMode" default="0" />
 			<description>
 				Create a new action. After this is called, do all your calls to [method add_do_method], [method add_undo_method], [method add_do_property], and [method add_undo_property], then commit the action with [method commit_action].
 				The way actions are merged is dictated by the [code]merge_mode[/code] argument. See [enum MergeMode] for details.
 			</description>
 		</method>
+		<method name="end_force_keep_in_merge_ends">
+			<return type="void" />
+			<description>
+				Stops marking operations as to be processed even if the action gets merged with another in the [constant MERGE_ENDS] mode. See [method start_force_keep_in_merge_ends].
+			</description>
+		</method>
 		<method name="get_action_name">
-			<return type="String">
-			</return>
-			<argument index="0" name="id" type="int">
-			</argument>
+			<return type="String" />
+			<argument index="0" name="id" type="int" />
 			<description>
 				Gets the action name from its index.
 			</description>
 		</method>
 		<method name="get_current_action">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Gets the index of the current action.
 			</description>
 		</method>
 		<method name="get_current_action_name" qualifiers="const">
-			<return type="String">
-			</return>
+			<return type="String" />
 			<description>
 				Gets the name of the current action, equivalent to [code]get_action_name(get_current_action())[/code].
 			</description>
 		</method>
 		<method name="get_history_count">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Return how many elements are in the history.
 			</description>
 		</method>
 		<method name="get_version" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Gets the version. Every time a new action is committed, the [UndoRedo]'s version number is increased automatically.
 				This is useful mostly to check if something changed from a saved version.
 			</description>
 		</method>
-		<method name="has_redo">
-			<return type="bool">
-			</return>
+		<method name="has_redo" qualifiers="const">
+			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if a "redo" action is available.
 			</description>
 		</method>
-		<method name="has_undo">
-			<return type="bool">
-			</return>
+		<method name="has_undo" qualifiers="const">
+			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if an "undo" action is available.
 			</description>
 		</method>
 		<method name="is_committing_action" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if the [UndoRedo] is currently committing the action, i.e. running its "do" method or property change (see [method commit_action]).
 			</description>
 		</method>
 		<method name="redo">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Redo the last action.
 			</description>
 		</method>
+		<method name="start_force_keep_in_merge_ends">
+			<return type="void" />
+			<description>
+				Marks the next "do" and "undo" operations to be processed even if the action gets merged with another in the [constant MERGE_ENDS] mode. Return to normal operation using [method end_force_keep_in_merge_ends].
+			</description>
+		</method>
 		<method name="undo">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Undo the last action.
 			</description>
@@ -245,7 +221,7 @@
 			Makes "do"/"undo" operations stay in separate actions.
 		</constant>
 		<constant name="MERGE_ENDS" value="1" enum="MergeMode">
-			Makes so that the action's "do" operation is from the first action created and the "undo" operation is from the last subsequent action with the same name.
+			Makes so that the action's "undo" operations are from the first action created and the "do" operations are from the last subsequent action with the same name.
 		</constant>
 		<constant name="MERGE_ALL" value="2" enum="MergeMode">
 			Makes subsequent actions with the same name be merged into one.

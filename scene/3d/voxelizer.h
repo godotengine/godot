@@ -31,8 +31,6 @@
 #ifndef VOXEL_LIGHT_BAKER_H
 #define VOXEL_LIGHT_BAKER_H
 
-#include "core/math/vector3i.h"
-#include "scene/3d/mesh_instance_3d.h"
 #include "scene/resources/multimesh.h"
 
 class Voxelizer {
@@ -93,7 +91,7 @@ private:
 	AABB po2_bounds;
 	int axis_cell_size[3] = {};
 
-	Transform to_cell_space;
+	Transform3D to_cell_space;
 
 	int color_scan_cell_width = 4;
 	int bake_texture_size = 128;
@@ -114,20 +112,20 @@ private:
 
 public:
 	void begin_bake(int p_subdiv, const AABB &p_bounds);
-	void plot_mesh(const Transform &p_xform, Ref<Mesh> &p_mesh, const Vector<Ref<Material>> &p_materials, const Ref<Material> &p_override_material);
+	void plot_mesh(const Transform3D &p_xform, Ref<Mesh> &p_mesh, const Vector<Ref<Material>> &p_materials, const Ref<Material> &p_override_material);
 	void end_bake();
 
-	int get_gi_probe_octree_depth() const;
-	Vector3i get_giprobe_octree_size() const;
-	int get_giprobe_cell_count() const;
-	Vector<uint8_t> get_giprobe_octree_cells() const;
-	Vector<uint8_t> get_giprobe_data_cells() const;
-	Vector<int> get_giprobe_level_cell_count() const;
+	int get_voxel_gi_octree_depth() const;
+	Vector3i get_voxel_gi_octree_size() const;
+	int get_voxel_gi_cell_count() const;
+	Vector<uint8_t> get_voxel_gi_octree_cells() const;
+	Vector<uint8_t> get_voxel_gi_data_cells() const;
+	Vector<int> get_voxel_gi_level_cell_count() const;
 	Vector<uint8_t> get_sdf_3d_image() const;
 
 	Ref<MultiMesh> create_debug_multimesh();
 
-	Transform get_to_cell_space_xform() const;
+	Transform3D get_to_cell_space_xform() const;
 	Voxelizer();
 };
 

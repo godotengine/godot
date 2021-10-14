@@ -29,51 +29,77 @@
 /*************************************************************************/
 
 #include "body_2d_sw.h"
+
 #include "area_2d_sw.h"
-#include "physics_server_2d_sw.h"
+#include "body_direct_state_2d_sw.h"
 #include "space_2d_sw.h"
 
-void Body2DSW::_update_inertia() {
-	if (!user_inertia && get_space() && !inertia_update_list.in_list()) {
-		get_space()->body_add_to_inertia_update_list(&inertia_update_list);
+void Body2DSW::_mass_properties_changed() {
+	if (get_space() && !mass_properties_update_list.in_list() && (calculate_inertia || calculate_center_of_mass)) {
+		get_space()->body_add_to_mass_properties_update_list(&mass_properties_update_list);
 	}
 }
 
-void Body2DSW::update_inertias() {
+void Body2DSW::update_mass_properties() {
 	//update shapes and motions
 
 	switch (mode) {
-		case PhysicsServer2D::BODY_MODE_RIGID: {
-			if (user_inertia) {
-				_inv_inertia = inertia > 0 ? (1.0 / inertia) : 0;
-				break;
-			}
-			//update tensor for allshapes, not the best way but should be somehow OK. (inspired from bullet)
+		case PhysicsServer2D::BODY_MODE_DYNAMIC: {
 			real_t total_area = 0;
-
-			for (int i = 0; i < get_shape_count(); i++) {
-				total_area += get_shape_aabb(i).get_area();
-			}
-
-			inertia = 0;
-
 			for (int i = 0; i < get_shape_count(); i++) {
 				if (is_shape_disabled(i)) {
 					continue;
 				}
-
-				const Shape2DSW *shape = get_shape(i);
-
-				real_t area = get_shape_aabb(i).get_area();
-
-				real_t mass = area * this->mass / total_area;
-
-				Transform2D mtx = get_shape_transform(i);
-				Vector2 scale = mtx.get_scale();
-				inertia += shape->get_moment_of_inertia(mass, scale) + mass * mtx.get_origin().length_squared();
+				total_area += get_shape_aabb(i).get_area();
 			}
 
-			_inv_inertia = inertia > 0 ? (1.0 / inertia) : 0;
+			if (calculate_center_of_mass) {
+				// We have to recompute the center of mass.
+				center_of_mass = Vector2();
+
+				if (total_area != 0.0) {
+					for (int i = 0; i < get_shape_count(); i++) {
+						if (is_shape_disabled(i)) {
+							continue;
+						}
+
+						real_t area = get_shape_aabb(i).get_area();
+
+						real_t mass = area * this->mass / total_area;
+
+						// NOTE: we assume that the shape origin is also its center of mass.
+						center_of_mass += mass * get_shape_transform(i).get_origin();
+					}
+
+					center_of_mass /= mass;
+				}
+			}
+
+			if (calculate_inertia) {
+				inertia = 0;
+
+				for (int i = 0; i < get_shape_count(); i++) {
+					if (is_shape_disabled(i)) {
+						continue;
+					}
+
+					const Shape2DSW *shape = get_shape(i);
+
+					real_t area = get_shape_aabb(i).get_area();
+					if (area == 0.0) {
+						continue;
+					}
+
+					real_t mass = area * this->mass / total_area;
+
+					Transform2D mtx = get_shape_transform(i);
+					Vector2 scale = mtx.get_scale();
+					Vector2 shape_origin = mtx.get_origin() - center_of_mass;
+					inertia += shape->get_moment_of_inertia(mass, scale) + mass * shape_origin.length_squared();
+				}
+			}
+
+			_inv_inertia = inertia > 0.0 ? (1.0 / inertia) : 0.0;
 
 			if (mass) {
 				_inv_mass = 1.0 / mass;
@@ -87,15 +113,18 @@ void Body2DSW::update_inertias() {
 			_inv_inertia = 0;
 			_inv_mass = 0;
 		} break;
-		case PhysicsServer2D::BODY_MODE_CHARACTER: {
+		case PhysicsServer2D::BODY_MODE_DYNAMIC_LINEAR: {
 			_inv_inertia = 0;
 			_inv_mass = 1.0 / mass;
 
 		} break;
 	}
-	//_update_inertia_tensor();
+}
 
-	//_update_shapes();
+void Body2DSW::reset_mass_properties() {
+	calculate_inertia = true;
+	calculate_center_of_mass = true;
+	_mass_properties_changed();
 }
 
 void Body2DSW::set_active(bool p_active) {
@@ -104,34 +133,20 @@ void Body2DSW::set_active(bool p_active) {
 	}
 
 	active = p_active;
-	if (!p_active) {
-		if (get_space()) {
-			get_space()->body_remove_from_active_list(&active_list);
-		}
-	} else {
+
+	if (active) {
 		if (mode == PhysicsServer2D::BODY_MODE_STATIC) {
-			return; //static bodies can't become active
-		}
-		if (get_space()) {
+			// Static bodies can't be active.
+			active = false;
+		} else if (get_space()) {
 			get_space()->body_add_to_active_list(&active_list);
 		}
-
-		//still_time=0;
+	} else if (get_space()) {
+		get_space()->body_remove_from_active_list(&active_list);
 	}
-	/*
-	if (!space)
-		return;
-
-	for(int i=0;i<get_shape_count();i++) {
-		Shape &s=shapes[i];
-		if (s.bpid>0) {
-			get_space()->get_broadphase()->set_active(s.bpid,active);
-		}
-	}
-*/
 }
 
-void Body2DSW::set_param(PhysicsServer2D::BodyParameter p_param, real_t p_value) {
+void Body2DSW::set_param(PhysicsServer2D::BodyParameter p_param, const Variant &p_value) {
 	switch (p_param) {
 		case PhysicsServer2D::BODY_PARAM_BOUNCE: {
 			bounce = p_value;
@@ -140,20 +155,31 @@ void Body2DSW::set_param(PhysicsServer2D::BodyParameter p_param, real_t p_value)
 			friction = p_value;
 		} break;
 		case PhysicsServer2D::BODY_PARAM_MASS: {
-			ERR_FAIL_COND(p_value <= 0);
-			mass = p_value;
-			_update_inertia();
-
+			real_t mass_value = p_value;
+			ERR_FAIL_COND(mass_value <= 0);
+			mass = mass_value;
+			if (mode >= PhysicsServer2D::BODY_MODE_DYNAMIC) {
+				_mass_properties_changed();
+			}
 		} break;
 		case PhysicsServer2D::BODY_PARAM_INERTIA: {
-			if (p_value <= 0) {
-				user_inertia = false;
-				_update_inertia();
+			real_t inertia_value = p_value;
+			if (inertia_value <= 0.0) {
+				calculate_inertia = true;
+				if (mode == PhysicsServer2D::BODY_MODE_DYNAMIC) {
+					_mass_properties_changed();
+				}
 			} else {
-				user_inertia = true;
-				inertia = p_value;
-				_inv_inertia = 1.0 / p_value;
+				calculate_inertia = false;
+				inertia = inertia_value;
+				if (mode == PhysicsServer2D::BODY_MODE_DYNAMIC) {
+					_inv_inertia = 1.0 / inertia;
+				}
 			}
+		} break;
+		case PhysicsServer2D::BODY_PARAM_CENTER_OF_MASS: {
+			calculate_center_of_mass = false;
+			center_of_mass = p_value;
 		} break;
 		case PhysicsServer2D::BODY_PARAM_GRAVITY_SCALE: {
 			gravity_scale = p_value;
@@ -169,7 +195,7 @@ void Body2DSW::set_param(PhysicsServer2D::BodyParameter p_param, real_t p_value)
 	}
 }
 
-real_t Body2DSW::get_param(PhysicsServer2D::BodyParameter p_param) const {
+Variant Body2DSW::get_param(PhysicsServer2D::BodyParameter p_param) const {
 	switch (p_param) {
 		case PhysicsServer2D::BODY_PARAM_BOUNCE: {
 			return bounce;
@@ -182,6 +208,9 @@ real_t Body2DSW::get_param(PhysicsServer2D::BodyParameter p_param) const {
 		}
 		case PhysicsServer2D::BODY_PARAM_INERTIA: {
 			return inertia;
+		}
+		case PhysicsServer2D::BODY_PARAM_CENTER_OF_MASS: {
+			return center_of_mass;
 		}
 		case PhysicsServer2D::BODY_PARAM_GRAVITY_SCALE: {
 			return gravity_scale;
@@ -218,28 +247,24 @@ void Body2DSW::set_mode(PhysicsServer2D::BodyMode p_mode) {
 				first_time_kinematic = true;
 			}
 		} break;
-		case PhysicsServer2D::BODY_MODE_RIGID: {
+		case PhysicsServer2D::BODY_MODE_DYNAMIC: {
 			_inv_mass = mass > 0 ? (1.0 / mass) : 0;
-			_inv_inertia = inertia > 0 ? (1.0 / inertia) : 0;
+			if (!calculate_inertia) {
+				_inv_inertia = 1.0 / inertia;
+			}
+			_mass_properties_changed();
 			_set_static(false);
 			set_active(true);
 
 		} break;
-		case PhysicsServer2D::BODY_MODE_CHARACTER: {
+		case PhysicsServer2D::BODY_MODE_DYNAMIC_LINEAR: {
 			_inv_mass = mass > 0 ? (1.0 / mass) : 0;
 			_inv_inertia = 0;
+			angular_velocity = 0;
 			_set_static(false);
 			set_active(true);
-			angular_velocity = 0;
-		} break;
+		}
 	}
-	if (p_mode == PhysicsServer2D::BODY_MODE_RIGID && _inv_inertia == 0) {
-		_update_inertia();
-	}
-	/*
-	if (get_space())
-		_update_queries();
-	*/
 }
 
 PhysicsServer2D::BodyMode Body2DSW::get_mode() const {
@@ -247,7 +272,7 @@ PhysicsServer2D::BodyMode Body2DSW::get_mode() const {
 }
 
 void Body2DSW::_shapes_changed() {
-	_update_inertia();
+	_mass_properties_changed();
 	wakeup_neighbours();
 }
 
@@ -281,25 +306,18 @@ void Body2DSW::set_state(PhysicsServer2D::BodyState p_state, const Variant &p_va
 
 		} break;
 		case PhysicsServer2D::BODY_STATE_LINEAR_VELOCITY: {
-			/*
-			if (mode==PhysicsServer2D::BODY_MODE_STATIC)
-				break;
-			*/
 			linear_velocity = p_variant;
+			constant_linear_velocity = linear_velocity;
 			wakeup();
 
 		} break;
 		case PhysicsServer2D::BODY_STATE_ANGULAR_VELOCITY: {
-			/*
-			if (mode!=PhysicsServer2D::BODY_MODE_RIGID)
-				break;
-			*/
 			angular_velocity = p_variant;
+			constant_angular_velocity = angular_velocity;
 			wakeup();
 
 		} break;
 		case PhysicsServer2D::BODY_STATE_SLEEPING: {
-			//?
 			if (mode == PhysicsServer2D::BODY_MODE_STATIC || mode == PhysicsServer2D::BODY_MODE_KINEMATIC) {
 				break;
 			}
@@ -318,7 +336,7 @@ void Body2DSW::set_state(PhysicsServer2D::BodyState p_state, const Variant &p_va
 		} break;
 		case PhysicsServer2D::BODY_STATE_CAN_SLEEP: {
 			can_sleep = p_variant;
-			if (mode == PhysicsServer2D::BODY_MODE_RIGID && !active && !can_sleep) {
+			if (mode >= PhysicsServer2D::BODY_MODE_DYNAMIC && !active && !can_sleep) {
 				set_active(true);
 			}
 
@@ -352,8 +370,8 @@ void Body2DSW::set_space(Space2DSW *p_space) {
 	if (get_space()) {
 		wakeup_neighbours();
 
-		if (inertia_update_list.in_list()) {
-			get_space()->body_remove_from_inertia_update_list(&inertia_update_list);
+		if (mass_properties_update_list.in_list()) {
+			get_space()->body_remove_from_mass_properties_update_list(&mass_properties_update_list);
 		}
 		if (active_list.in_list()) {
 			get_space()->body_remove_from_active_list(&active_list);
@@ -366,33 +384,17 @@ void Body2DSW::set_space(Space2DSW *p_space) {
 	_set_space(p_space);
 
 	if (get_space()) {
-		_update_inertia();
+		_mass_properties_changed();
 		if (active) {
 			get_space()->body_add_to_active_list(&active_list);
 		}
-		/*
-		_update_queries();
-		if (is_active()) {
-			active=false;
-			set_active(true);
-		}
-		*/
 	}
-
-	first_integration = false;
 }
 
-void Body2DSW::_compute_area_gravity_and_dampenings(const Area2DSW *p_area) {
-	if (p_area->is_gravity_point()) {
-		if (p_area->get_gravity_distance_scale() > 0) {
-			Vector2 v = p_area->get_transform().xform(p_area->get_gravity_vector()) - get_transform().get_origin();
-			gravity += v.normalized() * (p_area->get_gravity() / Math::pow(v.length() * p_area->get_gravity_distance_scale() + 1, 2));
-		} else {
-			gravity += (p_area->get_transform().xform(p_area->get_gravity_vector()) - get_transform().get_origin()).normalized() * p_area->get_gravity();
-		}
-	} else {
-		gravity += p_area->get_gravity_vector() * p_area->get_gravity();
-	}
+void Body2DSW::_compute_area_gravity_and_damping(const Area2DSW *p_area) {
+	Vector2 area_gravity;
+	p_area->compute_gravity(get_transform().get_origin(), area_gravity);
+	gravity += area_gravity;
 
 	area_linear_damp += p_area->get_linear_damp();
 	area_angular_damp += p_area->get_angular_damp();
@@ -421,7 +423,7 @@ void Body2DSW::integrate_forces(real_t p_step) {
 			switch (mode) {
 				case PhysicsServer2D::AREA_SPACE_OVERRIDE_COMBINE:
 				case PhysicsServer2D::AREA_SPACE_OVERRIDE_COMBINE_REPLACE: {
-					_compute_area_gravity_and_dampenings(aa[i].area);
+					_compute_area_gravity_and_damping(aa[i].area);
 					stopped = mode == PhysicsServer2D::AREA_SPACE_OVERRIDE_COMBINE_REPLACE;
 				} break;
 				case PhysicsServer2D::AREA_SPACE_OVERRIDE_REPLACE:
@@ -429,7 +431,7 @@ void Body2DSW::integrate_forces(real_t p_step) {
 					gravity = Vector2(0, 0);
 					area_angular_damp = 0;
 					area_linear_damp = 0;
-					_compute_area_gravity_and_dampenings(aa[i].area);
+					_compute_area_gravity_and_damping(aa[i].area);
 					stopped = mode == PhysicsServer2D::AREA_SPACE_OVERRIDE_REPLACE;
 				} break;
 				default: {
@@ -438,7 +440,7 @@ void Body2DSW::integrate_forces(real_t p_step) {
 		}
 	}
 	if (!stopped) {
-		_compute_area_gravity_and_dampenings(def_area);
+		_compute_area_gravity_and_damping(def_area);
 	}
 	gravity *= gravity_scale;
 
@@ -465,10 +467,10 @@ void Body2DSW::integrate_forces(real_t p_step) {
 	if (mode == PhysicsServer2D::BODY_MODE_KINEMATIC) {
 		//compute motion, angular and etc. velocities from prev transform
 		motion = new_transform.get_origin() - get_transform().get_origin();
-		linear_velocity = motion / p_step;
+		linear_velocity = constant_linear_velocity + motion / p_step;
 
 		real_t rot = new_transform.get_rotation() - get_transform().get_rotation();
-		angular_velocity = remainder(rot, 2.0 * Math_PI) / p_step;
+		angular_velocity = constant_angular_velocity + remainder(rot, 2.0 * Math_PI) / p_step;
 
 		do_motion = true;
 
@@ -480,7 +482,7 @@ void Body2DSW::integrate_forces(real_t p_step) {
 		*/
 
 	} else {
-		if (!omit_force_integration && !first_integration) {
+		if (!omit_force_integration) {
 			//overridden by direct state query
 
 			Vector2 force = gravity * mass;
@@ -514,7 +516,6 @@ void Body2DSW::integrate_forces(real_t p_step) {
 
 	//motion=linear_velocity*p_step;
 
-	first_integration = false;
 	biased_angular_velocity = 0;
 	biased_linear_velocity = Vector2();
 
@@ -532,7 +533,7 @@ void Body2DSW::integrate_velocities(real_t p_step) {
 		return;
 	}
 
-	if (fi_callback) {
+	if (fi_callback_data || body_state_callback) {
 		get_space()->body_add_to_state_query_list(&direct_state_query_list);
 	}
 
@@ -551,28 +552,36 @@ void Body2DSW::integrate_velocities(real_t p_step) {
 	real_t angle = get_transform().get_rotation() + total_angular_velocity * p_step;
 	Vector2 pos = get_transform().get_origin() + total_linear_velocity * p_step;
 
+	real_t center_of_mass_distance = center_of_mass.length();
+	if (center_of_mass_distance > CMP_EPSILON) {
+		// Calculate displacement due to center of mass offset.
+		real_t prev_angle = get_transform().get_rotation();
+		real_t angle_base = Math::atan2(center_of_mass.y, center_of_mass.x);
+		Vector2 point1(Math::cos(angle_base + prev_angle), Math::sin(angle_base + prev_angle));
+		Vector2 point2(Math::cos(angle_base + angle), Math::sin(angle_base + angle));
+		pos += center_of_mass_distance * (point1 - point2);
+	}
+
 	_set_transform(Transform2D(angle, pos), continuous_cd_mode == PhysicsServer2D::CCD_MODE_DISABLED);
 	_set_inv_transform(get_transform().inverse());
 
 	if (continuous_cd_mode != PhysicsServer2D::CCD_MODE_DISABLED) {
 		new_transform = get_transform();
 	}
-
-	//_update_inertia_tensor();
 }
 
 void Body2DSW::wakeup_neighbours() {
-	for (List<Pair<Constraint2DSW *, int>>::Element *E = constraint_list.front(); E; E = E->next()) {
-		const Constraint2DSW *c = E->get().first;
+	for (const Pair<Constraint2DSW *, int> &E : constraint_list) {
+		const Constraint2DSW *c = E.first;
 		Body2DSW **n = c->get_body_ptr();
 		int bc = c->get_body_count();
 
 		for (int i = 0; i < bc; i++) {
-			if (i == E->get().second) {
+			if (i == E.second) {
 				continue;
 			}
 			Body2DSW *b = n[i];
-			if (b->mode != PhysicsServer2D::BODY_MODE_RIGID) {
+			if (b->mode < PhysicsServer2D::BODY_MODE_DYNAMIC) {
 				continue;
 			}
 
@@ -584,34 +593,32 @@ void Body2DSW::wakeup_neighbours() {
 }
 
 void Body2DSW::call_queries() {
-	if (fi_callback) {
-		PhysicsDirectBodyState2DSW *dbs = PhysicsDirectBodyState2DSW::singleton;
-		dbs->body = this;
-
-		Variant v = dbs;
-		const Variant *vp[2] = { &v, &fi_callback->callback_udata };
-
-		Object *obj = fi_callback->callable.get_object();
-		if (!obj) {
+	if (fi_callback_data) {
+		if (!fi_callback_data->callable.get_object()) {
 			set_force_integration_callback(Callable());
 		} else {
+			Variant direct_state_variant = get_direct_state();
+			const Variant *vp[2] = { &direct_state_variant, &fi_callback_data->udata };
+
 			Callable::CallError ce;
 			Variant rv;
-			if (fi_callback->callback_udata.get_type() != Variant::NIL) {
-				fi_callback->callable.call(vp, 2, rv, ce);
+			if (fi_callback_data->udata.get_type() != Variant::NIL) {
+				fi_callback_data->callable.call(vp, 2, rv, ce);
 
 			} else {
-				fi_callback->callable.call(vp, 1, rv, ce);
+				fi_callback_data->callable.call(vp, 1, rv, ce);
 			}
 		}
+	}
+
+	if (body_state_callback) {
+		(body_state_callback)(body_state_callback_instance, get_direct_state());
 	}
 }
 
 bool Body2DSW::sleep_test(real_t p_step) {
 	if (mode == PhysicsServer2D::BODY_MODE_STATIC || mode == PhysicsServer2D::BODY_MODE_KINEMATIC) {
-		return true; //
-	} else if (mode == PhysicsServer2D::BODY_MODE_CHARACTER) {
-		return !active; // characters and kinematic bodies don't sleep unless asked to sleep
+		return true;
 	} else if (!can_sleep) {
 		return false;
 	}
@@ -626,78 +633,45 @@ bool Body2DSW::sleep_test(real_t p_step) {
 	}
 }
 
-void Body2DSW::set_force_integration_callback(const Callable &p_callable, const Variant &p_udata) {
-	if (fi_callback) {
-		memdelete(fi_callback);
-		fi_callback = nullptr;
-	}
+void Body2DSW::set_state_sync_callback(void *p_instance, PhysicsServer2D::BodyStateCallback p_callback) {
+	body_state_callback_instance = p_instance;
+	body_state_callback = p_callback;
+}
 
+void Body2DSW::set_force_integration_callback(const Callable &p_callable, const Variant &p_udata) {
 	if (p_callable.get_object()) {
-		fi_callback = memnew(ForceIntegrationCallback);
-		fi_callback->callable = p_callable;
-		fi_callback->callback_udata = p_udata;
+		if (!fi_callback_data) {
+			fi_callback_data = memnew(ForceIntegrationCallbackData);
+		}
+		fi_callback_data->callable = p_callable;
+		fi_callback_data->udata = p_udata;
+	} else if (fi_callback_data) {
+		memdelete(fi_callback_data);
+		fi_callback_data = nullptr;
 	}
+}
+
+PhysicsDirectBodyState2DSW *Body2DSW::get_direct_state() {
+	if (!direct_state) {
+		direct_state = memnew(PhysicsDirectBodyState2DSW);
+		direct_state->body = this;
+	}
+	return direct_state;
 }
 
 Body2DSW::Body2DSW() :
 		CollisionObject2DSW(TYPE_BODY),
 		active_list(this),
-		inertia_update_list(this),
+		mass_properties_update_list(this),
 		direct_state_query_list(this) {
-	mode = PhysicsServer2D::BODY_MODE_RIGID;
-	active = true;
-	angular_velocity = 0;
-	biased_angular_velocity = 0;
-	mass = 1;
-	inertia = 0;
-	user_inertia = false;
-	_inv_inertia = 0;
-	_inv_mass = 1;
-	bounce = 0;
-	friction = 1;
-	omit_force_integration = false;
-	applied_torque = 0;
-	island_step = 0;
 	_set_static(false);
-	first_time_kinematic = false;
-	linear_damp = -1;
-	angular_damp = -1;
-	area_angular_damp = 0;
-	area_linear_damp = 0;
-	contact_count = 0;
-	gravity_scale = 1.0;
-	first_integration = false;
-
-	still_time = 0;
-	continuous_cd_mode = PhysicsServer2D::CCD_MODE_DISABLED;
-	can_sleep = true;
-	fi_callback = nullptr;
 }
 
 Body2DSW::~Body2DSW() {
-	if (fi_callback) {
-		memdelete(fi_callback);
+	if (fi_callback_data) {
+		memdelete(fi_callback_data);
 	}
-}
-
-PhysicsDirectBodyState2DSW *PhysicsDirectBodyState2DSW::singleton = nullptr;
-
-PhysicsDirectSpaceState2D *PhysicsDirectBodyState2DSW::get_space_state() {
-	return body->get_space()->get_direct_state();
-}
-
-Variant PhysicsDirectBodyState2DSW::get_contact_collider_shape_metadata(int p_contact_idx) const {
-	ERR_FAIL_INDEX_V(p_contact_idx, body->contact_count, Variant());
-
-	if (!PhysicsServer2DSW::singletonsw->body_owner.owns(body->contacts[p_contact_idx].collider)) {
-		return Variant();
+	if (direct_state) {
+		memdelete(direct_state);
 	}
-	Body2DSW *other = PhysicsServer2DSW::singletonsw->body_owner.getornull(body->contacts[p_contact_idx].collider);
-
-	int sidx = body->contacts[p_contact_idx].collider_shape;
-	if (sidx < 0 || sidx >= other->get_shape_count()) {
-		return Variant();
-	}
-
-	return other->get_shape_metadata(sidx);
 }

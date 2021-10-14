@@ -31,9 +31,10 @@
 #ifndef CONTROL_H
 #define CONTROL_H
 
+#include "core/input/shortcut.h"
 #include "core/math/transform_2d.h"
+#include "core/object/gdvirtual.gen.inc"
 #include "core/templates/rid.h"
-#include "scene/gui/shortcut.h"
 #include "scene/main/canvas_item.h"
 #include "scene/main/node.h"
 #include "scene/main/timer.h"
@@ -178,6 +179,10 @@ private:
 		GrowDirection v_grow = GROW_DIRECTION_END;
 
 		LayoutDirection layout_dir = LAYOUT_DIRECTION_INHERITED;
+		bool is_rtl_dirty = true;
+		bool is_rtl = false;
+
+		bool auto_translate = true;
 
 		real_t rotation = 0.0;
 		Vector2 scale = Vector2(1, 1);
@@ -201,6 +206,9 @@ private:
 		Ref<Theme> theme;
 		Control *theme_owner = nullptr;
 		Window *theme_owner_window = nullptr;
+		Window *parent_window = nullptr;
+		StringName theme_type_variation;
+
 		String tooltip;
 		CursorShape default_cursor = CURSOR_ARROW;
 
@@ -212,6 +220,7 @@ private:
 		NodePath focus_next;
 		NodePath focus_prev;
 
+		bool bulk_theme_override = false;
 		HashMap<StringName, Ref<Texture2D>> icon_override;
 		HashMap<StringName, Ref<StyleBox>> style_override;
 		HashMap<StringName, Ref<Font>> font_override;
@@ -220,6 +229,9 @@ private:
 		HashMap<StringName, int> constant_override;
 
 	} data;
+
+	static constexpr unsigned properties_managed_by_container_count = 11;
+	static String properties_managed_by_container[properties_managed_by_container_count];
 
 	// used internally
 	Control *_find_control_at_pos(CanvasItem *p_node, const Point2 &p_pos, const Transform2D &p_xform, Transform2D &r_inv_xform);
@@ -233,6 +245,7 @@ private:
 	void _set_size(const Size2 &p_size);
 
 	void _theme_changed();
+	void _notify_theme_changed();
 
 	void _update_minimum_size();
 
@@ -253,28 +266,16 @@ private:
 
 	friend class Viewport;
 
+	void _call_gui_input(const Ref<InputEvent> &p_event);
+
 	void _update_minimum_size_cache();
 	friend class Window;
 	static void _propagate_theme_changed(Node *p_at, Control *p_owner, Window *p_owner_window, bool p_assign = true);
 
 	template <class T>
-	_FORCE_INLINE_ static bool _find_theme_item(Control *p_theme_owner, Window *p_theme_owner_window, T &, T (Theme::*get_func)(const StringName &, const StringName &) const, bool (Theme::*has_func)(const StringName &, const StringName &) const, const StringName &p_name, const StringName &p_node_type);
-
-	_FORCE_INLINE_ static bool _has_theme_item(Control *p_theme_owner, Window *p_theme_owner_window, bool (Theme::*has_func)(const StringName &, const StringName &) const, const StringName &p_name, const StringName &p_node_type);
-
-	static Ref<Texture2D> get_icons(Control *p_theme_owner, Window *p_theme_owner_window, const StringName &p_name, const StringName &p_node_type = StringName());
-	static Ref<StyleBox> get_styleboxs(Control *p_theme_owner, Window *p_theme_owner_window, const StringName &p_name, const StringName &p_node_type = StringName());
-	static Ref<Font> get_fonts(Control *p_theme_owner, Window *p_theme_owner_window, const StringName &p_name, const StringName &p_node_type = StringName());
-	static int get_font_sizes(Control *p_theme_owner, Window *p_theme_owner_window, const StringName &p_name, const StringName &p_node_type = StringName());
-	static Color get_colors(Control *p_theme_owner, Window *p_theme_owner_window, const StringName &p_name, const StringName &p_node_type = StringName());
-	static int get_constants(Control *p_theme_owner, Window *p_theme_owner_window, const StringName &p_name, const StringName &p_node_type = StringName());
-
-	static bool has_icons(Control *p_theme_owner, Window *p_theme_owner_window, const StringName &p_name, const StringName &p_node_type = StringName());
-	static bool has_styleboxs(Control *p_theme_owner, Window *p_theme_owner_window, const StringName &p_name, const StringName &p_node_type = StringName());
-	static bool has_fonts(Control *p_theme_owner, Window *p_theme_owner_window, const StringName &p_name, const StringName &p_node_type = StringName());
-	static bool has_font_sizes(Control *p_theme_owner, Window *p_theme_owner_window, const StringName &p_name, const StringName &p_node_type = StringName());
-	static bool has_colors(Control *p_theme_owner, Window *p_theme_owner_window, const StringName &p_name, const StringName &p_node_type = StringName());
-	static bool has_constants(Control *p_theme_owner, Window *p_theme_owner_window, const StringName &p_name, const StringName &p_node_type = StringName());
+	static T get_theme_item_in_types(Control *p_theme_owner, Window *p_theme_owner_window, Theme::DataType p_data_type, const StringName &p_name, List<StringName> p_theme_types);
+	static bool has_theme_item_in_types(Control *p_theme_owner, Window *p_theme_owner_window, Theme::DataType p_data_type, const StringName &p_name, List<StringName> p_theme_types);
+	_FORCE_INLINE_ void _get_theme_type_dependencies(const StringName &p_theme_type, List<StringName> *p_list) const;
 
 protected:
 	virtual void add_child_notify(Node *p_child) override;
@@ -282,17 +283,28 @@ protected:
 
 	//virtual void _window_gui_input(InputEvent p_event);
 
-	virtual Vector<Vector2i> structured_text_parser(StructuredTextParser p_node_type, const Array &p_args, const String p_text) const;
+	virtual Array structured_text_parser(StructuredTextParser p_theme_type, const Array &p_args, const String p_text) const;
 
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 
 	void _notification(int p_notification);
-
 	static void _bind_methods();
+	virtual void _validate_property(PropertyInfo &property) const override;
 
 	//bind helpers
+
+	GDVIRTUAL1RC(bool, _has_point, Vector2)
+	GDVIRTUAL2RC(Array, _structured_text_parser, Array, String)
+	GDVIRTUAL0RC(Vector2, _get_minimum_size)
+
+	GDVIRTUAL1RC(Variant, _get_drag_data, Vector2)
+	GDVIRTUAL2RC(bool, _can_drop_data, Vector2, Variant)
+	GDVIRTUAL2(_drop_data, Vector2, Variant)
+	GDVIRTUAL1RC(Object *, _make_custom_tooltip, String)
+
+	GDVIRTUAL1(_gui_input, Ref<InputEvent>)
 
 public:
 	enum {
@@ -336,13 +348,14 @@ public:
 	virtual Size2 _edit_get_minimum_size() const override;
 #endif
 
+	virtual void gui_input(const Ref<InputEvent> &p_event);
+
 	void accept_event();
 
 	virtual Size2 get_minimum_size() const;
 	virtual Size2 get_combined_minimum_size() const;
 	virtual bool has_point(const Point2 &p_point) const;
-	virtual bool clips_input() const;
-	virtual void set_drag_forwarding(Control *p_target);
+	virtual void set_drag_forwarding(Node *p_target);
 	virtual Variant get_drag_data(const Point2 &p_point);
 	virtual bool can_drop_data(const Point2 &p_point, const Variant &p_data) const;
 	virtual void drop_data(const Point2 &p_point, const Variant &p_data);
@@ -353,10 +366,15 @@ public:
 	Size2 get_custom_minimum_size() const;
 
 	Control *get_parent_control() const;
+	Window *get_parent_window() const;
 
 	void set_layout_direction(LayoutDirection p_direction);
 	LayoutDirection get_layout_direction() const;
 	virtual bool is_layout_rtl() const;
+
+	void set_auto_translate(bool p_enable);
+	bool is_auto_translating() const;
+	_FORCE_INLINE_ String atr(const String p_string) const { return is_auto_translating() ? tr(p_string) : p_string; };
 
 	/* POSITIONING */
 
@@ -390,15 +408,13 @@ public:
 	Rect2 get_rect() const;
 	Rect2 get_global_rect() const;
 	Rect2 get_screen_rect() const;
-	Rect2 get_window_rect() const; ///< use with care, as it blocks waiting for the visual server
+	Rect2 get_window_rect() const; ///< use with care, as it blocks waiting for the rendering server
 	Rect2 get_anchorable_rect() const override;
 
 	void set_rect(const Rect2 &p_rect); // Reset anchors to begin and set rect, for faster container children sorting.
 
 	void set_rotation(real_t p_radians);
-	void set_rotation_degrees(real_t p_degrees);
 	real_t get_rotation() const;
-	real_t get_rotation_degrees() const;
 
 	void set_h_grow_direction(GrowDirection p_direction);
 	GrowDirection get_h_grow_direction() const;
@@ -414,6 +430,9 @@ public:
 
 	void set_theme(const Ref<Theme> &p_theme);
 	Ref<Theme> get_theme() const;
+
+	void set_theme_type_variation(const StringName &p_theme_type);
+	StringName get_theme_type_variation() const;
 
 	void set_h_size_flags(int p_flags);
 	int get_h_size_flags() const;
@@ -452,6 +471,9 @@ public:
 
 	/* SKINNING */
 
+	void begin_bulk_theme_override();
+	void end_bulk_theme_override();
+
 	void add_theme_icon_override(const StringName &p_name, const Ref<Texture2D> &p_icon);
 	void add_theme_style_override(const StringName &p_name, const Ref<StyleBox> &p_style);
 	void add_theme_font_override(const StringName &p_name, const Ref<Font> &p_font);
@@ -466,12 +488,12 @@ public:
 	void remove_theme_color_override(const StringName &p_name);
 	void remove_theme_constant_override(const StringName &p_name);
 
-	Ref<Texture2D> get_theme_icon(const StringName &p_name, const StringName &p_node_type = StringName()) const;
-	Ref<StyleBox> get_theme_stylebox(const StringName &p_name, const StringName &p_node_type = StringName()) const;
-	Ref<Font> get_theme_font(const StringName &p_name, const StringName &p_node_type = StringName()) const;
-	int get_theme_font_size(const StringName &p_name, const StringName &p_node_type = StringName()) const;
-	Color get_theme_color(const StringName &p_name, const StringName &p_node_type = StringName()) const;
-	int get_theme_constant(const StringName &p_name, const StringName &p_node_type = StringName()) const;
+	Ref<Texture2D> get_theme_icon(const StringName &p_name, const StringName &p_theme_type = StringName()) const;
+	Ref<StyleBox> get_theme_stylebox(const StringName &p_name, const StringName &p_theme_type = StringName()) const;
+	Ref<Font> get_theme_font(const StringName &p_name, const StringName &p_theme_type = StringName()) const;
+	int get_theme_font_size(const StringName &p_name, const StringName &p_theme_type = StringName()) const;
+	Color get_theme_color(const StringName &p_name, const StringName &p_theme_type = StringName()) const;
+	int get_theme_constant(const StringName &p_name, const StringName &p_theme_type = StringName()) const;
 
 	bool has_theme_icon_override(const StringName &p_name) const;
 	bool has_theme_stylebox_override(const StringName &p_name) const;
@@ -480,12 +502,20 @@ public:
 	bool has_theme_color_override(const StringName &p_name) const;
 	bool has_theme_constant_override(const StringName &p_name) const;
 
-	bool has_theme_icon(const StringName &p_name, const StringName &p_node_type = StringName()) const;
-	bool has_theme_stylebox(const StringName &p_name, const StringName &p_node_type = StringName()) const;
-	bool has_theme_font(const StringName &p_name, const StringName &p_node_type = StringName()) const;
-	bool has_theme_font_size(const StringName &p_name, const StringName &p_node_type = StringName()) const;
-	bool has_theme_color(const StringName &p_name, const StringName &p_node_type = StringName()) const;
-	bool has_theme_constant(const StringName &p_name, const StringName &p_node_type = StringName()) const;
+	bool has_theme_icon(const StringName &p_name, const StringName &p_theme_type = StringName()) const;
+	bool has_theme_stylebox(const StringName &p_name, const StringName &p_theme_type = StringName()) const;
+	bool has_theme_font(const StringName &p_name, const StringName &p_theme_type = StringName()) const;
+	bool has_theme_font_size(const StringName &p_name, const StringName &p_theme_type = StringName()) const;
+	bool has_theme_color(const StringName &p_name, const StringName &p_theme_type = StringName()) const;
+	bool has_theme_constant(const StringName &p_name, const StringName &p_theme_type = StringName()) const;
+
+	static float fetch_theme_default_base_scale(Control *p_theme_owner, Window *p_theme_owner_window);
+	static Ref<Font> fetch_theme_default_font(Control *p_theme_owner, Window *p_theme_owner_window);
+	static int fetch_theme_default_font_size(Control *p_theme_owner, Window *p_theme_owner_window);
+
+	float get_theme_default_base_scale() const;
+	Ref<Font> get_theme_default_font() const;
+	int get_theme_default_font_size() const;
 
 	/* TOOLTIP */
 

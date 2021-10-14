@@ -31,10 +31,14 @@
 #ifndef STREAM_PEER_H
 #define STREAM_PEER_H
 
-#include "core/object/reference.h"
+#include "core/object/ref_counted.h"
 
-class StreamPeer : public Reference {
-	GDCLASS(StreamPeer, Reference);
+#include "core/object/gdvirtual.gen.inc"
+#include "core/object/script_language.h"
+#include "core/variant/native_ptr.h"
+
+class StreamPeer : public RefCounted {
+	GDCLASS(StreamPeer, RefCounted);
 	OBJ_CATEGORY("Networking");
 
 protected:
@@ -58,7 +62,8 @@ public:
 
 	virtual int get_available_bytes() const = 0;
 
-	void set_big_endian(bool p_enable);
+	/* helpers */
+	void set_big_endian(bool p_big_endian);
 	bool is_big_endian_enabled() const;
 
 	void put_8(int8_t p_val);
@@ -90,6 +95,26 @@ public:
 	Variant get_var(bool p_allow_objects = false);
 
 	StreamPeer() {}
+};
+
+class StreamPeerExtension : public StreamPeer {
+	GDCLASS(StreamPeerExtension, StreamPeer);
+
+protected:
+	static void _bind_methods();
+
+public:
+	virtual Error put_data(const uint8_t *p_data, int p_bytes) override;
+	virtual Error put_partial_data(const uint8_t *p_data, int p_bytes, int &r_sent) override;
+	virtual Error get_data(uint8_t *p_buffer, int p_bytes) override;
+	virtual Error get_partial_data(uint8_t *p_buffer, int p_bytes, int &r_received) override;
+	virtual int get_available_bytes() const override;
+
+	GDVIRTUAL3R(int, _put_data, GDNativeConstPtr<const uint8_t>, int, GDNativePtr<int>);
+	GDVIRTUAL3R(int, _put_partial_data, GDNativeConstPtr<const uint8_t>, int, GDNativePtr<int>);
+	GDVIRTUAL3R(int, _get_data, GDNativePtr<uint8_t>, int, GDNativePtr<int>);
+	GDVIRTUAL3R(int, _get_partial_data, GDNativePtr<uint8_t>, int, GDNativePtr<int>);
+	GDVIRTUAL0RC(int, _get_available_bytes);
 };
 
 class StreamPeerBuffer : public StreamPeer {

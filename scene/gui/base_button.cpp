@@ -52,7 +52,7 @@ void BaseButton::_unpress_group() {
 	}
 }
 
-void BaseButton::_gui_input(Ref<InputEvent> p_event) {
+void BaseButton::gui_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
 	if (status.disabled) { // no interaction with disabled button
@@ -98,17 +98,14 @@ void BaseButton::_notification(int p_what) {
 	}
 
 	if (p_what == NOTIFICATION_FOCUS_ENTER) {
-		status.hovering = true;
 		update();
 	}
 
 	if (p_what == NOTIFICATION_FOCUS_EXIT) {
 		if (status.press_attempt) {
 			status.press_attempt = false;
-			status.hovering = false;
 			update();
 		} else if (status.hovering) {
-			status.hovering = false;
 			update();
 		}
 	}
@@ -124,37 +121,40 @@ void BaseButton::_notification(int p_what) {
 }
 
 void BaseButton::_pressed() {
-	if (get_script_instance()) {
-		get_script_instance()->call(SceneStringNames::get_singleton()->_pressed);
-	}
+	GDVIRTUAL_CALL(_pressed);
 	pressed();
-	emit_signal("pressed");
+	emit_signal(SNAME("pressed"));
 }
 
 void BaseButton::_toggled(bool p_pressed) {
-	if (get_script_instance()) {
-		get_script_instance()->call(SceneStringNames::get_singleton()->_toggled, p_pressed);
-	}
+	GDVIRTUAL_CALL(_toggled, p_pressed);
 	toggled(p_pressed);
-	emit_signal("toggled", p_pressed);
+	emit_signal(SNAME("toggled"), p_pressed);
 }
 
 void BaseButton::on_action_event(Ref<InputEvent> p_event) {
 	if (p_event->is_pressed()) {
 		status.press_attempt = true;
 		status.pressing_inside = true;
-		emit_signal("button_down");
+		emit_signal(SNAME("button_down"));
 	}
 
 	if (status.press_attempt && status.pressing_inside) {
 		if (toggle_mode) {
-			if ((p_event->is_pressed() && action_mode == ACTION_MODE_BUTTON_PRESS) || (!p_event->is_pressed() && action_mode == ACTION_MODE_BUTTON_RELEASE)) {
+			bool is_pressed = p_event->is_pressed();
+			if (Object::cast_to<InputEventShortcut>(*p_event)) {
+				is_pressed = false;
+			}
+			if ((is_pressed && action_mode == ACTION_MODE_BUTTON_PRESS) || (!is_pressed && action_mode == ACTION_MODE_BUTTON_RELEASE)) {
 				if (action_mode == ACTION_MODE_BUTTON_PRESS) {
 					status.press_attempt = false;
 					status.pressing_inside = false;
 				}
 				status.pressed = !status.pressed;
 				_unpress_group();
+				if (button_group.is_valid()) {
+					button_group->emit_signal(SNAME("pressed"), this);
+				}
 				_toggled(status.pressed);
 				_pressed();
 			}
@@ -172,10 +172,9 @@ void BaseButton::on_action_event(Ref<InputEvent> p_event) {
 				status.hovering = false;
 			}
 		}
-		// pressed state should be correct with button_up signal
-		emit_signal("button_up");
 		status.press_attempt = false;
 		status.pressing_inside = false;
+		emit_signal(SNAME("button_up"));
 	}
 
 	update();
@@ -218,8 +217,23 @@ void BaseButton::set_pressed(bool p_pressed) {
 
 	if (p_pressed) {
 		_unpress_group();
+		if (button_group.is_valid()) {
+			button_group->emit_signal(SNAME("pressed"), this);
+		}
 	}
 	_toggled(status.pressed);
+
+	update();
+}
+
+void BaseButton::set_pressed_no_signal(bool p_pressed) {
+	if (!toggle_mode) {
+		return;
+	}
+	if (status.pressed == p_pressed) {
+		return;
+	}
+	status.pressed = p_pressed;
 
 	update();
 }
@@ -324,14 +338,14 @@ Ref<Shortcut> BaseButton::get_shortcut() const {
 	return shortcut;
 }
 
-void BaseButton::_unhandled_key_input(Ref<InputEvent> p_event) {
+void BaseButton::unhandled_key_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
 	if (!_is_focus_owner_in_shorcut_context()) {
 		return;
 	}
 
-	if (!is_disabled() && is_visible_in_tree() && !p_event->is_echo() && shortcut.is_valid() && shortcut->is_shortcut(p_event)) {
+	if (!is_disabled() && is_visible_in_tree() && !p_event->is_echo() && shortcut.is_valid() && shortcut->matches_event(p_event)) {
 		on_action_event(p_event);
 		accept_event();
 	}
@@ -339,7 +353,7 @@ void BaseButton::_unhandled_key_input(Ref<InputEvent> p_event) {
 
 String BaseButton::get_tooltip(const Point2 &p_pos) const {
 	String tooltip = Control::get_tooltip(p_pos);
-	if (shortcut_in_tooltip && shortcut.is_valid() && shortcut->is_valid()) {
+	if (shortcut_in_tooltip && shortcut.is_valid() && shortcut->has_valid_event()) {
 		String text = shortcut->get_name() + " (" + shortcut->get_as_text() + ")";
 		if (tooltip != String() && shortcut->get_name().nocasecmp_to(tooltip) != 0) {
 			text += "\n" + tooltip;
@@ -389,14 +403,13 @@ bool BaseButton::_is_focus_owner_in_shorcut_context() const {
 	Control *vp_focus = get_focus_owner();
 
 	// If the context is valid and the viewport focus is valid, check if the context is the focus or is a parent of it.
-	return ctx_node && vp_focus && (ctx_node == vp_focus || ctx_node->is_a_parent_of(vp_focus));
+	return ctx_node && vp_focus && (ctx_node == vp_focus || ctx_node->is_ancestor_of(vp_focus));
 }
 
 void BaseButton::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_gui_input"), &BaseButton::_gui_input);
-	ClassDB::bind_method(D_METHOD("_unhandled_key_input"), &BaseButton::_unhandled_key_input);
 	ClassDB::bind_method(D_METHOD("set_pressed", "pressed"), &BaseButton::set_pressed);
 	ClassDB::bind_method(D_METHOD("is_pressed"), &BaseButton::is_pressed);
+	ClassDB::bind_method(D_METHOD("set_pressed_no_signal", "pressed"), &BaseButton::set_pressed_no_signal);
 	ClassDB::bind_method(D_METHOD("is_hovered"), &BaseButton::is_hovered);
 	ClassDB::bind_method(D_METHOD("set_toggle_mode", "enabled"), &BaseButton::set_toggle_mode);
 	ClassDB::bind_method(D_METHOD("is_toggle_mode"), &BaseButton::is_toggle_mode);
@@ -421,8 +434,8 @@ void BaseButton::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_shortcut_context", "node"), &BaseButton::set_shortcut_context);
 	ClassDB::bind_method(D_METHOD("get_shortcut_context"), &BaseButton::get_shortcut_context);
 
-	BIND_VMETHOD(MethodInfo("_pressed"));
-	BIND_VMETHOD(MethodInfo("_toggled", PropertyInfo(Variant::BOOL, "button_pressed")));
+	GDVIRTUAL_BIND(_pressed);
+	GDVIRTUAL_BIND(_toggled, "button_pressed");
 
 	ADD_SIGNAL(MethodInfo("pressed"));
 	ADD_SIGNAL(MethodInfo("button_up"));
@@ -487,6 +500,7 @@ BaseButton *ButtonGroup::get_pressed_button() {
 void ButtonGroup::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_pressed_button"), &ButtonGroup::get_pressed_button);
 	ClassDB::bind_method(D_METHOD("get_buttons"), &ButtonGroup::_get_buttons);
+	ADD_SIGNAL(MethodInfo("pressed", PropertyInfo(Variant::OBJECT, "button")));
 }
 
 ButtonGroup::ButtonGroup() {

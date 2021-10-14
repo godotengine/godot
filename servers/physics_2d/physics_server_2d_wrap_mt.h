@@ -56,19 +56,19 @@ class PhysicsServer2DWrapMT : public PhysicsServer2D {
 	SafeFlag exit;
 	Thread thread;
 	SafeFlag step_thread_up;
-	bool create_thread;
+	bool create_thread = false;
 
 	Semaphore step_sem;
-	int step_pending;
+	int step_pending = 0;
 	void thread_step(real_t p_delta);
 	void thread_flush();
 
 	void thread_exit();
 
-	bool first_frame;
+	bool first_frame = true;
 
 	Mutex alloc_mutex;
-	int pool_max_size;
+	int pool_max_size = 0;
 
 public:
 #define ServerName PhysicsServer2D
@@ -79,8 +79,8 @@ public:
 #include "servers/server_wrap_mt_common.h"
 
 	//FUNC1RID(shape,ShapeType); todo fix
-	FUNCRID(line_shape)
-	FUNCRID(ray_shape)
+	FUNCRID(world_boundary_shape)
+	FUNCRID(separation_ray_shape)
 	FUNCRID(segment_shape)
 	FUNCRID(circle_shape)
 	FUNCRID(rectangle_shape)
@@ -184,11 +184,9 @@ public:
 	FUNC4(body_add_shape, RID, RID, const Transform2D &, bool);
 	FUNC3(body_set_shape, RID, int, RID);
 	FUNC3(body_set_shape_transform, RID, int, const Transform2D &);
-	FUNC3(body_set_shape_metadata, RID, int, const Variant &);
 
 	FUNC1RC(int, body_get_shape_count, RID);
 	FUNC2RC(Transform2D, body_get_shape_transform, RID, int);
-	FUNC2RC(Variant, body_get_shape_metadata, RID, int);
 	FUNC2RC(RID, body_get_shape, RID, int);
 
 	FUNC3(body_set_shape_disabled, RID, int, bool);
@@ -212,8 +210,10 @@ public:
 	FUNC2(body_set_collision_mask, RID, uint32_t);
 	FUNC1RC(uint32_t, body_get_collision_mask, RID);
 
-	FUNC3(body_set_param, RID, BodyParameter, real_t);
-	FUNC2RC(real_t, body_get_param, RID, BodyParameter);
+	FUNC3(body_set_param, RID, BodyParameter, const Variant &);
+	FUNC2RC(Variant, body_get_param, RID, BodyParameter);
+
+	FUNC1(body_reset_mass_properties, RID);
 
 	FUNC3(body_set_state, RID, BodyState, const Variant &);
 	FUNC2RC(Variant, body_get_state, RID, BodyState);
@@ -245,6 +245,7 @@ public:
 	FUNC2(body_set_omit_force_integration, RID, bool);
 	FUNC1RC(bool, body_is_omitting_force_integration, RID);
 
+	FUNC3(body_set_state_sync_callback, RID, void *, BodyStateCallback);
 	FUNC3(body_set_force_integration_callback, RID, const Callable &, const Variant &);
 
 	bool body_collide_shape(RID p_body, int p_body_shape, RID p_shape, const Transform2D &p_shape_xform, const Vector2 &p_motion, Vector2 *r_results, int p_result_max, int &r_result_count) override {
@@ -253,14 +254,9 @@ public:
 
 	FUNC2(body_set_pickable, RID, bool);
 
-	bool body_test_motion(RID p_body, const Transform2D &p_from, const Vector2 &p_motion, bool p_infinite_inertia, real_t p_margin = 0.001, MotionResult *r_result = nullptr, bool p_exclude_raycast_shapes = true) override {
+	bool body_test_motion(RID p_body, const MotionParameters &p_parameters, MotionResult *r_result = nullptr) override {
 		ERR_FAIL_COND_V(main_thread != Thread::get_caller_id(), false);
-		return physics_2d_server->body_test_motion(p_body, p_from, p_motion, p_infinite_inertia, p_margin, r_result, p_exclude_raycast_shapes);
-	}
-
-	int body_test_ray_separation(RID p_body, const Transform2D &p_transform, bool p_infinite_inertia, Vector2 &r_recover_motion, SeparationResult *r_results, int p_result_max, real_t p_margin = 0.001) override {
-		ERR_FAIL_COND_V(main_thread != Thread::get_caller_id(), false);
-		return physics_2d_server->body_test_ray_separation(p_body, p_transform, p_infinite_inertia, r_recover_motion, r_results, p_result_max, p_margin);
+		return physics_2d_server->body_test_motion(p_body, p_parameters, r_result);
 	}
 
 	// this function only works on physics process, errors and returns null otherwise
@@ -303,6 +299,7 @@ public:
 
 	FUNC1(free, RID);
 	FUNC1(set_active, bool);
+	FUNC1(set_collision_iterations, int);
 
 	virtual void init() override;
 	virtual void step(real_t p_step) override;

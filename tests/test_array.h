@@ -39,6 +39,7 @@
 #include "core/variant/container_type_validate.h"
 #include "core/variant/variant.h"
 #include "tests/test_macros.h"
+#include "tests/test_tools.h"
 
 namespace TestArray {
 
@@ -168,6 +169,56 @@ TEST_CASE("[Array] push_front(), pop_front(), pop_back()") {
 	arr.pop_back();
 	CHECK(int(arr[1]) == 2);
 	CHECK(arr.size() == 2);
+}
+
+TEST_CASE("[Array] pop_at()") {
+	ErrorDetector ed;
+
+	Array arr;
+	arr.push_back(2);
+	arr.push_back(4);
+	arr.push_back(6);
+	arr.push_back(8);
+	arr.push_back(10);
+
+	REQUIRE(int(arr.pop_at(2)) == 6);
+	REQUIRE(arr.size() == 4);
+	CHECK(int(arr[0]) == 2);
+	CHECK(int(arr[1]) == 4);
+	CHECK(int(arr[2]) == 8);
+	CHECK(int(arr[3]) == 10);
+
+	REQUIRE(int(arr.pop_at(2)) == 8);
+	REQUIRE(arr.size() == 3);
+	CHECK(int(arr[0]) == 2);
+	CHECK(int(arr[1]) == 4);
+	CHECK(int(arr[2]) == 10);
+
+	// Negative index.
+	REQUIRE(int(arr.pop_at(-1)) == 10);
+	REQUIRE(arr.size() == 2);
+	CHECK(int(arr[0]) == 2);
+	CHECK(int(arr[1]) == 4);
+
+	// Invalid pop.
+	ed.clear();
+	ERR_PRINT_OFF;
+	const Variant ret = arr.pop_at(-15);
+	ERR_PRINT_ON;
+	REQUIRE(ret.is_null());
+	CHECK(ed.has_error);
+
+	REQUIRE(int(arr.pop_at(0)) == 2);
+	REQUIRE(arr.size() == 1);
+	CHECK(int(arr[0]) == 4);
+
+	REQUIRE(int(arr.pop_at(0)) == 4);
+	REQUIRE(arr.is_empty());
+
+	// Pop from empty array.
+	ed.clear();
+	REQUIRE(arr.pop_at(24).is_null());
+	CHECK_FALSE(ed.has_error);
 }
 
 TEST_CASE("[Array] max() and min()") {

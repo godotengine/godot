@@ -4,14 +4,15 @@ on: [push, pull_request]
 # Global Settings
 env:
   GODOT_BASE_BRANCH: master
-  SCONSFLAGS: platform=android verbose=yes warnings=extra werror=yes debug_symbols=no --jobs=2 module_text_server_fb_enabled=yes
-  SCONS_CACHE_LIMIT: 4096
-  ANDROID_NDK_VERSION: 21.1.6352462
+  SCONSFLAGS: verbose=yes warnings=extra werror=yes debug_symbols=no module_text_server_fb_enabled=yes
+
+concurrency:
+  group: ci-${{github.actor}}-${{github.head_ref || github.run_number}}-${{github.ref}}-android
+  cancel-in-progress: true
 
 jobs:
   android-template:
     runs-on: "ubuntu-20.04"
-
     name: Template (target=release, tools=no)
 
     steps:
@@ -24,57 +25,42 @@ jobs:
           sudo cp -f misc/ci/sources.list /etc/apt/sources.list
           sudo apt-get update
 
-      - name: Set up Java 8
+      - name: Set up Java 11
         uses: actions/setup-java@v1
         with:
-          java-version: 8
+          java-version: 11
 
-      - name: Install Android NDK r21
-        run: |
-          sudo ${ANDROID_HOME}/tools/bin/sdkmanager --install 'ndk;${{env.ANDROID_NDK_VERSION}}'
+      - name: Setup Godot build cache
+        uses: ./.github/actions/godot-cache
+        continue-on-error: true
 
-      # Upload cache on completion and check it out now
-      - name: Load .scons_cache directory
-        id: android-template-cache
-        uses: actions/cache@v2
+      - name: Setup python and scons
+        uses: ./.github/actions/godot-deps
+
+      - name: Compilation (armv7)
+        uses: ./.github/actions/godot-build
         with:
-          path: ${{github.workspace}}/.scons_cache/
-          key: ${{github.job}}-${{env.GODOT_BASE_BRANCH}}-${{github.ref}}-${{github.sha}}
-          restore-keys: |
-            ${{github.job}}-${{env.GODOT_BASE_BRANCH}}-${{github.ref}}-${{github.sha}}
-            ${{github.job}}-${{env.GODOT_BASE_BRANCH}}-${{github.ref}}
-            ${{github.job}}-${{env.GODOT_BASE_BRANCH}}
+          sconsflags: ${{ env.SCONSFLAGS }} android_arch=armv7
+          platform: android
+          target: release
+          tools: false
+          tests: false
 
-      # Use python 3.x release (works cross platform)
-      - name: Set up Python 3.x
-        uses: actions/setup-python@v2
+      - name: Compilation (arm64v8)
+        uses: ./.github/actions/godot-build
         with:
-          # Semantic version range syntax or exact version of a Python version
-          python-version: '3.x'
-          # Optional - x64 or x86 architecture, defaults to x64
-          architecture: 'x64'
+          sconsflags: ${{ env.SCONSFLAGS }} android_arch=arm64v8
+          platform: android
+          target: release
+          tools: false
+          tests: false
 
-      - name: Configuring Python packages
+      - name: Generate Godot templates
         run: |
-          python -c "import sys; print(sys.version)"
-          python -m pip install scons
-          python --version
-          scons --version
-
-      - name: Compilation
-        env:
-          SCONS_CACHE: ${{github.workspace}}/.scons_cache/
-          ANDROID_NDK_ROOT: /usr/local/lib/android/sdk/ndk/${{env.ANDROID_NDK_VERSION}}/
-        run: |
-          scons target=release tools=no android_arch=armv7
-          scons target=release tools=no android_arch=arm64v8
           cd platform/android/java
           ./gradlew generateGodotTemplates
           cd ../../..
           ls -l bin/
 
-      - uses: actions/upload-artifact@v2
-        with:
-          name: ${{ github.job }}
-          path: bin/*
-          retention-days: 14
+      - name: Upload artifact
+        uses: ./.github/actions/upload-artifact

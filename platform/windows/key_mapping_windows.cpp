@@ -47,7 +47,7 @@ static _WinTranslatePair _vk_to_keycode[] = {
 
 	{ KEY_SHIFT, VK_SHIFT }, //(0x10)
 
-	{ KEY_CONTROL, VK_CONTROL }, //(0x11)
+	{ KEY_CTRL, VK_CONTROL }, //(0x11)
 
 	{ KEY_ALT, VK_MENU }, //(0x12)
 
@@ -166,8 +166,8 @@ static _WinTranslatePair _vk_to_keycode[] = {
 	{ KEY_SCROLLLOCK, VK_SCROLL }, // (0x91)
 	{ KEY_SHIFT, VK_LSHIFT }, // (0xA0)
 	{ KEY_SHIFT, VK_RSHIFT }, // (0xA1)
-	{ KEY_CONTROL, VK_LCONTROL }, // (0xA2)
-	{ KEY_CONTROL, VK_RCONTROL }, // (0xA3)
+	{ KEY_CTRL, VK_LCONTROL }, // (0xA2)
+	{ KEY_CTRL, VK_RCONTROL }, // (0xA3)
 	{ KEY_MENU, VK_LMENU }, // (0xA4)
 	{ KEY_MENU, VK_RMENU }, // (0xA5)
 
@@ -265,7 +265,7 @@ static _WinTranslatePair _scancode_to_keycode[] = {
 	{ KEY_BRACELEFT, 0x1A },
 	{ KEY_BRACERIGHT, 0x1B },
 	{ KEY_ENTER, 0x1C },
-	{ KEY_CONTROL, 0x1D },
+	{ KEY_CTRL, 0x1D },
 	{ KEY_A, 0x1E },
 	{ KEY_S, 0x1F },
 	{ KEY_D, 0x20 },
@@ -345,6 +345,16 @@ unsigned int KeyMappingWindows::get_keysym(unsigned int p_code) {
 	return KEY_UNKNOWN;
 }
 
+unsigned int KeyMappingWindows::get_scancode(Key p_keycode) {
+	for (int i = 0; _scancode_to_keycode[i].keysym != KEY_UNKNOWN; i++) {
+		if (_scancode_to_keycode[i].keysym == p_keycode) {
+			return _scancode_to_keycode[i].keycode;
+		}
+	}
+
+	return 0;
+}
+
 unsigned int KeyMappingWindows::get_scansym(unsigned int p_code, bool p_extended) {
 	unsigned int keycode = KEY_UNKNOWN;
 	for (int i = 0; _scancode_to_keycode[i].keysym != KEY_UNKNOWN; i++) {
@@ -365,6 +375,8 @@ unsigned int KeyMappingWindows::get_scansym(unsigned int p_code, bool p_extended
 			case KEY_CAPSLOCK: {
 				keycode = KEY_KP_ADD;
 			} break;
+			default:
+				break;
 		}
 	} else {
 		switch (keycode) {
@@ -404,6 +416,8 @@ unsigned int KeyMappingWindows::get_scansym(unsigned int p_code, bool p_extended
 			case KEY_PRINT: {
 				keycode = KEY_KP_MULTIPLY;
 			} break;
+			default:
+				break;
 		}
 	}
 

@@ -28,282 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "variant.h"
-
-#include "core/core_string_names.h"
-#include "core/debugger/engine_debugger.h"
-#include "core/object/class_db.h"
-#include "core/templates/local_vector.h"
-#include "core/variant/variant_internal.h"
-
-/**** NAMED SETTERS AND GETTERS ****/
-
-#define SETGET_STRUCT(m_base_type, m_member_type, m_member)                                                                          \
-	struct VariantSetGet_##m_base_type##_##m_member {                                                                                \
-		static void get(const Variant *base, Variant *member) {                                                                      \
-			VariantTypeAdjust<m_member_type>::adjust(member);                                                                        \
-			*VariantGetInternalPtr<m_member_type>::get_ptr(member) = VariantGetInternalPtr<m_base_type>::get_ptr(base)->m_member;    \
-		}                                                                                                                            \
-		static void ptr_get(const void *base, void *member) {                                                                        \
-			PtrToArg<m_member_type>::encode(PtrToArg<m_base_type>::convert(base).m_member, member);                                  \
-		}                                                                                                                            \
-		static void set(Variant *base, const Variant *value, bool &valid) {                                                          \
-			if (value->get_type() == GetTypeInfo<m_member_type>::VARIANT_TYPE) {                                                     \
-				VariantGetInternalPtr<m_base_type>::get_ptr(base)->m_member = *VariantGetInternalPtr<m_member_type>::get_ptr(value); \
-				valid = true;                                                                                                        \
-			} else {                                                                                                                 \
-				valid = false;                                                                                                       \
-			}                                                                                                                        \
-		}                                                                                                                            \
-		static void validated_set(Variant *base, const Variant *value) {                                                             \
-			VariantGetInternalPtr<m_base_type>::get_ptr(base)->m_member = *VariantGetInternalPtr<m_member_type>::get_ptr(value);     \
-		}                                                                                                                            \
-		static void ptr_set(void *base, const void *member) {                                                                        \
-			m_base_type b = PtrToArg<m_base_type>::convert(base);                                                                    \
-			b.m_member = PtrToArg<m_member_type>::convert(member);                                                                   \
-			PtrToArg<m_base_type>::encode(b, base);                                                                                  \
-		}                                                                                                                            \
-		static Variant::Type get_type() { return GetTypeInfo<m_member_type>::VARIANT_TYPE; }                                         \
-	};
-
-#define SETGET_NUMBER_STRUCT(m_base_type, m_member_type, m_member)                                                                \
-	struct VariantSetGet_##m_base_type##_##m_member {                                                                             \
-		static void get(const Variant *base, Variant *member) {                                                                   \
-			VariantTypeAdjust<m_member_type>::adjust(member);                                                                     \
-			*VariantGetInternalPtr<m_member_type>::get_ptr(member) = VariantGetInternalPtr<m_base_type>::get_ptr(base)->m_member; \
-		}                                                                                                                         \
-		static void ptr_get(const void *base, void *member) {                                                                     \
-			PtrToArg<m_member_type>::encode(PtrToArg<m_base_type>::convert(base).m_member, member);                               \
-		}                                                                                                                         \
-		static void set(Variant *base, const Variant *value, bool &valid) {                                                       \
-			if (value->get_type() == Variant::FLOAT) {                                                                            \
-				VariantGetInternalPtr<m_base_type>::get_ptr(base)->m_member = *VariantGetInternalPtr<double>::get_ptr(value);     \
-				valid = true;                                                                                                     \
-			} else if (value->get_type() == Variant::INT) {                                                                       \
-				VariantGetInternalPtr<m_base_type>::get_ptr(base)->m_member = *VariantGetInternalPtr<int64_t>::get_ptr(value);    \
-				valid = true;                                                                                                     \
-			} else {                                                                                                              \
-				valid = false;                                                                                                    \
-			}                                                                                                                     \
-		}                                                                                                                         \
-		static void validated_set(Variant *base, const Variant *value) {                                                          \
-			VariantGetInternalPtr<m_base_type>::get_ptr(base)->m_member = *VariantGetInternalPtr<m_member_type>::get_ptr(value);  \
-		}                                                                                                                         \
-		static void ptr_set(void *base, const void *member) {                                                                     \
-			m_base_type b = PtrToArg<m_base_type>::convert(base);                                                                 \
-			b.m_member = PtrToArg<m_member_type>::convert(member);                                                                \
-			PtrToArg<m_base_type>::encode(b, base);                                                                               \
-		}                                                                                                                         \
-		static Variant::Type get_type() { return GetTypeInfo<m_member_type>::VARIANT_TYPE; }                                      \
-	};
-
-#define SETGET_STRUCT_CUSTOM(m_base_type, m_member_type, m_member, m_custom)                                                         \
-	struct VariantSetGet_##m_base_type##_##m_member {                                                                                \
-		static void get(const Variant *base, Variant *member) {                                                                      \
-			VariantTypeAdjust<m_member_type>::adjust(member);                                                                        \
-			*VariantGetInternalPtr<m_member_type>::get_ptr(member) = VariantGetInternalPtr<m_base_type>::get_ptr(base)->m_custom;    \
-		}                                                                                                                            \
-		static void ptr_get(const void *base, void *member) {                                                                        \
-			PtrToArg<m_member_type>::encode(PtrToArg<m_base_type>::convert(base).m_custom, member);                                  \
-		}                                                                                                                            \
-		static void set(Variant *base, const Variant *value, bool &valid) {                                                          \
-			if (value->get_type() == GetTypeInfo<m_member_type>::VARIANT_TYPE) {                                                     \
-				VariantGetInternalPtr<m_base_type>::get_ptr(base)->m_custom = *VariantGetInternalPtr<m_member_type>::get_ptr(value); \
-				valid = true;                                                                                                        \
-			} else {                                                                                                                 \
-				valid = false;                                                                                                       \
-			}                                                                                                                        \
-		}                                                                                                                            \
-		static void validated_set(Variant *base, const Variant *value) {                                                             \
-			VariantGetInternalPtr<m_base_type>::get_ptr(base)->m_custom = *VariantGetInternalPtr<m_member_type>::get_ptr(value);     \
-		}                                                                                                                            \
-		static void ptr_set(void *base, const void *member) {                                                                        \
-			m_base_type b = PtrToArg<m_base_type>::convert(base);                                                                    \
-			b.m_custom = PtrToArg<m_member_type>::convert(member);                                                                   \
-			PtrToArg<m_base_type>::encode(b, base);                                                                                  \
-		}                                                                                                                            \
-		static Variant::Type get_type() { return GetTypeInfo<m_member_type>::VARIANT_TYPE; }                                         \
-	};
-
-#define SETGET_NUMBER_STRUCT_CUSTOM(m_base_type, m_member_type, m_member, m_custom)                                               \
-	struct VariantSetGet_##m_base_type##_##m_member {                                                                             \
-		static void get(const Variant *base, Variant *member) {                                                                   \
-			VariantTypeAdjust<m_member_type>::adjust(member);                                                                     \
-			*VariantGetInternalPtr<m_member_type>::get_ptr(member) = VariantGetInternalPtr<m_base_type>::get_ptr(base)->m_custom; \
-		}                                                                                                                         \
-		static void ptr_get(const void *base, void *member) {                                                                     \
-			PtrToArg<m_member_type>::encode(PtrToArg<m_base_type>::convert(base).m_custom, member);                               \
-		}                                                                                                                         \
-		static void set(Variant *base, const Variant *value, bool &valid) {                                                       \
-			if (value->get_type() == Variant::FLOAT) {                                                                            \
-				VariantGetInternalPtr<m_base_type>::get_ptr(base)->m_custom = *VariantGetInternalPtr<double>::get_ptr(value);     \
-				valid = true;                                                                                                     \
-			} else if (value->get_type() == Variant::INT) {                                                                       \
-				VariantGetInternalPtr<m_base_type>::get_ptr(base)->m_custom = *VariantGetInternalPtr<int64_t>::get_ptr(value);    \
-				valid = true;                                                                                                     \
-			} else {                                                                                                              \
-				valid = false;                                                                                                    \
-			}                                                                                                                     \
-		}                                                                                                                         \
-		static void validated_set(Variant *base, const Variant *value) {                                                          \
-			VariantGetInternalPtr<m_base_type>::get_ptr(base)->m_custom = *VariantGetInternalPtr<m_member_type>::get_ptr(value);  \
-		}                                                                                                                         \
-		static void ptr_set(void *base, const void *member) {                                                                     \
-			m_base_type b = PtrToArg<m_base_type>::convert(base);                                                                 \
-			b.m_custom = PtrToArg<m_member_type>::convert(member);                                                                \
-			PtrToArg<m_base_type>::encode(b, base);                                                                               \
-		}                                                                                                                         \
-		static Variant::Type get_type() { return GetTypeInfo<m_member_type>::VARIANT_TYPE; }                                      \
-	};
-
-#define SETGET_STRUCT_FUNC(m_base_type, m_member_type, m_member, m_setter, m_getter)                                                \
-	struct VariantSetGet_##m_base_type##_##m_member {                                                                               \
-		static void get(const Variant *base, Variant *member) {                                                                     \
-			VariantTypeAdjust<m_member_type>::adjust(member);                                                                       \
-			*VariantGetInternalPtr<m_member_type>::get_ptr(member) = VariantGetInternalPtr<m_base_type>::get_ptr(base)->m_getter(); \
-		}                                                                                                                           \
-		static void ptr_get(const void *base, void *member) {                                                                       \
-			PtrToArg<m_member_type>::encode(PtrToArg<m_base_type>::convert(base).m_getter(), member);                               \
-		}                                                                                                                           \
-		static void set(Variant *base, const Variant *value, bool &valid) {                                                         \
-			if (value->get_type() == GetTypeInfo<m_member_type>::VARIANT_TYPE) {                                                    \
-				VariantGetInternalPtr<m_base_type>::get_ptr(base)->m_setter(*VariantGetInternalPtr<m_member_type>::get_ptr(value)); \
-				valid = true;                                                                                                       \
-			} else {                                                                                                                \
-				valid = false;                                                                                                      \
-			}                                                                                                                       \
-		}                                                                                                                           \
-		static void validated_set(Variant *base, const Variant *value) {                                                            \
-			VariantGetInternalPtr<m_base_type>::get_ptr(base)->m_setter(*VariantGetInternalPtr<m_member_type>::get_ptr(value));     \
-		}                                                                                                                           \
-		static void ptr_set(void *base, const void *member) {                                                                       \
-			m_base_type b = PtrToArg<m_base_type>::convert(base);                                                                   \
-			b.m_setter(PtrToArg<m_member_type>::convert(member));                                                                   \
-			PtrToArg<m_base_type>::encode(b, base);                                                                                 \
-		}                                                                                                                           \
-		static Variant::Type get_type() { return GetTypeInfo<m_member_type>::VARIANT_TYPE; }                                        \
-	};
-
-#define SETGET_NUMBER_STRUCT_FUNC(m_base_type, m_member_type, m_member, m_setter, m_getter)                                         \
-	struct VariantSetGet_##m_base_type##_##m_member {                                                                               \
-		static void get(const Variant *base, Variant *member) {                                                                     \
-			VariantTypeAdjust<m_member_type>::adjust(member);                                                                       \
-			*VariantGetInternalPtr<m_member_type>::get_ptr(member) = VariantGetInternalPtr<m_base_type>::get_ptr(base)->m_getter(); \
-		}                                                                                                                           \
-		static void ptr_get(const void *base, void *member) {                                                                       \
-			PtrToArg<m_member_type>::encode(PtrToArg<m_base_type>::convert(base).m_getter(), member);                               \
-		}                                                                                                                           \
-		static void set(Variant *base, const Variant *value, bool &valid) {                                                         \
-			if (value->get_type() == Variant::FLOAT) {                                                                              \
-				VariantGetInternalPtr<m_base_type>::get_ptr(base)->m_setter(*VariantGetInternalPtr<double>::get_ptr(value));        \
-				valid = true;                                                                                                       \
-			} else if (value->get_type() == Variant::INT) {                                                                         \
-				VariantGetInternalPtr<m_base_type>::get_ptr(base)->m_setter(*VariantGetInternalPtr<int64_t>::get_ptr(value));       \
-				valid = true;                                                                                                       \
-			} else {                                                                                                                \
-				valid = false;                                                                                                      \
-			}                                                                                                                       \
-		}                                                                                                                           \
-		static void validated_set(Variant *base, const Variant *value) {                                                            \
-			VariantGetInternalPtr<m_base_type>::get_ptr(base)->m_setter(*VariantGetInternalPtr<m_member_type>::get_ptr(value));     \
-		}                                                                                                                           \
-		static void ptr_set(void *base, const void *member) {                                                                       \
-			m_base_type b = PtrToArg<m_base_type>::convert(base);                                                                   \
-			b.m_setter(PtrToArg<m_member_type>::convert(member));                                                                   \
-			PtrToArg<m_base_type>::encode(b, base);                                                                                 \
-		}                                                                                                                           \
-		static Variant::Type get_type() { return GetTypeInfo<m_member_type>::VARIANT_TYPE; }                                        \
-	};
-
-#define SETGET_STRUCT_FUNC_INDEX(m_base_type, m_member_type, m_member, m_setter, m_getter, m_index)                                          \
-	struct VariantSetGet_##m_base_type##_##m_member {                                                                                        \
-		static void get(const Variant *base, Variant *member) {                                                                              \
-			VariantTypeAdjust<m_member_type>::adjust(member);                                                                                \
-			*VariantGetInternalPtr<m_member_type>::get_ptr(member) = VariantGetInternalPtr<m_base_type>::get_ptr(base)->m_getter(m_index);   \
-		}                                                                                                                                    \
-		static void ptr_get(const void *base, void *member) {                                                                                \
-			PtrToArg<m_member_type>::encode(PtrToArg<m_base_type>::convert(base).m_getter(m_index), member);                                 \
-		}                                                                                                                                    \
-		static void set(Variant *base, const Variant *value, bool &valid) {                                                                  \
-			if (value->get_type() == GetTypeInfo<m_member_type>::VARIANT_TYPE) {                                                             \
-				VariantGetInternalPtr<m_base_type>::get_ptr(base)->m_setter(m_index, *VariantGetInternalPtr<m_member_type>::get_ptr(value)); \
-				valid = true;                                                                                                                \
-			} else {                                                                                                                         \
-				valid = false;                                                                                                               \
-			}                                                                                                                                \
-		}                                                                                                                                    \
-		static void validated_set(Variant *base, const Variant *value) {                                                                     \
-			VariantGetInternalPtr<m_base_type>::get_ptr(base)->m_setter(m_index, *VariantGetInternalPtr<m_member_type>::get_ptr(value));     \
-		}                                                                                                                                    \
-		static void ptr_set(void *base, const void *member) {                                                                                \
-			m_base_type b = PtrToArg<m_base_type>::convert(base);                                                                            \
-			b.m_setter(m_index, PtrToArg<m_member_type>::convert(member));                                                                   \
-			PtrToArg<m_base_type>::encode(b, base);                                                                                          \
-		}                                                                                                                                    \
-		static Variant::Type get_type() { return GetTypeInfo<m_member_type>::VARIANT_TYPE; }                                                 \
-	};
-
-SETGET_NUMBER_STRUCT(Vector2, double, x)
-SETGET_NUMBER_STRUCT(Vector2, double, y)
-
-SETGET_NUMBER_STRUCT(Vector2i, int64_t, x)
-SETGET_NUMBER_STRUCT(Vector2i, int64_t, y)
-
-SETGET_NUMBER_STRUCT(Vector3, double, x)
-SETGET_NUMBER_STRUCT(Vector3, double, y)
-SETGET_NUMBER_STRUCT(Vector3, double, z)
-
-SETGET_NUMBER_STRUCT(Vector3i, int64_t, x)
-SETGET_NUMBER_STRUCT(Vector3i, int64_t, y)
-SETGET_NUMBER_STRUCT(Vector3i, int64_t, z)
-
-SETGET_STRUCT(Rect2, Vector2, position)
-SETGET_STRUCT(Rect2, Vector2, size)
-SETGET_STRUCT_FUNC(Rect2, Vector2, end, set_end, get_end)
-
-SETGET_STRUCT(Rect2i, Vector2i, position)
-SETGET_STRUCT(Rect2i, Vector2i, size)
-SETGET_STRUCT_FUNC(Rect2i, Vector2i, end, set_end, get_end)
-
-SETGET_STRUCT(AABB, Vector3, position)
-SETGET_STRUCT(AABB, Vector3, size)
-SETGET_STRUCT_FUNC(AABB, Vector3, end, set_end, get_end)
-
-SETGET_STRUCT_CUSTOM(Transform2D, Vector2, x, elements[0])
-SETGET_STRUCT_CUSTOM(Transform2D, Vector2, y, elements[1])
-SETGET_STRUCT_CUSTOM(Transform2D, Vector2, origin, elements[2])
-
-SETGET_NUMBER_STRUCT_CUSTOM(Plane, double, x, normal.x)
-SETGET_NUMBER_STRUCT_CUSTOM(Plane, double, y, normal.y)
-SETGET_NUMBER_STRUCT_CUSTOM(Plane, double, z, normal.z)
-SETGET_STRUCT(Plane, Vector3, normal)
-SETGET_NUMBER_STRUCT(Plane, double, d)
-
-SETGET_NUMBER_STRUCT(Quat, double, x)
-SETGET_NUMBER_STRUCT(Quat, double, y)
-SETGET_NUMBER_STRUCT(Quat, double, z)
-SETGET_NUMBER_STRUCT(Quat, double, w)
-
-SETGET_STRUCT_FUNC_INDEX(Basis, Vector3, x, set_axis, get_axis, 0)
-SETGET_STRUCT_FUNC_INDEX(Basis, Vector3, y, set_axis, get_axis, 1)
-SETGET_STRUCT_FUNC_INDEX(Basis, Vector3, z, set_axis, get_axis, 2)
-
-SETGET_STRUCT(Transform, Basis, basis)
-SETGET_STRUCT(Transform, Vector3, origin)
-
-SETGET_NUMBER_STRUCT(Color, double, r)
-SETGET_NUMBER_STRUCT(Color, double, g)
-SETGET_NUMBER_STRUCT(Color, double, b)
-SETGET_NUMBER_STRUCT(Color, double, a)
-
-SETGET_NUMBER_STRUCT_FUNC(Color, int64_t, r8, set_r8, get_r8)
-SETGET_NUMBER_STRUCT_FUNC(Color, int64_t, g8, set_g8, get_g8)
-SETGET_NUMBER_STRUCT_FUNC(Color, int64_t, b8, set_b8, get_b8)
-SETGET_NUMBER_STRUCT_FUNC(Color, int64_t, a8, set_a8, get_a8)
-
-SETGET_NUMBER_STRUCT_FUNC(Color, double, h, set_h, get_h)
-SETGET_NUMBER_STRUCT_FUNC(Color, double, s, set_s, get_s)
-SETGET_NUMBER_STRUCT_FUNC(Color, double, v, set_v, get_v)
+#include "variant_setget.h"
 
 struct VariantSetterGetterInfo {
 	void (*setter)(Variant *base, const Variant *value, bool &valid);
@@ -326,7 +51,7 @@ static void register_member(Variant::Type p_type, const StringName &p_member) {
 	sgi.ptr_setter = T::ptr_set;
 
 	sgi.getter = T::get;
-	sgi.validated_getter = T::get;
+	sgi.validated_getter = T::validated_get;
 	sgi.ptr_getter = T::ptr_get;
 
 	sgi.member_type = T::get_type();
@@ -374,17 +99,17 @@ void register_named_setters_getters() {
 	REGISTER_MEMBER(Plane, d);
 	REGISTER_MEMBER(Plane, normal);
 
-	REGISTER_MEMBER(Quat, x);
-	REGISTER_MEMBER(Quat, y);
-	REGISTER_MEMBER(Quat, z);
-	REGISTER_MEMBER(Quat, w);
+	REGISTER_MEMBER(Quaternion, x);
+	REGISTER_MEMBER(Quaternion, y);
+	REGISTER_MEMBER(Quaternion, z);
+	REGISTER_MEMBER(Quaternion, w);
 
 	REGISTER_MEMBER(Basis, x);
 	REGISTER_MEMBER(Basis, y);
 	REGISTER_MEMBER(Basis, z);
 
-	REGISTER_MEMBER(Transform, basis);
-	REGISTER_MEMBER(Transform, origin);
+	REGISTER_MEMBER(Transform3D, basis);
+	REGISTER_MEMBER(Transform3D, origin);
 
 	REGISTER_MEMBER(Color, r);
 	REGISTER_MEMBER(Color, g);
@@ -514,7 +239,8 @@ void Variant::set_named(const StringName &p_member, const Variant &p_value, bool
 			*v = p_value;
 			r_valid = true;
 		} else {
-			r_valid = false;
+			VariantGetInternalPtr<Dictionary>::get_ptr(this)->operator[](p_member) = p_value;
+			r_valid = true;
 		}
 
 	} else {
@@ -936,6 +662,91 @@ struct VariantIndexedSetGet_Array {
 	static uint64_t get_indexed_size(const Variant *base) { return 0; }
 };
 
+struct VariantIndexedSetGet_String {
+	static void get(const Variant *base, int64_t index, Variant *value, bool *oob) {
+		int64_t length = VariantGetInternalPtr<String>::get_ptr(base)->length();
+		if (index < 0) {
+			index += length;
+		}
+		if (index < 0 || index >= length) {
+			*oob = true;
+			return;
+		}
+		char32_t result = (*VariantGetInternalPtr<String>::get_ptr(base))[index];
+		*value = String(&result, 1);
+		*oob = false;
+	}
+	static void ptr_get(const void *base, int64_t index, void *member) {
+		/* avoid ptrconvert for performance*/
+		const String &v = *reinterpret_cast<const String *>(base);
+		if (index < 0) {
+			index += v.length();
+		}
+		OOB_TEST(index, v.length());
+		char32_t c = v[index];
+		PtrToArg<String>::encode(String(&c, 1), member);
+	}
+	static void set(Variant *base, int64_t index, const Variant *value, bool *valid, bool *oob) {
+		if (value->get_type() != Variant::STRING) {
+			*oob = false;
+			*valid = false;
+			return;
+		}
+		int64_t length = VariantGetInternalPtr<String>::get_ptr(base)->length();
+		if (index < 0) {
+			index += length;
+		}
+		if (index < 0 || index >= length) {
+			*oob = true;
+			*valid = false;
+			return;
+		}
+		String *b = VariantGetInternalPtr<String>::get_ptr(base);
+		const String *v = VariantInternal::get_string(value);
+		if (v->length() == 0) {
+			b->remove(index);
+		} else {
+			b->set(index, v->get(0));
+		}
+		*oob = false;
+		*valid = true;
+	}
+	static void validated_set(Variant *base, int64_t index, const Variant *value, bool *oob) {
+		int64_t length = VariantGetInternalPtr<String>::get_ptr(base)->length();
+		if (index < 0) {
+			index += length;
+		}
+		if (index < 0 || index >= length) {
+			*oob = true;
+			return;
+		}
+		String *b = VariantGetInternalPtr<String>::get_ptr(base);
+		const String *v = VariantInternal::get_string(value);
+		if (v->length() == 0) {
+			b->remove(index);
+		} else {
+			b->set(index, v->get(0));
+		}
+		*oob = false;
+	}
+	static void ptr_set(void *base, int64_t index, const void *member) {
+		/* avoid ptrconvert for performance*/
+		String &v = *reinterpret_cast<String *>(base);
+		if (index < 0) {
+			index += v.length();
+		}
+		OOB_TEST(index, v.length());
+		const String &m = *reinterpret_cast<const String *>(member);
+		if (unlikely(m.length() == 0)) {
+			v.remove(index);
+		} else {
+			v.set(index, m.unicode_at(0));
+		}
+	}
+	static Variant::Type get_index_type() { return Variant::STRING; }
+	static uint64_t get_indexed_size(const Variant *base) { return VariantInternal::get_string(base)->length(); }
+};
+
 #define INDEXED_SETGET_STRUCT_DICT(m_base_type)                                                                                     \
 	struct VariantIndexedSetGet_##m_base_type {                                                                                     \
 		static void get(const Variant *base, int64_t index, Variant *value, bool *oob) {                                            \
@@ -975,7 +786,7 @@ INDEXED_SETGET_STRUCT_BULTIN_NUMERIC(Vector2, double, real_t, 2)
 INDEXED_SETGET_STRUCT_BULTIN_NUMERIC(Vector2i, int64_t, int32_t, 2)
 INDEXED_SETGET_STRUCT_BULTIN_NUMERIC(Vector3, double, real_t, 3)
 INDEXED_SETGET_STRUCT_BULTIN_NUMERIC(Vector3i, int64_t, int32_t, 3)
-INDEXED_SETGET_STRUCT_BULTIN_NUMERIC(Quat, double, real_t, 4)
+INDEXED_SETGET_STRUCT_BULTIN_NUMERIC(Quaternion, double, real_t, 4)
 INDEXED_SETGET_STRUCT_BULTIN_NUMERIC(Color, double, float, 4)
 
 INDEXED_SETGET_STRUCT_BULTIN_ACCESSOR(Transform2D, Vector2, .elements, 3)
@@ -1033,11 +844,12 @@ static void register_indexed_member(Variant::Type p_type) {
 void register_indexed_setters_getters() {
 #define REGISTER_INDEXED_MEMBER(m_base_type) register_indexed_member<VariantIndexedSetGet_##m_base_type>(GetTypeInfo<m_base_type>::VARIANT_TYPE)
 
+	REGISTER_INDEXED_MEMBER(String);
 	REGISTER_INDEXED_MEMBER(Vector2);
 	REGISTER_INDEXED_MEMBER(Vector2i);
 	REGISTER_INDEXED_MEMBER(Vector3);
 	REGISTER_INDEXED_MEMBER(Vector3i);
-	REGISTER_INDEXED_MEMBER(Quat);
+	REGISTER_INDEXED_MEMBER(Quaternion);
 	REGISTER_INDEXED_MEMBER(Color);
 	REGISTER_INDEXED_MEMBER(Transform2D);
 	REGISTER_INDEXED_MEMBER(Basis);
@@ -1146,7 +958,7 @@ struct VariantKeyedSetGetDictionary {
 		*r_valid = true;
 		return VariantGetInternalPtr<Dictionary>::get_ptr(base)->has(*key);
 	}
-	static bool ptr_has(const void *base, const void *key) {
+	static uint32_t ptr_has(const void *base, const void *key) {
 		/* avoid ptrconvert for performance*/
 		const Dictionary &v = *reinterpret_cast<const Dictionary *>(base);
 		return v.has(PtrToArg<Variant>::convert(key));
@@ -1196,7 +1008,7 @@ struct VariantKeyedSetGetObject {
 		obj->getvar(*key, &exists);
 		return exists;
 	}
-	static bool ptr_has(const void *base, const void *key) {
+	static uint32_t ptr_has(const void *base, const void *key) {
 		const Object *obj = PtrToArg<Object *>::convert(base);
 		ERR_FAIL_COND_V(!obj, false);
 		bool valid;
@@ -1368,9 +1180,9 @@ void Variant::get_property_list(List<PropertyInfo> *p_list) const {
 		const Dictionary *dic = reinterpret_cast<const Dictionary *>(_data._mem);
 		List<Variant> keys;
 		dic->get_key_list(&keys);
-		for (List<Variant>::Element *E = keys.front(); E; E = E->next()) {
-			if (E->get().get_type() == Variant::STRING) {
-				p_list->push_back(PropertyInfo(Variant::STRING, E->get()));
+		for (const Variant &E : keys) {
+			if (E.get_type() == Variant::STRING) {
+				p_list->push_back(PropertyInfo(Variant::STRING, E));
 			}
 		}
 	} else if (type == OBJECT) {
@@ -1381,10 +1193,10 @@ void Variant::get_property_list(List<PropertyInfo> *p_list) const {
 	} else {
 		List<StringName> members;
 		get_member_list(type, &members);
-		for (List<StringName>::Element *E = members.front(); E; E = E->next()) {
+		for (const StringName &E : members) {
 			PropertyInfo pi;
-			pi.name = E->get();
-			pi.type = get_member_type(type, E->get());
+			pi.name = E;
+			pi.type = get_member_type(type, E);
 			p_list->push_back(pi);
 		}
 	}
@@ -1453,7 +1265,7 @@ bool Variant::iter_init(Variant &r_iter, bool &valid) const {
 
 #ifdef DEBUG_ENABLED
 
-			if (EngineDebugger::is_active() && !_get_obj().id.is_reference() && ObjectDB::get_instance(_get_obj().id) == nullptr) {
+			if (EngineDebugger::is_active() && !_get_obj().id.is_ref_counted() && ObjectDB::get_instance(_get_obj().id) == nullptr) {
 				valid = false;
 				return false;
 			}
@@ -1680,7 +1492,7 @@ bool Variant::iter_next(Variant &r_iter, bool &valid) const {
 
 #ifdef DEBUG_ENABLED
 
-			if (EngineDebugger::is_active() && !_get_obj().id.is_reference() && ObjectDB::get_instance(_get_obj().id) == nullptr) {
+			if (EngineDebugger::is_active() && !_get_obj().id.is_ref_counted() && ObjectDB::get_instance(_get_obj().id) == nullptr) {
 				valid = false;
 				return false;
 			}
@@ -1865,7 +1677,7 @@ Variant Variant::iter_get(const Variant &r_iter, bool &r_valid) const {
 				return Variant();
 			}
 #ifdef DEBUG_ENABLED
-			if (EngineDebugger::is_active() && !_get_obj().id.is_reference() && ObjectDB::get_instance(_get_obj().id) == nullptr) {
+			if (EngineDebugger::is_active() && !_get_obj().id.is_ref_counted() && ObjectDB::get_instance(_get_obj().id) == nullptr) {
 				r_valid = false;
 				return Variant();
 			}
@@ -2135,10 +1947,10 @@ void Variant::blend(const Variant &a, const Variant &b, float c, Variant &r_dst)
 			r_dst = ::AABB(ra->position + rb->position * c, ra->size + rb->size * c);
 		}
 			return;
-		case QUAT: {
-			Quat empty_rot;
-			const Quat *qa = reinterpret_cast<const Quat *>(a._data._mem);
-			const Quat *qb = reinterpret_cast<const Quat *>(b._data._mem);
+		case QUATERNION: {
+			Quaternion empty_rot;
+			const Quaternion *qa = reinterpret_cast<const Quaternion *>(a._data._mem);
+			const Quaternion *qb = reinterpret_cast<const Quaternion *>(b._data._mem);
 			r_dst = *qa * empty_rot.slerp(*qb, c);
 		}
 			return;
@@ -2295,8 +2107,8 @@ void Variant::interpolate(const Variant &a, const Variant &b, float c, Variant &
 			r_dst = a;
 		}
 			return;
-		case QUAT: {
-			r_dst = reinterpret_cast<const Quat *>(a._data._mem)->slerp(*reinterpret_cast<const Quat *>(b._data._mem), c);
+		case QUATERNION: {
+			r_dst = reinterpret_cast<const Quaternion *>(a._data._mem)->slerp(*reinterpret_cast<const Quaternion *>(b._data._mem), c);
 		}
 			return;
 		case AABB: {
@@ -2304,11 +2116,11 @@ void Variant::interpolate(const Variant &a, const Variant &b, float c, Variant &
 		}
 			return;
 		case BASIS: {
-			r_dst = Transform(*a._data._basis).interpolate_with(Transform(*b._data._basis), c).basis;
+			r_dst = Transform3D(*a._data._basis).interpolate_with(Transform3D(*b._data._basis), c).basis;
 		}
 			return;
-		case TRANSFORM: {
-			r_dst = a._data._transform->interpolate_with(*b._data._transform, c);
+		case TRANSFORM3D: {
+			r_dst = a._data._transform3d->interpolate_with(*b._data._transform3d, c);
 		}
 			return;
 		case COLOR: {

@@ -4,17 +4,78 @@
 		A node that will attach to a bone.
 	</brief_description>
 	<description>
-		This node must be the child of a [Skeleton3D] node. You can then select a bone for this node to attach to. The BoneAttachment3D node will copy the transform of the selected bone.
+		This node will allow you to select a bone for this node to attach to. The BoneAttachment3D node can copy the transform of the select bone, or can override the transform of the selected bone.
+		The BoneAttachment3D node must either be a child of a [Skeleton3D] node or be given an external [Skeleton3D] to use in order to function properly.
 	</description>
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="get_external_skeleton" qualifiers="const">
+			<return type="NodePath" />
+			<description>
+				Returns the [NodePath] to the external [Skeleton3D] node, if one has been set.
+			</description>
+		</method>
+		<method name="get_override_mode" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the override mode for the BoneAttachment3D node.
+			</description>
+		</method>
+		<method name="get_override_pose" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns whether the BoneAttachment3D node is overriding the bone pose of the bone it's attached to.
+			</description>
+		</method>
+		<method name="get_use_external_skeleton" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns whether the BoneAttachment3D node is using an external [Skeleton3D] rather than attempting to use its parent node as the [Skeleton3D].
+			</description>
+		</method>
+		<method name="on_bone_pose_update">
+			<return type="void" />
+			<argument index="0" name="bone_index" type="int" />
+			<description>
+				A function that is called automatically when the [Skeleton3D] the BoneAttachment3D node is using has a bone that has changed its pose. This function is where the BoneAttachment3D node updates its position so it is correctly bound when it is [i]not[/i] set to override the bone pose.
+			</description>
+		</method>
+		<method name="set_external_skeleton">
+			<return type="void" />
+			<argument index="0" name="external_skeleton" type="NodePath" />
+			<description>
+				Sets the [NodePath] to the external skeleton that the BoneAttachment3D node should use. The external [Skeleton3D] node is only used when [code]use_external_skeleton[/code] is set to [code]true[/code].
+			</description>
+		</method>
+		<method name="set_override_mode">
+			<return type="void" />
+			<argument index="0" name="override_mode" type="int" />
+			<description>
+				Sets the override mode for the BoneAttachment3D node. The override mode defines which of the bone poses the BoneAttachment3D node will override.
+			</description>
+		</method>
+		<method name="set_override_pose">
+			<return type="void" />
+			<argument index="0" name="override_pose" type="bool" />
+			<description>
+				Sets whether the BoneAttachment3D node will override the bone pose of the bone it is attached to. When set to [code]true[/code], the BoneAttachment3D node can change the pose of the bone.
+			</description>
+		</method>
+		<method name="set_use_external_skeleton">
+			<return type="void" />
+			<argument index="0" name="use_external_skeleton" type="bool" />
+			<description>
+				Sets whether the BoneAttachment3D node will use an extenral [Skeleton3D] node rather than attenpting to use its parent node as the [Skeleton3D]. When set to [code]true[/code], the BoneAttachment3D node will use the external [Skeleton3D] node set in [code]set_external_skeleton[/code].
+			</description>
+		</method>
 	</methods>
 	<members>
+		<member name="bone_idx" type="int" setter="set_bone_idx" getter="get_bone_idx" default="-1">
+			The index of the attached bone.
+		</member>
 		<member name="bone_name" type="String" setter="set_bone_name" getter="get_bone_name" default="&quot;&quot;">
 			The name of the attached bone.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

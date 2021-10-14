@@ -30,7 +30,7 @@
 
 #include "os_linuxbsd.h"
 
-#include "core/os/dir_access.h"
+#include "core/io/dir_access.h"
 #include "main/main.h"
 
 #ifdef X11_ENABLED
@@ -50,6 +50,70 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
+
+void OS_LinuxBSD::alert(const String &p_alert, const String &p_title) {
+	const char *message_programs[] = { "zenity", "kdialog", "Xdialog", "xmessage" };
+
+	String path = get_environment("PATH");
+	Vector<String> path_elems = path.split(":", false);
+	String program;
+
+	for (int i = 0; i < path_elems.size(); i++) {
+		for (uint64_t k = 0; k < sizeof(message_programs) / sizeof(char *); k++) {
+			String tested_path = path_elems[i].plus_file(message_programs[k]);
+
+			if (FileAccess::exists(tested_path)) {
+				program = tested_path;
+				break;
+			}
+		}
+
+		if (program.length()) {
+			break;
+		}
+	}
+
+	List<String> args;
+
+	if (program.ends_with("zenity")) {
+		args.push_back("--error");
+		args.push_back("--width");
+		args.push_back("500");
+		args.push_back("--title");
+		args.push_back(p_title);
+		args.push_back("--text");
+		args.push_back(p_alert);
+	}
+
+	if (program.ends_with("kdialog")) {
+		args.push_back("--error");
+		args.push_back(p_alert);
+		args.push_back("--title");
+		args.push_back(p_title);
+	}
+
+	if (program.ends_with("Xdialog")) {
+		args.push_back("--title");
+		args.push_back(p_title);
+		args.push_back("--msgbox");
+		args.push_back(p_alert);
+		args.push_back("0");
+		args.push_back("0");
+	}
+
+	if (program.ends_with("xmessage")) {
+		args.push_back("-center");
+		args.push_back("-title");
+		args.push_back(p_title);
+		args.push_back(p_alert);
+	}
+
+	if (program.length()) {
+		execute(program, args);
+	} else {
+		print_line(p_alert);
+	}
+}
 
 void OS_LinuxBSD::initialize() {
 	crash_handler.initialize();
@@ -116,6 +180,8 @@ String OS_LinuxBSD::get_name() const {
 	return "FreeBSD";
 #elif defined(__NetBSD__)
 	return "NetBSD";
+#elif defined(__OpenBSD__)
+	return "OpenBSD";
 #else
 	return "BSD";
 #endif
@@ -164,7 +230,12 @@ bool OS_LinuxBSD::_check_internal_feature_support(const String &p_feature) {
 
 String OS_LinuxBSD::get_config_path() const {
 	if (has_environment("XDG_CONFIG_HOME")) {
-		return get_environment("XDG_CONFIG_HOME");
+		if (get_environment("XDG_CONFIG_HOME").is_absolute_path()) {
+			return get_environment("XDG_CONFIG_HOME");
+		} else {
+			WARN_PRINT_ONCE("`XDG_CONFIG_HOME` is a relative path. Ignoring its value and falling back to `$HOME/.config` or `.` per the XDG Base Directory specification.");
+			return has_environment("HOME") ? get_environment("HOME").plus_file(".config") : ".";
+		}
 	} else if (has_environment("HOME")) {
 		return get_environment("HOME").plus_file(".config");
 	} else {
@@ -174,7 +245,12 @@ String OS_LinuxBSD::get_config_path() const {
 
 String OS_LinuxBSD::get_data_path() const {
 	if (has_environment("XDG_DATA_HOME")) {
-		return get_environment("XDG_DATA_HOME");
+		if (get_environment("XDG_DATA_HOME").is_absolute_path()) {
+			return get_environment("XDG_DATA_HOME");
+		} else {
+			WARN_PRINT_ONCE("`XDG_DATA_HOME` is a relative path. Ignoring its value and falling back to `$HOME/.local/share` or `get_config_path()` per the XDG Base Directory specification.");
+			return has_environment("HOME") ? get_environment("HOME").plus_file(".local/share") : get_config_path();
+		}
 	} else if (has_environment("HOME")) {
 		return get_environment("HOME").plus_file(".local/share");
 	} else {
@@ -184,7 +260,12 @@ String OS_LinuxBSD::get_data_path() const {
 
 String OS_LinuxBSD::get_cache_path() const {
 	if (has_environment("XDG_CACHE_HOME")) {
-		return get_environment("XDG_CACHE_HOME");
+		if (get_environment("XDG_CACHE_HOME").is_absolute_path()) {
+			return get_environment("XDG_CACHE_HOME");
+		} else {
+			WARN_PRINT_ONCE("`XDG_CACHE_HOME` is a relative path. Ignoring its value and falling back to `$HOME/.cache` or `get_config_path()` per the XDG Base Directory specification.");
+			return has_environment("HOME") ? get_environment("HOME").plus_file(".cache") : get_config_path();
+		}
 	} else if (has_environment("HOME")) {
 		return get_environment("HOME").plus_file(".cache");
 	} else {
@@ -192,7 +273,7 @@ String OS_LinuxBSD::get_cache_path() const {
 	}
 }
 
-String OS_LinuxBSD::get_system_dir(SystemDir p_dir) const {
+String OS_LinuxBSD::get_system_dir(SystemDir p_dir, bool p_shared_storage) const {
 	String xdgparam;
 
 	switch (p_dir) {
@@ -370,7 +451,7 @@ Error OS_LinuxBSD::move_to_trash(const String &p_path) {
 		DirAccess *dir_access = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 		Error err = dir_access->make_dir_recursive(trash_path);
 
-		// Issue an error if trash can is not created proprely.
+		// Issue an error if trash can is not created properly.
 		ERR_FAIL_COND_V_MSG(err != OK, err, "Could not create the trash path \"" + trash_path + "\"");
 		err = dir_access->make_dir_recursive(trash_path + "/files");
 		ERR_FAIL_COND_V_MSG(err != OK, err, "Could not create the trash path \"" + trash_path + "\"/files");
@@ -382,7 +463,10 @@ Error OS_LinuxBSD::move_to_trash(const String &p_path) {
 	// The trash can is successfully created, now we check that we don't exceed our file name length limit.
 	// If the file name is too long trim it so we can add the identifying number and ".trashinfo".
 	// Assumes that the file name length limit is 255 characters.
-	String file_name = basename(p_path.utf8().get_data());
+	String file_name = p_path.get_file();
+	if (file_name.length() == 0) {
+		file_name = p_path.get_base_dir().get_file();
+	}
 	if (file_name.length() > 240) {
 		file_name = file_name.substr(0, file_name.length() - 15);
 	}
@@ -408,8 +492,8 @@ Error OS_LinuxBSD::move_to_trash(const String &p_path) {
 	// Generates the .trashinfo file
 	OS::Date date = OS::get_singleton()->get_date(false);
 	OS::Time time = OS::get_singleton()->get_time(false);
-	String timestamp = vformat("%04d-%02d-%02dT%02d:%02d:", date.year, date.month, date.day, time.hour, time.min);
-	timestamp = vformat("%s%02d", timestamp, time.sec); // vformat only supports up to 6 arguments.
+	String timestamp = vformat("%04d-%02d-%02dT%02d:%02d:", date.year, (int)date.month, date.day, time.hour, time.minute);
+	timestamp = vformat("%s%02d", timestamp, time.second); // vformat only supports up to 6 arguments.
 	String trash_info = "[Trash Info]\nPath=" + p_path.uri_encode() + "\nDeletionDate=" + timestamp + "\n";
 	{
 		Error err;

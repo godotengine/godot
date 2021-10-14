@@ -63,6 +63,8 @@ private:
 
 	String _key;
 	String _host;
+	int _port;
+	Array ip_candidates;
 	Vector<String> _protocols;
 	bool _use_ssl = false;
 
@@ -75,7 +77,7 @@ public:
 	int get_max_packet_size() const;
 	Ref<WebSocketPeer> get_peer(int p_peer_id) const;
 	void disconnect_from_host(int p_code = 1000, String p_reason = "");
-	IP_Address get_connected_host() const;
+	IPAddress get_connected_host() const;
 	uint16_t get_connected_port() const;
 	virtual ConnectionStatus get_connection_status() const;
 	virtual void poll();

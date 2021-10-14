@@ -35,12 +35,9 @@
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 
-void ResourcePreloaderEditor::_gui_input(Ref<InputEvent> p_event) {
-}
-
 void ResourcePreloaderEditor::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE) {
-		load->set_icon(get_theme_icon("Folder", "EditorIcons"));
+		load->set_icon(get_theme_icon(SNAME("Folder"), SNAME("EditorIcons")));
 	}
 
 	if (p_what == NOTIFICATION_READY) {
@@ -181,21 +178,21 @@ void ResourcePreloaderEditor::_update_library() {
 	preloader->get_resource_list(&rnames);
 
 	List<String> names;
-	for (List<StringName>::Element *E = rnames.front(); E; E = E->next()) {
-		names.push_back(E->get());
+	for (const StringName &E : rnames) {
+		names.push_back(E);
 	}
 
 	names.sort();
 
-	for (List<String>::Element *E = names.front(); E; E = E->next()) {
+	for (const String &E : names) {
 		TreeItem *ti = tree->create_item(root);
 		ti->set_cell_mode(0, TreeItem::CELL_MODE_STRING);
 		ti->set_editable(0, true);
 		ti->set_selectable(0, true);
-		ti->set_text(0, E->get());
-		ti->set_metadata(0, E->get());
+		ti->set_text(0, E);
+		ti->set_metadata(0, E);
 
-		RES r = preloader->get_resource(E->get());
+		RES r = preloader->get_resource(E);
 
 		ERR_CONTINUE(r.is_null());
 
@@ -208,11 +205,11 @@ void ResourcePreloaderEditor::_update_library() {
 		ti->set_selectable(1, false);
 
 		if (type == "PackedScene") {
-			ti->add_button(1, get_theme_icon("InstanceOptions", "EditorIcons"), BUTTON_OPEN_SCENE, false, TTR("Open in Editor"));
+			ti->add_button(1, get_theme_icon(SNAME("InstanceOptions"), SNAME("EditorIcons")), BUTTON_OPEN_SCENE, false, TTR("Open in Editor"));
 		} else {
-			ti->add_button(1, get_theme_icon("Load", "EditorIcons"), BUTTON_EDIT_RESOURCE, false, TTR("Open in Editor"));
+			ti->add_button(1, get_theme_icon(SNAME("Load"), SNAME("EditorIcons")), BUTTON_EDIT_RESOURCE, false, TTR("Open in Editor"));
 		}
-		ti->add_button(1, get_theme_icon("Remove", "EditorIcons"), BUTTON_REMOVE, false, TTR("Remove"));
+		ti->add_button(1, get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")), BUTTON_REMOVE, false, TTR("Remove"));
 	}
 
 	//player->add_resource("default",resource);
@@ -335,13 +332,12 @@ void ResourcePreloaderEditor::drop_data_fw(const Point2 &p_point, const Variant 
 }
 
 void ResourcePreloaderEditor::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_gui_input"), &ResourcePreloaderEditor::_gui_input);
 	ClassDB::bind_method(D_METHOD("_update_library"), &ResourcePreloaderEditor::_update_library);
 	ClassDB::bind_method(D_METHOD("_remove_resource", "to_remove"), &ResourcePreloaderEditor::_remove_resource);
 
-	ClassDB::bind_method(D_METHOD("get_drag_data_fw"), &ResourcePreloaderEditor::get_drag_data_fw);
-	ClassDB::bind_method(D_METHOD("can_drop_data_fw"), &ResourcePreloaderEditor::can_drop_data_fw);
-	ClassDB::bind_method(D_METHOD("drop_data_fw"), &ResourcePreloaderEditor::drop_data_fw);
+	ClassDB::bind_method(D_METHOD("_get_drag_data_fw"), &ResourcePreloaderEditor::get_drag_data_fw);
+	ClassDB::bind_method(D_METHOD("_can_drop_data_fw"), &ResourcePreloaderEditor::can_drop_data_fw);
+	ClassDB::bind_method(D_METHOD("_drop_data_fw"), &ResourcePreloaderEditor::drop_data_fw);
 }
 
 ResourcePreloaderEditor::ResourcePreloaderEditor() {
@@ -367,8 +363,10 @@ ResourcePreloaderEditor::ResourcePreloaderEditor() {
 	tree = memnew(Tree);
 	tree->connect("button_pressed", callable_mp(this, &ResourcePreloaderEditor::_cell_button_pressed));
 	tree->set_columns(2);
-	tree->set_column_min_width(0, 2);
-	tree->set_column_min_width(1, 3);
+	tree->set_column_expand_ratio(0, 2);
+	tree->set_column_clip_content(0, true);
+	tree->set_column_expand_ratio(1, 3);
+	tree->set_column_clip_content(1, true);
 	tree->set_column_expand(0, true);
 	tree->set_column_expand(1, true);
 	tree->set_v_size_flags(SIZE_EXPAND_FILL);

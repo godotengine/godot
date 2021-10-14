@@ -4,17 +4,13 @@
 		Pin joint for 2D shapes.
 	</brief_description>
 	<description>
-		Pin joint for 2D rigid bodies. It pins two bodies (rigid or static) together.
+		Pin joint for 2D rigid bodies. It pins two bodies (dynamic or static) together.
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="softness" type="float" setter="set_softness" getter="get_softness" default="0.0">
 			The higher this value, the more the bond to the pinned partner can flex.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

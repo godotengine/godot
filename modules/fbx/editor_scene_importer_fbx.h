@@ -36,7 +36,6 @@
 #include "data/import_state.h"
 #include "tools/import_utils.h"
 
-#include "core/core_bind.h"
 #include "core/io/resource_importer.h"
 #include "core/string/ustring.h"
 #include "core/templates/local_vector.h"

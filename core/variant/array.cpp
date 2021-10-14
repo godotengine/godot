@@ -34,6 +34,7 @@
 #include "core/object/class_db.h"
 #include "core/object/script_language.h"
 #include "core/templates/hashfuncs.h"
+#include "core/templates/search_array.h"
 #include "core/templates/vector.h"
 #include "core/variant/callable.h"
 #include "core/variant/variant.h"
@@ -203,9 +204,14 @@ Error Array::resize(int p_new_size) {
 	return _p->array.resize(p_new_size);
 }
 
-void Array::insert(int p_pos, const Variant &p_value) {
-	ERR_FAIL_COND(!_p->typed.validate(p_value, "insert"));
-	_p->array.insert(p_pos, p_value);
+Error Array::insert(int p_pos, const Variant &p_value) {
+	ERR_FAIL_COND_V(!_p->typed.validate(p_value, "insert"), ERR_INVALID_PARAMETER);
+	return _p->array.insert(p_pos, p_value);
+}
+
+void Array::fill(const Variant &p_value) {
+	ERR_FAIL_COND(!_p->typed.validate(p_value, "fill"));
+	_p->array.fill(p_value);
 }
 
 void Array::erase(const Variant &p_value) {
@@ -356,6 +362,79 @@ Array Array::slice(int p_begin, int p_end, int p_step, bool p_deep) const { // l
 	return new_arr;
 }
 
+Array Array::filter(const Callable &p_callable) const {
+	Array new_arr;
+	new_arr.resize(size());
+	int accepted_count = 0;
+
+	const Variant *argptrs[1];
+	for (int i = 0; i < size(); i++) {
+		argptrs[0] = &get(i);
+
+		Variant result;
+		Callable::CallError ce;
+		p_callable.call(argptrs, 1, result, ce);
+		if (ce.error != Callable::CallError::CALL_OK) {
+			ERR_FAIL_V_MSG(Array(), "Error calling method from 'filter': " + Variant::get_callable_error_text(p_callable, argptrs, 1, ce));
+		}
+
+		if (result.operator bool()) {
+			new_arr[accepted_count] = get(i);
+			accepted_count++;
+		}
+	}
+
+	new_arr.resize(accepted_count);
+
+	return new_arr;
+}
+
+Array Array::map(const Callable &p_callable) const {
+	Array new_arr;
+	new_arr.resize(size());
+
+	const Variant *argptrs[1];
+	for (int i = 0; i < size(); i++) {
+		argptrs[0] = &get(i);
+
+		Variant result;
+		Callable::CallError ce;
+		p_callable.call(argptrs, 1, result, ce);
+		if (ce.error != Callable::CallError::CALL_OK) {
+			ERR_FAIL_V_MSG(Array(), "Error calling method from 'map': " + Variant::get_callable_error_text(p_callable, argptrs, 1, ce));
+		}
+
+		new_arr[i] = result;
+	}
+
+	return new_arr;
+}
+
+Variant Array::reduce(const Callable &p_callable, const Variant &p_accum) const {
+	int start = 0;
+	Variant ret = p_accum;
+	if (ret == Variant() && size() > 0) {
+		ret = front();
+		start = 1;
+	}
+
+	const Variant *argptrs[2];
+	for (int i = start; i < size(); i++) {
+		argptrs[0] = &ret;
+		argptrs[1] = &get(i);
+
+		Variant result;
+		Callable::CallError ce;
+		p_callable.call(argptrs, 2, result, ce);
+		if (ce.error != Callable::CallError::CALL_OK) {
+			ERR_FAIL_V_MSG(Variant(), "Error calling method from 'reduce': " + Variant::get_callable_error_text(p_callable, argptrs, 2, ce));
+		}
+		ret = result;
+	}
+
+	return ret;
+}
+
 struct _ArrayVariantSort {
 	_FORCE_INLINE_ bool operator()(const Variant &p_l, const Variant &p_r) const {
 		bool valid = false;
@@ -406,44 +485,19 @@ void Array::shuffle() {
 	}
 }
 
-template <typename Less>
-_FORCE_INLINE_ int bisect(const Vector<Variant> &p_array, const Variant &p_value, bool p_before, const Less &p_less) {
-	int lo = 0;
-	int hi = p_array.size();
-	if (p_before) {
-		while (lo < hi) {
-			const int mid = (lo + hi) / 2;
-			if (p_less(p_array.get(mid), p_value)) {
-				lo = mid + 1;
-			} else {
-				hi = mid;
-			}
-		}
-	} else {
-		while (lo < hi) {
-			const int mid = (lo + hi) / 2;
-			if (p_less(p_value, p_array.get(mid))) {
-				hi = mid;
-			} else {
-				lo = mid + 1;
-			}
-		}
-	}
-	return lo;
-}
-
 int Array::bsearch(const Variant &p_value, bool p_before) {
 	ERR_FAIL_COND_V(!_p->typed.validate(p_value, "binary search"), -1);
-	return bisect(_p->array, p_value, p_before, _ArrayVariantSort());
+	SearchArray<Variant, _ArrayVariantSort> avs;
+	return avs.bisect(_p->array.ptrw(), _p->array.size(), p_value, p_before);
 }
 
 int Array::bsearch_custom(const Variant &p_value, Callable p_callable, bool p_before) {
 	ERR_FAIL_COND_V(!_p->typed.validate(p_value, "custom binary search"), -1);
 
-	_ArrayVariantSortCustom less;
-	less.func = p_callable;
+	SearchArray<Variant, _ArrayVariantSortCustom> avs;
+	avs.compare.func = p_callable;
 
-	return bisect(_p->array, p_value, p_before, less);
+	return avs.bisect(_p->array.ptrw(), _p->array.size(), p_value, p_before);
 }
 
 void Array::reverse() {
@@ -457,8 +511,8 @@ void Array::push_front(const Variant &p_value) {
 
 Variant Array::pop_back() {
 	if (!_p->array.is_empty()) {
-		int n = _p->array.size() - 1;
-		Variant ret = _p->array.get(n);
+		const int n = _p->array.size() - 1;
+		const Variant ret = _p->array.get(n);
 		_p->array.resize(n);
 		return ret;
 	}
@@ -467,11 +521,36 @@ Variant Array::pop_back() {
 
 Variant Array::pop_front() {
 	if (!_p->array.is_empty()) {
-		Variant ret = _p->array.get(0);
+		const Variant ret = _p->array.get(0);
 		_p->array.remove(0);
 		return ret;
 	}
 	return Variant();
+}
+
+Variant Array::pop_at(int p_pos) {
+	if (_p->array.is_empty()) {
+		// Return `null` without printing an error to mimic `pop_back()` and `pop_front()` behavior.
+		return Variant();
+	}
+
+	if (p_pos < 0) {
+		// Relative offset from the end
+		p_pos = _p->array.size() + p_pos;
+	}
+
+	ERR_FAIL_INDEX_V_MSG(
+			p_pos,
+			_p->array.size(),
+			Variant(),
+			vformat(
+					"The calculated index %s is out of bounds (the array has %s elements). Leaving the array untouched and returning `null`.",
+					p_pos,
+					_p->array.size()));
+
+	const Variant ret = _p->array.get(p_pos);
+	_p->array.remove(p_pos);
+	return ret;
 }
 
 Variant Array::min() const {

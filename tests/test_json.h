@@ -45,75 +45,65 @@ TEST_CASE("[JSON] Parsing single data types") {
 	// Parsing a single data type as JSON is valid per the JSON specification.
 
 	JSON json;
-	Variant result;
-	String err_str;
-	int err_line;
 
-	json.parse("null", result, err_str, err_line);
+	json.parse("null");
 	CHECK_MESSAGE(
-			err_line == 0,
+			json.get_error_line() == 0,
 			"Parsing `null` as JSON should parse successfully.");
 	CHECK_MESSAGE(
-			result == Variant(),
+			json.get_data() == Variant(),
 			"Parsing a double quoted string as JSON should return the expected value.");
 
-	json.parse("true", result, err_str, err_line);
+	json.parse("true");
 	CHECK_MESSAGE(
-			err_line == 0,
+			json.get_error_line() == 0,
 			"Parsing boolean `true` as JSON should parse successfully.");
 	CHECK_MESSAGE(
-			result,
+			json.get_data(),
 			"Parsing boolean `true` as JSON should return the expected value.");
 
-	json.parse("false", result, err_str, err_line);
+	json.parse("false");
 	CHECK_MESSAGE(
-			err_line == 0,
+			json.get_error_line() == 0,
 			"Parsing boolean `false` as JSON should parse successfully.");
 	CHECK_MESSAGE(
-			!result,
+			!json.get_data(),
 			"Parsing boolean `false` as JSON should return the expected value.");
 
-	// JSON only has a floating-point number type, no integer type.
-	// This is why we use `is_equal_approx()` for the comparison.
-	json.parse("123456", result, err_str, err_line);
+	json.parse("123456");
 	CHECK_MESSAGE(
-			err_line == 0,
+			json.get_error_line() == 0,
 			"Parsing an integer number as JSON should parse successfully.");
 	CHECK_MESSAGE(
-			Math::is_equal_approx(result, 123'456),
+			(int)(json.get_data()) == 123456,
 			"Parsing an integer number as JSON should return the expected value.");
 
-	json.parse("0.123456", result, err_str, err_line);
+	json.parse("0.123456");
 	CHECK_MESSAGE(
-			err_line == 0,
+			json.get_error_line() == 0,
 			"Parsing a floating-point number as JSON should parse successfully.");
 	CHECK_MESSAGE(
-			Math::is_equal_approx(result, 0.123456),
+			Math::is_equal_approx(double(json.get_data()), 0.123456),
 			"Parsing a floating-point number as JSON should return the expected value.");
 
-	json.parse("\"hello\"", result, err_str, err_line);
+	json.parse("\"hello\"");
 	CHECK_MESSAGE(
-			err_line == 0,
+			json.get_error_line() == 0,
 			"Parsing a double quoted string as JSON should parse successfully.");
 	CHECK_MESSAGE(
-			result == "hello",
+			json.get_data() == "hello",
 			"Parsing a double quoted string as JSON should return the expected value.");
 }
 
 TEST_CASE("[JSON] Parsing arrays") {
 	JSON json;
-	Variant result;
-	String err_str;
-	int err_line;
 
 	// JSON parsing fails if it's split over several lines (even if leading indentation is removed).
-	json.parse(
-			R"(["Hello", "world.", "This is",["a","json","array.",[]], "Empty arrays ahoy:", [[["Gotcha!"]]]])",
-			result, err_str, err_line);
+	json.parse(R"(["Hello", "world.", "This is",["a","json","array.",[]], "Empty arrays ahoy:", [[["Gotcha!"]]]])");
 
-	const Array array = result;
+	const Array array = json.get_data();
 	CHECK_MESSAGE(
-			err_line == 0,
+			json.get_error_line() == 0,
 			"Parsing a JSON array should parse successfully.");
 	CHECK_MESSAGE(
 			array[0] == "Hello",
@@ -136,15 +126,10 @@ TEST_CASE("[JSON] Parsing arrays") {
 
 TEST_CASE("[JSON] Parsing objects (dictionaries)") {
 	JSON json;
-	Variant result;
-	String err_str;
-	int err_line;
 
-	json.parse(
-			R"({"name": "Godot Engine", "is_free": true, "bugs": null, "apples": {"red": 500, "green": 0, "blue": -20}, "empty_object": {}})",
-			result, err_str, err_line);
+	json.parse(R"({"name": "Godot Engine", "is_free": true, "bugs": null, "apples": {"red": 500, "green": 0, "blue": -20}, "empty_object": {}})");
 
-	const Dictionary dictionary = result;
+	const Dictionary dictionary = json.get_data();
 	CHECK_MESSAGE(
 			dictionary["name"] == "Godot Engine",
 			"The parsed JSON should contain the expected values.");
@@ -155,7 +140,7 @@ TEST_CASE("[JSON] Parsing objects (dictionaries)") {
 			dictionary["bugs"] == Variant(),
 			"The parsed JSON should contain the expected values.");
 	CHECK_MESSAGE(
-			Math::is_equal_approx(Dictionary(dictionary["apples"])["blue"], -20),
+			(int)Dictionary(dictionary["apples"])["blue"] == -20,
 			"The parsed JSON should contain the expected values.");
 	CHECK_MESSAGE(
 			dictionary["empty_object"].hash() == Dictionary().hash(),

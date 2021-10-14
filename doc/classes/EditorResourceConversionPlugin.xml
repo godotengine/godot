@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="EditorResourceConversionPlugin" inherits="Reference" version="4.0">
+<class name="EditorResourceConversionPlugin" inherits="RefCounted" version="4.0">
 	<brief_description>
 	</brief_description>
 	<description>
@@ -7,21 +7,22 @@
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="_convert" qualifiers="virtual">
-			<return type="Resource">
-			</return>
-			<argument index="0" name="resource" type="Resource">
-			</argument>
+		<method name="_convert" qualifiers="virtual const">
+			<return type="Resource" />
+			<argument index="0" name="resource" type="Resource" />
 			<description>
 			</description>
 		</method>
-		<method name="_converts_to" qualifiers="virtual">
-			<return type="String">
-			</return>
+		<method name="_converts_to" qualifiers="virtual const">
+			<return type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="_handles" qualifiers="virtual const">
+			<return type="bool" />
+			<argument index="0" name="resource" type="Resource" />
 			<description>
 			</description>
 		</method>
 	</methods>
-	<constants>
-	</constants>
 </class>

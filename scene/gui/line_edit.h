@@ -134,9 +134,8 @@ private:
 		int start_column = 0;
 		bool enabled = false;
 		bool creating = false;
-		bool doubleclick = false;
+		bool double_click = false;
 		bool drag_attempt = false;
-		uint64_t last_dblclk = 0;
 	} selection;
 
 	struct TextOperation {
@@ -153,6 +152,9 @@ private:
 		bool pressing_inside = false;
 	} clear_button_status;
 
+	uint64_t last_dblclk = 0;
+	Vector2 last_dblclk_pos;
+
 	bool caret_blink_enabled = false;
 	bool caret_force_displayed = false;
 	bool draw_caret = true;
@@ -165,7 +167,6 @@ private:
 	void _create_undo_state();
 
 	int _get_menu_action_accelerator(const String &p_action);
-	void _generate_context_menu();
 
 	void _shape();
 	void _fit_to_width();
@@ -198,10 +199,12 @@ private:
 	void _backspace(bool p_word = false, bool p_all_to_left = false);
 	void _delete(bool p_word = false, bool p_all_to_right = false);
 
+	void _ensure_menu();
+
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
-	void _gui_input(Ref<InputEvent> p_event);
+	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
@@ -222,11 +225,15 @@ public:
 	void set_context_menu_enabled(bool p_enable);
 	bool is_context_menu_enabled();
 	PopupMenu *get_menu() const;
+	bool is_menu_visible() const;
 
 	void select(int p_from = 0, int p_to = -1);
 	void select_all();
 	void selection_delete();
 	void deselect();
+	bool has_selection() const;
+	int get_selection_from_column() const;
+	int get_selection_to_column() const;
 
 	void delete_char();
 	void delete_text(int p_from_column, int p_to_column);
@@ -283,6 +290,8 @@ public:
 	void copy_text();
 	void cut_text();
 	void paste_text();
+	bool has_undo() const;
+	bool has_redo() const;
 	void undo();
 	void redo();
 

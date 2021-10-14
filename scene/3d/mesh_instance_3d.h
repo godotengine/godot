@@ -31,10 +31,10 @@
 #ifndef MESH_INSTANCE_H
 #define MESH_INSTANCE_H
 
-#include "scene/3d/skeleton_3d.h"
 #include "scene/3d/visual_instance_3d.h"
-#include "scene/resources/mesh.h"
-#include "scene/resources/skin.h"
+
+class Skin;
+class SkinReference;
 
 class MeshInstance3D : public GeometryInstance3D {
 	GDCLASS(MeshInstance3D, GeometryInstance3D);
@@ -83,8 +83,11 @@ public:
 	Node *create_trimesh_collision_node();
 	void create_trimesh_collision();
 
-	Node *create_convex_collision_node();
-	void create_convex_collision();
+	Node *create_convex_collision_node(bool p_clean = true, bool p_simplify = false);
+	void create_convex_collision(bool p_clean = true, bool p_simplify = false);
+
+	Node *create_multiple_convex_collisions_node();
+	void create_multiple_convex_collisions();
 
 	void create_debug_tangents();
 

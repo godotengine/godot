@@ -31,10 +31,10 @@
 #ifndef POPUP_MENU_H
 #define POPUP_MENU_H
 
+#include "core/input/shortcut.h"
 #include "scene/gui/margin_container.h"
 #include "scene/gui/popup.h"
 #include "scene/gui/scroll_container.h"
-#include "scene/gui/shortcut.h"
 #include "scene/resources/text_line.h"
 
 class PopupMenu : public Popup {
@@ -80,8 +80,8 @@ class PopupMenu : public Popup {
 		}
 
 		Item() {
-			text_buf.instance();
-			accel_text_buf.instance();
+			text_buf.instantiate();
+			accel_text_buf.instantiate();
 			checkable_type = CHECKABLE_TYPE_NONE;
 		}
 	};
@@ -107,7 +107,7 @@ class PopupMenu : public Popup {
 
 	void _shape_item(int p_item);
 
-	void _gui_input(const Ref<InputEvent> &p_event);
+	virtual void gui_input(const Ref<InputEvent> &p_event);
 	void _activate_submenu(int p_over);
 	void _submenu_timeout();
 
@@ -140,11 +140,14 @@ class PopupMenu : public Popup {
 	void _close_pressed();
 
 protected:
-	friend class MenuButton;
 	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
+	// ATTENTION: This is used by the POT generator's scene parser. If the number of properties returned by `_get_items()` ever changes,
+	// this value should be updated to reflect the new size.
+	static const int ITEM_PROPERTY_SIZE = 10;
+
 	void add_item(const String &p_label, int p_id = -1, uint32_t p_accel = 0);
 	void add_icon_item(const Ref<Texture2D> &p_icon, const String &p_label, int p_id = -1, uint32_t p_accel = 0);
 	void add_check_item(const String &p_label, int p_id = -1, uint32_t p_accel = 0);

@@ -20,9 +20,9 @@
   "author": "Godot Engine contributors",
   "license": "MIT",
   "devDependencies": {
-    "eslint": "^7.9.0",
-    "eslint-config-airbnb-base": "^14.2.0",
-    "eslint-plugin-import": "^2.22.0",
-    "jsdoc": "^3.6.6"
+    "eslint": "^7.28.0",
+    "eslint-config-airbnb-base": "^14.2.1",
+    "eslint-plugin-import": "^2.23.4",
+    "jsdoc": "^3.6.7"
   }
 }

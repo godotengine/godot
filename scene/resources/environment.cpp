@@ -173,23 +173,13 @@ Environment::ReflectionSource Environment::get_reflection_source() const {
 	return reflection_source;
 }
 
-void Environment::set_ao_color(const Color &p_color) {
-	ao_color = p_color;
-	_update_ambient_light();
-}
-
-Color Environment::get_ao_color() const {
-	return ao_color;
-}
-
 void Environment::_update_ambient_light() {
 	RS::get_singleton()->environment_set_ambient_light(
 			environment,
 			ambient_color,
 			RS::EnvironmentAmbientSource(ambient_source),
 			ambient_energy,
-			ambient_sky_contribution, RS::EnvironmentReflectionSource(reflection_source),
-			ao_color);
+			ambient_sky_contribution, RS::EnvironmentReflectionSource(reflection_source));
 }
 
 // Tonemap
@@ -302,7 +292,7 @@ int Environment::get_ssr_max_steps() const {
 }
 
 void Environment::set_ssr_fade_in(float p_fade_in) {
-	ssr_fade_in = p_fade_in;
+	ssr_fade_in = MAX(p_fade_in, 0.0f);
 	_update_ssr();
 }
 
@@ -311,7 +301,7 @@ float Environment::get_ssr_fade_in() const {
 }
 
 void Environment::set_ssr_fade_out(float p_fade_out) {
-	ssr_fade_out = p_fade_out;
+	ssr_fade_out = MAX(p_fade_out, 0.0f);
 	_update_ssr();
 }
 
@@ -449,6 +439,7 @@ bool Environment::is_sdfgi_enabled() const {
 }
 
 void Environment::set_sdfgi_cascades(SDFGICascades p_cascades) {
+	ERR_FAIL_INDEX(p_cascades, SDFGI_CASCADES_8 + 1);
 	sdfgi_cascades = p_cascades;
 	_update_sdfgi();
 }
@@ -1091,15 +1082,12 @@ void Environment::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_ambient_light_sky_contribution"), &Environment::get_ambient_light_sky_contribution);
 	ClassDB::bind_method(D_METHOD("set_reflection_source", "source"), &Environment::set_reflection_source);
 	ClassDB::bind_method(D_METHOD("get_reflection_source"), &Environment::get_reflection_source);
-	ClassDB::bind_method(D_METHOD("set_ao_color", "color"), &Environment::set_ao_color);
-	ClassDB::bind_method(D_METHOD("get_ao_color"), &Environment::get_ao_color);
 
 	ADD_GROUP("Ambient Light", "ambient_light_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "ambient_light_source", PROPERTY_HINT_ENUM, "Background,Disabled,Color,Sky"), "set_ambient_source", "get_ambient_source");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "ambient_light_color"), "set_ambient_light_color", "get_ambient_light_color");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "ambient_light_sky_contribution", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_ambient_light_sky_contribution", "get_ambient_light_sky_contribution");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "ambient_light_energy", PROPERTY_HINT_RANGE, "0,16,0.01"), "set_ambient_light_energy", "get_ambient_light_energy");
-	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "ambient_light_occlusion_color", PROPERTY_HINT_COLOR_NO_ALPHA), "set_ao_color", "get_ao_color");
 
 	ADD_GROUP("Reflected Light", "reflected_light_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "reflected_light_source", PROPERTY_HINT_ENUM, "Background,Disabled,Sky"), "set_reflection_source", "get_reflection_source");
@@ -1303,7 +1291,7 @@ void Environment::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fog_density", PROPERTY_HINT_RANGE, "0,16,0.0001"), "set_fog_density", "get_fog_density");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fog_aerial_perspective", PROPERTY_HINT_RANGE, "0,1,0.001"), "set_fog_aerial_perspective", "get_fog_aerial_perspective");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fog_height", PROPERTY_HINT_RANGE, "-1024,1024,0.01,or_lesser,or_greater"), "set_fog_height", "get_fog_height");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fog_height_density", PROPERTY_HINT_RANGE, "0,128,0.001,or_greater"), "set_fog_height_density", "get_fog_height_density");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fog_height_density", PROPERTY_HINT_RANGE, "-16,16,0.0001,or_lesser,or_greater"), "set_fog_height_density", "get_fog_height_density");
 
 	ClassDB::bind_method(D_METHOD("set_volumetric_fog_enabled", "enabled"), &Environment::set_volumetric_fog_enabled);
 	ClassDB::bind_method(D_METHOD("is_volumetric_fog_enabled"), &Environment::is_volumetric_fog_enabled);
@@ -1329,7 +1317,7 @@ void Environment::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "volumetric_fog_density", PROPERTY_HINT_RANGE, "0,1,0.0001,or_greater"), "set_volumetric_fog_density", "get_volumetric_fog_density");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "volumetric_fog_light", PROPERTY_HINT_COLOR_NO_ALPHA), "set_volumetric_fog_light", "get_volumetric_fog_light");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "volumetric_fog_light_energy", PROPERTY_HINT_RANGE, "0,1024,0.01,or_greater"), "set_volumetric_fog_light_energy", "get_volumetric_fog_light_energy");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "volumetric_fog_gi_inject", PROPERTY_HINT_EXP_RANGE, "0.00,16,0.01"), "set_volumetric_fog_gi_inject", "get_volumetric_fog_gi_inject");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "volumetric_fog_gi_inject", PROPERTY_HINT_RANGE, "0.00,16,0.01,exp"), "set_volumetric_fog_gi_inject", "get_volumetric_fog_gi_inject");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "volumetric_fog_length", PROPERTY_HINT_RANGE, "0,1024,0.01,or_greater"), "set_volumetric_fog_length", "get_volumetric_fog_length");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "volumetric_fog_detail_spread", PROPERTY_HINT_EXP_EASING, "0.01,16,0.01"), "set_volumetric_fog_detail_spread", "get_volumetric_fog_detail_spread");
 	ADD_SUBGROUP("Temporal Reprojection", "volumetric_fog_temporal_reprojection_");

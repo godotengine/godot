@@ -29,6 +29,10 @@
 /*************************************************************************/
 
 #include "fbx_material.h"
+
+// FIXME: Shouldn't depend on core_bind.h! Use DirAccessRef like the rest of
+// the engine instead of core_bind::Directory.
+#include "core/core_bind.h"
 #include "scene/resources/material.h"
 #include "scene/resources/texture.h"
 #include "tools/validation_tools.h"
@@ -51,7 +55,7 @@ void FBXMaterial::add_search_string(String p_filename, String p_current_director
 }
 
 String find_file(const String &p_base, const String &p_file_to_find) {
-	_Directory dir;
+	core_bind::Directory dir;
 	dir.open(p_base);
 
 	dir.list_dir_begin();
@@ -80,7 +84,7 @@ String find_file(const String &p_base, const String &p_file_to_find) {
 // fbx will not give us good path information and let's not regex them to fix them
 // no relative paths are in fbx generally they have a rel field but it's populated incorrectly by the SDK.
 String FBXMaterial::find_texture_path_by_filename(const String p_filename, const String p_current_directory) {
-	_Directory dir;
+	core_bind::Directory dir;
 	Vector<String> paths;
 	add_search_string(p_filename, p_current_directory, "", paths);
 	add_search_string(p_filename, p_current_directory, "texture", paths);
@@ -160,7 +164,7 @@ Ref<StandardMaterial3D> FBXMaterial::import_material(ImportState &state) {
 	const String p_fbx_current_directory = state.path;
 
 	Ref<StandardMaterial3D> spatial_material;
-	spatial_material.instance();
+	spatial_material.instantiate();
 
 	// read the material file
 	// is material two sided
@@ -223,7 +227,7 @@ Ref<StandardMaterial3D> FBXMaterial::import_material(ImportState &state) {
 			} else if (fbx_texture_data != nullptr && fbx_texture_data->Media() != nullptr && fbx_texture_data->Media()->IsEmbedded()) {
 				// This is an embedded texture. Extract it.
 				Ref<Image> image;
-				//image.instance(); // oooo double instance bug? why make Image::_png_blah call
+				//image.instantiate(); // oooo double instance bug? why make Image::_png_blah call
 
 				const String extension = texture_name.get_extension().to_upper();
 				if (extension == "PNG") {
@@ -256,7 +260,7 @@ Ref<StandardMaterial3D> FBXMaterial::import_material(ImportState &state) {
 				}
 
 				Ref<ImageTexture> image_texture;
-				image_texture.instance();
+				image_texture.instantiate();
 				image_texture->create_from_image(image);
 
 				texture = image_texture;
@@ -324,7 +328,7 @@ Ref<StandardMaterial3D> FBXMaterial::import_material(ImportState &state) {
 
 		if (spatial_material.is_null()) {
 			// Done here so if no data no material is created.
-			spatial_material.instance();
+			spatial_material.instantiate();
 		}
 
 		const FBXDocParser::TypedProperty<real_t> *real_value = dynamic_cast<const FBXDocParser::TypedProperty<real_t> *>(prop);
@@ -420,7 +424,7 @@ Ref<StandardMaterial3D> FBXMaterial::import_material(ImportState &state) {
 			} break;
 			case PROPERTY_DESC_COAT_ROUGHNESS: {
 				// meaning is that approx equal to zero is disabled not actually zero. ;)
-				if (real_value && Math::is_equal_approx(real_value->Value(), 0.0f)) {
+				if (real_value && Math::is_zero_approx(real_value->Value())) {
 					print_verbose("clearcoat real value: " + rtos(real_value->Value()));
 					spatial_material->set_clearcoat_gloss(1.0 - real_value->Value());
 				} else {
@@ -428,7 +432,7 @@ Ref<StandardMaterial3D> FBXMaterial::import_material(ImportState &state) {
 				}
 			} break;
 			case PROPERTY_DESC_EMISSIVE: {
-				if (real_value && Math::is_equal_approx(real_value->Value(), 0.0f)) {
+				if (real_value && Math::is_zero_approx(real_value->Value())) {
 					print_verbose("Emissive real value: " + rtos(real_value->Value()));
 					spatial_material->set_emission_energy(real_value->Value());
 				} else if (vector_value && !vector_value->Value().is_equal_approx(Vector3(0, 0, 0))) {

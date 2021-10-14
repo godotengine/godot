@@ -12,8 +12,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="constant" type="int" setter="set_math_constant" getter="get_math_constant" enum="VisualScriptMathConstant.MathConstant" default="0">
 			The math constant.

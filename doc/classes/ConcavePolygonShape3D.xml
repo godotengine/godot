@@ -5,24 +5,21 @@
 	</brief_description>
 	<description>
 		Concave polygon shape resource, which can be set into a [PhysicsBody3D] or area. This shape is created by feeding a list of triangles.
-		Note: when used for collision, [ConcavePolygonShape3D] is intended to work with static [PhysicsBody3D] nodes like [StaticBody3D] and will not work with [KinematicBody3D] or [RigidBody3D] with a mode other than Static.
+		[b]Note:[/b] When used for collision, [ConcavePolygonShape3D] is intended to work with static [PhysicsBody3D] nodes like [StaticBody3D] and will not work with [CharacterBody3D] or [RigidDynamicBody3D] with a mode other than Static.
 	</description>
 	<tutorials>
 		<link title="3D Physics Tests Demo">https://godotengine.org/asset-library/asset/675</link>
 	</tutorials>
 	<methods>
 		<method name="get_faces" qualifiers="const">
-			<return type="PackedVector3Array">
-			</return>
+			<return type="PackedVector3Array" />
 			<description>
 				Returns the faces (an array of triangles).
 			</description>
 		</method>
 		<method name="set_faces">
-			<return type="void">
-			</return>
-			<argument index="0" name="faces" type="PackedVector3Array">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="faces" type="PackedVector3Array" />
 			<description>
 				Sets the faces (an array of triangles).
 			</description>
@@ -33,6 +30,4 @@
 			If set to [code]true[/code], collisions occur on both sides of the concave shape faces. Otherwise they occur only along the face normals.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

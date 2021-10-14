@@ -30,7 +30,6 @@
 
 #include "animated_sprite_2d.h"
 
-#include "core/os/os.h"
 #include "scene/main/viewport.h"
 #include "scene/scene_string_names.h"
 
@@ -95,7 +94,7 @@ Rect2 AnimatedSprite2D::_get_rect() const {
 
 	Point2 ofs = offset;
 	if (centered) {
-		ofs -= Size2(s) / 2;
+		ofs -= s / 2;
 	}
 
 	if (s == Size2(0, 0)) {
@@ -123,7 +122,7 @@ void AnimatedSprite2D::_validate_property(PropertyInfo &property) const {
 			}
 
 			property.hint_string += String(E->get());
-			if (animation == E->get()) {
+			if (animation == E) {
 				current_found = true;
 			}
 		}
@@ -159,12 +158,12 @@ void AnimatedSprite2D::_notification(int p_what) {
 				return;
 			}
 
-			float speed = frames->get_animation_speed(animation) * speed_scale;
+			double speed = frames->get_animation_speed(animation) * speed_scale;
 			if (speed == 0) {
 				return; //do nothing
 			}
 
-			float remaining = get_process_delta_time();
+			double remaining = get_process_delta_time();
 
 			while (remaining) {
 				if (timeout <= 0) {
@@ -205,7 +204,7 @@ void AnimatedSprite2D::_notification(int p_what) {
 					emit_signal(SceneStringNames::get_singleton()->frame_changed);
 				}
 
-				float to_process = MIN(timeout, remaining);
+				double to_process = MIN(timeout, remaining);
 				remaining -= to_process;
 				timeout -= to_process;
 			}
@@ -229,8 +228,7 @@ void AnimatedSprite2D::_notification(int p_what) {
 
 			RID ci = get_canvas_item();
 
-			Size2i s;
-			s = texture->get_size();
+			Size2 s = texture->get_size();
 			Point2 ofs = offset;
 			if (centered) {
 				ofs -= s / 2;
@@ -310,8 +308,8 @@ int AnimatedSprite2D::get_frame() const {
 	return frame;
 }
 
-void AnimatedSprite2D::set_speed_scale(float p_speed_scale) {
-	float elapsed = _get_frame_duration() - timeout;
+void AnimatedSprite2D::set_speed_scale(double p_speed_scale) {
+	double elapsed = _get_frame_duration() - timeout;
 
 	speed_scale = MAX(p_speed_scale, 0.0f);
 
@@ -320,7 +318,7 @@ void AnimatedSprite2D::set_speed_scale(float p_speed_scale) {
 	timeout -= elapsed;
 }
 
-float AnimatedSprite2D::get_speed_scale() const {
+double AnimatedSprite2D::get_speed_scale() const {
 	return speed_scale;
 }
 
@@ -402,9 +400,9 @@ bool AnimatedSprite2D::is_playing() const {
 	return playing;
 }
 
-float AnimatedSprite2D::_get_frame_duration() {
+double AnimatedSprite2D::_get_frame_duration() {
 	if (frames.is_valid() && frames->has_animation(animation)) {
-		float speed = frames->get_animation_speed(animation) * speed_scale;
+		double speed = frames->get_animation_speed(animation) * speed_scale;
 		if (speed > 0) {
 			return 1.0 / speed;
 		}

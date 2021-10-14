@@ -28,15 +28,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-// Must include Winsock before windows.h (included by os_windows.h)
-#include "drivers/unix/net_socket_posix.h"
-
 #include "os_windows.h"
 
 #include "core/debugger/engine_debugger.h"
 #include "core/debugger/script_debugger.h"
 #include "core/io/marshalls.h"
 #include "core/version_generated.gen.h"
+#include "drivers/unix/net_socket_posix.h"
 #include "drivers/windows/dir_access_windows.h"
 #include "drivers/windows/file_access_windows.h"
 #include "joypad_windows.h"
@@ -75,7 +73,6 @@ __declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 1;
 #define GetProcAddress (void *)GetProcAddress
 #endif
 
-#ifdef DEBUG_ENABLED
 static String format_error_message(DWORD id) {
 	LPWSTR messageBuffer = nullptr;
 	size_t size = FormatMessageW(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
@@ -87,7 +84,6 @@ static String format_error_message(DWORD id) {
 
 	return msg;
 }
-#endif // DEBUG_ENABLED
 
 void RedirectIOToConsole() {
 	int hConHandle;
@@ -165,6 +161,10 @@ BOOL WINAPI HandlerRoutine(_In_ DWORD dwCtrlType) {
 	}
 }
 
+void OS_Windows::alert(const String &p_alert, const String &p_title) {
+	MessageBoxW(nullptr, (LPCWSTR)(p_alert.utf16().get_data()), (LPCWSTR)(p_title.utf16().get_data()), MB_OK | MB_ICONEXCLAMATION | MB_TASKMODAL);
+}
+
 void OS_Windows::initialize_debugging() {
 	SetConsoleCtrlHandler(HandlerRoutine, TRUE);
 }
@@ -204,7 +204,7 @@ void OS_Windows::initialize() {
 	current_pi.pi.hProcess = GetCurrentProcess();
 	process_map->insert(GetCurrentProcessId(), current_pi);
 
-	IP_Unix::make_default();
+	IPUnix::make_default();
 	main_loop = nullptr;
 }
 
@@ -315,8 +315,8 @@ OS::Time OS_Windows::get_time(bool utc) const {
 
 	Time time;
 	time.hour = systemtime.wHour;
-	time.min = systemtime.wMinute;
-	time.sec = systemtime.wSecond;
+	time.minute = systemtime.wMinute;
+	time.second = systemtime.wSecond;
 	return time;
 }
 
@@ -407,8 +407,8 @@ String OS_Windows::_quote_command_line_argument(const String &p_text) const {
 Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments, String *r_pipe, int *r_exitcode, bool read_stderr, Mutex *p_pipe_mutex) {
 	String path = p_path.replace("/", "\\");
 	String command = _quote_command_line_argument(path);
-	for (const List<String>::Element *E = p_arguments.front(); E; E = E->next()) {
-		command += " " + _quote_command_line_argument(E->get());
+	for (const String &E : p_arguments) {
+		command += " " + _quote_command_line_argument(E);
 	}
 
 	if (r_pipe) {
@@ -463,8 +463,8 @@ Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments,
 Error OS_Windows::create_process(const String &p_path, const List<String> &p_arguments, ProcessID *r_child_id) {
 	String path = p_path.replace("/", "\\");
 	String command = _quote_command_line_argument(path);
-	for (const List<String>::Element *E = p_arguments.front(); E; E = E->next()) {
-		command += " " + _quote_command_line_argument(E->get());
+	for (const String &E : p_arguments) {
+		command += " " + _quote_command_line_argument(E);
 	}
 
 	ProcessInfo pi;
@@ -553,8 +553,27 @@ String OS_Windows::get_stdin_string(bool p_block) {
 }
 
 Error OS_Windows::shell_open(String p_uri) {
-	ShellExecuteW(nullptr, nullptr, (LPCWSTR)(p_uri.utf16().get_data()), nullptr, nullptr, SW_SHOWNORMAL);
-	return OK;
+	INT_PTR ret = (INT_PTR)ShellExecuteW(nullptr, nullptr, (LPCWSTR)(p_uri.utf16().get_data()), nullptr, nullptr, SW_SHOWNORMAL);
+	if (ret > 32) {
+		return OK;
+	} else {
+		switch (ret) {
+			case ERROR_FILE_NOT_FOUND:
+			case SE_ERR_DLLNOTFOUND:
+				return ERR_FILE_NOT_FOUND;
+			case ERROR_PATH_NOT_FOUND:
+				return ERR_FILE_BAD_PATH;
+			case ERROR_BAD_FORMAT:
+				return ERR_FILE_CORRUPT;
+			case SE_ERR_ACCESSDENIED:
+				return ERR_UNAUTHORIZED;
+			case 0:
+			case SE_ERR_OOM:
+				return ERR_OUT_OF_MEMORY;
+			default:
+				return FAILED;
+		}
+	}
 }
 
 String OS_Windows::get_locale() const {
@@ -631,31 +650,54 @@ MainLoop *OS_Windows::get_main_loop() const {
 }
 
 String OS_Windows::get_config_path() const {
-	if (has_environment("XDG_CONFIG_HOME")) { // unlikely, but after all why not?
-		return get_environment("XDG_CONFIG_HOME");
-	} else if (has_environment("APPDATA")) {
-		return get_environment("APPDATA");
-	} else {
-		return ".";
+	// The XDG Base Directory specification technically only applies on Linux/*BSD, but it doesn't hurt to support it on Windows as well.
+	if (has_environment("XDG_CONFIG_HOME")) {
+		if (get_environment("XDG_CONFIG_HOME").is_absolute_path()) {
+			return get_environment("XDG_CONFIG_HOME").replace("\\", "/");
+		} else {
+			WARN_PRINT_ONCE("`XDG_CONFIG_HOME` is a relative path. Ignoring its value and falling back to `%APPDATA%` or `.` per the XDG Base Directory specification.");
+		}
 	}
+	if (has_environment("APPDATA")) {
+		return get_environment("APPDATA").replace("\\", "/");
+	}
+	return ".";
 }
 
 String OS_Windows::get_data_path() const {
+	// The XDG Base Directory specification technically only applies on Linux/*BSD, but it doesn't hurt to support it on Windows as well.
 	if (has_environment("XDG_DATA_HOME")) {
-		return get_environment("XDG_DATA_HOME");
-	} else {
-		return get_config_path();
+		if (get_environment("XDG_DATA_HOME").is_absolute_path()) {
+			return get_environment("XDG_DATA_HOME").replace("\\", "/");
+		} else {
+			WARN_PRINT_ONCE("`XDG_DATA_HOME` is a relative path. Ignoring its value and falling back to `get_config_path()` per the XDG Base Directory specification.");
+		}
 	}
+	return get_config_path();
 }
 
 String OS_Windows::get_cache_path() const {
-	if (has_environment("XDG_CACHE_HOME")) {
-		return get_environment("XDG_CACHE_HOME");
-	} else if (has_environment("TEMP")) {
-		return get_environment("TEMP");
-	} else {
-		return get_config_path();
+	static String cache_path_cache;
+	if (cache_path_cache.is_empty()) {
+		// The XDG Base Directory specification technically only applies on Linux/*BSD, but it doesn't hurt to support it on Windows as well.
+		if (has_environment("XDG_CACHE_HOME")) {
+			if (get_environment("XDG_CACHE_HOME").is_absolute_path()) {
+				cache_path_cache = get_environment("XDG_CACHE_HOME").replace("\\", "/");
+			} else {
+				WARN_PRINT_ONCE("`XDG_CACHE_HOME` is a relative path. Ignoring its value and falling back to `%LOCALAPPDATA%\\cache`, `%TEMP%` or `get_config_path()` per the XDG Base Directory specification.");
+			}
+		}
+		if (cache_path_cache.is_empty() && has_environment("LOCALAPPDATA")) {
+			cache_path_cache = get_environment("LOCALAPPDATA").replace("\\", "/");
+		}
+		if (cache_path_cache.is_empty() && has_environment("TEMP")) {
+			cache_path_cache = get_environment("TEMP").replace("\\", "/");
+		}
+		if (cache_path_cache.is_empty()) {
+			cache_path_cache = get_config_path();
+		}
 	}
+	return cache_path_cache;
 }
 
 // Get properly capitalized engine name for system paths
@@ -663,7 +705,7 @@ String OS_Windows::get_godot_dir_name() const {
 	return String(VERSION_SHORT_NAME).capitalize();
 }
 
-String OS_Windows::get_system_dir(SystemDir p_dir) const {
+String OS_Windows::get_system_dir(SystemDir p_dir, bool p_shared_storage) const {
 	KNOWNFOLDERID id;
 
 	switch (p_dir) {
@@ -696,7 +738,7 @@ String OS_Windows::get_system_dir(SystemDir p_dir) const {
 	PWSTR szPath;
 	HRESULT res = SHGetKnownFolderPath(id, 0, nullptr, &szPath);
 	ERR_FAIL_COND_V(res != S_OK, String());
-	String path = String::utf16((const char16_t *)szPath);
+	String path = String::utf16((const char16_t *)szPath).replace("\\", "/");
 	CoTaskMemFree(szPath);
 	return path;
 }

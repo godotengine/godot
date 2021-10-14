@@ -10,34 +10,26 @@
 	</tutorials>
 	<methods>
 		<method name="get_constructor" qualifiers="const">
-			<return type="Dictionary">
-			</return>
+			<return type="Dictionary" />
 			<description>
 			</description>
 		</method>
 		<method name="get_constructor_type" qualifiers="const">
-			<return type="int" enum="Variant.Type">
-			</return>
+			<return type="int" enum="Variant.Type" />
 			<description>
 			</description>
 		</method>
 		<method name="set_constructor">
-			<return type="void">
-			</return>
-			<argument index="0" name="constructor" type="Dictionary">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="constructor" type="Dictionary" />
 			<description>
 			</description>
 		</method>
 		<method name="set_constructor_type">
-			<return type="void">
-			</return>
-			<argument index="0" name="type" type="int" enum="Variant.Type">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="type" type="int" enum="Variant.Type" />
 			<description>
 			</description>
 		</method>
 	</methods>
-	<constants>
-	</constants>
 </class>

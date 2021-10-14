@@ -11,20 +11,16 @@
 	<tutorials>
 		<link title="OS Test Demo">https://godotengine.org/asset-library/asset/677</link>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="columns" type="int" setter="set_columns" getter="get_columns" default="1">
 			The number of columns in the [GridContainer]. If modified, [GridContainer] reorders its Control-derived children to accommodate the new layout.
 		</member>
 	</members>
-	<constants>
-	</constants>
 	<theme_items>
-		<theme_item name="hseparation" type="int" default="4">
+		<theme_item name="hseparation" data_type="constant" type="int" default="4">
 			The horizontal separation of children nodes.
 		</theme_item>
-		<theme_item name="vseparation" type="int" default="4">
+		<theme_item name="vseparation" data_type="constant" type="int" default="4">
 			The vertical separation of children nodes.
 		</theme_item>
 	</theme_items>

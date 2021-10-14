@@ -43,7 +43,7 @@
 #include "scene/gui/tree.h"
 #include "scene/main/timer.h"
 
-#include "core/os/dir_access.h"
+#include "core/io/dir_access.h"
 #include "core/os/thread.h"
 
 #include "create_dialog.h"
@@ -101,6 +101,7 @@ private:
 		FILE_SHOW_IN_EXPLORER,
 		FILE_COPY_PATH,
 		FILE_NEW_RESOURCE,
+		FILE_NEW_TEXTFILE,
 		FOLDER_EXPAND_ALL,
 		FOLDER_COLLAPSE_ALL,
 	};

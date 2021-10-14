@@ -33,8 +33,6 @@
 #include "collision_shape_3d.h"
 #include "core/core_string_names.h"
 #include "physics_body_3d.h"
-#include "scene/resources/material.h"
-#include "skeleton_3d.h"
 
 bool MeshInstance3D::_set(const StringName &p_name, const Variant &p_value) {
 	//this is not _too_ bad performance wise, really. it only arrives here if the property was not set anywhere else.
@@ -88,19 +86,19 @@ bool MeshInstance3D::_get(const StringName &p_name, Variant &r_ret) const {
 
 void MeshInstance3D::_get_property_list(List<PropertyInfo> *p_list) const {
 	List<String> ls;
-	for (const Map<StringName, BlendShapeTrack>::Element *E = blend_shape_tracks.front(); E; E = E->next()) {
-		ls.push_back(E->key());
+	for (const KeyValue<StringName, BlendShapeTrack> &E : blend_shape_tracks) {
+		ls.push_back(E.key);
 	}
 
 	ls.sort();
 
-	for (List<String>::Element *E = ls.front(); E; E = E->next()) {
-		p_list->push_back(PropertyInfo(Variant::FLOAT, E->get(), PROPERTY_HINT_RANGE, "-1,1,0.00001"));
+	for (const String &E : ls) {
+		p_list->push_back(PropertyInfo(Variant::FLOAT, E, PROPERTY_HINT_RANGE, "-1,1,0.00001"));
 	}
 
 	if (mesh.is_valid()) {
 		for (int i = 0; i < mesh->get_surface_count(); i++) {
-			p_list->push_back(PropertyInfo(Variant::OBJECT, "surface_material_override/" + itos(i), PROPERTY_HINT_RESOURCE_TYPE, "ShaderMaterial,StandardMaterial3D", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_DEFERRED_SET_RESOURCE));
+			p_list->push_back(PropertyInfo(Variant::OBJECT, "surface_material_override/" + itos(i), PROPERTY_HINT_RESOURCE_TYPE, "BaseMaterial3D,ShaderMaterial", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_DEFERRED_SET_RESOURCE));
 		}
 	}
 }
@@ -133,7 +131,7 @@ void MeshInstance3D::set_mesh(const Ref<Mesh> &p_mesh) {
 		set_base(RID());
 	}
 
-	update_gizmo();
+	update_gizmos();
 
 	notify_property_list_changed();
 }
@@ -148,11 +146,13 @@ void MeshInstance3D::_resolve_skeleton_path() {
 	if (!skeleton_path.is_empty()) {
 		Skeleton3D *skeleton = Object::cast_to<Skeleton3D>(get_node(skeleton_path));
 		if (skeleton) {
-			new_skin_reference = skeleton->register_skin(skin_internal);
 			if (skin_internal.is_null()) {
+				new_skin_reference = skeleton->register_skin(skeleton->create_skin_from_rest_transforms());
 				//a skin was created for us
 				skin_internal = new_skin_reference->get_skin();
 				notify_property_list_changed();
+			} else {
+				new_skin_reference = skeleton->register_skin(skin_internal);
 			}
 		}
 	}
@@ -241,12 +241,12 @@ void MeshInstance3D::create_trimesh_collision() {
 	}
 }
 
-Node *MeshInstance3D::create_convex_collision_node() {
+Node *MeshInstance3D::create_convex_collision_node(bool p_clean, bool p_simplify) {
 	if (mesh.is_null()) {
 		return nullptr;
 	}
 
-	Ref<Shape3D> shape = mesh->create_convex_shape();
+	Ref<Shape3D> shape = mesh->create_convex_shape(p_clean, p_simplify);
 	if (shape.is_null()) {
 		return nullptr;
 	}
@@ -258,8 +258,8 @@ Node *MeshInstance3D::create_convex_collision_node() {
 	return static_body;
 }
 
-void MeshInstance3D::create_convex_collision() {
-	StaticBody3D *static_body = Object::cast_to<StaticBody3D>(create_convex_collision_node());
+void MeshInstance3D::create_convex_collision(bool p_clean, bool p_simplify) {
+	StaticBody3D *static_body = Object::cast_to<StaticBody3D>(create_convex_collision_node(p_clean, p_simplify));
 	ERR_FAIL_COND(!static_body);
 	static_body->set_name(String(get_name()) + "_col");
 
@@ -268,6 +268,42 @@ void MeshInstance3D::create_convex_collision() {
 		CollisionShape3D *cshape = Object::cast_to<CollisionShape3D>(static_body->get_child(0));
 		static_body->set_owner(get_owner());
 		cshape->set_owner(get_owner());
+	}
+}
+
+Node *MeshInstance3D::create_multiple_convex_collisions_node() {
+	if (mesh.is_null()) {
+		return nullptr;
+	}
+
+	Mesh::ConvexDecompositionSettings settings;
+	Vector<Ref<Shape3D>> shapes = mesh->convex_decompose(settings);
+	if (!shapes.size()) {
+		return nullptr;
+	}
+
+	StaticBody3D *static_body = memnew(StaticBody3D);
+	for (int i = 0; i < shapes.size(); i++) {
+		CollisionShape3D *cshape = memnew(CollisionShape3D);
+		cshape->set_shape(shapes[i]);
+		static_body->add_child(cshape);
+	}
+	return static_body;
+}
+
+void MeshInstance3D::create_multiple_convex_collisions() {
+	StaticBody3D *static_body = Object::cast_to<StaticBody3D>(create_multiple_convex_collisions_node());
+	ERR_FAIL_COND(!static_body);
+	static_body->set_name(String(get_name()) + "_col");
+
+	add_child(static_body);
+	if (get_owner()) {
+		static_body->set_owner(get_owner());
+		int count = static_body->get_child_count();
+		for (int i = 0; i < count; i++) {
+			CollisionShape3D *cshape = Object::cast_to<CollisionShape3D>(static_body->get_child(i));
+			cshape->set_owner(get_owner());
+		}
 	}
 }
 
@@ -321,6 +357,7 @@ Ref<Material> MeshInstance3D::get_active_material(int p_surface) const {
 void MeshInstance3D::_mesh_changed() {
 	ERR_FAIL_COND(mesh.is_null());
 	surface_override_materials.resize(mesh->get_surface_count());
+	update_gizmos();
 }
 
 void MeshInstance3D::create_debug_tangents() {
@@ -334,6 +371,8 @@ void MeshInstance3D::create_debug_tangents() {
 
 	for (int i = 0; i < mesh->get_surface_count(); i++) {
 		Array arrays = mesh->surface_get_arrays(i);
+		ERR_CONTINUE(arrays.size() != Mesh::ARRAY_MAX);
+
 		Vector<Vector3> verts = arrays[Mesh::ARRAY_VERTEX];
 		Vector<Vector3> norms = arrays[Mesh::ARRAY_NORMAL];
 		if (norms.size() == 0) {
@@ -369,14 +408,14 @@ void MeshInstance3D::create_debug_tangents() {
 
 	if (lines.size()) {
 		Ref<StandardMaterial3D> sm;
-		sm.instance();
+		sm.instantiate();
 
 		sm->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
 		sm->set_flag(StandardMaterial3D::FLAG_SRGB_VERTEX_COLOR, true);
 		sm->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
 
 		Ref<ArrayMesh> am;
-		am.instance();
+		am.instantiate();
 		Array a;
 		a.resize(Mesh::ARRAY_MAX);
 		a[Mesh::ARRAY_VERTEX] = lines;
@@ -391,7 +430,7 @@ void MeshInstance3D::create_debug_tangents() {
 		add_child(mi);
 #ifdef TOOLS_ENABLED
 
-		if (this == get_tree()->get_edited_scene_root()) {
+		if (is_inside_tree() && this == get_tree()->get_edited_scene_root()) {
 			mi->set_owner(this);
 		} else {
 			mi->set_owner(get_owner());
@@ -415,8 +454,10 @@ void MeshInstance3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("create_trimesh_collision"), &MeshInstance3D::create_trimesh_collision);
 	ClassDB::set_method_flags("MeshInstance3D", "create_trimesh_collision", METHOD_FLAGS_DEFAULT);
-	ClassDB::bind_method(D_METHOD("create_convex_collision"), &MeshInstance3D::create_convex_collision);
+	ClassDB::bind_method(D_METHOD("create_convex_collision", "clean", "simplify"), &MeshInstance3D::create_convex_collision, DEFVAL(true), DEFVAL(false));
 	ClassDB::set_method_flags("MeshInstance3D", "create_convex_collision", METHOD_FLAGS_DEFAULT);
+	ClassDB::bind_method(D_METHOD("create_multiple_convex_collisions"), &MeshInstance3D::create_multiple_convex_collisions);
+	ClassDB::set_method_flags("MeshInstance3D", "create_multiple_convex_collisions", METHOD_FLAGS_DEFAULT);
 
 	ClassDB::bind_method(D_METHOD("create_debug_tangents"), &MeshInstance3D::create_debug_tangents);
 	ClassDB::set_method_flags("MeshInstance3D", "create_debug_tangents", METHOD_FLAGS_DEFAULT | METHOD_FLAG_EDITOR);

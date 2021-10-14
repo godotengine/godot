@@ -6,7 +6,7 @@ buildscript {
 
     repositories {
         google()
-        jcenter()
+        mavenCentral()
     }
     dependencies {
         classpath libraries.androidGradlePlugin
@@ -18,9 +18,8 @@ apply plugin: 'com.android.application'
 
 allprojects {
     repositories {
-        mavenCentral()
         google()
-        jcenter()
+        mavenCentral()
 
         // Godot user plugins custom maven repos
         String[] mavenRepos = getGodotPluginsMavenRepos()
@@ -35,9 +34,8 @@ allprojects {
 }
 
 dependencies {
-    implementation libraries.supportCoreUtils
     implementation libraries.kotlinStdLib
-    implementation libraries.v4Support
+    implementation libraries.androidxFragment
 
     if (rootProject.findProject(":lib")) {
         implementation project(":lib")
@@ -73,6 +71,8 @@ android {
         sourceCompatibility versions.javaVersion
         targetCompatibility versions.javaVersion
     }
+
+    assetPacks = [":assetPacks:installTime"]
 
     defaultConfig {
         // The default ignore pattern for the 'assets' directory includes hidden files and directories which are used by Godot projects.
@@ -113,6 +113,15 @@ android {
     }
 
     signingConfigs {
+        debug {
+            if (hasCustomDebugKeystore()) {
+                storeFile new File(getDebugKeystoreFile())
+                storePassword getDebugKeystorePassword()
+                keyAlias getDebugKeyAlias()
+                keyPassword getDebugKeystorePassword()
+            }
+        }
+
         release {
             File keystoreFile = new File(getReleaseKeystoreFile())
             if (keystoreFile.isFile()) {

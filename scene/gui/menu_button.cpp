@@ -33,7 +33,7 @@
 #include "core/os/keyboard.h"
 #include "scene/main/window.h"
 
-void MenuButton::_unhandled_key_input(Ref<InputEvent> p_event) {
+void MenuButton::unhandled_key_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
 	if (!_is_focus_owner_in_shorcut_context()) {
@@ -44,7 +44,7 @@ void MenuButton::_unhandled_key_input(Ref<InputEvent> p_event) {
 		return;
 	}
 
-	if (p_event->is_pressed() && !p_event->is_echo() && (Object::cast_to<InputEventKey>(p_event.ptr()) || Object::cast_to<InputEventJoypadButton>(p_event.ptr()) || Object::cast_to<InputEventAction>(*p_event))) {
+	if (p_event->is_pressed() && !p_event->is_echo() && (Object::cast_to<InputEventKey>(p_event.ptr()) || Object::cast_to<InputEventJoypadButton>(p_event.ptr()) || Object::cast_to<InputEventAction>(*p_event) || Object::cast_to<InputEventShortcut>(*p_event))) {
 		if (!get_parent() || !is_visible_in_tree() || is_disabled()) {
 			return;
 		}
@@ -55,22 +55,55 @@ void MenuButton::_unhandled_key_input(Ref<InputEvent> p_event) {
 	}
 }
 
+void MenuButton::_popup_visibility_changed(bool p_visible) {
+	set_pressed(p_visible);
+
+	if (!p_visible) {
+		set_process_internal(false);
+		return;
+	}
+
+	if (switch_on_hover) {
+		Window *window = Object::cast_to<Window>(get_viewport());
+		if (window) {
+			mouse_pos_adjusted = window->get_position();
+
+			if (window->is_embedded()) {
+				Window *window_parent = Object::cast_to<Window>(window->get_parent()->get_viewport());
+				while (window_parent) {
+					if (!window_parent->is_embedded()) {
+						mouse_pos_adjusted += window_parent->get_position();
+						break;
+					}
+
+					window_parent = Object::cast_to<Window>(window_parent->get_parent()->get_viewport());
+				}
+			}
+
+			set_process_internal(true);
+		}
+	}
+}
+
 void MenuButton::pressed() {
-	Size2 size = get_size();
-
-	Point2 gp = get_screen_position();
-	gp.y += get_size().y;
-
-	popup->set_position(gp);
+	emit_signal(SNAME("about_to_popup"));
+	Size2 size = get_size() * get_viewport()->get_canvas_transform().get_scale();
 
 	popup->set_size(Size2(size.width, 0));
-	popup->set_parent_rect(Rect2(Point2(gp - popup->get_position()), get_size()));
+	Point2 gp = get_screen_position();
+	gp.y += size.y;
+	if (is_layout_rtl()) {
+		gp.x += size.width - popup->get_size().width;
+	}
+	popup->set_position(gp);
+	popup->set_parent_rect(Rect2(Point2(gp - popup->get_position()), size));
+
 	popup->take_mouse_focus();
 	popup->popup();
 }
 
-void MenuButton::_gui_input(Ref<InputEvent> p_event) {
-	BaseButton::_gui_input(p_event);
+void MenuButton::gui_input(const Ref<InputEvent> &p_event) {
+	BaseButton::gui_input(p_event);
 }
 
 PopupMenu *MenuButton::get_popup() const {
@@ -94,10 +127,22 @@ bool MenuButton::is_switch_on_hover() {
 }
 
 void MenuButton::_notification(int p_what) {
-	if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
-		if (!is_visible_in_tree()) {
-			popup->hide();
-		}
+	switch (p_what) {
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+			if (!is_visible_in_tree()) {
+				popup->hide();
+			}
+		} break;
+		case NOTIFICATION_INTERNAL_PROCESS: {
+			Vector2i mouse_pos = DisplayServer::get_singleton()->mouse_get_position() - mouse_pos_adjusted;
+			MenuButton *menu_btn_other = Object::cast_to<MenuButton>(get_viewport()->gui_find_control(mouse_pos));
+
+			if (menu_btn_other && menu_btn_other != this && menu_btn_other->is_switch_on_hover() && !menu_btn_other->is_disabled() &&
+					(get_parent()->is_ancestor_of(menu_btn_other) || menu_btn_other->get_parent()->is_ancestor_of(popup))) {
+				popup->hide();
+				menu_btn_other->pressed();
+			}
+		} break;
 	}
 }
 
@@ -129,9 +174,9 @@ MenuButton::MenuButton() {
 
 	popup = memnew(PopupMenu);
 	popup->hide();
-	add_child(popup);
-	popup->connect("about_to_popup", callable_mp((BaseButton *)this, &BaseButton::set_pressed), varray(true)); // For when switching from another MenuButton.
-	popup->connect("popup_hide", callable_mp((BaseButton *)this, &BaseButton::set_pressed), varray(false));
+	add_child(popup, false, INTERNAL_MODE_FRONT);
+	popup->connect("about_to_popup", callable_mp(this, &MenuButton::_popup_visibility_changed), varray(true));
+	popup->connect("popup_hide", callable_mp(this, &MenuButton::_popup_visibility_changed), varray(false));
 }
 
 MenuButton::~MenuButton() {

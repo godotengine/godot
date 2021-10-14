@@ -31,10 +31,10 @@
 #ifndef EXPRESSION_H
 #define EXPRESSION_H
 
-#include "core/object/reference.h"
+#include "core/object/ref_counted.h"
 
-class Expression : public Reference {
-	GDCLASS(Expression, Reference);
+class Expression : public RefCounted {
+	GDCLASS(Expression, RefCounted);
 
 private:
 	struct Input {

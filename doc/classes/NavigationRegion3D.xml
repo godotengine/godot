@@ -11,8 +11,7 @@
 	</tutorials>
 	<methods>
 		<method name="bake_navigation_mesh">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Bakes the [NavigationMesh]. The baking is done in a separate thread because navigation baking is not a cheap operation. This can be done at runtime. When it is completed, it automatically sets the new [NavigationMesh].
 			</description>
@@ -41,6 +40,4 @@
 			</description>
 		</signal>
 	</signals>
-	<constants>
-	</constants>
 </class>

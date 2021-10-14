@@ -15,7 +15,7 @@ functionality. If anything we should give this parser back to assimp at some poi
 
 # Updating assimp fbx parser
 
-Don't. it's not possible the code is rewritten in many areas to remove thirdparty deps and various bugs are fixed.
+Don't. It's not possible the code is rewritten in many areas to remove thirdparty deps and various bugs are fixed.
 
 Many days were put into rewriting the parser to use safe code and safe memory accessors.
 
@@ -79,23 +79,23 @@ enum RotOrder {
 // references: ComputePivotTransform / run the calculation
 // This is the local pivot transform for the node, not the global transforms
 Transform ComputePivotTransform(
-		Transform chain[TransformationComp_MAXIMUM],
-		Transform &geometric_transform) {
+		Transform3D chain[TransformationComp_MAXIMUM],
+		Transform3D &geometric_transform) {
 	// Maya pivots
-	Transform T = chain[TransformationComp_Translation];
-	Transform Roff = chain[TransformationComp_RotationOffset];
-	Transform Rp = chain[TransformationComp_RotationPivot];
-	Transform Rpre = chain[TransformationComp_PreRotation];
-	Transform R = chain[TransformationComp_Rotation];
-	Transform Rpost = chain[TransformationComp_PostRotation];
-	Transform Soff = chain[TransformationComp_ScalingOffset];
-	Transform Sp = chain[TransformationComp_ScalingPivot];
-	Transform S = chain[TransformationComp_Scaling];
+	Transform3D T = chain[TransformationComp_Translation];
+	Transform3D Roff = chain[TransformationComp_RotationOffset];
+	Transform3D Rp = chain[TransformationComp_RotationPivot];
+	Transform3D Rpre = chain[TransformationComp_PreRotation];
+	Transform3D R = chain[TransformationComp_Rotation];
+	Transform3D Rpost = chain[TransformationComp_PostRotation];
+	Transform3D Soff = chain[TransformationComp_ScalingOffset];
+	Transform3D Sp = chain[TransformationComp_ScalingPivot];
+	Transform3D S = chain[TransformationComp_Scaling];
 
 	// 3DS Max Pivots
-	Transform OT = chain[TransformationComp_GeometricTranslation];
-	Transform OR = chain[TransformationComp_GeometricRotation];
-	Transform OS = chain[TransformationComp_GeometricScaling];
+	Transform3D OT = chain[TransformationComp_GeometricTranslation];
+	Transform3D OR = chain[TransformationComp_GeometricRotation];
+	Transform3D OS = chain[TransformationComp_GeometricScaling];
 
 	// Calculate 3DS max pivot transform - use geometric space (e.g doesn't effect children nodes only the current node)
 	geometric_transform = OT * OR * OS;

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="SeparationRayShape3D" inherits="Shape3D" version="4.0">
+	<brief_description>
+		Separation ray shape for 3D collisions.
+	</brief_description>
+	<description>
+		Separation ray shape for 3D collisions, which can be set into a [PhysicsBody3D] or [Area3D]. A ray is not really a collision body; instead, it tries to separate itself from whatever is touching its far endpoint. It's often useful for characters.
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="length" type="float" setter="set_length" getter="get_length" default="1.0">
+			The ray's length.
+		</member>
+		<member name="slide_on_slope" type="bool" setter="set_slide_on_slope" getter="get_slide_on_slope" default="false">
+			If [code]false[/code] (default), the shape always separates and returns a normal along its own direction.
+			If [code]true[/code], the shape can return the correct normal and separate in any direction, allowing sliding motion on slopes.
+		</member>
+	</members>
+</class>

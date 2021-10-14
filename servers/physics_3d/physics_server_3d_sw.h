@@ -42,22 +42,19 @@ class PhysicsServer3DSW : public PhysicsServer3D {
 	GDCLASS(PhysicsServer3DSW, PhysicsServer3D);
 
 	friend class PhysicsDirectSpaceState3DSW;
-	bool active;
-	int iterations;
-	real_t last_step;
+	bool active = true;
+	int iterations = 0;
 
-	int island_count;
-	int active_objects;
-	int collision_pairs;
+	int island_count = 0;
+	int active_objects = 0;
+	int collision_pairs = 0;
 
-	bool using_threads;
-	bool doing_sync;
-	bool flushing_queries;
+	bool using_threads = false;
+	bool doing_sync = false;
+	bool flushing_queries = false;
 
-	Step3DSW *stepper;
+	Step3DSW *stepper = nullptr;
 	Set<const Space3DSW *> active_spaces;
-
-	PhysicsDirectBodyState3DSW *direct_state;
 
 	mutable RID_PtrOwner<Shape3DSW, true> shape_owner;
 	mutable RID_PtrOwner<Space3DSW, true> space_owner;
@@ -82,8 +79,8 @@ public:
 
 	static void _shape_col_cbk(const Vector3 &p_point_A, int p_index_A, const Vector3 &p_point_B, int p_index_B, void *p_userdata);
 
-	virtual RID plane_shape_create() override;
-	virtual RID ray_shape_create() override;
+	virtual RID world_boundary_shape_create() override;
+	virtual RID separation_ray_shape_create() override;
 	virtual RID sphere_shape_create() override;
 	virtual RID box_shape_create() override;
 	virtual RID capsule_shape_create() override;
@@ -130,13 +127,13 @@ public:
 	virtual void area_set_space(RID p_area, RID p_space) override;
 	virtual RID area_get_space(RID p_area) const override;
 
-	virtual void area_add_shape(RID p_area, RID p_shape, const Transform &p_transform = Transform(), bool p_disabled = false) override;
+	virtual void area_add_shape(RID p_area, RID p_shape, const Transform3D &p_transform = Transform3D(), bool p_disabled = false) override;
 	virtual void area_set_shape(RID p_area, int p_shape_idx, RID p_shape) override;
-	virtual void area_set_shape_transform(RID p_area, int p_shape_idx, const Transform &p_transform) override;
+	virtual void area_set_shape_transform(RID p_area, int p_shape_idx, const Transform3D &p_transform) override;
 
 	virtual int area_get_shape_count(RID p_area) const override;
 	virtual RID area_get_shape(RID p_area, int p_shape_idx) const override;
-	virtual Transform area_get_shape_transform(RID p_area, int p_shape_idx) const override;
+	virtual Transform3D area_get_shape_transform(RID p_area, int p_shape_idx) const override;
 
 	virtual void area_remove_shape(RID p_area, int p_shape_idx) override;
 	virtual void area_clear_shapes(RID p_area) override;
@@ -147,10 +144,10 @@ public:
 	virtual ObjectID area_get_object_instance_id(RID p_area) const override;
 
 	virtual void area_set_param(RID p_area, AreaParameter p_param, const Variant &p_value) override;
-	virtual void area_set_transform(RID p_area, const Transform &p_transform) override;
+	virtual void area_set_transform(RID p_area, const Transform3D &p_transform) override;
 
 	virtual Variant area_get_param(RID p_area, AreaParameter p_param) const override;
-	virtual Transform area_get_transform(RID p_area) const override;
+	virtual Transform3D area_get_transform(RID p_area) const override;
 
 	virtual void area_set_ray_pickable(RID p_area, bool p_enable) override;
 
@@ -173,13 +170,13 @@ public:
 	virtual void body_set_mode(RID p_body, BodyMode p_mode) override;
 	virtual BodyMode body_get_mode(RID p_body) const override;
 
-	virtual void body_add_shape(RID p_body, RID p_shape, const Transform &p_transform = Transform(), bool p_disabled = false) override;
+	virtual void body_add_shape(RID p_body, RID p_shape, const Transform3D &p_transform = Transform3D(), bool p_disabled = false) override;
 	virtual void body_set_shape(RID p_body, int p_shape_idx, RID p_shape) override;
-	virtual void body_set_shape_transform(RID p_body, int p_shape_idx, const Transform &p_transform) override;
+	virtual void body_set_shape_transform(RID p_body, int p_shape_idx, const Transform3D &p_transform) override;
 
 	virtual int body_get_shape_count(RID p_body) const override;
 	virtual RID body_get_shape(RID p_body, int p_shape_idx) const override;
-	virtual Transform body_get_shape_transform(RID p_body, int p_shape_idx) const override;
+	virtual Transform3D body_get_shape_transform(RID p_body, int p_shape_idx) const override;
 
 	virtual void body_set_shape_disabled(RID p_body, int p_shape_idx, bool p_disabled) override;
 
@@ -201,11 +198,10 @@ public:
 	virtual void body_set_user_flags(RID p_body, uint32_t p_flags) override;
 	virtual uint32_t body_get_user_flags(RID p_body) const override;
 
-	virtual void body_set_param(RID p_body, BodyParameter p_param, real_t p_value) override;
-	virtual real_t body_get_param(RID p_body, BodyParameter p_param) const override;
+	virtual void body_set_param(RID p_body, BodyParameter p_param, const Variant &p_value) override;
+	virtual Variant body_get_param(RID p_body, BodyParameter p_param) const override;
 
-	virtual void body_set_kinematic_safe_margin(RID p_body, real_t p_margin) override;
-	virtual real_t body_get_kinematic_safe_margin(RID p_body) const override;
+	virtual void body_reset_mass_properties(RID p_body) override;
 
 	virtual void body_set_state(RID p_body, BodyState p_state, const Variant &p_variant) override;
 	virtual Variant body_get_state(RID p_body, BodyState p_state) const override;
@@ -241,12 +237,12 @@ public:
 	virtual void body_set_max_contacts_reported(RID p_body, int p_contacts) override;
 	virtual int body_get_max_contacts_reported(RID p_body) const override;
 
+	virtual void body_set_state_sync_callback(RID p_body, void *p_instance, BodyStateCallback p_callback) override;
 	virtual void body_set_force_integration_callback(RID p_body, const Callable &p_callable, const Variant &p_udata = Variant()) override;
 
 	virtual void body_set_ray_pickable(RID p_body, bool p_enable) override;
 
-	virtual bool body_test_motion(RID p_body, const Transform &p_from, const Vector3 &p_motion, bool p_infinite_inertia, MotionResult *r_result = nullptr, bool p_exclude_raycast_shapes = true) override;
-	virtual int body_test_ray_separation(RID p_body, const Transform &p_transform, bool p_infinite_inertia, Vector3 &r_recover_motion, SeparationResult *r_results, int p_result_max, real_t p_margin = 0.001) override;
+	virtual bool body_test_motion(RID p_body, const MotionParameters &p_parameters, MotionResult *r_result = nullptr) override;
 
 	// this function only works on physics process, errors and returns null otherwise
 	virtual PhysicsDirectBodyState3D *body_get_direct_state(RID p_body) override;
@@ -273,7 +269,7 @@ public:
 	virtual void soft_body_set_state(RID p_body, BodyState p_state, const Variant &p_variant) override;
 	virtual Variant soft_body_get_state(RID p_body, BodyState p_state) const override;
 
-	virtual void soft_body_set_transform(RID p_body, const Transform &p_transform) override;
+	virtual void soft_body_set_transform(RID p_body, const Transform3D &p_transform) override;
 
 	virtual void soft_body_set_ray_pickable(RID p_body, bool p_enable) override;
 
@@ -295,7 +291,7 @@ public:
 	virtual void soft_body_set_drag_coefficient(RID p_body, real_t p_drag_coefficient) override;
 	virtual real_t soft_body_get_drag_coefficient(RID p_body) const override;
 
-	virtual void soft_body_set_mesh(RID p_body, const REF &p_mesh) override;
+	virtual void soft_body_set_mesh(RID p_body, RID p_mesh) override;
 
 	virtual AABB soft_body_get_bounds(RID p_body) const override;
 
@@ -323,7 +319,7 @@ public:
 	virtual void pin_joint_set_local_b(RID p_joint, const Vector3 &p_B) override;
 	virtual Vector3 pin_joint_get_local_b(RID p_joint) const override;
 
-	virtual void joint_make_hinge(RID p_joint, RID p_body_A, const Transform &p_frame_A, RID p_body_B, const Transform &p_frame_B) override;
+	virtual void joint_make_hinge(RID p_joint, RID p_body_A, const Transform3D &p_frame_A, RID p_body_B, const Transform3D &p_frame_B) override;
 	virtual void joint_make_hinge_simple(RID p_joint, RID p_body_A, const Vector3 &p_pivot_A, const Vector3 &p_axis_A, RID p_body_B, const Vector3 &p_pivot_B, const Vector3 &p_axis_B) override;
 
 	virtual void hinge_joint_set_param(RID p_joint, HingeJointParam p_param, real_t p_value) override;
@@ -332,17 +328,17 @@ public:
 	virtual void hinge_joint_set_flag(RID p_joint, HingeJointFlag p_flag, bool p_value) override;
 	virtual bool hinge_joint_get_flag(RID p_joint, HingeJointFlag p_flag) const override;
 
-	virtual void joint_make_slider(RID p_joint, RID p_body_A, const Transform &p_local_frame_A, RID p_body_B, const Transform &p_local_frame_B) override; //reference frame is A
+	virtual void joint_make_slider(RID p_joint, RID p_body_A, const Transform3D &p_local_frame_A, RID p_body_B, const Transform3D &p_local_frame_B) override; //reference frame is A
 
 	virtual void slider_joint_set_param(RID p_joint, SliderJointParam p_param, real_t p_value) override;
 	virtual real_t slider_joint_get_param(RID p_joint, SliderJointParam p_param) const override;
 
-	virtual void joint_make_cone_twist(RID p_joint, RID p_body_A, const Transform &p_local_frame_A, RID p_body_B, const Transform &p_local_frame_B) override; //reference frame is A
+	virtual void joint_make_cone_twist(RID p_joint, RID p_body_A, const Transform3D &p_local_frame_A, RID p_body_B, const Transform3D &p_local_frame_B) override; //reference frame is A
 
 	virtual void cone_twist_joint_set_param(RID p_joint, ConeTwistJointParam p_param, real_t p_value) override;
 	virtual real_t cone_twist_joint_get_param(RID p_joint, ConeTwistJointParam p_param) const override;
 
-	virtual void joint_make_generic_6dof(RID p_joint, RID p_body_A, const Transform &p_local_frame_A, RID p_body_B, const Transform &p_local_frame_B) override; //reference frame is A
+	virtual void joint_make_generic_6dof(RID p_joint, RID p_body_A, const Transform3D &p_local_frame_A, RID p_body_B, const Transform3D &p_local_frame_B) override; //reference frame is A
 
 	virtual void generic_6dof_joint_set_param(RID p_joint, Vector3::Axis, G6DOFJointAxisParam p_param, real_t p_value) override;
 	virtual real_t generic_6dof_joint_get_param(RID p_joint, Vector3::Axis, G6DOFJointAxisParam p_param) const override;
@@ -369,6 +365,8 @@ public:
 	virtual void flush_queries() override;
 	virtual void end_sync() override;
 	virtual void finish() override;
+
+	virtual void set_collision_iterations(int p_iterations) override;
 
 	virtual bool is_flushing_queries() const override { return flushing_queries; }
 

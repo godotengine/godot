@@ -117,14 +117,14 @@ void EngineDebugger::line_poll() {
 	poll_every++;
 }
 
-void EngineDebugger::iteration(uint64_t p_frame_ticks, uint64_t p_process_ticks, uint64_t p_physics_ticks, float p_physics_frame_time) {
+void EngineDebugger::iteration(uint64_t p_frame_ticks, uint64_t p_process_ticks, uint64_t p_physics_ticks, double p_physics_frame_time) {
 	frame_time = USEC_TO_SEC(p_frame_ticks);
 	process_time = USEC_TO_SEC(p_process_ticks);
 	physics_time = USEC_TO_SEC(p_physics_ticks);
 	physics_frame_time = p_physics_frame_time;
 	// Notify tick to running profilers
-	for (Map<StringName, Profiler>::Element *E = profilers.front(); E; E = E->next()) {
-		Profiler &p = E->get();
+	for (KeyValue<StringName, Profiler> &E : profilers) {
+		Profiler &p = E.value;
 		if (!p.active || !p.tick) {
 			continue;
 		}
@@ -179,9 +179,9 @@ void EngineDebugger::initialize(const String &p_uri, bool p_skip_breakpoints, Ve
 void EngineDebugger::deinitialize() {
 	if (singleton) {
 		// Stop all profilers
-		for (Map<StringName, Profiler>::Element *E = profilers.front(); E; E = E->next()) {
-			if (E->get().active) {
-				singleton->profiler_enable(E->key(), false);
+		for (const KeyValue<StringName, Profiler> &E : profilers) {
+			if (E.value.active) {
+				singleton->profiler_enable(E.key, false);
 			}
 		}
 

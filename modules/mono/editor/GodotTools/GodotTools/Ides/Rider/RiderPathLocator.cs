@@ -11,6 +11,7 @@ using Environment = System.Environment;
 using File = System.IO.File;
 using Path = System.IO.Path;
 using OS = GodotTools.Utils.OS;
+
 // ReSharper disable UnassignedField.Local
 // ReSharper disable InconsistentNaming
 // ReSharper disable UnassignedField.Global
@@ -47,16 +48,16 @@ namespace GodotTools.Ides.Rider
                 GD.PushWarning(e.Message);
             }
 
-            return new RiderInfo[0];
+            return Array.Empty<RiderInfo>();
         }
 
         private static RiderInfo[] CollectAllRiderPathsLinux()
         {
             var installInfos = new List<RiderInfo>();
-            var home = Environment.GetEnvironmentVariable("HOME");
+            string home = Environment.GetEnvironmentVariable("HOME");
             if (!string.IsNullOrEmpty(home))
             {
-                var toolboxRiderRootPath = GetToolboxBaseDir();
+                string toolboxRiderRootPath = GetToolboxBaseDir();
                 installInfos.AddRange(CollectPathsFromToolbox(toolboxRiderRootPath, "bin", "rider.sh", false)
                   .Select(a => new RiderInfo(a, true)).ToList());
 
@@ -65,12 +66,12 @@ namespace GodotTools.Ides.Rider
 
                 if (shortcut.Exists)
                 {
-                    var lines = File.ReadAllLines(shortcut.FullName);
-                    foreach (var line in lines)
+                    string[] lines = File.ReadAllLines(shortcut.FullName);
+                    foreach (string line in lines)
                     {
                         if (!line.StartsWith("Exec=\""))
                             continue;
-                        var path = line.Split('"').Where((item, index) => index == 1).SingleOrDefault();
+                        string path = line.Split('"').Where((item, index) => index == 1).SingleOrDefault();
                         if (string.IsNullOrEmpty(path))
                             continue;
 
@@ -82,7 +83,7 @@ namespace GodotTools.Ides.Rider
             }
 
             // snap install
-            var snapInstallPath = "/snap/rider/current/bin/rider.sh";
+            string snapInstallPath = "/snap/rider/current/bin/rider.sh";
             if (new FileInfo(snapInstallPath).Exists)
                 installInfos.Add(new RiderInfo(snapInstallPath, false));
 
@@ -98,15 +99,15 @@ namespace GodotTools.Ides.Rider
             if (folder.Exists)
             {
                 installInfos.AddRange(folder.GetDirectories("*Rider*.app")
-                  .Select(a => new RiderInfo(Path.Combine(a.FullName, "Contents/MacOS/rider"), false))
-                  .ToList());
+                    .Select(a => new RiderInfo(Path.Combine(a.FullName, "Contents/MacOS/rider"), false))
+                    .ToList());
             }
 
             // /Users/user/Library/Application Support/JetBrains/Toolbox/apps/Rider/ch-1/181.3870.267/Rider EAP.app
             // should be combined with "Contents/MacOS/rider"
-            var toolboxRiderRootPath = GetToolboxBaseDir();
+            string toolboxRiderRootPath = GetToolboxBaseDir();
             var paths = CollectPathsFromToolbox(toolboxRiderRootPath, "", "Rider*.app", true)
-              .Select(a => new RiderInfo(Path.Combine(a, "Contents/MacOS/rider"), true));
+                .Select(a => new RiderInfo(Path.Combine(a, "Contents/MacOS/rider"), true));
             installInfos.AddRange(paths);
 
             return installInfos.ToArray();
@@ -134,7 +135,7 @@ namespace GodotTools.Ides.Rider
         {
             if (OS.IsWindows)
             {
-                var localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+                string localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
                 return GetToolboxRiderRootPath(localAppData);
             }
 
@@ -249,7 +250,7 @@ namespace GodotTools.Ides.Rider
           bool isMac)
         {
             if (!Directory.Exists(toolboxRiderRootPath))
-                return new string[0];
+                return Array.Empty<string>();
 
             var channelDirs = Directory.GetDirectories(toolboxRiderRootPath);
             var paths = channelDirs.SelectMany(channelDir =>
@@ -295,7 +296,7 @@ namespace GodotTools.Ides.Rider
                       Logger.Warn($"Failed to get RiderPath from {channelDir}", e);
                   }
 
-                  return new string[0];
+                  return Array.Empty<string>();
               })
               .Where(c => !string.IsNullOrEmpty(c))
               .ToArray();
@@ -306,7 +307,7 @@ namespace GodotTools.Ides.Rider
         {
             var folder = new DirectoryInfo(Path.Combine(buildDir, dirName));
             if (!folder.Exists)
-                return new string[0];
+                return Array.Empty<string>();
 
             if (!isMac)
                 return new[] { Path.Combine(folder.FullName, searchPattern) }.Where(File.Exists).ToArray();

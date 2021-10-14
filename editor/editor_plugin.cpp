@@ -30,8 +30,10 @@
 
 #include "editor_plugin.h"
 
+#include "editor/editor_command_palette.h"
 #include "editor/editor_export.h"
 #include "editor/editor_node.h"
+#include "editor/editor_paths.h"
 #include "editor/editor_settings.h"
 #include "editor/filesystem_dock.h"
 #include "editor/project_settings_editor.h"
@@ -59,7 +61,7 @@ Array EditorInterface::_make_mesh_previews(const Array &p_meshes, int p_preview_
 	return ret;
 }
 
-Vector<Ref<Texture2D>> EditorInterface::make_mesh_previews(const Vector<Ref<Mesh>> &p_meshes, Vector<Transform> *p_transforms, int p_preview_size) {
+Vector<Ref<Texture2D>> EditorInterface::make_mesh_previews(const Vector<Ref<Mesh>> &p_meshes, Vector<Transform3D> *p_transforms, int p_preview_size) {
 	int size = p_preview_size;
 
 	RID scenario = RS::get_singleton()->scenario_create();
@@ -93,7 +95,7 @@ Vector<Ref<Texture2D>> EditorInterface::make_mesh_previews(const Vector<Ref<Mesh
 			continue;
 		}
 
-		Transform mesh_xform;
+		Transform3D mesh_xform;
 		if (p_transforms != nullptr) {
 			mesh_xform = (*p_transforms)[i];
 		}
@@ -102,9 +104,9 @@ Vector<Ref<Texture2D>> EditorInterface::make_mesh_previews(const Vector<Ref<Mesh
 		RS::get_singleton()->instance_set_transform(inst, mesh_xform);
 
 		AABB aabb = mesh->get_aabb();
-		Vector3 ofs = aabb.position + aabb.size * 0.5;
+		Vector3 ofs = aabb.get_center();
 		aabb.position -= ofs;
-		Transform xform;
+		Transform3D xform;
 		xform.basis = Basis().rotated(Vector3(0, 1, 0), -Math_PI / 6);
 		xform.basis = Basis().rotated(Vector3(1, 0, 0), Math_PI / 6) * xform.basis;
 		AABB rot_aabb = xform.xform(aabb);
@@ -118,11 +120,11 @@ Vector<Ref<Texture2D>> EditorInterface::make_mesh_previews(const Vector<Ref<Mesh
 		xform.invert();
 		xform = mesh_xform * xform;
 
-		RS::get_singleton()->camera_set_transform(camera, xform * Transform(Basis(), Vector3(0, 0, 3)));
+		RS::get_singleton()->camera_set_transform(camera, xform * Transform3D(Basis(), Vector3(0, 0, 3)));
 		RS::get_singleton()->camera_set_orthogonal(camera, m * 2, 0.01, 1000.0);
 
-		RS::get_singleton()->instance_set_transform(light_instance, xform * Transform().looking_at(Vector3(-2, -1, -1), Vector3(0, 1, 0)));
-		RS::get_singleton()->instance_set_transform(light_instance2, xform * Transform().looking_at(Vector3(+1, -1, -2), Vector3(0, 1, 0)));
+		RS::get_singleton()->instance_set_transform(light_instance, xform * Transform3D().looking_at(Vector3(-2, -1, -1), Vector3(0, 1, 0)));
+		RS::get_singleton()->instance_set_transform(light_instance2, xform * Transform3D().looking_at(Vector3(+1, -1, -2), Vector3(0, 1, 0)));
 
 		ep.step(TTR("Thumbnail..."), i);
 		Main::iteration();
@@ -217,7 +219,7 @@ Array EditorInterface::get_open_scenes() const {
 		if (scenes[idx_scn].root == nullptr) {
 			continue;
 		}
-		ret.push_back(scenes[idx_scn].root->get_filename());
+		ret.push_back(scenes[idx_scn].root->get_scene_file_path());
 	}
 	return ret;
 }
@@ -257,6 +259,9 @@ EditorSelection *EditorInterface::get_selection() {
 Ref<EditorSettings> EditorInterface::get_editor_settings() {
 	return EditorSettings::get_singleton();
 }
+EditorPaths *EditorInterface::get_editor_paths() {
+	return EditorPaths::get_singleton();
+}
 
 EditorResourcePreview *EditorInterface::get_resource_previewer() {
 	return EditorResourcePreview::get_singleton();
@@ -286,11 +291,11 @@ Error EditorInterface::save_scene() {
 	if (!get_edited_scene_root()) {
 		return ERR_CANT_CREATE;
 	}
-	if (get_edited_scene_root()->get_filename() == String()) {
+	if (get_edited_scene_root()->get_scene_file_path() == String()) {
 		return ERR_CANT_CREATE;
 	}
 
-	save_scene_as(get_edited_scene_root()->get_filename());
+	save_scene_as(get_edited_scene_root()->get_scene_file_path());
 	return OK;
 }
 
@@ -304,6 +309,10 @@ void EditorInterface::set_distraction_free_mode(bool p_enter) {
 
 bool EditorInterface::is_distraction_free_mode_enabled() const {
 	return EditorNode::get_singleton()->is_distraction_free_mode_enabled();
+}
+
+EditorCommandPalette *EditorInterface::get_command_palette() const {
+	return EditorCommandPalette::get_singleton();
 }
 
 EditorInterface *EditorInterface::singleton = nullptr;
@@ -335,6 +344,8 @@ void EditorInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_selected_path"), &EditorInterface::get_selected_path);
 	ClassDB::bind_method(D_METHOD("get_current_path"), &EditorInterface::get_current_path);
 	ClassDB::bind_method(D_METHOD("get_file_system_dock"), &EditorInterface::get_file_system_dock);
+	ClassDB::bind_method(D_METHOD("get_editor_paths"), &EditorInterface::get_editor_paths);
+	ClassDB::bind_method(D_METHOD("get_command_palette"), &EditorInterface::get_command_palette);
 
 	ClassDB::bind_method(D_METHOD("set_plugin_enabled", "plugin", "enabled"), &EditorInterface::set_plugin_enabled);
 	ClassDB::bind_method(D_METHOD("is_plugin_enabled", "plugin"), &EditorInterface::is_plugin_enabled);
@@ -527,7 +538,7 @@ void EditorPlugin::set_force_draw_over_forwarding_enabled() {
 }
 
 void EditorPlugin::notify_scene_changed(const Node *scn_root) {
-	emit_signal("scene_changed", scn_root);
+	emit_signal(SNAME("scene_changed"), scn_root);
 }
 
 void EditorPlugin::notify_main_screen_changed(const String &screen_name) {
@@ -535,35 +546,32 @@ void EditorPlugin::notify_main_screen_changed(const String &screen_name) {
 		return;
 	}
 
-	emit_signal("main_screen_changed", screen_name);
+	emit_signal(SNAME("main_screen_changed"), screen_name);
 	last_main_screen_name = screen_name;
 }
 
 void EditorPlugin::notify_scene_closed(const String &scene_filepath) {
-	emit_signal("scene_closed", scene_filepath);
+	emit_signal(SNAME("scene_closed"), scene_filepath);
 }
 
 void EditorPlugin::notify_resource_saved(const Ref<Resource> &p_resource) {
-	emit_signal("resource_saved", p_resource);
+	emit_signal(SNAME("resource_saved"), p_resource);
 }
 
 bool EditorPlugin::forward_canvas_gui_input(const Ref<InputEvent> &p_event) {
-	if (get_script_instance() && get_script_instance()->has_method("forward_canvas_gui_input")) {
-		return get_script_instance()->call("forward_canvas_gui_input", p_event);
+	bool success;
+	if (GDVIRTUAL_CALL(_forward_canvas_gui_input, p_event, success)) {
+		return success;
 	}
 	return false;
 }
 
 void EditorPlugin::forward_canvas_draw_over_viewport(Control *p_overlay) {
-	if (get_script_instance() && get_script_instance()->has_method("forward_canvas_draw_over_viewport")) {
-		get_script_instance()->call("forward_canvas_draw_over_viewport", p_overlay);
-	}
+	GDVIRTUAL_CALL(_forward_canvas_draw_over_viewport, p_overlay);
 }
 
 void EditorPlugin::forward_canvas_force_draw_over_viewport(Control *p_overlay) {
-	if (get_script_instance() && get_script_instance()->has_method("forward_canvas_force_draw_over_viewport")) {
-		get_script_instance()->call("forward_canvas_force_draw_over_viewport", p_overlay);
-	}
+	GDVIRTUAL_CALL(_forward_canvas_force_draw_over_viewport, p_overlay);
 }
 
 // Updates the overlays of the 2D viewport or, if in 3D mode, of every 3D viewport.
@@ -585,111 +593,102 @@ int EditorPlugin::update_overlays() const {
 	}
 }
 
-bool EditorPlugin::forward_spatial_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event) {
-	if (get_script_instance() && get_script_instance()->has_method("forward_spatial_gui_input")) {
-		return get_script_instance()->call("forward_spatial_gui_input", p_camera, p_event);
+EditorPlugin::AfterGUIInput EditorPlugin::forward_spatial_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event) {
+	int success;
+
+	if (GDVIRTUAL_CALL(_forward_3d_gui_input, p_camera, p_event, success)) {
+		return static_cast<EditorPlugin::AfterGUIInput>(success);
 	}
 
-	return false;
+	return EditorPlugin::AFTER_GUI_INPUT_PASS;
 }
 
 void EditorPlugin::forward_spatial_draw_over_viewport(Control *p_overlay) {
-	if (get_script_instance() && get_script_instance()->has_method("forward_spatial_draw_over_viewport")) {
-		get_script_instance()->call("forward_spatial_draw_over_viewport", p_overlay);
-	}
+	GDVIRTUAL_CALL(_forward_3d_draw_over_viewport, p_overlay);
 }
 
 void EditorPlugin::forward_spatial_force_draw_over_viewport(Control *p_overlay) {
-	if (get_script_instance() && get_script_instance()->has_method("forward_spatial_force_draw_over_viewport")) {
-		get_script_instance()->call("forward_spatial_force_draw_over_viewport", p_overlay);
-	}
+	GDVIRTUAL_CALL(_forward_3d_force_draw_over_viewport, p_overlay);
 }
 
 String EditorPlugin::get_name() const {
-	if (get_script_instance() && get_script_instance()->has_method("get_plugin_name")) {
-		return get_script_instance()->call("get_plugin_name");
+	String name;
+	if (GDVIRTUAL_CALL(_get_plugin_name, name)) {
+		return name;
 	}
 
 	return String();
 }
 
 const Ref<Texture2D> EditorPlugin::get_icon() const {
-	if (get_script_instance() && get_script_instance()->has_method("get_plugin_icon")) {
-		return get_script_instance()->call("get_plugin_icon");
+	Ref<Texture2D> icon;
+	if (GDVIRTUAL_CALL(_get_plugin_icon, icon)) {
+		return icon;
 	}
 
 	return Ref<Texture2D>();
 }
 
 bool EditorPlugin::has_main_screen() const {
-	if (get_script_instance() && get_script_instance()->has_method("has_main_screen")) {
-		return get_script_instance()->call("has_main_screen");
+	bool success;
+	if (GDVIRTUAL_CALL(_has_main_screen, success)) {
+		return success;
 	}
 
 	return false;
 }
 
 void EditorPlugin::make_visible(bool p_visible) {
-	if (get_script_instance() && get_script_instance()->has_method("make_visible")) {
-		get_script_instance()->call("make_visible", p_visible);
-	}
+	GDVIRTUAL_CALL(_make_visible, p_visible);
 }
 
 void EditorPlugin::edit(Object *p_object) {
-	if (get_script_instance() && get_script_instance()->has_method("edit")) {
-		if (p_object->is_class("Resource")) {
-			get_script_instance()->call("edit", Ref<Resource>(Object::cast_to<Resource>(p_object)));
-		} else {
-			get_script_instance()->call("edit", p_object);
-		}
+	if (p_object->is_class("Resource")) {
+		GDVIRTUAL_CALL(_edit, Ref<Resource>(Object::cast_to<Resource>(p_object)));
+	} else {
+		GDVIRTUAL_CALL(_edit, p_object);
 	}
 }
 
 bool EditorPlugin::handles(Object *p_object) const {
-	if (get_script_instance() && get_script_instance()->has_method("handles")) {
-		return get_script_instance()->call("handles", p_object);
+	bool success;
+	if (GDVIRTUAL_CALL(_handles, p_object, success)) {
+		return success;
 	}
 
 	return false;
 }
 
 Dictionary EditorPlugin::get_state() const {
-	if (get_script_instance() && get_script_instance()->has_method("get_state")) {
-		return get_script_instance()->call("get_state");
+	Dictionary state;
+	if (GDVIRTUAL_CALL(_get_state, state)) {
+		return state;
 	}
 
 	return Dictionary();
 }
 
 void EditorPlugin::set_state(const Dictionary &p_state) {
-	if (get_script_instance() && get_script_instance()->has_method("set_state")) {
-		get_script_instance()->call("set_state", p_state);
-	}
+	GDVIRTUAL_CALL(_set_state, p_state);
 }
 
 void EditorPlugin::clear() {
-	if (get_script_instance() && get_script_instance()->has_method("clear")) {
-		get_script_instance()->call("clear");
-	}
+	GDVIRTUAL_CALL(_clear);
 }
 
 // if editor references external resources/scenes, save them
 void EditorPlugin::save_external_data() {
-	if (get_script_instance() && get_script_instance()->has_method("save_external_data")) {
-		get_script_instance()->call("save_external_data");
-	}
+	GDVIRTUAL_CALL(_save_external_data);
 }
 
 // if changes are pending in editor, apply them
 void EditorPlugin::apply_changes() {
-	if (get_script_instance() && get_script_instance()->has_method("apply_changes")) {
-		get_script_instance()->call("apply_changes");
-	}
+	GDVIRTUAL_CALL(_apply_changes);
 }
 
 void EditorPlugin::get_breakpoints(List<String> *p_breakpoints) {
-	if (get_script_instance() && get_script_instance()->has_method("get_breakpoints")) {
-		PackedStringArray arr = get_script_instance()->call("get_breakpoints");
+	PackedStringArray arr;
+	if (GDVIRTUAL_CALL(_get_breakpoints, arr)) {
 		for (int i = 0; i < arr.size(); i++) {
 			p_breakpoints->push_back(arr[i]);
 		}
@@ -703,53 +702,73 @@ bool EditorPlugin::get_remove_list(List<Node *> *p_list) {
 void EditorPlugin::restore_global_state() {}
 void EditorPlugin::save_global_state() {}
 
+void EditorPlugin::add_undo_redo_inspector_hook_callback(Callable p_callable) {
+	EditorNode::get_singleton()->get_editor_data().add_undo_redo_inspector_hook_callback(p_callable);
+}
+
+void EditorPlugin::remove_undo_redo_inspector_hook_callback(Callable p_callable) {
+	EditorNode::get_singleton()->get_editor_data().remove_undo_redo_inspector_hook_callback(p_callable);
+}
+
 void EditorPlugin::add_translation_parser_plugin(const Ref<EditorTranslationParserPlugin> &p_parser) {
+	ERR_FAIL_COND(!p_parser.is_valid());
 	EditorTranslationParser::get_singleton()->add_parser(p_parser, EditorTranslationParser::CUSTOM);
 }
 
 void EditorPlugin::remove_translation_parser_plugin(const Ref<EditorTranslationParserPlugin> &p_parser) {
+	ERR_FAIL_COND(!p_parser.is_valid());
 	EditorTranslationParser::get_singleton()->remove_parser(p_parser, EditorTranslationParser::CUSTOM);
 }
 
 void EditorPlugin::add_import_plugin(const Ref<EditorImportPlugin> &p_importer) {
+	ERR_FAIL_COND(!p_importer.is_valid());
 	ResourceFormatImporter::get_singleton()->add_importer(p_importer);
-	EditorFileSystem::get_singleton()->call_deferred("scan");
+	EditorFileSystem::get_singleton()->call_deferred(SNAME("scan"));
 }
 
 void EditorPlugin::remove_import_plugin(const Ref<EditorImportPlugin> &p_importer) {
+	ERR_FAIL_COND(!p_importer.is_valid());
 	ResourceFormatImporter::get_singleton()->remove_importer(p_importer);
-	EditorFileSystem::get_singleton()->call_deferred("scan");
+	EditorFileSystem::get_singleton()->call_deferred(SNAME("scan"));
 }
 
 void EditorPlugin::add_export_plugin(const Ref<EditorExportPlugin> &p_exporter) {
+	ERR_FAIL_COND(!p_exporter.is_valid());
 	EditorExport::get_singleton()->add_export_plugin(p_exporter);
 }
 
 void EditorPlugin::remove_export_plugin(const Ref<EditorExportPlugin> &p_exporter) {
+	ERR_FAIL_COND(!p_exporter.is_valid());
 	EditorExport::get_singleton()->remove_export_plugin(p_exporter);
 }
 
 void EditorPlugin::add_spatial_gizmo_plugin(const Ref<EditorNode3DGizmoPlugin> &p_gizmo_plugin) {
+	ERR_FAIL_COND(!p_gizmo_plugin.is_valid());
 	Node3DEditor::get_singleton()->add_gizmo_plugin(p_gizmo_plugin);
 }
 
 void EditorPlugin::remove_spatial_gizmo_plugin(const Ref<EditorNode3DGizmoPlugin> &p_gizmo_plugin) {
+	ERR_FAIL_COND(!p_gizmo_plugin.is_valid());
 	Node3DEditor::get_singleton()->remove_gizmo_plugin(p_gizmo_plugin);
 }
 
 void EditorPlugin::add_inspector_plugin(const Ref<EditorInspectorPlugin> &p_plugin) {
+	ERR_FAIL_COND(!p_plugin.is_valid());
 	EditorInspector::add_inspector_plugin(p_plugin);
 }
 
 void EditorPlugin::remove_inspector_plugin(const Ref<EditorInspectorPlugin> &p_plugin) {
+	ERR_FAIL_COND(!p_plugin.is_valid());
 	EditorInspector::remove_inspector_plugin(p_plugin);
 }
 
 void EditorPlugin::add_scene_import_plugin(const Ref<EditorSceneImporter> &p_importer) {
+	ERR_FAIL_COND(!p_importer.is_valid());
 	ResourceImporterScene::get_singleton()->add_importer(p_importer);
 }
 
 void EditorPlugin::remove_scene_import_plugin(const Ref<EditorSceneImporter> &p_importer) {
+	ERR_FAIL_COND(!p_importer.is_valid());
 	ResourceImporterScene::get_singleton()->remove_importer(p_importer);
 }
 
@@ -766,37 +785,28 @@ int find(const PackedStringArray &a, const String &v) {
 void EditorPlugin::enable_plugin() {
 	// Called when the plugin gets enabled in project settings, after it's added to the tree.
 	// You can implement it to register autoloads.
-	if (get_script_instance() && get_script_instance()->has_method("enable_plugin")) {
-		get_script_instance()->call("enable_plugin");
-	}
+	GDVIRTUAL_CALL(_enable_plugin);
 }
 
 void EditorPlugin::disable_plugin() {
 	// Last function called when the plugin gets disabled in project settings.
 	// Implement it to cleanup things from the project, such as unregister autoloads.
-
-	if (get_script_instance() && get_script_instance()->has_method("disable_plugin")) {
-		get_script_instance()->call("disable_plugin");
-	}
+	GDVIRTUAL_CALL(_disable_plugin);
 }
 
 void EditorPlugin::set_window_layout(Ref<ConfigFile> p_layout) {
-	if (get_script_instance() && get_script_instance()->has_method("set_window_layout")) {
-		get_script_instance()->call("set_window_layout", p_layout);
-	}
+	GDVIRTUAL_CALL(_set_window_layout, p_layout);
 }
 
 void EditorPlugin::get_window_layout(Ref<ConfigFile> p_layout) {
-	if (get_script_instance() && get_script_instance()->has_method("get_window_layout")) {
-		get_script_instance()->call("get_window_layout", p_layout);
-	}
+	GDVIRTUAL_CALL(_get_window_layout, p_layout);
 }
 
 bool EditorPlugin::build() {
-	if (get_script_instance() && get_script_instance()->has_method("build")) {
-		return get_script_instance()->call("build");
+	bool success;
+	if (GDVIRTUAL_CALL(_build, success)) {
+		return success;
 	}
-
 	return true;
 }
 
@@ -829,7 +839,7 @@ void EditorPlugin::remove_debugger_plugin(const Ref<Script> &p_script) {
 }
 
 void EditorPlugin::_editor_project_settings_changed() {
-	emit_signal("project_settings_changed");
+	emit_signal(SNAME("project_settings_changed"));
 }
 void EditorPlugin::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE) {
@@ -862,6 +872,8 @@ void EditorPlugin::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("hide_bottom_panel"), &EditorPlugin::hide_bottom_panel);
 
 	ClassDB::bind_method(D_METHOD("get_undo_redo"), &EditorPlugin::_get_undo_redo);
+	ClassDB::bind_method(D_METHOD("add_undo_redo_inspector_hook_callback", "callable"), &EditorPlugin::add_undo_redo_inspector_hook_callback);
+	ClassDB::bind_method(D_METHOD("remove_undo_redo_inspector_hook_callback", "callable"), &EditorPlugin::remove_undo_redo_inspector_hook_callback);
 	ClassDB::bind_method(D_METHOD("queue_save_layout"), &EditorPlugin::queue_save_layout);
 	ClassDB::bind_method(D_METHOD("add_translation_parser_plugin", "parser"), &EditorPlugin::add_translation_parser_plugin);
 	ClassDB::bind_method(D_METHOD("remove_translation_parser_plugin", "parser"), &EditorPlugin::remove_translation_parser_plugin);
@@ -883,29 +895,29 @@ void EditorPlugin::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_debugger_plugin", "script"), &EditorPlugin::add_debugger_plugin);
 	ClassDB::bind_method(D_METHOD("remove_debugger_plugin", "script"), &EditorPlugin::remove_debugger_plugin);
 
-	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::BOOL, "forward_canvas_gui_input", PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent")));
-	ClassDB::add_virtual_method(get_class_static(), MethodInfo("forward_canvas_draw_over_viewport", PropertyInfo(Variant::OBJECT, "overlay", PROPERTY_HINT_RESOURCE_TYPE, "Control")));
-	ClassDB::add_virtual_method(get_class_static(), MethodInfo("forward_canvas_force_draw_over_viewport", PropertyInfo(Variant::OBJECT, "overlay", PROPERTY_HINT_RESOURCE_TYPE, "Control")));
-	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::BOOL, "forward_spatial_gui_input", PropertyInfo(Variant::OBJECT, "camera", PROPERTY_HINT_RESOURCE_TYPE, "Camera3D"), PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent")));
-	ClassDB::add_virtual_method(get_class_static(), MethodInfo("forward_spatial_draw_over_viewport", PropertyInfo(Variant::OBJECT, "overlay", PROPERTY_HINT_RESOURCE_TYPE, "Control")));
-	ClassDB::add_virtual_method(get_class_static(), MethodInfo("forward_spatial_force_draw_over_viewport", PropertyInfo(Variant::OBJECT, "overlay", PROPERTY_HINT_RESOURCE_TYPE, "Control")));
-	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::STRING, "get_plugin_name"));
-	ClassDB::add_virtual_method(get_class_static(), MethodInfo(PropertyInfo(Variant::OBJECT, "icon", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "get_plugin_icon"));
-	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::BOOL, "has_main_screen"));
-	ClassDB::add_virtual_method(get_class_static(), MethodInfo("make_visible", PropertyInfo(Variant::BOOL, "visible")));
-	ClassDB::add_virtual_method(get_class_static(), MethodInfo("edit", PropertyInfo(Variant::OBJECT, "object")));
-	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::BOOL, "handles", PropertyInfo(Variant::OBJECT, "object")));
-	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::DICTIONARY, "get_state"));
-	ClassDB::add_virtual_method(get_class_static(), MethodInfo("set_state", PropertyInfo(Variant::DICTIONARY, "state")));
-	ClassDB::add_virtual_method(get_class_static(), MethodInfo("clear"));
-	ClassDB::add_virtual_method(get_class_static(), MethodInfo("save_external_data"));
-	ClassDB::add_virtual_method(get_class_static(), MethodInfo("apply_changes"));
-	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::PACKED_STRING_ARRAY, "get_breakpoints"));
-	ClassDB::add_virtual_method(get_class_static(), MethodInfo("set_window_layout", PropertyInfo(Variant::OBJECT, "layout", PROPERTY_HINT_RESOURCE_TYPE, "ConfigFile")));
-	ClassDB::add_virtual_method(get_class_static(), MethodInfo("get_window_layout", PropertyInfo(Variant::OBJECT, "layout", PROPERTY_HINT_RESOURCE_TYPE, "ConfigFile")));
-	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::BOOL, "build"));
-	ClassDB::add_virtual_method(get_class_static(), MethodInfo("enable_plugin"));
-	ClassDB::add_virtual_method(get_class_static(), MethodInfo("disable_plugin"));
+	GDVIRTUAL_BIND(_forward_canvas_gui_input, "event");
+	GDVIRTUAL_BIND(_forward_canvas_draw_over_viewport, "viewport_control");
+	GDVIRTUAL_BIND(_forward_canvas_force_draw_over_viewport, "viewport_control");
+	GDVIRTUAL_BIND(_forward_3d_gui_input, "viewport_camera", "event");
+	GDVIRTUAL_BIND(_forward_3d_draw_over_viewport, "viewport_control");
+	GDVIRTUAL_BIND(_forward_3d_force_draw_over_viewport, "viewport_control");
+	GDVIRTUAL_BIND(_get_plugin_name);
+	GDVIRTUAL_BIND(_get_plugin_icon);
+	GDVIRTUAL_BIND(_has_main_screen);
+	GDVIRTUAL_BIND(_make_visible, "visible");
+	GDVIRTUAL_BIND(_edit, "object");
+	GDVIRTUAL_BIND(_handles, "object");
+	GDVIRTUAL_BIND(_get_state);
+	GDVIRTUAL_BIND(_set_state, "state");
+	GDVIRTUAL_BIND(_clear);
+	GDVIRTUAL_BIND(_save_external_data);
+	GDVIRTUAL_BIND(_apply_changes);
+	GDVIRTUAL_BIND(_get_breakpoints);
+	GDVIRTUAL_BIND(_set_window_layout, "configuration");
+	GDVIRTUAL_BIND(_get_window_layout, "configuration");
+	GDVIRTUAL_BIND(_build);
+	GDVIRTUAL_BIND(_enable_plugin);
+	GDVIRTUAL_BIND(_disable_plugin);
 
 	ADD_SIGNAL(MethodInfo("scene_changed", PropertyInfo(Variant::OBJECT, "scene_root", PROPERTY_HINT_RESOURCE_TYPE, "Node")));
 	ADD_SIGNAL(MethodInfo("scene_closed", PropertyInfo(Variant::STRING, "filepath")));

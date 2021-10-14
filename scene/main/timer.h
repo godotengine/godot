@@ -36,7 +36,7 @@
 class Timer : public Node {
 	GDCLASS(Timer, Node);
 
-	float wait_time = 1.0;
+	double wait_time = 1.0;
 	bool one_shot = false;
 	bool autostart = false;
 	bool processing = false;
@@ -54,8 +54,8 @@ public:
 		TIMER_PROCESS_IDLE,
 	};
 
-	void set_wait_time(float p_time);
-	float get_wait_time() const;
+	void set_wait_time(double p_time);
+	double get_wait_time() const;
 
 	void set_one_shot(bool p_one_shot);
 	bool is_one_shot() const;
@@ -63,7 +63,7 @@ public:
 	void set_autostart(bool p_start);
 	bool has_autostart() const;
 
-	void start(float p_time = -1);
+	void start(double p_time = -1);
 	void stop();
 
 	void set_paused(bool p_paused);
@@ -71,7 +71,9 @@ public:
 
 	bool is_stopped() const;
 
-	float get_time_left() const;
+	double get_time_left() const;
+
+	TypedArray<String> get_configuration_warnings() const override;
 
 	void set_timer_process_callback(TimerProcessCallback p_callback);
 	TimerProcessCallback get_timer_process_callback() const;

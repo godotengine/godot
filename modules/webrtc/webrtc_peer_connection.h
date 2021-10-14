@@ -34,8 +34,8 @@
 #include "core/io/packet_peer.h"
 #include "modules/webrtc/webrtc_data_channel.h"
 
-class WebRTCPeerConnection : public Reference {
-	GDCLASS(WebRTCPeerConnection, Reference);
+class WebRTCPeerConnection : public RefCounted {
+	GDCLASS(WebRTCPeerConnection, RefCounted);
 
 public:
 	enum ConnectionState {
@@ -47,11 +47,15 @@ public:
 		STATE_CLOSED
 	};
 
+private:
+	static StringName default_extension;
+
 protected:
 	static void _bind_methods();
-	static WebRTCPeerConnection *(*_create)();
 
 public:
+	static void set_default_extension(const StringName &p_name);
+
 	virtual ConnectionState get_connection_state() const = 0;
 
 	virtual Error initialize(Dictionary p_config = Dictionary()) = 0;
@@ -63,7 +67,6 @@ public:
 	virtual Error poll() = 0;
 	virtual void close() = 0;
 
-	static Ref<WebRTCPeerConnection> create_ref();
 	static WebRTCPeerConnection *create();
 
 	WebRTCPeerConnection();

@@ -30,19 +30,10 @@
 
 #include "collision_shape_3d.h"
 
-#include "core/math/quick_hull.h"
 #include "mesh_instance_3d.h"
 #include "physics_body_3d.h"
-#include "scene/resources/box_shape_3d.h"
-#include "scene/resources/capsule_shape_3d.h"
 #include "scene/resources/concave_polygon_shape_3d.h"
 #include "scene/resources/convex_polygon_shape_3d.h"
-#include "scene/resources/ray_shape_3d.h"
-#include "scene/resources/sphere_shape_3d.h"
-#include "scene/resources/world_margin_shape_3d.h"
-#include "servers/rendering_server.h"
-
-//TODO: Implement CylinderShape and HeightMapShape?
 
 void CollisionShape3D::make_convex_from_siblings() {
 	Node *p = get_parent();
@@ -117,14 +108,14 @@ void CollisionShape3D::_notification(int p_what) {
 }
 
 void CollisionShape3D::resource_changed(RES res) {
-	update_gizmo();
+	update_gizmos();
 }
 
 TypedArray<String> CollisionShape3D::get_configuration_warnings() const {
 	TypedArray<String> warnings = Node::get_configuration_warnings();
 
 	if (!Object::cast_to<CollisionObject3D>(get_parent())) {
-		warnings.push_back(TTR("CollisionShape3D only serves to provide a collision shape to a CollisionObject3D derived node. Please only use it as a child of Area3D, StaticBody3D, RigidBody3D, KinematicBody3D, etc. to give them a shape."));
+		warnings.push_back(TTR("CollisionShape3D only serves to provide a collision shape to a CollisionObject3D derived node. Please only use it as a child of Area3D, StaticBody3D, RigidDynamicBody3D, CharacterBody3D, etc. to give them a shape."));
 	}
 
 	if (!shape.is_valid()) {
@@ -132,10 +123,9 @@ TypedArray<String> CollisionShape3D::get_configuration_warnings() const {
 	}
 
 	if (shape.is_valid() &&
-			Object::cast_to<RigidBody3D>(get_parent()) &&
-			Object::cast_to<ConcavePolygonShape3D>(*shape) &&
-			Object::cast_to<RigidBody3D>(get_parent())->get_mode() != RigidBody3D::MODE_STATIC) {
-		warnings.push_back(TTR("ConcavePolygonShape3D doesn't support RigidBody3D in another mode than static."));
+			Object::cast_to<RigidDynamicBody3D>(get_parent()) &&
+			Object::cast_to<ConcavePolygonShape3D>(*shape)) {
+		warnings.push_back(TTR("ConcavePolygonShape3D doesn't support RigidDynamicBody3D in another mode than static."));
 	}
 
 	return warnings;
@@ -161,14 +151,12 @@ void CollisionShape3D::set_shape(const Ref<Shape3D> &p_shape) {
 	}
 	if (!shape.is_null()) {
 		shape->unregister_owner(this);
-		shape->disconnect("changed", callable_mp(this, &CollisionShape3D::_shape_changed));
 	}
 	shape = p_shape;
 	if (!shape.is_null()) {
 		shape->register_owner(this);
-		shape->connect("changed", callable_mp(this, &CollisionShape3D::_shape_changed));
 	}
-	update_gizmo();
+	update_gizmos();
 	if (parent) {
 		parent->shape_owner_clear_shapes(owner_id);
 		if (shape.is_valid()) {
@@ -176,8 +164,9 @@ void CollisionShape3D::set_shape(const Ref<Shape3D> &p_shape) {
 		}
 	}
 
-	if (is_inside_tree()) {
-		_shape_changed();
+	if (is_inside_tree() && parent) {
+		// If this is a heightfield shape our center may have changed
+		_update_in_shape_owner(true);
 	}
 	update_configuration_warnings();
 }
@@ -188,7 +177,7 @@ Ref<Shape3D> CollisionShape3D::get_shape() const {
 
 void CollisionShape3D::set_disabled(bool p_disabled) {
 	disabled = p_disabled;
-	update_gizmo();
+	update_gizmos();
 	if (parent) {
 		parent->shape_owner_set_disabled(owner_id, p_disabled);
 	}
@@ -208,11 +197,4 @@ CollisionShape3D::~CollisionShape3D() {
 		shape->unregister_owner(this);
 	}
 	//RenderingServer::get_singleton()->free(indicator);
-}
-
-void CollisionShape3D::_shape_changed() {
-	// If this is a heightfield shape our center may have changed
-	if (parent) {
-		_update_in_shape_owner(true);
-	}
 }

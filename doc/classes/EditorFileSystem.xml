@@ -11,70 +11,58 @@
 	</tutorials>
 	<methods>
 		<method name="get_file_type" qualifiers="const">
-			<return type="String">
-			</return>
-			<argument index="0" name="path" type="String">
-			</argument>
+			<return type="String" />
+			<argument index="0" name="path" type="String" />
 			<description>
-				Gets the type of the file, given the full path.
+				Returns the resource type of the file, given the full path. This returns a string such as [code]"Resource"[/code] or [code]"GDScript"[/code], [i]not[/i] a file extension such as [code]".gd"[/code].
 			</description>
 		</method>
 		<method name="get_filesystem">
-			<return type="EditorFileSystemDirectory">
-			</return>
+			<return type="EditorFileSystemDirectory" />
 			<description>
 				Gets the root directory object.
 			</description>
 		</method>
 		<method name="get_filesystem_path">
-			<return type="EditorFileSystemDirectory">
-			</return>
-			<argument index="0" name="path" type="String">
-			</argument>
+			<return type="EditorFileSystemDirectory" />
+			<argument index="0" name="path" type="String" />
 			<description>
 				Returns a view into the filesystem at [code]path[/code].
 			</description>
 		</method>
 		<method name="get_scanning_progress" qualifiers="const">
-			<return type="float">
-			</return>
+			<return type="float" />
 			<description>
 				Returns the scan progress for 0 to 1 if the FS is being scanned.
 			</description>
 		</method>
 		<method name="is_scanning" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns [code]true[/code] of the filesystem is being scanned.
 			</description>
 		</method>
 		<method name="scan">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Scan the filesystem for changes.
 			</description>
 		</method>
 		<method name="scan_sources">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Check if the source of any imported resource changed.
 			</description>
 		</method>
 		<method name="update_file">
-			<return type="void">
-			</return>
-			<argument index="0" name="path" type="String">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="path" type="String" />
 			<description>
 				Update a file information. Call this if an external program (not Godot) modified the file.
 			</description>
 		</method>
 		<method name="update_script_classes">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Scans the script files and updates the list of custom class names.
 			</description>
@@ -87,27 +75,22 @@
 			</description>
 		</signal>
 		<signal name="resources_reimported">
-			<argument index="0" name="resources" type="PackedStringArray">
-			</argument>
+			<argument index="0" name="resources" type="PackedStringArray" />
 			<description>
 				Emitted if a resource is reimported.
 			</description>
 		</signal>
 		<signal name="resources_reload">
-			<argument index="0" name="resources" type="PackedStringArray">
-			</argument>
+			<argument index="0" name="resources" type="PackedStringArray" />
 			<description>
 				Emitted if at least one resource is reloaded when the filesystem is scanned.
 			</description>
 		</signal>
 		<signal name="sources_changed">
-			<argument index="0" name="exist" type="bool">
-			</argument>
+			<argument index="0" name="exist" type="bool" />
 			<description>
 				Emitted if the source of any imported file changed.
 			</description>
 		</signal>
 	</signals>
-	<constants>
-	</constants>
 </class>

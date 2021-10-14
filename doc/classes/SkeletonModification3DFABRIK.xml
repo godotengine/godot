@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="SkeletonModification3DFABRIK" inherits="SkeletonModification3D" version="4.0">
+	<brief_description>
+		A modification that uses FABRIK to manipulate a series of bones to reach a target.
+	</brief_description>
+	<description>
+		This [SkeletonModification3D] uses an algorithm called Forward And Backward Reaching Inverse Kinematics, or FABRIK, to rotate a bone chain so that it reaches a target.
+		FABRIK works by knowing the positions and lengths of a series of bones, typically called a "bone chain". It first starts by running a forward pass, which places the final bone at the target's position. Then all other bones are moved towards the tip bone, so they stay at the defined bone length away. Then a backwards pass is performed, where the root/first bone in the FABRIK chain is placed back at the origin. then all other bones are moved so they stay at the defined bone length away. This positions the bone chain so that it reaches the target when possible, but all of the bones stay the correct length away from each other.
+		Because of how FABRIK works, it often gives more natural results than those seen in [SkeletonModification3DCCDIK], though FABRIK currently does not support joint constraints.
+		[b]Note:[/b] The FABRIK modifier has [code]fabrik_joints[/code], which are the data objects that hold the data for each joint in the FABRIK chain. This is different from a bone! FABRIK joints hold the data needed for each bone in the bone chain used by FABRIK.
+		To help control how the FABRIK joints move, a magnet vector can be passed, which can nudge the bones in a certain direction prior to solving, giving a level of control over the final result.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="fabrik_joint_auto_calculate_length">
+			<return type="void" />
+			<argument index="0" name="joint_idx" type="int" />
+			<description>
+				Will attempt to automatically calculate the length of the bone assigned to the FABRIK joint at [code]joint_idx[/code].
+			</description>
+		</method>
+		<method name="get_fabrik_joint_auto_calculate_length" qualifiers="const">
+			<return type="bool" />
+			<argument index="0" name="joint_idx" type="int" />
+			<description>
+				Returns a boolean that indiciates whether this modification will attempt to autocalculate the length of the bone assigned to the FABRIK joint at [code]joint_idx[/code].
+			</description>
+		</method>
+		<method name="get_fabrik_joint_bone_index" qualifiers="const">
+			<return type="int" />
+			<argument index="0" name="joint_idx" type="int" />
+			<description>
+				Returns the bone index of the bone assigned to the FABRIK joint at [code]joint_idx[/code].
+			</description>
+		</method>
+		<method name="get_fabrik_joint_bone_name" qualifiers="const">
+			<return type="String" />
+			<argument index="0" name="joint_idx" type="int" />
+			<description>
+				Returns the name of the bone that is assigned to the FABRIK joint at [code]joint_idx[/code].
+			</description>
+		</method>
+		<method name="get_fabrik_joint_length" qualifiers="const">
+			<return type="float" />
+			<argument index="0" name="joint_idx" type="int" />
+			<description>
+				Returns the length of the FABRIK joint at [code]joint_idx[/code].
+			</description>
+		</method>
+		<method name="get_fabrik_joint_magnet" qualifiers="const">
+			<return type="Vector3" />
+			<argument index="0" name="joint_idx" type="int" />
+			<description>
+				Returns the magnet vector of the FABRIK joint at [code]joint_idx[/code].
+			</description>
+		</method>
+		<method name="get_fabrik_joint_tip_node" qualifiers="const">
+			<return type="NodePath" />
+			<argument index="0" name="joint_idx" type="int" />
+			<description>
+				Returns the [Node3D]-based node placed at the tip of the FABRIK joint at [code]joint_idx[/code], if one has been set.
+			</description>
+		</method>
+		<method name="get_fabrik_joint_use_target_basis" qualifiers="const">
+			<return type="bool" />
+			<argument index="0" name="joint_idx" type="int" />
+			<description>
+				Returns a boolean indiciating whether the FABRIK joint uses the target's [Basis] for its rotation.
+				[b]Note:[/b] This option is only available for the final bone in the FABRIK chain, with this setting being ignored for all other bones.
+			</description>
+		</method>
+		<method name="get_fabrik_joint_use_tip_node" qualifiers="const">
+			<return type="bool" />
+			<argument index="0" name="joint_idx" type="int" />
+			<description>
+				Sets the [Node3D]-based node that will be used as the tip of the FABRIK joint at [code]joint_idx[/code].
+			</description>
+		</method>
+		<method name="set_fabrik_joint_auto_calculate_length">
+			<return type="void" />
+			<argument index="0" name="joint_idx" type="int" />
+			<argument index="1" name="auto_calculate_length" type="bool" />
+			<description>
+				When [code]true[/code], this modification will attempt to automatically calculate the length of the bone for the FABRIK joint at [code]joint_idx[/code]. It does this by either using the tip node assigned, if there is one assigned, or the distance the of the bone's children, if the bone has any. If the bone has no children and no tip node is assigned, then the modification [b]cannot[/b] autocalculate the joint's length. In this case, the joint length should be entered manually or a tip node assigned.
+			</description>
+		</method>
+		<method name="set_fabrik_joint_bone_index">
+			<return type="void" />
+			<argument index="0" name="joint_idx" type="int" />
+			<argument index="1" name="bone_index" type="int" />
+			<description>
+				Sets the bone index, [code]bone_index[/code], of the FABRIK joint at [code]joint_idx[/code]. When possible, this will also update the [code]bone_name[/code] of the FABRIK joint based on data provided by the [Skeleton3D].
+			</description>
+		</method>
+		<method name="set_fabrik_joint_bone_name">
+			<return type="void" />
+			<argument index="0" name="joint_idx" type="int" />
+			<argument index="1" name="bone_name" type="String" />
+			<description>
+				Sets the bone name, [code]bone_name[/code], of the FABRIK joint at [code]joint_idx[/code]. When possible, this will also update the [code]bone_index[/code] of the FABRIK joint based on data provided by the [Skeleton3D].
+			</description>
+		</method>
+		<method name="set_fabrik_joint_length">
+			<return type="void" />
+			<argument index="0" name="joint_idx" type="int" />
+			<argument index="1" name="length" type="float" />
+			<description>
+				Sets the joint length, [code]length[/code], of the FABRIK joint at [code]joint_idx[/code].
+			</description>
+		</method>
+		<method name="set_fabrik_joint_magnet">
+			<return type="void" />
+			<argument index="0" name="joint_idx" type="int" />
+			<argument index="1" name="magnet_position" type="Vector3" />
+			<description>
+				Sets the magenet position to [code]magnet_position[/code] for the joint at [code]joint_idx[/code]. The magnet position is used to nudge the joint in that direction when solving, which gives some control over how that joint will bend when being solved.
+			</description>
+		</method>
+		<method name="set_fabrik_joint_tip_node">
+			<return type="void" />
+			<argument index="0" name="joint_idx" type="int" />
+			<argument index="1" name="tip_node" type="NodePath" />
+			<description>
+				Sets the nodepath of the FARIK joint at [code]joint_idx[/code] to [code]tip_node[/code]. The tip node is used to calculate the length of the FABRIK joint when set to automatically calculate joint length.
+				[b]Note:[/b] The tip node should generally be a child node of a [BoneAttachment3D] node attached to the bone that this FABRIK joint operates on, with the child node being offset so it is at the end of the bone.
+			</description>
+		</method>
+		<method name="set_fabrik_joint_use_target_basis">
+			<return type="void" />
+			<argument index="0" name="joint_idx" type="int" />
+			<argument index="1" name="use_target_basis" type="bool" />
+			<description>
+				Sets whether the FABRIK joint at [code]joint_idx[/code] uses the target's [Basis] for its rotation.
+				[b]Note:[/b] This option is only available for the final bone in the FABRIK chain, with this setting being ignored for all other bones.
+			</description>
+		</method>
+		<method name="set_fabrik_joint_use_tip_node">
+			<return type="void" />
+			<argument index="0" name="joint_idx" type="int" />
+			<argument index="1" name="use_tip_node" type="bool" />
+			<description>
+				Sets whether the tip node should be used when autocalculating the joint length for the FABRIK joint at [code]joint_idx[/code]. This will only work if there is a node assigned to the tip nodepath for this joint.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="chain_max_iterations" type="int" setter="set_chain_max_iterations" getter="get_chain_max_iterations" default="10">
+			The number of times FABRIK will try to solve each time the [code]execute[/code] function is called. Setting this value to a lower number will be result in better performance, but this can also result in harsher movements and slower solves.
+		</member>
+		<member name="chain_tolerance" type="float" setter="set_chain_tolerance" getter="get_chain_tolerance" default="0.01">
+			The minimum distance the target has to be from the tip of the final bone in the bone chain. Setting this value to a higher number allows for greater performance, but less accurate solves.
+		</member>
+		<member name="fabrik_data_chain_length" type="int" setter="set_fabrik_data_chain_length" getter="get_fabrik_data_chain_length" default="0">
+			The amount of FABRIK joints in the FABRIK modification.
+		</member>
+		<member name="target_nodepath" type="NodePath" setter="set_target_node" getter="get_target_node" default="NodePath(&quot;&quot;)">
+			The NodePath to the node that is the target for the FABRIK modification. This node is what the FABRIK chain will attempt to rotate the bone chain to.
+		</member>
+	</members>
+</class>

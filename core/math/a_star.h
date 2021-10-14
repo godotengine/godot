@@ -31,7 +31,9 @@
 #ifndef A_STAR_H
 #define A_STAR_H
 
-#include "core/object/reference.h"
+#include "core/object/gdvirtual.gen.inc"
+#include "core/object/ref_counted.h"
+#include "core/object/script_language.h"
 #include "core/templates/oa_hash_map.h"
 
 /**
@@ -40,8 +42,8 @@
 	@author Juan Linietsky <reduzio@gmail.com>
 */
 
-class AStar : public Reference {
-	GDCLASS(AStar, Reference);
+class AStar : public RefCounted {
+	GDCLASS(AStar, RefCounted);
 	friend class AStar2D;
 
 	struct Point {
@@ -122,6 +124,9 @@ protected:
 	virtual real_t _estimate_cost(int p_from_id, int p_to_id);
 	virtual real_t _compute_cost(int p_from_id, int p_to_id);
 
+	GDVIRTUAL2RC(real_t, _estimate_cost, int64_t, int64_t)
+	GDVIRTUAL2RC(real_t, _compute_cost, int64_t, int64_t)
+
 public:
 	int get_available_point_id() const;
 
@@ -157,8 +162,8 @@ public:
 	~AStar();
 };
 
-class AStar2D : public Reference {
-	GDCLASS(AStar2D, Reference);
+class AStar2D : public RefCounted {
+	GDCLASS(AStar2D, RefCounted);
 	AStar astar;
 
 	bool _solve(AStar::Point *begin_point, AStar::Point *end_point);
@@ -168,6 +173,9 @@ protected:
 
 	virtual real_t _estimate_cost(int p_from_id, int p_to_id);
 	virtual real_t _compute_cost(int p_from_id, int p_to_id);
+
+	GDVIRTUAL2RC(real_t, _estimate_cost, int64_t, int64_t)
+	GDVIRTUAL2RC(real_t, _compute_cost, int64_t, int64_t)
 
 public:
 	int get_available_point_id() const;

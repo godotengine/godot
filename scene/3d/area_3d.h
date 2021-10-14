@@ -55,6 +55,9 @@ private:
 	real_t angular_damp = 0.1;
 	real_t linear_damp = 0.1;
 	int priority = 0;
+	real_t wind_force_magnitude = 0.0;
+	real_t wind_attenuation_factor = 0.0;
+	NodePath wind_source_path;
 	bool monitoring = false;
 	bool monitorable = false;
 	bool locked = false;
@@ -83,6 +86,7 @@ private:
 	};
 
 	struct BodyState {
+		RID rid;
 		int rc = 0;
 		bool in_tree = false;
 		VSet<ShapePair> shapes;
@@ -114,6 +118,7 @@ private:
 	};
 
 	struct AreaState {
+		RID rid;
 		int rc = 0;
 		bool in_tree = false;
 		VSet<AreaShapePair> shapes;
@@ -131,6 +136,8 @@ private:
 	float reverb_uniformity = 0.0;
 
 	void _validate_property(PropertyInfo &property) const override;
+
+	void _initialize_wind();
 
 protected:
 	void _notification(int p_what);
@@ -160,6 +167,15 @@ public:
 
 	void set_priority(real_t p_priority);
 	real_t get_priority() const;
+
+	void set_wind_force_magnitude(real_t p_wind_force_magnitude);
+	real_t get_wind_force_magnitude() const;
+
+	void set_wind_attenuation_factor(real_t p_wind_attenuation_factor);
+	real_t get_wind_attenuation_factor() const;
+
+	void set_wind_source_path(const NodePath &p_wind_source_path);
+	const NodePath &get_wind_source_path() const;
 
 	void set_monitoring(bool p_enable);
 	bool is_monitoring() const;

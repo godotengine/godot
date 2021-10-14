@@ -40,7 +40,7 @@
 
 class OS_JavaScript : public OS_Unix {
 	MainLoop *main_loop = nullptr;
-	AudioDriverJavaScript *audio_driver_javascript = nullptr;
+	List<AudioDriverJavaScript *> audio_drivers;
 
 	bool idb_is_syncing = false;
 	bool idb_available = false;
@@ -89,6 +89,9 @@ public:
 	String get_user_data_dir() const override;
 
 	bool is_userfs_persistent() const override;
+
+	void alert(const String &p_alert, const String &p_title = "ALERT!") override;
+
 	Error open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path) override;
 
 	void resume_audio();

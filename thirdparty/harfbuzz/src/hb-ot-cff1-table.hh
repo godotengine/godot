@@ -187,7 +187,7 @@ struct Encoding
 		  const hb_vector_t<code_pair_t>& supp_codes)
   {
     TRACE_SERIALIZE (this);
-    Encoding *dest = c->extend_min (*this);
+    Encoding *dest = c->extend_min (this);
     if (unlikely (!dest)) return_trace (false);
     dest->format = format | ((supp_codes.length > 0) ? 0x80 : 0);
     switch (format) {
@@ -457,7 +457,7 @@ struct Charset
 		  const hb_vector_t<code_pair_t>& sid_ranges)
   {
     TRACE_SERIALIZE (this);
-    Charset *dest = c->extend_min (*this);
+    Charset *dest = c->extend_min (this);
     if (unlikely (!dest)) return_trace (false);
     dest->format = format;
     switch (format)
@@ -713,6 +713,7 @@ struct cff1_top_dict_opset_t : top_dict_opset_t<cff1_top_dict_val_t>
       case OpCode_Notice:
       case OpCode_Copyright:
       case OpCode_FullName:
+      case OpCode_FontName:
       case OpCode_FamilyName:
       case OpCode_Weight:
       case OpCode_PostScript:
@@ -1390,7 +1391,7 @@ struct cff1
 
   public:
   FixedVersion<HBUINT8> version;	  /* Version of CFF table. set to 0x0100u */
-  OffsetTo<CFF1NameIndex, HBUINT8> nameIndex; /* headerSize = Offset to Name INDEX. */
+  NNOffsetTo<CFF1NameIndex, HBUINT8> nameIndex; /* headerSize = Offset to Name INDEX. */
   HBUINT8	       offSize;	  /* offset size (unused?) */
 
   public:

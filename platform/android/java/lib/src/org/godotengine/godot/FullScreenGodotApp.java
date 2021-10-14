@@ -30,13 +30,15 @@
 
 package org.godotengine.godot;
 
+import android.content.ComponentName;
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.KeyEvent;
+import android.util.Log;
 
 import androidx.annotation.CallSuper;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 
 /**
@@ -46,6 +48,8 @@ import androidx.fragment.app.FragmentActivity;
  * within an Android app.
  */
 public abstract class FullScreenGodotApp extends FragmentActivity implements GodotHost {
+	private static final String TAG = FullScreenGodotApp.class.getSimpleName();
+
 	@Nullable
 	private Godot godotFragment;
 
@@ -53,12 +57,53 @@ public abstract class FullScreenGodotApp extends FragmentActivity implements God
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.godot_app_layout);
-		godotFragment = initGodotInstance();
-		if (godotFragment == null) {
-			throw new IllegalStateException("Godot instance must be non-null.");
-		}
 
-		getSupportFragmentManager().beginTransaction().replace(R.id.godot_fragment_container, godotFragment).setPrimaryNavigationFragment(godotFragment).commitNowAllowingStateLoss();
+		Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.godot_fragment_container);
+		if (currentFragment instanceof Godot) {
+			Log.v(TAG, "Reusing existing Godot fragment instance.");
+			godotFragment = (Godot)currentFragment;
+		} else {
+			Log.v(TAG, "Creating new Godot fragment instance.");
+			godotFragment = initGodotInstance();
+			if (godotFragment == null) {
+				throw new IllegalStateException("Godot instance must be non-null.");
+			}
+
+			getSupportFragmentManager().beginTransaction().replace(R.id.godot_fragment_container, godotFragment).setPrimaryNavigationFragment(godotFragment).commitNowAllowingStateLoss();
+		}
+	}
+
+	@Override
+	public void onDestroy() {
+		super.onDestroy();
+		onGodotForceQuit(godotFragment);
+	}
+
+	@Override
+	public final void onGodotForceQuit(Godot instance) {
+		if (instance == godotFragment) {
+			System.exit(0);
+		}
+	}
+
+	@Override
+	public final void onGodotRestartRequested(Godot instance) {
+		if (instance == godotFragment) {
+			// HACK:
+			//
+			// Currently it's very hard to properly deinitialize Godot on Android to restart the game
+			// from scratch. Therefore, we need to kill the whole app process and relaunch it.
+			//
+			// Restarting only the activity, wouldn't be enough unless it did proper cleanup (including
+			// releasing and reloading native libs or resetting their state somehow and clearing statics).
+			//
+			// Using instrumentation is a way of making the whole app process restart, because Android
+			// will kill any process of the same package which was already running.
+			//
+			Bundle args = new Bundle();
+			args.putParcelable("intent", getIntent());
+			startInstrumentation(new ComponentName(this, GodotInstrumentation.class), null, args);
+		}
 	}
 
 	@Override
@@ -94,14 +139,6 @@ public abstract class FullScreenGodotApp extends FragmentActivity implements God
 		} else {
 			super.onBackPressed();
 		}
-	}
-
-	@Override
-	public boolean onKeyMultiple(final int inKeyCode, int repeatCount, KeyEvent event) {
-		if (godotFragment != null && godotFragment.onKeyMultiple(inKeyCode, repeatCount, event)) {
-			return true;
-		}
-		return super.onKeyMultiple(inKeyCode, repeatCount, event);
 	}
 
 	/**

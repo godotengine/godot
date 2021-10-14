@@ -31,10 +31,10 @@
 #include "resource_importer_texture_atlas.h"
 
 #include "atlas_import_failed.xpm"
+#include "core/io/file_access.h"
 #include "core/io/image_loader.h"
 #include "core/io/resource_saver.h"
 #include "core/math/geometry_2d.h"
-#include "core/os/file_access.h"
 #include "editor/editor_atlas_packer.h"
 #include "scene/resources/mesh.h"
 #include "scene/resources/texture.h"
@@ -74,6 +74,7 @@ String ResourceImporterTextureAtlas::get_preset_name(int p_idx) const {
 void ResourceImporterTextureAtlas::get_import_options(List<ImportOption> *r_options, int p_preset) const {
 	r_options->push_back(ImportOption(PropertyInfo(Variant::STRING, "atlas_file", PROPERTY_HINT_SAVE_FILE, "*.png"), ""));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "import_mode", PROPERTY_HINT_ENUM, "Region,Mesh2D"), 0));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "crop_to_region"), false));
 }
 
 String ResourceImporterTextureAtlas::get_option_group_file() const {
@@ -87,7 +88,7 @@ Error ResourceImporterTextureAtlas::import(const String &p_source_file, const St
 	//it's a simple hack
 	Ref<Image> broken = memnew(Image((const char **)atlas_import_failed_xpm));
 	Ref<ImageTexture> broken_texture;
-	broken_texture.instance();
+	broken_texture.instantiate();
 	broken_texture->create_from_image(broken);
 
 	String target_file = p_save_path + ".tex";
@@ -131,9 +132,9 @@ static void _plot_triangle(Vector2i *vertices, const Vector2i &p_offset, bool p_
 	double xf = x[0];
 	double xt = x[0] + dx_upper; // if y[0] == y[1], special case
 	int max_y = MIN(y[2], height - p_offset.y - 1);
-	for (int yi = y[0]; yi <= max_y; yi++) {
+	for (int yi = y[0]; yi < max_y; yi++) {
 		if (yi >= 0) {
-			for (int xi = (xf > 0 ? int(xf) : 0); xi <= (xt < width ? xt : width - 1); xi++) {
+			for (int xi = (xf > 0 ? int(xf) : 0); xi < (xt < width ? xt : width - 1); xi++) {
 				int px = xi, py = yi;
 				int sx = px, sy = py;
 				sx = CLAMP(sx, 0, src_width - 1);
@@ -201,11 +202,12 @@ Error ResourceImporterTextureAtlas::import_group_file(const String &p_group_file
 		const Map<StringName, Variant> &options = E->get();
 
 		Ref<Image> image;
-		image.instance();
+		image.instantiate();
 		Error err = ImageLoader::load_image(source, image);
 		ERR_CONTINUE(err != OK);
 
 		pack_data.image = image;
+		pack_data.is_cropped = options["crop_to_region"];
 
 		int mode = options["import_mode"];
 
@@ -240,7 +242,7 @@ Error ResourceImporterTextureAtlas::import_group_file(const String &p_group_file
 			pack_data.is_mesh = true;
 
 			Ref<BitMap> bit_map;
-			bit_map.instance();
+			bit_map.instantiate();
 			bit_map->create_from_image_alpha(image);
 			Vector<Vector<Vector2>> polygons = bit_map->clip_opaque_to_polygons(Rect2(0, 0, image->get_width(), image->get_height()));
 
@@ -272,7 +274,7 @@ Error ResourceImporterTextureAtlas::import_group_file(const String &p_group_file
 
 	//blit the atlas
 	Ref<Image> new_atlas;
-	new_atlas.instance();
+	new_atlas.instantiate();
 	new_atlas->create(atlas_width, atlas_height, false, Image::FORMAT_RGBA8);
 
 	for (int i = 0; i < pack_data_files.size(); i++) {
@@ -303,7 +305,7 @@ Error ResourceImporterTextureAtlas::import_group_file(const String &p_group_file
 		cache.reference_ptr(resptr);
 	} else {
 		Ref<ImageTexture> res_cache;
-		res_cache.instance();
+		res_cache.instantiate();
 		res_cache->create_from_image(new_atlas);
 		res_cache->set_path(p_group_file);
 		cache = res_cache;
@@ -321,15 +323,18 @@ Error ResourceImporterTextureAtlas::import_group_file(const String &p_group_file
 
 			//region
 			Ref<AtlasTexture> atlas_texture;
-			atlas_texture.instance();
+			atlas_texture.instantiate();
 			atlas_texture->set_atlas(cache);
 			atlas_texture->set_region(Rect2(offset, pack_data.region.size));
-			atlas_texture->set_margin(Rect2(pack_data.region.position, Size2(pack_data.image->get_width(), pack_data.image->get_height()) - pack_data.region.size));
+
+			if (!pack_data.is_cropped) {
+				atlas_texture->set_margin(Rect2(pack_data.region.position, pack_data.image->get_size() - pack_data.region.size));
+			}
 
 			texture = atlas_texture;
 		} else {
 			Ref<ArrayMesh> mesh;
-			mesh.instance();
+			mesh.instantiate();
 
 			for (int i = 0; i < pack_data.chart_pieces.size(); i++) {
 				const EditorAtlasPacker::Chart &chart = charts[pack_data.chart_pieces[i]];
@@ -375,7 +380,7 @@ Error ResourceImporterTextureAtlas::import_group_file(const String &p_group_file
 			}
 
 			Ref<MeshTexture> mesh_texture;
-			mesh_texture.instance();
+			mesh_texture.instantiate();
 			mesh_texture->set_base_texture(cache);
 			mesh_texture->set_image_size(pack_data.image->get_size());
 			mesh_texture->set_mesh(mesh);

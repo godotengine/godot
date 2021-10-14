@@ -55,6 +55,7 @@ class ScriptTextEditor : public ScriptEditorBase {
 
 	CodeTextEditor *code_editor = nullptr;
 	RichTextLabel *warnings_panel = nullptr;
+	RichTextLabel *errors_panel = nullptr;
 
 	Ref<Script> script;
 	bool script_is_valid = false;
@@ -89,6 +90,8 @@ class ScriptTextEditor : public ScriptEditorBase {
 	Color default_line_number_color = Color(1, 1, 1);
 	Color safe_line_number_color = Color(1, 1, 1);
 
+	Color marked_line_color = Color(1, 1, 1);
+
 	PopupPanel *color_panel = nullptr;
 	ColorPicker *color_picker = nullptr;
 	Vector2 color_position;
@@ -114,7 +117,7 @@ class ScriptTextEditor : public ScriptEditorBase {
 		EDIT_INDENT_RIGHT,
 		EDIT_INDENT_LEFT,
 		EDIT_DELETE_LINE,
-		EDIT_CLONE_DOWN,
+		EDIT_DUPLICATE_SELECTION,
 		EDIT_PICK_COLOR,
 		EDIT_TO_UPPERCASE,
 		EDIT_TO_LOWERCASE,
@@ -159,7 +162,9 @@ protected:
 
 	void _load_theme_settings();
 	void _set_theme_for_script();
+	void _show_errors_panel(bool p_show);
 	void _show_warnings_panel(bool p_show);
+	void _error_clicked(Variant p_line);
 	void _warning_clicked(Variant p_line);
 
 	void _notification(int p_what);
@@ -173,6 +178,7 @@ protected:
 	void _make_context_menu(bool p_selection, bool p_color, bool p_foldable, bool p_open_docs, bool p_goto_definition, Vector2 p_pos);
 	void _text_edit_gui_input(const Ref<InputEvent> &ev);
 	void _color_changed(const Color &p_color);
+	void _prepare_edit_menu();
 
 	void _goto_line(int p_line) { goto_line(p_line); }
 	void _lookup_symbol(const String &p_symbol, int p_row, int p_column);
@@ -191,7 +197,7 @@ public:
 
 	virtual void add_syntax_highlighter(Ref<EditorSyntaxHighlighter> p_highlighter) override;
 	virtual void set_syntax_highlighter(Ref<EditorSyntaxHighlighter> p_highlighter) override;
-	void update_toggle_scripts_button();
+	void update_toggle_scripts_button() override;
 
 	virtual void apply_code() override;
 	virtual RES get_edited_resource() const override;
@@ -219,6 +225,8 @@ public:
 
 	virtual void reload(bool p_soft) override;
 	virtual Array get_breakpoints() override;
+	virtual void set_breakpoint(int p_line, bool p_enabled) override;
+	virtual void clear_breakpoints() override;
 
 	virtual void add_callback(const String &p_function, PackedStringArray p_args) override;
 	virtual void update_settings() override;
@@ -231,7 +239,11 @@ public:
 
 	Control *get_edit_menu() override;
 	virtual void clear_edit_menu() override;
+	virtual void set_find_replace_bar(FindReplaceBar *p_bar) override;
+
 	static void register_editor();
+
+	virtual Control *get_base_editor() const override;
 
 	virtual void validate() override;
 

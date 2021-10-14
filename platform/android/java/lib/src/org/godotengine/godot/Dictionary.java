@@ -43,10 +43,10 @@ public class Dictionary extends HashMap<String, Object> {
 		for (String key : keys) {
 			ret[i] = key;
 			i++;
-		};
+		}
 
 		return ret;
-	};
+	}
 
 	public Object[] get_values() {
 		Object[] ret = new Object[size()];
@@ -55,21 +55,21 @@ public class Dictionary extends HashMap<String, Object> {
 		for (String key : keys) {
 			ret[i] = get(key);
 			i++;
-		};
+		}
 
 		return ret;
-	};
+	}
 
 	public void set_keys(String[] keys) {
 		keys_cache = keys;
-	};
+	}
 
 	public void set_values(Object[] vals) {
 		int i = 0;
 		for (String key : keys_cache) {
 			put(key, vals[i]);
 			i++;
-		};
+		}
 		keys_cache = null;
-	};
-};
+	}
+}

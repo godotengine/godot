@@ -36,7 +36,7 @@
 class CapsuleShape3D : public Shape3D {
 	GDCLASS(CapsuleShape3D, Shape3D);
 	float radius = 1.0;
-	float height = 1.0;
+	float height = 3.0;
 
 protected:
 	static void _bind_methods();

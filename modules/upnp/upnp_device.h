@@ -31,10 +31,10 @@
 #ifndef GODOT_UPNP_DEVICE_H
 #define GODOT_UPNP_DEVICE_H
 
-#include "core/object/reference.h"
+#include "core/object/ref_counted.h"
 
-class UPNPDevice : public Reference {
-	GDCLASS(UPNPDevice, Reference);
+class UPNPDevice : public RefCounted {
+	GDCLASS(UPNPDevice, RefCounted);
 
 public:
 	enum IGDStatus {

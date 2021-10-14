@@ -32,7 +32,6 @@
 #define CANVAS_LAYER_H
 
 #include "scene/main/node.h"
-#include "scene/resources/world_2d.h"
 
 class Viewport;
 class CanvasLayer : public Node {
@@ -78,9 +77,6 @@ public:
 
 	void set_rotation(real_t p_radians);
 	real_t get_rotation() const;
-
-	void set_rotation_degrees(real_t p_degrees);
-	real_t get_rotation_degrees() const;
 
 	void set_scale(const Size2 &p_scale);
 	Size2 get_scale() const;

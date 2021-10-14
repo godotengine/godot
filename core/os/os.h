@@ -52,14 +52,12 @@ class OS {
 	int low_processor_usage_mode_sleep_usec = 10000;
 	bool _verbose_stdout = false;
 	bool _debug_stdout = false;
+	bool _single_window = false;
 	String _local_clipboard;
-	bool _no_window = false;
 	int _exit_code = EXIT_FAILURE; // unexpected exit is marked as failure
 	int _orientation;
 	bool _allow_hidpi = false;
 	bool _allow_layered = false;
-	bool _use_vsync;
-	bool _vsync_via_compositor;
 	bool _stdout_enabled = true;
 	bool _stderr_enabled = true;
 
@@ -122,6 +120,8 @@ public:
 	virtual void open_midi_inputs();
 	virtual void close_midi_inputs();
 
+	virtual void alert(const String &p_alert, const String &p_title = "ALERT!");
+
 	virtual Error open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path = false) { return ERR_UNAVAILABLE; }
 	virtual Error close_dynamic_library(void *p_library_handle) { return ERR_UNAVAILABLE; }
 	virtual Error get_dynamic_library_symbol_handle(void *p_library_handle, const String p_name, void *&p_symbol_handle, bool p_optional = false) { return ERR_UNAVAILABLE; }
@@ -158,17 +158,17 @@ public:
 
 	virtual void yield();
 
-	enum Weekday {
-		DAY_SUNDAY,
-		DAY_MONDAY,
-		DAY_TUESDAY,
-		DAY_WEDNESDAY,
-		DAY_THURSDAY,
-		DAY_FRIDAY,
-		DAY_SATURDAY
+	enum Weekday : uint8_t {
+		WEEKDAY_SUNDAY,
+		WEEKDAY_MONDAY,
+		WEEKDAY_TUESDAY,
+		WEEKDAY_WEDNESDAY,
+		WEEKDAY_THURSDAY,
+		WEEKDAY_FRIDAY,
+		WEEKDAY_SATURDAY,
 	};
 
-	enum Month {
+	enum Month : uint8_t {
 		/// Start at 1 to follow Windows SYSTEMTIME structure
 		/// https://msdn.microsoft.com/en-us/library/windows/desktop/ms724950(v=vs.85).aspx
 		MONTH_JANUARY = 1,
@@ -182,21 +182,21 @@ public:
 		MONTH_SEPTEMBER,
 		MONTH_OCTOBER,
 		MONTH_NOVEMBER,
-		MONTH_DECEMBER
+		MONTH_DECEMBER,
 	};
 
 	struct Date {
-		int year;
+		int64_t year;
 		Month month;
-		int day;
+		uint8_t day;
 		Weekday weekday;
 		bool dst;
 	};
 
 	struct Time {
-		int hour;
-		int min;
-		int sec;
+		uint8_t hour;
+		uint8_t minute;
+		uint8_t second;
 	};
 
 	struct TimeZoneInfo {
@@ -207,14 +207,13 @@ public:
 	virtual Date get_date(bool local = false) const = 0;
 	virtual Time get_time(bool local = false) const = 0;
 	virtual TimeZoneInfo get_time_zone_info() const = 0;
-	virtual String get_iso_date_time(bool local = false) const;
 	virtual double get_unix_time() const;
 
 	virtual void delay_usec(uint32_t p_usec) const = 0;
 	virtual void add_frame_delay(bool p_can_draw);
 
 	virtual uint64_t get_ticks_usec() const = 0;
-	uint32_t get_ticks_msec() const;
+	uint64_t get_ticks_msec() const;
 
 	virtual bool is_userfs_persistent() const { return true; }
 
@@ -225,6 +224,8 @@ public:
 	bool is_stderr_enabled() const;
 	void set_stdout_enabled(bool p_enabled);
 	void set_stderr_enabled(bool p_enabled);
+
+	bool is_single_window() const;
 
 	virtual void disable_crash_handler() {}
 	virtual bool is_disable_crash_handler() const { return false; }
@@ -242,6 +243,7 @@ public:
 	RenderThreadMode get_render_thread_mode() const { return _render_thread_mode; }
 
 	virtual String get_locale() const;
+	String get_locale_language() const;
 
 	String get_safe_dir_name(const String &p_dir_name, bool p_allow_dir_separator = false) const;
 	virtual String get_godot_dir_name() const;
@@ -250,6 +252,7 @@ public:
 	virtual String get_config_path() const;
 	virtual String get_cache_path() const;
 	virtual String get_bundle_resource_dir() const;
+	virtual String get_bundle_icon_path() const;
 
 	virtual String get_user_data_dir() const;
 	virtual String get_resource_dir() const;
@@ -265,12 +268,9 @@ public:
 		SYSTEM_DIR_RINGTONES,
 	};
 
-	virtual String get_system_dir(SystemDir p_dir) const;
+	virtual String get_system_dir(SystemDir p_dir, bool p_shared_storage = true) const;
 
 	virtual Error move_to_trash(const String &p_path) { return FAILED; }
-
-	virtual void set_no_window_mode(bool p_enable);
-	virtual bool is_no_window_mode_enabled() const;
 
 	virtual void debug_break();
 

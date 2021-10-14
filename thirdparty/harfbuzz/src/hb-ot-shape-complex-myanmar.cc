@@ -41,7 +41,8 @@ myanmar_basic_features[] =
 {
   /*
    * Basic features.
-   * These features are applied in order, one at a time, after reordering.
+   * These features are applied in order, one at a time, after reordering,
+   * constrained to the syllable.
    */
   HB_TAG('r','p','h','f'),
   HB_TAG('p','r','e','f'),

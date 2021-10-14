@@ -30,7 +30,7 @@
 
 #include "crypto_mbedtls.h"
 
-#include "core/os/file_access.h"
+#include "core/io/file_access.h"
 
 #include "core/config/engine.h"
 #include "core/config/project_settings.h"
@@ -58,7 +58,7 @@ Error CryptoKeyMbedTLS::load(String p_path, bool p_public_only) {
 	FileAccess *f = FileAccess::open(p_path, FileAccess::READ);
 	ERR_FAIL_COND_V_MSG(!f, ERR_INVALID_PARAMETER, "Cannot open CryptoKeyMbedTLS file '" + p_path + "'.");
 
-	int flen = f->get_len();
+	uint64_t flen = f->get_length();
 	out.resize(flen + 1);
 	f->get_buffer(out.ptrw(), flen);
 	out.write[flen] = 0; // string terminator
@@ -146,7 +146,7 @@ Error X509CertificateMbedTLS::load(String p_path) {
 	FileAccess *f = FileAccess::open(p_path, FileAccess::READ);
 	ERR_FAIL_COND_V_MSG(!f, ERR_INVALID_PARAMETER, "Cannot open X509CertificateMbedTLS file '" + p_path + "'.");
 
-	int flen = f->get_len();
+	uint64_t flen = f->get_length();
 	out.resize(flen + 1);
 	f->get_buffer(out.ptrw(), flen);
 	out.write[flen] = 0; // string terminator
@@ -249,6 +249,13 @@ PackedByteArray HMACContextMbedTLS::finish() {
 	return out;
 }
 
+HMACContextMbedTLS::~HMACContextMbedTLS() {
+	if (ctx != nullptr) {
+		mbedtls_md_free((mbedtls_md_context_t *)ctx);
+		memfree((mbedtls_md_context_t *)ctx);
+	}
+}
+
 Crypto *CryptoMbedTLS::create() {
 	return memnew(CryptoMbedTLS);
 }
@@ -324,7 +331,7 @@ void CryptoMbedTLS::load_default_certificates(String p_path) {
 
 Ref<CryptoKey> CryptoMbedTLS::generate_rsa(int p_bytes) {
 	Ref<CryptoKeyMbedTLS> out;
-	out.instance();
+	out.instantiate();
 	int ret = mbedtls_pk_setup(&(out->pkey), mbedtls_pk_info_from_type(MBEDTLS_PK_RSA));
 	ERR_FAIL_COND_V(ret != 0, nullptr);
 	ret = mbedtls_rsa_gen_key(mbedtls_pk_rsa(out->pkey), mbedtls_ctr_drbg_random, &ctr_drbg, p_bytes, 65537);
@@ -366,7 +373,7 @@ Ref<X509Certificate> CryptoMbedTLS::generate_self_signed_certificate(Ref<CryptoK
 	buf[4095] = '\0'; // Make sure strlen can't fail.
 
 	Ref<X509CertificateMbedTLS> out;
-	out.instance();
+	out.instantiate();
 	out->load_from_memory(buf, strlen((char *)buf) + 1); // Use strlen to find correct output size.
 	return out;
 }
@@ -409,7 +416,7 @@ Vector<uint8_t> CryptoMbedTLS::sign(HashingContext::HashType p_hash_type, Vector
 	int ret = mbedtls_pk_sign(&(key->pkey), type, p_hash.ptr(), size, buf, &sig_size, mbedtls_ctr_drbg_random, &ctr_drbg);
 	ERR_FAIL_COND_V_MSG(ret, out, "Error while signing: " + itos(ret));
 	out.resize(sig_size);
-	copymem(out.ptrw(), buf, sig_size);
+	memcpy(out.ptrw(), buf, sig_size);
 	return out;
 }
 
@@ -432,7 +439,7 @@ Vector<uint8_t> CryptoMbedTLS::encrypt(Ref<CryptoKey> p_key, Vector<uint8_t> p_p
 	int ret = mbedtls_pk_encrypt(&(key->pkey), p_plaintext.ptr(), p_plaintext.size(), buf, &size, sizeof(buf), mbedtls_ctr_drbg_random, &ctr_drbg);
 	ERR_FAIL_COND_V_MSG(ret, out, "Error while encrypting: " + itos(ret));
 	out.resize(size);
-	copymem(out.ptrw(), buf, size);
+	memcpy(out.ptrw(), buf, size);
 	return out;
 }
 
@@ -446,6 +453,6 @@ Vector<uint8_t> CryptoMbedTLS::decrypt(Ref<CryptoKey> p_key, Vector<uint8_t> p_c
 	int ret = mbedtls_pk_decrypt(&(key->pkey), p_ciphertext.ptr(), p_ciphertext.size(), buf, &size, sizeof(buf), mbedtls_ctr_drbg_random, &ctr_drbg);
 	ERR_FAIL_COND_V_MSG(ret, out, "Error while decrypting: " + itos(ret));
 	out.resize(size);
-	copymem(out.ptrw(), buf, size);
+	memcpy(out.ptrw(), buf, size);
 	return out;
 }

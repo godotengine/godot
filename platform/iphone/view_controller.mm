@@ -34,7 +34,6 @@
 #import "godot_view.h"
 #import "godot_view_renderer.h"
 #import "keyboard_input_view.h"
-#import "native_video_view.h"
 #include "os_iphone.h"
 
 #import <AVFoundation/AVFoundation.h>
@@ -43,7 +42,6 @@
 @interface ViewController () <GodotViewDelegate>
 
 @property(strong, nonatomic) GodotViewRenderer *renderer;
-@property(strong, nonatomic) GodotNativeVideoView *videoView;
 @property(strong, nonatomic) GodotKeyboardInputView *keyboardView;
 
 @property(strong, nonatomic) UIView *godotLoadingOverlay;
@@ -151,10 +149,6 @@
 }
 
 - (void)dealloc {
-	[self.videoView stopVideo];
-
-	self.videoView = nil;
-
 	self.keyboardView = nil;
 
 	self.renderer = nil;
@@ -240,24 +234,6 @@
 - (void)keyboardHidden:(NSNotification *)notification {
 	if (DisplayServerIPhone::get_singleton()) {
 		DisplayServerIPhone::get_singleton()->virtual_keyboard_set_height(0);
-	}
-}
-
-// MARK: Native Video Player
-
-- (BOOL)playVideoAtPath:(NSString *)filePath volume:(float)videoVolume audio:(NSString *)audioTrack subtitle:(NSString *)subtitleTrack {
-	// If we are showing some video already, reuse existing view for new video.
-	if (self.videoView) {
-		return [self.videoView playVideoAtPath:filePath volume:videoVolume audio:audioTrack subtitle:subtitleTrack];
-	} else {
-		// Create autoresizing view for video playback.
-		GodotNativeVideoView *videoView = [[GodotNativeVideoView alloc] initWithFrame:self.view.bounds];
-		videoView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-		[self.view addSubview:videoView];
-
-		self.videoView = videoView;
-
-		return [self.videoView playVideoAtPath:filePath volume:videoVolume audio:audioTrack subtitle:subtitleTrack];
 	}
 }
 

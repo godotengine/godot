@@ -34,7 +34,7 @@ void RemoteTransform3D::_update_cache() {
 	cache = ObjectID();
 	if (has_node(remote_node)) {
 		Node *node = get_node(remote_node);
-		if (!node || this == node || node->is_a_parent_of(this) || this->is_a_parent_of(node)) {
+		if (!node || this == node || node->is_ancestor_of(this) || this->is_ancestor_of(node)) {
 			return;
 		}
 
@@ -65,7 +65,7 @@ void RemoteTransform3D::_update_remote() {
 		if (update_remote_position && update_remote_rotation && update_remote_scale) {
 			n->set_global_transform(get_global_transform());
 		} else {
-			Transform our_trans = get_global_transform();
+			Transform3D our_trans = get_global_transform();
 
 			if (update_remote_rotation) {
 				n->set_rotation(our_trans.basis.get_rotation());
@@ -76,7 +76,7 @@ void RemoteTransform3D::_update_remote() {
 			}
 
 			if (update_remote_position) {
-				Transform n_trans = n->get_global_transform();
+				Transform3D n_trans = n->get_global_transform();
 
 				n_trans.set_origin(our_trans.get_origin());
 				n->set_global_transform(n_trans);
@@ -87,7 +87,7 @@ void RemoteTransform3D::_update_remote() {
 		if (update_remote_position && update_remote_rotation && update_remote_scale) {
 			n->set_transform(get_transform());
 		} else {
-			Transform our_trans = get_transform();
+			Transform3D our_trans = get_transform();
 
 			if (update_remote_rotation) {
 				n->set_rotation(our_trans.basis.get_rotation());
@@ -98,7 +98,7 @@ void RemoteTransform3D::_update_remote() {
 			}
 
 			if (update_remote_position) {
-				Transform n_trans = n->get_transform();
+				Transform3D n_trans = n->get_transform();
 
 				n_trans.set_origin(our_trans.get_origin());
 				n->set_transform(n_trans);

@@ -63,8 +63,8 @@ Array Script::_get_script_property_list() {
 	Array ret;
 	List<PropertyInfo> list;
 	get_script_property_list(&list);
-	for (List<PropertyInfo>::Element *E = list.front(); E; E = E->next()) {
-		ret.append(E->get().operator Dictionary());
+	for (const PropertyInfo &E : list) {
+		ret.append(E.operator Dictionary());
 	}
 	return ret;
 }
@@ -73,8 +73,8 @@ Array Script::_get_script_method_list() {
 	Array ret;
 	List<MethodInfo> list;
 	get_script_method_list(&list);
-	for (List<MethodInfo>::Element *E = list.front(); E; E = E->next()) {
-		ret.append(E->get().operator Dictionary());
+	for (const MethodInfo &E : list) {
+		ret.append(E.operator Dictionary());
 	}
 	return ret;
 }
@@ -83,8 +83,8 @@ Array Script::_get_script_signal_list() {
 	Array ret;
 	List<MethodInfo> list;
 	get_script_signal_list(&list);
-	for (List<MethodInfo>::Element *E = list.front(); E; E = E->next()) {
-		ret.append(E->get().operator Dictionary());
+	for (const MethodInfo &E : list) {
+		ret.append(E.operator Dictionary());
 	}
 	return ret;
 }
@@ -93,14 +93,14 @@ Dictionary Script::_get_script_constant_map() {
 	Dictionary ret;
 	Map<StringName, Variant> map;
 	get_constants(&map);
-	for (Map<StringName, Variant>::Element *E = map.front(); E; E = E->next()) {
-		ret[E->key()] = E->value();
+	for (const KeyValue<StringName, Variant> &E : map) {
+		ret[E.key] = E.value;
 	}
 	return ret;
 }
 
 void Script::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("can_instance"), &Script::can_instance);
+	ClassDB::bind_method(D_METHOD("can_instantiate"), &Script::can_instantiate);
 	//ClassDB::bind_method(D_METHOD("instance_create","base_object"),&Script::instance_create);
 	ClassDB::bind_method(D_METHOD("instance_has", "base_object"), &Script::instance_has);
 	ClassDB::bind_method(D_METHOD("has_source_code"), &Script::has_source_code);
@@ -120,7 +120,7 @@ void Script::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("is_tool"), &Script::is_tool);
 
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "source_code", PROPERTY_HINT_NONE, "", 0), "set_source_code", "get_source_code");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "source_code", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_source_code", "get_source_code");
 }
 
 void ScriptServer::set_scripting_enabled(bool p_enabled) {
@@ -257,8 +257,8 @@ void ScriptServer::get_global_class_list(List<StringName> *r_global_classes) {
 		classes.push_back(*K);
 	}
 	classes.sort_custom<StringName::AlphCompare>();
-	for (List<StringName>::Element *E = classes.front(); E; E = E->next()) {
-		r_global_classes->push_back(E->get());
+	for (const StringName &E : classes) {
+		r_global_classes->push_back(E);
 	}
 }
 
@@ -266,12 +266,12 @@ void ScriptServer::save_global_classes() {
 	List<StringName> gc;
 	get_global_class_list(&gc);
 	Array gcarr;
-	for (List<StringName>::Element *E = gc.front(); E; E = E->next()) {
+	for (const StringName &E : gc) {
 		Dictionary d;
-		d["class"] = E->get();
-		d["language"] = global_classes[E->get()].language;
-		d["path"] = global_classes[E->get()].path;
-		d["base"] = global_classes[E->get()].base;
+		d["class"] = E;
+		d["language"] = global_classes[E].language;
+		d["path"] = global_classes[E].path;
+		d["base"] = global_classes[E].base;
 		gcarr.push_back(d);
 	}
 
@@ -297,10 +297,10 @@ void ScriptServer::save_global_classes() {
 void ScriptInstance::get_property_state(List<Pair<StringName, Variant>> &state) {
 	List<PropertyInfo> pinfo;
 	get_property_list(&pinfo);
-	for (List<PropertyInfo>::Element *E = pinfo.front(); E; E = E->next()) {
-		if (E->get().usage & PROPERTY_USAGE_STORAGE) {
+	for (const PropertyInfo &E : pinfo) {
+		if (E.usage & PROPERTY_USAGE_STORAGE) {
 			Pair<StringName, Variant> p;
-			p.first = E->get().name;
+			p.first = E.name;
 			if (get(p.first, p.second)) {
 				state.push_back(p);
 			}
@@ -353,10 +353,10 @@ void ScriptLanguage::get_core_type_words(List<String> *p_core_type_words) const 
 	p_core_type_words->push_back("Vector3i");
 	p_core_type_words->push_back("Transform2D");
 	p_core_type_words->push_back("Plane");
-	p_core_type_words->push_back("Quat");
+	p_core_type_words->push_back("Quaternion");
 	p_core_type_words->push_back("AABB");
 	p_core_type_words->push_back("Basis");
-	p_core_type_words->push_back("Transform");
+	p_core_type_words->push_back("Transform3D");
 	p_core_type_words->push_back("Color");
 	p_core_type_words->push_back("StringName");
 	p_core_type_words->push_back("NodePath");
@@ -430,16 +430,16 @@ bool PlaceHolderScriptInstance::get(const StringName &p_name, Variant &r_ret) co
 
 void PlaceHolderScriptInstance::get_property_list(List<PropertyInfo> *p_properties) const {
 	if (script->is_placeholder_fallback_enabled()) {
-		for (const List<PropertyInfo>::Element *E = properties.front(); E; E = E->next()) {
-			p_properties->push_back(E->get());
+		for (const PropertyInfo &E : properties) {
+			p_properties->push_back(E);
 		}
 	} else {
-		for (const List<PropertyInfo>::Element *E = properties.front(); E; E = E->next()) {
-			PropertyInfo pinfo = E->get();
+		for (const PropertyInfo &E : properties) {
+			PropertyInfo pinfo = E;
 			if (!values.has(pinfo.name)) {
 				pinfo.usage |= PROPERTY_USAGE_SCRIPT_DEFAULT_VALUE;
 			}
-			p_properties->push_back(E->get());
+			p_properties->push_back(E);
 		}
 	}
 }
@@ -489,11 +489,11 @@ bool PlaceHolderScriptInstance::has_method(const StringName &p_method) const {
 
 void PlaceHolderScriptInstance::update(const List<PropertyInfo> &p_properties, const Map<StringName, Variant> &p_values) {
 	Set<StringName> new_values;
-	for (const List<PropertyInfo>::Element *E = p_properties.front(); E; E = E->next()) {
-		StringName n = E->get().name;
+	for (const PropertyInfo &E : p_properties) {
+		StringName n = E.name;
 		new_values.insert(n);
 
-		if (!values.has(n) || values[n].get_type() != E->get().type) {
+		if (!values.has(n) || values[n].get_type() != E.type) {
 			if (p_values.has(n)) {
 				values[n] = p_values[n];
 			}
@@ -511,7 +511,7 @@ void PlaceHolderScriptInstance::update(const List<PropertyInfo> &p_properties, c
 		Variant defval;
 		if (script->get_property_default_value(E->key(), defval)) {
 			//remove because it's the same as the default value
-			if (defval == E->get()) {
+			if (defval == E) {
 				to_remove.push_back(E->key());
 			}
 		}
@@ -542,8 +542,8 @@ void PlaceHolderScriptInstance::property_set_fallback(const StringName &p_name, 
 		}
 
 		bool found = false;
-		for (const List<PropertyInfo>::Element *F = properties.front(); F; F = F->next()) {
-			if (F->get().name == p_name) {
+		for (const PropertyInfo &F : properties) {
+			if (F.name == p_name) {
 				found = true;
 				break;
 			}
@@ -583,14 +583,6 @@ Variant PlaceHolderScriptInstance::property_get_fallback(const StringName &p_nam
 	}
 
 	return Variant();
-}
-
-uint16_t PlaceHolderScriptInstance::get_rpc_method_id(const StringName &p_method) const {
-	return UINT16_MAX;
-}
-
-uint16_t PlaceHolderScriptInstance::get_rset_property_id(const StringName &p_method) const {
-	return UINT16_MAX;
 }
 
 PlaceHolderScriptInstance::PlaceHolderScriptInstance(ScriptLanguage *p_language, Ref<Script> p_script, Object *p_owner) :

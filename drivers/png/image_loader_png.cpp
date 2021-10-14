@@ -37,7 +37,7 @@
 #include <string.h>
 
 Error ImageLoaderPNG::load_image(Ref<Image> p_image, FileAccess *f, bool p_force_linear, float p_scale) {
-	const size_t buffer_size = f->get_len();
+	const uint64_t buffer_size = f->get_length();
 	Vector<uint8_t> file_buffer;
 	Error err = file_buffer.resize(buffer_size);
 	if (err) {
@@ -59,7 +59,7 @@ void ImageLoaderPNG::get_recognized_extensions(List<String> *p_extensions) const
 
 Ref<Image> ImageLoaderPNG::load_mem_png(const uint8_t *p_png, int p_size) {
 	Ref<Image> img;
-	img.instance();
+	img.instantiate();
 
 	// the value of p_force_linear does not matter since it only applies to 16 bit
 	Error err = PNGDriverCommon::png_to_image(p_png, p_size, false, img);
@@ -88,7 +88,7 @@ Vector<uint8_t> ImageLoaderPNG::lossless_pack_png(const Ref<Image> &p_image) {
 	{
 		// must be closed before call to image_to_png
 		uint8_t *writer = out_buffer.ptrw();
-		copymem(writer, "PNG ", 4);
+		memcpy(writer, "PNG ", 4);
 	}
 
 	Error err = PNGDriverCommon::image_to_png(p_image, out_buffer);
@@ -101,6 +101,6 @@ Vector<uint8_t> ImageLoaderPNG::lossless_pack_png(const Ref<Image> &p_image) {
 
 ImageLoaderPNG::ImageLoaderPNG() {
 	Image::_png_mem_loader_func = load_mem_png;
-	Image::lossless_unpacker = lossless_unpack_png;
-	Image::lossless_packer = lossless_pack_png;
+	Image::png_unpacker = lossless_unpack_png;
+	Image::png_packer = lossless_pack_png;
 }

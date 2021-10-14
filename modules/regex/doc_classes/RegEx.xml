@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="RegEx" inherits="Reference" version="4.0">
+<class name="RegEx" inherits="RefCounted" version="4.0">
 	<brief_description>
 		Class for searching text for patterns using regular expressions.
 	</brief_description>
@@ -50,93 +50,70 @@
 	</tutorials>
 	<methods>
 		<method name="clear">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				This method resets the state of the object, as if it was freshly created. Namely, it unassigns the regular expression of this object.
 			</description>
 		</method>
 		<method name="compile">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="pattern" type="String">
-			</argument>
+			<return type="int" enum="Error" />
+			<argument index="0" name="pattern" type="String" />
 			<description>
 				Compiles and assign the search pattern to use. Returns [constant OK] if the compilation is successful. If an error is encountered, details are printed to standard output and an error is returned.
 			</description>
 		</method>
 		<method name="get_group_count" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the number of capturing groups in compiled pattern.
 			</description>
 		</method>
 		<method name="get_names" qualifiers="const">
-			<return type="Array">
-			</return>
+			<return type="Array" />
 			<description>
 				Returns an array of names of named capturing groups in the compiled pattern. They are ordered by appearance.
 			</description>
 		</method>
 		<method name="get_pattern" qualifiers="const">
-			<return type="String">
-			</return>
+			<return type="String" />
 			<description>
 				Returns the original search pattern that was compiled.
 			</description>
 		</method>
 		<method name="is_valid" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns whether this object has a valid search pattern assigned.
 			</description>
 		</method>
 		<method name="search" qualifiers="const">
-			<return type="RegExMatch">
-			</return>
-			<argument index="0" name="subject" type="String">
-			</argument>
-			<argument index="1" name="offset" type="int" default="0">
-			</argument>
-			<argument index="2" name="end" type="int" default="-1">
-			</argument>
+			<return type="RegExMatch" />
+			<argument index="0" name="subject" type="String" />
+			<argument index="1" name="offset" type="int" default="0" />
+			<argument index="2" name="end" type="int" default="-1" />
 			<description>
 				Searches the text for the compiled pattern. Returns a [RegExMatch] container of the first matching result if found, otherwise [code]null[/code]. The region to search within can be specified without modifying where the start and end anchor would be.
 			</description>
 		</method>
 		<method name="search_all" qualifiers="const">
-			<return type="Array">
-			</return>
-			<argument index="0" name="subject" type="String">
-			</argument>
-			<argument index="1" name="offset" type="int" default="0">
-			</argument>
-			<argument index="2" name="end" type="int" default="-1">
-			</argument>
+			<return type="Array" />
+			<argument index="0" name="subject" type="String" />
+			<argument index="1" name="offset" type="int" default="0" />
+			<argument index="2" name="end" type="int" default="-1" />
 			<description>
 				Searches the text for the compiled pattern. Returns an array of [RegExMatch] containers for each non-overlapping result. If no results were found, an empty array is returned instead. The region to search within can be specified without modifying where the start and end anchor would be.
 			</description>
 		</method>
 		<method name="sub" qualifiers="const">
-			<return type="String">
-			</return>
-			<argument index="0" name="subject" type="String">
-			</argument>
-			<argument index="1" name="replacement" type="String">
-			</argument>
-			<argument index="2" name="all" type="bool" default="false">
-			</argument>
-			<argument index="3" name="offset" type="int" default="0">
-			</argument>
-			<argument index="4" name="end" type="int" default="-1">
-			</argument>
+			<return type="String" />
+			<argument index="0" name="subject" type="String" />
+			<argument index="1" name="replacement" type="String" />
+			<argument index="2" name="all" type="bool" default="false" />
+			<argument index="3" name="offset" type="int" default="0" />
+			<argument index="4" name="end" type="int" default="-1" />
 			<description>
 				Searches the text for the compiled pattern and replaces it with the specified string. Escapes and backreferences such as [code]$1[/code] and [code]$name[/code] are expanded and resolved. By default, only the first instance is replaced, but it can be changed for all instances (global replacement). The region to search within can be specified without modifying where the start and end anchor would be.
 			</description>
 		</method>
 	</methods>
-	<constants>
-	</constants>
 </class>

@@ -76,8 +76,7 @@ class SectionedInspectorFilter : public Object {
 
 		List<PropertyInfo> pinfo;
 		edited->get_property_list(&pinfo);
-		for (List<PropertyInfo>::Element *E = pinfo.front(); E; E = E->next()) {
-			PropertyInfo pi = E->get();
+		for (PropertyInfo &pi : pinfo) {
 			int sp = pi.name.find("/");
 
 			if (pi.name == "resource_path" || pi.name == "resource_name" || pi.name == "resource_local_to_scene" || pi.name.begins_with("script/") || pi.name.begins_with("_global_script")) { //skip resource stuff
@@ -135,7 +134,7 @@ void SectionedInspector::_section_selected() {
 	}
 
 	selected_category = sections->get_selected()->get_metadata(0);
-	filter->set_section(selected_category, sections->get_selected()->get_children() == nullptr);
+	filter->set_section(selected_category, sections->get_selected()->get_first_child() == nullptr);
 	inspector->set_property_prefix(selected_category + "/");
 }
 
@@ -187,8 +186,8 @@ void SectionedInspector::edit(Object *p_object) {
 
 		TreeItem *first_item = sections->get_root();
 		if (first_item) {
-			while (first_item->get_children()) {
-				first_item = first_item->get_children();
+			while (first_item->get_first_child()) {
+				first_item = first_item->get_first_child();
 			}
 
 			first_item->select(0);
@@ -221,9 +220,7 @@ void SectionedInspector::update_category_list() {
 		filter = search_box->get_text();
 	}
 
-	for (List<PropertyInfo>::Element *E = pinfo.front(); E; E = E->next()) {
-		PropertyInfo pi = E->get();
-
+	for (PropertyInfo &pi : pinfo) {
 		if (pi.usage & PROPERTY_USAGE_CATEGORY) {
 			continue;
 		} else if (!(pi.usage & PROPERTY_USAGE_EDITOR) || (restrict_to_basic && !(pi.usage & PROPERTY_USAGE_EDITOR_BASIC_SETTING))) {
@@ -250,7 +247,8 @@ void SectionedInspector::update_category_list() {
 
 		for (int i = 0; i < sc; i++) {
 			TreeItem *parent = section_map[metasection];
-			parent->set_custom_bg_color(0, get_theme_color("prop_subsection", "Editor"));
+			//parent->set_custom_bg_color(0, get_theme_color(SNAME("prop_subsection"), SNAME("Editor")));
+			parent->set_custom_font(0, get_theme_font(SNAME("bold"), SNAME("EditorFonts")));
 
 			if (i > 0) {
 				metasection += "/" + sectionarr[i];

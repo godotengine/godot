@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="GDNative" inherits="Reference" version="4.0">
+<class name="GDNative" inherits="RefCounted" version="4.0">
 	<brief_description>
 	</brief_description>
 	<description>
@@ -8,26 +8,20 @@
 	</tutorials>
 	<methods>
 		<method name="call_native">
-			<return type="Variant">
-			</return>
-			<argument index="0" name="calling_type" type="StringName">
-			</argument>
-			<argument index="1" name="procedure_name" type="StringName">
-			</argument>
-			<argument index="2" name="arguments" type="Array">
-			</argument>
+			<return type="Variant" />
+			<argument index="0" name="calling_type" type="StringName" />
+			<argument index="1" name="procedure_name" type="StringName" />
+			<argument index="2" name="arguments" type="Array" />
 			<description>
 			</description>
 		</method>
 		<method name="initialize">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 			</description>
 		</method>
 		<method name="terminate">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 			</description>
 		</method>
@@ -36,6 +30,4 @@
 		<member name="library" type="GDNativeLibrary" setter="set_library" getter="get_library">
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

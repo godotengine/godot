@@ -37,6 +37,7 @@ extern "C" {
 
 #include <stdint.h>
 
+// Alignment hardcoded in `core/variant/callable.h`.
 #define GODOT_SIGNAL_SIZE (16)
 
 #ifndef GODOT_CORE_API_GODOT_SIGNAL_TYPE_DEFINED

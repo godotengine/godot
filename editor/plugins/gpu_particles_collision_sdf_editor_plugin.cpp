@@ -33,7 +33,7 @@
 void GPUParticlesCollisionSDFEditorPlugin::_bake() {
 	if (col_sdf) {
 		if (col_sdf->get_texture().is_null() || !col_sdf->get_texture()->get_path().is_resource_file()) {
-			String path = get_tree()->get_edited_scene_root()->get_filename();
+			String path = get_tree()->get_edited_scene_root()->get_scene_file_path();
 			if (path == String()) {
 				path = "res://" + col_sdf->get_name() + "_data.exr";
 			} else {
@@ -83,13 +83,13 @@ void GPUParticlesCollisionSDFEditorPlugin::_notification(int p_what) {
 		Color color;
 		if (size_mb <= 16.0 + CMP_EPSILON) {
 			// Fast.
-			color = bake_info->get_theme_color("success_color", "Editor");
+			color = bake_info->get_theme_color(SNAME("success_color"), SNAME("Editor"));
 		} else if (size_mb <= 64.0 + CMP_EPSILON) {
 			// Medium.
-			color = bake_info->get_theme_color("warning_color", "Editor");
+			color = bake_info->get_theme_color(SNAME("warning_color"), SNAME("Editor"));
 		} else {
 			// Slow.
-			color = bake_info->get_theme_color("error_color", "Editor");
+			color = bake_info->get_theme_color(SNAME("error_color"), SNAME("Editor"));
 		}
 		bake_info->add_theme_color_override("font_color", color);
 
@@ -131,13 +131,13 @@ void GPUParticlesCollisionSDFEditorPlugin::_sdf_save_path_and_bake(const String 
 	if (col_sdf) {
 		Ref<Image> bake_img = col_sdf->bake();
 		if (bake_img.is_null()) {
-			EditorNode::get_singleton()->show_warning("Bake Error.");
+			EditorNode::get_singleton()->show_warning(TTR("Bake Error."));
 			return;
 		}
 
 		Ref<ConfigFile> config;
 
-		config.instance();
+		config.instantiate();
 		if (FileAccess::exists(p_path + ".import")) {
 			config->load(p_path + ".import");
 		}
@@ -174,7 +174,7 @@ GPUParticlesCollisionSDFEditorPlugin::GPUParticlesCollisionSDFEditorPlugin(Edito
 	bake_hb->hide();
 	bake = memnew(Button);
 	bake->set_flat(true);
-	bake->set_icon(editor->get_gui_base()->get_theme_icon("Bake", "EditorIcons"));
+	bake->set_icon(editor->get_gui_base()->get_theme_icon(SNAME("Bake"), SNAME("EditorIcons")));
 	bake->set_text(TTR("Bake SDF"));
 	bake->connect("pressed", callable_mp(this, &GPUParticlesCollisionSDFEditorPlugin::_bake));
 	bake_hb->add_child(bake);

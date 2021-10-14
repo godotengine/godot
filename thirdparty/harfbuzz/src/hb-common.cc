@@ -257,13 +257,11 @@ struct hb_language_item_t {
   bool operator == (const char *s) const
   { return lang_equal (lang, s); }
 
-  hb_language_item_t & operator = (const char *s) {
-    /* If a custom allocated is used calling strdup() pairs
-    badly with a call to the custom free() in fini() below.
-    Therefore don't call strdup(), implement its behavior.
-    */
+  hb_language_item_t & operator = (const char *s)
+  {
+    /* We can't call strdup(), because we allow custom allocators. */
     size_t len = strlen(s) + 1;
-    lang = (hb_language_t) malloc(len);
+    lang = (hb_language_t) hb_malloc(len);
     if (likely (lang))
     {
       memcpy((unsigned char *) lang, s, len);
@@ -274,16 +272,15 @@ struct hb_language_item_t {
     return *this;
   }
 
-  void fini () { free ((void *) lang); }
+  void fini () { hb_free ((void *) lang); }
 };
 
 
-/* Thread-safe lock-free language list */
+/* Thread-safe lockfree language list */
 
 static hb_atomic_ptr_t <hb_language_item_t> langs;
 
-#if HB_USE_ATEXIT
-static void
+static inline void
 free_langs ()
 {
 retry:
@@ -294,11 +291,10 @@ retry:
   while (first_lang) {
     hb_language_item_t *next = first_lang->next;
     first_lang->fini ();
-    free (first_lang);
+    hb_free (first_lang);
     first_lang = next;
   }
 }
-#endif
 
 static hb_language_item_t *
 lang_find_or_insert (const char *key)
@@ -311,28 +307,26 @@ retry:
       return lang;
 
   /* Not found; allocate one. */
-  hb_language_item_t *lang = (hb_language_item_t *) calloc (1, sizeof (hb_language_item_t));
+  hb_language_item_t *lang = (hb_language_item_t *) hb_calloc (1, sizeof (hb_language_item_t));
   if (unlikely (!lang))
     return nullptr;
   lang->next = first_lang;
   *lang = key;
   if (unlikely (!lang->lang))
   {
-    free (lang);
+    hb_free (lang);
     return nullptr;
   }
 
   if (unlikely (!langs.cmpexch (first_lang, lang)))
   {
     lang->fini ();
-    free (lang);
+    hb_free (lang);
     goto retry;
   }
 
-#if HB_USE_ATEXIT
   if (!first_lang)
-    atexit (free_langs); /* First person registers atexit() callback. */
-#endif
+    hb_atexit (free_langs); /* First person registers atexit() callback. */
 
   return lang;
 }
@@ -600,6 +594,9 @@ hb_script_get_horizontal_direction (hb_script_t script)
     /* Unicode-13.0 additions */
     case HB_SCRIPT_CHORASMIAN:
     case HB_SCRIPT_YEZIDI:
+
+    /* Unicode-14.0 additions */
+    case HB_SCRIPT_OLD_UYGHUR:
 
       return HB_DIRECTION_RTL;
 

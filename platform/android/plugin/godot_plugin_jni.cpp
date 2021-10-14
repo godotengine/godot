@@ -43,7 +43,7 @@ extern "C" {
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_plugin_GodotPlugin_nativeRegisterSingleton(JNIEnv *env, jclass clazz, jstring name, jobject obj) {
 	String singname = jstring_to_string(name, env);
-	JNISingleton *s = (JNISingleton *)ClassDB::instance("JNISingleton");
+	JNISingleton *s = (JNISingleton *)ClassDB::instantiate("JNISingleton");
 	s->set_instance(env->NewGlobalRef(obj));
 	jni_singletons[singname] = s;
 
@@ -126,7 +126,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_plugin_GodotPlugin_nativeEmitS
 		env->DeleteLocalRef(j_param);
 	};
 
-	singleton->emit_signal(signal_name, args, count);
+	singleton->emit_signal(SNAME(signal_name), args, count);
 }
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_plugin_GodotPlugin_nativeRegisterGDNativeLibraries(JNIEnv *env, jclass clazz, jobjectArray gdnlib_paths) {

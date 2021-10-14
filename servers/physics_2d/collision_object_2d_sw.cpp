@@ -47,8 +47,6 @@ void CollisionObject2DSW::add_shape(Shape2DSW *p_shape, const Transform2D &p_tra
 	if (!pending_shape_update_list.in_list()) {
 		PhysicsServer2DSW::singletonsw->pending_shape_update_list.add(&pending_shape_update_list);
 	}
-	// _update_shapes();
-	// _shapes_changed();
 }
 
 void CollisionObject2DSW::set_shape(int p_index, Shape2DSW *p_shape) {
@@ -61,13 +59,6 @@ void CollisionObject2DSW::set_shape(int p_index, Shape2DSW *p_shape) {
 	if (!pending_shape_update_list.in_list()) {
 		PhysicsServer2DSW::singletonsw->pending_shape_update_list.add(&pending_shape_update_list);
 	}
-	// _update_shapes();
-	// _shapes_changed();
-}
-
-void CollisionObject2DSW::set_shape_metadata(int p_index, const Variant &p_metadata) {
-	ERR_FAIL_INDEX(p_index, shapes.size());
-	shapes.write[p_index].metadata = p_metadata;
 }
 
 void CollisionObject2DSW::set_shape_transform(int p_index, const Transform2D &p_transform) {
@@ -79,11 +70,9 @@ void CollisionObject2DSW::set_shape_transform(int p_index, const Transform2D &p_
 	if (!pending_shape_update_list.in_list()) {
 		PhysicsServer2DSW::singletonsw->pending_shape_update_list.add(&pending_shape_update_list);
 	}
-	// _update_shapes();
-	// _shapes_changed();
 }
 
-void CollisionObject2DSW::set_shape_as_disabled(int p_idx, bool p_disabled) {
+void CollisionObject2DSW::set_shape_disabled(int p_idx, bool p_disabled) {
 	ERR_FAIL_INDEX(p_idx, shapes.size());
 
 	CollisionObject2DSW::Shape &shape = shapes.write[p_idx];
@@ -103,12 +92,10 @@ void CollisionObject2DSW::set_shape_as_disabled(int p_idx, bool p_disabled) {
 		if (!pending_shape_update_list.in_list()) {
 			PhysicsServer2DSW::singletonsw->pending_shape_update_list.add(&pending_shape_update_list);
 		}
-		//_update_shapes();
 	} else if (!p_disabled && shape.bpid == 0) {
 		if (!pending_shape_update_list.in_list()) {
 			PhysicsServer2DSW::singletonsw->pending_shape_update_list.add(&pending_shape_update_list);
 		}
-		//_update_shapes(); // automatically adds shape with bpid == 0
 	}
 }
 
@@ -177,24 +164,23 @@ void CollisionObject2DSW::_update_shapes() {
 
 	for (int i = 0; i < shapes.size(); i++) {
 		Shape &s = shapes.write[i];
-
 		if (s.disabled) {
 			continue;
-		}
-
-		if (s.bpid == 0) {
-			s.bpid = space->get_broadphase()->create(this, i);
-			space->get_broadphase()->set_static(s.bpid, _static);
 		}
 
 		//not quite correct, should compute the next matrix..
 		Rect2 shape_aabb = s.shape->get_aabb();
 		Transform2D xform = transform * s.xform;
 		shape_aabb = xform.xform(shape_aabb);
+		shape_aabb.grow_by((s.aabb_cache.size.x + s.aabb_cache.size.y) * 0.5 * 0.05);
 		s.aabb_cache = shape_aabb;
-		s.aabb_cache = s.aabb_cache.grow((s.aabb_cache.size.x + s.aabb_cache.size.y) * 0.5 * 0.05);
 
-		space->get_broadphase()->move(s.bpid, s.aabb_cache);
+		if (s.bpid == 0) {
+			s.bpid = space->get_broadphase()->create(this, i, shape_aabb, _static);
+			space->get_broadphase()->set_static(s.bpid, _static);
+		}
+
+		space->get_broadphase()->move(s.bpid, shape_aabb);
 	}
 }
 
@@ -209,17 +195,17 @@ void CollisionObject2DSW::_update_shapes_with_motion(const Vector2 &p_motion) {
 			continue;
 		}
 
-		if (s.bpid == 0) {
-			s.bpid = space->get_broadphase()->create(this, i);
-			space->get_broadphase()->set_static(s.bpid, _static);
-		}
-
 		//not quite correct, should compute the next matrix..
 		Rect2 shape_aabb = s.shape->get_aabb();
 		Transform2D xform = transform * s.xform;
 		shape_aabb = xform.xform(shape_aabb);
 		shape_aabb = shape_aabb.merge(Rect2(shape_aabb.position + p_motion, shape_aabb.size)); //use motion
 		s.aabb_cache = shape_aabb;
+
+		if (s.bpid == 0) {
+			s.bpid = space->get_broadphase()->create(this, i, shape_aabb, _static);
+			space->get_broadphase()->set_static(s.bpid, _static);
+		}
 
 		space->get_broadphase()->move(s.bpid, shape_aabb);
 	}
@@ -253,10 +239,5 @@ void CollisionObject2DSW::_shape_changed() {
 
 CollisionObject2DSW::CollisionObject2DSW(Type p_type) :
 		pending_shape_update_list(this) {
-	_static = true;
 	type = p_type;
-	space = nullptr;
-	collision_mask = 1;
-	collision_layer = 1;
-	pickable = true;
 }

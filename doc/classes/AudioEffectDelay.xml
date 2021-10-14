@@ -9,8 +9,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="dry" type="float" setter="set_dry" getter="get_dry" default="1.0">
 			Output percent of original sound. At 0, only delayed sounds are output. Value can range from 0 to 1.
@@ -52,6 +50,4 @@
 			Pan position for [code]tap2[/code]. Value can range from -1 (fully left) to 1 (fully right).
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

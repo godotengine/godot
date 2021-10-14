@@ -38,18 +38,23 @@ RenderingDevice *RenderingDevice::get_singleton() {
 	return singleton;
 }
 
-RenderingDevice::ShaderCompileFunction RenderingDevice::compile_function = nullptr;
+RenderingDevice::ShaderCompileToSPIRVFunction RenderingDevice::compile_to_spirv_function = nullptr;
 RenderingDevice::ShaderCacheFunction RenderingDevice::cache_function = nullptr;
+RenderingDevice::ShaderSPIRVGetCacheKeyFunction RenderingDevice::get_spirv_cache_key_function = nullptr;
 
-void RenderingDevice::shader_set_compile_function(ShaderCompileFunction p_function) {
-	compile_function = p_function;
+void RenderingDevice::shader_set_compile_to_spirv_function(ShaderCompileToSPIRVFunction p_function) {
+	compile_to_spirv_function = p_function;
 }
 
-void RenderingDevice::shader_set_cache_function(ShaderCacheFunction p_function) {
+void RenderingDevice::shader_set_spirv_cache_function(ShaderCacheFunction p_function) {
 	cache_function = p_function;
 }
 
-Vector<uint8_t> RenderingDevice::shader_compile_from_source(ShaderStage p_stage, const String &p_source_code, ShaderLanguage p_language, String *r_error, bool p_allow_cache) {
+void RenderingDevice::shader_set_get_cache_key_function(ShaderSPIRVGetCacheKeyFunction p_function) {
+	get_spirv_cache_key_function = p_function;
+}
+
+Vector<uint8_t> RenderingDevice::shader_compile_spirv_from_source(ShaderStage p_stage, const String &p_source_code, ShaderLanguage p_language, String *r_error, bool p_allow_cache) {
 	if (p_allow_cache && cache_function) {
 		Vector<uint8_t> cache = cache_function(p_stage, p_source_code, p_language);
 		if (cache.size()) {
@@ -57,9 +62,22 @@ Vector<uint8_t> RenderingDevice::shader_compile_from_source(ShaderStage p_stage,
 		}
 	}
 
-	ERR_FAIL_COND_V(!compile_function, Vector<uint8_t>());
+	ERR_FAIL_COND_V(!compile_to_spirv_function, Vector<uint8_t>());
 
-	return compile_function(p_stage, p_source_code, p_language, r_error, &device_capabilities);
+	return compile_to_spirv_function(p_stage, p_source_code, p_language, r_error, &device_capabilities);
+}
+
+String RenderingDevice::shader_get_spirv_cache_key() const {
+	if (get_spirv_cache_key_function) {
+		return get_spirv_cache_key_function(&device_capabilities);
+	}
+	return String();
+}
+
+RID RenderingDevice::shader_create_from_spirv(const Vector<ShaderStageSPIRVData> &p_spirv, const String &p_shader_name) {
+	Vector<uint8_t> bytecode = shader_compile_binary_from_spirv(p_spirv, p_shader_name);
+	ERR_FAIL_COND_V(bytecode.size() == 0, RID());
+	return shader_create_from_bytecode(bytecode);
 }
 
 RID RenderingDevice::_texture_create(const Ref<RDTextureFormat> &p_format, const Ref<RDTextureView> &p_view, const TypedArray<PackedByteArray> &p_data) {
@@ -86,7 +104,7 @@ RID RenderingDevice::_texture_create_shared_from_slice(const Ref<RDTextureView> 
 	return texture_create_shared_from_slice(p_view->base, p_with_texture, p_layer, p_mipmap, p_slice_type);
 }
 
-RenderingDevice::FramebufferFormatID RenderingDevice::_framebuffer_format_create(const TypedArray<RDAttachmentFormat> &p_attachments) {
+RenderingDevice::FramebufferFormatID RenderingDevice::_framebuffer_format_create(const TypedArray<RDAttachmentFormat> &p_attachments, uint32_t p_view_count) {
 	Vector<AttachmentFormat> attachments;
 	attachments.resize(p_attachments.size());
 
@@ -95,12 +113,43 @@ RenderingDevice::FramebufferFormatID RenderingDevice::_framebuffer_format_create
 		ERR_FAIL_COND_V(af.is_null(), INVALID_FORMAT_ID);
 		attachments.write[i] = af->base;
 	}
-	return framebuffer_format_create(attachments);
+	return framebuffer_format_create(attachments, p_view_count);
 }
 
-RID RenderingDevice::_framebuffer_create(const Array &p_textures, FramebufferFormatID p_format_check) {
+RenderingDevice::FramebufferFormatID RenderingDevice::_framebuffer_format_create_multipass(const TypedArray<RDAttachmentFormat> &p_attachments, const TypedArray<RDFramebufferPass> &p_passes, uint32_t p_view_count) {
+	Vector<AttachmentFormat> attachments;
+	attachments.resize(p_attachments.size());
+
+	for (int i = 0; i < p_attachments.size(); i++) {
+		Ref<RDAttachmentFormat> af = p_attachments[i];
+		ERR_FAIL_COND_V(af.is_null(), INVALID_FORMAT_ID);
+		attachments.write[i] = af->base;
+	}
+
+	Vector<FramebufferPass> passes;
+	for (int i = 0; i < p_passes.size(); i++) {
+		Ref<RDFramebufferPass> pass = p_passes[i];
+		ERR_CONTINUE(pass.is_null());
+		passes.push_back(pass->base);
+	}
+
+	return framebuffer_format_create_multipass(attachments, passes, p_view_count);
+}
+
+RID RenderingDevice::_framebuffer_create(const TypedArray<RID> &p_textures, FramebufferFormatID p_format_check, uint32_t p_view_count) {
 	Vector<RID> textures = Variant(p_textures);
-	return framebuffer_create(textures, p_format_check);
+	return framebuffer_create(textures, p_format_check, p_view_count);
+}
+
+RID RenderingDevice::_framebuffer_create_multipass(const TypedArray<RID> &p_textures, const TypedArray<RDFramebufferPass> &p_passes, FramebufferFormatID p_format_check, uint32_t p_view_count) {
+	Vector<RID> textures = Variant(p_textures);
+	Vector<FramebufferPass> passes;
+	for (int i = 0; i < p_passes.size(); i++) {
+		Ref<RDFramebufferPass> pass = p_passes[i];
+		ERR_CONTINUE(pass.is_null());
+		passes.push_back(pass->base);
+	}
+	return framebuffer_create_multipass(textures, passes, p_format_check, p_view_count);
 }
 
 RID RenderingDevice::_sampler_create(const Ref<RDSamplerState> &p_state) {
@@ -127,40 +176,59 @@ RID RenderingDevice::_vertex_array_create(uint32_t p_vertex_count, VertexFormatI
 	return vertex_array_create(p_vertex_count, p_vertex_format, buffers);
 }
 
-Ref<RDShaderBytecode> RenderingDevice::_shader_compile_from_source(const Ref<RDShaderSource> &p_source, bool p_allow_cache) {
-	ERR_FAIL_COND_V(p_source.is_null(), Ref<RDShaderBytecode>());
+Ref<RDShaderSPIRV> RenderingDevice::_shader_compile_spirv_from_source(const Ref<RDShaderSource> &p_source, bool p_allow_cache) {
+	ERR_FAIL_COND_V(p_source.is_null(), Ref<RDShaderSPIRV>());
 
-	Ref<RDShaderBytecode> bytecode;
-	bytecode.instance();
+	Ref<RDShaderSPIRV> bytecode;
+	bytecode.instantiate();
 	for (int i = 0; i < RD::SHADER_STAGE_MAX; i++) {
 		String error;
 
 		ShaderStage stage = ShaderStage(i);
-		Vector<uint8_t> spirv = shader_compile_from_source(stage, p_source->get_stage_source(stage), p_source->get_language(), &error, p_allow_cache);
+		Vector<uint8_t> spirv = shader_compile_spirv_from_source(stage, p_source->get_stage_source(stage), p_source->get_language(), &error, p_allow_cache);
 		bytecode->set_stage_bytecode(stage, spirv);
 		bytecode->set_stage_compile_error(stage, error);
 	}
 	return bytecode;
 }
 
-RID RenderingDevice::shader_create_from_bytecode(const Ref<RDShaderBytecode> &p_bytecode) {
-	ERR_FAIL_COND_V(p_bytecode.is_null(), RID());
+Vector<uint8_t> RenderingDevice::_shader_compile_binary_from_spirv(const Ref<RDShaderSPIRV> &p_spirv, const String &p_shader_name) {
+	ERR_FAIL_COND_V(p_spirv.is_null(), Vector<uint8_t>());
 
-	Vector<ShaderStageData> stage_data;
+	Vector<ShaderStageSPIRVData> stage_data;
 	for (int i = 0; i < RD::SHADER_STAGE_MAX; i++) {
 		ShaderStage stage = ShaderStage(i);
-		ShaderStageData sd;
+		ShaderStageSPIRVData sd;
 		sd.shader_stage = stage;
-		String error = p_bytecode->get_stage_compile_error(stage);
-		ERR_FAIL_COND_V_MSG(error != String(), RID(), "Can't create a shader from an errored bytecode. Check errors in source bytecode.");
-		sd.spir_v = p_bytecode->get_stage_bytecode(stage);
+		String error = p_spirv->get_stage_compile_error(stage);
+		ERR_FAIL_COND_V_MSG(error != String(), Vector<uint8_t>(), "Can't create a shader from an errored bytecode. Check errors in source bytecode.");
+		sd.spir_v = p_spirv->get_stage_bytecode(stage);
 		if (sd.spir_v.is_empty()) {
 			continue;
 		}
 		stage_data.push_back(sd);
 	}
 
-	return shader_create(stage_data);
+	return shader_compile_binary_from_spirv(stage_data, p_shader_name);
+}
+
+RID RenderingDevice::_shader_create_from_spirv(const Ref<RDShaderSPIRV> &p_spirv, const String &p_shader_name) {
+	ERR_FAIL_COND_V(p_spirv.is_null(), RID());
+
+	Vector<ShaderStageSPIRVData> stage_data;
+	for (int i = 0; i < RD::SHADER_STAGE_MAX; i++) {
+		ShaderStage stage = ShaderStage(i);
+		ShaderStageSPIRVData sd;
+		sd.shader_stage = stage;
+		String error = p_spirv->get_stage_compile_error(stage);
+		ERR_FAIL_COND_V_MSG(error != String(), RID(), "Can't create a shader from an errored bytecode. Check errors in source bytecode.");
+		sd.spir_v = p_spirv->get_stage_bytecode(stage);
+		if (sd.spir_v.is_empty()) {
+			continue;
+		}
+		stage_data.push_back(sd);
+	}
+	return shader_create_from_spirv(stage_data);
 }
 
 RID RenderingDevice::_uniform_set_create(const Array &p_uniforms, RID p_shader, uint32_t p_shader_set) {
@@ -178,7 +246,36 @@ Error RenderingDevice::_buffer_update(RID p_buffer, uint32_t p_offset, uint32_t 
 	return buffer_update(p_buffer, p_offset, p_size, p_data.ptr(), p_post_barrier);
 }
 
-RID RenderingDevice::_render_pipeline_create(RID p_shader, FramebufferFormatID p_framebuffer_format, VertexFormatID p_vertex_format, RenderPrimitive p_render_primitive, const Ref<RDPipelineRasterizationState> &p_rasterization_state, const Ref<RDPipelineMultisampleState> &p_multisample_state, const Ref<RDPipelineDepthStencilState> &p_depth_stencil_state, const Ref<RDPipelineColorBlendState> &p_blend_state, int p_dynamic_state_flags) {
+static Vector<RenderingDevice::PipelineSpecializationConstant> _get_spec_constants(const TypedArray<RDPipelineSpecializationConstant> &p_constants) {
+	Vector<RenderingDevice::PipelineSpecializationConstant> ret;
+	ret.resize(p_constants.size());
+	for (int i = 0; i < p_constants.size(); i++) {
+		Ref<RDPipelineSpecializationConstant> c = p_constants[i];
+		ERR_CONTINUE(c.is_null());
+		RenderingDevice::PipelineSpecializationConstant &sc = ret.write[i];
+		Variant value = c->get_value();
+		switch (value.get_type()) {
+			case Variant::BOOL: {
+				sc.type = RD::PIPELINE_SPECIALIZATION_CONSTANT_TYPE_BOOL;
+				sc.bool_value = value;
+			} break;
+			case Variant::INT: {
+				sc.type = RD::PIPELINE_SPECIALIZATION_CONSTANT_TYPE_INT;
+				sc.int_value = value;
+			} break;
+			case Variant::FLOAT: {
+				sc.type = RD::PIPELINE_SPECIALIZATION_CONSTANT_TYPE_FLOAT;
+				sc.float_value = value;
+			} break;
+			default: {
+			}
+		}
+
+		sc.constant_id = c->get_constant_id();
+	}
+	return ret;
+}
+RID RenderingDevice::_render_pipeline_create(RID p_shader, FramebufferFormatID p_framebuffer_format, VertexFormatID p_vertex_format, RenderPrimitive p_render_primitive, const Ref<RDPipelineRasterizationState> &p_rasterization_state, const Ref<RDPipelineMultisampleState> &p_multisample_state, const Ref<RDPipelineDepthStencilState> &p_depth_stencil_state, const Ref<RDPipelineColorBlendState> &p_blend_state, int p_dynamic_state_flags, uint32_t p_for_render_pass, const TypedArray<RDPipelineSpecializationConstant> &p_specialization_constants) {
 	PipelineRasterizationState rasterization_state;
 	if (p_rasterization_state.is_valid()) {
 		rasterization_state = p_rasterization_state->base;
@@ -209,7 +306,11 @@ RID RenderingDevice::_render_pipeline_create(RID p_shader, FramebufferFormatID p
 		}
 	}
 
-	return render_pipeline_create(p_shader, p_framebuffer_format, p_vertex_format, p_render_primitive, rasterization_state, multisample_state, depth_stencil_state, color_blend_state, p_dynamic_state_flags);
+	return render_pipeline_create(p_shader, p_framebuffer_format, p_vertex_format, p_render_primitive, rasterization_state, multisample_state, depth_stencil_state, color_blend_state, p_dynamic_state_flags, p_for_render_pass, _get_spec_constants(p_specialization_constants));
+}
+
+RID RenderingDevice::_compute_pipeline_create(RID p_shader, const TypedArray<RDPipelineSpecializationConstant> &p_specialization_constants = TypedArray<RDPipelineSpecializationConstant>()) {
+	return compute_pipeline_create(p_shader, _get_spec_constants(p_specialization_constants));
 }
 
 Vector<int64_t> RenderingDevice::_draw_list_begin_split(RID p_framebuffer, uint32_t p_splits, InitialAction p_initial_color_action, FinalAction p_final_color_action, InitialAction p_initial_depth_action, FinalAction p_final_depth_action, const Vector<Color> &p_clear_color_values, float p_clear_depth, uint32_t p_clear_stencil, const Rect2 &p_region, const TypedArray<RID> &p_storage_textures) {
@@ -220,6 +321,22 @@ Vector<int64_t> RenderingDevice::_draw_list_begin_split(RID p_framebuffer, uint3
 		stextures.push_back(p_storage_textures[i]);
 	}
 	draw_list_begin_split(p_framebuffer, p_splits, splits.ptrw(), p_initial_color_action, p_final_color_action, p_initial_depth_action, p_final_depth_action, p_clear_color_values, p_clear_depth, p_clear_stencil, p_region, stextures);
+
+	Vector<int64_t> split_ids;
+	split_ids.resize(splits.size());
+	for (int i = 0; i < splits.size(); i++) {
+		split_ids.write[i] = splits[i];
+	}
+
+	return split_ids;
+}
+
+Vector<int64_t> RenderingDevice::_draw_list_switch_to_next_pass_split(uint32_t p_splits) {
+	Vector<DrawListID> splits;
+	splits.resize(p_splits);
+
+	Error err = draw_list_switch_to_next_pass_split(p_splits, splits.ptrw());
+	ERR_FAIL_COND_V(err != OK, Vector<int64_t>());
 
 	Vector<int64_t> split_ids;
 	split_ids.resize(splits.size());
@@ -257,10 +374,12 @@ void RenderingDevice::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("texture_clear", "texture", "color", "base_mipmap", "mipmap_count", "base_layer", "layer_count", "post_barrier"), &RenderingDevice::texture_clear, DEFVAL(BARRIER_MASK_ALL));
 	ClassDB::bind_method(D_METHOD("texture_resolve_multisample", "from_texture", "to_texture", "post_barrier"), &RenderingDevice::texture_resolve_multisample, DEFVAL(BARRIER_MASK_ALL));
 
-	ClassDB::bind_method(D_METHOD("framebuffer_format_create", "attachments"), &RenderingDevice::_framebuffer_format_create);
+	ClassDB::bind_method(D_METHOD("framebuffer_format_create", "attachments", "view_count"), &RenderingDevice::_framebuffer_format_create, DEFVAL(1));
+	ClassDB::bind_method(D_METHOD("framebuffer_format_create_multipass", "attachments", "passes", "view_count"), &RenderingDevice::_framebuffer_format_create_multipass, DEFVAL(1));
 	ClassDB::bind_method(D_METHOD("framebuffer_format_create_empty", "samples"), &RenderingDevice::framebuffer_format_create_empty, DEFVAL(TEXTURE_SAMPLES_1));
-	ClassDB::bind_method(D_METHOD("framebuffer_format_get_texture_samples", "format"), &RenderingDevice::framebuffer_format_get_texture_samples);
-	ClassDB::bind_method(D_METHOD("framebuffer_create", "textures", "validate_with_format"), &RenderingDevice::_framebuffer_create, DEFVAL(INVALID_FORMAT_ID));
+	ClassDB::bind_method(D_METHOD("framebuffer_format_get_texture_samples", "format", "render_pass"), &RenderingDevice::framebuffer_format_get_texture_samples, DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("framebuffer_create", "textures", "validate_with_format", "view_count"), &RenderingDevice::_framebuffer_create, DEFVAL(INVALID_FORMAT_ID), DEFVAL(1));
+	ClassDB::bind_method(D_METHOD("framebuffer_create_multipass", "textures", "passes", "validate_with_format", "view_count"), &RenderingDevice::_framebuffer_create_multipass, DEFVAL(INVALID_FORMAT_ID), DEFVAL(1));
 	ClassDB::bind_method(D_METHOD("framebuffer_create_empty", "size", "samples", "validate_with_format"), &RenderingDevice::framebuffer_create_empty, DEFVAL(TEXTURE_SAMPLES_1), DEFVAL(INVALID_FORMAT_ID));
 	ClassDB::bind_method(D_METHOD("framebuffer_get_format", "framebuffer"), &RenderingDevice::framebuffer_get_format);
 
@@ -272,8 +391,10 @@ void RenderingDevice::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("index_buffer_create", "size_indices", "format", "data", "use_restart_indices"), &RenderingDevice::index_buffer_create, DEFVAL(Vector<uint8_t>()), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("index_array_create", "index_buffer", "index_offset", "index_count"), &RenderingDevice::index_array_create);
 
-	ClassDB::bind_method(D_METHOD("shader_compile_from_source", "shader_source", "allow_cache"), &RenderingDevice::_shader_compile_from_source, DEFVAL(true));
-	ClassDB::bind_method(D_METHOD("shader_create", "shader_data"), &RenderingDevice::shader_create_from_bytecode);
+	ClassDB::bind_method(D_METHOD("shader_compile_spirv_from_source", "shader_source", "allow_cache"), &RenderingDevice::_shader_compile_spirv_from_source, DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("shader_compile_binary_from_spirv", "spirv_data", "name"), &RenderingDevice::_shader_compile_binary_from_spirv, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("shader_create_from_spirv", "spirv_data", "name"), &RenderingDevice::_shader_create_from_spirv, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("shader_create_from_bytecode", "binary_data"), &RenderingDevice::shader_create_from_bytecode);
 	ClassDB::bind_method(D_METHOD("shader_get_vertex_input_attribute_mask", "shader"), &RenderingDevice::shader_get_vertex_input_attribute_mask);
 
 	ClassDB::bind_method(D_METHOD("uniform_buffer_create", "size_bytes", "data"), &RenderingDevice::uniform_buffer_create, DEFVAL(Vector<uint8_t>()));
@@ -287,10 +408,10 @@ void RenderingDevice::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("buffer_clear", "buffer", "offset", "size_bytes", "post_barrier"), &RenderingDevice::buffer_clear, DEFVAL(BARRIER_MASK_ALL));
 	ClassDB::bind_method(D_METHOD("buffer_get_data", "buffer"), &RenderingDevice::buffer_get_data);
 
-	ClassDB::bind_method(D_METHOD("render_pipeline_create", "shader", "framebuffer_format", "vertex_format", "primitive", "rasterization_state", "multisample_state", "stencil_state", "color_blend_state", "dynamic_state_flags"), &RenderingDevice::_render_pipeline_create, DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("render_pipeline_create", "shader", "framebuffer_format", "vertex_format", "primitive", "rasterization_state", "multisample_state", "stencil_state", "color_blend_state", "dynamic_state_flags", "for_render_pass", "specialization_constants"), &RenderingDevice::_render_pipeline_create, DEFVAL(0), DEFVAL(0), DEFVAL(TypedArray<RDPipelineSpecializationConstant>()));
 	ClassDB::bind_method(D_METHOD("render_pipeline_is_valid", "render_pipeline"), &RenderingDevice::render_pipeline_is_valid);
 
-	ClassDB::bind_method(D_METHOD("compute_pipeline_create", "shader"), &RenderingDevice::compute_pipeline_create);
+	ClassDB::bind_method(D_METHOD("compute_pipeline_create", "shader", "specialization_constants"), &RenderingDevice::_compute_pipeline_create, DEFVAL(TypedArray<RDPipelineSpecializationConstant>()));
 	ClassDB::bind_method(D_METHOD("compute_pipeline_is_valid", "compute_pieline"), &RenderingDevice::compute_pipeline_is_valid);
 
 	ClassDB::bind_method(D_METHOD("screen_get_width", "screen"), &RenderingDevice::screen_get_width, DEFVAL(DisplayServer::MAIN_WINDOW_ID));
@@ -299,8 +420,8 @@ void RenderingDevice::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("draw_list_begin_for_screen", "screen", "clear_color"), &RenderingDevice::draw_list_begin_for_screen, DEFVAL(DisplayServer::MAIN_WINDOW_ID), DEFVAL(Color()));
 
-	ClassDB::bind_method(D_METHOD("draw_list_begin", "framebuffer", "initial_color_action", "final_color_action", "initial_depth_action", "final_depth_action", "clear_color_values", "clear_depth", "clear_stencil", "region", "storage_textures"), &RenderingDevice::draw_list_begin, DEFVAL(Vector<Color>()), DEFVAL(1.0), DEFVAL(0), DEFVAL(Rect2i()), DEFVAL(TypedArray<RID>()));
-	ClassDB::bind_method(D_METHOD("draw_list_begin_split", "framebuffer", "splits", "initial_color_action", "final_color_action", "initial_depth_action", "final_depth_action", "clear_color_values", "clear_depth", "clear_stencil", "region", "storage_textures"), &RenderingDevice::_draw_list_begin_split, DEFVAL(Vector<Color>()), DEFVAL(1.0), DEFVAL(0), DEFVAL(Rect2i()), DEFVAL(TypedArray<RID>()));
+	ClassDB::bind_method(D_METHOD("draw_list_begin", "framebuffer", "initial_color_action", "final_color_action", "initial_depth_action", "final_depth_action", "clear_color_values", "clear_depth", "clear_stencil", "region", "storage_textures"), &RenderingDevice::draw_list_begin, DEFVAL(Vector<Color>()), DEFVAL(1.0), DEFVAL(0), DEFVAL(Rect2()), DEFVAL(TypedArray<RID>()));
+	ClassDB::bind_method(D_METHOD("draw_list_begin_split", "framebuffer", "splits", "initial_color_action", "final_color_action", "initial_depth_action", "final_depth_action", "clear_color_values", "clear_depth", "clear_stencil", "region", "storage_textures"), &RenderingDevice::_draw_list_begin_split, DEFVAL(Vector<Color>()), DEFVAL(1.0), DEFVAL(0), DEFVAL(Rect2()), DEFVAL(TypedArray<RID>()));
 
 	ClassDB::bind_method(D_METHOD("draw_list_bind_render_pipeline", "draw_list", "render_pipeline"), &RenderingDevice::draw_list_bind_render_pipeline);
 	ClassDB::bind_method(D_METHOD("draw_list_bind_uniform_set", "draw_list", "uniform_set", "set_index"), &RenderingDevice::draw_list_bind_uniform_set);
@@ -310,8 +431,11 @@ void RenderingDevice::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("draw_list_draw", "draw_list", "use_indices", "instances", "procedural_vertex_count"), &RenderingDevice::draw_list_draw, DEFVAL(0));
 
-	ClassDB::bind_method(D_METHOD("draw_list_enable_scissor", "draw_list", "rect"), &RenderingDevice::draw_list_enable_scissor, DEFVAL(Rect2i()));
+	ClassDB::bind_method(D_METHOD("draw_list_enable_scissor", "draw_list", "rect"), &RenderingDevice::draw_list_enable_scissor, DEFVAL(Rect2()));
 	ClassDB::bind_method(D_METHOD("draw_list_disable_scissor", "draw_list"), &RenderingDevice::draw_list_disable_scissor);
+
+	ClassDB::bind_method(D_METHOD("draw_list_switch_to_next_pass"), &RenderingDevice::draw_list_switch_to_next_pass);
+	ClassDB::bind_method(D_METHOD("draw_list_switch_to_next_pass_split", "splits"), &RenderingDevice::_draw_list_switch_to_next_pass_split);
 
 	ClassDB::bind_method(D_METHOD("draw_list_end", "post_barrier"), &RenderingDevice::draw_list_end, DEFVAL(BARRIER_MASK_ALL));
 
@@ -352,11 +476,29 @@ void RenderingDevice::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_device_name"), &RenderingDevice::get_device_name);
 	ClassDB::bind_method(D_METHOD("get_device_pipeline_cache_uuid"), &RenderingDevice::get_device_pipeline_cache_uuid);
 
+	ClassDB::bind_method(D_METHOD("get_memory_usage", "type"), &RenderingDevice::get_memory_usage);
+
+	ClassDB::bind_method(D_METHOD("get_driver_resource", "resource", "rid", "index"), &RenderingDevice::get_driver_resource);
+
 	BIND_CONSTANT(BARRIER_MASK_RASTER);
 	BIND_CONSTANT(BARRIER_MASK_COMPUTE);
 	BIND_CONSTANT(BARRIER_MASK_TRANSFER);
 	BIND_CONSTANT(BARRIER_MASK_ALL);
 	BIND_CONSTANT(BARRIER_MASK_NO_BARRIER);
+
+	BIND_ENUM_CONSTANT(DRIVER_RESOURCE_VULKAN_DEVICE);
+	BIND_ENUM_CONSTANT(DRIVER_RESOURCE_VULKAN_PHYSICAL_DEVICE);
+	BIND_ENUM_CONSTANT(DRIVER_RESOURCE_VULKAN_INSTANCE);
+	BIND_ENUM_CONSTANT(DRIVER_RESOURCE_VULKAN_QUEUE);
+	BIND_ENUM_CONSTANT(DRIVER_RESOURCE_VULKAN_QUEUE_FAMILY_INDEX);
+	BIND_ENUM_CONSTANT(DRIVER_RESOURCE_VULKAN_IMAGE);
+	BIND_ENUM_CONSTANT(DRIVER_RESOURCE_VULKAN_IMAGE_VIEW);
+	BIND_ENUM_CONSTANT(DRIVER_RESOURCE_VULKAN_IMAGE_NATIVE_TEXTURE_FORMAT);
+	BIND_ENUM_CONSTANT(DRIVER_RESOURCE_VULKAN_SAMPLER);
+	BIND_ENUM_CONSTANT(DRIVER_RESOURCE_VULKAN_DESCRIPTOR_SET);
+	BIND_ENUM_CONSTANT(DRIVER_RESOURCE_VULKAN_BUFFER);
+	BIND_ENUM_CONSTANT(DRIVER_RESOURCE_VULKAN_COMPUTE_PIPELINE);
+	BIND_ENUM_CONSTANT(DRIVER_RESOURCE_VULKAN_RENDER_PIPELINE);
 
 	BIND_ENUM_CONSTANT(DATA_FORMAT_R4G4_UNORM_PACK8);
 	BIND_ENUM_CONSTANT(DATA_FORMAT_R4G4B4A4_UNORM_PACK16);
@@ -613,7 +755,7 @@ void RenderingDevice::_bind_methods() {
 	BIND_ENUM_CONSTANT(TEXTURE_USAGE_CAN_UPDATE_BIT);
 	BIND_ENUM_CONSTANT(TEXTURE_USAGE_CAN_COPY_FROM_BIT);
 	BIND_ENUM_CONSTANT(TEXTURE_USAGE_CAN_COPY_TO_BIT);
-	BIND_ENUM_CONSTANT(TEXTURE_USAGE_RESOLVE_ATTACHMENT_BIT);
+	BIND_ENUM_CONSTANT(TEXTURE_USAGE_INPUT_ATTACHMENT_BIT);
 
 	BIND_ENUM_CONSTANT(TEXTURE_SWIZZLE_IDENTITY);
 	BIND_ENUM_CONSTANT(TEXTURE_SWIZZLE_ZERO);
@@ -787,6 +929,10 @@ void RenderingDevice::_bind_methods() {
 	BIND_ENUM_CONSTANT(SHADER_LANGUAGE_GLSL);
 	BIND_ENUM_CONSTANT(SHADER_LANGUAGE_HLSL);
 
+	BIND_ENUM_CONSTANT(PIPELINE_SPECIALIZATION_CONSTANT_TYPE_BOOL);
+	BIND_ENUM_CONSTANT(PIPELINE_SPECIALIZATION_CONSTANT_TYPE_INT);
+	BIND_ENUM_CONSTANT(PIPELINE_SPECIALIZATION_CONSTANT_TYPE_FLOAT);
+
 	BIND_ENUM_CONSTANT(LIMIT_MAX_BOUND_UNIFORM_SETS);
 	BIND_ENUM_CONSTANT(LIMIT_MAX_FRAMEBUFFER_COLOR_ATTACHMENTS);
 	BIND_ENUM_CONSTANT(LIMIT_MAX_TEXTURES_PER_UNIFORM_SET);
@@ -822,6 +968,10 @@ void RenderingDevice::_bind_methods() {
 	BIND_ENUM_CONSTANT(LIMIT_MAX_COMPUTE_WORKGROUP_SIZE_X);
 	BIND_ENUM_CONSTANT(LIMIT_MAX_COMPUTE_WORKGROUP_SIZE_Y);
 	BIND_ENUM_CONSTANT(LIMIT_MAX_COMPUTE_WORKGROUP_SIZE_Z);
+
+	BIND_ENUM_CONSTANT(MEMORY_TEXTURES);
+	BIND_ENUM_CONSTANT(MEMORY_BUFFERS);
+	BIND_ENUM_CONSTANT(MEMORY_TOTAL);
 
 	BIND_CONSTANT(INVALID_ID);
 	BIND_CONSTANT(INVALID_FORMAT_ID);

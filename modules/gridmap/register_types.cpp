@@ -37,7 +37,7 @@
 
 void register_gridmap_types() {
 #ifndef _3D_DISABLED
-	ClassDB::register_class<GridMap>();
+	GDREGISTER_CLASS(GridMap);
 #ifdef TOOLS_ENABLED
 	EditorPlugins::add_by_type<GridMapEditorPlugin>();
 #endif

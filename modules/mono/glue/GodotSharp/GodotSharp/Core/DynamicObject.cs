@@ -1,4 +1,3 @@
-
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
@@ -8,20 +7,20 @@ using System.Runtime.CompilerServices;
 namespace Godot
 {
     /// <summary>
-    /// Represents an <see cref="Godot.Object"/> whose members can be dynamically accessed at runtime through the Variant API.
+    /// Represents an <see cref="Object"/> whose members can be dynamically accessed at runtime through the Variant API.
     /// </summary>
     /// <remarks>
     /// <para>
-    /// The <see cref="Godot.DynamicGodotObject"/> class enables access to the Variant
-    /// members of a <see cref="Godot.Object"/> instance at runtime.
+    /// The <see cref="DynamicGodotObject"/> class enables access to the Variant
+    /// members of a <see cref="Object"/> instance at runtime.
     /// </para>
     /// <para>
     /// This allows accessing the class members using their original names in the engine as well as the members from the
-    /// script attached to the <see cref="Godot.Object"/>, regardless of the scripting language it was written in.
+    /// script attached to the <see cref="Object"/>, regardless of the scripting language it was written in.
     /// </para>
     /// </remarks>
     /// <example>
-    /// This sample shows how to use <see cref="Godot.DynamicGodotObject"/> to dynamically access the engine members of a <see cref="Godot.Object"/>.
+    /// This sample shows how to use <see cref="DynamicGodotObject"/> to dynamically access the engine members of a <see cref="Object"/>.
     /// <code>
     /// dynamic sprite = GetNode("Sprite2D").DynamicGodotObject;
     /// sprite.add_child(this);
@@ -31,7 +30,7 @@ namespace Godot
     /// </code>
     /// </example>
     /// <example>
-    /// This sample shows how to use <see cref="Godot.DynamicGodotObject"/> to dynamically access the members of the script attached to a <see cref="Godot.Object"/>.
+    /// This sample shows how to use <see cref="DynamicGodotObject"/> to dynamically access the members of the script attached to a <see cref="Object"/>.
     /// <code>
     /// dynamic childNode = GetNode("ChildNode").DynamicGodotObject;
     ///
@@ -55,32 +54,34 @@ namespace Godot
     public class DynamicGodotObject : DynamicObject
     {
         /// <summary>
-        /// Gets the <see cref="Godot.Object"/> associated with this <see cref="Godot.DynamicGodotObject"/>.
+        /// Gets the <see cref="Object"/> associated with this <see cref="DynamicGodotObject"/>.
         /// </summary>
         public Object Value { get; }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="Godot.DynamicGodotObject"/> class.
+        /// Initializes a new instance of the <see cref="DynamicGodotObject"/> class.
         /// </summary>
         /// <param name="godotObject">
-        /// The <see cref="Godot.Object"/> that will be associated with this <see cref="Godot.DynamicGodotObject"/>.
+        /// The <see cref="Object"/> that will be associated with this <see cref="DynamicGodotObject"/>.
         /// </param>
-        /// <exception cref="System.ArgumentNullException">
-        /// Thrown when the <paramref name="godotObject"/> parameter is null.
+        /// <exception cref="ArgumentNullException">
+        /// Thrown when the <paramref name="godotObject"/> parameter is <see langword="null"/>.
         /// </exception>
         public DynamicGodotObject(Object godotObject)
         {
             if (godotObject == null)
                 throw new ArgumentNullException(nameof(godotObject));
 
-            this.Value = godotObject;
+            Value = godotObject;
         }
 
+        /// <inheritdoc/>
         public override IEnumerable<string> GetDynamicMemberNames()
         {
             return godot_icall_DynamicGodotObject_SetMemberList(Object.GetPtr(Value));
         }
 
+        /// <inheritdoc/>
         public override bool TryBinaryOperation(BinaryOperationBinder binder, object arg, out object result)
         {
             switch (binder.Operation)
@@ -122,6 +123,7 @@ namespace Godot
             return base.TryBinaryOperation(binder, arg, out result);
         }
 
+        /// <inheritdoc/>
         public override bool TryConvert(ConvertBinder binder, out object result)
         {
             if (binder.Type == typeof(Object))
@@ -140,6 +142,7 @@ namespace Godot
             return base.TryConvert(binder, out result);
         }
 
+        /// <inheritdoc/>
         public override bool TryGetIndex(GetIndexBinder binder, object[] indexes, out object result)
         {
             if (indexes.Length == 1)
@@ -153,16 +156,19 @@ namespace Godot
             return base.TryGetIndex(binder, indexes, out result);
         }
 
+        /// <inheritdoc/>
         public override bool TryGetMember(GetMemberBinder binder, out object result)
         {
             return godot_icall_DynamicGodotObject_GetMember(Object.GetPtr(Value), binder.Name, out result);
         }
 
+        /// <inheritdoc/>
         public override bool TryInvokeMember(InvokeMemberBinder binder, object[] args, out object result)
         {
             return godot_icall_DynamicGodotObject_InvokeMember(Object.GetPtr(Value), binder.Name, args, out result);
         }
 
+        /// <inheritdoc/>
         public override bool TrySetIndex(SetIndexBinder binder, object[] indexes, object value)
         {
             if (indexes.Length == 1)
@@ -176,22 +182,23 @@ namespace Godot
             return base.TrySetIndex(binder, indexes, value);
         }
 
+        /// <inheritdoc/>
         public override bool TrySetMember(SetMemberBinder binder, object value)
         {
             return godot_icall_DynamicGodotObject_SetMember(Object.GetPtr(Value), binder.Name, value);
         }
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static string[] godot_icall_DynamicGodotObject_SetMemberList(IntPtr godotObject);
+        internal static extern string[] godot_icall_DynamicGodotObject_SetMemberList(IntPtr godotObject);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static bool godot_icall_DynamicGodotObject_InvokeMember(IntPtr godotObject, string name, object[] args, out object result);
+        internal static extern bool godot_icall_DynamicGodotObject_InvokeMember(IntPtr godotObject, string name, object[] args, out object result);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static bool godot_icall_DynamicGodotObject_GetMember(IntPtr godotObject, string name, out object result);
+        internal static extern bool godot_icall_DynamicGodotObject_GetMember(IntPtr godotObject, string name, out object result);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static bool godot_icall_DynamicGodotObject_SetMember(IntPtr godotObject, string name, object value);
+        internal static extern bool godot_icall_DynamicGodotObject_SetMember(IntPtr godotObject, string name, object value);
 
         #region We don't override these methods
 

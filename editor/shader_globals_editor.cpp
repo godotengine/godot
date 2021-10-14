@@ -66,7 +66,7 @@ class ShaderGlobalsEditorInterface : public Object {
 	GDCLASS(ShaderGlobalsEditorInterface, Object)
 
 	void _var_changed() {
-		emit_signal("var_changed");
+		emit_signal(SNAME("var_changed"));
 	}
 
 protected:
@@ -84,7 +84,7 @@ protected:
 
 		UndoRedo *undo_redo = EditorNode::get_singleton()->get_undo_redo();
 
-		undo_redo->create_action("Set Shader Global Variable");
+		undo_redo->create_action(TTR("Set Shader Global Variable"));
 		undo_redo->add_do_method(RS::get_singleton(), "global_variable_set", p_name, p_value);
 		undo_redo->add_undo_method(RS::get_singleton(), "global_variable_set", p_name, existing);
 		RS::GlobalVariableType type = RS::get_singleton()->global_variable_get_type(p_name);
@@ -110,7 +110,6 @@ protected:
 		undo_redo->commit_action();
 		block_update = false;
 
-		print_line("all good?");
 		return true;
 	}
 
@@ -199,7 +198,7 @@ protected:
 					pinfo.type = Variant::TRANSFORM2D;
 				} break;
 				case RS::GLOBAL_VAR_TYPE_TRANSFORM: {
-					pinfo.type = Variant::TRANSFORM;
+					pinfo.type = Variant::TRANSFORM3D;
 				} break;
 				case RS::GLOBAL_VAR_TYPE_MAT4: {
 					pinfo.type = Variant::PACKED_INT32_ARRAY;
@@ -326,7 +325,7 @@ static Variant create_var(RS::GlobalVariableType p_type) {
 			return Transform2D();
 		}
 		case RS::GLOBAL_VAR_TYPE_TRANSFORM: {
-			return Transform();
+			return Transform3D();
 		}
 		case RS::GLOBAL_VAR_TYPE_MAT4: {
 			Vector<real_t> xform;
@@ -395,7 +394,7 @@ void ShaderGlobalsEditor::_variable_added() {
 
 	Variant value = create_var(RS::GlobalVariableType(variable_type->get_selected()));
 
-	undo_redo->create_action("Add Shader Global Variable");
+	undo_redo->create_action(TTR("Add Shader Global Variable"));
 	undo_redo->add_do_method(RS::get_singleton(), "global_variable_add", var, RS::GlobalVariableType(variable_type->get_selected()), value);
 	undo_redo->add_undo_method(RS::get_singleton(), "global_variable_remove", var);
 	Dictionary gv;
@@ -410,10 +409,9 @@ void ShaderGlobalsEditor::_variable_added() {
 }
 
 void ShaderGlobalsEditor::_variable_deleted(const String &p_variable) {
-	print_line("deleted " + p_variable);
 	UndoRedo *undo_redo = EditorNode::get_singleton()->get_undo_redo();
 
-	undo_redo->create_action("Add Shader Global Variable");
+	undo_redo->create_action(TTR("Add Shader Global Variable"));
 	undo_redo->add_do_method(RS::get_singleton(), "global_variable_remove", p_variable);
 	undo_redo->add_undo_method(RS::get_singleton(), "global_variable_add", p_variable, RS::get_singleton()->global_variable_get_type(p_variable), RS::get_singleton()->global_variable_get(p_variable));
 
@@ -425,7 +423,7 @@ void ShaderGlobalsEditor::_variable_deleted(const String &p_variable) {
 }
 
 void ShaderGlobalsEditor::_changed() {
-	emit_signal("globals_changed");
+	emit_signal(SNAME("globals_changed"));
 	if (!interface->block_update) {
 		interface->notify_property_list_changed();
 	}
@@ -439,7 +437,6 @@ void ShaderGlobalsEditor::_bind_methods() {
 void ShaderGlobalsEditor::_notification(int p_what) {
 	if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
 		if (is_visible_in_tree()) {
-			print_line("OK load settings in globalseditor");
 			inspector->edit(interface);
 		}
 	}

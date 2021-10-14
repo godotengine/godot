@@ -6,10 +6,8 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
-		<member name="extents" type="Vector3" setter="set_extents" getter="get_extents" default="Vector3( 1, 1, 1 )">
+		<member name="extents" type="Vector3" setter="set_extents" getter="get_extents" default="Vector3(1, 1, 1)">
 		</member>
 		<member name="follow_camera_enabled" type="bool" setter="set_follow_camera_mode" getter="is_follow_camera_mode_enabled" default="false">
 		</member>

@@ -9,10 +9,11 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
-		<member name="size" type="Vector2" setter="set_size" getter="get_size" default="Vector2( 2, 2 )">
+		<member name="center_offset" type="Vector3" setter="set_center_offset" getter="get_center_offset" default="Vector3(0, 0, 0)">
+			Offset of the generated plane. Useful for particles.
+		</member>
+		<member name="size" type="Vector2" setter="set_size" getter="get_size" default="Vector2(2, 2)">
 			Size of the generated plane.
 		</member>
 		<member name="subdivide_depth" type="int" setter="set_subdivide_depth" getter="get_subdivide_depth" default="0">
@@ -22,6 +23,4 @@
 			Number of subdivision along the X axis.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

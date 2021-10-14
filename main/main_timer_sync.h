@@ -34,11 +34,11 @@
 #include "core/config/engine.h"
 
 struct MainFrameTime {
-	float process_step; // delta time to advance during process()
+	double process_step; // delta time to advance during process()
 	int physics_steps; // number of times to iterate the physics engine
-	float interpolation_fraction; // fraction through the current physics tick
+	double interpolation_fraction; // fraction through the current physics tick
 
-	void clamp_process_step(float min_process_step, float max_process_step);
+	void clamp_process_step(double min_process_step, double max_process_step);
 };
 
 class MainTimerSync {
@@ -47,10 +47,10 @@ class MainTimerSync {
 	uint64_t current_cpu_ticks_usec = 0;
 
 	// logical game time since last physics timestep
-	float time_accum = 0;
+	double time_accum = 0;
 
 	// current difference between wall clock time and reported sum of process_steps
-	float time_deficit = 0;
+	double time_deficit = 0;
 
 	// number of frames back for keeping accumulated physics steps roughly constant.
 	// value of 12 chosen because that is what is required to make 144 Hz monitors
@@ -70,20 +70,20 @@ protected:
 	// returns the fraction of p_physics_step required for the timer to overshoot
 	// before advance_core considers changing the physics_steps return from
 	// the typical values as defined by typical_physics_steps
-	float get_physics_jitter_fix();
+	double get_physics_jitter_fix();
 
 	// gets our best bet for the average number of physics steps per render frame
 	// return value: number of frames back this data is consistent
-	int get_average_physics_steps(float &p_min, float &p_max);
+	int get_average_physics_steps(double &p_min, double &p_max);
 
 	// advance physics clock by p_process_step, return appropriate number of steps to simulate
-	MainFrameTime advance_core(float p_physics_step, int p_physics_fps, float p_process_step);
+	MainFrameTime advance_core(double p_physics_step, int p_physics_ticks_per_second, double p_process_step);
 
 	// calls advance_core, keeps track of deficit it adds to animaption_step, make sure the deficit sum stays close to zero
-	MainFrameTime advance_checked(float p_physics_step, int p_physics_fps, float p_process_step);
+	MainFrameTime advance_checked(double p_physics_step, int p_physics_ticks_per_second, double p_process_step);
 
 	// determine wall clock step since last iteration
-	float get_cpu_process_step();
+	double get_cpu_process_step();
 
 public:
 	MainTimerSync();
@@ -96,7 +96,7 @@ public:
 	void set_fixed_fps(int p_fixed_fps);
 
 	// advance one frame, return timesteps to take
-	MainFrameTime advance(float p_physics_step, int p_physics_fps);
+	MainFrameTime advance(double p_physics_step, int p_physics_ticks_per_second);
 };
 
 #endif // MAIN_TIMER_SYNC_H

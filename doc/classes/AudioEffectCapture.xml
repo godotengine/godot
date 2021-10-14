@@ -11,55 +11,46 @@
 	</tutorials>
 	<methods>
 		<method name="can_get_buffer" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="frames" type="int">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="frames" type="int" />
 			<description>
 				Returns [code]true[/code] if at least [code]frames[/code] audio frames are available to read in the internal ring buffer.
 			</description>
 		</method>
 		<method name="clear_buffer">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Clears the internal ring buffer.
 			</description>
 		</method>
 		<method name="get_buffer">
-			<return type="PackedVector2Array">
-			</return>
-			<argument index="0" name="frames" type="int">
-			</argument>
+			<return type="PackedVector2Array" />
+			<argument index="0" name="frames" type="int" />
 			<description>
 				Gets the next [code]frames[/code] audio samples from the internal ring buffer.
 				Returns a [PackedVector2Array] containing exactly [code]frames[/code] audio samples if available, or an empty [PackedVector2Array] if insufficient data was available.
 			</description>
 		</method>
 		<method name="get_buffer_length_frames" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the total size of the internal ring buffer in frames.
 			</description>
 		</method>
 		<method name="get_discarded_frames" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the number of audio frames discarded from the audio bus due to full buffer.
 			</description>
 		</method>
 		<method name="get_frames_available" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the number of frames available to read using [method get_buffer].
 			</description>
 		</method>
 		<method name="get_pushed_frames" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the number of audio frames inserted from the audio bus.
 			</description>
@@ -70,6 +61,4 @@
 			Length of the internal ring buffer, in seconds. Setting the buffer length will have no effect if already initialized.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

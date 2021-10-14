@@ -35,8 +35,10 @@
 #include "core/templates/thread_work_pool.h"
 #include "servers/rendering/renderer_compositor.h"
 #include "servers/rendering/renderer_rd/forward_clustered/render_forward_clustered.h"
+#include "servers/rendering/renderer_rd/forward_mobile/render_forward_mobile.h"
 #include "servers/rendering/renderer_rd/renderer_canvas_render_rd.h"
 #include "servers/rendering/renderer_rd/renderer_storage_rd.h"
+#include "servers/rendering/renderer_rd/shaders/blit.glsl.gen.h"
 
 class RendererCompositorRD : public RendererCompositor {
 protected:
@@ -44,16 +46,42 @@ protected:
 	RendererStorageRD *storage;
 	RendererSceneRenderRD *scene;
 
-	RID copy_viewports_rd_shader;
-	RID copy_viewports_rd_pipeline;
-	RID copy_viewports_rd_index_buffer;
-	RID copy_viewports_rd_array;
-	RID copy_viewports_sampler;
+	enum BlitMode {
+		BLIT_MODE_NORMAL,
+		BLIT_MODE_USE_LAYER,
+		BLIT_MODE_LENS,
+		BLIT_MODE_NORMAL_ALPHA,
+		BLIT_MODE_MAX
+	};
+
+	struct BlitPushConstant {
+		float src_rect[4];
+		float dst_rect[4];
+
+		float eye_center[2];
+		float k1;
+		float k2;
+
+		float upscale;
+		float aspect_ratio;
+		uint32_t layer;
+		uint32_t pad1;
+	};
+
+	struct Blit {
+		BlitPushConstant push_constant;
+		BlitShaderRD shader;
+		RID shader_version;
+		RID pipelines[BLIT_MODE_MAX];
+		RID index_buffer;
+		RID array;
+		RID sampler;
+	} blit;
 
 	Map<RID, RID> render_target_descriptors;
 
 	double time;
-	float delta;
+	double delta;
 
 	static uint64_t frame;
 
@@ -62,7 +90,7 @@ public:
 	RendererCanvasRender *get_canvas() { return canvas; }
 	RendererSceneRender *get_scene() { return scene; }
 
-	void set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale, bool p_use_filter) {}
+	void set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale, bool p_use_filter);
 
 	void initialize();
 	void begin_frame(double frame_step);
@@ -73,7 +101,7 @@ public:
 	void finalize();
 
 	_ALWAYS_INLINE_ uint64_t get_frame_number() const { return frame; }
-	_ALWAYS_INLINE_ float get_frame_delta_time() const { return delta; }
+	_ALWAYS_INLINE_ double get_frame_delta_time() const { return delta; }
 	_ALWAYS_INLINE_ double get_total_time() const { return time; }
 
 	static Error is_viable() {
@@ -92,6 +120,6 @@ public:
 
 	static RendererCompositorRD *singleton;
 	RendererCompositorRD();
-	~RendererCompositorRD() {}
+	~RendererCompositorRD();
 };
 #endif // RASTERIZER_RD_H

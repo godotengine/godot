@@ -30,6 +30,8 @@
 
 #include "rename_dialog.h"
 
+#ifdef MODULE_REGEX_ENABLED
+
 #include "core/string/print_string.h"
 #include "editor_node.h"
 #include "editor_scale.h"
@@ -385,11 +387,11 @@ void RenameDialog::_update_preview(String new_text) {
 
 		if (new_name == preview_node->get_name()) {
 			// New name is identical to the old one. Don't color it as much to avoid distracting the user.
-			const Color accent_color = EditorNode::get_singleton()->get_gui_base()->get_theme_color("accent_color", "Editor");
-			const Color text_color = EditorNode::get_singleton()->get_gui_base()->get_theme_color("default_color", "RichTextLabel");
+			const Color accent_color = EditorNode::get_singleton()->get_gui_base()->get_theme_color(SNAME("accent_color"), SNAME("Editor"));
+			const Color text_color = EditorNode::get_singleton()->get_gui_base()->get_theme_color(SNAME("default_color"), SNAME("RichTextLabel"));
 			lbl_preview->add_theme_color_override("font_color", accent_color.lerp(text_color, 0.5));
 		} else {
-			lbl_preview->add_theme_color_override("font_color", EditorNode::get_singleton()->get_gui_base()->get_theme_color("success_color", "Editor"));
+			lbl_preview->add_theme_color_override("font_color", EditorNode::get_singleton()->get_gui_base()->get_theme_color(SNAME("success_color"), SNAME("Editor")));
 		}
 	}
 
@@ -475,7 +477,7 @@ void RenameDialog::_error_handler(void *p_self, const char *p_func, const char *
 
 	self->has_errors = true;
 	self->lbl_preview_title->set_text(TTR("Regular Expression Error:"));
-	self->lbl_preview->add_theme_color_override("font_color", EditorNode::get_singleton()->get_gui_base()->get_theme_color("error_color", "Editor"));
+	self->lbl_preview->add_theme_color_override("font_color", EditorNode::get_singleton()->get_gui_base()->get_theme_color(SNAME("error_color"), SNAME("Editor")));
 	self->lbl_preview->set_text(vformat(TTR("At character %s"), err_str));
 }
 
@@ -588,7 +590,7 @@ void RenameDialog::rename() {
 				continue;
 			}
 
-			scene_tree_editor->emit_signal("node_prerename", n, new_name);
+			scene_tree_editor->emit_signal(SNAME("node_prerename"), n, new_name);
 			undo_redo->add_do_method(scene_tree_editor, "_rename_node", n->get_instance_id(), new_name);
 			undo_redo->add_undo_method(scene_tree_editor, "_rename_node", n->get_instance_id(), n->get_name());
 		}
@@ -649,3 +651,5 @@ void RenameDialog::_features_toggled(bool pressed) {
 	size.y = 0;
 	set_size(size);
 }
+
+#endif // MODULE_REGEX_ENABLED

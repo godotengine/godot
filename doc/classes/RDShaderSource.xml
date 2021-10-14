@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="RDShaderSource" inherits="Reference" version="4.0">
+<class name="RDShaderSource" inherits="RefCounted" version="4.0">
 	<brief_description>
 	</brief_description>
 	<description>
@@ -8,20 +8,15 @@
 	</tutorials>
 	<methods>
 		<method name="get_stage_source" qualifiers="const">
-			<return type="String">
-			</return>
-			<argument index="0" name="stage" type="int" enum="RenderingDevice.ShaderStage">
-			</argument>
+			<return type="String" />
+			<argument index="0" name="stage" type="int" enum="RenderingDevice.ShaderStage" />
 			<description>
 			</description>
 		</method>
 		<method name="set_stage_source">
-			<return type="void">
-			</return>
-			<argument index="0" name="stage" type="int" enum="RenderingDevice.ShaderStage">
-			</argument>
-			<argument index="1" name="source" type="String">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="stage" type="int" enum="RenderingDevice.ShaderStage" />
+			<argument index="1" name="source" type="String" />
 			<description>
 			</description>
 		</method>
@@ -40,6 +35,4 @@
 		<member name="source_vertex" type="String" setter="set_stage_source" getter="get_stage_source" default="&quot;&quot;">
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

@@ -144,7 +144,7 @@ struct FeatureName
   protected:
   HBUINT16	feature;	/* Feature type. */
   HBUINT16	nSettings;	/* The number of records in the setting name array. */
-  LNNOffsetTo<UnsizedArrayOf<SettingName>>
+  NNOffset32To<UnsizedArrayOf<SettingName>>
 		settingTableZ;	/* Offset in bytes from the beginning of this table to
 				 * this feature's setting name array. The actual type of
 				 * record this offset refers to will depend on the

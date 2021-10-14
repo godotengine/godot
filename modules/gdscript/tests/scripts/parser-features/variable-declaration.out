@@ -1,7 +1,0 @@
-GDTEST_OK
->> WARNING
->> Line: 5
->> UNASSIGNED_VARIABLE
->> The variable 'c' was used but never assigned a value.
-1 42 2 23
-OK

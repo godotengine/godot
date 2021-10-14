@@ -25,125 +25,93 @@
 	</tutorials>
 	<methods>
 		<method name="get_border_width" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="margin" type="int" enum="Side">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="margin" type="int" enum="Side" />
 			<description>
 				Returns the specified [enum Side]'s border width.
 			</description>
 		</method>
 		<method name="get_border_width_min" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the smallest border width out of all four borders.
 			</description>
 		</method>
 		<method name="get_corner_radius" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="corner" type="int" enum="Corner">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="corner" type="int" enum="Corner" />
 			<description>
 				Returns the given [code]corner[/code]'s radius. See [enum Corner] for possible values.
 			</description>
 		</method>
 		<method name="get_expand_margin" qualifiers="const">
-			<return type="float">
-			</return>
-			<argument index="0" name="margin" type="int" enum="Side">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="margin" type="int" enum="Side" />
 			<description>
 				Returns the size of the specified [enum Side]'s expand margin.
 			</description>
 		</method>
 		<method name="set_border_width">
-			<return type="void">
-			</return>
-			<argument index="0" name="margin" type="int" enum="Side">
-			</argument>
-			<argument index="1" name="width" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="margin" type="int" enum="Side" />
+			<argument index="1" name="width" type="int" />
 			<description>
 				Sets the specified [enum Side]'s border width to [code]width[/code] pixels.
 			</description>
 		</method>
 		<method name="set_border_width_all">
-			<return type="void">
-			</return>
-			<argument index="0" name="width" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="width" type="int" />
 			<description>
 				Sets the border width to [code]width[/code] pixels for all sides.
 			</description>
 		</method>
 		<method name="set_corner_radius">
-			<return type="void">
-			</return>
-			<argument index="0" name="corner" type="int" enum="Corner">
-			</argument>
-			<argument index="1" name="radius" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="corner" type="int" enum="Corner" />
+			<argument index="1" name="radius" type="int" />
 			<description>
 				Sets the corner radius to [code]radius[/code] pixels for the given [code]corner[/code]. See [enum Corner] for possible values.
 			</description>
 		</method>
 		<method name="set_corner_radius_all">
-			<return type="void">
-			</return>
-			<argument index="0" name="radius" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="radius" type="int" />
 			<description>
 				Sets the corner radius to [code]radius[/code] pixels for all corners.
 			</description>
 		</method>
 		<method name="set_corner_radius_individual">
-			<return type="void">
-			</return>
-			<argument index="0" name="radius_top_left" type="int">
-			</argument>
-			<argument index="1" name="radius_top_right" type="int">
-			</argument>
-			<argument index="2" name="radius_bottom_right" type="int">
-			</argument>
-			<argument index="3" name="radius_bottom_left" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="radius_top_left" type="int" />
+			<argument index="1" name="radius_top_right" type="int" />
+			<argument index="2" name="radius_bottom_right" type="int" />
+			<argument index="3" name="radius_bottom_left" type="int" />
 			<description>
 				Sets the corner radius for each corner to [code]radius_top_left[/code], [code]radius_top_right[/code], [code]radius_bottom_right[/code], and [code]radius_bottom_left[/code] pixels.
 			</description>
 		</method>
 		<method name="set_expand_margin">
-			<return type="void">
-			</return>
-			<argument index="0" name="margin" type="int" enum="Side">
-			</argument>
-			<argument index="1" name="size" type="float">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="margin" type="int" enum="Side" />
+			<argument index="1" name="size" type="float" />
 			<description>
 				Sets the expand margin to [code]size[/code] pixels for the specified [enum Side].
 			</description>
 		</method>
 		<method name="set_expand_margin_all">
-			<return type="void">
-			</return>
-			<argument index="0" name="size" type="float">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="size" type="float" />
 			<description>
 				Sets the expand margin to [code]size[/code] pixels for all margins.
 			</description>
 		</method>
 		<method name="set_expand_margin_individual">
-			<return type="void">
-			</return>
-			<argument index="0" name="size_left" type="float">
-			</argument>
-			<argument index="1" name="size_top" type="float">
-			</argument>
-			<argument index="2" name="size_right" type="float">
-			</argument>
-			<argument index="3" name="size_bottom" type="float">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="size_left" type="float" />
+			<argument index="1" name="size_top" type="float" />
+			<argument index="2" name="size_right" type="float" />
+			<argument index="3" name="size_bottom" type="float" />
 			<description>
 				Sets the expand margin for each margin to [code]size_left[/code], [code]size_top[/code], [code]size_right[/code], and [code]size_bottom[/code] pixels.
 			</description>
@@ -152,17 +120,18 @@
 	<members>
 		<member name="anti_aliasing" type="bool" setter="set_anti_aliased" getter="is_anti_aliased" default="true">
 			Antialiasing draws a small ring around the edges, which fades to transparency. As a result, edges look much smoother. This is only noticeable when using rounded corners.
+			[b]Note:[/b] When using beveled corners with 45-degree angles ([member corner_detail] = 1), it is recommended to set [member anti_aliasing] to [code]false[/code] to ensure crisp visuals and avoid possible visual glitches.
 		</member>
-		<member name="anti_aliasing_size" type="int" setter="set_aa_size" getter="get_aa_size" default="1">
+		<member name="anti_aliasing_size" type="float" setter="set_aa_size" getter="get_aa_size" default="0.625">
 			This changes the size of the faded ring. Higher values can be used to achieve a "blurry" effect.
 		</member>
-		<member name="bg_color" type="Color" setter="set_bg_color" getter="get_bg_color" default="Color( 0.6, 0.6, 0.6, 1 )">
+		<member name="bg_color" type="Color" setter="set_bg_color" getter="get_bg_color" default="Color(0.6, 0.6, 0.6, 1)">
 			The background color of the stylebox.
 		</member>
 		<member name="border_blend" type="bool" setter="set_border_blend" getter="get_border_blend" default="false">
 			If [code]true[/code], the border will fade into the background color.
 		</member>
-		<member name="border_color" type="Color" setter="set_border_color" getter="get_border_color" default="Color( 0.8, 0.8, 0.8, 1 )">
+		<member name="border_color" type="Color" setter="set_border_color" getter="get_border_color" default="Color(0.8, 0.8, 0.8, 1)">
 			Sets the color of the border.
 		</member>
 		<member name="border_width_bottom" type="int" setter="set_border_width" getter="get_border_width" default="0">
@@ -209,16 +178,14 @@
 		<member name="expand_margin_top" type="float" setter="set_expand_margin" getter="get_expand_margin" default="0.0">
 			Expands the stylebox outside of the control rect on the top edge. Useful in combination with [member border_width_top] to draw a border outside the control rect.
 		</member>
-		<member name="shadow_color" type="Color" setter="set_shadow_color" getter="get_shadow_color" default="Color( 0, 0, 0, 0.6 )">
+		<member name="shadow_color" type="Color" setter="set_shadow_color" getter="get_shadow_color" default="Color(0, 0, 0, 0.6)">
 			The color of the shadow. This has no effect if [member shadow_size] is lower than 1.
 		</member>
-		<member name="shadow_offset" type="Vector2" setter="set_shadow_offset" getter="get_shadow_offset" default="Vector2( 0, 0 )">
+		<member name="shadow_offset" type="Vector2" setter="set_shadow_offset" getter="get_shadow_offset" default="Vector2(0, 0)">
 			The shadow offset in pixels. Adjusts the position of the shadow relatively to the stylebox.
 		</member>
 		<member name="shadow_size" type="int" setter="set_shadow_size" getter="get_shadow_size" default="0">
 			The shadow size in pixels.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

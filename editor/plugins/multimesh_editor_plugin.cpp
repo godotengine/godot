@@ -111,7 +111,7 @@ void MultiMeshEditor::_populate() {
 		return;
 	}
 
-	Transform geom_xform = node->get_global_transform().affine_inverse() * ss_instance->get_global_transform();
+	Transform3D geom_xform = node->get_global_transform().affine_inverse() * ss_instance->get_global_transform();
 
 	Vector<Face3> geometry = ss_instance->get_faces(VisualInstance3D::FACES_SOLID);
 
@@ -167,7 +167,7 @@ void MultiMeshEditor::_populate() {
 	float _scale = populate_scale->get_value();
 	int axis = populate_axis->get_selected();
 
-	Transform axis_xform;
+	Transform3D axis_xform;
 	if (axis == Vector3::AXIS_Z) {
 		axis_xform.rotate(Vector3(1, 0, 0), -Math_PI * 0.5);
 	}
@@ -191,7 +191,7 @@ void MultiMeshEditor::_populate() {
 		Vector3 normal = face.get_plane().normal;
 		Vector3 op_axis = (face.vertex[0] - face.vertex[1]).normalized();
 
-		Transform xform;
+		Transform3D xform;
 
 		xform.set_look_at(pos, pos + op_axis, normal);
 		xform = xform * axis_xform;
@@ -268,7 +268,7 @@ MultiMeshEditor::MultiMeshEditor() {
 	Node3DEditor::get_singleton()->add_control_to_menu_panel(options);
 
 	options->set_text("MultiMesh");
-	options->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon("MultiMeshInstance3D", "EditorIcons"));
+	options->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("MultiMeshInstance3D"), SNAME("EditorIcons")));
 
 	options->get_popup()->add_item(TTR("Populate Surface"));
 	options->get_popup()->connect("id_pressed", callable_mp(this, &MultiMeshEditor::_menu_option));

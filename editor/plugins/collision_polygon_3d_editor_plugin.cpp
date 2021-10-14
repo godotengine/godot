@@ -32,8 +32,8 @@
 
 #include "canvas_item_editor_plugin.h"
 #include "core/input/input.h"
+#include "core/io/file_access.h"
 #include "core/math/geometry_2d.h"
-#include "core/os/file_access.h"
 #include "core/os/keyboard.h"
 #include "editor/editor_settings.h"
 #include "node_3d_editor_plugin.h"
@@ -42,8 +42,8 @@
 void CollisionPolygon3DEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_READY: {
-			button_create->set_icon(get_theme_icon("Edit", "EditorIcons"));
-			button_edit->set_icon(get_theme_icon("MovePoint", "EditorIcons"));
+			button_create->set_icon(get_theme_icon(SNAME("Edit"), SNAME("EditorIcons")));
+			button_edit->set_icon(get_theme_icon(SNAME("MovePoint"), SNAME("EditorIcons")));
 			button_edit->set_pressed(true);
 			get_tree()->connect("node_removed", callable_mp(this, &CollisionPolygon3DEditor::_node_removed));
 
@@ -103,13 +103,13 @@ void CollisionPolygon3DEditor::_wip_close() {
 	undo_redo->commit_action();
 }
 
-bool CollisionPolygon3DEditor::forward_spatial_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event) {
+EditorPlugin::AfterGUIInput CollisionPolygon3DEditor::forward_spatial_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event) {
 	if (!node) {
-		return false;
+		return EditorPlugin::AFTER_GUI_INPUT_PASS;
 	}
 
-	Transform gt = node->get_global_transform();
-	Transform gi = gt.affine_inverse();
+	Transform3D gt = node->get_global_transform();
+	Transform3D gi = gt.affine_inverse();
 	float depth = _get_depth() * 0.5;
 	Vector3 n = gt.basis.get_axis(2).normalized();
 	Plane p(gt.origin + n * depth, n);
@@ -124,7 +124,7 @@ bool CollisionPolygon3DEditor::forward_spatial_gui_input(Camera3D *p_camera, con
 		Vector3 spoint;
 
 		if (!p.intersects_ray(ray_from, ray_dir, &spoint)) {
-			return false;
+			return EditorPlugin::AFTER_GUI_INPUT_PASS;
 		}
 
 		spoint = gi.xform(spoint);
@@ -138,7 +138,7 @@ bool CollisionPolygon3DEditor::forward_spatial_gui_input(Camera3D *p_camera, con
 		Vector<Vector2> poly = node->call("get_polygon");
 
 		//first check if a point is to be added (segment split)
-		real_t grab_threshold = EDITOR_GET("editors/poly_editor/point_grab_radius");
+		real_t grab_threshold = EDITOR_GET("editors/polygon_editor/point_grab_radius");
 
 		switch (mode) {
 			case MODE_CREATE: {
@@ -151,19 +151,19 @@ bool CollisionPolygon3DEditor::forward_spatial_gui_input(Camera3D *p_camera, con
 						snap_ignore = false;
 						_polygon_draw();
 						edited_point = 1;
-						return true;
+						return EditorPlugin::AFTER_GUI_INPUT_STOP;
 					} else {
 						if (wip.size() > 1 && p_camera->unproject_position(gt.xform(Vector3(wip[0].x, wip[0].y, depth))).distance_to(gpoint) < grab_threshold) {
 							//wip closed
 							_wip_close();
 
-							return true;
+							return EditorPlugin::AFTER_GUI_INPUT_STOP;
 						} else {
 							wip.push_back(cpoint);
 							edited_point = wip.size();
 							snap_ignore = false;
 							_polygon_draw();
-							return true;
+							return EditorPlugin::AFTER_GUI_INPUT_STOP;
 						}
 					}
 				} else if (mb->get_button_index() == MOUSE_BUTTON_RIGHT && mb->is_pressed() && wip_active) {
@@ -175,7 +175,7 @@ bool CollisionPolygon3DEditor::forward_spatial_gui_input(Camera3D *p_camera, con
 			case MODE_EDIT: {
 				if (mb->get_button_index() == MOUSE_BUTTON_LEFT) {
 					if (mb->is_pressed()) {
-						if (mb->get_control()) {
+						if (mb->is_ctrl_pressed()) {
 							if (poly.size() < 3) {
 								undo_redo->create_action(TTR("Edit Poly"));
 								undo_redo->add_undo_method(node, "set_polygon", poly);
@@ -184,7 +184,7 @@ bool CollisionPolygon3DEditor::forward_spatial_gui_input(Camera3D *p_camera, con
 								undo_redo->add_do_method(this, "_polygon_draw");
 								undo_redo->add_undo_method(this, "_polygon_draw");
 								undo_redo->commit_action();
-								return true;
+								return EditorPlugin::AFTER_GUI_INPUT_STOP;
 							}
 
 							//search edges
@@ -219,7 +219,7 @@ bool CollisionPolygon3DEditor::forward_spatial_gui_input(Camera3D *p_camera, con
 								_polygon_draw();
 								snap_ignore = true;
 
-								return true;
+								return EditorPlugin::AFTER_GUI_INPUT_STOP;
 							}
 						} else {
 							//look for points to move
@@ -244,7 +244,7 @@ bool CollisionPolygon3DEditor::forward_spatial_gui_input(Camera3D *p_camera, con
 								edited_point_pos = poly[closest_idx];
 								_polygon_draw();
 								snap_ignore = false;
-								return true;
+								return EditorPlugin::AFTER_GUI_INPUT_STOP;
 							}
 						}
 					} else {
@@ -253,7 +253,7 @@ bool CollisionPolygon3DEditor::forward_spatial_gui_input(Camera3D *p_camera, con
 						if (edited_point != -1) {
 							//apply
 
-							ERR_FAIL_INDEX_V(edited_point, poly.size(), false);
+							ERR_FAIL_INDEX_V(edited_point, poly.size(), EditorPlugin::AFTER_GUI_INPUT_PASS);
 							poly.write[edited_point] = edited_point_pos;
 							undo_redo->create_action(TTR("Edit Poly"));
 							undo_redo->add_do_method(node, "set_polygon", poly);
@@ -263,7 +263,7 @@ bool CollisionPolygon3DEditor::forward_spatial_gui_input(Camera3D *p_camera, con
 							undo_redo->commit_action();
 
 							edited_point = -1;
-							return true;
+							return EditorPlugin::AFTER_GUI_INPUT_STOP;
 						}
 					}
 				}
@@ -290,7 +290,7 @@ bool CollisionPolygon3DEditor::forward_spatial_gui_input(Camera3D *p_camera, con
 						undo_redo->add_do_method(this, "_polygon_draw");
 						undo_redo->add_undo_method(this, "_polygon_draw");
 						undo_redo->commit_action();
-						return true;
+						return EditorPlugin::AFTER_GUI_INPUT_STOP;
 					}
 				}
 
@@ -310,14 +310,14 @@ bool CollisionPolygon3DEditor::forward_spatial_gui_input(Camera3D *p_camera, con
 			Vector3 spoint;
 
 			if (!p.intersects_ray(ray_from, ray_dir, &spoint)) {
-				return false;
+				return EditorPlugin::AFTER_GUI_INPUT_PASS;
 			}
 
 			spoint = gi.xform(spoint);
 
 			Vector2 cpoint(spoint.x, spoint.y);
 
-			if (snap_ignore && !Input::get_singleton()->is_key_pressed(KEY_CONTROL)) {
+			if (snap_ignore && !Input::get_singleton()->is_key_pressed(KEY_CTRL)) {
 				snap_ignore = false;
 			}
 
@@ -332,7 +332,7 @@ bool CollisionPolygon3DEditor::forward_spatial_gui_input(Camera3D *p_camera, con
 		}
 	}
 
-	return false;
+	return EditorPlugin::AFTER_GUI_INPUT_PASS;
 }
 
 float CollisionPolygon3DEditor::_get_depth() {
@@ -358,9 +358,9 @@ void CollisionPolygon3DEditor::_polygon_draw() {
 
 	float depth = _get_depth() * 0.5;
 
-	imgeom->clear();
+	imesh->clear_surfaces();
 	imgeom->set_material_override(line_material);
-	imgeom->begin(Mesh::PRIMITIVE_LINES, Ref<Texture2D>());
+	imesh->surface_begin(Mesh::PRIMITIVE_LINES);
 
 	Rect2 rect;
 
@@ -382,10 +382,10 @@ void CollisionPolygon3DEditor::_polygon_draw() {
 		Vector3 point = Vector3(p.x, p.y, depth);
 		Vector3 next_point = Vector3(p2.x, p2.y, depth);
 
-		imgeom->set_color(Color(1, 0.3, 0.1, 0.8));
-		imgeom->add_vertex(point);
-		imgeom->set_color(Color(1, 0.3, 0.1, 0.8));
-		imgeom->add_vertex(next_point);
+		imesh->surface_set_color(Color(1, 0.3, 0.1, 0.8));
+		imesh->surface_add_vertex(point);
+		imesh->surface_set_color(Color(1, 0.3, 0.1, 0.8));
+		imesh->surface_add_vertex(next_point);
 
 		//Color col=Color(1,0.3,0.1,0.8);
 		//vpc->draw_line(point,next_point,col,2);
@@ -402,45 +402,43 @@ void CollisionPolygon3DEditor::_polygon_draw() {
 	r.size.y = rect.size.y;
 	r.size.z = 0;
 
-	imgeom->set_color(Color(0.8, 0.8, 0.8, 0.2));
-	imgeom->add_vertex(r.position);
-	imgeom->set_color(Color(0.8, 0.8, 0.8, 0.2));
-	imgeom->add_vertex(r.position + Vector3(0.3, 0, 0));
-	imgeom->set_color(Color(0.8, 0.8, 0.8, 0.2));
-	imgeom->add_vertex(r.position);
-	imgeom->set_color(Color(0.8, 0.8, 0.8, 0.2));
-	imgeom->add_vertex(r.position + Vector3(0.0, 0.3, 0));
+	imesh->surface_set_color(Color(0.8, 0.8, 0.8, 0.2));
+	imesh->surface_add_vertex(r.position);
+	imesh->surface_set_color(Color(0.8, 0.8, 0.8, 0.2));
+	imesh->surface_add_vertex(r.position + Vector3(0.3, 0, 0));
+	imesh->surface_set_color(Color(0.8, 0.8, 0.8, 0.2));
+	imesh->surface_add_vertex(r.position);
+	imesh->surface_set_color(Color(0.8, 0.8, 0.8, 0.2));
+	imesh->surface_add_vertex(r.position + Vector3(0.0, 0.3, 0));
 
-	imgeom->set_color(Color(0.8, 0.8, 0.8, 0.2));
-	imgeom->add_vertex(r.position + Vector3(r.size.x, 0, 0));
-	imgeom->set_color(Color(0.8, 0.8, 0.8, 0.2));
-	imgeom->add_vertex(r.position + Vector3(r.size.x, 0, 0) - Vector3(0.3, 0, 0));
-	imgeom->set_color(Color(0.8, 0.8, 0.8, 0.2));
-	imgeom->add_vertex(r.position + Vector3(r.size.x, 0, 0));
-	imgeom->set_color(Color(0.8, 0.8, 0.8, 0.2));
-	imgeom->add_vertex(r.position + Vector3(r.size.x, 0, 0) + Vector3(0, 0.3, 0));
+	imesh->surface_set_color(Color(0.8, 0.8, 0.8, 0.2));
+	imesh->surface_add_vertex(r.position + Vector3(r.size.x, 0, 0));
+	imesh->surface_set_color(Color(0.8, 0.8, 0.8, 0.2));
+	imesh->surface_add_vertex(r.position + Vector3(r.size.x, 0, 0) - Vector3(0.3, 0, 0));
+	imesh->surface_set_color(Color(0.8, 0.8, 0.8, 0.2));
+	imesh->surface_add_vertex(r.position + Vector3(r.size.x, 0, 0));
+	imesh->surface_set_color(Color(0.8, 0.8, 0.8, 0.2));
+	imesh->surface_add_vertex(r.position + Vector3(r.size.x, 0, 0) + Vector3(0, 0.3, 0));
 
-	imgeom->set_color(Color(0.8, 0.8, 0.8, 0.2));
-	imgeom->add_vertex(r.position + Vector3(0, r.size.y, 0));
-	imgeom->set_color(Color(0.8, 0.8, 0.8, 0.2));
-	imgeom->add_vertex(r.position + Vector3(0, r.size.y, 0) - Vector3(0, 0.3, 0));
-	imgeom->set_color(Color(0.8, 0.8, 0.8, 0.2));
-	imgeom->add_vertex(r.position + Vector3(0, r.size.y, 0));
-	imgeom->set_color(Color(0.8, 0.8, 0.8, 0.2));
-	imgeom->add_vertex(r.position + Vector3(0, r.size.y, 0) + Vector3(0.3, 0, 0));
+	imesh->surface_set_color(Color(0.8, 0.8, 0.8, 0.2));
+	imesh->surface_add_vertex(r.position + Vector3(0, r.size.y, 0));
+	imesh->surface_set_color(Color(0.8, 0.8, 0.8, 0.2));
+	imesh->surface_add_vertex(r.position + Vector3(0, r.size.y, 0) - Vector3(0, 0.3, 0));
+	imesh->surface_set_color(Color(0.8, 0.8, 0.8, 0.2));
+	imesh->surface_add_vertex(r.position + Vector3(0, r.size.y, 0));
+	imesh->surface_set_color(Color(0.8, 0.8, 0.8, 0.2));
+	imesh->surface_add_vertex(r.position + Vector3(0, r.size.y, 0) + Vector3(0.3, 0, 0));
 
-	imgeom->set_color(Color(0.8, 0.8, 0.8, 0.2));
-	imgeom->add_vertex(r.position + r.size);
-	imgeom->set_color(Color(0.8, 0.8, 0.8, 0.2));
-	imgeom->add_vertex(r.position + r.size - Vector3(0.3, 0, 0));
-	imgeom->set_color(Color(0.8, 0.8, 0.8, 0.2));
-	imgeom->add_vertex(r.position + r.size);
-	imgeom->set_color(Color(0.8, 0.8, 0.8, 0.2));
-	imgeom->add_vertex(r.position + r.size - Vector3(0.0, 0.3, 0));
+	imesh->surface_set_color(Color(0.8, 0.8, 0.8, 0.2));
+	imesh->surface_add_vertex(r.position + r.size);
+	imesh->surface_set_color(Color(0.8, 0.8, 0.8, 0.2));
+	imesh->surface_add_vertex(r.position + r.size - Vector3(0.3, 0, 0));
+	imesh->surface_set_color(Color(0.8, 0.8, 0.8, 0.2));
+	imesh->surface_add_vertex(r.position + r.size);
+	imesh->surface_set_color(Color(0.8, 0.8, 0.8, 0.2));
+	imesh->surface_add_vertex(r.position + r.size - Vector3(0.0, 0.3, 0));
 
-	imgeom->end();
-
-	m->clear_surfaces();
+	imesh->surface_end();
 
 	if (poly.size() == 0) {
 		return;
@@ -515,8 +513,10 @@ CollisionPolygon3DEditor::CollisionPolygon3DEditor(EditorNode *p_editor) {
 
 	mode = MODE_EDIT;
 	wip_active = false;
-	imgeom = memnew(ImmediateGeometry3D);
-	imgeom->set_transform(Transform(Basis(), Vector3(0, 0, 0.00001)));
+	imgeom = memnew(MeshInstance3D);
+	imesh.instantiate();
+	imgeom->set_mesh(imesh);
+	imgeom->set_transform(Transform3D(Basis(), Vector3(0, 0, 0.00001)));
 
 	line_material = Ref<StandardMaterial3D>(memnew(StandardMaterial3D));
 	line_material->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
@@ -531,15 +531,15 @@ CollisionPolygon3DEditor::CollisionPolygon3DEditor(EditorNode *p_editor) {
 	handle_material->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
 	handle_material->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
 	handle_material->set_flag(StandardMaterial3D::FLAG_SRGB_VERTEX_COLOR, true);
-	Ref<Texture2D> handle = editor->get_gui_base()->get_theme_icon("Editor3DHandle", "EditorIcons");
+	Ref<Texture2D> handle = editor->get_gui_base()->get_theme_icon(SNAME("Editor3DHandle"), SNAME("EditorIcons"));
 	handle_material->set_point_size(handle->get_width());
 	handle_material->set_texture(StandardMaterial3D::TEXTURE_ALBEDO, handle);
 
 	pointsm = memnew(MeshInstance3D);
 	imgeom->add_child(pointsm);
-	m.instance();
+	m.instantiate();
 	pointsm->set_mesh(m);
-	pointsm->set_transform(Transform(Basis(), Vector3(0, 0, 0.00001)));
+	pointsm->set_transform(Transform3D(Basis(), Vector3(0, 0, 0.00001)));
 
 	snap_ignore = false;
 }

@@ -31,7 +31,7 @@
 #include "godotsharp_dirs.h"
 
 #include "core/config/project_settings.h"
-#include "core/os/dir_access.h"
+#include "core/io/dir_access.h"
 #include "core/os/os.h"
 
 #ifdef TOOLS_ENABLED
@@ -63,8 +63,8 @@ String _get_expected_build_config() {
 
 String _get_mono_user_dir() {
 #ifdef TOOLS_ENABLED
-	if (EditorSettings::get_singleton()) {
-		return EditorSettings::get_singleton()->get_data_dir().plus_file("mono");
+	if (EditorPaths::get_singleton()) {
+		return EditorPaths::get_singleton()->get_data_dir().plus_file("mono");
 	} else {
 		String settings_path;
 
@@ -122,7 +122,7 @@ public:
 
 private:
 	_GodotSharpDirs() {
-		res_data_dir = "res://.godot/mono";
+		res_data_dir = ProjectSettings::get_singleton()->get_project_data_path().plus_file("mono");
 		res_metadata_dir = res_data_dir.plus_file("metadata");
 		res_assemblies_base_dir = res_data_dir.plus_file("assemblies");
 		res_assemblies_dir = res_assemblies_base_dir.plus_file(GDMono::get_expected_api_build_config());

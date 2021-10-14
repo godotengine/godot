@@ -307,7 +307,7 @@ struct hb_auto_trace_t
 
     _hb_debug_msg<max_level> (what, obj, func, true, plevel ? *plevel : 1, -1,
 			      "return %s (line %d)",
-			      hb_printer_t<decltype (v)>().print (v), line);
+			      hb_printer_t<hb_decay<decltype (v)>>().print (v), line);
     if (plevel) --*plevel;
     plevel = nullptr;
     returned = true;
@@ -436,6 +436,10 @@ struct hb_no_trace_t {
    " ")
 #else
 #define TRACE_SUBSET(this) hb_no_trace_t<bool> trace
+#endif
+
+#ifndef HB_DEBUG_SUBSET_REPACK
+#define HB_DEBUG_SUBSET_REPACK (HB_DEBUG+0)
 #endif
 
 #ifndef HB_DEBUG_DISPATCH

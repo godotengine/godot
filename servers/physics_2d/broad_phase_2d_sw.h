@@ -48,7 +48,7 @@ public:
 	typedef void (*UnpairCallback)(CollisionObject2DSW *A, int p_subindex_A, CollisionObject2DSW *B, int p_subindex_B, void *p_data, void *p_userdata);
 
 	// 0 is an invalid ID
-	virtual ID create(CollisionObject2DSW *p_object_, int p_subindex = 0) = 0;
+	virtual ID create(CollisionObject2DSW *p_object_, int p_subindex = 0, const Rect2 &p_aabb = Rect2(), bool p_static = false) = 0;
 	virtual void move(ID p_id, const Rect2 &p_aabb) = 0;
 	virtual void set_static(ID p_id, bool p_static) = 0;
 	virtual void remove(ID p_id) = 0;

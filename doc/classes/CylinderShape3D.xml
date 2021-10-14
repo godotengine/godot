@@ -11,8 +11,6 @@
 		<link title="3D Physics Tests Demo">https://godotengine.org/asset-library/asset/675</link>
 		<link title="3D Voxel Demo">https://godotengine.org/asset-library/asset/676</link>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="height" type="float" setter="set_height" getter="get_height" default="2.0">
 			The cylinder's height.
@@ -21,6 +19,4 @@
 			The cylinder's radius.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

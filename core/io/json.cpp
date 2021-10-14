@@ -45,7 +45,7 @@ const char *JSON::tk_name[TK_MAX] = {
 	"EOF",
 };
 
-static String _make_indent(const String &p_indent, int p_size) {
+String JSON::_make_indent(const String &p_indent, int p_size) {
 	String indent_text = "";
 	if (!p_indent.is_empty()) {
 		for (int i = 0; i < p_size; i++) {
@@ -55,7 +55,7 @@ static String _make_indent(const String &p_indent, int p_size) {
 	return indent_text;
 }
 
-String JSON::_print_var(const Variant &p_var, const String &p_indent, int p_cur_indent, bool p_sort_keys) {
+String JSON::_stringify(const Variant &p_var, const String &p_indent, int p_cur_indent, bool p_sort_keys, Set<const void *> &p_markers, bool p_full_precision) {
 	String colon = ":";
 	String end_statement = "";
 
@@ -71,8 +71,17 @@ String JSON::_print_var(const Variant &p_var, const String &p_indent, int p_cur_
 			return p_var.operator bool() ? "true" : "false";
 		case Variant::INT:
 			return itos(p_var);
-		case Variant::FLOAT:
-			return rtos(p_var);
+		case Variant::FLOAT: {
+			double num = p_var;
+			if (p_full_precision) {
+				// Store unreliable digits (17) instead of just reliable
+				// digits (14) so that the value can be decoded exactly.
+				return String::num(num, 17 - (int)floor(log10(num)));
+			} else {
+				// Store only reliable digits (14) by default.
+				return String::num(num, 14 - (int)floor(log10(num)));
+			}
+		}
 		case Variant::PACKED_INT32_ARRAY:
 		case Variant::PACKED_INT64_ARRAY:
 		case Variant::PACKED_FLOAT32_ARRAY:
@@ -82,20 +91,29 @@ String JSON::_print_var(const Variant &p_var, const String &p_indent, int p_cur_
 			String s = "[";
 			s += end_statement;
 			Array a = p_var;
+
+			ERR_FAIL_COND_V_MSG(p_markers.has(a.id()), "\"[...]\"", "Converting circular structure to JSON.");
+			p_markers.insert(a.id());
+
 			for (int i = 0; i < a.size(); i++) {
 				if (i > 0) {
 					s += ",";
 					s += end_statement;
 				}
-				s += _make_indent(p_indent, p_cur_indent + 1) + _print_var(a[i], p_indent, p_cur_indent + 1, p_sort_keys);
+				s += _make_indent(p_indent, p_cur_indent + 1) + _stringify(a[i], p_indent, p_cur_indent + 1, p_sort_keys, p_markers);
 			}
 			s += end_statement + _make_indent(p_indent, p_cur_indent) + "]";
+			p_markers.erase(a.id());
 			return s;
 		}
 		case Variant::DICTIONARY: {
 			String s = "{";
 			s += end_statement;
 			Dictionary d = p_var;
+
+			ERR_FAIL_COND_V_MSG(p_markers.has(d.id()), "\"{...}\"", "Converting circular structure to JSON.");
+			p_markers.insert(d.id());
+
 			List<Variant> keys;
 			d.get_key_list(&keys);
 
@@ -103,26 +121,26 @@ String JSON::_print_var(const Variant &p_var, const String &p_indent, int p_cur_
 				keys.sort();
 			}
 
-			for (List<Variant>::Element *E = keys.front(); E; E = E->next()) {
-				if (E != keys.front()) {
+			bool first_key = true;
+			for (const Variant &E : keys) {
+				if (first_key) {
+					first_key = false;
+				} else {
 					s += ",";
 					s += end_statement;
 				}
-				s += _make_indent(p_indent, p_cur_indent + 1) + _print_var(String(E->get()), p_indent, p_cur_indent + 1, p_sort_keys);
+				s += _make_indent(p_indent, p_cur_indent + 1) + _stringify(String(E), p_indent, p_cur_indent + 1, p_sort_keys, p_markers);
 				s += colon;
-				s += _print_var(d[E->get()], p_indent, p_cur_indent + 1, p_sort_keys);
+				s += _stringify(d[E], p_indent, p_cur_indent + 1, p_sort_keys, p_markers);
 			}
 
 			s += end_statement + _make_indent(p_indent, p_cur_indent) + "}";
+			p_markers.erase(d.id());
 			return s;
 		}
 		default:
 			return "\"" + String(p_var).json_escape() + "\"";
 	}
-}
-
-String JSON::print(const Variant &p_var, const String &p_indent, bool p_sort_keys) {
-	return _print_var(p_var, p_indent, 0, p_sort_keys);
 }
 
 Error JSON::_get_token(const char32_t *p_str, int &index, int p_len, Token &r_token, int &line, String &r_err_str) {
@@ -479,7 +497,7 @@ Error JSON::_parse_object(Dictionary &object, const char32_t *p_str, int &index,
 	return ERR_PARSE_ERROR;
 }
 
-Error JSON::parse(const String &p_json, Variant &r_ret, String &r_err_str, int &r_err_line) {
+Error JSON::_parse_string(const String &p_json, Variant &r_ret, String &r_err_str, int &r_err_line) {
 	const char32_t *str = p_json.ptr();
 	int idx = 0;
 	int len = p_json.length();
@@ -510,34 +528,24 @@ Error JSON::parse(const String &p_json, Variant &r_ret, String &r_err_str, int &
 	return err;
 }
 
-Error JSONParser::parse_string(const String &p_json_string) {
-	return JSON::parse(p_json_string, data, err_text, err_line);
-}
-String JSONParser::get_error_text() const {
-	return err_text;
-}
-int JSONParser::get_error_line() const {
-	return err_line;
-}
-Variant JSONParser::get_data() const {
-	return data;
+String JSON::stringify(const Variant &p_var, const String &p_indent, bool p_sort_keys, bool p_full_precision) {
+	Set<const void *> markers;
+	return _stringify(p_var, p_indent, 0, p_sort_keys, markers, p_full_precision);
 }
 
-Error JSONParser::decode_data(const Variant &p_data, const String &p_indent, bool p_sort_keys) {
-	string = JSON::print(p_data, p_indent, p_sort_keys);
-	data = p_data;
-	return OK;
+Error JSON::parse(const String &p_json_string) {
+	Error err = _parse_string(p_json_string, data, err_str, err_line);
+	if (err == Error::OK) {
+		err_line = 0;
+	}
+	return err;
 }
 
-String JSONParser::get_string() const {
-	return string;
-}
+void JSON::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("stringify", "data", "indent", "sort_keys", "full_precision"), &JSON::stringify, DEFVAL(""), DEFVAL(true), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("parse", "json_string"), &JSON::parse);
 
-void JSONParser::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("parse_string", "json_string"), &JSONParser::parse_string);
-	ClassDB::bind_method(D_METHOD("get_error_text"), &JSONParser::get_error_text);
-	ClassDB::bind_method(D_METHOD("get_error_line"), &JSONParser::get_error_line);
-	ClassDB::bind_method(D_METHOD("get_data"), &JSONParser::get_data);
-	ClassDB::bind_method(D_METHOD("decode_data", "data", "indent", "sort_keys"), &JSONParser::decode_data, DEFVAL(""), DEFVAL(true));
-	ClassDB::bind_method(D_METHOD("get_string"), &JSONParser::get_string);
+	ClassDB::bind_method(D_METHOD("get_data"), &JSON::get_data);
+	ClassDB::bind_method(D_METHOD("get_error_line"), &JSON::get_error_line);
+	ClassDB::bind_method(D_METHOD("get_error_message"), &JSON::get_error_message);
 }

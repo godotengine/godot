@@ -13,14 +13,37 @@
 		<link title="Audio Spectrum Demo">https://godotengine.org/asset-library/asset/528</link>
 	</tutorials>
 	<methods>
+		<method name="_get_length" qualifiers="virtual const">
+			<return type="float" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_stream_name" qualifiers="virtual const">
+			<return type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="_instance_playback" qualifiers="virtual const">
+			<return type="AudioStreamPlayback" />
+			<description>
+			</description>
+		</method>
+		<method name="_is_monophonic" qualifiers="virtual const">
+			<return type="bool" />
+			<description>
+			</description>
+		</method>
 		<method name="get_length" qualifiers="const">
-			<return type="float">
-			</return>
+			<return type="float" />
 			<description>
 				Returns the length of the audio stream in seconds.
 			</description>
 		</method>
+		<method name="is_monophonic" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns true if this audio stream only supports monophonic playback, or false if the audio stream supports polyphony.
+			</description>
+		</method>
 	</methods>
-	<constants>
-	</constants>
 </class>

@@ -59,7 +59,7 @@ void EditorSettingsDialog::_settings_property_edited(const String &p_name) {
 
 	if (full_name == "interface/theme/accent_color" || full_name == "interface/theme/base_color" || full_name == "interface/theme/contrast") {
 		EditorSettings::get_singleton()->set_manually("interface/theme/preset", "Custom"); // set preset to Custom
-	} else if (full_name.begins_with("text_editor/highlighting")) {
+	} else if (full_name.begins_with("text_editor/theme/highlighting")) {
 		EditorSettings::get_singleton()->set_manually("text_editor/theme/color_theme", "Custom");
 	}
 }
@@ -138,7 +138,7 @@ void EditorSettingsDialog::_notification(int p_what) {
 	}
 }
 
-void EditorSettingsDialog::_unhandled_input(const Ref<InputEvent> &p_event) {
+void EditorSettingsDialog::unhandled_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
 	const Ref<InputEventKey> k = p_event;
@@ -176,15 +176,15 @@ void EditorSettingsDialog::_unhandled_input(const Ref<InputEvent> &p_event) {
 }
 
 void EditorSettingsDialog::_update_icons() {
-	search_box->set_right_icon(shortcuts->get_theme_icon("Search", "EditorIcons"));
+	search_box->set_right_icon(shortcuts->get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
 	search_box->set_clear_button_enabled(true);
-	shortcut_search_box->set_right_icon(shortcuts->get_theme_icon("Search", "EditorIcons"));
+	shortcut_search_box->set_right_icon(shortcuts->get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
 	shortcut_search_box->set_clear_button_enabled(true);
 
-	restart_close_button->set_icon(shortcuts->get_theme_icon("Close", "EditorIcons"));
-	restart_container->add_theme_style_override("panel", shortcuts->get_theme_stylebox("bg", "Tree"));
-	restart_icon->set_texture(shortcuts->get_theme_icon("StatusWarning", "EditorIcons"));
-	restart_label->add_theme_color_override("font_color", shortcuts->get_theme_color("warning_color", "Editor"));
+	restart_close_button->set_icon(shortcuts->get_theme_icon(SNAME("Close"), SNAME("EditorIcons")));
+	restart_container->add_theme_style_override("panel", shortcuts->get_theme_stylebox(SNAME("bg"), SNAME("Tree")));
+	restart_icon->set_texture(shortcuts->get_theme_icon(SNAME("StatusWarning"), SNAME("EditorIcons")));
+	restart_label->add_theme_color_override("font_color", shortcuts->get_theme_color(SNAME("warning_color"), SNAME("Editor")));
 }
 
 void EditorSettingsDialog::_event_config_confirmed() {
@@ -193,35 +193,25 @@ void EditorSettingsDialog::_event_config_confirmed() {
 		return;
 	}
 
-	if (editing_action) {
-		if (current_action_event_index == -1) {
-			// Add new event
-			current_action_events.push_back(k);
-		} else {
-			// Edit existing event
-			current_action_events[current_action_event_index] = k;
-		}
-
-		_update_builtin_action(current_action, current_action_events);
+	if (current_event_index == -1) {
+		// Add new event
+		current_events.push_back(k);
 	} else {
-		k = k->duplicate();
-		Ref<Shortcut> current_sc = EditorSettings::get_singleton()->get_shortcut(shortcut_being_edited);
+		// Edit existing event
+		current_events[current_event_index] = k;
+	}
 
-		undo_redo->create_action(TTR("Change Shortcut") + " '" + shortcut_being_edited + "'");
-		undo_redo->add_do_method(current_sc.ptr(), "set_shortcut", k);
-		undo_redo->add_undo_method(current_sc.ptr(), "set_shortcut", current_sc->get_shortcut());
-		undo_redo->add_do_method(this, "_update_shortcuts");
-		undo_redo->add_undo_method(this, "_update_shortcuts");
-		undo_redo->add_do_method(this, "_settings_changed");
-		undo_redo->add_undo_method(this, "_settings_changed");
-		undo_redo->commit_action();
+	if (is_editing_action) {
+		_update_builtin_action(current_edited_identifier, current_events);
+	} else {
+		_update_shortcut_events(current_edited_identifier, current_events);
 	}
 }
 
 void EditorSettingsDialog::_update_builtin_action(const String &p_name, const Array &p_events) {
-	Array old_input_array = EditorSettings::get_singleton()->get_builtin_action_overrides(current_action);
+	Array old_input_array = EditorSettings::get_singleton()->get_builtin_action_overrides(p_name);
 
-	undo_redo->create_action(TTR("Edit Built-in Action"));
+	undo_redo->create_action(TTR("Edit Built-in Action") + " '" + p_name + "'");
 	undo_redo->add_do_method(EditorSettings::get_singleton(), "set_builtin_action_override", p_name, p_events);
 	undo_redo->add_undo_method(EditorSettings::get_singleton(), "set_builtin_action_override", p_name, old_input_array);
 	undo_redo->add_do_method(this, "_settings_changed");
@@ -231,15 +221,125 @@ void EditorSettingsDialog::_update_builtin_action(const String &p_name, const Ar
 	_update_shortcuts();
 }
 
+void EditorSettingsDialog::_update_shortcut_events(const String &p_path, const Array &p_events) {
+	Ref<Shortcut> current_sc = EditorSettings::get_singleton()->get_shortcut(p_path);
+
+	undo_redo->create_action(TTR("Edit Shortcut") + " '" + p_path + "'");
+	undo_redo->add_do_method(current_sc.ptr(), "set_events", p_events);
+	undo_redo->add_undo_method(current_sc.ptr(), "set_events", current_sc->get_events());
+	undo_redo->add_do_method(this, "_update_shortcuts");
+	undo_redo->add_undo_method(this, "_update_shortcuts");
+	undo_redo->add_do_method(this, "_settings_changed");
+	undo_redo->add_undo_method(this, "_settings_changed");
+	undo_redo->commit_action();
+}
+
+Array EditorSettingsDialog::_event_list_to_array_helper(List<Ref<InputEvent>> &p_events) {
+	Array events;
+
+	// Convert the list to an array, and only keep key events as this is for the editor.
+	for (List<Ref<InputEvent>>::Element *E = p_events.front(); E; E = E->next()) {
+		Ref<InputEventKey> k = E->get();
+		if (k.is_valid()) {
+			events.append(E->get());
+		}
+	}
+
+	return events;
+}
+
+void EditorSettingsDialog::_create_shortcut_treeitem(TreeItem *p_parent, const String &p_shortcut_identifier, const String &p_display, Array &p_events, bool p_allow_revert, bool p_is_action, bool p_is_collapsed) {
+	TreeItem *shortcut_item = shortcuts->create_item(p_parent);
+	shortcut_item->set_collapsed(p_is_collapsed);
+	shortcut_item->set_text(0, p_display);
+
+	Ref<InputEvent> primary = p_events.size() > 0 ? Ref<InputEvent>(p_events[0]) : Ref<InputEvent>();
+	Ref<InputEvent> secondary = p_events.size() > 1 ? Ref<InputEvent>(p_events[1]) : Ref<InputEvent>();
+
+	String sc_text = "None";
+	if (primary.is_valid()) {
+		sc_text = primary->as_text();
+
+		if (secondary.is_valid()) {
+			sc_text += ", " + secondary->as_text();
+
+			if (p_events.size() > 2) {
+				sc_text += " (+" + itos(p_events.size() - 2) + ")";
+			}
+		}
+	}
+
+	shortcut_item->set_text(1, sc_text);
+	if (sc_text == "None") {
+		// Fade out unassigned shortcut labels for easier visual grepping.
+		shortcut_item->set_custom_color(1, shortcuts->get_theme_color("font_color", "Label") * Color(1, 1, 1, 0.5));
+	}
+
+	if (p_allow_revert) {
+		shortcut_item->add_button(1, shortcuts->get_theme_icon("Reload", "EditorIcons"), SHORTCUT_REVERT);
+	}
+
+	shortcut_item->add_button(1, shortcuts->get_theme_icon("Add", "EditorIcons"), SHORTCUT_ADD);
+	shortcut_item->add_button(1, shortcuts->get_theme_icon("Close", "EditorIcons"), SHORTCUT_ERASE);
+
+	shortcut_item->set_meta("is_action", p_is_action);
+	shortcut_item->set_meta("type", "shortcut");
+	shortcut_item->set_meta("shortcut_identifier", p_shortcut_identifier);
+	shortcut_item->set_meta("events", p_events);
+
+	// Shortcut Input Events
+	for (int i = 0; i < p_events.size(); i++) {
+		Ref<InputEvent> ie = p_events[i];
+		if (ie.is_null()) {
+			continue;
+		}
+
+		TreeItem *event_item = shortcuts->create_item(shortcut_item);
+
+		event_item->set_text(0, shortcut_item->get_child_count() == 1 ? "Primary" : "");
+		event_item->set_text(1, ie->as_text());
+
+		event_item->add_button(1, shortcuts->get_theme_icon("Edit", "EditorIcons"), SHORTCUT_EDIT);
+		event_item->add_button(1, shortcuts->get_theme_icon("Close", "EditorIcons"), SHORTCUT_ERASE);
+
+		event_item->set_custom_bg_color(0, shortcuts->get_theme_color("dark_color_3", "Editor"));
+		event_item->set_custom_bg_color(1, shortcuts->get_theme_color("dark_color_3", "Editor"));
+
+		event_item->set_meta("is_action", p_is_action);
+		event_item->set_meta("type", "event");
+		event_item->set_meta("event_index", i);
+	}
+}
+
 void EditorSettingsDialog::_update_shortcuts() {
 	// Before clearing the tree, take note of which categories are collapsed so that this state can be maintained when the tree is repopulated.
 	Map<String, bool> collapsed;
 
-	if (shortcuts->get_root() && shortcuts->get_root()->get_children()) {
-		for (TreeItem *item = shortcuts->get_root()->get_children(); item; item = item->get_next()) {
-			collapsed[item->get_text(0)] = item->is_collapsed();
+	if (shortcuts->get_root() && shortcuts->get_root()->get_first_child()) {
+		TreeItem *ti = shortcuts->get_root()->get_first_child();
+		while (ti) {
+			// Not all items have valid or unique text in the first column - so if it has an identifier, use that, as it should be unique.
+			if (ti->get_first_child() && ti->has_meta("shortcut_identifier")) {
+				collapsed[ti->get_meta("shortcut_identifier")] = ti->is_collapsed();
+			} else {
+				collapsed[ti->get_text(0)] = ti->is_collapsed();
+			}
+
+			// Try go down tree
+			TreeItem *ti_next = ti->get_first_child();
+			// Try go across tree
+			if (!ti_next) {
+				ti_next = ti->get_next();
+			}
+			// Try go up tree, to next node
+			if (!ti_next) {
+				ti_next = ti->get_parent()->get_next();
+			}
+
+			ti = ti_next;
 		}
 	}
+
 	shortcuts->clear();
 
 	TreeItem *root = shortcuts->create_item();
@@ -247,79 +347,48 @@ void EditorSettingsDialog::_update_shortcuts() {
 
 	// Set up section for Common/Built-in actions
 	TreeItem *common_section = shortcuts->create_item(root);
-
 	sections["Common"] = common_section;
 	common_section->set_text(0, TTR("Common"));
+	common_section->set_selectable(0, false);
+	common_section->set_selectable(1, false);
 	if (collapsed.has("Common")) {
 		common_section->set_collapsed(collapsed["Common"]);
 	}
-	common_section->set_custom_bg_color(0, shortcuts->get_theme_color("prop_subsection", "Editor"));
-	common_section->set_custom_bg_color(1, shortcuts->get_theme_color("prop_subsection", "Editor"));
+	common_section->set_custom_bg_color(0, shortcuts->get_theme_color(SNAME("prop_subsection"), SNAME("Editor")));
+	common_section->set_custom_bg_color(1, shortcuts->get_theme_color(SNAME("prop_subsection"), SNAME("Editor")));
 
 	// Get the action map for the editor, and add each item to the "Common" section.
 	OrderedHashMap<StringName, InputMap::Action> action_map = InputMap::get_singleton()->get_action_map();
 	for (OrderedHashMap<StringName, InputMap::Action>::Element E = action_map.front(); E; E = E.next()) {
 		String action_name = E.key();
-
-		if (!shortcut_filter.is_subsequence_ofi(action_name)) {
-			continue;
-		}
-
 		InputMap::Action action = E.get();
 
 		Array events; // Need to get the list of events into an array so it can be set as metadata on the item.
 		Vector<String> event_strings;
 
-		List<Ref<InputEvent>> defaults = InputMap::get_singleton()->get_builtins().find(action_name).value();
-		// Remove all non-key events from the defaults.
-		for (List<Ref<InputEvent>>::Element *I = defaults.front(); I; I = I->next()) {
+		List<Ref<InputEvent>> all_default_events = InputMap::get_singleton()->get_builtins_with_feature_overrides_applied().find(action_name).value();
+		List<Ref<InputEventKey>> key_default_events;
+		// Remove all non-key events from the defaults. Only check keys, since we are in the editor.
+		for (List<Ref<InputEvent>>::Element *I = all_default_events.front(); I; I = I->next()) {
 			Ref<InputEventKey> k = I->get();
-			if (k.is_null()) {
-				I->erase();
+			if (k.is_valid()) {
+				key_default_events.push_back(k);
 			}
-		}
-
-		bool same_as_defaults = defaults.size() == action.inputs.size(); // Initially this is set to just whether the arrays are equal. Later we check the events if needed.
-
-		int count = 0;
-		for (List<Ref<InputEvent>>::Element *I = action.inputs.front(); I; I = I->next()) {
-			// Add event and event text to respective arrays.
-			events.push_back(I->get());
-			event_strings.push_back(I->get()->as_text());
-
-			// Only check if the events have been the same so far - once one fails, we don't need to check any more.
-			if (same_as_defaults) {
-				Ref<InputEventKey> k = defaults[count];
-				// Only check keys, since we are in the editor.
-				if (k.is_valid() && !defaults[count]->shortcut_match(I->get())) {
-					same_as_defaults = false;
-				}
-			}
-			count++;
 		}
 
 		// Join the text of the events with a delimiter so they can all be displayed in one cell.
 		String events_display_string = event_strings.is_empty() ? "None" : String("; ").join(event_strings);
 
-		TreeItem *item = shortcuts->create_item(common_section);
-		item->set_text(0, action_name);
-		item->set_text(1, events_display_string);
-
-		if (!same_as_defaults) {
-			item->add_button(1, shortcuts->get_theme_icon("Reload", "EditorIcons"), 2);
+		if (!shortcut_filter.is_subsequence_ofi(action_name) && (events_display_string == "None" || !shortcut_filter.is_subsequence_ofi(events_display_string))) {
+			continue;
 		}
 
-		if (events_display_string == "None") {
-			// Fade out unassigned shortcut labels for easier visual grepping.
-			item->set_custom_color(1, shortcuts->get_theme_color("font_color", "Label") * Color(1, 1, 1, 0.5));
-		}
+		Array action_events = _event_list_to_array_helper(action.inputs);
+		Array default_events = _event_list_to_array_helper(all_default_events);
+		bool same_as_defaults = Shortcut::is_event_array_equal(default_events, action_events);
+		bool collapse = !collapsed.has(action_name) || (collapsed.has(action_name) && collapsed[action_name]);
 
-		item->add_button(1, shortcuts->get_theme_icon("Edit", "EditorIcons"), 0);
-		item->add_button(1, shortcuts->get_theme_icon("Close", "EditorIcons"), 1);
-		item->set_tooltip(0, action_name);
-		item->set_tooltip(1, events_display_string);
-		item->set_metadata(0, "Common");
-		item->set_metadata(1, events);
+		_create_shortcut_treeitem(common_section, action_name, action_name, action_events, !same_as_defaults, true, collapse);
 	}
 
 	// Editor Shortcuts
@@ -327,17 +396,16 @@ void EditorSettingsDialog::_update_shortcuts() {
 	List<String> slist;
 	EditorSettings::get_singleton()->get_shortcut_list(&slist);
 
-	for (List<String>::Element *E = slist.front(); E; E = E->next()) {
-		Ref<Shortcut> sc = EditorSettings::get_singleton()->get_shortcut(E->get());
+	for (const String &E : slist) {
+		Ref<Shortcut> sc = EditorSettings::get_singleton()->get_shortcut(E);
 		if (!sc->has_meta("original")) {
 			continue;
 		}
 
-		Ref<InputEvent> original = sc->get_meta("original");
-
-		String section_name = E->get().get_slice("/", 0);
+		// Shortcut Section
 
 		TreeItem *section;
+		String section_name = E.get_slice("/", 0);
 
 		if (sections.has(section_name)) {
 			section = sections[section_name];
@@ -346,44 +414,36 @@ void EditorSettingsDialog::_update_shortcuts() {
 
 			String item_name = section_name.capitalize();
 			section->set_text(0, item_name);
+			section->set_selectable(0, false);
+			section->set_selectable(1, false);
+			section->set_custom_bg_color(0, shortcuts->get_theme_color(SNAME("prop_subsection"), SNAME("Editor")));
+			section->set_custom_bg_color(1, shortcuts->get_theme_color(SNAME("prop_subsection"), SNAME("Editor")));
 
 			if (collapsed.has(item_name)) {
 				section->set_collapsed(collapsed[item_name]);
 			}
 
 			sections[section_name] = section;
-			section->set_custom_bg_color(0, shortcuts->get_theme_color("prop_subsection", "Editor"));
-			section->set_custom_bg_color(1, shortcuts->get_theme_color("prop_subsection", "Editor"));
 		}
 
-		// Don't match unassigned shortcuts when searching for assigned keys in search results.
-		// This prevents all unassigned shortcuts from appearing when searching a string like "no".
-		if (shortcut_filter.is_subsequence_ofi(sc->get_name()) || (sc->get_as_text() != "None" && shortcut_filter.is_subsequence_ofi(sc->get_as_text()))) {
-			TreeItem *item = shortcuts->create_item(section);
+		// Shortcut Item
 
-			item->set_text(0, sc->get_name());
-			item->set_text(1, sc->get_as_text());
-
-			if (!sc->is_shortcut(original) && !(sc->get_shortcut().is_null() && original.is_null())) {
-				item->add_button(1, shortcuts->get_theme_icon("Reload", "EditorIcons"), 2);
-			}
-
-			if (sc->get_as_text() == "None") {
-				// Fade out unassigned shortcut labels for easier visual grepping.
-				item->set_custom_color(1, shortcuts->get_theme_color("font_color", "Label") * Color(1, 1, 1, 0.5));
-			}
-
-			item->add_button(1, shortcuts->get_theme_icon("Edit", "EditorIcons"), 0);
-			item->add_button(1, shortcuts->get_theme_icon("Close", "EditorIcons"), 1);
-			item->set_tooltip(0, E->get());
-			item->set_metadata(0, E->get());
+		if (!shortcut_filter.is_subsequence_ofi(sc->get_name())) {
+			continue;
 		}
+
+		Array original = sc->get_meta("original");
+		Array shortcuts_array = sc->get_events();
+		bool same_as_defaults = Shortcut::is_event_array_equal(original, shortcuts_array);
+		bool collapse = !collapsed.has(E) || (collapsed.has(E) && collapsed[E]);
+
+		_create_shortcut_treeitem(section, E, sc->get_name(), shortcuts_array, !same_as_defaults, false, collapse);
 	}
 
 	// remove sections with no shortcuts
-	for (Map<String, TreeItem *>::Element *E = sections.front(); E; E = E->next()) {
-		TreeItem *section = E->get();
-		if (section->get_children() == nullptr) {
+	for (KeyValue<String, TreeItem *> &E : sections) {
+		TreeItem *section = E.value;
+		if (section->get_first_child() == nullptr) {
 			root->remove_child(section);
 		}
 	}
@@ -391,121 +451,127 @@ void EditorSettingsDialog::_update_shortcuts() {
 
 void EditorSettingsDialog::_shortcut_button_pressed(Object *p_item, int p_column, int p_idx) {
 	TreeItem *ti = Object::cast_to<TreeItem>(p_item);
-	ERR_FAIL_COND(!ti);
+	ERR_FAIL_COND_MSG(!ti, "Object passed is not a TreeItem");
 
-	button_idx = p_idx;
+	ShortcutButton button_idx = (ShortcutButton)p_idx;
 
-	if (ti->get_metadata(0) == "Common") {
-		// Editing a Built-in action, which can have multiple bindings.
-		editing_action = true;
-		current_action = ti->get_text(0);
+	is_editing_action = ti->get_meta("is_action");
 
-		switch (button_idx) {
-			case SHORTCUT_REVERT: {
-				Array events;
-				List<Ref<InputEvent>> defaults = InputMap::get_singleton()->get_builtins()[current_action];
+	String type = ti->get_meta("type");
 
-				// Convert the list to an array, and only keep key events as this is for the editor.
-				for (List<Ref<InputEvent>>::Element *E = defaults.front(); E; E = E->next()) {
-					Ref<InputEventKey> k = E->get();
-					if (k.is_valid()) {
-						events.append(E->get());
-					}
-				}
-
-				_update_builtin_action(current_action, events);
-			} break;
-			case SHORTCUT_EDIT:
-			case SHORTCUT_ERASE: {
-				// For Edit end Delete, we will show a popup which displays each event so the user can select which one to edit/delete.
-				current_action_events = ti->get_metadata(1);
-				action_popup->clear();
-
-				for (int i = 0; i < current_action_events.size(); i++) {
-					Ref<InputEvent> ie = current_action_events[i];
-					action_popup->add_item(ie->as_text());
-					action_popup->set_item_metadata(i, ie);
-				}
-
-				if (button_idx == SHORTCUT_EDIT) {
-					// If editing, add a button which can be used to add an additional event.
-					action_popup->add_icon_item(get_theme_icon("Add", "EditorIcons"), TTR("Add"));
-				}
-
-				action_popup->set_position(get_position() + get_mouse_position());
-				action_popup->take_mouse_focus();
-				action_popup->popup();
-				action_popup->set_as_minsize();
-			} break;
-			default:
-				break;
-		}
-	} else {
-		// Editing an Editor Shortcut, which can only have 1 binding.
-		String item = ti->get_metadata(0);
-		Ref<Shortcut> sc = EditorSettings::get_singleton()->get_shortcut(item);
-		editing_action = false;
-
-		switch (button_idx) {
-			case EditorSettingsDialog::SHORTCUT_EDIT:
-				shortcut_editor->popup_and_configure(sc->get_shortcut());
-				shortcut_being_edited = item;
-				break;
-			case EditorSettingsDialog::SHORTCUT_ERASE: {
-				if (!sc.is_valid()) {
-					return; //pointless, there is nothing
-				}
-
-				undo_redo->create_action(TTR("Erase Shortcut"));
-				undo_redo->add_do_method(sc.ptr(), "set_shortcut", Ref<InputEvent>());
-				undo_redo->add_undo_method(sc.ptr(), "set_shortcut", sc->get_shortcut());
-				undo_redo->add_do_method(this, "_update_shortcuts");
-				undo_redo->add_undo_method(this, "_update_shortcuts");
-				undo_redo->add_do_method(this, "_settings_changed");
-				undo_redo->add_undo_method(this, "_settings_changed");
-				undo_redo->commit_action();
-			} break;
-			case EditorSettingsDialog::SHORTCUT_REVERT: {
-				if (!sc.is_valid()) {
-					return; //pointless, there is nothing
-				}
-
-				Ref<InputEvent> original = sc->get_meta("original");
-
-				undo_redo->create_action(TTR("Restore Shortcut"));
-				undo_redo->add_do_method(sc.ptr(), "set_shortcut", original);
-				undo_redo->add_undo_method(sc.ptr(), "set_shortcut", sc->get_shortcut());
-				undo_redo->add_do_method(this, "_update_shortcuts");
-				undo_redo->add_undo_method(this, "_update_shortcuts");
-				undo_redo->add_do_method(this, "_settings_changed");
-				undo_redo->add_undo_method(this, "_settings_changed");
-				undo_redo->commit_action();
-			} break;
-			default:
-				break;
-		}
+	if (type == "event") {
+		current_edited_identifier = ti->get_parent()->get_meta("shortcut_identifier");
+		current_events = ti->get_parent()->get_meta("events");
+		current_event_index = ti->get_meta("event_index");
+	} else { // Type is "shortcut"
+		current_edited_identifier = ti->get_meta("shortcut_identifier");
+		current_events = ti->get_meta("events");
+		current_event_index = -1;
 	}
-}
 
-void EditorSettingsDialog::_builtin_action_popup_index_pressed(int p_index) {
 	switch (button_idx) {
-		case SHORTCUT_EDIT: {
-			if (p_index == action_popup->get_item_count() - 1) {
-				// Selected last item in list (Add button), therefore add new
-				current_action_event_index = -1;
-				shortcut_editor->popup_and_configure();
-			} else {
-				// Configure existing
-				current_action_event_index = p_index;
-				shortcut_editor->popup_and_configure(action_popup->get_item_metadata(p_index));
+		case EditorSettingsDialog::SHORTCUT_ADD: {
+			// Only for "shortcut" types
+			shortcut_editor->popup_and_configure();
+		} break;
+		case EditorSettingsDialog::SHORTCUT_EDIT: {
+			// Only for "event" types
+			shortcut_editor->popup_and_configure(current_events[current_event_index]);
+		} break;
+		case EditorSettingsDialog::SHORTCUT_ERASE: {
+			if (type == "shortcut") {
+				if (is_editing_action) {
+					_update_builtin_action(current_edited_identifier, Array());
+				} else {
+					_update_shortcut_events(current_edited_identifier, Array());
+				}
+			} else if (type == "event") {
+				current_events.remove(current_event_index);
+
+				if (is_editing_action) {
+					_update_builtin_action(current_edited_identifier, current_events);
+				} else {
+					_update_shortcut_events(current_edited_identifier, current_events);
+				}
 			}
 		} break;
-		case SHORTCUT_ERASE: {
-			current_action_events.remove(p_index);
-			_update_builtin_action(current_action, current_action_events);
+		case EditorSettingsDialog::SHORTCUT_REVERT: {
+			// Only for "shortcut" types
+			if (is_editing_action) {
+				List<Ref<InputEvent>> defaults = InputMap::get_singleton()->get_builtins_with_feature_overrides_applied()[current_edited_identifier];
+				Array events = _event_list_to_array_helper(defaults);
+
+				_update_builtin_action(current_edited_identifier, events);
+			} else {
+				Ref<Shortcut> sc = EditorSettings::get_singleton()->get_shortcut(current_edited_identifier);
+				Array original = sc->get_meta("original");
+				_update_shortcut_events(current_edited_identifier, original);
+			}
 		} break;
 		default:
 			break;
+	}
+}
+
+Variant EditorSettingsDialog::get_drag_data_fw(const Point2 &p_point, Control *p_from) {
+	TreeItem *selected = shortcuts->get_selected();
+
+	// Only allow drag for events
+	if (!selected || !selected->has_meta("type") || selected->get_meta("type") != "event") {
+		return Variant();
+	}
+
+	String label_text = "Event " + itos(selected->get_meta("event_index"));
+	Label *label = memnew(Label(label_text));
+	label->set_modulate(Color(1, 1, 1, 1.0f));
+	shortcuts->set_drag_preview(label);
+
+	shortcuts->set_drop_mode_flags(Tree::DROP_MODE_INBETWEEN);
+
+	return Dictionary(); // No data required
+}
+
+bool EditorSettingsDialog::can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const {
+	TreeItem *selected = shortcuts->get_selected();
+	TreeItem *item = shortcuts->get_item_at_position(p_point);
+	if (!selected || !item || item == selected || !item->has_meta("type") || item->get_meta("type") != "event") {
+		return false;
+	}
+
+	// Don't allow moving an events in-between shortcuts.
+	if (selected->get_parent()->get_meta("shortcut_identifier") != item->get_parent()->get_meta("shortcut_identifier")) {
+		return false;
+	}
+
+	return true;
+}
+
+void EditorSettingsDialog::drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) {
+	if (!can_drop_data_fw(p_point, p_data, p_from)) {
+		return;
+	}
+
+	TreeItem *selected = shortcuts->get_selected();
+	TreeItem *target = shortcuts->get_item_at_position(p_point);
+
+	if (!target) {
+		return;
+	}
+
+	int target_event_index = target->get_meta("event_index");
+	int index_moving_from = selected->get_meta("event_index");
+
+	Array events = selected->get_parent()->get_meta("events");
+
+	Variant event_moved = events[index_moving_from];
+	events.remove(index_moving_from);
+	events.insert(target_event_index, event_moved);
+
+	String ident = selected->get_parent()->get_meta("shortcut_identifier");
+	if (selected->get_meta("is_action")) {
+		_update_builtin_action(ident, events);
+	} else {
+		_update_shortcut_events(ident, events);
 	}
 }
 
@@ -542,16 +608,15 @@ void EditorSettingsDialog::_editor_restart_close() {
 }
 
 void EditorSettingsDialog::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_unhandled_input"), &EditorSettingsDialog::_unhandled_input);
 	ClassDB::bind_method(D_METHOD("_update_shortcuts"), &EditorSettingsDialog::_update_shortcuts);
 	ClassDB::bind_method(D_METHOD("_settings_changed"), &EditorSettingsDialog::_settings_changed);
+
+	ClassDB::bind_method(D_METHOD("_get_drag_data_fw"), &EditorSettingsDialog::get_drag_data_fw);
+	ClassDB::bind_method(D_METHOD("_can_drop_data_fw"), &EditorSettingsDialog::can_drop_data_fw);
+	ClassDB::bind_method(D_METHOD("_drop_data_fw"), &EditorSettingsDialog::drop_data_fw);
 }
 
 EditorSettingsDialog::EditorSettingsDialog() {
-	action_popup = memnew(PopupMenu);
-	action_popup->connect("index_pressed", callable_mp(this, &EditorSettingsDialog::_builtin_action_popup_index_pressed));
-	add_child(action_popup);
-
 	set_title(TTR("Editor Settings"));
 
 	undo_redo = memnew(UndoRedo);
@@ -628,6 +693,8 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	shortcuts->set_column_title(1, TTR("Binding"));
 	shortcuts->connect("button_pressed", callable_mp(this, &EditorSettingsDialog::_shortcut_button_pressed));
 	tab_shortcuts->add_child(shortcuts);
+
+	shortcuts->set_drag_forwarding(this);
 
 	// Adding event dialog
 	shortcut_editor = memnew(InputEventConfigurationDialog);

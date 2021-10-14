@@ -44,16 +44,19 @@ struct StaticCString {
 
 class StringName {
 	enum {
-		STRING_TABLE_BITS = 12,
+		STRING_TABLE_BITS = 16,
 		STRING_TABLE_LEN = 1 << STRING_TABLE_BITS,
 		STRING_TABLE_MASK = STRING_TABLE_LEN - 1
 	};
 
 	struct _Data {
 		SafeRefCount refcount;
+		SafeNumeric<uint32_t> static_count;
 		const char *cname = nullptr;
 		String name;
-
+#ifdef DEBUG_ENABLED
+		uint32_t debug_references = 0;
+#endif
 		String get_name() const { return cname ? String(cname) : name; }
 		int idx = 0;
 		uint32_t hash = 0;
@@ -79,6 +82,15 @@ class StringName {
 	static void setup();
 	static void cleanup();
 	static bool configured;
+#ifdef DEBUG_ENABLED
+	struct DebugSortReferences {
+		bool operator()(const _Data *p_left, const _Data *p_right) const {
+			return p_left->debug_references > p_right->debug_references;
+		}
+	};
+
+	static bool debug_stringname;
+#endif
 
 	StringName(_Data *p_data) { _data = p_data; }
 
@@ -146,12 +158,20 @@ public:
 	};
 
 	void operator=(const StringName &p_name);
-	StringName(const char *p_name);
+	StringName(const char *p_name, bool p_static = false);
 	StringName(const StringName &p_name);
-	StringName(const String &p_name);
-	StringName(const StaticCString &p_static_string);
+	StringName(const String &p_name, bool p_static = false);
+	StringName(const StaticCString &p_static_string, bool p_static = false);
 	StringName() {}
-	~StringName();
+	_FORCE_INLINE_ ~StringName() {
+		if (likely(configured) && _data) { //only free if configured
+			unref();
+		}
+	}
+
+#ifdef DEBUG_ENABLED
+	static void set_debug_stringnames(bool p_enable) { debug_stringname = p_enable; }
+#endif
 };
 
 bool operator==(const String &p_name, const StringName &p_string_name);
@@ -159,6 +179,8 @@ bool operator!=(const String &p_name, const StringName &p_string_name);
 bool operator==(const char *p_name, const StringName &p_string_name);
 bool operator!=(const char *p_name, const StringName &p_string_name);
 
-StringName _scs_create(const char *p_chr);
+StringName _scs_create(const char *p_chr, bool p_static = false);
+
+#define SNAME(m_arg) ([]() -> const StringName & { static StringName sname = _scs_create(m_arg, true); return sname; })()
 
 #endif // STRING_NAME_H

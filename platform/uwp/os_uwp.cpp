@@ -28,14 +28,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-// Must include Winsock before windows.h (included by os_uwp.h)
-#include "drivers/unix/net_socket_posix.h"
-
 #include "os_uwp.h"
 
 #include "core/config/project_settings.h"
 #include "core/io/marshalls.h"
 #include "drivers/unix/ip_unix.h"
+#include "drivers/unix/net_socket_posix.h"
 #include "drivers/windows/dir_access_windows.h"
 #include "drivers/windows/file_access_windows.h"
 #include "drivers/windows/mutex_windows.h"
@@ -126,8 +124,6 @@ void OS_UWP::set_keep_screen_on(bool p_enabled) {
 }
 
 void OS_UWP::initialize_core() {
-	last_button_state = 0;
-
 	//RedirectIOToConsole();
 
 	FileAccess::make_default<FileAccessWindows>(FileAccess::ACCESS_RESOURCES);
@@ -147,7 +143,7 @@ void OS_UWP::initialize_core() {
 	ticks_start = 0;
 	ticks_start = get_ticks_usec();
 
-	IP_Unix::make_default();
+	IPUnix::make_default();
 
 	cursor_shape = CURSOR_ARROW;
 }
@@ -400,14 +396,12 @@ void OS_UWP::ManagedType::on_gyroscope_reading_changed(Gyrometer ^ sender, Gyrom
 void OS_UWP::set_mouse_mode(MouseMode p_mode) {
 	if (p_mode == MouseMode::MOUSE_MODE_CAPTURED) {
 		CoreWindow::GetForCurrentThread()->SetPointerCapture();
-
 	} else {
 		CoreWindow::GetForCurrentThread()->ReleasePointerCapture();
 	}
 
-	if (p_mode == MouseMode::MOUSE_MODE_CAPTURED || p_mode == MouseMode::MOUSE_MODE_HIDDEN) {
+	if (p_mode == MouseMode::MOUSE_MODE_HIDDEN || p_mode == MouseMode::MOUSE_MODE_CAPTURED || p_mode == MouseMode::MOUSE_MODE_CONFINED_HIDDEN) {
 		CoreWindow::GetForCurrentThread()->PointerCursor = nullptr;
-
 	} else {
 		CoreWindow::GetForCurrentThread()->PointerCursor = ref new CoreCursor(CoreCursorType::Arrow, 0);
 	}
@@ -425,7 +419,7 @@ Point2 OS_UWP::get_mouse_position() const {
 	return Point2(old_x, old_y);
 }
 
-int OS_UWP::get_mouse_button_state() const {
+MouseButton OS_UWP::get_mouse_button_state() const {
 	return last_button_state;
 }
 
@@ -564,13 +558,13 @@ void OS_UWP::process_key_events() {
 		KeyEvent &kev = key_event_buffer[i];
 
 		Ref<InputEventKey> key_event;
-		key_event.instance();
-		key_event->set_alt(kev.alt);
-		key_event->set_shift(kev.shift);
-		key_event->set_control(kev.control);
+		key_event.instantiate();
+		key_event->set_alt_pressed(kev.alt);
+		key_event->set_shift_pressed(kev.shift);
+		key_event->set_ctrl_pressed(kev.control);
 		key_event->set_echo(kev.echo);
 		key_event->set_keycode(kev.keycode);
-		key_event->set_physical_keycode(kev.physical_keycode);
+		key_event->set_physical_keycode((Key)kev.physical_keycode);
 		key_event->set_unicode(kev.unicode);
 		key_event->set_pressed(kev.pressed);
 

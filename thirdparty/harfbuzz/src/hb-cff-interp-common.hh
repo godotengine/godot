@@ -263,7 +263,7 @@ struct UnsizedByteStr : UnsizedArrayOf <HBUINT8>
 
     T *ip = c->allocate_size<T> (T::static_size);
     if (unlikely (!ip)) return_trace (false);
-    return_trace (c->check_assign (*ip, value));
+    return_trace (c->check_assign (*ip, value, HB_SERIALIZE_ERROR_INT_OVERFLOW));
   }
 
   template <typename V>

@@ -526,10 +526,10 @@ Error VisualScriptExpression::_get_token(Token &r_token) {
 						r_token.value = Math_TAU;
 					} else if (id == "INF") {
 						r_token.type = TK_CONSTANT;
-						r_token.value = Math_INF;
+						r_token.value = INFINITY;
 					} else if (id == "NAN") {
 						r_token.type = TK_CONSTANT;
-						r_token.value = Math_NAN;
+						r_token.value = NAN;
 					} else if (id == "not") {
 						r_token.type = TK_OP_NOT;
 					} else if (id == "or") {
@@ -1498,7 +1498,7 @@ public:
 	}
 };
 
-VisualScriptNodeInstance *VisualScriptExpression::instance(VisualScriptInstance *p_instance) {
+VisualScriptNodeInstance *VisualScriptExpression::instantiate(VisualScriptInstance *p_instance) {
 	_compile_expression();
 	VisualScriptNodeInstanceExpression *instance = memnew(VisualScriptNodeInstanceExpression);
 	instance->instance = p_instance;

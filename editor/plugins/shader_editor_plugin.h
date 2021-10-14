@@ -35,6 +35,7 @@
 #include "editor/editor_plugin.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/panel_container.h"
+#include "scene/gui/rich_text_label.h"
 #include "scene/gui/tab_container.h"
 #include "scene/gui/text_edit.h"
 #include "scene/main/timer.h"
@@ -44,10 +45,19 @@
 class ShaderTextEditor : public CodeTextEditor {
 	GDCLASS(ShaderTextEditor, CodeTextEditor);
 
+	Color marked_line_color = Color(1, 1, 1);
+
+	struct WarningsComparator {
+		_ALWAYS_INLINE_ bool operator()(const ShaderWarning &p_a, const ShaderWarning &p_b) const { return (p_a.get_line() < p_b.get_line()); }
+	};
+
 	Ref<CodeHighlighter> syntax_highlighter;
+	RichTextLabel *warnings_panel = nullptr;
 	Ref<Shader> shader;
+	List<ShaderWarning> warnings;
 
 	void _check_shader_mode();
+	void _update_warning_panel();
 
 protected:
 	static void _bind_methods();
@@ -59,6 +69,7 @@ public:
 	virtual void _validate_script() override;
 
 	void reload_text();
+	void set_warnings_panel(RichTextLabel *p_warnings_panel);
 
 	Ref<Shader> get_edited_shader() const;
 	void set_edited_shader(const Ref<Shader> &p_shader);
@@ -80,7 +91,7 @@ class ShaderEditor : public PanelContainer {
 		EDIT_INDENT_LEFT,
 		EDIT_INDENT_RIGHT,
 		EDIT_DELETE_LINE,
-		EDIT_CLONE_DOWN,
+		EDIT_DUPLICATE_SELECTION,
 		EDIT_TOGGLE_COMMENT,
 		EDIT_COMPLETE,
 		SEARCH_FIND,
@@ -100,6 +111,7 @@ class ShaderEditor : public PanelContainer {
 	PopupMenu *bookmarks_menu;
 	MenuButton *help_menu;
 	PopupMenu *context_menu;
+	RichTextLabel *warnings_panel = nullptr;
 	uint64_t idle;
 
 	GotoLineDialog *goto_line_dialog;
@@ -109,13 +121,16 @@ class ShaderEditor : public PanelContainer {
 	ShaderTextEditor *shader_editor;
 
 	void _menu_option(int p_option);
-	void _params_changed();
 	mutable Ref<Shader> shader;
 
 	void _editor_settings_changed();
+	void _project_settings_changed();
 
 	void _check_for_external_edit();
 	void _reload_shader_from_disk();
+	void _show_warnings_panel(bool p_show);
+	void _warning_clicked(Variant p_line);
+	void _update_warnings(bool p_validate);
 
 protected:
 	void _notification(int p_what);

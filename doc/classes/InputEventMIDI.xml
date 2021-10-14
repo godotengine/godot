@@ -6,8 +6,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="channel" type="int" setter="set_channel" getter="get_channel" default="0">
 		</member>
@@ -17,7 +15,7 @@
 		</member>
 		<member name="instrument" type="int" setter="set_instrument" getter="get_instrument" default="0">
 		</member>
-		<member name="message" type="int" setter="set_message" getter="get_message" default="0">
+		<member name="message" type="int" setter="set_message" getter="get_message" enum="MIDIMessage" default="0">
 		</member>
 		<member name="pitch" type="int" setter="set_pitch" getter="get_pitch" default="0">
 		</member>
@@ -26,6 +24,4 @@
 		<member name="velocity" type="int" setter="set_velocity" getter="get_velocity" default="0">
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

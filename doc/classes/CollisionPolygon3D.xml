@@ -8,8 +8,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="depth" type="float" setter="set_depth" getter="get_depth" default="1.0">
 			Length that the resulting collision extends in either direction perpendicular to its polygon.
@@ -20,11 +18,9 @@
 		<member name="margin" type="float" setter="set_margin" getter="get_margin" default="0.04">
 			The collision margin for the generated [Shape3D]. See [member Shape3D.margin] for more details.
 		</member>
-		<member name="polygon" type="PackedVector2Array" setter="set_polygon" getter="get_polygon" default="PackedVector2Array(  )">
+		<member name="polygon" type="PackedVector2Array" setter="set_polygon" getter="get_polygon" default="PackedVector2Array()">
 			Array of vertices which define the polygon.
 			[b]Note:[/b] The returned value is a copy of the original. Methods which mutate the size or properties of the return value will not impact the original polygon. To change properties of the polygon, assign it to a temporary variable and make changes before reassigning the [code]polygon[/code] member.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

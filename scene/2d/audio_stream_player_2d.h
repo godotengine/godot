@@ -31,7 +31,6 @@
 #ifndef AUDIO_STREAM_PLAYER_2D_H
 #define AUDIO_STREAM_PLAYER_2D_H
 
-#include "core/templates/safe_refcount.h"
 #include "scene/2d/node_2d.h"
 #include "servers/audio/audio_stream.h"
 #include "servers/audio_server.h"
@@ -52,37 +51,30 @@ private:
 		Viewport *viewport = nullptr; //pointer only used for reference to previous mix
 	};
 
-	Output outputs[MAX_OUTPUTS];
-	SafeNumeric<int> output_count;
-	SafeFlag output_ready;
-
-	//these are used by audio thread to have a reference of previous volumes (for ramping volume and avoiding clicks)
-	Output prev_outputs[MAX_OUTPUTS];
-	int prev_output_count = 0;
-
-	Ref<AudioStreamPlayback> stream_playback;
+	Vector<Ref<AudioStreamPlayback>> stream_playbacks;
 	Ref<AudioStream> stream;
-	Vector<AudioFrame> mix_buffer;
 
-	SafeNumeric<float> setseek{ -1.0 };
-	SafeFlag active;
+	SafeFlag active{ false };
 	SafeNumeric<float> setplay{ -1.0 };
+
+	Vector<AudioFrame> volume_vector;
+
+	uint64_t last_mix_count = -1;
 
 	float volume_db = 0.0;
 	float pitch_scale = 1.0;
 	bool autoplay = false;
-	bool stream_paused = false;
-	bool stream_paused_fade_in = false;
-	bool stream_paused_fade_out = false;
-	StringName bus;
-
-	void _mix_audio();
-	static void _mix_audios(void *self) { reinterpret_cast<AudioStreamPlayer2D *>(self)->_mix_audio(); }
+	StringName default_bus = SNAME("Master");
+	int max_polyphony = 1;
 
 	void _set_playing(bool p_enable);
 	bool _is_active() const;
 
+	StringName _get_actual_bus();
+	void _update_panning();
 	void _bus_layout_changed();
+
+	static void _listener_changed_cb(void *self) { reinterpret_cast<AudioStreamPlayer2D *>(self)->_update_panning(); }
 
 	uint32_t area_mask = 1;
 
@@ -127,6 +119,9 @@ public:
 
 	void set_stream_paused(bool p_pause);
 	bool get_stream_paused() const;
+
+	void set_max_polyphony(int p_max_polyphony);
+	int get_max_polyphony() const;
 
 	Ref<AudioStreamPlayback> get_stream_playback();
 

@@ -8,8 +8,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="function" type="int" setter="set_function" getter="get_function" enum="VisualShaderNodeVectorDerivativeFunc.Function" default="0">
 			A derivative type. See [enum Function] for options.
@@ -24,6 +22,9 @@
 		</constant>
 		<constant name="FUNC_Y" value="2" enum="Function">
 			Derivative in [code]y[/code] using local differencing.
+		</constant>
+		<constant name="FUNC_MAX" value="3" enum="Function">
+			Represents the size of the [enum Function] enum.
 		</constant>
 	</constants>
 </class>

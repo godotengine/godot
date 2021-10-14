@@ -55,6 +55,14 @@ Comment: Godot Engine logo
 Copyright: 2017, Andrea Calabró
 License: CC-BY-4.0
 
+Files: ./core/math/convex_hull.cpp
+ ./core/math/convex_hull.h
+Comment: Bullet Continuous Collision Detection and Physics Library
+Copyright: 2011, Ole Kniemeyer, MAXON, www.maxon.net
+ 2007-2021, Juan Linietsky, Ariel Manzur.
+ 2014-2021, Godot Engine contributors.
+License: Expat and Zlib
+
 Files: ./modules/fbx/fbx_parser/
 Comment: Open Asset Import Library (FBX parser)
 Copyright: 2006-2020, assimp team
@@ -71,6 +79,13 @@ Comment: The Android Open Source Project
 Copyright: 2008-2016, The Android Open Source Project
  2002, Google, Inc.
 License: Apache-2.0
+
+Files: ./scene/animation/easing_equations.h
+Comment: Robert Penner's Easing Functions
+Copyright: 2001, Robert Penner
+ 2007-2021 Juan Linietsky, Ariel Manzur.
+ 2014-2021 Godot Engine contributors.
+License: Expat
 
 Files: ./servers/physics_3d/collision_solver_3d_sat.cpp
 Comment: Open Dynamics Engine
@@ -128,8 +143,13 @@ License: Expat
 
 Files: ./thirdparty/doctest/
 Comment: doctest
-Copyright: 2016-2020, Viktor Kirilov
+Copyright: 2016-2021, Viktor Kirilov
 License: Expat
+
+Files: ./thirdparty/embree/
+Comment: Embree
+Copyright: 2009-2021 Intel Corporation
+License: Apache-2.0
 
 Files: ./thirdparty/enet/
 Comment: ENet
@@ -156,11 +176,6 @@ Comment: Hack font
 Copyright: 2018, Source Foundry Authors
   2003, Bitstream Inc.
 License: Expat and Bitstream Vera Fonts Copyright
-
-Files: ./thirdparty/fonts/Tamsyn*.png
-Comment: Tamsyn font
-Copyright: 2015, Scott Fial
-License: Tamsyn
 
 Files: ./thirdparty/freetype/
 Comment: The FreeType Project
@@ -294,11 +309,6 @@ Comment: Fast Filtering of Reflection Probes
 Copyright: 2016, Activision Publishing, Inc.
 License: Expat
 
-Files: ./thirdparty/misc/easing_equations.cpp
-Comment: Robert Penner's Easing Functions
-Copyright: 2001, Robert Penner
-License: BSD-3-clause
-
 Files: ./thirdparty/misc/fastlz.c
  ./thirdparty/misc/fastlz.h
 Comment: FastLZ
@@ -347,8 +357,13 @@ Comment: SMAZ
 Copyright: 2006-2009, Salvatore Sanfilippo
 License: BSD-3-clause
 
+Files: ./thirdparty/misc/smolv.cpp
+ ./thirdparty/misc/smolv.h
+Comment: SMOL-V
+Copyright: 2016-2020, Aras Pranckevicius
+License: public-domain or Unlicense or Expat
+
 Files: ./thirdparty/misc/stb_rect_pack.h
- ./thirdparty/misc/stb_vorbis.c
 Comment: stb libraries
 Copyright: Sean Barrett
 License: public-domain or Unlicense or Expat
@@ -357,6 +372,11 @@ Files: ./thirdparty/misc/yuv2rgb.h
 Comment: YUV2RGB
 Copyright: 2008-2011, Robin Watts
 License: BSD-2-clause
+
+Files: ./thirdparty/msdfgen/
+Comment: Multi-channel signed distance field generator
+Copyright: 2016, Viktor Chlumsky
+License: MIT
 
 Files: ./thirdparty/nanosvg/
 Comment: NanoSVG
@@ -419,17 +439,22 @@ Copyright: 2011, Khaled Mamou
   2003-2009, Erwin Coumans
 License: BSD-3-clause
 
+Files: ./thirdparty/volk/
+Comment: volk
+Copyright: 2018-2019, Arseny Kapoulkine
+License: Expat
+
 Files: ./thirdparty/vulkan/
-Comment: Vulkan Ecosystem Components (Vulkan ICD loader and headers)
-Copyright: 2014-2020, The Khronos Group Inc.
-  2014-2020, Valve Corporation
-  2014-2020, LunarG, Inc.
-  2015-2020, Google Inc.
+Comment: Vulkan Headers
+Copyright: 2014-2021, The Khronos Group Inc.
+  2014-2021, Valve Corporation
+  2014-2021, LunarG, Inc.
+  2015-2021, Google Inc.
 License: Apache-2.0
 
 Files: ./thirdparty/vulkan/vk_mem_alloc.h
 Comment: Vulkan Memory Allocator
-Copyright: 2017-2019, Advanced Micro Devices, Inc.
+Copyright: 2017-2021, Advanced Micro Devices, Inc.
 License: Expat
 
 Files: ./thirdparty/wslay/
@@ -1111,7 +1136,7 @@ License: glslang
  GNU General Public License for more details.
  .
  You should have received a copy of the GNU General Public License
- along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ along with this program.  If not, see <https://www.gnu.org/licenses/>.
  .
  As a special exception, you may create a larger work that contains
  part or all of the Bison parser skeleton and distribute that work
@@ -1351,7 +1376,7 @@ License: HarfBuzz
  Copyright (C) 2009  Keith Stribley
  Copyright (C) 2009  Martin Hosken and SIL International
  Copyright (C) 2007  Chris Wilson
- Copyright (C) 2006  Behdad Esfahbod
+ Copyright (C) 2005,2006,2020,2021  Behdad Esfahbod
  Copyright (C) 2005  David Turner
  Copyright (C) 2004,2007,2008,2009,2010  Red Hat, Inc.
  Copyright (C) 1998-2004  David Turner and Werner Lemberg
@@ -1737,7 +1762,7 @@ License: MPL-2.0
  .
    This Source Code Form is subject to the terms of the Mozilla Public
    License, v. 2.0. If a copy of the MPL was not distributed with this
-   file, You can obtain one at http://mozilla.org/MPL/2.0/.
+   file, You can obtain one at https://mozilla.org/MPL/2.0/.
  .
  If it is not possible or desirable to put the notice in a particular
  file, then You may include the notice in a location (such as a LICENSE
@@ -1834,18 +1859,6 @@ License: OFL-1.1
  INCLUDING ANY GENERAL, SPECIAL, INDIRECT, INCIDENTAL, OR CONSEQUENTIAL
  DAMAGES, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
  FROM, OUT OF THE USE OR INABILITY TO USE THE FONT SOFTWARE.
-
-License: Tamsyn
- Tamsyn font is free.  You are hereby granted permission to use, copy, modify,
- and distribute it as you see fit.
- .
- Tamsyn font is provided "as is" without any express or implied warranty.
- .
- The author makes no representations about the suitability of this font for
- a particular purpose.
- .
- In no event will the author be held liable for damages arising from the use
- of this font.
 
 License: Unicode
  COPYRIGHT AND PERMISSION NOTICE (ICU 58 and later)

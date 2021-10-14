@@ -33,6 +33,7 @@
 #include "core/config/project_settings.h"
 #include "core/input/input.h"
 #include "core/os/keyboard.h"
+#include "core/os/os.h"
 
 InputMap *InputMap::singleton = nullptr;
 
@@ -45,6 +46,7 @@ void InputMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("erase_action", "action"), &InputMap::erase_action);
 
 	ClassDB::bind_method(D_METHOD("action_set_deadzone", "action", "deadzone"), &InputMap::action_set_deadzone);
+	ClassDB::bind_method(D_METHOD("action_get_deadzone", "action"), &InputMap::action_get_deadzone);
 	ClassDB::bind_method(D_METHOD("action_add_event", "action", "event"), &InputMap::action_add_event);
 	ClassDB::bind_method(D_METHOD("action_has_event", "action", "event"), &InputMap::action_has_event);
 	ClassDB::bind_method(D_METHOD("action_erase_event", "action", "event"), &InputMap::action_erase_event);
@@ -58,17 +60,17 @@ void InputMap::_bind_methods() {
  * Returns an nonexistent action error message with a suggestion of the closest
  * matching action name (if possible).
  */
-String InputMap::_suggest_actions(const StringName &p_action) const {
+String InputMap::suggest_actions(const StringName &p_action) const {
 	List<StringName> actions = get_actions();
 	StringName closest_action;
 	float closest_similarity = 0.0;
 
 	// Find the most action with the most similar name.
-	for (List<StringName>::Element *E = actions.front(); E; E = E->next()) {
-		const float similarity = String(E->get()).similarity(p_action);
+	for (const StringName &action : actions) {
+		const float similarity = String(action).similarity(p_action);
 
 		if (similarity > closest_similarity) {
-			closest_action = E->get();
+			closest_action = action;
 			closest_similarity = similarity;
 		}
 	}
@@ -92,7 +94,7 @@ void InputMap::add_action(const StringName &p_action, float p_deadzone) {
 }
 
 void InputMap::erase_action(const StringName &p_action) {
-	ERR_FAIL_COND_MSG(!input_map.has(p_action), _suggest_actions(p_action));
+	ERR_FAIL_COND_MSG(!input_map.has(p_action), suggest_actions(p_action));
 
 	input_map.erase(p_action);
 }
@@ -104,8 +106,8 @@ Array InputMap::_get_actions() {
 		return ret;
 	}
 
-	for (const List<StringName>::Element *E = actions.front(); E; E = E->next()) {
-		ret.push_back(E->get());
+	for (const StringName &E : actions) {
+		ret.push_back(E);
 	}
 
 	return ret;
@@ -128,16 +130,11 @@ List<Ref<InputEvent>>::Element *InputMap::_find_event(Action &p_action, const Re
 	ERR_FAIL_COND_V(!p_event.is_valid(), nullptr);
 
 	for (List<Ref<InputEvent>>::Element *E = p_action.inputs.front(); E; E = E->next()) {
-		const Ref<InputEvent> e = E->get();
-
-		//if (e.type != Ref<InputEvent>::KEY && e.device != p_event.device) -- unsure about the KEY comparison, why is this here?
-		//	continue;
-
-		int device = e->get_device();
+		int device = E->get()->get_device();
 		if (device == ALL_DEVICES || device == p_event->get_device()) {
-			if (p_exact_match && e->shortcut_match(p_event)) {
+			if (p_exact_match && E->get()->is_match(p_event, true)) {
 				return E;
-			} else if (!p_exact_match && e->action_match(p_event, p_pressed, p_strength, p_raw_strength, p_action.deadzone)) {
+			} else if (!p_exact_match && E->get()->action_match(p_event, p_pressed, p_strength, p_raw_strength, p_action.deadzone)) {
 				return E;
 			}
 		}
@@ -151,34 +148,34 @@ bool InputMap::has_action(const StringName &p_action) const {
 }
 
 float InputMap::action_get_deadzone(const StringName &p_action) {
-	ERR_FAIL_COND_V_MSG(!input_map.has(p_action), 0.0f, _suggest_actions(p_action));
+	ERR_FAIL_COND_V_MSG(!input_map.has(p_action), 0.0f, suggest_actions(p_action));
 
 	return input_map[p_action].deadzone;
 }
 
 void InputMap::action_set_deadzone(const StringName &p_action, float p_deadzone) {
-	ERR_FAIL_COND_MSG(!input_map.has(p_action), _suggest_actions(p_action));
+	ERR_FAIL_COND_MSG(!input_map.has(p_action), suggest_actions(p_action));
 
 	input_map[p_action].deadzone = p_deadzone;
 }
 
 void InputMap::action_add_event(const StringName &p_action, const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND_MSG(p_event.is_null(), "It's not a reference to a valid InputEvent object.");
-	ERR_FAIL_COND_MSG(!input_map.has(p_action), _suggest_actions(p_action));
+	ERR_FAIL_COND_MSG(!input_map.has(p_action), suggest_actions(p_action));
 	if (_find_event(input_map[p_action], p_event, true)) {
-		return; // Already addded.
+		return; // Already added.
 	}
 
 	input_map[p_action].inputs.push_back(p_event);
 }
 
 bool InputMap::action_has_event(const StringName &p_action, const Ref<InputEvent> &p_event) {
-	ERR_FAIL_COND_V_MSG(!input_map.has(p_action), false, _suggest_actions(p_action));
+	ERR_FAIL_COND_V_MSG(!input_map.has(p_action), false, suggest_actions(p_action));
 	return (_find_event(input_map[p_action], p_event, true) != nullptr);
 }
 
 void InputMap::action_erase_event(const StringName &p_action, const Ref<InputEvent> &p_event) {
-	ERR_FAIL_COND_MSG(!input_map.has(p_action), _suggest_actions(p_action));
+	ERR_FAIL_COND_MSG(!input_map.has(p_action), suggest_actions(p_action));
 
 	List<Ref<InputEvent>>::Element *E = _find_event(input_map[p_action], p_event, true);
 	if (E) {
@@ -190,7 +187,7 @@ void InputMap::action_erase_event(const StringName &p_action, const Ref<InputEve
 }
 
 void InputMap::action_erase_events(const StringName &p_action) {
-	ERR_FAIL_COND_MSG(!input_map.has(p_action), _suggest_actions(p_action));
+	ERR_FAIL_COND_MSG(!input_map.has(p_action), suggest_actions(p_action));
 
 	input_map[p_action].inputs.clear();
 }
@@ -222,15 +219,16 @@ bool InputMap::event_is_action(const Ref<InputEvent> &p_event, const StringName 
 
 bool InputMap::event_get_action_status(const Ref<InputEvent> &p_event, const StringName &p_action, bool p_exact_match, bool *p_pressed, float *p_strength, float *p_raw_strength) const {
 	OrderedHashMap<StringName, Action>::Element E = input_map.find(p_action);
-	ERR_FAIL_COND_V_MSG(!E, false, _suggest_actions(p_action));
+	ERR_FAIL_COND_V_MSG(!E, false, suggest_actions(p_action));
 
 	Ref<InputEventAction> input_event_action = p_event;
 	if (input_event_action.is_valid()) {
+		bool pressed = input_event_action->is_pressed();
 		if (p_pressed != nullptr) {
-			*p_pressed = input_event_action->is_pressed();
+			*p_pressed = pressed;
 		}
 		if (p_strength != nullptr) {
-			*p_strength = (p_pressed != nullptr && *p_pressed) ? input_event_action->get_strength() : 0.0f;
+			*p_strength = pressed ? input_event_action->get_strength() : 0.0f;
 		}
 		return input_event_action->get_action() == p_action;
 	}
@@ -265,9 +263,7 @@ void InputMap::load_from_project_settings() {
 	List<PropertyInfo> pinfo;
 	ProjectSettings::get_singleton()->get_property_list(&pinfo);
 
-	for (List<PropertyInfo>::Element *E = pinfo.front(); E; E = E->next()) {
-		const PropertyInfo &pi = E->get();
-
+	for (const PropertyInfo &pi : pinfo) {
 		if (!pi.name.begins_with("input/")) {
 			continue;
 		}
@@ -322,38 +318,40 @@ static const _BuiltinActionDisplayName _builtin_action_display_names[] = {
     { "ui_text_dedent",                                TTRC("Dedent") },
     { "ui_text_backspace",                             TTRC("Backspace") },
     { "ui_text_backspace_word",                        TTRC("Backspace Word") },
-    { "ui_text_backspace_word.OSX",                    TTRC("Backspace Word") },
+    { "ui_text_backspace_word.macos",                  TTRC("Backspace Word") },
     { "ui_text_backspace_all_to_left",                 TTRC("Backspace all to Left") },
-    { "ui_text_backspace_all_to_left.OSX",             TTRC("Backspace all to Left") },
+    { "ui_text_backspace_all_to_left.macos",           TTRC("Backspace all to Left") },
     { "ui_text_delete",                                TTRC("Delete") },
     { "ui_text_delete_word",                           TTRC("Delete Word") },
-    { "ui_text_delete_word.OSX",                       TTRC("Delete Word") },
+    { "ui_text_delete_word.macos",                     TTRC("Delete Word") },
     { "ui_text_delete_all_to_right",                   TTRC("Delete all to Right") },
-    { "ui_text_delete_all_to_right.OSX",               TTRC("Delete all to Right") },
+    { "ui_text_delete_all_to_right.macos",             TTRC("Delete all to Right") },
     { "ui_text_caret_left",                            TTRC("Caret Left") },
     { "ui_text_caret_word_left",                       TTRC("Caret Word Left") },
-    { "ui_text_caret_word_left.OSX",                   TTRC("Caret Word Left") },
+    { "ui_text_caret_word_left.macos",                 TTRC("Caret Word Left") },
     { "ui_text_caret_right",                           TTRC("Caret Right") },
     { "ui_text_caret_word_right",                      TTRC("Caret Word Right") },
-    { "ui_text_caret_word_right.OSX",                  TTRC("Caret Word Right") },
+    { "ui_text_caret_word_right.macos",                TTRC("Caret Word Right") },
     { "ui_text_caret_up",                              TTRC("Caret Up") },
     { "ui_text_caret_down",                            TTRC("Caret Down") },
     { "ui_text_caret_line_start",                      TTRC("Caret Line Start") },
-    { "ui_text_caret_line_start.OSX",                  TTRC("Caret Line Start") },
+    { "ui_text_caret_line_start.macos",                TTRC("Caret Line Start") },
     { "ui_text_caret_line_end",                        TTRC("Caret Line End") },
-    { "ui_text_caret_line_end.OSX",                    TTRC("Caret Line End") },
+    { "ui_text_caret_line_end.macos",                  TTRC("Caret Line End") },
     { "ui_text_caret_page_up",                         TTRC("Caret Page Up") },
     { "ui_text_caret_page_down",                       TTRC("Caret Page Down") },
     { "ui_text_caret_document_start",                  TTRC("Caret Document Start") },
-    { "ui_text_caret_document_start.OSX",              TTRC("Caret Document Start") },
+    { "ui_text_caret_document_start.macos",            TTRC("Caret Document Start") },
     { "ui_text_caret_document_end",                    TTRC("Caret Document End") },
-    { "ui_text_caret_document_end.OSX",                TTRC("Caret Document End") },
+    { "ui_text_caret_document_end.macos",              TTRC("Caret Document End") },
     { "ui_text_scroll_up",                             TTRC("Scroll Up") },
-    { "ui_text_scroll_up.OSX",                         TTRC("Scroll Up") },
+    { "ui_text_scroll_up.macos",                       TTRC("Scroll Up") },
     { "ui_text_scroll_down",                           TTRC("Scroll Down") },
-    { "ui_text_scroll_down.OSX",                       TTRC("Scroll Down") },
+    { "ui_text_scroll_down.macos",                     TTRC("Scroll Down") },
     { "ui_text_select_all",                            TTRC("Select All") },
+    { "ui_text_select_word_under_caret",               TTRC("Select Word Under Caret") },
     { "ui_text_toggle_insert_mode",                    TTRC("Toggle Insert Mode") },
+    { "ui_text_submit",                                TTRC("Text Submitted") },
     { "ui_graph_duplicate",                            TTRC("Duplicate Nodes") },
     { "ui_graph_delete",                               TTRC("Delete Nodes") },
     { "ui_filedialog_up_one_level",                    TTRC("Go Up One Level") },
@@ -469,12 +467,17 @@ const OrderedHashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins() {
 
 	// ///// UI Text Input Shortcuts /////
 	inputs = List<Ref<InputEvent>>();
-	inputs.push_back(InputEventKey::create_reference(KEY_SPACE | KEY_MASK_CMD));
+	inputs.push_back(InputEventKey::create_reference(KEY_SPACE | KEY_MASK_CTRL));
 	default_builtin_cache.insert("ui_text_completion_query", inputs);
 
 	inputs = List<Ref<InputEvent>>();
-	inputs.push_back(InputEventKey::create_reference(KEY_TAB));
+	inputs.push_back(InputEventKey::create_reference(KEY_ENTER));
+	inputs.push_back(InputEventKey::create_reference(KEY_KP_ENTER));
 	default_builtin_cache.insert("ui_text_completion_accept", inputs);
+
+	inputs = List<Ref<InputEvent>>();
+	inputs.push_back(InputEventKey::create_reference(KEY_TAB));
+	default_builtin_cache.insert("ui_text_completion_replace", inputs);
 
 	// Newlines
 	inputs = List<Ref<InputEvent>>();
@@ -505,6 +508,7 @@ const OrderedHashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins() {
 	// Text Backspace and Delete
 	inputs = List<Ref<InputEvent>>();
 	inputs.push_back(InputEventKey::create_reference(KEY_BACKSPACE));
+	inputs.push_back(InputEventKey::create_reference(KEY_BACKSPACE | KEY_MASK_SHIFT));
 	default_builtin_cache.insert("ui_text_backspace", inputs);
 
 	inputs = List<Ref<InputEvent>>();
@@ -513,14 +517,14 @@ const OrderedHashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins() {
 
 	inputs = List<Ref<InputEvent>>();
 	inputs.push_back(InputEventKey::create_reference(KEY_BACKSPACE | KEY_MASK_ALT));
-	default_builtin_cache.insert("ui_text_backspace_word.OSX", inputs);
+	default_builtin_cache.insert("ui_text_backspace_word.macos", inputs);
 
 	inputs = List<Ref<InputEvent>>();
 	default_builtin_cache.insert("ui_text_backspace_all_to_left", inputs);
 
 	inputs = List<Ref<InputEvent>>();
 	inputs.push_back(InputEventKey::create_reference(KEY_BACKSPACE | KEY_MASK_CMD));
-	default_builtin_cache.insert("ui_text_backspace_all_to_left.OSX", inputs);
+	default_builtin_cache.insert("ui_text_backspace_all_to_left.macos", inputs);
 
 	inputs = List<Ref<InputEvent>>();
 	inputs.push_back(InputEventKey::create_reference(KEY_DELETE));
@@ -532,14 +536,14 @@ const OrderedHashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins() {
 
 	inputs = List<Ref<InputEvent>>();
 	inputs.push_back(InputEventKey::create_reference(KEY_DELETE | KEY_MASK_ALT));
-	default_builtin_cache.insert("ui_text_delete_word.OSX", inputs);
+	default_builtin_cache.insert("ui_text_delete_word.macos", inputs);
 
 	inputs = List<Ref<InputEvent>>();
 	default_builtin_cache.insert("ui_text_delete_all_to_right", inputs);
 
 	inputs = List<Ref<InputEvent>>();
 	inputs.push_back(InputEventKey::create_reference(KEY_DELETE | KEY_MASK_CMD));
-	default_builtin_cache.insert("ui_text_delete_all_to_right.OSX", inputs);
+	default_builtin_cache.insert("ui_text_delete_all_to_right.macos", inputs);
 
 	// Text Caret Movement Left/Right
 
@@ -553,7 +557,7 @@ const OrderedHashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins() {
 
 	inputs = List<Ref<InputEvent>>();
 	inputs.push_back(InputEventKey::create_reference(KEY_LEFT | KEY_MASK_ALT));
-	default_builtin_cache.insert("ui_text_caret_word_left.OSX", inputs);
+	default_builtin_cache.insert("ui_text_caret_word_left.macos", inputs);
 
 	inputs = List<Ref<InputEvent>>();
 	inputs.push_back(InputEventKey::create_reference(KEY_RIGHT));
@@ -565,7 +569,7 @@ const OrderedHashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins() {
 
 	inputs = List<Ref<InputEvent>>();
 	inputs.push_back(InputEventKey::create_reference(KEY_RIGHT | KEY_MASK_ALT));
-	default_builtin_cache.insert("ui_text_caret_word_right.OSX", inputs);
+	default_builtin_cache.insert("ui_text_caret_word_right.macos", inputs);
 
 	// Text Caret Movement Up/Down
 
@@ -586,7 +590,7 @@ const OrderedHashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins() {
 	inputs = List<Ref<InputEvent>>();
 	inputs.push_back(InputEventKey::create_reference(KEY_A | KEY_MASK_CTRL));
 	inputs.push_back(InputEventKey::create_reference(KEY_LEFT | KEY_MASK_CMD));
-	default_builtin_cache.insert("ui_text_caret_line_start.OSX", inputs);
+	default_builtin_cache.insert("ui_text_caret_line_start.macos", inputs);
 
 	inputs = List<Ref<InputEvent>>();
 	inputs.push_back(InputEventKey::create_reference(KEY_END));
@@ -595,7 +599,7 @@ const OrderedHashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins() {
 	inputs = List<Ref<InputEvent>>();
 	inputs.push_back(InputEventKey::create_reference(KEY_E | KEY_MASK_CTRL));
 	inputs.push_back(InputEventKey::create_reference(KEY_RIGHT | KEY_MASK_CMD));
-	default_builtin_cache.insert("ui_text_caret_line_end.OSX", inputs);
+	default_builtin_cache.insert("ui_text_caret_line_end.macos", inputs);
 
 	// Text Caret Movement Page Up/Down
 
@@ -615,7 +619,7 @@ const OrderedHashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins() {
 
 	inputs = List<Ref<InputEvent>>();
 	inputs.push_back(InputEventKey::create_reference(KEY_UP | KEY_MASK_CMD));
-	default_builtin_cache.insert("ui_text_caret_document_start.OSX", inputs);
+	default_builtin_cache.insert("ui_text_caret_document_start.macos", inputs);
 
 	inputs = List<Ref<InputEvent>>();
 	inputs.push_back(InputEventKey::create_reference(KEY_END | KEY_MASK_CMD));
@@ -623,7 +627,7 @@ const OrderedHashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins() {
 
 	inputs = List<Ref<InputEvent>>();
 	inputs.push_back(InputEventKey::create_reference(KEY_DOWN | KEY_MASK_CMD));
-	default_builtin_cache.insert("ui_text_caret_document_end.OSX", inputs);
+	default_builtin_cache.insert("ui_text_caret_document_end.macos", inputs);
 
 	// Text Scrolling
 
@@ -633,7 +637,7 @@ const OrderedHashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins() {
 
 	inputs = List<Ref<InputEvent>>();
 	inputs.push_back(InputEventKey::create_reference(KEY_UP | KEY_MASK_CMD | KEY_MASK_ALT));
-	default_builtin_cache.insert("ui_text_scroll_up.OSX", inputs);
+	default_builtin_cache.insert("ui_text_scroll_up.macos", inputs);
 
 	inputs = List<Ref<InputEvent>>();
 	inputs.push_back(InputEventKey::create_reference(KEY_DOWN | KEY_MASK_CMD));
@@ -641,7 +645,7 @@ const OrderedHashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins() {
 
 	inputs = List<Ref<InputEvent>>();
 	inputs.push_back(InputEventKey::create_reference(KEY_DOWN | KEY_MASK_CMD | KEY_MASK_ALT));
-	default_builtin_cache.insert("ui_text_scroll_down.OSX", inputs);
+	default_builtin_cache.insert("ui_text_scroll_down.macos", inputs);
 
 	// Text Misc
 
@@ -650,12 +654,21 @@ const OrderedHashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins() {
 	default_builtin_cache.insert("ui_text_select_all", inputs);
 
 	inputs = List<Ref<InputEvent>>();
+	inputs.push_back(InputEventKey::create_reference(KEY_D | KEY_MASK_CMD));
+	default_builtin_cache.insert("ui_text_select_word_under_caret", inputs);
+
+	inputs = List<Ref<InputEvent>>();
 	inputs.push_back(InputEventKey::create_reference(KEY_INSERT));
 	default_builtin_cache.insert("ui_text_toggle_insert_mode", inputs);
 
 	inputs = List<Ref<InputEvent>>();
 	inputs.push_back(InputEventKey::create_reference(KEY_MENU));
 	default_builtin_cache.insert("ui_menu", inputs);
+
+	inputs = List<Ref<InputEvent>>();
+	inputs.push_back(InputEventKey::create_reference(KEY_ENTER));
+	inputs.push_back(InputEventKey::create_reference(KEY_KP_ENTER));
+	default_builtin_cache.insert("ui_text_submit", inputs);
 
 	// ///// UI Graph Shortcuts /////
 
@@ -687,34 +700,57 @@ const OrderedHashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins() {
 	return default_builtin_cache;
 }
 
-void InputMap::load_default() {
+const OrderedHashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins_with_feature_overrides_applied() {
+	if (default_builtin_with_overrides_cache.size() > 0) {
+		return default_builtin_with_overrides_cache;
+	}
+
 	OrderedHashMap<String, List<Ref<InputEvent>>> builtins = get_builtins();
 
-	// List of Builtins which have an override for OSX.
-	Vector<String> osx_builtins;
+	// Get a list of all built in inputs which are valid overrides for the OS
+	// Key = builtin name (e.g. ui_accept)
+	// Value = override/feature names (e.g. macos, if it was defined as "ui_accept.macos" and the platform supports that feature)
+	Map<String, Vector<String>> builtins_with_overrides;
 	for (OrderedHashMap<String, List<Ref<InputEvent>>>::Element E = builtins.front(); E; E = E.next()) {
-		if (String(E.key()).ends_with(".OSX")) {
-			// Strip .OSX from name: some_input_name.OSX -> some_input_name
-			osx_builtins.push_back(String(E.key()).split(".")[0]);
+		String fullname = E.key();
+
+		Vector<String> split = fullname.split(".");
+		String name = split[0];
+		String override_for = split.size() > 1 ? split[1] : String();
+
+		if (override_for != String() && OS::get_singleton()->has_feature(override_for)) {
+			builtins_with_overrides[name].push_back(override_for);
 		}
 	}
 
 	for (OrderedHashMap<String, List<Ref<InputEvent>>>::Element E = builtins.front(); E; E = E.next()) {
 		String fullname = E.key();
-		String name = fullname.split(".")[0];
-		String override_for = fullname.split(".").size() > 1 ? fullname.split(".")[1] : "";
 
-#ifdef APPLE_STYLE_KEYS
-		if (osx_builtins.has(name) && override_for != "OSX") {
-			// Name has osx builtin but this particular one is for non-osx systems - so skip.
+		Vector<String> split = fullname.split(".");
+		String name = split[0];
+		String override_for = split.size() > 1 ? split[1] : String();
+
+		if (builtins_with_overrides.has(name) && override_for == String()) {
+			// Builtin has an override but this particular one is not an override, so skip.
 			continue;
 		}
-#else
-		if (override_for == "OSX") {
-			// Override for OSX - not needed on non-osx platforms.
+
+		if (override_for != String() && !OS::get_singleton()->has_feature(override_for)) {
+			// OS does not support this override - skip.
 			continue;
 		}
-#endif
+
+		default_builtin_with_overrides_cache.insert(name, E.value());
+	}
+
+	return default_builtin_with_overrides_cache;
+}
+
+void InputMap::load_default() {
+	OrderedHashMap<String, List<Ref<InputEvent>>> builtins = get_builtins_with_feature_overrides_applied();
+
+	for (OrderedHashMap<String, List<Ref<InputEvent>>>::Element E = builtins.front(); E; E = E.next()) {
+		String name = E.key();
 
 		add_action(name);
 
@@ -733,4 +769,8 @@ void InputMap::load_default() {
 InputMap::InputMap() {
 	ERR_FAIL_COND_MSG(singleton, "Singleton in InputMap already exist.");
 	singleton = this;
+}
+
+InputMap::~InputMap() {
+	singleton = nullptr;
 }

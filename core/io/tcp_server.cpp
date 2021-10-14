@@ -30,15 +30,16 @@
 
 #include "tcp_server.h"
 
-void TCP_Server::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("listen", "port", "bind_address"), &TCP_Server::listen, DEFVAL("*"));
-	ClassDB::bind_method(D_METHOD("is_connection_available"), &TCP_Server::is_connection_available);
-	ClassDB::bind_method(D_METHOD("is_listening"), &TCP_Server::is_listening);
-	ClassDB::bind_method(D_METHOD("take_connection"), &TCP_Server::take_connection);
-	ClassDB::bind_method(D_METHOD("stop"), &TCP_Server::stop);
+void TCPServer::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("listen", "port", "bind_address"), &TCPServer::listen, DEFVAL("*"));
+	ClassDB::bind_method(D_METHOD("is_connection_available"), &TCPServer::is_connection_available);
+	ClassDB::bind_method(D_METHOD("is_listening"), &TCPServer::is_listening);
+	ClassDB::bind_method(D_METHOD("get_local_port"), &TCPServer::get_local_port);
+	ClassDB::bind_method(D_METHOD("take_connection"), &TCPServer::take_connection);
+	ClassDB::bind_method(D_METHOD("stop"), &TCPServer::stop);
 }
 
-Error TCP_Server::listen(uint16_t p_port, const IP_Address &p_bind_address) {
+Error TCPServer::listen(uint16_t p_port, const IPAddress &p_bind_address) {
 	ERR_FAIL_COND_V(!_sock.is_valid(), ERR_UNAVAILABLE);
 	ERR_FAIL_COND_V(_sock->is_open(), ERR_ALREADY_IN_USE);
 	ERR_FAIL_COND_V(!p_bind_address.is_valid() && !p_bind_address.is_wildcard(), ERR_INVALID_PARAMETER);
@@ -74,13 +75,19 @@ Error TCP_Server::listen(uint16_t p_port, const IP_Address &p_bind_address) {
 	return OK;
 }
 
-bool TCP_Server::is_listening() const {
+int TCPServer::get_local_port() const {
+	uint16_t local_port;
+	_sock->get_socket_address(nullptr, &local_port);
+	return local_port;
+}
+
+bool TCPServer::is_listening() const {
 	ERR_FAIL_COND_V(!_sock.is_valid(), false);
 
 	return _sock->is_open();
 }
 
-bool TCP_Server::is_connection_available() const {
+bool TCPServer::is_connection_available() const {
 	ERR_FAIL_COND_V(!_sock.is_valid(), false);
 
 	if (!_sock->is_open()) {
@@ -91,14 +98,14 @@ bool TCP_Server::is_connection_available() const {
 	return (err == OK);
 }
 
-Ref<StreamPeerTCP> TCP_Server::take_connection() {
+Ref<StreamPeerTCP> TCPServer::take_connection() {
 	Ref<StreamPeerTCP> conn;
 	if (!is_connection_available()) {
 		return conn;
 	}
 
 	Ref<NetSocket> ns;
-	IP_Address ip;
+	IPAddress ip;
 	uint16_t port = 0;
 	ns = _sock->accept(ip, port);
 	if (!ns.is_valid()) {
@@ -110,16 +117,16 @@ Ref<StreamPeerTCP> TCP_Server::take_connection() {
 	return conn;
 }
 
-void TCP_Server::stop() {
+void TCPServer::stop() {
 	if (_sock.is_valid()) {
 		_sock->close();
 	}
 }
 
-TCP_Server::TCP_Server() :
+TCPServer::TCPServer() :
 		_sock(Ref<NetSocket>(NetSocket::create())) {
 }
 
-TCP_Server::~TCP_Server() {
+TCPServer::~TCPServer() {
 	stop();
 }

@@ -29,13 +29,12 @@
 /*************************************************************************/
 
 #include "remote_transform_2d.h"
-#include "scene/scene_string_names.h"
 
 void RemoteTransform2D::_update_cache() {
 	cache = ObjectID();
 	if (has_node(remote_node)) {
 		Node *node = get_node(remote_node);
-		if (!node || this == node || node->is_a_parent_of(this) || this->is_a_parent_of(node)) {
+		if (!node || this == node || node->is_ancestor_of(this) || this->is_ancestor_of(node)) {
 			return;
 		}
 

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="SkinReference" inherits="Reference" version="4.0">
+<class name="SkinReference" inherits="RefCounted" version="4.0">
 	<brief_description>
 	</brief_description>
 	<description>
@@ -8,18 +8,14 @@
 	</tutorials>
 	<methods>
 		<method name="get_skeleton" qualifiers="const">
-			<return type="RID">
-			</return>
+			<return type="RID" />
 			<description>
 			</description>
 		</method>
 		<method name="get_skin" qualifiers="const">
-			<return type="Skin">
-			</return>
+			<return type="Skin" />
 			<description>
 			</description>
 		</method>
 	</methods>
-	<constants>
-	</constants>
 </class>

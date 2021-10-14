@@ -32,9 +32,11 @@
 
 #include "core/core_string_names.h"
 #include "core/io/marshalls.h"
-#include "core/object/reference.h"
+#include "core/object/ref_counted.h"
 #include "core/os/os.h"
 #include "core/templates/oa_hash_map.h"
+#include "core/templates/rid.h"
+#include "core/templates/rid_owner.h"
 #include "core/variant/binder_common.h"
 #include "core/variant/variant_parser.h"
 
@@ -91,6 +93,10 @@ struct VariantUtilityFunctions {
 
 	static inline double fposmod(double b, double r) {
 		return Math::fposmod(b, r);
+	}
+
+	static inline int64_t posmod(int64_t b, int64_t r) {
+		return Math::posmod(b, r);
 	}
 
 	static inline double floor(double x) {
@@ -245,10 +251,6 @@ struct VariantUtilityFunctions {
 		return Math::move_toward(from, to, delta);
 	}
 
-	static inline double dectime(double value, double amount, double step) {
-		return Math::dectime(value, amount, step);
-	}
-
 	static inline double deg2rad(double angle_deg) {
 		return Math::deg2rad(angle_deg);
 	}
@@ -263,14 +265,6 @@ struct VariantUtilityFunctions {
 
 	static inline double db2linear(double db) {
 		return Math::db2linear(db);
-	}
-
-	static inline Vector2 polar2cartesian(double r, double th) {
-		return Vector2(r * Math::cos(th), r * Math::sin(th));
-	}
-
-	static inline Vector2 cartesian2polar(double x, double y) {
-		return Vector2(Math::sqrt(x * x + y * y), Math::atan2(y, x));
 	}
 
 	static inline int64_t wrapi(int64_t value, int64_t min, int64_t max) {
@@ -484,11 +478,15 @@ struct VariantUtilityFunctions {
 		return str;
 	}
 
-	static inline void print(const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
-		if (p_arg_count < 1) {
-			r_error.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
-			r_error.argument = 1;
+	static inline String error_string(Error error) {
+		if (error < 0 || error >= ERR_MAX) {
+			return String("(invalid error code)");
 		}
+
+		return String(error_names[error]);
+	}
+
+	static inline void print(const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
 		String str;
 		for (int i = 0; i < p_arg_count; i++) {
 			String os = p_args[i]->operator String();
@@ -504,11 +502,29 @@ struct VariantUtilityFunctions {
 		r_error.error = Callable::CallError::CALL_OK;
 	}
 
-	static inline void printerr(const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
-		if (p_arg_count < 1) {
-			r_error.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
-			r_error.argument = 1;
+	static inline void print_verbose(const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
+		if (OS::get_singleton()->is_stdout_verbose()) {
+			String str;
+			for (int i = 0; i < p_arg_count; i++) {
+				String os = p_args[i]->operator String();
+
+				if (i == 0) {
+					str = os;
+				} else {
+					str += os;
+				}
+			}
+
+			// No need to use `print_verbose()` as this call already only happens
+			// when verbose mode is enabled. This avoids performing string argument concatenation
+			// when not needed.
+			print_line(str);
 		}
+
+		r_error.error = Callable::CallError::CALL_OK;
+	}
+
+	static inline void printerr(const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
 		String str;
 		for (int i = 0; i < p_arg_count; i++) {
 			String os = p_args[i]->operator String();
@@ -525,10 +541,6 @@ struct VariantUtilityFunctions {
 	}
 
 	static inline void printt(const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
-		if (p_arg_count < 1) {
-			r_error.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
-			r_error.argument = 1;
-		}
 		String str;
 		for (int i = 0; i < p_arg_count; i++) {
 			if (i) {
@@ -542,10 +554,6 @@ struct VariantUtilityFunctions {
 	}
 
 	static inline void prints(const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
-		if (p_arg_count < 1) {
-			r_error.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
-			r_error.argument = 1;
-		}
 		String str;
 		for (int i = 0; i < p_arg_count; i++) {
 			if (i) {
@@ -559,10 +567,6 @@ struct VariantUtilityFunctions {
 	}
 
 	static inline void printraw(const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
-		if (p_arg_count < 1) {
-			r_error.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
-			r_error.argument = 1;
-		}
 		String str;
 		for (int i = 0; i < p_arg_count; i++) {
 			String os = p_args[i]->operator String();
@@ -719,6 +723,13 @@ struct VariantUtilityFunctions {
 			return false;
 		}
 		return p_instance.get_validated_object() != nullptr;
+	}
+
+	static inline uint64_t rid_allocate_id() {
+		return RID_AllocBase::_gen_id();
+	}
+	static inline RID rid_from_int64(uint64_t p_base) {
+		return RID::from_uint64(p_base);
 	}
 };
 
@@ -1154,6 +1165,7 @@ void Variant::_register_variant_utility_functions() {
 	FUNCBINDR(sqrt, sarray("x"), Variant::UTILITY_FUNC_TYPE_MATH);
 	FUNCBINDR(fmod, sarray("x", "y"), Variant::UTILITY_FUNC_TYPE_MATH);
 	FUNCBINDR(fposmod, sarray("x", "y"), Variant::UTILITY_FUNC_TYPE_MATH);
+	FUNCBINDR(posmod, sarray("x", "y"), Variant::UTILITY_FUNC_TYPE_MATH);
 	FUNCBINDR(floor, sarray("x"), Variant::UTILITY_FUNC_TYPE_MATH);
 	FUNCBINDR(ceil, sarray("x"), Variant::UTILITY_FUNC_TYPE_MATH);
 	FUNCBINDR(round, sarray("x"), Variant::UTILITY_FUNC_TYPE_MATH);
@@ -1190,15 +1202,11 @@ void Variant::_register_variant_utility_functions() {
 
 	FUNCBINDR(smoothstep, sarray("from", "to", "x"), Variant::UTILITY_FUNC_TYPE_MATH);
 	FUNCBINDR(move_toward, sarray("from", "to", "delta"), Variant::UTILITY_FUNC_TYPE_MATH);
-	FUNCBINDR(dectime, sarray("value", "amount", "step"), Variant::UTILITY_FUNC_TYPE_MATH);
 
 	FUNCBINDR(deg2rad, sarray("deg"), Variant::UTILITY_FUNC_TYPE_MATH);
 	FUNCBINDR(rad2deg, sarray("rad"), Variant::UTILITY_FUNC_TYPE_MATH);
 	FUNCBINDR(linear2db, sarray("lin"), Variant::UTILITY_FUNC_TYPE_MATH);
 	FUNCBINDR(db2linear, sarray("db"), Variant::UTILITY_FUNC_TYPE_MATH);
-
-	FUNCBINDR(polar2cartesian, sarray("r", "th"), Variant::UTILITY_FUNC_TYPE_MATH);
-	FUNCBINDR(cartesian2polar, sarray("x", "y"), Variant::UTILITY_FUNC_TYPE_MATH);
 
 	FUNCBINDR(wrapi, sarray("value", "min", "max"), Variant::UTILITY_FUNC_TYPE_MATH);
 	FUNCBINDR(wrapf, sarray("value", "min", "max"), Variant::UTILITY_FUNC_TYPE_MATH);
@@ -1234,11 +1242,13 @@ void Variant::_register_variant_utility_functions() {
 	FUNCBINDVR(weakref, sarray("obj"), Variant::UTILITY_FUNC_TYPE_GENERAL);
 	FUNCBINDR(_typeof, sarray("variable"), Variant::UTILITY_FUNC_TYPE_GENERAL);
 	FUNCBINDVARARGS(str, sarray(), Variant::UTILITY_FUNC_TYPE_GENERAL);
+	FUNCBINDR(error_string, sarray("error"), Variant::UTILITY_FUNC_TYPE_GENERAL);
 	FUNCBINDVARARGV(print, sarray(), Variant::UTILITY_FUNC_TYPE_GENERAL);
 	FUNCBINDVARARGV(printerr, sarray(), Variant::UTILITY_FUNC_TYPE_GENERAL);
 	FUNCBINDVARARGV(printt, sarray(), Variant::UTILITY_FUNC_TYPE_GENERAL);
 	FUNCBINDVARARGV(prints, sarray(), Variant::UTILITY_FUNC_TYPE_GENERAL);
 	FUNCBINDVARARGV(printraw, sarray(), Variant::UTILITY_FUNC_TYPE_GENERAL);
+	FUNCBINDVARARGV(print_verbose, sarray(), Variant::UTILITY_FUNC_TYPE_GENERAL);
 	FUNCBINDVARARGV(push_error, sarray(), Variant::UTILITY_FUNC_TYPE_GENERAL);
 	FUNCBINDVARARGV(push_warning, sarray(), Variant::UTILITY_FUNC_TYPE_GENERAL);
 
@@ -1256,6 +1266,9 @@ void Variant::_register_variant_utility_functions() {
 	FUNCBINDR(instance_from_id, sarray("instance_id"), Variant::UTILITY_FUNC_TYPE_GENERAL);
 	FUNCBINDR(is_instance_id_valid, sarray("id"), Variant::UTILITY_FUNC_TYPE_GENERAL);
 	FUNCBINDR(is_instance_valid, sarray("instance"), Variant::UTILITY_FUNC_TYPE_GENERAL);
+
+	FUNCBINDR(rid_allocate_id, Vector<String>(), Variant::UTILITY_FUNC_TYPE_GENERAL);
+	FUNCBINDR(rid_from_int64, sarray("base"), Variant::UTILITY_FUNC_TYPE_GENERAL);
 }
 
 void Variant::_unregister_variant_utility_functions() {
@@ -1320,6 +1333,28 @@ Variant::UtilityFunctionType Variant::get_utility_function_type(const StringName
 	return bfi->type;
 }
 
+MethodInfo Variant::get_utility_function_info(const StringName &p_name) {
+	MethodInfo info;
+	const VariantUtilityFunctionInfo *bfi = utility_function_table.lookup_ptr(p_name);
+	if (bfi) {
+		info.name = p_name;
+		if (bfi->returns_value && bfi->return_type == Variant::NIL) {
+			info.return_val.usage |= PROPERTY_USAGE_NIL_IS_VARIANT;
+		}
+		info.return_val.type = bfi->return_type;
+		if (bfi->is_vararg) {
+			info.flags |= METHOD_FLAG_VARARG;
+		}
+		for (int i = 0; i < bfi->argnames.size(); ++i) {
+			PropertyInfo arg;
+			arg.type = bfi->get_arg_type(i);
+			arg.name = bfi->argnames[i];
+			info.arguments.push_back(arg);
+		}
+	}
+	return info;
+}
+
 int Variant::get_utility_function_argument_count(const StringName &p_name) {
 	const VariantUtilityFunctionInfo *bfi = utility_function_table.lookup_ptr(p_name);
 	if (!bfi) {
@@ -1343,8 +1378,8 @@ String Variant::get_utility_function_argument_name(const StringName &p_name, int
 	if (!bfi) {
 		return String();
 	}
-	ERR_FAIL_COND_V(bfi->is_vararg, String());
 	ERR_FAIL_INDEX_V(p_arg, bfi->argnames.size(), String());
+	ERR_FAIL_COND_V(bfi->is_vararg, String());
 	return bfi->argnames[p_arg];
 }
 
@@ -1374,9 +1409,26 @@ bool Variant::is_utility_function_vararg(const StringName &p_name) {
 	return bfi->is_vararg;
 }
 
+uint32_t Variant::get_utility_function_hash(const StringName &p_name) {
+	const VariantUtilityFunctionInfo *bfi = utility_function_table.lookup_ptr(p_name);
+	ERR_FAIL_COND_V(!bfi, 0);
+
+	uint32_t hash = hash_djb2_one_32(bfi->is_vararg);
+	hash = hash_djb2_one_32(bfi->returns_value, hash);
+	if (bfi->returns_value) {
+		hash = hash_djb2_one_32(bfi->return_type, hash);
+	}
+	hash = hash_djb2_one_32(bfi->argcount, hash);
+	for (int i = 0; i < bfi->argcount; i++) {
+		hash = hash_djb2_one_32(bfi->get_arg_type(i), hash);
+	}
+
+	return hash;
+}
+
 void Variant::get_utility_function_list(List<StringName> *r_functions) {
-	for (List<StringName>::Element *E = utility_function_name_table.front(); E; E = E->next()) {
-		r_functions->push_back(E->get());
+	for (const StringName &E : utility_function_name_table) {
+		r_functions->push_back(E);
 	}
 }
 

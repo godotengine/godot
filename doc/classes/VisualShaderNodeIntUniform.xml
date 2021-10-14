@@ -8,8 +8,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="default_value" type="int" setter="set_default_value" getter="get_default_value" default="0">
 			A default value to be assigned within the shader.
@@ -39,6 +37,9 @@
 		</constant>
 		<constant name="HINT_RANGE_STEP" value="2" enum="Hint">
 			A range hint for scalar value with step, which limits possible input values between [member min] and [member max], with a step (increment) of [member step]). Translated to [code]hint_range(min, max, step)[/code] in shader code.
+		</constant>
+		<constant name="HINT_MAX" value="3" enum="Hint">
+			Represents the size of the [enum Hint] enum.
 		</constant>
 	</constants>
 </class>

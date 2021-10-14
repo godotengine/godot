@@ -317,9 +317,9 @@ struct GDScriptUtilityFunctionsDefinitions {
 				d["@subpath"] = cp;
 				d["@path"] = p->get_path();
 
-				for (Map<StringName, GDScript::MemberInfo>::Element *E = base->member_indices.front(); E; E = E->next()) {
-					if (!d.has(E->key())) {
-						d[E->key()] = ins->members[E->get().index];
+				for (const KeyValue<StringName, GDScript::MemberInfo> &E : base->member_indices) {
+					if (!d.has(E.key)) {
+						d[E.key] = ins->members[E.value.index];
 					}
 				}
 				*r_ret = d;
@@ -396,9 +396,9 @@ struct GDScriptUtilityFunctionsDefinitions {
 		GDScriptInstance *ins = static_cast<GDScriptInstance *>(static_cast<Object *>(*r_ret)->get_script_instance());
 		Ref<GDScript> gd_ref = ins->get_script();
 
-		for (Map<StringName, GDScript::MemberInfo>::Element *E = gd_ref->member_indices.front(); E; E = E->next()) {
-			if (d.has(E->key())) {
-				ins->members.write[E->get().index] = d[E->key()];
+		for (KeyValue<StringName, GDScript::MemberInfo> &E : gd_ref->member_indices) {
+			if (d.has(E.key)) {
+				ins->members.write[E.value.index] = d[E.key];
 			}
 		}
 	}
@@ -706,8 +706,8 @@ bool GDScriptUtilityFunctions::function_exists(const StringName &p_function) {
 }
 
 void GDScriptUtilityFunctions::get_function_list(List<StringName> *r_functions) {
-	for (const List<StringName>::Element *E = utility_function_name_table.front(); E; E = E->next()) {
-		r_functions->push_back(E->get());
+	for (const StringName &E : utility_function_name_table) {
+		r_functions->push_back(E);
 	}
 }
 

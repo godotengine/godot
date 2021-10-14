@@ -32,7 +32,6 @@
 #define CALLABLE_METHOD_POINTER_H
 
 #include "core/object/object.h"
-#include "core/os/copymem.h"
 #include "core/templates/hashfuncs.h"
 #include "core/templates/simple_type.h"
 #include "core/variant/binder_common.h"
@@ -98,7 +97,7 @@ public:
 	}
 
 	CallableCustomMethodPointer(T *p_instance, void (T::*p_method)(P...)) {
-		zeromem(&data, sizeof(Data)); // Clear beforehand, may have padding bytes.
+		memset(&data, 0, sizeof(Data)); // Clear beforehand, may have padding bytes.
 		data.instance = p_instance;
 #ifdef DEBUG_ENABLED
 		data.object_id = p_instance->get_instance_id();
@@ -153,7 +152,7 @@ public:
 	}
 
 	CallableCustomMethodPointerRet(T *p_instance, R (T::*p_method)(P...)) {
-		zeromem(&data, sizeof(Data)); // Clear beforehand, may have padding bytes.
+		memset(&data, 0, sizeof(Data)); // Clear beforehand, may have padding bytes.
 		data.instance = p_instance;
 #ifdef DEBUG_ENABLED
 		data.object_id = p_instance->get_instance_id();
@@ -208,7 +207,7 @@ public:
 	}
 
 	CallableCustomMethodPointerRetC(T *p_instance, R (T::*p_method)(P...) const) {
-		zeromem(&data, sizeof(Data)); // Clear beforehand, may have padding bytes.
+		memset(&data, 0, sizeof(Data)); // Clear beforehand, may have padding bytes.
 		data.instance = p_instance;
 #ifdef DEBUG_ENABLED
 		data.object_id = p_instance->get_instance_id();

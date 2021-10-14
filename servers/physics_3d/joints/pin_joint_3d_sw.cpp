@@ -50,7 +50,10 @@ subject to the following restrictions:
 #include "pin_joint_3d_sw.h"
 
 bool PinJoint3DSW::setup(real_t p_step) {
-	if ((A->get_mode() <= PhysicsServer3D::BODY_MODE_KINEMATIC) && (B->get_mode() <= PhysicsServer3D::BODY_MODE_KINEMATIC)) {
+	dynamic_A = (A->get_mode() > PhysicsServer3D::BODY_MODE_KINEMATIC);
+	dynamic_B = (B->get_mode() > PhysicsServer3D::BODY_MODE_KINEMATIC);
+
+	if (!dynamic_A && !dynamic_B) {
 		return false;
 	}
 
@@ -123,8 +126,12 @@ void PinJoint3DSW::solve(real_t p_step) {
 
 		m_appliedImpulse += impulse;
 		Vector3 impulse_vector = normal * impulse;
-		A->apply_impulse(impulse_vector, pivotAInW - A->get_transform().origin);
-		B->apply_impulse(-impulse_vector, pivotBInW - B->get_transform().origin);
+		if (dynamic_A) {
+			A->apply_impulse(impulse_vector, pivotAInW - A->get_transform().origin);
+		}
+		if (dynamic_B) {
+			B->apply_impulse(-impulse_vector, pivotBInW - B->get_transform().origin);
+		}
 
 		normal[i] = 0;
 	}
@@ -163,11 +170,6 @@ PinJoint3DSW::PinJoint3DSW(Body3DSW *p_body_a, const Vector3 &p_pos_a, Body3DSW 
 	B = p_body_b;
 	m_pivotInA = p_pos_a;
 	m_pivotInB = p_pos_b;
-
-	m_tau = 0.3;
-	m_damping = 1;
-	m_impulseClamp = 0;
-	m_appliedImpulse = 0;
 
 	A->add_constraint(this, 0);
 	B->add_constraint(this, 1);

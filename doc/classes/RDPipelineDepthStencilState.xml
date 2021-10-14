@@ -1,13 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="RDPipelineDepthStencilState" inherits="Reference" version="4.0">
+<class name="RDPipelineDepthStencilState" inherits="RefCounted" version="4.0">
 	<brief_description>
 	</brief_description>
 	<description>
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="back_op_compare" type="int" setter="set_back_op_compare" getter="get_back_op_compare" enum="RenderingDevice.CompareOperator" default="7">
 		</member>
@@ -52,6 +50,4 @@
 		<member name="front_op_write_mask" type="int" setter="set_front_op_write_mask" getter="get_front_op_write_mask" default="0">
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

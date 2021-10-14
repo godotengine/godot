@@ -8,13 +8,9 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="uniform_name" type="String" setter="set_uniform_name" getter="get_uniform_name" default="&quot;[None]&quot;">
 			The name of the uniform which this reference points to.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

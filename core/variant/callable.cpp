@@ -33,7 +33,7 @@
 #include "callable_bind.h"
 #include "core/object/message_queue.h"
 #include "core/object/object.h"
-#include "core/object/reference.h"
+#include "core/object/ref_counted.h"
 #include "core/object/script_language.h"
 
 void Callable::call_deferred(const Variant **p_arguments, int p_argcount) const {
@@ -50,7 +50,30 @@ void Callable::call(const Variant **p_arguments, int p_argcount, Variant &r_retu
 		custom->call(p_arguments, p_argcount, r_return_value, r_call_error);
 	} else {
 		Object *obj = ObjectDB::get_instance(ObjectID(object));
+#ifdef DEBUG_ENABLED
+		if (!obj) {
+			r_call_error.error = CallError::CALL_ERROR_INSTANCE_IS_NULL;
+			r_call_error.argument = 0;
+			r_call_error.expected = 0;
+			r_return_value = Variant();
+			return;
+		}
+#endif
 		r_return_value = obj->call(method, p_arguments, p_argcount, r_call_error);
+	}
+}
+
+void Callable::rpc(int p_id, const Variant **p_arguments, int p_argcount, CallError &r_call_error) const {
+	if (is_null()) {
+		r_call_error.error = CallError::CALL_ERROR_INSTANCE_IS_NULL;
+		r_call_error.argument = 0;
+		r_call_error.expected = 0;
+	} else if (!is_custom()) {
+		r_call_error.error = CallError::CALL_ERROR_INVALID_METHOD;
+		r_call_error.argument = 0;
+		r_call_error.expected = 0;
+	} else {
+		custom->rpc(p_id, p_arguments, p_argcount, r_call_error);
 	}
 }
 
@@ -64,6 +87,10 @@ Callable Callable::bind(const Variant **p_arguments, int p_argcount) const {
 }
 Callable Callable::unbind(int p_argcount) const {
 	return Callable(memnew(CallableCustomUnbind(*this, p_argcount)));
+}
+
+bool Callable::is_valid() const {
+	return get_object() && (is_custom() || get_object()->has_method(get_method()));
 }
 
 Object *Callable::get_object() const {
@@ -283,6 +310,12 @@ Callable::~Callable() {
 	}
 }
 
+void CallableCustom::rpc(int p_peer_id, const Variant **p_arguments, int p_argcount, Callable::CallError &r_call_error) const {
+	r_call_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
+	r_call_error.argument = 0;
+	r_call_error.expected = 0;
+}
+
 const Callable *CallableCustom::get_base_comparator() const {
 	return nullptr;
 }
@@ -344,11 +377,11 @@ Error Signal::emit(const Variant **p_arguments, int p_argcount) const {
 	return obj->emit_signal(name, p_arguments, p_argcount);
 }
 
-Error Signal::connect(const Callable &p_callable, const Vector<Variant> &p_binds, uint32_t p_flags) {
+Error Signal::connect(const Callable &p_callable, uint32_t p_flags) {
 	Object *object = get_object();
 	ERR_FAIL_COND_V(!object, ERR_UNCONFIGURED);
 
-	return object->connect(name, p_callable, p_binds, p_flags);
+	return object->connect(name, p_callable, varray(), p_flags);
 }
 
 void Signal::disconnect(const Callable &p_callable) {
@@ -374,8 +407,8 @@ Array Signal::get_connections() const {
 	object->get_signal_connection_list(name, &connections);
 
 	Array arr;
-	for (List<Object::Connection>::Element *E = connections.front(); E; E = E->next()) {
-		arr.push_back(E->get());
+	for (const Object::Connection &E : connections) {
+		arr.push_back(E);
 	}
 	return arr;
 }

@@ -46,6 +46,7 @@ void OptimizedTranslation::generate(const Ref<Translation> &p_from) {
 	// This method compresses a Translation instance.
 	// Right now, it doesn't handle context or plurals, so Translation subclasses using plurals or context (i.e TranslationPO) shouldn't be compressed.
 #ifdef TOOLS_ENABLED
+	ERR_FAIL_COND(p_from.is_null());
 	List<StringName> keys;
 	p_from->get_message_list(&keys);
 
@@ -65,9 +66,9 @@ void OptimizedTranslation::generate(const Ref<Translation> &p_from) {
 	int total_compression_size = 0;
 	int total_string_size = 0;
 
-	for (List<StringName>::Element *E = keys.front(); E; E = E->next()) {
+	for (const StringName &E : keys) {
 		//hash string
-		CharString cs = E->get().operator String().utf8();
+		CharString cs = E.operator String().utf8();
 		uint32_t h = hash(0, cs.get_data());
 		Pair<int, CharString> p;
 		p.first = idx;
@@ -75,7 +76,7 @@ void OptimizedTranslation::generate(const Ref<Translation> &p_from) {
 		buckets.write[h % size].push_back(p);
 
 		//compress string
-		CharString src_s = p_from->get_message(E->get()).operator String().utf8();
+		CharString src_s = p_from->get_message(E).operator String().utf8();
 		CompressedString ps;
 		ps.orig_len = src_s.size();
 		ps.offset = total_compression_size;
@@ -161,11 +162,11 @@ void OptimizedTranslation::generate(const Ref<Translation> &p_from) {
 		btw[btindex++] = t.size();
 		btw[btindex++] = hfunc_table[i];
 
-		for (Map<uint32_t, int>::Element *E = t.front(); E; E = E->next()) {
-			btw[btindex++] = E->key();
-			btw[btindex++] = compressed[E->get()].offset;
-			btw[btindex++] = compressed[E->get()].compressed.size();
-			btw[btindex++] = compressed[E->get()].orig_len;
+		for (const KeyValue<uint32_t, int> &E : t) {
+			btw[btindex++] = E.key;
+			btw[btindex++] = compressed[E.value].offset;
+			btw[btindex++] = compressed[E.value].compressed.size();
+			btw[btindex++] = compressed[E.value].orig_len;
 		}
 	}
 

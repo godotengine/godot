@@ -97,7 +97,7 @@ AudioStreamPreview::AudioStreamPreview() {
 ////
 
 void AudioStreamPreviewGenerator::_update_emit(ObjectID p_id) {
-	emit_signal("preview_updated", p_id);
+	emit_signal(SNAME("preview_updated"), p_id);
 }
 
 void AudioStreamPreviewGenerator::_preview_thread(void *p_preview) {
@@ -150,7 +150,7 @@ void AudioStreamPreviewGenerator::_preview_thread(void *p_preview) {
 		}
 
 		frames_todo -= to_read;
-		singleton->call_deferred("_update_emit", preview->id);
+		singleton->call_deferred(SNAME("_update_emit"), preview->id);
 	}
 
 	preview->playback->stop();
@@ -192,7 +192,7 @@ Ref<AudioStreamPreview> AudioStreamPreviewGenerator::generate_preview(const Ref<
 		}
 	}
 
-	preview->preview.instance();
+	preview->preview.instantiate();
 	preview->preview->preview = maxmin;
 	preview->preview->length = len_s;
 
@@ -216,15 +216,15 @@ AudioStreamPreviewGenerator *AudioStreamPreviewGenerator::singleton = nullptr;
 void AudioStreamPreviewGenerator::_notification(int p_what) {
 	if (p_what == NOTIFICATION_PROCESS) {
 		List<ObjectID> to_erase;
-		for (Map<ObjectID, Preview>::Element *E = previews.front(); E; E = E->next()) {
-			if (!E->get().generating.is_set()) {
-				if (E->get().thread) {
-					E->get().thread->wait_to_finish();
-					memdelete(E->get().thread);
-					E->get().thread = nullptr;
+		for (KeyValue<ObjectID, Preview> &E : previews) {
+			if (!E.value.generating.is_set()) {
+				if (E.value.thread) {
+					E.value.thread->wait_to_finish();
+					memdelete(E.value.thread);
+					E.value.thread = nullptr;
 				}
-				if (!ObjectDB::get_instance(E->key())) { //no longer in use, get rid of preview
-					to_erase.push_back(E->key());
+				if (!ObjectDB::get_instance(E.key)) { //no longer in use, get rid of preview
+					to_erase.push_back(E.key);
 				}
 			}
 		}

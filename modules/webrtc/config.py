@@ -10,7 +10,9 @@ def get_doc_classes():
     return [
         "WebRTCPeerConnection",
         "WebRTCDataChannel",
-        "WebRTCMultiplayer",
+        "WebRTCMultiplayerPeer",
+        "WebRTCPeerConnectionExtension",
+        "WebRTCDataChannelExtension",
     ]
 
 

@@ -45,7 +45,6 @@ class CreateDialog;
 class ScriptCreateDialog : public ConfirmationDialog {
 	GDCLASS(ScriptCreateDialog, ConfirmationDialog);
 
-	GridContainer *gc;
 	LineEdit *class_name;
 	Label *error_label;
 	Label *path_error_label;
@@ -105,7 +104,7 @@ class ScriptCreateDialog : public ConfirmationDialog {
 	void _path_hbox_sorted();
 	bool _can_be_built_in();
 	void _path_changed(const String &p_path = String());
-	void _path_entered(const String &p_path = String());
+	void _path_submitted(const String &p_path = String());
 	void _lang_changed(int l = 0);
 	void _built_in_pressed();
 	bool _validate_parent(const String &p_string);
@@ -127,7 +126,6 @@ class ScriptCreateDialog : public ConfirmationDialog {
 	void _update_dialog();
 
 protected:
-	void _theme_changed();
 	void _notification(int p_what);
 	static void _bind_methods();
 

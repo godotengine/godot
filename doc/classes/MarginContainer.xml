@@ -27,21 +27,17 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
-	<constants>
-	</constants>
 	<theme_items>
-		<theme_item name="margin_bottom" type="int" default="0">
+		<theme_item name="margin_bottom" data_type="constant" type="int" default="0">
 			All direct children of [MarginContainer] will have a bottom margin of [code]margin_bottom[/code] pixels.
 		</theme_item>
-		<theme_item name="margin_left" type="int" default="0">
+		<theme_item name="margin_left" data_type="constant" type="int" default="0">
 			All direct children of [MarginContainer] will have a left margin of [code]margin_left[/code] pixels.
 		</theme_item>
-		<theme_item name="margin_right" type="int" default="0">
+		<theme_item name="margin_right" data_type="constant" type="int" default="0">
 			All direct children of [MarginContainer] will have a right margin of [code]margin_right[/code] pixels.
 		</theme_item>
-		<theme_item name="margin_top" type="int" default="0">
+		<theme_item name="margin_top" data_type="constant" type="int" default="0">
 			All direct children of [MarginContainer] will have a top margin of [code]margin_top[/code] pixels.
 		</theme_item>
 	</theme_items>

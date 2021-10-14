@@ -10,61 +10,50 @@
 	</tutorials>
 	<methods>
 		<method name="get_aabb" qualifiers="const">
-			<return type="AABB">
-			</return>
+			<return type="AABB" />
 			<description>
 				Returns the [AABB] (also known as the bounding box) for this [VisualInstance3D]. See also [method get_transformed_aabb].
 			</description>
 		</method>
 		<method name="get_base" qualifiers="const">
-			<return type="RID">
-			</return>
+			<return type="RID" />
 			<description>
 				Returns the RID of the resource associated with this [VisualInstance3D]. For example, if the Node is a [MeshInstance3D], this will return the RID of the associated [Mesh].
 			</description>
 		</method>
 		<method name="get_instance" qualifiers="const">
-			<return type="RID">
-			</return>
+			<return type="RID" />
 			<description>
 				Returns the RID of this instance. This RID is the same as the RID returned by [method RenderingServer.instance_create]. This RID is needed if you want to call [RenderingServer] functions directly on this [VisualInstance3D].
 			</description>
 		</method>
-		<method name="get_layer_mask_bit" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="layer" type="int">
-			</argument>
+		<method name="get_layer_mask_value" qualifiers="const">
+			<return type="bool" />
+			<argument index="0" name="layer_number" type="int" />
 			<description>
-				Returns [code]true[/code] when the specified layer is enabled in [member layers] and [code]false[/code] otherwise.
+				Returns whether or not the specified layer of the [member layers] is enabled, given a [code]layer_number[/code] between 1 and 20.
 			</description>
 		</method>
 		<method name="get_transformed_aabb" qualifiers="const">
-			<return type="AABB">
-			</return>
+			<return type="AABB" />
 			<description>
 				Returns the transformed [AABB] (also known as the bounding box) for this [VisualInstance3D].
-				Transformed in this case means the [AABB] plus the position, rotation, and scale of the [Node3D]'s [Transform]. See also [method get_aabb].
+				Transformed in this case means the [AABB] plus the position, rotation, and scale of the [Node3D]'s [Transform3D]. See also [method get_aabb].
 			</description>
 		</method>
 		<method name="set_base">
-			<return type="void">
-			</return>
-			<argument index="0" name="base" type="RID">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="base" type="RID" />
 			<description>
 				Sets the resource that is instantiated by this [VisualInstance3D], which changes how the engine handles the [VisualInstance3D] under the hood. Equivalent to [method RenderingServer.instance_set_base].
 			</description>
 		</method>
-		<method name="set_layer_mask_bit">
-			<return type="void">
-			</return>
-			<argument index="0" name="layer" type="int">
-			</argument>
-			<argument index="1" name="enabled" type="bool">
-			</argument>
+		<method name="set_layer_mask_value">
+			<return type="void" />
+			<argument index="0" name="layer_number" type="int" />
+			<argument index="1" name="value" type="bool" />
 			<description>
-				Enables a particular layer in [member layers].
+				Based on [code]value[/code], enables or disables the specified layer in the [member layers], given a [code]layer_number[/code] between 1 and 20.
 			</description>
 		</method>
 	</methods>
@@ -74,6 +63,4 @@
 			This object will only be visible for [Camera3D]s whose cull mask includes the render object this [VisualInstance3D] is set to.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

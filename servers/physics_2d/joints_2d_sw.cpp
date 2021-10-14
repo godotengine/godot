@@ -64,17 +64,17 @@ void Joint2DSW::copy_settings_from(Joint2DSW *p_joint) {
 }
 
 static inline real_t k_scalar(Body2DSW *a, Body2DSW *b, const Vector2 &rA, const Vector2 &rB, const Vector2 &n) {
-	real_t value = 0;
+	real_t value = 0.0;
 
 	{
 		value += a->get_inv_mass();
-		real_t rcn = rA.cross(n);
+		real_t rcn = (rA - a->get_center_of_mass()).cross(n);
 		value += a->get_inv_inertia() * rcn * rcn;
 	}
 
 	if (b) {
 		value += b->get_inv_mass();
-		real_t rcn = rB.cross(n);
+		real_t rcn = (rB - b->get_center_of_mass()).cross(n);
 		value += b->get_inv_inertia() * rcn * rcn;
 	}
 
@@ -83,9 +83,9 @@ static inline real_t k_scalar(Body2DSW *a, Body2DSW *b, const Vector2 &rA, const
 
 static inline Vector2
 relative_velocity(Body2DSW *a, Body2DSW *b, Vector2 rA, Vector2 rB) {
-	Vector2 sum = a->get_linear_velocity() - rA.orthogonal() * a->get_angular_velocity();
+	Vector2 sum = a->get_linear_velocity() - (rA - a->get_center_of_mass()).orthogonal() * a->get_angular_velocity();
 	if (b) {
-		return (b->get_linear_velocity() - rB.orthogonal() * b->get_angular_velocity()) - sum;
+		return (b->get_linear_velocity() - (rB - b->get_center_of_mass()).orthogonal() * b->get_angular_velocity()) - sum;
 	} else {
 		return -sum;
 	}
@@ -97,7 +97,10 @@ normal_relative_velocity(Body2DSW *a, Body2DSW *b, Vector2 rA, Vector2 rB, Vecto
 }
 
 bool PinJoint2DSW::setup(real_t p_step) {
-	if ((A->get_mode() <= PhysicsServer2D::BODY_MODE_KINEMATIC) && (B->get_mode() <= PhysicsServer2D::BODY_MODE_KINEMATIC)) {
+	dynamic_A = (A->get_mode() > PhysicsServer2D::BODY_MODE_KINEMATIC);
+	dynamic_B = (B->get_mode() > PhysicsServer2D::BODY_MODE_KINEMATIC);
+
+	if (!dynamic_A && !dynamic_B) {
 		return false;
 	}
 
@@ -148,12 +151,6 @@ bool PinJoint2DSW::setup(real_t p_step) {
 
 	bias = delta * -(get_bias() == 0 ? space->get_constraint_bias() : get_bias()) * (1.0 / p_step);
 
-	// apply accumulated impulse
-	A->apply_impulse(-P, rA);
-	if (B) {
-		B->apply_impulse(P, rB);
-	}
-
 	return true;
 }
 
@@ -161,21 +158,35 @@ inline Vector2 custom_cross(const Vector2 &p_vec, real_t p_other) {
 	return Vector2(p_other * p_vec.y, -p_other * p_vec.x);
 }
 
+bool PinJoint2DSW::pre_solve(real_t p_step) {
+	// Apply accumulated impulse.
+	if (dynamic_A) {
+		A->apply_impulse(-P, rA);
+	}
+	if (B && dynamic_B) {
+		B->apply_impulse(P, rB);
+	}
+
+	return true;
+}
+
 void PinJoint2DSW::solve(real_t p_step) {
 	// compute relative velocity
-	Vector2 vA = A->get_linear_velocity() - custom_cross(rA, A->get_angular_velocity());
+	Vector2 vA = A->get_linear_velocity() - custom_cross(rA - A->get_center_of_mass(), A->get_angular_velocity());
 
 	Vector2 rel_vel;
 	if (B) {
-		rel_vel = B->get_linear_velocity() - custom_cross(rB, B->get_angular_velocity()) - vA;
+		rel_vel = B->get_linear_velocity() - custom_cross(rB - B->get_center_of_mass(), B->get_angular_velocity()) - vA;
 	} else {
 		rel_vel = -vA;
 	}
 
 	Vector2 impulse = M.basis_xform(bias - rel_vel - Vector2(softness, softness) * P);
 
-	A->apply_impulse(-impulse, rA);
-	if (B) {
+	if (dynamic_A) {
+		A->apply_impulse(-impulse, rA);
+	}
+	if (B && dynamic_B) {
 		B->apply_impulse(impulse, rB);
 	}
 
@@ -202,8 +213,6 @@ PinJoint2DSW::PinJoint2DSW(const Vector2 &p_pos, Body2DSW *p_body_a, Body2DSW *p
 	anchor_A = p_body_a->get_inv_transform().xform(p_pos);
 	anchor_B = p_body_b ? p_body_b->get_inv_transform().xform(p_pos) : p_pos;
 
-	softness = 0;
-
 	p_body_a->add_constraint(this, 0);
 	if (p_body_b) {
 		p_body_b->add_constraint(this, 1);
@@ -226,6 +235,9 @@ k_tensor(Body2DSW *a, Body2DSW *b, Vector2 r1, Vector2 r2, Vector2 *k1, Vector2 
 	k12 = 0.0f;
 	k21 = 0.0f;
 	k22 = m_sum;
+
+	r1 -= a->get_center_of_mass();
+	r2 -= b->get_center_of_mass();
 
 	// add the influence from r1
 	real_t a_i_inv = a->get_inv_inertia();
@@ -262,14 +274,19 @@ mult_k(const Vector2 &vr, const Vector2 &k1, const Vector2 &k2) {
 }
 
 bool GrooveJoint2DSW::setup(real_t p_step) {
-	if ((A->get_mode() <= PhysicsServer2D::BODY_MODE_KINEMATIC) && (B->get_mode() <= PhysicsServer2D::BODY_MODE_KINEMATIC)) {
+	dynamic_A = (A->get_mode() > PhysicsServer2D::BODY_MODE_KINEMATIC);
+	dynamic_B = (B->get_mode() > PhysicsServer2D::BODY_MODE_KINEMATIC);
+
+	if (!dynamic_A && !dynamic_B) {
 		return false;
 	}
+
+	Space2DSW *space = A->get_space();
+	ERR_FAIL_COND_V(!space, false);
 
 	// calculate endpoints in worldspace
 	Vector2 ta = A->get_transform().xform(A_groove_1);
 	Vector2 tb = A->get_transform().xform(A_groove_2);
-	Space2DSW *space = A->get_space();
 
 	// calculate axis
 	Vector2 n = -(tb - ta).orthogonal().normalized();
@@ -306,13 +323,21 @@ bool GrooveJoint2DSW::setup(real_t p_step) {
 	Vector2 delta = (B->get_transform().get_origin() + rB) - (A->get_transform().get_origin() + rA);
 
 	real_t _b = get_bias();
-	gbias = (delta * -(_b == 0 ? space->get_constraint_bias() : _b) * (1.0 / p_step)).clamped(get_max_bias());
-
-	// apply accumulated impulse
-	A->apply_impulse(-jn_acc, rA);
-	B->apply_impulse(jn_acc, rB);
+	gbias = (delta * -(_b == 0 ? space->get_constraint_bias() : _b) * (1.0 / p_step)).limit_length(get_max_bias());
 
 	correct = true;
+	return true;
+}
+
+bool GrooveJoint2DSW::pre_solve(real_t p_step) {
+	// Apply accumulated impulse.
+	if (dynamic_A) {
+		A->apply_impulse(-jn_acc, rA);
+	}
+	if (dynamic_B) {
+		B->apply_impulse(jn_acc, rB);
+	}
+
 	return true;
 }
 
@@ -324,12 +349,16 @@ void GrooveJoint2DSW::solve(real_t p_step) {
 	Vector2 jOld = jn_acc;
 	j += jOld;
 
-	jn_acc = (((clamp * j.cross(xf_normal)) > 0) ? j : j.project(xf_normal)).clamped(jn_max);
+	jn_acc = (((clamp * j.cross(xf_normal)) > 0) ? j : j.project(xf_normal)).limit_length(jn_max);
 
 	j = jn_acc - jOld;
 
-	A->apply_impulse(-j, rA);
-	B->apply_impulse(j, rB);
+	if (dynamic_A) {
+		A->apply_impulse(-j, rA);
+	}
+	if (dynamic_B) {
+		B->apply_impulse(j, rB);
+	}
 }
 
 GrooveJoint2DSW::GrooveJoint2DSW(const Vector2 &p_a_groove1, const Vector2 &p_a_groove2, const Vector2 &p_b_anchor, Body2DSW *p_body_a, Body2DSW *p_body_b) :
@@ -351,7 +380,10 @@ GrooveJoint2DSW::GrooveJoint2DSW(const Vector2 &p_a_groove1, const Vector2 &p_a_
 //////////////////////////////////////////////
 
 bool DampedSpringJoint2DSW::setup(real_t p_step) {
-	if ((A->get_mode() <= PhysicsServer2D::BODY_MODE_KINEMATIC) && (B->get_mode() <= PhysicsServer2D::BODY_MODE_KINEMATIC)) {
+	dynamic_A = (A->get_mode() > PhysicsServer2D::BODY_MODE_KINEMATIC);
+	dynamic_B = (B->get_mode() > PhysicsServer2D::BODY_MODE_KINEMATIC);
+
+	if (!dynamic_A && !dynamic_B) {
 		return false;
 	}
 
@@ -373,12 +405,21 @@ bool DampedSpringJoint2DSW::setup(real_t p_step) {
 	target_vrn = 0.0f;
 	v_coef = 1.0f - Math::exp(-damping * (p_step)*k);
 
-	// apply spring force
+	// Calculate spring force.
 	real_t f_spring = (rest_length - dist) * stiffness;
-	Vector2 j = n * f_spring * (p_step);
+	j = n * f_spring * (p_step);
 
-	A->apply_impulse(-j, rA);
-	B->apply_impulse(j, rB);
+	return true;
+}
+
+bool DampedSpringJoint2DSW::pre_solve(real_t p_step) {
+	// Apply spring force.
+	if (dynamic_A) {
+		A->apply_impulse(-j, rA);
+	}
+	if (dynamic_B) {
+		B->apply_impulse(j, rB);
+	}
 
 	return true;
 }
@@ -393,8 +434,12 @@ void DampedSpringJoint2DSW::solve(real_t p_step) {
 	target_vrn = vrn + v_damp;
 	Vector2 j = n * v_damp * n_mass;
 
-	A->apply_impulse(-j, rA);
-	B->apply_impulse(j, rB);
+	if (dynamic_A) {
+		A->apply_impulse(-j, rA);
+	}
+	if (dynamic_B) {
+		B->apply_impulse(j, rB);
+	}
 }
 
 void DampedSpringJoint2DSW::set_param(PhysicsServer2D::DampedSpringParam p_param, real_t p_value) {
@@ -435,8 +480,6 @@ DampedSpringJoint2DSW::DampedSpringJoint2DSW(const Vector2 &p_anchor_a, const Ve
 	anchor_B = B->get_inv_transform().xform(p_anchor_b);
 
 	rest_length = p_anchor_a.distance_to(p_anchor_b);
-	stiffness = 20;
-	damping = 1.5;
 
 	A->add_constraint(this, 0);
 	B->add_constraint(this, 1);

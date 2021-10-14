@@ -30,8 +30,8 @@
 
 #include "audio_stream_sample.h"
 
+#include "core/io/file_access.h"
 #include "core/io/marshalls.h"
-#include "core/os/file_access.h"
 
 void AudioStreamPlaybackSample::start(float p_from_pos) {
 	if (base->format == AudioStreamSample::FORMAT_IMA_ADPCM) {
@@ -221,12 +221,12 @@ void AudioStreamPlaybackSample::do_resample(const Depth *p_src, AudioFrame *p_ds
 	}
 }
 
-void AudioStreamPlaybackSample::mix(AudioFrame *p_buffer, float p_rate_scale, int p_frames) {
+int AudioStreamPlaybackSample::mix(AudioFrame *p_buffer, float p_rate_scale, int p_frames) {
 	if (!base->data || !active) {
 		for (int i = 0; i < p_frames; i++) {
 			p_buffer[i] = AudioFrame(0, 0);
 		}
-		return;
+		return 0;
 	}
 
 	int len = base->data_bytes;
@@ -261,11 +261,11 @@ void AudioStreamPlaybackSample::mix(AudioFrame *p_buffer, float p_rate_scale, in
 		sign = -1;
 	}
 
-	float global_rate_scale = AudioServer::get_singleton()->get_global_rate_scale();
-	float base_rate = AudioServer::get_singleton()->get_mix_rate() * global_rate_scale;
+	float base_rate = AudioServer::get_singleton()->get_mix_rate();
 	float srate = base->mix_rate;
 	srate *= p_rate_scale;
-	float fincrement = srate / base_rate;
+	float playback_speed_scale = AudioServer::get_singleton()->get_playback_speed_scale();
+	float fincrement = (srate * playback_speed_scale) / base_rate;
 	int32_t increment = int32_t(MAX(fincrement * MIX_FRAC_LEN, 1));
 	increment *= sign;
 
@@ -395,12 +395,15 @@ void AudioStreamPlaybackSample::mix(AudioFrame *p_buffer, float p_rate_scale, in
 	}
 
 	if (todo) {
+		int mixed_frames = p_frames - todo;
 		//bit was missing from mix
 		int todo_ofs = p_frames - todo;
 		for (int i = todo_ofs; i < p_frames; i++) {
 			p_buffer[i] = AudioFrame(0, 0);
 		}
+		return mixed_frames;
 	}
+	return p_frames;
 }
 
 AudioStreamPlaybackSample::AudioStreamPlaybackSample() {}
@@ -477,6 +480,10 @@ float AudioStreamSample::get_length() const {
 	return float(len) / mix_rate;
 }
 
+bool AudioStreamSample::is_monophonic() const {
+	return false;
+}
+
 void AudioStreamSample::set_data(const Vector<uint8_t> &p_data) {
 	AudioServer::get_singleton()->lock();
 	if (data) {
@@ -490,9 +497,9 @@ void AudioStreamSample::set_data(const Vector<uint8_t> &p_data) {
 		const uint8_t *r = p_data.ptr();
 		int alloc_len = datalen + DATA_PAD * 2;
 		data = memalloc(alloc_len); //alloc with some padding for interpolation
-		zeromem(data, alloc_len);
+		memset(data, 0, alloc_len);
 		uint8_t *dataptr = (uint8_t *)data;
-		copymem(dataptr + DATA_PAD, r, datalen);
+		memcpy(dataptr + DATA_PAD, r, datalen);
 		data_bytes = datalen;
 	}
 
@@ -507,7 +514,7 @@ Vector<uint8_t> AudioStreamSample::get_data() const {
 		{
 			uint8_t *w = pv.ptrw();
 			uint8_t *dataptr = (uint8_t *)data;
-			copymem(w, dataptr + DATA_PAD, data_bytes);
+			memcpy(w, dataptr + DATA_PAD, data_bytes);
 		}
 	}
 
@@ -596,7 +603,7 @@ Error AudioStreamSample::save_to_wav(const String &p_path) {
 
 Ref<AudioStreamPlayback> AudioStreamSample::instance_playback() {
 	Ref<AudioStreamPlaybackSample> sample;
-	sample.instance();
+	sample.instantiate();
 	sample->base = Ref<AudioStreamSample>(this);
 	return sample;
 }

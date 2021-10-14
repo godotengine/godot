@@ -13,92 +13,67 @@
 	</tutorials>
 	<methods>
 		<method name="draw" qualifiers="const">
-			<return type="void">
-			</return>
-			<argument index="0" name="canvas_item" type="RID">
-			</argument>
-			<argument index="1" name="position" type="Vector2">
-			</argument>
-			<argument index="2" name="modulate" type="Color" default="Color( 1, 1, 1, 1 )">
-			</argument>
-			<argument index="3" name="transpose" type="bool" default="false">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="canvas_item" type="RID" />
+			<argument index="1" name="position" type="Vector2" />
+			<argument index="2" name="modulate" type="Color" default="Color(1, 1, 1, 1)" />
+			<argument index="3" name="transpose" type="bool" default="false" />
 			<description>
 				Draws the texture using a [CanvasItem] with the [RenderingServer] API at the specified [code]position[/code].
 			</description>
 		</method>
 		<method name="draw_rect" qualifiers="const">
-			<return type="void">
-			</return>
-			<argument index="0" name="canvas_item" type="RID">
-			</argument>
-			<argument index="1" name="rect" type="Rect2">
-			</argument>
-			<argument index="2" name="tile" type="bool">
-			</argument>
-			<argument index="3" name="modulate" type="Color" default="Color( 1, 1, 1, 1 )">
-			</argument>
-			<argument index="4" name="transpose" type="bool" default="false">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="canvas_item" type="RID" />
+			<argument index="1" name="rect" type="Rect2" />
+			<argument index="2" name="tile" type="bool" />
+			<argument index="3" name="modulate" type="Color" default="Color(1, 1, 1, 1)" />
+			<argument index="4" name="transpose" type="bool" default="false" />
 			<description>
 				Draws the texture using a [CanvasItem] with the [RenderingServer] API.
 			</description>
 		</method>
 		<method name="draw_rect_region" qualifiers="const">
-			<return type="void">
-			</return>
-			<argument index="0" name="canvas_item" type="RID">
-			</argument>
-			<argument index="1" name="rect" type="Rect2">
-			</argument>
-			<argument index="2" name="src_rect" type="Rect2">
-			</argument>
-			<argument index="3" name="modulate" type="Color" default="Color( 1, 1, 1, 1 )">
-			</argument>
-			<argument index="4" name="transpose" type="bool" default="false">
-			</argument>
-			<argument index="5" name="clip_uv" type="bool" default="true">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="canvas_item" type="RID" />
+			<argument index="1" name="rect" type="Rect2" />
+			<argument index="2" name="src_rect" type="Rect2" />
+			<argument index="3" name="modulate" type="Color" default="Color(1, 1, 1, 1)" />
+			<argument index="4" name="transpose" type="bool" default="false" />
+			<argument index="5" name="clip_uv" type="bool" default="true" />
 			<description>
 				Draws a part of the texture using a [CanvasItem] with the [RenderingServer] API.
 			</description>
 		</method>
 		<method name="get_height" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the texture height.
 			</description>
 		</method>
 		<method name="get_image" qualifiers="const">
-			<return type="Image">
-			</return>
+			<return type="Image" />
 			<description>
 				Returns an [Image] that is a copy of data from this [Texture2D]. [Image]s can be accessed and manipulated directly.
 			</description>
 		</method>
 		<method name="get_size" qualifiers="const">
-			<return type="Vector2">
-			</return>
+			<return type="Vector2" />
 			<description>
 				Returns the texture size.
 			</description>
 		</method>
 		<method name="get_width" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the texture width.
 			</description>
 		</method>
 		<method name="has_alpha" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if this [Texture2D] has an alpha channel.
 			</description>
 		</method>
 	</methods>
-	<constants>
-	</constants>
 </class>

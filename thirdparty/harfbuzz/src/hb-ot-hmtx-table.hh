@@ -146,7 +146,7 @@ struct hmtxvmtx
 
     _mtx.fini ();
 
-    if (unlikely (c->serializer->ran_out_of_room || c->serializer->in_error ()))
+    if (unlikely (c->serializer->in_error ()))
       return_trace (false);
 
     // Amend header num hmetrics

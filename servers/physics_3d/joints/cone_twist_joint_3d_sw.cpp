@@ -84,7 +84,7 @@ static _FORCE_INLINE_ real_t atan2fast(real_t y, real_t x) {
 	return (y < 0.0f) ? -angle : angle;
 }
 
-ConeTwistJoint3DSW::ConeTwistJoint3DSW(Body3DSW *rbA, Body3DSW *rbB, const Transform &rbAFrame, const Transform &rbBFrame) :
+ConeTwistJoint3DSW::ConeTwistJoint3DSW(Body3DSW *rbA, Body3DSW *rbB, const Transform3D &rbAFrame, const Transform3D &rbBFrame) :
 		Joint3DSW(_arr, 2) {
 	A = rbA;
 	B = rbB;
@@ -92,24 +92,15 @@ ConeTwistJoint3DSW::ConeTwistJoint3DSW(Body3DSW *rbA, Body3DSW *rbB, const Trans
 	m_rbAFrame = rbAFrame;
 	m_rbBFrame = rbBFrame;
 
-	m_swingSpan1 = Math_TAU / 8.0;
-	m_swingSpan2 = Math_TAU / 8.0;
-	m_twistSpan = Math_TAU;
-	m_biasFactor = 0.3f;
-	m_relaxationFactor = 1.0f;
-
-	m_angularOnly = false;
-	m_solveTwistLimit = false;
-	m_solveSwingLimit = false;
-
 	A->add_constraint(this, 0);
 	B->add_constraint(this, 1);
-
-	m_appliedImpulse = 0;
 }
 
 bool ConeTwistJoint3DSW::setup(real_t p_timestep) {
-	if ((A->get_mode() <= PhysicsServer3D::BODY_MODE_KINEMATIC) && (B->get_mode() <= PhysicsServer3D::BODY_MODE_KINEMATIC)) {
+	dynamic_A = (A->get_mode() > PhysicsServer3D::BODY_MODE_KINEMATIC);
+	dynamic_B = (B->get_mode() > PhysicsServer3D::BODY_MODE_KINEMATIC);
+
+	if (!dynamic_A && !dynamic_B) {
 		return false;
 	}
 
@@ -208,7 +199,7 @@ bool ConeTwistJoint3DSW::setup(real_t p_timestep) {
 	// Twist limits
 	if (m_twistSpan >= real_t(0.)) {
 		Vector3 b2Axis22 = B->get_transform().basis.xform(this->m_rbBFrame.basis.get_axis(1));
-		Quat rotationArc = Quat(b2Axis1, b1Axis1);
+		Quaternion rotationArc = Quaternion(b2Axis1, b1Axis1);
 		Vector3 TwistRef = rotationArc.xform(b2Axis22);
 		real_t twist = atan2fast(TwistRef.dot(b1Axis3), TwistRef.dot(b1Axis2));
 
@@ -265,8 +256,12 @@ void ConeTwistJoint3DSW::solve(real_t p_timestep) {
 			real_t impulse = depth * tau / p_timestep * jacDiagABInv - rel_vel * jacDiagABInv;
 			m_appliedImpulse += impulse;
 			Vector3 impulse_vector = normal * impulse;
-			A->apply_impulse(impulse_vector, pivotAInW - A->get_transform().origin);
-			B->apply_impulse(-impulse_vector, pivotBInW - B->get_transform().origin);
+			if (dynamic_A) {
+				A->apply_impulse(impulse_vector, pivotAInW - A->get_transform().origin);
+			}
+			if (dynamic_B) {
+				B->apply_impulse(-impulse_vector, pivotBInW - B->get_transform().origin);
+			}
 		}
 	}
 
@@ -287,8 +282,12 @@ void ConeTwistJoint3DSW::solve(real_t p_timestep) {
 
 			Vector3 impulse = m_swingAxis * impulseMag;
 
-			A->apply_torque_impulse(impulse);
-			B->apply_torque_impulse(-impulse);
+			if (dynamic_A) {
+				A->apply_torque_impulse(impulse);
+			}
+			if (dynamic_B) {
+				B->apply_torque_impulse(-impulse);
+			}
 		}
 
 		// solve twist limit
@@ -303,8 +302,12 @@ void ConeTwistJoint3DSW::solve(real_t p_timestep) {
 
 			Vector3 impulse = m_twistAxis * impulseMag;
 
-			A->apply_torque_impulse(impulse);
-			B->apply_torque_impulse(-impulse);
+			if (dynamic_A) {
+				A->apply_torque_impulse(impulse);
+			}
+			if (dynamic_B) {
+				B->apply_torque_impulse(-impulse);
+			}
 		}
 	}
 }

@@ -30,7 +30,6 @@
 
 #include "navigation_agent_3d.h"
 
-#include "core/config/engine.h"
 #include "servers/navigation_server_3d.h"
 
 void NavigationAgent3D::_bind_methods() {
@@ -111,12 +110,7 @@ void NavigationAgent3D::_notification(int p_what) {
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
 			if (agent_parent) {
 				NavigationServer3D::get_singleton()->agent_set_position(agent, agent_parent->get_global_transform().origin);
-				if (!target_reached) {
-					if (distance_to_target() < target_desired_distance) {
-						emit_signal("target_reached");
-						target_reached = true;
-					}
-				}
+				_check_distance_to_target();
 			}
 		} break;
 	}
@@ -247,7 +241,7 @@ void NavigationAgent3D::_avoidance_done(Vector3 p_new_velocity) {
 	}
 	velocity_submitted = false;
 
-	emit_signal("velocity_computed", p_new_velocity);
+	emit_signal(SNAME("velocity_computed"), p_new_velocity);
 }
 
 TypedArray<String> NavigationAgent3D::get_configuration_warnings() const {
@@ -301,7 +295,7 @@ void NavigationAgent3D::update_navigation() {
 		navigation_path = NavigationServer3D::get_singleton()->map_get_path(agent_parent->get_world_3d()->get_navigation_map(), o, target_location, true);
 		navigation_finished = false;
 		nav_path_index = 0;
-		emit_signal("path_changed");
+		emit_signal(SNAME("path_changed"));
 	}
 
 	if (navigation_path.size() == 0) {
@@ -314,11 +308,21 @@ void NavigationAgent3D::update_navigation() {
 		while (o.distance_to(navigation_path[nav_path_index] - Vector3(0, navigation_height_offset, 0)) < target_desired_distance) {
 			nav_path_index += 1;
 			if (nav_path_index == navigation_path.size()) {
+				_check_distance_to_target();
 				nav_path_index -= 1;
 				navigation_finished = true;
-				emit_signal("navigation_finished");
+				emit_signal(SNAME("navigation_finished"));
 				break;
 			}
+		}
+	}
+}
+
+void NavigationAgent3D::_check_distance_to_target() {
+	if (!target_reached) {
+		if (distance_to_target() < target_desired_distance) {
+			emit_signal(SNAME("target_reached"));
+			target_reached = true;
 		}
 	}
 }

@@ -53,28 +53,27 @@ class EditorSettingsDialog : public AcceptDialog {
 	LineEdit *shortcut_search_box;
 	SectionedInspector *inspector;
 
+	// Shortcuts
 	enum ShortcutButton {
+		SHORTCUT_ADD,
 		SHORTCUT_EDIT,
 		SHORTCUT_ERASE,
 		SHORTCUT_REVERT
 	};
 
-	int button_idx;
-	int current_action_event_index = -1;
-	bool editing_action = false;
-	String current_action;
-	Array current_action_events;
-	PopupMenu *action_popup;
+	Tree *shortcuts;
+	String shortcut_filter;
+
+	InputEventConfigurationDialog *shortcut_editor;
+
+	bool is_editing_action = false;
+	String current_edited_identifier;
+	Array current_events;
+	int current_event_index = -1;
 
 	Timer *timer;
 
 	UndoRedo *undo_redo;
-
-	// Shortcuts
-	String shortcut_filter;
-	Tree *shortcuts;
-	InputEventConfigurationDialog *shortcut_editor;
-	String shortcut_being_edited;
 
 	virtual void cancel_pressed() override;
 	virtual void ok_pressed() override;
@@ -83,13 +82,20 @@ class EditorSettingsDialog : public AcceptDialog {
 	void _settings_property_edited(const String &p_name);
 	void _settings_save();
 
-	void _unhandled_input(const Ref<InputEvent> &p_event);
+	virtual void unhandled_input(const Ref<InputEvent> &p_event) override;
 	void _notification(int p_what);
 	void _update_icons();
 
 	void _event_config_confirmed();
 
+	void _create_shortcut_treeitem(TreeItem *p_parent, const String &p_shortcut_identifier, const String &p_display, Array &p_events, bool p_allow_revert, bool p_is_common, bool p_is_collapsed);
+	Array _event_list_to_array_helper(List<Ref<InputEvent>> &p_events);
 	void _update_builtin_action(const String &p_name, const Array &p_events);
+	void _update_shortcut_events(const String &p_path, const Array &p_events);
+
+	Variant get_drag_data_fw(const Point2 &p_point, Control *p_from);
+	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
+	void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
 
 	void _tabs_tab_changed(int p_tab);
 	void _focus_current_search_box();

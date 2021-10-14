@@ -56,10 +56,10 @@ typedef enum godot_variant_type {
 	GODOT_VARIANT_TYPE_VECTOR3I,
 	GODOT_VARIANT_TYPE_TRANSFORM2D,
 	GODOT_VARIANT_TYPE_PLANE,
-	GODOT_VARIANT_TYPE_QUAT,
+	GODOT_VARIANT_TYPE_QUATERNION,
 	GODOT_VARIANT_TYPE_AABB,
 	GODOT_VARIANT_TYPE_BASIS,
-	GODOT_VARIANT_TYPE_TRANSFORM,
+	GODOT_VARIANT_TYPE_TRANSFORM3D,
 
 	// misc types
 	GODOT_VARIANT_TYPE_COLOR,
@@ -164,7 +164,7 @@ typedef void (*godot_validated_keyed_getter)(const godot_variant *p_base, const 
 typedef bool (*godot_validated_keyed_checker)(const godot_variant *p_base, const godot_variant *p_key, bool *r_valid);
 typedef void (*godot_ptr_keyed_setter)(void *p_base, const void *p_key, const void *p_value);
 typedef void (*godot_ptr_keyed_getter)(const void *p_base, const void *p_key, void *r_value);
-typedef bool (*godot_ptr_keyed_checker)(const godot_variant *p_base, const godot_variant *p_key);
+typedef uint32_t (*godot_ptr_keyed_checker)(const godot_variant *p_base, const godot_variant *p_key);
 typedef void (*godot_validated_utility_function)(godot_variant *r_return, const godot_variant **p_arguments, int p_argument_count);
 typedef void (*godot_ptr_utility_function)(void *r_return, const void **p_arguments, int p_argument_count);
 
@@ -177,14 +177,14 @@ typedef void (*godot_ptr_utility_function)(void *r_return, const void **p_argume
 #include <gdnative/node_path.h>
 #include <gdnative/packed_arrays.h>
 #include <gdnative/plane.h>
-#include <gdnative/quat.h>
+#include <gdnative/quaternion.h>
 #include <gdnative/rect2.h>
 #include <gdnative/rid.h>
 #include <gdnative/signal.h>
 #include <gdnative/string.h>
 #include <gdnative/string_name.h>
-#include <gdnative/transform.h>
 #include <gdnative/transform2d.h>
+#include <gdnative/transform_3d.h>
 #include <gdnative/variant.h>
 #include <gdnative/vector2.h>
 #include <gdnative/vector3.h>
@@ -208,10 +208,10 @@ void GDAPI godot_variant_new_vector3(godot_variant *r_dest, const godot_vector3 
 void GDAPI godot_variant_new_vector3i(godot_variant *r_dest, const godot_vector3i *p_v3);
 void GDAPI godot_variant_new_transform2d(godot_variant *r_dest, const godot_transform2d *p_t2d);
 void GDAPI godot_variant_new_plane(godot_variant *r_dest, const godot_plane *p_plane);
-void GDAPI godot_variant_new_quat(godot_variant *r_dest, const godot_quat *p_quat);
+void GDAPI godot_variant_new_quaternion(godot_variant *r_dest, const godot_quaternion *p_quaternion);
 void GDAPI godot_variant_new_aabb(godot_variant *r_dest, const godot_aabb *p_aabb);
 void GDAPI godot_variant_new_basis(godot_variant *r_dest, const godot_basis *p_basis);
-void GDAPI godot_variant_new_transform(godot_variant *r_dest, const godot_transform *p_trans);
+void GDAPI godot_variant_new_transform3d(godot_variant *r_dest, const godot_transform3d *p_trans);
 void GDAPI godot_variant_new_color(godot_variant *r_dest, const godot_color *p_color);
 void GDAPI godot_variant_new_string_name(godot_variant *r_dest, const godot_string_name *p_s);
 void GDAPI godot_variant_new_node_path(godot_variant *r_dest, const godot_node_path *p_np);
@@ -243,10 +243,10 @@ godot_vector3 GDAPI godot_variant_as_vector3(const godot_variant *p_self);
 godot_vector3i GDAPI godot_variant_as_vector3i(const godot_variant *p_self);
 godot_transform2d GDAPI godot_variant_as_transform2d(const godot_variant *p_self);
 godot_plane GDAPI godot_variant_as_plane(const godot_variant *p_self);
-godot_quat GDAPI godot_variant_as_quat(const godot_variant *p_self);
+godot_quaternion GDAPI godot_variant_as_quaternion(const godot_variant *p_self);
 godot_aabb GDAPI godot_variant_as_aabb(const godot_variant *p_self);
 godot_basis GDAPI godot_variant_as_basis(const godot_variant *p_self);
-godot_transform GDAPI godot_variant_as_transform(const godot_variant *p_self);
+godot_transform3d GDAPI godot_variant_as_transform3d(const godot_variant *p_self);
 godot_color GDAPI godot_variant_as_color(const godot_variant *p_self);
 godot_string_name GDAPI godot_variant_as_string_name(const godot_variant *p_self);
 godot_node_path GDAPI godot_variant_as_node_path(const godot_variant *p_self);

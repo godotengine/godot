@@ -33,9 +33,9 @@
 #include "os_iphone.h"
 #import "app_delegate.h"
 #include "core/config/project_settings.h"
+#include "core/io/dir_access.h"
+#include "core/io/file_access.h"
 #include "core/io/file_access_pack.h"
-#include "core/os/dir_access.h"
-#include "core/os/file_access.h"
 #include "display_server_iphone.h"
 #include "drivers/unix/syslog_logger.h"
 #import "godot_view.h"
@@ -49,7 +49,11 @@
 #if defined(VULKAN_ENABLED)
 #include "servers/rendering/renderer_rd/renderer_compositor_rd.h"
 #import <QuartzCore/CAMetalLayer.h>
-#include <vulkan/vulkan_metal.h>
+#ifdef USE_VOLK
+#include <volk.h>
+#else
+#include <vulkan/vulkan.h>
+#endif
 #endif
 
 // Initialization order between compilation units is not guaranteed,
@@ -83,7 +87,7 @@ OSIPhone *OSIPhone::get_singleton() {
 	return (OSIPhone *)OS::get_singleton();
 }
 
-OSIPhone::OSIPhone(String p_data_dir) {
+OSIPhone::OSIPhone(String p_data_dir, String p_cache_dir) {
 	for (int i = 0; i < ios_init_callbacks_count; ++i) {
 		ios_init_callbacks[i]();
 	}
@@ -97,6 +101,7 @@ OSIPhone::OSIPhone(String p_data_dir) {
 	// can't call set_data_dir from here, since it requires DirAccess
 	// which is initialized in initialize_core
 	user_data_dir = p_data_dir;
+	cache_dir = p_cache_dir;
 
 	Vector<Logger *> loggers;
 	loggers.push_back(memnew(SyslogLogger));
@@ -113,6 +118,12 @@ OSIPhone::OSIPhone(String p_data_dir) {
 }
 
 OSIPhone::~OSIPhone() {}
+
+void OSIPhone::alert(const String &p_alert, const String &p_title) {
+	const CharString utf8_alert = p_alert.utf8();
+	const CharString utf8_title = p_title.utf8();
+	iOS::alert(utf8_alert.get_data(), utf8_title.get_data());
+}
 
 void OSIPhone::initialize_core() {
 	OS_Unix::initialize_core();
@@ -139,8 +150,6 @@ void OSIPhone::deinitialize_modules() {
 	if (ios) {
 		memdelete(ios);
 	}
-
-	godot_ios_plugins_deinitialize();
 }
 
 void OSIPhone::set_main_loop(MainLoop *p_main_loop) {
@@ -177,8 +186,6 @@ bool OSIPhone::iterate() {
 }
 
 void OSIPhone::start() {
-	godot_ios_plugins_initialize();
-
 	Main::start();
 
 	if (joypad_iphone) {
@@ -221,12 +228,6 @@ Error OSIPhone::get_dynamic_library_symbol_handle(void *p_library_handle, const 
 	return OS_Unix::get_dynamic_library_symbol_handle(p_library_handle, p_name, p_symbol_handle, p_optional);
 }
 
-void OSIPhone::alert(const String &p_alert, const String &p_title) {
-	const CharString utf8_alert = p_alert.utf8();
-	const CharString utf8_title = p_title.utf8();
-	iOS::alert(utf8_alert.get_data(), utf8_title.get_data());
-}
-
 String OSIPhone::get_name() const {
 	return "iOS";
 };
@@ -266,6 +267,10 @@ String OSIPhone::get_user_data_dir() const {
 	return user_data_dir;
 }
 
+String OSIPhone::get_cache_path() const {
+	return cache_dir;
+}
+
 String OSIPhone::get_locale() const {
 	NSString *preferedLanguage = [NSLocale preferredLanguages].firstObject;
 
@@ -301,10 +306,6 @@ void OSIPhone::on_focus_out() {
 
 		[AppDelegate.viewController.godotView stopRendering];
 
-		if (DisplayServerIPhone::get_singleton() && DisplayServerIPhone::get_singleton()->native_video_is_playing()) {
-			DisplayServerIPhone::get_singleton()->native_video_pause();
-		}
-
 		audio_driver.stop();
 	}
 }
@@ -318,10 +319,6 @@ void OSIPhone::on_focus_in() {
 		}
 
 		[AppDelegate.viewController.godotView startRendering];
-
-		if (DisplayServerIPhone::get_singleton() && DisplayServerIPhone::get_singleton()->native_video_is_playing()) {
-			DisplayServerIPhone::get_singleton()->native_video_unpause();
-		}
 
 		audio_driver.start();
 	}

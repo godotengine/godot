@@ -55,6 +55,7 @@ AAT::hb_aat_apply_context_t::hb_aat_apply_context_t (const hb_ot_shape_plan_t *p
 						       buffer (buffer_),
 						       sanitizer (),
 						       ankr_table (&Null (AAT::ankr)),
+						       gdef_table (face->table.GDEF->table),
 						       lookup_index (0)
 {
   sanitizer.init (blob);
@@ -79,7 +80,7 @@ AAT::hb_aat_apply_context_t::set_ankr_table (const AAT::ankr *ankr_table_)
  * @short_description: Apple Advanced Typography Layout
  * @include: hb-aat.h
  *
- * Functions for querying AAT Layout features in the font face. 
+ * Functions for querying AAT Layout features in the font face.
  *
  * HarfBuzz supports all of the AAT tables used to implement shaping. Other
  * AAT tables and their associated features are not supported.
@@ -172,13 +173,13 @@ static const hb_aat_feature_mapping_t feature_mappings[] =
   {HB_TAG ('z','e','r','o'), HB_AAT_LAYOUT_FEATURE_TYPE_TYPOGRAPHIC_EXTRAS,      HB_AAT_LAYOUT_FEATURE_SELECTOR_SLASHED_ZERO_ON,                HB_AAT_LAYOUT_FEATURE_SELECTOR_SLASHED_ZERO_OFF},
 };
 
-/** 
+/**
  * hb_aat_layout_find_feature_mapping:
  * @tag: The requested #hb_tag_t feature tag
  *
  * Fetches the AAT feature-and-selector combination that corresponds
  * to a given OpenType feature tag.
- *  
+ *
  * Return value: the AAT features and selectors corresponding to the
  * OpenType feature tag queried
  *
@@ -248,7 +249,9 @@ hb_aat_layout_substitute (const hb_ot_shape_plan_t *plan,
   if (morx.has_data ())
   {
     AAT::hb_aat_apply_context_t c (plan, font, buffer, morx_blob);
+    if (!buffer->message (font, "start table morx")) return;
     morx.apply (&c);
+    (void) buffer->message (font, "end table morx");
     return;
   }
 
@@ -257,7 +260,9 @@ hb_aat_layout_substitute (const hb_ot_shape_plan_t *plan,
   if (mort.has_data ())
   {
     AAT::hb_aat_apply_context_t c (plan, font, buffer, mort_blob);
+    if (!buffer->message (font, "start table mort")) return;
     mort.apply (&c);
+    (void) buffer->message (font, "end table mort");
     return;
   }
 }
@@ -313,8 +318,10 @@ hb_aat_layout_position (const hb_ot_shape_plan_t *plan,
   const AAT::kerx& kerx = *kerx_blob->as<AAT::kerx> ();
 
   AAT::hb_aat_apply_context_t c (plan, font, buffer, kerx_blob);
+  if (!buffer->message (font, "start table kerx")) return;
   c.set_ankr_table (font->face->table.ankr.get ());
   kerx.apply (&c);
+  (void) buffer->message (font, "end table kerx");
 }
 
 

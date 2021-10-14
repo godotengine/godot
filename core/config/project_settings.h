@@ -33,6 +33,7 @@
 
 #include "core/object/class_db.h"
 #include "core/os/thread_safe.h"
+#include "core/templates/ordered_hash_map.h"
 #include "core/templates/set.h"
 
 class ProjectSettings : public Object {
@@ -41,7 +42,6 @@ class ProjectSettings : public Object {
 
 public:
 	typedef Map<String, Variant> CustomMap;
-	static const String IMPORTED_FILES_PATH;
 
 	enum {
 		//properties that are not for built in values begin from this value, so builtin ones are displayed first
@@ -91,7 +91,9 @@ protected:
 	Set<String> custom_features;
 	Map<StringName, StringName> feature_overrides;
 
-	Map<StringName, AutoloadInfo> autoloads;
+	OrderedHashMap<StringName, AutoloadInfo> autoloads;
+
+	String project_data_dir_name;
 
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
@@ -140,7 +142,10 @@ public:
 	bool property_can_revert(const String &p_name);
 	Variant property_get_revert(const String &p_name);
 
+	String get_project_data_dir_name() const;
+	String get_project_data_path() const;
 	String get_resource_path() const;
+	String get_imported_files_path() const;
 
 	static ProjectSettings *get_singleton();
 
@@ -168,7 +173,7 @@ public:
 
 	bool has_custom_feature(const String &p_feature) const;
 
-	Map<StringName, AutoloadInfo> get_autoload_list() const;
+	OrderedHashMap<StringName, AutoloadInfo> get_autoload_list() const;
 	void add_autoload(const AutoloadInfo &p_autoload);
 	void remove_autoload(const StringName &p_autoload);
 	bool has_autoload(const StringName &p_autoload) const;

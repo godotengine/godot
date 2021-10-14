@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="WorldBoundaryShape3D" inherits="Shape3D" version="4.0">
+	<brief_description>
+		World boundary shape for 3D collisions.
+	</brief_description>
+	<description>
+		World boundary shape for 3D collisions. It works like an infinite plane and will not allow any physics body to go to the negative side. Note that the [Plane]'s normal matters; anything "below" the plane will collide with it. If the [WorldBoundaryShape3D] is used in a [PhysicsBody3D], it will cause colliding objects placed "below" it to teleport "above" the plane.
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="plane" type="Plane" setter="set_plane" getter="get_plane" default="Plane(0, 1, 0, 0)">
+			The [Plane] used by the [WorldBoundaryShape3D] for collision.
+		</member>
+	</members>
+</class>

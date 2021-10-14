@@ -31,22 +31,17 @@
 #include "editor_translation_parser.h"
 
 #include "core/error/error_macros.h"
+#include "core/io/file_access.h"
 #include "core/object/script_language.h"
-#include "core/os/file_access.h"
 #include "core/templates/set.h"
 
 EditorTranslationParser *EditorTranslationParser::singleton = nullptr;
 
 Error EditorTranslationParserPlugin::parse_file(const String &p_path, Vector<String> *r_ids, Vector<Vector<String>> *r_ids_ctx_plural) {
-	if (!get_script_instance()) {
-		return ERR_UNAVAILABLE;
-	}
+	Array ids;
+	Array ids_ctx_plural;
 
-	if (get_script_instance()->has_method("parse_file")) {
-		Array ids;
-		Array ids_ctx_plural;
-		get_script_instance()->call("parse_file", p_path, ids, ids_ctx_plural);
-
+	if (GDVIRTUAL_CALL(_parse_file, p_path, ids, ids_ctx_plural)) {
 		// Add user's extracted translatable messages.
 		for (int i = 0; i < ids.size(); i++) {
 			r_ids->append(ids[i]);
@@ -71,12 +66,8 @@ Error EditorTranslationParserPlugin::parse_file(const String &p_path, Vector<Str
 }
 
 void EditorTranslationParserPlugin::get_recognized_extensions(List<String> *r_extensions) const {
-	if (!get_script_instance()) {
-		return;
-	}
-
-	if (get_script_instance()->has_method("get_recognized_extensions")) {
-		Array extensions = get_script_instance()->call("get_recognized_extensions");
+	Vector<String> extensions;
+	if (GDVIRTUAL_CALL(_get_recognized_extensions, extensions)) {
 		for (int i = 0; i < extensions.size(); i++) {
 			r_extensions->push_back(extensions[i]);
 		}
@@ -86,8 +77,8 @@ void EditorTranslationParserPlugin::get_recognized_extensions(List<String> *r_ex
 }
 
 void EditorTranslationParserPlugin::_bind_methods() {
-	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::NIL, "parse_file", PropertyInfo(Variant::STRING, "path"), PropertyInfo(Variant::ARRAY, "msgids"), PropertyInfo(Variant::ARRAY, "msgids_context_plural")));
-	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::ARRAY, "get_recognized_extensions"));
+	GDVIRTUAL_BIND(_parse_file, "path", "msgids", "msgids_context_plural");
+	GDVIRTUAL_BIND(_get_recognized_extensions);
 }
 
 /////////////////////////
@@ -105,7 +96,7 @@ void EditorTranslationParser::get_recognized_extensions(List<String> *r_extensio
 	for (int i = 0; i < temp.size(); i++) {
 		extensions.insert(temp[i]);
 	}
-	for (auto E = extensions.front(); E; E = E->next()) {
+	for (Set<String>::Element *E = extensions.front(); E; E = E->next()) {
 		r_extensions->push_back(E->get());
 	}
 }

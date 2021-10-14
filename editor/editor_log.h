@@ -36,20 +36,105 @@
 #include "scene/gui/button.h"
 #include "scene/gui/control.h"
 #include "scene/gui/label.h"
+#include "scene/gui/line_edit.h"
 #include "scene/gui/panel_container.h"
 #include "scene/gui/rich_text_label.h"
 #include "scene/gui/texture_button.h"
 #include "scene/gui/texture_rect.h"
 
-class EditorLog : public VBoxContainer {
-	GDCLASS(EditorLog, VBoxContainer);
+class EditorLog : public HBoxContainer {
+	GDCLASS(EditorLog, HBoxContainer);
 
-	Button *clearbutton;
-	Button *copybutton;
-	Label *title;
+public:
+	enum MessageType {
+		MSG_TYPE_STD,
+		MSG_TYPE_ERROR,
+		MSG_TYPE_WARNING,
+		MSG_TYPE_EDITOR,
+	};
+
+private:
+	struct LogMessage {
+		String text;
+		MessageType type;
+		int count = 1;
+
+		LogMessage() {}
+
+		LogMessage(const String p_text, MessageType p_type) :
+				text(p_text),
+				type(p_type) {
+		}
+	};
+
+	// Encapsulates all data and functionality regarding filters.
+	struct LogFilter {
+	private:
+		// Force usage of set method since it has functionality built-in.
+		int message_count = 0;
+		bool active = true;
+
+	public:
+		MessageType type;
+		Button *toggle_button = nullptr;
+
+		void initialize_button(const String &p_tooltip, Callable p_toggled_callback) {
+			toggle_button = memnew(Button);
+			toggle_button->set_toggle_mode(true);
+			toggle_button->set_pressed(true);
+			toggle_button->set_text(itos(message_count));
+			toggle_button->set_tooltip(TTR(p_tooltip));
+			// Don't tint the icon even when in "pressed" state.
+			toggle_button->add_theme_color_override("icon_color_pressed", Color(1, 1, 1, 1));
+			toggle_button->set_focus_mode(FOCUS_NONE);
+			// When toggled call the callback and pass the MessageType this button is for.
+			toggle_button->connect("toggled", p_toggled_callback, varray(type));
+		}
+
+		int get_message_count() {
+			return message_count;
+		}
+
+		void set_message_count(int p_count) {
+			message_count = p_count;
+			toggle_button->set_text(itos(message_count));
+		}
+
+		bool is_active() {
+			return active;
+		}
+
+		void set_active(bool p_active) {
+			toggle_button->set_pressed(p_active);
+			active = p_active;
+		}
+
+		LogFilter(MessageType p_type) :
+				type(p_type) {
+		}
+	};
+
+	Vector<LogMessage> messages;
+	// Maps MessageTypes to LogFilters for convenient access and storage (don't need 1 member per filter).
+	Map<MessageType, LogFilter *> type_filter_map;
+
 	RichTextLabel *log;
-	HBoxContainer *title_hb;
+
+	Button *clear_button;
+	Button *copy_button;
+
+	Button *collapse_button;
+	bool collapse = false;
+
+	Button *show_search_button;
+	LineEdit *search_box;
+
+	// Reference to the "Output" button on the toolbar so we can update it's icon when
+	// Warnings or Errors are encounetered.
 	Button *tool_button;
+
+	bool is_loading_state = false; // Used to disable saving requests while loading (some signals from buttons will try trigger a save, which happens during loading).
+	Timer *save_state_timer;
 
 	static void _error_handler(void *p_self, const char *p_func, const char *p_file, int p_line, const char *p_error, const char *p_errorexp, ErrorHandlerType p_type);
 
@@ -62,26 +147,39 @@ class EditorLog : public VBoxContainer {
 	void _copy_request();
 	static void _undo_redo_cbk(void *p_self, const String &p_name);
 
+	void _rebuild_log();
+	void _add_log_line(LogMessage &p_message, bool p_replace_previous = false);
+
+	void _set_filter_active(bool p_active, MessageType p_message_type);
+	void _set_search_visible(bool p_visible);
+	void _search_changed(const String &p_text);
+
+	void _process_message(const String &p_msg, MessageType p_type);
+	void _reset_message_counts();
+
+	void _set_collapse(bool p_collapse);
+
+	void _start_state_save_timer();
+	void _save_state();
+	void _load_state();
+
+	void _update_theme();
+
 protected:
 	static void _bind_methods();
 	void _notification(int p_what);
 
 public:
-	enum MessageType {
-		MSG_TYPE_STD,
-		MSG_TYPE_ERROR,
-		MSG_TYPE_WARNING,
-		MSG_TYPE_EDITOR
-	};
-
 	void add_message(const String &p_msg, MessageType p_type = MSG_TYPE_STD);
 	void set_tool_button(Button *p_tool_button);
 	void deinit();
 
 	void clear();
-	void copy();
+
 	EditorLog();
 	~EditorLog();
 };
+
+VARIANT_ENUM_CAST(EditorLog::MessageType);
 
 #endif // EDITOR_LOG_H

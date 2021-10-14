@@ -50,7 +50,7 @@ void RemoteDebugger::_bind_profiler(const String &p_name, T *p_prof) {
 			[](void *p_user, const Array &p_data) {
 				((T *)p_user)->add(p_data);
 			},
-			[](void *p_user, float p_frame_time, float p_idle_time, float p_physics_time, float p_physics_frame_time) {
+			[](void *p_user, double p_frame_time, double p_idle_time, double p_physics_time, double p_physics_frame_time) {
 				((T *)p_user)->tick(p_frame_time, p_idle_time, p_physics_time, p_physics_frame_time);
 			});
 	EngineDebugger::register_profiler(p_name, prof);
@@ -164,7 +164,7 @@ public:
 		}
 	}
 
-	void tick(float p_frame_time, float p_idle_time, float p_physics_time, float p_physics_frame_time) {
+	void tick(double p_frame_time, double p_idle_time, double p_physics_time, double p_physics_frame_time) {
 		uint64_t pt = OS::get_singleton()->get_ticks_msec();
 		if (pt - last_bandwidth_time > 200) {
 			last_bandwidth_time = pt;
@@ -179,8 +179,8 @@ public:
 		if (pt - last_profile_time > 100) {
 			last_profile_time = pt;
 			DebuggerMarshalls::NetworkProfilerFrame frame;
-			for (Map<ObjectID, NodeInfo>::Element *E = multiplayer_node_data.front(); E; E = E->next()) {
-				frame.infos.push_back(E->get());
+			for (const KeyValue<ObjectID, NodeInfo> &E : multiplayer_node_data) {
+				frame.infos.push_back(E.value);
 			}
 			multiplayer_node_data.clear();
 			EngineDebugger::get_singleton()->send_message("network:profile_frame", frame.serialize());
@@ -278,10 +278,10 @@ struct RemoteDebugger::ServersProfiler {
 	Map<StringName, ServerInfo> server_data;
 	ScriptsProfiler scripts_profiler;
 
-	float frame_time = 0;
-	float idle_time = 0;
-	float physics_time = 0;
-	float physics_frame_time = 0;
+	double frame_time = 0;
+	double idle_time = 0;
+	double physics_time = 0;
+	double physics_frame_time = 0;
 
 	void toggle(bool p_enable, const Array &p_opts) {
 		skip_profile_frame = false;
@@ -308,7 +308,7 @@ struct RemoteDebugger::ServersProfiler {
 		srv.functions.push_back(fi);
 	}
 
-	void tick(float p_frame_time, float p_idle_time, float p_physics_time, float p_physics_frame_time) {
+	void tick(double p_frame_time, double p_idle_time, double p_physics_time, double p_physics_frame_time) {
 		frame_time = p_frame_time;
 		idle_time = p_idle_time;
 		physics_time = p_physics_time;
@@ -358,7 +358,7 @@ struct RemoteDebugger::VisualProfiler {
 
 	void add(const Array &p_data) {}
 
-	void tick(float p_frame_time, float p_idle_time, float p_physics_time, float p_physics_frame_time) {
+	void tick(double p_frame_time, double p_idle_time, double p_physics_time, double p_physics_frame_time) {
 		Vector<RS::FrameProfileArea> profile_areas = RS::get_singleton()->get_frame_profile();
 		DebuggerMarshalls::VisualProfilerFrame frame;
 		if (!profile_areas.size()) {
@@ -378,7 +378,7 @@ struct RemoteDebugger::PerformanceProfiler {
 
 	void toggle(bool p_enable, const Array &p_opts) {}
 	void add(const Array &p_data) {}
-	void tick(float p_frame_time, float p_idle_time, float p_physics_time, float p_physics_frame_time) {
+	void tick(double p_frame_time, double p_idle_time, double p_physics_time, double p_physics_frame_time) {
 		if (!performance) {
 			return;
 		}
@@ -427,16 +427,16 @@ void RemoteDebugger::_send_resource_usage() {
 	List<RS::TextureInfo> tinfo;
 	RS::get_singleton()->texture_debug_usage(&tinfo);
 
-	for (List<RS::TextureInfo>::Element *E = tinfo.front(); E; E = E->next()) {
+	for (const RS::TextureInfo &E : tinfo) {
 		DebuggerMarshalls::ResourceInfo info;
-		info.path = E->get().path;
-		info.vram = E->get().bytes;
-		info.id = E->get().texture;
+		info.path = E.path;
+		info.vram = E.bytes;
+		info.id = E.texture;
 		info.type = "Texture";
-		if (E->get().depth == 0) {
-			info.format = itos(E->get().width) + "x" + itos(E->get().height) + " " + Image::get_format_name(E->get().format);
+		if (E.depth == 0) {
+			info.format = itos(E.width) + "x" + itos(E.height) + " " + Image::get_format_name(E.format);
 		} else {
-			info.format = itos(E->get().width) + "x" + itos(E->get().height) + "x" + itos(E->get().depth) + " " + Image::get_format_name(E->get().format);
+			info.format = itos(E.width) + "x" + itos(E.height) + "x" + itos(E.depth) + " " + Image::get_format_name(E.format);
 		}
 		usage.infos.push_back(info);
 	}
@@ -706,6 +706,8 @@ void RemoteDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 	Array msg;
 	msg.push_back(p_can_continue);
 	msg.push_back(error_str);
+	ERR_FAIL_COND(!script_lang);
+	msg.push_back(script_lang->debug_get_stack_level_count() > 0);
 	send_message("debug_enter", msg);
 
 	servers_profiler->skip_profile_frame = true; // Avoid frame time spike in debug.
@@ -754,7 +756,6 @@ void RemoteDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 				break;
 
 			} else if (command == "get_stack_dump") {
-				ERR_FAIL_COND(!script_lang);
 				DebuggerMarshalls::ScriptStackDump dump;
 				int slc = script_lang->debug_get_stack_level_count();
 				for (int i = 0; i < slc; i++) {
@@ -790,7 +791,9 @@ void RemoteDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 				script_lang->debug_get_globals(&globals, &globals_vals);
 				ERR_FAIL_COND(globals.size() != globals_vals.size());
 
-				send_message("stack_frame_vars", Array());
+				Array var_size;
+				var_size.push_back(local_vals.size() + member_vals.size() + globals_vals.size());
+				send_message("stack_frame_vars", var_size);
 				_send_stack_vars(locals, local_vals, 0);
 				_send_stack_vars(members, member_vals, 1);
 				_send_stack_vars(globals, globals_vals, 2);

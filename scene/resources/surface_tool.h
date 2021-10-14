@@ -35,8 +35,8 @@
 #include "scene/resources/mesh.h"
 #include "thirdparty/misc/mikktspace.h"
 
-class SurfaceTool : public Reference {
-	GDCLASS(SurfaceTool, Reference);
+class SurfaceTool : public RefCounted {
+	GDCLASS(SurfaceTool, RefCounted);
 
 public:
 	struct Vertex {
@@ -78,6 +78,8 @@ public:
 	static OptimizeVertexCacheFunc optimize_vertex_cache_func;
 	typedef size_t (*SimplifyFunc)(unsigned int *destination, const unsigned int *indices, size_t index_count, const float *vertex_positions, size_t vertex_count, size_t vertex_positions_stride, size_t target_index_count, float target_error, float *r_error);
 	static SimplifyFunc simplify_func;
+	typedef size_t (*SimplifyWithAttribFunc)(unsigned int *destination, const unsigned int *indices, size_t index_count, const float *vertex_data, size_t vertex_count, size_t vertex_stride, size_t target_index_count, float target_error, float *result_error, const float *attributes, const float *attribute_weights, size_t attribute_count);
+	static SimplifyWithAttribFunc simplify_with_attrib_func;
 	typedef float (*SimplifyScaleFunc)(const float *vertex_positions, size_t vertex_count, size_t vertex_positions_stride);
 	static SimplifyScaleFunc simplify_scale_func;
 	typedef size_t (*SimplifySloppyFunc)(unsigned int *destination, const unsigned int *indices, size_t index_count, const float *vertex_positions_data, size_t vertex_count, size_t vertex_positions_stride, size_t target_index_count, float target_error, float *out_result_error);
@@ -184,7 +186,7 @@ public:
 	Array commit_to_arrays();
 	void create_from(const Ref<Mesh> &p_existing, int p_surface);
 	void create_from_blend_shape(const Ref<Mesh> &p_existing, int p_surface, const String &p_blend_shape_name);
-	void append_from(const Ref<Mesh> &p_existing, int p_surface, const Transform &p_xform);
+	void append_from(const Ref<Mesh> &p_existing, int p_surface, const Transform3D &p_xform);
 	Ref<ArrayMesh> commit(const Ref<ArrayMesh> &p_existing = Ref<ArrayMesh>(), uint32_t p_flags = 0);
 
 	SurfaceTool();

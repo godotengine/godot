@@ -50,9 +50,9 @@ void SpinBox::_value_changed(double) {
 	line_edit->set_text(value);
 }
 
-void SpinBox::_text_entered(const String &p_string) {
+void SpinBox::_text_submitted(const String &p_string) {
 	Ref<Expression> expr;
-	expr.instance();
+	expr.instantiate();
 
 	String num = TS->parse_number(p_string);
 	// Ignore the prefix and suffix in the expression
@@ -66,6 +66,15 @@ void SpinBox::_text_entered(const String &p_string) {
 		set_value(value);
 	}
 	_value_changed(0);
+}
+
+void SpinBox::_text_changed(const String &p_string) {
+	int cursor_pos = line_edit->get_caret_column();
+
+	_text_submitted(p_string);
+
+	// Line edit 'set_text' method resets the cursor position so we need to undo that.
+	line_edit->set_caret_column(cursor_pos);
 }
 
 LineEdit *SpinBox::get_line_edit() {
@@ -99,7 +108,7 @@ void SpinBox::_release_mouse() {
 	}
 }
 
-void SpinBox::_gui_input(const Ref<InputEvent> &p_event) {
+void SpinBox::gui_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
 	if (!is_editable()) {
@@ -140,6 +149,8 @@ void SpinBox::_gui_input(const Ref<InputEvent> &p_event) {
 					accept_event();
 				}
 			} break;
+			default:
+				break;
 		}
 	}
 
@@ -168,11 +179,11 @@ void SpinBox::_gui_input(const Ref<InputEvent> &p_event) {
 
 void SpinBox::_line_edit_focus_exit() {
 	// discontinue because the focus_exit was caused by right-click context menu
-	if (line_edit->get_menu()->is_visible()) {
+	if (line_edit->is_menu_visible()) {
 		return;
 	}
 
-	_text_entered(line_edit->get_text());
+	_text_submitted(line_edit->get_text());
 }
 
 inline void SpinBox::_adjust_width_for_icon(const Ref<Texture2D> &icon) {
@@ -186,7 +197,7 @@ inline void SpinBox::_adjust_width_for_icon(const Ref<Texture2D> &icon) {
 
 void SpinBox::_notification(int p_what) {
 	if (p_what == NOTIFICATION_DRAW) {
-		Ref<Texture2D> updown = get_theme_icon("updown");
+		Ref<Texture2D> updown = get_theme_icon(SNAME("updown"));
 
 		_adjust_width_for_icon(updown);
 
@@ -202,15 +213,15 @@ void SpinBox::_notification(int p_what) {
 	} else if (p_what == NOTIFICATION_FOCUS_EXIT) {
 		//_value_changed(0);
 	} else if (p_what == NOTIFICATION_ENTER_TREE) {
-		_adjust_width_for_icon(get_theme_icon("updown"));
+		_adjust_width_for_icon(get_theme_icon(SNAME("updown")));
 		_value_changed(0);
 	} else if (p_what == NOTIFICATION_EXIT_TREE) {
 		_release_mouse();
 	} else if (p_what == NOTIFICATION_TRANSLATION_CHANGED) {
 		_value_changed(0);
 	} else if (p_what == NOTIFICATION_THEME_CHANGED) {
-		call_deferred("minimum_size_changed");
-		get_line_edit()->call_deferred("minimum_size_changed");
+		call_deferred(SNAME("minimum_size_changed"));
+		get_line_edit()->call_deferred(SNAME("minimum_size_changed"));
 	} else if (p_what == NOTIFICATION_LAYOUT_DIRECTION_CHANGED || p_what == NOTIFICATION_TRANSLATION_CHANGED) {
 		update();
 	}
@@ -242,8 +253,26 @@ String SpinBox::get_prefix() const {
 	return prefix;
 }
 
-void SpinBox::set_editable(bool p_editable) {
-	line_edit->set_editable(p_editable);
+void SpinBox::set_update_on_text_changed(bool p_enabled) {
+	if (update_on_text_changed == p_enabled) {
+		return;
+	}
+
+	update_on_text_changed = p_enabled;
+
+	if (p_enabled) {
+		line_edit->connect("text_changed", callable_mp(this, &SpinBox::_text_changed), Vector<Variant>(), CONNECT_DEFERRED);
+	} else {
+		line_edit->disconnect("text_changed", callable_mp(this, &SpinBox::_text_changed));
+	}
+}
+
+bool SpinBox::get_update_on_text_changed() const {
+	return update_on_text_changed;
+}
+
+void SpinBox::set_editable(bool p_enabled) {
+	line_edit->set_editable(p_enabled);
 }
 
 bool SpinBox::is_editable() const {
@@ -251,43 +280,43 @@ bool SpinBox::is_editable() const {
 }
 
 void SpinBox::apply() {
-	_text_entered(line_edit->get_text());
+	_text_submitted(line_edit->get_text());
 }
 
 void SpinBox::_bind_methods() {
-	//ClassDB::bind_method(D_METHOD("_value_changed"),&SpinBox::_value_changed);
-	ClassDB::bind_method(D_METHOD("_gui_input"), &SpinBox::_gui_input);
 	ClassDB::bind_method(D_METHOD("set_align", "align"), &SpinBox::set_align);
 	ClassDB::bind_method(D_METHOD("get_align"), &SpinBox::get_align);
 	ClassDB::bind_method(D_METHOD("set_suffix", "suffix"), &SpinBox::set_suffix);
 	ClassDB::bind_method(D_METHOD("get_suffix"), &SpinBox::get_suffix);
 	ClassDB::bind_method(D_METHOD("set_prefix", "prefix"), &SpinBox::set_prefix);
 	ClassDB::bind_method(D_METHOD("get_prefix"), &SpinBox::get_prefix);
-	ClassDB::bind_method(D_METHOD("set_editable", "editable"), &SpinBox::set_editable);
+	ClassDB::bind_method(D_METHOD("set_editable", "enabled"), &SpinBox::set_editable);
 	ClassDB::bind_method(D_METHOD("is_editable"), &SpinBox::is_editable);
+	ClassDB::bind_method(D_METHOD("set_update_on_text_changed", "enabled"), &SpinBox::set_update_on_text_changed);
+	ClassDB::bind_method(D_METHOD("get_update_on_text_changed"), &SpinBox::get_update_on_text_changed);
 	ClassDB::bind_method(D_METHOD("apply"), &SpinBox::apply);
 	ClassDB::bind_method(D_METHOD("get_line_edit"), &SpinBox::get_line_edit);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "align", PROPERTY_HINT_ENUM, "Left,Center,Right,Fill"), "set_align", "get_align");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "editable"), "set_editable", "is_editable");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "update_on_text_changed"), "set_update_on_text_changed", "get_update_on_text_changed");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "prefix"), "set_prefix", "get_prefix");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "suffix"), "set_suffix", "get_suffix");
 }
 
 SpinBox::SpinBox() {
 	line_edit = memnew(LineEdit);
-	add_child(line_edit);
+	add_child(line_edit, false, INTERNAL_MODE_FRONT);
 
 	line_edit->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
 	line_edit->set_mouse_filter(MOUSE_FILTER_PASS);
 	line_edit->set_align(LineEdit::ALIGN_LEFT);
 
-	//connect("value_changed",this,"_value_changed");
-	line_edit->connect("text_entered", callable_mp(this, &SpinBox::_text_entered), Vector<Variant>(), CONNECT_DEFERRED);
+	line_edit->connect("text_submitted", callable_mp(this, &SpinBox::_text_submitted), Vector<Variant>(), CONNECT_DEFERRED);
 	line_edit->connect("focus_exited", callable_mp(this, &SpinBox::_line_edit_focus_exit), Vector<Variant>(), CONNECT_DEFERRED);
 	line_edit->connect("gui_input", callable_mp(this, &SpinBox::_line_edit_input));
 
 	range_click_timer = memnew(Timer);
 	range_click_timer->connect("timeout", callable_mp(this, &SpinBox::_range_click_timeout));
-	add_child(range_click_timer);
+	add_child(range_click_timer, false, INTERNAL_MODE_FRONT);
 }

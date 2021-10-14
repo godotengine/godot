@@ -31,9 +31,9 @@
 #include "register_types.h"
 
 #include "core/config/project_settings.h"
+#include "core/io/dir_access.h"
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
-#include "core/os/dir_access.h"
 #include "core/os/os.h"
 #include "scene/main/scene_tree.h"
 
@@ -107,7 +107,7 @@ void GDAPI godot_pluginscript_register_language(const godot_pluginscript_languag
 }
 
 void register_pluginscript_types() {
-	ClassDB::register_class<PluginScript>();
+	GDREGISTER_CLASS(PluginScript);
 }
 
 void unregister_pluginscript_types() {

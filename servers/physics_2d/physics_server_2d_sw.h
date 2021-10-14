@@ -43,23 +43,20 @@ class PhysicsServer2DSW : public PhysicsServer2D {
 
 	friend class PhysicsDirectSpaceState2DSW;
 	friend class PhysicsDirectBodyState2DSW;
-	bool active;
-	int iterations;
-	bool doing_sync;
-	real_t last_step;
+	bool active = true;
+	int iterations = 0;
+	bool doing_sync = false;
 
-	int island_count;
-	int active_objects;
-	int collision_pairs;
+	int island_count = 0;
+	int active_objects = 0;
+	int collision_pairs = 0;
 
-	bool using_threads;
+	bool using_threads = false;
 
-	bool flushing_queries;
+	bool flushing_queries = false;
 
-	Step2DSW *stepper;
+	Step2DSW *stepper = nullptr;
 	Set<const Space2DSW *> active_spaces;
-
-	PhysicsDirectBodyState2DSW *direct_state;
 
 	mutable RID_PtrOwner<Shape2DSW, true> shape_owner;
 	mutable RID_PtrOwner<Space2DSW, true> space_owner;
@@ -79,16 +76,16 @@ class PhysicsServer2DSW : public PhysicsServer2D {
 public:
 	struct CollCbkData {
 		Vector2 valid_dir;
-		real_t valid_depth;
-		int max;
-		int amount;
-		int passed;
-		int invalid_by_dir;
-		Vector2 *ptr;
+		real_t valid_depth = 0.0;
+		int max = 0;
+		int amount = 0;
+		int passed = 0;
+		int invalid_by_dir = 0;
+		Vector2 *ptr = nullptr;
 	};
 
-	virtual RID line_shape_create() override;
-	virtual RID ray_shape_create() override;
+	virtual RID world_boundary_shape_create() override;
+	virtual RID separation_ray_shape_create() override;
 	virtual RID segment_shape_create() override;
 	virtual RID circle_shape_create() override;
 	virtual RID rectangle_shape_create() override;
@@ -180,12 +177,10 @@ public:
 	virtual void body_add_shape(RID p_body, RID p_shape, const Transform2D &p_transform = Transform2D(), bool p_disabled = false) override;
 	virtual void body_set_shape(RID p_body, int p_shape_idx, RID p_shape) override;
 	virtual void body_set_shape_transform(RID p_body, int p_shape_idx, const Transform2D &p_transform) override;
-	virtual void body_set_shape_metadata(RID p_body, int p_shape_idx, const Variant &p_metadata) override;
 
 	virtual int body_get_shape_count(RID p_body) const override;
 	virtual RID body_get_shape(RID p_body, int p_shape_idx) const override;
 	virtual Transform2D body_get_shape_transform(RID p_body, int p_shape_idx) const override;
-	virtual Variant body_get_shape_metadata(RID p_body, int p_shape_idx) const override;
 
 	virtual void body_remove_shape(RID p_body, int p_shape_idx) override;
 	virtual void body_clear_shapes(RID p_body) override;
@@ -208,8 +203,10 @@ public:
 	virtual void body_set_collision_mask(RID p_body, uint32_t p_mask) override;
 	virtual uint32_t body_get_collision_mask(RID p_body) const override;
 
-	virtual void body_set_param(RID p_body, BodyParameter p_param, real_t p_value) override;
-	virtual real_t body_get_param(RID p_body, BodyParameter p_param) const override;
+	virtual void body_set_param(RID p_body, BodyParameter p_param, const Variant &p_value) override;
+	virtual Variant body_get_param(RID p_body, BodyParameter p_param) const override;
+
+	virtual void body_reset_mass_properties(RID p_body) override;
 
 	virtual void body_set_state(RID p_body, BodyState p_state, const Variant &p_variant) override;
 	virtual Variant body_get_state(RID p_body, BodyState p_state) const override;
@@ -242,13 +239,14 @@ public:
 	virtual void body_set_max_contacts_reported(RID p_body, int p_contacts) override;
 	virtual int body_get_max_contacts_reported(RID p_body) const override;
 
+	virtual void body_set_state_sync_callback(RID p_body, void *p_instance, BodyStateCallback p_callback) override;
 	virtual void body_set_force_integration_callback(RID p_body, const Callable &p_callable, const Variant &p_udata = Variant()) override;
+
 	virtual bool body_collide_shape(RID p_body, int p_body_shape, RID p_shape, const Transform2D &p_shape_xform, const Vector2 &p_motion, Vector2 *r_results, int p_result_max, int &r_result_count) override;
 
 	virtual void body_set_pickable(RID p_body, bool p_pickable) override;
 
-	virtual bool body_test_motion(RID p_body, const Transform2D &p_from, const Vector2 &p_motion, bool p_infinite_inertia, real_t p_margin = 0.001, MotionResult *r_result = nullptr, bool p_exclude_raycast_shapes = true) override;
-	virtual int body_test_ray_separation(RID p_body, const Transform2D &p_transform, bool p_infinite_inertia, Vector2 &r_recover_motion, SeparationResult *r_results, int p_result_max, real_t p_margin = 0.001) override;
+	virtual bool body_test_motion(RID p_body, const MotionParameters &p_parameters, MotionResult *r_result = nullptr) override;
 
 	// this function only works on physics process, errors and returns null otherwise
 	virtual PhysicsDirectBodyState2D *body_get_direct_state(RID p_body) override;
@@ -287,6 +285,8 @@ public:
 	virtual void flush_queries() override;
 	virtual void end_sync() override;
 	virtual void finish() override;
+
+	virtual void set_collision_iterations(int p_iterations) override;
 
 	virtual bool is_flushing_queries() const override { return flushing_queries; }
 

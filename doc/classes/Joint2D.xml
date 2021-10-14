@@ -8,8 +8,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="bias" type="float" setter="set_bias" getter="get_bias" default="0.0">
 			When [member node_a] and [member node_b] move in different directions the [code]bias[/code] controls how fast the joint pulls them back to their original position. The lower the [code]bias[/code] the more the two bodies can pull on the joint.
@@ -24,6 +22,4 @@
 			The second body attached to the joint. Must derive from [PhysicsBody2D].
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

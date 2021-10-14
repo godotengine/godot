@@ -146,10 +146,10 @@ MAKE_TYPE_INFO(Rect2i, Variant::RECT2I)
 MAKE_TYPE_INFO(Vector3i, Variant::VECTOR3I)
 MAKE_TYPE_INFO(Transform2D, Variant::TRANSFORM2D)
 MAKE_TYPE_INFO(Plane, Variant::PLANE)
-MAKE_TYPE_INFO(Quat, Variant::QUAT)
+MAKE_TYPE_INFO(Quaternion, Variant::QUATERNION)
 MAKE_TYPE_INFO(AABB, Variant::AABB)
 MAKE_TYPE_INFO(Basis, Variant::BASIS)
-MAKE_TYPE_INFO(Transform, Variant::TRANSFORM)
+MAKE_TYPE_INFO(Transform3D, Variant::TRANSFORM3D)
 MAKE_TYPE_INFO(Color, Variant::COLOR)
 MAKE_TYPE_INFO(StringName, Variant::STRING_NAME)
 MAKE_TYPE_INFO(NodePath, Variant::NODE_PATH)
@@ -168,7 +168,7 @@ MAKE_TYPE_INFO(PackedVector2Array, Variant::PACKED_VECTOR2_ARRAY)
 MAKE_TYPE_INFO(PackedVector3Array, Variant::PACKED_VECTOR3_ARRAY)
 MAKE_TYPE_INFO(PackedColorArray, Variant::PACKED_COLOR_ARRAY)
 
-MAKE_TYPE_INFO(IP_Address, Variant::STRING)
+MAKE_TYPE_INFO(IPAddress, Variant::STRING)
 
 //objectID
 template <>
@@ -241,14 +241,27 @@ struct GetTypeInfo<const T *, typename EnableIf<TypeInherits<Object, T>::value>:
 	}
 };
 
-#define TEMPL_MAKE_ENUM_TYPE_INFO(m_enum, m_impl)                                                                                                                                 \
-	template <>                                                                                                                                                                   \
-	struct GetTypeInfo<m_impl> {                                                                                                                                                  \
-		static const Variant::Type VARIANT_TYPE = Variant::INT;                                                                                                                   \
-		static const GodotTypeInfo::Metadata METADATA = GodotTypeInfo::METADATA_NONE;                                                                                             \
-		static inline PropertyInfo get_class_info() {                                                                                                                             \
-			return PropertyInfo(Variant::INT, String(), PROPERTY_HINT_NONE, String(), PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_CLASS_IS_ENUM, String(#m_enum).replace("::", ".")); \
-		}                                                                                                                                                                         \
+namespace godot {
+namespace details {
+inline String enum_qualified_name_to_class_info_name(const String &p_qualified_name) {
+	Vector<String> parts = p_qualified_name.split("::", false);
+	if (parts.size() <= 2)
+		return String(".").join(parts);
+	// Contains namespace. We only want the class and enum names.
+	return parts[parts.size() - 2] + "." + parts[parts.size() - 1];
+}
+} // namespace details
+} // namespace godot
+
+#define TEMPL_MAKE_ENUM_TYPE_INFO(m_enum, m_impl)                                                                                            \
+	template <>                                                                                                                              \
+	struct GetTypeInfo<m_impl> {                                                                                                             \
+		static const Variant::Type VARIANT_TYPE = Variant::INT;                                                                              \
+		static const GodotTypeInfo::Metadata METADATA = GodotTypeInfo::METADATA_NONE;                                                        \
+		static inline PropertyInfo get_class_info() {                                                                                        \
+			return PropertyInfo(Variant::INT, String(), PROPERTY_HINT_NONE, String(), PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_CLASS_IS_ENUM, \
+					godot::details::enum_qualified_name_to_class_info_name(String(#m_enum)));                                                \
+		}                                                                                                                                    \
 	};
 
 #define MAKE_ENUM_TYPE_INFO(m_enum)                 \

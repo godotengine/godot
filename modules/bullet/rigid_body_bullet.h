@@ -107,8 +107,10 @@ public:
 	virtual void set_angular_velocity(const Vector3 &p_velocity) override;
 	virtual Vector3 get_angular_velocity() const override;
 
-	virtual void set_transform(const Transform &p_transform) override;
-	virtual Transform get_transform() const override;
+	virtual void set_transform(const Transform3D &p_transform) override;
+	virtual Transform3D get_transform() const override;
+
+	virtual Vector3 get_velocity_at_local_position(const Vector3 &p_position) const override;
 
 	virtual void add_central_force(const Vector3 &p_force) override;
 	virtual void add_force(const Vector3 &p_force, const Vector3 &p_position = Vector3()) override;
@@ -299,7 +301,7 @@ public:
 	void reload_axis_lock();
 
 	/// Doc:
-	/// https://web.archive.org/web/20180404091446/http://www.bulletphysics.org/mediawiki-1.5.8/index.php/Anti_tunneling_by_Motion_Clamping
+	/// https://web.archive.org/web/20180404091446/https://www.bulletphysics.org/mediawiki-1.5.8/index.php/Anti_tunneling_by_Motion_Clamping
 	void set_continuous_collision_detection(bool p_enable);
 	bool is_continuous_collision_detection_enabled() const;
 

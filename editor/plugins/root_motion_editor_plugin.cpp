@@ -70,8 +70,8 @@ void EditorPropertyRootMotion::_node_assign() {
 		List<StringName> animations;
 		player->get_animation_list(&animations);
 
-		for (List<StringName>::Element *E = animations.front(); E; E = E->next()) {
-			Ref<Animation> anim = player->get_animation(E->get());
+		for (const StringName &E : animations) {
+			Ref<Animation> anim = player->get_animation(E);
 			for (int i = 0; i < anim->get_track_count(); i++) {
 				paths.insert(anim->track_get_path(i));
 			}
@@ -149,7 +149,7 @@ void EditorPropertyRootMotion::_node_assign() {
 						ti->set_text(0, F->get());
 						ti->set_selectable(0, true);
 						ti->set_editable(0, false);
-						ti->set_icon(0, get_theme_icon("BoneAttachment3D", "EditorIcons"));
+						ti->set_icon(0, get_theme_icon(SNAME("BoneAttachment3D"), SNAME("EditorIcons")));
 						ti->set_metadata(0, accum);
 					} else {
 						ti = parenthood[accum];
@@ -158,7 +158,7 @@ void EditorPropertyRootMotion::_node_assign() {
 
 				ti->set_selectable(0, true);
 				ti->set_text(0, concat);
-				ti->set_icon(0, get_theme_icon("BoneAttachment3D", "EditorIcons"));
+				ti->set_icon(0, get_theme_icon(SNAME("BoneAttachment3D"), SNAME("EditorIcons")));
 				ti->set_metadata(0, path);
 				if (path == current) {
 					ti->select(0);
@@ -205,7 +205,6 @@ void EditorPropertyRootMotion::update_property() {
 		assign->set_flat(false);
 		return;
 	}
-	assign->set_flat(true);
 
 	Node *base_node = nullptr;
 	if (base_hint != NodePath()) {
@@ -235,7 +234,7 @@ void EditorPropertyRootMotion::setup(const NodePath &p_base_hint) {
 
 void EditorPropertyRootMotion::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
-		Ref<Texture2D> t = get_theme_icon("Clear", "EditorIcons");
+		Ref<Texture2D> t = get_theme_icon(SNAME("Clear"), SNAME("EditorIcons"));
 		clear->set_icon(t);
 	}
 }
@@ -247,14 +246,12 @@ EditorPropertyRootMotion::EditorPropertyRootMotion() {
 	HBoxContainer *hbc = memnew(HBoxContainer);
 	add_child(hbc);
 	assign = memnew(Button);
-	assign->set_flat(true);
 	assign->set_h_size_flags(SIZE_EXPAND_FILL);
 	assign->set_clip_text(true);
 	assign->connect("pressed", callable_mp(this, &EditorPropertyRootMotion::_node_assign));
 	hbc->add_child(assign);
 
 	clear = memnew(Button);
-	clear->set_flat(true);
 	clear->connect("pressed", callable_mp(this, &EditorPropertyRootMotion::_node_clear));
 	hbc->add_child(clear);
 
@@ -281,7 +278,7 @@ void EditorInspectorRootMotionPlugin::parse_begin(Object *p_object) {
 	//do none
 }
 
-bool EditorInspectorRootMotionPlugin::parse_property(Object *p_object, Variant::Type p_type, const String &p_path, PropertyHint p_hint, const String &p_hint_text, int p_usage, bool p_wide) {
+bool EditorInspectorRootMotionPlugin::parse_property(Object *p_object, const Variant::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const uint32_t p_usage, const bool p_wide) {
 	if (p_path == "root_motion_track" && p_object->is_class("AnimationTree") && p_type == Variant::NODE_PATH) {
 		EditorPropertyRootMotion *editor = memnew(EditorPropertyRootMotion);
 		if (p_hint == PROPERTY_HINT_NODE_PATH_TO_EDITED_NODE && p_hint_text != String()) {

@@ -61,6 +61,7 @@ public:
 		PARAM_MAX
 	};
 
+	// When extending, make sure not to overflow the size of the MaterialKey below.
 	enum ParticleFlags {
 		PARTICLE_FLAG_ALIGN_Y_TO_VELOCITY,
 		PARTICLE_FLAG_ROTATE_Y,
@@ -68,15 +69,18 @@ public:
 		PARTICLE_FLAG_MAX
 	};
 
+	// When extending, make sure not to overflow the size of the MaterialKey below.
 	enum EmissionShape {
 		EMISSION_SHAPE_POINT,
 		EMISSION_SHAPE_SPHERE,
 		EMISSION_SHAPE_BOX,
 		EMISSION_SHAPE_POINTS,
 		EMISSION_SHAPE_DIRECTED_POINTS,
+		EMISSION_SHAPE_RING,
 		EMISSION_SHAPE_MAX
 	};
 
+	// When extending, make sure not to overflow the size of the MaterialKey below.
 	enum SubEmitterMode {
 		SUB_EMITTER_DISABLED,
 		SUB_EMITTER_CONSTANT,
@@ -87,11 +91,13 @@ public:
 
 private:
 	union MaterialKey {
+		// The bit size of the struct must be kept below or equal to 32 bits.
+		// Consider this when extending ParticleFlags, EmissionShape, or SubEmitterMode.
 		struct {
 			uint32_t texture_mask : 16;
 			uint32_t texture_color : 1;
 			uint32_t particle_flags : 4;
-			uint32_t emission_shape : 2;
+			uint32_t emission_shape : 3;
 			uint32_t invalid_key : 1;
 			uint32_t has_emission_color : 1;
 			uint32_t sub_emitter : 2;
@@ -148,31 +154,31 @@ private:
 		StringName direction;
 		StringName spread;
 		StringName flatness;
-		StringName initial_linear_velocity;
-		StringName initial_angle;
-		StringName angular_velocity;
-		StringName orbit_velocity;
-		StringName linear_accel;
-		StringName radial_accel;
-		StringName tangent_accel;
-		StringName damping;
-		StringName scale;
-		StringName hue_variation;
-		StringName anim_speed;
-		StringName anim_offset;
+		StringName initial_linear_velocity_min;
+		StringName initial_angle_min;
+		StringName angular_velocity_min;
+		StringName orbit_velocity_min;
+		StringName linear_accel_min;
+		StringName radial_accel_min;
+		StringName tangent_accel_min;
+		StringName damping_min;
+		StringName scale_min;
+		StringName hue_variation_min;
+		StringName anim_speed_min;
+		StringName anim_offset_min;
 
-		StringName initial_linear_velocity_random;
-		StringName initial_angle_random;
-		StringName angular_velocity_random;
-		StringName orbit_velocity_random;
-		StringName linear_accel_random;
-		StringName radial_accel_random;
-		StringName tangent_accel_random;
-		StringName damping_random;
-		StringName scale_random;
-		StringName hue_variation_random;
-		StringName anim_speed_random;
-		StringName anim_offset_random;
+		StringName initial_linear_velocity_max;
+		StringName initial_angle_max;
+		StringName angular_velocity_max;
+		StringName orbit_velocity_max;
+		StringName linear_accel_max;
+		StringName radial_accel_max;
+		StringName tangent_accel_max;
+		StringName damping_max;
+		StringName scale_max;
+		StringName hue_variation_max;
+		StringName anim_speed_max;
+		StringName anim_offset_max;
 
 		StringName angle_texture;
 		StringName angular_velocity_texture;
@@ -195,6 +201,10 @@ private:
 		StringName emission_texture_points;
 		StringName emission_texture_normal;
 		StringName emission_texture_color;
+		StringName emission_ring_axis;
+		StringName emission_ring_height;
+		StringName emission_ring_radius;
+		StringName emission_ring_inner_radius;
 
 		StringName gravity;
 
@@ -216,12 +226,13 @@ private:
 	_FORCE_INLINE_ void _queue_shader_change();
 	_FORCE_INLINE_ bool _is_shader_dirty() const;
 
+	bool is_initialized = false;
 	Vector3 direction;
 	float spread;
 	float flatness;
 
-	float parameters[PARAM_MAX];
-	float randomness[PARAM_MAX];
+	float params_min[PARAM_MAX];
+	float params_max[PARAM_MAX];
 
 	Ref<Texture2D> tex_parameters[PARAM_MAX];
 	Color color;
@@ -235,16 +246,20 @@ private:
 	Ref<Texture2D> emission_point_texture;
 	Ref<Texture2D> emission_normal_texture;
 	Ref<Texture2D> emission_color_texture;
+	Vector3 emission_ring_axis;
+	real_t emission_ring_height;
+	real_t emission_ring_radius;
+	real_t emission_ring_inner_radius;
 	int emission_point_count = 1;
 
 	bool anim_loop;
 
 	Vector3 gravity;
 
-	float lifetime_randomness;
+	double lifetime_randomness;
 
 	SubEmitterMode sub_emitter_mode;
-	float sub_emitter_frequency;
+	double sub_emitter_frequency;
 	int sub_emitter_amount_at_end;
 	bool sub_emitter_keep_velocity;
 	//do not save emission points here
@@ -269,11 +284,11 @@ public:
 	void set_flatness(float p_flatness);
 	float get_flatness() const;
 
-	void set_param(Parameter p_param, float p_value);
-	float get_param(Parameter p_param) const;
+	void set_param_min(Parameter p_param, float p_value);
+	float get_param_min(Parameter p_param) const;
 
-	void set_param_randomness(Parameter p_param, float p_value);
-	float get_param_randomness(Parameter p_param) const;
+	void set_param_max(Parameter p_param, float p_value);
+	float get_param_max(Parameter p_param) const;
 
 	void set_param_texture(Parameter p_param, const Ref<Texture2D> &p_texture);
 	Ref<Texture2D> get_param_texture(Parameter p_param) const;
@@ -288,26 +303,34 @@ public:
 	bool get_particle_flag(ParticleFlags p_particle_flag) const;
 
 	void set_emission_shape(EmissionShape p_shape);
-	void set_emission_sphere_radius(float p_radius);
+	void set_emission_sphere_radius(real_t p_radius);
 	void set_emission_box_extents(Vector3 p_extents);
 	void set_emission_point_texture(const Ref<Texture2D> &p_points);
 	void set_emission_normal_texture(const Ref<Texture2D> &p_normals);
 	void set_emission_color_texture(const Ref<Texture2D> &p_colors);
+	void set_emission_ring_axis(Vector3 p_axis);
+	void set_emission_ring_height(real_t p_height);
+	void set_emission_ring_radius(real_t p_radius);
+	void set_emission_ring_inner_radius(real_t p_radius);
 	void set_emission_point_count(int p_count);
 
 	EmissionShape get_emission_shape() const;
-	float get_emission_sphere_radius() const;
+	real_t get_emission_sphere_radius() const;
 	Vector3 get_emission_box_extents() const;
 	Ref<Texture2D> get_emission_point_texture() const;
 	Ref<Texture2D> get_emission_normal_texture() const;
 	Ref<Texture2D> get_emission_color_texture() const;
+	Vector3 get_emission_ring_axis() const;
+	real_t get_emission_ring_height() const;
+	real_t get_emission_ring_radius() const;
+	real_t get_emission_ring_inner_radius() const;
 	int get_emission_point_count() const;
 
 	void set_gravity(const Vector3 &p_gravity);
 	Vector3 get_gravity() const;
 
-	void set_lifetime_randomness(float p_lifetime);
-	float get_lifetime_randomness() const;
+	void set_lifetime_randomness(double p_lifetime);
+	double get_lifetime_randomness() const;
 
 	void set_attractor_interaction_enabled(bool p_enable);
 	bool is_attractor_interaction_enabled() const;
@@ -331,8 +354,8 @@ public:
 	void set_sub_emitter_mode(SubEmitterMode p_sub_emitter_mode);
 	SubEmitterMode get_sub_emitter_mode() const;
 
-	void set_sub_emitter_frequency(float p_frequency);
-	float get_sub_emitter_frequency() const;
+	void set_sub_emitter_frequency(double p_frequency);
+	double get_sub_emitter_frequency() const;
 
 	void set_sub_emitter_amount_at_end(int p_amount);
 	int get_sub_emitter_amount_at_end() const;

@@ -64,7 +64,7 @@ public:
 	void set_enable_return_value(bool p_enable);
 	bool is_return_value_enabled() const;
 
-	virtual VisualScriptNodeInstance *instance(VisualScriptInstance *p_instance) override;
+	virtual VisualScriptNodeInstance *instantiate(VisualScriptInstance *p_instance) override;
 
 	VisualScriptReturn();
 };
@@ -91,7 +91,7 @@ public:
 	virtual String get_text() const override;
 	virtual String get_category() const override { return "flow_control"; }
 
-	virtual VisualScriptNodeInstance *instance(VisualScriptInstance *p_instance) override;
+	virtual VisualScriptNodeInstance *instantiate(VisualScriptInstance *p_instance) override;
 
 	VisualScriptCondition();
 };
@@ -118,7 +118,7 @@ public:
 	virtual String get_text() const override;
 	virtual String get_category() const override { return "flow_control"; }
 
-	virtual VisualScriptNodeInstance *instance(VisualScriptInstance *p_instance) override;
+	virtual VisualScriptNodeInstance *instantiate(VisualScriptInstance *p_instance) override;
 
 	VisualScriptWhile();
 };
@@ -145,7 +145,7 @@ public:
 	virtual String get_text() const override;
 	virtual String get_category() const override { return "flow_control"; }
 
-	virtual VisualScriptNodeInstance *instance(VisualScriptInstance *p_instance) override;
+	virtual VisualScriptNodeInstance *instantiate(VisualScriptInstance *p_instance) override;
 
 	VisualScriptIterator();
 };
@@ -177,7 +177,7 @@ public:
 	void set_steps(int p_steps);
 	int get_steps() const;
 
-	virtual VisualScriptNodeInstance *instance(VisualScriptInstance *p_instance) override;
+	virtual VisualScriptNodeInstance *instantiate(VisualScriptInstance *p_instance) override;
 
 	VisualScriptSequence();
 };
@@ -220,7 +220,7 @@ public:
 	virtual String get_text() const override;
 	virtual String get_category() const override { return "flow_control"; }
 
-	virtual VisualScriptNodeInstance *instance(VisualScriptInstance *p_instance) override;
+	virtual VisualScriptNodeInstance *instantiate(VisualScriptInstance *p_instance) override;
 
 	VisualScriptSwitch();
 };
@@ -258,7 +258,7 @@ public:
 
 	virtual TypeGuess guess_output_type(TypeGuess *p_inputs, int p_output) const override;
 
-	virtual VisualScriptNodeInstance *instance(VisualScriptInstance *p_instance) override;
+	virtual VisualScriptNodeInstance *instantiate(VisualScriptInstance *p_instance) override;
 
 	VisualScriptTypeCast();
 };

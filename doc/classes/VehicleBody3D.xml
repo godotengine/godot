@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="VehicleBody3D" inherits="RigidBody3D" version="4.0">
+<class name="VehicleBody3D" inherits="RigidDynamicBody3D" version="4.0">
 	<brief_description>
 		Physics body that simulates the behavior of a car.
 	</brief_description>
@@ -11,14 +11,12 @@
 	<tutorials>
 		<link title="3D Truck Town Demo">https://godotengine.org/asset-library/asset/524</link>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="brake" type="float" setter="set_brake" getter="get_brake" default="0.0">
-			Slows down the vehicle by applying a braking force. The vehicle is only slowed down if the wheels are in contact with a surface. The force you need to apply to adequately slow down your vehicle depends on the [member RigidBody3D.mass] of the vehicle. For a vehicle with a mass set to 1000, try a value in the 25 - 30 range for hard braking.
+			Slows down the vehicle by applying a braking force. The vehicle is only slowed down if the wheels are in contact with a surface. The force you need to apply to adequately slow down your vehicle depends on the [member RigidDynamicBody3D.mass] of the vehicle. For a vehicle with a mass set to 1000, try a value in the 25 - 30 range for hard braking.
 		</member>
 		<member name="engine_force" type="float" setter="set_engine_force" getter="get_engine_force" default="0.0">
-			Accelerates the vehicle by applying an engine force. The vehicle is only speed up if the wheels that have [member VehicleWheel3D.use_as_traction] set to [code]true[/code] and are in contact with a surface. The [member RigidBody3D.mass] of the vehicle has an effect on the acceleration of the vehicle. For a vehicle with a mass set to 1000, try a value in the 25 - 50 range for acceleration.
+			Accelerates the vehicle by applying an engine force. The vehicle is only speed up if the wheels that have [member VehicleWheel3D.use_as_traction] set to [code]true[/code] and are in contact with a surface. The [member RigidDynamicBody3D.mass] of the vehicle has an effect on the acceleration of the vehicle. For a vehicle with a mass set to 1000, try a value in the 25 - 50 range for acceleration.
 			[b]Note:[/b] The simulation does not take the effect of gears into account, you will need to add logic for this if you wish to simulate gears.
 			A negative value will result in the vehicle reversing.
 		</member>
@@ -27,6 +25,4 @@
 			The steering angle for the vehicle. Setting this to a non-zero value will result in the vehicle turning when it's moving. Wheels that have [member VehicleWheel3D.use_as_steering] set to [code]true[/code] will automatically be rotated.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

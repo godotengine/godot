@@ -11,20 +11,16 @@
 	</tutorials>
 	<methods>
 		<method name="set_point_cloud">
-			<return type="void">
-			</return>
-			<argument index="0" name="point_cloud" type="PackedVector2Array">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="point_cloud" type="PackedVector2Array" />
 			<description>
 				Based on the set of points provided, this creates and assigns the [member points] property using the convex hull algorithm. Removing all unneeded points. See [method Geometry2D.convex_hull] for details.
 			</description>
 		</method>
 	</methods>
 	<members>
-		<member name="points" type="PackedVector2Array" setter="set_points" getter="get_points" default="PackedVector2Array(  )">
+		<member name="points" type="PackedVector2Array" setter="set_points" getter="get_points" default="PackedVector2Array()">
 			The polygon's list of vertices. Can be in either clockwise or counterclockwise order.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

@@ -8,828 +8,637 @@
 	</tutorials>
 	<methods>
 		<method name="barrier">
-			<return type="void">
-			</return>
-			<argument index="0" name="from" type="int" default="7">
-			</argument>
-			<argument index="1" name="to" type="int" default="7">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="from" type="int" default="7" />
+			<argument index="1" name="to" type="int" default="7" />
 			<description>
 			</description>
 		</method>
 		<method name="buffer_clear">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="buffer" type="RID">
-			</argument>
-			<argument index="1" name="offset" type="int">
-			</argument>
-			<argument index="2" name="size_bytes" type="int">
-			</argument>
-			<argument index="3" name="post_barrier" type="int" default="7">
-			</argument>
+			<return type="int" enum="Error" />
+			<argument index="0" name="buffer" type="RID" />
+			<argument index="1" name="offset" type="int" />
+			<argument index="2" name="size_bytes" type="int" />
+			<argument index="3" name="post_barrier" type="int" default="7" />
 			<description>
 			</description>
 		</method>
 		<method name="buffer_get_data">
-			<return type="PackedByteArray">
-			</return>
-			<argument index="0" name="buffer" type="RID">
-			</argument>
+			<return type="PackedByteArray" />
+			<argument index="0" name="buffer" type="RID" />
 			<description>
 			</description>
 		</method>
 		<method name="buffer_update">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="buffer" type="RID">
-			</argument>
-			<argument index="1" name="offset" type="int">
-			</argument>
-			<argument index="2" name="size_bytes" type="int">
-			</argument>
-			<argument index="3" name="data" type="PackedByteArray">
-			</argument>
-			<argument index="4" name="post_barrier" type="int" default="7">
-			</argument>
+			<return type="int" enum="Error" />
+			<argument index="0" name="buffer" type="RID" />
+			<argument index="1" name="offset" type="int" />
+			<argument index="2" name="size_bytes" type="int" />
+			<argument index="3" name="data" type="PackedByteArray" />
+			<argument index="4" name="post_barrier" type="int" default="7" />
 			<description>
 			</description>
 		</method>
 		<method name="capture_timestamp">
-			<return type="void">
-			</return>
-			<argument index="0" name="name" type="String">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="name" type="String" />
 			<description>
 			</description>
 		</method>
 		<method name="compute_list_add_barrier">
-			<return type="void">
-			</return>
-			<argument index="0" name="compute_list" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="compute_list" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="compute_list_begin">
-			<return type="int">
-			</return>
-			<argument index="0" name="allow_draw_overlap" type="bool" default="false">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="allow_draw_overlap" type="bool" default="false" />
 			<description>
 			</description>
 		</method>
 		<method name="compute_list_bind_compute_pipeline">
-			<return type="void">
-			</return>
-			<argument index="0" name="compute_list" type="int">
-			</argument>
-			<argument index="1" name="compute_pipeline" type="RID">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="compute_list" type="int" />
+			<argument index="1" name="compute_pipeline" type="RID" />
 			<description>
 			</description>
 		</method>
 		<method name="compute_list_bind_uniform_set">
-			<return type="void">
-			</return>
-			<argument index="0" name="compute_list" type="int">
-			</argument>
-			<argument index="1" name="uniform_set" type="RID">
-			</argument>
-			<argument index="2" name="set_index" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="compute_list" type="int" />
+			<argument index="1" name="uniform_set" type="RID" />
+			<argument index="2" name="set_index" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="compute_list_dispatch">
-			<return type="void">
-			</return>
-			<argument index="0" name="compute_list" type="int">
-			</argument>
-			<argument index="1" name="x_groups" type="int">
-			</argument>
-			<argument index="2" name="y_groups" type="int">
-			</argument>
-			<argument index="3" name="z_groups" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="compute_list" type="int" />
+			<argument index="1" name="x_groups" type="int" />
+			<argument index="2" name="y_groups" type="int" />
+			<argument index="3" name="z_groups" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="compute_list_end">
-			<return type="void">
-			</return>
-			<argument index="0" name="post_barrier" type="int" default="7">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="post_barrier" type="int" default="7" />
 			<description>
 			</description>
 		</method>
 		<method name="compute_list_set_push_constant">
-			<return type="void">
-			</return>
-			<argument index="0" name="compute_list" type="int">
-			</argument>
-			<argument index="1" name="buffer" type="PackedByteArray">
-			</argument>
-			<argument index="2" name="size_bytes" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="compute_list" type="int" />
+			<argument index="1" name="buffer" type="PackedByteArray" />
+			<argument index="2" name="size_bytes" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="compute_pipeline_create">
-			<return type="RID">
-			</return>
-			<argument index="0" name="shader" type="RID">
-			</argument>
+			<return type="RID" />
+			<argument index="0" name="shader" type="RID" />
+			<argument index="1" name="specialization_constants" type="RDPipelineSpecializationConstant[]" default="[]" />
 			<description>
 			</description>
 		</method>
 		<method name="compute_pipeline_is_valid">
-			<return type="bool">
-			</return>
-			<argument index="0" name="compute_pieline" type="RID">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="compute_pieline" type="RID" />
 			<description>
 			</description>
 		</method>
 		<method name="create_local_device">
-			<return type="RenderingDevice">
-			</return>
+			<return type="RenderingDevice" />
 			<description>
 			</description>
 		</method>
 		<method name="draw_command_begin_label">
-			<return type="void">
-			</return>
-			<argument index="0" name="name" type="String">
-			</argument>
-			<argument index="1" name="color" type="Color">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="name" type="String" />
+			<argument index="1" name="color" type="Color" />
 			<description>
 			</description>
 		</method>
 		<method name="draw_command_end_label">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 			</description>
 		</method>
 		<method name="draw_command_insert_label">
-			<return type="void">
-			</return>
-			<argument index="0" name="name" type="String">
-			</argument>
-			<argument index="1" name="color" type="Color">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="name" type="String" />
+			<argument index="1" name="color" type="Color" />
 			<description>
 			</description>
 		</method>
 		<method name="draw_list_begin">
-			<return type="int">
-			</return>
-			<argument index="0" name="framebuffer" type="RID">
-			</argument>
-			<argument index="1" name="initial_color_action" type="int" enum="RenderingDevice.InitialAction">
-			</argument>
-			<argument index="2" name="final_color_action" type="int" enum="RenderingDevice.FinalAction">
-			</argument>
-			<argument index="3" name="initial_depth_action" type="int" enum="RenderingDevice.InitialAction">
-			</argument>
-			<argument index="4" name="final_depth_action" type="int" enum="RenderingDevice.FinalAction">
-			</argument>
-			<argument index="5" name="clear_color_values" type="PackedColorArray" default="PackedColorArray(  )">
-			</argument>
-			<argument index="6" name="clear_depth" type="float" default="1.0">
-			</argument>
-			<argument index="7" name="clear_stencil" type="int" default="0">
-			</argument>
-			<argument index="8" name="region" type="Rect2" default="Rect2i( 0, 0, 0, 0 )">
-			</argument>
-			<argument index="9" name="storage_textures" type="Array" default="[  ]">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="framebuffer" type="RID" />
+			<argument index="1" name="initial_color_action" type="int" enum="RenderingDevice.InitialAction" />
+			<argument index="2" name="final_color_action" type="int" enum="RenderingDevice.FinalAction" />
+			<argument index="3" name="initial_depth_action" type="int" enum="RenderingDevice.InitialAction" />
+			<argument index="4" name="final_depth_action" type="int" enum="RenderingDevice.FinalAction" />
+			<argument index="5" name="clear_color_values" type="PackedColorArray" default="PackedColorArray()" />
+			<argument index="6" name="clear_depth" type="float" default="1.0" />
+			<argument index="7" name="clear_stencil" type="int" default="0" />
+			<argument index="8" name="region" type="Rect2" default="Rect2(0, 0, 0, 0)" />
+			<argument index="9" name="storage_textures" type="Array" default="[]" />
 			<description>
 			</description>
 		</method>
 		<method name="draw_list_begin_for_screen">
-			<return type="int">
-			</return>
-			<argument index="0" name="screen" type="int" default="0">
-			</argument>
-			<argument index="1" name="clear_color" type="Color" default="Color( 0, 0, 0, 1 )">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="screen" type="int" default="0" />
+			<argument index="1" name="clear_color" type="Color" default="Color(0, 0, 0, 1)" />
 			<description>
 			</description>
 		</method>
 		<method name="draw_list_begin_split">
-			<return type="PackedInt64Array">
-			</return>
-			<argument index="0" name="framebuffer" type="RID">
-			</argument>
-			<argument index="1" name="splits" type="int">
-			</argument>
-			<argument index="2" name="initial_color_action" type="int" enum="RenderingDevice.InitialAction">
-			</argument>
-			<argument index="3" name="final_color_action" type="int" enum="RenderingDevice.FinalAction">
-			</argument>
-			<argument index="4" name="initial_depth_action" type="int" enum="RenderingDevice.InitialAction">
-			</argument>
-			<argument index="5" name="final_depth_action" type="int" enum="RenderingDevice.FinalAction">
-			</argument>
-			<argument index="6" name="clear_color_values" type="PackedColorArray" default="PackedColorArray(  )">
-			</argument>
-			<argument index="7" name="clear_depth" type="float" default="1.0">
-			</argument>
-			<argument index="8" name="clear_stencil" type="int" default="0">
-			</argument>
-			<argument index="9" name="region" type="Rect2" default="Rect2i( 0, 0, 0, 0 )">
-			</argument>
-			<argument index="10" name="storage_textures" type="RID[]" default="[  ]">
-			</argument>
+			<return type="PackedInt64Array" />
+			<argument index="0" name="framebuffer" type="RID" />
+			<argument index="1" name="splits" type="int" />
+			<argument index="2" name="initial_color_action" type="int" enum="RenderingDevice.InitialAction" />
+			<argument index="3" name="final_color_action" type="int" enum="RenderingDevice.FinalAction" />
+			<argument index="4" name="initial_depth_action" type="int" enum="RenderingDevice.InitialAction" />
+			<argument index="5" name="final_depth_action" type="int" enum="RenderingDevice.FinalAction" />
+			<argument index="6" name="clear_color_values" type="PackedColorArray" default="PackedColorArray()" />
+			<argument index="7" name="clear_depth" type="float" default="1.0" />
+			<argument index="8" name="clear_stencil" type="int" default="0" />
+			<argument index="9" name="region" type="Rect2" default="Rect2(0, 0, 0, 0)" />
+			<argument index="10" name="storage_textures" type="RID[]" default="[]" />
 			<description>
 			</description>
 		</method>
 		<method name="draw_list_bind_index_array">
-			<return type="void">
-			</return>
-			<argument index="0" name="draw_list" type="int">
-			</argument>
-			<argument index="1" name="index_array" type="RID">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="draw_list" type="int" />
+			<argument index="1" name="index_array" type="RID" />
 			<description>
 			</description>
 		</method>
 		<method name="draw_list_bind_render_pipeline">
-			<return type="void">
-			</return>
-			<argument index="0" name="draw_list" type="int">
-			</argument>
-			<argument index="1" name="render_pipeline" type="RID">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="draw_list" type="int" />
+			<argument index="1" name="render_pipeline" type="RID" />
 			<description>
 			</description>
 		</method>
 		<method name="draw_list_bind_uniform_set">
-			<return type="void">
-			</return>
-			<argument index="0" name="draw_list" type="int">
-			</argument>
-			<argument index="1" name="uniform_set" type="RID">
-			</argument>
-			<argument index="2" name="set_index" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="draw_list" type="int" />
+			<argument index="1" name="uniform_set" type="RID" />
+			<argument index="2" name="set_index" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="draw_list_bind_vertex_array">
-			<return type="void">
-			</return>
-			<argument index="0" name="draw_list" type="int">
-			</argument>
-			<argument index="1" name="vertex_array" type="RID">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="draw_list" type="int" />
+			<argument index="1" name="vertex_array" type="RID" />
 			<description>
 			</description>
 		</method>
 		<method name="draw_list_disable_scissor">
-			<return type="void">
-			</return>
-			<argument index="0" name="draw_list" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="draw_list" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="draw_list_draw">
-			<return type="void">
-			</return>
-			<argument index="0" name="draw_list" type="int">
-			</argument>
-			<argument index="1" name="use_indices" type="bool">
-			</argument>
-			<argument index="2" name="instances" type="int">
-			</argument>
-			<argument index="3" name="procedural_vertex_count" type="int" default="0">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="draw_list" type="int" />
+			<argument index="1" name="use_indices" type="bool" />
+			<argument index="2" name="instances" type="int" />
+			<argument index="3" name="procedural_vertex_count" type="int" default="0" />
 			<description>
 			</description>
 		</method>
 		<method name="draw_list_enable_scissor">
-			<return type="void">
-			</return>
-			<argument index="0" name="draw_list" type="int">
-			</argument>
-			<argument index="1" name="rect" type="Rect2" default="Rect2i( 0, 0, 0, 0 )">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="draw_list" type="int" />
+			<argument index="1" name="rect" type="Rect2" default="Rect2(0, 0, 0, 0)" />
 			<description>
 			</description>
 		</method>
 		<method name="draw_list_end">
-			<return type="void">
-			</return>
-			<argument index="0" name="post_barrier" type="int" default="7">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="post_barrier" type="int" default="7" />
 			<description>
 			</description>
 		</method>
 		<method name="draw_list_set_push_constant">
-			<return type="void">
-			</return>
-			<argument index="0" name="draw_list" type="int">
-			</argument>
-			<argument index="1" name="buffer" type="PackedByteArray">
-			</argument>
-			<argument index="2" name="size_bytes" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="draw_list" type="int" />
+			<argument index="1" name="buffer" type="PackedByteArray" />
+			<argument index="2" name="size_bytes" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="draw_list_switch_to_next_pass">
+			<return type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="draw_list_switch_to_next_pass_split">
+			<return type="PackedInt64Array" />
+			<argument index="0" name="splits" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="framebuffer_create">
-			<return type="RID">
-			</return>
-			<argument index="0" name="textures" type="Array">
-			</argument>
-			<argument index="1" name="validate_with_format" type="int" default="-1">
-			</argument>
+			<return type="RID" />
+			<argument index="0" name="textures" type="RID[]" />
+			<argument index="1" name="validate_with_format" type="int" default="-1" />
+			<argument index="2" name="view_count" type="int" default="1" />
 			<description>
 			</description>
 		</method>
 		<method name="framebuffer_create_empty">
-			<return type="RID">
-			</return>
-			<argument index="0" name="size" type="Vector2i">
-			</argument>
-			<argument index="1" name="samples" type="int" enum="RenderingDevice.TextureSamples" default="0">
-			</argument>
-			<argument index="2" name="validate_with_format" type="int" default="-1">
-			</argument>
+			<return type="RID" />
+			<argument index="0" name="size" type="Vector2i" />
+			<argument index="1" name="samples" type="int" enum="RenderingDevice.TextureSamples" default="0" />
+			<argument index="2" name="validate_with_format" type="int" default="-1" />
+			<description>
+			</description>
+		</method>
+		<method name="framebuffer_create_multipass">
+			<return type="RID" />
+			<argument index="0" name="textures" type="RID[]" />
+			<argument index="1" name="passes" type="RDFramebufferPass[]" />
+			<argument index="2" name="validate_with_format" type="int" default="-1" />
+			<argument index="3" name="view_count" type="int" default="1" />
 			<description>
 			</description>
 		</method>
 		<method name="framebuffer_format_create">
-			<return type="int">
-			</return>
-			<argument index="0" name="attachments" type="RDAttachmentFormat[]">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="attachments" type="RDAttachmentFormat[]" />
+			<argument index="1" name="view_count" type="int" default="1" />
 			<description>
 			</description>
 		</method>
 		<method name="framebuffer_format_create_empty">
-			<return type="int">
-			</return>
-			<argument index="0" name="samples" type="int" enum="RenderingDevice.TextureSamples" default="0">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="samples" type="int" enum="RenderingDevice.TextureSamples" default="0" />
+			<description>
+			</description>
+		</method>
+		<method name="framebuffer_format_create_multipass">
+			<return type="int" />
+			<argument index="0" name="attachments" type="RDAttachmentFormat[]" />
+			<argument index="1" name="passes" type="RDFramebufferPass[]" />
+			<argument index="2" name="view_count" type="int" default="1" />
 			<description>
 			</description>
 		</method>
 		<method name="framebuffer_format_get_texture_samples">
-			<return type="int" enum="RenderingDevice.TextureSamples">
-			</return>
-			<argument index="0" name="format" type="int">
-			</argument>
+			<return type="int" enum="RenderingDevice.TextureSamples" />
+			<argument index="0" name="format" type="int" />
+			<argument index="1" name="render_pass" type="int" default="0" />
 			<description>
 			</description>
 		</method>
 		<method name="framebuffer_get_format">
-			<return type="int">
-			</return>
-			<argument index="0" name="framebuffer" type="RID">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="framebuffer" type="RID" />
 			<description>
 			</description>
 		</method>
 		<method name="free">
-			<return type="void">
-			</return>
-			<argument index="0" name="rid" type="RID">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="rid" type="RID" />
 			<description>
 			</description>
 		</method>
 		<method name="full_barrier">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 			</description>
 		</method>
 		<method name="get_captured_timestamp_cpu_time" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="index" type="int">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="index" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="get_captured_timestamp_gpu_time" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="index" type="int">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="index" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="get_captured_timestamp_name" qualifiers="const">
-			<return type="String">
-			</return>
-			<argument index="0" name="index" type="int">
-			</argument>
+			<return type="String" />
+			<argument index="0" name="index" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="get_captured_timestamps_count" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="get_captured_timestamps_frame" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="get_device_name" qualifiers="const">
-			<return type="String">
-			</return>
+			<return type="String" />
 			<description>
 			</description>
 		</method>
 		<method name="get_device_pipeline_cache_uuid" qualifiers="const">
-			<return type="String">
-			</return>
+			<return type="String" />
 			<description>
 			</description>
 		</method>
 		<method name="get_device_vendor_name" qualifiers="const">
-			<return type="String">
-			</return>
+			<return type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="get_driver_resource">
+			<return type="int" />
+			<argument index="0" name="resource" type="int" enum="RenderingDevice.DriverResource" />
+			<argument index="1" name="rid" type="RID" />
+			<argument index="2" name="index" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="get_frame_delay" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="get_memory_usage" qualifiers="const">
+			<return type="int" />
+			<argument index="0" name="type" type="int" enum="RenderingDevice.MemoryType" />
 			<description>
 			</description>
 		</method>
 		<method name="index_array_create">
-			<return type="RID">
-			</return>
-			<argument index="0" name="index_buffer" type="RID">
-			</argument>
-			<argument index="1" name="index_offset" type="int">
-			</argument>
-			<argument index="2" name="index_count" type="int">
-			</argument>
+			<return type="RID" />
+			<argument index="0" name="index_buffer" type="RID" />
+			<argument index="1" name="index_offset" type="int" />
+			<argument index="2" name="index_count" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="index_buffer_create">
-			<return type="RID">
-			</return>
-			<argument index="0" name="size_indices" type="int">
-			</argument>
-			<argument index="1" name="format" type="int" enum="RenderingDevice.IndexBufferFormat">
-			</argument>
-			<argument index="2" name="data" type="PackedByteArray" default="PackedByteArray(  )">
-			</argument>
-			<argument index="3" name="use_restart_indices" type="bool" default="false">
-			</argument>
+			<return type="RID" />
+			<argument index="0" name="size_indices" type="int" />
+			<argument index="1" name="format" type="int" enum="RenderingDevice.IndexBufferFormat" />
+			<argument index="2" name="data" type="PackedByteArray" default="PackedByteArray()" />
+			<argument index="3" name="use_restart_indices" type="bool" default="false" />
 			<description>
 			</description>
 		</method>
 		<method name="limit_get">
-			<return type="int">
-			</return>
-			<argument index="0" name="limit" type="int" enum="RenderingDevice.Limit">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="limit" type="int" enum="RenderingDevice.Limit" />
 			<description>
 			</description>
 		</method>
 		<method name="render_pipeline_create">
-			<return type="RID">
-			</return>
-			<argument index="0" name="shader" type="RID">
-			</argument>
-			<argument index="1" name="framebuffer_format" type="int">
-			</argument>
-			<argument index="2" name="vertex_format" type="int">
-			</argument>
-			<argument index="3" name="primitive" type="int" enum="RenderingDevice.RenderPrimitive">
-			</argument>
-			<argument index="4" name="rasterization_state" type="RDPipelineRasterizationState">
-			</argument>
-			<argument index="5" name="multisample_state" type="RDPipelineMultisampleState">
-			</argument>
-			<argument index="6" name="stencil_state" type="RDPipelineDepthStencilState">
-			</argument>
-			<argument index="7" name="color_blend_state" type="RDPipelineColorBlendState">
-			</argument>
-			<argument index="8" name="dynamic_state_flags" type="int" default="0">
-			</argument>
+			<return type="RID" />
+			<argument index="0" name="shader" type="RID" />
+			<argument index="1" name="framebuffer_format" type="int" />
+			<argument index="2" name="vertex_format" type="int" />
+			<argument index="3" name="primitive" type="int" enum="RenderingDevice.RenderPrimitive" />
+			<argument index="4" name="rasterization_state" type="RDPipelineRasterizationState" />
+			<argument index="5" name="multisample_state" type="RDPipelineMultisampleState" />
+			<argument index="6" name="stencil_state" type="RDPipelineDepthStencilState" />
+			<argument index="7" name="color_blend_state" type="RDPipelineColorBlendState" />
+			<argument index="8" name="dynamic_state_flags" type="int" default="0" />
+			<argument index="9" name="for_render_pass" type="int" default="0" />
+			<argument index="10" name="specialization_constants" type="RDPipelineSpecializationConstant[]" default="[]" />
 			<description>
 			</description>
 		</method>
 		<method name="render_pipeline_is_valid">
-			<return type="bool">
-			</return>
-			<argument index="0" name="render_pipeline" type="RID">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="render_pipeline" type="RID" />
 			<description>
 			</description>
 		</method>
 		<method name="sampler_create">
-			<return type="RID">
-			</return>
-			<argument index="0" name="state" type="RDSamplerState">
-			</argument>
+			<return type="RID" />
+			<argument index="0" name="state" type="RDSamplerState" />
 			<description>
 			</description>
 		</method>
 		<method name="screen_get_framebuffer_format" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="screen_get_height" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="screen" type="int" default="0">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="screen" type="int" default="0" />
 			<description>
 			</description>
 		</method>
 		<method name="screen_get_width" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="screen" type="int" default="0">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="screen" type="int" default="0" />
 			<description>
 			</description>
 		</method>
 		<method name="set_resource_name">
-			<return type="void">
-			</return>
-			<argument index="0" name="id" type="RID">
-			</argument>
-			<argument index="1" name="name" type="String">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="id" type="RID" />
+			<argument index="1" name="name" type="String" />
 			<description>
 			</description>
 		</method>
-		<method name="shader_compile_from_source">
-			<return type="RDShaderBytecode">
-			</return>
-			<argument index="0" name="shader_source" type="RDShaderSource">
-			</argument>
-			<argument index="1" name="allow_cache" type="bool" default="true">
-			</argument>
+		<method name="shader_compile_binary_from_spirv">
+			<return type="PackedByteArray" />
+			<argument index="0" name="spirv_data" type="RDShaderSPIRV" />
+			<argument index="1" name="name" type="String" default="&quot;&quot;" />
 			<description>
 			</description>
 		</method>
-		<method name="shader_create">
-			<return type="RID">
-			</return>
-			<argument index="0" name="shader_data" type="RDShaderBytecode">
-			</argument>
+		<method name="shader_compile_spirv_from_source">
+			<return type="RDShaderSPIRV" />
+			<argument index="0" name="shader_source" type="RDShaderSource" />
+			<argument index="1" name="allow_cache" type="bool" default="true" />
+			<description>
+			</description>
+		</method>
+		<method name="shader_create_from_bytecode">
+			<return type="RID" />
+			<argument index="0" name="binary_data" type="PackedByteArray" />
+			<description>
+			</description>
+		</method>
+		<method name="shader_create_from_spirv">
+			<return type="RID" />
+			<argument index="0" name="spirv_data" type="RDShaderSPIRV" />
+			<argument index="1" name="name" type="String" default="&quot;&quot;" />
 			<description>
 			</description>
 		</method>
 		<method name="shader_get_vertex_input_attribute_mask">
-			<return type="int">
-			</return>
-			<argument index="0" name="shader" type="RID">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="shader" type="RID" />
 			<description>
 			</description>
 		</method>
 		<method name="storage_buffer_create">
-			<return type="RID">
-			</return>
-			<argument index="0" name="size_bytes" type="int">
-			</argument>
-			<argument index="1" name="data" type="PackedByteArray" default="PackedByteArray(  )">
-			</argument>
-			<argument index="2" name="usage" type="int" default="0">
-			</argument>
+			<return type="RID" />
+			<argument index="0" name="size_bytes" type="int" />
+			<argument index="1" name="data" type="PackedByteArray" default="PackedByteArray()" />
+			<argument index="2" name="usage" type="int" default="0" />
 			<description>
 			</description>
 		</method>
 		<method name="submit">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 			</description>
 		</method>
 		<method name="sync">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 			</description>
 		</method>
 		<method name="texture_buffer_create">
-			<return type="RID">
-			</return>
-			<argument index="0" name="size_bytes" type="int">
-			</argument>
-			<argument index="1" name="format" type="int" enum="RenderingDevice.DataFormat">
-			</argument>
-			<argument index="2" name="data" type="PackedByteArray" default="PackedByteArray(  )">
-			</argument>
+			<return type="RID" />
+			<argument index="0" name="size_bytes" type="int" />
+			<argument index="1" name="format" type="int" enum="RenderingDevice.DataFormat" />
+			<argument index="2" name="data" type="PackedByteArray" default="PackedByteArray()" />
 			<description>
 			</description>
 		</method>
 		<method name="texture_clear">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="texture" type="RID">
-			</argument>
-			<argument index="1" name="color" type="Color">
-			</argument>
-			<argument index="2" name="base_mipmap" type="int">
-			</argument>
-			<argument index="3" name="mipmap_count" type="int">
-			</argument>
-			<argument index="4" name="base_layer" type="int">
-			</argument>
-			<argument index="5" name="layer_count" type="int">
-			</argument>
-			<argument index="6" name="post_barrier" type="int" default="7">
-			</argument>
+			<return type="int" enum="Error" />
+			<argument index="0" name="texture" type="RID" />
+			<argument index="1" name="color" type="Color" />
+			<argument index="2" name="base_mipmap" type="int" />
+			<argument index="3" name="mipmap_count" type="int" />
+			<argument index="4" name="base_layer" type="int" />
+			<argument index="5" name="layer_count" type="int" />
+			<argument index="6" name="post_barrier" type="int" default="7" />
 			<description>
 			</description>
 		</method>
 		<method name="texture_copy">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="from_texture" type="RID">
-			</argument>
-			<argument index="1" name="to_texture" type="RID">
-			</argument>
-			<argument index="2" name="from_pos" type="Vector3">
-			</argument>
-			<argument index="3" name="to_pos" type="Vector3">
-			</argument>
-			<argument index="4" name="size" type="Vector3">
-			</argument>
-			<argument index="5" name="src_mipmap" type="int">
-			</argument>
-			<argument index="6" name="dst_mipmap" type="int">
-			</argument>
-			<argument index="7" name="src_layer" type="int">
-			</argument>
-			<argument index="8" name="dst_layer" type="int">
-			</argument>
-			<argument index="9" name="post_barrier" type="int" default="7">
-			</argument>
+			<return type="int" enum="Error" />
+			<argument index="0" name="from_texture" type="RID" />
+			<argument index="1" name="to_texture" type="RID" />
+			<argument index="2" name="from_pos" type="Vector3" />
+			<argument index="3" name="to_pos" type="Vector3" />
+			<argument index="4" name="size" type="Vector3" />
+			<argument index="5" name="src_mipmap" type="int" />
+			<argument index="6" name="dst_mipmap" type="int" />
+			<argument index="7" name="src_layer" type="int" />
+			<argument index="8" name="dst_layer" type="int" />
+			<argument index="9" name="post_barrier" type="int" default="7" />
 			<description>
 			</description>
 		</method>
 		<method name="texture_create">
-			<return type="RID">
-			</return>
-			<argument index="0" name="format" type="RDTextureFormat">
-			</argument>
-			<argument index="1" name="view" type="RDTextureView">
-			</argument>
-			<argument index="2" name="data" type="PackedByteArray[]" default="[  ]">
-			</argument>
+			<return type="RID" />
+			<argument index="0" name="format" type="RDTextureFormat" />
+			<argument index="1" name="view" type="RDTextureView" />
+			<argument index="2" name="data" type="PackedByteArray[]" default="[]" />
 			<description>
 			</description>
 		</method>
 		<method name="texture_create_shared">
-			<return type="RID">
-			</return>
-			<argument index="0" name="view" type="RDTextureView">
-			</argument>
-			<argument index="1" name="with_texture" type="RID">
-			</argument>
+			<return type="RID" />
+			<argument index="0" name="view" type="RDTextureView" />
+			<argument index="1" name="with_texture" type="RID" />
 			<description>
 			</description>
 		</method>
 		<method name="texture_create_shared_from_slice">
-			<return type="RID">
-			</return>
-			<argument index="0" name="view" type="RDTextureView">
-			</argument>
-			<argument index="1" name="with_texture" type="RID">
-			</argument>
-			<argument index="2" name="layer" type="int">
-			</argument>
-			<argument index="3" name="mipmap" type="int">
-			</argument>
-			<argument index="4" name="slice_type" type="int" enum="RenderingDevice.TextureSliceType" default="0">
-			</argument>
+			<return type="RID" />
+			<argument index="0" name="view" type="RDTextureView" />
+			<argument index="1" name="with_texture" type="RID" />
+			<argument index="2" name="layer" type="int" />
+			<argument index="3" name="mipmap" type="int" />
+			<argument index="4" name="slice_type" type="int" enum="RenderingDevice.TextureSliceType" default="0" />
 			<description>
 			</description>
 		</method>
 		<method name="texture_get_data">
-			<return type="PackedByteArray">
-			</return>
-			<argument index="0" name="texture" type="RID">
-			</argument>
-			<argument index="1" name="layer" type="int">
-			</argument>
+			<return type="PackedByteArray" />
+			<argument index="0" name="texture" type="RID" />
+			<argument index="1" name="layer" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="texture_is_format_supported_for_usage" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="format" type="int" enum="RenderingDevice.DataFormat">
-			</argument>
-			<argument index="1" name="usage_flags" type="int">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="format" type="int" enum="RenderingDevice.DataFormat" />
+			<argument index="1" name="usage_flags" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="texture_is_shared">
-			<return type="bool">
-			</return>
-			<argument index="0" name="texture" type="RID">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="texture" type="RID" />
 			<description>
 			</description>
 		</method>
 		<method name="texture_is_valid">
-			<return type="bool">
-			</return>
-			<argument index="0" name="texture" type="RID">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="texture" type="RID" />
 			<description>
 			</description>
 		</method>
 		<method name="texture_resolve_multisample">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="from_texture" type="RID">
-			</argument>
-			<argument index="1" name="to_texture" type="RID">
-			</argument>
-			<argument index="2" name="post_barrier" type="int" default="7">
-			</argument>
+			<return type="int" enum="Error" />
+			<argument index="0" name="from_texture" type="RID" />
+			<argument index="1" name="to_texture" type="RID" />
+			<argument index="2" name="post_barrier" type="int" default="7" />
 			<description>
 			</description>
 		</method>
 		<method name="texture_update">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="texture" type="RID">
-			</argument>
-			<argument index="1" name="layer" type="int">
-			</argument>
-			<argument index="2" name="data" type="PackedByteArray">
-			</argument>
-			<argument index="3" name="post_barrier" type="int" default="7">
-			</argument>
+			<return type="int" enum="Error" />
+			<argument index="0" name="texture" type="RID" />
+			<argument index="1" name="layer" type="int" />
+			<argument index="2" name="data" type="PackedByteArray" />
+			<argument index="3" name="post_barrier" type="int" default="7" />
 			<description>
 			</description>
 		</method>
 		<method name="uniform_buffer_create">
-			<return type="RID">
-			</return>
-			<argument index="0" name="size_bytes" type="int">
-			</argument>
-			<argument index="1" name="data" type="PackedByteArray" default="PackedByteArray(  )">
-			</argument>
+			<return type="RID" />
+			<argument index="0" name="size_bytes" type="int" />
+			<argument index="1" name="data" type="PackedByteArray" default="PackedByteArray()" />
 			<description>
 			</description>
 		</method>
 		<method name="uniform_set_create">
-			<return type="RID">
-			</return>
-			<argument index="0" name="uniforms" type="Array">
-			</argument>
-			<argument index="1" name="shader" type="RID">
-			</argument>
-			<argument index="2" name="shader_set" type="int">
-			</argument>
+			<return type="RID" />
+			<argument index="0" name="uniforms" type="Array" />
+			<argument index="1" name="shader" type="RID" />
+			<argument index="2" name="shader_set" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="uniform_set_is_valid">
-			<return type="bool">
-			</return>
-			<argument index="0" name="uniform_set" type="RID">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="uniform_set" type="RID" />
 			<description>
 			</description>
 		</method>
 		<method name="vertex_buffer_create">
-			<return type="RID">
-			</return>
-			<argument index="0" name="size_bytes" type="int">
-			</argument>
-			<argument index="1" name="data" type="PackedByteArray" default="PackedByteArray(  )">
-			</argument>
-			<argument index="2" name="use_as_storage" type="bool" default="false">
-			</argument>
+			<return type="RID" />
+			<argument index="0" name="size_bytes" type="int" />
+			<argument index="1" name="data" type="PackedByteArray" default="PackedByteArray()" />
+			<argument index="2" name="use_as_storage" type="bool" default="false" />
 			<description>
 			</description>
 		</method>
 		<method name="vertex_format_create">
-			<return type="int">
-			</return>
-			<argument index="0" name="vertex_descriptions" type="RDVertexAttribute[]">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="vertex_descriptions" type="RDVertexAttribute[]" />
 			<description>
 			</description>
 		</method>
@@ -844,6 +653,32 @@
 		<constant name="BARRIER_MASK_ALL" value="7">
 		</constant>
 		<constant name="BARRIER_MASK_NO_BARRIER" value="8">
+		</constant>
+		<constant name="DRIVER_RESOURCE_VULKAN_DEVICE" value="0" enum="DriverResource">
+		</constant>
+		<constant name="DRIVER_RESOURCE_VULKAN_PHYSICAL_DEVICE" value="1" enum="DriverResource">
+		</constant>
+		<constant name="DRIVER_RESOURCE_VULKAN_INSTANCE" value="2" enum="DriverResource">
+		</constant>
+		<constant name="DRIVER_RESOURCE_VULKAN_QUEUE" value="3" enum="DriverResource">
+		</constant>
+		<constant name="DRIVER_RESOURCE_VULKAN_QUEUE_FAMILY_INDEX" value="4" enum="DriverResource">
+		</constant>
+		<constant name="DRIVER_RESOURCE_VULKAN_IMAGE" value="5" enum="DriverResource">
+		</constant>
+		<constant name="DRIVER_RESOURCE_VULKAN_IMAGE_VIEW" value="6" enum="DriverResource">
+		</constant>
+		<constant name="DRIVER_RESOURCE_VULKAN_IMAGE_NATIVE_TEXTURE_FORMAT" value="7" enum="DriverResource">
+		</constant>
+		<constant name="DRIVER_RESOURCE_VULKAN_SAMPLER" value="8" enum="DriverResource">
+		</constant>
+		<constant name="DRIVER_RESOURCE_VULKAN_DESCRIPTOR_SET" value="9" enum="DriverResource">
+		</constant>
+		<constant name="DRIVER_RESOURCE_VULKAN_BUFFER" value="10" enum="DriverResource">
+		</constant>
+		<constant name="DRIVER_RESOURCE_VULKAN_COMPUTE_PIPELINE" value="11" enum="DriverResource">
+		</constant>
+		<constant name="DRIVER_RESOURCE_VULKAN_RENDER_PIPELINE" value="12" enum="DriverResource">
 		</constant>
 		<constant name="DATA_FORMAT_R4G4_UNORM_PACK8" value="0" enum="DataFormat">
 		</constant>
@@ -1349,7 +1184,7 @@
 		</constant>
 		<constant name="TEXTURE_USAGE_CAN_COPY_TO_BIT" value="256" enum="TextureUsageBits">
 		</constant>
-		<constant name="TEXTURE_USAGE_RESOLVE_ATTACHMENT_BIT" value="512" enum="TextureUsageBits">
+		<constant name="TEXTURE_USAGE_INPUT_ATTACHMENT_BIT" value="512" enum="TextureUsageBits">
 		</constant>
 		<constant name="TEXTURE_SWIZZLE_IDENTITY" value="0" enum="TextureSwizzle">
 		</constant>
@@ -1653,6 +1488,12 @@
 		</constant>
 		<constant name="SHADER_LANGUAGE_HLSL" value="1" enum="ShaderLanguage">
 		</constant>
+		<constant name="PIPELINE_SPECIALIZATION_CONSTANT_TYPE_BOOL" value="0" enum="PipelineSpecializationConstantType">
+		</constant>
+		<constant name="PIPELINE_SPECIALIZATION_CONSTANT_TYPE_INT" value="1" enum="PipelineSpecializationConstantType">
+		</constant>
+		<constant name="PIPELINE_SPECIALIZATION_CONSTANT_TYPE_FLOAT" value="2" enum="PipelineSpecializationConstantType">
+		</constant>
 		<constant name="LIMIT_MAX_BOUND_UNIFORM_SETS" value="0" enum="Limit">
 		</constant>
 		<constant name="LIMIT_MAX_FRAMEBUFFER_COLOR_ATTACHMENTS" value="1" enum="Limit">
@@ -1722,6 +1563,12 @@
 		<constant name="LIMIT_MAX_COMPUTE_WORKGROUP_SIZE_Y" value="33" enum="Limit">
 		</constant>
 		<constant name="LIMIT_MAX_COMPUTE_WORKGROUP_SIZE_Z" value="34" enum="Limit">
+		</constant>
+		<constant name="MEMORY_TEXTURES" value="0" enum="MemoryType">
+		</constant>
+		<constant name="MEMORY_BUFFERS" value="1" enum="MemoryType">
+		</constant>
+		<constant name="MEMORY_TOTAL" value="2" enum="MemoryType">
 		</constant>
 		<constant name="INVALID_ID" value="-1">
 		</constant>

@@ -51,11 +51,13 @@ private:
 	float sun_angle_max;
 	float sun_curve;
 
-	RID shader;
+	static Mutex shader_mutex;
+	static RID shader;
+	static void _update_shader();
+	mutable bool shader_set = false;
 
 protected:
 	static void _bind_methods();
-	virtual bool _can_do_next_pass() const override;
 
 public:
 	void set_sky_top_color(const Color &p_sky_top);
@@ -90,6 +92,9 @@ public:
 
 	virtual Shader::Mode get_shader_mode() const override;
 	virtual RID get_shader_rid() const override;
+	virtual RID get_rid() const override;
+
+	static void cleanup_shader();
 
 	ProceduralSkyMaterial();
 	~ProceduralSkyMaterial();
@@ -103,11 +108,14 @@ class PanoramaSkyMaterial : public Material {
 
 private:
 	Ref<Texture2D> panorama;
-	RID shader;
+
+	static Mutex shader_mutex;
+	static RID shader;
+	static void _update_shader();
+	mutable bool shader_set = false;
 
 protected:
 	static void _bind_methods();
-	virtual bool _can_do_next_pass() const override;
 
 public:
 	void set_panorama(const Ref<Texture2D> &p_panorama);
@@ -115,6 +123,9 @@ public:
 
 	virtual Shader::Mode get_shader_mode() const override;
 	virtual RID get_shader_rid() const override;
+	virtual RID get_rid() const override;
+
+	static void cleanup_shader();
 
 	PanoramaSkyMaterial();
 	~PanoramaSkyMaterial();
@@ -127,7 +138,8 @@ class PhysicalSkyMaterial : public Material {
 	GDCLASS(PhysicalSkyMaterial, Material);
 
 private:
-	RID shader;
+	static Mutex shader_mutex;
+	static RID shader;
 
 	float rayleigh;
 	Color rayleigh_color;
@@ -140,10 +152,11 @@ private:
 	float exposure;
 	float dither_strength;
 	Ref<Texture2D> night_sky;
+	static void _update_shader();
+	mutable bool shader_set = false;
 
 protected:
 	static void _bind_methods();
-	virtual bool _can_do_next_pass() const override;
 
 public:
 	void set_rayleigh_coefficient(float p_rayleigh);
@@ -181,6 +194,9 @@ public:
 
 	virtual Shader::Mode get_shader_mode() const override;
 	virtual RID get_shader_rid() const override;
+
+	static void cleanup_shader();
+	virtual RID get_rid() const override;
 
 	PhysicalSkyMaterial();
 	~PhysicalSkyMaterial();

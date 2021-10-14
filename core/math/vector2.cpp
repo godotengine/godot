@@ -34,6 +34,10 @@ real_t Vector2::angle() const {
 	return Math::atan2(y, x);
 }
 
+Vector2 Vector2::from_angle(const real_t p_angle) {
+	return Vector2(Math::cos(p_angle), Math::sin(p_angle));
+}
+
 real_t Vector2::length() const {
 	return Math::sqrt(x * x + y * y);
 }
@@ -59,7 +63,7 @@ Vector2 Vector2::normalized() const {
 
 bool Vector2::is_normalized() const {
 	// use length_squared() instead of length() to avoid sqrt(), makes it more stringent.
-	return Math::is_equal_approx(length_squared(), 1.0, UNIT_EPSILON);
+	return Math::is_equal_approx(length_squared(), 1, (real_t)UNIT_EPSILON);
 }
 
 real_t Vector2::distance_to(const Vector2 &p_vector2) const {
@@ -75,7 +79,7 @@ real_t Vector2::angle_to(const Vector2 &p_vector2) const {
 }
 
 real_t Vector2::angle_to_point(const Vector2 &p_vector2) const {
-	return Math::atan2(y - p_vector2.y, x - p_vector2.x);
+	return (*this - p_vector2).angle();
 }
 
 real_t Vector2::dot(const Vector2 &p_other) const {
@@ -102,7 +106,7 @@ Vector2 Vector2::round() const {
 	return Vector2(Math::round(x), Math::round(y));
 }
 
-Vector2 Vector2::rotated(real_t p_by) const {
+Vector2 Vector2::rotated(const real_t p_by) const {
 	real_t sine = Math::sin(p_by);
 	real_t cosi = Math::cos(p_by);
 	return Vector2(
@@ -122,14 +126,20 @@ Vector2 Vector2::project(const Vector2 &p_to) const {
 	return p_to * (dot(p_to) / p_to.length_squared());
 }
 
+Vector2 Vector2::clamp(const Vector2 &p_min, const Vector2 &p_max) const {
+	return Vector2(
+			CLAMP(x, p_min.x, p_max.x),
+			CLAMP(y, p_min.y, p_max.y));
+}
+
 Vector2 Vector2::snapped(const Vector2 &p_step) const {
 	return Vector2(
 			Math::snapped(x, p_step.x),
 			Math::snapped(y, p_step.y));
 }
 
-Vector2 Vector2::clamped(real_t p_len) const {
-	real_t l = length();
+Vector2 Vector2::limit_length(const real_t p_len) const {
+	const real_t l = length();
 	Vector2 v = *this;
 	if (l > 0 && p_len < l) {
 		v /= l;
@@ -139,7 +149,7 @@ Vector2 Vector2::clamped(real_t p_len) const {
 	return v;
 }
 
-Vector2 Vector2::cubic_interpolate(const Vector2 &p_b, const Vector2 &p_pre_a, const Vector2 &p_post_b, real_t p_weight) const {
+Vector2 Vector2::cubic_interpolate(const Vector2 &p_b, const Vector2 &p_pre_a, const Vector2 &p_post_b, const real_t p_weight) const {
 	Vector2 p0 = p_pre_a;
 	Vector2 p1 = *this;
 	Vector2 p2 = p_b;
@@ -187,7 +197,17 @@ bool Vector2::is_equal_approx(const Vector2 &p_v) const {
 	return Math::is_equal_approx(x, p_v.x) && Math::is_equal_approx(y, p_v.y);
 }
 
+Vector2::operator String() const {
+	return "(" + String::num_real(x, false) + ", " + String::num_real(y, false) + ")";
+}
+
 /* Vector2i */
+
+Vector2i Vector2i::clamp(const Vector2i &p_min, const Vector2i &p_max) const {
+	return Vector2i(
+			CLAMP(x, p_min.x, p_max.x),
+			CLAMP(y, p_min.y, p_max.y));
+}
 
 Vector2i Vector2i::operator+(const Vector2i &p_v) const {
 	return Vector2i(x + p_v.x, y + p_v.y);
@@ -256,4 +276,8 @@ bool Vector2i::operator==(const Vector2i &p_vec2) const {
 
 bool Vector2i::operator!=(const Vector2i &p_vec2) const {
 	return x != p_vec2.x || y != p_vec2.y;
+}
+
+Vector2i::operator String() const {
+	return "(" + itos(x) + ", " + itos(y) + ")";
 }
