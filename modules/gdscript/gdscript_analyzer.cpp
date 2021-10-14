@@ -1927,16 +1927,25 @@ void GDScriptAnalyzer::reduce_await(GDScriptParser::AwaitNode *p_await) {
 		p_await->set_datatype(await_type);
 		return;
 	}
+
+	GDScriptParser::DataType awaiting_type;
+
 	if (p_await->to_await->type == GDScriptParser::Node::CALL) {
 		reduce_call(static_cast<GDScriptParser::CallNode *>(p_await->to_await), true);
+		awaiting_type = p_await->to_await->get_datatype();
 	} else {
 		reduce_expression(p_await->to_await);
 	}
 
-	p_await->is_constant = p_await->to_await->is_constant;
-	p_await->reduced_value = p_await->to_await->reduced_value;
+	if (p_await->to_await->is_constant) {
+		p_await->is_constant = p_await->to_await->is_constant;
+		p_await->reduced_value = p_await->to_await->reduced_value;
 
-	GDScriptParser::DataType awaiting_type = p_await->to_await->get_datatype();
+		awaiting_type = p_await->to_await->get_datatype();
+	} else {
+		awaiting_type.kind = GDScriptParser::DataType::VARIANT;
+		awaiting_type.type_source = GDScriptParser::DataType::UNDETECTED;
+	}
 
 	p_await->set_datatype(awaiting_type);
 
