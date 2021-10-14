@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="EditorSceneImporter" inherits="RefCounted" version="4.0">
+<class name="EditorSceneFormatImporter" inherits="RefCounted" version="4.0">
 	<brief_description>
 		Imports scenes from third-parties' 3D files.
 	</brief_description>

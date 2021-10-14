@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="EditorSceneImporterFBX" inherits="EditorSceneImporter" version="4.0">
+<class name="EditorSceneFormatImporterFBX" inherits="EditorSceneFormatImporter" version="4.0">
 	<brief_description>
 		FBX 3D asset importer.
 	</brief_description>

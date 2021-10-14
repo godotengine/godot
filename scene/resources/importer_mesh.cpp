@@ -997,7 +997,7 @@ Ref<NavigationMesh> ImporterMesh::create_navigation_mesh() {
 
 extern bool (*array_mesh_lightmap_unwrap_callback)(float p_texel_size, const float *p_vertices, const float *p_normals, int p_vertex_count, const int *p_indices, int p_index_count, const uint8_t *p_cache_data, bool *r_use_cache, uint8_t **r_mesh_cache, int *r_mesh_cache_size, float **r_uv, int **r_vertex, int *r_vertex_count, int **r_index, int *r_index_count, int *r_size_hint_x, int *r_size_hint_y);
 
-struct EditorSceneImporterMeshLightmapSurface {
+struct EditorSceneFormatImporterMeshLightmapSurface {
 	Ref<Material> material;
 	LocalVector<SurfaceTool::Vertex> vertices;
 	Mesh::PrimitiveType primitive = Mesh::PrimitiveType::PRIMITIVE_MAX;
@@ -1015,7 +1015,7 @@ Error ImporterMesh::lightmap_unwrap_cached(const Transform3D &p_base_transform, 
 	LocalVector<float> uv;
 	LocalVector<Pair<int, int>> uv_indices;
 
-	Vector<EditorSceneImporterMeshLightmapSurface> lightmap_surfaces;
+	Vector<EditorSceneFormatImporterMeshLightmapSurface> lightmap_surfaces;
 
 	// Keep only the scale
 	Basis basis = p_base_transform.get_basis();
@@ -1027,7 +1027,7 @@ Error ImporterMesh::lightmap_unwrap_cached(const Transform3D &p_base_transform, 
 	Basis normal_basis = transform.basis.inverse().transposed();
 
 	for (int i = 0; i < get_surface_count(); i++) {
-		EditorSceneImporterMeshLightmapSurface s;
+		EditorSceneFormatImporterMeshLightmapSurface s;
 		s.primitive = get_surface_primitive_type(i);
 
 		ERR_FAIL_COND_V_MSG(s.primitive != Mesh::PRIMITIVE_TRIANGLES, ERR_UNAVAILABLE, "Only triangles are supported for lightmap unwrap.");

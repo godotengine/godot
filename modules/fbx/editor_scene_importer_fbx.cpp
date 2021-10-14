@@ -56,7 +56,7 @@
 
 #include <string>
 
-void EditorSceneImporterFBX::get_extensions(List<String> *r_extensions) const {
+void EditorSceneFormatImporterFBX::get_extensions(List<String> *r_extensions) const {
 	// register FBX as the one and only format for FBX importing
 	const String import_setting_string = "filesystem/import/fbx/";
 	const String fbx_str = "fbx";
@@ -65,7 +65,7 @@ void EditorSceneImporterFBX::get_extensions(List<String> *r_extensions) const {
 	_register_project_setting_import(fbx_str, import_setting_string, exts, r_extensions, true);
 }
 
-void EditorSceneImporterFBX::_register_project_setting_import(const String generic,
+void EditorSceneFormatImporterFBX::_register_project_setting_import(const String generic,
 		const String import_setting_string,
 		const Vector<String> &exts,
 		List<String> *r_extensions,
@@ -79,11 +79,11 @@ void EditorSceneImporterFBX::_register_project_setting_import(const String gener
 	}
 }
 
-uint32_t EditorSceneImporterFBX::get_import_flags() const {
+uint32_t EditorSceneFormatImporterFBX::get_import_flags() const {
 	return IMPORT_SCENE;
 }
 
-Node3D *EditorSceneImporterFBX::import_scene(const String &p_path, uint32_t p_flags, int p_bake_fps,
+Node3D *EditorSceneFormatImporterFBX::import_scene(const String &p_path, uint32_t p_flags, int p_bake_fps,
 		List<String> *r_missing_deps, Error *r_err) {
 	// done for performance when re-importing lots of files when testing importer in verbose only!
 	if (OS::get_singleton()->is_stdout_verbose()) {
@@ -232,7 +232,7 @@ Node3D *EditorSceneImporterFBX::import_scene(const String &p_path, uint32_t p_fl
 }
 
 template <class T>
-struct EditorSceneImporterAssetImportInterpolate {
+struct EditorSceneFormatImporterAssetImportInterpolate {
 	T lerp(const T &a, const T &b, float c) const {
 		return a + (b - a) * c;
 	}
@@ -258,7 +258,7 @@ struct EditorSceneImporterAssetImportInterpolate {
 
 //thank you for existing, partial specialization
 template <>
-struct EditorSceneImporterAssetImportInterpolate<Quaternion> {
+struct EditorSceneFormatImporterAssetImportInterpolate<Quaternion> {
 	Quaternion lerp(const Quaternion &a, const Quaternion &b, float c) const {
 		ERR_FAIL_COND_V(!a.is_normalized(), Quaternion());
 		ERR_FAIL_COND_V(!b.is_normalized(), Quaternion());
@@ -282,7 +282,7 @@ struct EditorSceneImporterAssetImportInterpolate<Quaternion> {
 };
 
 template <class T>
-T EditorSceneImporterFBX::_interpolate_track(const Vector<float> &p_times, const Vector<T> &p_values, float p_time,
+T EditorSceneFormatImporterFBX::_interpolate_track(const Vector<float> &p_times, const Vector<T> &p_values, float p_time,
 		AssetImportAnimation::Interpolation p_interp) {
 	//could use binary search, worth it?
 	int idx = -1;
@@ -293,7 +293,7 @@ T EditorSceneImporterFBX::_interpolate_track(const Vector<float> &p_times, const
 		idx++;
 	}
 
-	EditorSceneImporterAssetImportInterpolate<T> interp;
+	EditorSceneFormatImporterAssetImportInterpolate<T> interp;
 
 	switch (p_interp) {
 		case AssetImportAnimation::INTERP_LINEAR: {
@@ -352,7 +352,7 @@ T EditorSceneImporterFBX::_interpolate_track(const Vector<float> &p_times, const
 	ERR_FAIL_V(p_values[0]);
 }
 
-Node3D *EditorSceneImporterFBX::_generate_scene(
+Node3D *EditorSceneFormatImporterFBX::_generate_scene(
 		const String &p_path,
 		const FBXDocParser::Document *p_document,
 		const uint32_t p_flags,
@@ -1294,7 +1294,7 @@ Node3D *EditorSceneImporterFBX::_generate_scene(
 	return scene_root;
 }
 
-void EditorSceneImporterFBX::BuildDocumentBones(Ref<FBXBone> p_parent_bone,
+void EditorSceneFormatImporterFBX::BuildDocumentBones(Ref<FBXBone> p_parent_bone,
 		ImportState &state, const FBXDocParser::Document *p_doc,
 		uint64_t p_id) {
 	const std::vector<const FBXDocParser::Connection *> &conns = p_doc->GetConnectionsByDestinationSequenced(p_id, "Model");
@@ -1383,7 +1383,7 @@ void EditorSceneImporterFBX::BuildDocumentBones(Ref<FBXBone> p_parent_bone,
 	}
 }
 
-void EditorSceneImporterFBX::BuildDocumentNodes(
+void EditorSceneFormatImporterFBX::BuildDocumentNodes(
 		Ref<PivotTransform> parent_transform,
 		ImportState &state,
 		const FBXDocParser::Document *p_doc,
