@@ -341,7 +341,11 @@ void TextureProgressBar::draw_nine_patch_stretched(const Ref<Texture2D> &p_textu
 			} break;
 			case FILL_BILINEAR_LEFT_AND_RIGHT: {
 				double center_mapped_from_real_width = (width_total * 0.5 - topleft.x) / max_middle_real_size * max_middle_texture_size + topleft.x;
-				double drift_from_unscaled_center = (src_rect.size.x * 0.5 - center_mapped_from_real_width) * (last_section_size - first_section_size) / (bottomright.x - topleft.x);
+				double drift_from_unscaled_center = 0;
+				if (bottomright.y != topleft.y) { // To avoid division by zero.
+					drift_from_unscaled_center = (src_rect.size.x * 0.5 - center_mapped_from_real_width) * (last_section_size - first_section_size) / (bottomright.x - topleft.x);
+				}
+
 				src_rect.position.x += center_mapped_from_real_width + drift_from_unscaled_center - width_texture * 0.5;
 				src_rect.size.x = width_texture;
 				dst_rect.position.x += (width_total - width_filled) * 0.5;
@@ -351,7 +355,11 @@ void TextureProgressBar::draw_nine_patch_stretched(const Ref<Texture2D> &p_textu
 			} break;
 			case FILL_BILINEAR_TOP_AND_BOTTOM: {
 				double center_mapped_from_real_width = (width_total * 0.5 - topleft.y) / max_middle_real_size * max_middle_texture_size + topleft.y;
-				double drift_from_unscaled_center = (src_rect.size.y * 0.5 - center_mapped_from_real_width) * (last_section_size - first_section_size) / (bottomright.y - topleft.y);
+				double drift_from_unscaled_center = 0;
+				if (bottomright.y != topleft.y) { // To avoid division by zero.
+					drift_from_unscaled_center = (src_rect.size.y * 0.5 - center_mapped_from_real_width) * (last_section_size - first_section_size) / (bottomright.y - topleft.y);
+				}
+
 				src_rect.position.y += center_mapped_from_real_width + drift_from_unscaled_center - width_texture * 0.5;
 				src_rect.size.y = width_texture;
 				dst_rect.position.y += (width_total - width_filled) * 0.5;
