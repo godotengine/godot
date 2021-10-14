@@ -41,13 +41,16 @@ StringName AnimationNodeStateMachineTransitionCondition::get_advance_condition()
 	return advance_condition;
 }
 
-void AnimationNodeStateMachineTransitionCondition::set_advance_variant_type(const VariantType p_type) {
-	ERR_FAIL_COND(p_type >= VARIANT_TYPES_MAX);
-	variant_type = p_type;
+void AnimationNodeStateMachineTransitionCondition::set_advance_parameter_type(const AnimationNode::ParameterType p_type) {
+	ERR_FAIL_COND(p_type >= AnimationNode::PARAMETER_TYPES_MAX);
+	parameter_type = p_type;
+
+	set_advance_comparison_value(get_advance_comparison_value());
+	notify_property_list_changed();
 }
 
-AnimationNodeStateMachineTransitionCondition::VariantType AnimationNodeStateMachineTransitionCondition::get_advance_variant_type() const {
-	return variant_type;
+AnimationNode::ParameterType AnimationNodeStateMachineTransitionCondition::get_advance_parameter_type() const {
+	return parameter_type;
 }
 
 void AnimationNodeStateMachineTransitionCondition::set_advance_comparison_operator(const ComparisonOperator p_operator) {
@@ -60,25 +63,25 @@ AnimationNodeStateMachineTransitionCondition::ComparisonOperator AnimationNodeSt
 }
 
 void AnimationNodeStateMachineTransitionCondition::set_advance_comparison_value(const Variant &p_value) {
-	comparison_value = p_value;
+	switch (get_advance_parameter_type()) {
+		case AnimationNode::PARAMETER_TYPE_BOOL:
+			comparison_value = bool(p_value);
+			break;
+		case AnimationNode::PARAMETER_TYPE_INT:
+			comparison_value = int(p_value);
+			break;
+		case AnimationNode::PARAMETER_TYPE_FLOAT:
+			comparison_value = float(p_value);
+			break;
+		default:
+			break;
+	}
+
 	emit_signal(SNAME("advance_condition_changed"));
 }
 
 Variant AnimationNodeStateMachineTransitionCondition::get_advance_comparison_value() const {
 	return comparison_value;
-}
-
-String AnimationNodeStateMachineTransitionCondition::get_variant_type_name(const VariantType &p_type) {
-	switch (p_type) {
-		case VARIANT_TYPE_BOOL:
-			return "Bool";
-		case VARIANT_TYPE_INT:
-			return "Int";
-		case VARIANT_TYPE_FLOAT:
-			return "Float";
-		default:
-			return "Invalid";
-	}
 }
 
 String AnimationNodeStateMachineTransitionCondition::get_operator_name(const ComparisonOperator &p_op) {
@@ -101,8 +104,8 @@ String AnimationNodeStateMachineTransitionCondition::get_operator_name(const Com
 }
 
 bool AnimationNodeStateMachineTransitionCondition::test_parameter(const Variant &p_parameter) {
-	switch (variant_type) {
-		case VariantType::VARIANT_TYPE_BOOL:
+	switch (parameter_type) {
+		case AnimationNode::PARAMETER_TYPE_BOOL:
 			switch (comparison_operator) {
 				case ComparisonOperator::OPERATOR_EQUALS:
 					return bool(p_parameter) == bool(comparison_value);
@@ -120,7 +123,7 @@ bool AnimationNodeStateMachineTransitionCondition::test_parameter(const Variant 
 					return false;
 			}
 			break;
-		case VariantType::VARIANT_TYPE_INT:
+		case AnimationNode::PARAMETER_TYPE_INT:
 			switch (comparison_operator) {
 				case ComparisonOperator::OPERATOR_EQUALS:
 					return int(p_parameter) == int(comparison_value);
@@ -138,7 +141,7 @@ bool AnimationNodeStateMachineTransitionCondition::test_parameter(const Variant 
 					return false;
 			}
 			break;
-		case VariantType::VARIANT_TYPE_FLOAT:
+		case AnimationNode::PARAMETER_TYPE_FLOAT:
 			switch (comparison_operator) {
 				case ComparisonOperator::OPERATOR_EQUALS:
 					return float(p_parameter) == float(comparison_value);
@@ -163,6 +166,37 @@ bool AnimationNodeStateMachineTransitionCondition::test_parameter(const Variant 
 	return false;
 }
 
+bool AnimationNodeStateMachineTransitionCondition::_set(const StringName &p_name, const Variant &p_value) {
+	if (p_name == "advance_comparison_value") {
+		set_advance_comparison_value(p_value);
+		return false;
+	}
+}
+
+bool AnimationNodeStateMachineTransitionCondition::_get(const StringName &p_name, Variant &r_ret) const {
+	if (p_name == "advance_comparison_value") {
+		r_ret = comparison_value;
+		return true;
+	}
+	return false;
+}
+
+void AnimationNodeStateMachineTransitionCondition::_get_property_list(List<PropertyInfo> *p_list) const {
+	switch (get_advance_parameter_type()) {
+		case AnimationNode::PARAMETER_TYPE_BOOL:
+			p_list->push_back(PropertyInfo(Variant::BOOL, "advance_comparison_value", PROPERTY_HINT_NONE));
+			break;
+		case AnimationNode::PARAMETER_TYPE_INT:
+			p_list->push_back(PropertyInfo(Variant::INT, "advance_comparison_value", PROPERTY_HINT_NONE));
+			break;
+		case AnimationNode::PARAMETER_TYPE_FLOAT:
+			p_list->push_back(PropertyInfo(Variant::FLOAT, "advance_comparison_value", PROPERTY_HINT_NONE));
+			break;
+		default:
+			break;
+	}
+}
+
 void AnimationNodeStateMachineTransitionCondition::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_advance_condition", "name"), &AnimationNodeStateMachineTransitionCondition::set_advance_condition);
 	ClassDB::bind_method(D_METHOD("get_advance_condition"), &AnimationNodeStateMachineTransitionCondition::get_advance_condition);
@@ -170,8 +204,8 @@ void AnimationNodeStateMachineTransitionCondition::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_advance_comparison_operator", "operator"), &AnimationNodeStateMachineTransitionCondition::set_advance_comparison_operator);
 	ClassDB::bind_method(D_METHOD("get_advance_comparison_operator"), &AnimationNodeStateMachineTransitionCondition::get_advance_comparison_operator);
 
-	ClassDB::bind_method(D_METHOD("set_advance_variant_type", "type"), &AnimationNodeStateMachineTransitionCondition::set_advance_variant_type);
-	ClassDB::bind_method(D_METHOD("get_advance_variant_type"), &AnimationNodeStateMachineTransitionCondition::get_advance_variant_type);
+	ClassDB::bind_method(D_METHOD("set_advance_parameter_type", "type"), &AnimationNodeStateMachineTransitionCondition::set_advance_parameter_type);
+	ClassDB::bind_method(D_METHOD("get_advance_parameter_type"), &AnimationNodeStateMachineTransitionCondition::get_advance_parameter_type);
 
 	ClassDB::bind_method(D_METHOD("set_advance_comparison_value", "value"), &AnimationNodeStateMachineTransitionCondition::set_advance_comparison_value);
 	ClassDB::bind_method(D_METHOD("get_advance_comparison_value"), &AnimationNodeStateMachineTransitionCondition::get_advance_comparison_value);
@@ -184,15 +218,18 @@ void AnimationNodeStateMachineTransitionCondition::_bind_methods() {
 		types += get_operator_name(static_cast<ComparisonOperator>(i));
 	}
 
-	String argt = "Any";
-	for (int i = 1; i < VARIANT_TYPES_MAX; i++) {
-		argt += "," + get_variant_type_name(VariantType(i));
+	String argt = "";
+	for (int i = 0; i < AnimationNode::PARAMETER_TYPES_MAX; i++) {
+		if (i > 0) {
+			argt += ",";
+		}
+		argt += AnimationNode::get_parameter_type_name(AnimationNode::ParameterType(i));
 	}
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "advance_condition"), "set_advance_condition", "get_advance_condition");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "advance_comparison_value"), "set_advance_comparison_value", "get_advance_comparison_value");
+	//ADD_PROPERTY(PropertyInfo(Variant::NIL, "advance_comparison_value"), "set_advance_comparison_value", "get_advance_comparison_value", PROPERTY_USAGE_NOEDITOR);
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "advance_comparison_operator", PROPERTY_HINT_ENUM, types), "set_advance_comparison_operator", "get_advance_comparison_operator");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "advance_comparison_variant_type", PROPERTY_HINT_ENUM, argt), "set_advance_variant_type", "get_advance_variant_type");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "advance_comparison_parameter_type", PROPERTY_HINT_ENUM, argt), "set_advance_parameter_type", "get_advance_parameter_type");
 }
 
 AnimationNodeStateMachineTransitionCondition::AnimationNodeStateMachineTransitionCondition() {
@@ -582,7 +619,7 @@ double AnimationNodeStateMachinePlayback::process(AnimationNodeStateMachine *p_s
 					if (condition) {
 						StringName advance_condition_name = condition->get_advance_condition();
 						if (advance_condition_name == StringName() ||
-								!condition->test_parameter(p_state_machine->get_custom_parameter(advance_condition_name))) {
+								!condition->test_parameter(p_state_machine->get_custom_parameter(advance_condition_name, "parameters/custom/"))) {
 							auto_advance = false;
 						}
 					}
@@ -972,7 +1009,7 @@ Vector2 AnimationNodeStateMachine::get_graph_offset() const {
 }
 
 double AnimationNodeStateMachine::process(double p_time, bool p_seek) {
-	Ref<AnimationNodeStateMachinePlayback> playback = get_parameter(this->playback);
+	Ref<AnimationNodeStateMachinePlayback> playback = get_local_parameter(this->playback);
 	ERR_FAIL_COND_V(playback.is_null(), 0.0);
 
 	return playback->process(this, p_time, p_seek);

@@ -44,6 +44,26 @@ class AnimationNode : public Resource {
 	GDCLASS(AnimationNode, Resource);
 
 public:
+	enum ParameterType {
+		PARAMETER_TYPE_BOOL,
+		PARAMETER_TYPE_INT,
+		PARAMETER_TYPE_FLOAT,
+		PARAMETER_TYPES_MAX
+	};
+
+	static String get_parameter_type_name(const AnimationNode::ParameterType &p_type) {
+		switch (p_type) {
+			case PARAMETER_TYPE_BOOL:
+				return "Bool";
+			case PARAMETER_TYPE_INT:
+				return "Int";
+			case PARAMETER_TYPE_FLOAT:
+				return "Float";
+			default:
+				return "Invalid";
+		}
+	}
+
 	enum FilterAction {
 		FILTER_IGNORE,
 		FILTER_PASS,
@@ -130,9 +150,10 @@ public:
 	virtual void get_custom_parameter_list(List<PropertyInfo> *r_list) const;
 	virtual Variant get_parameter_default_value(const StringName &p_parameter) const;
 
-	void set_parameter(const StringName &p_name, const Variant &p_value);
-	Variant get_parameter(const StringName &p_name) const;
-	Variant get_custom_parameter(const StringName &p_name) const;
+	void set_custom_parameter(const StringName &p_name, const Variant &p_value, const StringName &p_path);
+	Variant get_custom_parameter(const StringName &p_name, const StringName &p_path) const;
+	void set_local_parameter(const StringName &p_name, const Variant &p_value);
+	Variant get_local_parameter(const StringName &p_name) const;
 
 	struct ChildNode {
 		StringName name;
@@ -165,6 +186,7 @@ public:
 };
 
 VARIANT_ENUM_CAST(AnimationNode::FilterAction)
+VARIANT_ENUM_CAST(AnimationNode::ParameterType);
 
 //root node does not allow inputs
 class AnimationRootNode : public AnimationNode {

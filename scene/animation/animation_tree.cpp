@@ -70,31 +70,30 @@ Variant AnimationNode::get_parameter_default_value(const StringName &p_parameter
 	return Variant();
 }
 
-void AnimationNode::set_parameter(const StringName &p_name, const Variant &p_value) {
+void AnimationNode::set_custom_parameter(const StringName &p_name, const Variant &p_value, const StringName &p_path) {
 	ERR_FAIL_COND(!state);
-	ERR_FAIL_COND(!state->tree->property_parent_map.has(base_path));
-	ERR_FAIL_COND(!state->tree->property_parent_map[base_path].has(p_name));
-	StringName path = state->tree->property_parent_map[base_path][p_name];
+	ERR_FAIL_COND(!state->tree->property_parent_map.has(p_path));
+	ERR_FAIL_COND(!state->tree->property_parent_map[p_path].has(p_name));
+	StringName path = state->tree->property_parent_map[p_path][p_name];
 
 	state->tree->property_map[path] = p_value;
 }
 
-Variant AnimationNode::get_parameter(const StringName &p_name) const {
+Variant AnimationNode::get_custom_parameter(const StringName &p_name, const StringName &p_path) const {
 	ERR_FAIL_COND_V(!state, Variant());
-	ERR_FAIL_COND_V(!state->tree->property_parent_map.has(base_path), Variant());
-	ERR_FAIL_COND_V(!state->tree->property_parent_map[base_path].has(p_name), Variant());
+	ERR_FAIL_COND_V(!state->tree->property_parent_map.has(p_path), Variant());
+	ERR_FAIL_COND_V(!state->tree->property_parent_map[p_path].has(p_name), Variant());
 
-	StringName path = state->tree->property_parent_map[base_path][p_name];
+	StringName path = state->tree->property_parent_map[p_path][p_name];
 	return state->tree->property_map[path];
 }
 
-Variant AnimationNode::get_custom_parameter(const StringName &p_name) const {
-	ERR_FAIL_COND_V(!state, Variant());
-	ERR_FAIL_COND_V(!state->tree->property_parent_map.has("parameters/custom/"), Variant());
-	ERR_FAIL_COND_V(!state->tree->property_parent_map["parameters/custom/"].has(p_name), Variant());
+void AnimationNode::set_local_parameter(const StringName &p_name, const Variant &p_value) {
+	set_custom_parameter(p_name, p_value, base_path);
+}
 
-	StringName path = state->tree->property_parent_map["parameters/custom/"][p_name];
-	return state->tree->property_map[path];
+Variant AnimationNode::get_local_parameter(const StringName &p_name) const {
+	return get_custom_parameter(p_name, base_path);
 }
 
 void AnimationNode::get_child_nodes(List<ChildNode> *r_child_nodes) {
@@ -541,8 +540,8 @@ void AnimationNode::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("blend_node", "name", "node", "time", "seek", "blend", "filter", "optimize"), &AnimationNode::blend_node, DEFVAL(FILTER_IGNORE), DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("blend_input", "input_index", "time", "seek", "blend", "filter", "optimize"), &AnimationNode::blend_input, DEFVAL(FILTER_IGNORE), DEFVAL(true));
 
-	ClassDB::bind_method(D_METHOD("set_parameter", "name", "value"), &AnimationNode::set_parameter);
-	ClassDB::bind_method(D_METHOD("get_parameter", "name"), &AnimationNode::get_parameter);
+	ClassDB::bind_method(D_METHOD("set_local_parameter", "name", "value"), &AnimationNode::set_local_parameter);
+	ClassDB::bind_method(D_METHOD("get_local_parameter", "name"), &AnimationNode::get_local_parameter);
 	ClassDB::bind_method(D_METHOD("get_custom_parameter", "name"), &AnimationNode::get_custom_parameter);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "filter_enabled", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_filter_enabled", "is_filter_enabled");
