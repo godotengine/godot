@@ -64,6 +64,7 @@ def configure(env):
     elif env["target"] == "debug":
         env.Prepend(CCFLAGS=["-g3"])
         env.Prepend(CPPDEFINES=["DEBUG_ENABLED"])
+        env.Prepend(CPPDEFINES=["DEV_ENABLED"])
         env.Prepend(LINKFLAGS=["-Xlinker", "-no_deduplicate"])
 
     ## Architecture

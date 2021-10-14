@@ -82,6 +82,7 @@ def configure(env):
             env.Append(LINKFLAGS=["--profiling-funcs"])
     else:  # "debug"
         env.Append(CPPDEFINES=["DEBUG_ENABLED"])
+        env.Append(CPPDEFINES=["DEV_ENABLED"])
         env.Append(CCFLAGS=["-O1", "-g"])
         env.Append(LINKFLAGS=["-O1", "-g"])
         env["use_assertions"] = True

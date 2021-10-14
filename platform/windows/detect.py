@@ -208,6 +208,7 @@ def configure_msvc(env, manual_msvc_config):
     elif env["target"] == "debug":
         env.AppendUnique(CCFLAGS=["/Zi", "/FS", "/Od", "/EHsc"])
         env.AppendUnique(CPPDEFINES=["DEBUG_ENABLED"])
+        env.AppendUnique(CPPDEFINES=["DEV_ENABLED"])
         env.Append(LINKFLAGS=["/DEBUG"])
 
     if env["debug_symbols"]:
@@ -362,6 +363,7 @@ def configure_mingw(env):
     elif env["target"] == "debug":
         env.Append(CCFLAGS=["-g3"])
         env.Append(CPPDEFINES=["DEBUG_ENABLED"])
+        env.Append(CPPDEFINES=["DEV_ENABLED"])
 
     if env["windows_subsystem"] == "gui":
         env.Append(LINKFLAGS=["-Wl,--subsystem,windows"])
