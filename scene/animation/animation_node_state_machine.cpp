@@ -169,8 +169,10 @@ bool AnimationNodeStateMachineTransitionCondition::test_parameter(const Variant 
 bool AnimationNodeStateMachineTransitionCondition::_set(const StringName &p_name, const Variant &p_value) {
 	if (p_name == "advance_comparison_value") {
 		set_advance_comparison_value(p_value);
-		return false;
+		return true;
 	}
+
+	return false;
 }
 
 bool AnimationNodeStateMachineTransitionCondition::_get(const StringName &p_name, Variant &r_ret) const {
