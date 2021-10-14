@@ -1301,12 +1301,12 @@ struct VariantZeroAssigner<Signal> {
 
 template <>
 struct VariantZeroAssigner<Dictionary> {
-	static _FORCE_INLINE_ void zero(Variant *v) {}
+	static _FORCE_INLINE_ void zero(Variant *v) { *VariantInternal::get_dictionary(v) = Dictionary(); }
 };
 
 template <>
 struct VariantZeroAssigner<Array> {
-	static _FORCE_INLINE_ void zero(Variant *v) {}
+	static _FORCE_INLINE_ void zero(Variant *v) { *VariantInternal::get_array(v) = Array(); }
 };
 
 template <>
