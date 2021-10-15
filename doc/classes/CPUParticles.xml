@@ -272,7 +272,7 @@
 			Emission lifetime randomness ratio.
 		</member>
 		<member name="scale_amount" type="float" setter="set_param" getter="get_param" default="1.0">
-			Initial scale applied to each particle.
+			Initial scale applied to each particle. This can be set to a negative value to flip the particle on all axes.
 		</member>
 		<member name="scale_amount_curve" type="Curve" setter="set_param_curve" getter="get_param_curve">
 			Each particle's scale will vary along this [Curve].
