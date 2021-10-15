@@ -1036,6 +1036,10 @@ void ResourceImporterScene::_create_clips(AnimationPlayer *anim, const Array &p_
 							} else if (default_anim->track_get_type(j) == Animation::TYPE_VALUE) {
 								Variant var = default_anim->value_track_interpolate(j, from);
 								new_anim->track_insert_key(dtrack, 0, var);
+							} else if (default_anim->track_get_type(j) == Animation::TYPE_BLEND_SHAPE) {
+								float interp;
+								default_anim->blend_shape_track_interpolate(j, from, &interp);
+								new_anim->blend_shape_track_insert_key(dtrack, 0, interp);
 							}
 						}
 					}
@@ -1055,6 +1059,10 @@ void ResourceImporterScene::_create_clips(AnimationPlayer *anim, const Array &p_
 					} else if (default_anim->track_get_type(j) == Animation::TYPE_VALUE) {
 						Variant var = default_anim->track_get_key_value(j, k);
 						new_anim->track_insert_key(dtrack, kt - from, var);
+					} else if (default_anim->track_get_type(j) == Animation::TYPE_BLEND_SHAPE) {
+						float interp;
+						default_anim->blend_shape_track_get_key(j, k, &interp);
+						new_anim->blend_shape_track_insert_key(dtrack, kt - from, interp);
 					}
 				}
 
@@ -1074,6 +1082,10 @@ void ResourceImporterScene::_create_clips(AnimationPlayer *anim, const Array &p_
 					} else if (default_anim->track_get_type(j) == Animation::TYPE_VALUE) {
 						Variant var = default_anim->value_track_interpolate(j, to);
 						new_anim->track_insert_key(dtrack, to - from, var);
+					} else if (default_anim->track_get_type(j) == Animation::TYPE_BLEND_SHAPE) {
+						float interp;
+						default_anim->blend_shape_track_interpolate(j, to, &interp);
+						new_anim->blend_shape_track_insert_key(dtrack, to - from, interp);
 					}
 				}
 			}
@@ -1105,6 +1117,12 @@ void ResourceImporterScene::_create_clips(AnimationPlayer *anim, const Array &p_
 					new_anim->track_insert_key(dtrack, 0, var);
 					Variant to_var = default_anim->value_track_interpolate(j, to);
 					new_anim->track_insert_key(dtrack, to - from, to_var);
+				} else if (default_anim->track_get_type(j) == Animation::TYPE_BLEND_SHAPE) {
+					float interp;
+					default_anim->blend_shape_track_interpolate(j, from, &interp);
+					new_anim->blend_shape_track_insert_key(dtrack, 0, interp);
+					default_anim->blend_shape_track_interpolate(j, to, &interp);
+					new_anim->blend_shape_track_insert_key(dtrack, to - from, interp);
 				}
 			}
 		}
@@ -1652,7 +1670,7 @@ void ResourceImporterScene::_optimize_track_usage(AnimationPlayer *p_player, Ani
 	ERR_FAIL_COND(parent == nullptr);
 	OrderedHashMap<NodePath, uint32_t> used_tracks[TRACK_CHANNEL_MAX];
 	bool tracks_to_add = false;
-	static const Animation::TrackType track_types[TRACK_CHANNEL_MAX] = { Animation::TYPE_POSITION_3D, Animation::TYPE_ROTATION_3D, Animation::TYPE_SCALE_3D };
+	static const Animation::TrackType track_types[TRACK_CHANNEL_MAX] = { Animation::TYPE_POSITION_3D, Animation::TYPE_ROTATION_3D, Animation::TYPE_SCALE_3D, Animation::TYPE_BLEND_SHAPE };
 	for (const StringName &I : anims) {
 		Ref<Animation> anim = p_player->get_animation(I);
 		for (int i = 0; i < anim->get_track_count(); i++) {
@@ -1710,67 +1728,84 @@ void ResourceImporterScene::_optimize_track_usage(AnimationPlayer *p_player, Ani
 
 				NodePath path = J.key();
 				Node *n = parent->get_node(path);
-				Skeleton3D *skel = Object::cast_to<Skeleton3D>(n);
-				Node3D *n3d = Object::cast_to<Node3D>(n);
-				Vector3 loc;
-				Quaternion rot;
-				Vector3 scale;
-				if (skel && path.get_subname_count() > 0) {
-					StringName bone = path.get_subname(0);
-					int bone_idx = skel->find_bone(bone);
-					if (bone_idx == -1) {
+
+				if (j == TRACK_CHANNEL_BLEND_SHAPE) {
+					MeshInstance3D *mi = Object::cast_to<MeshInstance3D>(n);
+					if (mi && path.get_subname_count() > 0) {
+						StringName bs = path.get_subname(0);
+						bool valid;
+						float value = mi->get(bs, &valid);
+						if (valid) {
+							int track_idx = anim->add_track(track_types[j]);
+							anim->track_set_path(track_idx, path);
+							anim->track_set_imported(track_idx, true);
+							anim->blend_shape_track_insert_key(track_idx, 0, value);
+						}
+					}
+
+				} else {
+					Skeleton3D *skel = Object::cast_to<Skeleton3D>(n);
+					Node3D *n3d = Object::cast_to<Node3D>(n);
+					Vector3 loc;
+					Quaternion rot;
+					Vector3 scale;
+					if (skel && path.get_subname_count() > 0) {
+						StringName bone = path.get_subname(0);
+						int bone_idx = skel->find_bone(bone);
+						if (bone_idx == -1) {
+							continue;
+						}
+						skel->get_bone_pose(bone_idx);
+						loc = skel->get_bone_pose_position(bone_idx);
+						rot = skel->get_bone_pose_rotation(bone_idx);
+						scale = skel->get_bone_pose_scale(bone_idx);
+					} else if (n3d) {
+						loc = n3d->get_position();
+						rot = n3d->get_transform().basis.get_rotation_quaternion();
+						scale = n3d->get_scale();
+					} else {
 						continue;
 					}
-					skel->get_bone_pose(bone_idx);
-					loc = skel->get_bone_pose_position(bone_idx);
-					rot = skel->get_bone_pose_rotation(bone_idx);
-					scale = skel->get_bone_pose_scale(bone_idx);
-				} else if (n3d) {
-					loc = n3d->get_position();
-					rot = n3d->get_transform().basis.get_rotation_quaternion();
-					scale = n3d->get_scale();
-				} else {
-					continue;
-				}
 
-				// Ensure insertion keeps tracks together and ordered by type (loc/rot/scale)
-				int insert_at_pos = -1;
-				for (int k = 0; k < anim->get_track_count(); k++) {
-					NodePath tpath = anim->track_get_path(k);
+					// Ensure insertion keeps tracks together and ordered by type (loc/rot/scale)
+					int insert_at_pos = -1;
+					for (int k = 0; k < anim->get_track_count(); k++) {
+						NodePath tpath = anim->track_get_path(k);
 
-					if (path == tpath) {
-						Animation::TrackType ttype = anim->track_get_type(k);
-						if (insert_at_pos == -1) {
-							// First insert, determine whether replacing or kicking back
-							if (track_types[j] < ttype) {
-								insert_at_pos = k;
-								break; // No point in continuing.
-							} else {
+						if (path == tpath) {
+							Animation::TrackType ttype = anim->track_get_type(k);
+							if (insert_at_pos == -1) {
+								// First insert, determine whether replacing or kicking back
+								if (track_types[j] < ttype) {
+									insert_at_pos = k;
+									break; // No point in continuing.
+								} else {
+									insert_at_pos = k + 1;
+								}
+							} else if (ttype < track_types[j]) {
+								// Kick back.
 								insert_at_pos = k + 1;
 							}
-						} else if (ttype < track_types[j]) {
-							// Kick back.
-							insert_at_pos = k + 1;
+						} else if (insert_at_pos >= 0) {
+							break;
 						}
-					} else if (insert_at_pos >= 0) {
-						break;
 					}
-				}
-				int track_idx = anim->add_track(track_types[j], insert_at_pos);
+					int track_idx = anim->add_track(track_types[j], insert_at_pos);
 
-				anim->track_set_path(track_idx, path);
-				anim->track_set_imported(track_idx, true);
-				switch (j) {
-					case TRACK_CHANNEL_POSITION: {
-						anim->position_track_insert_key(track_idx, 0, loc);
-					} break;
-					case TRACK_CHANNEL_ROTATION: {
-						anim->rotation_track_insert_key(track_idx, 0, rot);
-					} break;
-					case TRACK_CHANNEL_SCALE: {
-						anim->scale_track_insert_key(track_idx, 0, scale);
-					} break;
-					default: {
+					anim->track_set_path(track_idx, path);
+					anim->track_set_imported(track_idx, true);
+					switch (j) {
+						case TRACK_CHANNEL_POSITION: {
+							anim->position_track_insert_key(track_idx, 0, loc);
+						} break;
+						case TRACK_CHANNEL_ROTATION: {
+							anim->rotation_track_insert_key(track_idx, 0, rot);
+						} break;
+						case TRACK_CHANNEL_SCALE: {
+							anim->scale_track_insert_key(track_idx, 0, scale);
+						} break;
+						default: {
+						}
 					}
 				}
 			}

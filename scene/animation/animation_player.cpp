@@ -257,6 +257,7 @@ void AnimationPlayer::_ensure_node_caches(AnimationData *p_anim, Node *p_root_ov
 		ERR_CONTINUE_MSG(!child, "On Animation: '" + p_anim->name + "', couldn't resolve track:  '" + String(a->track_get_path(i)) + "'."); // couldn't find the child node
 		ObjectID id = resource.is_valid() ? resource->get_instance_id() : child->get_instance_id();
 		int bone_idx = -1;
+		int blend_shape_idx = -1;
 
 #ifndef _3D_DISABLED
 		if (a->track_get_path(i).get_subname_count() == 1 && Object::cast_to<Skeleton3D>(child)) {
@@ -266,6 +267,22 @@ void AnimationPlayer::_ensure_node_caches(AnimationData *p_anim, Node *p_root_ov
 				continue;
 			}
 		}
+
+		if (a->track_get_type(i) == Animation::TYPE_BLEND_SHAPE) {
+			MeshInstance3D *mi_3d = Object::cast_to<MeshInstance3D>(child);
+			if (!mi_3d) {
+				continue;
+			}
+			if (a->track_get_path(i).get_subname_count() != 1) {
+				continue;
+			}
+
+			blend_shape_idx = mi_3d->find_blend_shape_by_name(a->track_get_path(i).get_subname(0));
+			if (blend_shape_idx == -1) {
+				continue;
+			}
+		}
+
 #endif // _3D_DISABLED
 
 		{
@@ -277,6 +294,7 @@ void AnimationPlayer::_ensure_node_caches(AnimationData *p_anim, Node *p_root_ov
 		TrackNodeCacheKey key;
 		key.id = id;
 		key.bone_idx = bone_idx;
+		key.blend_shape_idx = blend_shape_idx;
 
 		if (!node_cache_map.has(key)) {
 			node_cache_map[key] = TrackNodeCache();
@@ -334,6 +352,13 @@ void AnimationPlayer::_ensure_node_caches(AnimationData *p_anim, Node *p_root_ov
 				}
 			}
 		}
+
+		if (a->track_get_type(i) == Animation::TYPE_BLEND_SHAPE) {
+			// special cases and caches for transform tracks
+			node_cache->node_blend_shape = Object::cast_to<MeshInstance3D>(child);
+			node_cache->blend_shape_idx = blend_shape_idx;
+		}
+
 #endif // _3D_DISABLED
 
 		if (a->track_get_type(i) == Animation::TYPE_VALUE) {
@@ -478,6 +503,31 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, double
 					nc->scale_accum = scale;
 				} else {
 					nc->scale_accum = nc->scale_accum.lerp(scale, p_interp);
+				}
+#endif // _3D_DISABLED
+			} break;
+			case Animation::TYPE_BLEND_SHAPE: {
+#ifndef _3D_DISABLED
+				if (!nc->node_blend_shape) {
+					continue;
+				}
+
+				float blend;
+
+				Error err = a->blend_shape_track_interpolate(i, p_time, &blend);
+				//ERR_CONTINUE(err!=OK); //used for testing, should be removed
+
+				if (err != OK) {
+					continue;
+				}
+
+				if (nc->accum_pass != accum_pass) {
+					ERR_CONTINUE(cache_update_size >= NODE_CACHE_UPDATE_MAX);
+					nc->accum_pass = accum_pass;
+					cache_update[cache_update_size++] = nc;
+					nc->blend_shape_accum = blend;
+				} else {
+					nc->blend_shape_accum = Math::lerp(nc->blend_shape_accum, blend, p_interp);
 				}
 #endif // _3D_DISABLED
 			} break;
@@ -947,6 +997,8 @@ void AnimationPlayer::_animation_update_transforms() {
 					nc->skeleton->set_bone_pose_scale(nc->bone_idx, nc->scale_accum);
 				}
 
+			} else if (nc->node_blend_shape) {
+				nc->node_blend_shape->set_blend_shape_value(nc->blend_shape_idx, nc->blend_shape_accum);
 			} else if (nc->node_3d) {
 				if (nc->loc_used) {
 					nc->node_3d->set_position(nc->loc_accum);

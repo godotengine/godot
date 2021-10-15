@@ -45,6 +45,7 @@ public:
 		TYPE_POSITION_3D, ///< Position 3D track
 		TYPE_ROTATION_3D, ///< Rotation 3D track
 		TYPE_SCALE_3D, ///< Scale 3D track
+		TYPE_BLEND_SHAPE, ///< Blend Shape track
 		TYPE_METHOD, ///< Call any method on a specific node.
 		TYPE_BEZIER, ///< Bezier curve
 		TYPE_AUDIO,
@@ -91,6 +92,7 @@ private:
 	const int32_t POSITION_TRACK_SIZE = 5;
 	const int32_t ROTATION_TRACK_SIZE = 6;
 	const int32_t SCALE_TRACK_SIZE = 5;
+	const int32_t BLEND_SHAPE_TRACK_SIZE = 3;
 
 	/* POSITION TRACK */
 
@@ -113,6 +115,13 @@ private:
 	struct ScaleTrack : public Track {
 		Vector<TKey<Vector3>> scales;
 		ScaleTrack() { type = TYPE_SCALE_3D; }
+	};
+
+	/* BLEND SHAPE TRACK */
+
+	struct BlendShapeTrack : public Track {
+		Vector<TKey<float>> blend_shapes;
+		BlendShapeTrack() { type = TYPE_BLEND_SHAPE; }
 	};
 
 	/* PROPERTY VALUE TRACK */
@@ -247,10 +256,12 @@ private:
 	bool _position_track_optimize_key(const TKey<Vector3> &t0, const TKey<Vector3> &t1, const TKey<Vector3> &t2, real_t p_alowed_linear_err, real_t p_allowed_angular_error, const Vector3 &p_norm);
 	bool _rotation_track_optimize_key(const TKey<Quaternion> &t0, const TKey<Quaternion> &t1, const TKey<Quaternion> &t2, real_t p_allowed_angular_error, float p_max_optimizable_angle);
 	bool _scale_track_optimize_key(const TKey<Vector3> &t0, const TKey<Vector3> &t1, const TKey<Vector3> &t2, real_t p_allowed_linear_error);
+	bool _blend_shape_track_optimize_key(const TKey<float> &t0, const TKey<float> &t1, const TKey<float> &t2, real_t p_allowed_unit_error);
 
 	void _position_track_optimize(int p_idx, real_t p_allowed_linear_err, real_t p_allowed_angular_err);
 	void _rotation_track_optimize(int p_idx, real_t p_allowed_angular_err, real_t p_max_optimizable_angle);
 	void _scale_track_optimize(int p_idx, real_t p_allowed_linear_err);
+	void _blend_shape_track_optimize(int p_idx, real_t p_allowed_unit_error);
 
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
@@ -307,6 +318,10 @@ public:
 	int scale_track_insert_key(int p_track, double p_time, const Vector3 &p_scale);
 	Error scale_track_get_key(int p_track, int p_key, Vector3 *r_scale) const;
 	Error scale_track_interpolate(int p_track, double p_time, Vector3 *r_interpolation) const;
+
+	int blend_shape_track_insert_key(int p_track, double p_time, float p_blend);
+	Error blend_shape_track_get_key(int p_track, int p_key, float *r_blend) const;
+	Error blend_shape_track_interpolate(int p_track, double p_time, float *r_blend) const;
 
 	void track_set_interpolation_type(int p_track, InterpolationType p_interp);
 	InterpolationType track_get_interpolation_type(int p_track) const;
