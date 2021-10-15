@@ -471,6 +471,7 @@ GDScriptParser::DataType GDScriptAnalyzer::resolve_datatype(GDScriptParser::Type
 
 			if (container_type.kind != GDScriptParser::DataType::VARIANT) {
 				container_type.is_meta_type = false;
+				container_type.is_constant = false;
 				result.set_container_element_type(container_type);
 			}
 		}
@@ -1802,6 +1803,7 @@ void GDScriptAnalyzer::update_array_literal_element_type(const GDScriptParser::D
 			}
 		}
 		if (all_same_type) {
+			element_type.is_constant = false;
 			array_type.set_container_element_type(element_type);
 		} else if (all_have_type) {
 			push_error(vformat(R"(Variant array is not compatible with an array of type "%s".)", p_base_type.get_container_element_type().to_string()), p_array_literal);
@@ -3498,6 +3500,7 @@ GDScriptParser::DataType GDScriptAnalyzer::type_from_property(const PropertyInfo
 			} else {
 				ERR_FAIL_V_MSG(result, "Could not find element type from property hint of a typed array.");
 			}
+			elem_type.is_constant = false;
 			result.set_container_element_type(elem_type);
 		}
 	}
