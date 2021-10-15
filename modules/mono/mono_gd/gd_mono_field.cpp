@@ -503,6 +503,13 @@ void GDMonoField::set_value_from_variant(MonoObject *p_object, const Variant &p_
 				mono_field_set_value(p_object, mono_field, managed);
 				break;
 			}
+
+			// GodotObject
+			GDMonoClass *type_class = type.type_class;
+			if (CACHED_CLASS(GodotObject)->is_assignable_from(type_class)) {
+				MonoObject *managed = GDMonoUtils::unmanaged_get_managed(p_value.operator Object *());
+				mono_field_set_value(p_object, mono_field, managed);
+			}
 		} break;
 
 		default: {

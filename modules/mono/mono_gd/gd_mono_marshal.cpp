@@ -212,6 +212,12 @@ Variant::Type managed_to_variant_type(const ManagedType &p_type) {
 			if (GDMonoUtils::Marshal::type_is_generic_icollection(reftype) || GDMonoUtils::Marshal::type_is_generic_ienumerable(reftype)) {
 				return Variant::ARRAY;
 			}
+
+			// GodotObject
+			GDMonoClass *type_class = p_type.type_class;
+			if (CACHED_CLASS(GodotObject)->is_assignable_from(type_class)) {
+				return Variant::OBJECT;
+			}
 		} break;
 
 		default: {
@@ -694,6 +700,12 @@ MonoObject *variant_to_mono_object(const Variant *p_var, const ManagedType &p_ty
 
 					return GDMonoUtils::create_managed_from(p_var->operator Array(), godot_array_class);
 				}
+
+				// GodotObject
+				GDMonoClass *type_class = p_type.type_class;
+				if (CACHED_CLASS(GodotObject)->is_assignable_from(type_class)) {
+					return GDMonoUtils::unmanaged_get_managed(p_var->operator Object *());
+				}
 			} break;
 		} break;
 	}
@@ -895,6 +907,17 @@ Variant mono_object_to_variant_impl(MonoObject *p_obj, const ManagedType &p_type
 				MonoReflectionType *elem_reftype = nullptr;
 				GDMonoUtils::Marshal::array_get_element_type(reftype, &elem_reftype);
 				return system_generic_list_to_Array_variant(p_obj, p_type.type_class, elem_reftype);
+			}
+
+			// GodotObject
+			GDMonoClass *type_class = p_type.type_class;
+			if (CACHED_CLASS(GodotObject)->is_assignable_from(type_class)) {
+				Object *ptr = unbox<Object *>(CACHED_FIELD(GodotObject, ptr)->get_value(p_obj));
+				if (ptr != NULL) {
+					Reference *ref = Object::cast_to<Reference>(ptr);
+					return ref ? Variant(Ref<Reference>(ref)) : Variant(ptr);
+				}
+				return Variant();
 			}
 		} break;
 	}
