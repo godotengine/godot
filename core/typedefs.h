@@ -62,9 +62,9 @@
 #endif
 #endif
 
-// Should always inline, except in debug builds because it makes debugging harder.
+// Should always inline, except in dev builds because it makes debugging harder.
 #ifndef _FORCE_INLINE_
-#ifdef DISABLE_FORCED_INLINE
+#ifdef DEV_ENABLED
 #define _FORCE_INLINE_ inline
 #else
 #define _FORCE_INLINE_ _ALWAYS_INLINE_

@@ -203,12 +203,9 @@ def configure_msvc(env, manual_msvc_config):
         elif env["optimize"] == "size":  # optimize for size
             env.Append(CCFLAGS=["/O1"])
             env.Append(LINKFLAGS=["/OPT:REF"])
-        env.AppendUnique(CPPDEFINES=["DEBUG_ENABLED"])
 
     elif env["target"] == "debug":
         env.AppendUnique(CCFLAGS=["/Zi", "/FS", "/Od", "/EHsc"])
-        env.AppendUnique(CPPDEFINES=["DEBUG_ENABLED"])
-        env.AppendUnique(CPPDEFINES=["DEV_ENABLED"])
         env.Append(LINKFLAGS=["/DEBUG"])
 
     if env["debug_symbols"]:
@@ -352,7 +349,6 @@ def configure_mingw(env):
 
     elif env["target"] == "release_debug":
         env.Append(CCFLAGS=["-O2"])
-        env.Append(CPPDEFINES=["DEBUG_ENABLED"])
         if env["debug_symbols"]:
             env.Prepend(CCFLAGS=["-g2"])
         if env["optimize"] == "speed":  # optimize for speed (default)
@@ -362,8 +358,6 @@ def configure_mingw(env):
 
     elif env["target"] == "debug":
         env.Append(CCFLAGS=["-g3"])
-        env.Append(CPPDEFINES=["DEBUG_ENABLED"])
-        env.Append(CPPDEFINES=["DEV_ENABLED"])
 
     if env["windows_subsystem"] == "gui":
         env.Append(LINKFLAGS=["-Wl,--subsystem,windows"])

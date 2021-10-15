@@ -77,12 +77,9 @@ def configure(env):
             env.Append(LINKFLAGS=["-Os"])
 
         if env["target"] == "release_debug":
-            env.Append(CPPDEFINES=["DEBUG_ENABLED"])
             # Retain function names for backtraces at the cost of file size.
             env.Append(LINKFLAGS=["--profiling-funcs"])
     else:  # "debug"
-        env.Append(CPPDEFINES=["DEBUG_ENABLED"])
-        env.Append(CPPDEFINES=["DEV_ENABLED"])
         env.Append(CCFLAGS=["-O1", "-g"])
         env.Append(LINKFLAGS=["-O1", "-g"])
         env["use_assertions"] = True
