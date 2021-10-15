@@ -56,6 +56,12 @@ public:
 		DIFF_VIEW_TYPE_UNIFIED = 1,
 	};
 
+	enum ExtraOption {
+		EXTRA_OPTION_FORCE_PUSH,
+		EXTRA_OPTION_CREATE_BRANCH,
+		EXTRA_OPTION_CREATE_REMOTE,
+	};
+
 private:
 	static VersionControlEditorPlugin *singleton;
 
@@ -79,11 +85,11 @@ private:
 
 	OptionButton *commit_list_size_button;
 
-	AcceptDialog *branch_create_dialog;
+	AcceptDialog *branch_create_confirm;
 	LineEdit *branch_create_name_input;
 	Button *branch_create_ok;
 
-	AcceptDialog *remote_create_dialog;
+	AcceptDialog *remote_create_confirm;
 	LineEdit *remote_create_name_input;
 	LineEdit *remote_create_url_input;
 	Button *remote_create_ok;
@@ -99,12 +105,21 @@ private:
 	Tree *commit_list;
 
 	OptionButton *branch_select;
+	Button *branch_remove_button;
+	AcceptDialog *branch_remove_confirm;
 
 	ToolButton *fetch_button;
 	ToolButton *pull_button;
 	ToolButton *push_button;
 	OptionButton *remote_select;
-	CheckBox *force_push_box;
+	Button *remote_remove_button;
+	AcceptDialog *remote_remove_confirm;
+	MenuButton *extra_options;
+	PopupMenu *extra_options_remove_branch_list;
+	PopupMenu *extra_options_remove_remote_list;
+
+	String branch_to_remove;
+	String remote_to_remove;
 
 	ToolButton *stage_all_button;
 	ToolButton *unstage_all_button;
@@ -130,12 +145,14 @@ private:
 	void _update_remotes_list();
 	void _update_set_up_warning(String p_new_text);
 	void _update_opened_tabs();
+	void _update_extra_options();
 
 	bool _load_plugin(String p_path);
 	void _set_up();
 
 	void _pull();
 	void _push();
+	void _force_push();
 	void _fetch();
 	void _commit();
 	void _discard_all();
@@ -155,8 +172,10 @@ private:
 	void _update_remote_create_button(String p_new_text);
 	void _branch_item_selected(int p_index);
 	void _remote_selected(int p_index);
-	void _popup_create_branch();
-	void _popup_create_remote();
+	void _remove_branch();
+	void _remove_remote();
+	void _popup_branch_remove_confirm(int p_index);
+	void _popup_remote_remove_confirm(int p_index);
 	void _move_item(Tree *p_tree, TreeItem *p_itme);
 	void _display_diff_split_view(List<EditorVCSInterface::DiffLine> &p_diff_content);
 	void _display_diff_unified_view(List<EditorVCSInterface::DiffLine> &p_diff_content);
@@ -165,6 +184,7 @@ private:
 	void _add_new_item(Tree *p_tree, String p_file_path, EditorVCSInterface::ChangeType p_change);
 	void _update_commit_button();
 	void _commit_message_gui_input(const Ref<InputEvent> &p_event);
+	void _extra_option_selected(int p_index);
 	bool _is_staging_area_empty();
 
 	friend class EditorVCSInterface;

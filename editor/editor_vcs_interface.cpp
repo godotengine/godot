@@ -124,6 +124,14 @@ void EditorVCSInterface::create_remote(String p_remote_name, String p_remote_url
 	call("_create_remote", p_remote_name, p_remote_url);
 }
 
+void EditorVCSInterface::remove_branch(String p_branch_name) {
+	call("_remove_branch", p_branch_name);
+}
+
+void EditorVCSInterface::remove_remote(String p_remote_name) {
+	call("_remove_remote", p_remote_name);
+}
+
 String EditorVCSInterface::get_current_branch_name() {
 	return call("_get_current_branch_name");
 }
@@ -286,7 +294,9 @@ void EditorVCSInterface::_bind_methods() {
 	BIND_VMETHOD(MethodInfo(Variant::ARRAY, "_get_previous_commits", PropertyInfo(Variant::INT, "max_commits")));
 	BIND_VMETHOD(MethodInfo(Variant::ARRAY, "_get_branch_list"));
 	BIND_VMETHOD(MethodInfo("_create_branch", PropertyInfo(Variant::STRING, "branch_name")));
+	BIND_VMETHOD(MethodInfo("_remove_branch", PropertyInfo(Variant::STRING, "branch_name")));
 	BIND_VMETHOD(MethodInfo("_create_remote", PropertyInfo(Variant::STRING, "remote_name"), PropertyInfo(Variant::STRING, "remote_url")));
+	BIND_VMETHOD(MethodInfo("_remove_remote", PropertyInfo(Variant::STRING, "remote_name")));
 	BIND_VMETHOD(MethodInfo(Variant::STRING, "_get_current_branch_name"));
 	BIND_VMETHOD(MethodInfo(Variant::BOOL, "_checkout_branch", PropertyInfo(Variant::STRING, "branch_name")));
 	BIND_VMETHOD(MethodInfo("_push", PropertyInfo(Variant::STRING, "remote"), PropertyInfo(Variant::BOOL, "force")));

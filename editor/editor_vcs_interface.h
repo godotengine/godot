@@ -121,7 +121,9 @@ public:
 	List<String> get_branch_list();
 	List<String> get_remotes();
 	void create_branch(String p_branch_name);
+	void remove_branch(String p_branch_name);
 	void create_remote(String p_remote_name, String p_remote_url);
+	void remove_remote(String p_remote_name);
 	String get_current_branch_name();
 	bool checkout_branch(String p_branch_name);
 	void pull(String p_remote);

@@ -66,13 +66,17 @@ void VersionControlEditorPlugin::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_discard_all"), &VersionControlEditorPlugin::_discard_all);
 	ClassDB::bind_method(D_METHOD("_create_branch"), &VersionControlEditorPlugin::_create_branch);
 	ClassDB::bind_method(D_METHOD("_create_remote"), &VersionControlEditorPlugin::_create_remote);
+	ClassDB::bind_method(D_METHOD("_remove_branch"), &VersionControlEditorPlugin::_remove_branch);
+	ClassDB::bind_method(D_METHOD("_remove_remote"), &VersionControlEditorPlugin::_remove_remote);
 	ClassDB::bind_method(D_METHOD("_branch_item_selected"), &VersionControlEditorPlugin::_branch_item_selected);
 	ClassDB::bind_method(D_METHOD("_remote_selected"), &VersionControlEditorPlugin::_remote_selected);
-	ClassDB::bind_method(D_METHOD("_popup_create_branch"), &VersionControlEditorPlugin::_popup_create_branch);
-	ClassDB::bind_method(D_METHOD("_popup_create_remote"), &VersionControlEditorPlugin::_popup_create_remote);
 	ClassDB::bind_method(D_METHOD("_fetch"), &VersionControlEditorPlugin::_fetch);
 	ClassDB::bind_method(D_METHOD("_pull"), &VersionControlEditorPlugin::_pull);
 	ClassDB::bind_method(D_METHOD("_push"), &VersionControlEditorPlugin::_push);
+	ClassDB::bind_method(D_METHOD("_extra_option_selected"), &VersionControlEditorPlugin::_extra_option_selected);
+	ClassDB::bind_method(D_METHOD("_update_extra_options"), &VersionControlEditorPlugin::_update_extra_options);
+	ClassDB::bind_method(D_METHOD("_popup_branch_remove_confirm"), &VersionControlEditorPlugin::_popup_branch_remove_confirm);
+	ClassDB::bind_method(D_METHOD("_popup_remote_remove_confirm"), &VersionControlEditorPlugin::_popup_remote_remove_confirm);
 
 	ClassDB::bind_method(D_METHOD("popup_vcs_set_up_dialog"), &VersionControlEditorPlugin::popup_vcs_set_up_dialog);
 }
@@ -334,14 +338,6 @@ void VersionControlEditorPlugin::_create_branch() {
 	_refresh_branch_list();
 }
 
-void VersionControlEditorPlugin::_popup_create_branch() {
-	branch_create_dialog->popup_centered();
-}
-
-void VersionControlEditorPlugin::_popup_create_remote() {
-	remote_create_dialog->popup_centered();
-}
-
 void VersionControlEditorPlugin::_create_remote() {
 	CHECK_PLUGIN_INITIALIZED();
 
@@ -468,8 +464,13 @@ void VersionControlEditorPlugin::_pull() {
 void VersionControlEditorPlugin::_push() {
 	CHECK_PLUGIN_INITIALIZED();
 
-	EditorVCSInterface::get_singleton()->push(remote_select->get_selected_metadata(), force_push_box->is_pressed());
-	force_push_box->set_pressed(false);
+	EditorVCSInterface::get_singleton()->push(remote_select->get_selected_metadata(), false);
+}
+
+void VersionControlEditorPlugin::_force_push() {
+	CHECK_PLUGIN_INITIALIZED();
+
+	EditorVCSInterface::get_singleton()->push(remote_select->get_selected_metadata(), true);
 }
 
 void VersionControlEditorPlugin::_update_opened_tabs() {
@@ -821,6 +822,68 @@ void VersionControlEditorPlugin::_display_diff_unified_view(List<EditorVCSInterf
 
 void VersionControlEditorPlugin::_update_commit_button() {
 	commit_button->set_disabled(commit_message->get_text().strip_edges().empty());
+}
+
+void VersionControlEditorPlugin::_remove_branch() {
+	CHECK_PLUGIN_INITIALIZED();
+
+	EditorVCSInterface::get_singleton()->remove_branch(branch_to_remove);
+	branch_to_remove.clear();
+
+	_refresh_branch_list();
+}
+
+void VersionControlEditorPlugin::_remove_remote() {
+	CHECK_PLUGIN_INITIALIZED();
+
+	EditorVCSInterface::get_singleton()->remove_remote(remote_to_remove);
+	remote_to_remove.clear();
+
+	_refresh_remote_list();
+}
+
+void VersionControlEditorPlugin::_extra_option_selected(int p_index) {
+	CHECK_PLUGIN_INITIALIZED();
+
+	switch ((ExtraOption)p_index) {
+		case EXTRA_OPTION_FORCE_PUSH:
+			_force_push();
+			break;
+		case EXTRA_OPTION_CREATE_BRANCH:
+			branch_create_confirm->popup_centered();
+			break;
+		case EXTRA_OPTION_CREATE_REMOTE:
+			remote_create_confirm->popup_centered();
+			break;
+	}
+}
+
+void VersionControlEditorPlugin::_popup_branch_remove_confirm(int p_index) {
+	branch_to_remove = extra_options_remove_branch_list->get_item_text(p_index);
+
+	branch_remove_confirm->set_text(TTR("Do you want to remove the ") + branch_to_remove + " " + TTR("branch?"));
+	branch_remove_confirm->popup_centered();
+}
+
+void VersionControlEditorPlugin::_popup_remote_remove_confirm(int p_index) {
+	remote_to_remove = extra_options_remove_remote_list->get_item_text(p_index);
+
+	remote_remove_confirm->set_text(TTR("Do you want to remove the ") + remote_to_remove + " " + TTR("remote?"));
+	remote_remove_confirm->popup_centered();
+}
+
+void VersionControlEditorPlugin::_update_extra_options() {
+	extra_options_remove_branch_list->clear();
+	for (int i = 0; i < branch_select->get_item_count(); i++) {
+		extra_options_remove_branch_list->add_icon_item(EditorNode::get_singleton()->get_gui_base()->get_icon("Tree", "EditorIcons"), branch_select->get_item_text(branch_select->get_item_id(i)));
+	}
+	extra_options_remove_branch_list->update();
+
+	extra_options_remove_remote_list->clear();
+	for (int i = 0; i < remote_select->get_item_count(); i++) {
+		extra_options_remove_remote_list->add_icon_item(EditorNode::get_singleton()->get_gui_base()->get_icon("Tree", "EditorIcons"), remote_select->get_item_text(remote_select->get_item_id(i)));
+	}
+	extra_options_remove_remote_list->update();
 }
 
 bool VersionControlEditorPlugin::_is_staging_area_empty() {
@@ -1232,26 +1295,29 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	branch_select->connect("pressed", this, "_refresh_branch_list");
 	menu_bar->add_child(branch_select);
 
-	Button *branch_create_button = memnew(Button);
-	branch_create_button->set_icon(EditorNode::get_singleton()->get_gui_base()->get_icon("Add", "EditorIcons"));
-	branch_create_button->connect("pressed", this, "_popup_create_branch");
-	branch_create_button->set_tooltip(TTR("Create New Branch"));
-	menu_bar->add_child(branch_create_button);
+	branch_create_confirm = memnew(AcceptDialog);
+	branch_create_confirm->set_title(TTR("Create New Branch"));
+	branch_create_confirm->set_custom_minimum_size(Size2(400, 100));
+	branch_create_confirm->set_hide_on_ok(true);
+	version_commit_dock->add_child(branch_create_confirm);
 
-	branch_create_dialog = memnew(AcceptDialog);
-	branch_create_dialog->set_title(TTR("Create New Branch"));
-	branch_create_dialog->set_custom_minimum_size(Size2(400, 100));
-	branch_create_dialog->set_hide_on_ok(true);
-	version_commit_dock->add_child(branch_create_dialog);
-
-	branch_create_ok = branch_create_dialog->get_ok();
+	branch_create_ok = branch_create_confirm->get_ok();
 	branch_create_ok->set_text(TTR("Create"));
 	branch_create_ok->set_disabled(true);
 	branch_create_ok->connect("pressed", this, "_create_branch");
 
+	branch_remove_confirm = memnew(AcceptDialog);
+	branch_remove_confirm->set_title(TTR("Remove Branch"));
+	branch_remove_confirm->add_cancel();
+	version_commit_dock->add_child(branch_remove_confirm);
+
+	Button *branch_remove_ok = branch_remove_confirm->get_ok();
+	branch_remove_ok->set_text(TTR("Remove"));
+	branch_remove_ok->connect("pressed", this, "_remove_branch");
+
 	VBoxContainer *branch_create_vbc = memnew(VBoxContainer);
 	branch_create_vbc->set_alignment(VBoxContainer::ALIGN_CENTER);
-	branch_create_dialog->add_child(branch_create_vbc);
+	branch_create_confirm->add_child(branch_create_vbc);
 
 	HBoxContainer *branch_create_hbc = memnew(HBoxContainer);
 	branch_create_hbc->set_h_size_flags(Control::SIZE_EXPAND_FILL);
@@ -1274,26 +1340,29 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	remote_select->connect("pressed", this, "_refresh_remote_list");
 	menu_bar->add_child(remote_select);
 
-	Button *remote_create_button = memnew(Button);
-	remote_create_button->set_icon(EditorNode::get_singleton()->get_gui_base()->get_icon("Add", "EditorIcons"));
-	remote_create_button->connect("pressed", this, "_popup_create_remote");
-	remote_create_button->set_tooltip(TTR("Create New Remote"));
-	menu_bar->add_child(remote_create_button);
+	remote_create_confirm = memnew(AcceptDialog);
+	remote_create_confirm->set_title(TTR("Create New Remote"));
+	remote_create_confirm->set_custom_minimum_size(Size2(400, 100));
+	remote_create_confirm->set_hide_on_ok(true);
+	version_commit_dock->add_child(remote_create_confirm);
 
-	remote_create_dialog = memnew(AcceptDialog);
-	remote_create_dialog->set_title(TTR("Create New Remote"));
-	remote_create_dialog->set_custom_minimum_size(Size2(400, 100));
-	remote_create_dialog->set_hide_on_ok(true);
-	version_commit_dock->add_child(remote_create_dialog);
-
-	remote_create_ok = remote_create_dialog->get_ok();
+	remote_create_ok = remote_create_confirm->get_ok();
 	remote_create_ok->set_text(TTR("Create"));
 	remote_create_ok->set_disabled(true);
 	remote_create_ok->connect("pressed", this, "_create_remote");
 
+	remote_remove_confirm = memnew(AcceptDialog);
+	remote_remove_confirm->set_title(TTR("Remove Remote"));
+	remote_remove_confirm->add_cancel();
+	version_commit_dock->add_child(remote_remove_confirm);
+
+	Button *remote_remove_ok = remote_remove_confirm->get_ok();
+	remote_remove_ok->set_text(TTR("Remove"));
+	remote_remove_ok->connect("pressed", this, "_remove_remote");
+
 	VBoxContainer *remote_create_vbc = memnew(VBoxContainer);
 	remote_create_vbc->set_alignment(VBoxContainer::ALIGN_CENTER);
-	remote_create_dialog->add_child(remote_create_vbc);
+	remote_create_confirm->add_child(remote_create_vbc);
 
 	HBoxContainer *remote_create_name_hbc = memnew(HBoxContainer);
 	remote_create_name_hbc->set_h_size_flags(Control::SIZE_EXPAND_FILL);
@@ -1309,19 +1378,19 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	remote_create_name_input->connect("text_changed", this, "_update_remote_create_button");
 	remote_create_name_hbc->add_child(remote_create_name_input);
 
-	HBoxContainer *remote_url_create_hbc = memnew(HBoxContainer);
-	remote_url_create_hbc->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	remote_create_vbc->add_child(remote_url_create_hbc);
+	HBoxContainer *remote_create_hbc = memnew(HBoxContainer);
+	remote_create_hbc->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	remote_create_vbc->add_child(remote_create_hbc);
 
 	Label *remote_create_url_label = memnew(Label);
 	remote_create_url_label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	remote_create_url_label->set_text(TTR("Remote URL"));
-	remote_url_create_hbc->add_child(remote_create_url_label);
+	remote_create_hbc->add_child(remote_create_url_label);
 
 	remote_create_url_input = memnew(LineEdit);
 	remote_create_url_input->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	remote_create_url_input->connect("text_changed", this, "_update_remote_create_button");
-	remote_url_create_hbc->add_child(remote_create_url_input);
+	remote_create_hbc->add_child(remote_create_url_input);
 
 	fetch_button = memnew(ToolButton);
 	fetch_button->set_tooltip(TTR("Fetch"));
@@ -1341,9 +1410,30 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	push_button->connect("pressed", this, "_push");
 	menu_bar->add_child(push_button);
 
-	force_push_box = memnew(CheckBox);
-	force_push_box->set_text(TTR("Force"));
-	menu_bar->add_child(force_push_box);
+	extra_options = memnew(MenuButton);
+	extra_options->set_icon(EditorNode::get_singleton()->get_gui_base()->get_icon("GuiTabMenuHl", "EditorIcons"));
+	extra_options->get_popup()->connect("about_to_show", this, "_update_extra_options");
+	extra_options->get_popup()->connect("id_pressed", this, "_extra_option_selected");
+	menu_bar->add_child(extra_options);
+
+	extra_options->get_popup()->add_item(TTR("Force Push"), EXTRA_OPTION_FORCE_PUSH);
+	extra_options->get_popup()->add_separator();
+	extra_options->get_popup()->add_item(TTR("Create New Branch"), EXTRA_OPTION_CREATE_BRANCH);
+
+	extra_options_remove_branch_list = memnew(PopupMenu);
+	extra_options_remove_branch_list->connect("id_pressed", this, "_popup_branch_remove_confirm");
+	extra_options_remove_branch_list->set_name("Remove Branch");
+	extra_options->get_popup()->add_child(extra_options_remove_branch_list);
+	extra_options->get_popup()->add_submenu_item(TTR("Remove Branch"), "Remove Branch");
+
+	extra_options->get_popup()->add_separator();
+	extra_options->get_popup()->add_item(TTR("Create New Remote"), EXTRA_OPTION_CREATE_REMOTE);
+
+	extra_options_remove_remote_list = memnew(PopupMenu);
+	extra_options_remove_remote_list->connect("id_pressed", this, "_popup_remote_remove_confirm");
+	extra_options_remove_remote_list->set_name("Remove Remote");
+	extra_options->get_popup()->add_child(extra_options_remove_remote_list);
+	extra_options->get_popup()->add_submenu_item(TTR("Remove Remote"), "Remove Remote");
 
 	change_type_to_strings[EditorVCSInterface::CHANGE_TYPE_NEW] = TTR("New");
 	change_type_to_strings[EditorVCSInterface::CHANGE_TYPE_MODIFIED] = TTR("Modified");
