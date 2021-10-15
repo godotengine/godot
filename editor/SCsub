@@ -101,6 +101,7 @@ if env["tools"]:
     )
 
     env.add_source_files(env.editor_sources, "*.cpp")
+    env.add_source_files(env.editor_sources, "register_exporters.gen.cpp")
 
     SConscript("debugger/SCsub")
     SConscript("fileserver/SCsub")

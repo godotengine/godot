@@ -7,19 +7,15 @@ import input_builders
 
 # Order matters here. Higher index controller database files write on top of lower index database files.
 controller_databases = [
-    "#core/input/gamecontrollerdb.txt",
-    "#core/input/godotcontrollerdb.txt",
+    "gamecontrollerdb.txt",
+    "godotcontrollerdb.txt",
 ]
 
-env.Depends("#core/input/default_controller_mappings.gen.cpp", controller_databases)
-env.CommandNoCache(
-    "#core/input/default_controller_mappings.gen.cpp",
+gensource = env.CommandNoCache(
+    "default_controller_mappings.gen.cpp",
     controller_databases,
     env.Run(input_builders.make_default_controller_mappings, "Generating default controller mappings."),
 )
 
 env.add_source_files(env.core_sources, "*.cpp")
-
-# Don't warn about duplicate entry here, we need it registered manually for first build,
-# even if later builds will pick it up twice due to above *.cpp globbing.
-env.add_source_files(env.core_sources, "#core/input/default_controller_mappings.gen.cpp", warn_duplicates=False)
+env.add_source_files(env.core_sources, gensource)
