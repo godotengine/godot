@@ -122,7 +122,7 @@ Error ColladaImport::_populate_skeleton(Skeleton3D *p_skeleton, Collada::Node *p
 
 	{
 		Transform3D xform = joint->compute_transform(collada);
-		collada.fix_transform(xform) * joint->post_transform;
+		xform = collada.fix_transform(xform) * joint->post_transform;
 
 		p_skeleton->set_bone_pose_position(r_bone, xform.origin);
 		p_skeleton->set_bone_pose_rotation(r_bone, xform.basis.get_rotation_quaternion());
