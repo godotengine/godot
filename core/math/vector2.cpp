@@ -91,7 +91,7 @@ real_t Vector2::cross(const Vector2 &p_other) const {
 }
 
 Vector2 Vector2::sign() const {
-	return Vector2(SGN(x), SGN(y));
+	return Vector2(SIGN(x), SIGN(y));
 }
 
 Vector2 Vector2::floor() const {

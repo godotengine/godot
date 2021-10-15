@@ -94,7 +94,7 @@ void ReflectionProbe::set_extents(const Vector3 &p_extents) {
 		}
 
 		if (extents[i] - 0.01 < ABS(origin_offset[i])) {
-			origin_offset[i] = SGN(origin_offset[i]) * (extents[i] - 0.01);
+			origin_offset[i] = SIGN(origin_offset[i]) * (extents[i] - 0.01);
 		}
 	}
 
@@ -113,7 +113,7 @@ void ReflectionProbe::set_origin_offset(const Vector3 &p_extents) {
 
 	for (int i = 0; i < 3; i++) {
 		if (extents[i] - 0.01 < ABS(origin_offset[i])) {
-			origin_offset[i] = SGN(origin_offset[i]) * (extents[i] - 0.01);
+			origin_offset[i] = SIGN(origin_offset[i]) * (extents[i] - 0.01);
 		}
 	}
 	RS::get_singleton()->reflection_probe_set_extents(probe, extents);

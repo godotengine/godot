@@ -217,7 +217,7 @@ Vector3 Vector3::abs() const {
 }
 
 Vector3 Vector3::sign() const {
-	return Vector3(SGN(x), SGN(y), SGN(z));
+	return Vector3(SIGN(x), SIGN(y), SIGN(z));
 }
 
 Vector3 Vector3::floor() const {

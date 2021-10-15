@@ -91,8 +91,8 @@
 #define ABS(m_v) (((m_v) < 0) ? (-(m_v)) : (m_v))
 #endif
 
-#ifndef SGN
-#define SGN(m_v) (((m_v) == 0) ? (0.0) : (((m_v) < 0) ? (-1.0) : (+1.0)))
+#ifndef SIGN
+#define SIGN(m_v) (((m_v) == 0) ? (0.0) : (((m_v) < 0) ? (-1.0) : (+1.0)))
 #endif
 
 #ifndef MIN
