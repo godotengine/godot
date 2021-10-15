@@ -779,6 +779,16 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, Map<Ref<
 					}
 				}
 			}
+
+			AnimationImportTracks import_tracks_mode[TRACK_CHANNEL_MAX] = {
+				AnimationImportTracks(int(node_settings["import_tracks/position"])),
+				AnimationImportTracks(int(node_settings["import_tracks/rotation"])),
+				AnimationImportTracks(int(node_settings["import_tracks/scale"]))
+			};
+
+			if (anims.size() > 1 && (import_tracks_mode[0] != ANIMATION_IMPORT_TRACKS_IF_PRESENT || import_tracks_mode[1] != ANIMATION_IMPORT_TRACKS_IF_PRESENT || import_tracks_mode[2] != ANIMATION_IMPORT_TRACKS_IF_PRESENT)) {
+				_optimize_track_usage(ap, import_tracks_mode);
+			}
 		}
 	}
 
@@ -1024,9 +1034,9 @@ void ResourceImporterScene::get_internal_import_options(InternalImportCategory p
 			r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "optimizer/max_linear_error"), 0.05));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "optimizer/max_angular_error"), 0.01));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "optimizer/max_angle"), 22));
-			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "import_tracks/position", PROPERTY_HINT_ENUM, "IfPresent,IfPresentForAll,Always,Never"), 1));
-			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "import_tracks/rotation", PROPERTY_HINT_ENUM, "IfPresent,IfPresentForAll,Always,Never"), 1));
-			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "import_tracks/scale", PROPERTY_HINT_ENUM, "IfPresent,IfPresentForAll,Always,Never"), 1));
+			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "import_tracks/position", PROPERTY_HINT_ENUM, "IfPresent,IfPresentForAll,Never"), 1));
+			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "import_tracks/rotation", PROPERTY_HINT_ENUM, "IfPresent,IfPresentForAll,Never"), 1));
+			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "import_tracks/scale", PROPERTY_HINT_ENUM, "IfPresent,IfPresentForAll,Never"), 1));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "slices/amount", PROPERTY_HINT_RANGE, "0,256,1", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), 0));
 
 			for (int i = 0; i < 256; i++) {
@@ -1445,6 +1455,139 @@ void ResourceImporterScene::_add_shapes(Node *p_node, const Vector<Ref<Shape3D>>
 		p_node->add_child(cshape);
 
 		cshape->set_owner(p_node->get_owner());
+	}
+}
+
+void ResourceImporterScene::_optimize_track_usage(AnimationPlayer *p_player, AnimationImportTracks *p_track_actions) {
+	List<StringName> anims;
+	p_player->get_animation_list(&anims);
+	Node *parent = p_player->get_parent();
+	ERR_FAIL_COND(parent == nullptr);
+	OrderedHashMap<NodePath, uint32_t> used_tracks[TRACK_CHANNEL_MAX];
+	bool tracks_to_add = false;
+	static const Animation::TrackType track_types[TRACK_CHANNEL_MAX] = { Animation::TYPE_POSITION_3D, Animation::TYPE_ROTATION_3D, Animation::TYPE_SCALE_3D };
+	for (const StringName &I : anims) {
+		Ref<Animation> anim = p_player->get_animation(I);
+		for (int i = 0; i < anim->get_track_count(); i++) {
+			for (int j = 0; j < TRACK_CHANNEL_MAX; j++) {
+				if (anim->track_get_type(i) != track_types[j]) {
+					continue;
+				}
+				switch (p_track_actions[j]) {
+					case ANIMATION_IMPORT_TRACKS_IF_PRESENT: {
+						// Do Nothing.
+					} break;
+					case ANIMATION_IMPORT_TRACKS_IF_PRESENT_FOR_ALL: {
+						used_tracks[j].insert(anim->track_get_path(i), 0);
+						tracks_to_add = true;
+					} break;
+					case ANIMATION_IMPORT_TRACKS_NEVER: {
+						anim->remove_track(i);
+						i--;
+					} break;
+				}
+			}
+		}
+	}
+
+	if (!tracks_to_add) {
+		return;
+	}
+
+	uint32_t pass = 0;
+	for (const StringName &I : anims) {
+		Ref<Animation> anim = p_player->get_animation(I);
+		for (int j = 0; j < TRACK_CHANNEL_MAX; j++) {
+			if (p_track_actions[j] != ANIMATION_IMPORT_TRACKS_IF_PRESENT_FOR_ALL) {
+				continue;
+			}
+
+			pass++;
+
+			for (int i = 0; i < anim->get_track_count(); i++) {
+				if (anim->track_get_type(i) != track_types[j]) {
+					continue;
+				}
+
+				NodePath path = anim->track_get_path(i);
+
+				ERR_CONTINUE(!used_tracks[j].has(path)); // Should never happen.
+
+				used_tracks[j][path] = pass;
+			}
+
+			for (OrderedHashMap<NodePath, uint32_t>::Element J = used_tracks[j].front(); J; J = J.next()) {
+				if (J.get() == pass) {
+					continue;
+				}
+
+				NodePath path = J.key();
+				Node *n = parent->get_node(path);
+				Skeleton3D *skel = Object::cast_to<Skeleton3D>(n);
+				Node3D *n3d = Object::cast_to<Node3D>(n);
+				Vector3 loc;
+				Quaternion rot;
+				Vector3 scale;
+				if (skel && path.get_subname_count() > 0) {
+					StringName bone = path.get_subname(0);
+					int bone_idx = skel->find_bone(bone);
+					if (bone_idx == -1) {
+						continue;
+					}
+					skel->get_bone_pose(bone_idx);
+					loc = skel->get_bone_pose_position(bone_idx);
+					rot = skel->get_bone_pose_rotation(bone_idx);
+					scale = skel->get_bone_pose_scale(bone_idx);
+				} else if (n3d) {
+					loc = n3d->get_position();
+					rot = n3d->get_transform().basis.get_rotation_quaternion();
+					scale = n3d->get_scale();
+				} else {
+					continue;
+				}
+
+				// Ensure insertion keeps tracks together and ordered by type (loc/rot/scale)
+				int insert_at_pos = -1;
+				for (int k = 0; k < anim->get_track_count(); k++) {
+					NodePath tpath = anim->track_get_path(k);
+
+					if (path == tpath) {
+						Animation::TrackType ttype = anim->track_get_type(k);
+						if (insert_at_pos == -1) {
+							// First insert, determine whether replacing or kicking back
+							if (track_types[j] < ttype) {
+								insert_at_pos = k;
+								break; // No point in continuing.
+							} else {
+								insert_at_pos = k + 1;
+							}
+						} else if (ttype < track_types[j]) {
+							// Kick back.
+							insert_at_pos = k + 1;
+						}
+					} else if (insert_at_pos >= 0) {
+						break;
+					}
+				}
+				int track_idx = anim->add_track(track_types[j], insert_at_pos);
+
+				anim->track_set_path(track_idx, path);
+				anim->track_set_imported(track_idx, true);
+				switch (j) {
+					case TRACK_CHANNEL_POSITION: {
+						anim->position_track_insert_key(track_idx, 0, loc);
+					} break;
+					case TRACK_CHANNEL_ROTATION: {
+						anim->rotation_track_insert_key(track_idx, 0, rot);
+					} break;
+					case TRACK_CHANNEL_SCALE: {
+						anim->scale_track_insert_key(track_idx, 0, scale);
+					} break;
+					default: {
+					}
+				}
+			}
+		}
 	}
 }
 

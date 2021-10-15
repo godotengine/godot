@@ -65,13 +65,6 @@ public:
 		IMPORT_USE_NAMED_SKIN_BINDS = 16,
 	};
 
-	enum AnimationImportBoneTracks {
-		ANIMATION_IMPORT_BONE_TRACKS_IF_PRESENT,
-		ANIMATION_IMPORT_BONE_TRACKS_IF_PRESENT_FOR_ALL,
-		ANIMATION_IMPORT_BONE_TRACKS_ALWAYS,
-		ANIMATION_IMPORT_BONE_TRACKS_NEVER,
-	};
-
 	virtual uint32_t get_import_flags() const;
 	virtual void get_extensions(List<String> *r_extensions) const;
 	virtual Node *import_scene(const String &p_path, uint32_t p_flags, int p_bake_fps, List<String> *r_missing_deps, Error *r_err = nullptr);
@@ -150,6 +143,20 @@ class ResourceImporterScene : public ResourceImporter {
 	void _replace_owner(Node *p_node, Node *p_scene, Node *p_new_owner);
 	void _generate_meshes(Node *p_node, const Dictionary &p_mesh_data, bool p_generate_lods, bool p_create_shadow_meshes, LightBakeMode p_light_bake_mode, float p_lightmap_texel_size, const Vector<uint8_t> &p_src_lightmap_cache, Vector<Vector<uint8_t>> &r_lightmap_caches);
 	void _add_shapes(Node *p_node, const Vector<Ref<Shape3D>> &p_shapes);
+
+	enum AnimationImportTracks {
+		ANIMATION_IMPORT_TRACKS_IF_PRESENT,
+		ANIMATION_IMPORT_TRACKS_IF_PRESENT_FOR_ALL,
+		ANIMATION_IMPORT_TRACKS_NEVER,
+	};
+	enum TrackChannel {
+		TRACK_CHANNEL_POSITION,
+		TRACK_CHANNEL_ROTATION,
+		TRACK_CHANNEL_SCALE,
+		TRACK_CHANNEL_MAX
+	};
+
+	void _optimize_track_usage(AnimationPlayer *p_player, AnimationImportTracks *p_track_actions);
 
 public:
 	static ResourceImporterScene *get_singleton() { return singleton; }
