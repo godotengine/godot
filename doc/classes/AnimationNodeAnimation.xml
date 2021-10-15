@@ -15,5 +15,14 @@
 		<member name="animation" type="StringName" setter="set_animation" getter="get_animation" default="&amp;&quot;&quot;">
 			Animation to use as an output. It is one of the animations provided by [member AnimationTree.anim_player].
 		</member>
+		<member name="play_mode" type="int" setter="set_play_mode" getter="get_play_mode" enum="AnimationNodeAnimation.PlayMode" default="0">
+			Determines the playback direction of the animation.
+		</member>
 	</members>
+	<constants>
+		<constant name="PLAY_MODE_FORWARD" value="0" enum="PlayMode">
+		</constant>
+		<constant name="PLAY_MODE_BACKWARD" value="1" enum="PlayMode">
+		</constant>
+	</constants>
 </class>

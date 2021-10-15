@@ -64,7 +64,12 @@ public:
 		UPDATE_DISCRETE,
 		UPDATE_TRIGGER,
 		UPDATE_CAPTURE,
+	};
 
+	enum LoopMode {
+		LOOP_NONE,
+		LOOP_LINEAR,
+		LOOP_PINGPONG,
 	};
 
 private:
@@ -208,7 +213,8 @@ private:
 	int _insert(double p_time, T &p_keys, const V &p_value);
 
 	template <class K>
-	inline int _find(const Vector<K> &p_keys, double p_time) const;
+
+	inline int _find(const Vector<K> &p_keys, double p_time, bool p_backward = false) const;
 
 	_FORCE_INLINE_ Vector3 _interpolate(const Vector3 &p_a, const Vector3 &p_b, real_t p_c) const;
 	_FORCE_INLINE_ Quaternion _interpolate(const Quaternion &p_a, const Quaternion &p_b, real_t p_c) const;
@@ -221,7 +227,7 @@ private:
 	_FORCE_INLINE_ real_t _cubic_interpolate(const real_t &p_pre_a, const real_t &p_a, const real_t &p_b, const real_t &p_post_b, real_t p_c) const;
 
 	template <class T>
-	_FORCE_INLINE_ T _interpolate(const Vector<TKey<T>> &p_keys, double p_time, InterpolationType p_interp, bool p_loop_wrap, bool *p_ok) const;
+	_FORCE_INLINE_ T _interpolate(const Vector<TKey<T>> &p_keys, double p_time, InterpolationType p_interp, bool p_loop_wrap, bool *p_ok, bool p_backward = false) const;
 
 	template <class T>
 	_FORCE_INLINE_ void _track_get_key_indices_in_range(const Vector<T> &p_array, double from_time, double to_time, List<int> *p_indices) const;
@@ -231,7 +237,8 @@ private:
 
 	double length = 1.0;
 	real_t step = 0.1;
-	bool loop = false;
+	LoopMode loop_mode = LOOP_NONE;
+	int pingponged = 0;
 
 	/* Animation compression page format (version 1):
 	 *
@@ -438,23 +445,23 @@ public:
 	bool track_get_interpolation_loop_wrap(int p_track) const;
 
 	Variant value_track_interpolate(int p_track, double p_time) const;
-	void value_track_get_key_indices(int p_track, double p_time, double p_delta, List<int> *p_indices) const;
+	void value_track_get_key_indices(int p_track, double p_time, double p_delta, List<int> *p_indices, int p_pingponged = 0) const;
 	void value_track_set_update_mode(int p_track, UpdateMode p_mode);
 	UpdateMode value_track_get_update_mode(int p_track) const;
 
-	void method_track_get_key_indices(int p_track, double p_time, double p_delta, List<int> *p_indices) const;
+	void method_track_get_key_indices(int p_track, double p_time, double p_delta, List<int> *p_indices, int p_pingponged = 0) const;
 	Vector<Variant> method_track_get_params(int p_track, int p_key_idx) const;
 	StringName method_track_get_name(int p_track, int p_key_idx) const;
 
 	void copy_track(int p_track, Ref<Animation> p_to_animation);
 
-	void track_get_key_indices_in_range(int p_track, double p_time, double p_delta, List<int> *p_indices) const;
+	void track_get_key_indices_in_range(int p_track, double p_time, double p_delta, List<int> *p_indices, int p_pingponged = 0) const;
 
 	void set_length(real_t p_length);
 	real_t get_length() const;
 
-	void set_loop(bool p_enabled);
-	bool has_loop() const;
+	void set_loop_mode(LoopMode p_loop_mode);
+	LoopMode get_loop_mode() const;
 
 	void set_step(real_t p_step);
 	real_t get_step() const;
@@ -471,5 +478,6 @@ public:
 VARIANT_ENUM_CAST(Animation::TrackType);
 VARIANT_ENUM_CAST(Animation::InterpolationType);
 VARIANT_ENUM_CAST(Animation::UpdateMode);
+VARIANT_ENUM_CAST(Animation::LoopMode);
 
 #endif
