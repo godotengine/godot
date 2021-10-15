@@ -1362,7 +1362,6 @@ Dictionary system_generic_dict_to_Dictionary(MonoObject *p_obj, [[maybe_unused]]
 
 MonoObject *Array_to_system_generic_list(const Array &p_array, GDMonoClass *p_class, MonoReflectionType *p_elem_reftype) {
 	MonoType *elem_type = mono_reflection_type_get_type(p_elem_reftype);
-	MonoClass *elem_class = mono_class_from_mono_type(elem_type);
 
 	String ctor_desc = ":.ctor(System.Collections.Generic.IEnumerable`1<" + GDMonoUtils::get_type_desc(elem_type) + ">)";
 	GDMonoMethod *ctor = p_class->get_method_with_desc(ctor_desc, true);
@@ -1371,7 +1370,10 @@ MonoObject *Array_to_system_generic_list(const Array &p_array, GDMonoClass *p_cl
 	MonoObject *mono_object = mono_object_new(mono_domain_get(), p_class->get_mono_ptr());
 	ERR_FAIL_NULL_V(mono_object, nullptr);
 
-	void *ctor_args[1] = { Array_to_mono_array(p_array, elem_class) };
+	GDMonoClass *godot_array_class = GDMonoUtils::Marshal::make_generic_array_type(p_elem_reftype);
+	MonoObject *godot_array = GDMonoUtils::create_managed_from(p_array, godot_array_class);
+
+	void *ctor_args[1] = { godot_array };
 
 	MonoException *exc = nullptr;
 	ctor->invoke_raw(mono_object, ctor_args, &exc);
