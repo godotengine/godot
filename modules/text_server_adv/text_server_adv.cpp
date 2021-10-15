@@ -738,6 +738,10 @@ _FORCE_INLINE_ TextServerAdvanced::FontTexturePosition TextServerAdvanced::find_
 			continue;
 		}
 
+		if (ct.offsets.size() < ct.texture_w) {
+			continue;
+		}
+
 		ret.y = 0x7FFFFFFF;
 		ret.x = 0;
 
@@ -1213,7 +1217,7 @@ _FORCE_INLINE_ bool TextServerAdvanced::_ensure_cache_for_size(FontDataAdvanced 
 
 	FontDataForSizeAdvanced *fd = memnew(FontDataForSizeAdvanced);
 	fd->size = p_size;
-	if (p_font_data->data_ptr) {
+	if (p_font_data->data_ptr && (p_font_data->data_size > 0)) {
 		// Init dynamic font.
 #ifdef MODULE_FREETYPE_ENABLED
 		int error = 0;
@@ -2115,6 +2119,7 @@ void TextServerAdvanced::font_set_texture_offsets(RID p_font_rid, const Vector2i
 	MutexLock lock(fd->mutex);
 	Vector2i size = _get_size_outline(fd, p_size);
 	ERR_FAIL_COND(!_ensure_cache_for_size(fd, size));
+	ERR_FAIL_COND(p_texture_index < 0);
 	if (p_texture_index >= fd->cache[size]->textures.size()) {
 		fd->cache[size]->textures.resize(p_texture_index + 1);
 	}
@@ -2472,6 +2477,8 @@ Vector2 TextServerAdvanced::font_get_kerning(RID p_font_rid, int p_size, const V
 int32_t TextServerAdvanced::font_get_glyph_index(RID p_font_rid, int p_size, char32_t p_char, char32_t p_variation_selector) const {
 	FontDataAdvanced *fd = font_owner.get_or_null(p_font_rid);
 	ERR_FAIL_COND_V(!fd, 0);
+	ERR_FAIL_COND_V_MSG((p_char >= 0xd800 && p_char <= 0xdfff) || (p_char > 0x10ffff), 0, "Unicode parsing error: Invalid unicode codepoint " + String::num_int64(p_char, 16) + ".");
+	ERR_FAIL_COND_V_MSG((p_variation_selector >= 0xd800 && p_variation_selector <= 0xdfff) || (p_variation_selector > 0x10ffff), 0, "Unicode parsing error: Invalid unicode codepoint " + String::num_int64(p_variation_selector, 16) + ".");
 
 	MutexLock lock(fd->mutex);
 	Vector2i size = _get_size(fd, p_size);
@@ -2495,6 +2502,7 @@ int32_t TextServerAdvanced::font_get_glyph_index(RID p_font_rid, int p_size, cha
 bool TextServerAdvanced::font_has_char(RID p_font_rid, char32_t p_char) const {
 	FontDataAdvanced *fd = font_owner.get_or_null(p_font_rid);
 	ERR_FAIL_COND_V(!fd, false);
+	ERR_FAIL_COND_V_MSG((p_char >= 0xd800 && p_char <= 0xdfff) || (p_char > 0x10ffff), false, "Unicode parsing error: Invalid unicode codepoint " + String::num_int64(p_char, 16) + ".");
 
 	MutexLock lock(fd->mutex);
 	if (fd->cache.is_empty()) {
@@ -2547,6 +2555,8 @@ String TextServerAdvanced::font_get_supported_chars(RID p_font_rid) const {
 void TextServerAdvanced::font_render_range(RID p_font_rid, const Vector2i &p_size, char32_t p_start, char32_t p_end) {
 	FontDataAdvanced *fd = font_owner.get_or_null(p_font_rid);
 	ERR_FAIL_COND(!fd);
+	ERR_FAIL_COND_MSG((p_start >= 0xd800 && p_start <= 0xdfff) || (p_start > 0x10ffff), "Unicode parsing error: Invalid unicode codepoint " + String::num_int64(p_start, 16) + ".");
+	ERR_FAIL_COND_MSG((p_end >= 0xd800 && p_end <= 0xdfff) || (p_end > 0x10ffff), "Unicode parsing error: Invalid unicode codepoint " + String::num_int64(p_end, 16) + ".");
 
 	MutexLock lock(fd->mutex);
 	Vector2i size = _get_size_outline(fd, p_size);
