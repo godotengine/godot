@@ -38,16 +38,16 @@
 #include "scene/animation/animation_player.h"
 #include "scene/resources/animation.h"
 
-uint32_t EditorSceneImporterGLTF::get_import_flags() const {
+uint32_t EditorSceneFormatImporterGLTF::get_import_flags() const {
 	return ImportFlags::IMPORT_SCENE | ImportFlags::IMPORT_ANIMATION;
 }
 
-void EditorSceneImporterGLTF::get_extensions(List<String> *r_extensions) const {
+void EditorSceneFormatImporterGLTF::get_extensions(List<String> *r_extensions) const {
 	r_extensions->push_back("gltf");
 	r_extensions->push_back("glb");
 }
 
-Node *EditorSceneImporterGLTF::import_scene(const String &p_path,
+Node *EditorSceneFormatImporterGLTF::import_scene(const String &p_path,
 		uint32_t p_flags, int p_bake_fps,
 		List<String> *r_missing_deps,
 		Error *r_err) {
@@ -56,7 +56,7 @@ Node *EditorSceneImporterGLTF::import_scene(const String &p_path,
 	return doc->import_scene_gltf(p_path, p_flags, p_bake_fps, Ref<GLTFState>(), r_missing_deps, r_err);
 }
 
-Ref<Animation> EditorSceneImporterGLTF::import_animation(const String &p_path,
+Ref<Animation> EditorSceneFormatImporterGLTF::import_animation(const String &p_path,
 		uint32_t p_flags,
 		int p_bake_fps) {
 	return Ref<Animation>();

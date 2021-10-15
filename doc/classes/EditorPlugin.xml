@@ -381,7 +381,7 @@
 			<argument index="0" name="importer" type="EditorImportPlugin" />
 			<description>
 				Registers a new [EditorImportPlugin]. Import plugins are used to import custom and unsupported assets as a custom [Resource] type.
-				[b]Note:[/b] If you want to import custom 3D asset formats use [method add_scene_import_plugin] instead.
+				[b]Note:[/b] If you want to import custom 3D asset formats use [method add_scene_format_importer_plugin] instead.
 				See [method add_inspector_plugin] for an example of how to register a plugin.
 			</description>
 		</method>
@@ -405,11 +405,18 @@
 				[/codeblocks]
 			</description>
 		</method>
-		<method name="add_scene_import_plugin">
+		<method name="add_scene_format_importer_plugin">
 			<return type="void" />
-			<argument index="0" name="scene_importer" type="EditorSceneImporter" />
+			<argument index="0" name="scene_format_importer" type="EditorSceneFormatImporter" />
 			<description>
-				Registers a new [EditorSceneImporter]. Scene importers are used to import custom 3D asset formats as scenes.
+				Registers a new [EditorSceneFormatImporter]. Scene importers are used to import custom 3D asset formats as scenes.
+			</description>
+		</method>
+		<method name="add_scene_post_import_plugin">
+			<return type="void" />
+			<argument index="0" name="scene_import_plugin" type="EditorScenePostImportPlugin" />
+			<description>
+				Add a [EditorScenePostImportPlugin]. These plugins allow customizing the import process of 3D assets by adding new options to the import dialogs.
 			</description>
 		</method>
 		<method name="add_spatial_gizmo_plugin">
@@ -553,11 +560,18 @@
 				Removes an inspector plugin registered by [method add_import_plugin]
 			</description>
 		</method>
-		<method name="remove_scene_import_plugin">
+		<method name="remove_scene_format_importer_plugin">
 			<return type="void" />
-			<argument index="0" name="scene_importer" type="EditorSceneImporter" />
+			<argument index="0" name="scene_format_importer" type="EditorSceneFormatImporter" />
 			<description>
-				Removes a scene importer registered by [method add_scene_import_plugin].
+				Removes a scene format importer registered by [method add_scene_format_importer_plugin].
+			</description>
+		</method>
+		<method name="remove_scene_post_import_plugin">
+			<return type="void" />
+			<argument index="0" name="scene_import_plugin" type="EditorScenePostImportPlugin" />
+			<description>
+				Remove the [EditorScenePostImportPlugin], added with [method add_scene_post_import_plugin].
 			</description>
 		</method>
 		<method name="remove_spatial_gizmo_plugin">

@@ -41,8 +41,8 @@
 
 class Animation;
 
-class EditorSceneImporterGLTF : public EditorSceneImporter {
-	GDCLASS(EditorSceneImporterGLTF, EditorSceneImporter);
+class EditorSceneFormatImporterGLTF : public EditorSceneFormatImporter {
+	GDCLASS(EditorSceneFormatImporterGLTF, EditorSceneFormatImporter);
 
 public:
 	virtual uint32_t get_import_flags() const override;

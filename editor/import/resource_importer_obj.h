@@ -33,8 +33,8 @@
 
 #include "resource_importer_scene.h"
 
-class EditorOBJImporter : public EditorSceneImporter {
-	GDCLASS(EditorOBJImporter, EditorSceneImporter);
+class EditorOBJImporter : public EditorSceneFormatImporter {
+	GDCLASS(EditorOBJImporter, EditorSceneFormatImporter);
 
 public:
 	virtual uint32_t get_import_flags() const override;

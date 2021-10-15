@@ -5684,7 +5684,7 @@ void GLTFDocument::_generate_skeleton_bone_node(Ref<GLTFState> state, Node *scen
 }
 
 template <class T>
-struct EditorSceneImporterGLTFInterpolate {
+struct EditorSceneFormatImporterGLTFInterpolate {
 	T lerp(const T &a, const T &b, float c) const {
 		return a + (b - a) * c;
 	}
@@ -5710,7 +5710,7 @@ struct EditorSceneImporterGLTFInterpolate {
 
 // thank you for existing, partial specialization
 template <>
-struct EditorSceneImporterGLTFInterpolate<Quaternion> {
+struct EditorSceneFormatImporterGLTFInterpolate<Quaternion> {
 	Quaternion lerp(const Quaternion &a, const Quaternion &b, const float c) const {
 		ERR_FAIL_COND_V_MSG(!a.is_normalized(), Quaternion(), "The quaternion \"a\" must be normalized.");
 		ERR_FAIL_COND_V_MSG(!b.is_normalized(), Quaternion(), "The quaternion \"b\" must be normalized.");
@@ -5749,7 +5749,7 @@ T GLTFDocument::_interpolate_track(const Vector<float> &p_times, const Vector<T>
 		idx++;
 	}
 
-	EditorSceneImporterGLTFInterpolate<T> interp;
+	EditorSceneFormatImporterGLTFInterpolate<T> interp;
 
 	switch (p_interp) {
 		case GLTFAnimation::INTERP_LINEAR: {
@@ -6833,7 +6833,7 @@ Node *GLTFDocument::import_scene_gltf(const String &p_path, uint32_t p_flags, in
 		r_state.instantiate();
 	}
 	r_state->use_named_skin_binds =
-			p_flags & EditorSceneImporter::IMPORT_USE_NAMED_SKIN_BINDS;
+			p_flags & EditorSceneFormatImporter::IMPORT_USE_NAMED_SKIN_BINDS;
 
 	Ref<GLTFDocument> gltf_document;
 	gltf_document.instantiate();

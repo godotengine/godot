@@ -42,8 +42,8 @@ class Material;
 class AnimationPlayer;
 
 class ImporterMesh;
-class EditorSceneImporter : public RefCounted {
-	GDCLASS(EditorSceneImporter, RefCounted);
+class EditorSceneFormatImporter : public RefCounted {
+	GDCLASS(EditorSceneFormatImporter, RefCounted);
 
 protected:
 	static void _bind_methods();
@@ -70,7 +70,7 @@ public:
 	virtual Node *import_scene(const String &p_path, uint32_t p_flags, int p_bake_fps, List<String> *r_missing_deps, Error *r_err = nullptr);
 	virtual Ref<Animation> import_animation(const String &p_path, uint32_t p_flags, int p_bake_fps);
 
-	EditorSceneImporter() {}
+	EditorSceneFormatImporter() {}
 };
 
 class EditorScenePostImport : public RefCounted {
@@ -90,10 +90,64 @@ public:
 	EditorScenePostImport();
 };
 
+class EditorScenePostImportPlugin : public RefCounted {
+	GDCLASS(EditorScenePostImportPlugin, RefCounted);
+
+public:
+	enum InternalImportCategory {
+		INTERNAL_IMPORT_CATEGORY_NODE,
+		INTERNAL_IMPORT_CATEGORY_MESH_3D_NODE,
+		INTERNAL_IMPORT_CATEGORY_MESH,
+		INTERNAL_IMPORT_CATEGORY_MATERIAL,
+		INTERNAL_IMPORT_CATEGORY_ANIMATION,
+		INTERNAL_IMPORT_CATEGORY_ANIMATION_NODE,
+		INTERNAL_IMPORT_CATEGORY_MAX
+	};
+
+private:
+	mutable const Map<StringName, Variant> *current_options = nullptr;
+	mutable const Dictionary *current_options_dict = nullptr;
+	List<ResourceImporter::ImportOption> *current_option_list = nullptr;
+	InternalImportCategory current_category = INTERNAL_IMPORT_CATEGORY_MAX;
+
+protected:
+	GDVIRTUAL1(_get_internal_import_options, int)
+	GDVIRTUAL2RC(Variant, _get_internal_option_visibility, int, String)
+	GDVIRTUAL2RC(Variant, _get_internal_option_update_view_required, int, String)
+	GDVIRTUAL4(_internal_process, int, Node *, Node *, RES)
+	GDVIRTUAL0(_get_import_options)
+	GDVIRTUAL1RC(Variant, _get_option_visibility, String)
+	GDVIRTUAL1(_pre_process, Node *)
+	GDVIRTUAL1(_post_process, Node *)
+
+	static void _bind_methods();
+
+public:
+	Variant get_option_value(const StringName &p_name) const;
+	void add_import_option(const String &p_name, Variant p_default_value);
+	void add_import_option_advanced(Variant::Type p_type, const String &p_name, Variant p_default_value, PropertyHint p_hint = PROPERTY_HINT_NONE, const String &p_hint_string = String(), int p_usage_flags = PROPERTY_USAGE_DEFAULT);
+
+	virtual void get_internal_import_options(InternalImportCategory p_category, List<ResourceImporter::ImportOption> *r_options);
+	virtual Variant get_internal_option_visibility(InternalImportCategory p_category, const String &p_option, const Map<StringName, Variant> &p_options) const;
+	virtual Variant get_internal_option_update_view_required(InternalImportCategory p_category, const String &p_option, const Map<StringName, Variant> &p_options) const;
+
+	virtual void internal_process(InternalImportCategory p_category, Node *p_base_scene, Node *p_node, RES p_resource, const Dictionary &p_options);
+
+	virtual void get_import_options(List<ResourceImporter::ImportOption> *r_options);
+	virtual Variant get_option_visibility(const String &p_option, const Map<StringName, Variant> &p_options) const;
+
+	virtual void pre_process(Node *p_scene, const Map<StringName, Variant> &p_options);
+	virtual void post_process(Node *p_scene, const Map<StringName, Variant> &p_options);
+
+	EditorScenePostImportPlugin() {}
+};
+
+VARIANT_ENUM_CAST(EditorScenePostImportPlugin::InternalImportCategory)
+
 class ResourceImporterScene : public ResourceImporter {
 	GDCLASS(ResourceImporterScene, ResourceImporter);
 
-	Set<Ref<EditorSceneImporter>> importers;
+	Set<Ref<EditorSceneFormatImporter>> importers;
 
 	static ResourceImporterScene *singleton;
 
@@ -158,13 +212,18 @@ class ResourceImporterScene : public ResourceImporter {
 
 	void _optimize_track_usage(AnimationPlayer *p_player, AnimationImportTracks *p_track_actions);
 
+	mutable Vector<Ref<EditorScenePostImportPlugin>> post_importer_plugins;
+
 public:
 	static ResourceImporterScene *get_singleton() { return singleton; }
 
-	const Set<Ref<EditorSceneImporter>> &get_importers() const { return importers; }
+	void add_post_importer_plugin(const Ref<EditorScenePostImportPlugin> &p_plugin) { post_importer_plugins.push_back(p_plugin); }
+	void remove_post_importer_plugin(const Ref<EditorScenePostImportPlugin> &p_plugin) { post_importer_plugins.erase(p_plugin); }
 
-	void add_importer(Ref<EditorSceneImporter> p_importer) { importers.insert(p_importer); }
-	void remove_importer(Ref<EditorSceneImporter> p_importer) { importers.erase(p_importer); }
+	const Set<Ref<EditorSceneFormatImporter>> &get_importers() const { return importers; }
+
+	void add_importer(Ref<EditorSceneFormatImporter> p_importer) { importers.insert(p_importer); }
+	void remove_importer(Ref<EditorSceneFormatImporter> p_importer) { importers.erase(p_importer); }
 
 	virtual String get_importer_name() const override;
 	virtual String get_visible_name() const override;
@@ -177,13 +236,13 @@ public:
 	virtual String get_preset_name(int p_idx) const override;
 
 	enum InternalImportCategory {
-		INTERNAL_IMPORT_CATEGORY_NODE,
-		INTERNAL_IMPORT_CATEGORY_MESH_3D_NODE,
-		INTERNAL_IMPORT_CATEGORY_MESH,
-		INTERNAL_IMPORT_CATEGORY_MATERIAL,
-		INTERNAL_IMPORT_CATEGORY_ANIMATION,
-		INTERNAL_IMPORT_CATEGORY_ANIMATION_NODE,
-		INTERNAL_IMPORT_CATEGORY_MAX
+		INTERNAL_IMPORT_CATEGORY_NODE = EditorScenePostImportPlugin::INTERNAL_IMPORT_CATEGORY_NODE,
+		INTERNAL_IMPORT_CATEGORY_MESH_3D_NODE = EditorScenePostImportPlugin::INTERNAL_IMPORT_CATEGORY_MESH_3D_NODE,
+		INTERNAL_IMPORT_CATEGORY_MESH = EditorScenePostImportPlugin::INTERNAL_IMPORT_CATEGORY_MESH,
+		INTERNAL_IMPORT_CATEGORY_MATERIAL = EditorScenePostImportPlugin::INTERNAL_IMPORT_CATEGORY_MATERIAL,
+		INTERNAL_IMPORT_CATEGORY_ANIMATION = EditorScenePostImportPlugin::INTERNAL_IMPORT_CATEGORY_ANIMATION,
+		INTERNAL_IMPORT_CATEGORY_ANIMATION_NODE = EditorScenePostImportPlugin::INTERNAL_IMPORT_CATEGORY_ANIMATION_NODE,
+		INTERNAL_IMPORT_CATEGORY_MAX = EditorScenePostImportPlugin::INTERNAL_IMPORT_CATEGORY_MAX
 	};
 
 	void get_internal_import_options(InternalImportCategory p_category, List<ImportOption> *r_options) const;
@@ -205,8 +264,8 @@ public:
 	Node *pre_import(const String &p_source_file);
 	virtual Error import(const String &p_source_file, const String &p_save_path, const Map<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files = nullptr, Variant *r_metadata = nullptr) override;
 
-	Node *import_scene_from_other_importer(EditorSceneImporter *p_exception, const String &p_path, uint32_t p_flags, int p_bake_fps);
-	Ref<Animation> import_animation_from_other_importer(EditorSceneImporter *p_exception, const String &p_path, uint32_t p_flags, int p_bake_fps);
+	Node *import_scene_from_other_importer(EditorSceneFormatImporter *p_exception, const String &p_path, uint32_t p_flags, int p_bake_fps);
+	Ref<Animation> import_animation_from_other_importer(EditorSceneFormatImporter *p_exception, const String &p_path, uint32_t p_flags, int p_bake_fps);
 
 	virtual bool has_advanced_options() const override;
 	virtual void show_advanced_options(const String &p_path) override;
@@ -222,8 +281,8 @@ public:
 	static Transform3D get_collision_shapes_transform(const M &p_options);
 };
 
-class EditorSceneImporterESCN : public EditorSceneImporter {
-	GDCLASS(EditorSceneImporterESCN, EditorSceneImporter);
+class EditorSceneFormatImporterESCN : public EditorSceneFormatImporter {
+	GDCLASS(EditorSceneFormatImporterESCN, EditorSceneFormatImporter);
 
 public:
 	virtual uint32_t get_import_flags() const override;
