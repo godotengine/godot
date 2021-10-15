@@ -7,7 +7,7 @@ env_ws = env_modules.Clone()
 
 thirdparty_obj = []
 
-if env["platform"] == "javascript":
+if env["selected_platform"] == "javascript":
     # Our JavaScript/C++ interface.
     env.AddJSLibraries(["library_godot_websocket.js"])
 
@@ -26,7 +26,7 @@ elif env["builtin_wslay"]:
     env_ws.Prepend(CPPPATH=[thirdparty_dir + "includes/"])
     env_ws.Append(CPPDEFINES=["HAVE_CONFIG_H"])
 
-    if env["platform"] == "windows" or env["platform"] == "uwp":
+    if env["selected_platform"] == "windows" or env["selected_platform"] == "uwp":
         env_ws.Append(CPPDEFINES=["HAVE_WINSOCK2_H"])
     else:
         env_ws.Append(CPPDEFINES=["HAVE_NETINET_IN_H"])

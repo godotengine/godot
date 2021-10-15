@@ -6,7 +6,7 @@ def can_build(env, platform):
 
 
 def configure(env):
-    platform = env["platform"]
+    platform = env["selected_platform"]
 
     if platform not in supported_platforms:
         raise RuntimeError("This module does not currently support building for this platform")
@@ -18,7 +18,7 @@ def configure(env):
     default_mono_static = platform in ["iphone", "javascript"]
     default_mono_bundles_zlib = platform in ["javascript"]
 
-    envvars = Variables()
+    envvars = env["opts"]
     envvars.Add(
         PathVariable(
             "mono_prefix",
@@ -48,9 +48,7 @@ def configure(env):
             "mono_bundles_zlib", "Specify if the Mono runtime was built with bundled zlib", default_mono_bundles_zlib
         )
     )
-
     envvars.Update(env)
-    Help(envvars.GenerateHelpText(env))
 
     if env["mono_bundles_zlib"]:
         # Mono may come with zlib bundled for WASM or on newer version when built with MinGW.

@@ -57,7 +57,7 @@ if env["builtin_glslang"]:
         "StandAlone/ResourceLimits.cpp",
     ]
 
-    if env["platform"] == "windows":
+    if env["selected_platform"] == "windows":
         thirdparty_sources.append("glslang/OSDependent/Windows/ossource.cpp")
     else:
         thirdparty_sources.append("glslang/OSDependent/Unix/ossource.cpp")

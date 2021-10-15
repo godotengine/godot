@@ -13,15 +13,15 @@ if env["use_volk"]:
     env.AppendUnique(CPPDEFINES=["USE_VOLK"])
     env.Prepend(CPPPATH=[thirdparty_volk_dir])
 
-if env["platform"] == "android":
+if env["selected_platform"] == "android":
     env.AppendUnique(CPPDEFINES=["VK_USE_PLATFORM_ANDROID_KHR"])
-elif env["platform"] == "iphone":
+elif env["selected_platform"] == "iphone":
     env.AppendUnique(CPPDEFINES=["VK_USE_PLATFORM_IOS_MVK"])
-elif env["platform"] == "linuxbsd":
+elif env["selected_platform"] == "linuxbsd":
     env.AppendUnique(CPPDEFINES=["VK_USE_PLATFORM_XLIB_KHR"])
-elif env["platform"] == "osx":
+elif env["selected_platform"] == "osx":
     env.AppendUnique(CPPDEFINES=["VK_USE_PLATFORM_MACOS_MVK"])
-elif env["platform"] == "windows":
+elif env["selected_platform"] == "windows":
     env.AppendUnique(CPPDEFINES=["VK_USE_PLATFORM_WIN32_KHR"])
 
 # Build Vulkan memory allocator and volk
@@ -36,7 +36,7 @@ if env["use_volk"]:
 
     thirdparty_sources_volk = [thirdparty_volk_dir + "/volk.c"]
     env_thirdparty_volk.add_source_files(thirdparty_obj, thirdparty_sources_volk)
-elif env["platform"] == "android":
+elif env["selected_platform"] == "android":
     # Our current NDK version only provides old Vulkan headers,
     # so we have to limit VMA.
     env_thirdparty_vma.AppendUnique(CPPDEFINES=["VMA_VULKAN_VERSION=1000000"])

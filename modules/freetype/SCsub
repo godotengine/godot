@@ -56,7 +56,7 @@ if env["builtin_freetype"]:
     ]
     thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 
-    if env["platform"] == "uwp":
+    if env["selected_platform"] == "uwp":
         # Include header for UWP to fix build issues
         env_freetype.Append(CCFLAGS=["/FI", '"modules/freetype/uwpdef.h"'])
         # Globally too, as freetype is used in scene (see bottom)
@@ -76,7 +76,7 @@ if env["builtin_freetype"]:
 
     sfnt = thirdparty_dir + "src/sfnt/sfnt.c"
     # Must be done after all CPPDEFINES are being set so we can copy them.
-    if env["platform"] == "javascript":
+    if env["selected_platform"] == "javascript":
         # Forcibly undefine this macro so SIMD is not used in this file,
         # since currently unsupported in WASM
         tmp_env = env_freetype.Clone()

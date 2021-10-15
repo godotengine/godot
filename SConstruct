@@ -12,6 +12,8 @@ import sys
 import time
 from collections import OrderedDict
 
+import SCons
+
 # Local
 import methods
 import glsl_builders
@@ -57,7 +59,7 @@ methods.save_active_platforms(active_platforms, active_platform_ids)
 
 custom_tools = ["default"]
 
-platform_arg = ARGUMENTS.get("platform", ARGUMENTS.get("p", False))
+platform_arg = ARGUMENTS.get("selected_platform", ARGUMENTS.get("p", False))
 
 if os.name == "nt" and (platform_arg == "android" or methods.get_cmdline_bool("use_mingw", False)):
     custom_tools = ["mingw"]
@@ -112,6 +114,7 @@ if profile:
         customs.append(profile + ".py")
 
 opts = Variables(customs, ARGUMENTS)
+env_base["opts"] = opts
 
 # Target build options
 opts.Add("p", "Platform (alias for 'platform')", "")
@@ -234,7 +237,7 @@ if selected_platform in ["linux", "bsd", "x11"]:
 
 # Make sure to update this to the found, valid platform as it's used through the buildsystem as the reference.
 # It should always be re-set after calling `opts.Update()` otherwise it uses the original input value.
-env_base["platform"] = selected_platform
+env_base["selected_platform"] = selected_platform
 
 # Add platform-specific options.
 if selected_platform in platform_opts:
@@ -243,7 +246,6 @@ if selected_platform in platform_opts:
 
 # Update the environment to take platform-specific options into account.
 opts.Update(env_base)
-env_base["platform"] = selected_platform  # Must always be re-set after calling opts.Update().
 
 # Detect modules.
 modules_detected = OrderedDict()
@@ -297,8 +299,6 @@ methods.write_modules(modules_detected)
 
 # Update the environment again after all the module options are added.
 opts.Update(env_base)
-env_base["platform"] = selected_platform  # Must always be re-set after calling opts.Update().
-Help(opts.GenerateHelpText(env_base))
 
 # add default include paths
 
@@ -477,7 +477,7 @@ if selected_platform in platform_list:
             )
         # Apple LLVM versions differ from upstream LLVM version \o/, compare
         # in https://en.wikipedia.org/wiki/Xcode#Toolchain_versions
-        elif env["platform"] == "osx" or env["platform"] == "iphone":
+        elif env["selected_platform"] == "osx" or env["selected_platform"] == "iphone":
             vanilla = methods.is_vanilla_clang(env)
             if vanilla and cc_version_major < 6:
                 print(
@@ -717,6 +717,15 @@ if selected_platform in platform_list:
         env.vs_incs = []
         env.vs_srcs = []
 
+    if opts.UnknownVariables():
+
+        methods.print_color(sys, "red", "ERROR: Unknown command line variables:")
+        for name, val in opts.UnknownVariables().items():
+            methods.print_color(sys, "red", "    '{}={}'".format(name, val))
+        methods.print_color(sys, "red", "Please check valid variables usage with '--help' option.")
+
+    Help(opts.GenerateHelpText(env))
+
     Export("env")
 
     # Build subdirs, the build order is dependent on link order.
@@ -746,6 +755,7 @@ if selected_platform in platform_list:
         for header in env["check_c_headers"]:
             if conf.CheckCHeader(header[0]):
                 env.AppendUnique(CPPDEFINES=[header[1]])
+
 
 elif selected_platform != "":
     if selected_platform == "list":
