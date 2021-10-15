@@ -219,35 +219,33 @@ TEST_CASE("[Curve] Custom curve with linear tangents") {
 
 TEST_CASE("[Curve2D] Linear sampling should return exact value") {
 	Ref<Curve2D> curve = memnew(Curve2D);
-	int len = 2048;
+	real_t len = 2048.0;
 
 	curve->add_point(Vector2(0, 0));
-	curve->add_point(Vector2((float)len, 0));
+	curve->add_point(Vector2(len, 0));
 
-	float baked_length = curve->get_baked_length();
-	CHECK((float)len == baked_length);
+	real_t baked_length = curve->get_baked_length();
+	CHECK(len == baked_length);
 
 	for (int i = 0; i < len; i++) {
-		float expected = (float)i;
-		Vector2 pos = curve->interpolate_baked(expected);
-		CHECK_MESSAGE(pos.x == expected, "interpolate_baked should return exact value");
+		Vector2 pos = curve->interpolate_baked(i);
+		CHECK_MESSAGE(pos.x == i, "interpolate_baked should return exact value");
 	}
 }
 
 TEST_CASE("[Curve3D] Linear sampling should return exact value") {
 	Ref<Curve3D> curve = memnew(Curve3D);
-	int len = 2048;
+	real_t len = 2048.0;
 
 	curve->add_point(Vector3(0, 0, 0));
-	curve->add_point(Vector3((float)len, 0, 0));
+	curve->add_point(Vector3(len, 0, 0));
 
-	float baked_length = curve->get_baked_length();
-	CHECK((float)len == baked_length);
+	real_t baked_length = curve->get_baked_length();
+	CHECK(len == baked_length);
 
 	for (int i = 0; i < len; i++) {
-		float expected = (float)i;
-		Vector3 pos = curve->interpolate_baked(expected);
-		CHECK_MESSAGE(pos.x == expected, "interpolate_baked should return exact value");
+		Vector3 pos = curve->interpolate_baked(i);
+		CHECK_MESSAGE(pos.x == i, "interpolate_baked should return exact value");
 	}
 }
 
