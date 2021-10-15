@@ -97,7 +97,6 @@ def configure(env):
             env["AR"] = mpprefix + "/libexec/llvm-" + mpclangver + "/bin/llvm-ar"
             env["RANLIB"] = mpprefix + "/libexec/llvm-" + mpclangver + "/bin/llvm-ranlib"
             env["AS"] = mpprefix + "/libexec/llvm-" + mpclangver + "/bin/llvm-as"
-            env.Append(CPPDEFINES=["__MACPORTS__"])  # hack to fix libvpx MM256_BROADCASTSI128_SI256 define
         else:
             env["CC"] = "clang"
             env["CXX"] = "clang++"
@@ -125,7 +124,6 @@ def configure(env):
         env["AR"] = basecmd + "ar"
         env["RANLIB"] = basecmd + "ranlib"
         env["AS"] = basecmd + "as"
-        env.Append(CPPDEFINES=["__MACPORTS__"])  # hack to fix libvpx MM256_BROADCASTSI128_SI256 define
 
     if env["use_ubsan"] or env["use_asan"] or env["use_tsan"]:
         env.extra_suffix += "s"
