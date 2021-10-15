@@ -203,28 +203,28 @@
 		<signal name="body_shape_entered">
 			<argument index="0" name="body_rid" type="RID" />
 			<argument index="1" name="body" type="Node" />
-			<argument index="2" name="body_shape" type="int" />
-			<argument index="3" name="local_shape" type="int" />
+			<argument index="2" name="body_shape_index" type="int" />
+			<argument index="3" name="local_shape_index" type="int" />
 			<description>
 				Emitted when one of this RigidBody's [Shape]s collides with another [PhysicsBody] or [GridMap]'s [Shape]s. Requires [member contact_monitor] to be set to [code]true[/code] and [member contacts_reported] to be set high enough to detect all the collisions. [GridMap]s are detected if the [MeshLibrary] has Collision [Shape]s.
-				[code]body_id[/code] the [RID] of the other [PhysicsBody] or [MeshLibrary]'s [CollisionObject] used by the [PhysicsServer].
+				[code]body_rid[/code] the [RID] of the other [PhysicsBody] or [MeshLibrary]'s [CollisionObject] used by the [PhysicsServer].
 				[code]body[/code] the [Node], if it exists in the tree, of the other [PhysicsBody] or [GridMap].
-				[code]body_shape[/code] the index of the [Shape] of the other [PhysicsBody] or [GridMap] used by the [PhysicsServer].
-				[code]local_shape[/code] the index of the [Shape] of this RigidBody used by the [PhysicsServer].
+				[code]body_shape_index[/code] the index of the [Shape] of the other [PhysicsBody] or [GridMap] used by the [PhysicsServer]. Get the [CollisionShape] node with [code]body.shape_owner_get_owner(body_shape_index)[/code].
+				[code]local_shape_index[/code] the index of the [Shape] of this RigidBody used by the [PhysicsServer]. Get the [CollisionShape] node with [code]self.shape_owner_get_owner(local_shape_index)[/code].
 				[b]Note:[/b] Bullet physics cannot identify the shape index when using a [ConcavePolygonShape]. Don't use multiple [CollisionShape]s when using a [ConcavePolygonShape] with Bullet physics if you need shape indices.
 			</description>
 		</signal>
 		<signal name="body_shape_exited">
 			<argument index="0" name="body_rid" type="RID" />
 			<argument index="1" name="body" type="Node" />
-			<argument index="2" name="body_shape" type="int" />
-			<argument index="3" name="local_shape" type="int" />
+			<argument index="2" name="body_shape_index" type="int" />
+			<argument index="3" name="local_shape_index" type="int" />
 			<description>
 				Emitted when the collision between one of this RigidBody's [Shape]s and another [PhysicsBody] or [GridMap]'s [Shape]s ends. Requires [member contact_monitor] to be set to [code]true[/code] and [member contacts_reported] to be set high enough to detect all the collisions. [GridMap]s are detected if the [MeshLibrary] has Collision [Shape]s.
-				[code]body_id[/code] the [RID] of the other [PhysicsBody] or [MeshLibrary]'s [CollisionObject] used by the [PhysicsServer]. [GridMap]s are detected if the Meshes have [Shape]s.
+				[code]body_rid[/code] the [RID] of the other [PhysicsBody] or [MeshLibrary]'s [CollisionObject] used by the [PhysicsServer]. [GridMap]s are detected if the Meshes have [Shape]s.
 				[code]body[/code] the [Node], if it exists in the tree, of the other [PhysicsBody] or [GridMap].
-				[code]body_shape[/code] the index of the [Shape] of the other [PhysicsBody] or [GridMap] used by the [PhysicsServer].
-				[code]local_shape[/code] the index of the [Shape] of this RigidBody used by the [PhysicsServer].
+				[code]body_shape_index[/code] the index of the [Shape] of the other [PhysicsBody] or [GridMap] used by the [PhysicsServer]. Get the [CollisionShape] node with [code]body.shape_owner_get_owner(body_shape_index)[/code].
+				[code]local_shape_index[/code] the index of the [Shape] of this RigidBody used by the [PhysicsServer]. Get the [CollisionShape] node with [code]self.shape_owner_get_owner(local_shape_index)[/code].
 				[b]Note:[/b] Bullet physics cannot identify the shape index when using a [ConcavePolygonShape]. Don't use multiple [CollisionShape]s when using a [ConcavePolygonShape] with Bullet physics if you need shape indices.
 			</description>
 		</signal>
