@@ -305,7 +305,7 @@
 			<description>
 			</description>
 		</method>
-		<method name="free">
+		<method name="free_rid">
 			<return type="void" />
 			<argument index="0" name="rid" type="RID" />
 			<description>
