@@ -139,61 +139,65 @@ Variant::Type managed_to_variant_type(const ManagedType &p_type, bool *r_nil_is_
 
 		case MONO_TYPE_ARRAY:
 		case MONO_TYPE_SZARRAY: {
-			MonoArrayType *array_type = mono_type_get_array_type(p_type.type_class->get_mono_type());
+			MonoClass *elem_class = mono_class_get_element_class(p_type.type_class->get_mono_ptr());
 
-			if (array_type->eklass == CACHED_CLASS_RAW(MonoObject)) {
+			if (elem_class == CACHED_CLASS_RAW(MonoObject)) {
 				return Variant::ARRAY;
 			}
 
-			if (array_type->eklass == CACHED_CLASS_RAW(uint8_t)) {
+			if (elem_class == CACHED_CLASS_RAW(uint8_t)) {
 				return Variant::PACKED_BYTE_ARRAY;
 			}
 
-			if (array_type->eklass == CACHED_CLASS_RAW(int32_t)) {
+			if (elem_class == CACHED_CLASS_RAW(int32_t)) {
 				return Variant::PACKED_INT32_ARRAY;
 			}
 
-			if (array_type->eklass == CACHED_CLASS_RAW(int64_t)) {
+			if (elem_class == CACHED_CLASS_RAW(int64_t)) {
 				return Variant::PACKED_INT64_ARRAY;
 			}
 
-			if (array_type->eklass == CACHED_CLASS_RAW(float)) {
+			if (elem_class == CACHED_CLASS_RAW(float)) {
 				return Variant::PACKED_FLOAT32_ARRAY;
 			}
 
-			if (array_type->eklass == CACHED_CLASS_RAW(double)) {
+			if (elem_class == CACHED_CLASS_RAW(double)) {
 				return Variant::PACKED_FLOAT64_ARRAY;
 			}
 
-			if (array_type->eklass == CACHED_CLASS_RAW(String)) {
+			if (elem_class == CACHED_CLASS_RAW(String)) {
 				return Variant::PACKED_STRING_ARRAY;
 			}
 
-			if (array_type->eklass == CACHED_CLASS_RAW(Vector2)) {
+			if (elem_class == CACHED_CLASS_RAW(Vector2)) {
 				return Variant::PACKED_VECTOR2_ARRAY;
 			}
 
-			if (array_type->eklass == CACHED_CLASS_RAW(Vector3)) {
+			if (elem_class == CACHED_CLASS_RAW(Vector3)) {
 				return Variant::PACKED_VECTOR3_ARRAY;
 			}
 
-			if (array_type->eklass == CACHED_CLASS_RAW(Color)) {
+			if (elem_class == CACHED_CLASS_RAW(Color)) {
 				return Variant::PACKED_COLOR_ARRAY;
 			}
 
-			if (array_type->eklass == CACHED_CLASS_RAW(StringName)) {
+			if (elem_class == CACHED_CLASS_RAW(StringName)) {
 				return Variant::ARRAY;
 			}
 
-			if (array_type->eklass == CACHED_CLASS_RAW(NodePath)) {
+			if (elem_class == CACHED_CLASS_RAW(NodePath)) {
 				return Variant::ARRAY;
 			}
 
-			if (array_type->eklass == CACHED_CLASS_RAW(RID)) {
+			if (elem_class == CACHED_CLASS_RAW(RID)) {
 				return Variant::ARRAY;
 			}
 
-			GDMonoClass *array_type_class = GDMono::get_singleton()->get_class(array_type->eklass);
+			if (mono_class_is_enum(elem_class)) {
+				return Variant::ARRAY;
+			}
+
+			GDMonoClass *array_type_class = GDMono::get_singleton()->get_class(elem_class);
 			if (CACHED_CLASS(GodotObject)->is_assignable_from(array_type_class)) {
 				return Variant::ARRAY;
 			}
@@ -302,9 +306,8 @@ bool try_get_array_element_type(const ManagedType &p_array_type, ManagedType &r_
 	switch (p_array_type.type_encoding) {
 		case MONO_TYPE_ARRAY:
 		case MONO_TYPE_SZARRAY: {
-			MonoArrayType *array_type = mono_type_get_array_type(p_array_type.type_class->get_mono_type());
-			GDMonoClass *array_type_class = GDMono::get_singleton()->get_class(array_type->eklass);
-			r_elem_type = ManagedType::from_class(array_type_class);
+			MonoClass *elem_class = mono_class_get_element_class(p_array_type.type_class->get_mono_ptr());
+			r_elem_type = ManagedType::from_class(elem_class);
 			return true;
 		} break;
 		case MONO_TYPE_GENERICINST: {
