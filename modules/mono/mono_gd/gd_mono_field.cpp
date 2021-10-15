@@ -281,6 +281,16 @@ void GDMonoField::set_value_from_variant(MonoObject *p_object, const Variant &p_
 				break;
 			}
 
+			if (array_type->eklass == CACHED_CLASS_RAW(NodePath)) {
+				SET_FROM_ARRAY(Array);
+				break;
+			}
+
+			if (array_type->eklass == CACHED_CLASS_RAW(RID)) {
+				SET_FROM_ARRAY(Array);
+				break;
+			}
+
 			GDMonoClass *array_type_class = GDMono::get_singleton()->get_class(array_type->eklass);
 			if (CACHED_CLASS(GodotObject)->is_assignable_from(array_type_class)) {
 				MonoArray *managed = GDMonoMarshal::Array_to_mono_array(p_value.operator ::Array(), array_type_class);
