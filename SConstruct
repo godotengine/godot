@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 EnsureSConsVersion(3, 0, 0)
-EnsurePythonVersion(3, 5)
+EnsurePythonVersion(3, 6)
 
 # System
 import atexit
