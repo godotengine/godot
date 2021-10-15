@@ -297,21 +297,19 @@ env_base.Prepend(CPPPATH=["#"])
 env_base.platform_exporters = platform_exporters
 env_base.platform_apis = platform_apis
 
-if env_base["use_precise_math_checks"]:
-    env_base.Append(CPPDEFINES=["PRECISE_MATH_CHECKS"])
+# Build type defines - more platform-specific ones can be in detect.py.
+if env_base["target"] == "release_debug" or env_base["target"] == "debug":
+    # DEBUG_ENABLED enables debugging *features* and debug-only code, which is intended
+    # to give *users* extra debugging information for their game development.
+    env_base.Append(CPPDEFINES=["DEBUG_ENABLED"])
 
 if env_base["target"] == "debug":
-    env_base.Append(CPPDEFINES=["DEBUG_MEMORY_ALLOC", "DISABLE_FORCED_INLINE"])
+    # DEV_ENABLED enables *engine developer* code which should only be compiled for those
+    # working on the engine itself.
+    env_base.Append(CPPDEFINES=["DEV_ENABLED"])
 
-    # The two options below speed up incremental builds, but reduce the certainty that all files
-    # will properly be rebuilt. As such, we only enable them for debug (dev) builds, not release.
-
-    # To decide whether to rebuild a file, use the MD5 sum only if the timestamp has changed.
-    # http://scons.org/doc/production/HTML/scons-user/ch06.html#idm139837621851792
-    env_base.Decider("MD5-timestamp")
-    # Use cached implicit dependencies by default. Can be overridden by specifying `--implicit-deps-changed` in the command line.
-    # http://scons.org/doc/production/HTML/scons-user/ch06s04.html
-    env_base.SetOption("implicit_cache", 1)
+if env_base["use_precise_math_checks"]:
+    env_base.Append(CPPDEFINES=["PRECISE_MATH_CHECKS"])
 
 if env_base["no_editor_splash"]:
     env_base.Append(CPPDEFINES=["NO_EDITOR_SPLASH"])
