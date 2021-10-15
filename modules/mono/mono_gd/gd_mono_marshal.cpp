@@ -278,6 +278,12 @@ Variant::Type managed_to_variant_type(const ManagedType &p_type, bool *r_nil_is_
 			if (GDMonoUtils::Marshal::type_is_generic_icollection(reftype) || GDMonoUtils::Marshal::type_is_generic_ienumerable(reftype)) {
 				return Variant::ARRAY;
 			}
+
+			// GodotObject
+			GDMonoClass *type_class = p_type.type_class;
+			if (CACHED_CLASS(GodotObject)->is_assignable_from(type_class)) {
+				return Variant::OBJECT;
+			}
 		} break;
 
 		default: {
@@ -472,6 +478,11 @@ MonoObject *variant_to_mono_object_of_genericinst(const Variant &p_var, GDMonoCl
 		GDMonoClass *godot_array_class = GDMonoUtils::Marshal::make_generic_array_type(elem_reftype);
 
 		return GDMonoUtils::create_managed_from(p_var.operator Array(), godot_array_class);
+	}
+
+	// GodotObject
+	if (CACHED_CLASS(GodotObject)->is_assignable_from(p_type_class)) {
+		return GDMonoUtils::unmanaged_get_managed(p_var.operator Object *());
 	}
 
 	ERR_FAIL_V_MSG(nullptr, "Attempted to convert Variant to unsupported generic type: '" +
