@@ -104,16 +104,12 @@ def configure(env):
         elif env["optimize"] == "size":  # optimize for size
             env.Prepend(CCFLAGS=["-Os"])
 
-        env.Prepend(CPPDEFINES=["DEBUG_ENABLED"])
-
         if env["debug_symbols"]:
             env.Prepend(CCFLAGS=["-g2"])
 
     elif env["target"] == "debug":
         env.Prepend(CCFLAGS=["-ggdb"])
         env.Prepend(CCFLAGS=["-g3"])
-        env.Prepend(CPPDEFINES=["DEBUG_ENABLED"])
-        env.Prepend(CPPDEFINES=["DEV_ENABLED"])
         env.Append(LINKFLAGS=["-rdynamic"])
 
     ## Architecture

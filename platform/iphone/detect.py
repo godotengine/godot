@@ -57,12 +57,9 @@ def configure(env):
             env.Append(CCFLAGS=["-Os", "-ftree-vectorize"])
             env.Append(LINKFLAGS=["-Os"])
 
-        if env["target"] == "release_debug":
-            env.Append(CPPDEFINES=["DEBUG_ENABLED"])
-
     elif env["target"] == "debug":
         env.Append(CCFLAGS=["-gdwarf-2", "-O0"])
-        env.Append(CPPDEFINES=["_DEBUG", ("DEBUG", 1), "DEBUG_ENABLED", "DEV_ENABLED"])
+        env.Append(CPPDEFINES=["_DEBUG", ("DEBUG", 1)])
 
     if env["use_lto"]:
         env.Append(CCFLAGS=["-flto"])
