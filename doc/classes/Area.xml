@@ -111,27 +111,27 @@
 		<signal name="area_shape_entered">
 			<argument index="0" name="area_rid" type="RID" />
 			<argument index="1" name="area" type="Area" />
-			<argument index="2" name="area_shape" type="int" />
-			<argument index="3" name="local_shape" type="int" />
+			<argument index="2" name="area_shape_index" type="int" />
+			<argument index="3" name="local_shape_index" type="int" />
 			<description>
 				Emitted when one of another Area's [Shape]s enters one of this Area's [Shape]s. Requires [member monitoring] to be set to [code]true[/code].
-				[code]area_id[/code] the [RID] of the other Area's [CollisionObject] used by the [PhysicsServer].
+				[code]area_rid[/code] the [RID] of the other Area's [CollisionObject] used by the [PhysicsServer].
 				[code]area[/code] the other Area.
-				[code]area_shape[/code] the index of the [Shape] of the other Area used by the [PhysicsServer].
-				[code]local_shape[/code] the index of the [Shape] of this Area used by the [PhysicsServer].
+				[code]area_shape_index[/code] the index of the [Shape] of the other Area used by the [PhysicsServer]. Get the [CollisionShape] node with [code]area.shape_owner_get_owner(area_shape_index)[/code].
+				[code]local_shape_index[/code] the index of the [Shape] of this Area used by the [PhysicsServer]. Get the [CollisionShape] node with [code]self.shape_owner_get_owner(local_shape_index)[/code].
 			</description>
 		</signal>
 		<signal name="area_shape_exited">
 			<argument index="0" name="area_rid" type="RID" />
 			<argument index="1" name="area" type="Area" />
-			<argument index="2" name="area_shape" type="int" />
-			<argument index="3" name="local_shape" type="int" />
+			<argument index="2" name="area_shape_index" type="int" />
+			<argument index="3" name="local_shape_index" type="int" />
 			<description>
 				Emitted when one of another Area's [Shape]s enters one of this Area's [Shape]s. Requires [member monitoring] to be set to [code]true[/code].
-				[code]area_id[/code] the [RID] of the other Area's [CollisionObject] used by the [PhysicsServer].
+				[code]area_rid[/code] the [RID] of the other Area's [CollisionObject] used by the [PhysicsServer].
 				[code]area[/code] the other Area.
-				[code]area_shape[/code] the index of the [Shape] of the other Area used by the [PhysicsServer].
-				[code]local_shape[/code] the index of the [Shape] of this Area used by the [PhysicsServer].
+				[code]area_shape_index[/code] the index of the [Shape] of the other Area used by the [PhysicsServer]. Get the [CollisionShape] node with [code]area.shape_owner_get_owner(area_shape_index)[/code].
+				[code]local_shape_index[/code] the index of the [Shape] of this Area used by the [PhysicsServer]. Get the [CollisionShape] node with [code]self.shape_owner_get_owner(local_shape_index)[/code].
 			</description>
 		</signal>
 		<signal name="body_entered">
@@ -151,27 +151,27 @@
 		<signal name="body_shape_entered">
 			<argument index="0" name="body_rid" type="RID" />
 			<argument index="1" name="body" type="Node" />
-			<argument index="2" name="body_shape" type="int" />
-			<argument index="3" name="local_shape" type="int" />
+			<argument index="2" name="body_shape_index" type="int" />
+			<argument index="3" name="local_shape_index" type="int" />
 			<description>
 				Emitted when one of a [PhysicsBody] or [GridMap]'s [Shape]s enters one of this Area's [Shape]s. Requires [member monitoring] to be set to [code]true[/code]. [GridMap]s are detected if the [MeshLibrary] has Collision [Shape]s.
-				[code]body_id[/code] the [RID] of the [PhysicsBody] or [MeshLibrary]'s [CollisionObject] used by the [PhysicsServer].
+				[code]body_rid[/code] the [RID] of the [PhysicsBody] or [MeshLibrary]'s [CollisionObject] used by the [PhysicsServer].
 				[code]body[/code] the [Node], if it exists in the tree, of the [PhysicsBody] or [GridMap].
-				[code]body_shape[/code] the index of the [Shape] of the [PhysicsBody] or [GridMap] used by the [PhysicsServer].
-				[code]local_shape[/code] the index of the [Shape] of this Area used by the [PhysicsServer].
+				[code]body_shape_index[/code] the index of the [Shape] of the [PhysicsBody] or [GridMap] used by the [PhysicsServer]. Get the [CollisionShape] node with [code]body.shape_owner_get_owner(body_shape_index)[/code].
+				[code]local_shape_index[/code] the index of the [Shape] of this Area used by the [PhysicsServer]. Get the [CollisionShape] node with [code]self.shape_owner_get_owner(local_shape_index)[/code].
 			</description>
 		</signal>
 		<signal name="body_shape_exited">
 			<argument index="0" name="body_rid" type="RID" />
 			<argument index="1" name="body" type="Node" />
-			<argument index="2" name="body_shape" type="int" />
-			<argument index="3" name="local_shape" type="int" />
+			<argument index="2" name="body_shape_index" type="int" />
+			<argument index="3" name="local_shape_index" type="int" />
 			<description>
 				Emitted when one of a [PhysicsBody] or [GridMap]'s [Shape]s enters one of this Area's [Shape]s. Requires [member monitoring] to be set to [code]true[/code]. [GridMap]s are detected if the [MeshLibrary] has Collision [Shape]s.
-				[code]body_id[/code] the [RID] of the [PhysicsBody] or [MeshLibrary]'s [CollisionObject] used by the [PhysicsServer].
+				[code]body_rid[/code] the [RID] of the [PhysicsBody] or [MeshLibrary]'s [CollisionObject] used by the [PhysicsServer].
 				[code]body[/code] the [Node], if it exists in the tree, of the [PhysicsBody] or [GridMap].
-				[code]body_shape[/code] the index of the [Shape] of the [PhysicsBody] or [GridMap] used by the [PhysicsServer].
-				[code]local_shape[/code] the index of the [Shape] of this Area used by the [PhysicsServer].
+				[code]body_shape_index[/code] the index of the [Shape] of the [PhysicsBody] or [GridMap] used by the [PhysicsServer]. Get the [CollisionShape] node with [code]body.shape_owner_get_owner(body_shape_index)[/code].
+				[code]local_shape_index[/code] the index of the [Shape] of this Area used by the [PhysicsServer]. Get the [CollisionShape] node with [code]self.shape_owner_get_owner(local_shape_index)[/code].
 			</description>
 		</signal>
 	</signals>
