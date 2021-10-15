@@ -181,6 +181,18 @@ Variant::Type managed_to_variant_type(const ManagedType &p_type, bool *r_nil_is_
 				return Variant::PACKED_COLOR_ARRAY;
 			}
 
+			if (array_type->eklass == CACHED_CLASS_RAW(StringName)) {
+				return Variant::ARRAY;
+			}
+
+			if (array_type->eklass == CACHED_CLASS_RAW(NodePath)) {
+				return Variant::ARRAY;
+			}
+
+			if (array_type->eklass == CACHED_CLASS_RAW(RID)) {
+				return Variant::ARRAY;
+			}
+
 			GDMonoClass *array_type_class = GDMono::get_singleton()->get_class(array_type->eklass);
 			if (CACHED_CLASS(GodotObject)->is_assignable_from(array_type_class)) {
 				return Variant::ARRAY;
@@ -359,6 +371,18 @@ MonoArray *variant_to_mono_array(const Variant &p_var, GDMonoClass *p_type_class
 
 	if (array_type->eklass == CACHED_CLASS_RAW(Color)) {
 		return PackedColorArray_to_mono_array(p_var.operator PackedColorArray());
+	}
+
+	if (array_type->eklass == CACHED_CLASS_RAW(StringName)) {
+		return Array_to_mono_array(p_var.operator Array());
+	}
+
+	if (array_type->eklass == CACHED_CLASS_RAW(NodePath)) {
+		return Array_to_mono_array(p_var.operator Array());
+	}
+
+	if (array_type->eklass == CACHED_CLASS_RAW(RID)) {
+		return Array_to_mono_array(p_var.operator Array());
 	}
 
 	if (mono_class_is_assignable_from(CACHED_CLASS(GodotObject)->get_mono_ptr(), array_type->eklass)) {
@@ -1116,6 +1140,18 @@ Variant mono_object_to_variant_impl(MonoObject *p_obj, const ManagedType &p_type
 
 			if (array_type->eklass == CACHED_CLASS_RAW(Color)) {
 				return mono_array_to_PackedColorArray((MonoArray *)p_obj);
+			}
+
+			if (array_type->eklass == CACHED_CLASS_RAW(StringName)) {
+				return mono_array_to_Array((MonoArray *)p_obj);
+			}
+
+			if (array_type->eklass == CACHED_CLASS_RAW(NodePath)) {
+				return mono_array_to_Array((MonoArray *)p_obj);
+			}
+
+			if (array_type->eklass == CACHED_CLASS_RAW(RID)) {
+				return mono_array_to_Array((MonoArray *)p_obj);
 			}
 
 			GDMonoClass *array_type_class = GDMono::get_singleton()->get_class(array_type->eklass);
