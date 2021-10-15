@@ -63,6 +63,7 @@ bool EditorSettings::_set(const StringName &p_name, const Variant &p_value) {
 
 	bool changed = _set_only(p_name, p_value);
 	if (changed) {
+		changed_settings.insert(p_name);
 		emit_signal(SNAME("settings_changed"));
 	}
 	return true;
@@ -941,8 +942,32 @@ void EditorSettings::save() {
 	if (err != OK) {
 		ERR_PRINT("Error saving editor settings to " + singleton->config_file_path);
 	} else {
+		singleton->changed_settings.clear();
 		print_verbose("EditorSettings: Save OK!");
 	}
+}
+
+Array EditorSettings::get_changed_settings() const {
+	Array arr;
+	for (const String &setting : changed_settings) {
+		arr.push_back(setting);
+	}
+
+	return arr;
+}
+
+bool EditorSettings::check_changed_settings_in_group(const String &p_setting_prefix) const {
+	for (const String &setting : changed_settings) {
+		if (setting.begins_with(p_setting_prefix)) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
+void EditorSettings::mark_setting_changed(const String &p_setting) {
+	changed_settings.insert(p_setting);
 }
 
 void EditorSettings::destroy() {
@@ -1620,6 +1645,10 @@ void EditorSettings::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_recent_dirs"), &EditorSettings::get_recent_dirs);
 
 	ClassDB::bind_method(D_METHOD("set_builtin_action_override", "name", "actions_list"), &EditorSettings::set_builtin_action_override);
+
+	ClassDB::bind_method(D_METHOD("check_changed_settings_in_group", "setting_prefix"), &EditorSettings::check_changed_settings_in_group);
+	ClassDB::bind_method(D_METHOD("get_changed_settings"), &EditorSettings::get_changed_settings);
+	ClassDB::bind_method(D_METHOD("mark_setting_changed", "setting"), &EditorSettings::mark_setting_changed);
 
 	ADD_SIGNAL(MethodInfo("settings_changed"));
 
