@@ -91,6 +91,7 @@ if env["tools"]:
     env.CommandNoCache("#editor/builtin_fonts.gen.h", flist, run_in_subprocess(editor_builders.make_fonts_header))
 
     env.add_source_files(env.editor_sources, "*.cpp")
+    env.add_source_files(env.editor_sources, "register_exporters.gen.cpp")
 
     SConscript("collada/SCsub")
     SConscript("doc/SCsub")
