@@ -4,6 +4,8 @@
 		Imports scenes from third-parties' 3D files.
 	</brief_description>
 	<description>
+		[EditorSceneFormatImporter] allows to define an importer script for a third-party 3D format.
+		To use [EditorSceneFormatImporter], register it using the [method EditorPlugin.add_scene_format_importer_plugin] method first.
 	</description>
 	<tutorials>
 	</tutorials>
