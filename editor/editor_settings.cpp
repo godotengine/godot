@@ -140,31 +140,36 @@ bool EditorSettings::_get(const StringName &p_name, Variant &r_ret) const {
 
 	if (p_name == "shortcuts") {
 		Array save_array;
+		const OrderedHashMap<String, List<Ref<InputEvent>>> &builtin_list = InputMap::get_singleton()->get_builtins();
 		for (const KeyValue<String, Ref<Shortcut>> &shortcut_definition : shortcuts) {
 			Ref<Shortcut> sc = shortcut_definition.value;
 
-			if (builtin_action_overrides.has(shortcut_definition.key)) {
+			if (builtin_list.has(shortcut_definition.key)) {
 				// This shortcut was auto-generated from built in actions: don't save.
+				// If the builtin is overriden, it will be saved in the "builtin_action_overrides" section below.
 				continue;
 			}
 
-			if (optimize_save) {
-				if (!sc->has_meta("original")) {
-					continue; //this came from settings but is not any longer used
-				}
+			Array shortcut_events = sc->get_events();
+
+			Dictionary dict;
+			dict["name"] = shortcut_definition.key;
+			dict["shortcuts"] = shortcut_events;
+
+			if (!sc->has_meta("original")) {
+				// Getting the meta when it doesn't exist will return an empty array. If the 'shortcut_events' have been cleared,
+				// we still want save the shortcut in this case so that shortcuts that the user has customised are not reset,
+				// even if the 'original' has not been populated yet. This can happen when calling save() from the Project Manager.
+				save_array.push_back(dict);
+				continue;
 			}
 
 			Array original_events = sc->get_meta("original");
-			Array shortcut_events = sc->get_events();
 
 			bool is_same = Shortcut::is_event_array_equal(original_events, shortcut_events);
 			if (is_same) {
 				continue; // Not changed from default; don't save.
 			}
-
-			Dictionary dict;
-			dict["name"] = shortcut_definition.key;
-			dict["shortcuts"] = shortcut_events;
 
 			save_array.push_back(dict);
 		}
@@ -1511,7 +1516,7 @@ void ED_SHORTCUT_OVERRIDE_ARRAY(const String &p_path, const String &p_feature, c
 
 	// Directly override the existing shortcut.
 	sc->set_events(events);
-	sc->set_meta("original", events);
+	sc->set_meta("original", events.duplicate(true));
 }
 
 Ref<Shortcut> ED_SHORTCUT(const String &p_path, const String &p_name, Key p_keycode) {
@@ -1545,21 +1550,21 @@ Ref<Shortcut> ED_SHORTCUT_ARRAY(const String &p_path, const String &p_name, cons
 		sc.instantiate();
 		sc->set_name(p_name);
 		sc->set_events(events);
-		sc->set_meta("original", events);
+		sc->set_meta("original", events.duplicate(true));
 		return sc;
 	}
 
 	Ref<Shortcut> sc = EditorSettings::get_singleton()->get_shortcut(p_path);
 	if (sc.is_valid()) {
 		sc->set_name(p_name); //keep name (the ones that come from disk have no name)
-		sc->set_meta("original", events); //to compare against changes
+		sc->set_meta("original", events.duplicate(true)); //to compare against changes
 		return sc;
 	}
 
 	sc.instantiate();
 	sc->set_name(p_name);
 	sc->set_events(events);
-	sc->set_meta("original", events); //to compare against changes
+	sc->set_meta("original", events.duplicate(true)); //to compare against changes
 	EditorSettings::get_singleton()->add_shortcut(p_path, sc);
 
 	return sc;
