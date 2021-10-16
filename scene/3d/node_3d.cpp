@@ -371,6 +371,9 @@ void Node3D::update_gizmos() {
 	if (data.gizmos.is_empty()) {
 		return;
 	}
+	if (data.gizmos_dirty) {
+		return;
+	}
 	data.gizmos_dirty = true;
 	MessageQueue::get_singleton()->push_callable(callable_mp(this, &Node3D::_update_gizmos));
 #endif
@@ -467,6 +470,7 @@ Vector<Ref<Node3DGizmo>> Node3D::get_gizmos() const {
 void Node3D::_update_gizmos() {
 #ifdef TOOLS_ENABLED
 	if (data.gizmos_disabled || !is_inside_world() || !data.gizmos_dirty) {
+		data.gizmos_dirty = false;
 		return;
 	}
 	data.gizmos_dirty = false;

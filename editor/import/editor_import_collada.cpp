@@ -1710,7 +1710,7 @@ void ColladaImport::create_animation(int p_clip, bool p_import_value_tracks) {
 			NodeMap &nm = node_map[at.target];
 			String path = scene->get_path_to(nm.node);
 
-			animation->add_track(Animation::TYPE_VALUE);
+			animation->add_track(Animation::TYPE_BLEND_SHAPE);
 			int track = animation->get_track_count() - 1;
 
 			path = path + ":" + at.param;
@@ -1732,7 +1732,7 @@ void ColladaImport::create_animation(int p_clip, bool p_import_value_tracks) {
 					WARN_PRINT("Collada: Unexpected amount of value keys: " + itos(data.size()));
 				}
 
-				animation->track_insert_key(track, time, value);
+				animation->blend_shape_track_insert_key(track, time, value);
 			}
 
 			tracks_found = true;

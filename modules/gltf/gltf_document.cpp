@@ -5991,12 +5991,11 @@ void GLTFDocument::_import_animation(Ref<GLTFState> state, AnimationPlayer *ap, 
 			ERR_CONTINUE(mesh.is_null());
 			ERR_CONTINUE(mesh->get_mesh().is_null());
 			ERR_CONTINUE(mesh->get_mesh()->get_mesh().is_null());
-			const String prop = "blend_shapes/" + mesh->get_mesh()->get_blend_shape_name(i);
 
-			const String blend_path = String(node_path) + ":" + prop;
+			const String blend_path = String(node_path) + ":" + String(mesh->get_mesh()->get_blend_shape_name(i));
 
 			const int track_idx = animation->get_track_count();
-			animation->add_track(Animation::TYPE_VALUE);
+			animation->add_track(Animation::TYPE_BLEND_SHAPE);
 			animation->track_set_path(track_idx, blend_path);
 
 			// Only LINEAR and STEP (NEAREST) can be supported out of the box by Godot's Animation,
@@ -6007,7 +6006,7 @@ void GLTFDocument::_import_animation(Ref<GLTFState> state, AnimationPlayer *ap, 
 				for (int j = 0; j < track.weight_tracks[i].times.size(); j++) {
 					const float t = track.weight_tracks[i].times[j];
 					const float attribs = track.weight_tracks[i].values[j];
-					animation->track_insert_key(track_idx, t, attribs);
+					animation->blend_shape_track_insert_key(track_idx, t, attribs);
 				}
 			} else {
 				// CATMULLROMSPLINE or CUBIC_SPLINE have to be baked, apologies.
@@ -6015,7 +6014,8 @@ void GLTFDocument::_import_animation(Ref<GLTFState> state, AnimationPlayer *ap, 
 				double time = 0.0;
 				bool last = false;
 				while (true) {
-					_interpolate_track<float>(track.weight_tracks[i].times, track.weight_tracks[i].values, time, gltf_interp);
+					float blend = _interpolate_track<float>(track.weight_tracks[i].times, track.weight_tracks[i].values, time, gltf_interp);
+					animation->blend_shape_track_insert_key(track_idx, time, blend);
 					if (last) {
 						break;
 					}
@@ -6459,7 +6459,7 @@ void GLTFDocument::_convert_animation(Ref<GLTFState> state, AnimationPlayer *ap,
 			if (!tracks.has(mesh_index)) {
 				for (int32_t shape_i = 0; shape_i < mesh->get_blend_shape_count(); shape_i++) {
 					String shape_name = mesh->get_blend_shape_name(shape_i);
-					NodePath shape_path = String(path) + ":blend_shapes/" + shape_name;
+					NodePath shape_path = String(path) + ":" + shape_name;
 					int32_t shape_track_i = animation->find_track(shape_path);
 					if (shape_track_i == -1) {
 						GLTFAnimation::Channel<float> weight;

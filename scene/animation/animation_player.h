@@ -32,6 +32,7 @@
 #define ANIMATION_PLAYER_H
 
 #include "scene/2d/node_2d.h"
+#include "scene/3d/mesh_instance_3d.h"
 #include "scene/3d/node_3d.h"
 #include "scene/3d/skeleton_3d.h"
 #include "scene/resources/animation.h"
@@ -99,6 +100,8 @@ private:
 #ifndef _3D_DISABLED
 		Node3D *node_3d = nullptr;
 		Skeleton3D *skeleton = nullptr;
+		MeshInstance3D *node_blend_shape = nullptr;
+		int blend_shape_idx = -1;
 #endif // _3D_DISABLED
 		int bone_idx = -1;
 		// accumulated transforms
@@ -110,6 +113,7 @@ private:
 		Vector3 loc_accum;
 		Quaternion rot_accum;
 		Vector3 scale_accum;
+		float blend_shape_accum = 0;
 		uint64_t accum_pass = 0;
 
 		bool audio_playing = false;
@@ -147,10 +151,15 @@ private:
 	struct TrackNodeCacheKey {
 		ObjectID id;
 		int bone_idx = -1;
+		int blend_shape_idx = -1;
 
 		inline bool operator<(const TrackNodeCacheKey &p_right) const {
 			if (id == p_right.id) {
-				return bone_idx < p_right.bone_idx;
+				if (blend_shape_idx == p_right.blend_shape_idx) {
+					return bone_idx < p_right.bone_idx;
+				} else {
+					return blend_shape_idx < p_right.blend_shape_idx;
+				}
 			} else {
 				return id < p_right.id;
 			}

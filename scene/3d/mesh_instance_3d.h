@@ -31,8 +31,8 @@
 #ifndef MESH_INSTANCE_H
 #define MESH_INSTANCE_H
 
+#include "core/templates/local_vector.h"
 #include "scene/3d/visual_instance_3d.h"
-
 class Skin;
 class SkinReference;
 
@@ -46,12 +46,8 @@ protected:
 	Ref<SkinReference> skin_ref;
 	NodePath skeleton_path = NodePath("..");
 
-	struct BlendShapeTrack {
-		int idx = 0;
-		float value = 0.0;
-	};
-
-	Map<StringName, BlendShapeTrack> blend_shape_tracks;
+	LocalVector<float> blend_shape_tracks;
+	Map<StringName, int> blend_shape_properties;
 	Vector<Ref<Material>> surface_override_materials;
 
 	void _mesh_changed();
@@ -74,6 +70,11 @@ public:
 
 	void set_skeleton_path(const NodePath &p_skeleton);
 	NodePath get_skeleton_path();
+
+	int get_blend_shape_count() const;
+	int find_blend_shape_by_name(const StringName &p_name);
+	float get_blend_shape_value(int p_blend_shape) const;
+	void set_blend_shape_value(int p_blend_shape, float p_value);
 
 	int get_surface_override_material_count() const;
 	void set_surface_override_material(int p_surface, const Ref<Material> &p_material);
