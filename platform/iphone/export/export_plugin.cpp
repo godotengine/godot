@@ -1427,7 +1427,6 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 	}
 
 	bool found_library = false;
-	int total_size = 0;
 
 	const String project_file = "godot_ios.xcodeproj/project.pbxproj";
 	Set<String> files_to_parse;
@@ -1523,7 +1522,6 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 			file = file.replace("godot_ios", binary_name);
 
 			print_line("ADDING: " + file + " size: " + itos(data.size()));
-			total_size += data.size();
 
 			/* write it into our folder structure */
 			file = dest_dir + file;

@@ -119,8 +119,9 @@ void Variant::_register_variant_constructors() {
 
 	add_constructor<VariantConstructNoArgs<Plane>>(sarray());
 	add_constructor<VariantConstructor<Plane, Plane>>(sarray("from"));
+	add_constructor<VariantConstructor<Plane, Vector3>>(sarray("normal"));
 	add_constructor<VariantConstructor<Plane, Vector3, double>>(sarray("normal", "d"));
-	add_constructor<VariantConstructor<Plane, Vector3, Vector3>>(sarray("point", "normal"));
+	add_constructor<VariantConstructor<Plane, Vector3, Vector3>>(sarray("normal", "point"));
 	add_constructor<VariantConstructor<Plane, Vector3, Vector3, Vector3>>(sarray("point1", "point2", "point3"));
 	add_constructor<VariantConstructor<Plane, double, double, double, double>>(sarray("a", "b", "c", "d"));
 

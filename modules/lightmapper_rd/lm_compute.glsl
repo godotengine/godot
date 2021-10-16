@@ -94,13 +94,14 @@ params;
 
 //check it, but also return distance and barycentric coords (for uv lookup)
 bool ray_hits_triangle(vec3 from, vec3 dir, float max_dist, vec3 p0, vec3 p1, vec3 p2, out float r_distance, out vec3 r_barycentric) {
+	const float EPSILON = 0.00001;
 	const vec3 e0 = p1 - p0;
 	const vec3 e1 = p0 - p2;
 	vec3 triangle_normal = cross(e1, e0);
 
 	float n_dot_dir = dot(triangle_normal, dir);
 
-	if (abs(n_dot_dir) < 0.01) {
+	if (abs(n_dot_dir) < EPSILON) {
 		return false;
 	}
 

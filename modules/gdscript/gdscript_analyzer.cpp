@@ -471,6 +471,7 @@ GDScriptParser::DataType GDScriptAnalyzer::resolve_datatype(GDScriptParser::Type
 
 			if (container_type.kind != GDScriptParser::DataType::VARIANT) {
 				container_type.is_meta_type = false;
+				container_type.is_constant = false;
 				result.set_container_element_type(container_type);
 			}
 		}
@@ -1069,7 +1070,7 @@ void GDScriptAnalyzer::resolve_node(GDScriptParser::Node *p_node) {
 		case GDScriptParser::Node::SUBSCRIPT:
 		case GDScriptParser::Node::TERNARY_OPERATOR:
 		case GDScriptParser::Node::UNARY_OPERATOR:
-			reduce_expression(static_cast<GDScriptParser::ExpressionNode *>(p_node));
+			reduce_expression(static_cast<GDScriptParser::ExpressionNode *>(p_node), true);
 			break;
 		case GDScriptParser::Node::BREAK:
 		case GDScriptParser::Node::BREAKPOINT:
@@ -1658,7 +1659,7 @@ void GDScriptAnalyzer::resolve_return(GDScriptParser::ReturnNode *p_return) {
 	p_return->set_datatype(result);
 }
 
-void GDScriptAnalyzer::reduce_expression(GDScriptParser::ExpressionNode *p_expression) {
+void GDScriptAnalyzer::reduce_expression(GDScriptParser::ExpressionNode *p_expression, bool p_is_root) {
 	// This one makes some magic happen.
 
 	if (p_expression == nullptr) {
@@ -1686,7 +1687,7 @@ void GDScriptAnalyzer::reduce_expression(GDScriptParser::ExpressionNode *p_expre
 			reduce_binary_op(static_cast<GDScriptParser::BinaryOpNode *>(p_expression));
 			break;
 		case GDScriptParser::Node::CALL:
-			reduce_call(static_cast<GDScriptParser::CallNode *>(p_expression));
+			reduce_call(static_cast<GDScriptParser::CallNode *>(p_expression), p_is_root);
 			break;
 		case GDScriptParser::Node::CAST:
 			reduce_cast(static_cast<GDScriptParser::CastNode *>(p_expression));
@@ -1802,6 +1803,7 @@ void GDScriptAnalyzer::update_array_literal_element_type(const GDScriptParser::D
 			}
 		}
 		if (all_same_type) {
+			element_type.is_constant = false;
 			array_type.set_container_element_type(element_type);
 		} else if (all_have_type) {
 			push_error(vformat(R"(Variant array is not compatible with an array of type "%s".)", p_base_type.get_container_element_type().to_string()), p_array_literal);
@@ -1927,16 +1929,25 @@ void GDScriptAnalyzer::reduce_await(GDScriptParser::AwaitNode *p_await) {
 		p_await->set_datatype(await_type);
 		return;
 	}
+
+	GDScriptParser::DataType awaiting_type;
+
 	if (p_await->to_await->type == GDScriptParser::Node::CALL) {
 		reduce_call(static_cast<GDScriptParser::CallNode *>(p_await->to_await), true);
+		awaiting_type = p_await->to_await->get_datatype();
 	} else {
 		reduce_expression(p_await->to_await);
 	}
 
-	p_await->is_constant = p_await->to_await->is_constant;
-	p_await->reduced_value = p_await->to_await->reduced_value;
+	if (p_await->to_await->is_constant) {
+		p_await->is_constant = p_await->to_await->is_constant;
+		p_await->reduced_value = p_await->to_await->reduced_value;
 
-	GDScriptParser::DataType awaiting_type = p_await->to_await->get_datatype();
+		awaiting_type = p_await->to_await->get_datatype();
+	} else {
+		awaiting_type.kind = GDScriptParser::DataType::VARIANT;
+		awaiting_type.type_source = GDScriptParser::DataType::UNDETECTED;
+	}
 
 	p_await->set_datatype(awaiting_type);
 
@@ -2056,7 +2067,7 @@ void GDScriptAnalyzer::reduce_binary_op(GDScriptParser::BinaryOpNode *p_binary_o
 	p_binary_op->set_datatype(result);
 }
 
-void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool is_await) {
+void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_await, bool p_is_root) {
 	bool all_is_constant = true;
 	Map<int, GDScriptParser::ArrayNode *> arrays; // For array literal to potentially type when passing.
 	for (int i = 0; i < p_call->arguments.size(); i++) {
@@ -2415,7 +2426,7 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool is_awa
 		}
 	}
 
-	if (call_type.is_coroutine && !is_await) {
+	if (call_type.is_coroutine && !p_is_await && !p_is_root) {
 		push_error(vformat(R"*(Function "%s()" is a coroutine, so it must be called with "await".)*", p_call->function_name), p_call->callee);
 	}
 
@@ -3489,6 +3500,7 @@ GDScriptParser::DataType GDScriptAnalyzer::type_from_property(const PropertyInfo
 			} else {
 				ERR_FAIL_V_MSG(result, "Could not find element type from property hint of a typed array.");
 			}
+			elem_type.is_constant = false;
 			result.set_container_element_type(elem_type);
 		}
 	}

@@ -68,7 +68,7 @@ void RendererSceneRender::CameraData::set_multiview_camera(uint32_t p_view_count
 	main_transform.basis.set(x, y, z);
 
 	// 3. create a horizon plane with one of the eyes and the up vector as normal.
-	Plane horizon(p_transforms[0].origin, y);
+	Plane horizon(y, p_transforms[0].origin);
 
 	// 4. Intersect horizon, left and right to obtain the combined camera origin.
 	ERR_FAIL_COND_MSG(
@@ -79,7 +79,7 @@ void RendererSceneRender::CameraData::set_multiview_camera(uint32_t p_view_count
 
 	// 5. figure out far plane, this could use some improvement, we may have our far plane too close like this, not sure if this matters
 	Vector3 far_center = (planes[0][CameraMatrix::PLANE_FAR].center() + planes[1][CameraMatrix::PLANE_FAR].center()) * 0.5;
-	Plane far(far_center, -z);
+	Plane far(-z, far_center);
 
 	/////////////////////////////////////////////////////////////////////////////
 	// Figure out our top/bottom planes
@@ -137,9 +137,9 @@ void RendererSceneRender::CameraData::set_multiview_camera(uint32_t p_view_count
 	Plane near;
 	Vector3 neg_z = -z;
 	if (neg_z.dot(p_transforms[1].origin) < neg_z.dot(p_transforms[0].origin)) {
-		near = Plane(p_transforms[0].origin, neg_z);
+		near = Plane(neg_z, p_transforms[0].origin);
 	} else {
-		near = Plane(p_transforms[1].origin, neg_z);
+		near = Plane(neg_z, p_transforms[1].origin);
 	}
 
 	// 13. Intersect near plane with bottm/left planes, to obtain min_vec then top/right to obtain max_vec

@@ -433,7 +433,7 @@ void EditorSettingsDialog::_update_shortcuts() {
 		}
 
 		Array original = sc->get_meta("original");
-		Array shortcuts_array = sc->get_events();
+		Array shortcuts_array = sc->get_events().duplicate(true);
 		bool same_as_defaults = Shortcut::is_event_array_equal(original, shortcuts_array);
 		bool collapse = !collapsed.has(E) || (collapsed.has(E) && collapsed[E]);
 

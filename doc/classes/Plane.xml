@@ -36,17 +36,24 @@
 		<method name="Plane" qualifiers="constructor">
 			<return type="Plane" />
 			<argument index="0" name="normal" type="Vector3" />
-			<argument index="1" name="d" type="float" />
+			<argument index="1" name="point" type="Vector3" />
 			<description>
-				Creates a plane from the normal and the plane's distance to the origin.
+				Creates a plane from the normal vector and a point in the plane.
 			</description>
 		</method>
 		<method name="Plane" qualifiers="constructor">
 			<return type="Plane" />
-			<argument index="0" name="point" type="Vector3" />
-			<argument index="1" name="normal" type="Vector3" />
+			<argument index="0" name="normal" type="Vector3" />
+			<argument index="1" name="d" type="float" />
 			<description>
-				Creates a plane from the given position and a plane normal.
+				Creates a plane from the normal vector and the plane's distance to the origin.
+			</description>
+		</method>
+		<method name="Plane" qualifiers="constructor">
+			<return type="Plane" />
+			<argument index="0" name="normal" type="Vector3" />
+			<description>
+				Creates a plane from the normal vector. The plane will intersect the origin.
 			</description>
 		</method>
 		<method name="Plane" qualifiers="constructor">

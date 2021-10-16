@@ -29,9 +29,9 @@
 /*************************************************************************/
 
 #include "video_player.h"
-#include "scene/scene_string_names.h"
 
 #include "core/os/os.h"
+#include "scene/scene_string_names.h"
 #include "servers/audio_server.h"
 
 int VideoPlayer::sp_get_channel_count() const {
@@ -55,7 +55,7 @@ bool VideoPlayer::mix(AudioFrame *p_buffer, int p_frames) {
 	return false;
 }
 
-// Called from main thread (eg VideoStreamPlaybackWebm::update)
+// Called from main thread (e.g. VideoStreamPlaybackTheora::update).
 int VideoPlayer::_audio_mix_callback(void *p_udata, const float *p_data, int p_frames) {
 	ERR_FAIL_NULL_V(p_udata, 0);
 	ERR_FAIL_NULL_V(p_data, 0);

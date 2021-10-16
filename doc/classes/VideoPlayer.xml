@@ -5,9 +5,9 @@
 	</brief_description>
 	<description>
 		Control node for playing video streams using [VideoStream] resources.
-		Supported video formats are [url=https://www.webmproject.org/]WebM[/url] ([code].webm[/code], [VideoStreamWebm]), [url=https://www.theora.org/]Ogg Theora[/url] ([code].ogv[/code], [VideoStreamTheora]), and any format exposed via a GDNative plugin using [VideoStreamGDNative].
+		Supported video formats are [url=https://www.theora.org/]Ogg Theora[/url] ([code].ogv[/code], [VideoStreamTheora]) and any format exposed via a GDNative plugin using [VideoStreamGDNative].
 		[b]Note:[/b] Due to a bug, VideoPlayer does not support localization remapping yet.
-		[b]Warning:[/b] On HTML5, video playback [i]will[/i] perform poorly due to missing architecture-specific assembly optimizations, especially for VP8/VP9.
+		[b]Warning:[/b] On HTML5, video playback [i]will[/i] perform poorly due to missing architecture-specific assembly optimizations.
 	</description>
 	<tutorials>
 	</tutorials>

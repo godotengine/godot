@@ -557,7 +557,7 @@ vec4 fog_process(vec3 vertex) {
 
 		float y_dist = y - scene_data.fog_height;
 
-		float vfog_amount = clamp(1.0 - exp(y_dist * scene_data.fog_height_density), 0.0, 1.0);
+		float vfog_amount = 1.0 - exp(min(0.0, y_dist * scene_data.fog_height_density));
 
 		fog_amount = max(vfog_amount, fog_amount);
 	}

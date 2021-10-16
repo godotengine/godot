@@ -491,6 +491,35 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id) {
 		bool is_curve = curve.is_valid() || curve_xyz.is_valid();
 
 		if (is_curve) {
+			// a default value handling
+			{
+				Variant default_value;
+				bool port_left_used = false;
+
+				for (const VisualShader::Connection &E : connections) {
+					if (E.to_node == p_id && E.to_port == 0) {
+						port_left_used = true;
+						break;
+					}
+				}
+
+				if (!port_left_used) {
+					default_value = vsnode->get_input_port_default_value(0);
+				}
+
+				Button *button = memnew(Button);
+				custom_editor->add_child(button);
+				register_default_input_button(p_id, 0, button);
+				custom_editor->move_child(button, 0);
+
+				button->connect("pressed", callable_mp(VisualShaderEditor::get_singleton(), &VisualShaderEditor::_edit_port_default_input), varray(button, p_id, 0));
+				if (default_value.get_type() != Variant::NIL) {
+					set_input_port_default_value(p_type, p_id, 0, default_value);
+				} else {
+					button->hide();
+				}
+			}
+
 			VisualShaderEditor::get_singleton()->graph->add_child(node);
 			VisualShaderEditor::get_singleton()->_update_created_node(node);
 
@@ -643,6 +672,7 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id) {
 			for (const VisualShader::Connection &E : connections) {
 				if (E.to_node == p_id && E.to_port == j) {
 					port_left_used = true;
+					break;
 				}
 			}
 		}
