@@ -1174,9 +1174,11 @@ Vector<int> SurfaceTool::generate_lod(float p_threshold, int p_target_index_coun
 	Vector<int> lod;
 
 	ERR_FAIL_COND_V(simplify_func == nullptr, lod);
+	ERR_FAIL_COND_V(p_target_index_count < 0, lod);
 	ERR_FAIL_COND_V(vertex_array.size() == 0, lod);
 	ERR_FAIL_COND_V(index_array.size() == 0, lod);
 	ERR_FAIL_COND_V(index_array.size() % 3 != 0, lod);
+	ERR_FAIL_COND_V(index_array.size() < (unsigned int)p_target_index_count, lod);
 
 	lod.resize(index_array.size());
 	LocalVector<float> vertices; //uses floats
