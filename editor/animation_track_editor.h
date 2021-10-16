@@ -36,6 +36,7 @@
 #include "editor/property_editor.h"
 #include "editor/property_selector.h"
 
+#include "scene/3d/mesh_instance_3d.h"
 #include "scene/gui/control.h"
 #include "scene/gui/file_dialog.h"
 #include "scene/gui/menu_button.h"
@@ -280,6 +281,18 @@ public:
 class AnimationTrackEditor : public VBoxContainer {
 	GDCLASS(AnimationTrackEditor, VBoxContainer);
 
+public:
+	enum RotationOrder {
+		ROTATION_ORDER_XYZ,
+		ROTATION_ORDER_XZY,
+		ROTATION_ORDER_YXZ,
+		ROTATION_ORDER_YZX,
+		ROTATION_ORDER_ZXY,
+		ROTATION_ORDER_ZYX,
+		ROTATION_ORDER_QUATERNION
+	};
+
+private:
 	Ref<Animation> animation;
 	Node *root;
 
@@ -342,8 +355,10 @@ class AnimationTrackEditor : public VBoxContainer {
 	struct InsertData {
 		Animation::TrackType type;
 		NodePath path;
+		NodePath special_path; // For Pos/Rot/Scl/BlendShapes Track.
 		int track_idx = 0;
 		Variant value;
+		RotationOrder rotation_order = ROTATION_ORDER_QUATERNION;
 		String query;
 		bool advance = false;
 	}; /* insert_data;*/
@@ -355,7 +370,7 @@ class AnimationTrackEditor : public VBoxContainer {
 	bool insert_queue;
 	List<InsertData> insert_data;
 
-	void _query_insert(const InsertData &p_id);
+	void _query_insert(const InsertData &p_id, const bool p_bezier_enabled = true);
 	Ref<Animation> _create_and_get_reset_animation();
 	void _confirm_insert_list();
 	struct TrackIndices {
@@ -530,10 +545,11 @@ public:
 	void set_anim_pos(float p_pos);
 	void insert_node_value_key(Node *p_node, const String &p_property, const Variant &p_value, bool p_only_if_exists = false);
 	void insert_value_key(const String &p_property, const Variant &p_value, bool p_advance);
-	void insert_transform_key(Node3D *p_node, const String &p_sub, const Animation::TrackType p_type, const Variant p_value);
+	void insert_transform_key(Node3D *p_node, const String &p_sub, const Animation::TrackType p_type, const Variant p_value, const RotationOrder p_rotation_order = ROTATION_ORDER_QUATERNION);
+	void insert_blend_shape_key(MeshInstance3D *p_mesh_instance, const int p_blend_shape_id, const Variant p_value);
 	bool has_track(Node3D *p_node, const String &p_sub, const Animation::TrackType p_type);
 	void make_insert_queue();
-	void commit_insert_queue();
+	void commit_insert_queue(const bool p_bezier_enabled = true);
 
 	void show_select_node_warning(bool p_show);
 

@@ -32,7 +32,9 @@
 			</description>
 		</signal>
 		<signal name="property_keyed">
-			<argument index="0" name="property" type="String" />
+			<argument index="0" name="object" type="Object" />
+			<argument index="1" name="property" type="String" />
+			<argument index="2" name="track_type" type="int" />
 			<description>
 				Emitted when a property is keyed in the inspector. Properties can be keyed by clicking the "key" icon next to a property when the Animation panel is toggled.
 			</description>

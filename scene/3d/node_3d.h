@@ -134,8 +134,7 @@ protected:
 
 	void _notification(int p_what);
 	static void _bind_methods();
-
-	virtual void _validate_property(PropertyInfo &property) const override;
+	void _validate_property(PropertyInfo &property) const override;
 
 public:
 	enum {

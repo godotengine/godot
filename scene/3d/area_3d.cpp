@@ -631,6 +631,7 @@ void Area3D::_validate_property(PropertyInfo &property) const {
 	}
 
 	CollisionObject3D::_validate_property(property);
+	Node3D::_validate_property(property);
 }
 
 void Area3D::_bind_methods() {

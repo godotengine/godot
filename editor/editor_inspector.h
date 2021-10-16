@@ -38,6 +38,7 @@
 #include "scene/gui/panel_container.h"
 #include "scene/gui/scroll_container.h"
 #include "scene/gui/texture_rect.h"
+#include "scene/resources/animation.h"
 
 class UndoRedo;
 
@@ -70,6 +71,7 @@ private:
 	StringName property;
 
 	int property_usage;
+	PropertyTrackType property_track_type;
 
 	bool read_only;
 	bool checkable;
@@ -463,8 +465,8 @@ class EditorInspector : public ScrollContainer {
 
 	void _property_changed(const String &p_path, const Variant &p_value, const String &p_name = "", bool p_changing = false, bool p_update_all = false);
 	void _multiple_properties_changed(Vector<String> p_paths, Array p_values, bool p_changing = false);
-	void _property_keyed(const String &p_path, bool p_advance);
-	void _property_keyed_with_value(const String &p_path, const Variant &p_value, bool p_advance);
+	void _property_keyed(const String &p_path, const Animation::TrackType p_track_type, bool p_advance);
+	void _property_keyed_with_value(const String &p_path, const Animation::TrackType p_track_type, const Variant &p_value, bool p_advance);
 	void _property_deleted(const String &p_path);
 	void _property_checked(const String &p_path, bool p_checked);
 	void _property_pinned(const String &p_path, bool p_pinned);

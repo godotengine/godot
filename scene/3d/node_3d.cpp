@@ -836,12 +836,27 @@ void Node3D::_validate_property(PropertyInfo &property) const {
 	}
 	if (data.rotation_edit_mode != ROTATION_EDIT_MODE_QUATERNION && property.name == "quaternion") {
 		property.usage = 0;
+		property.track_type = PROPERTY_TRACK_TYPE_ROTATION;
 	}
 	if (data.rotation_edit_mode != ROTATION_EDIT_MODE_EULER && property.name == "rotation") {
 		property.usage = 0;
+		property.track_type = PROPERTY_TRACK_TYPE_ROTATION;
 	}
 	if (data.rotation_edit_mode != ROTATION_EDIT_MODE_EULER && property.name == "rotation_order") {
 		property.usage = 0;
+	}
+
+	if (property.name == "position") {
+		property.track_type = PROPERTY_TRACK_TYPE_POSITION;
+	}
+	if (property.name == "rotation") {
+		property.track_type = PROPERTY_TRACK_TYPE_ROTATION;
+	}
+	if (property.name == "quaternion") {
+		property.track_type = PROPERTY_TRACK_TYPE_ROTATION;
+	}
+	if (property.name == "scale") {
+		property.track_type = PROPERTY_TRACK_TYPE_SCALE;
 	}
 }
 

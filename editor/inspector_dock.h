@@ -118,7 +118,7 @@ class InspectorDock : public VBoxContainer {
 	void _select_history(int p_idx);
 	void _prepare_history();
 
-	void _property_keyed(const String &p_keyed, const Variant &p_value, bool p_advance);
+	void _property_keyed(Object *sp, const String &p_keyed, const Animation::TrackType p_type, const Variant &p_value, bool p_advance);
 	void _transform_keyed(Object *sp, const String &p_sub, const Transform3D &p_key);
 
 protected:

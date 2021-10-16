@@ -160,7 +160,9 @@ void Decal::_validate_property(PropertyInfo &property) const {
 	if (!distance_fade_enabled && (property.name == "distance_fade_begin" || property.name == "distance_fade_length")) {
 		property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
+
 	VisualInstance3D::_validate_property(property);
+	Node3D::_validate_property(property);
 }
 
 TypedArray<String> Decal::get_configuration_warnings() const {

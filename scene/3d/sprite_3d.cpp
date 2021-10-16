@@ -746,6 +746,7 @@ void Sprite3D::_validate_property(PropertyInfo &property) const {
 	}
 
 	SpriteBase3D::_validate_property(property);
+	Node3D::_validate_property(property);
 }
 
 void Sprite3D::_bind_methods() {

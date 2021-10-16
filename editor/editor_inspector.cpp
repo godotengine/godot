@@ -617,7 +617,17 @@ void EditorProperty::gui_input(const Ref<InputEvent> &p_event) {
 		}
 
 		if (keying_rect.has_point(mpos)) {
-			emit_signal(SNAME("property_keyed"), property, use_keying_next());
+			if (property_track_type == PROPERTY_TRACK_TYPE_POSITION) {
+				emit_signal(SNAME("property_keyed"), property, Animation::TYPE_POSITION_3D, use_keying_next());
+			} else if (property_track_type == PROPERTY_TRACK_TYPE_ROTATION) {
+				emit_signal(SNAME("property_keyed"), property, Animation::TYPE_ROTATION_3D, use_keying_next());
+			} else if (property_track_type == PROPERTY_TRACK_TYPE_SCALE) {
+				emit_signal(SNAME("property_keyed"), property, Animation::TYPE_SCALE_3D, use_keying_next());
+			} else if (property_track_type == PROPERTY_TRACK_TYPE_BLEND_SHAPE) {
+				emit_signal(SNAME("property_keyed"), property, Animation::TYPE_BLEND_SHAPE, use_keying_next());
+			} else {
+				emit_signal(SNAME("property_keyed"), property, Animation::TYPE_VALUE, use_keying_next());
+			}
 
 			if (use_keying_next()) {
 				if (property == "frame_coords" && (object->is_class("Sprite2D") || object->is_class("Sprite3D"))) {
@@ -952,6 +962,7 @@ EditorProperty::EditorProperty() {
 	pinned = false;
 	use_folding = false;
 	property_usage = 0;
+	property_track_type = PROPERTY_TRACK_TYPE_VALUE;
 	selected = false;
 	selected_focusable = -1;
 	label_reference = nullptr;
@@ -2244,6 +2255,7 @@ void EditorInspector::_parse_added_editors(VBoxContainer *current_vbox, Ref<Edit
 					//since it's one, associate:
 					ep->property = F.properties[0];
 					ep->property_usage = 0;
+					ep->property_track_type = PROPERTY_TRACK_TYPE_VALUE;
 				}
 
 				if (!F.label.is_empty()) {
@@ -2785,6 +2797,7 @@ void EditorInspector::update_tree() {
 							//since it's one, associate:
 							ep->property = F.properties[0];
 							ep->property_usage = p.usage;
+							ep->property_track_type = p.track_type;
 							//and set label?
 						}
 
@@ -3200,12 +3213,12 @@ void EditorInspector::_multiple_properties_changed(Vector<String> p_paths, Array
 	}
 }
 
-void EditorInspector::_property_keyed(const String &p_path, bool p_advance) {
+void EditorInspector::_property_keyed(const String &p_path, const Animation::TrackType p_track_type, bool p_advance) {
 	if (!object) {
 		return;
 	}
 
-	emit_signal(SNAME("property_keyed"), p_path, object->get(p_path), p_advance); //second param is deprecated
+	emit_signal(SNAME("property_keyed"), object, p_path, p_track_type, object->get(p_path), p_advance); // object->get(p_path) param is deprecated.
 }
 
 void EditorInspector::_property_deleted(const String &p_path) {
@@ -3216,12 +3229,12 @@ void EditorInspector::_property_deleted(const String &p_path) {
 	emit_signal(SNAME("property_deleted"), p_path); //second param is deprecated
 }
 
-void EditorInspector::_property_keyed_with_value(const String &p_path, const Variant &p_value, bool p_advance) {
+void EditorInspector::_property_keyed_with_value(const String &p_path, const Animation::TrackType p_track_type, const Variant &p_value, bool p_advance) {
 	if (!object) {
 		return;
 	}
 
-	emit_signal(SNAME("property_keyed"), p_path, p_value, p_advance); //second param is deprecated
+	emit_signal(SNAME("property_keyed"), object, p_path, p_track_type, p_value, p_advance);
 }
 
 void EditorInspector::_property_checked(const String &p_path, bool p_checked) {
@@ -3531,7 +3544,7 @@ void EditorInspector::_bind_methods() {
 	ClassDB::bind_method("_edit_request_change", &EditorInspector::_edit_request_change);
 
 	ADD_SIGNAL(MethodInfo("property_selected", PropertyInfo(Variant::STRING, "property")));
-	ADD_SIGNAL(MethodInfo("property_keyed", PropertyInfo(Variant::STRING, "property")));
+	ADD_SIGNAL(MethodInfo("property_keyed", PropertyInfo(Variant::OBJECT, "object"), PropertyInfo(Variant::STRING, "property"), PropertyInfo(Variant::INT, "track_type")));
 	ADD_SIGNAL(MethodInfo("property_deleted", PropertyInfo(Variant::STRING, "property")));
 	ADD_SIGNAL(MethodInfo("resource_selected", PropertyInfo(Variant::OBJECT, "res"), PropertyInfo(Variant::STRING, "prop")));
 	ADD_SIGNAL(MethodInfo("object_id_selected", PropertyInfo(Variant::INT, "id")));

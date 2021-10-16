@@ -147,7 +147,7 @@ void BoneTransformEditor::set_target(const String &p_prop) {
 	rest_matrix->update_property();
 }
 
-void BoneTransformEditor::_property_keyed(const String &p_path, bool p_advance) {
+void BoneTransformEditor::_property_keyed(const String &p_path, const Animation::TrackType p_track_type, bool p_advance) {
 	AnimationTrackEditor *te = AnimationPlayerEditor::get_singleton()->get_track_editor();
 	PackedStringArray split = p_path.split("/");
 	if (split.size() == 3 && split[0] == "bones") {
@@ -320,7 +320,7 @@ void Skeleton3DEditor::insert_keys(const bool p_all_bones) {
 			te->insert_transform_key(skeleton, name, Animation::TYPE_SCALE_3D, skeleton->get_bone_pose_scale(i));
 		}
 	}
-	te->commit_insert_queue();
+	te->commit_insert_queue(false);
 }
 
 void Skeleton3DEditor::pose_to_rest(const bool p_all_bones) {

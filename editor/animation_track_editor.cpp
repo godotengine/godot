@@ -3512,7 +3512,10 @@ void AnimationTrackEditor::make_insert_queue() {
 	insert_queue = true;
 }
 
-void AnimationTrackEditor::commit_insert_queue() {
+void AnimationTrackEditor::commit_insert_queue(const bool p_bezier_enabled) {
+	// Default state must be false for preventing to make bezier track with bone.
+	insert_confirm_bezier->set_pressed(false);
+
 	bool reset_allowed = true;
 	AnimationPlayer *player = AnimationPlayerEditor::get_singleton()->get_player();
 	if (player->has_animation(SceneStringNames::get_singleton()->RESET) && player->get_animation(SceneStringNames::get_singleton()->RESET) == animation) {
@@ -3534,10 +3537,18 @@ void AnimationTrackEditor::commit_insert_queue() {
 	// Organize insert data.
 	int num_tracks = 0;
 	String last_track_query;
-	bool all_bezier = true;
+	bool all_bezier = p_bezier_enabled;
 	for (int i = 0; i < insert_data.size(); i++) {
-		if (insert_data[i].type != Animation::TYPE_VALUE && insert_data[i].type != Animation::TYPE_BEZIER) {
-			all_bezier = false;
+		if (insert_data[i].type != Animation::TYPE_BEZIER) {
+			switch (insert_data[i].type) {
+				case Animation::TYPE_METHOD:
+				case Animation::TYPE_AUDIO:
+				case Animation::TYPE_ANIMATION: {
+					all_bezier = false;
+				} break;
+				default: {
+				} break;
+			}
 		}
 
 		if (insert_data[i].track_idx == -1) {
@@ -3586,13 +3597,16 @@ void AnimationTrackEditor::commit_insert_queue() {
 	insert_queue = false;
 }
 
-void AnimationTrackEditor::_query_insert(const InsertData &p_id) {
+void AnimationTrackEditor::_query_insert(const InsertData &p_id, const bool p_bezier_enabled) {
 	if (!insert_queue) {
 		insert_data.clear();
 	}
 
 	for (const InsertData &E : insert_data) {
 		// Prevent insertion of multiple tracks.
+		if (E.special_path != NodePath() && E.special_path == p_id.special_path && E.type == p_id.type) {
+			return; // Already inserted a track this frame.
+		}
 		if (E.path == p_id.path && E.type == p_id.type) {
 			return; // Already inserted a track this frame.
 		}
@@ -3602,7 +3616,7 @@ void AnimationTrackEditor::_query_insert(const InsertData &p_id) {
 
 	// Without queue, commit immediately.
 	if (!insert_queue) {
-		commit_insert_queue();
+		commit_insert_queue(p_bezier_enabled);
 	}
 }
 
@@ -3643,7 +3657,7 @@ void AnimationTrackEditor::_insert_track(bool p_create_reset, bool p_create_bezi
 	}
 }
 
-void AnimationTrackEditor::insert_transform_key(Node3D *p_node, const String &p_sub, const Animation::TrackType p_type, const Variant p_value) {
+void AnimationTrackEditor::insert_transform_key(Node3D *p_node, const String &p_sub, const Animation::TrackType p_type, const Variant p_value, const RotationOrder p_rotation_order) {
 	ERR_FAIL_COND(!root);
 	ERR_FAIL_COND_MSG(
 			(p_type != Animation::TYPE_POSITION_3D && p_type != Animation::TYPE_ROTATION_3D && p_type != Animation::TYPE_SCALE_3D),
@@ -3655,21 +3669,108 @@ void AnimationTrackEditor::insert_transform_key(Node3D *p_node, const String &p_
 		return;
 	}
 
+	bool is_bone_path = p_sub != "";
+
 	// Let's build a node path.
 	String path = root->get_path_to(p_node);
-	if (!p_sub.is_empty()) {
-		path += ":" + p_sub;
+	String special_path = path;
+	String prop = "";
+	if (is_bone_path) {
+		special_path += ":" + p_sub;
+	}
+
+	switch (p_type) {
+		case Animation::TYPE_POSITION_3D: {
+			prop = "position";
+		} break;
+		case Animation::TYPE_ROTATION_3D: {
+			prop = "rotation";
+		} break;
+		case Animation::TYPE_SCALE_3D: {
+			prop = "scale";
+		} break;
+		default: {
+		} break;
+	}
+	if (prop != "") {
+		// Bone animation and Bezier tracks are incompatible,
+		// but the property path is required for duplicate checking.
+		if (is_bone_path) {
+			path = special_path + "/" + prop;
+		} else if (!p_sub.is_empty()) {
+			path = path + ":" + prop;
+		}
 	}
 
 	NodePath np = path;
+	NodePath sp = special_path;
 
 	int track_idx = -1;
 
 	for (int i = 0; i < animation->get_track_count(); i++) {
-		if (animation->track_get_path(i) != np) {
+		if (!is_bone_path) {
+			String tpath = animation->track_get_path(i);
+			int index = tpath.rfind(":");
+			// Hack: If it has been exist as BezierTrack, use insert_value_key().
+			if (NodePath(tpath.substr(0, index + 1)) == np) {
+				insert_value_key(prop, p_value, false);
+				return;
+			}
+		}
+
+		if (animation->track_get_path(i) != np && !(animation->track_get_path(i) == sp && animation->track_get_type(i) == p_type)) {
 			continue;
 		}
-		if (animation->track_get_type(i) != p_type) {
+		track_idx = i;
+	}
+
+	InsertData id;
+	if (p_type == Animation::TYPE_ROTATION_3D && p_value.get_type() == Variant::VECTOR3) {
+		ERR_FAIL_COND_MSG(p_rotation_order == ROTATION_ORDER_QUATERNION, "Need to pass EulerOrder when using Euler.");
+		id.rotation_order = p_rotation_order;
+	}
+	id.path = np;
+	id.special_path = sp;
+	// TRANSLATORS: This describes the target of new animation track, will be inserted into another string.
+	id.query = vformat(TTR("node '%s'"), p_node->get_name());
+	id.advance = false;
+	id.track_idx = track_idx;
+	id.value = p_value;
+	id.type = p_type;
+	_query_insert(id, !is_bone_path); // Prevent to make bezier track with bone.
+}
+
+void AnimationTrackEditor::insert_blend_shape_key(MeshInstance3D *p_mesh_instance, const int p_blend_shape_id, const Variant p_value) {
+	ERR_FAIL_COND(!root);
+	if (!keying) {
+		return;
+	}
+	if (!animation.is_valid()) {
+		return;
+	}
+
+	// Let's build a node path.
+	String path = root->get_path_to(p_mesh_instance);
+	String special_path = path;
+	String prop = "blend_shapes/" + itos(p_blend_shape_id);
+	path = path + ":" + prop;
+	special_path += ":" + itos(p_blend_shape_id);
+
+	NodePath np = path;
+	NodePath sp = special_path;
+
+	int track_idx = -1;
+
+	for (int i = 0; i < animation->get_track_count(); i++) {
+		String tpath = animation->track_get_path(i);
+		int index = tpath.rfind(":");
+		// Hack: If it has been exist as BezierTrack, use insert_value_key().
+		if (NodePath(tpath.substr(0, index + 1)) == np) {
+			insert_value_key(prop, p_value, false);
+			return;
+		}
+
+		if (animation->track_get_path(i) != np && !(animation->track_get_path(i) == sp && animation->track_get_type(i) == Animation::TYPE_BLEND_SHAPE)) {
 			continue;
 		}
 		track_idx = i;
@@ -3677,12 +3778,13 @@ void AnimationTrackEditor::insert_transform_key(Node3D *p_node, const String &p_
 
 	InsertData id;
 	id.path = np;
+	id.special_path = sp;
 	// TRANSLATORS: This describes the target of new animation track, will be inserted into another string.
-	id.query = vformat(TTR("node '%s'"), p_node->get_name());
+	id.query = vformat(TTR("node '%s'"), p_mesh_instance->get_name());
 	id.advance = false;
 	id.track_idx = track_idx;
 	id.value = p_value;
-	id.type = p_type;
+	id.type = Animation::TYPE_BLEND_SHAPE;
 	_query_insert(id);
 }
 
@@ -4134,8 +4236,19 @@ AnimationTrackEditor::TrackIndices AnimationTrackEditor::_confirm_insert(InsertD
 
 		p_id.track_idx = p_next_tracks.normal;
 
+		bool use_special_path = false;
+		switch (p_id.type) {
+			case Animation::TYPE_POSITION_3D:
+			case Animation::TYPE_ROTATION_3D:
+			case Animation::TYPE_SCALE_3D:
+			case Animation::TYPE_BLEND_SHAPE: {
+				use_special_path = true;
+			} break;
+			default: {
+			} break;
+		}
 		undo_redo->add_do_method(animation.ptr(), "add_track", p_id.type);
-		undo_redo->add_do_method(animation.ptr(), "track_set_path", p_id.track_idx, p_id.path);
+		undo_redo->add_do_method(animation.ptr(), "track_set_path", p_id.track_idx, use_special_path ? p_id.special_path : p_id.path);
 		if (p_id.type == Animation::TYPE_VALUE) {
 			undo_redo->add_do_method(animation.ptr(), "value_track_set_update_mode", p_id.track_idx, update_mode);
 		}
@@ -4154,7 +4267,6 @@ AnimationTrackEditor::TrackIndices AnimationTrackEditor::_confirm_insert(InsertD
 		case Animation::TYPE_BLEND_SHAPE:
 		case Animation::TYPE_VALUE: {
 			value = p_id.value;
-
 		} break;
 		case Animation::TYPE_BEZIER: {
 			Array array;
@@ -4172,6 +4284,13 @@ AnimationTrackEditor::TrackIndices AnimationTrackEditor::_confirm_insert(InsertD
 		} break;
 		default: {
 		}
+	}
+
+	// Special case for euler.
+	if (p_id.type == Animation::TYPE_ROTATION_3D && value.get_type() == Variant::VECTOR3) {
+		Basis rot;
+		rot.set_euler(static_cast<Vector3>(value), static_cast<Basis::EulerOrder>(p_id.rotation_order));
+		value = rot;
 	}
 
 	undo_redo->add_do_method(animation.ptr(), "track_insert_key", p_id.track_idx, time, value);

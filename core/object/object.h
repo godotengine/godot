@@ -140,6 +140,14 @@ enum PropertyUsageFlags {
 	PROPERTY_USAGE_NO_EDITOR = PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_NETWORK,
 };
 
+enum PropertyTrackType {
+	PROPERTY_TRACK_TYPE_VALUE,
+	PROPERTY_TRACK_TYPE_POSITION,
+	PROPERTY_TRACK_TYPE_ROTATION,
+	PROPERTY_TRACK_TYPE_SCALE,
+	PROPERTY_TRACK_TYPE_BLEND_SHAPE
+};
+
 #define ADD_SIGNAL(m_signal) ::ClassDB::add_signal(get_class_static(), m_signal)
 #define ADD_PROPERTY(m_property, m_setter, m_getter) ::ClassDB::add_property(get_class_static(), m_property, _scs_create(m_setter), _scs_create(m_getter))
 #define ADD_PROPERTYI(m_property, m_setter, m_getter, m_index) ::ClassDB::add_property(get_class_static(), m_property, _scs_create(m_setter), _scs_create(m_getter), m_index)
@@ -159,6 +167,7 @@ struct PropertyInfo {
 	PropertyHint hint = PROPERTY_HINT_NONE;
 	String hint_string;
 	uint32_t usage = PROPERTY_USAGE_DEFAULT;
+	PropertyTrackType track_type = PROPERTY_TRACK_TYPE_VALUE;
 
 #ifdef TOOLS_ENABLED
 	Vector<String> linked_properties;

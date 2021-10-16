@@ -507,6 +507,16 @@ void MeshInstance3D::_bind_methods() {
 	ADD_GROUP("", "");
 }
 
+void MeshInstance3D::_validate_property(PropertyInfo &property) const {
+	PackedStringArray split = property.name.split("/");
+	if (split.size() == 2 && split[0] == "blend_shapes") {
+		property.track_type = PROPERTY_TRACK_TYPE_BLEND_SHAPE;
+	}
+
+	GeometryInstance3D::_validate_property(property);
+	Node3D::_validate_property(property);
+}
+
 MeshInstance3D::MeshInstance3D() {
 }
 

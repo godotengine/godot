@@ -75,7 +75,7 @@ class BoneTransformEditor : public VBoxContainer {
 
 	void _value_changed(const String &p_property, Variant p_value, const String &p_name, bool p_changing);
 
-	void _property_keyed(const String &p_path, bool p_advance);
+	void _property_keyed(const String &p_path, const Animation::TrackType p_track_type, bool p_advance);
 
 protected:
 	void _notification(int p_what);

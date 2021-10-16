@@ -382,8 +382,48 @@ void InspectorDock::_menu_expandall() {
 	inspector->expand_all_folding();
 }
 
-void InspectorDock::_property_keyed(const String &p_keyed, const Variant &p_value, bool p_advance) {
-	AnimationPlayerEditor::get_singleton()->get_track_editor()->insert_value_key(p_keyed, p_value, p_advance);
+void InspectorDock::_property_keyed(Object *sp, const String &p_keyed, const Animation::TrackType p_type, const Variant &p_value, bool p_advance) {
+	switch (p_type) {
+		case Animation::TYPE_POSITION_3D: {
+			Node3D *s = Object::cast_to<Node3D>(sp);
+			if (!s) {
+				return;
+			}
+			AnimationPlayerEditor::get_singleton()->get_track_editor()->insert_transform_key(s, "", Animation::TYPE_POSITION_3D, p_value);
+			return;
+		} break;
+		case Animation::TYPE_ROTATION_3D: {
+			Node3D *s = Object::cast_to<Node3D>(sp);
+			if (!s) {
+				return;
+			}
+			AnimationPlayerEditor::get_singleton()->get_track_editor()->insert_transform_key(
+					s, "", Animation::TYPE_ROTATION_3D, p_value,
+					s->get_rotation_edit_mode() == Node3D::ROTATION_EDIT_MODE_EULER ? static_cast<AnimationTrackEditor::RotationOrder>(s->get_rotation_order()) : AnimationTrackEditor::ROTATION_ORDER_QUATERNION);
+			return;
+		} break;
+		case Animation::TYPE_SCALE_3D: {
+			Node3D *s = Object::cast_to<Node3D>(sp);
+			if (!s) {
+				return;
+			}
+			AnimationPlayerEditor::get_singleton()->get_track_editor()->insert_transform_key(s, "", Animation::TYPE_SCALE_3D, p_value);
+			return;
+		} break;
+		case Animation::TYPE_BLEND_SHAPE: {
+			MeshInstance3D *m = Object::cast_to<MeshInstance3D>(sp);
+			if (!m) {
+				return;
+			}
+			PackedStringArray split = p_keyed.split("/");
+			int blend_shape_id = split[split.size() - 1].to_int();
+			AnimationPlayerEditor::get_singleton()->get_track_editor()->insert_blend_shape_key(m, blend_shape_id, p_value);
+			return;
+		} break;
+		default: {
+			AnimationPlayerEditor::get_singleton()->get_track_editor()->insert_value_key(p_keyed, p_value, p_advance);
+		} break;
+	}
 }
 
 void InspectorDock::_transform_keyed(Object *sp, const String &p_sub, const Transform3D &p_key) {
