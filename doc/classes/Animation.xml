@@ -226,6 +226,7 @@
 		<method name="find_track" qualifiers="const">
 			<return type="int" />
 			<argument index="0" name="path" type="NodePath" />
+			<argument index="1" name="type" type="int" enum="Animation.TrackType" />
 			<description>
 				Returns the index of the specified track. If the track is not found, return -1.
 			</description>
