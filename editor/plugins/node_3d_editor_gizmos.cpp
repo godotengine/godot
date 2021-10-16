@@ -682,7 +682,7 @@ bool EditorNode3DGizmo::intersect_ray(Camera3D *p_camera, const Point2 &p_point,
 	}
 
 	if (collision_segments.size()) {
-		Plane camp(p_camera->get_transform().origin, (-p_camera->get_transform().basis.get_axis(2)).normalized());
+		Plane camp(-p_camera->get_transform().basis.get_axis(2).normalized(), p_camera->get_transform().origin);
 
 		int vc = collision_segments.size();
 		const Vector3 *vptr = collision_segments.ptr();
@@ -1313,7 +1313,7 @@ void Light3DGizmoPlugin::set_handle(const EditorNode3DGizmo *p_gizmo, int p_id, 
 
 			light->set_param(Light3D::PARAM_RANGE, d);
 		} else if (Object::cast_to<OmniLight3D>(light)) {
-			Plane cp = Plane(gt.origin, p_camera->get_transform().basis.get_axis(2));
+			Plane cp = Plane(p_camera->get_transform().basis.get_axis(2), gt.origin);
 
 			Vector3 inters;
 			if (cp.intersects_ray(ray_from, ray_dir, &inters)) {

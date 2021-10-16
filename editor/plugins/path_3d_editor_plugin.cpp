@@ -101,7 +101,7 @@ void Path3DGizmo::set_handle(int p_id, Camera3D *p_camera, const Point2 &p_point
 
 	// Setting curve point positions
 	if (p_id < c->get_point_count()) {
-		Plane p(gt.xform(original), p_camera->get_transform().basis.get_axis(2));
+		const Plane p = Plane(p_camera->get_transform().basis.get_axis(2), gt.xform(original));
 
 		Vector3 inters;
 
@@ -125,7 +125,7 @@ void Path3DGizmo::set_handle(int p_id, Camera3D *p_camera, const Point2 &p_point
 
 	Vector3 base = c->get_point_position(idx);
 
-	Plane p(gt.xform(original), p_camera->get_transform().basis.get_axis(2));
+	Plane p(p_camera->get_transform().basis.get_axis(2), gt.xform(original));
 
 	Vector3 inters;
 
@@ -389,13 +389,13 @@ EditorPlugin::AfterGUIInput Path3DEditorPlugin::forward_spatial_gui_input(Camera
 				return EditorPlugin::AFTER_GUI_INPUT_STOP;
 
 			} else {
-				Vector3 org;
+				Vector3 origin;
 				if (c->get_point_count() == 0) {
-					org = path->get_transform().get_origin();
+					origin = path->get_transform().get_origin();
 				} else {
-					org = gt.xform(c->get_point_position(c->get_point_count() - 1));
+					origin = gt.xform(c->get_point_position(c->get_point_count() - 1));
 				}
-				Plane p(org, p_camera->get_transform().basis.get_axis(2));
+				Plane p(p_camera->get_transform().basis.get_axis(2), origin);
 				Vector3 ray_from = p_camera->project_ray_origin(mbpos);
 				Vector3 ray_dir = p_camera->project_ray_normal(mbpos);
 

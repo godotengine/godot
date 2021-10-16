@@ -2886,7 +2886,7 @@ void RendererSceneRenderRD::_setup_lights(const PagedArray<RID> &p_lights, const
 	r_positional_light_count = 0;
 	sky.sky_scene_state.ubo.directional_light_count = 0;
 
-	Plane camera_plane(p_camera_transform.origin, -p_camera_transform.basis.get_axis(Vector3::AXIS_Z).normalized());
+	Plane camera_plane(-p_camera_transform.basis.get_axis(Vector3::AXIS_Z).normalized(), p_camera_transform.origin);
 
 	cluster.omni_light_count = 0;
 	cluster.spot_light_count = 0;
@@ -3928,7 +3928,7 @@ void RendererSceneRenderRD::_pre_opaque_render(RenderDataRD *p_render_data, bool
 	render_state.shadows.clear();
 	render_state.directional_shadows.clear();
 
-	Plane camera_plane(p_render_data->cam_transform.origin, -p_render_data->cam_transform.basis.get_axis(Vector3::AXIS_Z));
+	Plane camera_plane(-p_render_data->cam_transform.basis.get_axis(Vector3::AXIS_Z), p_render_data->cam_transform.origin);
 	float lod_distance_multiplier = p_render_data->cam_projection.get_lod_multiplier();
 	{
 		for (int i = 0; i < render_state.render_shadow_count; i++) {
@@ -4090,7 +4090,7 @@ void RendererSceneRenderRD::render_scene(RID p_render_buffers, const CameraData 
 
 		// this should be the same for all cameras..
 		render_data.lod_distance_multiplier = p_camera_data->main_projection.get_lod_multiplier();
-		render_data.lod_camera_plane = Plane(p_camera_data->main_transform.get_origin(), -p_camera_data->main_transform.basis.get_axis(Vector3::AXIS_Z));
+		render_data.lod_camera_plane = Plane(-p_camera_data->main_transform.basis.get_axis(Vector3::AXIS_Z), p_camera_data->main_transform.get_origin());
 
 		if (get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_DISABLE_LOD) {
 			render_data.screen_lod_threshold = 0.0;
