@@ -2434,10 +2434,10 @@ bool Main::start() {
 
 		if (project_manager || editor) {
 			if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_CONSOLE_WINDOW)) {
-				// Hide console window if requested (Windows-only).
-				bool hide_console = EditorSettings::get_singleton()->get_setting(
-						"interface/editor/hide_console_window");
-				DisplayServer::get_singleton()->console_set_visible(!hide_console);
+				// Show console window if requested (Windows-only).
+				const bool show_console = EditorSettings::get_singleton()->get_setting(
+						"interface/editor/show_console_window");
+				DisplayServer::get_singleton()->console_set_visible(show_console);
 			}
 
 			// Load SSL Certificates from Editor Settings (or builtin)
