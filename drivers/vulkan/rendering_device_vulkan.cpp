@@ -5927,7 +5927,7 @@ void RenderingDeviceVulkan::uniform_set_set_invalidation_callback(RID p_uniform_
 	us->invalidated_callback_userdata = p_userdata;
 }
 
-Error RenderingDeviceVulkan::buffer_update(RID p_buffer, uint32_t p_offset, uint32_t p_size, const void *p_data, uint32_t p_post_barrier) {
+Error RenderingDeviceVulkan::buffer_update(RID p_buffer, uint32_t p_offset, uint32_t p_size_bytes, const void *p_data, uint32_t p_post_barrier) {
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND_V_MSG(draw_list, ERR_INVALID_PARAMETER,
@@ -5947,13 +5947,13 @@ Error RenderingDeviceVulkan::buffer_update(RID p_buffer, uint32_t p_offset, uint
 		ERR_FAIL_V_MSG(ERR_INVALID_PARAMETER, "Buffer argument is not a valid buffer of any type.");
 	}
 
-	ERR_FAIL_COND_V_MSG(p_offset + p_size > buffer->size, ERR_INVALID_PARAMETER,
-			"Attempted to write buffer (" + itos((p_offset + p_size) - buffer->size) + " bytes) past the end.");
+	ERR_FAIL_COND_V_MSG(p_offset + p_size_bytes > buffer->size, ERR_INVALID_PARAMETER,
+			"Attempted to write buffer (" + itos((p_offset + p_size_bytes) - buffer->size) + " bytes) past the end.");
 
 	// no barrier should be needed here
 	// _buffer_memory_barrier(buffer->buffer, p_offset, p_size, dst_stage_mask, VK_PIPELINE_STAGE_TRANSFER_BIT, dst_access, VK_ACCESS_TRANSFER_WRITE_BIT, true);
 
-	Error err = _buffer_update(buffer, p_offset, (uint8_t *)p_data, p_size, p_post_barrier);
+	Error err = _buffer_update(buffer, p_offset, (uint8_t *)p_data, p_size_bytes, p_post_barrier);
 	if (err) {
 		return err;
 	}
@@ -5966,17 +5966,17 @@ Error RenderingDeviceVulkan::buffer_update(RID p_buffer, uint32_t p_offset, uint
 	}
 
 	if (p_post_barrier != RD::BARRIER_MASK_NO_BARRIER) {
-		_buffer_memory_barrier(buffer->buffer, p_offset, p_size, VK_PIPELINE_STAGE_TRANSFER_BIT, dst_stage_mask, VK_ACCESS_TRANSFER_WRITE_BIT, dst_access, true);
+		_buffer_memory_barrier(buffer->buffer, p_offset, p_size_bytes, VK_PIPELINE_STAGE_TRANSFER_BIT, dst_stage_mask, VK_ACCESS_TRANSFER_WRITE_BIT, dst_access, true);
 	}
 
 #endif
 	return err;
 }
 
-Error RenderingDeviceVulkan::buffer_clear(RID p_buffer, uint32_t p_offset, uint32_t p_size, uint32_t p_post_barrier) {
+Error RenderingDeviceVulkan::buffer_clear(RID p_buffer, uint32_t p_offset, uint32_t p_size_bytes, uint32_t p_post_barrier) {
 	_THREAD_SAFE_METHOD_
 
-	ERR_FAIL_COND_V_MSG((p_size % 4) != 0, ERR_INVALID_PARAMETER,
+	ERR_FAIL_COND_V_MSG((p_size_bytes % 4) != 0, ERR_INVALID_PARAMETER,
 			"Size must be a multiple of four");
 	ERR_FAIL_COND_V_MSG(draw_list, ERR_INVALID_PARAMETER,
 			"Updating buffers in is forbidden during creation of a draw list");
@@ -5996,13 +5996,13 @@ Error RenderingDeviceVulkan::buffer_clear(RID p_buffer, uint32_t p_offset, uint3
 		ERR_FAIL_V_MSG(ERR_INVALID_PARAMETER, "Buffer argument is not a valid buffer of any type.");
 	}
 
-	ERR_FAIL_COND_V_MSG(p_offset + p_size > buffer->size, ERR_INVALID_PARAMETER,
-			"Attempted to write buffer (" + itos((p_offset + p_size) - buffer->size) + " bytes) past the end.");
+	ERR_FAIL_COND_V_MSG(p_offset + p_size_bytes > buffer->size, ERR_INVALID_PARAMETER,
+			"Attempted to write buffer (" + itos((p_offset + p_size_bytes) - buffer->size) + " bytes) past the end.");
 
 	// should not be needed
 	// _buffer_memory_barrier(buffer->buffer, p_offset, p_size, dst_stage_mask, VK_PIPELINE_STAGE_TRANSFER_BIT, dst_access, VK_ACCESS_TRANSFER_WRITE_BIT, p_post_barrier);
 
-	vkCmdFillBuffer(frames[frame].draw_command_buffer, buffer->buffer, p_offset, p_size, 0);
+	vkCmdFillBuffer(frames[frame].draw_command_buffer, buffer->buffer, p_offset, p_size_bytes, 0);
 
 #ifdef FORCE_FULL_BARRIER
 	_full_barrier(true);
@@ -6011,7 +6011,7 @@ Error RenderingDeviceVulkan::buffer_clear(RID p_buffer, uint32_t p_offset, uint3
 		dst_stage_mask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
 	}
 
-	_buffer_memory_barrier(buffer->buffer, p_offset, p_size, VK_PIPELINE_STAGE_TRANSFER_BIT, dst_stage_mask, VK_ACCESS_TRANSFER_WRITE_BIT, dst_access, dst_stage_mask);
+	_buffer_memory_barrier(buffer->buffer, p_offset, p_size_bytes, VK_PIPELINE_STAGE_TRANSFER_BIT, dst_stage_mask, VK_ACCESS_TRANSFER_WRITE_BIT, dst_access, dst_stage_mask);
 
 #endif
 	return OK;

@@ -27,6 +27,18 @@
 			<return type="PackedByteArray" />
 			<argument index="0" name="buffer" type="RID" />
 			<description>
+				Fetch the data from the buffer as a [PackedByteArray].
+				The size of the new array will be of buffer's size.
+			</description>
+		</method>
+		<method name="buffer_get_data_generic">
+			<return type="Variant" />
+			<argument index="0" name="buffer" type="RID" />
+			<argument index="1" name="type" type="int" enum="Variant.Type" />
+			<description>
+				Fetch the data from the buffer as an array of type [code]type[/code].
+				The size of the new array will be of buffer's size (divided by the size of each element).
+				Valid [code]type[/code] are [PackedByteArray],[PackedInt32Array], [PackedInt64Array], [PackedFloat32Array], [PackedFloat64Array], [PackedVector2Array] and [PackedColorArray].
 			</description>
 		</method>
 		<method name="buffer_update">
@@ -37,6 +49,21 @@
 			<argument index="3" name="data" type="PackedByteArray" />
 			<argument index="4" name="post_barrier" type="int" default="7" />
 			<description>
+				Update the data in the buffer from position [code]offset[/code] to position [code]offset + size_bytes[/code] (excluded).
+				[code]data.size()[/code] must be &gt;= to [code]size_bytes[/code].
+			</description>
+		</method>
+		<method name="buffer_update_generic">
+			<return type="int" enum="Error" />
+			<argument index="0" name="buffer" type="RID" />
+			<argument index="1" name="index" type="int" />
+			<argument index="2" name="size" type="int" />
+			<argument index="3" name="data" type="Variant" />
+			<argument index="4" name="post_barrier" type="int" default="7" />
+			<description>
+				Update the data in the buffer from position [code]index[/code] to position [code]index + size[/code] (excluded).
+				[code]data.size()[/code] must be &gt;= to [code]size[/code].
+				Valid [code]data[/code] are of type [PackedByteArray],[PackedInt32Array], [PackedInt64Array], [PackedFloat32Array], [PackedFloat64Array], [PackedVector2Array] and [PackedColorArray].
 			</description>
 		</method>
 		<method name="capture_timestamp">
@@ -492,6 +519,17 @@
 			<argument index="1" name="data" type="PackedByteArray" default="PackedByteArray()" />
 			<argument index="2" name="usage" type="int" default="0" />
 			<description>
+				Create a storage buffer of size [code]size_bytes[/code].
+				If [code]data[/code] is not empty it must be of size [code]size_bytes[/code].
+			</description>
+		</method>
+		<method name="storage_buffer_create_generic">
+			<return type="RID" />
+			<argument index="0" name="data" type="Variant" />
+			<argument index="1" name="usage" type="int" default="0" />
+			<description>
+				Create a storage buffer initialized with values in [code]data[/code].
+				Valid [code]data[/code] are of type [PackedByteArray],[PackedInt32Array], [PackedInt64Array], [PackedFloat32Array], [PackedFloat64Array], [PackedVector2Array] and [PackedColorArray].
 			</description>
 		</method>
 		<method name="submit">
@@ -613,6 +651,16 @@
 			<argument index="0" name="size_bytes" type="int" />
 			<argument index="1" name="data" type="PackedByteArray" default="PackedByteArray()" />
 			<description>
+				Create a uniform buffer of size [code]size_bytes[/code].
+				If [code]data[/code] is not empty it must be of size [code]size_bytes[/code].
+			</description>
+		</method>
+		<method name="uniform_buffer_create_generic">
+			<return type="RID" />
+			<argument index="0" name="data" type="Variant" />
+			<description>
+				Create a uniform buffer initialized with values in [code]data[/code].
+				Valid [code]data[/code] are of type [PackedByteArray],[PackedInt32Array], [PackedInt64Array], [PackedFloat32Array], [PackedFloat64Array], [PackedVector2Array] and [PackedColorArray].
 			</description>
 		</method>
 		<method name="uniform_set_create">
