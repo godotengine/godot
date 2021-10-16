@@ -1,6 +1,8 @@
 /* clang-format off */
 [vertex]
 
+
+
 layout(location = 0) in highp vec4 vertex_attrib;
 /* clang-format on */
 
@@ -13,7 +15,10 @@ void main() {
 [fragment]
 
 #define TWO_PI 6.283185307179586476925286766559
+#define PI 3.14159265358979323846
+#define INV_PI 0.31830988618
 
+#ifndef SSAO_TYPE_GTAO
 #ifdef SSAO_QUALITY_HIGH
 #define NUM_SAMPLES (16)
 #endif
@@ -24,6 +29,29 @@ void main() {
 
 #if !defined(SSAO_QUALITY_LOW) && !defined(SSAO_QUALITY_HIGH)
 #define NUM_SAMPLES (12)
+#endif
+#endif
+//#ifndef GTAO
+
+//define sample numbers for GTAO
+#ifdef SSAO_TYPE_GTAO
+
+//higher number of circle samples means less noise
+//higher num_samples means less bias.
+#ifdef SSAO_QUALITY_HIGH
+#define CIRCLE_SAMPLES (3)
+#define NUM_SAMPLES (12)
+#endif
+
+#ifdef SSAO_QUALITY_LOW
+#define CIRCLE_SAMPLES (1)
+#define NUM_SAMPLES (8)
+#endif
+
+#if !defined(SSAO_QUALITY_LOW) && !defined(SSAO_QUALITY_HIGH)
+#define CIRCLE_SAMPLES (2)
+#define NUM_SAMPLES (10)
+#endif
 #endif
 
 // If using depth mip levels, the log of the maximum pixel offset before we need to switch to a lower
@@ -50,6 +78,15 @@ const int ROTATIONS[] = int[](
 		31, 31, 23, 18, 25, 26, 25, 23, 19, 34,
 		19, 27, 21, 25, 39, 29, 17, 21, 27);
 /* clang-format on */
+
+float saturate(float t) {
+	return t < 0.0 ? 0.0 : t > 1.0 ? 1.0 :
+									   t;
+}
+
+float lerp(float a, float b, float t) {
+	return a + (b - a) * t;
+}
 
 //#define NUM_SPIRAL_TURNS (7)
 const int NUM_SPIRAL_TURNS = ROTATIONS[NUM_SAMPLES - 1];
@@ -102,6 +139,36 @@ vec3 getPosition(ivec2 ssP) {
 	P = reconstructCSPosition(vec2(ssP) + vec2(0.5), P.z);
 	return P;
 }
+
+#ifdef SSAO_TYPE_GTAO
+
+#ifdef SSAO_THICKNESS_ATTENUATION
+//TODO: make this a uniform
+const float thickness_attenuation_blending_parameter = 0.04;
+#endif
+
+//TODO:make this a uniform
+const float distance_attenuation_start = 0.9;
+
+vec3 getPositionBias(ivec2 ssP) {
+	vec3 P;
+	//apply the bias in projective coordinates
+	P.z = min(texelFetch(source_depth, ssP, 0).r + bias * 0.001, 1.0);
+
+	P.z = P.z * 2.0 - 1.0;
+#ifdef USE_ORTHOGONAL_PROJECTION
+	P.z = ((P.z + (camera_z_far + camera_z_near) / (camera_z_far - camera_z_near)) * (camera_z_far - camera_z_near)) / 2.0;
+#else
+	P.z = 2.0 * camera_z_near * camera_z_far / (camera_z_far + camera_z_near - P.z * (camera_z_far - camera_z_near));
+#endif
+	P.z = -P.z;
+
+	// Offset to pixel center
+	P = reconstructCSPosition(vec2(ssP) + vec2(0.5), P.z);
+	return P;
+}
+
+#endif
 
 /** Reconstructs screen-space unit normal from screen-space position */
 vec3 reconstructCSFaceNormal(vec3 C) {
@@ -164,6 +231,8 @@ vec3 getOffsetPosition(ivec2 ssC, vec2 unitOffset, float ssR) {
 
 	Four versions of the falloff function are implemented below
 */
+
+#ifndef SSAO_TYPE_GTAO
 float sampleAO(in ivec2 ssC, in vec3 C, in vec3 n_C, in float ssDiskRadius, in float p_radius, in int tapIndex, in float randomPatternRotationAngle) {
 	// Offset on the unit disk, spun for this pixel
 	float ssR;
@@ -197,6 +266,92 @@ float sampleAO(in ivec2 ssC, in vec3 C, in vec3 n_C, in float ssDiskRadius, in f
 	// D: Low contrast, no division operation
 	// return 2.0 * float(vv < radius * radius) * max(vn - bias, 0.0);
 }
+#endif
+
+#ifdef SSAO_TYPE_GTAO
+// Implementation of Practical Realtime Strategies for Accurate Indirect Occlusion, Jiminez, J., et al,
+//      https://iryoku.com/downloads/Practical-Realtime-Strategies-for-Accurate-Indirect-Occlusion.pdf
+
+//TODO: improve memory access, by sampling mipmaps and/or using interleaved sampling (would this require constant screen space radius?)
+
+float sampleAO(in ivec2 ssC, in vec3 C, in vec3 n_C, in float ssDiskRadius, in float p_radius, in int tapIndex, in float randomPatternRotationAngle) {
+	float angle = randomPatternRotationAngle + (float(tapIndex) / float(CIRCLE_SAMPLES)) * PI;
+	vec2 unitOffset = vec2(cos(angle), sin(angle));
+	float stepsize = ssDiskRadius / NUM_SAMPLES;
+
+	vec3 wo = normalize(-C);
+	vec3 orthogonal = normalize(cross(wo, vec3(unitOffset.x, unitOffset.y, 0.0)));
+	float maxCos1 = -1.0;
+	float maxCos2 = -1.0;
+
+	//TODO: precompute this
+	float distAttenuationScale = 1.0 / (1.0 - distance_attenuation_start);
+
+	for (int i = 1; i <= NUM_SAMPLES; i++) {
+		float dist = float(i) / NUM_SAMPLES;
+		ivec2 ssP = ivec2(unitOffset * stepsize * float(i)) + ssC;
+		vec3 Q;
+		vec3 v;
+//TODO: base the attenuation on view space distance, not screen space
+#ifdef SSAO_DISTANCE_ATTENUATION
+		float weightDistanceAttenuation;
+		weightDistanceAttenuation = saturate((dist - distance_attenuation_start) * distAttenuationScale);
+#endif
+		if (!(any(lessThan(ssP, ivec2(0))) || any(greaterThanEqual(ssP, screen_size)))) {
+			// The occluding point in camera space
+			Q = getPositionBias(ssP);
+			v = normalize(Q - C);
+
+			float tmp = dot(v, wo);
+#ifdef SSAO_DISTANCE_ATTENUATION
+			lerp(maxCos1, tmp, weightDistanceAttenuation);
+#endif
+
+#ifndef SSAO_THICKNESS_ATTENUATION
+			if (tmp > maxCos1)
+				maxCos1 = tmp;
+#else
+			if (tmp > maxCos1)
+				maxCos1 = tmp;
+			else
+				maxCos1 = lerp(maxCos1, tmp, thickness_attenuation_blending_parameter);
+#endif
+		}
+		ssP = -ivec2(float(i) * unitOffset * stepsize) + ssC;
+
+		if (!(any(lessThan(ssP, ivec2(0))) || any(greaterThanEqual(ssP, screen_size)))) {
+			// The occluding point in camera space
+			Q = getPositionBias(ssP);
+			v = normalize(Q - C);
+			float tmp = dot(v, wo);
+#ifdef SSAO_DISTANCE_ATTENUATION
+			lerp(maxCos2, tmp, weightDistanceAttenuation);
+#endif
+
+#ifndef SSAO_THICKNESS_ATTENUATION
+			maxCos2 = tmp;
+#else
+			if (tmp > maxCos2)
+				maxCos2 = tmp;
+			else
+				maxCos2 = lerp(maxCos2, tmp, thickness_attenuation_blending_parameter);
+#endif
+		}
+	}
+
+	float theta1 = acos(maxCos1);
+	float theta2 = -acos(maxCos2);
+	vec3 proj_normal = n_C - orthogonal * dot(orthogonal, n_C);
+	float pn_len = length(proj_normal);
+	proj_normal = proj_normal * (1.0 / pn_len);
+	float gamma = acos(dot(proj_normal, wo)) * sign(dot(proj_normal, cross(orthogonal, wo)));
+	theta1 = gamma + min(theta1 - gamma, PI * 0.5);
+	theta2 = gamma + max(theta2 - gamma, -PI * 0.5);
+
+	float a = 0.25 * (-cos(2.0 * theta1 - gamma) + (2.0 * theta1 + 2.0 * theta2) * sin(gamma) + 2.0 * cos(gamma) - cos(2.0 * theta2 - gamma));
+	return a * pn_len;
+}
+#endif
 
 void main() {
 	// Pixel being shaded
@@ -215,7 +370,8 @@ void main() {
 
 	//visibility = -C.z / camera_z_far;
 	//return;
-#if 0
+#ifdef SSAO_TYPE_GTAO
+	//GTAO requires the source normal, otherwise you get flat shading artifacts
 	vec3 n_C = texelFetch(source_normal, ssC, 0).rgb * 2.0 - 1.0;
 #else
 	vec3 n_C = reconstructCSFaceNormal(C);
@@ -237,12 +393,25 @@ void main() {
 	float ssDiskRadius = -proj_scale * radius / C.z;
 #endif
 	float sum = 0.0;
+#ifndef SSAO_TYPE_GTAO
+
 	for (int i = 0; i < NUM_SAMPLES; ++i) {
 		sum += sampleAO(ssC, C, n_C, ssDiskRadius, radius, i, randomPatternRotationAngle);
 	}
 
 	float A = max(0.0, 1.0 - sum * intensity_div_r6 * (5.0 / float(NUM_SAMPLES)));
 
+#endif
+
+#ifdef SSAO_TYPE_GTAO
+	for (int i = 0; i < CIRCLE_SAMPLES; ++i) {
+		sum += sampleAO(ssC, C, n_C, ssDiskRadius, radius, i, randomPatternRotationAngle);
+	}
+
+	float A = max(0.0, sum / float(CIRCLE_SAMPLES));
+#endif
+
+#ifndef SSAO_TYPE_GTAO
 #ifdef ENABLE_RADIUS2
 
 	//go again for radius2
@@ -263,6 +432,7 @@ void main() {
 
 	A = min(A, max(0.0, 1.0 - sum * intensity_div_r62 * (5.0 / float(NUM_SAMPLES))));
 #endif
+#endif
 	// Bilateral box-filter over a quad for free, respecting depth edges
 	// (the difference that this makes is subtle)
 	if (abs(dFdx(C.z)) < 0.02) {
@@ -273,4 +443,9 @@ void main() {
 	}
 
 	visibility = A;
+	/*
+#ifdef SSAO_TYPE_GTAO
+	visibility = 0.5;
+#endif
+*/
 }
