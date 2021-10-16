@@ -528,10 +528,9 @@ void EditorSpinSlider::_value_input_submitted(const String &p_text) {
 	}
 }
 
-//modal_closed signal
+//popup_hide signal
 void EditorSpinSlider::_value_input_closed() {
 	_evaluate_input_text();
-	value_input_just_closed = true;
 }
 
 //focus_exited signal
@@ -545,7 +544,7 @@ void EditorSpinSlider::_value_focus_exited() {
 	// focus is not on the same element after the vlalue_input was exited
 	// -> focus is on next element
 	// -> TAB was pressed
-	// -> modal_close was not called
+	// -> popup_hide was not called
 	// -> need to close/hide manually
 	if (!value_input_just_closed) { //value_input_just_closed should do the same
 		if (value_input_popup) {
@@ -596,9 +595,9 @@ void EditorSpinSlider::_focus_entered() {
 	value_input->set_text(get_text_value());
 	value_input_popup->set_position(gr.position);
 	value_input_popup->set_size(gr.size);
-	value_input_popup->call_deferred(SNAME("popup"));
+	value_input_popup->popup();
+	value_input->select_all();
 	value_input->call_deferred(SNAME("grab_focus"));
-	value_input->call_deferred(SNAME("select_all"));
 	value_input->set_focus_next(find_next_valid_focus()->get_path());
 	value_input->set_focus_previous(find_prev_valid_focus()->get_path());
 }
@@ -636,7 +635,7 @@ void EditorSpinSlider::_ensure_input_popup() {
 	value_input->set_anchors_and_offsets_preset(PRESET_WIDE);
 	value_input_popup->connect("popup_hide", callable_mp(this, &EditorSpinSlider::_value_input_closed));
 	value_input->connect("text_submitted", callable_mp(this, &EditorSpinSlider::_value_input_submitted));
-	value_input->connect("focus_exited", callable_mp(this, &EditorSpinSlider::_value_focus_exited));
+	this->connect("focus_exited", callable_mp(this, &EditorSpinSlider::_value_focus_exited));
 	value_input->connect("gui_input", callable_mp(this, &EditorSpinSlider::_value_input_gui_input));
 
 	if (is_inside_tree()) {
