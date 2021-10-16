@@ -146,6 +146,7 @@
 			<description>
 				Sets the number of times the tweening sequence will be repeated, i.e. [code]set_loops(2)[/code] will run the animation twice.
 				Calling this method without arguments will make the [Tween] run infinitely, until it is either killed by [method kill] or by freeing bound node, or all the animated objects have been freed (which makes further animation impossible).
+				[b]Warning:[/b] Make sure to always add some duration/delay when using infinite loops. 0-duration looped animations (e.g. single [CallbackTweener] with no delay) are equivalent to infinite [code]while[/code] loops and will freeze your game.
 			</description>
 		</method>
 		<method name="set_parallel">
