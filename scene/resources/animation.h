@@ -281,8 +281,7 @@ public:
 
 	void track_set_path(int p_track, const NodePath &p_path);
 	NodePath track_get_path(int p_track) const;
-	int find_track(const NodePath &p_path) const;
-	// transform
+	int find_track(const NodePath &p_path, const TrackType p_type) const;
 
 	void track_move_up(int p_track);
 	void track_move_down(int p_track);
