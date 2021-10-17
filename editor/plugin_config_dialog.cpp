@@ -124,6 +124,10 @@ void PluginConfigDialog::_on_cancelled() {
 	_clear_fields();
 }
 
+void PluginConfigDialog::_on_language_changed(const int) {
+	_on_required_text_changed(String());
+}
+
 void PluginConfigDialog::_on_required_text_changed(const String &) {
 	int lang_idx = script_option_edit->get_selected();
 	String ext = ScriptServer::get_language(lang_idx)->get_extension();
@@ -161,6 +165,9 @@ void PluginConfigDialog::_on_required_text_changed(const String &) {
 		is_valid = false;
 		subfolder_validation->set_texture(invalid_icon);
 		subfolder_validation->set_tooltip(TTR("Subfolder cannot be blank."));
+	} else if (!subfolder_edit->get_text().is_valid_filename()) {
+		subfolder_validation->set_texture(invalid_icon);
+		subfolder_validation->set_tooltip(TTR("Subfolder name is not a valid folder name."));
 	} else {
 		DirAccessRef dir = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 		String path = "res://addons/" + subfolder_edit->get_text();
@@ -330,6 +337,7 @@ PluginConfigDialog::PluginConfigDialog() {
 	}
 	script_option_edit->select(default_lang);
 	grid->add_child(script_option_edit);
+	script_option_edit->connect("item_selected", callable_mp(this, &PluginConfigDialog::_on_language_changed));
 
 	// Plugin Script Name
 	Label *script_lb = memnew(Label);
