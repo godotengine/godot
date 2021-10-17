@@ -403,7 +403,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 
 	float prev_icon_saturation = theme->has_color("icon_saturation", "Editor") ? theme->get_color("icon_saturation", "Editor").r : 1.0;
 
-	theme->set_color("icon_saturation", "Editor", Color(icon_saturation, icon_saturation, icon_saturation)); //can't save single float in theme, so using color
+	theme->set_color("icon_saturation", "Editor", Color(icon_saturation, icon_saturation, icon_saturation)); // can't save single float in theme, so using color
 	theme->set_color("accent_color", "Editor", accent_color);
 	theme->set_color("highlight_color", "Editor", highlight_color);
 	theme->set_color("disabled_highlight_color", "Editor", disabled_highlight_color);
@@ -549,7 +549,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 
 	Ref<StyleBoxEmpty> style_empty = make_empty_stylebox(default_margin_size, default_margin_size, default_margin_size, default_margin_size);
 
-	// Tabs
+	// TabBar
 
 	Ref<StyleBoxFlat> style_tab_selected = style_widget->duplicate();
 
@@ -950,33 +950,33 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_constant("icon_margin", "ItemList", 6 * EDSCALE);
 	theme->set_constant("line_separation", "ItemList", 3 * EDSCALE);
 
-	// Tabs & TabContainer
+	// TabBar & TabContainer
 	theme->set_stylebox("tab_selected", "TabContainer", style_tab_selected);
 	theme->set_stylebox("tab_unselected", "TabContainer", style_tab_unselected);
 	theme->set_stylebox("tab_disabled", "TabContainer", style_tab_disabled);
-	theme->set_stylebox("tab_selected", "Tabs", style_tab_selected);
-	theme->set_stylebox("tab_unselected", "Tabs", style_tab_unselected);
-	theme->set_stylebox("tab_disabled", "Tabs", style_tab_disabled);
+	theme->set_stylebox("tab_selected", "TabBar", style_tab_selected);
+	theme->set_stylebox("tab_unselected", "TabBar", style_tab_unselected);
+	theme->set_stylebox("tab_disabled", "TabBar", style_tab_disabled);
 	theme->set_color("font_selected_color", "TabContainer", font_color);
 	theme->set_color("font_unselected_color", "TabContainer", font_disabled_color);
-	theme->set_color("font_selected_color", "Tabs", font_color);
-	theme->set_color("font_unselected_color", "Tabs", font_disabled_color);
+	theme->set_color("font_selected_color", "TabBar", font_color);
+	theme->set_color("font_unselected_color", "TabBar", font_disabled_color);
 	theme->set_icon("menu", "TabContainer", theme->get_icon("GuiTabMenu", "EditorIcons"));
 	theme->set_icon("menu_highlight", "TabContainer", theme->get_icon("GuiTabMenuHl", "EditorIcons"));
 	theme->set_stylebox("SceneTabFG", "EditorStyles", style_tab_selected);
 	theme->set_stylebox("SceneTabBG", "EditorStyles", style_tab_unselected);
-	theme->set_icon("close", "Tabs", theme->get_icon("GuiClose", "EditorIcons"));
-	theme->set_stylebox("close_bg_pressed", "Tabs", style_menu);
-	theme->set_stylebox("close_bg_highlight", "Tabs", style_menu);
+	theme->set_icon("close", "TabBar", theme->get_icon("GuiClose", "EditorIcons"));
+	theme->set_stylebox("close_bg_pressed", "TabBar", style_menu);
+	theme->set_stylebox("close_bg_highlight", "TabBar", style_menu);
 	theme->set_icon("increment", "TabContainer", theme->get_icon("GuiScrollArrowRight", "EditorIcons"));
 	theme->set_icon("decrement", "TabContainer", theme->get_icon("GuiScrollArrowLeft", "EditorIcons"));
-	theme->set_icon("increment", "Tabs", theme->get_icon("GuiScrollArrowRight", "EditorIcons"));
-	theme->set_icon("decrement", "Tabs", theme->get_icon("GuiScrollArrowLeft", "EditorIcons"));
-	theme->set_icon("increment_highlight", "Tabs", theme->get_icon("GuiScrollArrowRightHl", "EditorIcons"));
-	theme->set_icon("decrement_highlight", "Tabs", theme->get_icon("GuiScrollArrowLeftHl", "EditorIcons"));
+	theme->set_icon("increment", "TabBar", theme->get_icon("GuiScrollArrowRight", "EditorIcons"));
+	theme->set_icon("decrement", "TabBar", theme->get_icon("GuiScrollArrowLeft", "EditorIcons"));
+	theme->set_icon("increment_highlight", "TabBar", theme->get_icon("GuiScrollArrowRightHl", "EditorIcons"));
+	theme->set_icon("decrement_highlight", "TabBar", theme->get_icon("GuiScrollArrowLeftHl", "EditorIcons"));
 	theme->set_icon("increment_highlight", "TabContainer", theme->get_icon("GuiScrollArrowRightHl", "EditorIcons"));
 	theme->set_icon("decrement_highlight", "TabContainer", theme->get_icon("GuiScrollArrowLeftHl", "EditorIcons"));
-	theme->set_constant("hseparation", "Tabs", 4 * EDSCALE);
+	theme->set_constant("hseparation", "TabBar", 4 * EDSCALE);
 
 	// Content of each tab
 	Ref<StyleBoxFlat> style_content_panel = style_default->duplicate();

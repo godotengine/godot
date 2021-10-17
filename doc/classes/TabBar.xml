@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Tabs" inherits="Control" version="4.0">
+<class name="TabBar" inherits="Control" version="4.0">
 	<brief_description>
-		Tabs control.
+		Tab bar control.
 	</brief_description>
 	<description>
 		Simple tabs control, similar to [TabContainer] but is only in charge of drawing tabs, not interacting with children.
@@ -114,7 +114,7 @@
 		<method name="get_tabs_rearrange_group" qualifiers="const">
 			<return type="int" />
 			<description>
-				Returns the [Tabs]' rearrange group ID.
+				Returns the [TabBar]'s rearrange group ID.
 			</description>
 		</method>
 		<method name="move_tab">
@@ -192,7 +192,7 @@
 			<return type="void" />
 			<argument index="0" name="group_id" type="int" />
 			<description>
-				Defines the rearrange group ID. Choose for each [Tabs] the same value to dragging tabs between [Tabs]. Enable drag with [member drag_to_rearrange_enabled].
+				Defines the rearrange group ID. Choose for each [TabBar] the same value to dragging tabs between [TabBar]. Enable drag with [member drag_to_rearrange_enabled].
 			</description>
 		</method>
 	</methods>
@@ -209,10 +209,10 @@
 		<member name="scrolling_enabled" type="bool" setter="set_scrolling_enabled" getter="get_scrolling_enabled" default="true">
 			if [code]true[/code], the mouse's scroll wheel can be used to navigate the scroll view.
 		</member>
-		<member name="tab_align" type="int" setter="set_tab_align" getter="get_tab_align" enum="Tabs.TabAlign" default="1">
+		<member name="tab_align" type="int" setter="set_tab_align" getter="get_tab_align" enum="TabBar.TabAlign" default="1">
 			The alignment of all tabs. See [enum TabAlign] for details.
 		</member>
-		<member name="tab_close_display_policy" type="int" setter="set_tab_close_display_policy" getter="get_tab_close_display_policy" enum="Tabs.CloseButtonDisplayPolicy" default="0">
+		<member name="tab_close_display_policy" type="int" setter="set_tab_close_display_policy" getter="get_tab_close_display_policy" enum="TabBar.CloseButtonDisplayPolicy" default="0">
 			Sets when the close button will appear on the tabs. See [enum CloseButtonDisplayPolicy] for details.
 		</member>
 	</members>

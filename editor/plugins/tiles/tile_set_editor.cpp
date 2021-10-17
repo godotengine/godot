@@ -642,8 +642,8 @@ TileSetEditor::TileSetEditor() {
 
 	set_process_internal(true);
 
-	// Tabs.
-	tabs_bar = memnew(Tabs);
+	// TabBar.
+	tabs_bar = memnew(TabBar);
 	tabs_bar->set_clip_tabs(false);
 	tabs_bar->add_tab(TTR("Tiles"));
 	tabs_bar->add_tab(TTR("Patterns"));

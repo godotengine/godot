@@ -4049,8 +4049,8 @@ TileMapEditor::TileMapEditor() {
 	tile_map_editor_plugins.push_back(memnew(TileMapEditorTilesPlugin));
 	tile_map_editor_plugins.push_back(memnew(TileMapEditorTerrainsPlugin));
 
-	// Tabs.
-	tabs_bar = memnew(Tabs);
+	// TabBar.
+	tabs_bar = memnew(TabBar);
 	tabs_bar->set_clip_tabs(false);
 	for (int plugin_index = 0; plugin_index < tile_map_editor_plugins.size(); plugin_index++) {
 		Vector<TileMapEditorPlugin::TabData> tabs_vector = tile_map_editor_plugins[plugin_index]->get_tabs();

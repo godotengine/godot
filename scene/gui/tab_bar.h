@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  tabs.h                                                               */
+/*  tab_bar.h                                                            */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,14 +28,14 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef TABS_H
-#define TABS_H
+#ifndef TAB_BAR_H
+#define TAB_BAR_H
 
 #include "scene/gui/control.h"
 #include "scene/resources/text_line.h"
 
-class Tabs : public Control {
-	GDCLASS(Tabs, Control);
+class TabBar : public Control {
+	GDCLASS(TabBar, Control);
 
 public:
 	enum TabAlign {
@@ -187,10 +187,10 @@ public:
 	Rect2 get_tab_rect(int p_tab) const;
 	Size2 get_minimum_size() const override;
 
-	Tabs();
+	TabBar();
 };
 
-VARIANT_ENUM_CAST(Tabs::TabAlign);
-VARIANT_ENUM_CAST(Tabs::CloseButtonDisplayPolicy);
+VARIANT_ENUM_CAST(TabBar::TabAlign);
+VARIANT_ENUM_CAST(TabBar::CloseButtonDisplayPolicy);
 
-#endif // TABS_H
+#endif // TAB_BAR_H

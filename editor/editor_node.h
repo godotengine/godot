@@ -85,7 +85,7 @@ class ProjectSettingsEditor;
 class RunSettingsDialog;
 class ScriptCreateDialog;
 class TabContainer;
-class Tabs;
+class TabBar;
 class TextureProgressBar;
 class Button;
 class VSplitContainer;
@@ -216,7 +216,7 @@ private:
 		TOOL_MENU_BASE = 1000
 	};
 
-	SubViewport *scene_root; //root of the scene being edited
+	SubViewport *scene_root; // root of the scene being edited
 
 	PanelContainer *scene_root_parent;
 	Control *theme_base;
@@ -250,7 +250,7 @@ private:
 
 	// Main tabs
 
-	Tabs *scene_tabs;
+	TabBar *scene_tabs;
 	PopupMenu *scene_tabs_context_menu;
 	Panel *tab_preview_panel;
 	TextureRect *tab_preview;
@@ -324,7 +324,7 @@ private:
 
 	EditorSettingsDialog *settings_config_dialog;
 	ProjectSettingsEditor *project_settings;
-	bool settings_changed = true; //make it update settings on first frame
+	bool settings_changed = true; // make it update settings on first frame
 	void _update_from_settings();
 
 	PopupMenu *vcs_actions_menu;
@@ -775,7 +775,7 @@ public:
 
 	Node *get_edited_scene() { return editor_data.get_edited_scene_root(); }
 
-	SubViewport *get_scene_root() { return scene_root; } //root of the scene being edited
+	SubViewport *get_scene_root() { return scene_root; } // root of the scene being edited
 
 	void fix_dependencies(const String &p_for_file);
 	void clear_scene() { _cleanup_scene(); }

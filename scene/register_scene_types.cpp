@@ -115,8 +115,8 @@
 #include "scene/gui/spin_box.h"
 #include "scene/gui/split_container.h"
 #include "scene/gui/subviewport_container.h"
+#include "scene/gui/tab_bar.h"
 #include "scene/gui/tab_container.h"
-#include "scene/gui/tabs.h"
 #include "scene/gui/text_edit.h"
 #include "scene/gui/texture_button.h"
 #include "scene/gui/texture_progress_bar.h"
@@ -262,7 +262,7 @@ static Ref<ResourceFormatLoaderShader> resource_loader_shader;
 void register_scene_types() {
 	SceneStringNames::create();
 
-	OS::get_singleton()->yield(); //may take time to init
+	OS::get_singleton()->yield(); // may take time to init
 
 	Node::init_node_hrcr();
 
@@ -287,7 +287,7 @@ void register_scene_types() {
 	resource_loader_shader.instantiate();
 	ResourceLoader::add_resource_format_loader(resource_loader_shader, true);
 
-	OS::get_singleton()->yield(); //may take time to init
+	OS::get_singleton()->yield(); // may take time to init
 
 	GDREGISTER_CLASS(Object);
 
@@ -309,7 +309,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(ButtonGroup);
 	GDREGISTER_VIRTUAL_CLASS(BaseButton);
 
-	OS::get_singleton()->yield(); //may take time to init
+	OS::get_singleton()->yield(); // may take time to init
 
 	GDREGISTER_CLASS(Control);
 	GDREGISTER_CLASS(Button);
@@ -330,7 +330,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(Panel);
 	GDREGISTER_VIRTUAL_CLASS(Range);
 
-	OS::get_singleton()->yield(); //may take time to init
+	OS::get_singleton()->yield(); // may take time to init
 
 	GDREGISTER_CLASS(TextureRect);
 	GDREGISTER_CLASS(ColorRect);
@@ -338,7 +338,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(ReferenceRect);
 	GDREGISTER_CLASS(AspectRatioContainer);
 	GDREGISTER_CLASS(TabContainer);
-	GDREGISTER_CLASS(Tabs);
+	GDREGISTER_CLASS(TabBar);
 	GDREGISTER_VIRTUAL_CLASS(Separator);
 	GDREGISTER_CLASS(HSeparator);
 	GDREGISTER_CLASS(VSeparator);
@@ -352,7 +352,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(ScrollContainer);
 	GDREGISTER_CLASS(PanelContainer);
 
-	OS::get_singleton()->yield(); //may take time to init
+	OS::get_singleton()->yield(); // may take time to init
 
 	GDREGISTER_CLASS(TextureProgressBar);
 	GDREGISTER_CLASS(ItemList);
@@ -391,7 +391,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(GraphNode);
 	GDREGISTER_CLASS(GraphEdit);
 
-	OS::get_singleton()->yield(); //may take time to init
+	OS::get_singleton()->yield(); // may take time to init
 
 	bool swap_cancel_ok = false;
 	if (DisplayServer::get_singleton()) {
@@ -431,9 +431,9 @@ void register_scene_types() {
 	GDREGISTER_CLASS(AnimationNodeTimeSeek);
 	GDREGISTER_CLASS(AnimationNodeTransition);
 
-	GDREGISTER_CLASS(ShaderGlobalsOverride); //can be used in any shader
+	GDREGISTER_CLASS(ShaderGlobalsOverride); // can be used in any shader
 
-	OS::get_singleton()->yield(); //may take time to init
+	OS::get_singleton()->yield(); // may take time to init
 
 	/* REGISTER 3D */
 
@@ -486,9 +486,9 @@ void register_scene_types() {
 	GDREGISTER_CLASS(Position3D);
 
 	GDREGISTER_CLASS(RootMotionView);
-	ClassDB::set_class_enabled("RootMotionView", false); //disabled by default, enabled by editor
+	ClassDB::set_class_enabled("RootMotionView", false); // disabled by default, enabled by editor
 
-	OS::get_singleton()->yield(); //may take time to init
+	OS::get_singleton()->yield(); // may take time to init
 
 	GDREGISTER_VIRTUAL_CLASS(CollisionObject3D);
 	GDREGISTER_VIRTUAL_CLASS(PhysicsBody3D);
@@ -533,7 +533,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(NavigationAgent3D);
 	GDREGISTER_CLASS(NavigationObstacle3D);
 
-	OS::get_singleton()->yield(); //may take time to init
+	OS::get_singleton()->yield(); // may take time to init
 #endif
 
 	/* REGISTER SHADER */
@@ -673,7 +673,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(OccluderPolygon2D);
 	GDREGISTER_CLASS(BackBufferCopy);
 
-	OS::get_singleton()->yield(); //may take time to init
+	OS::get_singleton()->yield(); // may take time to init
 
 	GDREGISTER_CLASS(Camera2D);
 	GDREGISTER_CLASS(AudioListener2D);
@@ -705,7 +705,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(PhysicalBone2D);
 	GDREGISTER_CLASS(SkeletonModification2DPhysicalBones);
 
-	OS::get_singleton()->yield(); //may take time to init
+	OS::get_singleton()->yield(); // may take time to init
 
 	/* REGISTER RESOURCES */
 
@@ -746,7 +746,7 @@ void register_scene_types() {
 
 	GDREGISTER_CLASS(MeshLibrary);
 
-	OS::get_singleton()->yield(); //may take time to init
+	OS::get_singleton()->yield(); // may take time to init
 
 	GDREGISTER_VIRTUAL_CLASS(Shape3D);
 	GDREGISTER_CLASS(SeparationRayShape3D);
@@ -768,7 +768,7 @@ void register_scene_types() {
 	ClassDB::register_class<SkeletonModification3DTwoBoneIK>();
 	ClassDB::register_class<SkeletonModification3DStackHolder>();
 
-	OS::get_singleton()->yield(); //may take time to init
+	OS::get_singleton()->yield(); // may take time to init
 
 	GDREGISTER_CLASS(VelocityTracker3D);
 #endif
@@ -823,7 +823,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(BitMap);
 	GDREGISTER_CLASS(Gradient);
 
-	OS::get_singleton()->yield(); //may take time to init
+	OS::get_singleton()->yield(); // may take time to init
 
 	GDREGISTER_CLASS(AudioStreamPlayer);
 	GDREGISTER_CLASS(AudioStreamPlayer2D);
@@ -833,7 +833,7 @@ void register_scene_types() {
 	GDREGISTER_VIRTUAL_CLASS(VideoStream);
 	GDREGISTER_CLASS(AudioStreamSample);
 
-	OS::get_singleton()->yield(); //may take time to init
+	OS::get_singleton()->yield(); // may take time to init
 
 	GDREGISTER_VIRTUAL_CLASS(Shape2D);
 	GDREGISTER_CLASS(WorldBoundaryShape2D);
@@ -854,13 +854,13 @@ void register_scene_types() {
 	GDREGISTER_CLASS(NavigationAgent2D);
 	GDREGISTER_CLASS(NavigationObstacle2D);
 
-	OS::get_singleton()->yield(); //may take time to init
+	OS::get_singleton()->yield(); // may take time to init
 
 	GDREGISTER_VIRTUAL_CLASS(SceneState);
 	GDREGISTER_CLASS(PackedScene);
 
 	GDREGISTER_CLASS(SceneTree);
-	GDREGISTER_VIRTUAL_CLASS(SceneTreeTimer); //sorry, you can't create it
+	GDREGISTER_VIRTUAL_CLASS(SceneTreeTimer); // sorry, you can't create it
 
 #ifndef DISABLE_DEPRECATED
 	// Dropped in 4.0, near approximation.
@@ -1008,7 +1008,7 @@ void register_scene_types() {
 
 #endif /* DISABLE_DEPRECATED */
 
-	OS::get_singleton()->yield(); //may take time to init
+	OS::get_singleton()->yield(); // may take time to init
 
 	for (int i = 0; i < 20; i++) {
 		GLOBAL_DEF_BASIC(vformat("layer_names/2d_render/layer_%d", i + 1), "");
@@ -1086,7 +1086,7 @@ void unregister_scene_types() {
 	ResourceLoader::remove_resource_format_loader(resource_loader_shader);
 	resource_loader_shader.unref();
 
-	//StandardMaterial3D is not initialised when 3D is disabled, so it shouldn't be cleaned up either
+	// StandardMaterial3D is not initialised when 3D is disabled, so it shouldn't be cleaned up either
 #ifndef _3D_DISABLED
 	BaseMaterial3D::finish_shaders();
 #endif // _3D_DISABLED

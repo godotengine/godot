@@ -3204,7 +3204,7 @@ void ThemeEditor::_add_preview_tab(ThemeEditorPreview *p_preview_tab, const Stri
 
 	preview_tabs->add_tab(p_preview_name, p_icon);
 	preview_tabs_content->add_child(p_preview_tab);
-	preview_tabs->set_tab_right_button(preview_tabs->get_tab_count() - 1, EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("close"), SNAME("Tabs")));
+	preview_tabs->set_tab_right_button(preview_tabs->get_tab_count() - 1, EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("close"), SNAME("TabBar")));
 	p_preview_tab->connect("control_picked", callable_mp(this, &ThemeEditor::_preview_control_picked));
 
 	preview_tabs->set_current_tab(preview_tabs->get_tab_count() - 1);
@@ -3328,8 +3328,8 @@ ThemeEditor::ThemeEditor() {
 	preview_tabs_content->set_draw_behind_parent(true);
 	preview_tabs_vb->add_child(preview_tabs_content);
 
-	preview_tabs = memnew(Tabs);
-	preview_tabs->set_tab_align(Tabs::ALIGN_LEFT);
+	preview_tabs = memnew(TabBar);
+	preview_tabs->set_tab_align(TabBar::ALIGN_LEFT);
 	preview_tabs->set_h_size_flags(SIZE_EXPAND_FILL);
 	preview_tabbar_hb->add_child(preview_tabs);
 	preview_tabs->connect("tab_changed", callable_mp(this, &ThemeEditor::_change_preview_tab));
