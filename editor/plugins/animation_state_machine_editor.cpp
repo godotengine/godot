@@ -684,8 +684,8 @@ void AnimationNodeStateMachineEditor::_state_machine_draw() {
 		Ref<AnimationNodeStateMachineTransition> tr = state_machine->get_transition(i);
 		tl.disabled = tr->is_disabled();
 		tl.auto_advance = tr->has_auto_advance();
-		//tl.advance_condition_name = tr->get_advance_condition_name();
-		tl.advance_condition_state = false;
+		tl.advance_parameter_names = tr->get_advance_parameters().duplicate();
+		tl.advance_condition = tr->get_advance_condition();
 		tl.mode = tr->get_switch_mode();
 		tl.width = tr_bidi_offset;
 
@@ -725,12 +725,24 @@ void AnimationNodeStateMachineEditor::_state_machine_draw() {
 			}
 		}
 
+		PackedStringArray advance_parameters = tl.advance_parameter_names;
+		if (advance_parameters.size() > 0) {
+			AnimationTree *tree = AnimationTree::get_current_tree();
+			Array parameter_values;
+			for (int j = 0; j < advance_parameters.size(); j++) {
+				if (!advance_parameters[j].is_empty()) {
+					parameter_values.push_back(tree->get("parameters/custom/" + advance_parameters[j]));
+				}
+			}
+
+			tl.advance_condition_state = tr->evaluate_advance_expression(parameter_values);
+		}
+
 		bool auto_advance = tl.auto_advance;
-		/*StringName fullpath = AnimationTreeEditor::get_singleton()->get_base_path() + String(tl.advance_condition_name);
-		if (tl.advance_condition_name != StringName() && bool(AnimationTreeEditor::get_singleton()->get_tree()->get(fullpath))) {
-			tl.advance_condition_state = true;
+		if (tl.advance_condition_state) {
 			auto_advance = true;
-		}*/
+		}
+
 		_connection_draw(tl.from, tl.to, tl.mode, !tl.disabled, selected, travel, auto_advance);
 
 		transition_lines.push_back(tl);
@@ -947,34 +959,44 @@ void AnimationNodeStateMachineEditor::_notification(int p_what) {
 				break;
 			}
 
-			if (transition_lines[i].disabled != state_machine->get_transition(tidx)->is_disabled()) {
+			Ref<AnimationNodeStateMachineTransition> transition = state_machine->get_transition(tidx);
+
+			if (transition_lines[i].disabled != transition->is_disabled()) {
 				state_machine_draw->update();
 				break;
 			}
 
-			if (transition_lines[i].auto_advance != state_machine->get_transition(tidx)->has_auto_advance()) {
+			if (transition_lines[i].auto_advance != transition->has_auto_advance()) {
 				state_machine_draw->update();
 				break;
 			}
 
-			/*
-			if (transition_lines[i].advance_condition_name != state_machine->get_transition(tidx)->get_advance_condition_name()) {
-				state_machine_draw->update();
-				break;
-			}
-			*/
-
-			if (transition_lines[i].mode != state_machine->get_transition(tidx)->get_switch_mode()) {
+			if (transition_lines[i].advance_parameter_names != transition->get_advance_parameters() ||
+					transition_lines[i].advance_condition != transition->get_advance_condition() ||
+					transition_lines[i].mode != transition->get_switch_mode()) {
 				state_machine_draw->update();
 				break;
 			}
 
-			//bool acstate = transition_lines[i].advance_condition_name != StringName() && bool(AnimationTreeEditor::get_singleton()->get_tree()->get(AnimationTreeEditor::get_singleton()->get_base_path() + String(transition_lines[i].advance_condition_name)));
+			bool acstate = false;
 
-			/*if (transition_lines[i].advance_condition_state != acstate) {
+			PackedStringArray advance_parameters = transition_lines[i].advance_parameter_names;
+			if (advance_parameters.size() > 0) {
+				AnimationTree *tree = AnimationTree::get_current_tree();
+				Array parameter_values;
+				for (int j = 0; j < advance_parameters.size(); j++) {
+					if (!advance_parameters[j].is_empty()) {
+						parameter_values.push_back(tree->get("parameters/custom/" + advance_parameters[j]));
+					}
+				}
+
+				acstate = transition->evaluate_advance_expression(parameter_values);
+			}
+
+			if (transition_lines[i].advance_condition_state != acstate) {
 				state_machine_draw->update();
 				break;
-			}*/
+			}
 		}
 
 		bool same_travel_path = true;

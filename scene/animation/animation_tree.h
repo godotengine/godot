@@ -32,6 +32,7 @@
 #define ANIMATION_GRAPH_PLAYER_H
 
 #include "animation_player.h"
+#include "core/math/expression.h"
 #include "scene/3d/node_3d.h"
 #include "scene/3d/skeleton_3d.h"
 #include "scene/resources/animation.h"

@@ -33,55 +33,6 @@
 
 #include "scene/animation/animation_tree.h"
 
-class AnimationNodeStateMachineTransitionCondition : public Resource {
-	GDCLASS(AnimationNodeStateMachineTransitionCondition, Resource);
-
-private:
-	StringName advance_condition;
-
-protected:
-	bool _set(const StringName &p_name, const Variant &p_value);
-	bool _get(const StringName &p_name, Variant &r_ret) const;
-	void _get_property_list(List<PropertyInfo> *p_list) const;
-
-	static void _bind_methods();
-
-public:
-	enum ComparisonOperator {
-		OPERATOR_EQUALS,
-		OPERATOR_NOT,
-		OPERATOR_GREATER_THAN,
-		OPERATOR_LESS_THAN,
-		OPERATOR_EQUAL_OR_GREATER_THAN,
-		OPERATOR_EQUAL_OR_LESS_THAN,
-		OPERATORS_MAX
-	};
-
-	AnimationNode::ParameterType parameter_type = AnimationNode::PARAMETER_TYPE_BOOL;
-	ComparisonOperator comparison_operator = OPERATOR_EQUALS;
-	Variant comparison_value = true;
-
-	void set_advance_condition(const StringName &p_condition);
-	StringName get_advance_condition() const;
-
-	void set_advance_comparison_operator(ComparisonOperator p_operator);
-	ComparisonOperator get_advance_comparison_operator() const;
-
-	void set_advance_parameter_type(const AnimationNode::ParameterType p_type);
-	AnimationNode::ParameterType get_advance_parameter_type() const;
-
-	void set_advance_comparison_value(const Variant &p_value);
-	Variant get_advance_comparison_value() const;
-
-	static String get_operator_name(const ComparisonOperator &p_op);
-
-	bool test_parameter(const Variant &p_parameter);
-
-	AnimationNodeStateMachineTransitionCondition();
-};
-
-VARIANT_ENUM_CAST(AnimationNodeStateMachineTransitionCondition::ComparisonOperator);
-
 class AnimationNodeStateMachineTransition : public Resource {
 	GDCLASS(AnimationNodeStateMachineTransition, Resource);
 
@@ -93,9 +44,15 @@ public:
 	};
 
 private:
+	Expression _advance_condition_expression;
+
+	bool advance_condition_requires_compilation;
+	Error advance_condition_compiliation_result;
+
 	SwitchMode switch_mode = SWITCH_MODE_IMMEDIATE;
 	bool auto_advance = false;
-	Array advance_conditions;
+	PackedStringArray advance_parameters;
+	String advance_condition;
 	float xfade = 0.0;
 	bool disabled = false;
 	int priority = 1;
@@ -104,14 +61,19 @@ protected:
 	static void _bind_methods();
 
 public:
+	Error compile_advance_condition_if_required();
+
 	void set_switch_mode(SwitchMode p_mode);
 	SwitchMode get_switch_mode() const;
 
 	void set_auto_advance(bool p_enable);
 	bool has_auto_advance() const;
 
-	Array get_advance_conditions() const;
-	void set_advance_conditions(const Array &p_advance_conditions);
+	void set_advance_parameters(const PackedStringArray &p_parameters);
+	PackedStringArray get_advance_parameters() const;
+
+	void set_advance_condition(const String &p_text);
+	String get_advance_condition() const;
 
 	void set_xfade_time(float p_xfade);
 	float get_xfade_time() const;
@@ -121,6 +83,8 @@ public:
 
 	void set_priority(int p_priority);
 	int get_priority() const;
+
+	bool evaluate_advance_expression(const Array &p_parameter_values);
 
 	AnimationNodeStateMachineTransition();
 };

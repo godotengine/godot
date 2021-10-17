@@ -420,7 +420,6 @@ void register_scene_types() {
 	GDREGISTER_CLASS(AnimationNodeStateMachinePlayback);
 
 	GDREGISTER_CLASS(AnimationNodeStateMachineTransition);
-	GDREGISTER_CLASS(AnimationNodeStateMachineTransitionCondition);
 	GDREGISTER_CLASS(AnimationNodeOutput);
 	GDREGISTER_CLASS(AnimationNodeOneShot);
 	GDREGISTER_CLASS(AnimationNodeAnimation);
