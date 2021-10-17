@@ -7,7 +7,6 @@ env_text_server_adv = env_modules.Clone()
 
 
 def make_icu_data(target, source, env):
-    import os
 
     dst = target[0].srcnode().abspath
 
@@ -24,7 +23,6 @@ def make_icu_data(target, source, env):
 
     f = open(source[0].srcnode().abspath, "rb")
     buf = f.read()
-    import os.path
 
     g.write('extern "C" U_EXPORT const size_t U_ICUDATA_SIZE = ' + str(len(buf)) + ";\n")
     g.write('extern "C" U_EXPORT const unsigned char U_ICUDATA_ENTRY_POINT[] = {\n')
