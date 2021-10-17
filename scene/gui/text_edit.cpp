@@ -3623,6 +3623,8 @@ int TextEdit::get_caret_wrap_index() const {
 }
 
 String TextEdit::get_word_under_caret() const {
+	ERR_FAIL_INDEX_V(caret.line, text.size(), "");
+	ERR_FAIL_INDEX_V(caret.column, text[caret.line].length() + 1, "");
 	PackedInt32Array words = TS->shaped_text_get_word_breaks(text.get_line_data(caret.line)->get_rid());
 	for (int i = 0; i < words.size(); i = i + 2) {
 		if (words[i] <= caret.column && words[i + 1] > caret.column) {
