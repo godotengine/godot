@@ -351,11 +351,11 @@ String VisualShaderNodeParticleMeshEmitter::generate_code(Shader::Mode p_mode, V
 Vector<VisualShader::DefaultTextureParam> VisualShaderNodeParticleMeshEmitter::get_default_texture_parameters(VisualShader::Type p_type, int p_id) const {
 	VisualShader::DefaultTextureParam dtp_vx;
 	dtp_vx.name = make_unique_id(p_type, p_id, "mesh_vx");
-	dtp_vx.param = position_texture;
+	dtp_vx.params[0] = position_texture;
 
 	VisualShader::DefaultTextureParam dtp_nm;
 	dtp_nm.name = make_unique_id(p_type, p_id, "mesh_nm");
-	dtp_nm.param = normal_texture;
+	dtp_nm.params[0] = normal_texture;
 
 	Vector<VisualShader::DefaultTextureParam> ret;
 	ret.push_back(dtp_vx);

@@ -2661,8 +2661,10 @@
 			<return type="RID" />
 			<argument index="0" name="shader" type="RID" />
 			<argument index="1" name="param" type="StringName" />
+			<argument index="2" name="index" type="int" default="0" />
 			<description>
 				Returns a default texture from a shader searched by name.
+				[b]Note:[/b] If the sampler array is used use [code]index[/code] to access the specified texture.
 			</description>
 		</method>
 		<method name="shader_get_param_default" qualifiers="const">
@@ -2684,8 +2686,10 @@
 			<argument index="0" name="shader" type="RID" />
 			<argument index="1" name="param" type="StringName" />
 			<argument index="2" name="texture" type="RID" />
+			<argument index="3" name="index" type="int" default="0" />
 			<description>
 				Sets a shader's default texture. Overwrites the texture given by name.
+				[b]Note:[/b] If the sampler array is used use [code]index[/code] to access the specified texture.
 			</description>
 		</method>
 		<method name="shadows_quality_set">

@@ -1962,7 +1962,9 @@ void VisualShader::_update_shader() const {
 
 	const_cast<VisualShader *>(this)->set_code(final_code);
 	for (int i = 0; i < default_tex_params.size(); i++) {
-		const_cast<VisualShader *>(this)->set_default_texture_param(default_tex_params[i].name, default_tex_params[i].param);
+		for (int j = 0; j < default_tex_params[i].params.size(); j++) {
+			const_cast<VisualShader *>(this)->set_default_texture_param(default_tex_params[i].name, default_tex_params[i].params[j], j);
+		}
 	}
 	if (previous_code != final_code) {
 		const_cast<VisualShader *>(this)->emit_signal(SNAME("changed"));

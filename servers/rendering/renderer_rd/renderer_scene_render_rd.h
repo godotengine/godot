@@ -879,12 +879,12 @@ private:
 
 		String path;
 		String code;
-		Map<StringName, RID> default_texture_params;
+		Map<StringName, Map<int, RID>> default_texture_params;
 
 		bool uses_time;
 
 		virtual void set_code(const String &p_Code);
-		virtual void set_default_texture_param(const StringName &p_name, RID p_texture);
+		virtual void set_default_texture_param(const StringName &p_name, RID p_texture, int p_index);
 		virtual void get_param_list(List<PropertyInfo> *p_param_list) const;
 		virtual void get_instance_param_list(List<RendererStorage::InstanceShaderParam> *p_param_list) const;
 		virtual bool is_param_texture(const StringName &p_param) const;

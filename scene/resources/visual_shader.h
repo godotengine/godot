@@ -70,7 +70,7 @@ public:
 
 	struct DefaultTextureParam {
 		StringName name;
-		Ref<Texture2D> param;
+		List<Ref<Texture2D>> params;
 	};
 
 private:

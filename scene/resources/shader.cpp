@@ -97,28 +97,36 @@ RID Shader::get_rid() const {
 	return shader;
 }
 
-void Shader::set_default_texture_param(const StringName &p_param, const Ref<Texture2D> &p_texture) {
+void Shader::set_default_texture_param(const StringName &p_param, const Ref<Texture2D> &p_texture, int p_index) {
 	if (p_texture.is_valid()) {
-		default_textures[p_param] = p_texture;
-		RS::get_singleton()->shader_set_default_texture_param(shader, p_param, p_texture->get_rid());
+		if (!default_textures.has(p_param)) {
+			default_textures[p_param] = Map<int, Ref<Texture2D>>();
+		}
+		default_textures[p_param][p_index] = p_texture;
+		RS::get_singleton()->shader_set_default_texture_param(shader, p_param, p_texture->get_rid(), p_index);
 	} else {
-		default_textures.erase(p_param);
-		RS::get_singleton()->shader_set_default_texture_param(shader, p_param, RID());
+		if (default_textures.has(p_param) && default_textures[p_param].has(p_index)) {
+			default_textures[p_param].erase(p_index);
+
+			if (default_textures[p_param].is_empty()) {
+				default_textures.erase(p_param);
+			}
+		}
+		RS::get_singleton()->shader_set_default_texture_param(shader, p_param, RID(), p_index);
 	}
 
 	emit_changed();
 }
 
-Ref<Texture2D> Shader::get_default_texture_param(const StringName &p_param) const {
-	if (default_textures.has(p_param)) {
-		return default_textures[p_param];
-	} else {
-		return Ref<Texture2D>();
+Ref<Texture2D> Shader::get_default_texture_param(const StringName &p_param, int p_index) const {
+	if (default_textures.has(p_param) && default_textures[p_param].has(p_index)) {
+		return default_textures[p_param][p_index];
 	}
+	return Ref<Texture2D>();
 }
 
 void Shader::get_default_texture_param_list(List<StringName> *r_textures) const {
-	for (const KeyValue<StringName, Ref<Texture2D>> &E : default_textures) {
+	for (const KeyValue<StringName, Map<int, Ref<Texture2D>>> &E : default_textures) {
 		r_textures->push_back(E.key);
 	}
 }
@@ -140,8 +148,8 @@ void Shader::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_code", "code"), &Shader::set_code);
 	ClassDB::bind_method(D_METHOD("get_code"), &Shader::get_code);
 
-	ClassDB::bind_method(D_METHOD("set_default_texture_param", "param", "texture"), &Shader::set_default_texture_param);
-	ClassDB::bind_method(D_METHOD("get_default_texture_param", "param"), &Shader::get_default_texture_param);
+	ClassDB::bind_method(D_METHOD("set_default_texture_param", "param", "texture", "index"), &Shader::set_default_texture_param, DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("get_default_texture_param", "param", "index"), &Shader::get_default_texture_param, DEFVAL(0));
 
 	ClassDB::bind_method(D_METHOD("has_param", "name"), &Shader::has_param);
 
