@@ -967,15 +967,17 @@ void GDScriptParser::parse_property_setter(VariableNode *p_variable) {
 			ParameterNode *parameter = alloc_node<ParameterNode>();
 			parameter->identifier = p_variable->setter_parameter;
 
-			function->parameters_indices[parameter->identifier->name] = 0;
-			function->parameters.push_back(parameter);
+			if (parameter->identifier != nullptr) {
+				function->parameters_indices[parameter->identifier->name] = 0;
+				function->parameters.push_back(parameter);
 
-			SuiteNode *body = alloc_node<SuiteNode>();
-			body->add_local(parameter, function);
+				SuiteNode *body = alloc_node<SuiteNode>();
+				body->add_local(parameter, function);
 
-			function->body = parse_suite("setter declaration", body);
+				function->body = parse_suite("setter declaration", body);
+				p_variable->setter = function;
+			}
 
-			p_variable->setter = function;
 			current_function = previous_function;
 			break;
 		}

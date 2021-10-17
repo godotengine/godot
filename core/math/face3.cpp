@@ -229,7 +229,7 @@ bool Face3::intersects_aabb(const AABB &p_aabb) const {
 			axis.normalize();
 
 			real_t minA, maxA, minB, maxB;
-			p_aabb.project_range_in_plane(Plane(axis, 0), minA, maxA);
+			p_aabb.project_range_in_plane(Plane(axis), minA, maxA);
 			project_range(axis, Transform3D(), minB, maxB);
 
 			if (maxA < minB || maxB < minA) {

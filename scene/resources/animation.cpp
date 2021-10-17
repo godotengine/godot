@@ -49,6 +49,8 @@ bool Animation::_set(const StringName &p_name, const Variant &p_value) {
 				add_track(TYPE_ROTATION_3D);
 			} else if (type == "scale_3d") {
 				add_track(TYPE_SCALE_3D);
+			} else if (type == "blend_shape") {
+				add_track(TYPE_BLEND_SHAPE);
 			} else if (type == "value") {
 				add_track(TYPE_VALUE);
 			} else if (type == "method") {
@@ -145,6 +147,25 @@ bool Animation::_set(const StringName &p_name, const Variant &p_value) {
 					sk.value.x = ofs[2];
 					sk.value.y = ofs[3];
 					sk.value.z = ofs[4];
+				}
+			} else if (track_get_type(track) == TYPE_BLEND_SHAPE) {
+				BlendShapeTrack *st = static_cast<BlendShapeTrack *>(tracks[track]);
+				Vector<real_t> values = p_value;
+				int vcount = values.size();
+				ERR_FAIL_COND_V(vcount % BLEND_SHAPE_TRACK_SIZE, false);
+
+				const real_t *r = values.ptr();
+
+				int64_t count = vcount / BLEND_SHAPE_TRACK_SIZE;
+				st->blend_shapes.resize(count);
+
+				TKey<float> *sw = st->blend_shapes.ptrw();
+				for (int i = 0; i < count; i++) {
+					TKey<float> &sk = sw[i];
+					const real_t *ofs = &r[i * BLEND_SHAPE_TRACK_SIZE];
+					sk.time = ofs[0];
+					sk.transition = ofs[1];
+					sk.value = ofs[2];
 				}
 
 			} else if (track_get_type(track) == TYPE_VALUE) {
@@ -369,6 +390,9 @@ bool Animation::_get(const StringName &p_name, Variant &r_ret) const {
 				case TYPE_SCALE_3D:
 					r_ret = "scale_3d";
 					break;
+				case TYPE_BLEND_SHAPE:
+					r_ret = "blend_shape";
+					break;
 				case TYPE_VALUE:
 					r_ret = "value";
 					break;
@@ -460,6 +484,25 @@ bool Animation::_get(const StringName &p_name, Variant &r_ret) const {
 					w[idx++] = scale.x;
 					w[idx++] = scale.y;
 					w[idx++] = scale.z;
+				}
+
+				r_ret = keys;
+				return true;
+			} else if (track_get_type(track) == TYPE_BLEND_SHAPE) {
+				Vector<real_t> keys;
+				int kk = track_get_key_count(track);
+				keys.resize(kk * BLEND_SHAPE_TRACK_SIZE);
+
+				real_t *w = keys.ptrw();
+
+				int idx = 0;
+				for (int i = 0; i < track_get_key_count(track); i++) {
+					float bs;
+					blend_shape_track_get_key(track, i, &bs);
+
+					w[idx++] = track_get_key_time(track, i);
+					w[idx++] = track_get_key_transition(track, i);
+					w[idx++] = bs;
 				}
 
 				r_ret = keys;
@@ -682,6 +725,10 @@ int Animation::add_track(TrackType p_type, int p_at_pos) {
 			ScaleTrack *st = memnew(ScaleTrack);
 			tracks.insert(p_at_pos, st);
 		} break;
+		case TYPE_BLEND_SHAPE: {
+			BlendShapeTrack *bst = memnew(BlendShapeTrack);
+			tracks.insert(p_at_pos, bst);
+		} break;
 		case TYPE_VALUE: {
 			tracks.insert(p_at_pos, memnew(ValueTrack));
 
@@ -729,6 +776,11 @@ void Animation::remove_track(int p_track) {
 		case TYPE_SCALE_3D: {
 			ScaleTrack *st = static_cast<ScaleTrack *>(t);
 			_clear(st->scales);
+
+		} break;
+		case TYPE_BLEND_SHAPE: {
+			BlendShapeTrack *bst = static_cast<BlendShapeTrack *>(t);
+			_clear(bst->blend_shapes);
 
 		} break;
 		case TYPE_VALUE: {
@@ -993,6 +1045,53 @@ Error Animation::scale_track_interpolate(int p_track, double p_time, Vector3 *r_
 	return OK;
 }
 
+int Animation::blend_shape_track_insert_key(int p_track, double p_time, float p_blend_shape) {
+	ERR_FAIL_INDEX_V(p_track, tracks.size(), -1);
+	Track *t = tracks[p_track];
+	ERR_FAIL_COND_V(t->type != TYPE_BLEND_SHAPE, -1);
+
+	BlendShapeTrack *st = static_cast<BlendShapeTrack *>(t);
+
+	TKey<float> tkey;
+	tkey.time = p_time;
+	tkey.value = p_blend_shape;
+
+	int ret = _insert(p_time, st->blend_shapes, tkey);
+	emit_changed();
+	return ret;
+}
+
+Error Animation::blend_shape_track_get_key(int p_track, int p_key, float *r_blend_shape) const {
+	ERR_FAIL_INDEX_V(p_track, tracks.size(), ERR_INVALID_PARAMETER);
+	Track *t = tracks[p_track];
+
+	BlendShapeTrack *st = static_cast<BlendShapeTrack *>(t);
+	ERR_FAIL_COND_V(t->type != TYPE_BLEND_SHAPE, ERR_INVALID_PARAMETER);
+	ERR_FAIL_INDEX_V(p_key, st->blend_shapes.size(), ERR_INVALID_PARAMETER);
+
+	*r_blend_shape = st->blend_shapes[p_key].value;
+
+	return OK;
+}
+
+Error Animation::blend_shape_track_interpolate(int p_track, double p_time, float *r_interpolation) const {
+	ERR_FAIL_INDEX_V(p_track, tracks.size(), ERR_INVALID_PARAMETER);
+	Track *t = tracks[p_track];
+	ERR_FAIL_COND_V(t->type != TYPE_BLEND_SHAPE, ERR_INVALID_PARAMETER);
+
+	BlendShapeTrack *st = static_cast<BlendShapeTrack *>(t);
+
+	bool ok = false;
+
+	float tk = _interpolate(st->blend_shapes, p_time, st->interpolation, st->loop_wrap, &ok);
+
+	if (!ok) {
+		return ERR_UNAVAILABLE;
+	}
+	*r_interpolation = tk;
+	return OK;
+}
+
 void Animation::track_remove_key_at_time(int p_track, double p_time) {
 	int idx = track_find_key(p_track, p_time, true);
 	ERR_FAIL_COND(idx < 0);
@@ -1020,6 +1119,12 @@ void Animation::track_remove_key(int p_track, int p_idx) {
 			ScaleTrack *st = static_cast<ScaleTrack *>(t);
 			ERR_FAIL_INDEX(p_idx, st->scales.size());
 			st->scales.remove(p_idx);
+
+		} break;
+		case TYPE_BLEND_SHAPE: {
+			BlendShapeTrack *bst = static_cast<BlendShapeTrack *>(t);
+			ERR_FAIL_INDEX(p_idx, bst->blend_shapes.size());
+			bst->blend_shapes.remove(p_idx);
 
 		} break;
 		case TYPE_VALUE: {
@@ -1087,12 +1192,24 @@ int Animation::track_find_key(int p_track, double p_time, bool p_exact) const {
 
 		} break;
 		case TYPE_SCALE_3D: {
-			ScaleTrack *rt = static_cast<ScaleTrack *>(t);
-			int k = _find(rt->scales, p_time);
-			if (k < 0 || k >= rt->scales.size()) {
+			ScaleTrack *st = static_cast<ScaleTrack *>(t);
+			int k = _find(st->scales, p_time);
+			if (k < 0 || k >= st->scales.size()) {
 				return -1;
 			}
-			if (rt->scales[k].time != p_time && p_exact) {
+			if (st->scales[k].time != p_time && p_exact) {
+				return -1;
+			}
+			return k;
+
+		} break;
+		case TYPE_BLEND_SHAPE: {
+			BlendShapeTrack *bst = static_cast<BlendShapeTrack *>(t);
+			int k = _find(bst->blend_shapes, p_time);
+			if (k < 0 || k >= bst->blend_shapes.size()) {
+				return -1;
+			}
+			if (bst->blend_shapes[k].time != p_time && p_exact) {
 				return -1;
 			}
 			return k;
@@ -1183,6 +1300,12 @@ void Animation::track_insert_key(int p_track, double p_time, const Variant &p_ke
 		case TYPE_SCALE_3D: {
 			ERR_FAIL_COND((p_key.get_type() != Variant::VECTOR3) && (p_key.get_type() != Variant::VECTOR3I));
 			int idx = scale_track_insert_key(p_track, p_time, p_key);
+			track_set_key_transition(p_track, idx, p_transition);
+
+		} break;
+		case TYPE_BLEND_SHAPE: {
+			ERR_FAIL_COND((p_key.get_type() != Variant::FLOAT) && (p_key.get_type() != Variant::INT));
+			int idx = blend_shape_track_insert_key(p_track, p_time, p_key);
 			track_set_key_transition(p_track, idx, p_transition);
 
 		} break;
@@ -1279,6 +1402,10 @@ int Animation::track_get_key_count(int p_track) const {
 			ScaleTrack *st = static_cast<ScaleTrack *>(t);
 			return st->scales.size();
 		} break;
+		case TYPE_BLEND_SHAPE: {
+			BlendShapeTrack *bst = static_cast<BlendShapeTrack *>(t);
+			return bst->blend_shapes.size();
+		} break;
 		case TYPE_VALUE: {
 			ValueTrack *vt = static_cast<ValueTrack *>(t);
 			return vt->values.size();
@@ -1327,6 +1454,12 @@ Variant Animation::track_get_key_value(int p_track, int p_key_idx) const {
 			ERR_FAIL_INDEX_V(p_key_idx, st->scales.size(), Variant());
 
 			return st->scales[p_key_idx].value;
+		} break;
+		case TYPE_BLEND_SHAPE: {
+			BlendShapeTrack *bst = static_cast<BlendShapeTrack *>(t);
+			ERR_FAIL_INDEX_V(p_key_idx, bst->blend_shapes.size(), Variant());
+
+			return bst->blend_shapes[p_key_idx].value;
 		} break;
 		case TYPE_VALUE: {
 			ValueTrack *vt = static_cast<ValueTrack *>(t);
@@ -1400,6 +1533,11 @@ double Animation::track_get_key_time(int p_track, int p_key_idx) const {
 			ERR_FAIL_INDEX_V(p_key_idx, st->scales.size(), -1);
 			return st->scales[p_key_idx].time;
 		} break;
+		case TYPE_BLEND_SHAPE: {
+			BlendShapeTrack *bst = static_cast<BlendShapeTrack *>(t);
+			ERR_FAIL_INDEX_V(p_key_idx, bst->blend_shapes.size(), -1);
+			return bst->blend_shapes[p_key_idx].time;
+		} break;
 		case TYPE_VALUE: {
 			ValueTrack *vt = static_cast<ValueTrack *>(t);
 			ERR_FAIL_INDEX_V(p_key_idx, vt->values.size(), -1);
@@ -1465,6 +1603,15 @@ void Animation::track_set_key_time(int p_track, int p_key_idx, double p_time) {
 			key.time = p_time;
 			tt->scales.remove(p_key_idx);
 			_insert(p_time, tt->scales, key);
+			return;
+		}
+		case TYPE_BLEND_SHAPE: {
+			BlendShapeTrack *tt = static_cast<BlendShapeTrack *>(t);
+			ERR_FAIL_INDEX(p_key_idx, tt->blend_shapes.size());
+			TKey<float> key = tt->blend_shapes[p_key_idx];
+			key.time = p_time;
+			tt->blend_shapes.remove(p_key_idx);
+			_insert(p_time, tt->blend_shapes, key);
 			return;
 		}
 		case TYPE_VALUE: {
@@ -1537,6 +1684,11 @@ real_t Animation::track_get_key_transition(int p_track, int p_key_idx) const {
 			ERR_FAIL_INDEX_V(p_key_idx, st->scales.size(), -1);
 			return st->scales[p_key_idx].transition;
 		} break;
+		case TYPE_BLEND_SHAPE: {
+			BlendShapeTrack *bst = static_cast<BlendShapeTrack *>(t);
+			ERR_FAIL_INDEX_V(p_key_idx, bst->blend_shapes.size(), -1);
+			return bst->blend_shapes[p_key_idx].transition;
+		} break;
 		case TYPE_VALUE: {
 			ValueTrack *vt = static_cast<ValueTrack *>(t);
 			ERR_FAIL_INDEX_V(p_key_idx, vt->values.size(), -1);
@@ -1590,6 +1742,14 @@ void Animation::track_set_key_value(int p_track, int p_key_idx, const Variant &p
 			ERR_FAIL_INDEX(p_key_idx, st->scales.size());
 
 			st->scales.write[p_key_idx].value = p_value;
+
+		} break;
+		case TYPE_BLEND_SHAPE: {
+			ERR_FAIL_COND((p_value.get_type() != Variant::FLOAT) && (p_value.get_type() != Variant::INT));
+			BlendShapeTrack *bst = static_cast<BlendShapeTrack *>(t);
+			ERR_FAIL_INDEX(p_key_idx, bst->blend_shapes.size());
+
+			bst->blend_shapes.write[p_key_idx].value = p_value;
 
 		} break;
 		case TYPE_VALUE: {
@@ -1672,6 +1832,11 @@ void Animation::track_set_key_transition(int p_track, int p_key_idx, real_t p_tr
 			ScaleTrack *st = static_cast<ScaleTrack *>(t);
 			ERR_FAIL_INDEX(p_key_idx, st->scales.size());
 			st->scales.write[p_key_idx].transition = p_transition;
+		} break;
+		case TYPE_BLEND_SHAPE: {
+			BlendShapeTrack *bst = static_cast<BlendShapeTrack *>(t);
+			ERR_FAIL_INDEX(p_key_idx, bst->blend_shapes.size());
+			bst->blend_shapes.write[p_key_idx].transition = p_transition;
 		} break;
 		case TYPE_VALUE: {
 			ValueTrack *vt = static_cast<ValueTrack *>(t);
@@ -2185,6 +2350,12 @@ void Animation::track_get_key_indices_in_range(int p_track, double p_time, doubl
 					_track_get_key_indices_in_range(st->scales, 0, to_time, p_indices);
 
 				} break;
+				case TYPE_BLEND_SHAPE: {
+					const BlendShapeTrack *bst = static_cast<const BlendShapeTrack *>(t);
+					_track_get_key_indices_in_range(bst->blend_shapes, from_time, length, p_indices);
+					_track_get_key_indices_in_range(bst->blend_shapes, 0, to_time, p_indices);
+
+				} break;
 				case TYPE_VALUE: {
 					const ValueTrack *vt = static_cast<const ValueTrack *>(t);
 					_track_get_key_indices_in_range(vt->values, from_time, length, p_indices);
@@ -2248,6 +2419,11 @@ void Animation::track_get_key_indices_in_range(int p_track, double p_time, doubl
 		case TYPE_SCALE_3D: {
 			const ScaleTrack *st = static_cast<const ScaleTrack *>(t);
 			_track_get_key_indices_in_range(st->scales, from_time, to_time, p_indices);
+
+		} break;
+		case TYPE_BLEND_SHAPE: {
+			const BlendShapeTrack *bst = static_cast<const BlendShapeTrack *>(t);
+			_track_get_key_indices_in_range(bst->blend_shapes, from_time, to_time, p_indices);
 
 		} break;
 		case TYPE_VALUE: {
@@ -2867,6 +3043,7 @@ void Animation::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("position_track_insert_key", "track_idx", "time", "position"), &Animation::position_track_insert_key);
 	ClassDB::bind_method(D_METHOD("rotation_track_insert_key", "track_idx", "time", "rotation"), &Animation::rotation_track_insert_key);
 	ClassDB::bind_method(D_METHOD("scale_track_insert_key", "track_idx", "time", "scale"), &Animation::scale_track_insert_key);
+	ClassDB::bind_method(D_METHOD("blend_shape_track_insert_key", "track_idx", "time", "amount"), &Animation::blend_shape_track_insert_key);
 
 	ClassDB::bind_method(D_METHOD("track_insert_key", "track_idx", "time", "key", "transition"), &Animation::track_insert_key, DEFVAL(1));
 	ClassDB::bind_method(D_METHOD("track_remove_key", "track_idx", "key_idx"), &Animation::track_remove_key);
@@ -2943,6 +3120,7 @@ void Animation::_bind_methods() {
 	BIND_ENUM_CONSTANT(TYPE_POSITION_3D);
 	BIND_ENUM_CONSTANT(TYPE_ROTATION_3D);
 	BIND_ENUM_CONSTANT(TYPE_SCALE_3D);
+	BIND_ENUM_CONSTANT(TYPE_BLEND_SHAPE);
 	BIND_ENUM_CONSTANT(TYPE_METHOD);
 	BIND_ENUM_CONSTANT(TYPE_BEZIER);
 	BIND_ENUM_CONSTANT(TYPE_AUDIO);
@@ -3089,6 +3267,41 @@ bool Animation::_scale_track_optimize_key(const TKey<Vector3> &t0, const TKey<Ve
 	return true;
 }
 
+bool Animation::_blend_shape_track_optimize_key(const TKey<float> &t0, const TKey<float> &t1, const TKey<float> &t2, real_t p_allowed_unit_error) {
+	float v0 = t0.value;
+	float v1 = t1.value;
+	float v2 = t2.value;
+
+	if (Math::is_equal_approx(v1, v2, p_allowed_unit_error)) {
+		//0 and 2 are close, let's see if 1 is close
+		if (!Math::is_equal_approx(v0, v1, p_allowed_unit_error)) {
+			//not close, not optimizable
+			return false;
+		}
+
+	} else {
+		/*
+		TODO eventually discuss a way to optimize these better.
+		float pd = (v2 - v0);
+		real_t d0 = pd.dot(v0);
+		real_t d1 = pd.dot(v1);
+		real_t d2 = pd.dot(v2);
+		if (d1 < d0 || d1 > d2) {
+			return false; //beyond segment range
+		}
+
+		float s[2] = { v0, v2 };
+		real_t d = Geometry3D::get_closest_point_to_segment(v1, s).distance_to(v1);
+
+		if (d > pd.length() * p_allowed_linear_error) {
+			return false; //beyond allowed error for colinearity
+		}
+*/
+	}
+
+	return true;
+}
+
 void Animation::_position_track_optimize(int p_idx, real_t p_allowed_linear_err, real_t p_allowed_angular_err) {
 	ERR_FAIL_INDEX(p_idx, tracks.size());
 	ERR_FAIL_COND(tracks[p_idx]->type != TYPE_POSITION_3D);
@@ -3197,6 +3410,41 @@ void Animation::_scale_track_optimize(int p_idx, real_t p_allowed_linear_err) {
 	}
 }
 
+void Animation::_blend_shape_track_optimize(int p_idx, real_t p_allowed_linear_err) {
+	ERR_FAIL_INDEX(p_idx, tracks.size());
+	ERR_FAIL_COND(tracks[p_idx]->type != TYPE_BLEND_SHAPE);
+	BlendShapeTrack *tt = static_cast<BlendShapeTrack *>(tracks[p_idx]);
+	bool prev_erased = false;
+	TKey<float> first_erased;
+	first_erased.value = 0.0;
+
+	for (int i = 1; i < tt->blend_shapes.size() - 1; i++) {
+		TKey<float> &t0 = tt->blend_shapes.write[i - 1];
+		TKey<float> &t1 = tt->blend_shapes.write[i];
+		TKey<float> &t2 = tt->blend_shapes.write[i + 1];
+
+		bool erase = _blend_shape_track_optimize_key(t0, t1, t2, p_allowed_linear_err);
+
+		if (prev_erased && !_blend_shape_track_optimize_key(t0, first_erased, t2, p_allowed_linear_err)) {
+			//avoid error to go beyond first erased key
+			erase = false;
+		}
+
+		if (erase) {
+			if (!prev_erased) {
+				first_erased = t1;
+				prev_erased = true;
+			}
+
+			tt->blend_shapes.remove(i);
+			i--;
+
+		} else {
+			prev_erased = false;
+		}
+	}
+}
+
 void Animation::optimize(real_t p_allowed_linear_err, real_t p_allowed_angular_err, real_t p_max_optimizable_angle) {
 	for (int i = 0; i < tracks.size(); i++) {
 		if (tracks[i]->type == TYPE_POSITION_3D) {
@@ -3205,6 +3453,8 @@ void Animation::optimize(real_t p_allowed_linear_err, real_t p_allowed_angular_e
 			_rotation_track_optimize(i, p_allowed_angular_err, p_max_optimizable_angle);
 		} else if (tracks[i]->type == TYPE_SCALE_3D) {
 			_scale_track_optimize(i, p_allowed_linear_err);
+		} else if (tracks[i]->type == TYPE_BLEND_SHAPE) {
+			_blend_shape_track_optimize(i, p_allowed_linear_err);
 		}
 	}
 }

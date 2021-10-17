@@ -171,6 +171,45 @@ void Skeleton3D::_get_property_list(List<PropertyInfo> *p_list) const {
 					"SkeletonModificationStack3D",
 					PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_DEFERRED_SET_RESOURCE | PROPERTY_USAGE_DO_NOT_SHARE_ON_DUPLICATE));
 #endif //_3D_DISABLED
+
+	for (PropertyInfo &E : *p_list) {
+		_validate_property(E);
+	}
+}
+
+void Skeleton3D::_validate_property(PropertyInfo &property) const {
+	PackedStringArray spr = property.name.split("/");
+	if (spr.size() == 3 && spr[0] == "bones") {
+		if (spr[2] == "rest") {
+			property.usage |= PROPERTY_USAGE_READ_ONLY;
+		}
+		if (is_show_rest_only()) {
+			if (spr[2] == "enabled") {
+				property.usage |= PROPERTY_USAGE_READ_ONLY;
+			}
+			if (spr[2] == "position") {
+				property.usage |= PROPERTY_USAGE_READ_ONLY;
+			}
+			if (spr[2] == "rotation") {
+				property.usage |= PROPERTY_USAGE_READ_ONLY;
+			}
+			if (spr[2] == "scale") {
+				property.usage |= PROPERTY_USAGE_READ_ONLY;
+			}
+		} else if (!is_bone_enabled(spr[1].to_int())) {
+			if (spr[2] == "position") {
+				property.usage |= PROPERTY_USAGE_READ_ONLY;
+			}
+			if (spr[2] == "rotation") {
+				property.usage |= PROPERTY_USAGE_READ_ONLY;
+			}
+			if (spr[2] == "scale") {
+				property.usage |= PROPERTY_USAGE_READ_ONLY;
+			}
+		}
+	}
+
+	Node3D::_validate_property(property);
 }
 
 void Skeleton3D::_update_process_order() {
@@ -1074,7 +1113,7 @@ Transform3D Skeleton3D::global_pose_to_local_pose(int p_bone_idx, Transform3D p_
 	ERR_FAIL_INDEX_V(p_bone_idx, bone_size, Transform3D());
 	if (bones[p_bone_idx].parent >= 0) {
 		int parent_bone_idx = bones[p_bone_idx].parent;
-		Transform3D conversion_transform = bones[parent_bone_idx].pose_global.affine_inverse();
+		Transform3D conversion_transform = get_bone_global_pose(parent_bone_idx).affine_inverse();
 		return conversion_transform * p_global_pose;
 	} else {
 		return p_global_pose;

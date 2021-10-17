@@ -85,8 +85,8 @@ public:
 			normal(p_a, p_b, p_c),
 			d(p_d) {}
 
-	_FORCE_INLINE_ Plane(const Vector3 &p_normal, real_t p_d);
-	_FORCE_INLINE_ Plane(const Vector3 &p_point, const Vector3 &p_normal);
+	_FORCE_INLINE_ Plane(const Vector3 &p_normal, real_t p_d = 0.0);
+	_FORCE_INLINE_ Plane(const Vector3 &p_normal, const Vector3 &p_point);
 	_FORCE_INLINE_ Plane(const Vector3 &p_point1, const Vector3 &p_point2, const Vector3 &p_point3, ClockDirection p_dir = CLOCKWISE);
 };
 
@@ -109,7 +109,7 @@ Plane::Plane(const Vector3 &p_normal, real_t p_d) :
 		d(p_d) {
 }
 
-Plane::Plane(const Vector3 &p_point, const Vector3 &p_normal) :
+Plane::Plane(const Vector3 &p_normal, const Vector3 &p_point) :
 		normal(p_normal),
 		d(p_normal.dot(p_point)) {
 }

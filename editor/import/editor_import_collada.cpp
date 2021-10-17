@@ -122,7 +122,7 @@ Error ColladaImport::_populate_skeleton(Skeleton3D *p_skeleton, Collada::Node *p
 
 	{
 		Transform3D xform = joint->compute_transform(collada);
-		collada.fix_transform(xform) * joint->post_transform;
+		xform = collada.fix_transform(xform) * joint->post_transform;
 
 		p_skeleton->set_bone_pose_position(r_bone, xform.origin);
 		p_skeleton->set_bone_pose_rotation(r_bone, xform.basis.get_rotation_quaternion());
@@ -1710,7 +1710,7 @@ void ColladaImport::create_animation(int p_clip, bool p_import_value_tracks) {
 			NodeMap &nm = node_map[at.target];
 			String path = scene->get_path_to(nm.node);
 
-			animation->add_track(Animation::TYPE_VALUE);
+			animation->add_track(Animation::TYPE_BLEND_SHAPE);
 			int track = animation->get_track_count() - 1;
 
 			path = path + ":" + at.param;
@@ -1732,7 +1732,7 @@ void ColladaImport::create_animation(int p_clip, bool p_import_value_tracks) {
 					WARN_PRINT("Collada: Unexpected amount of value keys: " + itos(data.size()));
 				}
 
-				animation->track_insert_key(track, time, value);
+				animation->blend_shape_track_insert_key(track, time, value);
 			}
 
 			tracks_found = true;
@@ -1748,15 +1748,15 @@ void ColladaImport::create_animation(int p_clip, bool p_import_value_tracks) {
 /*************************************** SCENE ***********************************/
 /*********************************************************************************/
 
-uint32_t EditorSceneImporterCollada::get_import_flags() const {
+uint32_t EditorSceneFormatImporterCollada::get_import_flags() const {
 	return IMPORT_SCENE | IMPORT_ANIMATION;
 }
 
-void EditorSceneImporterCollada::get_extensions(List<String> *r_extensions) const {
+void EditorSceneFormatImporterCollada::get_extensions(List<String> *r_extensions) const {
 	r_extensions->push_back("dae");
 }
 
-Node *EditorSceneImporterCollada::import_scene(const String &p_path, uint32_t p_flags, int p_bake_fps, List<String> *r_missing_deps, Error *r_err) {
+Node *EditorSceneFormatImporterCollada::import_scene(const String &p_path, uint32_t p_flags, int p_bake_fps, List<String> *r_missing_deps, Error *r_err) {
 	if (r_err) {
 		*r_err = OK;
 	}
@@ -1769,7 +1769,7 @@ Node *EditorSceneImporterCollada::import_scene(const String &p_path, uint32_t p_
 	state.use_mesh_builtin_materials = true;
 	state.bake_fps = p_bake_fps;
 
-	Error err = state.load(p_path, flags, p_flags & EditorSceneImporter::IMPORT_GENERATE_TANGENT_ARRAYS, false);
+	Error err = state.load(p_path, flags, p_flags & EditorSceneFormatImporter::IMPORT_GENERATE_TANGENT_ARRAYS, false);
 
 	if (r_err) {
 		*r_err = err;
@@ -1812,12 +1812,12 @@ Node *EditorSceneImporterCollada::import_scene(const String &p_path, uint32_t p_
 	return state.scene;
 }
 
-Ref<Animation> EditorSceneImporterCollada::import_animation(const String &p_path, uint32_t p_flags, int p_bake_fps) {
+Ref<Animation> EditorSceneFormatImporterCollada::import_animation(const String &p_path, uint32_t p_flags, int p_bake_fps) {
 	ColladaImport state;
 
 	state.use_mesh_builtin_materials = false;
 
-	Error err = state.load(p_path, Collada::IMPORT_FLAG_ANIMATION, p_flags & EditorSceneImporter::IMPORT_GENERATE_TANGENT_ARRAYS);
+	Error err = state.load(p_path, Collada::IMPORT_FLAG_ANIMATION, p_flags & EditorSceneFormatImporter::IMPORT_GENERATE_TANGENT_ARRAYS);
 	ERR_FAIL_COND_V_MSG(err != OK, RES(), "Cannot load animation from file '" + p_path + "'.");
 
 	state.create_animations(true);
@@ -1833,5 +1833,5 @@ Ref<Animation> EditorSceneImporterCollada::import_animation(const String &p_path
 	return anim;
 }
 
-EditorSceneImporterCollada::EditorSceneImporterCollada() {
+EditorSceneFormatImporterCollada::EditorSceneFormatImporterCollada() {
 }

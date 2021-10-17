@@ -198,6 +198,7 @@ public:
 				}
 
 			} break;
+			case Animation::TYPE_BLEND_SHAPE:
 			case Animation::TYPE_VALUE: {
 				if (name == "value") {
 					Variant value = p_value;
@@ -438,6 +439,7 @@ public:
 					return true;
 				}
 			} break;
+			case Animation::TYPE_BLEND_SHAPE:
 			case Animation::TYPE_VALUE: {
 				if (name == "value") {
 					r_ret = animation->track_get_key_value(track, key);
@@ -550,6 +552,9 @@ public:
 			} break;
 			case Animation::TYPE_SCALE_3D: {
 				p_list->push_back(PropertyInfo(Variant::VECTOR3, "scale"));
+			} break;
+			case Animation::TYPE_BLEND_SHAPE: {
+				p_list->push_back(PropertyInfo(Variant::FLOAT, "value"));
 			} break;
 			case Animation::TYPE_VALUE: {
 				Variant v = animation->track_get_key_value(track, key);
@@ -828,6 +833,7 @@ public:
 						undo_redo->add_undo_method(animation.ptr(), "track_set_key_value", track, key, old);
 						update_obj = true;
 					} break;
+					case Animation::TYPE_BLEND_SHAPE:
 					case Animation::TYPE_VALUE: {
 						if (name == "value") {
 							Variant value = p_value;
@@ -1054,6 +1060,7 @@ public:
 						}
 
 					} break;
+					case Animation::TYPE_BLEND_SHAPE:
 					case Animation::TYPE_VALUE: {
 						if (name == "value") {
 							r_ret = animation->track_get_key_value(track, key);
@@ -1205,6 +1212,9 @@ public:
 				} break;
 				case Animation::TYPE_SCALE_3D: {
 					p_list->push_back(PropertyInfo(Variant::VECTOR3, "scale"));
+				} break;
+				case Animation::TYPE_BLEND_SHAPE: {
+					p_list->push_back(PropertyInfo(Variant::FLOAT, "value"));
 				} break;
 				case Animation::TYPE_VALUE: {
 					if (same_key_type) {
@@ -1404,6 +1414,7 @@ void AnimationTimelineEdit::_notification(int p_what) {
 		add_track->get_popup()->add_icon_item(get_theme_icon(SNAME("KeyXPosition"), SNAME("EditorIcons")), TTR("3D Position Track"));
 		add_track->get_popup()->add_icon_item(get_theme_icon(SNAME("KeyXRotation"), SNAME("EditorIcons")), TTR("3D Rotation Track"));
 		add_track->get_popup()->add_icon_item(get_theme_icon(SNAME("KeyXScale"), SNAME("EditorIcons")), TTR("3D Scale Track"));
+		add_track->get_popup()->add_icon_item(get_theme_icon(SNAME("KeyBlendShape"), SNAME("EditorIcons")), TTR("Blend Shape Track"));
 		add_track->get_popup()->add_icon_item(get_theme_icon(SNAME("KeyCall"), SNAME("EditorIcons")), TTR("Call Method Track"));
 		add_track->get_popup()->add_icon_item(get_theme_icon(SNAME("KeyBezier"), SNAME("EditorIcons")), TTR("Bezier Curve Track"));
 		add_track->get_popup()->add_icon_item(get_theme_icon(SNAME("KeyAudio"), SNAME("EditorIcons")), TTR("Audio Playback Track"));
@@ -1872,11 +1883,12 @@ void AnimationTrackEdit::_notification(int p_what) {
 		Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
 		int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
 		Color color = get_theme_color(SNAME("font_color"), SNAME("Label"));
-		Ref<Texture2D> type_icons[8] = {
+		Ref<Texture2D> type_icons[9] = {
 			get_theme_icon(SNAME("KeyValue"), SNAME("EditorIcons")),
 			get_theme_icon(SNAME("KeyTrackPosition"), SNAME("EditorIcons")),
 			get_theme_icon(SNAME("KeyTrackRotation"), SNAME("EditorIcons")),
 			get_theme_icon(SNAME("KeyTrackScale"), SNAME("EditorIcons")),
+			get_theme_icon(SNAME("KeyTrackBlendShape"), SNAME("EditorIcons")),
 			get_theme_icon(SNAME("KeyCall"), SNAME("EditorIcons")),
 			get_theme_icon(SNAME("KeyBezier"), SNAME("EditorIcons")),
 			get_theme_icon(SNAME("KeyAudio"), SNAME("EditorIcons")),
@@ -2067,7 +2079,7 @@ void AnimationTrackEdit::_notification(int p_what) {
 				interp_mode_rect.position.y = int(get_size().height - icon->get_height()) / 2;
 				interp_mode_rect.size = icon->get_size();
 
-				if (animation->track_get_type(track) == Animation::TYPE_VALUE || animation->track_get_type(track) == Animation::TYPE_POSITION_3D || animation->track_get_type(track) == Animation::TYPE_SCALE_3D || animation->track_get_type(track) == Animation::TYPE_ROTATION_3D) {
+				if (animation->track_get_type(track) == Animation::TYPE_VALUE || animation->track_get_type(track) == Animation::TYPE_BLEND_SHAPE || animation->track_get_type(track) == Animation::TYPE_POSITION_3D || animation->track_get_type(track) == Animation::TYPE_SCALE_3D || animation->track_get_type(track) == Animation::TYPE_ROTATION_3D) {
 					draw_texture(icon, interp_mode_rect.position);
 				}
 				// Make it easier to click.
@@ -2077,7 +2089,7 @@ void AnimationTrackEdit::_notification(int p_what) {
 				ofs += icon->get_width() + hsep;
 				interp_mode_rect.size.x += hsep;
 
-				if (animation->track_get_type(track) == Animation::TYPE_VALUE || animation->track_get_type(track) == Animation::TYPE_POSITION_3D || animation->track_get_type(track) == Animation::TYPE_SCALE_3D || animation->track_get_type(track) == Animation::TYPE_ROTATION_3D) {
+				if (animation->track_get_type(track) == Animation::TYPE_VALUE || animation->track_get_type(track) == Animation::TYPE_BLEND_SHAPE || animation->track_get_type(track) == Animation::TYPE_POSITION_3D || animation->track_get_type(track) == Animation::TYPE_SCALE_3D || animation->track_get_type(track) == Animation::TYPE_ROTATION_3D) {
 					draw_texture(down_icon, Vector2(ofs, int(get_size().height - down_icon->get_height()) / 2));
 					interp_mode_rect.size.x += down_icon->get_width();
 				} else {
@@ -2100,7 +2112,7 @@ void AnimationTrackEdit::_notification(int p_what) {
 				loop_mode_rect.position.y = int(get_size().height - icon->get_height()) / 2;
 				loop_mode_rect.size = icon->get_size();
 
-				if (animation->track_get_type(track) == Animation::TYPE_VALUE || animation->track_get_type(track) == Animation::TYPE_POSITION_3D || animation->track_get_type(track) == Animation::TYPE_SCALE_3D || animation->track_get_type(track) == Animation::TYPE_ROTATION_3D) {
+				if (animation->track_get_type(track) == Animation::TYPE_VALUE || animation->track_get_type(track) == Animation::TYPE_BLEND_SHAPE || animation->track_get_type(track) == Animation::TYPE_POSITION_3D || animation->track_get_type(track) == Animation::TYPE_SCALE_3D || animation->track_get_type(track) == Animation::TYPE_ROTATION_3D) {
 					draw_texture(icon, loop_mode_rect.position);
 				}
 
@@ -2110,7 +2122,7 @@ void AnimationTrackEdit::_notification(int p_what) {
 				ofs += icon->get_width() + hsep;
 				loop_mode_rect.size.x += hsep;
 
-				if (animation->track_get_type(track) == Animation::TYPE_VALUE || animation->track_get_type(track) == Animation::TYPE_POSITION_3D || animation->track_get_type(track) == Animation::TYPE_SCALE_3D || animation->track_get_type(track) == Animation::TYPE_ROTATION_3D) {
+				if (animation->track_get_type(track) == Animation::TYPE_VALUE || animation->track_get_type(track) == Animation::TYPE_BLEND_SHAPE || animation->track_get_type(track) == Animation::TYPE_POSITION_3D || animation->track_get_type(track) == Animation::TYPE_SCALE_3D || animation->track_get_type(track) == Animation::TYPE_ROTATION_3D) {
 					draw_texture(down_icon, Vector2(ofs, int(get_size().height - down_icon->get_height()) / 2));
 					loop_mode_rect.size.x += down_icon->get_width();
 				} else {
@@ -2330,11 +2342,12 @@ void AnimationTrackEdit::set_animation_and_track(const Ref<Animation> &p_animati
 	track = p_track;
 	update();
 
-	Ref<Texture2D> type_icons[8] = {
+	Ref<Texture2D> type_icons[9] = {
 		get_theme_icon(SNAME("KeyValue"), SNAME("EditorIcons")),
 		get_theme_icon(SNAME("KeyXPosition"), SNAME("EditorIcons")),
 		get_theme_icon(SNAME("KeyXRotation"), SNAME("EditorIcons")),
 		get_theme_icon(SNAME("KeyXScale"), SNAME("EditorIcons")),
+		get_theme_icon(SNAME("KeyBlendShape"), SNAME("EditorIcons")),
 		get_theme_icon(SNAME("KeyCall"), SNAME("EditorIcons")),
 		get_theme_icon(SNAME("KeyBezier"), SNAME("EditorIcons")),
 		get_theme_icon(SNAME("KeyAudio"), SNAME("EditorIcons")),
@@ -2515,6 +2528,10 @@ String AnimationTrackEdit::get_tooltip(const Point2 &p_pos) const {
 				case Animation::TYPE_SCALE_3D: {
 					Vector3 t = animation->track_get_key_value(track, key_idx);
 					text += "Scale: " + String(t) + "\n";
+				} break;
+				case Animation::TYPE_BLEND_SHAPE: {
+					float t = animation->track_get_key_value(track, key_idx);
+					text += "Blend Shape: " + itos(t) + "\n";
 				} break;
 				case Animation::TYPE_VALUE: {
 					const Variant &v = animation->track_get_key_value(track, key_idx);
@@ -3369,6 +3386,8 @@ static bool track_type_is_resettable(Animation::TrackType p_type) {
 	switch (p_type) {
 		case Animation::TYPE_VALUE:
 			[[fallthrough]];
+		case Animation::TYPE_BLEND_SHAPE:
+			[[fallthrough]];
 		case Animation::TYPE_BEZIER:
 			[[fallthrough]];
 		case Animation::TYPE_POSITION_3D:
@@ -4049,6 +4068,7 @@ AnimationTrackEditor::TrackIndices AnimationTrackEditor::_confirm_insert(InsertD
 		case Animation::TYPE_POSITION_3D:
 		case Animation::TYPE_ROTATION_3D:
 		case Animation::TYPE_SCALE_3D:
+		case Animation::TYPE_BLEND_SHAPE:
 		case Animation::TYPE_VALUE: {
 			value = p_id.value;
 
@@ -4468,6 +4488,11 @@ void AnimationTrackEditor::_new_track_node_selected(NodePath p_path) {
 	ERR_FAIL_COND(!node);
 	NodePath path_to = root->get_path_to(node);
 
+	if (adding_track_type == Animation::TYPE_BLEND_SHAPE && !node->is_class("MeshInstance3D")) {
+		EditorNode::get_singleton()->show_warning(TTR("Blend Shape tracks only apply to MeshInstance3D nodes."));
+		return;
+	}
+
 	if ((adding_track_type == Animation::TYPE_POSITION_3D || adding_track_type == Animation::TYPE_ROTATION_3D || adding_track_type == Animation::TYPE_SCALE_3D) && !node->is_class("Node3D")) {
 		EditorNode::get_singleton()->show_warning(TTR("Position/Rotation/Scale 3D tracks only apply to 3D-based nodes."));
 		return;
@@ -4477,6 +4502,13 @@ void AnimationTrackEditor::_new_track_node_selected(NodePath p_path) {
 		case Animation::TYPE_VALUE: {
 			adding_track_path = path_to;
 			prop_selector->set_type_filter(Vector<Variant::Type>());
+			prop_selector->select_property_from_instance(node);
+		} break;
+		case Animation::TYPE_BLEND_SHAPE: {
+			adding_track_path = path_to;
+			Vector<Variant::Type> filter;
+			filter.push_back(Variant::FLOAT);
+			prop_selector->set_type_filter(filter);
 			prop_selector->select_property_from_instance(node);
 		} break;
 		case Animation::TYPE_POSITION_3D:
@@ -4710,6 +4742,7 @@ void AnimationTrackEditor::_insert_key_from_track(float p_ofs, int p_track) {
 			undo_redo->commit_action();
 
 		} break;
+		case Animation::TYPE_BLEND_SHAPE:
 		case Animation::TYPE_VALUE: {
 			NodePath bp;
 			Variant value;
@@ -5387,6 +5420,9 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 						break;
 					case Animation::TYPE_SCALE_3D:
 						text += " (Scale)";
+						break;
+					case Animation::TYPE_BLEND_SHAPE:
+						text += " (BlendShape)";
 						break;
 					case Animation::TYPE_METHOD:
 						text += " (Methods)";

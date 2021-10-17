@@ -52,21 +52,22 @@ class BoneTransformEditor : public VBoxContainer {
 
 	EditorInspectorSection *section = nullptr;
 
-	EditorPropertyVector3 *translation_property = nullptr;
-	EditorPropertyVector3 *rotation_property = nullptr;
+	EditorPropertyCheck *enabled_checkbox = nullptr;
+	EditorPropertyVector3 *position_property = nullptr;
+	EditorPropertyQuaternion *rotation_property = nullptr;
 	EditorPropertyVector3 *scale_property = nullptr;
-	EditorInspectorSection *transform_section = nullptr;
-	EditorPropertyTransform3D *transform_property = nullptr;
+
+	EditorInspectorSection *rest_section = nullptr;
+	EditorPropertyTransform3D *rest_matrix = nullptr;
 
 	Rect2 background_rects[5];
 
 	Skeleton3D *skeleton;
-	String property;
+	// String property;
 
 	UndoRedo *undo_redo;
 
-	Button *key_button = nullptr;
-	CheckBox *enabled_checkbox = nullptr;
+	// Button *key_button = nullptr;
 
 	bool keyable = false;
 	bool toggle_enabled = false;
@@ -76,20 +77,7 @@ class BoneTransformEditor : public VBoxContainer {
 
 	void create_editors();
 
-	// Called when one of the EditorSpinSliders are changed.
-	void _value_changed(const double p_value);
-	// Called when the one of the EditorPropertyVector3 are updated.
-	void _value_changed_vector3(const String p_property_name, const Vector3 p_vector, const StringName p_edited_property_name, const bool p_boolean);
-	// Called when the transform_property is updated.
-	void _value_changed_transform(const String p_property_name, const Transform3D p_transform, const StringName p_edited_property_name, const bool p_boolean);
-	// Changes the transform to the given transform and updates the UI accordingly.
-	void _change_transform(Transform3D p_new_transform);
-	// Update it is truely keyable then.
-	void _update_key_button(const bool p_keyable);
-	// Creates a Transform using the EditorPropertyVector3 properties.
-	Transform3D compute_transform_from_vector3s() const;
-
-	void update_enabled_checkbox();
+	void _value_changed(const String &p_property, Variant p_value, const String &p_name, bool p_changing);
 
 protected:
 	void _notification(int p_what);
@@ -102,23 +90,6 @@ public:
 	void set_label(const String &p_label) { label = p_label; }
 
 	void _update_properties();
-	void _update_transform_properties(Transform3D p_transform);
-
-	// Transform can be keyed, whether or not to show the button.
-	void set_keyable(const bool p_keyable);
-
-	// When rest mode, pose editor are diasbled.
-	void set_properties_read_only(const bool p_readonly);
-	void set_transform_read_only(const bool p_readonly);
-
-	// Bone can be toggled enabled or disabled, whether or not to show the checkbox.
-	void set_toggle_enabled(const bool p_enabled);
-
-	// Key Transform Button pressed.
-	void _key_button_pressed();
-
-	// Bone Enabled Checkbox toggled.
-	void _checkbox_pressed();
 };
 
 class Skeleton3DEditor : public VBoxContainer {
@@ -197,13 +168,12 @@ class Skeleton3DEditor : public VBoxContainer {
 	Ref<ShaderMaterial> handle_material;
 	Ref<Shader> handle_shader;
 
-	Transform3D bone_original;
+	Vector3 bone_original_position;
+	Quaternion bone_original_rotation;
+	Vector3 bone_original_scale;
 
-	void _update_pose_enabled(int p_bone = -1);
-	void _update_show_rest_only();
-
-	void _update_gizmo_transform();
 	void _update_gizmo_visible();
+	void _bone_enabled_changed(const int p_bone_id);
 
 	void _hide_handles();
 
@@ -237,7 +207,9 @@ public:
 	bool is_edit_mode() const { return edit_mode; }
 
 	void update_bone_original();
-	Transform3D get_bone_original() { return bone_original; };
+	Vector3 get_bone_original_position() const { return bone_original_position; };
+	Quaternion get_bone_original_rotation() const { return bone_original_rotation; };
+	Vector3 get_bone_original_scale() const { return bone_original_scale; };
 
 	Skeleton3DEditor(EditorInspectorPluginSkeleton *e_plugin, EditorNode *p_editor, Skeleton3D *skeleton);
 	~Skeleton3DEditor();

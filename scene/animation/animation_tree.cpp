@@ -640,6 +640,37 @@ bool AnimationTree::_update_caches(AnimationPlayer *player) {
 
 #endif // _3D_DISABLED
 					} break;
+					case Animation::TYPE_BLEND_SHAPE: {
+#ifndef _3D_DISABLED
+
+						if (path.get_subname_count() != 1) {
+							ERR_PRINT("AnimationTree: '" + String(E) + "', blend shape track does not contain a blend shape subname:  '" + String(path) + "'");
+							continue;
+						}
+						MeshInstance3D *mesh_3d = Object::cast_to<MeshInstance3D>(child);
+
+						if (!mesh_3d) {
+							ERR_PRINT("AnimationTree: '" + String(E) + "', blend shape track does not point to MeshInstance3D:  '" + String(path) + "'");
+							continue;
+						}
+
+						StringName blend_shape_name = path.get_subname(0);
+						int blend_shape_idx = mesh_3d->find_blend_shape_by_name(blend_shape_name);
+						if (blend_shape_idx == -1) {
+							ERR_PRINT("AnimationTree: '" + String(E) + "', blend shape track points to a non-existing name:  '" + String(blend_shape_name) + "'");
+							continue;
+						}
+
+						TrackCacheBlendShape *track_bshape = memnew(TrackCacheBlendShape);
+
+						track_bshape->mesh_3d = mesh_3d;
+						track_bshape->shape_index = blend_shape_idx;
+
+						track_bshape->object = mesh_3d;
+						track_bshape->object_id = mesh_3d->get_instance_id();
+						track = track_bshape;
+#endif
+					} break;
 					case Animation::TYPE_METHOD: {
 						TrackCacheMethod *track_method = memnew(TrackCacheMethod);
 
@@ -1089,6 +1120,28 @@ void AnimationTree::_process_graph(real_t p_delta) {
 						}
 #endif // _3D_DISABLED
 					} break;
+					case Animation::TYPE_BLEND_SHAPE: {
+#ifndef _3D_DISABLED
+						TrackCacheBlendShape *t = static_cast<TrackCacheBlendShape *>(track);
+
+						if (t->process_pass != process_pass) {
+							t->process_pass = process_pass;
+							t->value = 0;
+						}
+
+						float value;
+
+						Error err = a->blend_shape_track_interpolate(i, time, &value);
+						//ERR_CONTINUE(err!=OK); //used for testing, should be removed
+
+						if (err != OK) {
+							continue;
+						}
+
+						t->value = Math::lerp(t->value, value, blend);
+
+#endif // _3D_DISABLED
+					} break;
 					case Animation::TYPE_VALUE: {
 						TrackCacheValue *t = static_cast<TrackCacheValue *>(track);
 
@@ -1381,6 +1434,15 @@ void AnimationTree::_process_graph(real_t p_delta) {
 						if (t->scale_used) {
 							t->node_3d->set_scale(t->scale);
 						}
+					}
+#endif // _3D_DISABLED
+				} break;
+				case Animation::TYPE_BLEND_SHAPE: {
+#ifndef _3D_DISABLED
+					TrackCacheBlendShape *t = static_cast<TrackCacheBlendShape *>(track);
+
+					if (t->mesh_3d) {
+						t->mesh_3d->set_blend_shape_value(t->shape_index, t->value);
 					}
 #endif // _3D_DISABLED
 				} break;

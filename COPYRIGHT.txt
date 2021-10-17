@@ -235,16 +235,6 @@ Copyright: 1995-2019, The PNG Reference Library Authors.
  1995-1996, Guy Eric Schalnat, Group 42, Inc.
 License: Zlib
 
-Files: ./thirdparty/libsimplewebm/
-Comment: libsimplewebm
-Copyright: 2016, Błażej Szczygieł
-License: Expat
-
-Files: ./thirdparty/libsimplewebm/libwebm/
-Comment: The WebM Project
-Copyright: 2010, Google Inc.
-License: BSD-3-clause
-
 Files: ./thirdparty/libtheora/
 Comment: OggTheora
 Copyright: 2002-2009, Xiph.org Foundation
@@ -254,17 +244,6 @@ Files: ./thirdparty/libvorbis/
 Comment: OggVorbis
 Copyright: 2002-2015, Xiph.org Foundation
 License: BSD-3-clause
-
-Files: ./thirdparty/libvpx/
-Comment: The WebM Project
-Copyright: 2010, The WebM Project authors.
-License: BSD-3-clause
-
-Files: ./thirdparty/libvpx/third_party/android/cpu-features.c
- ./thirdparty/libvpx/third_party/android/cpu-features.h
-Comment: The Android Open Source Project
-Copyright: 2010, The Android Open Source Project
-License: BSD-2-clause
 
 Files: ./thirdparty/libwebp/
 Comment: WebP codec
@@ -387,14 +366,6 @@ Files: ./thirdparty/oidn/
 Comment: Intel Open Image Denoise
 Copyright: 2009-2019, Intel Corporation
 License: Apache-2.0
-
-Files: ./thirdparty/opus/
-Comment: Opus
-Copyright: 2001-2011, Xiph.Org, Skype Limited, Octasic,
- Jean-Marc Valin, Timothy B. Terriberry,
- CSIRO, Gregory Maxwell, Mark Borgerding,
- Erik de Castro Lopo
-License: BSD-3-clause
 
 Files: ./thirdparty/pcre2/
 Comment: PCRE2

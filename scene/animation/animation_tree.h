@@ -210,6 +210,13 @@ private:
 		}
 	};
 
+	struct TrackCacheBlendShape : public TrackCache {
+		MeshInstance3D *mesh_3d = nullptr;
+		float value = 0;
+		int shape_index = -1;
+		TrackCacheBlendShape() { type = Animation::TYPE_BLEND_SHAPE; }
+	};
+
 	struct TrackCacheValue : public TrackCache {
 		Variant value;
 		Vector<StringName> subpath;

@@ -174,27 +174,27 @@
 		<signal name="body_shape_entered">
 			<argument index="0" name="body_rid" type="RID" />
 			<argument index="1" name="body" type="Node" />
-			<argument index="2" name="body_shape" type="int" />
-			<argument index="3" name="local_shape" type="int" />
+			<argument index="2" name="body_shape_index" type="int" />
+			<argument index="3" name="local_shape_index" type="int" />
 			<description>
 				Emitted when one of this RigidDynamicBody2D's [Shape2D]s collides with another [PhysicsBody2D] or [TileMap]'s [Shape2D]s. Requires [member contact_monitor] to be set to [code]true[/code] and [member contacts_reported] to be set high enough to detect all the collisions. [TileMap]s are detected if the [TileSet] has Collision [Shape2D]s.
-				[code]body_id[/code] the [RID] of the other [PhysicsBody2D] or [TileSet]'s [CollisionObject2D] used by the [PhysicsServer2D].
+				[code]body_rid[/code] the [RID] of the other [PhysicsBody2D] or [TileSet]'s [CollisionObject2D] used by the [PhysicsServer2D].
 				[code]body[/code] the [Node], if it exists in the tree, of the other [PhysicsBody2D] or [TileMap].
-				[code]body_shape[/code] the index of the [Shape2D] of the other [PhysicsBody2D] or [TileMap] used by the [PhysicsServer2D].
-				[code]local_shape[/code] the index of the [Shape2D] of this RigidDynamicBody2D used by the [PhysicsServer2D].
+				[code]body_shape_index[/code] the index of the [Shape2D] of the other [PhysicsBody2D] or [TileMap] used by the [PhysicsServer2D]. Get the [CollisionShape2D] node with [code]body.shape_owner_get_owner(body_shape_index)[/code].
+				[code]local_shape_index[/code] the index of the [Shape2D] of this RigidDynamicBody2D used by the [PhysicsServer2D]. Get the [CollisionShape2D] node with [code]self.shape_owner_get_owner(local_shape_index)[/code].
 			</description>
 		</signal>
 		<signal name="body_shape_exited">
 			<argument index="0" name="body_rid" type="RID" />
 			<argument index="1" name="body" type="Node" />
-			<argument index="2" name="body_shape" type="int" />
-			<argument index="3" name="local_shape" type="int" />
+			<argument index="2" name="body_shape_index" type="int" />
+			<argument index="3" name="local_shape_index" type="int" />
 			<description>
 				Emitted when the collision between one of this RigidDynamicBody2D's [Shape2D]s and another [PhysicsBody2D] or [TileMap]'s [Shape2D]s ends. Requires [member contact_monitor] to be set to [code]true[/code] and [member contacts_reported] to be set high enough to detect all the collisions. [TileMap]s are detected if the [TileSet] has Collision [Shape2D]s.
-				[code]body_id[/code] the [RID] of the other [PhysicsBody2D] or [TileSet]'s [CollisionObject2D] used by the [PhysicsServer2D].
+				[code]body_rid[/code] the [RID] of the other [PhysicsBody2D] or [TileSet]'s [CollisionObject2D] used by the [PhysicsServer2D].
 				[code]body[/code] the [Node], if it exists in the tree, of the other [PhysicsBody2D] or [TileMap].
-				[code]body_shape[/code] the index of the [Shape2D] of the other [PhysicsBody2D] or [TileMap] used by the [PhysicsServer2D].
-				[code]local_shape[/code] the index of the [Shape2D] of this RigidDynamicBody2D used by the [PhysicsServer2D].
+				[code]body_shape_index[/code] the index of the [Shape2D] of the other [PhysicsBody2D] or [TileMap] used by the [PhysicsServer2D]. Get the [CollisionShape2D] node with [code]body.shape_owner_get_owner(body_shape_index)[/code].
+				[code]local_shape_index[/code] the index of the [Shape2D] of this RigidDynamicBody2D used by the [PhysicsServer2D]. Get the [CollisionShape2D] node with [code]self.shape_owner_get_owner(local_shape_index)[/code].
 			</description>
 		</signal>
 		<signal name="sleeping_state_changed">

@@ -255,25 +255,6 @@ Files extracted from upstream source:
 - `LICENSE`
 
 
-## libsimplewebm
-
-- Upstream: https://github.com/zaps166/libsimplewebm
-- Version: git (fe57fd3cfe6c0af4c6af110b1f84a90cf191d943, 2019)
-- License: MIT (main), BSD-3-Clause (libwebm)
-
-This contains libwebm, but the version in use is updated from the one used by libsimplewebm,
-and may have *unmarked* alterations from that.
-
-Files extracted from upstream source:
-
-- all the .cpp, .hpp files in the main folder except `example.cpp`
-- LICENSE
-
-Important: Some files have Godot-made changes.
-They are marked with `// -- GODOT start --` and `// -- GODOT end --`
-comments.
-
-
 ## libtheora
 
 - Upstream: https://www.theora.org
@@ -303,23 +284,6 @@ Files extracted from upstream source:
 - COPYING
 
 
-## libvpx
-
-- Upstream: https://chromium.googlesource.com/webm/libvpx/
-- Version: 1.6.0 (2016)
-- License: BSD-3-Clause
-
-Files extracted from upstream source:
-
-TODO.
-
-Important: File `libvpx/vpx_dsp/x86/vpx_subpixel_8t_intrin_avx2.c` has
-Godot-made change marked with `// -- GODOT --` comments.
-
-The files `libvpx/third_party/android/cpu-features.{c,h}` were copied
-from the Android NDK r18.
-
-
 ## libwebp
 
 - Upstream: https://chromium.googlesource.com/webm/libwebp/
@@ -347,11 +311,13 @@ File extracted from upstream release tarball:
 - All `*.h` from `include/mbedtls/` to `thirdparty/mbedtls/include/mbedtls/`.
 - All `*.c` from `library/` to `thirdparty/mbedtls/library/`.
 - `LICENSE` and `apache-2.0.txt` files.
-- Applied the patch in `thirdparty/mbedtls/patches/1453.diff` (upstream PR:
+- Applied the patch in `patches/1453.diff` (upstream PR:
   https://github.com/ARMmbed/mbedtls/pull/1453).
-- Applied the patch in `thirdparty/mbedtls/patches/padlock.diff`. This disables
-  VIA padlock support which defines a symbol `unsupported` which clashes with
-  a pre-defined symbol.
+- Applied the patch in `patches/padlock.diff`. This disables VIA padlock
+  support which defines a symbol `unsupported` which clashes with a
+  pre-defined symbol.
+- Applied the patch in `patches/pr4948-fix-clang12-opt.patch`. Upstream bugfix
+  from PR 4948 to fix a bug caused by Clang 12 optimizations.
 - Added 2 files `godot_core_mbedtls_platform.c` and `godot_core_mbedtls_config.h`
   providing configuration for light bundling with core.
 
@@ -527,23 +493,6 @@ Patch files are provided in `oidn/patches/`.
 - core/transfer_function.cpp
 
 - scripts/resource_to_cpp.py (used in modules/denoise/resource_to_cpp.py)
-
-
-## opus
-
-- Upstream: https://opus-codec.org
-- Version: 1.1.5 (opus) and 0.8 (opusfile) (2017)
-- License: BSD-3-Clause
-
-Files extracted from upstream source:
-
-- all .c and .h files in src/ (both opus and opusfile)
-- all .h files in include/ (both opus and opusfile) as opus/
-- remove unused `opus_demo.c`,
-- remove `http.c`, `wincerts.c` and `winerrno.h` (part of
-  unused libopusurl)
-- celt/ and silk/ subfolders
-- COPYING
 
 
 ## pcre2

@@ -357,7 +357,6 @@ ImporterMeshInstance3D *FBXMeshData::create_fbx_mesh(const ImportState &state, c
 	mesh->set_blend_shape_mode(Mesh::BLEND_SHAPE_MODE_NORMALIZED);
 
 	// Add surfaces.
-	int in_mesh_surface_id = 0;
 	for (const SurfaceId *surface_id = surfaces.next(nullptr); surface_id != nullptr; surface_id = surfaces.next(surface_id)) {
 		SurfaceData *surface = surfaces.getptr(*surface_id);
 
@@ -377,8 +376,6 @@ ImporterMeshInstance3D *FBXMeshData::create_fbx_mesh(const ImportState &state, c
 		} else {
 			mesh->add_surface(Mesh::PRIMITIVE_TRIANGLES, mesh_array, blend_shapes);
 		}
-
-		in_mesh_surface_id += 1;
 	}
 
 	ImporterMeshInstance3D *godot_mesh = memnew(ImporterMeshInstance3D);

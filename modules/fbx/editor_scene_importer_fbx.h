@@ -57,9 +57,9 @@
 
 #define CONVERT_FBX_TIME(time) static_cast<double>(time) / 46186158000LL
 
-class EditorSceneImporterFBX : public EditorSceneImporter {
+class EditorSceneFormatImporterFBX : public EditorSceneFormatImporter {
 private:
-	GDCLASS(EditorSceneImporterFBX, EditorSceneImporter);
+	GDCLASS(EditorSceneFormatImporterFBX, EditorSceneFormatImporter);
 
 	struct AssetImportAnimation {
 		enum Interpolation {
@@ -122,8 +122,8 @@ private:
 	void _register_project_setting_import(const String generic, const String import_setting_string, const Vector<String> &exts, List<String> *r_extensions, const bool p_enabled) const;
 
 public:
-	EditorSceneImporterFBX() {}
-	~EditorSceneImporterFBX() {}
+	EditorSceneFormatImporterFBX() {}
+	~EditorSceneFormatImporterFBX() {}
 
 	virtual void get_extensions(List<String> *r_extensions) const override;
 	virtual uint32_t get_import_flags() const override;

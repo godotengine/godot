@@ -370,8 +370,8 @@ void EditorVisualProfiler::_update_frame(bool p_focus_selected) {
 			float total_gpu = E->get_metadata(2);
 			total_cpu += cpu_time;
 			total_gpu += gpu_time;
-			E->set_metadata(1, cpu_time);
-			E->set_metadata(2, gpu_time);
+			E->set_metadata(1, total_cpu);
+			E->set_metadata(2, total_gpu);
 		}
 
 		category->set_icon(0, track_icon);

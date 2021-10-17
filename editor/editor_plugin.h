@@ -288,8 +288,11 @@ public:
 	void add_inspector_plugin(const Ref<EditorInspectorPlugin> &p_plugin);
 	void remove_inspector_plugin(const Ref<EditorInspectorPlugin> &p_plugin);
 
-	void add_scene_import_plugin(const Ref<EditorSceneImporter> &p_importer);
-	void remove_scene_import_plugin(const Ref<EditorSceneImporter> &p_importer);
+	void add_scene_format_importer_plugin(const Ref<EditorSceneFormatImporter> &p_importer);
+	void remove_scene_format_importer_plugin(const Ref<EditorSceneFormatImporter> &p_importer);
+
+	void add_scene_post_import_plugin(const Ref<EditorScenePostImportPlugin> &p_importer);
+	void remove_scene_post_import_plugin(const Ref<EditorScenePostImportPlugin> &p_importer);
 
 	void add_autoload_singleton(const String &p_name, const String &p_path);
 	void remove_autoload_singleton(const String &p_name);

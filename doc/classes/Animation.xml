@@ -201,6 +201,14 @@
 				Sets the value of the key identified by [code]key_idx[/code] to the given value. The [code]track_idx[/code] must be the index of a Bezier Track.
 			</description>
 		</method>
+		<method name="blend_shape_track_insert_key">
+			<return type="int" />
+			<argument index="0" name="track_idx" type="int" />
+			<argument index="1" name="time" type="float" />
+			<argument index="2" name="amount" type="float" />
+			<description>
+			</description>
+		</method>
 		<method name="clear">
 			<return type="void" />
 			<description>
@@ -552,16 +560,18 @@
 		</constant>
 		<constant name="TYPE_SCALE_3D" value="3" enum="TrackType">
 		</constant>
-		<constant name="TYPE_METHOD" value="4" enum="TrackType">
+		<constant name="TYPE_BLEND_SHAPE" value="4" enum="TrackType">
+		</constant>
+		<constant name="TYPE_METHOD" value="5" enum="TrackType">
 			Method tracks call functions with given arguments per key.
 		</constant>
-		<constant name="TYPE_BEZIER" value="5" enum="TrackType">
+		<constant name="TYPE_BEZIER" value="6" enum="TrackType">
 			Bezier tracks are used to interpolate a value using custom curves. They can also be used to animate sub-properties of vectors and colors (e.g. alpha value of a [Color]).
 		</constant>
-		<constant name="TYPE_AUDIO" value="6" enum="TrackType">
+		<constant name="TYPE_AUDIO" value="7" enum="TrackType">
 			Audio tracks are used to play an audio stream with either type of [AudioStreamPlayer]. The stream can be trimmed and previewed in the animation.
 		</constant>
-		<constant name="TYPE_ANIMATION" value="7" enum="TrackType">
+		<constant name="TYPE_ANIMATION" value="8" enum="TrackType">
 			Animation tracks play animations in other [AnimationPlayer] nodes.
 		</constant>
 		<constant name="INTERPOLATION_NEAREST" value="0" enum="InterpolationType">

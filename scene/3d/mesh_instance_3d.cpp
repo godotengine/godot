@@ -42,10 +42,9 @@ bool MeshInstance3D::_set(const StringName &p_name, const Variant &p_value) {
 		return false;
 	}
 
-	Map<StringName, BlendShapeTrack>::Element *E = blend_shape_tracks.find(p_name);
+	Map<StringName, int>::Element *E = blend_shape_properties.find(p_name);
 	if (E) {
-		E->get().value = p_value;
-		RenderingServer::get_singleton()->instance_set_blend_shape_weight(get_instance(), E->get().idx, E->get().value);
+		set_blend_shape_value(E->get(), p_value);
 		return true;
 	}
 
@@ -67,9 +66,9 @@ bool MeshInstance3D::_get(const StringName &p_name, Variant &r_ret) const {
 		return false;
 	}
 
-	const Map<StringName, BlendShapeTrack>::Element *E = blend_shape_tracks.find(p_name);
+	const Map<StringName, int>::Element *E = blend_shape_properties.find(p_name);
 	if (E) {
-		r_ret = E->get().value;
+		r_ret = get_blend_shape_value(E->get());
 		return true;
 	}
 
@@ -86,7 +85,7 @@ bool MeshInstance3D::_get(const StringName &p_name, Variant &r_ret) const {
 
 void MeshInstance3D::_get_property_list(List<PropertyInfo> *p_list) const {
 	List<String> ls;
-	for (const KeyValue<StringName, BlendShapeTrack> &E : blend_shape_tracks) {
+	for (const KeyValue<StringName, int> &E : blend_shape_properties) {
 		ls.push_back(E.key);
 	}
 
@@ -114,30 +113,51 @@ void MeshInstance3D::set_mesh(const Ref<Mesh> &p_mesh) {
 
 	mesh = p_mesh;
 
-	blend_shape_tracks.clear();
 	if (mesh.is_valid()) {
-		for (int i = 0; i < mesh->get_blend_shape_count(); i++) {
-			BlendShapeTrack mt;
-			mt.idx = i;
-			mt.value = 0;
-			blend_shape_tracks["blend_shapes/" + String(mesh->get_blend_shape_name(i))] = mt;
-		}
-
 		mesh->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &MeshInstance3D::_mesh_changed));
-		surface_override_materials.resize(mesh->get_surface_count());
-
+		_mesh_changed();
 		set_base(mesh->get_rid());
 	} else {
+		blend_shape_tracks.clear();
+		blend_shape_properties.clear();
 		set_base(RID());
+		update_gizmos();
 	}
-
-	update_gizmos();
 
 	notify_property_list_changed();
 }
 
 Ref<Mesh> MeshInstance3D::get_mesh() const {
 	return mesh;
+}
+
+int MeshInstance3D::get_blend_shape_count() const {
+	if (mesh.is_null()) {
+		return 0;
+	}
+	return mesh->get_blend_shape_count();
+}
+int MeshInstance3D::find_blend_shape_by_name(const StringName &p_name) {
+	if (mesh.is_null()) {
+		return -1;
+	}
+	for (int i = 0; i < mesh->get_blend_shape_count(); i++) {
+		if (mesh->get_blend_shape_name(i) == p_name) {
+			return i;
+		}
+	}
+	return -1;
+}
+float MeshInstance3D::get_blend_shape_value(int p_blend_shape) const {
+	ERR_FAIL_COND_V(mesh.is_null(), 0.0);
+	ERR_FAIL_INDEX_V(p_blend_shape, (int)blend_shape_tracks.size(), 0);
+	return blend_shape_tracks[p_blend_shape];
+}
+void MeshInstance3D::set_blend_shape_value(int p_blend_shape, float p_value) {
+	ERR_FAIL_COND(mesh.is_null());
+	ERR_FAIL_INDEX(p_blend_shape, (int)blend_shape_tracks.size());
+	blend_shape_tracks[p_blend_shape] = p_value;
+	RenderingServer::get_singleton()->instance_set_blend_shape_weight(get_instance(), p_blend_shape, p_value);
 }
 
 void MeshInstance3D::_resolve_skeleton_path() {
@@ -357,6 +377,19 @@ Ref<Material> MeshInstance3D::get_active_material(int p_surface) const {
 void MeshInstance3D::_mesh_changed() {
 	ERR_FAIL_COND(mesh.is_null());
 	surface_override_materials.resize(mesh->get_surface_count());
+
+	uint32_t initialize_bs_from = blend_shape_tracks.size();
+	blend_shape_tracks.resize(mesh->get_blend_shape_count());
+
+	for (uint32_t i = 0; i < blend_shape_tracks.size(); i++) {
+		blend_shape_properties["blend_shapes/" + String(mesh->get_blend_shape_name(i))] = i;
+		if (i < initialize_bs_from) {
+			set_blend_shape_value(i, blend_shape_tracks[i]);
+		} else {
+			set_blend_shape_value(i, 0);
+		}
+	}
+
 	update_gizmos();
 }
 
@@ -458,6 +491,11 @@ void MeshInstance3D::_bind_methods() {
 	ClassDB::set_method_flags("MeshInstance3D", "create_convex_collision", METHOD_FLAGS_DEFAULT);
 	ClassDB::bind_method(D_METHOD("create_multiple_convex_collisions"), &MeshInstance3D::create_multiple_convex_collisions);
 	ClassDB::set_method_flags("MeshInstance3D", "create_multiple_convex_collisions", METHOD_FLAGS_DEFAULT);
+
+	ClassDB::bind_method(D_METHOD("get_blend_shape_count"), &MeshInstance3D::get_blend_shape_count);
+	ClassDB::bind_method(D_METHOD("find_blend_shape_by_name", "name"), &MeshInstance3D::find_blend_shape_by_name);
+	ClassDB::bind_method(D_METHOD("get_blend_shape_value", "blend_shape_idx"), &MeshInstance3D::get_blend_shape_value);
+	ClassDB::bind_method(D_METHOD("set_blend_shape_value", "blend_shape_idx", "value"), &MeshInstance3D::set_blend_shape_value);
 
 	ClassDB::bind_method(D_METHOD("create_debug_tangents"), &MeshInstance3D::create_debug_tangents);
 	ClassDB::set_method_flags("MeshInstance3D", "create_debug_tangents", METHOD_FLAGS_DEFAULT | METHOD_FLAG_EDITOR);

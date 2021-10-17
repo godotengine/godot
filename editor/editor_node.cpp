@@ -3848,7 +3848,8 @@ void EditorNode::register_editor_types() {
 	GDREGISTER_VIRTUAL_CLASS(EditorInterface);
 	GDREGISTER_CLASS(EditorExportPlugin);
 	GDREGISTER_CLASS(EditorResourceConversionPlugin);
-	GDREGISTER_CLASS(EditorSceneImporter);
+	GDREGISTER_CLASS(EditorSceneFormatImporter);
+	GDREGISTER_CLASS(EditorScenePostImportPlugin);
 	GDREGISTER_CLASS(EditorInspector);
 	GDREGISTER_CLASS(EditorInspectorPlugin);
 	GDREGISTER_CLASS(EditorProperty);
@@ -5935,7 +5936,7 @@ EditorNode::EditorNode() {
 		ResourceFormatImporter::get_singleton()->add_importer(import_scene);
 
 		{
-			Ref<EditorSceneImporterCollada> import_collada;
+			Ref<EditorSceneFormatImporterCollada> import_collada;
 			import_collada.instantiate();
 			import_scene->add_importer(import_collada);
 
@@ -5943,7 +5944,7 @@ EditorNode::EditorNode() {
 			import_obj2.instantiate();
 			import_scene->add_importer(import_obj2);
 
-			Ref<EditorSceneImporterESCN> import_escn;
+			Ref<EditorSceneFormatImporterESCN> import_escn;
 			import_escn.instantiate();
 			import_scene->add_importer(import_escn);
 		}
