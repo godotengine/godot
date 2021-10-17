@@ -53,6 +53,7 @@
 #include "core/version_hash.gen.h"
 #include "drivers/register_driver_types.h"
 #include "main/app_icon.gen.h"
+#include "main/build_arguments.gen.h"
 #include "main/main_timer_sync.h"
 #include "main/performance.h"
 #include "main/splash.gen.h"
@@ -645,6 +646,11 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 		} else if (I->get() == "--version") {
 			print_line(get_full_version_string());
+			goto error;
+
+		} else if (I->get() == "--build-info") {
+			print_line(get_full_version_string());
+			print_line("Build arguments: " + String(BUILD_ARGUMENTS));
 			goto error;
 
 		} else if (I->get() == "-v" || I->get() == "--verbose") { // verbose output

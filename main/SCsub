@@ -3,6 +3,8 @@
 Import("env")
 
 import main_builders
+import sys
+import os
 
 env.main_sources = []
 
@@ -36,3 +38,16 @@ env_main.CommandNoCache(
 
 lib = env_main.add_library("main", env.main_sources)
 env.Prepend(LIBS=[lib])
+
+build_args = " ".join(sys.argv[1:])
+
+SCONSFLAGS = os.environ.get("SCONSFLAGS")
+if SCONSFLAGS:
+    build_args = SCONSFLAGS + " " + build_args
+
+with open("build_arguments.gen.h", "w") as fd:
+    fd.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
+    fd.write("#ifndef BUILD_ARGUMENTS_GEN_H\n")
+    fd.write("#define BUILD_ARGUMENTS_GEN_H\n")
+    fd.write('#define BUILD_ARGUMENTS "' + build_args + '"\n')
+    fd.write("#endif // BUILD_ARGUMENTS_GEN_H\n")
