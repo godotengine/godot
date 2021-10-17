@@ -7,7 +7,6 @@ subdir('freetype')
 subdir('libogg')
 subdir('libvorbis')
 subdir('libtheora')
-subdir('opus')
 
 subdir('graphite')
 subdir('icu4c')
