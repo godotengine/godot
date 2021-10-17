@@ -934,7 +934,6 @@ void AnimationTree::_process_graph(real_t p_delta) {
 							t->process_pass = process_pass;
 							t->loc = Vector3();
 							t->rot = Quaternion();
-							t->rot_blend_accum = 0;
 							t->scale = Vector3(1, 1, 1);
 						}
 
@@ -995,7 +994,6 @@ void AnimationTree::_process_graph(real_t p_delta) {
 							t->process_pass = process_pass;
 							t->loc = Vector3();
 							t->rot = Quaternion();
-							t->rot_blend_accum = 0;
 							t->scale = Vector3(1, 1, 1);
 						}
 
@@ -1047,14 +1045,7 @@ void AnimationTree::_process_graph(real_t p_delta) {
 								continue;
 							}
 
-							if (t->rot_blend_accum == 0) {
-								t->rot = rot;
-								t->rot_blend_accum = blend;
-							} else {
-								real_t rot_total = t->rot_blend_accum + blend;
-								t->rot = rot.slerp(t->rot, t->rot_blend_accum / rot_total).normalized();
-								t->rot_blend_accum = rot_total;
-							}
+							t->rot = (t->rot * Quaternion().slerp(rot, blend)).normalized();
 						}
 #endif // _3D_DISABLED
 					} break;
@@ -1066,7 +1057,6 @@ void AnimationTree::_process_graph(real_t p_delta) {
 							t->process_pass = process_pass;
 							t->loc = Vector3();
 							t->rot = Quaternion();
-							t->rot_blend_accum = 0;
 							t->scale = Vector3(1, 1, 1);
 						}
 
