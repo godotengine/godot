@@ -545,7 +545,7 @@ void GDScript::_update_doc() {
 	for (int i = 0; i < signals.size(); i++) {
 		DocData::MethodDoc signal_doc;
 		if (doc_signals.has(signals[i].name)) {
-			DocData::signal_doc_from_methodinfo(signal_doc, signals[i], signals[i].name);
+			DocData::signal_doc_from_methodinfo(signal_doc, signals[i], doc_signals[signals[i].name]);
 		} else {
 			DocData::signal_doc_from_methodinfo(signal_doc, signals[i], String());
 		}
