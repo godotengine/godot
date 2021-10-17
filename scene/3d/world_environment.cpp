@@ -147,11 +147,25 @@ TypedArray<String> WorldEnvironment::get_configuration_warnings() const {
 	}
 
 	if (environment.is_valid() && get_viewport()->find_world_3d()->get_environment() != environment) {
-		warnings.push_back(("Only the first Environment has an effect in a scene (or set of instantiated scenes)."));
+		warnings.push_back(TTR("Only the first Environment has an effect in a scene (or set of instantiated scenes)."));
 	}
 
 	if (camera_effects.is_valid() && get_viewport()->find_world_3d()->get_camera_effects() != camera_effects) {
 		warnings.push_back(RTR("Only one WorldEnvironment is allowed per scene (or set of instantiated scenes)."));
+	}
+
+	if (
+			environment.is_valid() &&
+			!environment->get_ambient_light_color().is_equal_approx(Color()) &&
+			Math::is_equal_approx(environment->get_ambient_light_sky_contribution(), 1.0f)) {
+		warnings.push_back(TTR("The Environment's custom ambient light color is ignored if Sky Contribution is equal to 1.0. To resolve this, decrease Sky Contribution below 1.0 or revert the ambient light color to its default value."));
+	}
+
+	if (
+			environment.is_valid() &&
+			!Math::is_equal_approx(environment->get_ambient_light_energy(), 1.0f) &&
+			Math::is_equal_approx(environment->get_ambient_light_sky_contribution(), 1.0f)) {
+		warnings.push_back(TTR("The Environment's custom ambient light energy is ignored if Sky Contribution is equal to 1.0. To resolve this, decrease Sky Contribution below 1.0 or revert the ambient light energy to its default value."));
 	}
 
 	return warnings;
