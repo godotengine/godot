@@ -297,6 +297,7 @@ void TextServerExtension::_bind_methods() {
 	GDVIRTUAL_BIND(percent_sign, "language");
 
 	GDVIRTUAL_BIND(strip_diacritics, "string");
+	GDVIRTUAL_BIND(is_valid_identifier, "string");
 
 	GDVIRTUAL_BIND(string_get_word_breaks, "string", "language");
 
@@ -1496,6 +1497,14 @@ String TextServerExtension::percent_sign(const String &p_language) const {
 		return ret;
 	}
 	return "%";
+}
+
+bool TextServerExtension::is_valid_identifier(const String &p_string) const {
+	bool ret;
+	if (GDVIRTUAL_CALL(is_valid_identifier, p_string, ret)) {
+		return ret;
+	}
+	return TextServer::is_valid_identifier(p_string);
 }
 
 String TextServerExtension::strip_diacritics(const String &p_string) const {

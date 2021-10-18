@@ -944,6 +944,21 @@
 				Returns [code]true[/code] if locale is right-to-left.
 			</description>
 		</method>
+		<method name="is_valid_identifier" qualifiers="const">
+			<return type="bool" />
+			<argument index="0" name="string" type="String" />
+			<description>
+				Returns [code]true[/code] is [code]string[/code] is a valid identifier.
+				If the text server supports the [constant FEATURE_UNICODE_IDENTIFIERS] feature, a valid identifier must:
+				- Conform to normalization form C.
+				- Begin with a Unicode character of class XID_Start or [code]"_"[/code].
+				- May contain Unicode characters of class XID_Continue in the other positions.
+				- Use UAX #31 recommended scripts only (mixed scripts are allowed).
+				If the [constant FEATURE_UNICODE_IDENTIFIERS] feature is not supported, a valid identifier must:
+				- Begin with a Unicode character of class XID_Start or [code]"_"[/code].
+				- May contain Unicode characters of class XID_Continue in the other positions.
+			</description>
+		</method>
 		<method name="load_support_data">
 			<return type="bool" />
 			<argument index="0" name="filename" type="String" />
@@ -1713,7 +1728,10 @@
 			TextServer supports locale dependent and context sensitive case conversion.
 		</constant>
 		<constant name="FEATURE_USE_SUPPORT_DATA" value="4096" enum="Feature">
-			TextServer require external data file for some features.
+			TextServer require external data file for some features, see [method load_support_data].
+		</constant>
+		<constant name="FEATURE_UNICODE_IDENTIFIERS" value="8192" enum="Feature">
+			TextServer supports UAX #31 identifier validation, see [method is_valid_identifier].
 		</constant>
 		<constant name="CONTOUR_CURVE_TAG_ON" value="1" enum="ContourPointTag">
 			Contour point is on the curve.

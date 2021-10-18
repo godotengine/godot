@@ -346,6 +346,7 @@ bool TextServerAdvanced::has_feature(Feature p_feature) const {
 		case FEATURE_FONT_VARIABLE:
 		case FEATURE_CONTEXT_SENSITIVE_CASE_CONVERSION:
 		case FEATURE_USE_SUPPORT_DATA:
+		case FEATURE_UNICODE_IDENTIFIERS:
 			return true;
 		default: {
 		}
@@ -5755,6 +5756,191 @@ PackedInt32Array TextServerAdvanced::string_get_word_breaks(const String &p_stri
 		}
 	}
 	return ret;
+}
+
+bool TextServerAdvanced::is_valid_identifier(const String &p_string) const {
+	enum UAX31SequenceStatus {
+		SEQ_NOT_STARTED,
+		SEQ_STARTED,
+		SEQ_STARTED_VIR,
+		SEQ_NEAR_END,
+	};
+
+	const char32_t *str = p_string.ptr();
+	int len = p_string.length();
+
+	if (len == 0) {
+		return false; // Empty string.
+	}
+
+	UErrorCode err = U_ZERO_ERROR;
+	Char16String utf16 = p_string.utf16();
+	const UNormalizer2 *norm_c = unorm2_getNFCInstance(&err);
+	if (U_FAILURE(err)) {
+		return false; // Failed to load normalizer.
+	}
+	bool isnurom = unorm2_isNormalized(norm_c, utf16.ptr(), utf16.length(), &err);
+	if (U_FAILURE(err) || !isnurom) {
+		return false; // Do not conform to Normalization Form C.
+	}
+
+	UAX31SequenceStatus A1_sequence_status = SEQ_NOT_STARTED;
+	UScriptCode A1_scr = USCRIPT_INHERITED;
+	UAX31SequenceStatus A2_sequence_status = SEQ_NOT_STARTED;
+	UScriptCode A2_scr = USCRIPT_INHERITED;
+	UAX31SequenceStatus B_sequence_status = SEQ_NOT_STARTED;
+	UScriptCode B_scr = USCRIPT_INHERITED;
+
+	for (int i = 0; i < len; i++) {
+		err = U_ZERO_ERROR;
+		UScriptCode scr = uscript_getScript(str[i], &err);
+		if (U_FAILURE(err)) {
+			return false; // Invalid script.
+		}
+		if (uscript_getUsage(scr) != USCRIPT_USAGE_RECOMMENDED) {
+			return false; // Not a recommended script.
+		}
+		uint8_t cat = u_charType(str[i]);
+		int32_t jt = u_getIntPropertyValue(str[i], UCHAR_JOINING_TYPE);
+
+		// UAX #31 section 2.3 subsections A1, A2 and B, check ZWNJ and ZWJ usage.
+		switch (A1_sequence_status) {
+			case SEQ_NEAR_END: {
+				if ((A1_scr > USCRIPT_INHERITED) && (scr > USCRIPT_INHERITED) && (scr != A1_scr)) {
+					return false; // Mixed script.
+				}
+				if (jt == U_JT_RIGHT_JOINING || jt == U_JT_DUAL_JOINING) {
+					A1_sequence_status = SEQ_NOT_STARTED; // Valid end of sequence, reset.
+				} else if (jt != U_JT_TRANSPARENT) {
+					return false; // Invalid end of sequence.
+				}
+			} break;
+			case SEQ_STARTED: {
+				if ((A1_scr > USCRIPT_INHERITED) && (scr > USCRIPT_INHERITED) && (scr != A1_scr)) {
+					A1_sequence_status = SEQ_NOT_STARTED; // Reset.
+				} else {
+					if (jt != U_JT_TRANSPARENT) {
+						if (str[i] == 0x200C /*ZWNJ*/) {
+							A1_sequence_status = SEQ_NEAR_END;
+							continue;
+						} else {
+							A1_sequence_status = SEQ_NOT_STARTED; // Reset.
+						}
+					}
+				}
+			} break;
+			default:
+				break;
+		}
+		if (A1_sequence_status == SEQ_NOT_STARTED) {
+			if (jt == U_JT_LEFT_JOINING || jt == U_JT_DUAL_JOINING) {
+				A1_sequence_status = SEQ_STARTED;
+				A1_scr = scr;
+			}
+		};
+
+		switch (A2_sequence_status) {
+			case SEQ_NEAR_END: {
+				if ((A2_scr > USCRIPT_INHERITED) && (scr > USCRIPT_INHERITED) && (scr != A2_scr)) {
+					return false; // Mixed script.
+				}
+				if (cat == U_UPPERCASE_LETTER || cat == U_LOWERCASE_LETTER || cat == U_TITLECASE_LETTER || cat == U_MODIFIER_LETTER || cat == U_OTHER_LETTER) {
+					A2_sequence_status = SEQ_NOT_STARTED; // Valid end of sequence, reset.
+				} else if (cat != U_MODIFIER_LETTER || u_getCombiningClass(str[i]) == 0) {
+					return false; // Invalid end of sequence.
+				}
+			} break;
+			case SEQ_STARTED_VIR: {
+				if ((A2_scr > USCRIPT_INHERITED) && (scr > USCRIPT_INHERITED) && (scr != A2_scr)) {
+					A2_sequence_status = SEQ_NOT_STARTED; // Reset.
+				} else {
+					if (str[i] == 0x200C /*ZWNJ*/) {
+						A2_sequence_status = SEQ_NEAR_END;
+						continue;
+					} else if (cat != U_MODIFIER_LETTER || u_getCombiningClass(str[i]) == 0) {
+						A2_sequence_status = SEQ_NOT_STARTED; // Reset.
+					}
+				}
+			} break;
+			case SEQ_STARTED: {
+				if ((A2_scr > USCRIPT_INHERITED) && (scr > USCRIPT_INHERITED) && (scr != A2_scr)) {
+					A2_sequence_status = SEQ_NOT_STARTED; // Reset.
+				} else {
+					if (u_getCombiningClass(str[i]) == 9 /*Virama Combining Class*/) {
+						A2_sequence_status = SEQ_STARTED_VIR;
+					} else if (cat != U_MODIFIER_LETTER) {
+						A2_sequence_status = SEQ_NOT_STARTED; // Reset.
+					}
+				}
+			} break;
+			default:
+				break;
+		}
+		if (A2_sequence_status == SEQ_NOT_STARTED) {
+			if (cat == U_UPPERCASE_LETTER || cat == U_LOWERCASE_LETTER || cat == U_TITLECASE_LETTER || cat == U_MODIFIER_LETTER || cat == U_OTHER_LETTER) {
+				A2_sequence_status = SEQ_STARTED;
+				A2_scr = scr;
+			}
+		}
+
+		switch (B_sequence_status) {
+			case SEQ_NEAR_END: {
+				if ((B_scr > USCRIPT_INHERITED) && (scr > USCRIPT_INHERITED) && (scr != B_scr)) {
+					return false; // Mixed script.
+				}
+				if (u_getIntPropertyValue(str[i], UCHAR_INDIC_SYLLABIC_CATEGORY) != U_INSC_VOWEL_DEPENDENT) {
+					B_sequence_status = SEQ_NOT_STARTED; // Valid end of sequence, reset.
+				} else {
+					return false; // Invalid end of sequence.
+				}
+			} break;
+			case SEQ_STARTED_VIR: {
+				if ((B_scr > USCRIPT_INHERITED) && (scr > USCRIPT_INHERITED) && (scr != B_scr)) {
+					B_sequence_status = SEQ_NOT_STARTED; // Reset.
+				} else {
+					if (str[i] == 0x200D /*ZWJ*/) {
+						B_sequence_status = SEQ_NEAR_END;
+						continue;
+					} else if (cat != U_MODIFIER_LETTER || u_getCombiningClass(str[i]) == 0) {
+						B_sequence_status = SEQ_NOT_STARTED; // Reset.
+					}
+				}
+			} break;
+			case SEQ_STARTED: {
+				if ((B_scr > USCRIPT_INHERITED) && (scr > USCRIPT_INHERITED) && (scr != B_scr)) {
+					B_sequence_status = SEQ_NOT_STARTED; // Reset.
+				} else {
+					if (u_getCombiningClass(str[i]) == 9 /*Virama Combining Class*/) {
+						B_sequence_status = SEQ_STARTED_VIR;
+					} else if (cat != U_MODIFIER_LETTER) {
+						B_sequence_status = SEQ_NOT_STARTED; // Reset.
+					}
+				}
+			} break;
+			default:
+				break;
+		}
+		if (B_sequence_status == SEQ_NOT_STARTED) {
+			if (cat == U_UPPERCASE_LETTER || cat == U_LOWERCASE_LETTER || cat == U_TITLECASE_LETTER || cat == U_MODIFIER_LETTER || cat == U_OTHER_LETTER) {
+				B_sequence_status = SEQ_STARTED;
+				B_scr = scr;
+			}
+		}
+
+		if (u_hasBinaryProperty(str[i], UCHAR_PATTERN_SYNTAX) || u_hasBinaryProperty(str[i], UCHAR_PATTERN_WHITE_SPACE) || u_hasBinaryProperty(str[i], UCHAR_NONCHARACTER_CODE_POINT)) {
+			return false; // Not a XID_Start or XID_Continue character.
+		}
+		if (i == 0) {
+			if (!(cat == U_LOWERCASE_LETTER || cat == U_UPPERCASE_LETTER || cat == U_TITLECASE_LETTER || cat == U_OTHER_LETTER || cat == U_MODIFIER_LETTER || cat == U_LETTER_NUMBER || str[0] == 0x2118 || str[0] == 0x212E || str[0] == 0x309B || str[0] == 0x309C || str[0] == 0x005F)) {
+				return false; // Not a XID_Start character.
+			}
+		} else {
+			if (!(cat == U_LOWERCASE_LETTER || cat == U_UPPERCASE_LETTER || cat == U_TITLECASE_LETTER || cat == U_OTHER_LETTER || cat == U_MODIFIER_LETTER || cat == U_LETTER_NUMBER || cat == U_NON_SPACING_MARK || cat == U_COMBINING_SPACING_MARK || cat == U_DECIMAL_DIGIT_NUMBER || cat == U_CONNECTOR_PUNCTUATION || str[i] == 0x2118 || str[i] == 0x212E || str[i] == 0x309B || str[i] == 0x309C || str[i] == 0x1369 || str[i] == 0x1371 || str[i] == 0x00B7 || str[i] == 0x0387 || str[i] == 0x19DA || str[i] == 0x0E33 || str[i] == 0x0EB3 || str[i] == 0xFF9E || str[i] == 0xFF9F)) {
+				return false; // Not a XID_Continue character.
+			}
+		}
+	}
+	return true;
 }
 
 TextServerAdvanced::TextServerAdvanced() {
