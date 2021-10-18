@@ -2,8 +2,6 @@
 
 Import("env")
 
-import os
-import os.path
 from platform_methods import run_in_subprocess
 import default_theme_builders
 
