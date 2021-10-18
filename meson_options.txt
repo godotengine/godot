@@ -45,7 +45,6 @@ option('builtin_pcre2', type: 'boolean', value: true, description: 'Use the buil
 option('builtin_pcre2_with_jit', type: 'boolean', value: true, description: 'Use JIT compiler for the built-in PCRE2 library')
 option('builtin_squish', type: 'boolean', value: true, description: 'Use the built-in squish library')
 option('builtin_vulkan', type: 'boolean', value: true, description: 'Use the built-in Vulkan loader library and headers')
-option('builtin_wslay', type: 'boolean', value: true, description: 'Use the built-in wslay library')
 option('builtin_zlib', type: 'boolean', value: true, description: 'Use the built-in zlib library')
 option('builtin_zstd', type: 'boolean', value: true, description: 'Use the built-in zstd library')
 
