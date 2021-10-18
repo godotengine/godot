@@ -328,6 +328,8 @@ void RenderForwardClustered::_render_list_template(RenderingDevice::DrawListID p
 		push_constant.uv_offset = 0;
 	}
 
+	bool should_request_redraw = false;
+
 	for (uint32_t i = p_from_element; i < p_to_element; i++) {
 		const GeometryInstanceSurfaceDataCache *surf = p_params->elements[i];
 		const RenderElementInfo &element_info = p_params->element_info[i];
@@ -363,6 +365,11 @@ void RenderForwardClustered::_render_list_template(RenderingDevice::DrawListID p
 
 		if (!mesh_surface) {
 			continue;
+		}
+
+		//request a redraw if one of the shaders uses TIME
+		if (shader->uses_time) {
+			should_request_redraw = true;
 		}
 
 		//find cull variant
@@ -499,6 +506,11 @@ void RenderForwardClustered::_render_list_template(RenderingDevice::DrawListID p
 
 		RD::get_singleton()->draw_list_draw(draw_list, index_array_rd.is_valid(), instance_count);
 		i += element_info.repeat - 1; //skip equal elements
+	}
+
+	// Make the actual redraw request
+	if (should_request_redraw) {
+		RenderingServerDefault::redraw_request();
 	}
 }
 
