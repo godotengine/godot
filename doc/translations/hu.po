@@ -3,65 +3,68 @@
 # Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).
 # This file is distributed under the same license as the Godot source code.
 #
-# harvinder rathor <harvinderr09@gmail.com>, 2021.
+# Misi <varady.misi@gmail.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine class reference\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
-"PO-Revision-Date: 2021-05-03 21:30+0000\n"
-"Last-Translator: harvinder rathor <harvinderr09@gmail.com>\n"
-"Language-Team: Hindi <https://hosted.weblate.org/projects/godot-engine/godot-"
-"class-reference/hi/>\n"
-"Language: hi\n"
+"PO-Revision-Date: 2021-10-10 14:03+0000\n"
+"Last-Translator: Misi <varady.misi@gmail.com>\n"
+"Language-Team: Hungarian <https://hosted.weblate.org/projects/godot-engine/"
+"godot-class-reference/hu/>\n"
+"Language: hu\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
-"Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 4.7-dev\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"X-Generator: Weblate 4.9-dev\n"
 
 #: doc/tools/makerst.py
 msgid "Description"
-msgstr "विवरण"
+msgstr "Leírás"
 
 #: doc/tools/makerst.py
+#, fuzzy
 msgid "Tutorials"
-msgstr "शिक्षण"
+msgstr "Útmutatók"
 
 #: doc/tools/makerst.py
 msgid "Properties"
-msgstr "विशेषता"
+msgstr "Tulajdonságok"
 
 #: doc/tools/makerst.py
 msgid "Methods"
-msgstr "तरीकों"
+msgstr "Metódusok"
 
 #: doc/tools/makerst.py
+#, fuzzy
 msgid "Theme Properties"
-msgstr "थीम विशेषता"
+msgstr "Téma Tulajdonságok"
 
 #: doc/tools/makerst.py
 msgid "Signals"
-msgstr "संकेत"
+msgstr "Jelzések"
 
 #: doc/tools/makerst.py
+#, fuzzy
 msgid "Enumerations"
-msgstr "गणना"
+msgstr "Számlálók"
 
 #: doc/tools/makerst.py
 msgid "Constants"
-msgstr ""
+msgstr "Konstansok"
 
 #: doc/tools/makerst.py
 msgid "Property Descriptions"
-msgstr ""
+msgstr "Tulajdonság leírások"
 
 #: doc/tools/makerst.py
 msgid "Method Descriptions"
-msgstr ""
+msgstr "Metódus leírások"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:4
 msgid "Built-in GDScript functions."
-msgstr ""
+msgstr "Beépített GDScript függvények"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:7
 msgid ""
@@ -69,6 +72,9 @@ msgid ""
 "utilities. Everything else is provided by objects. (Keywords: builtin, built "
 "in, global functions.)"
 msgstr ""
+"Egy lista a belső beépített GDScript függvényekről. Matematikai függvények "
+"és további segédprogramok. Minden más objektumok által van biztosítva. "
+"(Kulcsszavak: beépített, globális függvények.)"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:19
 msgid ""
@@ -83,6 +89,16 @@ msgid ""
 "red = Color8(255, 0, 0)\n"
 "[/codeblock]"
 msgstr ""
+"Egy színt ad vissza, amit egy egész szám (integer) alapú piros, zöld, kék és "
+"átlátszóság (alpha) csatorna alapján rak össze. Mindegyik csatorna egy 8 "
+"bitnyi információt tartalmaz 0-tól 255-ig.\n"
+"[code]r8[/code] piros csatorna\n"
+"[code]g8[/code] zöld csatorna\n"
+"[code]b8[/code] kék csatorna\n"
+"[code]a8[/code] átlátszósági csatorna\n"
+"[codeblock]\n"
+"red = Color8(255, 0, 0)\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:34
 msgid ""
