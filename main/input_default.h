@@ -252,10 +252,10 @@ public:
 
 	virtual void parse_input_event(const Ref<InputEvent> &p_event);
 
-	void set_gravity(const Vector3 &p_gravity);
-	void set_accelerometer(const Vector3 &p_accel);
-	void set_magnetometer(const Vector3 &p_magnetometer);
-	void set_gyroscope(const Vector3 &p_gyroscope);
+	virtual void set_gravity(const Vector3 &p_gravity);
+	virtual void set_accelerometer(const Vector3 &p_accel);
+	virtual void set_magnetometer(const Vector3 &p_magnetometer);
+	virtual void set_gyroscope(const Vector3 &p_gyroscope);
 	void set_joy_axis(int p_device, int p_axis, float p_value);
 
 	virtual void start_joy_vibration(int p_device, float p_weak_magnitude, float p_strong_magnitude, float p_duration = 0);
