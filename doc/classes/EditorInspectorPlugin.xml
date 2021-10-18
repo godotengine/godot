@@ -4,13 +4,13 @@
 		Plugin for adding custom property editors on inspector.
 	</brief_description>
 	<description>
-		These plugins allow adding custom property editors to [EditorInspector].
-		Plugins are registered via [method EditorPlugin.add_inspector_plugin].
+		[EditorInspectorPlugin] allows adding custom property editors to [EditorInspector].
 		When an object is edited, the [method _can_handle] function is called and must return [code]true[/code] if the object type is supported.
 		If supported, the function [method _parse_begin] will be called, allowing to place custom controls at the beginning of the class.
 		Subsequently, the [method _parse_category] and [method _parse_property] are called for every category and property. They offer the ability to add custom controls to the inspector too.
 		Finally, [method _parse_end] will be called.
 		On each of these calls, the "add" functions can be called.
+		To use [EditorInspectorPlugin], register it using the [method EditorPlugin.add_inspector_plugin] method first.
 	</description>
 	<tutorials>
 		<link title="Inspector plugins">https://docs.godotengine.org/en/latest/tutorials/plugins/editor/inspector_plugins.html</link>

@@ -4,9 +4,10 @@
 		A base class to implement debugger plugins.
 	</brief_description>
 	<description>
-		All debugger plugin scripts must extend [EditorDebuggerPlugin]. It provides functions related to editor side of debugger.
-		You don't need to instantiate this class. That is handled by the debugger itself. [Control] nodes can be added as child nodes to provide a GUI front-end for the plugin.
-		Do not queue_free/reparent it's instance otherwise the instance becomes unusable.
+		[EditorDebuggerPlugin] provides functions related to the editor side of the debugger.
+		You don't need to instantiate this class; that is automatically handled by the debugger. [Control] nodes can be added as child nodes to provide a GUI for the plugin.
+		Do not free or reparent this node, otherwise it becomes unusable.
+		To use [EditorDebuggerPlugin], register it using the [method EditorPlugin.add_debugger_plugin] method first.
 	</description>
 	<tutorials>
 	</tutorials>
