@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef PHYSICS_SERVER_H
-#define PHYSICS_SERVER_H
+#ifndef PHYSICS_SERVER_3D_H
+#define PHYSICS_SERVER_3D_H
 
 #include "core/io/resource.h"
 #include "core/object/class_db.h"
@@ -903,4 +903,4 @@ VARIANT_ENUM_CAST(PhysicsServer3D::G6DOFJointAxisFlag);
 VARIANT_ENUM_CAST(PhysicsServer3D::AreaBodyStatus);
 VARIANT_ENUM_CAST(PhysicsServer3D::ProcessInfo);
 
-#endif
+#endif // PHYSICS_SERVER_3D_H

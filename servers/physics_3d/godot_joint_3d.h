@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  gjk_epa.h                                                            */
+/*  godot_joint_3d.h                                                     */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,13 +28,41 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GJK_EPA_H
-#define GJK_EPA_H
+#ifndef GODOT_JOINT_3D_H
+#define GODOT_JOINT_3D_H
 
-#include "godot_collision_solver_3d.h"
-#include "godot_shape_3d.h"
+#include "godot_body_3d.h"
+#include "godot_constraint_3d.h"
 
-bool gjk_epa_calculate_penetration(const GodotShape3D *p_shape_A, const Transform3D &p_transform_A, const GodotShape3D *p_shape_B, const Transform3D &p_transform_B, GodotCollisionSolver3D::CallbackResult p_result_callback, void *p_userdata, bool p_swap = false, real_t p_margin_A = 0.0, real_t p_margin_B = 0.0);
-bool gjk_epa_calculate_distance(const GodotShape3D *p_shape_A, const Transform3D &p_transform_A, const GodotShape3D *p_shape_B, const Transform3D &p_transform_B, Vector3 &r_result_A, Vector3 &r_result_B);
+class GodotJoint3D : public GodotConstraint3D {
+protected:
+	bool dynamic_A = false;
+	bool dynamic_B = false;
 
-#endif
+public:
+	virtual bool setup(real_t p_step) override { return false; }
+	virtual bool pre_solve(real_t p_step) override { return true; }
+	virtual void solve(real_t p_step) override {}
+
+	void copy_settings_from(GodotJoint3D *p_joint) {
+		set_self(p_joint->get_self());
+		set_priority(p_joint->get_priority());
+		disable_collisions_between_bodies(p_joint->is_disabled_collisions_between_bodies());
+	}
+
+	virtual PhysicsServer3D::JointType get_type() const { return PhysicsServer3D::JOINT_TYPE_MAX; }
+	_FORCE_INLINE_ GodotJoint3D(GodotBody3D **p_body_ptr = nullptr, int p_body_count = 0) :
+			GodotConstraint3D(p_body_ptr, p_body_count) {
+	}
+
+	virtual ~GodotJoint3D() {
+		for (int i = 0; i < get_body_count(); i++) {
+			GodotBody3D *body = get_body_ptr()[i];
+			if (body) {
+				body->remove_constraint(this);
+			}
+		}
+	}
+};
+
+#endif // GODOT_JOINT_3D_H
