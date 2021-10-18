@@ -1105,7 +1105,7 @@ Error EditorExportPlatformIOS::_export_additional_assets(const String &p_out_dir
 		for (int j = 0; j < project_static_libs.size(); j++) {
 			project_static_libs.write[j] = project_static_libs[j].get_file(); // Only the file name as it's copied to the project
 		}
-		err = _export_additional_assets(p_out_dir, project_static_libs, true, true, r_exported_assets);
+		err = _export_additional_assets(p_out_dir, project_static_libs, true, false, r_exported_assets);
 		ERR_FAIL_COND_V(err, err);
 
 		Vector<String> ios_bundle_files = export_plugins[i]->get_ios_bundle_files();
