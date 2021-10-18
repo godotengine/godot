@@ -2304,15 +2304,21 @@ FRAGMENT_SHADER_CODE
 	float max_emission = max(emission.r, max(emission.g, emission.b));
 	float max_ambient = max(ambient_light.r, max(ambient_light.g, ambient_light.b));
 	float max_diffuse = max(diffuse_light.r, max(diffuse_light.g, diffuse_light.b));
-	float total_ambient = max_ambient + max_diffuse + max_emission;
+	float total_ambient = max_ambient + max_diffuse;
+#ifdef USE_FORWARD_LIGHTING
+	total_ambient += max_emission;
+#endif
 	float ambient_scale = (total_ambient > 0.0) ? (max_ambient + ambient_occlusion_affect_light * max_diffuse) / total_ambient : 0.0;
 
 #if defined(ENABLE_AO)
 	ambient_scale = mix(0.0, ambient_scale, ambient_occlusion_affect_ao_channel);
 #endif
-	diffuse_buffer = vec4(emission + diffuse_light + ambient_light, ambient_scale);
+	diffuse_buffer = vec4(diffuse_light + ambient_light, ambient_scale);
 	specular_buffer = vec4(specular_light, metallic);
 
+#ifdef USE_FORWARD_LIGHTING
+	diffuse_buffer.rgb += emission;
+#endif
 #endif //SHADELESS
 
 	normal_mr_buffer = vec4(normalize(normal) * 0.5 + 0.5, roughness);
@@ -2326,7 +2332,10 @@ FRAGMENT_SHADER_CODE
 #ifdef SHADELESS
 	frag_color = vec4(albedo, alpha);
 #else
-	frag_color = vec4(emission + ambient_light + diffuse_light + specular_light, alpha);
+	frag_color = vec4(ambient_light + diffuse_light + specular_light, alpha);
+#ifdef USE_FORWARD_LIGHTING
+	frag_color.rgb += emission;
+#endif
 #endif //SHADELESS
 
 #endif //USE_MULTIPLE_RENDER_TARGETS
