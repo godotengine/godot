@@ -1660,7 +1660,7 @@ bool CSharpInstance::set(const StringName &p_name, const Variant &p_value) {
 		GDMonoProperty *property = top->get_property(p_name);
 
 		if (property) {
-			property->set_value(mono_object, GDMonoMarshal::variant_to_mono_object(p_value, property->get_type()));
+			property->set_value_from_variant(mono_object, p_value);
 			return true;
 		}
 
