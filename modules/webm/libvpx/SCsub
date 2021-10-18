@@ -224,7 +224,7 @@ if env["platform"] == "uwp":
         webm_cpu_arm = True
     else:
         webm_cpu_x86 = True
-else:
+elif env["platform"] != "windows":  # Disable for Windows, yasm SIMD optimizations trigger crash (GH-50862).
     import platform
 
     is_x11_or_server_arm = (env["platform"] == "x11" or env["platform"] == "server") and (
@@ -322,7 +322,7 @@ if webm_cpu_arm:
 
     webm_simd_optimizations = True
 
-if webm_simd_optimizations == False:
+if webm_simd_optimizations == False and env["platform"] != "windows":
     print("WebM SIMD optimizations are disabled. Check if your CPU architecture, CPU bits or platform are supported!")
 
 env_libvpx.add_source_files(env.modules_sources, libvpx_sources)
