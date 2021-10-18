@@ -1953,6 +1953,7 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("positional_soft_shadow_filter_set_quality", "quality"), &RenderingServer::positional_soft_shadow_filter_set_quality);
 	ClassDB::bind_method(D_METHOD("directional_soft_shadow_filter_set_quality", "quality"), &RenderingServer::directional_soft_shadow_filter_set_quality);
 	ClassDB::bind_method(D_METHOD("directional_shadow_atlas_set_size", "size", "is_16bits"), &RenderingServer::directional_shadow_atlas_set_size);
+	ClassDB::bind_method(D_METHOD("soft_shadow_set_use_dithering", "dither"), &RenderingServer::soft_shadow_set_use_dithering);
 
 	BIND_ENUM_CONSTANT(SHADOW_QUALITY_HARD);
 	BIND_ENUM_CONSTANT(SHADOW_QUALITY_SOFT_VERY_LOW);
@@ -2890,6 +2891,8 @@ void RenderingServer::init() {
 
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/lights_and_shadows/positional_shadow/soft_shadow_filter_quality", PROPERTY_HINT_ENUM, "Hard (Fastest),Soft Very Low (Faster),Soft Low (Fast),Soft Medium (Average),Soft High (Slow),Soft Ultra (Slowest)"), 2);
 	GLOBAL_DEF("rendering/lights_and_shadows/positional_shadow/soft_shadow_filter_quality.mobile", 0);
+
+	GLOBAL_DEF("rendering/lights_and_shadows/soft_shadow_use_dithering", true);
 
 	GLOBAL_DEF("rendering/2d/shadow_atlas/size", 2048);
 

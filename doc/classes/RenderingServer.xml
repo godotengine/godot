@@ -465,6 +465,14 @@
 				Sets the default texture repeat mode for the canvas item specified by the [param item] RID. Equivalent to [member CanvasItem.texture_repeat].
 			</description>
 		</method>
+		<method name="soft_shadow_set_use_dithering">
+			<return type="void" />
+			<argument index="0" name="dither" type="bool" />
+			<description>
+				If [code]dither[/code] is [code]true[/code], enables dithering for soft shadows. Dithering improves overall soft shadow quality, but it has a performance cost and introduces a grainy effect that can be noticeable in scenes with large flat color areas. This dithering effect becomes less noticeable as textures become more complex and as the 3D rendering resolution increases. [method soft_shadow_set_use_dithering] affects both [DirectionalLight3D] and point light shadows. See also [member ProjectSettings.rendering/lights_and_shadows/soft_shadow_use_dithering].
+				[b]Note:[/b] Shadow dithering only has an effect if either the shadow quality or directional shadow quality are set to [constant SHADOW_QUALITY_SOFT_VERY_LOW] or higher. Shadow dithering also only has an effect on [Light3D]s whose [member Light3D.shadow_blur] is greater than [code]0.0[/code].
+			</description>
+		</method>
 		<method name="canvas_item_set_distance_field_mode">
 			<return type="void" />
 			<param index="0" name="item" type="RID" />
@@ -1024,14 +1032,14 @@
 			<param index="0" name="size" type="int" />
 			<param index="1" name="is_16bits" type="bool" />
 			<description>
-				Sets the [param size] of the directional light shadows in 3D. See also [member ProjectSettings.rendering/lights_and_shadows/directional_shadow/size]. This parameter is global and cannot be set on a per-viewport basis.
+				Sets the [param size] of the directional light shadows in 3D. Higher values result in sharper shadows, at the cost of performance. The value is rounded up to the nearest power of 2. See also [member ProjectSettings.rendering/lights_and_shadows/directional_shadow/size]. This parameter is global and cannot be set on a per-viewport basis.
 			</description>
 		</method>
 		<method name="directional_soft_shadow_filter_set_quality">
 			<return type="void" />
 			<param index="0" name="quality" type="int" enum="RenderingServer.ShadowQuality" />
 			<description>
-				Sets the filter [param quality] for directional light shadows in 3D. See also [member ProjectSettings.rendering/lights_and_shadows/directional_shadow/soft_shadow_filter_quality]. This parameter is global and cannot be set on a per-viewport basis.
+				Sets the filter [param quality] for directional light shadows in 3D. Higher quality settings use more samples when reading from shadow maps and are thus slower. See also [member ProjectSettings.rendering/lights_and_shadows/directional_shadow/soft_shadow_filter_quality]. This parameter is global and cannot be set on a per-viewport basis.
 			</description>
 		</method>
 		<method name="environment_bake_panorama">

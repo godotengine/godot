@@ -131,6 +131,7 @@ public:
 
 	void positional_soft_shadow_filter_set_quality(RS::ShadowQuality p_quality) override {}
 	void directional_soft_shadow_filter_set_quality(RS::ShadowQuality p_quality) override {}
+	void soft_shadow_set_use_dithering(bool p_dither) override {}
 
 	RID fog_volume_instance_create(RID p_fog_volume) override { return RID(); }
 	void fog_volume_instance_set_transform(RID p_fog_volume_instance, const Transform3D &p_transform) override {}

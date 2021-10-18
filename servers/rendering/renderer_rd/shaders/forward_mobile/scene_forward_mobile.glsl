@@ -480,9 +480,10 @@ layout(constant_id = 12) const bool sc_disable_directional_lights = false;
 
 #endif //!MODE_UNSHADED
 
-layout(constant_id = 7) const bool sc_decal_use_mipmaps = true;
-layout(constant_id = 13) const bool sc_disable_decals = false;
-layout(constant_id = 14) const bool sc_disable_fog = false;
+layout(constant_id = 7) const bool sc_shadow_dither = true;
+layout(constant_id = 8) const bool sc_decal_use_mipmaps = true;
+layout(constant_id = 14) const bool sc_disable_decals = false;
+layout(constant_id = 15) const bool sc_disable_fog = false;
 
 #endif //!MODE_RENDER_DEPTH
 

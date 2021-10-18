@@ -112,7 +112,7 @@
 			Used to adjust shadow appearance. Too small a value results in self-shadowing ("shadow acne"), while too large a value causes shadows to separate from casters ("peter-panning"). Adjust as needed.
 		</member>
 		<member name="shadow_blur" type="float" setter="set_param" getter="get_param" default="1.0">
-			Blurs the edges of the shadow. Can be used to hide pixel artifacts in low-resolution shadow maps. A high value can impact performance, make shadows appear grainy and can cause other unwanted artifacts. Try to keep as near default as possible.
+			Blurs the edges of the shadow. This can be used to hide pixel artifacts in low-resolution shadow maps, especially with moving objects. A high value can impact performance, make shadows appear grainy (if [member ProjectSettings.rendering/lights_and_shadows/soft_shadow_use_dithering] is [code]true[/code]) and can cause other unwanted artifacts. Try to keep [member shadow_blur] close to its default value whenever possible.
 		</member>
 		<member name="shadow_enabled" type="bool" setter="set_shadow" getter="has_shadow" default="false">
 			If [code]true[/code], the light will cast real-time shadows. This has a significant performance cost. Only enable shadow rendering when it makes a noticeable difference in the scene's appearance, and consider using [member distance_fade_enabled] to hide the light when far away from the [Camera3D].

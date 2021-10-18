@@ -2755,6 +2755,12 @@ void RenderForwardMobile::_update_shader_quality_settings() {
 	spec_constants.push_back(sc);
 
 	sc.type = RD::PIPELINE_SPECIALIZATION_CONSTANT_TYPE_BOOL;
+	sc.constant_id = SPEC_CONSTANT_SHADOW_DITHER;
+	sc.bool_value = soft_shadow_is_using_dither();
+
+	spec_constants.push_back(sc);
+
+	sc.type = RD::PIPELINE_SPECIALIZATION_CONSTANT_TYPE_BOOL;
 	sc.constant_id = SPEC_CONSTANT_DECAL_USE_MIPMAPS;
 	sc.bool_value = decals_get_filter() == RS::DECAL_FILTER_NEAREST_MIPMAPS ||
 			decals_get_filter() == RS::DECAL_FILTER_LINEAR_MIPMAPS ||
