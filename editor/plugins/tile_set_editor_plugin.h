@@ -173,11 +173,9 @@ class TileSetEditor : public HSplitContainer {
 	static void _import_scene(Node *p_scene, Ref<TileSet> p_library, bool p_merge);
 	void _undo_redo_import_scene(Node *p_scene, bool p_merge);
 
-	bool _is_drop_valid(const Dictionary &p_drag_data, const Dictionary &p_item_data) const;
 	Variant get_drag_data_fw(const Point2 &p_point, Control *p_from);
 	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
 	void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
-	void _file_load_request(const PoolVector<String> &p_path, int p_at_pos = -1);
 
 protected:
 	static void _bind_methods();

@@ -75,9 +75,6 @@ public:
 	virtual bool is_stereo();
 	virtual Transform get_transform_for_eye(ARVRInterface::Eyes p_eye, const Transform &p_cam_transform);
 
-	// we expose a PoolVector<float> version of this function to GDNative
-	PoolVector<float> _get_projection_for_eye(ARVRInterface::Eyes p_eye, real_t p_aspect, real_t p_z_near, real_t p_z_far);
-
 	// and a CameraMatrix version to ARVRServer
 	virtual CameraMatrix get_projection_for_eye(ARVRInterface::Eyes p_eye, real_t p_aspect, real_t p_z_near, real_t p_z_far);
 

@@ -433,8 +433,6 @@ private:
 
 	CanvasItem *ref_item;
 
-	void _add_canvas_item(CanvasItem *p_canvas_item);
-
 	void _save_canvas_item_ik_chain(const CanvasItem *p_canvas_item, List<float> *p_bones_length, List<Dictionary> *p_bones_state);
 	void _save_canvas_item_state(List<CanvasItem *> p_canvas_items, bool save_bones = false);
 	void _restore_canvas_item_ik_chain(CanvasItem *p_canvas_item, const List<Dictionary> *p_bones_state);
@@ -448,7 +446,6 @@ private:
 	bool updating_scroll;
 	void _update_scroll(float);
 	void _update_scrollbars();
-	void _append_canvas_item(CanvasItem *p_item);
 	void _snap_changed();
 	void _selection_result_pressed(int);
 	void _selection_menu_hide();
@@ -537,7 +534,6 @@ private:
 			const Node *p_current);
 
 	void _set_anchors_preset(Control::LayoutPreset p_preset);
-	void _set_margins_preset(Control::LayoutPreset p_preset);
 	void _set_anchors_and_margins_preset(Control::LayoutPreset p_preset);
 	void _set_anchors_and_margins_to_keep_ratio();
 
@@ -577,9 +573,6 @@ protected:
 	void _notification(int p_what);
 
 	static void _bind_methods();
-	void end_drag();
-	void box_selection_start(Point2 &click);
-	bool box_selection_end();
 
 	HBoxContainer *get_panel_hb() { return hb; }
 
@@ -604,9 +597,6 @@ protected:
 		float get(const Vector2 &v) { return v.y; }
 		void set(Vector2 &v, float f) { v.y = f; }
 	};
-
-	template <class P, class C>
-	void space_selected_items();
 
 	static CanvasItemEditor *singleton;
 

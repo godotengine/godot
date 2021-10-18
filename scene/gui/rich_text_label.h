@@ -394,8 +394,6 @@ private:
 	bool use_bbcode;
 	String bbcode;
 
-	void _update_all_lines();
-
 	int fixed_width;
 
 	bool fit_content_height;

@@ -89,7 +89,6 @@ public:
 
 	typedef int64_t ProcessID;
 
-	static OS *get_singleton();
 	GodotJavaWrapper *get_godot_java();
 	GodotIOJavaWrapper *get_godot_io_java();
 

@@ -109,8 +109,6 @@ class AnimationNodeBlendSpace1DEditor : public AnimationTreeNodeEditorPlugin {
 	void _edit_point_pos(double);
 	void _open_editor();
 
-	void _goto_parent();
-
 	EditorFileDialog *open_file;
 	Ref<AnimationNode> file_loaded;
 	void _file_opened(const String &p_file);

@@ -60,7 +60,6 @@ class AudioDriverOpenSL : public AudioDriver {
 	SLObjectItf sl;
 	SLEngineItf EngineItf;
 	SLObjectItf OutputMix;
-	SLVolumeItf volumeItf;
 	SLObjectItf player;
 	SLObjectItf recorder;
 	SLAndroidSimpleBufferQueueItf bufferQueueItf;
@@ -69,7 +68,6 @@ class AudioDriverOpenSL : public AudioDriver {
 	SLDataFormat_PCM pcm;
 	SLDataSink audioSink;
 	SLDataLocator_OutputMix locator_outputmix;
-	SLBufferQueueState state;
 
 	static AudioDriverOpenSL *s_ad;
 
@@ -90,8 +88,6 @@ class AudioDriverOpenSL : public AudioDriver {
 	virtual Error capture_init_device();
 
 public:
-	void set_singleton();
-
 	virtual const char *get_name() const;
 
 	virtual Error init();

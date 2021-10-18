@@ -57,8 +57,6 @@ public:
 
 	Vector<Input> inputs;
 
-	float process_input(int p_input, float p_time, bool p_seek, float p_blend);
-
 	friend class AnimationTree;
 
 	struct AnimationState {
@@ -85,7 +83,6 @@ public:
 	State *state;
 
 	float _pre_process(const StringName &p_base_path, AnimationNode *p_parent, State *p_state, float p_time, bool p_seek, const Vector<StringName> &p_connections);
-	void _pre_update_animations(HashMap<NodePath, int> *track_map);
 
 	//all this is temporary
 	StringName base_path;
@@ -109,8 +106,6 @@ protected:
 	static void _bind_methods();
 
 	void _validate_property(PropertyInfo &property) const;
-
-	void _set_parent(Object *p_parent);
 
 public:
 	virtual void get_parameter_list(List<PropertyInfo> *r_list) const;
@@ -258,7 +253,6 @@ private:
 	AnimationNode::State state;
 	bool cache_valid;
 	void _node_removed(Node *p_node);
-	void _caches_cleared();
 
 	void _clear_caches();
 	bool _update_caches(AnimationPlayer *player);

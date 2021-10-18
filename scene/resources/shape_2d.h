@@ -62,7 +62,6 @@ public:
 
 	bool is_collision_outline_enabled();
 
-	Shape2D();
 	~Shape2D();
 };
 

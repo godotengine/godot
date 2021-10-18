@@ -88,12 +88,6 @@ public:
 	void set_stack_size(int p_size);
 	int get_stack_size() const;
 
-	void set_return_type_enabled(bool p_returns);
-	bool is_return_type_enabled() const;
-
-	void set_return_type(Variant::Type p_type);
-	Variant::Type get_return_type() const;
-
 	void set_rpc_mode(MultiplayerAPI::RPCMode p_mode);
 	MultiplayerAPI::RPCMode get_rpc_mode() const;
 

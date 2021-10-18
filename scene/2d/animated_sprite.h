@@ -195,9 +195,6 @@ public:
 	void set_flip_v(bool p_flip);
 	bool is_flipped_v() const;
 
-	void set_modulate(const Color &p_color);
-	Color get_modulate() const;
-
 	virtual String get_configuration_warning() const;
 	AnimatedSprite();
 };

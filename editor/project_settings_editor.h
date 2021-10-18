@@ -165,8 +165,6 @@ class ProjectSettingsEditor : public AcceptDialog {
 
 	void _copy_to_platform_about_to_show();
 
-	ProjectSettingsEditor();
-
 	static ProjectSettingsEditor *singleton;
 
 	Label *restart_label;

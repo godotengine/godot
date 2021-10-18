@@ -78,7 +78,6 @@ private:
 	Vector<Tab> tabs;
 	int current;
 	int previous;
-	int _get_top_margin() const;
 	TabAlign tab_align;
 	int rb_hover;
 	bool rb_pressing;

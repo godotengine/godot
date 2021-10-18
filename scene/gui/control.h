@@ -205,9 +205,6 @@ private:
 
 	} data;
 
-	// used internally
-	Control *_find_control_at_pos(CanvasItem *p_node, const Point2 &p_pos, const Transform2D &p_xform, Transform2D &r_inv_xform);
-
 	void _window_find_focus_neighbour(const Vector2 &p_dir, Node *p_at, const Point2 *p_points, float p_min, float &r_closest_dist, Control **r_closest);
 	Control *_get_focus_neighbour(Margin p_margin, int p_count = 0);
 
@@ -222,7 +219,6 @@ private:
 	void _change_notify_margins();
 	void _update_minimum_size();
 
-	void _update_scroll();
 	void _resize(const Size2 &p_size);
 
 	void _compute_margins(Rect2 p_rect, const float p_anchors[4], float (&r_margins)[4]);

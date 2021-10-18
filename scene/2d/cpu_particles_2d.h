@@ -203,7 +203,6 @@ public:
 	void set_explosiveness_ratio(float p_ratio);
 	void set_randomness_ratio(float p_ratio);
 	void set_lifetime_randomness(float p_random);
-	void set_visibility_aabb(const Rect2 &p_aabb);
 	void set_use_local_coordinates(bool p_enable);
 	void set_speed_scale(float p_scale);
 
@@ -215,7 +214,6 @@ public:
 	float get_explosiveness_ratio() const;
 	float get_randomness_ratio() const;
 	float get_lifetime_randomness() const;
-	Rect2 get_visibility_aabb() const;
 	bool get_use_local_coordinates() const;
 	float get_speed_scale() const;
 
@@ -227,9 +225,6 @@ public:
 
 	void set_draw_order(DrawOrder p_order);
 	DrawOrder get_draw_order() const;
-
-	void set_draw_passes(int p_count);
-	int get_draw_passes() const;
 
 	void set_texture(const Ref<Texture> &p_texture);
 	Ref<Texture> get_texture() const;
@@ -269,7 +264,6 @@ public:
 	void set_emission_points(const PoolVector<Vector2> &p_points);
 	void set_emission_normals(const PoolVector<Vector2> &p_normals);
 	void set_emission_colors(const PoolVector<Color> &p_colors);
-	void set_emission_point_count(int p_count);
 
 	EmissionShape get_emission_shape() const;
 	float get_emission_sphere_radius() const;
@@ -277,7 +271,6 @@ public:
 	PoolVector<Vector2> get_emission_points() const;
 	PoolVector<Vector2> get_emission_normals() const;
 	PoolVector<Color> get_emission_colors() const;
-	int get_emission_point_count() const;
 
 	void set_gravity(const Vector2 &p_gravity);
 	Vector2 get_gravity() const;

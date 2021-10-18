@@ -738,8 +738,6 @@ private:
 
 	void _register_all_gizmos();
 
-	SpatialEditor();
-
 	bool is_any_freelook_active() const;
 
 	void _refresh_menu_icons();

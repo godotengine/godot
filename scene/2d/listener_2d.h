@@ -43,8 +43,6 @@ private:
 	friend class Viewport;
 
 protected:
-	void _update_listener();
-
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
 	void _get_property_list(List<PropertyInfo> *p_list) const;

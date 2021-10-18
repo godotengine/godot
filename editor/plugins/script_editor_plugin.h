@@ -325,15 +325,12 @@ class ScriptEditor : public PanelContainer {
 	bool use_space_indentation;
 	bool convert_indent_on_save;
 
-	void _trim_trailing_whitespace(TextEdit *tx);
-
 	void _goto_script_line2(int p_line);
 	void _goto_script_line(REF p_script, int p_line);
 	void _set_execution(REF p_script, int p_line);
 	void _clear_execution(REF p_script);
 	void _breaked(bool p_breaked, bool p_can_debug);
 	void _show_debugger(bool p_show);
-	void _update_window_menu();
 	void _script_created(Ref<Script> p_script);
 
 	ScriptEditorBase *_get_current_editor() const;
@@ -376,7 +373,6 @@ class ScriptEditor : public PanelContainer {
 	void _make_script_list_context_menu();
 
 	void _help_search(String p_text);
-	void _help_index(String p_text);
 
 	void _history_forward();
 	void _history_back();
