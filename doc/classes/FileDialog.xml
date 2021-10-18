@@ -32,12 +32,14 @@
 			<return type="LineEdit" />
 			<description>
 				Returns the LineEdit for the selected file.
+				[b]Warning:[/b] This is a required internal node, removing and freeing it may cause a crash. If you wish to hide it or any of its children, use their [member CanvasItem.visible] property.
 			</description>
 		</method>
 		<method name="get_vbox">
 			<return type="VBoxContainer" />
 			<description>
 				Returns the vertical box container of the dialog, custom controls can be added to it.
+				[b]Warning:[/b] This is a required internal node, removing and freeing it may cause a crash. If you wish to hide it or any of its children, use their [member CanvasItem.visible] property.
 			</description>
 		</method>
 		<method name="invalidate">

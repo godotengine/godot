@@ -147,6 +147,7 @@
 			<return type="PopupMenu" />
 			<description>
 				Returns the [PopupMenu] of this [TextEdit]. By default, this menu is displayed when right-clicking on the [TextEdit].
+				[b]Warning:[/b] This is a required internal node, removing and freeing it may cause a crash. If you wish to hide it or any of its children, use their [member CanvasItem.visible] property.
 			</description>
 		</method>
 		<method name="get_selection_from_column" qualifiers="const">
