@@ -49,12 +49,14 @@
 # Vancha March <tjipkevdh@gmail.com>, 2021.
 # Hugo van de Kuilen <hugo.vandekuilen1234567890@gmail.com>, 2021.
 # tobeqz <vanveenjorik+tobeqz@gmail.com>, 2021.
+# Edgar <Edgar@anotherfoxguy.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
+"Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-08-06 19:42+0000\n"
-"Last-Translator: tobeqz <vanveenjorik+tobeqz@gmail.com>\n"
+"PO-Revision-Date: 2021-10-04 13:31+0000\n"
+"Last-Translator: Edgar <Edgar@anotherfoxguy.com>\n"
 "Language-Team: Dutch <https://hosted.weblate.org/projects/godot-engine/godot/"
 "nl/>\n"
 "Language: nl\n"
@@ -62,7 +64,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.8-dev\n"
+"X-Generator: Weblate 4.9-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -412,9 +414,8 @@ msgstr "Anim Invoegen"
 
 #. TRANSLATORS: This describes the target of new animation track, will be inserted into another string.
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "node '%s'"
-msgstr "Kan '%s' niet openen."
+msgstr "node '%s'"
 
 #. TRANSLATORS: This describes the target of new animation track, will be inserted into another string.
 #: editor/animation_track_editor.cpp
@@ -428,9 +429,8 @@ msgstr "Animatie-Speler kan zichzelf niet animeren, alleen andere spelers."
 
 #. TRANSLATORS: This describes the target of new animation track, will be inserted into another string.
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "property '%s'"
-msgstr "Eigenschap '%s' bestaat niet."
+msgstr "Eigenschap '%s'"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Create & Insert"
@@ -1608,9 +1608,8 @@ msgid "Name"
 msgstr "Naam"
 
 #: editor/editor_autoload_settings.cpp
-#, fuzzy
 msgid "Global Variable"
-msgstr "Hernoem Variabele"
+msgstr "Globale Variabele"
 
 #: editor/editor_data.cpp
 msgid "Paste Params"
@@ -2458,6 +2457,15 @@ msgstr ""
 "Kon de scène niet opslaan. Waarschijnlijk konden afhankelijkheden "
 "(instanties of erfelijkheden) niet voldaan worden."
 
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Could not save one or more scenes!"
+msgstr "Kon het subproces niet opstarten!"
+
+#: editor/editor_node.cpp
+msgid "Save All Scenes"
+msgstr "Alle scènes opslaan"
+
 #: editor/editor_node.cpp editor/scene_tree_dock.cpp
 msgid "Can't overwrite scene that is still open!"
 msgstr "Kan geen scènes overschrijven die nog open zijn!"
@@ -2593,6 +2601,10 @@ msgstr "Opslaan & Sluiten"
 #: editor/editor_node.cpp
 msgid "Save changes to '%s' before closing?"
 msgstr "Sla wijzigen aan '%s' op voor het afsluiten?"
+
+#: editor/editor_node.cpp
+msgid "%s no longer exists! Please specify a new save location."
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2940,10 +2952,6 @@ msgstr "Onlangs geopend"
 #: editor/editor_node.cpp
 msgid "Save Scene"
 msgstr "Scène opslaan"
-
-#: editor/editor_node.cpp
-msgid "Save All Scenes"
-msgstr "Alle scènes opslaan"
 
 #: editor/editor_node.cpp
 msgid "Convert To..."
@@ -4459,16 +4467,24 @@ msgid "Clear Default for '%s'"
 msgstr "Wis Standaard voor '%s'"
 
 #: editor/import_dock.cpp
+msgid "Reimport"
+msgstr "Opnieuw importeren"
+
+#: editor/import_dock.cpp
+msgid ""
+"You have pending changes that haven't been applied yet. Click Reimport to "
+"apply changes made to the import options.\n"
+"Selecting another resource in the FileSystem dock without clicking Reimport "
+"first will discard changes made in the Import dock."
+msgstr ""
+
+#: editor/import_dock.cpp
 msgid "Import As:"
 msgstr "Importeer als:"
 
 #: editor/import_dock.cpp
 msgid "Preset"
 msgstr "Voorinstellingen"
-
-#: editor/import_dock.cpp
-msgid "Reimport"
-msgstr "Opnieuw importeren"
 
 #: editor/import_dock.cpp
 msgid "Save Scenes, Re-Import, and Restart"
@@ -7467,11 +7483,13 @@ msgid "Move Down"
 msgstr "Plaats Omlaag"
 
 #: editor/plugins/script_editor_plugin.cpp
-msgid "Next script"
+#, fuzzy
+msgid "Next Script"
 msgstr "Volgend script"
 
 #: editor/plugins/script_editor_plugin.cpp
-msgid "Previous script"
+#, fuzzy
+msgid "Previous Script"
 msgstr "Vorig script"
 
 #: editor/plugins/script_editor_plugin.cpp
@@ -7894,13 +7912,18 @@ msgstr "Orthogonaal"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 #, fuzzy
-msgid "Right Perspective"
+msgid "Left Perspective"
 msgstr "Perspectief"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 #, fuzzy
 msgid "Right Orthogonal"
 msgstr "Orthogonaal"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Right Perspective"
+msgstr "Perspectief"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 #, fuzzy
@@ -8264,6 +8287,27 @@ msgstr "Linker Zijaanzicht"
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Right View"
 msgstr "Rechter Zijaanzicht"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Orbit View Down"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Orbit View Left"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Orbit View Right"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Orbit View Up"
+msgstr "Vooraanzicht"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Orbit View 180"
+msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Switch Perspective/Orthogonal View"
@@ -14633,6 +14677,14 @@ msgstr ""
 "De standaard Environment zoals aangegeven in Projectinstellingen "
 "(Rendering→Environment→Default Environment) kon niet worden geladen."
 
+#: scene/main/timer.cpp
+msgid ""
+"Very low timer wait times (< 0.05 seconds) may behave in significantly "
+"different ways depending on the rendered or physics frame rate.\n"
+"Consider using a script's process loop instead of relying on a Timer for "
+"very low wait times."
+msgstr ""
+
 #: scene/main/viewport.cpp
 msgid ""
 "This viewport is not set as render target. If you intend for it to display "
@@ -14646,7 +14698,10 @@ msgstr ""
 "van en wijs zijn interne textuur toe aan een knoop om te tonen."
 
 #: scene/main/viewport.cpp
-msgid "Viewport size must be greater than 0 to render anything."
+#, fuzzy
+msgid ""
+"The Viewport size must be greater than or equal to 2 pixels on both "
+"dimensions to render anything."
 msgstr ""
 "De grootte van een Viewport moet groter zijn dan 0 om iets weer te geven."
 

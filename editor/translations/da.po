@@ -21,6 +21,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
+"Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
 "PO-Revision-Date: 2021-04-26 22:31+0000\n"
 "Last-Translator: Kim Nielsen <kimmowich@stofanet.dk>\n"
@@ -2509,6 +2510,15 @@ msgstr ""
 "Kunne ikke gemme scene. Der er nogle afhængigheder (forekomster) som ikke "
 "kunne opfyldes."
 
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Could not save one or more scenes!"
+msgstr "Kunne ikke starte underproces!"
+
+#: editor/editor_node.cpp
+msgid "Save All Scenes"
+msgstr "Gem alle Scener"
+
 #: editor/editor_node.cpp editor/scene_tree_dock.cpp
 msgid "Can't overwrite scene that is still open!"
 msgstr ""
@@ -2643,6 +2653,10 @@ msgstr "Gem & Luk"
 #: editor/editor_node.cpp
 msgid "Save changes to '%s' before closing?"
 msgstr "Gem ændringer til '%s' før lukning?"
+
+#: editor/editor_node.cpp
+msgid "%s no longer exists! Please specify a new save location."
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2993,10 +3007,6 @@ msgstr "Åben Seneste"
 #: editor/editor_node.cpp
 msgid "Save Scene"
 msgstr "Gem Scene"
-
-#: editor/editor_node.cpp
-msgid "Save All Scenes"
-msgstr "Gem alle Scener"
 
 #: editor/editor_node.cpp
 msgid "Convert To..."
@@ -4540,6 +4550,18 @@ msgid "Clear Default for '%s'"
 msgstr "Fjern Standard for '%s'"
 
 #: editor/import_dock.cpp
+msgid "Reimport"
+msgstr "Genimporter"
+
+#: editor/import_dock.cpp
+msgid ""
+"You have pending changes that haven't been applied yet. Click Reimport to "
+"apply changes made to the import options.\n"
+"Selecting another resource in the FileSystem dock without clicking Reimport "
+"first will discard changes made in the Import dock."
+msgstr ""
+
+#: editor/import_dock.cpp
 msgid "Import As:"
 msgstr "Importer Som:"
 
@@ -4547,10 +4569,6 @@ msgstr "Importer Som:"
 #, fuzzy
 msgid "Preset"
 msgstr "Forudindstillet..."
-
-#: editor/import_dock.cpp
-msgid "Reimport"
-msgstr "Genimporter"
 
 #: editor/import_dock.cpp
 msgid "Save Scenes, Re-Import, and Restart"
@@ -7612,12 +7630,14 @@ msgid "Move Down"
 msgstr ""
 
 #: editor/plugins/script_editor_plugin.cpp
-msgid "Next script"
-msgstr ""
+#, fuzzy
+msgid "Next Script"
+msgstr "Åben script"
 
 #: editor/plugins/script_editor_plugin.cpp
-msgid "Previous script"
-msgstr ""
+#, fuzzy
+msgid "Previous Script"
+msgstr "Forrige fane"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "File"
@@ -8060,13 +8080,17 @@ msgid "Left Orthogonal"
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Right Perspective"
+msgid "Left Perspective"
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 #, fuzzy
 msgid "Right Orthogonal"
 msgstr "Højre knap."
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Right Perspective"
+msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Front Orthogonal"
@@ -8416,6 +8440,26 @@ msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Right View"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Orbit View Down"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Orbit View Left"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Orbit View Right"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Orbit View Up"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Orbit View 180"
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -14728,6 +14772,14 @@ msgid ""
 "Environment -> Default Environment) could not be loaded."
 msgstr ""
 
+#: scene/main/timer.cpp
+msgid ""
+"Very low timer wait times (< 0.05 seconds) may behave in significantly "
+"different ways depending on the rendered or physics frame rate.\n"
+"Consider using a script's process loop instead of relying on a Timer for "
+"very low wait times."
+msgstr ""
+
 #: scene/main/viewport.cpp
 msgid ""
 "This viewport is not set as render target. If you intend for it to display "
@@ -14741,7 +14793,9 @@ msgstr ""
 "indre textur til en node så den kan vises."
 
 #: scene/main/viewport.cpp
-msgid "Viewport size must be greater than 0 to render anything."
+msgid ""
+"The Viewport size must be greater than or equal to 2 pixels on both "
+"dimensions to render anything."
 msgstr ""
 
 #: scene/resources/occluder_shape.cpp

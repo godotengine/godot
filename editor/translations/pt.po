@@ -22,8 +22,9 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
+"Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-09-15 00:46+0000\n"
+"PO-Revision-Date: 2021-09-29 02:21+0000\n"
 "Last-Translator: João Lopes <linux-man@hotmail.com>\n"
 "Language-Team: Portuguese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/pt/>\n"
@@ -422,7 +423,7 @@ msgstr "Reorganizar Pistas"
 
 #: editor/animation_track_editor.cpp
 msgid "Transform tracks only apply to Spatial-based nodes."
-msgstr "Pistas de Transformação só se aplicam a nós de base Espacial."
+msgstr "Pistas de transformação só se aplicam a nós de base Espacial."
 
 #: editor/animation_track_editor.cpp
 msgid ""
@@ -1079,7 +1080,7 @@ msgid ""
 "Depending on your filesystem configuration, the files will either be moved "
 "to the system trash or deleted permanently."
 msgstr ""
-"Remover ficheiros selecionados do Projeto? (Não pode ser revertido.)\n"
+"Remover ficheiros selecionados do Projeto? (Não pode ser desfeito.)\n"
 "Dependendo da configuração, pode encontrar os ficheiros removidos na "
 "Reciclagem do sistema ou apagados permanentemente."
 
@@ -1093,7 +1094,7 @@ msgid ""
 msgstr ""
 "Os ficheiros a serem removidos são necessários para que outros recursos "
 "funcionem.\n"
-"Remover mesmo assim? (Não pode ser revertido.)\n"
+"Removê-los mesmo assim? (Não pode ser desfeito.)\n"
 "Dependendo da configuração, pode encontrar os ficheiros removidos na "
 "Reciclagem do sistema ou apagados permanentemente."
 
@@ -1111,7 +1112,7 @@ msgstr "Falha no carregamento devido a dependências em falta:"
 
 #: editor/dependency_editor.cpp editor/editor_node.cpp
 msgid "Open Anyway"
-msgstr "Abrir De Qualquer Maneira"
+msgstr "Abrir Em Qualquer Caso"
 
 #: editor/dependency_editor.cpp
 msgid "Which action should be taken?"
@@ -1127,7 +1128,7 @@ msgstr "Erros ao carregar!"
 
 #: editor/dependency_editor.cpp
 msgid "Permanently delete %d item(s)? (No undo!)"
-msgstr "Apagar permanentemente %d itens? (Sem desfazer!)"
+msgstr "Apagar permanentemente %d itens? (Definitivo!)"
 
 #: editor/dependency_editor.cpp
 msgid "Show Dependencies"
@@ -1789,7 +1790,7 @@ msgstr "(nada)"
 
 #: editor/editor_feature_profile.cpp
 msgid "Remove currently selected profile, '%s'? Cannot be undone."
-msgstr "Remover perfil selecionado, '%s'? Não pode ser revertido."
+msgstr "Remover perfil selecionado, '%s'? Não pode ser desfeito."
 
 #: editor/editor_feature_profile.cpp
 msgid "Profile must be a valid filename and must not contain '.'"
@@ -2110,7 +2111,7 @@ msgstr "Propriedades"
 
 #: editor/editor_help.cpp
 msgid "override:"
-msgstr "Sobrepõe:"
+msgstr "sobrepor:"
 
 #: editor/editor_help.cpp
 msgid "default:"
@@ -2316,6 +2317,9 @@ msgid ""
 "Update Continuously is enabled, which can increase power usage. Click to "
 "disable it."
 msgstr ""
+"Roda quando a janela do editor redesenha.\n"
+"Atualização Contínua está ativa, o que pode aumentar o consumo de energia. "
+"Clique para a desativar."
 
 #: editor/editor_node.cpp
 msgid "Spins when the editor window redraws."
@@ -2412,6 +2416,15 @@ msgstr ""
 "Incapaz de guardar cena. Provavelmente, as dependências (instâncias ou "
 "heranças) não puderam ser satisfeitas."
 
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Could not save one or more scenes!"
+msgstr "Não consegui iniciar o subprocesso!"
+
+#: editor/editor_node.cpp
+msgid "Save All Scenes"
+msgstr "Guardar todas as Cenas"
+
 #: editor/editor_node.cpp editor/scene_tree_dock.cpp
 msgid "Can't overwrite scene that is still open!"
 msgstr "Não se consegue sobrescrever cena ainda aberta!"
@@ -2446,7 +2459,7 @@ msgid ""
 "To restore the Default layout to its base settings, use the Delete Layout "
 "option and delete the Default layout."
 msgstr ""
-"Layout predefinido do editor anulado.\n"
+"Layout predefinido do editor sobreposto.\n"
 "Para restaurar o layout predefinido nas configurações base, use a opção "
 "Apagar Layout e remova o layout Predefinido."
 
@@ -2549,12 +2562,16 @@ msgid "Save changes to '%s' before closing?"
 msgstr "Guardar alterações a '%s' antes de fechar?"
 
 #: editor/editor_node.cpp
+msgid "%s no longer exists! Please specify a new save location."
+msgstr ""
+
+#: editor/editor_node.cpp
 msgid ""
 "The current scene has no root node, but %d modified external resource(s) "
 "were saved anyway."
 msgstr ""
 "A cena atual não tem nó raiz, mas %d recurso(s) externo(s) modificados foram "
-"guardados."
+"mesmo assim guardados."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2594,29 +2611,27 @@ msgstr "A cena atual não foi guardada. Abrir na mesma?"
 
 #: editor/editor_node.cpp
 msgid "Can't undo while mouse buttons are pressed."
-msgstr ""
+msgstr "Incapaz de desfazer enquanto os botões do rato estão premidos."
 
 #: editor/editor_node.cpp
 msgid "Nothing to undo."
-msgstr ""
+msgstr "Nada para desfazer."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Undo: %s"
-msgstr "Desfazer"
+msgstr "Desfazer: %s"
 
 #: editor/editor_node.cpp
 msgid "Can't redo while mouse buttons are pressed."
-msgstr ""
+msgstr "Incapaz de refazer enquanto os botões do rato estão premidos."
 
 #: editor/editor_node.cpp
 msgid "Nothing to redo."
-msgstr ""
+msgstr "Nada para refazer."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Redo: %s"
-msgstr "Refazer"
+msgstr "Refazer: %s"
 
 #: editor/editor_node.cpp
 msgid "Can't reload a scene that was never saved."
@@ -2632,7 +2647,7 @@ msgid ""
 "Reload the saved scene anyway? This action cannot be undone."
 msgstr ""
 "A cena atual tem alterações não guardadas.\n"
-"Recarregar a cena guardada? Esta ação não pode ser revertida."
+"Recarregar na mesma a cena guardada? Esta ação não pode ser desfeita."
 
 #: editor/editor_node.cpp
 msgid "Quick Run Scene..."
@@ -2898,10 +2913,6 @@ msgstr "Abrir Recente"
 #: editor/editor_node.cpp
 msgid "Save Scene"
 msgstr "Guardar Cena"
-
-#: editor/editor_node.cpp
-msgid "Save All Scenes"
-msgstr "Guardar todas as Cenas"
 
 #: editor/editor_node.cpp
 msgid "Convert To..."
@@ -3303,9 +3314,8 @@ msgid "Merge With Existing"
 msgstr "Combinar com o Existente"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Apply MeshInstance Transforms"
-msgstr "Anim Mudar Transformação"
+msgstr "Aplicar Transformações do MeshInstance"
 
 #: editor/editor_node.cpp
 msgid "Open & Run a Script"
@@ -3456,6 +3466,12 @@ msgid ""
 "functions called by that function.\n"
 "Use this to find individual functions to optimize."
 msgstr ""
+"Inclusiva: Inclui tempo de outras funções chamadas por esta função.\n"
+"Use-o para detetar congestionamentos.\n"
+"\n"
+"Próprio: Conta apenas o tempo gasto na própria função, não em outras funções "
+"chamadas pela função.\n"
+"Use-o para encontrar funções individuais a otimizar."
 
 #: editor/editor_profiler.cpp
 msgid "Frame #:"
@@ -3560,7 +3576,7 @@ msgstr ""
 
 #: editor/editor_resource_picker.cpp
 msgid "Quick Load"
-msgstr ""
+msgstr "Carregamento Rápido"
 
 #: editor/editor_resource_picker.cpp editor/property_editor.cpp
 msgid "Make Unique"
@@ -4203,7 +4219,7 @@ msgstr "Substituir: "
 
 #: editor/find_in_files.cpp
 msgid "Replace all (no undo)"
-msgstr "Substituir tudo (não há desfazer)"
+msgstr "Substituir tudo (definitivo)"
 
 #: editor/find_in_files.cpp
 msgid "Searching..."
@@ -4384,16 +4400,24 @@ msgid "Clear Default for '%s'"
 msgstr "Limpar Predefinição para '%s'"
 
 #: editor/import_dock.cpp
+msgid "Reimport"
+msgstr "Reimportar"
+
+#: editor/import_dock.cpp
+msgid ""
+"You have pending changes that haven't been applied yet. Click Reimport to "
+"apply changes made to the import options.\n"
+"Selecting another resource in the FileSystem dock without clicking Reimport "
+"first will discard changes made in the Import dock."
+msgstr ""
+
+#: editor/import_dock.cpp
 msgid "Import As:"
 msgstr "Importar Como:"
 
 #: editor/import_dock.cpp
 msgid "Preset"
 msgstr "Predefinições"
-
-#: editor/import_dock.cpp
-msgid "Reimport"
-msgstr "Reimportar"
 
 #: editor/import_dock.cpp
 msgid "Save Scenes, Re-Import, and Restart"
@@ -5667,22 +5691,20 @@ msgstr "Mover CanvasItem \"%s\" para (%d, %d)"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Locked"
-msgstr "Bloquear Seleção"
+msgstr "Bloqueado"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Grouped"
-msgstr "Grupos"
+msgstr "Agrupado"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid ""
 "Children of containers have their anchors and margins values overridden by "
 "their parent."
 msgstr ""
-"As âncoras e margens de filhos de um contentores são sobrescritas pelo seu "
+"As âncoras e margens de filhos de um contentores são sobrepostas pelo seu "
 "progenitor."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
@@ -5793,6 +5815,9 @@ msgid ""
 "No project instance running. Run the project from the editor to use this "
 "feature."
 msgstr ""
+"Sobreposição da Câmara do Projeto.\n"
+"Nenhuma instância do projeto em execução. Execute o projeto pelo editor para "
+"usar este recurso."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -6389,7 +6414,7 @@ msgstr "Editor da lista de itens"
 
 #: editor/plugins/light_occluder_2d_editor_plugin.cpp
 msgid "Create Occluder Polygon"
-msgstr "Criar Polígono oclusor"
+msgstr "Criar Polígono Oclusor"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Mesh is empty!"
@@ -6532,6 +6557,9 @@ msgid ""
 "This is similar to single collision shape, but can result in a simpler "
 "geometry in some cases, at the cost of accuracy."
 msgstr ""
+"Cria uma forma convexa de colisão simplificada.\n"
+"É similar à forma de colisão única, mas pode ter uma geometria mais simples "
+"em alguns casos, ao custo da precisão."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Multiple Convex Collision Siblings"
@@ -6612,14 +6640,12 @@ msgid "Remove Selected Item"
 msgstr "Remover item selecionado"
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
-#, fuzzy
 msgid "Import from Scene (Ignore Transforms)"
-msgstr "Importar da Cena"
+msgstr "Importar da Cena (Ignorar Transformações)"
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
-#, fuzzy
 msgid "Import from Scene (Apply Transforms)"
-msgstr "Importar da Cena"
+msgstr "Importar da Cena (Aplicar Transformações)"
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
 msgid "Update from Scene"
@@ -7198,7 +7224,7 @@ msgstr "Inverter Portais"
 
 #: editor/plugins/room_manager_editor_plugin.cpp
 msgid "Room Generate Points"
-msgstr "Quarto Gerar Pontos"
+msgstr "Room Gerar Pontos"
 
 #: editor/plugins/room_manager_editor_plugin.cpp
 msgid "Generate Points"
@@ -7209,14 +7235,12 @@ msgid "Flip Portal"
 msgstr "Inverter Portal"
 
 #: editor/plugins/room_manager_editor_plugin.cpp
-#, fuzzy
 msgid "Occluder Set Transform"
-msgstr "Limpar Transformação"
+msgstr "Oclusor Definir Transformação"
 
 #: editor/plugins/room_manager_editor_plugin.cpp
-#, fuzzy
 msgid "Center Node"
-msgstr "Criar Nó"
+msgstr "Centrar Nó"
 
 #: editor/plugins/root_motion_editor_plugin.cpp
 msgid "AnimationTree has no path set to an AnimationPlayer"
@@ -7352,11 +7376,13 @@ msgid "Move Down"
 msgstr "Mover para baixo"
 
 #: editor/plugins/script_editor_plugin.cpp
-msgid "Next script"
+#, fuzzy
+msgid "Next Script"
 msgstr "Próximo Script"
 
 #: editor/plugins/script_editor_plugin.cpp
-msgid "Previous script"
+#, fuzzy
+msgid "Previous Script"
 msgstr "Script anterior"
 
 #: editor/plugins/script_editor_plugin.cpp
@@ -7718,14 +7744,12 @@ msgid "Skeleton2D"
 msgstr "Esqueleto2D"
 
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Reset to Rest Pose"
 msgstr "Pôr Ossos em Pose de Descanso"
 
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Overwrite Rest Pose"
-msgstr "Sobrescrever"
+msgstr "Sobrescrever Pose de Descanso"
 
 #: editor/plugins/skeleton_editor_plugin.cpp
 msgid "Create physical bones"
@@ -7752,73 +7776,67 @@ msgid "Perspective"
 msgstr "Perspetiva"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Top Orthogonal"
-msgstr "Ortogonal"
+msgstr "Ortogonal Topo"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Top Perspective"
-msgstr "Perspetiva"
+msgstr "Perspetiva Topo"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Bottom Orthogonal"
-msgstr "Ortogonal"
+msgstr "Ortogonal Fundo"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Bottom Perspective"
-msgstr "Perspetiva"
+msgstr "Perspetiva Fundo"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Left Orthogonal"
-msgstr "Ortogonal"
+msgstr "Ortogonal Esquerda"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 #, fuzzy
-msgid "Right Perspective"
+msgid "Left Perspective"
 msgstr "Perspetiva"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Right Orthogonal"
-msgstr "Ortogonal"
+msgstr "Ortogonal Direita"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
+msgid "Right Perspective"
+msgstr "Perspetiva Direita"
+
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Front Orthogonal"
-msgstr "Ortogonal"
+msgstr "Ortogonal Frente"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Front Perspective"
-msgstr "Perspetiva"
+msgstr "Perspetiva Frente"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Rear Orthogonal"
-msgstr "Ortogonal"
+msgstr "Ortogonal Traseira"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Rear Perspective"
-msgstr "Perspetiva"
+msgstr "Perspetiva Traseira"
 
 #. TRANSLATORS: This will be appended to the view name when Auto Orthogonal is enabled.
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid " [auto]"
-msgstr ""
+msgstr " [auto]"
 
 #. TRANSLATORS: This will be appended to the view name when Portal Occulusion is enabled.
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid " [portals active]"
-msgstr ""
+msgstr " [portais ativos]"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Transform Aborted."
-msgstr "Transformação abortada."
+msgstr "Transformação Abortada."
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "X-Axis Transform."
@@ -7921,7 +7939,7 @@ msgstr "Vista de topo."
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Bottom View."
-msgstr "Vista de fundo."
+msgstr "Vista de Fundo."
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Left View."
@@ -8072,7 +8090,7 @@ msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Convert Rooms"
-msgstr "Converter Quartos"
+msgstr "Converter Rooms"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "XForm Dialog"
@@ -8095,7 +8113,7 @@ msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Snap Nodes to Floor"
-msgstr "Ajustar Nós ao Fundo"
+msgstr "Ajustar Nós ao Chão"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Couldn't find a solid floor to snap the selection to."
@@ -8111,7 +8129,7 @@ msgstr "Usar Ajuste"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Converts rooms for portal culling."
-msgstr ""
+msgstr "Converte rooms para culling de portal."
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Bottom View"
@@ -8136,6 +8154,27 @@ msgstr "Vista Esquerda"
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Right View"
 msgstr "Vista Direita"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Orbit View Down"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Orbit View Left"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Orbit View Right"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Orbit View Up"
+msgstr "Vista de Frente"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Orbit View 180"
+msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Switch Perspective/Orthogonal View"
@@ -8168,7 +8207,7 @@ msgstr "Ajustar Objetos ao Chão"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Transform Dialog..."
-msgstr "Diálogo de transformação..."
+msgstr "Diálogo de Transformação..."
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "1 Viewport"
@@ -8211,9 +8250,8 @@ msgid "View Portal Culling"
 msgstr "Ver Culling do Portal"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "View Occlusion Culling"
-msgstr "Ver Culling do Portal"
+msgstr "Ver Culling da Oclusão"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 #: modules/gridmap/grid_map_editor_plugin.cpp
@@ -8270,7 +8308,7 @@ msgstr "Escala (prop.):"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Transform Type"
-msgstr "Tipo de transformação"
+msgstr "Tipo de Transformação"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Pre"
@@ -8281,9 +8319,8 @@ msgid "Post"
 msgstr "Pós"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Unnamed Gizmo"
-msgstr "Projeto sem nome"
+msgstr "Gizmo sem nome"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Create Mesh2D"
@@ -8731,12 +8768,18 @@ msgid ""
 "closing this window.\n"
 "Close anyway?"
 msgstr ""
+"O separador de Importação de Itens tem alguns itens selecionados. A seleção "
+"será perdida ao fechar esta janela.\n"
+"Fechar na mesma?"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid ""
 "Select a theme type from the list to edit its items.\n"
 "You can add a custom type or import a type with its items from another theme."
 msgstr ""
+"Selecione um tipo de tema da lista para editar os seus itens.\n"
+"Pode adicionar um tipo personalizado ou importar um tipo com os seus itens "
+"de outro tema."
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Remove All Color Items"
@@ -8767,6 +8810,8 @@ msgid ""
 "This theme type is empty.\n"
 "Add more items to it manually or by importing from another theme."
 msgstr ""
+"Este tipo de tema está vazio.\n"
+"Adicione-lhe mais itens manualmente ou importando-os de outro tema."
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Add Color Item"
@@ -8927,6 +8972,7 @@ msgstr "Mostrar Predefinição"
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Show default type items alongside items that have been overridden."
 msgstr ""
+"Mostrar itens do tipo predefinido ao lado de itens que foram sobrepostos."
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Override All"
@@ -8934,7 +8980,7 @@ msgstr "Sobrepor Tudo"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Override all default type items."
-msgstr ""
+msgstr "Sobrepõe todos os itens de tipo predefinido."
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Theme:"
@@ -8965,6 +9011,8 @@ msgid ""
 "Toggle the control picker, allowing to visually select control types for "
 "edit."
 msgstr ""
+"Alternar o selecionador de controlo, permitindo escolher o tipo de controlo "
+"para editar."
 
 #: editor/plugins/theme_editor_preview.cpp
 msgid "Toggle Button"
@@ -9053,10 +9101,11 @@ msgstr "Tem,Muitas,Opções"
 #: editor/plugins/theme_editor_preview.cpp
 msgid "Invalid path, the PackedScene resource was probably moved or removed."
 msgstr ""
+"Caminho inválido, o recurso PackedScene foi provavelmente movido ou removido."
 
 #: editor/plugins/theme_editor_preview.cpp
 msgid "Invalid PackedScene resource, must have a Control node at its root."
-msgstr ""
+msgstr "Recurso PackedScene inválido, tem de ter um nó Control na sua raíz."
 
 #: editor/plugins/theme_editor_preview.cpp
 msgid "Invalid file, not a PackedScene resource."
@@ -9064,7 +9113,7 @@ msgstr "Ficheiro inválido, não é um recurso PackedScene."
 
 #: editor/plugins/theme_editor_preview.cpp
 msgid "Reload the scene to reflect its most actual state."
-msgstr ""
+msgstr "Recarregar a cena para refletir o seu estado atual."
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Erase Selection"
@@ -10157,7 +10206,7 @@ msgstr "Consulta uniforme de textura 2D com triplanar."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Transform function."
-msgstr "Função Transformação."
+msgstr "Função transformação."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
@@ -10207,11 +10256,11 @@ msgstr "Multiplica vetor por transformação."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Transform constant."
-msgstr "Constante Transformação."
+msgstr "Constante transformação."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Transform uniform."
-msgstr "Uniforme Transformação."
+msgstr "Uniforme transformação."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Vector function."
@@ -11009,7 +11058,7 @@ msgstr "Remover tudo"
 
 #: editor/project_manager.cpp
 msgid "Also delete project contents (no undo!)"
-msgstr ""
+msgstr "Também apaga conteúdos do projeto (definitivo!)"
 
 #: editor/project_manager.cpp
 msgid "Can't run project"
@@ -11568,7 +11617,7 @@ msgstr "Reassociar Localização (Selecionar novo Progenitor):"
 
 #: editor/reparent_dialog.cpp
 msgid "Keep Global Transform"
-msgstr "Manter transformação global"
+msgstr "Manter Transformação Global"
 
 #: editor/reparent_dialog.cpp editor/scene_tree_dock.cpp
 msgid "Reparent"
@@ -11691,12 +11740,15 @@ msgstr "Apagar nó \"%s\"?"
 msgid ""
 "Saving the branch as a scene requires having a scene open in the editor."
 msgstr ""
+"Para guardar o ramo como cena é necessário ter uma cena aberta no editor."
 
 #: editor/scene_tree_dock.cpp
 msgid ""
 "Saving the branch as a scene requires selecting only one node, but you have "
 "selected %d nodes."
 msgstr ""
+"Para guardar o ramo como cena é necessário selecionar apenas um nó, mas "
+"estão selecionados %d nós."
 
 #: editor/scene_tree_dock.cpp
 msgid ""
@@ -11908,7 +11960,7 @@ msgstr "Local"
 
 #: editor/scene_tree_dock.cpp
 msgid "Clear Inheritance? (No Undo!)"
-msgstr "Limpar herança? (Sem retrocesso!)"
+msgstr "Limpar herança? (Definitivo!)"
 
 #: editor/scene_tree_editor.cpp
 msgid "Toggle Visible"
@@ -12119,6 +12171,8 @@ msgid ""
 "Warning: Having the script name be the same as a built-in type is usually "
 "not desired."
 msgstr ""
+"Aviso: Não é habitualmente desejável que o nome do script seja o mesmo do "
+"que o de um tipo incorporado."
 
 #: editor/script_create_dialog.cpp
 msgid "Class Name:"
@@ -12370,21 +12424,19 @@ msgstr "Mudar comprimento da forma raio"
 
 #: editor/spatial_editor_gizmos.cpp
 msgid "Set Room Point Position"
-msgstr "Definir Posição do Ponto do Quarto"
+msgstr "Definir Posição do Ponto do Room"
 
 #: editor/spatial_editor_gizmos.cpp
 msgid "Set Portal Point Position"
 msgstr "Definir Posição do Ponto do Portal"
 
 #: editor/spatial_editor_gizmos.cpp
-#, fuzzy
 msgid "Set Occluder Sphere Radius"
-msgstr "Mudar Raio da Forma Cilindro"
+msgstr "Definir Raio da Esfera do Oclusor"
 
 #: editor/spatial_editor_gizmos.cpp
-#, fuzzy
 msgid "Set Occluder Sphere Position"
-msgstr "Definir curva na posição"
+msgstr "Definir Posição da Esfera do Oclusor"
 
 #: modules/csg/csg_gizmos.cpp
 msgid "Change Cylinder Radius"
@@ -12669,9 +12721,8 @@ msgid "Class name can't be a reserved keyword"
 msgstr "Nome de classe não pode ser uma palavra-chave reservada"
 
 #: modules/mono/csharp_script.cpp
-#, fuzzy
 msgid "Build Solution"
-msgstr "Preencher Seleção"
+msgstr "Construir Solução"
 
 #: modules/mono/mono_gd/gd_mono_utils.cpp
 msgid "End of inner exception stack trace"
@@ -13390,6 +13441,8 @@ msgstr ""
 msgid ""
 "Unable to overwrite res://android/build/res/*.xml files with project name"
 msgstr ""
+"Incapaz de sobrescrever ficheiros res://android/build/res/*.xml com o nome "
+"do projeto"
 
 #: platform/android/export/export_plugin.cpp
 msgid "Could not export project files to gradle project\n"
@@ -13790,7 +13843,7 @@ msgid ""
 "Change the size in children collision shapes instead."
 msgstr ""
 "Mudanças no tamanho do RigidBody2D (em modos carácter ou rígido) serão "
-"reescritas pelo motor de física na execução.\n"
+"sobrepostas pelo motor de física na execução.\n"
 "Mude antes o tamanho das formas de colisão filhas."
 
 #: scene/2d/remote_transform_2d.cpp
@@ -13996,11 +14049,11 @@ msgstr ""
 
 #: scene/3d/occluder.cpp
 msgid "No shape is set."
-msgstr ""
+msgstr "Nenhuma forma está definida."
 
 #: scene/3d/occluder.cpp
 msgid "Only uniform scales are supported."
-msgstr ""
+msgstr "Apenas são suportadas escalas uniformes."
 
 #: scene/3d/particles.cpp
 msgid ""
@@ -14045,7 +14098,7 @@ msgid ""
 "Change the size in children collision shapes instead."
 msgstr ""
 "Mudanças no tamanho do RigidBody (em modos carácter ou rígido) serão "
-"reescritas pelo motor de física na execução.\n"
+"sobrepostas pelo motor de física na execução.\n"
 "Mude antes o tamanho das formas de colisão filhas."
 
 #: scene/3d/physics_joint.cpp
@@ -14070,15 +14123,15 @@ msgstr "Nó A e Nó B têm de ser PhysicsBodies diferentes"
 
 #: scene/3d/portal.cpp
 msgid "The RoomManager should not be a child or grandchild of a Portal."
-msgstr ""
+msgstr "O RoomManager não deve ser filho ou neto de um Portal."
 
 #: scene/3d/portal.cpp
 msgid "A Room should not be a child or grandchild of a Portal."
-msgstr ""
+msgstr "Um Room não deve ser filho ou neto de um Portal."
 
 #: scene/3d/portal.cpp
 msgid "A RoomGroup should not be a child or grandchild of a Portal."
-msgstr ""
+msgstr "Um RoomGroup não deve ser filho ou neto de um Portal."
 
 #: scene/3d/remote_transform.cpp
 msgid ""
@@ -14090,15 +14143,15 @@ msgstr ""
 
 #: scene/3d/room.cpp
 msgid "A Room cannot have another Room as a child or grandchild."
-msgstr "Um Quarto não pode ter outro Quarto como filho ou neto."
+msgstr "Um Room não pode ter outro Room como filho ou neto."
 
 #: scene/3d/room.cpp
 msgid "The RoomManager should not be placed inside a Room."
-msgstr ""
+msgstr "O RoomManager não deve ser colocado dentro de um Room."
 
 #: scene/3d/room.cpp
 msgid "A RoomGroup should not be placed inside a Room."
-msgstr ""
+msgstr "Um RoomGroup não deve ser colocado dentro de um Room."
 
 #: scene/3d/room.cpp
 msgid ""
@@ -14108,15 +14161,15 @@ msgstr ""
 
 #: scene/3d/room_group.cpp
 msgid "The RoomManager should not be placed inside a RoomGroup."
-msgstr ""
+msgstr "O RoomManager não deve ser colocado dentro de um RoomGroup."
 
 #: scene/3d/room_manager.cpp
 msgid "The RoomList has not been assigned."
-msgstr ""
+msgstr "A RoomList não foi atribuída."
 
 #: scene/3d/room_manager.cpp
 msgid "The RoomList node should be a Spatial (or derived from Spatial)."
-msgstr ""
+msgstr "O nó RoomList deve ser um Spatial (ou derivado de Spatial)."
 
 #: scene/3d/room_manager.cpp
 msgid ""
@@ -14126,7 +14179,7 @@ msgstr ""
 
 #: scene/3d/room_manager.cpp
 msgid "There should only be one RoomManager in the SceneTree."
-msgstr ""
+msgstr "Só deve existir um RoomManager na SceneTree."
 
 #: scene/3d/room_manager.cpp
 msgid ""
@@ -14136,33 +14189,43 @@ msgstr ""
 
 #: scene/3d/room_manager.cpp
 msgid "RoomList contains no Rooms, aborting."
-msgstr ""
+msgstr "A RoomList não contem Rooms, a abortar."
 
 #: scene/3d/room_manager.cpp
 msgid "Misnamed nodes detected, check output log for details. Aborting."
 msgstr ""
+"Nomes de nós errados detetados, verifique o log de saída para detalhes. A "
+"abortar."
 
 #: scene/3d/room_manager.cpp
 msgid "Portal link room not found, check output log for details."
 msgstr ""
+"Room portal link não encontrado, verifique o log de saída para detalhes."
 
 #: scene/3d/room_manager.cpp
 msgid ""
 "Portal autolink failed, check output log for details.\n"
 "Check the portal is facing outwards from the source room."
 msgstr ""
+"Autolink do Portal falhou, verifique o log de saída para detalhes.\n"
+"Verifique se o portal está voltado para fora do room de origem."
 
 #: scene/3d/room_manager.cpp
 msgid ""
 "Room overlap detected, cameras may work incorrectly in overlapping area.\n"
 "Check output log for details."
 msgstr ""
+"Sobreposição de room detetada, câmaras podem trabalhar mal na área de "
+"sobreposição.\n"
+"Verifique o log de saída para detalhes."
 
 #: scene/3d/room_manager.cpp
 msgid ""
 "Error calculating room bounds.\n"
 "Ensure all rooms contain geometry or manual bounds."
 msgstr ""
+"Erro ao calcular limites do room.\n"
+"Garanta que todos os rooms contêm geometria ou limites manuais."
 
 #: scene/3d/soft_body.cpp
 msgid "This body will be ignored until you set a mesh."
@@ -14174,7 +14237,7 @@ msgid ""
 "running.\n"
 "Change the size in children collision shapes instead."
 msgstr ""
-"Mudanças no tamanho do SoftBody serão reescritas pelo motor de física na "
+"Mudanças no tamanho do SoftBody serão sobrepostas pelo motor de física na "
 "execução.\n"
 "Em vez disso, mude o tamanho das formas de colisão filhas."
 
@@ -14372,6 +14435,14 @@ msgstr ""
 "Ambiente predefinido especificado em Configurações do Projeto (Rendering -> "
 "Environment -> Default Environment) não pode ser carregado."
 
+#: scene/main/timer.cpp
+msgid ""
+"Very low timer wait times (< 0.05 seconds) may behave in significantly "
+"different ways depending on the rendered or physics frame rate.\n"
+"Consider using a script's process loop instead of relying on a Timer for "
+"very low wait times."
+msgstr ""
+
 #: scene/main/viewport.cpp
 msgid ""
 "This viewport is not set as render target. If you intend for it to display "
@@ -14385,12 +14456,15 @@ msgstr ""
 "RenderTarget e atribua a sua textura interna a outro nó para visualizar."
 
 #: scene/main/viewport.cpp
-msgid "Viewport size must be greater than 0 to render anything."
+#, fuzzy
+msgid ""
+"The Viewport size must be greater than or equal to 2 pixels on both "
+"dimensions to render anything."
 msgstr "O tamanho do viewport tem de ser maior do que 0 para renderizar."
 
 #: scene/resources/occluder_shape.cpp
 msgid "OccluderShapeSphere Set Spheres"
-msgstr ""
+msgstr "OccluderShapeSphere Definir Esferas"
 
 #: scene/resources/visual_shader_nodes.cpp
 msgid ""

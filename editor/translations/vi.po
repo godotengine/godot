@@ -23,6 +23,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
+"Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
 "PO-Revision-Date: 2021-09-15 00:46+0000\n"
 "Last-Translator: IoeCmcomc <hopdaigia2004@gmail.com>\n"
@@ -2405,6 +2406,15 @@ msgstr ""
 "Không thể lưu cảnh. Các phần phụ thuộc (trường hợp hoặc kế thừa) không thoả "
 "mãn."
 
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Could not save one or more scenes!"
+msgstr "Không thể bắt đầu quá trình phụ!"
+
+#: editor/editor_node.cpp
+msgid "Save All Scenes"
+msgstr "Lưu hết các Cảnh"
+
 #: editor/editor_node.cpp editor/scene_tree_dock.cpp
 msgid "Can't overwrite scene that is still open!"
 msgstr "Không thể ghi đè cảnh vẫn đang mở!"
@@ -2535,6 +2545,10 @@ msgstr "Lưu & Đóng"
 #: editor/editor_node.cpp
 msgid "Save changes to '%s' before closing?"
 msgstr "Lưu thay đổi vào '%s' trước khi đóng?"
+
+#: editor/editor_node.cpp
+msgid "%s no longer exists! Please specify a new save location."
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2879,10 +2893,6 @@ msgstr "Mở gần đây"
 #: editor/editor_node.cpp
 msgid "Save Scene"
 msgstr "Lưu Cảnh"
-
-#: editor/editor_node.cpp
-msgid "Save All Scenes"
-msgstr "Lưu hết các Cảnh"
 
 #: editor/editor_node.cpp
 msgid "Convert To..."
@@ -4366,16 +4376,24 @@ msgid "Clear Default for '%s'"
 msgstr "Dọn Mặc định cho '%s'"
 
 #: editor/import_dock.cpp
+msgid "Reimport"
+msgstr "Nhập vào lại"
+
+#: editor/import_dock.cpp
+msgid ""
+"You have pending changes that haven't been applied yet. Click Reimport to "
+"apply changes made to the import options.\n"
+"Selecting another resource in the FileSystem dock without clicking Reimport "
+"first will discard changes made in the Import dock."
+msgstr ""
+
+#: editor/import_dock.cpp
 msgid "Import As:"
 msgstr "Nhập vào với:"
 
 #: editor/import_dock.cpp
 msgid "Preset"
 msgstr "Cài sẵn"
-
-#: editor/import_dock.cpp
-msgid "Reimport"
-msgstr "Nhập vào lại"
 
 #: editor/import_dock.cpp
 msgid "Save Scenes, Re-Import, and Restart"
@@ -7338,11 +7356,13 @@ msgid "Move Down"
 msgstr "Hạ nút xuống"
 
 #: editor/plugins/script_editor_plugin.cpp
-msgid "Next script"
+#, fuzzy
+msgid "Next Script"
 msgstr "Tệp lệnh tiếp theo"
 
 #: editor/plugins/script_editor_plugin.cpp
-msgid "Previous script"
+#, fuzzy
+msgid "Previous Script"
 msgstr "Tệp lệnh trước đó"
 
 #: editor/plugins/script_editor_plugin.cpp
@@ -7768,13 +7788,18 @@ msgstr "Vuông góc"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 #, fuzzy
-msgid "Right Perspective"
+msgid "Left Perspective"
 msgstr "Phối cảnh"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 #, fuzzy
 msgid "Right Orthogonal"
 msgstr "Vuông góc"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Right Perspective"
+msgstr "Phối cảnh"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 #, fuzzy
@@ -8132,6 +8157,27 @@ msgstr "Góc nhìn trái"
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Right View"
 msgstr "Góc nhìn phải"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Orbit View Down"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Orbit View Left"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Orbit View Right"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Orbit View Up"
+msgstr "Góc nhìn trực diện"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Orbit View 180"
+msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Switch Perspective/Orthogonal View"
@@ -14387,6 +14433,14 @@ msgstr ""
 "Environment mặc định được chỉ định trong Cài đặt Dự án (Rendering -> "
 "Environment -> Default Environment) không thể nạp được."
 
+#: scene/main/timer.cpp
+msgid ""
+"Very low timer wait times (< 0.05 seconds) may behave in significantly "
+"different ways depending on the rendered or physics frame rate.\n"
+"Consider using a script's process loop instead of relying on a Timer for "
+"very low wait times."
+msgstr ""
+
 #: scene/main/viewport.cpp
 msgid ""
 "This viewport is not set as render target. If you intend for it to display "
@@ -14396,7 +14450,9 @@ msgid ""
 msgstr ""
 
 #: scene/main/viewport.cpp
-msgid "Viewport size must be greater than 0 to render anything."
+msgid ""
+"The Viewport size must be greater than or equal to 2 pixels on both "
+"dimensions to render anything."
 msgstr ""
 
 #: scene/resources/occluder_shape.cpp
