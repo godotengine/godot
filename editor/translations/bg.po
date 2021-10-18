@@ -16,8 +16,9 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
+"Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-09-20 14:46+0000\n"
+"PO-Revision-Date: 2021-10-11 15:44+0000\n"
 "Last-Translator: Любомир Василев <lyubomirv@gmx.com>\n"
 "Language-Team: Bulgarian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/bg/>\n"
@@ -2336,6 +2337,14 @@ msgid ""
 "be satisfied."
 msgstr ""
 
+#: editor/editor_node.cpp
+msgid "Could not save one or more scenes!"
+msgstr ""
+
+#: editor/editor_node.cpp
+msgid "Save All Scenes"
+msgstr "Запазване на всички сцени"
+
 #: editor/editor_node.cpp editor/scene_tree_dock.cpp
 msgid "Can't overwrite scene that is still open!"
 msgstr ""
@@ -2449,6 +2458,10 @@ msgstr "Запазване и затваряне"
 
 #: editor/editor_node.cpp
 msgid "Save changes to '%s' before closing?"
+msgstr ""
+
+#: editor/editor_node.cpp
+msgid "%s no longer exists! Please specify a new save location."
 msgstr ""
 
 #: editor/editor_node.cpp
@@ -2791,10 +2804,6 @@ msgstr ""
 #: editor/editor_node.cpp
 msgid "Save Scene"
 msgstr "Запазване на сцената"
-
-#: editor/editor_node.cpp
-msgid "Save All Scenes"
-msgstr "Запазване на всички сцени"
 
 #: editor/editor_node.cpp
 msgid "Convert To..."
@@ -4202,16 +4211,24 @@ msgid "Clear Default for '%s'"
 msgstr "Изчистване на подразбирането за „%s“"
 
 #: editor/import_dock.cpp
+msgid "Reimport"
+msgstr "Повторно внасяне"
+
+#: editor/import_dock.cpp
+msgid ""
+"You have pending changes that haven't been applied yet. Click Reimport to "
+"apply changes made to the import options.\n"
+"Selecting another resource in the FileSystem dock without clicking Reimport "
+"first will discard changes made in the Import dock."
+msgstr ""
+
+#: editor/import_dock.cpp
 msgid "Import As:"
 msgstr "Внасяне като:"
 
 #: editor/import_dock.cpp
 msgid "Preset"
 msgstr ""
-
-#: editor/import_dock.cpp
-msgid "Reimport"
-msgstr "Повторно внасяне"
 
 #: editor/import_dock.cpp
 msgid "Save Scenes, Re-Import, and Restart"
@@ -5481,15 +5498,13 @@ msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Locked"
-msgstr "Заключване на избраното"
+msgstr "Заключено"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Grouped"
-msgstr "Групи"
+msgstr "Групирано"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid ""
@@ -7143,11 +7158,13 @@ msgid "Move Down"
 msgstr "Преместване надолу"
 
 #: editor/plugins/script_editor_plugin.cpp
-msgid "Next script"
+#, fuzzy
+msgid "Next Script"
 msgstr "Следващ скрипт"
 
 #: editor/plugins/script_editor_plugin.cpp
-msgid "Previous script"
+#, fuzzy
+msgid "Previous Script"
 msgstr "Предишен скрипт"
 
 #: editor/plugins/script_editor_plugin.cpp
@@ -7564,13 +7581,18 @@ msgid "Left Orthogonal"
 msgstr "Ляв бутон"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Right Perspective"
-msgstr ""
+#, fuzzy
+msgid "Left Perspective"
+msgstr "Долу вляво"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 #, fuzzy
 msgid "Right Orthogonal"
 msgstr "Десен бутон"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Right Perspective"
+msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Front Orthogonal"
@@ -7907,6 +7929,26 @@ msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Right View"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Orbit View Down"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Orbit View Left"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Orbit View Right"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Orbit View Up"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Orbit View 180"
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -13854,6 +13896,14 @@ msgid ""
 "Environment -> Default Environment) could not be loaded."
 msgstr ""
 
+#: scene/main/timer.cpp
+msgid ""
+"Very low timer wait times (< 0.05 seconds) may behave in significantly "
+"different ways depending on the rendered or physics frame rate.\n"
+"Consider using a script's process loop instead of relying on a Timer for "
+"very low wait times."
+msgstr ""
+
 #: scene/main/viewport.cpp
 msgid ""
 "This viewport is not set as render target. If you intend for it to display "
@@ -13863,7 +13913,9 @@ msgid ""
 msgstr ""
 
 #: scene/main/viewport.cpp
-msgid "Viewport size must be greater than 0 to render anything."
+msgid ""
+"The Viewport size must be greater than or equal to 2 pixels on both "
+"dimensions to render anything."
 msgstr ""
 
 #: scene/resources/occluder_shape.cpp

@@ -122,12 +122,15 @@
 # Alkoarism <Alkoarism@gmail.com>, 2021.
 # リーLee <kaualee304@gmail.com>, 2021.
 # William Weber Berrutti <wwberrutti@protonmail.ch>, 2021.
+# Zenvasca <zenvasca@gmail.com>, 2021.
+# Wladimir Roberto Barbosa <wladrbarbosa@gmail.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
+"Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: 2016-05-30\n"
-"PO-Revision-Date: 2021-09-11 20:05+0000\n"
-"Last-Translator: William Weber Berrutti <wwberrutti@protonmail.ch>\n"
+"PO-Revision-Date: 2021-10-09 16:52+0000\n"
+"Last-Translator: Wladimir Roberto Barbosa <wladrbarbosa@gmail.com>\n"
 "Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/pt_BR/>\n"
 "Language: pt_BR\n"
@@ -2417,6 +2420,9 @@ msgid ""
 "Update Continuously is enabled, which can increase power usage. Click to "
 "disable it."
 msgstr ""
+"Gira quando a janela do editor é redesenhada.\n"
+"Atualização contínua está habilitada, o que pode aumentar o uso de energia. "
+"Clique para desativá-lo."
 
 #: editor/editor_node.cpp
 msgid "Spins when the editor window redraws."
@@ -2513,6 +2519,15 @@ msgid ""
 msgstr ""
 "Não se pôde salvar a cena. É provável que dependências (instâncias ou "
 "herança) não foram satisfeitas."
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Could not save one or more scenes!"
+msgstr "Não se pôde salvar textura convertida:"
+
+#: editor/editor_node.cpp
+msgid "Save All Scenes"
+msgstr "Salvar Todas as Cenas"
 
 #: editor/editor_node.cpp editor/scene_tree_dock.cpp
 msgid "Can't overwrite scene that is still open!"
@@ -2649,6 +2664,10 @@ msgid "Save changes to '%s' before closing?"
 msgstr "Salvar alterações em '%s' antes de fechar?"
 
 #: editor/editor_node.cpp
+msgid "%s no longer exists! Please specify a new save location."
+msgstr ""
+
+#: editor/editor_node.cpp
 msgid ""
 "The current scene has no root node, but %d modified external resource(s) "
 "were saved anyway."
@@ -2694,11 +2713,11 @@ msgstr "Cena atual não salva. Abrir mesmo assim?"
 
 #: editor/editor_node.cpp
 msgid "Can't undo while mouse buttons are pressed."
-msgstr ""
+msgstr "Não pode desfazer enquanto os botões do mouse estiverem pressionados."
 
 #: editor/editor_node.cpp
 msgid "Nothing to undo."
-msgstr ""
+msgstr "Nada para desfazer."
 
 #: editor/editor_node.cpp
 #, fuzzy
@@ -2707,11 +2726,11 @@ msgstr "Desfazer"
 
 #: editor/editor_node.cpp
 msgid "Can't redo while mouse buttons are pressed."
-msgstr ""
+msgstr "Não pode refazer enquanto os botões do mouse estiverem pressionados."
 
 #: editor/editor_node.cpp
 msgid "Nothing to redo."
-msgstr ""
+msgstr "Nada para refazer."
 
 #: editor/editor_node.cpp
 #, fuzzy
@@ -3002,10 +3021,6 @@ msgstr "Abrir Recente"
 #: editor/editor_node.cpp
 msgid "Save Scene"
 msgstr "Salvar Cena"
-
-#: editor/editor_node.cpp
-msgid "Save All Scenes"
-msgstr "Salvar Todas as Cenas"
 
 #: editor/editor_node.cpp
 msgid "Convert To..."
@@ -3563,6 +3578,12 @@ msgid ""
 "functions called by that function.\n"
 "Use this to find individual functions to optimize."
 msgstr ""
+"Inclusivo: inclui o tempo de outras funções chamadas por esta função.\n"
+"Use isso para detectar restrições.\n"
+"\n"
+"Próprio: conta apenas o tempo gasto na função em si, não em outras funções "
+"chamadas por essa função.\n"
+"Use isso para encontrar funções individuais para otimizar."
 
 #: editor/editor_profiler.cpp
 msgid "Frame #:"
@@ -3668,7 +3689,7 @@ msgstr ""
 
 #: editor/editor_resource_picker.cpp
 msgid "Quick Load"
-msgstr ""
+msgstr "Carregamento Rápido"
 
 #: editor/editor_resource_picker.cpp editor/property_editor.cpp
 msgid "Make Unique"
@@ -4199,25 +4220,24 @@ msgid "Collapse All"
 msgstr "Recolher Tudo"
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Sort files"
-msgstr "Pesquisar arquivos"
+msgstr "Ordenar arquivos"
 
 #: editor/filesystem_dock.cpp
 msgid "Sort by Name (Ascending)"
-msgstr ""
+msgstr "Ordenar por Nome (Ascendente)"
 
 #: editor/filesystem_dock.cpp
 msgid "Sort by Name (Descending)"
-msgstr ""
+msgstr "Ordenar por Nome (Descendente)"
 
 #: editor/filesystem_dock.cpp
 msgid "Sort by Type (Ascending)"
-msgstr ""
+msgstr "Ordenar por Tipo (Ascendente)"
 
 #: editor/filesystem_dock.cpp
 msgid "Sort by Type (Descending)"
-msgstr ""
+msgstr "Ordenar por Tipo (Descendente)"
 
 #: editor/filesystem_dock.cpp
 #, fuzzy
@@ -4516,16 +4536,24 @@ msgid "Clear Default for '%s'"
 msgstr "Limpar Padrão para '%s'"
 
 #: editor/import_dock.cpp
+msgid "Reimport"
+msgstr "Reimportar"
+
+#: editor/import_dock.cpp
+msgid ""
+"You have pending changes that haven't been applied yet. Click Reimport to "
+"apply changes made to the import options.\n"
+"Selecting another resource in the FileSystem dock without clicking Reimport "
+"first will discard changes made in the Import dock."
+msgstr ""
+
+#: editor/import_dock.cpp
 msgid "Import As:"
 msgstr "Importar como:"
 
 #: editor/import_dock.cpp
 msgid "Preset"
 msgstr "Predefinição"
-
-#: editor/import_dock.cpp
-msgid "Reimport"
-msgstr "Reimportar"
 
 #: editor/import_dock.cpp
 msgid "Save Scenes, Re-Import, and Restart"
@@ -5611,7 +5639,7 @@ msgstr "Pesquisar modelos, projetos e demonstrações"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Search assets (excluding templates, projects, and demos)"
-msgstr ""
+msgstr "Pesquisar recursos (excluindo modelos, projetos e demonstrações)"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Import..."
@@ -6026,15 +6054,14 @@ msgstr "Remover nó ou trilha selecionada."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Alt+RMB: Show list of all nodes at position clicked, including locked."
 msgstr ""
-"Mostrar uma lista de todos os objetos na posição clicada\n"
-"(mesmo como Alt + botão direito do mouse no Modo de seleção)."
+"Alt+BDM:  Mostra uma lista de todos os nodes na posição clicada, incluindo "
+"os bloqueados."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "RMB: Add node at position clicked."
-msgstr ""
+msgstr "BDM: Adiciona node à posição clicada."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -6295,15 +6322,15 @@ msgstr "Deslocar Visão"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Zoom to 3.125%"
-msgstr ""
+msgstr "Zoom para 3.125%"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Zoom to 6.25%"
-msgstr ""
+msgstr "Zoom para 6.25%"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Zoom to 12.5%"
-msgstr ""
+msgstr "Zoom para 12.5%"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #, fuzzy
@@ -6337,7 +6364,7 @@ msgstr "Reduzir"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Zoom to 1600%"
-msgstr ""
+msgstr "Zoom para 1600%"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Add %s"
@@ -6696,6 +6723,9 @@ msgid ""
 "This is similar to single collision shape, but can result in a simpler "
 "geometry in some cases, at the cost of accuracy."
 msgstr ""
+"Cria uma forma de colisão convexa simplificada.\n"
+"É semelhante à forma de colisão única, mas pode resultar em uma geometria "
+"mais simples em alguns casos, com menos precisão."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Multiple Convex Collision Siblings"
@@ -7525,11 +7555,13 @@ msgid "Move Down"
 msgstr "Mover para Baixo"
 
 #: editor/plugins/script_editor_plugin.cpp
-msgid "Next script"
+#, fuzzy
+msgid "Next Script"
 msgstr "Próximo Script"
 
 #: editor/plugins/script_editor_plugin.cpp
-msgid "Previous script"
+#, fuzzy
+msgid "Previous Script"
 msgstr "Script anterior"
 
 #: editor/plugins/script_editor_plugin.cpp
@@ -7952,13 +7984,18 @@ msgstr "Ortogonal"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 #, fuzzy
-msgid "Right Perspective"
+msgid "Left Perspective"
 msgstr "Perspectiva"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 #, fuzzy
 msgid "Right Orthogonal"
 msgstr "Ortogonal"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Right Perspective"
+msgstr "Perspectiva"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 #, fuzzy
@@ -8029,7 +8066,7 @@ msgstr "Translação:"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Scale"
-msgstr "Scale"
+msgstr "Escala"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Scaling: "
@@ -8132,7 +8169,7 @@ msgstr "Alinhar Rotação com a Vista"
 
 #: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "No parent to instance a child at."
-msgstr "Sem pai onde instanciar um filho."
+msgstr "Sem pai para instanciar um filho."
 
 #: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "This operation requires a single selected node."
@@ -8231,13 +8268,12 @@ msgid "Freelook Slow Modifier"
 msgstr "Modificador de velocidade lenta da Visão Livre"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Toggle Camera Preview"
-msgstr "Alterar Tamanho da Câmera"
+msgstr "Alternar pré-visualização da câmera"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "View Rotation Locked"
-msgstr "Ver Rotação Bloqueada"
+msgstr "Rotação de Vista Bloqueada"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid ""
@@ -8274,7 +8310,7 @@ msgstr ""
 "Clique para alternar entre estados de visibilidade.\n"
 "\n"
 "Olhos abertos: Gizmo está visível.\n"
-"Olhos fechados: Gizmo não está visível.\n"
+"Olhos fechados: Gizmo está escondido.\n"
 "Olhos semi-abertos: Gizmo está visível através de superficies opacas (\"raio-"
 "x\")."
 
@@ -8322,6 +8358,27 @@ msgstr "Visão Esquerda"
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Right View"
 msgstr "Visão Direita"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Orbit View Down"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Orbit View Left"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Orbit View Right"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Orbit View Up"
+msgstr "Visão Frontal"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Orbit View 180"
+msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Switch Perspective/Orthogonal View"
@@ -8884,21 +8941,23 @@ msgstr "Selecione um item de configuração primeiro!"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Select all visible stylebox items."
-msgstr ""
+msgstr "Selecionar todos os itens visíveis da caixa de estilo."
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Select all visible stylebox items and their data."
-msgstr ""
+msgstr "Selecionar todos os itens visíveis da caixa de estilo e seus dados."
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Deselect all visible stylebox items."
-msgstr ""
+msgstr "Deselecionar todos os itens visíveis da caixa de estilo."
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid ""
 "Caution: Adding icon data may considerably increase the size of your Theme "
 "resource."
 msgstr ""
+"Atenção: Adicionar dados de ícone pode aumentar consideravelmente o tamanho "
+"do recurso do Tema."
 
 #: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
@@ -8922,7 +8981,7 @@ msgstr "Selecionar Pontos"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Select all Theme items with item data."
-msgstr ""
+msgstr "Selecionar todos os itens do Tema com dados."
 
 #: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
@@ -8931,7 +8990,7 @@ msgstr "Selecionar tudo"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Deselect all Theme items."
-msgstr ""
+msgstr "Desselecionar todos os itens do Tema."
 
 #: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
@@ -8944,6 +9003,9 @@ msgid ""
 "closing this window.\n"
 "Close anyway?"
 msgstr ""
+"A guia de Importação de itens possui alguns itens selecionados. A seleção "
+"será perdida ao fechar esta janela.\n"
+"Fechar mesmo assim?"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid ""
@@ -8986,6 +9048,8 @@ msgid ""
 "This theme type is empty.\n"
 "Add more items to it manually or by importing from another theme."
 msgstr ""
+"Este tipo de tema está vazio.\n"
+"Adicione mais itens manualmente ou importe de outro tema."
 
 #: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
@@ -13630,11 +13694,8 @@ msgid "Signing debug %s..."
 msgstr ""
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "Signing release %s..."
-msgstr ""
-"Escaneando arquivos,\n"
-"Por favor aguarde..."
+msgstr "Assinando lançamento %s..."
 
 #: platform/android/export/export_plugin.cpp
 #, fuzzy
@@ -13746,11 +13807,12 @@ msgid "Creating APK..."
 msgstr "Criando contornos..."
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid ""
 "Could not find template APK to export:\n"
 "%s"
-msgstr "Não foi possível abrir o modelo para exportar:"
+msgstr ""
+"Não foi possível encontrar o modelo de APK para exportar:\n"
+"%s"
 
 #: platform/android/export/export_plugin.cpp
 msgid ""
@@ -14692,6 +14754,14 @@ msgstr ""
 "O Ambiente Padrão especificado nas Configurações de Projeto (Rendering -> "
 "Environment -> Default Environment) não pôde ser carregado."
 
+#: scene/main/timer.cpp
+msgid ""
+"Very low timer wait times (< 0.05 seconds) may behave in significantly "
+"different ways depending on the rendered or physics frame rate.\n"
+"Consider using a script's process loop instead of relying on a Timer for "
+"very low wait times."
+msgstr ""
+
 #: scene/main/viewport.cpp
 msgid ""
 "This viewport is not set as render target. If you intend for it to display "
@@ -14705,7 +14775,10 @@ msgstr ""
 "render e atribua sua textura interna a algum nó para exibir."
 
 #: scene/main/viewport.cpp
-msgid "Viewport size must be greater than 0 to render anything."
+#, fuzzy
+msgid ""
+"The Viewport size must be greater than or equal to 2 pixels on both "
+"dimensions to render anything."
 msgstr ""
 "O tamanho da Viewport deve ser maior do que 0 para renderizar qualquer coisa."
 
@@ -16393,9 +16466,6 @@ msgstr "Constantes não podem serem modificadas."
 
 #~ msgid "Couldn't save atlas image:"
 #~ msgstr "Não se pôde salva imagem de atlas:"
-
-#~ msgid "Couldn't save converted texture:"
-#~ msgstr "Não se pôde salvar textura convertida:"
 
 #~ msgid "Invalid translation source!"
 #~ msgstr "Origem de tradução inválida!"

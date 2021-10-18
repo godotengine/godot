@@ -33,12 +33,14 @@
 # Naufal Adriansyah <naufaladrn90@gmail.com>, 2021.
 # undisputedgoose <diablodvorak@gmail.com>, 2021.
 # Tsaqib Fadhlurrahman Soka <sokatsaqib@gmail.com>, 2021.
+# Hilman Hazazi <hafizd.muhammad.kren.403@gmail.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
+"Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-09-20 14:46+0000\n"
-"Last-Translator: Sofyan Sugianto <sofyanartem@gmail.com>\n"
+"PO-Revision-Date: 2021-10-15 04:32+0000\n"
+"Last-Translator: Tsaqib Fadhlurrahman Soka <sokatsaqib@gmail.com>\n"
 "Language-Team: Indonesian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/id/>\n"
 "Language: id\n"
@@ -55,13 +57,13 @@ msgstr "Tipe argumen tidak valid untuk convert(), gunakan konstanta TYPE_*."
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 msgid "Expected a string of length 1 (a character)."
-msgstr "String dengan panjang 1 (karakter) yang diharapkan."
+msgstr "String dengan panjang 1 (karakter) diharapkan."
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/mono/glue/gd_glue.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Not enough bytes for decoding bytes, or invalid format."
-msgstr "Tidak cukup byte untuk mendekode byte, atau format tidak valid."
+msgstr "Tidak cukup bita untuk mendekode bita, atau format tidak valid."
 
 #: core/math/expression.cpp
 msgid "Invalid input %i (not passed) in expression"
@@ -70,7 +72,7 @@ msgstr "Masukkan tidak sah %i (tidak diberikan) dalam ekspresi"
 #: core/math/expression.cpp
 msgid "self can't be used because instance is null (not passed)"
 msgstr ""
-"self tidak dapat digunakan karena instance bernilai null (tidak di-passing)"
+"self tidak dapat digunakan karena nilai instansi adalah null (tidak lolos)"
 
 #: core/math/expression.cpp
 msgid "Invalid operands to operator %s, %s and %s."
@@ -122,7 +124,7 @@ msgstr "EiB"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Free"
-msgstr "Bebaskan"
+msgstr "Bebas"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Balanced"
@@ -557,7 +559,7 @@ msgstr "Susun Track-track dengan node atau tampilkan sebagai daftar biasa."
 
 #: editor/animation_track_editor.cpp
 msgid "Snap:"
-msgstr "Snap:"
+msgstr "Senap:"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation step value."
@@ -581,7 +583,7 @@ msgstr "FPS"
 #: editor/project_settings_editor.cpp editor/property_editor.cpp
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Edit"
-msgstr "Edit"
+msgstr "Sunting"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation properties."
@@ -1054,7 +1056,7 @@ msgstr "Resource"
 #: editor/dependency_editor.cpp editor/editor_autoload_settings.cpp
 #: editor/project_manager.cpp editor/project_settings_editor.cpp
 msgid "Path"
-msgstr "Path"
+msgstr "Jalur"
 
 #: editor/dependency_editor.cpp
 msgid "Dependencies:"
@@ -1547,7 +1549,7 @@ msgstr "Mengatur kembali Autoload-autoload"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Can't add autoload:"
-msgstr "Tidak dapat menambahkan autoload"
+msgstr "Tidak dapat menambahkan autoload:"
 
 #: editor/editor_autoload_settings.cpp
 msgid "%s is an invalid path. File does not exist."
@@ -1567,7 +1569,7 @@ msgstr "Tambahkan AutoLoad"
 #: editor/plugins/animation_tree_editor_plugin.cpp
 #: editor/script_create_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Path:"
-msgstr "Path:"
+msgstr "Jalur:"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Node Name:"
@@ -2130,7 +2132,7 @@ msgstr "baku:"
 
 #: editor/editor_help.cpp
 msgid "Methods"
-msgstr "Method"
+msgstr "Metode"
 
 #: editor/editor_help.cpp
 msgid "Theme Properties"
@@ -2427,6 +2429,15 @@ msgstr ""
 "Tidak dapat menyimpan skena Dependensi (instance atau turunannya) mungkin "
 "tidak terpenuhi."
 
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Could not save one or more scenes!"
+msgstr "Tidak dapat memulai subproses!"
+
+#: editor/editor_node.cpp
+msgid "Save All Scenes"
+msgstr "Simpan Semua Skena"
+
 #: editor/editor_node.cpp editor/scene_tree_dock.cpp
 msgid "Can't overwrite scene that is still open!"
 msgstr "Tidak bisa menimpa skena yang masih terbuka!"
@@ -2548,7 +2559,7 @@ msgstr "Buka Cepat..."
 
 #: editor/editor_node.cpp
 msgid "Quick Open Scene..."
-msgstr "Buka Cepat Skena..."
+msgstr "Buka Cepat Skenario..."
 
 #: editor/editor_node.cpp
 msgid "Quick Open Script..."
@@ -2561,6 +2572,10 @@ msgstr "Simpan & Tutup"
 #: editor/editor_node.cpp
 msgid "Save changes to '%s' before closing?"
 msgstr "Simpan perubahan '%s' sebelum menutupnya?"
+
+#: editor/editor_node.cpp
+msgid "%s no longer exists! Please specify a new save location."
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2608,29 +2623,27 @@ msgstr "Skena saat ini belum disimpan. Buka saja?"
 
 #: editor/editor_node.cpp
 msgid "Can't undo while mouse buttons are pressed."
-msgstr ""
+msgstr "Tidak bisa membatalkan ketika tombol mouse ditekan."
 
 #: editor/editor_node.cpp
 msgid "Nothing to undo."
-msgstr ""
+msgstr "Tidak ada yang bisa dibatalkan."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Undo: %s"
-msgstr "Batal"
+msgstr "Batal: %s"
 
 #: editor/editor_node.cpp
 msgid "Can't redo while mouse buttons are pressed."
-msgstr ""
+msgstr "Tidak bisa mengulangi ketika tombol mouse ditekan."
 
 #: editor/editor_node.cpp
 msgid "Nothing to redo."
-msgstr ""
+msgstr "Tidak ada yang perlu diulang."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Redo: %s"
-msgstr "Ulangi"
+msgstr "Ulangi: %s"
 
 #: editor/editor_node.cpp
 msgid "Can't reload a scene that was never saved."
@@ -2721,8 +2734,9 @@ msgid ""
 "error in that script.\n"
 "Disabling the addon at '%s' to prevent further errors."
 msgstr ""
-"Tidak dapat memuat script addon dari path: '%s' Mungkin ada kesalahan dalam "
-"kode, mohon periksa sintaks."
+"Tidak dapat memuat script addon dari jalur: '%s' Hal ini terjadi karena "
+"kesalahan koda dalam skrip.\n"
+"Lepaskan addon di '%s' to mencegah kesalahan kedepan."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2911,10 +2925,6 @@ msgstr "Buka baru-baru ini"
 #: editor/editor_node.cpp
 msgid "Save Scene"
 msgstr "Simpan Skena"
-
-#: editor/editor_node.cpp
-msgid "Save All Scenes"
-msgstr "Simpan Semua Skena"
 
 #: editor/editor_node.cpp
 msgid "Convert To..."
@@ -3315,9 +3325,8 @@ msgid "Merge With Existing"
 msgstr "Gabung dengan yang Ada"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Apply MeshInstance Transforms"
-msgstr "Ubah Transformasi Animasi"
+msgstr "Aplikasi Transformasi MeshInstance"
 
 #: editor/editor_node.cpp
 msgid "Open & Run a Script"
@@ -3468,6 +3477,12 @@ msgid ""
 "functions called by that function.\n"
 "Use this to find individual functions to optimize."
 msgstr ""
+"Inklusif: Termasuk waktu dari fungsi lain yang terpanggil oleh fungsi ini.\n"
+"Gunakan ini untuk menemukan perlambatan.\n"
+"\n"
+"Sendiri: Hanya menghitung waktu terpakai oleh fungsi tersendiri, tidak "
+"termasuk fungsi yang dipanggil.\n"
+"Gunakan ini untuk menemukan fungsi individual untuk optimalisasi."
 
 #: editor/editor_profiler.cpp
 msgid "Frame #:"
@@ -3573,7 +3588,7 @@ msgstr ""
 
 #: editor/editor_resource_picker.cpp
 msgid "Quick Load"
-msgstr ""
+msgstr "Muat Cepat"
 
 #: editor/editor_resource_picker.cpp editor/property_editor.cpp
 msgid "Make Unique"
@@ -4026,7 +4041,7 @@ msgstr "Buka Skena"
 
 #: editor/filesystem_dock.cpp
 msgid "Instance"
-msgstr "Instance"
+msgstr "Instansi"
 
 #: editor/filesystem_dock.cpp
 msgid "Add to Favorites"
@@ -4388,16 +4403,24 @@ msgid "Clear Default for '%s'"
 msgstr "Bersihkan Baku untuk '%s'"
 
 #: editor/import_dock.cpp
+msgid "Reimport"
+msgstr "Impor ulang"
+
+#: editor/import_dock.cpp
+msgid ""
+"You have pending changes that haven't been applied yet. Click Reimport to "
+"apply changes made to the import options.\n"
+"Selecting another resource in the FileSystem dock without clicking Reimport "
+"first will discard changes made in the Import dock."
+msgstr ""
+
+#: editor/import_dock.cpp
 msgid "Import As:"
 msgstr "Impor sebagai:"
 
 #: editor/import_dock.cpp
 msgid "Preset"
 msgstr "Prasetel"
-
-#: editor/import_dock.cpp
-msgid "Reimport"
-msgstr "Impor ulang"
 
 #: editor/import_dock.cpp
 msgid "Save Scenes, Re-Import, and Restart"
@@ -5521,13 +5544,12 @@ msgstr ""
 "Simpan skena Anda dan coba lagi."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "No meshes to bake. Make sure they contain an UV2 channel and that the 'Use "
 "In Baked Light' and 'Generate Lightmap' flags are on."
 msgstr ""
-"Tidak ada mesh-mesh untuk di bake. Pastikan mereka punya kanal UV2 dan 'Bake "
-"Cahaya' menyala."
+"Tidak ada mesh untuk di bake. Pastikan mesh mempunyai kanal UV2 dengan flag "
+"'Use In Baked Light' dan 'Generate Lightmap' aktif."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Failed creating lightmap images, make sure path is writable."
@@ -5668,15 +5690,13 @@ msgstr "Pindahkan CanvasItem \"%s\" ke (%d,%d)"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Locked"
-msgstr "Kunci yang Dipilih"
+msgstr "Terkunci"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Grouped"
-msgstr "Kelompok"
+msgstr "Terkelompok"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid ""
@@ -6529,9 +6549,8 @@ msgstr ""
 "deteksi collision."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#, fuzzy
 msgid "Create Simplified Convex Collision Sibling"
-msgstr "Buat Saudara Tunggal Convex Collision"
+msgstr "Buat saudara Convex Collision yang dipermudah"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid ""
@@ -6539,20 +6558,23 @@ msgid ""
 "This is similar to single collision shape, but can result in a simpler "
 "geometry in some cases, at the cost of accuracy."
 msgstr ""
+"Buat bentuk convex collision dipermudah.\n"
+"Ini serupa dengan bentuk collision tunggal, namun dapat menghasilkan "
+"geometri mudah dalam beberapa kasus, dengan biaya pada akurasi."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Multiple Convex Collision Siblings"
 msgstr "Buat Beberapa Saudara Convex Collision"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "Creates a polygon-based collision shape.\n"
 "This is a performance middle-ground between a single convex collision and a "
 "polygon-based collision."
 msgstr ""
-"Buat collision shape berbasis poligon.\n"
-"Opsi ini kinerjanya berada di antara dua opsi di atas."
+"Buat bentuk collision berbasis poligon.\n"
+"Ini adalah opsi tengah performa antara convex collision tunggal dan "
+"collision berbasis poligon."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Outline Mesh..."
@@ -6619,14 +6641,12 @@ msgid "Remove Selected Item"
 msgstr "Hapus Item yang Dipilih"
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
-#, fuzzy
 msgid "Import from Scene (Ignore Transforms)"
-msgstr "Impor dari Skena"
+msgstr "Impor dari Skenario (Hiraukan Transforms)"
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
-#, fuzzy
 msgid "Import from Scene (Apply Transforms)"
-msgstr "Impor dari Skena"
+msgstr "Impor dari Skenario (Aplikasikan Transforms)"
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
 msgid "Update from Scene"
@@ -7207,28 +7227,24 @@ msgid "Flip Portals"
 msgstr "Balikkan Portal"
 
 #: editor/plugins/room_manager_editor_plugin.cpp
-#, fuzzy
 msgid "Room Generate Points"
-msgstr "Jumlah Titik yang Dihasilkan:"
+msgstr "Jumlah Titik Dihasilkan"
 
 #: editor/plugins/room_manager_editor_plugin.cpp
-#, fuzzy
 msgid "Generate Points"
-msgstr "Jumlah Titik yang Dihasilkan:"
+msgstr "Menghasilkan Nilai"
 
 #: editor/plugins/room_manager_editor_plugin.cpp
 msgid "Flip Portal"
 msgstr "Balikkan Portal"
 
 #: editor/plugins/room_manager_editor_plugin.cpp
-#, fuzzy
 msgid "Occluder Set Transform"
-msgstr "Bersihkan Transformasi"
+msgstr "Tutup Set Transformasi"
 
 #: editor/plugins/room_manager_editor_plugin.cpp
-#, fuzzy
 msgid "Center Node"
-msgstr "Buat Node"
+msgstr "Node Tengah"
 
 #: editor/plugins/root_motion_editor_plugin.cpp
 msgid "AnimationTree has no path set to an AnimationPlayer"
@@ -7364,11 +7380,13 @@ msgid "Move Down"
 msgstr "Turunkan"
 
 #: editor/plugins/script_editor_plugin.cpp
-msgid "Next script"
+#, fuzzy
+msgid "Next Script"
 msgstr "Skrip berikutnya"
 
 #: editor/plugins/script_editor_plugin.cpp
-msgid "Previous script"
+#, fuzzy
+msgid "Previous Script"
 msgstr "Skrip sebelumnya"
 
 #: editor/plugins/script_editor_plugin.cpp
@@ -7520,7 +7538,7 @@ msgstr "Sumber"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Target"
-msgstr "Target"
+msgstr "Sasaran"
 
 #: editor/plugins/script_text_editor.cpp
 msgid ""
@@ -7735,14 +7753,12 @@ msgid "Skeleton2D"
 msgstr "Skeleton2D"
 
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Reset to Rest Pose"
-msgstr "Atur Tulang ke Pose Istirahat"
+msgstr "Atur ulang ke Pose Duduk"
 
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Overwrite Rest Pose"
-msgstr "Timpa"
+msgstr "Timpa Pose Duduk"
 
 #: editor/plugins/skeleton_editor_plugin.cpp
 msgid "Create physical bones"
@@ -7769,69 +7785,63 @@ msgid "Perspective"
 msgstr "Perspektif"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Top Orthogonal"
-msgstr "Ortogonal"
+msgstr "Ortogonal Atas"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Top Perspective"
-msgstr "Perspektif"
+msgstr "Perspektif Atas"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Bottom Orthogonal"
-msgstr "Ortogonal"
+msgstr "Ortogonal Bawah"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Bottom Perspective"
-msgstr "Perspektif"
+msgstr "Perspektif Bawah"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Left Orthogonal"
-msgstr "Ortogonal"
+msgstr "Ortogonal Kiri"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 #, fuzzy
-msgid "Right Perspective"
+msgid "Left Perspective"
 msgstr "Perspektif"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Right Orthogonal"
-msgstr "Ortogonal"
+msgstr "Ortogonal Kanan"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
+msgid "Right Perspective"
+msgstr "Perspektif Kanan"
+
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Front Orthogonal"
-msgstr "Ortogonal"
+msgstr "Ortogonal Depan"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Front Perspective"
-msgstr "Perspektif"
+msgstr "Perspektif Depan"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Rear Orthogonal"
-msgstr "Ortogonal"
+msgstr "Ortogonal Belakang"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Rear Perspective"
-msgstr "Perspektif"
+msgstr "Perspektif Belakang"
 
 #. TRANSLATORS: This will be appended to the view name when Auto Orthogonal is enabled.
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid " [auto]"
-msgstr ""
+msgstr " [auto]"
 
 #. TRANSLATORS: This will be appended to the view name when Portal Occulusion is enabled.
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid " [portals active]"
-msgstr ""
+msgstr " [portal aktif]"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Transform Aborted."
@@ -7893,9 +7903,8 @@ msgid "Animation Key Inserted."
 msgstr "Kunci Animasi Dimasukkan."
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Pitch:"
-msgstr "Dongak"
+msgstr "Dongak:"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Yaw:"
@@ -7906,34 +7915,28 @@ msgid "Size:"
 msgstr "Ukuran:"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Objects Drawn:"
-msgstr "Objek Digambar"
+msgstr "Objek Digambar:"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Material Changes:"
-msgstr "Perubahan Material"
+msgstr "Perubahan Material:"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Shader Changes:"
-msgstr "Perubahan Shader"
+msgstr "Perubahan Shader:"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Surface Changes:"
-msgstr "Perubahan Permukaan"
+msgstr "Perubahan Permukaan:"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Draw Calls:"
-msgstr "Gambarkan Panggilan"
+msgstr "Gambarkan Panggilan:"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Vertices:"
-msgstr "Titik"
+msgstr "Sudut:"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "FPS: %d (%s ms)"
@@ -8164,6 +8167,27 @@ msgstr "Tampilan Kiri"
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Right View"
 msgstr "Tampilan Kanan"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Orbit View Down"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Orbit View Left"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Orbit View Right"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Orbit View Up"
+msgstr "Tampilan Depan"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Orbit View 180"
+msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Switch Perspective/Orthogonal View"
@@ -8607,18 +8631,16 @@ msgid "{num} font(s)"
 msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "No fonts found."
-msgstr "Tidak ditemukan!"
+msgstr "Font tidak ditemukan."
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "{num} icon(s)"
 msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "No icons found."
-msgstr "Tidak ditemukan!"
+msgstr "Ikon tidak ditemukan."
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "{num} stylebox(es)"
@@ -8647,9 +8669,8 @@ msgid "Importing items {n}/{n}"
 msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Updating the editor"
-msgstr "Keluar editor?"
+msgstr "Memperbarui editor"
 
 #: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
@@ -8666,14 +8687,12 @@ msgid "With Data"
 msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Select by data type:"
-msgstr "Pilih Node"
+msgstr "Pilih berdasarkan tipe data:"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Select all visible color items."
-msgstr "Pilih Berkas untuk Dipindai"
+msgstr "Pilih semua benda warna terlihat."
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Select all visible color items and their data."
@@ -8684,9 +8703,8 @@ msgid "Deselect all visible color items."
 msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Select all visible constant items."
-msgstr "Pilih item pengaturan terlebih dahulu!"
+msgstr "Pilih semua benda konstan terlihat."
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Select all visible constant items and their data."
@@ -8697,9 +8715,8 @@ msgid "Deselect all visible constant items."
 msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Select all visible font items."
-msgstr "Pilih item pengaturan terlebih dahulu!"
+msgstr "Pilih semua benda font terlihat."
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Select all visible font items and their data."
@@ -8710,19 +8727,16 @@ msgid "Deselect all visible font items."
 msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Select all visible icon items."
-msgstr "Pilih item pengaturan terlebih dahulu!"
+msgstr "Pilih semua benda ikon terlihat."
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Select all visible icon items and their data."
-msgstr "Pilih item pengaturan terlebih dahulu!"
+msgstr "Pilih semua benda ikon terlihat dan data mereka."
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Deselect all visible icon items."
-msgstr "Pilih item pengaturan terlebih dahulu!"
+msgstr "Batal pilih semua benda ikon terlihat."
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Select all visible stylebox items."
@@ -8743,19 +8757,16 @@ msgid ""
 msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Collapse types."
-msgstr "Lipat Semua"
+msgstr "Lipat Semua."
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Expand types."
-msgstr "Bentangkan Semua"
+msgstr "Bentangkan Semua."
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Select all Theme items."
-msgstr "Pilih berkas templat"
+msgstr "Pilih semua benda Tema."
 
 #: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
@@ -8909,9 +8920,8 @@ msgid "Add Type:"
 msgstr "Jenis:"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Add Item:"
-msgstr "Tambah Item"
+msgstr "Tambah benda:"
 
 #: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
@@ -8919,9 +8929,8 @@ msgid "Add StyleBox Item"
 msgstr "Tambahkan Semua Item"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Remove Items:"
-msgstr "Hapus item"
+msgstr "Hapus benda:"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Remove Class Items"
@@ -8962,9 +8971,8 @@ msgid "Editor Theme"
 msgstr "Sunting Tema"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Select Another Theme Resource:"
-msgstr "Hapus Resource"
+msgstr "Pilih Tema Lain Aset:"
 
 #: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
@@ -9007,9 +9015,8 @@ msgid "Add Item Type"
 msgstr "Tambah Item"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Node Types:"
-msgstr "Jenis node"
+msgstr "Tipe node:"
 
 #: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
@@ -9030,9 +9037,8 @@ msgid "Override all default type items."
 msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Theme:"
-msgstr "Tema"
+msgstr "Tema:"
 
 #: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
@@ -9097,9 +9103,8 @@ msgid "Checked Radio Item"
 msgstr "Item Radio yang Dicentang"
 
 #: editor/plugins/theme_editor_preview.cpp
-#, fuzzy
 msgid "Named Separator"
-msgstr "Pemisah yang diberi nama."
+msgstr "Pemisah yang diberi nama"
 
 #: editor/plugins/theme_editor_preview.cpp
 msgid "Submenu"
@@ -10572,9 +10577,8 @@ msgid "VisualShader"
 msgstr "ShaderVisual"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Edit Visual Property:"
-msgstr "Sunting Properti Visual"
+msgstr "Sunting Properti Visual:"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Visual Shader Mode Changed"
@@ -11023,14 +11027,12 @@ msgid "Are you sure to run %d projects at once?"
 msgstr "Apakah Anda yakin menjalankan %d proyek sekaligus?"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Remove %d projects from the list?"
-msgstr "Pilih perangkat pada daftar"
+msgstr "Buang proyek %d dari daftar?"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Remove this project from the list?"
-msgstr "Pilih perangkat pada daftar"
+msgstr "Buang proyek ini dari daftar?"
 
 #: editor/project_manager.cpp
 msgid ""
@@ -11272,7 +11274,7 @@ msgstr "Indeks Sumbu Joypad:"
 
 #: editor/project_settings_editor.cpp
 msgid "Axis"
-msgstr "Axis"
+msgstr "Sumbu"
 
 #: editor/project_settings_editor.cpp
 msgid "Joypad Button Index:"
@@ -11511,11 +11513,11 @@ msgstr "Nol"
 
 #: editor/property_editor.cpp
 msgid "Easing In-Out"
-msgstr "Easing In-Out"
+msgstr "Mempermudah Masuk-Keluar"
 
 #: editor/property_editor.cpp
 msgid "Easing Out-In"
-msgstr "Easing Out-In"
+msgstr "Mempermudah Keluar-Masuk"
 
 #: editor/property_editor.cpp
 msgid "File..."
@@ -11636,7 +11638,7 @@ msgstr "Jumlah penghitung bertambah untuk setiap node"
 
 #: editor/rename_dialog.cpp
 msgid "Padding"
-msgstr "Padding"
+msgstr "Lapisan"
 
 #: editor/rename_dialog.cpp
 msgid ""
@@ -12306,7 +12308,7 @@ msgstr "Sumber C++ :"
 
 #: editor/script_editor_debugger.cpp
 msgid "Stack Trace"
-msgstr "Stack Trace"
+msgstr "Jejak Tumpukan"
 
 #: editor/script_editor_debugger.cpp
 msgid "Errors"
@@ -12648,7 +12650,7 @@ msgstr "Plane Sebelumnya"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Plane:"
-msgstr "Plane:"
+msgstr "Dataran:"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Next Floor"
@@ -12660,7 +12662,7 @@ msgstr "Floor Sebelumnya"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Floor:"
-msgstr "Floor:"
+msgstr "Lantai:"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "GridMap Delete Selection"
@@ -12685,7 +12687,7 @@ msgstr "Isi Seleksi GridMap"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Grid Map"
-msgstr "Grid Map"
+msgstr "Peta Grid"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Snap View"
@@ -12815,7 +12817,7 @@ msgstr "Akhir dari inner exception stack trace"
 
 #: modules/recast/navigation_mesh_editor_plugin.cpp
 msgid "Bake NavMesh"
-msgstr "Bake NavMesh"
+msgstr "Panggang NavMesh"
 
 #: modules/recast/navigation_mesh_editor_plugin.cpp
 msgid "Clear the navigation mesh."
@@ -13329,14 +13331,12 @@ msgid "Running on %s"
 msgstr ""
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "Exporting APK..."
-msgstr "Mengekspor Semua"
+msgstr "Mengekspor APK..."
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "Uninstalling..."
-msgstr "Copot Pemasangan"
+msgstr "Copot Pemasangan..."
 
 #: platform/android/export/export_plugin.cpp
 #, fuzzy
@@ -13344,9 +13344,8 @@ msgid "Installing to device, please wait..."
 msgstr "Memuat, tunggu sejenak..."
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "Could not install to device: %s"
-msgstr "Tidak dapat memulai subproses!"
+msgstr "Tidak dapat instalasi ke perangkat: %s"
 
 #: platform/android/export/export_plugin.cpp
 #, fuzzy
@@ -13466,16 +13465,12 @@ msgid "Signing debug %s..."
 msgstr ""
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "Signing release %s..."
-msgstr ""
-"Memindai Berkas,\n"
-"Silakan Tunggu..."
+msgstr "Menandatangani rilis %s..."
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "Could not find keystore, unable to export."
-msgstr "Tidak dapat membuka templat untuk ekspor:"
+msgstr "Tidak dapat menemukan keystore, tidak bisa ekspor."
 
 #: platform/android/export/export_plugin.cpp
 msgid "'apksigner' returned with error #%d"
@@ -13541,9 +13536,8 @@ msgid "Could not export project files to gradle project\n"
 msgstr "Tidak dapat menyunting proyek gradle dalam lokasi proyek\n"
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "Could not write expansion package file!"
-msgstr "Tidak dapat menulis berkas:"
+msgstr "Tidak dapat menulis berkas paket ekspansi!"
 
 #: platform/android/export/export_plugin.cpp
 msgid "Building Android Project (gradle)"
@@ -13580,11 +13574,12 @@ msgid "Creating APK..."
 msgstr "Membuat kontur..."
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid ""
 "Could not find template APK to export:\n"
 "%s"
-msgstr "Tidak dapat membuka templat untuk ekspor:"
+msgstr ""
+"Tidak dapat menemukan contoh APK untuk ekspor:\n"
+"%s"
 
 #: platform/android/export/export_plugin.cpp
 msgid ""
@@ -13600,9 +13595,8 @@ msgid "Adding files..."
 msgstr "Menambahkan %s..."
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "Could not export project files"
-msgstr "Tidak dapat menulis berkas:"
+msgstr "Tidak dapat ekspor berkas proyek"
 
 #: platform/android/export/export_plugin.cpp
 msgid "Aligning APK..."
@@ -13668,14 +13662,12 @@ msgid "Could not read HTML shell:"
 msgstr "Tidak dapat membaca shell HTML kustom:"
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Could not create HTTP server directory:"
-msgstr "Tidak dapat membuat folder."
+msgstr "Tidak dapat menciptakan direktori server HTTP:"
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Error starting HTTP server:"
-msgstr "Galat menyimpan skena."
+msgstr "Kesalahan memulai server HTTP:"
 
 #: platform/osx/export/export.cpp
 #, fuzzy
@@ -14539,6 +14531,14 @@ msgstr ""
 "Lingkungan Baku yang ditetapkan di Pengaturan Proyek (Rendering -> Viewport -"
 "> Lingkungan Baku) tidak dapat dimuat."
 
+#: scene/main/timer.cpp
+msgid ""
+"Very low timer wait times (< 0.05 seconds) may behave in significantly "
+"different ways depending on the rendered or physics frame rate.\n"
+"Consider using a script's process loop instead of relying on a Timer for "
+"very low wait times."
+msgstr ""
+
 #: scene/main/viewport.cpp
 msgid ""
 "This viewport is not set as render target. If you intend for it to display "
@@ -14553,7 +14553,10 @@ msgstr ""
 "beberapa node untuk ditampilkan."
 
 #: scene/main/viewport.cpp
-msgid "Viewport size must be greater than 0 to render anything."
+#, fuzzy
+msgid ""
+"The Viewport size must be greater than or equal to 2 pixels on both "
+"dimensions to render anything."
 msgstr "Ukuran viewport harus lebih besar dari 0 untuk me-render apa pun."
 
 #: scene/resources/occluder_shape.cpp
