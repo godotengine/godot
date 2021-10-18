@@ -56,6 +56,8 @@ public:
 
 	ShadowFilterMode shadow_filter_mode;
 
+	bool shadow_use_dithering;
+
 	uint64_t shadow_atlas_realloc_tolerance_msec;
 
 	enum SubSurfaceScatterQuality {

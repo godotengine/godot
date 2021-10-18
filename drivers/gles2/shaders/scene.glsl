@@ -1500,9 +1500,23 @@ LIGHT_SHADER_CODE
 
 #define SAMPLE_SHADOW_TEXEL(p_shadow, p_pos, p_depth) step(p_depth, SHADOW_DEPTH(texture2D(p_shadow, p_pos)))
 
+#ifdef SHADOW_USE_DITHERING
+// Interleaved Gradient Noise
+// https://www.iryoku.com/next-generation-post-processing-in-call-of-duty-advanced-warfare
+float quick_hash(vec2 pos) {
+	const vec3 magic = vec3(0.06711056f, 0.00583715f, 52.9829189f);
+	return fract(magic.z * fract(dot(pos, magic.xy)));
+}
+#endif
+
 float sample_shadow(highp sampler2D shadow, highp vec4 spos) {
 	spos.xyz /= spos.w;
+#ifdef SHADOW_USE_DITHERING
+	vec2 dither = (-vec2(0.5) + quick_hash(gl_FragCoord.xy)) * shadow_pixel_size;
+	vec2 pos = spos.xy + dither;
+#else
 	vec2 pos = spos.xy;
+#endif
 	float depth = spos.z;
 
 #ifdef SHADOW_MODE_PCF_13

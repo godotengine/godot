@@ -1801,11 +1801,14 @@
 			Lower-end override for [member rendering/quality/shadow_atlas/size] on mobile devices, due to performance concerns or driver support.
 		</member>
 		<member name="rendering/quality/shadows/filter_mode" type="int" setter="" getter="" default="1">
-			Shadow filter mode. Higher-quality settings result in smoother shadows that flicker less when moving. "Disabled" is the fastest option, but also has the lowest quality. "PCF5" is smoother but is also slower. "PCF13" is the smoothest option, but is also the slowest.
+			Shadow filter mode in 3D. Higher-quality settings result in smoother shadows that flicker less when moving. "Disabled" is the fastest option, but also has the lowest quality. "PCF5" is smoother but is also slower. "PCF13" is the smoothest option, but is also the slowest. See also [member rendering/quality/shadows/use_dithering].
 			[b]Note:[/b] When using the GLES2 backend, the "PCF13" option actually uses 16 samples to emulate linear filtering in the shader. This results in a shadow appearance similar to the one produced by the GLES3 backend.
 		</member>
 		<member name="rendering/quality/shadows/filter_mode.mobile" type="int" setter="" getter="" default="0">
 			Lower-end override for [member rendering/quality/shadows/filter_mode] on mobile devices, due to performance concerns or driver support.
+		</member>
+		<member name="rendering/quality/shadows/use_dithering" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], enables dithering for 3D shadows. Dithering improves overall shadow quality, but introduces a grainy effect that can be noticeable in scenes with large flat color areas. This dithering effect becomes less noticeable as textures become more complex and as the 3D rendering resolution increases. Disabling dithering can also slightly improve shadow rendering performance. See also [member rendering/quality/shadows/filter_mode].
 		</member>
 		<member name="rendering/quality/skinning/force_software_skinning" type="bool" setter="" getter="" default="false">
 			Forces [MeshInstance] to always perform skinning on the CPU (applies to both GLES2 and GLES3).
