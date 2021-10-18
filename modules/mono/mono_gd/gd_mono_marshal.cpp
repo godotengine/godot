@@ -1256,6 +1256,17 @@ Variant mono_object_to_variant_impl(MonoObject *p_obj, const ManagedType &p_type
 				GDMonoUtils::Marshal::array_get_element_type(reftype, &elem_reftype);
 				return system_generic_list_to_Array_variant(p_obj, p_type.type_class, elem_reftype);
 			}
+
+			// GodotObject
+			GDMonoClass *type_class = p_type.type_class;
+			if (CACHED_CLASS(GodotObject)->is_assignable_from(type_class)) {
+				Object *ptr = unbox<Object *>(CACHED_FIELD(GodotObject, ptr)->get_value(p_obj));
+				if (ptr != nullptr) {
+					RefCounted *rc = Object::cast_to<RefCounted>(ptr);
+					return rc ? Variant(Ref<RefCounted>(rc)) : Variant(ptr);
+				}
+				return Variant();
+			}
 		} break;
 	}
 
