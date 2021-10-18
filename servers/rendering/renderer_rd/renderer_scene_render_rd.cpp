@@ -1781,6 +1781,11 @@ void RendererSceneRenderRD::_free_render_buffer_data(RenderBuffers *rb) {
 		rb->ambient_buffer = RID();
 		rb->reflection_buffer = RID();
 	}
+
+	if (rb->gi.voxel_gi_buffer.is_valid()) {
+		RD::get_singleton()->free(rb->gi.voxel_gi_buffer);
+		rb->gi.voxel_gi_buffer = RID();
+	}
 }
 
 void RendererSceneRenderRD::_process_sss(RID p_render_buffers, const CameraMatrix &p_camera) {
