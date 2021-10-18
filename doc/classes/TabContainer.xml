@@ -20,6 +20,7 @@
 			<return type="Popup" />
 			<description>
 				Returns the [Popup] node instance if one has been set already with [method set_popup].
+				[b]Warning:[/b] This is a required internal node, removing and freeing it may cause a crash. If you wish to hide it or any of its children, use their [member Window.visible] property.
 			</description>
 		</method>
 		<method name="get_previous_tab" qualifiers="const">

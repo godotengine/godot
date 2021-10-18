@@ -469,6 +469,7 @@
 			<description>
 				Gets the Editor's dialogue used for making scripts.
 				[b]Note:[/b] Users can configure it before use.
+				[b]Warning:[/b] Removing and freeing this node will render a part of the editor useless and may cause a crash.
 			</description>
 		</method>
 		<method name="get_undo_redo">
