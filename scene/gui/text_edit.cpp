@@ -4039,7 +4039,7 @@ int TextEdit::get_visible_line_count() const {
 }
 
 int TextEdit::get_total_visible_line_count() const {
-	/* Returns the total number of (lines + wraped - hidden). */
+	/* Returns the total number of (lines + wrapped - hidden). */
 	if (!_is_hiding_enabled() && get_line_wrapping_mode() == LineWrappingMode::LINE_WRAPPING_NONE) {
 		return text.size();
 	}
