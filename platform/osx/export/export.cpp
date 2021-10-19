@@ -647,7 +647,6 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 
 	// Now process our template.
 	bool found_binary = false;
-	int total_size = 0;
 	Vector<String> dylibs_found;
 
 	while (ret == UNZ_OK && err == OK) {
@@ -735,7 +734,6 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 			}
 
 			print_line("ADDING: " + file + " size: " + itos(data.size()));
-			total_size += data.size();
 
 			// Write it into our application bundle.
 			file = tmp_app_path_name.plus_file(file);
