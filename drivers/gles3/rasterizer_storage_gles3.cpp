@@ -1076,11 +1076,11 @@ bool RasterizerStorageGLES3::light_directional_get_blend_splits(RID p_light) con
 	return false;
 }
 
-void RasterizerStorageGLES3::light_directional_set_sky_only(RID p_light, bool p_sky_only) {
+void RasterizerStorageGLES3::light_directional_set_sky_mode(RID p_light, RS::LightDirectionalSkyMode p_mode) {
 }
 
-bool RasterizerStorageGLES3::light_directional_is_sky_only(RID p_light) const {
-	return false;
+RS::LightDirectionalSkyMode RasterizerStorageGLES3::light_directional_get_sky_mode(RID p_light) const {
+	return RS::LIGHT_DIRECTIONAL_SKY_MODE_LIGHT_AND_SKY;
 }
 
 RS::LightDirectionalShadowMode RasterizerStorageGLES3::light_directional_get_shadow_mode(RID p_light) {

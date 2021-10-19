@@ -921,7 +921,7 @@ private:
 		RS::LightOmniShadowMode omni_shadow_mode = RS::LIGHT_OMNI_SHADOW_DUAL_PARABOLOID;
 		RS::LightDirectionalShadowMode directional_shadow_mode = RS::LIGHT_DIRECTIONAL_SHADOW_ORTHOGONAL;
 		bool directional_blend_splits = false;
-		bool directional_sky_only = false;
+		RS::LightDirectionalSkyMode directional_sky_mode = RS::LIGHT_DIRECTIONAL_SKY_MODE_LIGHT_AND_SKY;
 		uint64_t version = 0;
 
 		Dependency dependency;
@@ -1649,8 +1649,8 @@ public:
 	void light_directional_set_shadow_mode(RID p_light, RS::LightDirectionalShadowMode p_mode);
 	void light_directional_set_blend_splits(RID p_light, bool p_enable);
 	bool light_directional_get_blend_splits(RID p_light) const;
-	void light_directional_set_sky_only(RID p_light, bool p_sky_only);
-	bool light_directional_is_sky_only(RID p_light) const;
+	void light_directional_set_sky_mode(RID p_light, RS::LightDirectionalSkyMode p_mode);
+	RS::LightDirectionalSkyMode light_directional_get_sky_mode(RID p_light) const;
 
 	RS::LightDirectionalShadowMode light_directional_get_shadow_mode(RID p_light);
 	RS::LightOmniShadowMode light_omni_get_shadow_mode(RID p_light);

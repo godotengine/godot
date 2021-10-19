@@ -689,7 +689,7 @@ public:
 			float spot_angle;
 			float spot_attenuation;
 			bool has_shadow;
-			bool sky_only;
+			RS::LightDirectionalSkyMode sky_mode;
 		};
 
 		Vector<LightCache> light_cache;

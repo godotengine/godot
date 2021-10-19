@@ -408,13 +408,13 @@ bool DirectionalLight3D::is_blend_splits_enabled() const {
 	return blend_splits;
 }
 
-void DirectionalLight3D::set_sky_only(bool p_sky_only) {
-	sky_only = p_sky_only;
-	RS::get_singleton()->light_directional_set_sky_only(light, p_sky_only);
+void DirectionalLight3D::set_sky_mode(SkyMode p_mode) {
+	sky_mode = p_mode;
+	RS::get_singleton()->light_directional_set_sky_mode(light, RS::LightDirectionalSkyMode(p_mode));
 }
 
-bool DirectionalLight3D::is_sky_only() const {
-	return sky_only;
+DirectionalLight3D::SkyMode DirectionalLight3D::get_sky_mode() const {
+	return sky_mode;
 }
 
 void DirectionalLight3D::_validate_property(PropertyInfo &property) const {
@@ -449,8 +449,8 @@ void DirectionalLight3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_blend_splits", "enabled"), &DirectionalLight3D::set_blend_splits);
 	ClassDB::bind_method(D_METHOD("is_blend_splits_enabled"), &DirectionalLight3D::is_blend_splits_enabled);
 
-	ClassDB::bind_method(D_METHOD("set_sky_only", "priority"), &DirectionalLight3D::set_sky_only);
-	ClassDB::bind_method(D_METHOD("is_sky_only"), &DirectionalLight3D::is_sky_only);
+	ClassDB::bind_method(D_METHOD("set_sky_mode", "mode"), &DirectionalLight3D::set_sky_mode);
+	ClassDB::bind_method(D_METHOD("get_sky_mode"), &DirectionalLight3D::get_sky_mode);
 
 	ADD_GROUP("Directional Shadow", "directional_shadow_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "directional_shadow_mode", PROPERTY_HINT_ENUM, "Orthogonal (Fast),PSSM 2 Splits (Average),PSSM 4 Splits (Slow)"), "set_shadow_mode", "get_shadow_mode");
@@ -462,11 +462,15 @@ void DirectionalLight3D::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "directional_shadow_max_distance", PROPERTY_HINT_RANGE, "0,8192,0.1,or_greater,exp"), "set_param", "get_param", PARAM_SHADOW_MAX_DISTANCE);
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "directional_shadow_pancake_size", PROPERTY_HINT_RANGE, "0,1024,0.1,or_greater,exp"), "set_param", "get_param", PARAM_SHADOW_PANCAKE_SIZE);
 
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_in_sky_only"), "set_sky_only", "is_sky_only");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "sky_mode", PROPERTY_HINT_ENUM, "Light and Sky,Light Only,Sky Only"), "set_sky_mode", "get_sky_mode");
 
 	BIND_ENUM_CONSTANT(SHADOW_ORTHOGONAL);
 	BIND_ENUM_CONSTANT(SHADOW_PARALLEL_2_SPLITS);
 	BIND_ENUM_CONSTANT(SHADOW_PARALLEL_4_SPLITS);
+
+	BIND_ENUM_CONSTANT(SKY_MODE_LIGHT_AND_SKY);
+	BIND_ENUM_CONSTANT(SKY_MODE_LIGHT_ONLY);
+	BIND_ENUM_CONSTANT(SKY_MODE_SKY_ONLY);
 }
 
 DirectionalLight3D::DirectionalLight3D() :
@@ -477,6 +481,7 @@ DirectionalLight3D::DirectionalLight3D() :
 	set_param(PARAM_SHADOW_BIAS, 0.1);
 	set_shadow_mode(SHADOW_PARALLEL_4_SPLITS);
 	blend_splits = false;
+	set_sky_mode(SKY_MODE_LIGHT_AND_SKY);
 }
 
 void OmniLight3D::set_shadow_mode(ShadowMode p_mode) {

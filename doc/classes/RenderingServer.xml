@@ -1616,10 +1616,10 @@
 				Sets the shadow mode for this directional light. Equivalent to [member DirectionalLight3D.directional_shadow_mode]. See [enum LightDirectionalShadowMode] for options.
 			</description>
 		</method>
-		<method name="light_directional_set_sky_only">
+		<method name="light_directional_set_sky_mode">
 			<return type="void" />
 			<argument index="0" name="light" type="RID" />
-			<argument index="1" name="enable" type="bool" />
+			<argument index="1" name="mode" type="int" enum="RenderingServer.LightDirectionalSkyMode" />
 			<description>
 				If [code]true[/code], this light will not be used for anything except sky shaders. Use this for lights that impact your sky shader that you may want to hide from affecting the rest of the scene. For example, you may want to enable this when the sun in your sky shader falls below the horizon.
 			</description>
@@ -3794,6 +3794,15 @@
 		</constant>
 		<constant name="LIGHT_DIRECTIONAL_SHADOW_PARALLEL_4_SPLITS" value="2" enum="LightDirectionalShadowMode">
 			Use 4 splits for shadow projection when using directional light.
+		</constant>
+		<constant name="LIGHT_DIRECTIONAL_SKY_MODE_LIGHT_AND_SKY" value="0" enum="LightDirectionalSkyMode">
+			Use DirectionalLight3D in both sky rendering and scene lighting.
+		</constant>
+		<constant name="LIGHT_DIRECTIONAL_SKY_MODE_LIGHT_ONLY" value="1" enum="LightDirectionalSkyMode">
+			Only use DirectionalLight3D in scene lighting.
+		</constant>
+		<constant name="LIGHT_DIRECTIONAL_SKY_MODE_SKY_ONLY" value="2" enum="LightDirectionalSkyMode">
+			Only use DirectionalLight3D in sky rendering.
 		</constant>
 		<constant name="SHADOW_QUALITY_HARD" value="0" enum="ShadowQuality">
 			Lowest shadow filtering quality (fastest). Soft shadows are not available with this quality setting, which means the [member Light3D.shadow_blur] property is ignored if [member Light3D.light_size] and [member Light3D.light_angular_distance] is [code]0.0[/code].

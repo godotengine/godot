@@ -1458,7 +1458,7 @@ void RendererSceneGIRD::SDFGI::pre_process_gi(const Transform3D &p_transform, Re
 			RendererSceneRenderRD::LightInstance *li = p_scene_render->light_instance_owner.get_or_null(p_scene_render->render_state.sdfgi_update_data->directional_lights->get(j));
 			ERR_CONTINUE(!li);
 
-			if (storage->light_directional_is_sky_only(li->light)) {
+			if (storage->light_directional_get_sky_mode(li->light) == RS::LIGHT_DIRECTIONAL_SKY_MODE_SKY_ONLY) {
 				continue;
 			}
 
@@ -2388,7 +2388,7 @@ void RendererSceneGIRD::VoxelGIInstance::update(bool p_update_light_instances, c
 				RID light = p_scene_render->light_instance_get_base_light(light_instance);
 
 				l.type = storage->light_get_type(light);
-				if (l.type == RS::LIGHT_DIRECTIONAL && storage->light_directional_is_sky_only(light)) {
+				if (l.type == RS::LIGHT_DIRECTIONAL && storage->light_directional_get_sky_mode(light) == RS::LIGHT_DIRECTIONAL_SKY_MODE_SKY_ONLY) {
 					light_count--;
 					continue;
 				}
