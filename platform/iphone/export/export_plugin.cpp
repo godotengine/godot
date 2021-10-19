@@ -146,15 +146,15 @@ void EditorExportPlatformIOS::get_export_options(List<ExportOption> *r_options) 
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "icons/generate_missing"), false));
 
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "required_icons/iphone_120x120", PROPERTY_HINT_FILE, "*.png"), "")); // Home screen on iPhone/iPod Touch with retina display
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "required_icons/iphone_120x120", PROPERTY_HINT_FILE, "*.png"), "")); // Home screen on iPhone/iPod Touch with Retina display
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "required_icons/ipad_76x76", PROPERTY_HINT_FILE, "*.png"), "")); // Home screen on iPad
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "required_icons/ipad_152x152", PROPERTY_HINT_FILE, "*.png"), "")); // Home screen on iPad with Retina display
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "required_icons/app_store_1024x1024", PROPERTY_HINT_FILE, "*.png"), "")); // App Store
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "required_icons/spotlight_40x40", PROPERTY_HINT_FILE, "*.png"), "")); // Spotlight
 
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "optional_icons/iphone_180x180", PROPERTY_HINT_FILE, "*.png"), "")); // Home screen on iPhone with retina HD display
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "optional_icons/ipad_152x152", PROPERTY_HINT_FILE, "*.png"), "")); // Home screen on iPad with retina display
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "optional_icons/iphone_180x180", PROPERTY_HINT_FILE, "*.png"), "")); // Home screen on iPhone with Retina HD display
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "optional_icons/ipad_167x167", PROPERTY_HINT_FILE, "*.png"), "")); // Home screen on iPad Pro
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "optional_icons/spotlight_40x40", PROPERTY_HINT_FILE, "*.png"), "")); // Spotlight
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "optional_icons/spotlight_80x80", PROPERTY_HINT_FILE, "*.png"), "")); // Spotlight on devices with retina display
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "optional_icons/spotlight_80x80", PROPERTY_HINT_FILE, "*.png"), "")); // Spotlight on devices with Retina display
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "storyboard/use_launch_screen_storyboard"), false));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "storyboard/image_scale_mode", PROPERTY_HINT_ENUM, "Same as Logo,Center,Scale to Fit,Scale to Fill,Scale"), 0));
@@ -474,15 +474,14 @@ static const IconInfo icon_infos[] = {
 	{ "required_icons/iphone_120x120", "iphone", "Icon-120.png", "120", "3x", "40x40", true },
 
 	{ "required_icons/ipad_76x76", "ipad", "Icon-76.png", "76", "1x", "76x76", true },
+	{ "required_icons/ipad_152x152", "ipad", "Icon-152.png", "152", "2x", "76x76", true },
+	{ "required_icons/spotlight_40x40", "ipad", "Icon-40.png", "40", "1x", "40x40", true },
+
 	{ "required_icons/app_store_1024x1024", "ios-marketing", "Icon-1024.png", "1024", "1x", "1024x1024", true },
 
 	{ "optional_icons/iphone_180x180", "iphone", "Icon-180.png", "180", "3x", "60x60", false },
 
-	{ "optional_icons/ipad_152x152", "ipad", "Icon-152.png", "152", "2x", "76x76", false },
-
 	{ "optional_icons/ipad_167x167", "ipad", "Icon-167.png", "167", "2x", "83.5x83.5", false },
-
-	{ "optional_icons/spotlight_40x40", "ipad", "Icon-40.png", "40", "1x", "40x40", false },
 
 	{ "optional_icons/spotlight_80x80", "iphone", "Icon-80.png", "80", "2x", "40x40", false },
 	{ "optional_icons/spotlight_80x80", "ipad", "Icon-80.png", "80", "2x", "40x40", false }
