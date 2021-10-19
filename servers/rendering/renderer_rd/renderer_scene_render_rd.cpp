@@ -2696,8 +2696,13 @@ void RendererSceneRenderRD::shadows_quality_set(RS::ShadowQuality p_quality) {
 		switch (shadows_quality) {
 			case RS::SHADOW_QUALITY_HARD: {
 				penumbra_shadow_samples = 4;
-				soft_shadow_samples = 1;
+				soft_shadow_samples = 0;
 				shadows_quality_radius = 1.0;
+			} break;
+			case RS::SHADOW_QUALITY_SOFT_VERY_LOW: {
+				penumbra_shadow_samples = 4;
+				soft_shadow_samples = 1;
+				shadows_quality_radius = 1.5;
 			} break;
 			case RS::SHADOW_QUALITY_SOFT_LOW: {
 				penumbra_shadow_samples = 8;
@@ -2738,8 +2743,13 @@ void RendererSceneRenderRD::directional_shadow_quality_set(RS::ShadowQuality p_q
 		switch (directional_shadow_quality) {
 			case RS::SHADOW_QUALITY_HARD: {
 				directional_penumbra_shadow_samples = 4;
-				directional_soft_shadow_samples = 1;
+				directional_soft_shadow_samples = 0;
 				directional_shadow_quality_radius = 1.0;
+			} break;
+			case RS::SHADOW_QUALITY_SOFT_VERY_LOW: {
+				directional_penumbra_shadow_samples = 4;
+				directional_soft_shadow_samples = 1;
+				directional_shadow_quality_radius = 1.5;
 			} break;
 			case RS::SHADOW_QUALITY_SOFT_LOW: {
 				directional_penumbra_shadow_samples = 8;
