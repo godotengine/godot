@@ -141,7 +141,7 @@ World3D::World3D() {
 	scenario = RenderingServer::get_singleton()->scenario_create();
 
 	PhysicsServer3D::get_singleton()->space_set_active(space, true);
-	PhysicsServer3D::get_singleton()->area_set_param(space, PhysicsServer3D::AREA_PARAM_GRAVITY, GLOBAL_DEF("physics/3d/default_gravity", 9.8));
+	PhysicsServer3D::get_singleton()->area_set_param(space, PhysicsServer3D::AREA_PARAM_GRAVITY, GLOBAL_DEF("physics/3d/default_gravity", 61.25));
 	PhysicsServer3D::get_singleton()->area_set_param(space, PhysicsServer3D::AREA_PARAM_GRAVITY_VECTOR, GLOBAL_DEF("physics/3d/default_gravity_vector", Vector3(0, -1, 0)));
 	PhysicsServer3D::get_singleton()->area_set_param(space, PhysicsServer3D::AREA_PARAM_LINEAR_DAMP, GLOBAL_DEF("physics/3d/default_linear_damp", 0.1));
 	ProjectSettings::get_singleton()->set_custom_property_info("physics/3d/default_linear_damp", PropertyInfo(Variant::FLOAT, "physics/3d/default_linear_damp", PROPERTY_HINT_RANGE, "-1,100,0.001,or_greater"));
