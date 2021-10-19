@@ -329,8 +329,13 @@ bool InputEventKey::shortcut_match(const Ref<InputEvent> &p_event, bool p_exact_
 		return false;
 	}
 
-	return scancode == key->scancode &&
-		   (!p_exact_match || get_modifiers_mask() == key->get_modifiers_mask());
+	if (scancode == 0) {
+		return physical_scancode == key->physical_scancode &&
+			   (!p_exact_match || get_modifiers_mask() == key->get_modifiers_mask());
+	} else {
+		return scancode == key->scancode &&
+			   (!p_exact_match || get_modifiers_mask() == key->get_modifiers_mask());
+	}
 }
 
 void InputEventKey::_bind_methods() {
