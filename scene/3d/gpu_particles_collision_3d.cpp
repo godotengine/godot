@@ -475,7 +475,7 @@ Ref<Image> GPUParticlesCollisionSDF::bake() {
 	_create_bvh(bvh, face_pos.ptr(), face_pos.size(), faces.ptr(), th);
 
 	Vector<uint8_t> data;
-	data.resize(sdf_size.z * sdf_size.y * sdf_size.x * sizeof(float));
+	data.resize(sdf_size.z * sdf_size.y * sdf_size.x * (int)sizeof(float));
 
 	if (bake_step_function) {
 		bake_step_function(0, "Baking SDF");

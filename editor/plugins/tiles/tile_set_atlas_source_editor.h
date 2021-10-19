@@ -78,6 +78,7 @@ private:
 		int get_id();
 
 		void edit(Ref<TileSet> p_tile_set, TileSetAtlasSource *p_tile_set_atlas_source, int p_source_id);
+		TileSetAtlasSource *get_edited() { return tile_set_atlas_source; };
 	};
 
 	// -- Proxy object for a tile, needed by the inspector --
@@ -112,7 +113,7 @@ private:
 
 	UndoRedo *undo_redo = EditorNode::get_undo_redo();
 
-	bool tile_set_atlas_source_changed_needs_update = false;
+	bool tile_set_changed_needs_update = false;
 
 	// -- Properties painting --
 	VBoxContainer *tile_data_painting_editor_container;
@@ -189,7 +190,6 @@ private:
 		TILE_CREATE_ALTERNATIVE,
 		TILE_DELETE,
 
-		ADVANCED_CLEANUP_TILES_OUTSIDE_TEXTURE,
 		ADVANCED_AUTO_CREATE_TILES,
 		ADVANCED_AUTO_REMOVE_TILES,
 	};
@@ -263,7 +263,7 @@ private:
 	void _auto_remove_tiles();
 	AcceptDialog *confirm_auto_create_tiles;
 
-	void _tile_set_atlas_source_changed();
+	void _tile_set_changed();
 	void _tile_proxy_object_changed(String p_what);
 	void _atlas_source_proxy_object_changed(String p_what);
 

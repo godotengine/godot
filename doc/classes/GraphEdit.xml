@@ -89,8 +89,8 @@
 		<method name="get_zoom_hbox">
 			<return type="HBoxContainer" />
 			<description>
-				Gets the [HBoxContainer] that contains the zooming and grid snap controls in the top left of the graph.
-				Warning: The intended usage of this function is to allow you to reposition or add your own custom controls to the container. This is an internal control and as such should not be freed. If you wish to hide this or any of its children, use their [member CanvasItem.visible] property instead.
+				Gets the [HBoxContainer] that contains the zooming and grid snap controls in the top left of the graph. You can use this method to reposition the toolbar or to add your own custom controls to it.
+				[b]Warning:[/b] This is a required internal node, removing and freeing it may cause a crash. If you wish to hide it or any of its children, use their [member CanvasItem.visible] property.
 			</description>
 		</method>
 		<method name="is_node_connected">

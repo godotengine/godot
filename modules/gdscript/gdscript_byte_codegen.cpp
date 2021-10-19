@@ -692,7 +692,8 @@ void GDScriptByteCodeGenerator::write_end_ternary() {
 
 void GDScriptByteCodeGenerator::write_set(const Address &p_target, const Address &p_index, const Address &p_source) {
 	if (HAS_BUILTIN_TYPE(p_target)) {
-		if (IS_BUILTIN_TYPE(p_index, Variant::INT) && Variant::get_member_validated_indexed_setter(p_target.type.builtin_type)) {
+		if (IS_BUILTIN_TYPE(p_index, Variant::INT) && Variant::get_member_validated_indexed_setter(p_target.type.builtin_type) &&
+				IS_BUILTIN_TYPE(p_source, Variant::get_indexed_element_type(p_target.type.builtin_type))) {
 			// Use indexed setter instead.
 			Variant::ValidatedIndexedSetter setter = Variant::get_member_validated_indexed_setter(p_target.type.builtin_type);
 			append(GDScriptFunction::OPCODE_SET_INDEXED_VALIDATED, 3);
@@ -746,7 +747,8 @@ void GDScriptByteCodeGenerator::write_get(const Address &p_target, const Address
 }
 
 void GDScriptByteCodeGenerator::write_set_named(const Address &p_target, const StringName &p_name, const Address &p_source) {
-	if (HAS_BUILTIN_TYPE(p_target) && Variant::get_member_validated_setter(p_target.type.builtin_type, p_name)) {
+	if (HAS_BUILTIN_TYPE(p_target) && Variant::get_member_validated_setter(p_target.type.builtin_type, p_name) &&
+			IS_BUILTIN_TYPE(p_source, Variant::get_member_type(p_target.type.builtin_type, p_name))) {
 		Variant::ValidatedSetter setter = Variant::get_member_validated_setter(p_target.type.builtin_type, p_name);
 		append(GDScriptFunction::OPCODE_SET_NAMED_VALIDATED, 2);
 		append(p_target);

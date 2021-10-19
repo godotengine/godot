@@ -230,10 +230,13 @@ String OS_Android::get_user_data_dir() const {
 }
 
 String OS_Android::get_cache_path() const {
+	if (cache_dir_cache != String())
+		return cache_dir_cache;
+
 	String cache_dir = godot_io_java->get_cache_dir();
 	if (cache_dir != "") {
-		cache_dir = _remove_symlink(cache_dir);
-		return cache_dir;
+		cache_dir_cache = _remove_symlink(cache_dir);
+		return cache_dir_cache;
 	}
 	return ".";
 }

@@ -10,6 +10,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
+"Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "PO-Revision-Date: 2021-07-16 05:47+0000\n"
 "Last-Translator: Kritzmensch <streef.gtx@gmail.com>\n"
 "Language-Team: Estonian <https://hosted.weblate.org/projects/godot-engine/"
@@ -2377,6 +2378,14 @@ msgid ""
 "be satisfied."
 msgstr ""
 
+#: editor/editor_node.cpp
+msgid "Could not save one or more scenes!"
+msgstr ""
+
+#: editor/editor_node.cpp
+msgid "Save All Scenes"
+msgstr "Salvesta kõik stseenid"
+
 #: editor/editor_node.cpp editor/scene_tree_dock.cpp
 msgid "Can't overwrite scene that is still open!"
 msgstr "Avatud stseeni ei saa üle kirjutada!"
@@ -2491,6 +2500,10 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Save changes to '%s' before closing?"
+msgstr ""
+
+#: editor/editor_node.cpp
+msgid "%s no longer exists! Please specify a new save location."
 msgstr ""
 
 #: editor/editor_node.cpp
@@ -2821,10 +2834,6 @@ msgstr "Hiljuti avatud"
 #: editor/editor_node.cpp
 msgid "Save Scene"
 msgstr "Salvesta stseen"
-
-#: editor/editor_node.cpp
-msgid "Save All Scenes"
-msgstr "Salvesta kõik stseenid"
 
 #: editor/editor_node.cpp
 msgid "Convert To..."
@@ -4245,16 +4254,24 @@ msgid "Clear Default for '%s'"
 msgstr ""
 
 #: editor/import_dock.cpp
+msgid "Reimport"
+msgstr "Taasimpordi"
+
+#: editor/import_dock.cpp
+msgid ""
+"You have pending changes that haven't been applied yet. Click Reimport to "
+"apply changes made to the import options.\n"
+"Selecting another resource in the FileSystem dock without clicking Reimport "
+"first will discard changes made in the Import dock."
+msgstr ""
+
+#: editor/import_dock.cpp
 msgid "Import As:"
 msgstr "Impordi kui:"
 
 #: editor/import_dock.cpp
 msgid "Preset"
 msgstr "Eelseadistus"
-
-#: editor/import_dock.cpp
-msgid "Reimport"
-msgstr "Taasimpordi"
 
 #: editor/import_dock.cpp
 msgid "Save Scenes, Re-Import, and Restart"
@@ -7145,11 +7162,13 @@ msgid "Move Down"
 msgstr "Liiguta allapoole"
 
 #: editor/plugins/script_editor_plugin.cpp
-msgid "Next script"
+#, fuzzy
+msgid "Next Script"
 msgstr "Järgmine skript"
 
 #: editor/plugins/script_editor_plugin.cpp
-msgid "Previous script"
+#, fuzzy
+msgid "Previous Script"
 msgstr "Eelmine skript"
 
 #: editor/plugins/script_editor_plugin.cpp
@@ -7563,12 +7582,17 @@ msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 #, fuzzy
-msgid "Right Perspective"
+msgid "Left Perspective"
 msgstr "Perspektiiv"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Right Orthogonal"
 msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Right Perspective"
+msgstr "Perspektiiv"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Front Orthogonal"
@@ -7920,6 +7944,27 @@ msgstr "Vasakvaade"
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Right View"
 msgstr "Paremvaade"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Orbit View Down"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Orbit View Left"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Orbit View Right"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Orbit View Up"
+msgstr "Eesvaade"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Orbit View 180"
+msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Switch Perspective/Orthogonal View"
@@ -13859,6 +13904,14 @@ msgid ""
 "Environment -> Default Environment) could not be loaded."
 msgstr ""
 
+#: scene/main/timer.cpp
+msgid ""
+"Very low timer wait times (< 0.05 seconds) may behave in significantly "
+"different ways depending on the rendered or physics frame rate.\n"
+"Consider using a script's process loop instead of relying on a Timer for "
+"very low wait times."
+msgstr ""
+
 #: scene/main/viewport.cpp
 msgid ""
 "This viewport is not set as render target. If you intend for it to display "
@@ -13868,7 +13921,10 @@ msgid ""
 msgstr ""
 
 #: scene/main/viewport.cpp
-msgid "Viewport size must be greater than 0 to render anything."
+#, fuzzy
+msgid ""
+"The Viewport size must be greater than or equal to 2 pixels on both "
+"dimensions to render anything."
 msgstr "Vaateakne suurus peab olema suurem kui 0, et kuvada."
 
 #: scene/resources/occluder_shape.cpp

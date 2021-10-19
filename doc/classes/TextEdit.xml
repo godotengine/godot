@@ -314,6 +314,7 @@
 			<return type="PopupMenu" />
 			<description>
 				Returns the [PopupMenu] of this [TextEdit]. By default, this menu is displayed when right-clicking on the [TextEdit].
+				[b]Warning:[/b] This is a required internal node, removing and freeing it may cause a crash. If you wish to hide it or any of its children, use their [member Window.visible] property.
 			</description>
 		</method>
 		<method name="get_minimap_line_at_pos" qualifiers="const">
@@ -936,7 +937,7 @@
 		<member name="language" type="String" setter="set_language" getter="get_language" default="&quot;&quot;">
 			Language code used for line-breaking and text shaping algorithms, if left empty current locale is used instead.
 		</member>
-		<member name="minimap_draw" type="bool" setter="draw_minimap" getter="is_drawing_minimap" default="false">
+		<member name="minimap_draw" type="bool" setter="set_draw_minimap" getter="is_drawing_minimap" default="false">
 			If [code]true[/code], a minimap is shown, providing an outline of your source code.
 		</member>
 		<member name="minimap_width" type="int" setter="set_minimap_width" getter="get_minimap_width" default="80">

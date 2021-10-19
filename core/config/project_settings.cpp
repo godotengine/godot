@@ -49,12 +49,11 @@ ProjectSettings *ProjectSettings::get_singleton() {
 }
 
 String ProjectSettings::get_project_data_dir_name() const {
-	return ".godot";
+	return project_data_dir_name;
 }
 
 String ProjectSettings::get_project_data_path() const {
-	String project_data_dir_name = get_project_data_dir_name();
-	return "res://" + project_data_dir_name;
+	return "res://" + get_project_data_dir_name();
 }
 
 String ProjectSettings::get_resource_path() const {
@@ -520,6 +519,10 @@ Error ProjectSettings::setup(const String &p_path, const String &p_main_pack, bo
 			_load_settings_text(custom_settings);
 		}
 	}
+
+	// Updating the default value after the project settings have loaded.
+	project_data_dir_name = GLOBAL_GET("application/config/project_data_dir_name");
+
 	// Using GLOBAL_GET on every block for compressing can be slow, so assigning here.
 	Compression::zstd_long_distance_matching = GLOBAL_GET("compression/formats/zstd/long_distance_matching");
 	Compression::zstd_level = GLOBAL_GET("compression/formats/zstd/compression_level");
@@ -1091,6 +1094,7 @@ ProjectSettings::ProjectSettings() {
 	custom_prop_info["application/run/main_scene"] = PropertyInfo(Variant::STRING, "application/run/main_scene", PROPERTY_HINT_FILE, "*.tscn,*.scn,*.res");
 	GLOBAL_DEF("application/run/disable_stdout", false);
 	GLOBAL_DEF("application/run/disable_stderr", false);
+	project_data_dir_name = GLOBAL_DEF_RST("application/config/project_data_dir_name", ".godot");
 	GLOBAL_DEF("application/config/use_custom_user_dir", false);
 	GLOBAL_DEF("application/config/custom_user_dir_name", "");
 	GLOBAL_DEF("application/config/project_settings_override", "");

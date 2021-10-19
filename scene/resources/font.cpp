@@ -116,8 +116,8 @@ void FontData::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_scale", "cache_index", "size", "scale"), &FontData::set_scale);
 	ClassDB::bind_method(D_METHOD("get_scale", "cache_index", "size"), &FontData::get_scale);
 
-	ClassDB::bind_method(D_METHOD("set_spacing", "cache_index", "size", "spacing"), &FontData::set_spacing);
-	ClassDB::bind_method(D_METHOD("get_spacing", "cache_index", "size"), &FontData::get_spacing);
+	ClassDB::bind_method(D_METHOD("set_spacing", "cache_index", "size", "spacing_type", "value"), &FontData::set_spacing);
+	ClassDB::bind_method(D_METHOD("get_spacing", "cache_index", "size", "spacing_type"), &FontData::get_spacing);
 
 	ClassDB::bind_method(D_METHOD("get_texture_count", "cache_index", "size"), &FontData::get_texture_count);
 	ClassDB::bind_method(D_METHOD("clear_textures", "cache_index", "size"), &FontData::clear_textures);
@@ -175,7 +175,7 @@ void FontData::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("has_char", "char"), &FontData::has_char);
 	ClassDB::bind_method(D_METHOD("get_supported_chars"), &FontData::get_supported_chars);
 
-	ClassDB::bind_method(D_METHOD("get_glyph_index", "char", "variation_selector"), &FontData::get_glyph_index);
+	ClassDB::bind_method(D_METHOD("get_glyph_index", "size", "char", "variation_selector"), &FontData::get_glyph_index);
 
 	ClassDB::bind_method(D_METHOD("get_supported_feature_list"), &FontData::get_supported_feature_list);
 	ClassDB::bind_method(D_METHOD("get_supported_variation_list"), &FontData::get_supported_variation_list);

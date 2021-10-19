@@ -777,7 +777,7 @@ Vector3 CylinderShape3DSW::get_closest_point_to(const Vector3 &p_point) const {
 		// Project point to top disk.
 		real_t dir = p_point.y > 0.0 ? 1.0 : -1.0;
 		Vector3 circle_pos(0.0, dir * height * 0.5, 0.0);
-		Plane circle_plane(circle_pos, Vector3(0.0, dir, 0.0));
+		Plane circle_plane(Vector3(0.0, dir, 0.0), circle_pos);
 		Vector3 proj_point = circle_plane.project(p_point);
 
 		// Clip position.
@@ -1025,7 +1025,7 @@ Vector3 ConvexPolygonShape3DSW::get_closest_point_to(const Vector3 &p_point) con
 			Vector3 a = vertices[indices[j]];
 			Vector3 b = vertices[indices[(j + 1) % ic]];
 			Vector3 n = (a - b).cross(faces[i].plane.normal).normalized();
-			if (Plane(a, n).is_point_over(p_point)) {
+			if (Plane(n, a).is_point_over(p_point)) {
 				is_inside = false;
 				break;
 			}
@@ -1641,7 +1641,7 @@ int HeightMapShape3DSW::get_depth() const {
 
 void HeightMapShape3DSW::project_range(const Vector3 &p_normal, const Transform3D &p_transform, real_t &r_min, real_t &r_max) const {
 	//not very useful, but not very used either
-	p_transform.xform(get_aabb()).project_range_in_plane(Plane(p_normal, 0), r_min, r_max);
+	p_transform.xform(get_aabb()).project_range_in_plane(Plane(p_normal), r_min, r_max);
 }
 
 Vector3 HeightMapShape3DSW::get_support(const Vector3 &p_normal) const {

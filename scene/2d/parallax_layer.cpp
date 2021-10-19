@@ -123,12 +123,12 @@ void ParallaxLayer::set_base_offset_and_scale(const Point2 &p_offset, real_t p_s
 	Point2 new_ofs = (screen_offset + (p_offset - screen_offset) * motion_scale) + motion_offset * p_scale + orig_offset * p_scale;
 
 	if (mirroring.x) {
-		double den = mirroring.x * p_scale;
+		real_t den = mirroring.x * p_scale;
 		new_ofs.x -= den * ceil(new_ofs.x / den);
 	}
 
 	if (mirroring.y) {
-		double den = mirroring.y * p_scale;
+		real_t den = mirroring.y * p_scale;
 		new_ofs.y -= den * ceil(new_ofs.y / den);
 	}
 

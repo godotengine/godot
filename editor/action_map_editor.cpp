@@ -126,28 +126,30 @@ void InputEventConfigurationDialog::_set_event(const Ref<InputEvent> &p_event) {
 			while (category) {
 				TreeItem *input_item = category->get_first_child();
 
-				// has_type this should be always true, unless the tree structure has been misconfigured.
-				bool has_type = input_item->get_parent()->has_meta("__type");
-				int input_type = input_item->get_parent()->get_meta("__type");
-				if (!has_type) {
-					return;
-				}
+				if (input_item != nullptr) {
+					// has_type this should be always true, unless the tree structure has been misconfigured.
+					bool has_type = input_item->get_parent()->has_meta("__type");
+					int input_type = input_item->get_parent()->get_meta("__type");
+					if (!has_type) {
+						return;
+					}
 
-				// If event type matches input types of this category.
-				if ((k.is_valid() && input_type == INPUT_KEY) || (joyb.is_valid() && input_type == INPUT_JOY_BUTTON) || (joym.is_valid() && input_type == INPUT_JOY_MOTION) || (mb.is_valid() && input_type == INPUT_MOUSE_BUTTON)) {
-					// Loop through all items of this category until one matches.
-					while (input_item) {
-						bool key_match = k.is_valid() && (Variant(k->get_keycode()) == input_item->get_meta("__keycode") || Variant(k->get_physical_keycode()) == input_item->get_meta("__keycode"));
-						bool joyb_match = joyb.is_valid() && Variant(joyb->get_button_index()) == input_item->get_meta("__index");
-						bool joym_match = joym.is_valid() && Variant(joym->get_axis()) == input_item->get_meta("__axis") && joym->get_axis_value() == (float)input_item->get_meta("__value");
-						bool mb_match = mb.is_valid() && Variant(mb->get_button_index()) == input_item->get_meta("__index");
-						if (key_match || joyb_match || joym_match || mb_match) {
-							category->set_collapsed(false);
-							input_item->select(0);
-							input_list_tree->ensure_cursor_is_visible();
-							return;
+					// If event type matches input types of this category.
+					if ((k.is_valid() && input_type == INPUT_KEY) || (joyb.is_valid() && input_type == INPUT_JOY_BUTTON) || (joym.is_valid() && input_type == INPUT_JOY_MOTION) || (mb.is_valid() && input_type == INPUT_MOUSE_BUTTON)) {
+						// Loop through all items of this category until one matches.
+						while (input_item) {
+							bool key_match = k.is_valid() && (Variant(k->get_keycode()) == input_item->get_meta("__keycode") || Variant(k->get_physical_keycode()) == input_item->get_meta("__keycode"));
+							bool joyb_match = joyb.is_valid() && Variant(joyb->get_button_index()) == input_item->get_meta("__index");
+							bool joym_match = joym.is_valid() && Variant(joym->get_axis()) == input_item->get_meta("__axis") && joym->get_axis_value() == (float)input_item->get_meta("__value");
+							bool mb_match = mb.is_valid() && Variant(mb->get_button_index()) == input_item->get_meta("__index");
+							if (key_match || joyb_match || joym_match || mb_match) {
+								category->set_collapsed(false);
+								input_item->select(0);
+								input_list_tree->ensure_cursor_is_visible();
+								return;
+							}
+							input_item = input_item->get_next();
 						}
-						input_item = input_item->get_next();
 					}
 				}
 

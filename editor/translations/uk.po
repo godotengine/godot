@@ -20,8 +20,9 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Ukrainian (Godot Engine)\n"
+"Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-08-12 21:32+0000\n"
+"PO-Revision-Date: 2021-09-22 20:30+0000\n"
 "Last-Translator: Yuri Chornoivan <yurchor@ukr.net>\n"
 "Language-Team: Ukrainian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/uk/>\n"
@@ -31,7 +32,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
 "%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 4.8-dev\n"
+"X-Generator: Weblate 4.9-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -2424,6 +2425,15 @@ msgstr ""
 "Не вдалося зберегти сцену. Вірогідно, залежності (екземпляри або "
 "успадковані) не задоволені."
 
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Could not save one or more scenes!"
+msgstr "Не вдалося запустити підпроцес!"
+
+#: editor/editor_node.cpp
+msgid "Save All Scenes"
+msgstr "Зберегти всі сцени"
+
 #: editor/editor_node.cpp editor/scene_tree_dock.cpp
 msgid "Can't overwrite scene that is still open!"
 msgstr "Неможливо перезаписати сцену, яка є ще відкритою!"
@@ -2560,6 +2570,10 @@ msgid "Save changes to '%s' before closing?"
 msgstr "Зберегти зміни, внесені до '%s' перед закриттям?"
 
 #: editor/editor_node.cpp
+msgid "%s no longer exists! Please specify a new save location."
+msgstr ""
+
+#: editor/editor_node.cpp
 msgid ""
 "The current scene has no root node, but %d modified external resource(s) "
 "were saved anyway."
@@ -2605,29 +2619,27 @@ msgstr "Поточна сцена не збережена. Відкрити в �
 
 #: editor/editor_node.cpp
 msgid "Can't undo while mouse buttons are pressed."
-msgstr ""
+msgstr "Скасування неможливе, доки натиснуто кнопки миші."
 
 #: editor/editor_node.cpp
 msgid "Nothing to undo."
-msgstr ""
+msgstr "Нічого скасовувати."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Undo: %s"
-msgstr "Скасувати"
+msgstr "Скасувати: %s"
 
 #: editor/editor_node.cpp
 msgid "Can't redo while mouse buttons are pressed."
-msgstr ""
+msgstr "Повторення дій неможливе, доки натиснуто кнопки миші."
 
 #: editor/editor_node.cpp
 msgid "Nothing to redo."
-msgstr ""
+msgstr "Нічого повторювати."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Redo: %s"
-msgstr "Повернути"
+msgstr "Повторити: %s"
 
 #: editor/editor_node.cpp
 msgid "Can't reload a scene that was never saved."
@@ -2912,10 +2924,6 @@ msgstr "Відкрити останні"
 #: editor/editor_node.cpp
 msgid "Save Scene"
 msgstr "Зберегти сцену"
-
-#: editor/editor_node.cpp
-msgid "Save All Scenes"
-msgstr "Зберегти всі сцени"
 
 #: editor/editor_node.cpp
 msgid "Convert To..."
@@ -3319,9 +3327,8 @@ msgid "Merge With Existing"
 msgstr "Об'єднати з існуючим"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Apply MeshInstance Transforms"
-msgstr "Змінити перетворення"
+msgstr "Змінити перетворення екземпляра сітки"
 
 #: editor/editor_node.cpp
 msgid "Open & Run a Script"
@@ -3583,7 +3590,7 @@ msgstr ""
 
 #: editor/editor_resource_picker.cpp
 msgid "Quick Load"
-msgstr ""
+msgstr "Швидке завантаження"
 
 #: editor/editor_resource_picker.cpp editor/property_editor.cpp
 msgid "Make Unique"
@@ -4404,16 +4411,24 @@ msgid "Clear Default for '%s'"
 msgstr "Очистити типове для '%s'"
 
 #: editor/import_dock.cpp
+msgid "Reimport"
+msgstr "Переімпортувати"
+
+#: editor/import_dock.cpp
+msgid ""
+"You have pending changes that haven't been applied yet. Click Reimport to "
+"apply changes made to the import options.\n"
+"Selecting another resource in the FileSystem dock without clicking Reimport "
+"first will discard changes made in the Import dock."
+msgstr ""
+
+#: editor/import_dock.cpp
 msgid "Import As:"
 msgstr "Імпортувати як:"
 
 #: editor/import_dock.cpp
 msgid "Preset"
 msgstr "Набір"
-
-#: editor/import_dock.cpp
-msgid "Reimport"
-msgstr "Переімпортувати"
 
 #: editor/import_dock.cpp
 msgid "Save Scenes, Re-Import, and Restart"
@@ -5696,15 +5711,13 @@ msgstr "Пересунути CanvasItem «%s» до (%d, %d)"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Locked"
-msgstr "Заблокувати позначене"
+msgstr "Заблоковано"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Grouped"
-msgstr "Групи"
+msgstr "Згруповано"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid ""
@@ -6647,14 +6660,12 @@ msgid "Remove Selected Item"
 msgstr "Вилучити вибраний елемент"
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
-#, fuzzy
 msgid "Import from Scene (Ignore Transforms)"
-msgstr "Імпортувати зі сцени"
+msgstr "Імпортувати зі сцени (ігнорувати перетворення)"
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
-#, fuzzy
 msgid "Import from Scene (Apply Transforms)"
-msgstr "Імпортувати зі сцени"
+msgstr "Імпортувати зі сцени (застосувати перетворення)"
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
 msgid "Update from Scene"
@@ -7246,14 +7257,12 @@ msgid "Flip Portal"
 msgstr "Віддзеркалити портал"
 
 #: editor/plugins/room_manager_editor_plugin.cpp
-#, fuzzy
 msgid "Occluder Set Transform"
-msgstr "Зняти перетворення"
+msgstr "Перетворення набору закупорювача"
 
 #: editor/plugins/room_manager_editor_plugin.cpp
-#, fuzzy
 msgid "Center Node"
-msgstr "Створити вузол"
+msgstr "Центрувати вузол"
 
 #: editor/plugins/root_motion_editor_plugin.cpp
 msgid "AnimationTree has no path set to an AnimationPlayer"
@@ -7391,11 +7400,13 @@ msgid "Move Down"
 msgstr "Перемістити вниз"
 
 #: editor/plugins/script_editor_plugin.cpp
-msgid "Next script"
+#, fuzzy
+msgid "Next Script"
 msgstr "Наступний скрипт"
 
 #: editor/plugins/script_editor_plugin.cpp
-msgid "Previous script"
+#, fuzzy
+msgid "Previous Script"
 msgstr "Попередній скрипт"
 
 #: editor/plugins/script_editor_plugin.cpp
@@ -7761,14 +7772,12 @@ msgid "Skeleton2D"
 msgstr "Плоский каркас"
 
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Reset to Rest Pose"
-msgstr "Встановити кістки для вільної пози"
+msgstr "Відновити вільну позу"
 
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Overwrite Rest Pose"
-msgstr "Перезаписати"
+msgstr "Перезаписати вільну позу"
 
 #: editor/plugins/skeleton_editor_plugin.cpp
 msgid "Create physical bones"
@@ -7795,69 +7804,63 @@ msgid "Perspective"
 msgstr "Перспектива"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Top Orthogonal"
-msgstr "Ортогонально"
+msgstr "Верхній ортогональний"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Top Perspective"
-msgstr "Перспектива"
+msgstr "Верхній перспективний"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Bottom Orthogonal"
-msgstr "Ортогонально"
+msgstr "Нижній ортогональний"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Bottom Perspective"
-msgstr "Перспектива"
+msgstr "Нижній перспективний"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Left Orthogonal"
-msgstr "Ортогонально"
+msgstr "Лівий ортогональний"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 #, fuzzy
-msgid "Right Perspective"
+msgid "Left Perspective"
 msgstr "Перспектива"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Right Orthogonal"
-msgstr "Ортогонально"
+msgstr "Правий ортогональний"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
+msgid "Right Perspective"
+msgstr "Правий перспективний"
+
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Front Orthogonal"
-msgstr "Ортогонально"
+msgstr "Передній ортогональний"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Front Perspective"
-msgstr "Перспектива"
+msgstr "Передній перспективний"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Rear Orthogonal"
-msgstr "Ортогонально"
+msgstr "Задній ортогональний"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Rear Perspective"
-msgstr "Перспектива"
+msgstr "Задній перспективний"
 
 #. TRANSLATORS: This will be appended to the view name when Auto Orthogonal is enabled.
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid " [auto]"
-msgstr ""
+msgstr " [авто]"
 
 #. TRANSLATORS: This will be appended to the view name when Portal Occulusion is enabled.
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid " [portals active]"
-msgstr ""
+msgstr " [портали активні]"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Transform Aborted."
@@ -8181,6 +8184,27 @@ msgid "Right View"
 msgstr "Вигляд справа"
 
 #: editor/plugins/spatial_editor_plugin.cpp
+msgid "Orbit View Down"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Orbit View Left"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Orbit View Right"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Orbit View Up"
+msgstr "Вигляд спереду"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Orbit View 180"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Switch Perspective/Orthogonal View"
 msgstr "Перемкнути перегляд перспективи/ортогональний перегляд"
 
@@ -8254,9 +8278,8 @@ msgid "View Portal Culling"
 msgstr "Переглянути відбраковування Portal"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "View Occlusion Culling"
-msgstr "Переглянути відбраковування Portal"
+msgstr "Переглянути відбраковування замикання"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 #: modules/gridmap/grid_map_editor_plugin.cpp
@@ -8324,9 +8347,8 @@ msgid "Post"
 msgstr "Після"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Unnamed Gizmo"
-msgstr "Проєкт без назви"
+msgstr "Гаджет без назви"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Create Mesh2D"
@@ -12465,14 +12487,12 @@ msgid "Set Portal Point Position"
 msgstr "Задати положення точки порталу"
 
 #: editor/spatial_editor_gizmos.cpp
-#, fuzzy
 msgid "Set Occluder Sphere Radius"
-msgstr "Змінити радіус форми циліндра"
+msgstr "Змінити радіус сфери закупорювання"
 
 #: editor/spatial_editor_gizmos.cpp
-#, fuzzy
 msgid "Set Occluder Sphere Position"
-msgstr "Встановити криву в позиції"
+msgstr "Встановити позицію сфери закупорювання"
 
 #: modules/csg/csg_gizmos.cpp
 msgid "Change Cylinder Radius"
@@ -12758,9 +12778,8 @@ msgid "Class name can't be a reserved keyword"
 msgstr "Назвою класу не може бути зарезервоване ключове слово"
 
 #: modules/mono/csharp_script.cpp
-#, fuzzy
 msgid "Build Solution"
-msgstr "Заповнити позначене"
+msgstr "Зібрати рішення"
 
 #: modules/mono/mono_gd/gd_mono_utils.cpp
 msgid "End of inner exception stack trace"
@@ -14119,11 +14138,11 @@ msgstr ""
 
 #: scene/3d/occluder.cpp
 msgid "No shape is set."
-msgstr ""
+msgstr "Форму не встановлено."
 
 #: scene/3d/occluder.cpp
 msgid "Only uniform scales are supported."
-msgstr ""
+msgstr "Передбачено підтримку лише однорідних масштабів."
 
 #: scene/3d/particles.cpp
 msgid ""
@@ -14486,6 +14505,10 @@ msgid ""
 "The GLES2 backend is currently in use, so these modes will act like Stretch "
 "instead."
 msgstr ""
+"Варіанти «Плитка» і «За плиткою» для властивостей розтягування вісі працюють "
+"лише при використанні модуля обробки даних GLES3.\n"
+"Зараз використано модуль обробки GLES2, тому ці режими працюватимуть просто "
+"як «Розтягнути»."
 
 #: scene/gui/popup.cpp
 msgid ""
@@ -14524,6 +14547,14 @@ msgstr ""
 "Не вдалося завантажити типове середовище, як його визначено у параметрах "
 "проєкту (Обробка -> Середовище -> Типове середовище)."
 
+#: scene/main/timer.cpp
+msgid ""
+"Very low timer wait times (< 0.05 seconds) may behave in significantly "
+"different ways depending on the rendered or physics frame rate.\n"
+"Consider using a script's process loop instead of relying on a Timer for "
+"very low wait times."
+msgstr ""
+
 #: scene/main/viewport.cpp
 msgid ""
 "This viewport is not set as render target. If you intend for it to display "
@@ -14537,14 +14568,17 @@ msgstr ""
 "пов'язати її внутрішню текстуру з одним із вузлів для показу."
 
 #: scene/main/viewport.cpp
-msgid "Viewport size must be greater than 0 to render anything."
+#, fuzzy
+msgid ""
+"The Viewport size must be greater than or equal to 2 pixels on both "
+"dimensions to render anything."
 msgstr ""
 "Щоб програма могла хоч щось показати, розмір поля перегляду має бути більшим "
 "за 0."
 
 #: scene/resources/occluder_shape.cpp
 msgid "OccluderShapeSphere Set Spheres"
-msgstr ""
+msgstr "Сфери набору OccluderShapeSphere"
 
 #: scene/resources/visual_shader_nodes.cpp
 msgid ""

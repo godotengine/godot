@@ -74,6 +74,13 @@ static inline uint32_t hash_djb2_one_32(uint32_t p_in, uint32_t p_prev = 5381) {
 	return ((p_prev << 5) + p_prev) + p_in;
 }
 
+/**
+ * Thomas Wang's 64-bit to 32-bit Hash function:
+ * https://web.archive.org/web/20071223173210/https:/www.concentric.net/~Ttwang/tech/inthash.htm
+ *
+ * @param p_int - 64-bit unsigned integer key to be hashed
+ * @return unsigned 32-bit value representing hashcode
+ */
 static inline uint32_t hash_one_uint64(const uint64_t p_int) {
 	uint64_t v = p_int;
 	v = (~v) + (v << 18); // v = (v << 18) - v - 1;
@@ -82,7 +89,7 @@ static inline uint32_t hash_one_uint64(const uint64_t p_int) {
 	v = v ^ (v >> 11);
 	v = v + (v << 6);
 	v = v ^ (v >> 22);
-	return (int)v;
+	return uint32_t(v);
 }
 
 static inline uint32_t hash_djb2_one_float(double p_in, uint32_t p_prev = 5381) {

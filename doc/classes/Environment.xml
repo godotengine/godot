@@ -101,8 +101,10 @@
 			If [code]true[/code], fog effects are enabled.
 		</member>
 		<member name="fog_height" type="float" setter="set_fog_height" getter="get_fog_height" default="0.0">
+			The height at which the height fog effect begins.
 		</member>
 		<member name="fog_height_density" type="float" setter="set_fog_height_density" getter="get_fog_height_density" default="0.0">
+			The density used to increase fog as height decreases. To make fog increase as height increases, use a negative value.
 		</member>
 		<member name="fog_light_color" type="Color" setter="set_fog_light_color" getter="get_fog_light_color" default="Color(0.5, 0.6, 0.7, 1)">
 		</member>

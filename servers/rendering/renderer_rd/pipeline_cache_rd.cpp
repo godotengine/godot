@@ -35,8 +35,10 @@ RID PipelineCacheRD::_generate_version(RD::VertexFormatID p_vertex_format_id, RD
 	RD::PipelineMultisampleState multisample_state_version = multisample_state;
 	multisample_state_version.sample_count = RD::get_singleton()->framebuffer_format_get_texture_samples(p_framebuffer_format_id, p_render_pass);
 
+	bool wireframe = p_wireframe || rasterization_state.wireframe;
+
 	RD::PipelineRasterizationState raster_state_version = rasterization_state;
-	raster_state_version.wireframe = p_wireframe;
+	raster_state_version.wireframe = wireframe;
 
 	Vector<RD::PipelineSpecializationConstant> specialization_constants = base_specialization_constants;
 
@@ -59,7 +61,7 @@ RID PipelineCacheRD::_generate_version(RD::VertexFormatID p_vertex_format_id, RD
 	versions = (Version *)memrealloc(versions, sizeof(Version) * (version_count + 1));
 	versions[version_count].framebuffer_id = p_framebuffer_format_id;
 	versions[version_count].vertex_id = p_vertex_format_id;
-	versions[version_count].wireframe = p_wireframe;
+	versions[version_count].wireframe = wireframe;
 	versions[version_count].pipeline = pipeline;
 	versions[version_count].render_pass = p_render_pass;
 	versions[version_count].bool_specializations = p_bool_specializations;

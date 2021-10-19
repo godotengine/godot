@@ -1,0 +1,2 @@
+GDTEST_ANALYZER_ERROR
+Cannot assign a value of type "String" to a target of type "int".

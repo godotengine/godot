@@ -94,13 +94,14 @@ params;
 
 //check it, but also return distance and barycentric coords (for uv lookup)
 bool ray_hits_triangle(vec3 from, vec3 dir, float max_dist, vec3 p0, vec3 p1, vec3 p2, out float r_distance, out vec3 r_barycentric) {
+	const float EPSILON = 0.00001;
 	const vec3 e0 = p1 - p0;
 	const vec3 e1 = p0 - p2;
 	vec3 triangle_normal = cross(e1, e0);
 
 	float n_dot_dir = dot(triangle_normal, dir);
 
-	if (abs(n_dot_dir) < 0.01) {
+	if (abs(n_dot_dir) < EPSILON) {
 		return false;
 	}
 
@@ -148,7 +149,7 @@ uint trace_ray(vec3 p_from, vec3 p_to
 	ivec3 icell = ivec3(from_cell);
 	ivec3 iendcell = ivec3(to_cell);
 	vec3 dir_cell = normalize(rel_cell);
-	vec3 delta = abs(1.0 / dir_cell); //vec3(length(rel_cell)) / rel_cell);
+	vec3 delta = min(abs(1.0 / dir_cell), params.grid_size); // use params.grid_size as max to prevent infinity values
 	ivec3 step = ivec3(sign(rel_cell));
 	vec3 side = (sign(rel_cell) * (vec3(icell) - from_cell) + (sign(rel_cell) * 0.5) + 0.5) * delta;
 
@@ -420,20 +421,22 @@ void main() {
 
 			light = textureLod(sampler2DArray(source_light, linear_sampler), uvw, 0.0).rgb;
 			active_rays += 1.0;
-		} else if (trace_result == RAY_MISS && params.env_transform[0][3] == 0.0) { // Use env_transform[0][3] to indicate when we are computing the first bounce
-			// Did not hit a triangle, reach out for the sky
-			vec3 sky_dir = normalize(mat3(params.env_transform) * ray_dir);
+		} else if (trace_result == RAY_MISS) {
+			if (params.env_transform[0][3] == 0.0) { // Use env_transform[0][3] to indicate when we are computing the first bounce
+				// Did not hit a triangle, reach out for the sky
+				vec3 sky_dir = normalize(mat3(params.env_transform) * ray_dir);
 
-			vec2 st = vec2(
-					atan(sky_dir.x, sky_dir.z),
-					acos(sky_dir.y));
+				vec2 st = vec2(
+						atan(sky_dir.x, sky_dir.z),
+						acos(sky_dir.y));
 
-			if (st.x < 0.0)
-				st.x += PI * 2.0;
+				if (st.x < 0.0)
+					st.x += PI * 2.0;
 
-			st /= vec2(PI * 2.0, PI);
+				st /= vec2(PI * 2.0, PI);
 
-			light = textureLod(sampler2D(environment, linear_sampler), st, 0.0).rgb;
+				light = textureLod(sampler2D(environment, linear_sampler), st, 0.0).rgb;
+			}
 			active_rays += 1.0;
 		}
 

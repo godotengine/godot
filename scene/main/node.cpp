@@ -536,12 +536,13 @@ bool Node::is_multiplayer_authority() const {
 
 /***** RPC CONFIG ********/
 
-uint16_t Node::rpc_config(const StringName &p_method, Multiplayer::RPCMode p_rpc_mode, Multiplayer::TransferMode p_transfer_mode, int p_channel) {
+uint16_t Node::rpc_config(const StringName &p_method, Multiplayer::RPCMode p_rpc_mode, bool p_call_local, Multiplayer::TransferMode p_transfer_mode, int p_channel) {
 	for (int i = 0; i < data.rpc_methods.size(); i++) {
 		if (data.rpc_methods[i].name == p_method) {
 			Multiplayer::RPCConfig &nd = data.rpc_methods.write[i];
 			nd.rpc_mode = p_rpc_mode;
 			nd.transfer_mode = p_transfer_mode;
+			nd.call_local = p_call_local;
 			nd.channel = p_channel;
 			return i | (1 << 15);
 		}
@@ -552,6 +553,7 @@ uint16_t Node::rpc_config(const StringName &p_method, Multiplayer::RPCMode p_rpc
 	nd.rpc_mode = p_rpc_mode;
 	nd.transfer_mode = p_transfer_mode;
 	nd.channel = p_channel;
+	nd.call_local = p_call_local;
 	data.rpc_methods.push_back(nd);
 	return ((uint16_t)data.rpc_methods.size() - 1) | (1 << 15);
 }
@@ -2740,7 +2742,7 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_multiplayer"), &Node::get_multiplayer);
 	ClassDB::bind_method(D_METHOD("get_custom_multiplayer"), &Node::get_custom_multiplayer);
 	ClassDB::bind_method(D_METHOD("set_custom_multiplayer", "api"), &Node::set_custom_multiplayer);
-	ClassDB::bind_method(D_METHOD("rpc_config", "method", "rpc_mode", "transfer_mode", "channel"), &Node::rpc_config, DEFVAL(Multiplayer::TRANSFER_MODE_RELIABLE), DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("rpc_config", "method", "rpc_mode", "call_local", "transfer_mode", "channel"), &Node::rpc_config, DEFVAL(false), DEFVAL(Multiplayer::TRANSFER_MODE_RELIABLE), DEFVAL(0));
 
 	ClassDB::bind_method(D_METHOD("set_editor_description", "editor_description"), &Node::set_editor_description);
 	ClassDB::bind_method(D_METHOD("get_editor_description"), &Node::get_editor_description);

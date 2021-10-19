@@ -122,6 +122,7 @@ name is available.
     Julien Nguyen (Blackiris)
     Jummit
     Justo Delgado (mrcdk)
+    karroffel
     Kelly Thomas (KellyThomas)
     kleonc
     Kongfa Waroros (gongpha)
@@ -179,6 +180,7 @@ name is available.
     Ralf Hölzemer (rollenrolm)
     Ramesh Ravone (RameshRavone)
     raphael10241024
+    Raul Santos (raulsntos)
     Ray Koopa (RayKoopa)
     Rémi Verschelde (akien-mga)
     Rhody Lugo (rraallvv)
@@ -194,13 +196,13 @@ name is available.
     Sergey Minakov (naithar)
     sersoong
     Shiqing (kawa-yoiko)
+    Silc 'Tokage' Renew (TokageItLab)
     Simon Wenner (swenner)
     Stijn Hinlopen (hinlopen)
     Swarnim Arun (minraws)
     Thakee Nathees (ThakeeNathees)
     thebestnom
     Theo Hallenius (TheoXD)
-    Thomas Herzog (karroffel)
     Timo Schwarzer (timoschwarzer)
     Timo (toger5)
     Tomasz Chabora (KoBeWi)

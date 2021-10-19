@@ -368,9 +368,9 @@ public:
 	float get_playback_speed_scale() const;
 
 	// Convenience method.
-	void start_playback_stream(Ref<AudioStreamPlayback> p_playback, StringName p_bus, Vector<AudioFrame> p_volume_db_vector, float p_start_time = 0);
+	void start_playback_stream(Ref<AudioStreamPlayback> p_playback, StringName p_bus, Vector<AudioFrame> p_volume_db_vector, float p_start_time = 0, float p_pitch_scale = 1);
 	// Expose all parameters.
-	void start_playback_stream(Ref<AudioStreamPlayback> p_playback, Map<StringName, Vector<AudioFrame>> p_bus_volumes, float p_start_time = 0, float p_highshelf_gain = 0, float p_attenuation_cutoff_hz = 0, float p_pitch_scale = 1);
+	void start_playback_stream(Ref<AudioStreamPlayback> p_playback, Map<StringName, Vector<AudioFrame>> p_bus_volumes, float p_start_time = 0, float p_pitch_scale = 1, float p_highshelf_gain = 0, float p_attenuation_cutoff_hz = 0);
 	void stop_playback_stream(Ref<AudioStreamPlayback> p_playback);
 
 	void set_playback_bus_exclusive(Ref<AudioStreamPlayback> p_playback, StringName p_bus, Vector<AudioFrame> p_volumes);

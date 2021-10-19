@@ -38,8 +38,16 @@
 #include "editor/editor_properties.h"
 #include "editor/editor_scale.h"
 
-void TileDataEditor::_call_tile_set_changed() {
-	_tile_set_changed();
+void TileDataEditor::_tile_set_changed_plan_update() {
+	_tile_set_changed_update_needed = true;
+	call_deferred("_tile_set_changed_deferred_update");
+}
+
+void TileDataEditor::_tile_set_changed_deferred_update() {
+	if (_tile_set_changed_update_needed) {
+		_tile_set_changed();
+		_tile_set_changed_update_needed = false;
+	}
 }
 
 TileData *TileDataEditor::_get_tile_data(TileMapCell p_cell) {
@@ -59,18 +67,20 @@ TileData *TileDataEditor::_get_tile_data(TileMapCell p_cell) {
 }
 
 void TileDataEditor::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("_tile_set_changed_deferred_update"), &TileDataEditor::_tile_set_changed_deferred_update);
+
 	ADD_SIGNAL(MethodInfo("needs_redraw"));
 }
 
 void TileDataEditor::set_tile_set(Ref<TileSet> p_tile_set) {
 	if (tile_set.is_valid()) {
-		tile_set->disconnect("changed", callable_mp(this, &TileDataEditor::_call_tile_set_changed));
+		tile_set->disconnect("changed", callable_mp(this, &TileDataEditor::_tile_set_changed_plan_update));
 	}
 	tile_set = p_tile_set;
 	if (tile_set.is_valid()) {
-		tile_set->connect("changed", callable_mp(this, &TileDataEditor::_call_tile_set_changed));
+		tile_set->connect("changed", callable_mp(this, &TileDataEditor::_tile_set_changed_plan_update));
 	}
-	_call_tile_set_changed();
+	_tile_set_changed_plan_update();
 }
 
 bool DummyObject::_set(const StringName &p_name, const Variant &p_value) {

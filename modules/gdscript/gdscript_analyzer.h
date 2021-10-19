@@ -78,12 +78,12 @@ class GDScriptAnalyzer {
 	void resolve_return(GDScriptParser::ReturnNode *p_return);
 
 	// Reduction functions.
-	void reduce_expression(GDScriptParser::ExpressionNode *p_expression);
+	void reduce_expression(GDScriptParser::ExpressionNode *p_expression, bool p_is_root = false);
 	void reduce_array(GDScriptParser::ArrayNode *p_array);
 	void reduce_assignment(GDScriptParser::AssignmentNode *p_assignment);
 	void reduce_await(GDScriptParser::AwaitNode *p_await);
 	void reduce_binary_op(GDScriptParser::BinaryOpNode *p_binary_op);
-	void reduce_call(GDScriptParser::CallNode *p_call, bool is_await = false);
+	void reduce_call(GDScriptParser::CallNode *p_call, bool p_is_await = false, bool p_is_root = false);
 	void reduce_cast(GDScriptParser::CastNode *p_cast);
 	void reduce_dictionary(GDScriptParser::DictionaryNode *p_dictionary);
 	void reduce_get_node(GDScriptParser::GetNodeNode *p_get_node);

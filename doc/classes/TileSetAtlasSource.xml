@@ -15,12 +15,6 @@
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="clear_tiles_outside_texture">
-			<return type="void" />
-			<description>
-				Clears all tiles that are defined outside the texture boundaries.
-			</description>
-		</method>
 		<method name="create_alternative_tile">
 			<return type="int" />
 			<argument index="0" name="atlas_coords" type="Vector2i" />
@@ -124,6 +118,16 @@
 				Returns a tile's texture region in the atlas texture. For animated tiles, a [code]frame[/code] argument might be provided for the different frames of the animation.
 			</description>
 		</method>
+		<method name="get_tiles_to_be_removed_on_change">
+			<return type="PackedVector2Array" />
+			<argument index="0" name="texture" type="Texture2D" />
+			<argument index="1" name="margins" type="Vector2i" />
+			<argument index="2" name="separation" type="Vector2i" />
+			<argument index="3" name="texture_region_size" type="Vector2i" />
+			<description>
+				Returns an array of tiles coordinates ID that will be automatically removed when modifying one or several of those properties: [code]texture[/code], [code]margins[/code], [code]separation[/code] or [code]texture_region_size[/code]. This can be used to undo changes that would have caused tiles data loss.
+			</description>
+		</method>
 		<method name="has_room_for_tile" qualifiers="const">
 			<return type="bool" />
 			<argument index="0" name="atlas_coords" type="Vector2i" />
@@ -134,12 +138,6 @@
 			<argument index="5" name="ignored_tile" type="Vector2i" default="Vector2i(-1, -1)" />
 			<description>
 				Returns whether there is enough room in an atlas to create/modify a tile with the given properties. If [code]ignored_tile[/code] is provided, act as is the given tile was not present in the atlas. This may be used when you want to modify a tile's properties.
-			</description>
-		</method>
-		<method name="has_tiles_outside_texture">
-			<return type="bool" />
-			<description>
-				Returns if this atlas has tiles outside of its texture.
 			</description>
 		</method>
 		<method name="move_tile_in_atlas">

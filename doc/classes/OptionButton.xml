@@ -84,6 +84,7 @@
 			<return type="PopupMenu" />
 			<description>
 				Returns the [PopupMenu] contained in this button.
+				[b]Warning:[/b] This is a required internal node, removing and freeing it may cause a crash. If you wish to hide it or any of its children, use their [member Window.visible] property.
 			</description>
 		</method>
 		<method name="get_selected_id" qualifiers="const">

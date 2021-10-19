@@ -123,7 +123,7 @@
 			Logarithmic dampening of loudness according to distance.
 		</constant>
 		<constant name="ATTENUATION_DISABLED" value="3" enum="AttenuationModel">
-			No dampening of loudness according to distance. The sound will still be heard positionally, unlike an [AudioStreamPlayer].
+			No dampening of loudness according to distance. The sound will still be heard positionally, unlike an [AudioStreamPlayer]. [constant ATTENUATION_DISABLED] can be combined with a [member max_distance] value greater than [code]0.0[/code] to achieve linear attenuation clamped to a sphere of a defined size.
 		</constant>
 		<constant name="DOPPLER_TRACKING_DISABLED" value="0" enum="DopplerTracking">
 			Disables doppler tracking.

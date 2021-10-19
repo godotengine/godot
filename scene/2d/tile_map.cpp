@@ -409,6 +409,19 @@ bool TileMap::is_layer_enabled(int p_layer) const {
 	return layers[p_layer].enabled;
 }
 
+void TileMap::set_layer_modulate(int p_layer, Color p_modulate) {
+	ERR_FAIL_INDEX(p_layer, (int)layers.size());
+	layers[p_layer].modulate = p_modulate;
+	_clear_internals();
+	_recreate_internals();
+	emit_signal(SNAME("changed"));
+}
+
+Color TileMap::get_layer_modulate(int p_layer) const {
+	ERR_FAIL_INDEX_V(p_layer, (int)layers.size(), Color());
+	return layers[p_layer].modulate;
+}
+
 void TileMap::set_layer_y_sort_enabled(int p_layer, bool p_y_sort_enabled) {
 	ERR_FAIL_INDEX(p_layer, (int)layers.size());
 	layers[p_layer].y_sort_enabled = p_y_sort_enabled;
@@ -798,8 +811,9 @@ void TileMap::_rendering_cleanup_layer(int p_layer) {
 	ERR_FAIL_INDEX(p_layer, (int)layers.size());
 
 	RenderingServer *rs = RenderingServer::get_singleton();
-	if (!layers[p_layer].canvas_item.is_valid()) {
+	if (layers[p_layer].canvas_item.is_valid()) {
 		rs->free(layers[p_layer].canvas_item);
+		layers[p_layer].canvas_item = RID();
 	}
 }
 
@@ -831,6 +845,19 @@ void TileMap::_rendering_update_dirty_quadrants(SelfList<TileMapQuadrant>::List 
 		Ref<ShaderMaterial> prev_material;
 		int prev_z_index = 0;
 		RID prev_canvas_item;
+
+		Color modulate = get_self_modulate();
+		modulate *= get_layer_modulate(q.layer);
+		if (selected_layer >= 0) {
+			int z1 = get_layer_z_index(q.layer);
+			int z2 = get_layer_z_index(selected_layer);
+			if (z1 < z2 || (z1 == z2 && q.layer < selected_layer)) {
+				modulate = modulate.darkened(0.5);
+			} else if (z1 > z2 || (z1 == z2 && q.layer > selected_layer)) {
+				modulate = modulate.darkened(0.5);
+				modulate.a *= 0.3;
+			}
+		}
 
 		// Iterate over the cells of the quadrant.
 		for (const KeyValue<Vector2i, Vector2i> &E_cell : q.world_to_map) {
@@ -894,15 +921,6 @@ void TileMap::_rendering_update_dirty_quadrants(SelfList<TileMapQuadrant>::List 
 					}
 
 					// Drawing the tile in the canvas item.
-					Color modulate = get_self_modulate();
-					if (selected_layer >= 0) {
-						if (q.layer < selected_layer) {
-							modulate = modulate.darkened(0.5);
-						} else if (q.layer > selected_layer) {
-							modulate = modulate.darkened(0.5);
-							modulate.a *= 0.3;
-						}
-					}
 					draw_tile(canvas_item, E_cell.key - position, tile_set, c.source_id, c.get_atlas_coords(), c.alternative_tile, -1, modulate);
 
 					// --- Occluders ---
@@ -2083,6 +2101,9 @@ bool TileMap::_set(const StringName &p_name, const Variant &p_value) {
 		} else if (components[1] == "enabled") {
 			set_layer_enabled(index, p_value);
 			return true;
+		} else if (components[1] == "modulate") {
+			set_layer_modulate(index, p_value);
+			return true;
 		} else if (components[1] == "y_sort_enabled") {
 			set_layer_y_sort_enabled(index, p_value);
 			return true;
@@ -2119,6 +2140,9 @@ bool TileMap::_get(const StringName &p_name, Variant &r_ret) const {
 		} else if (components[1] == "enabled") {
 			r_ret = is_layer_enabled(index);
 			return true;
+		} else if (components[1] == "modulate") {
+			r_ret = get_layer_modulate(index);
+			return true;
 		} else if (components[1] == "y_sort_enabled") {
 			r_ret = is_layer_y_sort_enabled(index);
 			return true;
@@ -2144,6 +2168,7 @@ void TileMap::_get_property_list(List<PropertyInfo> *p_list) const {
 	for (unsigned int i = 0; i < layers.size(); i++) {
 		p_list->push_back(PropertyInfo(Variant::STRING, vformat("layer_%d/name", i), PROPERTY_HINT_NONE));
 		p_list->push_back(PropertyInfo(Variant::BOOL, vformat("layer_%d/enabled", i), PROPERTY_HINT_NONE));
+		p_list->push_back(PropertyInfo(Variant::COLOR, vformat("layer_%d/modulate", i), PROPERTY_HINT_NONE));
 		p_list->push_back(PropertyInfo(Variant::BOOL, vformat("layer_%d/y_sort_enabled", i), PROPERTY_HINT_NONE));
 		p_list->push_back(PropertyInfo(Variant::INT, vformat("layer_%d/y_sort_origin", i), PROPERTY_HINT_NONE));
 		p_list->push_back(PropertyInfo(Variant::INT, vformat("layer_%d/z_index", i), PROPERTY_HINT_NONE));
@@ -3027,6 +3052,8 @@ void TileMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_layer_name", "layer"), &TileMap::get_layer_name);
 	ClassDB::bind_method(D_METHOD("set_layer_enabled", "layer", "enabled"), &TileMap::set_layer_enabled);
 	ClassDB::bind_method(D_METHOD("is_layer_enabled", "layer"), &TileMap::is_layer_enabled);
+	ClassDB::bind_method(D_METHOD("set_layer_modulate", "layer", "enabled"), &TileMap::set_layer_modulate);
+	ClassDB::bind_method(D_METHOD("get_layer_modulate", "layer"), &TileMap::get_layer_modulate);
 	ClassDB::bind_method(D_METHOD("set_layer_y_sort_enabled", "layer", "y_sort_enabled"), &TileMap::set_layer_y_sort_enabled);
 	ClassDB::bind_method(D_METHOD("is_layer_y_sort_enabled", "layer"), &TileMap::is_layer_y_sort_enabled);
 	ClassDB::bind_method(D_METHOD("set_layer_y_sort_origin", "layer", "y_sort_origin"), &TileMap::set_layer_y_sort_origin);
@@ -3068,6 +3095,8 @@ void TileMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_set_tile_data", "layer"), &TileMap::_set_tile_data);
 	ClassDB::bind_method(D_METHOD("_get_tile_data", "layer"), &TileMap::_get_tile_data);
 
+	ClassDB::bind_method(D_METHOD("_tile_set_changed_deferred_update"), &TileMap::_tile_set_changed_deferred_update);
+
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "tile_set", PROPERTY_HINT_RESOURCE_TYPE, "TileSet"), "set_tileset", "get_tileset");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "cell_quadrant_size", PROPERTY_HINT_RANGE, "1,128,1"), "set_quadrant_size", "get_quadrant_size");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "collision_animatable"), "set_collision_animatable", "is_collision_animatable");
@@ -3087,8 +3116,16 @@ void TileMap::_bind_methods() {
 
 void TileMap::_tile_set_changed() {
 	emit_signal(SNAME("changed"));
-	_clear_internals();
-	_recreate_internals();
+	_tile_set_changed_deferred_update_needed = true;
+	call_deferred("_tile_set_changed_deferred_update");
+}
+
+void TileMap::_tile_set_changed_deferred_update() {
+	if (_tile_set_changed_deferred_update_needed) {
+		_clear_internals();
+		_recreate_internals();
+		_tile_set_changed_deferred_update_needed = false;
+	}
 }
 
 TileMap::TileMap() {

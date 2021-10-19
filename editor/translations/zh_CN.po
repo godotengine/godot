@@ -82,8 +82,9 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
+"Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: 2018-01-20 12:15+0200\n"
-"PO-Revision-Date: 2021-09-06 16:32+0000\n"
+"PO-Revision-Date: 2021-10-08 03:03+0000\n"
 "Last-Translator: Haoyu Qiu <timothyqiu32@gmail.com>\n"
 "Language-Team: Chinese (Simplified) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hans/>\n"
@@ -92,7 +93,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.8.1-dev\n"
+"X-Generator: Weblate 4.9-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -2433,6 +2434,15 @@ msgid ""
 "be satisfied."
 msgstr "无法保存场景。可能是因为依赖项（实例或继承）无法满足。"
 
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Could not save one or more scenes!"
+msgstr "无法保存转换的贴图:"
+
+#: editor/editor_node.cpp
+msgid "Save All Scenes"
+msgstr "保存所有场景"
+
 #: editor/editor_node.cpp editor/scene_tree_dock.cpp
 msgid "Can't overwrite scene that is still open!"
 msgstr "无法覆盖仍处于打开状态的场景！"
@@ -2562,6 +2572,10 @@ msgid "Save changes to '%s' before closing?"
 msgstr "是否在关闭前保存对 “%s” 的更改？"
 
 #: editor/editor_node.cpp
+msgid "%s no longer exists! Please specify a new save location."
+msgstr ""
+
+#: editor/editor_node.cpp
 msgid ""
 "The current scene has no root node, but %d modified external resource(s) "
 "were saved anyway."
@@ -2603,29 +2617,27 @@ msgstr "当前场景尚未保存。是否仍要打开？"
 
 #: editor/editor_node.cpp
 msgid "Can't undo while mouse buttons are pressed."
-msgstr ""
+msgstr "鼠标按下时无法撤销。"
 
 #: editor/editor_node.cpp
 msgid "Nothing to undo."
-msgstr ""
+msgstr "无可撤销。"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Undo: %s"
-msgstr "撤销"
+msgstr "撤销：%s"
 
 #: editor/editor_node.cpp
 msgid "Can't redo while mouse buttons are pressed."
-msgstr ""
+msgstr "鼠标按下时无法重做。"
 
 #: editor/editor_node.cpp
 msgid "Nothing to redo."
-msgstr ""
+msgstr "无可重做。"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Redo: %s"
-msgstr "重做"
+msgstr "重做：%s"
 
 #: editor/editor_node.cpp
 msgid "Can't reload a scene that was never saved."
@@ -2895,10 +2907,6 @@ msgstr "最近打开"
 #: editor/editor_node.cpp
 msgid "Save Scene"
 msgstr "保存场景"
-
-#: editor/editor_node.cpp
-msgid "Save All Scenes"
-msgstr "保存所有场景"
 
 #: editor/editor_node.cpp
 msgid "Convert To..."
@@ -3285,9 +3293,8 @@ msgid "Merge With Existing"
 msgstr "与现有合并"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Apply MeshInstance Transforms"
-msgstr "修改动画变换"
+msgstr "应用 MeshInstance 变换"
 
 #: editor/editor_node.cpp
 msgid "Open & Run a Script"
@@ -3543,7 +3550,7 @@ msgstr "所选资源（%s）与该属性（%s）所需的类型都不匹配。"
 
 #: editor/editor_resource_picker.cpp
 msgid "Quick Load"
-msgstr ""
+msgstr "快速加载"
 
 #: editor/editor_resource_picker.cpp editor/property_editor.cpp
 msgid "Make Unique"
@@ -4345,16 +4352,24 @@ msgid "Clear Default for '%s'"
 msgstr "清除 “%s” 的默认值"
 
 #: editor/import_dock.cpp
+msgid "Reimport"
+msgstr "重新导入"
+
+#: editor/import_dock.cpp
+msgid ""
+"You have pending changes that haven't been applied yet. Click Reimport to "
+"apply changes made to the import options.\n"
+"Selecting another resource in the FileSystem dock without clicking Reimport "
+"first will discard changes made in the Import dock."
+msgstr ""
+
+#: editor/import_dock.cpp
 msgid "Import As:"
 msgstr "导入为："
 
 #: editor/import_dock.cpp
 msgid "Preset"
 msgstr "预设"
-
-#: editor/import_dock.cpp
-msgid "Reimport"
-msgstr "重新导入"
 
 #: editor/import_dock.cpp
 msgid "Save Scenes, Re-Import, and Restart"
@@ -4383,7 +4398,7 @@ msgstr "粘贴属性"
 
 #: editor/inspector_dock.cpp
 msgid "Make Sub-Resources Unique"
-msgstr "转为独立子资源"
+msgstr "唯一化子资源"
 
 #: editor/inspector_dock.cpp
 msgid "Create a new resource in memory and edit it."
@@ -5612,15 +5627,13 @@ msgstr "移动 CanvasItem “%s” 至 (%d, %d)"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Locked"
-msgstr "锁定所选项"
+msgstr "已锁定"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Grouped"
-msgstr "分组"
+msgstr "已分组"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid ""
@@ -6546,14 +6559,12 @@ msgid "Remove Selected Item"
 msgstr "移除选中项目"
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
-#, fuzzy
 msgid "Import from Scene (Ignore Transforms)"
-msgstr "从场景中导入"
+msgstr "从场景中导入（忽略变换）"
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
-#, fuzzy
 msgid "Import from Scene (Apply Transforms)"
-msgstr "从场景中导入"
+msgstr "从场景中导入（应用变换）"
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
 msgid "Update from Scene"
@@ -7139,14 +7150,12 @@ msgid "Flip Portal"
 msgstr "翻转入口"
 
 #: editor/plugins/room_manager_editor_plugin.cpp
-#, fuzzy
 msgid "Occluder Set Transform"
-msgstr "清除变换"
+msgstr "遮挡集变换"
 
 #: editor/plugins/room_manager_editor_plugin.cpp
-#, fuzzy
 msgid "Center Node"
-msgstr "创建节点"
+msgstr "居中节点"
 
 #: editor/plugins/root_motion_editor_plugin.cpp
 msgid "AnimationTree has no path set to an AnimationPlayer"
@@ -7280,11 +7289,13 @@ msgid "Move Down"
 msgstr "向下移动"
 
 #: editor/plugins/script_editor_plugin.cpp
-msgid "Next script"
+#, fuzzy
+msgid "Next Script"
 msgstr "下一个脚本"
 
 #: editor/plugins/script_editor_plugin.cpp
-msgid "Previous script"
+#, fuzzy
+msgid "Previous Script"
 msgstr "上一个脚本"
 
 #: editor/plugins/script_editor_plugin.cpp
@@ -7646,14 +7657,12 @@ msgid "Skeleton2D"
 msgstr "2D 骨骼节点"
 
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Reset to Rest Pose"
-msgstr "将骨骼重置为放松姿势"
+msgstr "重置为放松姿势"
 
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Overwrite Rest Pose"
-msgstr "覆盖"
+msgstr "覆盖放松姿势"
 
 #: editor/plugins/skeleton_editor_plugin.cpp
 msgid "Create physical bones"
@@ -7680,69 +7689,63 @@ msgid "Perspective"
 msgstr "透视"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Top Orthogonal"
-msgstr "正交"
+msgstr "正交顶视图"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Top Perspective"
-msgstr "透视"
+msgstr "透视顶视图"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Bottom Orthogonal"
-msgstr "正交"
+msgstr "正交底视图"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Bottom Perspective"
-msgstr "透视"
+msgstr "透视底视图"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Left Orthogonal"
-msgstr "正交"
+msgstr "正交左视图"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 #, fuzzy
-msgid "Right Perspective"
+msgid "Left Perspective"
 msgstr "透视"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Right Orthogonal"
-msgstr "正交"
+msgstr "正交右视图"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
+msgid "Right Perspective"
+msgstr "透视右视图"
+
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Front Orthogonal"
-msgstr "正交"
+msgstr "正交前视图"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Front Perspective"
-msgstr "透视"
+msgstr "透视前视图"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Rear Orthogonal"
-msgstr "正交"
+msgstr "正交后视图"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Rear Perspective"
-msgstr "透视"
+msgstr "透视后视图"
 
 #. TRANSLATORS: This will be appended to the view name when Auto Orthogonal is enabled.
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid " [auto]"
-msgstr ""
+msgstr " [自动]"
 
 #. TRANSLATORS: This will be appended to the view name when Portal Occulusion is enabled.
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid " [portals active]"
-msgstr ""
+msgstr " [入口生效]"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Transform Aborted."
@@ -8063,6 +8066,27 @@ msgid "Right View"
 msgstr "右视图"
 
 #: editor/plugins/spatial_editor_plugin.cpp
+msgid "Orbit View Down"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Orbit View Left"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Orbit View Right"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Orbit View Up"
+msgstr "前视图"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Orbit View 180"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Switch Perspective/Orthogonal View"
 msgstr "切换透视图/正交视图"
 
@@ -8136,9 +8160,8 @@ msgid "View Portal Culling"
 msgstr "显示入口剔除"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "View Occlusion Culling"
-msgstr "显示入口剔除"
+msgstr "显示遮挡剔除"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 #: modules/gridmap/grid_map_editor_plugin.cpp
@@ -8206,9 +8229,8 @@ msgid "Post"
 msgstr "后置"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Unnamed Gizmo"
-msgstr "未命名项目"
+msgstr "未命名控制器"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Create Mesh2D"
@@ -12239,14 +12261,12 @@ msgid "Set Portal Point Position"
 msgstr "设置入口点位置"
 
 #: editor/spatial_editor_gizmos.cpp
-#, fuzzy
 msgid "Set Occluder Sphere Radius"
-msgstr "修改圆柱体半径"
+msgstr "设置遮挡球体半径"
 
 #: editor/spatial_editor_gizmos.cpp
-#, fuzzy
 msgid "Set Occluder Sphere Position"
-msgstr "设置曲线内控点位置"
+msgstr "设置遮挡球体位置"
 
 #: modules/csg/csg_gizmos.cpp
 msgid "Change Cylinder Radius"
@@ -12529,9 +12549,8 @@ msgid "Class name can't be a reserved keyword"
 msgstr "类名不能是保留关键字"
 
 #: modules/mono/csharp_script.cpp
-#, fuzzy
 msgid "Build Solution"
-msgstr "填充选中项"
+msgstr "构建解决方案"
 
 #: modules/mono/mono_gd/gd_mono_utils.cpp
 msgid "End of inner exception stack trace"
@@ -13092,11 +13111,11 @@ msgstr "用于发布的密钥存储在导出预设中未被正确设置。"
 
 #: platform/android/export/export_plugin.cpp
 msgid "A valid Android SDK path is required in Editor Settings."
-msgstr "编辑器设置中需要有效的Android SDK路径。"
+msgstr "编辑器设置中需要有效的 Android SDK 路径。"
 
 #: platform/android/export/export_plugin.cpp
 msgid "Invalid Android SDK path in Editor Settings."
-msgstr "编辑器设置中的Android SDK路径无效。"
+msgstr "编辑器设置中的 Android SDK 路径无效。"
 
 #: platform/android/export/export_plugin.cpp
 msgid "Missing 'platform-tools' directory!"
@@ -13104,11 +13123,11 @@ msgstr "缺失“platform-tools”目录！"
 
 #: platform/android/export/export_plugin.cpp
 msgid "Unable to find Android SDK platform-tools' adb command."
-msgstr "找不到Android SDK平台工具的adb命令。"
+msgstr "找不到 Android SDK 平台工具的 adb 命令。"
 
 #: platform/android/export/export_plugin.cpp
 msgid "Please check in the Android SDK directory specified in Editor Settings."
-msgstr "请签入编辑器设置中指定的Android SDK目录。"
+msgstr "请签入编辑器设置中指定的 Android SDK 目录。"
 
 #: platform/android/export/export_plugin.cpp
 msgid "Missing 'build-tools' directory!"
@@ -13116,7 +13135,7 @@ msgstr "缺失“build-tools”目录！"
 
 #: platform/android/export/export_plugin.cpp
 msgid "Unable to find Android SDK build-tools' apksigner command."
-msgstr "找不到Android SDK生成工具的apksigner命令。"
+msgstr "找不到 Android SDK 生成工具的 apksigner 命令。"
 
 #: platform/android/export/export_plugin.cpp
 msgid "Invalid public key for APK expansion."
@@ -13320,7 +13339,7 @@ msgstr "预设中未指定必需的图标。"
 
 #: platform/javascript/export/export.cpp
 msgid "Stop HTTP Server"
-msgstr "停止 HTTP 服务"
+msgstr "停止 HTTP 服务器"
 
 #: platform/javascript/export/export.cpp
 msgid "Run in Browser"
@@ -13790,11 +13809,11 @@ msgstr ""
 
 #: scene/3d/occluder.cpp
 msgid "No shape is set."
-msgstr ""
+msgstr "未设置形状。"
 
 #: scene/3d/occluder.cpp
 msgid "Only uniform scales are supported."
-msgstr ""
+msgstr "仅支持统一的缩放。"
 
 #: scene/3d/particles.cpp
 msgid ""
@@ -14131,6 +14150,8 @@ msgid ""
 "The GLES2 backend is currently in use, so these modes will act like Stretch "
 "instead."
 msgstr ""
+"Axis Stretch 属性的 Tile 和 Tile Fit 选项仅在使用 GLES3 渲染后端时有效。\n"
+"当前使用的是 GLES2 后端，将使用 Stretch 的行为代替这些模式。"
 
 #: scene/gui/popup.cpp
 msgid ""
@@ -14167,6 +14188,14 @@ msgstr ""
 "无法加载项目设置中的默认环境 (Rendering -> Environment -> Default "
 "Environment)。"
 
+#: scene/main/timer.cpp
+msgid ""
+"Very low timer wait times (< 0.05 seconds) may behave in significantly "
+"different ways depending on the rendered or physics frame rate.\n"
+"Consider using a script's process loop instead of relying on a Timer for "
+"very low wait times."
+msgstr ""
+
 #: scene/main/viewport.cpp
 msgid ""
 "This viewport is not set as render target. If you intend for it to display "
@@ -14179,12 +14208,15 @@ msgstr ""
 "RenderTarget 并分配其内部纹理来显示。"
 
 #: scene/main/viewport.cpp
-msgid "Viewport size must be greater than 0 to render anything."
+#, fuzzy
+msgid ""
+"The Viewport size must be greater than or equal to 2 pixels on both "
+"dimensions to render anything."
 msgstr "Viewport 大小大于 0 时才能进行渲染。"
 
 #: scene/resources/occluder_shape.cpp
 msgid "OccluderShapeSphere Set Spheres"
-msgstr ""
+msgstr "OccluderShapeSphere 设置 Spheres"
 
 #: scene/resources/visual_shader_nodes.cpp
 msgid ""
@@ -15856,9 +15888,6 @@ msgstr "不允许修改常量。"
 
 #~ msgid "Couldn't save atlas image:"
 #~ msgstr "无法保存精灵集图片:"
-
-#~ msgid "Couldn't save converted texture:"
-#~ msgstr "无法保存转换的贴图:"
 
 #~ msgid "Invalid translation source!"
 #~ msgstr "源语言文件非法！"

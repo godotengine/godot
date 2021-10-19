@@ -165,7 +165,7 @@ void ExtendGDScriptParser::parse_class_symbol(const GDScriptParser::ClassNode *p
 			case ClassNode::Member::VARIABLE: {
 				lsp::DocumentSymbol symbol;
 				symbol.name = m.variable->identifier->name;
-				symbol.kind = m.variable->property == VariableNode::PropertyStyle::PROP_NONE ? lsp::SymbolKind::Variable : lsp::SymbolKind::Property;
+				symbol.kind = m.variable->property == VariableNode::PROP_NONE ? lsp::SymbolKind::Variable : lsp::SymbolKind::Property;
 				symbol.deprecated = false;
 				symbol.range.start.line = LINE_NUMBER_TO_INDEX(m.variable->start_line);
 				symbol.range.start.character = LINE_NUMBER_TO_INDEX(m.variable->start_column);

@@ -1,12 +1,12 @@
 ext.versions = [
-    androidGradlePlugin: '4.2.2',
+    androidGradlePlugin: '7.0.3',
     compileSdk         : 30,
     minSdk             : 19,
     targetSdk          : 30,
     buildTools         : '30.0.3',
     kotlinVersion      : '1.5.10',
     fragmentVersion    : '1.3.6',
-    javaVersion        : 1.8,
+    javaVersion        : 11,
     ndkVersion         : '21.4.7075529' // Also update 'platform/android/detect.py#get_project_ndk_version()' when this is updated.
 
 ]

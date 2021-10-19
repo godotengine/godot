@@ -1333,6 +1333,28 @@ Variant::UtilityFunctionType Variant::get_utility_function_type(const StringName
 	return bfi->type;
 }
 
+MethodInfo Variant::get_utility_function_info(const StringName &p_name) {
+	MethodInfo info;
+	const VariantUtilityFunctionInfo *bfi = utility_function_table.lookup_ptr(p_name);
+	if (bfi) {
+		info.name = p_name;
+		if (bfi->returns_value && bfi->return_type == Variant::NIL) {
+			info.return_val.usage |= PROPERTY_USAGE_NIL_IS_VARIANT;
+		}
+		info.return_val.type = bfi->return_type;
+		if (bfi->is_vararg) {
+			info.flags |= METHOD_FLAG_VARARG;
+		}
+		for (int i = 0; i < bfi->argnames.size(); ++i) {
+			PropertyInfo arg;
+			arg.type = bfi->get_arg_type(i);
+			arg.name = bfi->argnames[i];
+			info.arguments.push_back(arg);
+		}
+	}
+	return info;
+}
+
 int Variant::get_utility_function_argument_count(const StringName &p_name) {
 	const VariantUtilityFunctionInfo *bfi = utility_function_table.lookup_ptr(p_name);
 	if (!bfi) {

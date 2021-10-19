@@ -482,7 +482,7 @@ void TextServer::_bind_methods() {
 Vector2 TextServer::get_hex_code_box_size(int p_size, char32_t p_index) const {
 	int w = ((p_index <= 0xFF) ? 1 : ((p_index <= 0xFFFF) ? 2 : 3));
 	int sp = MAX(0, w - 1);
-	int sz = MAX(1, p_size / 15);
+	int sz = MAX(1, Math::round(p_size / 15.f));
 
 	return Vector2(4 + 3 * w + sp + 1, 15) * sz;
 }
@@ -520,7 +520,7 @@ void TextServer::draw_hex_code_box(RID p_canvas, int p_size, const Vector2 &p_po
 
 	int w = ((p_index <= 0xFF) ? 1 : ((p_index <= 0xFFFF) ? 2 : 3));
 	int sp = MAX(0, w - 1);
-	int sz = MAX(1, p_size / 15);
+	int sz = MAX(1, Math::round(p_size / 15.f));
 
 	Size2 size = Vector2(4 + 3 * w + sp, 15) * sz;
 	Point2 pos = p_pos - Point2i(0, size.y * 0.85);

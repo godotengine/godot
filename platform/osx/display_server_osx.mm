@@ -3014,7 +3014,7 @@ void DisplayServerOSX::cursor_set_custom_image(const RES &p_cursor, CursorShape 
 		ERR_FAIL_COND(!image.is_valid());
 
 		NSBitmapImageRep *imgrep = [[NSBitmapImageRep alloc]
-				initWithBitmapDataPlanes:NULL
+				initWithBitmapDataPlanes:nullptr
 							  pixelsWide:int(texture_size.width)
 							  pixelsHigh:int(texture_size.height)
 						   bitsPerSample:8
@@ -3418,7 +3418,7 @@ void DisplayServerOSX::set_icon(const Ref<Image> &p_icon) {
 	img = img->duplicate();
 	img->convert(Image::FORMAT_RGBA8);
 	NSBitmapImageRep *imgrep = [[NSBitmapImageRep alloc]
-			initWithBitmapDataPlanes:NULL
+			initWithBitmapDataPlanes:nullptr
 						  pixelsWide:img->get_width()
 						  pixelsHigh:img->get_height()
 					   bitsPerSample:8

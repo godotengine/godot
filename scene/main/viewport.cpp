@@ -1079,8 +1079,11 @@ Transform2D Viewport::_get_input_pre_xform() const {
 }
 
 Ref<InputEvent> Viewport::_make_input_local(const Ref<InputEvent> &ev) {
-	Transform2D ai = get_final_transform().affine_inverse() * _get_input_pre_xform();
+	if (ev.is_null()) {
+		return ev; // No transformation defined for null event
+	}
 
+	Transform2D ai = get_final_transform().affine_inverse() * _get_input_pre_xform();
 	return ev->xformed_by(ai);
 }
 
@@ -2878,9 +2881,8 @@ bool Viewport::gui_is_dragging() const {
 
 void Viewport::set_input_as_handled() {
 	_drop_physics_mouseover();
-	if (handle_input_locally) {
-		local_input_handled = true;
-	} else {
+
+	if (!handle_input_locally) {
 		ERR_FAIL_COND(!is_inside_tree());
 		Viewport *vp = this;
 		while (true) {
@@ -2892,16 +2894,19 @@ void Viewport::set_input_as_handled() {
 			}
 			vp = vp->get_parent()->get_viewport();
 		}
-		vp->set_input_as_handled();
+		if (vp != this) {
+			vp->set_input_as_handled();
+			return;
+		}
 	}
+
+	local_input_handled = true;
 }
 
 bool Viewport::is_input_handled() const {
-	if (handle_input_locally) {
-		return local_input_handled;
-	} else {
-		const Viewport *vp = this;
+	if (!handle_input_locally) {
 		ERR_FAIL_COND_V(!is_inside_tree(), false);
+		const Viewport *vp = this;
 		while (true) {
 			if (Object::cast_to<Window>(vp)) {
 				break;
@@ -2911,8 +2916,11 @@ bool Viewport::is_input_handled() const {
 			}
 			vp = vp->get_parent()->get_viewport();
 		}
-		return vp->is_input_handled();
+		if (vp != this) {
+			return vp->is_input_handled();
+		}
 	}
+	return local_input_handled;
 }
 
 void Viewport::set_handle_input_locally(bool p_enable) {
@@ -3443,13 +3451,16 @@ bool Viewport::is_using_xr() {
 	return use_xr;
 }
 
-void Viewport::set_scale_3d(const Scale3D p_scale_3d) {
-	scale_3d = p_scale_3d;
+void Viewport::set_scale_3d(float p_scale_3d) {
+	// Clamp to reasonable values that are actually useful.
+	// Values above 2.0 don't serve a practical purpose since the viewport
+	// isn't displayed with mipmaps.
+	scale_3d = CLAMP(p_scale_3d, 0.1, 2.0);
 
-	RS::get_singleton()->viewport_set_scale_3d(viewport, RS::ViewportScale3D(scale_3d));
+	RS::get_singleton()->viewport_set_scale_3d(viewport, scale_3d);
 }
 
-Viewport::Scale3D Viewport::get_scale_3d() const {
+float Viewport::get_scale_3d() const {
 	return scale_3d;
 }
 
@@ -3582,7 +3593,7 @@ void Viewport::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "disable_3d"), "set_disable_3d", "is_3d_disabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_xr"), "set_use_xr", "is_using_xr");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "scale_3d", PROPERTY_HINT_ENUM, String::utf8("Disabled,75%,50%,33%,25%")), "set_scale_3d", "get_scale_3d");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "scale_3d", PROPERTY_HINT_RANGE, "0.25,2.0,0.01"), "set_scale_3d", "get_scale_3d");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "audio_listener_enable_3d"), "set_as_audio_listener_3d", "is_audio_listener_3d");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "own_world_3d"), "set_use_own_world_3d", "is_using_own_world_3d");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "world_3d", PROPERTY_HINT_RESOURCE_TYPE, "World3D"), "set_world_3d", "get_world_3d");
@@ -3625,12 +3636,6 @@ void Viewport::_bind_methods() {
 
 	ADD_SIGNAL(MethodInfo("size_changed"));
 	ADD_SIGNAL(MethodInfo("gui_focus_changed", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, "Control")));
-
-	BIND_ENUM_CONSTANT(SCALE_3D_DISABLED);
-	BIND_ENUM_CONSTANT(SCALE_3D_75_PERCENT);
-	BIND_ENUM_CONSTANT(SCALE_3D_50_PERCENT);
-	BIND_ENUM_CONSTANT(SCALE_3D_33_PERCENT);
-	BIND_ENUM_CONSTANT(SCALE_3D_25_PERCENT);
 
 	BIND_ENUM_CONSTANT(SHADOW_ATLAS_QUADRANT_SUBDIV_DISABLED);
 	BIND_ENUM_CONSTANT(SHADOW_ATLAS_QUADRANT_SUBDIV_1);
@@ -3744,8 +3749,7 @@ Viewport::Viewport() {
 	ProjectSettings::get_singleton()->set_custom_property_info("gui/timers/tooltip_delay_sec", PropertyInfo(Variant::FLOAT, "gui/timers/tooltip_delay_sec", PROPERTY_HINT_RANGE, "0,5,0.01,or_greater")); // No negative numbers
 
 #ifndef _3D_DISABLED
-	int scale = GLOBAL_GET("rendering/3d/viewport/scale");
-	set_scale_3d((Scale3D)scale);
+	set_scale_3d(GLOBAL_GET("rendering/3d/viewport/scale"));
 #endif // _3D_DISABLED
 
 	set_sdf_oversize(sdf_oversize); // Set to server.

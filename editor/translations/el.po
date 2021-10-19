@@ -16,6 +16,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
+"Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
 "PO-Revision-Date: 2021-07-09 14:32+0000\n"
 "Last-Translator: Shadofer <shadowrlrs@gmail.com>\n"
@@ -2432,6 +2433,15 @@ msgstr ""
 "Αδύνατη η αποθήκευση σκηνής. Πιθανώς οι εξαρτήσεις (στιγμιότυπα ή "
 "κληρονομιά) να μην μπορούσαν να ικανοποιηθούν."
 
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Could not save one or more scenes!"
+msgstr "Δεν ήταν δυνατή η αποθήκευση υφής που έχει μετατραπεί:"
+
+#: editor/editor_node.cpp
+msgid "Save All Scenes"
+msgstr "Αποθήκευση Ολων των Σκηνών"
+
 #: editor/editor_node.cpp editor/scene_tree_dock.cpp
 msgid "Can't overwrite scene that is still open!"
 msgstr "Αδύνατη η αντικατάσταση σκηνής που είναι ακόμα ανοιχτή!"
@@ -2571,6 +2581,10 @@ msgstr "Αποθήκευση & Κλείσιμο"
 #: editor/editor_node.cpp
 msgid "Save changes to '%s' before closing?"
 msgstr "Αποθήκευση αλλαγών στο '%s' πριν το κλείσιμο;"
+
+#: editor/editor_node.cpp
+msgid "%s no longer exists! Please specify a new save location."
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2927,10 +2941,6 @@ msgstr "Άνοιγμα πρόσφατων"
 #: editor/editor_node.cpp
 msgid "Save Scene"
 msgstr "Αποθηκεύση σκηνής"
-
-#: editor/editor_node.cpp
-msgid "Save All Scenes"
-msgstr "Αποθήκευση Ολων των Σκηνών"
 
 #: editor/editor_node.cpp
 msgid "Convert To..."
@@ -4455,16 +4465,24 @@ msgid "Clear Default for '%s'"
 msgstr "Εκκαθάριση προεπιλογής για '%s'"
 
 #: editor/import_dock.cpp
+msgid "Reimport"
+msgstr "Επανεισαγωγή"
+
+#: editor/import_dock.cpp
+msgid ""
+"You have pending changes that haven't been applied yet. Click Reimport to "
+"apply changes made to the import options.\n"
+"Selecting another resource in the FileSystem dock without clicking Reimport "
+"first will discard changes made in the Import dock."
+msgstr ""
+
+#: editor/import_dock.cpp
 msgid "Import As:"
 msgstr "Εισαγωγή ώς:"
 
 #: editor/import_dock.cpp
 msgid "Preset"
 msgstr "Προρύθμιση"
-
-#: editor/import_dock.cpp
-msgid "Reimport"
-msgstr "Επανεισαγωγή"
 
 #: editor/import_dock.cpp
 msgid "Save Scenes, Re-Import, and Restart"
@@ -7484,11 +7502,13 @@ msgid "Move Down"
 msgstr "Μετακίνηση κάτω"
 
 #: editor/plugins/script_editor_plugin.cpp
-msgid "Next script"
+#, fuzzy
+msgid "Next Script"
 msgstr "Επόμενη Δέμη Ενεργειών"
 
 #: editor/plugins/script_editor_plugin.cpp
-msgid "Previous script"
+#, fuzzy
+msgid "Previous Script"
 msgstr "Προηγούμενη Δέσμη Ενεργειών"
 
 #: editor/plugins/script_editor_plugin.cpp
@@ -7915,13 +7935,18 @@ msgstr "Αξονομετρική"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 #, fuzzy
-msgid "Right Perspective"
+msgid "Left Perspective"
 msgstr "Προοπτική"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 #, fuzzy
 msgid "Right Orthogonal"
 msgstr "Αξονομετρική"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Right Perspective"
+msgstr "Προοπτική"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 #, fuzzy
@@ -8288,6 +8313,27 @@ msgstr "Αριστερή όψη"
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Right View"
 msgstr "Δεξιά όψη"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Orbit View Down"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Orbit View Left"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Orbit View Right"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Orbit View Up"
+msgstr "Εμπρόσθια όψη"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Orbit View 180"
+msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Switch Perspective/Orthogonal View"
@@ -14696,6 +14742,14 @@ msgstr ""
 "Το προεπιλεγμένο περιβάλλον, όπως έχει ορισθεί στις ρυθμίσεις έργου "
 "(Rendering -> Environment -> Default Environment) δεν μπορούσε να φορτωθεί."
 
+#: scene/main/timer.cpp
+msgid ""
+"Very low timer wait times (< 0.05 seconds) may behave in significantly "
+"different ways depending on the rendered or physics frame rate.\n"
+"Consider using a script's process loop instead of relying on a Timer for "
+"very low wait times."
+msgstr ""
+
 #: scene/main/viewport.cpp
 msgid ""
 "This viewport is not set as render target. If you intend for it to display "
@@ -14709,7 +14763,10 @@ msgstr ""
 "έναν κόμβο για απεικόνιση."
 
 #: scene/main/viewport.cpp
-msgid "Viewport size must be greater than 0 to render anything."
+#, fuzzy
+msgid ""
+"The Viewport size must be greater than or equal to 2 pixels on both "
+"dimensions to render anything."
 msgstr ""
 "Το μέγεθος της οπτικής γωνίας πρέπει να είναι μεγαλύτερο του 0 για να γίνει "
 "απόδοση."
@@ -16572,9 +16629,6 @@ msgstr "Οι σταθερές δεν μπορούν να τροποποιηθο�
 
 #~ msgid "Couldn't save atlas image:"
 #~ msgstr "Δεν ήταν δυνατή η αποθήκευση εικόνας άτλαντα:"
-
-#~ msgid "Couldn't save converted texture:"
-#~ msgstr "Δεν ήταν δυνατή η αποθήκευση υφής που έχει μετατραπεί:"
 
 #~ msgid "Invalid translation source!"
 #~ msgstr "Μη έγκυρη πηγή μετάφρασης!"

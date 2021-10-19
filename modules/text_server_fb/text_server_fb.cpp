@@ -111,22 +111,14 @@ bool TextServerFallback::is_locale_right_to_left(const String &p_locale) const {
 	return false; // No RTL support.
 }
 
-#define OT_TAG(c1, c2, c3, c4) ((int32_t)((((uint32_t)(c1)&0xFF) << 24) | (((uint32_t)(c2)&0xFF) << 16) | (((uint32_t)(c3)&0xFF) << 8) | ((uint32_t)(c4)&0xFF)))
-
-struct FeatureInfo {
-	int32_t tag;
-	String name;
-};
-
-static FeatureInfo feature_set[] = {
-	// Registered OpenType variation tags.
-	{ OT_TAG('i', 't', 'a', 'l'), "italic" },
-	{ OT_TAG('o', 'p', 's', 'z'), "optical_size" },
-	{ OT_TAG('s', 'l', 'n', 't'), "slant" },
-	{ OT_TAG('w', 'd', 't', 'h'), "width" },
-	{ OT_TAG('w', 'g', 'h', 't'), "weight" },
-	{ 0, String() },
-};
+void TextServerFallback::_insert_feature_sets() {
+	// Registered OpenType variation tag.
+	feature_sets.insert("italic", OT_TAG('i', 't', 'a', 'l'));
+	feature_sets.insert("optical_size", OT_TAG('o', 'p', 's', 'z'));
+	feature_sets.insert("slant", OT_TAG('s', 'l', 'n', 't'));
+	feature_sets.insert("width", OT_TAG('w', 'd', 't', 'h'));
+	feature_sets.insert("weight", OT_TAG('w', 'g', 'h', 't'));
+}
 
 _FORCE_INLINE_ int32_t ot_tag_from_string(const char *p_str, int p_len) {
 	char tag[4];
@@ -150,10 +142,8 @@ _FORCE_INLINE_ int32_t ot_tag_from_string(const char *p_str, int p_len) {
 }
 
 int32_t TextServerFallback::name_to_tag(const String &p_name) const {
-	for (int i = 0; feature_set[i].tag != 0; i++) {
-		if (feature_set[i].name == p_name) {
-			return feature_set[i].tag;
-		}
+	if (feature_sets.has(p_name)) {
+		return feature_sets[p_name];
 	}
 
 	// No readable name, use tag string.
@@ -168,9 +158,9 @@ _FORCE_INLINE_ void ot_tag_to_string(int32_t p_tag, char *p_buf) {
 }
 
 String TextServerFallback::tag_to_name(int32_t p_tag) const {
-	for (int i = 0; feature_set[i].tag != 0; i++) {
-		if (feature_set[i].tag == p_tag) {
-			return feature_set[i].name;
+	for (const KeyValue<StringName, int32_t> &E : feature_sets) {
+		if (E.value == p_tag) {
+			return E.key;
 		}
 	}
 
@@ -202,6 +192,10 @@ _FORCE_INLINE_ TextServerFallback::FontTexturePosition TextServerFallback::find_
 		}
 
 		if (mw > ct.texture_w || mh > ct.texture_h) { // Too big for this texture.
+			continue;
+		}
+
+		if (ct.offsets.size() < ct.texture_w) {
 			continue;
 		}
 
@@ -421,7 +415,6 @@ _FORCE_INLINE_ TextServerFallback::FontGlyph TextServerFallback::rasterize_msdf(
 
 		edgeColoringSimple(shape, 3.0); // Max. angle.
 		msdfgen::Bitmap<float, 4> image(w, h); // Texture size.
-		//msdfgen::generateMTSDF(image, shape, p_pixel_range, 1.0, msdfgen::Vector2(-bounds.l, -bounds.b)); // Range, scale, translation.
 
 		DistancePixelConversion distancePixelConversion(p_pixel_range);
 		msdfgen::Projection projection(msdfgen::Vector2(1.0, 1.0), msdfgen::Vector2(-bounds.l, -bounds.b));
@@ -515,11 +508,11 @@ _FORCE_INLINE_ TextServerFallback::FontGlyph TextServerFallback::rasterize_bitma
 					case FT_PIXEL_MODE_MONO: {
 						int byte = i * bitmap.pitch + (j >> 3);
 						int bit = 1 << (7 - (j % 8));
-						wr[ofs + 0] = 255; //grayscale as 1
+						wr[ofs + 0] = 255; // grayscale as 1
 						wr[ofs + 1] = (bitmap.buffer[byte] & bit) ? 255 : 0;
 					} break;
 					case FT_PIXEL_MODE_GRAY:
-						wr[ofs + 0] = 255; //grayscale as 1
+						wr[ofs + 0] = 255; // grayscale as 1
 						wr[ofs + 1] = bitmap.buffer[i * bitmap.pitch + j];
 						break;
 					case FT_PIXEL_MODE_BGRA: {
@@ -683,7 +676,7 @@ _FORCE_INLINE_ bool TextServerFallback::_ensure_cache_for_size(FontDataFallback 
 
 	FontDataForSizeFallback *fd = memnew(FontDataForSizeFallback);
 	fd->size = p_size;
-	if (p_font_data->data_ptr) {
+	if (p_font_data->data_ptr && (p_font_data->data_size > 0)) {
 		// Init dynamic font.
 #ifdef MODULE_FREETYPE_ENABLED
 		int error = 0;
@@ -1304,6 +1297,7 @@ void TextServerFallback::font_set_texture_offsets(RID p_font_rid, const Vector2i
 	MutexLock lock(fd->mutex);
 	Vector2i size = _get_size_outline(fd, p_size);
 	ERR_FAIL_COND(!_ensure_cache_for_size(fd, size));
+	ERR_FAIL_COND(p_texture_index < 0);
 	if (p_texture_index >= fd->cache[size]->textures.size()) {
 		fd->cache[size]->textures.resize(p_texture_index + 1);
 	}
@@ -1661,12 +1655,14 @@ Vector2 TextServerFallback::font_get_kerning(RID p_font_rid, int p_size, const V
 }
 
 int32_t TextServerFallback::font_get_glyph_index(RID p_font_rid, int p_size, char32_t p_char, char32_t p_variation_selector) const {
+	ERR_FAIL_COND_V_MSG((p_char >= 0xd800 && p_char <= 0xdfff) || (p_char > 0x10ffff), 0, "Unicode parsing error: Invalid unicode codepoint " + String::num_int64(p_char, 16) + ".");
 	return (int32_t)p_char;
 }
 
 bool TextServerFallback::font_has_char(RID p_font_rid, char32_t p_char) const {
 	FontDataFallback *fd = font_owner.get_or_null(p_font_rid);
 	ERR_FAIL_COND_V(!fd, false);
+	ERR_FAIL_COND_V_MSG((p_char >= 0xd800 && p_char <= 0xdfff) || (p_char > 0x10ffff), false, "Unicode parsing error: Invalid unicode codepoint " + String::num_int64(p_char, 16) + ".");
 
 	MutexLock lock(fd->mutex);
 	if (fd->cache.is_empty()) {
@@ -1719,6 +1715,8 @@ String TextServerFallback::font_get_supported_chars(RID p_font_rid) const {
 void TextServerFallback::font_render_range(RID p_font_rid, const Vector2i &p_size, char32_t p_start, char32_t p_end) {
 	FontDataFallback *fd = font_owner.get_or_null(p_font_rid);
 	ERR_FAIL_COND(!fd);
+	ERR_FAIL_COND_MSG((p_start >= 0xd800 && p_start <= 0xdfff) || (p_start > 0x10ffff), "Unicode parsing error: Invalid unicode codepoint " + String::num_int64(p_start, 16) + ".");
+	ERR_FAIL_COND_MSG((p_end >= 0xd800 && p_end <= 0xdfff) || (p_end > 0x10ffff), "Unicode parsing error: Invalid unicode codepoint " + String::num_int64(p_end, 16) + ".");
 
 	MutexLock lock(fd->mutex);
 	Vector2i size = _get_size_outline(fd, p_size);
@@ -2269,7 +2267,7 @@ bool TextServerFallback::shaped_text_resize_object(RID p_shaped, Variant p_key, 
 							E.value.rect.position.y -= E.value.rect.size.y / 2;
 						} break;
 						case INLINE_ALIGN_TOP_TO: {
-							//NOP
+							// NOP
 						} break;
 					}
 					full_ascent = MAX(full_ascent, -E.value.rect.position.y);
@@ -2297,7 +2295,7 @@ bool TextServerFallback::shaped_text_resize_object(RID p_shaped, Variant p_key, 
 							E.value.rect.position.x -= E.value.rect.size.x / 2;
 						} break;
 						case INLINE_ALIGN_TOP_TO: {
-							//NOP
+							// NOP
 						} break;
 					}
 					full_ascent = MAX(full_ascent, -E.value.rect.position.x);
@@ -2420,7 +2418,7 @@ RID TextServerFallback::shaped_text_substr(RID p_shaped, int p_start, int p_leng
 							E.value.rect.position.y -= E.value.rect.size.y / 2;
 						} break;
 						case INLINE_ALIGN_TOP_TO: {
-							//NOP
+							// NOP
 						} break;
 					}
 					full_ascent = MAX(full_ascent, -E.value.rect.position.y);
@@ -2448,7 +2446,7 @@ RID TextServerFallback::shaped_text_substr(RID p_shaped, int p_start, int p_leng
 							E.value.rect.position.x -= E.value.rect.size.x / 2;
 						} break;
 						case INLINE_ALIGN_TOP_TO: {
-							//NOP
+							// NOP
 						} break;
 					}
 					full_ascent = MAX(full_ascent, -E.value.rect.position.x);
@@ -2960,7 +2958,7 @@ bool TextServerFallback::shaped_text_shape(RID p_shaped) {
 					E.value.rect.position.y -= E.value.rect.size.y / 2;
 				} break;
 				case INLINE_ALIGN_TOP_TO: {
-					//NOP
+					// NOP
 				} break;
 			}
 			full_ascent = MAX(full_ascent, -E.value.rect.position.y);
@@ -2988,7 +2986,7 @@ bool TextServerFallback::shaped_text_shape(RID p_shaped) {
 					E.value.rect.position.x -= E.value.rect.size.x / 2;
 				} break;
 				case INLINE_ALIGN_TOP_TO: {
-					//NOP
+					// NOP
 				} break;
 			}
 			full_ascent = MAX(full_ascent, -E.value.rect.position.x);
@@ -3148,7 +3146,9 @@ float TextServerFallback::shaped_text_get_underline_thickness(RID p_shaped) cons
 	return sd->uthk;
 }
 
-TextServerFallback::TextServerFallback(){};
+TextServerFallback::TextServerFallback() {
+	_insert_feature_sets();
+};
 
 TextServerFallback::~TextServerFallback() {
 	if (library != nullptr) {

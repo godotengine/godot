@@ -1776,19 +1776,25 @@ void EditorNode::restart_editor() {
 }
 
 void EditorNode::_save_all_scenes() {
+	bool all_saved = true;
 	for (int i = 0; i < editor_data.get_edited_scene_count(); i++) {
 		Node *scene = editor_data.get_edited_scene_root(i);
-		if (scene && scene->get_scene_file_path() != "" && DirAccess::exists(scene->get_scene_file_path().get_base_dir())) {
-			if (i != editor_data.get_edited_scene()) {
-				_save_scene(scene->get_scene_file_path(), i);
+		if (scene) {
+			if (scene->get_scene_file_path() != "" && DirAccess::exists(scene->get_scene_file_path().get_base_dir())) {
+				if (i != editor_data.get_edited_scene()) {
+					_save_scene(scene->get_scene_file_path(), i);
+				} else {
+					_save_scene_with_preview(scene->get_scene_file_path());
+				}
 			} else {
-				_save_scene_with_preview(scene->get_scene_file_path());
+				all_saved = false;
 			}
-		} else {
-			show_warning(TTR("Could not save one or more scenes!"), TTR("Save All Scenes"));
 		}
 	}
 
+	if (!all_saved) {
+		show_warning(TTR("Could not save one or more scenes!"), TTR("Save All Scenes"));
+	}
 	_save_default_environment();
 }
 
@@ -3842,7 +3848,8 @@ void EditorNode::register_editor_types() {
 	GDREGISTER_VIRTUAL_CLASS(EditorInterface);
 	GDREGISTER_CLASS(EditorExportPlugin);
 	GDREGISTER_CLASS(EditorResourceConversionPlugin);
-	GDREGISTER_CLASS(EditorSceneImporter);
+	GDREGISTER_CLASS(EditorSceneFormatImporter);
+	GDREGISTER_CLASS(EditorScenePostImportPlugin);
 	GDREGISTER_CLASS(EditorInspector);
 	GDREGISTER_CLASS(EditorInspectorPlugin);
 	GDREGISTER_CLASS(EditorProperty);
@@ -5929,7 +5936,7 @@ EditorNode::EditorNode() {
 		ResourceFormatImporter::get_singleton()->add_importer(import_scene);
 
 		{
-			Ref<EditorSceneImporterCollada> import_collada;
+			Ref<EditorSceneFormatImporterCollada> import_collada;
 			import_collada.instantiate();
 			import_scene->add_importer(import_collada);
 
@@ -5937,7 +5944,7 @@ EditorNode::EditorNode() {
 			import_obj2.instantiate();
 			import_scene->add_importer(import_obj2);
 
-			Ref<EditorSceneImporterESCN> import_escn;
+			Ref<EditorSceneFormatImporterESCN> import_escn;
 			import_escn.instantiate();
 			import_scene->add_importer(import_escn);
 		}

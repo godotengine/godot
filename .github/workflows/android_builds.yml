@@ -25,10 +25,10 @@ jobs:
           sudo cp -f misc/ci/sources.list /etc/apt/sources.list
           sudo apt-get update
 
-      - name: Set up Java 8
+      - name: Set up Java 11
         uses: actions/setup-java@v1
         with:
-          java-version: 8
+          java-version: 11
 
       - name: Setup Godot build cache
         uses: ./.github/actions/godot-cache

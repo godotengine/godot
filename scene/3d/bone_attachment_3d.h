@@ -47,7 +47,6 @@ class BoneAttachment3D : public Node3D {
 	enum OVERRIDE_MODES {
 		MODE_GLOBAL_POSE,
 		MODE_LOCAL_POSE,
-		MODE_CUSTOM_POSE
 	};
 
 	bool use_external_skeleton = false;

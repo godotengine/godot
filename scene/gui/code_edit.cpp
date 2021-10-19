@@ -1146,7 +1146,7 @@ bool CodeEdit::is_drawing_executing_lines_gutter() const {
 }
 
 void CodeEdit::_main_gutter_draw_callback(int p_line, int p_gutter, const Rect2 &p_region) {
-	if (draw_breakpoints) {
+	if (draw_breakpoints && breakpoint_icon.is_valid()) {
 		bool hovering = p_region.has_point(get_local_mouse_pos());
 		bool breakpointed = is_line_breakpointed(p_line);
 
@@ -1162,7 +1162,7 @@ void CodeEdit::_main_gutter_draw_callback(int p_line, int p_gutter, const Rect2 
 		}
 	}
 
-	if (draw_bookmarks && is_line_bookmarked(p_line)) {
+	if (draw_bookmarks && is_line_bookmarked(p_line) && bookmark_icon.is_valid()) {
 		int horizontal_padding = p_region.size.x / 2;
 		int vertical_padding = p_region.size.y / 4;
 
@@ -1172,7 +1172,7 @@ void CodeEdit::_main_gutter_draw_callback(int p_line, int p_gutter, const Rect2 
 		bookmark_icon->draw_rect(get_canvas_item(), bookmark_region, false, bookmark_color);
 	}
 
-	if (draw_executing_lines && is_line_executing(p_line)) {
+	if (draw_executing_lines && is_line_executing(p_line) && executing_line_icon.is_valid()) {
 		int horizontal_padding = p_region.size.x / 10;
 		int vertical_padding = p_region.size.y / 4;
 

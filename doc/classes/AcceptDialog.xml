@@ -32,12 +32,14 @@
 			<return type="Label" />
 			<description>
 				Returns the label used for built-in text.
+				[b]Warning:[/b] This is a required internal node, removing and freeing it may cause a crash. If you wish to hide it or any of its children, use their [member CanvasItem.visible] property.
 			</description>
 		</method>
 		<method name="get_ok_button">
 			<return type="Button" />
 			<description>
 				Returns the OK [Button] instance.
+				[b]Warning:[/b] This is a required internal node, removing and freeing it may cause a crash. If you wish to hide it or any of its children, use their [member CanvasItem.visible] property.
 			</description>
 		</method>
 		<method name="register_text_enter">

@@ -163,8 +163,8 @@ void GPUParticles2D::set_trail_sections(int p_sections) {
 }
 
 void GPUParticles2D::set_trail_section_subdivisions(int p_subdivisions) {
-	ERR_FAIL_COND(trail_section_subdivisions < 1);
-	ERR_FAIL_COND(trail_section_subdivisions > 1024);
+	ERR_FAIL_COND(p_subdivisions < 1);
+	ERR_FAIL_COND(p_subdivisions > 1024);
 
 	trail_section_subdivisions = p_subdivisions;
 	update();

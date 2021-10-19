@@ -1624,6 +1624,19 @@ Variant::operator String() const {
 	return stringify(stack);
 }
 
+template <class T>
+String stringify_vector(const T &vec, List<const void *> &stack) {
+	String str("[");
+	for (int i = 0; i < vec.size(); i++) {
+		if (i > 0) {
+			str += ", ";
+		}
+		str = str + Variant(vec[i]).stringify(stack);
+	}
+	str += "]";
+	return str;
+}
+
 String Variant::stringify(List<const void *> &stack) const {
 	switch (type) {
 		case NIL:
@@ -1703,88 +1716,31 @@ String Variant::stringify(List<const void *> &stack) const {
 			return str;
 		} break;
 		case PACKED_VECTOR2_ARRAY: {
-			Vector<Vector2> vec = operator Vector<Vector2>();
-			String str("[");
-			for (int i = 0; i < vec.size(); i++) {
-				if (i > 0) {
-					str += ", ";
-				}
-				str = str + Variant(vec[i]);
-			}
-			str += "]";
-			return str;
+			return stringify_vector(operator Vector<Vector2>(), stack);
 		} break;
 		case PACKED_VECTOR3_ARRAY: {
-			Vector<Vector3> vec = operator Vector<Vector3>();
-			String str("[");
-			for (int i = 0; i < vec.size(); i++) {
-				if (i > 0) {
-					str += ", ";
-				}
-				str = str + Variant(vec[i]);
-			}
-			str += "]";
-			return str;
+			return stringify_vector(operator Vector<Vector3>(), stack);
+		} break;
+		case PACKED_COLOR_ARRAY: {
+			return stringify_vector(operator Vector<Color>(), stack);
 		} break;
 		case PACKED_STRING_ARRAY: {
-			Vector<String> vec = operator Vector<String>();
-			String str("[");
-			for (int i = 0; i < vec.size(); i++) {
-				if (i > 0) {
-					str += ", ";
-				}
-				str = str + vec[i];
-			}
-			str += "]";
-			return str;
+			return stringify_vector(operator Vector<String>(), stack);
+		} break;
+		case PACKED_BYTE_ARRAY: {
+			return stringify_vector(operator Vector<uint8_t>(), stack);
 		} break;
 		case PACKED_INT32_ARRAY: {
-			Vector<int32_t> vec = operator Vector<int32_t>();
-			String str("[");
-			for (int i = 0; i < vec.size(); i++) {
-				if (i > 0) {
-					str += ", ";
-				}
-				str = str + itos(vec[i]);
-			}
-			str += "]";
-			return str;
+			return stringify_vector(operator Vector<int32_t>(), stack);
 		} break;
 		case PACKED_INT64_ARRAY: {
-			Vector<int64_t> vec = operator Vector<int64_t>();
-			String str("[");
-			for (int i = 0; i < vec.size(); i++) {
-				if (i > 0) {
-					str += ", ";
-				}
-				str = str + itos(vec[i]);
-			}
-			str += "]";
-			return str;
+			return stringify_vector(operator Vector<int64_t>(), stack);
 		} break;
 		case PACKED_FLOAT32_ARRAY: {
-			Vector<float> vec = operator Vector<float>();
-			String str("[");
-			for (int i = 0; i < vec.size(); i++) {
-				if (i > 0) {
-					str += ", ";
-				}
-				str = str + rtos(vec[i]);
-			}
-			str += "]";
-			return str;
+			return stringify_vector(operator Vector<float>(), stack);
 		} break;
 		case PACKED_FLOAT64_ARRAY: {
-			Vector<double> vec = operator Vector<double>();
-			String str("[");
-			for (int i = 0; i < vec.size(); i++) {
-				if (i > 0) {
-					str += ", ";
-				}
-				str = str + rtos(vec[i]);
-			}
-			str += "]";
-			return str;
+			return stringify_vector(operator Vector<double>(), stack);
 		} break;
 		case ARRAY: {
 			Array arr = operator Array();
@@ -1793,16 +1749,8 @@ String Variant::stringify(List<const void *> &stack) const {
 			}
 			stack.push_back(arr.id());
 
-			String str("[");
-			for (int i = 0; i < arr.size(); i++) {
-				if (i) {
-					str += ", ";
-				}
+			String str = stringify_vector(arr, stack);
 
-				str += arr[i].stringify(stack);
-			}
-
-			str += "]";
 			stack.erase(arr.id());
 			return str;
 
@@ -3145,8 +3093,16 @@ bool Variant::hash_compare(const Variant &p_variant) const {
 	}
 
 	switch (type) {
+		case INT: {
+			return _data._int == p_variant._data._int;
+		} break;
+
 		case FLOAT: {
 			return hash_compare_scalar(_data._float, p_variant._data._float);
+		} break;
+
+		case STRING: {
+			return *reinterpret_cast<const String *>(_data._mem) == *reinterpret_cast<const String *>(p_variant._data._mem);
 		} break;
 
 		case VECTOR2: {
