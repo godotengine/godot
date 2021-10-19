@@ -152,14 +152,21 @@ void TileMapEditorTilesPlugin::_update_tile_set_sources_list() {
 		Ref<Texture2D> texture;
 		String item_text;
 
+		// Common to all type of sources.
+		if (!source->get_name().is_empty()) {
+			item_text = vformat(TTR("%s (id:%d)"), source->get_name(), source_id);
+		}
+
 		// Atlas source.
 		TileSetAtlasSource *atlas_source = Object::cast_to<TileSetAtlasSource>(source);
 		if (atlas_source) {
 			texture = atlas_source->get_texture();
-			if (texture.is_valid()) {
-				item_text = vformat("%s (ID: %d)", texture->get_path().get_file(), source_id);
-			} else {
-				item_text = vformat("No Texture Atlas Source (ID: %d)", source_id);
+			if (item_text.is_empty()) {
+				if (texture.is_valid()) {
+					item_text = vformat("%s (ID: %d)", texture->get_path().get_file(), source_id);
+				} else {
+					item_text = vformat("No Texture Atlas Source (ID: %d)", source_id);
+				}
 			}
 		}
 
@@ -167,7 +174,9 @@ void TileMapEditorTilesPlugin::_update_tile_set_sources_list() {
 		TileSetScenesCollectionSource *scene_collection_source = Object::cast_to<TileSetScenesCollectionSource>(source);
 		if (scene_collection_source) {
 			texture = get_theme_icon(SNAME("PackedScene"), SNAME("EditorIcons"));
-			item_text = vformat(TTR("Scene Collection Source (ID: %d)"), source_id);
+			if (item_text.is_empty()) {
+				item_text = vformat(TTR("Scene Collection Source (ID: %d)"), source_id);
+			}
 		}
 
 		// Use default if not valid.

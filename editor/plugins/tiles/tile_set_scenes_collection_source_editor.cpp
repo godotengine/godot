@@ -56,10 +56,15 @@ int TileSetScenesCollectionSourceEditor::TileSetScenesCollectionProxyObject::get
 }
 
 bool TileSetScenesCollectionSourceEditor::TileSetScenesCollectionProxyObject::_set(const StringName &p_name, const Variant &p_value) {
+	String name = p_name;
+	if (name == "name") {
+		// Use the resource_name property to store the source's name.
+		name = "resource_name";
+	}
 	bool valid = false;
-	tile_set_scenes_collection_source->set(p_name, p_value, &valid);
+	tile_set_scenes_collection_source->set(name, p_value, &valid);
 	if (valid) {
-		emit_signal(SNAME("changed"), String(p_name).utf8().get_data());
+		emit_signal(SNAME("changed"), String(name).utf8().get_data());
 	}
 	return valid;
 }
@@ -68,9 +73,18 @@ bool TileSetScenesCollectionSourceEditor::TileSetScenesCollectionProxyObject::_g
 	if (!tile_set_scenes_collection_source) {
 		return false;
 	}
+	String name = p_name;
+	if (name == "name") {
+		// Use the resource_name property to store the source's name.
+		name = "resource_name";
+	}
 	bool valid = false;
-	r_ret = tile_set_scenes_collection_source->get(p_name, &valid);
+	r_ret = tile_set_scenes_collection_source->get(name, &valid);
 	return valid;
+}
+
+void TileSetScenesCollectionSourceEditor::TileSetScenesCollectionProxyObject::_get_property_list(List<PropertyInfo> *p_list) const {
+	p_list->push_back(PropertyInfo(Variant::STRING, "name", PROPERTY_HINT_NONE, ""));
 }
 
 void TileSetScenesCollectionSourceEditor::TileSetScenesCollectionProxyObject::_bind_methods() {
@@ -88,6 +102,10 @@ void TileSetScenesCollectionSourceEditor::TileSetScenesCollectionProxyObject::ed
 	ERR_FAIL_COND(!p_tile_set_scenes_collection_source);
 	ERR_FAIL_COND(p_source_id < 0);
 	ERR_FAIL_COND(p_tile_set->get_source(p_source_id) != p_tile_set_scenes_collection_source);
+
+	if (tile_set == p_tile_set && tile_set_scenes_collection_source == p_tile_set_scenes_collection_source && source_id == p_source_id) {
+		return;
+	}
 
 	// Disconnect to changes.
 	if (tile_set_scenes_collection_source) {
@@ -173,6 +191,10 @@ void TileSetScenesCollectionSourceEditor::SceneTileProxyObject::_get_property_li
 void TileSetScenesCollectionSourceEditor::SceneTileProxyObject::edit(TileSetScenesCollectionSource *p_tile_set_scenes_collection_source, int p_scene_id) {
 	ERR_FAIL_COND(!p_tile_set_scenes_collection_source);
 	ERR_FAIL_COND(!p_tile_set_scenes_collection_source->has_scene_tile_id(p_scene_id));
+
+	if (tile_set_scenes_collection_source == p_tile_set_scenes_collection_source && scene_id == p_scene_id) {
+		return;
+	}
 
 	tile_set_scenes_collection_source = p_tile_set_scenes_collection_source;
 	scene_id = p_scene_id;
