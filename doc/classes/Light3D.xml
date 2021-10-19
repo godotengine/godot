@@ -32,7 +32,7 @@
 			If [code]true[/code], the light only appears in the editor and will not be visible at runtime.
 		</member>
 		<member name="light_angular_distance" type="float" setter="set_param" getter="get_param" default="0.0">
-			The light's angular size in degrees. Only available for [DirectionalLight3D]s. For reference, the Sun from the Earth is approximately [code]0.5[/code].
+			The light's angular size in degrees. Increasing this will make shadows softer at greater distances. Only available for [DirectionalLight3D]s. For reference, the Sun from the Earth is approximately [code]0.5[/code].
 		</member>
 		<member name="light_bake_mode" type="int" setter="set_bake_mode" getter="get_bake_mode" enum="Light3D.BakeMode" default="1">
 			The light's bake mode. See [enum BakeMode].
