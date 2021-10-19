@@ -35,7 +35,7 @@
 
 #include "editor_toaster.h"
 
-EditorToaster *EditorToaster::singleton;
+EditorToaster *EditorToaster::singleton = nullptr;
 
 void EditorToaster::_notification(int p_what) {
 	switch (p_what) {
@@ -90,8 +90,10 @@ void EditorToaster::_notification(int p_what) {
 
 				// Hide element if it is not visible anymore.
 				if (modulate.a <= 0) {
-					element.key->hide();
-					needs_update = true;
+					if (element.key->is_visible()) {
+						element.key->hide();
+						needs_update = true;
+					}
 				}
 			}
 
@@ -141,7 +143,7 @@ void EditorToaster::_notification(int p_what) {
 }
 
 void EditorToaster::_error_handler(void *p_self, const char *p_func, const char *p_file, int p_line, const char *p_error, const char *p_errorexp, bool p_editor_notify, ErrorHandlerType p_type) {
-	if (!EditorToaster::get_singleton()) {
+	if (!EditorToaster::get_singleton() || !EditorToaster::get_singleton()->is_inside_tree()) {
 		return;
 	}
 
