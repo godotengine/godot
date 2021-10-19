@@ -924,7 +924,7 @@ void TileSetAtlasSourceEditor::_update_atlas_view() {
 	tile_atlas_view->update();
 
 	// Synchronize atlas view.
-	TilesEditor::get_singleton()->synchronize_atlas_view(tile_atlas_view);
+	TilesEditorPlugin::get_singleton()->synchronize_atlas_view(tile_atlas_view);
 }
 
 void TileSetAtlasSourceEditor::_update_toolbar() {
@@ -2476,7 +2476,7 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 	tile_atlas_view = memnew(TileAtlasView);
 	tile_atlas_view->set_h_size_flags(SIZE_EXPAND_FILL);
 	tile_atlas_view->set_v_size_flags(SIZE_EXPAND_FILL);
-	tile_atlas_view->connect("transform_changed", callable_mp(TilesEditor::get_singleton(), &TilesEditor::set_atlas_view_transform));
+	tile_atlas_view->connect("transform_changed", callable_mp(TilesEditorPlugin::get_singleton(), &TilesEditorPlugin::set_atlas_view_transform));
 	tile_atlas_view->connect("transform_changed", callable_mp(this, &TileSetAtlasSourceEditor::_tile_atlas_view_transform_changed).unbind(2));
 	right_panel->add_child(tile_atlas_view);
 

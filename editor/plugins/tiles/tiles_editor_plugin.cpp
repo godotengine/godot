@@ -45,37 +45,18 @@
 
 #include "tile_set_editor.h"
 
-TilesEditor *TilesEditor::singleton = nullptr;
+TilesEditorPlugin *TilesEditorPlugin::singleton = nullptr;
 
-void TilesEditor::_notification(int p_what) {
-	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE:
-		case NOTIFICATION_THEME_CHANGED: {
-			tileset_tilemap_switch_button->set_icon(get_theme_icon(SNAME("TileSet"), SNAME("EditorIcons")));
-		} break;
-		case NOTIFICATION_INTERNAL_PROCESS: {
-			if (tile_map_changed_needs_update) {
-				TileMap *tile_map = Object::cast_to<TileMap>(ObjectDB::get_instance(tile_map_id));
-				if (tile_map) {
-					tile_set = tile_map->get_tileset();
-				}
-				_update_switch_button();
-				_update_editors();
-			}
-		} break;
-	}
-}
-
-void TilesEditor::_pattern_preview_done(const Variant &p_udata) {
+void TilesEditorPlugin::_pattern_preview_done(const Variant &p_udata) {
 	pattern_preview_done.set();
 }
 
-void TilesEditor::_thread_func(void *ud) {
-	TilesEditor *te = (TilesEditor *)ud;
+void TilesEditorPlugin::_thread_func(void *ud) {
+	TilesEditorPlugin *te = (TilesEditorPlugin *)ud;
 	te->_thread();
 }
 
-void TilesEditor::_thread() {
+void TilesEditorPlugin::_thread() {
 	pattern_thread_exited.clear();
 	while (!pattern_thread_exit.is_set()) {
 		pattern_preview_sem.wait();
@@ -132,7 +113,7 @@ void TilesEditor::_thread() {
 				EditorNode::get_singleton()->add_child(viewport);
 
 				pattern_preview_done.clear();
-				RS::get_singleton()->request_frame_drawn_callback(const_cast<TilesEditor *>(this), "_pattern_preview_done", Variant());
+				RS::get_singleton()->request_frame_drawn_callback(const_cast<TilesEditorPlugin *>(this), "_pattern_preview_done", Variant());
 
 				while (!pattern_preview_done.is_set()) {
 					OS::get_singleton()->delay_usec(10);
@@ -159,65 +140,73 @@ void TilesEditor::_thread() {
 	pattern_thread_exited.set();
 }
 
-void TilesEditor::_tile_map_changed() {
+void TilesEditorPlugin::_tile_map_changed() {
 	tile_map_changed_needs_update = true;
 }
 
-void TilesEditor::_update_switch_button() {
-	// Force the buttons status if needed.
-	TileMap *tile_map = Object::cast_to<TileMap>(ObjectDB::get_instance(tile_map_id));
-	if (tile_map && !tile_set.is_valid()) {
-		tileset_tilemap_switch_button->set_pressed(false);
-	} else if (!tile_map && tile_set.is_valid()) {
-		tileset_tilemap_switch_button->set_pressed(true);
-	}
-}
-
-void TilesEditor::_update_editors() {
-	// Set editors visibility.
-	tilemap_toolbar->set_visible(!tileset_tilemap_switch_button->is_pressed());
-	tilemap_editor->set_visible(!tileset_tilemap_switch_button->is_pressed());
-	tileset_toolbar->set_visible(tileset_tilemap_switch_button->is_pressed());
-	tileset_editor->set_visible(tileset_tilemap_switch_button->is_pressed());
-
-	// Enable/disable the switch button.
-	if (!tileset_tilemap_switch_button->is_pressed()) {
-		if (!tile_set.is_valid()) {
-			tileset_tilemap_switch_button->set_disabled(true);
-			tileset_tilemap_switch_button->set_tooltip(TTR("This TileMap has no assigned TileSet, assign a TileSet to this TileMap to edit it."));
-		} else {
-			tileset_tilemap_switch_button->set_disabled(false);
-			tileset_tilemap_switch_button->set_tooltip(TTR("Switch between TileSet/TileMap editor."));
-		}
-	} else {
-		TileMap *tile_map = Object::cast_to<TileMap>(ObjectDB::get_instance(tile_map_id));
-		if (!tile_map) {
-			tileset_tilemap_switch_button->set_disabled(true);
-			tileset_tilemap_switch_button->set_tooltip(TTR("You are editing a TileSet resource. Select a TileMap node to paint."));
-		} else {
-			tileset_tilemap_switch_button->set_disabled(false);
-			tileset_tilemap_switch_button->set_tooltip(TTR("Switch between TileSet/TileMap editor."));
-		}
-	}
-
+void TilesEditorPlugin::_update_editors() {
 	// If tile_map is not edited, we change the edited only if we are not editing a tile_set.
+	tileset_editor->edit(tile_set);
 	TileMap *tile_map = Object::cast_to<TileMap>(ObjectDB::get_instance(tile_map_id));
 	if (tile_map) {
 		tilemap_editor->edit(tile_map);
 	} else {
 		tilemap_editor->edit(nullptr);
 	}
-	tileset_editor->edit(tile_set);
 
-	// Update the viewport
+	// Update the viewport.
 	CanvasItemEditor::get_singleton()->update_viewport();
 }
 
-void TilesEditor::set_sources_lists_current(int p_current) {
+void TilesEditorPlugin::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_INTERNAL_PROCESS: {
+			if (tile_map_changed_needs_update) {
+				TileMap *tile_map = Object::cast_to<TileMap>(ObjectDB::get_instance(tile_map_id));
+				if (tile_map) {
+					tile_set = tile_map->get_tileset();
+				}
+				_update_editors();
+				tile_map_changed_needs_update = false;
+			}
+		} break;
+	}
+}
+
+void TilesEditorPlugin::make_visible(bool p_visible) {
+	if (p_visible) {
+		// Disable and hide invalid editors.
+		TileMap *tile_map = Object::cast_to<TileMap>(ObjectDB::get_instance(tile_map_id));
+		tileset_editor_button->set_visible(tile_set.is_valid());
+		tilemap_editor_button->set_visible(tile_map);
+		if (tile_map) {
+			editor_node->make_bottom_panel_item_visible(tilemap_editor);
+		} else {
+			editor_node->make_bottom_panel_item_visible(tileset_editor);
+		}
+
+	} else {
+		tileset_editor_button->hide();
+		tilemap_editor_button->hide();
+		editor_node->hide_bottom_panel();
+	}
+}
+
+void TilesEditorPlugin::queue_pattern_preview(Ref<TileSet> p_tile_set, Ref<TileMapPattern> p_pattern, Callable p_callback) {
+	ERR_FAIL_COND(!p_tile_set.is_valid());
+	ERR_FAIL_COND(!p_pattern.is_valid());
+	{
+		MutexLock lock(pattern_preview_mutex);
+		pattern_preview_queue.push_back({ p_tile_set, p_pattern, p_callback });
+	}
+	pattern_preview_sem.post();
+}
+
+void TilesEditorPlugin::set_sources_lists_current(int p_current) {
 	atlas_sources_lists_current = p_current;
 }
 
-void TilesEditor::synchronize_sources_list(Object *p_current) {
+void TilesEditorPlugin::synchronize_sources_list(Object *p_current) {
 	ItemList *item_list = Object::cast_to<ItemList>(p_current);
 	ERR_FAIL_COND(!item_list);
 
@@ -231,12 +220,12 @@ void TilesEditor::synchronize_sources_list(Object *p_current) {
 	}
 }
 
-void TilesEditor::set_atlas_view_transform(float p_zoom, Vector2 p_scroll) {
+void TilesEditorPlugin::set_atlas_view_transform(float p_zoom, Vector2 p_scroll) {
 	atlas_view_zoom = p_zoom;
 	atlas_view_scroll = p_scroll;
 }
 
-void TilesEditor::synchronize_atlas_view(Object *p_current) {
+void TilesEditorPlugin::synchronize_atlas_view(Object *p_current) {
 	TileAtlasView *tile_atlas_view = Object::cast_to<TileAtlasView>(p_current);
 	ERR_FAIL_COND(!tile_atlas_view);
 
@@ -245,21 +234,11 @@ void TilesEditor::synchronize_atlas_view(Object *p_current) {
 	}
 }
 
-void TilesEditor::queue_pattern_preview(Ref<TileSet> p_tile_set, Ref<TileMapPattern> p_pattern, Callable p_callback) {
-	ERR_FAIL_COND(!p_tile_set.is_valid());
-	ERR_FAIL_COND(!p_pattern.is_valid());
-	{
-		MutexLock lock(pattern_preview_mutex);
-		pattern_preview_queue.push_back({ p_tile_set, p_pattern, p_callback });
-	}
-	pattern_preview_sem.post();
-}
-
-void TilesEditor::edit(Object *p_object) {
+void TilesEditorPlugin::edit(Object *p_object) {
 	// Disconnect to changes.
 	TileMap *tile_map = Object::cast_to<TileMap>(ObjectDB::get_instance(tile_map_id));
 	if (tile_map) {
-		tile_map->disconnect("changed", callable_mp(this, &TilesEditor::_tile_map_changed));
+		tile_map->disconnect("changed", callable_mp(this, &TilesEditorPlugin::_tile_map_changed));
 	}
 
 	// Update edited objects.
@@ -269,84 +248,72 @@ void TilesEditor::edit(Object *p_object) {
 			tile_map_id = p_object->get_instance_id();
 			tile_map = Object::cast_to<TileMap>(ObjectDB::get_instance(tile_map_id));
 			tile_set = tile_map->get_tileset();
+			editor_node->make_bottom_panel_item_visible(tilemap_editor);
 		} else if (p_object->is_class("TileSet")) {
 			tile_set = Ref<TileSet>(p_object);
 			if (tile_map) {
-				if (tile_map->get_tileset() != tile_set) {
+				if (tile_map->get_tileset() != tile_set || !tile_map->is_inside_tree()) {
 					tile_map = nullptr;
+					tile_map_id = ObjectID();
 				}
 			}
-		}
-
-		// Update pressed status button.
-		if (p_object->is_class("TileMap")) {
-			tileset_tilemap_switch_button->set_pressed(false);
-		} else if (p_object->is_class("TileSet")) {
-			tileset_tilemap_switch_button->set_pressed(true);
+			editor_node->make_bottom_panel_item_visible(tileset_editor);
 		}
 	}
 
 	// Update the editors.
-	_update_switch_button();
 	_update_editors();
 
 	// Add change listener.
 	if (tile_map) {
-		tile_map->connect("changed", callable_mp(this, &TilesEditor::_tile_map_changed));
+		tile_map->connect("changed", callable_mp(this, &TilesEditorPlugin::_tile_map_changed));
 	}
 }
 
-void TilesEditor::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_pattern_preview_done", "pattern"), &TilesEditor::_pattern_preview_done);
+bool TilesEditorPlugin::handles(Object *p_object) const {
+	return p_object->is_class("TileMap") || p_object->is_class("TileSet");
 }
 
-TilesEditor::TilesEditor(EditorNode *p_editor) {
+void TilesEditorPlugin::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("_pattern_preview_done", "pattern"), &TilesEditorPlugin::_pattern_preview_done);
+}
+
+TilesEditorPlugin::TilesEditorPlugin(EditorNode *p_node) {
 	set_process_internal(true);
 
 	// Update the singleton.
 	singleton = this;
 
-	// Toolbar.
-	HBoxContainer *toolbar = memnew(HBoxContainer);
-	toolbar->set_h_size_flags(SIZE_EXPAND_FILL);
-	add_child(toolbar);
-
-	// Switch button.
-	tileset_tilemap_switch_button = memnew(Button);
-	tileset_tilemap_switch_button->set_flat(true);
-	tileset_tilemap_switch_button->set_toggle_mode(true);
-	tileset_tilemap_switch_button->connect("toggled", callable_mp(this, &TilesEditor::_update_editors).unbind(1));
-	toolbar->add_child(tileset_tilemap_switch_button);
-
-	// Tilemap editor.
-	tilemap_editor = memnew(TileMapEditor);
-	tilemap_editor->set_h_size_flags(SIZE_EXPAND_FILL);
-	tilemap_editor->set_v_size_flags(SIZE_EXPAND_FILL);
-	tilemap_editor->hide();
-	add_child(tilemap_editor);
-
-	tilemap_toolbar = tilemap_editor->get_toolbar();
-	toolbar->add_child(tilemap_toolbar);
+	editor_node = p_node;
 
 	// Tileset editor.
 	tileset_editor = memnew(TileSetEditor);
-	tileset_editor->set_h_size_flags(SIZE_EXPAND_FILL);
-	tileset_editor->set_v_size_flags(SIZE_EXPAND_FILL);
+	tileset_editor->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	tileset_editor->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	tileset_editor->set_custom_minimum_size(Size2(0, 200) * EDSCALE);
 	tileset_editor->hide();
-	add_child(tileset_editor);
 
-	tileset_toolbar = tileset_editor->get_toolbar();
-	toolbar->add_child(tileset_toolbar);
+	// Tilemap editor.
+	tilemap_editor = memnew(TileMapEditor);
+	tilemap_editor->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	tilemap_editor->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	tilemap_editor->set_custom_minimum_size(Size2(0, 200) * EDSCALE);
+	tilemap_editor->hide();
 
 	// Pattern preview generation thread.
 	pattern_preview_thread.start(_thread_func, this);
 
+	// Bottom buttons.
+	tileset_editor_button = p_node->add_bottom_panel_item(TTR("TileSet"), tileset_editor);
+	tileset_editor_button->hide();
+	tilemap_editor_button = p_node->add_bottom_panel_item(TTR("TileMap"), tilemap_editor);
+	tilemap_editor_button->hide();
+
 	// Initialization.
-	_update_switch_button();
 	_update_editors();
 }
 
-TilesEditor::~TilesEditor() {
+TilesEditorPlugin::~TilesEditorPlugin() {
 	if (pattern_preview_thread.is_started()) {
 		pattern_thread_exit.set();
 		pattern_preview_sem.post();
@@ -356,41 +323,4 @@ TilesEditor::~TilesEditor() {
 		}
 		pattern_preview_thread.wait_to_finish();
 	}
-}
-
-///////////////////////////////////////////////////////////////
-
-void TilesEditorPlugin::_notification(int p_what) {
-}
-
-void TilesEditorPlugin::make_visible(bool p_visible) {
-	if (p_visible) {
-		tiles_editor_button->show();
-		editor_node->make_bottom_panel_item_visible(tiles_editor);
-	} else {
-		editor_node->hide_bottom_panel();
-		tiles_editor_button->hide();
-	}
-}
-
-void TilesEditorPlugin::edit(Object *p_object) {
-	tiles_editor->edit(p_object);
-}
-
-bool TilesEditorPlugin::handles(Object *p_object) const {
-	return p_object->is_class("TileMap") || p_object->is_class("TileSet");
-}
-
-TilesEditorPlugin::TilesEditorPlugin(EditorNode *p_node) {
-	editor_node = p_node;
-
-	tiles_editor = memnew(TilesEditor(p_node));
-	tiles_editor->set_custom_minimum_size(Size2(0, 200) * EDSCALE);
-	tiles_editor->hide();
-
-	tiles_editor_button = p_node->add_bottom_panel_item(TTR("Tiles"), tiles_editor);
-	tiles_editor_button->hide();
-}
-
-TilesEditorPlugin::~TilesEditorPlugin() {
 }
