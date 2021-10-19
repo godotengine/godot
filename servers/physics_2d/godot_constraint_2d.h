@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  gjk_epa.h                                                            */
+/*  godot_constraint_2d.h                                                */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,13 +28,43 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GJK_EPA_H
-#define GJK_EPA_H
+#ifndef GODOT_CONSTRAINT_2D_H
+#define GODOT_CONSTRAINT_2D_H
 
-#include "godot_collision_solver_3d.h"
-#include "godot_shape_3d.h"
+#include "godot_body_2d.h"
 
-bool gjk_epa_calculate_penetration(const GodotShape3D *p_shape_A, const Transform3D &p_transform_A, const GodotShape3D *p_shape_B, const Transform3D &p_transform_B, GodotCollisionSolver3D::CallbackResult p_result_callback, void *p_userdata, bool p_swap = false, real_t p_margin_A = 0.0, real_t p_margin_B = 0.0);
-bool gjk_epa_calculate_distance(const GodotShape3D *p_shape_A, const Transform3D &p_transform_A, const GodotShape3D *p_shape_B, const Transform3D &p_transform_B, Vector3 &r_result_A, Vector3 &r_result_B);
+class GodotConstraint2D {
+	GodotBody2D **_body_ptr;
+	int _body_count;
+	uint64_t island_step = 0;
+	bool disabled_collisions_between_bodies = true;
 
-#endif
+	RID self;
+
+protected:
+	GodotConstraint2D(GodotBody2D **p_body_ptr = nullptr, int p_body_count = 0) {
+		_body_ptr = p_body_ptr;
+		_body_count = p_body_count;
+	}
+
+public:
+	_FORCE_INLINE_ void set_self(const RID &p_self) { self = p_self; }
+	_FORCE_INLINE_ RID get_self() const { return self; }
+
+	_FORCE_INLINE_ uint64_t get_island_step() const { return island_step; }
+	_FORCE_INLINE_ void set_island_step(uint64_t p_step) { island_step = p_step; }
+
+	_FORCE_INLINE_ GodotBody2D **get_body_ptr() const { return _body_ptr; }
+	_FORCE_INLINE_ int get_body_count() const { return _body_count; }
+
+	_FORCE_INLINE_ void disable_collisions_between_bodies(const bool p_disabled) { disabled_collisions_between_bodies = p_disabled; }
+	_FORCE_INLINE_ bool is_disabled_collisions_between_bodies() const { return disabled_collisions_between_bodies; }
+
+	virtual bool setup(real_t p_step) = 0;
+	virtual bool pre_solve(real_t p_step) = 0;
+	virtual void solve(real_t p_step) = 0;
+
+	virtual ~GodotConstraint2D() {}
+};
+
+#endif // GODOT_CONSTRAINT_2D_H

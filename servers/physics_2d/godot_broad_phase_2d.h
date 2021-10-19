@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  gjk_epa.h                                                            */
+/*  godot_broad_phase_2d.h                                               */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,13 +28,44 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GJK_EPA_H
-#define GJK_EPA_H
+#ifndef GODOT_BROAD_PHASE_2D_H
+#define GODOT_BROAD_PHASE_2D_H
 
-#include "godot_collision_solver_3d.h"
-#include "godot_shape_3d.h"
+#include "core/math/math_funcs.h"
+#include "core/math/rect2.h"
 
-bool gjk_epa_calculate_penetration(const GodotShape3D *p_shape_A, const Transform3D &p_transform_A, const GodotShape3D *p_shape_B, const Transform3D &p_transform_B, GodotCollisionSolver3D::CallbackResult p_result_callback, void *p_userdata, bool p_swap = false, real_t p_margin_A = 0.0, real_t p_margin_B = 0.0);
-bool gjk_epa_calculate_distance(const GodotShape3D *p_shape_A, const Transform3D &p_transform_A, const GodotShape3D *p_shape_B, const Transform3D &p_transform_B, Vector3 &r_result_A, Vector3 &r_result_B);
+class GodotCollisionObject2D;
 
-#endif
+class GodotBroadPhase2D {
+public:
+	typedef GodotBroadPhase2D *(*CreateFunction)();
+
+	static CreateFunction create_func;
+
+	typedef uint32_t ID;
+
+	typedef void *(*PairCallback)(GodotCollisionObject2D *A, int p_subindex_A, GodotCollisionObject2D *B, int p_subindex_B, void *p_userdata);
+	typedef void (*UnpairCallback)(GodotCollisionObject2D *A, int p_subindex_A, GodotCollisionObject2D *B, int p_subindex_B, void *p_data, void *p_userdata);
+
+	// 0 is an invalid ID
+	virtual ID create(GodotCollisionObject2D *p_object_, int p_subindex = 0, const Rect2 &p_aabb = Rect2(), bool p_static = false) = 0;
+	virtual void move(ID p_id, const Rect2 &p_aabb) = 0;
+	virtual void set_static(ID p_id, bool p_static) = 0;
+	virtual void remove(ID p_id) = 0;
+
+	virtual GodotCollisionObject2D *get_object(ID p_id) const = 0;
+	virtual bool is_static(ID p_id) const = 0;
+	virtual int get_subindex(ID p_id) const = 0;
+
+	virtual int cull_segment(const Vector2 &p_from, const Vector2 &p_to, GodotCollisionObject2D **p_results, int p_max_results, int *p_result_indices = nullptr) = 0;
+	virtual int cull_aabb(const Rect2 &p_aabb, GodotCollisionObject2D **p_results, int p_max_results, int *p_result_indices = nullptr) = 0;
+
+	virtual void set_pair_callback(PairCallback p_pair_callback, void *p_userdata) = 0;
+	virtual void set_unpair_callback(UnpairCallback p_unpair_callback, void *p_userdata) = 0;
+
+	virtual void update() = 0;
+
+	virtual ~GodotBroadPhase2D();
+};
+
+#endif // GODOT_BROAD_PHASE_2D_H

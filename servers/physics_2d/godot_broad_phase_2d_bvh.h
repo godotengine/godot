@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  gjk_epa.h                                                            */
+/*  godot_broad_phase_2d_bvh.h                                           */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,13 +28,47 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GJK_EPA_H
-#define GJK_EPA_H
+#ifndef GODOT_BROAD_PHASE_2D_BVH_H
+#define GODOT_BROAD_PHASE_2D_BVH_H
 
-#include "godot_collision_solver_3d.h"
-#include "godot_shape_3d.h"
+#include "godot_broad_phase_2d.h"
 
-bool gjk_epa_calculate_penetration(const GodotShape3D *p_shape_A, const Transform3D &p_transform_A, const GodotShape3D *p_shape_B, const Transform3D &p_transform_B, GodotCollisionSolver3D::CallbackResult p_result_callback, void *p_userdata, bool p_swap = false, real_t p_margin_A = 0.0, real_t p_margin_B = 0.0);
-bool gjk_epa_calculate_distance(const GodotShape3D *p_shape_A, const Transform3D &p_transform_A, const GodotShape3D *p_shape_B, const Transform3D &p_transform_B, Vector3 &r_result_A, Vector3 &r_result_B);
+#include "core/math/bvh.h"
+#include "core/math/rect2.h"
+#include "core/math/vector2.h"
 
-#endif
+class GodotBroadPhase2DBVH : public GodotBroadPhase2D {
+	BVH_Manager<GodotCollisionObject2D, true, 128, Rect2, Vector2> bvh;
+
+	static void *_pair_callback(void *, uint32_t, GodotCollisionObject2D *, int, uint32_t, GodotCollisionObject2D *, int);
+	static void _unpair_callback(void *, uint32_t, GodotCollisionObject2D *, int, uint32_t, GodotCollisionObject2D *, int, void *);
+
+	PairCallback pair_callback = nullptr;
+	void *pair_userdata = nullptr;
+	UnpairCallback unpair_callback = nullptr;
+	void *unpair_userdata = nullptr;
+
+public:
+	// 0 is an invalid ID
+	virtual ID create(GodotCollisionObject2D *p_object, int p_subindex = 0, const Rect2 &p_aabb = Rect2(), bool p_static = false);
+	virtual void move(ID p_id, const Rect2 &p_aabb);
+	virtual void set_static(ID p_id, bool p_static);
+	virtual void remove(ID p_id);
+
+	virtual GodotCollisionObject2D *get_object(ID p_id) const;
+	virtual bool is_static(ID p_id) const;
+	virtual int get_subindex(ID p_id) const;
+
+	virtual int cull_segment(const Vector2 &p_from, const Vector2 &p_to, GodotCollisionObject2D **p_results, int p_max_results, int *p_result_indices = nullptr);
+	virtual int cull_aabb(const Rect2 &p_aabb, GodotCollisionObject2D **p_results, int p_max_results, int *p_result_indices = nullptr);
+
+	virtual void set_pair_callback(PairCallback p_pair_callback, void *p_userdata);
+	virtual void set_unpair_callback(UnpairCallback p_unpair_callback, void *p_userdata);
+
+	virtual void update();
+
+	static GodotBroadPhase2D *_create();
+	GodotBroadPhase2DBVH();
+};
+
+#endif // GODOT_BROAD_PHASE_2D_BVH_H

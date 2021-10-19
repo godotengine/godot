@@ -59,12 +59,12 @@
 #include "display_server.h"
 #include "navigation_server_2d.h"
 #include "navigation_server_3d.h"
-#include "physics_2d/physics_server_2d_sw.h"
-#include "physics_2d/physics_server_2d_wrap_mt.h"
-#include "physics_3d/physics_server_3d_sw.h"
-#include "physics_3d/physics_server_3d_wrap_mt.h"
+#include "physics_2d/godot_physics_server_2d.h"
+#include "physics_3d/godot_physics_server_3d.h"
 #include "physics_server_2d.h"
+#include "physics_server_2d_wrap_mt.h"
 #include "physics_server_3d.h"
+#include "physics_server_3d_wrap_mt.h"
 #include "rendering/renderer_compositor.h"
 #include "rendering/rendering_device.h"
 #include "rendering/rendering_device_binds.h"
@@ -82,7 +82,7 @@ ShaderTypes *shader_types = nullptr;
 PhysicsServer3D *_createGodotPhysics3DCallback() {
 	bool using_threads = GLOBAL_GET("physics/3d/run_on_thread");
 
-	PhysicsServer3D *physics_server = memnew(PhysicsServer3DSW(using_threads));
+	PhysicsServer3D *physics_server = memnew(GodotPhysicsServer3D(using_threads));
 
 	return memnew(PhysicsServer3DWrapMT(physics_server, using_threads));
 }
@@ -90,7 +90,7 @@ PhysicsServer3D *_createGodotPhysics3DCallback() {
 PhysicsServer2D *_createGodotPhysics2DCallback() {
 	bool using_threads = GLOBAL_GET("physics/2d/run_on_thread");
 
-	PhysicsServer2D *physics_server = memnew(PhysicsServer2DSW(using_threads));
+	PhysicsServer2D *physics_server = memnew(GodotPhysicsServer2D(using_threads));
 
 	return memnew(PhysicsServer2DWrapMT(physics_server, using_threads));
 }

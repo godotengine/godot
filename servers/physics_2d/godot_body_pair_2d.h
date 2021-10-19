@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  gjk_epa.h                                                            */
+/*  godot_body_pair_2d.h                                                 */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,13 +28,71 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GJK_EPA_H
-#define GJK_EPA_H
+#ifndef GODOT_BODY_PAIR_2D_H
+#define GODOT_BODY_PAIR_2D_H
 
-#include "godot_collision_solver_3d.h"
-#include "godot_shape_3d.h"
+#include "godot_body_2d.h"
+#include "godot_constraint_2d.h"
 
-bool gjk_epa_calculate_penetration(const GodotShape3D *p_shape_A, const Transform3D &p_transform_A, const GodotShape3D *p_shape_B, const Transform3D &p_transform_B, GodotCollisionSolver3D::CallbackResult p_result_callback, void *p_userdata, bool p_swap = false, real_t p_margin_A = 0.0, real_t p_margin_B = 0.0);
-bool gjk_epa_calculate_distance(const GodotShape3D *p_shape_A, const Transform3D &p_transform_A, const GodotShape3D *p_shape_B, const Transform3D &p_transform_B, Vector3 &r_result_A, Vector3 &r_result_B);
+class GodotBodyPair2D : public GodotConstraint2D {
+	enum {
+		MAX_CONTACTS = 2
+	};
+	union {
+		struct {
+			GodotBody2D *A;
+			GodotBody2D *B;
+		};
 
-#endif
+		GodotBody2D *_arr[2] = { nullptr, nullptr };
+	};
+
+	int shape_A = 0;
+	int shape_B = 0;
+
+	bool collide_A = false;
+	bool collide_B = false;
+
+	GodotSpace2D *space = nullptr;
+
+	struct Contact {
+		Vector2 position;
+		Vector2 normal;
+		Vector2 local_A, local_B;
+		real_t acc_normal_impulse = 0.0; // accumulated normal impulse (Pn)
+		real_t acc_tangent_impulse = 0.0; // accumulated tangent impulse (Pt)
+		real_t acc_bias_impulse = 0.0; // accumulated normal impulse for position bias (Pnb)
+		real_t mass_normal, mass_tangent = 0.0;
+		real_t bias = 0.0;
+
+		real_t depth = 0.0;
+		bool active = false;
+		Vector2 rA, rB;
+		bool reused = false;
+		real_t bounce = 0.0;
+	};
+
+	Vector2 offset_B; //use local A coordinates to avoid numerical issues on collision detection
+
+	Vector2 sep_axis;
+	Contact contacts[MAX_CONTACTS];
+	int contact_count = 0;
+	bool collided = false;
+	bool oneway_disabled = false;
+	bool report_contacts_only = false;
+
+	bool _test_ccd(real_t p_step, GodotBody2D *p_A, int p_shape_A, const Transform2D &p_xform_A, GodotBody2D *p_B, int p_shape_B, const Transform2D &p_xform_B, bool p_swap_result = false);
+	void _validate_contacts();
+	static void _add_contact(const Vector2 &p_point_A, const Vector2 &p_point_B, void *p_self);
+	_FORCE_INLINE_ void _contact_added_callback(const Vector2 &p_point_A, const Vector2 &p_point_B);
+
+public:
+	virtual bool setup(real_t p_step) override;
+	virtual bool pre_solve(real_t p_step) override;
+	virtual void solve(real_t p_step) override;
+
+	GodotBodyPair2D(GodotBody2D *p_A, int p_shape_A, GodotBody2D *p_B, int p_shape_B);
+	~GodotBodyPair2D();
+};
+
+#endif // GODOT_BODY_PAIR_2D_H

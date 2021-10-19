@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  gjk_epa.h                                                            */
+/*  godot_step_2d.h                                                      */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,13 +28,36 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GJK_EPA_H
-#define GJK_EPA_H
+#ifndef GODOT_STEP_2D_H
+#define GODOT_STEP_2D_H
 
-#include "godot_collision_solver_3d.h"
-#include "godot_shape_3d.h"
+#include "godot_space_2d.h"
 
-bool gjk_epa_calculate_penetration(const GodotShape3D *p_shape_A, const Transform3D &p_transform_A, const GodotShape3D *p_shape_B, const Transform3D &p_transform_B, GodotCollisionSolver3D::CallbackResult p_result_callback, void *p_userdata, bool p_swap = false, real_t p_margin_A = 0.0, real_t p_margin_B = 0.0);
-bool gjk_epa_calculate_distance(const GodotShape3D *p_shape_A, const Transform3D &p_transform_A, const GodotShape3D *p_shape_B, const Transform3D &p_transform_B, Vector3 &r_result_A, Vector3 &r_result_B);
+#include "core/templates/local_vector.h"
+#include "core/templates/thread_work_pool.h"
 
-#endif
+class GodotStep2D {
+	uint64_t _step = 1;
+
+	int iterations = 0;
+	real_t delta = 0.0;
+
+	ThreadWorkPool work_pool;
+
+	LocalVector<LocalVector<GodotBody2D *>> body_islands;
+	LocalVector<LocalVector<GodotConstraint2D *>> constraint_islands;
+	LocalVector<GodotConstraint2D *> all_constraints;
+
+	void _populate_island(GodotBody2D *p_body, LocalVector<GodotBody2D *> &p_body_island, LocalVector<GodotConstraint2D *> &p_constraint_island);
+	void _setup_contraint(uint32_t p_constraint_index, void *p_userdata = nullptr);
+	void _pre_solve_island(LocalVector<GodotConstraint2D *> &p_constraint_island) const;
+	void _solve_island(uint32_t p_island_index, void *p_userdata = nullptr) const;
+	void _check_suspend(LocalVector<GodotBody2D *> &p_body_island) const;
+
+public:
+	void step(GodotSpace2D *p_space, real_t p_delta, int p_iterations);
+	GodotStep2D();
+	~GodotStep2D();
+};
+
+#endif // GODOT_STEP_2D_H
