@@ -120,7 +120,7 @@ public:
 	void set_max_lines_visible(int p_lines);
 	int get_max_lines_visible() const;
 
-	Size2 get_non_wraped_size() const;
+	Size2 get_non_wrapped_size() const;
 
 	Size2 get_size() const;
 
