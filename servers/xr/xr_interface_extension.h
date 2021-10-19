@@ -62,8 +62,17 @@ public:
 	GDVIRTUAL0R(bool, _initialize);
 	GDVIRTUAL0(_uninitialize);
 
+	/** input and output **/
+
+	virtual PackedStringArray get_suggested_tracker_names() const override; /* return a list of likely/suggested tracker names */
+	virtual PackedStringArray get_suggested_pose_names(const StringName &p_tracker_name) const override; /* return a list of likely/suggested action names for this tracker */
 	virtual TrackingStatus get_tracking_status() const override;
+	virtual void trigger_haptic_pulse(const String &p_action_name, const StringName &p_tracker_name, double p_frequency, double p_amplitude, double p_duration_sec, double p_delay_sec = 0) override;
+
+	GDVIRTUAL0RC(PackedStringArray, _get_suggested_tracker_names);
+	GDVIRTUAL1RC(PackedStringArray, _get_suggested_pose_names, const StringName &);
 	GDVIRTUAL0RC(uint32_t, _get_tracking_status);
+	GDVIRTUAL6(_trigger_haptic_pulse, const String &, const StringName &, double, double, double, double);
 
 	/** specific to VR **/
 	// nothing yet

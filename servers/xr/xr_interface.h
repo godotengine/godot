@@ -58,14 +58,10 @@ public:
 		XR_NONE = 0, /* no capabilities */
 		XR_MONO = 1, /* can be used with mono output */
 		XR_STEREO = 2, /* can be used with stereo output */
-		XR_AR = 4, /* offers a camera feed for AR */
-		XR_EXTERNAL = 8 /* renders to external device */
-	};
-
-	enum Eyes {
-		EYE_MONO, /* my son says we should call this EYE_CYCLOPS */
-		EYE_LEFT,
-		EYE_RIGHT
+		XR_QUAD = 4, /* can be used with quad output (not currently supported) */
+		XR_VR = 8, /* offers VR support */
+		XR_AR = 16, /* offers AR support */
+		XR_EXTERNAL = 32 /* renders to external device */
 	};
 
 	enum TrackingStatus { /* tracking status currently based on AR but we can start doing more with this for VR as well */
@@ -94,7 +90,12 @@ public:
 	virtual bool initialize() = 0; /* initialize this interface, if this has an HMD it becomes the primary interface */
 	virtual void uninitialize() = 0; /* deinitialize this interface */
 
+	/** input and output **/
+
+	virtual PackedStringArray get_suggested_tracker_names() const; /* return a list of likely/suggested tracker names */
+	virtual PackedStringArray get_suggested_pose_names(const StringName &p_tracker_name) const; /* return a list of likely/suggested action names for this tracker */
 	virtual TrackingStatus get_tracking_status() const; /* get the status of our current tracking */
+	virtual void trigger_haptic_pulse(const String &p_action_name, const StringName &p_tracker_name, double p_frequency, double p_amplitude, double p_duration_sec, double p_delay_sec = 0); /* trigger a haptic pulse */
 
 	/** specific to VR **/
 	// nothing yet
@@ -124,7 +125,6 @@ public:
 };
 
 VARIANT_ENUM_CAST(XRInterface::Capabilities);
-VARIANT_ENUM_CAST(XRInterface::Eyes);
 VARIANT_ENUM_CAST(XRInterface::TrackingStatus);
 
 #endif // !XR_INTERFACE_H

@@ -55,6 +55,17 @@
 			<description>
 			</description>
 		</method>
+		<method name="_get_suggested_pose_names" qualifiers="virtual const">
+			<return type="PackedStringArray" />
+			<argument index="0" name="tracker_name" type="StringName" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_suggested_tracker_names" qualifiers="virtual const">
+			<return type="PackedStringArray" />
+			<description>
+			</description>
+		</method>
 		<method name="_get_tracking_status" qualifiers="virtual const">
 			<return type="int" />
 			<description>
@@ -96,6 +107,17 @@
 		<method name="_set_anchor_detection_is_enabled" qualifiers="virtual">
 			<return type="void" />
 			<argument index="0" name="enabled" type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="_trigger_haptic_pulse" qualifiers="virtual">
+			<return type="void" />
+			<argument index="0" name="action_name" type="String" />
+			<argument index="1" name="tracker_name" type="StringName" />
+			<argument index="2" name="frequency" type="float" />
+			<argument index="3" name="amplitude" type="float" />
+			<argument index="4" name="duration_sec" type="float" />
+			<argument index="5" name="delay_sec" type="float" />
 			<description>
 			</description>
 		</method>

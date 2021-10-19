@@ -54,10 +54,11 @@ void XRServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_interface", "idx"), &XRServer::get_interface);
 	ClassDB::bind_method(D_METHOD("get_interfaces"), &XRServer::get_interfaces);
 	ClassDB::bind_method(D_METHOD("find_interface", "name"), &XRServer::find_interface);
-	ClassDB::bind_method(D_METHOD("get_tracker_count"), &XRServer::get_tracker_count);
-	ClassDB::bind_method(D_METHOD("get_tracker", "idx"), &XRServer::get_tracker);
+
 	ClassDB::bind_method(D_METHOD("add_tracker", "tracker"), &XRServer::add_tracker);
 	ClassDB::bind_method(D_METHOD("remove_tracker", "tracker"), &XRServer::remove_tracker);
+	ClassDB::bind_method(D_METHOD("get_trackers", "tracker_types"), &XRServer::get_trackers);
+	ClassDB::bind_method(D_METHOD("get_tracker", "tracker_name"), &XRServer::get_tracker);
 
 	ClassDB::bind_method(D_METHOD("get_primary_interface"), &XRServer::get_primary_interface);
 	ClassDB::bind_method(D_METHOD("set_primary_interface", "interface"), &XRServer::set_primary_interface);
@@ -68,6 +69,7 @@ void XRServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_last_commit_usec"), &XRServer::get_last_commit_usec);
 	ClassDB::bind_method(D_METHOD("get_last_frame_usec"), &XRServer::get_last_frame_usec);
 
+	BIND_ENUM_CONSTANT(TRACKER_HEAD);
 	BIND_ENUM_CONSTANT(TRACKER_CONTROLLER);
 	BIND_ENUM_CONSTANT(TRACKER_BASESTATION);
 	BIND_ENUM_CONSTANT(TRACKER_ANCHOR);
@@ -82,8 +84,9 @@ void XRServer::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("interface_added", PropertyInfo(Variant::STRING_NAME, "interface_name")));
 	ADD_SIGNAL(MethodInfo("interface_removed", PropertyInfo(Variant::STRING_NAME, "interface_name")));
 
-	ADD_SIGNAL(MethodInfo("tracker_added", PropertyInfo(Variant::STRING_NAME, "tracker_name"), PropertyInfo(Variant::INT, "type"), PropertyInfo(Variant::INT, "id")));
-	ADD_SIGNAL(MethodInfo("tracker_removed", PropertyInfo(Variant::STRING_NAME, "tracker_name"), PropertyInfo(Variant::INT, "type"), PropertyInfo(Variant::INT, "id")));
+	ADD_SIGNAL(MethodInfo("tracker_added", PropertyInfo(Variant::STRING_NAME, "tracker_name"), PropertyInfo(Variant::INT, "type")));
+	ADD_SIGNAL(MethodInfo("tracker_updated", PropertyInfo(Variant::STRING_NAME, "tracker_name"), PropertyInfo(Variant::INT, "type")));
+	ADD_SIGNAL(MethodInfo("tracker_removed", PropertyInfo(Variant::STRING_NAME, "tracker_name"), PropertyInfo(Variant::INT, "type")));
 };
 
 double XRServer::get_world_scale() const {
@@ -224,92 +227,6 @@ Array XRServer::get_interfaces() const {
 	return ret;
 };
 
-/*
-	A little extra info on the tracker ids, these are unique per tracker type so we get some consistency in recognising our trackers, specifically controllers.
-
-	The first controller that is turned of will get ID 1, the second will get ID 2, etc.
-	The magic happens when one of the controllers is turned off, say controller 1 turns off, controller 2 will remain controller 2, controller 3 will remain controller 3.
-	If controller number 1 is turned on again it again gets ID 1 unless another new controller was turned on since.
-
-	The most likely scenario however is a controller that runs out of battery and another controller being used to replace it.
-	Because the controllers are often linked to physical objects, say you're holding a shield in controller 1, your left hand, and a gun in controller 2, your right hand, and controller 1 dies:
-	- using our tracker index would suddenly make the gun disappear and the shield jump into your right hand because controller 2 becomes controller 1.
-	- using this approach the shield disappears or is no longer tracked, but the gun stays firmly in your right hand because that is still controller 2, further more, if controller 1 is replaced the shield will return.
-*/
-
-bool XRServer::is_tracker_id_in_use_for_type(TrackerType p_tracker_type, int p_tracker_id) const {
-	for (int i = 0; i < trackers.size(); i++) {
-		if (trackers[i]->get_tracker_type() == p_tracker_type && trackers[i]->get_tracker_id() == p_tracker_id) {
-			return true;
-		};
-	};
-
-	// all good
-	return false;
-};
-
-int XRServer::get_free_tracker_id_for_type(TrackerType p_tracker_type) {
-	// We start checking at 1, 0 means that it's not a controller..
-	// Note that for controller we reserve:
-	// - 1 for the left hand controller and
-	// - 2 for the right hand controller
-	// so we start at 3 :)
-	int tracker_id = p_tracker_type == XRServer::TRACKER_CONTROLLER ? 3 : 1;
-
-	while (is_tracker_id_in_use_for_type(p_tracker_type, tracker_id)) {
-		// try the next one
-		tracker_id++;
-	};
-
-	return tracker_id;
-};
-
-void XRServer::add_tracker(Ref<XRPositionalTracker> p_tracker) {
-	ERR_FAIL_COND(p_tracker.is_null());
-
-	trackers.push_back(p_tracker);
-	emit_signal(SNAME("tracker_added"), p_tracker->get_tracker_name(), p_tracker->get_tracker_type(), p_tracker->get_tracker_id());
-};
-
-void XRServer::remove_tracker(Ref<XRPositionalTracker> p_tracker) {
-	ERR_FAIL_COND(p_tracker.is_null());
-
-	int idx = -1;
-	for (int i = 0; i < trackers.size(); i++) {
-		if (trackers[i] == p_tracker) {
-			idx = i;
-			break;
-		};
-	};
-
-	ERR_FAIL_COND(idx == -1);
-
-	emit_signal(SNAME("tracker_removed"), p_tracker->get_tracker_name(), p_tracker->get_tracker_type(), p_tracker->get_tracker_id());
-	trackers.remove(idx);
-};
-
-int XRServer::get_tracker_count() const {
-	return trackers.size();
-};
-
-Ref<XRPositionalTracker> XRServer::get_tracker(int p_index) const {
-	ERR_FAIL_INDEX_V(p_index, trackers.size(), Ref<XRPositionalTracker>());
-
-	return trackers[p_index];
-};
-
-Ref<XRPositionalTracker> XRServer::find_by_type_and_id(TrackerType p_tracker_type, int p_tracker_id) const {
-	ERR_FAIL_COND_V(p_tracker_id == 0, Ref<XRPositionalTracker>());
-
-	for (int i = 0; i < trackers.size(); i++) {
-		if (trackers[i]->get_tracker_type() == p_tracker_type && trackers[i]->get_tracker_id() == p_tracker_id) {
-			return trackers[i];
-		};
-	};
-
-	return Ref<XRPositionalTracker>();
-};
-
 Ref<XRInterface> XRServer::get_primary_interface() const {
 	return primary_interface;
 };
@@ -324,6 +241,107 @@ void XRServer::set_primary_interface(const Ref<XRInterface> &p_primary_interface
 		print_verbose("XR: Primary interface set to: " + primary_interface->get_name());
 	}
 };
+
+void XRServer::add_tracker(Ref<XRPositionalTracker> p_tracker) {
+	ERR_FAIL_COND(p_tracker.is_null());
+
+	StringName tracker_name = p_tracker->get_tracker_name();
+	if (trackers.has(tracker_name)) {
+		if (trackers[tracker_name] != p_tracker) {
+			// We already have a tracker with this name, we're going to replace it
+			trackers[tracker_name] = p_tracker;
+			emit_signal(SNAME("tracker_updated"), tracker_name, p_tracker->get_tracker_type());
+		}
+	} else {
+		trackers[tracker_name] = p_tracker;
+		emit_signal(SNAME("tracker_added"), tracker_name, p_tracker->get_tracker_type());
+	}
+};
+
+void XRServer::remove_tracker(Ref<XRPositionalTracker> p_tracker) {
+	ERR_FAIL_COND(p_tracker.is_null());
+
+	StringName tracker_name = p_tracker->get_tracker_name();
+	if (trackers.has(tracker_name)) {
+		// we send the signal right before removing it
+		emit_signal(SNAME("tracker_removed"), p_tracker->get_tracker_name(), p_tracker->get_tracker_type());
+
+		// and remove it
+		trackers.erase(tracker_name);
+	}
+};
+
+Dictionary XRServer::get_trackers(int p_tracker_types) {
+	Dictionary res;
+
+	for (int i = 0; i < trackers.size(); i++) {
+		Ref<XRPositionalTracker> tracker = trackers.get_value_at_index(i);
+		if (tracker.is_valid() && (tracker->get_tracker_type() & p_tracker_types) != 0) {
+			res[tracker->get_tracker_name()] = tracker;
+		}
+	}
+
+	return res;
+}
+
+Ref<XRPositionalTracker> XRServer::get_tracker(const StringName &p_name) const {
+	if (trackers.has(p_name)) {
+		return trackers[p_name];
+	} else {
+		// tracker hasn't been registered yet, which is fine, no need to spam the error log...
+		return Ref<XRPositionalTracker>();
+	}
+};
+
+PackedStringArray XRServer::get_suggested_tracker_names() const {
+	PackedStringArray arr;
+
+	for (int i = 0; i < interfaces.size(); i++) {
+		Ref<XRInterface> interface = interfaces[i];
+		PackedStringArray interface_arr = interface->get_suggested_tracker_names();
+		for (int a = 0; a < interface_arr.size(); a++) {
+			if (!arr.has(interface_arr[a])) {
+				arr.push_back(interface_arr[a]);
+			}
+		}
+	}
+
+	if (arr.size() == 0) {
+		// no suggestions from our tracker? include our defaults
+		arr.push_back(String("head"));
+		arr.push_back(String("left_hand"));
+		arr.push_back(String("right_hand"));
+	}
+
+	return arr;
+}
+
+PackedStringArray XRServer::get_suggested_pose_names(const StringName &p_tracker_name) const {
+	PackedStringArray arr;
+
+	for (int i = 0; i < interfaces.size(); i++) {
+		Ref<XRInterface> interface = interfaces[i];
+		PackedStringArray interface_arr = interface->get_suggested_pose_names(p_tracker_name);
+		for (int a = 0; a < interface_arr.size(); a++) {
+			if (!arr.has(interface_arr[a])) {
+				arr.push_back(interface_arr[a]);
+			}
+		}
+	}
+
+	if (arr.size() == 0) {
+		// no suggestions from our tracker? include our defaults
+		arr.push_back(String("default"));
+
+		if ((p_tracker_name == "left_hand") || (p_tracker_name == "right_hand")) {
+			arr.push_back(String("aim"));
+			arr.push_back(String("grip"));
+			arr.push_back(String("skeleton"));
+		}
+	}
+
+	return arr;
+}
 
 uint64_t XRServer::get_last_process_usec() {
 	return last_process_usec;
@@ -373,8 +391,9 @@ XRServer::~XRServer() {
 		interfaces.remove(0);
 	}
 
+	// TODO pretty sure there is a clear function or something...
 	while (trackers.size() > 0) {
-		trackers.remove(0);
+		trackers.erase(trackers.get_key_at_index(0));
 	}
 
 	singleton = nullptr;

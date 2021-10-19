@@ -5,86 +5,113 @@
 	</brief_description>
 	<description>
 		An instance of this object represents a device that is tracked, such as a controller or anchor point. HMDs aren't represented here as they are handled internally.
-		As controllers are turned on and the AR/VR interface detects them, instances of this object are automatically added to this list of active tracking objects accessible through the [XRServer].
-		The [XRController3D] and [XRAnchor3D] both consume objects of this type and should be used in your project. The positional trackers are just under-the-hood objects that make this all work. These are mostly exposed so that GDNative-based interfaces can interact with them.
+		As controllers are turned on and the [XRInterface] detects them, instances of this object are automatically added to this list of active tracking objects accessible through the [XRServer].
+		The [XRController3D] and [XRAnchor3D] both consume objects of this type and should be used in your project. The positional trackers are just under-the-hood objects that make this all work. These are mostly exposed so that GDExtension-based interfaces can interact with them.
 	</description>
 	<tutorials>
 		<link title="VR documentation index">https://docs.godotengine.org/en/latest/tutorials/vr/index.html</link>
 	</tutorials>
 	<methods>
-		<method name="get_joy_id" qualifiers="const">
-			<return type="int" />
+		<method name="get_input" qualifiers="const">
+			<return type="Variant" />
+			<argument index="0" name="name" type="StringName" />
 			<description>
-				If this is a controller that is being tracked, the controller will also be represented by a joystick entry with this ID.
+				Returns an input for this tracker. It can return a boolean, float or [Vector2] value depending on whether the input is a button, trigger or thumbstick/thumbpad.
 			</description>
 		</method>
-		<method name="get_mesh" qualifiers="const">
-			<return type="Mesh" />
+		<method name="get_pose" qualifiers="const">
+			<return type="XRPose" />
+			<argument index="0" name="name" type="StringName" />
 			<description>
-				Returns the mesh related to a controller or anchor point if one is available.
+				Returns the current [XRPose] state object for the bound [code]pose[/code].
 			</description>
 		</method>
-		<method name="get_orientation" qualifiers="const">
-			<return type="Basis" />
-			<description>
-				Returns the controller's orientation matrix.
-			</description>
-		</method>
-		<method name="get_position" qualifiers="const">
-			<return type="Vector3" />
-			<description>
-				Returns the world-space controller position.
-			</description>
-		</method>
-		<method name="get_tracker_hand" qualifiers="const">
-			<return type="int" enum="XRPositionalTracker.TrackerHand" />
-			<description>
-				Returns the hand holding this tracker, if known. See [enum TrackerHand] constants.
-			</description>
-		</method>
-		<method name="get_tracker_id" qualifiers="const">
-			<return type="int" />
-			<description>
-				Returns the internal tracker ID. This uniquely identifies the tracker per tracker type and matches the ID you need to specify for nodes such as the [XRController3D] and [XRAnchor3D] nodes.
-			</description>
-		</method>
-		<method name="get_tracker_name" qualifiers="const">
-			<return type="StringName" />
-			<description>
-				Returns the controller or anchor point's name, if applicable.
-			</description>
-		</method>
-		<method name="get_tracker_type" qualifiers="const">
-			<return type="int" enum="XRServer.TrackerType" />
-			<description>
-				Returns the tracker's type, which will be one of the values from the [enum XRServer.TrackerType] enum.
-			</description>
-		</method>
-		<method name="get_transform" qualifiers="const">
-			<return type="Transform3D" />
-			<argument index="0" name="adjust_by_reference_frame" type="bool" />
-			<description>
-				Returns the transform combining this device's orientation and position.
-			</description>
-		</method>
-		<method name="is_tracking_orientation" qualifiers="const">
+		<method name="has_pose" qualifiers="const">
 			<return type="bool" />
+			<argument index="0" name="name" type="StringName" />
 			<description>
-				Returns [code]true[/code] if this device is tracking orientation.
+				Returns [code]true[/code] if the bound [code]tracker[/code] is available and is currently tracking the bound [code]pose[/code].
 			</description>
 		</method>
-		<method name="is_tracking_position" qualifiers="const">
-			<return type="bool" />
+		<method name="invalidate_pose">
+			<return type="void" />
+			<argument index="0" name="name" type="StringName" />
 			<description>
-				Returns [code]true[/code] if this device is tracking position.
+				Marks this pose as invalid, we don't clear the last reported state but it allows users to decide if trackers need to be hidden if we loose tracking or just remain at their last known position.
+			</description>
+		</method>
+		<method name="set_input">
+			<return type="void" />
+			<argument index="0" name="name" type="StringName" />
+			<argument index="1" name="value" type="Variant" />
+			<description>
+				Changes the value for the given input. This method is called by a [XRInterface] implementation and should not be used directly.
+			</description>
+		</method>
+		<method name="set_pose">
+			<return type="void" />
+			<argument index="0" name="name" type="StringName" />
+			<argument index="1" name="transform" type="Transform3D" />
+			<argument index="2" name="linear_velocity" type="Vector3" />
+			<argument index="3" name="angular_velocity" type="Vector3" />
+			<description>
+				Sets the transform, linear velocity and angular velocity for the given pose. This method is called by a [XRInterface] implementation and should not be used directly.
 			</description>
 		</method>
 	</methods>
 	<members>
+		<member name="description" type="String" setter="set_tracker_desc" getter="get_tracker_desc" default="&quot;&quot;">
+			The description of this tracker.
+		</member>
+		<member name="hand" type="int" setter="set_tracker_hand" getter="get_tracker_hand" enum="XRPositionalTracker.TrackerHand" default="0">
+			Defines which hand this tracker relates to.
+		</member>
+		<member name="name" type="StringName" setter="set_tracker_name" getter="get_tracker_name" default="&amp;&quot;Unknown&quot;">
+			The unique name of this tracker. The trackers that are available differ between various XR runtimes and can often be configured by the user. Godot maintains a number of reserved names that it expects the [XRInterface] to implement if applicable:
+			- [code]left_hand[/code] identifies the controller held in the players left hand
+			- [code]right_hand[/code] identifies the controller held in the players right hand
+		</member>
 		<member name="rumble" type="float" setter="set_rumble" getter="get_rumble" default="0.0">
 			The degree to which the tracker rumbles. Ranges from [code]0.0[/code] to [code]1.0[/code] with precision [code].01[/code].
 		</member>
+		<member name="type" type="int" setter="set_tracker_type" getter="get_tracker_type" enum="XRServer.TrackerType" default="128">
+			The type of tracker.
+		</member>
 	</members>
+	<signals>
+		<signal name="button_pressed">
+			<argument index="0" name="name" type="String" />
+			<description>
+				Emitted when a button on this tracker is pressed. Note that many XR runtimes allow other inputs to be mapped to buttons.
+			</description>
+		</signal>
+		<signal name="button_released">
+			<argument index="0" name="name" type="String" />
+			<description>
+				Emitted when a button on this tracker is released.
+			</description>
+		</signal>
+		<signal name="input_axis_changed">
+			<argument index="0" name="name" type="String" />
+			<argument index="1" name="vector" type="Vector2" />
+			<description>
+				Emitted when a thumbstick or thumbpad on this tracker moves.
+			</description>
+		</signal>
+		<signal name="input_value_changed">
+			<argument index="0" name="name" type="String" />
+			<argument index="1" name="value" type="float" />
+			<description>
+				Emitted when a trigger or similar input on this tracker changes value.
+			</description>
+		</signal>
+		<signal name="pose_changed">
+			<argument index="0" name="pose" type="XRPose" />
+			<description>
+				Emitted when the state of a pose tracked by this tracker changes.
+			</description>
+		</signal>
+	</signals>
 	<constants>
 		<constant name="TRACKER_HAND_UNKNOWN" value="0" enum="TrackerHand">
 			The hand this tracker is held in is unknown or not applicable.

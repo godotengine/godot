@@ -41,8 +41,6 @@ void XRInterfaceExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_initialize);
 	GDVIRTUAL_BIND(_uninitialize);
 
-	GDVIRTUAL_BIND(_get_tracking_status);
-
 	GDVIRTUAL_BIND(_get_render_target_size);
 	GDVIRTUAL_BIND(_get_view_count);
 	GDVIRTUAL_BIND(_get_camera_transform);
@@ -53,6 +51,13 @@ void XRInterfaceExtension::_bind_methods() {
 
 	GDVIRTUAL_BIND(_process);
 	GDVIRTUAL_BIND(_notification, "what");
+
+	/** input and output **/
+
+	GDVIRTUAL_BIND(_get_suggested_tracker_names);
+	GDVIRTUAL_BIND(_get_suggested_pose_names, "tracker_name");
+	GDVIRTUAL_BIND(_get_tracking_status);
+	GDVIRTUAL_BIND(_trigger_haptic_pulse, "action_name", "tracker_name", "frequency", "amplitude", "duration_sec", "delay_sec");
 
 	// we don't have any properties specific to VR yet....
 
@@ -111,6 +116,22 @@ void XRInterfaceExtension::uninitialize() {
 	GDVIRTUAL_CALL(_uninitialize);
 }
 
+PackedStringArray XRInterfaceExtension::get_suggested_tracker_names() const {
+	PackedStringArray arr;
+
+	GDVIRTUAL_CALL(_get_suggested_tracker_names, arr);
+
+	return arr;
+}
+
+PackedStringArray XRInterfaceExtension::get_suggested_pose_names(const StringName &p_tracker_name) const {
+	PackedStringArray arr;
+
+	GDVIRTUAL_CALL(_get_suggested_pose_names, p_tracker_name, arr);
+
+	return arr;
+}
+
 XRInterface::TrackingStatus XRInterfaceExtension::get_tracking_status() const {
 	uint32_t status;
 
@@ -119,6 +140,10 @@ XRInterface::TrackingStatus XRInterfaceExtension::get_tracking_status() const {
 	}
 
 	return XR_UNKNOWN_TRACKING;
+}
+
+void XRInterfaceExtension::trigger_haptic_pulse(const String &p_action_name, const StringName &p_tracker_name, double p_frequency, double p_amplitude, double p_duration_sec, double p_delay_sec) {
+	GDVIRTUAL_CALL(_trigger_haptic_pulse, p_action_name, p_tracker_name, p_frequency, p_amplitude, p_duration_sec, p_delay_sec);
 }
 
 /** these will only be implemented on AR interfaces, so we want dummies for VR **/

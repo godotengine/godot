@@ -47,6 +47,8 @@ void XRInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_render_target_size"), &XRInterface::get_render_target_size);
 	ClassDB::bind_method(D_METHOD("get_view_count"), &XRInterface::get_view_count);
 
+	ClassDB::bind_method(D_METHOD("trigger_haptic_pulse", "action_name", "tracker_name", "frequency", "amplitude", "duration_sec", "delay_sec"), &XRInterface::trigger_haptic_pulse);
+
 	ADD_GROUP("Interface", "interface_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "interface_is_primary"), "set_primary", "is_primary");
 
@@ -63,12 +65,10 @@ void XRInterface::_bind_methods() {
 	BIND_ENUM_CONSTANT(XR_NONE);
 	BIND_ENUM_CONSTANT(XR_MONO);
 	BIND_ENUM_CONSTANT(XR_STEREO);
+	BIND_ENUM_CONSTANT(XR_QUAD);
+	BIND_ENUM_CONSTANT(XR_VR);
 	BIND_ENUM_CONSTANT(XR_AR);
 	BIND_ENUM_CONSTANT(XR_EXTERNAL);
-
-	BIND_ENUM_CONSTANT(EYE_MONO);
-	BIND_ENUM_CONSTANT(EYE_LEFT);
-	BIND_ENUM_CONSTANT(EYE_RIGHT);
 
 	BIND_ENUM_CONSTANT(XR_NORMAL_TRACKING);
 	BIND_ENUM_CONSTANT(XR_EXCESSIVE_MOTION);
@@ -114,9 +114,24 @@ int XRInterface::get_camera_feed_id() {
 }
 
 /** these are optional, so we want dummies **/
+PackedStringArray XRInterface::get_suggested_tracker_names() const {
+	PackedStringArray arr;
+
+	return arr;
+}
+
+PackedStringArray XRInterface::get_suggested_pose_names(const StringName &p_tracker_name) const {
+	PackedStringArray arr;
+
+	return arr;
+}
+
 XRInterface::TrackingStatus XRInterface::get_tracking_status() const {
 	return XR_UNKNOWN_TRACKING;
 }
 
 void XRInterface::notification(int p_what) {
+}
+
+void XRInterface::trigger_haptic_pulse(const String &p_action_name, const StringName &p_tracker_name, double p_frequency, double p_amplitude, double p_duration_sec, double p_delay_sec) {
 }
