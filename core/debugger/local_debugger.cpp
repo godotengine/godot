@@ -358,7 +358,7 @@ void LocalDebugger::send_message(const String &p_message, const Array &p_args) {
 	// print_line("MESSAGE: '" + p_message + "' - " + String(Variant(p_args)));
 }
 
-void LocalDebugger::send_error(const String &p_func, const String &p_file, int p_line, const String &p_err, const String &p_descr, ErrorHandlerType p_type) {
+void LocalDebugger::send_error(const String &p_func, const String &p_file, int p_line, const String &p_err, const String &p_descr, bool p_editor_notify, ErrorHandlerType p_type) {
 	print_line("ERROR: '" + (p_descr.is_empty() ? p_err : p_descr) + "'");
 }
 

@@ -37,6 +37,7 @@
 #include "editor/editor_folding.h"
 #include "editor/editor_native_shader_source_visualizer.h"
 #include "editor/editor_run.h"
+#include "editor/editor_toaster.h"
 #include "editor/inspector_dock.h"
 #include "editor/property_editor.h"
 #include "editor/scene_tree_dock.h"
@@ -438,6 +439,7 @@ private:
 	HBoxContainer *bottom_panel_hb;
 	HBoxContainer *bottom_panel_hb_editors;
 	VBoxContainer *bottom_panel_vb;
+	EditorToaster *editor_toaster;
 	LinkButton *version_btn;
 	Button *bottom_panel_raise;
 

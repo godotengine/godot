@@ -455,7 +455,7 @@ Error RemoteDebugger::_put_msg(String p_message, Array p_data) {
 	return err;
 }
 
-void RemoteDebugger::_err_handler(void *p_this, const char *p_func, const char *p_file, int p_line, const char *p_err, const char *p_descr, ErrorHandlerType p_type) {
+void RemoteDebugger::_err_handler(void *p_this, const char *p_func, const char *p_file, int p_line, const char *p_err, const char *p_descr, bool p_editor_notify, ErrorHandlerType p_type) {
 	if (p_type == ERR_HANDLER_SCRIPT) {
 		return; //ignore script errors, those go through debugger
 	}
@@ -475,7 +475,7 @@ void RemoteDebugger::_err_handler(void *p_this, const char *p_func, const char *
 	}
 
 	// send_error will lock internally.
-	rd->script_debugger->send_error(p_func, p_file, p_line, p_err, p_descr, p_type, si);
+	rd->script_debugger->send_error(p_func, p_file, p_line, p_err, p_descr, p_editor_notify, p_type, si);
 }
 
 void RemoteDebugger::_print_handler(void *p_this, const String &p_string, bool p_error) {
@@ -605,7 +605,7 @@ void RemoteDebugger::send_message(const String &p_message, const Array &p_args) 
 	}
 }
 
-void RemoteDebugger::send_error(const String &p_func, const String &p_file, int p_line, const String &p_err, const String &p_descr, ErrorHandlerType p_type) {
+void RemoteDebugger::send_error(const String &p_func, const String &p_file, int p_line, const String &p_err, const String &p_descr, bool p_editor_notify, ErrorHandlerType p_type) {
 	ErrorMessage oe;
 	oe.error = p_err;
 	oe.error_descr = p_descr;

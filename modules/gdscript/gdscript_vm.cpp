@@ -3315,7 +3315,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 		if (!GDScriptLanguage::get_singleton()->debug_break(err_text, false)) {
 			// debugger break did not happen
 
-			_err_print_error(err_func.utf8().get_data(), err_file.utf8().get_data(), err_line, err_text.utf8().get_data(), ERR_HANDLER_SCRIPT);
+			_err_print_error(err_func.utf8().get_data(), err_file.utf8().get_data(), err_line, err_text.utf8().get_data(), false, ERR_HANDLER_SCRIPT);
 		}
 
 #endif

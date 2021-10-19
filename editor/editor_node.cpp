@@ -95,6 +95,7 @@
 #include "editor/editor_settings.h"
 #include "editor/editor_spin_slider.h"
 #include "editor/editor_themes.h"
+#include "editor/editor_toaster.h"
 #include "editor/editor_translation_parser.h"
 #include "editor/export_template_manager.h"
 #include "editor/filesystem_dock.h"
@@ -6747,6 +6748,9 @@ EditorNode::EditorNode() {
 	bottom_panel_hb_editors = memnew(HBoxContainer);
 	bottom_panel_hb_editors->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	bottom_panel_hb->add_child(bottom_panel_hb_editors);
+
+	editor_toaster = memnew(EditorToaster);
+	bottom_panel_hb->add_child(editor_toaster);
 
 	VBoxContainer *version_info_vbc = memnew(VBoxContainer);
 	bottom_panel_hb->add_child(version_info_vbc);

@@ -247,7 +247,7 @@ Error GLTFDocument::_parse_json(const String &p_path, Ref<GLTFState> state) {
 	JSON json;
 	err = json.parse(text);
 	if (err != OK) {
-		_err_print_error("", p_path.utf8().get_data(), json.get_error_line(), json.get_error_message().utf8().get_data(), ERR_HANDLER_SCRIPT);
+		_err_print_error("", p_path.utf8().get_data(), json.get_error_line(), json.get_error_message().utf8().get_data(), false, ERR_HANDLER_SCRIPT);
 		return err;
 	}
 	state->json = json.get_data();
@@ -282,7 +282,7 @@ Error GLTFDocument::_parse_glb(const String &p_path, Ref<GLTFState> state) {
 	JSON json;
 	err = json.parse(text);
 	if (err != OK) {
-		_err_print_error("", p_path.utf8().get_data(), json.get_error_line(), json.get_error_message().utf8().get_data(), ERR_HANDLER_SCRIPT);
+		_err_print_error("", p_path.utf8().get_data(), json.get_error_line(), json.get_error_message().utf8().get_data(), false, ERR_HANDLER_SCRIPT);
 		return err;
 	}
 

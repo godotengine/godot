@@ -128,7 +128,7 @@ public:
 
 	virtual void poll_events(bool p_is_idle) {}
 	virtual void send_message(const String &p_msg, const Array &p_data) = 0;
-	virtual void send_error(const String &p_func, const String &p_file, int p_line, const String &p_err, const String &p_descr, ErrorHandlerType p_type) = 0;
+	virtual void send_error(const String &p_func, const String &p_file, int p_line, const String &p_err, const String &p_descr, bool p_editor_notify, ErrorHandlerType p_type) = 0;
 	virtual void debug(bool p_can_continue = true, bool p_is_error_breakpoint = false) = 0;
 
 	virtual ~EngineDebugger();
