@@ -156,9 +156,9 @@ void TileSetEditor::_update_sources_list(int force_selected_id) {
 			texture = atlas_source->get_texture();
 			if (item_text.is_empty()) {
 				if (texture.is_valid()) {
-					item_text = vformat("%s (id:%d)", texture->get_path().get_file(), source_id);
+					item_text = vformat("%s (ID:%d)", texture->get_path().get_file(), source_id);
 				} else {
-					item_text = vformat(TTR("No Texture Atlas Source (id:%d)"), source_id);
+					item_text = vformat(TTR("No Texture Atlas Source (ID:%d)"), source_id);
 				}
 			}
 		}
@@ -168,13 +168,13 @@ void TileSetEditor::_update_sources_list(int force_selected_id) {
 		if (scene_collection_source) {
 			texture = get_theme_icon(SNAME("PackedScene"), SNAME("EditorIcons"));
 			if (item_text.is_empty()) {
-				item_text = vformat(TTR("Scene Collection Source (id:%d)"), source_id);
+				item_text = vformat(TTR("Scene Collection Source (ID:%d)"), source_id);
 			}
 		}
 
 		// Use default if not valid.
 		if (item_text.is_empty()) {
-			item_text = vformat(TTR("Unknown Type Source (id:%d)"), source_id);
+			item_text = vformat(TTR("Unknown Type Source (ID:%d)"), source_id);
 		}
 		if (!texture.is_valid()) {
 			texture = missing_texture_texture;
@@ -327,6 +327,7 @@ void TileSetEditor::_notification(int p_what) {
 					tile_set->set_edited(true);
 				}
 				_update_sources_list();
+				_update_patterns_list();
 				tile_set_changed_needs_update = false;
 			}
 			break;
@@ -335,8 +336,54 @@ void TileSetEditor::_notification(int p_what) {
 	}
 }
 
+void TileSetEditor::_patterns_item_list_gui_input(const Ref<InputEvent> &p_event) {
+	ERR_FAIL_COND(!tile_set.is_valid());
+
+	if (ED_IS_SHORTCUT("tiles_editor/delete", p_event) && p_event->is_pressed() && !p_event->is_echo()) {
+		Vector<int> selected = patterns_item_list->get_selected_items();
+		undo_redo->create_action(TTR("Remove TileSet patterns"));
+		for (int i = 0; i < selected.size(); i++) {
+			int pattern_index = selected[i];
+			undo_redo->add_do_method(*tile_set, "remove_pattern", pattern_index);
+			undo_redo->add_undo_method(*tile_set, "add_pattern", tile_set->get_pattern(pattern_index), pattern_index);
+		}
+		undo_redo->commit_action();
+		patterns_item_list->accept_event();
+	}
+}
+
+void TileSetEditor::_pattern_preview_done(Ref<TileMapPattern> p_pattern, Ref<Texture2D> p_texture) {
+	// TODO optimize ?
+	for (int i = 0; i < patterns_item_list->get_item_count(); i++) {
+		if (patterns_item_list->get_item_metadata(i) == p_pattern) {
+			patterns_item_list->set_item_icon(i, p_texture);
+			break;
+		}
+	}
+}
+
+void TileSetEditor::_update_patterns_list() {
+	ERR_FAIL_COND(!tile_set.is_valid());
+
+	// Recreate the items.
+	patterns_item_list->clear();
+	for (int i = 0; i < tile_set->get_patterns_count(); i++) {
+		int id = patterns_item_list->add_item("");
+		patterns_item_list->set_item_metadata(id, tile_set->get_pattern(i));
+		TilesEditor::get_singleton()->queue_pattern_preview(tile_set, tile_set->get_pattern(i), callable_mp(this, &TileSetEditor::_pattern_preview_done));
+	}
+
+	// Update the label visibility.
+	patterns_help_label->set_visible(patterns_item_list->get_item_count() == 0);
+}
+
 void TileSetEditor::_tile_set_changed() {
 	tile_set_changed_needs_update = true;
+}
+
+void TileSetEditor::_tab_changed(int p_tab_changed) {
+	split_container->set_visible(p_tab_changed == 0);
+	patterns_item_list->set_visible(p_tab_changed == 1);
 }
 
 void TileSetEditor::_move_tile_set_array_element(Object *p_undo_redo, Object *p_edited, String p_array_prefix, int p_from_index, int p_to_pos) {
@@ -582,6 +629,7 @@ void TileSetEditor::edit(Ref<TileSet> p_tile_set) {
 	if (tile_set.is_valid()) {
 		tile_set->connect("changed", callable_mp(this, &TileSetEditor::_tile_set_changed));
 		_update_sources_list();
+		_update_patterns_list();
 	}
 
 	tile_set_atlas_source_editor->hide();
@@ -594,8 +642,20 @@ TileSetEditor::TileSetEditor() {
 
 	set_process_internal(true);
 
+	// Tabs.
+	tabs_bar = memnew(Tabs);
+	tabs_bar->set_clip_tabs(false);
+	tabs_bar->add_tab(TTR("Tiles"));
+	tabs_bar->add_tab(TTR("Patterns"));
+	tabs_bar->connect("tab_changed", callable_mp(this, &TileSetEditor::_tab_changed));
+
+	tile_set_toolbar = memnew(HBoxContainer);
+	tile_set_toolbar->set_h_size_flags(SIZE_EXPAND_FILL);
+	tile_set_toolbar->add_child(tabs_bar);
+
+	//// Tiles ////
 	// Split container.
-	HSplitContainer *split_container = memnew(HSplitContainer);
+	split_container = memnew(HSplitContainer);
 	split_container->set_name(TTR("Tiles"));
 	split_container->set_h_size_flags(SIZE_EXPAND_FILL);
 	split_container->set_v_size_flags(SIZE_EXPAND_FILL);
@@ -680,6 +740,24 @@ TileSetEditor::TileSetEditor() {
 	tile_set_scenes_collection_source_editor->connect("source_id_changed", callable_mp(this, &TileSetEditor::_update_sources_list));
 	split_container_right_side->add_child(tile_set_scenes_collection_source_editor);
 	tile_set_scenes_collection_source_editor->hide();
+
+	//// Patterns ////
+	int thumbnail_size = 64;
+	patterns_item_list = memnew(ItemList);
+	patterns_item_list->set_max_columns(0);
+	patterns_item_list->set_icon_mode(ItemList::ICON_MODE_TOP);
+	patterns_item_list->set_fixed_column_width(thumbnail_size * 3 / 2);
+	patterns_item_list->set_max_text_lines(2);
+	patterns_item_list->set_fixed_icon_size(Size2(thumbnail_size, thumbnail_size));
+	patterns_item_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	patterns_item_list->connect("gui_input", callable_mp(this, &TileSetEditor::_patterns_item_list_gui_input));
+	add_child(patterns_item_list);
+	patterns_item_list->hide();
+
+	patterns_help_label = memnew(Label);
+	patterns_help_label->set_text(TTR("Add new patterns in the TileMap editing mode."));
+	patterns_help_label->set_anchors_and_offsets_preset(Control::PRESET_CENTER);
+	patterns_item_list->add_child(patterns_help_label);
 
 	// Registers UndoRedo inspector callback.
 	EditorNode::get_singleton()->get_editor_data().add_move_array_element_function(SNAME("TileSet"), callable_mp(this, &TileSetEditor::_move_tile_set_array_element));

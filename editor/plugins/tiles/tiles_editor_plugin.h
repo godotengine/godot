@@ -53,6 +53,7 @@ private:
 	Control *tilemap_toolbar;
 	TileMapEditor *tilemap_editor;
 
+	Control *tileset_toolbar;
 	TileSetEditor *tileset_editor;
 
 	void _update_switch_button();
@@ -62,6 +63,23 @@ private:
 	int atlas_sources_lists_current = 0;
 	float atlas_view_zoom = 1.0;
 	Vector2 atlas_view_scroll = Vector2();
+
+	// Patterns preview generation.
+	struct QueueItem {
+		Ref<TileSet> tile_set;
+		Ref<TileMapPattern> pattern;
+		Callable callback;
+	};
+	List<QueueItem> pattern_preview_queue;
+	Mutex pattern_preview_mutex;
+	Semaphore pattern_preview_sem;
+	Thread pattern_preview_thread;
+	SafeFlag pattern_thread_exit;
+	SafeFlag pattern_thread_exited;
+	mutable SafeFlag pattern_preview_done;
+	void _pattern_preview_done(const Variant &p_udata);
+	static void _thread_func(void *ud);
+	void _thread();
 
 	void _tile_map_changed();
 
@@ -81,6 +99,9 @@ public:
 
 	void set_atlas_view_transform(float p_zoom, Vector2 p_scroll);
 	void synchronize_atlas_view(Object *p_current);
+
+	// Pattern preview API.
+	void queue_pattern_preview(Ref<TileSet> p_tile_set, Ref<TileMapPattern> p_pattern, Callable p_callback);
 
 	void edit(Object *p_object);
 

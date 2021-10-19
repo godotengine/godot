@@ -173,4 +173,22 @@ public:
 	EditorFontPreviewPlugin();
 	~EditorFontPreviewPlugin();
 };
+
+class EditorTileMapPatternPreviewPlugin : public EditorResourcePreviewGenerator {
+	GDCLASS(EditorTileMapPatternPreviewPlugin, EditorResourcePreviewGenerator);
+
+	mutable SafeFlag preview_done;
+
+	void _preview_done(const Variant &p_udata);
+
+protected:
+	static void _bind_methods();
+
+public:
+	virtual bool handles(const String &p_type) const override;
+	virtual Ref<Texture2D> generate(const RES &p_from, const Size2 &p_size) const override;
+
+	EditorTileMapPatternPreviewPlugin();
+	~EditorTileMapPatternPreviewPlugin();
+};
 #endif // EDITORPREVIEWPLUGINS_H

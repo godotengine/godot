@@ -33,17 +33,24 @@
 
 #include "tile_atlas_view.h"
 
+#include "core/os/thread.h"
 #include "core/typedefs.h"
 #include "editor/editor_node.h"
 #include "scene/2d/tile_map.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/tabs.h"
 
-class TileMapEditorPlugin : public VBoxContainer {
+class TileMapEditorPlugin : public Object {
 public:
-	virtual Control *get_toolbar() const {
-		return memnew(Control);
+	struct TabData {
+		Control *toolbar;
+		Control *panel;
 	};
+
+	virtual Vector<TabData> get_tabs() const {
+		return Vector<TabData>();
+	};
+
 	virtual bool forward_canvas_gui_input(const Ref<InputEvent> &p_event) { return false; };
 	virtual void forward_canvas_draw_over_viewport(Control *p_overlay){};
 	virtual void tile_set_changed(){};
@@ -106,7 +113,7 @@ private:
 	Map<Vector2i, TileMapCell> drag_modified;
 	bool rmb_erasing = false;
 
-	TileMapCell _pick_random_tile(const TileMapPattern *p_pattern);
+	TileMapCell _pick_random_tile(Ref<TileMapPattern> p_pattern);
 	Map<Vector2i, TileMapCell> _draw_line(Vector2 p_start_drag_mouse_pos, Vector2 p_from_mouse_pos, Vector2 p_to_mouse_pos);
 	Map<Vector2i, TileMapCell> _draw_rect(Vector2i p_start_cell, Vector2i p_end_cell);
 	Map<Vector2i, TileMapCell> _draw_bucket_fill(Vector2i p_coords, bool p_contiguous);
@@ -115,20 +122,25 @@ private:
 
 	///// Selection system. /////
 	Set<Vector2i> tile_map_selection;
-	TileMapPattern *tile_map_clipboard = memnew(TileMapPattern);
-	TileMapPattern *selection_pattern = memnew(TileMapPattern);
+	Ref<TileMapPattern> tile_map_clipboard;
+	Ref<TileMapPattern> selection_pattern;
 	void _set_tile_map_selection(const TypedArray<Vector2i> &p_selection);
 	TypedArray<Vector2i> _get_tile_map_selection() const;
 
 	Set<TileMapCell> tile_set_selection;
 
 	void _update_selection_pattern_from_tilemap_selection();
-	void _update_selection_pattern_from_tileset_selection();
+	void _update_selection_pattern_from_tileset_tiles_selection();
+	void _update_selection_pattern_from_tileset_pattern_selection();
 	void _update_tileset_selection_from_selection_pattern();
 	void _update_fix_selected_and_hovered();
 	void _fix_invalid_tiles_in_tile_map_selection();
 
-	///// Bottom panel. ////.
+	///// Bottom panel common ////
+	void _tab_changed();
+
+	///// Bottom panel tiles ////
+	VBoxContainer *tiles_bottom_panel;
 	Label *missing_source_label;
 	Label *invalid_source_label;
 
@@ -137,7 +149,7 @@ private:
 	Ref<Texture2D> missing_atlas_texture_icon;
 	void _update_tile_set_sources_list();
 
-	void _update_bottom_panel();
+	void _update_source_display();
 
 	// Atlas sources.
 	TileMapCell hovered_tile;
@@ -167,15 +179,26 @@ private:
 	void _scenes_list_multi_selected(int p_index, bool p_selected);
 	void _scenes_list_nothing_selected();
 
+	///// Bottom panel patterns ////
+	VBoxContainer *patterns_bottom_panel;
+	ItemList *patterns_item_list;
+	Label *patterns_help_label;
+	void _patterns_item_list_gui_input(const Ref<InputEvent> &p_event);
+	void _pattern_preview_done(Ref<TileMapPattern> p_pattern, Ref<Texture2D> p_texture);
+	bool select_last_pattern = false;
+	void _update_patterns_list();
+
+	// General
+	void _update_theme();
+
 	// Update callback
 	virtual void tile_set_changed() override;
 
 protected:
-	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
-	virtual Control *get_toolbar() const override;
+	virtual Vector<TabData> get_tabs() const override;
 	virtual bool forward_canvas_gui_input(const Ref<InputEvent> &p_event) override;
 	virtual void forward_canvas_draw_over_viewport(Control *p_overlay) override;
 
@@ -204,6 +227,9 @@ private:
 	Button *erase_button;
 
 	void _update_toolbar();
+
+	// Main vbox.
+	VBoxContainer *main_vbox_container;
 
 	// TileMap editing.
 	enum DragType {
@@ -281,16 +307,13 @@ private:
 	void _update_terrains_cache();
 	void _update_terrains_tree();
 	void _update_tiles_list();
+	void _update_theme();
 
 	// Update callback
 	virtual void tile_set_changed() override;
 
-protected:
-	void _notification(int p_what);
-	//	static void _bind_methods();
-
 public:
-	virtual Control *get_toolbar() const override;
+	virtual Vector<TabData> get_tabs() const override;
 	virtual bool forward_canvas_gui_input(const Ref<InputEvent> &p_event) override;
 	//virtual void forward_canvas_draw_over_viewport(Control *p_overlay) override;
 
@@ -328,7 +351,9 @@ private:
 
 	// Bottom panel.
 	Label *missing_tileset_label;
-	Tabs *tabs;
+	Tabs *tabs_bar;
+	LocalVector<TileMapEditorPlugin::TabData> tabs_data;
+	LocalVector<TileMapEditorPlugin *> tabs_plugins;
 	void _update_bottom_panel();
 
 	// TileMap.
