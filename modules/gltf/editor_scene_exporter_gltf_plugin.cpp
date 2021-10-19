@@ -36,6 +36,7 @@
 #include "core/templates/vector.h"
 #include "editor/editor_file_system.h"
 #include "gltf_document.h"
+#include "gltf_state.h"
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/gui/check_box.h"
 #include "scene/main/node.h"
@@ -75,7 +76,15 @@ void SceneExporterGLTFPlugin::_gltf2_dialog_action(String p_file) {
 	List<String> deps;
 	Ref<GLTFDocument> doc;
 	doc.instantiate();
-	Error err = doc->save_scene(root, p_file, p_file, 0, 30.0f, Ref<GLTFState>());
+	Ref<GLTFState> state;
+	state.instantiate();
+	int32_t flags = 0;
+	flags |= EditorSceneFormatImporter::IMPORT_USE_NAMED_SKIN_BINDS;
+	Error err = doc->append_from_scene(root, state, flags, 30.0f);
+	if (err != OK) {
+		ERR_PRINT(vformat("glTF2 save scene error %s.", itos(err)));
+	}
+	err = doc->write_to_filesystem(state, p_file);
 	if (err != OK) {
 		ERR_PRINT(vformat("glTF2 save scene error %s.", itos(err)));
 	}
