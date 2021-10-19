@@ -590,6 +590,7 @@ protected:
 public:
 	// Not exposed.
 	virtual void set_tile_set(const TileSet *p_tile_set) override;
+	const TileSet *get_tile_set() const;
 	virtual void notify_tile_data_properties_should_change() override;
 	virtual void add_occlusion_layer(int p_index) override;
 	virtual void move_occlusion_layer(int p_from_index, int p_to_pos) override;
@@ -743,7 +744,7 @@ private:
 		};
 
 		Vector2 linear_velocity;
-		float angular_velocity = 0.0;
+		double angular_velocity = 0.0;
 		Vector<PolygonShapeTileData> polygons;
 	};
 	Vector<PhysicsLayerTileData> physics;

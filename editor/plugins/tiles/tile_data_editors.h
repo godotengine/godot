@@ -94,7 +94,8 @@ private:
 	LocalVector<Vector<Point2>> polygons;
 	bool multiple_polygon_mode = false;
 
-	UndoRedo *undo_redo = EditorNode::get_undo_redo();
+	bool use_undo_redo = true;
+	UndoRedo *editor_undo_redo = EditorNode::get_undo_redo();
 
 	// UI
 	int hovered_polygon_index = -1;
@@ -108,7 +109,7 @@ private:
 		DRAG_TYPE_CREATE_POINT,
 		DRAG_TYPE_PAN,
 	};
-	DragType drag_type;
+	DragType drag_type = DRAG_TYPE_NONE;
 	int drag_polygon_index;
 	int drag_point_index;
 	Vector2 drag_last_pos;
@@ -143,6 +144,10 @@ private:
 	enum AdvancedMenuOption {
 		RESET_TO_DEFAULT_TILE,
 		CLEAR_TILE,
+		ROTATE_RIGHT,
+		ROTATE_LEFT,
+		FLIP_HORIZONTALLY,
+		FLIP_VERTICALLY,
 	};
 
 	void _base_control_draw();
@@ -161,6 +166,8 @@ protected:
 	static void _bind_methods();
 
 public:
+	void set_use_undo_redo(bool p_use_undo_redo);
+
 	void set_tile_set(Ref<TileSet> p_tile_set);
 	void set_background(Ref<Texture2D> p_texture, Rect2 p_region = Rect2(), Vector2 p_offset = Vector2(), bool p_flip_h = false, bool p_flip_v = false, bool p_transpose = false, Color p_modulate = Color(1.0, 1.0, 1.0, 0.0));
 

@@ -3277,6 +3277,10 @@ void TileSetAtlasSource::set_tile_set(const TileSet *p_tile_set) {
 	}
 }
 
+const TileSet *TileSetAtlasSource::get_tile_set() const {
+	return tile_set;
+}
+
 void TileSetAtlasSource::notify_tile_data_properties_should_change() {
 	// Set the TileSet on all TileData.
 	for (KeyValue<Vector2i, TileAlternativesData> &E_tile : tiles) {
@@ -3850,13 +3854,17 @@ void TileSetAtlasSource::set_tile_animation_frames_count(const Vector2i p_atlas_
 	ERR_FAIL_COND_MSG(!tiles.has(p_atlas_coords), vformat("TileSetAtlasSource has no tile at %s.", Vector2i(p_atlas_coords)));
 	ERR_FAIL_COND(p_frames_count < 1);
 
+	int old_size = tiles[p_atlas_coords].animation_frames_durations.size();
+	if (p_frames_count == old_size) {
+		return;
+	}
+
 	TileAlternativesData &tad = tiles[p_atlas_coords];
 	bool room_for_tile = has_room_for_tile(p_atlas_coords, tad.size_in_atlas, tad.animation_columns, tad.animation_separation, p_frames_count, p_atlas_coords);
 	ERR_FAIL_COND_MSG(!room_for_tile, "Cannot set animation columns count, tiles are already present in the space the tile would cover.");
 
 	_clear_coords_mapping_cache(p_atlas_coords);
 
-	int old_size = tiles[p_atlas_coords].animation_frames_durations.size();
 	tiles[p_atlas_coords].animation_frames_durations.resize(p_frames_count);
 	for (int i = old_size; i < p_frames_count; i++) {
 		tiles[p_atlas_coords].animation_frames_durations[i] = 1.0;
@@ -4745,6 +4753,9 @@ real_t TileData::get_constant_angular_velocity(int p_layer_id) const {
 void TileData::set_collision_polygons_count(int p_layer_id, int p_polygons_count) {
 	ERR_FAIL_INDEX(p_layer_id, physics.size());
 	ERR_FAIL_COND(p_polygons_count < 0);
+	if (p_polygons_count == physics.write[p_layer_id].polygons.size()) {
+		return;
+	}
 	physics.write[p_layer_id].polygons.resize(p_polygons_count);
 	notify_property_list_changed();
 	emit_signal(SNAME("changed"));
@@ -4950,9 +4961,6 @@ bool TileData::_set(const StringName &p_name, const Variant &p_value) {
 		ERR_FAIL_COND_V(layer_index < 0, false);
 		if (components[1] == "polygon") {
 			Ref<OccluderPolygon2D> polygon = p_value;
-			if (!polygon.is_valid()) {
-				return false;
-			}
 
 			if (layer_index >= occluders.size()) {
 				if (tile_set) {
@@ -5024,9 +5032,6 @@ bool TileData::_set(const StringName &p_name, const Variant &p_value) {
 		ERR_FAIL_COND_V(layer_index < 0, false);
 		if (components[1] == "polygon") {
 			Ref<NavigationPolygon> polygon = p_value;
-			if (!polygon.is_valid()) {
-				return false;
-			}
 
 			if (layer_index >= navigation.size()) {
 				if (tile_set) {
