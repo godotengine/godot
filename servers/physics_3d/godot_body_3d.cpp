@@ -40,7 +40,7 @@ void GodotBody3D::_mass_properties_changed() {
 	}
 }
 
-void GodotBody3D::_update_transform_dependant() {
+void GodotBody3D::_update_transform_dependent() {
 	center_of_mass = get_transform().basis.xform(center_of_mass_local);
 	principal_inertia_axes = get_transform().basis * principal_inertia_axes_local;
 
@@ -161,7 +161,7 @@ void GodotBody3D::update_mass_properties() {
 		} break;
 	}
 
-	_update_transform_dependant();
+	_update_transform_dependent();
 }
 
 void GodotBody3D::reset_mass_properties() {
@@ -217,14 +217,14 @@ void GodotBody3D::set_param(PhysicsServer3D::BodyParameter p_param, const Varian
 				if (mode == PhysicsServer3D::BODY_MODE_DYNAMIC) {
 					principal_inertia_axes_local = Basis();
 					_inv_inertia = inertia.inverse();
-					_update_transform_dependant();
+					_update_transform_dependent();
 				}
 			}
 		} break;
 		case PhysicsServer3D::BODY_PARAM_CENTER_OF_MASS: {
 			calculate_center_of_mass = false;
 			center_of_mass_local = p_value;
-			_update_transform_dependant();
+			_update_transform_dependent();
 		} break;
 		case PhysicsServer3D::BODY_PARAM_GRAVITY_SCALE: {
 			gravity_scale = p_value;
@@ -295,7 +295,7 @@ void GodotBody3D::set_mode(PhysicsServer3D::BodyMode p_mode) {
 			if (mode == PhysicsServer3D::BODY_MODE_KINEMATIC && prev != mode) {
 				first_time_kinematic = true;
 			}
-			_update_transform_dependant();
+			_update_transform_dependent();
 
 		} break;
 		case PhysicsServer3D::BODY_MODE_DYNAMIC: {
@@ -303,7 +303,7 @@ void GodotBody3D::set_mode(PhysicsServer3D::BodyMode p_mode) {
 			if (!calculate_inertia) {
 				principal_inertia_axes_local = Basis();
 				_inv_inertia = inertia.inverse();
-				_update_transform_dependant();
+				_update_transform_dependent();
 			}
 			_mass_properties_changed();
 			_set_static(false);
@@ -314,7 +314,7 @@ void GodotBody3D::set_mode(PhysicsServer3D::BodyMode p_mode) {
 			_inv_mass = mass > 0 ? (1.0 / mass) : 0;
 			_inv_inertia = Vector3();
 			angular_velocity = Vector3();
-			_update_transform_dependant();
+			_update_transform_dependent();
 			_set_static(false);
 			set_active(true);
 		}
@@ -355,6 +355,7 @@ void GodotBody3D::set_state(PhysicsServer3D::BodyState p_state, const Variant &p
 				}
 				_set_transform(t);
 				_set_inv_transform(get_transform().inverse());
+				_update_transform_dependent();
 			}
 			wakeup();
 
@@ -651,7 +652,7 @@ void GodotBody3D::integrate_velocities(real_t p_step) {
 	_set_transform(transform);
 	_set_inv_transform(get_transform().inverse());
 
-	_update_transform_dependant();
+	_update_transform_dependent();
 }
 
 void GodotBody3D::wakeup_neighbours() {

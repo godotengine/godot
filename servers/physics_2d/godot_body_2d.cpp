@@ -119,6 +119,8 @@ void GodotBody2D::update_mass_properties() {
 
 		} break;
 	}
+
+	_update_transform_dependent();
 }
 
 void GodotBody2D::reset_mass_properties() {
@@ -179,7 +181,8 @@ void GodotBody2D::set_param(PhysicsServer2D::BodyParameter p_param, const Varian
 		} break;
 		case PhysicsServer2D::BODY_PARAM_CENTER_OF_MASS: {
 			calculate_center_of_mass = false;
-			center_of_mass = p_value;
+			center_of_mass_local = p_value;
+			_update_transform_dependent();
 		} break;
 		case PhysicsServer2D::BODY_PARAM_GRAVITY_SCALE: {
 			gravity_scale = p_value;
@@ -301,6 +304,7 @@ void GodotBody2D::set_state(PhysicsServer2D::BodyState p_state, const Variant &p
 				}
 				_set_transform(t);
 				_set_inv_transform(get_transform().inverse());
+				_update_transform_dependent();
 			}
 			wakeup();
 
@@ -398,6 +402,10 @@ void GodotBody2D::_compute_area_gravity_and_damping(const GodotArea2D *p_area) {
 
 	area_linear_damp += p_area->get_linear_damp();
 	area_angular_damp += p_area->get_angular_damp();
+}
+
+void GodotBody2D::_update_transform_dependent() {
+	center_of_mass = get_transform().basis_xform(center_of_mass_local);
 }
 
 void GodotBody2D::integrate_forces(real_t p_step) {
@@ -568,6 +576,8 @@ void GodotBody2D::integrate_velocities(real_t p_step) {
 	if (continuous_cd_mode != PhysicsServer2D::CCD_MODE_DISABLED) {
 		new_transform = get_transform();
 	}
+
+	_update_transform_dependent();
 }
 
 void GodotBody2D::wakeup_neighbours() {
