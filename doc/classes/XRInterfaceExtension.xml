@@ -81,11 +81,6 @@
 			<description>
 			</description>
 		</method>
-		<method name="_get_tracking_status" qualifiers="virtual const">
-			<return type="int" />
-			<description>
-			</description>
-		</method>
 		<method name="_get_transform_for_view" qualifiers="virtual">
 			<return type="Transform3D" />
 			<argument index="0" name="view" type="int" />

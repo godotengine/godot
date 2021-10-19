@@ -41,8 +41,6 @@ void XRInterfaceExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_initialize);
 	GDVIRTUAL_BIND(_uninitialize);
 
-	GDVIRTUAL_BIND(_get_tracking_status);
-
 	GDVIRTUAL_BIND(_supports_play_area_mode, "mode");
 	GDVIRTUAL_BIND(_get_play_area_mode);
 	GDVIRTUAL_BIND(_set_play_area_mode, "mode");
