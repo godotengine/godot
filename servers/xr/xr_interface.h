@@ -72,7 +72,14 @@ public:
 		XR_NOT_TRACKING
 	};
 
-private:
+	enum PlayAreaMode { /* defines the mode used by the XR interface for tracking */
+		XR_PLAY_AREA_UNKNOWN, /* Area mode not set or not available */
+		XR_PLAY_AREA_3DOF, /* Only support orientation tracking, no positional tracking, area will center around player */
+		XR_PLAY_AREA_SITTING, /* Player is in seated position, limited positional tracking, fixed guardian around player */
+		XR_PLAY_AREA_ROOMSCALE, /* Player is free to move around, full positional tracking */
+		XR_PLAY_AREA_STAGE, /* Same as roomscale but origin point is fixed to the center of the physical space, XRServer.center_on_hmd disabled */
+	};
+
 protected:
 	_THREAD_SAFE_CLASS_
 
@@ -98,7 +105,10 @@ public:
 	virtual void trigger_haptic_pulse(const String &p_action_name, const StringName &p_tracker_name, double p_frequency, double p_amplitude, double p_duration_sec, double p_delay_sec = 0); /* trigger a haptic pulse */
 
 	/** specific to VR **/
-	// nothing yet
+	virtual bool supports_play_area_mode(XRInterface::PlayAreaMode p_mode); /* query if this interface supports this play area mode */
+	virtual XRInterface::PlayAreaMode get_play_area_mode() const; /* get the current play area mode */
+	virtual bool set_play_area_mode(XRInterface::PlayAreaMode p_mode); /* change the play area mode, note that this should return false if the mode is not available */
+	virtual PackedVector3Array get_play_area() const; /* if available, returns an array of vectors denoting the play area the player can move around in */
 
 	/** specific to AR **/
 	virtual bool get_anchor_detection_is_enabled() const;
@@ -126,5 +136,6 @@ public:
 
 VARIANT_ENUM_CAST(XRInterface::Capabilities);
 VARIANT_ENUM_CAST(XRInterface::TrackingStatus);
+VARIANT_ENUM_CAST(XRInterface::PlayAreaMode);
 
 #endif // !XR_INTERFACE_H

@@ -370,6 +370,19 @@ void MobileVRInterface::uninitialize() {
 	};
 };
 
+bool MobileVRInterface::supports_play_area_mode(XRInterface::PlayAreaMode p_mode) {
+	// This interface has no positional tracking so fix this to 3DOF
+	return p_mode == XR_PLAY_AREA_3DOF;
+}
+
+XRInterface::PlayAreaMode MobileVRInterface::get_play_area_mode() const {
+	return XR_PLAY_AREA_3DOF;
+}
+
+bool MobileVRInterface::set_play_area_mode(XRInterface::PlayAreaMode p_mode) {
+	return p_mode == XR_PLAY_AREA_3DOF;
+}
+
 Size2 MobileVRInterface::get_render_target_size() {
 	_THREAD_SAFE_METHOD_
 
