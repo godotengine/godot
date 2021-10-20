@@ -702,14 +702,10 @@ Error OS_JavaScript::initialize(const VideoMode &p_desired, int p_video_driver, 
 		set_window_per_pixel_transparency_enabled(true);
 	}
 
-#ifdef TOOLS_ENABLED
-	bool gles3 = false;
-#else
 	bool gles3 = true;
 	if (p_video_driver == VIDEO_DRIVER_GLES2) {
 		gles3 = false;
 	}
-#endif
 
 	bool gl_initialization_error = false;
 
