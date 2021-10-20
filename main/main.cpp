@@ -1343,8 +1343,9 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		display_driver_idx = 0;
 	}
 
-	if (audio_driver == "") { // specified in project.godot
-		audio_driver = GLOBAL_DEF_RST_NOVAL("audio/driver/driver", AudioDriverManager::get_driver(0)->get_name());
+	GLOBAL_DEF_RST_NOVAL("audio/driver/driver", AudioDriverManager::get_driver(0)->get_name());
+	if (audio_driver == "") { // Specified in project.godot.
+		audio_driver = GLOBAL_GET("audio/driver/driver");
 	}
 
 	for (int i = 0; i < AudioDriverManager::get_driver_count(); i++) {

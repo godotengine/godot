@@ -8913,6 +8913,8 @@ void RenderingDeviceVulkan::initialize(VulkanContext *p_context, bool p_local_de
 		}
 	}
 
+	// Note: If adding new project settings here, also duplicate their definition in
+	// rendering_server.cpp for headless doctool.
 	staging_buffer_block_size = GLOBAL_DEF("rendering/vulkan/staging_buffer/block_size_kb", 256);
 	staging_buffer_block_size = MAX(4, staging_buffer_block_size);
 	staging_buffer_block_size *= 1024; //kb -> bytes
