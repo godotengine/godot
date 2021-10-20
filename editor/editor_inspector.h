@@ -74,7 +74,7 @@ private:
 	bool read_only;
 	bool checkable;
 	bool checked;
-	bool draw_red;
+	bool draw_warning;
 	bool keying;
 	bool deletable;
 
@@ -150,8 +150,8 @@ public:
 	void set_checked(bool p_checked);
 	bool is_checked() const;
 
-	void set_draw_red(bool p_draw_red);
-	bool is_draw_red() const;
+	void set_draw_warning(bool p_draw_warning);
+	bool is_draw_warning() const;
 
 	void set_keying(bool p_keying);
 	bool is_keying() const;

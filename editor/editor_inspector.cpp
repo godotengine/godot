@@ -245,13 +245,15 @@ void EditorProperty::_notification(int p_what) {
 		}
 
 		Color color;
-		if (draw_red) {
-			color = get_theme_color(is_read_only() ? SNAME("readonly_error_color") : SNAME("error_color"));
+		if (draw_warning) {
+			color = get_theme_color(is_read_only() ? SNAME("readonly_warning_color") : SNAME("warning_color"));
 		} else {
 			color = get_theme_color(is_read_only() ? SNAME("readonly_color") : SNAME("property_color"));
 		}
 		if (label.find(".") != -1) {
-			color.a = 0.5; //this should be un-hacked honestly, as it's used for editor overrides
+			// FIXME: Move this to the project settings editor, as this is only used
+			// for project settings feature tag overrides.
+			color.a = 0.5;
 		}
 
 		int ofs = get_theme_constant(SNAME("font_offset"));
@@ -625,8 +627,8 @@ bool EditorProperty::is_checked() const {
 	return checked;
 }
 
-void EditorProperty::set_draw_red(bool p_draw_red) {
-	draw_red = p_draw_red;
+void EditorProperty::set_draw_warning(bool p_draw_warning) {
+	draw_warning = p_draw_warning;
 	update();
 }
 
@@ -650,8 +652,8 @@ bool EditorProperty::is_keying() const {
 	return keying;
 }
 
-bool EditorProperty::is_draw_red() const {
-	return draw_red;
+bool EditorProperty::is_draw_warning() const {
+	return draw_warning;
 }
 
 void EditorProperty::_focusable_focused(int p_index) {
@@ -969,8 +971,8 @@ void EditorProperty::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_checked", "checked"), &EditorProperty::set_checked);
 	ClassDB::bind_method(D_METHOD("is_checked"), &EditorProperty::is_checked);
 
-	ClassDB::bind_method(D_METHOD("set_draw_red", "draw_red"), &EditorProperty::set_draw_red);
-	ClassDB::bind_method(D_METHOD("is_draw_red"), &EditorProperty::is_draw_red);
+	ClassDB::bind_method(D_METHOD("set_draw_warning", "draw_warning"), &EditorProperty::set_draw_warning);
+	ClassDB::bind_method(D_METHOD("is_draw_warning"), &EditorProperty::is_draw_warning);
 
 	ClassDB::bind_method(D_METHOD("set_keying", "keying"), &EditorProperty::set_keying);
 	ClassDB::bind_method(D_METHOD("is_keying"), &EditorProperty::is_keying);
@@ -993,7 +995,7 @@ void EditorProperty::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "read_only"), "set_read_only", "is_read_only");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "checkable"), "set_checkable", "is_checkable");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "checked"), "set_checked", "is_checked");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "draw_red"), "set_draw_red", "is_draw_red");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "draw_warning"), "set_draw_warning", "is_draw_warning");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "keying"), "set_keying", "is_keying");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "deletable"), "set_deletable", "is_deletable");
 	ADD_SIGNAL(MethodInfo("property_changed", PropertyInfo(Variant::STRING_NAME, "property"), PropertyInfo(Variant::NIL, "value", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NIL_IS_VARIANT)));
@@ -1018,7 +1020,7 @@ EditorProperty::EditorProperty() {
 	read_only = false;
 	checkable = false;
 	checked = false;
-	draw_red = false;
+	draw_warning = false;
 	keying = false;
 	deletable = false;
 	keying_hover = false;
@@ -2393,14 +2395,15 @@ void EditorInspector::update_tree() {
 		valid_plugins.push_back(inspector_plugins[i]);
 	}
 
-	// Decide if properties should be drawn in red.
-	bool draw_red = false;
+	// Decide if properties should be drawn with the warning color (yellow).
+	bool draw_warning = false;
 	if (is_inside_tree()) {
 		Node *nod = Object::cast_to<Node>(object);
 		Node *es = EditorNode::get_singleton()->get_edited_scene();
 		if (nod && es != nod && nod->get_owner() != es) {
-			// Draw in red edited nodes that are not in the currently edited scene.
-			draw_red = true;
+			// Draw in warning color edited nodes that are not in the currently edited scene,
+			// as changes may be lost in the future.
+			draw_warning = true;
 		}
 	}
 
@@ -2855,7 +2858,7 @@ void EditorInspector::update_tree() {
 							editor_property_map[prop].push_back(ep);
 						}
 					}
-					ep->set_draw_red(draw_red);
+					ep->set_draw_warning(draw_warning);
 					ep->set_use_folding(use_folding);
 					ep->set_checkable(checkable);
 					ep->set_checked(checked);
