@@ -2177,7 +2177,7 @@ void OS_X11::_handle_key_event(XKeyEvent *p_event, LocalVector<XEvent> &p_events
 	input->parse_input_event(k);
 }
 
-Atom OS_X11::_process_selection_request_target(Atom p_target, Window p_requestor, Atom p_property) const {
+Atom OS_X11::_process_selection_request_target(Atom p_target, Window p_requestor, Atom p_property, Atom p_selection) const {
 	if (p_target == XInternAtom(x11_display, "TARGETS", 0)) {
 		// Request to list all supported targets.
 		Atom data[9];
@@ -2220,7 +2220,13 @@ Atom OS_X11::_process_selection_request_target(Atom p_target, Window p_requestor
 			p_target == XInternAtom(x11_display, "text/plain", 0)) {
 		// Directly using internal clipboard because we know our window
 		// is the owner during a selection request.
-		CharString clip = OS::get_clipboard().utf8();
+		CharString clip;
+		static const char *target_type = "PRIMARY";
+		if (p_selection != None && String(XGetAtomName(x11_display, p_selection)) == target_type) {
+			clip = OS::get_clipboard_primary().utf8();
+		} else {
+			clip = OS::get_clipboard().utf8();
+		}
 		XChangeProperty(x11_display,
 				p_requestor,
 				p_property,
@@ -2258,7 +2264,7 @@ void OS_X11::_handle_selection_request_event(XSelectionRequestEvent *p_event) co
 				for (uint64_t i = 0; i < len; i += 2) {
 					Atom target = targets[i];
 					Atom &property = targets[i + 1];
-					property = _process_selection_request_target(target, p_event->requestor, property);
+					property = _process_selection_request_target(target, p_event->requestor, property, p_event->selection);
 				}
 
 				XChangeProperty(x11_display,
@@ -2276,7 +2282,7 @@ void OS_X11::_handle_selection_request_event(XSelectionRequestEvent *p_event) co
 		}
 	} else {
 		// Request for target conversion.
-		respond.xselection.property = _process_selection_request_target(p_event->target, p_event->requestor, p_event->property);
+		respond.xselection.property = _process_selection_request_target(p_event->target, p_event->requestor, p_event->property, p_event->selection);
 	}
 
 	respond.xselection.type = SelectionNotify;
@@ -3112,7 +3118,12 @@ String OS_X11::_get_clipboard_impl(Atom p_source, Window x11_window, Atom target
 
 	Window selection_owner = XGetSelectionOwner(x11_display, p_source);
 	if (selection_owner == x11_window) {
-		return OS::get_clipboard();
+		static const char *target_type = "PRIMARY";
+		if (p_source != None && String(XGetAtomName(x11_display, p_source)) == target_type) {
+			return OS::get_clipboard_primary();
+		} else {
+			return OS::get_clipboard();
+		}
 	}
 
 	if (selection_owner != None) {
@@ -3315,6 +3326,30 @@ void OS_X11::_clipboard_transfer_ownership(Atom p_source, Window x11_window) con
 	}
 }
 
+void OS_X11::set_clipboard_primary(const String &p_text) {
+	if (!p_text.empty()) {
+		{
+			// The clipboard content can be accessed while polling for events.
+			MutexLock mutex_lock(events_mutex);
+			OS::set_clipboard_primary(p_text);
+		}
+
+		XSetSelectionOwner(x11_display, XA_PRIMARY, x11_window, CurrentTime);
+		XSetSelectionOwner(x11_display, XInternAtom(x11_display, "PRIMARY", 0), x11_window, CurrentTime);
+	}
+}
+
+String OS_X11::get_clipboard_primary() const {
+	String ret;
+	ret = _get_clipboard(XInternAtom(x11_display, "PRIMARY", 0), x11_window);
+
+	if (ret.empty()) {
+		ret = _get_clipboard(XA_PRIMARY, x11_window);
+	}
+
+	return ret;
+}
+
 String OS_X11::get_name() const {
 	return "X11";
 }
@@ -3357,7 +3392,15 @@ Error OS_X11::shell_open(String p_uri) {
 }
 
 bool OS_X11::_check_internal_feature_support(const String &p_feature) {
-	return p_feature == "pc";
+	if (p_feature == "pc") {
+		return true;
+	}
+
+	if (p_feature == "primary_clipboard") {
+		return true;
+	}
+
+	return false;
 }
 
 String OS_X11::get_config_path() const {

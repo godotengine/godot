@@ -170,6 +170,14 @@ bool OS::has_clipboard() const {
 	return !get_clipboard().empty();
 }
 
+void OS::set_clipboard_primary(const String &p_text) {
+	_primary_clipboard = p_text;
+}
+
+String OS::get_clipboard_primary() const {
+	return _primary_clipboard;
+}
+
 String OS::get_executable_path() const {
 	return _execpath;
 }
