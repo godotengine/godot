@@ -222,6 +222,11 @@ void TabBar::gui_input(const Ref<InputEvent> &p_event) {
 				}
 			}
 
+			if (max_drawn_tab <= 0) {
+				// Return early if there are no actual tabs to handle input for.
+				return;
+			}
+
 			int found = -1;
 			for (int i = offset; i <= max_drawn_tab; i++) {
 				if (tabs[i].rb_rect.has_point(pos)) {
