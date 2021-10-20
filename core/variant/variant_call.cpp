@@ -1581,6 +1581,8 @@ static void _register_variant_builtin_methods() {
 	bind_method(Vector3, bounce, sarray("n"), varray());
 	bind_method(Vector3, reflect, sarray("n"), varray());
 	bind_method(Vector3, sign, sarray(), varray());
+	bind_method(Vector3, octahedron_encode, sarray(), varray());
+	bind_static_method(Vector3, octahedron_decode, sarray("uv"), varray());
 
 	/* Vector3i */
 
@@ -1617,6 +1619,8 @@ static void _register_variant_builtin_methods() {
 	bind_method(Quaternion, slerpni, sarray("to", "weight"), varray());
 	bind_method(Quaternion, cubic_slerp, sarray("b", "pre_a", "post_b", "weight"), varray());
 	bind_method(Quaternion, get_euler, sarray(), varray());
+	bind_method(Quaternion, get_axis, sarray(), varray());
+	bind_method(Quaternion, get_angle, sarray(), varray());
 
 	/* Color */
 

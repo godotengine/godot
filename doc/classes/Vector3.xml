@@ -208,6 +208,17 @@
 				Returns the vector scaled to unit length. Equivalent to [code]v / v.length()[/code].
 			</description>
 		</method>
+		<method name="octahedron_decode" qualifiers="static">
+			<return type="Vector3" />
+			<argument index="0" name="uv" type="Vector2" />
+			<description>
+			</description>
+		</method>
+		<method name="octahedron_encode" qualifiers="const">
+			<return type="Vector2" />
+			<description>
+			</description>
+		</method>
 		<method name="operator !=" qualifiers="operator">
 			<return type="bool" />
 			<description>

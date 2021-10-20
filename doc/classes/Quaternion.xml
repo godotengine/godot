@@ -90,6 +90,16 @@
 				Returns the dot product of two quaternions.
 			</description>
 		</method>
+		<method name="get_angle" qualifiers="const">
+			<return type="float" />
+			<description>
+			</description>
+		</method>
+		<method name="get_axis" qualifiers="const">
+			<return type="Vector3" />
+			<description>
+			</description>
+		</method>
 		<method name="get_euler" qualifiers="const">
 			<return type="Vector3" />
 			<description>

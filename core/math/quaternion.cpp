@@ -189,6 +189,15 @@ Quaternion::operator String() const {
 	return "(" + String::num_real(x, false) + ", " + String::num_real(y, false) + ", " + String::num_real(z, false) + ", " + String::num_real(w, false) + ")";
 }
 
+Vector3 Quaternion::get_axis() const {
+	real_t r = ((real_t)1) / Math::sqrt(1 - w * w);
+	return Vector3(x * r, y * r, z * r);
+}
+
+float Quaternion::get_angle() const {
+	return 2 * Math::acos(w);
+}
+
 Quaternion::Quaternion(const Vector3 &p_axis, real_t p_angle) {
 #ifdef MATH_CHECKS
 	ERR_FAIL_COND_MSG(!p_axis.is_normalized(), "The axis Vector3 must be normalized.");

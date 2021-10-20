@@ -32,9 +32,9 @@
 #define VECTOR3_H
 
 #include "core/math/math_funcs.h"
+#include "core/math/vector2.h"
 #include "core/math/vector3i.h"
 #include "core/string/ustring.h"
-
 class Basis;
 
 struct Vector3 {
@@ -102,6 +102,31 @@ struct Vector3 {
 	_FORCE_INLINE_ Vector3 slerp(const Vector3 &p_to, const real_t p_weight) const;
 	Vector3 cubic_interpolate(const Vector3 &p_b, const Vector3 &p_pre_a, const Vector3 &p_post_b, const real_t p_weight) const;
 	Vector3 move_toward(const Vector3 &p_to, const real_t p_delta) const;
+
+	_FORCE_INLINE_ Vector2 octahedron_encode() const {
+		Vector3 n = *this;
+		n /= Math::abs(n.x) + Math::abs(n.y) + Math::abs(n.z);
+		Vector2 o;
+		if (n.z >= 0.0) {
+			o.x = n.x;
+			o.y = n.y;
+		} else {
+			o.x = (1.0 - Math::abs(n.y)) * (n.x >= 0.0 ? 1.0 : -1.0);
+			o.y = (1.0 - Math::abs(n.x)) * (n.y >= 0.0 ? 1.0 : -1.0);
+		}
+		o.x = o.x * 0.5 + 0.5;
+		o.y = o.y * 0.5 + 0.5;
+		return o;
+	}
+
+	static _FORCE_INLINE_ Vector3 octahedron_decode(const Vector2 &p_oct) {
+		Vector2 f(p_oct.x * 2.0 - 1.0, p_oct.y * 2.0 - 1.0);
+		Vector3 n(f.x, f.y, 1.0f - Math::abs(f.x) - Math::abs(f.y));
+		float t = CLAMP(-n.z, 0.0, 1.0);
+		n.x += n.x >= 0 ? -t : t;
+		n.y += n.y >= 0 ? -t : t;
+		return n.normalized();
+	}
 
 	_FORCE_INLINE_ Vector3 cross(const Vector3 &p_b) const;
 	_FORCE_INLINE_ real_t dot(const Vector3 &p_b) const;
