@@ -2228,18 +2228,28 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 		}
 		if (ED_IS_SHORTCUT("spatial_editor/orbit_view_down", p_event)) {
 			cursor.x_rot -= Math_PI / 12.0;
+			view_type = VIEW_TYPE_USER;
+			_update_name();
 		}
 		if (ED_IS_SHORTCUT("spatial_editor/orbit_view_up", p_event)) {
 			cursor.x_rot += Math_PI / 12.0;
+			view_type = VIEW_TYPE_USER;
+			_update_name();
 		}
 		if (ED_IS_SHORTCUT("spatial_editor/orbit_view_right", p_event)) {
 			cursor.y_rot -= Math_PI / 12.0;
+			view_type = VIEW_TYPE_USER;
+			_update_name();
 		}
 		if (ED_IS_SHORTCUT("spatial_editor/orbit_view_left", p_event)) {
 			cursor.y_rot += Math_PI / 12.0;
+			view_type = VIEW_TYPE_USER;
+			_update_name();
 		}
 		if (ED_IS_SHORTCUT("spatial_editor/orbit_view_180", p_event)) {
 			cursor.y_rot += Math_PI;
+			view_type = VIEW_TYPE_USER;
+			_update_name();
 		}
 		if (ED_IS_SHORTCUT("spatial_editor/focus_origin", p_event)) {
 			_menu_option(VIEW_CENTER_TO_ORIGIN);
