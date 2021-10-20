@@ -209,7 +209,7 @@ void TileSetEditor::_update_sources_list(int force_selected_id) {
 	_source_selected(sources_list->get_current());
 
 	// Synchronize the lists.
-	TilesEditor::get_singleton()->set_sources_lists_current(sources_list->get_current());
+	TilesEditorPlugin::get_singleton()->set_sources_lists_current(sources_list->get_current());
 }
 
 void TileSetEditor::_source_selected(int p_source_index) {
@@ -370,7 +370,7 @@ void TileSetEditor::_update_patterns_list() {
 	for (int i = 0; i < tile_set->get_patterns_count(); i++) {
 		int id = patterns_item_list->add_item("");
 		patterns_item_list->set_item_metadata(id, tile_set->get_pattern(i));
-		TilesEditor::get_singleton()->queue_pattern_preview(tile_set, tile_set->get_pattern(i), callable_mp(this, &TileSetEditor::_pattern_preview_done));
+		TilesEditorPlugin::get_singleton()->queue_pattern_preview(tile_set, tile_set->get_pattern(i), callable_mp(this, &TileSetEditor::_pattern_preview_done));
 	}
 
 	// Update the label visibility.
@@ -652,6 +652,7 @@ TileSetEditor::TileSetEditor() {
 	tile_set_toolbar = memnew(HBoxContainer);
 	tile_set_toolbar->set_h_size_flags(SIZE_EXPAND_FILL);
 	tile_set_toolbar->add_child(tabs_bar);
+	add_child(tile_set_toolbar);
 
 	//// Tiles ////
 	// Split container.
@@ -674,8 +675,8 @@ TileSetEditor::TileSetEditor() {
 	sources_list->set_h_size_flags(SIZE_EXPAND_FILL);
 	sources_list->set_v_size_flags(SIZE_EXPAND_FILL);
 	sources_list->connect("item_selected", callable_mp(this, &TileSetEditor::_source_selected));
-	sources_list->connect("item_selected", callable_mp(TilesEditor::get_singleton(), &TilesEditor::set_sources_lists_current));
-	sources_list->connect("visibility_changed", callable_mp(TilesEditor::get_singleton(), &TilesEditor::synchronize_sources_list), varray(sources_list));
+	sources_list->connect("item_selected", callable_mp(TilesEditorPlugin::get_singleton(), &TilesEditorPlugin::set_sources_lists_current));
+	sources_list->connect("visibility_changed", callable_mp(TilesEditorPlugin::get_singleton(), &TilesEditorPlugin::synchronize_sources_list), varray(sources_list));
 	sources_list->set_texture_filter(CanvasItem::TEXTURE_FILTER_NEAREST);
 	sources_list->set_drag_forwarding(this);
 	split_container_left_side->add_child(sources_list);

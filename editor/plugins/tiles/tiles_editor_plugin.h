@@ -38,31 +38,32 @@
 #include "tile_map_editor.h"
 #include "tile_set_editor.h"
 
-class TilesEditor : public VBoxContainer {
-	GDCLASS(TilesEditor, VBoxContainer);
+class TilesEditorPlugin : public EditorPlugin {
+	GDCLASS(TilesEditorPlugin, EditorPlugin);
 
-	static TilesEditor *singleton;
+	static TilesEditorPlugin *singleton;
 
 private:
+	EditorNode *editor_node;
+
 	bool tile_map_changed_needs_update = false;
 	ObjectID tile_map_id;
 	Ref<TileSet> tile_set;
 
-	Button *tileset_tilemap_switch_button;
-
-	Control *tilemap_toolbar;
+	Button *tilemap_editor_button;
 	TileMapEditor *tilemap_editor;
 
-	Control *tileset_toolbar;
+	Button *tileset_editor_button;
 	TileSetEditor *tileset_editor;
 
-	void _update_switch_button();
 	void _update_editors();
 
 	// For synchronization.
 	int atlas_sources_lists_current = 0;
 	float atlas_view_zoom = 1.0;
 	Vector2 atlas_view_scroll = Vector2();
+
+	void _tile_map_changed();
 
 	// Patterns preview generation.
 	struct QueueItem {
@@ -81,17 +82,18 @@ private:
 	static void _thread_func(void *ud);
 	void _thread();
 
-	void _tile_map_changed();
-
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
-	_FORCE_INLINE_ static TilesEditor *get_singleton() { return singleton; }
+	_FORCE_INLINE_ static TilesEditorPlugin *get_singleton() { return singleton; }
 
-	bool forward_canvas_gui_input(const Ref<InputEvent> &p_event) { return tilemap_editor->forward_canvas_gui_input(p_event); }
-	void forward_canvas_draw_over_viewport(Control *p_overlay) { tilemap_editor->forward_canvas_draw_over_viewport(p_overlay); }
+	virtual bool forward_canvas_gui_input(const Ref<InputEvent> &p_event) override { return tilemap_editor->forward_canvas_gui_input(p_event); }
+	virtual void forward_canvas_draw_over_viewport(Control *p_overlay) override { tilemap_editor->forward_canvas_draw_over_viewport(p_overlay); }
+
+	// Pattern preview API.
+	void queue_pattern_preview(Ref<TileSet> p_tile_set, Ref<TileMapPattern> p_pattern, Callable p_callback);
 
 	// To synchronize the atlas sources lists.
 	void set_sources_lists_current(int p_current);
@@ -99,30 +101,6 @@ public:
 
 	void set_atlas_view_transform(float p_zoom, Vector2 p_scroll);
 	void synchronize_atlas_view(Object *p_current);
-
-	// Pattern preview API.
-	void queue_pattern_preview(Ref<TileSet> p_tile_set, Ref<TileMapPattern> p_pattern, Callable p_callback);
-
-	void edit(Object *p_object);
-
-	TilesEditor(EditorNode *p_editor);
-	~TilesEditor();
-};
-
-class TilesEditorPlugin : public EditorPlugin {
-	GDCLASS(TilesEditorPlugin, EditorPlugin);
-
-private:
-	EditorNode *editor_node;
-	TilesEditor *tiles_editor;
-	Button *tiles_editor_button;
-
-protected:
-	void _notification(int p_what);
-
-public:
-	virtual bool forward_canvas_gui_input(const Ref<InputEvent> &p_event) override { return tiles_editor->forward_canvas_gui_input(p_event); }
-	virtual void forward_canvas_draw_over_viewport(Control *p_overlay) override { tiles_editor->forward_canvas_draw_over_viewport(p_overlay); }
 
 	virtual void edit(Object *p_object) override;
 	virtual bool handles(Object *p_object) const override;

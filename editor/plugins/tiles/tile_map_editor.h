@@ -380,7 +380,6 @@ public:
 	void forward_canvas_draw_over_viewport(Control *p_overlay);
 
 	void edit(TileMap *p_tile_map);
-	Control *get_toolbar() { return tile_map_toolbar; };
 
 	TileMapEditor();
 	~TileMapEditor();
