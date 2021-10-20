@@ -155,6 +155,7 @@ class DisplayServerX11 : public DisplayServer {
 	WindowID _create_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect);
 
 	String internal_clipboard;
+	String internal_clipboard_primary;
 	Window xdnd_source_window;
 	::Display *x11_display;
 	char *xmbstring;
@@ -205,7 +206,7 @@ class DisplayServerX11 : public DisplayServer {
 
 	void _handle_key_event(WindowID p_window, XKeyEvent *p_event, LocalVector<XEvent> &p_events, uint32_t &p_event_index, bool p_echo = false);
 
-	Atom _process_selection_request_target(Atom p_target, Window p_requestor, Atom p_property) const;
+	Atom _process_selection_request_target(Atom p_target, Window p_requestor, Atom p_property, Atom p_selection) const;
 	void _handle_selection_request_event(XSelectionRequestEvent *p_event) const;
 
 	String _clipboard_get_impl(Atom p_source, Window x11_window, Atom target) const;
@@ -290,6 +291,8 @@ public:
 
 	virtual void clipboard_set(const String &p_text) override;
 	virtual String clipboard_get() const override;
+	virtual void clipboard_set_primary(const String &p_text) override;
+	virtual String clipboard_get_primary() const override;
 
 	virtual int get_screen_count() const override;
 	virtual Point2i screen_get_position(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;

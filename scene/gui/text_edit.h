@@ -269,6 +269,7 @@ private:
 	bool context_menu_enabled = true;
 	bool shortcut_keys_enabled = true;
 	bool virtual_keyboard_enabled = true;
+	bool middle_mouse_paste_enabled = true;
 
 	// Overridable actions
 	String cut_copy_line = "";
@@ -586,12 +587,14 @@ protected:
 	virtual void _cut_internal();
 	virtual void _copy_internal();
 	virtual void _paste_internal();
+	virtual void _paste_primary_clipboard_internal();
 
 	GDVIRTUAL1(_handle_unicode_input, int)
 	GDVIRTUAL0(_backspace)
 	GDVIRTUAL0(_cut)
 	GDVIRTUAL0(_copy)
 	GDVIRTUAL0(_paste)
+	GDVIRTUAL0(_paste_primary_clipboard)
 
 public:
 	/* General overrides. */
@@ -640,6 +643,9 @@ public:
 	void set_virtual_keyboard_enabled(bool p_enabled);
 	bool is_virtual_keyboard_enabled() const;
 
+	void set_middle_mouse_paste_enabled(bool p_enabled);
+	bool is_middle_mouse_paste_enabled() const;
+
 	// Text manipulation
 	void clear();
 
@@ -674,6 +680,7 @@ public:
 	void cut();
 	void copy();
 	void paste();
+	void paste_primary_clipboard();
 
 	// Context menu.
 	PopupMenu *get_menu() const;

@@ -159,6 +159,14 @@ String DisplayServer::clipboard_get() const {
 	ERR_FAIL_V_MSG(String(), "Clipboard is not supported by this display server.");
 }
 
+void DisplayServer::clipboard_set_primary(const String &p_text) {
+	WARN_PRINT("Primary clipboard is not supported by this display server.");
+}
+
+String DisplayServer::clipboard_get_primary() const {
+	ERR_FAIL_V_MSG(String(), "Primary clipboard is not supported by this display server.");
+}
+
 void DisplayServer::screen_set_orientation(ScreenOrientation p_orientation, int p_screen) {
 	WARN_PRINT("Orientation not supported by this display server.");
 }
@@ -360,6 +368,8 @@ void DisplayServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("clipboard_set", "clipboard"), &DisplayServer::clipboard_set);
 	ClassDB::bind_method(D_METHOD("clipboard_get"), &DisplayServer::clipboard_get);
+	ClassDB::bind_method(D_METHOD("clipboard_set_primary", "clipboard_primary"), &DisplayServer::clipboard_set_primary);
+	ClassDB::bind_method(D_METHOD("clipboard_get_primary"), &DisplayServer::clipboard_get_primary);
 
 	ClassDB::bind_method(D_METHOD("get_screen_count"), &DisplayServer::get_screen_count);
 	ClassDB::bind_method(D_METHOD("screen_get_position", "screen"), &DisplayServer::screen_get_position, DEFVAL(SCREEN_OF_MAIN_WINDOW));

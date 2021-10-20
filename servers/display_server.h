@@ -161,6 +161,8 @@ public:
 
 	virtual void clipboard_set(const String &p_text);
 	virtual String clipboard_get() const;
+	virtual void clipboard_set_primary(const String &p_text);
+	virtual String clipboard_get_primary() const;
 
 	enum {
 		SCREEN_OF_MAIN_WINDOW = -1

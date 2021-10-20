@@ -41,6 +41,13 @@
 				Override this method to define what happens when the user performs a paste operation.
 			</description>
 		</method>
+		<method name="_paste_primary_clipboard" qualifiers="virtual">
+			<return type="void" />
+			<description>
+				Override this method to define what happens when the user performs a paste operation with middle mouse button.
+				[b]Note:[/b] This method is only implemented on Linux.
+			</description>
+		</method>
 		<method name="add_gutter">
 			<return type="void" />
 			<argument index="0" name="at" type="int" default="-1" />
@@ -936,6 +943,10 @@
 		</member>
 		<member name="language" type="String" setter="set_language" getter="get_language" default="&quot;&quot;">
 			Language code used for line-breaking and text shaping algorithms, if left empty current locale is used instead.
+		</member>
+		<member name="middle_mouse_paste_enabled" type="bool" setter="set_middle_mouse_paste_enabled" getter="is_middle_mouse_paste_enabled" default="true">
+			If [code]false[/code], using middle mouse button to paste clipboard will be disabled.
+			[b]Note:[/b] This method is only implemented on Linux.
 		</member>
 		<member name="minimap_draw" type="bool" setter="set_draw_minimap" getter="is_drawing_minimap" default="false">
 			If [code]true[/code], a minimap is shown, providing an outline of your source code.

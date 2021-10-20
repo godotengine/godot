@@ -406,6 +406,20 @@ void DisplayServerX11::clipboard_set(const String &p_text) {
 	XSetSelectionOwner(x11_display, XInternAtom(x11_display, "CLIPBOARD", 0), windows[MAIN_WINDOW_ID].x11_window, CurrentTime);
 }
 
+void DisplayServerX11::clipboard_set_primary(const String &p_text) {
+	_THREAD_SAFE_METHOD_
+	if (!p_text.is_empty()) {
+		{
+			// The clipboard content can be accessed while polling for events.
+			MutexLock mutex_lock(events_mutex);
+			internal_clipboard_primary = p_text;
+		}
+
+		XSetSelectionOwner(x11_display, XA_PRIMARY, windows[MAIN_WINDOW_ID].x11_window, CurrentTime);
+		XSetSelectionOwner(x11_display, XInternAtom(x11_display, "PRIMARY", 0), windows[MAIN_WINDOW_ID].x11_window, CurrentTime);
+	}
+}
+
 Bool DisplayServerX11::_predicate_clipboard_selection(Display *display, XEvent *event, XPointer arg) {
 	if (event->type == SelectionNotify && event->xselection.requestor == *(Window *)arg) {
 		return True;
@@ -427,7 +441,12 @@ String DisplayServerX11::_clipboard_get_impl(Atom p_source, Window x11_window, A
 
 	Window selection_owner = XGetSelectionOwner(x11_display, p_source);
 	if (selection_owner == x11_window) {
-		return internal_clipboard;
+		static const char *target_type = "PRIMARY";
+		if (p_source != None && String(XGetAtomName(x11_display, p_source)) == target_type) {
+			return internal_clipboard_primary;
+		} else {
+			return internal_clipboard;
+		}
 	}
 
 	if (selection_owner != None) {
@@ -572,6 +591,19 @@ String DisplayServerX11::clipboard_get() const {
 
 	String ret;
 	ret = _clipboard_get(XInternAtom(x11_display, "CLIPBOARD", 0), windows[MAIN_WINDOW_ID].x11_window);
+
+	if (ret.is_empty()) {
+		ret = _clipboard_get(XA_PRIMARY, windows[MAIN_WINDOW_ID].x11_window);
+	}
+
+	return ret;
+}
+
+String DisplayServerX11::clipboard_get_primary() const {
+	_THREAD_SAFE_METHOD_
+
+	String ret;
+	ret = _clipboard_get(XInternAtom(x11_display, "PRIMARY", 0), windows[MAIN_WINDOW_ID].x11_window);
 
 	if (ret.is_empty()) {
 		ret = _clipboard_get(XA_PRIMARY, windows[MAIN_WINDOW_ID].x11_window);
@@ -2417,7 +2449,7 @@ void DisplayServerX11::_handle_key_event(WindowID p_window, XKeyEvent *p_event, 
 	Input::get_singleton()->parse_input_event(k);
 }
 
-Atom DisplayServerX11::_process_selection_request_target(Atom p_target, Window p_requestor, Atom p_property) const {
+Atom DisplayServerX11::_process_selection_request_target(Atom p_target, Window p_requestor, Atom p_property, Atom p_selection) const {
 	if (p_target == XInternAtom(x11_display, "TARGETS", 0)) {
 		// Request to list all supported targets.
 		Atom data[9];
@@ -2459,7 +2491,13 @@ Atom DisplayServerX11::_process_selection_request_target(Atom p_target, Window p
 			   p_target == XInternAtom(x11_display, "text/plain", 0)) {
 		// Directly using internal clipboard because we know our window
 		// is the owner during a selection request.
-		CharString clip = internal_clipboard.utf8();
+		CharString clip;
+		static const char *target_type = "PRIMARY";
+		if (p_selection != None && String(XGetAtomName(x11_display, p_selection)) == target_type) {
+			clip = internal_clipboard_primary.utf8();
+		} else {
+			clip = internal_clipboard.utf8();
+		}
 		XChangeProperty(x11_display,
 				p_requestor,
 				p_property,
@@ -2497,7 +2535,7 @@ void DisplayServerX11::_handle_selection_request_event(XSelectionRequestEvent *p
 				for (uint64_t i = 0; i < len; i += 2) {
 					Atom target = targets[i];
 					Atom &property = targets[i + 1];
-					property = _process_selection_request_target(target, p_event->requestor, property);
+					property = _process_selection_request_target(target, p_event->requestor, property, p_event->selection);
 				}
 
 				XChangeProperty(x11_display,
@@ -2515,7 +2553,7 @@ void DisplayServerX11::_handle_selection_request_event(XSelectionRequestEvent *p
 		}
 	} else {
 		// Request for target conversion.
-		respond.xselection.property = _process_selection_request_target(p_event->target, p_event->requestor, p_event->property);
+		respond.xselection.property = _process_selection_request_target(p_event->target, p_event->requestor, p_event->property, p_event->selection);
 	}
 
 	respond.xselection.type = SelectionNotify;
