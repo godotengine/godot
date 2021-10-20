@@ -452,8 +452,13 @@ bool InputEventKey::is_match(const Ref<InputEvent> &p_event, bool p_exact_match)
 		return false;
 	}
 
-	return keycode == key->keycode &&
-		   (!p_exact_match || get_modifiers_mask() == key->get_modifiers_mask());
+	if (keycode == 0) {
+		return physical_keycode == key->physical_keycode &&
+			   (!p_exact_match || get_modifiers_mask() == key->get_modifiers_mask());
+	} else {
+		return keycode == key->keycode &&
+			   (!p_exact_match || get_modifiers_mask() == key->get_modifiers_mask());
+	}
 }
 
 void InputEventKey::_bind_methods() {
