@@ -2672,9 +2672,11 @@ void RendererStorageRD::MaterialData::update_textures(const Map<StringName, Vari
 			if (uniform_array_size > 0) {
 				if (textures.size() < uniform_array_size) {
 					const Map<StringName, RID>::Element *W = p_default_textures.find(uniform_name);
-					if (W) {
-						for (int j = textures.size(); j < uniform_array_size; j++) {
+					for (int j = textures.size(); j < uniform_array_size; j++) {
+						if (W) {
 							textures.push_back(W->get());
+						} else {
+							textures.push_back(RID());
 						}
 					}
 				}
