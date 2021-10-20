@@ -174,6 +174,7 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 		l.height_caches.clear();
 		l.ascent_caches.clear();
 		l.descent_caches.clear();
+		l.space_caches.clear();
 		l.char_count = 0;
 		l.minimum_width = 0;
 		l.maximum_width = 0;
