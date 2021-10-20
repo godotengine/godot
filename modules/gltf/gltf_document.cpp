@@ -130,8 +130,7 @@ Error GLTFDocument::serialize(Ref<GLTFState> state, Node *p_root, const String &
 
 	/* STEP 9 SERIALIZE TEXTURE SAMPLERS */
 	err = _serialize_texture_samplers(state);
-	if (err != OK)
-	{
+	if (err != OK) {
 		return Error::FAILED;
 	}
 
@@ -3133,11 +3132,11 @@ Error GLTFDocument::_parse_images(Ref<GLTFState> state, const String &p_base_pat
 			continue;
 		}
 
-		Ref<ImageTexture> t;
-		t.instance();
-		t->create_from_image(img);
+		//Ref<ImageTexture> t;
+		//t.instance();
+		//t->create_from_image(img);
 
-		state->images.push_back(t);
+		state->images.push_back(img);
 	}
 
 	print_verbose("glTF: Total images: " + itos(state->images.size()));
@@ -3156,6 +3155,7 @@ Error GLTFDocument::_serialize_textures(Ref<GLTFState> state) {
 		Ref<GLTFTexture> t = state->textures[i];
 		ERR_CONTINUE(t->get_src_image() == -1);
 		d["source"] = t->get_src_image();
+		d["sampler"] = t->get_sampler();
 		textures.push_back(d);
 	}
 	state->json["textures"] = textures;
@@ -3177,7 +3177,56 @@ Error GLTFDocument::_parse_textures(Ref<GLTFState> state) {
 		Ref<GLTFTexture> t;
 		t.instance();
 		t->set_src_image(d["source"]);
+		t->set_sampler(d["sampler"]);
 		state->textures.push_back(t);
+
+		// Create and cache the texture used in the engine
+		Ref<ImageTexture> imgTex;
+		imgTex.instance();
+		imgTex->create_from_image(state->images[t->get_src_image()]);
+
+		// Set texture filter and mipmap based on sampler object
+		const Ref<GLTFTextureSampler> sampler = state->texture_samplers[t->get_sampler()];
+
+		using MinFilter = GLTFTextureSampler::MinFilter;
+		using MagFilter = GLTFTextureSampler::MagFilter;
+		using WrapMode = GLTFTextureSampler::WrapMode;
+
+		uint32_t flags = 0;
+
+		// Set mipmap enabled
+		switch ((MinFilter)sampler->get_min_filter()) {
+			case MinFilter::LINEAR_MIPMAP_LINEAR:
+			case MinFilter::LINEAR_MIPMAP_NEAREST:
+			case MinFilter::NEAREST_MIPMAP_LINEAR:
+			case MinFilter::NEAREST_MIPMAP_NEAREST:
+				flags |= Texture::Flags::FLAG_MIPMAPS;
+				break;
+		}
+
+		// Set texture filter
+		switch ((MinFilter)sampler->get_min_filter()) {
+			case MinFilter::LINEAR_MIPMAP_LINEAR:
+			case MinFilter::LINEAR_MIPMAP_NEAREST:
+			case MinFilter::LINEAR:
+				flags |= Texture::Flags::FLAG_FILTER;
+				break;
+		}
+		if ((MagFilter)sampler->get_mag_filter() == MagFilter::LINEAR) {
+			flags |= Texture::Flags::FLAG_FILTER;
+		}
+
+		// Set wrapping/repeat mode
+		// Note: Currently, the engine does not support different wrapping modes for each sampling direction, so the S and T wrap modes are merged.
+		if ((WrapMode)sampler->get_wrap_s() == WrapMode::MIRRORED_REPEAT || (WrapMode)sampler->get_wrap_t() == WrapMode::MIRRORED_REPEAT) {
+			flags |= Texture::Flags::FLAG_MIRRORED_REPEAT;
+		} else if ((WrapMode)sampler->get_wrap_s() == WrapMode::REPEAT || (WrapMode)sampler->get_wrap_t() == WrapMode::REPEAT) {
+			flags |= Texture::Flags::FLAG_REPEAT;
+		}
+
+		imgTex->set_flags(flags);
+
+		state->textures_cache.insert(i, imgTex);
 	}
 
 	return OK;
@@ -3185,24 +3234,63 @@ Error GLTFDocument::_parse_textures(Ref<GLTFState> state) {
 
 GLTFTextureIndex GLTFDocument::_set_texture(Ref<GLTFState> state, Ref<Texture> p_texture) {
 	ERR_FAIL_COND_V(p_texture.is_null(), -1);
+	ERR_FAIL_COND_V(p_texture->get_data().is_null(), -1);
+
+	// Create GLTF data structures for the new texture
 	Ref<GLTFTexture> gltf_texture;
 	gltf_texture.instance();
-	ERR_FAIL_COND_V(p_texture->get_data().is_null(), -1);
 	GLTFImageIndex gltf_src_image_i = state->images.size();
-	state->images.push_back(p_texture);
+
+	state->images.push_back(p_texture->get_data());
+
 	gltf_texture->set_src_image(gltf_src_image_i);
+
+	Ref<GLTFTextureSampler> gltf_sampler;
+	gltf_sampler.instance();
+
+	bool mipmaps = (p_texture->get_flags() & Texture::FLAG_MIPMAPS) > 0;
+	bool filter = (p_texture->get_flags() & Texture::FLAG_FILTER) > 0;
+
+	// Interpret the texture flags as sampler properties
+	if (filter) {
+		if (mipmaps) {
+			gltf_sampler->set_min_filter((int)GLTFTextureSampler::MinFilter::LINEAR_MIPMAP_LINEAR);
+		} else {
+			gltf_sampler->set_min_filter((int)GLTFTextureSampler::MinFilter::LINEAR);
+		}
+		gltf_sampler->set_mag_filter((int)GLTFTextureSampler::MagFilter::LINEAR);
+	} else {
+		if (mipmaps) {
+			gltf_sampler->set_min_filter((int)GLTFTextureSampler::MinFilter::NEAREST_MIPMAP_NEAREST);
+		} else {
+			gltf_sampler->set_min_filter((int)GLTFTextureSampler::MinFilter::NEAREST);
+		}
+		gltf_sampler->set_mag_filter((int)GLTFTextureSampler::MagFilter::NEAREST);
+	}
+
+	if (p_texture->get_flags() & Texture::FLAG_MIRRORED_REPEAT > 0) {
+		gltf_sampler->set_wrap_s((int)GLTFTextureSampler::WrapMode::MIRRORED_REPEAT);
+		gltf_sampler->set_wrap_t((int)GLTFTextureSampler::WrapMode::MIRRORED_REPEAT);
+	} else if (p_texture->get_flags() & Texture::FLAG_REPEAT > 0) {
+		gltf_sampler->set_wrap_s((int)GLTFTextureSampler::WrapMode::REPEAT);
+		gltf_sampler->set_wrap_t((int)GLTFTextureSampler::WrapMode::REPEAT);
+	} else {
+		gltf_sampler->set_wrap_s((int)GLTFTextureSampler::WrapMode::CLAMP_TO_EDGE);
+		gltf_sampler->set_wrap_t((int)GLTFTextureSampler::WrapMode::CLAMP_TO_EDGE);
+	}
+
+	GLTFTextureSamplerIndex gltf_sampler_i = state->texture_samplers.size();
+	gltf_texture->set_sampler(gltf_sampler_i);
+
 	GLTFTextureIndex gltf_texture_i = state->textures.size();
 	state->textures.push_back(gltf_texture);
+	state->textures_cache[gltf_texture_i] = p_texture;
 	return gltf_texture_i;
 }
 
 Ref<Texture> GLTFDocument::_get_texture(Ref<GLTFState> state, const GLTFTextureIndex p_texture) {
 	ERR_FAIL_INDEX_V(p_texture, state->textures.size(), Ref<Texture>());
-	const GLTFImageIndex image = state->textures[p_texture]->get_src_image();
-
-	ERR_FAIL_INDEX_V(image, state->images.size(), Ref<Texture>());
-
-	return state->images[image];
+	return state->textures_cache[p_texture];
 }
 
 Error GLTFDocument::_serialize_texture_samplers(Ref<GLTFState> state) {
@@ -3214,10 +3302,10 @@ Error GLTFDocument::_serialize_texture_samplers(Ref<GLTFState> state) {
 	for (int32_t i = 0; i < state->texture_samplers.size(); ++i) {
 		Dictionary d;
 		Ref<GLTFTextureSampler> s = state->texture_samplers[i];
-		d["magFilter"] = (int32_t) s->get_mag_filter();
-		d["minFilter"] = (int32_t) s->get_min_filter();
-		d["wrapS"] = (int32_t) s->get_wrap_s();
-		d["wrapT"] = (int32_t) s->get_wrap_t();
+		d["magFilter"] = (int32_t)s->get_mag_filter();
+		d["minFilter"] = (int32_t)s->get_min_filter();
+		d["wrapS"] = (int32_t)s->get_wrap_s();
+		d["wrapT"] = (int32_t)s->get_wrap_t();
 		samplers.push_back(d);
 	}
 	state->json["samplers"] = samplers;
@@ -3233,26 +3321,26 @@ Error GLTFDocument::_parse_texture_samplers(Ref<GLTFState> state) {
 	const Array &samplers = state->json["samplers"];
 	for (int i = 0; i < samplers.size(); ++i) {
 		const Dictionary &d = samplers[i];
-		
+
 		ERR_FAIL_COND_V(!d.has("minFilter"), ERR_PARSE_ERROR);
 		ERR_FAIL_COND_V(!d.has("magFilter"), ERR_PARSE_ERROR);
 
 		Ref<GLTFTextureSampler> sampler;
 		sampler.instance();
-		sampler->set_min_filter((GLTFTextureSampler::MinFilter) (int) d["minFilter"]);
-		sampler->set_mag_filter((GLTFTextureSampler::MagFilter) (int) d["magFilter"]);
-		
-		//Wrapping modes are optional and have default values.
+		sampler->set_min_filter(d["minFilter"]);
+		sampler->set_mag_filter(d["magFilter"]);
+
+		// Wrapping modes are optional and have default values.
 		if (d.has("wrapS")) {
-			sampler->set_wrap_s((GLTFTextureSampler::WrapMode) (int) d["wrapS"]);
+			sampler->set_wrap_s(d["wrapS"]);
 		} else {
-			sampler->set_wrap_s(GLTFTextureSampler::WrapMode::DEFAULT);
+			sampler->set_wrap_s((int)GLTFTextureSampler::WrapMode::DEFAULT);
 		}
 
 		if (d.has("wrapT")) {
-			sampler->set_wrap_t((GLTFTextureSampler::WrapMode) (int) d["wrapT"]);
+			sampler->set_wrap_t(d["wrapT"]);
 		} else {
-			sampler->set_wrap_t(GLTFTextureSampler::WrapMode::DEFAULT);
+			sampler->set_wrap_t((int)GLTFTextureSampler::WrapMode::DEFAULT);
 		}
 
 		state->texture_samplers.push_back(sampler);
@@ -6635,20 +6723,20 @@ Error GLTFDocument::parse(Ref<GLTFState> state, String p_path, bool p_read_binar
 		return Error::FAILED;
 	}
 
-	/* STEP 5 PARSE IMAGES */
+	/* STEP 5 PARSE TEXTURE SAMPLERS */
+	err = _parse_texture_samplers(state);
+	if (err != OK) {
+		return Error::FAILED;
+	}
+
+	/* STEP 6 PARSE IMAGES */
 	err = _parse_images(state, p_path.get_base_dir());
 	if (err != OK) {
 		return Error::FAILED;
 	}
 
-	/* STEP 6 PARSE TEXTURES */
+	/* STEP 7 PARSE TEXTURES */
 	err = _parse_textures(state);
-	if (err != OK) {
-		return Error::FAILED;
-	}
-
-	/* STEP 7 PARSE TEXTURE SAMPLERS */
-	err = _parse_texture_samplers(state);
 	if (err != OK) {
 		return Error::FAILED;
 	}

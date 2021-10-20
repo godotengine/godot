@@ -62,6 +62,7 @@ using GLTFNodeIndex = int;
 using GLTFSkeletonIndex = int;
 using GLTFSkinIndex = int;
 using GLTFTextureIndex = int;
+using GLTFTextureSamplerIndex = int;
 
 class GLTFDocument : public Resource {
 	GDCLASS(GLTFDocument, Resource);

@@ -78,7 +78,8 @@ class GLTFState : public Resource {
 	Vector<int> root_nodes;
 	Vector<Ref<GLTFTexture>> textures;
 	Vector<Ref<GLTFTextureSampler>> texture_samplers;
-	Vector<Ref<Texture>> images;
+	Vector<Ref<Image>> images;
+	Map<GLTFTextureIndex, Ref<Texture>> textures_cache;
 
 	Vector<Ref<GLTFSkin>> skins;
 	Vector<Ref<GLTFCamera>> cameras;

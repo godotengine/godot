@@ -37,12 +37,12 @@ class GLTFTextureSampler : public Resource {
 	GDCLASS(GLTFTextureSampler, Resource);
 
 public:
-	enum class MagFilter : int32_t {
+	enum class MagFilter {
 		NEAREST = 9728,
 		LINEAR = 9729
 	};
 
-	enum class MinFilter : int32_t {
+	enum class MinFilter {
 		NEAREST = 9728,
 		LINEAR = 9729,
 		NEAREST_MIPMAP_NEAREST = 9984,
@@ -51,43 +51,43 @@ public:
 		LINEAR_MIPMAP_LINEAR = 9987
 	};
 
-	enum class WrapMode : int32_t {
+	enum class WrapMode {
 		CLAMP_TO_EDGE = 33071,
 		MIRRORED_REPEAT = 33648,
 		REPEAT = 10497,
 		DEFAULT = REPEAT
 	};
 
-	MagFilter get_mag_filter() const {
-		return mag_filter;
+	int get_mag_filter() const {
+		return (int)mag_filter;
 	};
 
-	void set_mag_filter(const MagFilter filter_mode) {
-		mag_filter = filter_mode;
+	void set_mag_filter(const int filter_mode) {
+		mag_filter = (MagFilter)filter_mode;
 	};
 
-	MinFilter get_min_filter() const {
-		return min_filter;
+	int get_min_filter() const {
+		return (int)min_filter;
 	};
 
-	void set_min_filter(const MinFilter filter_mode) {
-		min_filter = filter_mode;
+	void set_min_filter(const int filter_mode) {
+		min_filter = (MinFilter)filter_mode;
 	};
 
-	WrapMode get_wrap_s() const {
-		return wrap_s;
+	int get_wrap_s() const {
+		return (int)wrap_s;
 	};
 
-	void set_wrap_s(const WrapMode wrap_mode) {
-		wrap_s = wrap_mode;
+	void set_wrap_s(const int wrap_mode) {
+		wrap_s = (WrapMode)wrap_mode;
 	};
 
-	WrapMode get_wrap_t() const {
-		return wrap_t;
+	int get_wrap_t() const {
+		return (int)wrap_t;
 	};
 
-	void set_wrap_t(const WrapMode wrap_mode) {
-		wrap_s = wrap_mode;
+	void set_wrap_t(const int wrap_mode) {
+		wrap_s = (WrapMode)wrap_mode;
 	};
 
 protected:
