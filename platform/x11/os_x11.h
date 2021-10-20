@@ -157,7 +157,7 @@ class OS_X11 : public OS_Unix {
 
 	void _handle_key_event(XKeyEvent *p_event, LocalVector<XEvent> &p_events, uint32_t &p_event_index, bool p_echo = false);
 
-	Atom _process_selection_request_target(Atom p_target, Window p_requestor, Atom p_property) const;
+	Atom _process_selection_request_target(Atom p_target, Window p_requestor, Atom p_property, Atom p_selection) const;
 	void _handle_selection_request_event(XSelectionRequestEvent *p_event) const;
 
 	String _get_clipboard_impl(Atom p_source, Window x11_window, Atom target) const;
@@ -273,6 +273,8 @@ public:
 
 	virtual void set_clipboard(const String &p_text);
 	virtual String get_clipboard() const;
+	virtual void set_clipboard_primary(const String &p_text);
+	virtual String get_clipboard_primary() const;
 
 	virtual void release_rendering_thread();
 	virtual void make_rendering_thread();
