@@ -438,12 +438,12 @@
 				Triggered when a multiple selection is altered on a list allowing multiple selection.
 			</description>
 		</signal>
-		<signal name="nothing_selected">
+		<signal name="empty_clicked">
 			<description>
 				Triggered when a left mouse click is issued within the rect of the list but on empty space.
 			</description>
 		</signal>
-		<signal name="rmb_clicked">
+		<signal name="empty_rmb_clicked">
 			<argument index="0" name="at_position" type="Vector2" />
 			<description>
 				Triggered when a right mouse click is issued within the rect of the list but on empty space.

@@ -2908,7 +2908,7 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 	files->connect("item_rmb_selected", callable_mp(this, &FileSystemDock::_file_list_rmb_select));
 	files->connect("gui_input", callable_mp(this, &FileSystemDock::_file_list_gui_input));
 	files->connect("multi_selected", callable_mp(this, &FileSystemDock::_file_multi_selected));
-	files->connect("rmb_clicked", callable_mp(this, &FileSystemDock::_file_list_rmb_pressed));
+	files->connect("empty_rmb_clicked", callable_mp(this, &FileSystemDock::_file_list_rmb_pressed));
 	files->set_custom_minimum_size(Size2(0, 15 * EDSCALE));
 	files->set_allow_rmb_select(true);
 	file_list_vb->add_child(files);

@@ -2148,7 +2148,7 @@ TileMapEditorTilesPlugin::TileMapEditorTilesPlugin() {
 	scene_tiles_list->set_drag_forwarding(this);
 	scene_tiles_list->set_select_mode(ItemList::SELECT_MULTI);
 	scene_tiles_list->connect("multi_selected", callable_mp(this, &TileMapEditorTilesPlugin::_scenes_list_multi_selected));
-	scene_tiles_list->connect("nothing_selected", callable_mp(this, &TileMapEditorTilesPlugin::_scenes_list_nothing_selected));
+	scene_tiles_list->connect("empty_clicked", callable_mp(this, &TileMapEditorTilesPlugin::_scenes_list_nothing_selected));
 	scene_tiles_list->set_texture_filter(CanvasItem::TEXTURE_FILTER_NEAREST);
 	atlas_sources_split_container->add_child(scene_tiles_list);
 
@@ -2178,7 +2178,7 @@ TileMapEditorTilesPlugin::TileMapEditorTilesPlugin() {
 	patterns_item_list->connect("gui_input", callable_mp(this, &TileMapEditorTilesPlugin::_patterns_item_list_gui_input));
 	patterns_item_list->connect("item_selected", callable_mp(this, &TileMapEditorTilesPlugin::_update_selection_pattern_from_tileset_pattern_selection).unbind(1));
 	patterns_item_list->connect("item_activated", callable_mp(this, &TileMapEditorTilesPlugin::_update_selection_pattern_from_tileset_pattern_selection));
-	patterns_item_list->connect("nothing_selected", callable_mp(this, &TileMapEditorTilesPlugin::_update_selection_pattern_from_tileset_pattern_selection));
+	patterns_item_list->connect("empty_clicked", callable_mp(this, &TileMapEditorTilesPlugin::_update_selection_pattern_from_tileset_pattern_selection));
 	patterns_bottom_panel->add_child(patterns_item_list);
 
 	patterns_help_label = memnew(Label);

@@ -1642,7 +1642,7 @@ EditorFileDialog::EditorFileDialog() {
 	item_list = memnew(ItemList);
 	item_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	item_list->connect("item_rmb_selected", callable_mp(this, &EditorFileDialog::_item_list_item_rmb_selected));
-	item_list->connect("rmb_clicked", callable_mp(this, &EditorFileDialog::_item_list_rmb_clicked));
+	item_list->connect("empty_rmb_clicked", callable_mp(this, &EditorFileDialog::_item_list_rmb_clicked));
 	item_list->set_allow_rmb_select(true);
 
 	list_vb->add_child(item_list);
@@ -1688,7 +1688,7 @@ EditorFileDialog::EditorFileDialog() {
 	item_list->connect("item_selected", callable_mp(this, &EditorFileDialog::_item_selected), varray(), CONNECT_DEFERRED);
 	item_list->connect("multi_selected", callable_mp(this, &EditorFileDialog::_multi_selected), varray(), CONNECT_DEFERRED);
 	item_list->connect("item_activated", callable_mp(this, &EditorFileDialog::_item_dc_selected), varray());
-	item_list->connect("nothing_selected", callable_mp(this, &EditorFileDialog::_items_clear_selection));
+	item_list->connect("empty_clicked", callable_mp(this, &EditorFileDialog::_items_clear_selection));
 	dir->connect("text_submitted", callable_mp(this, &EditorFileDialog::_dir_submitted));
 	file->connect("text_submitted", callable_mp(this, &EditorFileDialog::_file_submitted));
 	filter->connect("item_selected", callable_mp(this, &EditorFileDialog::_filter_selected));

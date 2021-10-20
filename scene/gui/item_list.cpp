@@ -639,13 +639,13 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 			return;
 		}
 		if (mb->get_button_index() == MOUSE_BUTTON_RIGHT) {
-			emit_signal(SNAME("rmb_clicked"), mb->get_position());
+			emit_signal(SNAME("empty_rmb_clicked"), mb->get_position());
 
 			return;
 		}
 
 		// Since closest is null, more likely we clicked on empty space, so send signal to interested controls. Allows, for example, implement items deselecting.
-		emit_signal(SNAME("nothing_selected"));
+		emit_signal(SNAME("empty_clicked"));
 	}
 	if (mb.is_valid() && mb->get_button_index() == MOUSE_BUTTON_WHEEL_UP && mb->is_pressed()) {
 		scroll_bar->set_value(scroll_bar->get_value() - scroll_bar->get_page() * mb->get_factor() / 8);
@@ -1647,8 +1647,8 @@ void ItemList::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("item_rmb_selected", PropertyInfo(Variant::INT, "index"), PropertyInfo(Variant::VECTOR2, "at_position")));
 	ADD_SIGNAL(MethodInfo("multi_selected", PropertyInfo(Variant::INT, "index"), PropertyInfo(Variant::BOOL, "selected")));
 	ADD_SIGNAL(MethodInfo("item_activated", PropertyInfo(Variant::INT, "index")));
-	ADD_SIGNAL(MethodInfo("rmb_clicked", PropertyInfo(Variant::VECTOR2, "at_position")));
-	ADD_SIGNAL(MethodInfo("nothing_selected"));
+	ADD_SIGNAL(MethodInfo("empty_rmb_clicked", PropertyInfo(Variant::VECTOR2, "at_position")));
+	ADD_SIGNAL(MethodInfo("empty_clicked"));
 
 	GLOBAL_DEF("gui/timers/incremental_search_max_interval_msec", 2000);
 	ProjectSettings::get_singleton()->set_custom_property_info("gui/timers/incremental_search_max_interval_msec", PropertyInfo(Variant::INT, "gui/timers/incremental_search_max_interval_msec", PROPERTY_HINT_RANGE, "0,10000,1,or_greater")); // No negative numbers
