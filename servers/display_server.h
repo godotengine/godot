@@ -114,6 +114,7 @@ public:
 		FEATURE_ORIENTATION,
 		FEATURE_SWAP_BUFFERS,
 		FEATURE_KEEP_SCREEN_ON,
+		FEATURE_CLIPBOARD_PRIMARY,
 	};
 
 	virtual bool has_feature(Feature p_feature) const = 0;

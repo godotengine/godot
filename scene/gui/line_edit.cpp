@@ -235,7 +235,7 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 			return;
 		}
 
-		if (is_middle_mouse_paste_enabled() && b->is_pressed() && b->get_button_index() == MOUSE_BUTTON_MIDDLE && is_editable()) {
+		if (is_middle_mouse_paste_enabled() && b->is_pressed() && b->get_button_index() == MOUSE_BUTTON_MIDDLE && is_editable() && DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_CLIPBOARD_PRIMARY)) {
 			String paste_buffer = DisplayServer::get_singleton()->clipboard_get_primary().strip_escapes();
 
 			deselect();
@@ -290,7 +290,7 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 						selection.double_click = true;
 						last_dblclk = 0;
 						caret_column = selection.begin;
-						if (!pass) {
+						if (!pass && DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_CLIPBOARD_PRIMARY)) {
 							DisplayServer::get_singleton()->clipboard_set_primary(text);
 						}
 					} else if (b->is_double_click()) {
@@ -308,7 +308,7 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 								break;
 							}
 						}
-						if (!pass) {
+						if (!pass && DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_CLIPBOARD_PRIMARY)) {
 							DisplayServer::get_singleton()->clipboard_set_primary(text.substr(selection.begin, selection.end - selection.begin));
 						}
 					}
@@ -328,7 +328,7 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 			update();
 
 		} else {
-			if (selection.enabled && !pass && b->get_button_index() == MOUSE_BUTTON_LEFT) {
+			if (selection.enabled && !pass && b->get_button_index() == MOUSE_BUTTON_LEFT && DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_CLIPBOARD_PRIMARY)) {
 				DisplayServer::get_singleton()->clipboard_set_primary(text.substr(selection.begin, selection.end - selection.begin));
 			}
 			if (!text.is_empty() && is_editable() && clear_button_enabled) {

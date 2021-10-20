@@ -819,6 +819,8 @@
 		</constant>
 		<constant name="FEATURE_SWAP_BUFFERS" value="17" enum="Feature">
 		</constant>
+		<constant name="FEATURE_CLIPBOARD_PRIMARY" value="19" enum="Feature">
+		</constant>
 		<constant name="MOUSE_MODE_VISIBLE" value="0" enum="MouseMode">
 			Makes the mouse cursor visible if it is hidden.
 		</constant>

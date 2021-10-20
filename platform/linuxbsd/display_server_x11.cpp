@@ -124,6 +124,7 @@ bool DisplayServerX11::has_feature(Feature p_feature) const {
 #ifdef DBUS_ENABLED
 		case FEATURE_KEEP_SCREEN_ON:
 #endif
+		case FEATURE_CLIPBOARD_PRIMARY:
 			return true;
 		default: {
 		}
