@@ -5,7 +5,6 @@ Import("env")
 env.editor_sources = []
 
 import os
-import os.path
 import glob
 from platform_methods import run_in_subprocess
 from compat import open_utf8
@@ -61,31 +60,41 @@ if env["tools"]:
         else:
             docs += Glob(d + "/*.xml")  # Custom.
 
-    _make_doc_data_class_path(os.path.join(env.Dir("#").abspath, "editor/doc"))
+    _make_doc_data_class_path(env.Dir("#editor/doc").abspath)
 
     docs = sorted(docs)
     env.Depends("#editor/doc_data_compressed.gen.h", docs)
     env.CommandNoCache("#editor/doc_data_compressed.gen.h", docs, run_in_subprocess(editor_builders.make_doc_header))
 
-    path = env.Dir(".").abspath
+    # Editor interface and class reference translations incur a significant size
+    # cost for the editor binary (see godot-proposals#3421).
+    # To limit it, we only include translations with a high enough completion
+    # ratio (30% for the editor UI, 10% for the class reference).
+    # Generated with `make include-list` for each resource.
+    # Note: In 3.x, we also exclude languages that depend on complex text
+    # layouts to be displayed properly: ar,bn,fa,he,hi,ml,si,ta,te,ur.
 
     # Editor translations
-    tlist = glob.glob(path + "/translations/*.po")
+    to_include = (
+        "bg,ca,cs,de,el,eo,es_AR,es,fi,fr,gl,hu,id,it,ja,ko,ms,nb,nl,pl,pt_BR,pt,ro,ru,sk,sv,th,tr,uk,vi,zh_CN,zh_TW"
+    ).split(",")
+    tlist = [env.Dir("#editor/translations").abspath + "/" + f + ".po" for f in to_include]
     env.Depends("#editor/editor_translations.gen.h", tlist)
     env.CommandNoCache(
         "#editor/editor_translations.gen.h", tlist, run_in_subprocess(editor_builders.make_editor_translations_header)
     )
 
     # Documentation translations
-    tlist = glob.glob(env.Dir("#doc").abspath + "/translations/*.po")
+    to_include = "es,fr,ja,zh_CN".split(",")
+    tlist = [env.Dir("#doc/translations").abspath + "/" + f + ".po" for f in to_include]
     env.Depends("#editor/doc_translations.gen.h", tlist)
     env.CommandNoCache(
         "#editor/doc_translations.gen.h", tlist, run_in_subprocess(editor_builders.make_doc_translations_header)
     )
 
     # Fonts
-    flist = glob.glob(path + "/../thirdparty/fonts/*.ttf")
-    flist.extend(glob.glob(path + "/../thirdparty/fonts/*.otf"))
+    flist = glob.glob(env.Dir("#thirdparty").abspath + "/fonts/*.ttf")
+    flist.extend(glob.glob(env.Dir("#thirdparty").abspath + "/fonts/*.otf"))
     flist.sort()
     env.Depends("#editor/builtin_fonts.gen.h", flist)
     env.CommandNoCache("#editor/builtin_fonts.gen.h", flist, run_in_subprocess(editor_builders.make_fonts_header))
