@@ -34,7 +34,7 @@
 #include "scene/gui/margin_container.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/scroll_container.h"
-#include "scene/gui/tabs.h"
+#include "scene/gui/tab_bar.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/resources/theme.h"
 #include "theme_editor_preview.h"
@@ -391,7 +391,7 @@ class ThemeEditor : public VBoxContainer {
 
 	Ref<Theme> theme;
 
-	Tabs *preview_tabs;
+	TabBar *preview_tabs;
 	PanelContainer *preview_tabs_content;
 	Button *add_preview_button;
 	EditorFileDialog *preview_scene_dialog;

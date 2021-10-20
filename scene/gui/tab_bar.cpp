@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  tabs.cpp                                                             */
+/*  tab_bar.cpp                                                          */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "tabs.h"
+#include "tab_bar.h"
 
 #include "core/object/message_queue.h"
 #include "core/string/translation.h"
@@ -37,7 +37,7 @@
 #include "scene/gui/label.h"
 #include "scene/gui/texture_rect.h"
 
-Size2 Tabs::get_minimum_size() const {
+Size2 TabBar::get_minimum_size() const {
 	Ref<StyleBox> tab_unselected = get_theme_stylebox(SNAME("tab_unselected"));
 	Ref<StyleBox> tab_selected = get_theme_stylebox(SNAME("tab_selected"));
 	Ref<StyleBox> tab_disabled = get_theme_stylebox(SNAME("tab_disabled"));
@@ -90,7 +90,7 @@ Size2 Tabs::get_minimum_size() const {
 	return ms;
 }
 
-void Tabs::gui_input(const Ref<InputEvent> &p_event) {
+void TabBar::gui_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
 	Ref<InputEventMouseMotion> mm = p_event;
@@ -164,7 +164,7 @@ void Tabs::gui_input(const Ref<InputEvent> &p_event) {
 
 		if (rb_pressing && !mb->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_LEFT) {
 			if (rb_hover != -1) {
-				//pressed
+				// pressed
 				emit_signal(SNAME("tab_rmb_clicked"), rb_hover);
 			}
 
@@ -174,7 +174,7 @@ void Tabs::gui_input(const Ref<InputEvent> &p_event) {
 
 		if (cb_pressing && !mb->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_LEFT) {
 			if (cb_hover != -1) {
-				//pressed
+				// pressed
 				emit_signal(SNAME("tab_closed"), cb_hover);
 			}
 
@@ -252,7 +252,7 @@ void Tabs::gui_input(const Ref<InputEvent> &p_event) {
 	}
 }
 
-void Tabs::_shape(int p_tab) {
+void TabBar::_shape(int p_tab) {
 	Ref<Font> font = get_theme_font(SNAME("font"));
 	int font_size = get_theme_font_size(SNAME("font_size"));
 
@@ -268,7 +268,7 @@ void Tabs::_shape(int p_tab) {
 	tabs.write[p_tab].text_buf->add_string(tabs.write[p_tab].xl_text, font, font_size, tabs[p_tab].opentype_features, (tabs[p_tab].language != "") ? tabs[p_tab].language : TranslationServer::get_singleton()->get_tool_locale());
 }
 
-void Tabs::_notification(int p_what) {
+void TabBar::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED: {
 			_update_cache();
@@ -505,11 +505,11 @@ void Tabs::_notification(int p_what) {
 	}
 }
 
-int Tabs::get_tab_count() const {
+int TabBar::get_tab_count() const {
 	return tabs.size();
 }
 
-void Tabs::set_current_tab(int p_current) {
+void TabBar::set_current_tab(int p_current) {
 	if (current == p_current) {
 		return;
 	}
@@ -524,27 +524,27 @@ void Tabs::set_current_tab(int p_current) {
 	emit_signal(SNAME("tab_changed"), p_current);
 }
 
-int Tabs::get_current_tab() const {
+int TabBar::get_current_tab() const {
 	return current;
 }
 
-int Tabs::get_previous_tab() const {
+int TabBar::get_previous_tab() const {
 	return previous;
 }
 
-int Tabs::get_hovered_tab() const {
+int TabBar::get_hovered_tab() const {
 	return hover;
 }
 
-int Tabs::get_tab_offset() const {
+int TabBar::get_tab_offset() const {
 	return offset;
 }
 
-bool Tabs::get_offset_buttons_visible() const {
+bool TabBar::get_offset_buttons_visible() const {
 	return buttons_visible;
 }
 
-void Tabs::set_tab_title(int p_tab, const String &p_title) {
+void TabBar::set_tab_title(int p_tab, const String &p_title) {
 	ERR_FAIL_INDEX(p_tab, tabs.size());
 	tabs.write[p_tab].text = p_title;
 	_shape(p_tab);
@@ -552,12 +552,12 @@ void Tabs::set_tab_title(int p_tab, const String &p_title) {
 	minimum_size_changed();
 }
 
-String Tabs::get_tab_title(int p_tab) const {
+String TabBar::get_tab_title(int p_tab) const {
 	ERR_FAIL_INDEX_V(p_tab, tabs.size(), "");
 	return tabs[p_tab].text;
 }
 
-void Tabs::set_tab_text_direction(int p_tab, Control::TextDirection p_text_direction) {
+void TabBar::set_tab_text_direction(int p_tab, Control::TextDirection p_text_direction) {
 	ERR_FAIL_INDEX(p_tab, tabs.size());
 	ERR_FAIL_COND((int)p_text_direction < -1 || (int)p_text_direction > 3);
 	if (tabs[p_tab].text_direction != p_text_direction) {
@@ -567,19 +567,19 @@ void Tabs::set_tab_text_direction(int p_tab, Control::TextDirection p_text_direc
 	}
 }
 
-Control::TextDirection Tabs::get_tab_text_direction(int p_tab) const {
+Control::TextDirection TabBar::get_tab_text_direction(int p_tab) const {
 	ERR_FAIL_INDEX_V(p_tab, tabs.size(), Control::TEXT_DIRECTION_INHERITED);
 	return tabs[p_tab].text_direction;
 }
 
-void Tabs::clear_tab_opentype_features(int p_tab) {
+void TabBar::clear_tab_opentype_features(int p_tab) {
 	ERR_FAIL_INDEX(p_tab, tabs.size());
 	tabs.write[p_tab].opentype_features.clear();
 	_shape(p_tab);
 	update();
 }
 
-void Tabs::set_tab_opentype_feature(int p_tab, const String &p_name, int p_value) {
+void TabBar::set_tab_opentype_feature(int p_tab, const String &p_name, int p_value) {
 	ERR_FAIL_INDEX(p_tab, tabs.size());
 	int32_t tag = TS->name_to_tag(p_name);
 	if (!tabs[p_tab].opentype_features.has(tag) || (int)tabs[p_tab].opentype_features[tag] != p_value) {
@@ -589,7 +589,7 @@ void Tabs::set_tab_opentype_feature(int p_tab, const String &p_name, int p_value
 	}
 }
 
-int Tabs::get_tab_opentype_feature(int p_tab, const String &p_name) const {
+int TabBar::get_tab_opentype_feature(int p_tab, const String &p_name) const {
 	ERR_FAIL_INDEX_V(p_tab, tabs.size(), -1);
 	int32_t tag = TS->name_to_tag(p_name);
 	if (!tabs[p_tab].opentype_features.has(tag)) {
@@ -598,7 +598,7 @@ int Tabs::get_tab_opentype_feature(int p_tab, const String &p_name) const {
 	return tabs[p_tab].opentype_features[tag];
 }
 
-void Tabs::set_tab_language(int p_tab, const String &p_language) {
+void TabBar::set_tab_language(int p_tab, const String &p_language) {
 	ERR_FAIL_INDEX(p_tab, tabs.size());
 	if (tabs[p_tab].language != p_language) {
 		tabs.write[p_tab].language = p_language;
@@ -607,35 +607,35 @@ void Tabs::set_tab_language(int p_tab, const String &p_language) {
 	}
 }
 
-String Tabs::get_tab_language(int p_tab) const {
+String TabBar::get_tab_language(int p_tab) const {
 	ERR_FAIL_INDEX_V(p_tab, tabs.size(), "");
 	return tabs[p_tab].language;
 }
 
-void Tabs::set_tab_icon(int p_tab, const Ref<Texture2D> &p_icon) {
+void TabBar::set_tab_icon(int p_tab, const Ref<Texture2D> &p_icon) {
 	ERR_FAIL_INDEX(p_tab, tabs.size());
 	tabs.write[p_tab].icon = p_icon;
 	update();
 	minimum_size_changed();
 }
 
-Ref<Texture2D> Tabs::get_tab_icon(int p_tab) const {
+Ref<Texture2D> TabBar::get_tab_icon(int p_tab) const {
 	ERR_FAIL_INDEX_V(p_tab, tabs.size(), Ref<Texture2D>());
 	return tabs[p_tab].icon;
 }
 
-void Tabs::set_tab_disabled(int p_tab, bool p_disabled) {
+void TabBar::set_tab_disabled(int p_tab, bool p_disabled) {
 	ERR_FAIL_INDEX(p_tab, tabs.size());
 	tabs.write[p_tab].disabled = p_disabled;
 	update();
 }
 
-bool Tabs::get_tab_disabled(int p_tab) const {
+bool TabBar::get_tab_disabled(int p_tab) const {
 	ERR_FAIL_INDEX_V(p_tab, tabs.size(), false);
 	return tabs[p_tab].disabled;
 }
 
-void Tabs::set_tab_right_button(int p_tab, const Ref<Texture2D> &p_right_button) {
+void TabBar::set_tab_right_button(int p_tab, const Ref<Texture2D> &p_right_button) {
 	ERR_FAIL_INDEX(p_tab, tabs.size());
 	tabs.write[p_tab].right_button = p_right_button;
 	_update_cache();
@@ -643,12 +643,12 @@ void Tabs::set_tab_right_button(int p_tab, const Ref<Texture2D> &p_right_button)
 	minimum_size_changed();
 }
 
-Ref<Texture2D> Tabs::get_tab_right_button(int p_tab) const {
+Ref<Texture2D> TabBar::get_tab_right_button(int p_tab) const {
 	ERR_FAIL_INDEX_V(p_tab, tabs.size(), Ref<Texture2D>());
 	return tabs[p_tab].right_button;
 }
 
-void Tabs::_update_hover() {
+void TabBar::_update_hover() {
 	if (!is_inside_tree()) {
 		return;
 	}
@@ -685,7 +685,7 @@ void Tabs::_update_hover() {
 	}
 }
 
-void Tabs::_update_cache() {
+void TabBar::_update_cache() {
 	Ref<StyleBox> tab_disabled = get_theme_stylebox(SNAME("tab_disabled"));
 	Ref<StyleBox> tab_unselected = get_theme_stylebox(SNAME("tab_unselected"));
 	Ref<StyleBox> tab_selected = get_theme_stylebox(SNAME("tab_selected"));
@@ -748,7 +748,7 @@ void Tabs::_update_cache() {
 	}
 }
 
-void Tabs::_on_mouse_exited() {
+void TabBar::_on_mouse_exited() {
 	rb_hover = -1;
 	cb_hover = -1;
 	hover = -1;
@@ -756,7 +756,7 @@ void Tabs::_on_mouse_exited() {
 	update();
 }
 
-void Tabs::add_tab(const String &p_str, const Ref<Texture2D> &p_icon) {
+void TabBar::add_tab(const String &p_str, const Ref<Texture2D> &p_icon) {
 	Tab t;
 	t.text = p_str;
 	t.xl_text = atr(p_str);
@@ -775,7 +775,7 @@ void Tabs::add_tab(const String &p_str, const Ref<Texture2D> &p_icon) {
 	minimum_size_changed();
 }
 
-void Tabs::clear_tabs() {
+void TabBar::clear_tabs() {
 	tabs.clear();
 	current = 0;
 	previous = 0;
@@ -783,7 +783,7 @@ void Tabs::clear_tabs() {
 	update();
 }
 
-void Tabs::remove_tab(int p_idx) {
+void TabBar::remove_tab(int p_idx) {
 	ERR_FAIL_INDEX(p_idx, tabs.size());
 	tabs.remove(p_idx);
 	if (current >= p_idx) {
@@ -805,7 +805,7 @@ void Tabs::remove_tab(int p_idx) {
 	_ensure_no_over_offset();
 }
 
-Variant Tabs::get_drag_data(const Point2 &p_point) {
+Variant TabBar::get_drag_data(const Point2 &p_point) {
 	if (!drag_to_rearrange_enabled) {
 		return Variant();
 	}
@@ -839,7 +839,7 @@ Variant Tabs::get_drag_data(const Point2 &p_point) {
 	return drag_data;
 }
 
-bool Tabs::can_drop_data(const Point2 &p_point, const Variant &p_data) const {
+bool TabBar::can_drop_data(const Point2 &p_point, const Variant &p_data) const {
 	if (!drag_to_rearrange_enabled) {
 		return false;
 	}
@@ -855,9 +855,9 @@ bool Tabs::can_drop_data(const Point2 &p_point, const Variant &p_data) const {
 		if (from_path == to_path) {
 			return true;
 		} else if (get_tabs_rearrange_group() != -1) {
-			// drag and drop between other Tabs
+			// drag and drop between other TabBars
 			Node *from_node = get_node(from_path);
-			Tabs *from_tabs = Object::cast_to<Tabs>(from_node);
+			TabBar *from_tabs = Object::cast_to<TabBar>(from_node);
 			if (from_tabs && from_tabs->get_tabs_rearrange_group() == get_tabs_rearrange_group()) {
 				return true;
 			}
@@ -866,7 +866,7 @@ bool Tabs::can_drop_data(const Point2 &p_point, const Variant &p_data) const {
 	return false;
 }
 
-void Tabs::drop_data(const Point2 &p_point, const Variant &p_data) {
+void TabBar::drop_data(const Point2 &p_point, const Variant &p_data) {
 	if (!drag_to_rearrange_enabled) {
 		return;
 	}
@@ -892,7 +892,7 @@ void Tabs::drop_data(const Point2 &p_point, const Variant &p_data) {
 		} else if (get_tabs_rearrange_group() != -1) {
 			// drag and drop between Tabs
 			Node *from_node = get_node(from_path);
-			Tabs *from_tabs = Object::cast_to<Tabs>(from_node);
+			TabBar *from_tabs = Object::cast_to<TabBar>(from_node);
 			if (from_tabs && from_tabs->get_tabs_rearrange_group() == get_tabs_rearrange_group()) {
 				if (tab_from_id >= from_tabs->get_tab_count()) {
 					return;
@@ -912,7 +912,7 @@ void Tabs::drop_data(const Point2 &p_point, const Variant &p_data) {
 	update();
 }
 
-int Tabs::get_tab_idx_at_point(const Point2 &p_point) const {
+int TabBar::get_tab_idx_at_point(const Point2 &p_point) const {
 	int hover_now = -1;
 	for (int i = offset; i <= max_drawn_tab; i++) {
 		Rect2 rect = get_tab_rect(i);
@@ -924,17 +924,17 @@ int Tabs::get_tab_idx_at_point(const Point2 &p_point) const {
 	return hover_now;
 }
 
-void Tabs::set_tab_align(TabAlign p_align) {
+void TabBar::set_tab_align(TabAlign p_align) {
 	ERR_FAIL_INDEX(p_align, ALIGN_MAX);
 	tab_align = p_align;
 	update();
 }
 
-Tabs::TabAlign Tabs::get_tab_align() const {
+TabBar::TabAlign TabBar::get_tab_align() const {
 	return tab_align;
 }
 
-void Tabs::set_clip_tabs(bool p_clip_tabs) {
+void TabBar::set_clip_tabs(bool p_clip_tabs) {
 	if (clip_tabs == p_clip_tabs) {
 		return;
 	}
@@ -943,11 +943,11 @@ void Tabs::set_clip_tabs(bool p_clip_tabs) {
 	minimum_size_changed();
 }
 
-bool Tabs::get_clip_tabs() const {
+bool TabBar::get_clip_tabs() const {
 	return clip_tabs;
 }
 
-void Tabs::move_tab(int from, int to) {
+void TabBar::move_tab(int from, int to) {
 	if (from == to) {
 		return;
 	}
@@ -963,7 +963,7 @@ void Tabs::move_tab(int from, int to) {
 	update();
 }
 
-int Tabs::get_tab_width(int p_idx) const {
+int TabBar::get_tab_width(int p_idx) const {
 	ERR_FAIL_INDEX_V(p_idx, tabs.size(), 0);
 
 	Ref<StyleBox> tab_unselected = get_theme_stylebox(SNAME("tab_unselected"));
@@ -1005,7 +1005,7 @@ int Tabs::get_tab_width(int p_idx) const {
 	return x;
 }
 
-void Tabs::_ensure_no_over_offset() {
+void TabBar::_ensure_no_over_offset() {
 	if (!is_inside_tree()) {
 		return;
 	}
@@ -1031,7 +1031,7 @@ void Tabs::_ensure_no_over_offset() {
 	}
 }
 
-void Tabs::ensure_tab_visible(int p_idx) {
+void TabBar::ensure_tab_visible(int p_idx) {
 	if (!is_inside_tree()) {
 		return;
 	}
@@ -1068,7 +1068,7 @@ void Tabs::ensure_tab_visible(int p_idx) {
 	}
 }
 
-Rect2 Tabs::get_tab_rect(int p_tab) const {
+Rect2 TabBar::get_tab_rect(int p_tab) const {
 	ERR_FAIL_INDEX_V(p_tab, tabs.size(), Rect2());
 	if (is_layout_rtl()) {
 		return Rect2(get_size().width - tabs[p_tab].ofs_cache - tabs[p_tab].size_cache, 0, tabs[p_tab].size_cache, get_size().height);
@@ -1077,93 +1077,93 @@ Rect2 Tabs::get_tab_rect(int p_tab) const {
 	}
 }
 
-void Tabs::set_tab_close_display_policy(CloseButtonDisplayPolicy p_policy) {
+void TabBar::set_tab_close_display_policy(CloseButtonDisplayPolicy p_policy) {
 	ERR_FAIL_INDEX(p_policy, CLOSE_BUTTON_MAX);
 	cb_displaypolicy = p_policy;
 	update();
 }
 
-Tabs::CloseButtonDisplayPolicy Tabs::get_tab_close_display_policy() const {
+TabBar::CloseButtonDisplayPolicy TabBar::get_tab_close_display_policy() const {
 	return cb_displaypolicy;
 }
 
-void Tabs::set_min_width(int p_width) {
+void TabBar::set_min_width(int p_width) {
 	min_width = p_width;
 }
 
-void Tabs::set_scrolling_enabled(bool p_enabled) {
+void TabBar::set_scrolling_enabled(bool p_enabled) {
 	scrolling_enabled = p_enabled;
 }
 
-bool Tabs::get_scrolling_enabled() const {
+bool TabBar::get_scrolling_enabled() const {
 	return scrolling_enabled;
 }
 
-void Tabs::set_drag_to_rearrange_enabled(bool p_enabled) {
+void TabBar::set_drag_to_rearrange_enabled(bool p_enabled) {
 	drag_to_rearrange_enabled = p_enabled;
 }
 
-bool Tabs::get_drag_to_rearrange_enabled() const {
+bool TabBar::get_drag_to_rearrange_enabled() const {
 	return drag_to_rearrange_enabled;
 }
 
-void Tabs::set_tabs_rearrange_group(int p_group_id) {
+void TabBar::set_tabs_rearrange_group(int p_group_id) {
 	tabs_rearrange_group = p_group_id;
 }
 
-int Tabs::get_tabs_rearrange_group() const {
+int TabBar::get_tabs_rearrange_group() const {
 	return tabs_rearrange_group;
 }
 
-void Tabs::set_select_with_rmb(bool p_enabled) {
+void TabBar::set_select_with_rmb(bool p_enabled) {
 	select_with_rmb = p_enabled;
 }
 
-bool Tabs::get_select_with_rmb() const {
+bool TabBar::get_select_with_rmb() const {
 	return select_with_rmb;
 }
 
-void Tabs::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_update_hover"), &Tabs::_update_hover);
-	ClassDB::bind_method(D_METHOD("get_tab_count"), &Tabs::get_tab_count);
-	ClassDB::bind_method(D_METHOD("set_current_tab", "tab_idx"), &Tabs::set_current_tab);
-	ClassDB::bind_method(D_METHOD("get_current_tab"), &Tabs::get_current_tab);
-	ClassDB::bind_method(D_METHOD("get_previous_tab"), &Tabs::get_previous_tab);
-	ClassDB::bind_method(D_METHOD("set_tab_title", "tab_idx", "title"), &Tabs::set_tab_title);
-	ClassDB::bind_method(D_METHOD("get_tab_title", "tab_idx"), &Tabs::get_tab_title);
-	ClassDB::bind_method(D_METHOD("set_tab_text_direction", "tab_idx", "direction"), &Tabs::set_tab_text_direction);
-	ClassDB::bind_method(D_METHOD("get_tab_text_direction", "tab_idx"), &Tabs::get_tab_text_direction);
-	ClassDB::bind_method(D_METHOD("set_tab_opentype_feature", "tab_idx", "tag", "values"), &Tabs::set_tab_opentype_feature);
-	ClassDB::bind_method(D_METHOD("get_tab_opentype_feature", "tab_idx", "tag"), &Tabs::get_tab_opentype_feature);
-	ClassDB::bind_method(D_METHOD("clear_tab_opentype_features", "tab_idx"), &Tabs::clear_tab_opentype_features);
-	ClassDB::bind_method(D_METHOD("set_tab_language", "tab_idx", "language"), &Tabs::set_tab_language);
-	ClassDB::bind_method(D_METHOD("get_tab_language", "tab_idx"), &Tabs::get_tab_language);
-	ClassDB::bind_method(D_METHOD("set_tab_icon", "tab_idx", "icon"), &Tabs::set_tab_icon);
-	ClassDB::bind_method(D_METHOD("get_tab_icon", "tab_idx"), &Tabs::get_tab_icon);
-	ClassDB::bind_method(D_METHOD("set_tab_disabled", "tab_idx", "disabled"), &Tabs::set_tab_disabled);
-	ClassDB::bind_method(D_METHOD("get_tab_disabled", "tab_idx"), &Tabs::get_tab_disabled);
-	ClassDB::bind_method(D_METHOD("remove_tab", "tab_idx"), &Tabs::remove_tab);
-	ClassDB::bind_method(D_METHOD("add_tab", "title", "icon"), &Tabs::add_tab, DEFVAL(""), DEFVAL(Ref<Texture2D>()));
-	ClassDB::bind_method(D_METHOD("set_tab_align", "align"), &Tabs::set_tab_align);
-	ClassDB::bind_method(D_METHOD("get_tab_align"), &Tabs::get_tab_align);
-	ClassDB::bind_method(D_METHOD("set_clip_tabs", "clip_tabs"), &Tabs::set_clip_tabs);
-	ClassDB::bind_method(D_METHOD("get_clip_tabs"), &Tabs::get_clip_tabs);
-	ClassDB::bind_method(D_METHOD("get_tab_offset"), &Tabs::get_tab_offset);
-	ClassDB::bind_method(D_METHOD("get_offset_buttons_visible"), &Tabs::get_offset_buttons_visible);
-	ClassDB::bind_method(D_METHOD("ensure_tab_visible", "idx"), &Tabs::ensure_tab_visible);
-	ClassDB::bind_method(D_METHOD("get_tab_rect", "tab_idx"), &Tabs::get_tab_rect);
-	ClassDB::bind_method(D_METHOD("move_tab", "from", "to"), &Tabs::move_tab);
-	ClassDB::bind_method(D_METHOD("set_tab_close_display_policy", "policy"), &Tabs::set_tab_close_display_policy);
-	ClassDB::bind_method(D_METHOD("get_tab_close_display_policy"), &Tabs::get_tab_close_display_policy);
-	ClassDB::bind_method(D_METHOD("set_scrolling_enabled", "enabled"), &Tabs::set_scrolling_enabled);
-	ClassDB::bind_method(D_METHOD("get_scrolling_enabled"), &Tabs::get_scrolling_enabled);
-	ClassDB::bind_method(D_METHOD("set_drag_to_rearrange_enabled", "enabled"), &Tabs::set_drag_to_rearrange_enabled);
-	ClassDB::bind_method(D_METHOD("get_drag_to_rearrange_enabled"), &Tabs::get_drag_to_rearrange_enabled);
-	ClassDB::bind_method(D_METHOD("set_tabs_rearrange_group", "group_id"), &Tabs::set_tabs_rearrange_group);
-	ClassDB::bind_method(D_METHOD("get_tabs_rearrange_group"), &Tabs::get_tabs_rearrange_group);
+void TabBar::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("_update_hover"), &TabBar::_update_hover);
+	ClassDB::bind_method(D_METHOD("get_tab_count"), &TabBar::get_tab_count);
+	ClassDB::bind_method(D_METHOD("set_current_tab", "tab_idx"), &TabBar::set_current_tab);
+	ClassDB::bind_method(D_METHOD("get_current_tab"), &TabBar::get_current_tab);
+	ClassDB::bind_method(D_METHOD("get_previous_tab"), &TabBar::get_previous_tab);
+	ClassDB::bind_method(D_METHOD("set_tab_title", "tab_idx", "title"), &TabBar::set_tab_title);
+	ClassDB::bind_method(D_METHOD("get_tab_title", "tab_idx"), &TabBar::get_tab_title);
+	ClassDB::bind_method(D_METHOD("set_tab_text_direction", "tab_idx", "direction"), &TabBar::set_tab_text_direction);
+	ClassDB::bind_method(D_METHOD("get_tab_text_direction", "tab_idx"), &TabBar::get_tab_text_direction);
+	ClassDB::bind_method(D_METHOD("set_tab_opentype_feature", "tab_idx", "tag", "values"), &TabBar::set_tab_opentype_feature);
+	ClassDB::bind_method(D_METHOD("get_tab_opentype_feature", "tab_idx", "tag"), &TabBar::get_tab_opentype_feature);
+	ClassDB::bind_method(D_METHOD("clear_tab_opentype_features", "tab_idx"), &TabBar::clear_tab_opentype_features);
+	ClassDB::bind_method(D_METHOD("set_tab_language", "tab_idx", "language"), &TabBar::set_tab_language);
+	ClassDB::bind_method(D_METHOD("get_tab_language", "tab_idx"), &TabBar::get_tab_language);
+	ClassDB::bind_method(D_METHOD("set_tab_icon", "tab_idx", "icon"), &TabBar::set_tab_icon);
+	ClassDB::bind_method(D_METHOD("get_tab_icon", "tab_idx"), &TabBar::get_tab_icon);
+	ClassDB::bind_method(D_METHOD("set_tab_disabled", "tab_idx", "disabled"), &TabBar::set_tab_disabled);
+	ClassDB::bind_method(D_METHOD("get_tab_disabled", "tab_idx"), &TabBar::get_tab_disabled);
+	ClassDB::bind_method(D_METHOD("remove_tab", "tab_idx"), &TabBar::remove_tab);
+	ClassDB::bind_method(D_METHOD("add_tab", "title", "icon"), &TabBar::add_tab, DEFVAL(""), DEFVAL(Ref<Texture2D>()));
+	ClassDB::bind_method(D_METHOD("set_tab_align", "align"), &TabBar::set_tab_align);
+	ClassDB::bind_method(D_METHOD("get_tab_align"), &TabBar::get_tab_align);
+	ClassDB::bind_method(D_METHOD("set_clip_tabs", "clip_tabs"), &TabBar::set_clip_tabs);
+	ClassDB::bind_method(D_METHOD("get_clip_tabs"), &TabBar::get_clip_tabs);
+	ClassDB::bind_method(D_METHOD("get_tab_offset"), &TabBar::get_tab_offset);
+	ClassDB::bind_method(D_METHOD("get_offset_buttons_visible"), &TabBar::get_offset_buttons_visible);
+	ClassDB::bind_method(D_METHOD("ensure_tab_visible", "idx"), &TabBar::ensure_tab_visible);
+	ClassDB::bind_method(D_METHOD("get_tab_rect", "tab_idx"), &TabBar::get_tab_rect);
+	ClassDB::bind_method(D_METHOD("move_tab", "from", "to"), &TabBar::move_tab);
+	ClassDB::bind_method(D_METHOD("set_tab_close_display_policy", "policy"), &TabBar::set_tab_close_display_policy);
+	ClassDB::bind_method(D_METHOD("get_tab_close_display_policy"), &TabBar::get_tab_close_display_policy);
+	ClassDB::bind_method(D_METHOD("set_scrolling_enabled", "enabled"), &TabBar::set_scrolling_enabled);
+	ClassDB::bind_method(D_METHOD("get_scrolling_enabled"), &TabBar::get_scrolling_enabled);
+	ClassDB::bind_method(D_METHOD("set_drag_to_rearrange_enabled", "enabled"), &TabBar::set_drag_to_rearrange_enabled);
+	ClassDB::bind_method(D_METHOD("get_drag_to_rearrange_enabled"), &TabBar::get_drag_to_rearrange_enabled);
+	ClassDB::bind_method(D_METHOD("set_tabs_rearrange_group", "group_id"), &TabBar::set_tabs_rearrange_group);
+	ClassDB::bind_method(D_METHOD("get_tabs_rearrange_group"), &TabBar::get_tabs_rearrange_group);
 
-	ClassDB::bind_method(D_METHOD("set_select_with_rmb", "enabled"), &Tabs::set_select_with_rmb);
-	ClassDB::bind_method(D_METHOD("get_select_with_rmb"), &Tabs::get_select_with_rmb);
+	ClassDB::bind_method(D_METHOD("set_select_with_rmb", "enabled"), &TabBar::set_select_with_rmb);
+	ClassDB::bind_method(D_METHOD("get_select_with_rmb"), &TabBar::get_select_with_rmb);
 
 	ADD_SIGNAL(MethodInfo("tab_changed", PropertyInfo(Variant::INT, "tab")));
 	ADD_SIGNAL(MethodInfo("tab_rmb_clicked", PropertyInfo(Variant::INT, "tab")));
@@ -1190,6 +1190,6 @@ void Tabs::_bind_methods() {
 	BIND_ENUM_CONSTANT(CLOSE_BUTTON_MAX);
 }
 
-Tabs::Tabs() {
-	connect("mouse_exited", callable_mp(this, &Tabs::_on_mouse_exited));
+TabBar::TabBar() {
+	connect("mouse_exited", callable_mp(this, &TabBar::_on_mouse_exited));
 }

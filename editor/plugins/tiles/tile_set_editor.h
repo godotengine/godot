@@ -48,9 +48,9 @@ private:
 	bool tile_set_changed_needs_update = false;
 	HSplitContainer *split_container;
 
-	// Tabs.
+	// TabBar.
 	HBoxContainer *tile_set_toolbar;
-	Tabs *tabs_bar;
+	TabBar *tabs_bar;
 
 	// Tiles.
 	Label *no_source_selected_label;

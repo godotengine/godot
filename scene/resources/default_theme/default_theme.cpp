@@ -785,30 +785,30 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_constant("icon_separation", "TabContainer", 4 * scale);
 	theme->set_constant("outline_size", "TabContainer", 0);
 
-	// Tabs
+	// TabBar
 
-	theme->set_stylebox("tab_selected", "Tabs", sb_expand(make_stylebox(tab_current_png, 4, 3, 4, 1, 16, 3, 16, 2), 2, 2, 2, 2));
-	theme->set_stylebox("tab_unselected", "Tabs", sb_expand(make_stylebox(tab_behind_png, 5, 4, 5, 1, 16, 5, 16, 2), 3, 3, 3, 3));
-	theme->set_stylebox("tab_disabled", "Tabs", sb_expand(make_stylebox(tab_disabled_png, 5, 5, 5, 1, 16, 6, 16, 4), 3, 0, 3, 3));
-	theme->set_stylebox("close_bg_pressed", "Tabs", make_stylebox(button_pressed_png, 4, 4, 4, 4));
-	theme->set_stylebox("close_bg_highlight", "Tabs", make_stylebox(button_normal_png, 4, 4, 4, 4));
+	theme->set_stylebox("tab_selected", "TabBar", sb_expand(make_stylebox(tab_current_png, 4, 3, 4, 1, 16, 3, 16, 2), 2, 2, 2, 2));
+	theme->set_stylebox("tab_unselected", "TabBar", sb_expand(make_stylebox(tab_behind_png, 5, 4, 5, 1, 16, 5, 16, 2), 3, 3, 3, 3));
+	theme->set_stylebox("tab_disabled", "TabBar", sb_expand(make_stylebox(tab_disabled_png, 5, 5, 5, 1, 16, 6, 16, 4), 3, 0, 3, 3));
+	theme->set_stylebox("close_bg_pressed", "TabBar", make_stylebox(button_pressed_png, 4, 4, 4, 4));
+	theme->set_stylebox("close_bg_highlight", "TabBar", make_stylebox(button_normal_png, 4, 4, 4, 4));
 
-	theme->set_icon("increment", "Tabs", make_icon(scroll_button_right_png));
-	theme->set_icon("increment_highlight", "Tabs", make_icon(scroll_button_right_hl_png));
-	theme->set_icon("decrement", "Tabs", make_icon(scroll_button_left_png));
-	theme->set_icon("decrement_highlight", "Tabs", make_icon(scroll_button_left_hl_png));
-	theme->set_icon("close", "Tabs", make_icon(tab_close_png));
+	theme->set_icon("increment", "TabBar", make_icon(scroll_button_right_png));
+	theme->set_icon("increment_highlight", "TabBar", make_icon(scroll_button_right_hl_png));
+	theme->set_icon("decrement", "TabBar", make_icon(scroll_button_left_png));
+	theme->set_icon("decrement_highlight", "TabBar", make_icon(scroll_button_left_hl_png));
+	theme->set_icon("close", "TabBar", make_icon(tab_close_png));
 
-	theme->set_font("font", "Tabs", Ref<Font>());
-	theme->set_font_size("font_size", "Tabs", -1);
+	theme->set_font("font", "TabBar", Ref<Font>());
+	theme->set_font_size("font_size", "TabBar", -1);
 
-	theme->set_color("font_selected_color", "Tabs", control_font_hover_color);
-	theme->set_color("font_unselected_color", "Tabs", control_font_low_color);
-	theme->set_color("font_disabled_color", "Tabs", control_font_disabled_color);
-	theme->set_color("font_outline_color", "Tabs", Color(1, 1, 1));
+	theme->set_color("font_selected_color", "TabBar", control_font_hover_color);
+	theme->set_color("font_unselected_color", "TabBar", control_font_low_color);
+	theme->set_color("font_disabled_color", "TabBar", control_font_disabled_color);
+	theme->set_color("font_outline_color", "TabBar", Color(1, 1, 1));
 
-	theme->set_constant("hseparation", "Tabs", 4 * scale);
-	theme->set_constant("outline_size", "Tabs", 0);
+	theme->set_constant("hseparation", "TabBar", 4 * scale);
+	theme->set_constant("outline_size", "TabBar", 0);
 
 	// Separators
 
