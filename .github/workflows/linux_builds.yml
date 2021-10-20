@@ -85,6 +85,15 @@ jobs:
         run: |
           ${{ matrix.bin }} --test
 
+      # Check class reference
+      - name: Check for class reference updates
+        if: ${{ matrix.doc-test }}
+        run: |
+          echo "Running --doctool to see if this changes the public API without updating the documentation."
+          echo -e "If a diff is shown, it means that your code/doc changes are incomplete and you should update the class reference with --doctool.\n\n"
+          ${{ matrix.bin }} --doctool --headless 2>&1 > /dev/null || true
+          git diff --color --exit-code && ! git ls-files --others --exclude-standard | sed -e 's/^/New doc file missing in PR: /' | grep 'xml$'
+
       # Download, unzip and setup SwiftShader library [4466040]
       - name: Download SwiftShader
         if: ${{ matrix.tests }}
@@ -94,15 +103,6 @@ jobs:
           rm swiftshader2.zip
           curr="$(pwd)/libvk_swiftshader.so"
           sed -i "s|PATH_TO_CHANGE|$curr|" vk_swiftshader_icd.json
-
-      # Check class reference
-      - name: Check for class reference updates
-        if: ${{ matrix.doc-test }}
-        run: |
-          echo "Running --doctool to see if this changes the public API without updating the documentation."
-          echo -e "If a diff is shown, it means that your code/doc changes are incomplete and you should update the class reference with --doctool.\n\n"
-          VK_ICD_FILENAMES=$(pwd)/vk_swiftshader_icd.json DRI_PRIME=0 xvfb-run ${{ matrix.bin }} --doctool . 2>&1 > /dev/null || true
-          git diff --color --exit-code && ! git ls-files --others --exclude-standard | sed -e 's/^/New doc file missing in PR: /' | grep 'xml$'
 
       # Download and extract zip archive with project, folder is renamed to be able to easy change used project
       - name: Download test project
