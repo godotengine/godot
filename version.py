@@ -1,9 +1,9 @@
-short_name = "godot"
-name = "Godot Engine"
+short_name = "gdsos"
+name = "Godot Engine Sos Edition"
 major = 3
 minor = 3
 patch = 1
-status = "rc"
+status = "dev"
 module_config = ""
 year = 2021
 website = "https://godotengine.org"

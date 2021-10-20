@@ -70,6 +70,8 @@
 #include "servers/physics_server.h"
 #include "servers/register_server_types.h"
 
+#include "modules/lilyphys/lilyphys_server.h"
+
 #ifdef TOOLS_ENABLED
 #include "editor/doc/doc_data.h"
 #include "editor/doc/doc_data_class_path.gen.h"
@@ -2105,6 +2107,8 @@ bool Main::iteration() {
 		message_queue->flush();
 
 		PhysicsServer::get_singleton()->step(frame_slice * time_scale);
+
+        LilyphysServer::get_singleton()->step(frame_slice * time_scale);
 
 		Physics2DServer::get_singleton()->end_sync();
 		Physics2DServer::get_singleton()->step(frame_slice * time_scale);
