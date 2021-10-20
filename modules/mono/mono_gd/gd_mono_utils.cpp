@@ -450,7 +450,7 @@ void debug_send_unhandled_exception_error(MonoException *p_exc) {
 	int line = si.size() ? si[0].line : __LINE__;
 	String error_msg = "Unhandled exception";
 
-	EngineDebugger::get_script_debugger()->send_error(func, file, line, error_msg, exc_msg, ERR_HANDLER_ERROR, si);
+	EngineDebugger::get_script_debugger()->send_error(func, file, line, error_msg, exc_msg, true, ERR_HANDLER_ERROR, si);
 #endif
 }
 
