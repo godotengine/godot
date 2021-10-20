@@ -5,7 +5,6 @@ Import("env")
 env.editor_sources = []
 
 import os
-import os.path
 import glob
 import editor_builders
 
@@ -59,7 +58,7 @@ if env["tools"]:
         else:
             docs += Glob(d + "/*.xml")  # Custom.
 
-    _make_doc_data_class_path(os.path.join(env.Dir("#").abspath, "editor"))
+    _make_doc_data_class_path(env.Dir("#editor").abspath)
 
     docs = sorted(docs)
     env.Depends("#editor/doc_data_compressed.gen.h", docs)
@@ -69,10 +68,17 @@ if env["tools"]:
         env.Run(editor_builders.make_doc_header, "Generating documentation header."),
     )
 
-    path = env.Dir(".").abspath
+    # Editor interface and class reference translations incur a significant size
+    # cost for the editor binary (see godot-proposals#3421).
+    # To limit it, we only include translations with a high enough completion
+    # ratio (30% for the editor UI, 10% for the class reference).
+    # Generated with `make include-list` for each resource.
 
     # Editor translations
-    tlist = glob.glob(path + "/translations/*.po")
+    to_include = (
+        "ar,bg,bn,ca,cs,de,el,eo,es_AR,es,fi,fr,gl,he,hu,id,it,ja,ko,ms,nb,nl,pl,pt_BR,pt,ro,ru,sk,sv,th,tr,uk,vi,zh_CN,zh_TW"
+    ).split(",")
+    tlist = [env.Dir("#editor/translations").abspath + "/" + f + ".po" for f in to_include]
     env.Depends("#editor/editor_translations.gen.h", tlist)
     env.CommandNoCache(
         "#editor/editor_translations.gen.h",
@@ -81,7 +87,8 @@ if env["tools"]:
     )
 
     # Documentation translations
-    tlist = glob.glob(env.Dir("#doc").abspath + "/translations/*.po")
+    to_include = "es,fr,ja,zh_CN".split(",")
+    tlist = [env.Dir("#doc/translations").abspath + "/" + f + ".po" for f in to_include]
     env.Depends("#editor/doc_translations.gen.h", tlist)
     env.CommandNoCache(
         "#editor/doc_translations.gen.h",
@@ -90,8 +97,8 @@ if env["tools"]:
     )
 
     # Fonts
-    flist = glob.glob(path + "/../thirdparty/fonts/*.ttf")
-    flist.extend(glob.glob(path + "/../thirdparty/fonts/*.otf"))
+    flist = glob.glob(env.Dir("#thirdparty").abspath + "/fonts/*.ttf")
+    flist.extend(glob.glob(env.Dir("#thirdparty").abspath + "/fonts/*.otf"))
     flist.sort()
     env.Depends("#editor/builtin_fonts.gen.h", flist)
     env.CommandNoCache(
