@@ -293,6 +293,8 @@ struct _VariantCall {
 	VCALL_LOCALMEM0R(String, is_abs_path);
 	VCALL_LOCALMEM0R(String, simplify_path);
 	VCALL_LOCALMEM0R(String, is_rel_path);
+	VCALL_LOCALMEM1R(String, path_to);
+	VCALL_LOCALMEM1R(String, path_to_file);
 	VCALL_LOCALMEM0R(String, get_base_dir);
 	VCALL_LOCALMEM0R(String, get_file);
 	VCALL_LOCALMEM0R(String, xml_escape);
@@ -1689,6 +1691,8 @@ void register_variant_methods() {
 	ADDFUNC0R(STRING, BOOL, String, is_abs_path, varray());
 	ADDFUNC0R(STRING, STRING, String, simplify_path, varray());
 	ADDFUNC0R(STRING, BOOL, String, is_rel_path, varray());
+	ADDFUNC1R(STRING, STRING, String, path_to, STRING, "path", varray());
+	ADDFUNC1R(STRING, STRING, String, path_to_file, STRING, "path", varray());
 	ADDFUNC0R(STRING, STRING, String, get_base_dir, varray());
 	ADDFUNC0R(STRING, STRING, String, get_file, varray());
 	ADDFUNC0R(STRING, STRING, String, xml_escape, varray());
