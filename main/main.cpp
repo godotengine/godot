@@ -2072,6 +2072,8 @@ bool Main::start() {
 		if (check_only) {
 			if (!script_res->is_valid()) {
 				OS::get_singleton()->set_exit_code(EXIT_FAILURE);
+			} else {
+				OS::get_singleton()->set_exit_code(EXIT_SUCCESS);
 			}
 			return false;
 		}
