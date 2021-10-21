@@ -90,7 +90,7 @@ private:
 
 	DisableMode disable_mode = DISABLE_MODE_REMOVE;
 
-	bool mesh_owner = false;
+	RID owned_mesh;
 	uint32_t collision_mask = 1;
 	uint32_t collision_layer = 1;
 	NodePath parent_collision_ignore;
@@ -106,6 +106,12 @@ private:
 
 	void _update_pickable();
 
+	void _update_physics_server();
+	void _draw_soft_mesh();
+
+	void _prepare_physics_server();
+	void _become_mesh_owner();
+
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
@@ -120,14 +126,7 @@ protected:
 
 	TypedArray<String> get_configuration_warnings() const override;
 
-protected:
-	void _update_physics_server();
-	void _draw_soft_mesh();
-
 public:
-	void prepare_physics_server();
-	void become_mesh_owner();
-
 	RID get_physics_rid() const { return physics_rid; }
 
 	void set_collision_mask(uint32_t p_mask);
