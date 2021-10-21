@@ -657,6 +657,10 @@ void SceneShaderForwardClustered::init(RendererStorageRD *p_storage, const Strin
 			actions.render_mode_defines["specular_schlick_ggx"] = "#define SPECULAR_BLINN\n";
 		}
 
+		actions.custom_samplers["SCREEN_TEXTURE"] = "material_samplers[3]"; // linear filter with mipmaps
+		actions.custom_samplers["DEPTH_TEXTURE"] = "material_samplers[3]";
+		actions.custom_samplers["NORMAL_ROUGHNESS_TEXTURE"] = "material_samplers[1]"; // linear filter
+
 		actions.render_mode_defines["specular_blinn"] = "#define SPECULAR_BLINN\n";
 		actions.render_mode_defines["specular_phong"] = "#define SPECULAR_PHONG\n";
 		actions.render_mode_defines["specular_toon"] = "#define SPECULAR_TOON\n";
