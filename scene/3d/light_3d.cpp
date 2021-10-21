@@ -215,6 +215,7 @@ void Light3D::_validate_property(PropertyInfo &property) const {
 	if (get_light_type() != RS::LIGHT_DIRECTIONAL && property.name == "light_angular_distance") {
 		property.usage = PROPERTY_USAGE_NONE;
 	}
+	VisualInstance3D::_validate_property(property);
 }
 
 void Light3D::_bind_methods() {

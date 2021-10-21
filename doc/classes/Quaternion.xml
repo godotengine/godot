@@ -43,9 +43,8 @@
 		</method>
 		<method name="Quaternion" qualifiers="constructor">
 			<return type="Quaternion" />
-			<argument index="0" name="euler" type="Vector3" />
+			<argument index="0" name="euler_yxz" type="Vector3" />
 			<description>
-				Constructs a quaternion that will perform a rotation specified by Euler angles (in the YXZ convention: when decomposing, first Z, then X, and Y last), given in the vector format as (X angle, Y angle, Z angle).
 			</description>
 		</method>
 		<method name="Quaternion" qualifiers="constructor">

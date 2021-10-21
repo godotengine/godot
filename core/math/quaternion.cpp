@@ -44,7 +44,7 @@ real_t Quaternion::angle_to(const Quaternion &p_to) const {
 // This implementation uses XYZ convention (Z is the first rotation).
 Vector3 Quaternion::get_euler_xyz() const {
 	Basis m(*this);
-	return m.get_euler_xyz();
+	return m.get_euler(Basis::EULER_ORDER_XYZ);
 }
 
 // get_euler_yxz returns a vector containing the Euler angles in the format
@@ -56,7 +56,7 @@ Vector3 Quaternion::get_euler_yxz() const {
 	ERR_FAIL_COND_V_MSG(!is_normalized(), Vector3(0, 0, 0), "The quaternion must be normalized.");
 #endif
 	Basis m(*this);
-	return m.get_euler_yxz();
+	return m.get_euler(Basis::EULER_ORDER_YXZ);
 }
 
 void Quaternion::operator*=(const Quaternion &p_q) {

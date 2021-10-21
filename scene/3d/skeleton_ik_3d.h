@@ -137,8 +137,7 @@ class SkeletonIK3D : public Node {
 	FabrikInverseKinematic::Task *task = nullptr;
 
 protected:
-	virtual void
-	_validate_property(PropertyInfo &property) const override;
+	virtual void _validate_property(PropertyInfo &property) const override;
 
 	static void _bind_methods();
 	virtual void _notification(int p_what);

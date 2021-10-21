@@ -576,6 +576,7 @@ void CSGShape3D::_validate_property(PropertyInfo &property) const {
 	} else if (is_collision_prefixed && !bool(get("use_collision"))) {
 		property.usage = PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL;
 	}
+	GeometryInstance3D::_validate_property(property);
 }
 
 Array CSGShape3D::get_meshes() const {

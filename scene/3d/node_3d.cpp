@@ -220,6 +220,13 @@ void Node3D::_notification(int p_what) {
 	}
 }
 
+void Node3D::set_basis(const Basis &p_basis) {
+	set_transform(Transform3D(p_basis, data.local_transform.origin));
+}
+void Node3D::set_quaternion(const Quaternion &p_quaternion) {
+	set_transform(Transform3D(Basis(p_quaternion), data.local_transform.origin));
+}
+
 void Node3D::set_transform(const Transform3D &p_transform) {
 	data.local_transform = p_transform;
 	data.dirty |= DIRTY_VECTORS;
@@ -227,6 +234,13 @@ void Node3D::set_transform(const Transform3D &p_transform) {
 	if (data.notify_local_transform) {
 		notification(NOTIFICATION_LOCAL_TRANSFORM_CHANGED);
 	}
+}
+
+Basis Node3D::get_basis() const {
+	return get_transform().basis;
+}
+Quaternion Node3D::get_quaternion() const {
+	return Quaternion(get_transform().basis);
 }
 
 void Node3D::set_global_transform(const Transform3D &p_transform) {
@@ -308,6 +322,45 @@ void Node3D::set_position(const Vector3 &p_position) {
 	}
 }
 
+void Node3D::set_rotation_edit_mode(RotationEditMode p_mode) {
+	if (data.rotation_edit_mode == p_mode) {
+		return;
+	}
+	data.rotation_edit_mode = p_mode;
+	notify_property_list_changed();
+}
+
+Node3D::RotationEditMode Node3D::get_rotation_edit_mode() const {
+	return data.rotation_edit_mode;
+}
+
+void Node3D::set_rotation_order(RotationOrder p_order) {
+	Basis::EulerOrder order = Basis::EulerOrder(p_order);
+
+	if (data.rotation_order == order) {
+		return;
+	}
+
+	ERR_FAIL_INDEX(int32_t(order), 6);
+
+	if (data.dirty & DIRTY_VECTORS) {
+		data.rotation = data.local_transform.basis.get_euler_normalized(order);
+		data.scale = data.local_transform.basis.get_scale();
+		data.dirty &= ~DIRTY_VECTORS;
+	} else {
+		data.rotation = Basis::from_euler(data.rotation, data.rotation_order).get_euler_normalized(order);
+	}
+
+	data.rotation_order = order;
+	//changing rotation order should not affect transform
+
+	notify_property_list_changed(); //will change rotation
+}
+
+Node3D::RotationOrder Node3D::get_rotation_order() const {
+	return RotationOrder(data.rotation_order);
+}
+
 void Node3D::set_rotation(const Vector3 &p_euler_rad) {
 	if (data.dirty & DIRTY_VECTORS) {
 		data.scale = data.local_transform.basis.get_scale();
@@ -324,7 +377,7 @@ void Node3D::set_rotation(const Vector3 &p_euler_rad) {
 
 void Node3D::set_scale(const Vector3 &p_scale) {
 	if (data.dirty & DIRTY_VECTORS) {
-		data.rotation = data.local_transform.basis.get_rotation();
+		data.rotation = data.local_transform.basis.get_euler_normalized(data.rotation_order);
 		data.dirty &= ~DIRTY_VECTORS;
 	}
 
@@ -343,7 +396,7 @@ Vector3 Node3D::get_position() const {
 Vector3 Node3D::get_rotation() const {
 	if (data.dirty & DIRTY_VECTORS) {
 		data.scale = data.local_transform.basis.get_scale();
-		data.rotation = data.local_transform.basis.get_rotation();
+		data.rotation = data.local_transform.basis.get_euler_normalized(data.rotation_order);
 
 		data.dirty &= ~DIRTY_VECTORS;
 	}
@@ -354,7 +407,7 @@ Vector3 Node3D::get_rotation() const {
 Vector3 Node3D::get_scale() const {
 	if (data.dirty & DIRTY_VECTORS) {
 		data.scale = data.local_transform.basis.get_scale();
-		data.rotation = data.local_transform.basis.get_rotation();
+		data.rotation = data.local_transform.basis.get_euler_normalized(data.rotation_order);
 
 		data.dirty &= ~DIRTY_VECTORS;
 	}
@@ -780,6 +833,24 @@ NodePath Node3D::get_visibility_parent() const {
 	return visibility_parent_path;
 }
 
+void Node3D::_validate_property(PropertyInfo &property) const {
+	if (data.rotation_edit_mode != ROTATION_EDIT_MODE_BASIS && property.name == "basis") {
+		property.usage = 0;
+	}
+	if (data.rotation_edit_mode == ROTATION_EDIT_MODE_BASIS && property.name == "scale") {
+		property.usage = 0;
+	}
+	if (data.rotation_edit_mode != ROTATION_EDIT_MODE_QUATERNION && property.name == "quaternion") {
+		property.usage = 0;
+	}
+	if (data.rotation_edit_mode != ROTATION_EDIT_MODE_EULER && property.name == "rotation") {
+		property.usage = 0;
+	}
+	if (data.rotation_edit_mode != ROTATION_EDIT_MODE_EULER && property.name == "rotation_order") {
+		property.usage = 0;
+	}
+}
+
 void Node3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_transform", "local"), &Node3D::set_transform);
 	ClassDB::bind_method(D_METHOD("get_transform"), &Node3D::get_transform);
@@ -787,8 +858,16 @@ void Node3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_position"), &Node3D::get_position);
 	ClassDB::bind_method(D_METHOD("set_rotation", "euler"), &Node3D::set_rotation);
 	ClassDB::bind_method(D_METHOD("get_rotation"), &Node3D::get_rotation);
+	ClassDB::bind_method(D_METHOD("set_rotation_order", "order"), &Node3D::set_rotation_order);
+	ClassDB::bind_method(D_METHOD("get_rotation_order"), &Node3D::get_rotation_order);
+	ClassDB::bind_method(D_METHOD("set_rotation_edit_mode", "edit_mode"), &Node3D::set_rotation_edit_mode);
+	ClassDB::bind_method(D_METHOD("get_rotation_edit_mode"), &Node3D::get_rotation_edit_mode);
 	ClassDB::bind_method(D_METHOD("set_scale", "scale"), &Node3D::set_scale);
 	ClassDB::bind_method(D_METHOD("get_scale"), &Node3D::get_scale);
+	ClassDB::bind_method(D_METHOD("set_quaternion", "quaternion"), &Node3D::set_quaternion);
+	ClassDB::bind_method(D_METHOD("get_quaternion"), &Node3D::get_quaternion);
+	ClassDB::bind_method(D_METHOD("set_basis", "basis"), &Node3D::set_basis);
+	ClassDB::bind_method(D_METHOD("get_basis"), &Node3D::get_basis);
 	ClassDB::bind_method(D_METHOD("set_global_transform", "global"), &Node3D::set_global_transform);
 	ClassDB::bind_method(D_METHOD("get_global_transform"), &Node3D::get_global_transform);
 	ClassDB::bind_method(D_METHOD("get_parent_node_3d"), &Node3D::get_parent_node_3d);
@@ -848,15 +927,29 @@ void Node3D::_bind_methods() {
 	BIND_CONSTANT(NOTIFICATION_EXIT_WORLD);
 	BIND_CONSTANT(NOTIFICATION_VISIBILITY_CHANGED);
 
+	BIND_ENUM_CONSTANT(ROTATION_EDIT_MODE_EULER);
+	BIND_ENUM_CONSTANT(ROTATION_EDIT_MODE_QUATERNION);
+	BIND_ENUM_CONSTANT(ROTATION_EDIT_MODE_BASIS);
+
+	BIND_ENUM_CONSTANT(ROTATION_ORDER_XYZ);
+	BIND_ENUM_CONSTANT(ROTATION_ORDER_XZY);
+	BIND_ENUM_CONSTANT(ROTATION_ORDER_YXZ);
+	BIND_ENUM_CONSTANT(ROTATION_ORDER_YZX);
+	BIND_ENUM_CONSTANT(ROTATION_ORDER_ZXY);
+	BIND_ENUM_CONSTANT(ROTATION_ORDER_ZYX);
+
 	//ADD_PROPERTY( PropertyInfo(Variant::TRANSFORM3D,"transform/global",PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR ), "set_global_transform", "get_global_transform") ;
 	ADD_GROUP("Transform", "");
 	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM3D, "global_transform", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_global_transform", "get_global_transform");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "position", PROPERTY_HINT_RANGE, "-99999,99999,0,or_greater,or_lesser,noslider,suffix:m", PROPERTY_USAGE_EDITOR), "set_position", "get_position");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "rotation", PROPERTY_HINT_RANGE, "-360,360,0.1,or_lesser,or_greater,radians", PROPERTY_USAGE_EDITOR), "set_rotation", "get_rotation");
+	ADD_PROPERTY(PropertyInfo(Variant::QUATERNION, "quaternion", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_quaternion", "get_quaternion");
+	ADD_PROPERTY(PropertyInfo(Variant::BASIS, "basis", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_basis", "get_basis");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "scale", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_scale", "get_scale");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "rotation_edit_mode", PROPERTY_HINT_ENUM, "Euler,Quaternion,Basis"), "set_rotation_edit_mode", "get_rotation_edit_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "rotation_order", PROPERTY_HINT_ENUM, "XYZ,XZY,YXZ,YZX,ZXY,ZYX"), "set_rotation_order", "get_rotation_order");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "top_level"), "set_as_top_level", "is_set_as_top_level");
-	ADD_GROUP("Matrix", "");
-	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM3D, "transform", PROPERTY_HINT_NONE, ""), "set_transform", "get_transform");
+	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM3D, "transform", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_transform", "get_transform");
 	ADD_GROUP("Visibility", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "visible"), "set_visible", "is_visible");
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "visibility_parent", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "GeometryInstance3D"), "set_visibility_parent", "get_visibility_parent");

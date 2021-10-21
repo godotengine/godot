@@ -42,14 +42,6 @@
 		</method>
 		<method name="Basis" qualifiers="constructor">
 			<return type="Basis" />
-			<argument index="0" name="euler" type="Vector3" />
-			<description>
-				Constructs a pure rotation basis matrix from the given Euler angles (in the YXZ convention: when *composing*, first Y, then X, and Z last), given in the vector format as (X angle, Y angle, Z angle).
-				Consider using the [Quaternion] constructor instead, which uses a quaternion instead of Euler angles.
-			</description>
-		</method>
-		<method name="Basis" qualifiers="constructor">
-			<return type="Basis" />
 			<argument index="0" name="from" type="Quaternion" />
 			<description>
 				Constructs a pure rotation basis matrix from the given quaternion.
@@ -71,6 +63,13 @@
 				A negative determinant means the basis has a negative scale. A zero determinant means the basis isn't invertible, and is usually considered invalid.
 			</description>
 		</method>
+		<method name="from_euler" qualifiers="static">
+			<return type="Basis" />
+			<argument index="0" name="euler" type="Vector3" />
+			<argument index="1" name="order" type="int" default="2" />
+			<description>
+			</description>
+		</method>
 		<method name="from_scale" qualifiers="static">
 			<return type="Basis" />
 			<argument index="0" name="scale" type="Vector3" />
@@ -80,6 +79,7 @@
 		</method>
 		<method name="get_euler" qualifiers="const">
 			<return type="Vector3" />
+			<argument index="0" name="order" type="int" default="2" />
 			<description>
 				Returns the basis's rotation in the form of Euler angles (in the YXZ convention: when decomposing, first Z, then X, and Y last). The returned vector contains the rotation angles in the format (X angle, Y angle, Z angle).
 				Consider using the [method get_rotation_quaternion] method instead, which returns a [Quaternion] quaternion instead of Euler angles.
@@ -248,6 +248,18 @@
 		</member>
 	</members>
 	<constants>
+		<constant name="EULER_ORDER_XYZ" value="0">
+		</constant>
+		<constant name="EULER_ORDER_XZY" value="1">
+		</constant>
+		<constant name="EULER_ORDER_YXZ" value="2">
+		</constant>
+		<constant name="EULER_ORDER_YZX" value="3">
+		</constant>
+		<constant name="EULER_ORDER_ZXY" value="4">
+		</constant>
+		<constant name="EULER_ORDER_ZYX" value="5">
+		</constant>
 		<constant name="IDENTITY" value="Basis(1, 0, 0, 0, 1, 0, 0, 0, 1)">
 			The identity basis, with no rotation or scaling applied.
 			This is identical to calling [code]Basis()[/code] without any parameters. This constant can be used to make your code clearer, and for consistency with C#.

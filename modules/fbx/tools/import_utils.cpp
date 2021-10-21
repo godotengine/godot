@@ -45,27 +45,27 @@ Basis ImportUtils::EulerToBasis(FBXDocParser::Model::RotOrder mode, const Vector
 	// by simply invert its order: https://www.cs.utexas.edu/~theshark/courses/cs354/lectures/cs354-14.pdf
 	switch (mode) {
 		case FBXDocParser::Model::RotOrder_EulerXYZ:
-			ret.set_euler_zyx(p_rotation);
+			ret.set_euler(p_rotation, Basis::EULER_ORDER_XYZ);
 			break;
 
 		case FBXDocParser::Model::RotOrder_EulerXZY:
-			ret.set_euler_yzx(p_rotation);
+			ret.set_euler(p_rotation, Basis::EULER_ORDER_XZY);
 			break;
 
 		case FBXDocParser::Model::RotOrder_EulerYZX:
-			ret.set_euler_xzy(p_rotation);
+			ret.set_euler(p_rotation, Basis::EULER_ORDER_YZX);
 			break;
 
 		case FBXDocParser::Model::RotOrder_EulerYXZ:
-			ret.set_euler_zxy(p_rotation);
+			ret.set_euler(p_rotation, Basis::EULER_ORDER_YXZ);
 			break;
 
 		case FBXDocParser::Model::RotOrder_EulerZXY:
-			ret.set_euler_yxz(p_rotation);
+			ret.set_euler(p_rotation, Basis::EULER_ORDER_ZXY);
 			break;
 
 		case FBXDocParser::Model::RotOrder_EulerZYX:
-			ret.set_euler_xyz(p_rotation);
+			ret.set_euler(p_rotation, Basis::EULER_ORDER_ZYX);
 			break;
 
 		case FBXDocParser::Model::RotOrder_SphericXYZ:
@@ -89,22 +89,22 @@ Vector3 ImportUtils::BasisToEuler(FBXDocParser::Model::RotOrder mode, const Basi
 	// by simply invert its order: https://www.cs.utexas.edu/~theshark/courses/cs354/lectures/cs354-14.pdf
 	switch (mode) {
 		case FBXDocParser::Model::RotOrder_EulerXYZ:
-			return p_rotation.get_euler_zyx();
+			return p_rotation.get_euler(Basis::EULER_ORDER_XYZ);
 
 		case FBXDocParser::Model::RotOrder_EulerXZY:
-			return p_rotation.get_euler_yzx();
+			return p_rotation.get_euler(Basis::EULER_ORDER_XZY);
 
 		case FBXDocParser::Model::RotOrder_EulerYZX:
-			return p_rotation.get_euler_xzy();
+			return p_rotation.get_euler(Basis::EULER_ORDER_YZX);
 
 		case FBXDocParser::Model::RotOrder_EulerYXZ:
-			return p_rotation.get_euler_zxy();
+			return p_rotation.get_euler(Basis::EULER_ORDER_YXZ);
 
 		case FBXDocParser::Model::RotOrder_EulerZXY:
-			return p_rotation.get_euler_yxz();
+			return p_rotation.get_euler(Basis::EULER_ORDER_ZXY);
 
 		case FBXDocParser::Model::RotOrder_EulerZYX:
-			return p_rotation.get_euler_xyz();
+			return p_rotation.get_euler(Basis::EULER_ORDER_ZYX);
 
 		case FBXDocParser::Model::RotOrder_SphericXYZ:
 			// TODO

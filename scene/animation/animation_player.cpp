@@ -166,6 +166,8 @@ void AnimationPlayer::_validate_property(PropertyInfo &property) const {
 
 		property.hint_string = hint;
 	}
+
+	Node::_validate_property(property);
 }
 
 void AnimationPlayer::_get_property_list(List<PropertyInfo> *p_list) const {

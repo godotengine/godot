@@ -1370,6 +1370,7 @@ void LightmapGI::_validate_property(PropertyInfo &property) const {
 	if (property.name == "environment_custom_energy" && environment_mode != ENVIRONMENT_MODE_CUSTOM_COLOR && environment_mode != ENVIRONMENT_MODE_CUSTOM_SKY) {
 		property.usage = PROPERTY_USAGE_NONE;
 	}
+	VisualInstance3D::_validate_property(property);
 }
 
 void LightmapGI::_bind_methods() {

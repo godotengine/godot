@@ -532,6 +532,8 @@ void CPUParticles3D::_validate_property(PropertyInfo &property) const {
 	if (property.name.begins_with("scale_curve_") && !split_scale) {
 		property.usage = PROPERTY_USAGE_NONE;
 	}
+
+	Node3D::_validate_property(property);
 }
 
 static uint32_t idhash(uint32_t x) {

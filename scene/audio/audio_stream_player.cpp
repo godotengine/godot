@@ -292,6 +292,8 @@ void AudioStreamPlayer::_validate_property(PropertyInfo &property) const {
 
 		property.hint_string = options;
 	}
+
+	Node::_validate_property(property);
 }
 
 void AudioStreamPlayer::_bus_layout_changed() {
