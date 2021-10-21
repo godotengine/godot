@@ -2137,7 +2137,7 @@ int64_t String::hex_to_int() const {
 		s++;
 	}
 
-	if (len > 2 && s[0] == '0' && s[1] == 'x') {
+	if (len > 2 && s[0] == '0' && lower_case(s[1]) == 'x') {
 		s += 2;
 	}
 
@@ -2151,7 +2151,7 @@ int64_t String::hex_to_int() const {
 		} else if (c >= 'a' && c <= 'f') {
 			n = (c - 'a') + 10;
 		} else {
-			return 0;
+			ERR_FAIL_COND_V_MSG(true, 0, "Invalid hexadecimal notation character \"" + chr(*s) + "\" in string \"" + *this + "\".");
 		}
 		// Check for overflow/underflow, with special case to ensure INT64_MIN does not result in error
 		bool overflow = ((hex > INT64_MAX / 16) && (sign == 1 || (sign == -1 && hex != (INT64_MAX >> 4) + 1))) || (sign == -1 && hex == (INT64_MAX >> 4) + 1 && c > '0');
