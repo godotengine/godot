@@ -552,15 +552,9 @@ void SoftDynamicBody3D::set_disable_mode(DisableMode p_mode) {
 		return;
 	}
 
-	bool inside_tree = is_inside_tree();
-
-	if (inside_tree && (disable_mode == DISABLE_MODE_REMOVE)) {
-		_prepare_physics_server();
-	}
-
 	disable_mode = p_mode;
 
-	if (inside_tree && (disable_mode == DISABLE_MODE_REMOVE)) {
+	if (mesh.is_valid() && is_inside_tree() && !is_enabled()) {
 		_prepare_physics_server();
 	}
 }

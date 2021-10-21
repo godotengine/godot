@@ -139,6 +139,7 @@ void GodotSoftBody3D::set_mesh(RID p_mesh) {
 	}
 
 	Array arrays = RenderingServer::get_singleton()->mesh_surface_get_arrays(soft_mesh, 0);
+	ERR_FAIL_COND(arrays.is_empty());
 
 	bool success = create_from_trimesh(arrays[RenderingServer::ARRAY_INDEX], arrays[RenderingServer::ARRAY_VERTEX]);
 	if (!success) {

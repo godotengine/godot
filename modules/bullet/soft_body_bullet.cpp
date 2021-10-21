@@ -116,6 +116,7 @@ void SoftBodyBullet::set_soft_mesh(RID p_mesh) {
 	}
 
 	Array arrays = RenderingServer::get_singleton()->mesh_surface_get_arrays(soft_mesh, 0);
+	ERR_FAIL_COND(arrays.is_empty());
 
 	bool success = set_trimesh_body_shape(arrays[RS::ARRAY_INDEX], arrays[RS::ARRAY_VERTEX]);
 	if (!success) {
