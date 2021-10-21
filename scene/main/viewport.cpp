@@ -2192,7 +2192,10 @@ void Viewport::_drop_physics_mouseover(bool p_paused_only) {
 	if (physics_object_over.is_valid()) {
 		CollisionObject3D *co = Object::cast_to<CollisionObject3D>(ObjectDB::get_instance(physics_object_over));
 		if (co) {
-			if (!(p_paused_only && co->can_process())) {
+			if (!co->is_inside_tree()) {
+				physics_object_over = ObjectID();
+				physics_object_capture = ObjectID();
+			} else if (!(p_paused_only && co->can_process())) {
 				co->_mouse_exit();
 				physics_object_over = ObjectID();
 				physics_object_capture = ObjectID();
@@ -2213,7 +2216,7 @@ void Viewport::_cleanup_mouseover_colliders(bool p_clean_all_frames, bool p_paus
 		Object *o = ObjectDB::get_instance(E->key());
 		if (o) {
 			CollisionObject2D *co = Object::cast_to<CollisionObject2D>(o);
-			if (co) {
+			if (co && co->is_inside_tree()) {
 				if (p_clean_all_frames && p_paused_only && co->can_process()) {
 					continue;
 				}
@@ -2239,7 +2242,7 @@ void Viewport::_cleanup_mouseover_colliders(bool p_clean_all_frames, bool p_paus
 		Object *o = ObjectDB::get_instance(E->key().first);
 		if (o) {
 			CollisionObject2D *co = Object::cast_to<CollisionObject2D>(o);
-			if (co) {
+			if (co && co->is_inside_tree()) {
 				if (p_clean_all_frames && p_paused_only && co->can_process()) {
 					continue;
 				}
