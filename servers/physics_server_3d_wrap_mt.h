@@ -58,9 +58,7 @@ class PhysicsServer3DWrapMT : public PhysicsServer3D {
 	bool create_thread = false;
 
 	Semaphore step_sem;
-	int step_pending = 0;
 	void thread_step(real_t p_delta);
-	void thread_flush();
 
 	void thread_exit();
 

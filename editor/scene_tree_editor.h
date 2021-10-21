@@ -114,8 +114,6 @@ class SceneTreeEditor : public Control {
 	void _node_visibility_changed(Node *p_node);
 	void _update_visibility_color(Node *p_node, TreeItem *p_item);
 
-	void _node_replace_owner(Node *p_base, Node *p_node, Node *p_root);
-
 	void _selection_changed();
 	Node *get_scene_node();
 
@@ -173,7 +171,6 @@ class SceneTreeDialog : public ConfirmationDialog {
 	//Button *cancel;
 	LineEdit *filter;
 
-	void update_tree();
 	void _select();
 	void _cancel();
 	void _filter_changed(const String &p_filter);

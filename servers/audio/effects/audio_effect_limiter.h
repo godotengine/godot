@@ -72,8 +72,6 @@ public:
 	float get_soft_clip_ratio() const;
 
 	Ref<AudioEffectInstance> instantiate() override;
-	void set_volume_db(float p_volume);
-	float get_volume_db() const;
 
 	AudioEffectLimiter();
 };

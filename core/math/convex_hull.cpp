@@ -594,8 +594,6 @@ private:
 
 		IntermediateHull() {
 		}
-
-		void print();
 	};
 
 	enum Orientation { NONE,

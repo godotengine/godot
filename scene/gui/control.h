@@ -233,9 +233,6 @@ private:
 	static constexpr unsigned properties_managed_by_container_count = 11;
 	static String properties_managed_by_container[properties_managed_by_container_count];
 
-	// used internally
-	Control *_find_control_at_pos(CanvasItem *p_node, const Point2 &p_pos, const Transform2D &p_xform, Transform2D &r_inv_xform);
-
 	void _window_find_focus_neighbor(const Vector2 &p_dir, Node *p_at, const Point2 *p_points, real_t p_min, real_t &r_closest_dist, Control **r_closest);
 	Control *_get_focus_neighbor(Side p_side, int p_count = 0);
 
@@ -250,7 +247,6 @@ private:
 	void _update_minimum_size();
 
 	void _clear_size_warning();
-	void _update_scroll();
 
 	void _compute_offsets(Rect2 p_rect, const real_t p_anchors[4], real_t (&r_offsets)[4]);
 	void _compute_anchors(Rect2 p_rect, const real_t p_offsets[4], real_t (&r_anchors)[4]);

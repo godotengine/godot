@@ -677,8 +677,6 @@ private:
 
 	void _register_all_gizmos();
 
-	Node3DEditor();
-
 	void _selection_changed();
 	void _refresh_menu_icons();
 

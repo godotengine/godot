@@ -263,7 +263,6 @@ Size2i OS_Android::get_display_size() const {
 
 void OS_Android::set_context_is_16_bits(bool p_is_16) {
 #if defined(OPENGL_ENABLED)
-	//use_16bits_fbo = p_is_16;
 	//if (rasterizer)
 	//	rasterizer->set_force_16_bits_fbo(p_is_16);
 #endif
@@ -325,7 +324,6 @@ OS_Android::OS_Android(GodotJavaWrapper *p_godot_java, GodotIOJavaWrapper *p_god
 #if defined(OPENGL_ENABLED)
 	gl_extensions = nullptr;
 	use_gl2 = false;
-	use_16bits_fbo = false;
 #endif
 
 #if defined(VULKAN_ENABLED)

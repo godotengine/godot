@@ -83,7 +83,6 @@ class RotatedFileLogger : public Logger {
 
 	FileAccess *file = nullptr;
 
-	void rotate_file_without_closing();
 	void close_file();
 	void clear_old_backups();
 	void rotate_file();

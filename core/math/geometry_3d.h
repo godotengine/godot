@@ -36,8 +36,6 @@
 #include "core/templates/vector.h"
 
 class Geometry3D {
-	Geometry3D();
-
 public:
 	static void get_closest_points_between_segments(const Vector3 &p1, const Vector3 &p2, const Vector3 &q1, const Vector3 &q2, Vector3 &c1, Vector3 &c2) {
 // Do the function 'd' as defined by pb. I think it's a dot product of some sort.

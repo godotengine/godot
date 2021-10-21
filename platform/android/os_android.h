@@ -48,7 +48,6 @@ private:
 	bool use_apk_expansion;
 
 #if defined(OPENGL_ENABLED)
-	bool use_16bits_fbo;
 	const char *gl_extensions;
 #endif
 

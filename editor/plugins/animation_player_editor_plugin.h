@@ -187,7 +187,6 @@ class AnimationPlayerEditor : public VBoxContainer {
 	void _scale_changed(const String &p_scale);
 	void _save_animation(String p_file);
 	void _load_animations(Vector<String> p_files);
-	void _seek_frame_changed(const String &p_frame);
 	void _seek_value_changed(float p_value, bool p_set = false, bool p_timeline_only = false);
 	void _blend_editor_next_changed(const int p_idx);
 
@@ -217,7 +216,6 @@ class AnimationPlayerEditor : public VBoxContainer {
 
 	void _pin_pressed();
 
-	AnimationPlayerEditor();
 	~AnimationPlayerEditor();
 
 protected:

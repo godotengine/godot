@@ -484,14 +484,14 @@ void Node3D::_update_gizmos() {
 #endif
 }
 
-#ifdef TOOLS_ENABLED
 void Node3D::set_disable_gizmos(bool p_enabled) {
+#ifdef TOOLS_ENABLED
 	data.gizmos_disabled = p_enabled;
 	if (!p_enabled) {
 		clear_gizmos();
 	}
-}
 #endif
+}
 
 void Node3D::set_disable_scale(bool p_enabled) {
 	data.disable_scale = p_enabled;

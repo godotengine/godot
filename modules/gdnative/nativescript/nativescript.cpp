@@ -1139,15 +1139,12 @@ void NativeScriptLanguage::profiling_start() {
 	MutexLock lock(mutex);
 
 	profile_data.clear();
-	profiling = true;
 #endif
 }
 
 void NativeScriptLanguage::profiling_stop() {
 #ifdef DEBUG_ENABLED
 	MutexLock lock(mutex);
-
-	profiling = false;
 #endif
 }
 
