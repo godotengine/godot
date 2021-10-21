@@ -314,7 +314,7 @@ Error ColladaImport::_create_scene(Collada::Node *p_node, Node3D *p_parent) {
 
 	xf = collada.fix_transform(xf) * p_node->post_transform;
 	node->set_transform(xf);
-	p_parent->add_child(node);
+	p_parent->add_child(node, true);
 	node->set_owner(scene);
 
 	if (p_node->empty_draw_type != "") {
@@ -1805,7 +1805,7 @@ Node *EditorSceneFormatImporterCollada::import_scene(const String &p_path, uint3
 
 			ap->add_animation(name, state.animations[i]);
 		}
-		state.scene->add_child(ap);
+		state.scene->add_child(ap, true);
 		ap->set_owner(state.scene);
 	}
 

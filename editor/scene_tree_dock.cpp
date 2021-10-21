@@ -2153,7 +2153,7 @@ void SceneTreeDock::_do_create(Node *p_parent) {
 	editor_data->get_undo_redo().create_action(TTR("Create Node"));
 
 	if (edited_scene) {
-		editor_data->get_undo_redo().add_do_method(p_parent, "add_child", child);
+		editor_data->get_undo_redo().add_do_method(p_parent, "add_child", child, true);
 		editor_data->get_undo_redo().add_do_method(child, "set_owner", edited_scene);
 		editor_data->get_undo_redo().add_do_method(editor_selection, "clear");
 		editor_data->get_undo_redo().add_do_method(editor_selection, "add_node", child);

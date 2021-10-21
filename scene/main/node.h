@@ -437,7 +437,6 @@ public:
 	void queue_delete();
 
 	//hacks for speed
-	static void set_human_readable_collision_renaming(bool p_enabled);
 	static void init_node_hrcr();
 
 	void force_parent_owned() { data.parent_owned = true; } //hack to avoid duplicate nodes

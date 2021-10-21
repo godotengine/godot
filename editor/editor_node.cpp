@@ -3347,7 +3347,7 @@ void EditorNode::set_edited_scene(Node *p_scene) {
 
 	if (p_scene) {
 		if (p_scene->get_parent() != scene_root) {
-			scene_root->add_child(p_scene);
+			scene_root->add_child(p_scene, true);
 		}
 	}
 }
@@ -3479,7 +3479,7 @@ void EditorNode::set_current_scene(int p_idx) {
 
 	if (new_scene) {
 		if (new_scene->get_parent() != scene_root) {
-			scene_root->add_child(new_scene);
+			scene_root->add_child(new_scene, true);
 		}
 	}
 
@@ -7114,8 +7114,6 @@ EditorNode::EditorNode() {
 	EditorFileSystem::get_singleton()->connect("resources_reload", callable_mp(this, &EditorNode::_resources_changed));
 
 	_build_icon_type_cache();
-
-	Node::set_human_readable_collision_renaming(true);
 
 	pick_main_scene = memnew(ConfirmationDialog);
 	gui_base->add_child(pick_main_scene);

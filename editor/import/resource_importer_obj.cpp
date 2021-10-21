@@ -448,7 +448,7 @@ Node *EditorOBJImporter::import_scene(const String &p_path, uint32_t p_flags, in
 		ImporterMeshInstance3D *mi = memnew(ImporterMeshInstance3D);
 		mi->set_mesh(mesh);
 		mi->set_name(m->get_name());
-		scene->add_child(mi);
+		scene->add_child(mi, true);
 		mi->set_owner(scene);
 	}
 
