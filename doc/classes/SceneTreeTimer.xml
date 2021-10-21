@@ -10,7 +10,7 @@
 		[gdscript]
 		func some_function():
 		    print("Timer started.")
-		    yield(get_tree().create_timer(1.0), "timeout")
+		    await get_tree().create_timer(1.0).timeout
 		    print("Timer ended.")
 		[/gdscript]
 		[csharp]
