@@ -204,6 +204,17 @@
 				- The alternative tile identifier [code]alternative_tile[/code] identifies a tile alternative the source is a [TileSetAtlasSource], and the scene for a [TileSetScenesCollectionSource].
 			</description>
 		</method>
+		<method name="set_cells_from_surrounding_terrains">
+			<return type="void" />
+			<argument index="0" name="layer" type="int" />
+			<argument index="1" name="cells" type="Vector2i[]" />
+			<argument index="2" name="terrain_set" type="int" />
+			<argument index="3" name="ignore_empty_terrains" type="bool" default="true" />
+			<description>
+				Updates all the cells in the [code]cells[/code] coordinates array and replace them by tiles that matches the surrounding cells terrains. Only cells form the given [code]terrain_set[/code] are considered.
+				If [code]ignore_empty_terrains[/code] is true, zones with no terrain defined are ignored to select the tiles.
+			</description>
+		</method>
 		<method name="set_layer_enabled">
 			<return type="void" />
 			<argument index="0" name="layer" type="int" />

@@ -301,6 +301,66 @@ int TileSet::get_next_source_id() const {
 	return next_source_id;
 }
 
+void TileSet::_update_terrains_cache() {
+	if (terrains_cache_dirty) {
+		// Organizes tiles into structures.
+		per_terrain_pattern_tiles.resize(terrain_sets.size());
+		for (int i = 0; i < (int)per_terrain_pattern_tiles.size(); i++) {
+			per_terrain_pattern_tiles[i].clear();
+		}
+
+		for (const KeyValue<int, Ref<TileSetSource>> &kv : sources) {
+			Ref<TileSetSource> source = kv.value;
+			Ref<TileSetAtlasSource> atlas_source = source;
+			if (atlas_source.is_valid()) {
+				for (int tile_index = 0; tile_index < source->get_tiles_count(); tile_index++) {
+					Vector2i tile_id = source->get_tile_id(tile_index);
+					for (int alternative_index = 0; alternative_index < source->get_alternative_tiles_count(tile_id); alternative_index++) {
+						int alternative_id = source->get_alternative_tile_id(tile_id, alternative_index);
+
+						// Executed for each tile_data.
+						TileData *tile_data = Object::cast_to<TileData>(atlas_source->get_tile_data(tile_id, alternative_id));
+						int terrain_set = tile_data->get_terrain_set();
+						if (terrain_set >= 0) {
+							TileMapCell cell;
+							cell.source_id = kv.key;
+							cell.set_atlas_coords(tile_id);
+							cell.alternative_tile = alternative_id;
+
+							TileSet::TerrainsPattern terrains_pattern = tile_data->get_terrains_pattern();
+
+							// Terrain bits.
+							for (int i = 0; i < terrains_pattern.size(); i++) {
+								int terrain = terrains_pattern[i];
+								if (terrain >= 0) {
+									per_terrain_pattern_tiles[terrain_set][terrains_pattern].insert(cell);
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+
+		// Add the empty cell in the possible patterns and cells.
+		for (int i = 0; i < terrain_sets.size(); i++) {
+			TileSet::TerrainsPattern empty_pattern;
+			for (int j = 0; j < TileSet::CELL_NEIGHBOR_MAX; j++) {
+				if (is_valid_peering_bit_terrain(i, TileSet::CellNeighbor(j))) {
+					empty_pattern.push_back(-1);
+				}
+			}
+
+			TileMapCell empty_cell;
+			empty_cell.source_id = TileSet::INVALID_SOURCE;
+			empty_cell.set_atlas_coords(TileSetSource::INVALID_ATLAS_COORDS);
+			empty_cell.alternative_tile = TileSetSource::INVALID_TILE_ALTERNATIVE;
+			per_terrain_pattern_tiles[i][empty_pattern].insert(empty_cell);
+		}
+		terrains_cache_dirty = false;
+	}
+}
+
 void TileSet::_compute_next_source_id() {
 	while (sources.has(next_source_id)) {
 		next_source_id = (next_source_id + 1) % 1073741824; // 2 ** 30
@@ -321,6 +381,7 @@ int TileSet::add_source(Ref<TileSetSource> p_tile_set_source, int p_atlas_source
 
 	sources[new_source_id]->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &TileSet::_source_changed));
 
+	terrains_cache_dirty = true;
 	emit_changed();
 
 	return new_source_id;
@@ -336,6 +397,7 @@ void TileSet::remove_source(int p_source_id) {
 	source_ids.erase(p_source_id);
 	source_ids.sort();
 
+	terrains_cache_dirty = true;
 	emit_changed();
 }
 
@@ -357,6 +419,7 @@ void TileSet::set_source_id(int p_source_id, int p_new_source_id) {
 
 	_compute_next_source_id();
 
+	terrains_cache_dirty = true;
 	emit_changed();
 }
 
@@ -545,6 +608,7 @@ void TileSet::add_terrain_set(int p_index) {
 	}
 
 	notify_property_list_changed();
+	terrains_cache_dirty = true;
 	emit_changed();
 }
 
@@ -557,6 +621,7 @@ void TileSet::move_terrain_set(int p_from_index, int p_to_pos) {
 		source.value->move_terrain_set(p_from_index, p_to_pos);
 	}
 	notify_property_list_changed();
+	terrains_cache_dirty = true;
 	emit_changed();
 }
 
@@ -567,6 +632,7 @@ void TileSet::remove_terrain_set(int p_index) {
 		source.value->remove_terrain_set(p_index);
 	}
 	notify_property_list_changed();
+	terrains_cache_dirty = true;
 	emit_changed();
 }
 
@@ -578,6 +644,7 @@ void TileSet::set_terrain_set_mode(int p_terrain_set, TerrainMode p_terrain_mode
 	}
 
 	notify_property_list_changed();
+	terrains_cache_dirty = true;
 	emit_changed();
 }
 
@@ -612,6 +679,7 @@ void TileSet::add_terrain(int p_terrain_set, int p_index) {
 	}
 
 	notify_property_list_changed();
+	terrains_cache_dirty = true;
 	emit_changed();
 }
 
@@ -627,6 +695,7 @@ void TileSet::move_terrain(int p_terrain_set, int p_from_index, int p_to_pos) {
 		source.value->move_terrain(p_terrain_set, p_from_index, p_to_pos);
 	}
 	notify_property_list_changed();
+	terrains_cache_dirty = true;
 	emit_changed();
 }
 
@@ -640,6 +709,7 @@ void TileSet::remove_terrain(int p_terrain_set, int p_index) {
 		source.value->remove_terrain(p_terrain_set, p_index);
 	}
 	notify_property_list_changed();
+	terrains_cache_dirty = true;
 	emit_changed();
 }
 
@@ -1196,6 +1266,73 @@ int TileSet::get_patterns_count() {
 	return patterns.size();
 }
 
+Set<TileSet::TerrainsPattern> TileSet::get_terrains_pattern_set(int p_terrain_set) {
+	ERR_FAIL_INDEX_V(p_terrain_set, terrain_sets.size(), Set<TileSet::TerrainsPattern>());
+	_update_terrains_cache();
+
+	Set<TileSet::TerrainsPattern> output;
+	for (KeyValue<TileSet::TerrainsPattern, Set<TileMapCell>> kv : per_terrain_pattern_tiles[p_terrain_set]) {
+		output.insert(kv.key);
+	}
+	return output;
+}
+
+Set<TileMapCell> TileSet::get_tiles_for_terrains_pattern(int p_terrain_set, TerrainsPattern p_terrain_tile_pattern) {
+	ERR_FAIL_INDEX_V(p_terrain_set, terrain_sets.size(), Set<TileMapCell>());
+	_update_terrains_cache();
+	return per_terrain_pattern_tiles[p_terrain_set][p_terrain_tile_pattern];
+}
+
+TileMapCell TileSet::get_random_tile_from_pattern(int p_terrain_set, TileSet::TerrainsPattern p_terrain_tile_pattern) {
+	ERR_FAIL_INDEX_V(p_terrain_set, terrain_sets.size(), TileMapCell());
+	_update_terrains_cache();
+
+	// Count the sum of probabilities.
+	double sum = 0.0;
+	Set<TileMapCell> set = per_terrain_pattern_tiles[p_terrain_set][p_terrain_tile_pattern];
+	for (Set<TileMapCell>::Element *E = set.front(); E; E = E->next()) {
+		if (E->get().source_id >= 0) {
+			Ref<TileSetSource> source = sources[E->get().source_id];
+			Ref<TileSetAtlasSource> atlas_source = source;
+			if (atlas_source.is_valid()) {
+				TileData *tile_data = Object::cast_to<TileData>(atlas_source->get_tile_data(E->get().get_atlas_coords(), E->get().alternative_tile));
+				sum += tile_data->get_probability();
+			} else {
+				sum += 1.0;
+			}
+		} else {
+			sum += 1.0;
+		}
+	}
+
+	// Generate a random number.
+	double count = 0.0;
+	double picked = Math::random(0.0, sum);
+
+	// Pick the tile.
+	for (Set<TileMapCell>::Element *E = set.front(); E; E = E->next()) {
+		if (E->get().source_id >= 0) {
+			Ref<TileSetSource> source = sources[E->get().source_id];
+
+			Ref<TileSetAtlasSource> atlas_source = source;
+			if (atlas_source.is_valid()) {
+				TileData *tile_data = Object::cast_to<TileData>(atlas_source->get_tile_data(E->get().get_atlas_coords(), E->get().alternative_tile));
+				count += tile_data->get_probability();
+			} else {
+				count += 1.0;
+			}
+		} else {
+			count += 1.0;
+		}
+
+		if (count >= picked) {
+			return E->get();
+		}
+	}
+
+	ERR_FAIL_V(TileMapCell());
+}
+
 Vector<Vector2> TileSet::get_tile_shape_polygon() {
 	Vector<Vector2> points;
 	if (tile_shape == TileSet::TILE_SHAPE_SQUARE) {
@@ -1510,6 +1647,7 @@ Vector<Vector<Ref<Texture2D>>> TileSet::generate_terrains_icons(Size2i p_size) {
 }
 
 void TileSet::_source_changed() {
+	terrains_cache_dirty = true;
 	emit_changed();
 }
 
@@ -4741,6 +4879,18 @@ bool TileData::is_valid_peering_bit_terrain(TileSet::CellNeighbor p_peering_bit)
 	ERR_FAIL_COND_V(!tile_set, false);
 
 	return tile_set->is_valid_peering_bit_terrain(terrain_set, p_peering_bit);
+}
+
+TileSet::TerrainsPattern TileData::get_terrains_pattern() const {
+	ERR_FAIL_COND_V(!tile_set, TileSet::TerrainsPattern());
+
+	TileSet::TerrainsPattern output;
+	for (int i = 0; i < TileSet::CELL_NEIGHBOR_MAX; i++) {
+		if (tile_set->is_valid_peering_bit_terrain(terrain_set, TileSet::CellNeighbor(i))) {
+			output.push_back(get_peering_bit_terrain(TileSet::CellNeighbor(i)));
+		}
+	}
+	return output;
 }
 
 // Navigation
