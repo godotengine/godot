@@ -34,6 +34,7 @@ jobs:
             tests: true
             sconsflags: use_asan=yes use_ubsan=yes
             proj-test: true
+            godot-cpp-test: true
             bin: "./bin/godot.linuxbsd.tools.64s"
             # Skip 2GiB artifact speeding up action.
             artifact: false
@@ -125,6 +126,46 @@ jobs:
         run: |
           VK_ICD_FILENAMES=$(pwd)/vk_swiftshader_icd.json DRI_PRIME=0 xvfb-run ${{ matrix.bin }} 40 --audio-driver Dummy --path test_project 2>&1 | tee sanitizers_log.txt || true
           misc/scripts/check_ci_log.py sanitizers_log.txt
+
+      # Checkout godot-cpp
+      - name: Checkout godot-cpp
+        if: ${{ matrix.godot-cpp-test }}
+        uses: actions/checkout@v2
+        with:
+          repository: godotengine/godot-cpp
+          submodules: 'recursive'
+          path: 'godot-cpp'
+
+      # Check extension API
+      - name: Check for extension api updates
+        if: ${{ matrix.godot-cpp-test }}
+        run: |
+          echo "Running --dump-extension-api to create extensions api."
+          VK_ICD_FILENAMES=$(pwd)/vk_swiftshader_icd.json DRI_PRIME=0 xvfb-run ${{ matrix.bin }} --audio-driver Dummy --dump-extension-api 2>&1 > /dev/null || true
+          misc/scripts/compare_extension_api.py godot-cpp/godot-headers/extension_api.json extension_api.json
+
+      # Copy new extension API files into place
+      - name: Copy new extension API files into place
+        if: ${{ matrix.godot-cpp-test }}
+        run: |
+          cp -f extension_api.json godot-cpp/godot-headers/
+          cp -f core/extension/gdnative_interface.h godot-cpp/godot-headers/godot/
+
+      # Build godot-cpp library
+      - name: Build godot-cpp library
+        if: ${{ matrix.godot-cpp-test }}
+        run: |
+          cd godot-cpp
+          scons target=${{ matrix.target }} generate_bindings=yes -j2
+          cd ..
+
+      # Build godot-cpp test extension
+      - name: Build godot-cpp test extension
+        if: ${{ matrix.godot-cpp-test }}
+        run: |
+          cd godot-cpp/test
+          scons target=${{ matrix.target }} -j2
+          cd ../..
 
       - name: Prepare artifact
         if: ${{ matrix.artifact }}
