@@ -37,8 +37,9 @@
 class BroadPhaseBVH : public BroadPhaseSW {
 	BVH_Manager<CollisionObjectSW, true, 128> bvh;
 
-	static void *_pair_callback(void *, uint32_t, CollisionObjectSW *, int, uint32_t, CollisionObjectSW *, int);
-	static void _unpair_callback(void *, uint32_t, CollisionObjectSW *, int, uint32_t, CollisionObjectSW *, int, void *);
+	static void *_pair_callback(void *p_self, uint32_t p_id_A, CollisionObjectSW *p_object_A, int p_subindex_A, uint32_t p_id_B, CollisionObjectSW *p_object_B, int p_subindex_B);
+	static void _unpair_callback(void *p_self, uint32_t p_id_A, CollisionObjectSW *p_object_A, int p_subindex_A, uint32_t p_id_B, CollisionObjectSW *p_object_B, int p_subindex_B, void *p_pair_data);
+	static void *_check_pair_callback(void *p_self, uint32_t p_id_A, CollisionObjectSW *p_object_A, int p_subindex_A, uint32_t p_id_B, CollisionObjectSW *p_object_B, int p_subindex_B, void *p_pair_data);
 
 	PairCallback pair_callback;
 	void *pair_userdata;
@@ -49,6 +50,7 @@ public:
 	// 0 is an invalid ID
 	virtual ID create(CollisionObjectSW *p_object, int p_subindex = 0, const AABB &p_aabb = AABB(), bool p_static = false);
 	virtual void move(ID p_id, const AABB &p_aabb);
+	virtual void recheck_pairs(ID p_id);
 	virtual void set_static(ID p_id, bool p_static);
 	virtual void remove(ID p_id);
 

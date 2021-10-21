@@ -445,6 +445,7 @@ public:
 	bool is_pairable(OctreeElementID p_id) const;
 	T *get(OctreeElementID p_id) const;
 	int get_subindex(OctreeElementID p_id) const;
+	AABB get_aabb(OctreeElementID p_id) const;
 
 	int cull_convex(const Vector<Plane> &p_convex, T **p_result_array, int p_result_max, uint32_t p_mask = 0xFFFFFFFF);
 	int cull_aabb(const AABB &p_aabb, T **p_result_array, int p_result_max, int *p_subindex_array = nullptr, uint32_t p_mask = 0xFFFFFFFF);
@@ -496,6 +497,12 @@ OCTREE_FUNC(int)::get_subindex(OctreeElementID p_id) const {
 	const typename ElementMap::Element *E = element_map.find(p_id);
 	ERR_FAIL_COND_V(!E, -1);
 	return E->get().subindex;
+}
+
+OCTREE_FUNC(AABB)::get_aabb(OctreeElementID p_id) const {
+	const typename ElementMap::Element *E = element_map.find(p_id);
+	ERR_FAIL_COND_V(!E, AABB());
+	return E->get().aabb;
 }
 
 #define OCTREE_DIVISOR 4

@@ -180,6 +180,23 @@ void CollisionObjectSW::_update_shapes() {
 	}
 }
 
+void CollisionObjectSW::_recheck_shapes() {
+	if (!space) {
+		return;
+	}
+
+	for (int i = 0; i < shapes.size(); i++) {
+		Shape &s = shapes.write[i];
+		if (s.disabled) {
+			continue;
+		}
+
+		if (s.bpid != 0) {
+			space->get_broadphase()->recheck_pairs(s.bpid);
+		}
+	}
+}
+
 void CollisionObjectSW::_update_shapes_with_motion(const Vector3 &p_motion) {
 	if (!space) {
 		return;

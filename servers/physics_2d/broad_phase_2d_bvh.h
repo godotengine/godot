@@ -39,8 +39,9 @@
 class BroadPhase2DBVH : public BroadPhase2DSW {
 	BVH_Manager<CollisionObject2DSW, true, 128, Rect2, Vector2> bvh;
 
-	static void *_pair_callback(void *, uint32_t, CollisionObject2DSW *, int, uint32_t, CollisionObject2DSW *, int);
-	static void _unpair_callback(void *, uint32_t, CollisionObject2DSW *, int, uint32_t, CollisionObject2DSW *, int, void *);
+	static void *_pair_callback(void *p_self, uint32_t p_id_A, CollisionObject2DSW *p_object_A, int p_subindex_A, uint32_t p_id_B, CollisionObject2DSW *p_object_B, int p_subindex_B);
+	static void _unpair_callback(void *p_self, uint32_t p_id_A, CollisionObject2DSW *p_object_A, int p_subindex_A, uint32_t p_id_B, CollisionObject2DSW *p_object_B, int p_subindex_B, void *p_pair_data);
+	static void *_check_pair_callback(void *p_self, uint32_t p_id_A, CollisionObject2DSW *p_object_A, int p_subindex_A, uint32_t p_id_B, CollisionObject2DSW *p_object_B, int p_subindex_B, void *p_pair_data);
 
 	PairCallback pair_callback;
 	void *pair_userdata;
@@ -51,6 +52,7 @@ public:
 	// 0 is an invalid ID
 	virtual ID create(CollisionObject2DSW *p_object, int p_subindex = 0, const Rect2 &p_aabb = Rect2(), bool p_static = false);
 	virtual void move(ID p_id, const Rect2 &p_aabb);
+	virtual void recheck_pairs(ID p_id);
 	virtual void set_static(ID p_id, bool p_static);
 	virtual void remove(ID p_id);
 

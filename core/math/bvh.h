@@ -59,6 +59,7 @@ public:
 	// is for compatibility with octree
 	typedef void *(*PairCallback)(void *, uint32_t, T *, int, uint32_t, T *, int);
 	typedef void (*UnpairCallback)(void *, uint32_t, T *, int, uint32_t, T *, int, void *);
+	typedef void *(*CheckPairCallback)(void *, uint32_t, T *, int, uint32_t, T *, int, void *);
 
 	// allow locally toggling thread safety if the template has been compiled with BVH_THREAD_SAFE
 	void params_set_thread_safe(bool p_enable) {
@@ -96,6 +97,11 @@ public:
 		BVH_LOCKED_FUNCTION
 		unpair_callback = p_callback;
 		unpair_callback_userdata = p_userdata;
+	}
+	void set_check_pair_callback(CheckPairCallback p_callback, void *p_userdata) {
+		BVH_LOCKED_FUNCTION
+		check_pair_callback = p_callback;
+		check_pair_callback_userdata = p_userdata;
 	}
 
 	BVHHandle create(T *p_userdata, bool p_active, const Bounds &p_aabb = Bounds(), int p_subindex = 0, bool p_pairable = false, uint32_t p_pairable_type = 0, uint32_t p_pairable_mask = 1) {
@@ -140,6 +146,12 @@ public:
 		BVHHandle h;
 		h.set(p_handle);
 		move(h, p_aabb);
+	}
+
+	void recheck_pairs(uint32_t p_handle) {
+		BVHHandle h;
+		h.set(p_handle);
+		recheck_pairs(h);
 	}
 
 	void erase(uint32_t p_handle) {
@@ -197,6 +209,13 @@ public:
 			if (USE_PAIRS) {
 				_add_changed_item(p_handle, p_aabb);
 			}
+		}
+	}
+
+	void recheck_pairs(BVHHandle p_handle) {
+		BVH_LOCKED_FUNCTION
+		if (USE_PAIRS) {
+			_recheck_pairs(p_handle);
 		}
 	}
 
@@ -517,6 +536,23 @@ private:
 		}
 	}
 
+	void _recheck_pair(BVHHandle p_from, BVHHandle p_to, void *p_pair_data) {
+		tree._handle_sort(p_from, p_to);
+
+		typename BVHTREE_CLASS::ItemExtra &exa = tree._extra[p_from.id()];
+		typename BVHTREE_CLASS::ItemExtra &exb = tree._extra[p_to.id()];
+
+		// if the userdata is the same, no collisions should occur
+		if ((exa.userdata == exb.userdata) && exa.userdata) {
+			return;
+		}
+
+		// callback
+		if (check_pair_callback) {
+			check_pair_callback(check_pair_callback_userdata, p_from, exa.userdata, exa.subindex, p_to, exb.userdata, exb.subindex, p_pair_data);
+		}
+	}
+
 	// returns true if unpair
 	bool _find_leavers_process_pair(typename BVHTREE_CLASS::ItemPairs &p_pairs_from, const BVHABB_CLASS &p_abb_from, BVHHandle p_from, BVHHandle p_to, bool p_full_check) {
 		BVHABB_CLASS abb_to;
@@ -620,6 +656,18 @@ private:
 		}
 	}
 
+	// Send pair callbacks again for all existing pairs for the given handle.
+	void _recheck_pairs(BVHHandle p_handle) {
+		typename BVHTREE_CLASS::ItemPairs &p_from = tree._pairs[p_handle.id()];
+
+		// checking pair for every partner.
+		for (unsigned int n = 0; n < p_from.extended_pairs.size(); n++) {
+			const typename BVHTREE_CLASS::ItemPairs::Link &pair = p_from.extended_pairs[n];
+			BVHHandle h_to = pair.handle;
+			_recheck_pair(p_handle, h_to, pair.userdata);
+		}
+	}
+
 private:
 	const typename BVHTREE_CLASS::ItemExtra &_get_extra(BVHHandle p_handle) const {
 		return tree._extra[p_handle.id()];
@@ -696,8 +744,10 @@ private:
 
 	PairCallback pair_callback;
 	UnpairCallback unpair_callback;
+	CheckPairCallback check_pair_callback;
 	void *pair_callback_userdata;
 	void *unpair_callback_userdata;
+	void *check_pair_callback_userdata;
 
 	BVHTREE_CLASS tree;
 

@@ -165,11 +165,13 @@ class BroadPhase2DHashGrid : public BroadPhase2DSW {
 
 	void _pair_attempt(Element *p_elem, Element *p_with);
 	void _unpair_attempt(Element *p_elem, Element *p_with);
+	void _move_internal(Element *p_elem, const Rect2 &p_aabb);
 	void _check_motion(Element *p_elem);
 
 public:
 	virtual ID create(CollisionObject2DSW *p_object, int p_subindex = 0, const Rect2 &p_aabb = Rect2(), bool p_static = false);
 	virtual void move(ID p_id, const Rect2 &p_aabb);
+	virtual void recheck_pairs(ID p_id);
 	virtual void set_static(ID p_id, bool p_static);
 	virtual void remove(ID p_id);
 

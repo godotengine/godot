@@ -88,7 +88,7 @@ void BroadPhase2DHashGrid::_check_motion(Element *p_elem) {
 
 		if (physical_collision && logical_collision) {
 			if (!E->get()->colliding && pair_callback) {
-				E->get()->ud = pair_callback(p_elem->owner, p_elem->subindex, E->key()->owner, E->key()->subindex, pair_userdata);
+				E->get()->ud = pair_callback(p_elem->owner, p_elem->subindex, E->key()->owner, E->key()->subindex, nullptr, pair_userdata);
 			}
 			E->get()->colliding = true;
 		} else { // No collision
@@ -334,6 +334,14 @@ void BroadPhase2DHashGrid::move(ID p_id, const Rect2 &p_aabb) {
 	}
 
 	_check_motion(&e);
+}
+
+void BroadPhase2DHashGrid::recheck_pairs(ID p_id) {
+	Map<ID, Element>::Element *E = element_map.find(p_id);
+	ERR_FAIL_COND(!E);
+
+	Element &e = E->get();
+	move(p_id, e.aabb);
 }
 
 void BroadPhase2DHashGrid::set_static(ID p_id, bool p_static) {
