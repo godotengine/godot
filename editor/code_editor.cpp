@@ -1824,6 +1824,7 @@ CodeTextEditor::CodeTextEditor() {
 	text_editor->set_draw_line_numbers(true);
 	text_editor->set_highlight_matching_braces_enabled(true);
 	text_editor->set_auto_indent_enabled(true);
+	text_editor->set_deselect_on_focus_loss_enabled(false);
 
 	status_bar = memnew(HBoxContainer);
 	add_child(status_bar);

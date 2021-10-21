@@ -97,6 +97,7 @@ private:
 	float full_width = 0.0;
 
 	bool selecting_enabled = true;
+	bool deselect_on_focus_loss_enabled = true;
 
 	bool context_menu_enabled = true;
 	PopupMenu *menu = nullptr;
@@ -325,6 +326,9 @@ public:
 
 	void set_selecting_enabled(bool p_enabled);
 	bool is_selecting_enabled() const;
+
+	void set_deselect_on_focus_loss_enabled(const bool p_enabled);
+	bool is_deselect_on_focus_loss_enabled() const;
 
 	void set_right_icon(const Ref<Texture2D> &p_icon);
 	Ref<Texture2D> get_right_icon();
