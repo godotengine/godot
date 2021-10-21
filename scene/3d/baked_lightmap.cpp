@@ -572,6 +572,10 @@ bool BakedLightmap::_lightmap_bake_step_function(float p_completion, const Strin
 }
 
 BakedLightmap::BakeError BakedLightmap::bake(Node *p_from_node, String p_data_save_path) {
+	if (!p_from_node && !get_parent()) {
+		return BAKE_ERROR_NO_ROOT;
+	}
+
 	bool no_save_path = false;
 	if (p_data_save_path == "" && (get_light_data().is_null() || !get_light_data()->get_path().is_resource_file())) {
 		no_save_path = true;
@@ -1595,6 +1599,7 @@ void BakedLightmap::_bind_methods() {
 	BIND_ENUM_CONSTANT(BAKE_ERROR_INVALID_MESH);
 	BIND_ENUM_CONSTANT(BAKE_ERROR_USER_ABORTED);
 	BIND_ENUM_CONSTANT(BAKE_ERROR_NO_LIGHTMAPPER);
+	BIND_ENUM_CONSTANT(BAKE_ERROR_NO_ROOT);
 
 	BIND_ENUM_CONSTANT(ENVIRONMENT_MODE_DISABLED);
 	BIND_ENUM_CONSTANT(ENVIRONMENT_MODE_SCENE);

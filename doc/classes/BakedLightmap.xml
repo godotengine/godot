@@ -16,7 +16,7 @@
 			<argument index="0" name="from_node" type="Node" default="null" />
 			<argument index="1" name="data_save_path" type="String" default="&quot;&quot;" />
 			<description>
-				Bakes the lightmap, scanning from the given [code]from_node[/code] root and saves the resulting [BakedLightmapData] in [code]data_save_path[/code]. If no save path is provided it will try to match the path from the current [member light_data].
+				Bakes the lightmap, scanning from the given [code]from_node[/code] root and saves the resulting [BakedLightmapData] in [code]data_save_path[/code]. If no root node is provided, parent of this node will be used as root instead. If no save path is provided it will try to match the path from the current [member light_data].
 			</description>
 		</method>
 	</methods>
@@ -128,6 +128,10 @@
 			Returns if user cancels baking.
 		</constant>
 		<constant name="BAKE_ERROR_NO_LIGHTMAPPER" value="7" enum="BakeError">
+			Returns if lightmapper can't be created. Unless you are using a custom lightmapper, please report this as bug.
+		</constant>
+		<constant name="BAKE_ERROR_NO_ROOT" value="8" enum="BakeError">
+			There is no root node to start baking from. Either provide [code]from_node[/code] argument or attach this node to a parent that should be used as root.
 		</constant>
 		<constant name="ENVIRONMENT_MODE_DISABLED" value="0" enum="EnvironmentMode">
 			No environment is used during baking.
