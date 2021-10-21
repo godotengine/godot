@@ -56,11 +56,11 @@
 				Converts a string containing a binary number into an integer. Binary strings can either be prefixed with [code]0b[/code] or not, and they can also start with a [code]-[/code] before the optional prefix.
 				[codeblocks]
 				[gdscript]
-				print("0x101".bin_to_int()) # Prints "5".
+				print("0b101".bin_to_int()) # Prints "5".
 				print("101".bin_to_int()) # Prints "5".
 				[/gdscript]
 				[csharp]
-				GD.Print("0x101".BinToInt()); // Prints "5".
+				GD.Print("0b101".BinToInt()); // Prints "5".
 				GD.Print("101".BinToInt()); // Prints "5".
 				[/csharp]
 				[/codeblocks]
