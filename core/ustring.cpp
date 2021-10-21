@@ -1785,9 +1785,7 @@ int64_t String::hex_to_int64(bool p_with_prefix) const {
 
 int64_t String::bin_to_int64(bool p_with_prefix) const {
 	int len = length();
-	if (len == 0 || (p_with_prefix && len < 3)) {
-		return 0;
-	}
+	ERR_FAIL_COND_V_MSG(p_with_prefix ? len < 3 : len == 0, 0, String("Invalid binary notation length in string ") + (p_with_prefix ? "with" : "without") + " prefix \"" + *this + "\".");
 
 	const CharType *s = ptr();
 
@@ -1798,9 +1796,7 @@ int64_t String::bin_to_int64(bool p_with_prefix) const {
 	}
 
 	if (p_with_prefix) {
-		if (s[0] != '0' || s[1] != 'b') {
-			return 0;
-		}
+		ERR_FAIL_COND_V_MSG(s[0] != '0' || LOWERCASE(s[1]) != 'b', 0, "Invalid binary notation prefix in string \"" + *this + "\".");
 		s += 2;
 	}
 
@@ -1812,7 +1808,7 @@ int64_t String::bin_to_int64(bool p_with_prefix) const {
 		if (c == '0' || c == '1') {
 			n = c - '0';
 		} else {
-			return 0;
+			ERR_FAIL_V_MSG(0, "Invalid binary notation character \"" + chr(*s) + "\" in string \"" + *this + "\".");
 		}
 		// Check for overflow/underflow, with special case to ensure INT64_MIN does not result in error
 		bool overflow = ((binary > INT64_MAX / 2) && (sign == 1 || (sign == -1 && binary != (INT64_MAX >> 1) + 1))) || (sign == -1 && binary == (INT64_MAX >> 1) + 1 && c > '0');
