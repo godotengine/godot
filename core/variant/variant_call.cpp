@@ -1420,6 +1420,9 @@ static void _register_variant_builtin_methods() {
 	// FIXME: Static function, not sure how to bind
 	//bind_method(String, humanize_size, sarray("size"), varray());
 
+	bind_method(String, path_to, sarray("path"), varray());
+	bind_method(String, path_to_file, sarray("path"), varray());
+
 	bind_method(String, is_absolute_path, sarray(), varray());
 	bind_method(String, is_relative_path, sarray(), varray());
 	bind_method(String, simplify_path, sarray(), varray());

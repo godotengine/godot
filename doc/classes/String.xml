@@ -533,6 +533,20 @@
 				Formats a number to have an exact number of [code]digits[/code] before the decimal point.
 			</description>
 		</method>
+		<method name="path_to" qualifiers="const">
+			<return type="String" />
+			<argument index="0" name="path" type="String" />
+			<description>
+				Returns a relative non-canonical path to a directory starting from the caller string and up to [code]path[/code] if both paths share a common parent directory. Non-canonical are paths that may contain references to a parent directory using the double dot notation ([code]..[/code]).
+			</description>
+		</method>
+		<method name="path_to_file" qualifiers="const">
+			<return type="String" />
+			<argument index="0" name="path" type="String" />
+			<description>
+				Returns a relative non-canonical path to a file starting from the caller string and up to [code]path[/code] if both paths share a common parent directory. Non-canonical are paths that may contain references to a parent directory using the double dot notation ([code]..[/code]).
+			</description>
+		</method>
 		<method name="plus_file" qualifiers="const">
 			<return type="String" />
 			<argument index="0" name="file" type="String" />
