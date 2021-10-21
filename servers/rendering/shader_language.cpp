@@ -2763,6 +2763,7 @@ bool ShaderLanguage::_validate_function_call(BlockNode *p_block, const FunctionI
 
 									bool is_const = false;
 									ConstantNode::Value value;
+									value.sint = -1;
 
 									_find_identifier(p_block, false, p_function_info, vn->name, nullptr, nullptr, &is_const, nullptr, nullptr, &value);
 									if (!is_const || value.sint < min || value.sint > max) {
