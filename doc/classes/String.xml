@@ -601,6 +601,24 @@
 				Formats a string to be at least [code]min_length[/code] long by adding [code]character[/code]s to the right of the string.
 			</description>
 		</method>
+		<method name="rreplace" qualifiers="const">
+			<return type="String" />
+			<argument index="0" name="old" type="String" />
+			<argument index="1" name="new" type="String" />
+			<argument index="2" name="count" type="int" default="-1" />
+			<description>
+				Returns a copy of the string where occurrences of a case-sensitive [code]old[/code] substring have been replaced with a [code]new[/code] string. If a [code]count[/code] is given, only that number of occurrences will be replaced in reverse.
+			</description>
+		</method>
+		<method name="rreplacen" qualifiers="const">
+			<return type="String" />
+			<argument index="0" name="old" type="String" />
+			<argument index="1" name="new" type="String" />
+			<argument index="2" name="count" type="int" default="-1" />
+			<description>
+				Returns a copy of the string where occurrences of a case-insensitive [code]old[/code] substring have been replaced with a [code]new[/code] string. If a [code]count[/code] is given, only that number of occurrences will be replaced in reverse.
+			</description>
+		</method>
 		<method name="rsplit" qualifiers="const">
 			<return type="PackedStringArray" />
 			<argument index="0" name="delimiter" type="String" />

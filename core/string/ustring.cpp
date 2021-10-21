@@ -3469,6 +3469,91 @@ String String::replace_first(const String &p_key, const String &p_with) const {
 	return *this;
 }
 
+String String::_rreplace(const String &p_old, const String &p_new, int p_count, bool p_is_case_sensitive) const {
+	String new_string;
+	int caller_length = this->length();
+	int search_from = caller_length;
+	int find_result = 0;
+	int occurrences = 1;
+	int substring_length = p_old.length();
+
+	if (substring_length == 0 || p_count == 0) {
+		return *this; // there's nothing to match or substitute
+	}
+
+	find_result = p_is_case_sensitive ? rfind(p_old, search_from) : rfindn(p_old, search_from);
+	while ((find_result >= 0) && (search_from > 0)) {
+		if (p_count < 0 || occurrences <= p_count) {
+			new_string = p_new + substr(find_result + substring_length, search_from - (find_result + substring_length) + 1) + new_string;
+		} else {
+			new_string = substr(find_result, search_from - find_result + 1) + new_string;
+		}
+		search_from = find_result - 1;
+		find_result = p_is_case_sensitive ? rfind(p_old, search_from) : rfindn(p_old, search_from);
+		++occurrences;
+	}
+
+	if (search_from == caller_length) {
+		return *this;
+	}
+
+	new_string = substr(find_result + 1, search_from + 1) + new_string;
+
+	return new_string;
+}
+
+String String::rreplace(const String &p_old, const String &p_new, int p_count) const {
+	return _rreplace(p_old, p_new, p_count, true);
+}
+
+String String::rreplacen(const String &p_old, const String &p_new, int p_count) const {
+	return _rreplace(p_old, p_new, p_count, false);
+}
+
+String String::_rreplace(const char *p_old, const char *p_new, int p_count, bool p_is_case_sensitive) const {
+	String new_string;
+	int caller_length = this->length();
+	int search_from = caller_length;
+	int find_result = 0;
+	int occurrences = 1;
+	int substring_length = 0;
+	while (p_old[substring_length]) {
+		++substring_length;
+	}
+
+	if (substring_length == 0 || p_count == 0) {
+		return *this; // there's nothing to match or substitute
+	}
+
+	find_result = p_is_case_sensitive ? rfind(p_old, search_from) : rfindn(p_old, search_from);
+	while ((find_result >= 0) && (search_from > 0)) {
+		if (p_count < 0 || occurrences <= p_count) {
+			new_string = p_new + substr(find_result + substring_length, search_from - (find_result + substring_length) + 1) + new_string;
+		} else {
+			new_string = substr(find_result, search_from - find_result + 1) + new_string;
+		}
+		search_from = find_result - 1;
+		find_result = p_is_case_sensitive ? rfind(p_old, search_from) : rfindn(p_old, search_from);
+		++occurrences;
+	}
+
+	if (search_from == caller_length) {
+		return *this;
+	}
+
+	new_string = substr(find_result + 1, search_from + 1) + new_string;
+
+	return new_string;
+}
+
+String String::rreplace(const char *p_old, const char *p_new, int p_count) const {
+	return _rreplace(p_old, p_new, p_count, true);
+}
+
+String String::rreplacen(const char *p_old, const char *p_new, int p_count) const {
+	return _rreplace(p_old, p_new, p_count, false);
+}
+
 String String::repeat(int p_count) const {
 	ERR_FAIL_COND_V_MSG(p_count < 0, "", "Parameter count should be a positive number.");
 
