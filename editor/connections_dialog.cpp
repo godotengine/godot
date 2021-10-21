@@ -39,6 +39,7 @@
 #include "editor/editor_settings.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/gui/scene_tree_editor.h"
+#include "editor/node_dock.h"
 #include "editor/scene_tree_dock.h"
 #include "plugins/script_editor_plugin.h"
 #include "scene/gui/button.h"
@@ -1440,6 +1441,7 @@ ConnectionsDock::ConnectionsDock() {
 	connect_button->connect("pressed", callable_mp(this, &ConnectionsDock::_connect_pressed));
 
 	connect_dialog = memnew(ConnectDialog);
+	connect_dialog->connect("connected", callable_mp(NodeDock::get_singleton(), &NodeDock::restore_last_valid_node), CONNECT_DEFERRED);
 	add_child(connect_dialog);
 
 	disconnect_all_dialog = memnew(ConfirmationDialog);
