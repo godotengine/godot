@@ -251,6 +251,7 @@ Physics2DServer::BodyMode Body2DSW::get_mode() const {
 
 void Body2DSW::_shapes_changed() {
 	_update_inertia();
+	wakeup();
 	wakeup_neighbours();
 }
 
