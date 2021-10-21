@@ -65,6 +65,7 @@ void SceneShaderForwardClustered::ShaderData::set_code(const String &p_code) {
 	bool wireframe = false;
 
 	unshaded = false;
+	disable_alpha = false;
 	uses_vertex = false;
 	uses_position = false;
 	uses_sss = false;
@@ -105,6 +106,7 @@ void SceneShaderForwardClustered::ShaderData::set_code(const String &p_code) {
 	actions.render_mode_flags["unshaded"] = &unshaded;
 	actions.render_mode_flags["wireframe"] = &wireframe;
 	actions.render_mode_flags["particle_trails"] = &uses_particle_trails;
+	actions.render_mode_flags["disable_alpha"] = &disable_alpha;
 
 	actions.usage_flag_pointers["ALPHA"] = &uses_alpha;
 	actions.render_mode_flags["depth_prepass_alpha"] = &uses_depth_pre_pass;
@@ -279,7 +281,7 @@ void SceneShaderForwardClustered::ShaderData::set_code(const String &p_code) {
 				RD::PipelineDepthStencilState depth_stencil = depth_stencil_state;
 				RD::PipelineMultisampleState multisample_state;
 
-				if (uses_alpha || uses_blend_alpha) {
+				if (!disable_alpha && (uses_alpha || uses_blend_alpha)) {
 					// only allow these flags to go through if we have some form of msaa
 					if (alpha_antialiasing_mode == ALPHA_ANTIALIASING_ALPHA_TO_COVERAGE) {
 						multisample_state.enable_alpha_to_coverage = true;

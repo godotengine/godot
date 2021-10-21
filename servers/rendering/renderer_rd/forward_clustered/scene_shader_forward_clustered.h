@@ -136,6 +136,7 @@ public:
 		bool uses_particle_trails;
 
 		bool unshaded;
+		bool disable_alpha;
 		bool uses_vertex;
 		bool uses_position;
 		bool uses_sss;
