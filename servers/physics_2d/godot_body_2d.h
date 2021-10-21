@@ -66,6 +66,7 @@ class GodotBody2D : public GodotCollisionObject2D {
 	real_t inertia = 0.0;
 	real_t _inv_inertia = 0.0;
 
+	Vector2 center_of_mass_local;
 	Vector2 center_of_mass;
 
 	bool calculate_inertia = true;
@@ -139,7 +140,9 @@ class GodotBody2D : public GodotCollisionObject2D {
 
 	uint64_t island_step = 0;
 
-	_FORCE_INLINE_ void _compute_area_gravity_and_damping(const GodotArea2D *p_area);
+	void _compute_area_gravity_and_damping(const GodotArea2D *p_area);
+
+	void _update_transform_dependent();
 
 	friend class GodotPhysicsDirectBodyState2D; // i give up, too many functions to expose
 
