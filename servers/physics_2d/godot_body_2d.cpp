@@ -221,7 +221,7 @@ Variant GodotBody2D::get_param(PhysicsServer2D::BodyParameter p_param) const {
 			return inertia;
 		}
 		case PhysicsServer2D::BODY_PARAM_CENTER_OF_MASS: {
-			return center_of_mass;
+			return center_of_mass_local;
 		}
 		case PhysicsServer2D::BODY_PARAM_GRAVITY_SCALE: {
 			return gravity_scale;

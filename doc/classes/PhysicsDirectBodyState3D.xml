@@ -159,7 +159,10 @@
 			The body's rotational velocity.
 		</member>
 		<member name="center_of_mass" type="Vector3" setter="" getter="get_center_of_mass">
-			The body's center of mass.
+			The body's center of mass position relative to the body's center in the global coordinate system.
+		</member>
+		<member name="center_of_mass_local" type="Vector3" setter="" getter="get_center_of_mass_local">
+			The body's center of mass position in the body's local coordinate system.
 		</member>
 		<member name="inverse_inertia" type="Vector3" setter="" getter="get_inverse_inertia">
 			The inverse of the inertia of the body.

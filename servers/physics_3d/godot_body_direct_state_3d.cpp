@@ -49,6 +49,10 @@ Vector3 GodotPhysicsDirectBodyState3D::get_center_of_mass() const {
 	return body->get_center_of_mass();
 }
 
+Vector3 GodotPhysicsDirectBodyState3D::get_center_of_mass_local() const {
+	return body->get_center_of_mass_local();
+}
+
 Basis GodotPhysicsDirectBodyState3D::get_principal_inertia_axes() const {
 	return body->get_principal_inertia_axes();
 }

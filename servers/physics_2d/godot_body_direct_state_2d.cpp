@@ -50,6 +50,10 @@ Vector2 GodotPhysicsDirectBodyState2D::get_center_of_mass() const {
 	return body->get_center_of_mass();
 }
 
+Vector2 GodotPhysicsDirectBodyState2D::get_center_of_mass_local() const {
+	return body->get_center_of_mass_local();
+}
+
 real_t GodotPhysicsDirectBodyState2D::get_inverse_mass() const {
 	return body->get_inv_mass();
 }
