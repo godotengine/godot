@@ -2178,7 +2178,7 @@ int64_t String::bin_to_int() const {
 		s++;
 	}
 
-	if (len > 2 && s[0] == '0' && s[1] == 'b') {
+	if (len > 2 && s[0] == '0' && lower_case(s[1]) == 'b') {
 		s += 2;
 	}
 
