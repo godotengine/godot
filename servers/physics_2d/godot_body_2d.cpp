@@ -558,17 +558,13 @@ void GodotBody2D::integrate_velocities(real_t p_step) {
 	real_t total_angular_velocity = angular_velocity + biased_angular_velocity;
 	Vector2 total_linear_velocity = linear_velocity + biased_linear_velocity;
 
-	real_t angle = get_transform().get_rotation() + total_angular_velocity * p_step;
+	real_t angle_delta = total_angular_velocity * p_step;
+	real_t angle = get_transform().get_rotation() + angle_delta;
 	Vector2 pos = get_transform().get_origin() + total_linear_velocity * p_step;
 
-	real_t center_of_mass_distance = center_of_mass.length();
-	if (center_of_mass_distance > CMP_EPSILON) {
+	if (center_of_mass.length_squared() > CMP_EPSILON2) {
 		// Calculate displacement due to center of mass offset.
-		real_t prev_angle = get_transform().get_rotation();
-		real_t angle_base = Math::atan2(center_of_mass.y, center_of_mass.x);
-		Vector2 point1(Math::cos(angle_base + prev_angle), Math::sin(angle_base + prev_angle));
-		Vector2 point2(Math::cos(angle_base + angle), Math::sin(angle_base + angle));
-		pos += center_of_mass_distance * (point1 - point2);
+		pos += center_of_mass - center_of_mass.rotated(angle_delta);
 	}
 
 	_set_transform(Transform2D(angle, pos), continuous_cd_mode == PhysicsServer2D::CCD_MODE_DISABLED);
