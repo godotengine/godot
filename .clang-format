@@ -1,31 +1,41 @@
-# Commented out parameters are those with the same value as base LLVM style
+# Commented out parameters are those with the same value as base LLVM style.
 # We can uncomment them if we want to change their value, or enforce the
-# chosen value in case the base style changes (last sync: Clang 6.0.1).
+# chosen value in case the base style changes (last sync: Clang 13.0).
 ---
 ### General config, applies to all languages ###
 BasedOnStyle:  LLVM
 AccessModifierOffset: -4
 AlignAfterOpenBracket: DontAlign
-# AlignConsecutiveAssignments: false
-# AlignConsecutiveDeclarations: false
+# AlignArrayOfStructures: None
+# AlignConsecutiveMacros: None
+# AlignConsecutiveAssignments: None
+# AlignConsecutiveBitFields: None
+# AlignConsecutiveDeclarations: None
 # AlignEscapedNewlines: Right
-# AlignOperands:   true
+# AlignOperands:   Align
 AlignTrailingComments: false
+# AllowAllArgumentsOnNextLine: true
+# AllowAllConstructorInitializersOnNextLine: true
 AllowAllParametersOfDeclarationOnNextLine: false
-# AllowShortBlocksOnASingleLine: false
+# AllowShortEnumsOnASingleLine: true
+# AllowShortBlocksOnASingleLine: Never
 # AllowShortCaseLabelsOnASingleLine: false
 AllowShortFunctionsOnASingleLine: Inline
-# AllowShortIfStatementsOnASingleLine: false
+# AllowShortLambdasOnASingleLine: All
+# AllowShortIfStatementsOnASingleLine: Never
 # AllowShortLoopsOnASingleLine: false
 # AlwaysBreakAfterDefinitionReturnType: None
 # AlwaysBreakAfterReturnType: None
 # AlwaysBreakBeforeMultilineStrings: false
-# AlwaysBreakTemplateDeclarations: false
+# AlwaysBreakTemplateDeclarations: MultiLine
+# AttributeMacros:
+#   - __capability
 # BinPackArguments: true
 # BinPackParameters: true
 # BraceWrapping:
+#   AfterCaseLabel:  false
 #   AfterClass:      false
-#   AfterControlStatement: false
+#   AfterControlStatement: Never
 #   AfterEnum:       false
 #   AfterFunction:   false
 #   AfterNamespace:  false
@@ -35,13 +45,17 @@ AllowShortFunctionsOnASingleLine: Inline
 #   AfterExternBlock: false
 #   BeforeCatch:     false
 #   BeforeElse:      false
+#   BeforeLambdaBody: false
+#   BeforeWhile:     false
 #   IndentBraces:    false
 #   SplitEmptyFunction: true
 #   SplitEmptyRecord: true
 #   SplitEmptyNamespace: true
 # BreakBeforeBinaryOperators: None
+# BreakBeforeConceptDeclarations: true
 # BreakBeforeBraces: Attach
 # BreakBeforeInheritanceComma: false
+# BreakInheritanceList: BeforeColon
 BreakBeforeTernaryOperators: false
 # BreakConstructorInitializersBeforeComma: false
 BreakConstructorInitializers: AfterColon
@@ -53,14 +67,19 @@ ConstructorInitializerAllOnOneLineOrOnePerLine: true
 ConstructorInitializerIndentWidth: 8
 ContinuationIndentWidth: 8
 Cpp11BracedListStyle: false
+# DeriveLineEnding: true
 # DerivePointerAlignment: false
 # DisableFormat:   false
+# EmptyLineAfterAccessModifier: Never
+# EmptyLineBeforeAccessModifier: LogicalBlock
 # ExperimentalAutoDetectBinPacking: false
 # FixNamespaceComments: true
 # ForEachMacros:
 #   - foreach
 #   - Q_FOREACH
 #   - BOOST_FOREACH
+# IfMacros:
+#   - KJ_IF_MAYBE
 # IncludeBlocks:   Preserve
 IncludeCategories:
   - Regex:           '".*"'
@@ -70,13 +89,21 @@ IncludeCategories:
   - Regex:           '^<.*'
     Priority:        3
 # IncludeIsMainRegex: '(Test)?$'
+# IncludeIsMainSourceRegex: ''
+# IndentAccessModifiers: false
 IndentCaseLabels: true
+# IndentCaseBlocks: false
+# IndentGotoLabels: true
 # IndentPPDirectives: None
+# IndentExternBlock: AfterExternBlock
+# IndentRequires:  false
 IndentWidth:     4
 # IndentWrappedFunctionNames: false
+# InsertTrailingCommas: None
 # JavaScriptQuotes: Leave
 # JavaScriptWrapImports: true
 KeepEmptyLinesAtTheStartOfBlocks: false
+# LambdaBodyIndentation: Signature
 # MacroBlockBegin: ''
 # MacroBlockEnd:   ''
 # MaxEmptyLinesToKeep: 1
@@ -86,38 +113,72 @@ KeepEmptyLinesAtTheStartOfBlocks: false
 # PenaltyBreakComment: 300
 # PenaltyBreakFirstLessLess: 120
 # PenaltyBreakString: 1000
+# PenaltyBreakTemplateDeclaration: 10
 # PenaltyExcessCharacter: 1000000
 # PenaltyReturnTypeOnItsOwnLine: 60
+# PenaltyIndentedWhitespace: 0
 # PointerAlignment: Right
-# RawStringFormats:
-#   - Delimiter:       pb
-#     Language:        TextProto
-#     BasedOnStyle:    google
+# PPIndentWidth:   -1
+# ReferenceAlignment: Pointer
 # ReflowComments:  true
-# SortIncludes:    true
+# ShortNamespaceLines: 1
+# SortIncludes:    CaseSensitive
+# SortJavaStaticImport: Before
 # SortUsingDeclarations: true
 # SpaceAfterCStyleCast: false
+# SpaceAfterLogicalNot: false
 # SpaceAfterTemplateKeyword: true
 # SpaceBeforeAssignmentOperators: true
+# SpaceBeforeCaseColon: false
+# SpaceBeforeCpp11BracedList: false
+# SpaceBeforeCtorInitializerColon: true
+# SpaceBeforeInheritanceColon: true
 # SpaceBeforeParens: ControlStatements
+# SpaceAroundPointerQualifiers: Default
+# SpaceBeforeRangeBasedForLoopColon: true
 # SpaceInEmptyParentheses: false
 # SpacesBeforeTrailingComments: 1
-# SpacesInAngles:  false
+# SpaceInEmptyBlock: false
+# SpaceInEmptyParentheses: false
+# SpacesBeforeTrailingComments: 1
+# SpacesInAngles:  Never
+# SpacesInContainerLiterals: true
+# SpacesInConditionalStatement: false
 # SpacesInContainerLiterals: true
 # SpacesInCStyleCastParentheses: false
+## Godot TODO: We'll want to use a min of 1, but we need to see how to fix
+## our comment capitalization at the same time.
+SpacesInLineCommentPrefix:
+  Minimum:         0
+  Maximum:         -1
 # SpacesInParentheses: false
 # SpacesInSquareBrackets: false
+# SpaceBeforeSquareBrackets: false
+# BitFieldColonSpacing: Both
+# StatementAttributeLikeMacros:
+#   - Q_EMIT
+# StatementMacros:
+#   - Q_UNUSED
+#   - QT_REQUIRE_VERSION
 TabWidth:        4
+# UseCRLF:         false
 UseTab:          Always
+# WhitespaceSensitiveMacros:
+#   - STRINGIZE
+#   - PP_STRINGIZE
+#   - BOOST_PP_STRINGIZE
+#   - NS_SWIFT_NAME
+#   - CF_SWIFT_NAME
 ---
 ### C++ specific config ###
 Language:        Cpp
-Standard:        Cpp11
+Standard:        c++17
 ---
 ### ObjC specific config ###
 Language:        ObjC
-Standard:        Cpp11
+# ObjCBinPackProtocolList: Auto
 ObjCBlockIndentWidth: 4
+# ObjCBreakBeforeNestedBlockParam: true
 # ObjCSpaceAfterProperty: false
 # ObjCSpaceBeforeProtocolList: true
 ---
