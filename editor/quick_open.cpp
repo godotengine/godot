@@ -55,16 +55,23 @@ void EditorQuickOpen::_build_search_cache(EditorFileSystemDirectory *p_efsd) {
 		_build_search_cache(p_efsd->get_subdir(i));
 	}
 
+	Vector<String> base_types = String(base_type).split(String(","));
 	for (int i = 0; i < p_efsd->get_file_count(); i++) {
 		String file_type = p_efsd->get_file_type(i);
-		if (ClassDB::is_parent_class(file_type, base_type)) {
-			String file = p_efsd->get_file_path(i);
-			files.push_back(file.substr(6, file.length()));
+		// Iterate all possible base types.
+		for (String &parent_type : base_types) {
+			if (ClassDB::is_parent_class(file_type, parent_type)) {
+				String file = p_efsd->get_file_path(i);
+				files.push_back(file.substr(6, file.length()));
 
-			// Store refs to used icons.
-			String ext = file.get_extension();
-			if (!icons.has(ext)) {
-				icons.insert(ext, get_theme_icon((has_theme_icon(file_type, SNAME("EditorIcons")) ? file_type : String("Object")), SNAME("EditorIcons")));
+				// Store refs to used icons.
+				String ext = file.get_extension();
+				if (!icons.has(ext)) {
+					icons.insert(ext, get_theme_icon((has_theme_icon(file_type, SNAME("EditorIcons")) ? file_type : String("Object")), SNAME("EditorIcons")));
+				}
+
+				// Stop testing base types as soon as we got a match.
+				break;
 			}
 		}
 	}
