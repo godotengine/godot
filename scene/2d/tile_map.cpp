@@ -803,8 +803,10 @@ void TileMap::_update_dirty_quadrants() {
 	}
 
 	for (unsigned int layer = 0; layer < layers.size(); layer++) {
+		SelfList<TileMapQuadrant>::List &dirty_quadrant_list = layers[layer].dirty_quadrant_list;
+
 		// Update the coords cache.
-		for (SelfList<TileMapQuadrant> *q = layers[layer].dirty_quadrant_list.first(); q; q = q->next()) {
+		for (SelfList<TileMapQuadrant> *q = dirty_quadrant_list.first(); q; q = q->next()) {
 			q->self()->map_to_world.clear();
 			q->self()->world_to_map.clear();
 			for (Set<Vector2i>::Element *E = q->self()->cells.front(); E; E = E->next()) {
@@ -815,15 +817,18 @@ void TileMap::_update_dirty_quadrants() {
 			}
 		}
 
+		// Find TileData that need a runtime modification.
+		_build_runtime_update_tile_data(dirty_quadrant_list);
+
 		// Call the update_dirty_quadrant method on plugins.
-		_rendering_update_dirty_quadrants(layers[layer].dirty_quadrant_list);
-		_physics_update_dirty_quadrants(layers[layer].dirty_quadrant_list);
-		_navigation_update_dirty_quadrants(layers[layer].dirty_quadrant_list);
-		_scenes_update_dirty_quadrants(layers[layer].dirty_quadrant_list);
+		_rendering_update_dirty_quadrants(dirty_quadrant_list);
+		_physics_update_dirty_quadrants(dirty_quadrant_list);
+		_navigation_update_dirty_quadrants(dirty_quadrant_list);
+		_scenes_update_dirty_quadrants(dirty_quadrant_list);
 
 		// Redraw the debug canvas_items.
 		RenderingServer *rs = RenderingServer::get_singleton();
-		for (SelfList<TileMapQuadrant> *q = layers[layer].dirty_quadrant_list.first(); q; q = q->next()) {
+		for (SelfList<TileMapQuadrant> *q = dirty_quadrant_list.first(); q; q = q->next()) {
 			rs->canvas_item_clear(q->self()->debug_canvas_item);
 			Transform2D xform;
 			xform.set_origin(map_to_world(q->self()->coords * get_effective_quadrant_size(layer)));
@@ -836,8 +841,13 @@ void TileMap::_update_dirty_quadrants() {
 		}
 
 		// Clear the list
-		while (layers[layer].dirty_quadrant_list.first()) {
-			layers[layer].dirty_quadrant_list.remove(layers[layer].dirty_quadrant_list.first());
+		while (dirty_quadrant_list.first()) {
+			// Clear the runtime tile data.
+			for (const KeyValue<Vector2i, TileData *> &kv : dirty_quadrant_list.first()->self()->runtime_tile_data_cache) {
+				memdelete(kv.value);
+			}
+
+			dirty_quadrant_list.remove(dirty_quadrant_list.first());
 		}
 	}
 
@@ -847,6 +857,8 @@ void TileMap::_update_dirty_quadrants() {
 }
 
 void TileMap::_recreate_layer_internals(int p_layer) {
+	ERR_FAIL_INDEX(p_layer, (int)layers.size());
+
 	// Make sure that _clear_internals() was called prior.
 	ERR_FAIL_COND_MSG(layers[p_layer].quadrant_map.size() > 0, "TileMap layer " + itos(p_layer) + " had a non-empty quadrant map.");
 
@@ -1103,7 +1115,13 @@ void TileMap::_rendering_update_dirty_quadrants(SelfList<TileMapQuadrant>::List 
 				TileSetAtlasSource *atlas_source = Object::cast_to<TileSetAtlasSource>(source);
 				if (atlas_source) {
 					// Get the tile data.
-					TileData *tile_data = Object::cast_to<TileData>(atlas_source->get_tile_data(c.get_atlas_coords(), c.alternative_tile));
+					const TileData *tile_data;
+					if (q.runtime_tile_data_cache.has(E_cell.value)) {
+						tile_data = q.runtime_tile_data_cache[E_cell.value];
+					} else {
+						tile_data = Object::cast_to<TileData>(atlas_source->get_tile_data(c.get_atlas_coords(), c.alternative_tile));
+					}
+
 					Ref<ShaderMaterial> mat = tile_data->get_material();
 					int z_index = tile_data->get_z_index();
 
@@ -1150,7 +1168,7 @@ void TileMap::_rendering_update_dirty_quadrants(SelfList<TileMapQuadrant>::List 
 					}
 
 					// Drawing the tile in the canvas item.
-					draw_tile(canvas_item, E_cell.key - position, tile_set, c.source_id, c.get_atlas_coords(), c.alternative_tile, -1, modulate);
+					draw_tile(canvas_item, E_cell.key - position, tile_set, c.source_id, c.get_atlas_coords(), c.alternative_tile, -1, modulate, tile_data);
 
 					// --- Occluders ---
 					for (int i = 0; i < tile_set->get_occlusion_layers_count(); i++) {
@@ -1267,7 +1285,7 @@ void TileMap::_rendering_draw_quadrant_debug(TileMapQuadrant *p_quadrant) {
 	}
 }
 
-void TileMap::draw_tile(RID p_canvas_item, Vector2i p_position, const Ref<TileSet> p_tile_set, int p_atlas_source_id, Vector2i p_atlas_coords, int p_alternative_tile, int p_frame, Color p_modulation) {
+void TileMap::draw_tile(RID p_canvas_item, Vector2i p_position, const Ref<TileSet> p_tile_set, int p_atlas_source_id, Vector2i p_atlas_coords, int p_alternative_tile, int p_frame, Color p_modulation, const TileData *p_tile_data_override) {
 	ERR_FAIL_COND(!p_tile_set.is_valid());
 	ERR_FAIL_COND(!p_tile_set->has_source(p_atlas_source_id));
 	ERR_FAIL_COND(!p_tile_set->get_source(p_atlas_source_id)->has_tile(p_atlas_coords));
@@ -1293,7 +1311,7 @@ void TileMap::draw_tile(RID p_canvas_item, Vector2i p_position, const Ref<TileSe
 		}
 
 		// Get tile data.
-		TileData *tile_data = Object::cast_to<TileData>(atlas_source->get_tile_data(p_atlas_coords, p_alternative_tile));
+		const TileData *tile_data = p_tile_data_override ? p_tile_data_override : Object::cast_to<TileData>(atlas_source->get_tile_data(p_atlas_coords, p_alternative_tile));
 
 		// Get the tile modulation.
 		Color modulate = tile_data->get_modulate() * p_modulation;
@@ -1452,8 +1470,12 @@ void TileMap::_physics_update_dirty_quadrants(SelfList<TileMapQuadrant>::List &r
 
 				TileSetAtlasSource *atlas_source = Object::cast_to<TileSetAtlasSource>(source);
 				if (atlas_source) {
-					TileData *tile_data = Object::cast_to<TileData>(atlas_source->get_tile_data(c.get_atlas_coords(), c.alternative_tile));
-
+					const TileData *tile_data;
+					if (q.runtime_tile_data_cache.has(E_cell->get())) {
+						tile_data = q.runtime_tile_data_cache[E_cell->get()];
+					} else {
+						tile_data = Object::cast_to<TileData>(atlas_source->get_tile_data(c.get_atlas_coords(), c.alternative_tile));
+					}
 					for (int tile_set_physics_layer = 0; tile_set_physics_layer < tile_set->get_physics_layers_count(); tile_set_physics_layer++) {
 						Ref<PhysicsMaterial> physics_material = tile_set->get_physics_layer_physics_material(tile_set_physics_layer);
 						uint32_t physics_layer = tile_set->get_physics_layer_collision_layer(tile_set_physics_layer);
@@ -1645,7 +1667,12 @@ void TileMap::_navigation_update_dirty_quadrants(SelfList<TileMapQuadrant>::List
 
 				TileSetAtlasSource *atlas_source = Object::cast_to<TileSetAtlasSource>(source);
 				if (atlas_source) {
-					TileData *tile_data = Object::cast_to<TileData>(atlas_source->get_tile_data(c.get_atlas_coords(), c.alternative_tile));
+					const TileData *tile_data;
+					if (q.runtime_tile_data_cache.has(E_cell->get())) {
+						tile_data = q.runtime_tile_data_cache[E_cell->get()];
+					} else {
+						tile_data = Object::cast_to<TileData>(atlas_source->get_tile_data(c.get_atlas_coords(), c.alternative_tile));
+					}
 					q.navigation_regions[E_cell->get()].resize(tile_set->get_navigation_layers_count());
 
 					for (int layer_index = 0; layer_index < tile_set->get_navigation_layers_count(); layer_index++) {
@@ -1729,7 +1756,12 @@ void TileMap::_navigation_draw_quadrant_debug(TileMapQuadrant *p_quadrant) {
 
 			TileSetAtlasSource *atlas_source = Object::cast_to<TileSetAtlasSource>(source);
 			if (atlas_source) {
-				TileData *tile_data = Object::cast_to<TileData>(atlas_source->get_tile_data(c.get_atlas_coords(), c.alternative_tile));
+				const TileData *tile_data;
+				if (p_quadrant->runtime_tile_data_cache.has(E_cell->get())) {
+					tile_data = p_quadrant->runtime_tile_data_cache[E_cell->get()];
+				} else {
+					tile_data = Object::cast_to<TileData>(atlas_source->get_tile_data(c.get_atlas_coords(), c.alternative_tile));
+				}
 
 				Transform2D xform;
 				xform.set_origin(map_to_world(E_cell->get()) - quadrant_pos);
@@ -2407,6 +2439,17 @@ void TileMap::clear() {
 	used_rect_cache_dirty = true;
 }
 
+void TileMap::force_update(int p_layer) {
+	if (p_layer >= 0) {
+		ERR_FAIL_INDEX(p_layer, (int)layers.size());
+		_clear_layer_internals(p_layer);
+		_recreate_layer_internals(p_layer);
+	} else {
+		_clear_internals();
+		_recreate_internals();
+	}
+}
+
 void TileMap::_set_tile_data(int p_layer, const Vector<int> &p_data) {
 	ERR_FAIL_INDEX(p_layer, (int)layers.size());
 	ERR_FAIL_COND(format > FORMAT_3);
@@ -2514,6 +2557,44 @@ Vector<int> TileMap::_get_tile_data(int p_layer) const {
 	}
 
 	return data;
+}
+
+void TileMap::_build_runtime_update_tile_data(SelfList<TileMapQuadrant>::List &r_dirty_quadrant_list) {
+	if (GDVIRTUAL_IS_OVERRIDDEN(_use_tile_data_runtime_update) && GDVIRTUAL_IS_OVERRIDDEN(_tile_data_runtime_update)) {
+		SelfList<TileMapQuadrant> *q_list_element = r_dirty_quadrant_list.first();
+		while (q_list_element) {
+			TileMapQuadrant &q = *q_list_element->self();
+			// Iterate over the cells of the quadrant.
+			for (const KeyValue<Vector2i, Vector2i> &E_cell : q.world_to_map) {
+				TileMapCell c = get_cell(q.layer, E_cell.value, true);
+
+				TileSetSource *source;
+				if (tile_set->has_source(c.source_id)) {
+					source = *tile_set->get_source(c.source_id);
+
+					if (!source->has_tile(c.get_atlas_coords()) || !source->has_alternative_tile(c.get_atlas_coords(), c.alternative_tile)) {
+						continue;
+					}
+
+					TileSetAtlasSource *atlas_source = Object::cast_to<TileSetAtlasSource>(source);
+					if (atlas_source) {
+						bool ret = false;
+						if (GDVIRTUAL_CALL(_use_tile_data_runtime_update, q.layer, E_cell.value, ret) && ret) {
+							TileData *tile_data = Object::cast_to<TileData>(atlas_source->get_tile_data(c.get_atlas_coords(), c.alternative_tile));
+
+							// Create the runtime TileData.
+							TileData *tile_data_runtime_use = tile_data->duplicate();
+							tile_data->set_allow_transform(true);
+							q.runtime_tile_data_cache[E_cell.value] = tile_data_runtime_use;
+
+							GDVIRTUAL_CALL(_tile_data_runtime_update, q.layer, E_cell.value, tile_data_runtime_use);
+						}
+					}
+				}
+			}
+			q_list_element = q_list_element->next();
+		}
+	}
 }
 
 #ifdef TOOLS_ENABLED
@@ -3553,6 +3634,8 @@ void TileMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("clear_layer", "layer"), &TileMap::clear_layer);
 	ClassDB::bind_method(D_METHOD("clear"), &TileMap::clear);
 
+	ClassDB::bind_method(D_METHOD("force_update", "layer"), &TileMap::force_update, DEFVAL(-1));
+
 	ClassDB::bind_method(D_METHOD("get_surrounding_tiles", "coords"), &TileMap::get_surrounding_tiles);
 
 	ClassDB::bind_method(D_METHOD("get_used_cells", "layer"), &TileMap::get_used_cells);
@@ -3569,6 +3652,9 @@ void TileMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_get_tile_data", "layer"), &TileMap::_get_tile_data);
 
 	ClassDB::bind_method(D_METHOD("_tile_set_changed_deferred_update"), &TileMap::_tile_set_changed_deferred_update);
+
+	GDVIRTUAL_BIND(_use_tile_data_runtime_update, "layer", "coords");
+	GDVIRTUAL_BIND(_tile_data_runtime_update, "layer", "coords", "tile_data");
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "tile_set", PROPERTY_HINT_RESOURCE_TYPE, "TileSet"), "set_tileset", "get_tileset");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "cell_quadrant_size", PROPERTY_HINT_RANGE, "1,128,1"), "set_quadrant_size", "get_quadrant_size");
@@ -3590,7 +3676,7 @@ void TileMap::_bind_methods() {
 void TileMap::_tile_set_changed() {
 	emit_signal(SNAME("changed"));
 	_tile_set_changed_deferred_update_needed = true;
-	call_deferred("_tile_set_changed_deferred_update");
+	call_deferred(SNAME("_tile_set_changed_deferred_update"));
 }
 
 void TileMap::_tile_set_changed_deferred_update() {
@@ -3612,5 +3698,6 @@ TileMap::~TileMap() {
 	if (tile_set.is_valid()) {
 		tile_set->disconnect("changed", callable_mp(this, &TileMap::_tile_set_changed));
 	}
+
 	_clear_internals();
 }
