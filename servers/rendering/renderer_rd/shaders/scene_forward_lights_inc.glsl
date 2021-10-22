@@ -301,7 +301,7 @@ float sample_directional_pcf_shadow(texture2D shadow, vec2 shadow_pixel_size, ve
 	float depth = coord.z;
 
 	//if only one sample is taken, take it from the center
-	if (sc_directional_soft_shadow_samples == 1) {
+	if (sc_directional_soft_shadow_samples == 0) {
 		return textureProj(sampler2DShadow(shadow, shadow_sampler), vec4(pos, depth, 1.0));
 	}
 
@@ -327,7 +327,7 @@ float sample_pcf_shadow(texture2D shadow, vec2 shadow_pixel_size, vec3 coord) {
 	float depth = coord.z;
 
 	//if only one sample is taken, take it from the center
-	if (sc_soft_shadow_samples == 1) {
+	if (sc_soft_shadow_samples == 0) {
 		return textureProj(sampler2DShadow(shadow, shadow_sampler), vec4(pos, depth, 1.0));
 	}
 
@@ -350,7 +350,7 @@ float sample_pcf_shadow(texture2D shadow, vec2 shadow_pixel_size, vec3 coord) {
 
 float sample_omni_pcf_shadow(texture2D shadow, float blur_scale, vec2 coord, vec4 uv_rect, vec2 flip_offset, float depth) {
 	//if only one sample is taken, take it from the center
-	if (sc_soft_shadow_samples == 1) {
+	if (sc_soft_shadow_samples == 0) {
 		vec2 pos = coord * 0.5 + 0.5;
 		pos = uv_rect.xy + pos * uv_rect.zw;
 		return textureProj(sampler2DShadow(shadow, shadow_sampler), vec4(pos, depth, 1.0));

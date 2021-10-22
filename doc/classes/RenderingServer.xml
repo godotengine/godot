@@ -3663,16 +3663,25 @@
 			Use 4 splits for shadow projection when using directional light.
 		</constant>
 		<constant name="SHADOW_QUALITY_HARD" value="0" enum="ShadowQuality">
+			Lowest shadow filtering quality (fastest). Soft shadows are not available with this quality setting, which means the [member Light3D.shadow_blur] property is ignored if [member Light3D.light_size] and [member Light3D.light_angular_distance] is [code]0.0[/code].
+			[b]Note:[/b] The variable shadow blur performed by [member Light3D.light_size] and [member Light3D.light_angular_distance] is still effective when using hard shadow filtering. In this case, [member Light3D.shadow_blur] [i]is[/i] taken into account. However, the results will not be blurred, instead the blur amount is treated as a maximum radius for the penumbra.
 		</constant>
-		<constant name="SHADOW_QUALITY_SOFT_LOW" value="1" enum="ShadowQuality">
+		<constant name="SHADOW_QUALITY_SOFT_VERY_LOW" value="1" enum="ShadowQuality">
+			Very low shadow filtering quality (faster). When using this quality setting, [member Light3D.shadow_blur] is automatically multiplied by 0.75× to avoid introducing too much noise. This division only applies to lights whose [member Light3D.light_size] or [member Light3D.light_angular_distance] is [code]0.0[/code]).
 		</constant>
-		<constant name="SHADOW_QUALITY_SOFT_MEDIUM" value="2" enum="ShadowQuality">
+		<constant name="SHADOW_QUALITY_SOFT_LOW" value="2" enum="ShadowQuality">
+			Low shadow filtering quality (fast).
 		</constant>
-		<constant name="SHADOW_QUALITY_SOFT_HIGH" value="3" enum="ShadowQuality">
+		<constant name="SHADOW_QUALITY_SOFT_MEDIUM" value="3" enum="ShadowQuality">
+			Medium low shadow filtering quality (average).
 		</constant>
-		<constant name="SHADOW_QUALITY_SOFT_ULTRA" value="4" enum="ShadowQuality">
+		<constant name="SHADOW_QUALITY_SOFT_HIGH" value="4" enum="ShadowQuality">
+			High low shadow filtering quality (slow). When using this quality setting, [member Light3D.shadow_blur] is automatically multiplied by 1.5× to better make use of the high sample count. This increased blur also improves the stability of dynamic object shadows. This multiplier only applies to lights whose [member Light3D.light_size] or [member Light3D.light_angular_distance] is [code]0.0[/code]).
 		</constant>
-		<constant name="SHADOW_QUALITY_MAX" value="5" enum="ShadowQuality">
+		<constant name="SHADOW_QUALITY_SOFT_ULTRA" value="5" enum="ShadowQuality">
+			Highest low shadow filtering quality (slowest). When using this quality setting, [member Light3D.shadow_blur] is automatically multiplied by 2× to better make use of the high sample count. This increased blur also improves the stability of dynamic object shadows. This multiplier only applies to lights whose [member Light3D.light_size] or [member Light3D.light_angular_distance] is [code]0.0[/code]).
+		</constant>
+		<constant name="SHADOW_QUALITY_MAX" value="6" enum="ShadowQuality">
 		</constant>
 		<constant name="REFLECTION_PROBE_UPDATE_ONCE" value="0" enum="ReflectionProbeUpdateMode">
 			Reflection probe will update reflections once and then stop.
