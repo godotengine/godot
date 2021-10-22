@@ -431,6 +431,15 @@ bool OS::has_feature(const String &p_feature) {
 	if (p_feature == "arm") {
 		return true;
 	}
+#elif defined(__riscv)
+#if __riscv_xlen == 8
+	if (p_feature == "rv64") {
+		return true;
+	}
+#endif
+	if (p_feature == "riscv") {
+		return true;
+	}
 #endif
 
 	if (_check_internal_feature_support(p_feature)) {
