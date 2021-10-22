@@ -126,17 +126,24 @@ void EditorQuickOpen::_parse_fs(EditorFileSystemDirectory *efsd, Vector<Pair<Str
 
 	String search_text = search_box->get_text();
 
+	Vector<String> base_types = String(base_type).split(String(","));
 	for (int i = 0; i < efsd->get_file_count(); i++) {
 		String file = efsd->get_file_path(i);
 		file = file.substr(6, file.length());
 
 		StringName file_type = efsd->get_file_type(i);
-		if (ClassDB::is_parent_class(file_type, base_type) && search_text.is_subsequence_ofi(file)) {
-			Pair<String, Ref<Texture>> pair;
-			pair.first = file;
-			StringName icon_name = search_options->has_icon(file_type, ei) ? file_type : ot;
-			pair.second = search_options->get_icon(icon_name, ei);
-			list.push_back(pair);
+		// Iterate all possible base types.
+		for (int j = 0; j < base_types.size(); j++) {
+			if (ClassDB::is_parent_class(file_type, base_types[j]) && search_text.is_subsequence_ofi(file)) {
+				Pair<String, Ref<Texture>> pair;
+				pair.first = file;
+				StringName icon_name = search_options->has_icon(file_type, ei) ? file_type : ot;
+				pair.second = search_options->get_icon(icon_name, ei);
+				list.push_back(pair);
+
+				// Stop testing base types as soon as we got a match.
+				break;
+			}
 		}
 	}
 }
