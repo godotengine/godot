@@ -276,6 +276,7 @@ PhysicsServer2D::BodyMode GodotBody2D::get_mode() const {
 
 void GodotBody2D::_shapes_changed() {
 	_mass_properties_changed();
+	wakeup();
 	wakeup_neighbours();
 }
 
