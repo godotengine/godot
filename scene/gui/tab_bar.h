@@ -83,7 +83,6 @@ private:
 	Vector<Tab> tabs;
 	int current = 0;
 	int previous = 0;
-	int _get_top_margin() const;
 	TabAlign tab_align = ALIGN_CENTER;
 	bool clip_tabs = true;
 	int rb_hover = -1;

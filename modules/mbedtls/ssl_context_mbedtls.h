@@ -67,8 +67,6 @@ class SSLContextMbedTLS : public RefCounted {
 protected:
 	bool inited = false;
 
-	static PackedByteArray _read_file(String p_path);
-
 public:
 	static void print_mbedtls_error(int p_ret);
 

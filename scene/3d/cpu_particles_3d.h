@@ -209,7 +209,6 @@ public:
 	void set_explosiveness_ratio(real_t p_ratio);
 	void set_randomness_ratio(real_t p_ratio);
 	void set_lifetime_randomness(double p_random);
-	void set_visibility_aabb(const AABB &p_aabb);
 	void set_use_local_coordinates(bool p_enable);
 	void set_speed_scale(double p_scale);
 
@@ -221,7 +220,6 @@ public:
 	real_t get_explosiveness_ratio() const;
 	real_t get_randomness_ratio() const;
 	double get_lifetime_randomness() const;
-	AABB get_visibility_aabb() const;
 	bool get_use_local_coordinates() const;
 	double get_speed_scale() const;
 
@@ -233,9 +231,6 @@ public:
 
 	void set_draw_order(DrawOrder p_order);
 	DrawOrder get_draw_order() const;
-
-	void set_draw_passes(int p_count);
-	int get_draw_passes() const;
 
 	void set_mesh(const Ref<Mesh> &p_mesh);
 	Ref<Mesh> get_mesh() const;
@@ -275,7 +270,6 @@ public:
 	void set_emission_points(const Vector<Vector3> &p_points);
 	void set_emission_normals(const Vector<Vector3> &p_normals);
 	void set_emission_colors(const Vector<Color> &p_colors);
-	void set_emission_point_count(int p_count);
 	void set_emission_ring_axis(Vector3 p_axis);
 	void set_emission_ring_height(real_t p_height);
 	void set_emission_ring_radius(real_t p_radius);
@@ -291,7 +285,6 @@ public:
 	Vector<Vector3> get_emission_points() const;
 	Vector<Vector3> get_emission_normals() const;
 	Vector<Color> get_emission_colors() const;
-	int get_emission_point_count() const;
 	Vector3 get_emission_ring_axis() const;
 	real_t get_emission_ring_height() const;
 	real_t get_emission_ring_radius() const;

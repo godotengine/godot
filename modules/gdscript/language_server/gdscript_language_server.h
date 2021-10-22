@@ -50,10 +50,8 @@ class GDScriptLanguageServer : public EditorPlugin {
 
 private:
 	void _notification(int p_what);
-	void _iteration();
 
 public:
-	Error parse_script_file(const String &p_path);
 	GDScriptLanguageServer();
 	void start();
 	void stop();

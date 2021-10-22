@@ -63,9 +63,6 @@ public:
 
 	virtual Transform3D get_listener_transform() const;
 
-	void set_visible_layers(uint32_t p_layers);
-	uint32_t get_visible_layers() const;
-
 	AudioListener3D();
 	~AudioListener3D();
 };

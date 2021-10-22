@@ -37,8 +37,6 @@
 #include "core/templates/vector.h"
 
 class Geometry2D {
-	Geometry2D();
-
 public:
 	static real_t get_closest_points_between_segments(const Vector2 &p1, const Vector2 &q1, const Vector2 &p2, const Vector2 &q2, Vector2 &c1, Vector2 &c2) {
 		Vector2 d1 = q1 - p1; // Direction vector of segment S1.

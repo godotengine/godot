@@ -57,8 +57,6 @@ public:
 
 	Vector<Input> inputs;
 
-	real_t process_input(int p_input, real_t p_time, bool p_seek, real_t p_blend);
-
 	friend class AnimationTree;
 
 	struct AnimationState {
@@ -85,7 +83,6 @@ public:
 	State *state = nullptr;
 
 	real_t _pre_process(const StringName &p_base_path, AnimationNode *p_parent, State *p_state, real_t p_time, bool p_seek, const Vector<StringName> &p_connections);
-	void _pre_update_animations(HashMap<NodePath, int> *track_map);
 
 	//all this is temporary
 	StringName base_path;
@@ -109,8 +106,6 @@ protected:
 	static void _bind_methods();
 
 	void _validate_property(PropertyInfo &property) const override;
-
-	void _set_parent(Object *p_parent);
 
 	GDVIRTUAL0RC(Dictionary, _get_child_nodes)
 	GDVIRTUAL0RC(Array, _get_parameter_list)
@@ -265,7 +260,6 @@ private:
 	AnimationNode::State state;
 	bool cache_valid = false;
 	void _node_removed(Node *p_node);
-	void _caches_cleared();
 
 	void _clear_caches();
 	bool _update_caches(AnimationPlayer *player);

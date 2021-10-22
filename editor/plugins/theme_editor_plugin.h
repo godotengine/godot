@@ -347,7 +347,6 @@ class ThemeTypeEditor : public MarginContainer {
 	void _update_type_items();
 
 	void _list_type_selected(int p_index);
-	void _select_type(String p_type_name);
 	void _add_type_button_cbk();
 	void _add_default_type_items();
 

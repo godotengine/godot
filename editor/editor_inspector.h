@@ -96,8 +96,6 @@ private:
 	bool draw_top_bg;
 
 	void _ensure_popup();
-	bool _is_property_different(const Variant &p_current, const Variant &p_orig);
-	bool _get_instantiated_node_original_property(const StringName &p_prop, Variant &value);
 	void _focusable_focused(int p_index);
 
 	bool selectable;
@@ -280,8 +278,6 @@ public:
 	VBoxContainer *get_vbox();
 	void unfold();
 	void fold();
-
-	Object *get_edited_object();
 
 	EditorInspectorSection();
 	~EditorInspectorSection();
