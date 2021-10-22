@@ -185,7 +185,8 @@ protected:
 
 public:
 	virtual void get_parameter_list(List<PropertyInfo> *r_list) const override;
-	virtual void get_custom_parameter_list(List<PropertyInfo> *r_list) const override;
+	virtual ParameterType get_parameter_type(const StringName &p_parameter) const override;
+	virtual int get_valid_parameter_types(const StringName &p_parameter) const override;
 	virtual Variant get_parameter_default_value(const StringName &p_parameter) const override;
 
 	void add_node(const StringName &p_name, Ref<AnimationNode> p_node, const Vector2 &p_position = Vector2());

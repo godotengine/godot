@@ -554,9 +554,7 @@ AnimationNodeStateMachinePlayback::AnimationNodeStateMachinePlayback() {
 
 void AnimationNodeStateMachine::get_parameter_list(List<PropertyInfo> *r_list) const {
 	r_list->push_back(PropertyInfo(Variant::OBJECT, playback, PROPERTY_HINT_RESOURCE_TYPE, "AnimationNodeStateMachinePlayback", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_DO_NOT_SHARE_ON_DUPLICATE));
-}
 
-void AnimationNodeStateMachine::get_custom_parameter_list(List<PropertyInfo> *r_list) const {
 	List<StringName> advance_conditions;
 	for (int i = 0; i < transitions.size(); i++) {
 		PackedStringArray transition_advance_parameters = transitions[i].transition->get_advance_parameters();
@@ -573,6 +571,22 @@ void AnimationNodeStateMachine::get_custom_parameter_list(List<PropertyInfo> *r_
 	advance_conditions.sort_custom<StringName::AlphCompare>();
 	for (const StringName &E : advance_conditions) {
 		r_list->push_back(PropertyInfo(Variant::BOOL, E));
+	}
+}
+
+AnimationNode::ParameterType AnimationNodeStateMachine::get_parameter_type(const StringName &p_parameter) const {
+	if (p_parameter == "playback") {
+		return AnimationNode::PARAMETER_TYPE_CONSTANT;
+	} else {
+		return AnimationNode::PARAMETER_TYPE_GLOBAL;
+	}
+}
+
+int AnimationNodeStateMachine::get_valid_parameter_types(const StringName &p_parameter) const {
+	if (p_parameter == "playback") {
+		return (1 << PARAMETER_TYPE_CONSTANT);
+	} else {
+		return (1 << PARAMETER_TYPE_GLOBAL);
 	}
 }
 

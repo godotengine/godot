@@ -46,24 +46,9 @@ class AnimationNode : public Resource {
 
 public:
 	enum ParameterType {
-		PARAMETER_TYPE_BOOL,
-		PARAMETER_TYPE_INT,
-		PARAMETER_TYPE_FLOAT,
-		PARAMETER_TYPES_MAX
+		PARAMETER_TYPE_CONSTANT,
+		PARAMETER_TYPE_GLOBAL
 	};
-
-	static String get_parameter_type_name(const AnimationNode::ParameterType &p_type) {
-		switch (p_type) {
-			case PARAMETER_TYPE_BOOL:
-				return "Bool";
-			case PARAMETER_TYPE_INT:
-				return "Int";
-			case PARAMETER_TYPE_FLOAT:
-				return "Float";
-			default:
-				return "Invalid";
-		}
-	}
 
 	enum FilterAction {
 		FILTER_IGNORE,
@@ -139,7 +124,6 @@ protected:
 
 	GDVIRTUAL0RC(Dictionary, _get_child_nodes)
 	GDVIRTUAL0RC(Array, _get_parameter_list)
-	GDVIRTUAL0RC(Array, _get_custom_parameter_list)
 	GDVIRTUAL1RC(Ref<AnimationNode>, _get_child_by_name, StringName)
 	GDVIRTUAL1RC(Variant, _get_parameter_default_value, StringName)
 	GDVIRTUAL2RC(double, _process, double, bool)
@@ -148,8 +132,15 @@ protected:
 
 public:
 	virtual void get_parameter_list(List<PropertyInfo> *r_list) const;
-	virtual void get_custom_parameter_list(List<PropertyInfo> *r_list) const;
 	virtual Variant get_parameter_default_value(const StringName &p_parameter) const;
+
+	virtual StringName get_parameter_name(const StringName &p_parameter) const;
+	virtual bool set_parameter_name(const StringName &p_parameter, const StringName &p_name) const;
+
+	virtual ParameterType get_parameter_type(const StringName &p_parameter) const;
+	virtual bool set_parameter_type(const StringName &p_parameter, const ParameterType &p_type) const;
+
+	virtual int get_valid_parameter_types(const StringName &p_parameter) const;
 
 	void set_custom_parameter(const StringName &p_name, const Variant &p_value, const StringName &p_path);
 	Variant get_custom_parameter(const StringName &p_name, const StringName &p_path) const;
