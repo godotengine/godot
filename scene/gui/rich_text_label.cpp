@@ -207,100 +207,101 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 
 #define RETURN return nonblank_line_count
 
-#define NEW_LINE                                                                                                                                                \
-	{                                                                                                                                                           \
-		if (p_mode != PROCESS_CACHE) {                                                                                                                          \
-			line++;                                                                                                                                             \
-			backtrack = 0.0f;                                                                                                                                   \
-			if (!line_is_blank) {                                                                                                                               \
-				nonblank_line_count++;                                                                                                                          \
-			}                                                                                                                                                   \
-			line_is_blank = true;                                                                                                                               \
-			if (line < l.offset_caches.size())                                                                                                                  \
-				line_ofs = l.offset_caches[line];                                                                                                               \
-			wofs = margin;                                                                                                                                      \
-			if (align != ALIGN_FILL)                                                                                                                            \
-				wofs += line_ofs;                                                                                                                               \
-		} else {                                                                                                                                                \
-			int used = wofs - margin;                                                                                                                           \
-			switch (align) {                                                                                                                                    \
-				case ALIGN_LEFT:                                                                                                                                \
-					l.offset_caches.push_back(0);                                                                                                               \
-					break;                                                                                                                                      \
-				case ALIGN_CENTER:                                                                                                                              \
-					l.offset_caches.push_back(((p_width - margin) - used) / 2);                                                                                 \
-					break;                                                                                                                                      \
-				case ALIGN_RIGHT:                                                                                                                               \
-					l.offset_caches.push_back(((p_width - margin) - used));                                                                                     \
-					break;                                                                                                                                      \
-				case ALIGN_FILL:                                                                                                                                \
-					l.offset_caches.push_back(line_wrapped ? ((p_width - margin) - used) : 0);                                                                  \
-					break;                                                                                                                                      \
-			}                                                                                                                                                   \
-			l.height_caches.push_back(line_height);                                                                                                             \
-			l.ascent_caches.push_back(line_ascent);                                                                                                             \
-			l.descent_caches.push_back(line_descent);                                                                                                           \
-			l.space_caches.push_back(spaces);                                                                                                                   \
-		}                                                                                                                                                       \
-		line_wrapped = false;                                                                                                                                   \
-		y += line_height + get_constant(SceneStringNames::get_singleton()->line_separation);                                                                    \
-		line_height = 0;                                                                                                                                        \
-		line_ascent = 0;                                                                                                                                        \
-		line_descent = 0;                                                                                                                                       \
-		spaces = 0;                                                                                                                                             \
-		wofs = begin;                                                                                                                                           \
-		align_ofs = 0.0f;                                                                                                                                       \
-		if (p_mode != PROCESS_CACHE) {                                                                                                                          \
-			lh = line < l.height_caches.size() ? l.height_caches[line] : 1;                                                                                     \
-			line_ascent = line < l.ascent_caches.size() ? l.ascent_caches[line] : 1;                                                                            \
-			line_descent = line < l.descent_caches.size() ? l.descent_caches[line] : 1;                                                                         \
-			if (align != ALIGN_FILL) {                                                                                                                          \
-				if (line < l.offset_caches.size()) {                                                                                                            \
-					wofs = l.offset_caches[line];                                                                                                               \
-				}                                                                                                                                               \
-			}                                                                                                                                                   \
-		}                                                                                                                                                       \
-		if (p_mode == PROCESS_POINTER && r_click_item && p_click_pos.y >= p_ofs.y + y && p_click_pos.y <= p_ofs.y + y + lh && p_click_pos.x < p_ofs.x + wofs) { \
-			if (r_outside)                                                                                                                                      \
-				*r_outside = true;                                                                                                                              \
-			*r_click_item = it;                                                                                                                                 \
-			*r_click_char = rchar;                                                                                                                              \
-			RETURN;                                                                                                                                             \
-		}                                                                                                                                                       \
+#define NEW_LINE                                                                                                                                                            \
+	{                                                                                                                                                                       \
+		if (p_mode != PROCESS_CACHE) {                                                                                                                                      \
+			line++;                                                                                                                                                         \
+			backtrack = 0.0f;                                                                                                                                               \
+			if (!line_is_blank) {                                                                                                                                           \
+				nonblank_line_count++;                                                                                                                                      \
+			}                                                                                                                                                               \
+			line_is_blank = true;                                                                                                                                           \
+			if (line < l.offset_caches.size())                                                                                                                              \
+				line_ofs = l.offset_caches[line];                                                                                                                           \
+			wofs = margin;                                                                                                                                                  \
+			if (align != ALIGN_FILL)                                                                                                                                        \
+				wofs += line_ofs;                                                                                                                                           \
+		} else {                                                                                                                                                            \
+			int used = wofs - margin;                                                                                                                                       \
+			switch (align) {                                                                                                                                                \
+				case ALIGN_LEFT:                                                                                                                                            \
+					l.offset_caches.push_back(0);                                                                                                                           \
+					break;                                                                                                                                                  \
+				case ALIGN_CENTER:                                                                                                                                          \
+					l.offset_caches.push_back(((p_width - margin) - used) / 2);                                                                                             \
+					break;                                                                                                                                                  \
+				case ALIGN_RIGHT:                                                                                                                                           \
+					l.offset_caches.push_back(((p_width - margin) - used));                                                                                                 \
+					break;                                                                                                                                                  \
+				case ALIGN_FILL:                                                                                                                                            \
+					l.offset_caches.push_back(line_wrapped ? ((p_width - margin) - used) : 0);                                                                              \
+					break;                                                                                                                                                  \
+			}                                                                                                                                                               \
+			l.height_caches.push_back(line_height);                                                                                                                         \
+			l.ascent_caches.push_back(line_ascent);                                                                                                                         \
+			l.descent_caches.push_back(line_descent);                                                                                                                       \
+			l.space_caches.push_back(spaces);                                                                                                                               \
+		}                                                                                                                                                                   \
+		line_wrapped = false;                                                                                                                                               \
+		y += line_height + get_constant(SceneStringNames::get_singleton()->line_separation);                                                                                \
+		line_height = 0;                                                                                                                                                    \
+		line_ascent = 0;                                                                                                                                                    \
+		line_descent = 0;                                                                                                                                                   \
+		spaces = 0;                                                                                                                                                         \
+		wofs = begin;                                                                                                                                                       \
+		align_ofs = 0.0f;                                                                                                                                                   \
+		if (p_mode != PROCESS_CACHE) {                                                                                                                                      \
+			lh = line < l.height_caches.size() ? l.height_caches[line] : 1;                                                                                                 \
+			line_ascent = line < l.ascent_caches.size() ? l.ascent_caches[line] : 1;                                                                                        \
+			line_descent = line < l.descent_caches.size() ? l.descent_caches[line] : 1;                                                                                     \
+			if (align != ALIGN_FILL) {                                                                                                                                      \
+				if (line < l.offset_caches.size()) {                                                                                                                        \
+					wofs = l.offset_caches[line];                                                                                                                           \
+				}                                                                                                                                                           \
+			}                                                                                                                                                               \
+		}                                                                                                                                                                   \
+		if (p_mode == PROCESS_POINTER && r_click_item && p_click_pos.y >= p_ofs.y + y && p_click_pos.y <= p_ofs.y + y + lh && p_click_pos.x < p_ofs.x + align_ofs + wofs) { \
+			if (r_outside)                                                                                                                                                  \
+				*r_outside = true;                                                                                                                                          \
+			*r_click_item = it;                                                                                                                                             \
+			*r_click_char = rchar;                                                                                                                                          \
+			RETURN;                                                                                                                                                         \
+		}                                                                                                                                                                   \
 	}
 
-#define ENSURE_WIDTH(m_width)                                                                                                               \
-	if (p_mode == PROCESS_CACHE) {                                                                                                          \
-		l.maximum_width = MAX(l.maximum_width, MIN(p_width, wofs + m_width));                                                               \
-		l.minimum_width = MAX(l.minimum_width, m_width);                                                                                    \
-	}                                                                                                                                       \
-	if (wofs - backtrack + m_width > p_width) {                                                                                             \
-		line_wrapped = true;                                                                                                                \
-		if (p_mode == PROCESS_CACHE) {                                                                                                      \
-			if (spaces > 0)                                                                                                                 \
-				spaces -= 1;                                                                                                                \
-		}                                                                                                                                   \
-		const bool x_in_range = (p_click_pos.x > p_ofs.x + wofs) && (!p_frame->cell || p_click_pos.x < p_ofs.x + p_width);                  \
+#define ENSURE_WIDTH(m_width)                                                                                                                      \
+	if (p_mode == PROCESS_CACHE) {                                                                                                                 \
+		l.maximum_width = MAX(l.maximum_width, MIN(p_width, wofs + m_width));                                                                      \
+		l.minimum_width = MAX(l.minimum_width, m_width);                                                                                           \
+	}                                                                                                                                              \
+	if (wofs - backtrack + m_width > p_width) {                                                                                                    \
+		line_wrapped = true;                                                                                                                       \
+		if (p_mode == PROCESS_CACHE) {                                                                                                             \
+			if (spaces > 0)                                                                                                                        \
+				spaces -= 1;                                                                                                                       \
+		}                                                                                                                                          \
+		const bool x_in_range = (p_click_pos.x > p_ofs.x + align_ofs + wofs) && (!p_frame->cell || p_click_pos.x < p_ofs.x + align_ofs + p_width); \
+		if (p_mode == PROCESS_POINTER && r_click_item && p_click_pos.y >= p_ofs.y + y && p_click_pos.y <= p_ofs.y + y + lh && x_in_range) {        \
+			if (r_outside)                                                                                                                         \
+				*r_outside = true;                                                                                                                 \
+			*r_click_item = it;                                                                                                                    \
+			*r_click_char = rchar;                                                                                                                 \
+			RETURN;                                                                                                                                \
+		}                                                                                                                                          \
+		NEW_LINE                                                                                                                                   \
+	}
+
+#define ADVANCE(m_width)                                                                                                                    \
+	{                                                                                                                                       \
+		const bool x_in_range = (p_click_pos.x >= p_ofs.x + align_ofs + wofs) && (p_click_pos.x < p_ofs.x + align_ofs + wofs + m_width);    \
 		if (p_mode == PROCESS_POINTER && r_click_item && p_click_pos.y >= p_ofs.y + y && p_click_pos.y <= p_ofs.y + y + lh && x_in_range) { \
 			if (r_outside)                                                                                                                  \
-				*r_outside = true;                                                                                                          \
+				*r_outside = false;                                                                                                         \
 			*r_click_item = it;                                                                                                             \
 			*r_click_char = rchar;                                                                                                          \
 			RETURN;                                                                                                                         \
 		}                                                                                                                                   \
-		NEW_LINE                                                                                                                            \
-	}
-
-#define ADVANCE(m_width)                                                                                                                                                                                     \
-	{                                                                                                                                                                                                        \
-		if (p_mode == PROCESS_POINTER && r_click_item && p_click_pos.y >= p_ofs.y + y && p_click_pos.y <= p_ofs.y + y + lh && p_click_pos.x >= p_ofs.x + wofs && p_click_pos.x < p_ofs.x + wofs + m_width) { \
-			if (r_outside)                                                                                                                                                                                   \
-				*r_outside = false;                                                                                                                                                                          \
-			*r_click_item = it;                                                                                                                                                                              \
-			*r_click_char = rchar;                                                                                                                                                                           \
-			RETURN;                                                                                                                                                                                          \
-		}                                                                                                                                                                                                    \
-		wofs += m_width;                                                                                                                                                                                     \
+		wofs += m_width;                                                                                                                    \
 	}
 
 #define CHECK_HEIGHT(m_height)    \
