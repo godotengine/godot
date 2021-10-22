@@ -584,7 +584,6 @@ void GodotPhysicsServer3D::body_set_collision_layer(RID p_body, uint32_t p_layer
 	ERR_FAIL_COND(!body);
 
 	body->set_collision_layer(p_layer);
-	body->wakeup();
 }
 
 uint32_t GodotPhysicsServer3D::body_get_collision_layer(RID p_body) const {
@@ -599,7 +598,6 @@ void GodotPhysicsServer3D::body_set_collision_mask(RID p_body, uint32_t p_mask) 
 	ERR_FAIL_COND(!body);
 
 	body->set_collision_mask(p_mask);
-	body->wakeup();
 }
 
 uint32_t GodotPhysicsServer3D::body_get_collision_mask(RID p_body) const {

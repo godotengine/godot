@@ -327,6 +327,8 @@ PhysicsServer3D::BodyMode GodotBody3D::get_mode() const {
 
 void GodotBody3D::_shapes_changed() {
 	_mass_properties_changed();
+	wakeup();
+	wakeup_neighbours();
 }
 
 void GodotBody3D::set_state(PhysicsServer3D::BodyState p_state, const Variant &p_variant) {
