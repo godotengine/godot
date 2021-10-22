@@ -82,6 +82,7 @@ public:
 	// 0 is an invalid ID
 	virtual ID create(CollisionObjectSW *p_object, int p_subindex = 0, const AABB &p_aabb = AABB(), bool p_static = false);
 	virtual void move(ID p_id, const AABB &p_aabb);
+	virtual void recheck_pairs(ID p_id);
 	virtual void set_static(ID p_id, bool p_static);
 	virtual void remove(ID p_id);
 

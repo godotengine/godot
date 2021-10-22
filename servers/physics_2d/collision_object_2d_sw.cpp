@@ -187,6 +187,23 @@ void CollisionObject2DSW::_update_shapes() {
 	}
 }
 
+void CollisionObject2DSW::_recheck_shapes() {
+	if (!space) {
+		return;
+	}
+
+	for (int i = 0; i < shapes.size(); i++) {
+		Shape &s = shapes.write[i];
+		if (s.disabled) {
+			continue;
+		}
+
+		if (s.bpid != 0) {
+			space->get_broadphase()->recheck_pairs(s.bpid);
+		}
+	}
+}
+
 void CollisionObject2DSW::_update_shapes_with_motion(const Vector2 &p_motion) {
 	if (!space) {
 		return;

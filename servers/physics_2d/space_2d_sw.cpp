@@ -1196,15 +1196,29 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, co
 	return collided;
 }
 
-void *Space2DSW::_broadphase_pair(CollisionObject2DSW *A, int p_subindex_A, CollisionObject2DSW *B, int p_subindex_B, void *p_self) {
-	if (!A->test_collision_mask(B)) {
+void *Space2DSW::_broadphase_pair(CollisionObject2DSW *p_object_A, int p_subindex_A, CollisionObject2DSW *p_object_B, int p_subindex_B, void *p_pair_data, void *p_self) {
+	bool valid_collision_pair = p_object_A->test_collision_mask(p_object_B);
+
+	if (p_pair_data) {
+		// Checking an existing pair.
+		if (valid_collision_pair) {
+			// Nothing to do, pair is still valid.
+			return p_pair_data;
+		} else {
+			// Logical collision not valid anymore, unpair.
+			_broadphase_unpair(p_object_A, p_subindex_A, p_object_B, p_subindex_B, p_pair_data, p_self);
+			return nullptr;
+		}
+	}
+
+	if (!valid_collision_pair) {
 		return nullptr;
 	}
 
-	CollisionObject2DSW::Type type_A = A->get_type();
-	CollisionObject2DSW::Type type_B = B->get_type();
+	CollisionObject2DSW::Type type_A = p_object_A->get_type();
+	CollisionObject2DSW::Type type_B = p_object_B->get_type();
 	if (type_A > type_B) {
-		SWAP(A, B);
+		SWAP(p_object_A, p_object_B);
 		SWAP(p_subindex_A, p_subindex_B);
 		SWAP(type_A, type_B);
 	}
@@ -1213,33 +1227,35 @@ void *Space2DSW::_broadphase_pair(CollisionObject2DSW *A, int p_subindex_A, Coll
 	self->collision_pairs++;
 
 	if (type_A == CollisionObject2DSW::TYPE_AREA) {
-		Area2DSW *area = static_cast<Area2DSW *>(A);
+		Area2DSW *area_a = static_cast<Area2DSW *>(p_object_A);
 		if (type_B == CollisionObject2DSW::TYPE_AREA) {
-			Area2DSW *area_b = static_cast<Area2DSW *>(B);
-			Area2Pair2DSW *area2_pair = memnew(Area2Pair2DSW(area_b, p_subindex_B, area, p_subindex_A));
+			Area2DSW *area_b = static_cast<Area2DSW *>(p_object_B);
+			Area2Pair2DSW *area2_pair = memnew(Area2Pair2DSW(area_b, p_subindex_B, area_a, p_subindex_A));
 			return area2_pair;
 		} else {
-			Body2DSW *body = static_cast<Body2DSW *>(B);
-			AreaPair2DSW *area_pair = memnew(AreaPair2DSW(body, p_subindex_B, area, p_subindex_A));
+			Body2DSW *body_b = static_cast<Body2DSW *>(p_object_B);
+			AreaPair2DSW *area_pair = memnew(AreaPair2DSW(body_b, p_subindex_B, area_a, p_subindex_A));
 			return area_pair;
 		}
 
 	} else {
-		BodyPair2DSW *b = memnew(BodyPair2DSW((Body2DSW *)A, p_subindex_A, (Body2DSW *)B, p_subindex_B));
-		return b;
+		Body2DSW *body_a = static_cast<Body2DSW *>(p_object_A);
+		Body2DSW *body_b = static_cast<Body2DSW *>(p_object_B);
+		BodyPair2DSW *body_pair = memnew(BodyPair2DSW(body_a, p_subindex_A, body_b, p_subindex_B));
+		return body_pair;
 	}
 
 	return nullptr;
 }
 
-void Space2DSW::_broadphase_unpair(CollisionObject2DSW *A, int p_subindex_A, CollisionObject2DSW *B, int p_subindex_B, void *p_data, void *p_self) {
-	if (!p_data) {
+void Space2DSW::_broadphase_unpair(CollisionObject2DSW *p_object_A, int p_subindex_A, CollisionObject2DSW *p_object_B, int p_subindex_B, void *p_pair_data, void *p_self) {
+	if (!p_pair_data) {
 		return;
 	}
 
 	Space2DSW *self = (Space2DSW *)p_self;
 	self->collision_pairs--;
-	Constraint2DSW *c = (Constraint2DSW *)p_data;
+	Constraint2DSW *c = (Constraint2DSW *)p_pair_data;
 	memdelete(c);
 }
 

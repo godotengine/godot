@@ -40,10 +40,16 @@ void BroadPhaseOctree::move(ID p_id, const AABB &p_aabb) {
 	octree.move(p_id, p_aabb);
 }
 
+void BroadPhaseOctree::recheck_pairs(ID p_id) {
+	AABB aabb = octree.get_aabb(p_id);
+	octree.move(p_id, aabb);
+}
+
 void BroadPhaseOctree::set_static(ID p_id, bool p_static) {
 	CollisionObjectSW *it = octree.get(p_id);
 	octree.set_pairable(p_id, !p_static, 1 << it->get_type(), p_static ? 0 : 0xFFFFF); //pair everything, don't care 1?
 }
+
 void BroadPhaseOctree::remove(ID p_id) {
 	octree.erase(p_id);
 }
@@ -78,7 +84,7 @@ void *BroadPhaseOctree::_pair_callback(void *self, OctreeElementID p_A, Collisio
 		return nullptr;
 	}
 
-	return bpo->pair_callback(p_object_A, subindex_A, p_object_B, subindex_B, bpo->pair_userdata);
+	return bpo->pair_callback(p_object_A, subindex_A, p_object_B, subindex_B, nullptr, bpo->pair_userdata);
 }
 
 void BroadPhaseOctree::_unpair_callback(void *self, OctreeElementID p_A, CollisionObjectSW *p_object_A, int subindex_A, OctreeElementID p_B, CollisionObjectSW *p_object_B, int subindex_B, void *pairdata) {

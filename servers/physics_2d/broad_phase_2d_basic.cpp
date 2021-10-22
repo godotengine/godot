@@ -47,11 +47,17 @@ void BroadPhase2DBasic::move(ID p_id, const Rect2 &p_aabb) {
 	ERR_FAIL_COND(!E);
 	E->get().aabb = p_aabb;
 }
+
+void BroadPhase2DBasic::recheck_pairs(ID p_id) {
+	// Not supported.
+}
+
 void BroadPhase2DBasic::set_static(ID p_id, bool p_static) {
 	Map<ID, Element>::Element *E = element_map.find(p_id);
 	ERR_FAIL_COND(!E);
 	E->get()._static = p_static;
 }
+
 void BroadPhase2DBasic::remove(ID p_id) {
 	Map<ID, Element>::Element *E = element_map.find(p_id);
 	ERR_FAIL_COND(!E);
@@ -145,7 +151,7 @@ void BroadPhase2DBasic::update() {
 			if (pair_ok && !E) {
 				void *data = nullptr;
 				if (pair_callback) {
-					data = pair_callback(elem_A->owner, elem_A->subindex, elem_B->owner, elem_B->subindex, unpair_userdata);
+					data = pair_callback(elem_A->owner, elem_A->subindex, elem_B->owner, elem_B->subindex, nullptr, unpair_userdata);
 					if (data) {
 						pair_map.insert(key, data);
 					}
