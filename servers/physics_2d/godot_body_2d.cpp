@@ -55,7 +55,7 @@ void GodotBody2D::update_mass_properties() {
 
 			if (calculate_center_of_mass) {
 				// We have to recompute the center of mass.
-				center_of_mass = Vector2();
+				center_of_mass_local = Vector2();
 
 				if (total_area != 0.0) {
 					for (int i = 0; i < get_shape_count(); i++) {
@@ -68,10 +68,10 @@ void GodotBody2D::update_mass_properties() {
 						real_t mass = area * this->mass / total_area;
 
 						// NOTE: we assume that the shape origin is also its center of mass.
-						center_of_mass += mass * get_shape_transform(i).get_origin();
+						center_of_mass_local += mass * get_shape_transform(i).get_origin();
 					}
 
-					center_of_mass /= mass;
+					center_of_mass_local /= mass;
 				}
 			}
 
@@ -94,7 +94,7 @@ void GodotBody2D::update_mass_properties() {
 
 					Transform2D mtx = get_shape_transform(i);
 					Vector2 scale = mtx.get_scale();
-					Vector2 shape_origin = mtx.get_origin() - center_of_mass;
+					Vector2 shape_origin = mtx.get_origin() - center_of_mass_local;
 					inertia += shape->get_moment_of_inertia(mass, scale) + mass * shape_origin.length_squared();
 				}
 			}
