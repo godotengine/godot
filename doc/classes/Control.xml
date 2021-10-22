@@ -1044,7 +1044,7 @@
 		<member name="rect_scale" type="Vector2" setter="set_scale" getter="get_scale" default="Vector2(1, 1)">
 			The node's scale, relative to its [member rect_size]. Change this property to scale the node around its [member rect_pivot_offset]. The Control's [member hint_tooltip] will also scale according to this value.
 			[b]Note:[/b] This property is mainly intended to be used for animation purposes. Text inside the Control will look pixelated or blurry when the Control is scaled. To support multiple resolutions in your project, use an appropriate viewport stretch mode as described in the [url=https://docs.godotengine.org/en/latest/tutorials/viewports/multiple_resolutions.html]documentation[/url] instead of scaling Controls individually.
-			[b]Note:[/b] If the Control node is a child of a [Container] node, the scale will be reset to [code]Vector2(1, 1)[/code] when the scene is instantiated. To set the Control's scale when it's instantiated, wait for one frame using [code]yield(get_tree(), "process_frame")[/code] then set its [member rect_scale] property.
+			[b]Note:[/b] If the Control node is a child of a [Container] node, the scale will be reset to [code]Vector2(1, 1)[/code] when the scene is instantiated. To set the Control's scale when it's instantiated, wait for one frame using [code]await get_tree().process_frame[/code] then set its [member rect_scale] property.
 		</member>
 		<member name="rect_size" type="Vector2" setter="_set_size" getter="get_size" default="Vector2(0, 0)">
 			The size of the node's bounding rectangle, in pixels. [Container] nodes update this property automatically.

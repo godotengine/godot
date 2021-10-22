@@ -57,7 +57,7 @@
 			<argument index="0" name="msec" type="int" />
 			<description>
 				Delays execution of the current thread by [code]msec[/code] milliseconds. [code]msec[/code] must be greater than or equal to [code]0[/code]. Otherwise, [method delay_msec] will do nothing and will print an error message.
-				[b]Note:[/b] [method delay_msec] is a [i]blocking[/i] way to delay code execution. To delay code execution in a non-blocking way, see [method SceneTree.create_timer]. Yielding with [method SceneTree.create_timer] will delay the execution of code placed below the [code]yield[/code] without affecting the rest of the project (or editor, for [EditorPlugin]s and [EditorScript]s).
+				[b]Note:[/b] [method delay_msec] is a [i]blocking[/i] way to delay code execution. To delay code execution in a non-blocking way, see [method SceneTree.create_timer]. Awaiting with [method SceneTree.create_timer] will delay the execution of code placed below the [code]await[/code] without affecting the rest of the project (or editor, for [EditorPlugin]s and [EditorScript]s).
 				[b]Note:[/b] When [method delay_msec] is called on the main thread, it will freeze the project and will prevent it from redrawing and registering input until the delay has passed. When using [method delay_msec] as part of an [EditorPlugin] or [EditorScript], it will freeze the editor but won't freeze the project if it is currently running (since the project is an independent child process).
 			</description>
 		</method>
@@ -66,7 +66,7 @@
 			<argument index="0" name="usec" type="int" />
 			<description>
 				Delays execution of the current thread by [code]usec[/code] microseconds. [code]usec[/code] must be greater than or equal to [code]0[/code]. Otherwise, [method delay_usec] will do nothing and will print an error message.
-				[b]Note:[/b] [method delay_usec] is a [i]blocking[/i] way to delay code execution. To delay code execution in a non-blocking way, see [method SceneTree.create_timer]. Yielding with [method SceneTree.create_timer] will delay the execution of code placed below the [code]yield[/code] without affecting the rest of the project (or editor, for [EditorPlugin]s and [EditorScript]s).
+				[b]Note:[/b] [method delay_usec] is a [i]blocking[/i] way to delay code execution. To delay code execution in a non-blocking way, see [method SceneTree.create_timer]. Awaiting with [method SceneTree.create_timer] will delay the execution of code placed below the [code]await[/code] without affecting the rest of the project (or editor, for [EditorPlugin]s and [EditorScript]s).
 				[b]Note:[/b] When [method delay_usec] is called on the main thread, it will freeze the project and will prevent it from redrawing and registering input until the delay has passed. When using [method delay_usec] as part of an [EditorPlugin] or [EditorScript], it will freeze the editor but won't freeze the project if it is currently running (since the project is an independent child process).
 			</description>
 		</method>
