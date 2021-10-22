@@ -129,7 +129,7 @@ class CSharpScript : public Script {
 	Set<StringName> exported_members_names;
 #endif
 
-	Map<StringName, PropertyInfo> member_info;
+	OrderedHashMap<StringName, PropertyInfo> member_info;
 
 	void _clear();
 
