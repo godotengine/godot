@@ -3648,7 +3648,10 @@
 		<constant name="LIGHT_PARAM_SHADOW_BIAS_SPLIT_SCALE" value="15" enum="LightParam">
 			Increases bias on further splits to fix self-shadowing that only occurs far away from the camera.
 		</constant>
-		<constant name="LIGHT_PARAM_MAX" value="16" enum="LightParam">
+		<constant name="LIGHT_PARAM_SHADOW_FADE_START" value="16" enum="LightParam">
+			Proportion of [constant LIGHT_PARAM_SHADOW_MAX_DISTANCE] at which point the shadow starts to fade. At [constant LIGHT_PARAM_SHADOW_MAX_DISTANCE], the shadow will disappear. The default value is a balance between smooth fading and distant shadow visibility. If the camera moves fast and the [constant LIGHT_PARAM_SHADOW_MAX_DISTANCE] is low, consider lowering [constant LIGHT_PARAM_SHADOW_FADE_START] below [code]0.8[/code] to make shadow transitions less noticeable. On the other hand, if you tuned [constant LIGHT_PARAM_SHADOW_MAX_DISTANCE] to cover the entire scene, you can set [constant LIGHT_PARAM_SHADOW_FADE_START] to [code]1.0[/code] to prevent the shadow from fading in the distance (it will suddenly cut off instead).
+		</constant>
+		<constant name="LIGHT_PARAM_MAX" value="17" enum="LightParam">
 			Represents the size of the [enum LightParam] enum.
 		</constant>
 		<constant name="LIGHT_BAKE_DISABLED" value="0" enum="LightBakeMode">

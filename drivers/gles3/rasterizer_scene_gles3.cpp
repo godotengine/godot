@@ -2766,6 +2766,7 @@ void RasterizerSceneGLES3::_setup_directional_light(int p_index, const Transform
 				}
 			}
 
+			// Store the fade distance factor relative to the last split's end.
 			ubo_data.shadow_split_offsets[j] = li->shadow_transform[j].split;
 
 			Transform modelview = (p_camera_inverse_transform * li->shadow_transform[j].transform).affine_inverse();
@@ -2785,6 +2786,11 @@ void RasterizerSceneGLES3::_setup_directional_light(int p_index, const Transform
 			ubo_data.light_clamp[2] = atlas_rect.size.x;
 			ubo_data.light_clamp[3] = atlas_rect.size.y;
 		}
+
+		const float fade_start = li->light_ptr->param[VS::LIGHT_PARAM_SHADOW_FADE_START];
+		// Using 1.0 would break `smoothstep()` in the shader.
+		ubo_data.fade_from = -ubo_data.shadow_split_offsets[shadow_count - 1] * MIN(fade_start, 0.999);
+		ubo_data.fade_to = -ubo_data.shadow_split_offsets[shadow_count - 1];
 	}
 
 	glBindBuffer(GL_UNIFORM_BUFFER, state.directional_ubo);

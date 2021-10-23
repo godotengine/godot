@@ -587,6 +587,10 @@ public:
 			float matrix[4 * 16];
 		} shadow;
 		float shadow_split_offsets[4];
+
+		float fade_from;
+		float fade_to;
+		float pad[2];
 	};
 
 	struct LightInstance : public RID_Data {

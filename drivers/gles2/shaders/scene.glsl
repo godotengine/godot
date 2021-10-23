@@ -1104,6 +1104,8 @@ uniform highp sampler2D light_shadow_atlas; //texunit:-3
 #ifdef LIGHT_MODE_DIRECTIONAL
 uniform highp sampler2D light_directional_shadow; // texunit:-3
 uniform highp vec4 light_split_offsets;
+uniform mediump float fade_from;
+uniform mediump float fade_to;
 #endif
 
 varying highp vec4 shadow_coord;
@@ -1987,7 +1989,6 @@ FRAGMENT_SHADER_CODE
 	float shadow4 = sample_shadow(light_directional_shadow, shadow_coord4);
 
 	if (depth_z < light_split_offsets.w) {
-		float pssm_fade = 0.0;
 		float shadow_att = 1.0;
 #ifdef LIGHT_USE_PSSM_BLEND
 		float shadow_att2 = 1.0;
@@ -2023,7 +2024,6 @@ FRAGMENT_SHADER_CODE
 
 			} else {
 				shadow_att = shadow4;
-				pssm_fade = smoothstep(light_split_offsets.z, light_split_offsets.w, depth_z);
 
 #if defined(LIGHT_USE_PSSM_BLEND)
 				use_blend = false;
@@ -2047,7 +2047,6 @@ FRAGMENT_SHADER_CODE
 	float shadow3 = sample_shadow(light_directional_shadow, shadow_coord3);
 
 	if (depth_z < light_split_offsets.z) {
-		float pssm_fade = 0.0;
 		float shadow_att = 1.0;
 #ifdef LIGHT_USE_PSSM_BLEND
 		float shadow_att2 = 1.0;
@@ -2097,7 +2096,6 @@ FRAGMENT_SHADER_CODE
 
 	if (depth_z < light_split_offsets.y) {
 		float shadow_att = 1.0;
-		float pssm_fade = 0.0;
 
 #ifdef LIGHT_USE_PSSM_BLEND
 		float shadow_att2 = 1.0;
@@ -2105,7 +2103,6 @@ FRAGMENT_SHADER_CODE
 		bool use_blend = true;
 #endif
 		if (depth_z < light_split_offsets.x) {
-			float pssm_fade = 0.0;
 			shadow_att = shadow1;
 
 #ifdef LIGHT_USE_PSSM_BLEND
@@ -2114,7 +2111,6 @@ FRAGMENT_SHADER_CODE
 #endif
 		} else {
 			shadow_att = shadow2;
-			pssm_fade = smoothstep(light_split_offsets.x, light_split_offsets.y, depth_z);
 #ifdef LIGHT_USE_PSSM_BLEND
 			use_blend = false;
 #endif
@@ -2148,7 +2144,6 @@ FRAGMENT_SHADER_CODE
 #endif //pssm2
 
 			highp vec4 pssm_coord;
-			float pssm_fade = 0.0;
 
 #ifdef LIGHT_USE_PSSM_BLEND
 			float pssm_blend;
@@ -2187,7 +2182,6 @@ FRAGMENT_SHADER_CODE
 
 				} else {
 					pssm_coord = shadow_coord4;
-					pssm_fade = smoothstep(light_split_offsets.z, light_split_offsets.w, depth_z);
 
 #if defined(LIGHT_USE_PSSM_BLEND)
 					use_blend = false;
@@ -2217,7 +2211,6 @@ FRAGMENT_SHADER_CODE
 				}
 			} else {
 				pssm_coord = shadow_coord3;
-				pssm_fade = smoothstep(light_split_offsets.y, light_split_offsets.z, depth_z);
 
 #if defined(LIGHT_USE_PSSM_BLEND)
 				use_blend = false;
@@ -2236,7 +2229,6 @@ FRAGMENT_SHADER_CODE
 #endif
 			} else {
 				pssm_coord = shadow_coord2;
-				pssm_fade = smoothstep(light_split_offsets.x, light_split_offsets.y, depth_z);
 #ifdef LIGHT_USE_PSSM_BLEND
 				use_blend = false;
 #endif
@@ -2258,7 +2250,8 @@ FRAGMENT_SHADER_CODE
 			}
 #endif
 
-			light_att *= mix(shadow_color.rgb, vec3(1.0), shadow);
+			float pssm_fade = smoothstep(fade_from, fade_to, vertex.z);
+			light_att *= mix(mix(shadow_color.rgb, vec3(1.0), shadow), vec3(1.0), pssm_fade);
 		}
 	}
 #endif //use vertex lighting
