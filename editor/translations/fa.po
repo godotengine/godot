@@ -363,7 +363,7 @@ msgstr "حذف ترک انیمشین"
 #. TRANSLATORS: %s will be replaced by a phrase describing the target of track.
 #: editor/animation_track_editor.cpp
 msgid "Create NEW track for %s and insert key?"
-msgstr "یک ترک جدید برای s% بساز و کلید را درج کن؟"
+msgstr "یک ترک جدید برای %s بساز و کلید را درج کن؟"
 
 #: editor/animation_track_editor.cpp
 msgid "Create %d NEW tracks and insert keys?"
@@ -904,11 +904,11 @@ msgstr "سیگنال:"
 
 #: editor/connections_dialog.cpp
 msgid "Connect '%s' to '%s'"
-msgstr "'s%' را به 's%' متصل کن"
+msgstr "'%s' را به '%s' متصل کن"
 
 #: editor/connections_dialog.cpp
 msgid "Disconnect '%s' from '%s'"
-msgstr "'s%' را از 's%' جدا کن"
+msgstr "'%s' را از '%s' جدا کن"
 
 #: editor/connections_dialog.cpp
 msgid "Disconnect all from signal: '%s'"
@@ -1024,7 +1024,7 @@ msgid ""
 "Scene '%s' is currently being edited.\n"
 "Changes will only take effect when reloaded."
 msgstr ""
-"ویرایش صحنه 's%' شروع شده است.\n"
+"ویرایش صحنه '%s' شروع شده است.\n"
 "تغییرات تنها وقتی جلوه گرند که از نو بارگیری شوند."
 
 #: editor/dependency_editor.cpp
@@ -1032,7 +1032,7 @@ msgid ""
 "Resource '%s' is in use.\n"
 "Changes will only take effect when reloaded."
 msgstr ""
-"منابع 's%' بکار رفته‌اند.\n"
+"منابع '%s' بکار رفته‌اند.\n"
 "تغییرات تنها وقتی جلوه گرند که از نو بارگیری شوند."
 
 #: editor/dependency_editor.cpp
@@ -1134,7 +1134,7 @@ msgstr "خطا در بارگذاری!"
 
 #: editor/dependency_editor.cpp
 msgid "Permanently delete %d item(s)? (No undo!)"
-msgstr "به طور دائمی تعداد 'd%' آیتم را حذف کند؟ (بدون undo !)"
+msgstr "به طور دائمی تعداد '%d' آیتم را حذف کند؟ (بدون undo !)"
 
 #: editor/dependency_editor.cpp
 msgid "Show Dependencies"
@@ -1519,7 +1519,7 @@ msgstr "کلمه کلیدی نمی تواند به عنوان یک نام خود
 
 #: editor/editor_autoload_settings.cpp
 msgid "Autoload '%s' already exists!"
-msgstr "بارگذاری خودکار 's%' هم اکنون موجود است!"
+msgstr "بارگذاری خودکار '%s' هم اکنون موجود است!"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Rename Autoload"
@@ -4191,7 +4191,7 @@ msgstr ""
 #: editor/groups_editor.cpp
 #, fuzzy
 msgid "Group name already exists."
-msgstr "بارگذاری خودکار 's%' هم اکنون موجود است!"
+msgstr "بارگذاری خودکار '%s' هم اکنون موجود است!"
 
 #: editor/groups_editor.cpp
 #, fuzzy
@@ -4670,7 +4670,7 @@ msgstr "گره انیمیشن"
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 #, fuzzy
 msgid "Triangle already exists."
-msgstr "بارگذاری خودکار 's%' هم اکنون موجود است!"
+msgstr "بارگذاری خودکار '%s' هم اکنون موجود است!"
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 #, fuzzy
@@ -4875,7 +4875,7 @@ msgstr "نام نامعتبر."
 #: editor/plugins/animation_player_editor_plugin.cpp
 #, fuzzy
 msgid "Animation name already exists!"
-msgstr "بارگذاری خودکار 's%' هم اکنون موجود است!"
+msgstr "بارگذاری خودکار '%s' هم اکنون موجود است!"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
@@ -7606,7 +7606,7 @@ msgstr ""
 #, fuzzy
 msgid ""
 "Missing connected method '%s' for signal '%s' from node '%s' to node '%s'."
-msgstr "'s%' را از 's%' جدا کن"
+msgstr "'%s' را از '%s' جدا کن"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "[Ignore]"
@@ -11277,7 +11277,7 @@ msgstr ""
 #: editor/project_settings_editor.cpp
 #, fuzzy
 msgid "An action with the name '%s' already exists."
-msgstr "بارگذاری خودکار 's%' هم اکنون موجود است!"
+msgstr "بارگذاری خودکار '%s' هم اکنون موجود است!"
 
 #: editor/project_settings_editor.cpp
 msgid "Rename Input Action Event"
@@ -13428,7 +13428,7 @@ msgstr "مسیر به یک نود نمیرسد!"
 
 #: modules/visual_script/visual_script_func_nodes.cpp
 msgid "Invalid index property name '%s' in node %s."
-msgstr "نام دارایی ایندکس نامعتبر 's%' در نود s%."
+msgstr "نام دارایی ایندکس نامعتبر '%s' در نود %s."
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid ": Invalid argument of type: "
@@ -14497,12 +14497,12 @@ msgstr ""
 
 #: scene/animation/animation_tree.cpp
 msgid "Invalid animation: '%s'."
-msgstr "انیمیشن نامعتبر: 's%'."
+msgstr "انیمیشن نامعتبر: '%s'."
 
 #: scene/animation/animation_tree.cpp
 #, fuzzy
 msgid "Nothing connected to input '%s' of node '%s'."
-msgstr "'s%' را از 's%' جدا کن"
+msgstr "'%s' را از '%s' جدا کن"
 
 #: scene/animation/animation_tree.cpp
 msgid "No root AnimationNode for the graph is set."
@@ -14826,7 +14826,7 @@ msgstr "ثوابت قابل تغییر نیستند."
 #~ msgstr "صحنه جدید"
 
 #~ msgid "Replaced %d occurrence(s)."
-#~ msgstr "تعداد d% رخداد جایگزین شد."
+#~ msgstr "تعداد %d رخداد جایگزین شد."
 
 #, fuzzy
 #~ msgid "Brief Description"
@@ -15232,7 +15232,7 @@ msgstr "ثوابت قابل تغییر نیستند."
 #~ "اسپرایت تنظیم شود تا کار کند."
 
 #~ msgid "Method List For '%s':"
-#~ msgstr "لیست متد برای 's%' :"
+#~ msgstr "لیست متد برای '%s' :"
 
 #~ msgid "Return:"
 #~ msgstr "بازگشت:"
@@ -15273,7 +15273,7 @@ msgstr "ثوابت قابل تغییر نیستند."
 #~ "SpatialSamplePlayer آهنگ را پخش کند."
 
 #~ msgid "Replaced %d Ocurrence(s)."
-#~ msgstr "تعداد d% رخداد جایگزین شد."
+#~ msgstr "تعداد %d رخداد جایگزین شد."
 
 #, fuzzy
 #~ msgid "Create Android keystore"

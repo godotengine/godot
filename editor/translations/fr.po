@@ -35,7 +35,7 @@
 # Rémi Verschelde <rverschelde@gmail.com>, 2016-2017.
 # Robin Arys <robinarys@hotmail.com>, 2017.
 # Roger BR <drai_kin@hotmail.com>, 2016.
-# salty64 <cedric.arrabie@univ-pau.fr>, 2018, 2020.
+# salty64 <cedric.arrabie@univ-pau.fr>, 2018, 2020, 2021.
 # Thomas Baijot <thomasbaijot@gmail.com>, 2016, 2019.
 # Tommy Melançon-Roy <tommel1234@hotmail.com>, 2017-2018.
 # Willow <theotimefd@aol.com>, 2018.
@@ -49,7 +49,7 @@
 # Brice Lobet <tempo.data@gmail.com>, 2018.
 # Florent Wijanto <f_wijanto@hotmail.com>, 2018.
 # Olivier gareau <olivier.gareau@protonmail.com>, 2018.
-# Rémi Verschelde <akien@godotengine.org>, 2018, 2019, 2020.
+# Rémi Verschelde <akien@godotengine.org>, 2018, 2019, 2020, 2021.
 # Rémi Bintein <reminus5@hotmail.fr>, 2018, 2019.
 # Sylvain Corsini <sylvain.corsini@gmail.com>, 2018.
 # Caye Pierre <pierrecaye@laposte.net>, 2019.
@@ -83,13 +83,14 @@
 # Clément Topy <topy72.mine@gmail.com>, 2021.
 # Cold <coldragon78@gmail.com>, 2021.
 # Blackiris <divjvc@free.fr>, 2021.
+# Olivier Monnom <olivier.monnom@gmail.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-10-04 13:31+0000\n"
-"Last-Translator: Pierre Caye <pierrecaye@laposte.net>\n"
+"PO-Revision-Date: 2021-10-23 12:20+0200\n"
+"Last-Translator: salty64 <cedric.arrabie@univ-pau.fr>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fr/>\n"
 "Language: fr\n"
@@ -2500,9 +2501,8 @@ msgstr ""
 "n'ont sans doute pas pu être satisfaites."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Could not save one or more scenes!"
-msgstr "Impossible de démarrer le sous-processus !"
+msgstr "Impossible de sauver la (les) scènes(s) !"
 
 #: editor/editor_node.cpp
 msgid "Save All Scenes"
@@ -2651,7 +2651,7 @@ msgstr "Sauvegarder les modifications effectuées à « %s » avant de quitt
 
 #: editor/editor_node.cpp
 msgid "%s no longer exists! Please specify a new save location."
-msgstr ""
+msgstr "%s n'existe plus ! Veuillez spécifier un nouvel endroit de sauvegarde."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2699,29 +2699,27 @@ msgstr "La scène actuelle n'est pas enregistrée. Ouvrir quand même ?"
 
 #: editor/editor_node.cpp
 msgid "Can't undo while mouse buttons are pressed."
-msgstr ""
+msgstr "Impossible d'annuler quand les boutons de la souris sont activés."
 
 #: editor/editor_node.cpp
 msgid "Nothing to undo."
-msgstr ""
+msgstr "Rien à annuler."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Undo: %s"
-msgstr "Annuler"
+msgstr "Annuler %s"
 
 #: editor/editor_node.cpp
 msgid "Can't redo while mouse buttons are pressed."
-msgstr ""
+msgstr "Impossible de rétablir quand les boutons de la souris sont activés."
 
 #: editor/editor_node.cpp
 msgid "Nothing to redo."
-msgstr ""
+msgstr "Rien à rétablir."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Redo: %s"
-msgstr "Refaire"
+msgstr "Refaire %s"
 
 #: editor/editor_node.cpp
 msgid "Can't reload a scene that was never saved."
@@ -2757,7 +2755,7 @@ msgstr "Quitter l'éditeur ?"
 
 #: editor/editor_node.cpp
 msgid "Open Project Manager?"
-msgstr "Ouvrir gestionnaire de projets ?"
+msgstr "Ouvrir le gestionnaire de projets ?"
 
 #: editor/editor_node.cpp
 msgid "Save & Quit"
@@ -3418,9 +3416,8 @@ msgid "Merge With Existing"
 msgstr "Fusionner avec l'existant"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Apply MeshInstance Transforms"
-msgstr "Changer la transformation de l’animation"
+msgstr "Appliquer la transformation du MeshInstance"
 
 #: editor/editor_node.cpp
 msgid "Open & Run a Script"
@@ -3683,7 +3680,7 @@ msgstr ""
 
 #: editor/editor_resource_picker.cpp
 msgid "Quick Load"
-msgstr ""
+msgstr "Chargement rapide"
 
 #: editor/editor_resource_picker.cpp editor/property_editor.cpp
 msgid "Make Unique"
@@ -4519,6 +4516,12 @@ msgid ""
 "Selecting another resource in the FileSystem dock without clicking Reimport "
 "first will discard changes made in the Import dock."
 msgstr ""
+"Vous avez des changements en attente qui n'ont pas encore été appliqués. "
+"Cliquez sur réimporter pour appliquer les changements des options "
+"d'importation\n"
+"Sélectionner une autre ressource dans le \"FileSystem dock\" sans cliquer "
+"sur réimport avant va annuler les changements faits dans le dock "
+"d'importation."
 
 #: editor/import_dock.cpp
 msgid "Import As:"
@@ -5599,7 +5602,7 @@ msgstr "Dernier"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "All"
-msgstr "All"
+msgstr "Tous"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Search templates, projects, and demos"
@@ -5812,15 +5815,13 @@ msgstr "Déplacer le CanvasItem « %s » vers (%d, %d)"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Locked"
-msgstr "Verrouillage Sélectionné"
+msgstr "Verrouillé"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Grouped"
-msgstr "Groupes"
+msgstr "Groupé"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid ""
@@ -6773,14 +6774,12 @@ msgid "Remove Selected Item"
 msgstr "Supprimer l'élément sélectionné"
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
-#, fuzzy
 msgid "Import from Scene (Ignore Transforms)"
-msgstr "Importer depuis la scène"
+msgstr "Importer depuis la scène (Ignore les transformations)"
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
-#, fuzzy
 msgid "Import from Scene (Apply Transforms)"
-msgstr "Importer depuis la scène"
+msgstr "Importer depuis la scène (Applique les transformations)"
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
 msgid "Update from Scene"
@@ -7378,14 +7377,12 @@ msgid "Flip Portal"
 msgstr "Retourner le Portal"
 
 #: editor/plugins/room_manager_editor_plugin.cpp
-#, fuzzy
 msgid "Occluder Set Transform"
-msgstr "Supprimer la transformation"
+msgstr "Définir la transformation pour l'occulteur"
 
 #: editor/plugins/room_manager_editor_plugin.cpp
-#, fuzzy
 msgid "Center Node"
-msgstr "Créer un nœud"
+msgstr "Centrer le nœud"
 
 #: editor/plugins/root_motion_editor_plugin.cpp
 msgid "AnimationTree has no path set to an AnimationPlayer"
@@ -7521,12 +7518,10 @@ msgid "Move Down"
 msgstr "Déplacer vers le bas"
 
 #: editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Next Script"
 msgstr "Script suivant"
 
 #: editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Previous Script"
 msgstr "Script précédent"
 
@@ -7893,14 +7888,12 @@ msgid "Skeleton2D"
 msgstr "Squelette 2D"
 
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Reset to Rest Pose"
-msgstr "Assigner les os à la position de repos"
+msgstr "Remettre à la position de repos"
 
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Overwrite Rest Pose"
-msgstr "Écraser"
+msgstr "Écraser la position de repos"
 
 #: editor/plugins/skeleton_editor_plugin.cpp
 msgid "Create physical bones"
@@ -7927,74 +7920,62 @@ msgid "Perspective"
 msgstr "Perspective"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Top Orthogonal"
-msgstr "Orthogonale"
+msgstr "Haut Orthogonal"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Top Perspective"
-msgstr "Perspective"
+msgstr "Perspective haute"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Bottom Orthogonal"
-msgstr "Orthogonale"
+msgstr "Bas Orthogonal"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Bottom Perspective"
-msgstr "Perspective"
+msgstr "Perspective basse"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Left Orthogonal"
-msgstr "Orthogonale"
+msgstr "Gauche Orthogonal"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Left Perspective"
-msgstr "Perspective"
+msgstr "Perspective Gauche"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Right Orthogonal"
-msgstr "Orthogonale"
+msgstr "Orthogonal Droit"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Right Perspective"
-msgstr "Perspective"
+msgstr "Perspective Droite"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Front Orthogonal"
-msgstr "Orthogonale"
+msgstr "Orthogonal avant"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Front Perspective"
-msgstr "Perspective"
+msgstr "Perspective Avant"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Rear Orthogonal"
-msgstr "Orthogonale"
+msgstr "Orthogonale arrière"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Rear Perspective"
-msgstr "Perspective"
+msgstr "Perspective arrière"
 
 #. TRANSLATORS: This will be appended to the view name when Auto Orthogonal is enabled.
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid " [auto]"
-msgstr ""
+msgstr " [auto]"
 
 #. TRANSLATORS: This will be appended to the view name when Portal Occulusion is enabled.
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid " [portals active]"
-msgstr ""
+msgstr " [portails actifs]"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Transform Aborted."
@@ -8322,24 +8303,23 @@ msgstr "Vue de droite"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Orbit View Down"
-msgstr ""
+msgstr "Vue de l'orbite vers le bas"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Orbit View Left"
-msgstr ""
+msgstr "Vue de l'orbite vers la gauche"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Orbit View Right"
-msgstr ""
+msgstr "Vue de l'orbite vers la droite"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Orbit View Up"
-msgstr "Vue de devant"
+msgstr "Vue de l'orbite vers le devant"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Orbit View 180"
-msgstr ""
+msgstr "Vue de l'orbite à 180°"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Switch Perspective/Orthogonal View"
@@ -8415,9 +8395,8 @@ msgid "View Portal Culling"
 msgstr "Afficher le Portal culling"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "View Occlusion Culling"
-msgstr "Afficher le Portal culling"
+msgstr "Voir la suppression de l'occlusion"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 #: modules/gridmap/grid_map_editor_plugin.cpp
@@ -8485,9 +8464,8 @@ msgid "Post"
 msgstr "Post"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Unnamed Gizmo"
-msgstr "Projet sans titre"
+msgstr "Gizmo sans nom"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Create Mesh2D"
@@ -12648,14 +12626,12 @@ msgid "Set Portal Point Position"
 msgstr "Définir la position du point du Portal"
 
 #: editor/spatial_editor_gizmos.cpp
-#, fuzzy
 msgid "Set Occluder Sphere Radius"
-msgstr "Changer le rayon de la forme du cylindre"
+msgstr "Définir le rayon de la sphère de l'occulteur"
 
 #: editor/spatial_editor_gizmos.cpp
-#, fuzzy
 msgid "Set Occluder Sphere Position"
-msgstr "Définir position d'entrée de la courbe"
+msgstr "Définir la position de la sphère de l'occulteur"
 
 #: modules/csg/csg_gizmos.cpp
 msgid "Change Cylinder Radius"
@@ -12943,9 +12919,8 @@ msgid "Class name can't be a reserved keyword"
 msgstr "Le nom de classe ne peut pas être un mot-clé réservé"
 
 #: modules/mono/csharp_script.cpp
-#, fuzzy
 msgid "Build Solution"
-msgstr "Remplir la sélection"
+msgstr "Compiler la solution"
 
 #: modules/mono/mono_gd/gd_mono_utils.cpp
 msgid "End of inner exception stack trace"
@@ -14325,11 +14300,11 @@ msgstr ""
 
 #: scene/3d/occluder.cpp
 msgid "No shape is set."
-msgstr ""
+msgstr "Aucune forme n'est définie."
 
 #: scene/3d/occluder.cpp
 msgid "Only uniform scales are supported."
-msgstr ""
+msgstr "Seules les échelles uniformes sont prises en charge."
 
 #: scene/3d/particles.cpp
 msgid ""
@@ -14693,6 +14668,10 @@ msgid ""
 "The GLES2 backend is currently in use, so these modes will act like Stretch "
 "instead."
 msgstr ""
+"Les options Tile et Tile Fit pour les propriétés d'extension d'axe ne sont "
+"efficaces que si vous utilisez le rendu GLES3.\n"
+"Le rendu GLES2 étant actuellement utilisé, ces modes se comporteront comme "
+"un étirement."
 
 #: scene/gui/popup.cpp
 msgid ""
@@ -14739,6 +14718,10 @@ msgid ""
 "Consider using a script's process loop instead of relying on a Timer for "
 "very low wait times."
 msgstr ""
+"Les temps d'attente très faibles des timers(< 0,05 seconde) peuvent se "
+"comporter de manière très différente selon la vitesse du rendu ou physique.\n"
+"Envisagez d'utiliser la boucle de traitement d'un script au lieu de vous "
+"fier à un timer pour les temps d'attente très faibles."
 
 #: scene/main/viewport.cpp
 msgid ""
@@ -14753,17 +14736,16 @@ msgstr ""
 "RenderTarget et assignez sa texture à un nœud pouvant l'afficher."
 
 #: scene/main/viewport.cpp
-#, fuzzy
 msgid ""
 "The Viewport size must be greater than or equal to 2 pixels on both "
 "dimensions to render anything."
 msgstr ""
-"La taille de la fenêtre d'affichage doit être supérieure à 0 pour pouvoir "
-"afficher quoi que ce soit."
+"La taille de la fenêtre d'affichage doit être supérieure ou égale à 2 pixels "
+"dans les deux sens pour que le rendu soit possible."
 
 #: scene/resources/occluder_shape.cpp
 msgid "OccluderShapeSphere Set Spheres"
-msgstr ""
+msgstr "Définir les sphères pour OccluderShapeSphere"
 
 #: scene/resources/visual_shader_nodes.cpp
 msgid ""

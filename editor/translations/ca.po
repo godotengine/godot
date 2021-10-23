@@ -21,7 +21,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-10-13 09:34+0000\n"
+"PO-Revision-Date: 2021-10-21 10:31+0000\n"
 "Last-Translator: Xavier Gomez <hiulit@gmail.com>\n"
 "Language-Team: Catalan <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ca/>\n"
@@ -747,7 +747,6 @@ msgid "Whole Words"
 msgstr "Paraules senceres"
 
 #: editor/code_editor.cpp
-#, fuzzy
 msgid "Replace"
 msgstr "Reemplaçar"
 
@@ -2158,7 +2157,6 @@ msgid "Constants"
 msgstr "Constants"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "Property Descriptions"
 msgstr "Descripcions de la Propietat"
 
@@ -2662,7 +2660,6 @@ msgid "Reload Saved Scene"
 msgstr "Desa Escena"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid ""
 "The current scene has unsaved changes.\n"
 "Reload the saved scene anyway? This action cannot be undone."
@@ -3194,9 +3191,8 @@ msgid "Suggest a Feature"
 msgstr ""
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Send Docs Feedback"
-msgstr "Enviar suggeriments sobre la documentació"
+msgstr "Enviar suggeriments sobre la Documentació"
 
 #: editor/editor_node.cpp editor/plugins/asset_library_editor_plugin.cpp
 msgid "Community"
@@ -3220,9 +3216,8 @@ msgid "Play"
 msgstr "Reprodueix"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Pause the scene execution for debugging."
-msgstr "Pausa l’execució d’escena per a la depuració."
+msgstr "Posa en pausa l'execució de l'escena per a depurar-la."
 
 #: editor/editor_node.cpp
 msgid "Pause Scene"
@@ -3782,12 +3777,11 @@ msgid "Cannot remove temporary file:"
 msgstr "No es pot desar el Tema:"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid ""
 "Templates installation failed.\n"
 "The problematic templates archives can be found at '%s'."
 msgstr ""
-"No s'han pogut instal·lar les plantilles. \n"
+"No s'han pogut instal·lar les plantilles.\n"
 "Les plantilles problemàtics es troben a '%s'."
 
 #: editor/export_template_manager.cpp
@@ -4906,11 +4900,10 @@ msgstr ""
 "els noms de les pistes."
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
-#, fuzzy
 msgid "Player path set is invalid, so unable to retrieve track names."
 msgstr ""
-"El camí del reproductor assignat no és vàlid, de manera que no pot recuperar "
-"els noms de les pistes."
+"El camí del reproductor assignat no és vàlid, de manera que no s'ha pogut "
+"recuperar els noms de les pistes."
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/root_motion_editor_plugin.cpp
@@ -5136,7 +5129,6 @@ msgid "Include Gizmos (3D)"
 msgstr "Inclou Gizmos (3D)"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
-#, fuzzy
 msgid "Pin AnimationPlayer"
 msgstr "Fixar AnimationPlayer"
 
@@ -5468,14 +5460,12 @@ msgid "Redirect loop."
 msgstr "Bucle de redirecció."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Request failed, timeout"
 msgstr "La sol·licitud ha fallat, s'ha esgotat el temps d'espera"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Timeout."
-msgstr "Temps esgotat."
+msgstr "Temps d'espera esgotat."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Failed:"
@@ -5539,7 +5529,6 @@ msgid "Download for this asset is already in progress!"
 msgstr "Ja s'està baixant aquest actiu!"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Recently Updated"
 msgstr "Actualitzat Recentment"
 
@@ -5548,12 +5537,10 @@ msgid "Least Recently Updated"
 msgstr "Actualitzacions menys recents"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Name (A-Z)"
 msgstr "Nom (A-Z)"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Name (Z-A)"
 msgstr "Nom (Z-A)"
 
@@ -5707,9 +5694,8 @@ msgid "Grid Step:"
 msgstr "Pas de la Graella:"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Primary Line Every:"
-msgstr "Línia principal cada:"
+msgstr "Línia Principal Cada:"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #, fuzzy
@@ -6100,7 +6086,6 @@ msgid "Snapping Options"
 msgstr "Opcions d'Ajustament"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Use Rotation Snap"
 msgstr "Utilitzar Ajustament de Rotació"
 
@@ -6131,7 +6116,6 @@ msgid "Snap to Parent"
 msgstr "Ajustar al Pare"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Snap to Node Anchor"
 msgstr "Ajustar a l'Àncora del Node"
 
@@ -6144,9 +6128,8 @@ msgid "Snap to Node Center"
 msgstr "Ajustar al centre del node"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Snap to Other Nodes"
-msgstr "Ajustar als altres nodes"
+msgstr "Ajustar a altres Nodes"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snap to Guides"
@@ -6181,9 +6164,8 @@ msgid "Show Bones"
 msgstr "Mostra els Ossos"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Make Custom Bone(s) from Node(s)"
-msgstr "Fer os(sos) personalitzat(s) a partir de Node(s)"
+msgstr "Crear os(sos) personalitzat(s) a partir de Node(s)"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #, fuzzy
@@ -6233,9 +6215,8 @@ msgid "Frame Selection"
 msgstr "Enquadra la Selecció"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Preview Canvas Scale"
-msgstr "Vista prèvia de l'escala del llenç"
+msgstr "Vista prèvia de l'Escala del Llenç"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Translation mask for inserting keys."
@@ -6578,9 +6559,8 @@ msgid "Mesh is empty!"
 msgstr "La malla és buida!"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#, fuzzy
 msgid "Couldn't create a Trimesh collision shape."
-msgstr "Crea una Col·lisió entre malles de triangles germanes."
+msgstr "No s'ha pogut crear una forma de col·lisió Trimesh."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Static Trimesh Body"
@@ -6772,18 +6752,16 @@ msgid "Remove item %d?"
 msgstr "Elimina l'element %d?"
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "Update from existing scene?:\n"
 "%s"
 msgstr ""
-"Actualitzar des d'una 'Escena existent?:\n"
+"Actualitzar des de l'Escena existent?:\n"
 "%s"
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
-#, fuzzy
 msgid "Mesh Library"
-msgstr "Biblioteca de Models (MeshLibrary)"
+msgstr "Biblioteca de Malles"
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
 msgid "Add Item"
@@ -6906,7 +6884,6 @@ msgstr "Crea un Polígon de Navegació"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp
-#, fuzzy
 msgid "Convert to CPUParticles"
 msgstr "Convertir a ParticulesCPU"
 
@@ -6942,9 +6919,8 @@ msgid "The geometry doesn't contain any faces."
 msgstr "El Node no conté cap geometria (cares)."
 
 #: editor/plugins/particles_editor_plugin.cpp
-#, fuzzy
 msgid "\"%s\" doesn't inherit from Spatial."
-msgstr "\"% s\" no hereta de Spatial."
+msgstr "\"%s\" no hereta de Spatial."
 
 #: editor/plugins/particles_editor_plugin.cpp
 #, fuzzy
@@ -7253,14 +7229,12 @@ msgid "Scale Polygon"
 msgstr "Escala el Polígon"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Create a custom polygon. Enables custom polygon rendering."
 msgstr ""
-"Crear polígon personalitzat. Habilita el renderitzat de polígons "
+"Crear un polígon personalitzat. S'habilita el renderitzat de polígons "
 "personalitzats."
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "Remove a custom polygon. If none remain, custom polygon rendering is "
 "disabled."
@@ -7273,9 +7247,8 @@ msgid "Paint weights with specified intensity."
 msgstr "Pinta pesos amb la intensitat especificada."
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Unpaint weights with specified intensity."
-msgstr "Despinta el pes amb la intensitat especificada."
+msgstr "Despinta pesos amb la intensitat especificada."
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Radius:"
@@ -7424,7 +7397,6 @@ msgid "AnimationTree has no path set to an AnimationPlayer"
 msgstr "L'AnimationTree no té ruta assignada cap a un AnimationPlayer"
 
 #: editor/plugins/root_motion_editor_plugin.cpp
-#, fuzzy
 msgid "Path to AnimationPlayer is invalid"
 msgstr "El camí cap a l'AnimationPlayer no és vàlid"
 
@@ -7751,7 +7723,6 @@ msgstr ""
 "No s'hi poden afegir els nodes ja que l'escena no utilitza l'script '%s' ."
 
 #: editor/plugins/script_text_editor.cpp
-#, fuzzy
 msgid "Lookup Symbol"
 msgstr "Cercar Símbol"
 
@@ -7864,7 +7835,6 @@ msgid "Contextual Help"
 msgstr "Ajuda Contextual"
 
 #: editor/plugins/script_text_editor.cpp
-#, fuzzy
 msgid "Toggle Bookmark"
 msgstr "Commutar Marcador"
 
@@ -7873,9 +7843,8 @@ msgid "Go to Next Bookmark"
 msgstr "Anar al marcador següent"
 
 #: editor/plugins/script_text_editor.cpp
-#, fuzzy
 msgid "Go to Previous Bookmark"
-msgstr "Anar al marcador anterior"
+msgstr "Anar al Marcador Anterior"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Remove All Bookmarks"
@@ -7919,9 +7888,8 @@ msgid "Shader"
 msgstr "Shader"
 
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
-#, fuzzy
 msgid "This skeleton has no bones, create some children Bone2D nodes."
-msgstr "Aquest esquelet no té ossos, crea alguns nodes fill Bone2D."
+msgstr "Aquest esquelet no té ossos, crea alguns nodes Bone2D fills."
 
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
 #, fuzzy
@@ -7929,9 +7897,8 @@ msgid "Create Rest Pose from Bones"
 msgstr "Crea Punts d'Emissió des d'una Malla"
 
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Set Rest Pose to Bones"
-msgstr "Estableix la postura de repòs als ossos"
+msgstr "Estableix la Postura de Repòs als Ossos"
 
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
 msgid "Skeleton2D"
@@ -7960,7 +7927,6 @@ msgid "Create physical skeleton"
 msgstr "Crea esquelet físic"
 
 #: editor/plugins/skeleton_ik_editor_plugin.cpp
-#, fuzzy
 msgid "Play IK"
 msgstr "Reproduir IK"
 
@@ -8252,7 +8218,6 @@ msgid "Cinematic Preview"
 msgstr "Previsualització Cinemàtica"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Not available when using the GLES2 renderer."
 msgstr "No disponible quan s'utilitza el renderitzador GLES2."
 
@@ -8304,13 +8269,13 @@ msgid ""
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "Note: The FPS value displayed is the editor's framerate.\n"
 "It cannot be used as a reliable indication of in-game performance."
 msgstr ""
-"Nota: el valor FPS mostrat és la taxa de fotogrames de l'editor.\n"
-"No es pot utilitzar com una indicació fiable del rendiment en el joc."
+"Nota: El valor FPS que es mostra és el percentatge de fotogrames de "
+"l'editor.\n"
+"No es pot utilitzar com a indicació fiable del rendiment del joc."
 
 #: editor/plugins/spatial_editor_plugin.cpp
 #, fuzzy
@@ -8336,9 +8301,8 @@ msgid "Snap Nodes to Floor"
 msgstr "Ajustar Nodes al Terra"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Couldn't find a solid floor to snap the selection to."
-msgstr "No ha pogut trobar un terra sòlid per ajustar la selecció."
+msgstr "No s'ha pogut trobar un sòl sòlid on ajustar la selecció."
 
 #: editor/plugins/spatial_editor_plugin.cpp
 #, fuzzy
@@ -8487,17 +8451,14 @@ msgid "Snap Settings"
 msgstr "Configuració d'Ajustament"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Translate Snap:"
 msgstr "Ajustament de Translació:"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Rotate Snap (deg.):"
 msgstr "Ajustament de Rotació (graus):"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Scale Snap (%):"
 msgstr "Ajustament d'Escala (%):"
 
@@ -8588,9 +8549,8 @@ msgid "LightOccluder2D Preview"
 msgstr "Crea un Polígon Oclusor"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "Sprite is empty!"
-msgstr "El Sprite està buit!"
+msgstr "L'Sprite està buit!"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Can't convert a sprite using animation frames to mesh."
@@ -8623,9 +8583,8 @@ msgid "Create CollisionPolygon2D Sibling"
 msgstr "Crea un Polígon de Navegació"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "Invalid geometry, can't create light occluder."
-msgstr "La geometria no és vàlida, no es pot crear oclusor de llum."
+msgstr "La geometria no és vàlida; no es pot crear un oclusor de llum."
 
 #: editor/plugins/sprite_editor_plugin.cpp
 #, fuzzy
@@ -8657,12 +8616,10 @@ msgid "Settings:"
 msgstr "Configuració:"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
-#, fuzzy
 msgid "No Frames Selected"
-msgstr "No hi ha Fotogrames Seleccionats"
+msgstr "No s'ha seleccionat cap fotograma"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
-#, fuzzy
 msgid "Add %d Frame(s)"
 msgstr "Afegir %d Fotograma(es)"
 
@@ -8729,9 +8686,8 @@ msgid "Add a Texture from File"
 msgstr "Afegir Textura des de Fitxer"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
-#, fuzzy
 msgid "Add Frames from a Sprite Sheet"
-msgstr "Afegir fotogrames des d'una fulla de Sprites"
+msgstr "Afegir fotogrames des d'un full d'Sprites"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Insert Empty (Before)"
@@ -8750,7 +8706,6 @@ msgid "Move (After)"
 msgstr "Mou (Després)"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
-#, fuzzy
 msgid "Select Frames"
 msgstr "Seleccionar Fotogrames"
 
@@ -8789,9 +8744,8 @@ msgid "Snap Mode:"
 msgstr "Mode d'ajustament:"
 
 #: editor/plugins/texture_region_editor_plugin.cpp
-#, fuzzy
 msgid "Pixel Snap"
-msgstr "Ajustar amb els Píxels"
+msgstr "Ajustament de Píxels"
 
 #: editor/plugins/texture_region_editor_plugin.cpp
 msgid "Grid Snap"
@@ -9310,9 +9264,8 @@ msgid ""
 msgstr ""
 
 #: editor/plugins/theme_editor_preview.cpp
-#, fuzzy
 msgid "Toggle Button"
-msgstr "Botó de commutació"
+msgstr "Botó de Commutació"
 
 #: editor/plugins/theme_editor_preview.cpp
 msgid "Disabled Button"
@@ -9391,7 +9344,6 @@ msgid "Editable Item"
 msgstr "Element Editable"
 
 #: editor/plugins/theme_editor_preview.cpp
-#, fuzzy
 msgid "Subtree"
 msgstr "Subarbre"
 
@@ -9421,9 +9373,8 @@ msgid "Erase Selection"
 msgstr "Elimina la Selecció"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
-#, fuzzy
 msgid "Fix Invalid Tiles"
-msgstr "Arreglar Rajoles no Valides"
+msgstr "Arreglar Tiles no vàlides"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 #: modules/gridmap/grid_map_editor_plugin.cpp
@@ -9468,9 +9419,8 @@ msgid "Enable Priority"
 msgstr "Habilitar Prioritat"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
-#, fuzzy
 msgid "Filter tiles"
-msgstr "Filtrat de Fitxers"
+msgstr "Filtrar tiles"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Give a TileSet resource to this TileMap to use its tiles."
@@ -9523,14 +9473,12 @@ msgid "Clear Transform"
 msgstr "Restablir Transformació"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Add Texture(s) to TileSet."
-msgstr "Afegeix Nodes des d'Arbre."
+msgstr "Afegir Textura(es) al TileSet"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Remove selected Texture from TileSet."
-msgstr "Elimineu la textura seleccionada de TileSet."
+msgstr "Eliminar la textura seleccionada del TileSet."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Create from Scene"
@@ -9559,18 +9507,16 @@ msgid "Next Coordinate"
 msgstr "Coordenada Següent"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Select the next shape, subtile, or Tile."
-msgstr "Seleccioneu la forma, sub-rajola o rajola següent."
+msgstr "Seleccioneu la següent forma, subtile o Tile."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Previous Coordinate"
 msgstr "Coordenada Anterior"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Select the previous shape, subtile, or Tile."
-msgstr "Seleccioneu la forma, sub-rajola o rajola anterior."
+msgstr "Seleccioneu la forma, el subtile o el Tile anterior."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 #, fuzzy
@@ -9648,12 +9594,10 @@ msgid "Copy bitmask."
 msgstr "Copiar màscara de bits."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Paste bitmask."
 msgstr "Enganxar màscara de bits."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Erase bitmask."
 msgstr "Esborrar màscara de bits."
 
@@ -9681,9 +9625,8 @@ msgid "Delete Selected Shape"
 msgstr "Elimina Seleccionats"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Keep polygon inside region Rect."
-msgstr "Mantenir polígon dins de la regió Rect."
+msgstr "Mantenir el polígon dins de la regió Rect."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Enable snap and show grid (configurable via the Inspector)."
@@ -9737,9 +9680,8 @@ msgstr ""
 "Clica en una altra Peça per a editar-lo."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Delete selected Rect."
-msgstr "Suprimir Rectangle seleccionat."
+msgstr "Suprimir el Rect seleccionat."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 #, fuzzy
@@ -10385,7 +10327,6 @@ msgid "Returns the arc-sine of the parameter."
 msgstr "Retorna l'arc sinus del paràmetre."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Returns the inverse hyperbolic sine of the parameter."
 msgstr "Retorna el sinus hiperbòlic invers del paràmetre."
 

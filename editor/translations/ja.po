@@ -40,7 +40,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-10-15 04:33+0000\n"
+"PO-Revision-Date: 2021-10-22 06:04+0000\n"
 "Last-Translator: nitenook <admin@alterbaum.net>\n"
 "Language-Team: Japanese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ja/>\n"
@@ -2431,9 +2431,8 @@ msgstr ""
 "満たせませんでした。"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Could not save one or more scenes!"
-msgstr "変換したテクスチャを保存できませんでした:"
+msgstr "一つまたは複数のシーンを保存できませんでした！"
 
 #: editor/editor_node.cpp
 msgid "Save All Scenes"
@@ -2576,7 +2575,7 @@ msgstr "閉じる前に、'%s' への変更を保存しますか？"
 
 #: editor/editor_node.cpp
 msgid "%s no longer exists! Please specify a new save location."
-msgstr ""
+msgstr "%s は存在しなくなりました！新しい保存先を指定してください。"
 
 #: editor/editor_node.cpp
 msgid ""
@@ -3324,7 +3323,7 @@ msgstr "ライブラリのエクスポート"
 
 #: editor/editor_node.cpp
 msgid "Merge With Existing"
-msgstr "既存の(ライブラリを)マージ"
+msgstr "既存のものとマージする"
 
 #: editor/editor_node.cpp
 msgid "Apply MeshInstance Transforms"
@@ -4416,6 +4415,10 @@ msgid ""
 "Selecting another resource in the FileSystem dock without clicking Reimport "
 "first will discard changes made in the Import dock."
 msgstr ""
+"まだ適用されていない保留中の変更があります。再インポートをクリックすると、イ"
+"ンポートのオプションに加えた変更を適用します。\n"
+"再インポートをクリックせずにファイルシステム ドックから他のリソースを選択する"
+"と、インポートのドックで加えた変更は破棄されます。"
 
 #: editor/import_dock.cpp
 msgid "Import As:"
@@ -6570,14 +6573,14 @@ msgid "Create Multiple Convex Collision Siblings"
 msgstr "複数の凸型コリジョンの兄弟を作成"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "Creates a polygon-based collision shape.\n"
 "This is a performance middle-ground between a single convex collision and a "
 "polygon-based collision."
 msgstr ""
 "ポリゴンベースのコリジョンシェイプを作成します。\n"
-"これは、上記の2つのオプションの中間的なパフォーマンスです。"
+"これは、単一の凸型コリジョンとポリゴンベースのコリジョンの中間的なパフォーマ"
+"ンスです。"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Outline Mesh..."
@@ -6708,7 +6711,7 @@ msgstr "サーフェスを投入する"
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "Populate MultiMesh"
-msgstr "マルチメッシュを投入する"
+msgstr "MultiMeshを投入する"
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "Target Surface:"
@@ -7228,28 +7231,24 @@ msgid "Flip Portals"
 msgstr "ポータルを反転"
 
 #: editor/plugins/room_manager_editor_plugin.cpp
-#, fuzzy
 msgid "Room Generate Points"
-msgstr "生成したポイントの数:"
+msgstr "Roomのポイントを生成"
 
 #: editor/plugins/room_manager_editor_plugin.cpp
-#, fuzzy
 msgid "Generate Points"
-msgstr "生成したポイントの数:"
+msgstr "ポイントを生成"
 
 #: editor/plugins/room_manager_editor_plugin.cpp
 msgid "Flip Portal"
 msgstr "ポータルを反転"
 
 #: editor/plugins/room_manager_editor_plugin.cpp
-#, fuzzy
 msgid "Occluder Set Transform"
-msgstr "トランスフォームをクリア"
+msgstr "オクルーダーのトランスフォームをセット"
 
 #: editor/plugins/room_manager_editor_plugin.cpp
-#, fuzzy
 msgid "Center Node"
-msgstr "ノードを生成"
+msgstr "中央ノード"
 
 #: editor/plugins/root_motion_editor_plugin.cpp
 msgid "AnimationTree has no path set to an AnimationPlayer"
@@ -7386,14 +7385,12 @@ msgid "Move Down"
 msgstr "下に移動"
 
 #: editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Next Script"
 msgstr "次のスクリプト"
 
 #: editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Previous Script"
-msgstr "直前のスクリプト"
+msgstr "前のスクリプト"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "File"
@@ -7810,9 +7807,8 @@ msgid "Left Orthogonal"
 msgstr "左側面 平行投影"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Left Perspective"
-msgstr "透視投影"
+msgstr "左側面 透視投影"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Right Orthogonal"
@@ -8103,9 +8099,8 @@ msgstr ""
 "ゲーム内のパフォーマンスを確実に示すものとして使用することはできません。"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Convert Rooms"
-msgstr "%s に変換"
+msgstr "Roomを変換"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "XForm Dialog"
@@ -8143,7 +8138,7 @@ msgstr "スナップを使用"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Converts rooms for portal culling."
-msgstr ""
+msgstr "ポータルカリング用にRoomを変換します。"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Bottom View"
@@ -8171,24 +8166,23 @@ msgstr "右側面図"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Orbit View Down"
-msgstr ""
+msgstr "オービットビュー 下"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Orbit View Left"
-msgstr ""
+msgstr "オービットビュー 左"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Orbit View Right"
-msgstr ""
+msgstr "オービットビュー 右"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Orbit View Up"
-msgstr "前面図"
+msgstr "オービットビュー 上"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Orbit View 180"
-msgstr ""
+msgstr "オービットビュー 180"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Switch Perspective/Orthogonal View"
@@ -8673,9 +8667,8 @@ msgid "With Data"
 msgstr "データ付"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Select by data type:"
-msgstr "ノードを選択"
+msgstr "データのタイプから選択:"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Select all visible color items."
@@ -8747,11 +8740,11 @@ msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Collapse types."
-msgstr "タイプを折りたたむ"
+msgstr "タイプを折りたたむ。"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Expand types."
-msgstr "タイプを展開"
+msgstr "タイプを展開。"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Select all Theme items."
@@ -8774,9 +8767,8 @@ msgid "Deselect all Theme items."
 msgstr "すべてのテーマアイテムの選択を解除する。"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Import Selected"
-msgstr "シーンをインポート"
+msgstr "選択されたものをインポート"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid ""
@@ -8970,19 +8962,16 @@ msgstr ""
 "てのこのタイプのStyleBoxで同じプロパティが更新されます。"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Add Type"
-msgstr "タイプ(型)"
+msgstr "タイプを追加"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Add Item Type"
-msgstr "アイテムを追加"
+msgstr "アイテムのタイプを追加"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Node Types:"
-msgstr "ノードタイプ"
+msgstr "ノードのタイプ:"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Show Default"
@@ -9030,6 +9019,8 @@ msgid ""
 "Toggle the control picker, allowing to visually select control types for "
 "edit."
 msgstr ""
+"コントロールピッカーを切り替えて、コントロールタイプを視覚的に選択して編集で"
+"きるようにします。"
 
 #: editor/plugins/theme_editor_preview.cpp
 msgid "Toggle Button"
@@ -9064,9 +9055,8 @@ msgid "Checked Radio Item"
 msgstr "チェック済みラジオ アイテム"
 
 #: editor/plugins/theme_editor_preview.cpp
-#, fuzzy
 msgid "Named Separator"
-msgstr "名前付き分類。"
+msgstr "名前付きセパレーター"
 
 #: editor/plugins/theme_editor_preview.cpp
 msgid "Submenu"
@@ -11306,22 +11296,20 @@ msgid "Remove Translation"
 msgstr "翻訳を除去"
 
 #: editor/project_settings_editor.cpp
-#, fuzzy
 msgid "Translation Resource Remap: Add %d Path(s)"
-msgstr "リソース再マップが再マップを追加"
+msgstr "翻訳リソースの再マップ: %d個のパスを追加"
 
 #: editor/project_settings_editor.cpp
-#, fuzzy
 msgid "Translation Resource Remap: Add %d Remap(s)"
-msgstr "リソース再マップが再マップを追加"
+msgstr "翻訳リソースの再マップ: %d個の再マップを追加"
 
 #: editor/project_settings_editor.cpp
 msgid "Change Resource Remap Language"
-msgstr "リソースリマップ言語を変更"
+msgstr "リソースの再マップ言語を変更"
 
 #: editor/project_settings_editor.cpp
 msgid "Remove Resource Remap"
-msgstr "リソースのリマップを削除"
+msgstr "リソースの再マップを削除"
 
 #: editor/project_settings_editor.cpp
 msgid "Remove Resource Remap Option"
@@ -11389,7 +11377,7 @@ msgstr "翻訳:"
 
 #: editor/project_settings_editor.cpp
 msgid "Remaps"
-msgstr "リマップ"
+msgstr "再マップ"
 
 #: editor/project_settings_editor.cpp
 msgid "Resources:"
@@ -11397,7 +11385,7 @@ msgstr "リソース:"
 
 #: editor/project_settings_editor.cpp
 msgid "Remaps by Locale:"
-msgstr "ロケールに従いリマップ:"
+msgstr "ロケールに従い再マップ:"
 
 #: editor/project_settings_editor.cpp
 msgid "Locale"
@@ -12456,14 +12444,12 @@ msgid "Set Portal Point Position"
 msgstr "Portal ポイントの位置を設定"
 
 #: editor/spatial_editor_gizmos.cpp
-#, fuzzy
 msgid "Set Occluder Sphere Radius"
-msgstr "円柱シェイプの半径を変更"
+msgstr "オクルーダーの球形の半径をセット"
 
 #: editor/spatial_editor_gizmos.cpp
-#, fuzzy
 msgid "Set Occluder Sphere Position"
-msgstr "曲線のIn-Controlの位置を指定"
+msgstr "オクルーダーの球形の位置をセット"
 
 #: modules/csg/csg_gizmos.cpp
 msgid "Change Cylinder Radius"
@@ -12850,7 +12836,7 @@ msgstr ""
 
 #: modules/visual_script/visual_script.cpp
 msgid "Stack overflow with stack depth: "
-msgstr "スタックオーバーフロー スタックの深さ: "
+msgstr "スタックオーバーフロー発生 スタックの深さ: "
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Change Signal Arguments"
@@ -13089,9 +13075,8 @@ msgid "Select at least one node with sequence port."
 msgstr "シーケンス ポートを持つノードを少なくとも 1 つ選択します。"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Try to only have one sequence input in selection."
-msgstr "セクションでは唯一つのシーケンス入力を持つようにしてください。"
+msgstr "選択するシーケンス入力は1つだけにしてください。"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Create Function"
@@ -13187,7 +13172,7 @@ msgstr "イテレーターが無効になりました: "
 
 #: modules/visual_script/visual_script_func_nodes.cpp
 msgid "Invalid index property name."
-msgstr "インデックスプロパティ名が無効です。"
+msgstr "インデックスのプロパティ名が無効です。"
 
 #: modules/visual_script/visual_script_func_nodes.cpp
 msgid "Base object is not a Node!"
@@ -13473,7 +13458,7 @@ msgstr ""
 msgid ""
 "Unable to overwrite res://android/build/res/*.xml files with project name"
 msgstr ""
-"res://android/build/res/*.xml ファイルをプロジェクト名で上書きできません。"
+"res://android/build/res/*.xml ファイルをプロジェクト名で上書きできません"
 
 #: platform/android/export/export_plugin.cpp
 msgid "Could not export project files to gradle project\n"
@@ -13855,8 +13840,8 @@ msgid ""
 "A material to process the particles is not assigned, so no behavior is "
 "imprinted."
 msgstr ""
-"パーティクルを処理するマテリアルは割り当てられていないため、動作はインプリン"
-"トされません。"
+"パーティクルを処理するマテリアルが割り当てられていないため、動作を反映できま"
+"せんでした。"
 
 #: scene/2d/particles_2d.cpp
 msgid ""
@@ -13966,9 +13951,8 @@ msgid "Preparing environment"
 msgstr "環境を準備中"
 
 #: scene/3d/baked_lightmap.cpp
-#, fuzzy
 msgid "Generating capture"
-msgstr "ライトマップの生成"
+msgstr "キャプチャーを生成中"
 
 #: scene/3d/baked_lightmap.cpp
 msgid "Saving lightmaps"
@@ -14203,6 +14187,8 @@ msgid ""
 "Room convex hull contains a large number of planes.\n"
 "Consider simplifying the room bound in order to increase performance."
 msgstr ""
+"Roomの凸包に大量の平面が含まれています。\n"
+"パフォーマンスの向上のために、Roomの境界の単純化を検討してください。"
 
 #: scene/3d/room_group.cpp
 msgid "The RoomManager should not be placed inside a RoomGroup."
@@ -14449,6 +14435,10 @@ msgid ""
 "The GLES2 backend is currently in use, so these modes will act like Stretch "
 "instead."
 msgstr ""
+"Axis StretchプロパティのTileおよびTile Fitオプションは、GLES3レンダリングバッ"
+"クエンドを使用している場合にのみ有効です。\n"
+"現在GLES2バックエンドが使用されているため、これらのモードは代わりにStretchの"
+"ように振る舞います。"
 
 #: scene/gui/popup.cpp
 msgid ""
@@ -14493,6 +14483,10 @@ msgid ""
 "Consider using a script's process loop instead of relying on a Timer for "
 "very low wait times."
 msgstr ""
+"タイマーの待ち時間が非常に短い (0.05秒未満) の場合、描画または物理フレーム"
+"レートに応じて大幅に動作が異なる可能性があります。\n"
+"非常に短い待ち時間の場合、Timerを使用せずにスクリプトのprocessループを使用す"
+"ることを検討してください。"
 
 #: scene/main/viewport.cpp
 msgid ""
@@ -14507,15 +14501,15 @@ msgstr ""
 "当てます。"
 
 #: scene/main/viewport.cpp
-#, fuzzy
 msgid ""
 "The Viewport size must be greater than or equal to 2 pixels on both "
 "dimensions to render anything."
-msgstr "レンダーするにはビューポートのサイズが 0 より大きい必要があります。"
+msgstr ""
+"レンダーするにはViewportの縦横それぞれが2ピクセル以上である必要があります。"
 
 #: scene/resources/occluder_shape.cpp
 msgid "OccluderShapeSphere Set Spheres"
-msgstr ""
+msgstr "OccluderShapeSphereの球形をセット"
 
 #: scene/resources/visual_shader_nodes.cpp
 msgid ""
@@ -14559,7 +14553,7 @@ msgstr ""
 
 #: servers/visual/shader_language.cpp
 msgid "Fragment-stage varying could not been accessed in custom function!"
-msgstr ""
+msgstr "カスタム関数内でFragment-stageのVaryingにアクセスできませんでした！"
 
 #: servers/visual/shader_language.cpp
 msgid "Assignment to function."

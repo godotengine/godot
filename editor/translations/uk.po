@@ -22,7 +22,7 @@ msgstr ""
 "Project-Id-Version: Ukrainian (Godot Engine)\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-09-22 20:30+0000\n"
+"PO-Revision-Date: 2021-10-18 15:35+0000\n"
 "Last-Translator: Yuri Chornoivan <yurchor@ukr.net>\n"
 "Language-Team: Ukrainian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/uk/>\n"
@@ -2426,9 +2426,8 @@ msgstr ""
 "успадковані) не задоволені."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Could not save one or more scenes!"
-msgstr "Не вдалося запустити підпроцес!"
+msgstr "Не вдалося зберегти одну або декілька сцен!"
 
 #: editor/editor_node.cpp
 msgid "Save All Scenes"
@@ -2571,7 +2570,7 @@ msgstr "Зберегти зміни, внесені до '%s' перед зак�
 
 #: editor/editor_node.cpp
 msgid "%s no longer exists! Please specify a new save location."
-msgstr ""
+msgstr "%s вже не існує! Будь ласка, вкажіть нове місце для збереження."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -4421,6 +4420,11 @@ msgid ""
 "Selecting another resource in the FileSystem dock without clicking Reimport "
 "first will discard changes made in the Import dock."
 msgstr ""
+"Внесені вами зміни ще не застосовано. Натисніть кнопку «Імпортувати "
+"повторно», щоб застосувати зміни у параметрах імпортування.\n"
+"Вибір іншого ресурсу на бічній панелі файлової системи без натискання кнопки "
+"«Імпортувати повторно» призведе до відкидання змін, які було внесено на "
+"бічній панелі імпортування."
 
 #: editor/import_dock.cpp
 msgid "Import As:"
@@ -7400,12 +7404,10 @@ msgid "Move Down"
 msgstr "Перемістити вниз"
 
 #: editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Next Script"
 msgstr "Наступний скрипт"
 
 #: editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Previous Script"
 msgstr "Попередній скрипт"
 
@@ -7824,9 +7826,8 @@ msgid "Left Orthogonal"
 msgstr "Лівий ортогональний"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Left Perspective"
-msgstr "Перспектива"
+msgstr "Ліва перспектива"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Right Orthogonal"
@@ -8185,24 +8186,23 @@ msgstr "Вигляд справа"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Orbit View Down"
-msgstr ""
+msgstr "Орбітальний вид вниз"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Orbit View Left"
-msgstr ""
+msgstr "Орбітальний вид ліворуч"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Orbit View Right"
-msgstr ""
+msgstr "Орбітальний вид праворуч"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Orbit View Up"
-msgstr "Вигляд спереду"
+msgstr "Орбітальний вид згори"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Orbit View 180"
-msgstr ""
+msgstr "Орбітальний вид 180"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Switch Perspective/Orthogonal View"
@@ -14554,6 +14554,11 @@ msgid ""
 "Consider using a script's process loop instead of relying on a Timer for "
 "very low wait times."
 msgstr ""
+"Дуже малі проміжки часу очікування за таймером (< 0.05 секунд) можуть "
+"призводити до суттєво різних результатів для різних оброблених або фізичних "
+"частот кадрів.\n"
+"Вам варто скористатися циклом процесу скрипту замість Timer для дуже малих "
+"проміжків очікування."
 
 #: scene/main/viewport.cpp
 msgid ""
@@ -14568,13 +14573,12 @@ msgstr ""
 "пов'язати її внутрішню текстуру з одним із вузлів для показу."
 
 #: scene/main/viewport.cpp
-#, fuzzy
 msgid ""
 "The Viewport size must be greater than or equal to 2 pixels on both "
 "dimensions to render anything."
 msgstr ""
 "Щоб програма могла хоч щось показати, розмір поля перегляду має бути більшим "
-"за 0."
+"або рівним 2 пікселям в обох вимірах."
 
 #: scene/resources/occluder_shape.cpp
 msgid "OccluderShapeSphere Set Spheres"

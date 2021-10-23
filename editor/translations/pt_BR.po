@@ -124,13 +124,14 @@
 # William Weber Berrutti <wwberrutti@protonmail.ch>, 2021.
 # Zenvasca <zenvasca@gmail.com>, 2021.
 # Wladimir Roberto Barbosa <wladrbarbosa@gmail.com>, 2021.
+# Mário Victor Ribeiro Silva <mariovictorrs@gmail.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: 2016-05-30\n"
-"PO-Revision-Date: 2021-10-09 16:52+0000\n"
-"Last-Translator: Wladimir Roberto Barbosa <wladrbarbosa@gmail.com>\n"
+"PO-Revision-Date: 2021-10-21 10:31+0000\n"
+"Last-Translator: Mário Victor Ribeiro Silva <mariovictorrs@gmail.com>\n"
 "Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/pt_BR/>\n"
 "Language: pt_BR\n"
@@ -2521,9 +2522,8 @@ msgstr ""
 "herança) não foram satisfeitas."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Could not save one or more scenes!"
-msgstr "Não se pôde salvar textura convertida:"
+msgstr "Não foi possível salvar um ou mais cenas!"
 
 #: editor/editor_node.cpp
 msgid "Save All Scenes"
@@ -2665,7 +2665,7 @@ msgstr "Salvar alterações em '%s' antes de fechar?"
 
 #: editor/editor_node.cpp
 msgid "%s no longer exists! Please specify a new save location."
-msgstr ""
+msgstr "%s não existe! Por favor especifique um novo local para salvar."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2720,9 +2720,8 @@ msgid "Nothing to undo."
 msgstr "Nada para desfazer."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Undo: %s"
-msgstr "Desfazer"
+msgstr "Desfazer: %s"
 
 #: editor/editor_node.cpp
 msgid "Can't redo while mouse buttons are pressed."
@@ -2733,9 +2732,8 @@ msgid "Nothing to redo."
 msgstr "Nada para refazer."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Redo: %s"
-msgstr "Refazer"
+msgstr "Refazer: %s"
 
 #: editor/editor_node.cpp
 msgid "Can't reload a scene that was never saved."
@@ -3374,9 +3372,8 @@ msgid "Install from file"
 msgstr "Instalar do arquivo"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Select android sources file"
-msgstr "Selecione o arquivo de fontes do Android"
+msgstr "Selecione os arquivos fontes do Android"
 
 #: editor/editor_node.cpp
 msgid ""
@@ -3463,7 +3460,6 @@ msgid "Select"
 msgstr "Selecionar"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Select Current"
 msgstr "Selecione Atual"
 
@@ -3791,9 +3787,8 @@ msgid "Uninstall these templates."
 msgstr "Desinstalar esses modelos."
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "There are no mirrors available."
-msgstr "Não existe o arquivo '%s'."
+msgstr "Não há espelhos disponíveis."
 
 #: editor/export_template_manager.cpp
 #, fuzzy
@@ -3809,23 +3804,20 @@ msgid "Error requesting URL:"
 msgstr "Erro ao solicitar URL:"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Connecting to the mirror..."
-msgstr "Conectando..."
+msgstr "Conectando ao espelho..."
 
 #: editor/export_template_manager.cpp
 msgid "Can't resolve the requested address."
 msgstr "Não é possível resolver o endereço solicitado."
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Can't connect to the mirror."
-msgstr "Não foi possível conectar ao host:"
+msgstr "Não foi possível conectar ao espelho."
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "No response from the mirror."
-msgstr "Sem resposta do host:"
+msgstr "Sem resposta do espelho."
 
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
@@ -3978,9 +3970,8 @@ msgstr ""
 "As exportações de modelos estão instaladas e prontas para serem usadas."
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Open Folder"
-msgstr "Abrir um arquivo"
+msgstr "Abrir Pasta"
 
 #: editor/export_template_manager.cpp
 msgid "Open the folder containing installed templates for the current version."
@@ -3996,14 +3987,12 @@ msgid "Uninstall templates for the current version."
 msgstr "Valor inicial para o contador"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Download from:"
-msgstr "Erro ao baixar"
+msgstr "Baixar de:"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Open in Web Browser"
-msgstr "Rodar no Navegador"
+msgstr "Abrir no Navegador"
 
 #: editor/export_template_manager.cpp
 #, fuzzy
@@ -4029,7 +4018,6 @@ msgstr ""
 "desenvolvimento."
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Install from File"
 msgstr "Instalar a Partir do Arquivo"
 
@@ -4049,14 +4037,12 @@ msgid "Cancel the download of the templates."
 msgstr "Não se pôde abrir zip dos modelos de exportação."
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Other Installed Versions:"
-msgstr "Versões Instaladas:"
+msgstr "Outras Versões Instaladas:"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Uninstall Template"
-msgstr "Desinstalar"
+msgstr "Desinstalar Template"
 
 #: editor/export_template_manager.cpp
 msgid "Select Template File"
@@ -4576,14 +4562,12 @@ msgid "Failed to load resource."
 msgstr "Falha ao carregar recurso."
 
 #: editor/inspector_dock.cpp
-#, fuzzy
 msgid "Copy Properties"
-msgstr "Propriedades"
+msgstr "Copiar Propriedades"
 
 #: editor/inspector_dock.cpp
-#, fuzzy
 msgid "Paste Properties"
-msgstr "Propriedades"
+msgstr "Colar Propriedades"
 
 #: editor/inspector_dock.cpp
 msgid "Make Sub-Resources Unique"
@@ -4639,9 +4623,8 @@ msgid "History of recently edited objects."
 msgstr "Histórico dos objetos editados recentemente."
 
 #: editor/inspector_dock.cpp
-#, fuzzy
 msgid "Open documentation for this object."
-msgstr "Abrir Documentação"
+msgstr "Abrir documentação para esse objeto."
 
 #: editor/inspector_dock.cpp editor/scene_tree_dock.cpp
 msgid "Open Documentation"
@@ -4899,9 +4882,8 @@ msgid "Blend:"
 msgstr "Misturar:"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
-#, fuzzy
 msgid "Parameter Changed:"
-msgstr "Parâmetro Modificado"
+msgstr "Parâmetro Modificado:"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
@@ -6043,9 +6025,8 @@ msgid "Drag: Rotate selected node around pivot."
 msgstr "Remover nó ou trilha selecionada."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Alt+Drag: Move selected node."
-msgstr "Alt+Arrastar: Mover"
+msgstr "Alt+Arrastar: Mover nó selecionado."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #, fuzzy
@@ -6299,14 +6280,12 @@ msgid "Clear Pose"
 msgstr "Limpar Pose"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Add Node Here"
-msgstr "Adicionar Nó"
+msgstr "Adicionar Nó Aqui"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Instance Scene Here"
-msgstr "Instanciar Cena(s)"
+msgstr "Instanciar Cena Aqui"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Multiply grid step by 2"
@@ -6333,34 +6312,28 @@ msgid "Zoom to 12.5%"
 msgstr "Zoom para 12.5%"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Zoom to 25%"
-msgstr "Reduzir"
+msgstr "Zoom de 25%"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Zoom to 50%"
-msgstr "Reduzir"
+msgstr "Zoom de 50%"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Zoom to 100%"
-msgstr "Reduzir"
+msgstr "Zoom de 100%"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Zoom to 200%"
-msgstr "Reduzir"
+msgstr "Zoom de 200%"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Zoom to 400%"
-msgstr "Reduzir"
+msgstr "Zoom de 400%"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Zoom to 800%"
-msgstr "Reduzir"
+msgstr "Zoom de 800%"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Zoom to 1600%"
@@ -7417,9 +7390,8 @@ msgid "Occluder Set Transform"
 msgstr "Limpar Transformação"
 
 #: editor/plugins/room_manager_editor_plugin.cpp
-#, fuzzy
 msgid "Center Node"
-msgstr "Criar Nó"
+msgstr "Centralizar Nó"
 
 #: editor/plugins/root_motion_editor_plugin.cpp
 msgid "AnimationTree has no path set to an AnimationPlayer"
@@ -7555,12 +7527,10 @@ msgid "Move Down"
 msgstr "Mover para Baixo"
 
 #: editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Next Script"
 msgstr "Próximo Script"
 
 #: editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Previous Script"
 msgstr "Script anterior"
 
@@ -8054,15 +8024,13 @@ msgid "None"
 msgstr "Nenhum"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Rotate"
-msgstr "Status:"
+msgstr "Rotacionar"
 
 #. TRANSLATORS: This refers to the movement that changes the position of an object.
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Translate"
-msgstr "Translação:"
+msgstr "Translação"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Scale"
@@ -8102,38 +8070,32 @@ msgid "Size:"
 msgstr "Tamanho:"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Objects Drawn:"
-msgstr "Objetos Desenhados"
+msgstr "Objetos Desenhados:"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Material Changes:"
-msgstr "Alterações de Material"
+msgstr "Alterações de Material:"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Shader Changes:"
-msgstr "Alterações de Shader"
+msgstr "Alterações de Shader:"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Surface Changes:"
-msgstr "Alterações de Superfície"
+msgstr "Alterações de Superfície:"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Draw Calls:"
-msgstr "Chamadas de Desenho"
+msgstr "Chamadas de Desenho:"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Vertices:"
-msgstr "Vértices"
+msgstr "Vértices:"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "FPS: %d (%s ms)"
-msgstr ""
+msgstr "FPS: %d (%s ms)"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Top View."
@@ -13273,9 +13235,8 @@ msgid "Add Preload Node"
 msgstr "Adicionar Nó de Pré-carregamento"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Add Node(s)"
-msgstr "Adicionar Nó"
+msgstr "Adicionar Nó(s)"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Node(s) From Tree"
@@ -13542,17 +13503,15 @@ msgstr "Selecione um dispositivo da lista"
 
 #: platform/android/export/export_plugin.cpp
 msgid "Running on %s"
-msgstr ""
+msgstr "Executando em %s"
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "Exporting APK..."
-msgstr "Exportando tudo"
+msgstr "Exportando APK..."
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "Uninstalling..."
-msgstr "Desinstalar"
+msgstr "Desinstalando..."
 
 #: platform/android/export/export_plugin.cpp
 #, fuzzy
@@ -13565,14 +13524,12 @@ msgid "Could not install to device: %s"
 msgstr "Não foi possível instanciar cena!"
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "Running on device..."
-msgstr "Rodando Script Personalizado..."
+msgstr "Executando no dispositivo..."
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "Could not execute on device."
-msgstr "Não foi possível criar a pasta."
+msgstr "Não foi possível executar no dispositivo."
 
 #: platform/android/export/export_plugin.cpp
 msgid "Unable to find the 'apksigner' tool."
@@ -13707,9 +13664,8 @@ msgid "'apksigner' returned with error #%d"
 msgstr ""
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "Verifying %s..."
-msgstr "Adicionando %s..."
+msgstr "Verificando %s..."
 
 #: platform/android/export/export_plugin.cpp
 msgid "'apksigner' verification of %s failed."
@@ -13797,9 +13753,8 @@ msgstr ""
 "diretório do projeto gradle por saídas."
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "Package not found: %s"
-msgstr "Animação não encontrada: '%s'"
+msgstr "Pacote não encontrado: '%s'"
 
 #: platform/android/export/export_plugin.cpp
 #, fuzzy
@@ -13823,9 +13778,8 @@ msgid ""
 msgstr ""
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "Adding files..."
-msgstr "Adicionando %s..."
+msgstr "Adicionando arquivos..."
 
 #: platform/android/export/export_plugin.cpp
 #, fuzzy
