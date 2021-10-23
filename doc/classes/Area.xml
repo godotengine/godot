@@ -14,13 +14,15 @@
 		<method name="get_overlapping_areas" qualifiers="const">
 			<return type="Array" />
 			<description>
-				Returns a list of intersecting [Area]s. For performance reasons (collisions are all processed at the same time) this list is modified once during the physics step, not immediately after objects are moved. Consider using signals instead.
+				Returns a list of intersecting [Area]s. The overlapping area's [member CollisionObject.collision_layer] must be part of this area's [member CollisionObject.collision_mask] in order to be detected.
+				For performance reasons (collisions are all processed at the same time) this list is modified once during the physics step, not immediately after objects are moved. Consider using signals instead.
 			</description>
 		</method>
 		<method name="get_overlapping_bodies" qualifiers="const">
 			<return type="Array" />
 			<description>
-				Returns a list of intersecting [PhysicsBody]s. For performance reasons (collisions are all processed at the same time) this list is modified once during the physics step, not immediately after objects are moved. Consider using signals instead.
+				Returns a list of intersecting [PhysicsBody]s. The overlapping body's [member CollisionObject.collision_layer] must be part of this area's [member CollisionObject.collision_mask] in order to be detected.
+				For performance reasons (collisions are all processed at the same time) this list is modified once during the physics step, not immediately after objects are moved. Consider using signals instead.
 			</description>
 		</method>
 		<method name="overlaps_area" qualifiers="const">
