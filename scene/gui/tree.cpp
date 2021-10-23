@@ -3570,7 +3570,9 @@ int Tree::_get_title_button_height() const {
 
 void Tree::_notification(int p_what) {
 	if (p_what == NOTIFICATION_FOCUS_ENTER) {
-		focus_in_id = get_viewport()->get_processed_events_count();
+		if (get_viewport()) {
+			focus_in_id = get_viewport()->get_processed_events_count();
+		}
 	}
 	if (p_what == NOTIFICATION_MOUSE_EXIT) {
 		if (cache.hover_type != Cache::CLICK_NONE) {
