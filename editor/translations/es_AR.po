@@ -24,7 +24,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-10-10 10:18+0000\n"
+"PO-Revision-Date: 2021-10-23 10:13+0000\n"
 "Last-Translator: Lisandro Lorea <lisandrolorea@gmail.com>\n"
 "Language-Team: Spanish (Argentina) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/es_AR/>\n"
@@ -2427,9 +2427,8 @@ msgstr ""
 "dependencias (instancias o herencia)."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Could not save one or more scenes!"
-msgstr "No se pudo guardar la textura convertida:"
+msgstr "¡No se ha podido guardar una o varias escenas!"
 
 #: editor/editor_node.cpp
 msgid "Save All Scenes"
@@ -2575,6 +2574,7 @@ msgstr "Guardar cambios a '%s' antes de cerrar?"
 #: editor/editor_node.cpp
 msgid "%s no longer exists! Please specify a new save location."
 msgstr ""
+"¡%s ya no existe! Por favor, especificá una nueva ubicación de guardado."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -3881,7 +3881,7 @@ msgstr "Abrir Carpeta"
 #: editor/export_template_manager.cpp
 msgid "Open the folder containing installed templates for the current version."
 msgstr ""
-"Abra la carpeta que contiene las plantillas instaladas para la versión "
+"Abrir la carpeta que contiene las plantillas instaladas para la versión "
 "actual."
 
 #: editor/export_template_manager.cpp
@@ -4433,6 +4433,11 @@ msgid ""
 "Selecting another resource in the FileSystem dock without clicking Reimport "
 "first will discard changes made in the Import dock."
 msgstr ""
+"Tenés cambios pendientes que aún no se han aplicado. Hacé clic en Reimportar "
+"para aplicar los cambios realizados en las opciones de importación.\n"
+"Si seleccionás otro recurso en el dock Sistema de Archivos sin hacer clic en "
+"Reimportar primero, se descartarán los cambios realizados en el dock "
+"Importar."
 
 #: editor/import_dock.cpp
 msgid "Import As:"
@@ -5924,7 +5929,7 @@ msgstr "Arrastrar: Rotar el nodo seleccionado alrededor del pivote."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Alt+Drag: Move selected node."
-msgstr "Alt+Arrastrar: Mover el nodo seleccionado"
+msgstr "Alt+Arrastrar: Mover el nodo seleccionado."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "V: Set selected node's pivot position."
@@ -7268,16 +7273,15 @@ msgstr "Generar Puntos en la Room"
 
 #: editor/plugins/room_manager_editor_plugin.cpp
 msgid "Generate Points"
-msgstr "Conteo de Puntos Generados:"
+msgstr "Generar puntos"
 
 #: editor/plugins/room_manager_editor_plugin.cpp
 msgid "Flip Portal"
 msgstr "Invertir Portal"
 
 #: editor/plugins/room_manager_editor_plugin.cpp
-#, fuzzy
 msgid "Occluder Set Transform"
-msgstr "Reestablecer Transform"
+msgstr "Transform de Occluder Set"
 
 #: editor/plugins/room_manager_editor_plugin.cpp
 msgid "Center Node"
@@ -7417,14 +7421,12 @@ msgid "Move Down"
 msgstr "Bajar"
 
 #: editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Next Script"
-msgstr "Script siguiente"
+msgstr "Script Siguiente"
 
 #: editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Previous Script"
-msgstr "Script anterior"
+msgstr "Script Anterior"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "File"
@@ -7840,9 +7842,8 @@ msgid "Left Orthogonal"
 msgstr "Ortogonal Izquierda"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Left Perspective"
-msgstr "Perspectiva"
+msgstr "Perspectiva Izquierda"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Right Orthogonal"
@@ -8201,24 +8202,23 @@ msgstr "Vista Derecha"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Orbit View Down"
-msgstr ""
+msgstr "Orbitar Vista Hacia Abajo"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Orbit View Left"
-msgstr ""
+msgstr "Orbitar Vista Hacia La Izquierda"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Orbit View Right"
-msgstr ""
+msgstr "Orbitar Vista Hacia La Derecha"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Orbit View Up"
-msgstr "Vista Frontal"
+msgstr "Orbitar Vista Hacia Arriba"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Orbit View 180"
-msgstr ""
+msgstr "Orbitar Vista 180"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Switch Perspective/Orthogonal View"
@@ -8716,7 +8716,7 @@ msgstr "Seleccione todos los elementos visibles de color y sus datos."
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Deselect all visible color items."
-msgstr "Quitar selección a todos los elementos visibles de color."
+msgstr "Quitar selección a todos los items de color visibles."
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Select all visible constant items."
@@ -8724,11 +8724,11 @@ msgstr "Seleccionar todos elementos constant visibles."
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Select all visible constant items and their data."
-msgstr "Seleccionar todos los elementos constant visibles y sus datos."
+msgstr "Seleccionar todos los items visibles constantes y sus datos."
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Deselect all visible constant items."
-msgstr "Deseleccionar todos los elementos constant visibles."
+msgstr "Quitar selección a todos los items visibles constantes."
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Select all visible font items."
@@ -8736,7 +8736,7 @@ msgstr "Seleccionar todos los elementos font visibles."
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Select all visible font items and their data."
-msgstr "Seleccionar todos los elementos font visibles y sus datos."
+msgstr "Seleccionar todos los items visibles y sus datos."
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Deselect all visible font items."
@@ -11820,6 +11820,11 @@ msgid ""
 "FileSystem dock context menu\n"
 "or create an inherited scene using Scene > New Inherited Scene... instead."
 msgstr ""
+"No se puede guardar la rama del nodo raíz como una escena instanciada.\n"
+"Para crear una copia editable de la escena actual, duplicala usando el menú "
+"contextual del dock Sistema de Archivos\n"
+"o crea una escena heredada usando Escena > Nueva Escena Heredada... en su "
+"lugar."
 
 #: editor/scene_tree_dock.cpp
 msgid ""
@@ -11827,6 +11832,10 @@ msgid ""
 "To create a variation of a scene, you can make an inherited scene based on "
 "the instanced scene using Scene > New Inherited Scene... instead."
 msgstr ""
+"No se puede guardar la rama de una escena ya instanciada.\n"
+"Para crear una variación de una escena, puedes hacer una escena heredada "
+"basada en la escena instanciada usando Escena > Nueva Escena Heredada... en "
+"su lugar."
 
 #: editor/scene_tree_dock.cpp
 msgid "Save New Scene As..."
@@ -12488,24 +12497,20 @@ msgid "Change Ray Shape Length"
 msgstr "Cambiar Largo de Shape Rayo"
 
 #: editor/spatial_editor_gizmos.cpp
-#, fuzzy
 msgid "Set Room Point Position"
-msgstr "Setear Posición de Punto de Curva"
+msgstr "Establecer Posición del Room Point"
 
 #: editor/spatial_editor_gizmos.cpp
-#, fuzzy
 msgid "Set Portal Point Position"
-msgstr "Setear Posición de Punto de Curva"
+msgstr "Establecer Posición del Portal Point"
 
 #: editor/spatial_editor_gizmos.cpp
-#, fuzzy
 msgid "Set Occluder Sphere Radius"
-msgstr "Cambiar Radio de Shape Cilindro"
+msgstr "Establecer Radio de la Esfera de Oclusión"
 
 #: editor/spatial_editor_gizmos.cpp
-#, fuzzy
 msgid "Set Occluder Sphere Position"
-msgstr "Setear Posición de Entrada de Curva"
+msgstr "Establecer Posición de la Esfera de Oclusión"
 
 #: modules/csg/csg_gizmos.cpp
 msgid "Change Cylinder Radius"
@@ -12619,14 +12624,12 @@ msgid "Object can't provide a length."
 msgstr "El objeto no puede proveer un largo."
 
 #: modules/gltf/editor_scene_exporter_gltf_plugin.cpp
-#, fuzzy
 msgid "Export Mesh GLTF2"
-msgstr "Exportar Librería de Meshes"
+msgstr "Exportar Malla GLTF2"
 
 #: modules/gltf/editor_scene_exporter_gltf_plugin.cpp
-#, fuzzy
 msgid "Export GLTF..."
-msgstr "Exportar..."
+msgstr "Exportar GLTF..."
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Next Plane"
@@ -12669,9 +12672,8 @@ msgid "GridMap Paint"
 msgstr "Pintar GridMap"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
-#, fuzzy
 msgid "GridMap Selection"
-msgstr "Llenar Selección en GridMap"
+msgstr "Selección de GridMap"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Grid Map"
@@ -12794,9 +12796,8 @@ msgid "Class name can't be a reserved keyword"
 msgstr "El nombre de la clase no puede ser una palabra reservada"
 
 #: modules/mono/csharp_script.cpp
-#, fuzzy
 msgid "Build Solution"
-msgstr "Llenar la Selección"
+msgstr "Construir Solución"
 
 #: modules/mono/mono_gd/gd_mono_utils.cpp
 msgid "End of inner exception stack trace"
@@ -12928,14 +12929,12 @@ msgid "Add Output Port"
 msgstr "Agregar Puerto de Salida"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Change Port Type"
-msgstr "Cambiar Tipo"
+msgstr "Cambiar Tipo de Puerto"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Change Port Name"
-msgstr "Cambiar nombre del puerto de entrada"
+msgstr "Cambiar Nombre de Puerto"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Override an existing built-in function."
@@ -13050,9 +13049,8 @@ msgid "Add Preload Node"
 msgstr "Agregar Nodo Preload"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Add Node(s)"
-msgstr "Agregar Nodo"
+msgstr "Agregar Nodo(s)"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Node(s) From Tree"
@@ -13319,37 +13317,31 @@ msgstr "Seleccionar dispositivo de la lista"
 
 #: platform/android/export/export_plugin.cpp
 msgid "Running on %s"
-msgstr ""
+msgstr "Ejecutando en %s"
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "Exporting APK..."
-msgstr "Exportar Todo"
+msgstr "Exportar APK..."
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "Uninstalling..."
-msgstr "Desinstalar"
+msgstr "Desinstalando..."
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "Installing to device, please wait..."
-msgstr "Cargando, esperá, por favor..."
+msgstr "Instalando en el dispositivo, espera por favor..."
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "Could not install to device: %s"
-msgstr "No se pudo instanciar la escena!"
+msgstr "No se pudo instalar en el dispositivo: %s"
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "Running on device..."
-msgstr "Ejecutando Script Personalizado..."
+msgstr "Ejecutando en el dispositivo..."
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "Could not execute on device."
-msgstr "No se pudo crear la carpeta."
+msgstr "No se ha podido ejecutar en el dispositivo."
 
 #: platform/android/export/export_plugin.cpp
 msgid "Unable to find the 'apksigner' tool."
@@ -13460,40 +13452,38 @@ msgid ""
 "directory.\n"
 "The resulting %s is unsigned."
 msgstr ""
+"No se ha encontrado 'apksigner'.\n"
+"Por favor, comprobá que el comando esté disponible en el directorio Android "
+"SDK build-tools.\n"
+"El %s resultante está sin firmar."
 
 #: platform/android/export/export_plugin.cpp
 msgid "Signing debug %s..."
-msgstr ""
+msgstr "Firmando %s debug..."
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "Signing release %s..."
-msgstr ""
-"Examinando Archivos,\n"
-"Aguardá, por favor."
+msgstr "Firmando %s release..."
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "Could not find keystore, unable to export."
-msgstr "No se pudo abrir la plantilla para exportar:"
+msgstr "No se pudo encontrar la keystore, no se puedo exportar."
 
 #: platform/android/export/export_plugin.cpp
 msgid "'apksigner' returned with error #%d"
-msgstr ""
+msgstr "'apksigner' ha retornado con error #%d"
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "Verifying %s..."
-msgstr "Agregando %s..."
+msgstr "Verificando %s..."
 
 #: platform/android/export/export_plugin.cpp
 msgid "'apksigner' verification of %s failed."
-msgstr ""
+msgstr "La verificación de 'apksigner' de %s ha fallado."
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "Exporting for Android"
-msgstr "Exportar Todo"
+msgstr "Exportando para Android"
 
 #: platform/android/export/export_plugin.cpp
 msgid "Invalid filename! Android App Bundle requires the *.aab extension."
@@ -13510,7 +13500,7 @@ msgstr "¡Nombre de archivo inválido! Android APK requiere la extensión *.apk.
 
 #: platform/android/export/export_plugin.cpp
 msgid "Unsupported export format!\n"
-msgstr ""
+msgstr "¡Formato de exportación no soportado!\n"
 
 #: platform/android/export/export_plugin.cpp
 msgid ""
@@ -13538,16 +13528,17 @@ msgstr ""
 msgid ""
 "Unable to overwrite res://android/build/res/*.xml files with project name"
 msgstr ""
+"No se pudieron sobrescribir los archivos res://android/build/res/*.xml con "
+"el nombre del proyecto"
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "Could not export project files to gradle project\n"
-msgstr "No se pudo obtener project.godot en la ruta de proyecto."
+msgstr ""
+"No se pudieron exportar los archivos del proyecto a un proyecto gradle\n"
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "Could not write expansion package file!"
-msgstr "No se pudo escribir el archivo:"
+msgstr "¡No se pudo escribir el archivo del paquete de expansión!"
 
 #: platform/android/export/export_plugin.cpp
 msgid "Building Android Project (gradle)"
@@ -13575,21 +13566,20 @@ msgstr ""
 "directorio del proyecto de gradle para ver los resultados."
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "Package not found: %s"
-msgstr "No se encontró la animación: '%s'"
+msgstr "Paquete no encontrado:% s"
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "Creating APK..."
-msgstr "Creando contornos..."
+msgstr "Creando APK..."
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid ""
 "Could not find template APK to export:\n"
 "%s"
-msgstr "No se pudo abrir la plantilla para exportar:"
+msgstr ""
+"No se pudo encontrar la plantilla APK para exportar:\n"
+"%s"
 
 #: platform/android/export/export_plugin.cpp
 msgid ""
@@ -13598,24 +13588,26 @@ msgid ""
 "Please build a template with all required libraries, or uncheck the missing "
 "architectures in the export preset."
 msgstr ""
+"Bibliotecas faltantes en la plantilla de exportación para las arquitecturas "
+"seleccionadas: %s.\n"
+"Por favor, construya una plantilla con todas las bibliotecas necesarias, o "
+"desmarque las arquitecturas faltantes en el preset de exportación."
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "Adding files..."
-msgstr "Agregando %s..."
+msgstr "Agregando archivos..."
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "Could not export project files"
-msgstr "No se pudo escribir el archivo:"
+msgstr "No se pudieron exportar los archivos del proyecto"
 
 #: platform/android/export/export_plugin.cpp
 msgid "Aligning APK..."
-msgstr ""
+msgstr "Alineando APK..."
 
 #: platform/android/export/export_plugin.cpp
 msgid "Could not unzip temporary unaligned APK."
-msgstr ""
+msgstr "No se pudo descomprimir el APK temporal no alineado."
 
 #: platform/iphone/export/export.cpp platform/osx/export/export.cpp
 msgid "Identifier is missing."
@@ -13663,45 +13655,40 @@ msgid "Could not write file:"
 msgstr "No se pudo escribir el archivo:"
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Could not read file:"
-msgstr "No se pudo escribir el archivo:"
+msgstr "No se pudo leer el archivo:"
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Could not read HTML shell:"
-msgstr "No se pudo leer el shell HTML personalizado:"
+msgstr "No se pudo leer el shell HTML:"
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Could not create HTTP server directory:"
-msgstr "No se pudo crear la carpeta."
+msgstr "No se pudo crear el directorio del servidor HTTP:"
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Error starting HTTP server:"
-msgstr "Error al guardar escena."
+msgstr "Error al iniciar el servidor HTTP:"
 
 #: platform/osx/export/export.cpp
-#, fuzzy
 msgid "Invalid bundle identifier:"
-msgstr "Identificador inválido:"
+msgstr "Identificador de paquete no válido:"
 
 #: platform/osx/export/export.cpp
 msgid "Notarization: code signing required."
-msgstr ""
+msgstr "Notarización: se requiere firma de código."
 
 #: platform/osx/export/export.cpp
 msgid "Notarization: hardened runtime required."
-msgstr ""
+msgstr "Notarización: se requiere hardened runtime."
 
 #: platform/osx/export/export.cpp
 msgid "Notarization: Apple ID name not specified."
-msgstr ""
+msgstr "Notarización: nombre de ID de Apple no especificado."
 
 #: platform/osx/export/export.cpp
 msgid "Notarization: Apple ID password not specified."
-msgstr ""
+msgstr "Notarización: contraseña de ID de Apple no especificada."
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid package short name."
@@ -14146,6 +14133,9 @@ msgid ""
 "longer has any effect.\n"
 "To remove this warning, disable the GIProbe's Compress property."
 msgstr ""
+"La propiedad Compress de GIProbe ha quedado obsoleta debido a errores "
+"conocidos y ya no tiene ningún efecto.\n"
+"Para eliminar esta advertencia, desactiva la propiedad Compress de GIProbe."
 
 #: scene/3d/light.cpp
 msgid "A SpotLight with an angle wider than 90 degrees cannot cast shadows."
@@ -14168,11 +14158,11 @@ msgstr ""
 
 #: scene/3d/occluder.cpp
 msgid "No shape is set."
-msgstr ""
+msgstr "No se ha establecido ninguna forma."
 
 #: scene/3d/occluder.cpp
 msgid "Only uniform scales are supported."
-msgstr ""
+msgstr "Sólo se admiten escalas uniformes."
 
 #: scene/3d/particles.cpp
 msgid ""
@@ -14243,15 +14233,15 @@ msgstr "El nodo A y el nodo B deben ser diferentes PhysicsBody"
 
 #: scene/3d/portal.cpp
 msgid "The RoomManager should not be a child or grandchild of a Portal."
-msgstr ""
+msgstr "El RoomManager no debe ser hijo o nieto de un Portal."
 
 #: scene/3d/portal.cpp
 msgid "A Room should not be a child or grandchild of a Portal."
-msgstr ""
+msgstr "Una Room no debe ser hijo o nieto de un Portal."
 
 #: scene/3d/portal.cpp
 msgid "A RoomGroup should not be a child or grandchild of a Portal."
-msgstr ""
+msgstr "Un RoomGroup no debe ser hijo o nieto de un Portal."
 
 #: scene/3d/remote_transform.cpp
 msgid ""
@@ -14263,79 +14253,98 @@ msgstr ""
 
 #: scene/3d/room.cpp
 msgid "A Room cannot have another Room as a child or grandchild."
-msgstr ""
+msgstr "Una Room no puede tener otra Room como hija o nieta."
 
 #: scene/3d/room.cpp
 msgid "The RoomManager should not be placed inside a Room."
-msgstr ""
+msgstr "El RoomManager no debe ubicarse dentro de una Room."
 
 #: scene/3d/room.cpp
 msgid "A RoomGroup should not be placed inside a Room."
-msgstr ""
+msgstr "Un RoomGroup no debe colocarse dentro de una Room."
 
 #: scene/3d/room.cpp
 msgid ""
 "Room convex hull contains a large number of planes.\n"
 "Consider simplifying the room bound in order to increase performance."
 msgstr ""
+"El cuerpo convexo de la room contiene un gran número de planos.\n"
+"Considera la posibilidad de simplificar los límites de la room para aumentar "
+"el rendimiento."
 
 #: scene/3d/room_group.cpp
 msgid "The RoomManager should not be placed inside a RoomGroup."
-msgstr ""
+msgstr "El RoomManager no debe colocarse dentro de un RoomGroup."
 
 #: scene/3d/room_manager.cpp
 msgid "The RoomList has not been assigned."
-msgstr ""
+msgstr "La RoomList no ha sido asignada."
 
 #: scene/3d/room_manager.cpp
 msgid "The RoomList node should be a Spatial (or derived from Spatial)."
-msgstr ""
+msgstr "El nodo RoomList debe ser un Spatial (o derivado de Spatial)."
 
 #: scene/3d/room_manager.cpp
 msgid ""
 "Portal Depth Limit is set to Zero.\n"
 "Only the Room that the Camera is in will render."
 msgstr ""
+"El Límite de Profundidad del Portal está ajustado a cero.\n"
+"Sólo se renderizará la room en la que se encuentra la cámara."
 
 #: scene/3d/room_manager.cpp
 msgid "There should only be one RoomManager in the SceneTree."
-msgstr ""
+msgstr "Sólo debe haber un RoomManager en el SceneTree."
 
 #: scene/3d/room_manager.cpp
 msgid ""
 "RoomList path is invalid.\n"
 "Please check the RoomList branch has been assigned in the RoomManager."
 msgstr ""
+"La ruta del RoomList no es válida.\n"
+"Por favor, comprueba que la rama de la RoomList ha sido asignada al "
+"RoomManager."
 
 #: scene/3d/room_manager.cpp
 msgid "RoomList contains no Rooms, aborting."
-msgstr ""
+msgstr "La RoomList no contiene Rooms, abortando."
 
 #: scene/3d/room_manager.cpp
 msgid "Misnamed nodes detected, check output log for details. Aborting."
 msgstr ""
+"Nodos con nombres incorrectos detectados, comprueba la salida del Log para "
+"más detalles. Abortando."
 
 #: scene/3d/room_manager.cpp
 msgid "Portal link room not found, check output log for details."
 msgstr ""
+"No se encuentra Portal link room, comprueba la salida del Log para más "
+"detalles."
 
 #: scene/3d/room_manager.cpp
 msgid ""
 "Portal autolink failed, check output log for details.\n"
 "Check the portal is facing outwards from the source room."
 msgstr ""
+"Fallo en el Portal autolink, comprueba la salida del Log para más detalles.\n"
+"Comprueba si el portal está mirando hacia fuera de la room de origen."
 
 #: scene/3d/room_manager.cpp
 msgid ""
 "Room overlap detected, cameras may work incorrectly in overlapping area.\n"
 "Check output log for details."
 msgstr ""
+"Detectada superposición de la Room, las cámaras pueden funcionar "
+"incorrectamente en las zonas donde hay superposición.\n"
+"Comrpueba la salida del Log para más detalles."
 
 #: scene/3d/room_manager.cpp
 msgid ""
 "Error calculating room bounds.\n"
 "Ensure all rooms contain geometry or manual bounds."
 msgstr ""
+"Error al calcular los límites de la room.\n"
+"Asegurate de que todas las rooms contengan geometría o límites manuales."
 
 #: scene/3d/soft_body.cpp
 msgid "This body will be ignored until you set a mesh."
@@ -14401,7 +14410,7 @@ msgstr "No se encontró la animación: '%s'"
 
 #: scene/animation/animation_player.cpp
 msgid "Anim Apply Reset"
-msgstr ""
+msgstr "Aplicar Reset de Animación"
 
 #: scene/animation/animation_tree.cpp
 msgid "In node '%s', invalid animation: '%s'."
@@ -14510,6 +14519,10 @@ msgid ""
 "The GLES2 backend is currently in use, so these modes will act like Stretch "
 "instead."
 msgstr ""
+"Las opciones Tile y Tile Fit para las propiedades Axis Stretch sólo son "
+"efectivas cuando se utiliza el backend de renderizado GLES3.\n"
+"El backend GLES2 está actualmente en uso, por lo que estos modos actuarán "
+"como Stretch en su lugar."
 
 #: scene/gui/popup.cpp
 msgid ""
@@ -14554,6 +14567,11 @@ msgid ""
 "Consider using a script's process loop instead of relying on a Timer for "
 "very low wait times."
 msgstr ""
+"Los tiempos de espera del temporizador muy bajos (< 0,05 segundos) pueden "
+"comportarse de manera significativamente diferente dependiendo de la "
+"velocidad de fotogramas renderizados o de la física.\n"
+"Considera la posibilidad de utilizar un bucle en process dentro del script "
+"en lugar de depender de un Timer para tiempos de espera muy bajos."
 
 #: scene/main/viewport.cpp
 msgid ""
@@ -14568,15 +14586,16 @@ msgstr ""
 "textura interna a algún otro nodo para mostrar."
 
 #: scene/main/viewport.cpp
-#, fuzzy
 msgid ""
 "The Viewport size must be greater than or equal to 2 pixels on both "
 "dimensions to render anything."
-msgstr "El tamaño del viewport debe ser mayor a 0 para poder renderizar."
+msgstr ""
+"El tamaño del Viewport debe ser mayor o igual a 2 píxeles en ambas "
+"dimensiones para renderizar cualquier cosa."
 
 #: scene/resources/occluder_shape.cpp
 msgid "OccluderShapeSphere Set Spheres"
-msgstr ""
+msgstr "Establecer Esferas OccluderShapeSphere"
 
 #: scene/resources/visual_shader_nodes.cpp
 msgid ""
@@ -14599,25 +14618,29 @@ msgid "Invalid comparison function for that type."
 msgstr "Función de comparación inválida para este tipo."
 
 #: servers/visual/shader_language.cpp
-#, fuzzy
 msgid "Varying may not be assigned in the '%s' function."
-msgstr "Solo se pueden asignar variaciones en funciones de vértice."
+msgstr "No se pueden asignar varyings a la función '%s'."
 
 #: servers/visual/shader_language.cpp
 msgid ""
 "Varyings which assigned in 'vertex' function may not be reassigned in "
 "'fragment' or 'light'."
 msgstr ""
+"Las varyings que fueron asignadas en una función 'vertex' no pueden ser "
+"reasignadas en 'fragment' o 'light'."
 
 #: servers/visual/shader_language.cpp
 msgid ""
 "Varyings which assigned in 'fragment' function may not be reassigned in "
 "'vertex' or 'light'."
 msgstr ""
+"Las varyings que fueron asignadas en una función 'fragment' no pueden ser "
+"reasignadas en 'vertex' o 'light'."
 
 #: servers/visual/shader_language.cpp
 msgid "Fragment-stage varying could not been accessed in custom function!"
 msgstr ""
+"¡No se pudo acceder a la fragment-stage varying en la función personalizada!"
 
 #: servers/visual/shader_language.cpp
 msgid "Assignment to function."

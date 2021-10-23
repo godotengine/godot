@@ -79,12 +79,15 @@
 # suplife <2634557184@qq.com>, 2021.
 # luoji <564144019@qq.com>, 2021.
 # zeng haochen <m18621006730@163.com>, 2021.
+# Sam Sun <oppositenormal@outlook.com>, 2021.
+# 苏轼 <youwanyuyu@gmail.com>, 2021.
+# nitenook <admin@alterbaum.net>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: 2018-01-20 12:15+0200\n"
-"PO-Revision-Date: 2021-10-08 03:03+0000\n"
+"PO-Revision-Date: 2021-10-21 10:31+0000\n"
 "Last-Translator: Haoyu Qiu <timothyqiu32@gmail.com>\n"
 "Language-Team: Chinese (Simplified) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hans/>\n"
@@ -2435,9 +2438,8 @@ msgid ""
 msgstr "无法保存场景。可能是因为依赖项（实例或继承）无法满足。"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Could not save one or more scenes!"
-msgstr "无法保存转换的贴图:"
+msgstr "无法保存一个或多个场景！"
 
 #: editor/editor_node.cpp
 msgid "Save All Scenes"
@@ -2573,7 +2575,7 @@ msgstr "是否在关闭前保存对 “%s” 的更改？"
 
 #: editor/editor_node.cpp
 msgid "%s no longer exists! Please specify a new save location."
-msgstr ""
+msgstr "路径 %s 已不存在！请重新选择新的保存路径。"
 
 #: editor/editor_node.cpp
 msgid ""
@@ -4362,6 +4364,8 @@ msgid ""
 "Selecting another resource in the FileSystem dock without clicking Reimport "
 "first will discard changes made in the Import dock."
 msgstr ""
+"有些修改未被应用。点击“重新导入”来应用导入的修改。\n"
+"若在选择另一个资源前没有点击“重新导入”，则会忽略导入的修改。"
 
 #: editor/import_dock.cpp
 msgid "Import As:"
@@ -7289,12 +7293,10 @@ msgid "Move Down"
 msgstr "向下移动"
 
 #: editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Next Script"
 msgstr "下一个脚本"
 
 #: editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Previous Script"
 msgstr "上一个脚本"
 
@@ -7709,9 +7711,8 @@ msgid "Left Orthogonal"
 msgstr "正交左视图"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Left Perspective"
-msgstr "透视"
+msgstr "透视左视图"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Right Orthogonal"
@@ -8067,24 +8068,23 @@ msgstr "右视图"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Orbit View Down"
-msgstr ""
+msgstr "视图向下环绕"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Orbit View Left"
-msgstr ""
+msgstr "视图向左环绕"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Orbit View Right"
-msgstr ""
+msgstr "视图向右环绕"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Orbit View Up"
-msgstr "前视图"
+msgstr "视图向上环绕"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Orbit View 180"
-msgstr ""
+msgstr "视图环绕至背面"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Switch Perspective/Orthogonal View"
@@ -14195,6 +14195,9 @@ msgid ""
 "Consider using a script's process loop instead of relying on a Timer for "
 "very low wait times."
 msgstr ""
+"计时器等待时间非常短（小于 0.05 秒）时可能会根据渲染帧率和物理帧率的不同而表"
+"现得极为不同。\n"
+"建议使用脚本的 process 循环代替此类计时器。"
 
 #: scene/main/viewport.cpp
 msgid ""
@@ -14203,16 +14206,15 @@ msgid ""
 "obtain a size. Otherwise, make it a RenderTarget and assign its internal "
 "texture to some node for display."
 msgstr ""
-"这个 Viewport 未被设置为渲染目标。如果你想让其直接在屏幕上显示内容，请使其成"
-"为 Control 的子节点，这样一来该 Viewport 才会有大小。否则请为其设置 "
+"这个视窗未被设置为渲染目标。如果你想让其直接在屏幕上显示内容，请使其成为 "
+"Control 的子节点，这样一来该 Viewport 才会有大小。否则请为其设置 "
 "RenderTarget 并分配其内部纹理来显示。"
 
 #: scene/main/viewport.cpp
-#, fuzzy
 msgid ""
 "The Viewport size must be greater than or equal to 2 pixels on both "
 "dimensions to render anything."
-msgstr "Viewport 大小大于 0 时才能进行渲染。"
+msgstr "Viewport 的宽高都大于等于 2 像素时才能进行渲染。"
 
 #: scene/resources/occluder_shape.cpp
 msgid "OccluderShapeSphere Set Spheres"
