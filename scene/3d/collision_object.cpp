@@ -60,13 +60,14 @@ void CollisionObject::_notification(int p_what) {
 				PhysicsServer::get_singleton()->body_set_state(rid, PhysicsServer::BODY_STATE_TRANSFORM, get_global_transform());
 			}
 
-			RID space = get_world()->get_space();
+			Ref<World> world_ref = get_world();
+			ERR_FAIL_COND(!world_ref.is_valid());
+			RID space = world_ref->get_space();
 			if (area) {
 				PhysicsServer::get_singleton()->area_set_space(rid, space);
 			} else {
 				PhysicsServer::get_singleton()->body_set_space(rid, space);
 			}
-
 			_update_pickable();
 			//get space
 		} break;
