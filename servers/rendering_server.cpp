@@ -2794,12 +2794,12 @@ RenderingServer::RenderingServer() {
 	GLOBAL_DEF("rendering/shadows/directional_shadow/size", 4096);
 	GLOBAL_DEF("rendering/shadows/directional_shadow/size.mobile", 2048);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/shadows/directional_shadow/size", PropertyInfo(Variant::INT, "rendering/shadows/directional_shadow/size", PROPERTY_HINT_RANGE, "256,16384"));
-	GLOBAL_DEF("rendering/shadows/directional_shadow/soft_shadow_quality", 3);
+	GLOBAL_DEF("rendering/shadows/directional_shadow/soft_shadow_quality", 2);
 	GLOBAL_DEF("rendering/shadows/directional_shadow/soft_shadow_quality.mobile", 0);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/shadows/directional_shadow/soft_shadow_quality", PropertyInfo(Variant::INT, "rendering/shadows/directional_shadow/soft_shadow_quality", PROPERTY_HINT_ENUM, "Hard (Fastest),Soft Very Low (Faster),Soft Low (Fast),Soft Medium (Average),Soft High (Slow),Soft Ultra (Slowest)"));
 	GLOBAL_DEF("rendering/shadows/directional_shadow/16_bits", true);
 
-	GLOBAL_DEF("rendering/shadows/shadows/soft_shadow_quality", 3);
+	GLOBAL_DEF("rendering/shadows/shadows/soft_shadow_quality", 2);
 	GLOBAL_DEF("rendering/shadows/shadows/soft_shadow_quality.mobile", 0);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/shadows/shadows/soft_shadow_quality", PropertyInfo(Variant::INT, "rendering/shadows/shadows/soft_shadow_quality", PROPERTY_HINT_ENUM, "Hard (Fastest),Soft Very Low (Faster),Soft Low (Fast),Soft Medium (Average),Soft High (Slow),Soft Ultra (Slowest)"));
 
