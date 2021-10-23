@@ -688,9 +688,11 @@ void FileSystemDock::_sort_file_info_list(List<FileSystemDock::FileInfo> &r_file
 			r_file_list.reverse();
 			break;
 		case FILE_SORT_NAME_REVERSE:
+			r_file_list.sort();
 			r_file_list.reverse();
 			break;
 		default: // FILE_SORT_NAME
+			r_file_list.sort();
 			break;
 	}
 }
