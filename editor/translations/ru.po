@@ -98,12 +98,13 @@
 # enderlorde <madel.laboratories@gmail.com>, 2021.
 # Олег Довгер <oleg.a.dovger@gmail.com>, 2021.
 # Anna Malinovskaia <tacitcoast@gmail.com>, 2021.
+# mrvladus <mrvladus@yandex.ru>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-09-29 02:21+0000\n"
+"PO-Revision-Date: 2021-10-21 10:31+0000\n"
 "Last-Translator: Danil Alexeev <danil@alexeev.xyz>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ru/>\n"
@@ -2497,9 +2498,8 @@ msgstr ""
 "унаследованные) не могли быть удовлетворены."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Could not save one or more scenes!"
-msgstr "Невозможно сохранить конвертированную текстуру:"
+msgstr "Не удалось сохранить одну или несколько сцен!"
 
 #: editor/editor_node.cpp
 msgid "Save All Scenes"
@@ -2644,6 +2644,7 @@ msgstr "Сохранить изменения в «%s» перед закрыт�
 #: editor/editor_node.cpp
 msgid "%s no longer exists! Please specify a new save location."
 msgstr ""
+"%s больше не существует! Пожалуйста укажите новое место для сохранения."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2785,7 +2786,7 @@ msgstr "Открыть закрытую сцену"
 #: editor/editor_node.cpp
 msgid "Unable to enable addon plugin at: '%s' parsing of config failed."
 msgstr ""
-"Не удаётся включить плагин: «%s». Ошибка синтаксического разбора "
+"Не удаётся включить плагин: «%s». Ошибка синтаксического разбора файла "
 "конфигурации."
 
 #: editor/editor_node.cpp
@@ -4486,6 +4487,11 @@ msgid ""
 "Selecting another resource in the FileSystem dock without clicking Reimport "
 "first will discard changes made in the Import dock."
 msgstr ""
+"У вас есть изменения, которые ещё не были применены. Нажмите "
+"«Переимпортировать», чтобы применить изменения, внесённые в параметры "
+"импорта.\n"
+"Если выбрать другой ресурс в панели «Файловая система», не нажав сначала "
+"«Переимпортировать», то сделанные в панели «Импорт» изменения будут потеряны."
 
 #: editor/import_dock.cpp
 msgid "Import As:"
@@ -7453,12 +7459,10 @@ msgid "Move Down"
 msgstr "Переместить вниз"
 
 #: editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Next Script"
 msgstr "Следующий скрипт"
 
 #: editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Previous Script"
 msgstr "Предыдущий скрипт"
 
@@ -7877,9 +7881,8 @@ msgid "Left Orthogonal"
 msgstr "Левый ортогональный"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Left Perspective"
-msgstr "Перспективный"
+msgstr "Левый перспективный"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Right Orthogonal"
@@ -8104,7 +8107,7 @@ msgstr "Прослушиватель звука"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Enable Doppler"
-msgstr "Включить эффект Doppler"
+msgstr "Включить эффект Доплера"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Cinematic Preview"
@@ -8239,24 +8242,23 @@ msgstr "Вид справа"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Orbit View Down"
-msgstr ""
+msgstr "Вид с орбиты вниз"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Orbit View Left"
-msgstr ""
+msgstr "Вид с орбиты влево"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Orbit View Right"
-msgstr ""
+msgstr "Вид с орбиты вправо"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Orbit View Up"
-msgstr "Вид спереди"
+msgstr "Вид с орбиты вверх"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Orbit View 180"
-msgstr ""
+msgstr "Вид с орбиты 180"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Switch Perspective/Orthogonal View"
@@ -12082,7 +12084,7 @@ msgstr "(Источник)"
 
 #: editor/scene_tree_editor.cpp
 msgid "Node configuration warning:"
-msgstr "Конфигурации узла, предупреждение:"
+msgstr "Предупреждение о конфигурации узла:"
 
 #: editor/scene_tree_editor.cpp
 msgid ""
@@ -14565,6 +14567,11 @@ msgid ""
 "Consider using a script's process loop instead of relying on a Timer for "
 "very low wait times."
 msgstr ""
+"Очень низкое время ожидания таймера (< 0,05 секунды) может привести к "
+"значительно разному поведению, в зависимости от частоты кадров рендеринга "
+"или физики.\n"
+"Рассмотрите возможность использования цикла обработки в скрипте вместо "
+"таймера с очень низким временем ожидания."
 
 #: scene/main/viewport.cpp
 msgid ""
@@ -14580,11 +14587,12 @@ msgstr ""
 "либо узлу для отображения."
 
 #: scene/main/viewport.cpp
-#, fuzzy
 msgid ""
 "The Viewport size must be greater than or equal to 2 pixels on both "
 "dimensions to render anything."
-msgstr "Размер окна просмотра должен быть больше 0 для рендеринга."
+msgstr ""
+"Размер области просмотра должен быть больше или равен 2 пикселям в обоих "
+"измерениях, чтобы отобразить что-либо."
 
 #: scene/resources/occluder_shape.cpp
 msgid "OccluderShapeSphere Set Spheres"

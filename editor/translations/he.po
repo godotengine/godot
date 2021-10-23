@@ -966,7 +966,7 @@ msgstr "מעבר למתודה"
 
 #: editor/create_dialog.cpp
 msgid "Change %s Type"
-msgstr "שנה את הסוג של s%"
+msgstr "שנה את הסוג של %s"
 
 #: editor/create_dialog.cpp editor/project_settings_editor.cpp
 msgid "Change"
@@ -1026,7 +1026,7 @@ msgid ""
 "Scene '%s' is currently being edited.\n"
 "Changes will only take effect when reloaded."
 msgstr ""
-"סצנה 's%' נמצאת כרגע בעריכה.\n"
+"סצנה '%s' נמצאת כרגע בעריכה.\n"
 "שינויים יכנסו לתוקף בטעינה מחדש."
 
 #: editor/dependency_editor.cpp
@@ -1034,7 +1034,7 @@ msgid ""
 "Resource '%s' is in use.\n"
 "Changes will only take effect when reloaded."
 msgstr ""
-"משאב 's%' נמצא בשימוש.\n"
+"משאב '%s' נמצא בשימוש.\n"
 "שינויים יכנסו לתוקף רק בטעינה מחדש."
 
 #: editor/dependency_editor.cpp

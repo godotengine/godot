@@ -3,7 +3,7 @@
 # Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).
 # This file is distributed under the same license as the Godot source code.
 # bergmarklund <davemcgroin@gmail.com>, 2017, 2018.
-# Christoffer Sundbom <christoffer_karlsson@live.se>, 2017.
+# Christoffer Sundbom <christoffer_karlsson@live.se>, 2017, 2021.
 # Jakob Sinclair <sinclair.jakob@mailbox.org>, 2018.
 # . <grenoscar@gmail.com>, 2018, 2020.
 # Kristoffer Grundström <kristoffer.grundstrom1983@gmail.com>, 2018.
@@ -28,8 +28,8 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-08-10 21:40+0000\n"
-"Last-Translator: Kristoffer Grundström <swedishsailfishosuser@tutanota.com>\n"
+"PO-Revision-Date: 2021-10-21 10:31+0000\n"
+"Last-Translator: Christoffer Sundbom <christoffer_karlsson@live.se>\n"
 "Language-Team: Swedish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/sv/>\n"
 "Language: sv\n"
@@ -37,7 +37,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.8-dev\n"
+"X-Generator: Weblate 4.9-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -2146,9 +2146,8 @@ msgid "Methods"
 msgstr "Metoder"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "Theme Properties"
-msgstr "Egenskaper"
+msgstr "Tema Egenskaper"
 
 #: editor/editor_help.cpp
 msgid "Enumerations"
