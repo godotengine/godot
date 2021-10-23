@@ -19,6 +19,7 @@ if __name__ == "__main__":
     parser.add_argument("-i", "--inputs", nargs="+", default=[])
     parser.add_argument("-o", "--outputs", nargs="+", default=[])
     parser.add_argument("-e", "--scons-env", nargs="+", default=[])
+    parser.add_argument("-f", "--fake-stamp", default="")
 
     args = parser.parse_args()
 
@@ -54,3 +55,11 @@ if __name__ == "__main__":
 
     mymodule = SourceFileLoader("script", script).load_module()
     getattr(mymodule, args.method)(targets, sources, env)
+
+    # HACK to make it so that the file does not get forcibly
+    # regenerated on every build. The proper fix is to move
+    # the defs around to there are no cyclic dependencies
+    # between third party code and Godot core.
+    if args.fake_stamp:
+        with open(args.fake_stamp, "w") as fake_stamp:
+            fake_stamp.write("#error This file should not be included, your include paths are wrong.\n")
