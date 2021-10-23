@@ -6,11 +6,27 @@ import argparse
 import os
 
 
+def replace_if_different(output_path_str, new_content_path_str):
+    import pathlib
+
+    output_path = pathlib.Path(output_path_str)
+    new_content_path = pathlib.Path(new_content_path_str)
+    if not output_path.exists():
+        new_content_path.replace(output_path)
+        return
+    if output_path.read_bytes() == new_content_path.read_bytes():
+        new_content_path.unlink()
+    else:
+        new_content_path.replace(output_path)
+
+
 def __make_modules_tests_header(module_db_file: dict, build_root: str, source_root: str, output: str):
     import glob
 
     mdb = module_db.load_db(module_db_file)
-    with open(os.path.join(build_root, "modules", output), "w") as f:
+    ofilename = os.path.join(build_root, "modules", output)
+    tmpfilename = ofilename + "~"
+    with open(tmpfilename, "w") as f:
         for module in mdb.get_modules():
             if not module.build:
                 continue
@@ -18,18 +34,22 @@ def __make_modules_tests_header(module_db_file: dict, build_root: str, source_ro
             headers = glob.glob(os.path.join(path, "*.h"))
             for h in headers:
                 f.write('#include "%s"\n' % (os.path.normpath(h)))
+    replace_if_different(ofilename, tmpfilename)
 
 
 def __make_modules_enabled_header(module_db_file: dict, build_root: str, output: str):
     mdb = module_db.load_db(module_db_file)
     modules_enabled: [str] = mdb.get_modules_enabled_names()
 
-    with open(os.path.join(build_root, "modules", output), "w") as f:
+    ofilename = os.path.join(build_root, "modules", output)
+    tmpfilename = ofilename + "~"
+    with open(tmpfilename, "w") as f:
         f.write("#ifndef MODULE_GUARD_DEFINES\n")
         f.write("#define MODULE_GUARD_DEFINES\n\n")
         for module in modules_enabled:
             f.write("#define %s\n" % ("MODULE_" + module.upper() + "_ENABLED"))
         f.write("\n#endif\n")
+    replace_if_different(ofilename, tmpfilename)
 
 
 def __make_register_module_types_cpp(module_db_file: dict, build_root: str, output: str):
