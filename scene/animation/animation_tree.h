@@ -32,6 +32,7 @@
 #define ANIMATION_GRAPH_PLAYER_H
 
 #include "animation_player.h"
+#include "core/math/expression.h"
 #include "scene/3d/node_3d.h"
 #include "scene/3d/skeleton_3d.h"
 #include "scene/resources/animation.h"
@@ -44,6 +45,11 @@ class AnimationNode : public Resource {
 	GDCLASS(AnimationNode, Resource);
 
 public:
+	enum ParameterType {
+		PARAMETER_TYPE_CONSTANT,
+		PARAMETER_TYPE_GLOBAL
+	};
+
 	enum FilterAction {
 		FILTER_IGNORE,
 		FILTER_PASS,
@@ -103,6 +109,10 @@ protected:
 	real_t blend_input(int p_input, real_t p_time, bool p_seek, real_t p_blend, FilterAction p_filter = FILTER_IGNORE, bool p_optimize = true);
 	void make_invalid(const String &p_reason);
 
+	bool _set(const StringName &p_name, const Variant &p_value);
+	bool _get(const StringName &p_name, Variant &r_ret) const;
+	void _get_property_list(List<PropertyInfo> *p_list) const;
+
 	static void _bind_methods();
 
 	void _validate_property(PropertyInfo &property) const override;
@@ -119,8 +129,18 @@ public:
 	virtual void get_parameter_list(List<PropertyInfo> *r_list) const;
 	virtual Variant get_parameter_default_value(const StringName &p_parameter) const;
 
-	void set_parameter(const StringName &p_name, const Variant &p_value);
-	Variant get_parameter(const StringName &p_name) const;
+	virtual StringName get_parameter_name(const StringName &p_parameter) const;
+	virtual bool set_parameter_name(const StringName &p_parameter, const StringName &p_name) const;
+
+	virtual ParameterType get_parameter_type(const StringName &p_parameter) const;
+	virtual bool set_parameter_type(const StringName &p_parameter, const ParameterType &p_type) const;
+
+	virtual int get_valid_parameter_types(const StringName &p_parameter) const;
+
+	void set_custom_parameter(const StringName &p_name, const Variant &p_value, const StringName &p_path);
+	Variant get_custom_parameter(const StringName &p_name, const StringName &p_path) const;
+	void set_local_parameter(const StringName &p_name, const Variant &p_value);
+	Variant get_local_parameter(const StringName &p_name) const;
 
 	struct ChildNode {
 		StringName name;
@@ -153,6 +173,7 @@ public:
 };
 
 VARIANT_ENUM_CAST(AnimationNode::FilterAction)
+VARIANT_ENUM_CAST(AnimationNode::ParameterType);
 
 //root node does not allow inputs
 class AnimationRootNode : public AnimationNode {
@@ -302,6 +323,9 @@ protected:
 	static void _bind_methods();
 
 public:
+	static AnimationTree *(*get_current_tree)();
+	static Vector<String> (*get_tree_edited_path)();
+
 	void set_tree_root(const Ref<AnimationNode> &p_root);
 	Ref<AnimationNode> get_tree_root() const;
 

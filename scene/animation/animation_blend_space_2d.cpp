@@ -434,9 +434,9 @@ void AnimationNodeBlendSpace2D::_blend_triangle(const Vector2 &p_pos, const Vect
 double AnimationNodeBlendSpace2D::process(double p_time, bool p_seek) {
 	_update_triangles();
 
-	Vector2 blend_pos = get_parameter(blend_position);
-	int closest = get_parameter(this->closest);
-	double length_internal = get_parameter(this->length_internal);
+	Vector2 blend_pos = get_local_parameter(blend_position);
+	int closest = get_local_parameter(this->closest);
+	double length_internal = get_local_parameter(this->length_internal);
 	float mind = 0.0; //time of min distance point
 
 	if (blend_mode == BLEND_MODE_INTERPOLATED) {
@@ -545,8 +545,8 @@ double AnimationNodeBlendSpace2D::process(double p_time, bool p_seek) {
 		}
 	}
 
-	set_parameter(this->closest, closest);
-	set_parameter(this->length_internal, length_internal);
+	set_local_parameter(this->closest, closest);
+	set_local_parameter(this->length_internal, length_internal);
 	return mind;
 }
 

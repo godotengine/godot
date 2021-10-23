@@ -67,7 +67,7 @@ double AnimationNodeAnimation::process(double p_time, bool p_seek) {
 	AnimationPlayer *ap = state->player;
 	ERR_FAIL_COND_V(!ap, 0);
 
-	double time = get_parameter(this->time);
+	double time = get_local_parameter(this->time);
 
 	if (!ap->has_animation(animation)) {
 		AnimationNodeBlendTree *tree = Object::cast_to<AnimationNodeBlendTree>(parent);
@@ -107,7 +107,7 @@ double AnimationNodeAnimation::process(double p_time, bool p_seek) {
 
 	blend_animation(animation, time, step, p_seek, 1.0);
 
-	set_parameter(this->time, time);
+	set_local_parameter(this->time, time);
 
 	return anim_size - time;
 }
@@ -203,25 +203,25 @@ bool AnimationNodeOneShot::has_filter() const {
 }
 
 double AnimationNodeOneShot::process(double p_time, bool p_seek) {
-	bool active = get_parameter(this->active);
-	bool prev_active = get_parameter(this->prev_active);
-	double time = get_parameter(this->time);
-	double remaining = get_parameter(this->remaining);
-	double time_to_restart = get_parameter(this->time_to_restart);
+	bool active = get_local_parameter(this->active);
+	bool prev_active = get_local_parameter(this->prev_active);
+	double time = get_local_parameter(this->time);
+	double remaining = get_local_parameter(this->remaining);
+	double time_to_restart = get_local_parameter(this->time_to_restart);
 
 	if (!active) {
 		//make it as if this node doesn't exist, pass input 0 by.
 		if (prev_active) {
-			set_parameter(this->prev_active, false);
+			set_local_parameter(this->prev_active, false);
 		}
 		if (time_to_restart >= 0.0 && !p_seek) {
 			time_to_restart -= p_time;
 			if (time_to_restart < 0) {
 				//restart
-				set_parameter(this->active, true);
+				set_local_parameter(this->active, true);
 				active = true;
 			}
-			set_parameter(this->time_to_restart, time_to_restart);
+			set_local_parameter(this->time_to_restart, time_to_restart);
 		}
 
 		if (!active) {
@@ -239,7 +239,7 @@ double AnimationNodeOneShot::process(double p_time, bool p_seek) {
 	if (do_start) {
 		time = 0;
 		os_seek = true;
-		set_parameter(this->prev_active, true);
+		set_local_parameter(this->prev_active, true);
 	}
 
 	float blend;
@@ -277,17 +277,17 @@ double AnimationNodeOneShot::process(double p_time, bool p_seek) {
 		time += p_time;
 		remaining = os_rem;
 		if (remaining <= 0) {
-			set_parameter(this->active, false);
-			set_parameter(this->prev_active, false);
+			set_local_parameter(this->active, false);
+			set_local_parameter(this->prev_active, false);
 			if (autorestart) {
 				float restart_sec = autorestart_delay + Math::randf() * autorestart_random_delay;
-				set_parameter(this->time_to_restart, restart_sec);
+				set_local_parameter(this->time_to_restart, restart_sec);
 			}
 		}
 	}
 
-	set_parameter(this->time, time);
-	set_parameter(this->remaining, remaining);
+	set_local_parameter(this->time, time);
+	set_local_parameter(this->remaining, remaining);
 
 	return MAX(main_rem, remaining);
 }
@@ -370,7 +370,7 @@ bool AnimationNodeAdd2::has_filter() const {
 }
 
 double AnimationNodeAdd2::process(double p_time, bool p_seek) {
-	double amount = get_parameter(add_amount);
+	double amount = get_local_parameter(add_amount);
 	double rem0 = blend_input(0, p_time, p_seek, 1.0, FILTER_IGNORE, !sync);
 	blend_input(1, p_time, p_seek, amount, FILTER_PASS, !sync);
 
@@ -416,7 +416,7 @@ bool AnimationNodeAdd3::has_filter() const {
 }
 
 double AnimationNodeAdd3::process(double p_time, bool p_seek) {
-	double amount = get_parameter(add_amount);
+	double amount = get_local_parameter(add_amount);
 	blend_input(0, p_time, p_seek, MAX(0, -amount), FILTER_PASS, !sync);
 	double rem0 = blend_input(1, p_time, p_seek, 1.0, FILTER_IGNORE, !sync);
 	blend_input(2, p_time, p_seek, MAX(0, amount), FILTER_PASS, !sync);
@@ -452,7 +452,7 @@ String AnimationNodeBlend2::get_caption() const {
 }
 
 double AnimationNodeBlend2::process(double p_time, bool p_seek) {
-	double amount = get_parameter(blend_amount);
+	double amount = get_local_parameter(blend_amount);
 
 	double rem0 = blend_input(0, p_time, p_seek, 1.0 - amount, FILTER_BLEND, !sync);
 	double rem1 = blend_input(1, p_time, p_seek, amount, FILTER_PASS, !sync);
@@ -507,7 +507,7 @@ bool AnimationNodeBlend3::is_using_sync() const {
 }
 
 double AnimationNodeBlend3::process(double p_time, bool p_seek) {
-	double amount = get_parameter(blend_amount);
+	double amount = get_local_parameter(blend_amount);
 	double rem0 = blend_input(0, p_time, p_seek, MAX(0, -amount), FILTER_IGNORE, !sync);
 	double rem1 = blend_input(1, p_time, p_seek, 1.0 - ABS(amount), FILTER_IGNORE, !sync);
 	double rem2 = blend_input(2, p_time, p_seek, MAX(0, amount), FILTER_IGNORE, !sync);
@@ -545,7 +545,7 @@ String AnimationNodeTimeScale::get_caption() const {
 }
 
 double AnimationNodeTimeScale::process(double p_time, bool p_seek) {
-	double scale = get_parameter(this->scale);
+	double scale = get_local_parameter(this->scale);
 	if (p_seek) {
 		return blend_input(0, p_time, true, 1.0, FILTER_IGNORE, false);
 	} else {
@@ -575,12 +575,12 @@ String AnimationNodeTimeSeek::get_caption() const {
 }
 
 double AnimationNodeTimeSeek::process(double p_time, bool p_seek) {
-	double seek_pos = get_parameter(this->seek_pos);
+	double seek_pos = get_local_parameter(this->seek_pos);
 	if (p_seek) {
 		return blend_input(0, p_time, true, 1.0, FILTER_IGNORE, false);
 	} else if (seek_pos >= 0) {
 		double ret = blend_input(0, seek_pos, true, 1.0, FILTER_IGNORE, false);
-		set_parameter(this->seek_pos, -1.0); //reset
+		set_local_parameter(this->seek_pos, -1.0); //reset
 		return ret;
 	} else {
 		return blend_input(0, p_time, false, 1.0, FILTER_IGNORE, false);
@@ -676,18 +676,18 @@ float AnimationNodeTransition::get_cross_fade_time() const {
 }
 
 double AnimationNodeTransition::process(double p_time, bool p_seek) {
-	int current = get_parameter(this->current);
-	int prev = get_parameter(this->prev);
-	int prev_current = get_parameter(this->prev_current);
+	int current = get_local_parameter(this->current);
+	int prev = get_local_parameter(this->prev);
+	int prev_current = get_local_parameter(this->prev_current);
 
-	double time = get_parameter(this->time);
-	double prev_xfading = get_parameter(this->prev_xfading);
+	double time = get_local_parameter(this->time);
+	double prev_xfading = get_local_parameter(this->prev_xfading);
 
 	bool switched = current != prev_current;
 
 	if (switched) {
-		set_parameter(this->prev_current, current);
-		set_parameter(this->prev, prev_current);
+		set_local_parameter(this->prev_current, current);
+		set_local_parameter(this->prev, prev_current);
 
 		prev = prev_current;
 		prev_xfading = xfade;
@@ -712,7 +712,7 @@ double AnimationNodeTransition::process(double p_time, bool p_seek) {
 		}
 
 		if (inputs[current].auto_advance && rem <= xfade) {
-			set_parameter(this->current, (current + 1) % enabled_inputs);
+			set_local_parameter(this->current, (current + 1) % enabled_inputs);
 		}
 
 	} else { // cross-fading from prev to current
@@ -734,13 +734,13 @@ double AnimationNodeTransition::process(double p_time, bool p_seek) {
 			time += p_time;
 			prev_xfading -= p_time;
 			if (prev_xfading < 0) {
-				set_parameter(this->prev, -1);
+				set_local_parameter(this->prev, -1);
 			}
 		}
 	}
 
-	set_parameter(this->time, time);
-	set_parameter(this->prev_xfading, prev_xfading);
+	set_local_parameter(this->time, time);
+	set_local_parameter(this->prev_xfading, prev_xfading);
 
 	return rem;
 }
@@ -1151,6 +1151,8 @@ void AnimationNodeBlendTree::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_graph_offset", "offset"), &AnimationNodeBlendTree::set_graph_offset);
 	ClassDB::bind_method(D_METHOD("get_graph_offset"), &AnimationNodeBlendTree::get_graph_offset);
+
+	ClassDB::bind_method(D_METHOD("get_node_name"), &AnimationNodeBlendTree::get_node_name);
 
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "graph_offset", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_graph_offset", "get_graph_offset");
 

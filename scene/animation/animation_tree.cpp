@@ -35,6 +35,9 @@
 #include "scene/scene_string_names.h"
 #include "servers/audio/audio_stream.h"
 
+AnimationTree *(*AnimationTree::get_current_tree)() = nullptr;
+Vector<String> (*AnimationTree::get_tree_edited_path)() = nullptr;
+
 void AnimationNode::get_parameter_list(List<PropertyInfo> *r_list) const {
 	Array parameters;
 
@@ -55,22 +58,50 @@ Variant AnimationNode::get_parameter_default_value(const StringName &p_parameter
 	return Variant();
 }
 
-void AnimationNode::set_parameter(const StringName &p_name, const Variant &p_value) {
+StringName AnimationNode::get_parameter_name(const StringName &p_parameter) const {
+	return p_parameter;
+}
+
+bool AnimationNode::set_parameter_name(const StringName &p_parameter, const StringName &p_name) const {
+	return false;
+}
+
+AnimationNode::ParameterType AnimationNode::get_parameter_type(const StringName &p_parameter) const {
+	return PARAMETER_TYPE_CONSTANT;
+}
+
+bool AnimationNode::set_parameter_type(const StringName &p_parameter, const ParameterType &p_type) const {
+	return false;
+}
+
+int AnimationNode::get_valid_parameter_types(const StringName &p_parameter) const {
+	return (1 << PARAMETER_TYPE_CONSTANT);
+}
+
+void AnimationNode::set_custom_parameter(const StringName &p_name, const Variant &p_value, const StringName &p_path) {
 	ERR_FAIL_COND(!state);
-	ERR_FAIL_COND(!state->tree->property_parent_map.has(base_path));
-	ERR_FAIL_COND(!state->tree->property_parent_map[base_path].has(p_name));
-	StringName path = state->tree->property_parent_map[base_path][p_name];
+	ERR_FAIL_COND(!state->tree->property_parent_map.has(p_path));
+	ERR_FAIL_COND(!state->tree->property_parent_map[p_path].has(p_name));
+	StringName path = state->tree->property_parent_map[p_path][p_name];
 
 	state->tree->property_map[path] = p_value;
 }
 
-Variant AnimationNode::get_parameter(const StringName &p_name) const {
+Variant AnimationNode::get_custom_parameter(const StringName &p_name, const StringName &p_path) const {
 	ERR_FAIL_COND_V(!state, Variant());
-	ERR_FAIL_COND_V(!state->tree->property_parent_map.has(base_path), Variant());
-	ERR_FAIL_COND_V(!state->tree->property_parent_map[base_path].has(p_name), Variant());
+	ERR_FAIL_COND_V(!state->tree->property_parent_map.has(p_path), Variant());
+	ERR_FAIL_COND_V(!state->tree->property_parent_map[p_path].has(p_name), Variant());
 
-	StringName path = state->tree->property_parent_map[base_path][p_name];
+	StringName path = state->tree->property_parent_map[p_path][p_name];
 	return state->tree->property_map[path];
+}
+
+void AnimationNode::set_local_parameter(const StringName &p_name, const Variant &p_value) {
+	set_custom_parameter(p_name, p_value, base_path);
+}
+
+Variant AnimationNode::get_local_parameter(const StringName &p_name) const {
+	return get_custom_parameter(p_name, base_path);
 }
 
 void AnimationNode::get_child_nodes(List<ChildNode> *r_child_nodes) {
@@ -402,6 +433,101 @@ Ref<AnimationNode> AnimationNode::get_child_by_name(const StringName &p_name) {
 	return Ref<AnimationNode>();
 }
 
+bool AnimationNode::_set(const StringName &p_name, const Variant &p_value) {
+	if (String(p_name).begins_with("parameters/") && String(p_name).ends_with("/value")) {
+		if (AnimationTree::get_current_tree && AnimationTree::get_tree_edited_path) {
+			AnimationTree *tree = AnimationTree::get_current_tree();
+			if (tree) {
+				List<PropertyInfo> plist;
+				// Parameters with the base path
+				get_parameter_list(&plist);
+				if (plist.size()) {
+					String full_path = "parameters/";
+					String parameter_name = String(p_name).trim_prefix("parameters/").trim_suffix("/value");
+					Vector<String> current_base_path = AnimationTree::get_tree_edited_path();
+
+					Ref<AnimationNode> cur_node = tree->get_tree_root();
+					if (cur_node.ptr() != this) {
+						for (int i = 0; i < current_base_path.size(); i++) {
+							cur_node = cur_node->get_child_by_name(current_base_path[i]);
+							full_path += current_base_path[i] + "/";
+						}
+
+						String current_node_name = "";
+						if (cur_node->has_method("get_node_name")) {
+							current_node_name = cur_node->call("get_node_name", Ref<AnimationNode>(this));
+							full_path += current_node_name + "/";
+						}
+					}
+
+					for (PropertyInfo &pinfo : plist) {
+						if (parameter_name == pinfo.name) {
+							String parameter_path = full_path + parameter_name;
+							tree->set(parameter_path, p_value);
+							return true;
+						}
+					}
+				}
+			}
+		}
+	}
+	return false;
+}
+
+bool AnimationNode::_get(const StringName &p_name, Variant &r_ret) const {
+	if (String(p_name).begins_with("parameters/") && String(p_name).ends_with("/value")) {
+		if (AnimationTree::get_current_tree && AnimationTree::get_tree_edited_path) {
+			AnimationTree *tree = AnimationTree::get_current_tree();
+			if (tree) {
+				List<PropertyInfo> plist;
+				// Parameters with the base path
+				get_parameter_list(&plist);
+				if (plist.size()) {
+					String full_path = "parameters/";
+					String parameter_name = String(p_name).trim_prefix("parameters/").trim_suffix("/value");
+					Vector<String> current_base_path = AnimationTree::get_tree_edited_path();
+
+					Ref<AnimationNode> cur_node = tree->get_tree_root();
+					if (cur_node.ptr() != this) {
+						for (int i = 0; i < current_base_path.size(); i++) {
+							cur_node = cur_node->get_child_by_name(current_base_path[i]);
+							full_path += current_base_path[i] + "/";
+						}
+
+						String current_node_name = "";
+						if (cur_node->has_method("get_node_name")) {
+							current_node_name = cur_node->call("get_node_name", Ref<AnimationNode>(this));
+							full_path += current_node_name + "/";
+						}
+					}
+
+					for (PropertyInfo &pinfo : plist) {
+						if (parameter_name == pinfo.name) {
+							String parameter_path = full_path + parameter_name;
+							r_ret = tree->get(parameter_path);
+							return true;
+						}
+					}
+				}
+			}
+		}
+	}
+
+	return false;
+}
+
+void AnimationNode::_get_property_list(List<PropertyInfo> *p_list) const {
+	List<PropertyInfo> plist;
+	// Parameters with the base path
+	get_parameter_list(&plist);
+	for (PropertyInfo &pinfo : plist) {
+		StringName key = pinfo.name;
+
+		pinfo.name = "parameters/" + key + "/value";
+		p_list->push_back(pinfo);
+	}
+}
+
 void AnimationNode::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_input_count"), &AnimationNode::get_input_count);
 	ClassDB::bind_method(D_METHOD("get_input_name", "input"), &AnimationNode::get_input_name);
@@ -422,8 +548,9 @@ void AnimationNode::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("blend_node", "name", "node", "time", "seek", "blend", "filter", "optimize"), &AnimationNode::blend_node, DEFVAL(FILTER_IGNORE), DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("blend_input", "input_index", "time", "seek", "blend", "filter", "optimize"), &AnimationNode::blend_input, DEFVAL(FILTER_IGNORE), DEFVAL(true));
 
-	ClassDB::bind_method(D_METHOD("set_parameter", "name", "value"), &AnimationNode::set_parameter);
-	ClassDB::bind_method(D_METHOD("get_parameter", "name"), &AnimationNode::get_parameter);
+	ClassDB::bind_method(D_METHOD("set_local_parameter", "name", "value"), &AnimationNode::set_local_parameter);
+	ClassDB::bind_method(D_METHOD("get_local_parameter", "name"), &AnimationNode::get_local_parameter);
+	ClassDB::bind_method(D_METHOD("get_custom_parameter", "name"), &AnimationNode::get_custom_parameter);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "filter_enabled", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_filter_enabled", "is_filter_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "filters", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_filters", "_get_filters");
@@ -1579,18 +1706,35 @@ void AnimationTree::_update_properties_for_node(const String &p_base_path, Ref<A
 	}
 
 	List<PropertyInfo> plist;
+	// Parameters with the base path
 	node->get_parameter_list(&plist);
 	for (PropertyInfo &pinfo : plist) {
 		StringName key = pinfo.name;
 
-		if (!property_map.has(p_base_path + key)) {
-			property_map[p_base_path + key] = node->get_parameter_default_value(key);
+		switch (node->get_parameter_type(key)) {
+			case AnimationNode::PARAMETER_TYPE_CONSTANT:
+				if (!property_map.has(p_base_path + key)) {
+					property_map[p_base_path + key] = node->get_parameter_default_value(key);
+				}
+
+				property_parent_map[p_base_path][key] = p_base_path + key;
+
+				pinfo.name = p_base_path + key;
+				properties.push_back(pinfo);
+				break;
+			case AnimationNode::PARAMETER_TYPE_GLOBAL:
+				if (!property_map.has("parameters/custom/" + key)) {
+					property_map["parameters/custom/" + key] = node->get_parameter_default_value(key);
+				}
+
+				property_parent_map["parameters/custom/"][key] = "parameters/custom/" + key;
+
+				pinfo.name = "parameters/custom/" + key;
+				properties.push_back(pinfo);
+				break;
+			default:
+				break;
 		}
-
-		property_parent_map[p_base_path][key] = p_base_path + key;
-
-		pinfo.name = p_base_path + key;
-		properties.push_back(pinfo);
 	}
 
 	List<AnimationNode::ChildNode> children;

@@ -44,10 +44,15 @@ public:
 	};
 
 private:
+	Expression _advance_condition_expression;
+
+	bool advance_condition_requires_compilation;
+	Error advance_condition_compiliation_result;
+
 	SwitchMode switch_mode = SWITCH_MODE_IMMEDIATE;
 	bool auto_advance = false;
-	StringName advance_condition;
-	StringName advance_condition_name;
+	PackedStringArray advance_parameters;
+	String advance_condition;
 	float xfade = 0.0;
 	bool disabled = false;
 	int priority = 1;
@@ -56,16 +61,19 @@ protected:
 	static void _bind_methods();
 
 public:
+	Error compile_advance_condition_if_required();
+
 	void set_switch_mode(SwitchMode p_mode);
 	SwitchMode get_switch_mode() const;
 
 	void set_auto_advance(bool p_enable);
 	bool has_auto_advance() const;
 
-	void set_advance_condition(const StringName &p_condition);
-	StringName get_advance_condition() const;
+	void set_advance_parameters(const PackedStringArray &p_parameters);
+	PackedStringArray get_advance_parameters() const;
 
-	StringName get_advance_condition_name() const;
+	void set_advance_condition(const String &p_text);
+	String get_advance_condition() const;
 
 	void set_xfade_time(float p_xfade);
 	float get_xfade_time() const;
@@ -75,6 +83,8 @@ public:
 
 	void set_priority(int p_priority);
 	int get_priority() const;
+
+	bool evaluate_advance_expression(const Array &p_parameter_values);
 
 	AnimationNodeStateMachineTransition();
 };
@@ -175,6 +185,8 @@ protected:
 
 public:
 	virtual void get_parameter_list(List<PropertyInfo> *r_list) const override;
+	virtual ParameterType get_parameter_type(const StringName &p_parameter) const override;
+	virtual int get_valid_parameter_types(const StringName &p_parameter) const override;
 	virtual Variant get_parameter_default_value(const StringName &p_parameter) const override;
 
 	void add_node(const StringName &p_name, Ref<AnimationNode> p_node, const Vector2 &p_position = Vector2());
