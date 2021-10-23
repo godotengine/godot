@@ -158,9 +158,9 @@ def templateBuildTasks() {
 /**
  * Master task used to coordinate the tasks defined above to generate the set of Godot templates.
  */
-task generateGodotTemplates(type: GradleBuild) {
-    startParameter.excludedTaskNames = templateExcludedBuildTask()
-    tasks = templateBuildTasks()
+task generateGodotTemplates {
+    gradle.startParameter.excludedTaskNames += templateExcludedBuildTask()
+    dependsOn = templateBuildTasks()
 
     finalizedBy 'zipCustomBuild'
 }
@@ -168,12 +168,12 @@ task generateGodotTemplates(type: GradleBuild) {
 /**
  * Generates the same output as generateGodotTemplates but with dev symbols
  */
-task generateDevTemplate (type: GradleBuild) {
+task generateDevTemplate {
     // add parameter to set symbols to true
-    startParameter.projectProperties += [doNotStrip: true]
+    gradle.startParameter.projectProperties += [doNotStrip: true]
 
-    startParameter.excludedTaskNames = templateExcludedBuildTask()
-    tasks = templateBuildTasks()
+    gradle.startParameter.excludedTaskNames += templateExcludedBuildTask()
+    dependsOn = templateBuildTasks()
 
     finalizedBy 'zipCustomBuild'
 }
