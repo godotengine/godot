@@ -79,6 +79,35 @@ static _FORCE_INLINE_ void store_camera(const CameraMatrix &p_mtx, float *p_arra
 	}
 }
 
+void RasterizerSceneGLES3::directional_shadow_create() {
+	if (directional_shadow.fbo) {
+		// Erase existing directional shadow texture to recreate it.
+		glDeleteTextures(1, &directional_shadow.depth);
+		glDeleteFramebuffers(1, &directional_shadow.fbo);
+
+		directional_shadow.depth = 0;
+		directional_shadow.fbo = 0;
+	}
+
+	directional_shadow.light_count = 0;
+	directional_shadow.size = next_power_of_2(directional_shadow_size);
+	glGenFramebuffers(1, &directional_shadow.fbo);
+	glBindFramebuffer(GL_FRAMEBUFFER, directional_shadow.fbo);
+	glGenTextures(1, &directional_shadow.depth);
+	glBindTexture(GL_TEXTURE_2D, directional_shadow.depth);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, directional_shadow.size, directional_shadow.size, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, nullptr);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, directional_shadow.depth, 0);
+	GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+	if (status != GL_FRAMEBUFFER_COMPLETE) {
+		ERR_PRINT("Directional shadow framebuffer status invalid");
+	}
+}
+
 /* SHADOW ATLAS API */
 
 RID RasterizerSceneGLES3::shadow_atlas_create() {
@@ -5059,26 +5088,7 @@ void RasterizerSceneGLES3::initialize() {
 		cube_size >>= 1;
 	}
 
-	{
-		//directional light shadow
-		directional_shadow.light_count = 0;
-		directional_shadow.size = next_power_of_2(GLOBAL_GET("rendering/quality/directional_shadow/size"));
-		glGenFramebuffers(1, &directional_shadow.fbo);
-		glBindFramebuffer(GL_FRAMEBUFFER, directional_shadow.fbo);
-		glGenTextures(1, &directional_shadow.depth);
-		glBindTexture(GL_TEXTURE_2D, directional_shadow.depth);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, directional_shadow.size, directional_shadow.size, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, nullptr);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, directional_shadow.depth, 0);
-		GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-		if (status != GL_FRAMEBUFFER_COMPLETE) {
-			ERR_PRINT("Directional shadow framebuffer status invalid");
-		}
-	}
+	directional_shadow_create();
 
 	{
 		//spot and omni ubos
@@ -5268,6 +5278,13 @@ void RasterizerSceneGLES3::initialize() {
 
 void RasterizerSceneGLES3::iteration() {
 	shadow_filter_mode = ShadowFilterMode(int(GLOBAL_GET("rendering/quality/shadows/filter_mode")));
+
+	const int directional_shadow_size_new = next_power_of_2(int(GLOBAL_GET("rendering/quality/directional_shadow/size")));
+	if (directional_shadow_size != directional_shadow_size_new) {
+		directional_shadow_size = directional_shadow_size_new;
+		directional_shadow_create();
+	}
+
 	subsurface_scatter_follow_surface = GLOBAL_GET("rendering/quality/subsurface_scattering/follow_surface");
 	subsurface_scatter_weight_samples = GLOBAL_GET("rendering/quality/subsurface_scattering/weight_samples");
 	subsurface_scatter_quality = SubSurfaceScatterQuality(int(GLOBAL_GET("rendering/quality/subsurface_scattering/quality")));
@@ -5282,6 +5299,7 @@ void RasterizerSceneGLES3::finalize() {
 }
 
 RasterizerSceneGLES3::RasterizerSceneGLES3() {
+	directional_shadow_size = next_power_of_2(int(GLOBAL_GET("rendering/quality/directional_shadow/size")));
 }
 
 RasterizerSceneGLES3::~RasterizerSceneGLES3() {
