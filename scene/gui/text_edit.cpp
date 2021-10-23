@@ -1534,7 +1534,7 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 				update();
 			}
 
-			if (is_middle_mouse_paste_enabled() && mb->get_button_index() == MOUSE_BUTTON_MIDDLE) {
+			if (is_middle_mouse_paste_enabled() && mb->get_button_index() == MOUSE_BUTTON_MIDDLE && DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_CLIPBOARD_PRIMARY)) {
 				paste_primary_clipboard();
 			}
 
@@ -1575,7 +1575,9 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 				dragging_selection = false;
 				can_drag_minimap = false;
 				click_select_held->stop();
-				DisplayServer::get_singleton()->clipboard_set_primary(get_selected_text());
+				if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_CLIPBOARD_PRIMARY)) {
+					DisplayServer::get_singleton()->clipboard_set_primary(get_selected_text());
+				}
 			}
 
 			// Notify to show soft keyboard.
@@ -5167,7 +5169,7 @@ void TextEdit::_paste_internal() {
 }
 
 void TextEdit::_paste_primary_clipboard_internal() {
-	if (!is_editable()) {
+	if (!is_editable() || !DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_CLIPBOARD_PRIMARY)) {
 		return;
 	}
 
@@ -5520,7 +5522,9 @@ void TextEdit::_update_selection_mode_word() {
 		}
 	}
 
-	DisplayServer::get_singleton()->clipboard_set_primary(get_selected_text());
+	if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_CLIPBOARD_PRIMARY)) {
+		DisplayServer::get_singleton()->clipboard_set_primary(get_selected_text());
+	}
 
 	update();
 
@@ -5549,7 +5553,9 @@ void TextEdit::_update_selection_mode_line() {
 	set_caret_column(0);
 
 	select(selection.selecting_line, selection.selecting_column, line, col);
-	DisplayServer::get_singleton()->clipboard_set_primary(get_selected_text());
+	if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_CLIPBOARD_PRIMARY)) {
+		DisplayServer::get_singleton()->clipboard_set_primary(get_selected_text());
+	}
 
 	update();
 

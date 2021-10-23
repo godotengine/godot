@@ -1596,14 +1596,16 @@ void RichTextLabel::gui_input(const Ref<InputEvent> &p_event) {
 							selection.to_char = words[i + 1];
 
 							selection.active = true;
-							DisplayServer::get_singleton()->clipboard_set_primary(get_selected_text());
+							if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_CLIPBOARD_PRIMARY)) {
+								DisplayServer::get_singleton()->clipboard_set_primary(get_selected_text());
+							}
 							update();
 							break;
 						}
 					}
 				}
 			} else if (!b->is_pressed()) {
-				if (selection.enabled) {
+				if (selection.enabled && DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_CLIPBOARD_PRIMARY)) {
 					DisplayServer::get_singleton()->clipboard_set_primary(get_selected_text());
 				}
 				selection.click_item = nullptr;
