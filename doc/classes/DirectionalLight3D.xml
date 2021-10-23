@@ -11,10 +11,10 @@
 	</tutorials>
 	<members>
 		<member name="directional_shadow_blend_splits" type="bool" setter="set_blend_splits" getter="is_blend_splits_enabled" default="false">
-			If [code]true[/code], shadow detail is sacrificed in exchange for smoother transitions between splits. This is ignored when [member directional_shadow_mode] is [code]SHADOW_ORTHOGONAL[/code].
+			If [code]true[/code], shadow detail is sacrificed in exchange for smoother transitions between splits. Enabling shadow blend splitting also has a moderate performance cost. This is ignored when [member directional_shadow_mode] is [code]SHADOW_ORTHOGONAL[/code].
 		</member>
 		<member name="directional_shadow_fade_start" type="float" setter="set_param" getter="get_param" default="0.8">
-			Proportion of [member directional_shadow_max_distance] at which point the shadow starts to fade. At [member directional_shadow_max_distance] the shadow will disappear.
+			Proportion of [member directional_shadow_max_distance] at which point the shadow starts to fade. At [member directional_shadow_max_distance], the shadow will disappear. The default value is a balance between smooth fading and distant shadow visibility. If the camera moves fast and the [member directional_shadow_max_distance] is low, consider lowering [member directional_shadow_fade_start] below [code]0.8[/code] to make shadow transitions less noticeable. On the other hand, if you tuned [member directional_shadow_max_distance] to cover the entire scene, you can set [member directional_shadow_fade_start] to [code]1.0[/code] to prevent the shadow from fading in the distance (it will suddenly cut off instead).
 		</member>
 		<member name="directional_shadow_max_distance" type="float" setter="set_param" getter="get_param" default="100.0">
 			The maximum distance for shadow splits.
