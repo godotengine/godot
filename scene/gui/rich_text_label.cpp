@@ -2815,12 +2815,12 @@ bool RichTextLabel::is_scroll_following() const {
 	return scroll_follow;
 }
 
-Error RichTextLabel::parse_bbcode(const String &p_bbcode) {
+void RichTextLabel::parse_bbcode(const String &p_bbcode) {
 	clear();
-	return append_text(p_bbcode);
+	append_text(p_bbcode);
 }
 
-Error RichTextLabel::append_text(const String &p_bbcode) {
+void RichTextLabel::append_text(const String &p_bbcode) {
 	int pos = 0;
 
 	List<String> tag_stack;
@@ -3543,8 +3543,6 @@ Error RichTextLabel::append_text(const String &p_bbcode) {
 			break;
 		}
 	}
-
-	return OK;
 }
 
 void RichTextLabel::scroll_to_paragraph(int p_paragraph) {
