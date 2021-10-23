@@ -554,6 +554,7 @@ void CanvasItem::_exit_canvas() {
 void CanvasItem::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
+			ERR_FAIL_COND(!is_inside_tree());
 			first_draw = true;
 			if (get_parent()) {
 				CanvasItem *ci = Object::cast_to<CanvasItem>(get_parent());

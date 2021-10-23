@@ -245,6 +245,7 @@ void Camera2D::_notification(int p_what) {
 
 		} break;
 		case NOTIFICATION_ENTER_TREE: {
+			ERR_FAIL_COND(!is_inside_tree());
 			canvas = get_canvas();
 
 			_setup_viewport();
