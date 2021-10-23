@@ -36,10 +36,10 @@
 			</description>
 		</method>
 		<method name="append_text">
-			<return type="int" enum="Error" />
+			<return type="void" />
 			<argument index="0" name="bbcode" type="String" />
 			<description>
-				Parses [code]bbcode[/code] and adds tags to the tag stack as needed. Returns the result of the parsing, [constant OK] if successful.
+				Parses [code]bbcode[/code] and adds tags to the tag stack as needed.
 				[b]Note:[/b] Using this method, you can't close a tag that was opened in a previous [method append_text] call. This is done to improve performance, especially when updating large RichTextLabels since rebuilding the whole BBCode every time would be slower. If you absolutely need to close a tag in a future method call, append the [member text] instead of using [method append_text].
 			</description>
 		</method>
@@ -130,10 +130,10 @@
 			</description>
 		</method>
 		<method name="parse_bbcode">
-			<return type="int" enum="Error" />
+			<return type="void" />
 			<argument index="0" name="bbcode" type="String" />
 			<description>
-				The assignment version of [method append_text]. Clears the tag stack and inserts the new content. Returns [constant OK] if parses [code]bbcode[/code] successfully.
+				The assignment version of [method append_text]. Clears the tag stack and inserts the new content.
 			</description>
 		</method>
 		<method name="parse_expressions_for_values">

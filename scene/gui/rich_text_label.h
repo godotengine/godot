@@ -552,8 +552,8 @@ public:
 	String get_selected_text() const;
 	void selection_copy();
 
-	Error parse_bbcode(const String &p_bbcode);
-	Error append_text(const String &p_bbcode);
+	void parse_bbcode(const String &p_bbcode);
+	void append_text(const String &p_bbcode);
 
 	void set_use_bbcode(bool p_enable);
 	bool is_using_bbcode() const;
