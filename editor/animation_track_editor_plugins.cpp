@@ -419,7 +419,7 @@ Rect2 AnimationTrackEditSpriteFrame::get_key_rect(int p_index, float p_pixels_se
 			// Go through other track to find if animation is set
 			String animation_path = get_animation()->track_get_path(get_track());
 			animation_path = animation_path.replace(":frame", ":animation");
-			int animation_track = get_animation()->find_track(animation_path);
+			int animation_track = get_animation()->find_track(animation_path, get_animation()->track_get_type(get_track()));
 			float track_time = get_animation()->track_get_key_time(get_track(), p_index);
 			int animaiton_index = get_animation()->track_find_key(animation_track, track_time);
 			animation = get_animation()->track_get_key_value(animation_track, animaiton_index);
@@ -511,7 +511,7 @@ void AnimationTrackEditSpriteFrame::draw_key(int p_index, float p_pixels_sec, in
 			// Go through other track to find if animation is set
 			String animation_path = get_animation()->track_get_path(get_track());
 			animation_path = animation_path.replace(":frame", ":animation");
-			int animation_track = get_animation()->find_track(animation_path);
+			int animation_track = get_animation()->find_track(animation_path, get_animation()->track_get_type(get_track()));
 			float track_time = get_animation()->track_get_key_time(get_track(), p_index);
 			int animaiton_index = get_animation()->track_find_key(animation_track, track_time);
 			animation = get_animation()->track_get_key_value(animation_track, animaiton_index);

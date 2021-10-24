@@ -837,9 +837,9 @@ NodePath Animation::track_get_path(int p_track) const {
 	return tracks[p_track]->path;
 }
 
-int Animation::find_track(const NodePath &p_path) const {
+int Animation::find_track(const NodePath &p_path, const TrackType p_type) const {
 	for (int i = 0; i < tracks.size(); i++) {
-		if (tracks[i]->path == p_path) {
+		if (tracks[i]->path == p_path && tracks[i]->type == p_type) {
 			return i;
 		}
 	};
@@ -3027,7 +3027,7 @@ void Animation::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("track_get_type", "track_idx"), &Animation::track_get_type);
 	ClassDB::bind_method(D_METHOD("track_get_path", "track_idx"), &Animation::track_get_path);
 	ClassDB::bind_method(D_METHOD("track_set_path", "track_idx", "path"), &Animation::track_set_path);
-	ClassDB::bind_method(D_METHOD("find_track", "path"), &Animation::find_track);
+	ClassDB::bind_method(D_METHOD("find_track", "path", "type"), &Animation::find_track);
 
 	ClassDB::bind_method(D_METHOD("track_move_up", "track_idx"), &Animation::track_move_up);
 	ClassDB::bind_method(D_METHOD("track_move_down", "track_idx"), &Animation::track_move_down);
