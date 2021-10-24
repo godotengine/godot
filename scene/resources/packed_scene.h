@@ -198,9 +198,10 @@ class PackedScene : public Resource {
 	Dictionary _get_bundled_scene() const;
 
 protected:
-	virtual bool editor_can_reload_from_file() override { return false; } // this is handled by editor better
+	virtual bool editor_can_reload_from_file() override { return false; } // This is handled by editor better.
 	static void _bind_methods();
 	virtual void reset_state() override;
+	bool property_can_revert(const String &p_name);
 
 public:
 	enum GenEditState {

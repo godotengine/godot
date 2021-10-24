@@ -1688,6 +1688,12 @@ void PackedScene::set_path(const String &p_path, bool p_take_over) {
 void PackedScene::reset_state() {
 	clear();
 }
+
+bool PackedScene::property_can_revert(const String &p_name) {
+	// Don't let the editor revert scene properties since this can break linked scenes.
+	return true;
+}
+
 void PackedScene::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("pack", "path"), &PackedScene::pack);
 	ClassDB::bind_method(D_METHOD("instantiate", "edit_state"), &PackedScene::instantiate, DEFVAL(GEN_EDIT_STATE_DISABLED));
@@ -1695,6 +1701,7 @@ void PackedScene::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_set_bundled_scene"), &PackedScene::_set_bundled_scene);
 	ClassDB::bind_method(D_METHOD("_get_bundled_scene"), &PackedScene::_get_bundled_scene);
 	ClassDB::bind_method(D_METHOD("get_state"), &PackedScene::get_state);
+	ClassDB::bind_method(D_METHOD("property_can_revert", "name"), &PackedScene::property_can_revert);
 
 	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "_bundled"), "_set_bundled_scene", "_get_bundled_scene");
 

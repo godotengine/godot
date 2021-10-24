@@ -102,6 +102,13 @@
 				Pack will ignore any sub-nodes not owned by given node. See [member Node.owner].
 			</description>
 		</method>
+		<method name="property_can_revert">
+			<return type="bool" />
+			<argument index="0" name="name" type="String" />
+			<description>
+				Returns [code]true[/code] if the property identified by [code]name[/code] can be reverted to a default value.
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="_bundled" type="Dictionary" setter="_set_bundled_scene" getter="_get_bundled_scene" default="{&quot;conn_count&quot;: 0,&quot;conns&quot;: PackedInt32Array(),&quot;editable_instances&quot;: [],&quot;names&quot;: PackedStringArray(),&quot;node_count&quot;: 0,&quot;node_paths&quot;: [],&quot;nodes&quot;: PackedInt32Array(),&quot;variants&quot;: [],&quot;version&quot;: 2}">
