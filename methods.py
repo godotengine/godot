@@ -1,9 +1,9 @@
-import collections
 import os
 import re
 import glob
 import subprocess
 from collections import OrderedDict
+from collections.abc import Mapping
 from typing import Iterator
 
 # We need to define our own `Action` method to control the verbosity of output
@@ -662,7 +662,7 @@ def generate_vs_project(env, num_jobs):
     batch_file = find_visual_c_batch_file(env)
     if batch_file:
 
-        class ModuleConfigs(collections.Mapping):
+        class ModuleConfigs(Mapping):
             # This version information (Win32, x64, Debug, Release, Release_Debug seems to be
             # required for Visual Studio to understand that it needs to generate an NMAKE
             # project. Do not modify without knowing what you are doing.
