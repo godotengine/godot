@@ -2927,6 +2927,7 @@ bool Viewport::is_input_handled() const {
 }
 
 void Viewport::set_handle_input_locally(bool p_enable) {
+	ERR_FAIL_COND_MSG(!p_enable && Object::cast_to<Window>(this), "Windows must handle input!");
 	handle_input_locally = p_enable;
 }
 
