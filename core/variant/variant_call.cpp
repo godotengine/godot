@@ -752,8 +752,9 @@ struct _VariantCall {
 
 	static PackedInt32Array func_PackedByteArray_decode_s32_array(PackedByteArray *p_instance) {
 		uint64_t size = p_instance->size();
-		const uint8_t *r = p_instance->ptr();
 		PackedInt32Array dest;
+		ERR_FAIL_COND_V_MSG(size < sizeof(int32_t), dest, "Size didn't match array of size int32_t, maybe you are trying to convert to the wrong type?");
+		const uint8_t *r = p_instance->ptr();
 		dest.resize(size / sizeof(int32_t));
 		memcpy(dest.ptrw(), r, size);
 		return dest;
@@ -761,8 +762,9 @@ struct _VariantCall {
 
 	static PackedInt64Array func_PackedByteArray_decode_s64_array(PackedByteArray *p_instance) {
 		uint64_t size = p_instance->size();
-		const uint8_t *r = p_instance->ptr();
 		PackedInt64Array dest;
+		ERR_FAIL_COND_V_MSG(size < sizeof(int64_t), dest, "Size didn't match array of size int64_t, maybe you are trying to convert to the wrong type?");
+		const uint8_t *r = p_instance->ptr();
 		dest.resize(size / sizeof(int64_t));
 		memcpy(dest.ptrw(), r, size);
 		return dest;
@@ -770,8 +772,9 @@ struct _VariantCall {
 
 	static PackedFloat32Array func_PackedByteArray_decode_float_array(PackedByteArray *p_instance) {
 		uint64_t size = p_instance->size();
-		const uint8_t *r = p_instance->ptr();
 		PackedFloat32Array dest;
+		ERR_FAIL_COND_V_MSG(size < sizeof(float), dest, "Size didn't match array of size float, maybe you are trying to convert to the wrong type?");
+		const uint8_t *r = p_instance->ptr();
 		dest.resize(size / sizeof(float));
 		memcpy(dest.ptrw(), r, size);
 		return dest;
@@ -779,8 +782,9 @@ struct _VariantCall {
 
 	static PackedFloat64Array func_PackedByteArray_decode_double_array(PackedByteArray *p_instance) {
 		uint64_t size = p_instance->size();
-		const uint8_t *r = p_instance->ptr();
 		PackedFloat64Array dest;
+		ERR_FAIL_COND_V_MSG(size < sizeof(double), dest, "Size didn't match array of size double, maybe you are trying to convert to the wrong type?");
+		const uint8_t *r = p_instance->ptr();
 		dest.resize(size / sizeof(double));
 		memcpy(dest.ptrw(), r, size);
 		return dest;
