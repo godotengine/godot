@@ -1,11 +1,11 @@
-import collections
 import os
 import re
 import glob
 import subprocess
 from collections import OrderedDict
-from compat import iteritems, isbasestring, open_utf8, decode_utf8, qualname
+from collections.abc import Mapping
 from typing import Iterator
+from compat import iteritems, isbasestring, open_utf8, decode_utf8, qualname
 
 from SCons import Node
 from SCons.Script import ARGUMENTS
@@ -675,7 +675,7 @@ def generate_vs_project(env, num_jobs):
     batch_file = find_visual_c_batch_file(env)
     if batch_file:
 
-        class ModuleConfigs(collections.Mapping):
+        class ModuleConfigs(Mapping):
             # This version information (Win32, x64, Debug, Release, Release_Debug seems to be
             # required for Visual Studio to understand that it needs to generate an NMAKE
             # project. Do not modify without knowing what you are doing.
