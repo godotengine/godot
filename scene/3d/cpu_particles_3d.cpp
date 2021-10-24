@@ -73,6 +73,7 @@ void CPUParticles3D::set_amount(int p_amount) {
 	}
 
 	particle_data.resize((12 + 4 + 4) * p_amount);
+	RS::get_singleton()->multimesh_set_visible_instances(multimesh, -1);
 	RS::get_singleton()->multimesh_allocate_data(multimesh, p_amount, RS::MULTIMESH_TRANSFORM_3D, true, true);
 
 	particle_order.resize(p_amount);
