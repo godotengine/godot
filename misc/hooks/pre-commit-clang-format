@@ -76,7 +76,7 @@ fi
 
 # To get consistent formatting, we recommend contributors to use the same
 # clang-format version as CI.
-RECOMMENDED_CLANG_FORMAT_MAJOR_MIN="11"
+RECOMMENDED_CLANG_FORMAT_MAJOR_MIN="12"
 RECOMMENDED_CLANG_FORMAT_MAJOR_MAX="13"
 
 if [ ! -x "$CLANG_FORMAT" ] ; then
@@ -146,7 +146,7 @@ do
     #    +++ - timestamp
     # to both lines working on the same file and having a/ and b/ prefix.
     # Else it can not be applied with 'git apply'.
-    "$CLANG_FORMAT" -style=file "$file" | \
+    "$CLANG_FORMAT" -style=file "$file" --Wno-error=unknown | \
         diff -u "$file" - | \
         sed -e "1s|--- |--- a/|" -e "2s|+++ -|+++ b/$file|" >> "$patch"
 done

@@ -22,9 +22,9 @@ jobs:
 
       - name: Install dependencies
         run: |
-          sudo apt-get install -qq dos2unix recode clang-format-11
+          sudo apt-get install -qq dos2unix recode clang-format-12
           sudo update-alternatives --remove-all clang-format
-          sudo update-alternatives --install /usr/bin/clang-format clang-format /usr/bin/clang-format-11 100
+          sudo update-alternatives --install /usr/bin/clang-format clang-format /usr/bin/clang-format-12 100
           sudo pip3 install black==20.8b1 pygments
 
       - name: File formatting checks (file_format.sh)
