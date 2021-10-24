@@ -199,7 +199,6 @@ private:
 		bool scale_used = false;
 		Vector3 loc;
 		Quaternion rot;
-		real_t rot_blend_accum = 0.0;
 		Vector3 scale;
 
 		TrackCacheTransform() {
