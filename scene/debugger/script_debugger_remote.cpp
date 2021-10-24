@@ -517,10 +517,10 @@ bool ScriptDebuggerRemote::_parse_live_edit(const Array &p_command) {
 		scene_tree->_live_edit_res_set_func(p_command[1], p_command[2], p_command[3]);
 
 	} else if (cmdstr == "live_node_call") {
-		scene_tree->_live_edit_node_call_func(p_command[1], p_command[2], p_command[3], p_command[4], p_command[5], p_command[6], p_command[7]);
+		scene_tree->_live_edit_node_call_func(p_command[1], p_command[2], p_command[3], p_command[4], p_command[5], p_command[6], p_command[7], p_command[8], p_command[9], p_command[10]);
 
 	} else if (cmdstr == "live_res_call") {
-		scene_tree->_live_edit_res_call_func(p_command[1], p_command[2], p_command[3], p_command[4], p_command[5], p_command[6], p_command[7]);
+		scene_tree->_live_edit_res_call_func(p_command[1], p_command[2], p_command[3], p_command[4], p_command[5], p_command[6], p_command[7], p_command[8], p_command[9], p_command[10]);
 
 	} else if (cmdstr == "live_create_node") {
 		scene_tree->_live_edit_create_node_func(p_command[1], p_command[2], p_command[3]);

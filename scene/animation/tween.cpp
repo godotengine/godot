@@ -255,8 +255,8 @@ void Tween::_bind_methods() {
 	// Bind interpolation and follow methods
 	ClassDB::bind_method(D_METHOD("interpolate_property", "object", "property", "initial_val", "final_val", "duration", "trans_type", "ease_type", "delay"), &Tween::interpolate_property, DEFVAL(TRANS_LINEAR), DEFVAL(EASE_IN_OUT), DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("interpolate_method", "object", "method", "initial_val", "final_val", "duration", "trans_type", "ease_type", "delay"), &Tween::interpolate_method, DEFVAL(TRANS_LINEAR), DEFVAL(EASE_IN_OUT), DEFVAL(0));
-	ClassDB::bind_method(D_METHOD("interpolate_callback", "object", "duration", "callback", "arg1", "arg2", "arg3", "arg4", "arg5"), &Tween::interpolate_callback, DEFVAL(Variant()), DEFVAL(Variant()), DEFVAL(Variant()), DEFVAL(Variant()), DEFVAL(Variant()));
-	ClassDB::bind_method(D_METHOD("interpolate_deferred_callback", "object", "duration", "callback", "arg1", "arg2", "arg3", "arg4", "arg5"), &Tween::interpolate_deferred_callback, DEFVAL(Variant()), DEFVAL(Variant()), DEFVAL(Variant()), DEFVAL(Variant()), DEFVAL(Variant()));
+	ClassDB::bind_method(D_METHOD("interpolate_callback", "object", "duration", "callback", "arg1", "arg2", "arg3", "arg4", "arg5", "arg6", "arg7", "arg8"), &Tween::interpolate_callback, DEFVAL(Variant()), DEFVAL(Variant()), DEFVAL(Variant()), DEFVAL(Variant()), DEFVAL(Variant()), DEFVAL(Variant()), DEFVAL(Variant()), DEFVAL(Variant()));
+	ClassDB::bind_method(D_METHOD("interpolate_deferred_callback", "object", "duration", "callback", "arg1", "arg2", "arg3", "arg4", "arg5", "arg6", "arg7", "arg8"), &Tween::interpolate_deferred_callback, DEFVAL(Variant()), DEFVAL(Variant()), DEFVAL(Variant()), DEFVAL(Variant()), DEFVAL(Variant()), DEFVAL(Variant()), DEFVAL(Variant()), DEFVAL(Variant()));
 	ClassDB::bind_method(D_METHOD("follow_property", "object", "property", "initial_val", "target", "target_property", "duration", "trans_type", "ease_type", "delay"), &Tween::follow_property, DEFVAL(TRANS_LINEAR), DEFVAL(EASE_IN_OUT), DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("follow_method", "object", "method", "initial_val", "target", "target_method", "duration", "trans_type", "ease_type", "delay"), &Tween::follow_method, DEFVAL(TRANS_LINEAR), DEFVAL(EASE_IN_OUT), DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("targeting_property", "object", "property", "initial", "initial_val", "final_val", "duration", "trans_type", "ease_type", "delay"), &Tween::targeting_property, DEFVAL(TRANS_LINEAR), DEFVAL(EASE_IN_OUT), DEFVAL(0));
@@ -744,6 +744,8 @@ void Tween::_tween_process(float p_delta) {
 		if (data.type == INTER_CALLBACK) {
 			// Is the tween completed?
 			if (data.finish) {
+				static_assert(VARIANT_ARG_MAX == 8, "This code needs to be updated if VARIANT_ARG_MAX != 8");
+
 				// Are we calling this callback deferred or immediately?
 				if (data.call_deferred) {
 					// Run the deferred function callback, applying the correct number of arguments
@@ -766,16 +768,28 @@ void Tween::_tween_process(float p_delta) {
 						case 5:
 							object->call_deferred(data.key[0], data.arg[0], data.arg[1], data.arg[2], data.arg[3], data.arg[4]);
 							break;
+						case 6:
+							object->call_deferred(data.key[0], data.arg[0], data.arg[1], data.arg[2], data.arg[3], data.arg[4], data.arg[5]);
+							break;
+						case 7:
+							object->call_deferred(data.key[0], data.arg[0], data.arg[1], data.arg[2], data.arg[3], data.arg[4], data.arg[5], data.arg[6]);
+							break;
+						case 8:
+							object->call_deferred(data.key[0], data.arg[0], data.arg[1], data.arg[2], data.arg[3], data.arg[4], data.arg[5], data.arg[6], data.arg[7]);
+							break;
 					}
 				} else {
 					// Call the function directly with the arguments
 					Variant::CallError error;
-					Variant *arg[5] = {
+					Variant *arg[VARIANT_ARG_MAX] = {
 						&data.arg[0],
 						&data.arg[1],
 						&data.arg[2],
 						&data.arg[3],
 						&data.arg[4],
+						&data.arg[5],
+						&data.arg[6],
+						&data.arg[7],
 					};
 					object->call(data.key[0], (const Variant **)arg, data.args, error);
 				}
@@ -1519,8 +1533,15 @@ bool Tween::interpolate_deferred_callback(Object *p_object, real_t p_duration, S
 	data.delay = 0;
 
 	// Collect arguments for the callback
+	static_assert(VARIANT_ARG_MAX == 8, "This code needs to be updated if VARIANT_ARG_MAX != 8");
 	int args = 0;
-	if (p_arg5.get_type() != Variant::NIL) {
+	if (p_arg8.get_type() != Variant::NIL) {
+		args = 8;
+	} else if (p_arg7.get_type() != Variant::NIL) {
+		args = 7;
+	} else if (p_arg6.get_type() != Variant::NIL) {
+		args = 6;
+	} else if (p_arg5.get_type() != Variant::NIL) {
 		args = 5;
 	} else if (p_arg4.get_type() != Variant::NIL) {
 		args = 4;
@@ -1540,6 +1561,9 @@ bool Tween::interpolate_deferred_callback(Object *p_object, real_t p_duration, S
 	data.arg[2] = p_arg3;
 	data.arg[3] = p_arg4;
 	data.arg[4] = p_arg5;
+	data.arg[5] = p_arg6;
+	data.arg[6] = p_arg7;
+	data.arg[7] = p_arg8;
 
 	// Add the new interpolation
 	_push_interpolate_data(data);

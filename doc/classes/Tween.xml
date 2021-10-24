@@ -70,6 +70,9 @@
 			<argument index="5" name="arg3" type="Variant" default="null" />
 			<argument index="6" name="arg4" type="Variant" default="null" />
 			<argument index="7" name="arg5" type="Variant" default="null" />
+			<argument index="8" name="arg6" type="Variant" default="null" />
+			<argument index="9" name="arg7" type="Variant" default="null" />
+			<argument index="10" name="arg8" type="Variant" default="null" />
 			<description>
 				Calls [code]callback[/code] of [code]object[/code] after [code]duration[/code]. [code]arg1[/code]-[code]arg5[/code] are arguments to be passed to the callback.
 			</description>
@@ -84,6 +87,9 @@
 			<argument index="5" name="arg3" type="Variant" default="null" />
 			<argument index="6" name="arg4" type="Variant" default="null" />
 			<argument index="7" name="arg5" type="Variant" default="null" />
+			<argument index="8" name="arg6" type="Variant" default="null" />
+			<argument index="9" name="arg7" type="Variant" default="null" />
+			<argument index="10" name="arg8" type="Variant" default="null" />
 			<description>
 				Calls [code]callback[/code] of [code]object[/code] after [code]duration[/code] on the main thread (similar to [method Object.call_deferred]). [code]arg1[/code]-[code]arg5[/code] are arguments to be passed to the callback.
 			</description>

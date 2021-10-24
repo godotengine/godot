@@ -98,7 +98,7 @@ private:
 		EaseType ease_type;
 		real_t delay;
 		int args;
-		Variant arg[5];
+		Variant arg[VARIANT_ARG_MAX];
 		int uid;
 		InterpolateData() {
 			active = false;
