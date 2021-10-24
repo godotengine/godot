@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# Git pre-commit hook that checks the class reference syntax using makerst.py.
+# Git pre-commit hook that checks the class reference syntax using make_rst.py.
 
 # Workaround because we can't execute the .py file directly on windows
 PYTHON=python
@@ -9,4 +9,4 @@ if [[ "$py_ver" != "3" ]]; then
   PYTHON+=3
 fi
 
-$PYTHON doc/tools/makerst.py doc/classes modules --dry-run
+$PYTHON doc/tools/make_rst.py doc/classes modules --dry-run
