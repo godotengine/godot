@@ -3682,8 +3682,10 @@ void TextEdit::set_selection_mode(SelectionMode p_mode, int p_line, int p_column
 	if (p_line >= 0) {
 		ERR_FAIL_INDEX(p_line, text.size());
 		selection.selecting_line = p_line;
+		selection.selecting_column = CLAMP(selection.selecting_column, 0, text[selection.selecting_line].length());
 	}
 	if (p_column >= 0) {
+		ERR_FAIL_INDEX(selection.selecting_line, text.size());
 		ERR_FAIL_INDEX(p_column, text[selection.selecting_line].length());
 		selection.selecting_column = p_column;
 	}
