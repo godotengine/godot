@@ -571,7 +571,13 @@ void InputEventConfigurationDialog::popup_and_configure(const Ref<InputEvent> &p
 		for (int i = 0; i < MOD_MAX; i++) {
 			mod_checkboxes[i]->set_pressed(false);
 		}
-		physical_key_checkbox->set_pressed(false);
+
+		// Enable the Physical Key checkbox by default to encourage its use.
+		// Physical Key should be used for most game inputs as it allows keys to work
+		// on non-QWERTY layouts out of the box.
+		// This is especially important for WASD movement layouts.
+		physical_key_checkbox->set_pressed(true);
+
 		store_command_checkbox->set_pressed(true);
 		_set_current_device(0);
 
@@ -702,7 +708,7 @@ InputEventConfigurationDialog::InputEventConfigurationDialog() {
 
 	physical_key_checkbox = memnew(CheckBox);
 	physical_key_checkbox->set_text(TTR("Use Physical Keycode"));
-	physical_key_checkbox->set_tooltip(TTR("Stores the physical position of the key on the keyboard rather than the keys value. Used for compatibility with non-latin layouts."));
+	physical_key_checkbox->set_tooltip(TTR("Stores the physical position of the key on the keyboard rather than the key's value. Used for compatibility with non-latin layouts.\nThis should generally be enabled for most game shortcuts, but not in non-game applications."));
 	physical_key_checkbox->connect("toggled", callable_mp(this, &InputEventConfigurationDialog::_physical_keycode_toggled));
 	physical_key_checkbox->hide();
 	additional_options_container->add_child(physical_key_checkbox);
