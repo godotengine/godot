@@ -772,6 +772,7 @@ struct _VariantCall {
 		uint64_t size = p_instance->size();
 		const uint8_t *r = p_instance->ptr();
 		PackedFloat32Array dest;
+		ERR_FAIL_COND_V(size / sizeof(float) <= 0, dest);
 		dest.resize(size / sizeof(float));
 		memcpy(dest.ptrw(), r, size);
 		return dest;
@@ -781,6 +782,7 @@ struct _VariantCall {
 		uint64_t size = p_instance->size();
 		const uint8_t *r = p_instance->ptr();
 		PackedFloat64Array dest;
+		ERR_FAIL_COND_V(size / sizeof(double) <= 0, dest);
 		dest.resize(size / sizeof(double));
 		memcpy(dest.ptrw(), r, size);
 		return dest;
