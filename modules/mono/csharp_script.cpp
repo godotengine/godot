@@ -1585,8 +1585,8 @@ void CSharpInstance::get_properties_state_for_reloading(List<Pair<StringName, Va
 }
 
 void CSharpInstance::get_property_list(List<PropertyInfo> *p_properties) const {
-	for (Map<StringName, PropertyInfo>::Element *E = script->member_info.front(); E; E = E->next()) {
-		p_properties->push_back(E->value());
+	for (OrderedHashMap<StringName, PropertyInfo>::ConstElement E = script->member_info.front(); E; E = E.next()) {
+		p_properties->push_front(E.value());
 	}
 
 	// Call _get_property_list
@@ -1608,12 +1608,12 @@ void CSharpInstance::get_property_list(List<PropertyInfo> *p_properties) const {
 
 			if (ret) {
 				Array array = Array(GDMonoMarshal::mono_object_to_variant(ret));
-				for (int i = 0, size = array.size(); i < size; i++)
+				for (int i = 0, size = array.size(); i < size; i++) {
 					p_properties->push_back(PropertyInfo::from_dict(array.get(i)));
-				return;
+				}
 			}
 
-			break;
+			return;
 		}
 
 		top = top->get_parent_class();
@@ -1634,8 +1634,9 @@ Variant::Type CSharpInstance::get_property_type(const StringName &p_name, bool *
 }
 
 void CSharpInstance::get_method_list(List<MethodInfo> *p_list) const {
-	if (!script->is_valid() || !script->script_class)
+	if (!script->is_valid() || !script->script_class) {
 		return;
+	}
 
 	GD_MONO_SCOPE_THREAD_ATTACH;
 
@@ -3280,8 +3281,8 @@ Ref<Script> CSharpScript::get_base_script() const {
 }
 
 void CSharpScript::get_script_property_list(List<PropertyInfo> *p_list) const {
-	for (Map<StringName, PropertyInfo>::Element *E = member_info.front(); E; E = E->next()) {
-		p_list->push_back(E->value());
+	for (OrderedHashMap<StringName, PropertyInfo>::ConstElement E = member_info.front(); E; E = E.next()) {
+		p_list->push_front(E.value());
 	}
 }
 
