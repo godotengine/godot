@@ -154,7 +154,7 @@ private:
 	Set<StringName> exported_members_names;
 #endif
 
-	Map<StringName, PropertyInfo> member_info;
+	OrderedHashMap<StringName, PropertyInfo> member_info;
 
 	void _clear();
 
@@ -215,7 +215,7 @@ public:
 	void get_script_signal_list(List<MethodInfo> *r_signals) const override;
 
 	bool get_property_default_value(const StringName &p_property, Variant &r_value) const override;
-	void get_script_property_list(List<PropertyInfo> *p_list) const override;
+	void get_script_property_list(List<PropertyInfo> *r_list) const override;
 	void update_exports() override;
 
 	void get_members(Set<StringName> *p_members) override;

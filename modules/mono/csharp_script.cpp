@@ -1813,8 +1813,8 @@ void CSharpInstance::get_event_signals_state_for_reloading(List<Pair<StringName,
 }
 
 void CSharpInstance::get_property_list(List<PropertyInfo> *p_properties) const {
-	for (const KeyValue<StringName, PropertyInfo> &E : script->member_info) {
-		p_properties->push_back(E.value);
+	for (OrderedHashMap<StringName, PropertyInfo>::ConstElement E = script->member_info.front(); E; E = E.next()) {
+		p_properties->push_front(E.value());
 	}
 
 	// Call _get_property_list
@@ -1839,10 +1839,9 @@ void CSharpInstance::get_property_list(List<PropertyInfo> *p_properties) const {
 				for (int i = 0, size = array.size(); i < size; i++) {
 					p_properties->push_back(PropertyInfo::from_dict(array.get(i)));
 				}
-				return;
 			}
 
-			break;
+			return;
 		}
 
 		top = top->get_parent_class();
@@ -1865,8 +1864,9 @@ Variant::Type CSharpInstance::get_property_type(const StringName &p_name, bool *
 }
 
 void CSharpInstance::get_method_list(List<MethodInfo> *p_list) const {
-	if (!script->is_valid() || !script->script_class)
+	if (!script->is_valid() || !script->script_class) {
 		return;
+	}
 
 	GD_MONO_SCOPE_THREAD_ATTACH;
 
@@ -3499,9 +3499,9 @@ Ref<Script> CSharpScript::get_base_script() const {
 	return Ref<Script>();
 }
 
-void CSharpScript::get_script_property_list(List<PropertyInfo> *p_list) const {
-	for (const KeyValue<StringName, PropertyInfo> &E : member_info) {
-		p_list->push_back(E.value);
+void CSharpScript::get_script_property_list(List<PropertyInfo> *r_list) const {
+	for (OrderedHashMap<StringName, PropertyInfo>::ConstElement E = member_info.front(); E; E = E.next()) {
+		r_list->push_front(E.value());
 	}
 }
 
