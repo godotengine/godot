@@ -152,6 +152,7 @@ private:
 
 protected:
 	static void _bind_methods();
+	virtual void _validate_property(PropertyInfo &property) const override;
 
 public:
 	void set_shadow_mode(ShadowMode p_mode);
