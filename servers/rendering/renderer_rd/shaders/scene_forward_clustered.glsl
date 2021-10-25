@@ -1251,6 +1251,7 @@ void main() {
 
 	{ //directional light
 
+#ifndef SHADOWS_DISABLED
 		// Do shadow and lighting in two passes to reduce register pressure
 		uint shadow0 = 0;
 		uint shadow1 = 0;
@@ -1449,6 +1450,7 @@ void main() {
 				shadow1 |= uint(clamp(shadow * 255.0, 0.0, 255.0)) << ((i - 4) * 8);
 			}
 		}
+#endif // SHADOWS_DISABLED
 
 		for (uint i = 0; i < 8; i++) {
 			if (i >= scene_data.directional_light_count) {
@@ -1511,12 +1513,13 @@ void main() {
 #endif
 
 			float shadow = 1.0;
-
+#ifndef SHADOWS_DISABLED
 			if (i < 4) {
 				shadow = float(shadow0 >> (i * 8) & 0xFF) / 255.0;
 			} else {
 				shadow = float(shadow1 >> ((i - 4) * 8) & 0xFF) / 255.0;
 			}
+#endif
 
 			blur_shadow(shadow);
 

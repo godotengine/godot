@@ -1139,7 +1139,7 @@ void RendererSceneCull::instance_geometry_set_cast_shadows_setting(RID p_instanc
 	if (instance->scenario && instance->array_index >= 0) {
 		InstanceData &idata = instance->scenario->instance_data[instance->array_index];
 
-		if (instance->cast_shadows != RS::SHADOW_CASTING_SETTING_SHADOWS_ONLY) {
+		if (instance->cast_shadows != RS::SHADOW_CASTING_SETTING_OFF) {
 			idata.flags |= InstanceData::FLAG_CAST_SHADOWS;
 		} else {
 			idata.flags &= ~uint32_t(InstanceData::FLAG_CAST_SHADOWS);
@@ -1603,7 +1603,7 @@ void RendererSceneCull::_update_instance(Instance *p_instance) {
 			//always dirty when added
 			idata.flags |= InstanceData::FLAG_REFLECTION_PROBE_DIRTY;
 		}
-		if (p_instance->cast_shadows != RS::SHADOW_CASTING_SETTING_SHADOWS_ONLY) {
+		if (p_instance->cast_shadows != RS::SHADOW_CASTING_SETTING_OFF) {
 			idata.flags |= InstanceData::FLAG_CAST_SHADOWS;
 		}
 		if (p_instance->cast_shadows == RS::SHADOW_CASTING_SETTING_SHADOWS_ONLY) {

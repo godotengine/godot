@@ -287,7 +287,7 @@ void light_compute(vec3 N, vec3 L, vec3 V, float A, vec3 light_color, float atte
 #endif //defined(LIGHT_CODE_USED)
 }
 
-#ifndef USE_NO_SHADOWS
+#ifndef SHADOWS_DISABLED
 
 // Interleaved Gradient Noise
 // https://www.iryoku.com/next-generation-post-processing-in-call-of-duty-advanced-warfare
@@ -433,7 +433,7 @@ float sample_directional_soft_shadow(texture2D shadow, vec3 pssm_coord, vec2 tex
 	}
 }
 
-#endif //USE_NO_SHADOWS
+#endif // SHADOWS_DISABLED
 
 float get_omni_attenuation(float distance, float inv_range, float decay) {
 	float nd = distance * inv_range;
@@ -445,7 +445,7 @@ float get_omni_attenuation(float distance, float inv_range, float decay) {
 }
 
 float light_process_omni_shadow(uint idx, vec3 vertex, vec3 normal) {
-#ifndef USE_NO_SHADOWS
+#ifndef SHADOWS_DISABLED
 	if (omni_lights.data[idx].shadow_enabled) {
 		// there is a shadowmap
 		vec2 texel_size = scene_data.shadow_atlas_pixel_size;
@@ -730,7 +730,7 @@ void light_process_omni(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 v
 }
 
 float light_process_spot_shadow(uint idx, vec3 vertex, vec3 normal) {
-#ifndef USE_NO_SHADOWS
+#ifndef SHADOWS_DISABLED
 	if (spot_lights.data[idx].shadow_enabled) {
 		vec3 light_rel_vec = spot_lights.data[idx].position - vertex;
 		float light_length = length(light_rel_vec);
@@ -806,7 +806,7 @@ float light_process_spot_shadow(uint idx, vec3 vertex, vec3 normal) {
 		return shadow;
 	}
 
-#endif //USE_NO_SHADOWS
+#endif // SHADOWS_DISABLED
 
 	return 1.0;
 }
