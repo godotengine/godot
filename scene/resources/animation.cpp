@@ -4688,7 +4688,7 @@ bool Animation::_blend_shape_interpolate_compressed(uint32_t p_compressed_track,
 template <uint32_t COMPONENTS>
 bool Animation::_fetch_compressed(uint32_t p_compressed_track, double p_time, Vector3i &r_current_value, double &r_current_time, Vector3i &r_next_value, double &r_next_time, uint32_t *key_index) const {
 	ERR_FAIL_COND_V(!compression.enabled, false);
-	ERR_FAIL_INDEX_V(p_compressed_track, compression.bounds.size(), false);
+	ERR_FAIL_UNSIGNED_INDEX_V(p_compressed_track, compression.bounds.size(), false);
 	p_time = CLAMP(p_time, 0, length);
 	if (key_index) {
 		*key_index = 0;
@@ -4836,7 +4836,7 @@ bool Animation::_fetch_compressed(uint32_t p_compressed_track, double p_time, Ve
 template <uint32_t COMPONENTS>
 void Animation::_get_compressed_key_indices_in_range(uint32_t p_compressed_track, double p_time, double p_delta, List<int> *r_indices) const {
 	ERR_FAIL_COND(!compression.enabled);
-	ERR_FAIL_INDEX(p_compressed_track, compression.bounds.size());
+	ERR_FAIL_UNSIGNED_INDEX(p_compressed_track, compression.bounds.size());
 
 	double frame_to_sec = 1.0 / double(compression.fps);
 	uint32_t key_index = 0;
@@ -4957,7 +4957,7 @@ float Animation::_uncompress_blend_shape(const Vector3i &p_value) const {
 template <uint32_t COMPONENTS>
 bool Animation::_fetch_compressed_by_index(uint32_t p_compressed_track, int p_index, Vector3i &r_value, double &r_time) const {
 	ERR_FAIL_COND_V(!compression.enabled, false);
-	ERR_FAIL_INDEX_V(p_compressed_track, compression.bounds.size(), false);
+	ERR_FAIL_UNSIGNED_INDEX_V(p_compressed_track, compression.bounds.size(), false);
 
 	for (uint32_t i = 0; i < compression.pages.size(); i++) {
 		const uint8_t *page_data = compression.pages[i].data.ptr();
