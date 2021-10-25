@@ -90,6 +90,7 @@ public:
 	String get_user_data_dir() const override;
 
 	bool is_userfs_persistent() const override;
+	bool is_single_window() const override { return true; }
 
 	void alert(const String &p_alert, const String &p_title = "ALERT!") override;
 
