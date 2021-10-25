@@ -525,7 +525,9 @@ void Control::_notification(int p_notification) {
 					data.SI = get_viewport()->_gui_add_subwindow_control(this);
 				} else {
 					//is a regular root control
-					data.RI = get_viewport()->_gui_add_root_control(this);
+					Viewport *viewport = get_viewport();
+					ERR_FAIL_COND(!viewport);
+					data.RI = viewport->_gui_add_root_control(this);
 				}
 
 				data.parent_canvas_item = get_parent_item();
@@ -534,7 +536,9 @@ void Control::_notification(int p_notification) {
 					data.parent_canvas_item->connect("item_rect_changed", this, "_size_changed");
 				} else {
 					//connect viewport
-					get_viewport()->connect("size_changed", this, "_size_changed");
+					Viewport *viewport = get_viewport();
+					ERR_FAIL_COND(!viewport);
+					viewport->connect("size_changed", this, "_size_changed");
 				}
 			}
 
@@ -552,7 +556,9 @@ void Control::_notification(int p_notification) {
 				data.parent_canvas_item = nullptr;
 			} else if (!is_set_as_toplevel()) {
 				//disconnect viewport
-				get_viewport()->disconnect("size_changed", this, "_size_changed");
+				Viewport *viewport = get_viewport();
+				ERR_FAIL_COND(!viewport);
+				viewport->disconnect("size_changed", this, "_size_changed");
 			}
 
 			if (data.MI) {
