@@ -1215,8 +1215,11 @@
 		<member name="rendering/gles2/compatibility/disable_half_float" type="bool" setter="" getter="" default="false">
 			The use of half-float vertex compression may be producing rendering errors on some platforms (especially iOS). These have been seen particularly in particles. Disabling half-float may resolve these problems.
 		</member>
+		<member name="rendering/gles2/compatibility/disable_half_float.iOS" type="bool" setter="" getter="" default="true">
+			iOS specific override for [member rendering/gles2/compatibility/disable_half_float], due to poor support for half-float vertex compression on many devices.
+		</member>
 		<member name="rendering/gles2/compatibility/enable_high_float.Android" type="bool" setter="" getter="" default="false">
-			If [code]true[/code] and available on the target device, enables high floating point precision for all shader computations in GLES2.
+			If [code]true[/code] and available on the target Android device, enables high floating point precision for all shader computations in GLES2.
 			[b]Warning:[/b] High floating point precision can be extremely slow on older devices and is often not available at all. Use with caution.
 		</member>
 		<member name="rendering/limits/buffers/blend_shape_max_buffer_size_kb" type="int" setter="" getter="" default="4096">
