@@ -232,7 +232,7 @@ GodotGeneric6DOFJoint3D::GodotGeneric6DOFJoint3D(GodotBody3D *rbA, GodotBody3D *
 void GodotGeneric6DOFJoint3D::calculateAngleInfo() {
 	Basis relative_frame = m_calculatedTransformB.basis.inverse() * m_calculatedTransformA.basis;
 
-	m_calculatedAxisAngleDiff = relative_frame.get_euler_xyz();
+	m_calculatedAxisAngleDiff = relative_frame.get_euler(Basis::EULER_ORDER_XYZ);
 
 	// in euler angle mode we do not actually constrain the angular velocity
 	// along the axes axis[0] and axis[2] (although we do use axis[1]) :

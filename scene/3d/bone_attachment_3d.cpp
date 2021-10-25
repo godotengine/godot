@@ -58,6 +58,8 @@ void BoneAttachment3D::_validate_property(PropertyInfo &property) const {
 			property.hint_string = "";
 		}
 	}
+
+	Node3D::_validate_property(property);
 }
 
 bool BoneAttachment3D::_set(const StringName &p_path, const Variant &p_value) {

@@ -261,6 +261,8 @@ void XRNode3D::_validate_property(PropertyInfo &property) const {
 		}
 		property.hint_string = hint_string;
 	}
+
+	Node3D::_validate_property(property);
 }
 
 void XRNode3D::set_tracker(const StringName p_tracker_name) {

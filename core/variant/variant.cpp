@@ -313,7 +313,6 @@ bool Variant::can_convert(Variant::Type p_type_from, Variant::Type p_type_to) {
 		case BASIS: {
 			static const Type valid[] = {
 				QUATERNION,
-				VECTOR3,
 				NIL
 			};
 
@@ -620,7 +619,6 @@ bool Variant::can_convert_strict(Variant::Type p_type_from, Variant::Type p_type
 		case BASIS: {
 			static const Type valid[] = {
 				QUATERNION,
-				VECTOR3,
 				NIL
 			};
 
@@ -1889,8 +1887,6 @@ Variant::operator Basis() const {
 		return *_data._basis;
 	} else if (type == QUATERNION) {
 		return *reinterpret_cast<const Quaternion *>(_data._mem);
-	} else if (type == VECTOR3) {
-		return Basis(*reinterpret_cast<const Vector3 *>(_data._mem));
 	} else if (type == TRANSFORM3D) { // unexposed in Variant::can_convert?
 		return _data._transform3d->basis;
 	} else {

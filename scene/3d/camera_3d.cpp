@@ -71,6 +71,8 @@ void Camera3D::_validate_property(PropertyInfo &p_property) const {
 			p_property.usage = PROPERTY_USAGE_NOEDITOR;
 		}
 	}
+
+	Node3D::_validate_property(p_property);
 }
 
 void Camera3D::_update_camera() {

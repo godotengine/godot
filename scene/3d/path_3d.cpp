@@ -248,6 +248,7 @@ void PathFollow3D::_validate_property(PropertyInfo &property) const {
 
 		property.hint_string = "0," + rtos(max) + ",0.01,or_lesser,or_greater";
 	}
+	Node3D::_validate_property(property);
 }
 
 TypedArray<String> PathFollow3D::get_configuration_warnings() const {
