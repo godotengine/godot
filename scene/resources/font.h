@@ -219,7 +219,6 @@ class Font : public Resource {
 	mutable Vector<RID> rids;
 
 	// Font config.
-	int base_size = 16;
 	Dictionary variation_coordinates;
 	int spacing_bottom = 0;
 	int spacing_top = 0;
@@ -237,6 +236,8 @@ protected:
 	virtual void reset_state() override;
 
 public:
+	static const int DEFAULT_FONT_SIZE = 16;
+
 	Dictionary get_feature_list() const;
 
 	// Font data.
@@ -249,9 +250,6 @@ public:
 	virtual void remove_data(int p_idx);
 
 	// Font configuration.
-	virtual void set_base_size(int p_size);
-	virtual int get_base_size() const;
-
 	virtual void set_variation_coordinates(const Dictionary &p_variation_coordinates);
 	virtual Dictionary get_variation_coordinates() const;
 
@@ -259,26 +257,26 @@ public:
 	virtual int get_spacing(TextServer::SpacingType p_spacing) const;
 
 	// Font metrics.
-	virtual real_t get_height(int p_size = -1) const;
-	virtual real_t get_ascent(int p_size = -1) const;
-	virtual real_t get_descent(int p_size = -1) const;
-	virtual real_t get_underline_position(int p_size = -1) const;
-	virtual real_t get_underline_thickness(int p_size = -1) const;
+	virtual real_t get_height(int p_size = DEFAULT_FONT_SIZE) const;
+	virtual real_t get_ascent(int p_size = DEFAULT_FONT_SIZE) const;
+	virtual real_t get_descent(int p_size = DEFAULT_FONT_SIZE) const;
+	virtual real_t get_underline_position(int p_size = DEFAULT_FONT_SIZE) const;
+	virtual real_t get_underline_thickness(int p_size = DEFAULT_FONT_SIZE) const;
 
 	// Drawing string.
-	virtual Size2 get_string_size(const String &p_text, int p_size = -1, HAlign p_align = HALIGN_LEFT, real_t p_width = -1, uint16_t p_flags = TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_WORD_BOUND) const;
-	virtual Size2 get_multiline_string_size(const String &p_text, real_t p_width = -1, int p_size = -1, uint16_t p_flags = TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND) const;
+	virtual Size2 get_string_size(const String &p_text, int p_size = DEFAULT_FONT_SIZE, HAlign p_align = HALIGN_LEFT, real_t p_width = -1, uint16_t p_flags = TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_WORD_BOUND) const;
+	virtual Size2 get_multiline_string_size(const String &p_text, real_t p_width = -1, int p_size = DEFAULT_FONT_SIZE, uint16_t p_flags = TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND) const;
 
-	virtual void draw_string(RID p_canvas_item, const Point2 &p_pos, const String &p_text, HAlign p_align = HALIGN_LEFT, real_t p_width = -1, int p_size = -1, const Color &p_modulate = Color(1, 1, 1), int p_outline_size = 0, const Color &p_outline_modulate = Color(1, 1, 1, 0), uint16_t p_flags = TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_WORD_BOUND) const;
-	virtual void draw_multiline_string(RID p_canvas_item, const Point2 &p_pos, const String &p_text, HAlign p_align = HALIGN_LEFT, real_t p_width = -1, int p_max_lines = -1, int p_size = -1, const Color &p_modulate = Color(1, 1, 1), int p_outline_size = 0, const Color &p_outline_modulate = Color(1, 1, 1, 0), uint16_t p_flags = TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND | TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_WORD_BOUND) const;
+	virtual void draw_string(RID p_canvas_item, const Point2 &p_pos, const String &p_text, HAlign p_align = HALIGN_LEFT, real_t p_width = -1, int p_size = DEFAULT_FONT_SIZE, const Color &p_modulate = Color(1, 1, 1), int p_outline_size = 0, const Color &p_outline_modulate = Color(1, 1, 1, 0), uint16_t p_flags = TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_WORD_BOUND) const;
+	virtual void draw_multiline_string(RID p_canvas_item, const Point2 &p_pos, const String &p_text, HAlign p_align = HALIGN_LEFT, real_t p_width = -1, int p_max_lines = -1, int p_size = DEFAULT_FONT_SIZE, const Color &p_modulate = Color(1, 1, 1), int p_outline_size = 0, const Color &p_outline_modulate = Color(1, 1, 1, 0), uint16_t p_flags = TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND | TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_WORD_BOUND) const;
 
 	// Helper functions.
 	virtual bool has_char(char32_t p_char) const;
 	virtual String get_supported_chars() const;
 
 	// Drawing char.
-	virtual Size2 get_char_size(char32_t p_char, char32_t p_next = 0, int p_size = -1) const;
-	virtual real_t draw_char(RID p_canvas_item, const Point2 &p_pos, char32_t p_char, char32_t p_next = 0, int p_size = -1, const Color &p_modulate = Color(1, 1, 1), int p_outline_size = 0, const Color &p_outline_modulate = Color(1, 1, 1, 0)) const;
+	virtual Size2 get_char_size(char32_t p_char, char32_t p_next = 0, int p_size = DEFAULT_FONT_SIZE) const;
+	virtual real_t draw_char(RID p_canvas_item, const Point2 &p_pos, char32_t p_char, char32_t p_next = 0, int p_size = DEFAULT_FONT_SIZE, const Color &p_modulate = Color(1, 1, 1), int p_outline_size = 0, const Color &p_outline_modulate = Color(1, 1, 1, 0)) const;
 
 	Vector<RID> get_rids() const;
 

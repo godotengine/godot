@@ -169,7 +169,7 @@ void Theme::_get_property_list(List<PropertyInfo> *p_list) const {
 		const StringName *key2 = nullptr;
 
 		while ((key2 = font_size_map[*key].next(key2))) {
-			list.push_back(PropertyInfo(Variant::INT, String() + *key + "/font_sizes/" + *key2));
+			list.push_back(PropertyInfo(Variant::INT, String() + *key + "/font_sizes/" + *key2, PROPERTY_HINT_RANGE, "0,256,1,or_greater"));
 		}
 	}
 
@@ -1655,7 +1655,7 @@ void Theme::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "default_base_scale", PROPERTY_HINT_RANGE, "0.0,2.0,0.01,or_greater"), "set_default_base_scale", "get_default_base_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "default_font", PROPERTY_HINT_RESOURCE_TYPE, "Font"), "set_default_font", "get_default_font");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "default_font_size"), "set_default_font_size", "get_default_font_size");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "default_font_size", PROPERTY_HINT_RANGE, "0,256,1,or_greater"), "set_default_font_size", "get_default_font_size");
 
 	BIND_ENUM_CONSTANT(DATA_TYPE_COLOR);
 	BIND_ENUM_CONSTANT(DATA_TYPE_CONSTANT);
