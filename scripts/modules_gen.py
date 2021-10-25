@@ -106,8 +106,10 @@ void unregister_module_types() {
     )
 
     # NOTE: It is safe to generate this file here, since this is still executed serially
-    with open(output, "w") as f:
+    tmpfilename = output + "~"
+    with open(tmpfilename, "w") as f:
         f.write(modules_cpp)
+    replace_if_different(output, tmpfilename)
 
     return
 
@@ -139,6 +141,7 @@ if __name__ == "__main__":
     module_enabled_parser.add_argument("module_db_file", type=str, help="The module db json file.")
     module_enabled_parser.add_argument("build_root", type=str, help="The project build root")
     module_enabled_parser.add_argument("output", type=str, help="The output header file.")
+    module_enabled_parser.add_argument("-f", "--fake-stamp", default="")
 
     # module tests
     module_enabled_tests = subparsers.add_parser("modules_tests", help="Generate the modules_tests file")
@@ -146,6 +149,7 @@ if __name__ == "__main__":
     module_enabled_tests.add_argument("build_root", type=str, help="The project build root")
     module_enabled_tests.add_argument("source_root", type=str, help="The project build root")
     module_enabled_tests.add_argument("output", type=str, help="The output header file.")
+    module_enabled_tests.add_argument("-f", "--fake-stamp", default="")
 
     # register module type
     register_module_type_parser = subparsers.add_parser(
@@ -157,11 +161,19 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
+    fake_stamp = None
     if args.command == "modules_enabled":
         __make_modules_enabled_header(args.module_db_file, args.build_root, args.output)
+        fake_stamp = args.fake_stamp
     elif args.command == "register_module_types":
         __make_register_module_types_cpp(args.module_db_file, args.build_root, args.output)
     elif args.command == "modules_tests":
         __make_modules_tests_header(args.module_db_file, args.build_root, args.source_root, args.output)
+        fake_stamp = args.fake_stamp
     else:
         sys.exit(255)
+
+    # See scons_compat.py for explanation.
+    if fake_stamp:
+        with open(fake_stamp, "w") as fake_stamp:
+            fake_stamp.write("#error This file should not be included, your include paths are wrong.\n")
