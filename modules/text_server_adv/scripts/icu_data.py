@@ -11,7 +11,7 @@ def fix_path(name: str, dest: str):
 def _make_icu_data(input_data_file: str, output_gen_file: str):
     import os
 
-    f = fix_path(output_gen_file, os.path.join("thirdparty", "icu4c"))
+    f = output_gen_file
     g = open(f, "w", encoding="utf-8")
 
     g.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
