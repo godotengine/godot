@@ -309,7 +309,14 @@ _modules_enabled_gen = custom_target(
     'modules_enabled',
     output: ['modules_enabled.gen.h'],
     input: [MODULES_DB_FILE],
-    command: [SCRIPT_MODULES_GEN, 'modules_enabled', '@INPUT@', MESON_BUILD_ROOT, '@OUTPUT@'],
+    command: [SCRIPT_MODULES_GEN,
+              'modules_enabled',
+              '@INPUT@',
+              MESON_BUILD_ROOT,
+              '@OUTPUT@',
+              '--fake-stamp',
+              'modules_enabled.gen.h'
+              ],
     build_by_default: true,
     env: SCRIPTS_ENV
 )
@@ -319,7 +326,14 @@ _modules_tests_gen = custom_target(
     'modules_tests',
     output: ['modules_tests.gen.h'],
     input: [MODULES_DB_FILE],
-    command: [SCRIPT_MODULES_GEN, 'modules_tests', '@INPUT@', MESON_BUILD_ROOT, MESON_SOURCE_ROOT, '@OUTPUT@'],
+    command: [SCRIPT_MODULES_GEN,
+              'modules_tests',
+              '@INPUT@',
+              MESON_BUILD_ROOT,
+              MESON_SOURCE_ROOT,
+              '@OUTPUT@',
+              '--fake-stamp',
+              'modules_tests.gen.h'],
     build_by_default: true,
     env: SCRIPTS_ENV
 )
