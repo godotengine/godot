@@ -612,6 +612,9 @@ Vector<int> Skeleton3D::get_bone_children(int p_bone) {
 void Skeleton3D::set_bone_children(int p_bone, Vector<int> p_children) {
 	const int bone_size = bones.size();
 	ERR_FAIL_INDEX(p_bone, bone_size);
+	for (int idx : p_children) {
+		ERR_FAIL_INDEX(idx, bones.size());
+	}
 	bones.write[p_bone].child_bones = p_children;
 
 	process_order_dirty = true;
