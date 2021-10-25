@@ -434,6 +434,7 @@
 		</constant>
 		<constant name="FORMAT_R8" value="2" enum="Format">
 			OpenGL texture format [code]RED[/code] with a single component and a bitdepth of 8.
+			[b]Note:[/b] When using the GLES2 backend, this uses the alpha channel instead of the red channel for storage.
 		</constant>
 		<constant name="FORMAT_RG8" value="3" enum="Format">
 			OpenGL texture format [code]RG[/code] with two components and a bitdepth of 8 for each.
