@@ -361,7 +361,6 @@ DirectionalLight3D::ShadowMode DirectionalLight3D::get_shadow_mode() const {
 void DirectionalLight3D::set_blend_splits(bool p_enable) {
 	blend_splits = p_enable;
 	RS::get_singleton()->light_directional_set_blend_splits(light, p_enable);
-	notify_property_list_changed();
 }
 
 bool DirectionalLight3D::is_blend_splits_enabled() const {
@@ -379,12 +378,12 @@ bool DirectionalLight3D::is_sky_only() const {
 
 void DirectionalLight3D::_validate_property(PropertyInfo &property) const {
 	if (shadow_mode == SHADOW_ORTHOGONAL && (property.name == "directional_shadow_split_1" || property.name == "directional_shadow_blend_splits")) {
-		// Split 2 and split blending are only used with PSSM 2 Splits and PSSM 4 Splits shadow mode.
+		// Split 2 and split blending are only used with the PSSM 2 Splits and PSSM 4 Splits shadow modes.
 		property.usage = PROPERTY_USAGE_NOEDITOR;
 	}
 
 	if ((shadow_mode == SHADOW_ORTHOGONAL || shadow_mode == SHADOW_PARALLEL_2_SPLITS) && (property.name == "directional_shadow_split_2" || property.name == "directional_shadow_split_3")) {
-		// Splits 3 and 4 are only used with PSSM 4 Splits shadow mode.
+		// Splits 3 and 4 are only used with the PSSM 4 Splits shadow mode.
 		property.usage = PROPERTY_USAGE_NOEDITOR;
 	}
 
@@ -392,6 +391,8 @@ void DirectionalLight3D::_validate_property(PropertyInfo &property) const {
 		// Not implemented in DirectionalLight3D (`light_size` is replaced by `light_angular_distance`).
 		property.usage = PROPERTY_USAGE_NONE;
 	}
+
+	Light3D::_validate_property(property);
 }
 
 void DirectionalLight3D::_bind_methods() {
