@@ -74,7 +74,7 @@ public class GodotGestureHandler extends GestureDetector.SimpleOnGestureListener
 		//Log.i("GodotGesture", "onDoubleTap");
 		final int x = Math.round(event.getX());
 		final int y = Math.round(event.getY());
-		final int buttonMask = event.getButtonState();
+		final int buttonMask = event.getButtonState() + (event.getToolType(event.getActionIndex()) != MotionEvent.TOOL_TYPE_MOUSE ? 1 : 0) * event.getPointerCount();
 		GodotLib.doubleTap(buttonMask, x, y);
 		return true;
 	}
