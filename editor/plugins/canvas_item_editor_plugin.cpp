@@ -3565,7 +3565,7 @@ void CanvasItemEditor::_draw_hover() {
 
 		Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
 		int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
-		Size2 node_name_size = font->get_string_size(node_name);
+		Size2 node_name_size = font->get_string_size(node_name, font_size);
 		Size2 item_size = Size2(node_icon->get_size().x + 4 + node_name_size.x, MAX(node_icon->get_size().y, node_name_size.y - 3));
 
 		Point2 pos = transform.xform(hovering_results[i].position) - Point2(0, item_size.y) + (Point2(node_icon->get_size().x, -node_icon->get_size().y) / 4);
@@ -4777,10 +4777,6 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 					if (key_pos) {
 						ctrl->set_position(Point2());
 					}
-					/*
-                                   if (key_scale)
-				   AnimationPlayerEditor::get_singleton()->get_track_editor()->insert_node_value_key(ctrl,"rect/size",ctrl->get_size());
-                                   */
 				}
 			}
 

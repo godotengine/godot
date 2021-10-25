@@ -884,10 +884,11 @@ public:
 							flag_rects.push_back(rect2);
 
 							Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
+							int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
 							Vector2 offset;
 							offset.y = rect2.size.y * 0.75;
 
-							draw_string(font, rect2.position + offset, itos(layer_index + 1), HALIGN_CENTER, rect2.size.x, -1, on ? text_color_on : text_color);
+							draw_string(font, rect2.position + offset, itos(layer_index + 1), HALIGN_CENTER, rect2.size.x, font_size, on ? text_color_on : text_color);
 
 							ofs.x += bsize + 1;
 
