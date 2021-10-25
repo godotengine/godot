@@ -331,6 +331,7 @@ Light::~Light() {
 void DirectionalLight::set_shadow_mode(ShadowMode p_mode) {
 	shadow_mode = p_mode;
 	VS::get_singleton()->light_directional_set_shadow_mode(light, VS::LightDirectionalShadowMode(p_mode));
+	property_list_changed_notify();
 }
 
 DirectionalLight::ShadowMode DirectionalLight::get_shadow_mode() const {
@@ -353,6 +354,20 @@ void DirectionalLight::set_blend_splits(bool p_enable) {
 
 bool DirectionalLight::is_blend_splits_enabled() const {
 	return blend_splits;
+}
+
+void DirectionalLight::_validate_property(PropertyInfo &property) const {
+	if (shadow_mode == SHADOW_ORTHOGONAL && (property.name == "directional_shadow_split_1" || property.name == "directional_shadow_blend_splits" || property.name == "directional_shadow_bias_split_scale")) {
+		// Split 2, split blending and bias split scale are only used with the PSSM 2 Splits and PSSM 4 Splits shadow modes.
+		property.usage = PROPERTY_USAGE_NOEDITOR;
+	}
+
+	if ((shadow_mode == SHADOW_ORTHOGONAL || shadow_mode == SHADOW_PARALLEL_2_SPLITS) && (property.name == "directional_shadow_split_2" || property.name == "directional_shadow_split_3")) {
+		// Splits 3 and 4 are only used with the PSSM 4 Splits shadow mode.
+		property.usage = PROPERTY_USAGE_NOEDITOR;
+	}
+
+	Light::_validate_property(property);
 }
 
 void DirectionalLight::_bind_methods() {
