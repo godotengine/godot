@@ -215,6 +215,14 @@
 				Clear the animation (clear all tracks and reset all).
 			</description>
 		</method>
+		<method name="compress">
+			<return type="void" />
+			<argument index="0" name="page_size" type="int" default="8192" />
+			<argument index="1" name="fps" type="int" default="120" />
+			<argument index="2" name="split_tolerance" type="float" default="4.0" />
+			<description>
+			</description>
+		</method>
 		<method name="copy_track">
 			<return type="void" />
 			<argument index="0" name="track_idx" type="int" />
@@ -369,6 +377,12 @@
 			<argument index="3" name="transition" type="float" default="1" />
 			<description>
 				Insert a generic key in a given track.
+			</description>
+		</method>
+		<method name="track_is_compressed" qualifiers="const">
+			<return type="bool" />
+			<argument index="0" name="track_idx" type="int" />
+			<description>
 			</description>
 		</method>
 		<method name="track_is_enabled" qualifiers="const">

@@ -32,6 +32,7 @@
 #define ANIMATION_H
 
 #include "core/io/resource.h"
+#include "core/templates/local_vector.h"
 
 #define ANIM_MIN_LENGTH 0.001
 
@@ -98,7 +99,7 @@ private:
 
 	struct PositionTrack : public Track {
 		Vector<TKey<Vector3>> positions;
-
+		int32_t compressed_track = -1;
 		PositionTrack() { type = TYPE_POSITION_3D; }
 	};
 
@@ -106,7 +107,7 @@ private:
 
 	struct RotationTrack : public Track {
 		Vector<TKey<Quaternion>> rotations;
-
+		int32_t compressed_track = -1;
 		RotationTrack() { type = TYPE_ROTATION_3D; }
 	};
 
@@ -114,6 +115,7 @@ private:
 
 	struct ScaleTrack : public Track {
 		Vector<TKey<Vector3>> scales;
+		int32_t compressed_track = -1;
 		ScaleTrack() { type = TYPE_SCALE_3D; }
 	};
 
@@ -121,6 +123,7 @@ private:
 
 	struct BlendShapeTrack : public Track {
 		Vector<TKey<float>> blend_shapes;
+		int32_t compressed_track = -1;
 		BlendShapeTrack() { type = TYPE_BLEND_SHAPE; }
 	};
 
@@ -230,6 +233,89 @@ private:
 	real_t step = 0.1;
 	bool loop = false;
 
+	/* Animation compression page format (version 1):
+	 *
+	 * Animation uses bitwidth based compression separated into small pages. The intention is that pages fit easily in the cache, so decoding is cache efficient.
+	 * The page-based nature also makes future animation streaming from disk possible.
+	 *
+	 * Actual format:
+	 *
+	 * num_compressed_tracks = bounds.size()
+	 * header : (x num_compressed_tracks)
+	 * -------
+	 * timeline_keys_offset : uint32_t - offset to time keys
+	 * timeline_size : uint32_t - amount of time keys
+	 * data_keys_offset : uint32_t offset to key data
+	 *
+	 * time key (uint32_t):
+	 * ------------------
+	 * frame : bits 0-15 - time offset of key, computed as: page.time_offset + frame * (1.0/fps)
+	 * data_key_offset : bits 16-27 - offset to key data, computed as: data_keys_offset * 4 + data_key_offset
+	 * data_key_count : bits 28-31 - amount of data keys pointed to, computed as: data_key_count+1 (max 16)
+	 *
+	 * data key:
+	 * ---------
+	 * X / Blend Shape : uint16_t - X coordinate of XYZ vector key, or Blend Shape value. If Blend shape, Y and Z are not present and can be ignored.
+	 * Y : uint16_t
+	 * Z : uint16_t
+	 * If data_key_count+1 > 1 (if more than 1 key is stored):
+	 * data_bitwidth : uint16_t - This is only present if data_key_count > 1. Contains delta bitwidth information.
+	 *    X / Blend Shape delta bitwidth: bits 0-3 -
+	 * if 0, nothing is present for X (use the first key-value for subsequent keys),
+	 * else assume the number of bits present for each element (+ 1 for sign). Assumed always 16 bits, delta max signed 15 bits, with underflow and overflow supported.
+	 *    Y delta bitwidth : bits 4-7
+	 *    Z delta bitwidth : bits 8-11
+	 *    FRAME delta bitwidth : 12-15 bits - always present (obviously), actual bitwidth is FRAME+1
+	 * Data key is 4 bytes long for Blend Shapes, 8 bytes long for pos/rot/scale.
+	 *
+	 * delta keys:
+	 * -----------
+	 * Compressed format is packed in the following format after the data key, containing delta keys one after the next in a tightly bit packed fashion.
+	 * FRAME bits -> X / Blend Shape Bits (if bitwidth > 0) -> Y Bits (if not Blend Shape and Y Bitwidth > 0) -> Z Bits (if not Blend Shape and Z Bitwidth > 0)
+	 *
+	 * data key format:
+	 * ----------------
+	 * Decoding keys means starting from the base key and going key by key applying deltas until the proper position is reached needed for interpolation.
+	 * Resulting values are uint32_t
+	 * data for X / Blend Shape, Y and Z must be normalized first: unorm = float(data) / 65535.0
+	 * **Blend Shape**: (unorm * 2.0 - 1.0) * Compression::BLEND_SHAPE_RANGE
+	 * **Pos/Scale**: unorm_vec3 * bounds[track].size + bounds[track].position
+	 * **Rotation**: Quaternion(Vector3::octahedron_decode(unorm_vec3.xy),unorm_vec3.z * Math_PI * 2.0)
+	 * **Frame**: page.time_offset + frame * (1.0/fps)
+	 */
+
+	struct Compression {
+		enum {
+			MAX_DATA_TRACK_SIZE = 16384,
+			BLEND_SHAPE_RANGE = 8, // - 8.0 to 8.0
+			FORMAT_VERSION = 1
+		};
+		struct Page {
+			Vector<uint8_t> data;
+			double time_offset;
+		};
+
+		uint32_t fps = 120;
+		LocalVector<Page> pages;
+		LocalVector<AABB> bounds; //used by position and scale tracks (which contain index to track and index to bounds).
+		bool enabled = false;
+	} compression;
+
+	Vector3i _compress_key(uint32_t p_track, const AABB &p_bounds, int32_t p_key = -1, float p_time = 0.0);
+	bool _rotation_interpolate_compressed(uint32_t p_compressed_track, double p_time, Quaternion &r_ret) const;
+	bool _pos_scale_interpolate_compressed(uint32_t p_compressed_track, double p_time, Vector3 &r_ret) const;
+	bool _blend_shape_interpolate_compressed(uint32_t p_compressed_track, double p_time, float &r_ret) const;
+	template <uint32_t COMPONENTS>
+	bool _fetch_compressed(uint32_t p_compressed_track, double p_time, Vector3i &r_current_value, double &r_current_time, Vector3i &r_next_value, double &r_next_time, uint32_t *key_index = nullptr) const;
+	template <uint32_t COMPONENTS>
+	bool _fetch_compressed_by_index(uint32_t p_compressed_track, int p_index, Vector3i &r_value, double &r_time) const;
+	int _get_compressed_key_count(uint32_t p_compressed_track) const;
+	template <uint32_t COMPONENTS>
+	void _get_compressed_key_indices_in_range(uint32_t p_compressed_track, double p_time, double p_delta, List<int> *r_indices) const;
+	_FORCE_INLINE_ Quaternion _uncompress_quaternion(const Vector3i &p_value) const;
+	_FORCE_INLINE_ Vector3 _uncompress_pos_scale(uint32_t p_compressed_track, const Vector3i &p_value) const;
+	_FORCE_INLINE_ float _uncompress_blend_shape(const Vector3i &p_value) const;
+
 	// bind helpers
 private:
 	Vector<int> _value_track_get_key_indices(int p_track, double p_time, double p_delta) const {
@@ -305,6 +391,7 @@ public:
 	Variant track_get_key_value(int p_track, int p_key_idx) const;
 	double track_get_key_time(int p_track, int p_key_idx) const;
 	real_t track_get_key_transition(int p_track, int p_key_idx) const;
+	bool track_is_compressed(int p_track) const;
 
 	int position_track_insert_key(int p_track, double p_time, const Vector3 &p_position);
 	Error position_track_get_key(int p_track, int p_key, Vector3 *r_position) const;
@@ -375,6 +462,7 @@ public:
 	void clear();
 
 	void optimize(real_t p_allowed_linear_err = 0.05, real_t p_allowed_angular_err = 0.01, real_t p_max_optimizable_angle = Math_PI * 0.125);
+	void compress(uint32_t p_page_size = 8192, uint32_t p_fps = 120, float p_split_tolerance = 4.0); // 4.0 seems to be the split tolerance sweet spot from many tests
 
 	Animation();
 	~Animation();
