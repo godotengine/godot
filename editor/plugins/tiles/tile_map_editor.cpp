@@ -2894,7 +2894,11 @@ void TileMapEditor::_layers_selection_button_draw() {
 				clr = get_theme_color(SNAME("font_disabled_color"));
 				break;
 			default:
-				clr = get_theme_color(SNAME("font_color"));
+				if (layers_selection_button->has_focus()) {
+					clr = get_theme_color(SNAME("font_focus_color"));
+				} else {
+					clr = get_theme_color(SNAME("font_color"));
+				}
 		}
 	}
 
