@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,7 +31,7 @@
 #ifndef GODOTSHARP_DIRS_H
 #define GODOTSHARP_DIRS_H
 
-#include "core/ustring.h"
+#include "core/string/ustring.h"
 
 namespace GodotSharpDirs {
 
@@ -56,6 +56,8 @@ String get_project_csproj_path();
 
 String get_data_editor_tools_dir();
 String get_data_editor_prebuilt_api_dir();
+#else
+String get_data_game_assemblies_dir();
 #endif
 
 String get_data_mono_etc_dir();
@@ -64,7 +66,6 @@ String get_data_mono_lib_dir();
 #ifdef WINDOWS_ENABLED
 String get_data_mono_bin_dir();
 #endif
-
 } // namespace GodotSharpDirs
 
 #endif // GODOTSHARP_DIRS_H

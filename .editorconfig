@@ -9,10 +9,15 @@ insert_final_newline = true
 [*.{cpp,hpp,c,h,mm}]
 trim_trailing_whitespace = true
 
-[{*.{py,cs},SConstruct,SCsub}]
+[{*.gradle,AndroidManifest.xml}]
 indent_style = space
 indent_size = 4
 
-[.travis.yml]
+[{*.py,SConstruct,SCsub}]
+indent_style = space
+indent_size = 4
+
+# YAML requires indentation with spaces instead of tabs.
+[*.{yml,yaml}]
 indent_style = space
 indent_size = 2

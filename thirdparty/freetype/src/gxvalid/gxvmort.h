@@ -4,7 +4,7 @@
  *
  *   TrueTypeGX/AAT common definition for mort table (specification).
  *
- * Copyright (C) 2004-2019 by
+ * Copyright (C) 2004-2020 by
  * suzuki toshiya, Masatake YAMATO, Red Hat K.K.,
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
@@ -31,7 +31,10 @@
 #include "gxvalid.h"
 #include "gxvcommn.h"
 
-#include FT_SFNT_NAMES_H
+#include <freetype/ftsnames.h>
+
+
+FT_BEGIN_HEADER
 
 
   typedef struct  GXV_mort_featureRec_
@@ -87,6 +90,8 @@
                                     FT_Bytes       limit,
                                     GXV_Validator  gxvalid );
 
+
+FT_END_HEADER
 
 #endif /* GXVMORT_H_ */
 

@@ -4,7 +4,7 @@
  *
  *   Debugging and logging component (specification).
  *
- * Copyright (C) 1996-2019 by
+ * Copyright (C) 1996-2020 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -27,7 +27,9 @@
 
 #include <ft2build.h>
 #include FT_CONFIG_CONFIG_H
-#include FT_FREETYPE_H
+#include <freetype/freetype.h>
+
+#include "compiler-macros.h"
 
 
 FT_BEGIN_HEADER
@@ -56,7 +58,7 @@ FT_BEGIN_HEADER
   /* defining the enumeration */
   typedef enum  FT_Trace_
   {
-#include FT_INTERNAL_TRACE_H
+#include <freetype/internal/fttrace.h>
     trace_count
 
   } FT_Trace;

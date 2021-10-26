@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,14 +37,12 @@
 #include "servers/audio_server.h"
 
 class VideoPlayer : public Control {
-
 	GDCLASS(VideoPlayer, Control);
 
 	struct Output {
-
 		AudioFrame vol;
-		int bus_index;
-		Viewport *viewport; //pointer only used for reference to previous mix
+		int bus_index = 0;
+		Viewport *viewport = nullptr; //pointer only used for reference to previous mix
 	};
 	Ref<VideoStreamPlayback> playback;
 	Ref<VideoStream> stream;
@@ -55,39 +53,39 @@ class VideoPlayer : public Control {
 	RID stream_rid;
 
 	Ref<ImageTexture> texture;
-	Ref<Image> last_frame;
 
 	AudioRBResampler resampler;
 	Vector<AudioFrame> mix_buffer;
-	int wait_resampler, wait_resampler_limit;
+	int wait_resampler = 0;
+	int wait_resampler_limit = 2;
 
-	bool paused;
-	bool autoplay;
-	float volume;
-	double last_audio_time;
-	bool expand;
-	bool loops;
-	int buffering_ms;
-	int audio_track;
-	int bus_index;
+	bool paused = false;
+	bool autoplay = false;
+	float volume = 1.0;
+	double last_audio_time = 0.0;
+	bool expand = true;
+	bool loops = false;
+	int buffering_ms = 500;
+	int audio_track = 0;
+	int bus_index = 0;
 
 	StringName bus;
 
 	void _mix_audio();
 	static int _audio_mix_callback(void *p_udata, const float *p_data, int p_frames);
-	static void _mix_audios(void *self) { reinterpret_cast<VideoPlayer *>(self)->_mix_audio(); }
+	static void _mix_audios(void *p_self);
 
 protected:
 	static void _bind_methods();
 	void _notification(int p_notification);
-	void _validate_property(PropertyInfo &property) const;
+	void _validate_property(PropertyInfo &p_property) const override;
 
 public:
-	Size2 get_minimum_size() const;
+	Size2 get_minimum_size() const override;
 	void set_expand(bool p_expand);
 	bool has_expand() const;
 
-	Ref<Texture> get_video_texture();
+	Ref<Texture2D> get_video_texture() const;
 
 	void set_stream(const Ref<VideoStream> &p_stream);
 	Ref<VideoStream> get_stream() const;

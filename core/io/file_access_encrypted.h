@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,7 +31,9 @@
 #ifndef FILE_ACCESS_ENCRYPTED_H
 #define FILE_ACCESS_ENCRYPTED_H
 
-#include "core/os/file_access.h"
+#include "core/io/file_access.h"
+
+#define ENCRYPTED_HEADER_MAGIC 0x43454447
 
 class FileAccessEncrypted : public FileAccess {
 public:
@@ -42,39 +44,45 @@ public:
 	};
 
 private:
-	Mode mode;
 	Vector<uint8_t> key;
-	bool writing;
-	FileAccess *file;
-	size_t base;
-	size_t length;
+	bool writing = false;
+	FileAccess *file = nullptr;
+	uint64_t base = 0;
+	uint64_t length = 0;
 	Vector<uint8_t> data;
-	mutable int pos;
-	mutable bool eofed;
+	mutable uint64_t pos = 0;
+	mutable bool eofed = false;
+	bool use_magic = true;
+
+	void _release();
 
 public:
-	Error open_and_parse(FileAccess *p_base, const Vector<uint8_t> &p_key, Mode p_mode);
+	Error open_and_parse(FileAccess *p_base, const Vector<uint8_t> &p_key, Mode p_mode, bool p_with_magic = true);
 	Error open_and_parse_password(FileAccess *p_base, const String &p_key, Mode p_mode);
 
 	virtual Error _open(const String &p_path, int p_mode_flags); ///< open a file
 	virtual void close(); ///< close a file
+	virtual void release(); ///< finish and keep base file open
 	virtual bool is_open() const; ///< true when file is open
 
-	virtual void seek(size_t p_position); ///< seek to a given position
+	virtual String get_path() const; /// returns the path for the current open file
+	virtual String get_path_absolute() const; /// returns the absolute path for the current open file
+
+	virtual void seek(uint64_t p_position); ///< seek to a given position
 	virtual void seek_end(int64_t p_position = 0); ///< seek from the end of file
-	virtual size_t get_position() const; ///< get position in the file
-	virtual size_t get_len() const; ///< get size of the file
+	virtual uint64_t get_position() const; ///< get position in the file
+	virtual uint64_t get_length() const; ///< get size of the file
 
 	virtual bool eof_reached() const; ///< reading passed EOF
 
 	virtual uint8_t get_8() const; ///< get a byte
-	virtual int get_buffer(uint8_t *p_dst, int p_length) const;
+	virtual uint64_t get_buffer(uint8_t *p_dst, uint64_t p_length) const;
 
 	virtual Error get_error() const; ///< get last error
 
 	virtual void flush();
 	virtual void store_8(uint8_t p_dest); ///< store a byte
-	virtual void store_buffer(const uint8_t *p_src, int p_length); ///< store an array of bytes
+	virtual void store_buffer(const uint8_t *p_src, uint64_t p_length); ///< store an array of bytes
 
 	virtual bool file_exists(const String &p_name); ///< return true if a file exists
 
@@ -82,7 +90,7 @@ public:
 	virtual uint32_t _get_unix_permissions(const String &p_file);
 	virtual Error _set_unix_permissions(const String &p_file, uint32_t p_permissions);
 
-	FileAccessEncrypted();
+	FileAccessEncrypted() {}
 	~FileAccessEncrypted();
 };
 

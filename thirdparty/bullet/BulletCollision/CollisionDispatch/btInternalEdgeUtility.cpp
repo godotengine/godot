@@ -1,6 +1,8 @@
 #include "btInternalEdgeUtility.h"
 
 #include "BulletCollision/CollisionShapes/btBvhTriangleMeshShape.h"
+#include "BulletCollision/CollisionShapes/btHeightfieldTerrainShape.h"
+
 #include "BulletCollision/CollisionShapes/btScaledBvhTriangleMeshShape.h"
 #include "BulletCollision/CollisionShapes/btTriangleShape.h"
 #include "BulletCollision/CollisionDispatch/btCollisionObject.h"
@@ -290,6 +292,39 @@ struct btConnectivityProcessor : public btTriangleCallback
 		}
 	}
 };
+
+
+struct b3ProcessAllTrianglesHeightfield: public btTriangleCallback
+{
+	btHeightfieldTerrainShape* m_heightfieldShape;
+	btTriangleInfoMap* m_triangleInfoMap;
+	
+
+	b3ProcessAllTrianglesHeightfield(btHeightfieldTerrainShape* heightFieldShape, btTriangleInfoMap* triangleInfoMap)
+		:m_heightfieldShape(heightFieldShape),
+		m_triangleInfoMap(triangleInfoMap)
+	{
+	}
+	virtual void processTriangle(btVector3* triangle, int partId, int triangleIndex)
+	{
+		btConnectivityProcessor connectivityProcessor;
+		connectivityProcessor.m_partIdA = partId;
+		connectivityProcessor.m_triangleIndexA = triangleIndex;
+		connectivityProcessor.m_triangleVerticesA = triangle;
+		connectivityProcessor.m_triangleInfoMap = m_triangleInfoMap;
+		btVector3 aabbMin, aabbMax;
+		aabbMin.setValue(btScalar(BT_LARGE_FLOAT), btScalar(BT_LARGE_FLOAT), btScalar(BT_LARGE_FLOAT));
+		aabbMax.setValue(btScalar(-BT_LARGE_FLOAT), btScalar(-BT_LARGE_FLOAT), btScalar(-BT_LARGE_FLOAT));
+		aabbMin.setMin(triangle[0]);
+		aabbMax.setMax(triangle[0]);
+		aabbMin.setMin(triangle[1]);
+		aabbMax.setMax(triangle[1]);
+		aabbMin.setMin(triangle[2]);
+		aabbMax.setMax(triangle[2]);
+
+		m_heightfieldShape->processAllTriangles(&connectivityProcessor, aabbMin, aabbMax);
+	}
+};
 /////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////
 
@@ -326,7 +361,13 @@ void btGenerateInternalEdgeInfo(btBvhTriangleMeshShape* trimeshShape, btTriangle
 
 			for (int j = 2; j >= 0; j--)
 			{
-				int graphicsindex = indicestype == PHY_SHORT ? ((unsigned short*)gfxbase)[j] : gfxbase[j];
+				int graphicsindex;
+                                switch (indicestype) {
+                                        case PHY_INTEGER: graphicsindex = gfxbase[j]; break;
+                                        case PHY_SHORT: graphicsindex = ((unsigned short*)gfxbase)[j]; break;
+                                        case PHY_UCHAR: graphicsindex = ((unsigned char*)gfxbase)[j]; break;
+                                        default: btAssert(0);
+                                }
 				if (type == PHY_FLOAT)
 				{
 					float* graphicsbase = (float*)(vertexbase + graphicsindex * stride);
@@ -359,6 +400,28 @@ void btGenerateInternalEdgeInfo(btBvhTriangleMeshShape* trimeshShape, btTriangle
 			trimeshShape->processAllTriangles(&connectivityProcessor, aabbMin, aabbMax);
 		}
 	}
+}
+
+
+void btGenerateInternalEdgeInfo(btHeightfieldTerrainShape* heightfieldShape, btTriangleInfoMap* triangleInfoMap)
+{
+
+	//the user pointer shouldn't already be used for other purposes, we intend to store connectivity info there!
+	if (heightfieldShape->getTriangleInfoMap())
+		return;
+
+	heightfieldShape->setTriangleInfoMap(triangleInfoMap);
+
+	//get all the triangles of the heightfield
+
+	btVector3 aabbMin, aabbMax;
+
+	aabbMax.setValue(btScalar(BT_LARGE_FLOAT), btScalar(BT_LARGE_FLOAT), btScalar(BT_LARGE_FLOAT));
+	aabbMin.setValue(btScalar(-BT_LARGE_FLOAT), btScalar(-BT_LARGE_FLOAT), btScalar(-BT_LARGE_FLOAT));
+
+	b3ProcessAllTrianglesHeightfield processHeightfield(heightfieldShape, triangleInfoMap);
+	heightfieldShape->processAllTriangles(&processHeightfield, aabbMin, aabbMax);
+
 }
 
 // Given a point and a line segment (defined by two points), compute the closest point
@@ -426,6 +489,32 @@ void btAdjustInternalEdgeContacts(btManifoldPoint& cp, const btCollisionObjectWr
 	if (colObj0Wrap->getCollisionShape()->getShapeType() != TRIANGLE_SHAPE_PROXYTYPE)
 		return;
 
+	
+	btTriangleInfoMap* triangleInfoMapPtr = 0;
+
+	if (colObj0Wrap->getCollisionObject()->getCollisionShape()->getShapeType() == TERRAIN_SHAPE_PROXYTYPE)
+	{
+		btHeightfieldTerrainShape* heightfield = (btHeightfieldTerrainShape*)colObj0Wrap->getCollisionObject()->getCollisionShape();
+		triangleInfoMapPtr = heightfield->getTriangleInfoMap();
+
+//#define USE_HEIGHTFIELD_TRIANGLES
+#ifdef USE_HEIGHTFIELD_TRIANGLES
+		btVector3 newNormal = btVector3(0, 0, 1);
+
+		const btTriangleShape* tri_shape = static_cast<const btTriangleShape*>(colObj0Wrap->getCollisionShape());
+		btVector3 tri_normal;
+		tri_shape->calcNormal(tri_normal);
+		newNormal = tri_normal;
+		//					cp.m_distance1 = cp.m_distance1 * newNormal.dot(cp.m_normalWorldOnB);
+		cp.m_normalWorldOnB = newNormal;
+		// Reproject collision point along normal. (what about cp.m_distance1?)
+		cp.m_positionWorldOnB = cp.m_positionWorldOnA - cp.m_normalWorldOnB * cp.m_distance1;
+		cp.m_localPointB = colObj0Wrap->getWorldTransform().invXform(cp.m_positionWorldOnB);
+		return;
+#endif
+	}
+
+
 	btBvhTriangleMeshShape* trimesh = 0;
 
 	if (colObj0Wrap->getCollisionObject()->getCollisionShape()->getShapeType() == SCALED_TRIANGLE_MESH_SHAPE_PROXYTYPE)
@@ -439,10 +528,12 @@ void btAdjustInternalEdgeContacts(btManifoldPoint& cp, const btCollisionObjectWr
 			trimesh = (btBvhTriangleMeshShape*)colObj0Wrap->getCollisionObject()->getCollisionShape();
 		}
 	}
-	if (trimesh == 0)
-		return;
-
-	btTriangleInfoMap* triangleInfoMapPtr = (btTriangleInfoMap*)trimesh->getTriangleInfoMap();
+	if (trimesh)
+	{
+		triangleInfoMapPtr = (btTriangleInfoMap*)trimesh->getTriangleInfoMap();
+	}
+	
+	
 	if (!triangleInfoMapPtr)
 		return;
 

@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="MultiplayerPeerExtension" inherits="MultiplayerPeer" version="4.0">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="_get_available_packet_count" qualifiers="virtual const">
+			<return type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_connection_status" qualifiers="virtual const">
+			<return type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_max_packet_size" qualifiers="virtual const">
+			<return type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_packet" qualifiers="virtual">
+			<return type="int" />
+			<argument index="0" name="r_buffer" type="const uint8_t **" />
+			<argument index="1" name="r_buffer_size" type="int32_t*" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_packet_peer" qualifiers="virtual const">
+			<return type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_transfer_channel" qualifiers="virtual const">
+			<return type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_transfer_mode" qualifiers="virtual const">
+			<return type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_unique_id" qualifiers="virtual const">
+			<return type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_is_refusing_new_connections" qualifiers="virtual const">
+			<return type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="_is_server" qualifiers="virtual const">
+			<return type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="_poll" qualifiers="virtual">
+			<return type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_put_packet" qualifiers="virtual">
+			<return type="int" />
+			<argument index="0" name="p_buffer" type="const uint8_t*" />
+			<argument index="1" name="p_buffer_size" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_set_refuse_new_connections" qualifiers="virtual">
+			<return type="void" />
+			<argument index="0" name="p_enable" type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="_set_target_peer" qualifiers="virtual">
+			<return type="void" />
+			<argument index="0" name="p_peer" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_set_transfer_channel" qualifiers="virtual">
+			<return type="void" />
+			<argument index="0" name="p_channel" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_set_transfer_mode" qualifiers="virtual">
+			<return type="void" />
+			<argument index="0" name="p_mode" type="int" />
+			<description>
+			</description>
+		</method>
+	</methods>
+</class>

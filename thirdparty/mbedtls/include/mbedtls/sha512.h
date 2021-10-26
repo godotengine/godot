@@ -6,8 +6,14 @@
  * hash functions are defined in <em>FIPS 180-4: Secure Hash Standard (SHS)</em>.
  */
 /*
- *  Copyright (C) 2006-2018, Arm Limited (or its affiliates), All Rights Reserved
- *  SPDX-License-Identifier: Apache-2.0
+ *  Copyright The Mbed TLS Contributors
+ *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
+ *
+ *  This file is provided under the Apache License 2.0, or the
+ *  GNU General Public License v2.0 or later.
+ *
+ *  **********
+ *  Apache License 2.0:
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may
  *  not use this file except in compliance with the License.
@@ -21,7 +27,26 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  *
- *  This file is part of Mbed TLS (https://tls.mbed.org)
+ *  **********
+ *
+ *  **********
+ *  GNU General Public License v2.0 or later:
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along
+ *  with this program; if not, write to the Free Software Foundation, Inc.,
+ *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *  **********
  */
 #ifndef MBEDTLS_SHA512_H
 #define MBEDTLS_SHA512_H
@@ -127,8 +152,7 @@ int mbedtls_sha512_update_ret( mbedtls_sha512_context *ctx,
 
 /**
  * \brief          This function finishes the SHA-512 operation, and writes
- *                 the result to the output buffer. This function is for
- *                 internal use only.
+ *                 the result to the output buffer.
  *
  * \param ctx      The SHA-512 context. This must be initialized
  *                 and have a hash operation started.
@@ -144,6 +168,7 @@ int mbedtls_sha512_finish_ret( mbedtls_sha512_context *ctx,
 /**
  * \brief          This function processes a single data block within
  *                 the ongoing SHA-512 computation.
+ *                 This function is for internal use only.
  *
  * \param ctx      The SHA-512 context. This must be initialized.
  * \param data     The buffer holding one block of data. This
@@ -253,6 +278,7 @@ int mbedtls_sha512_ret( const unsigned char *input,
 #else
 #define MBEDTLS_DEPRECATED
 #endif
+
 /**
  * \brief          This function calculates the SHA-512 or SHA-384
  *                 checksum of a buffer.
@@ -280,6 +306,9 @@ MBEDTLS_DEPRECATED void mbedtls_sha512( const unsigned char *input,
 
 #undef MBEDTLS_DEPRECATED
 #endif /* !MBEDTLS_DEPRECATED_REMOVED */
+
+#if defined(MBEDTLS_SELF_TEST)
+
  /**
  * \brief          The SHA-384 or SHA-512 checkup routine.
  *
@@ -287,6 +316,7 @@ MBEDTLS_DEPRECATED void mbedtls_sha512( const unsigned char *input,
  * \return         \c 1 on failure.
  */
 int mbedtls_sha512_self_test( int verbose );
+#endif /* MBEDTLS_SELF_TEST */
 
 #ifdef __cplusplus
 }

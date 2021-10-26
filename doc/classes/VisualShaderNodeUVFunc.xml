@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="VisualShaderNodeUVFunc" inherits="VisualShaderNode" version="4.0">
+	<brief_description>
+		Contains functions to modify texture coordinates ([code]uv[/code]) to be used within the visual shader graph.
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="function" type="int" setter="set_function" getter="get_function" enum="VisualShaderNodeUVFunc.Function" default="0">
+			A function to be applied to the texture coordinates. See [enum Function] for options.
+		</member>
+	</members>
+	<constants>
+		<constant name="FUNC_PANNING" value="0" enum="Function">
+			Translates [code]uv[/code] by using [code]scale[/code] and [code]offset[/code] values using the following formula: [code]uv = uv + offset * scale[/code]. [code]uv[/code] port is connected to [code]UV[/code] built-in by default.
+		</constant>
+		<constant name="FUNC_SCALING" value="1" enum="Function">
+			Scales [code]uv[/uv] by using [code]scale[/code] and [code]pivot[/code] values using the following formula: [code]uv = (uv - pivot) * scale + pivot[/code]. [code]uv[/code] port is connected to [code]UV[/code] built-in by default.
+		</constant>
+		<constant name="FUNC_MAX" value="2" enum="Function">
+			Represents the size of the [enum Function] enum.
+		</constant>
+	</constants>
+</class>

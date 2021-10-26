@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -38,21 +38,23 @@
 #include "scene/resources/texture.h"
 
 class AudioStreamEditor : public ColorRect {
-
 	GDCLASS(AudioStreamEditor, ColorRect);
 
 	Ref<AudioStream> stream;
-	AudioStreamPlayer *_player;
-	ColorRect *_preview;
-	Control *_indicator;
-	Label *_current_label;
-	Label *_duration_label;
+	AudioStreamPlayer *_player = nullptr;
+	ColorRect *_preview = nullptr;
+	Control *_indicator = nullptr;
+	Label *_current_label = nullptr;
+	Label *_duration_label = nullptr;
 
-	ToolButton *_play_button;
-	ToolButton *_stop_button;
+	Button *_play_button = nullptr;
+	Button *_stop_button = nullptr;
 
-	float _current;
-	bool _dragging;
+	float _current = 0;
+	bool _dragging = false;
+	bool _pausing = false;
+
+	void _audio_changed();
 
 protected:
 	void _notification(int p_what);
@@ -64,7 +66,6 @@ protected:
 	void _draw_indicator();
 	void _on_input_indicator(Ref<InputEvent> p_event);
 	void _seek_to(real_t p_x);
-	void _changed_callback(Object *p_changed, const char *p_prop);
 	static void _bind_methods();
 
 public:
@@ -73,18 +74,17 @@ public:
 };
 
 class AudioStreamEditorPlugin : public EditorPlugin {
-
 	GDCLASS(AudioStreamEditorPlugin, EditorPlugin);
 
 	AudioStreamEditor *audio_editor;
 	EditorNode *editor;
 
 public:
-	virtual String get_name() const { return "Audio"; }
-	bool has_main_screen() const { return false; }
-	virtual void edit(Object *p_object);
-	virtual bool handles(Object *p_object) const;
-	virtual void make_visible(bool p_visible);
+	virtual String get_name() const override { return "Audio"; }
+	bool has_main_screen() const override { return false; }
+	virtual void edit(Object *p_object) override;
+	virtual bool handles(Object *p_object) const override;
+	virtual void make_visible(bool p_visible) override;
 
 	AudioStreamEditorPlugin(EditorNode *p_node);
 	~AudioStreamEditorPlugin();

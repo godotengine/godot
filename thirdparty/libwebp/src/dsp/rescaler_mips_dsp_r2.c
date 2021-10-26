@@ -107,10 +107,9 @@ static void ExportRowShrink_MIPSdspR2(WebPRescaler* const wrk) {
       );
     }
     for (i = 0; i < (x_out_max & 0x3); ++i) {
-      const uint32_t frac = (uint32_t)MULT_FIX(*frow++, yscale);
-      const int v = (int)MULT_FIX_FLOOR(*irow - frac, wrk->fxy_scale);
-      assert(v >= 0 && v <= 255);
-      *dst++ = v;
+      const uint32_t frac = (uint32_t)MULT_FIX_FLOOR(*frow++, yscale);
+      const int v = (int)MULT_FIX(*irow - frac, wrk->fxy_scale);
+      *dst++ = (v > 255) ? 255u : (uint8_t)v;
       *irow++ = frac;   // new fractional start
     }
   } else {
@@ -157,8 +156,7 @@ static void ExportRowShrink_MIPSdspR2(WebPRescaler* const wrk) {
     }
     for (i = 0; i < (x_out_max & 0x3); ++i) {
       const int v = (int)MULT_FIX_FLOOR(*irow, wrk->fxy_scale);
-      assert(v >= 0 && v <= 255);
-      *dst++ = v;
+      *dst++ = (v > 255) ? 255u : (uint8_t)v;
       *irow++ = 0;
     }
   }
@@ -219,8 +217,7 @@ static void ExportRowExpand_MIPSdspR2(WebPRescaler* const wrk) {
     for (i = 0; i < (x_out_max & 0x3); ++i) {
       const uint32_t J = *frow++;
       const int v = (int)MULT_FIX(J, wrk->fy_scale);
-      assert(v >= 0 && v <= 255);
-      *dst++ = v;
+      *dst++ = (v > 255) ? 255u : (uint8_t)v;
     }
   } else {
     const uint32_t B = WEBP_RESCALER_FRAC(-wrk->y_accum, wrk->y_sub);
@@ -291,8 +288,7 @@ static void ExportRowExpand_MIPSdspR2(WebPRescaler* const wrk) {
                        + (uint64_t)B * *irow++;
       const uint32_t J = (uint32_t)((I + ROUNDER) >> WEBP_RESCALER_RFIX);
       const int v = (int)MULT_FIX(J, wrk->fy_scale);
-      assert(v >= 0 && v <= 255);
-      *dst++ = v;
+      *dst++ = (v > 255) ? 255u : (uint8_t)v;
     }
   }
 }

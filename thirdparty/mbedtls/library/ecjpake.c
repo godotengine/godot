@@ -1,8 +1,14 @@
 /*
  *  Elliptic curve J-PAKE
  *
- *  Copyright (C) 2006-2015, ARM Limited, All Rights Reserved
- *  SPDX-License-Identifier: Apache-2.0
+ *  Copyright The Mbed TLS Contributors
+ *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
+ *
+ *  This file is provided under the Apache License 2.0, or the
+ *  GNU General Public License v2.0 or later.
+ *
+ *  **********
+ *  Apache License 2.0:
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may
  *  not use this file except in compliance with the License.
@@ -16,7 +22,26 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  *
- *  This file is part of mbed TLS (https://tls.mbed.org)
+ *  **********
+ *
+ *  **********
+ *  GNU General Public License v2.0 or later:
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along
+ *  with this program; if not, write to the Free Software Foundation, Inc.,
+ *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *  **********
  */
 
 /*
@@ -226,7 +251,7 @@ static int ecjpake_hash( const mbedtls_md_info_t *md_info,
     p += id_len;
 
     /* Compute hash */
-    mbedtls_md( md_info, buf, p - buf, hash );
+    MBEDTLS_MPI_CHK( mbedtls_md( md_info, buf, p - buf, hash ) );
 
     /* Turn it into an integer mod n */
     MBEDTLS_MPI_CHK( mbedtls_mpi_read_binary( h, hash,
@@ -825,6 +850,8 @@ static const unsigned char ecjpake_test_password[] = {
     0x65, 0x73, 0x74
 };
 
+#if !defined(MBEDTLS_ECJPAKE_ALT)
+
 static const unsigned char ecjpake_test_x1[] = {
     0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c,
     0x0d, 0x0e, 0x0f, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18,
@@ -951,7 +978,7 @@ static const unsigned char ecjpake_test_pms[] = {
     0xb4, 0x38, 0xf7, 0x19, 0xd3, 0xc4, 0xf3, 0x51
 };
 
-/* Load my private keys and generate the correponding public keys */
+/* Load my private keys and generate the corresponding public keys */
 static int ecjpake_test_load( mbedtls_ecjpake_context *ctx,
                               const unsigned char *xm1, size_t len1,
                               const unsigned char *xm2, size_t len2 )
@@ -968,6 +995,8 @@ static int ecjpake_test_load( mbedtls_ecjpake_context *ctx,
 cleanup:
     return( ret );
 }
+
+#endif /* ! MBEDTLS_ECJPAKE_ALT */
 
 /* For tests we don't need a secure RNG;
  * use the LGC from Numerical Recipes for simplicity */
@@ -1064,6 +1093,12 @@ int mbedtls_ecjpake_self_test( int verbose )
     if( verbose != 0 )
         mbedtls_printf( "passed\n" );
 
+#if !defined(MBEDTLS_ECJPAKE_ALT)
+    /* 'reference handshake' tests can only be run against implementations
+     * for which we have 100% control over how the random ephemeral keys
+     * are generated. This is only the case for the internal mbed TLS
+     * implementation, so these tests are skipped in case the internal
+     * implementation is swapped out for an alternative one. */
     if( verbose != 0 )
         mbedtls_printf( "  ECJPAKE test #2 (reference handshake): " );
 
@@ -1112,6 +1147,7 @@ int mbedtls_ecjpake_self_test( int verbose )
 
     if( verbose != 0 )
         mbedtls_printf( "passed\n" );
+#endif /* ! MBEDTLS_ECJPAKE_ALT */
 
 cleanup:
     mbedtls_ecjpake_free( &cli );

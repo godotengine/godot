@@ -4,7 +4,7 @@
  *
  *   Memory debugger (body).
  *
- * Copyright (C) 2001-2019 by
+ * Copyright (C) 2001-2020 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -18,11 +18,11 @@
 
 #include <ft2build.h>
 #include FT_CONFIG_CONFIG_H
-#include FT_INTERNAL_DEBUG_H
-#include FT_INTERNAL_MEMORY_H
-#include FT_SYSTEM_H
-#include FT_ERRORS_H
-#include FT_TYPES_H
+#include <freetype/internal/ftdebug.h>
+#include <freetype/internal/ftmemory.h>
+#include <freetype/ftsystem.h>
+#include <freetype/fterrors.h>
+#include <freetype/fttypes.h>
 
 
 #ifdef FT_DEBUG_MEMORY
@@ -621,8 +621,10 @@
 
         if ( node->size < 0 )
           ft_mem_debug_panic(
-            "freeing memory block at %p more than once at (%s:%ld)\n"
-            "block allocated at (%s:%ld) and released at (%s:%ld)",
+            "freeing memory block at %p more than once\n"
+            "  at (%s:%ld)!\n"
+            "  Block was allocated at (%s:%ld)\n"
+            "  and released at (%s:%ld).",
             address,
             FT_FILENAME( _ft_debug_file ), _ft_debug_lineno,
             FT_FILENAME( node->source->file_name ), node->source->line_no,

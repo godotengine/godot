@@ -37,7 +37,7 @@
 
 
 #include "psft.h"
-#include FT_INTERNAL_DEBUG_H
+#include <freetype/internal/ftdebug.h>
 
 #include "psfont.h"
 #include "pserror.h"
@@ -45,11 +45,11 @@
 #include "cffdecode.h"
 
 #ifdef TT_CONFIG_OPTION_GX_VAR_SUPPORT
-#include FT_MULTIPLE_MASTERS_H
-#include FT_SERVICE_MULTIPLE_MASTERS_H
+#include <freetype/ftmm.h>
+#include <freetype/internal/services/svmm.h>
 #endif
 
-#include FT_SERVICE_CFF_TABLE_LOAD_H
+#include <freetype/internal/services/svcfftl.h>
 
 
 #define CF2_MAX_SIZE  cf2_intToFixed( 2000 )    /* max ppem */
@@ -313,7 +313,7 @@
     FT_Error   error = FT_Err_Ok;
     CF2_Font   font;
 
-    FT_Bool    is_t1 = decoder->builder.is_t1;
+    FT_Bool  is_t1 = decoder->builder.is_t1;
 
 
     FT_ASSERT( decoder &&
@@ -385,7 +385,7 @@
       FT_ZERO( &buf );
       buf.start =
       buf.ptr   = charstring_base;
-      buf.end   = charstring_base + charstring_len;
+      buf.end   = FT_OFFSET( charstring_base, charstring_len );
 
       FT_ZERO( &transform );
 
@@ -697,7 +697,7 @@
     FT_ASSERT( charstring + len >= charstring );
 
     buf->start = charstring;
-    buf->end   = charstring + len;
+    buf->end   = FT_OFFSET( charstring, len );
     buf->ptr   = buf->start;
 
     return FT_Err_Ok;
@@ -820,7 +820,7 @@
       /* The CID driver stores subroutines with seed bytes.  This     */
       /* case is taken care of when decoder->subrs_len == 0.          */
       if ( decoder->locals_len )
-        buf->end = buf->start + decoder->locals_len[idx];
+        buf->end = FT_OFFSET( buf->start, decoder->locals_len[idx] );
       else
       {
         /* We are using subroutines from a CID font.  We must adjust */

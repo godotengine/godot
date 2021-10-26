@@ -1,10 +1,11 @@
 /*
- * Copyright (c) 2016-present, Yann Collet, Facebook, Inc.
+ * Copyright (c) 2016-2020, Yann Collet, Facebook, Inc.
  * All rights reserved.
  *
  * This source code is licensed under both the BSD-style license (found in the
  * LICENSE file in the root directory of this source tree) and the GPLv2 (found
  * in the COPYING file in the root directory of this source tree).
+ * You may select, at your option, one of the above-listed licenses.
  */
 
 #ifndef ZSTD_LDM_H
@@ -15,13 +16,17 @@ extern "C" {
 #endif
 
 #include "zstd_compress_internal.h"   /* ldmParams_t, U32 */
-#include "zstd.h"   /* ZSTD_CCtx, size_t */
+#include "../zstd.h"   /* ZSTD_CCtx, size_t */
 
 /*-*************************************
 *  Long distance matching
 ***************************************/
 
 #define ZSTD_LDM_DEFAULT_WINDOW_LOG ZSTD_WINDOWLOG_LIMIT_DEFAULT
+
+void ZSTD_ldm_fillHashTable(
+            ldmState_t* state, const BYTE* ip,
+            const BYTE* iend, ldmParams_t const* params);
 
 /**
  * ZSTD_ldm_generateSequences():
@@ -73,6 +78,12 @@ size_t ZSTD_ldm_blockCompress(rawSeqStore_t* rawSeqStore,
 void ZSTD_ldm_skipSequences(rawSeqStore_t* rawSeqStore, size_t srcSize,
     U32 const minMatch);
 
+/* ZSTD_ldm_skipRawSeqStoreBytes():
+ * Moves forward in rawSeqStore by nbBytes, updating fields 'pos' and 'posInSequence'.
+ * Not to be used in conjunction with ZSTD_ldm_skipSequences().
+ * Must be called for data with is not passed to ZSTD_ldm_blockCompress().
+ */
+void ZSTD_ldm_skipRawSeqStoreBytes(rawSeqStore_t* rawSeqStore, size_t nbBytes);
 
 /** ZSTD_ldm_getTableSize() :
  *  Estimate the space needed for long distance matching tables or 0 if LDM is

@@ -61,12 +61,17 @@ static const uint16_t kAcTable[128] = {
 
 void VP8ParseQuant(VP8Decoder* const dec) {
   VP8BitReader* const br = &dec->br_;
-  const int base_q0 = VP8GetValue(br, 7);
-  const int dqy1_dc = VP8Get(br) ? VP8GetSignedValue(br, 4) : 0;
-  const int dqy2_dc = VP8Get(br) ? VP8GetSignedValue(br, 4) : 0;
-  const int dqy2_ac = VP8Get(br) ? VP8GetSignedValue(br, 4) : 0;
-  const int dquv_dc = VP8Get(br) ? VP8GetSignedValue(br, 4) : 0;
-  const int dquv_ac = VP8Get(br) ? VP8GetSignedValue(br, 4) : 0;
+  const int base_q0 = VP8GetValue(br, 7, "global-header");
+  const int dqy1_dc = VP8Get(br, "global-header") ?
+       VP8GetSignedValue(br, 4, "global-header") : 0;
+  const int dqy2_dc = VP8Get(br, "global-header") ?
+       VP8GetSignedValue(br, 4, "global-header") : 0;
+  const int dqy2_ac = VP8Get(br, "global-header") ?
+       VP8GetSignedValue(br, 4, "global-header") : 0;
+  const int dquv_dc = VP8Get(br, "global-header") ?
+       VP8GetSignedValue(br, 4, "global-header") : 0;
+  const int dquv_ac = VP8Get(br, "global-header") ?
+       VP8GetSignedValue(br, 4, "global-header") : 0;
 
   const VP8SegmentHeader* const hdr = &dec->segment_hdr_;
   int i;

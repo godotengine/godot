@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ImporterMesh" inherits="Resource" version="4.0">
+	<brief_description>
+		A [Resource] that contains vertex array-based geometry during the import process.
+	</brief_description>
+	<description>
+		ImporterMesh is a type of [Resource] analogous to [ArrayMesh]. It contains vertex array-based geometry, divided in [i]surfaces[/i]. Each surface contains a completely separate array and a material used to draw it. Design wise, a mesh with multiple surfaces is preferred to a single surface, because objects created in 3D editing software commonly contain multiple materials.
+
+		Unlike its runtime counterpart, [ImporterMesh] contains mesh data before various import steps, such as lod and shadow mesh generation, have taken place. Modify surface data by calling [method clear], followed by [method add_surface] for each surface.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="add_blend_shape">
+			<return type="void" />
+			<argument index="0" name="name" type="String" />
+			<description>
+				Adds name for a blend shape that will be added with [method add_surface]. Must be called before surface is added.
+			</description>
+		</method>
+		<method name="add_surface">
+			<return type="void" />
+			<argument index="0" name="primitive" type="int" enum="Mesh.PrimitiveType" />
+			<argument index="1" name="arrays" type="Array" />
+			<argument index="2" name="blend_shapes" type="Array" default="[]" />
+			<argument index="3" name="lods" type="Dictionary" default="{
+}" />
+			<argument index="4" name="material" type="Material" default="null" />
+			<argument index="5" name="name" type="String" default="&quot;&quot;" />
+			<argument index="6" name="flags" type="int" default="0" />
+			<description>
+				Creates a new surface, analogous to [method ArrayMesh.add_surface_from_arrays].
+				Surfaces are created to be rendered using a [code]primitive[/code], which may be any of the types defined in [enum Mesh.PrimitiveType]. (As a note, when using indices, it is recommended to only use points, lines, or triangles.) [method Mesh.get_surface_count] will become the [code]surf_idx[/code] for this new surface.
+				The [code]arrays[/code] argument is an array of arrays. See [enum Mesh.ArrayType] for the values used in this array. For example, [code]arrays[0][/code] is the array of vertices. That first vertex sub-array is always required; the others are optional. Adding an index array puts this function into "index mode" where the vertex and other arrays become the sources of data and the index array defines the vertex order. All sub-arrays must have the same length as the vertex array or be empty, except for [constant Mesh.ARRAY_INDEX] if it is used.
+			</description>
+		</method>
+		<method name="clear">
+			<return type="void" />
+			<description>
+				Removes all surfaces and blend shapes from this [ImporterMesh].
+			</description>
+		</method>
+		<method name="get_blend_shape_count" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the number of blend shapes that the mesh holds.
+			</description>
+		</method>
+		<method name="get_blend_shape_mode" qualifiers="const">
+			<return type="int" enum="Mesh.BlendShapeMode" />
+			<description>
+				Returns the blend shape mode for this Mesh.
+			</description>
+		</method>
+		<method name="get_blend_shape_name" qualifiers="const">
+			<return type="String" />
+			<argument index="0" name="blend_shape_idx" type="int" />
+			<description>
+				Returns the name of the blend shape at this index.
+			</description>
+		</method>
+		<method name="get_lightmap_size_hint" qualifiers="const">
+			<return type="Vector2i" />
+			<description>
+				Returns the size hint of this mesh for lightmap-unwrapping in UV-space.
+			</description>
+		</method>
+		<method name="get_mesh">
+			<return type="ArrayMesh" />
+			<argument index="0" name="base_mesh" type="ArrayMesh" default="null" />
+			<description>
+				Returns the mesh data represented by this [ImporterMesh] as a usable [ArrayMesh].
+				This method caches the returned mesh, and subsequent calls will return the cached data until [method clear] is called.
+				If not yet cached and [code]base_mesh[/code] is provided, [code]base_mesh[/code] will be used and mutated.
+			</description>
+		</method>
+		<method name="get_surface_arrays" qualifiers="const">
+			<return type="Array" />
+			<argument index="0" name="surface_idx" type="int" />
+			<description>
+				Returns the arrays for the vertices, normals, uvs, etc. that make up the requested surface. See [method add_surface].
+			</description>
+		</method>
+		<method name="get_surface_blend_shape_arrays" qualifiers="const">
+			<return type="Array" />
+			<argument index="0" name="surface_idx" type="int" />
+			<argument index="1" name="blend_shape_idx" type="int" />
+			<description>
+				Returns a single set of blend shape arrays for the requested blend shape index for a surface.
+			</description>
+		</method>
+		<method name="get_surface_count" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the amount of surfaces that the mesh holds.
+			</description>
+		</method>
+		<method name="get_surface_format" qualifiers="const">
+			<return type="int" />
+			<argument index="0" name="surface_idx" type="int" />
+			<description>
+				Returns the format of the surface that the mesh holds.
+			</description>
+		</method>
+		<method name="get_surface_lod_count" qualifiers="const">
+			<return type="int" />
+			<argument index="0" name="surface_idx" type="int" />
+			<description>
+				Returns the amount of lods that the mesh holds on a given surface.
+			</description>
+		</method>
+		<method name="get_surface_lod_indices" qualifiers="const">
+			<return type="PackedInt32Array" />
+			<argument index="0" name="surface_idx" type="int" />
+			<argument index="1" name="lod_idx" type="int" />
+			<description>
+				Returns the index buffer of a lod for a surface.
+			</description>
+		</method>
+		<method name="get_surface_lod_size" qualifiers="const">
+			<return type="float" />
+			<argument index="0" name="surface_idx" type="int" />
+			<argument index="1" name="lod_idx" type="int" />
+			<description>
+				Returns the screen ratio which activates a lod for a surface.
+			</description>
+		</method>
+		<method name="get_surface_material" qualifiers="const">
+			<return type="Material" />
+			<argument index="0" name="surface_idx" type="int" />
+			<description>
+				Returns a [Material] in a given surface. Surface is rendered using this material.
+			</description>
+		</method>
+		<method name="get_surface_name" qualifiers="const">
+			<return type="String" />
+			<argument index="0" name="surface_idx" type="int" />
+			<description>
+				Gets the name assigned to this surface.
+			</description>
+		</method>
+		<method name="get_surface_primitive_type">
+			<return type="int" enum="Mesh.PrimitiveType" />
+			<argument index="0" name="surface_idx" type="int" />
+			<description>
+				Returns the primitive type of the requested surface (see [method add_surface]).
+			</description>
+		</method>
+		<method name="set_blend_shape_mode">
+			<return type="void" />
+			<argument index="0" name="mode" type="int" enum="Mesh.BlendShapeMode" />
+			<description>
+				Sets the blend shape mode to one of [enum Mesh.BlendShapeMode].
+			</description>
+		</method>
+		<method name="set_lightmap_size_hint">
+			<return type="void" />
+			<argument index="0" name="size" type="Vector2i" />
+			<description>
+				Sets the size hint of this mesh for lightmap-unwrapping in UV-space.
+			</description>
+		</method>
+		<method name="set_surface_material">
+			<return type="void" />
+			<argument index="0" name="surface_idx" type="int" />
+			<argument index="1" name="material" type="Material" />
+			<description>
+				Sets a [Material] for a given surface. Surface will be rendered using this material.
+			</description>
+		</method>
+		<method name="set_surface_name">
+			<return type="void" />
+			<argument index="0" name="surface_idx" type="int" />
+			<argument index="1" name="name" type="String" />
+			<description>
+				Sets a name for a given surface.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="_data" type="Dictionary" setter="_set_data" getter="_get_data" default="{&quot;surfaces&quot;: []}">
+		</member>
+	</members>
+</class>

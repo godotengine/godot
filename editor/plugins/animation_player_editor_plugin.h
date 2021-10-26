@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -39,14 +39,10 @@
 #include "scene/gui/spin_box.h"
 #include "scene/gui/texture_button.h"
 
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
 class AnimationTrackEditor;
 class AnimationPlayerEditorPlugin;
 
 class AnimationPlayerEditor : public VBoxContainer {
-
 	GDCLASS(AnimationPlayerEditor, VBoxContainer);
 
 	EditorNode *editor;
@@ -100,27 +96,27 @@ class AnimationPlayerEditor : public VBoxContainer {
 	Button *autoplay;
 
 	MenuButton *tool_anim;
-	ToolButton *onion_toggle;
+	Button *onion_toggle;
 	MenuButton *onion_skinning;
-	ToolButton *pin;
+	Button *pin;
 	SpinBox *frame;
 	LineEdit *scale;
 	LineEdit *name;
 	Label *name_title;
 	UndoRedo *undo_redo;
-	Ref<Texture> autoplay_icon;
+	Ref<Texture2D> autoplay_icon;
+	Ref<Texture2D> reset_icon;
+	Ref<ImageTexture> autoplay_reset_icon;
 	bool last_active;
+	float timeline_position;
 
 	EditorFileDialog *file;
-	AcceptDialog *accept;
 	ConfirmationDialog *delete_dialog;
-	int current_option;
 
 	struct BlendEditor {
-
-		AcceptDialog *dialog;
-		Tree *tree;
-		OptionButton *next;
+		AcceptDialog *dialog = nullptr;
+		Tree *tree = nullptr;
+		OptionButton *next = nullptr;
 
 	} blend_editor;
 
@@ -132,26 +128,27 @@ class AnimationPlayerEditor : public VBoxContainer {
 	bool updating_blends;
 
 	AnimationTrackEditor *track_editor;
+	static AnimationPlayerEditor *singleton;
 
-	// Onion skinning
+	// Onion skinning.
 	struct {
-		// Settings
-		bool enabled;
-		bool past;
-		bool future;
-		int steps;
-		bool differences_only;
-		bool force_white_modulate;
-		bool include_gizmos;
+		// Settings.
+		bool enabled = false;
+		bool past = false;
+		bool future = false;
+		int steps = 0;
+		bool differences_only = false;
+		bool force_white_modulate = false;
+		bool include_gizmos = false;
 
 		int get_needed_capture_count() const {
-			// 'Differences only' needs a capture of the present
+			// 'Differences only' needs a capture of the present.
 			return (past && future ? 2 * steps : steps) + (differences_only ? 1 : 0);
 		}
 
-		// Rendering
-		int64_t last_frame;
-		int can_overlay;
+		// Rendering.
+		int64_t last_frame = 0;
+		int can_overlay = 0;
 		Size2 capture_size;
 		Vector<RID> captures;
 		Vector<bool> captures_valid;
@@ -164,6 +161,7 @@ class AnimationPlayerEditor : public VBoxContainer {
 	} onion;
 
 	void _select_anim_by_name(const String &p_anim);
+	double _get_editor_step() const;
 	void _play_pressed();
 	void _play_from_pressed();
 	void _play_bw_pressed();
@@ -187,9 +185,9 @@ class AnimationPlayerEditor : public VBoxContainer {
 	void _animation_duplicate();
 	void _animation_resource_edit();
 	void _scale_changed(const String &p_scale);
-	void _dialog_action(String p_file);
-	void _seek_frame_changed(const String &p_frame);
-	void _seek_value_changed(float p_value, bool p_set = false);
+	void _save_animation(String p_file);
+	void _load_animations(Vector<String> p_files);
+	void _seek_value_changed(float p_value, bool p_set = false, bool p_timeline_only = false);
 	void _blend_editor_next_changed(const int p_idx);
 
 	void _list_changed();
@@ -197,31 +195,27 @@ class AnimationPlayerEditor : public VBoxContainer {
 	void _update_player();
 	void _blend_edited();
 
-	void _hide_anim_editors();
-
 	void _animation_player_changed(Object *p_pl);
 
-	void _animation_key_editor_seek(float p_pos, bool p_drag);
+	void _animation_key_editor_seek(float p_pos, bool p_drag, bool p_timeline_only = false);
 	void _animation_key_editor_anim_len_changed(float p_len);
-	void _animation_key_editor_anim_step_changed(float p_len);
 
-	void _unhandled_key_input(const Ref<InputEvent> &p_ev);
+	virtual void unhandled_key_input(const Ref<InputEvent> &p_ev) override;
 	void _animation_tool_menu(int p_option);
 	void _onion_skinning_menu(int p_option);
-	void _animation_about_to_show_menu();
 
 	void _editor_visibility_changed();
 	bool _are_onion_layers_valid();
 	void _allocate_onion_layers();
 	void _free_onion_layers();
 	void _prepare_onion_layers_1();
+	void _prepare_onion_layers_1_deferred();
 	void _prepare_onion_layers_2();
 	void _start_onion_skinning();
 	void _stop_onion_skinning();
 
 	void _pin_pressed();
 
-	AnimationPlayerEditor();
 	~AnimationPlayerEditor();
 
 protected:
@@ -231,7 +225,8 @@ protected:
 
 public:
 	AnimationPlayer *get_player() const;
-	static AnimationPlayerEditor *singleton;
+
+	static AnimationPlayerEditor *get_singleton() { return singleton; }
 
 	bool is_pinned() const { return pin->is_pressed(); }
 	void unpin() { pin->set_pressed(false); }
@@ -243,13 +238,12 @@ public:
 
 	void set_undo_redo(UndoRedo *p_undo_redo) { undo_redo = p_undo_redo; }
 	void edit(AnimationPlayer *p_player);
-	void forward_canvas_force_draw_over_viewport(Control *p_overlay);
+	void forward_force_draw_over_viewport(Control *p_overlay);
 
 	AnimationPlayerEditor(EditorNode *p_editor, AnimationPlayerEditorPlugin *p_plugin);
 };
 
 class AnimationPlayerEditorPlugin : public EditorPlugin {
-
 	GDCLASS(AnimationPlayerEditorPlugin, EditorPlugin);
 
 	AnimationPlayerEditor *anim_editor;
@@ -259,16 +253,17 @@ protected:
 	void _notification(int p_what);
 
 public:
-	virtual Dictionary get_state() const { return anim_editor->get_state(); }
-	virtual void set_state(const Dictionary &p_state) { anim_editor->set_state(p_state); }
+	virtual Dictionary get_state() const override { return anim_editor->get_state(); }
+	virtual void set_state(const Dictionary &p_state) override { anim_editor->set_state(p_state); }
 
-	virtual String get_name() const { return "Anim"; }
-	bool has_main_screen() const { return false; }
-	virtual void edit(Object *p_object);
-	virtual bool handles(Object *p_object) const;
-	virtual void make_visible(bool p_visible);
+	virtual String get_name() const override { return "Anim"; }
+	bool has_main_screen() const override { return false; }
+	virtual void edit(Object *p_object) override;
+	virtual bool handles(Object *p_object) const override;
+	virtual void make_visible(bool p_visible) override;
 
-	virtual void forward_canvas_force_draw_over_viewport(Control *p_overlay) { anim_editor->forward_canvas_force_draw_over_viewport(p_overlay); }
+	virtual void forward_canvas_force_draw_over_viewport(Control *p_overlay) override { anim_editor->forward_force_draw_over_viewport(p_overlay); }
+	virtual void forward_spatial_force_draw_over_viewport(Control *p_overlay) override { anim_editor->forward_force_draw_over_viewport(p_overlay); }
 
 	AnimationPlayerEditorPlugin(EditorNode *p_node);
 	~AnimationPlayerEditorPlugin();

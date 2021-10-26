@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,11 +34,7 @@
 #include "editor/plugins/abstract_polygon_2d_editor.h"
 #include "scene/2d/light_occluder_2d.h"
 
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
 class LightOccluder2DEditor : public AbstractPolygon2DEditor {
-
 	GDCLASS(LightOccluder2DEditor, AbstractPolygon2DEditor);
 
 	LightOccluder2D *node;
@@ -46,25 +42,24 @@ class LightOccluder2DEditor : public AbstractPolygon2DEditor {
 	Ref<OccluderPolygon2D> _ensure_occluder() const;
 
 protected:
-	virtual Node2D *_get_node() const;
-	virtual void _set_node(Node *p_polygon);
+	virtual Node2D *_get_node() const override;
+	virtual void _set_node(Node *p_polygon) override;
 
-	virtual bool _is_line() const;
-	virtual int _get_polygon_count() const;
-	virtual Variant _get_polygon(int p_idx) const;
-	virtual void _set_polygon(int p_idx, const Variant &p_polygon) const;
+	virtual bool _is_line() const override;
+	virtual int _get_polygon_count() const override;
+	virtual Variant _get_polygon(int p_idx) const override;
+	virtual void _set_polygon(int p_idx, const Variant &p_polygon) const override;
 
-	virtual void _action_set_polygon(int p_idx, const Variant &p_previous, const Variant &p_polygon);
+	virtual void _action_set_polygon(int p_idx, const Variant &p_previous, const Variant &p_polygon) override;
 
-	virtual bool _has_resource() const;
-	virtual void _create_resource();
+	virtual bool _has_resource() const override;
+	virtual void _create_resource() override;
 
 public:
 	LightOccluder2DEditor(EditorNode *p_editor);
 };
 
 class LightOccluder2DEditorPlugin : public AbstractPolygon2DEditorPlugin {
-
 	GDCLASS(LightOccluder2DEditorPlugin, AbstractPolygon2DEditorPlugin);
 
 public:

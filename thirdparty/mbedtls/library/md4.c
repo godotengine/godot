@@ -1,8 +1,14 @@
 /*
  *  RFC 1186/1320 compliant MD4 implementation
  *
- *  Copyright (C) 2006-2015, ARM Limited, All Rights Reserved
- *  SPDX-License-Identifier: Apache-2.0
+ *  Copyright The Mbed TLS Contributors
+ *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
+ *
+ *  This file is provided under the Apache License 2.0, or the
+ *  GNU General Public License v2.0 or later.
+ *
+ *  **********
+ *  Apache License 2.0:
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may
  *  not use this file except in compliance with the License.
@@ -16,7 +22,26 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  *
- *  This file is part of mbed TLS (https://tls.mbed.org)
+ *  **********
+ *
+ *  **********
+ *  GNU General Public License v2.0 or later:
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along
+ *  with this program; if not, write to the Free Software Foundation, Inc.,
+ *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *  **********
  */
 /*
  *  The MD4 algorithm was designed by Ron Rivest in 1990.
@@ -118,105 +143,127 @@ void mbedtls_md4_starts( mbedtls_md4_context *ctx )
 int mbedtls_internal_md4_process( mbedtls_md4_context *ctx,
                                   const unsigned char data[64] )
 {
-    uint32_t X[16], A, B, C, D;
+    struct
+    {
+        uint32_t X[16], A, B, C, D;
+    } local;
 
-    GET_UINT32_LE( X[ 0], data,  0 );
-    GET_UINT32_LE( X[ 1], data,  4 );
-    GET_UINT32_LE( X[ 2], data,  8 );
-    GET_UINT32_LE( X[ 3], data, 12 );
-    GET_UINT32_LE( X[ 4], data, 16 );
-    GET_UINT32_LE( X[ 5], data, 20 );
-    GET_UINT32_LE( X[ 6], data, 24 );
-    GET_UINT32_LE( X[ 7], data, 28 );
-    GET_UINT32_LE( X[ 8], data, 32 );
-    GET_UINT32_LE( X[ 9], data, 36 );
-    GET_UINT32_LE( X[10], data, 40 );
-    GET_UINT32_LE( X[11], data, 44 );
-    GET_UINT32_LE( X[12], data, 48 );
-    GET_UINT32_LE( X[13], data, 52 );
-    GET_UINT32_LE( X[14], data, 56 );
-    GET_UINT32_LE( X[15], data, 60 );
+    GET_UINT32_LE( local.X[ 0], data,  0 );
+    GET_UINT32_LE( local.X[ 1], data,  4 );
+    GET_UINT32_LE( local.X[ 2], data,  8 );
+    GET_UINT32_LE( local.X[ 3], data, 12 );
+    GET_UINT32_LE( local.X[ 4], data, 16 );
+    GET_UINT32_LE( local.X[ 5], data, 20 );
+    GET_UINT32_LE( local.X[ 6], data, 24 );
+    GET_UINT32_LE( local.X[ 7], data, 28 );
+    GET_UINT32_LE( local.X[ 8], data, 32 );
+    GET_UINT32_LE( local.X[ 9], data, 36 );
+    GET_UINT32_LE( local.X[10], data, 40 );
+    GET_UINT32_LE( local.X[11], data, 44 );
+    GET_UINT32_LE( local.X[12], data, 48 );
+    GET_UINT32_LE( local.X[13], data, 52 );
+    GET_UINT32_LE( local.X[14], data, 56 );
+    GET_UINT32_LE( local.X[15], data, 60 );
 
-#define S(x,n) ((x << n) | ((x & 0xFFFFFFFF) >> (32 - n)))
+#define S(x,n) (((x) << (n)) | (((x) & 0xFFFFFFFF) >> (32 - (n))))
 
-    A = ctx->state[0];
-    B = ctx->state[1];
-    C = ctx->state[2];
-    D = ctx->state[3];
+    local.A = ctx->state[0];
+    local.B = ctx->state[1];
+    local.C = ctx->state[2];
+    local.D = ctx->state[3];
 
-#define F(x, y, z) ((x & y) | ((~x) & z))
-#define P(a,b,c,d,x,s) { a += F(b,c,d) + x; a = S(a,s); }
+#define F(x, y, z) (((x) & (y)) | ((~(x)) & (z)))
+#define P(a,b,c,d,x,s)                           \
+    do                                           \
+    {                                            \
+        (a) += F((b),(c),(d)) + (x);             \
+        (a) = S((a),(s));                        \
+    } while( 0 )
 
-    P( A, B, C, D, X[ 0],  3 );
-    P( D, A, B, C, X[ 1],  7 );
-    P( C, D, A, B, X[ 2], 11 );
-    P( B, C, D, A, X[ 3], 19 );
-    P( A, B, C, D, X[ 4],  3 );
-    P( D, A, B, C, X[ 5],  7 );
-    P( C, D, A, B, X[ 6], 11 );
-    P( B, C, D, A, X[ 7], 19 );
-    P( A, B, C, D, X[ 8],  3 );
-    P( D, A, B, C, X[ 9],  7 );
-    P( C, D, A, B, X[10], 11 );
-    P( B, C, D, A, X[11], 19 );
-    P( A, B, C, D, X[12],  3 );
-    P( D, A, B, C, X[13],  7 );
-    P( C, D, A, B, X[14], 11 );
-    P( B, C, D, A, X[15], 19 );
 
-#undef P
-#undef F
-
-#define F(x,y,z) ((x & y) | (x & z) | (y & z))
-#define P(a,b,c,d,x,s) { a += F(b,c,d) + x + 0x5A827999; a = S(a,s); }
-
-    P( A, B, C, D, X[ 0],  3 );
-    P( D, A, B, C, X[ 4],  5 );
-    P( C, D, A, B, X[ 8],  9 );
-    P( B, C, D, A, X[12], 13 );
-    P( A, B, C, D, X[ 1],  3 );
-    P( D, A, B, C, X[ 5],  5 );
-    P( C, D, A, B, X[ 9],  9 );
-    P( B, C, D, A, X[13], 13 );
-    P( A, B, C, D, X[ 2],  3 );
-    P( D, A, B, C, X[ 6],  5 );
-    P( C, D, A, B, X[10],  9 );
-    P( B, C, D, A, X[14], 13 );
-    P( A, B, C, D, X[ 3],  3 );
-    P( D, A, B, C, X[ 7],  5 );
-    P( C, D, A, B, X[11],  9 );
-    P( B, C, D, A, X[15], 13 );
+    P( local.A, local.B, local.C, local.D, local.X[ 0],  3 );
+    P( local.D, local.A, local.B, local.C, local.X[ 1],  7 );
+    P( local.C, local.D, local.A, local.B, local.X[ 2], 11 );
+    P( local.B, local.C, local.D, local.A, local.X[ 3], 19 );
+    P( local.A, local.B, local.C, local.D, local.X[ 4],  3 );
+    P( local.D, local.A, local.B, local.C, local.X[ 5],  7 );
+    P( local.C, local.D, local.A, local.B, local.X[ 6], 11 );
+    P( local.B, local.C, local.D, local.A, local.X[ 7], 19 );
+    P( local.A, local.B, local.C, local.D, local.X[ 8],  3 );
+    P( local.D, local.A, local.B, local.C, local.X[ 9],  7 );
+    P( local.C, local.D, local.A, local.B, local.X[10], 11 );
+    P( local.B, local.C, local.D, local.A, local.X[11], 19 );
+    P( local.A, local.B, local.C, local.D, local.X[12],  3 );
+    P( local.D, local.A, local.B, local.C, local.X[13],  7 );
+    P( local.C, local.D, local.A, local.B, local.X[14], 11 );
+    P( local.B, local.C, local.D, local.A, local.X[15], 19 );
 
 #undef P
 #undef F
 
-#define F(x,y,z) (x ^ y ^ z)
-#define P(a,b,c,d,x,s) { a += F(b,c,d) + x + 0x6ED9EBA1; a = S(a,s); }
+#define F(x,y,z) (((x) & (y)) | ((x) & (z)) | ((y) & (z)))
+#define P(a,b,c,d,x,s)                          \
+    do                                          \
+    {                                           \
+        (a) += F((b),(c),(d)) + (x) + 0x5A827999;       \
+        (a) = S((a),(s));                               \
+    } while( 0 )
 
-    P( A, B, C, D, X[ 0],  3 );
-    P( D, A, B, C, X[ 8],  9 );
-    P( C, D, A, B, X[ 4], 11 );
-    P( B, C, D, A, X[12], 15 );
-    P( A, B, C, D, X[ 2],  3 );
-    P( D, A, B, C, X[10],  9 );
-    P( C, D, A, B, X[ 6], 11 );
-    P( B, C, D, A, X[14], 15 );
-    P( A, B, C, D, X[ 1],  3 );
-    P( D, A, B, C, X[ 9],  9 );
-    P( C, D, A, B, X[ 5], 11 );
-    P( B, C, D, A, X[13], 15 );
-    P( A, B, C, D, X[ 3],  3 );
-    P( D, A, B, C, X[11],  9 );
-    P( C, D, A, B, X[ 7], 11 );
-    P( B, C, D, A, X[15], 15 );
+    P( local.A, local.B, local.C, local.D, local.X[ 0],  3 );
+    P( local.D, local.A, local.B, local.C, local.X[ 4],  5 );
+    P( local.C, local.D, local.A, local.B, local.X[ 8],  9 );
+    P( local.B, local.C, local.D, local.A, local.X[12], 13 );
+    P( local.A, local.B, local.C, local.D, local.X[ 1],  3 );
+    P( local.D, local.A, local.B, local.C, local.X[ 5],  5 );
+    P( local.C, local.D, local.A, local.B, local.X[ 9],  9 );
+    P( local.B, local.C, local.D, local.A, local.X[13], 13 );
+    P( local.A, local.B, local.C, local.D, local.X[ 2],  3 );
+    P( local.D, local.A, local.B, local.C, local.X[ 6],  5 );
+    P( local.C, local.D, local.A, local.B, local.X[10],  9 );
+    P( local.B, local.C, local.D, local.A, local.X[14], 13 );
+    P( local.A, local.B, local.C, local.D, local.X[ 3],  3 );
+    P( local.D, local.A, local.B, local.C, local.X[ 7],  5 );
+    P( local.C, local.D, local.A, local.B, local.X[11],  9 );
+    P( local.B, local.C, local.D, local.A, local.X[15], 13 );
+
+#undef P
+#undef F
+
+#define F(x,y,z) ((x) ^ (y) ^ (z))
+#define P(a,b,c,d,x,s)                                  \
+    do                                                  \
+    {                                                   \
+        (a) += F((b),(c),(d)) + (x) + 0x6ED9EBA1;       \
+        (a) = S((a),(s));                               \
+    } while( 0 )
+
+    P( local.A, local.B, local.C, local.D, local.X[ 0],  3 );
+    P( local.D, local.A, local.B, local.C, local.X[ 8],  9 );
+    P( local.C, local.D, local.A, local.B, local.X[ 4], 11 );
+    P( local.B, local.C, local.D, local.A, local.X[12], 15 );
+    P( local.A, local.B, local.C, local.D, local.X[ 2],  3 );
+    P( local.D, local.A, local.B, local.C, local.X[10],  9 );
+    P( local.C, local.D, local.A, local.B, local.X[ 6], 11 );
+    P( local.B, local.C, local.D, local.A, local.X[14], 15 );
+    P( local.A, local.B, local.C, local.D, local.X[ 1],  3 );
+    P( local.D, local.A, local.B, local.C, local.X[ 9],  9 );
+    P( local.C, local.D, local.A, local.B, local.X[ 5], 11 );
+    P( local.B, local.C, local.D, local.A, local.X[13], 15 );
+    P( local.A, local.B, local.C, local.D, local.X[ 3],  3 );
+    P( local.D, local.A, local.B, local.C, local.X[11],  9 );
+    P( local.C, local.D, local.A, local.B, local.X[ 7], 11 );
+    P( local.B, local.C, local.D, local.A, local.X[15], 15 );
 
 #undef F
 #undef P
 
-    ctx->state[0] += A;
-    ctx->state[1] += B;
-    ctx->state[2] += C;
-    ctx->state[3] += D;
+    ctx->state[0] += local.A;
+    ctx->state[1] += local.B;
+    ctx->state[2] += local.C;
+    ctx->state[3] += local.D;
+
+    /* Zeroise variables to clear sensitive data from memory. */
+    mbedtls_platform_zeroize( &local, sizeof( local ) );
 
     return( 0 );
 }

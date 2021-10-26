@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,12 +32,9 @@
 #define BUTTON_H
 
 #include "scene/gui/base_button.h"
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
+#include "scene/resources/text_paragraph.h"
 
 class Button : public BaseButton {
-
 	GDCLASS(Button, BaseButton);
 
 public:
@@ -48,38 +45,66 @@ public:
 	};
 
 private:
-	bool flat;
+	bool flat = false;
 	String text;
 	String xl_text;
-	Ref<Texture> icon;
-	bool clip_text;
-	TextAlign align;
-	float _internal_margin[4];
+	Ref<TextParagraph> text_buf;
+
+	Dictionary opentype_features;
+	String language;
+	TextDirection text_direction = TEXT_DIRECTION_AUTO;
+
+	Ref<Texture2D> icon;
+	bool expand_icon = false;
+	bool clip_text = false;
+	TextAlign align = ALIGN_CENTER;
+	TextAlign icon_align = ALIGN_LEFT;
+	float _internal_margin[4] = {};
+
+	void _shape();
 
 protected:
-	void _set_internal_margin(Margin p_margin, float p_value);
+	void _set_internal_margin(Side p_side, float p_value);
 	void _notification(int p_what);
 	static void _bind_methods();
 
-public:
-	//
+	bool _set(const StringName &p_name, const Variant &p_value);
+	bool _get(const StringName &p_name, Variant &r_ret) const;
+	void _get_property_list(List<PropertyInfo> *p_list) const;
 
-	virtual Size2 get_minimum_size() const;
+public:
+	virtual Size2 get_minimum_size() const override;
 
 	void set_text(const String &p_text);
 	String get_text() const;
 
-	void set_icon(const Ref<Texture> &p_icon);
-	Ref<Texture> get_icon() const;
+	void set_text_direction(TextDirection p_text_direction);
+	TextDirection get_text_direction() const;
 
-	void set_flat(bool p_flat);
+	void set_opentype_feature(const String &p_name, int p_value);
+	int get_opentype_feature(const String &p_name) const;
+	void clear_opentype_features();
+
+	void set_language(const String &p_language);
+	String get_language() const;
+
+	void set_icon(const Ref<Texture2D> &p_icon);
+	Ref<Texture2D> get_icon() const;
+
+	void set_expand_icon(bool p_enabled);
+	bool is_expand_icon() const;
+
+	void set_flat(bool p_enabled);
 	bool is_flat() const;
 
-	void set_clip_text(bool p_clip_text);
+	void set_clip_text(bool p_enabled);
 	bool get_clip_text() const;
 
 	void set_text_align(TextAlign p_align);
 	TextAlign get_text_align() const;
+
+	void set_icon_align(TextAlign p_align);
+	TextAlign get_icon_align() const;
 
 	Button(const String &p_text = String());
 	~Button();

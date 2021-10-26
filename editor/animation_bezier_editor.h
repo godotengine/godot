@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,7 +34,6 @@
 #include "animation_track_editor.h"
 
 class AnimationBezierTrackEdit : public Control {
-
 	GDCLASS(AnimationBezierTrackEdit, Control);
 
 	enum HandleMode {
@@ -52,56 +51,57 @@ class AnimationBezierTrackEdit : public Control {
 	HandleMode handle_mode;
 	OptionButton *handle_mode_option;
 
-	AnimationTimelineEdit *timeline;
-	UndoRedo *undo_redo;
-	Node *root;
+	VBoxContainer *right_column;
+	Button *close_button;
+
+	AnimationTimelineEdit *timeline = nullptr;
+	UndoRedo *undo_redo = nullptr;
+	Node *root = nullptr;
 	Control *play_position; //separate control used to draw so updates for only position changed are much faster
-	float play_position_pos;
+	float play_position_pos = 0;
 
 	Ref<Animation> animation;
 	int track;
 
 	Vector<Rect2> view_rects;
 
-	Ref<Texture> bezier_icon;
-	Ref<Texture> bezier_handle_icon;
-	Ref<Texture> selected_icon;
+	Ref<Texture2D> bezier_icon;
+	Ref<Texture2D> bezier_handle_icon;
+	Ref<Texture2D> selected_icon;
 
 	Rect2 close_icon_rect;
 
 	Map<int, Rect2> subtracks;
 
-	float v_scroll;
-	float v_zoom;
+	float v_scroll = 0;
+	float v_zoom = 1;
 
-	PopupMenu *menu;
+	PopupMenu *menu = nullptr;
 
 	void _zoom_changed();
 
-	void _gui_input(const Ref<InputEvent> &p_event);
+	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 	void _menu_selected(int p_index);
-
-	bool *block_animation_update_ptr; //used to block all tracks re-gen (speed up)
 
 	void _play_position_draw();
 
 	Vector2 insert_at_pos;
 
-	bool moving_selection_attempt;
-	int select_single_attempt;
-	bool moving_selection;
+	bool moving_selection_attempt = false;
+	int select_single_attempt = -1;
+	bool moving_selection = false;
 	int moving_selection_from_key;
 
 	Vector2 moving_selection_offset;
 
-	bool box_selecting_attempt;
-	bool box_selecting;
-	bool box_selecting_add;
+	bool box_selecting_attempt = false;
+	bool box_selecting = false;
+	bool box_selecting_add = false;
 	Vector2 box_selection_from;
 	Vector2 box_selection_to;
 
-	int moving_handle; //0 no move -1 or +1 out
-	int moving_handle_key;
+	int moving_handle = 0; //0 no move -1 or +1 out
+	int moving_handle_key = 0;
 	Vector2 moving_handle_left;
 	Vector2 moving_handle_right;
 
@@ -112,11 +112,10 @@ class AnimationBezierTrackEdit : public Control {
 	Vector2 menu_insert_key;
 
 	struct AnimMoveRestore {
-
-		int track;
-		float time;
+		int track = 0;
+		float time = 0;
 		Variant key;
-		float transition;
+		float transition = 0;
 	};
 
 	AnimationTrackEditor *editor;
@@ -131,7 +130,7 @@ class AnimationBezierTrackEdit : public Control {
 
 	Set<int> selection;
 
-	bool panning_timeline;
+	bool panning_timeline = false;
 	float panning_timeline_from;
 	float panning_timeline_at;
 
@@ -145,19 +144,17 @@ protected:
 	void _notification(int p_what);
 
 public:
-	virtual String get_tooltip(const Point2 &p_pos) const;
+	virtual String get_tooltip(const Point2 &p_pos) const override;
 
 	Ref<Animation> get_animation() const;
 
 	void set_animation_and_track(const Ref<Animation> &p_animation, int p_track);
-	virtual Size2 get_minimum_size() const;
+	virtual Size2 get_minimum_size() const override;
 
 	void set_undo_redo(UndoRedo *p_undo_redo);
 	void set_timeline(AnimationTimelineEdit *p_timeline);
 	void set_editor(AnimationTrackEditor *p_editor);
 	void set_root(Node *p_root);
-
-	void set_block_animation_update_ptr(bool *p_block_ptr);
 
 	void set_play_position(float p_pos);
 	void update_play_position();

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ImageTextureLayered" inherits="TextureLayered" version="4.0">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="create_from_images">
+			<return type="int" enum="Error" />
+			<argument index="0" name="images" type="Array" />
+			<description>
+			</description>
+		</method>
+		<method name="update_layer">
+			<return type="void" />
+			<argument index="0" name="image" type="Image" />
+			<argument index="1" name="layer" type="int" />
+			<description>
+			</description>
+		</method>
+	</methods>
+</class>

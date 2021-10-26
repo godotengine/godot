@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "webrtc_data_channel.h"
+#include "core/config/project_settings.h"
 
 void WebRTCDataChannel::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("poll"), &WebRTCDataChannel::poll);
@@ -45,6 +46,7 @@ void WebRTCDataChannel::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_max_retransmits"), &WebRTCDataChannel::get_max_retransmits);
 	ClassDB::bind_method(D_METHOD("get_protocol"), &WebRTCDataChannel::get_protocol);
 	ClassDB::bind_method(D_METHOD("is_negotiated"), &WebRTCDataChannel::is_negotiated);
+	ClassDB::bind_method(D_METHOD("get_buffered_amount"), &WebRTCDataChannel::get_buffered_amount);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "write_mode", PROPERTY_HINT_ENUM), "set_write_mode", "get_write_mode");
 
@@ -58,6 +60,7 @@ void WebRTCDataChannel::_bind_methods() {
 }
 
 WebRTCDataChannel::WebRTCDataChannel() {
+	_in_buffer_shift = nearest_shift((int)GLOBAL_GET(WRTC_IN_BUF) - 1) + 10;
 }
 
 WebRTCDataChannel::~WebRTCDataChannel() {

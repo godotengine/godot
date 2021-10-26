@@ -4,7 +4,7 @@
  *
  *   FreeType path stroker (specification).
  *
- * Copyright (C) 2002-2019 by
+ * Copyright (C) 2002-2020 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -19,9 +19,8 @@
 #ifndef FTSTROKE_H_
 #define FTSTROKE_H_
 
-#include <ft2build.h>
-#include FT_OUTLINE_H
-#include FT_GLYPH_H
+#include <freetype/ftoutln.h>
+#include <freetype/ftglyph.h>
 
 
 FT_BEGIN_HEADER
@@ -44,7 +43,7 @@ FT_BEGIN_HEADER
    *    borders of the stroke.
    *
    *    This can be useful to generate 'bordered' glyph, i.e., glyphs
-   *    displayed with a coloured (and anti-aliased) border around their
+   *    displayed with a colored (and anti-aliased) border around their
    *    shape.
    *
    * @order:
@@ -114,22 +113,19 @@ FT_BEGIN_HEADER
    *   FT_STROKER_LINEJOIN_MITER_FIXED ::
    *     Used to render mitered line joins, with fixed bevels if the miter
    *     limit is exceeded.  The outer edges of the strokes for the two
-   *     segments are extended until they meet at an angle.  If the segments
-   *     meet at too sharp an angle (such that the miter would extend from
-   *     the intersection of the segments a distance greater than the product
-   *     of the miter limit value and the border radius), then a bevel join
-   *     (see above) is used instead.  This prevents long spikes being
-   *     created.  `FT_STROKER_LINEJOIN_MITER_FIXED` generates a miter line
-   *     join as used in PostScript and PDF.
+   *     segments are extended until they meet at an angle.  A bevel join
+   *     (see above) is used if the segments meet at too sharp an angle and
+   *     the outer edges meet beyond a distance corresponding to the meter
+   *     limit.  This prevents long spikes being created.
+   *     `FT_STROKER_LINEJOIN_MITER_FIXED` generates a miter line join as
+   *     used in PostScript and PDF.
    *
    *   FT_STROKER_LINEJOIN_MITER_VARIABLE ::
    *   FT_STROKER_LINEJOIN_MITER ::
    *     Used to render mitered line joins, with variable bevels if the miter
-   *     limit is exceeded.  The intersection of the strokes is clipped at a
-   *     line perpendicular to the bisector of the angle between the strokes,
-   *     at the distance from the intersection of the segments equal to the
-   *     product of the miter limit value and the border radius.  This
-   *     prevents long spikes being created. 
+   *     limit is exceeded.  The intersection of the strokes is clipped
+   *     perpendicularly to the bisector, at a distance corresponding to
+   *     the miter limit. This prevents long spikes being created.
    *     `FT_STROKER_LINEJOIN_MITER_VARIABLE` generates a mitered line join
    *     as used in XPS.  `FT_STROKER_LINEJOIN_MITER` is an alias for
    *     `FT_STROKER_LINEJOIN_MITER_VARIABLE`, retained for backward
@@ -296,12 +292,17 @@ FT_BEGIN_HEADER
    *     The line join style.
    *
    *   miter_limit ::
-   *     The miter limit for the `FT_STROKER_LINEJOIN_MITER_FIXED` and
-   *     `FT_STROKER_LINEJOIN_MITER_VARIABLE` line join styles, expressed as
-   *     16.16 fixed-point value.
+   *     The maximum reciprocal sine of half-angle at the miter join,
+   *     expressed as 16.16 fixed point value.
    *
    * @note:
-   *   The radius is expressed in the same units as the outline coordinates.
+   *   The `radius` is expressed in the same units as the outline
+   *   coordinates.
+   *
+   *   The `miter_limit` multiplied by the `radius` gives the maximum size
+   *   of a miter spike, at which it is clipped for
+   *   @FT_STROKER_LINEJOIN_MITER_VARIABLE or replaced with a bevel join for
+   *   @FT_STROKER_LINEJOIN_MITER_FIXED.
    *
    *   This function calls @FT_Stroker_Rewind automatically.
    */

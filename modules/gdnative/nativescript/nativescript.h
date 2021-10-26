@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,37 +31,37 @@
 #ifndef NATIVE_SCRIPT_H
 #define NATIVE_SCRIPT_H
 
+#include "core/doc_data.h"
+#include "core/io/resource.h"
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
-#include "core/oa_hash_map.h"
-#include "core/ordered_hash_map.h"
+#include "core/object/script_language.h"
+#include "core/os/mutex.h"
 #include "core/os/thread_safe.h"
-#include "core/resource.h"
-#include "core/script_language.h"
-#include "core/self_list.h"
+#include "core/templates/oa_hash_map.h"
+#include "core/templates/ordered_hash_map.h"
+#include "core/templates/safe_refcount.h"
+#include "core/templates/self_list.h"
 #include "scene/main/node.h"
 
 #include "modules/gdnative/gdnative.h"
+
 #include <nativescript/godot_nativescript.h>
 
-#ifndef NO_THREADS
-#include "core/os/mutex.h"
-#endif
-
 struct NativeScriptDesc {
-
 	struct Method {
-		godot_instance_method method;
+		godot_nativescript_instance_method method;
 		MethodInfo info;
-		int rpc_mode;
+		int rpc_mode = 0;
+		uint16_t rpc_method_id = 0;
 		String documentation;
 	};
+
 	struct Property {
-		godot_property_set_func setter;
-		godot_property_get_func getter;
+		godot_nativescript_property_set_func setter;
+		godot_nativescript_property_get_func getter;
 		PropertyInfo info;
 		Variant default_value;
-		int rset_mode;
 		String documentation;
 	};
 
@@ -71,30 +71,24 @@ struct NativeScriptDesc {
 	};
 
 	Map<StringName, Method> methods;
+	Vector<Multiplayer::RPCConfig> rpc_methods;
 	OrderedHashMap<StringName, Property> properties;
 	Map<StringName, Signal> signals_; // QtCreator doesn't like the name signals
 	StringName base;
 	StringName base_native_type;
-	NativeScriptDesc *base_data;
-	godot_instance_create_func create_func;
-	godot_instance_destroy_func destroy_func;
+	NativeScriptDesc *base_data = nullptr;
+	godot_nativescript_instance_create_func create_func;
+	godot_nativescript_instance_destroy_func destroy_func;
 
 	String documentation;
 
-	const void *type_tag;
+	const void *type_tag = nullptr;
 
-	bool is_tool;
+	bool is_tool = false;
 
-	inline NativeScriptDesc() :
-			methods(),
-			properties(),
-			signals_(),
-			base(),
-			base_native_type(),
-			documentation(),
-			type_tag(NULL) {
-		zeromem(&create_func, sizeof(godot_instance_create_func));
-		zeromem(&destroy_func, sizeof(godot_instance_destroy_func));
+	inline NativeScriptDesc() {
+		memset(&create_func, 0, sizeof(godot_nativescript_instance_create_func));
+		memset(&destroy_func, 0, sizeof(godot_nativescript_instance_destroy_func));
 	}
 };
 
@@ -104,7 +98,7 @@ class NativeScript : public Script {
 #ifdef TOOLS_ENABLED
 	Set<PlaceHolderScriptInstance *> placeholders;
 	void _update_placeholder(PlaceHolderScriptInstance *p_placeholder);
-	virtual void _placeholder_erased(PlaceHolderScriptInstance *p_placeholder);
+	virtual void _placeholder_erased(PlaceHolderScriptInstance *p_placeholder) override;
 #endif
 
 	friend class NativeScriptInstance;
@@ -121,9 +115,7 @@ class NativeScript : public Script {
 	String script_class_name;
 	String script_class_icon_path;
 
-#ifndef NO_THREADS
-	Mutex *owners_lock;
-#endif
+	Mutex owners_lock;
 	Set<Object *> instance_owners;
 
 protected:
@@ -131,6 +123,8 @@ protected:
 
 public:
 	inline NativeScriptDesc *get_script_desc() const;
+
+	bool inherits_script(const Ref<Script> &p_script) const override;
 
 	void set_class_name(String p_class_name);
 	String get_class_name() const;
@@ -143,50 +137,58 @@ public:
 	void set_script_class_icon_path(String p_icon_path);
 	String get_script_class_icon_path() const;
 
-	virtual bool can_instance() const;
+	virtual bool can_instantiate() const override;
 
-	virtual Ref<Script> get_base_script() const; //for script inheritance
+	virtual Ref<Script> get_base_script() const override; //for script inheritance
 
-	virtual StringName get_instance_base_type() const; // this may not work in all scripts, will return empty if so
-	virtual ScriptInstance *instance_create(Object *p_this);
-	virtual PlaceHolderScriptInstance *placeholder_instance_create(Object *p_this);
-	virtual bool instance_has(const Object *p_this) const;
+	virtual StringName get_instance_base_type() const override; // this may not work in all scripts, will return empty if so
+	virtual ScriptInstance *instance_create(Object *p_this) override;
+	virtual PlaceHolderScriptInstance *placeholder_instance_create(Object *p_this) override;
+	virtual bool instance_has(const Object *p_this) const override;
 
-	virtual bool has_source_code() const;
-	virtual String get_source_code() const;
-	virtual void set_source_code(const String &p_code);
-	virtual Error reload(bool p_keep_state = false);
+	virtual bool has_source_code() const override;
+	virtual String get_source_code() const override;
+	virtual void set_source_code(const String &p_code) override;
+	virtual Error reload(bool p_keep_state = false) override;
 
-	virtual bool has_method(const StringName &p_method) const;
-	virtual MethodInfo get_method_info(const StringName &p_method) const;
+#ifdef TOOLS_ENABLED
+	virtual const Vector<DocData::ClassDoc> &get_documentation() const override {
+		static Vector<DocData::ClassDoc> docs;
+		return docs;
+	}
+#endif // TOOLS_ENABLED
 
-	virtual bool is_tool() const;
-	virtual bool is_valid() const;
+	virtual bool has_method(const StringName &p_method) const override;
+	virtual MethodInfo get_method_info(const StringName &p_method) const override;
 
-	virtual ScriptLanguage *get_language() const;
+	virtual bool is_tool() const override;
+	virtual bool is_valid() const override;
 
-	virtual bool has_script_signal(const StringName &p_signal) const;
-	virtual void get_script_signal_list(List<MethodInfo> *r_signals) const;
+	virtual ScriptLanguage *get_language() const override;
 
-	virtual bool get_property_default_value(const StringName &p_property, Variant &r_value) const;
+	virtual bool has_script_signal(const StringName &p_signal) const override;
+	virtual void get_script_signal_list(List<MethodInfo> *r_signals) const override;
 
-	virtual void update_exports(); //editor tool
-	virtual void get_script_method_list(List<MethodInfo> *p_list) const;
-	virtual void get_script_property_list(List<PropertyInfo> *p_list) const;
+	virtual bool get_property_default_value(const StringName &p_property, Variant &r_value) const override;
+
+	virtual void update_exports() override; //editor tool
+	virtual void get_script_method_list(List<MethodInfo> *p_list) const override;
+	virtual void get_script_property_list(List<PropertyInfo> *p_list) const override;
+
+	virtual const Vector<Multiplayer::RPCConfig> get_rpc_methods() const override;
 
 	String get_class_documentation() const;
 	String get_method_documentation(const StringName &p_method) const;
 	String get_signal_documentation(const StringName &p_signal_name) const;
 	String get_property_documentation(const StringName &p_path) const;
 
-	Variant _new(const Variant **p_args, int p_argcount, Variant::CallError &r_error);
+	Variant _new(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 
 	NativeScript();
 	~NativeScript();
 };
 
 class NativeScriptInstance : public ScriptInstance {
-
 	friend class NativeScript;
 
 	Object *owner;
@@ -206,16 +208,14 @@ public:
 	virtual Variant::Type get_property_type(const StringName &p_name, bool *r_is_valid) const;
 	virtual void get_method_list(List<MethodInfo> *p_list) const;
 	virtual bool has_method(const StringName &p_method) const;
-	virtual Variant call(const StringName &p_method, const Variant **p_args, int p_argcount, Variant::CallError &r_error);
+	virtual Variant call(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 	virtual void notification(int p_notification);
 	String to_string(bool *r_valid);
 	virtual Ref<Script> get_script() const;
-	virtual MultiplayerAPI::RPCMode get_rpc_mode(const StringName &p_method) const;
-	virtual MultiplayerAPI::RPCMode get_rset_mode(const StringName &p_variable) const;
-	virtual ScriptLanguage *get_language();
 
-	virtual void call_multilevel(const StringName &p_method, const Variant **p_args, int p_argcount);
-	virtual void call_multilevel_reversed(const StringName &p_method, const Variant **p_args, int p_argcount);
+	virtual const Vector<Multiplayer::RPCConfig> get_rpc_methods() const;
+
+	virtual ScriptLanguage *get_language();
 
 	virtual void refcount_incremented();
 	virtual bool refcount_decremented();
@@ -226,23 +226,21 @@ public:
 class NativeReloadNode;
 
 class NativeScriptLanguage : public ScriptLanguage {
-
 	friend class NativeScript;
 	friend class NativeScriptInstance;
 	friend class NativeReloadNode;
 
 private:
 	static NativeScriptLanguage *singleton;
-	int lang_idx;
+	int lang_idx = 0;
 
 	void _unload_stuff(bool p_reload = false);
 
+	Mutex mutex;
 #ifndef NO_THREADS
-	Mutex *mutex;
-
-	Set<Ref<GDNativeLibrary> > libs_to_init;
+	Set<Ref<GDNativeLibrary>> libs_to_init;
 	Set<NativeScript *> scripts_to_register;
-	volatile bool has_objects_to_register; // so that we don't lock mutex every frame - it's rarely needed
+	SafeFlag has_objects_to_register; // so that we don't lock mutex every frame - it's rarely needed
 	void defer_init_library(Ref<GDNativeLibrary> lib, NativeScript *script);
 #endif
 
@@ -252,33 +250,32 @@ private:
 
 	void call_libraries_cb(const StringName &name);
 
-	Vector<Pair<bool, godot_instance_binding_functions> > binding_functions;
+	Vector<Pair<bool, godot_nativescript_instance_binding_functions>> binding_functions;
 	Set<Vector<void *> *> binding_instances;
 
-	Map<int, HashMap<StringName, const void *> > global_type_tags;
+	Map<int, HashMap<StringName, const void *>> global_type_tags;
 
 	struct ProfileData {
 		StringName signature;
-		uint64_t call_count;
-		uint64_t self_time;
-		uint64_t total_time;
-		uint64_t frame_call_count;
-		uint64_t frame_self_time;
-		uint64_t frame_total_time;
-		uint64_t last_frame_call_count;
-		uint64_t last_frame_self_time;
-		uint64_t last_frame_total_time;
+		uint64_t call_count = 0;
+		uint64_t self_time = 0;
+		uint64_t total_time = 0;
+		uint64_t frame_call_count = 0;
+		uint64_t frame_self_time = 0;
+		uint64_t frame_total_time = 0;
+		uint64_t last_frame_call_count = 0;
+		uint64_t last_frame_self_time = 0;
+		uint64_t last_frame_total_time = 0;
 	};
 
 	Map<StringName, ProfileData> profile_data;
-	bool profiling;
 
 public:
 	// These two maps must only be touched on the main thread
-	Map<String, Map<StringName, NativeScriptDesc> > library_classes;
-	Map<String, Ref<GDNative> > library_gdnatives;
+	Map<String, Map<StringName, NativeScriptDesc>> library_classes;
+	Map<String, Ref<GDNative>> library_gdnatives;
 
-	Map<String, Set<NativeScript *> > library_script_users;
+	Map<String, Set<NativeScript *>> library_script_users;
 
 	StringName _init_call_type;
 	StringName _init_call_name;
@@ -297,8 +294,6 @@ public:
 		return singleton;
 	}
 
-	void _hacky_api_anchor();
-
 	_FORCE_INLINE_ void set_language_index(int p_idx) { lang_idx = p_idx; }
 
 #ifndef NO_THREADS
@@ -315,15 +310,16 @@ public:
 	virtual Error execute_file(const String &p_path);
 	virtual void finish();
 	virtual void get_reserved_words(List<String> *p_words) const;
+	virtual bool is_control_flow_keyword(String p_keyword) const;
 	virtual void get_comment_delimiters(List<String> *p_delimiters) const;
 	virtual void get_string_delimiters(List<String> *p_delimiters) const;
 	virtual Ref<Script> get_template(const String &p_class_name, const String &p_base_class_name) const;
-	virtual bool validate(const String &p_script, int &r_line_error, int &r_col_error, String &r_test_error, const String &p_path, List<String> *r_functions, List<ScriptLanguage::Warning> *r_warnings = NULL, Set<int> *r_safe_lines = NULL) const;
+	virtual bool validate(const String &p_script, const String &p_path, List<String> *r_functions, List<ScriptLanguage::ScriptError> *r_errors = nullptr, List<ScriptLanguage::Warning> *r_warnings = nullptr, Set<int> *r_safe_lines = nullptr) const;
 	virtual Script *create_script() const;
 	virtual bool has_named_classes() const;
 	virtual bool supports_builtin_mode() const;
 	virtual int find_function(const String &p_function, const String &p_code) const;
-	virtual String make_function(const String &p_class, const String &p_name, const PoolStringArray &p_args) const;
+	virtual String make_function(const String &p_class, const String &p_name, const PackedStringArray &p_args) const;
 	virtual void auto_indent_code(String &p_code, int p_from_line, int p_to_line) const;
 	virtual void add_global_constant(const StringName &p_variable, const Variant &p_value);
 	virtual String debug_get_error() const;
@@ -339,13 +335,13 @@ public:
 	virtual void reload_tool_script(const Ref<Script> &p_script, bool p_soft_reload);
 	virtual void get_recognized_extensions(List<String> *p_extensions) const;
 	virtual void get_public_functions(List<MethodInfo> *p_functions) const;
-	virtual void get_public_constants(List<Pair<String, Variant> > *p_constants) const;
+	virtual void get_public_constants(List<Pair<String, Variant>> *p_constants) const;
 	virtual void profiling_start();
 	virtual void profiling_stop();
 	virtual int profiling_get_accumulated_data(ProfilingInfo *p_info_arr, int p_info_max);
 	virtual int profiling_get_frame_data(ProfilingInfo *p_info_arr, int p_info_max);
 
-	int register_binding_functions(godot_instance_binding_functions p_binding_functions);
+	int register_binding_functions(godot_nativescript_instance_binding_functions p_binding_functions);
 	void unregister_binding_functions(int p_idx);
 
 	void *get_instance_binding_data(int p_idx, Object *p_object);
@@ -366,24 +362,23 @@ public:
 
 inline NativeScriptDesc *NativeScript::get_script_desc() const {
 	Map<StringName, NativeScriptDesc>::Element *E = NativeScriptLanguage::singleton->library_classes[lib_path].find(class_name);
-	return E ? &E->get() : NULL;
+	return E ? &E->get() : nullptr;
 }
 
 class NativeReloadNode : public Node {
 	GDCLASS(NativeReloadNode, Node);
-	bool unloaded;
+	bool unloaded = false;
 
 public:
 	static void _bind_methods();
 	void _notification(int p_what);
 
-	NativeReloadNode() :
-			unloaded(false) {}
+	NativeReloadNode() {}
 };
 
 class ResourceFormatLoaderNativeScript : public ResourceFormatLoader {
 public:
-	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = NULL);
+	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, CacheMode p_cache_mode = CACHE_MODE_REUSE);
 	virtual void get_recognized_extensions(List<String> *p_extensions) const;
 	virtual bool handles_type(const String &p_type) const;
 	virtual String get_resource_type(const String &p_path) const;

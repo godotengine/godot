@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,25 +31,26 @@
 #include "animation_tree.h"
 
 #include "animation_blend_tree.h"
-#include "core/engine.h"
-#include "core/method_bind_ext.gen.inc"
+#include "core/config/engine.h"
 #include "scene/scene_string_names.h"
 #include "servers/audio/audio_stream.h"
 
 void AnimationNode::get_parameter_list(List<PropertyInfo> *r_list) const {
-	if (get_script_instance()) {
-		Array parameters = get_script_instance()->call("get_parameter_list");
+	Array parameters;
+
+	if (GDVIRTUAL_CALL(_get_parameter_list, parameters)) {
 		for (int i = 0; i < parameters.size(); i++) {
 			Dictionary d = parameters[i];
-			ERR_CONTINUE(d.empty());
+			ERR_CONTINUE(d.is_empty());
 			r_list->push_back(PropertyInfo::from_dict(d));
 		}
 	}
 }
 
 Variant AnimationNode::get_parameter_default_value(const StringName &p_parameter) const {
-	if (get_script_instance()) {
-		return get_script_instance()->call("get_parameter_default_value");
+	Variant ret;
+	if (GDVIRTUAL_CALL(_get_parameter_default_value, p_parameter, ret)) {
+		return ret;
 	}
 	return Variant();
 }
@@ -73,29 +74,26 @@ Variant AnimationNode::get_parameter(const StringName &p_name) const {
 }
 
 void AnimationNode::get_child_nodes(List<ChildNode> *r_child_nodes) {
-
-	if (get_script_instance()) {
-		Dictionary cn = get_script_instance()->call("get_child_nodes");
+	Dictionary cn;
+	if (GDVIRTUAL_CALL(_get_child_nodes, cn)) {
 		List<Variant> keys;
 		cn.get_key_list(&keys);
-		for (List<Variant>::Element *E = keys.front(); E; E = E->next()) {
+		for (const Variant &E : keys) {
 			ChildNode child;
-			child.name = E->get();
-			child.node = cn[E->get()];
+			child.name = E;
+			child.node = cn[E];
 			r_child_nodes->push_back(child);
 		}
 	}
 }
 
-void AnimationNode::blend_animation(const StringName &p_animation, float p_time, float p_delta, bool p_seeked, float p_blend) {
-
+void AnimationNode::blend_animation(const StringName &p_animation, real_t p_time, real_t p_delta, bool p_seeked, real_t p_blend) {
 	ERR_FAIL_COND(!state);
 	ERR_FAIL_COND(!state->player->has_animation(p_animation));
 
 	Ref<Animation> animation = state->player->get_animation(p_animation);
 
 	if (animation.is_null()) {
-
 		AnimationNodeBlendTree *btree = Object::cast_to<AnimationNodeBlendTree>(parent);
 		if (btree) {
 			String name = btree->get_node_name(Ref<AnimationNodeAnimation>(this));
@@ -119,17 +117,16 @@ void AnimationNode::blend_animation(const StringName &p_animation, float p_time,
 	state->animation_states.push_back(anim_state);
 }
 
-float AnimationNode::_pre_process(const StringName &p_base_path, AnimationNode *p_parent, State *p_state, float p_time, bool p_seek, const Vector<StringName> &p_connections) {
-
+real_t AnimationNode::_pre_process(const StringName &p_base_path, AnimationNode *p_parent, State *p_state, real_t p_time, bool p_seek, const Vector<StringName> &p_connections) {
 	base_path = p_base_path;
 	parent = p_parent;
 	connections = p_connections;
 	state = p_state;
 
-	float t = process(p_time, p_seek);
+	real_t t = process(p_time, p_seek);
 
-	state = NULL;
-	parent = NULL;
+	state = nullptr;
+	parent = nullptr;
 	base_path = StringName();
 	connections.clear();
 
@@ -142,10 +139,10 @@ void AnimationNode::make_invalid(const String &p_reason) {
 	if (state->invalid_reasons != String()) {
 		state->invalid_reasons += "\n";
 	}
-	state->invalid_reasons += "- " + p_reason;
+	state->invalid_reasons += String::utf8("•  ") + p_reason;
 }
 
-float AnimationNode::blend_input(int p_input, float p_time, bool p_seek, float p_blend, FilterAction p_filter, bool p_optimize) {
+real_t AnimationNode::blend_input(int p_input, real_t p_time, bool p_seek, real_t p_blend, FilterAction p_filter, bool p_optimize) {
 	ERR_FAIL_INDEX_V(p_input, inputs.size(), 0);
 	ERR_FAIL_COND_V(!state, 0);
 
@@ -163,8 +160,8 @@ float AnimationNode::blend_input(int p_input, float p_time, bool p_seek, float p
 	Ref<AnimationNode> node = blend_tree->get_node(node_name);
 
 	//inputs.write[p_input].last_pass = state->last_pass;
-	float activity = 0;
-	float ret = _blend_node(node_name, blend_tree->get_node_connection_array(node_name), NULL, node, p_time, p_seek, p_blend, p_filter, p_optimize, &activity);
+	real_t activity = 0.0;
+	real_t ret = _blend_node(node_name, blend_tree->get_node_connection_array(node_name), nullptr, node, p_time, p_seek, p_blend, p_filter, p_optimize, &activity);
 
 	Vector<AnimationTree::Activity> *activity_ptr = state->tree->input_activity_map.getptr(base_path);
 
@@ -175,13 +172,11 @@ float AnimationNode::blend_input(int p_input, float p_time, bool p_seek, float p
 	return ret;
 }
 
-float AnimationNode::blend_node(const StringName &p_sub_path, Ref<AnimationNode> p_node, float p_time, bool p_seek, float p_blend, FilterAction p_filter, bool p_optimize) {
-
+real_t AnimationNode::blend_node(const StringName &p_sub_path, Ref<AnimationNode> p_node, real_t p_time, bool p_seek, real_t p_blend, FilterAction p_filter, bool p_optimize) {
 	return _blend_node(p_sub_path, Vector<StringName>(), this, p_node, p_time, p_seek, p_blend, p_filter, p_optimize);
 }
 
-float AnimationNode::_blend_node(const StringName &p_subpath, const Vector<StringName> &p_connections, AnimationNode *p_new_parent, Ref<AnimationNode> p_node, float p_time, bool p_seek, float p_blend, FilterAction p_filter, bool p_optimize, float *r_max) {
-
+real_t AnimationNode::_blend_node(const StringName &p_subpath, const Vector<StringName> &p_connections, AnimationNode *p_new_parent, Ref<AnimationNode> p_node, real_t p_time, bool p_seek, real_t p_blend, FilterAction p_filter, bool p_optimize, real_t *r_max) {
 	ERR_FAIL_COND_V(!p_node.is_valid(), 0);
 	ERR_FAIL_COND_V(!state, 0);
 
@@ -191,18 +186,17 @@ float AnimationNode::_blend_node(const StringName &p_subpath, const Vector<Strin
 		p_node->blends.resize(blend_count);
 	}
 
-	float *blendw = p_node->blends.ptrw();
-	const float *blendr = blends.ptr();
+	real_t *blendw = p_node->blends.ptrw();
+	const real_t *blendr = blends.ptr();
 
 	bool any_valid = false;
 
 	if (has_filter() && is_filter_enabled() && p_filter != FILTER_IGNORE) {
-
 		for (int i = 0; i < blend_count; i++) {
 			blendw[i] = 0.0; //all to zero by default
 		}
 
-		const NodePath *K = NULL;
+		const NodePath *K = nullptr;
 		while ((K = filter.next(K))) {
 			if (!state->track_map.has(*K)) {
 				continue;
@@ -217,8 +211,9 @@ float AnimationNode::_blend_node(const StringName &p_subpath, const Vector<Strin
 			case FILTER_PASS: {
 				//values filtered pass, the rest don't
 				for (int i = 0; i < blend_count; i++) {
-					if (blendw[i] == 0) //not filtered, does not pass
+					if (blendw[i] == 0) { //not filtered, does not pass
 						continue;
+					}
 
 					blendw[i] = blendr[i] * p_blend;
 					if (blendw[i] > CMP_EPSILON) {
@@ -228,12 +223,12 @@ float AnimationNode::_blend_node(const StringName &p_subpath, const Vector<Strin
 
 			} break;
 			case FILTER_STOP: {
-
 				//values filtered don't pass, the rest are blended
 
 				for (int i = 0; i < blend_count; i++) {
-					if (blendw[i] > 0) //filtered, does not pass
+					if (blendw[i] > 0) { //filtered, does not pass
 						continue;
+					}
 
 					blendw[i] = blendr[i] * p_blend;
 					if (blendw[i] > CMP_EPSILON) {
@@ -243,7 +238,6 @@ float AnimationNode::_blend_node(const StringName &p_subpath, const Vector<Strin
 
 			} break;
 			case FILTER_BLEND: {
-
 				//filtered values are blended, the rest are passed without blending
 
 				for (int i = 0; i < blend_count; i++) {
@@ -262,7 +256,6 @@ float AnimationNode::_blend_node(const StringName &p_subpath, const Vector<Strin
 		}
 	} else {
 		for (int i = 0; i < blend_count; i++) {
-
 			//regular blend
 			blendw[i] = blendr[i] * p_blend;
 			if (blendw[i] > CMP_EPSILON) {
@@ -278,8 +271,9 @@ float AnimationNode::_blend_node(const StringName &p_subpath, const Vector<Strin
 		}
 	}
 
-	if (!p_seek && p_optimize && !any_valid) //pointless to go on, all are zero
+	if (!p_seek && p_optimize && !any_valid) { //pointless to go on, all are zero
 		return 0;
+	}
 
 	String new_path;
 	AnimationNode *new_parent;
@@ -297,18 +291,18 @@ float AnimationNode::_blend_node(const StringName &p_subpath, const Vector<Strin
 }
 
 int AnimationNode::get_input_count() const {
-
 	return inputs.size();
 }
+
 String AnimationNode::get_input_name(int p_input) {
 	ERR_FAIL_INDEX_V(p_input, inputs.size(), String());
 	return inputs[p_input].name;
 }
 
 String AnimationNode::get_caption() const {
-
-	if (get_script_instance()) {
-		return get_script_instance()->call("get_caption");
+	String ret;
+	if (GDVIRTUAL_CALL(_get_caption, ret)) {
+		return ret;
 	}
 
 	return "Node";
@@ -316,7 +310,7 @@ String AnimationNode::get_caption() const {
 
 void AnimationNode::add_input(const String &p_name) {
 	//root nodes can't add inputs
-	ERR_FAIL_COND(Object::cast_to<AnimationRootNode>(this) != NULL);
+	ERR_FAIL_COND(Object::cast_to<AnimationRootNode>(this) != nullptr);
 	Input input;
 	ERR_FAIL_COND(p_name.find(".") != -1 || p_name.find("/") != -1);
 	input.name = p_name;
@@ -337,10 +331,10 @@ void AnimationNode::remove_input(int p_index) {
 	emit_changed();
 }
 
-float AnimationNode::process(float p_time, bool p_seek) {
-
-	if (get_script_instance()) {
-		return get_script_instance()->call("process", p_time, p_seek);
+double AnimationNode::process(double p_time, bool p_seek) {
+	double ret;
+	if (GDVIRTUAL_CALL(_process, p_time, p_seek, ret)) {
+		return ret;
 	}
 
 	return 0;
@@ -367,14 +361,18 @@ bool AnimationNode::is_path_filtered(const NodePath &p_path) const {
 }
 
 bool AnimationNode::has_filter() const {
+	bool ret;
+	if (GDVIRTUAL_CALL(_has_filter, ret)) {
+		return ret;
+	}
+
 	return false;
 }
 
 Array AnimationNode::_get_filters() const {
-
 	Array paths;
 
-	const NodePath *K = NULL;
+	const NodePath *K = nullptr;
 	while ((K = filter.next(K))) {
 		paths.push_back(String(*K)); //use strings, so sorting is possible
 	}
@@ -382,6 +380,7 @@ Array AnimationNode::_get_filters() const {
 
 	return paths;
 }
+
 void AnimationNode::_set_filters(const Array &p_filters) {
 	filter.clear();
 	for (int i = 0; i < p_filters.size(); i++) {
@@ -391,19 +390,19 @@ void AnimationNode::_set_filters(const Array &p_filters) {
 
 void AnimationNode::_validate_property(PropertyInfo &property) const {
 	if (!has_filter() && (property.name == "filter_enabled" || property.name == "filters")) {
-		property.usage = 0;
+		property.usage = PROPERTY_USAGE_NONE;
 	}
 }
 
 Ref<AnimationNode> AnimationNode::get_child_by_name(const StringName &p_name) {
-	if (get_script_instance()) {
-		return get_script_instance()->call("get_child_by_name");
+	Ref<AnimationNode> ret;
+	if (GDVIRTUAL_CALL(_get_child_by_name, p_name, ret)) {
+		return ret;
 	}
 	return Ref<AnimationNode>();
 }
 
 void AnimationNode::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("get_input_count"), &AnimationNode::get_input_count);
 	ClassDB::bind_method(D_METHOD("get_input_name", "input"), &AnimationNode::get_input_name);
 
@@ -429,17 +428,13 @@ void AnimationNode::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "filter_enabled", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_filter_enabled", "is_filter_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "filters", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_filters", "_get_filters");
 
-	BIND_VMETHOD(MethodInfo(Variant::DICTIONARY, "get_child_nodes"));
-	BIND_VMETHOD(MethodInfo(Variant::ARRAY, "get_parameter_list"));
-	BIND_VMETHOD(MethodInfo(Variant::OBJECT, "get_child_by_name", PropertyInfo(Variant::STRING, "name")));
-	{
-		MethodInfo mi = MethodInfo(Variant::NIL, "get_parameter_default_value", PropertyInfo(Variant::STRING, "name"));
-		mi.return_val.usage = PROPERTY_USAGE_NIL_IS_VARIANT;
-		BIND_VMETHOD(mi);
-	}
-	BIND_VMETHOD(MethodInfo("process", PropertyInfo(Variant::REAL, "time"), PropertyInfo(Variant::BOOL, "seek")));
-	BIND_VMETHOD(MethodInfo(Variant::STRING, "get_caption"));
-	BIND_VMETHOD(MethodInfo(Variant::STRING, "has_filter"));
+	GDVIRTUAL_BIND(_get_child_nodes);
+	GDVIRTUAL_BIND(_get_parameter_list);
+	GDVIRTUAL_BIND(_get_child_by_name, "name");
+	GDVIRTUAL_BIND(_get_parameter_default_value, "parameter");
+	GDVIRTUAL_BIND(_process, "time", "seek");
+	GDVIRTUAL_BIND(_get_caption);
+	GDVIRTUAL_BIND(_has_filter);
 
 	ADD_SIGNAL(MethodInfo("removed_from_graph"));
 
@@ -452,29 +447,24 @@ void AnimationNode::_bind_methods() {
 }
 
 AnimationNode::AnimationNode() {
-
-	state = NULL;
-	parent = NULL;
-	filter_enabled = false;
 }
 
 ////////////////////
 
 void AnimationTree::set_tree_root(const Ref<AnimationNode> &p_root) {
-
 	if (root.is_valid()) {
-		root->disconnect("tree_changed", this, "_tree_changed");
+		root->disconnect("tree_changed", callable_mp(this, &AnimationTree::_tree_changed));
 	}
 
 	root = p_root;
 
 	if (root.is_valid()) {
-		root->connect("tree_changed", this, "_tree_changed");
+		root->connect("tree_changed", callable_mp(this, &AnimationTree::_tree_changed));
 	}
 
 	properties_dirty = true;
 
-	update_configuration_warning();
+	update_configuration_warnings();
 }
 
 Ref<AnimationNode> AnimationTree::get_tree_root() const {
@@ -482,23 +472,21 @@ Ref<AnimationNode> AnimationTree::get_tree_root() const {
 }
 
 void AnimationTree::set_active(bool p_active) {
-
-	if (active == p_active)
+	if (active == p_active) {
 		return;
+	}
 
 	active = p_active;
 	started = active;
 
-	if (process_mode == ANIMATION_PROCESS_IDLE) {
+	if (process_callback == ANIMATION_PROCESS_IDLE) {
 		set_process_internal(active);
 	} else {
-
 		set_physics_process_internal(active);
 	}
 
 	if (!active && is_inside_tree()) {
 		for (Set<TrackCache *>::Element *E = playing_caches.front(); E; E = E->next()) {
-
 			if (ObjectDB::get_instance(E->get()->object_id)) {
 				E->get()->object->call("stop");
 			}
@@ -509,29 +497,28 @@ void AnimationTree::set_active(bool p_active) {
 }
 
 bool AnimationTree::is_active() const {
-
 	return active;
 }
 
-void AnimationTree::set_process_mode(AnimationProcessMode p_mode) {
-
-	if (process_mode == p_mode)
+void AnimationTree::set_process_callback(AnimationProcessCallback p_mode) {
+	if (process_callback == p_mode) {
 		return;
+	}
 
 	bool was_active = is_active();
 	if (was_active) {
 		set_active(false);
 	}
 
-	process_mode = p_mode;
+	process_callback = p_mode;
 
 	if (was_active) {
 		set_active(true);
 	}
 }
 
-AnimationTree::AnimationProcessMode AnimationTree::get_process_mode() const {
-	return process_mode;
+AnimationTree::AnimationProcessCallback AnimationTree::get_process_callback() const {
+	return process_callback;
 }
 
 void AnimationTree::_node_removed(Node *p_node) {
@@ -539,7 +526,6 @@ void AnimationTree::_node_removed(Node *p_node) {
 }
 
 bool AnimationTree::_update_caches(AnimationPlayer *player) {
-
 	setup_pass++;
 
 	if (!player->has_node(player->get_root())) {
@@ -552,43 +538,46 @@ bool AnimationTree::_update_caches(AnimationPlayer *player) {
 	List<StringName> sname;
 	player->get_animation_list(&sname);
 
-	for (List<StringName>::Element *E = sname.front(); E; E = E->next()) {
-		Ref<Animation> anim = player->get_animation(E->get());
+	for (const StringName &E : sname) {
+		Ref<Animation> anim = player->get_animation(E);
 		for (int i = 0; i < anim->get_track_count(); i++) {
 			NodePath path = anim->track_get_path(i);
 			Animation::TrackType track_type = anim->track_get_type(i);
 
-			TrackCache *track = NULL;
+			Animation::TrackType track_cache_type = track_type;
+			if (track_cache_type == Animation::TYPE_POSITION_3D || track_cache_type == Animation::TYPE_ROTATION_3D || track_cache_type == Animation::TYPE_SCALE_3D) {
+				track_cache_type = Animation::TYPE_POSITION_3D; //reference them as position3D tracks, even if they modify rotation or scale
+			}
+
+			TrackCache *track = nullptr;
 			if (track_cache.has(path)) {
 				track = track_cache.get(path);
 			}
 
 			//if not valid, delete track
-			if (track && (track->type != track_type || ObjectDB::get_instance(track->object_id) == NULL)) {
+			if (track && (track->type != track_cache_type || ObjectDB::get_instance(track->object_id) == nullptr)) {
 				playing_caches.erase(track);
 				memdelete(track);
 				track_cache.erase(path);
-				track = NULL;
+				track = nullptr;
 			}
 
 			if (!track) {
-
 				RES resource;
 				Vector<StringName> leftover_path;
 				Node *child = parent->get_node_and_resource(path, resource, leftover_path);
 
 				if (!child) {
-					ERR_PRINTS("AnimationTree: '" + String(E->get()) + "', couldn't resolve track:  '" + String(path) + "'");
+					ERR_PRINT("AnimationTree: '" + String(E) + "', couldn't resolve track:  '" + String(path) + "'");
 					continue;
 				}
 
-				if (!child->is_connected("tree_exited", this, "_node_removed")) {
-					child->connect("tree_exited", this, "_node_removed", varray(child));
+				if (!child->is_connected("tree_exited", callable_mp(this, &AnimationTree::_node_removed))) {
+					child->connect("tree_exited", callable_mp(this, &AnimationTree::_node_removed), varray(child));
 				}
 
 				switch (track_type) {
 					case Animation::TYPE_VALUE: {
-
 						TrackCacheValue *track_value = memnew(TrackCacheValue);
 
 						if (resource.is_valid()) {
@@ -603,40 +592,86 @@ bool AnimationTree::_update_caches(AnimationPlayer *player) {
 						track = track_value;
 
 					} break;
-					case Animation::TYPE_TRANSFORM: {
+					case Animation::TYPE_POSITION_3D:
+					case Animation::TYPE_ROTATION_3D:
+					case Animation::TYPE_SCALE_3D: {
+#ifndef _3D_DISABLED
+						Node3D *node_3d = Object::cast_to<Node3D>(child);
 
-						Spatial *spatial = Object::cast_to<Spatial>(child);
-
-						if (!spatial) {
-							ERR_PRINTS("AnimationTree: '" + String(E->get()) + "', transform track does not point to spatial:  '" + String(path) + "'");
+						if (!node_3d) {
+							ERR_PRINT("AnimationTree: '" + String(E) + "', transform track does not point to Node3D:  '" + String(path) + "'");
 							continue;
 						}
 
 						TrackCacheTransform *track_xform = memnew(TrackCacheTransform);
+						track_xform->type = Animation::TYPE_POSITION_3D;
 
-						track_xform->spatial = spatial;
-						track_xform->skeleton = NULL;
+						track_xform->node_3d = node_3d;
+						track_xform->skeleton = nullptr;
 						track_xform->bone_idx = -1;
 
-						if (path.get_subname_count() == 1 && Object::cast_to<Skeleton>(spatial)) {
-
-							Skeleton *sk = Object::cast_to<Skeleton>(spatial);
+						if (path.get_subname_count() == 1 && Object::cast_to<Skeleton3D>(node_3d)) {
+							Skeleton3D *sk = Object::cast_to<Skeleton3D>(node_3d);
+							track_xform->skeleton = sk;
 							int bone_idx = sk->find_bone(path.get_subname(0));
-							if (bone_idx != -1 && !sk->is_bone_ignore_animation(bone_idx)) {
-
-								track_xform->skeleton = sk;
+							if (bone_idx != -1) {
 								track_xform->bone_idx = bone_idx;
 							}
 						}
 
-						track_xform->object = spatial;
+						track_xform->object = node_3d;
 						track_xform->object_id = track_xform->object->get_instance_id();
 
 						track = track_xform;
 
+						switch (track_type) {
+							case Animation::TYPE_POSITION_3D: {
+								track_xform->loc_used = true;
+							} break;
+							case Animation::TYPE_ROTATION_3D: {
+								track_xform->rot_used = true;
+							} break;
+							case Animation::TYPE_SCALE_3D: {
+								track_xform->scale_used = true;
+							} break;
+							default: {
+							}
+						}
+
+#endif // _3D_DISABLED
+					} break;
+					case Animation::TYPE_BLEND_SHAPE: {
+#ifndef _3D_DISABLED
+
+						if (path.get_subname_count() != 1) {
+							ERR_PRINT("AnimationTree: '" + String(E) + "', blend shape track does not contain a blend shape subname:  '" + String(path) + "'");
+							continue;
+						}
+						MeshInstance3D *mesh_3d = Object::cast_to<MeshInstance3D>(child);
+
+						if (!mesh_3d) {
+							ERR_PRINT("AnimationTree: '" + String(E) + "', blend shape track does not point to MeshInstance3D:  '" + String(path) + "'");
+							continue;
+						}
+
+						StringName blend_shape_name = path.get_subname(0);
+						int blend_shape_idx = mesh_3d->find_blend_shape_by_name(blend_shape_name);
+						if (blend_shape_idx == -1) {
+							ERR_PRINT("AnimationTree: '" + String(E) + "', blend shape track points to a non-existing name:  '" + String(blend_shape_name) + "'");
+							continue;
+						}
+
+						TrackCacheBlendShape *track_bshape = memnew(TrackCacheBlendShape);
+
+						track_bshape->mesh_3d = mesh_3d;
+						track_bshape->shape_index = blend_shape_idx;
+
+						track_bshape->object = mesh_3d;
+						track_bshape->object_id = mesh_3d->get_instance_id();
+						track = track_bshape;
+#endif
 					} break;
 					case Animation::TYPE_METHOD: {
-
 						TrackCacheMethod *track_method = memnew(TrackCacheMethod);
 
 						if (resource.is_valid()) {
@@ -651,7 +686,6 @@ bool AnimationTree::_update_caches(AnimationPlayer *player) {
 
 					} break;
 					case Animation::TYPE_BEZIER: {
-
 						TrackCacheBezier *track_bezier = memnew(TrackCacheBezier);
 
 						if (resource.is_valid()) {
@@ -666,7 +700,6 @@ bool AnimationTree::_update_caches(AnimationPlayer *player) {
 						track = track_bezier;
 					} break;
 					case Animation::TYPE_AUDIO: {
-
 						TrackCacheAudio *track_audio = memnew(TrackCacheAudio);
 
 						track_audio->object = child;
@@ -676,7 +709,6 @@ bool AnimationTree::_update_caches(AnimationPlayer *player) {
 
 					} break;
 					case Animation::TYPE_ANIMATION: {
-
 						TrackCacheAnimation *track_animation = memnew(TrackCacheAnimation);
 
 						track_animation->object = child;
@@ -692,6 +724,26 @@ bool AnimationTree::_update_caches(AnimationPlayer *player) {
 				}
 
 				track_cache[path] = track;
+			} else if (track_cache_type == Animation::TYPE_POSITION_3D) {
+				TrackCacheTransform *track_xform = static_cast<TrackCacheTransform *>(track);
+				if (track->setup_pass != setup_pass) {
+					track_xform->loc_used = false;
+					track_xform->rot_used = false;
+					track_xform->scale_used = false;
+				}
+				switch (track_type) {
+					case Animation::TYPE_POSITION_3D: {
+						track_xform->loc_used = true;
+					} break;
+					case Animation::TYPE_ROTATION_3D: {
+						track_xform->rot_used = true;
+					} break;
+					case Animation::TYPE_SCALE_3D: {
+						track_xform->scale_used = true;
+					} break;
+					default: {
+					}
+				}
 			}
 
 			track->setup_pass = setup_pass;
@@ -700,7 +752,7 @@ bool AnimationTree::_update_caches(AnimationPlayer *player) {
 
 	List<NodePath> to_delete;
 
-	const NodePath *K = NULL;
+	const NodePath *K = nullptr;
 	while ((K = track_cache.next(K))) {
 		TrackCache *tc = track_cache[*K];
 		if (tc->setup_pass != setup_pass) {
@@ -717,7 +769,7 @@ bool AnimationTree::_update_caches(AnimationPlayer *player) {
 
 	state.track_map.clear();
 
-	K = NULL;
+	K = nullptr;
 	int idx = 0;
 	while ((K = track_cache.next(K))) {
 		state.track_map[*K] = idx;
@@ -732,8 +784,7 @@ bool AnimationTree::_update_caches(AnimationPlayer *player) {
 }
 
 void AnimationTree::_clear_caches() {
-
-	const NodePath *K = NULL;
+	const NodePath *K = nullptr;
 	while ((K = track_cache.next(K))) {
 		memdelete(track_cache[*K]);
 	}
@@ -743,13 +794,12 @@ void AnimationTree::_clear_caches() {
 	cache_valid = false;
 }
 
-void AnimationTree::_process_graph(float p_delta) {
-
+void AnimationTree::_process_graph(real_t p_delta) {
 	_update_properties(); //if properties need updating, update them
 
 	//check all tracks, see if they need modification
 
-	root_motion_transform = Transform();
+	root_motion_transform = Transform3D();
 
 	if (!root.is_valid()) {
 		ERR_PRINT("AnimationTree: root AnimationNode is not set, disabling playback.");
@@ -767,23 +817,22 @@ void AnimationTree::_process_graph(float p_delta) {
 
 	AnimationPlayer *player = Object::cast_to<AnimationPlayer>(get_node(animation_player));
 
-	ObjectID current_animation_player = 0;
+	ObjectID current_animation_player;
 
 	if (player) {
 		current_animation_player = player->get_instance_id();
 	}
 
 	if (last_animation_player != current_animation_player) {
-
-		if (last_animation_player) {
+		if (last_animation_player.is_valid()) {
 			Object *old_player = ObjectDB::get_instance(last_animation_player);
 			if (old_player) {
-				old_player->disconnect("caches_cleared", this, "_clear_caches");
+				old_player->disconnect("caches_cleared", callable_mp(this, &AnimationTree::_clear_caches));
 			}
 		}
 
 		if (player) {
-			player->connect("caches_cleared", this, "_clear_caches");
+			player->connect("caches_cleared", callable_mp(this, &AnimationTree::_clear_caches));
 		}
 
 		last_animation_player = current_animation_player;
@@ -817,7 +866,7 @@ void AnimationTree::_process_graph(float p_delta) {
 		// root source blends
 
 		root->blends.resize(state.track_count);
-		float *src_blendsw = root->blends.ptrw();
+		real_t *src_blendsw = root->blends.ptrw();
 		for (int i = 0; i < state.track_count; i++) {
 			src_blendsw[i] = 1.0; //by default all go to 1 for the root input
 		}
@@ -826,14 +875,13 @@ void AnimationTree::_process_graph(float p_delta) {
 	//process
 
 	{
-
 		if (started) {
 			//if started, seek
-			root->_pre_process(SceneStringNames::get_singleton()->parameters_base_path, NULL, &state, 0, true, Vector<StringName>());
+			root->_pre_process(SceneStringNames::get_singleton()->parameters_base_path, nullptr, &state, 0, true, Vector<StringName>());
 			started = false;
 		}
 
-		root->_pre_process(SceneStringNames::get_singleton()->parameters_base_path, NULL, &state, p_delta, false, Vector<StringName>());
+		root->_pre_process(SceneStringNames::get_singleton()->parameters_base_path, nullptr, &state, p_delta, false, Vector<StringName>());
 	}
 
 	if (!state.valid) {
@@ -842,27 +890,26 @@ void AnimationTree::_process_graph(float p_delta) {
 	//apply value/transform/bezier blends to track caches and execute method/audio/animation tracks
 
 	{
-
 		bool can_call = is_inside_tree() && !Engine::get_singleton()->is_editor_hint();
 
-		for (List<AnimationNode::AnimationState>::Element *E = state.animation_states.front(); E; E = E->next()) {
-
-			const AnimationNode::AnimationState &as = E->get();
-
+		for (const AnimationNode::AnimationState &as : state.animation_states) {
 			Ref<Animation> a = as.animation;
-			float time = as.time;
-			float delta = as.delta;
+			double time = as.time;
+			double delta = as.delta;
+			real_t weight = as.blend;
 			bool seeked = as.seeked;
 
 			for (int i = 0; i < a->get_track_count(); i++) {
-
 				NodePath path = a->track_get_path(i);
 
 				ERR_CONTINUE(!track_cache.has(path));
 
 				TrackCache *track = track_cache[path];
-				if (track->type != a->track_get_type(i)) {
-					continue; //may happen should not
+
+				Animation::TrackType ttype = a->track_get_type(i);
+				if (ttype != Animation::TYPE_POSITION_3D && ttype != Animation::TYPE_ROTATION_3D && ttype != Animation::TYPE_SCALE_3D && track->type != ttype) {
+					//broken animation, but avoid error spamming
+					continue;
 				}
 
 				track->root_motion = root_motion_track == path;
@@ -872,29 +919,27 @@ void AnimationTree::_process_graph(float p_delta) {
 
 				ERR_CONTINUE(blend_idx < 0 || blend_idx >= state.track_count);
 
-				float blend = (*as.track_blends)[blend_idx];
+				real_t blend = (*as.track_blends)[blend_idx] * weight;
 
-				if (blend < CMP_EPSILON)
+				if (blend < CMP_EPSILON) {
 					continue; //nothing to blend
+				}
 
-				switch (track->type) {
-
-					case Animation::TYPE_TRANSFORM: {
-
+				switch (ttype) {
+					case Animation::TYPE_POSITION_3D: {
+#ifndef _3D_DISABLED
 						TrackCacheTransform *t = static_cast<TrackCacheTransform *>(track);
 
+						if (t->process_pass != process_pass) {
+							t->process_pass = process_pass;
+							t->loc = Vector3();
+							t->rot = Quaternion();
+							t->rot_blend_accum = 0;
+							t->scale = Vector3(1, 1, 1);
+						}
+
 						if (track->root_motion) {
-
-							if (t->process_pass != process_pass) {
-
-								t->process_pass = process_pass;
-								t->loc = Vector3();
-								t->rot = Quat();
-								t->rot_blend_accum = 0;
-								t->scale = Vector3(1, 1, 1);
-							}
-
-							float prev_time = time - delta;
+							real_t prev_time = time - delta;
 							if (prev_time < 0) {
 								if (!a->has_loop()) {
 									prev_time = 0;
@@ -904,75 +949,200 @@ void AnimationTree::_process_graph(float p_delta) {
 							}
 
 							Vector3 loc[2];
-							Quat rot[2];
-							Vector3 scale[2];
 
 							if (prev_time > time) {
-
-								Error err = a->transform_track_interpolate(i, prev_time, &loc[0], &rot[0], &scale[0]);
+								Error err = a->position_track_interpolate(i, prev_time, &loc[0]);
 								if (err != OK) {
 									continue;
 								}
 
-								a->transform_track_interpolate(i, a->get_length(), &loc[1], &rot[1], &scale[1]);
+								a->position_track_interpolate(i, a->get_length(), &loc[1]);
 
 								t->loc += (loc[1] - loc[0]) * blend;
-								t->scale += (scale[1] - scale[0]) * blend;
-								Quat q = Quat().slerp(rot[0].normalized().inverse() * rot[1].normalized(), blend).normalized();
-								t->rot = (t->rot * q).normalized();
-
 								prev_time = 0;
 							}
 
-							Error err = a->transform_track_interpolate(i, prev_time, &loc[0], &rot[0], &scale[0]);
+							Error err = a->position_track_interpolate(i, prev_time, &loc[0]);
 							if (err != OK) {
 								continue;
 							}
 
-							a->transform_track_interpolate(i, time, &loc[1], &rot[1], &scale[1]);
+							a->position_track_interpolate(i, time, &loc[1]);
 
 							t->loc += (loc[1] - loc[0]) * blend;
-							t->scale += (scale[1] - scale[0]) * blend;
-							Quat q = Quat().slerp(rot[0].normalized().inverse() * rot[1].normalized(), blend).normalized();
-							t->rot = (t->rot * q).normalized();
 
 							prev_time = 0;
 
 						} else {
 							Vector3 loc;
-							Quat rot;
-							Vector3 scale;
 
-							Error err = a->transform_track_interpolate(i, time, &loc, &rot, &scale);
+							Error err = a->position_track_interpolate(i, time, &loc);
 							//ERR_CONTINUE(err!=OK); //used for testing, should be removed
 
-							if (t->process_pass != process_pass) {
-
-								t->process_pass = process_pass;
-								t->loc = loc;
-								t->rot = rot;
-								t->rot_blend_accum = 0;
-								t->scale = scale;
+							if (err != OK) {
+								continue;
 							}
 
-							if (err != OK)
-								continue;
+							t->loc = t->loc.lerp(loc, blend);
+						}
+#endif // _3D_DISABLED
+					} break;
+					case Animation::TYPE_ROTATION_3D: {
+#ifndef _3D_DISABLED
+						TrackCacheTransform *t = static_cast<TrackCacheTransform *>(track);
 
-							t->loc = t->loc.linear_interpolate(loc, blend);
+						if (t->process_pass != process_pass) {
+							t->process_pass = process_pass;
+							t->loc = Vector3();
+							t->rot = Quaternion();
+							t->rot_blend_accum = 0;
+							t->scale = Vector3(1, 1, 1);
+						}
+
+						if (track->root_motion) {
+							real_t prev_time = time - delta;
+							if (prev_time < 0) {
+								if (!a->has_loop()) {
+									prev_time = 0;
+								} else {
+									prev_time = a->get_length() + prev_time;
+								}
+							}
+
+							Quaternion rot[2];
+
+							if (prev_time > time) {
+								Error err = a->rotation_track_interpolate(i, prev_time, &rot[0]);
+								if (err != OK) {
+									continue;
+								}
+
+								a->rotation_track_interpolate(i, a->get_length(), &rot[1]);
+
+								Quaternion q = Quaternion().slerp(rot[0].normalized().inverse() * rot[1].normalized(), blend).normalized();
+								t->rot = (t->rot * q).normalized();
+
+								prev_time = 0;
+							}
+
+							Error err = a->rotation_track_interpolate(i, prev_time, &rot[0]);
+							if (err != OK) {
+								continue;
+							}
+
+							a->rotation_track_interpolate(i, time, &rot[1]);
+
+							Quaternion q = Quaternion().slerp(rot[0].normalized().inverse() * rot[1].normalized(), blend).normalized();
+							t->rot = (t->rot * q).normalized();
+
+							prev_time = 0;
+
+						} else {
+							Quaternion rot;
+
+							Error err = a->rotation_track_interpolate(i, time, &rot);
+							//ERR_CONTINUE(err!=OK); //used for testing, should be removed
+
+							if (err != OK) {
+								continue;
+							}
+
 							if (t->rot_blend_accum == 0) {
 								t->rot = rot;
 								t->rot_blend_accum = blend;
 							} else {
-								float rot_total = t->rot_blend_accum + blend;
+								real_t rot_total = t->rot_blend_accum + blend;
 								t->rot = rot.slerp(t->rot, t->rot_blend_accum / rot_total).normalized();
 								t->rot_blend_accum = rot_total;
 							}
-							t->scale = t->scale.linear_interpolate(scale, blend);
+						}
+#endif // _3D_DISABLED
+					} break;
+					case Animation::TYPE_SCALE_3D: {
+#ifndef _3D_DISABLED
+						TrackCacheTransform *t = static_cast<TrackCacheTransform *>(track);
+
+						if (t->process_pass != process_pass) {
+							t->process_pass = process_pass;
+							t->loc = Vector3();
+							t->rot = Quaternion();
+							t->rot_blend_accum = 0;
+							t->scale = Vector3(1, 1, 1);
 						}
 
+						if (track->root_motion) {
+							real_t prev_time = time - delta;
+							if (prev_time < 0) {
+								if (!a->has_loop()) {
+									prev_time = 0;
+								} else {
+									prev_time = a->get_length() + prev_time;
+								}
+							}
+
+							Vector3 scale[2];
+
+							if (prev_time > time) {
+								Error err = a->scale_track_interpolate(i, prev_time, &scale[0]);
+								if (err != OK) {
+									continue;
+								}
+
+								a->scale_track_interpolate(i, a->get_length(), &scale[1]);
+
+								t->scale += (scale[1] - scale[0]) * blend;
+
+								prev_time = 0;
+							}
+
+							Error err = a->scale_track_interpolate(i, prev_time, &scale[0]);
+							if (err != OK) {
+								continue;
+							}
+
+							a->scale_track_interpolate(i, time, &scale[1]);
+
+							t->scale += (scale[1] - scale[0]) * blend;
+
+							prev_time = 0;
+
+						} else {
+							Vector3 scale;
+
+							Error err = a->scale_track_interpolate(i, time, &scale);
+							//ERR_CONTINUE(err!=OK); //used for testing, should be removed
+
+							if (err != OK) {
+								continue;
+							}
+
+							t->scale = t->scale.lerp(scale, blend);
+						}
+#endif // _3D_DISABLED
+					} break;
+					case Animation::TYPE_BLEND_SHAPE: {
+#ifndef _3D_DISABLED
+						TrackCacheBlendShape *t = static_cast<TrackCacheBlendShape *>(track);
+
+						if (t->process_pass != process_pass) {
+							t->process_pass = process_pass;
+							t->value = 0;
+						}
+
+						float value;
+
+						Error err = a->blend_shape_track_interpolate(i, time, &value);
+						//ERR_CONTINUE(err!=OK); //used for testing, should be removed
+
+						if (err != OK) {
+							continue;
+						}
+
+						t->value = Math::lerp(t->value, value, blend);
+
+#endif // _3D_DISABLED
 					} break;
 					case Animation::TYPE_VALUE: {
-
 						TrackCacheValue *t = static_cast<TrackCacheValue *>(track);
 
 						Animation::UpdateMode update_mode = a->value_track_get_update_mode(i);
@@ -981,8 +1151,9 @@ void AnimationTree::_process_graph(float p_delta) {
 
 							Variant value = a->value_track_interpolate(i, time);
 
-							if (value == Variant())
+							if (value == Variant()) {
 								continue;
+							}
 
 							if (t->process_pass != process_pass) {
 								t->value = value;
@@ -991,21 +1162,18 @@ void AnimationTree::_process_graph(float p_delta) {
 
 							Variant::interpolate(t->value, value, blend, t->value);
 
-						} else if (delta != 0) {
-
+						} else {
 							List<int> indices;
 							a->value_track_get_key_indices(i, time, delta, &indices);
 
-							for (List<int>::Element *F = indices.front(); F; F = F->next()) {
-
-								Variant value = a->track_get_key_value(i, F->get());
+							for (int &F : indices) {
+								Variant value = a->track_get_key_value(i, F);
 								t->object->set_indexed(t->subpath, value);
 							}
 						}
 
 					} break;
 					case Animation::TYPE_METHOD: {
-
 						if (delta == 0) {
 							continue;
 						}
@@ -1015,13 +1183,13 @@ void AnimationTree::_process_graph(float p_delta) {
 
 						a->method_track_get_key_indices(i, time, delta, &indices);
 
-						for (List<int>::Element *F = indices.front(); F; F = F->next()) {
-
-							StringName method = a->method_track_get_name(i, F->get());
-							Vector<Variant> params = a->method_track_get_params(i, F->get());
+						for (int &F : indices) {
+							StringName method = a->method_track_get_name(i, F);
+							Vector<Variant> params = a->method_track_get_params(i, F);
 
 							int s = params.size();
 
+							static_assert(VARIANT_ARG_MAX == 8, "This code needs to be updated if VARIANT_ARG_MAX != 8");
 							ERR_CONTINUE(s > VARIANT_ARG_MAX);
 							if (can_call) {
 								t->object->call_deferred(
@@ -1030,16 +1198,18 @@ void AnimationTree::_process_graph(float p_delta) {
 										s >= 2 ? params[1] : Variant(),
 										s >= 3 ? params[2] : Variant(),
 										s >= 4 ? params[3] : Variant(),
-										s >= 5 ? params[4] : Variant());
+										s >= 5 ? params[4] : Variant(),
+										s >= 6 ? params[5] : Variant(),
+										s >= 7 ? params[6] : Variant(),
+										s >= 8 ? params[7] : Variant());
 							}
 						}
 
 					} break;
 					case Animation::TYPE_BEZIER: {
-
 						TrackCacheBezier *t = static_cast<TrackCacheBezier *>(track);
 
-						float bezier = a->bezier_track_interpolate(i, time);
+						real_t bezier = a->bezier_track_interpolate(i, time);
 
 						if (t->process_pass != process_pass) {
 							t->value = bezier;
@@ -1050,14 +1220,14 @@ void AnimationTree::_process_graph(float p_delta) {
 
 					} break;
 					case Animation::TYPE_AUDIO: {
-
 						TrackCacheAudio *t = static_cast<TrackCacheAudio *>(track);
 
 						if (seeked) {
-							//find whathever should be playing
+							//find whatever should be playing
 							int idx = a->track_find_key(i, time);
-							if (idx < 0)
+							if (idx < 0) {
 								continue;
+							}
 
 							Ref<AudioStream> stream = a->audio_track_get_key_stream(i, idx);
 							if (!stream.is_valid()) {
@@ -1065,10 +1235,10 @@ void AnimationTree::_process_graph(float p_delta) {
 								t->playing = false;
 								playing_caches.erase(t);
 							} else {
-								float start_ofs = a->audio_track_get_key_start_offset(i, idx);
+								real_t start_ofs = a->audio_track_get_key_start_offset(i, idx);
 								start_ofs += time - a->track_get_key_time(i, idx);
-								float end_ofs = a->audio_track_get_key_end_offset(i, idx);
-								float len = stream->get_length();
+								real_t end_ofs = a->audio_track_get_key_end_offset(i, idx);
+								real_t len = stream->get_length();
 
 								if (start_ofs > len - end_ofs) {
 									t->object->call("stop");
@@ -1082,7 +1252,7 @@ void AnimationTree::_process_graph(float p_delta) {
 
 								t->playing = true;
 								playing_caches.insert(t);
-								if (len && end_ofs > 0) { //force a end at a time
+								if (len && end_ofs > 0) { //force an end at a time
 									t->len = len - start_ofs - end_ofs;
 								} else {
 									t->len = 0;
@@ -1104,16 +1274,16 @@ void AnimationTree::_process_graph(float p_delta) {
 									t->playing = false;
 									playing_caches.erase(t);
 								} else {
-									float start_ofs = a->audio_track_get_key_start_offset(i, idx);
-									float end_ofs = a->audio_track_get_key_end_offset(i, idx);
-									float len = stream->get_length();
+									real_t start_ofs = a->audio_track_get_key_start_offset(i, idx);
+									real_t end_ofs = a->audio_track_get_key_end_offset(i, idx);
+									real_t len = stream->get_length();
 
 									t->object->call("set_stream", stream);
 									t->object->call("play", start_ofs);
 
 									t->playing = true;
 									playing_caches.insert(t);
-									if (len && end_ofs > 0) { //force a end at a time
+									if (len && end_ofs > 0) { //force an end at a time
 										t->len = len - start_ofs - end_ofs;
 									} else {
 										t->len = 0;
@@ -1122,7 +1292,6 @@ void AnimationTree::_process_graph(float p_delta) {
 									t->start = time;
 								}
 							} else if (t->playing) {
-
 								bool loop = a->has_loop();
 
 								bool stop = false;
@@ -1130,7 +1299,7 @@ void AnimationTree::_process_graph(float p_delta) {
 								if (!loop && time < t->start) {
 									stop = true;
 								} else if (t->len > 0) {
-									float len = t->start > time ? (a->get_length() - t->start) + time : time - t->start;
+									real_t len = t->start > time ? (a->get_length() - t->start) + time : time - t->start;
 
 									if (len > t->len) {
 										stop = true;
@@ -1146,7 +1315,7 @@ void AnimationTree::_process_graph(float p_delta) {
 							}
 						}
 
-						float db = Math::linear2db(MAX(blend, 0.00001));
+						real_t db = Math::linear2db(MAX(blend, 0.00001));
 						if (t->object->has_method("set_unit_db")) {
 							t->object->call("set_unit_db", db);
 						} else {
@@ -1154,32 +1323,34 @@ void AnimationTree::_process_graph(float p_delta) {
 						}
 					} break;
 					case Animation::TYPE_ANIMATION: {
-
 						TrackCacheAnimation *t = static_cast<TrackCacheAnimation *>(track);
 
 						AnimationPlayer *player2 = Object::cast_to<AnimationPlayer>(t->object);
 
-						if (!player2)
+						if (!player2) {
 							continue;
+						}
 
 						if (delta == 0 || seeked) {
 							//seek
 							int idx = a->track_find_key(i, time);
-							if (idx < 0)
+							if (idx < 0) {
 								continue;
+							}
 
-							float pos = a->track_get_key_time(i, idx);
+							double pos = a->track_get_key_time(i, idx);
 
 							StringName anim_name = a->animation_track_get_key_animation(i, idx);
-							if (String(anim_name) == "[stop]" || !player2->has_animation(anim_name))
+							if (String(anim_name) == "[stop]" || !player2->has_animation(anim_name)) {
 								continue;
+							}
 
 							Ref<Animation> anim = player2->get_animation(anim_name);
 
-							float at_anim_pos;
+							real_t at_anim_pos;
 
 							if (anim->has_loop()) {
-								at_anim_pos = Math::fposmod(time - pos, anim->get_length()); //seek to loop
+								at_anim_pos = Math::fposmod(time - pos, (double)anim->get_length()); //seek to loop
 							} else {
 								at_anim_pos = MAX(anim->get_length(), time - pos); //seek to end
 							}
@@ -1202,7 +1373,6 @@ void AnimationTree::_process_graph(float p_delta) {
 
 								StringName anim_name = a->animation_track_get_key_animation(i, idx);
 								if (String(anim_name) == "[stop]" || !player2->has_animation(anim_name)) {
-
 									if (playing_caches.has(t)) {
 										playing_caches.erase(t);
 										player2->stop();
@@ -1224,49 +1394,65 @@ void AnimationTree::_process_graph(float p_delta) {
 
 	{
 		// finally, set the tracks
-		const NodePath *K = NULL;
+		const NodePath *K = nullptr;
 		while ((K = track_cache.next(K))) {
 			TrackCache *track = track_cache[*K];
-			if (track->process_pass != process_pass)
+			if (track->process_pass != process_pass) {
 				continue; //not processed, ignore
+			}
 
 			switch (track->type) {
-
-				case Animation::TYPE_TRANSFORM: {
-
+				case Animation::TYPE_POSITION_3D: {
+#ifndef _3D_DISABLED
 					TrackCacheTransform *t = static_cast<TrackCacheTransform *>(track);
 
-					Transform xform;
-					xform.origin = t->loc;
-
-					xform.basis.set_quat_scale(t->rot, t->scale);
-
 					if (t->root_motion) {
+						Transform3D xform;
+						xform.origin = t->loc;
+						xform.basis.set_quaternion_scale(t->rot, t->scale);
 
 						root_motion_transform = xform;
 
-						if (t->skeleton && t->bone_idx >= 0) {
-							root_motion_transform = (t->skeleton->get_bone_rest(t->bone_idx) * root_motion_transform) * t->skeleton->get_bone_rest(t->bone_idx).affine_inverse();
-						}
 					} else if (t->skeleton && t->bone_idx >= 0) {
+						if (t->loc_used) {
+							t->skeleton->set_bone_pose_position(t->bone_idx, t->loc);
+						}
+						if (t->rot_used) {
+							t->skeleton->set_bone_pose_rotation(t->bone_idx, t->rot);
+						}
+						if (t->scale_used) {
+							t->skeleton->set_bone_pose_scale(t->bone_idx, t->scale);
+						}
 
-						t->skeleton->set_bone_pose(t->bone_idx, xform);
-
-					} else {
-
-						t->spatial->set_transform(xform);
+					} else if (!t->skeleton) {
+						if (t->loc_used) {
+							t->node_3d->set_position(t->loc);
+						}
+						if (t->rot_used) {
+							t->node_3d->set_rotation(t->rot.get_euler());
+						}
+						if (t->scale_used) {
+							t->node_3d->set_scale(t->scale);
+						}
 					}
+#endif // _3D_DISABLED
+				} break;
+				case Animation::TYPE_BLEND_SHAPE: {
+#ifndef _3D_DISABLED
+					TrackCacheBlendShape *t = static_cast<TrackCacheBlendShape *>(track);
 
+					if (t->mesh_3d) {
+						t->mesh_3d->set_blend_shape_value(t->shape_index, t->value);
+					}
+#endif // _3D_DISABLED
 				} break;
 				case Animation::TYPE_VALUE: {
-
 					TrackCacheValue *t = static_cast<TrackCacheValue *>(track);
 
 					t->object->set_indexed(t->subpath, t->value);
 
 				} break;
 				case Animation::TYPE_BEZIER: {
-
 					TrackCacheBezier *t = static_cast<TrackCacheBezier *>(track);
 
 					t->object->set_indexed(t->subpath, t->value);
@@ -1279,36 +1465,32 @@ void AnimationTree::_process_graph(float p_delta) {
 	}
 }
 
-void AnimationTree::advance(float p_time) {
-
+void AnimationTree::advance(real_t p_time) {
 	_process_graph(p_time);
 }
 
 void AnimationTree::_notification(int p_what) {
-
-	if (active && p_what == NOTIFICATION_INTERNAL_PHYSICS_PROCESS && process_mode == ANIMATION_PROCESS_PHYSICS) {
+	if (active && p_what == NOTIFICATION_INTERNAL_PHYSICS_PROCESS && process_callback == ANIMATION_PROCESS_PHYSICS) {
 		_process_graph(get_physics_process_delta_time());
 	}
 
-	if (active && p_what == NOTIFICATION_INTERNAL_PROCESS && process_mode == ANIMATION_PROCESS_IDLE) {
+	if (active && p_what == NOTIFICATION_INTERNAL_PROCESS && process_callback == ANIMATION_PROCESS_IDLE) {
 		_process_graph(get_process_delta_time());
 	}
 
 	if (p_what == NOTIFICATION_EXIT_TREE) {
 		_clear_caches();
-		if (last_animation_player) {
-
+		if (last_animation_player.is_valid()) {
 			Object *player = ObjectDB::get_instance(last_animation_player);
 			if (player) {
-				player->disconnect("caches_cleared", this, "_clear_caches");
+				player->disconnect("caches_cleared", callable_mp(this, &AnimationTree::_clear_caches));
 			}
 		}
 	} else if (p_what == NOTIFICATION_ENTER_TREE) {
-		if (last_animation_player) {
-
+		if (last_animation_player.is_valid()) {
 			Object *player = ObjectDB::get_instance(last_animation_player);
 			if (player) {
-				player->connect("caches_cleared", this, "_clear_caches");
+				player->connect("caches_cleared", callable_mp(this, &AnimationTree::_clear_caches));
 			}
 		}
 	}
@@ -1316,7 +1498,7 @@ void AnimationTree::_notification(int p_what) {
 
 void AnimationTree::set_animation_player(const NodePath &p_player) {
 	animation_player = p_player;
-	update_configuration_warning();
+	update_configuration_warnings();
 }
 
 NodePath AnimationTree::get_animation_player() const {
@@ -1324,11 +1506,10 @@ NodePath AnimationTree::get_animation_player() const {
 }
 
 bool AnimationTree::is_state_invalid() const {
-
 	return !state.valid;
 }
-String AnimationTree::get_invalid_state_reason() const {
 
+String AnimationTree::get_invalid_state_reason() const {
 	return state.invalid_reasons;
 }
 
@@ -1336,48 +1517,26 @@ uint64_t AnimationTree::get_last_process_pass() const {
 	return process_pass;
 }
 
-String AnimationTree::get_configuration_warning() const {
-
-	String warning = Node::get_configuration_warning();
+TypedArray<String> AnimationTree::get_configuration_warnings() const {
+	TypedArray<String> warnings = Node::get_configuration_warnings();
 
 	if (!root.is_valid()) {
-		if (warning != String()) {
-			warning += "\n";
-		}
-		warning += TTR("A root AnimationNode for the graph is not set.");
+		warnings.push_back(TTR("No root AnimationNode for the graph is set."));
 	}
 
 	if (!has_node(animation_player)) {
+		warnings.push_back(TTR("Path to an AnimationPlayer node containing animations is not set."));
+	} else {
+		AnimationPlayer *player = Object::cast_to<AnimationPlayer>(get_node(animation_player));
 
-		if (warning != String()) {
-			warning += "\n";
+		if (!player) {
+			warnings.push_back(TTR("Path set for AnimationPlayer does not lead to an AnimationPlayer node."));
+		} else if (!player->has_node(player->get_root())) {
+			warnings.push_back(TTR("The AnimationPlayer root node is not a valid node."));
 		}
-
-		warning += TTR("Path to an AnimationPlayer node containing animations is not set.");
-		return warning;
 	}
 
-	AnimationPlayer *player = Object::cast_to<AnimationPlayer>(get_node(animation_player));
-
-	if (!player) {
-		if (warning != String()) {
-			warning += "\n";
-		}
-
-		warning += TTR("Path set for AnimationPlayer does not lead to an AnimationPlayer node.");
-		return warning;
-	}
-
-	if (!player->has_node(player->get_root())) {
-		if (warning != String()) {
-			warning += "\n";
-		}
-
-		warning += TTR("AnimationPlayer root is not a valid node.");
-		return warning;
-	}
-
-	return warning;
+	return warnings;
 }
 
 void AnimationTree::set_root_motion_track(const NodePath &p_track) {
@@ -1388,7 +1547,7 @@ NodePath AnimationTree::get_root_motion_track() const {
 	return root_motion_track;
 }
 
-Transform AnimationTree::get_root_motion_transform() const {
+Transform3D AnimationTree::get_root_motion_transform() const {
 	return root_motion_transform;
 }
 
@@ -1397,21 +1556,21 @@ void AnimationTree::_tree_changed() {
 		return;
 	}
 
-	call_deferred("_update_properties");
+	call_deferred(SNAME("_update_properties"));
 	properties_dirty = true;
 }
 
 void AnimationTree::_update_properties_for_node(const String &p_base_path, Ref<AnimationNode> node) {
-
+	ERR_FAIL_COND(node.is_null());
 	if (!property_parent_map.has(p_base_path)) {
 		property_parent_map[p_base_path] = HashMap<StringName, StringName>();
 	}
 
 	if (node->get_input_count() && !input_activity_map.has(p_base_path)) {
-
 		Vector<Activity> activity;
 		for (int i = 0; i < node->get_input_count(); i++) {
 			Activity a;
+			a.activity = 0;
 			a.last_pass = 0;
 			activity.push_back(a);
 		}
@@ -1421,9 +1580,7 @@ void AnimationTree::_update_properties_for_node(const String &p_base_path, Ref<A
 
 	List<PropertyInfo> plist;
 	node->get_parameter_list(&plist);
-	for (List<PropertyInfo>::Element *E = plist.front(); E; E = E->next()) {
-		PropertyInfo pinfo = E->get();
-
+	for (PropertyInfo &pinfo : plist) {
 		StringName key = pinfo.name;
 
 		if (!property_map.has(p_base_path + key)) {
@@ -1439,8 +1596,8 @@ void AnimationTree::_update_properties_for_node(const String &p_base_path, Ref<A
 	List<AnimationNode::ChildNode> children;
 	node->get_child_nodes(&children);
 
-	for (List<AnimationNode::ChildNode>::Element *E = children.front(); E; E = E->next()) {
-		_update_properties_for_node(p_base_path + E->get().name + "/", E->get().node);
+	for (const AnimationNode::ChildNode &E : children) {
+		_update_properties_for_node(p_base_path + E.name + "/", E.node);
 	}
 }
 
@@ -1460,7 +1617,7 @@ void AnimationTree::_update_properties() {
 
 	properties_dirty = false;
 
-	_change_notify();
+	notify_property_list_changed();
 }
 
 bool AnimationTree::_set(const StringName &p_name, const Variant &p_value) {
@@ -1470,9 +1627,6 @@ bool AnimationTree::_set(const StringName &p_name, const Variant &p_value) {
 
 	if (property_map.has(p_name)) {
 		property_map[p_name] = p_value;
-#ifdef TOOLS_ENABLED
-		_change_notify(p_name.operator String().utf8().get_data());
-#endif
 		return true;
 	}
 
@@ -1491,23 +1645,23 @@ bool AnimationTree::_get(const StringName &p_name, Variant &r_ret) const {
 
 	return false;
 }
+
 void AnimationTree::_get_property_list(List<PropertyInfo> *p_list) const {
 	if (properties_dirty) {
 		const_cast<AnimationTree *>(this)->_update_properties();
 	}
 
-	for (const List<PropertyInfo>::Element *E = properties.front(); E; E = E->next()) {
-		p_list->push_back(E->get());
+	for (const PropertyInfo &E : properties) {
+		p_list->push_back(E);
 	}
 }
 
 void AnimationTree::rename_parameter(const String &p_base, const String &p_new_base) {
-
 	//rename values first
-	for (const List<PropertyInfo>::Element *E = properties.front(); E; E = E->next()) {
-		if (E->get().name.begins_with(p_base)) {
-			String new_name = E->get().name.replace_first(p_base, p_new_base);
-			property_map[new_name] = property_map[E->get().name];
+	for (const PropertyInfo &E : properties) {
+		if (E.name.begins_with(p_base)) {
+			String new_name = E.name.replace_first(p_base, p_new_base);
+			property_map[new_name] = property_map[E.name];
 		}
 	}
 
@@ -1516,8 +1670,7 @@ void AnimationTree::rename_parameter(const String &p_base, const String &p_new_b
 	_update_properties();
 }
 
-float AnimationTree::get_connection_activity(const StringName &p_path, int p_connection) const {
-
+real_t AnimationTree::get_connection_activity(const StringName &p_path, int p_connection) const {
 	if (!input_activity_map_get.has(p_path)) {
 		return 0;
 	}
@@ -1541,8 +1694,8 @@ void AnimationTree::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_tree_root", "root"), &AnimationTree::set_tree_root);
 	ClassDB::bind_method(D_METHOD("get_tree_root"), &AnimationTree::get_tree_root);
 
-	ClassDB::bind_method(D_METHOD("set_process_mode", "mode"), &AnimationTree::set_process_mode);
-	ClassDB::bind_method(D_METHOD("get_process_mode"), &AnimationTree::get_process_mode);
+	ClassDB::bind_method(D_METHOD("set_process_callback", "mode"), &AnimationTree::set_process_callback);
+	ClassDB::bind_method(D_METHOD("get_process_callback"), &AnimationTree::get_process_callback);
 
 	ClassDB::bind_method(D_METHOD("set_animation_player", "root"), &AnimationTree::set_animation_player);
 	ClassDB::bind_method(D_METHOD("get_animation_player"), &AnimationTree::get_animation_player);
@@ -1552,20 +1705,16 @@ void AnimationTree::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_root_motion_transform"), &AnimationTree::get_root_motion_transform);
 
-	ClassDB::bind_method(D_METHOD("_tree_changed"), &AnimationTree::_tree_changed);
 	ClassDB::bind_method(D_METHOD("_update_properties"), &AnimationTree::_update_properties);
 
 	ClassDB::bind_method(D_METHOD("rename_parameter", "old_name", "new_name"), &AnimationTree::rename_parameter);
 
 	ClassDB::bind_method(D_METHOD("advance", "delta"), &AnimationTree::advance);
 
-	ClassDB::bind_method(D_METHOD("_node_removed"), &AnimationTree::_node_removed);
-	ClassDB::bind_method(D_METHOD("_clear_caches"), &AnimationTree::_clear_caches);
-
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "tree_root", PROPERTY_HINT_RESOURCE_TYPE, "AnimationRootNode"), "set_tree_root", "get_tree_root");
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "anim_player", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "AnimationPlayer"), "set_animation_player", "get_animation_player");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "active"), "set_active", "is_active");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "process_mode", PROPERTY_HINT_ENUM, "Physics,Idle,Manual"), "set_process_mode", "get_process_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "process_callback", PROPERTY_HINT_ENUM, "Physics,Idle,Manual"), "set_process_callback", "get_process_callback");
 	ADD_GROUP("Root Motion", "root_motion_");
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "root_motion_track"), "set_root_motion_track", "get_root_motion_track");
 
@@ -1575,15 +1724,6 @@ void AnimationTree::_bind_methods() {
 }
 
 AnimationTree::AnimationTree() {
-
-	process_mode = ANIMATION_PROCESS_IDLE;
-	active = false;
-	cache_valid = false;
-	setup_pass = 1;
-	process_pass = 1;
-	started = true;
-	properties_dirty = true;
-	last_animation_player = 0;
 }
 
 AnimationTree::~AnimationTree() {

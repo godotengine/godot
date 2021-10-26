@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,12 +31,11 @@
 #ifndef DIR_ACCESS_JANDROID_H
 #define DIR_ACCESS_JANDROID_H
 
-#include "core/os/dir_access.h"
+#include "core/io/dir_access.h"
 #include "java_godot_lib_jni.h"
 #include <stdio.h>
 
 class DirAccessJAndroid : public DirAccess {
-
 	//AAssetDir* aad;
 
 	static jobject io;
@@ -65,7 +64,7 @@ public:
 	virtual String get_drive(int p_drive);
 
 	virtual Error change_dir(String p_dir); ///< can be relative or absolute, return false on success
-	virtual String get_current_dir(); ///< return current dir location
+	virtual String get_current_dir(bool p_include_drive = true); ///< return current dir location
 
 	virtual bool file_exists(String p_file);
 	virtual bool dir_exists(String p_dir);
@@ -75,10 +74,13 @@ public:
 	virtual Error rename(String p_from, String p_to);
 	virtual Error remove(String p_name);
 
+	virtual bool is_link(String p_file) { return false; }
+	virtual String read_link(String p_file) { return p_file; }
+	virtual Error create_link(String p_source, String p_target) { return FAILED; }
+
 	virtual String get_filesystem_type() const;
 
-	//virtual FileType get_file_type() const;
-	size_t get_space_left();
+	uint64_t get_space_left();
 
 	static void setup(jobject p_io);
 

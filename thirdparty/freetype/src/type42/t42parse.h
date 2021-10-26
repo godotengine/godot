@@ -4,7 +4,7 @@
  *
  *   Type 42 font parser (specification).
  *
- * Copyright (C) 2002-2019 by
+ * Copyright (C) 2002-2020 by
  * Roberto Alameda.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -21,7 +21,7 @@
 
 
 #include "t42objs.h"
-#include FT_INTERNAL_POSTSCRIPT_AUX_H
+#include <freetype/internal/psaux.h>
 
 
 FT_BEGIN_HEADER

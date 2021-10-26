@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,12 +33,11 @@
 #include "servers/audio_server.h"
 
 void AudioEffectDistortionInstance::process(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count) {
-
 	const float *src = (const float *)p_src_frames;
 	float *dst = (float *)p_dst_frames;
 
-	//float lpf_c=expf(-2.0*Math_PI*keep_hf_hz.get()/(mix_rate*(float)OVERSAMPLE));
-	float lpf_c = expf(-2.0 * Math_PI * base->keep_hf_hz / (AudioServer::get_singleton()->get_mix_rate()));
+	//float lpf_c=expf(-Math_TAU*keep_hf_hz.get()/(mix_rate*(float)OVERSAMPLE));
+	float lpf_c = expf(-Math_TAU * base->keep_hf_hz / (AudioServer::get_singleton()->get_mix_rate()));
 	float lpf_ic = 1.0 - lpf_c;
 
 	float drive_f = base->drive;
@@ -51,7 +50,6 @@ void AudioEffectDistortionInstance::process(const AudioFrame *p_src_frames, Audi
 	float lofi_mult = powf(2.0, 2.0 + (1.0 - drive_f) * 14); //goes from 16 to 2 bits
 
 	for (int i = 0; i < p_frame_count * 2; i++) {
-
 		float out = undenormalise(src[i] * lpf_ic + lpf_c * h[i & 1]);
 		h[i & 1] = out;
 		float a = out;
@@ -59,28 +57,25 @@ void AudioEffectDistortionInstance::process(const AudioFrame *p_src_frames, Audi
 		a *= pregain_f;
 
 		switch (base->mode) {
-
 			case AudioEffectDistortion::MODE_CLIP: {
-
-				a = powf(a, 1.0001 - drive_f);
-				if (a > 1.0)
+				float a_sign = a < 0 ? -1.0f : 1.0f;
+				a = powf(abs(a), 1.0001 - drive_f) * a_sign;
+				if (a > 1.0) {
 					a = 1.0;
-				else if (a < (-1.0))
+				} else if (a < (-1.0)) {
 					a = -1.0;
+				}
 
 			} break;
 			case AudioEffectDistortion::MODE_ATAN: {
-
 				a = atanf(a * atan_mult) * atan_div;
 
 			} break;
 			case AudioEffectDistortion::MODE_LOFI: {
-
 				a = floorf(a * lofi_mult + 0.5) / lofi_mult;
 
 			} break;
 			case AudioEffectDistortion::MODE_OVERDRIVE: {
-
 				const double x = a * 0.686306;
 				const double z = 1 + exp(sqrt(fabs(x)) * -0.75);
 				a = (expf(x) - expf(-x * z)) / (expf(x) + expf(-x));
@@ -98,9 +93,9 @@ void AudioEffectDistortionInstance::process(const AudioFrame *p_src_frames, Audi
 	}
 }
 
-Ref<AudioEffectInstance> AudioEffectDistortion::instance() {
+Ref<AudioEffectInstance> AudioEffectDistortion::instantiate() {
 	Ref<AudioEffectDistortionInstance> ins;
-	ins.instance();
+	ins.instantiate();
 	ins->base = Ref<AudioEffectDistortion>(this);
 	ins->h[0] = 0;
 	ins->h[1] = 0;
@@ -109,53 +104,46 @@ Ref<AudioEffectInstance> AudioEffectDistortion::instance() {
 }
 
 void AudioEffectDistortion::set_mode(Mode p_mode) {
-
 	mode = p_mode;
 }
 
 AudioEffectDistortion::Mode AudioEffectDistortion::get_mode() const {
-
 	return mode;
 }
 
 void AudioEffectDistortion::set_pre_gain(float p_pre_gain) {
-
 	pre_gain = p_pre_gain;
 }
-float AudioEffectDistortion::get_pre_gain() const {
 
+float AudioEffectDistortion::get_pre_gain() const {
 	return pre_gain;
 }
 
 void AudioEffectDistortion::set_keep_hf_hz(float p_keep_hf_hz) {
-
 	keep_hf_hz = p_keep_hf_hz;
 }
-float AudioEffectDistortion::get_keep_hf_hz() const {
 
+float AudioEffectDistortion::get_keep_hf_hz() const {
 	return keep_hf_hz;
 }
 
 void AudioEffectDistortion::set_drive(float p_drive) {
-
 	drive = p_drive;
 }
-float AudioEffectDistortion::get_drive() const {
 
+float AudioEffectDistortion::get_drive() const {
 	return drive;
 }
 
 void AudioEffectDistortion::set_post_gain(float p_post_gain) {
-
 	post_gain = p_post_gain;
 }
-float AudioEffectDistortion::get_post_gain() const {
 
+float AudioEffectDistortion::get_post_gain() const {
 	return post_gain;
 }
 
 void AudioEffectDistortion::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_mode", "mode"), &AudioEffectDistortion::set_mode);
 	ClassDB::bind_method(D_METHOD("get_mode"), &AudioEffectDistortion::get_mode);
 
@@ -171,11 +159,11 @@ void AudioEffectDistortion::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_post_gain", "post_gain"), &AudioEffectDistortion::set_post_gain);
 	ClassDB::bind_method(D_METHOD("get_post_gain"), &AudioEffectDistortion::get_post_gain);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "mode", PROPERTY_HINT_ENUM, "Clip,ATan,LoFi,Overdrive,WaveShape"), "set_mode", "get_mode");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "pre_gain", PROPERTY_HINT_RANGE, "-60,60,0.01"), "set_pre_gain", "get_pre_gain");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "keep_hf_hz", PROPERTY_HINT_RANGE, "1,20000,1"), "set_keep_hf_hz", "get_keep_hf_hz");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "drive", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_drive", "get_drive");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "post_gain", PROPERTY_HINT_RANGE, "-80,24,0.01"), "set_post_gain", "get_post_gain");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "mode", PROPERTY_HINT_ENUM, "Clip,ATan,LoFi,Overdrive,Wave Shape"), "set_mode", "get_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "pre_gain", PROPERTY_HINT_RANGE, "-60,60,0.01"), "set_pre_gain", "get_pre_gain");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "keep_hf_hz", PROPERTY_HINT_RANGE, "1,20500,1"), "set_keep_hf_hz", "get_keep_hf_hz");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "drive", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_drive", "get_drive");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "post_gain", PROPERTY_HINT_RANGE, "-80,24,0.01"), "set_post_gain", "get_post_gain");
 
 	BIND_ENUM_CONSTANT(MODE_CLIP);
 	BIND_ENUM_CONSTANT(MODE_ATAN);

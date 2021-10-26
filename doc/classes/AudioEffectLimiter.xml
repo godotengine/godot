@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AudioEffectLimiter" inherits="AudioEffect" category="Core" version="3.2">
+<class name="AudioEffectLimiter" inherits="AudioEffect" version="4.0">
 	<brief_description>
 		Adds a soft-clip limiter audio effect to an Audio bus.
 	</brief_description>
@@ -9,8 +9,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="ceiling_db" type="float" setter="set_ceiling_db" getter="get_ceiling_db" default="-0.1">
 			The waveform's maximum allowed value, in decibels. Value can range from -20 to -0.1.
@@ -24,6 +22,4 @@
 			Threshold from which the limiter begins to be active, in decibels. Value can range from -30 to 0.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

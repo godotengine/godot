@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,7 +36,6 @@
 #include "gdnative.h"
 
 class GDNativeLibraryEditor : public Control {
-
 	GDCLASS(GDNativeLibraryEditor, Control);
 
 	struct NativePlatformConfig {
@@ -61,7 +60,7 @@ class GDNativeLibraryEditor : public Control {
 	};
 
 	Tree *tree;
-	OptionButton *filter;
+	MenuButton *filter;
 	EditorFileDialog *file_dialog;
 	ConfirmationDialog *new_architecture_dialog;
 	LineEdit *new_architecture_input;
@@ -77,7 +76,7 @@ protected:
 	void _update_tree();
 	void _on_item_button(Object *item, int column, int id);
 	void _on_library_selected(const String &file);
-	void _on_dependencies_selected(const PoolStringArray &files);
+	void _on_dependencies_selected(const PackedStringArray &files);
 	void _on_filter_selected(int id);
 	void _on_item_collapsed(Object *p_item);
 	void _on_item_activated();
@@ -94,19 +93,18 @@ public:
 };
 
 class GDNativeLibraryEditorPlugin : public EditorPlugin {
-
 	GDCLASS(GDNativeLibraryEditorPlugin, EditorPlugin);
 
-	GDNativeLibraryEditor *library_editor;
-	EditorNode *editor;
-	Button *button;
+	GDNativeLibraryEditor *library_editor = nullptr;
+	EditorNode *editor = nullptr;
+	Button *button = nullptr;
 
 public:
-	virtual String get_name() const { return "GDNativeLibrary"; }
-	bool has_main_screen() const { return false; }
-	virtual void edit(Object *p_node);
-	virtual bool handles(Object *p_node) const;
-	virtual void make_visible(bool p_visible);
+	virtual String get_name() const override { return "GDNativeLibrary"; }
+	bool has_main_screen() const override { return false; }
+	virtual void edit(Object *p_node) override;
+	virtual bool handles(Object *p_node) const override;
+	virtual void make_visible(bool p_visible) override;
 
 	GDNativeLibraryEditorPlugin(EditorNode *p_node);
 };

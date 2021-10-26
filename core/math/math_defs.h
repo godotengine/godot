@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -43,8 +43,6 @@
 #define Math_TAU 6.2831853071795864769252867666
 #define Math_PI 3.1415926535897932384626433833
 #define Math_E 2.7182818284590452353602874714
-#define Math_INF INFINITY
-#define Math_NAN NAN
 
 #ifdef DEBUG_ENABLED
 #define MATH_CHECKS
@@ -66,35 +64,51 @@ enum ClockDirection {
 };
 
 enum Orientation {
-
 	HORIZONTAL,
 	VERTICAL
 };
 
 enum HAlign {
-
 	HALIGN_LEFT,
 	HALIGN_CENTER,
-	HALIGN_RIGHT
+	HALIGN_RIGHT,
+	HALIGN_FILL,
 };
 
 enum VAlign {
-
 	VALIGN_TOP,
 	VALIGN_CENTER,
 	VALIGN_BOTTOM
 };
 
-enum Margin {
+enum InlineAlign {
+	// Image alignment points.
+	INLINE_ALIGN_TOP_TO = 0b0000,
+	INLINE_ALIGN_CENTER_TO = 0b0001,
+	INLINE_ALIGN_BOTTOM_TO = 0b0010,
+	INLINE_ALIGN_IMAGE_MASK = 0b0011,
 
-	MARGIN_LEFT,
-	MARGIN_TOP,
-	MARGIN_RIGHT,
-	MARGIN_BOTTOM
+	// Text alignment points.
+	INLINE_ALIGN_TO_TOP = 0b0000,
+	INLINE_ALIGN_TO_CENTER = 0b0100,
+	INLINE_ALIGN_TO_BASELINE = 0b1000,
+	INLINE_ALIGN_TO_BOTTOM = 0b1100,
+	INLINE_ALIGN_TEXT_MASK = 0b1100,
+
+	// Presets.
+	INLINE_ALIGN_TOP = INLINE_ALIGN_TOP_TO | INLINE_ALIGN_TO_TOP,
+	INLINE_ALIGN_CENTER = INLINE_ALIGN_CENTER_TO | INLINE_ALIGN_TO_CENTER,
+	INLINE_ALIGN_BOTTOM = INLINE_ALIGN_BOTTOM_TO | INLINE_ALIGN_TO_BOTTOM
+};
+
+enum Side {
+	SIDE_LEFT,
+	SIDE_TOP,
+	SIDE_RIGHT,
+	SIDE_BOTTOM
 };
 
 enum Corner {
-
 	CORNER_TOP_LEFT,
 	CORNER_TOP_RIGHT,
 	CORNER_BOTTOM_RIGHT,

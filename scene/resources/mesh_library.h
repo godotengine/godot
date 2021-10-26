@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,31 +28,31 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GRID_THEME_H
-#define GRID_THEME_H
+#ifndef MESH_LIBRARY_H
+#define MESH_LIBRARY_H
 
-#include "core/map.h"
-#include "core/resource.h"
+#include "core/io/resource.h"
+#include "core/templates/map.h"
 #include "mesh.h"
-#include "scene/3d/navigation_mesh.h"
-#include "shape.h"
+#include "scene/3d/navigation_region_3d.h"
+#include "shape_3d.h"
 
 class MeshLibrary : public Resource {
-
 	GDCLASS(MeshLibrary, Resource);
 	RES_BASE_EXTENSION("meshlib");
 
 public:
 	struct ShapeData {
-		Ref<Shape> shape;
-		Transform local_transform;
+		Ref<Shape3D> shape;
+		Transform3D local_transform;
 	};
 	struct Item {
 		String name;
 		Ref<Mesh> mesh;
 		Vector<ShapeData> shapes;
-		Ref<Texture> preview;
-		Transform navmesh_transform;
+		Ref<Texture2D> preview;
+		Transform3D navmesh_transform;
+		Transform3D mesh_transform;
 		Ref<NavigationMesh> navmesh;
 	};
 
@@ -66,22 +66,25 @@ protected:
 	bool _get(const StringName &p_name, Variant &r_ret) const;
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 
+	virtual void reset_state() override;
 	static void _bind_methods();
 
 public:
 	void create_item(int p_item);
 	void set_item_name(int p_item, const String &p_name);
 	void set_item_mesh(int p_item, const Ref<Mesh> &p_mesh);
+	void set_item_mesh_transform(int p_item, const Transform3D &p_transform);
 	void set_item_navmesh(int p_item, const Ref<NavigationMesh> &p_navmesh);
-	void set_item_navmesh_transform(int p_item, const Transform &p_transform);
+	void set_item_navmesh_transform(int p_item, const Transform3D &p_transform);
 	void set_item_shapes(int p_item, const Vector<ShapeData> &p_shapes);
-	void set_item_preview(int p_item, const Ref<Texture> &p_preview);
+	void set_item_preview(int p_item, const Ref<Texture2D> &p_preview);
 	String get_item_name(int p_item) const;
 	Ref<Mesh> get_item_mesh(int p_item) const;
+	Transform3D get_item_mesh_transform(int p_item) const;
 	Ref<NavigationMesh> get_item_navmesh(int p_item) const;
-	Transform get_item_navmesh_transform(int p_item) const;
+	Transform3D get_item_navmesh_transform(int p_item) const;
 	Vector<ShapeData> get_item_shapes(int p_item) const;
-	Ref<Texture> get_item_preview(int p_item) const;
+	Ref<Texture2D> get_item_preview(int p_item) const;
 
 	void remove_item(int p_item);
 	bool has_item(int p_item) const;
@@ -97,4 +100,4 @@ public:
 	~MeshLibrary();
 };
 
-#endif // CUBE_GRID_THEME_H
+#endif // MESH_LIBRARY_H

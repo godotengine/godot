@@ -4,7 +4,7 @@
  *
  *   FreeType modules public interface (specification).
  *
- * Copyright (C) 1996-2019 by
+ * Copyright (C) 1996-2020 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -20,8 +20,7 @@
 #define FTMODAPI_H_
 
 
-#include <ft2build.h>
-#include FT_FREETYPE_H
+#include <freetype/freetype.h>
 
 #ifdef FREETYPE_H
 #error "freetype.h of FreeType 1 has been loaded!"
@@ -65,7 +64,7 @@ FT_BEGIN_HEADER
    *     psnames
    *     raster1
    *     sfnt
-   *     smooth, smooth-lcd, smooth-lcdv
+   *     smooth
    *     truetype
    *     type1
    *     type42
@@ -486,7 +485,7 @@ FT_BEGIN_HEADER
    *
    *   ```
    *     FREETYPE_PROPERTIES=truetype:interpreter-version=35 \
-   *                         cff:no-stem-darkening=1 \
+   *                         cff:no-stem-darkening=0 \
    *                         autofitter:warping=1
    *   ```
    *
@@ -623,7 +622,7 @@ FT_BEGIN_HEADER
    *     it is bytecode interpreter's execution context, `TT_ExecContext`,
    *     which is declared in FreeType's internal header file `tttypes.h`.
    */
-  typedef void
+  typedef FT_Error
   (*FT_DebugHook_Func)( void*  arg );
 
 

@@ -309,11 +309,11 @@ inline void btMprSupport(const btConvexTemplate &a, const btConvexTemplate &b,
 						 const btMprCollisionDescription &colDesc,
 						 const btVector3 &dir, btMprSupport_t *supp)
 {
-	btVector3 seperatingAxisInA = dir * a.getWorldTransform().getBasis();
-	btVector3 seperatingAxisInB = -dir * b.getWorldTransform().getBasis();
+	btVector3 separatingAxisInA = dir * a.getWorldTransform().getBasis();
+	btVector3 separatingAxisInB = -dir * b.getWorldTransform().getBasis();
 
-	btVector3 pInA = a.getLocalSupportWithMargin(seperatingAxisInA);
-	btVector3 qInB = b.getLocalSupportWithMargin(seperatingAxisInB);
+	btVector3 pInA = a.getLocalSupportWithMargin(separatingAxisInA);
+	btVector3 qInB = b.getLocalSupportWithMargin(separatingAxisInB);
 
 	supp->v1 = a.getWorldTransform()(pInA);
 	supp->v2 = b.getWorldTransform()(qInB);
@@ -467,7 +467,7 @@ static int btRefinePortal(const btConvexTemplate &a, const btConvexTemplate &b, 
 	for (int i = 0; i < BT_MPR_MAX_ITERATIONS; i++)
 	//while (1)
 	{
-		// compute direction outside the portal (from v0 throught v1,v2,v3
+		// compute direction outside the portal (from v0 through v1,v2,v3
 		// face)
 		btPortalDir(portal, &dir);
 

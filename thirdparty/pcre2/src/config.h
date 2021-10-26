@@ -35,6 +35,10 @@ sure both macros are undefined; an emulation function will then be used. */
    */
 /* #undef BSR_ANYCRLF */
 
+/* Define to any value to disable the use of the z and t modifiers in
+   formatting settings such as %zu or %td (this is rarely needed). */
+/* #undef DISABLE_PERCENT_ZT */
+
 /* If you are compiling for a system that uses EBCDIC instead of ASCII
    character codes, define this macro to any value. When EBCDIC is set, PCRE2
    assumes that all input strings are in EBCDIC. If you do not define this
@@ -47,6 +51,9 @@ sure both macros are undefined; an emulation function will then be used. */
    NL character to be 0x25 instead of the default 0x15. NL plays the role that
    LF does in an ASCII/Unicode environment. */
 /* #undef EBCDIC_NL25 */
+
+/* Define this if your compiler supports __attribute__((uninitialized)) */
+/* #undef HAVE_ATTRIBUTE_UNINITIALIZED */
 
 /* Define to 1 if you have the `bcopy' function. */
 /* #undef HAVE_BCOPY */
@@ -71,6 +78,9 @@ sure both macros are undefined; an emulation function will then be used. */
 
 /* Define to 1 if you have the <limits.h> header file. */
 /* #undef HAVE_LIMITS_H */
+
+/* Define to 1 if you have the `memfd_create' function. */
+/* #undef HAVE_MEMFD_CREATE */
 
 /* Define to 1 if you have the `memmove' function. */
 /* #undef HAVE_MEMMOVE */
@@ -214,7 +224,7 @@ sure both macros are undefined; an emulation function will then be used. */
 #define PACKAGE_NAME "PCRE2"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "PCRE2 10.32"
+#define PACKAGE_STRING "PCRE2 10.36"
 
 /* Define to the one symbol short name of this package. */
 #define PACKAGE_TARNAME "pcre2"
@@ -223,7 +233,7 @@ sure both macros are undefined; an emulation function will then be used. */
 #define PACKAGE_URL ""
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "10.32"
+#define PACKAGE_VERSION "10.36"
 
 /* The value of PARENS_NEST_LIMIT specifies the maximum depth of nested
    parentheses (of any kind) in a pattern. This limits the amount of system
@@ -299,6 +309,11 @@ sure both macros are undefined; an emulation function will then be used. */
 /* Define to any value to enable callout script support in pcre2grep. */
 /* #undef SUPPORT_PCRE2GREP_CALLOUT */
 
+/* Define to any value to enable fork support in pcre2grep callout scripts.
+   This will have no effect unless SUPPORT_PCRE2GREP_CALLOUT is also defined.
+   */
+/* #undef SUPPORT_PCRE2GREP_CALLOUT_FORK */
+
 /* Define to any value to enable JIT support in pcre2grep. Note that this will
    have no effect unless SUPPORT_JIT is also defined. */
 /* #undef SUPPORT_PCRE2GREP_JIT */
@@ -343,7 +358,7 @@ sure both macros are undefined; an emulation function will then be used. */
 #endif
 
 /* Version number of package */
-#define VERSION "10.32"
+#define VERSION "10.36"
 
 /* Define to 1 if on MINIX. */
 /* #undef _MINIX */

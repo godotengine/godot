@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -53,7 +53,9 @@ extern "C" {
 #endif
 
 // This is for libraries *using* the header, NOT GODOT EXPOSING STUFF!!
-#ifdef _WIN32
+#ifdef __GNUC__
+#define GDN_EXPORT __attribute__((visibility("default")))
+#elif defined(_WIN32)
 #define GDN_EXPORT __declspec(dllexport)
 #else
 #define GDN_EXPORT
@@ -61,8 +63,6 @@ extern "C" {
 
 #include <stdbool.h>
 #include <stdint.h>
-
-#define GODOT_API_VERSION 1
 
 ////// Error
 
@@ -118,21 +118,6 @@ typedef enum {
 	GODOT_ERR_PRINTER_ON_FIRE, /// the parallel port printer is engulfed in flames
 } godot_error;
 
-////// bool
-
-typedef bool godot_bool;
-
-#define GODOT_TRUE 1
-#define GODOT_FALSE 0
-
-/////// int
-
-typedef int godot_int;
-
-/////// real
-
-typedef float godot_real;
-
 /////// Object (forward declared)
 typedef void godot_object;
 
@@ -144,15 +129,15 @@ typedef void godot_object;
 
 #include <gdnative/string_name.h>
 
-////// Vector2
+////// Vector2 & Vector2i
 
 #include <gdnative/vector2.h>
 
-////// Rect2
+////// Rect2 & Rect2i
 
 #include <gdnative/rect2.h>
 
-////// Vector3
+////// Vector3 & Vector3i
 
 #include <gdnative/vector3.h>
 
@@ -164,9 +149,9 @@ typedef void godot_object;
 
 #include <gdnative/plane.h>
 
-/////// Quat
+/////// Quaternion
 
-#include <gdnative/quat.h>
+#include <gdnative/quaternion.h>
 
 /////// AABB
 
@@ -176,9 +161,9 @@ typedef void godot_object;
 
 #include <gdnative/basis.h>
 
-/////// Transform
+/////// Transform3D
 
-#include <gdnative/transform.h>
+#include <gdnative/transform_3d.h>
 
 /////// Color
 
@@ -192,6 +177,10 @@ typedef void godot_object;
 
 #include <gdnative/rid.h>
 
+/////// Callable & Signal
+
+#include <gdnative/callable.h>
+
 /////// Dictionary
 
 #include <gdnative/dictionary.h>
@@ -200,8 +189,8 @@ typedef void godot_object;
 
 #include <gdnative/array.h>
 
-// single API file for Pool*Array
-#include <gdnative/pool_arrays.h>
+// single API file for Packed*Array
+#include <gdnative/packed_arrays.h>
 
 void GDAPI godot_object_destroy(godot_object *p_o);
 
@@ -211,7 +200,7 @@ void GDAPI godot_object_destroy(godot_object *p_o);
 
 ////// Singleton API
 
-godot_object GDAPI *godot_global_get_singleton(char *p_name); // result shouldn't be freed
+godot_object GDAPI *godot_global_get_singleton(char *p_name); // Result shouldn't be freed.
 
 ////// MethodBind API
 
@@ -277,17 +266,22 @@ void GDAPI *godot_alloc(int p_bytes);
 void GDAPI *godot_realloc(void *p_ptr, int p_bytes);
 void GDAPI godot_free(void *p_ptr);
 
-//print using Godot's error handler list
+// Helper print functions.
 void GDAPI godot_print_error(const char *p_description, const char *p_function, const char *p_file, int p_line);
 void GDAPI godot_print_warning(const char *p_description, const char *p_function, const char *p_file, int p_line);
-void GDAPI godot_print(const godot_string *p_message);
+void GDAPI godot_print_script_error(const char *p_description, const char *p_function, const char *p_file, int p_line);
 
-// GDNATIVE CORE 1.0.1
+//tags used for safe dynamic casting
+void GDAPI *godot_get_class_tag(const godot_string_name *p_class);
+godot_object GDAPI *godot_object_cast_to(const godot_object *p_object, void *p_class_tag);
 
-bool GDAPI godot_is_instance_valid(const godot_object *p_object);
+// equivalent of GDScript's instance_from_id
+godot_object GDAPI *godot_instance_from_id(uint64_t p_instance_id);
+
+uint64_t GDAPI godot_object_get_instance_id(const godot_object *p_object);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // GODOT_C_H
+#endif // GODOT_GDNATIVE_H

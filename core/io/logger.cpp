@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,20 +30,11 @@
 
 #include "logger.h"
 
-#include "core/os/dir_access.h"
+#include "core/config/project_settings.h"
+#include "core/io/dir_access.h"
 #include "core/os/os.h"
-#include "core/print_string.h"
-
-// va_copy was defined in the C99, but not in C++ standards before C++11.
-// When you compile C++ without --std=c++<XX> option, compilers still define
-// va_copy, otherwise you have to use the internal version (__va_copy).
-#if !defined(va_copy)
-#if defined(__GNUC__)
-#define va_copy(d, s) __va_copy((d), (s))
-#else
-#define va_copy(d, s) ((d) = (s))
-#endif
-#endif
+#include "core/os/time.h"
+#include "core/string/print_string.h"
 
 #if defined(MINGW_ENABLED) || defined(_MSC_VER)
 #define sprintf sprintf_s
@@ -53,28 +44,49 @@ bool Logger::should_log(bool p_err) {
 	return (!p_err || _print_error_enabled) && (p_err || _print_line_enabled);
 }
 
-void Logger::log_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, ErrorType p_type) {
+bool Logger::_flush_stdout_on_print = true;
+
+void Logger::set_flush_stdout_on_print(bool value) {
+	_flush_stdout_on_print = value;
+}
+
+void Logger::log_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, bool p_editor_notify, ErrorType p_type) {
 	if (!should_log(true)) {
 		return;
 	}
 
-	const char *err_type = "**ERROR**";
+	const char *err_type = "ERROR";
 	switch (p_type) {
-		case ERR_ERROR: err_type = "**ERROR**"; break;
-		case ERR_WARNING: err_type = "**WARNING**"; break;
-		case ERR_SCRIPT: err_type = "**SCRIPT ERROR**"; break;
-		case ERR_SHADER: err_type = "**SHADER ERROR**"; break;
-		default: ERR_PRINT("Unknown error type"); break;
+		case ERR_ERROR:
+			err_type = "ERROR";
+			break;
+		case ERR_WARNING:
+			err_type = "WARNING";
+			break;
+		case ERR_SCRIPT:
+			err_type = "SCRIPT ERROR";
+			break;
+		case ERR_SHADER:
+			err_type = "SHADER ERROR";
+			break;
+		default:
+			ERR_PRINT("Unknown error type");
+			break;
 	}
 
 	const char *err_details;
-	if (p_rationale && *p_rationale)
+	if (p_rationale && *p_rationale) {
 		err_details = p_rationale;
-	else
+	} else {
 		err_details = p_code;
+	}
 
-	logf_error("%s: %s\n", err_type, err_details);
-	logf_error("   At: %s:%i:%s() - %s\n", p_file, p_line, p_function, p_code);
+	if (p_editor_notify) {
+		logf_error("%s: %s\n", err_type, err_details);
+	} else {
+		logf_error("USER %s: %s\n", err_type, err_details);
+	}
+	logf_error("   at: %s (%s:%i) - %s\n", p_function, p_file, p_line, p_code);
 }
 
 void Logger::logf(const char *p_format, ...) {
@@ -103,12 +115,10 @@ void Logger::logf_error(const char *p_format, ...) {
 	va_end(argp);
 }
 
-Logger::~Logger() {}
-
 void RotatedFileLogger::close_file() {
 	if (file) {
 		memdelete(file);
-		file = NULL;
+		file = nullptr;
 	}
 }
 
@@ -151,11 +161,7 @@ void RotatedFileLogger::rotate_file() {
 
 	if (FileAccess::exists(base_path)) {
 		if (max_files > 1) {
-			char timestamp[21];
-			OS::Date date = OS::get_singleton()->get_date();
-			OS::Time time = OS::get_singleton()->get_time();
-			sprintf(timestamp, "-%04d-%02d-%02d-%02d-%02d-%02d", date.year, date.month, date.day, time.hour, time.min, time.sec);
-
+			String timestamp = Time::get_singleton()->get_datetime_string_from_system().replace(":", ".");
 			String backup_name = base_path.get_basename() + timestamp;
 			if (base_path.get_extension() != String()) {
 				backup_name += "." + base_path.get_extension();
@@ -181,8 +187,7 @@ void RotatedFileLogger::rotate_file() {
 
 RotatedFileLogger::RotatedFileLogger(const String &p_base_path, int p_max_files) :
 		base_path(p_base_path.simplify_path()),
-		max_files(p_max_files > 0 ? p_max_files : 1),
-		file(NULL) {
+		max_files(p_max_files > 0 ? p_max_files : 1) {
 	rotate_file();
 }
 
@@ -204,15 +209,14 @@ void RotatedFileLogger::logv(const char *p_format, va_list p_list, bool p_err) {
 		}
 		va_end(list_copy);
 		file->store_buffer((uint8_t *)buf, len);
+
 		if (len >= static_buf_size) {
 			Memory::free_static(buf);
 		}
-#ifdef DEBUG_ENABLED
-		const bool need_flush = true;
-#else
-		bool need_flush = p_err;
-#endif
-		if (need_flush) {
+
+		if (p_err || _flush_stdout_on_print) {
+			// Don't always flush when printing stdout to avoid performance
+			// issues when `print()` is spammed in release builds.
 			file->flush();
 		}
 	}
@@ -231,13 +235,13 @@ void StdLogger::logv(const char *p_format, va_list p_list, bool p_err) {
 		vfprintf(stderr, p_format, p_list);
 	} else {
 		vprintf(p_format, p_list);
-#ifdef DEBUG_ENABLED
-		fflush(stdout);
-#endif
+		if (_flush_stdout_on_print) {
+			// Don't always flush when printing stdout to avoid performance
+			// issues when `print()` is spammed in release builds.
+			fflush(stdout);
+		}
 	}
 }
-
-StdLogger::~StdLogger() {}
 
 CompositeLogger::CompositeLogger(Vector<Logger *> p_loggers) :
 		loggers(p_loggers) {
@@ -256,7 +260,7 @@ void CompositeLogger::logv(const char *p_format, va_list p_list, bool p_err) {
 	}
 }
 
-void CompositeLogger::log_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, ErrorType p_type) {
+void CompositeLogger::log_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, bool p_editor_notify, ErrorType p_type) {
 	if (!should_log(true)) {
 		return;
 	}

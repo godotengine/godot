@@ -60,7 +60,7 @@ bool btDefaultSoftBodySolver::checkInitialized()
 	return true;
 }
 
-void btDefaultSoftBodySolver::solveConstraints(float solverdt)
+void btDefaultSoftBodySolver::solveConstraints(btScalar solverdt)
 {
 	// Solve constraints for non-solver softbodies
 	for (int i = 0; i < m_softBodySet.size(); ++i)
@@ -132,7 +132,7 @@ void btDefaultSoftBodySolver::processCollision(btSoftBody *softBody, const btCol
 	softBody->defaultCollisionHandler(collisionObjectWrap);
 }  // btDefaultSoftBodySolver::processCollision
 
-void btDefaultSoftBodySolver::predictMotion(float timeStep)
+void btDefaultSoftBodySolver::predictMotion(btScalar timeStep)
 {
 	for (int i = 0; i < m_softBodySet.size(); ++i)
 	{

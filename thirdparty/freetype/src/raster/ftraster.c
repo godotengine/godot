@@ -4,7 +4,7 @@
  *
  *   The FreeType glyph rasterizer (body).
  *
- * Copyright (C) 1996-2019 by
+ * Copyright (C) 1996-2020 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -62,10 +62,9 @@
 
 #else /* !STANDALONE_ */
 
-#include <ft2build.h>
 #include "ftraster.h"
-#include FT_INTERNAL_CALC_H   /* for FT_MulDiv and FT_MulDiv_No_Round */
-#include FT_OUTLINE_H         /* for FT_Outline_Get_CBox              */
+#include <freetype/internal/ftcalc.h> /* for FT_MulDiv and FT_MulDiv_No_Round */
+#include <freetype/ftoutln.h>         /* for FT_Outline_Get_CBox              */
 
 #endif /* !STANDALONE_ */
 
@@ -226,8 +225,8 @@
 #else /* !STANDALONE_ */
 
 
-#include FT_INTERNAL_OBJECTS_H
-#include FT_INTERNAL_DEBUG_H       /* for FT_TRACE, FT_ERROR, and FT_THROW */
+#include <freetype/internal/ftobjs.h>
+#include <freetype/internal/ftdebug.h> /* for FT_TRACE, FT_ERROR, and FT_THROW */
 
 #include "rasterrs.h"
 
@@ -399,7 +398,7 @@
 
 
 #define RAS_ARGS       /* void */
-#define RAS_ARG        /* void */
+#define RAS_ARG        void
 
 #define RAS_VARS       /* void */
 #define RAS_VAR        /* void */
@@ -459,6 +458,11 @@
           (Bool)( CEILING( x ) - x >= ras.precision_half )
 #define IS_TOP_OVERSHOOT( x )    \
           (Bool)( x - FLOOR( x ) >= ras.precision_half )
+
+  /* Smart dropout rounding to find which pixel is closer to span ends. */
+  /* To mimick Windows, symmetric cases break down indepenently of the  */
+  /* precision.                                                         */
+#define SMART( p, q )  FLOOR( ( (p) + (q) + ras.precision * 63 / 64 ) >> 1 )
 
 #if FT_RENDER_POOL_SIZE > 2048
 #define FT_MAX_BLACK_POOL  ( FT_RENDER_POOL_SIZE / sizeof ( Long ) )
@@ -546,8 +550,7 @@
 
 #ifdef FT_STATIC_RASTER
 
-  static black_TWorker  cur_ras;
-#define ras  cur_ras
+  static black_TWorker  ras;
 
 #else /* !FT_STATIC_RASTER */
 
@@ -661,7 +664,6 @@
       return FAILURE;
     }
 
-    ras.cProfile->flags  = 0;
     ras.cProfile->start  = 0;
     ras.cProfile->height = 0;
     ras.cProfile->offset = ras.top;
@@ -676,13 +678,13 @@
       if ( overshoot )
         ras.cProfile->flags |= Overshoot_Bottom;
 
-      FT_TRACE6(( "  new ascending profile = %p\n", ras.cProfile ));
+      FT_TRACE6(( "  new ascending profile = %p\n", (void *)ras.cProfile ));
       break;
 
     case Descending_State:
       if ( overshoot )
         ras.cProfile->flags |= Overshoot_Top;
-      FT_TRACE6(( "  new descending profile = %p\n", ras.cProfile ));
+      FT_TRACE6(( "  new descending profile = %p\n", (void *)ras.cProfile ));
       break;
 
     default:
@@ -739,7 +741,7 @@
 
 
       FT_TRACE6(( "  ending profile %p, start = %ld, height = %ld\n",
-                  ras.cProfile, ras.cProfile->start, h ));
+                  (void *)ras.cProfile, ras.cProfile->start, h ));
 
       ras.cProfile->height = h;
       if ( overshoot )
@@ -914,16 +916,18 @@
 
 
     base[4].x = base[2].x;
-    b = base[1].x;
-    a = base[3].x = ( base[2].x + b ) / 2;
-    b = base[1].x = ( base[0].x + b ) / 2;
-    base[2].x = ( a + b ) / 2;
+    a = base[0].x + base[1].x;
+    b = base[1].x + base[2].x;
+    base[3].x = b >> 1;
+    base[2].x = ( a + b ) >> 2;
+    base[1].x = a >> 1;
 
     base[4].y = base[2].y;
-    b = base[1].y;
-    a = base[3].y = ( base[2].y + b ) / 2;
-    b = base[1].y = ( base[0].y + b ) / 2;
-    base[2].y = ( a + b ) / 2;
+    a = base[0].y + base[1].y;
+    b = base[1].y + base[2].y;
+    base[3].y = b >> 1;
+    base[2].y = ( a + b ) >> 2;
+    base[1].y = a >> 1;
 
     /* hand optimized.  gcc doesn't seem to be too good at common      */
     /* expression substitution and instruction scheduling ;-)          */
@@ -947,28 +951,32 @@
   static void
   Split_Cubic( TPoint*  base )
   {
-    Long  a, b, c, d;
+    Long  a, b, c;
 
 
     base[6].x = base[3].x;
-    c = base[1].x;
-    d = base[2].x;
-    base[1].x = a = ( base[0].x + c + 1 ) >> 1;
-    base[5].x = b = ( base[3].x + d + 1 ) >> 1;
-    c = ( c + d + 1 ) >> 1;
-    base[2].x = a = ( a + c + 1 ) >> 1;
-    base[4].x = b = ( b + c + 1 ) >> 1;
-    base[3].x = ( a + b + 1 ) >> 1;
+    a = base[0].x + base[1].x;
+    b = base[1].x + base[2].x;
+    c = base[2].x + base[3].x;
+    base[5].x = c >> 1;
+    c += b;
+    base[4].x = c >> 2;
+    base[1].x = a >> 1;
+    a += b;
+    base[2].x = a >> 2;
+    base[3].x = ( a + c ) >> 3;
 
     base[6].y = base[3].y;
-    c = base[1].y;
-    d = base[2].y;
-    base[1].y = a = ( base[0].y + c + 1 ) >> 1;
-    base[5].y = b = ( base[3].y + d + 1 ) >> 1;
-    c = ( c + d + 1 ) >> 1;
-    base[2].y = a = ( a + c + 1 ) >> 1;
-    base[4].y = b = ( b + c + 1 ) >> 1;
-    base[3].y = ( a + b + 1 ) >> 1;
+    a = base[0].y + base[1].y;
+    b = base[1].y + base[2].y;
+    c = base[2].y + base[3].y;
+    base[5].y = c >> 1;
+    c += b;
+    base[4].y = c >> 2;
+    base[1].y = a >> 1;
+    a += b;
+    base[2].y = a >> 2;
+    base[3].y = ( a + c ) >> 3;
   }
 
 
@@ -2238,11 +2246,10 @@
 
     /* in high-precision mode, we need 12 digits after the comma to */
     /* represent multiples of 1/(1<<12) = 1/4096                    */
-    FT_TRACE7(( "  y=%d x=[%.12f;%.12f], drop-out=%d",
+    FT_TRACE7(( "  y=%d x=[% .12f;% .12f]",
                 y,
                 x1 / (double)ras.precision,
-                x2 / (double)ras.precision,
-                dropOutControl ));
+                x2 / (double)ras.precision ));
 
     /* Drop-out control */
 
@@ -2270,7 +2277,7 @@
       if ( e2 >= ras.bWidth )
         e2 = ras.bWidth - 1;
 
-      FT_TRACE7(( " -> x=[%d;%d]", e1, e2 ));
+      FT_TRACE7(( " -> x=[%ld;%ld]", e1, e2 ));
 
       c1 = (Short)( e1 >> 3 );
       c2 = (Short)( e2 >> 3 );
@@ -2312,7 +2319,7 @@
     Short  c1, f1;
 
 
-    FT_TRACE7(( "  y=%d x=[%.12f;%.12f]",
+    FT_TRACE7(( "  y=%d x=[% .12f;% .12f]",
                 y,
                 x1 / (double)ras.precision,
                 x2 / (double)ras.precision ));
@@ -2349,8 +2356,6 @@
       Int  dropOutControl = left->flags & 7;
 
 
-      FT_TRACE7(( ", drop-out=%d", dropOutControl ));
-
       if ( e1 == e2 + ras.precision )
       {
         switch ( dropOutControl )
@@ -2360,7 +2365,7 @@
           break;
 
         case 4: /* smart drop-outs including stubs */
-          pxl = FLOOR( ( x1 + x2 - 1 ) / 2 + ras.precision_half );
+          pxl = SMART( x1, x2 );
           break;
 
         case 1: /* simple drop-outs excluding stubs */
@@ -2409,7 +2414,7 @@
           if ( dropOutControl == 1 )
             pxl = e2;
           else
-            pxl = FLOOR( ( x1 + x2 - 1 ) / 2 + ras.precision_half );
+            pxl = SMART( x1, x2 );
           break;
 
         default: /* modes 2, 3, 6, 7 */
@@ -2444,7 +2449,7 @@
 
     if ( e1 >= 0 && e1 < ras.bWidth )
     {
-      FT_TRACE7(( " -> x=%d (drop-out)", e1 ));
+      FT_TRACE7(( " -> x=%ld", e1 ));
 
       c1 = (Short)( e1 >> 3 );
       f1 = (Short)( e1 & 7 );
@@ -2453,7 +2458,7 @@
     }
 
   Exit:
-    FT_TRACE7(( "\n" ));
+    FT_TRACE7(( " dropout=%d\n", left->flags & 7 ));
   }
 
 
@@ -2491,44 +2496,68 @@
                                   PProfile    left,
                                   PProfile    right )
   {
+    Long  e1, e2;
+
     FT_UNUSED( left );
     FT_UNUSED( right );
 
 
-    if ( x2 - x1 < ras.precision )
+    FT_TRACE7(( "  x=%d y=[% .12f;% .12f]",
+                y,
+                x1 / (double)ras.precision,
+                x2 / (double)ras.precision ));
+
+    /* We should not need this procedure but the vertical sweep   */
+    /* mishandles horizontal lines through pixel centers.  So we  */
+    /* have to check perfectly aligned span edges here.           */
+    /*                                                            */
+    /* XXX: Can we handle horizontal lines better and drop this?  */
+
+    e1 = CEILING( x1 );
+
+    if ( x1 == e1 )
     {
-      Long  e1, e2;
+      e1 = TRUNC( e1 );
 
-
-      FT_TRACE7(( "  x=%d y=[%.12f;%.12f]",
-                  y,
-                  x1 / (double)ras.precision,
-                  x2 / (double)ras.precision ));
-
-      e1 = CEILING( x1 );
-      e2 = FLOOR  ( x2 );
-
-      if ( e1 == e2 )
+      if ( e1 >= 0 && (ULong)e1 < ras.target.rows )
       {
-        e1 = TRUNC( e1 );
-
-        if ( e1 >= 0 && (ULong)e1 < ras.target.rows )
-        {
-          Byte   f1;
-          PByte  bits;
+        Byte   f1;
+        PByte  bits;
 
 
-          FT_TRACE7(( " -> y=%d (drop-out)", e1 ));
+        bits = ras.bOrigin + ( y >> 3 ) - e1 * ras.target.pitch;
+        f1   = (Byte)( 0x80 >> ( y & 7 ) );
 
-          bits = ras.bOrigin + ( y >> 3 ) - e1 * ras.target.pitch;
-          f1   = (Byte)( 0x80 >> ( y & 7 ) );
+        FT_TRACE7(( bits[0] & f1 ? " redundant"
+                                 : " -> y=%ld edge", e1 ));
 
-          bits[0] |= f1;
-        }
+        bits[0] |= f1;
       }
-
-      FT_TRACE7(( "\n" ));
     }
+
+    e2 = FLOOR  ( x2 );
+
+    if ( x2 == e2 )
+    {
+      e2 = TRUNC( e2 );
+
+      if ( e2 >= 0 && (ULong)e2 < ras.target.rows )
+      {
+        Byte   f1;
+        PByte  bits;
+
+
+        bits = ras.bOrigin + ( y >> 3 ) - e2 * ras.target.pitch;
+        f1   = (Byte)( 0x80 >> ( y & 7 ) );
+
+        FT_TRACE7(( bits[0] & f1 ? " redundant"
+                                 : " -> y=%ld edge", e2 ));
+
+        bits[0] |= f1;
+      }
+    }
+
+    FT_TRACE7(( "\n" ));
   }
 
 
@@ -2544,7 +2573,7 @@
     Byte   f1;
 
 
-    FT_TRACE7(( "  x=%d y=[%.12f;%.12f]",
+    FT_TRACE7(( "  x=%d y=[% .12f;% .12f]",
                 y,
                 x1 / (double)ras.precision,
                 x2 / (double)ras.precision ));
@@ -2570,8 +2599,6 @@
       Int  dropOutControl = left->flags & 7;
 
 
-      FT_TRACE7(( ", dropout=%d", dropOutControl ));
-
       if ( e1 == e2 + ras.precision )
       {
         switch ( dropOutControl )
@@ -2581,7 +2608,7 @@
           break;
 
         case 4: /* smart drop-outs including stubs */
-          pxl = FLOOR( ( x1 + x2 - 1 ) / 2 + ras.precision_half );
+          pxl = SMART( x1, x2 );
           break;
 
         case 1: /* simple drop-outs excluding stubs */
@@ -2605,7 +2632,7 @@
           if ( dropOutControl == 1 )
             pxl = e2;
           else
-            pxl = FLOOR( ( x1 + x2 - 1 ) / 2 + ras.precision_half );
+            pxl = SMART( x1, x2 );
           break;
 
         default: /* modes 2, 3, 6, 7 */
@@ -2641,7 +2668,7 @@
 
     if ( e1 >= 0 && (ULong)e1 < ras.target.rows )
     {
-      FT_TRACE7(( " -> y=%d (drop-out)", e1 ));
+      FT_TRACE7(( " -> y=%ld", e1 ));
 
       bits  = ras.bOrigin + ( y >> 3 ) - e1 * ras.target.pitch;
       f1    = (Byte)( 0x80 >> ( y & 7 ) );
@@ -2650,7 +2677,7 @@
     }
 
   Exit:
-    FT_TRACE7(( "\n" ));
+    FT_TRACE7(( " dropout=%d\n", left->flags & 7 ));
   }
 
 
@@ -2784,7 +2811,7 @@
         P_Left  = draw_left;
         P_Right = draw_right;
 
-        while ( P_Left )
+        while ( P_Left && P_Right )
         {
           x1 = P_Left ->X;
           x2 = P_Right->X;
@@ -2885,7 +2912,7 @@
     P_Left  = draw_left;
     P_Right = draw_right;
 
-    while ( P_Left )
+    while ( P_Left && P_Right )
     {
       if ( P_Left->countL )
       {
@@ -3257,7 +3284,9 @@
     const FT_Outline*  outline    = (const FT_Outline*)params->source;
     const FT_Bitmap*   target_map = params->target;
 
+#ifndef FT_STATIC_RASTER
     black_TWorker  worker[1];
+#endif
 
     Long  buffer[FT_MAX_BLACK_POOL];
 
@@ -3299,8 +3328,8 @@
     ras.outline = *outline;
     ras.target  = *target_map;
 
-    worker->buff     = buffer;
-    worker->sizeBuff = (&buffer)[1]; /* Points to right after buffer. */
+    ras.buff     = buffer;
+    ras.sizeBuff = (&buffer)[1]; /* Points to right after buffer. */
 
     return Render_Glyph( RAS_VAR );
   }

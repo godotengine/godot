@@ -4,7 +4,7 @@
  *
  *   FreeType's OpenType validation module implementation (body).
  *
- * Copyright (C) 2004-2019 by
+ * Copyright (C) 2004-2020 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -16,12 +16,11 @@
  */
 
 
-#include <ft2build.h>
-#include FT_TRUETYPE_TABLES_H
-#include FT_TRUETYPE_TAGS_H
-#include FT_OPENTYPE_VALIDATE_H
-#include FT_INTERNAL_OBJECTS_H
-#include FT_SERVICE_OPENTYPE_VALIDATE_H
+#include <freetype/tttables.h>
+#include <freetype/tttags.h>
+#include <freetype/ftotval.h>
+#include <freetype/internal/ftobjs.h>
+#include <freetype/internal/services/svotval.h>
 
 #include "otvmod.h"
 #include "otvalid.h"

@@ -4,7 +4,7 @@
  *
  *   CID objects manager (specification).
  *
- * Copyright (C) 1996-2019 by
+ * Copyright (C) 1996-2020 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -21,9 +21,9 @@
 
 
 #include <ft2build.h>
-#include FT_INTERNAL_OBJECTS_H
+#include <freetype/internal/ftobjs.h>
 #include FT_CONFIG_CONFIG_H
-#include FT_INTERNAL_TYPE1_TYPES_H
+#include <freetype/internal/t1types.h>
 
 
 FT_BEGIN_HEADER

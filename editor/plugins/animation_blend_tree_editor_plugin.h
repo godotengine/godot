@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -40,12 +40,10 @@
 #include "scene/gui/graph_edit.h"
 #include "scene/gui/popup.h"
 #include "scene/gui/tree.h"
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
+
+class ProgressBar;
 
 class AnimationNodeBlendTreeEditor : public AnimationTreeNodeEditorPlugin {
-
 	GDCLASS(AnimationNodeBlendTreeEditor, AnimationTreeNodeEditorPlugin);
 
 	Ref<AnimationNodeBlendTree> blend_tree;
@@ -66,22 +64,28 @@ class AnimationNodeBlendTreeEditor : public AnimationTreeNodeEditorPlugin {
 	Map<StringName, ProgressBar *> animations;
 	Vector<EditorProperty *> visible_properties;
 
+	String to_node = "";
+	int to_slot = -1;
+	String from_node = "";
+
 	void _update_graph();
 
 	struct AddOption {
 		String name;
 		String type;
 		Ref<Script> script;
-		AddOption(const String &p_name = String(), const String &p_type = String()) :
+		int input_port_count;
+		AddOption(const String &p_name = String(), const String &p_type = String(), bool p_input_port_count = 0) :
 				name(p_name),
-				type(p_type) {
+				type(p_type),
+				input_port_count(p_input_port_count) {
 		}
 	};
 
 	Vector<AddOption> add_options;
 
 	void _add_node(int p_idx);
-	void _update_options_menu();
+	void _update_options_menu(bool p_has_input_ports = false);
 
 	static AnimationNodeBlendTreeEditor *singleton;
 
@@ -100,13 +104,17 @@ class AnimationNodeBlendTreeEditor : public AnimationTreeNodeEditorPlugin {
 	void _anim_selected(int p_index, Array p_options, const String &p_node);
 	void _delete_request(const String &p_which);
 	void _delete_nodes_request();
-	void _popup_request(const Vector2 &p_position);
 
 	bool _update_filters(const Ref<AnimationNode> &anode);
 	void _edit_filters(const String &p_which);
 	void _filter_edited();
 	void _filter_toggled();
 	Ref<AnimationNode> _filter_edit;
+
+	void _popup(bool p_has_input_ports, const Vector2 &p_popup_position, const Vector2 &p_node_position);
+	void _popup_request(const Vector2 &p_position);
+	void _connection_to_empty(const String &p_from, int p_from_slot, const Vector2 &p_release_position);
+	void _connection_from_empty(const String &p_to, int p_to_slot, const Vector2 &p_release_position);
 
 	void _property_changed(const StringName &p_property, const Variant &p_value, const String &p_field, bool p_changing);
 	void _removed_from_graph();
@@ -131,10 +139,10 @@ public:
 	void add_custom_type(const String &p_name, const Ref<Script> &p_script);
 	void remove_custom_type(const Ref<Script> &p_script);
 
-	virtual Size2 get_minimum_size() const;
+	virtual Size2 get_minimum_size() const override;
 
-	virtual bool can_edit(const Ref<AnimationNode> &p_node);
-	virtual void edit(const Ref<AnimationNode> &p_node);
+	virtual bool can_edit(const Ref<AnimationNode> &p_node) override;
+	virtual void edit(const Ref<AnimationNode> &p_node) override;
 
 	AnimationNodeBlendTreeEditor();
 };

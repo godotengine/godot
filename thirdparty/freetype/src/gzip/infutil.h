@@ -86,7 +86,7 @@ struct inflate_blocks_state {
 
 /* masks for lower bits (size given to avoid silly warnings with Visual C++) */
 #ifndef NO_INFLATE_MASK
-local uInt inflate_mask[17];
+local const uInt inflate_mask[17];
 #endif
 
 /* copy as much as possible from the sliding window to the output area */

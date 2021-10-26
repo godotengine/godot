@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,11 +29,13 @@
 /*************************************************************************/
 
 #include "camera_server.h"
+#include "rendering_server.h"
 #include "servers/camera/camera_feed.h"
-#include "visual_server.h"
 
 ////////////////////////////////////////////////////////
 // CameraServer
+
+CameraServer::CreateFunc CameraServer::create_func = nullptr;
 
 void CameraServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_feed", "index"), &CameraServer::get_feed);
@@ -52,7 +54,7 @@ void CameraServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(FEED_CBCR_IMAGE);
 };
 
-CameraServer *CameraServer::singleton = NULL;
+CameraServer *CameraServer::singleton = nullptr;
 
 CameraServer *CameraServer::get_singleton() {
 	return singleton;
@@ -90,13 +92,15 @@ Ref<CameraFeed> CameraServer::get_feed_by_id(int p_id) {
 	int index = get_feed_index(p_id);
 
 	if (index == -1) {
-		return NULL;
+		return nullptr;
 	} else {
 		return feeds[index];
 	}
 };
 
 void CameraServer::add_feed(const Ref<CameraFeed> &p_feed) {
+	ERR_FAIL_COND(p_feed.is_null());
+
 	// add our feed
 	feeds.push_back(p_feed);
 
@@ -106,7 +110,7 @@ void CameraServer::add_feed(const Ref<CameraFeed> &p_feed) {
 #endif
 
 	// let whomever is interested know
-	emit_signal("camera_feed_added", p_feed->get_id());
+	emit_signal(SNAME("camera_feed_added"), p_feed->get_id());
 };
 
 void CameraServer::remove_feed(const Ref<CameraFeed> &p_feed) {
@@ -123,14 +127,14 @@ void CameraServer::remove_feed(const Ref<CameraFeed> &p_feed) {
 			feeds.remove(i);
 
 			// let whomever is interested know
-			emit_signal("camera_feed_removed", feed_id);
+			emit_signal(SNAME("camera_feed_removed"), feed_id);
 			return;
 		};
 	};
 };
 
 Ref<CameraFeed> CameraServer::get_feed(int p_index) {
-	ERR_FAIL_INDEX_V(p_index, feeds.size(), NULL);
+	ERR_FAIL_INDEX_V(p_index, feeds.size(), nullptr);
 
 	return feeds[p_index];
 };
@@ -165,5 +169,5 @@ CameraServer::CameraServer() {
 };
 
 CameraServer::~CameraServer() {
-	singleton = NULL;
+	singleton = nullptr;
 };

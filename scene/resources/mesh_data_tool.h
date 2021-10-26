@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,11 +33,10 @@
 
 #include "scene/resources/mesh.h"
 
-class MeshDataTool : public Reference {
+class MeshDataTool : public RefCounted {
+	GDCLASS(MeshDataTool, RefCounted);
 
-	GDCLASS(MeshDataTool, Reference);
-
-	int format;
+	int format = 0;
 	struct Vertex {
 		Vector3 vertex;
 		Color color;
@@ -55,8 +54,7 @@ class MeshDataTool : public Reference {
 	Vector<Vertex> vertices;
 
 	struct Edge {
-
-		int vertex[2];
+		int vertex[2] = {};
 		Vector<int> faces;
 		Variant meta;
 	};
@@ -64,9 +62,8 @@ class MeshDataTool : public Reference {
 	Vector<Edge> edges;
 
 	struct Face {
-
-		int v[3];
-		int edges[3];
+		int v[3] = {};
+		int edges[3] = {};
 		Variant meta;
 	};
 

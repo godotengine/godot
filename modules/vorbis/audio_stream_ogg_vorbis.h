@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,110 +28,107 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef AUDIO_STREAM_OGG_VORBIS_H
-#define AUDIO_STREAM_OGG_VORBIS_H
+#ifndef AUDIO_STREAM_LIBVORBIS_H
+#define AUDIO_STREAM_LIBVORBIS_H
 
-#include "core/io/resource_loader.h"
-#include "core/os/file_access.h"
-#include "core/os/thread_safe.h"
-#include "scene/resources/audio_stream.h"
+#include "core/variant/variant.h"
+#include "modules/ogg/ogg_packet_sequence.h"
+#include "servers/audio/audio_stream.h"
+#include "thirdparty/libvorbis/vorbis/codec.h"
 
-#include <vorbis/vorbisfile.h>
+class AudioStreamOGGVorbis;
 
-class AudioStreamPlaybackOGGVorbis : public AudioStreamPlayback {
+class AudioStreamPlaybackOGGVorbis : public AudioStreamPlaybackResampled {
+	GDCLASS(AudioStreamPlaybackOGGVorbis, AudioStreamPlaybackResampled);
 
-	GDCLASS(AudioStreamPlaybackOGGVorbis, AudioStreamPlayback);
+	uint32_t frames_mixed = 0;
+	bool active = false;
+	int loops = 0;
 
-	enum {
-		MIN_MIX = 1024
-	};
+	vorbis_info info;
+	vorbis_comment comment;
+	vorbis_dsp_state dsp_state;
+	vorbis_block block;
 
-	FileAccess *f;
+	bool info_is_allocated = false;
+	bool comment_is_allocated = false;
+	bool dsp_state_is_allocated = false;
+	bool block_is_allocated = false;
 
-	ov_callbacks _ov_callbacks;
-	float length;
-	static size_t _ov_read_func(void *p_dst, size_t p_data, size_t p_count, void *_f);
-	static int _ov_seek_func(void *_f, ogg_int64_t offs, int whence);
-	static int _ov_close_func(void *_f);
-	static long _ov_tell_func(void *_f);
+	bool ready = false;
 
-	String file;
-	int64_t frames_mixed;
+	bool have_samples_left = false;
+	bool have_packets_left = false;
 
-	bool stream_loaded;
-	volatile bool playing;
-	OggVorbis_File vf;
-	int stream_channels;
-	int stream_srate;
-	int current_section;
+	friend class AudioStreamOGGVorbis;
 
-	bool paused;
-	bool loops;
-	int repeats;
+	Ref<OGGPacketSequence> vorbis_data;
+	Ref<OGGPacketSequencePlayback> vorbis_data_playback;
+	Ref<AudioStreamOGGVorbis> vorbis_stream;
 
-	Error _load_stream();
-	void _clear_stream();
-	void _close_file();
+	int _mix_frames_vorbis(AudioFrame *p_buffer, int p_frames);
 
-	bool stream_valid;
-	float loop_restart_time;
+	// Allocates vorbis data structures. Returns true upon success, false on failure.
+	bool _alloc_vorbis();
+
+protected:
+	virtual int _mix_internal(AudioFrame *p_buffer, int p_frames) override;
+	virtual float get_stream_sampling_rate() override;
 
 public:
-	Error set_file(const String &p_file);
+	virtual void start(float p_from_pos = 0.0) override;
+	virtual void stop() override;
+	virtual bool is_playing() const override;
 
-	virtual void play(float p_from = 0);
-	virtual void stop();
-	virtual bool is_playing() const;
+	virtual int get_loop_count() const override; //times it looped
 
-	virtual void set_loop_restart_time(float p_time) { loop_restart_time = p_time; }
+	virtual float get_playback_position() const override;
+	virtual void seek(float p_time) override;
 
-	virtual void set_paused(bool p_paused);
-	virtual bool is_paused() const;
-
-	virtual void set_loop(bool p_enable);
-	virtual bool has_loop() const;
-
-	virtual float get_length() const;
-
-	virtual String get_stream_name() const;
-
-	virtual int get_loop_count() const;
-
-	virtual float get_playback_position() const;
-	virtual void seek(float p_time);
-
-	virtual int get_channels() const { return stream_channels; }
-	virtual int get_mix_rate() const { return stream_srate; }
-
-	virtual int get_minimum_buffer_size() const { return 0; }
-	virtual int mix(int16_t *p_buffer, int p_frames);
-
-	AudioStreamPlaybackOGGVorbis();
+	AudioStreamPlaybackOGGVorbis() {}
 	~AudioStreamPlaybackOGGVorbis();
 };
 
 class AudioStreamOGGVorbis : public AudioStream {
-
 	GDCLASS(AudioStreamOGGVorbis, AudioStream);
+	OBJ_SAVE_TYPE(AudioStream); // Saves derived classes with common type so they can be interchanged.
+	RES_BASE_EXTENSION("oggvorbisstr");
 
-	String file;
+	friend class AudioStreamPlaybackOGGVorbis;
+
+	int channels = 1;
+	float length = 0.0;
+	bool loop = false;
+	float loop_offset = 0.0;
+
+	// Performs a seek to the beginning of the stream, should not be called during playback!
+	// Also causes allocation and deallocation.
+	void maybe_update_info();
+
+	Ref<OGGPacketSequence> packet_sequence;
+
+protected:
+	static void _bind_methods();
 
 public:
-	Ref<AudioStreamPlayback> instance_playback() {
-		Ref<AudioStreamPlaybackOGGVorbis> pb = memnew(AudioStreamPlaybackOGGVorbis);
-		pb->set_file(file);
-		return pb;
-	}
+	void set_loop(bool p_enable);
+	bool has_loop() const;
 
-	void set_file(const String &p_file) { file = p_file; }
+	void set_loop_offset(float p_seconds);
+	float get_loop_offset() const;
+
+	virtual Ref<AudioStreamPlayback> instance_playback() override;
+	virtual String get_stream_name() const override;
+
+	void set_packet_sequence(Ref<OGGPacketSequence> p_packet_sequence);
+	Ref<OGGPacketSequence> get_packet_sequence() const;
+
+	virtual float get_length() const override; //if supported, otherwise return 0
+
+	virtual bool is_monophonic() const override;
+
+	AudioStreamOGGVorbis();
+	virtual ~AudioStreamOGGVorbis();
 };
 
-class ResourceFormatLoaderAudioStreamOGGVorbis : public ResourceFormatLoader {
-public:
-	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = NULL);
-	virtual void get_recognized_extensions(List<String> *p_extensions) const;
-	virtual bool handles_type(const String &p_type) const;
-	virtual String get_resource_type(const String &p_path) const;
-};
-
-#endif // AUDIO_STREAM_OGG_H
+#endif // AUDIO_STREAM_LIBVORBIS_H

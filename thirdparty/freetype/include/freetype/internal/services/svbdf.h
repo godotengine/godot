@@ -4,7 +4,7 @@
  *
  *   The FreeType BDF services (specification).
  *
- * Copyright (C) 2003-2019 by
+ * Copyright (C) 2003-2020 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -19,8 +19,8 @@
 #ifndef SVBDF_H_
 #define SVBDF_H_
 
-#include FT_BDF_H
-#include FT_INTERNAL_SERVICE_H
+#include <freetype/ftbdf.h>
+#include <freetype/internal/ftserv.h>
 
 
 FT_BEGIN_HEADER

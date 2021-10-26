@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using Godot;
+using GodotTools.Ides.Rider;
 using GodotTools.Internals;
 using Directory = System.IO.Directory;
 using Environment = System.Environment;
@@ -15,95 +16,98 @@ namespace GodotTools.Build
     {
         private static string _msbuildToolsPath = string.Empty;
         private static string _msbuildUnixPath = string.Empty;
-        private static string _xbuildUnixPath = string.Empty;
 
-        public static string FindMsBuild()
+        public static (string, BuildTool) FindMsBuild()
         {
             var editorSettings = GodotSharpEditor.Instance.GetEditorInterface().GetEditorSettings();
-            var buildTool = (GodotSharpBuilds.BuildTool) editorSettings.GetSetting("mono/builds/build_tool");
+            var buildTool = (BuildTool)editorSettings.GetSetting("mono/builds/build_tool");
 
-            if (OS.IsWindows())
+            if (OS.IsWindows)
             {
                 switch (buildTool)
                 {
-                    case GodotSharpBuilds.BuildTool.MsBuildVs:
+                    case BuildTool.DotnetCli:
                     {
-                        if (_msbuildToolsPath.Empty() || !File.Exists(_msbuildToolsPath))
+                        string dotnetCliPath = OS.PathWhich("dotnet");
+                        if (!string.IsNullOrEmpty(dotnetCliPath))
+                            return (dotnetCliPath, BuildTool.DotnetCli);
+                        GD.PushError($"Cannot find executable for '{BuildManager.PropNameDotnetCli}'. Fallback to MSBuild from Visual Studio.");
+                        goto case BuildTool.MsBuildVs;
+                    }
+                    case BuildTool.MsBuildVs:
+                    {
+                        if (string.IsNullOrEmpty(_msbuildToolsPath) || !File.Exists(_msbuildToolsPath))
                         {
                             // Try to search it again if it wasn't found last time or if it was removed from its location
                             _msbuildToolsPath = FindMsBuildToolsPathOnWindows();
 
-                            if (_msbuildToolsPath.Empty())
-                            {
-                                throw new FileNotFoundException($"Cannot find executable for '{GodotSharpBuilds.PropNameMsbuildVs}'. Tried with path: {_msbuildToolsPath}");
-                            }
+                            if (string.IsNullOrEmpty(_msbuildToolsPath))
+                                throw new FileNotFoundException($"Cannot find executable for '{BuildManager.PropNameMSBuildVs}'.");
                         }
 
                         if (!_msbuildToolsPath.EndsWith("\\"))
                             _msbuildToolsPath += "\\";
 
-                        return Path.Combine(_msbuildToolsPath, "MSBuild.exe");
+                        return (Path.Combine(_msbuildToolsPath, "MSBuild.exe"), BuildTool.MsBuildVs);
                     }
-
-                    case GodotSharpBuilds.BuildTool.MsBuildMono:
+                    case BuildTool.MsBuildMono:
                     {
                         string msbuildPath = Path.Combine(Internal.MonoWindowsInstallRoot, "bin", "msbuild.bat");
 
                         if (!File.Exists(msbuildPath))
-                        {
-                            throw new FileNotFoundException($"Cannot find executable for '{GodotSharpBuilds.PropNameMsbuildMono}'. Tried with path: {msbuildPath}");
-                        }
+                            throw new FileNotFoundException($"Cannot find executable for '{BuildManager.PropNameMSBuildMono}'. Tried with path: {msbuildPath}");
 
-                        return msbuildPath;
+                        return (msbuildPath, BuildTool.MsBuildMono);
                     }
-
-                    case GodotSharpBuilds.BuildTool.XBuild:
+                    case BuildTool.JetBrainsMsBuild:
                     {
-                        string xbuildPath = Path.Combine(Internal.MonoWindowsInstallRoot, "bin", "xbuild.bat");
+                        string editorPath = (string)editorSettings.GetSetting(RiderPathManager.EditorPathSettingName);
 
-                        if (!File.Exists(xbuildPath))
-                        {
-                            throw new FileNotFoundException($"Cannot find executable for '{GodotSharpBuilds.PropNameXbuild}'. Tried with path: {xbuildPath}");
-                        }
+                        if (!File.Exists(editorPath))
+                            throw new FileNotFoundException($"Cannot find Rider executable. Tried with path: {editorPath}");
 
-                        return xbuildPath;
+                        var riderDir = new FileInfo(editorPath).Directory?.Parent;
+
+                        string msbuildPath = Path.Combine(riderDir.FullName, @"tools\MSBuild\Current\Bin\MSBuild.exe");
+
+                        if (!File.Exists(msbuildPath))
+                            throw new FileNotFoundException($"Cannot find executable for '{BuildManager.PropNameMSBuildJetBrains}'. Tried with path: {msbuildPath}");
+
+                        return (msbuildPath, BuildTool.JetBrainsMsBuild);
                     }
-
                     default:
                         throw new IndexOutOfRangeException("Invalid build tool in editor settings");
                 }
             }
 
-            if (OS.IsUnix())
+            if (OS.IsUnixLike)
             {
-                if (buildTool == GodotSharpBuilds.BuildTool.XBuild)
+                switch (buildTool)
                 {
-                    if (_xbuildUnixPath.Empty() || !File.Exists(_xbuildUnixPath))
+                    case BuildTool.DotnetCli:
                     {
-                        // Try to search it again if it wasn't found last time or if it was removed from its location
-                        _xbuildUnixPath = FindBuildEngineOnUnix("msbuild");
+                        string dotnetCliPath = FindBuildEngineOnUnix("dotnet");
+                        if (!string.IsNullOrEmpty(dotnetCliPath))
+                            return (dotnetCliPath, BuildTool.DotnetCli);
+                        GD.PushError($"Cannot find executable for '{BuildManager.PropNameDotnetCli}'. Fallback to MSBuild from Mono.");
+                        goto case BuildTool.MsBuildMono;
                     }
+                    case BuildTool.MsBuildMono:
+                    {
+                        if (string.IsNullOrEmpty(_msbuildUnixPath) || !File.Exists(_msbuildUnixPath))
+                        {
+                            // Try to search it again if it wasn't found last time or if it was removed from its location
+                            _msbuildUnixPath = FindBuildEngineOnUnix("msbuild");
+                        }
 
-                    if (_xbuildUnixPath.Empty())
-                    {
-                        throw new FileNotFoundException($"Cannot find binary for '{GodotSharpBuilds.PropNameXbuild}'");
+                        if (string.IsNullOrEmpty(_msbuildUnixPath))
+                            throw new FileNotFoundException($"Cannot find binary for '{BuildManager.PropNameMSBuildMono}'");
+
+                        return (_msbuildUnixPath, BuildTool.MsBuildMono);
                     }
+                    default:
+                        throw new IndexOutOfRangeException("Invalid build tool in editor settings");
                 }
-                else
-                {
-                    if (_msbuildUnixPath.Empty() || !File.Exists(_msbuildUnixPath))
-                    {
-                        // Try to search it again if it wasn't found last time or if it was removed from its location
-                        _msbuildUnixPath = FindBuildEngineOnUnix("msbuild");
-                    }
-
-                    if (_msbuildUnixPath.Empty())
-                    {
-                        throw new FileNotFoundException($"Cannot find binary for '{GodotSharpBuilds.PropNameMsbuildMono}'");
-                    }
-                }
-
-                return buildTool != GodotSharpBuilds.BuildTool.XBuild ? _msbuildUnixPath : _xbuildUnixPath;
             }
 
             throw new PlatformNotSupportedException();
@@ -115,10 +119,14 @@ namespace GodotTools.Build
             {
                 var result = new List<string>();
 
-                if (OS.IsOSX())
+                if (OS.IsMacOS)
                 {
                     result.Add("/Library/Frameworks/Mono.framework/Versions/Current/bin/");
+                    result.Add("/opt/local/bin/");
                     result.Add("/usr/local/var/homebrew/linked/mono/bin/");
+                    result.Add("/usr/local/bin/");
+                    result.Add("/usr/local/bin/dotnet/");
+                    result.Add("/usr/local/share/dotnet/");
                 }
 
                 result.Add("/opt/novell/mono/bin/");
@@ -131,12 +139,12 @@ namespace GodotTools.Build
         {
             string ret = OS.PathWhich(name);
 
-            if (!ret.Empty())
+            if (!string.IsNullOrEmpty(ret))
                 return ret;
 
             string retFallback = OS.PathWhich($"{name}.exe");
 
-            if (!retFallback.Empty())
+            if (!string.IsNullOrEmpty(retFallback))
                 return retFallback;
 
             foreach (string hintDir in MsBuildHintDirs)
@@ -152,27 +160,42 @@ namespace GodotTools.Build
 
         private static string FindMsBuildToolsPathOnWindows()
         {
-            if (!OS.IsWindows())
+            if (!OS.IsWindows)
                 throw new PlatformNotSupportedException();
 
             // Try to find 15.0 with vswhere
 
-            string vsWherePath = Environment.GetEnvironmentVariable(Internal.GodotIs32Bits() ? "ProgramFiles" : "ProgramFiles(x86)");
-            vsWherePath += "\\Microsoft Visual Studio\\Installer\\vswhere.exe";
+            string[] envNames = Internal.GodotIs32Bits() ?
+                envNames = new[] { "ProgramFiles", "ProgramW6432" } :
+                envNames = new[] { "ProgramFiles(x86)", "ProgramFiles" };
+
+            string vsWherePath = null;
+            foreach (var envName in envNames)
+            {
+                vsWherePath = Environment.GetEnvironmentVariable(envName);
+                if (!string.IsNullOrEmpty(vsWherePath))
+                {
+                    vsWherePath += "\\Microsoft Visual Studio\\Installer\\vswhere.exe";
+                    if (File.Exists(vsWherePath))
+                        break;
+                }
+
+                vsWherePath = null;
+            }
 
             var vsWhereArgs = new[] {"-latest", "-products", "*", "-requires", "Microsoft.Component.MSBuild"};
 
             var outputArray = new Godot.Collections.Array<string>();
             int exitCode = Godot.OS.Execute(vsWherePath, vsWhereArgs,
-                blocking: true, output: (Godot.Collections.Array) outputArray);
+                output: (Godot.Collections.Array)outputArray);
 
-            if (exitCode == 0)
+            if (exitCode != 0)
                 return string.Empty;
 
             if (outputArray.Count == 0)
                 return string.Empty;
 
-            var lines = outputArray[1].Split('\n');
+            var lines = outputArray[0].Split('\n');
 
             foreach (string line in lines)
             {
@@ -188,7 +211,7 @@ namespace GodotTools.Build
 
                 string value = line.Substring(sepIdx + 1).StripEdges();
 
-                if (value.Empty())
+                if (string.IsNullOrEmpty(value))
                     throw new FormatException("installationPath value is empty");
 
                 if (!value.EndsWith("\\"))

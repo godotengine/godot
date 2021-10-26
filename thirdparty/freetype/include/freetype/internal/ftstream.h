@@ -4,7 +4,7 @@
  *
  *   Stream handling (specification).
  *
- * Copyright (C) 1996-2019 by
+ * Copyright (C) 1996-2020 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -21,8 +21,8 @@
 
 
 #include <ft2build.h>
-#include FT_SYSTEM_H
-#include FT_INTERNAL_OBJECTS_H
+#include <freetype/ftsystem.h>
+#include <freetype/internal/ftobjs.h>
 
 
 FT_BEGIN_HEADER
@@ -163,6 +163,17 @@ FT_BEGIN_HEADER
 
 #define FT_BYTE_U16( p, i, s )  ( FT_UINT16( FT_BYTE_( p, i ) ) << (s) )
 #define FT_BYTE_U32( p, i, s )  ( FT_UINT32( FT_BYTE_( p, i ) ) << (s) )
+
+
+  /*
+   *    function      acts on      increases  does range   for    emits
+   *                                pointer    checking   frames  error
+   *  -------------------------------------------------------------------
+   *   FT_PEEK_XXX  buffer pointer      no         no        no     no
+   *   FT_NEXT_XXX  buffer pointer     yes         no        no     no
+   *   FT_GET_XXX   stream->cursor     yes        yes       yes     no
+   *   FT_READ_XXX  stream->pos        yes        yes        no    yes
+   */
 
 
   /*

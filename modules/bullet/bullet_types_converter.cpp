@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -59,7 +59,7 @@ void INVERT_B_TO_G(btMatrix3x3 const &inVal, Basis &outVal) {
 	INVERT_B_TO_G(inVal[2], outVal[2]);
 }
 
-void B_TO_G(btTransform const &inVal, Transform &outVal) {
+void B_TO_G(btTransform const &inVal, Transform3D &outVal) {
 	B_TO_G(inVal.getBasis(), outVal.basis);
 	B_TO_G(inVal.getOrigin(), outVal.origin);
 }
@@ -89,18 +89,67 @@ void INVERT_G_TO_B(Basis const &inVal, btMatrix3x3 &outVal) {
 	INVERT_G_TO_B(inVal[2], outVal[2]);
 }
 
-void G_TO_B(Transform const &inVal, btTransform &outVal) {
+void G_TO_B(Transform3D const &inVal, btTransform &outVal) {
 	G_TO_B(inVal.basis, outVal.getBasis());
 	G_TO_B(inVal.origin, outVal.getOrigin());
 }
 
 void UNSCALE_BT_BASIS(btTransform &scaledBasis) {
-	btMatrix3x3 &m(scaledBasis.getBasis());
-	btVector3 column0(m[0][0], m[1][0], m[2][0]);
-	btVector3 column1(m[0][1], m[1][1], m[2][1]);
-	btVector3 column2(m[0][2], m[1][2], m[2][2]);
+	btMatrix3x3 &basis(scaledBasis.getBasis());
+	btVector3 column0 = basis.getColumn(0);
+	btVector3 column1 = basis.getColumn(1);
+	btVector3 column2 = basis.getColumn(2);
+
+	// Check for zero scaling.
+	if (column0.fuzzyZero()) {
+		if (column1.fuzzyZero()) {
+			if (column2.fuzzyZero()) {
+				// All dimensions are fuzzy zero. Create a default basis.
+				column0 = btVector3(1, 0, 0);
+				column1 = btVector3(0, 1, 0);
+				column2 = btVector3(0, 0, 1);
+			} else { // Column 2 scale not fuzzy zero.
+				// Create two vectors orthogonal to row 2.
+				// Ensure that a default basis is created if row 2 = <0, 0, 1>
+				column1 = btVector3(0, column2[2], -column2[1]);
+				column0 = column1.cross(column2);
+			}
+		} else { // Column 1 scale not fuzzy zero.
+			if (column2.fuzzyZero()) {
+				// Create two vectors orthogonal to column 1.
+				// Ensure that a default basis is created if column 1 = <0, 1, 0>
+				column0 = btVector3(column1[1], -column1[0], 0);
+				column2 = column0.cross(column1);
+			} else { // Column 1 and column 2 scales not fuzzy zero.
+				// Create column 0 orthogonal to column 1 and column 2.
+				column0 = column1.cross(column2);
+			}
+		}
+	} else { // Column 0 scale not fuzzy zero.
+		if (column1.fuzzyZero()) {
+			if (column2.fuzzyZero()) {
+				// Create two vectors orthogonal to column 0.
+				// Ensure that a default basis is created if column 0 = <1, 0, 0>
+				column2 = btVector3(-column0[2], 0, column0[0]);
+				column1 = column2.cross(column0);
+			} else { // Column 0 and column 2 scales not fuzzy zero.
+				// Create column 1 orthogonal to column 0 and column 2.
+				column1 = column2.cross(column0);
+			}
+		} else { // Column 0 and column 1 scales not fuzzy zero.
+			if (column2.fuzzyZero()) {
+				// Create column 2 orthogonal to column 0 and column 1.
+				column2 = column0.cross(column1);
+			}
+		}
+	}
+
+	// Normalize
 	column0.normalize();
 	column1.normalize();
 	column2.normalize();
-	m.setValue(column0[0], column1[0], column2[0], column0[1], column1[1], column2[1], column0[2], column1[2], column2[2]);
+
+	basis.setValue(column0[0], column1[0], column2[0],
+			column0[1], column1[1], column2[1],
+			column0[2], column1[2], column2[2]);
 }

@@ -4,7 +4,7 @@
  *
  *   TrueType character mapping table (cmap) support (specification).
  *
- * Copyright (C) 2002-2019 by
+ * Copyright (C) 2002-2020 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -20,10 +20,9 @@
 #define TTCMAP_H_
 
 
-#include <ft2build.h>
-#include FT_INTERNAL_TRUETYPE_TYPES_H
-#include FT_INTERNAL_VALIDATE_H
-#include FT_SERVICE_TT_CMAP_H
+#include <freetype/internal/tttypes.h>
+#include <freetype/internal/ftvalid.h>
+#include <freetype/internal/services/svttcmap.h>
 
 FT_BEGIN_HEADER
 
@@ -89,6 +88,11 @@ FT_BEGIN_HEADER
     validate_,                                 \
     get_cmap_info_                             \
   };
+
+
+#undef  TTCMAPCITEM
+#define TTCMAPCITEM( a )  FT_CALLBACK_TABLE  const TT_CMap_ClassRec  a;
+#include "ttcmapc.h"
 
 
   typedef struct  TT_ValidatorRec_

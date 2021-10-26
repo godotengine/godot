@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="CapsuleMesh" inherits="PrimitiveMesh" category="Core" version="3.2">
+<class name="CapsuleMesh" inherits="PrimitiveMesh" version="4.0">
 	<brief_description>
 		Class representing a capsule-shaped [PrimitiveMesh].
 	</brief_description>
@@ -8,11 +8,9 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
-		<member name="mid_height" type="float" setter="set_mid_height" getter="get_mid_height" default="1.0">
-			Height of the capsule mesh from the center point.
+		<member name="height" type="float" setter="set_height" getter="get_height" default="3.0">
+			Total height of the capsule mesh (including the hemispherical ends).
 		</member>
 		<member name="radial_segments" type="int" setter="set_radial_segments" getter="get_radial_segments" default="64">
 			Number of radial segments on the capsule mesh.
@@ -24,6 +22,4 @@
 			Number of rings along the height of the capsule.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

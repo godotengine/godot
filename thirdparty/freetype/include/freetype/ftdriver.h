@@ -4,7 +4,7 @@
  *
  *   FreeType API for controlling driver modules (specification only).
  *
- * Copyright (C) 2017-2019 by
+ * Copyright (C) 2017-2020 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -19,9 +19,8 @@
 #ifndef FTDRIVER_H_
 #define FTDRIVER_H_
 
-#include <ft2build.h>
-#include FT_FREETYPE_H
-#include FT_PARAMETER_TAGS_H
+#include <freetype/freetype.h>
+#include <freetype/ftparams.h>
 
 #ifdef FREETYPE_H
 #error "freetype.h of FreeType 1 has been loaded!"
@@ -426,10 +425,6 @@ FT_BEGIN_HEADER
    *   coverage of filled-in outlines and are therefore 'blacker'.  This
    *   counteracts the 'thinning out' of glyphs, making text remain readable
    *   at smaller sizes.
-   *
-   *   By default, the Adobe engines for CFF, Type~1, and CID fonts darken
-   *   stems at smaller sizes, regardless of hinting, to enhance contrast.
-   *   Setting this property, stem darkening gets switched off.
    *
    *   For the auto-hinter, stem-darkening is experimental currently and thus
    *   switched off by default (this is, `no-stem-darkening` is set to TRUE

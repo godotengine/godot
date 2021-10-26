@@ -1,0 +1,21 @@
+#!/usr/bin/env python
+
+Import("env")
+
+import input_builders
+
+
+# Order matters here. Higher index controller database files write on top of lower index database files.
+controller_databases = [
+    "gamecontrollerdb.txt",
+    "godotcontrollerdb.txt",
+]
+
+gensource = env.CommandNoCache(
+    "default_controller_mappings.gen.cpp",
+    controller_databases,
+    env.Run(input_builders.make_default_controller_mappings, "Generating default controller mappings."),
+)
+
+env.add_source_files(env.core_sources, "*.cpp")
+env.add_source_files(env.core_sources, gensource)

@@ -1,0 +1,17 @@
+diff --git a/thirdparty/vulkan/vk_enum_string_helper.h b/thirdparty/vulkan/vk_enum_string_helper.h
+index 4c36430341..004a861774 100644
+--- a/thirdparty/vulkan/vk_enum_string_helper.h
++++ b/thirdparty/vulkan/vk_enum_string_helper.h
+@@ -36,7 +36,11 @@
+ #endif
+ 
+ #include <string>
+-#include <vulkan/vulkan.h>
++#ifdef USE_VOLK
++    #include <volk.h>
++#else
++    #include <vulkan/vulkan.h>
++#endif
+ 
+ 
+ static inline const char* string_VkResult(VkResult input_value)

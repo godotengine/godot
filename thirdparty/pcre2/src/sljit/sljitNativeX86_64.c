@@ -39,8 +39,10 @@ static sljit_s32 emit_load_imm64(struct sljit_compiler *compiler, sljit_s32 reg,
 	return SLJIT_SUCCESS;
 }
 
-static sljit_u8* generate_far_jump_code(struct sljit_jump *jump, sljit_u8 *code_ptr, sljit_s32 type)
+static sljit_u8* generate_far_jump_code(struct sljit_jump *jump, sljit_u8 *code_ptr)
 {
+	sljit_s32 type = jump->flags >> TYPE_SHIFT;
+
 	int short_addr = !(jump->flags & SLJIT_REWRITABLE_JUMP) && !(jump->flags & JUMP_LABEL) && (jump->u.target <= 0xffffffff);
 
 	/* The relative jump below specialized for this case. */
@@ -72,6 +74,56 @@ static sljit_u8* generate_far_jump_code(struct sljit_jump *jump, sljit_u8 *code_
 	return code_ptr;
 }
 
+static sljit_u8* generate_put_label_code(struct sljit_put_label *put_label, sljit_u8 *code_ptr, sljit_uw max_label)
+{
+	if (max_label > HALFWORD_MAX) {
+		put_label->addr -= put_label->flags;
+		put_label->flags = PATCH_MD;
+		return code_ptr;
+	}
+
+	if (put_label->flags == 0) {
+		/* Destination is register. */
+		code_ptr = (sljit_u8*)put_label->addr - 2 - sizeof(sljit_uw);
+
+		SLJIT_ASSERT((code_ptr[0] & 0xf8) == REX_W);
+		SLJIT_ASSERT((code_ptr[1] & 0xf8) == MOV_r_i32);
+
+		if ((code_ptr[0] & 0x07) != 0) {
+			code_ptr[0] = (sljit_u8)(code_ptr[0] & ~0x08);
+			code_ptr += 2 + sizeof(sljit_s32);
+		}
+		else {
+			code_ptr[0] = code_ptr[1];
+			code_ptr += 1 + sizeof(sljit_s32);
+		}
+
+		put_label->addr = (sljit_uw)code_ptr;
+		return code_ptr;
+	}
+
+	code_ptr -= put_label->flags + (2 + sizeof(sljit_uw));
+	SLJIT_MEMMOVE(code_ptr, code_ptr + (2 + sizeof(sljit_uw)), put_label->flags);
+
+	SLJIT_ASSERT((code_ptr[0] & 0xf8) == REX_W);
+
+	if ((code_ptr[1] & 0xf8) == MOV_r_i32) {
+		code_ptr += 2 + sizeof(sljit_uw);
+		SLJIT_ASSERT((code_ptr[0] & 0xf8) == REX_W);
+	}
+
+	SLJIT_ASSERT(code_ptr[1] == MOV_rm_r);
+
+	code_ptr[0] = (sljit_u8)(code_ptr[0] & ~0x4);
+	code_ptr[1] = MOV_rm_i32;
+	code_ptr[2] = (sljit_u8)(code_ptr[2] & ~(0x7 << 3));
+
+	code_ptr = (sljit_u8*)(put_label->addr - (2 + sizeof(sljit_uw)) + sizeof(sljit_s32));
+	put_label->addr = (sljit_uw)code_ptr;
+	put_label->flags = 0;
+	return code_ptr;
+}
+
 SLJIT_API_FUNC_ATTRIBUTE sljit_s32 sljit_emit_enter(struct sljit_compiler *compiler,
 	sljit_s32 options, sljit_s32 arg_types, sljit_s32 scratches, sljit_s32 saveds,
 	sljit_s32 fscratches, sljit_s32 fsaveds, sljit_s32 local_size)
@@ -82,6 +134,9 @@ SLJIT_API_FUNC_ATTRIBUTE sljit_s32 sljit_emit_enter(struct sljit_compiler *compi
 	CHECK_ERROR();
 	CHECK(check_sljit_emit_enter(compiler, options, arg_types, scratches, saveds, fscratches, fsaveds, local_size));
 	set_emit_enter(compiler, options, arg_types, scratches, saveds, fscratches, fsaveds, local_size);
+
+	/* Emit ENDBR64 at function entry if needed.  */
+	FAIL_IF(emit_endbranch(compiler));
 
 	compiler->mode32 = 0;
 
@@ -744,13 +799,9 @@ SLJIT_API_FUNC_ATTRIBUTE sljit_s32 sljit_emit_fast_enter(struct sljit_compiler *
 	return SLJIT_SUCCESS;
 }
 
-SLJIT_API_FUNC_ATTRIBUTE sljit_s32 sljit_emit_fast_return(struct sljit_compiler *compiler, sljit_s32 src, sljit_sw srcw)
+static sljit_s32 emit_fast_return(struct sljit_compiler *compiler, sljit_s32 src, sljit_sw srcw)
 {
 	sljit_u8 *inst;
-
-	CHECK_ERROR();
-	CHECK(check_sljit_emit_fast_return(compiler, src, srcw));
-	ADJUST_LOCAL_OFFSET(src, srcw);
 
 	if (FAST_IS_REG(src)) {
 		if (reg_map[src] < 8) {
@@ -845,4 +896,23 @@ static sljit_s32 emit_mov_int(struct sljit_compiler *compiler, sljit_s32 sign,
 	}
 
 	return SLJIT_SUCCESS;
+}
+
+static sljit_s32 skip_frames_before_return(struct sljit_compiler *compiler)
+{
+	sljit_s32 tmp, size;
+
+	/* Don't adjust shadow stack if it isn't enabled.  */
+	if (!cpu_has_shadow_stack ())
+		return SLJIT_SUCCESS;
+
+	size = compiler->local_size;
+	tmp = compiler->scratches;
+	if (tmp >= SLJIT_FIRST_SAVED_REG)
+		size += (tmp - SLJIT_FIRST_SAVED_REG + 1) * sizeof(sljit_uw);
+	tmp = compiler->saveds < SLJIT_NUMBER_OF_SAVED_REGISTERS ? (SLJIT_S0 + 1 - compiler->saveds) : SLJIT_FIRST_SAVED_REG;
+	if (SLJIT_S0 >= tmp)
+		size += (SLJIT_S0 - tmp + 1) * sizeof(sljit_uw);
+
+	return adjust_shadow_stack(compiler, SLJIT_UNUSED, 0, SLJIT_SP, size);
 }

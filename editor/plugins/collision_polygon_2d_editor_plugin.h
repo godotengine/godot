@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,25 +34,20 @@
 #include "editor/plugins/abstract_polygon_2d_editor.h"
 #include "scene/2d/collision_polygon_2d.h"
 
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
 class CollisionPolygon2DEditor : public AbstractPolygon2DEditor {
-
 	GDCLASS(CollisionPolygon2DEditor, AbstractPolygon2DEditor);
 
 	CollisionPolygon2D *node;
 
 protected:
-	virtual Node2D *_get_node() const;
-	virtual void _set_node(Node *p_polygon);
+	virtual Node2D *_get_node() const override;
+	virtual void _set_node(Node *p_polygon) override;
 
 public:
 	CollisionPolygon2DEditor(EditorNode *p_editor);
 };
 
 class CollisionPolygon2DEditorPlugin : public AbstractPolygon2DEditorPlugin {
-
 	GDCLASS(CollisionPolygon2DEditorPlugin, AbstractPolygon2DEditorPlugin);
 
 public:

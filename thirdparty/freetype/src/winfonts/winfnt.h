@@ -4,7 +4,7 @@
  *
  *   FreeType font driver for Windows FNT/FON files
  *
- * Copyright (C) 1996-2019 by
+ * Copyright (C) 1996-2020 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  * Copyright 2007 Dmitry Timoshkov for Codeweavers
  *
@@ -21,9 +21,8 @@
 #define WINFNT_H_
 
 
-#include <ft2build.h>
-#include FT_WINFONTS_H
-#include FT_INTERNAL_DRIVER_H
+#include <freetype/ftwinfnt.h>
+#include <freetype/internal/ftdrv.h>
 
 
 FT_BEGIN_HEADER

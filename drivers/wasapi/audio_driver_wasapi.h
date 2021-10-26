@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -39,53 +39,45 @@
 
 #include <audioclient.h>
 #include <mmdeviceapi.h>
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
 class AudioDriverWASAPI : public AudioDriver {
-
 	class AudioDeviceWASAPI {
 	public:
-		IAudioClient *audio_client;
-		IAudioRenderClient *render_client;
-		IAudioCaptureClient *capture_client;
-		bool active;
+		IAudioClient *audio_client = nullptr;
+		IAudioRenderClient *render_client = nullptr;
+		IAudioCaptureClient *capture_client = nullptr;
+		bool active = false;
 
-		WORD format_tag;
-		WORD bits_per_sample;
-		unsigned int channels;
-		unsigned int frame_size;
+		WORD format_tag = 0;
+		WORD bits_per_sample = 0;
+		unsigned int channels = 0;
+		unsigned int frame_size = 0;
 
-		String device_name;
-		String new_device;
+		String device_name = "Default";
+		String new_device = "Default";
 
-		AudioDeviceWASAPI() :
-				audio_client(NULL),
-				render_client(NULL),
-				capture_client(NULL),
-				active(false),
-				format_tag(0),
-				bits_per_sample(0),
-				channels(0),
-				frame_size(0),
-				device_name("Default"),
-				new_device("Default") {
-		}
+		AudioDeviceWASAPI() {}
 	};
 
 	AudioDeviceWASAPI audio_input;
 	AudioDeviceWASAPI audio_output;
 
-	Mutex *mutex;
-	Thread *thread;
+	Mutex mutex;
+	Thread thread;
 
 	Vector<int32_t> samples_in;
 
-	unsigned int channels;
-	int mix_rate;
-	int buffer_frames;
+	unsigned int channels = 0;
+	int mix_rate = 0;
+	int buffer_frames = 0;
+	int target_latency_ms = 0;
+	float real_latency = 0.0;
+	bool using_audio_client_3 = false;
 
-	bool thread_exited;
-	mutable bool exit_thread;
+	bool thread_exited = false;
+	mutable bool exit_thread = false;
 
 	static _FORCE_INLINE_ void write_sample(WORD format_tag, int bits_per_sample, BYTE *buffer, int i, int32_t sample);
 	static _FORCE_INLINE_ int32_t read_sample(WORD format_tag, int bits_per_sample, BYTE *buffer, int i);
@@ -109,6 +101,7 @@ public:
 	virtual Error init();
 	virtual void start();
 	virtual int get_mix_rate() const;
+	virtual float get_latency();
 	virtual SpeakerMode get_speaker_mode() const;
 	virtual Array get_device_list();
 	virtual String get_device();
@@ -126,5 +119,5 @@ public:
 	AudioDriverWASAPI();
 };
 
+#endif // WASAPI_ENABLED
 #endif // AUDIO_DRIVER_WASAPI_H
-#endif

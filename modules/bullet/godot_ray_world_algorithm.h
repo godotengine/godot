@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -42,11 +42,10 @@
 class btDiscreteDynamicsWorld;
 
 class GodotRayWorldAlgorithm : public btActivatingCollisionAlgorithm {
-
 	const btDiscreteDynamicsWorld *m_world;
 	btPersistentManifold *m_manifoldPtr;
-	bool m_ownManifold;
-	bool m_isSwapped;
+	bool m_ownManifold = false;
+	bool m_isSwapped = false;
 
 public:
 	GodotRayWorldAlgorithm(const btDiscreteDynamicsWorld *world, btPersistentManifold *mf, const btCollisionAlgorithmConstructionInfo &ci, const btCollisionObjectWrapper *body0Wrap, const btCollisionObjectWrapper *body1Wrap, bool isSwapped);
@@ -57,11 +56,11 @@ public:
 
 	virtual void getAllContactManifolds(btManifoldArray &manifoldArray) {
 		///should we use m_ownManifold to avoid adding duplicates?
-		if (m_manifoldPtr && m_ownManifold)
+		if (m_manifoldPtr && m_ownManifold) {
 			manifoldArray.push_back(m_manifoldPtr);
+		}
 	}
 	struct CreateFunc : public btCollisionAlgorithmCreateFunc {
-
 		const btDiscreteDynamicsWorld *m_world;
 		CreateFunc(const btDiscreteDynamicsWorld *world);
 
@@ -72,7 +71,6 @@ public:
 	};
 
 	struct SwappedCreateFunc : public btCollisionAlgorithmCreateFunc {
-
 		const btDiscreteDynamicsWorld *m_world;
 		SwappedCreateFunc(const btDiscreteDynamicsWorld *world);
 

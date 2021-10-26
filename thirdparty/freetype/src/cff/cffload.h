@@ -4,7 +4,7 @@
  *
  *   OpenType & CFF data/program tables loader (specification).
  *
- * Copyright (C) 1996-2019 by
+ * Copyright (C) 1996-2020 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -20,10 +20,9 @@
 #define CFFLOAD_H_
 
 
-#include <ft2build.h>
-#include FT_INTERNAL_CFF_TYPES_H
+#include <freetype/internal/cfftypes.h>
 #include "cffparse.h"
-#include FT_INTERNAL_CFF_OBJECTS_TYPES_H  /* for CFF_Face */
+#include <freetype/internal/cffotypes.h>  /* for CFF_Face */
 
 
 FT_BEGIN_HEADER

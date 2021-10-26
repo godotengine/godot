@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,24 +33,24 @@
 
 #include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
-#include "scene/3d/camera.h"
-#include "scene/3d/light.h"
-#include "scene/3d/mesh_instance.h"
+#include "scene/3d/camera_3d.h"
+#include "scene/3d/light_3d.h"
+#include "scene/3d/mesh_instance_3d.h"
+#include "scene/gui/subviewport_container.h"
 #include "scene/resources/material.h"
 
-class MeshEditor : public ViewportContainer {
-
-	GDCLASS(MeshEditor, ViewportContainer);
+class MeshEditor : public SubViewportContainer {
+	GDCLASS(MeshEditor, SubViewportContainer);
 
 	float rot_x;
 	float rot_y;
 
-	Viewport *viewport;
-	MeshInstance *mesh_instance;
-	Spatial *rotation;
-	DirectionalLight *light1;
-	DirectionalLight *light2;
-	Camera *camera;
+	SubViewport *viewport;
+	MeshInstance3D *mesh_instance;
+	Node3D *rotation;
+	DirectionalLight3D *light1;
+	DirectionalLight3D *light2;
+	Camera3D *camera;
 
 	Ref<Mesh> mesh;
 
@@ -64,8 +64,7 @@ class MeshEditor : public ViewportContainer {
 
 protected:
 	void _notification(int p_what);
-	void _gui_input(Ref<InputEvent> p_event);
-	static void _bind_methods();
+	void gui_input(const Ref<InputEvent> &p_event) override;
 
 public:
 	void edit(Ref<Mesh> p_mesh);
@@ -76,16 +75,15 @@ class EditorInspectorPluginMesh : public EditorInspectorPlugin {
 	GDCLASS(EditorInspectorPluginMesh, EditorInspectorPlugin);
 
 public:
-	virtual bool can_handle(Object *p_object);
-	virtual void parse_begin(Object *p_object);
+	virtual bool can_handle(Object *p_object) override;
+	virtual void parse_begin(Object *p_object) override;
 };
 
 class MeshEditorPlugin : public EditorPlugin {
-
 	GDCLASS(MeshEditorPlugin, EditorPlugin);
 
 public:
-	virtual String get_name() const { return "Mesh"; }
+	virtual String get_name() const override { return "Mesh"; }
 
 	MeshEditorPlugin(EditorNode *p_node);
 };

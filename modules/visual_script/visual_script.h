@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,8 +31,11 @@
 #ifndef VISUAL_SCRIPT_H
 #define VISUAL_SCRIPT_H
 
+#include "core/debugger/engine_debugger.h"
+#include "core/debugger/script_debugger.h"
+#include "core/doc_data.h"
+#include "core/object/script_language.h"
 #include "core/os/thread.h"
-#include "core/script_language.h"
 
 class VisualScriptInstance;
 class VisualScriptNodeInstance;
@@ -43,10 +46,10 @@ class VisualScriptNode : public Resource {
 
 	friend class VisualScript;
 
-	Set<VisualScript *> scripts_used;
+	Ref<VisualScript> script_used;
 
 	Array default_input_values;
-	bool breakpoint;
+	bool breakpoint = false;
 
 	void _set_default_input_values(Array p_values);
 	Array _get_default_input_values() const;
@@ -80,21 +83,16 @@ public:
 	virtual String get_text() const;
 	virtual String get_category() const = 0;
 
-	//used by editor, this is not really saved
+	// Used by editor, this is not really saved.
 	void set_breakpoint(bool p_breakpoint);
 	bool is_breakpoint() const;
 
-	virtual VisualScriptNodeInstance *instance(VisualScriptInstance *p_instance) = 0;
+	virtual VisualScriptNodeInstance *instantiate(VisualScriptInstance *p_instance) = 0;
 
 	struct TypeGuess {
-
-		Variant::Type type;
+		Variant::Type type = Variant::NIL;
 		StringName gdclass;
 		Ref<Script> script;
-
-		TypeGuess() {
-			type = Variant::NIL;
-		}
 	};
 
 	virtual TypeGuess guess_output_type(TypeGuess *p_inputs, int p_output) const;
@@ -104,27 +102,27 @@ public:
 
 class VisualScriptNodeInstance {
 	friend class VisualScriptInstance;
-	friend class VisualScriptLanguage; //for debugger
+	friend class VisualScriptLanguage; // For debugger.
 
-	enum { //input argument addressing
+	enum { // Input argument addressing.
 		INPUT_SHIFT = 1 << 24,
 		INPUT_MASK = INPUT_SHIFT - 1,
 		INPUT_DEFAULT_VALUE_BIT = INPUT_SHIFT, // from unassigned input port, using default value (edited by user)
 	};
 
-	int id;
-	int sequence_index;
-	VisualScriptNodeInstance **sequence_outputs;
-	int sequence_output_count;
+	int id = 0;
+	int sequence_index = 0;
+	VisualScriptNodeInstance **sequence_outputs = nullptr;
+	int sequence_output_count = 0;
 	Vector<VisualScriptNodeInstance *> dependencies;
-	int *input_ports;
-	int input_port_count;
-	int *output_ports;
-	int output_port_count;
-	int working_mem_idx;
-	int pass_idx;
+	int *input_ports = nullptr;
+	int input_port_count = 0;
+	int *output_ports = nullptr;
+	int output_port_count = 0;
+	int working_mem_idx = 0;
+	int pass_idx = 0;
 
-	VisualScriptNode *base;
+	VisualScriptNode *base = nullptr;
 
 public:
 	enum StartMode {
@@ -136,13 +134,13 @@ public:
 	enum {
 		STEP_SHIFT = 1 << 24,
 		STEP_MASK = STEP_SHIFT - 1,
-		STEP_FLAG_PUSH_STACK_BIT = STEP_SHIFT, //push bit to stack
-		STEP_FLAG_GO_BACK_BIT = STEP_SHIFT << 1, //go back to previous node
-		STEP_NO_ADVANCE_BIT = STEP_SHIFT << 2, //do not advance past this node
-		STEP_EXIT_FUNCTION_BIT = STEP_SHIFT << 3, //return from function
-		STEP_YIELD_BIT = STEP_SHIFT << 4, //yield (will find VisualScriptFunctionState state in first working memory)
+		STEP_FLAG_PUSH_STACK_BIT = STEP_SHIFT, // push bit to stack
+		STEP_FLAG_GO_BACK_BIT = STEP_SHIFT << 1, // go back to previous node
+		STEP_NO_ADVANCE_BIT = STEP_SHIFT << 2, // do not advance past this node
+		STEP_EXIT_FUNCTION_BIT = STEP_SHIFT << 3, // return from function
+		STEP_YIELD_BIT = STEP_SHIFT << 4, // yield (will find VisualScriptFunctionState state in first working memory)
 
-		FLOW_STACK_PUSHED_BIT = 1 << 30, //in flow stack, means bit was pushed (must go back here if end of sequence)
+		FLOW_STACK_PUSHED_BIT = 1 << 30, // in flow stack, means bit was pushed (must go back here if end of sequence)
 		FLOW_STACK_MASK = FLOW_STACK_PUSHED_BIT - 1
 
 	};
@@ -155,7 +153,7 @@ public:
 
 	virtual int get_working_memory_size() const { return 0; }
 
-	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Variant::CallError &r_error, String &r_error_str) = 0; //do a step, return which sequence port to go out
+	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) = 0; // Do a step, return which sequence port to go out.
 
 	Ref<VisualScriptNode> get_base_node() { return Ref<VisualScriptNode>(base); }
 
@@ -164,45 +162,38 @@ public:
 };
 
 class VisualScript : public Script {
-
 	GDCLASS(VisualScript, Script);
 
 	RES_BASE_EXTENSION("vs");
 
 public:
 	struct SequenceConnection {
-
 		union {
-
 			struct {
 				uint64_t from_node : 24;
 				uint64_t from_output : 16;
 				uint64_t to_node : 24;
 			};
-			uint64_t id;
+			uint64_t id = 0;
 		};
 
 		bool operator<(const SequenceConnection &p_connection) const {
-
 			return id < p_connection.id;
 		}
 	};
 
 	struct DataConnection {
-
 		union {
-
 			struct {
 				uint64_t from_node : 24;
 				uint64_t from_port : 8;
 				uint64_t to_node : 24;
 				uint64_t to_port : 8;
 			};
-			uint64_t id;
+			uint64_t id = 0;
 		};
 
 		bool operator<(const DataConnection &p_connection) const {
-
 			return id < p_connection.id;
 		}
 	};
@@ -213,44 +204,46 @@ private:
 	StringName base_type;
 	struct Argument {
 		String name;
-		Variant::Type type;
+		Variant::Type type = Variant::Type::NIL;
 	};
 
+	struct NodeData {
+		Point2 pos;
+		Ref<VisualScriptNode> node;
+	};
+
+	HashMap<int, NodeData> nodes; // Can be a sparse map.
+
+	Set<SequenceConnection> sequence_connections;
+	Set<DataConnection> data_connections;
+
+	Vector2 scroll;
+
 	struct Function {
-		struct NodeData {
-			Point2 pos;
-			Ref<VisualScriptNode> node;
-		};
-
-		Map<int, NodeData> nodes;
-
-		Set<SequenceConnection> sequence_connections;
-
-		Set<DataConnection> data_connections;
-
-		int function_id;
-
-		Vector2 scroll;
-
-		Function() { function_id = -1; }
+		int func_id;
+		Function() { func_id = -1; }
 	};
 
 	struct Variable {
 		PropertyInfo info;
 		Variant default_value;
-		bool _export;
+		bool _export = false;
+		// Add getter & setter options here.
 	};
 
-	Map<StringName, Function> functions;
-	Map<StringName, Variable> variables;
-	Map<StringName, Vector<Argument> > custom_signals;
+	HashMap<StringName, Function> functions;
+	HashMap<StringName, Variable> variables;
+	Map<StringName, Vector<Argument>> custom_signals;
+	Vector<Multiplayer::RPCConfig> rpc_functions;
 
 	Map<Object *, VisualScriptInstance *> instances;
 
+	bool is_tool_script;
+
 #ifdef TOOLS_ENABLED
 	Set<PlaceHolderScriptInstance *> placeholders;
-	//void _update_placeholder(PlaceHolderScriptInstance *p_placeholder);
-	virtual void _placeholder_erased(PlaceHolderScriptInstance *p_placeholder);
+	// void _update_placeholder(PlaceHolderScriptInstance *p_placeholder);
+	virtual void _placeholder_erased(PlaceHolderScriptInstance *p_placeholder) override;
 	void _update_placeholders();
 #endif
 
@@ -265,34 +258,40 @@ protected:
 	static void _bind_methods();
 
 public:
-	void add_function(const StringName &p_name);
+	bool inherits_script(const Ref<Script> &p_script) const override;
+
+	void set_scroll(const Vector2 &p_scroll);
+	Vector2 get_scroll() const;
+
+	void add_function(const StringName &p_name, int p_func_node_id);
 	bool has_function(const StringName &p_name) const;
 	void remove_function(const StringName &p_name);
 	void rename_function(const StringName &p_name, const StringName &p_new_name);
-	void set_function_scroll(const StringName &p_name, const Vector2 &p_scroll);
-	Vector2 get_function_scroll(const StringName &p_name) const;
 	void get_function_list(List<StringName> *r_functions) const;
 	int get_function_node_id(const StringName &p_name) const;
+	void set_tool_enabled(bool p_enabled);
 
-	void add_node(const StringName &p_func, int p_id, const Ref<VisualScriptNode> &p_node, const Point2 &p_pos = Point2());
-	void remove_node(const StringName &p_func, int p_id);
-	bool has_node(const StringName &p_func, int p_id) const;
-	Ref<VisualScriptNode> get_node(const StringName &p_func, int p_id) const;
-	void set_node_position(const StringName &p_func, int p_id, const Point2 &p_pos);
-	Point2 get_node_position(const StringName &p_func, int p_id) const;
-	void get_node_list(const StringName &p_func, List<int> *r_nodes) const;
+	void add_node(int p_id, const Ref<VisualScriptNode> &p_node, const Point2 &p_pos = Point2());
+	void remove_node(int p_id);
+	bool has_node(int p_id) const;
+	Ref<VisualScriptNode> get_node(int p_id) const;
+	void set_node_position(int p_id, const Point2 &p_pos);
+	Point2 get_node_position(int p_id) const;
+	void get_node_list(List<int> *r_nodes) const;
 
-	void sequence_connect(const StringName &p_func, int p_from_node, int p_from_output, int p_to_node);
-	void sequence_disconnect(const StringName &p_func, int p_from_node, int p_from_output, int p_to_node);
-	bool has_sequence_connection(const StringName &p_func, int p_from_node, int p_from_output, int p_to_node) const;
-	void get_sequence_connection_list(const StringName &p_func, List<SequenceConnection> *r_connection) const;
+	void sequence_connect(int p_from_node, int p_from_output, int p_to_node);
+	void sequence_disconnect(int p_from_node, int p_from_output, int p_to_node);
+	bool has_sequence_connection(int p_from_node, int p_from_output, int p_to_node) const;
+	void get_sequence_connection_list(List<SequenceConnection> *r_connection) const;
+	Set<int> get_output_sequence_ports_connected(int from_node);
 
-	void data_connect(const StringName &p_func, int p_from_node, int p_from_port, int p_to_node, int p_to_port);
-	void data_disconnect(const StringName &p_func, int p_from_node, int p_from_port, int p_to_node, int p_to_port);
-	bool has_data_connection(const StringName &p_func, int p_from_node, int p_from_port, int p_to_node, int p_to_port) const;
-	void get_data_connection_list(const StringName &p_func, List<DataConnection> *r_connection) const;
-	bool is_input_value_port_connected(const StringName &p_func, int p_node, int p_port) const;
-	bool get_input_value_port_connection_source(const StringName &p_func, int p_node, int p_port, int *r_node, int *r_port) const;
+	void data_connect(int p_from_node, int p_from_port, int p_to_node, int p_to_port);
+	void data_disconnect(int p_from_node, int p_from_port, int p_to_node, int p_to_port);
+	bool has_data_connection(int p_from_node, int p_from_port, int p_to_node, int p_to_port) const;
+	void get_data_connection_list(List<DataConnection> *r_connection) const;
+
+	bool is_input_value_port_connected(int p_node, int p_port) const;
+	bool get_input_value_port_connection_source(int p_node, int p_port, int *r_node, int *r_port) const;
 
 	void add_variable(const StringName &p_name, const Variant &p_default_value = Variant(), bool p_export = false);
 	bool has_variable(const StringName &p_name) const;
@@ -326,35 +325,44 @@ public:
 
 	void set_instance_base_type(const StringName &p_type);
 
-	virtual bool can_instance() const;
+	virtual bool can_instantiate() const override;
 
-	virtual Ref<Script> get_base_script() const;
-	virtual StringName get_instance_base_type() const;
-	virtual ScriptInstance *instance_create(Object *p_this);
-	virtual bool instance_has(const Object *p_this) const;
+	virtual Ref<Script> get_base_script() const override;
+	virtual StringName get_instance_base_type() const override;
+	virtual ScriptInstance *instance_create(Object *p_this) override;
+	virtual bool instance_has(const Object *p_this) const override;
 
-	virtual bool has_source_code() const;
-	virtual String get_source_code() const;
-	virtual void set_source_code(const String &p_code);
-	virtual Error reload(bool p_keep_state = false);
+	virtual bool has_source_code() const override;
+	virtual String get_source_code() const override;
+	virtual void set_source_code(const String &p_code) override;
+	virtual Error reload(bool p_keep_state = false) override;
 
-	virtual bool is_tool() const;
-	virtual bool is_valid() const;
+#ifdef TOOLS_ENABLED
+	virtual const Vector<DocData::ClassDoc> &get_documentation() const override {
+		static Vector<DocData::ClassDoc> docs;
+		return docs;
+	}
+#endif // TOOLS_ENABLED
 
-	virtual ScriptLanguage *get_language() const;
+	virtual bool is_tool() const override;
+	virtual bool is_valid() const override;
 
-	virtual bool has_script_signal(const StringName &p_signal) const;
-	virtual void get_script_signal_list(List<MethodInfo> *r_signals) const;
+	virtual ScriptLanguage *get_language() const override;
 
-	virtual bool get_property_default_value(const StringName &p_property, Variant &r_value) const;
-	virtual void get_script_method_list(List<MethodInfo> *p_list) const;
+	virtual bool has_script_signal(const StringName &p_signal) const override;
+	virtual void get_script_signal_list(List<MethodInfo> *r_signals) const override;
 
-	virtual bool has_method(const StringName &p_method) const;
-	virtual MethodInfo get_method_info(const StringName &p_method) const;
+	virtual bool get_property_default_value(const StringName &p_property, Variant &r_value) const override;
+	virtual void get_script_method_list(List<MethodInfo> *p_list) const override;
 
-	virtual void get_script_property_list(List<PropertyInfo> *p_list) const;
+	virtual bool has_method(const StringName &p_method) const override;
+	virtual MethodInfo get_method_info(const StringName &p_method) const override;
 
-	virtual int get_member_line(const StringName &p_member) const;
+	virtual void get_script_property_list(List<PropertyInfo> *p_list) const override;
+
+	virtual int get_member_line(const StringName &p_member) const override;
+
+	virtual const Vector<Multiplayer::RPCConfig> get_rpc_methods() const override;
 
 #ifdef TOOLS_ENABLED
 	virtual bool are_subnodes_edited() const;
@@ -365,62 +373,62 @@ public:
 };
 
 class VisualScriptInstance : public ScriptInstance {
-	Object *owner;
+	Object *owner = nullptr;
 	Ref<VisualScript> script;
 
-	Map<StringName, Variant> variables; //using variable path, not script
+	Map<StringName, Variant> variables; // Using variable path, not script.
 	Map<int, VisualScriptNodeInstance *> instances;
 
 	struct Function {
-		int node;
-		int max_stack;
-		int trash_pos;
-		int flow_stack_size;
-		int pass_stack_size;
-		int node_count;
-		int argument_count;
+		int node = 0;
+		int max_stack = 0;
+		int trash_pos = 0;
+		int flow_stack_size = 0;
+		int pass_stack_size = 0;
+		int node_count = 0;
+		int argument_count = 0;
 	};
 
 	Map<StringName, Function> functions;
 
 	Vector<Variant> default_values;
-	int max_input_args, max_output_args;
+	int max_input_args = 0;
+	int max_output_args = 0;
 
 	StringName source;
 
-	void _dependency_step(VisualScriptNodeInstance *node, int p_pass, int *pass_stack, const Variant **input_args, Variant **output_args, Variant *variant_stack, Variant::CallError &r_error, String &error_str, VisualScriptNodeInstance **r_error_node);
-	Variant _call_internal(const StringName &p_method, void *p_stack, int p_stack_size, VisualScriptNodeInstance *p_node, int p_flow_stack_pos, int p_pass, bool p_resuming_yield, Variant::CallError &r_error);
+	void _dependency_step(VisualScriptNodeInstance *node, int p_pass, int *pass_stack, const Variant **input_args, Variant **output_args, Variant *variant_stack, Callable::CallError &r_error, String &error_str, VisualScriptNodeInstance **r_error_node);
+	Variant _call_internal(const StringName &p_method, void *p_stack, int p_stack_size, VisualScriptNodeInstance *p_node, int p_flow_stack_pos, int p_pass, bool p_resuming_yield, Callable::CallError &r_error);
 
-	//Map<StringName,Function> functions;
-	friend class VisualScriptFunctionState; //for yield
-	friend class VisualScriptLanguage; //for debugger
+	friend class VisualScriptFunctionState; // For yield.
+	friend class VisualScriptLanguage; // For debugger.
 public:
 	virtual bool set(const StringName &p_name, const Variant &p_value);
 	virtual bool get(const StringName &p_name, Variant &r_ret) const;
 	virtual void get_property_list(List<PropertyInfo> *p_properties) const;
-	virtual Variant::Type get_property_type(const StringName &p_name, bool *r_is_valid = NULL) const;
+	virtual Variant::Type get_property_type(const StringName &p_name, bool *r_is_valid = nullptr) const;
 
 	virtual void get_method_list(List<MethodInfo> *p_list) const;
 	virtual bool has_method(const StringName &p_method) const;
-	virtual Variant call(const StringName &p_method, const Variant **p_args, int p_argcount, Variant::CallError &r_error);
+	virtual Variant call(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 	virtual void notification(int p_notification);
 	String to_string(bool *r_valid);
 
 	bool set_variable(const StringName &p_variable, const Variant &p_value) {
-
 		Map<StringName, Variant>::Element *E = variables.find(p_variable);
-		if (!E)
+		if (!E) {
 			return false;
+		}
 
 		E->get() = p_value;
 		return true;
 	}
 
 	bool get_variable(const StringName &p_variable, Variant *r_variable) const {
-
 		const Map<StringName, Variant>::Element *E = variables.find(p_variable);
-		if (!E)
+		if (!E) {
 			return false;
+		}
 
 		*r_variable = E->get();
 		return true;
@@ -435,30 +443,28 @@ public:
 
 	virtual ScriptLanguage *get_language();
 
-	virtual MultiplayerAPI::RPCMode get_rpc_mode(const StringName &p_method) const;
-	virtual MultiplayerAPI::RPCMode get_rset_mode(const StringName &p_variable) const;
+	virtual const Vector<Multiplayer::RPCConfig> get_rpc_methods() const;
 
 	VisualScriptInstance();
 	~VisualScriptInstance();
 };
 
-class VisualScriptFunctionState : public Reference {
-
-	GDCLASS(VisualScriptFunctionState, Reference);
+class VisualScriptFunctionState : public RefCounted {
+	GDCLASS(VisualScriptFunctionState, RefCounted);
 	friend class VisualScriptInstance;
 
 	ObjectID instance_id;
 	ObjectID script_id;
-	VisualScriptInstance *instance;
+	VisualScriptInstance *instance = nullptr;
 	StringName function;
 	Vector<uint8_t> stack;
-	int working_mem_index;
-	int variant_stack_size;
-	VisualScriptNodeInstance *node;
-	int flow_stack_pos;
-	int pass;
+	int working_mem_index = 0;
+	int variant_stack_size = 0;
+	VisualScriptNodeInstance *node = nullptr;
+	int flow_stack_pos = 0;
+	int pass = 0;
 
-	Variant _signal_callback(const Variant **p_args, int p_argcount, Variant::CallError &r_error);
+	Variant _signal_callback(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 
 protected:
 	static void _bind_methods();
@@ -474,50 +480,49 @@ public:
 typedef Ref<VisualScriptNode> (*VisualScriptNodeRegisterFunc)(const String &p_type);
 
 class VisualScriptLanguage : public ScriptLanguage {
-
 	Map<String, VisualScriptNodeRegisterFunc> register_funcs;
 
 	struct CallLevel {
-
-		Variant *stack;
-		Variant **work_mem;
-		const StringName *function;
-		VisualScriptInstance *instance;
-		int *current_id;
+		Variant *stack = nullptr;
+		Variant **work_mem = nullptr;
+		const StringName *function = nullptr;
+		VisualScriptInstance *instance = nullptr;
+		int *current_id = nullptr;
 	};
 
-	int _debug_parse_err_node;
-	String _debug_parse_err_file;
+	int _debug_parse_err_node = -1;
+	String _debug_parse_err_file = "";
 	String _debug_error;
-	int _debug_call_stack_pos;
+	int _debug_call_stack_pos = 0;
 	int _debug_max_call_stack;
 	CallLevel *_call_stack;
 
 public:
-	StringName notification;
+	StringName notification = "_notification";
 	StringName _get_output_port_unsequenced;
-	StringName _step;
-	StringName _subcall;
+	StringName _step = "_step";
+	StringName _subcall = "_subcall";
 
 	static VisualScriptLanguage *singleton;
 
-	Mutex *lock;
+	Mutex lock;
 
 	bool debug_break(const String &p_error, bool p_allow_continue = true);
 	bool debug_break_parse(const String &p_file, int p_node, const String &p_error);
 
 	_FORCE_INLINE_ void enter_function(VisualScriptInstance *p_instance, const StringName *p_function, Variant *p_stack, Variant **p_work_mem, int *current_id) {
+		if (Thread::get_main_id() != Thread::get_caller_id()) {
+			return; // No support for other threads than main for now.
+		}
 
-		if (Thread::get_main_id() != Thread::get_caller_id())
-			return; //no support for other threads than main for now
-
-		if (ScriptDebugger::get_singleton()->get_lines_left() > 0 && ScriptDebugger::get_singleton()->get_depth() >= 0)
-			ScriptDebugger::get_singleton()->set_depth(ScriptDebugger::get_singleton()->get_depth() + 1);
+		if (EngineDebugger::get_script_debugger()->get_lines_left() > 0 && EngineDebugger::get_script_debugger()->get_depth() >= 0) {
+			EngineDebugger::get_script_debugger()->set_depth(EngineDebugger::get_script_debugger()->get_depth() + 1);
+		}
 
 		if (_debug_call_stack_pos >= _debug_max_call_stack) {
-			//stack overflow
+			// Stack overflow.
 			_debug_error = "Stack Overflow (Stack Size: " + itos(_debug_max_call_stack) + ")";
-			ScriptDebugger::get_singleton()->debug(this);
+			EngineDebugger::get_script_debugger()->debug(this);
 			return;
 		}
 
@@ -530,17 +535,17 @@ public:
 	}
 
 	_FORCE_INLINE_ void exit_function() {
+		if (Thread::get_main_id() != Thread::get_caller_id()) {
+			return; // No support for other threads than main for now.
+		}
 
-		if (Thread::get_main_id() != Thread::get_caller_id())
-			return; //no support for other threads than main for now
-
-		if (ScriptDebugger::get_singleton()->get_lines_left() > 0 && ScriptDebugger::get_singleton()->get_depth() >= 0)
-			ScriptDebugger::get_singleton()->set_depth(ScriptDebugger::get_singleton()->get_depth() - 1);
+		if (EngineDebugger::get_script_debugger()->get_lines_left() > 0 && EngineDebugger::get_script_debugger()->get_depth() >= 0) {
+			EngineDebugger::get_script_debugger()->set_depth(EngineDebugger::get_script_debugger()->get_depth() - 1);
+		}
 
 		if (_debug_call_stack_pos == 0) {
-
 			_debug_error = "Stack Underflow (Engine Bug)";
-			ScriptDebugger::get_singleton()->debug(this);
+			EngineDebugger::get_script_debugger()->debug(this);
 			return;
 		}
 
@@ -560,17 +565,18 @@ public:
 
 	/* EDITOR FUNCTIONS */
 	virtual void get_reserved_words(List<String> *p_words) const;
+	virtual bool is_control_flow_keyword(String p_keyword) const;
 	virtual void get_comment_delimiters(List<String> *p_delimiters) const;
 	virtual void get_string_delimiters(List<String> *p_delimiters) const;
 	virtual Ref<Script> get_template(const String &p_class_name, const String &p_base_class_name) const;
 	virtual bool is_using_templates();
 	virtual void make_template(const String &p_class_name, const String &p_base_class_name, Ref<Script> &p_script);
-	virtual bool validate(const String &p_script, int &r_line_error, int &r_col_error, String &r_test_error, const String &p_path = "", List<String> *r_functions = NULL, List<ScriptLanguage::Warning> *r_warnings = NULL, Set<int> *r_safe_lines = NULL) const;
+	virtual bool validate(const String &p_script, const String &p_path = "", List<String> *r_functions = nullptr, List<ScriptLanguage::ScriptError> *r_errors = nullptr, List<ScriptLanguage::Warning> *r_warnings = nullptr, Set<int> *r_safe_lines = nullptr) const;
 	virtual Script *create_script() const;
 	virtual bool has_named_classes() const;
 	virtual bool supports_builtin_mode() const;
 	virtual int find_function(const String &p_function, const String &p_code) const;
-	virtual String make_function(const String &p_class, const String &p_name, const PoolStringArray &p_args) const;
+	virtual String make_function(const String &p_class, const String &p_name, const PackedStringArray &p_args) const;
 	virtual void auto_indent_code(String &p_code, int p_from_line, int p_to_line) const;
 	virtual void add_global_constant(const StringName &p_variable, const Variant &p_value);
 
@@ -592,7 +598,7 @@ public:
 
 	virtual void get_recognized_extensions(List<String> *p_extensions) const;
 	virtual void get_public_functions(List<MethodInfo> *p_functions) const;
-	virtual void get_public_constants(List<Pair<String, Variant> > *p_constants) const;
+	virtual void get_public_constants(List<Pair<String, Variant>> *p_constants) const;
 
 	virtual void profiling_start();
 	virtual void profiling_stop();
@@ -609,12 +615,11 @@ public:
 	~VisualScriptLanguage();
 };
 
-//aid for registering
+// Aid for registering.
 template <class T>
 static Ref<VisualScriptNode> create_node_generic(const String &p_name) {
-
 	Ref<T> node;
-	node.instance();
+	node.instantiate();
 	return node;
 }
 

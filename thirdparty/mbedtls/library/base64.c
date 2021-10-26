@@ -1,8 +1,14 @@
 /*
  *  RFC 1521 base64 encoding/decoding
  *
- *  Copyright (C) 2006-2015, ARM Limited, All Rights Reserved
- *  SPDX-License-Identifier: Apache-2.0
+ *  Copyright The Mbed TLS Contributors
+ *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
+ *
+ *  This file is provided under the Apache License 2.0, or the
+ *  GNU General Public License v2.0 or later.
+ *
+ *  **********
+ *  Apache License 2.0:
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may
  *  not use this file except in compliance with the License.
@@ -16,7 +22,26 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  *
- *  This file is part of mbed TLS (https://tls.mbed.org)
+ *  **********
+ *
+ *  **********
+ *  GNU General Public License v2.0 or later:
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along
+ *  with this program; if not, write to the Free Software Foundation, Inc.,
+ *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *  **********
  */
 
 #if !defined(MBEDTLS_CONFIG_FILE)
@@ -41,35 +66,39 @@
 #endif /* MBEDTLS_PLATFORM_C */
 #endif /* MBEDTLS_SELF_TEST */
 
-static const unsigned char base64_enc_map[64] =
-{
-    'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J',
-    'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T',
-    'U', 'V', 'W', 'X', 'Y', 'Z', 'a', 'b', 'c', 'd',
-    'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n',
-    'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x',
-    'y', 'z', '0', '1', '2', '3', '4', '5', '6', '7',
-    '8', '9', '+', '/'
-};
-
-static const unsigned char base64_dec_map[128] =
-{
-    127, 127, 127, 127, 127, 127, 127, 127, 127, 127,
-    127, 127, 127, 127, 127, 127, 127, 127, 127, 127,
-    127, 127, 127, 127, 127, 127, 127, 127, 127, 127,
-    127, 127, 127, 127, 127, 127, 127, 127, 127, 127,
-    127, 127, 127,  62, 127, 127, 127,  63,  52,  53,
-     54,  55,  56,  57,  58,  59,  60,  61, 127, 127,
-    127,  64, 127, 127, 127,   0,   1,   2,   3,   4,
-      5,   6,   7,   8,   9,  10,  11,  12,  13,  14,
-     15,  16,  17,  18,  19,  20,  21,  22,  23,  24,
-     25, 127, 127, 127, 127, 127, 127,  26,  27,  28,
-     29,  30,  31,  32,  33,  34,  35,  36,  37,  38,
-     39,  40,  41,  42,  43,  44,  45,  46,  47,  48,
-     49,  50,  51, 127, 127, 127, 127, 127
-};
-
 #define BASE64_SIZE_T_MAX   ( (size_t) -1 ) /* SIZE_T_MAX is not standard */
+
+/* Return 0xff if low <= c <= high, 0 otherwise.
+ *
+ * Constant flow with respect to c.
+ */
+static unsigned char mask_of_range( unsigned char low, unsigned char high,
+                                    unsigned char c )
+{
+    /* low_mask is: 0 if low <= c, 0x...ff if low > c */
+    unsigned low_mask = ( (unsigned) c - low ) >> 8;
+    /* high_mask is: 0 if c <= high, 0x...ff if high > c */
+    unsigned high_mask = ( (unsigned) high - c ) >> 8;
+    return( ~( low_mask | high_mask ) & 0xff );
+}
+
+/* Given a value in the range 0..63, return the corresponding Base64 digit.
+ * The implementation assumes that letters are consecutive (e.g. ASCII
+ * but not EBCDIC).
+ */
+static unsigned char enc_char( unsigned char val )
+{
+    unsigned char digit = 0;
+    /* For each range of values, if val is in that range, mask digit with
+     * the corresponding value. Since val can only be in a single range,
+     * only at most one masking will change digit. */
+    digit |= mask_of_range(  0, 25, val ) & ( 'A' + val );
+    digit |= mask_of_range( 26, 51, val ) & ( 'a' + val - 26 );
+    digit |= mask_of_range( 52, 61, val ) & ( '0' + val - 52 );
+    digit |= mask_of_range( 62, 62, val ) & '+';
+    digit |= mask_of_range( 63, 63, val ) & '/';
+    return( digit );
+}
 
 /*
  * Encode a buffer into base64 format
@@ -111,10 +140,10 @@ int mbedtls_base64_encode( unsigned char *dst, size_t dlen, size_t *olen,
         C2 = *src++;
         C3 = *src++;
 
-        *p++ = base64_enc_map[(C1 >> 2) & 0x3F];
-        *p++ = base64_enc_map[(((C1 &  3) << 4) + (C2 >> 4)) & 0x3F];
-        *p++ = base64_enc_map[(((C2 & 15) << 2) + (C3 >> 6)) & 0x3F];
-        *p++ = base64_enc_map[C3 & 0x3F];
+        *p++ = enc_char( ( C1 >> 2 ) & 0x3F );
+        *p++ = enc_char( ( ( ( C1 &  3 ) << 4 ) + ( C2 >> 4 ) ) & 0x3F );
+        *p++ = enc_char( ( ( ( C2 & 15 ) << 2 ) + ( C3 >> 6 ) ) & 0x3F );
+        *p++ = enc_char( C3 & 0x3F );
     }
 
     if( i < slen )
@@ -122,11 +151,11 @@ int mbedtls_base64_encode( unsigned char *dst, size_t dlen, size_t *olen,
         C1 = *src++;
         C2 = ( ( i + 1 ) < slen ) ? *src++ : 0;
 
-        *p++ = base64_enc_map[(C1 >> 2) & 0x3F];
-        *p++ = base64_enc_map[(((C1 & 3) << 4) + (C2 >> 4)) & 0x3F];
+        *p++ = enc_char( ( C1 >> 2 ) & 0x3F );
+        *p++ = enc_char( ( ( ( C1 & 3 ) << 4 ) + ( C2 >> 4 ) ) & 0x3F );
 
         if( ( i + 1 ) < slen )
-             *p++ = base64_enc_map[((C2 & 15) << 2) & 0x3F];
+             *p++ = enc_char( ( ( C2 & 15 ) << 2 ) & 0x3F );
         else *p++ = '=';
 
         *p++ = '=';
@@ -138,25 +167,57 @@ int mbedtls_base64_encode( unsigned char *dst, size_t dlen, size_t *olen,
     return( 0 );
 }
 
+/* Given a Base64 digit, return its value.
+ * If c is not a Base64 digit ('A'..'Z', 'a'..'z', '0'..'9', '+' or '/'),
+ * return -1.
+ *
+ * The implementation assumes that letters are consecutive (e.g. ASCII
+ * but not EBCDIC).
+ *
+ * The implementation is constant-flow (no branch or memory access depending
+ * on the value of c) unless the compiler inlines and optimizes a specific
+ * access.
+ */
+static signed char dec_value( unsigned char c )
+{
+    unsigned char val = 0;
+    /* For each range of digits, if c is in that range, mask val with
+     * the corresponding value. Since c can only be in a single range,
+     * only at most one masking will change val. Set val to one plus
+     * the desired value so that it stays 0 if c is in none of the ranges. */
+    val |= mask_of_range( 'A', 'Z', c ) & ( c - 'A' +  0 + 1 );
+    val |= mask_of_range( 'a', 'z', c ) & ( c - 'a' + 26 + 1 );
+    val |= mask_of_range( '0', '9', c ) & ( c - '0' + 52 + 1 );
+    val |= mask_of_range( '+', '+', c ) & ( c - '+' + 62 + 1 );
+    val |= mask_of_range( '/', '/', c ) & ( c - '/' + 63 + 1 );
+    /* At this point, val is 0 if c is an invalid digit and v+1 if c is
+     * a digit with the value v. */
+    return( val - 1 );
+}
+
 /*
  * Decode a base64-formatted buffer
  */
 int mbedtls_base64_decode( unsigned char *dst, size_t dlen, size_t *olen,
                    const unsigned char *src, size_t slen )
 {
-    size_t i, n;
-    uint32_t j, x;
+    size_t i; /* index in source */
+    size_t n; /* number of digits or trailing = in source */
+    uint32_t x; /* value accumulator */
+    unsigned accumulated_digits = 0;
+    unsigned equals = 0;
+    int spaces_present = 0;
     unsigned char *p;
 
     /* First pass: check for validity and get output length */
-    for( i = n = j = 0; i < slen; i++ )
+    for( i = n = 0; i < slen; i++ )
     {
         /* Skip spaces before checking for EOL */
-        x = 0;
+        spaces_present = 0;
         while( i < slen && src[i] == ' ' )
         {
             ++i;
-            ++x;
+            spaces_present = 1;
         }
 
         /* Spaces at end of buffer are OK */
@@ -171,18 +232,24 @@ int mbedtls_base64_decode( unsigned char *dst, size_t dlen, size_t *olen,
             continue;
 
         /* Space inside a line is an error */
-        if( x != 0 )
+        if( spaces_present )
             return( MBEDTLS_ERR_BASE64_INVALID_CHARACTER );
 
-        if( src[i] == '=' && ++j > 2 )
+        if( src[i] > 127 )
             return( MBEDTLS_ERR_BASE64_INVALID_CHARACTER );
 
-        if( src[i] > 127 || base64_dec_map[src[i]] == 127 )
-            return( MBEDTLS_ERR_BASE64_INVALID_CHARACTER );
-
-        if( base64_dec_map[src[i]] < 64 && j != 0 )
-            return( MBEDTLS_ERR_BASE64_INVALID_CHARACTER );
-
+        if( src[i] == '=' )
+        {
+            if( ++equals > 2 )
+                return( MBEDTLS_ERR_BASE64_INVALID_CHARACTER );
+        }
+        else
+        {
+            if( equals != 0 )
+                return( MBEDTLS_ERR_BASE64_INVALID_CHARACTER );
+            if( dec_value( src[i] ) < 0 )
+                return( MBEDTLS_ERR_BASE64_INVALID_CHARACTER );
+        }
         n++;
     }
 
@@ -197,7 +264,7 @@ int mbedtls_base64_decode( unsigned char *dst, size_t dlen, size_t *olen,
      *     n = ( ( n * 6 ) + 7 ) >> 3;
      */
     n = ( 6 * ( n >> 3 ) ) + ( ( 6 * ( n & 0x7 ) + 7 ) >> 3 );
-    n -= j;
+    n -= equals;
 
     if( dst == NULL || dlen < n )
     {
@@ -205,20 +272,24 @@ int mbedtls_base64_decode( unsigned char *dst, size_t dlen, size_t *olen,
         return( MBEDTLS_ERR_BASE64_BUFFER_TOO_SMALL );
     }
 
-   for( j = 3, n = x = 0, p = dst; i > 0; i--, src++ )
-   {
+    equals = 0;
+    for( x = 0, p = dst; i > 0; i--, src++ )
+    {
         if( *src == '\r' || *src == '\n' || *src == ' ' )
             continue;
 
-        j -= ( base64_dec_map[*src] == 64 );
-        x  = ( x << 6 ) | ( base64_dec_map[*src] & 0x3F );
+        x = x << 6;
+        if( *src == '=' )
+            ++equals;
+        else
+            x |= dec_value( *src );
 
-        if( ++n == 4 )
+        if( ++accumulated_digits == 4 )
         {
-            n = 0;
-            if( j > 0 ) *p++ = (unsigned char)( x >> 16 );
-            if( j > 1 ) *p++ = (unsigned char)( x >>  8 );
-            if( j > 2 ) *p++ = (unsigned char)( x       );
+            accumulated_digits = 0;
+            *p++ = (unsigned char)( x >> 16 );
+            if( equals <= 1 ) *p++ = (unsigned char)( x >>  8 );
+            if( equals <= 0 ) *p++ = (unsigned char)( x       );
         }
     }
 

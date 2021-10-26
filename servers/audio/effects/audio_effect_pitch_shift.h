@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,7 +34,6 @@
 #include "servers/audio/audio_effect.h"
 
 class SMBPitchShift {
-
 	enum {
 		MAX_FRAME_LENGTH = 8192
 	};
@@ -81,7 +80,7 @@ class AudioEffectPitchShiftInstance : public AudioEffectInstance {
 	SMBPitchShift shift_r;
 
 public:
-	virtual void process(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count);
+	virtual void process(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count) override;
 };
 
 class AudioEffectPitchShift : public AudioEffect {
@@ -90,7 +89,7 @@ class AudioEffectPitchShift : public AudioEffect {
 public:
 	friend class AudioEffectPitchShiftInstance;
 
-	enum FFT_Size {
+	enum FFTSize {
 		FFT_SIZE_256,
 		FFT_SIZE_512,
 		FFT_SIZE_1024,
@@ -101,7 +100,7 @@ public:
 
 	float pitch_scale;
 	int oversampling;
-	FFT_Size fft_size;
+	FFTSize fft_size;
 	float wet;
 	float dry;
 	bool filter;
@@ -110,7 +109,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	Ref<AudioEffectInstance> instance();
+	Ref<AudioEffectInstance> instantiate() override;
 
 	void set_pitch_scale(float p_pitch_scale);
 	float get_pitch_scale() const;
@@ -118,12 +117,12 @@ public:
 	void set_oversampling(int p_oversampling);
 	int get_oversampling() const;
 
-	void set_fft_size(FFT_Size);
-	FFT_Size get_fft_size() const;
+	void set_fft_size(FFTSize);
+	FFTSize get_fft_size() const;
 
 	AudioEffectPitchShift();
 };
 
-VARIANT_ENUM_CAST(AudioEffectPitchShift::FFT_Size);
+VARIANT_ENUM_CAST(AudioEffectPitchShift::FFTSize);
 
 #endif // AUDIO_EFFECT_PITCH_SHIFT_H

@@ -4,7 +4,7 @@
  *
  *   TrueTypeGX/AAT common definition for morx table (specification).
  *
- * Copyright (C) 2005-2019 by
+ * Copyright (C) 2005-2020 by
  * suzuki toshiya, Masatake YAMATO, Red Hat K.K.,
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
@@ -33,7 +33,10 @@
 #include "gxvcommn.h"
 #include "gxvmort.h"
 
-#include FT_SFNT_NAMES_H
+#include <freetype/ftsnames.h>
+
+
+FT_BEGIN_HEADER
 
 
   FT_LOCAL( void )
@@ -61,6 +64,8 @@
                                     FT_Bytes       limit,
                                     GXV_Validator  gxvalid );
 
+
+FT_END_HEADER
 
 #endif /* GXVMORX_H_ */
 

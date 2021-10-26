@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,7 +31,7 @@
 #ifndef AUDIO_STREAM_GENERATOR_H
 #define AUDIO_STREAM_GENERATOR_H
 
-#include "core/ring_buffer.h"
+#include "core/templates/ring_buffer.h"
 #include "servers/audio/audio_stream.h"
 
 class AudioStreamGenerator : public AudioStream {
@@ -50,15 +50,15 @@ public:
 	void set_buffer_length(float p_seconds);
 	float get_buffer_length() const;
 
-	virtual Ref<AudioStreamPlayback> instance_playback();
-	virtual String get_stream_name() const;
+	virtual Ref<AudioStreamPlayback> instance_playback() override;
+	virtual String get_stream_name() const override;
 
-	virtual float get_length() const;
+	virtual float get_length() const override;
+	virtual bool is_monophonic() const override;
 	AudioStreamGenerator();
 };
 
 class AudioStreamGeneratorPlayback : public AudioStreamPlaybackResampled {
-
 	GDCLASS(AudioStreamGeneratorPlayback, AudioStreamPlaybackResampled);
 	friend class AudioStreamGenerator;
 	RingBuffer<AudioFrame> buffer;
@@ -68,24 +68,24 @@ class AudioStreamGeneratorPlayback : public AudioStreamPlaybackResampled {
 	AudioStreamGenerator *generator;
 
 protected:
-	virtual void _mix_internal(AudioFrame *p_buffer, int p_frames);
-	virtual float get_stream_sampling_rate();
+	virtual int _mix_internal(AudioFrame *p_buffer, int p_frames) override;
+	virtual float get_stream_sampling_rate() override;
 
 	static void _bind_methods();
 
 public:
-	virtual void start(float p_from_pos = 0.0);
-	virtual void stop();
-	virtual bool is_playing() const;
+	virtual void start(float p_from_pos = 0.0) override;
+	virtual void stop() override;
+	virtual bool is_playing() const override;
 
-	virtual int get_loop_count() const; //times it looped
+	virtual int get_loop_count() const override; //times it looped
 
-	virtual float get_playback_position() const;
-	virtual void seek(float p_time);
+	virtual float get_playback_position() const override;
+	virtual void seek(float p_time) override;
 
 	bool push_frame(const Vector2 &p_frame);
 	bool can_push_buffer(int p_frames) const;
-	bool push_buffer(const PoolVector2Array &p_frames);
+	bool push_buffer(const PackedVector2Array &p_frames);
 	int get_frames_available() const;
 	int get_skips() const;
 

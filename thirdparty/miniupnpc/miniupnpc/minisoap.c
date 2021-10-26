@@ -1,8 +1,8 @@
-/* $Id: minisoap.c,v 1.25 2017/04/21 10:03:24 nanard Exp $ */
+/* $Id: minisoap.c,v 1.30 2020/11/09 19:27:42 nanard Exp $ */
 /* vim: tabstop=4 shiftwidth=4 noexpandtab
  * Project : miniupnp
  * Author : Thomas Bernard
- * Copyright (c) 2005-2018 Thomas Bernard
+ * Copyright (c) 2005-2020 Thomas Bernard
  * This software is subject to the conditions detailed in the
  * LICENCE file provided in this distribution.
  *
@@ -13,7 +13,7 @@
 #ifdef _WIN32
 #include <io.h>
 #include <winsock2.h>
-#define snprintf _snprintf
+#include "win32_snprintf.h"
 #else
 #include <unistd.h>
 #include <sys/types.h>

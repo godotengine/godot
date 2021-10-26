@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,32 +33,33 @@
 
 #include "open_simplex_noise.h"
 
-#include "core/image.h"
-#include "core/reference.h"
+#include "core/io/image.h"
+#include "core/object/ref_counted.h"
 #include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
 #include "editor/property_editor.h"
 
-class NoiseTexture : public Texture {
-	GDCLASS(NoiseTexture, Texture);
+class NoiseTexture : public Texture2D {
+	GDCLASS(NoiseTexture, Texture2D);
 
 private:
-	Ref<Image> data;
+	Ref<Image> image;
 
-	Thread *noise_thread;
+	Thread noise_thread;
 
-	bool first_time;
-	bool update_queued;
-	bool regen_queued;
+	bool first_time = true;
+	bool update_queued = false;
+	bool regen_queued = false;
 
-	RID texture;
-	uint32_t flags;
+	mutable RID texture;
+	uint32_t flags = 0;
 
 	Ref<OpenSimplexNoise> noise;
-	Vector2i size;
-	bool seamless;
-	bool as_normalmap;
-	float bump_strength;
+	Vector2i size = Vector2i(512, 512);
+	Vector2 noise_offset;
+	bool seamless = false;
+	bool as_normal_map = false;
+	float bump_strength = 8.0;
 
 	void _thread_done(const Ref<Image> &p_image);
 	static void _thread_function(void *p_ud);
@@ -66,11 +67,11 @@ private:
 	void _queue_update();
 	Ref<Image> _generate_texture();
 	void _update_texture();
-	void _set_texture_data(const Ref<Image> &p_image);
+	void _set_texture_image(const Ref<Image> &p_image);
 
 protected:
 	static void _bind_methods();
-	virtual void _validate_property(PropertyInfo &property) const;
+	virtual void _validate_property(PropertyInfo &property) const override;
 
 public:
 	void set_noise(Ref<OpenSimplexNoise> p_noise);
@@ -79,25 +80,25 @@ public:
 	void set_width(int p_width);
 	void set_height(int p_height);
 
+	void set_noise_offset(Vector2 p_noise_offset);
+	Vector2 get_noise_offset() const;
+
 	void set_seamless(bool p_seamless);
 	bool get_seamless();
 
-	void set_as_normalmap(bool p_as_normalmap);
-	bool is_normalmap();
+	void set_as_normal_map(bool p_as_normal_map);
+	bool is_normal_map();
 
 	void set_bump_strength(float p_bump_strength);
 	float get_bump_strength();
 
-	int get_width() const;
-	int get_height() const;
+	int get_width() const override;
+	int get_height() const override;
 
-	virtual void set_flags(uint32_t p_flags);
-	virtual uint32_t get_flags() const;
+	virtual RID get_rid() const override;
+	virtual bool has_alpha() const override { return false; }
 
-	virtual RID get_rid() const { return texture; }
-	virtual bool has_alpha() const { return false; }
-
-	virtual Ref<Image> get_data() const;
+	virtual Ref<Image> get_image() const override;
 
 	NoiseTexture();
 	virtual ~NoiseTexture();

@@ -4,7 +4,7 @@
  *
  *   AFM support for Type 1 fonts (specification).
  *
- * Copyright (C) 1996-2019 by
+ * Copyright (C) 1996-2020 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -19,9 +19,8 @@
 #ifndef T1AFM_H_
 #define T1AFM_H_
 
-#include <ft2build.h>
 #include "t1objs.h"
-#include FT_INTERNAL_TYPE1_TYPES_H
+#include <freetype/internal/t1types.h>
 
 FT_BEGIN_HEADER
 

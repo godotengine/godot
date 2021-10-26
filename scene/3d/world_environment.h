@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,17 +31,18 @@
 #ifndef SCENARIO_FX_H
 #define SCENARIO_FX_H
 
-#include "scene/3d/spatial.h"
-
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
+#include "scene/main/node.h"
+#include "scene/resources/camera_effects.h"
+#include "scene/resources/environment.h"
 
 class WorldEnvironment : public Node {
-
 	GDCLASS(WorldEnvironment, Node);
 
 	Ref<Environment> environment;
+	Ref<CameraEffects> camera_effects;
+
+	void _update_current_environment();
+	void _update_current_camera_effects();
 
 protected:
 	void _notification(int p_what);
@@ -51,7 +52,10 @@ public:
 	void set_environment(const Ref<Environment> &p_environment);
 	Ref<Environment> get_environment() const;
 
-	String get_configuration_warning() const;
+	void set_camera_effects(const Ref<CameraEffects> &p_camera_effects);
+	Ref<CameraEffects> get_camera_effects() const;
+
+	TypedArray<String> get_configuration_warnings() const override;
 
 	WorldEnvironment();
 };

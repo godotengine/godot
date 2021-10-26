@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -39,20 +39,33 @@ class EditorImportPlugin : public ResourceImporter {
 protected:
 	static void _bind_methods();
 
+	GDVIRTUAL0RC(String, _get_importer_name)
+	GDVIRTUAL0RC(String, _get_visible_name)
+	GDVIRTUAL0RC(int, _get_preset_count)
+	GDVIRTUAL1RC(String, _get_preset_name, int)
+	GDVIRTUAL0RC(Vector<String>, _get_recognized_extensions)
+	GDVIRTUAL1RC(Array, _get_import_options, int)
+	GDVIRTUAL0RC(String, _get_save_extension)
+	GDVIRTUAL0RC(String, _get_resource_type)
+	GDVIRTUAL0RC(float, _get_priority)
+	GDVIRTUAL0RC(int, _get_import_order)
+	GDVIRTUAL2RC(bool, _get_option_visibility, StringName, Dictionary)
+	GDVIRTUAL5RC(int, _import, String, String, Dictionary, Array, Array)
+
 public:
 	EditorImportPlugin();
-	virtual String get_importer_name() const;
-	virtual String get_visible_name() const;
-	virtual void get_recognized_extensions(List<String> *p_extensions) const;
-	virtual String get_preset_name(int p_idx) const;
-	virtual int get_preset_count() const;
-	virtual String get_save_extension() const;
-	virtual String get_resource_type() const;
-	virtual float get_priority() const;
-	virtual int get_import_order() const;
-	virtual void get_import_options(List<ImportOption> *r_options, int p_preset) const;
-	virtual bool get_option_visibility(const String &p_option, const Map<StringName, Variant> &p_options) const;
-	virtual Error import(const String &p_source_file, const String &p_save_path, const Map<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata = NULL);
+	virtual String get_importer_name() const override;
+	virtual String get_visible_name() const override;
+	virtual void get_recognized_extensions(List<String> *p_extensions) const override;
+	virtual String get_preset_name(int p_idx) const override;
+	virtual int get_preset_count() const override;
+	virtual String get_save_extension() const override;
+	virtual String get_resource_type() const override;
+	virtual float get_priority() const override;
+	virtual int get_import_order() const override;
+	virtual void get_import_options(List<ImportOption> *r_options, int p_preset) const override;
+	virtual bool get_option_visibility(const String &p_option, const Map<StringName, Variant> &p_options) const override;
+	virtual Error import(const String &p_source_file, const String &p_save_path, const Map<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata = nullptr) override;
 };
 
 #endif //EDITOR_IMPORT_PLUGIN_H

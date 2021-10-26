@@ -1,22 +1,16 @@
-using System;
 using System.Runtime.CompilerServices;
 using Godot;
-using Godot.Collections;
+using GodotTools.IdeMessaging.Requests;
 
 namespace GodotTools.Internals
 {
     public static class Internal
     {
         public const string CSharpLanguageType = "CSharpScript";
-        public const string CSharpLanguageExtension = "cs";
+        public const string CSharpLanguageExtension = ".cs";
 
-        public static float EditorScale => internal_EditorScale();
-
-        public static object GlobalDef(string setting, object defaultValue, bool restartIfChanged = false) =>
-            internal_GlobalDef(setting, defaultValue, restartIfChanged);
-
-        public static object EditorDef(string setting, object defaultValue, bool restartIfChanged = false) =>
-            internal_EditorDef(setting, defaultValue, restartIfChanged);
+        public static string UpdateApiAssembliesFromPrebuilt(string config) =>
+            internal_UpdateApiAssembliesFromPrebuilt(config);
 
         public static string FullTemplatesDir =>
             internal_FullTemplatesDir();
@@ -24,14 +18,6 @@ namespace GodotTools.Internals
         public static string SimplifyGodotPath(this string path) => internal_SimplifyGodotPath(path);
 
         public static bool IsOsxAppBundleInstalled(string bundleId) => internal_IsOsxAppBundleInstalled(bundleId);
-
-        public static bool MetadataIsApiAssemblyInvalidated(ApiAssemblyType apiType) =>
-            internal_MetadataIsApiAssemblyInvalidated(apiType);
-
-        public static void MetadataSetApiAssemblyInvalidated(ApiAssemblyType apiType, bool invalidated) =>
-            internal_MetadataSetApiAssemblyInvalidated(apiType, invalidated);
-
-        public static bool IsMessageQueueFlushing() => internal_IsMessageQueueFlushing();
 
         public static bool GodotIs32Bits() => internal_GodotIs32Bits();
 
@@ -47,28 +33,28 @@ namespace GodotTools.Internals
 
         public static void ReloadAssemblies(bool softReload) => internal_ReloadAssemblies(softReload);
 
-        public static void ScriptEditorDebuggerReloadScripts() => internal_ScriptEditorDebuggerReloadScripts();
+        public static void EditorDebuggerNodeReloadScripts() => internal_EditorDebuggerNodeReloadScripts();
 
         public static bool ScriptEditorEdit(Resource resource, int line, int col, bool grabFocus = true) =>
             internal_ScriptEditorEdit(resource, line, col, grabFocus);
 
         public static void EditorNodeShowScriptScreen() => internal_EditorNodeShowScriptScreen();
 
-        public static Dictionary<string, object> GetScriptsMetadataOrNothing() =>
-            internal_GetScriptsMetadataOrNothing(typeof(Dictionary<string, object>));
-
         public static string MonoWindowsInstallRoot => internal_MonoWindowsInstallRoot();
 
-        // Internal Calls
+        public static void EditorRunPlay() => internal_EditorRunPlay();
+
+        public static void EditorRunStop() => internal_EditorRunStop();
+
+        public static void ScriptEditorDebugger_ReloadScripts() => internal_ScriptEditorDebugger_ReloadScripts();
+
+        public static string[] CodeCompletionRequest(CodeCompletionRequest.CompletionKind kind, string scriptFile) =>
+            internal_CodeCompletionRequest((int)kind, scriptFile);
+
+        #region Internal
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern float internal_EditorScale();
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern object internal_GlobalDef(string setting, object defaultValue, bool restartIfChanged);
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern object internal_EditorDef(string setting, object defaultValue, bool restartIfChanged);
+        private static extern string internal_UpdateApiAssembliesFromPrebuilt(string config);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
         private static extern string internal_FullTemplatesDir();
@@ -78,15 +64,6 @@ namespace GodotTools.Internals
 
         [MethodImpl(MethodImplOptions.InternalCall)]
         private static extern bool internal_IsOsxAppBundleInstalled(string bundleId);
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern bool internal_MetadataIsApiAssemblyInvalidated(ApiAssemblyType apiType);
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern void internal_MetadataSetApiAssemblyInvalidated(ApiAssemblyType apiType, bool invalidated);
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern bool internal_IsMessageQueueFlushing();
 
         [MethodImpl(MethodImplOptions.InternalCall)]
         private static extern bool internal_GodotIs32Bits();
@@ -110,7 +87,7 @@ namespace GodotTools.Internals
         private static extern void internal_ReloadAssemblies(bool softReload);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern void internal_ScriptEditorDebuggerReloadScripts();
+        private static extern void internal_EditorDebuggerNodeReloadScripts();
 
         [MethodImpl(MethodImplOptions.InternalCall)]
         private static extern bool internal_ScriptEditorEdit(Resource resource, int line, int col, bool grabFocus);
@@ -119,9 +96,20 @@ namespace GodotTools.Internals
         private static extern void internal_EditorNodeShowScriptScreen();
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern Dictionary<string, object> internal_GetScriptsMetadataOrNothing(Type dictType);
+        private static extern string internal_MonoWindowsInstallRoot();
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern string internal_MonoWindowsInstallRoot();
+        private static extern void internal_EditorRunPlay();
+
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        private static extern void internal_EditorRunStop();
+
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        private static extern void internal_ScriptEditorDebugger_ReloadScripts();
+
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        private static extern string[] internal_CodeCompletionRequest(int kind, string scriptFile);
+
+        #endregion
     }
 }

@@ -4,7 +4,7 @@
  *
  *   CFF character mapping table (cmap) support (specification).
  *
- * Copyright (C) 2002-2019 by
+ * Copyright (C) 2002-2020 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -19,7 +19,7 @@
 #ifndef CFFCMAP_H_
 #define CFFCMAP_H_
 
-#include FT_INTERNAL_CFF_OBJECTS_TYPES_H
+#include <freetype/internal/cffotypes.h>
 
 FT_BEGIN_HEADER
 
@@ -43,7 +43,7 @@ FT_BEGIN_HEADER
   } CFF_CMapStdRec;
 
 
-  FT_DECLARE_CMAP_CLASS(cff_cmap_encoding_class_rec)
+  FT_DECLARE_CMAP_CLASS( cff_cmap_encoding_class_rec )
 
 
   /*************************************************************************/
@@ -56,7 +56,7 @@ FT_BEGIN_HEADER
 
   /* unicode (synthetic) cmaps */
 
-  FT_DECLARE_CMAP_CLASS(cff_cmap_unicode_class_rec)
+  FT_DECLARE_CMAP_CLASS( cff_cmap_unicode_class_rec )
 
 
 FT_END_HEADER

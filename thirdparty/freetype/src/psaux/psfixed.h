@@ -72,8 +72,7 @@ FT_BEGIN_HEADER
 #define cf2_fixedFraction( x )                                           \
           ( (x) - cf2_fixedFloor( x ) )
 #define cf2_fracToFixed( x )                                             \
-          ( (x) < 0 ? -( ( -(x) + 0x2000 ) >> 14 )                       \
-                    :  ( (  (x) + 0x2000 ) >> 14 ) )
+          ( ( (x) + 0x2000 - ( (x) < 0 ) ) >> 14 )
 
 
   /* signed numeric types */

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="StandardMaterial3D" inherits="BaseMaterial3D" version="4.0">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+		<link title="Standard Material 3D">https://docs.godotengine.org/en/latest/tutorials/3d/standard_material_3d.html</link>
+	</tutorials>
+</class>

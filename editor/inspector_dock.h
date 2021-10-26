@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -40,14 +40,10 @@
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/control.h"
-#include "scene/gui/label.h"
-#include "scene/gui/popup_menu.h"
-#include "scene/gui/tool_button.h"
 
 class EditorNode;
 
 class InspectorDock : public VBoxContainer {
-
 	GDCLASS(InspectorDock, VBoxContainer);
 
 	enum MenuOptions {
@@ -75,46 +71,55 @@ class InspectorDock : public VBoxContainer {
 
 	Object *current;
 
-	ToolButton *backward_button;
-	ToolButton *forward_button;
+	Button *backward_button;
+	Button *forward_button;
 
 	EditorFileDialog *load_resource_dialog;
 	CreateDialog *new_resource_dialog;
-	ToolButton *resource_new_button;
-	ToolButton *resource_load_button;
+	Button *resource_new_button;
+	Button *resource_load_button;
 	MenuButton *resource_save_button;
+	MenuButton *resource_extra_button;
 	MenuButton *history_menu;
 	LineEdit *search;
 
+	Button *open_docs_button;
 	MenuButton *object_menu;
 	EditorPath *editor_path;
 
 	Button *warning;
 	AcceptDialog *warning_dialog;
 
+	int current_option = -1;
+	ConfirmationDialog *unique_resources_confirmation;
+	Tree *unique_resources_list_tree;
+
 	void _menu_option(int p_option);
+	void _menu_confirm_current();
+	void _menu_option_confirm(int p_option, bool p_confirmed);
 
 	void _new_resource();
 	void _load_resource(const String &p_type = "");
 	void _open_resource_selector() { _load_resource(); }; // just used to call from arg-less signal
 	void _resource_file_selected(String p_file);
-	void _save_resource(bool save_as) const;
-	void _unref_resource() const;
-	void _copy_resource() const;
-	void _paste_resource() const;
+	void _save_resource(bool save_as);
+	void _unref_resource();
+	void _copy_resource();
+	void _paste_resource();
+	void _prepare_resource_extra_popup();
 
 	void _warning_pressed();
-	void _resource_created() const;
-	void _resource_selected(const RES &p_res, const String &p_property = "") const;
+	void _resource_created();
+	void _resource_selected(const RES &p_res, const String &p_property);
 	void _edit_forward();
 	void _edit_back();
 	void _menu_collapseall();
 	void _menu_expandall();
-	void _select_history(int p_idx) const;
+	void _select_history(int p_idx);
 	void _prepare_history();
 
 	void _property_keyed(const String &p_keyed, const Variant &p_value, bool p_advance);
-	void _transform_keyed(Object *sp, const String &p_sub, const Transform &p_key);
+	void _transform_keyed(Object *sp, const String &p_sub, const Transform3D &p_key);
 
 protected:
 	static void _bind_methods();

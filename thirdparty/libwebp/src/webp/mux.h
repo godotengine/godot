@@ -57,7 +57,7 @@ extern "C" {
   WebPMuxGetChunk(mux, "ICCP", &icc_profile);
   // ... (Consume icc_data).
   WebPMuxDelete(mux);
-  free(data);
+  WebPFree(data);
 */
 
 // Note: forward declaring enumerations is not allowed in (strict) C and C++,
@@ -245,7 +245,7 @@ WEBP_EXTERN WebPMuxError WebPMuxPushFrame(
     WebPMux* mux, const WebPMuxFrameInfo* frame, int copy_data);
 
 // Gets the nth frame from the mux object.
-// The content of 'frame->bitstream' is allocated using malloc(), and NOT
+// The content of 'frame->bitstream' is allocated using WebPMalloc(), and NOT
 // owned by the 'mux' object. It MUST be deallocated by the caller by calling
 // WebPDataClear().
 // nth=0 has a special meaning - last position.
@@ -376,10 +376,10 @@ WEBP_EXTERN WebPMuxError WebPMuxNumChunks(const WebPMux* mux,
 // Assembles all chunks in WebP RIFF format and returns in 'assembled_data'.
 // This function also validates the mux object.
 // Note: The content of 'assembled_data' will be ignored and overwritten.
-// Also, the content of 'assembled_data' is allocated using malloc(), and NOT
-// owned by the 'mux' object. It MUST be deallocated by the caller by calling
-// WebPDataClear(). It's always safe to call WebPDataClear() upon return,
-// even in case of error.
+// Also, the content of 'assembled_data' is allocated using WebPMalloc(), and
+// NOT owned by the 'mux' object. It MUST be deallocated by the caller by
+// calling WebPDataClear(). It's always safe to call WebPDataClear() upon
+// return, even in case of error.
 // Parameters:
 //   mux - (in/out) object whose chunks are to be assembled
 //   assembled_data - (out) assembled WebP data

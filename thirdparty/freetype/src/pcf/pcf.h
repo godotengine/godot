@@ -29,9 +29,8 @@ THE SOFTWARE.
 #define PCF_H_
 
 
-#include <ft2build.h>
-#include FT_INTERNAL_DRIVER_H
-#include FT_INTERNAL_STREAM_H
+#include <freetype/internal/ftdrv.h>
+#include <freetype/internal/ftstream.h>
 
 
 FT_BEGIN_HEADER
@@ -99,7 +98,8 @@ FT_BEGIN_HEADER
     FT_Short  ascent;
     FT_Short  descent;
     FT_Short  attributes;
-    FT_ULong  bits;
+
+    FT_ULong  bits;  /* offset into the PCF_BITMAPS table */
 
   } PCF_MetricRec, *PCF_Metric;
 

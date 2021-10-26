@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="NavigationObstacle2D" inherits="Node" version="4.0">
+	<brief_description>
+		2D Obstacle used in navigation for collision avoidance.
+	</brief_description>
+	<description>
+		2D Obstacle used in navigation for collision avoidance. The obstacle needs navigation data to work correctly. [NavigationObstacle2D] is physics safe.
+	</description>
+	<tutorials>
+	</tutorials>
+</class>

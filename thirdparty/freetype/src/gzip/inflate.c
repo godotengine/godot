@@ -174,6 +174,7 @@ int f )
         break;
       }
       z->state->mode = FLAG;
+      /* fall through */
     case FLAG:
       NEEDBYTE
       b = NEXTBYTE;
@@ -191,18 +192,22 @@ int f )
         break;
       }
       z->state->mode = DICT4;
+      /* fall through */
     case DICT4:
       NEEDBYTE
       z->state->sub.check.need = (uLong)NEXTBYTE << 24;
       z->state->mode = DICT3;
+      /* fall through */
     case DICT3:
       NEEDBYTE
       z->state->sub.check.need += (uLong)NEXTBYTE << 16;
       z->state->mode = DICT2;
+      /* fall through */
     case DICT2:
       NEEDBYTE
       z->state->sub.check.need += (uLong)NEXTBYTE << 8;
       z->state->mode = DICT1;
+      /* fall through */
     case DICT1:
       NEEDBYTE
       z->state->sub.check.need += (uLong)NEXTBYTE;
@@ -234,18 +239,22 @@ int f )
         break;
       }
       z->state->mode = CHECK4;
+      /* fall through */
     case CHECK4:
       NEEDBYTE
       z->state->sub.check.need = (uLong)NEXTBYTE << 24;
       z->state->mode = CHECK3;
+      /* fall through */
     case CHECK3:
       NEEDBYTE
       z->state->sub.check.need += (uLong)NEXTBYTE << 16;
       z->state->mode = CHECK2;
+      /* fall through */
     case CHECK2:
       NEEDBYTE
       z->state->sub.check.need += (uLong)NEXTBYTE << 8;
       z->state->mode = CHECK1;
+      /* fall through */
     case CHECK1:
       NEEDBYTE
       z->state->sub.check.need += (uLong)NEXTBYTE;
@@ -259,6 +268,7 @@ int f )
       }
       Tracev((stderr, "inflate: zlib check ok\n"));
       z->state->mode = DONE;
+      /* fall through */
     case DONE:
       return Z_STREAM_END;
     case BAD:

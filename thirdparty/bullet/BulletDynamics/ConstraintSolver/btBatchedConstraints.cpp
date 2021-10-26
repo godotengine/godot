@@ -852,7 +852,7 @@ static void setupSpatialGridBatchesMt(
 		memHelper.addChunk((void**)&constraintRowBatchIds, sizeof(int) * numConstraintRows);
 		size_t scratchSize = memHelper.getSizeToAllocate();
 		// if we need to reallocate
-		if (scratchMemory->capacity() < scratchSize)
+		if (static_cast<size_t>(scratchMemory->capacity()) < scratchSize)
 		{
 			// allocate 6.25% extra to avoid repeated reallocs
 			scratchMemory->reserve(scratchSize + scratchSize / 16);
@@ -889,6 +889,8 @@ static void setupSpatialGridBatchesMt(
 	btVector3 consExtent = findMaxDynamicConstraintExtent(bodyPositions, bodyDynamicFlags, conInfos, numConstraints, bodies.size());
 
 	btVector3 gridExtent = bboxMax - bboxMin;
+
+	gridExtent.setMax(btVector3(btScalar(1), btScalar(1), btScalar(1)));
 
 	btVector3 gridCellSize = consExtent;
 	int gridDim[3];

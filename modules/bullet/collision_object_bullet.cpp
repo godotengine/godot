@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -49,7 +49,7 @@
 
 CollisionObjectBullet::ShapeWrapper::~ShapeWrapper() {}
 
-void CollisionObjectBullet::ShapeWrapper::set_transform(const Transform &p_transform) {
+void CollisionObjectBullet::ShapeWrapper::set_transform(const Transform3D &p_transform) {
 	G_TO_B(p_transform.get_basis().get_scale_abs(), scale);
 	G_TO_B(p_transform, transform);
 	UNSCALE_BT_BASIS(transform);
@@ -60,7 +60,7 @@ void CollisionObjectBullet::ShapeWrapper::set_transform(const btTransform &p_tra
 }
 
 btTransform CollisionObjectBullet::ShapeWrapper::get_adjusted_transform() const {
-	if (shape->get_type() == PhysicsServer::SHAPE_HEIGHTMAP) {
+	if (shape->get_type() == PhysicsServer3D::SHAPE_HEIGHTMAP) {
 		const HeightMapShapeBullet *hm_shape = (const HeightMapShapeBullet *)shape; // should be safe to cast now
 		btTransform adjusted_transform;
 
@@ -80,27 +80,17 @@ btTransform CollisionObjectBullet::ShapeWrapper::get_adjusted_transform() const 
 
 void CollisionObjectBullet::ShapeWrapper::claim_bt_shape(const btVector3 &body_scale) {
 	if (!bt_shape) {
-		if (active)
+		if (active) {
 			bt_shape = shape->create_bt_shape(scale * body_scale);
-		else
+		} else {
 			bt_shape = ShapeBullet::create_shape_empty();
+		}
 	}
 }
 
 CollisionObjectBullet::CollisionObjectBullet(Type p_type) :
 		RIDBullet(),
-		type(p_type),
-		instance_id(0),
-		collisionLayer(0),
-		collisionMask(0),
-		collisionsEnabled(true),
-		m_isStatic(false),
-		ray_pickable(false),
-		bt_collision_object(NULL),
-		body_scale(1., 1., 1.),
-		force_shape_reset(false),
-		space(NULL),
-		isTransformChanged(false) {}
+		type(p_type) {}
 
 CollisionObjectBullet::~CollisionObjectBullet() {
 	// Remove all overlapping, notify is not required since godot take care of it
@@ -147,26 +137,35 @@ void CollisionObjectBullet::setupBulletCollisionObject(btCollisionObject *p_coll
 
 void CollisionObjectBullet::add_collision_exception(const CollisionObjectBullet *p_ignoreCollisionObject) {
 	exceptions.insert(p_ignoreCollisionObject->get_self());
-	if (!bt_collision_object)
+	if (!bt_collision_object) {
 		return;
+	}
 	bt_collision_object->setIgnoreCollisionCheck(p_ignoreCollisionObject->bt_collision_object, true);
-	if (space)
+	if (space) {
 		space->get_broadphase()->getOverlappingPairCache()->cleanProxyFromPairs(bt_collision_object->getBroadphaseHandle(), space->get_dispatcher());
+	}
 }
 
 void CollisionObjectBullet::remove_collision_exception(const CollisionObjectBullet *p_ignoreCollisionObject) {
 	exceptions.erase(p_ignoreCollisionObject->get_self());
+	if (!bt_collision_object) {
+		return;
+	}
 	bt_collision_object->setIgnoreCollisionCheck(p_ignoreCollisionObject->bt_collision_object, false);
-	if (space)
+	if (space) {
 		space->get_broadphase()->getOverlappingPairCache()->cleanProxyFromPairs(bt_collision_object->getBroadphaseHandle(), space->get_dispatcher());
+	}
 }
 
 bool CollisionObjectBullet::has_collision_exception(const CollisionObjectBullet *p_otherCollisionObject) const {
-	return !bt_collision_object->checkCollideWith(p_otherCollisionObject->bt_collision_object);
+	return exceptions.has(p_otherCollisionObject->get_self());
 }
 
 void CollisionObjectBullet::set_collision_enabled(bool p_enabled) {
 	collisionsEnabled = p_enabled;
+	if (!bt_collision_object) {
+		return;
+	}
 	if (collisionsEnabled) {
 		bt_collision_object->setCollisionFlags(bt_collision_object->getCollisionFlags() & (~btCollisionObject::CF_NO_CONTACT_RESPONSE));
 	} else {
@@ -194,8 +193,7 @@ int CollisionObjectBullet::get_godot_object_flags() const {
 	return bt_collision_object->getUserIndex2();
 }
 
-void CollisionObjectBullet::set_transform(const Transform &p_global_transform) {
-
+void CollisionObjectBullet::set_transform(const Transform3D &p_global_transform) {
 	set_body_scale(p_global_transform.basis.get_scale_abs());
 
 	btTransform bt_transform;
@@ -205,8 +203,8 @@ void CollisionObjectBullet::set_transform(const Transform &p_global_transform) {
 	set_transform__bullet(bt_transform);
 }
 
-Transform CollisionObjectBullet::get_transform() const {
-	Transform t;
+Transform3D CollisionObjectBullet::get_transform() const {
+	Transform3D t;
 	B_TO_G(get_transform__bullet(), t);
 	t.basis.scale(body_scale);
 	return t;
@@ -225,11 +223,6 @@ void CollisionObjectBullet::notify_transform_changed() {
 	isTransformChanged = true;
 }
 
-RigidCollisionObjectBullet::RigidCollisionObjectBullet(Type p_type) :
-		CollisionObjectBullet(p_type),
-		mainShape(NULL) {
-}
-
 RigidCollisionObjectBullet::~RigidCollisionObjectBullet() {
 	remove_all_shapes(true, true);
 	if (mainShape && mainShape->isCompound()) {
@@ -237,7 +230,7 @@ RigidCollisionObjectBullet::~RigidCollisionObjectBullet() {
 	}
 }
 
-void RigidCollisionObjectBullet::add_shape(ShapeBullet *p_shape, const Transform &p_transform, bool p_disabled) {
+void RigidCollisionObjectBullet::add_shape(ShapeBullet *p_shape, const Transform3D &p_transform, bool p_disabled) {
 	shapes.push_back(ShapeWrapper(p_shape, p_transform, !p_disabled));
 	p_shape->add_owner(this);
 	reload_shapes();
@@ -266,8 +259,9 @@ btCollisionShape *RigidCollisionObjectBullet::get_bt_shape(int p_index) const {
 int RigidCollisionObjectBullet::find_shape(ShapeBullet *p_shape) const {
 	const int size = shapes.size();
 	for (int i = 0; i < size; ++i) {
-		if (shapes[i].shape == p_shape)
+		if (shapes[i].shape == p_shape) {
 			return i;
+		}
 	}
 	return -1;
 }
@@ -297,11 +291,12 @@ void RigidCollisionObjectBullet::remove_all_shapes(bool p_permanentlyFromThisBod
 		internal_shape_destroy(i, p_permanentlyFromThisBody);
 	}
 	shapes.clear();
-	if (!p_force_not_reload)
+	if (!p_force_not_reload) {
 		reload_shapes();
+	}
 }
 
-void RigidCollisionObjectBullet::set_shape_transform(int p_index, const Transform &p_transform) {
+void RigidCollisionObjectBullet::set_shape_transform(int p_index, const Transform3D &p_transform) {
 	ERR_FAIL_INDEX(p_index, get_shape_count());
 
 	shapes.write[p_index].set_transform(p_transform);
@@ -312,15 +307,16 @@ const btTransform &RigidCollisionObjectBullet::get_bt_shape_transform(int p_inde
 	return shapes[p_index].transform;
 }
 
-Transform RigidCollisionObjectBullet::get_shape_transform(int p_index) const {
-	Transform trs;
+Transform3D RigidCollisionObjectBullet::get_shape_transform(int p_index) const {
+	Transform3D trs;
 	B_TO_G(shapes[p_index].transform, trs);
 	return trs;
 }
 
 void RigidCollisionObjectBullet::set_shape_disabled(int p_index, bool p_disabled) {
-	if (shapes[p_index].active != p_disabled)
+	if (shapes[p_index].active != p_disabled) {
 		return;
+	}
 	shapes.write[p_index].active = !p_disabled;
 	shape_changed(p_index);
 }
@@ -332,20 +328,19 @@ bool RigidCollisionObjectBullet::is_shape_disabled(int p_index) {
 void RigidCollisionObjectBullet::shape_changed(int p_shape_index) {
 	ShapeWrapper &shp = shapes.write[p_shape_index];
 	if (shp.bt_shape == mainShape) {
-		mainShape = NULL;
+		mainShape = nullptr;
 	}
 	bulletdelete(shp.bt_shape);
 	reload_shapes();
 }
 
 void RigidCollisionObjectBullet::reload_shapes() {
-
 	if (mainShape && mainShape->isCompound()) {
 		// Destroy compound
 		bulletdelete(mainShape);
 	}
 
-	mainShape = NULL;
+	mainShape = nullptr;
 
 	ShapeWrapper *shpWrapper;
 	const int shape_count = shapes.size();
@@ -398,7 +393,7 @@ void RigidCollisionObjectBullet::internal_shape_destroy(int p_index, bool p_perm
 	ShapeWrapper &shp = shapes.write[p_index];
 	shp.shape->remove_owner(this, p_permanentlyFromThisBody);
 	if (shp.bt_shape == mainShape) {
-		mainShape = NULL;
+		mainShape = nullptr;
 	}
 	bulletdelete(shp.bt_shape);
 }

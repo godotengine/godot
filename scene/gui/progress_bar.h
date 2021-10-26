@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,10 +34,9 @@
 #include "scene/gui/range.h"
 
 class ProgressBar : public Range {
-
 	GDCLASS(ProgressBar, Range);
 
-	bool percent_visible;
+	bool percent_visible = true;
 
 protected:
 	void _notification(int p_what);
@@ -47,7 +46,7 @@ public:
 	void set_percent_visible(bool p_visible);
 	bool is_percent_visible() const;
 
-	Size2 get_minimum_size() const;
+	Size2 get_minimum_size() const override;
 	ProgressBar();
 };
 

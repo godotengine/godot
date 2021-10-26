@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="PathFollow2D" inherits="Node2D" category="Core" version="3.2">
+<class name="PathFollow2D" inherits="Node2D" version="4.0">
 	<brief_description>
 		Point sampler for a [Path2D].
 	</brief_description>
@@ -9,8 +9,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="cubic_interp" type="bool" setter="set_cubic_interpolation" getter="get_cubic_interpolation" default="true">
 			If [code]true[/code], the position between two cached points is interpolated cubically, and linearly otherwise.
@@ -29,8 +27,8 @@
 		<member name="offset" type="float" setter="set_offset" getter="get_offset" default="0.0">
 			The distance along the path in pixels.
 		</member>
-		<member name="rotate" type="bool" setter="set_rotate" getter="is_rotating" default="true">
-			If [code]true[/code], this node rotates to follow the path, making its descendants rotate.
+		<member name="rotates" type="bool" setter="set_rotates" getter="is_rotating" default="true">
+			If [code]true[/code], this node rotates to follow the path, with the +X direction facing forward on the path.
 		</member>
 		<member name="unit_offset" type="float" setter="set_unit_offset" getter="get_unit_offset" default="0.0">
 			The distance along the path as a number in the range 0.0 (for the first vertex) to 1.0 (for the last). This is just another way of expressing the offset within the path, as the offset supplied is multiplied internally by the path's length.
@@ -39,6 +37,4 @@
 			The node's offset perpendicular to the curve.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,11 +34,10 @@
 #include "core/io/file_access_network.h"
 #include "core/io/packet_peer.h"
 #include "core/io/tcp_server.h"
-#include "core/object.h"
+#include "core/object/class_db.h"
 #include "core/os/thread.h"
 
 class EditorFileServer : public Object {
-
 	GDCLASS(EditorFileServer, Object);
 
 	enum Command {
@@ -48,22 +47,21 @@ class EditorFileServer : public Object {
 	};
 
 	struct ClientData {
-
 		Thread *thread;
 		Ref<StreamPeerTCP> connection;
 		Map<int, FileAccess *> files;
-		EditorFileServer *efs;
-		bool quit;
+		EditorFileServer *efs = nullptr;
+		bool quit = false;
 	};
 
-	Ref<TCP_Server> server;
+	Ref<TCPServer> server;
 	Set<Thread *> to_wait;
 
 	static void _close_client(ClientData *cd);
 	static void _subthread_start(void *s);
 
-	Mutex *wait_mutex;
-	Thread *thread;
+	Mutex wait_mutex;
+	Thread thread;
 	static void _thread_start(void *);
 	bool quit;
 	Command cmd;

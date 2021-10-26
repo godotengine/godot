@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,9 +32,9 @@
 
 #if defined(UNIX_ENABLED) || defined(LIBC_FILEIO_ENABLED)
 
-#include "core/list.h"
 #include "core/os/memory.h"
-#include "core/print_string.h"
+#include "core/string/print_string.h"
+#include "core/templates/list.h"
 
 #include <errno.h>
 #include <stdio.h>
@@ -50,12 +50,10 @@
 #endif
 
 DirAccess *DirAccessUnix::create_fs() {
-
 	return memnew(DirAccessUnix);
 }
 
 Error DirAccessUnix::list_dir_begin() {
-
 	list_dir_end(); //close any previous dir opening!
 
 	//char real_current_dir_name[2048]; //is this enough?!
@@ -63,18 +61,19 @@ Error DirAccessUnix::list_dir_begin() {
 	//chdir(current_path.utf8().get_data());
 	dir_stream = opendir(current_dir.utf8().get_data());
 	//chdir(real_current_dir_name);
-	if (!dir_stream)
+	if (!dir_stream) {
 		return ERR_CANT_OPEN; //error!
+	}
 
 	return OK;
 }
 
 bool DirAccessUnix::file_exists(String p_file) {
-
 	GLOBAL_LOCK_FUNCTION
 
-	if (p_file.is_rel_path())
+	if (p_file.is_relative_path()) {
 		p_file = current_dir.plus_file(p_file);
+	}
 
 	p_file = fix_path(p_file);
 
@@ -89,11 +88,11 @@ bool DirAccessUnix::file_exists(String p_file) {
 }
 
 bool DirAccessUnix::dir_exists(String p_dir) {
-
 	GLOBAL_LOCK_FUNCTION
 
-	if (p_dir.is_rel_path())
+	if (p_dir.is_relative_path()) {
 		p_dir = get_current_dir().plus_file(p_dir);
+	}
 
 	p_dir = fix_path(p_dir);
 
@@ -103,10 +102,32 @@ bool DirAccessUnix::dir_exists(String p_dir) {
 	return (success && S_ISDIR(flags.st_mode));
 }
 
-uint64_t DirAccessUnix::get_modified_time(String p_file) {
+bool DirAccessUnix::is_readable(String p_dir) {
+	GLOBAL_LOCK_FUNCTION
 
-	if (p_file.is_rel_path())
+	if (p_dir.is_relative_path()) {
+		p_dir = get_current_dir().plus_file(p_dir);
+	}
+
+	p_dir = fix_path(p_dir);
+	return (access(p_dir.utf8().get_data(), R_OK) == 0);
+}
+
+bool DirAccessUnix::is_writable(String p_dir) {
+	GLOBAL_LOCK_FUNCTION
+
+	if (p_dir.is_relative_path()) {
+		p_dir = get_current_dir().plus_file(p_dir);
+	}
+
+	p_dir = fix_path(p_dir);
+	return (access(p_dir.utf8().get_data(), W_OK) == 0);
+}
+
+uint64_t DirAccessUnix::get_modified_time(String p_file) {
+	if (p_file.is_relative_path()) {
 		p_file = current_dir.plus_file(p_file);
+	}
 
 	p_file = fix_path(p_file);
 
@@ -116,69 +137,61 @@ uint64_t DirAccessUnix::get_modified_time(String p_file) {
 	if (success) {
 		return flags.st_mtime;
 	} else {
-
 		ERR_FAIL_V(0);
 	};
 	return 0;
 };
 
 String DirAccessUnix::get_next() {
-
-	if (!dir_stream)
+	if (!dir_stream) {
 		return "";
-	dirent *entry;
+	}
 
-	entry = readdir(dir_stream);
+	dirent *entry = readdir(dir_stream);
 
-	if (entry == NULL) {
-
+	if (entry == nullptr) {
 		list_dir_end();
 		return "";
 	}
 
-	//typedef struct stat Stat;
-	struct stat flags;
-
 	String fname = fix_unicode_name(entry->d_name);
 
-	String f = current_dir.plus_file(fname);
+	// Look at d_type to determine if the entry is a directory, unless
+	// its type is unknown (the file system does not support it) or if
+	// the type is a link, in that case we want to resolve the link to
+	// known if it points to a directory. stat() will resolve the link
+	// for us.
+	if (entry->d_type == DT_UNKNOWN || entry->d_type == DT_LNK) {
+		String f = current_dir.plus_file(fname);
 
-	if (stat(f.utf8().get_data(), &flags) == 0) {
-
-		if (S_ISDIR(flags.st_mode)) {
-
-			_cisdir = true;
-
+		struct stat flags;
+		if (stat(f.utf8().get_data(), &flags) == 0) {
+			_cisdir = S_ISDIR(flags.st_mode);
 		} else {
-
 			_cisdir = false;
 		}
-
 	} else {
-
-		_cisdir = false;
+		_cisdir = (entry->d_type == DT_DIR);
 	}
 
-	_cishidden = (fname != "." && fname != ".." && fname.begins_with("."));
+	_cishidden = is_hidden(fname);
 
 	return fname;
 }
 
 bool DirAccessUnix::current_is_dir() const {
-
 	return _cisdir;
 }
 
 bool DirAccessUnix::current_is_hidden() const {
-
 	return _cishidden;
 }
 
 void DirAccessUnix::list_dir_end() {
-
-	if (dir_stream)
+	if (dir_stream) {
 		closedir(dir_stream);
-	dir_stream = 0;
+	}
+	dir_stream = nullptr;
 	_cisdir = false;
 }
 
@@ -203,7 +216,6 @@ static bool _filter_drive(struct mntent *mnt) {
 #endif
 
 static void _get_drives(List<String> *list) {
-
 #if defined(HAVE_MNTENT) && defined(X11_ENABLED)
 	// Check /etc/mtab for the list of mounted partitions
 	FILE *mtab = setmntent("/etc/mtab", "r");
@@ -212,10 +224,11 @@ static void _get_drives(List<String> *list) {
 		char strings[4096];
 
 		while (getmntent_r(mtab, &mnt, strings, sizeof(strings))) {
-			if (mnt.mnt_dir != NULL && _filter_drive(&mnt)) {
+			if (mnt.mnt_dir != nullptr && _filter_drive(&mnt)) {
 				// Avoid duplicates
-				if (!list->find(mnt.mnt_dir)) {
-					list->push_back(mnt.mnt_dir);
+				String name = String::utf8(mnt.mnt_dir);
+				if (!list->find(name)) {
+					list->push_back(name);
 				}
 			}
 		}
@@ -228,8 +241,9 @@ static void _get_drives(List<String> *list) {
 	const char *home = getenv("HOME");
 	if (home) {
 		// Only add if it's not a duplicate
-		if (!list->find(home)) {
-			list->push_back(home);
+		String home_name = String::utf8(home);
+		if (!list->find(home_name)) {
+			list->push_back(home_name);
 		}
 
 		// Check $HOME/.config/gtk-3.0/bookmarks
@@ -242,7 +256,7 @@ static void _get_drives(List<String> *list) {
 				// Parse only file:// links
 				if (strncmp(string, "file://", 7) == 0) {
 					// Strip any unwanted edges on the strings and push_back if it's not a duplicate
-					String fpath = String(string + 7).strip_edges().split_spaces()[0].percent_decode();
+					String fpath = String::utf8(string + 7).strip_edges().split_spaces()[0].uri_decode();
 					if (!list->find(fpath)) {
 						list->push_back(fpath);
 					}
@@ -257,7 +271,6 @@ static void _get_drives(List<String> *list) {
 }
 
 int DirAccessUnix::get_drive_count() {
-
 	List<String> list;
 	_get_drives(&list);
 
@@ -265,7 +278,6 @@ int DirAccessUnix::get_drive_count() {
 }
 
 String DirAccessUnix::get_drive(int p_drive) {
-
 	List<String> list;
 	_get_drives(&list);
 
@@ -274,12 +286,16 @@ String DirAccessUnix::get_drive(int p_drive) {
 	return list[p_drive];
 }
 
-Error DirAccessUnix::make_dir(String p_dir) {
+bool DirAccessUnix::drives_are_shortcuts() {
+	return true;
+}
 
+Error DirAccessUnix::make_dir(String p_dir) {
 	GLOBAL_LOCK_FUNCTION
 
-	if (p_dir.is_rel_path())
+	if (p_dir.is_relative_path()) {
 		p_dir = get_current_dir().plus_file(p_dir);
+	}
 
 	p_dir = fix_path(p_dir);
 
@@ -298,7 +314,6 @@ Error DirAccessUnix::make_dir(String p_dir) {
 }
 
 Error DirAccessUnix::change_dir(String p_dir) {
-
 	GLOBAL_LOCK_FUNCTION
 
 	p_dir = fix_path(p_dir);
@@ -306,13 +321,14 @@ Error DirAccessUnix::change_dir(String p_dir) {
 	// prev_dir is the directory we are changing out of
 	String prev_dir;
 	char real_current_dir_name[2048];
-	ERR_FAIL_COND_V(getcwd(real_current_dir_name, 2048) == NULL, ERR_BUG);
-	if (prev_dir.parse_utf8(real_current_dir_name))
+	ERR_FAIL_COND_V(getcwd(real_current_dir_name, 2048) == nullptr, ERR_BUG);
+	if (prev_dir.parse_utf8(real_current_dir_name)) {
 		prev_dir = real_current_dir_name; //no utf8, maybe latin?
+	}
 
 	// try_dir is the directory we are trying to change into
 	String try_dir = "";
-	if (p_dir.is_rel_path()) {
+	if (p_dir.is_relative_path()) {
 		String next_dir = current_dir.plus_file(p_dir);
 		next_dir = next_dir.simplify_path();
 		try_dir = next_dir;
@@ -327,7 +343,7 @@ Error DirAccessUnix::change_dir(String p_dir) {
 
 	String base = _get_root_path();
 	if (base != String() && !try_dir.begins_with(base)) {
-		ERR_FAIL_COND_V(getcwd(real_current_dir_name, 2048) == NULL, ERR_BUG);
+		ERR_FAIL_COND_V(getcwd(real_current_dir_name, 2048) == nullptr, ERR_BUG);
 		String new_dir;
 		new_dir.parse_utf8(real_current_dir_name);
 
@@ -342,29 +358,29 @@ Error DirAccessUnix::change_dir(String p_dir) {
 	return OK;
 }
 
-String DirAccessUnix::get_current_dir() {
-
+String DirAccessUnix::get_current_dir(bool p_include_drive) {
 	String base = _get_root_path();
 	if (base != "") {
-
 		String bd = current_dir.replace_first(base, "");
-		if (bd.begins_with("/"))
+		if (bd.begins_with("/")) {
 			return _get_root_string() + bd.substr(1, bd.length());
-		else
+		} else {
 			return _get_root_string() + bd;
+		}
 	}
 	return current_dir;
 }
 
 Error DirAccessUnix::rename(String p_path, String p_new_path) {
-
-	if (p_path.is_rel_path())
+	if (p_path.is_relative_path()) {
 		p_path = get_current_dir().plus_file(p_path);
+	}
 
 	p_path = fix_path(p_path);
 
-	if (p_new_path.is_rel_path())
+	if (p_new_path.is_relative_path()) {
 		p_new_path = get_current_dir().plus_file(p_new_path);
+	}
 
 	p_new_path = fix_path(p_new_path);
 
@@ -372,32 +388,79 @@ Error DirAccessUnix::rename(String p_path, String p_new_path) {
 }
 
 Error DirAccessUnix::remove(String p_path) {
-
-	if (p_path.is_rel_path())
+	if (p_path.is_relative_path()) {
 		p_path = get_current_dir().plus_file(p_path);
+	}
 
 	p_path = fix_path(p_path);
 
 	struct stat flags;
-	if ((stat(p_path.utf8().get_data(), &flags) != 0))
+	if ((stat(p_path.utf8().get_data(), &flags) != 0)) {
 		return FAILED;
+	}
 
-	if (S_ISDIR(flags.st_mode))
+	if (S_ISDIR(flags.st_mode)) {
 		return ::rmdir(p_path.utf8().get_data()) == 0 ? OK : FAILED;
-	else
+	} else {
 		return ::unlink(p_path.utf8().get_data()) == 0 ? OK : FAILED;
+	}
 }
 
-size_t DirAccessUnix::get_space_left() {
+bool DirAccessUnix::is_link(String p_file) {
+	if (p_file.is_relative_path()) {
+		p_file = get_current_dir().plus_file(p_file);
+	}
 
+	p_file = fix_path(p_file);
+
+	struct stat flags;
+	if ((lstat(p_file.utf8().get_data(), &flags) != 0)) {
+		return FAILED;
+	}
+
+	return S_ISLNK(flags.st_mode);
+}
+
+String DirAccessUnix::read_link(String p_file) {
+	if (p_file.is_relative_path()) {
+		p_file = get_current_dir().plus_file(p_file);
+	}
+
+	p_file = fix_path(p_file);
+
+	char buf[256];
+	memset(buf, 0, 256);
+	ssize_t len = readlink(p_file.utf8().get_data(), buf, sizeof(buf));
+	String link;
+	if (len > 0) {
+		link.parse_utf8(buf, len);
+	}
+	return link;
+}
+
+Error DirAccessUnix::create_link(String p_source, String p_target) {
+	if (p_target.is_relative_path()) {
+		p_target = get_current_dir().plus_file(p_target);
+	}
+
+	p_source = fix_path(p_source);
+	p_target = fix_path(p_target);
+
+	if (symlink(p_source.utf8().get_data(), p_target.utf8().get_data()) == 0) {
+		return OK;
+	} else {
+		return FAILED;
+	}
+}
+
+uint64_t DirAccessUnix::get_space_left() {
 #ifndef NO_STATVFS
 	struct statvfs vfs;
 	if (statvfs(current_dir.utf8().get_data(), &vfs) != 0) {
-
 		return 0;
 	};
 
-	return vfs.f_bfree * vfs.f_bsize;
+	return (uint64_t)vfs.f_bavail * (uint64_t)vfs.f_frsize;
 #else
 	// FIXME: Implement this.
 	return 0;
@@ -408,24 +471,27 @@ String DirAccessUnix::get_filesystem_type() const {
 	return ""; //TODO this should be implemented
 }
 
-DirAccessUnix::DirAccessUnix() {
+bool DirAccessUnix::is_hidden(const String &p_name) {
+	return p_name != "." && p_name != ".." && p_name.begins_with(".");
+}
 
-	dir_stream = 0;
+DirAccessUnix::DirAccessUnix() {
+	dir_stream = nullptr;
 	_cisdir = false;
 
 	/* determine drive count */
 
 	// set current directory to an absolute path of the current directory
 	char real_current_dir_name[2048];
-	ERR_FAIL_COND(getcwd(real_current_dir_name, 2048) == NULL);
-	if (current_dir.parse_utf8(real_current_dir_name))
+	ERR_FAIL_COND(getcwd(real_current_dir_name, 2048) == nullptr);
+	if (current_dir.parse_utf8(real_current_dir_name)) {
 		current_dir = real_current_dir_name;
+	}
 
 	change_dir(current_dir);
 }
 
 DirAccessUnix::~DirAccessUnix() {
-
 	list_dir_end();
 }
 

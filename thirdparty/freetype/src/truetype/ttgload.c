@@ -4,7 +4,7 @@
  *
  *   TrueType Glyph Loader (body).
  *
- * Copyright (C) 1996-2019 by
+ * Copyright (C) 1996-2020 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -17,15 +17,15 @@
 
 
 #include <ft2build.h>
-#include FT_INTERNAL_DEBUG_H
+#include <freetype/internal/ftdebug.h>
 #include FT_CONFIG_CONFIG_H
-#include FT_INTERNAL_CALC_H
-#include FT_INTERNAL_STREAM_H
-#include FT_INTERNAL_SFNT_H
-#include FT_TRUETYPE_TAGS_H
-#include FT_OUTLINE_H
-#include FT_DRIVER_H
-#include FT_LIST_H
+#include <freetype/internal/ftcalc.h>
+#include <freetype/internal/ftstream.h>
+#include <freetype/internal/sfnt.h>
+#include <freetype/tttags.h>
+#include <freetype/ftoutln.h>
+#include <freetype/ftdriver.h>
+#include <freetype/ftlist.h>
 
 #include "ttgload.h"
 #include "ttpload.h"
@@ -60,7 +60,7 @@
 #define SAME_X          0x10
 #define Y_POSITIVE      0x20  /* two meanings depending on Y_SHORT_VECTOR */
 #define SAME_Y          0x20
-#define OVERLAP_SIMPLE  0x40  /* we ignore this value                     */
+#define OVERLAP_SIMPLE  0x40  /* retained as FT_OUTLINE_OVERLAP           */
 
 
   /**************************************************************************
@@ -77,9 +77,18 @@
 #define WE_HAVE_A_2X2              0x0080
 #define WE_HAVE_INSTR              0x0100
 #define USE_MY_METRICS             0x0200
-#define OVERLAP_COMPOUND           0x0400  /* we ignore this value */
+#define OVERLAP_COMPOUND           0x0400  /* retained as FT_OUTLINE_OVERLAP */
 #define SCALED_COMPONENT_OFFSET    0x0800
 #define UNSCALED_COMPONENT_OFFSET  0x1000
+
+
+#ifdef TT_CONFIG_OPTION_GX_VAR_SUPPORT
+#define IS_DEFAULT_INSTANCE( _face )             \
+          ( !( FT_IS_NAMED_INSTANCE( _face ) ||  \
+               FT_IS_VARIATION( _face )      ) )
+#else
+#define IS_DEFAULT_INSTANCE( _face )  1
+#endif
 
 
   /**************************************************************************
@@ -127,6 +136,11 @@
       *ah  = (FT_UShort)FT_ABS( face->horizontal.Ascender -
                                 face->horizontal.Descender );
     }
+
+#ifdef FT_DEBUG_LEVEL_TRACE
+    if ( !face->vertical_info )
+      FT_TRACE5(( "  [vertical metrics missing, computing values]\n" ));
+#endif
 
     FT_TRACE5(( "  advance height (font units): %d\n", *ah ));
     FT_TRACE5(( "  top side bearing (font units): %d\n", *tsb ));
@@ -324,9 +338,9 @@
     loader->bbox.yMax = FT_NEXT_SHORT( p );
 
     FT_TRACE5(( "  # of contours: %d\n", loader->n_contours ));
-    FT_TRACE5(( "  xMin: %4d  xMax: %4d\n", loader->bbox.xMin,
+    FT_TRACE5(( "  xMin: %4ld  xMax: %4ld\n", loader->bbox.xMin,
                                             loader->bbox.xMax ));
-    FT_TRACE5(( "  yMin: %4d  yMax: %4d\n", loader->bbox.yMin,
+    FT_TRACE5(( "  yMin: %4ld  yMax: %4ld\n", loader->bbox.yMin,
                                             loader->bbox.yMax ));
     loader->cursor = p;
 
@@ -479,6 +493,10 @@
           *flag++ = c;
       }
     }
+
+    /* retain the overlap flag */
+    if ( n_points && outline->tags[0] & OVERLAP_SIMPLE )
+      gloader->base.outline.flags |= FT_OUTLINE_OVERLAP;
 
     /* reading the X coordinates */
 
@@ -927,6 +945,11 @@
     FT_Outline*     outline;
     FT_Int          n_points;
 
+#ifdef TT_CONFIG_OPTION_GX_VAR_SUPPORT
+    FT_Memory   memory    = loader->face->root.memory;
+    FT_Vector*  unrounded = NULL;
+#endif
+
 
     outline  = &gloader->current.outline;
     n_points = outline->n_points;
@@ -947,26 +970,32 @@
 
 #ifdef TT_CONFIG_OPTION_GX_VAR_SUPPORT
 
-    if ( FT_IS_NAMED_INSTANCE( FT_FACE( loader->face ) ) ||
-         FT_IS_VARIATION( FT_FACE( loader->face ) )      )
+    if ( !IS_DEFAULT_INSTANCE( FT_FACE( loader->face ) ) )
     {
+      if ( FT_NEW_ARRAY( unrounded, n_points ) )
+        goto Exit;
+
       /* Deltas apply to the unscaled data. */
       error = TT_Vary_Apply_Glyph_Deltas( loader->face,
                                           loader->glyph_index,
                                           outline,
+                                          unrounded,
                                           (FT_UInt)n_points );
 
       /* recalculate linear horizontal and vertical advances */
       /* if we don't have HVAR and VVAR, respectively        */
+
+      /* XXX: change all FreeType modules to store `linear' and `vadvance' */
+      /*      in 26.6 format before the `base' module scales them to 16.16 */
       if ( !( loader->face->variation_support & TT_FACE_FLAG_VAR_HADVANCE ) )
-        loader->linear = outline->points[n_points - 3].x -
-                         outline->points[n_points - 4].x;
+        loader->linear = FT_PIX_ROUND( unrounded[n_points - 3].x -
+                                       unrounded[n_points - 4].x ) / 64;
       if ( !( loader->face->variation_support & TT_FACE_FLAG_VAR_VADVANCE ) )
-        loader->vadvance = outline->points[n_points - 1].x -
-                           outline->points[n_points - 2].x;
+        loader->vadvance = FT_PIX_ROUND( unrounded[n_points - 1].x -
+                                         unrounded[n_points - 2].x ) / 64;
 
       if ( error )
-        return error;
+        goto Exit;
     }
 
 #endif /* TT_CONFIG_OPTION_GX_VAR_SUPPORT */
@@ -1021,10 +1050,23 @@
           /* compensate for any scaling by de/emboldening; */
           /* the amount was determined via experimentation */
           if ( x_scale_factor != 1000 && ppem > 11 )
+          {
+#ifdef TT_CONFIG_OPTION_GX_VAR_SUPPORT
+            FT_Vector*  orig_points = outline->points;
+
+
+            if ( !IS_DEFAULT_INSTANCE( FT_FACE( loader->face ) ) )
+              outline->points = unrounded;
+#endif
             FT_Outline_EmboldenXY( outline,
                                    FT_MulFix( 1280 * ppem,
                                               1000 - x_scale_factor ),
                                    0 );
+#ifdef TT_CONFIG_OPTION_GX_VAR_SUPPORT
+            if ( !IS_DEFAULT_INSTANCE( FT_FACE( loader->face ) ) )
+              outline->points = orig_points;
+#endif
+          }
           do_scale = TRUE;
         }
       }
@@ -1045,17 +1087,40 @@
 
       if ( do_scale )
       {
-        for ( ; vec < limit; vec++ )
+#ifdef TT_CONFIG_OPTION_GX_VAR_SUPPORT
+        if ( !IS_DEFAULT_INSTANCE( FT_FACE( loader->face ) ) )
         {
-          vec->x = FT_MulFix( vec->x, x_scale );
-          vec->y = FT_MulFix( vec->y, y_scale );
+          FT_Vector*  u = unrounded;
+
+
+          for ( ; vec < limit; vec++, u++ )
+          {
+            vec->x = ( FT_MulFix( u->x, x_scale ) + 32 ) >> 6;
+            vec->y = ( FT_MulFix( u->y, y_scale ) + 32 ) >> 6;
+          }
+        }
+        else
+#endif /* TT_CONFIG_OPTION_GX_VAR_SUPPORT */
+        {
+          for ( ; vec < limit; vec++ )
+          {
+            vec->x = FT_MulFix( vec->x, x_scale );
+            vec->y = FT_MulFix( vec->y, y_scale );
+          }
         }
       }
 
 #ifdef TT_CONFIG_OPTION_GX_VAR_SUPPORT
-      /* if we have a HVAR table, `pp1' and/or `pp2' are already adjusted */
-      if ( !( loader->face->variation_support & TT_FACE_FLAG_VAR_HADVANCE ) ||
-           !IS_HINTED( loader->load_flags )                                 )
+      /* if we have a HVAR table, `pp1' and/or `pp2' */
+      /* are already adjusted but unscaled           */
+      if ( ( loader->face->variation_support & TT_FACE_FLAG_VAR_HADVANCE ) &&
+           IS_HINTED( loader->load_flags )                                 )
+      {
+        loader->pp1.x = FT_MulFix( loader->pp1.x, x_scale );
+        loader->pp2.x = FT_MulFix( loader->pp2.x, x_scale );
+        /* pp1.y and pp2.y are always zero */
+      }
+      else
 #endif
       {
         loader->pp1 = outline->points[n_points - 4];
@@ -1063,9 +1128,17 @@
       }
 
 #ifdef TT_CONFIG_OPTION_GX_VAR_SUPPORT
-      /* if we have a VVAR table, `pp3' and/or `pp4' are already adjusted */
-      if ( !( loader->face->variation_support & TT_FACE_FLAG_VAR_VADVANCE ) ||
-           !IS_HINTED( loader->load_flags )                                 )
+      /* if we have a VVAR table, `pp3' and/or `pp4' */
+      /* are already adjusted but unscaled           */
+      if ( ( loader->face->variation_support & TT_FACE_FLAG_VAR_VADVANCE ) &&
+           IS_HINTED( loader->load_flags )                                 )
+      {
+        loader->pp3.x = FT_MulFix( loader->pp3.x, x_scale );
+        loader->pp3.y = FT_MulFix( loader->pp3.y, y_scale );
+        loader->pp4.x = FT_MulFix( loader->pp4.x, x_scale );
+        loader->pp4.y = FT_MulFix( loader->pp4.y, y_scale );
+      }
+      else
 #endif
       {
         loader->pp3 = outline->points[n_points - 2];
@@ -1079,6 +1152,11 @@
 
       error = TT_Hint_Glyph( loader, 0 );
     }
+
+#ifdef TT_CONFIG_OPTION_GX_VAR_SUPPORT
+  Exit:
+    FT_FREE( unrounded );
+#endif
 
     return error;
   }
@@ -1681,6 +1759,9 @@
         short       contours[4] = { 0, 1, 2, 3 };
         FT_Outline  outline;
 
+        /* unrounded values */
+        FT_Vector  unrounded[4] = { {0, 0}, {0, 0}, {0, 0}, {0, 0} };
+
 
         points[0].x = loader->pp1.x;
         points[0].y = loader->pp1.y;
@@ -1702,6 +1783,7 @@
         error = TT_Vary_Apply_Glyph_Deltas( loader->face,
                                             glyph_index,
                                             &outline,
+                                            unrounded,
                                             (FT_UInt)outline.n_points );
         if ( error )
           goto Exit;
@@ -1719,9 +1801,11 @@
         /* recalculate linear horizontal and vertical advances */
         /* if we don't have HVAR and VVAR, respectively        */
         if ( !( loader->face->variation_support & TT_FACE_FLAG_VAR_HADVANCE ) )
-          loader->linear = loader->pp2.x - loader->pp1.x;
+          loader->linear = FT_PIX_ROUND( unrounded[1].x -
+                                         unrounded[0].x ) / 64;
         if ( !( loader->face->variation_support & TT_FACE_FLAG_VAR_VADVANCE ) )
-          loader->vadvance = loader->pp4.x - loader->pp3.x;
+          loader->vadvance = FT_PIX_ROUND( unrounded[3].x -
+                                           unrounded[2].x ) / 64;
       }
 
 #endif /* TT_CONFIG_OPTION_GX_VAR_SUPPORT */
@@ -1861,9 +1945,10 @@
         FT_SubGlyph  subglyph;
 
         FT_Outline  outline;
-        FT_Vector*  points   = NULL;
-        char*       tags     = NULL;
-        short*      contours = NULL;
+        FT_Vector*  points    = NULL;
+        char*       tags      = NULL;
+        short*      contours  = NULL;
+        FT_Vector*  unrounded = NULL;
 
 
         limit = (short)gloader->current.num_subglyphs;
@@ -1877,9 +1962,10 @@
         outline.tags     = NULL;
         outline.contours = NULL;
 
-        if ( FT_NEW_ARRAY( points, outline.n_points )   ||
-             FT_NEW_ARRAY( tags, outline.n_points )     ||
-             FT_NEW_ARRAY( contours, outline.n_points ) )
+        if ( FT_NEW_ARRAY( points, outline.n_points )    ||
+             FT_NEW_ARRAY( tags, outline.n_points )      ||
+             FT_NEW_ARRAY( contours, outline.n_points )  ||
+             FT_NEW_ARRAY( unrounded, outline.n_points ) )
           goto Exit1;
 
         subglyph = gloader->current.subglyphs;
@@ -1928,6 +2014,7 @@
                              face,
                              glyph_index,
                              &outline,
+                             unrounded,
                              (FT_UInt)outline.n_points ) ) )
           goto Exit1;
 
@@ -1955,14 +2042,19 @@
         /* recalculate linear horizontal and vertical advances */
         /* if we don't have HVAR and VVAR, respectively        */
         if ( !( face->variation_support & TT_FACE_FLAG_VAR_HADVANCE ) )
-          loader->linear = loader->pp2.x - loader->pp1.x;
+          loader->linear =
+            FT_PIX_ROUND( unrounded[outline.n_points - 3].x -
+                          unrounded[outline.n_points - 4].x ) / 64;
         if ( !( face->variation_support & TT_FACE_FLAG_VAR_VADVANCE ) )
-          loader->vadvance = loader->pp4.x - loader->pp3.x;
+          loader->vadvance =
+            FT_PIX_ROUND( unrounded[outline.n_points - 1].x -
+                          unrounded[outline.n_points - 2].x ) / 64;
 
       Exit1:
         FT_FREE( outline.points );
         FT_FREE( outline.tags );
         FT_FREE( outline.contours );
+        FT_FREE( unrounded );
 
         if ( error )
           goto Exit;
@@ -2088,6 +2180,7 @@
         loader->ins_pos = ins_pos;
         if ( IS_HINTED( loader->load_flags ) &&
 #ifdef TT_USE_BYTECODE_INTERPRETER
+             subglyph                        &&
              subglyph->flags & WE_HAVE_INSTR &&
 #endif
              num_points > start_point )
@@ -2099,6 +2192,11 @@
             goto Exit;
         }
       }
+
+      /* retain the overlap flag */
+      if ( gloader->base.num_subglyphs                         &&
+           gloader->base.subglyphs[0].flags & OVERLAP_COMPOUND )
+        gloader->base.outline.flags |= FT_OUTLINE_OVERLAP;
     }
 
     /***********************************************************************/
@@ -2218,13 +2316,14 @@
       if ( face->vertical_info                   &&
            face->vertical.number_Of_VMetrics > 0 )
       {
-        top = (FT_Short)FT_DivFix( loader->pp3.y - bbox.yMax,
+        top = (FT_Short)FT_DivFix( SUB_LONG( loader->pp3.y, bbox.yMax ),
                                    y_scale );
 
         if ( loader->pp3.y <= loader->pp4.y )
           advance = 0;
         else
-          advance = (FT_UShort)FT_DivFix( loader->pp3.y - loader->pp4.y,
+          advance = (FT_UShort)FT_DivFix( SUB_LONG( loader->pp3.y,
+                                                    loader->pp4.y ),
                                           y_scale );
       }
       else
@@ -2611,11 +2710,6 @@
 
       if ( reexecute )
       {
-        FT_UInt  i;
-
-
-        for ( i = 0; i < size->cvt_size; i++ )
-          size->cvt[i] = FT_MulFix( face->cvt[i], size->ttmetrics.scale );
         error = tt_size_run_prep( size, pedantic );
         if ( error )
           return error;
@@ -2718,13 +2812,6 @@
     FT_Error      error;
     TT_LoaderRec  loader;
 
-#ifdef TT_CONFIG_OPTION_GX_VAR_SUPPORT
-#define IS_DEFAULT_INSTANCE  ( !( FT_IS_NAMED_INSTANCE( glyph->face ) ||  \
-                                  FT_IS_VARIATION( glyph->face )      ) )
-#else
-#define IS_DEFAULT_INSTANCE  1
-#endif
-
 
     FT_TRACE1(( "TT_Load_Glyph: glyph index %d\n", glyph_index ));
 
@@ -2733,7 +2820,7 @@
     /* try to load embedded bitmap (if any) */
     if ( size->strike_index != 0xFFFFFFFFUL      &&
          ( load_flags & FT_LOAD_NO_BITMAP ) == 0 &&
-         IS_DEFAULT_INSTANCE                     )
+         IS_DEFAULT_INSTANCE( glyph->face )      )
     {
       FT_Fixed  x_scale = size->root.metrics.x_scale;
       FT_Fixed  y_scale = size->root.metrics.y_scale;
@@ -2908,8 +2995,6 @@
       error = compute_glyph_metrics( &loader, glyph_index );
     }
 
-    tt_loader_done( &loader );
-
     /* Set the `high precision' bit flag.                           */
     /* This is _critical_ to get correct output for monochrome      */
     /* TrueType glyphs at all sizes using the bytecode interpreter. */
@@ -2917,6 +3002,15 @@
     if ( !( load_flags & FT_LOAD_NO_SCALE ) &&
          size->metrics->y_ppem < 24         )
       glyph->outline.flags |= FT_OUTLINE_HIGH_PRECISION;
+
+    FT_TRACE1(( "  subglyphs = %u, contours = %hd, points = %hd,"
+                " flags = 0x%.3x\n",
+                loader.gloader->base.num_subglyphs,
+                glyph->outline.n_contours,
+                glyph->outline.n_points,
+                glyph->outline.flags ));
+
+    tt_loader_done( &loader );
 
   Exit:
 #ifdef FT_DEBUG_LEVEL_TRACE

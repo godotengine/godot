@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,51 +31,44 @@
 #ifndef RESOURCE_LOADER_H
 #define RESOURCE_LOADER_H
 
+#include "core/io/resource.h"
+#include "core/object/gdvirtual.gen.inc"
+#include "core/object/script_language.h"
+#include "core/os/semaphore.h"
 #include "core/os/thread.h"
-#include "core/resource.h"
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
 
-class ResourceInteractiveLoader : public Reference {
+class ResourceFormatLoader : public RefCounted {
+	GDCLASS(ResourceFormatLoader, RefCounted);
 
-	GDCLASS(ResourceInteractiveLoader, Reference);
-	friend class ResourceLoader;
-	String path_loading;
-	Thread::ID path_loading_thread;
+public:
+	enum CacheMode {
+		CACHE_MODE_IGNORE, // Resource and subresources do not use path cache, no path is set into resource.
+		CACHE_MODE_REUSE, // Resource and subresources use patch cache, reuse existing loaded resources instead of loading from disk when available.
+		CACHE_MODE_REPLACE, // Resource and subresource use path cache, but replace existing loaded resources when available with information from disk.
+	};
 
 protected:
 	static void _bind_methods();
 
-public:
-	virtual void set_local_path(const String &p_local_path) = 0;
-	virtual Ref<Resource> get_resource() = 0;
-	virtual Error poll() = 0;
-	virtual int get_stage() const = 0;
-	virtual int get_stage_count() const = 0;
-	virtual void set_translation_remapped(bool p_remapped) = 0;
-	virtual Error wait();
+	GDVIRTUAL0RC(Vector<String>, _get_recognized_extensions)
+	GDVIRTUAL1RC(bool, _handles_type, StringName)
+	GDVIRTUAL1RC(String, _get_resource_type, String)
+	GDVIRTUAL1RC(ResourceUID::ID, _get_resource_uid, String)
+	GDVIRTUAL2RC(Vector<String>, _get_dependencies, String, bool)
+	GDVIRTUAL2RC(int64_t, _rename_dependencies, String, Dictionary)
+	GDVIRTUAL1RC(bool, _exists, String)
 
-	ResourceInteractiveLoader() {}
-	~ResourceInteractiveLoader();
-};
-
-class ResourceFormatLoader : public Reference {
-
-	GDCLASS(ResourceFormatLoader, Reference);
-
-protected:
-	static void _bind_methods();
+	GDVIRTUAL4RC(Variant, _load, String, String, bool, int)
 
 public:
-	virtual Ref<ResourceInteractiveLoader> load_interactive(const String &p_path, const String &p_original_path = "", Error *r_error = NULL);
-	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = NULL);
+	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, CacheMode p_cache_mode = CACHE_MODE_REUSE);
 	virtual bool exists(const String &p_path) const;
 	virtual void get_recognized_extensions(List<String> *p_extensions) const;
 	virtual void get_recognized_extensions_for_type(const String &p_type, List<String> *p_extensions) const;
 	virtual bool recognize_path(const String &p_path, const String &p_for_type = String()) const;
 	virtual bool handles_type(const String &p_type) const;
 	virtual String get_resource_type(const String &p_path) const;
+	virtual ResourceUID::ID get_resource_uid(const String &p_path) const;
 	virtual void get_dependencies(const String &p_path, List<String> *p_dependencies, bool p_add_types = false);
 	virtual Error rename_dependencies(const String &p_path, const Map<String, String> &p_map);
 	virtual bool is_import_valid(const String &p_path) const { return true; }
@@ -86,6 +79,8 @@ public:
 	virtual ~ResourceFormatLoader() {}
 };
 
+VARIANT_ENUM_CAST(ResourceFormatLoader::CacheMode)
+
 typedef void (*ResourceLoadErrorNotify)(void *p_ud, const String &p_text);
 typedef void (*DependencyErrorNotify)(void *p_ud, const String &p_loading, const String &p_which, const String &p_type);
 
@@ -93,11 +88,19 @@ typedef Error (*ResourceLoaderImport)(const String &p_path);
 typedef void (*ResourceLoadedCallback)(RES p_resource, const String &p_path);
 
 class ResourceLoader {
-
 	enum {
 		MAX_LOADERS = 64
 	};
 
+public:
+	enum ThreadLoadStatus {
+		THREAD_LOAD_INVALID_RESOURCE,
+		THREAD_LOAD_IN_PROGRESS,
+		THREAD_LOAD_FAILED,
+		THREAD_LOAD_LOADED
+	};
+
+private:
 	static Ref<ResourceFormatLoader> loader[MAX_LOADERS];
 	static int loader_count;
 	static bool timestamp_on_load;
@@ -107,52 +110,67 @@ class ResourceLoader {
 	static void *dep_err_notify_ud;
 	static DependencyErrorNotify dep_err_notify;
 	static bool abort_on_missing_resource;
-	static HashMap<String, Vector<String> > translation_remaps;
+	static HashMap<String, Vector<String>> translation_remaps;
 	static HashMap<String, String> path_remaps;
 
-	static String _path_remap(const String &p_path, bool *r_translation_remapped = NULL);
+	static String _path_remap(const String &p_path, bool *r_translation_remapped = nullptr);
 	friend class Resource;
 
 	static SelfList<Resource>::List remapped_list;
 
 	friend class ResourceFormatImporter;
 	friend class ResourceInteractiveLoader;
-	//internal load function
-	static RES _load(const String &p_path, const String &p_original_path, const String &p_type_hint, bool p_no_cache, Error *r_error);
+	// Internal load function.
+	static RES _load(const String &p_path, const String &p_original_path, const String &p_type_hint, ResourceFormatLoader::CacheMode p_cache_mode, Error *r_error, bool p_use_sub_threads, float *r_progress);
 
 	static ResourceLoadedCallback _loaded_callback;
 
 	static Ref<ResourceFormatLoader> _find_custom_resource_format_loader(String path);
-	static Mutex *loading_map_mutex;
 
-	//used to track paths being loaded in a thread, avoids cyclic recursion
-	struct LoadingMapKey {
-		String path;
-		Thread::ID thread;
-		bool operator==(const LoadingMapKey &p_key) const {
-			return (thread == p_key.thread && path == p_key.path);
-		}
+	struct ThreadLoadTask {
+		Thread *thread = nullptr;
+		Thread::ID loader_id = 0;
+		Semaphore *semaphore = nullptr;
+		String local_path;
+		String remapped_path;
+		String type_hint;
+		float progress = 0.0;
+		ThreadLoadStatus status = THREAD_LOAD_IN_PROGRESS;
+		ResourceFormatLoader::CacheMode cache_mode = ResourceFormatLoader::CACHE_MODE_REUSE;
+		Error error = OK;
+		RES resource;
+		bool xl_remapped = false;
+		bool use_sub_threads = false;
+		bool start_next = true;
+		int requests = 0;
+		int poll_requests = 0;
+		Set<String> sub_tasks;
 	};
-	struct LoadingMapKeyHasher {
 
-		static _FORCE_INLINE_ uint32_t hash(const LoadingMapKey &p_key) { return p_key.path.hash() + HashMapHasherDefault::hash(p_key.thread); }
-	};
+	static void _thread_load_function(void *p_userdata);
+	static Mutex *thread_load_mutex;
+	static HashMap<String, ThreadLoadTask> thread_load_tasks;
+	static Semaphore *thread_load_semaphore;
+	static int thread_waiting_count;
+	static int thread_loading_count;
+	static int thread_suspended_count;
+	static int thread_load_max;
 
-	static HashMap<LoadingMapKey, int, LoadingMapKeyHasher> loading_map;
-
-	static bool _add_to_loading_map(const String &p_path);
-	static void _remove_from_loading_map(const String &p_path);
-	static void _remove_from_loading_map_and_thread(const String &p_path, Thread::ID p_thread);
+	static float _dependency_get_progress(const String &p_path);
 
 public:
-	static Ref<ResourceInteractiveLoader> load_interactive(const String &p_path, const String &p_type_hint = "", bool p_no_cache = false, Error *r_error = NULL);
-	static RES load(const String &p_path, const String &p_type_hint = "", bool p_no_cache = false, Error *r_error = NULL);
+	static Error load_threaded_request(const String &p_path, const String &p_type_hint = "", bool p_use_sub_threads = false, ResourceFormatLoader::CacheMode p_cache_mode = ResourceFormatLoader::CACHE_MODE_REUSE, const String &p_source_resource = String());
+	static ThreadLoadStatus load_threaded_get_status(const String &p_path, float *r_progress = nullptr);
+	static RES load_threaded_get(const String &p_path, Error *r_error = nullptr);
+
+	static RES load(const String &p_path, const String &p_type_hint = "", ResourceFormatLoader::CacheMode p_cache_mode = ResourceFormatLoader::CACHE_MODE_REUSE, Error *r_error = nullptr);
 	static bool exists(const String &p_path, const String &p_type_hint = "");
 
 	static void get_recognized_extensions_for_type(const String &p_type, List<String> *p_extensions);
 	static void add_resource_format_loader(Ref<ResourceFormatLoader> p_format_loader, bool p_at_front = false);
 	static void remove_resource_format_loader(Ref<ResourceFormatLoader> p_format_loader);
 	static String get_resource_type(const String &p_path);
+	static ResourceUID::ID get_resource_uid(const String &p_path);
 	static void get_dependencies(const String &p_path, List<String> *p_dependencies, bool p_add_types = false);
 	static Error rename_dependencies(const String &p_path, const Map<String, String> &p_map);
 	static bool is_import_valid(const String &p_path);
@@ -164,7 +182,9 @@ public:
 	static bool get_timestamp_on_load() { return timestamp_on_load; }
 
 	static void notify_load_error(const String &p_err) {
-		if (err_notify) err_notify(err_notify_ud, p_err);
+		if (err_notify) {
+			err_notify(err_notify_ud, p_err);
+		}
 	}
 	static void set_error_notify_func(void *p_ud, ResourceLoadErrorNotify p_err_notify) {
 		err_notify = p_err_notify;
@@ -172,7 +192,9 @@ public:
 	}
 
 	static void notify_dependency_error(const String &p_path, const String &p_dependency, const String &p_type) {
-		if (dep_err_notify) dep_err_notify(dep_err_notify_ud, p_path, p_dependency, p_type);
+		if (dep_err_notify) {
+			dep_err_notify(dep_err_notify_ud, p_path, p_dependency, p_type);
+		}
 	}
 	static void set_dependency_error_notify_func(void *p_ud, DependencyErrorNotify p_err_notify) {
 		dep_err_notify = p_err_notify;
@@ -204,4 +226,4 @@ public:
 	static void finalize();
 };
 
-#endif
+#endif // RESOURCE_LOADER_H

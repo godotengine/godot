@@ -32,7 +32,7 @@ Cons:
 
 /*
 2007-09-09
-btGeneric6DofConstraint Refactored by Francisco Leon
+btGeneric6DofConstraint Refactored by Francisco Le?n
 email: projectileman@yahoo.com
 http://gimpact.sf.net
 */
@@ -311,9 +311,9 @@ void btGeneric6DofSpring2Constraint::calculateAngleInfo()
 		case RO_XYZ:
 		{
 			//Is this the "line of nodes" calculation choosing planes YZ (B coordinate system) and xy (A coordinate system)? (http://en.wikipedia.org/wiki/Euler_angles)
-			//The two planes are non-homologous, so this is a Tait-Bryan angle formalism and not a proper Euler
+			//The two planes are non-homologous, so this is a Tait Bryan angle formalism and not a proper Euler
 			//Extrinsic rotations are equal to the reversed order intrinsic rotations so the above xyz extrinsic rotations (axes are fixed) are the same as the zy'x" intrinsic rotations (axes are refreshed after each rotation)
-			//that is why xy and YZ planes are chosen (this will describe a zy'x" intrinsic rotation) (see the figure on the left at http://en.wikipedia.org/wiki/Euler_angles under Tait-Bryan angles)
+			//that is why xy and YZ planes are chosen (this will describe a zy'x" intrinsic rotation) (see the figure on the left at http://en.wikipedia.org/wiki/Euler_angles under Tait Bryan angles)
 			// x' = Nperp = N.cross(axis2)
 			// y' = N = axis2.cross(axis0)
 			// z' = z
@@ -876,7 +876,10 @@ int btGeneric6DofSpring2Constraint::get_limit_motor_info2(
 		// will we not request a velocity with the wrong direction ?
 		// and the answer is not, because in practice during the solving the current velocity is subtracted from the m_constraintError
 		// so the sign of the force that is really matters
-		info->m_constraintError[srow] = (rotational ? -1 : 1) * (f < 0 ? -SIMD_INFINITY : SIMD_INFINITY);
+		if (m_flags & BT_6DOF_FLAGS_USE_INFINITE_ERROR)
+			info->m_constraintError[srow] = (rotational ? -1 : 1) * (f < 0 ? -SIMD_INFINITY : SIMD_INFINITY);
+		else
+			info->m_constraintError[srow] = vel + f / m * (rotational ? -1 : 1);
 
 		btScalar minf = f < fd ? f : fd;
 		btScalar maxf = f < fd ? fd : f;

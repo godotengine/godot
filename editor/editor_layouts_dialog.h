@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,7 +37,6 @@ class LineEdit;
 class ItemList;
 
 class EditorLayoutsDialog : public ConfirmationDialog {
-
 	GDCLASS(EditorLayoutsDialog, ConfirmationDialog);
 
 	LineEdit *name;
@@ -48,8 +47,8 @@ class EditorLayoutsDialog : public ConfirmationDialog {
 
 protected:
 	static void _bind_methods();
-	virtual void ok_pressed();
-	virtual void _post_popup();
+	virtual void ok_pressed() override;
+	virtual void _post_popup() override;
 
 public:
 	EditorLayoutsDialog();

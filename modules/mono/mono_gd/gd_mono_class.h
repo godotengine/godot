@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,10 +31,8 @@
 #ifndef GD_MONO_CLASS_H
 #define GD_MONO_CLASS_H
 
-#include <mono/metadata/debug-helpers.h>
-
-#include "core/map.h"
-#include "core/ustring.h"
+#include "core/string/ustring.h"
+#include "core/templates/map.h"
 
 #include "gd_mono_field.h"
 #include "gd_mono_header.h"
@@ -61,13 +59,12 @@ class GDMonoClass {
 
 		MethodKey() {}
 
-		MethodKey(const StringName &p_name, int p_params_count) {
-			name = p_name;
-			params_count = p_params_count;
+		MethodKey(const StringName &p_name, uint16_t p_params_count) :
+				name(p_name), params_count(p_params_count) {
 		}
 
 		StringName name;
-		int params_count;
+		uint16_t params_count = 0;
 	};
 
 	StringName namespace_name;
@@ -107,21 +104,23 @@ public:
 	static MonoType *get_mono_type(MonoClass *p_mono_class);
 
 	String get_full_name() const;
-	MonoType *get_mono_type();
+	String get_type_desc() const;
+	MonoType *get_mono_type() const;
 
 	uint32_t get_flags() const;
 	bool is_static() const;
 
 	bool is_assignable_from(GDMonoClass *p_from) const;
 
-	_FORCE_INLINE_ StringName get_namespace() const { return namespace_name; }
+	StringName get_namespace() const;
 	_FORCE_INLINE_ StringName get_name() const { return class_name; }
+	String get_name_for_lookup() const;
 
 	_FORCE_INLINE_ MonoClass *get_mono_ptr() const { return mono_class; }
 	_FORCE_INLINE_ const GDMonoAssembly *get_assembly() const { return assembly; }
 
-	GDMonoClass *get_parent_class();
-	GDMonoClass *get_nesting_class();
+	GDMonoClass *get_parent_class() const;
+	GDMonoClass *get_nesting_class() const;
 
 #ifdef TOOLS_ENABLED
 	Vector<MonoClassField *> get_enum_fields();
@@ -137,14 +136,13 @@ public:
 	void fetch_methods_with_godot_api_checks(GDMonoClass *p_native_base);
 
 	bool implements_interface(GDMonoClass *p_interface);
+	bool has_public_parameterless_ctor();
 
-	GDMonoMethod *get_method(const StringName &p_name, int p_params_count = 0);
+	GDMonoMethod *get_method(const StringName &p_name, uint16_t p_params_count = 0);
 	GDMonoMethod *get_method(MonoMethod *p_raw_method);
 	GDMonoMethod *get_method(MonoMethod *p_raw_method, const StringName &p_name);
-	GDMonoMethod *get_method(MonoMethod *p_raw_method, const StringName &p_name, int p_params_count);
+	GDMonoMethod *get_method(MonoMethod *p_raw_method, const StringName &p_name, uint16_t p_params_count);
 	GDMonoMethod *get_method_with_desc(const String &p_description, bool p_include_namespace);
-
-	void *get_method_thunk(const StringName &p_name, int p_params_count = 0);
 
 	GDMonoField *get_field(const StringName &p_name);
 	const Vector<GDMonoField *> &get_all_fields();

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,9 +32,9 @@
 #define GRAPH_NODE_H
 
 #include "scene/gui/container.h"
+#include "scene/resources/text_line.h"
 
 class GraphNode : public Container {
-
 	GDCLASS(GraphNode, Container);
 
 public:
@@ -46,32 +46,29 @@ public:
 
 private:
 	struct Slot {
-		bool enable_left;
-		int type_left;
-		Color color_left;
-		bool enable_right;
-		int type_right;
-		Color color_right;
-		Ref<Texture> custom_slot_left;
-		Ref<Texture> custom_slot_right;
-
-		Slot() {
-			enable_left = false;
-			type_left = 0;
-			color_left = Color(1, 1, 1, 1);
-			enable_right = false;
-			type_right = 0;
-			color_right = Color(1, 1, 1, 1);
-		}
+		bool enable_left = false;
+		int type_left = 0;
+		Color color_left = Color(1, 1, 1, 1);
+		bool enable_right = false;
+		int type_right = 0;
+		Color color_right = Color(1, 1, 1, 1);
+		Ref<Texture2D> custom_slot_left;
+		Ref<Texture2D> custom_slot_right;
 	};
 
 	String title;
-	bool show_close;
-	Vector2 offset;
-	bool comment;
-	bool resizable;
+	Ref<TextLine> title_buf;
 
-	bool resizing;
+	Dictionary opentype_features;
+	String language;
+	TextDirection text_direction = TEXT_DIRECTION_AUTO;
+
+	bool show_close = false;
+	Vector2 position_offset;
+	bool comment = false;
+	bool resizable = false;
+
+	bool resizing = false;
 	Vector2 resizing_from;
 	Vector2 resizing_from_size;
 
@@ -81,7 +78,7 @@ private:
 
 	struct ConnCache {
 		Vector2 pos;
-		int type;
+		int type = 0;
 		Color color;
 	};
 
@@ -90,18 +87,24 @@ private:
 
 	Map<int, Slot> slot_info;
 
-	bool connpos_dirty;
+	bool connpos_dirty = true;
 
 	void _connpos_update();
 	void _resort();
+	void _shape();
 
 	Vector2 drag_from;
-	bool selected;
+	bool selected = false;
 
-	Overlay overlay;
+	Overlay overlay = OVERLAY_DISABLED;
+
+#ifdef TOOLS_ENABLED
+	void _edit_set_position(const Point2 &p_position) override;
+	void _validate_property(PropertyInfo &property) const override;
+#endif
 
 protected:
-	void _gui_input(const Ref<InputEvent> &p_ev);
+	virtual void gui_input(const Ref<InputEvent> &p_ev) override;
 	void _notification(int p_what);
 	static void _bind_methods();
 
@@ -110,23 +113,45 @@ protected:
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 
 public:
-	bool has_point(const Point2 &p_point) const;
+	bool has_point(const Point2 &p_point) const override;
 
-	void set_slot(int p_idx, bool p_enable_left, int p_type_left, const Color &p_color_left, bool p_enable_right, int p_type_right, const Color &p_color_right, const Ref<Texture> &p_custom_left = Ref<Texture>(), const Ref<Texture> &p_custom_right = Ref<Texture>());
+	void set_slot(int p_idx, bool p_enable_left, int p_type_left, const Color &p_color_left, bool p_enable_right, int p_type_right, const Color &p_color_right, const Ref<Texture2D> &p_custom_left = Ref<Texture2D>(), const Ref<Texture2D> &p_custom_right = Ref<Texture2D>());
 	void clear_slot(int p_idx);
 	void clear_all_slots();
+
 	bool is_slot_enabled_left(int p_idx) const;
+	void set_slot_enabled_left(int p_idx, bool p_enable_left);
+
+	void set_slot_type_left(int p_idx, int p_type_left);
 	int get_slot_type_left(int p_idx) const;
+
+	void set_slot_color_left(int p_idx, const Color &p_color_left);
 	Color get_slot_color_left(int p_idx) const;
+
 	bool is_slot_enabled_right(int p_idx) const;
+	void set_slot_enabled_right(int p_idx, bool p_enable_right);
+
+	void set_slot_type_right(int p_idx, int p_type_right);
 	int get_slot_type_right(int p_idx) const;
+
+	void set_slot_color_right(int p_idx, const Color &p_color_right);
 	Color get_slot_color_right(int p_idx) const;
 
 	void set_title(const String &p_title);
 	String get_title() const;
 
-	void set_offset(const Vector2 &p_offset);
-	Vector2 get_offset() const;
+	void set_text_direction(TextDirection p_text_direction);
+	TextDirection get_text_direction() const;
+
+	void set_opentype_feature(const String &p_name, int p_value);
+	int get_opentype_feature(const String &p_name) const;
+	void clear_opentype_features();
+
+	void set_language(const String &p_language);
+	String get_language() const;
+
+	void set_position_offset(const Vector2 &p_offset);
+	Vector2 get_position_offset() const;
 
 	void set_selected(bool p_selected);
 	bool is_selected();
@@ -155,7 +180,7 @@ public:
 	void set_resizable(bool p_enable);
 	bool is_resizable() const;
 
-	virtual Size2 get_minimum_size() const;
+	virtual Size2 get_minimum_size() const override;
 
 	bool is_resizing() const { return resizing; }
 

@@ -4,7 +4,7 @@
  *
  *   TrueType Glyph Loader (specification).
  *
- * Copyright (C) 1996-2019 by
+ * Copyright (C) 1996-2020 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -20,7 +20,6 @@
 #define TTGLOAD_H_
 
 
-#include <ft2build.h>
 #include "ttobjs.h"
 
 #ifdef TT_USE_BYTECODE_INTERPRETER

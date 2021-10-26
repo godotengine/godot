@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,7 +31,7 @@
 #ifdef UNIX_ENABLED
 
 #include "syslog_logger.h"
-#include "core/print_string.h"
+#include "core/string/print_string.h"
 #include <syslog.h>
 
 void SyslogLogger::logv(const char *p_format, va_list p_list, bool p_err) {
@@ -49,18 +49,29 @@ void SyslogLogger::print_error(const char *p_function, const char *p_file, int p
 
 	const char *err_type = "**ERROR**";
 	switch (p_type) {
-		case ERR_ERROR: err_type = "**ERROR**"; break;
-		case ERR_WARNING: err_type = "**WARNING**"; break;
-		case ERR_SCRIPT: err_type = "**SCRIPT ERROR**"; break;
-		case ERR_SHADER: err_type = "**SHADER ERROR**"; break;
-		default: ERR_PRINT("Unknown error type"); break;
+		case ERR_ERROR:
+			err_type = "**ERROR**";
+			break;
+		case ERR_WARNING:
+			err_type = "**WARNING**";
+			break;
+		case ERR_SCRIPT:
+			err_type = "**SCRIPT ERROR**";
+			break;
+		case ERR_SHADER:
+			err_type = "**SHADER ERROR**";
+			break;
+		default:
+			ERR_PRINT("Unknown error type");
+			break;
 	}
 
 	const char *err_details;
-	if (p_rationale && *p_rationale)
+	if (p_rationale && *p_rationale) {
 		err_details = p_rationale;
-	else
+	} else {
 		err_details = p_code;
+	}
 
 	syslog(p_type == ERR_WARNING ? LOG_WARNING : LOG_ERR, "%s: %s\n   At: %s:%i:%s() - %s", err_type, err_details, p_file, p_line, p_function, p_code);
 }

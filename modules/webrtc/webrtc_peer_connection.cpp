@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,18 +30,29 @@
 
 #include "webrtc_peer_connection.h"
 
-WebRTCPeerConnection *(*WebRTCPeerConnection::_create)() = NULL;
+#ifdef JAVASCRIPT_ENABLED
+#include "webrtc_peer_connection_js.h"
+#else
+#include "webrtc_peer_connection_extension.h"
+#endif
 
-Ref<WebRTCPeerConnection> WebRTCPeerConnection::create_ref() {
+StringName WebRTCPeerConnection::default_extension;
 
-	return create();
+void WebRTCPeerConnection::set_default_extension(const StringName &p_extension) {
+	default_extension = p_extension;
 }
 
 WebRTCPeerConnection *WebRTCPeerConnection::create() {
-
-	if (!_create)
-		return NULL;
-	return _create();
+#ifdef JAVASCRIPT_ENABLED
+	return memnew(WebRTCPeerConnectionJS);
+#else
+	if (default_extension == String()) {
+		WARN_PRINT_ONCE("No default WebRTC extension configured.");
+		return memnew(WebRTCPeerConnectionExtension);
+	}
+	Object *obj = ClassDB::instantiate(default_extension);
+	return Object::cast_to<WebRTCPeerConnectionExtension>(obj);
+#endif
 }
 
 void WebRTCPeerConnection::_bind_methods() {

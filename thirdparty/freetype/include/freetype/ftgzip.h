@@ -4,7 +4,7 @@
  *
  *   Gzip-compressed stream support.
  *
- * Copyright (C) 2002-2019 by
+ * Copyright (C) 2002-2020 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -19,8 +19,7 @@
 #ifndef FTGZIP_H_
 #define FTGZIP_H_
 
-#include <ft2build.h>
-#include FT_FREETYPE_H
+#include <freetype/freetype.h>
 
 #ifdef FREETYPE_H
 #error "freetype.h of FreeType 1 has been loaded!"
@@ -43,6 +42,16 @@ FT_BEGIN_HEADER
    *   Using gzip-compressed font files.
    *
    * @description:
+   *   In certain builds of the library, gzip compression recognition is
+   *   automatically handled when calling @FT_New_Face or @FT_Open_Face.
+   *   This means that if no font driver is capable of handling the raw
+   *   compressed file, the library will try to open a gzipped stream from it
+   *   and re-open the face with it.
+   *
+   *   The stream implementation is very basic and resets the decompression
+   *   process each time seeking backwards is needed within the stream,
+   *   which significantly undermines the performance.
+   *
    *   This section contains the declaration of Gzip-specific functions.
    *
    */
@@ -74,15 +83,6 @@ FT_BEGIN_HEADER
    *   Calling the internal function `FT_Stream_Close` on the new stream will
    *   **not** call `FT_Stream_Close` on the source stream.  None of the
    *   stream objects will be released to the heap.
-   *
-   *   The stream implementation is very basic and resets the decompression
-   *   process each time seeking backwards is needed within the stream.
-   *
-   *   In certain builds of the library, gzip compression recognition is
-   *   automatically handled when calling @FT_New_Face or @FT_Open_Face.
-   *   This means that if no font driver is capable of handling the raw
-   *   compressed file, the library will try to open a gzipped stream from it
-   *   and re-open the face with it.
    *
    *   This function may return `FT_Err_Unimplemented_Feature` if your build
    *   of FreeType was not compiled with zlib support.

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,26 +32,35 @@
 #define EDITOR_PATH_H
 
 #include "editor_data.h"
-#include "scene/gui/menu_button.h"
+#include "scene/gui/box_container.h"
+#include "scene/gui/button.h"
+#include "scene/gui/popup_menu.h"
 
-class EditorPath : public MenuButton {
-
-	GDCLASS(EditorPath, MenuButton);
+class EditorPath : public Button {
+	GDCLASS(EditorPath, Button);
 
 	EditorHistory *history;
 
-	Vector<ObjectID> objects;
-	EditorPath();
+	TextureRect *current_object_icon;
+	Label *current_object_label;
+	TextureRect *sub_objects_icon;
+	PopupMenu *sub_objects_menu;
 
+	Vector<ObjectID> objects;
+
+	void _show_popup();
 	void _id_pressed(int p_idx);
 	void _about_to_show();
 	void _add_children_to_popup(Object *p_obj, int p_depth = 0);
 
 protected:
+	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
 	void update_path();
+	void clear_path();
+	void enable_path();
 
 	EditorPath(EditorHistory *p_history);
 };

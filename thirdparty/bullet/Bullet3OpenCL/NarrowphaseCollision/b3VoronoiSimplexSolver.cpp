@@ -183,9 +183,9 @@ bool b3VoronoiSimplexSolver::updateClosestVectorAndPoints()
 				const b3Vector3& c = m_simplexVectorW[2];
 				const b3Vector3& d = m_simplexVectorW[3];
 
-				bool hasSeperation = closestPtPointTetrahedron(p, a, b, c, d, m_cachedBC);
+				bool hasSeparation = closestPtPointTetrahedron(p, a, b, c, d, m_cachedBC);
 
-				if (hasSeperation)
+				if (hasSeparation)
 				{
 					m_cachedP1 = m_simplexPointsP[0] * m_cachedBC.m_barycentricCoords[0] +
 								 m_simplexPointsP[1] * m_cachedBC.m_barycentricCoords[1] +

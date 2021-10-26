@@ -187,13 +187,6 @@ btBroadphasePair
 
 	BT_DECLARE_ALIGNED_ALLOCATOR();
 
-	btBroadphasePair(const btBroadphasePair& other)
-		: m_pProxy0(other.m_pProxy0),
-		  m_pProxy1(other.m_pProxy1),
-		  m_algorithm(other.m_algorithm),
-		  m_internalInfo1(other.m_internalInfo1)
-	{
-	}
 	btBroadphasePair(btBroadphaseProxy & proxy0, btBroadphaseProxy & proxy1)
 	{
 		//keep them sorted, so the std::set operations work

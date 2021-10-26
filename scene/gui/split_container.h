@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,7 +34,6 @@
 #include "scene/gui/container.h"
 
 class SplitContainer : public Container {
-
 	GDCLASS(SplitContainer, Container);
 
 public:
@@ -45,23 +44,23 @@ public:
 	};
 
 private:
-	bool should_clamp_split_offset;
-	int split_offset;
-	int middle_sep;
-	bool vertical;
-	bool dragging;
-	int drag_from;
-	int drag_ofs;
-	bool collapsed;
-	DraggerVisibility dragger_visibility;
-	bool mouse_inside;
+	bool should_clamp_split_offset = false;
+	int split_offset = 0;
+	int middle_sep = 0;
+	bool vertical = false;
+	bool dragging = false;
+	int drag_from = 0;
+	int drag_ofs = 0;
+	bool collapsed = false;
+	DraggerVisibility dragger_visibility = DRAGGER_VISIBLE;
+	bool mouse_inside = false;
 
 	Control *_getch(int p_idx) const;
 
 	void _resort();
 
 protected:
-	void _gui_input(const Ref<InputEvent> &p_event);
+	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 	void _notification(int p_what);
 	static void _bind_methods();
 
@@ -76,9 +75,9 @@ public:
 	void set_dragger_visibility(DraggerVisibility p_visibility);
 	DraggerVisibility get_dragger_visibility() const;
 
-	virtual CursorShape get_cursor_shape(const Point2 &p_pos = Point2i()) const;
+	virtual CursorShape get_cursor_shape(const Point2 &p_pos = Point2i()) const override;
 
-	virtual Size2 get_minimum_size() const;
+	virtual Size2 get_minimum_size() const override;
 
 	SplitContainer(bool p_vertical = false);
 };
@@ -86,7 +85,6 @@ public:
 VARIANT_ENUM_CAST(SplitContainer::DraggerVisibility);
 
 class HSplitContainer : public SplitContainer {
-
 	GDCLASS(HSplitContainer, SplitContainer);
 
 public:
@@ -95,7 +93,6 @@ public:
 };
 
 class VSplitContainer : public SplitContainer {
-
 	GDCLASS(VSplitContainer, SplitContainer);
 
 public:

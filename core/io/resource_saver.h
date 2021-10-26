@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,17 +31,19 @@
 #ifndef RESOURCE_SAVER_H
 #define RESOURCE_SAVER_H
 
-#include "core/resource.h"
+#include "core/io/resource.h"
+#include "core/object/gdvirtual.gen.inc"
+#include "core/object/script_language.h"
 
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
-
-class ResourceFormatSaver : public Reference {
-	GDCLASS(ResourceFormatSaver, Reference);
+class ResourceFormatSaver : public RefCounted {
+	GDCLASS(ResourceFormatSaver, RefCounted);
 
 protected:
 	static void _bind_methods();
+
+	GDVIRTUAL3R(int64_t, _save, String, RES, uint32_t)
+	GDVIRTUAL1RC(bool, _recognize, RES)
+	GDVIRTUAL1RC(Vector<String>, _get_recognized_extensions, RES)
 
 public:
 	virtual Error save(const String &p_path, const RES &p_resource, uint32_t p_flags = 0);
@@ -52,9 +54,9 @@ public:
 };
 
 typedef void (*ResourceSavedCallback)(Ref<Resource> p_resource, const String &p_path);
+typedef ResourceUID::ID (*ResourceSaverGetResourceIDForPath)(const String &p_path, bool p_generate);
 
 class ResourceSaver {
-
 	enum {
 		MAX_SAVERS = 64
 	};
@@ -63,12 +65,12 @@ class ResourceSaver {
 	static int saver_count;
 	static bool timestamp_on_save;
 	static ResourceSavedCallback save_callback;
+	static ResourceSaverGetResourceIDForPath save_get_id_for_path;
 
 	static Ref<ResourceFormatSaver> _find_custom_resource_format_saver(String path);
 
 public:
 	enum SaverFlags {
-
 		FLAG_RELATIVE_PATHS = 1,
 		FLAG_BUNDLE_RESOURCES = 2,
 		FLAG_CHANGE_PATH = 4,
@@ -86,7 +88,10 @@ public:
 	static void set_timestamp_on_save(bool p_timestamp) { timestamp_on_save = p_timestamp; }
 	static bool get_timestamp_on_save() { return timestamp_on_save; }
 
+	static ResourceUID::ID get_resource_id_for_path(const String &p_path, bool p_generate = false);
+
 	static void set_save_callback(ResourceSavedCallback p_callback);
+	static void set_get_resource_id_for_path(ResourceSaverGetResourceIDForPath p_callback);
 
 	static bool add_custom_resource_format_saver(String script_path);
 	static void remove_custom_resource_format_saver(String script_path);
@@ -94,4 +99,4 @@ public:
 	static void remove_custom_savers();
 };
 
-#endif
+#endif // RESOURCE_SAVER_H

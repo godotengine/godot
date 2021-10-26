@@ -20,6 +20,9 @@
 #define RECASTALLOC_H
 
 #include <stddef.h>
+#include <stdint.h>
+
+#include <RecastAssert.h>
 
 /// Provides hint values to the memory allocator on how long the
 /// memory is expected to be used.
@@ -58,64 +61,257 @@ void* rcAlloc(size_t size, rcAllocHint hint);
 /// @see rcAlloc
 void rcFree(void* ptr);
 
+/// An implementation of operator new usable for placement new. The default one is part of STL (which we don't use).
+/// rcNewTag is a dummy type used to differentiate our operator from the STL one, in case users import both Recast
+/// and STL.
+struct rcNewTag {};
+inline void* operator new(size_t, const rcNewTag&, void* p) { return p; }
+inline void operator delete(void*, const rcNewTag&, void*) {}
 
-/// A simple dynamic array of integers.
+/// Signed to avoid warnnings when comparing to int loop indexes, and common error with comparing to zero.
+/// MSVC2010 has a bug where ssize_t is unsigned (!!!).
+typedef intptr_t rcSizeType;
+#define RC_SIZE_MAX INTPTR_MAX
+
+/// Macros to hint to the compiler about the likeliest branch. Please add a benchmark that demonstrates a performance
+/// improvement before introducing use cases.
+#if defined(__GNUC__) || defined(__clang__)
+#define rcLikely(x) __builtin_expect((x), true)
+#define rcUnlikely(x) __builtin_expect((x), false)
+#else
+#define rcLikely(x) (x)
+#define rcUnlikely(x) (x)
+#endif
+
+/// Variable-sized storage type. Mimics the interface of std::vector<T> with some notable differences:
+///  * Uses rcAlloc()/rcFree() to handle storage.
+///  * No support for a custom allocator.
+///  * Uses signed size instead of size_t to avoid warnings in for loops: "for (int i = 0; i < foo.size(); i++)"
+///  * Omits methods of limited utility: insert/erase, (bad performance), at (we don't use exceptions), operator=.
+///  * assign() and the pre-sizing constructor follow C++11 semantics -- they don't construct a temporary if no value is provided.
+///  * push_back() and resize() support adding values from the current vector. Range-based constructors and assign(begin, end) do not.
+///  * No specialization for bool.
+template <typename T, rcAllocHint H>
+class rcVectorBase {
+	rcSizeType m_size;
+	rcSizeType m_cap;
+	T* m_data;
+	// Constructs a T at the give address with either the copy constructor or the default.
+	static void construct(T* p, const T& v) { ::new(rcNewTag(), (void*)p) T(v); }
+	static void construct(T* p) { ::new(rcNewTag(), (void*)p) T; }
+	static void construct_range(T* begin, T* end);
+	static void construct_range(T* begin, T* end, const T& value);
+	static void copy_range(T* dst, const T* begin, const T* end);
+	void destroy_range(rcSizeType begin, rcSizeType end);
+	// Creates an array of the given size, copies all of this vector's data into it, and returns it.
+	T* allocate_and_copy(rcSizeType size);
+	void resize_impl(rcSizeType size, const T* value);
+ public:
+	typedef rcSizeType size_type;
+	typedef T value_type;
+
+	rcVectorBase() : m_size(0), m_cap(0), m_data(0) {};
+	rcVectorBase(const rcVectorBase<T, H>& other) : m_size(0), m_cap(0), m_data(0) { assign(other.begin(), other.end()); }
+	explicit rcVectorBase(rcSizeType count) : m_size(0), m_cap(0), m_data(0) { resize(count); }
+	rcVectorBase(rcSizeType count, const T& value) : m_size(0), m_cap(0), m_data(0) { resize(count, value); }
+	rcVectorBase(const T* begin, const T* end) : m_size(0), m_cap(0), m_data(0) { assign(begin, end); }
+	~rcVectorBase() { destroy_range(0, m_size); rcFree(m_data); }
+
+	// Unlike in std::vector, we return a bool to indicate whether the alloc was successful.
+	bool reserve(rcSizeType size);
+
+	void assign(rcSizeType count, const T& value) { clear(); resize(count, value); }
+	void assign(const T* begin, const T* end);
+
+	void resize(rcSizeType size) { resize_impl(size, NULL); }
+	void resize(rcSizeType size, const T& value) { resize_impl(size, &value); }
+	// Not implemented as resize(0) because resize requires T to be default-constructible.
+	void clear() { destroy_range(0, m_size); m_size = 0; }
+
+	void push_back(const T& value);
+	void pop_back() { rcAssert(m_size > 0); back().~T(); m_size--; }
+
+	rcSizeType size() const { return m_size; }
+	rcSizeType capacity() const { return m_cap; }
+	bool empty() const { return size() == 0; }
+
+	const T& operator[](rcSizeType i) const { rcAssert(i >= 0 && i < m_size); return m_data[i]; }
+	T& operator[](rcSizeType i) { rcAssert(i >= 0 && i < m_size); return m_data[i]; }
+
+	const T& front() const { rcAssert(m_size); return m_data[0]; }
+	T& front() { rcAssert(m_size); return m_data[0]; }
+	const T& back() const { rcAssert(m_size); return m_data[m_size - 1]; };
+	T& back() { rcAssert(m_size); return m_data[m_size - 1]; };
+	const T* data() const { return m_data; }
+	T* data() { return m_data; }
+
+	T* begin() { return m_data; }
+	T* end() { return m_data + m_size; }
+	const T* begin() const { return m_data; }
+	const T* end() const { return m_data + m_size; }
+
+	void swap(rcVectorBase<T, H>& other);
+
+	// Explicitly deleted.
+	rcVectorBase& operator=(const rcVectorBase<T, H>& other);
+};
+
+template<typename T, rcAllocHint H>
+bool rcVectorBase<T, H>::reserve(rcSizeType count) {
+	if (count <= m_cap) {
+		return true;
+	}
+	T* new_data = allocate_and_copy(count);
+	if (!new_data) {
+	  return false;
+	}
+	destroy_range(0, m_size);
+	rcFree(m_data);
+	m_data = new_data;
+	m_cap = count;
+	return true;
+}
+template <typename T, rcAllocHint H>
+T* rcVectorBase<T, H>::allocate_and_copy(rcSizeType size) {
+	rcAssert(RC_SIZE_MAX / static_cast<rcSizeType>(sizeof(T)) >= size);
+	T* new_data = static_cast<T*>(rcAlloc(sizeof(T) * size, H));
+	if (new_data) {
+		copy_range(new_data, m_data, m_data + m_size);
+	}
+	return new_data;
+}
+template <typename T, rcAllocHint H>
+void rcVectorBase<T, H>::assign(const T* begin, const T* end) {
+	clear();
+	reserve(end - begin);
+	m_size = end - begin;
+	copy_range(m_data, begin, end);
+}
+template <typename T, rcAllocHint H>
+void rcVectorBase<T, H>::push_back(const T& value) {
+	// rcLikely increases performance by ~50% on BM_rcVector_PushPreallocated,
+	// and by ~2-5% on BM_rcVector_Push.
+	if (rcLikely(m_size < m_cap)) {
+		construct(m_data + m_size++, value);
+		return;
+	}
+
+	rcAssert(RC_SIZE_MAX / 2 >= m_size);
+	rcSizeType new_cap = m_size ? 2*m_size : 1;
+	T* data = allocate_and_copy(new_cap);
+	// construct between allocate and destroy+free in case value is
+	// in this vector.
+	construct(data + m_size, value);
+	destroy_range(0, m_size);
+	m_size++;
+	m_cap = new_cap;
+	rcFree(m_data);
+	m_data = data;
+}
+template <typename T, rcAllocHint H>
+void rcVectorBase<T, H>::resize_impl(rcSizeType size, const T* value) {
+	if (size < m_size) {
+		destroy_range(size, m_size);
+		m_size = size;
+	} else if (size > m_size) {
+		T* new_data = allocate_and_copy(size);
+		// We defer deconstructing/freeing old data until after constructing
+		// new elements in case "value" is there.
+		if (value) {
+			construct_range(new_data + m_size, new_data + size, *value);
+		} else {
+			construct_range(new_data + m_size, new_data + size);
+		}
+		destroy_range(0, m_size);
+		rcFree(m_data);
+		m_data = new_data;
+		m_cap = size;
+		m_size = size;
+	}
+}
+template <typename T, rcAllocHint H>
+void rcVectorBase<T, H>::swap(rcVectorBase<T, H>& other) {
+	// TODO: Reorganize headers so we can use rcSwap here.
+	rcSizeType tmp_cap = other.m_cap;
+	rcSizeType tmp_size = other.m_size;
+	T* tmp_data = other.m_data;
+
+	other.m_cap = m_cap;
+	other.m_size = m_size;
+	other.m_data = m_data;
+
+	m_cap = tmp_cap;
+	m_size = tmp_size;
+	m_data = tmp_data;
+}
+// static
+template <typename T, rcAllocHint H>
+void rcVectorBase<T, H>::construct_range(T* begin, T* end) {
+	for (T* p = begin; p < end; p++) {
+		construct(p);
+	}
+}
+// static
+template <typename T, rcAllocHint H>
+void rcVectorBase<T, H>::construct_range(T* begin, T* end, const T& value) {
+	for (T* p = begin; p < end; p++) {
+		construct(p, value);
+	}
+}
+// static
+template <typename T, rcAllocHint H>
+void rcVectorBase<T, H>::copy_range(T* dst, const T* begin, const T* end) {
+	for (rcSizeType i = 0 ; i < end - begin; i++) {
+		construct(dst + i, begin[i]);
+	}
+}
+template <typename T, rcAllocHint H>
+void rcVectorBase<T, H>::destroy_range(rcSizeType begin, rcSizeType end) {
+	for (rcSizeType i = begin; i < end; i++) {
+		m_data[i].~T();
+	}
+}
+
+template <typename T>
+class rcTempVector : public rcVectorBase<T, RC_ALLOC_TEMP> {
+	typedef rcVectorBase<T, RC_ALLOC_TEMP> Base;
+public:
+	rcTempVector() : Base() {}
+	explicit rcTempVector(rcSizeType size) : Base(size) {}
+	rcTempVector(rcSizeType size, const T& value) : Base(size, value) {}
+	rcTempVector(const rcTempVector<T>& other) : Base(other) {}
+	rcTempVector(const T* begin, const T* end) : Base(begin, end) {}
+};
+template <typename T>
+class rcPermVector : public rcVectorBase<T, RC_ALLOC_PERM> {
+	typedef rcVectorBase<T, RC_ALLOC_PERM> Base;
+public:
+	rcPermVector() : Base() {}
+	explicit rcPermVector(rcSizeType size) : Base(size) {}
+	rcPermVector(rcSizeType size, const T& value) : Base(size, value) {}
+	rcPermVector(const rcPermVector<T>& other) : Base(other) {}
+	rcPermVector(const T* begin, const T* end) : Base(begin, end) {}
+};
+
+
+/// Legacy class. Prefer rcVector<int>.
 class rcIntArray
 {
-	int* m_data;
-	int m_size, m_cap;
-
-	void doResize(int n);
-	
-	// Explicitly disabled copy constructor and copy assignment operator.
-	rcIntArray(const rcIntArray&);
-	rcIntArray& operator=(const rcIntArray&);
-
+	rcTempVector<int> m_impl;
 public:
-	/// Constructs an instance with an initial array size of zero.
-	rcIntArray() : m_data(0), m_size(0), m_cap(0) {}
-
-	/// Constructs an instance initialized to the specified size.
-	///  @param[in]		n	The initial size of the integer array.
-	rcIntArray(int n) : m_data(0), m_size(0), m_cap(0) { resize(n); }
-	~rcIntArray() { rcFree(m_data); }
-
-	/// Specifies the new size of the integer array.
-	///  @param[in]		n	The new size of the integer array.
-	void resize(int n)
-	{
-		if (n > m_cap)
-			doResize(n);
-		
-		m_size = n;
-	}
-
-	/// Push the specified integer onto the end of the array and increases the size by one.
-	///  @param[in]		item	The new value.
-	void push(int item) { resize(m_size+1); m_data[m_size-1] = item; }
-
-	/// Returns the value at the end of the array and reduces the size by one.
-	///  @return The value at the end of the array.
+	rcIntArray() {}
+	rcIntArray(int n) : m_impl(n, 0) {}
+	void push(int item) { m_impl.push_back(item); }
+	void resize(int size) { m_impl.resize(size); }
 	int pop()
 	{
-		if (m_size > 0)
-			m_size--;
-		
-		return m_data[m_size];
+		int v = m_impl.back();
+		m_impl.pop_back();
+		return v;
 	}
-
-	/// The value at the specified array index.
-	/// @warning Does not provide overflow protection.
-	///  @param[in]		i	The index of the value.
-	const int& operator[](int i) const { return m_data[i]; }
-
-	/// The value at the specified array index.
-	/// @warning Does not provide overflow protection.
-	///  @param[in]		i	The index of the value.
-	int& operator[](int i) { return m_data[i]; }
-
-	/// The current size of the integer array.
-	int size() const { return m_size; }
+	int size() const { return static_cast<int>(m_impl.size()); }
+	int& operator[](int index) { return m_impl[index]; }
+	int operator[](int index) const { return m_impl[index]; }
 };
 
 /// A simple helper class used to delete an array when it goes out of scope.

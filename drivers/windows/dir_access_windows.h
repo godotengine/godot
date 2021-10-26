@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,7 +33,7 @@
 
 #ifdef WINDOWS_ENABLED
 
-#include "core/os/dir_access.h"
+#include "core/io/dir_access.h"
 
 /**
 	@author Juan Linietsky <reduz@gmail.com>
@@ -42,21 +42,20 @@
 struct DirAccessWindowsPrivate;
 
 class DirAccessWindows : public DirAccess {
-
 	enum {
 		MAX_DRIVES = 26
 	};
 
-	DirAccessWindowsPrivate *p;
+	DirAccessWindowsPrivate *p = nullptr;
 	/* Windows stuff */
 
-	char drives[MAX_DRIVES]; // a-z:
-	int drive_count;
+	char drives[MAX_DRIVES] = { 0 }; // a-z:
+	int drive_count = 0;
 
 	String current_dir;
 
-	bool _cisdir;
-	bool _cishidden;
+	bool _cisdir = false;
+	bool _cishidden = false;
 
 public:
 	virtual Error list_dir_begin(); ///< This starts dir listing
@@ -69,7 +68,7 @@ public:
 	virtual String get_drive(int p_drive);
 
 	virtual Error change_dir(String p_dir); ///< can be relative or absolute, return false on success
-	virtual String get_current_dir(); ///< return current dir location
+	virtual String get_current_dir(bool p_include_drive = true); ///< return current dir location
 
 	virtual bool file_exists(String p_file);
 	virtual bool dir_exists(String p_dir);
@@ -79,8 +78,11 @@ public:
 	virtual Error rename(String p_path, String p_new_path);
 	virtual Error remove(String p_path);
 
-	//virtual FileType get_file_type() const;
-	size_t get_space_left();
+	virtual bool is_link(String p_file) { return false; };
+	virtual String read_link(String p_file) { return p_file; };
+	virtual Error create_link(String p_source, String p_target) { return FAILED; };
+
+	uint64_t get_space_left();
 
 	virtual String get_filesystem_type() const;
 

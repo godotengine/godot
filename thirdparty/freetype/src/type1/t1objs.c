@@ -4,7 +4,7 @@
  *
  *   Type 1 objects manager (body).
  *
- * Copyright (C) 1996-2019 by
+ * Copyright (C) 1996-2020 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -16,12 +16,11 @@
  */
 
 
-#include <ft2build.h>
-#include FT_INTERNAL_CALC_H
-#include FT_INTERNAL_DEBUG_H
-#include FT_INTERNAL_STREAM_H
-#include FT_TRUETYPE_IDS_H
-#include FT_DRIVER_H
+#include <freetype/internal/ftcalc.h>
+#include <freetype/internal/ftdebug.h>
+#include <freetype/internal/ftstream.h>
+#include <freetype/ttnameid.h>
+#include <freetype/ftdriver.h>
 
 #include "t1gload.h"
 #include "t1load.h"
@@ -32,8 +31,8 @@
 #include "t1afm.h"
 #endif
 
-#include FT_SERVICE_POSTSCRIPT_CMAPS_H
-#include FT_INTERNAL_POSTSCRIPT_AUX_H
+#include <freetype/internal/services/svpscmap.h>
+#include <freetype/internal/psaux.h>
 
 
   /**************************************************************************
@@ -347,8 +346,8 @@
     if ( error )
       goto Exit;
 
-    FT_TRACE2(( "T1_Face_Init: %08p (index %d)\n",
-                face,
+    FT_TRACE2(( "T1_Face_Init: %p (index %d)\n",
+                (void *)face,
                 face_index ));
 
     /* if we just wanted to check the format, leave successfully now */

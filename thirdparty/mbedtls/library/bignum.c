@@ -1,8 +1,14 @@
 /*
  *  Multi-precision integer library
  *
- *  Copyright (C) 2006-2015, ARM Limited, All Rights Reserved
- *  SPDX-License-Identifier: Apache-2.0
+ *  Copyright The Mbed TLS Contributors
+ *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
+ *
+ *  This file is provided under the Apache License 2.0, or the
+ *  GNU General Public License v2.0 or later.
+ *
+ *  **********
+ *  Apache License 2.0:
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may
  *  not use this file except in compliance with the License.
@@ -16,7 +22,26 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  *
- *  This file is part of mbed TLS (https://tls.mbed.org)
+ *  **********
+ *
+ *  **********
+ *  GNU General Public License v2.0 or later:
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along
+ *  with this program; if not, write to the Free Software Foundation, Inc.,
+ *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *  **********
  */
 
 /*
@@ -157,9 +182,10 @@ int mbedtls_mpi_shrink( mbedtls_mpi *X, size_t nblimbs )
     if( nblimbs > MBEDTLS_MPI_MAX_LIMBS )
         return( MBEDTLS_ERR_MPI_ALLOC_FAILED );
 
-    /* Actually resize up in this case */
+    /* Actually resize up if there are currently fewer than nblimbs limbs. */
     if( X->n <= nblimbs )
         return( mbedtls_mpi_grow( X, nblimbs ) );
+    /* After this point, then X->n > nblimbs and in particular X->n > 0. */
 
     for( i = X->n - 1; i > 0; i-- )
         if( X->p[i] != 0 )
@@ -198,7 +224,7 @@ int mbedtls_mpi_copy( mbedtls_mpi *X, const mbedtls_mpi *Y )
     if( X == Y )
         return( 0 );
 
-    if( Y->p == NULL )
+    if( Y->n == 0 )
     {
         mbedtls_mpi_free( X );
         return( 0 );
@@ -241,6 +267,67 @@ void mbedtls_mpi_swap( mbedtls_mpi *X, mbedtls_mpi *Y )
     memcpy(  Y, &T, sizeof( mbedtls_mpi ) );
 }
 
+/**
+ * Select between two sign values in constant-time.
+ *
+ * This is functionally equivalent to second ? a : b but uses only bit
+ * operations in order to avoid branches.
+ *
+ * \param[in] a         The first sign; must be either +1 or -1.
+ * \param[in] b         The second sign; must be either +1 or -1.
+ * \param[in] second    Must be either 1 (return b) or 0 (return a).
+ *
+ * \return The selected sign value.
+ */
+static int mpi_safe_cond_select_sign( int a, int b, unsigned char second )
+{
+    /* In order to avoid questions about what we can reasonnably assume about
+     * the representations of signed integers, move everything to unsigned
+     * by taking advantage of the fact that a and b are either +1 or -1. */
+    unsigned ua = a + 1;
+    unsigned ub = b + 1;
+
+    /* second was 0 or 1, mask is 0 or 2 as are ua and ub */
+    const unsigned mask = second << 1;
+
+    /* select ua or ub */
+    unsigned ur = ( ua & ~mask ) | ( ub & mask );
+
+    /* ur is now 0 or 2, convert back to -1 or +1 */
+    return( (int) ur - 1 );
+}
+
+/*
+ * Conditionally assign dest = src, without leaking information
+ * about whether the assignment was made or not.
+ * dest and src must be arrays of limbs of size n.
+ * assign must be 0 or 1.
+ */
+static void mpi_safe_cond_assign( size_t n,
+                                  mbedtls_mpi_uint *dest,
+                                  const mbedtls_mpi_uint *src,
+                                  unsigned char assign )
+{
+    size_t i;
+
+    /* MSVC has a warning about unary minus on unsigned integer types,
+     * but this is well-defined and precisely what we want to do here. */
+#if defined(_MSC_VER)
+#pragma warning( push )
+#pragma warning( disable : 4146 )
+#endif
+
+    /* all-bits 1 if assign is 1, all-bits 0 if assign is 0 */
+    const mbedtls_mpi_uint mask = -assign;
+
+#if defined(_MSC_VER)
+#pragma warning( pop )
+#endif
+
+    for( i = 0; i < n; i++ )
+        dest[i] = ( src[i] & mask ) | ( dest[i] & ~mask );
+}
+
 /*
  * Conditionally assign X = Y, without leaking information
  * about whether the assignment was made or not.
@@ -250,21 +337,34 @@ int mbedtls_mpi_safe_cond_assign( mbedtls_mpi *X, const mbedtls_mpi *Y, unsigned
 {
     int ret = 0;
     size_t i;
+    mbedtls_mpi_uint limb_mask;
     MPI_VALIDATE_RET( X != NULL );
     MPI_VALIDATE_RET( Y != NULL );
 
+    /* MSVC has a warning about unary minus on unsigned integer types,
+     * but this is well-defined and precisely what we want to do here. */
+#if defined(_MSC_VER)
+#pragma warning( push )
+#pragma warning( disable : 4146 )
+#endif
+
     /* make sure assign is 0 or 1 in a time-constant manner */
-    assign = (assign | (unsigned char)-assign) >> 7;
+    assign = (assign | (unsigned char)-assign) >> (sizeof( assign ) * 8 - 1);
+    /* all-bits 1 if assign is 1, all-bits 0 if assign is 0 */
+    limb_mask = -assign;
+
+#if defined(_MSC_VER)
+#pragma warning( pop )
+#endif
 
     MBEDTLS_MPI_CHK( mbedtls_mpi_grow( X, Y->n ) );
 
-    X->s = X->s * ( 1 - assign ) + Y->s * assign;
+    X->s = mpi_safe_cond_select_sign( X->s, Y->s, assign );
 
-    for( i = 0; i < Y->n; i++ )
-        X->p[i] = X->p[i] * ( 1 - assign ) + Y->p[i] * assign;
+    mpi_safe_cond_assign( Y->n, X->p, Y->p, assign );
 
-    for( ; i < X->n; i++ )
-        X->p[i] *= ( 1 - assign );
+    for( i = Y->n; i < X->n; i++ )
+        X->p[i] &= ~limb_mask;
 
 cleanup:
     return( ret );
@@ -280,6 +380,7 @@ int mbedtls_mpi_safe_cond_swap( mbedtls_mpi *X, mbedtls_mpi *Y, unsigned char sw
 {
     int ret, s;
     size_t i;
+    mbedtls_mpi_uint limb_mask;
     mbedtls_mpi_uint tmp;
     MPI_VALIDATE_RET( X != NULL );
     MPI_VALIDATE_RET( Y != NULL );
@@ -287,22 +388,35 @@ int mbedtls_mpi_safe_cond_swap( mbedtls_mpi *X, mbedtls_mpi *Y, unsigned char sw
     if( X == Y )
         return( 0 );
 
+    /* MSVC has a warning about unary minus on unsigned integer types,
+     * but this is well-defined and precisely what we want to do here. */
+#if defined(_MSC_VER)
+#pragma warning( push )
+#pragma warning( disable : 4146 )
+#endif
+
     /* make sure swap is 0 or 1 in a time-constant manner */
-    swap = (swap | (unsigned char)-swap) >> 7;
+    swap = (swap | (unsigned char)-swap) >> (sizeof( swap ) * 8 - 1);
+    /* all-bits 1 if swap is 1, all-bits 0 if swap is 0 */
+    limb_mask = -swap;
+
+#if defined(_MSC_VER)
+#pragma warning( pop )
+#endif
 
     MBEDTLS_MPI_CHK( mbedtls_mpi_grow( X, Y->n ) );
     MBEDTLS_MPI_CHK( mbedtls_mpi_grow( Y, X->n ) );
 
     s = X->s;
-    X->s = X->s * ( 1 - swap ) + Y->s * swap;
-    Y->s = Y->s * ( 1 - swap ) +    s * swap;
+    X->s = mpi_safe_cond_select_sign( X->s, Y->s, swap );
+    Y->s = mpi_safe_cond_select_sign( Y->s, s, swap );
 
 
     for( i = 0; i < X->n; i++ )
     {
         tmp = X->p[i];
-        X->p[i] = X->p[i] * ( 1 - swap ) + Y->p[i] * swap;
-        Y->p[i] = Y->p[i] * ( 1 - swap ) +     tmp * swap;
+        X->p[i] = ( X->p[i] & ~limb_mask ) | ( Y->p[i] & limb_mask );
+        Y->p[i] = ( Y->p[i] & ~limb_mask ) | (     tmp & limb_mask );
     }
 
 cleanup:
@@ -459,6 +573,7 @@ int mbedtls_mpi_read_string( mbedtls_mpi *X, int radix, const char *s )
 {
     int ret;
     size_t i, j, slen, n;
+    int sign = 1;
     mbedtls_mpi_uint d;
     mbedtls_mpi T;
     MPI_VALIDATE_RET( X != NULL );
@@ -468,6 +583,12 @@ int mbedtls_mpi_read_string( mbedtls_mpi *X, int radix, const char *s )
         return( MBEDTLS_ERR_MPI_BAD_INPUT_DATA );
 
     mbedtls_mpi_init( &T );
+
+    if( s[0] == '-' )
+    {
+        ++s;
+        sign = -1;
+    }
 
     slen = strlen( s );
 
@@ -483,12 +604,6 @@ int mbedtls_mpi_read_string( mbedtls_mpi *X, int radix, const char *s )
 
         for( i = slen, j = 0; i > 0; i--, j++ )
         {
-            if( i == 1 && s[i - 1] == '-' )
-            {
-                X->s = -1;
-                break;
-            }
-
             MBEDTLS_MPI_CHK( mpi_get_digit( &d, radix, s[i - 1] ) );
             X->p[j / ( 2 * ciL )] |= d << ( ( j % ( 2 * ciL ) ) << 2 );
         }
@@ -499,25 +614,14 @@ int mbedtls_mpi_read_string( mbedtls_mpi *X, int radix, const char *s )
 
         for( i = 0; i < slen; i++ )
         {
-            if( i == 0 && s[i] == '-' )
-            {
-                X->s = -1;
-                continue;
-            }
-
             MBEDTLS_MPI_CHK( mpi_get_digit( &d, radix, s[i] ) );
             MBEDTLS_MPI_CHK( mbedtls_mpi_mul_int( &T, X, radix ) );
-
-            if( X->s == 1 )
-            {
-                MBEDTLS_MPI_CHK( mbedtls_mpi_add_int( X, &T, d ) );
-            }
-            else
-            {
-                MBEDTLS_MPI_CHK( mbedtls_mpi_sub_int( X, &T, d ) );
-            }
+            MBEDTLS_MPI_CHK( mbedtls_mpi_add_int( X, &T, d ) );
         }
     }
+
+    if( sign < 0 && mbedtls_mpi_bitlen( X ) != 0 )
+        X->s = -1;
 
 cleanup:
 
@@ -527,26 +631,38 @@ cleanup:
 }
 
 /*
- * Helper to write the digits high-order first
+ * Helper to write the digits high-order first.
  */
-static int mpi_write_hlp( mbedtls_mpi *X, int radix, char **p )
+static int mpi_write_hlp( mbedtls_mpi *X, int radix,
+                          char **p, const size_t buflen )
 {
     int ret;
     mbedtls_mpi_uint r;
+    size_t length = 0;
+    char *p_end = *p + buflen;
 
-    if( radix < 2 || radix > 16 )
-        return( MBEDTLS_ERR_MPI_BAD_INPUT_DATA );
+    do
+    {
+        if( length >= buflen )
+        {
+            return( MBEDTLS_ERR_MPI_BUFFER_TOO_SMALL );
+        }
 
-    MBEDTLS_MPI_CHK( mbedtls_mpi_mod_int( &r, X, radix ) );
-    MBEDTLS_MPI_CHK( mbedtls_mpi_div_int( X, NULL, X, radix ) );
+        MBEDTLS_MPI_CHK( mbedtls_mpi_mod_int( &r, X, radix ) );
+        MBEDTLS_MPI_CHK( mbedtls_mpi_div_int( X, NULL, X, radix ) );
+        /*
+         * Write the residue in the current position, as an ASCII character.
+         */
+        if( r < 0xA )
+            *(--p_end) = (char)( '0' + r );
+        else
+            *(--p_end) = (char)( 'A' + ( r - 0xA ) );
 
-    if( mbedtls_mpi_cmp_int( X, 0 ) != 0 )
-        MBEDTLS_MPI_CHK( mpi_write_hlp( X, radix, p ) );
+        length++;
+    } while( mbedtls_mpi_cmp_int( X, 0 ) != 0 );
 
-    if( r < 10 )
-        *(*p)++ = (char)( r + 0x30 );
-    else
-        *(*p)++ = (char)( r + 0x37 );
+    memmove( *p, p_end, length );
+    *p += length;
 
 cleanup:
 
@@ -570,15 +686,20 @@ int mbedtls_mpi_write_string( const mbedtls_mpi *X, int radix,
     if( radix < 2 || radix > 16 )
         return( MBEDTLS_ERR_MPI_BAD_INPUT_DATA );
 
-    n = mbedtls_mpi_bitlen( X );
-    if( radix >=  4 ) n >>= 1;
-    if( radix >= 16 ) n >>= 1;
-    /*
-     * Round up the buffer length to an even value to ensure that there is
-     * enough room for hexadecimal values that can be represented in an odd
-     * number of digits.
-     */
-    n += 3 + ( ( n + 1 ) & 1 );
+    n = mbedtls_mpi_bitlen( X ); /* Number of bits necessary to present `n`. */
+    if( radix >=  4 ) n >>= 1;   /* Number of 4-adic digits necessary to present
+                                  * `n`. If radix > 4, this might be a strict
+                                  * overapproximation of the number of
+                                  * radix-adic digits needed to present `n`. */
+    if( radix >= 16 ) n >>= 1;   /* Number of hexadecimal digits necessary to
+                                  * present `n`. */
+
+    n += 1; /* Terminating null byte */
+    n += 1; /* Compensate for the divisions above, which round down `n`
+             * in case it's not even. */
+    n += 1; /* Potential '-'-sign. */
+    n += ( n & 1 ); /* Make n even to have enough space for hexadecimal writing,
+                     * which always uses an even number of hex-digits. */
 
     if( buflen < n )
     {
@@ -590,7 +711,10 @@ int mbedtls_mpi_write_string( const mbedtls_mpi *X, int radix,
     mbedtls_mpi_init( &T );
 
     if( X->s == -1 )
+    {
         *p++ = '-';
+        buflen--;
+    }
 
     if( radix == 16 )
     {
@@ -619,7 +743,7 @@ int mbedtls_mpi_write_string( const mbedtls_mpi *X, int radix,
         if( T.s == -1 )
             T.s = 1;
 
-        MBEDTLS_MPI_CHK( mpi_write_hlp( &T, radix, &p ) );
+        MBEDTLS_MPI_CHK( mpi_write_hlp( &T, radix, &p, buflen ) );
     }
 
     *p++ = '\0';
@@ -715,14 +839,106 @@ cleanup:
 }
 #endif /* MBEDTLS_FS_IO */
 
+
+/* Convert a big-endian byte array aligned to the size of mbedtls_mpi_uint
+ * into the storage form used by mbedtls_mpi. */
+
+static mbedtls_mpi_uint mpi_uint_bigendian_to_host_c( mbedtls_mpi_uint x )
+{
+    uint8_t i;
+    unsigned char *x_ptr;
+    mbedtls_mpi_uint tmp = 0;
+
+    for( i = 0, x_ptr = (unsigned char*) &x; i < ciL; i++, x_ptr++ )
+    {
+        tmp <<= CHAR_BIT;
+        tmp |= (mbedtls_mpi_uint) *x_ptr;
+    }
+
+    return( tmp );
+}
+
+static mbedtls_mpi_uint mpi_uint_bigendian_to_host( mbedtls_mpi_uint x )
+{
+#if defined(__BYTE_ORDER__)
+
+/* Nothing to do on bigendian systems. */
+#if ( __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__ )
+    return( x );
+#endif /* __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__ */
+
+#if ( __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__ )
+
+/* For GCC and Clang, have builtins for byte swapping. */
+#if defined(__GNUC__) && defined(__GNUC_PREREQ)
+#if __GNUC_PREREQ(4,3)
+#define have_bswap
+#endif
+#endif
+
+#if defined(__clang__) && defined(__has_builtin)
+#if __has_builtin(__builtin_bswap32)  &&                 \
+    __has_builtin(__builtin_bswap64)
+#define have_bswap
+#endif
+#endif
+
+#if defined(have_bswap)
+    /* The compiler is hopefully able to statically evaluate this! */
+    switch( sizeof(mbedtls_mpi_uint) )
+    {
+        case 4:
+            return( __builtin_bswap32(x) );
+        case 8:
+            return( __builtin_bswap64(x) );
+    }
+#endif
+#endif /* __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__ */
+#endif /* __BYTE_ORDER__ */
+
+    /* Fall back to C-based reordering if we don't know the byte order
+     * or we couldn't use a compiler-specific builtin. */
+    return( mpi_uint_bigendian_to_host_c( x ) );
+}
+
+static void mpi_bigendian_to_host( mbedtls_mpi_uint * const p, size_t limbs )
+{
+    mbedtls_mpi_uint *cur_limb_left;
+    mbedtls_mpi_uint *cur_limb_right;
+    if( limbs == 0 )
+        return;
+
+    /*
+     * Traverse limbs and
+     * - adapt byte-order in each limb
+     * - swap the limbs themselves.
+     * For that, simultaneously traverse the limbs from left to right
+     * and from right to left, as long as the left index is not bigger
+     * than the right index (it's not a problem if limbs is odd and the
+     * indices coincide in the last iteration).
+     */
+    for( cur_limb_left = p, cur_limb_right = p + ( limbs - 1 );
+         cur_limb_left <= cur_limb_right;
+         cur_limb_left++, cur_limb_right-- )
+    {
+        mbedtls_mpi_uint tmp;
+        /* Note that if cur_limb_left == cur_limb_right,
+         * this code effectively swaps the bytes only once. */
+        tmp             = mpi_uint_bigendian_to_host( *cur_limb_left  );
+        *cur_limb_left  = mpi_uint_bigendian_to_host( *cur_limb_right );
+        *cur_limb_right = tmp;
+    }
+}
+
 /*
  * Import X from unsigned binary data, big endian
  */
 int mbedtls_mpi_read_binary( mbedtls_mpi *X, const unsigned char *buf, size_t buflen )
 {
     int ret;
-    size_t i, j;
-    size_t const limbs = CHARS_TO_LIMBS( buflen );
+    size_t const limbs    = CHARS_TO_LIMBS( buflen );
+    size_t const overhead = ( limbs * ciL ) - buflen;
+    unsigned char *Xp;
 
     MPI_VALIDATE_RET( X != NULL );
     MPI_VALIDATE_RET( buflen == 0 || buf != NULL );
@@ -734,11 +950,17 @@ int mbedtls_mpi_read_binary( mbedtls_mpi *X, const unsigned char *buf, size_t bu
         mbedtls_mpi_init( X );
         MBEDTLS_MPI_CHK( mbedtls_mpi_grow( X, limbs ) );
     }
-
     MBEDTLS_MPI_CHK( mbedtls_mpi_lset( X, 0 ) );
 
-    for( i = buflen, j = 0; i > 0; i--, j++ )
-        X->p[j / ciL] |= ((mbedtls_mpi_uint) buf[i - 1]) << ((j % ciL) << 3);
+    /* Avoid calling `memcpy` with NULL source argument,
+     * even if buflen is 0. */
+    if( buf != NULL )
+    {
+        Xp = (unsigned char*) X->p;
+        memcpy( Xp + overhead, buf, buflen );
+
+        mpi_bigendian_to_host( X->p, limbs );
+    }
 
 cleanup:
 
@@ -953,6 +1175,107 @@ int mbedtls_mpi_cmp_mpi( const mbedtls_mpi *X, const mbedtls_mpi *Y )
     return( 0 );
 }
 
+/** Decide if an integer is less than the other, without branches.
+ *
+ * \param x         First integer.
+ * \param y         Second integer.
+ *
+ * \return          1 if \p x is less than \p y, 0 otherwise
+ */
+static unsigned ct_lt_mpi_uint( const mbedtls_mpi_uint x,
+        const mbedtls_mpi_uint y )
+{
+    mbedtls_mpi_uint ret;
+    mbedtls_mpi_uint cond;
+
+    /*
+     * Check if the most significant bits (MSB) of the operands are different.
+     */
+    cond = ( x ^ y );
+    /*
+     * If the MSB are the same then the difference x-y will be negative (and
+     * have its MSB set to 1 during conversion to unsigned) if and only if x<y.
+     */
+    ret = ( x - y ) & ~cond;
+    /*
+     * If the MSB are different, then the operand with the MSB of 1 is the
+     * bigger. (That is if y has MSB of 1, then x<y is true and it is false if
+     * the MSB of y is 0.)
+     */
+    ret |= y & cond;
+
+
+    ret = ret >> ( biL - 1 );
+
+    return (unsigned) ret;
+}
+
+/*
+ * Compare signed values in constant time
+ */
+int mbedtls_mpi_lt_mpi_ct( const mbedtls_mpi *X, const mbedtls_mpi *Y,
+        unsigned *ret )
+{
+    size_t i;
+    /* The value of any of these variables is either 0 or 1 at all times. */
+    unsigned cond, done, X_is_negative, Y_is_negative;
+
+    MPI_VALIDATE_RET( X != NULL );
+    MPI_VALIDATE_RET( Y != NULL );
+    MPI_VALIDATE_RET( ret != NULL );
+
+    if( X->n != Y->n )
+        return MBEDTLS_ERR_MPI_BAD_INPUT_DATA;
+
+    /*
+     * Set sign_N to 1 if N >= 0, 0 if N < 0.
+     * We know that N->s == 1 if N >= 0 and N->s == -1 if N < 0.
+     */
+    X_is_negative = ( X->s & 2 ) >> 1;
+    Y_is_negative = ( Y->s & 2 ) >> 1;
+
+    /*
+     * If the signs are different, then the positive operand is the bigger.
+     * That is if X is negative (X_is_negative == 1), then X < Y is true and it
+     * is false if X is positive (X_is_negative == 0).
+     */
+    cond = ( X_is_negative ^ Y_is_negative );
+    *ret = cond & X_is_negative;
+
+    /*
+     * This is a constant-time function. We might have the result, but we still
+     * need to go through the loop. Record if we have the result already.
+     */
+    done = cond;
+
+    for( i = X->n; i > 0; i-- )
+    {
+        /*
+         * If Y->p[i - 1] < X->p[i - 1] then X < Y is true if and only if both
+         * X and Y are negative.
+         *
+         * Again even if we can make a decision, we just mark the result and
+         * the fact that we are done and continue looping.
+         */
+        cond = ct_lt_mpi_uint( Y->p[i - 1], X->p[i - 1] );
+        *ret |= cond & ( 1 - done ) & X_is_negative;
+        done |= cond;
+
+        /*
+         * If X->p[i - 1] < Y->p[i - 1] then X < Y is true if and only if both
+         * X and Y are positive.
+         *
+         * Again even if we can make a decision, we just mark the result and
+         * the fact that we are done and continue looping.
+         */
+        cond = ct_lt_mpi_uint( X->p[i - 1], Y->p[i - 1] );
+        *ret |= cond & ( 1 - done ) & ( 1 - X_is_negative );
+        done |= cond;
+    }
+
+    return( 0 );
+}
+
 /*
  * Compare signed values
  */
@@ -1029,10 +1352,24 @@ cleanup:
     return( ret );
 }
 
-/*
- * Helper for mbedtls_mpi subtraction
+/**
+ * Helper for mbedtls_mpi subtraction.
+ *
+ * Calculate d - s where d and s have the same size.
+ * This function operates modulo (2^ciL)^n and returns the carry
+ * (1 if there was a wraparound, i.e. if `d < s`, and 0 otherwise).
+ *
+ * \param n             Number of limbs of \p d and \p s.
+ * \param[in,out] d     On input, the left operand.
+ *                      On output, the result of the subtraction:
+ * \param[in] s         The right operand.
+ *
+ * \return              1 if `d < s`.
+ *                      0 if `d >= s`.
  */
-static void mpi_sub_hlp( size_t n, mbedtls_mpi_uint *s, mbedtls_mpi_uint *d )
+static mbedtls_mpi_uint mpi_sub_hlp( size_t n,
+                                     mbedtls_mpi_uint *d,
+                                     const mbedtls_mpi_uint *s )
 {
     size_t i;
     mbedtls_mpi_uint c, z;
@@ -1043,27 +1380,21 @@ static void mpi_sub_hlp( size_t n, mbedtls_mpi_uint *s, mbedtls_mpi_uint *d )
         c = ( *d < *s ) + z; *d -= *s;
     }
 
-    while( c != 0 )
-    {
-        z = ( *d < c ); *d -= c;
-        c = z; d++;
-    }
+    return( c );
 }
 
 /*
- * Unsigned subtraction: X = |A| - |B|  (HAC 14.9)
+ * Unsigned subtraction: X = |A| - |B|  (HAC 14.9, 14.10)
  */
 int mbedtls_mpi_sub_abs( mbedtls_mpi *X, const mbedtls_mpi *A, const mbedtls_mpi *B )
 {
     mbedtls_mpi TB;
     int ret;
     size_t n;
+    mbedtls_mpi_uint carry;
     MPI_VALIDATE_RET( X != NULL );
     MPI_VALIDATE_RET( A != NULL );
     MPI_VALIDATE_RET( B != NULL );
-
-    if( mbedtls_mpi_cmp_abs( A, B ) < 0 )
-        return( MBEDTLS_ERR_MPI_NEGATIVE_VALUE );
 
     mbedtls_mpi_init( &TB );
 
@@ -1086,8 +1417,28 @@ int mbedtls_mpi_sub_abs( mbedtls_mpi *X, const mbedtls_mpi *A, const mbedtls_mpi
     for( n = B->n; n > 0; n-- )
         if( B->p[n - 1] != 0 )
             break;
+    if( n > A->n )
+    {
+        /* B >= (2^ciL)^n > A */
+        ret = MBEDTLS_ERR_MPI_NEGATIVE_VALUE;
+        goto cleanup;
+    }
 
-    mpi_sub_hlp( n, B->p, X->p );
+    carry = mpi_sub_hlp( n, X->p, B->p );
+    if( carry != 0 )
+    {
+        /* Propagate the carry to the first nonzero limb of X. */
+        for( ; n < X->n && X->p[n] == 0; n++ )
+            --X->p[n];
+        /* If we ran out of space for the carry, it means that the result
+         * is negative. */
+        if( n == X->n )
+        {
+            ret = MBEDTLS_ERR_MPI_NEGATIVE_VALUE;
+            goto cleanup;
+        }
+        --X->p[n];
+    }
 
 cleanup:
 
@@ -1282,6 +1633,7 @@ int mbedtls_mpi_mul_mpi( mbedtls_mpi *X, const mbedtls_mpi *A, const mbedtls_mpi
     int ret;
     size_t i, j;
     mbedtls_mpi TA, TB;
+    int result_is_zero = 0;
     MPI_VALIDATE_RET( X != NULL );
     MPI_VALIDATE_RET( A != NULL );
     MPI_VALIDATE_RET( B != NULL );
@@ -1294,10 +1646,14 @@ int mbedtls_mpi_mul_mpi( mbedtls_mpi *X, const mbedtls_mpi *A, const mbedtls_mpi
     for( i = A->n; i > 0; i-- )
         if( A->p[i - 1] != 0 )
             break;
+    if( i == 0 )
+        result_is_zero = 1;
 
     for( j = B->n; j > 0; j-- )
         if( B->p[j - 1] != 0 )
             break;
+    if( j == 0 )
+        result_is_zero = 1;
 
     MBEDTLS_MPI_CHK( mbedtls_mpi_grow( X, i + j ) );
     MBEDTLS_MPI_CHK( mbedtls_mpi_lset( X, 0 ) );
@@ -1305,7 +1661,14 @@ int mbedtls_mpi_mul_mpi( mbedtls_mpi *X, const mbedtls_mpi *A, const mbedtls_mpi
     for( ; j > 0; j-- )
         mpi_mul_hlp( i, A->p, X->p + j - 1, B->p[j - 1] );
 
-    X->s = A->s * B->s;
+    /* If the result is 0, we don't shortcut the operation, which reduces
+     * but does not eliminate side channels leaking the zero-ness. We do
+     * need to take care to set the sign bit properly since the library does
+     * not fully support an MPI object with a value of 0 and s == -1. */
+    if( result_is_zero )
+        X->s = 1;
+    else
+        X->s = A->s * B->s;
 
 cleanup:
 
@@ -1667,17 +2030,33 @@ static void mpi_montg_init( mbedtls_mpi_uint *mm, const mbedtls_mpi *N )
     *mm = ~x + 1;
 }
 
-/*
- * Montgomery multiplication: A = A * B * R^-1 mod N  (HAC 14.36)
+/** Montgomery multiplication: A = A * B * R^-1 mod N  (HAC 14.36)
+ *
+ * \param[in,out]   A   One of the numbers to multiply.
+ *                      It must have at least as many limbs as N
+ *                      (A->n >= N->n), and any limbs beyond n are ignored.
+ *                      On successful completion, A contains the result of
+ *                      the multiplication A * B * R^-1 mod N where
+ *                      R = (2^ciL)^n.
+ * \param[in]       B   One of the numbers to multiply.
+ *                      It must be nonzero and must not have more limbs than N
+ *                      (B->n <= N->n).
+ * \param[in]       N   The modulo. N must be odd.
+ * \param           mm  The value calculated by `mpi_montg_init(&mm, N)`.
+ *                      This is -N^-1 mod 2^ciL.
+ * \param[in,out]   T   A bignum for temporary storage.
+ *                      It must be at least twice the limb size of N plus 2
+ *                      (T->n >= 2 * (N->n + 1)).
+ *                      Its initial content is unused and
+ *                      its final content is indeterminate.
+ *                      Note that unlike the usual convention in the library
+ *                      for `const mbedtls_mpi*`, the content of T can change.
  */
-static int mpi_montmul( mbedtls_mpi *A, const mbedtls_mpi *B, const mbedtls_mpi *N, mbedtls_mpi_uint mm,
+static void mpi_montmul( mbedtls_mpi *A, const mbedtls_mpi *B, const mbedtls_mpi *N, mbedtls_mpi_uint mm,
                          const mbedtls_mpi *T )
 {
     size_t i, n, m;
     mbedtls_mpi_uint u0, u1, *d;
-
-    if( T->n < N->n + 1 || T->p == NULL )
-        return( MBEDTLS_ERR_MPI_BAD_INPUT_DATA );
 
     memset( T->p, 0, T->n * ciL );
 
@@ -1699,22 +2078,34 @@ static int mpi_montmul( mbedtls_mpi *A, const mbedtls_mpi *B, const mbedtls_mpi 
         *d++ = u0; d[n + 1] = 0;
     }
 
-    memcpy( A->p, d, ( n + 1 ) * ciL );
+    /* At this point, d is either the desired result or the desired result
+     * plus N. We now potentially subtract N, avoiding leaking whether the
+     * subtraction is performed through side channels. */
 
-    if( mbedtls_mpi_cmp_abs( A, N ) >= 0 )
-        mpi_sub_hlp( n, N->p, A->p );
-    else
-        /* prevent timing attacks */
-        mpi_sub_hlp( n, A->p, T->p );
-
-    return( 0 );
+    /* Copy the n least significant limbs of d to A, so that
+     * A = d if d < N (recall that N has n limbs). */
+    memcpy( A->p, d, n * ciL );
+    /* If d >= N then we want to set A to d - N. To prevent timing attacks,
+     * do the calculation without using conditional tests. */
+    /* Set d to d0 + (2^biL)^n - N where d0 is the current value of d. */
+    d[n] += 1;
+    d[n] -= mpi_sub_hlp( n, d, N->p );
+    /* If d0 < N then d < (2^biL)^n
+     * so d[n] == 0 and we want to keep A as it is.
+     * If d0 >= N then d >= (2^biL)^n, and d <= (2^biL)^n + N < 2 * (2^biL)^n
+     * so d[n] == 1 and we want to set A to the result of the subtraction
+     * which is d - (2^biL)^n, i.e. the n least significant limbs of d.
+     * This exactly corresponds to a conditional assignment. */
+    mpi_safe_cond_assign( n, A->p, d, (unsigned char) d[n] );
 }
 
 /*
  * Montgomery reduction: A = A * R^-1 mod N
+ *
+ * See mpi_montmul() regarding constraints and guarantees on the parameters.
  */
-static int mpi_montred( mbedtls_mpi *A, const mbedtls_mpi *N,
-                        mbedtls_mpi_uint mm, const mbedtls_mpi *T )
+static void mpi_montred( mbedtls_mpi *A, const mbedtls_mpi *N,
+                         mbedtls_mpi_uint mm, const mbedtls_mpi *T )
 {
     mbedtls_mpi_uint z = 1;
     mbedtls_mpi U;
@@ -1722,7 +2113,73 @@ static int mpi_montred( mbedtls_mpi *A, const mbedtls_mpi *N,
     U.n = U.s = (int) z;
     U.p = &z;
 
-    return( mpi_montmul( A, &U, N, mm, T ) );
+    mpi_montmul( A, &U, N, mm, T );
+}
+
+/*
+ * Constant-flow boolean "equal" comparison:
+ * return x == y
+ *
+ * This function can be used to write constant-time code by replacing branches
+ * with bit operations - it can be used in conjunction with
+ * mbedtls_ssl_cf_mask_from_bit().
+ *
+ * This function is implemented without using comparison operators, as those
+ * might be translated to branches by some compilers on some platforms.
+ */
+static size_t mbedtls_mpi_cf_bool_eq( size_t x, size_t y )
+{
+    /* diff = 0 if x == y, non-zero otherwise */
+    const size_t diff = x ^ y;
+
+    /* MSVC has a warning about unary minus on unsigned integer types,
+     * but this is well-defined and precisely what we want to do here. */
+#if defined(_MSC_VER)
+#pragma warning( push )
+#pragma warning( disable : 4146 )
+#endif
+
+    /* diff_msb's most significant bit is equal to x != y */
+    const size_t diff_msb = ( diff | (size_t) -diff );
+
+#if defined(_MSC_VER)
+#pragma warning( pop )
+#endif
+
+    /* diff1 = (x != y) ? 1 : 0 */
+    const size_t diff1 = diff_msb >> ( sizeof( diff_msb ) * 8 - 1 );
+
+    return( 1 ^ diff1 );
+}
+
+/**
+ * Select an MPI from a table without leaking the index.
+ *
+ * This is functionally equivalent to mbedtls_mpi_copy(R, T[idx]) except it
+ * reads the entire table in order to avoid leaking the value of idx to an
+ * attacker able to observe memory access patterns.
+ *
+ * \param[out] R        Where to write the selected MPI.
+ * \param[in] T         The table to read from.
+ * \param[in] T_size    The number of elements in the table.
+ * \param[in] idx       The index of the element to select;
+ *                      this must satisfy 0 <= idx < T_size.
+ *
+ * \return \c 0 on success, or a negative error code.
+ */
+static int mpi_select( mbedtls_mpi *R, const mbedtls_mpi *T, size_t T_size, size_t idx )
+{
+    int ret = MBEDTLS_ERR_MPI_BAD_INPUT_DATA;
+    size_t i;
+
+    for( i = 0; i < T_size; i++ )
+    {
+        MBEDTLS_MPI_CHK( mbedtls_mpi_safe_cond_assign( R, &T[i],
+                        (unsigned char) mbedtls_mpi_cf_bool_eq( i, idx ) ) );
+    }
+
+cleanup:
+    return( ret );
 }
 
 /*
@@ -1737,7 +2194,7 @@ int mbedtls_mpi_exp_mod( mbedtls_mpi *X, const mbedtls_mpi *A,
     size_t i, j, nblimbs;
     size_t bufsize, nbits;
     mbedtls_mpi_uint ei, mm, state;
-    mbedtls_mpi RR, T, W[ 2 << MBEDTLS_MPI_WINDOW_SIZE ], Apos;
+    mbedtls_mpi RR, T, W[ 1 << MBEDTLS_MPI_WINDOW_SIZE ], WW, Apos;
     int neg;
 
     MPI_VALIDATE_RET( X != NULL );
@@ -1751,12 +2208,17 @@ int mbedtls_mpi_exp_mod( mbedtls_mpi *X, const mbedtls_mpi *A,
     if( mbedtls_mpi_cmp_int( E, 0 ) < 0 )
         return( MBEDTLS_ERR_MPI_BAD_INPUT_DATA );
 
+    if( mbedtls_mpi_bitlen( E ) > MBEDTLS_MPI_MAX_BITS ||
+        mbedtls_mpi_bitlen( N ) > MBEDTLS_MPI_MAX_BITS )
+        return ( MBEDTLS_ERR_MPI_BAD_INPUT_DATA );
+
     /*
      * Init temps and window size
      */
     mpi_montg_init( &mm, N );
     mbedtls_mpi_init( &RR ); mbedtls_mpi_init( &T );
     mbedtls_mpi_init( &Apos );
+    mbedtls_mpi_init( &WW );
     memset( W, 0, sizeof( W ) );
 
     i = mbedtls_mpi_bitlen( E );
@@ -1764,10 +2226,17 @@ int mbedtls_mpi_exp_mod( mbedtls_mpi *X, const mbedtls_mpi *A,
     wsize = ( i > 671 ) ? 6 : ( i > 239 ) ? 5 :
             ( i >  79 ) ? 4 : ( i >  23 ) ? 3 : 1;
 
+#if( MBEDTLS_MPI_WINDOW_SIZE < 6 )
     if( wsize > MBEDTLS_MPI_WINDOW_SIZE )
         wsize = MBEDTLS_MPI_WINDOW_SIZE;
+#endif
 
     j = N->n + 1;
+    /* All W[i] and X must have at least N->n limbs for the mpi_montmul()
+     * and mpi_montred() calls later. Here we ensure that W[1] and X are
+     * large enough, and later we'll grow other W[i] to the same length.
+     * They must not be shrunk midway through this function!
+     */
     MBEDTLS_MPI_CHK( mbedtls_mpi_grow( X, j ) );
     MBEDTLS_MPI_CHK( mbedtls_mpi_grow( &W[1],  j ) );
     MBEDTLS_MPI_CHK( mbedtls_mpi_grow( &T, j * 2 ) );
@@ -1805,14 +2274,18 @@ int mbedtls_mpi_exp_mod( mbedtls_mpi *X, const mbedtls_mpi *A,
         MBEDTLS_MPI_CHK( mbedtls_mpi_mod_mpi( &W[1], A, N ) );
     else
         MBEDTLS_MPI_CHK( mbedtls_mpi_copy( &W[1], A ) );
+    /* Re-grow W[1] if necessary. This should be only necessary in one corner
+     * case: when A == 0 represented with A.n == 0, mbedtls_mpi_copy shrinks
+     * W[1] to 0 limbs. */
+    MBEDTLS_MPI_CHK( mbedtls_mpi_grow( &W[1], N->n +1 ) );
 
-    MBEDTLS_MPI_CHK( mpi_montmul( &W[1], &RR, N, mm, &T ) );
+    mpi_montmul( &W[1], &RR, N, mm, &T );
 
     /*
      * X = R^2 * R^-1 mod N = R mod N
      */
     MBEDTLS_MPI_CHK( mbedtls_mpi_copy( X, &RR ) );
-    MBEDTLS_MPI_CHK( mpi_montred( X, N, mm, &T ) );
+    mpi_montred( X, N, mm, &T );
 
     if( wsize > 1 )
     {
@@ -1825,7 +2298,7 @@ int mbedtls_mpi_exp_mod( mbedtls_mpi *X, const mbedtls_mpi *A,
         MBEDTLS_MPI_CHK( mbedtls_mpi_copy( &W[j], &W[1]    ) );
 
         for( i = 0; i < wsize - 1; i++ )
-            MBEDTLS_MPI_CHK( mpi_montmul( &W[j], &W[j], N, mm, &T ) );
+            mpi_montmul( &W[j], &W[j], N, mm, &T );
 
         /*
          * W[i] = W[i - 1] * W[1]
@@ -1835,7 +2308,7 @@ int mbedtls_mpi_exp_mod( mbedtls_mpi *X, const mbedtls_mpi *A,
             MBEDTLS_MPI_CHK( mbedtls_mpi_grow( &W[i], N->n + 1 ) );
             MBEDTLS_MPI_CHK( mbedtls_mpi_copy( &W[i], &W[i - 1] ) );
 
-            MBEDTLS_MPI_CHK( mpi_montmul( &W[i], &W[1], N, mm, &T ) );
+            mpi_montmul( &W[i], &W[1], N, mm, &T );
         }
     }
 
@@ -1872,7 +2345,7 @@ int mbedtls_mpi_exp_mod( mbedtls_mpi *X, const mbedtls_mpi *A,
             /*
              * out of window, square X
              */
-            MBEDTLS_MPI_CHK( mpi_montmul( X, X, N, mm, &T ) );
+            mpi_montmul( X, X, N, mm, &T );
             continue;
         }
 
@@ -1890,12 +2363,13 @@ int mbedtls_mpi_exp_mod( mbedtls_mpi *X, const mbedtls_mpi *A,
              * X = X^wsize R^-1 mod N
              */
             for( i = 0; i < wsize; i++ )
-                MBEDTLS_MPI_CHK( mpi_montmul( X, X, N, mm, &T ) );
+                mpi_montmul( X, X, N, mm, &T );
 
             /*
              * X = X * W[wbits] R^-1 mod N
              */
-            MBEDTLS_MPI_CHK( mpi_montmul( X, &W[wbits], N, mm, &T ) );
+            MBEDTLS_MPI_CHK( mpi_select( &WW, W, (size_t) 1 << wsize, wbits ) );
+            mpi_montmul( X, &WW, N, mm, &T );
 
             state--;
             nbits = 0;
@@ -1908,18 +2382,18 @@ int mbedtls_mpi_exp_mod( mbedtls_mpi *X, const mbedtls_mpi *A,
      */
     for( i = 0; i < nbits; i++ )
     {
-        MBEDTLS_MPI_CHK( mpi_montmul( X, X, N, mm, &T ) );
+        mpi_montmul( X, X, N, mm, &T );
 
         wbits <<= 1;
 
         if( ( wbits & ( one << wsize ) ) != 0 )
-            MBEDTLS_MPI_CHK( mpi_montmul( X, &W[1], N, mm, &T ) );
+            mpi_montmul( X, &W[1], N, mm, &T );
     }
 
     /*
      * X = A^E * R * R^-1 mod N = A^E mod N
      */
-    MBEDTLS_MPI_CHK( mpi_montred( X, N, mm, &T ) );
+    mpi_montred( X, N, mm, &T );
 
     if( neg && E->n != 0 && ( E->p[0] & 1 ) != 0 )
     {
@@ -1933,6 +2407,7 @@ cleanup:
         mbedtls_mpi_free( &W[i] );
 
     mbedtls_mpi_free( &W[1] ); mbedtls_mpi_free( &T ); mbedtls_mpi_free( &Apos );
+    mbedtls_mpi_free( &WW );
 
     if( _RR == NULL || _RR->p == NULL )
         mbedtls_mpi_free( &RR );
@@ -1961,6 +2436,16 @@ int mbedtls_mpi_gcd( mbedtls_mpi *G, const mbedtls_mpi *A, const mbedtls_mpi *B 
     lz = mbedtls_mpi_lsb( &TA );
     lzt = mbedtls_mpi_lsb( &TB );
 
+    /* The loop below gives the correct result when A==0 but not when B==0.
+     * So have a special case for B==0. Leverage the fact that we just
+     * calculated the lsb and lsb(B)==0 iff B is odd or 0 to make the test
+     * slightly more efficient than cmp_int(). */
+    if( lzt == 0 && mbedtls_mpi_get_bit( &TB, 0 ) == 0 )
+    {
+        ret = mbedtls_mpi_copy( G, A );
+        goto cleanup;
+    }
+
     if( lzt < lz )
         lz = lzt;
 
@@ -1969,11 +2454,52 @@ int mbedtls_mpi_gcd( mbedtls_mpi *G, const mbedtls_mpi *A, const mbedtls_mpi *B 
 
     TA.s = TB.s = 1;
 
+    /* We mostly follow the procedure described in HAC 14.54, but with some
+     * minor differences:
+     * - Sequences of multiplications or divisions by 2 are grouped into a
+     *   single shift operation.
+     * - The procedure in HAC assumes that 0 < TB <= TA.
+     *     - The condition TB <= TA is not actually necessary for correctness.
+     *       TA and TB have symmetric roles except for the loop termination
+     *       condition, and the shifts at the beginning of the loop body
+     *       remove any significance from the ordering of TA vs TB before
+     *       the shifts.
+     *     - If TA = 0, the loop goes through 0 iterations and the result is
+     *       correctly TB.
+     *     - The case TB = 0 was short-circuited above.
+     *
+     * For the correctness proof below, decompose the original values of
+     * A and B as
+     *   A = sa * 2^a * A' with A'=0 or A' odd, and sa = +-1
+     *   B = sb * 2^b * B' with B'=0 or B' odd, and sb = +-1
+     * Then gcd(A, B) = 2^{min(a,b)} * gcd(A',B'),
+     * and gcd(A',B') is odd or 0.
+     *
+     * At the beginning, we have TA = |A|/2^a and TB = |B|/2^b.
+     * The code maintains the following invariant:
+     *     gcd(A,B) = 2^k * gcd(TA,TB) for some k   (I)
+     */
+
+    /* Proof that the loop terminates:
+     * At each iteration, either the right-shift by 1 is made on a nonzero
+     * value and the nonnegative integer bitlen(TA) + bitlen(TB) decreases
+     * by at least 1, or the right-shift by 1 is made on zero and then
+     * TA becomes 0 which ends the loop (TB cannot be 0 if it is right-shifted
+     * since in that case TB is calculated from TB-TA with the condition TB>TA).
+     */
     while( mbedtls_mpi_cmp_int( &TA, 0 ) != 0 )
     {
+        /* Divisions by 2 preserve the invariant (I). */
         MBEDTLS_MPI_CHK( mbedtls_mpi_shift_r( &TA, mbedtls_mpi_lsb( &TA ) ) );
         MBEDTLS_MPI_CHK( mbedtls_mpi_shift_r( &TB, mbedtls_mpi_lsb( &TB ) ) );
 
+        /* Set either TA or TB to |TA-TB|/2. Since TA and TB are both odd,
+         * TA-TB is even so the division by 2 has an integer result.
+         * Invariant (I) is preserved since any odd divisor of both TA and TB
+         * also divides |TA-TB|/2, and any odd divisor of both TA and |TA-TB|/2
+         * also divides TB, and any odd divisior of both TB and |TA-TB|/2 also
+         * divides TA.
+         */
         if( mbedtls_mpi_cmp_mpi( &TA, &TB ) >= 0 )
         {
             MBEDTLS_MPI_CHK( mbedtls_mpi_sub_abs( &TA, &TA, &TB ) );
@@ -1984,7 +2510,17 @@ int mbedtls_mpi_gcd( mbedtls_mpi *G, const mbedtls_mpi *A, const mbedtls_mpi *B 
             MBEDTLS_MPI_CHK( mbedtls_mpi_sub_abs( &TB, &TB, &TA ) );
             MBEDTLS_MPI_CHK( mbedtls_mpi_shift_r( &TB, 1 ) );
         }
+        /* Note that one of TA or TB is still odd. */
     }
+
+    /* By invariant (I), gcd(A,B) = 2^k * gcd(TA,TB) for some k.
+     * At the loop exit, TA = 0, so gcd(TA,TB) = TB.
+     * - If there was at least one loop iteration, then one of TA or TB is odd,
+     *   and TA = 0, so TB is odd and gcd(TA,TB) = gcd(A',B'). In this case,
+     *   lz = min(a,b) so gcd(A,B) = 2^lz * TB.
+     * - If there was no loop iteration, then A was 0, and gcd(A,B) = B.
+     *   In this case, lz = 0 and B = TB so gcd(A,B) = B = 2^lz * TB as well.
+     */
 
     MBEDTLS_MPI_CHK( mbedtls_mpi_shift_l( &TB, lz ) );
     MBEDTLS_MPI_CHK( mbedtls_mpi_copy( G, &TB ) );
@@ -2008,18 +2544,28 @@ int mbedtls_mpi_fill_random( mbedtls_mpi *X, size_t size,
                      void *p_rng )
 {
     int ret;
-    unsigned char buf[MBEDTLS_MPI_MAX_SIZE];
+    size_t const limbs = CHARS_TO_LIMBS( size );
+    size_t const overhead = ( limbs * ciL ) - size;
+    unsigned char *Xp;
+
     MPI_VALIDATE_RET( X     != NULL );
     MPI_VALIDATE_RET( f_rng != NULL );
 
-    if( size > MBEDTLS_MPI_MAX_SIZE )
-        return( MBEDTLS_ERR_MPI_BAD_INPUT_DATA );
+    /* Ensure that target MPI has exactly the necessary number of limbs */
+    if( X->n != limbs )
+    {
+        mbedtls_mpi_free( X );
+        mbedtls_mpi_init( X );
+        MBEDTLS_MPI_CHK( mbedtls_mpi_grow( X, limbs ) );
+    }
+    MBEDTLS_MPI_CHK( mbedtls_mpi_lset( X, 0 ) );
 
-    MBEDTLS_MPI_CHK( f_rng( p_rng, buf, size ) );
-    MBEDTLS_MPI_CHK( mbedtls_mpi_read_binary( X, buf, size ) );
+    Xp = (unsigned char*) X->p;
+    MBEDTLS_MPI_CHK( f_rng( p_rng, Xp + overhead, size ) );
+
+    mpi_bigendian_to_host( X->p, limbs );
 
 cleanup:
-    mbedtls_platform_zeroize( buf, sizeof( buf ) );
     return( ret );
 }
 
@@ -2208,8 +2754,6 @@ static int mpi_miller_rabin( const mbedtls_mpi *X, size_t rounds,
     MBEDTLS_MPI_CHK( mbedtls_mpi_copy( &R, &W ) );
     MBEDTLS_MPI_CHK( mbedtls_mpi_shift_r( &R, s ) );
 
-    i = mbedtls_mpi_bitlen( X );
-
     for( i = 0; i < rounds; i++ )
     {
         /*
@@ -2226,7 +2770,8 @@ static int mpi_miller_rabin( const mbedtls_mpi *X, size_t rounds,
             }
 
             if (count++ > 30) {
-                return MBEDTLS_ERR_MPI_NOT_ACCEPTABLE;
+                ret = MBEDTLS_ERR_MPI_NOT_ACCEPTABLE;
+                goto cleanup;
             }
 
         } while ( mbedtls_mpi_cmp_mpi( &A, &W ) >= 0 ||

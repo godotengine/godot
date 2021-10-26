@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,12 +31,15 @@
 #ifndef RENAME_DIALOG_H
 #define RENAME_DIALOG_H
 
+#include "modules/modules_enabled.gen.h"
+#ifdef MODULE_REGEX_ENABLED
+
 #include "scene/gui/check_box.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/spin_box.h"
 
-#include "core/undo_redo.h"
+#include "core/object/undo_redo.h"
 #include "editor/scene_tree_editor.h"
 
 /**
@@ -44,11 +47,10 @@
 */
 
 class RenameDialog : public ConfirmationDialog {
-
 	GDCLASS(RenameDialog, ConfirmationDialog);
 
-	virtual void ok_pressed() { rename(); };
-	void _cancel_pressed(){};
+	virtual void ok_pressed() override { rename(); };
+	void _cancel_pressed() {}
 	void _features_toggled(bool pressed);
 	void _insert_text(String text);
 	void _update_substitute();
@@ -61,7 +63,7 @@ class RenameDialog : public ConfirmationDialog {
 	String _postprocess(const String &subject);
 	void _update_preview(String new_text = "");
 	void _update_preview_int(int new_value = 0);
-	static void _error_handler(void *p_self, const char *p_func, const char *p_file, int p_line, const char *p_error, const char *p_errorexp, ErrorHandlerType p_type);
+	static void _error_handler(void *p_self, const char *p_func, const char *p_file, int p_line, const char *p_error, const char *p_errorexp, bool p_editor_notify, ErrorHandlerType p_type);
 
 	SceneTreeEditor *scene_tree_editor;
 	UndoRedo *undo_redo;
@@ -75,7 +77,7 @@ class RenameDialog : public ConfirmationDialog {
 	TabContainer *tabc_features;
 
 	CheckBox *cbut_substitute;
-	CheckBox *cbut_regex;
+	CheckButton *cbut_regex;
 	CheckBox *cbut_process;
 	CheckBox *chk_per_level_counter;
 
@@ -96,23 +98,24 @@ class RenameDialog : public ConfirmationDialog {
 	Label *lbl_preview_title;
 	Label *lbl_preview;
 
-	List<Pair<NodePath, String> > to_rename;
+	List<Pair<NodePath, String>> to_rename;
 	Node *preview_node;
 	bool lock_preview_update;
 	ErrorHandlerList eh;
 	bool has_errors;
 
 protected:
-	void _notification(int p_what){};
 	static void _bind_methods();
-	virtual void _post_popup();
+	virtual void _post_popup() override;
 
 public:
 	void reset();
 	void rename();
 
-	RenameDialog(SceneTreeEditor *p_scene_tree_editor, UndoRedo *p_undo_redo = NULL);
-	~RenameDialog(){};
+	RenameDialog(SceneTreeEditor *p_scene_tree_editor, UndoRedo *p_undo_redo = nullptr);
+	~RenameDialog() {}
 };
 
-#endif
+#endif // MODULE_REGEX_ENABLED
+
+#endif // RENAME_DIALOG_H

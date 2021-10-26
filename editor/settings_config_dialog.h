@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,6 +31,7 @@
 #ifndef SETTINGS_CONFIG_DIALOG_H
 #define SETTINGS_CONFIG_DIALOG_H
 
+#include "editor/action_map_editor.h"
 #include "editor/editor_sectioned_inspector.h"
 #include "editor_inspector.h"
 #include "scene/gui/dialogs.h"
@@ -38,10 +39,8 @@
 #include "scene/gui/rich_text_label.h"
 #include "scene/gui/tab_container.h"
 #include "scene/gui/texture_rect.h"
-#include "scene/gui/tool_button.h"
 
 class EditorSettingsDialog : public AcceptDialog {
-
 	GDCLASS(EditorSettingsDialog, AcceptDialog);
 
 	bool updating;
@@ -54,48 +53,66 @@ class EditorSettingsDialog : public AcceptDialog {
 	LineEdit *shortcut_search_box;
 	SectionedInspector *inspector;
 
+	// Shortcuts
+	enum ShortcutButton {
+		SHORTCUT_ADD,
+		SHORTCUT_EDIT,
+		SHORTCUT_ERASE,
+		SHORTCUT_REVERT
+	};
+
+	Tree *shortcuts;
+	String shortcut_filter;
+
+	InputEventConfigurationDialog *shortcut_editor;
+
+	bool is_editing_action = false;
+	String current_edited_identifier;
+	Array current_events;
+	int current_event_index = -1;
+
 	Timer *timer;
 
 	UndoRedo *undo_redo;
-	Tree *shortcuts;
 
-	ConfirmationDialog *press_a_key;
-	Label *press_a_key_label;
-	Ref<InputEventKey> last_wait_for_key;
-	String shortcut_configured;
-	String shortcut_filter;
-
-	virtual void cancel_pressed();
-	virtual void ok_pressed();
+	virtual void cancel_pressed() override;
+	virtual void ok_pressed() override;
 
 	void _settings_changed();
 	void _settings_property_edited(const String &p_name);
 	void _settings_save();
 
-	void _unhandled_input(const Ref<InputEvent> &p_event);
+	virtual void unhandled_input(const Ref<InputEvent> &p_event) override;
 	void _notification(int p_what);
 	void _update_icons();
 
-	void _press_a_key_confirm();
-	void _wait_for_key(const Ref<InputEvent> &p_event);
+	void _event_config_confirmed();
+
+	void _create_shortcut_treeitem(TreeItem *p_parent, const String &p_shortcut_identifier, const String &p_display, Array &p_events, bool p_allow_revert, bool p_is_common, bool p_is_collapsed);
+	Array _event_list_to_array_helper(List<Ref<InputEvent>> &p_events);
+	void _update_builtin_action(const String &p_name, const Array &p_events);
+	void _update_shortcut_events(const String &p_path, const Array &p_events);
+
+	Variant get_drag_data_fw(const Point2 &p_point, Control *p_from);
+	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
+	void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
 
 	void _tabs_tab_changed(int p_tab);
 	void _focus_current_search_box();
-
-	void _clear_shortcut_search_box();
-	void _clear_search_box();
 
 	void _filter_shortcuts(const String &p_filter);
 
 	void _update_shortcuts();
 	void _shortcut_button_pressed(Object *p_item, int p_column, int p_idx);
 
+	void _builtin_action_popup_index_pressed(int p_index);
+
 	static void _undo_redo_callback(void *p_self, const String &p_name);
 
 	Label *restart_label;
 	TextureRect *restart_icon;
 	PanelContainer *restart_container;
-	ToolButton *restart_close_button;
+	Button *restart_close_button;
 
 	void _editor_restart_request();
 	void _editor_restart();

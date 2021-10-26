@@ -2,11 +2,12 @@
 #include "BulletDynamics/Dynamics/btRigidBody.h"
 #include "btMultiBodyPoint2Point.h"  //for testing (BTMBP2PCONSTRAINT_BLOCK_ANGULAR_MOTION_TEST macro)
 
-btMultiBodyConstraint::btMultiBodyConstraint(btMultiBody* bodyA, btMultiBody* bodyB, int linkA, int linkB, int numRows, bool isUnilateral)
+btMultiBodyConstraint::btMultiBodyConstraint(btMultiBody* bodyA, btMultiBody* bodyB, int linkA, int linkB, int numRows, bool isUnilateral, int type)
 	: m_bodyA(bodyA),
 	  m_bodyB(bodyB),
 	  m_linkA(linkA),
 	  m_linkB(linkB),
+	  m_type(type),
 	  m_numRows(numRows),
 	  m_jacSizeA(0),
 	  m_jacSizeBoth(0),
@@ -60,7 +61,8 @@ btScalar btMultiBodyConstraint::fillMultiBodyConstraint(btMultiBodySolverConstra
 														btScalar lowerLimit, btScalar upperLimit,
 														bool angConstraint,
 														btScalar relaxation,
-														bool isFriction, btScalar desiredVelocity, btScalar cfmSlip)
+														bool isFriction, btScalar desiredVelocity, btScalar cfmSlip,
+														btScalar damping)
 {
 	solverConstraint.m_multiBodyA = m_bodyA;
 	solverConstraint.m_multiBodyB = m_bodyB;
@@ -342,46 +344,12 @@ btScalar btMultiBodyConstraint::fillMultiBodyConstraint(btMultiBodySolverConstra
 		solverConstraint.m_friction = 0.f;  //cp.m_combinedFriction;
 	}
 
-	///warm starting (or zero if disabled)
-	/*
-     if (infoGlobal.m_solverMode & SOLVER_USE_WARMSTARTING)
-     {
-     solverConstraint.m_appliedImpulse = isFriction ? 0 : cp.m_appliedImpulse * infoGlobal.m_warmstartingFactor;
-     
-     if (solverConstraint.m_appliedImpulse)
-     {
-     if (multiBodyA)
-     {
-     btScalar impulse = solverConstraint.m_appliedImpulse;
-     btScalar* deltaV = &data.m_deltaVelocitiesUnitImpulse[solverConstraint.m_jacAindex];
-     multiBodyA->applyDeltaVee(deltaV,impulse);
-     applyDeltaVee(data,deltaV,impulse,solverConstraint.m_deltaVelAindex,ndofA);
-     } else
-     {
-     if (rb0)
-					bodyA->internalApplyImpulse(solverConstraint.m_contactNormal1*bodyA->internalGetInvMass()*rb0->getLinearFactor(),solverConstraint.m_angularComponentA,solverConstraint.m_appliedImpulse);
-     }
-     if (multiBodyB)
-     {
-     btScalar impulse = solverConstraint.m_appliedImpulse;
-     btScalar* deltaV = &data.m_deltaVelocitiesUnitImpulse[solverConstraint.m_jacBindex];
-     multiBodyB->applyDeltaVee(deltaV,impulse);
-     applyDeltaVee(data,deltaV,impulse,solverConstraint.m_deltaVelBindex,ndofB);
-     } else
-     {
-     if (rb1)
-					bodyB->internalApplyImpulse(-solverConstraint.m_contactNormal2*bodyB->internalGetInvMass()*rb1->getLinearFactor(),-solverConstraint.m_angularComponentB,-(btScalar)solverConstraint.m_appliedImpulse);
-     }
-     }
-     } else
-     */
-
 	solverConstraint.m_appliedImpulse = 0.f;
 	solverConstraint.m_appliedPushImpulse = 0.f;
 
 	{
 		btScalar positionalError = 0.f;
-		btScalar velocityError = desiredVelocity - rel_vel;  // * damping;
+		btScalar velocityError = (desiredVelocity - rel_vel) * damping;
 
 		btScalar erp = infoGlobal.m_erp2;
 

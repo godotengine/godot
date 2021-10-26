@@ -55,6 +55,7 @@ public:
 		: m_userPersistentData(0),
 		  m_contactPointFlags(0),
 		  m_appliedImpulse(0.f),
+		  m_prevRHS(0.f),
 		  m_appliedImpulseLateral1(0.f),
 		  m_appliedImpulseLateral2(0.f),
 		  m_contactMotion1(0.f),
@@ -79,6 +80,7 @@ public:
 										 m_userPersistentData(0),
 										 m_contactPointFlags(0),
 										 m_appliedImpulse(0.f),
+										 m_prevRHS(0.f),
 										 m_appliedImpulseLateral1(0.f),
 										 m_appliedImpulseLateral2(0.f),
 										 m_contactMotion1(0.f),
@@ -114,6 +116,7 @@ public:
 	int m_contactPointFlags;
 
 	btScalar m_appliedImpulse;
+	btScalar m_prevRHS;
 	btScalar m_appliedImpulseLateral1;
 	btScalar m_appliedImpulseLateral2;
 	btScalar m_contactMotion1;

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,15 +30,14 @@
 
 #include "register_types.h"
 
-#include "core/error_macros.h"
+#include "core/error/error_macros.h"
 
 #include "upnp.h"
 #include "upnp_device.h"
 
 void register_upnp_types() {
-
-	ClassDB::register_class<UPNP>();
-	ClassDB::register_class<UPNPDevice>();
+	GDREGISTER_CLASS(UPNP);
+	GDREGISTER_CLASS(UPNPDevice);
 }
 
 void unregister_upnp_types() {

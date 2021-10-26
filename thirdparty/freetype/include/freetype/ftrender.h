@@ -4,7 +4,7 @@
  *
  *   FreeType renderer modules public interface (specification).
  *
- * Copyright (C) 1996-2019 by
+ * Copyright (C) 1996-2020 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -20,9 +20,8 @@
 #define FTRENDER_H_
 
 
-#include <ft2build.h>
-#include FT_MODULE_H
-#include FT_GLYPH_H
+#include <freetype/ftmodapi.h>
+#include <freetype/ftglyph.h>
 
 
 FT_BEGIN_HEADER

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,13 +31,12 @@
 #ifndef FILE_ACCESS_MEMORY_H
 #define FILE_ACCESS_MEMORY_H
 
-#include "core/os/file_access.h"
+#include "core/io/file_access.h"
 
 class FileAccessMemory : public FileAccess {
-
-	uint8_t *data;
-	int length;
-	mutable int pos;
+	uint8_t *data = nullptr;
+	uint64_t length = 0;
+	mutable uint64_t pos = 0;
 
 	static FileAccess *create();
 
@@ -45,27 +44,27 @@ public:
 	static void register_file(String p_name, Vector<uint8_t> p_data);
 	static void cleanup();
 
-	virtual Error open_custom(const uint8_t *p_data, int p_len); ///< open a file
+	virtual Error open_custom(const uint8_t *p_data, uint64_t p_len); ///< open a file
 	virtual Error _open(const String &p_path, int p_mode_flags); ///< open a file
 	virtual void close(); ///< close a file
 	virtual bool is_open() const; ///< true when file is open
 
-	virtual void seek(size_t p_position); ///< seek to a given position
+	virtual void seek(uint64_t p_position); ///< seek to a given position
 	virtual void seek_end(int64_t p_position); ///< seek from the end of file
-	virtual size_t get_position() const; ///< get position in the file
-	virtual size_t get_len() const; ///< get size of the file
+	virtual uint64_t get_position() const; ///< get position in the file
+	virtual uint64_t get_length() const; ///< get size of the file
 
 	virtual bool eof_reached() const; ///< reading passed EOF
 
 	virtual uint8_t get_8() const; ///< get a byte
 
-	virtual int get_buffer(uint8_t *p_dst, int p_length) const; ///< get an array of bytes
+	virtual uint64_t get_buffer(uint8_t *p_dst, uint64_t p_length) const; ///< get an array of bytes
 
 	virtual Error get_error() const; ///< get last error
 
 	virtual void flush();
 	virtual void store_8(uint8_t p_byte); ///< store a byte
-	virtual void store_buffer(const uint8_t *p_src, int p_length); ///< store an array of bytes
+	virtual void store_buffer(const uint8_t *p_src, uint64_t p_length); ///< store an array of bytes
 
 	virtual bool file_exists(const String &p_name); ///< return true if a file exists
 
@@ -73,7 +72,7 @@ public:
 	virtual uint32_t _get_unix_permissions(const String &p_file) { return 0; }
 	virtual Error _set_unix_permissions(const String &p_file, uint32_t p_permissions) { return FAILED; }
 
-	FileAccessMemory();
+	FileAccessMemory() {}
 };
 
 #endif // FILE_ACCESS_MEMORY_H

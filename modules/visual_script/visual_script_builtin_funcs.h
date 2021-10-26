@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,7 +34,6 @@
 #include "visual_script.h"
 
 class VisualScriptBuiltinFunc : public VisualScriptNode {
-
 	GDCLASS(VisualScriptBuiltinFunc, VisualScriptNode);
 
 public:
@@ -63,25 +62,23 @@ public:
 		MATH_ISNAN,
 		MATH_ISINF,
 		MATH_EASE,
-		MATH_DECIMALS,
-		MATH_STEPIFY,
+		MATH_STEP_DECIMALS,
+		MATH_SNAPPED,
 		MATH_LERP,
 		MATH_INVERSE_LERP,
 		MATH_RANGE_LERP,
 		MATH_MOVE_TOWARD,
-		MATH_DECTIME,
 		MATH_RANDOMIZE,
-		MATH_RAND,
+		MATH_RANDI,
 		MATH_RANDF,
-		MATH_RANDOM,
+		MATH_RANDF_RANGE,
+		MATH_RANDI_RANGE,
 		MATH_SEED,
 		MATH_RANDSEED,
 		MATH_DEG2RAD,
 		MATH_RAD2DEG,
 		MATH_LINEAR2DB,
 		MATH_DB2LINEAR,
-		MATH_POLAR2CARTESIAN,
-		MATH_CARTESIAN2POLAR,
 		MATH_WRAP,
 		MATH_WRAPF,
 		LOGIC_MAX,
@@ -89,7 +86,6 @@ public:
 		LOGIC_CLAMP,
 		LOGIC_NEAREST_PO2,
 		OBJ_WEAKREF,
-		FUNC_FUNCREF,
 		TYPE_CONVERT,
 		TYPE_OF,
 		TYPE_EXISTS,
@@ -98,18 +94,21 @@ public:
 		TEXT_PRINT,
 		TEXT_PRINTERR,
 		TEXT_PRINTRAW,
+		TEXT_PRINT_VERBOSE,
 		VAR_TO_STR,
 		STR_TO_VAR,
 		VAR_TO_BYTES,
 		BYTES_TO_VAR,
-		COLORN,
 		MATH_SMOOTHSTEP,
+		MATH_POSMOD,
+		MATH_LERP_ANGLE,
+		TEXT_ORD,
 		FUNC_MAX
 	};
 
 	static int get_func_argument_count(BuiltinFunc p_func);
 	static String get_func_name(BuiltinFunc p_func);
-	static void exec_func(BuiltinFunc p_func, const Variant **p_inputs, Variant *r_return, Variant::CallError &r_error, String &r_error_str);
+	static void exec_func(BuiltinFunc p_func, const Variant **p_inputs, Variant *r_return, Callable::CallError &r_error, String &r_error_str);
 	static BuiltinFunc find_function(const String &p_string);
 
 private:
@@ -120,25 +119,25 @@ protected:
 	static void _bind_methods();
 
 public:
-	virtual int get_output_sequence_port_count() const;
-	virtual bool has_input_sequence_port() const;
+	virtual int get_output_sequence_port_count() const override;
+	virtual bool has_input_sequence_port() const override;
 
-	virtual String get_output_sequence_port_text(int p_port) const;
+	virtual String get_output_sequence_port_text(int p_port) const override;
 
-	virtual int get_input_value_port_count() const;
-	virtual int get_output_value_port_count() const;
+	virtual int get_input_value_port_count() const override;
+	virtual int get_output_value_port_count() const override;
 
-	virtual PropertyInfo get_input_value_port_info(int p_idx) const;
-	virtual PropertyInfo get_output_value_port_info(int p_idx) const;
+	virtual PropertyInfo get_input_value_port_info(int p_idx) const override;
+	virtual PropertyInfo get_output_value_port_info(int p_idx) const override;
 
-	virtual String get_caption() const;
+	virtual String get_caption() const override;
 	//virtual String get_text() const;
-	virtual String get_category() const { return "functions"; }
+	virtual String get_category() const override { return "functions"; }
 
 	void set_func(BuiltinFunc p_which);
 	BuiltinFunc get_func();
 
-	virtual VisualScriptNodeInstance *instance(VisualScriptInstance *p_instance);
+	virtual VisualScriptNodeInstance *instantiate(VisualScriptInstance *p_instance) override;
 
 	VisualScriptBuiltinFunc(VisualScriptBuiltinFunc::BuiltinFunc func);
 	VisualScriptBuiltinFunc();

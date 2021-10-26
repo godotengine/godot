@@ -4,7 +4,7 @@
  *
  *   The FreeType services (specification only).
  *
- * Copyright (C) 2003-2019 by
+ * Copyright (C) 2003-2020 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -31,6 +31,7 @@
 #ifndef FTSERV_H_
 #define FTSERV_H_
 
+#include "compiler-macros.h"
 
 FT_BEGIN_HEADER
 
@@ -485,33 +486,6 @@ FT_BEGIN_HEADER
   struct FT_Service_ ## name ## Rec_
 
   /* */
-
-  /*
-   * The header files containing the services.
-   */
-
-#define FT_SERVICE_BDF_H                <freetype/internal/services/svbdf.h>
-#define FT_SERVICE_CFF_TABLE_LOAD_H     <freetype/internal/services/svcfftl.h>
-#define FT_SERVICE_CID_H                <freetype/internal/services/svcid.h>
-#define FT_SERVICE_FONT_FORMAT_H        <freetype/internal/services/svfntfmt.h>
-#define FT_SERVICE_GLYPH_DICT_H         <freetype/internal/services/svgldict.h>
-#define FT_SERVICE_GX_VALIDATE_H        <freetype/internal/services/svgxval.h>
-#define FT_SERVICE_KERNING_H            <freetype/internal/services/svkern.h>
-#define FT_SERVICE_METRICS_VARIATIONS_H <freetype/internal/services/svmetric.h>
-#define FT_SERVICE_MULTIPLE_MASTERS_H   <freetype/internal/services/svmm.h>
-#define FT_SERVICE_OPENTYPE_VALIDATE_H  <freetype/internal/services/svotval.h>
-#define FT_SERVICE_PFR_H                <freetype/internal/services/svpfr.h>
-#define FT_SERVICE_POSTSCRIPT_CMAPS_H   <freetype/internal/services/svpscmap.h>
-#define FT_SERVICE_POSTSCRIPT_INFO_H    <freetype/internal/services/svpsinfo.h>
-#define FT_SERVICE_POSTSCRIPT_NAME_H    <freetype/internal/services/svpostnm.h>
-#define FT_SERVICE_PROPERTIES_H         <freetype/internal/services/svprop.h>
-#define FT_SERVICE_SFNT_H               <freetype/internal/services/svsfnt.h>
-#define FT_SERVICE_TRUETYPE_ENGINE_H    <freetype/internal/services/svtteng.h>
-#define FT_SERVICE_TRUETYPE_GLYF_H      <freetype/internal/services/svttglyf.h>
-#define FT_SERVICE_TT_CMAP_H            <freetype/internal/services/svttcmap.h>
-#define FT_SERVICE_WINFNT_H             <freetype/internal/services/svwinfnt.h>
-
- /* */
 
 FT_END_HEADER
 

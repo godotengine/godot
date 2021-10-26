@@ -26,8 +26,14 @@
 	<string>$signature</string>
 	<key>CFBundleVersion</key>
 	<string>$version</string>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false />
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>LSSupportsOpeningDocumentsInPlace</key>
+	$docs_in_place
+	<key>UIFileSharingEnabled</key>
+	$docs_sharing
 	<key>UIRequiredDeviceCapabilities</key>
 	<array>
 		$required_device_capabilities
@@ -51,5 +57,6 @@
 		$interface_orientations
 	</array>
 	$additional_plist_content
+	$plist_launch_screen_name
 </dict>
 </plist>

@@ -4,7 +4,7 @@
  *
  *   CFF token stream parser (body)
  *
- * Copyright (C) 1996-2019 by
+ * Copyright (C) 1996-2020 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -16,13 +16,12 @@
  */
 
 
-#include <ft2build.h>
 #include "cffparse.h"
-#include FT_INTERNAL_STREAM_H
-#include FT_INTERNAL_DEBUG_H
-#include FT_INTERNAL_CALC_H
-#include FT_INTERNAL_POSTSCRIPT_AUX_H
-#include FT_LIST_H
+#include <freetype/internal/ftstream.h>
+#include <freetype/internal/ftdebug.h>
+#include <freetype/internal/ftcalc.h>
+#include <freetype/internal/psaux.h>
+#include <freetype/ftlist.h>
 
 #include "cfferrs.h"
 #include "cffload.h"
@@ -77,6 +76,23 @@
   }
 
 
+#ifdef CFF_CONFIG_OPTION_OLD_ENGINE
+  static void
+  finalize_t2_strings( FT_Memory  memory,
+                       void*      data,
+                       void*      user )
+  {
+    CFF_T2_String  t2 = (CFF_T2_String)data;
+
+
+    FT_UNUSED( user );
+
+    memory->free( memory, t2->start );
+    memory->free( memory, data );
+  }
+#endif /* CFF_CONFIG_OPTION_OLD_ENGINE */
+
+
   FT_LOCAL_DEF( void )
   cff_parser_done( CFF_Parser  parser )
   {
@@ -84,13 +100,65 @@
 
 
     FT_FREE( parser->stack );
+
+#ifdef CFF_CONFIG_OPTION_OLD_ENGINE
+    FT_List_Finalize( &parser->t2_strings,
+                      finalize_t2_strings,
+                      memory,
+                      NULL );
+#endif
+  }
+
+
+  /* Assuming `first >= last'. */
+
+  static FT_Error
+  cff_parser_within_limits( CFF_Parser  parser,
+                            FT_Byte*    first,
+                            FT_Byte*    last )
+  {
+#ifndef CFF_CONFIG_OPTION_OLD_ENGINE
+
+    /* Fast path for regular FreeType builds with the "new" engine; */
+    /*   `first >= parser->start' can be assumed.                   */
+
+    FT_UNUSED( first );
+
+    return last < parser->limit ? FT_Err_Ok : FT_THROW( Invalid_Argument );
+
+#else /* CFF_CONFIG_OPTION_OLD_ENGINE */
+
+    FT_ListNode  node;
+
+
+    if ( first >= parser->start &&
+         last  <  parser->limit )
+      return FT_Err_Ok;
+
+    node = parser->t2_strings.head;
+
+    while ( node )
+    {
+      CFF_T2_String  t2 = (CFF_T2_String)node->data;
+
+
+      if ( first >= t2->start &&
+           last  <  t2->limit )
+        return FT_Err_Ok;
+
+      node = node->next;
+    }
+
+    return FT_THROW( Invalid_Argument );
+
+#endif /* CFF_CONFIG_OPTION_OLD_ENGINE */
   }
 
 
   /* read an integer */
   static FT_Long
-  cff_parse_integer( FT_Byte*  start,
-                     FT_Byte*  limit )
+  cff_parse_integer( CFF_Parser  parser,
+                     FT_Byte*    start )
   {
     FT_Byte*  p   = start;
     FT_Int    v   = *p++;
@@ -99,14 +167,14 @@
 
     if ( v == 28 )
     {
-      if ( p + 2 > limit )
+      if ( cff_parser_within_limits( parser, p, p + 1 ) )
         goto Bad;
 
       val = (FT_Short)( ( (FT_UShort)p[0] << 8 ) | p[1] );
     }
     else if ( v == 29 )
     {
-      if ( p + 4 > limit )
+      if ( cff_parser_within_limits( parser, p, p + 3 ) )
         goto Bad;
 
       val = (FT_Long)( ( (FT_ULong)p[0] << 24 ) |
@@ -120,14 +188,14 @@
     }
     else if ( v < 251 )
     {
-      if ( p + 1 > limit )
+      if ( cff_parser_within_limits( parser, p, p ) )
         goto Bad;
 
       val = ( v - 247 ) * 256 + p[0] + 108;
     }
     else
     {
-      if ( p + 1 > limit )
+      if ( cff_parser_within_limits( parser, p, p ) )
         goto Bad;
 
       val = -( v - 251 ) * 256 - p[0] - 108;
@@ -176,10 +244,10 @@
 
   /* read a real */
   static FT_Fixed
-  cff_parse_real( FT_Byte*  start,
-                  FT_Byte*  limit,
-                  FT_Long   power_ten,
-                  FT_Long*  scaling )
+  cff_parse_real( CFF_Parser  parser,
+                  FT_Byte*    start,
+                  FT_Long     power_ten,
+                  FT_Long*    scaling )
   {
     FT_Byte*  p = start;
     FT_Int    nib;
@@ -214,7 +282,7 @@
         p++;
 
         /* Make sure we don't read past the end. */
-        if ( p >= limit )
+        if ( cff_parser_within_limits( parser, p, p ) )
           goto Bad;
       }
 
@@ -251,7 +319,7 @@
           p++;
 
           /* Make sure we don't read past the end. */
-          if ( p >= limit )
+          if ( cff_parser_within_limits( parser, p, p ) )
             goto Bad;
         }
 
@@ -290,7 +358,7 @@
           p++;
 
           /* Make sure we don't read past the end. */
-          if ( p >= limit )
+          if ( cff_parser_within_limits( parser, p, p ) )
             goto Bad;
         }
 
@@ -457,7 +525,7 @@
     if ( **d == 30 )
     {
       /* binary-coded decimal is truncated to integer */
-      return cff_parse_real( *d, parser->limit, 0, NULL ) >> 16;
+      return cff_parse_real( parser, *d, 0, NULL ) >> 16;
     }
 
     else if ( **d == 255 )
@@ -483,7 +551,7 @@
     }
 
     else
-      return cff_parse_integer( *d, parser->limit );
+      return cff_parse_integer( parser, *d );
   }
 
 
@@ -494,10 +562,10 @@
             FT_Long     scaling )
   {
     if ( **d == 30 )
-      return cff_parse_real( *d, parser->limit, scaling, NULL );
+      return cff_parse_real( parser, *d, scaling, NULL );
     else
     {
-      FT_Long  val = cff_parse_integer( *d, parser->limit );
+      FT_Long  val = cff_parse_integer( parser, *d );
 
 
       if ( scaling )
@@ -562,14 +630,14 @@
     FT_ASSERT( scaling );
 
     if ( **d == 30 )
-      return cff_parse_real( *d, parser->limit, 0, scaling );
+      return cff_parse_real( parser, *d, 0, scaling );
     else
     {
       FT_Long  number;
       FT_Int   integer_length;
 
 
-      number = cff_parse_integer( d[0], d[1] );
+      number = cff_parse_integer( parser, d[0] );
 
       if ( number > 0x7FFFL )
       {
@@ -645,7 +713,7 @@
            ( max_scaling - min_scaling ) > 9 )
       {
         FT_TRACE1(( "cff_parse_font_matrix:"
-                    " strange scaling values (minimum %d, maximum %d),\n"
+                    " strange scaling values (minimum %ld, maximum %ld),\n"
                     "                      "
                     " using default matrix\n", min_scaling, max_scaling ));
         goto Unlikely;
@@ -742,7 +810,7 @@
       bbox->yMax = FT_RoundFix( cff_parse_fixed( parser, data   ) );
       error = FT_Err_Ok;
 
-      FT_TRACE4(( " [%d %d %d %d]\n",
+      FT_TRACE4(( " [%ld %ld %ld %ld]\n",
                   bbox->xMin / 65536,
                   bbox->yMin / 65536,
                   bbox->xMax / 65536,
@@ -865,11 +933,11 @@
         FT_TRACE1(( "cff_parse_cid_ros: real supplement is rounded\n" ));
       dict->cid_supplement = cff_parse_num( parser, data );
       if ( dict->cid_supplement < 0 )
-        FT_TRACE1(( "cff_parse_cid_ros: negative supplement %d is found\n",
+        FT_TRACE1(( "cff_parse_cid_ros: negative supplement %ld is found\n",
                    dict->cid_supplement ));
       error = FT_Err_Ok;
 
-      FT_TRACE4(( " %d %d %d\n",
+      FT_TRACE4(( " %d %d %ld\n",
                   dict->cid_registry,
                   dict->cid_ordering,
                   dict->cid_supplement ));
@@ -1122,18 +1190,6 @@
 #endif /* FT_DEBUG_LEVEL_TRACE */
 
 
-#ifdef CFF_CONFIG_OPTION_OLD_ENGINE
-  static void
-  destruct_t2s_item( FT_Memory  memory,
-                     void*      data,
-                     void*      user )
-  {
-    FT_UNUSED( user );
-    memory->free( memory, data );
-  }
-#endif /* CFF_CONFIG_OPTION_OLD_ENGINE */
-
-
   FT_LOCAL_DEF( FT_Error )
   cff_parser_run( CFF_Parser  parser,
                   FT_Byte*    start,
@@ -1147,11 +1203,6 @@
 
     FT_Library  library = parser->library;
     FT_Memory   memory  = library->memory;
-
-    FT_ListRec  t2s;
-
-
-    FT_ZERO( &t2s );
 #endif
 
     parser->top    = parser->stack;
@@ -1212,9 +1263,11 @@
         FT_Byte*     charstring_base;
         FT_ULong     charstring_len;
 
-        FT_Fixed*    stack;
-        FT_ListNode  node;
-        FT_Byte*     q;
+        FT_Fixed*      stack;
+        FT_ListNode    node;
+        CFF_T2_String  t2;
+        FT_Fixed       t2_size;
+        FT_Byte*       q;
 
 
         charstring_base = ++p;
@@ -1261,16 +1314,26 @@
         if ( !node )
           goto Out_Of_Memory_Error;
 
+        FT_List_Add( &parser->t2_strings, node );
+
+        t2 = (CFF_T2_String)memory->alloc( memory,
+                                           sizeof ( CFF_T2_StringRec ) );
+        if ( !t2 )
+          goto Out_Of_Memory_Error;
+
+        node->data = t2;
+
         /* `5' is the conservative upper bound of required bytes per stack */
         /* element.                                                        */
-        q = (FT_Byte*)memory->alloc( memory,
-                                     5 * ( decoder.top - decoder.stack ) );
+
+        t2_size = 5 * ( decoder.top - decoder.stack );
+
+        q = (FT_Byte*)memory->alloc( memory, t2_size );
         if ( !q )
           goto Out_Of_Memory_Error;
 
-        node->data = q;
-
-        FT_List_Add( &t2s, node );
+        t2->start = q;
+        t2->limit = q + t2_size;
 
         stack = decoder.stack;
 
@@ -1531,9 +1594,6 @@
     } /* while ( p < limit ) */
 
   Exit:
-#ifdef CFF_CONFIG_OPTION_OLD_ENGINE
-    FT_List_Finalize( &t2s, destruct_t2s_item, memory, NULL );
-#endif
     return error;
 
 #ifdef CFF_CONFIG_OPTION_OLD_ENGINE

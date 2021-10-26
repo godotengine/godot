@@ -78,6 +78,8 @@ void VP8LHtreeGroupsFree(HTreeGroup* const htree_groups);
 // the huffman table.
 // Returns built table size or 0 in case of error (invalid tree or
 // memory error).
+// If root_table is NULL, it returns 0 if a lookup cannot be built, something
+// > 0 otherwise (but not the table size).
 int VP8LBuildHuffmanTable(HuffmanCode* const root_table, int root_bits,
                           const int code_lengths[], int code_lengths_size);
 

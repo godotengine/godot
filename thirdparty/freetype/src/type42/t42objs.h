@@ -4,7 +4,7 @@
  *
  *   Type 42 objects manager (specification).
  *
- * Copyright (C) 2002-2019 by
+ * Copyright (C) 2002-2020 by
  * Roberto Alameda.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -19,15 +19,14 @@
 #ifndef T42OBJS_H_
 #define T42OBJS_H_
 
-#include <ft2build.h>
-#include FT_FREETYPE_H
-#include FT_TYPE1_TABLES_H
-#include FT_INTERNAL_TYPE1_TYPES_H
+#include <freetype/freetype.h>
+#include <freetype/t1tables.h>
+#include <freetype/internal/t1types.h>
 #include "t42types.h"
-#include FT_INTERNAL_OBJECTS_H
-#include FT_INTERNAL_DRIVER_H
-#include FT_SERVICE_POSTSCRIPT_CMAPS_H
-#include FT_INTERNAL_POSTSCRIPT_HINTS_H
+#include <freetype/internal/ftobjs.h>
+#include <freetype/internal/ftdrv.h>
+#include <freetype/internal/services/svpscmap.h>
+#include <freetype/internal/pshints.h>
 
 
 FT_BEGIN_HEADER

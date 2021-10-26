@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,22 +31,24 @@
 #ifndef ROOT_MOTION_VIEW_H
 #define ROOT_MOTION_VIEW_H
 
-#include "scene/3d/visual_instance.h"
-
-class RootMotionView : public VisualInstance {
-	GDCLASS(RootMotionView, VisualInstance);
+#include "scene/3d/visual_instance_3d.h"
+#include "scene/resources/immediate_mesh.h"
+class RootMotionView : public VisualInstance3D {
+	GDCLASS(RootMotionView, VisualInstance3D);
 
 public:
-	RID immediate;
+	Ref<ImmediateMesh> immediate;
 	NodePath path;
-	float cell_size;
-	float radius;
-	bool use_in_game;
-	Color color;
-	bool first;
-	bool zero_y;
+	real_t cell_size = 1.0;
+	real_t radius = 10.0;
+	bool use_in_game = false;
+	Color color = Color(0.5, 0.5, 1.0);
+	bool first = true;
+	bool zero_y = true;
 
-	Transform accumulated;
+	Ref<Material> immediate_material;
+
+	Transform3D accumulated;
 
 private:
 	void _notification(int p_what);
@@ -68,8 +70,8 @@ public:
 	void set_zero_y(bool p_zero_y);
 	bool get_zero_y() const;
 
-	virtual AABB get_aabb() const;
-	virtual PoolVector<Face3> get_faces(uint32_t p_usage_flags) const;
+	virtual AABB get_aabb() const override;
+	virtual Vector<Face3> get_faces(uint32_t p_usage_flags) const override;
 
 	RootMotionView();
 	~RootMotionView();

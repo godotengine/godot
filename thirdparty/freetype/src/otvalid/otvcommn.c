@@ -4,7 +4,7 @@
  *
  *   OpenType common tables validation (body).
  *
- * Copyright (C) 2004-2019 by
+ * Copyright (C) 2004-2020 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -150,6 +150,9 @@
     FT_UInt   count          = FT_NEXT_USHORT( p );     /* Glyph/RangeCount */
     FT_UInt   result = 0;
 
+
+    if ( !count )
+      return result;
 
     switch ( CoverageFormat )
     {

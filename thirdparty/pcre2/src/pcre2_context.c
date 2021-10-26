@@ -7,7 +7,7 @@ and semantics are as close as possible to those of the Perl 5 language.
 
                        Written by Philip Hazel
      Original API code Copyright (c) 1997-2012 University of Cambridge
-          New API code Copyright (c) 2016-2017 University of Cambridge
+          New API code Copyright (c) 2016-2018 University of Cambridge
 
 -----------------------------------------------------------------------------
 Redistribution and use in source and binary forms, with or without
@@ -163,11 +163,13 @@ when no context is supplied to a match function. */
 const pcre2_match_context PRIV(default_match_context) = {
   { default_malloc, default_free, NULL },
 #ifdef SUPPORT_JIT
-  NULL,
-  NULL,
+  NULL,          /* JIT callback */
+  NULL,          /* JIT callback data */
 #endif
-  NULL,
-  NULL,
+  NULL,          /* Callout function */
+  NULL,          /* Callout data */
+  NULL,          /* Substitute callout function */
+  NULL,          /* Substitute callout data */
   PCRE2_UNSET,   /* Offset limit */
   HEAP_LIMIT,
   MATCH_LIMIT,
@@ -321,7 +323,7 @@ data. */
 
 PCRE2_EXP_DEFN int PCRE2_CALL_CONVENTION
 pcre2_set_character_tables(pcre2_compile_context *ccontext,
-  const unsigned char *tables)
+  const uint8_t *tables)
 {
 ccontext->tables = tables;
 return 0;
@@ -400,6 +402,16 @@ pcre2_set_callout(pcre2_match_context *mcontext,
 {
 mcontext->callout = callout;
 mcontext->callout_data = callout_data;
+return 0;
+}
+
+PCRE2_EXP_DEFN int PCRE2_CALL_CONVENTION
+pcre2_set_substitute_callout(pcre2_match_context *mcontext,
+  int (*substitute_callout)(pcre2_substitute_callout_block *, void *),
+    void *substitute_callout_data)
+{
+mcontext->substitute_callout = substitute_callout;
+mcontext->substitute_callout_data = substitute_callout_data;
 return 0;
 }
 

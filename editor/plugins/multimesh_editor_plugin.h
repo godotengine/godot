@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,26 +33,21 @@
 
 #include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
-#include "scene/3d/multimesh_instance.h"
+#include "scene/3d/multimesh_instance_3d.h"
 #include "scene/gui/spin_box.h"
 
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
-
 class MultiMeshEditor : public Control {
-
 	GDCLASS(MultiMeshEditor, Control);
 
 	friend class MultiMeshEditorPlugin;
 
 	AcceptDialog *err_dialog;
 	MenuButton *options;
-	MultiMeshInstance *_last_pp_node;
+	MultiMeshInstance3D *_last_pp_node;
 	bool browsing_source;
 
 	Panel *panel;
-	MultiMeshInstance *node;
+	MultiMeshInstance3D *node;
 
 	LineEdit *surface_source;
 	LineEdit *mesh_source;
@@ -68,7 +63,6 @@ class MultiMeshEditor : public Control {
 	SpinBox *populate_amount;
 
 	enum Menu {
-
 		MENU_OPTION_POPULATE
 	};
 
@@ -82,23 +76,22 @@ protected:
 	static void _bind_methods();
 
 public:
-	void edit(MultiMeshInstance *p_multimesh);
+	void edit(MultiMeshInstance3D *p_multimesh);
 	MultiMeshEditor();
 };
 
 class MultiMeshEditorPlugin : public EditorPlugin {
-
 	GDCLASS(MultiMeshEditorPlugin, EditorPlugin);
 
 	MultiMeshEditor *multimesh_editor;
 	EditorNode *editor;
 
 public:
-	virtual String get_name() const { return "MultiMesh"; }
-	bool has_main_screen() const { return false; }
-	virtual void edit(Object *p_object);
-	virtual bool handles(Object *p_object) const;
-	virtual void make_visible(bool p_visible);
+	virtual String get_name() const override { return "MultiMesh"; }
+	bool has_main_screen() const override { return false; }
+	virtual void edit(Object *p_object) override;
+	virtual bool handles(Object *p_object) const override;
+	virtual void make_visible(bool p_visible) override;
 
 	MultiMeshEditorPlugin(EditorNode *p_node);
 	~MultiMeshEditorPlugin();

@@ -7,7 +7,7 @@ and semantics are as close as possible to those of the Perl 5 language.
 
                        Written by Philip Hazel
      Original API code Copyright (c) 1997-2012 University of Cambridge
-         New API code Copyright (c) 2016 University of Cambridge
+          New API code Copyright (c) 2016-2018 University of Cambridge
 
 -----------------------------------------------------------------------------
 Redistribution and use in source and binary forms, with or without
@@ -74,7 +74,6 @@ Arguments:
   options         option bits
   match_data      points to a match_data block
   mcontext        points to a match context
-  jit_stack       points to a JIT stack
 
 Returns:          > 0 => success; value is the number of ovector pairs filled
                   = 0 => success, but ovector is not big enough
@@ -152,8 +151,6 @@ else
   jit_stack = NULL;
   }
 
-/* JIT only need two offsets for each ovector entry. Hence
-   the last 1/3 of the ovector will never be touched. */
 
 max_oveccount = functions->top_bracket;
 if (oveccount > max_oveccount)
@@ -173,7 +170,7 @@ else
 if (rc > (int)oveccount)
   rc = 0;
 match_data->code = re;
-match_data->subject = subject;
+match_data->subject = (rc >= 0 || rc == PCRE2_ERROR_PARTIAL)? subject : NULL;
 match_data->rc = rc;
 match_data->startchar = arguments.startchar_ptr - subject;
 match_data->leftchar = 0;

@@ -4,7 +4,7 @@
  *
  *   TrueTypeGX/AAT kern table validation (body).
  *
- * Copyright (C) 2004-2019 by
+ * Copyright (C) 2004-2020 by
  * suzuki toshiya, Masatake YAMATO, Red Hat K.K.,
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
@@ -28,8 +28,8 @@
 #include "gxvalid.h"
 #include "gxvcommn.h"
 
-#include FT_SFNT_NAMES_H
-#include FT_SERVICE_GX_VALIDATE_H
+#include <freetype/ftsnames.h>
+#include <freetype/internal/services/svgxval.h>
 
 
   /**************************************************************************

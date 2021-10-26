@@ -5,7 +5,7 @@
  *   FreeType API for checking patented TrueType bytecode instructions
  *   (body).  Obsolete, retained for backward compatibility.
  *
- * Copyright (C) 2007-2019 by
+ * Copyright (C) 2007-2020 by
  * David Turner.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -16,13 +16,12 @@
  *
  */
 
-#include <ft2build.h>
-#include FT_FREETYPE_H
-#include FT_TRUETYPE_TAGS_H
-#include FT_INTERNAL_OBJECTS_H
-#include FT_INTERNAL_STREAM_H
-#include FT_SERVICE_SFNT_H
-#include FT_SERVICE_TRUETYPE_GLYF_H
+#include <freetype/freetype.h>
+#include <freetype/tttags.h>
+#include <freetype/internal/ftobjs.h>
+#include <freetype/internal/ftstream.h>
+#include <freetype/internal/services/svsfnt.h>
+#include <freetype/internal/services/svttglyf.h>
 
 
   /* documentation is in freetype.h */

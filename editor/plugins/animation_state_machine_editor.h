@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -42,20 +42,20 @@
 #include "scene/gui/tree.h"
 
 class AnimationNodeStateMachineEditor : public AnimationTreeNodeEditorPlugin {
-
 	GDCLASS(AnimationNodeStateMachineEditor, AnimationTreeNodeEditorPlugin);
 
 	Ref<AnimationNodeStateMachine> state_machine;
 
-	ToolButton *tool_select;
-	ToolButton *tool_create;
-	ToolButton *tool_connect;
+	Button *tool_select;
+	Button *tool_create;
+	Button *tool_connect;
+	Popup *name_edit_popup;
 	LineEdit *name_edit;
 
 	HBoxContainer *tool_erase_hb;
-	ToolButton *tool_erase;
-	ToolButton *tool_autoplay;
-	ToolButton *tool_end;
+	Button *tool_erase;
+	Button *tool_autoplay;
+	Button *tool_end;
 
 	OptionButton *transition_mode;
 	OptionButton *play_mode;
@@ -126,10 +126,10 @@ class AnimationNodeStateMachineEditor : public AnimationTreeNodeEditorPlugin {
 		Vector2 to;
 		AnimationNodeStateMachineTransition::SwitchMode mode;
 		StringName advance_condition_name;
-		bool advance_condition_state;
-		bool disabled;
-		bool auto_advance;
-		float width;
+		bool advance_condition_state = false;
+		bool disabled = false;
+		bool auto_advance = false;
+		float width = 0;
 	};
 
 	Vector<TransitionLine> transition_lines;
@@ -182,8 +182,8 @@ protected:
 
 public:
 	static AnimationNodeStateMachineEditor *get_singleton() { return singleton; }
-	virtual bool can_edit(const Ref<AnimationNode> &p_node);
-	virtual void edit(const Ref<AnimationNode> &p_node);
+	virtual bool can_edit(const Ref<AnimationNode> &p_node) override;
+	virtual void edit(const Ref<AnimationNode> &p_node) override;
 	AnimationNodeStateMachineEditor();
 };
 

@@ -4,7 +4,7 @@
  *
  *   FreeType utility file to access FSType data (body).
  *
- * Copyright (C) 2008-2019 by
+ * Copyright (C) 2008-2020 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -15,11 +15,10 @@
  *
  */
 
-#include <ft2build.h>
-#include FT_TYPE1_TABLES_H
-#include FT_TRUETYPE_TABLES_H
-#include FT_INTERNAL_SERVICE_H
-#include FT_SERVICE_POSTSCRIPT_INFO_H
+#include <freetype/t1tables.h>
+#include <freetype/tttables.h>
+#include <freetype/internal/ftserv.h>
+#include <freetype/internal/services/svpsinfo.h>
 
 
   /* documentation is in freetype.h */

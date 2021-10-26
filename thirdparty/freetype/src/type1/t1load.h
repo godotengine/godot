@@ -4,7 +4,7 @@
  *
  *   Type 1 font loader (specification).
  *
- * Copyright (C) 1996-2019 by
+ * Copyright (C) 1996-2020 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -20,10 +20,9 @@
 #define T1LOAD_H_
 
 
-#include <ft2build.h>
-#include FT_INTERNAL_STREAM_H
-#include FT_INTERNAL_POSTSCRIPT_AUX_H
-#include FT_MULTIPLE_MASTERS_H
+#include <freetype/internal/ftstream.h>
+#include <freetype/internal/psaux.h>
+#include <freetype/ftmm.h>
 
 #include "t1parse.h"
 

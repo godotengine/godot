@@ -4,7 +4,7 @@
  *
  *   Internal PFR service functions (specification).
  *
- * Copyright (C) 2003-2019 by
+ * Copyright (C) 2003-2020 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -19,8 +19,8 @@
 #ifndef SVPFR_H_
 #define SVPFR_H_
 
-#include FT_PFR_H
-#include FT_INTERNAL_SERVICE_H
+#include <freetype/ftpfr.h>
+#include <freetype/internal/ftserv.h>
 
 
 FT_BEGIN_HEADER
@@ -56,7 +56,6 @@ FT_BEGIN_HEADER
 
   };
 
- /* */
 
 FT_END_HEADER
 

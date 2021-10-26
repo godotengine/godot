@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,11 +32,12 @@
 #define AUDIO_STREAM_PREVIEW_H
 
 #include "core/os/thread.h"
+#include "core/templates/safe_refcount.h"
 #include "scene/main/node.h"
 #include "servers/audio/audio_stream.h"
 
-class AudioStreamPreview : public Reference {
-	GDCLASS(AudioStreamPreview, Reference);
+class AudioStreamPreview : public RefCounted {
+	GDCLASS(AudioStreamPreview, RefCounted);
 	friend class AudioStream;
 	Vector<uint8_t> preview;
 	float length;
@@ -60,9 +61,29 @@ class AudioStreamPreviewGenerator : public Node {
 		Ref<AudioStreamPreview> preview;
 		Ref<AudioStream> base_stream;
 		Ref<AudioStreamPlayback> playback;
-		volatile bool generating;
+		SafeFlag generating;
 		ObjectID id;
-		Thread *thread;
+		Thread *thread = nullptr;
+
+		// Needed for the bookkeeping of the Map
+		Preview &operator=(const Preview &p_rhs) {
+			preview = p_rhs.preview;
+			base_stream = p_rhs.base_stream;
+			playback = p_rhs.playback;
+			generating.set_to(generating.is_set());
+			id = p_rhs.id;
+			thread = p_rhs.thread;
+			return *this;
+		}
+		Preview(const Preview &p_rhs) {
+			preview = p_rhs.preview;
+			base_stream = p_rhs.base_stream;
+			playback = p_rhs.playback;
+			generating.set_to(generating.is_set());
+			id = p_rhs.id;
+			thread = p_rhs.thread;
+		}
+		Preview() {}
 	};
 
 	Map<ObjectID, Preview> previews;

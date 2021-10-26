@@ -1,3 +1,5 @@
-Godot Logo (C) Andrea Calabró
-Distributed under the terms of the Creative Commons Attribution License
-version 3.0 (CC-BY 3.0) <https://creativecommons.org/licenses/by/3.0/legalcode>.
+Godot Engine Logo
+Copyright (c) 2017 Andrea Calabró
+
+This work is licensed under a Creative Commons Attribution 4.0 International
+License (CC-BY-4.0 International) <https://creativecommons.org/licenses/by/4.0/>.

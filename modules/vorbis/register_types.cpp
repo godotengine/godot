@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,18 +31,18 @@
 #include "register_types.h"
 
 #include "audio_stream_ogg_vorbis.h"
-
-static Ref<ResourceFormatLoaderAudioStreamOGGVorbis> vorbis_stream_loader;
+#include "resource_importer_ogg_vorbis.h"
 
 void register_vorbis_types() {
-
-	vorbis_stream_loader.instance();
-	ResourceLoader::add_resource_format_loader(vorbis_stream_loader);
-	ClassDB::register_class<AudioStreamOGGVorbis>();
+#ifdef TOOLS_ENABLED
+	if (Engine::get_singleton()->is_editor_hint()) {
+		Ref<ResourceImporterOGGVorbis> ogg_vorbis_importer;
+		ogg_vorbis_importer.instantiate();
+		ResourceFormatImporter::get_singleton()->add_importer(ogg_vorbis_importer);
+	}
+#endif
+	GDREGISTER_CLASS(AudioStreamOGGVorbis);
+	GDREGISTER_CLASS(AudioStreamPlaybackOGGVorbis);
 }
 
-void unregister_vorbis_types() {
-
-	ResourceLoader::remove_resource_format_loader(vorbis_stream_loader);
-	vorbis_stream_loader.unref();
-}
+void unregister_vorbis_types() {}

@@ -68,7 +68,7 @@ public:
 
 	virtual void unLockReadOnlyVertexBase(int subpart) const = 0;
 
-	/// getNumSubParts returns the number of seperate subparts
+	/// getNumSubParts returns the number of separate subparts
 	/// each subpart has a continuous array of vertices and indices
 	virtual int getNumSubParts() const = 0;
 

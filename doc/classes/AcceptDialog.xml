@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AcceptDialog" inherits="WindowDialog" category="Core" version="3.2">
+<class name="AcceptDialog" inherits="Window" version="4.0">
 	<brief_description>
 		Base dialog for user notification.
 	</brief_description>
@@ -10,49 +10,50 @@
 	</tutorials>
 	<methods>
 		<method name="add_button">
-			<return type="Button">
-			</return>
-			<argument index="0" name="text" type="String">
-			</argument>
-			<argument index="1" name="right" type="bool" default="false">
-			</argument>
-			<argument index="2" name="action" type="String" default="&quot;&quot;">
-			</argument>
+			<return type="Button" />
+			<argument index="0" name="text" type="String" />
+			<argument index="1" name="right" type="bool" default="false" />
+			<argument index="2" name="action" type="String" default="&quot;&quot;" />
 			<description>
 				Adds a button with label [code]text[/code] and a custom [code]action[/code] to the dialog and returns the created button. [code]action[/code] will be passed to the [signal custom_action] signal when pressed.
 				If [code]true[/code], [code]right[/code] will place the button to the right of any sibling buttons.
+				You can use [method remove_button] method to remove a button created with this method from the dialog.
 			</description>
 		</method>
-		<method name="add_cancel">
-			<return type="Button">
-			</return>
-			<argument index="0" name="name" type="String">
-			</argument>
+		<method name="add_cancel_button">
+			<return type="Button" />
+			<argument index="0" name="name" type="String" />
 			<description>
 				Adds a button with label [code]name[/code] and a cancel action to the dialog and returns the created button.
+				You can use [method remove_button] method to remove a button created with this method from the dialog.
 			</description>
 		</method>
 		<method name="get_label">
-			<return type="Label">
-			</return>
+			<return type="Label" />
 			<description>
 				Returns the label used for built-in text.
+				[b]Warning:[/b] This is a required internal node, removing and freeing it may cause a crash. If you wish to hide it or any of its children, use their [member CanvasItem.visible] property.
 			</description>
 		</method>
-		<method name="get_ok">
-			<return type="Button">
-			</return>
+		<method name="get_ok_button">
+			<return type="Button" />
 			<description>
 				Returns the OK [Button] instance.
+				[b]Warning:[/b] This is a required internal node, removing and freeing it may cause a crash. If you wish to hide it or any of its children, use their [member CanvasItem.visible] property.
 			</description>
 		</method>
 		<method name="register_text_enter">
-			<return type="void">
-			</return>
-			<argument index="0" name="line_edit" type="Node">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="line_edit" type="Control" />
 			<description>
 				Registers a [LineEdit] in the dialog. When the enter key is pressed, the dialog will be accepted.
+			</description>
+		</method>
+		<method name="remove_button">
+			<return type="void" />
+			<argument index="0" name="button" type="Control" />
+			<description>
+				Removes the [code]button[/code] from the dialog. Does NOT free the [code]button[/code]. The [code]button[/code] must be a [Button] added with [method add_button] or [method add_cancel_button] method. After removal, pressing the [code]button[/code] will no longer emit this dialog's [signal custom_action] or [signal cancelled] signals.
 			</description>
 		</method>
 	</methods>
@@ -67,21 +68,33 @@
 		<member name="dialog_text" type="String" setter="set_text" getter="get_text" default="&quot;&quot;">
 			The text displayed by the dialog.
 		</member>
+		<member name="exclusive" type="bool" setter="set_exclusive" getter="is_exclusive" override="true" default="true" />
+		<member name="title" type="String" setter="set_title" getter="get_title" override="true" default="&quot;Alert!&quot;" />
+		<member name="transient" type="bool" setter="set_transient" getter="is_transient" override="true" default="true" />
+		<member name="visible" type="bool" setter="set_visible" getter="is_visible" override="true" default="false" />
+		<member name="wrap_controls" type="bool" setter="set_wrap_controls" getter="is_wrapping_controls" override="true" default="true" />
 	</members>
 	<signals>
+		<signal name="cancelled">
+			<description>
+				Emitted when the dialog is closed or the button created with [method add_cancel_button] is pressed.
+			</description>
+		</signal>
 		<signal name="confirmed">
 			<description>
 				Emitted when the dialog is accepted, i.e. the OK button is pressed.
 			</description>
 		</signal>
 		<signal name="custom_action">
-			<argument index="0" name="action" type="String">
-			</argument>
+			<argument index="0" name="action" type="StringName" />
 			<description>
 				Emitted when a custom button is pressed. See [method add_button].
 			</description>
 		</signal>
 	</signals>
-	<constants>
-	</constants>
+	<theme_items>
+		<theme_item name="panel" data_type="style" type="StyleBox">
+			Panel that fills up the background of the window.
+		</theme_item>
+	</theme_items>
 </class>

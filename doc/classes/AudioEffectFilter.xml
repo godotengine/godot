@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AudioEffectFilter" inherits="AudioEffect" category="Core" version="3.2">
+<class name="AudioEffectFilter" inherits="AudioEffect" version="4.0">
 	<brief_description>
 		Adds a filter to the audio bus.
 	</brief_description>
@@ -7,9 +7,8 @@
 		Allows frequencies other than the [member cutoff_hz] to pass.
 	</description>
 	<tutorials>
+		<link title="Audio buses">https://docs.godotengine.org/en/latest/tutorials/audio/audio_buses.html</link>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="cutoff_hz" type="float" setter="set_cutoff" getter="get_cutoff" default="2000.0">
 			Threshold frequency for the filter, in Hz.
@@ -20,7 +19,7 @@
 			Gain amount of the frequencies after the filter.
 		</member>
 		<member name="resonance" type="float" setter="set_resonance" getter="get_resonance" default="0.5">
-			Amount of boost in the overtones near the cutoff frequency.
+			Amount of boost in the frequency range near the cutoff frequency.
 		</member>
 	</members>
 	<constants>

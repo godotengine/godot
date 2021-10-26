@@ -1,72 +1,52 @@
-using GodotTools.Core;
-using System.Collections.Generic;
-using System.IO;
-using DotNet.Globbing;
+using System;
 using Microsoft.Build.Construction;
 
 namespace GodotTools.ProjectEditor
 {
+    public sealed class MSBuildProject
+    {
+        internal ProjectRootElement Root { get; set; }
+
+        public bool HasUnsavedChanges { get; set; }
+
+        public void Save() => Root.Save();
+
+        public MSBuildProject(ProjectRootElement root)
+        {
+            Root = root;
+        }
+    }
+
     public static class ProjectUtils
     {
-        public static void AddItemToProjectChecked(string projectPath, string itemType, string include)
+        public static MSBuildProject Open(string path)
         {
-            var dir = Directory.GetParent(projectPath).FullName;
-            var root = ProjectRootElement.Open(projectPath);
-            var normalizedInclude = include.RelativeToPath(dir).Replace("/", "\\");
-
-            if (root.AddItemChecked(itemType, normalizedInclude))
-                root.Save();
+            var root = ProjectRootElement.Open(path);
+            return root != null ? new MSBuildProject(root) : null;
         }
 
-        private static string[] GetAllFilesRecursive(string rootDirectory, string mask)
+        public static void MigrateToProjectSdksStyle(MSBuildProject project, string projectName)
         {
-            string[] files = Directory.GetFiles(rootDirectory, mask, SearchOption.AllDirectories);
+            var origRoot = project.Root;
 
-            // We want relative paths
-            for (int i = 0; i < files.Length; i++) {
-                files[i] = files[i].RelativeToPath(rootDirectory);
-            }
+            if (!string.IsNullOrEmpty(origRoot.Sdk))
+                return;
 
-            return files;
+            project.Root = ProjectGenerator.GenGameProject(projectName);
+            project.Root.FullPath = origRoot.FullPath;
+            project.HasUnsavedChanges = true;
         }
 
-        public static string[] GetIncludeFiles(string projectPath, string itemType)
+        public static void EnsureGodotSdkIsUpToDate(MSBuildProject project)
         {
-            var result = new List<string>();
-            var existingFiles = GetAllFilesRecursive(Path.GetDirectoryName(projectPath), "*.cs");
+            var root = project.Root;
+            string godotSdkAttrValue = ProjectGenerator.GodotSdkAttrValue;
 
-            GlobOptions globOptions = new GlobOptions();
-            globOptions.Evaluation.CaseInsensitive = false;
+            if (!string.IsNullOrEmpty(root.Sdk) && root.Sdk.Trim().Equals(godotSdkAttrValue, StringComparison.OrdinalIgnoreCase))
+                return;
 
-            var root = ProjectRootElement.Open(projectPath);
-
-            foreach (var itemGroup in root.ItemGroups)
-            {
-                if (itemGroup.Condition.Length != 0)
-                    continue;
-
-                foreach (var item in itemGroup.Items)
-                {
-                    if (item.ItemType != itemType)
-                        continue;
-
-                    string normalizedInclude = item.Include.NormalizePath();
-
-                    var glob = Glob.Parse(normalizedInclude, globOptions);
-
-                    // TODO Check somehow if path has no blob to avoid the following loop...
-
-                    foreach (var existingFile in existingFiles)
-                    {
-                        if (glob.IsMatch(existingFile))
-                        {
-                            result.Add(existingFile);
-                        }
-                    }
-                }
-            }
-
-            return result.ToArray();
+            root.Sdk = godotSdkAttrValue;
+            project.HasUnsavedChanges = true;
         }
     }
 }

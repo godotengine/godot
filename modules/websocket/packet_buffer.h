@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,12 +31,10 @@
 #ifndef PACKET_BUFFER_H
 #define PACKET_BUFFER_H
 
-#include "core/os/copymem.h"
-#include "core/ring_buffer.h"
+#include "core/templates/ring_buffer.h"
 
 template <class T>
 class PacketBuffer {
-
 private:
 	typedef struct {
 		uint32_t size;
@@ -63,15 +61,15 @@ public:
 		ERR_FAIL_COND_V(p_info && _packets.space_left() < 1, ERR_OUT_OF_MEMORY);
 #endif
 
-		// If p_info is NULL, only the payload is written
+		// If p_info is nullptr, only the payload is written
 		if (p_info) {
 			_Packet p;
 			p.size = p_size;
-			copymem(&p.info, p_info, sizeof(T));
+			memcpy(&p.info, p_info, sizeof(T));
 			_packets.write(p);
 		}
 
-		// If p_payload is NULL, only the packet information is written.
+		// If p_payload is nullptr, only the packet information is written.
 		if (p_payload) {
 			_payload.write((const uint8_t *)p_payload, p_size);
 		}
@@ -87,7 +85,7 @@ public:
 		ERR_FAIL_COND_V(p_bytes < (int)p.size, ERR_OUT_OF_MEMORY);
 
 		r_read = p.size;
-		copymem(r_info, &p.info, sizeof(T));
+		memcpy(r_info, &p.info, sizeof(T));
 		_payload.read(r_payload, p.size);
 		return OK;
 	}

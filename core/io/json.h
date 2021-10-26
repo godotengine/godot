@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,9 +31,11 @@
 #ifndef JSON_H
 #define JSON_H
 
-#include "core/variant.h"
+#include "core/object/ref_counted.h"
+#include "core/variant/variant.h"
 
-class JSON {
+class JSON : public RefCounted {
+	GDCLASS(JSON, RefCounted);
 
 	enum TokenType {
 		TK_CURLY_BRACKET_OPEN,
@@ -50,7 +52,6 @@ class JSON {
 	};
 
 	enum Expecting {
-
 		EXPECT_OBJECT,
 		EXPECT_OBJECT_KEY,
 		EXPECT_COLON,
@@ -58,23 +59,34 @@ class JSON {
 	};
 
 	struct Token {
-
 		TokenType type;
 		Variant value;
 	};
 
-	static const char *tk_name[TK_MAX];
+	Variant data;
+	String err_str;
+	int err_line = 0;
 
-	static String _print_var(const Variant &p_var, const String &p_indent, int p_cur_indent, bool p_sort_keys);
+	static const char *tk_name[];
 
-	static Error _get_token(const CharType *p_str, int &index, int p_len, Token &r_token, int &line, String &r_err_str);
-	static Error _parse_value(Variant &value, Token &token, const CharType *p_str, int &index, int p_len, int &line, String &r_err_str);
-	static Error _parse_array(Array &array, const CharType *p_str, int &index, int p_len, int &line, String &r_err_str);
-	static Error _parse_object(Dictionary &object, const CharType *p_str, int &index, int p_len, int &line, String &r_err_str);
+	static String _make_indent(const String &p_indent, int p_size);
+	static String _stringify(const Variant &p_var, const String &p_indent, int p_cur_indent, bool p_sort_keys, Set<const void *> &p_markers, bool p_full_precision = false);
+	static Error _get_token(const char32_t *p_str, int &index, int p_len, Token &r_token, int &line, String &r_err_str);
+	static Error _parse_value(Variant &value, Token &token, const char32_t *p_str, int &index, int p_len, int &line, String &r_err_str);
+	static Error _parse_array(Array &array, const char32_t *p_str, int &index, int p_len, int &line, String &r_err_str);
+	static Error _parse_object(Dictionary &object, const char32_t *p_str, int &index, int p_len, int &line, String &r_err_str);
+	static Error _parse_string(const String &p_json, Variant &r_ret, String &r_err_str, int &r_err_line);
+
+protected:
+	static void _bind_methods();
 
 public:
-	static String print(const Variant &p_var, const String &p_indent = "", bool p_sort_keys = true);
-	static Error parse(const String &p_json, Variant &r_ret, String &r_err_str, int &r_err_line);
+	String stringify(const Variant &p_var, const String &p_indent = "", bool p_sort_keys = true, bool p_full_precision = false);
+	Error parse(const String &p_json_string);
+
+	inline Variant get_data() const { return data; }
+	inline int get_error_line() const { return err_line; }
+	inline String get_error_message() const { return err_str; }
 };
 
 #endif // JSON_H

@@ -205,19 +205,19 @@ whether its argument, which is assumed to be one code unit, is less than 256.
 The CHMAX_255 macro does not assume one code unit. The maximum length of a MARK
 name must fit in one code unit; currently it is set to 255 or 65535. The
 TABLE_GET macro is used to access elements of tables containing exactly 256
-items. When code points can be greater than 255, a check is needed before
-accessing these tables. */
+items. Its argument is a code unit. When code points can be greater than 255, a
+check is needed before accessing these tables. */
 
 #if PCRE2_CODE_UNIT_WIDTH == 8
 #define MAX_255(c) TRUE
 #define MAX_MARK ((1u << 8) - 1)
+#define TABLE_GET(c, table, default) ((table)[c])
 #ifdef SUPPORT_UNICODE
 #define SUPPORT_WIDE_CHARS
 #define CHMAX_255(c) ((c) <= 255u)
 #else
 #define CHMAX_255(c) TRUE
 #endif  /* SUPPORT_UNICODE */
-#define TABLE_GET(c, table, default) ((table)[c])
 
 #else  /* Code units are 16 or 32 bits */
 #define CHMAX_255(c) ((c) <= 255u)
@@ -226,7 +226,6 @@ accessing these tables. */
 #define SUPPORT_WIDE_CHARS
 #define TABLE_GET(c, table, default) (MAX_255(c)? ((table)[c]):(default))
 #endif
-
 
 
 /* ----------------- Character-handling macros ----------------- */
@@ -585,6 +584,8 @@ typedef struct pcre2_real_match_context {
 #endif
   int    (*callout)(pcre2_callout_block *, void *);
   void    *callout_data;
+  int    (*substitute_callout)(pcre2_substitute_callout_block *, void *);
+  void    *substitute_callout_data;
   PCRE2_SIZE offset_limit;
   uint32_t heap_limit;
   uint32_t match_limit;
@@ -656,7 +657,8 @@ typedef struct pcre2_real_match_data {
   PCRE2_SIZE       leftchar;      /* Offset to leftmost code unit */
   PCRE2_SIZE       rightchar;     /* Offset to rightmost code unit */
   PCRE2_SIZE       startchar;     /* Offset to starting code unit */
-  uint16_t         matchedby;     /* Type of match (normal, JIT, DFA) */
+  uint8_t          matchedby;     /* Type of match (normal, JIT, DFA) */
+  uint8_t          flags;         /* Various flags */
   uint16_t         oveccount;     /* Number of pairs */
   int              rc;            /* The return code from the match */
   PCRE2_SIZE       ovector[131072]; /* Must be last in the structure */
@@ -851,6 +853,7 @@ typedef struct match_block {
   uint32_t match_call_count;      /* Number of times a new frame is created */
   BOOL hitend;                    /* Hit the end of the subject at some point */
   BOOL hasthen;                   /* Pattern contains (*THEN) */
+  BOOL allowemptypartial;         /* Allow empty hard partial */
   const uint8_t *lcc;             /* Points to lower casing table */
   const uint8_t *fcc;             /* Points to case-flipping table */
   const uint8_t *ctypes;          /* Points to table of type maps */
@@ -863,6 +866,7 @@ typedef struct match_block {
   PCRE2_SPTR name_table;          /* Table of group names */
   PCRE2_SPTR start_code;          /* For use when recursing */
   PCRE2_SPTR start_subject;       /* Start of the subject string */
+  PCRE2_SPTR check_subject;       /* Where UTF-checked from */
   PCRE2_SPTR end_subject;         /* End of the subject string */
   PCRE2_SPTR end_match_ptr;       /* Subject position at end match */
   PCRE2_SPTR start_used_ptr;      /* Earliest consulted character */
@@ -905,6 +909,7 @@ typedef struct dfa_match_block {
   uint32_t poptions;              /* Pattern options */
   uint32_t nltype;                /* Newline type */
   uint32_t nllen;                 /* Newline string length */
+  BOOL allowemptypartial;         /* Allow empty hard partial */
   PCRE2_UCHAR nl[4];              /* Newline string when fixed */
   uint16_t bsr_convention;        /* \R interpretation */
   pcre2_callout_block *cb;        /* Points to a callout block */

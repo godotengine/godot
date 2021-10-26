@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="XRNode3D" inherits="Node3D" version="4.0">
+	<brief_description>
+		A spatial node that has its position automatically updated by the [XRServer].
+	</brief_description>
+	<description>
+		This node can be bound to a specific pose of a [XRPositionalTracker] and will automatically have its [member Node3D.transform] updated by the [XRServer]. Nodes of this type must be added as children of the [XROrigin3D] node.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_has_tracking_data" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the [member tracker] has current tracking data for the [member pose] being tracked.
+			</description>
+		</method>
+		<method name="get_is_active" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the [member tracker] has been registered and the [member pose] is being tracked.
+			</description>
+		</method>
+		<method name="get_pose">
+			<return type="XRPose" />
+			<description>
+				Returns the [XRPose] containing the current state of the pose being tracked. This gives access to additional properties of this pose.
+			</description>
+		</method>
+		<method name="trigger_haptic_pulse">
+			<return type="void" />
+			<argument index="0" name="action_name" type="String" />
+			<argument index="1" name="frequency" type="float" />
+			<argument index="2" name="amplitude" type="float" />
+			<argument index="3" name="duration_sec" type="float" />
+			<argument index="4" name="delay_sec" type="float" />
+			<description>
+				Triggers a haptic pulse on a device associated with this interface.
+				[code]action_name[/code] is the name of the action for this pulse.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="pose" type="StringName" setter="set_pose_name" getter="get_pose_name" default="&amp;&quot;default&quot;">
+			The name of the pose we're bound to. Which poses a tracker supports is not known during design time.
+			Godot defines number of standard pose names such as [code]aim[/code] and [code]grip[/code] but other may be configured within a given [XRInterface].
+		</member>
+		<member name="tracker" type="StringName" setter="set_tracker" getter="get_tracker" default="&amp;&quot;&quot;">
+			The name of the tracker we're bound to. Which trackers are available is not known during design time.
+			Godot defines a number of standard trackers such as [code]left_hand[/code] and [code]right_hand[/code] but others may be configured within a given [XRInterface].
+		</member>
+	</members>
+</class>

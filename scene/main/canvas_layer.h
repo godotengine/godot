@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,31 +32,29 @@
 #define CANVAS_LAYER_H
 
 #include "scene/main/node.h"
-#include "scene/resources/world_2d.h"
 
 class Viewport;
 class CanvasLayer : public Node {
-
 	GDCLASS(CanvasLayer, Node);
 
-	bool locrotscale_dirty;
+	bool locrotscale_dirty = false;
 	Vector2 ofs;
-	Size2 scale;
-	real_t rot;
-	int layer;
+	Size2 scale = Vector2(1, 1);
+	real_t rot = 0.0;
+	int layer = 1;
 	Transform2D transform;
 	RID canvas;
 
 	ObjectID custom_viewport_id; // to check validity
-	Viewport *custom_viewport;
+	Viewport *custom_viewport = nullptr;
 
 	RID viewport;
-	Viewport *vp;
+	Viewport *vp = nullptr;
 
-	int sort_index;
+	int sort_index = 0;
 
-	bool follow_viewport;
-	float follow_viewport_scale;
+	bool follow_viewport = false;
+	float follow_viewport_scale = 1.0;
 
 	void _update_xform();
 	void _update_locrotscale();
@@ -65,6 +63,7 @@ class CanvasLayer : public Node {
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
+	void _validate_property(PropertyInfo &property) const override;
 
 public:
 	void set_layer(int p_xform);
@@ -78,9 +77,6 @@ public:
 
 	void set_rotation(real_t p_radians);
 	real_t get_rotation() const;
-
-	void set_rotation_degrees(real_t p_degrees);
-	real_t get_rotation_degrees() const;
 
 	void set_scale(const Size2 &p_scale);
 	Size2 get_scale() const;

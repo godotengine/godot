@@ -4,7 +4,7 @@
  *
  *   Objects manager (body).
  *
- * Copyright (C) 1996-2019 by
+ * Copyright (C) 1996-2020 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -16,12 +16,11 @@
  */
 
 
-#include <ft2build.h>
-#include FT_INTERNAL_DEBUG_H
-#include FT_INTERNAL_STREAM_H
-#include FT_TRUETYPE_TAGS_H
-#include FT_INTERNAL_SFNT_H
-#include FT_DRIVER_H
+#include <freetype/internal/ftdebug.h>
+#include <freetype/internal/ftstream.h>
+#include <freetype/tttags.h>
+#include <freetype/internal/sfnt.h>
+#include <freetype/ftdriver.h>
 
 #include "ttgload.h"
 #include "ttpload.h"
@@ -148,7 +147,7 @@
   /* This list shall be expanded as we find more of them.       */
 
   static FT_Bool
-  tt_check_trickyness_family( FT_String*  name )
+  tt_check_trickyness_family( const FT_String*  name )
   {
 
 #define TRICK_NAMES_MAX_CHARACTERS  19
@@ -937,7 +936,22 @@
     TT_Face         face = (TT_Face)size->root.face;
     TT_ExecContext  exec;
     FT_Error        error;
+    FT_UInt         i;
 
+    /* unscaled CVT values are already stored in 26.6 format */
+    FT_Fixed  scale = size->ttmetrics.scale >> 6;
+
+
+    /* Scale the cvt values to the new ppem.            */
+    /* By default, we use the y ppem value for scaling. */
+    FT_TRACE6(( "CVT values:\n" ));
+    for ( i = 0; i < size->cvt_size; i++ )
+    {
+      size->cvt[i] = FT_MulFix( face->cvt[i], scale );
+      FT_TRACE6(( "  %3d: %f (%f)\n",
+                  i, face->cvt[i] / 64.0, size->cvt[i] / 64.0 ));
+    }
+    FT_TRACE6(( "\n" ));
 
     exec = size->context;
 
@@ -1094,11 +1108,17 @@
       tt_metrics->rotated   = FALSE;
       tt_metrics->stretched = FALSE;
 
-      /* set default engine compensation */
-      tt_metrics->compensations[0] = 0;   /* gray     */
-      tt_metrics->compensations[1] = 0;   /* black    */
-      tt_metrics->compensations[2] = 0;   /* white    */
-      tt_metrics->compensations[3] = 0;   /* reserved */
+      /* Set default engine compensation.  Value 3 is not described */
+      /* in the OpenType specification (as of Mai 2019), but Greg   */
+      /* says that MS handles it the same as `gray'.                */
+      /*                                                            */
+      /* The Apple specification says that the compensation for     */
+      /* `gray' is always zero.  FreeType doesn't do any            */
+      /* compensation at all.                                       */
+      tt_metrics->compensations[0] = 0;   /* gray  */
+      tt_metrics->compensations[1] = 0;   /* black */
+      tt_metrics->compensations[2] = 0;   /* white */
+      tt_metrics->compensations[3] = 0;   /* zero  */
     }
 
     /* allocate function defs, instruction defs, cvt, and storage area */
@@ -1171,19 +1191,7 @@
     if ( size->cvt_ready < 0 )
     {
       FT_UInt  i;
-      TT_Face  face = (TT_Face)size->root.face;
 
-
-      /* Scale the cvt values to the new ppem.            */
-      /* By default, we use the y ppem value for scaling. */
-      FT_TRACE6(( "CVT values:\n" ));
-      for ( i = 0; i < size->cvt_size; i++ )
-      {
-        size->cvt[i] = FT_MulFix( face->cvt[i], size->ttmetrics.scale );
-        FT_TRACE6(( "  %3d: %d (%f)\n",
-                    i, face->cvt[i], size->cvt[i] / 64.0 ));
-      }
-      FT_TRACE6(( "\n" ));
 
       /* all twilight points are originally zero */
       for ( i = 0; i < (FT_UInt)size->twilight.n_points; i++ )

@@ -1,14 +1,8 @@
 def can_build(env, platform):
-    return True
+    # API Changed and bullet is disabled at the moment
+    return False
+    # Later change to return not env["disable_3d"]
+
 
 def configure(env):
     pass
-
-def get_doc_classes():
-    return [
-        "BulletPhysicsDirectBodyState",
-        "BulletPhysicsServer",
-    ]
-
-def get_doc_path():
-    return "doc_classes"
