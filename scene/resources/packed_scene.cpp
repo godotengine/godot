@@ -47,6 +47,30 @@ bool SceneState::can_instantiate() const {
 	return nodes.size() > 0;
 }
 
+static Array _sanitize_node_pinned_properties(Node *p_node) {
+	if (!p_node->has_meta("_edit_pinned_properties_")) {
+		return Array();
+	}
+	Array pinned = p_node->get_meta("_edit_pinned_properties_");
+	if (pinned.is_empty()) {
+		return Array();
+	}
+	Set<StringName> storable_properties;
+	p_node->get_storable_properties(storable_properties);
+	int i = 0;
+	do {
+		if (storable_properties.has(pinned[i])) {
+			i++;
+		} else {
+			pinned.remove(i);
+		}
+	} while (i < pinned.size());
+	if (pinned.is_empty()) {
+		p_node->remove_meta("_edit_pinned_properties_");
+	}
+	return pinned;
+}
+
 Node *SceneState::instantiate(GenEditState p_edit_state) const {
 	// nodes where instancing failed (because something is missing)
 	List<Node *> stray_instances;
@@ -229,7 +253,7 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 									} else {
 										Node *base = i == 0 ? node : ret_nodes[0];
 
-										if (p_edit_state == GEN_EDIT_STATE_MAIN) {
+										if (p_edit_state == GEN_EDIT_STATE_MAIN || p_edit_state == GEN_EDIT_STATE_MAIN_INHERITED) {
 											//for the main scene, use the resource as is
 											res->configure_for_local_scene(base, resources_local_to_scene);
 											resources_local_to_scene[res] = res;
@@ -291,6 +315,13 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 					node->_set_owner_nocheck(owner);
 				}
 			}
+		}
+
+		// we only want to deal with pinned flag if instancing as pure main (no instance, no inheriting)
+		if (p_edit_state == GEN_EDIT_STATE_MAIN) {
+			_sanitize_node_pinned_properties(node);
+		} else {
+			node->remove_meta("_edit_pinned_properties_");
 		}
 
 		ret_nodes[i] = node;
@@ -442,22 +473,38 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Map
 	List<PropertyInfo> plist;
 	p_node->get_property_list(&plist);
 
+	Array pinned_props = _sanitize_node_pinned_properties(p_node);
+
 	for (const PropertyInfo &E : plist) {
 		if (!(E.usage & PROPERTY_USAGE_STORAGE)) {
 			continue;
 		}
 
+		Variant forced_value;
+
 		// If instance or inheriting, not saving if property requested so, or it's meta
-		if (states_stack.size() && ((E.usage & PROPERTY_USAGE_NO_INSTANCE_STATE) || E.name == "__meta__")) {
-			continue;
+		if (states_stack.size()) {
+			if ((E.usage & PROPERTY_USAGE_NO_INSTANCE_STATE)) {
+				continue;
+			}
+			// Meta is normally not saved in instances/inherited (see GH-12838), but we need to save the pinned list
+			if (E.name == "__meta__") {
+				if (pinned_props.size()) {
+					Dictionary meta_override;
+					meta_override["_edit_pinned_properties_"] = pinned_props;
+					forced_value = meta_override;
+				}
+			}
 		}
 
-		String name = E.name;
-		Variant value = p_node->get(name);
+		StringName name = E.name;
+		Variant value = forced_value.get_type() == Variant::NIL ? p_node->get(name) : forced_value;
 
-		Variant default_value = PropertyUtils::get_property_default_value(p_node, name, &states_stack, true);
-		if (!PropertyUtils::is_property_value_different(value, default_value)) {
-			continue;
+		if (!pinned_props.has(name) && forced_value.get_type() == Variant::NIL) {
+			Variant default_value = PropertyUtils::get_property_default_value(p_node, name, &states_stack, true);
+			if (!PropertyUtils::is_property_value_different(value, default_value)) {
+				continue;
+			}
 		}
 
 		NodeData::Property prop;
@@ -1505,6 +1552,7 @@ void SceneState::_bind_methods() {
 	BIND_ENUM_CONSTANT(GEN_EDIT_STATE_DISABLED);
 	BIND_ENUM_CONSTANT(GEN_EDIT_STATE_INSTANCE);
 	BIND_ENUM_CONSTANT(GEN_EDIT_STATE_MAIN);
+	BIND_ENUM_CONSTANT(GEN_EDIT_STATE_MAIN_INHERITED);
 }
 
 SceneState::SceneState() {
@@ -1596,6 +1644,7 @@ void PackedScene::_bind_methods() {
 	BIND_ENUM_CONSTANT(GEN_EDIT_STATE_DISABLED);
 	BIND_ENUM_CONSTANT(GEN_EDIT_STATE_INSTANCE);
 	BIND_ENUM_CONSTANT(GEN_EDIT_STATE_MAIN);
+	BIND_ENUM_CONSTANT(GEN_EDIT_STATE_MAIN_INHERITED);
 }
 
 PackedScene::PackedScene() {

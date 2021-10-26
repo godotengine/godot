@@ -59,6 +59,7 @@ public:
 		MENU_COPY_PROPERTY,
 		MENU_PASTE_PROPERTY,
 		MENU_COPY_PROPERTY_PATH,
+		MENU_PIN_VALUE,
 	};
 
 private:
@@ -90,11 +91,14 @@ private:
 	bool delete_hover = false;
 
 	bool can_revert;
+	bool can_pin;
+	bool pin_hidden;
+	bool pinned;
 
 	bool use_folding;
 	bool draw_top_bg;
 
-	void _ensure_popup();
+	void _update_popup();
 	void _focusable_focused(int p_index);
 
 	bool selectable;
@@ -113,6 +117,8 @@ private:
 	Map<StringName, Variant> cache;
 
 	GDVIRTUAL0(_update_property)
+	void _update_pin_flags();
+
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
@@ -137,7 +143,7 @@ public:
 	StringName get_edited_property();
 
 	virtual void update_property();
-	void update_reload_status();
+	void update_revert_and_pin_status();
 
 	virtual bool use_keying_next() const;
 
@@ -458,8 +464,8 @@ class EditorInspector : public ScrollContainer {
 	void _property_keyed(const String &p_path, bool p_advance);
 	void _property_keyed_with_value(const String &p_path, const Variant &p_value, bool p_advance);
 	void _property_deleted(const String &p_path);
-
 	void _property_checked(const String &p_path, bool p_checked);
+	void _property_pinned(const String &p_path, bool p_pinned);
 
 	void _resource_selected(const String &p_path, RES p_resource);
 	void _property_selected(const String &p_path, int p_focusable);
