@@ -34,7 +34,7 @@
 
 // FIXME: Add support for both OpenGL and Vulkan when OpenGL is implemented again,
 // so it can't be done with compilation time branching.
-//#if defined(OPENGL_ENABLED)
+//#if defined(GLES3_ENABLED)
 //@interface AppDelegate : NSObject <UIApplicationDelegate, GLViewDelegate> {
 //#endif
 //#if defined(VULKAN_ENABLED)

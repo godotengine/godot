@@ -74,51 +74,6 @@ Error rename_and_store_file_in_gradle_project(void *p_userdata, const String &p_
 
 // Creates strings.xml files inside the gradle project for different locales.
 Error _create_project_name_strings_files(const Ref<EditorExportPreset> &p_preset, const String &project_name);
-//Error _create_project_name_strings_files(const Ref<EditorExportPreset> &p_preset, const String &project_name) {
-//	// Stores the string into the default values directory.
-//	String processed_default_xml_string = vformat(godot_project_name_xml_string, project_name.xml_escape(true));
-//	store_string_at_path("res://android/build/res/values/godot_project_name_string.xml", processed_default_xml_string);
-
-//	// Searches the Gradle project res/ directory to find all supported locales
-//	DirAccessRef da = DirAccess::open("res://android/build/res");
-//	if (!da) {
-//		return ERR_CANT_OPEN;
-//	}
-//	da->list_dir_begin();
-//	while (true) {
-//		String file = da->get_next();
-//		if (file == "") {
-//			break;
-//		}
-//		if (!file.begins_with("values-")) {
-//			// NOTE: This assumes all directories that start with "values-" are for localization.
-//			continue;
-//		}
-//		String locale = file.replace("values-", "").replace("-r", "_");
-//		String property_name = "application/config/name_" + locale;
-//		String locale_directory = "res://android/build/res/" + file + "/godot_project_name_string.xml";
-//		if (ProjectSettings::get_singleton()->has_setting(property_name)) {
-//			String locale_project_name = ProjectSettings::get_singleton()->get(property_name);
-//			String processed_xml_string = vformat(godot_project_name_xml_string, locale_project_name.xml_escape(true));
-//			store_string_at_path(locale_directory, processed_xml_string);
-//		} else {
-//			// TODO: Once the legacy build system is deprecated we don't need to have xml files for this else branch
-//			store_string_at_path(locale_directory, processed_default_xml_string);
-//		}
-//	}
-//	da->list_dir_end();
-//	return OK;
-//}
-
-//String bool_to_string(bool v) {
-//	return v ? "true" : "false";
-//}
-
-//String _get_gles_tag() {
-//	bool min_gles3 = ProjectSettings::get_singleton()->get("rendering/driver/driver_name") == "GLES3" &&
-//					 !ProjectSettings::get_singleton()->get("rendering/quality/driver/fallback_to_gles2");
-//	return min_gles3 ? "    <uses-feature android:glEsVersion=\"0x00030000\" android:required=\"true\" />\n" : "";
-//}
 
 String bool_to_string(bool v);
 

@@ -31,7 +31,7 @@
 #include "gl_manager_windows.h"
 
 #ifdef WINDOWS_ENABLED
-#ifdef OPENGL_ENABLED
+#ifdef GLES3_ENABLED
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -129,50 +129,46 @@ Error GLManager_Windows::_create_context(GLWindow &win, GLDisplay &gl_display) {
 
 	wglMakeCurrent(hDC, gl_display.hRC);
 
-	if (opengl_3_context) {
-		int attribs[] = {
-			WGL_CONTEXT_MAJOR_VERSION_ARB, 3, //we want a 3.3 context
-			WGL_CONTEXT_MINOR_VERSION_ARB, 3,
-			//and it shall be forward compatible so that we can only use up to date functionality
-			WGL_CONTEXT_PROFILE_MASK_ARB, WGL_CONTEXT_CORE_PROFILE_BIT_ARB,
-			WGL_CONTEXT_FLAGS_ARB, WGL_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB /*| _WGL_CONTEXT_DEBUG_BIT_ARB*/,
-			0
-		}; //zero indicates the end of the array
+	int attribs[] = {
+		WGL_CONTEXT_MAJOR_VERSION_ARB, 3, //we want a 3.3 context
+		WGL_CONTEXT_MINOR_VERSION_ARB, 3,
+		//and it shall be forward compatible so that we can only use up to date functionality
+		WGL_CONTEXT_PROFILE_MASK_ARB, WGL_CONTEXT_CORE_PROFILE_BIT_ARB,
+		WGL_CONTEXT_FLAGS_ARB, WGL_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB /*| _WGL_CONTEXT_DEBUG_BIT_ARB*/,
+		0
+	}; //zero indicates the end of the array
 
-		PFNWGLCREATECONTEXTATTRIBSARBPROC wglCreateContextAttribsARB = nullptr; //pointer to the method
-		wglCreateContextAttribsARB = (PFNWGLCREATECONTEXTATTRIBSARBPROC)wglGetProcAddress("wglCreateContextAttribsARB");
+	PFNWGLCREATECONTEXTATTRIBSARBPROC wglCreateContextAttribsARB = nullptr; //pointer to the method
+	wglCreateContextAttribsARB = (PFNWGLCREATECONTEXTATTRIBSARBPROC)wglGetProcAddress("wglCreateContextAttribsARB");
 
-		if (wglCreateContextAttribsARB == nullptr) //OpenGL 3.0 is not supported
-		{
-			wglDeleteContext(gl_display.hRC);
-			gl_display.hRC = 0;
-			return ERR_CANT_CREATE;
-		}
-
-		HGLRC new_hRC = wglCreateContextAttribsARB(hDC, 0, attribs);
-		if (!new_hRC) {
-			wglDeleteContext(gl_display.hRC);
-			gl_display.hRC = 0;
-			return ERR_CANT_CREATE; // Return false
-		}
-		wglMakeCurrent(hDC, nullptr);
+	if (wglCreateContextAttribsARB == nullptr) //OpenGL 3.0 is not supported
+	{
 		wglDeleteContext(gl_display.hRC);
-		gl_display.hRC = new_hRC;
+		gl_display.hRC = 0;
+		return ERR_CANT_CREATE;
+	}
 
-		if (!wglMakeCurrent(hDC, gl_display.hRC)) // Try To Activate The Rendering Context
-		{
-			wglDeleteContext(gl_display.hRC);
-			gl_display.hRC = 0;
-			return ERR_CANT_CREATE; // Return FALSE
-		}
+	HGLRC new_hRC = wglCreateContextAttribsARB(hDC, 0, attribs);
+	if (!new_hRC) {
+		wglDeleteContext(gl_display.hRC);
+		gl_display.hRC = 0;
+		return ERR_CANT_CREATE; // Return false
+	}
+	wglMakeCurrent(hDC, nullptr);
+	wglDeleteContext(gl_display.hRC);
+	gl_display.hRC = new_hRC;
+
+	if (!wglMakeCurrent(hDC, gl_display.hRC)) // Try To Activate The Rendering Context
+	{
+		wglDeleteContext(gl_display.hRC);
+		gl_display.hRC = 0;
+		return ERR_CANT_CREATE; // Return FALSE
 	}
 
 	return OK;
 }
 
 Error GLManager_Windows::window_create(DisplayServer::WindowID p_window_id, HWND p_hwnd, HINSTANCE p_hinstance, int p_width, int p_height) {
-	print_line("window_create window id " + itos(p_window_id));
-
 	HDC hdc = GetDC(p_hwnd);
 	if (!hdc) {
 		return ERR_CANT_CREATE; // Return FALSE
@@ -349,5 +345,5 @@ GLManager_Windows::~GLManager_Windows() {
 	release_current();
 }
 
-#endif // OPENGL_ENABLED
+#endif // GLES3_ENABLED
 #endif // WINDOWS

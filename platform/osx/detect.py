@@ -189,4 +189,4 @@ def configure(env):
         if not env["use_volk"]:
             env.Append(LINKFLAGS=["-L$VULKAN_SDK_PATH/MoltenVK/MoltenVK.xcframework/macos-arm64_x86_64/", "-lMoltenVK"])
 
-    # env.Append(CPPDEFINES=['GLES_ENABLED', 'OPENGL_ENABLED'])
+    # env.Append(CPPDEFINES=['GLES_ENABLED', 'GLES3_ENABLED'])

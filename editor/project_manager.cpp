@@ -478,7 +478,7 @@ private:
 					if (rasterizer_button_group->get_pressed_button()->get_meta("driver_name") == "Vulkan") {
 						initial_settings["rendering/driver/driver_name"] = "Vulkan";
 					} else {
-						initial_settings["rendering/driver/driver_name"] = "OpenGL";
+						initial_settings["rendering/driver/driver_name"] = "OpenGL3";
 						initial_settings["rendering/textures/vram_compression/import_etc2"] = false;
 						initial_settings["rendering/textures/vram_compression/import_etc"] = true;
 					}

@@ -31,7 +31,7 @@
 #ifndef GL_MANAGER_WINDOWS_H
 #define GL_MANAGER_WINDOWS_H
 
-#if defined(WINDOWS_ENABLED) && defined(OPENGL_ENABLED)
+#if defined(WINDOWS_ENABLED) && defined(GLES3_ENABLED)
 
 #include "core/error/error_list.h"
 #include "core/os/os.h"
@@ -76,7 +76,6 @@ private:
 	LocalVector<GLDisplay> _displays;
 
 	GLWindow *_current_window;
-	bool opengl_3_context = false;
 
 	PFNWGLSWAPINTERVALEXTPROC wglSwapIntervalEXT;
 	PFNWGLGETSWAPINTERVALEXTPROC wglGetSwapIntervalEXT;
@@ -123,6 +122,6 @@ public:
 	~GLManager_Windows();
 };
 
-#endif // defined(WINDOWS_ENABLED) && defined(OPENGL_ENABLED)
+#endif // defined(WINDOWS_ENABLED) && defined(GLES3_ENABLED)
 
 #endif // GL_MANAGER_WINDOWS_H

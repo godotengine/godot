@@ -2440,7 +2440,7 @@ void RenderForwardMobile::_geometry_instance_update(GeometryInstance *p_geometry
 		} break;
 #if 0
 		case RS::INSTANCE_IMMEDIATE: {
-			RasterizerStorageOpenGL::Immediate *immediate = storage->immediate_owner.get_or_null(inst->base);
+			RasterizerStorageGLES3::Immediate *immediate = storage->immediate_owner.get_or_null(inst->base);
 			ERR_CONTINUE(!immediate);
 
 			_add_geometry(immediate, inst, nullptr, -1, p_depth_pass, p_shadow_pass);

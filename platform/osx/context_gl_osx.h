@@ -31,7 +31,7 @@
 #ifndef CONTEXT_GL_OSX_H
 #define CONTEXT_GL_OSX_H
 
-#if defined(OPENGL_ENABLED) || defined(GLES_ENABLED)
+#if defined(GLES3_ENABLED) || defined(GLES_ENABLED)
 
 #include "core/error/error_list.h"
 #include "core/os/os.h"
@@ -41,7 +41,7 @@
 #include <CoreVideo/CoreVideo.h>
 
 class ContextGL_OSX {
-	bool opengl_3_context;
+	bool gles3_context;
 	bool use_vsync;
 
 	void *framework;
@@ -66,7 +66,7 @@ public:
 	void set_use_vsync(bool p_use);
 	bool is_using_vsync() const;
 
-	ContextGL_OSX(id p_view, bool p_opengl_3_context);
+	ContextGL_OSX(id p_view, bool p_gles3_context);
 	~ContextGL_OSX();
 };
 

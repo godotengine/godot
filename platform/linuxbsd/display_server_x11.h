@@ -31,7 +31,7 @@
 #ifndef DISPLAY_SERVER_X11_H
 #define DISPLAY_SERVER_X11_H
 
-#include "drivers/opengl/rasterizer_platforms.h"
+#include "drivers/gles3/rasterizer_platforms.h"
 
 #ifdef X11_ENABLED
 
@@ -48,7 +48,7 @@
 #include "servers/rendering/renderer_compositor.h"
 #include "servers/rendering_server.h"
 
-#if defined(OPENGL_ENABLED)
+#if defined(GLES3_ENABLED)
 #include "gl_manager_x11.h"
 #endif
 
@@ -101,7 +101,7 @@ class DisplayServerX11 : public DisplayServer {
 	Atom requested;
 	int xdnd_version;
 
-#if defined(OPENGL_ENABLED)
+#if defined(GLES3_ENABLED)
 	GLManager_X11 *gl_manager = nullptr;
 #endif
 #if defined(VULKAN_ENABLED)

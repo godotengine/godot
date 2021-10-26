@@ -56,7 +56,7 @@
 #include "platform/windows/vulkan_context_win.h"
 #endif
 
-#if defined(OPENGL_ENABLED)
+#if defined(GLES3_ENABLED)
 #include "gl_manager_windows.h"
 #endif
 
@@ -304,7 +304,7 @@ class DisplayServerWindows : public DisplayServer {
 	int old_x, old_y;
 	Point2i center;
 
-#if defined(OPENGL_ENABLED)
+#if defined(GLES3_ENABLED)
 	GLManager_Windows *gl_manager;
 #endif
 

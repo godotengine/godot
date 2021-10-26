@@ -51,7 +51,7 @@ DisplayServerIPhone *DisplayServerIPhone::get_singleton() {
 DisplayServerIPhone::DisplayServerIPhone(const String &p_rendering_driver, WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error) {
 	rendering_driver = p_rendering_driver;
 
-#if defined(OPENGL_ENABLED)
+#if defined(GLES3_ENABLED)
 	// FIXME: Add support for both OpenGL and Vulkan when OpenGL is implemented
 	// again,
 
@@ -60,9 +60,9 @@ DisplayServerIPhone::DisplayServerIPhone(const String &p_rendering_driver, Windo
 
 		// FIXME: Add Vulkan support via MoltenVK. Add fallback code back?
 
-		if (RasterizerOpenGLis_viable() == OK) {
-			RasterizerOpenGLregister_config();
-			RasterizerOpenGLmake_current();
+		if (RasterizerGLES3::is_viable() == OK) {
+			RasterizerGLES3::register_config();
+			RasterizerGLES3::make_current();
 		} else {
 			gl_initialization_error = true;
 		}
@@ -83,7 +83,7 @@ DisplayServerIPhone::DisplayServerIPhone(const String &p_rendering_driver, Windo
 
 		// reset this to what it should be, it will have been set to 0 after
 		// rendering_server->init() is called
-		//    RasterizerStorageOpenGLsystem_fbo = gl_view_base_fb;
+		//    RasterizerStorageGLES3system_fbo = gl_view_base_fb;
 	}
 #endif
 
@@ -157,7 +157,7 @@ Vector<String> DisplayServerIPhone::get_rendering_drivers_func() {
 #if defined(VULKAN_ENABLED)
 	drivers.push_back("vulkan");
 #endif
-#if defined(OPENGL_ENABLED)
+#if defined(GLES3_ENABLED)
 	drivers.push_back("opengl_es");
 #endif
 

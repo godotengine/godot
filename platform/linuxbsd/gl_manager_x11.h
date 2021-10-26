@@ -33,9 +33,9 @@
 
 #ifdef X11_ENABLED
 
-#include "drivers/opengl/rasterizer_platforms.h"
+#include "drivers/gles3/rasterizer_platforms.h"
 
-#ifdef OPENGL_ENABLED
+#ifdef GLES3_ENABLED
 
 #include "core/os/os.h"
 #include "core/templates/local_vector.h"
@@ -124,7 +124,7 @@ public:
 	~GLManager_X11();
 };
 
-#endif // OPENGL_ENABLED
+#endif // GLES3_ENABLED
 #endif // X11_ENABLED
 
 #endif // GL_MANAGER_X11_H

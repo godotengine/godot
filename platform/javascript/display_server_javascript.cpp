@@ -691,10 +691,10 @@ DisplayServerJavaScript::DisplayServerJavaScript(const String &p_rendering_drive
 
 	bool gl_initialization_error = false;
 
-	if (RasterizerOpenGLis_viable() == OK) {
+	if (RasterizerGLES3::is_viable() == OK) {
 		attributes.majorVersion = 1;
-		RasterizerOpenGLregister_config();
-		RasterizerOpenGLmake_current();
+		RasterizerGLES3::register_config();
+		RasterizerGLES3::make_current();
 	} else {
 		gl_initialization_error = true;
 	}

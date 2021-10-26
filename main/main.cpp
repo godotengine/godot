@@ -1573,8 +1573,6 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 		String display_driver = DisplayServer::get_create_function_name(display_driver_idx);
 
 		// rendering_driver now held in static global String in main and initialized in setup()
-		print_line("creating display driver : " + display_driver);
-		print_line("creating rendering driver : " + rendering_driver);
 		Error err;
 		display_server = DisplayServer::create(display_driver_idx, rendering_driver, window_mode, window_vsync_mode, window_flags, window_size, err);
 		if (err != OK || display_server == nullptr) {
