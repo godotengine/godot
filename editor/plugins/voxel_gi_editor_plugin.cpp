@@ -149,7 +149,6 @@ VoxelGIEditorPlugin::VoxelGIEditorPlugin(EditorNode *p_node) {
 	bake_hb->add_child(bake);
 	bake_info = memnew(Label);
 	bake_info->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	bake_info->set_clip_text(true);
 	bake_hb->add_child(bake_info);
 
 	add_control_to_container(CONTAINER_SPATIAL_EDITOR_MENU, bake_hb);
