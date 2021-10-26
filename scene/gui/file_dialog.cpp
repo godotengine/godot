@@ -54,18 +54,22 @@ void FileDialog::_notification(int p_what) {
 
 		Color font_color = get_color("font_color", "ToolButton");
 		Color font_color_hover = get_color("font_color_hover", "ToolButton");
+		Color font_color_focus = get_color("font_color_focus", "ToolButton");
 		Color font_color_pressed = get_color("font_color_pressed", "ToolButton");
 
 		dir_up->add_color_override("icon_color_normal", font_color);
 		dir_up->add_color_override("icon_color_hover", font_color_hover);
+		dir_up->add_color_override("font_color_focus", font_color_focus);
 		dir_up->add_color_override("icon_color_pressed", font_color_pressed);
 
 		refresh->add_color_override("icon_color_normal", font_color);
 		refresh->add_color_override("icon_color_hover", font_color_hover);
+		refresh->add_color_override("font_color_focus", font_color_focus);
 		refresh->add_color_override("icon_color_pressed", font_color_pressed);
 
 		show_hidden->add_color_override("icon_color_normal", font_color);
 		show_hidden->add_color_override("icon_color_hover", font_color_hover);
+		show_hidden->add_color_override("font_color_focus", font_color_focus);
 		show_hidden->add_color_override("icon_color_pressed", font_color_pressed);
 
 	} else if (p_what == NOTIFICATION_POPUP_HIDE) {

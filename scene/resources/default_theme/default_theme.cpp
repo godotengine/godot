@@ -203,6 +203,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	Color control_font_color_lower = Color(0.63, 0.63, 0.63);
 	Color control_font_color_low = Color(0.69, 0.69, 0.69);
 	Color control_font_color_hover = Color(0.94, 0.94, 0.94);
+	Color control_font_color_focus = Color(0.94, 0.94, 0.94);
 	Color control_font_color_disabled = Color(0.9, 0.9, 0.9, 0.2);
 	Color control_font_color_pressed = Color(1, 1, 1);
 	Color font_color_selection = Color(0.49, 0.49, 0.49);
@@ -237,6 +238,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("font_color", "Button", control_font_color);
 	theme->set_color("font_color_pressed", "Button", control_font_color_pressed);
 	theme->set_color("font_color_hover", "Button", control_font_color_hover);
+	theme->set_color("font_color_focus", "Button", control_font_color_focus);
 	theme->set_color("font_color_disabled", "Button", control_font_color_disabled);
 
 	theme->set_constant("hseparation", "Button", 2 * scale);
@@ -250,6 +252,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("font_color", "LinkButton", control_font_color);
 	theme->set_color("font_color_pressed", "LinkButton", control_font_color_pressed);
 	theme->set_color("font_color_hover", "LinkButton", control_font_color_hover);
+	theme->set_color("font_color_focus", "LinkButton", control_font_color_focus);
 
 	theme->set_constant("underline_spacing", "LinkButton", 2 * scale);
 
@@ -266,6 +269,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("font_color", "ColorPickerButton", Color(1, 1, 1, 1));
 	theme->set_color("font_color_pressed", "ColorPickerButton", Color(0.8, 0.8, 0.8, 1));
 	theme->set_color("font_color_hover", "ColorPickerButton", Color(1, 1, 1, 1));
+	theme->set_color("font_color_focus", "ColorPickerButton", Color(1, 1, 1, 1));
 	theme->set_color("font_color_disabled", "ColorPickerButton", Color(0.9, 0.9, 0.9, 0.3));
 
 	theme->set_constant("hseparation", "ColorPickerButton", 2 * scale);
@@ -282,6 +286,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("font_color", "ToolButton", control_font_color);
 	theme->set_color("font_color_pressed", "ToolButton", control_font_color_pressed);
 	theme->set_color("font_color_hover", "ToolButton", control_font_color_hover);
+	theme->set_color("font_color_focus", "ToolButton", control_font_color_focus);
 	theme->set_color("font_color_disabled", "ToolButton", Color(0.9, 0.95, 1, 0.3));
 
 	theme->set_constant("hseparation", "ToolButton", 3);
@@ -307,6 +312,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("font_color", "OptionButton", control_font_color);
 	theme->set_color("font_color_pressed", "OptionButton", control_font_color_pressed);
 	theme->set_color("font_color_hover", "OptionButton", control_font_color_hover);
+	theme->set_color("font_color_focus", "OptionButton", control_font_color_focus);
 	theme->set_color("font_color_disabled", "OptionButton", control_font_color_disabled);
 
 	theme->set_constant("hseparation", "OptionButton", 2 * scale);
@@ -325,6 +331,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("font_color", "MenuButton", control_font_color);
 	theme->set_color("font_color_pressed", "MenuButton", control_font_color_pressed);
 	theme->set_color("font_color_hover", "MenuButton", control_font_color_hover);
+	theme->set_color("font_color_focus", "MenuButton", control_font_color_focus);
 	theme->set_color("font_color_disabled", "MenuButton", Color(1, 1, 1, 0.3));
 
 	theme->set_constant("hseparation", "MenuButton", 3 * scale);
@@ -364,6 +371,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("font_color_pressed", "CheckBox", control_font_color_pressed);
 	theme->set_color("font_color_hover", "CheckBox", control_font_color_hover);
 	theme->set_color("font_color_hover_pressed", "CheckBox", control_font_color_pressed);
+	theme->set_color("font_color_focus", "CheckBox", control_font_color_focus);
 	theme->set_color("font_color_disabled", "CheckBox", control_font_color_disabled);
 
 	theme->set_constant("hseparation", "CheckBox", 4 * scale);
@@ -395,6 +403,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("font_color_pressed", "CheckButton", control_font_color_pressed);
 	theme->set_color("font_color_hover", "CheckButton", control_font_color_hover);
 	theme->set_color("font_color_hover_pressed", "CheckButton", control_font_color_pressed);
+	theme->set_color("font_color_focus", "CheckButton", control_font_color_focus);
 	theme->set_color("font_color_disabled", "CheckButton", control_font_color_disabled);
 
 	theme->set_constant("hseparation", "CheckButton", 4 * scale);

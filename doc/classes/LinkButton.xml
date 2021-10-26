@@ -42,6 +42,9 @@
 		<theme_item name="font_color" data_type="color" type="Color" default="Color( 0.88, 0.88, 0.88, 1 )">
 			Default text [Color] of the [LinkButton].
 		</theme_item>
+		<theme_item name="font_color_focus" data_type="color" type="Color" default="Color( 0.94, 0.94, 0.94, 1 )">
+			Text [Color] used when the [LinkButton] is focused. Only replaces the normal text color of the button. Disabled, hovered, and pressed states take precedence over this color.
+		</theme_item>
 		<theme_item name="font_color_hover" data_type="color" type="Color" default="Color( 0.94, 0.94, 0.94, 1 )">
 			Text [Color] used when the [LinkButton] is being hovered.
 		</theme_item>

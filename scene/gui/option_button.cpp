@@ -70,7 +70,11 @@ void OptionButton::_notification(int p_what) {
 						clr = get_color("font_color_disabled");
 						break;
 					default:
-						clr = get_color("font_color");
+						if (has_focus()) {
+							clr = get_color("font_color_focus");
+						} else {
+							clr = get_color("font_color");
+						}
 				}
 			}
 

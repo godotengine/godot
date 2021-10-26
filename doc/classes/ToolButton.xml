@@ -35,6 +35,9 @@
 		<theme_item name="font_color_disabled" data_type="color" type="Color" default="Color( 0.9, 0.95, 1, 0.3 )">
 			Text [Color] used when the [ToolButton] is disabled.
 		</theme_item>
+		<theme_item name="font_color_focus" data_type="color" type="Color" default="Color( 0.94, 0.94, 0.94, 1 )">
+			Text [Color] used when the [ToolButton] is focused. Only replaces the normal text color of the button. Disabled, hovered, and pressed states take precedence over this color.
+		</theme_item>
 		<theme_item name="font_color_hover" data_type="color" type="Color" default="Color( 0.94, 0.94, 0.94, 1 )">
 			Text [Color] used when the [ToolButton] is being hovered.
 		</theme_item>

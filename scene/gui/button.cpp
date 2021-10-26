@@ -84,9 +84,18 @@ void Button::_notification(int p_what) {
 					if (!flat) {
 						style->draw(ci, Rect2(Point2(0, 0), size));
 					}
-					color = get_color("font_color");
-					if (has_color("icon_color_normal")) {
-						color_icon = get_color("icon_color_normal");
+
+					// Focus colors only take precedence over normal state.
+					if (has_focus()) {
+						color = get_color("font_color_focus");
+						if (has_color("icon_color_focus")) {
+							color_icon = get_color("icon_color_focus");
+						}
+					} else {
+						color = get_color("font_color");
+						if (has_color("icon_color_normal")) {
+							color_icon = get_color("icon_color_normal");
+						}
 					}
 				} break;
 				case DRAW_HOVER_PRESSED: {

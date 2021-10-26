@@ -25,6 +25,7 @@
 			The check icon to display when the [CheckBox] is checked.
 		</theme_item>
 		<theme_item name="checked_disabled" data_type="icon" type="Texture">
+			The check icon to display when the [CheckBox] is checked and disabled.
 		</theme_item>
 		<theme_item name="disabled" data_type="style" type="StyleBox">
 			The [StyleBox] to display as a background when the [CheckBox] is disabled.
@@ -40,6 +41,9 @@
 		</theme_item>
 		<theme_item name="font_color_disabled" data_type="color" type="Color" default="Color( 0.9, 0.9, 0.9, 0.2 )">
 			The [CheckBox] text's font color when it's disabled.
+		</theme_item>
+		<theme_item name="font_color_focus" data_type="color" type="Color" default="Color( 0.94, 0.94, 0.94, 1 )">
+			The [CheckBox] text's font color when it's focused. Only replaces the normal text color of the checkbox. Disabled, hovered, and pressed states take precedence over this color.
 		</theme_item>
 		<theme_item name="font_color_hover" data_type="color" type="Color" default="Color( 0.94, 0.94, 0.94, 1 )">
 			The [CheckBox] text's font color when it's hovered.
@@ -79,6 +83,7 @@
 			The check icon to display when the [CheckBox] is unchecked.
 		</theme_item>
 		<theme_item name="unchecked_disabled" data_type="icon" type="Texture">
+			The check icon to display when the [CheckBox] is unchecked and disabled.
 		</theme_item>
 	</theme_items>
 </class>
