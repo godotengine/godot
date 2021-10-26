@@ -280,11 +280,14 @@ class RenderForwardClustered : public RendererSceneRenderRD {
 			float fog_sun_scatter;
 
 			float fog_aerial_perspective;
-
+			float fog_linear_start;
+			float fog_linear_end;
 			float time;
-			float reflection_multiplier;
 
+			float reflection_multiplier;
 			uint32_t pancake_shadows;
+			uint32_t pad1;
+			uint32_t pad2;
 		};
 
 		struct PushConstant {

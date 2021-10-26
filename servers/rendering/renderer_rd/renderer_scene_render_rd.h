@@ -894,7 +894,7 @@ public:
 	virtual void environment_glow_set_use_bicubic_upscale(bool p_enable) override;
 	virtual void environment_glow_set_use_high_quality(bool p_enable) override;
 
-	virtual void environment_set_fog(RID p_env, bool p_enable, const Color &p_light_color, float p_light_energy, float p_sun_scatter, float p_density, float p_height, float p_height_density, float p_aerial_perspective) override;
+	virtual void environment_set_fog(RID p_env, bool p_enable, const Color &p_light_color, float p_light_energy, float p_sun_scatter, float p_density, float p_height, float p_height_density, float p_aerial_perspective, float p_linear_start, float p_linear_end) override;
 	bool environment_is_fog_enabled(RID p_env) const;
 	Color environment_get_fog_light_color(RID p_env) const;
 	float environment_get_fog_light_energy(RID p_env) const;
@@ -903,6 +903,8 @@ public:
 	float environment_get_fog_height(RID p_env) const;
 	float environment_get_fog_height_density(RID p_env) const;
 	float environment_get_fog_aerial_perspective(RID p_env) const;
+	float environment_get_fog_linear_start(RID p_env) const;
+	float environment_get_fog_linear_end(RID p_env) const;
 
 	virtual void environment_set_volumetric_fog(RID p_env, bool p_enable, float p_density, const Color &p_light, float p_light_energy, float p_length, float p_detail_spread, float p_gi_inject, bool p_temporal_reprojection, float p_temporal_reprojection_amount) override;
 

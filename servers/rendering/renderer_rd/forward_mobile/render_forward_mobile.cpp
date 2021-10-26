@@ -1638,6 +1638,8 @@ void RenderForwardMobile::_setup_environment(const RenderDataRD *p_render_data, 
 		scene_state.ubo.fog_height = environment_get_fog_height(p_render_data->environment);
 		scene_state.ubo.fog_height_density = environment_get_fog_height_density(p_render_data->environment);
 		scene_state.ubo.fog_aerial_perspective = environment_get_fog_aerial_perspective(p_render_data->environment);
+		scene_state.ubo.fog_linear_start = environment_get_fog_linear_start(p_render_data->environment);
+		scene_state.ubo.fog_linear_end = environment_get_fog_linear_end(p_render_data->environment);
 
 		Color fog_color = environment_get_fog_light_color(p_render_data->environment).to_linear();
 		float fog_energy = environment_get_fog_light_energy(p_render_data->environment);

@@ -155,9 +155,14 @@ public:
 
 			uint32_t fog_enabled;
 			float fog_density;
+			float fog_linear_start;
+			float fog_linear_end;
 
 			float z_far;
+
 			uint32_t directional_light_count;
+			uint32_t pad1;
+			uint32_t pad2;
 		};
 
 		UBO ubo;

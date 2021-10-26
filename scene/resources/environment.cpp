@@ -719,41 +719,52 @@ void Environment::set_fog_light_color(const Color &p_light_color) {
 	fog_light_color = p_light_color;
 	_update_fog();
 }
+
 Color Environment::get_fog_light_color() const {
 	return fog_light_color;
 }
+
 void Environment::set_fog_light_energy(float p_amount) {
 	fog_light_energy = p_amount;
 	_update_fog();
 }
+
 float Environment::get_fog_light_energy() const {
 	return fog_light_energy;
 }
+
 void Environment::set_fog_sun_scatter(float p_amount) {
 	fog_sun_scatter = p_amount;
 	_update_fog();
 }
+
 float Environment::get_fog_sun_scatter() const {
 	return fog_sun_scatter;
 }
+
 void Environment::set_fog_density(float p_amount) {
 	fog_density = p_amount;
 	_update_fog();
 }
+
 float Environment::get_fog_density() const {
 	return fog_density;
 }
+
 void Environment::set_fog_height(float p_amount) {
 	fog_height = p_amount;
 	_update_fog();
 }
+
 float Environment::get_fog_height() const {
 	return fog_height;
 }
+
 void Environment::set_fog_height_density(float p_amount) {
 	fog_height_density = p_amount;
 	_update_fog();
 }
+
 float Environment::get_fog_height_density() const {
 	return fog_height_density;
 }
@@ -762,8 +773,27 @@ void Environment::set_fog_aerial_perspective(float p_aerial_perspective) {
 	fog_aerial_perspective = p_aerial_perspective;
 	_update_fog();
 }
+
 float Environment::get_fog_aerial_perspective() const {
 	return fog_aerial_perspective;
+}
+
+void Environment::set_fog_linear_start(float p_distance) {
+	fog_linear_start = p_distance;
+	_update_fog();
+}
+
+float Environment::get_fog_linear_start() const {
+	return fog_linear_start;
+}
+
+void Environment::set_fog_linear_end(float p_distance) {
+	fog_linear_end = p_distance;
+	_update_fog();
+}
+
+float Environment::get_fog_linear_end() const {
+	return fog_linear_end;
 }
 
 void Environment::_update_fog() {
@@ -776,7 +806,9 @@ void Environment::_update_fog() {
 			fog_density,
 			fog_height,
 			fog_height_density,
-			fog_aerial_perspective);
+			fog_aerial_perspective,
+			fog_linear_start,
+			fog_linear_end);
 }
 
 // Volumetric Fog
@@ -1282,6 +1314,11 @@ void Environment::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_fog_aerial_perspective", "aerial_perspective"), &Environment::set_fog_aerial_perspective);
 	ClassDB::bind_method(D_METHOD("get_fog_aerial_perspective"), &Environment::get_fog_aerial_perspective);
 
+	ClassDB::bind_method(D_METHOD("set_fog_linear_start", "distance"), &Environment::set_fog_linear_start);
+	ClassDB::bind_method(D_METHOD("get_fog_linear_start"), &Environment::get_fog_linear_start);
+	ClassDB::bind_method(D_METHOD("set_fog_linear_end", "distance"), &Environment::set_fog_linear_end);
+	ClassDB::bind_method(D_METHOD("get_fog_linear_end"), &Environment::get_fog_linear_end);
+
 	ADD_GROUP("Fog", "fog_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "fog_enabled"), "set_fog_enabled", "is_fog_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "fog_light_color", PROPERTY_HINT_COLOR_NO_ALPHA), "set_fog_light_color", "get_fog_light_color");
@@ -1292,6 +1329,8 @@ void Environment::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fog_aerial_perspective", PROPERTY_HINT_RANGE, "0,1,0.001"), "set_fog_aerial_perspective", "get_fog_aerial_perspective");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fog_height", PROPERTY_HINT_RANGE, "-1024,1024,0.01,or_lesser,or_greater"), "set_fog_height", "get_fog_height");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fog_height_density", PROPERTY_HINT_RANGE, "-16,16,0.0001,or_lesser,or_greater"), "set_fog_height_density", "get_fog_height_density");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fog_linear_start", PROPERTY_HINT_RANGE, "0,1024,0.01,or_greater"), "set_fog_linear_start", "get_fog_linear_start");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fog_linear_end", PROPERTY_HINT_RANGE, "0,1024,0.01,or_greater"), "set_fog_linear_end", "get_fog_linear_end");
 
 	ClassDB::bind_method(D_METHOD("set_volumetric_fog_enabled", "enabled"), &Environment::set_volumetric_fog_enabled);
 	ClassDB::bind_method(D_METHOD("is_volumetric_fog_enabled"), &Environment::is_volumetric_fog_enabled);

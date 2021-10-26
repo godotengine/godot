@@ -110,6 +110,13 @@
 		</member>
 		<member name="fog_light_energy" type="float" setter="set_fog_light_energy" getter="get_fog_light_energy" default="1.0">
 		</member>
+		<member name="fog_linear_end" type="float" setter="set_fog_linear_end" getter="get_fog_linear_end" default="0.0">
+			The linear fog far distance. When set to 0, linear fog is ignored. See [member fog_linear_start] to adjust the start distance.
+			When used with [member fog_density], linear fog and exponential fog are combined. If [member fog_density] is too low (or linear fog too aggressive), fog will appear entirely linear.
+		</member>
+		<member name="fog_linear_start" type="float" setter="set_fog_linear_start" getter="get_fog_linear_start" default="0.0">
+			The linear fog near distance. See [member fog_linear_end].
+		</member>
 		<member name="fog_sun_scatter" type="float" setter="set_fog_sun_scatter" getter="get_fog_sun_scatter" default="0.0">
 		</member>
 		<member name="glow_blend_mode" type="int" setter="set_glow_blend_mode" getter="get_glow_blend_mode" enum="Environment.GlowBlendMode" default="2">

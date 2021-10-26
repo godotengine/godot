@@ -179,15 +179,14 @@ layout(set = 1, binding = 0, std140) uniform SceneData {
 	mediump float fog_sun_scatter;
 
 	mediump float fog_aerial_perspective;
+	highp float fog_linear_start;
+	highp float fog_linear_end;
 	bool material_uv2_mode;
 
 	highp float time;
 	mediump float reflection_multiplier; // one normally, zero when rendering reflections
-
 	bool pancake_shadows;
 	uint pad1;
-	uint pad2;
-	uint pad3;
 }
 scene_data;
 

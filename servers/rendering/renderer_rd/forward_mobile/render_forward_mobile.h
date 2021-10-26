@@ -304,6 +304,8 @@ protected:
 			float fog_sun_scatter;
 
 			float fog_aerial_perspective;
+			float fog_linear_start;
+			float fog_linear_end;
 			uint32_t material_uv2_mode;
 
 			float time;
@@ -311,8 +313,6 @@ protected:
 
 			uint32_t pancake_shadows;
 			uint32_t pad1;
-			uint32_t pad2;
-			uint32_t pad3;
 		};
 
 		UBO ubo;

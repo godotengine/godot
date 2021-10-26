@@ -1094,7 +1094,7 @@ public:
 
 	PASS7(environment_set_adjustment, RID, bool, float, float, float, bool, RID)
 
-	PASS9(environment_set_fog, RID, bool, const Color &, float, float, float, float, float, float)
+	PASS11(environment_set_fog, RID, bool, const Color &, float, float, float, float, float, float, float, float)
 	PASS10(environment_set_volumetric_fog, RID, bool, float, const Color &, float, float, float, float, bool, float)
 
 	PASS2(environment_set_volumetric_fog_volume_size, int, int)

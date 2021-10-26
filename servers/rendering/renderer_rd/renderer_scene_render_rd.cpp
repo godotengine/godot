@@ -314,11 +314,11 @@ void RendererSceneRenderRD::environment_set_sdfgi(RID p_env, bool p_enable, RS::
 	env->set_sdfgi(p_enable, p_cascades, p_min_cell_size, p_y_scale, p_use_occlusion, p_bounce_feedback, p_read_sky, p_energy, p_normal_bias, p_probe_bias);
 }
 
-void RendererSceneRenderRD::environment_set_fog(RID p_env, bool p_enable, const Color &p_light_color, float p_light_energy, float p_sun_scatter, float p_density, float p_height, float p_height_density, float p_fog_aerial_perspective) {
+void RendererSceneRenderRD::environment_set_fog(RID p_env, bool p_enable, const Color &p_light_color, float p_light_energy, float p_sun_scatter, float p_density, float p_height, float p_height_density, float p_aerial_perspective, float p_linear_start, float p_linear_end) {
 	RendererSceneEnvironmentRD *env = environment_owner.get_or_null(p_env);
 	ERR_FAIL_COND(!env);
 
-	env->set_fog(p_enable, p_light_color, p_light_energy, p_sun_scatter, p_density, p_height, p_height_density, p_fog_aerial_perspective);
+	env->set_fog(p_enable, p_light_color, p_light_energy, p_sun_scatter, p_density, p_height, p_height_density, p_aerial_perspective, p_linear_start, p_linear_end);
 }
 
 bool RendererSceneRenderRD::environment_is_fog_enabled(RID p_env) const {
@@ -363,6 +363,18 @@ float RendererSceneRenderRD::environment_get_fog_aerial_perspective(RID p_env) c
 	const RendererSceneEnvironmentRD *env = environment_owner.get_or_null(p_env);
 	ERR_FAIL_COND_V(!env, 0);
 	return env->fog_aerial_perspective;
+}
+
+float RendererSceneRenderRD::environment_get_fog_linear_start(RID p_env) const {
+	const RendererSceneEnvironmentRD *env = environment_owner.get_or_null(p_env);
+	ERR_FAIL_COND_V(!env, 0);
+	return env->fog_linear_start;
+}
+
+float RendererSceneRenderRD::environment_get_fog_linear_end(RID p_env) const {
+	const RendererSceneEnvironmentRD *env = environment_owner.get_or_null(p_env);
+	ERR_FAIL_COND_V(!env, 0);
+	return env->fog_linear_end;
 }
 
 void RendererSceneRenderRD::environment_set_volumetric_fog(RID p_env, bool p_enable, float p_density, const Color &p_light, float p_light_energy, float p_length, float p_detail_spread, float p_gi_inject, bool p_temporal_reprojection, float p_temporal_reprojection_amount) {

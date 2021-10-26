@@ -498,9 +498,10 @@ vec4 fog_process(vec3 vertex) {
 
 	if (scene_data.fog_aerial_perspective > 0.0) {
 		vec3 sky_fog_color = vec3(0.0);
-		vec3 cube_view = scene_data.radiance_inverse_xform * vertex;
+		vec3 cube_view = scene_data.radiance_inverse_xform * normalize(vertex);
 		// mip_level always reads from the second mipmap and higher so the fog is always slightly blurred
-		float mip_level = mix(1.0 / MAX_ROUGHNESS_LOD, 1.0, 1.0 - (abs(vertex.z) - scene_data.z_near) / (scene_data.z_far - scene_data.z_near));
+		float z_far = scene_data.fog_linear_end > 0.0 ? scene_data.fog_linear_end : scene_data.z_far;
+		float mip_level = mix(1.0 / MAX_ROUGHNESS_LOD, 1.0, max(0.0, 1.0 - (length(vertex) - scene_data.z_near) / (z_far - scene_data.z_near)));
 #ifdef USE_RADIANCE_CUBEMAP_ARRAY
 		float lod, blend;
 		blend = modf(mip_level * MAX_ROUGHNESS_LOD, lod);
@@ -525,6 +526,10 @@ vec4 fog_process(vec3 vertex) {
 	}
 
 	float fog_amount = 1.0 - exp(min(0.0, -length(vertex) * scene_data.fog_density));
+	if (scene_data.fog_linear_end >= 0.0001) {
+		float fog_linear = clamp((length(vertex) - scene_data.fog_linear_start) / (scene_data.fog_linear_end - scene_data.fog_linear_start), 0, 1);
+		fog_amount = max(fog_amount, fog_linear);
+	}
 
 	if (abs(scene_data.fog_height_density) >= 0.0001) {
 		float y = (scene_data.camera_matrix * vec4(vertex, 1.0)).y;

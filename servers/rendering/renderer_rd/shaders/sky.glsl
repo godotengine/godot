@@ -86,7 +86,6 @@ layout(set = 0, binding = 2, std140) uniform SceneData {
 	bool volumetric_fog_enabled;
 	float volumetric_fog_inv_length;
 	float volumetric_fog_detail_spread;
-
 	float fog_aerial_perspective;
 
 	vec3 fog_light_color;
@@ -94,9 +93,13 @@ layout(set = 0, binding = 2, std140) uniform SceneData {
 
 	bool fog_enabled;
 	float fog_density;
+	float fog_linear_start;
+	float fog_linear_end;
 
 	float z_far;
 	uint directional_light_count;
+	uint pad1;
+	uint pad2;
 }
 scene_data;
 

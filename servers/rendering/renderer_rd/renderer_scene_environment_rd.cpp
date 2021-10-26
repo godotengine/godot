@@ -81,7 +81,7 @@ void RendererSceneEnvironmentRD::set_sdfgi(bool p_enable, RS::EnvironmentSDFGICa
 	sdfgi_y_scale = p_y_scale;
 }
 
-void RendererSceneEnvironmentRD::set_fog(bool p_enable, const Color &p_light_color, float p_light_energy, float p_sun_scatter, float p_density, float p_height, float p_height_density, float p_fog_aerial_perspective) {
+void RendererSceneEnvironmentRD::set_fog(bool p_enable, const Color &p_light_color, float p_light_energy, float p_sun_scatter, float p_density, float p_height, float p_height_density, float p_aerial_perspective, float p_linear_start, float p_linear_end) {
 	fog_enabled = p_enable;
 	fog_light_color = p_light_color;
 	fog_light_energy = p_light_energy;
@@ -89,7 +89,9 @@ void RendererSceneEnvironmentRD::set_fog(bool p_enable, const Color &p_light_col
 	fog_density = p_density;
 	fog_height = p_height;
 	fog_height_density = p_height_density;
-	fog_aerial_perspective = p_fog_aerial_perspective;
+	fog_aerial_perspective = p_aerial_perspective;
+	fog_linear_start = p_linear_start;
+	fog_linear_end = p_linear_end;
 }
 
 void RendererSceneEnvironmentRD::set_volumetric_fog(bool p_enable, float p_density, const Color &p_light, float p_light_energy, float p_length, float p_detail_spread, float p_gi_inject, bool p_temporal_reprojection, float p_temporal_reprojection_amount) {
