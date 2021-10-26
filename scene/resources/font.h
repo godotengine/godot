@@ -79,6 +79,15 @@ public:
 	virtual PackedByteArray get_data() const;
 
 	// Common properties.
+	virtual void set_font_name(const String &p_name);
+	virtual String get_font_name() const;
+
+	virtual void set_font_style_name(const String &p_name);
+	virtual String get_font_style_name() const;
+
+	virtual void set_font_style(uint32_t p_style);
+	virtual uint32_t get_font_style() const;
+
 	virtual void set_antialiased(bool p_antialiased);
 	virtual bool is_antialiased() const;
 

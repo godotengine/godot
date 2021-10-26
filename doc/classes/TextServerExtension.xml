@@ -254,6 +254,13 @@
 				Returns source font size used to generate MSDF textures.
 			</description>
 		</method>
+		<method name="_font_get_name" qualifiers="virtual const">
+			<return type="String" />
+			<argument index="0" name="font_rid" type="RID" />
+			<description>
+				Returns font family name.
+			</description>
+		</method>
 		<method name="_font_get_oversampling" qualifiers="virtual const">
 			<return type="float" />
 			<argument index="0" name="font_rid" type="RID" />
@@ -298,6 +305,20 @@
 			<argument index="2" name="spacing" type="int" enum="TextServer.SpacingType" />
 			<description>
 				Returns extra spacing added between glyphs in pixels.
+			</description>
+		</method>
+		<method name="_font_get_style" qualifiers="virtual const">
+			<return type="int" />
+			<argument index="0" name="font_rid" type="RID" />
+			<description>
+				Returns font style flags, see [enum TextServer.FontStyle].
+			</description>
+		</method>
+		<method name="_font_get_style_name" qualifiers="virtual const">
+			<return type="String" />
+			<argument index="0" name="font_rid" type="RID" />
+			<description>
+				Returns font style name.
 			</description>
 		</method>
 		<method name="_font_get_supported_chars" qualifiers="virtual const">
@@ -641,6 +662,14 @@
 				If set to [code]true[/code], glyphs of all sizes are rendered using single multichannel signed distance field generated from the dynamic font vector data.
 			</description>
 		</method>
+		<method name="_font_set_name" qualifiers="virtual">
+			<return type="void" />
+			<argument index="0" name="font_rid" type="RID" />
+			<argument index="1" name="name" type="String" />
+			<description>
+				Sets the font family name.
+			</description>
+		</method>
 		<method name="_font_set_oversampling" qualifiers="virtual">
 			<return type="void" />
 			<argument index="0" name="font_rid" type="RID" />
@@ -675,6 +704,22 @@
 			<argument index="3" name="value" type="int" />
 			<description>
 				Sets extra spacing added between glyphs in pixels.
+			</description>
+		</method>
+		<method name="_font_set_style" qualifiers="virtual">
+			<return type="void" />
+			<argument index="0" name="font_rid" type="RID" />
+			<argument index="1" name="style" type="int" />
+			<description>
+				Sets the font style flags, see [enum TextServer.FontStyle].
+			</description>
+		</method>
+		<method name="_font_set_style_name" qualifiers="virtual">
+			<return type="void" />
+			<argument index="0" name="font_rid" type="RID" />
+			<argument index="1" name="name_style" type="String" />
+			<description>
+				Sets the font style name.
 			</description>
 		</method>
 		<method name="_font_set_texture_image" qualifiers="virtual">

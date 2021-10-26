@@ -130,6 +130,7 @@ private:
 	bool middle_mouse_paste_enabled = true;
 
 	Ref<Texture2D> right_icon;
+	bool flat = false;
 
 	struct Selection {
 		int begin = 0;
@@ -331,6 +332,9 @@ public:
 
 	void set_right_icon(const Ref<Texture2D> &p_icon);
 	Ref<Texture2D> get_right_icon();
+
+	void set_flat(bool p_enabled);
+	bool is_flat() const;
 
 	virtual bool is_text_field() const override;
 

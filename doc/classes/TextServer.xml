@@ -254,6 +254,13 @@
 				Returns source font size used to generate MSDF textures.
 			</description>
 		</method>
+		<method name="font_get_name" qualifiers="const">
+			<return type="String" />
+			<argument index="0" name="font_rid" type="RID" />
+			<description>
+				Returns font family name.
+			</description>
+		</method>
 		<method name="font_get_oversampling" qualifiers="const">
 			<return type="float" />
 			<argument index="0" name="font_rid" type="RID" />
@@ -298,6 +305,20 @@
 			<argument index="2" name="spacing" type="int" enum="TextServer.SpacingType" />
 			<description>
 				Returns extra spacing added between glyphs in pixels.
+			</description>
+		</method>
+		<method name="font_get_style" qualifiers="const">
+			<return type="int" />
+			<argument index="0" name="font_rid" type="RID" />
+			<description>
+				Returns font style flags, see [enum FontStyle].
+			</description>
+		</method>
+		<method name="font_get_style_name" qualifiers="const">
+			<return type="String" />
+			<argument index="0" name="font_rid" type="RID" />
+			<description>
+				Returns font style name.
 			</description>
 		</method>
 		<method name="font_get_supported_chars" qualifiers="const">
@@ -634,6 +655,14 @@
 				[b]Note:[/b] MSDF font rendering does not render glyphs with overlapping shapes correctly. Overlapping shapes are not valid per the OpenType standard, but are still commonly found in many font files, especially those converted by Google Fonts. To avoid issues with overlapping glyphs, consider downloading the font file directly from the type foundry instead of relying on Google Fonts.
 			</description>
 		</method>
+		<method name="font_set_name">
+			<return type="void" />
+			<argument index="0" name="font_rid" type="RID" />
+			<argument index="1" name="name" type="String" />
+			<description>
+				Sets the font family name.
+			</description>
+		</method>
 		<method name="font_set_oversampling">
 			<return type="void" />
 			<argument index="0" name="font_rid" type="RID" />
@@ -668,6 +697,22 @@
 			<argument index="3" name="value" type="int" />
 			<description>
 				Sets extra spacing added between glyphs in pixels.
+			</description>
+		</method>
+		<method name="font_set_style">
+			<return type="void" />
+			<argument index="0" name="font_rid" type="RID" />
+			<argument index="1" name="style" type="int" />
+			<description>
+				Sets the font style flags, see [enum FontStyle].
+			</description>
+		</method>
+		<method name="font_set_style_name">
+			<return type="void" />
+			<argument index="0" name="font_rid" type="RID" />
+			<argument index="1" name="name" type="String" />
+			<description>
+				Set the font style name.
 			</description>
 		</method>
 		<method name="font_set_texture_image">
@@ -1401,6 +1446,15 @@
 		</constant>
 		<constant name="SPACING_BOTTOM" value="3" enum="SpacingType">
 			Spacing at the bottom of the line.
+		</constant>
+		<constant name="FONT_BOLD" value="1" enum="FontStyle">
+			Font is bold.
+		</constant>
+		<constant name="FONT_ITALIC" value="2" enum="FontStyle">
+			Font is italic or oblique.
+		</constant>
+		<constant name="FONT_FIXED_WIDTH" value="4" enum="FontStyle">
+			Font have fixed-width characters.
 		</constant>
 	</constants>
 </class>
