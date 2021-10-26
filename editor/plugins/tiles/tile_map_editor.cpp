@@ -2219,569 +2219,7 @@ Vector<TileMapEditorPlugin::TabData> TileMapEditorTerrainsPlugin::get_tabs() con
 	return tabs;
 }
 
-Map<Vector2i, TileSet::CellNeighbor> TileMapEditorTerrainsPlugin::Constraint::get_overlapping_coords_and_peering_bits() const {
-	Map<Vector2i, TileSet::CellNeighbor> output;
-	Ref<TileSet> tile_set = tile_map->get_tileset();
-	ERR_FAIL_COND_V(!tile_set.is_valid(), output);
-
-	TileSet::TileShape shape = tile_set->get_tile_shape();
-	if (shape == TileSet::TILE_SHAPE_SQUARE) {
-		switch (bit) {
-			case 0:
-				output[base_cell_coords] = TileSet::CELL_NEIGHBOR_RIGHT_SIDE;
-				output[tile_map->get_neighbor_cell(base_cell_coords, TileSet::CELL_NEIGHBOR_RIGHT_SIDE)] = TileSet::CELL_NEIGHBOR_LEFT_SIDE;
-				break;
-			case 1:
-				output[base_cell_coords] = TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_CORNER;
-				output[tile_map->get_neighbor_cell(base_cell_coords, TileSet::CELL_NEIGHBOR_RIGHT_SIDE)] = TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_CORNER;
-				output[tile_map->get_neighbor_cell(base_cell_coords, TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_CORNER)] = TileSet::CELL_NEIGHBOR_TOP_LEFT_CORNER;
-				output[tile_map->get_neighbor_cell(base_cell_coords, TileSet::CELL_NEIGHBOR_BOTTOM_SIDE)] = TileSet::CELL_NEIGHBOR_TOP_RIGHT_CORNER;
-				break;
-			case 2:
-				output[base_cell_coords] = TileSet::CELL_NEIGHBOR_BOTTOM_SIDE;
-				output[tile_map->get_neighbor_cell(base_cell_coords, TileSet::CELL_NEIGHBOR_BOTTOM_SIDE)] = TileSet::CELL_NEIGHBOR_TOP_SIDE;
-				break;
-			case 3:
-				output[base_cell_coords] = TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_CORNER;
-				output[tile_map->get_neighbor_cell(base_cell_coords, TileSet::CELL_NEIGHBOR_BOTTOM_SIDE)] = TileSet::CELL_NEIGHBOR_TOP_LEFT_CORNER;
-				output[tile_map->get_neighbor_cell(base_cell_coords, TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_CORNER)] = TileSet::CELL_NEIGHBOR_TOP_RIGHT_CORNER;
-				output[tile_map->get_neighbor_cell(base_cell_coords, TileSet::CELL_NEIGHBOR_LEFT_SIDE)] = TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_CORNER;
-				break;
-			default:
-				ERR_FAIL_V(output);
-		}
-	} else if (shape == TileSet::TILE_SHAPE_ISOMETRIC) {
-		switch (bit) {
-			case 0:
-				output[base_cell_coords] = TileSet::CELL_NEIGHBOR_RIGHT_CORNER;
-				output[tile_map->get_neighbor_cell(base_cell_coords, TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE)] = TileSet::CELL_NEIGHBOR_BOTTOM_CORNER;
-				output[tile_map->get_neighbor_cell(base_cell_coords, TileSet::CELL_NEIGHBOR_RIGHT_CORNER)] = TileSet::CELL_NEIGHBOR_LEFT_CORNER;
-				output[tile_map->get_neighbor_cell(base_cell_coords, TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE)] = TileSet::CELL_NEIGHBOR_TOP_CORNER;
-				break;
-			case 1:
-				output[base_cell_coords] = TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE;
-				output[tile_map->get_neighbor_cell(base_cell_coords, TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE)] = TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE;
-				break;
-			case 2:
-				output[base_cell_coords] = TileSet::CELL_NEIGHBOR_BOTTOM_CORNER;
-				output[tile_map->get_neighbor_cell(base_cell_coords, TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE)] = TileSet::CELL_NEIGHBOR_LEFT_CORNER;
-				output[tile_map->get_neighbor_cell(base_cell_coords, TileSet::CELL_NEIGHBOR_BOTTOM_CORNER)] = TileSet::CELL_NEIGHBOR_TOP_CORNER;
-				output[tile_map->get_neighbor_cell(base_cell_coords, TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE)] = TileSet::CELL_NEIGHBOR_RIGHT_CORNER;
-				break;
-			case 3:
-				output[base_cell_coords] = TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE;
-				output[tile_map->get_neighbor_cell(base_cell_coords, TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE)] = TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE;
-				break;
-			default:
-				ERR_FAIL_V(output);
-		}
-	} else {
-		// Half offset shapes.
-		TileSet::TileOffsetAxis offset_axis = tile_set->get_tile_offset_axis();
-		if (offset_axis == TileSet::TILE_OFFSET_AXIS_HORIZONTAL) {
-			switch (bit) {
-				case 0:
-					output[base_cell_coords] = TileSet::CELL_NEIGHBOR_RIGHT_SIDE;
-					output[tile_map->get_neighbor_cell(base_cell_coords, TileSet::CELL_NEIGHBOR_RIGHT_SIDE)] = TileSet::CELL_NEIGHBOR_LEFT_SIDE;
-					break;
-				case 1:
-					output[base_cell_coords] = TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_CORNER;
-					output[tile_map->get_neighbor_cell(base_cell_coords, TileSet::CELL_NEIGHBOR_RIGHT_SIDE)] = TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_CORNER;
-					output[tile_map->get_neighbor_cell(base_cell_coords, TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE)] = TileSet::CELL_NEIGHBOR_TOP_CORNER;
-					break;
-				case 2:
-					output[base_cell_coords] = TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE;
-					output[tile_map->get_neighbor_cell(base_cell_coords, TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE)] = TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE;
-					break;
-				case 3:
-					output[base_cell_coords] = TileSet::CELL_NEIGHBOR_BOTTOM_CORNER;
-					output[tile_map->get_neighbor_cell(base_cell_coords, TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE)] = TileSet::CELL_NEIGHBOR_TOP_LEFT_CORNER;
-					output[tile_map->get_neighbor_cell(base_cell_coords, TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE)] = TileSet::CELL_NEIGHBOR_TOP_RIGHT_CORNER;
-					break;
-				case 4:
-					output[base_cell_coords] = TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE;
-					output[tile_map->get_neighbor_cell(base_cell_coords, TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE)] = TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE;
-					break;
-				default:
-					ERR_FAIL_V(output);
-			}
-		} else {
-			switch (bit) {
-				case 0:
-					output[base_cell_coords] = TileSet::CELL_NEIGHBOR_RIGHT_CORNER;
-					output[tile_map->get_neighbor_cell(base_cell_coords, TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE)] = TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_CORNER;
-					output[tile_map->get_neighbor_cell(base_cell_coords, TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE)] = TileSet::CELL_NEIGHBOR_TOP_LEFT_CORNER;
-					break;
-				case 1:
-					output[base_cell_coords] = TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE;
-					output[tile_map->get_neighbor_cell(base_cell_coords, TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE)] = TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE;
-					break;
-				case 2:
-					output[base_cell_coords] = TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_CORNER;
-					output[tile_map->get_neighbor_cell(base_cell_coords, TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE)] = TileSet::CELL_NEIGHBOR_LEFT_CORNER;
-					output[tile_map->get_neighbor_cell(base_cell_coords, TileSet::CELL_NEIGHBOR_BOTTOM_SIDE)] = TileSet::CELL_NEIGHBOR_TOP_LEFT_CORNER;
-					break;
-				case 3:
-					output[base_cell_coords] = TileSet::CELL_NEIGHBOR_BOTTOM_SIDE;
-					output[tile_map->get_neighbor_cell(base_cell_coords, TileSet::CELL_NEIGHBOR_BOTTOM_SIDE)] = TileSet::CELL_NEIGHBOR_TOP_SIDE;
-					break;
-				case 4:
-					output[base_cell_coords] = TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE;
-					output[tile_map->get_neighbor_cell(base_cell_coords, TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE)] = TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE;
-					break;
-				default:
-					ERR_FAIL_V(output);
-			}
-		}
-	}
-	return output;
-}
-
-TileMapEditorTerrainsPlugin::Constraint::Constraint(const TileMap *p_tile_map, const Vector2i &p_position, const TileSet::CellNeighbor &p_bit, int p_terrain) {
-	// The way we build the constraint make it easy to detect conflicting constraints.
-	tile_map = p_tile_map;
-
-	Ref<TileSet> tile_set = tile_map->get_tileset();
-	ERR_FAIL_COND(!tile_set.is_valid());
-
-	TileSet::TileShape shape = tile_set->get_tile_shape();
-	if (shape == TileSet::TILE_SHAPE_SQUARE || shape == TileSet::TILE_SHAPE_ISOMETRIC) {
-		switch (p_bit) {
-			case TileSet::CELL_NEIGHBOR_RIGHT_SIDE:
-			case TileSet::CELL_NEIGHBOR_RIGHT_CORNER:
-				bit = 0;
-				base_cell_coords = p_position;
-				break;
-			case TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_CORNER:
-			case TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE:
-				bit = 1;
-				base_cell_coords = p_position;
-				break;
-			case TileSet::CELL_NEIGHBOR_BOTTOM_SIDE:
-			case TileSet::CELL_NEIGHBOR_BOTTOM_CORNER:
-				bit = 2;
-				base_cell_coords = p_position;
-				break;
-			case TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_CORNER:
-			case TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE:
-				bit = 3;
-				base_cell_coords = p_position;
-				break;
-			case TileSet::CELL_NEIGHBOR_LEFT_SIDE:
-			case TileSet::CELL_NEIGHBOR_LEFT_CORNER:
-				bit = 0;
-				base_cell_coords = p_tile_map->get_neighbor_cell(p_position, p_bit);
-				break;
-			case TileSet::CELL_NEIGHBOR_TOP_LEFT_CORNER:
-			case TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE:
-				bit = 1;
-				base_cell_coords = p_tile_map->get_neighbor_cell(p_position, p_bit);
-				break;
-			case TileSet::CELL_NEIGHBOR_TOP_SIDE:
-			case TileSet::CELL_NEIGHBOR_TOP_CORNER:
-				bit = 2;
-				base_cell_coords = p_tile_map->get_neighbor_cell(p_position, p_bit);
-				break;
-			case TileSet::CELL_NEIGHBOR_TOP_RIGHT_CORNER:
-			case TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE:
-				bit = 3;
-				base_cell_coords = p_tile_map->get_neighbor_cell(p_position, p_bit);
-				break;
-			default:
-				ERR_FAIL();
-				break;
-		}
-	} else {
-		// Half-offset shapes
-		TileSet::TileOffsetAxis offset_axis = tile_set->get_tile_offset_axis();
-		if (offset_axis == TileSet::TILE_OFFSET_AXIS_HORIZONTAL) {
-			switch (p_bit) {
-				case TileSet::CELL_NEIGHBOR_RIGHT_SIDE:
-					bit = 0;
-					base_cell_coords = p_position;
-					break;
-				case TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_CORNER:
-					bit = 1;
-					base_cell_coords = p_position;
-					break;
-				case TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE:
-					bit = 2;
-					base_cell_coords = p_position;
-					break;
-				case TileSet::CELL_NEIGHBOR_BOTTOM_CORNER:
-					bit = 3;
-					base_cell_coords = p_position;
-					break;
-				case TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE:
-					bit = 4;
-					base_cell_coords = p_position;
-					break;
-				case TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_CORNER:
-					bit = 1;
-					base_cell_coords = p_tile_map->get_neighbor_cell(p_position, TileSet::CELL_NEIGHBOR_LEFT_SIDE);
-					break;
-				case TileSet::CELL_NEIGHBOR_LEFT_SIDE:
-					bit = 0;
-					base_cell_coords = p_tile_map->get_neighbor_cell(p_position, TileSet::CELL_NEIGHBOR_LEFT_SIDE);
-					break;
-				case TileSet::CELL_NEIGHBOR_TOP_LEFT_CORNER:
-					bit = 3;
-					base_cell_coords = p_tile_map->get_neighbor_cell(p_position, TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE);
-					break;
-				case TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE:
-					bit = 2;
-					base_cell_coords = p_tile_map->get_neighbor_cell(p_position, TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE);
-					break;
-				case TileSet::CELL_NEIGHBOR_TOP_CORNER:
-					bit = 1;
-					base_cell_coords = p_tile_map->get_neighbor_cell(p_position, TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE);
-					break;
-				case TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE:
-					bit = 4;
-					base_cell_coords = p_tile_map->get_neighbor_cell(p_position, TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE);
-					break;
-				case TileSet::CELL_NEIGHBOR_TOP_RIGHT_CORNER:
-					bit = 3;
-					base_cell_coords = p_tile_map->get_neighbor_cell(p_position, TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE);
-					break;
-				default:
-					ERR_FAIL();
-					break;
-			}
-		} else {
-			switch (p_bit) {
-				case TileSet::CELL_NEIGHBOR_RIGHT_CORNER:
-					bit = 0;
-					base_cell_coords = p_position;
-					break;
-				case TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE:
-					bit = 1;
-					base_cell_coords = p_position;
-					break;
-				case TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_CORNER:
-					bit = 2;
-					base_cell_coords = p_position;
-					break;
-				case TileSet::CELL_NEIGHBOR_BOTTOM_SIDE:
-					bit = 3;
-					base_cell_coords = p_position;
-					break;
-				case TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_CORNER:
-					bit = 0;
-					base_cell_coords = p_tile_map->get_neighbor_cell(p_position, TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE);
-					break;
-				case TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE:
-					bit = 4;
-					base_cell_coords = p_position;
-					break;
-				case TileSet::CELL_NEIGHBOR_LEFT_CORNER:
-					bit = 2;
-					base_cell_coords = p_tile_map->get_neighbor_cell(p_position, TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE);
-					break;
-				case TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE:
-					bit = 1;
-					base_cell_coords = p_tile_map->get_neighbor_cell(p_position, TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE);
-					break;
-				case TileSet::CELL_NEIGHBOR_TOP_LEFT_CORNER:
-					bit = 0;
-					base_cell_coords = p_tile_map->get_neighbor_cell(p_position, TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE);
-					break;
-				case TileSet::CELL_NEIGHBOR_TOP_SIDE:
-					bit = 3;
-					base_cell_coords = p_tile_map->get_neighbor_cell(p_position, TileSet::CELL_NEIGHBOR_TOP_SIDE);
-					break;
-				case TileSet::CELL_NEIGHBOR_TOP_RIGHT_CORNER:
-					bit = 2;
-					base_cell_coords = p_tile_map->get_neighbor_cell(p_position, TileSet::CELL_NEIGHBOR_TOP_SIDE);
-					break;
-				case TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE:
-					bit = 4;
-					base_cell_coords = p_tile_map->get_neighbor_cell(p_position, TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE);
-					break;
-				default:
-					ERR_FAIL();
-					break;
-			}
-		}
-	}
-	terrain = p_terrain;
-}
-
-Set<TileMapEditorTerrainsPlugin::TerrainsTilePattern> TileMapEditorTerrainsPlugin::_get_valid_terrains_tile_patterns_for_constraints(int p_terrain_set, const Vector2i &p_position, Set<Constraint> p_constraints) const {
-	TileMap *tile_map = Object::cast_to<TileMap>(ObjectDB::get_instance(tile_map_id));
-	if (!tile_map) {
-		return Set<TerrainsTilePattern>();
-	}
-
-	Ref<TileSet> tile_set = tile_map->get_tileset();
-	if (!tile_set.is_valid()) {
-		return Set<TerrainsTilePattern>();
-	}
-
-	// Returns all tiles compatible with the given constraints.
-	Set<TerrainsTilePattern> compatible_terrain_tile_patterns;
-	for (const KeyValue<TerrainsTilePattern, Set<TileMapCell>> &E : per_terrain_terrains_tile_patterns_tiles[p_terrain_set]) {
-		int valid = true;
-		int in_pattern_count = 0;
-		for (int i = 0; i < TileSet::CELL_NEIGHBOR_MAX; i++) {
-			TileSet::CellNeighbor bit = TileSet::CellNeighbor(i);
-			if (tile_set->is_valid_peering_bit_terrain(p_terrain_set, bit)) {
-				// Check if the bit is compatible with the constraints.
-				Constraint terrain_bit_constraint = Constraint(tile_map, p_position, bit, E.key[in_pattern_count]);
-
-				Set<Constraint>::Element *in_set_constraint_element = p_constraints.find(terrain_bit_constraint);
-				if (in_set_constraint_element && in_set_constraint_element->get().get_terrain() != terrain_bit_constraint.get_terrain()) {
-					valid = false;
-					break;
-				}
-				in_pattern_count++;
-			}
-		}
-
-		if (valid) {
-			compatible_terrain_tile_patterns.insert(E.key);
-		}
-	}
-
-	return compatible_terrain_tile_patterns;
-}
-
-Set<TileMapEditorTerrainsPlugin::Constraint> TileMapEditorTerrainsPlugin::_get_constraints_from_removed_cells_list(const Set<Vector2i> &p_to_replace, int p_terrain_set) const {
-	TileMap *tile_map = Object::cast_to<TileMap>(ObjectDB::get_instance(tile_map_id));
-	if (!tile_map) {
-		return Set<Constraint>();
-	}
-
-	Ref<TileSet> tile_set = tile_map->get_tileset();
-	if (!tile_set.is_valid()) {
-		return Set<Constraint>();
-	}
-
-	ERR_FAIL_INDEX_V(p_terrain_set, tile_set->get_terrain_sets_count(), Set<Constraint>());
-	ERR_FAIL_INDEX_V(tile_map_layer, tile_map->get_layers_count(), Set<Constraint>());
-
-	// Build a set of dummy constraints get the constrained points.
-	Set<Constraint> dummy_constraints;
-	for (Set<Vector2i>::Element *E = p_to_replace.front(); E; E = E->next()) {
-		for (int i = 0; i < TileSet::CELL_NEIGHBOR_MAX; i++) { // Iterates over sides.
-			TileSet::CellNeighbor bit = TileSet::CellNeighbor(i);
-			if (tile_set->is_valid_peering_bit_terrain(p_terrain_set, bit)) {
-				dummy_constraints.insert(Constraint(tile_map, E->get(), bit, -1));
-			}
-		}
-	}
-
-	// For each constrained point, we get all overlapping tiles, and select the most adequate terrain for it.
-	Set<Constraint> constraints;
-	for (Set<Constraint>::Element *E = dummy_constraints.front(); E; E = E->next()) {
-		Constraint c = E->get();
-
-		Map<int, int> terrain_count;
-
-		// Count the number of occurrences per terrain.
-		Map<Vector2i, TileSet::CellNeighbor> overlapping_terrain_bits = c.get_overlapping_coords_and_peering_bits();
-		for (const KeyValue<Vector2i, TileSet::CellNeighbor> &E_overlapping : overlapping_terrain_bits) {
-			if (!p_to_replace.has(E_overlapping.key)) {
-				TileMapCell neighbor_cell = tile_map->get_cell(tile_map_layer, E_overlapping.key);
-				TileData *neighbor_tile_data = nullptr;
-				if (terrain_tiles.has(neighbor_cell) && terrain_tiles[neighbor_cell]->get_terrain_set() == p_terrain_set) {
-					neighbor_tile_data = terrain_tiles[neighbor_cell];
-				}
-
-				int terrain = neighbor_tile_data ? neighbor_tile_data->get_peering_bit_terrain(TileSet::CellNeighbor(E_overlapping.value)) : -1;
-				if (terrain_count.has(terrain)) {
-					terrain_count[terrain] = 0;
-				}
-				terrain_count[terrain] += 1;
-			}
-		}
-
-		// Get the terrain with the max number of occurrences.
-		int max = 0;
-		int max_terrain = -1;
-		for (const KeyValue<int, int> &E_terrain_count : terrain_count) {
-			if (E_terrain_count.value > max) {
-				max = E_terrain_count.value;
-				max_terrain = E_terrain_count.key;
-			}
-		}
-
-		// Set the adequate terrain.
-		if (max > 0) {
-			c.set_terrain(max_terrain);
-			constraints.insert(c);
-		}
-	}
-
-	return constraints;
-}
-
-Set<TileMapEditorTerrainsPlugin::Constraint> TileMapEditorTerrainsPlugin::_get_constraints_from_added_tile(Vector2i p_position, int p_terrain_set, TerrainsTilePattern p_terrains_tile_pattern) const {
-	TileMap *tile_map = Object::cast_to<TileMap>(ObjectDB::get_instance(tile_map_id));
-	if (!tile_map) {
-		return Set<TileMapEditorTerrainsPlugin::Constraint>();
-	}
-
-	Ref<TileSet> tile_set = tile_map->get_tileset();
-	if (!tile_set.is_valid()) {
-		return Set<TileMapEditorTerrainsPlugin::Constraint>();
-	}
-
-	// Compute the constraints needed from the surrounding tiles.
-	Set<TileMapEditorTerrainsPlugin::Constraint> output;
-	int in_pattern_count = 0;
-	for (uint32_t i = 0; i < TileSet::CELL_NEIGHBOR_MAX; i++) {
-		TileSet::CellNeighbor side = TileSet::CellNeighbor(i);
-		if (tile_set->is_valid_peering_bit_terrain(p_terrain_set, side)) {
-			Constraint c = Constraint(tile_map, p_position, side, p_terrains_tile_pattern[in_pattern_count]);
-			output.insert(c);
-			in_pattern_count++;
-		}
-	}
-
-	return output;
-}
-
-Map<Vector2i, TileMapEditorTerrainsPlugin::TerrainsTilePattern> TileMapEditorTerrainsPlugin::_wave_function_collapse(const Set<Vector2i> &p_to_replace, int p_terrain_set, const Set<TileMapEditorTerrainsPlugin::Constraint> p_constraints) const {
-	TileMap *tile_map = Object::cast_to<TileMap>(ObjectDB::get_instance(tile_map_id));
-	if (!tile_map) {
-		return Map<Vector2i, TerrainsTilePattern>();
-	}
-
-	Ref<TileSet> tile_set = tile_map->get_tileset();
-	if (!tile_set.is_valid()) {
-		return Map<Vector2i, TileMapEditorTerrainsPlugin::TerrainsTilePattern>();
-	}
-
-	// Copy the constraints set.
-	Set<TileMapEditorTerrainsPlugin::Constraint> constraints = p_constraints;
-
-	// Compute all acceptable tiles for each cell.
-	Map<Vector2i, Set<TerrainsTilePattern>> per_cell_acceptable_tiles;
-	for (Set<Vector2i>::Element *E = p_to_replace.front(); E; E = E->next()) {
-		per_cell_acceptable_tiles[E->get()] = _get_valid_terrains_tile_patterns_for_constraints(p_terrain_set, E->get(), constraints);
-	}
-
-	// Output map.
-	Map<Vector2i, TerrainsTilePattern> output;
-
-	// Add all positions to a set.
-	Set<Vector2i> to_replace = Set<Vector2i>(p_to_replace);
-	while (!to_replace.is_empty()) {
-		// Compute the minimum number of tile possibilities for each cell.
-		int min_nb_possibilities = 100000000;
-		for (const KeyValue<Vector2i, Set<TerrainsTilePattern>> &E : per_cell_acceptable_tiles) {
-			min_nb_possibilities = MIN(min_nb_possibilities, E.value.size());
-		}
-
-		// Get the set of possible cells to fill.
-		LocalVector<Vector2i> to_choose_from;
-		for (const KeyValue<Vector2i, Set<TerrainsTilePattern>> &E : per_cell_acceptable_tiles) {
-			if (E.value.size() == min_nb_possibilities) {
-				to_choose_from.push_back(E.key);
-			}
-		}
-
-		// Randomly pick a tile out of the most constrained.
-		Vector2i selected_cell_to_replace = to_choose_from[Math::random(0, to_choose_from.size() - 1)];
-
-		// Randomly select a tile out of them the put it in the grid.
-		Set<TerrainsTilePattern> valid_tiles = per_cell_acceptable_tiles[selected_cell_to_replace];
-		if (valid_tiles.is_empty()) {
-			// No possibilities :/
-			break;
-		}
-		int random_terrain_tile_pattern_index = Math::random(0, valid_tiles.size() - 1);
-		Set<TerrainsTilePattern>::Element *E = valid_tiles.front();
-		for (int i = 0; i < random_terrain_tile_pattern_index; i++) {
-			E = E->next();
-		}
-		TerrainsTilePattern selected_terrain_tile_pattern = E->get();
-
-		// Set the selected cell into the output.
-		output[selected_cell_to_replace] = selected_terrain_tile_pattern;
-		to_replace.erase(selected_cell_to_replace);
-		per_cell_acceptable_tiles.erase(selected_cell_to_replace);
-
-		// Add the new constraints from the added tiles.
-		Set<TileMapEditorTerrainsPlugin::Constraint> new_constraints = _get_constraints_from_added_tile(selected_cell_to_replace, p_terrain_set, selected_terrain_tile_pattern);
-		for (Set<TileMapEditorTerrainsPlugin::Constraint>::Element *E_constraint = new_constraints.front(); E_constraint; E_constraint = E_constraint->next()) {
-			constraints.insert(E_constraint->get());
-		}
-
-		// Compute valid tiles again for neighbors.
-		for (uint32_t i = 0; i < TileSet::CELL_NEIGHBOR_MAX; i++) {
-			TileSet::CellNeighbor side = TileSet::CellNeighbor(i);
-			if (tile_map->is_existing_neighbor(side)) {
-				Vector2i neighbor = tile_map->get_neighbor_cell(selected_cell_to_replace, side);
-				if (to_replace.has(neighbor)) {
-					per_cell_acceptable_tiles[neighbor] = _get_valid_terrains_tile_patterns_for_constraints(p_terrain_set, neighbor, constraints);
-				}
-			}
-		}
-	}
-	return output;
-}
-
-TileMapCell TileMapEditorTerrainsPlugin::_get_random_tile_from_pattern(int p_terrain_set, TerrainsTilePattern p_terrain_tile_pattern) const {
-	TileMap *tile_map = Object::cast_to<TileMap>(ObjectDB::get_instance(tile_map_id));
-	if (!tile_map) {
-		return TileMapCell();
-	}
-
-	Ref<TileSet> tile_set = tile_map->get_tileset();
-	if (!tile_set.is_valid()) {
-		return TileMapCell();
-	}
-
-	// Count the sum of probabilities.
-	double sum = 0.0;
-	Set<TileMapCell> set = per_terrain_terrains_tile_patterns_tiles[p_terrain_set][p_terrain_tile_pattern];
-	for (Set<TileMapCell>::Element *E = set.front(); E; E = E->next()) {
-		if (E->get().source_id >= 0) {
-			Ref<TileSetSource> source = tile_set->get_source(E->get().source_id);
-
-			Ref<TileSetAtlasSource> atlas_source = source;
-			if (atlas_source.is_valid()) {
-				TileData *tile_data = Object::cast_to<TileData>(atlas_source->get_tile_data(E->get().get_atlas_coords(), E->get().alternative_tile));
-				sum += tile_data->get_probability();
-			} else {
-				sum += 1.0;
-			}
-		} else {
-			sum += 1.0;
-		}
-	}
-
-	// Generate a random number.
-	double count = 0.0;
-	double picked = Math::random(0.0, sum);
-
-	// Pick the tile.
-	for (Set<TileMapCell>::Element *E = set.front(); E; E = E->next()) {
-		if (E->get().source_id >= 0) {
-			Ref<TileSetSource> source = tile_set->get_source(E->get().source_id);
-
-			Ref<TileSetAtlasSource> atlas_source = source;
-			if (atlas_source.is_valid()) {
-				TileData *tile_data = Object::cast_to<TileData>(atlas_source->get_tile_data(E->get().get_atlas_coords(), E->get().alternative_tile));
-				count += tile_data->get_probability();
-			} else {
-				count += 1.0;
-			}
-		} else {
-			count += 1.0;
-		}
-
-		if (count >= picked) {
-			return E->get();
-		}
-	}
-
-	ERR_FAIL_V(TileMapCell());
-}
-
-Map<Vector2i, TileMapCell> TileMapEditorTerrainsPlugin::_draw_terrains(const Map<Vector2i, TerrainsTilePattern> &p_to_paint, int p_terrain_set) const {
+Map<Vector2i, TileMapCell> TileMapEditorTerrainsPlugin::_draw_terrains(const Map<Vector2i, TileSet::TerrainsPattern> &p_to_paint, int p_terrain_set) const {
 	TileMap *tile_map = Object::cast_to<TileMap>(ObjectDB::get_instance(tile_map_id));
 	if (!tile_map) {
 		return Map<Vector2i, TileMapCell>();
@@ -2795,20 +2233,20 @@ Map<Vector2i, TileMapCell> TileMapEditorTerrainsPlugin::_draw_terrains(const Map
 	Map<Vector2i, TileMapCell> output;
 
 	// Add the constraints from the added tiles.
-	Set<TileMapEditorTerrainsPlugin::Constraint> added_tiles_constraints_set;
-	for (const KeyValue<Vector2i, TerrainsTilePattern> &E_to_paint : p_to_paint) {
+	Set<TileMap::TerrainConstraint> added_tiles_constraints_set;
+	for (const KeyValue<Vector2i, TileSet::TerrainsPattern> &E_to_paint : p_to_paint) {
 		Vector2i coords = E_to_paint.key;
-		TerrainsTilePattern terrains_tile_pattern = E_to_paint.value;
+		TileSet::TerrainsPattern terrains_pattern = E_to_paint.value;
 
-		Set<TileMapEditorTerrainsPlugin::Constraint> cell_constraints = _get_constraints_from_added_tile(coords, p_terrain_set, terrains_tile_pattern);
-		for (Set<TileMapEditorTerrainsPlugin::Constraint>::Element *E = cell_constraints.front(); E; E = E->next()) {
+		Set<TileMap::TerrainConstraint> cell_constraints = tile_map->get_terrain_constraints_from_added_tile(coords, p_terrain_set, terrains_pattern);
+		for (Set<TileMap::TerrainConstraint>::Element *E = cell_constraints.front(); E; E = E->next()) {
 			added_tiles_constraints_set.insert(E->get());
 		}
 	}
 
 	// Build the list of potential tiles to replace.
 	Set<Vector2i> potential_to_replace;
-	for (const KeyValue<Vector2i, TerrainsTilePattern> &E_to_paint : p_to_paint) {
+	for (const KeyValue<Vector2i, TileSet::TerrainsPattern> &E_to_paint : p_to_paint) {
 		Vector2i coords = E_to_paint.key;
 		for (int i = 0; i < TileSet::CELL_NEIGHBOR_MAX; i++) {
 			if (tile_map->is_existing_neighbor(TileSet::CellNeighbor(i))) {
@@ -2823,42 +2261,42 @@ Map<Vector2i, TileMapCell> TileMapEditorTerrainsPlugin::_draw_terrains(const Map
 	// Set of tiles to replace
 	Set<Vector2i> to_replace;
 
-	// Add the central tiles to the one to replace. TODO: maybe change that.
-	for (const KeyValue<Vector2i, TerrainsTilePattern> &E_to_paint : p_to_paint) {
+	// Add the central tiles to the one to replace.
+	for (const KeyValue<Vector2i, TileSet::TerrainsPattern> &E_to_paint : p_to_paint) {
 		to_replace.insert(E_to_paint.key);
 	}
 
 	// Add the constraints from the surroundings of the modified areas.
-	Set<TileMapEditorTerrainsPlugin::Constraint> removed_cells_constraints_set;
+	Set<TileMap::TerrainConstraint> removed_cells_constraints_set;
 	bool to_replace_modified = true;
 	while (to_replace_modified) {
 		// Get the constraints from the removed cells.
-		removed_cells_constraints_set = _get_constraints_from_removed_cells_list(to_replace, p_terrain_set);
+		removed_cells_constraints_set = tile_map->get_terrain_constraints_from_removed_cells_list(tile_map_layer, to_replace, p_terrain_set);
 
 		// Filter the sources to make sure they are in the potential_to_replace.
-		Map<Constraint, Set<Vector2i>> source_tiles_of_constraint;
-		for (Set<Constraint>::Element *E = removed_cells_constraints_set.front(); E; E = E->next()) {
+		Map<TileMap::TerrainConstraint, Set<Vector2i>> per_constraint_tiles;
+		for (Set<TileMap::TerrainConstraint>::Element *E = removed_cells_constraints_set.front(); E; E = E->next()) {
 			Map<Vector2i, TileSet::CellNeighbor> sources_of_constraint = E->get().get_overlapping_coords_and_peering_bits();
 			for (const KeyValue<Vector2i, TileSet::CellNeighbor> &E_source_tile_of_constraint : sources_of_constraint) {
 				if (potential_to_replace.has(E_source_tile_of_constraint.key)) {
-					source_tiles_of_constraint[E->get()].insert(E_source_tile_of_constraint.key);
+					per_constraint_tiles[E->get()].insert(E_source_tile_of_constraint.key);
 				}
 			}
 		}
 
 		to_replace_modified = false;
-		for (Set<TileMapEditorTerrainsPlugin::Constraint>::Element *E = added_tiles_constraints_set.front(); E; E = E->next()) {
-			Constraint c = E->get();
+		for (Set<TileMap::TerrainConstraint>::Element *E = added_tiles_constraints_set.front(); E; E = E->next()) {
+			TileMap::TerrainConstraint c = E->get();
 			// Check if we have a conflict in constraints.
 			if (removed_cells_constraints_set.has(c) && removed_cells_constraints_set.find(c)->get().get_terrain() != c.get_terrain()) {
 				// If we do, we search for a neighbor to remove.
-				if (source_tiles_of_constraint.has(c) && !source_tiles_of_constraint[c].is_empty()) {
+				if (per_constraint_tiles.has(c) && !per_constraint_tiles[c].is_empty()) {
 					// Remove it.
-					Vector2i to_add_to_remove = source_tiles_of_constraint[c].front()->get();
+					Vector2i to_add_to_remove = per_constraint_tiles[c].front()->get();
 					potential_to_replace.erase(to_add_to_remove);
 					to_replace.insert(to_add_to_remove);
 					to_replace_modified = true;
-					for (KeyValue<Constraint, Set<Vector2i>> &E_source_tiles_of_constraint : source_tiles_of_constraint) {
+					for (KeyValue<TileMap::TerrainConstraint, Set<Vector2i>> &E_source_tiles_of_constraint : per_constraint_tiles) {
 						E_source_tiles_of_constraint.value.erase(to_add_to_remove);
 					}
 					break;
@@ -2868,22 +2306,27 @@ Map<Vector2i, TileMapCell> TileMapEditorTerrainsPlugin::_draw_terrains(const Map
 	}
 
 	// Combine all constraints together.
-	Set<TileMapEditorTerrainsPlugin::Constraint> constraints = removed_cells_constraints_set;
-	for (Set<TileMapEditorTerrainsPlugin::Constraint>::Element *E = added_tiles_constraints_set.front(); E; E = E->next()) {
+	Set<TileMap::TerrainConstraint> constraints = removed_cells_constraints_set;
+	for (Set<TileMap::TerrainConstraint>::Element *E = added_tiles_constraints_set.front(); E; E = E->next()) {
 		constraints.insert(E->get());
 	}
 
-	// Run WFC to fill the holes with the constraints.
-	Map<Vector2i, TerrainsTilePattern> wfc_output = _wave_function_collapse(to_replace, p_terrain_set, constraints);
-
-	// Use the WFC run for the output.
-	for (const KeyValue<Vector2i, TerrainsTilePattern> &E : wfc_output) {
-		output[E.key] = _get_random_tile_from_pattern(p_terrain_set, E.value);
+	// Remove the central tiles from the ones to replace.
+	for (const KeyValue<Vector2i, TileSet::TerrainsPattern> &E_to_paint : p_to_paint) {
+		to_replace.erase(E_to_paint.key);
 	}
 
-	// Override the WFC results to make sure at least the painted tiles are actually painted.
-	for (const KeyValue<Vector2i, TerrainsTilePattern> &E_to_paint : p_to_paint) {
-		output[E_to_paint.key] = _get_random_tile_from_pattern(p_terrain_set, E_to_paint.value);
+	// Run WFC to fill the holes with the constraints.
+	Map<Vector2i, TileSet::TerrainsPattern> wfc_output = tile_map->terrain_wave_function_collapse(to_replace, p_terrain_set, constraints);
+
+	// Actually paint the tiles.
+	for (const KeyValue<Vector2i, TileSet::TerrainsPattern> &E_to_paint : p_to_paint) {
+		output[E_to_paint.key] = tile_set->get_random_tile_from_pattern(p_terrain_set, E_to_paint.value);
+	}
+
+	// Use the WFC run for the output.
+	for (const KeyValue<Vector2i, TileSet::TerrainsPattern> &E : wfc_output) {
+		output[E.key] = tile_set->get_random_tile_from_pattern(p_terrain_set, E.value);
 	}
 
 	return output;
@@ -2901,10 +2344,23 @@ void TileMapEditorTerrainsPlugin::_stop_dragging() {
 	switch (drag_type) {
 		case DRAG_TYPE_PICK: {
 			Vector2i coords = tile_map->world_to_map(mpos);
-			TileMapCell tile = tile_map->get_cell(tile_map_layer, coords);
+			TileMapCell cell = tile_map->get_cell(tile_map_layer, coords);
 
-			if (terrain_tiles.has(tile)) {
-				Array terrains_tile_pattern = _build_terrains_tile_pattern(terrain_tiles[tile]);
+			Ref<TileSet> tile_set = tile_map->get_tileset();
+			if (!tile_set.is_valid()) {
+				return;
+			}
+
+			TileData *tile_data = nullptr;
+
+			Ref<TileSetSource> source = tile_set->get_source(cell.source_id);
+			Ref<TileSetAtlasSource> atlas_source = source;
+			if (atlas_source.is_valid()) {
+				tile_data = Object::cast_to<TileData>(atlas_source->get_tile_data(cell.get_atlas_coords(), cell.alternative_tile));
+			}
+
+			if (tile_data) {
+				Array terrains_pattern = tile_data->get_terrains_pattern();
 
 				// Find the tree item for the right terrain set.
 				bool need_tree_item_switch = true;
@@ -2914,7 +2370,7 @@ void TileMapEditorTerrainsPlugin::_stop_dragging() {
 					if (metadata_dict.has("terrain_set") && metadata_dict.has("terrain_id")) {
 						int terrain_set = metadata_dict["terrain_set"];
 						int terrain_id = metadata_dict["terrain_id"];
-						if (per_terrain_terrains_tile_patterns[terrain_set][terrain_id].has(terrains_tile_pattern)) {
+						if (per_terrain_terrains_patterns[terrain_set][terrain_id].has(terrains_pattern)) {
 							need_tree_item_switch = false;
 						}
 					}
@@ -2926,7 +2382,7 @@ void TileMapEditorTerrainsPlugin::_stop_dragging() {
 						if (metadata_dict.has("terrain_set") && metadata_dict.has("terrain_id")) {
 							int terrain_set = metadata_dict["terrain_set"];
 							int terrain_id = metadata_dict["terrain_id"];
-							if (per_terrain_terrains_tile_patterns[terrain_set][terrain_id].has(terrains_tile_pattern)) {
+							if (per_terrain_terrains_patterns[terrain_set][terrain_id].has(terrains_pattern)) {
 								// Found
 								tree_item->select(0);
 								_update_tiles_list();
@@ -2940,10 +2396,10 @@ void TileMapEditorTerrainsPlugin::_stop_dragging() {
 				if (tree_item) {
 					for (int i = 0; i < terrains_tile_list->get_item_count(); i++) {
 						Dictionary metadata_dict = terrains_tile_list->get_item_metadata(i);
-						TerrainsTilePattern in_meta_terrains_tile_pattern = metadata_dict["terrains_tile_pattern"];
+						TileSet::TerrainsPattern in_meta_terrains_pattern = metadata_dict["terrains_pattern"];
 						bool equals = true;
-						for (int j = 0; j < terrains_tile_pattern.size(); j++) {
-							if (terrains_tile_pattern[j] != in_meta_terrains_tile_pattern[j]) {
+						for (int j = 0; j < terrains_pattern.size(); j++) {
+							if (terrains_pattern[j] != in_meta_terrains_pattern[j]) {
 								equals = false;
 								break;
 							}
@@ -2999,7 +2455,7 @@ bool TileMapEditorTerrainsPlugin::forward_canvas_gui_input(const Ref<InputEvent>
 	ERR_FAIL_COND_V(tile_map_layer >= tile_map->get_layers_count(), false);
 
 	// Get the selected terrain.
-	TerrainsTilePattern selected_terrains_tile_pattern;
+	TileSet::TerrainsPattern selected_terrains_pattern;
 	int selected_terrain_set = -1;
 
 	TreeItem *selected_tree_item = terrains_tree->get_selected();
@@ -3010,16 +2466,16 @@ bool TileMapEditorTerrainsPlugin::forward_canvas_gui_input(const Ref<InputEvent>
 
 		// Selected tile
 		if (erase_button->is_pressed()) {
-			selected_terrains_tile_pattern.clear();
+			selected_terrains_pattern.clear();
 			for (uint32_t i = 0; i < TileSet::CELL_NEIGHBOR_MAX; i++) {
 				TileSet::CellNeighbor side = TileSet::CellNeighbor(i);
 				if (tile_set->is_valid_peering_bit_terrain(selected_terrain_set, side)) {
-					selected_terrains_tile_pattern.push_back(-1);
+					selected_terrains_pattern.push_back(-1);
 				}
 			}
 		} else if (terrains_tile_list->is_anything_selected()) {
 			metadata_dict = terrains_tile_list->get_item_metadata(terrains_tile_list->get_selected_items()[0]);
-			selected_terrains_tile_pattern = metadata_dict["terrains_tile_pattern"];
+			selected_terrains_pattern = metadata_dict["terrains_pattern"];
 		}
 	}
 
@@ -3032,9 +2488,9 @@ bool TileMapEditorTerrainsPlugin::forward_canvas_gui_input(const Ref<InputEvent>
 			case DRAG_TYPE_PAINT: {
 				if (selected_terrain_set >= 0) {
 					Vector<Vector2i> line = TileMapEditor::get_line(tile_map, tile_map->world_to_map(drag_last_mouse_pos), tile_map->world_to_map(mpos));
-					Map<Vector2i, TerrainsTilePattern> to_draw;
+					Map<Vector2i, TileSet::TerrainsPattern> to_draw;
 					for (int i = 0; i < line.size(); i++) {
-						to_draw[line[i]] = selected_terrains_tile_pattern;
+						to_draw[line[i]] = selected_terrains_pattern;
 					}
 					Map<Vector2i, TileMapCell> modified = _draw_terrains(to_draw, selected_terrain_set);
 					for (const KeyValue<Vector2i, TileMapCell> &E : modified) {
@@ -3066,14 +2522,14 @@ bool TileMapEditorTerrainsPlugin::forward_canvas_gui_input(const Ref<InputEvent>
 					drag_type = DRAG_TYPE_PICK;
 				} else {
 					// Paint otherwise.
-					if (selected_terrain_set >= 0 && !selected_terrains_tile_pattern.is_empty() && tool_buttons_group->get_pressed_button() == paint_tool_button) {
+					if (selected_terrain_set >= 0 && !selected_terrains_pattern.is_empty() && tool_buttons_group->get_pressed_button() == paint_tool_button) {
 						drag_type = DRAG_TYPE_PAINT;
 						drag_start_mouse_pos = mpos;
 
 						drag_modified.clear();
 
-						Map<Vector2i, TerrainsTilePattern> terrains_to_draw;
-						terrains_to_draw[tile_map->world_to_map(mpos)] = selected_terrains_tile_pattern;
+						Map<Vector2i, TileSet::TerrainsPattern> terrains_to_draw;
+						terrains_to_draw[tile_map->world_to_map(mpos)] = selected_terrains_pattern;
 
 						Map<Vector2i, TileMapCell> to_draw = _draw_terrains(terrains_to_draw, selected_terrain_set);
 						for (const KeyValue<Vector2i, TileMapCell> &E : to_draw) {
@@ -3097,26 +2553,6 @@ bool TileMapEditorTerrainsPlugin::forward_canvas_gui_input(const Ref<InputEvent>
 	return false;
 }
 
-TileMapEditorTerrainsPlugin::TerrainsTilePattern TileMapEditorTerrainsPlugin::_build_terrains_tile_pattern(TileData *p_tile_data) {
-	TileMap *tile_map = Object::cast_to<TileMap>(ObjectDB::get_instance(tile_map_id));
-	if (!tile_map) {
-		return TerrainsTilePattern();
-	}
-
-	Ref<TileSet> tile_set = tile_map->get_tileset();
-	if (!tile_set.is_valid()) {
-		return TerrainsTilePattern();
-	}
-
-	TerrainsTilePattern output;
-	for (int i = 0; i < TileSet::CELL_NEIGHBOR_MAX; i++) {
-		if (tile_set->is_valid_peering_bit_terrain(p_tile_data->get_terrain_set(), TileSet::CellNeighbor(i))) {
-			output.push_back(p_tile_data->get_peering_bit_terrain(TileSet::CellNeighbor(i)));
-		}
-	}
-	return output;
-}
-
 void TileMapEditorTerrainsPlugin::_update_terrains_cache() {
 	TileMap *tile_map = Object::cast_to<TileMap>(ObjectDB::get_instance(tile_map_id));
 	if (!tile_map) {
@@ -3128,45 +2564,12 @@ void TileMapEditorTerrainsPlugin::_update_terrains_cache() {
 		return;
 	}
 
-	// Compute the tile sides.
-	tile_sides.clear();
-	TileSet::TileShape shape = tile_set->get_tile_shape();
-	if (shape == TileSet::TILE_SHAPE_SQUARE) {
-		tile_sides.push_back(TileSet::CELL_NEIGHBOR_RIGHT_SIDE);
-		tile_sides.push_back(TileSet::CELL_NEIGHBOR_BOTTOM_SIDE);
-		tile_sides.push_back(TileSet::CELL_NEIGHBOR_LEFT_SIDE);
-		tile_sides.push_back(TileSet::CELL_NEIGHBOR_TOP_SIDE);
-	} else if (shape == TileSet::TILE_SHAPE_ISOMETRIC) {
-		tile_sides.push_back(TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE);
-		tile_sides.push_back(TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE);
-		tile_sides.push_back(TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE);
-		tile_sides.push_back(TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE);
-	} else {
-		if (tile_set->get_tile_offset_axis() == TileSet::TILE_OFFSET_AXIS_HORIZONTAL) {
-			tile_sides.push_back(TileSet::CELL_NEIGHBOR_RIGHT_SIDE);
-			tile_sides.push_back(TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE);
-			tile_sides.push_back(TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE);
-			tile_sides.push_back(TileSet::CELL_NEIGHBOR_LEFT_SIDE);
-			tile_sides.push_back(TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE);
-			tile_sides.push_back(TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE);
-		} else {
-			tile_sides.push_back(TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE);
-			tile_sides.push_back(TileSet::CELL_NEIGHBOR_BOTTOM_SIDE);
-			tile_sides.push_back(TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE);
-			tile_sides.push_back(TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE);
-			tile_sides.push_back(TileSet::CELL_NEIGHBOR_TOP_SIDE);
-			tile_sides.push_back(TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE);
-		}
-	}
-
 	// Organizes tiles into structures.
-	per_terrain_terrains_tile_patterns_tiles.resize(tile_set->get_terrain_sets_count());
-	per_terrain_terrains_tile_patterns.resize(tile_set->get_terrain_sets_count());
+	per_terrain_terrains_patterns.resize(tile_set->get_terrain_sets_count());
 	for (int i = 0; i < tile_set->get_terrain_sets_count(); i++) {
-		per_terrain_terrains_tile_patterns_tiles[i].clear();
-		per_terrain_terrains_tile_patterns[i].resize(tile_set->get_terrains_count(i));
-		for (int j = 0; j < (int)per_terrain_terrains_tile_patterns[i].size(); j++) {
-			per_terrain_terrains_tile_patterns[i][j].clear();
+		per_terrain_terrains_patterns[i].resize(tile_set->get_terrains_count(i));
+		for (int j = 0; j < (int)per_terrain_terrains_patterns[i].size(); j++) {
+			per_terrain_terrains_patterns[i][j].clear();
 		}
 	}
 
@@ -3184,44 +2587,26 @@ void TileMapEditorTerrainsPlugin::_update_terrains_cache() {
 					TileData *tile_data = Object::cast_to<TileData>(atlas_source->get_tile_data(tile_id, alternative_id));
 					int terrain_set = tile_data->get_terrain_set();
 					if (terrain_set >= 0) {
-						ERR_FAIL_INDEX(terrain_set, (int)per_terrain_terrains_tile_patterns.size());
+						ERR_FAIL_INDEX(terrain_set, (int)per_terrain_terrains_patterns.size());
 
 						TileMapCell cell;
 						cell.source_id = source_id;
 						cell.set_atlas_coords(tile_id);
 						cell.alternative_tile = alternative_id;
 
-						TerrainsTilePattern terrains_tile_pattern = _build_terrains_tile_pattern(tile_data);
+						TileSet::TerrainsPattern terrains_pattern = tile_data->get_terrains_pattern();
 
 						// Terrain bits.
-						for (int i = 0; i < terrains_tile_pattern.size(); i++) {
-							int terrain = terrains_tile_pattern[i];
-							if (terrain >= 0 && terrain < (int)per_terrain_terrains_tile_patterns[terrain_set].size()) {
-								per_terrain_terrains_tile_patterns[terrain_set][terrain].insert(terrains_tile_pattern);
-								terrain_tiles[cell] = tile_data;
-								per_terrain_terrains_tile_patterns_tiles[terrain_set][terrains_tile_pattern].insert(cell);
+						for (int i = 0; i < terrains_pattern.size(); i++) {
+							int terrain = terrains_pattern[i];
+							if (terrain >= 0 && terrain < (int)per_terrain_terrains_patterns[terrain_set].size()) {
+								per_terrain_terrains_patterns[terrain_set][terrain].insert(terrains_pattern);
 							}
 						}
 					}
 				}
 			}
 		}
-	}
-
-	// Add the empty cell in the possible patterns and cells.
-	for (int i = 0; i < tile_set->get_terrain_sets_count(); i++) {
-		TerrainsTilePattern empty_pattern;
-		for (int j = 0; j < TileSet::CELL_NEIGHBOR_MAX; j++) {
-			if (tile_set->is_valid_peering_bit_terrain(i, TileSet::CellNeighbor(j))) {
-				empty_pattern.push_back(-1);
-			}
-		}
-
-		TileMapCell empty_cell;
-		empty_cell.source_id = TileSet::INVALID_SOURCE;
-		empty_cell.set_atlas_coords(TileSetSource::INVALID_ATLAS_COORDS);
-		empty_cell.alternative_tile = TileSetSource::INVALID_TILE_ALTERNATIVE;
-		per_terrain_terrains_tile_patterns_tiles[i][empty_pattern].insert(empty_cell);
 	}
 }
 
@@ -3291,12 +2676,13 @@ void TileMapEditorTerrainsPlugin::_update_tiles_list() {
 		Dictionary metadata_dict = selected_tree_item->get_metadata(0);
 		int selected_terrain_set = metadata_dict["terrain_set"];
 		int selected_terrain_id = metadata_dict["terrain_id"];
-		ERR_FAIL_INDEX(selected_terrain_set, (int)per_terrain_terrains_tile_patterns.size());
-		ERR_FAIL_INDEX(selected_terrain_id, (int)per_terrain_terrains_tile_patterns[selected_terrain_set].size());
+		ERR_FAIL_INDEX(selected_terrain_set, tile_set->get_terrain_sets_count());
+		ERR_FAIL_INDEX(selected_terrain_id, tile_set->get_terrains_count(selected_terrain_set));
 
 		// Sort the items in a map by the number of corresponding terrains.
-		Map<int, Set<TerrainsTilePattern>> sorted;
-		for (Set<TerrainsTilePattern>::Element *E = per_terrain_terrains_tile_patterns[selected_terrain_set][selected_terrain_id].front(); E; E = E->next()) {
+		Map<int, Set<TileSet::TerrainsPattern>> sorted;
+
+		for (Set<TileSet::TerrainsPattern>::Element *E = per_terrain_terrains_patterns[selected_terrain_set][selected_terrain_id].front(); E; E = E->next()) {
 			// Count the number of matching sides/terrains.
 			int count = 0;
 
@@ -3308,9 +2694,9 @@ void TileMapEditorTerrainsPlugin::_update_tiles_list() {
 			sorted[count].insert(E->get());
 		}
 
-		for (Map<int, Set<TerrainsTilePattern>>::Element *E_set = sorted.back(); E_set; E_set = E_set->prev()) {
-			for (Set<TerrainsTilePattern>::Element *E = E_set->get().front(); E; E = E->next()) {
-				TerrainsTilePattern terrains_tile_pattern = E->get();
+		for (Map<int, Set<TileSet::TerrainsPattern>>::Element *E_set = sorted.back(); E_set; E_set = E_set->prev()) {
+			for (Set<TileSet::TerrainsPattern>::Element *E = E_set->get().front(); E; E = E->next()) {
+				TileSet::TerrainsPattern terrains_pattern = E->get();
 
 				// Get the icon.
 				Ref<Texture2D> icon;
@@ -3318,15 +2704,15 @@ void TileMapEditorTerrainsPlugin::_update_tiles_list() {
 				bool transpose = false;
 
 				double max_probability = -1.0;
-				for (Set<TileMapCell>::Element *E_tile_map_cell = per_terrain_terrains_tile_patterns_tiles[selected_terrain_set][terrains_tile_pattern].front(); E_tile_map_cell; E_tile_map_cell = E_tile_map_cell->next()) {
-					Ref<TileSetSource> source = tile_set->get_source(E_tile_map_cell->get().source_id);
+				for (const TileMapCell &cell : tile_set->get_tiles_for_terrains_pattern(selected_terrain_set, terrains_pattern)) {
+					Ref<TileSetSource> source = tile_set->get_source(cell.source_id);
 
 					Ref<TileSetAtlasSource> atlas_source = source;
 					if (atlas_source.is_valid()) {
-						TileData *tile_data = Object::cast_to<TileData>(atlas_source->get_tile_data(E_tile_map_cell->get().get_atlas_coords(), E_tile_map_cell->get().alternative_tile));
+						TileData *tile_data = Object::cast_to<TileData>(atlas_source->get_tile_data(cell.get_atlas_coords(), cell.alternative_tile));
 						if (tile_data->get_probability() > max_probability) {
 							icon = atlas_source->get_texture();
-							region = atlas_source->get_tile_texture_region(E_tile_map_cell->get().get_atlas_coords());
+							region = atlas_source->get_tile_texture_region(cell.get_atlas_coords());
 							if (tile_data->get_flip_h()) {
 								region.position.x += region.size.x;
 								region.size.x = -region.size.x;
@@ -3347,7 +2733,7 @@ void TileMapEditorTerrainsPlugin::_update_tiles_list() {
 				terrains_tile_list->set_item_icon_region(item_index, region);
 				terrains_tile_list->set_item_icon_transposed(item_index, transpose);
 				Dictionary list_metadata_dict;
-				list_metadata_dict["terrains_tile_pattern"] = terrains_tile_pattern;
+				list_metadata_dict["terrains_pattern"] = terrains_pattern;
 				terrains_tile_list->set_item_metadata(item_index, list_metadata_dict);
 			}
 		}

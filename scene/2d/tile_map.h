@@ -109,6 +109,43 @@ class TileMap : public Node2D {
 	GDCLASS(TileMap, Node2D);
 
 public:
+	class TerrainConstraint {
+	private:
+		const TileMap *tile_map;
+		Vector2i base_cell_coords = Vector2i();
+		int bit = -1;
+		int terrain = -1;
+
+	public:
+		bool operator<(const TerrainConstraint &p_other) const {
+			if (base_cell_coords == p_other.base_cell_coords) {
+				return bit < p_other.bit;
+			}
+			return base_cell_coords < p_other.base_cell_coords;
+		}
+
+		String to_string() const {
+			return vformat("Constraint {pos:%s, bit:%d, terrain:%d}", base_cell_coords, bit, terrain);
+		}
+
+		Vector2i get_base_cell_coords() const {
+			return base_cell_coords;
+		}
+
+		Map<Vector2i, TileSet::CellNeighbor> get_overlapping_coords_and_peering_bits() const;
+
+		void set_terrain(int p_terrain) {
+			terrain = p_terrain;
+		}
+
+		int get_terrain() const {
+			return terrain;
+		}
+
+		TerrainConstraint(const TileMap *p_tile_map, const Vector2i &p_position, const TileSet::CellNeighbor &p_bit, int p_terrain);
+		TerrainConstraint() {}
+	};
+
 	enum VisibilityMode {
 		VISIBILITY_MODE_DEFAULT,
 		VISIBILITY_MODE_FORCE_SHOW,
@@ -209,6 +246,9 @@ private:
 	void _scenes_cleanup_quadrant(TileMapQuadrant *p_quadrant);
 	void _scenes_draw_quadrant_debug(TileMapQuadrant *p_quadrant);
 
+	// Terrains.
+	Set<TileSet::TerrainsPattern> _get_valid_terrains_patterns_for_constraints(int p_terrain_set, const Vector2i &p_position, Set<TerrainConstraint> p_constraints);
+
 	// Set and get tiles from data arrays.
 	void _set_tile_data(int p_layer, const Vector<int> &p_data);
 	Vector<int> _get_tile_data(int p_layer) const;
@@ -267,20 +307,29 @@ public:
 	void set_collision_animatable(bool p_enabled);
 	bool is_collision_animatable() const;
 
+	// Debug visibility modes.
 	void set_collision_visibility_mode(VisibilityMode p_show_collision);
 	VisibilityMode get_collision_visibility_mode();
 
 	void set_navigation_visibility_mode(VisibilityMode p_show_navigation);
 	VisibilityMode get_navigation_visibility_mode();
 
+	// Cells accessors.
 	void set_cell(int p_layer, const Vector2i &p_coords, int p_source_id = -1, const Vector2i p_atlas_coords = TileSetSource::INVALID_ATLAS_COORDS, int p_alternative_tile = TileSetSource::INVALID_TILE_ALTERNATIVE);
 	int get_cell_source_id(int p_layer, const Vector2i &p_coords, bool p_use_proxies = false) const;
 	Vector2i get_cell_atlas_coords(int p_layer, const Vector2i &p_coords, bool p_use_proxies = false) const;
 	int get_cell_alternative_tile(int p_layer, const Vector2i &p_coords, bool p_use_proxies = false) const;
 
+	// Patterns.
 	Ref<TileMapPattern> get_pattern(int p_layer, TypedArray<Vector2i> p_coords_array);
 	Vector2i map_pattern(Vector2i p_position_in_tilemap, Vector2i p_coords_in_pattern, Ref<TileMapPattern> p_pattern);
 	void set_pattern(int p_layer, Vector2i p_position, const Ref<TileMapPattern> p_pattern);
+
+	// Terrains.
+	Set<TerrainConstraint> get_terrain_constraints_from_removed_cells_list(int p_layer, const Set<Vector2i> &p_to_replace, int p_terrain_set, bool p_ignore_empty_terrains = true) const; // Not exposed.
+	Set<TerrainConstraint> get_terrain_constraints_from_added_tile(Vector2i p_position, int p_terrain_set, TileSet::TerrainsPattern p_terrains_pattern) const; // Not exposed.
+	Map<Vector2i, TileSet::TerrainsPattern> terrain_wave_function_collapse(const Set<Vector2i> &p_to_replace, int p_terrain_set, const Set<TerrainConstraint> p_constraints); // Not exposed.
+	void set_cells_from_surrounding_terrains(int p_layer, TypedArray<Vector2i> p_coords_array, int p_terrain_set, bool p_ignore_empty_terrains = true);
 
 	// Not exposed to users
 	TileMapCell get_cell(int p_layer, const Vector2i &p_coords, bool p_use_proxies = false) const;

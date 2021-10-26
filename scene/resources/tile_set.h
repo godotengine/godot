@@ -253,6 +253,7 @@ public:
 		Ref<PackedScene> scene;
 		Vector2 offset;
 	};
+	typedef Array TerrainsPattern;
 
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
@@ -302,6 +303,10 @@ private:
 
 	Map<TerrainMode, Map<CellNeighbor, Ref<ArrayMesh>>> terrain_bits_meshes;
 	bool terrain_bits_meshes_dirty = true;
+
+	LocalVector<Map<TileSet::TerrainsPattern, Set<TileMapCell>>> per_terrain_pattern_tiles; // Cached data.
+	bool terrains_cache_dirty = true;
+	void _update_terrains_cache();
 
 	// Navigation
 	struct NavigationLayer {
@@ -469,6 +474,11 @@ public:
 	Ref<TileMapPattern> get_pattern(int p_index);
 	void remove_pattern(int p_index);
 	int get_patterns_count();
+
+	// Terrains.
+	Set<TerrainsPattern> get_terrains_pattern_set(int p_terrain_set);
+	Set<TileMapCell> get_tiles_for_terrains_pattern(int p_terrain_set, TerrainsPattern p_terrain_tile_pattern);
+	TileMapCell get_random_tile_from_pattern(int p_terrain_set, TerrainsPattern p_terrain_tile_pattern);
 
 	// Helpers
 	Vector<Vector2> get_tile_shape_polygon();
@@ -830,6 +840,8 @@ public:
 	void set_peering_bit_terrain(TileSet::CellNeighbor p_peering_bit, int p_terrain_id);
 	int get_peering_bit_terrain(TileSet::CellNeighbor p_peering_bit) const;
 	bool is_valid_peering_bit_terrain(TileSet::CellNeighbor p_peering_bit) const;
+
+	TileSet::TerrainsPattern get_terrains_pattern() const; // Not exposed.
 
 	// Navigation
 	void set_navigation_polygon(int p_layer_id, Ref<NavigationPolygon> p_navigation_polygon);

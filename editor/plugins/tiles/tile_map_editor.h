@@ -243,65 +243,15 @@ private:
 	Map<Vector2i, TileMapCell> drag_modified;
 
 	// Painting
-	class Constraint {
-	private:
-		const TileMap *tile_map;
-		Vector2i base_cell_coords = Vector2i();
-		int bit = -1;
-		int terrain = -1;
-
-	public:
-		// TODO implement difference operator.
-		bool operator<(const Constraint &p_other) const {
-			if (base_cell_coords == p_other.base_cell_coords) {
-				return bit < p_other.bit;
-			}
-			return base_cell_coords < p_other.base_cell_coords;
-		}
-
-		String to_string() const {
-			return vformat("Constraint {pos:%s, bit:%d, terrain:%d}", base_cell_coords, bit, terrain);
-		}
-
-		Vector2i get_base_cell_coords() const {
-			return base_cell_coords;
-		}
-
-		Map<Vector2i, TileSet::CellNeighbor> get_overlapping_coords_and_peering_bits() const;
-
-		void set_terrain(int p_terrain) {
-			terrain = p_terrain;
-		}
-
-		int get_terrain() const {
-			return terrain;
-		}
-
-		Constraint(const TileMap *p_tile_map, const Vector2i &p_position, const TileSet::CellNeighbor &p_bit, int p_terrain);
-		Constraint() {}
-	};
-
-	typedef Array TerrainsTilePattern;
-
-	Set<TerrainsTilePattern> _get_valid_terrains_tile_patterns_for_constraints(int p_terrain_set, const Vector2i &p_position, Set<TileMapEditorTerrainsPlugin::Constraint> p_constraints) const;
-	Set<TileMapEditorTerrainsPlugin::Constraint> _get_constraints_from_removed_cells_list(const Set<Vector2i> &p_to_replace, int p_terrain_set) const;
-	Set<TileMapEditorTerrainsPlugin::Constraint> _get_constraints_from_added_tile(Vector2i p_position, int p_terrain_set, TerrainsTilePattern p_terrains_tile_pattern) const;
-	Map<Vector2i, TerrainsTilePattern> _wave_function_collapse(const Set<Vector2i> &p_to_replace, int p_terrain_set, const Set<TileMapEditorTerrainsPlugin::Constraint> p_constraints) const;
-	TileMapCell _get_random_tile_from_pattern(int p_terrain_set, TerrainsTilePattern p_terrain_tile_pattern) const;
-	Map<Vector2i, TileMapCell> _draw_terrains(const Map<Vector2i, TerrainsTilePattern> &p_to_paint, int p_terrain_set) const;
+	Map<Vector2i, TileMapCell> _draw_terrains(const Map<Vector2i, TileSet::TerrainsPattern> &p_to_paint, int p_terrain_set) const;
 	void _stop_dragging();
-
-	// Cached data.
-	TerrainsTilePattern _build_terrains_tile_pattern(TileData *p_tile_data);
-	LocalVector<Map<TerrainsTilePattern, Set<TileMapCell>>> per_terrain_terrains_tile_patterns_tiles;
-	LocalVector<LocalVector<Set<TerrainsTilePattern>>> per_terrain_terrains_tile_patterns;
-
-	Map<TileMapCell, TileData *> terrain_tiles;
-	LocalVector<TileSet::CellNeighbor> tile_sides;
 
 	// Bottom panel.
 	Tree *terrains_tree;
 	ItemList *terrains_tile_list;
+
+	// Cache.
+	LocalVector<LocalVector<Set<TileSet::TerrainsPattern>>> per_terrain_terrains_patterns;
 
 	// Update functions.
 	void _update_terrains_cache();
