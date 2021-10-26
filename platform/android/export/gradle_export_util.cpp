@@ -128,11 +128,26 @@ Error rename_and_store_file_in_gradle_project(void *p_userdata, const String &p_
 	return err;
 }
 
+String _android_xml_escape(const String &p_string) {
+	// Android XML requires strings to be both valid XML (`xml_escape()`) but also
+	// to escape characters which are valid XML but have special meaning in Android XML.
+	// https://developer.android.com/guide/topics/resources/string-resource.html#FormattingAndStyling
+	// Note: Didn't handle U+XXXX unicode chars, could be done if needed.
+	return p_string
+			.replace("@", "\\@")
+			.replace("?", "\\?")
+			.replace("'", "\\'")
+			.replace("\"", "\\\"")
+			.replace("\n", "\\n")
+			.replace("\t", "\\t")
+			.xml_escape(false);
+}
+
 // Creates strings.xml files inside the gradle project for different locales.
 Error _create_project_name_strings_files(const Ref<EditorExportPreset> &p_preset, const String &project_name) {
 	print_verbose("Creating strings resources for supported locales for project " + project_name);
 	// Stores the string into the default values directory.
-	String processed_default_xml_string = vformat(godot_project_name_xml_string, project_name.xml_escape(true));
+	String processed_default_xml_string = vformat(godot_project_name_xml_string, _android_xml_escape(project_name));
 	store_string_at_path("res://android/build/res/values/godot_project_name_string.xml", processed_default_xml_string);
 
 	// Searches the Gradle project res/ directory to find all supported locales
@@ -158,7 +173,7 @@ Error _create_project_name_strings_files(const Ref<EditorExportPreset> &p_preset
 		String locale_directory = "res://android/build/res/" + file + "/godot_project_name_string.xml";
 		if (ProjectSettings::get_singleton()->has_setting(property_name)) {
 			String locale_project_name = ProjectSettings::get_singleton()->get(property_name);
-			String processed_xml_string = vformat(godot_project_name_xml_string, locale_project_name.xml_escape(true));
+			String processed_xml_string = vformat(godot_project_name_xml_string, _android_xml_escape(locale_project_name));
 			print_verbose("Storing project name for locale " + locale + " under " + locale_directory);
 			store_string_at_path(locale_directory, processed_xml_string);
 		} else {
