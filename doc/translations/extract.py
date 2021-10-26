@@ -24,7 +24,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8-bit\\n"
 
 """
-# Some strings used by makerst.py are normally part of the editor translations,
+# Some strings used by make_rst.py are normally part of the editor translations,
 # so we need to include them manually here for the online docs.
 BASE_STRINGS = [
     "Description",
@@ -225,7 +225,7 @@ def _generate_translation_catalog_file(unique_msgs, output):
     with open(output, "w", encoding="utf8") as f:
         f.write(HEADER)
         for msg in BASE_STRINGS:
-            f.write("#: doc/tools/makerst.py\n")
+            f.write("#: doc/tools/make_rst.py\n")
             f.write('msgid "{}"\n'.format(msg))
             f.write('msgstr ""\n\n')
         for msg in unique_msgs:
