@@ -230,7 +230,8 @@ void EditorSpinSlider::_value_input_gui_input(const Ref<InputEvent> &p_event) {
 					set_value(last_value + real_step);
 				}
 
-				value_input->set_text(get_text_value());
+				value_input_dirty = true;
+				set_process_internal(true);
 			} break;
 			case KEY_DOWN: {
 				_evaluate_input_text();
@@ -243,7 +244,8 @@ void EditorSpinSlider::_value_input_gui_input(const Ref<InputEvent> &p_event) {
 					set_value(last_value - real_step);
 				}
 
-				value_input->set_text(get_text_value());
+				value_input_dirty = true;
+				set_process_internal(true);
 			} break;
 		}
 	}
@@ -370,6 +372,14 @@ void EditorSpinSlider::_notification(int p_what) {
 			stylebox->set_default_margin(MARGIN_LEFT, (get_label() != String() ? 23 : 16) * EDSCALE);
 			value_input->add_style_override("normal", stylebox);
 		} break;
+
+		case NOTIFICATION_INTERNAL_PROCESS:
+			if (value_input_dirty) {
+				value_input_dirty = false;
+				value_input->set_text(get_text_value());
+			}
+			set_process_internal(false);
+			break;
 
 		case NOTIFICATION_DRAW:
 			_draw_spin_slider();
@@ -590,6 +600,7 @@ EditorSpinSlider::EditorSpinSlider() {
 	value_input->connect("focus_exited", this, "_value_focus_exited");
 	value_input->connect("gui_input", this, "_value_input_gui_input");
 	value_input_just_closed = false;
+	value_input_dirty = false;
 	hide_slider = false;
 	read_only = false;
 	use_custom_label_color = false;

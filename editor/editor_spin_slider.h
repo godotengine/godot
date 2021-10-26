@@ -64,6 +64,7 @@ class EditorSpinSlider : public Range {
 
 	LineEdit *value_input;
 	bool value_input_just_closed;
+	bool value_input_dirty;
 
 	void _grabber_gui_input(const Ref<InputEvent> &p_event);
 	void _value_input_closed();
