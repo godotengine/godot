@@ -120,26 +120,26 @@ Error GLTFDocument::serialize(Ref<GLTFState> state, Node *p_root, const String &
 		return Error::FAILED;
 	}
 
-	/* STEP 7 SERIALIZE IMAGES */
-	err = _serialize_images(state, p_path);
-	if (err != OK) {
-		return Error::FAILED;
-	}
-
-	/* STEP 8 SERIALIZE TEXTURES */
-	err = _serialize_textures(state);
-	if (err != OK) {
-		return Error::FAILED;
-	}
-
-	// /* STEP 9 SERIALIZE ANIMATIONS */
+	/* STEP 7 SERIALIZE ANIMATIONS */
 	err = _serialize_animations(state);
 	if (err != OK) {
 		return Error::FAILED;
 	}
 
-	/* STEP 10 SERIALIZE ACCESSORS */
+	/* STEP 8 SERIALIZE ACCESSORS */
 	err = _encode_accessors(state);
+	if (err != OK) {
+		return Error::FAILED;
+	}
+
+	/* STEP 9 SERIALIZE IMAGES */
+	err = _serialize_images(state, p_path);
+	if (err != OK) {
+		return Error::FAILED;
+	}
+
+	/* STEP 10 SERIALIZE TEXTURES */
+	err = _serialize_textures(state);
 	if (err != OK) {
 		return Error::FAILED;
 	}
@@ -4369,6 +4369,10 @@ Error GLTFDocument::_serialize_skins(Ref<GLTFState> state) {
 		json_skin["name"] = gltf_skin->get_name();
 		json_skins.push_back(json_skin);
 	}
+	if (!state->skins.size()) {
+		return OK;
+	}
+
 	state->json["skins"] = json_skins;
 	return OK;
 }
@@ -6756,32 +6760,35 @@ Error GLTFDocument::_serialize_file(Ref<GLTFState> state, const String p_path) {
 		const uint32_t magic = 0x46546C67; // GLTF
 		const int32_t header_size = 12;
 		const int32_t chunk_header_size = 8;
-
-		for (int32_t pad_i = 0; pad_i < (chunk_header_size + json.utf8().length()) % 4; pad_i++) {
-			json += " ";
-		}
 		CharString cs = json.utf8();
-		const uint32_t text_chunk_length = cs.length();
-
+		const uint32_t text_data_length = cs.length();
+		const uint32_t text_chunk_length = ((text_data_length + 3) & (~3));
 		const uint32_t text_chunk_type = 0x4E4F534A; //JSON
-		int32_t binary_data_length = 0;
+
+		uint32_t binary_data_length = 0;
 		if (state->buffers.size()) {
 			binary_data_length = state->buffers[0].size();
 		}
-		const int32_t binary_chunk_length = binary_data_length;
-		const int32_t binary_chunk_type = 0x004E4942; //BIN
+		const uint32_t binary_chunk_length = ((binary_data_length + 3) & (~3));
+		const uint32_t binary_chunk_type = 0x004E4942; //BIN
 
 		f->create(FileAccess::ACCESS_RESOURCES);
 		f->store_32(magic);
 		f->store_32(state->major_version); // version
-		f->store_32(header_size + chunk_header_size + text_chunk_length + chunk_header_size + binary_data_length); // length
+		f->store_32(header_size + chunk_header_size + text_chunk_length + chunk_header_size + binary_chunk_length); // length
 		f->store_32(text_chunk_length);
 		f->store_32(text_chunk_type);
 		f->store_buffer((uint8_t *)&cs[0], cs.length());
+		for (uint32_t pad_i = text_data_length; pad_i < text_chunk_length; pad_i++) {
+			f->store_8(' ');
+		}
 		if (binary_chunk_length) {
 			f->store_32(binary_chunk_length);
 			f->store_32(binary_chunk_type);
 			f->store_buffer(state->buffers[0].ptr(), binary_data_length);
+		}
+		for (uint32_t pad_i = binary_data_length; pad_i < binary_chunk_length; pad_i++) {
+			f->store_8(0);
 		}
 
 		f->close();
