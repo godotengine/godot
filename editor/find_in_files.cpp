@@ -148,11 +148,11 @@ void FindInFiles::_process() {
 	// This part can be moved to a thread if needed
 
 	OS &os = *OS::get_singleton();
-	float time_before = os.get_ticks_msec();
+	uint64_t time_before = os.get_ticks_msec();
 	while (is_processing()) {
 		_iterate();
-		float elapsed = (os.get_ticks_msec() - time_before);
-		if (elapsed > 1000.0 / 120.0) {
+		uint64_t elapsed = (os.get_ticks_msec() - time_before);
+		if (elapsed > 8) { // Process again after waiting 8 ticks
 			break;
 		}
 	}

@@ -371,7 +371,7 @@ void AudioDriverPulseAudio::thread_func(void *p_udata) {
 	AudioDriverPulseAudio *ad = (AudioDriverPulseAudio *)p_udata;
 	unsigned int write_ofs = 0;
 	size_t avail_bytes = 0;
-	uint32_t default_device_msec = OS::get_singleton()->get_ticks_msec();
+	uint64_t default_device_msec = OS::get_singleton()->get_ticks_msec();
 
 	while (!ad->exit_thread) {
 		size_t read_bytes = 0;
@@ -463,7 +463,7 @@ void AudioDriverPulseAudio::thread_func(void *p_udata) {
 
 		// If we're using the default device check that the current device is still the default
 		if (ad->device_name == "Default") {
-			uint32_t msec = OS::get_singleton()->get_ticks_msec();
+			uint64_t msec = OS::get_singleton()->get_ticks_msec();
 			if (msec > (default_device_msec + 1000)) {
 				String old_default_device = ad->default_device;
 
