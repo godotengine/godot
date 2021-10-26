@@ -176,6 +176,9 @@ class TextServerAdvanced : public TextServer {
 		Dictionary variation_coordinates;
 		float oversampling = 0.f;
 
+		uint32_t style_flags = 0;
+		String font_name;
+
 		Map<Vector2i, FontDataForSizeAdvanced *> cache;
 
 		bool face_init = false;
@@ -319,6 +322,12 @@ public:
 
 	virtual void font_set_data(RID p_font_rid, const PackedByteArray &p_data) override;
 	virtual void font_set_data_ptr(RID p_font_rid, const uint8_t *p_data_ptr, size_t p_data_size) override;
+
+	virtual void font_set_style(RID p_font_rid, uint32_t /*FontStyle*/ p_style) override;
+	virtual uint32_t /*FontStyle*/ font_get_style(RID p_font_rid) const override;
+
+	virtual void font_set_name(RID p_font_rid, const String &p_name) override;
+	virtual String font_get_name(RID p_font_rid) const override;
 
 	virtual void font_set_antialiased(RID p_font_rid, bool p_antialiased) override;
 	virtual bool font_is_antialiased(RID p_font_rid) const override;
