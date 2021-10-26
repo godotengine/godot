@@ -1511,6 +1511,12 @@ static bool _guess_identifier_type_from_base(GDScriptCompletionContext &p_contex
 				ClassDB::get_property_list(class_name, &props);
 				for (const List<PropertyInfo>::Element *E = props.front(); E; E = E->next()) {
 					const PropertyInfo &prop = E->get();
+
+					// Ignore groups and categories in code completion.
+					if (prop.usage & (PROPERTY_USAGE_GROUP | PROPERTY_USAGE_CATEGORY)) {
+						continue;
+					}
+
 					if (prop.name == p_identifier) {
 						StringName getter = ClassDB::get_property_getter(class_name, p_identifier);
 						if (getter != StringName()) {
