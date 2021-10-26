@@ -58,7 +58,7 @@ void UndoRedo::_discard_redo() {
 }
 
 void UndoRedo::create_action(const String &p_name, MergeMode p_mode) {
-	uint32_t ticks = OS::get_singleton()->get_ticks_msec();
+	uint64_t ticks = OS::get_singleton()->get_ticks_msec();
 
 	if (action_level == 0) {
 		_discard_redo();

@@ -919,7 +919,7 @@ void _OS::delay_msec(int p_msec) const {
 	OS::get_singleton()->delay_usec(int64_t(p_msec) * 1000);
 }
 
-uint32_t _OS::get_ticks_msec() const {
+uint64_t _OS::get_ticks_msec() const {
 	return OS::get_singleton()->get_ticks_msec();
 }
 

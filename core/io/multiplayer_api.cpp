@@ -887,8 +887,8 @@ int MultiplayerAPI::get_outgoing_bandwidth_usage() {
 int MultiplayerAPI::_get_bandwidth_usage(const Vector<BandwidthFrame> &p_buffer, int p_pointer) {
 	int total_bandwidth = 0;
 
-	uint32_t timestamp = OS::get_singleton()->get_ticks_msec();
-	uint32_t final_timestamp = timestamp - 1000;
+	uint64_t timestamp = OS::get_singleton()->get_ticks_msec();
+	uint64_t final_timestamp = timestamp - 1000;
 
 	int i = (p_pointer + p_buffer.size() - 1) % p_buffer.size();
 

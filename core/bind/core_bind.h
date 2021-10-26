@@ -312,7 +312,7 @@ public:
 
 	void delay_usec(int p_usec) const;
 	void delay_msec(int p_msec) const;
-	uint32_t get_ticks_msec() const;
+	uint64_t get_ticks_msec() const;
 	uint64_t get_ticks_usec() const;
 	uint32_t get_splash_tick_msec() const;
 
