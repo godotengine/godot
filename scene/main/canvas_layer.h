@@ -102,6 +102,10 @@ public:
 
 	RID get_canvas() const;
 
+#ifdef TOOLS_ENABLED
+	StringName get_property_store_alias(const StringName &p_property) const;
+#endif
+
 	CanvasLayer();
 	~CanvasLayer();
 };

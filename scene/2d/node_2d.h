@@ -116,6 +116,10 @@ public:
 
 	Transform2D get_transform() const;
 
+#ifdef TOOLS_ENABLED
+	virtual StringName get_property_store_alias(const StringName &p_property) const;
+#endif
+
 	Node2D();
 };
 

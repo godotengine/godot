@@ -102,7 +102,7 @@
 		</signal>
 		<signal name="property_checked">
 			<argument index="0" name="property" type="String" />
-			<argument index="1" name="bool" type="String" />
+			<argument index="1" name="checked" type="bool" />
 			<description>
 				Emitted when a property was checked. Used internally.
 			</description>
@@ -118,6 +118,14 @@
 			<argument index="1" name="value" type="Variant" />
 			<description>
 				Emit it if you want to key a property with a single value.
+			</description>
+		</signal>
+		<signal name="property_pinned">
+			<argument index="0" name="property" type="String" />
+			<argument index="1" name="pinned" type="bool" />
+			<description>
+				Emit it if you want to mark (or unmark) the value of a property for being saved regardless of being equal to the default value.
+				The default value is the one the property will get when the node is just instantiated and can come from an ancestor scene in the inheritance/instancing chain, a script or a builtin class.
 			</description>
 		</signal>
 		<signal name="resource_selected">
