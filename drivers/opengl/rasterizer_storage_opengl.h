@@ -78,10 +78,13 @@ public:
 
 		bool float_texture_supported;
 		bool s3tc_supported;
-		bool etc1_supported;
-		bool pvrtc_supported;
+		bool latc_supported;
 		bool rgtc_supported;
 		bool bptc_supported;
+		bool etc_supported;
+		bool etc2_supported;
+		bool pvrtc_supported;
+		bool srgb_decode_supported;
 
 		bool keep_original_textures;
 
@@ -99,7 +102,6 @@ public:
 
 		bool support_shadow_cubemaps;
 
-		bool multisample_supported;
 		bool render_to_mipmap_supported;
 
 		GLuint depth_internalformat;

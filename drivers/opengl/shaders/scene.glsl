@@ -10,11 +10,7 @@ precision highp float;
 precision highp int;
 #endif
 
-/* clang-format on */
-#include "stdlib.glsl"
-/* clang-format off */
-
-#define SHADER_IS_SRGB true
+#define SHADER_IS_SRGB true //TODO remove
 
 #define M_PI 3.14159265359
 
@@ -22,38 +18,38 @@ precision highp int;
 // attributes
 //
 
-attribute highp vec4 vertex_attrib; // attrib:0
+layout(location = 0) highp vec4 vertex_attrib;
 /* clang-format on */
-attribute vec3 normal_attrib; // attrib:1
+layout(location = 1) vec3 normal_attrib;
 
 #if defined(ENABLE_TANGENT_INTERP) || defined(ENABLE_NORMALMAP)
-attribute vec4 tangent_attrib; // attrib:2
+layout(location = 2) vec4 tangent_attrib;
 #endif
 
 #if defined(ENABLE_COLOR_INTERP)
-attribute vec4 color_attrib; // attrib:3
+layout(location = 3) vec4 color_attrib;
 #endif
 
 #if defined(ENABLE_UV_INTERP)
-attribute vec2 uv_attrib; // attrib:4
+layout(location = 4) vec2 uv_attrib;
 #endif
 
 #if defined(ENABLE_UV2_INTERP) || defined(USE_LIGHTMAP)
-attribute vec2 uv2_attrib; // attrib:5
+layout(location = 5) vec2 uv2_attrib;
 #endif
 
 #ifdef USE_SKELETON
 
 #ifdef USE_SKELETON_SOFTWARE
 
-attribute highp vec4 bone_transform_row_0; // attrib:13
-attribute highp vec4 bone_transform_row_1; // attrib:14
-attribute highp vec4 bone_transform_row_2; // attrib:15
+layout(location = 13) highp vec4 bone_transform_row_0;
+layout(location = 14) highp vec4 bone_transform_row_1;
+layout(location = 15) highp vec4 bone_transform_row_2;
 
 #else
 
-attribute vec4 bone_ids; // attrib:6
-attribute highp vec4 bone_weights; // attrib:7
+layout(location = 6) vec4 bone_ids;
+layout(location = 7) highp vec4 bone_weights;
 
 uniform highp sampler2D bone_transforms; // texunit:-1
 uniform ivec2 skeleton_texture_size;
@@ -64,12 +60,12 @@ uniform ivec2 skeleton_texture_size;
 
 #ifdef USE_INSTANCING
 
-attribute highp vec4 instance_xform_row_0; // attrib:8
-attribute highp vec4 instance_xform_row_1; // attrib:9
-attribute highp vec4 instance_xform_row_2; // attrib:10
+layout(location = 8) highp vec4 instance_xform_row_0;
+layout(location = 9) highp vec4 instance_xform_row_1;
+layout(location = 10) highp vec4 instance_xform_row_2;
 
-attribute highp vec4 instance_color; // attrib:11
-attribute highp vec4 instance_custom_data; // attrib:12
+layout(location = 11) highp vec4 instance_color;
+layout(location = 12) highp vec4 instance_custom_data;
 
 #endif
 
@@ -98,27 +94,27 @@ uniform float light_normal_bias;
 //
 
 #if defined(RENDER_DEPTH) && defined(USE_RGBA_SHADOWS)
-varying highp vec4 position_interp;
+out highp vec4 position_interp;
 #endif
 
-varying highp vec3 vertex_interp;
-varying vec3 normal_interp;
+out highp vec3 vertex_interp;
+out vec3 normal_interp;
 
 #if defined(ENABLE_TANGENT_INTERP) || defined(ENABLE_NORMALMAP)
-varying vec3 tangent_interp;
-varying vec3 binormal_interp;
+out vec3 tangent_interp;
+out vec3 binormal_interp;
 #endif
 
 #if defined(ENABLE_COLOR_INTERP)
-varying vec4 color_interp;
+out vec4 color_interp;
 #endif
 
 #if defined(ENABLE_UV_INTERP)
-varying vec2 uv_interp;
+out vec2 uv_interp;
 #endif
 
 #if defined(ENABLE_UV2_INTERP) || defined(USE_LIGHTMAP)
-varying vec2 uv2_interp;
+out vec2 uv2_interp;
 #endif
 
 /* clang-format off */
@@ -129,7 +125,7 @@ VERTEX_SHADER_GLOBALS
 
 #ifdef RENDER_DEPTH_DUAL_PARABOLOID
 
-varying highp float dp_clip;
+out highp float dp_clip;
 uniform highp float shadow_dual_paraboloid_render_zfar;
 uniform highp float shadow_dual_paraboloid_render_side;
 
@@ -138,19 +134,19 @@ uniform highp float shadow_dual_paraboloid_render_side;
 #if defined(USE_SHADOW) && defined(USE_LIGHTING)
 
 uniform highp mat4 light_shadow_matrix;
-varying highp vec4 shadow_coord;
+out highp vec4 shadow_coord;
 
 #if defined(LIGHT_USE_PSSM2) || defined(LIGHT_USE_PSSM4)
 uniform highp mat4 light_shadow_matrix2;
-varying highp vec4 shadow_coord2;
+out highp vec4 shadow_coord2;
 #endif
 
 #if defined(LIGHT_USE_PSSM4)
 
 uniform highp mat4 light_shadow_matrix3;
 uniform highp mat4 light_shadow_matrix4;
-varying highp vec4 shadow_coord3;
-varying highp vec4 shadow_coord4;
+out highp vec4 shadow_coord3;
+out highp vec4 shadow_coord4;
 
 #endif
 
@@ -158,8 +154,8 @@ varying highp vec4 shadow_coord4;
 
 #if defined(USE_VERTEX_LIGHTING) && defined(USE_LIGHTING)
 
-varying highp vec3 diffuse_interp;
-varying highp vec3 specular_interp;
+out highp vec3 diffuse_interp;
+out highp vec3 specular_interp;
 
 // general for all lights
 uniform highp vec4 light_color;
@@ -266,11 +262,11 @@ void light_compute(
 #ifdef USE_REFLECTION_PROBE1
 
 uniform highp mat4 refprobe1_local_matrix;
-varying mediump vec4 refprobe1_reflection_normal_blend;
+out mediump vec4 refprobe1_reflection_normal_blend;
 uniform highp vec3 refprobe1_box_extents;
 
 #ifndef USE_LIGHTMAP
-varying mediump vec3 refprobe1_ambient_normal;
+out mediump vec3 refprobe1_ambient_normal;
 #endif
 
 #endif //reflection probe1
@@ -278,11 +274,11 @@ varying mediump vec3 refprobe1_ambient_normal;
 #ifdef USE_REFLECTION_PROBE2
 
 uniform highp mat4 refprobe2_local_matrix;
-varying mediump vec4 refprobe2_reflection_normal_blend;
+out mediump vec4 refprobe2_reflection_normal_blend;
 uniform highp vec3 refprobe2_box_extents;
 
 #ifndef USE_LIGHTMAP
-varying mediump vec3 refprobe2_ambient_normal;
+out mediump vec3 refprobe2_ambient_normal;
 #endif
 
 #endif //reflection probe2
@@ -291,7 +287,7 @@ varying mediump vec3 refprobe2_ambient_normal;
 
 #if defined(FOG_DEPTH_ENABLED) || defined(FOG_HEIGHT_ENABLED)
 
-varying vec4 fog_interp;
+out vec4 fog_interp;
 
 uniform mediump vec4 fog_color_base;
 #ifdef LIGHT_MODE_DIRECTIONAL
@@ -663,25 +659,6 @@ VERTEX_SHADER_CODE
 /* clang-format off */
 [fragment]
 
-// texture2DLodEXT and textureCubeLodEXT are fragment shader specific.
-// Do not copy these defines in the vertex section.
-#ifndef USE_GLES_OVER_GL
-#ifdef GL_EXT_shader_texture_lod
-#extension GL_EXT_shader_texture_lod : enable
-#define texture2DLod(img, coord, lod) texture2DLodEXT(img, coord, lod)
-#define textureCubeLod(img, coord, lod) textureCubeLodEXT(img, coord, lod)
-#endif
-#endif // !USE_GLES_OVER_GL
-
-#ifdef GL_ARB_shader_texture_lod
-#extension GL_ARB_shader_texture_lod : enable
-#endif
-
-#if !defined(GL_EXT_shader_texture_lod) && !defined(GL_ARB_shader_texture_lod)
-#define texture2DLod(img, coord, lod) texture2D(img, coord, lod)
-#define textureCubeLod(img, coord, lod) textureCube(img, coord, lod)
-#endif
-
 #ifdef USE_GLES_OVER_GL
 #define lowp
 #define mediump
@@ -695,8 +672,6 @@ precision mediump float;
 precision mediump int;
 #endif
 #endif
-
-#include "stdlib.glsl"
 
 #define M_PI 3.14159265359
 #define SHADER_IS_SRGB true
@@ -732,9 +707,9 @@ uniform highp sampler2D depth_texture; //texunit:-4
 
 #ifdef USE_VERTEX_LIGHTING
 
-varying mediump vec4 refprobe1_reflection_normal_blend;
+in mediump vec4 refprobe1_reflection_normal_blend;
 #ifndef USE_LIGHTMAP
-varying mediump vec3 refprobe1_ambient_normal;
+in mediump vec3 refprobe1_ambient_normal;
 #endif
 
 #else
@@ -759,9 +734,9 @@ uniform vec4 refprobe1_ambient;
 
 #ifdef USE_VERTEX_LIGHTING
 
-varying mediump vec4 refprobe2_reflection_normal_blend;
+in mediump vec4 refprobe2_reflection_normal_blend;
 #ifndef USE_LIGHTMAP
-varying mediump vec3 refprobe2_ambient_normal;
+in mediump vec3 refprobe2_ambient_normal;
 #endif
 
 #else
@@ -909,8 +884,8 @@ uniform highp vec4 shadow_color;
 #ifdef USE_VERTEX_LIGHTING
 
 //get from vertex
-varying highp vec3 diffuse_interp;
-varying highp vec3 specular_interp;
+in highp vec3 diffuse_interp;
+in highp vec3 specular_interp;
 
 uniform highp vec3 light_direction; //may be used by fog, so leave here
 
@@ -950,16 +925,16 @@ uniform highp sampler2D light_directional_shadow; // texunit:-3
 uniform highp vec4 light_split_offsets;
 #endif
 
-varying highp vec4 shadow_coord;
+in highp vec4 shadow_coord;
 
 #if defined(LIGHT_USE_PSSM2) || defined(LIGHT_USE_PSSM4)
-varying highp vec4 shadow_coord2;
+in highp vec4 shadow_coord2;
 #endif
 
 #if defined(LIGHT_USE_PSSM4)
 
-varying highp vec4 shadow_coord3;
-varying highp vec4 shadow_coord4;
+in highp vec4 shadow_coord3;
+in highp vec4 shadow_coord4;
 
 #endif
 
@@ -976,30 +951,32 @@ uniform vec4 light_clamp;
 //
 
 #if defined(RENDER_DEPTH) && defined(USE_RGBA_SHADOWS)
-varying highp vec4 position_interp;
+in highp vec4 position_interp;
 #endif
 
-varying highp vec3 vertex_interp;
-varying vec3 normal_interp;
+in highp vec3 vertex_interp;
+in vec3 normal_interp;
 
 #if defined(ENABLE_TANGENT_INTERP) || defined(ENABLE_NORMALMAP)
-varying vec3 tangent_interp;
-varying vec3 binormal_interp;
+in vec3 tangent_interp;
+in vec3 binormal_interp;
 #endif
 
 #if defined(ENABLE_COLOR_INTERP)
-varying vec4 color_interp;
+in vec4 color_interp;
 #endif
 
 #if defined(ENABLE_UV_INTERP)
-varying vec2 uv_interp;
+in vec2 uv_interp;
 #endif
 
 #if defined(ENABLE_UV2_INTERP) || defined(USE_LIGHTMAP)
-varying vec2 uv2_interp;
+in vec2 uv2_interp;
 #endif
 
-varying vec3 view_interp;
+in vec3 view_interp;
+
+layout(location = 0) out vec4 frag_color;
 
 vec3 F0(float metallic, float specular, vec3 albedo) {
 	float dielectric = 0.16 * specular * specular;
@@ -1016,7 +993,7 @@ FRAGMENT_SHADER_GLOBALS
 
 #ifdef RENDER_DEPTH_DUAL_PARABOLOID
 
-varying highp float dp_clip;
+in highp float dp_clip;
 
 #endif
 
@@ -1354,8 +1331,8 @@ LIGHT_SHADER_CODE
 
 #endif
 
-#define SAMPLE_SHADOW_TEXEL(p_shadow, p_pos, p_depth) step(p_depth, SHADOW_DEPTH(texture2D(p_shadow, p_pos)))
-#define SAMPLE_SHADOW_TEXEL_PROJ(p_shadow, p_pos) step(p_pos.z, SHADOW_DEPTH(texture2DProj(p_shadow, p_pos)))
+#define SAMPLE_SHADOW_TEXEL(p_shadow, p_pos, p_depth) step(p_depth, SHADOW_DEPTH(texture(p_shadow, p_pos)))
+#define SAMPLE_SHADOW_TEXEL_PROJ(p_shadow, p_pos) step(p_pos.z, SHADOW_DEPTH(textureProj(p_shadow, p_pos)))
 
 float sample_shadow(highp sampler2D shadow, highp vec4 spos) {
 #ifdef SHADOW_MODE_PCF_13
@@ -1407,7 +1384,7 @@ float sample_shadow(highp sampler2D shadow, highp vec4 spos) {
 
 #if defined(USE_VERTEX_LIGHTING)
 
-varying vec4 fog_interp;
+in vec4 fog_interp;
 
 #else
 uniform mediump vec4 fog_color_base;
@@ -1648,7 +1625,7 @@ FRAGMENT_SHADER_CODE
 
 #ifdef USE_LIGHTMAP
 	//ambient light will come entirely from lightmap is lightmap is used
-	ambient_light = texture2D(lightmap, uv2_interp).rgb * lightmap_energy;
+	ambient_light = texture(lightmap, uv2_interp).rgb * lightmap_energy;
 #endif
 
 #ifdef USE_LIGHTMAP_CAPTURE
@@ -2084,7 +2061,7 @@ FRAGMENT_SHADER_CODE
 
 #ifdef SHADELESS
 
-	gl_FragColor = vec4(albedo, alpha);
+	frag_color = vec4(albedo, alpha);
 #else
 
 	ambient_light *= albedo;
@@ -2099,13 +2076,13 @@ FRAGMENT_SHADER_CODE
 	diffuse_light *= 1.0 - metallic;
 	ambient_light *= 1.0 - metallic;
 
-	gl_FragColor = vec4(ambient_light + diffuse_light + specular_light, alpha);
+	frag_color = vec4(ambient_light + diffuse_light + specular_light, alpha);
 
 	//add emission if in base pass
 #ifdef BASE_PASS
-	gl_FragColor.rgb += emission;
+	frag_color.rgb += emission;
 #endif
-	// gl_FragColor = vec4(normal, 1.0);
+	// frag_color = vec4(normal, 1.0);
 
 //apply fog
 #if defined(FOG_DEPTH_ENABLED) || defined(FOG_HEIGHT_ENABLED)
@@ -2113,9 +2090,9 @@ FRAGMENT_SHADER_CODE
 #if defined(USE_VERTEX_LIGHTING)
 
 #if defined(BASE_PASS)
-	gl_FragColor.rgb = mix(gl_FragColor.rgb, fog_interp.rgb, fog_interp.a);
+	frag_color.rgb = mix(frag_color.rgb, fog_interp.rgb, fog_interp.a);
 #else
-	gl_FragColor.rgb *= (1.0 - fog_interp.a);
+	frag_color.rgb *= (1.0 - fog_interp.a);
 #endif // BASE_PASS
 
 #else //pixel based fog
@@ -2136,7 +2113,7 @@ FRAGMENT_SHADER_CODE
 		fog_amount = pow(fog_z, fog_depth_curve) * fog_color_base.a;
 
 		if (fog_transmit_enabled) {
-			vec3 total_light = gl_FragColor.rgb;
+			vec3 total_light = frag_color.rgb;
 			float transmit = pow(fog_z, fog_transmit_curve);
 			fog_color = mix(max(total_light, fog_color), fog_color, transmit);
 		}
@@ -2151,9 +2128,9 @@ FRAGMENT_SHADER_CODE
 #endif
 
 #if defined(BASE_PASS)
-	gl_FragColor.rgb = mix(gl_FragColor.rgb, fog_color, fog_amount);
+	frag_color.rgb = mix(frag_color.rgb, fog_color, fog_amount);
 #else
-	gl_FragColor.rgb *= (1.0 - fog_amount);
+	frag_color.rgb *= (1.0 - fog_amount);
 #endif // BASE_PASS
 
 #endif //use vertex lit
@@ -2169,7 +2146,7 @@ FRAGMENT_SHADER_CODE
 	highp float depth = ((position_interp.z / position_interp.w) + 1.0) * 0.5 + 0.0; // bias
 	highp vec4 comp = fract(depth * vec4(255.0 * 255.0 * 255.0, 255.0 * 255.0, 255.0, 1.0));
 	comp -= comp.xxyz * vec4(0.0, 1.0 / 255.0, 1.0 / 255.0, 1.0 / 255.0);
-	gl_FragColor = comp;
+	frag_color = comp;
 
 #endif
 #endif

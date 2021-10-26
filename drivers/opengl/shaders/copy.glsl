@@ -10,23 +10,23 @@ precision highp float;
 precision highp int;
 #endif
 
-attribute highp vec4 vertex_attrib; // attrib:0
+layout(location = 0) highp vec4 vertex_attrib;
 /* clang-format on */
 
 #if defined(USE_CUBEMAP) || defined(USE_PANORAMA)
-attribute vec3 cube_in; // attrib:4
+layout(location = 4) vec3 cube_in;
 #else
-attribute vec2 uv_in; // attrib:4
+layout(location = 4) vec2 uv_in;
 #endif
 
-attribute vec2 uv2_in; // attrib:5
+layout(location = 5) vec2 uv2_in;
 
 #if defined(USE_CUBEMAP) || defined(USE_PANORAMA)
-varying vec3 cube_interp;
+out vec3 cube_interp;
 #else
-varying vec2 uv_interp;
+out vec2 uv_interp;
 #endif
-varying vec2 uv2_interp;
+out vec2 uv2_interp;
 
 // These definitions are here because the shader-wrapper builder does
 // not understand `#elif defined()`
@@ -79,9 +79,9 @@ precision mediump int;
 #endif
 
 #if defined(USE_CUBEMAP) || defined(USE_PANORAMA)
-varying vec3 cube_interp;
+in vec3 cube_interp;
 #else
-varying vec2 uv_interp;
+in vec2 uv_interp;
 #endif
 /* clang-format on */
 
@@ -100,7 +100,7 @@ uniform sampler2D source; // texunit:0
 uniform sampler2D CbCr; //texunit:1
 #endif
 
-varying vec2 uv2_interp;
+in vec2 uv2_interp;
 
 #ifdef USE_MULTIPLIER
 uniform float multiplier;
@@ -123,10 +123,12 @@ vec4 texturePanorama(sampler2D pano, vec3 normal) {
 
 	st /= vec2(M_PI * 2.0, M_PI);
 
-	return texture2D(pano, st);
+	return texture(pano, st);
 }
 
 #endif
+
+layout(location = 0) out vec4 frag_color;
 
 void main() {
 #ifdef USE_PANORAMA
@@ -157,11 +159,11 @@ void main() {
 	vec4 color = textureCube(source_cube, normalize(cube_interp));
 #elif defined(SEP_CBCR_TEXTURE)
 	vec4 color;
-	color.r = texture2D(source, uv_interp).r;
-	color.gb = texture2D(CbCr, uv_interp).rg - vec2(0.5, 0.5);
+	color.r = texture(source, uv_interp).r;
+	color.gb = texture(CbCr, uv_interp).rg - vec2(0.5, 0.5);
 	color.a = 1.0;
 #else
-	vec4 color = texture2D(source, uv_interp);
+	vec4 color = texture(source, uv_interp);
 #endif
 
 #ifdef YCBCR_TO_RGB
@@ -187,5 +189,5 @@ void main() {
 	color.rgb *= multiplier;
 #endif
 
-	gl_FragColor = color;
+	frag_color = color;
 }

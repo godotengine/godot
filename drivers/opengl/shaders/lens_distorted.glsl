@@ -10,13 +10,13 @@ precision highp float;
 precision highp int;
 #endif
 
-attribute highp vec2 vertex; // attrib:0
+layout(location = 0) highp vec2 vertex;
 /* clang-format on */
 
 uniform vec2 offset;
 uniform vec2 scale;
 
-varying vec2 uv_interp;
+out vec2 uv_interp;
 
 void main() {
 	uv_interp = vertex.xy * 2.0 - 1.0;
@@ -51,7 +51,9 @@ uniform float k2;
 uniform float upscale;
 uniform float aspect_ratio;
 
-varying vec2 uv_interp;
+in vec2 uv_interp;
+
+layout(location = 0) out vec4 frag_color;
 
 void main() {
 	vec2 coords = uv_interp;
@@ -76,9 +78,9 @@ void main() {
 
 	// and check our color
 	if (coords.x < -1.0 || coords.y < -1.0 || coords.x > 1.0 || coords.y > 1.0) {
-		gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
+		frag_color = vec4(0.0, 0.0, 0.0, 1.0);
 	} else {
 		coords = (coords + vec2(1.0)) / vec2(2.0);
-		gl_FragColor = texture2D(source, coords);
+		frag_color = texture(source, coords);
 	}
 }

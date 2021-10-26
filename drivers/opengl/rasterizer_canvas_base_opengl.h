@@ -62,10 +62,25 @@ public:
 		float time;
 	};
 
+	struct CanvasItemUBO {
+		float projection_matrix[16];
+		float time;
+		uint8_t padding[12];
+	};
+
 	struct Data {
+		enum { NUM_QUAD_ARRAY_VARIATIONS = 8 };
+
 		GLuint canvas_quad_vertices;
+		GLuint canvas_quad_array;
+
 		GLuint polygon_buffer;
+		GLuint polygon_buffer_quad_arrays[NUM_QUAD_ARRAY_VARIATIONS];
+		GLuint polygon_buffer_pointer_array;
 		GLuint polygon_index_buffer;
+
+		GLuint particle_quad_vertices;
+		GLuint particle_quad_array;
 
 		uint32_t polygon_buffer_size;
 		uint32_t polygon_index_buffer_size;
@@ -76,6 +91,8 @@ public:
 
 	struct State {
 		Uniforms uniforms;
+		CanvasItemUBO canvas_item_ubo_data;
+		GLuint canvas_item_ubo;
 		bool canvas_texscreen_used;
 		CanvasShaderOpenGL canvas_shader;
 		CanvasShadowShaderOpenGL canvas_shadow_shader;

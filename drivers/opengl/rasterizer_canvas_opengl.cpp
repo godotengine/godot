@@ -401,7 +401,7 @@ void RasterizerCanvasOpenGL::render_batches(Item::Command *const *p_commands, It
 
 						case Item::Command::TYPE_RECT: {
 							Item::CommandRect *r = static_cast<Item::CommandRect *>(command);
-
+							_bind_quad_buffer();
 							glDisableVertexAttribArray(RS::ARRAY_COLOR);
 							glVertexAttrib4fv(RS::ARRAY_COLOR, r->modulate.components);
 
@@ -564,7 +564,6 @@ void RasterizerCanvasOpenGL::render_batches(Item::Command *const *p_commands, It
 
 							} else {
 								// This branch is better for performance, but can produce flicker on Nvidia, see above comment.
-								_bind_quad_buffer();
 
 								_set_texture_rect_mode(true);
 
@@ -572,6 +571,7 @@ void RasterizerCanvasOpenGL::render_batches(Item::Command *const *p_commands, It
 									_set_uniforms();
 									state.canvas_shader.use_material((void *)p_material);
 								}
+								_bind_quad_buffer();
 
 								// FTODO
 								//RasterizerStorageOpenGL::Texture *tex = _bind_canvas_texture(r->texture, r->normal_map);
@@ -656,6 +656,7 @@ void RasterizerCanvasOpenGL::render_batches(Item::Command *const *p_commands, It
 								_set_uniforms();
 								state.canvas_shader.use_material((void *)p_material);
 							}
+							_bind_quad_buffer();
 
 							glDisableVertexAttribArray(RS::ARRAY_COLOR);
 							glVertexAttrib4fv(RS::ARRAY_COLOR, np->color.components);
@@ -809,13 +810,13 @@ void RasterizerCanvasOpenGL::render_batches(Item::Command *const *p_commands, It
 
 							glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, data.ninepatch_elements);
 
-							glEnableVertexAttribArray(RS::ARRAY_VERTEX);
+							//glEnableVertexAttribArray(RS::ARRAY_VERTEX);
 							glEnableVertexAttribArray(RS::ARRAY_TEX_UV);
 
-							glVertexAttribPointer(RS::ARRAY_VERTEX, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), NULL);
+							//glVertexAttribPointer(RS::ARRAY_VERTEX, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), NULL);
 							glVertexAttribPointer(RS::ARRAY_TEX_UV, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), CAST_INT_TO_UCHAR_PTR((sizeof(float) * 2)));
 
-							glDrawElements(GL_TRIANGLES, 18 * 3 - (np->draw_center ? 0 : 6), GL_UNSIGNED_BYTE, NULL);
+							//glDrawElements(GL_TRIANGLES, 18 * 3 - (np->draw_center ? 0 : 6), GL_UNSIGNED_SHORT, NULL);
 
 							glBindBuffer(GL_ARRAY_BUFFER, 0);
 							glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);

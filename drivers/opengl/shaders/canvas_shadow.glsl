@@ -10,7 +10,7 @@ precision highp float;
 precision highp int;
 #endif
 
-attribute highp vec3 vertex; // attrib:0
+layout(location = 0) highp vec3 vertex;
 
 uniform highp mat4 projection_matrix;
 /* clang-format on */
@@ -18,7 +18,7 @@ uniform highp mat4 light_matrix;
 uniform highp mat4 world_matrix;
 uniform highp float distance_norm;
 
-varying highp vec4 position_interp;
+out highp vec4 position_interp;
 
 void main() {
 	gl_Position = projection_matrix * (light_matrix * (world_matrix * vec4(vertex, 1.0)));
@@ -42,7 +42,7 @@ precision mediump int;
 #endif
 #endif
 
-varying highp vec4 position_interp;
+in highp vec4 position_interp;
 /* clang-format on */
 
 void main() {
@@ -52,9 +52,9 @@ void main() {
 
 	highp vec4 comp = fract(depth * vec4(255.0 * 255.0 * 255.0, 255.0 * 255.0, 255.0, 1.0));
 	comp -= comp.xxyz * vec4(0.0, 1.0 / 255.0, 1.0 / 255.0, 1.0 / 255.0);
-	gl_FragColor = comp;
+	frag_color = comp;
 #else
 
-	gl_FragColor = vec4(depth);
+	frag_color = vec4(depth);
 #endif
 }

@@ -89,43 +89,15 @@ GLuint RasterizerStorageOpenGL::system_fbo = 0;
 
 #ifndef GLES_OVER_GL
 #define glClearDepth glClearDepthf
-
-// enable extensions manually for android and ios
-#ifndef UWP_ENABLED
-#include <dlfcn.h> // needed to load extensions
-#endif
-
-#ifdef IPHONE_ENABLED
-
-#include <OpenGLES/ES2/glext.h>
-//void *glRenderbufferStorageMultisampleAPPLE;
-//void *glResolveMultisampleFramebufferAPPLE;
-#define glRenderbufferStorageMultisample glRenderbufferStorageMultisampleAPPLE
-#elif defined(ANDROID_ENABLED)
-
-#include <GLES2/gl2ext.h>
-PFNGLRENDERBUFFERSTORAGEMULTISAMPLEEXTPROC glRenderbufferStorageMultisampleEXT;
-PFNGLFRAMEBUFFERTEXTURE2DMULTISAMPLEEXTPROC glFramebufferTexture2DMultisampleEXT;
-#define glRenderbufferStorageMultisample glRenderbufferStorageMultisampleEXT
-#define glFramebufferTexture2DMultisample glFramebufferTexture2DMultisampleEXT
-
-#elif defined(UWP_ENABLED)
-#include <GLES2/gl2ext.h>
-#define glRenderbufferStorageMultisample glRenderbufferStorageMultisampleANGLE
-#define glFramebufferTexture2DMultisample glFramebufferTexture2DMultisampleANGLE
-#endif
-
-#define GL_TEXTURE_3D 0x806F
-#define GL_MAX_SAMPLES 0x8D57
 #endif //!GLES_OVER_GL
 
 void RasterizerStorageOpenGL::bind_quad_array() const {
-	glBindBuffer(GL_ARRAY_BUFFER, resources.quadie);
-	glVertexAttribPointer(RS::ARRAY_VERTEX, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 4, 0);
-	glVertexAttribPointer(RS::ARRAY_TEX_UV, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 4, CAST_INT_TO_UCHAR_PTR(8));
+	//glBindBuffer(GL_ARRAY_BUFFER, resources.quadie);
+	//glVertexAttribPointer(RS::ARRAY_VERTEX, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 4, 0);
+	//glVertexAttribPointer(RS::ARRAY_TEX_UV, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 4, CAST_INT_TO_UCHAR_PTR(8));
 
-	glEnableVertexAttribArray(RS::ARRAY_VERTEX);
-	glEnableVertexAttribArray(RS::ARRAY_TEX_UV);
+	//glEnableVertexAttribArray(RS::ARRAY_VERTEX);
+	//glEnableVertexAttribArray(RS::ARRAY_TEX_UV);
 }
 
 bool RasterizerStorageOpenGL::can_create_resources_async() const {
@@ -142,131 +114,116 @@ Ref<Image> RasterizerStorageOpenGL::_get_gl_image_and_format(const Ref<Image> &p
 
 	switch (p_format) {
 		case Image::FORMAT_L8: {
+#ifdef GLES_OVER_GL
+			r_gl_internal_format = GL_R8;
+			r_gl_format = GL_RED;
+			r_gl_type = GL_UNSIGNED_BYTE;
+#else
 			r_gl_internal_format = GL_LUMINANCE;
 			r_gl_format = GL_LUMINANCE;
 			r_gl_type = GL_UNSIGNED_BYTE;
+#endif
 		} break;
 		case Image::FORMAT_LA8: {
+#ifdef GLES_OVER_GL
+			r_gl_internal_format = GL_RG8;
+			r_gl_format = GL_RG;
+			r_gl_type = GL_UNSIGNED_BYTE;
+#else
 			r_gl_internal_format = GL_LUMINANCE_ALPHA;
 			r_gl_format = GL_LUMINANCE_ALPHA;
 			r_gl_type = GL_UNSIGNED_BYTE;
+#endif
 		} break;
 		case Image::FORMAT_R8: {
-			r_gl_internal_format = GL_ALPHA;
-			r_gl_format = GL_ALPHA;
+			r_gl_internal_format = GL_R8;
+			r_gl_format = GL_RED;
 			r_gl_type = GL_UNSIGNED_BYTE;
 
 		} break;
 		case Image::FORMAT_RG8: {
-			ERR_PRINT("RG texture not supported, converting to RGB8.");
-			if (image.is_valid())
-				image->convert(Image::FORMAT_RGB8);
-			r_real_format = Image::FORMAT_RGB8;
-			r_gl_internal_format = GL_RGB;
-			r_gl_format = GL_RGB;
+			r_gl_internal_format = GL_RG8;
+			r_gl_format = GL_RG;
 			r_gl_type = GL_UNSIGNED_BYTE;
 
 		} break;
 		case Image::FORMAT_RGB8: {
-			r_gl_internal_format = GL_RGB;
+			r_gl_internal_format = GL_RGB8;
 			r_gl_format = GL_RGB;
 			r_gl_type = GL_UNSIGNED_BYTE;
+			//r_srgb = true;
 
 		} break;
 		case Image::FORMAT_RGBA8: {
 			r_gl_format = GL_RGBA;
-			r_gl_internal_format = GL_RGBA;
+			r_gl_internal_format = GL_RGBA8;
 			r_gl_type = GL_UNSIGNED_BYTE;
+			//r_srgb = true;
 
 		} break;
 		case Image::FORMAT_RGBA4444: {
-			r_gl_internal_format = GL_RGBA;
+			r_gl_internal_format = GL_RGBA4;
 			r_gl_format = GL_RGBA;
 			r_gl_type = GL_UNSIGNED_SHORT_4_4_4_4;
 
 		} break;
-			//		case Image::FORMAT_RGBA5551: {
-			//			r_gl_internal_format = GL_RGB5_A1;
-			//			r_gl_format = GL_RGBA;
-			//			r_gl_type = GL_UNSIGNED_SHORT_5_5_5_1;
-
-			//		} break;
+			//case Image::FORMAT_RGBA5551: {
+			//	r_gl_internal_format = GL_RGB5_A1;
+			//	r_gl_format = GL_RGBA;
+			//	r_gl_type = GL_UNSIGNED_SHORT_5_5_5_1;
+			//
+			//} break;
 		case Image::FORMAT_RF: {
-			if (!config.float_texture_supported) {
-				ERR_PRINT("R float texture not supported, converting to RGB8.");
-				if (image.is_valid())
-					image->convert(Image::FORMAT_RGB8);
-				r_real_format = Image::FORMAT_RGB8;
-				r_gl_internal_format = GL_RGB;
-				r_gl_format = GL_RGB;
-				r_gl_type = GL_UNSIGNED_BYTE;
-			} else {
-				r_gl_internal_format = GL_ALPHA;
-				r_gl_format = GL_ALPHA;
-				r_gl_type = GL_FLOAT;
-			}
+			r_gl_internal_format = GL_R32F;
+			r_gl_format = GL_RED;
+			r_gl_type = GL_FLOAT;
+
 		} break;
 		case Image::FORMAT_RGF: {
-			ERR_PRINT("RG float texture not supported, converting to RGB8.");
-			if (image.is_valid())
-				image->convert(Image::FORMAT_RGB8);
-			r_real_format = Image::FORMAT_RGB8;
-			r_gl_internal_format = GL_RGB;
-			r_gl_format = GL_RGB;
-			r_gl_type = GL_UNSIGNED_BYTE;
+			r_gl_internal_format = GL_RG32F;
+			r_gl_format = GL_RG;
+			r_gl_type = GL_FLOAT;
+
 		} break;
 		case Image::FORMAT_RGBF: {
-			if (!config.float_texture_supported) {
-				ERR_PRINT("RGB float texture not supported, converting to RGB8.");
-				if (image.is_valid())
-					image->convert(Image::FORMAT_RGB8);
-				r_real_format = Image::FORMAT_RGB8;
-				r_gl_internal_format = GL_RGB;
-				r_gl_format = GL_RGB;
-				r_gl_type = GL_UNSIGNED_BYTE;
-			} else {
-				r_gl_internal_format = GL_RGB;
-				r_gl_format = GL_RGB;
-				r_gl_type = GL_FLOAT;
-			}
+			r_gl_internal_format = GL_RGB32F;
+			r_gl_format = GL_RGB;
+			r_gl_type = GL_FLOAT;
+
 		} break;
 		case Image::FORMAT_RGBAF: {
-			if (!config.float_texture_supported) {
-				ERR_PRINT("RGBA float texture not supported, converting to RGBA8.");
-				if (image.is_valid())
-					image->convert(Image::FORMAT_RGBA8);
-				r_real_format = Image::FORMAT_RGBA8;
-				r_gl_internal_format = GL_RGBA;
-				r_gl_format = GL_RGBA;
-				r_gl_type = GL_UNSIGNED_BYTE;
-			} else {
-				r_gl_internal_format = GL_RGBA;
-				r_gl_format = GL_RGBA;
-				r_gl_type = GL_FLOAT;
-			}
+			r_gl_internal_format = GL_RGBA32F;
+			r_gl_format = GL_RGBA;
+			r_gl_type = GL_FLOAT;
+
 		} break;
 		case Image::FORMAT_RH: {
-			need_decompress = true;
+			r_gl_internal_format = GL_R16F;
+			r_gl_format = GL_RED;
+			r_gl_type = GL_HALF_FLOAT;
 		} break;
 		case Image::FORMAT_RGH: {
-			need_decompress = true;
+			r_gl_internal_format = GL_RG16F;
+			r_gl_format = GL_RG;
+			r_gl_type = GL_HALF_FLOAT;
+
 		} break;
 		case Image::FORMAT_RGBH: {
-			need_decompress = true;
+			r_gl_internal_format = GL_RGB16F;
+			r_gl_format = GL_RGB;
+			r_gl_type = GL_HALF_FLOAT;
+
 		} break;
 		case Image::FORMAT_RGBAH: {
-			need_decompress = true;
+			r_gl_internal_format = GL_RGBA16F;
+			r_gl_format = GL_RGBA;
+			r_gl_type = GL_HALF_FLOAT;
+
 		} break;
 		case Image::FORMAT_RGBE9995: {
-			r_gl_internal_format = GL_RGB;
+			r_gl_internal_format = GL_RGB9_E5;
 			r_gl_format = GL_RGB;
-			r_gl_type = GL_UNSIGNED_BYTE;
-
-			if (image.is_valid())
-
-				image = image->rgbe_to_srgb();
-
-			return image;
+			r_gl_type = GL_UNSIGNED_INT_5_9_9_9_REV;
 
 		} break;
 		case Image::FORMAT_DXT1: {
@@ -275,10 +232,11 @@ Ref<Image> RasterizerStorageOpenGL::_get_gl_image_and_format(const Ref<Image> &p
 				r_gl_format = GL_RGBA;
 				r_gl_type = GL_UNSIGNED_BYTE;
 				r_compressed = true;
+				//r_srgb = true;
+
 			} else {
 				need_decompress = true;
 			}
-
 		} break;
 		case Image::FORMAT_DXT3: {
 			if (config.s3tc_supported) {
@@ -286,10 +244,11 @@ Ref<Image> RasterizerStorageOpenGL::_get_gl_image_and_format(const Ref<Image> &p
 				r_gl_format = GL_RGBA;
 				r_gl_type = GL_UNSIGNED_BYTE;
 				r_compressed = true;
+				//r_srgb = true;
+
 			} else {
 				need_decompress = true;
 			}
-
 		} break;
 		case Image::FORMAT_DXT5: {
 			if (config.s3tc_supported) {
@@ -297,10 +256,11 @@ Ref<Image> RasterizerStorageOpenGL::_get_gl_image_and_format(const Ref<Image> &p
 				r_gl_format = GL_RGBA;
 				r_gl_type = GL_UNSIGNED_BYTE;
 				r_compressed = true;
+				//r_srgb = true;
+
 			} else {
 				need_decompress = true;
 			}
-
 		} break;
 		case Image::FORMAT_RGTC_R: {
 			if (config.rgtc_supported) {
@@ -312,7 +272,6 @@ Ref<Image> RasterizerStorageOpenGL::_get_gl_image_and_format(const Ref<Image> &p
 			} else {
 				need_decompress = true;
 			}
-
 		} break;
 		case Image::FORMAT_RGTC_RG: {
 			if (config.rgtc_supported) {
@@ -323,7 +282,6 @@ Ref<Image> RasterizerStorageOpenGL::_get_gl_image_and_format(const Ref<Image> &p
 			} else {
 				need_decompress = true;
 			}
-
 		} break;
 		case Image::FORMAT_BPTC_RGBA: {
 			if (config.bptc_supported) {
@@ -331,6 +289,7 @@ Ref<Image> RasterizerStorageOpenGL::_get_gl_image_and_format(const Ref<Image> &p
 				r_gl_format = GL_RGBA;
 				r_gl_type = GL_UNSIGNED_BYTE;
 				r_compressed = true;
+				//r_srgb = true;
 
 			} else {
 				need_decompress = true;
@@ -362,6 +321,7 @@ Ref<Image> RasterizerStorageOpenGL::_get_gl_image_and_format(const Ref<Image> &p
 				r_gl_format = GL_RGBA;
 				r_gl_type = GL_UNSIGNED_BYTE;
 				r_compressed = true;
+				//r_srgb = true;
 
 			} else {
 				need_decompress = true;
@@ -373,6 +333,7 @@ Ref<Image> RasterizerStorageOpenGL::_get_gl_image_and_format(const Ref<Image> &p
 				r_gl_format = GL_RGBA;
 				r_gl_type = GL_UNSIGNED_BYTE;
 				r_compressed = true;
+				//r_srgb = true;
 
 			} else {
 				need_decompress = true;
@@ -385,6 +346,7 @@ Ref<Image> RasterizerStorageOpenGL::_get_gl_image_and_format(const Ref<Image> &p
 				r_gl_format = GL_RGBA;
 				r_gl_type = GL_UNSIGNED_BYTE;
 				r_compressed = true;
+				//r_srgb = true;
 
 			} else {
 				need_decompress = true;
@@ -397,6 +359,7 @@ Ref<Image> RasterizerStorageOpenGL::_get_gl_image_and_format(const Ref<Image> &p
 				r_gl_format = GL_RGBA;
 				r_gl_type = GL_UNSIGNED_BYTE;
 				r_compressed = true;
+				//r_srgb = true;
 
 			} else {
 				need_decompress = true;
@@ -404,38 +367,101 @@ Ref<Image> RasterizerStorageOpenGL::_get_gl_image_and_format(const Ref<Image> &p
 
 		} break;
 		case Image::FORMAT_ETC: {
-			if (config.etc1_supported) {
+			if (config.etc_supported) {
 				r_gl_internal_format = _EXT_ETC1_RGB8_OES;
 				r_gl_format = GL_RGBA;
 				r_gl_type = GL_UNSIGNED_BYTE;
 				r_compressed = true;
+
+			} else {
+				need_decompress = true;
+			}
+
+		} break;
+		/*
+		case Image::FORMAT_ETC2_R11: {
+			if (config.etc2_supported) {
+				r_gl_internal_format = _EXT_COMPRESSED_R11_EAC;
+				r_gl_format = GL_RED;
+				r_gl_type = GL_UNSIGNED_BYTE;
+				r_compressed = true;
+
 			} else {
 				need_decompress = true;
 			}
 		} break;
-		case Image::FORMAT_ETC2_R11: {
-			need_decompress = true;
-		} break;
 		case Image::FORMAT_ETC2_R11S: {
-			need_decompress = true;
+			if (config.etc2_supported) {
+				r_gl_internal_format = _EXT_COMPRESSED_SIGNED_R11_EAC;
+				r_gl_format = GL_RED;
+				r_gl_type = GL_UNSIGNED_BYTE;
+				r_compressed = true;
+
+			} else {
+				need_decompress = true;
+			}
 		} break;
 		case Image::FORMAT_ETC2_RG11: {
-			need_decompress = true;
+			if (config.etc2_supported) {
+				r_gl_internal_format = _EXT_COMPRESSED_RG11_EAC;
+				r_gl_format = GL_RG;
+				r_gl_type = GL_UNSIGNED_BYTE;
+				r_compressed = true;
+
+			} else {
+				need_decompress = true;
+			}
 		} break;
 		case Image::FORMAT_ETC2_RG11S: {
-			need_decompress = true;
+			if (config.etc2_supported) {
+				r_gl_internal_format = _EXT_COMPRESSED_SIGNED_RG11_EAC;
+				r_gl_format = GL_RG;
+				r_gl_type = GL_UNSIGNED_BYTE;
+				r_compressed = true;
+
+			} else {
+				need_decompress = true;
+			}
 		} break;
 		case Image::FORMAT_ETC2_RGB8: {
-			need_decompress = true;
+			if (config.etc2_supported) {
+				r_gl_internal_format = _EXT_COMPRESSED_RGB8_ETC2;
+				r_gl_format = GL_RGB;
+				r_gl_type = GL_UNSIGNED_BYTE;
+				r_compressed = true;
+				//r_srgb = true;
+
+			} else {
+				need_decompress = true;
+			}
 		} break;
 		case Image::FORMAT_ETC2_RGBA8: {
-			need_decompress = true;
+			if (config.etc2_supported) {
+				r_gl_internal_format = _EXT_COMPRESSED_RGBA8_ETC2_EAC;
+				r_gl_format = GL_RGBA;
+				r_gl_type = GL_UNSIGNED_BYTE;
+				r_compressed = true;
+				//r_srgb = true;
+
+			} else {
+				need_decompress = true;
+			}
 		} break;
 		case Image::FORMAT_ETC2_RGB8A1: {
-			need_decompress = true;
+			if (config.etc2_supported) {
+				r_gl_internal_format = _EXT_COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1_ETC2;
+				r_gl_format = GL_RGBA;
+				r_gl_type = GL_UNSIGNED_BYTE;
+				r_compressed = true;
+				//r_srgb = true;
+
+			} else {
+				need_decompress = true;
+			}
 		} break;
+		*/
 		default: {
-			ERR_FAIL_V(p_image);
+			ERR_FAIL_V(Ref<Image>());
 		}
 	}
 
@@ -510,6 +536,7 @@ void RasterizerStorageOpenGL::texture_3d_initialize(RID p_texture, Image::Format
 }
 
 void RasterizerStorageOpenGL::texture_proxy_initialize(RID p_texture, RID p_base) {
+	texture_set_proxy(p_texture, p_base);
 }
 
 //RID RasterizerStorageOpenGL::texture_2d_create(const Ref<Image> &p_image) {
@@ -528,12 +555,6 @@ void RasterizerStorageOpenGL::texture_proxy_initialize(RID p_texture, RID p_base
 
 //RID RasterizerStorageOpenGL::texture_2d_layered_create(const Vector<Ref<Image>> &p_layers, RS::TextureLayeredType p_layered_type) {
 //	return RID();
-//}
-
-//RID RasterizerStorageOpenGL::texture_proxy_create(RID p_base) {
-//	RID link = texture_create();
-//	texture_set_proxy(link, p_base);
-//	return link;
 //}
 
 //void RasterizerStorageOpenGL::texture_2d_update_immediate(RID p_texture, const Ref<Image> &p_image, int p_layer) {
@@ -810,6 +831,32 @@ void RasterizerStorageOpenGL::texture_set_data(RID p_texture, const Ref<Image> &
 
 	// set filtering and repeat state
 	_texture_set_state_from_flags(texture);
+
+	//set swizle for older format compatibility
+#ifdef GLES_OVER_GL
+	switch (texture->format) {
+		case Image::FORMAT_L8: {
+			glTexParameteri(texture->target, GL_TEXTURE_SWIZZLE_R, GL_RED);
+			glTexParameteri(texture->target, GL_TEXTURE_SWIZZLE_G, GL_RED);
+			glTexParameteri(texture->target, GL_TEXTURE_SWIZZLE_B, GL_RED);
+			glTexParameteri(texture->target, GL_TEXTURE_SWIZZLE_A, GL_ONE);
+
+		} break;
+		case Image::FORMAT_LA8: {
+			glTexParameteri(texture->target, GL_TEXTURE_SWIZZLE_R, GL_RED);
+			glTexParameteri(texture->target, GL_TEXTURE_SWIZZLE_G, GL_RED);
+			glTexParameteri(texture->target, GL_TEXTURE_SWIZZLE_B, GL_RED);
+			glTexParameteri(texture->target, GL_TEXTURE_SWIZZLE_A, GL_GREEN);
+		} break;
+		default: {
+			glTexParameteri(texture->target, GL_TEXTURE_SWIZZLE_R, GL_RED);
+			glTexParameteri(texture->target, GL_TEXTURE_SWIZZLE_G, GL_GREEN);
+			glTexParameteri(texture->target, GL_TEXTURE_SWIZZLE_B, GL_BLUE);
+			glTexParameteri(texture->target, GL_TEXTURE_SWIZZLE_A, GL_ALPHA);
+
+		} break;
+	}
+#endif
 
 	int mipmaps = ((texture->flags & TEXTURE_FLAG_MIPMAPS) && img->has_mipmaps()) ? img->get_mipmap_count() + 1 : 1;
 
@@ -1290,7 +1337,7 @@ void RasterizerStorageOpenGL::sky_set_texture(RID p_sky, RID p_panorama, int p_r
 		glDisable(GL_BLEND);
 
 		for (int i = 0; i < RS::ARRAY_MAX - 1; i++) {
-			glDisableVertexAttribArray(i);
+			//glDisableVertexAttribArray(i);
 		}
 	}
 
@@ -1378,7 +1425,7 @@ void RasterizerStorageOpenGL::sky_set_texture(RID p_sky, RID p_panorama, int p_r
 			shaders.cubemap_filter.set_uniform(CubemapFilterShaderOpenGL::ROUGHNESS, roughness);
 			shaders.cubemap_filter.set_uniform(CubemapFilterShaderOpenGL::Z_FLIP, false);
 
-			glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+			//glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
 			glCopyTexSubImage2D(_cube_side_enum[i], lod, 0, 0, 0, 0, size, size);
 		}
@@ -3223,7 +3270,7 @@ void RasterizerStorageOpenGL::_render_target_allocate(RenderTarget *rt) {
 	/* For MSAA */
 
 #ifndef JAVASCRIPT_ENABLED
-	if (rt->msaa >= RS::VIEWPORT_MSAA_2X && rt->msaa <= RS::VIEWPORT_MSAA_8X && config.multisample_supported) {
+	if (rt->msaa >= RS::VIEWPORT_MSAA_2X && rt->msaa <= RS::VIEWPORT_MSAA_8X) {
 		rt->multisample_active = true;
 
 		static const int msaa_value[] = { 0, 2, 4, 8, 16 };
@@ -3246,26 +3293,11 @@ void RasterizerStorageOpenGL::_render_target_allocate(RenderTarget *rt) {
 
 		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rt->multisample_depth);
 
-#if defined(GLES_OVER_GL) || defined(IPHONE_ENABLED)
-
 		glGenRenderbuffers(1, &rt->multisample_color);
 		glBindRenderbuffer(GL_RENDERBUFFER, rt->multisample_color);
 		glRenderbufferStorageMultisample(GL_RENDERBUFFER, msaa, color_internal_format, rt->width, rt->height);
 
 		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, rt->multisample_color);
-#elif ANDROID_ENABLED
-		// Render to a texture in android
-		glGenTextures(1, &rt->multisample_color);
-		glBindTexture(GL_TEXTURE_2D, rt->multisample_color);
-
-		glTexImage2D(GL_TEXTURE_2D, 0, color_internal_format, rt->width, rt->height, 0, color_format, color_type, NULL);
-
-		// multisample buffer is same size as front buffer, so just use nearest
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-
-		glFramebufferTexture2DMultisample(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, rt->multisample_color, 0, msaa);
-#endif
 
 		GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 
@@ -3273,7 +3305,6 @@ void RasterizerStorageOpenGL::_render_target_allocate(RenderTarget *rt) {
 			// Delete allocated resources and default to no MSAA
 			WARN_PRINT_ONCE("Cannot allocate back framebuffer for MSAA");
 			printf("err status: %x\n", status);
-			config.multisample_supported = false;
 			rt->multisample_active = false;
 
 			glDeleteFramebuffers(1, &rt->multisample_fbo);
@@ -3281,19 +3312,13 @@ void RasterizerStorageOpenGL::_render_target_allocate(RenderTarget *rt) {
 
 			glDeleteRenderbuffers(1, &rt->multisample_depth);
 			rt->multisample_depth = 0;
-#ifdef ANDROID_ENABLED
-			glDeleteTextures(1, &rt->multisample_color);
-#else
+
 			glDeleteRenderbuffers(1, &rt->multisample_color);
-#endif
 			rt->multisample_color = 0;
 		}
 
 		glBindRenderbuffer(GL_RENDERBUFFER, 0);
 		bind_framebuffer(0);
-#ifdef ANDROID_ENABLED
-		glBindTexture(GL_TEXTURE_2D, 0);
-#endif
 
 	} else
 #endif // JAVASCRIPT_ENABLED
@@ -3532,11 +3557,9 @@ void RasterizerStorageOpenGL::_render_target_clear(RenderTarget *rt) {
 
 		glDeleteRenderbuffers(1, &rt->multisample_depth);
 		rt->multisample_depth = 0;
-#ifdef ANDROID_ENABLED
-		glDeleteTextures(1, &rt->multisample_color);
-#else
+
 		glDeleteRenderbuffers(1, &rt->multisample_color);
-#endif
+
 		rt->multisample_color = 0;
 	}
 }
@@ -3707,31 +3730,6 @@ void RasterizerStorageOpenGL::render_target_set_external_texture(RID p_render_ta
 		t->alloc_width = rt->height;
 
 		// Switch our texture on our frame buffer
-#if ANDROID_ENABLED
-		if (rt->msaa >= RS::VIEWPORT_MSAA_2X && rt->msaa <= RS::VIEWPORT_MSAA_4X) {
-			// This code only applies to the Oculus Go and Oculus Quest. Due to the the tiled nature
-			// of the GPU we can do a single render pass by rendering directly into our texture chains
-			// texture and apply MSAA as we render.
-
-			// On any other hardware these two modes are ignored and we do not have any MSAA,
-			// the normal MSAA modes need to be used to enable our two pass approach
-
-			static const int msaa_value[] = { 2, 4 };
-			int msaa = msaa_value[rt->msaa - RS::VIEWPORT_MSAA_2X];
-
-			if (rt->external.depth == 0) {
-				// create a multisample depth buffer, we're not reusing Godots because Godot's didn't get created..
-				glGenRenderbuffers(1, &rt->external.depth);
-				glBindRenderbuffer(GL_RENDERBUFFER, rt->external.depth);
-				glRenderbufferStorageMultisample(GL_RENDERBUFFER, msaa, config.depth_buffer_internalformat, rt->width, rt->height);
-				glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rt->external.depth);
-			}
-
-			// and set our external texture as the texture...
-			glFramebufferTexture2DMultisample(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, p_texture_id, 0, msaa);
-
-		} else
-#endif
 		{
 			// set our texture as the destination for our framebuffer
 			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, p_texture_id, 0);
@@ -3824,11 +3822,6 @@ void RasterizerStorageOpenGL::render_target_set_msaa(RID p_render_target, RS::Vi
 
 	if (rt->msaa == p_msaa)
 		return;
-
-	if (!config.multisample_supported) {
-		ERR_PRINT("MSAA not supported on this hardware.");
-		return;
-	}
 
 	_render_target_clear(rt);
 	rt->msaa = p_msaa;
@@ -4335,7 +4328,7 @@ bool RasterizerStorageOpenGL::has_os_feature(const String &p_feature) const {
 		return config.s3tc_supported;
 
 	if (p_feature == "etc")
-		return config.etc1_supported;
+		return config.etc_supported;
 
 	if (p_feature == "skinning_fallback")
 		return config.use_skeleton_software;
@@ -4461,13 +4454,13 @@ void RasterizerStorageOpenGL::initialize() {
 	config.float_texture_supported = true;
 	config.s3tc_supported = true;
 	config.pvrtc_supported = false;
-	config.etc1_supported = false;
+	config.etc_supported = false;
 	config.support_npot_repeat_mipmap = true;
 	config.depth_buffer_internalformat = GL_DEPTH_COMPONENT24;
 #else
 	config.float_texture_supported = config.extensions.has("GL_ARB_texture_float") || config.extensions.has("GL_OES_texture_float");
 	config.s3tc_supported = config.extensions.has("GL_EXT_texture_compression_s3tc") || config.extensions.has("WEBGL_compressed_texture_s3tc");
-	config.etc1_supported = config.extensions.has("GL_OES_compressed_ETC1_RGB8_texture") || config.extensions.has("WEBGL_compressed_texture_etc1");
+	config.etc_supported = config.extensions.has("GL_OES_compressed_ETC1_RGB8_texture") || config.extensions.has("WEBGL_compressed_texture_etc1");
 	config.pvrtc_supported = config.extensions.has("GL_IMG_texture_compression_pvrtc") || config.extensions.has("WEBGL_compressed_texture_pvrtc");
 	config.support_npot_repeat_mipmap = config.extensions.has("GL_OES_texture_npot");
 
@@ -4489,25 +4482,6 @@ void RasterizerStorageOpenGL::initialize() {
 	}
 #endif
 #endif
-
-#ifndef GLES_OVER_GL
-	//Manually load extensions for android and ios
-
-#ifdef IPHONE_ENABLED
-	// appears that IPhone doesn't need to dlopen TODO: test this rigorously before removing
-	//void *gles2_lib = dlopen(NULL, RTLD_LAZY);
-	//glRenderbufferStorageMultisampleAPPLE = dlsym(gles2_lib, "glRenderbufferStorageMultisampleAPPLE");
-	//glResolveMultisampleFramebufferAPPLE = dlsym(gles2_lib, "glResolveMultisampleFramebufferAPPLE");
-#elif ANDROID_ENABLED
-
-	void *gles2_lib = dlopen("libGLESv2.so", RTLD_LAZY);
-	glRenderbufferStorageMultisampleEXT = (PFNGLRENDERBUFFERSTORAGEMULTISAMPLEEXTPROC)dlsym(gles2_lib, "glRenderbufferStorageMultisampleEXT");
-	glFramebufferTexture2DMultisampleEXT = (PFNGLFRAMEBUFFERTEXTURE2DMULTISAMPLEEXTPROC)dlsym(gles2_lib, "glFramebufferTexture2DMultisampleEXT");
-#endif
-#endif
-
-	// Check for multisample support
-	config.multisample_supported = config.extensions.has("GL_EXT_framebuffer_multisample") || config.extensions.has("GL_EXT_multisampled_render_to_texture") || config.extensions.has("GL_APPLE_framebuffer_multisample");
 
 #ifdef GLES_OVER_GL
 	//TODO: causes huge problems with desktop video drivers. Making false for now, needs to be true to render SCREEN_TEXTURE mipmaps
@@ -4548,14 +4522,18 @@ void RasterizerStorageOpenGL::initialize() {
 #ifdef JAVASCRIPT_ENABLED
 	config.support_half_float_vertices = false;
 #endif
-	bool disable_half_float = GLOBAL_GET("rendering/opengl/compatibility/disable_half_float");
+	bool disable_half_float = false; //GLOBAL_GET("rendering/opengl/compatibility/disable_half_float");
 	if (disable_half_float) {
 		config.support_half_float_vertices = false;
 	}
 
+	config.etc_supported = config.extensions.has("GL_OES_compressed_ETC1_RGB8_texture");
+	config.latc_supported = config.extensions.has("GL_EXT_texture_compression_latc");
+	config.bptc_supported = config.extensions.has("GL_ARB_texture_compression_bptc");
+	config.pvrtc_supported = config.extensions.has("GL_IMG_texture_compression_pvrtc");
 	config.rgtc_supported = config.extensions.has("GL_EXT_texture_compression_rgtc") || config.extensions.has("GL_ARB_texture_compression_rgtc") || config.extensions.has("EXT_texture_compression_rgtc");
 	config.bptc_supported = config.extensions.has("GL_ARB_texture_compression_bptc") || config.extensions.has("EXT_texture_compression_bptc");
-
+	config.srgb_decode_supported = config.extensions.has("GL_EXT_texture_sRGB_decode");
 	//determine formats for depth textures (or renderbuffers)
 	if (config.support_depth_texture) {
 		// Will use texture for depth
@@ -4640,7 +4618,7 @@ void RasterizerStorageOpenGL::initialize() {
 
 	shaders.copy.init();
 	shaders.cubemap_filter.init();
-	bool ggx_hq = GLOBAL_GET("rendering/quality/reflections/high_quality_ggx");
+	bool ggx_hq = false; //GLOBAL_GET("rendering/quality/reflections/high_quality_ggx");
 	shaders.cubemap_filter.set_conditional(CubemapFilterShaderOpenGL::LOW_QUALITY, !ggx_hq);
 
 	{
@@ -4783,8 +4761,8 @@ void RasterizerStorageOpenGL::initialize() {
 	glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);
 #endif
 
-	config.force_vertex_shading = GLOBAL_GET("rendering/quality/shading/force_vertex_shading");
-	config.use_fast_texture_filter = GLOBAL_GET("rendering/quality/filters/use_nearest_mipmap_filter");
+	config.force_vertex_shading = false; //GLOBAL_GET("rendering/quality/shading/force_vertex_shading");
+	config.use_fast_texture_filter = false; //GLOBAL_GET("rendering/quality/filters/use_nearest_mipmap_filter");
 	//config.should_orphan = GLOBAL_GET("rendering/options/api_usage_legacy/orphan_buffers");
 }
 

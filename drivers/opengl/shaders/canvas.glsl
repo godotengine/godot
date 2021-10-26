@@ -13,44 +13,42 @@ precision highp int;
 uniform highp mat4 projection_matrix;
 /* clang-format on */
 
-#include "stdlib.glsl"
-
 uniform highp mat4 modelview_matrix;
 uniform highp mat4 extra_matrix;
-attribute highp vec2 vertex; // attrib:0
+layout(location = 0) in highp vec2 vertex;
 
 #ifdef USE_ATTRIB_LIGHT_ANGLE
 // shared with tangent, not used in canvas shader
-attribute highp float light_angle; // attrib:2
+layout(location = 2) in highp float light_angle;
 #endif
 
-attribute vec4 color_attrib; // attrib:3
-attribute vec2 uv_attrib; // attrib:4
+layout(location = 3) in vec4 color_attrib;
+layout(location = 4) in vec2 uv_attrib;
 
 #ifdef USE_ATTRIB_MODULATE
-attribute highp vec4 modulate_attrib; // attrib:5
+layout(location = 5) in highp vec4 modulate_attrib;
 #endif
 
 #ifdef USE_ATTRIB_LARGE_VERTEX
 // shared with skeleton attributes, not used in batched shader
-attribute highp vec2 translate_attrib; // attrib:6
-attribute highp vec4 basis_attrib; // attrib:7
+layout(location = 6) in highp vec2 translate_attrib;
+layout(location = 7) in highp vec4 basis_attrib;
 #endif
 
 #ifdef USE_SKELETON
-attribute highp vec4 bone_indices; // attrib:6
-attribute highp vec4 bone_weights; // attrib:7
+layout(location = 6) in highp vec4 bone_indices;
+layout(location = 7) in highp vec4 bone_weights;
 #endif
 
 #ifdef USE_INSTANCING
 
-attribute highp vec4 instance_xform0; //attrib:8
-attribute highp vec4 instance_xform1; //attrib:9
-attribute highp vec4 instance_xform2; //attrib:10
-attribute highp vec4 instance_color; //attrib:11
+layout(location = 8) in highp vec4 instance_xform0;
+layout(location = 9) in highp vec4 instance_xform1;
+layout(location = 10) in highp vec4 instance_xform2;
+layout(location = 11) in highp vec4 instance_color;
 
 #ifdef USE_INSTANCE_CUSTOM
-attribute highp vec4 instance_custom_data; //attrib:12
+layout(location = 12) in highp vec4 instance_custom_data;
 #endif
 
 #endif
@@ -62,12 +60,12 @@ uniform highp mat4 skeleton_transform;
 uniform highp mat4 skeleton_transform_inverse;
 #endif
 
-varying vec2 uv_interp;
-varying vec4 color_interp;
+out vec2 uv_interp;
+out vec4 color_interp;
 
 #ifdef USE_ATTRIB_MODULATE
 // modulate doesn't need interpolating but we need to send it to the fragment shader
-varying vec4 modulate_interp;
+flat out vec4 modulate_interp;
 #endif
 
 #ifdef MODULATE_USED
@@ -101,12 +99,12 @@ uniform highp float light_height;
 uniform highp float light_outside_alpha;
 uniform highp float shadow_distance_mult;
 
-varying vec4 light_uv_interp;
-varying vec2 transformed_light_uv;
-varying vec4 local_rot;
+out vec4 light_uv_interp;
+out vec2 transformed_light_uv;
+out vec4 local_rot;
 
 #ifdef USE_SHADOWS
-varying highp vec2 pos;
+out highp vec2 pos;
 #endif
 
 const bool at_light_pass = true;
@@ -295,25 +293,6 @@ VERTEX_SHADER_CODE
 /* clang-format off */
 [fragment]
 
-// texture2DLodEXT and textureCubeLodEXT are fragment shader specific.
-// Do not copy these defines in the vertex section.
-#ifndef USE_GLES_OVER_GL
-#ifdef GL_EXT_shader_texture_lod
-#extension GL_EXT_shader_texture_lod : enable
-#define texture2DLod(img, coord, lod) texture2DLodEXT(img, coord, lod)
-#define textureCubeLod(img, coord, lod) textureCubeLodEXT(img, coord, lod)
-#endif
-#endif // !USE_GLES_OVER_GL
-
-#ifdef GL_ARB_shader_texture_lod
-#extension GL_ARB_shader_texture_lod : enable
-#endif
-
-#if !defined(GL_EXT_shader_texture_lod) && !defined(GL_ARB_shader_texture_lod)
-#define texture2DLod(img, coord, lod) texture2D(img, coord, lod)
-#define textureCubeLod(img, coord, lod) textureCube(img, coord, lod)
-#endif
-
 #ifdef USE_GLES_OVER_GL
 #define lowp
 #define mediump
@@ -328,18 +307,16 @@ precision mediump int;
 #endif
 #endif
 
-#include "stdlib.glsl"
-
 uniform sampler2D color_texture; // texunit:-1
 /* clang-format on */
 uniform highp vec2 color_texpixel_size;
 uniform mediump sampler2D normal_texture; // texunit:-2
 
-varying mediump vec2 uv_interp;
-varying mediump vec4 color_interp;
+in mediump vec2 uv_interp;
+in mediump vec4 color_interp;
 
 #ifdef USE_ATTRIB_MODULATE
-varying mediump vec4 modulate_interp;
+in mediump vec4 modulate_interp;
 #endif
 
 uniform highp float time;
@@ -373,15 +350,15 @@ uniform highp float light_outside_alpha;
 uniform highp float shadow_distance_mult;
 
 uniform lowp sampler2D light_texture; // texunit:-6
-varying vec4 light_uv_interp;
-varying vec2 transformed_light_uv;
+in vec4 light_uv_interp;
+in vec2 transformed_light_uv;
 
-varying vec4 local_rot;
+in vec4 local_rot;
 
 #ifdef USE_SHADOWS
 
 uniform highp sampler2D shadow_texture; // texunit:-5
-varying highp vec2 pos;
+in highp vec2 pos;
 
 #endif
 
@@ -391,6 +368,8 @@ const bool at_light_pass = false;
 #endif
 
 uniform bool use_default_normal;
+
+layout(location = 0) out mediump vec4 frag_color;
 
 /* clang-format off */
 
@@ -434,7 +413,7 @@ void main() {
 
 #if !defined(COLOR_USED)
 	//default behavior, texture by color
-	color *= texture2D(color_texture, uv);
+	color *= texture(color_texture, uv);
 #endif
 
 #ifdef SCREEN_UV_USED
@@ -451,7 +430,7 @@ void main() {
 #endif
 
 	if (use_default_normal) {
-		normal.xy = texture2D(normal_texture, uv).xy * 2.0 - 1.0;
+		normal.xy = texture(normal_texture, uv).xy * 2.0 - 1.0;
 		normal.z = sqrt(1.0 - dot(normal.xy, normal.xy));
 		normal_used = true;
 	} else {
@@ -497,7 +476,7 @@ FRAGMENT_SHADER_CODE
 	float att = 1.0;
 
 	vec2 light_uv = light_uv_interp.xy;
-	vec4 light = texture2D(light_texture, light_uv);
+	vec4 light = texture(light_texture, light_uv);
 
 	if (any(lessThan(light_uv_interp.xy, vec2(0.0, 0.0))) || any(greaterThanEqual(light_uv_interp.xy, vec2(1.0, 1.0)))) {
 		color.a *= light_outside_alpha; //invisible
@@ -579,11 +558,11 @@ FRAGMENT_SHADER_CODE
 		highp float shadow_attenuation = 0.0;
 
 #ifdef USE_RGBA_SHADOWS
-#define SHADOW_DEPTH(m_tex, m_uv) dot(texture2D((m_tex), (m_uv)), vec4(1.0 / (255.0 * 255.0 * 255.0), 1.0 / (255.0 * 255.0), 1.0 / 255.0, 1.0))
+#define SHADOW_DEPTH(m_tex, m_uv) dot(texture((m_tex), (m_uv)), vec4(1.0 / (255.0 * 255.0 * 255.0), 1.0 / (255.0 * 255.0), 1.0 / 255.0, 1.0))
 
 #else
 
-#define SHADOW_DEPTH(m_tex, m_uv) (texture2D((m_tex), (m_uv)).r)
+#define SHADOW_DEPTH(m_tex, m_uv) (texture((m_tex), (m_uv)).r)
 
 #endif
 
@@ -682,5 +661,5 @@ FRAGMENT_SHADER_CODE
 //use lighting
 #endif
 
-	gl_FragColor = color;
+	frag_color = color;
 }

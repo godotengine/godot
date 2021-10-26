@@ -76,7 +76,6 @@ private:
 	LocalVector<GLDisplay> _displays;
 
 	GLWindow *_current_window;
-	bool opengl_3_context = false;
 
 	PFNWGLSWAPINTERVALEXTPROC wglSwapIntervalEXT;
 	PFNWGLGETSWAPINTERVALEXTPROC wglGetSwapIntervalEXT;

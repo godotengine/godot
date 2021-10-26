@@ -10,11 +10,11 @@ precision mediump float;
 precision mediump int;
 #endif
 
-attribute highp vec4 vertex_attrib; // attrib:0
+layout(location = 0) highp vec4 vertex_attrib;
 /* clang-format on */
-attribute vec2 uv_in; // attrib:4
+layout(location = 4) vec2 uv_in;
 
-varying vec2 uv_interp;
+out vec2 uv_interp;
 
 void main() {
 	uv_interp = uv_in;
@@ -40,7 +40,7 @@ precision mediump int;
 
 uniform highp samplerCube source_cube; //texunit:0
 /* clang-format on */
-varying vec2 uv_interp;
+in vec2 uv_interp;
 
 uniform bool z_flip;
 uniform highp float z_far;

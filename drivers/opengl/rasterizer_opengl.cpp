@@ -75,9 +75,9 @@
 #endif
 
 #if !defined(GLES_OVER_GL) && defined(CAN_DEBUG)
-#include <GLES2/gl2.h>
-#include <GLES2/gl2ext.h>
-#include <GLES2/gl2platform.h>
+#include <GLES3/gl3.h>
+#include <GLES3/gl3ext.h>
+#include <GLES3/gl3platform.h>
 
 #include <EGL/egl.h>
 #include <EGL/eglext.h>
@@ -184,7 +184,7 @@ static void GLAPIENTRY _gl_debug_print(GLenum source, GLenum type, GLuint id, GL
 
 	ERR_PRINT(output);
 }
-#endif // CAN_DEBUG
+#endif
 
 typedef void (*DEBUGPROCARB)(GLenum source,
 		GLenum type,
@@ -287,6 +287,7 @@ void RasterizerOpenGL::_blit_render_target_to_screen(RID p_render_target, const 
 	canvas.canvas_begin();
 
 	glDisable(GL_BLEND);
+	storage.bind_framebuffer_system();
 	glActiveTexture(GL_TEXTURE0 + storage.config.max_texture_image_units - 1);
 	if (rt->external.fbo != 0) {
 		glBindTexture(GL_TEXTURE_2D, rt->external.color);

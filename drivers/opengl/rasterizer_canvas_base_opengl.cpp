@@ -42,6 +42,25 @@
 #define glClearDepth glClearDepthf
 #endif
 
+static _FORCE_INLINE_ void store_transform3d(const Transform3D &p_mtx, float *p_array) {
+	p_array[0] = p_mtx.basis.elements[0][0];
+	p_array[1] = p_mtx.basis.elements[1][0];
+	p_array[2] = p_mtx.basis.elements[2][0];
+	p_array[3] = 0;
+	p_array[4] = p_mtx.basis.elements[0][1];
+	p_array[5] = p_mtx.basis.elements[1][1];
+	p_array[6] = p_mtx.basis.elements[2][1];
+	p_array[7] = 0;
+	p_array[8] = p_mtx.basis.elements[0][2];
+	p_array[9] = p_mtx.basis.elements[1][2];
+	p_array[10] = p_mtx.basis.elements[2][2];
+	p_array[11] = 0;
+	p_array[12] = p_mtx.origin.x;
+	p_array[13] = p_mtx.origin.y;
+	p_array[14] = p_mtx.origin.z;
+	p_array[15] = 1;
+}
+
 RID RasterizerCanvasBaseOpenGL::light_internal_create() {
 	return RID();
 }
@@ -204,14 +223,13 @@ void RasterizerCanvasBaseOpenGL::canvas_begin() {
 
 	_set_uniforms();
 	_bind_quad_buffer();
+
+	glBindBufferBase(GL_UNIFORM_BUFFER, 0, state.canvas_item_ubo);
+	glBindVertexArray(data.canvas_quad_array);
 }
 
 void RasterizerCanvasBaseOpenGL::canvas_end() {
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-	for (int i = 0; i < RS::ARRAY_MAX; i++) {
-		glDisableVertexAttribArray(i);
-	}
 
 	if (storage->frame.current_rt && storage->frame.current_rt->flags[RendererStorage::RENDER_TARGET_DIRECT_TO_SCREEN]) {
 		//reset viewport to full window size
@@ -232,7 +250,7 @@ void RasterizerCanvasBaseOpenGL::canvas_end() {
 void RasterizerCanvasBaseOpenGL::draw_generic_textured_rect(const Rect2 &p_rect, const Rect2 &p_src) {
 	state.canvas_shader.set_uniform(CanvasShaderOpenGL::DST_RECT, Color(p_rect.position.x, p_rect.position.y, p_rect.size.x, p_rect.size.y));
 	state.canvas_shader.set_uniform(CanvasShaderOpenGL::SRC_RECT, Color(p_src.position.x, p_src.position.y, p_src.size.x, p_src.size.y));
-
+	_bind_quad_buffer();
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 }
 
@@ -410,9 +428,7 @@ void RasterizerCanvasBaseOpenGL::draw_window_margins(int *black_margin, RID *bla
 */
 
 void RasterizerCanvasBaseOpenGL::_bind_quad_buffer() {
-	glBindBuffer(GL_ARRAY_BUFFER, data.canvas_quad_vertices);
-	glEnableVertexAttribArray(RS::ARRAY_VERTEX);
-	glVertexAttribPointer(RS::ARRAY_VERTEX, 2, GL_FLOAT, GL_FALSE, 0, NULL);
+	glBindVertexArray(data.canvas_quad_array);
 }
 
 void RasterizerCanvasBaseOpenGL::_set_uniforms() {
@@ -518,6 +534,7 @@ void RasterizerCanvasBaseOpenGL::_copy_texscreen(const Rect2 &p_rect) {
 }
 
 void RasterizerCanvasBaseOpenGL::_draw_polygon(const int *p_indices, int p_index_count, int p_vertex_count, const Vector2 *p_vertices, const Vector2 *p_uvs, const Color *p_colors, bool p_singlecolor, const float *p_weights, const int *p_bones) {
+	glBindVertexArray(data.polygon_buffer_pointer_array);
 	glBindBuffer(GL_ARRAY_BUFFER, data.polygon_buffer);
 
 	uint32_t buffer_ofs = 0;
@@ -593,12 +610,13 @@ void RasterizerCanvasBaseOpenGL::_draw_polygon(const int *p_indices, int p_index
 		glDrawElements(GL_TRIANGLES, p_index_count, GL_UNSIGNED_SHORT, 0);
 		storage->info.render._2d_draw_call_count++;
 	}
-
+	glBindVertexArray(0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
 void RasterizerCanvasBaseOpenGL::_draw_generic(GLuint p_primitive, int p_vertex_count, const Vector2 *p_vertices, const Vector2 *p_uvs, const Color *p_colors, bool p_singlecolor) {
+	glBindVertexArray(data.polygon_buffer_pointer_array);
 	glBindBuffer(GL_ARRAY_BUFFER, data.polygon_buffer);
 
 	uint32_t buffer_ofs = 0;
@@ -638,10 +656,12 @@ void RasterizerCanvasBaseOpenGL::_draw_generic(GLuint p_primitive, int p_vertex_
 	glDrawArrays(p_primitive, 0, p_vertex_count);
 	storage->info.render._2d_draw_call_count++;
 
+	glBindVertexArray(0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
 void RasterizerCanvasBaseOpenGL::_draw_generic_indices(GLuint p_primitive, const int *p_indices, int p_index_count, int p_vertex_count, const Vector2 *p_vertices, const Vector2 *p_uvs, const Color *p_colors, bool p_singlecolor) {
+	glBindVertexArray(data.polygon_buffer_pointer_array);
 	glBindBuffer(GL_ARRAY_BUFFER, data.polygon_buffer);
 
 	uint32_t buffer_ofs = 0;
@@ -706,7 +726,7 @@ void RasterizerCanvasBaseOpenGL::_draw_generic_indices(GLuint p_primitive, const
 		glDrawElements(p_primitive, p_index_count, GL_UNSIGNED_SHORT, 0);
 		storage->info.render._2d_draw_call_count++;
 	}
-
+	glBindVertexArray(0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
@@ -803,22 +823,26 @@ void RasterizerCanvasBaseOpenGL::_legacy_draw_line(Item::CommandPrimitive *p_pr,
 void RasterizerCanvasBaseOpenGL::_draw_gui_primitive(int p_points, const Vector2 *p_vertices, const Color *p_colors, const Vector2 *p_uvs, const float *p_light_angles) {
 	static const GLenum prim[5] = { GL_POINTS, GL_POINTS, GL_LINES, GL_TRIANGLES, GL_TRIANGLE_FAN };
 
+	int version = 0;
 	int color_offset = 0;
 	int uv_offset = 0;
 	int light_angle_offset = 0;
 	int stride = 2;
 
 	if (p_colors) {
+		version |= 1;
 		color_offset = stride;
 		stride += 4;
 	}
 
 	if (p_uvs) {
+		version |= 2;
 		uv_offset = stride;
 		stride += 2;
 	}
 
 	if (p_light_angles) { //light_angles
+		version |= 4;
 		light_angle_offset = stride;
 		stride += 1;
 	}
@@ -856,31 +880,11 @@ void RasterizerCanvasBaseOpenGL::_draw_gui_primitive(int p_points, const Vector2
 	glBindBuffer(GL_ARRAY_BUFFER, data.polygon_buffer);
 	storage->buffer_orphan_and_upload(data.polygon_buffer_size, 0, p_points * stride * 4 * sizeof(float), buffer_data, GL_ARRAY_BUFFER, _buffer_upload_usage_flag, true);
 
-	glVertexAttribPointer(RS::ARRAY_VERTEX, 2, GL_FLOAT, GL_FALSE, stride * sizeof(float), NULL);
-
-	if (p_colors) {
-		glVertexAttribPointer(RS::ARRAY_COLOR, 4, GL_FLOAT, GL_FALSE, stride * sizeof(float), CAST_INT_TO_UCHAR_PTR(color_offset * sizeof(float)));
-		glEnableVertexAttribArray(RS::ARRAY_COLOR);
-	}
-
-	if (p_uvs) {
-		glVertexAttribPointer(RS::ARRAY_TEX_UV, 2, GL_FLOAT, GL_FALSE, stride * sizeof(float), CAST_INT_TO_UCHAR_PTR(uv_offset * sizeof(float)));
-		glEnableVertexAttribArray(RS::ARRAY_TEX_UV);
-	}
-
-	if (p_light_angles) {
-		glVertexAttribPointer(RS::ARRAY_TANGENT, 1, GL_FLOAT, GL_FALSE, stride * sizeof(float), CAST_INT_TO_UCHAR_PTR(light_angle_offset * sizeof(float)));
-		glEnableVertexAttribArray(RS::ARRAY_TANGENT);
-	}
+	glBindVertexArray(data.polygon_buffer_quad_arrays[version]);
 
 	glDrawArrays(prim[p_points], 0, p_points);
 	storage->info.render._2d_draw_call_count++;
-
-	if (p_light_angles) {
-		// may not be needed
-		glDisableVertexAttribArray(RS::ARRAY_TANGENT);
-	}
-
+	glBindVertexArray(0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
@@ -1093,10 +1097,6 @@ void RasterizerCanvasBaseOpenGL::draw_lens_distortion_rect(const Rect2 &p_rect, 
 
 	// and cleanup
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-	for (int i = 0; i < RS::ARRAY_MAX; i++) {
-		glDisableVertexAttribArray(i);
-	}
 }
 
 void RasterizerCanvasBaseOpenGL::initialize() {
@@ -1122,29 +1122,119 @@ void RasterizerCanvasBaseOpenGL::initialize() {
 		glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 8, qv, GL_STATIC_DRAW);
 
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+		glGenVertexArrays(1, &data.canvas_quad_array);
+		glBindVertexArray(data.canvas_quad_array);
+		glBindBuffer(GL_ARRAY_BUFFER, data.canvas_quad_vertices);
+		glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, nullptr);
+		glEnableVertexAttribArray(0);
+		glBindVertexArray(0);
+		glBindBuffer(GL_ARRAY_BUFFER, 0); //unbind
+	}
+
+	{
+		//particle quad buffers
+
+		glGenBuffers(1, &data.particle_quad_vertices);
+		glBindBuffer(GL_ARRAY_BUFFER, data.particle_quad_vertices);
+		{
+			//quad of size 1, with pivot on the center for particles, then regular UVS. Color is general plus fetched from particle
+			const float qv[16] = {
+				-0.5, -0.5,
+				0.0, 0.0,
+				-0.5, 0.5,
+				0.0, 1.0,
+				0.5, 0.5,
+				1.0, 1.0,
+				0.5, -0.5,
+				1.0, 0.0
+			};
+
+			glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 16, qv, GL_STATIC_DRAW);
+		}
+
+		glBindBuffer(GL_ARRAY_BUFFER, 0); //unbind
+
+		glGenVertexArrays(1, &data.particle_quad_array);
+		glBindVertexArray(data.particle_quad_array);
+		glBindBuffer(GL_ARRAY_BUFFER, data.particle_quad_vertices);
+		glEnableVertexAttribArray(RS::ARRAY_VERTEX);
+		glVertexAttribPointer(RS::ARRAY_VERTEX, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 4, nullptr);
+		glEnableVertexAttribArray(RS::ARRAY_TEX_UV);
+		glVertexAttribPointer(RS::ARRAY_TEX_UV, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 4, CAST_INT_TO_UCHAR_PTR(8));
+		glBindVertexArray(0);
+		glBindBuffer(GL_ARRAY_BUFFER, 0); //unbind
 	}
 
 	// polygon buffer
 	{
-		uint32_t poly_size = GLOBAL_DEF("rendering/limits/buffers/canvas_polygon_buffer_size_kb", 128);
+		uint32_t poly_size = 128; //GLOBAL_DEF_RST("rendering/limits/buffers/canvas_polygon_buffer_size_kb", 128);
 		ProjectSettings::get_singleton()->set_custom_property_info("rendering/limits/buffers/canvas_polygon_buffer_size_kb", PropertyInfo(Variant::INT, "rendering/limits/buffers/canvas_polygon_buffer_size_kb", PROPERTY_HINT_RANGE, "0,256,1,or_greater"));
-		poly_size = MAX(poly_size, 128); // minimum 2k, may still see anomalies in editor
-		poly_size *= 1024;
+		poly_size = MAX(poly_size, 2); // minimum 2k, may still see anomalies in editor
+		poly_size *= 1024; //kb
 		glGenBuffers(1, &data.polygon_buffer);
 		glBindBuffer(GL_ARRAY_BUFFER, data.polygon_buffer);
-		glBufferData(GL_ARRAY_BUFFER, poly_size, NULL, GL_DYNAMIC_DRAW);
-
+		glBufferData(GL_ARRAY_BUFFER, poly_size, nullptr, GL_DYNAMIC_DRAW); //allocate max size
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
 		data.polygon_buffer_size = poly_size;
 
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		//quad arrays
+		for (int i = 0; i < Data::NUM_QUAD_ARRAY_VARIATIONS; i++) {
+			glGenVertexArrays(1, &data.polygon_buffer_quad_arrays[i]);
+			glBindVertexArray(data.polygon_buffer_quad_arrays[i]);
+			glBindBuffer(GL_ARRAY_BUFFER, data.polygon_buffer);
 
-		uint32_t index_size = GLOBAL_DEF("rendering/limits/buffers/canvas_polygon_index_buffer_size_kb", 128);
+			int uv_ofs = 0;
+			int color_ofs = 0;
+			int light_angle_ofs = 0;
+			int stride = 2 * 4;
+
+			if (i & 1) { //color
+				color_ofs = stride;
+				stride += 4 * 4;
+			}
+
+			if (i & 2) { //uv
+				uv_ofs = stride;
+				stride += 2 * 4;
+			}
+
+			if (i & 4) { //light_angle
+				light_angle_ofs = stride;
+				stride += 1 * 4;
+			}
+
+			glEnableVertexAttribArray(RS::ARRAY_VERTEX);
+			glVertexAttribPointer(RS::ARRAY_VERTEX, 2, GL_FLOAT, GL_FALSE, stride, nullptr);
+
+			if (i & 1) {
+				glEnableVertexAttribArray(RS::ARRAY_COLOR);
+				glVertexAttribPointer(RS::ARRAY_COLOR, 4, GL_FLOAT, GL_FALSE, stride, CAST_INT_TO_UCHAR_PTR(color_ofs));
+			}
+
+			if (i & 2) {
+				glEnableVertexAttribArray(RS::ARRAY_TEX_UV);
+				glVertexAttribPointer(RS::ARRAY_TEX_UV, 2, GL_FLOAT, GL_FALSE, stride, CAST_INT_TO_UCHAR_PTR(uv_ofs));
+			}
+
+			if (i & 4) {
+				// reusing tangent for light_angle
+				glEnableVertexAttribArray(RS::ARRAY_TANGENT);
+				glVertexAttribPointer(RS::ARRAY_TANGENT, 1, GL_FLOAT, GL_FALSE, stride, CAST_INT_TO_UCHAR_PTR(light_angle_ofs));
+			}
+
+			glBindVertexArray(0);
+		}
+
+		glGenVertexArrays(1, &data.polygon_buffer_pointer_array);
+
+		uint32_t index_size = 128; //GLOBAL_DEF_RST("rendering/limits/buffers/canvas_polygon_index_buffer_size_kb", 128);
 		ProjectSettings::get_singleton()->set_custom_property_info("rendering/limits/buffers/canvas_polygon_index_buffer_size_kb", PropertyInfo(Variant::INT, "rendering/limits/buffers/canvas_polygon_index_buffer_size_kb", PROPERTY_HINT_RANGE, "0,256,1,or_greater"));
-		index_size = MAX(index_size, 128);
-		index_size *= 1024; // kb
+		index_size = MAX(index_size, 2);
+		index_size *= 1024; //kb
 		glGenBuffers(1, &data.polygon_index_buffer);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, data.polygon_index_buffer);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, index_size, NULL, GL_DYNAMIC_DRAW);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, index_size, nullptr, GL_DYNAMIC_DRAW); //allocate max size
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
 		data.polygon_index_buffer_size = index_size;
@@ -1212,10 +1302,15 @@ void RasterizerCanvasBaseOpenGL::initialize() {
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	}
 
+	store_transform3d(Transform3D(), state.canvas_item_ubo_data.projection_matrix);
+
+	glGenBuffers(1, &state.canvas_item_ubo);
+	glBindBuffer(GL_UNIFORM_BUFFER, state.canvas_item_ubo);
+	glBufferData(GL_UNIFORM_BUFFER, sizeof(CanvasItemUBO), &state.canvas_item_ubo_data, GL_DYNAMIC_DRAW);
+	glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
 	state.canvas_shadow_shader.init();
-
 	state.canvas_shader.init();
-
 	_set_texture_rect_mode(true);
 	state.canvas_shader.set_conditional(CanvasShaderOpenGL::USE_RGBA_SHADOWS, storage->config.use_rgba_2d_shadows);
 
@@ -1244,6 +1339,13 @@ void RasterizerCanvasBaseOpenGL::free_polygon(PolygonID p_polygon) {
 }
 
 void RasterizerCanvasBaseOpenGL::finalize() {
+	glDeleteBuffers(1, &data.canvas_quad_vertices);
+	glDeleteVertexArrays(1, &data.canvas_quad_array);
+
+	glDeleteBuffers(1, &data.canvas_quad_vertices);
+	glDeleteVertexArrays(1, &data.canvas_quad_array);
+
+	glDeleteVertexArrays(1, &data.polygon_buffer_pointer_array);
 }
 
 RasterizerCanvasBaseOpenGL::RasterizerCanvasBaseOpenGL() {

@@ -3355,42 +3355,10 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 		}
 
 		//		gl_manager->set_use_vsync(current_videomode.use_vsync);
-
-		if (true) {
-			RasterizerOpenGL::make_current();
-		} else {
-			memdelete(gl_manager);
-			gl_manager = nullptr;
-			r_error = ERR_UNAVAILABLE;
-			return;
-		}
+		RasterizerOpenGL::make_current();
 	}
 #endif
 
-	/*
-#if defined(OPENGL_ENABLED)
-	if (rendering_driver_index == VIDEO_DRIVER_GLES2) {
-		context_gles2 = memnew(ContextGL_Windows(hWnd, false));
-
-		if (context_gles2->initialize() != OK) {
-			memdelete(context_gles2);
-			context_gles2 = nullptr;
-			ERR_FAIL_V(ERR_UNAVAILABLE);
-		}
-
-		context_gles2->set_use_vsync(video_mode.use_vsync);
-
-		if (RasterizerOpenGL::is_viable() == OK) {
-			RasterizerOpenGL::register_config();
-			RasterizerOpenGL::make_current();
-		} else {
-			memdelete(context_gles2);
-			context_gles2 = nullptr;
-			ERR_FAIL_V(ERR_UNAVAILABLE);
-		}
-	}
-#endif
-	*/
 	Point2i window_position(
 			(screen_get_size(0).width - p_resolution.width) / 2,
 			(screen_get_size(0).height - p_resolution.height) / 2);

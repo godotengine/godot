@@ -10,11 +10,11 @@ precision highp float;
 precision highp int;
 #endif
 
-attribute highp vec2 vertex; // attrib:0
+layout(location = 0) highp vec2 vertex;
 /* clang-format on */
-attribute highp vec2 uv; // attrib:4
+layout(location = 4) highp vec2 uv;
 
-varying highp vec2 uv_interp;
+out highp vec2 uv_interp;
 
 void main() {
 	uv_interp = uv;
@@ -23,25 +23,6 @@ void main() {
 
 /* clang-format off */
 [fragment]
-
-// texture2DLodEXT and textureCubeLodEXT are fragment shader specific.
-// Do not copy these defines in the vertex section.
-#ifndef USE_GLES_OVER_GL
-#ifdef GL_EXT_shader_texture_lod
-#extension GL_EXT_shader_texture_lod : enable
-#define texture2DLod(img, coord, lod) texture2DLodEXT(img, coord, lod)
-#define textureCubeLod(img, coord, lod) textureCubeLodEXT(img, coord, lod)
-#endif
-#endif // !USE_GLES_OVER_GL
-
-#ifdef GL_ARB_shader_texture_lod
-#extension GL_ARB_shader_texture_lod : enable
-#endif
-
-#if !defined(GL_EXT_shader_texture_lod) && !defined(GL_ARB_shader_texture_lod)
-#define texture2DLod(img, coord, lod) texture2D(img, coord, lod)
-#define textureCubeLod(img, coord, lod) textureCube(img, coord, lod)
-#endif
 
 #ifdef USE_GLES_OVER_GL
 #define lowp
@@ -67,7 +48,7 @@ uniform samplerCube source_cube; //texunit:0
 
 uniform int face_id;
 uniform float roughness;
-varying highp vec2 uv_interp;
+in highp vec2 uv_interp;
 
 uniform sampler2D radical_inverse_vdc_cache; // texunit:1
 
@@ -95,7 +76,7 @@ vec4 texturePanorama(sampler2D pano, vec3 normal) {
 
 	st /= vec2(M_PI * 2.0, M_PI);
 
-	return texture2DLod(pano, st, 0.0);
+	return textureLod(pano, st, 0.0);
 }
 
 #endif
@@ -167,7 +148,7 @@ vec3 ImportanceSampleGGX(vec2 Xi, float Roughness, vec3 N) {
 }
 
 float radical_inverse_VdC(int i) {
-	return texture2D(radical_inverse_vdc_cache, vec2(float(i) / 512.0, 0.0)).x;
+	return texture(radical_inverse_vdc_cache, vec2(float(i) / 512.0, 0.0)).x;
 }
 
 vec2 Hammersley(int i, int N) {
@@ -175,6 +156,8 @@ vec2 Hammersley(int i, int N) {
 }
 
 uniform bool z_flip;
+
+layout(location = 0) out vec4 frag_color;
 
 void main() {
 	vec3 color = vec3(0.0);
@@ -186,10 +169,10 @@ void main() {
 
 #ifdef USE_SOURCE_PANORAMA
 
-	gl_FragColor = vec4(texturePanorama(source_panorama, N).rgb, 1.0);
+	frag_color = vec4(texturePanorama(source_panorama, N).rgb, 1.0);
 #else
 
-	gl_FragColor = vec4(textureCube(source_cube, N).rgb, 1.0);
+	frag_color = vec4(textureCube(source_cube, N).rgb, 1.0);
 #endif //USE_SOURCE_PANORAMA
 
 #else
@@ -226,6 +209,6 @@ void main() {
 	vec3 a = vec3(0.055);
 	sum.rgb = mix((vec3(1.0) + a) * pow(sum.rgb, vec3(1.0 / 2.4)) - a, 12.92 * sum.rgb, vec3(lessThan(sum.rgb, vec3(0.0031308))));
 
-	gl_FragColor = vec4(sum.rgb, 1.0);
+	frag_color = vec4(sum.rgb, 1.0);
 #endif
 }

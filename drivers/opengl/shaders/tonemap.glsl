@@ -10,11 +10,11 @@ precision highp float;
 precision highp int;
 #endif
 
-attribute vec2 vertex_attrib; // attrib:0
+layout(location = 0) vec2 vertex_attrib;
 /* clang-format on */
-attribute vec2 uv_in; // attrib:4
+layout(location = 4) vec2 uv_in;
 
-varying vec2 uv_interp;
+out vec2 uv_interp;
 
 void main() {
 	gl_Position = vec4(vertex_attrib, 0.0, 1.0);
@@ -24,30 +24,6 @@ void main() {
 
 /* clang-format off */
 [fragment]
-
-// texture2DLodEXT and textureCubeLodEXT are fragment shader specific.
-// Do not copy these defines in the vertex section.
-#ifndef USE_GLES_OVER_GL
-#ifdef GL_EXT_shader_texture_lod
-#extension GL_EXT_shader_texture_lod : enable
-#define texture2DLod(img, coord, lod) texture2DLodEXT(img, coord, lod)
-#define textureCubeLod(img, coord, lod) textureCubeLodEXT(img, coord, lod)
-#endif
-#endif // !USE_GLES_OVER_GL
-
-#ifdef GL_ARB_shader_texture_lod
-#extension GL_ARB_shader_texture_lod : enable
-#endif
-
-#if !defined(GL_EXT_shader_texture_lod) && !defined(GL_ARB_shader_texture_lod)
-#define texture2DLod(img, coord, lod) texture2D(img, coord, lod)
-#define textureCubeLod(img, coord, lod) textureCube(img, coord, lod)
-#endif
-
-// Allows the use of bitshift operators for bicubic upscale
-#ifdef GL_EXT_gpu_shader4
-#extension GL_EXT_gpu_shader4 : enable
-#endif
 
 #ifdef USE_GLES_OVER_GL
 #define lowp
@@ -63,10 +39,10 @@ precision mediump int;
 #endif
 #endif
 
-#include "stdlib.glsl"
-
-varying vec2 uv_interp;
+in vec2 uv_interp;
 /* clang-format on */
+
+layout(location = 0) out vec4 frag_color;
 
 uniform highp sampler2D source; //texunit:0
 
@@ -101,7 +77,6 @@ uniform vec2 pixel_size;
 uniform sampler2D color_correction; //texunit:1
 #endif
 
-#ifdef GL_EXT_gpu_shader4
 #ifdef USE_GLOW_FILTER_BICUBIC
 // w0, w1, w2, and w3 are the four cubic B-spline basis functions
 float w0(float a) {
@@ -140,7 +115,7 @@ float h1(float a) {
 
 uniform ivec2 glow_texture_size;
 
-vec4 texture2D_bicubic(sampler2D tex, vec2 uv, int p_lod) {
+vec4 texture_bicubic(sampler2D tex, vec2 uv, int p_lod) {
 	float lod = float(p_lod);
 	vec2 tex_size = vec2(glow_texture_size >> p_lod);
 	vec2 texel_size = vec2(1.0) / tex_size;
@@ -162,18 +137,14 @@ vec4 texture2D_bicubic(sampler2D tex, vec2 uv, int p_lod) {
 	vec2 p2 = (vec2(iuv.x + h0x, iuv.y + h1y) - vec2(0.5)) * texel_size;
 	vec2 p3 = (vec2(iuv.x + h1x, iuv.y + h1y) - vec2(0.5)) * texel_size;
 
-	return (g0(fuv.y) * (g0x * texture2DLod(tex, p0, lod) + g1x * texture2DLod(tex, p1, lod))) +
-		   (g1(fuv.y) * (g0x * texture2DLod(tex, p2, lod) + g1x * texture2DLod(tex, p3, lod)));
+	return (g0(fuv.y) * (g0x * textureLod(tex, p0, lod) + g1x * textureLod(tex, p1, lod))) +
+		   (g1(fuv.y) * (g0x * textureLod(tex, p2, lod) + g1x * textureLod(tex, p3, lod)));
 }
 
-#define GLOW_TEXTURE_SAMPLE(m_tex, m_uv, m_lod) texture2D_bicubic(m_tex, m_uv, m_lod)
+#define GLOW_TEXTURE_SAMPLE(m_tex, m_uv, m_lod) texture_bicubic(m_tex, m_uv, m_lod)
 #else //!USE_GLOW_FILTER_BICUBIC
-#define GLOW_TEXTURE_SAMPLE(m_tex, m_uv, m_lod) texture2DLod(m_tex, m_uv, float(m_lod))
+#define GLOW_TEXTURE_SAMPLE(m_tex, m_uv, m_lod) textureLod(m_tex, m_uv, float(m_lod))
 #endif //USE_GLOW_FILTER_BICUBIC
-
-#else //!GL_EXT_gpu_shader4
-#define GLOW_TEXTURE_SAMPLE(m_tex, m_uv, m_lod) texture2DLod(m_tex, m_uv, float(m_lod))
-#endif //GL_EXT_gpu_shader4
 
 vec3 apply_glow(vec3 color, vec3 glow) { // apply glow using the selected blending mode
 #ifdef USE_GLOW_REPLACE
@@ -208,9 +179,9 @@ vec3 apply_bcs(vec3 color, vec3 bcs) {
 }
 
 vec3 apply_color_correction(vec3 color, sampler2D correction_tex) {
-	color.r = texture2D(correction_tex, vec2(color.r, 0.0)).r;
-	color.g = texture2D(correction_tex, vec2(color.g, 0.0)).g;
-	color.b = texture2D(correction_tex, vec2(color.b, 0.0)).b;
+	color.r = texture(correction_tex, vec2(color.r, 0.0)).r;
+	color.g = texture(correction_tex, vec2(color.g, 0.0)).g;
+	color.b = texture(correction_tex, vec2(color.b, 0.0)).b;
 
 	return color;
 }
@@ -220,10 +191,10 @@ vec3 apply_fxaa(vec3 color, vec2 uv_interp, vec2 pixel_size) {
 	const float FXAA_REDUCE_MUL = (1.0 / 8.0);
 	const float FXAA_SPAN_MAX = 8.0;
 
-	vec3 rgbNW = texture2DLod(source, uv_interp + vec2(-1.0, -1.0) * pixel_size, 0.0).xyz;
-	vec3 rgbNE = texture2DLod(source, uv_interp + vec2(1.0, -1.0) * pixel_size, 0.0).xyz;
-	vec3 rgbSW = texture2DLod(source, uv_interp + vec2(-1.0, 1.0) * pixel_size, 0.0).xyz;
-	vec3 rgbSE = texture2DLod(source, uv_interp + vec2(1.0, 1.0) * pixel_size, 0.0).xyz;
+	vec3 rgbNW = textureLod(source, uv_interp + vec2(-1.0, -1.0) * pixel_size, 0.0).xyz;
+	vec3 rgbNE = textureLod(source, uv_interp + vec2(1.0, -1.0) * pixel_size, 0.0).xyz;
+	vec3 rgbSW = textureLod(source, uv_interp + vec2(-1.0, 1.0) * pixel_size, 0.0).xyz;
+	vec3 rgbSE = textureLod(source, uv_interp + vec2(1.0, 1.0) * pixel_size, 0.0).xyz;
 	vec3 rgbM = color;
 	vec3 luma = vec3(0.299, 0.587, 0.114);
 	float lumaNW = dot(rgbNW, luma);
@@ -248,9 +219,9 @@ vec3 apply_fxaa(vec3 color, vec2 uv_interp, vec2 pixel_size) {
 						  dir * rcpDirMin)) *
 		  pixel_size;
 
-	vec3 rgbA = 0.5 * (texture2DLod(source, uv_interp + dir * (1.0 / 3.0 - 0.5), 0.0).xyz + texture2DLod(source, uv_interp + dir * (2.0 / 3.0 - 0.5), 0.0).xyz);
-	vec3 rgbB = rgbA * 0.5 + 0.25 * (texture2DLod(source, uv_interp + dir * -0.5, 0.0).xyz +
-											texture2DLod(source, uv_interp + dir * 0.5, 0.0).xyz);
+	vec3 rgbA = 0.5 * (textureLod(source, uv_interp + dir * (1.0 / 3.0 - 0.5), 0.0).xyz + textureLod(source, uv_interp + dir * (2.0 / 3.0 - 0.5), 0.0).xyz);
+	vec3 rgbB = rgbA * 0.5 + 0.25 * (textureLod(source, uv_interp + dir * -0.5, 0.0).xyz +
+											textureLod(source, uv_interp + dir * 0.5, 0.0).xyz);
 
 	float lumaB = dot(rgbB, luma);
 	if ((lumaB < lumaMin) || (lumaB > lumaMax)) {
@@ -261,7 +232,7 @@ vec3 apply_fxaa(vec3 color, vec2 uv_interp, vec2 pixel_size) {
 }
 
 void main() {
-	vec3 color = texture2DLod(source, uv_interp, 0.0).rgb;
+	vec3 color = textureLod(source, uv_interp, 0.0).rgb;
 
 #ifdef USE_FXAA
 	color = apply_fxaa(color, uv_interp, pixel_size);
@@ -339,5 +310,5 @@ void main() {
 	color = apply_color_correction(color, color_correction);
 #endif
 
-	gl_FragColor = vec4(color, 1.0);
+	frag_color = vec4(color, 1.0);
 }

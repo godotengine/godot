@@ -172,32 +172,20 @@ ShaderOpenGL::Version *ShaderOpenGL::get_current_version() {
 	Vector<const char *> strings;
 
 #ifdef GLES_OVER_GL
-	strings.push_back("#version 120\n");
+	strings.push_back("#version 330\n");
 	strings.push_back("#define USE_GLES_OVER_GL\n");
-
-	// test
-	strings.push_back("#define highp\n");
-	//#ifdef USE_GLES_OVER_GL
-	//#define lowp
-	//#define mediump
-	//#define highp
-	//#else
-	//	precision highp float;
-	//	precision highp int;
-	//#endif
-
 #else
-	strings.push_back("#version 100\n");
+	strings.push_back("#version 300 es\n");
 //angle does not like
 #ifdef JAVASCRIPT_ENABLED
 	strings.push_back("#define USE_HIGHP_PRECISION\n");
 #endif
 
-	if (GLOBAL_GET("rendering/opengl/compatibility/enable_high_float.Android")) {
-		// enable USE_HIGHP_PRECISION but safeguarded by an availability check as highp support is optional in OpenGL
-		// see Section 4.5.4 of the GLSL_ES_Specification_1.00
-		strings.push_back("#ifdef GL_FRAGMENT_PRECISION_HIGH\n  #define USE_HIGHP_PRECISION\n#endif\n");
-	}
+	//if (GLOBAL_GET("rendering/opengl/compatibility/enable_high_float.Android")) {
+	// enable USE_HIGHP_PRECISION but safeguarded by an availability check as highp support is optional in OpenGL
+	// see Section 4.5.4 of the GLSL_ES_Specification_1.00
+	//strings.push_back("#ifdef GL_FRAGMENT_PRECISION_HIGH\n  #define USE_HIGHP_PRECISION\n#endif\n");
+	//}
 
 #endif
 

@@ -10,11 +10,11 @@ precision highp float;
 precision highp int;
 #endif
 
-attribute vec2 vertex_attrib; // attrib:0
+layout(location = 0) vec2 vertex_attrib;
 /* clang-format on */
-attribute vec2 uv_in; // attrib:4
+layout(location = 4) vec2 uv_in;
 
-varying vec2 uv_interp;
+out vec2 uv_interp;
 
 #ifdef USE_BLUR_SECTION
 
@@ -35,25 +35,6 @@ void main() {
 /* clang-format off */
 [fragment]
 
-// texture2DLodEXT and textureCubeLodEXT are fragment shader specific.
-// Do not copy these defines in the vertex section.
-#ifndef USE_GLES_OVER_GL
-#ifdef GL_EXT_shader_texture_lod
-#extension GL_EXT_shader_texture_lod : enable
-#define texture2DLod(img, coord, lod) texture2DLodEXT(img, coord, lod)
-#define textureCubeLod(img, coord, lod) textureCubeLodEXT(img, coord, lod)
-#endif
-#endif // !USE_GLES_OVER_GL
-
-#ifdef GL_ARB_shader_texture_lod
-#extension GL_ARB_shader_texture_lod : enable
-#endif
-
-#if !defined(GL_EXT_shader_texture_lod) && !defined(GL_ARB_shader_texture_lod)
-#define texture2DLod(img, coord, lod) texture2D(img, coord, lod)
-#define textureCubeLod(img, coord, lod) textureCube(img, coord, lod)
-#endif
-
 #ifdef USE_GLES_OVER_GL
 #define lowp
 #define mediump
@@ -68,7 +49,7 @@ precision mediump int;
 #endif
 #endif
 
-varying vec2 uv_interp;
+in vec2 uv_interp;
 /* clang-format on */
 uniform sampler2D source_color; //texunit:0
 
@@ -125,29 +106,31 @@ uniform float glow_hdr_scale;
 uniform float camera_z_far;
 uniform float camera_z_near;
 
+layout(location = 0) out vec4 frag_color;
+
 void main() {
 #ifdef GLOW_GAUSSIAN_HORIZONTAL
 	vec2 pix_size = pixel_size;
 	pix_size *= 0.5; //reading from larger buffer, so use more samples
-	vec4 color = texture2DLod(source_color, uv_interp + vec2(0.0, 0.0) * pix_size, lod) * 0.174938;
-	color += texture2DLod(source_color, uv_interp + vec2(1.0, 0.0) * pix_size, lod) * 0.165569;
-	color += texture2DLod(source_color, uv_interp + vec2(2.0, 0.0) * pix_size, lod) * 0.140367;
-	color += texture2DLod(source_color, uv_interp + vec2(3.0, 0.0) * pix_size, lod) * 0.106595;
-	color += texture2DLod(source_color, uv_interp + vec2(-1.0, 0.0) * pix_size, lod) * 0.165569;
-	color += texture2DLod(source_color, uv_interp + vec2(-2.0, 0.0) * pix_size, lod) * 0.140367;
-	color += texture2DLod(source_color, uv_interp + vec2(-3.0, 0.0) * pix_size, lod) * 0.106595;
+	vec4 color = textureLod(source_color, uv_interp + vec2(0.0, 0.0) * pix_size, lod) * 0.174938;
+	color += textureLod(source_color, uv_interp + vec2(1.0, 0.0) * pix_size, lod) * 0.165569;
+	color += textureLod(source_color, uv_interp + vec2(2.0, 0.0) * pix_size, lod) * 0.140367;
+	color += textureLod(source_color, uv_interp + vec2(3.0, 0.0) * pix_size, lod) * 0.106595;
+	color += textureLod(source_color, uv_interp + vec2(-1.0, 0.0) * pix_size, lod) * 0.165569;
+	color += textureLod(source_color, uv_interp + vec2(-2.0, 0.0) * pix_size, lod) * 0.140367;
+	color += textureLod(source_color, uv_interp + vec2(-3.0, 0.0) * pix_size, lod) * 0.106595;
 	color *= glow_strength;
-	gl_FragColor = color;
+	frag_color = color;
 #endif
 
 #ifdef GLOW_GAUSSIAN_VERTICAL
-	vec4 color = texture2DLod(source_color, uv_interp + vec2(0.0, 0.0) * pixel_size, lod) * 0.288713;
-	color += texture2DLod(source_color, uv_interp + vec2(0.0, 1.0) * pixel_size, lod) * 0.233062;
-	color += texture2DLod(source_color, uv_interp + vec2(0.0, 2.0) * pixel_size, lod) * 0.122581;
-	color += texture2DLod(source_color, uv_interp + vec2(0.0, -1.0) * pixel_size, lod) * 0.233062;
-	color += texture2DLod(source_color, uv_interp + vec2(0.0, -2.0) * pixel_size, lod) * 0.122581;
+	vec4 color = textureLod(source_color, uv_interp + vec2(0.0, 0.0) * pixel_size, lod) * 0.288713;
+	color += textureLod(source_color, uv_interp + vec2(0.0, 1.0) * pixel_size, lod) * 0.233062;
+	color += textureLod(source_color, uv_interp + vec2(0.0, 2.0) * pixel_size, lod) * 0.122581;
+	color += textureLod(source_color, uv_interp + vec2(0.0, -1.0) * pixel_size, lod) * 0.233062;
+	color += textureLod(source_color, uv_interp + vec2(0.0, -2.0) * pixel_size, lod) * 0.122581;
 	color *= glow_strength;
-	gl_FragColor = color;
+	frag_color = color;
 #endif
 
 #ifndef USE_GLES_OVER_GL
@@ -214,7 +197,7 @@ void main() {
 
 	vec4 color_accum = vec4(0.0);
 
-	float depth = texture2DLod(dof_source_depth, uv_interp, 0.0).r;
+	float depth = textureLod(dof_source_depth, uv_interp, 0.0).r;
 	depth = depth * 2.0 - 1.0;
 #ifdef USE_ORTHOGONAL_PROJECTION
 	depth = ((depth + (camera_z_far + camera_z_near) / (camera_z_far - camera_z_near)) * (camera_z_far - camera_z_near)) / 2.0;
@@ -231,7 +214,7 @@ void main() {
 
 		float tap_k = dof_kernel[i];
 
-		float tap_depth = texture2D(dof_source_depth, tap_uv, 0.0).r;
+		float tap_depth = texture(dof_source_depth, tap_uv, 0.0).r;
 		tap_depth = tap_depth * 2.0 - 1.0;
 #ifdef USE_ORTHOGONAL_PROJECTION
 		tap_depth = ((tap_depth + (camera_z_far + camera_z_near) / (camera_z_far - camera_z_near)) * (camera_z_far - camera_z_near)) / 2.0;
@@ -241,7 +224,7 @@ void main() {
 		float tap_amount = int_ofs == 0 ? 1.0 : smoothstep(dof_begin, dof_end, tap_depth);
 		tap_amount *= tap_amount * tap_amount; //prevent undesired glow effect
 
-		vec4 tap_color = texture2DLod(source_color, tap_uv, 0.0) * tap_k;
+		vec4 tap_color = textureLod(source_color, tap_uv, 0.0) * tap_k;
 
 		k_accum += tap_k * tap_amount;
 		color_accum += tap_color * tap_amount;
@@ -251,7 +234,7 @@ void main() {
 		color_accum /= k_accum;
 	}
 
-	gl_FragColor = color_accum; ///k_accum;
+	frag_color = color_accum; ///k_accum;
 
 #endif
 
@@ -268,9 +251,9 @@ void main() {
 
 		float tap_k = dof_kernel[i];
 
-		vec4 tap_color = texture2DLod(source_color, tap_uv, 0.0);
+		vec4 tap_color = textureLod(source_color, tap_uv, 0.0);
 
-		float tap_depth = texture2D(dof_source_depth, tap_uv, 0.0).r;
+		float tap_depth = texture(dof_source_depth, tap_uv, 0.0).r;
 		tap_depth = tap_depth * 2.0 - 1.0;
 #ifdef USE_ORTHOGONAL_PROJECTION
 		tap_depth = ((tap_depth + (camera_z_far + camera_z_near) / (camera_z_far - camera_z_near)) * (camera_z_far - camera_z_near)) / 2.0;
@@ -293,16 +276,16 @@ void main() {
 
 	color_accum.a = max(color_accum.a, sqrt(max_accum));
 
-	gl_FragColor = color_accum;
+	frag_color = color_accum;
 
 #endif
 
 #ifdef GLOW_FIRST_PASS
 
-	float luminance = max(gl_FragColor.r, max(gl_FragColor.g, gl_FragColor.b));
+	float luminance = max(frag_color.r, max(frag_color.g, frag_color.b));
 	float feedback = max(smoothstep(glow_hdr_threshold, glow_hdr_threshold + glow_hdr_scale, luminance), glow_bloom);
 
-	gl_FragColor = min(gl_FragColor * feedback, vec4(luminance_cap));
+	frag_color = min(frag_color * feedback, vec4(luminance_cap));
 
 #endif
 }
