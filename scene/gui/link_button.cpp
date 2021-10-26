@@ -75,7 +75,11 @@ void LinkButton::_notification(int p_what) {
 
 			switch (get_draw_mode()) {
 				case DRAW_NORMAL: {
-					color = get_color("font_color");
+					if (has_focus()) {
+						color = get_color("font_color_focus");
+					} else {
+						color = get_color("font_color");
+					}
 					do_underline = underline_mode == UNDERLINE_MODE_ALWAYS;
 				} break;
 				case DRAW_HOVER_PRESSED:
