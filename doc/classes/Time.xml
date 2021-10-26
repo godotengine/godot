@@ -6,7 +6,7 @@
 	<description>
 		The Time singleton allows converting time between various formats and also getting time information from the system.
 		This class conforms with as many of the ISO 8601 standards as possible. All dates follow the Proleptic Gregorian calendar. As such, the day before [code]1582-10-15[/code] is [code]1582-10-14[/code], not [code]1582-10-04[/code]. The year before 1 AD (aka 1 BC) is number [code]0[/code], with the year before that (2 BC) being [code]-1[/code], etc.
-		Conversion methods assume "the same timezone", and do not handle timezone conversions or DST automatically. Leap seconds are also not handled, they must be done manually if desired. Suffixes such as "Z" are not handled, you need to strip them away manually.
+		Conversion methods assume "the same timezone", and do not handle timezone conversions or DST automatically. Unix epoch assumes UTC. Leap seconds are also not handled, they must be done manually if desired. Suffixes such as "Z" are not handled, you need to strip them away manually.
 		[b]Important:[/b] The [code]_from_system[/code] methods use the system clock that the user can manually set. [b]Never use[/b] this method for precise time calculation since its results are subject to automatic adjustments by the user or the operating system. [b]Always use[/b] [method get_ticks_usec] or [method get_ticks_msec] for precise time calculation instead, since they are guaranteed to be monotonic (i.e. never decrease).
 	</description>
 	<tutorials>
@@ -100,12 +100,14 @@
 			<return type="int" />
 			<description>
 				Returns the amount of time passed in milliseconds since the engine started.
+				Will always be positive or 0 and uses a 64-bit value (it will wrap after roughly 500 million years).
 			</description>
 		</method>
 		<method name="get_ticks_usec" qualifiers="const">
 			<return type="int" />
 			<description>
 				Returns the amount of time passed in microseconds since the engine started.
+				Will always be positive or 0 and uses a 64-bit value (it will wrap after roughly half a million years).
 			</description>
 		</method>
 		<method name="get_time_dict_from_system" qualifiers="const">
@@ -150,8 +152,9 @@
 			<description>
 				Converts a dictionary of time values to a Unix timestamp.
 				The given dictionary can be populated with the following keys: [code]year[/code], [code]month[/code], [code]day[/code], [code]hour[/code], [code]minute[/code], and [code]second[/code]. Any other entries (including [code]dst[/code]) are ignored.
-				If the dictionary is empty, [code]0[/code] is returned. If some keys are omitted, they default to the equivalent values for the Unix epoch timestamp 0 (1970-01-01 at 00:00:00).
+				If the dictionary is empty, [code]0[/code] is returned. If some keys are omitted, they default to the equivalent values for the Unix epoch timestamp 0 (1970-01-01 at 00:00:00 UTC).
 				You can pass the output from [method get_datetime_dict_from_unix_time] directly into this function and get the same as what was put in.
+				[b]Note:[/b] Unix timestamps are usually in UTC, the given datetime dict may not be.
 			</description>
 		</method>
 		<method name="get_unix_time_from_datetime_string" qualifiers="const">
@@ -159,12 +162,13 @@
 			<argument index="0" name="datetime" type="String" />
 			<description>
 				Converts the given ISO 8601 date and/or time string to a Unix timestamp. The string can contain a date only, a time only, or both.
+				[b]Note:[/b] Unix timestamps are usually in UTC, the given datetime string may not be.
 			</description>
 		</method>
 		<method name="get_unix_time_from_system" qualifiers="const">
 			<return type="float" />
 			<description>
-				Returns the current Unix timestamp in seconds based on the system time.
+				Returns the current Unix timestamp in seconds based on the system time in UTC.
 			</description>
 		</method>
 	</methods>
