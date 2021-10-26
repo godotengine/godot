@@ -536,7 +536,7 @@ private:
 		}
 	}
 
-	void _recheck_pair(BVHHandle p_from, BVHHandle p_to, void *p_pair_data) {
+	void *_recheck_pair(BVHHandle p_from, BVHHandle p_to, void *p_pair_data) {
 		tree._handle_sort(p_from, p_to);
 
 		typename BVHTREE_CLASS::ItemExtra &exa = tree._extra[p_from.id()];
@@ -544,13 +544,15 @@ private:
 
 		// if the userdata is the same, no collisions should occur
 		if ((exa.userdata == exb.userdata) && exa.userdata) {
-			return;
+			return p_pair_data;
 		}
 
 		// callback
 		if (check_pair_callback) {
-			check_pair_callback(check_pair_callback_userdata, p_from, exa.userdata, exa.subindex, p_to, exb.userdata, exb.subindex, p_pair_data);
+			return check_pair_callback(check_pair_callback_userdata, p_from, exa.userdata, exa.subindex, p_to, exb.userdata, exb.subindex, p_pair_data);
 		}
+
+		return p_pair_data;
 	}
 
 	// returns true if unpair
@@ -658,13 +660,27 @@ private:
 
 	// Send pair callbacks again for all existing pairs for the given handle.
 	void _recheck_pairs(BVHHandle p_handle) {
-		typename BVHTREE_CLASS::ItemPairs &p_from = tree._pairs[p_handle.id()];
+		typename BVHTREE_CLASS::ItemPairs &from = tree._pairs[p_handle.id()];
 
 		// checking pair for every partner.
-		for (unsigned int n = 0; n < p_from.extended_pairs.size(); n++) {
-			const typename BVHTREE_CLASS::ItemPairs::Link &pair = p_from.extended_pairs[n];
+		for (unsigned int n = 0; n < from.extended_pairs.size(); n++) {
+			typename BVHTREE_CLASS::ItemPairs::Link &pair = from.extended_pairs[n];
 			BVHHandle h_to = pair.handle;
-			_recheck_pair(p_handle, h_to, pair.userdata);
+			void *new_pair_data = _recheck_pair(p_handle, h_to, pair.userdata);
+
+			if (new_pair_data != pair.userdata) {
+				pair.userdata = new_pair_data;
+
+				// Update pair data for the second item.
+				typename BVHTREE_CLASS::ItemPairs &to = tree._pairs[h_to.id()];
+				for (unsigned int to_index = 0; to_index < to.extended_pairs.size(); to_index++) {
+					typename BVHTREE_CLASS::ItemPairs::Link &to_pair = to.extended_pairs[to_index];
+					if (to_pair.handle == p_handle) {
+						to_pair.userdata = new_pair_data;
+						break;
+					}
+				}
+			}
 		}
 	}
 
