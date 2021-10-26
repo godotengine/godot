@@ -382,7 +382,15 @@ void VisualServerViewport::viewport_set_use_arvr(RID p_viewport, bool p_use_arvr
 	Viewport *viewport = viewport_owner.getornull(p_viewport);
 	ERR_FAIL_COND(!viewport);
 
+	if (viewport->use_arvr == p_use_arvr) {
+		return;
+	}
+
 	viewport->use_arvr = p_use_arvr;
+	if (!viewport->use_arvr && viewport->size.width > 0 && viewport->size.height > 0) {
+		// No longer controlled by our XR server, make sure we reset it
+		VSG::storage->render_target_set_size(viewport->render_target, viewport->size.width, viewport->size.height);
+	}
 }
 
 void VisualServerViewport::viewport_set_size(RID p_viewport, int p_width, int p_height) {
@@ -392,7 +400,10 @@ void VisualServerViewport::viewport_set_size(RID p_viewport, int p_width, int p_
 	ERR_FAIL_COND(!viewport);
 
 	viewport->size = Size2(p_width, p_height);
-	VSG::storage->render_target_set_size(viewport->render_target, p_width, p_height);
+	if (!viewport->use_arvr) {
+		// Only update if this is not controlled by our XR server
+		VSG::storage->render_target_set_size(viewport->render_target, p_width, p_height);
+	}
 }
 
 void VisualServerViewport::viewport_set_active(RID p_viewport, bool p_active) {
