@@ -79,8 +79,8 @@ public:
 		ERR_FAIL_COND_V(p_buffer.size() == 0, 0);
 		int total_bandwidth = 0;
 
-		uint32_t timestamp = OS::get_singleton()->get_ticks_msec();
-		uint32_t final_timestamp = timestamp - 1000;
+		uint64_t timestamp = OS::get_singleton()->get_ticks_msec();
+		uint64_t final_timestamp = timestamp - 1000;
 
 		int i = (p_pointer + p_buffer.size() - 1) % p_buffer.size();
 

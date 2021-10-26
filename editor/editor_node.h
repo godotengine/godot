@@ -407,7 +407,7 @@ private:
 
 	bool waiting_for_sources_changed;
 
-	uint32_t update_spinner_step_msec;
+	uint64_t update_spinner_step_msec;
 	uint64_t update_spinner_step_frame;
 	int update_spinner_step;
 

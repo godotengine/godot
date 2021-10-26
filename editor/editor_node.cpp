@@ -562,9 +562,9 @@ void EditorNode::_notification(int p_what) {
 				last_checked_version = editor_data.get_undo_redo().get_version();
 			}
 
-			// update the animation frame of the update spinner
+			// Update the animation frame of the update spinner.
 			uint64_t frame = Engine::get_singleton()->get_frames_drawn();
-			uint32_t tick = OS::get_singleton()->get_ticks_msec();
+			uint64_t tick = OS::get_singleton()->get_ticks_msec();
 
 			if (frame != update_spinner_step_frame && (tick - update_spinner_step_msec) > (1000 / 8)) {
 				update_spinner_step++;
@@ -575,7 +575,7 @@ void EditorNode::_notification(int p_what) {
 				update_spinner_step_msec = tick;
 				update_spinner_step_frame = frame + 1;
 
-				// update the icon itself only when the spinner is visible
+				// Update the icon itself only when the spinner is visible.
 				if (EditorSettings::get_singleton()->get("interface/editor/show_update_spinner")) {
 					update_spinner->set_icon(gui_base->get_theme_icon("Progress" + itos(update_spinner_step + 1), SNAME("EditorIcons")));
 				}
