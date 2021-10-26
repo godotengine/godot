@@ -71,7 +71,11 @@ void OptionButton::_notification(int p_what) {
 						clr = get_theme_color(SNAME("font_disabled_color"));
 						break;
 					default:
-						clr = get_theme_color(SNAME("font_color"));
+						if (has_focus()) {
+							clr = get_theme_color(SNAME("font_focus_color"));
+						} else {
+							clr = get_theme_color(SNAME("font_color"));
+						}
 				}
 			}
 
