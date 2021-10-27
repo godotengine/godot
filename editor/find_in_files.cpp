@@ -47,13 +47,13 @@
 const char *FindInFiles::SIGNAL_RESULT_FOUND = "result_found";
 const char *FindInFiles::SIGNAL_FINISHED = "finished";
 
-// TODO Would be nice in Vector and Vectors
+// TODO: Would be nice in Vector and Vectors.
 template <typename T>
 inline void pop_back(T &container) {
 	container.resize(container.size() - 1);
 }
 
-// TODO Copied from TextEdit private, would be nice to extract it in a single place
+// TODO: Copied from TextEdit private, would be nice to extract it in a single place.
 static bool is_text_char(char32_t c) {
 	return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '_';
 }
@@ -125,7 +125,7 @@ void FindInFiles::start() {
 		return;
 	}
 
-	// Init search
+	// Init search.
 	_current_dir = "";
 	PackedStringArray init_folder;
 	init_folder.push_back(_root_dir);
@@ -145,14 +145,14 @@ void FindInFiles::stop() {
 }
 
 void FindInFiles::_process() {
-	// This part can be moved to a thread if needed
+	// This part can be moved to a thread if needed.
 
 	OS &os = *OS::get_singleton();
 	uint64_t time_before = os.get_ticks_msec();
 	while (is_processing()) {
 		_iterate();
 		uint64_t elapsed = (os.get_ticks_msec() - time_before);
-		if (elapsed > 8) { // Process again after waiting 8 ticks
+		if (elapsed > 8) { // Process again after waiting 8 ticks.
 			break;
 		}
 	}
@@ -160,12 +160,12 @@ void FindInFiles::_process() {
 
 void FindInFiles::_iterate() {
 	if (_folders_stack.size() != 0) {
-		// Scan folders first so we can build a list of files and have progress info later
+		// Scan folders first so we can build a list of files and have progress info later.
 
 		PackedStringArray &folders_to_scan = _folders_stack.write[_folders_stack.size() - 1];
 
 		if (folders_to_scan.size() != 0) {
-			// Scan one folder below
+			// Scan one folder below.
 
 			String folder_name = folders_to_scan[folders_to_scan.size() - 1];
 			pop_back(folders_to_scan);
@@ -178,19 +178,19 @@ void FindInFiles::_iterate() {
 			_folders_stack.push_back(sub_dirs);
 
 		} else {
-			// Go back one level
+			// Go back one level.
 
 			pop_back(_folders_stack);
 			_current_dir = _current_dir.get_base_dir();
 
 			if (_folders_stack.size() == 0) {
-				// All folders scanned
+				// All folders scanned.
 				_initial_files_count = _files_to_scan.size();
 			}
 		}
 
 	} else if (_files_to_scan.size() != 0) {
-		// Then scan files
+		// Then scan files.
 
 		String fpath = _files_to_scan[_files_to_scan.size() - 1];
 		pop_back(_files_to_scan);
@@ -228,12 +228,12 @@ void FindInFiles::_scan_dir(String path, PackedStringArray &out_folders) {
 			break;
 		}
 
-		// If there is a .gdignore file in the directory, don't bother searching it
+		// If there is a .gdignore file in the directory, skip searching the directory.
 		if (file == ".gdignore") {
 			break;
 		}
 
-		// Ignore special dirs (such as .git and project data directory)
+		// Ignore special directories (such as those beginning with . and the project data directory).
 		String project_data_dir_name = ProjectSettings::get_singleton()->get_project_data_dir_name();
 		if (file.begins_with(".") || file == project_data_dir_name) {
 			continue;
@@ -264,7 +264,7 @@ void FindInFiles::_scan_file(String fpath) {
 	int line_number = 0;
 
 	while (!f->eof_reached()) {
-		// line number starts at 1
+		// Line number starts at 1.
 		++line_number;
 
 		int begin = 0;
@@ -331,7 +331,7 @@ FindInFilesDialog::FindInFilesDialog() {
 	_replace_text_line_edit->hide();
 	gc->add_child(_replace_text_line_edit);
 
-	gc->add_child(memnew(Control)); // Space to maintain the grid aligned.
+	gc->add_child(memnew(Control)); // Space to maintain the grid alignment.
 
 	{
 		HBoxContainer *hbc = memnew(HBoxContainer);
@@ -421,7 +421,7 @@ void FindInFilesDialog::set_find_in_files_mode(FindInFilesMode p_mode) {
 		_replace_text_line_edit->show();
 	}
 
-	//	After hiding some child controls, let's recalculate proper Dialog size
+	// Recalculate the dialog size after hiding child controls.
 	set_size(Size2(get_size().x, 0));
 }
 
@@ -448,7 +448,7 @@ String FindInFilesDialog::get_folder() const {
 }
 
 Set<String> FindInFilesDialog::get_filter() const {
-	// could check the _filters_preferences but it might not have been generated yet.
+	// Could check the _filters_preferences but it might not have been generated yet.
 	Set<String> filters;
 	for (int i = 0; i < _filters_container->get_child_count(); ++i) {
 		CheckBox *cb = (CheckBox *)_filters_container->get_child(i);
@@ -492,6 +492,7 @@ void FindInFilesDialog::custom_action(const String &p_action) {
 		CheckBox *cb = (CheckBox *)_filters_container->get_child(i);
 		_filters_preferences[cb->get_text()] = cb->is_pressed();
 	}
+
 	if (p_action == "find") {
 		emit_signal(SNAME(SIGNAL_FIND_REQUESTED));
 		hide();
@@ -510,7 +511,7 @@ void FindInFilesDialog::_on_search_text_modified(String text) {
 }
 
 void FindInFilesDialog::_on_search_text_submitted(String text) {
-	// This allows to trigger a global search without leaving the keyboard
+	// This allows to trigger a global search without leaving the keyboard.
 	if (!_find_button->is_disabled()) {
 		if (_mode == SEARCH_MODE) {
 			custom_action("find");
@@ -525,7 +526,7 @@ void FindInFilesDialog::_on_search_text_submitted(String text) {
 }
 
 void FindInFilesDialog::_on_replace_text_submitted(String text) {
-	// This allows to trigger a global search without leaving the keyboard
+	// This allows to trigger a global search without leaving the keyboard.
 	if (!_replace_button->is_disabled()) {
 		if (_mode == REPLACE_MODE) {
 			custom_action("replace");
@@ -641,13 +642,12 @@ void FindInFilesPanel::set_with_replace(bool with_replace) {
 	_replace_container->set_visible(with_replace);
 
 	if (with_replace) {
-		// Results show checkboxes on their left so they can be opted out
+		// Results show checkboxes on their left so they can be opted out.
 		_results_display->set_columns(2);
 		_results_display->set_column_expand(0, false);
 		_results_display->set_column_custom_minimum_width(0, 48 * EDSCALE);
-
 	} else {
-		// Results are single-cell items
+		// Results are single-cell items.
 		_results_display->set_column_expand(0, true);
 		_results_display->set_columns(1);
 	}
@@ -708,12 +708,12 @@ void FindInFilesPanel::_on_result_found(String fpath, int line_number, int begin
 		file_item->set_text(0, fpath);
 		file_item->set_metadata(0, fpath);
 
-		// The width of this column is restrained to checkboxes, but that doesn't make sense for the parent items,
-		// so we override their width so they can expand to full width
+		// The width of this column is restrained to checkboxes,
+		// but that doesn't make sense for the parent items,
+		// so we override their width so they can expand to full width.
 		file_item->set_expand_right(0, true);
 
 		_file_items[fpath] = file_item;
-
 	} else {
 		file_item = E->value();
 	}
@@ -725,7 +725,7 @@ void FindInFilesPanel::_on_result_found(String fpath, int line_number, int begin
 	// Do this first because it resets properties of the cell...
 	item->set_cell_mode(text_index, TreeItem::CELL_MODE_CUSTOM);
 
-	// Trim result item line
+	// Trim result item line.
 	int old_text_size = text.size();
 	text = text.strip_edges(true, false);
 	int chars_removed = old_text_size - text.size();
@@ -780,9 +780,8 @@ void FindInFilesPanel::_on_item_edited() {
 
 	if (item->is_checked(0)) {
 		item->set_custom_color(1, _results_display->get_theme_color(SNAME("font_color")));
-
 	} else {
-		// Grey out
+		// Grey out.
 		Color color = _results_display->get_theme_color(SNAME("font_color"));
 		color.a /= 2.0;
 		item->set_custom_color(1, color);
@@ -857,19 +856,19 @@ void FindInFilesPanel::_on_replace_all_clicked() {
 		}
 
 		if (locations.size() != 0) {
-			// Results are sorted by file, so we can batch replaces
+			// Results are sorted by file, so we can batch replaces.
 			apply_replaces_in_file(fpath, locations, replace_text);
 			modified_files.push_back(fpath);
 		}
 	}
 
-	// Hide replace bar so we can't trigger the action twice without doing a new search
+	// Hide replace bar so we can't trigger the action twice without doing a new search.
 	_replace_container->hide();
 
 	emit_signal(SNAME(SIGNAL_FILES_MODIFIED), modified_files);
 }
 
-// Same as get_line, but preserves line ending characters
+// Same as get_line, but preserves line ending characters.
 class ConservativeGetLine {
 public:
 	String get_line(FileAccess *f) {
@@ -941,7 +940,7 @@ void FindInFilesPanel::apply_replaces_in_file(String fpath, const Vector<Result>
 		}
 
 		line = line.left(repl_begin) + new_text + line.substr(repl_end);
-		// keep an offset in case there are successive replaces in the same line
+		// Keep an offset in case there are successive replaces in the same line.
 		offset += new_text.length() - (repl_end - repl_begin);
 	}
 
@@ -951,7 +950,7 @@ void FindInFilesPanel::apply_replaces_in_file(String fpath, const Vector<Result>
 		buffer += conservative.get_line(f);
 	}
 
-	// Now the modified contents are in the buffer, rewrite the file with our changes
+	// Now the modified contents are in the buffer, rewrite the file with our changes.
 
 	Error err = f->reopen(fpath, FileAccess::WRITE);
 	ERR_FAIL_COND_MSG(err != OK, "Cannot create file in path '" + fpath + "'.");
