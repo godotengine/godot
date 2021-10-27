@@ -1101,7 +1101,7 @@ bool CharacterBody2D::move_and_slide() {
 	}
 
 	if (motion_mode == MOTION_MODE_GROUNDED) {
-		_move_and_slide_grounded(delta, was_on_floor, current_platform_velocity);
+		_move_and_slide_grounded(delta, was_on_floor);
 	} else {
 		_move_and_slide_free(delta);
 	}
@@ -1122,14 +1122,11 @@ bool CharacterBody2D::move_and_slide() {
 	return motion_results.size() > 0;
 }
 
-void CharacterBody2D::_move_and_slide_grounded(double p_delta, bool p_was_on_floor, const Vector2 &p_prev_platform_velocity) {
+void CharacterBody2D::_move_and_slide_grounded(double p_delta, bool p_was_on_floor) {
 	Vector2 motion = motion_velocity * p_delta;
 	Vector2 motion_slide_up = motion.slide(up_direction);
 
 	Vector2 prev_floor_normal = floor_normal;
-	RID prev_platform_rid = platform_rid;
-	ObjectID prev_platform_object_id = platform_object_id;
-	int prev_platform_layer = platform_layer;
 
 	platform_rid = RID();
 	platform_object_id = ObjectID();
@@ -1202,12 +1199,8 @@ void CharacterBody2D::_move_and_slide_grounded(double p_delta, bool p_was_on_flo
 						gt.elements[2] -= result.travel;
 						set_global_transform(gt);
 					}
-					on_floor = true;
-					platform_rid = prev_platform_rid;
-					platform_object_id = prev_platform_object_id;
-					platform_layer = prev_platform_layer;
-					platform_velocity = p_prev_platform_velocity;
-					floor_normal = prev_floor_normal;
+					// Determines if you are on the ground.
+					_snap_on_floor(true, false);
 					motion_velocity = Vector2();
 					last_motion = Vector2();
 					motion = Vector2();
