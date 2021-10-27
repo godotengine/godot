@@ -211,6 +211,7 @@ private:
 
 	void _update_dirty_quadrants();
 
+	void _recreate_layer_internals(int p_layer);
 	void _recreate_internals();
 
 	void _erase_quadrant(Map<Vector2i, TileMapQuadrant>::Element *Q);
