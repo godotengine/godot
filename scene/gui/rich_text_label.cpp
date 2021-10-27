@@ -1491,7 +1491,13 @@ void RichTextLabel::_notification(int p_what) {
 				_update_fx(main, dt);
 				update();
 			}
-		}
+		} break;
+		case NOTIFICATION_FOCUS_EXIT: {
+			if (deselect_on_focus_loss_enabled) {
+				selection.active = false;
+				update();
+			}
+		} break;
 	}
 }
 
@@ -3609,6 +3615,14 @@ void RichTextLabel::set_selection_enabled(bool p_enabled) {
 	}
 }
 
+void RichTextLabel::set_deselect_on_focus_loss_enabled(const bool p_enabled) {
+	deselect_on_focus_loss_enabled = p_enabled;
+	if (p_enabled && selection.active && !has_focus()) {
+		selection.active = false;
+		update();
+	}
+}
+
 bool RichTextLabel::_search_table(ItemTable *p_table, List<Item *>::Element *p_from, const String &p_string, bool p_reverse_search) {
 	List<Item *>::Element *E = p_from;
 	while (E != nullptr) {
@@ -3856,6 +3870,10 @@ void RichTextLabel::selection_copy() {
 
 bool RichTextLabel::is_selection_enabled() const {
 	return selection.enabled;
+}
+
+bool RichTextLabel::is_deselect_on_focus_loss_enabled() const {
+	return deselect_on_focus_loss_enabled;
 }
 
 int RichTextLabel::get_selection_from() const {
@@ -4111,6 +4129,9 @@ void RichTextLabel::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_selection_enabled", "enabled"), &RichTextLabel::set_selection_enabled);
 	ClassDB::bind_method(D_METHOD("is_selection_enabled"), &RichTextLabel::is_selection_enabled);
 
+	ClassDB::bind_method(D_METHOD("set_deselect_on_focus_loss_enabled", "enable"), &RichTextLabel::set_deselect_on_focus_loss_enabled);
+	ClassDB::bind_method(D_METHOD("is_deselect_on_focus_loss_enabled"), &RichTextLabel::is_deselect_on_focus_loss_enabled);
+
 	ClassDB::bind_method(D_METHOD("get_selection_from"), &RichTextLabel::get_selection_from);
 	ClassDB::bind_method(D_METHOD("get_selection_to"), &RichTextLabel::get_selection_to);
 
@@ -4161,6 +4182,8 @@ void RichTextLabel::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "selection_enabled"), "set_selection_enabled", "is_selection_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "override_selected_font_color"), "set_override_selected_font_color", "is_overriding_selected_font_color");
+
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "deselect_on_focus_loss_enabled"), "set_deselect_on_focus_loss_enabled", "is_deselect_on_focus_loss_enabled");
 
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "custom_effects", PROPERTY_HINT_ARRAY_TYPE, vformat("%s/%s:%s", Variant::OBJECT, PROPERTY_HINT_RESOURCE_TYPE, "RichTextEffect"), (PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_SCRIPT_VARIABLE)), "set_effects", "get_effects");
 
