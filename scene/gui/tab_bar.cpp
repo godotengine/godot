@@ -222,7 +222,7 @@ void TabBar::gui_input(const Ref<InputEvent> &p_event) {
 				}
 			}
 
-			if (max_drawn_tab <= 0) {
+			if (tabs.is_empty()) {
 				// Return early if there are no actual tabs to handle input for.
 				return;
 			}
