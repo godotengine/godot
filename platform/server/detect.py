@@ -80,6 +80,13 @@ def configure(env):
     if env["bits"] == "default":
         env["bits"] = "64" if is64 else "32"
 
+    if env["arch"] == "" and platform.machine() == "riscv64":
+        env["arch"] = "rv64"
+
+    if env["arch"] == "rv64":
+        # G = General-purpose extensions, C = Compression extension (very common).
+        env.Append(CCFLAGS=["-march=rv64gc"])
+
     ## Compiler configuration
 
     if "CXX" in env and "clang" in os.path.basename(env["CXX"]):
