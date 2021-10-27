@@ -44,7 +44,9 @@ void CollisionObject2D::_notification(int p_what) {
 				Physics2DServer::get_singleton()->body_set_state(rid, Physics2DServer::BODY_STATE_TRANSFORM, global_transform);
 			}
 
-			RID space = get_world_2d()->get_space();
+			Ref<World2D> world_ref = get_world_2d();
+			ERR_FAIL_COND(!world_ref.is_valid());
+			RID space = world_ref->get_space();
 			if (area) {
 				Physics2DServer::get_singleton()->area_set_space(rid, space);
 			} else {
