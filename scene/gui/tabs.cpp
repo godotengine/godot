@@ -182,7 +182,7 @@ void Tabs::_gui_input(const Ref<InputEvent> &p_event) {
 				}
 			}
 
-			if (max_drawn_tab <= 0) {
+			if (tabs.empty()) {
 				// Return early if there are no actual tabs to handle input for.
 				return;
 			}
