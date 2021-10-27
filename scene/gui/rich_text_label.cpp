@@ -448,11 +448,18 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 					line_descent = MAX(line_descent, descent);
 					fh = line_ascent + line_descent;
 
+					float align_spacing = 0.0f;
+					bool is_at_line_wrap = false;
 					if (end && c[end - 1] == ' ') {
 						if (align == ALIGN_FILL && p_mode != PROCESS_CACHE) {
 							int ln = MIN(l.offset_caches.size() - 1, line);
 							if (l.space_caches[ln]) {
-								align_ofs = spaces * l.offset_caches[ln] / l.space_caches[ln];
+								align_spacing = l.offset_caches[ln] / l.space_caches[ln];
+								align_ofs = spaces * align_spacing;
+
+								if (l.space_caches[ln] == spaces) {
+									is_at_line_wrap = true;
+								}
 							}
 						}
 						spaces++;
@@ -613,24 +620,25 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 							}
 						}
 
-						if (underline) {
+						if (underline || strikethrough) {
 							Color uc = color;
 							uc.a *= 0.5;
-							int uy = y + lh - line_descent + 2;
-							float underline_width = 1.0;
+
+							int line_y = y + lh;
+							if (underline) {
+								line_y -= line_descent - 2;
+							} else {
+								line_y -= (line_ascent + line_descent) / 2;
+							}
+							const Point2 from = p_ofs + Point2(align_ofs + wofs, line_y);
+							const Point2 to = from + Point2(w + (is_at_line_wrap ? 0 : align_spacing), 0);
+
+							float line_width = 1.0f;
 #ifdef TOOLS_ENABLED
-							underline_width *= EDSCALE;
+							line_width *= EDSCALE;
 #endif
-							VS::get_singleton()->canvas_item_add_line(ci, p_ofs + Point2(align_ofs + wofs, uy), p_ofs + Point2(align_ofs + wofs + w, uy), uc, underline_width);
-						} else if (strikethrough) {
-							Color uc = color;
-							uc.a *= 0.5;
-							int uy = y + lh - (line_ascent + line_descent) / 2;
-							float strikethrough_width = 1.0;
-#ifdef TOOLS_ENABLED
-							strikethrough_width *= EDSCALE;
-#endif
-							VS::get_singleton()->canvas_item_add_line(ci, p_ofs + Point2(align_ofs + wofs, uy), p_ofs + Point2(align_ofs + wofs + w, uy), uc, strikethrough_width);
+
+							VS::get_singleton()->canvas_item_add_line(ci, from, to, uc, line_width);
 						}
 					}
 
