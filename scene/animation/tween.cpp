@@ -75,12 +75,17 @@ Ref<PropertyTweener> Tween::tween_property(Object *p_target, NodePath p_property
 	ERR_FAIL_COND_V_MSG(!valid, nullptr, "Tween invalid. Either finished or created outside scene tree.");
 	ERR_FAIL_COND_V_MSG(started, nullptr, "Can't append to a Tween that has started. Use stop() first.");
 
-#ifdef DEBUG_ENABLED
-	Variant::Type property_type = p_target->get_indexed(p_property.get_as_property_path().get_subnames()).get_type();
-	ERR_FAIL_COND_V_MSG(property_type != p_to.get_type(), Ref<PropertyTweener>(), "Type mismatch between property and final value: " + Variant::get_type_name(property_type) + " and " + Variant::get_type_name(p_to.get_type()));
-#endif
+	bool access_ok;
+	Variant::Type target_type = p_target->get_indexed(p_property.get_as_property_path().get_subnames(), &access_ok).get_type();
+	ERR_FAIL_COND_V_MSG(!access_ok, nullptr, "Can't access property " + p_property);
 
-	Ref<PropertyTweener> tweener = memnew(PropertyTweener(p_target, p_property, p_to, p_duration));
+	Variant to_value;
+	const Variant *src = &p_to;
+	Callable::CallError ce;
+	Variant::construct(target_type, to_value, &src, 1, ce);
+	ERR_FAIL_COND_V_MSG(ce.error != Callable::CallError::CALL_OK, nullptr, "Can't convert final value to target type: " + Variant::get_type_name(p_to.get_type()) + " to " + Variant::get_type_name(target_type));
+
+	Ref<PropertyTweener> tweener = memnew(PropertyTweener(p_target, p_property, to_value, p_duration));
 	append(tweener);
 	return tweener;
 }
@@ -658,7 +663,12 @@ void Tween::_bind_methods() {
 }
 
 Ref<PropertyTweener> PropertyTweener::from(Variant p_value) {
-	initial_val = p_value;
+	Variant::Type target_type = initial_val.get_type();
+	const Variant *src = &p_value;
+	Callable::CallError ce;
+	Variant::construct(target_type, initial_val, &src, 1, ce);
+	ERR_FAIL_COND_V_MSG(ce.error != Callable::CallError::CALL_OK, this, "Can't convert start value to target type: " + Variant::get_type_name(p_value.get_type()) + " to " + Variant::get_type_name(target_type));
+
 	do_continue = false;
 	return this;
 }
@@ -699,7 +709,9 @@ void PropertyTweener::start() {
 	}
 
 	if (do_continue) {
-		initial_val = target_instance->get_indexed(property);
+		bool access_ok;
+		initial_val = target_instance->get_indexed(property, &access_ok);
+		ERR_FAIL_COND_MSG(!access_ok, "Target property not accessible, aborting Tweener.");
 	}
 
 	if (relative) {
