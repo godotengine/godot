@@ -486,7 +486,6 @@ int TileMap::get_selected_layer() const {
 void TileMap::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
-			pending_update = true;
 			_clear_internals();
 			_recreate_internals();
 		} break;
@@ -623,8 +622,8 @@ String TileMap::get_layer_name(int p_layer) const {
 void TileMap::set_layer_enabled(int p_layer, bool p_enabled) {
 	ERR_FAIL_INDEX(p_layer, (int)layers.size());
 	layers[p_layer].enabled = p_enabled;
-	_clear_internals();
-	_recreate_internals();
+	_clear_layer_internals(p_layer);
+	_recreate_layer_internals(p_layer);
 	emit_signal(SNAME("changed"));
 
 	update_configuration_warnings();
@@ -638,8 +637,8 @@ bool TileMap::is_layer_enabled(int p_layer) const {
 void TileMap::set_layer_modulate(int p_layer, Color p_modulate) {
 	ERR_FAIL_INDEX(p_layer, (int)layers.size());
 	layers[p_layer].modulate = p_modulate;
-	_clear_internals();
-	_recreate_internals();
+	_clear_layer_internals(p_layer);
+	_recreate_layer_internals(p_layer);
 	emit_signal(SNAME("changed"));
 }
 
@@ -651,8 +650,8 @@ Color TileMap::get_layer_modulate(int p_layer) const {
 void TileMap::set_layer_y_sort_enabled(int p_layer, bool p_y_sort_enabled) {
 	ERR_FAIL_INDEX(p_layer, (int)layers.size());
 	layers[p_layer].y_sort_enabled = p_y_sort_enabled;
-	_clear_internals();
-	_recreate_internals();
+	_clear_layer_internals(p_layer);
+	_recreate_layer_internals(p_layer);
 	emit_signal(SNAME("changed"));
 
 	update_configuration_warnings();
@@ -666,8 +665,8 @@ bool TileMap::is_layer_y_sort_enabled(int p_layer) const {
 void TileMap::set_layer_y_sort_origin(int p_layer, int p_y_sort_origin) {
 	ERR_FAIL_INDEX(p_layer, (int)layers.size());
 	layers[p_layer].y_sort_origin = p_y_sort_origin;
-	_clear_internals();
-	_recreate_internals();
+	_clear_layer_internals(p_layer);
+	_recreate_layer_internals(p_layer);
 	emit_signal(SNAME("changed"));
 }
 
@@ -679,8 +678,8 @@ int TileMap::get_layer_y_sort_origin(int p_layer) const {
 void TileMap::set_layer_z_index(int p_layer, int p_z_index) {
 	ERR_FAIL_INDEX(p_layer, (int)layers.size());
 	layers[p_layer].z_index = p_z_index;
-	_clear_internals();
-	_recreate_internals();
+	_clear_layer_internals(p_layer);
+	_recreate_layer_internals(p_layer);
 	emit_signal(SNAME("changed"));
 
 	update_configuration_warnings();
@@ -847,37 +846,41 @@ void TileMap::_update_dirty_quadrants() {
 	_recompute_rect_cache();
 }
 
-void TileMap::_recreate_internals() {
-	for (unsigned int layer = 0; layer < layers.size(); layer++) {
-		// Make sure that _clear_internals() was called prior.
-		ERR_FAIL_COND_MSG(layers[layer].quadrant_map.size() > 0, "TileMap layer " + itos(layer) + " had a non-empty quadrant map.");
+void TileMap::_recreate_layer_internals(int p_layer) {
+	// Make sure that _clear_internals() was called prior.
+	ERR_FAIL_COND_MSG(layers[p_layer].quadrant_map.size() > 0, "TileMap layer " + itos(p_layer) + " had a non-empty quadrant map.");
 
-		if (!layers[layer].enabled) {
-			continue;
-		}
-
-		// Upadate the layer internals.
-		_rendering_update_layer(layer);
-
-		// Recreate the quadrants.
-		const Map<Vector2i, TileMapCell> &tile_map = layers[layer].tile_map;
-		for (const KeyValue<Vector2i, TileMapCell> &E : tile_map) {
-			Vector2i qk = _coords_to_quadrant_coords(layer, Vector2i(E.key.x, E.key.y));
-
-			Map<Vector2i, TileMapQuadrant>::Element *Q = layers[layer].quadrant_map.find(qk);
-			if (!Q) {
-				Q = _create_quadrant(layer, qk);
-				layers[layer].dirty_quadrant_list.add(&Q->get().dirty_list_element);
-			}
-
-			Vector2i pk = E.key;
-			Q->get().cells.insert(pk);
-
-			_make_quadrant_dirty(Q);
-		}
+	if (!layers[p_layer].enabled) {
+		return;
 	}
 
-	_update_dirty_quadrants();
+	// Upadate the layer internals.
+	_rendering_update_layer(p_layer);
+
+	// Recreate the quadrants.
+	const Map<Vector2i, TileMapCell> &tile_map = layers[p_layer].tile_map;
+	for (const KeyValue<Vector2i, TileMapCell> &E : tile_map) {
+		Vector2i qk = _coords_to_quadrant_coords(p_layer, Vector2i(E.key.x, E.key.y));
+
+		Map<Vector2i, TileMapQuadrant>::Element *Q = layers[p_layer].quadrant_map.find(qk);
+		if (!Q) {
+			Q = _create_quadrant(p_layer, qk);
+			layers[p_layer].dirty_quadrant_list.add(&Q->get().dirty_list_element);
+		}
+
+		Vector2i pk = E.key;
+		Q->get().cells.insert(pk);
+
+		_make_quadrant_dirty(Q);
+	}
+
+	_queue_update_dirty_quadrants();
+}
+
+void TileMap::_recreate_internals() {
+	for (unsigned int layer = 0; layer < layers.size(); layer++) {
+		_recreate_layer_internals(layer);
+	}
 }
 
 void TileMap::_erase_quadrant(Map<Vector2i, TileMapQuadrant>::Element *Q) {
