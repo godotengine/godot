@@ -50,7 +50,9 @@ void CollisionObject2D::_notification(int p_what) {
 			}
 
 			if (!disabled || (disable_mode != DISABLE_MODE_REMOVE)) {
-				RID space = get_world_2d()->get_space();
+				Ref<World2D> world_ref = get_world_2d();
+				ERR_FAIL_COND(!world_ref.is_valid());
+				RID space = world_ref->get_space();
 				if (area) {
 					PhysicsServer2D::get_singleton()->area_set_space(rid, space);
 				} else {
