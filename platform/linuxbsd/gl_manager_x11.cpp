@@ -205,8 +205,6 @@ Error GLManager_X11::_create_context(GLDisplay &gl_display) {
 }
 
 Error GLManager_X11::window_create(DisplayServer::WindowID p_window_id, ::Window p_window, Display *p_display, int p_width, int p_height) {
-	print_line("window_create window id " + itos(p_window_id));
-
 	// make sure vector is big enough...
 	// we can mirror the external vector, it is simpler
 	// to keep the IDs identical for fast lookup

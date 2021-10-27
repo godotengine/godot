@@ -3895,7 +3895,6 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, V
 		}
 #endif
 #ifdef OPENGL_ENABLED
-		print_line("rendering_driver " + rendering_driver);
 		if (gl_manager) {
 			Error err = gl_manager->window_create(id, wd.x11_window, x11_display, p_rect.size.width, p_rect.size.height);
 			ERR_FAIL_COND_V_MSG(err != OK, INVALID_WINDOW_ID, "Can't create an OpenGL window");
@@ -4085,11 +4084,6 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 	//TODO - do Vulkan and OpenGL support checks, driver selection and fallback
 	rendering_driver = p_rendering_driver;
 
-#ifndef _MSC_VER
-//#warning Forcing vulkan rendering driver because OpenGL not implemented yet
-//#warning Forcing opengl rendering driver because selecting properly is too much effort
-#endif
-
 	bool driver_found = false;
 #if defined(VULKAN_ENABLED)
 	if (rendering_driver == "vulkan") {
@@ -4103,9 +4097,8 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 		driver_found = true;
 	}
 #endif
-	// Init context and rendering device
+	// Initialize context and rendering device.
 #if defined(OPENGL_ENABLED)
-	print_line("rendering_driver " + rendering_driver);
 	if (rendering_driver == "opengl") {
 		if (getenv("DRI_PRIME") == nullptr) {
 			int use_prime = -1;

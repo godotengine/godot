@@ -169,8 +169,6 @@ Error GLManager_Windows::_create_context(GLWindow &win, GLDisplay &gl_display) {
 }
 
 Error GLManager_Windows::window_create(DisplayServer::WindowID p_window_id, HWND p_hwnd, HINSTANCE p_hinstance, int p_width, int p_height) {
-	print_line("window_create window id " + itos(p_window_id));
-
 	HDC hdc = GetDC(p_hwnd);
 	if (!hdc) {
 		return ERR_CANT_CREATE; // Return FALSE

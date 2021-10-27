@@ -3111,7 +3111,6 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 #endif
 
 #ifdef OPENGL_ENABLED
-		print_line("rendering_driver " + rendering_driver);
 		if (rendering_driver == "opengl") {
 			Error err = gl_manager->window_create(id, wd.hWnd, hInstance, WindowRect.right - WindowRect.left, WindowRect.bottom - WindowRect.top);
 			ERR_FAIL_COND_V_MSG(err != OK, INVALID_WINDOW_ID, "Failed to create an OpenGL window.");
@@ -3325,8 +3324,6 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 		// Registration failed.
 		use_raw_input = false;
 	}
-
-	print_line("rendering_driver " + rendering_driver);
 
 #if defined(VULKAN_ENABLED)
 	if (rendering_driver == "vulkan") {
