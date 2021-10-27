@@ -1446,7 +1446,7 @@ void CustomPropertyEditor::_modified(String p_string) {
 				v = value_editor[0]->get_text().to_int();
 				return;
 			} else {
-				v = expr->execute(Array(), nullptr, false);
+				v = expr->execute(Array(), nullptr, false, false);
 			}
 
 			if (v != prev_v) {
@@ -1622,7 +1622,7 @@ real_t CustomPropertyEditor::_parse_real_expression(String text) {
 	if (err != OK) {
 		out = value_editor[0]->get_text().to_float();
 	} else {
-		out = expr->execute(Array(), nullptr, false);
+		out = expr->execute(Array(), nullptr, false, true);
 	}
 	return out;
 }

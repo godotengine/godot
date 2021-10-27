@@ -77,6 +77,7 @@ enum PropertyHint {
 	PROPERTY_HINT_GLOBAL_DIR, ///< a directory path must be passed
 	PROPERTY_HINT_RESOURCE_TYPE, ///< a resource object type
 	PROPERTY_HINT_MULTILINE_TEXT, ///< used for string properties that can contain multiple lines
+	PROPERTY_HINT_EXPRESSION, ///< used for string properties that can contain multiple lines
 	PROPERTY_HINT_PLACEHOLDER_TEXT, ///< used to set a placeholder text for string properties
 	PROPERTY_HINT_COLOR_NO_ALPHA, ///< used for ignoring alpha component when editing a color
 	PROPERTY_HINT_IMAGE_COMPRESS_LOSSY,
@@ -748,6 +749,7 @@ public:
 	Variant callv(const StringName &p_method, const Array &p_args);
 	virtual Variant call(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 	Variant call(const StringName &p_name, VARIANT_ARG_LIST); // C++ helper
+	virtual Variant call_const(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 
 	void notification(int p_notification, bool p_reversed = false);
 	virtual String to_string();

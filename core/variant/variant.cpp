@@ -3360,6 +3360,46 @@ Variant Variant::call(const StringName &p_method, VARIANT_ARG_DECLARE) {
 	return ret;
 }
 
+Variant Variant::call_const(const StringName &p_method, VARIANT_ARG_DECLARE) {
+	VARIANT_ARGPTRS;
+	int argc = 0;
+	for (int i = 0; i < VARIANT_ARG_MAX; i++) {
+		if (argptr[i]->get_type() == Variant::NIL) {
+			break;
+		}
+		argc++;
+	}
+
+	Callable::CallError error;
+
+	Variant ret;
+	call_const(p_method, argptr, argc, ret, error);
+
+	switch (error.error) {
+		case Callable::CallError::CALL_ERROR_INVALID_ARGUMENT: {
+			String err = "Invalid type for argument #" + itos(error.argument) + ", expected '" + Variant::get_type_name(Variant::Type(error.expected)) + "'.";
+			ERR_PRINT(err.utf8().get_data());
+
+		} break;
+		case Callable::CallError::CALL_ERROR_INVALID_METHOD: {
+			String err = "Invalid method '" + p_method + "' for type '" + Variant::get_type_name(type) + "'.";
+			ERR_PRINT(err.utf8().get_data());
+		} break;
+		case Callable::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS: {
+			String err = "Too many arguments for method '" + p_method + "'";
+			ERR_PRINT(err.utf8().get_data());
+		} break;
+		case Callable::CallError::CALL_ERROR_METHOD_NOT_CONST: {
+			String err = "Method is not const '" + p_method + "' and call_const used";
+			ERR_PRINT(err.utf8().get_data());
+		} break;
+		default: {
+		}
+	}
+
+	return ret;
+}
+
 void Variant::construct_from_string(const String &p_string, Variant &r_value, ObjectConstruct p_obj_construct, void *p_construct_ud) {
 	r_value = Variant();
 }
@@ -3389,6 +3429,8 @@ String Variant::get_call_error_text(const StringName &p_method, const Variant **
 		err_text = "Method not found.";
 	} else if (ce.error == Callable::CallError::CALL_ERROR_INSTANCE_IS_NULL) {
 		err_text = "Instance is null";
+	} else if (ce.error == Callable::CallError::CALL_ERROR_METHOD_NOT_CONST) {
+		err_text = "Method not const in const instance";
 	} else if (ce.error == Callable::CallError::CALL_OK) {
 		return "Call OK";
 	}
@@ -3413,6 +3455,8 @@ String Variant::get_call_error_text(Object *p_base, const StringName &p_method, 
 		err_text = "Method not found.";
 	} else if (ce.error == Callable::CallError::CALL_ERROR_INSTANCE_IS_NULL) {
 		err_text = "Instance is null";
+	} else if (ce.error == Callable::CallError::CALL_ERROR_METHOD_NOT_CONST) {
+		err_text = "Method not const in const instance";
 	} else if (ce.error == Callable::CallError::CALL_OK) {
 		return "Call OK";
 	}
@@ -3443,6 +3487,8 @@ String Variant::get_callable_error_text(const Callable &p_callable, const Varian
 		err_text = "Method not found.";
 	} else if (ce.error == Callable::CallError::CALL_ERROR_INSTANCE_IS_NULL) {
 		err_text = "Instance is null";
+	} else if (ce.error == Callable::CallError::CALL_ERROR_METHOD_NOT_CONST) {
+		err_text = "Method not const in const instance";
 	} else if (ce.error == Callable::CallError::CALL_OK) {
 		return "Call OK";
 	}

@@ -513,7 +513,7 @@ void EditorSpinSlider::_evaluate_input_text() {
 		return;
 	}
 
-	Variant v = expr->execute(Array(), nullptr, false);
+	Variant v = expr->execute(Array(), nullptr, false, true);
 	if (v.get_type() == Variant::NIL) {
 		return;
 	}

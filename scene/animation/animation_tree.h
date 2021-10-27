@@ -102,6 +102,7 @@ protected:
 	real_t blend_node(const StringName &p_sub_path, Ref<AnimationNode> p_node, real_t p_time, bool p_seek, real_t p_blend, FilterAction p_filter = FILTER_IGNORE, bool p_optimize = true);
 	real_t blend_input(int p_input, real_t p_time, bool p_seek, real_t p_blend, FilterAction p_filter = FILTER_IGNORE, bool p_optimize = true);
 	void make_invalid(const String &p_reason);
+	AnimationTree *get_animation_tree() const;
 
 	static void _bind_methods();
 

@@ -19,6 +19,10 @@
 			[/csharp]
 			[/codeblocks]
 		</member>
+		<member name="advance_expression" type="String" setter="set_advance_expression" getter="get_advance_expression" default="&quot;&quot;">
+		</member>
+		<member name="advance_expression_base_node" type="NodePath" setter="set_advance_expression_base_node" getter="get_advance_expression_base_node" default="NodePath(&quot;..&quot;)">
+		</member>
 		<member name="auto_advance" type="bool" setter="set_auto_advance" getter="has_auto_advance" default="false">
 			Turn on the transition automatically when this state is reached. This works best with [constant SWITCH_MODE_AT_END].
 		</member>

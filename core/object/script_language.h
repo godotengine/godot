@@ -178,6 +178,7 @@ public:
 	virtual bool has_method(const StringName &p_method) const = 0;
 	virtual Variant call(const StringName &p_method, VARIANT_ARG_LIST);
 	virtual Variant call(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) = 0;
+	virtual Variant call_const(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error); // implement if language supports const functions
 	virtual void notification(int p_notification) = 0;
 	virtual String to_string(bool *r_valid) {
 		if (r_valid) {

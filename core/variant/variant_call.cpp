@@ -1031,6 +1031,43 @@ void Variant::call(const StringName &p_method, const Variant **p_args, int p_arg
 	}
 }
 
+void Variant::call_const(const StringName &p_method, const Variant **p_args, int p_argcount, Variant &r_ret, Callable::CallError &r_error) {
+	if (type == Variant::OBJECT) {
+		//call object
+		Object *obj = _get_obj().obj;
+		if (!obj) {
+			r_error.error = Callable::CallError::CALL_ERROR_INSTANCE_IS_NULL;
+			return;
+		}
+#ifdef DEBUG_ENABLED
+		if (EngineDebugger::is_active() && !_get_obj().id.is_ref_counted() && ObjectDB::get_instance(_get_obj().id) == nullptr) {
+			r_error.error = Callable::CallError::CALL_ERROR_INSTANCE_IS_NULL;
+			return;
+		}
+
+#endif
+		r_ret = _get_obj().obj->call_const(p_method, p_args, p_argcount, r_error);
+
+		//else if (type==Variant::METHOD) {
+	} else {
+		r_error.error = Callable::CallError::CALL_OK;
+
+		const VariantBuiltInMethodInfo *imf = builtin_method_info[type].lookup_ptr(p_method);
+
+		if (!imf) {
+			r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
+			return;
+		}
+
+		if (!imf->is_const) {
+			r_error.error = Callable::CallError::CALL_ERROR_METHOD_NOT_CONST;
+			return;
+		}
+
+		imf->call(this, p_args, p_argcount, r_ret, imf->default_arguments, r_error);
+	}
+}
+
 void Variant::call_static(Variant::Type p_type, const StringName &p_method, const Variant **p_args, int p_argcount, Variant &r_ret, Callable::CallError &r_error) {
 	r_error.error = Callable::CallError::CALL_OK;
 

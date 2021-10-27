@@ -1157,7 +1157,7 @@ bool Expression::_compile_expression() {
 	return false;
 }
 
-bool Expression::_execute(const Array &p_inputs, Object *p_instance, Expression::ENode *p_node, Variant &r_ret, String &r_error_str) {
+bool Expression::_execute(const Array &p_inputs, Object *p_instance, Expression::ENode *p_node, Variant &r_ret, bool p_const_calls_only, String &r_error_str) {
 	switch (p_node->type) {
 		case Expression::ENode::TYPE_INPUT: {
 			const Expression::InputNode *in = static_cast<const Expression::InputNode *>(p_node);
@@ -1183,7 +1183,7 @@ bool Expression::_execute(const Array &p_inputs, Object *p_instance, Expression:
 			const Expression::OperatorNode *op = static_cast<const Expression::OperatorNode *>(p_node);
 
 			Variant a;
-			bool ret = _execute(p_inputs, p_instance, op->nodes[0], a, r_error_str);
+			bool ret = _execute(p_inputs, p_instance, op->nodes[0], a, p_const_calls_only, r_error_str);
 			if (ret) {
 				return true;
 			}
@@ -1191,7 +1191,7 @@ bool Expression::_execute(const Array &p_inputs, Object *p_instance, Expression:
 			Variant b;
 
 			if (op->nodes[1]) {
-				ret = _execute(p_inputs, p_instance, op->nodes[1], b, r_error_str);
+				ret = _execute(p_inputs, p_instance, op->nodes[1], b, p_const_calls_only, r_error_str);
 				if (ret) {
 					return true;
 				}
@@ -1209,14 +1209,14 @@ bool Expression::_execute(const Array &p_inputs, Object *p_instance, Expression:
 			const Expression::IndexNode *index = static_cast<const Expression::IndexNode *>(p_node);
 
 			Variant base;
-			bool ret = _execute(p_inputs, p_instance, index->base, base, r_error_str);
+			bool ret = _execute(p_inputs, p_instance, index->base, base, p_const_calls_only, r_error_str);
 			if (ret) {
 				return true;
 			}
 
 			Variant idx;
 
-			ret = _execute(p_inputs, p_instance, index->index, idx, r_error_str);
+			ret = _execute(p_inputs, p_instance, index->index, idx, p_const_calls_only, r_error_str);
 			if (ret) {
 				return true;
 			}
@@ -1233,7 +1233,7 @@ bool Expression::_execute(const Array &p_inputs, Object *p_instance, Expression:
 			const Expression::NamedIndexNode *index = static_cast<const Expression::NamedIndexNode *>(p_node);
 
 			Variant base;
-			bool ret = _execute(p_inputs, p_instance, index->base, base, r_error_str);
+			bool ret = _execute(p_inputs, p_instance, index->base, base, p_const_calls_only, r_error_str);
 			if (ret) {
 				return true;
 			}
@@ -1253,7 +1253,7 @@ bool Expression::_execute(const Array &p_inputs, Object *p_instance, Expression:
 			arr.resize(array->array.size());
 			for (int i = 0; i < array->array.size(); i++) {
 				Variant value;
-				bool ret = _execute(p_inputs, p_instance, array->array[i], value, r_error_str);
+				bool ret = _execute(p_inputs, p_instance, array->array[i], value, p_const_calls_only, r_error_str);
 
 				if (ret) {
 					return true;
@@ -1270,14 +1270,14 @@ bool Expression::_execute(const Array &p_inputs, Object *p_instance, Expression:
 			Dictionary d;
 			for (int i = 0; i < dictionary->dict.size(); i += 2) {
 				Variant key;
-				bool ret = _execute(p_inputs, p_instance, dictionary->dict[i + 0], key, r_error_str);
+				bool ret = _execute(p_inputs, p_instance, dictionary->dict[i + 0], key, p_const_calls_only, r_error_str);
 
 				if (ret) {
 					return true;
 				}
 
 				Variant value;
-				ret = _execute(p_inputs, p_instance, dictionary->dict[i + 1], value, r_error_str);
+				ret = _execute(p_inputs, p_instance, dictionary->dict[i + 1], value, p_const_calls_only, r_error_str);
 				if (ret) {
 					return true;
 				}
@@ -1297,7 +1297,7 @@ bool Expression::_execute(const Array &p_inputs, Object *p_instance, Expression:
 
 			for (int i = 0; i < constructor->arguments.size(); i++) {
 				Variant value;
-				bool ret = _execute(p_inputs, p_instance, constructor->arguments[i], value, r_error_str);
+				bool ret = _execute(p_inputs, p_instance, constructor->arguments[i], value, p_const_calls_only, r_error_str);
 
 				if (ret) {
 					return true;
@@ -1325,7 +1325,7 @@ bool Expression::_execute(const Array &p_inputs, Object *p_instance, Expression:
 
 			for (int i = 0; i < bifunc->arguments.size(); i++) {
 				Variant value;
-				bool ret = _execute(p_inputs, p_instance, bifunc->arguments[i], value, r_error_str);
+				bool ret = _execute(p_inputs, p_instance, bifunc->arguments[i], value, p_const_calls_only, r_error_str);
 				if (ret) {
 					return true;
 				}
@@ -1346,7 +1346,7 @@ bool Expression::_execute(const Array &p_inputs, Object *p_instance, Expression:
 			const Expression::CallNode *call = static_cast<const Expression::CallNode *>(p_node);
 
 			Variant base;
-			bool ret = _execute(p_inputs, p_instance, call->base, base, r_error_str);
+			bool ret = _execute(p_inputs, p_instance, call->base, base, p_const_calls_only, r_error_str);
 
 			if (ret) {
 				return true;
@@ -1359,7 +1359,7 @@ bool Expression::_execute(const Array &p_inputs, Object *p_instance, Expression:
 
 			for (int i = 0; i < call->arguments.size(); i++) {
 				Variant value;
-				ret = _execute(p_inputs, p_instance, call->arguments[i], value, r_error_str);
+				ret = _execute(p_inputs, p_instance, call->arguments[i], value, p_const_calls_only, r_error_str);
 
 				if (ret) {
 					return true;
@@ -1369,7 +1369,11 @@ bool Expression::_execute(const Array &p_inputs, Object *p_instance, Expression:
 			}
 
 			Callable::CallError ce;
-			base.call(call->method, (const Variant **)argp.ptr(), argp.size(), r_ret, ce);
+			if (p_const_calls_only) {
+				base.call_const(call->method, (const Variant **)argp.ptr(), argp.size(), r_ret, ce);
+			} else {
+				base.call(call->method, (const Variant **)argp.ptr(), argp.size(), r_ret, ce);
+			}
 
 			if (ce.error != Callable::CallError::CALL_OK) {
 				r_error_str = vformat(RTR("On call to '%s':"), String(call->method));
@@ -1408,13 +1412,13 @@ Error Expression::parse(const String &p_expression, const Vector<String> &p_inpu
 	return OK;
 }
 
-Variant Expression::execute(Array p_inputs, Object *p_base, bool p_show_error) {
+Variant Expression::execute(Array p_inputs, Object *p_base, bool p_show_error, bool p_const_calls_only) {
 	ERR_FAIL_COND_V_MSG(error_set, Variant(), "There was previously a parse error: " + error_str + ".");
 
 	execution_error = false;
 	Variant output;
 	String error_txt;
-	bool err = _execute(p_inputs, p_base, root, output, error_txt);
+	bool err = _execute(p_inputs, p_base, root, output, p_const_calls_only, error_txt);
 	if (err) {
 		execution_error = true;
 		error_str = error_txt;
@@ -1434,7 +1438,7 @@ String Expression::get_error_text() const {
 
 void Expression::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("parse", "expression", "input_names"), &Expression::parse, DEFVAL(Vector<String>()));
-	ClassDB::bind_method(D_METHOD("execute", "inputs", "base_instance", "show_error"), &Expression::execute, DEFVAL(Array()), DEFVAL(Variant()), DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("execute", "inputs", "base_instance", "show_error", "const_calls_only"), &Expression::execute, DEFVAL(Array()), DEFVAL(Variant()), DEFVAL(true), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("has_execute_failed"), &Expression::has_execute_failed);
 	ClassDB::bind_method(D_METHOD("get_error_text"), &Expression::get_error_text);
 }

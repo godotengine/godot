@@ -32,6 +32,7 @@
 
 #include "editor/editor_resource_preview.h"
 #include "editor/filesystem_dock.h"
+#include "editor/plugins/script_editor_plugin.h"
 #include "editor_node.h"
 #include "editor_properties_array_dict.h"
 #include "editor_scale.h"
@@ -162,6 +163,9 @@ void EditorPropertyMultilineText::_notification(int p_what) {
 			int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
 			text->set_custom_minimum_size(Vector2(0, font->get_height(font_size) * 6));
 
+			text->add_theme_font_override("font", get_theme_font("expression", "EditorFonts"));
+			text->add_theme_font_size_override("font_size", get_theme_font_size("expression_size", "EditorFonts"));
+
 		} break;
 	}
 }
@@ -169,7 +173,7 @@ void EditorPropertyMultilineText::_notification(int p_what) {
 void EditorPropertyMultilineText::_bind_methods() {
 }
 
-EditorPropertyMultilineText::EditorPropertyMultilineText() {
+EditorPropertyMultilineText::EditorPropertyMultilineText(bool p_expression) {
 	HBoxContainer *hb = memnew(HBoxContainer);
 	add_child(hb);
 	set_bottom_editor(hb);
@@ -185,6 +189,12 @@ EditorPropertyMultilineText::EditorPropertyMultilineText() {
 	hb->add_child(open_big_text);
 	big_text_dialog = nullptr;
 	big_text = nullptr;
+	if (p_expression) {
+		expression = true;
+		Ref<EditorStandardSyntaxHighlighter> highlighter;
+		highlighter.instantiate();
+		text->set_syntax_highlighter(highlighter);
+	}
 }
 
 ///////////////////// TEXT ENUM /////////////////////////
@@ -3319,6 +3329,9 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 				return editor;
 			} else if (p_hint == PROPERTY_HINT_MULTILINE_TEXT) {
 				EditorPropertyMultilineText *editor = memnew(EditorPropertyMultilineText);
+				return editor;
+			} else if (p_hint == PROPERTY_HINT_EXPRESSION) {
+				EditorPropertyMultilineText *editor = memnew(EditorPropertyMultilineText(true));
 				return editor;
 			} else if (p_hint == PROPERTY_HINT_TYPE_STRING) {
 				EditorPropertyClassName *editor = memnew(EditorPropertyClassName);
