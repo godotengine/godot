@@ -357,6 +357,10 @@ Rect2i DisplayServerIPhone::screen_get_usable_rect(int p_screen) const {
 	}
 }
 
+Rect2i DisplayServerIPhone::screen_get_inactive_rect(int p_screen) const {
+	return Rect2i();
+}
+
 int DisplayServerIPhone::screen_get_dpi(int p_screen) const {
 	struct utsname systemInfo;
 	uname(&systemInfo);

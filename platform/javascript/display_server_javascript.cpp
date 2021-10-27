@@ -795,6 +795,10 @@ Rect2i DisplayServerJavaScript::screen_get_usable_rect(int p_screen) const {
 	return Rect2i(0, 0, size[0], size[1]);
 }
 
+Rect2i DisplayServerJavaScript::screen_get_inactive_rect(int p_screen) const {
+	return Rect2i();
+}
+
 int DisplayServerJavaScript::screen_get_dpi(int p_screen) const {
 	return godot_js_display_screen_dpi_get();
 }

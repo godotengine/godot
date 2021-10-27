@@ -739,6 +739,10 @@ Rect2i DisplayServerX11::screen_get_usable_rect(int p_screen) const {
 	return rect;
 }
 
+Rect2i DisplayServerX11::screen_get_inactive_rect(int p_screen) const {
+	return Rect2i(0, 0, 0, 0);
+}
+
 int DisplayServerX11::screen_get_dpi(int p_screen) const {
 	_THREAD_SAFE_METHOD_
 

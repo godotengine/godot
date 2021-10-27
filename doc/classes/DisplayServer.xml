@@ -389,6 +389,14 @@
 				[b]Note:[/b] This method is implemented on Android, Linux, macOS and Windows. Returns [code]72[/code] on unsupported platforms.
 			</description>
 		</method>
+		<method name="screen_get_inactive_rect" qualifiers="const">
+			<return type="Rect2i" />
+			<argument index="0" name="screen" type="int" default="-1" />
+			<description>
+				Returns the bounding rectangle of the inactive part of a device's display, such as a notch, or an empty [Rect2i] if none is found.
+				[b]Note:[/b] This method is implemented on Android. Returns an empty [Rect2i] on unsupported platforms.
+			</description>
+		</method>
 		<method name="screen_get_max_scale" qualifiers="const">
 			<return type="float" />
 			<description>

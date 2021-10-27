@@ -2224,6 +2224,10 @@ Rect2i DisplayServerOSX::screen_get_usable_rect(int p_screen) const {
 	return Rect2i();
 }
 
+Rect2i DisplayServerOSX::screen_get_inactive_rect(int p_screen) const {
+	return Rect2i();
+}
+
 Vector<DisplayServer::WindowID> DisplayServerOSX::get_window_list() const {
 	_THREAD_SAFE_METHOD_
 

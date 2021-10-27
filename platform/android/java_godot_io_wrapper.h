@@ -52,6 +52,7 @@ private:
 	jmethodID _get_model = 0;
 	jmethodID _get_screen_DPI = 0;
 	jmethodID _screen_get_usable_rect = 0;
+	jmethodID _screen_get_inactive_rect = 0;
 	jmethodID _get_unique_id = 0;
 	jmethodID _show_keyboard = 0;
 	jmethodID _hide_keyboard = 0;
@@ -72,6 +73,7 @@ public:
 	String get_model();
 	int get_screen_dpi();
 	void screen_get_usable_rect(int (&p_rect_xywh)[4]);
+	void screen_get_inactive_rect(int (&p_rect_xywh)[4]);
 	String get_unique_id();
 	bool has_vk();
 	void show_vk(const String &p_existing, bool p_multiline, int p_max_input_length, int p_cursor_start, int p_cursor_end);

@@ -38,6 +38,7 @@ import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.res.AssetManager;
 import android.graphics.Point;
+import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
@@ -243,6 +244,22 @@ public class GodotIO {
 				result[1] = insetTop;
 				result[2] -= insetLeft + cutout.getSafeInsetRight();
 				result[3] -= insetTop + cutout.getSafeInsetBottom();
+			}
+		}
+		return result;
+	}
+
+	public int[] screenGetInactiveRect() {
+		int[] result = { 0, 0, 0, 0 };
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+			WindowInsets insets = activity.getWindow().getDecorView().getRootWindowInsets();
+			DisplayCutout cutout = insets.getDisplayCutout();
+			if (cutout != null) {
+				Rect boundingRect = cutout.getBoundingRects().get(0);
+				result[0] = boundingRect.left;
+				result[1] = boundingRect.top;
+				result[2] = boundingRect.width();
+				result[3] = boundingRect.height();
 			}
 		}
 		return result;

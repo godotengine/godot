@@ -351,6 +351,10 @@ Rect2i DisplayServerWindows::screen_get_usable_rect(int p_screen) const {
 	return data.rect;
 }
 
+Rect2i DisplayServerWindows::screen_get_inactive_rect(int p_screen) const {
+	return Rect2i();
+}
+
 typedef struct {
 	int count;
 	int screen;
