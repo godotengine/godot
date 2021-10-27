@@ -583,6 +583,8 @@ void CanvasItem::_notification(int p_what) {
 
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
+			ERR_FAIL_COND(!get_tree());
+
 			if (xform_change.in_list())
 				get_tree()->xform_change_list.remove(&xform_change);
 			_exit_canvas();
