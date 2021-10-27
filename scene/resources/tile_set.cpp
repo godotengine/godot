@@ -4638,6 +4638,37 @@ bool TileData::is_allowing_transform() const {
 	return allow_transform;
 }
 
+TileData *TileData::duplicate() {
+	TileData *output = memnew(TileData);
+	output->tile_set = tile_set;
+
+	output->allow_transform = allow_transform;
+
+	// Rendering
+	output->flip_h = flip_h;
+	output->flip_v = flip_v;
+	output->transpose = transpose;
+	output->tex_offset = tex_offset;
+	output->material = material;
+	output->modulate = modulate;
+	output->z_index = z_index;
+	output->y_sort_origin = y_sort_origin;
+	output->occluders = occluders;
+	// Physics
+	output->physics = physics;
+	// Terrain
+	output->terrain_set = -1;
+	memcpy(output->terrain_peering_bits, terrain_peering_bits, 16 * sizeof(int));
+	// Navigation
+	output->navigation = navigation;
+	// Misc
+	output->probability = probability;
+	// Custom data
+	output->custom_data = custom_data;
+
+	return output;
+}
+
 // Rendering
 void TileData::set_flip_h(bool p_flip_h) {
 	ERR_FAIL_COND_MSG(!allow_transform && p_flip_h, "Transform is only allowed for alternative tiles (with its alternative_id != 0)");

@@ -79,6 +79,9 @@ struct TileMapQuadrant {
 	// Scenes.
 	Map<Vector2i, String> scenes;
 
+	// Runtime TileData cache.
+	Map<Vector2i, TileData *> runtime_tile_data_cache;
+
 	void operator=(const TileMapQuadrant &q) {
 		layer = q.layer;
 		coords = q.coords;
@@ -254,6 +257,8 @@ private:
 	void _set_tile_data(int p_layer, const Vector<int> &p_data);
 	Vector<int> _get_tile_data(int p_layer) const;
 
+	void _build_runtime_update_tile_data(SelfList<TileMapQuadrant>::List &r_dirty_quadrant_list);
+
 	void _tile_set_changed();
 	bool _tile_set_changed_deferred_update_needed = false;
 	void _tile_set_changed_deferred_update();
@@ -283,7 +288,7 @@ public:
 	void set_quadrant_size(int p_size);
 	int get_quadrant_size() const;
 
-	static void draw_tile(RID p_canvas_item, Vector2i p_position, const Ref<TileSet> p_tile_set, int p_atlas_source_id, Vector2i p_atlas_coords, int p_alternative_tile, int p_frame = -1, Color p_modulation = Color(1.0, 1.0, 1.0, 1.0));
+	static void draw_tile(RID p_canvas_item, Vector2i p_position, const Ref<TileSet> p_tile_set, int p_atlas_source_id, Vector2i p_atlas_coords, int p_alternative_tile, int p_frame = -1, Color p_modulation = Color(1.0, 1.0, 1.0, 1.0), const TileData *p_tile_data_override = nullptr);
 
 	// Layers management.
 	int get_layers_count() const;
@@ -362,12 +367,20 @@ public:
 	// Fixing a nclearing methods.
 	void fix_invalid_tiles();
 
+	// Clears tiles from a given layer
 	void clear_layer(int p_layer);
 	void clear();
 
-	// Helpers
+	// Force a TileMap update
+	void force_update(int p_layer = -1);
+
+	// Helpers?
 	TypedArray<Vector2i> get_surrounding_tiles(Vector2i coords);
 	void draw_cells_outline(Control *p_control, Set<Vector2i> p_cells, Color p_color, Transform2D p_transform = Transform2D());
+
+	// Virtual function to modify the TileData at runtime
+	GDVIRTUAL2R(bool, _use_tile_data_runtime_update, int, Vector2i);
+	GDVIRTUAL3(_tile_data_runtime_update, int, Vector2i, TileData *);
 
 	// Configuration warnings.
 	TypedArray<String> get_configuration_warnings() const override;

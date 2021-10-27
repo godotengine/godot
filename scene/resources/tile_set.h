@@ -794,6 +794,9 @@ public:
 	void set_allow_transform(bool p_allow_transform);
 	bool is_allowing_transform() const;
 
+	// To duplicate a TileData object, needed for runtiume update.
+	TileData *duplicate();
+
 	// Rendering
 	void set_flip_h(bool p_flip_h);
 	bool get_flip_h() const;
