@@ -164,7 +164,7 @@ Vector2 Transform2D::xform(const Vector2 &p_vec) const {
 	return Vector2(
 				   tdotx(p_vec),
 				   tdoty(p_vec)) +
-		   elements[2];
+			elements[2];
 }
 
 Vector2 Transform2D::xform_inv(const Vector2 &p_vec) const {

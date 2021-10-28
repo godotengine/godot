@@ -348,7 +348,7 @@ bool FileDialog::_is_open_should_be_disabled() {
 
 	// Opening a file, but selected a folder? Forbidden.
 	return ((mode == FILE_MODE_OPEN_FILE || mode == FILE_MODE_OPEN_FILES) && d["dir"]) || // Flipped case, also forbidden.
-		   (mode == FILE_MODE_OPEN_DIR && !d["dir"]);
+			(mode == FILE_MODE_OPEN_DIR && !d["dir"]);
 }
 
 void FileDialog::_go_up() {

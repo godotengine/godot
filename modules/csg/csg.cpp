@@ -156,8 +156,8 @@ inline bool is_point_in_triangle(const Vector3 &p_point, const Vector3 p_vertice
 
 inline static bool is_triangle_degenerate(const Vector2 p_vertices[3], real_t p_vertex_snap2) {
 	real_t det = p_vertices[0].x * p_vertices[1].y - p_vertices[0].x * p_vertices[2].y +
-				 p_vertices[0].y * p_vertices[2].x - p_vertices[0].y * p_vertices[1].x +
-				 p_vertices[1].x * p_vertices[2].y - p_vertices[1].y * p_vertices[2].x;
+			p_vertices[0].y * p_vertices[2].x - p_vertices[0].y * p_vertices[1].x +
+			p_vertices[1].x * p_vertices[2].y - p_vertices[1].y * p_vertices[2].x;
 
 	return det < p_vertex_snap2;
 }

@@ -1300,27 +1300,28 @@ bool ResourceImporterScene::get_internal_option_visibility(InternalImportCategor
 			if (p_option == "primitive/position" || p_option == "primitive/rotation") {
 				const ShapeType physics_shape = (ShapeType)p_options["physics/shape_type"].operator int();
 				return generate_physics &&
-					   physics_shape >= SHAPE_TYPE_BOX;
+						physics_shape >= SHAPE_TYPE_BOX;
 			}
 
 			if (p_option == "primitive/size") {
 				const ShapeType physics_shape = (ShapeType)p_options["physics/shape_type"].operator int();
 				return generate_physics &&
-					   physics_shape == SHAPE_TYPE_BOX;
+						physics_shape == SHAPE_TYPE_BOX;
 			}
 
 			if (p_option == "primitive/radius") {
 				const ShapeType physics_shape = (ShapeType)p_options["physics/shape_type"].operator int();
-				return generate_physics && (physics_shape == SHAPE_TYPE_SPHERE ||
-												   physics_shape == SHAPE_TYPE_CYLINDER ||
-												   physics_shape == SHAPE_TYPE_CAPSULE);
+				return generate_physics &&
+						(physics_shape == SHAPE_TYPE_SPHERE ||
+								physics_shape == SHAPE_TYPE_CYLINDER ||
+								physics_shape == SHAPE_TYPE_CAPSULE);
 			}
 
 			if (p_option == "primitive/height") {
 				const ShapeType physics_shape = (ShapeType)p_options["physics/shape_type"].operator int();
 				return generate_physics &&
-					   (physics_shape == SHAPE_TYPE_CYLINDER ||
-							   physics_shape == SHAPE_TYPE_CAPSULE);
+						(physics_shape == SHAPE_TYPE_CYLINDER ||
+								physics_shape == SHAPE_TYPE_CAPSULE);
 			}
 		} break;
 		case INTERNAL_IMPORT_CATEGORY_MESH: {

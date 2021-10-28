@@ -2319,10 +2319,11 @@ Variant Animation::_cubic_interpolate(const Variant &p_pre_a, const Variant &p_a
 		real_t t2 = t * t;
 		real_t t3 = t2 * t;
 
-		return 0.5f * ((p1 * 2.0f) +
-							  (-p0 + p2) * t +
-							  (2.0f * p0 - 5.0f * p1 + 4 * p2 - p3) * t2 +
-							  (-p0 + 3.0f * p1 - 3.0f * p2 + p3) * t3);
+		return 0.5f *
+				((p1 * 2.0f) +
+						(-p0 + p2) * t +
+						(2.0f * p0 - 5.0f * p1 + 4 * p2 - p3) * t2 +
+						(-p0 + 3.0f * p1 - 3.0f * p2 + p3) * t3);
 
 	} else if ((vformat & (vformat - 1))) {
 		return p_a; //can't interpolate, mix of types

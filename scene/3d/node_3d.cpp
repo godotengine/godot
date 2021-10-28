@@ -246,8 +246,8 @@ Quaternion Node3D::get_quaternion() const {
 void Node3D::set_global_transform(const Transform3D &p_transform) {
 	Transform3D xform =
 			(data.parent && !data.top_level_active) ?
-					  data.parent->get_global_transform().affine_inverse() * p_transform :
-					  p_transform;
+			  data.parent->get_global_transform().affine_inverse() * p_transform :
+			  p_transform;
 
 	set_transform(xform);
 }

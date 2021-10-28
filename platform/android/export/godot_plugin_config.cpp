@@ -78,14 +78,13 @@ Vector<PluginConfigAndroid> PluginConfigAndroid::get_prebuilt_plugins(String plu
 bool PluginConfigAndroid::is_plugin_config_valid(PluginConfigAndroid plugin_config) {
 	bool valid_name = !plugin_config.name.is_empty();
 	bool valid_binary_type = plugin_config.binary_type == PluginConfigAndroid::BINARY_TYPE_LOCAL ||
-							 plugin_config.binary_type == PluginConfigAndroid::BINARY_TYPE_REMOTE;
+			plugin_config.binary_type == PluginConfigAndroid::BINARY_TYPE_REMOTE;
 
 	bool valid_binary = false;
 	if (valid_binary_type) {
 		valid_binary = !plugin_config.binary.is_empty() &&
-					   (plugin_config.binary_type == PluginConfigAndroid::BINARY_TYPE_REMOTE ||
-
-							   FileAccess::exists(plugin_config.binary));
+				(plugin_config.binary_type == PluginConfigAndroid::BINARY_TYPE_REMOTE ||
+						FileAccess::exists(plugin_config.binary));
 	}
 
 	bool valid_local_dependencies = true;

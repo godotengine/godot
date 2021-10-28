@@ -616,7 +616,7 @@ String DisplayServerX11::clipboard_get_primary() const {
 Bool DisplayServerX11::_predicate_clipboard_save_targets(Display *display, XEvent *event, XPointer arg) {
 	if (event->xany.window == *(Window *)arg) {
 		return (event->type == SelectionRequest) ||
-			   (event->type == SelectionNotify);
+				(event->type == SelectionNotify);
 	} else {
 		return False;
 	}
@@ -2485,11 +2485,11 @@ Atom DisplayServerX11::_process_selection_request_target(Atom p_target, Window p
 				0);
 		return p_property;
 	} else if (p_target == XInternAtom(x11_display, "UTF8_STRING", 0) ||
-			   p_target == XInternAtom(x11_display, "COMPOUND_TEXT", 0) ||
-			   p_target == XInternAtom(x11_display, "TEXT", 0) ||
-			   p_target == XA_STRING ||
-			   p_target == XInternAtom(x11_display, "text/plain;charset=utf-8", 0) ||
-			   p_target == XInternAtom(x11_display, "text/plain", 0)) {
+			p_target == XInternAtom(x11_display, "COMPOUND_TEXT", 0) ||
+			p_target == XInternAtom(x11_display, "TEXT", 0) ||
+			p_target == XA_STRING ||
+			p_target == XInternAtom(x11_display, "text/plain;charset=utf-8", 0) ||
+			p_target == XInternAtom(x11_display, "text/plain", 0)) {
 		// Directly using internal clipboard because we know our window
 		// is the owner during a selection request.
 		CharString clip;
@@ -2867,7 +2867,7 @@ void DisplayServerX11::process_events() {
 								if (pen_pressure_range != Vector2()) {
 									xi.pressure_supported = true;
 									xi.pressure = (*values - pen_pressure_range[0]) /
-												  (pen_pressure_range[1] - pen_pressure_range[0]);
+											(pen_pressure_range[1] - pen_pressure_range[0]);
 								}
 							}
 
@@ -3756,18 +3756,18 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, V
 			XSetWindowAttributes new_attr;
 
 			new_attr.event_mask = KeyPressMask | KeyReleaseMask | ButtonPressMask |
-								  ButtonReleaseMask | EnterWindowMask |
-								  LeaveWindowMask | PointerMotionMask |
-								  Button1MotionMask |
-								  Button2MotionMask | Button3MotionMask |
-								  Button4MotionMask | Button5MotionMask |
-								  ButtonMotionMask | KeymapStateMask |
-								  ExposureMask | VisibilityChangeMask |
-								  StructureNotifyMask |
-								  SubstructureNotifyMask | SubstructureRedirectMask |
-								  FocusChangeMask | PropertyChangeMask |
-								  ColormapChangeMask | OwnerGrabButtonMask |
-								  im_event_mask;
+					ButtonReleaseMask | EnterWindowMask |
+					LeaveWindowMask | PointerMotionMask |
+					Button1MotionMask |
+					Button2MotionMask | Button3MotionMask |
+					Button4MotionMask | Button5MotionMask |
+					ButtonMotionMask | KeymapStateMask |
+					ExposureMask | VisibilityChangeMask |
+					StructureNotifyMask |
+					SubstructureNotifyMask | SubstructureRedirectMask |
+					FocusChangeMask | PropertyChangeMask |
+					ColormapChangeMask | OwnerGrabButtonMask |
+					im_event_mask;
 
 			XChangeWindowAttributes(x11_display, wd.x11_window, CWEventMask, &new_attr);
 

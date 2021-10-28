@@ -54,8 +54,8 @@ struct Version {
 
 	bool operator==(const Version &p_other) const {
 		return godot_api_hash == p_other.godot_api_hash &&
-			   bindings_version == p_other.bindings_version &&
-			   cs_glue_version == p_other.cs_glue_version;
+				bindings_version == p_other.bindings_version &&
+				cs_glue_version == p_other.cs_glue_version;
 	}
 
 	Version() {}

@@ -58,8 +58,8 @@ void Basis::invert() {
 		cofac(1, 1, 2, 2), cofac(1, 2, 2, 0), cofac(1, 0, 2, 1)
 	};
 	real_t det = elements[0][0] * co[0] +
-				 elements[0][1] * co[1] +
-				 elements[0][2] * co[2];
+			elements[0][1] * co[1] +
+			elements[0][2] * co[2];
 #ifdef MATH_CHECKS
 	ERR_FAIL_COND(det == 0);
 #endif
@@ -288,10 +288,7 @@ Vector3 Basis::get_scale() const {
 	//
 	// The rotation part of this decomposition is returned by get_rotation* functions.
 	real_t det_sign = SGN(determinant());
-	return det_sign * Vector3(
-							  Vector3(elements[0][0], elements[1][0], elements[2][0]).length(),
-							  Vector3(elements[0][1], elements[1][1], elements[2][1]).length(),
-							  Vector3(elements[0][2], elements[1][2], elements[2][2]).length());
+	return det_sign * get_scale_abs();
 }
 
 // Decomposes a Basis into a rotation-reflection matrix (an element of the group O(3)) and a positive scaling matrix as B = O.S.
@@ -682,8 +679,8 @@ bool Basis::operator!=(const Basis &p_matrix) const {
 
 Basis::operator String() const {
 	return "[X: " + get_axis(0).operator String() +
-		   ", Y: " + get_axis(1).operator String() +
-		   ", Z: " + get_axis(2).operator String() + "]";
+			", Y: " + get_axis(1).operator String() +
+			", Z: " + get_axis(2).operator String() + "]";
 }
 
 Quaternion Basis::get_quaternion() const {
@@ -705,8 +702,8 @@ Quaternion Basis::get_quaternion() const {
 		temp[2] = ((m.elements[1][0] - m.elements[0][1]) * s);
 	} else {
 		int i = m.elements[0][0] < m.elements[1][1] ?
-						  (m.elements[1][1] < m.elements[2][2] ? 2 : 1) :
-						  (m.elements[0][0] < m.elements[2][2] ? 2 : 0);
+				  (m.elements[1][1] < m.elements[2][2] ? 2 : 1) :
+				  (m.elements[0][0] < m.elements[2][2] ? 2 : 0);
 		int j = (i + 1) % 3;
 		int k = (i + 2) % 3;
 

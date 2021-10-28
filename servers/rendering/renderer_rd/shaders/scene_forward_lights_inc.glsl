@@ -182,11 +182,11 @@ void light_compute(vec3 N, vec3 L, vec3 V, float A, vec3 light_color, float atte
 			float d = scale * abs(transmittance_z);
 			float dd = -d * d;
 			vec3 profile = vec3(0.233, 0.455, 0.649) * exp(dd / 0.0064) +
-						   vec3(0.1, 0.336, 0.344) * exp(dd / 0.0484) +
-						   vec3(0.118, 0.198, 0.0) * exp(dd / 0.187) +
-						   vec3(0.113, 0.007, 0.007) * exp(dd / 0.567) +
-						   vec3(0.358, 0.004, 0.0) * exp(dd / 1.99) +
-						   vec3(0.078, 0.0, 0.0) * exp(dd / 7.41);
+					vec3(0.1, 0.336, 0.344) * exp(dd / 0.0484) +
+					vec3(0.118, 0.198, 0.0) * exp(dd / 0.187) +
+					vec3(0.113, 0.007, 0.007) * exp(dd / 0.567) +
+					vec3(0.358, 0.004, 0.0) * exp(dd / 1.99) +
+					vec3(0.078, 0.0, 0.0) * exp(dd / 7.41);
 
 			diffuse_light += profile * transmittance_color.a * light_color * clamp(transmittance_boost - NdotL, 0.0, 1.0) * (1.0 / M_PI);
 #else

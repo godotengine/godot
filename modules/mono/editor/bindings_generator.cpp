@@ -1524,7 +1524,7 @@ Error BindingsGenerator::_generate_cs_property(const BindingsGenerator::TypeInte
 		if (getter->return_type.cname != setter_first_arg.type.cname) {
 			// Special case for Node::set_name
 			bool whitelisted = getter->return_type.cname == name_cache.type_StringName &&
-							   setter_first_arg.type.cname == name_cache.type_String;
+					setter_first_arg.type.cname == name_cache.type_String;
 
 			ERR_FAIL_COND_V_MSG(!whitelisted, ERR_BUG,
 					"Return type from getter doesn't match first argument of setter for property: '" +
@@ -2481,29 +2481,29 @@ bool BindingsGenerator::_arg_default_value_is_assignable_to_type(const Variant &
 	switch (p_val.get_type()) {
 		case Variant::NIL:
 			return p_arg_type.is_object_type ||
-				   name_cache.is_nullable_type(p_arg_type.name);
+					name_cache.is_nullable_type(p_arg_type.name);
 		case Variant::BOOL:
 			return p_arg_type.name == name_cache.type_bool;
 		case Variant::INT:
 			return p_arg_type.name == name_cache.type_sbyte ||
-				   p_arg_type.name == name_cache.type_short ||
-				   p_arg_type.name == name_cache.type_int ||
-				   p_arg_type.name == name_cache.type_byte ||
-				   p_arg_type.name == name_cache.type_ushort ||
-				   p_arg_type.name == name_cache.type_uint ||
-				   p_arg_type.name == name_cache.type_long ||
-				   p_arg_type.name == name_cache.type_ulong ||
-				   p_arg_type.name == name_cache.type_float ||
-				   p_arg_type.name == name_cache.type_double ||
-				   p_arg_type.is_enum;
+					p_arg_type.name == name_cache.type_short ||
+					p_arg_type.name == name_cache.type_int ||
+					p_arg_type.name == name_cache.type_byte ||
+					p_arg_type.name == name_cache.type_ushort ||
+					p_arg_type.name == name_cache.type_uint ||
+					p_arg_type.name == name_cache.type_long ||
+					p_arg_type.name == name_cache.type_ulong ||
+					p_arg_type.name == name_cache.type_float ||
+					p_arg_type.name == name_cache.type_double ||
+					p_arg_type.is_enum;
 		case Variant::FLOAT:
 			return p_arg_type.name == name_cache.type_float ||
-				   p_arg_type.name == name_cache.type_double;
+					p_arg_type.name == name_cache.type_double;
 		case Variant::STRING:
 		case Variant::STRING_NAME:
 			return p_arg_type.name == name_cache.type_String ||
-				   p_arg_type.name == name_cache.type_StringName ||
-				   p_arg_type.name == name_cache.type_NodePath;
+					p_arg_type.name == name_cache.type_StringName ||
+					p_arg_type.name == name_cache.type_NodePath;
 		case Variant::NODE_PATH:
 			return p_arg_type.name == name_cache.type_NodePath;
 		case Variant::TRANSFORM2D:
@@ -2535,13 +2535,13 @@ bool BindingsGenerator::_arg_default_value_is_assignable_to_type(const Variant &
 			return p_arg_type.is_object_type;
 		case Variant::VECTOR2I:
 			return p_arg_type.name == name_cache.type_Vector2 ||
-				   p_arg_type.name == Variant::get_type_name(p_val.get_type());
+					p_arg_type.name == Variant::get_type_name(p_val.get_type());
 		case Variant::RECT2I:
 			return p_arg_type.name == name_cache.type_Rect2 ||
-				   p_arg_type.name == Variant::get_type_name(p_val.get_type());
+					p_arg_type.name == Variant::get_type_name(p_val.get_type());
 		case Variant::VECTOR3I:
 			return p_arg_type.name == name_cache.type_Vector3 ||
-				   p_arg_type.name == Variant::get_type_name(p_val.get_type());
+					p_arg_type.name == Variant::get_type_name(p_val.get_type());
 		default:
 			CRASH_NOW_MSG("Unexpected Variant type: " + itos(p_val.get_type()));
 			break;
@@ -2714,7 +2714,7 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 				if (itype.cname != name_cache.type_Object || imethod.name != "free") {
 					WARN_PRINT("Notification: New unexpected virtual non-overridable method found."
 							   " We only expected Object.free, but found '" +
-							   itype.name + "." + imethod.name + "'.");
+							itype.name + "." + imethod.name + "'.");
 				}
 			} else if (return_info.type == Variant::INT && return_info.usage & PROPERTY_USAGE_CLASS_IS_ENUM) {
 				imethod.return_type.cname = return_info.class_name;
@@ -2723,7 +2723,7 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 				imethod.return_type.cname = return_info.class_name;
 
 				bool bad_reference_hint = !imethod.is_virtual && return_info.hint != PROPERTY_HINT_RESOURCE_TYPE &&
-										  ClassDB::is_parent_class(return_info.class_name, name_cache.type_RefCounted);
+						ClassDB::is_parent_class(return_info.class_name, name_cache.type_RefCounted);
 				ERR_FAIL_COND_V_MSG(bad_reference_hint, false,
 						String() + "Return type is reference but hint is not '" _STR(PROPERTY_HINT_RESOURCE_TYPE) "'." +
 								" Are you returning a reference type by pointer? Method: '" + itype.name + "." + imethod.name + "'.");

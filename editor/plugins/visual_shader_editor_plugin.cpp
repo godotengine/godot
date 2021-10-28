@@ -3207,10 +3207,7 @@ void VisualShaderEditor::_show_members_dialog(bool at_mouse_pos, VisualShaderNod
 
 void VisualShaderEditor::_sbox_input(const Ref<InputEvent> &p_ie) {
 	Ref<InputEventKey> ie = p_ie;
-	if (ie.is_valid() && (ie->get_keycode() == KEY_UP ||
-								 ie->get_keycode() == KEY_DOWN ||
-								 ie->get_keycode() == KEY_ENTER ||
-								 ie->get_keycode() == KEY_KP_ENTER)) {
+	if (ie.is_valid() && (ie->get_keycode() == KEY_UP || ie->get_keycode() == KEY_DOWN || ie->get_keycode() == KEY_ENTER || ie->get_keycode() == KEY_KP_ENTER)) {
 		members->gui_input(ie);
 		node_filter->accept_event();
 	}

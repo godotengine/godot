@@ -923,7 +923,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			// Needs full refactoring to fix properly.
 			main_args.push_back(I->get());
 		} else if (I->get() == "--export" || I->get() == "--export-debug" ||
-				   I->get() == "--export-pack") { // Export project
+				I->get() == "--export-pack") { // Export project
 			// Actually handling is done in start().
 			editor = true;
 			cmdline_tool = true;

@@ -3118,7 +3118,7 @@ bool Variant::hash_compare(const Variant &p_variant) const {
 			const Rect2 *r = reinterpret_cast<const Rect2 *>(p_variant._data._mem);
 
 			return (hash_compare_vector2(l->position, r->position)) &&
-				   (hash_compare_vector2(l->size, r->size));
+					(hash_compare_vector2(l->size, r->size));
 		} break;
 		case RECT2I: {
 			const Rect2i *l = reinterpret_cast<const Rect2i *>(_data._mem);
@@ -3158,7 +3158,7 @@ bool Variant::hash_compare(const Variant &p_variant) const {
 			const Plane *r = reinterpret_cast<const Plane *>(p_variant._data._mem);
 
 			return (hash_compare_vector3(l->normal, r->normal)) &&
-				   (hash_compare_scalar(l->d, r->d));
+					(hash_compare_scalar(l->d, r->d));
 		} break;
 
 		case AABB: {
