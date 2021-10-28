@@ -1249,10 +1249,10 @@ void main() {
 // LIGHTING
 #if !defined(MODE_RENDER_DEPTH) && !defined(MODE_UNSHADED)
 
-	{ //directional light
+	{ // Directional light.
 
+		// Do shadow and lighting in two passes to reduce register pressure.
 #ifndef SHADOWS_DISABLED
-		// Do shadow and lighting in two passes to reduce register pressure
 		uint shadow0 = 0;
 		uint shadow1 = 0;
 

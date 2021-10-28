@@ -631,10 +631,10 @@ Error VulkanContext::_create_physical_device() {
 	}
 
 	/*
-	   * This is info for a temp callback to use during CreateInstance.
-	   * After the instance is created, we use the instance-based
-	   * function to register the final callback.
-	   */
+	 * This is info for a temp callback to use during CreateInstance.
+	 * After the instance is created, we use the instance-based
+	 * function to register the final callback.
+	 */
 	VkDebugUtilsMessengerCreateInfoEXT dbg_messenger_create_info;
 	VkDebugReportCallbackCreateInfoEXT dbg_report_callback_create_info{};
 	if (enabled_debug_utils) {

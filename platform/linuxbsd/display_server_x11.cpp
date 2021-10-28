@@ -2926,10 +2926,7 @@ void DisplayServerX11::process_events() {
 						xi.last_relative_time = raw_event->time;
 					} break;
 #ifdef TOUCH_ENABLED
-					case XI_TouchBegin: // Fall-through
-							// Disabled hand-in-hand with the grabbing
-							//XIAllowTouchEvents(x11_display, event_data->deviceid, event_data->detail, x11_window, XIAcceptTouch);
-
+					case XI_TouchBegin:
 					case XI_TouchEnd: {
 						bool is_begin = event_data->evtype == XI_TouchBegin;
 
@@ -4137,7 +4134,6 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 	}
 	show_window(main_window);
 
-//create RenderingDevice if used
 #if defined(VULKAN_ENABLED)
 	if (rendering_driver == "vulkan") {
 		//temporary
@@ -4147,13 +4143,6 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 		RendererCompositorRD::make_current();
 	}
 #endif
-
-	/*
-	rendering_server = memnew(RenderingServerDefault);
-	if (get_render_thread_mode() != RENDER_THREAD_UNSAFE) {
-		rendering_server = memnew(RenderingServerWrapMT(rendering_server, get_render_thread_mode() == RENDER_SEPARATE_THREAD));
-	}
-	*/
 
 	{
 		//set all event master mask
@@ -4166,15 +4155,6 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 		XISetMask(all_master_event_mask.mask, XI_RawMotion);
 		XISelectEvents(x11_display, DefaultRootWindow(x11_display), &all_master_event_mask, 1);
 	}
-
-	// Disabled by now since grabbing also blocks mouse events
-	// (they are received as extended events instead of standard events)
-	/*XIClearMask(xi.touch_event_mask.mask, XI_TouchOwnership);
-
-	// Grab touch devices to avoid OS gesture interference
-	for (int i = 0; i < xi.touch_devices.size(); ++i) {
-		XIGrabDevice(x11_display, xi.touch_devices[i], x11_window, CurrentTime, None, XIGrabModeAsync, XIGrabModeAsync, False, &xi.touch_event_mask);
-	}*/
 
 	cursor_size = XcursorGetDefaultSize(x11_display);
 	cursor_theme = XcursorGetTheme(x11_display);

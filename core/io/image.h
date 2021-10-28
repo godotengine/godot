@@ -41,7 +41,7 @@
  * Image storage class. This is used to store an image in user memory, as well as
  * providing some basic methods for image manipulation.
  * Images can be loaded from a file, or registered into the Render object as textures.
-*/
+ */
 
 class Image;
 

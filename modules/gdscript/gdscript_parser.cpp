@@ -3068,9 +3068,9 @@ void GDScriptParser::get_class_doc_comment(int p_line, String &p_brief, String &
 
 			} else {
 				/* Syntax:
-				   @tutorial ( The Title Here )         :         https://the.url/
-				             ^ open           ^ close   ^ colon   ^ url
-				*/
+				 *   @tutorial ( The Title Here )         :         https://the.url/
+				 *             ^ open           ^ close   ^ colon   ^ url
+				 */
 				int open_bracket_pos = begin_scan, close_bracket_pos = 0;
 				while (open_bracket_pos < striped_line.length() && (striped_line[open_bracket_pos] == ' ' || striped_line[open_bracket_pos] == '\t')) {
 					open_bracket_pos++;

@@ -42,18 +42,13 @@ real_t Triangulate::get_area(const Vector<Vector2> &contour) {
 	return A * 0.5;
 }
 
-/*
-     is_inside_triangle decides if a point P is Inside of the triangle
-     defined by A, B, C.
-   */
-
+/* `is_inside_triangle` decides if a point P is inside the triangle
+ * defined by A, B, C. */
 bool Triangulate::is_inside_triangle(real_t Ax, real_t Ay,
 		real_t Bx, real_t By,
 		real_t Cx, real_t Cy,
 		real_t Px, real_t Py,
-		bool include_edges)
-
-{
+		bool include_edges) {
 	real_t ax, ay, bx, by, cx, cy, apx, apy, bpx, bpy, cpx, cpy;
 	real_t cCROSSap, bCROSScp, aCROSSbp;
 

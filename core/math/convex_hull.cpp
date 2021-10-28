@@ -735,8 +735,6 @@ int32_t ConvexHullInternal::Rational64::compare(const Rational64 &b) const {
 		return 0;
 	}
 
-	//	return (numerator * b.denominator > b.numerator * denominator) ? sign : (numerator * b.denominator < b.numerator * denominator) ? -sign : 0;
-
 #ifdef USE_X86_64_ASM
 
 	int32_t result;
@@ -757,10 +755,9 @@ int32_t ConvexHullInternal::Rational64::compare(const Rational64 &b) const {
 			: "=&b"(result), [tmp] "=&r"(tmp), "=a"(dummy)
 			: "a"(denominator), [bn] "g"(b.numerator), [tn] "g"(numerator), [bd] "g"(b.denominator)
 			: "%rdx", "cc");
-	return result ? result ^ sign // if sign is +1, only bit 0 of result is inverted, which does not change the sign of result (and cannot result in zero)
-					// if sign is -1, all bits of result are inverted, which changes the sign of result (and again cannot result in zero)
-					:
-					  0;
+	// if sign is +1, only bit 0 of result is inverted, which does not change the sign of result (and cannot result in zero)
+	// if sign is -1, all bits of result are inverted, which changes the sign of result (and again cannot result in zero)
+	return result ? result ^ sign : 0;
 
 #else
 
