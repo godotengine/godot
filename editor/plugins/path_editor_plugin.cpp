@@ -606,15 +606,6 @@ PathEditorPlugin::PathEditorPlugin(EditorNode *p_node) {
 	menu->connect("id_pressed", this, "_handle_option_pressed");
 
 	curve_edit->set_pressed(true);
-	/*
-    collision_polygon_editor = memnew( PathEditor(p_node) );
-    editor->get_viewport()->add_child(collision_polygon_editor);
-    collision_polygon_editor->set_margin(MARGIN_LEFT,200);
-    collision_polygon_editor->set_margin(MARGIN_RIGHT,230);
-    collision_polygon_editor->set_margin(MARGIN_TOP,0);
-    collision_polygon_editor->set_margin(MARGIN_BOTTOM,10);
-    collision_polygon_editor->hide();
-    */
 }
 
 PathEditorPlugin::~PathEditorPlugin() {

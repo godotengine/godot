@@ -42,10 +42,10 @@ PowerUWP::~PowerUWP() {
 bool PowerUWP::UpdatePowerInfo() {
 	// TODO, WinRT: Battery info is available on at least one WinRT platform (Windows Phone 8).  Implement UpdatePowerInfo as appropriate. */
 	/* Notes from SDL:
-	         - the Win32 function, GetSystemPowerStatus, is not available for use on WinRT
-	         - Windows Phone 8 has a 'Battery' class, which is documented as available for C++
-	             - More info on WP8's Battery class can be found at http://msdn.microsoft.com/library/windowsphone/develop/jj207231
-	    */
+	 * - the Win32 function, GetSystemPowerStatus, is not available for use on WinRT
+	 * - Windows Phone 8 has a 'Battery' class, which is documented as available for C++
+	 * - More info on WP8's Battery class can be found at http://msdn.microsoft.com/library/windowsphone/develop/jj207231
+	 */
 	return false;
 }
 

@@ -36,9 +36,9 @@
 #include "core/variant.h"
 
 /**
-  * Miscellaneous helpers for marshalling data types, and encoding
-  * in an endian independent way
-  */
+ * Miscellaneous helpers for marshalling data types, and encoding
+ * in an endian independent way
+ */
 
 union MarshallFloat {
 	uint32_t i; ///< int

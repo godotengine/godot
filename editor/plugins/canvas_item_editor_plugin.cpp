@@ -5196,10 +5196,6 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 					if (key_pos) {
 						ctrl->set_position(Point2());
 					}
-					/*
-                                   if (key_scale)
-				   AnimationPlayerEditor::singleton->get_track_editor()->insert_node_value_key(ctrl,"rect/size",ctrl->get_size());
-                                   */
 				}
 			}
 

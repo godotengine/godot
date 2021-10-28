@@ -468,15 +468,6 @@ Error OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 	XISelectEvents(x11_display, x11_window, &xi.all_event_mask, 1);
 	XISelectEvents(x11_display, DefaultRootWindow(x11_display), &xi.all_master_event_mask, 1);
 
-	// Disabled by now since grabbing also blocks mouse events
-	// (they are received as extended events instead of standard events)
-	/*XIClearMask(xi.touch_event_mask.mask, XI_TouchOwnership);
-
-	// Grab touch devices to avoid OS gesture interference
-	for (int i = 0; i < xi.touch_devices.size(); ++i) {
-		XIGrabDevice(x11_display, xi.touch_devices[i], x11_window, CurrentTime, None, XIGrabModeAsync, XIGrabModeAsync, False, &xi.touch_event_mask);
-	}*/
-
 	/* set the titlebar name */
 	XStoreName(x11_display, x11_window, "Godot");
 
@@ -2469,10 +2460,7 @@ void OS_X11::process_xevents() {
 						xi.last_relative_time = raw_event->time;
 					} break;
 #ifdef TOUCH_ENABLED
-					case XI_TouchBegin: // Fall-through
-							// Disabled hand-in-hand with the grabbing
-							//XIAllowTouchEvents(x11_display, event_data->deviceid, event_data->detail, x11_window, XIAcceptTouch);
-
+					case XI_TouchBegin:
 					case XI_TouchEnd: {
 						bool is_begin = event_data->evtype == XI_TouchBegin;
 
