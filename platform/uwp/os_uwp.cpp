@@ -441,12 +441,13 @@ String OS_UWP::get_name() const {
 	return "UWP";
 }
 
-OS::Date OS_UWP::get_date(bool utc) const {
+OS::Date OS_UWP::get_date(bool p_utc) const {
 	SYSTEMTIME systemtime;
-	if (utc)
+	if (utc) {
 		GetSystemTime(&systemtime);
-	else
+	} else {
 		GetLocalTime(&systemtime);
+	}
 
 	Date date;
 	date.day = systemtime.wDay;
@@ -457,7 +458,7 @@ OS::Date OS_UWP::get_date(bool utc) const {
 	return date;
 }
 
-OS::Time OS_UWP::get_time(bool utc) const {
+OS::Time OS_UWP::get_time(bool p_utc) const {
 	SYSTEMTIME systemtime;
 	if (utc)
 		GetSystemTime(&systemtime);

@@ -204,8 +204,8 @@ public:
 		String name;
 	};
 
-	virtual Date get_date(bool local = false) const = 0;
-	virtual Time get_time(bool local = false) const = 0;
+	virtual Date get_date(bool p_utc = false) const = 0;
+	virtual Time get_time(bool p_utc = false) const = 0;
 	virtual TimeZoneInfo get_time_zone_info() const = 0;
 	virtual double get_unix_time() const;
 
