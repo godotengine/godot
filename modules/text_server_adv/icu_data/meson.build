@@ -1,5 +1,5 @@
 if get_option('tools')
-    _module_tsa_icu_data_name = DEP_ICU.get_variable(internal: 'icu_data_name', default_value: 'icudt69l.dat')
+    _module_tsa_icu_data_name = DEP_ICU.get_variable(internal: 'icu_data_name')
     _module_tsa_icu_file = files('../../../thirdparty/icu4c' / _module_tsa_icu_data_name)
 
     _script_icu_data_gen = find_program('../scripts/icu_data.py')

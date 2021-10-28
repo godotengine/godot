@@ -23,6 +23,7 @@ if get_option('builtin_icu')
         'common/dictionarydata.cpp',
         'common/dtintrv.cpp',
         'common/edits.cpp',
+        'common/emojiprops.cpp',
         'common/errorcode.cpp',
         'common/filteredbrk.cpp',
         'common/filterednormalizer2.cpp',
@@ -44,6 +45,7 @@ if get_option('builtin_icu')
         'common/locresdata.cpp',
         'common/locutil.cpp',
         'common/lsr.cpp',
+        'common/lstmbe.cpp',
         'common/messagepattern.cpp',
         'common/normalizer2.cpp',
         'common/normalizer2impl.cpp',
@@ -200,7 +202,7 @@ if get_option('builtin_icu')
         'common/wintz.cpp',
     ])
 
-    _icu_data_name = 'icudt69l.dat'
+    _icu_data_name = 'icudt70l.dat'
 
     _builtin_icu_compile_dep_flags = [
         '-DU_STATIC_IMPLEMENTATION',
@@ -229,7 +231,7 @@ if get_option('builtin_icu')
     )
 
     _builtin_icu_dep_flags = [
-	'-DICU_DATA_NAME=' + _icu_data_name,
+        '-DICU_DATA_NAME=' + _icu_data_name,
     ]
 
     if get_option('tools')
