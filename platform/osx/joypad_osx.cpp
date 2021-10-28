@@ -343,10 +343,10 @@ bool JoypadOSX::configure_joypad(IOHIDDeviceRef p_device_ref, joypad *p_joy) {
 	}
 	// Xbox controller hat values start at 1 rather than 0.
 	p_joy->offset_hat = vendor == 0x45e &&
-						(product_id == 0x0b05 ||
-								product_id == 0x02e0 ||
-								product_id == 0x02fd ||
-								product_id == 0x0b13);
+			(product_id == 0x0b05 ||
+					product_id == 0x02e0 ||
+					product_id == 0x02fd ||
+					product_id == 0x0b13);
 
 	return true;
 }

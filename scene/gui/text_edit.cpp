@@ -70,18 +70,18 @@ static bool _is_hex_symbol(CharType c) {
 
 static bool _is_pair_right_symbol(CharType c) {
 	return c == '"' ||
-		   c == '\'' ||
-		   c == ')' ||
-		   c == ']' ||
-		   c == '}';
+			c == '\'' ||
+			c == ')' ||
+			c == ']' ||
+			c == '}';
 }
 
 static bool _is_pair_left_symbol(CharType c) {
 	return c == '"' ||
-		   c == '\'' ||
-		   c == '(' ||
-		   c == '[' ||
-		   c == '{';
+			c == '\'' ||
+			c == '(' ||
+			c == '[' ||
+			c == '{';
 }
 
 static bool _is_pair_symbol(CharType c) {

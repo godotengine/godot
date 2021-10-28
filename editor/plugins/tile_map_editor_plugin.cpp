@@ -387,10 +387,7 @@ void TileMapEditor::_text_changed(const String &p_text) {
 void TileMapEditor::_sbox_input(const Ref<InputEvent> &p_ie) {
 	Ref<InputEventKey> k = p_ie;
 
-	if (k.is_valid() && (k->get_scancode() == KEY_UP ||
-								k->get_scancode() == KEY_DOWN ||
-								k->get_scancode() == KEY_PAGEUP ||
-								k->get_scancode() == KEY_PAGEDOWN)) {
+	if (k.is_valid() && (k->get_scancode() == KEY_UP || k->get_scancode() == KEY_DOWN || k->get_scancode() == KEY_PAGEUP || k->get_scancode() == KEY_PAGEDOWN)) {
 		palette->call("_gui_input", k);
 		search_box->accept_event();
 	}

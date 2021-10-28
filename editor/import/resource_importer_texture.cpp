@@ -409,7 +409,7 @@ Error ResourceImporterTexture::import(const String &p_source_file, const String 
 		tex_flags |= Texture::FLAG_REPEAT;
 
 		const bool min_gles3 = GLOBAL_GET("rendering/quality/driver/driver_name") == "GLES3" &&
-							   !GLOBAL_GET("rendering/quality/driver/fallback_to_gles2");
+				!GLOBAL_GET("rendering/quality/driver/fallback_to_gles2");
 		if (!min_gles3 && !image->is_size_po2()) {
 			// The project can be run using GLES2. GLES2 does not guarantee that
 			// repeating textures with a non-power-of-two size will be displayed

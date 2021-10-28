@@ -123,7 +123,7 @@ void VehicleWheel::_update(PhysicsDirectBodyState *s) {
 		Vector3 relpos = m_raycastInfo.m_contactPointWS - s->get_transform().origin;
 
 		chassis_velocity_at_contactPoint = s->get_linear_velocity() +
-										   (s->get_angular_velocity()).cross(relpos); // * mPos);
+				(s->get_angular_velocity()).cross(relpos); // * mPos);
 
 		real_t projVel = m_raycastInfo.m_contactNormalWS.dot(chassis_velocity_at_contactPoint);
 		if (project >= real_t(-0.1)) {
@@ -460,7 +460,7 @@ real_t VehicleBody::_ray_cast(int p_idx, PhysicsDirectBodyState *s) {
 		//chassis_velocity_at_contactPoint = getRigidBody()->getVelocityInLocalPoint(relpos);
 
 		chassis_velocity_at_contactPoint = s->get_linear_velocity() +
-										   (s->get_angular_velocity()).cross(wheel.m_raycastInfo.m_contactPointWS - s->get_transform().origin); // * mPos);
+				(s->get_angular_velocity()).cross(wheel.m_raycastInfo.m_contactPointWS - s->get_transform().origin); // * mPos);
 
 		real_t projVel = wheel.m_raycastInfo.m_contactNormalWS.dot(chassis_velocity_at_contactPoint);
 
@@ -788,7 +788,7 @@ void VehicleBody::_update_friction(PhysicsDirectBodyState *s) {
 			VehicleWheel &wheelInfo = *wheels[wheel];
 
 			Vector3 rel_pos = wheelInfo.m_raycastInfo.m_contactPointWS -
-							  s->get_transform().origin;
+					s->get_transform().origin;
 
 			if (m_forwardImpulse[wheel] != real_t(0.)) {
 				s->apply_impulse(rel_pos, m_forwardWS[wheel] * (m_forwardImpulse[wheel]));

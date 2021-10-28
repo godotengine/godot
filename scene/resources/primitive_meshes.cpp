@@ -266,7 +266,7 @@ PrimitiveMesh::~PrimitiveMesh() {
 }
 
 /**
-    CapsuleMesh
+  CapsuleMesh
 */
 
 void CapsuleMesh::_create_mesh_array(Array &p_arr) const {

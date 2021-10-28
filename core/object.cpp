@@ -1526,9 +1526,10 @@ void Object::_disconnect(const StringName &p_signal, Object *p_to_object, const 
 	Signal *s = signal_map.getptr(p_signal);
 	if (!s) {
 		bool signal_is_valid = ClassDB::has_signal(get_class_name(), p_signal) ||
-							   (!script.is_null() && Ref<Script>(script)->has_script_signal(p_signal));
-		ERR_FAIL_COND_MSG(signal_is_valid, vformat("Attempt to disconnect a nonexistent connection to signal '%s' in %s, with target '%s' in %s.",
-												   p_signal, to_string(), p_to_method, p_to_object->to_string()));
+				(!script.is_null() && Ref<Script>(script)->has_script_signal(p_signal));
+		ERR_FAIL_COND_MSG(signal_is_valid,
+				vformat("Attempt to disconnect a nonexistent connection to signal '%s' in %s, with target '%s' in %s.",
+						p_signal, to_string(), p_to_method, p_to_object->to_string()));
 	}
 	ERR_FAIL_COND_MSG(!s, vformat("Disconnecting nonexistent signal '%s' in %s.", p_signal, to_string()));
 

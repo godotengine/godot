@@ -420,13 +420,13 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 						// For info about the unicode range, see Label::regenerate_word_cache.
 						const CharType current = c[end];
 						const bool separatable = (current >= 0x2E08 && current <= 0x9FFF) || // CJK scripts and symbols.
-												 (current >= 0xAC00 && current <= 0xD7FF) || // Hangul Syllables and Hangul Jamo Extended-B.
-												 (current >= 0xF900 && current <= 0xFAFF) || // CJK Compatibility Ideographs.
-												 (current >= 0xFE30 && current <= 0xFE4F) || // CJK Compatibility Forms.
-												 (current >= 0xFF65 && current <= 0xFF9F) || // Halfwidth forms of katakana
-												 (current >= 0xFFA0 && current <= 0xFFDC) || // Halfwidth forms of compatibility jamo characters for Hangul
-												 (current >= 0x20000 && current <= 0x2FA1F) || // CJK Unified Ideographs Extension B ~ F and CJK Compatibility Ideographs Supplement.
-												 (current >= 0x30000 && current <= 0x3134F); // CJK Unified Ideographs Extension G.
+								(current >= 0xAC00 && current <= 0xD7FF) || // Hangul Syllables and Hangul Jamo Extended-B.
+								(current >= 0xF900 && current <= 0xFAFF) || // CJK Compatibility Ideographs.
+								(current >= 0xFE30 && current <= 0xFE4F) || // CJK Compatibility Forms.
+								(current >= 0xFF65 && current <= 0xFF9F) || // Halfwidth forms of katakana
+								(current >= 0xFFA0 && current <= 0xFFDC) || // Halfwidth forms of compatibility jamo characters for Hangul
+								(current >= 0x20000 && current <= 0x2FA1F) || // CJK Unified Ideographs Extension B ~ F and CJK Compatibility Ideographs Supplement.
+								(current >= 0x30000 && current <= 0x3134F); // CJK Unified Ideographs Extension G.
 						const bool long_separatable = separatable && (wofs - backtrack + w + cw > p_width);
 						const bool separation_changed = end > 0 && was_separatable != separatable;
 						if (!just_breaked_in_middle && (long_separatable || separation_changed)) {
@@ -501,8 +501,7 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 									fx_color.a = faded_visibility;
 								}
 
-								bool visible = visible_characters < 0 || ((p_char_count < visible_characters && YRANGE_VISIBLE(y + lh - line_descent - line_ascent, line_ascent + line_descent)) &&
-																				 faded_visibility > 0.0f);
+								bool visible = visible_characters < 0 || ((p_char_count < visible_characters && YRANGE_VISIBLE(y + lh - line_descent - line_ascent, line_ascent + line_descent)) && faded_visibility > 0.0f);
 
 								const bool previously_visible = visible;
 
@@ -548,7 +547,7 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 															 Math::lerp(Math::cos(previous_offset),
 																	 Math::cos(current_offset),
 																	 n_time)) *
-													 (float)item_shake->strength / 10.0f;
+												(float)item_shake->strength / 10.0f;
 									} else if (item_fx->type == ITEM_WAVE) {
 										ItemWave *item_wave = static_cast<ItemWave *>(item_fx);
 

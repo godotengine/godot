@@ -502,11 +502,11 @@ bool EditorExportPlatformAndroid::is_package_name_valid(const String &p_package,
 
 bool EditorExportPlatformAndroid::_should_compress_asset(const String &p_path, const Vector<uint8_t> &p_data) {
 	/*
-     *  By not compressing files with little or not benefit in doing so,
-     *  a performance gain is expected attime. Moreover, if the APK is
-     *  zip-aligned, assets stored as they are can be efficiently read by
-     *  Android by memory-mapping them.
-     */
+	 *  By not compressing files with little or not benefit in doing so,
+	 *  a performance gain is expected attime. Moreover, if the APK is
+	 *  zip-aligned, assets stored as they are can be efficiently read by
+	 *  Android by memory-mapping them.
+	 */
 
 	// -- Unconditional uncompress to mimic AAPT plus some other
 
@@ -831,7 +831,7 @@ void EditorExportPlatformAndroid::_fix_manifest(const Ref<EditorExportPreset> &p
 			OS::get_singleton()->get_screen_orientation_from_string(GLOBAL_GET("display/window/handheld/orientation")));
 
 	bool min_gles3 = ProjectSettings::get_singleton()->get("rendering/quality/driver/driver_name") == "GLES3" &&
-					 !ProjectSettings::get_singleton()->get("rendering/quality/driver/fallback_to_gles2");
+			!ProjectSettings::get_singleton()->get("rendering/quality/driver/fallback_to_gles2");
 	bool screen_support_small = p_preset->get("screen/support_small");
 	bool screen_support_normal = p_preset->get("screen/support_normal");
 	bool screen_support_large = p_preset->get("screen/support_large");
@@ -857,16 +857,11 @@ void EditorExportPlatformAndroid::_fix_manifest(const Ref<EditorExportPreset> &p
 				int iofs = ofs + 8;
 
 				string_count = decode_uint32(&p_manifest[iofs]);
-				//styles_count = decode_uint32(&p_manifest[iofs + 4]);
+				// iofs + 4 is `styles_count`.
 				string_flags = decode_uint32(&p_manifest[iofs + 8]);
 				string_data_offset = decode_uint32(&p_manifest[iofs + 12]);
-				//styles_offset = decode_uint32(&p_manifest[iofs + 16]);
-				/*
-                printf("string count: %i\n",string_count);
-                printf("flags: %i\n",string_flags);
-                printf("sdata ofs: %i\n",string_data_offset);
-                printf("styles ofs: %i\n",styles_offset);
-                */
+				// iofs + 16 is `styles_offset`.
+
 				uint32_t st_offset = iofs + 20;
 				string_table.resize(string_count);
 				uint32_t string_end = 0;
@@ -1441,7 +1436,6 @@ void EditorExportPlatformAndroid::_fix_resources(const Ref<EditorExportPreset> &
 	encode_uint32(ret.size(), &ret.write[4]);
 
 	r_manifest = ret;
-	//printf("end\n");
 }
 
 void EditorExportPlatformAndroid::_load_image_data(const Ref<Image> &p_splash_image, Vector<uint8_t> &p_data) {

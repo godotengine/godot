@@ -354,8 +354,7 @@ String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterf
 				xml_output.append(link_target);
 				xml_output.append("</c>");
 			} else if (link_tag == "enum") {
-				StringName search_cname = !target_itype ? target_cname :
-															StringName(target_itype->name + "." + (String)target_cname);
+				StringName search_cname = !target_itype ? target_cname : StringName(target_itype->name + "." + (String)target_cname);
 
 				const Map<StringName, TypeInterface>::Element *enum_match = enum_types.find(search_cname);
 
@@ -2350,7 +2349,7 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 				if (itype.cname != name_cache.type_Object || imethod.name != "free") {
 					WARN_PRINT("Notification: New unexpected virtual non-overridable method found."
 							   " We only expected Object.free, but found '" +
-							   itype.name + "." + imethod.name + "'.");
+							itype.name + "." + imethod.name + "'.");
 				}
 			} else if (return_info.type == Variant::INT && return_info.usage & PROPERTY_USAGE_CLASS_IS_ENUM) {
 				imethod.return_type.cname = return_info.class_name;

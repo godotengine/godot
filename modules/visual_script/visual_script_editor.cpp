@@ -3799,7 +3799,7 @@ void VisualScriptEditor::connect_seq(Ref<VisualScriptNode> vnode_old, Ref<Visual
 		undo_redo->add_do_method(script.ptr(), "sequence_connect", func, port_action_node, pass_port, new_id);
 		undo_redo->add_undo_method(script.ptr(), "sequence_disconnect", func, port_action_node, pass_port, new_id);
 	} else if (vnode_old->get_output_value_port_info(port_action_output).name == String("return") &&
-			   !script->get_output_sequence_ports_connected(func, port_action_node).has(return_port)) {
+			!script->get_output_sequence_ports_connected(func, port_action_node).has(return_port)) {
 		undo_redo->add_do_method(script.ptr(), "sequence_connect", func, port_action_node, return_port, new_id);
 		undo_redo->add_undo_method(script.ptr(), "sequence_disconnect", func, port_action_node, return_port, new_id);
 	} else {

@@ -437,8 +437,7 @@ void BodyPairSW::solve(real_t p_step) {
 			Vector3 temp1 = A->get_inv_inertia_tensor().xform(c.rA.cross(tv));
 			Vector3 temp2 = B->get_inv_inertia_tensor().xform(c.rB.cross(tv));
 
-			real_t t = -tvl /
-					   (A->get_inv_mass() + B->get_inv_mass() + tv.dot(temp1.cross(c.rA) + temp2.cross(c.rB)));
+			real_t t = -tvl / (A->get_inv_mass() + B->get_inv_mass() + tv.dot(temp1.cross(c.rA) + temp2.cross(c.rB)));
 
 			Vector3 jt = t * tv;
 

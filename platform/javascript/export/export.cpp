@@ -463,7 +463,7 @@ void EditorExportPlatformJavaScript::_fix_html(Vector<uint8_t> &p_html, const Re
 	if (p_preset->get("progressive_web_app/enabled")) {
 		head_include += "<link rel='manifest' href='" + p_name + ".manifest.json'>\n";
 		head_include += "<script type='application/javascript'>window.addEventListener('load', () => {if ('serviceWorker' in navigator) {navigator.serviceWorker.register('" +
-						p_name + ".service.worker.js');}});</script>\n";
+				p_name + ".service.worker.js');}});</script>\n";
 	}
 
 	// Replaces HTML string

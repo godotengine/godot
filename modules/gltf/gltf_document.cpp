@@ -5430,7 +5430,7 @@ void GLTFDocument::_convert_mult_mesh_instance_to_gltf(MultiMeshInstance *p_mult
 						p_multi_mesh_instance->get_transform() * transform;
 			} else if (multi_mesh->get_transform_format() == MultiMesh::TRANSFORM_3D) {
 				transform = p_multi_mesh_instance->get_transform() *
-							multi_mesh->get_instance_transform(instance_i);
+						multi_mesh->get_instance_transform(instance_i);
 			}
 			Ref<ArrayMesh> mm = multi_mesh->get_mesh();
 			if (mm.is_valid()) {

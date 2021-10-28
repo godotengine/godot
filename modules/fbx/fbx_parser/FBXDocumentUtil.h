@@ -114,12 +114,12 @@ const T *ProcessSimpleConnection(const Connection &con,
 		const char **propNameOut = nullptr) {
 	if (is_object_property_conn && !con.PropertyName().length()) {
 		DOMWarning("expected incoming " + std::string(name) +
-						   " link to be an object-object connection, ignoring",
+						" link to be an object-object connection, ignoring",
 				element);
 		return nullptr;
 	} else if (!is_object_property_conn && con.PropertyName().length()) {
 		DOMWarning("expected incoming " + std::string(name) +
-						   " link to be an object-property connection, ignoring",
+						" link to be an object-property connection, ignoring",
 				element);
 		return nullptr;
 	}

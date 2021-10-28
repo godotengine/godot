@@ -638,8 +638,7 @@ static String get_preprocessor_directive(const String &p_line, int p_from) {
 	CRASH_COND(p_line[p_from] != '#');
 	p_from++;
 	int i = p_from;
-	while (i < p_line.length() && (p_line[i] == '_' || (p_line[i] >= 'A' && p_line[i] <= 'Z') ||
-										  (p_line[i] >= 'a' && p_line[i] <= 'z') || p_line[i] > 127)) {
+	while (i < p_line.length() && (p_line[i] == '_' || (p_line[i] >= 'A' && p_line[i] <= 'Z') || (p_line[i] >= 'a' && p_line[i] <= 'z') || p_line[i] > 127)) {
 		i++;
 	}
 	return p_line.substr(p_from, i - p_from);
@@ -717,10 +716,10 @@ Error ScriptClassParser::parse_file(const String &p_filepath) {
 	Error ferr = read_all_file_utf8(p_filepath, source);
 
 	ERR_FAIL_COND_V_MSG(ferr != OK, ferr,
-			ferr == ERR_INVALID_DATA ?
-					  "File '" + p_filepath + "' contains invalid unicode (UTF-8), so it was not loaded."
-											" Please ensure that scripts are saved in valid UTF-8 unicode." :
-					  "Failed to read file: '" + p_filepath + "'.");
+			ferr == ERR_INVALID_DATA
+					? "File '" + p_filepath + "' contains invalid unicode (UTF-8), so it was not loaded."
+											  " Please ensure that scripts are saved in valid UTF-8 unicode."
+					: "Failed to read file: '" + p_filepath + "'.");
 
 	run_dummy_preprocessor(source, p_filepath);
 

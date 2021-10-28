@@ -123,7 +123,7 @@ vec4 texture2D_bicubic(sampler2D tex, vec2 uv, int p_lod) {
 	vec2 p3 = (vec2(iuv.x + h1x, iuv.y + h1y) - vec2(0.5f)) * texel_size;
 
 	return (g0(fuv.y) * (g0x * textureLod(tex, p0, lod) + g1x * textureLod(tex, p1, lod))) +
-		   (g1(fuv.y) * (g0x * textureLod(tex, p2, lod) + g1x * textureLod(tex, p3, lod)));
+			(g1(fuv.y) * (g0x * textureLod(tex, p2, lod) + g1x * textureLod(tex, p3, lod)));
 }
 
 #define GLOW_TEXTURE_SAMPLE(m_tex, m_uv, m_lod) texture2D_bicubic(m_tex, m_uv, m_lod)
@@ -332,14 +332,14 @@ vec3 apply_fxaa(vec3 color, float exposure, vec2 uv_interp, vec2 pixel_size) {
 	dir.y = ((lumaNW + lumaSW) - (lumaNE + lumaSE));
 
 	float dirReduce = max((lumaNW + lumaNE + lumaSW + lumaSE) *
-								  (0.25 * FXAA_REDUCE_MUL),
+					(0.25 * FXAA_REDUCE_MUL),
 			FXAA_REDUCE_MIN);
 
 	float rcpDirMin = 1.0 / (min(abs(dir.x), abs(dir.y)) + dirReduce);
 	dir = min(vec2(FXAA_SPAN_MAX, FXAA_SPAN_MAX),
 				  max(vec2(-FXAA_SPAN_MAX, -FXAA_SPAN_MAX),
 						  dir * rcpDirMin)) *
-		  pixel_size;
+			pixel_size;
 
 	vec3 rgbA = 0.5 * exposure * (textureLod(source, uv_interp + dir * (1.0 / 3.0 - 0.5), 0.0).xyz + textureLod(source, uv_interp + dir * (2.0 / 3.0 - 0.5), 0.0).xyz);
 	vec3 rgbB = rgbA * 0.5 + 0.25 * exposure * (textureLod(source, uv_interp + dir * -0.5, 0.0).xyz + textureLod(source, uv_interp + dir * 0.5, 0.0).xyz);

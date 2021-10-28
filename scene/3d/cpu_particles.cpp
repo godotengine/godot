@@ -202,8 +202,7 @@ String CPUParticles::get_configuration_warning() const {
 		warnings += "- " + TTR("Nothing is visible because no mesh has been assigned.");
 	}
 
-	if (!anim_material_found && (get_param(PARAM_ANIM_SPEED) != 0.0 || get_param(PARAM_ANIM_OFFSET) != 0.0 ||
-										get_param_curve(PARAM_ANIM_SPEED).is_valid() || get_param_curve(PARAM_ANIM_OFFSET).is_valid())) {
+	if (!anim_material_found && (get_param(PARAM_ANIM_SPEED) != 0.0 || get_param(PARAM_ANIM_OFFSET) != 0.0 || get_param_curve(PARAM_ANIM_SPEED).is_valid() || get_param_curve(PARAM_ANIM_OFFSET).is_valid())) {
 		if (warnings != String()) {
 			warnings += "\n";
 		}

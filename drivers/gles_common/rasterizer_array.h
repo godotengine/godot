@@ -35,7 +35,7 @@
  * Fast single-threaded growable array for POD types.
  * For use in render drivers, not for general use.
  * TO BE REPLACED by local_vector.
-*/
+ */
 
 #include "core/os/memory.h"
 #include "core/vector.h"

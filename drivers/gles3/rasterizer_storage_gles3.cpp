@@ -1192,9 +1192,9 @@ Ref<Image> RasterizerStorageGLES3::texture_get_data(RID p_texture, int p_layer) 
 			uint32_t a = px >> 30 & 0xFF;
 
 			ptr[ofs] = (px >> 2 & 0xFF) |
-					   (px >> 12 & 0xFF) << 8 |
-					   (px >> 22 & 0xFF) << 16 |
-					   (a | a << 2 | a << 4 | a << 6) << 24;
+					(px >> 12 & 0xFF) << 8 |
+					(px >> 22 & 0xFF) << 16 |
+					(a | a << 2 | a << 4 | a << 6) << 24;
 		}
 	} else {
 		img_format = real_format;

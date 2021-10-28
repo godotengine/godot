@@ -1336,7 +1336,7 @@ void FileSystemDock::_make_dir_confirm() {
 		EditorNode::get_singleton()->show_warning(TTR("No name provided."));
 		return;
 	} else if (dir_name.find("/") != -1 || dir_name.find("\\") != -1 || dir_name.find(":") != -1 || dir_name.find("*") != -1 ||
-			   dir_name.find("|") != -1 || dir_name.find(">") != -1 || dir_name.ends_with(".") || dir_name.ends_with(" ")) {
+			dir_name.find("|") != -1 || dir_name.find(">") != -1 || dir_name.ends_with(".") || dir_name.ends_with(" ")) {
 		EditorNode::get_singleton()->show_warning(TTR("Provided name contains invalid characters."));
 		return;
 	}

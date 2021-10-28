@@ -149,7 +149,7 @@ EditorAbout::EditorAbout() {
 	Label *about_text = memnew(Label);
 	about_text->set_v_size_flags(Control::SIZE_SHRINK_CENTER);
 	about_text->set_text(String::utf8("\xc2\xa9 2007-2021 Juan Linietsky, Ariel Manzur.\n\xc2\xa9 2014-2021 ") +
-						 TTR("Godot Engine contributors") + "\n");
+			TTR("Godot Engine contributors") + "\n");
 	version_info_vbc->add_child(about_text);
 
 	hbc->add_child(version_info_vbc);

@@ -33,9 +33,11 @@
 void AudioFilterSW::set_mode(Mode p_mode) {
 	mode = p_mode;
 }
+
 void AudioFilterSW::set_cutoff(float p_cutoff) {
 	cutoff = p_cutoff;
 }
+
 void AudioFilterSW::set_resonance(float p_resonance) {
 	resonance = p_resonance;
 }
@@ -178,21 +180,13 @@ void AudioFilterSW::prepare_coefficients(Coeffs *p_coeffs) {
 	p_coeffs->b2 /= a0;
 	p_coeffs->a1 /= 0.0 - a0;
 	p_coeffs->a2 /= 0.0 - a0;
-
-	//undenormalise
-	/*    p_coeffs->b0=undenormalise(p_coeffs->b0);
-    p_coeffs->b1=undenormalise(p_coeffs->b1);
-    p_coeffs->b2=undenormalise(p_coeffs->b2);
-    p_coeffs->a1=undenormalise(p_coeffs->a1);
-    p_coeffs->a2=undenormalise(p_coeffs->a2);*/
 }
 
-void AudioFilterSW::set_stages(int p_stages) { //adjust for multiple stages
-
+void AudioFilterSW::set_stages(int p_stages) {
 	stages = p_stages;
 }
 
-/* Fouriertransform kernel to obtain response */
+/* Fourier transform kernel to obtain response */
 
 float AudioFilterSW::get_response(float p_freq, Coeffs *p_coeffs) {
 	float freq = p_freq / sampling_rate * Math_PI * 2.0f;

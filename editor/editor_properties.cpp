@@ -2719,13 +2719,13 @@ bool EditorInspectorDefaultPlugin::parse_property(Object *p_object, Variant::Typ
 				}
 				add_property_editor(p_path, editor);
 			} else if (p_hint == PROPERTY_HINT_METHOD_OF_VARIANT_TYPE ||
-					   p_hint == PROPERTY_HINT_METHOD_OF_BASE_TYPE ||
-					   p_hint == PROPERTY_HINT_METHOD_OF_INSTANCE ||
-					   p_hint == PROPERTY_HINT_METHOD_OF_SCRIPT ||
-					   p_hint == PROPERTY_HINT_PROPERTY_OF_VARIANT_TYPE ||
-					   p_hint == PROPERTY_HINT_PROPERTY_OF_BASE_TYPE ||
-					   p_hint == PROPERTY_HINT_PROPERTY_OF_INSTANCE ||
-					   p_hint == PROPERTY_HINT_PROPERTY_OF_SCRIPT) {
+					p_hint == PROPERTY_HINT_METHOD_OF_BASE_TYPE ||
+					p_hint == PROPERTY_HINT_METHOD_OF_INSTANCE ||
+					p_hint == PROPERTY_HINT_METHOD_OF_SCRIPT ||
+					p_hint == PROPERTY_HINT_PROPERTY_OF_VARIANT_TYPE ||
+					p_hint == PROPERTY_HINT_PROPERTY_OF_BASE_TYPE ||
+					p_hint == PROPERTY_HINT_PROPERTY_OF_INSTANCE ||
+					p_hint == PROPERTY_HINT_PROPERTY_OF_SCRIPT) {
 				EditorPropertyMember *editor = memnew(EditorPropertyMember);
 
 				EditorPropertyMember::Type type = EditorPropertyMember::MEMBER_METHOD_OF_BASE_TYPE;
