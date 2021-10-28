@@ -654,6 +654,12 @@
 				See [method add_theme_stylebox_override].
 			</description>
 		</method>
+		<method name="is_drag_successful" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if drag operation is successful.
+			</description>
+		</method>
 		<method name="is_layout_rtl" qualifiers="const">
 			<return type="bool" />
 			<description>
