@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  glue_header.h                                                        */
+/*  callable_glue.cpp                                                    */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -31,56 +31,49 @@
 #ifdef MONO_GLUE_ENABLED
 
 #include "../mono_gd/gd_mono_marshal.h"
+#include "arguments_vector.h"
 
-void godot_register_collections_icalls();
-void godot_register_gd_icalls();
-void godot_register_string_name_icalls();
-void godot_register_nodepath_icalls();
-void godot_register_callable_icalls();
-void godot_register_object_icalls();
-void godot_register_rid_icalls();
-void godot_register_string_icalls();
-void godot_register_scene_tree_icalls();
+MonoObject *godot_icall_Callable_Call(GDMonoMarshal::M_Callable *p_callable, MonoArray *p_args) {
+	Callable callable = GDMonoMarshal::managed_to_callable(*p_callable);
 
-/**
- * Registers internal calls that were not generated. This function is called
- * from the generated GodotSharpBindings::register_generated_icalls() function.
- */
-void godot_register_glue_header_icalls() {
-	godot_register_collections_icalls();
-	godot_register_gd_icalls();
-	godot_register_string_name_icalls();
-	godot_register_nodepath_icalls();
-	godot_register_callable_icalls();
-	godot_register_object_icalls();
-	godot_register_rid_icalls();
-	godot_register_string_icalls();
-	godot_register_scene_tree_icalls();
+	int argc = mono_array_length(p_args);
+
+	ArgumentsVector<Variant> arg_store(argc);
+	ArgumentsVector<const Variant *> args(argc);
+
+	for (int i = 0; i < argc; i++) {
+		MonoObject *elem = mono_array_get(p_args, MonoObject *, i);
+		arg_store.set(i, GDMonoMarshal::mono_object_to_variant(elem));
+		args.set(i, &arg_store.get(i));
+	}
+
+	Variant result;
+	Callable::CallError error;
+	callable.call(args.ptr(), argc, result, error);
+
+	return GDMonoMarshal::variant_to_mono_object(result);
 }
 
-// Used by the generated glue
+void godot_icall_Callable_CallDeferred(GDMonoMarshal::M_Callable *p_callable, MonoArray *p_args) {
+	Callable callable = GDMonoMarshal::managed_to_callable(*p_callable);
 
-#include "core/config/engine.h"
-#include "core/object/class_db.h"
-#include "core/object/method_bind.h"
-#include "core/object/ref_counted.h"
-#include "core/string/node_path.h"
-#include "core/string/ustring.h"
-#include "core/typedefs.h"
-#include "core/variant/array.h"
-#include "core/variant/dictionary.h"
+	int argc = mono_array_length(p_args);
 
-#include "../mono_gd/gd_mono_class.h"
-#include "../mono_gd/gd_mono_internals.h"
-#include "../mono_gd/gd_mono_utils.h"
+	ArgumentsVector<Variant> arg_store(argc);
+	ArgumentsVector<const Variant *> args(argc);
 
-#define GODOTSHARP_INSTANCE_OBJECT(m_instance, m_type) \
-	static ClassDB::ClassInfo *ci = nullptr;           \
-	if (!ci) {                                         \
-		ci = ClassDB::classes.getptr(m_type);          \
-	}                                                  \
-	Object *m_instance = ci->creation_func();
+	for (int i = 0; i < argc; i++) {
+		MonoObject *elem = mono_array_get(p_args, MonoObject *, i);
+		arg_store.set(i, GDMonoMarshal::mono_object_to_variant(elem));
+		args.set(i, &arg_store.get(i));
+	}
 
-#include "arguments_vector.h"
+	callable.call_deferred(args.ptr(), argc);
+}
+
+void godot_register_callable_icalls() {
+	GDMonoUtils::add_internal_call("Godot.Callable::godot_icall_Callable_Call", godot_icall_Callable_Call);
+	GDMonoUtils::add_internal_call("Godot.Callable::godot_icall_Callable_CallDeferred", godot_icall_Callable_CallDeferred);
+}
 
 #endif // MONO_GLUE_ENABLED

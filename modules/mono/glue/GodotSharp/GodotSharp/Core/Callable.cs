@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.CompilerServices;
 
 namespace Godot
 {
@@ -71,5 +72,32 @@ namespace Godot
             _method = null;
             _delegate = @delegate;
         }
+
+        /// <summary>
+        /// Calls the method represented by this <see cref="Callable"/>.
+        /// Arguments can be passed and should match the method's signature.
+        /// </summary>
+        /// <param name="args">Arguments that will be passed to the method call.</param>
+        /// <returns>The value returned by the method.</returns>
+        public object Call(params object[] args)
+        {
+            return godot_icall_Callable_Call(ref this, args);
+        }
+
+        /// <summary>
+        /// Calls the method represented by this <see cref="Callable"/> in deferred mode, i.e. during the idle frame.
+        /// Arguments can be passed and should match the method's signature.
+        /// </summary>
+        /// <param name="args">Arguments that will be passed to the method call.</param>
+        public void CallDeferred(params object[] args)
+        {
+            godot_icall_Callable_CallDeferred(ref this, args);
+        }
+
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern object godot_icall_Callable_Call(ref Callable callable, object[] args);
+
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void godot_icall_Callable_CallDeferred(ref Callable callable, object[] args);
     }
 }
