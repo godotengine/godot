@@ -291,7 +291,7 @@ bool Tween::step(float p_delta) {
 			float temp_delta = rem_delta;
 			// Turns to true if any Tweener returns true (i.e. is still not finished).
 			step_active = tweener->step(temp_delta) || step_active;
-			step_delta = MIN(temp_delta, rem_delta);
+			step_delta = MIN(temp_delta, step_delta);
 		}
 
 		rem_delta = step_delta;
