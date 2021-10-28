@@ -270,6 +270,7 @@ if env["builtin_icu"]:
         "common/dictionarydata.cpp",
         "common/dtintrv.cpp",
         "common/edits.cpp",
+        "common/emojiprops.cpp",
         "common/errorcode.cpp",
         "common/filteredbrk.cpp",
         "common/filterednormalizer2.cpp",
@@ -291,6 +292,7 @@ if env["builtin_icu"]:
         "common/locresdata.cpp",
         "common/locutil.cpp",
         "common/lsr.cpp",
+        "common/lstmbe.cpp",
         "common/messagepattern.cpp",
         "common/normalizer2.cpp",
         "common/normalizer2impl.cpp",
@@ -448,7 +450,7 @@ if env["builtin_icu"]:
     ]
     thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 
-    icu_data_name = "icudt69l.dat"
+    icu_data_name = "icudt70l.dat"
 
     if env_icu["tools"]:
         env_icu.Depends("#thirdparty/icu4c/icudata.gen.h", "#thirdparty/icu4c/" + icu_data_name)
