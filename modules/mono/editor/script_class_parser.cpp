@@ -716,10 +716,10 @@ Error ScriptClassParser::parse_file(const String &p_filepath) {
 	Error ferr = read_all_file_utf8(p_filepath, source);
 
 	ERR_FAIL_COND_V_MSG(ferr != OK, ferr,
-			ferr == ERR_INVALID_DATA ?
-					  "File '" + p_filepath + "' contains invalid unicode (UTF-8), so it was not loaded."
-											" Please ensure that scripts are saved in valid UTF-8 unicode." :
-					  "Failed to read file: '" + p_filepath + "'.");
+			ferr == ERR_INVALID_DATA
+					? "File '" + p_filepath + "' contains invalid unicode (UTF-8), so it was not loaded."
+											  " Please ensure that scripts are saved in valid UTF-8 unicode."
+					: "Failed to read file: '" + p_filepath + "'.");
 
 	run_dummy_preprocessor(source, p_filepath);
 

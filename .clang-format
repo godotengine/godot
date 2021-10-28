@@ -56,7 +56,7 @@ AllowShortFunctionsOnASingleLine: Inline
 # BreakBeforeBraces: Attach
 # BreakBeforeInheritanceComma: false
 # BreakInheritanceList: BeforeColon
-BreakBeforeTernaryOperators: false
+# BreakBeforeTernaryOperators: true
 # BreakConstructorInitializersBeforeComma: false
 BreakConstructorInitializers: AfterColon
 # BreakStringLiterals: true

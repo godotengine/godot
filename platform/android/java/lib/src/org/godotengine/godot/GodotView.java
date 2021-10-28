@@ -156,16 +156,16 @@ public class GodotView extends GLSurfaceView {
 				 */
 
 				if (GLUtils.use_32) {
-					setEGLConfigChooser(translucent ?
-									  new RegularFallbackConfigChooser(8, 8, 8, 8, 24, stencil,
-											new RegularConfigChooser(8, 8, 8, 8, 16, stencil)) :
-									  new RegularFallbackConfigChooser(8, 8, 8, 8, 24, stencil,
-											new RegularConfigChooser(5, 6, 5, 0, 16, stencil)));
+					setEGLConfigChooser(translucent
+									? new RegularFallbackConfigChooser(8, 8, 8, 8, 24, stencil,
+											  new RegularConfigChooser(8, 8, 8, 8, 16, stencil))
+									: new RegularFallbackConfigChooser(8, 8, 8, 8, 24, stencil,
+											  new RegularConfigChooser(5, 6, 5, 0, 16, stencil)));
 
 				} else {
-					setEGLConfigChooser(translucent ?
-									  new RegularConfigChooser(8, 8, 8, 8, 16, stencil) :
-									  new RegularConfigChooser(5, 6, 5, 0, 16, stencil));
+					setEGLConfigChooser(translucent
+									? new RegularConfigChooser(8, 8, 8, 8, 16, stencil)
+									: new RegularConfigChooser(5, 6, 5, 0, 16, stencil));
 				}
 				break;
 		}
