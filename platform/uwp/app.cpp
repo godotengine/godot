@@ -131,8 +131,7 @@ void App::SetWindow(CoreWindow ^ p_window) {
 	window->PointerWheelChanged +=
 			ref new TypedEventHandler<CoreWindow ^, PointerEventArgs ^>(this, &App::OnPointerWheelChanged);
 
-	mouseChangedNotifier = SignalNotifier::AttachToEvent(L"os_mouse_mode_changed", ref new SignalHandler(
-																						   this, &App::OnMouseModeChanged));
+	mouseChangedNotifier = SignalNotifier::AttachToEvent(L"os_mouse_mode_changed", ref new SignalHandler(this, &App::OnMouseModeChanged));
 
 	mouseChangedNotifier->Enable();
 

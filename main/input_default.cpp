@@ -170,11 +170,11 @@ Vector2 Input::get_vector(const StringName &p_negative_x, const StringName &p_po
 
 	if (p_deadzone < 0.0f) {
 		// If the deadzone isn't specified, get it from the average of the actions.
-		p_deadzone = (InputMap::get_singleton()->action_get_deadzone(p_positive_x) +
-							 InputMap::get_singleton()->action_get_deadzone(p_negative_x) +
-							 InputMap::get_singleton()->action_get_deadzone(p_positive_y) +
-							 InputMap::get_singleton()->action_get_deadzone(p_negative_y)) /
-					 4;
+		p_deadzone = 0.25 *
+				(InputMap::get_singleton()->action_get_deadzone(p_positive_x) +
+						InputMap::get_singleton()->action_get_deadzone(p_negative_x) +
+						InputMap::get_singleton()->action_get_deadzone(p_positive_y) +
+						InputMap::get_singleton()->action_get_deadzone(p_negative_y));
 	}
 
 	// Circular length limiting and deadzone.

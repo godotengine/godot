@@ -37,10 +37,10 @@
 
 bool UPNP::is_common_device(const String &dev) const {
 	return dev.empty() ||
-		   dev.find("InternetGatewayDevice") >= 0 ||
-		   dev.find("WANIPConnection") >= 0 ||
-		   dev.find("WANPPPConnection") >= 0 ||
-		   dev.find("rootdevice") >= 0;
+			dev.find("InternetGatewayDevice") >= 0 ||
+			dev.find("WANIPConnection") >= 0 ||
+			dev.find("WANPPPConnection") >= 0 ||
+			dev.find("rootdevice") >= 0;
 }
 
 int UPNP::discover(int timeout, int ttl, const String &device_filter) {

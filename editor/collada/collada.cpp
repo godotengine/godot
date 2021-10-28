@@ -552,9 +552,9 @@ void Collada::_parse_effect_material(XMLParser &parser, Effect &effect, String &
 				COLLADA_PRINT("param: " + name + " value:" + String(value));
 
 			} else if (parser.get_node_name() == "constant" ||
-					   parser.get_node_name() == "lambert" ||
-					   parser.get_node_name() == "phong" ||
-					   parser.get_node_name() == "blinn") {
+					parser.get_node_name() == "lambert" ||
+					parser.get_node_name() == "phong" ||
+					parser.get_node_name() == "blinn") {
 				COLLADA_PRINT("shade model: " + parser.get_node_name());
 				while (parser.read() == OK) {
 					if (parser.get_node_type() == XMLParser::NODE_ELEMENT) {
@@ -628,10 +628,11 @@ void Collada::_parse_effect_material(XMLParser &parser, Effect &effect, String &
 						} else if (what == "shininess") {
 							effect.shininess = _parse_param(parser);
 						}
-					} else if (parser.get_node_type() == XMLParser::NODE_ELEMENT_END && (parser.get_node_name() == "constant" ||
-																								parser.get_node_name() == "lambert" ||
-																								parser.get_node_name() == "phong" ||
-																								parser.get_node_name() == "blinn")) {
+					} else if (parser.get_node_type() == XMLParser::NODE_ELEMENT_END &&
+							(parser.get_node_name() == "constant" ||
+									parser.get_node_name() == "lambert" ||
+									parser.get_node_name() == "phong" ||
+									parser.get_node_name() == "blinn")) {
 						break;
 					}
 				}
@@ -682,10 +683,10 @@ void Collada::_parse_effect_material(XMLParser &parser, Effect &effect, String &
 				parser.skip_section();
 			}
 		} else if (parser.get_node_type() == XMLParser::NODE_ELEMENT_END &&
-				   (parser.get_node_name() == "effect" ||
-						   parser.get_node_name() == "profile_COMMON" ||
-						   parser.get_node_name() == "technique" ||
-						   parser.get_node_name() == "extra")) {
+				(parser.get_node_name() == "effect" ||
+						parser.get_node_name() == "profile_COMMON" ||
+						parser.get_node_name() == "technique" ||
+						parser.get_node_name() == "extra")) {
 			break;
 		}
 	}

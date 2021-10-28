@@ -398,15 +398,15 @@ static void get_modulation_value(int x, int y, const int p_2bit, const int p_mod
 							  rep_vals0[p_modulation[y + 1][x]] +
 							  rep_vals0[p_modulation[y][x - 1]] +
 							  rep_vals0[p_modulation[y][x + 1]] + 2) /
-					  4;
+					4;
 		} else if (p_modulation_modes[y][x] == 2) {
 			mod_val = (rep_vals0[p_modulation[y][x - 1]] +
 							  rep_vals0[p_modulation[y][x + 1]] + 1) /
-					  2;
+					2;
 		} else {
 			mod_val = (rep_vals0[p_modulation[y - 1][x]] +
 							  rep_vals0[p_modulation[y + 1][x]] + 1) /
-					  2;
+					2;
 		}
 	} else {
 		mod_val = rep_vals1[p_modulation[y][x]];

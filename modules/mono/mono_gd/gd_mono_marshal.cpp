@@ -712,8 +712,7 @@ MonoObject *variant_to_mono_object(const Variant *p_var, const ManagedType &p_ty
 		} break;
 	}
 
-	ERR_FAIL_V_MSG(NULL, "Attempted to convert Variant to an unmarshallable managed type. Name: '" +
-								 p_type.type_class->get_name() + "' Encoding: " + itos(p_type.type_encoding) + ".");
+	ERR_FAIL_V_MSG(NULL, "Attempted to convert Variant to an unmarshallable managed type. Name: '" + p_type.type_class->get_name() + "' Encoding: " + itos(p_type.type_encoding) + ".");
 }
 
 Variant mono_object_to_variant_impl(MonoObject *p_obj, const ManagedType &p_type, bool p_fail_with_err = true) {
@@ -925,8 +924,7 @@ Variant mono_object_to_variant_impl(MonoObject *p_obj, const ManagedType &p_type
 	}
 
 	if (p_fail_with_err) {
-		ERR_FAIL_V_MSG(Variant(), "Attempted to convert an unmarshallable managed type to Variant. Name: '" +
-										  p_type.type_class->get_name() + "' Encoding: " + itos(p_type.type_encoding) + ".");
+		ERR_FAIL_V_MSG(Variant(), "Attempted to convert an unmarshallable managed type to Variant. Name: '" + p_type.type_class->get_name() + "' Encoding: " + itos(p_type.type_encoding) + ".");
 	} else {
 		return Variant();
 	}
@@ -982,7 +980,7 @@ String mono_object_to_variant_string(MonoObject *p_obj, MonoException **r_exc) {
 
 MonoObject *Dictionary_to_system_generic_dict(const Dictionary &p_dict, GDMonoClass *p_class, MonoReflectionType *p_key_reftype, MonoReflectionType *p_value_reftype) {
 	String ctor_desc = ":.ctor(System.Collections.Generic.IDictionary`2<" + GDMonoUtils::get_type_desc(p_key_reftype) +
-					   ", " + GDMonoUtils::get_type_desc(p_value_reftype) + ">)";
+			", " + GDMonoUtils::get_type_desc(p_value_reftype) + ">)";
 	GDMonoMethod *ctor = p_class->get_method_with_desc(ctor_desc, true);
 	CRASH_COND(ctor == nullptr);
 
@@ -1004,7 +1002,7 @@ MonoObject *Dictionary_to_system_generic_dict(const Dictionary &p_dict, GDMonoCl
 Dictionary system_generic_dict_to_Dictionary(MonoObject *p_obj, GDMonoClass *p_class, MonoReflectionType *p_key_reftype, MonoReflectionType *p_value_reftype) {
 	GDMonoClass *godot_dict_class = GDMonoUtils::Marshal::make_generic_dictionary_type(p_key_reftype, p_value_reftype);
 	String ctor_desc = ":.ctor(System.Collections.Generic.IDictionary`2<" + GDMonoUtils::get_type_desc(p_key_reftype) +
-					   ", " + GDMonoUtils::get_type_desc(p_value_reftype) + ">)";
+			", " + GDMonoUtils::get_type_desc(p_value_reftype) + ">)";
 	GDMonoMethod *godot_dict_ctor = godot_dict_class->get_method_with_desc(ctor_desc, true);
 	CRASH_COND(godot_dict_ctor == nullptr);
 

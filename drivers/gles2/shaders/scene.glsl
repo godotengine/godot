@@ -1004,7 +1004,7 @@ vec4 texture2D_bicubic(sampler2D tex, vec2 uv) {
 	vec2 p3 = (vec2(iuv.x + h1x, iuv.y + h1y) - vec2(0.5)) * texel_size;
 
 	return (g0(fuv.y) * (g0x * texture2D(tex, p0) + g1x * texture2D(tex, p1))) +
-		   (g1(fuv.y) * (g0x * texture2D(tex, p2) + g1x * texture2D(tex, p3)));
+			(g1(fuv.y) * (g0x * texture2D(tex, p2) + g1x * texture2D(tex, p3)));
 }
 #endif //USE_LIGHTMAP_FILTER_BICUBIC
 #endif
@@ -1544,7 +1544,7 @@ float sample_shadow(highp sampler2D shadow, highp vec4 spos) {
 								   SAMPLE_SHADOW_TEXEL(shadow, pos + vec2(2.0 * shadow_pixel_size.x, 2.0 * shadow_pixel_size.y), depth),
 								   f.x),
 						   f.y)) *
-		   (1.0 / 9.0);
+			(1.0 / 9.0);
 #endif
 
 #ifdef SHADOW_MODE_PCF_5

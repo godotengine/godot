@@ -172,7 +172,7 @@ void main() {
 						vec3(1.00000, 1.00000, 1.00000),
 						vec3(0.00000, -0.34413, 1.77200),
 						vec3(1.40200, -0.71414, 0.00000)) *
-				color.rgb;
+			color.rgb;
 #endif
 
 #ifdef USE_NO_ALPHA

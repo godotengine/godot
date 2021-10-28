@@ -1663,10 +1663,7 @@ void VisualShaderEditor::_show_members_dialog(bool at_mouse_pos) {
 
 void VisualShaderEditor::_sbox_input(const Ref<InputEvent> &p_ie) {
 	Ref<InputEventKey> ie = p_ie;
-	if (ie.is_valid() && (ie->get_scancode() == KEY_UP ||
-								 ie->get_scancode() == KEY_DOWN ||
-								 ie->get_scancode() == KEY_ENTER ||
-								 ie->get_scancode() == KEY_KP_ENTER)) {
+	if (ie.is_valid() && (ie->get_scancode() == KEY_UP || ie->get_scancode() == KEY_DOWN || ie->get_scancode() == KEY_ENTER || ie->get_scancode() == KEY_KP_ENTER)) {
 		members->call("_gui_input", ie);
 		node_filter->accept_event();
 	}

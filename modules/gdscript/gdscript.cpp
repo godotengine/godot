@@ -1782,15 +1782,15 @@ void GDScriptLanguage::get_reserved_words(List<String> *p_words) const {
 
 bool GDScriptLanguage::is_control_flow_keyword(String p_keyword) const {
 	return p_keyword == "break" ||
-		   p_keyword == "continue" ||
-		   p_keyword == "elif" ||
-		   p_keyword == "else" ||
-		   p_keyword == "if" ||
-		   p_keyword == "for" ||
-		   p_keyword == "match" ||
-		   p_keyword == "pass" ||
-		   p_keyword == "return" ||
-		   p_keyword == "while";
+			p_keyword == "continue" ||
+			p_keyword == "elif" ||
+			p_keyword == "else" ||
+			p_keyword == "if" ||
+			p_keyword == "for" ||
+			p_keyword == "match" ||
+			p_keyword == "pass" ||
+			p_keyword == "return" ||
+			p_keyword == "while";
 }
 
 bool GDScriptLanguage::handles_global_class_type(const String &p_type) const {

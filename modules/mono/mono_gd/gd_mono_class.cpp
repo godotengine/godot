@@ -180,7 +180,7 @@ void GDMonoClass::fetch_methods_with_godot_api_checks(GDMonoClass *p_native_base
 #ifdef DEBUG_ENABLED
 			String fullname = method->get_ret_type_full_name() + " " + name + "(" + method->get_signature_desc(true) + ")";
 			WARN_PRINT("Method '" + fullname + "' is hidden by Godot API method. Should be '" +
-					   method->get_full_name_no_class() + "'. In class '" + namespace_name + "." + class_name + "'.");
+					method->get_full_name_no_class() + "'. In class '" + namespace_name + "." + class_name + "'.");
 #endif
 			continue;
 		}
@@ -198,7 +198,7 @@ void GDMonoClass::fetch_methods_with_godot_api_checks(GDMonoClass *p_native_base
 					// found
 					String fullname = m->get_ret_type_full_name() + " " + name + "(" + m->get_signature_desc(true) + ")";
 					WARN_PRINT("Method '" + fullname + "' should be '" + m->get_full_name_no_class() +
-							   "'. In class '" + namespace_name + "." + class_name + "'.");
+							"'. In class '" + namespace_name + "." + class_name + "'.");
 					break;
 				}
 

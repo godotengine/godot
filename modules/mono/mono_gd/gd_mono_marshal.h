@@ -187,45 +187,45 @@ enum {
 #endif
 
 	MATCHES_Vector2 = (MATCHES_real_t && (sizeof(Vector2) == (sizeof(real_t) * 2)) &&
-					   offsetof(Vector2, x) == (sizeof(real_t) * 0) &&
-					   offsetof(Vector2, y) == (sizeof(real_t) * 1)),
+			offsetof(Vector2, x) == (sizeof(real_t) * 0) &&
+			offsetof(Vector2, y) == (sizeof(real_t) * 1)),
 
 	MATCHES_Rect2 = (MATCHES_Vector2 && (sizeof(Rect2) == (sizeof(Vector2) * 2)) &&
-					 offsetof(Rect2, position) == (sizeof(Vector2) * 0) &&
-					 offsetof(Rect2, size) == (sizeof(Vector2) * 1)),
+			offsetof(Rect2, position) == (sizeof(Vector2) * 0) &&
+			offsetof(Rect2, size) == (sizeof(Vector2) * 1)),
 
 	MATCHES_Transform2D = (MATCHES_Vector2 && (sizeof(Transform2D) == (sizeof(Vector2) * 3))), // No field offset required, it stores an array
 
 	MATCHES_Vector3 = (MATCHES_real_t && (sizeof(Vector3) == (sizeof(real_t) * 3)) &&
-					   offsetof(Vector3, x) == (sizeof(real_t) * 0) &&
-					   offsetof(Vector3, y) == (sizeof(real_t) * 1) &&
-					   offsetof(Vector3, z) == (sizeof(real_t) * 2)),
+			offsetof(Vector3, x) == (sizeof(real_t) * 0) &&
+			offsetof(Vector3, y) == (sizeof(real_t) * 1) &&
+			offsetof(Vector3, z) == (sizeof(real_t) * 2)),
 
 	MATCHES_Basis = (MATCHES_Vector3 && (sizeof(Basis) == (sizeof(Vector3) * 3))), // No field offset required, it stores an array
 
 	MATCHES_Quat = (MATCHES_real_t && (sizeof(Quat) == (sizeof(real_t) * 4)) &&
-					offsetof(Quat, x) == (sizeof(real_t) * 0) &&
-					offsetof(Quat, y) == (sizeof(real_t) * 1) &&
-					offsetof(Quat, z) == (sizeof(real_t) * 2) &&
-					offsetof(Quat, w) == (sizeof(real_t) * 3)),
+			offsetof(Quat, x) == (sizeof(real_t) * 0) &&
+			offsetof(Quat, y) == (sizeof(real_t) * 1) &&
+			offsetof(Quat, z) == (sizeof(real_t) * 2) &&
+			offsetof(Quat, w) == (sizeof(real_t) * 3)),
 
 	MATCHES_Transform = (MATCHES_Basis && MATCHES_Vector3 && (sizeof(Transform) == (sizeof(Basis) + sizeof(Vector3))) &&
-						 offsetof(Transform, basis) == 0 &&
-						 offsetof(Transform, origin) == sizeof(Basis)),
+			offsetof(Transform, basis) == 0 &&
+			offsetof(Transform, origin) == sizeof(Basis)),
 
 	MATCHES_AABB = (MATCHES_Vector3 && (sizeof(AABB) == (sizeof(Vector3) * 2)) &&
-					offsetof(AABB, position) == (sizeof(Vector3) * 0) &&
-					offsetof(AABB, size) == (sizeof(Vector3) * 1)),
+			offsetof(AABB, position) == (sizeof(Vector3) * 0) &&
+			offsetof(AABB, size) == (sizeof(Vector3) * 1)),
 
 	MATCHES_Color = (MATCHES_float && (sizeof(Color) == (sizeof(float) * 4)) &&
-					 offsetof(Color, r) == (sizeof(float) * 0) &&
-					 offsetof(Color, g) == (sizeof(float) * 1) &&
-					 offsetof(Color, b) == (sizeof(float) * 2) &&
-					 offsetof(Color, a) == (sizeof(float) * 3)),
+			offsetof(Color, r) == (sizeof(float) * 0) &&
+			offsetof(Color, g) == (sizeof(float) * 1) &&
+			offsetof(Color, b) == (sizeof(float) * 2) &&
+			offsetof(Color, a) == (sizeof(float) * 3)),
 
 	MATCHES_Plane = (MATCHES_Vector3 && MATCHES_real_t && (sizeof(Plane) == (sizeof(Vector3) + sizeof(real_t))) &&
-					 offsetof(Plane, normal) == 0 &&
-					 offsetof(Plane, d) == sizeof(Vector3))
+			offsetof(Plane, normal) == 0 &&
+			offsetof(Plane, d) == sizeof(Vector3))
 };
 
 // In the future we may force this if we want to ref return these structs

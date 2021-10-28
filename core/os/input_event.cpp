@@ -331,10 +331,10 @@ bool InputEventKey::shortcut_match(const Ref<InputEvent> &p_event, bool p_exact_
 
 	if (scancode == 0) {
 		return physical_scancode == key->physical_scancode &&
-			   (!p_exact_match || get_modifiers_mask() == key->get_modifiers_mask());
+				(!p_exact_match || get_modifiers_mask() == key->get_modifiers_mask());
 	} else {
 		return scancode == key->scancode &&
-			   (!p_exact_match || get_modifiers_mask() == key->get_modifiers_mask());
+				(!p_exact_match || get_modifiers_mask() == key->get_modifiers_mask());
 	}
 }
 
@@ -497,7 +497,7 @@ bool InputEventMouseButton::shortcut_match(const Ref<InputEvent> &p_event, bool 
 	}
 
 	return button_index == mb->button_index &&
-		   (!p_exact_match || get_modifiers_mask() == mb->get_modifiers_mask());
+			(!p_exact_match || get_modifiers_mask() == mb->get_modifiers_mask());
 }
 
 String InputEventMouseButton::as_text() const {
@@ -773,7 +773,7 @@ bool InputEventJoypadMotion::shortcut_match(const Ref<InputEvent> &p_event, bool
 	}
 
 	return axis == jm->axis &&
-		   (!p_exact_match || ((axis_value < 0) == (jm->axis_value < 0)));
+			(!p_exact_match || ((axis_value < 0) == (jm->axis_value < 0)));
 }
 
 String InputEventJoypadMotion::as_text() const {

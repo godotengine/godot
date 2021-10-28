@@ -12,7 +12,7 @@ AlignAfterOpenBracket: DontAlign
 # AlignConsecutiveBitFields: None
 # AlignConsecutiveDeclarations: None
 # AlignEscapedNewlines: Right
-# AlignOperands:   Align
+AlignOperands:   DontAlign
 AlignTrailingComments: false
 # AllowAllArgumentsOnNextLine: true
 # AllowAllConstructorInitializersOnNextLine: true

@@ -173,7 +173,7 @@ template <typename T>
 struct m2n_arg_cast_helper<T, 'L'> {
 	static T cast(Mono_InterpMethodArguments *p_margs, size_t p_idx) {
 		static_assert(std::is_same<T, int64_t>::value || std::is_same<T, uint64_t>::value ||
-							  (sizeof(void *) == 8 && std::is_pointer<T>::value),
+						(sizeof(void *) == 8 && std::is_pointer<T>::value),
 				"Invalid type for cookie 'L'.");
 
 		union {

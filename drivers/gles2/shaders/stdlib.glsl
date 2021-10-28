@@ -317,7 +317,7 @@ highp mat3 inverse(highp mat3 m) {
 	return mat3(c01, (-m[2].z * m[0].y + m[0].z * m[2].y), (m[1].z * m[0].y - m[0].z * m[1].y),
 				   c11, (m[2].z * m[0].x - m[0].z * m[2].x), (-m[1].z * m[0].x + m[0].z * m[1].x),
 				   c21, (-m[2].y * m[0].x + m[0].y * m[2].x), (m[1].y * m[0].x - m[0].y * m[1].x)) *
-		   d;
+			d;
 }
 
 highp mat4 inverse(highp mat4 m) {
