@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef WEBSOCKETMACTOS_H
-#define WEBSOCKETMACTOS_H
+#ifndef WEBSOCKET_MACROS_H
+#define WEBSOCKET_MACROS_H
 
 // Defaults per peer buffers, 1024 packets with a shared 65536 bytes payload.
 #define DEF_PKT_SHIFT 10
@@ -65,4 +65,4 @@ public:\
 protected:\
 /* clang-format on */
 
-#endif // WEBSOCKETMACTOS_H
+#endif // WEBSOCKET_MACROS_H
