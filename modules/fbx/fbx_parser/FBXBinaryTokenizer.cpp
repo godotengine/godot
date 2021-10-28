@@ -82,46 +82,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <stdint.h>
 
 namespace FBXDocParser {
-//enum Flag
-//{
-//   e_unknown_0 = 1 << 0,
-//   e_unknown_1 = 1 << 1,
-//   e_unknown_2 = 1 << 2,
-//   e_unknown_3 = 1 << 3,
-//   e_unknown_4 = 1 << 4,
-//   e_unknown_5 = 1 << 5,
-//   e_unknown_6 = 1 << 6,
-//   e_unknown_7 = 1 << 7,
-//   e_unknown_8 = 1 << 8,
-//   e_unknown_9 = 1 << 9,
-//   e_unknown_10 = 1 << 10,
-//   e_unknown_11 = 1 << 11,
-//   e_unknown_12 = 1 << 12,
-//   e_unknown_13 = 1 << 13,
-//   e_unknown_14 = 1 << 14,
-//   e_unknown_15 = 1 << 15,
-//   e_unknown_16 = 1 << 16,
-//   e_unknown_17 = 1 << 17,
-//   e_unknown_18 = 1 << 18,
-//   e_unknown_19 = 1 << 19,
-//   e_unknown_20 = 1 << 20,
-//   e_unknown_21 = 1 << 21,
-//   e_unknown_22 = 1 << 22,
-//   e_unknown_23 = 1 << 23,
-//   e_flag_field_size_64_bit = 1 << 24, // Not sure what is
-//   e_unknown_25 = 1 << 25,
-//   e_unknown_26 = 1 << 26,
-//   e_unknown_27 = 1 << 27,
-//   e_unknown_28 = 1 << 28,
-//   e_unknown_29 = 1 << 29,
-//   e_unknown_30 = 1 << 30,
-//   e_unknown_31 = 1 << 31
-//};
-//
-//bool check_flag(uint32_t flags, Flag to_check)
-//{
-//	return (flags & to_check) != 0;
-//}
 // ------------------------------------------------------------------------------------------------
 Token::Token(const char *sbegin, const char *send, TokenType type, size_t offset) :
 		sbegin(sbegin),
@@ -457,12 +417,6 @@ void TokenizeBinary(TokenList &output_tokens, const char *input, size_t length, 
 	if (length < 0x1b) {
 		//TokenizeError("file is too short",0);
 	}
-
-	//uint32_t offset = 0x15;
-	/*    const char* cursor = input + 0x15;
-    const uint32_t flags = ReadWord(input, cursor, input + length);
-    const uint8_t padding_0 = ReadByte(input, cursor, input + length); // unused
-    const uint8_t padding_1 = ReadByte(input, cursor, input + length); // unused*/
 
 	if (strncmp(input, "Kaydara FBX Binary", 18)) {
 		TokenizeError("magic bytes not found", 0);

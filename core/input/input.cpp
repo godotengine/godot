@@ -164,10 +164,11 @@ void Input::_bind_methods() {
 
 void Input::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
 	String pf = p_function;
-	if (p_idx == 0 && (pf == "is_action_pressed" || pf == "action_press" || pf == "action_release" ||
-							  pf == "is_action_just_pressed" || pf == "is_action_just_released" ||
-							  pf == "get_action_strength" || pf == "get_action_raw_strength" ||
-							  pf == "get_axis" || pf == "get_vector")) {
+	if (p_idx == 0 &&
+			(pf == "is_action_pressed" || pf == "action_press" || pf == "action_release" ||
+					pf == "is_action_just_pressed" || pf == "is_action_just_released" ||
+					pf == "get_action_strength" || pf == "get_action_raw_strength" ||
+					pf == "get_axis" || pf == "get_vector")) {
 		List<PropertyInfo> pinfo;
 		ProjectSettings::get_singleton()->get_property_list(&pinfo);
 
@@ -315,11 +316,11 @@ Vector2 Input::get_vector(const StringName &p_negative_x, const StringName &p_po
 
 	if (p_deadzone < 0.0f) {
 		// If the deadzone isn't specified, get it from the average of the actions.
-		p_deadzone = (InputMap::get_singleton()->action_get_deadzone(p_positive_x) +
-							 InputMap::get_singleton()->action_get_deadzone(p_negative_x) +
-							 InputMap::get_singleton()->action_get_deadzone(p_positive_y) +
-							 InputMap::get_singleton()->action_get_deadzone(p_negative_y)) /
-					 4;
+		p_deadzone = 0.25 *
+				(InputMap::get_singleton()->action_get_deadzone(p_positive_x) +
+						InputMap::get_singleton()->action_get_deadzone(p_negative_x) +
+						InputMap::get_singleton()->action_get_deadzone(p_positive_y) +
+						InputMap::get_singleton()->action_get_deadzone(p_negative_y));
 	}
 
 	// Circular length limiting and deadzone.

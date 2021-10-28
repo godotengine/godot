@@ -119,11 +119,11 @@ public:
 
 	//! Test limit
 	/*!
-    - free means upper < lower,
-    - locked means upper == lower
-    - limited means upper > lower
-    - limitIndex: first 3 are linear, next 3 are angular
-    */
+	 * - free means upper < lower,
+	 * - locked means upper == lower
+	 * - limited means upper > lower
+	 * - limitIndex: first 3 are linear, next 3 are angular
+	 */
 	inline bool isLimited(int limitIndex) {
 		return (m_upperLimit[limitIndex] >= m_lowerLimit[limitIndex]);
 	}
@@ -291,11 +291,11 @@ public:
 
 	//! Test limit
 	/*!
-    - free means upper < lower,
-    - locked means upper == lower
-    - limited means upper > lower
-    - limitIndex: first 3 are linear, next 3 are angular
-    */
+	 * - free means upper < lower,
+	 * - locked means upper == lower
+	 * - limited means upper > lower
+	 * - limitIndex: first 3 are linear, next 3 are angular
+	 */
 	bool isLimited(int limitIndex) {
 		if (limitIndex < 3) {
 			return m_linearLimits.isLimited(limitIndex);

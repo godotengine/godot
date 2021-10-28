@@ -112,16 +112,18 @@ bool GodotSliderJoint3D::setup(real_t p_step) {
 	//linear part
 	for (i = 0; i < 3; i++) {
 		normalWorld = m_calculatedTransformA.basis.get_axis(i);
-		memnew_placement(&m_jacLin[i], GodotJacobianEntry3D(
-											   A->get_principal_inertia_axes().transposed(),
-											   B->get_principal_inertia_axes().transposed(),
-											   m_relPosA - A->get_center_of_mass(),
-											   m_relPosB - B->get_center_of_mass(),
-											   normalWorld,
-											   A->get_inv_inertia(),
-											   A->get_inv_mass(),
-											   B->get_inv_inertia(),
-											   B->get_inv_mass()));
+		memnew_placement(
+				&m_jacLin[i],
+				GodotJacobianEntry3D(
+						A->get_principal_inertia_axes().transposed(),
+						B->get_principal_inertia_axes().transposed(),
+						m_relPosA - A->get_center_of_mass(),
+						m_relPosB - B->get_center_of_mass(),
+						normalWorld,
+						A->get_inv_inertia(),
+						A->get_inv_mass(),
+						B->get_inv_inertia(),
+						B->get_inv_mass()));
 		m_jacLinDiagABInv[i] = real_t(1.) / m_jacLin[i].getDiagonal();
 		m_depth[i] = m_delta.dot(normalWorld);
 	}
@@ -129,12 +131,14 @@ bool GodotSliderJoint3D::setup(real_t p_step) {
 	// angular part
 	for (i = 0; i < 3; i++) {
 		normalWorld = m_calculatedTransformA.basis.get_axis(i);
-		memnew_placement(&m_jacAng[i], GodotJacobianEntry3D(
-											   normalWorld,
-											   A->get_principal_inertia_axes().transposed(),
-											   B->get_principal_inertia_axes().transposed(),
-											   A->get_inv_inertia(),
-											   B->get_inv_inertia()));
+		memnew_placement(
+				&m_jacAng[i],
+				GodotJacobianEntry3D(
+						normalWorld,
+						A->get_principal_inertia_axes().transposed(),
+						B->get_principal_inertia_axes().transposed(),
+						A->get_inv_inertia(),
+						B->get_inv_inertia()));
 	}
 	testAngLimits();
 	Vector3 axisA = m_calculatedTransformA.basis.get_axis(0);

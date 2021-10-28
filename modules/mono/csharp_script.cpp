@@ -313,22 +313,22 @@ void CSharpLanguage::get_reserved_words(List<String> *p_words) const {
 
 bool CSharpLanguage::is_control_flow_keyword(String p_keyword) const {
 	return p_keyword == "break" ||
-		   p_keyword == "case" ||
-		   p_keyword == "catch" ||
-		   p_keyword == "continue" ||
-		   p_keyword == "default" ||
-		   p_keyword == "do" ||
-		   p_keyword == "else" ||
-		   p_keyword == "finally" ||
-		   p_keyword == "for" ||
-		   p_keyword == "foreach" ||
-		   p_keyword == "goto" ||
-		   p_keyword == "if" ||
-		   p_keyword == "return" ||
-		   p_keyword == "switch" ||
-		   p_keyword == "throw" ||
-		   p_keyword == "try" ||
-		   p_keyword == "while";
+			p_keyword == "case" ||
+			p_keyword == "catch" ||
+			p_keyword == "continue" ||
+			p_keyword == "default" ||
+			p_keyword == "do" ||
+			p_keyword == "else" ||
+			p_keyword == "finally" ||
+			p_keyword == "for" ||
+			p_keyword == "foreach" ||
+			p_keyword == "goto" ||
+			p_keyword == "if" ||
+			p_keyword == "return" ||
+			p_keyword == "switch" ||
+			p_keyword == "throw" ||
+			p_keyword == "try" ||
+			p_keyword == "while";
 }
 
 void CSharpLanguage::get_comment_delimiters(List<String> *p_delimiters) const {
@@ -3265,8 +3265,7 @@ ScriptInstance *CSharpScript::instance_create(Object *p_this) {
 						"Script inherits from native type '" + String(native_name) +
 								"', so it can't be instantiated in object of type: '" + p_this->get_class() + "'");
 			}
-			ERR_FAIL_V_MSG(nullptr, "Script inherits from native type '" + String(native_name) +
-											"', so it can't be instantiated in object of type: '" + p_this->get_class() + "'.");
+			ERR_FAIL_V_MSG(nullptr, "Script inherits from native type '" + String(native_name) + "', so it can't be instantiated in object of type: '" + p_this->get_class() + "'.");
 		}
 	}
 
@@ -3529,10 +3528,10 @@ Error CSharpScript::load_source_code(const String &p_path) {
 	Error ferr = read_all_file_utf8(p_path, source);
 
 	ERR_FAIL_COND_V_MSG(ferr != OK, ferr,
-			ferr == ERR_INVALID_DATA ?
-					  "Script '" + p_path + "' contains invalid unicode (UTF-8), so it was not loaded."
-										  " Please ensure that scripts are saved in valid UTF-8 unicode." :
-					  "Failed to read file: '" + p_path + "'.");
+			ferr == ERR_INVALID_DATA
+					? "Script '" + p_path + "' contains invalid unicode (UTF-8), so it was not loaded."
+											" Please ensure that scripts are saved in valid UTF-8 unicode."
+					: "Failed to read file: '" + p_path + "'.");
 
 #ifdef TOOLS_ENABLED
 	source_changed_cache = true;

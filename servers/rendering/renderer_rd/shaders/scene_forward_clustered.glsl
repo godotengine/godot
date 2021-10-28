@@ -971,15 +971,15 @@ void main() {
 		const float c4 = 0.886227;
 		const float c5 = 0.247708;
 		ambient_light += (c1 * lightmap_captures.data[index].sh[8].rgb * (wnormal.x * wnormal.x - wnormal.y * wnormal.y) +
-						  c3 * lightmap_captures.data[index].sh[6].rgb * wnormal.z * wnormal.z +
-						  c4 * lightmap_captures.data[index].sh[0].rgb -
-						  c5 * lightmap_captures.data[index].sh[6].rgb +
-						  2.0 * c1 * lightmap_captures.data[index].sh[4].rgb * wnormal.x * wnormal.y +
-						  2.0 * c1 * lightmap_captures.data[index].sh[7].rgb * wnormal.x * wnormal.z +
-						  2.0 * c1 * lightmap_captures.data[index].sh[5].rgb * wnormal.y * wnormal.z +
-						  2.0 * c2 * lightmap_captures.data[index].sh[3].rgb * wnormal.x +
-						  2.0 * c2 * lightmap_captures.data[index].sh[1].rgb * wnormal.y +
-						  2.0 * c2 * lightmap_captures.data[index].sh[2].rgb * wnormal.z);
+				c3 * lightmap_captures.data[index].sh[6].rgb * wnormal.z * wnormal.z +
+				c4 * lightmap_captures.data[index].sh[0].rgb -
+				c5 * lightmap_captures.data[index].sh[6].rgb +
+				2.0 * c1 * lightmap_captures.data[index].sh[4].rgb * wnormal.x * wnormal.y +
+				2.0 * c1 * lightmap_captures.data[index].sh[7].rgb * wnormal.x * wnormal.z +
+				2.0 * c1 * lightmap_captures.data[index].sh[5].rgb * wnormal.y * wnormal.z +
+				2.0 * c2 * lightmap_captures.data[index].sh[3].rgb * wnormal.x +
+				2.0 * c2 * lightmap_captures.data[index].sh[1].rgb * wnormal.y +
+				2.0 * c2 * lightmap_captures.data[index].sh[2].rgb * wnormal.z);
 
 	} else if (bool(instances.data[instance_index].flags & INSTANCE_FLAGS_USE_LIGHTMAP)) { // has actual lightmap
 		bool uses_sh = bool(instances.data[instance_index].flags & INSTANCE_FLAGS_USE_SH_LIGHTMAP);
@@ -1256,10 +1256,10 @@ void main() {
 // LIGHTING
 #if !defined(MODE_RENDER_DEPTH) && !defined(MODE_UNSHADED)
 
-	{ //directional light
+	{ // Directional light.
 
+		// Do shadow and lighting in two passes to reduce register pressure.
 #ifndef SHADOWS_DISABLED
-		// Do shadow and lighting in two passes to reduce register pressure
 		uint shadow0 = 0;
 		uint shadow1 = 0;
 

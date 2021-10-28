@@ -60,7 +60,7 @@ struct TypeInherits {
 	static char (&test(...))[2];
 
 	static bool const value = sizeof(test(get_d())) == sizeof(char) &&
-							  !TypesAreSame<B volatile const, void volatile const>::value;
+			!TypesAreSame<B volatile const, void volatile const>::value;
 };
 
 namespace GodotTypeInfo {

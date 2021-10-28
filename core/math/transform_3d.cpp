@@ -175,9 +175,9 @@ Transform3D Transform3D::operator*(const real_t p_val) const {
 
 Transform3D::operator String() const {
 	return "[X: " + basis.get_axis(0).operator String() +
-		   ", Y: " + basis.get_axis(1).operator String() +
-		   ", Z: " + basis.get_axis(2).operator String() +
-		   ", O: " + origin.operator String() + "]";
+			", Y: " + basis.get_axis(1).operator String() +
+			", Z: " + basis.get_axis(2).operator String() +
+			", O: " + origin.operator String() + "]";
 }
 
 Transform3D::Transform3D(const Basis &p_basis, const Vector3 &p_origin) :

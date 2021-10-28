@@ -1650,8 +1650,7 @@ void ColladaImport::create_animation(int p_clip, bool p_import_value_tracks) {
 
 			Vector3 s = xform.basis.get_scale();
 			bool singular_matrix = Math::is_zero_approx(s.x) || Math::is_zero_approx(s.y) || Math::is_zero_approx(s.z);
-			Quaternion q = singular_matrix ? Quaternion() :
-											   xform.basis.get_rotation_quaternion();
+			Quaternion q = singular_matrix ? Quaternion() : xform.basis.get_rotation_quaternion();
 			Vector3 l = xform.origin;
 
 			if (position_idx >= 0) {

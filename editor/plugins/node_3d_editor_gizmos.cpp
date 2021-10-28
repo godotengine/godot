@@ -3641,15 +3641,15 @@ void LightmapGIGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 				const float c4 = 0.886227;
 				const float c5 = 0.247708;
 				Vector3 light = (c1 * sh_col[8] * (n.x * n.x - n.y * n.y) +
-								 c3 * sh_col[6] * n.z * n.z +
-								 c4 * sh_col[0] -
-								 c5 * sh_col[6] +
-								 2.0 * c1 * sh_col[4] * n.x * n.y +
-								 2.0 * c1 * sh_col[7] * n.x * n.z +
-								 2.0 * c1 * sh_col[5] * n.y * n.z +
-								 2.0 * c2 * sh_col[3] * n.x +
-								 2.0 * c2 * sh_col[1] * n.y +
-								 2.0 * c2 * sh_col[2] * n.z);
+						c3 * sh_col[6] * n.z * n.z +
+						c4 * sh_col[0] -
+						c5 * sh_col[6] +
+						2.0 * c1 * sh_col[4] * n.x * n.y +
+						2.0 * c1 * sh_col[7] * n.x * n.z +
+						2.0 * c1 * sh_col[5] * n.y * n.z +
+						2.0 * c2 * sh_col[3] * n.x +
+						2.0 * c2 * sh_col[1] * n.y +
+						2.0 * c2 * sh_col[2] * n.z);
 
 				colors.push_back(Color(light.x, light.y, light.z, 1));
 			}

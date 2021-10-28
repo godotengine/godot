@@ -325,11 +325,11 @@ void EditorExportPlatformOSX::_fix_plist(const Ref<EditorExportPreset> &p_preset
 }
 
 /**
-    If we're running the OSX version of the Godot editor we'll:
-    - export our application bundle to a temporary folder
-    - attempt to code sign it
-    - and then wrap it up in a DMG
-**/
+ * If we're running the OSX version of the Godot editor we'll:
+ * - export our application bundle to a temporary folder
+ * - attempt to code sign it
+ * - and then wrap it up in a DMG
+ */
 
 Error EditorExportPlatformOSX::_notarize(const Ref<EditorExportPreset> &p_preset, const String &p_path) {
 #ifdef OSX_ENABLED

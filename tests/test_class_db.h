@@ -224,20 +224,20 @@ bool arg_default_value_is_assignable_to_type(const Context &p_context, const Var
 	switch (p_val.get_type()) {
 		case Variant::NIL:
 			return p_context.find_exposed_class(p_arg_type) ||
-				   p_context.names_cache.is_nullable_type(p_arg_type.name);
+					p_context.names_cache.is_nullable_type(p_arg_type.name);
 		case Variant::BOOL:
 			return p_arg_type.name == p_context.names_cache.bool_type;
 		case Variant::INT:
 			return p_arg_type.name == p_context.names_cache.int_type ||
-				   p_arg_type.name == p_context.names_cache.float_type ||
-				   p_arg_type.is_enum;
+					p_arg_type.name == p_context.names_cache.float_type ||
+					p_arg_type.is_enum;
 		case Variant::FLOAT:
 			return p_arg_type.name == p_context.names_cache.float_type;
 		case Variant::STRING:
 		case Variant::STRING_NAME:
 			return p_arg_type.name == p_context.names_cache.string_type ||
-				   p_arg_type.name == p_context.names_cache.string_name_type ||
-				   p_arg_type.name == p_context.names_cache.node_path_type;
+					p_arg_type.name == p_context.names_cache.string_name_type ||
+					p_arg_type.name == p_context.names_cache.node_path_type;
 		case Variant::NODE_PATH:
 			return p_arg_type.name == p_context.names_cache.node_path_type;
 		case Variant::TRANSFORM3D:
@@ -269,13 +269,13 @@ bool arg_default_value_is_assignable_to_type(const Context &p_context, const Var
 			return p_context.find_exposed_class(p_arg_type);
 		case Variant::VECTOR2I:
 			return p_arg_type.name == p_context.names_cache.vector2_type ||
-				   p_arg_type.name == Variant::get_type_name(p_val.get_type());
+					p_arg_type.name == Variant::get_type_name(p_val.get_type());
 		case Variant::RECT2I:
 			return p_arg_type.name == p_context.names_cache.rect2_type ||
-				   p_arg_type.name == Variant::get_type_name(p_val.get_type());
+					p_arg_type.name == Variant::get_type_name(p_val.get_type());
 		case Variant::VECTOR3I:
 			return p_arg_type.name == p_context.names_cache.vector3_type ||
-				   p_arg_type.name == Variant::get_type_name(p_val.get_type());
+					p_arg_type.name == Variant::get_type_name(p_val.get_type());
 		default:
 			if (r_err_msg) {
 				*r_err_msg = "Unexpected Variant type: " + itos(p_val.get_type());
@@ -327,7 +327,7 @@ void validate_property(const Context &p_context, const ExposedClass &p_class, co
 		if (getter->return_type.name != setter_first_arg.type.name) {
 			// Special case for Node::set_name
 			bool whitelisted = getter->return_type.name == p_context.names_cache.string_name_type &&
-							   setter_first_arg.type.name == p_context.names_cache.string_type;
+					setter_first_arg.type.name == p_context.names_cache.string_type;
 
 			TEST_FAIL_COND(!whitelisted,
 					"Return type from getter doesn't match first argument of setter, for property: '", p_class.name, ".", String(p_prop.name), "'.");
@@ -609,7 +609,7 @@ void add_exposed_classes(Context &r_context) {
 				method.return_type.name = return_info.class_name;
 
 				bool bad_reference_hint = !method.is_virtual && return_info.hint != PROPERTY_HINT_RESOURCE_TYPE &&
-										  ClassDB::is_parent_class(return_info.class_name, r_context.names_cache.ref_counted_class);
+						ClassDB::is_parent_class(return_info.class_name, r_context.names_cache.ref_counted_class);
 				TEST_COND(bad_reference_hint, "Return type is reference but hint is not '" _STR(PROPERTY_HINT_RESOURCE_TYPE) "'.", " Are you returning a reference type by pointer? Method: '",
 						exposed_class.name, ".", method.name, "'.");
 			} else if (return_info.hint == PROPERTY_HINT_RESOURCE_TYPE) {

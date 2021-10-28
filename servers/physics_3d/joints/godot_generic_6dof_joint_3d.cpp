@@ -279,25 +279,30 @@ void GodotGeneric6DOFJoint3D::calculateTransforms() {
 void GodotGeneric6DOFJoint3D::buildLinearJacobian(
 		GodotJacobianEntry3D &jacLinear, const Vector3 &normalWorld,
 		const Vector3 &pivotAInW, const Vector3 &pivotBInW) {
-	memnew_placement(&jacLinear, GodotJacobianEntry3D(
-										 A->get_principal_inertia_axes().transposed(),
-										 B->get_principal_inertia_axes().transposed(),
-										 pivotAInW - A->get_transform().origin - A->get_center_of_mass(),
-										 pivotBInW - B->get_transform().origin - B->get_center_of_mass(),
-										 normalWorld,
-										 A->get_inv_inertia(),
-										 A->get_inv_mass(),
-										 B->get_inv_inertia(),
-										 B->get_inv_mass()));
+	memnew_placement(
+			&jacLinear,
+			GodotJacobianEntry3D(
+					A->get_principal_inertia_axes().transposed(),
+					B->get_principal_inertia_axes().transposed(),
+					pivotAInW - A->get_transform().origin - A->get_center_of_mass(),
+					pivotBInW - B->get_transform().origin - B->get_center_of_mass(),
+					normalWorld,
+					A->get_inv_inertia(),
+					A->get_inv_mass(),
+					B->get_inv_inertia(),
+					B->get_inv_mass()));
 }
 
 void GodotGeneric6DOFJoint3D::buildAngularJacobian(
 		GodotJacobianEntry3D &jacAngular, const Vector3 &jointAxisW) {
-	memnew_placement(&jacAngular, GodotJacobianEntry3D(jointAxisW,
-										  A->get_principal_inertia_axes().transposed(),
-										  B->get_principal_inertia_axes().transposed(),
-										  A->get_inv_inertia(),
-										  B->get_inv_inertia()));
+	memnew_placement(
+			&jacAngular,
+			GodotJacobianEntry3D(
+					jointAxisW,
+					A->get_principal_inertia_axes().transposed(),
+					B->get_principal_inertia_axes().transposed(),
+					A->get_inv_inertia(),
+					B->get_inv_inertia()));
 }
 
 bool GodotGeneric6DOFJoint3D::testAngularLimitMotor(int axis_index) {

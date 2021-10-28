@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "renderer_canvas_render_rd.h"
+
 #include "core/config/project_settings.h"
 #include "core/math/geometry_2d.h"
 #include "core/math/math_defs.h"
@@ -1584,9 +1585,6 @@ void RendererCanvasRenderRD::light_update_shadow(RID p_rid, int p_shadow_index, 
 		push_constant.direction[1] = directions[i].y;
 		push_constant.z_far = p_far;
 		push_constant.pad = 0;
-
-		/*if (i == 0)
-			*p_xform_cache = projection;*/
 
 		LightOccluderInstance *instance = p_occluders;
 

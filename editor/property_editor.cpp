@@ -407,11 +407,11 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 				return false;
 
 			} else if (hint == PROPERTY_HINT_LAYERS_2D_PHYSICS ||
-					   hint == PROPERTY_HINT_LAYERS_2D_RENDER ||
-					   hint == PROPERTY_HINT_LAYERS_2D_NAVIGATION ||
-					   hint == PROPERTY_HINT_LAYERS_3D_PHYSICS ||
-					   hint == PROPERTY_HINT_LAYERS_3D_RENDER ||
-					   hint == PROPERTY_HINT_LAYERS_3D_NAVIGATION) {
+					hint == PROPERTY_HINT_LAYERS_2D_RENDER ||
+					hint == PROPERTY_HINT_LAYERS_2D_NAVIGATION ||
+					hint == PROPERTY_HINT_LAYERS_3D_PHYSICS ||
+					hint == PROPERTY_HINT_LAYERS_3D_RENDER ||
+					hint == PROPERTY_HINT_LAYERS_3D_NAVIGATION) {
 				String basename;
 				switch (hint) {
 					case PROPERTY_HINT_LAYERS_2D_RENDER:
