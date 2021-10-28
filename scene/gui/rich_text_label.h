@@ -362,6 +362,7 @@ private:
 	};
 
 	Selection selection;
+	bool deselect_on_focus_loss_enabled;
 
 	int visible_characters;
 	float percent_visible;
@@ -473,6 +474,8 @@ public:
 	bool is_selection_enabled() const;
 	String get_selected_text();
 	void selection_copy();
+	void set_deselect_on_focus_loss_enabled(const bool p_enabled);
+	bool is_deselect_on_focus_loss_enabled() const;
 
 	Error parse_bbcode(const String &p_bbcode);
 	Error append_bbcode(const String &p_bbcode);
