@@ -267,8 +267,26 @@ void SceneShaderForwardClustered::ShaderData::set_code(const String &p_code) {
 
 			RD::RenderPrimitive primitive_rd = uses_point_size ? RD::RENDER_PRIMITIVE_POINTS : primitive_rd_table[j];
 
-			for (int k = 0; k < SHADER_VERSION_MAX; k++) {
-				if (!static_cast<SceneShaderForwardClustered *>(singleton)->shader.is_variant_enabled(k)) {
+			for (int k = 0; k < PIPELINE_VERSION_MAX; k++) {
+				ShaderVersion shader_version;
+				static const ShaderVersion shader_version_table[PIPELINE_VERSION_MAX] = {
+					SHADER_VERSION_DEPTH_PASS,
+					SHADER_VERSION_DEPTH_PASS_DP,
+					SHADER_VERSION_DEPTH_PASS_WITH_NORMAL_AND_ROUGHNESS,
+					SHADER_VERSION_DEPTH_PASS_WITH_NORMAL_AND_ROUGHNESS_AND_VOXEL_GI,
+					SHADER_VERSION_DEPTH_PASS_WITH_MATERIAL,
+					SHADER_VERSION_DEPTH_PASS_WITH_SDF,
+					SHADER_VERSION_COLOR_PASS,
+					SHADER_VERSION_COLOR_PASS_WITH_SEPARATE_SPECULAR,
+					SHADER_VERSION_COLOR_PASS,
+					SHADER_VERSION_LIGHTMAP_COLOR_PASS,
+					SHADER_VERSION_LIGHTMAP_COLOR_PASS_WITH_SEPARATE_SPECULAR,
+					SHADER_VERSION_LIGHTMAP_COLOR_PASS,
+				};
+
+				shader_version = shader_version_table[k];
+
+				if (!static_cast<SceneShaderForwardClustered *>(singleton)->shader.is_variant_enabled(shader_version)) {
 					continue;
 				}
 				RD::PipelineRasterizationState raster_state;
@@ -279,8 +297,7 @@ void SceneShaderForwardClustered::ShaderData::set_code(const String &p_code) {
 				RD::PipelineDepthStencilState depth_stencil = depth_stencil_state;
 				RD::PipelineMultisampleState multisample_state;
 
-				if (uses_alpha || uses_blend_alpha) {
-					// only allow these flags to go through if we have some form of msaa
+				if (k == PIPELINE_VERSION_TRANSPARENT_PASS || k == PIPELINE_VERSION_LIGHTMAP_TRANSPARENT_PASS) {
 					if (alpha_antialiasing_mode == ALPHA_ANTIALIASING_ALPHA_TO_COVERAGE) {
 						multisample_state.enable_alpha_to_coverage = true;
 					} else if (alpha_antialiasing_mode == ALPHA_ANTIALIASING_ALPHA_TO_COVERAGE_AND_TO_ONE) {
@@ -288,43 +305,29 @@ void SceneShaderForwardClustered::ShaderData::set_code(const String &p_code) {
 						multisample_state.enable_alpha_to_one = true;
 					}
 
-					if (k == SHADER_VERSION_COLOR_PASS || k == SHADER_VERSION_LIGHTMAP_COLOR_PASS) {
-						blend_state = blend_state_blend;
-						if (depth_draw == DEPTH_DRAW_OPAQUE) {
-							depth_stencil.enable_depth_write = false; //alpha does not draw depth
-						}
-					} else if (uses_depth_pre_pass && (k == SHADER_VERSION_DEPTH_PASS || k == SHADER_VERSION_DEPTH_PASS_DP || k == SHADER_VERSION_DEPTH_PASS_WITH_NORMAL_AND_ROUGHNESS || k == SHADER_VERSION_DEPTH_PASS_WITH_MATERIAL)) {
-						if (k == SHADER_VERSION_DEPTH_PASS || k == SHADER_VERSION_DEPTH_PASS_DP) {
-							//none, blend state contains nothing
-						} else if (k == SHADER_VERSION_DEPTH_PASS_WITH_MATERIAL) {
-							blend_state = RD::PipelineColorBlendState::create_disabled(5); //writes to normal and roughness in opaque way
-						} else {
-							blend_state = blend_state_opaque; //writes to normal and roughness in opaque way
-						}
-					} else {
-						pipelines[i][j][k].clear();
-						continue; // do not use this version (will error if using it is attempted)
+					blend_state = blend_state_blend;
+
+					if (depth_draw == DEPTH_DRAW_OPAQUE) {
+						depth_stencil.enable_depth_write = false; //alpha does not draw depth
 					}
+				} else if (k == PIPELINE_VERSION_OPAQUE_PASS || k == PIPELINE_VERSION_LIGHTMAP_OPAQUE_PASS) {
+					blend_state = blend_state_opaque;
+				} else if (k == PIPELINE_VERSION_DEPTH_PASS || k == PIPELINE_VERSION_DEPTH_PASS_DP) {
+					//none, leave empty
+				} else if (k == PIPELINE_VERSION_DEPTH_PASS_WITH_NORMAL_AND_ROUGHNESS) {
+					blend_state = blend_state_depth_normal_roughness;
+				} else if (k == PIPELINE_VERSION_DEPTH_PASS_WITH_NORMAL_AND_ROUGHNESS_AND_VOXEL_GI) {
+					blend_state = blend_state_depth_normal_roughness_giprobe;
+				} else if (k == PIPELINE_VERSION_DEPTH_PASS_WITH_MATERIAL) {
+					blend_state = RD::PipelineColorBlendState::create_disabled(5); //writes to normal and roughness in opaque way
+				} else if (k == PIPELINE_VERSION_DEPTH_PASS_WITH_SDF) {
+					blend_state = RD::PipelineColorBlendState(); //no color targets for SDF
 				} else {
-					if (k == SHADER_VERSION_COLOR_PASS || k == SHADER_VERSION_LIGHTMAP_COLOR_PASS) {
-						blend_state = blend_state_opaque;
-					} else if (k == SHADER_VERSION_DEPTH_PASS || k == SHADER_VERSION_DEPTH_PASS_DP) {
-						//none, leave empty
-					} else if (k == SHADER_VERSION_DEPTH_PASS_WITH_NORMAL_AND_ROUGHNESS) {
-						blend_state = blend_state_depth_normal_roughness;
-					} else if (k == SHADER_VERSION_DEPTH_PASS_WITH_NORMAL_AND_ROUGHNESS_AND_VOXEL_GI) {
-						blend_state = blend_state_depth_normal_roughness_giprobe;
-					} else if (k == SHADER_VERSION_DEPTH_PASS_WITH_MATERIAL) {
-						blend_state = RD::PipelineColorBlendState::create_disabled(5); //writes to normal and roughness in opaque way
-					} else if (k == SHADER_VERSION_DEPTH_PASS_WITH_SDF) {
-						blend_state = RD::PipelineColorBlendState(); //no color targets for SDF
-					} else {
-						//specular write
-						blend_state = blend_state_opaque_specular;
-					}
+					//specular write
+					blend_state = blend_state_opaque_specular;
 				}
 
-				RID shader_variant = shader_singleton->shader.version_get_shader(version, k);
+				RID shader_variant = shader_singleton->shader.version_get_shader(version, shader_version);
 				pipelines[i][j][k].setup(shader_variant, primitive_rd, raster_state, multisample_state, depth_stencil, blend_state, 0, singleton->default_specialization_constants);
 			}
 		}

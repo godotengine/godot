@@ -644,6 +644,12 @@ void RendererSceneCull::instance_set_base(RID p_instance, RID p_base) {
 					scene_render->geometry_instance_set_lightmap_capture(geom->geometry_instance, instance->lightmap_sh.ptr());
 				}
 
+				for (Set<Instance *>::Element *E = instance->visibility_dependencies.front(); E; E = E->next()) {
+					Instance *dep_instance = E->get();
+					ERR_CONTINUE(dep_instance->array_index == -1);
+					ERR_CONTINUE(dep_instance->scenario->instance_data[dep_instance->array_index].parent_array_index != -1);
+					dep_instance->scenario->instance_data[dep_instance->array_index].parent_array_index = instance->array_index;
+				}
 			} break;
 			case RS::INSTANCE_PARTICLES_COLLISION: {
 				InstanceParticlesCollisionData *collision = memnew(InstanceParticlesCollisionData);
@@ -816,6 +822,16 @@ void RendererSceneCull::instance_set_layer_mask(RID p_instance, uint32_t p_mask)
 	if ((1 << instance->base_type) & RS::INSTANCE_GEOMETRY_MASK && instance->base_data) {
 		InstanceGeometryData *geom = static_cast<InstanceGeometryData *>(instance->base_data);
 		scene_render->geometry_instance_set_layer_mask(geom->geometry_instance, p_mask);
+	}
+}
+
+void RendererSceneCull::instance_geometry_set_transparency(RID p_instance, float p_transparency) {
+	Instance *instance = instance_owner.get_or_null(p_instance);
+	ERR_FAIL_COND(!instance);
+
+	if ((1 << instance->base_type) & RS::INSTANCE_GEOMETRY_MASK && instance->base_data) {
+		InstanceGeometryData *geom = static_cast<InstanceGeometryData *>(instance->base_data);
+		scene_render->geometry_instance_set_transparency(geom->geometry_instance, p_transparency);
 	}
 }
 
@@ -1173,7 +1189,7 @@ void RendererSceneCull::instance_geometry_set_material_override(RID p_instance, 
 	}
 }
 
-void RendererSceneCull::instance_geometry_set_visibility_range(RID p_instance, float p_min, float p_max, float p_min_margin, float p_max_margin) {
+void RendererSceneCull::instance_geometry_set_visibility_range(RID p_instance, float p_min, float p_max, float p_min_margin, float p_max_margin, RS::VisibilityRangeFadeMode p_fade_mode) {
 	Instance *instance = instance_owner.get_or_null(p_instance);
 	ERR_FAIL_COND(!instance);
 
@@ -1181,6 +1197,7 @@ void RendererSceneCull::instance_geometry_set_visibility_range(RID p_instance, f
 	instance->visibility_range_end = p_max;
 	instance->visibility_range_begin_margin = p_min_margin;
 	instance->visibility_range_end_margin = p_max_margin;
+	instance->visibility_range_fade_mode = p_fade_mode;
 
 	_update_instance_visibility_dependencies(instance);
 
@@ -1190,6 +1207,7 @@ void RendererSceneCull::instance_geometry_set_visibility_range(RID p_instance, f
 		vd.range_end = instance->visibility_range_end;
 		vd.range_begin_margin = instance->visibility_range_begin_margin;
 		vd.range_end_margin = instance->visibility_range_end_margin;
+		vd.fade_mode = p_fade_mode;
 	}
 }
 
@@ -1199,53 +1217,48 @@ void RendererSceneCull::instance_set_visibility_parent(RID p_instance, RID p_par
 
 	Instance *old_parent = instance->visibility_parent;
 	if (old_parent) {
-		if ((1 << old_parent->base_type) & RS::INSTANCE_GEOMETRY_MASK && old_parent->base_data) {
-			InstanceGeometryData *old_parent_geom = static_cast<InstanceGeometryData *>(old_parent->base_data);
-			old_parent_geom->visibility_dependencies.erase(instance);
-			_update_instance_visibility_depth(old_parent);
-		}
+		old_parent->visibility_dependencies.erase(instance);
 		instance->visibility_parent = nullptr;
+		_update_instance_visibility_depth(old_parent);
 	}
 
 	Instance *parent = instance_owner.get_or_null(p_parent_instance);
 	ERR_FAIL_COND(p_parent_instance.is_valid() && !parent);
 
 	if (parent) {
-		if ((1 << parent->base_type) & RS::INSTANCE_GEOMETRY_MASK && parent->base_data) {
-			InstanceGeometryData *parent_geom = static_cast<InstanceGeometryData *>(parent->base_data);
-			parent_geom->visibility_dependencies.insert(instance);
-			_update_instance_visibility_depth(parent);
-		}
+		parent->visibility_dependencies.insert(instance);
 		instance->visibility_parent = parent;
+
+		bool cycle_detected = _update_instance_visibility_depth(parent);
+		if (cycle_detected) {
+			ERR_PRINT("Cycle detected in the visibility dependencies tree. The latest change to visibility_parent will have no effect.");
+			parent->visibility_dependencies.erase(instance);
+			instance->visibility_parent = nullptr;
+		}
 	}
 
 	_update_instance_visibility_dependencies(instance);
 }
 
-void RendererSceneCull::_update_instance_visibility_depth(Instance *p_instance) {
+bool RendererSceneCull::_update_instance_visibility_depth(Instance *p_instance) {
 	bool cycle_detected = false;
 	Set<Instance *> traversed_nodes;
 
 	{
 		Instance *instance = p_instance;
-		while (instance && ((1 << instance->base_type) & RS::INSTANCE_GEOMETRY_MASK) && instance->base_data) {
-			InstanceGeometryData *geom = static_cast<InstanceGeometryData *>(instance->base_data);
-			if (!geom->visibility_dependencies.is_empty()) {
+		while (instance) {
+			if (!instance->visibility_dependencies.is_empty()) {
 				uint32_t depth = 0;
-				for (Set<Instance *>::Element *E = geom->visibility_dependencies.front(); E; E = E->next()) {
-					if (((1 << E->get()->base_type) & RS::INSTANCE_GEOMETRY_MASK) == 0 || !E->get()->base_data) {
-						continue;
-					}
-					InstanceGeometryData *child_geom = static_cast<InstanceGeometryData *>(E->get()->base_data);
-					depth = MAX(depth, child_geom->visibility_dependencies_depth);
+				for (Set<Instance *>::Element *E = instance->visibility_dependencies.front(); E; E = E->next()) {
+					depth = MAX(depth, E->get()->visibility_dependencies_depth);
 				}
-				geom->visibility_dependencies_depth = depth + 1;
+				instance->visibility_dependencies_depth = depth + 1;
 			} else {
-				geom->visibility_dependencies_depth = 0;
+				instance->visibility_dependencies_depth = 0;
 			}
 
 			if (instance->scenario && instance->visibility_index != -1) {
-				instance->scenario->instance_visibility.move(instance->visibility_index, geom->visibility_dependencies_depth);
+				instance->scenario->instance_visibility.move(instance->visibility_index, instance->visibility_dependencies_depth);
 			}
 
 			traversed_nodes.insert(instance);
@@ -1258,17 +1271,7 @@ void RendererSceneCull::_update_instance_visibility_depth(Instance *p_instance) 
 		}
 	}
 
-	if (cycle_detected) {
-		ERR_PRINT("Cycle detected in the visibility dependencies tree.");
-		for (Set<Instance *>::Element *E = traversed_nodes.front(); E; E = E->next()) {
-			Instance *instance = E->get();
-			InstanceGeometryData *geom = static_cast<InstanceGeometryData *>(instance->base_data);
-			geom->visibility_dependencies_depth = 0;
-			if (instance->scenario && instance->visibility_index != -1) {
-				instance->scenario->instance_visibility.move(instance->visibility_index, geom->visibility_dependencies_depth);
-			}
-		}
-	}
+	return cycle_detected;
 }
 
 void RendererSceneCull::_update_instance_visibility_dependencies(Instance *p_instance) {
@@ -1288,25 +1291,42 @@ void RendererSceneCull::_update_instance_visibility_dependencies(Instance *p_ins
 		vd.range_end_margin = p_instance->visibility_range_end_margin;
 		vd.position = p_instance->transformed_aabb.get_center();
 		vd.array_index = p_instance->array_index;
+		vd.fade_mode = p_instance->visibility_range_fade_mode;
 
-		InstanceGeometryData *geom_data = static_cast<InstanceGeometryData *>(p_instance->base_data);
-		p_instance->scenario->instance_visibility.insert(vd, geom_data->visibility_dependencies_depth);
+		p_instance->scenario->instance_visibility.insert(vd, p_instance->visibility_dependencies_depth);
 	}
 
 	if (p_instance->scenario && p_instance->array_index != -1) {
-		p_instance->scenario->instance_data[p_instance->array_index].visibility_index = p_instance->visibility_index;
+		InstanceData &idata = p_instance->scenario->instance_data[p_instance->array_index];
+		idata.visibility_index = p_instance->visibility_index;
 
-		InstanceGeometryData *geom_data = static_cast<InstanceGeometryData *>(p_instance->base_data);
-		if ((has_visibility_range || p_instance->visibility_parent) && (p_instance->visibility_index == -1 || (geom_data && geom_data->visibility_dependencies_depth == 0))) {
-			p_instance->scenario->instance_data[p_instance->array_index].flags |= InstanceData::FLAG_VISIBILITY_DEPENDENCY_NEEDS_CHECK;
+		if (is_geometry_instance) {
+			if (has_visibility_range && p_instance->visibility_range_fade_mode == RS::VISIBILITY_RANGE_FADE_SELF) {
+				bool begin_enabled = p_instance->visibility_range_begin > 0.0f;
+				float begin_min = p_instance->visibility_range_begin - p_instance->visibility_range_begin_margin;
+				float begin_max = p_instance->visibility_range_begin + p_instance->visibility_range_begin_margin;
+				bool end_enabled = p_instance->visibility_range_end > 0.0f;
+				float end_min = p_instance->visibility_range_end - p_instance->visibility_range_end_margin;
+				float end_max = p_instance->visibility_range_end + p_instance->visibility_range_end_margin;
+				scene_render->geometry_instance_set_fade_range(idata.instance_geometry, begin_enabled, begin_min, begin_max, end_enabled, end_min, end_max);
+			} else {
+				scene_render->geometry_instance_set_fade_range(idata.instance_geometry, false, 0.0f, 0.0f, false, 0.0f, 0.0f);
+			}
+		}
+
+		if ((has_visibility_range || p_instance->visibility_parent) && (p_instance->visibility_index == -1 || p_instance->visibility_dependencies_depth == 0)) {
+			idata.flags |= InstanceData::FLAG_VISIBILITY_DEPENDENCY_NEEDS_CHECK;
 		} else {
-			p_instance->scenario->instance_data[p_instance->array_index].flags &= ~InstanceData::FLAG_VISIBILITY_DEPENDENCY_NEEDS_CHECK;
+			idata.flags &= ~InstanceData::FLAG_VISIBILITY_DEPENDENCY_NEEDS_CHECK;
 		}
 
 		if (p_instance->visibility_parent) {
-			p_instance->scenario->instance_data[p_instance->array_index].parent_array_index = p_instance->visibility_parent->array_index;
+			idata.parent_array_index = p_instance->visibility_parent->array_index;
 		} else {
-			p_instance->scenario->instance_data[p_instance->array_index].parent_array_index = -1;
+			idata.parent_array_index = -1;
+			if (is_geometry_instance) {
+				scene_render->geometry_instance_set_parent_fade_alpha(idata.instance_geometry, 1.0f);
+			}
 		}
 	}
 }
@@ -1559,19 +1579,19 @@ void RendererSceneCull::_update_instance(Instance *p_instance) {
 		idata.parent_array_index = p_instance->visibility_parent ? p_instance->visibility_parent->array_index : -1;
 		idata.visibility_index = p_instance->visibility_index;
 
+		for (Set<Instance *>::Element *E = p_instance->visibility_dependencies.front(); E; E = E->next()) {
+			Instance *dep_instance = E->get();
+			if (dep_instance->array_index != -1) {
+				dep_instance->scenario->instance_data[dep_instance->array_index].parent_array_index = p_instance->array_index;
+			}
+		}
+
 		switch (p_instance->base_type) {
 			case RS::INSTANCE_MESH:
 			case RS::INSTANCE_MULTIMESH:
 			case RS::INSTANCE_PARTICLES: {
 				InstanceGeometryData *geom = static_cast<InstanceGeometryData *>(p_instance->base_data);
 				idata.instance_geometry = geom->geometry_instance;
-
-				for (Set<Instance *>::Element *E = geom->visibility_dependencies.front(); E; E = E->next()) {
-					Instance *dep_instance = E->get();
-					if (dep_instance->array_index != -1) {
-						dep_instance->scenario->instance_data[dep_instance->array_index].parent_array_index = p_instance->array_index;
-					}
-				}
 			} break;
 			case RS::INSTANCE_LIGHT: {
 				InstanceLightData *light_data = static_cast<InstanceLightData *>(p_instance->base_data);
@@ -1721,13 +1741,10 @@ void RendererSceneCull::_unpair_instance(Instance *p_instance) {
 			swapped_instance->scenario->instance_visibility[swapped_instance->visibility_index].array_index = swapped_instance->array_index;
 		}
 
-		if ((1 << swapped_instance->base_type) & RS::INSTANCE_GEOMETRY_MASK) {
-			InstanceGeometryData *geom = static_cast<InstanceGeometryData *>(swapped_instance->base_data);
-			for (Set<Instance *>::Element *E = geom->visibility_dependencies.front(); E; E = E->next()) {
-				Instance *dep_instance = E->get();
-				if (dep_instance != p_instance && dep_instance->array_index != -1) {
-					dep_instance->scenario->instance_data[dep_instance->array_index].parent_array_index = swapped_instance->array_index;
-				}
+		for (Set<Instance *>::Element *E = swapped_instance->visibility_dependencies.front(); E; E = E->next()) {
+			Instance *dep_instance = E->get();
+			if (dep_instance != p_instance && dep_instance->array_index != -1) {
+				dep_instance->scenario->instance_data[dep_instance->array_index].parent_array_index = swapped_instance->array_index;
 			}
 		}
 	}
@@ -1746,11 +1763,14 @@ void RendererSceneCull::_unpair_instance(Instance *p_instance) {
 		scene_render->geometry_instance_pair_reflection_probe_instances(geom->geometry_instance, nullptr, 0);
 		scene_render->geometry_instance_pair_decal_instances(geom->geometry_instance, nullptr, 0);
 		scene_render->geometry_instance_pair_voxel_gi_instances(geom->geometry_instance, nullptr, 0);
+	}
 
-		for (Set<Instance *>::Element *E = geom->visibility_dependencies.front(); E; E = E->next()) {
-			Instance *dep_instance = E->get();
-			if (dep_instance->array_index != -1) {
-				dep_instance->scenario->instance_data[dep_instance->array_index].parent_array_index = -1;
+	for (Set<Instance *>::Element *E = p_instance->visibility_dependencies.front(); E; E = E->next()) {
+		Instance *dep_instance = E->get();
+		if (dep_instance->array_index != -1) {
+			dep_instance->scenario->instance_data[dep_instance->array_index].parent_array_index = -1;
+			if ((1 << dep_instance->base_type) & RS::INSTANCE_GEOMETRY_MASK) {
+				scene_render->geometry_instance_set_parent_fade_alpha(dep_instance->scenario->instance_data[dep_instance->array_index].instance_geometry, 1.0f);
 			}
 		}
 	}
@@ -2453,34 +2473,49 @@ void RendererSceneCull::_visibility_cull(const VisibilityCullData &cull_data, ui
 
 		if (idata.parent_array_index >= 0) {
 			uint32_t parent_flags = scenario->instance_data[idata.parent_array_index].flags;
-			if ((parent_flags & InstanceData::FLAG_VISIBILITY_DEPENDENCY_HIDDEN) || (parent_flags & InstanceData::FLAG_VISIBILITY_DEPENDENCY_HIDDEN_CLOSE_RANGE) == 0) {
+
+			if ((parent_flags & InstanceData::FLAG_VISIBILITY_DEPENDENCY_HIDDEN) || !(parent_flags & (InstanceData::FLAG_VISIBILITY_DEPENDENCY_HIDDEN_CLOSE_RANGE | InstanceData::FLAG_VISIBILITY_DEPENDENCY_FADE_CHILDREN))) {
 				idata.flags |= InstanceData::FLAG_VISIBILITY_DEPENDENCY_HIDDEN;
 				idata.flags &= ~InstanceData::FLAG_VISIBILITY_DEPENDENCY_HIDDEN_CLOSE_RANGE;
+				idata.flags &= ~InstanceData::FLAG_VISIBILITY_DEPENDENCY_FADE_CHILDREN;
 				continue;
 			}
 		}
 
-		int range_check = _visibility_range_check(vd, cull_data.camera_position, cull_data.viewport_mask);
+		int range_check = _visibility_range_check<true>(vd, cull_data.camera_position, cull_data.viewport_mask);
 
 		if (range_check == -1) {
 			idata.flags |= InstanceData::FLAG_VISIBILITY_DEPENDENCY_HIDDEN;
 			idata.flags &= ~InstanceData::FLAG_VISIBILITY_DEPENDENCY_HIDDEN_CLOSE_RANGE;
+			idata.flags &= ~InstanceData::FLAG_VISIBILITY_DEPENDENCY_FADE_CHILDREN;
 		} else if (range_check == 1) {
 			idata.flags &= ~InstanceData::FLAG_VISIBILITY_DEPENDENCY_HIDDEN;
 			idata.flags |= InstanceData::FLAG_VISIBILITY_DEPENDENCY_HIDDEN_CLOSE_RANGE;
+			idata.flags &= ~InstanceData::FLAG_VISIBILITY_DEPENDENCY_FADE_CHILDREN;
 		} else {
 			idata.flags &= ~InstanceData::FLAG_VISIBILITY_DEPENDENCY_HIDDEN;
 			idata.flags &= ~InstanceData::FLAG_VISIBILITY_DEPENDENCY_HIDDEN_CLOSE_RANGE;
+			if (range_check == 2) {
+				idata.flags |= InstanceData::FLAG_VISIBILITY_DEPENDENCY_FADE_CHILDREN;
+			} else {
+				idata.flags &= ~InstanceData::FLAG_VISIBILITY_DEPENDENCY_FADE_CHILDREN;
+			}
 		}
 	}
 }
 
+template <bool p_fade_check>
 int RendererSceneCull::_visibility_range_check(InstanceVisibilityData &r_vis_data, const Vector3 &p_camera_pos, uint64_t p_viewport_mask) {
 	float dist = p_camera_pos.distance_to(r_vis_data.position);
+	const RS::VisibilityRangeFadeMode &fade_mode = r_vis_data.fade_mode;
 
-	bool in_range_last_frame = p_viewport_mask & r_vis_data.viewport_state;
-	float begin_offset = in_range_last_frame ? -r_vis_data.range_begin_margin : r_vis_data.range_begin_margin;
-	float end_offset = in_range_last_frame ? r_vis_data.range_end_margin : -r_vis_data.range_end_margin;
+	float begin_offset = -r_vis_data.range_begin_margin;
+	float end_offset = r_vis_data.range_end_margin;
+
+	if (fade_mode == RS::VISIBILITY_RANGE_FADE_DISABLED && !(p_viewport_mask & r_vis_data.viewport_state)) {
+		begin_offset = -begin_offset;
+		end_offset = -end_offset;
+	}
 
 	if (r_vis_data.range_end > 0.0f && dist > r_vis_data.range_end + end_offset) {
 		r_vis_data.viewport_state &= ~p_viewport_mask;
@@ -2490,8 +2525,32 @@ int RendererSceneCull::_visibility_range_check(InstanceVisibilityData &r_vis_dat
 		return 1;
 	} else {
 		r_vis_data.viewport_state |= p_viewport_mask;
+		if (p_fade_check) {
+			if (fade_mode != RS::VISIBILITY_RANGE_FADE_DISABLED) {
+				r_vis_data.children_fade_alpha = 1.0f;
+				if (r_vis_data.range_end > 0.0f && dist > r_vis_data.range_end - end_offset) {
+					if (fade_mode == RS::VISIBILITY_RANGE_FADE_DEPENDENCIES) {
+						r_vis_data.children_fade_alpha = MIN(1.0f, (dist - (r_vis_data.range_end - end_offset)) / (2.0f * r_vis_data.range_end_margin));
+					}
+					return 2;
+				} else if (r_vis_data.range_begin > 0.0f && dist < r_vis_data.range_begin - begin_offset) {
+					if (fade_mode == RS::VISIBILITY_RANGE_FADE_DEPENDENCIES) {
+						r_vis_data.children_fade_alpha = MIN(1.0f, 1.0 - (dist - (r_vis_data.range_begin + begin_offset)) / (2.0f * r_vis_data.range_begin_margin));
+					}
+					return 2;
+				}
+			}
+		}
 		return 0;
 	}
+}
+
+bool RendererSceneCull::_visibility_parent_check(const CullData &p_cull_data, const InstanceData &p_instance_data) {
+	if (p_instance_data.parent_array_index == -1) {
+		return true;
+	}
+	const uint32_t &parent_flags = p_cull_data.scenario->instance_data[p_instance_data.parent_array_index].flags;
+	return ((parent_flags & InstanceData::FLAG_VISIBILITY_DEPENDENCY_NEEDS_CHECK) == InstanceData::FLAG_VISIBILITY_DEPENDENCY_HIDDEN_CLOSE_RANGE) || (parent_flags & InstanceData::FLAG_VISIBILITY_DEPENDENCY_FADE_CHILDREN);
 }
 
 void RendererSceneCull::_scene_cull_threaded(uint32_t p_thread, CullData *cull_data) {
@@ -2519,14 +2578,14 @@ void RendererSceneCull::_scene_cull(CullData &cull_data, InstanceCullResult &cul
 		bool mesh_visible = false;
 
 		InstanceData &idata = cull_data.scenario->instance_data[i];
-		uint32_t visibility_flags = idata.flags & (InstanceData::FLAG_VISIBILITY_DEPENDENCY_HIDDEN_CLOSE_RANGE | InstanceData::FLAG_VISIBILITY_DEPENDENCY_HIDDEN);
+		uint32_t visibility_flags = idata.flags & (InstanceData::FLAG_VISIBILITY_DEPENDENCY_HIDDEN_CLOSE_RANGE | InstanceData::FLAG_VISIBILITY_DEPENDENCY_HIDDEN | InstanceData::FLAG_VISIBILITY_DEPENDENCY_FADE_CHILDREN);
 		int32_t visibility_check = -1;
 
 #define HIDDEN_BY_VISIBILITY_CHECKS (visibility_flags == InstanceData::FLAG_VISIBILITY_DEPENDENCY_HIDDEN_CLOSE_RANGE || visibility_flags == InstanceData::FLAG_VISIBILITY_DEPENDENCY_HIDDEN)
 #define LAYER_CHECK (cull_data.visible_layers & idata.layer_mask)
 #define IN_FRUSTUM(f) (cull_data.scenario->instance_aabbs[i].in_frustum(f))
-#define VIS_RANGE_CHECK ((idata.visibility_index == -1) || _visibility_range_check(cull_data.scenario->instance_visibility[idata.visibility_index], cull_data.cam_transform.origin, cull_data.visibility_viewport_mask) == 0)
-#define VIS_PARENT_CHECK ((idata.parent_array_index == -1) || ((cull_data.scenario->instance_data[idata.parent_array_index].flags & InstanceData::FLAG_VISIBILITY_DEPENDENCY_NEEDS_CHECK) == InstanceData::FLAG_VISIBILITY_DEPENDENCY_HIDDEN_CLOSE_RANGE))
+#define VIS_RANGE_CHECK ((idata.visibility_index == -1) || _visibility_range_check<false>(cull_data.scenario->instance_visibility[idata.visibility_index], cull_data.cam_transform.origin, cull_data.visibility_viewport_mask) == 0)
+#define VIS_PARENT_CHECK (_visibility_parent_check(cull_data, idata))
 #define VIS_CHECK (visibility_check < 0 ? (visibility_check = (visibility_flags != InstanceData::FLAG_VISIBILITY_DEPENDENCY_NEEDS_CHECK || (VIS_RANGE_CHECK && VIS_PARENT_CHECK))) : visibility_check)
 #define OCCLUSION_CULLED (cull_data.occlusion_buffer != nullptr && (cull_data.scenario->instance_data[i].flags & InstanceData::FLAG_IGNORE_OCCLUSION_CULLING) == 0 && cull_data.occlusion_buffer->is_occluded(cull_data.scenario->instance_aabbs[i].bounds, cull_data.cam_transform.origin, inv_cam_transform, *cull_data.camera_matrix, z_near))
 
@@ -2605,6 +2664,16 @@ void RendererSceneCull::_scene_cull(CullData &cull_data, InstanceCullResult &cul
 							//particles visible? request redraw
 							RenderingServerDefault::redraw_request();
 						}
+					}
+
+					if (idata.parent_array_index != -1) {
+						float fade = 1.0f;
+						const uint32_t &parent_flags = cull_data.scenario->instance_data[idata.parent_array_index].flags;
+						if (parent_flags & InstanceData::FLAG_VISIBILITY_DEPENDENCY_FADE_CHILDREN) {
+							const int32_t &parent_idx = cull_data.scenario->instance_data[idata.parent_array_index].visibility_index;
+							fade = cull_data.scenario->instance_visibility[parent_idx].children_fade_alpha;
+						}
+						scene_render->geometry_instance_set_parent_fade_alpha(idata.instance_geometry, fade);
 					}
 
 					if (geometry_instance_pair_mask & (1 << RS::INSTANCE_LIGHT) && (idata.flags & InstanceData::FLAG_GEOM_LIGHTING_DIRTY)) {

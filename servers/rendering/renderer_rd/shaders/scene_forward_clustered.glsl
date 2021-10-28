@@ -95,7 +95,7 @@ layout(location = 8) out float dp_clip;
 
 #endif
 
-layout(location = 9) out flat uint instance_index;
+layout(location = 9) out flat uint instance_index_interp;
 
 invariant gl_Position;
 
@@ -107,7 +107,8 @@ void main() {
 	color_interp = color_attrib;
 #endif
 
-	instance_index = draw_call.instance_index;
+	uint instance_index = draw_call.instance_index;
+	instance_index_interp = instance_index;
 
 	bool is_multimesh = bool(instances.data[instance_index].flags & INSTANCE_FLAGS_MULTIMESH);
 	if (!is_multimesh) {
@@ -410,7 +411,7 @@ layout(location = 8) in float dp_clip;
 
 #endif
 
-layout(location = 9) in flat uint instance_index;
+layout(location = 9) in flat uint instance_index_interp;
 
 //defines to keep compatibility with vertex
 
@@ -564,6 +565,12 @@ void main() {
 		discard;
 #endif
 
+#ifdef USE_SUBGROUPS
+	//ensures instance_index is in sgpr
+	uint instance_index = subgroupBroadcastFirst(instance_index_interp);
+#else
+	uint instance_index = instance_index_interp;
+#endif
 	//lay out everything, whathever is unused is optimized away anyway
 	vec3 vertex = vertex_interp;
 	vec3 view = -normalize(vertex_interp);
@@ -593,7 +600,7 @@ void main() {
 	float ao = 1.0;
 	float ao_light_affect = 0.0;
 
-	float alpha = 1.0;
+	float alpha = float(instances.data[instance_index].flags >> INSTANCE_FLAGS_FADE_SHIFT) / float(255.0);
 
 #if defined(TANGENT_USED) || defined(NORMAL_MAP_USED) || defined(LIGHT_ANISOTROPY_USED)
 	vec3 binormal = normalize(binormal_interp);
@@ -1900,7 +1907,6 @@ void main() {
 
 	// Draw "fixed" fog before volumetric fog to ensure volumetric fog can appear in front of the sky.
 	frag_color.rgb = mix(frag_color.rgb, fog.rgb, fog.a);
-	;
 
 #endif //MODE_MULTIPLE_RENDER_TARGETS
 

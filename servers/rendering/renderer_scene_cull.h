@@ -267,7 +267,8 @@ public:
 			FLAG_VISIBILITY_DEPENDENCY_NEEDS_CHECK = (3 << 20), // 2 bits, overlaps with the other vis. dependency flags
 			FLAG_VISIBILITY_DEPENDENCY_HIDDEN_CLOSE_RANGE = (1 << 20),
 			FLAG_VISIBILITY_DEPENDENCY_HIDDEN = (1 << 21),
-			FLAG_GEOM_PROJECTOR_SOFTSHADOW_DIRTY = (1 << 22),
+			FLAG_VISIBILITY_DEPENDENCY_FADE_CHILDREN = (1 << 22),
+			FLAG_GEOM_PROJECTOR_SOFTSHADOW_DIRTY = (1 << 23),
 		};
 
 		uint32_t flags = 0;
@@ -286,12 +287,14 @@ public:
 	struct InstanceVisibilityData {
 		uint64_t viewport_state = 0;
 		int32_t array_index = -1;
+		RS::VisibilityRangeFadeMode fade_mode = RS::VISIBILITY_RANGE_FADE_DISABLED;
 		Vector3 position;
 		Instance *instance = nullptr;
 		float range_begin = 0.0f;
 		float range_end = 0.0f;
 		float range_begin_margin = 0.0f;
 		float range_end_margin = 0.0f;
+		float children_fade_alpha = 1.0f;
 	};
 
 	class VisibilityArray : public BinSortedArray<InstanceVisibilityData> {
@@ -440,7 +443,10 @@ public:
 		float visibility_range_end;
 		float visibility_range_begin_margin;
 		float visibility_range_end_margin;
+		RS::VisibilityRangeFadeMode visibility_range_fade_mode = RS::VISIBILITY_RANGE_FADE_DISABLED;
 		Instance *visibility_parent = nullptr;
+		Set<Instance *> visibility_dependencies;
+		uint32_t visibility_dependencies_depth;
 		Scenario *scenario;
 		SelfList<Instance> scenario_item;
 
@@ -583,8 +589,6 @@ public:
 		Set<Instance *> reflection_probes;
 		Set<Instance *> voxel_gi_instances;
 		Set<Instance *> lightmap_captures;
-		Set<Instance *> visibility_dependencies;
-		uint32_t visibility_dependencies_depth = 0;
 
 		InstanceGeometryData() {
 			can_cast_shadows = true;
@@ -920,6 +924,7 @@ public:
 	virtual void instance_set_blend_shape_weight(RID p_instance, int p_shape, float p_weight);
 	virtual void instance_set_surface_override_material(RID p_instance, int p_surface, RID p_material);
 	virtual void instance_set_visible(RID p_instance, bool p_visible);
+	virtual void instance_geometry_set_transparency(RID p_instance, float p_transparency);
 
 	virtual void instance_set_custom_aabb(RID p_instance, AABB p_aabb);
 
@@ -929,7 +934,7 @@ public:
 
 	virtual void instance_set_visibility_parent(RID p_instance, RID p_parent_instance);
 
-	void _update_instance_visibility_depth(Instance *p_instance);
+	bool _update_instance_visibility_depth(Instance *p_instance);
 	void _update_instance_visibility_dependencies(Instance *p_instance);
 
 	// don't use these in a game!
@@ -941,7 +946,7 @@ public:
 	virtual void instance_geometry_set_cast_shadows_setting(RID p_instance, RS::ShadowCastingSetting p_shadow_casting_setting);
 	virtual void instance_geometry_set_material_override(RID p_instance, RID p_material);
 
-	virtual void instance_geometry_set_visibility_range(RID p_instance, float p_min, float p_max, float p_min_margin, float p_max_margin);
+	virtual void instance_geometry_set_visibility_range(RID p_instance, float p_min, float p_max, float p_min_margin, float p_max_margin, RS::VisibilityRangeFadeMode p_fade_mode);
 
 	virtual void instance_geometry_set_lightmap(RID p_instance, RID p_lightmap, const Rect2 &p_lightmap_uv_scale, int p_slice_index);
 	virtual void instance_geometry_set_lod_bias(RID p_instance, float p_lod_bias);
@@ -1013,7 +1018,7 @@ public:
 
 	void _visibility_cull_threaded(uint32_t p_thread, VisibilityCullData *cull_data);
 	void _visibility_cull(const VisibilityCullData &cull_data, uint64_t p_from, uint64_t p_to);
-	_FORCE_INLINE_ void _visibility_cull(const VisibilityCullData &cull_data, uint64_t p_idx);
+	template <bool p_fade_check>
 	_FORCE_INLINE_ int _visibility_range_check(InstanceVisibilityData &r_vis_data, const Vector3 &p_camera_pos, uint64_t p_viewport_mask);
 
 	struct CullData {
@@ -1030,6 +1035,7 @@ public:
 
 	void _scene_cull_threaded(uint32_t p_thread, CullData *cull_data);
 	void _scene_cull(CullData &cull_data, InstanceCullResult &cull_result, uint64_t p_from, uint64_t p_to);
+	_FORCE_INLINE_ bool _visibility_parent_check(const CullData &p_cull_data, const InstanceData &p_instance_data);
 
 	bool _render_reflection_probe_step(Instance *p_instance, int p_step);
 	void _render_scene(const RendererSceneRender::CameraData *p_camera_data, RID p_render_buffers, RID p_environment, RID p_force_camera_effects, uint32_t p_visible_layers, RID p_scenario, RID p_viewport, RID p_shadow_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_lod_threshold, bool p_using_shadows = true, RenderInfo *r_render_info = nullptr);

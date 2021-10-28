@@ -49,6 +49,9 @@
 			The material override for the whole geometry.
 			If a material is assigned to this property, it will be used instead of any material set in any material slot of the mesh.
 		</member>
+		<member name="transparency" type="float" setter="set_transparency" getter="get_transparency" default="0.0">
+			Transparency applied to the whole geometry. In spatial shaders, transparency is set as the default value of the [code]ALPHA[/code] built-in.
+		</member>
 		<member name="visibility_range_begin" type="float" setter="set_visibility_range_begin" getter="get_visibility_range_begin" default="0.0">
 			Starting distance from which the GeometryInstance3D will be visible, taking [member visibility_range_begin_margin] into account as well. The default value of 0 is used to disable the range check.
 		</member>
@@ -56,10 +59,13 @@
 			Margin for the [member visibility_range_begin] threshold. The GeometryInstance3D will only change its visibility state when it goes over or under the [member visibility_range_begin] threshold by this amount.
 		</member>
 		<member name="visibility_range_end" type="float" setter="set_visibility_range_end" getter="get_visibility_range_end" default="0.0">
-			Distance from which the GeometryInstance3D will be hidden, taking [member visibility_range_end_margin] into account as well. The default value of 0 is used to disable the range check..
+			Distance from which the GeometryInstance3D will be hidden, taking [member visibility_range_end_margin] into account as well. The default value of 0 is used to disable the range check.
 		</member>
 		<member name="visibility_range_end_margin" type="float" setter="set_visibility_range_end_margin" getter="get_visibility_range_end_margin" default="0.0">
 			Margin for the [member visibility_range_end] threshold. The GeometryInstance3D will only change its visibility state when it goes over or under the [member visibility_range_end] threshold by this amount.
+		</member>
+		<member name="visibility_range_fade_mode" type="int" setter="set_visibility_range_fade_mode" getter="get_visibility_range_fade_mode" enum="GeometryInstance3D.VisibilityRangeFadeMode" default="0">
+			Controls which instances will be faded when approaching the limits of the visibility range. See [enum VisibilityRangeFadeMode] for possible values.
 		</member>
 	</members>
 	<constants>
@@ -93,6 +99,15 @@
 		<constant name="LIGHTMAP_SCALE_8X" value="3" enum="LightmapScale">
 		</constant>
 		<constant name="LIGHTMAP_SCALE_MAX" value="4" enum="LightmapScale">
+		</constant>
+		<constant name="VISIBILITY_RANGE_FADE_DISABLED" value="0" enum="VisibilityRangeFadeMode">
+			Will not fade itself nor its visibility dependencies, hysteresis will be used instead. See [member visibility_range_begin] and [member Node3D.visibility_parent] for more information.
+		</constant>
+		<constant name="VISIBILITY_RANGE_FADE_SELF" value="1" enum="VisibilityRangeFadeMode">
+			Will fade-out itself when reaching the limits of its own visibility range. The fading range is determined by [member visibility_range_begin_margin] and [member visibility_range_end_margin].
+		</constant>
+		<constant name="VISIBILITY_RANGE_FADE_DEPENDENCIES" value="2" enum="VisibilityRangeFadeMode">
+			Will fade-in its visibility dependencies (see [member Node3D.visibility_parent]) when reaching the limits of its own visibility range.  The fading range is determined by [member visibility_range_begin_margin] and [member visibility_range_end_margin].
 		</constant>
 	</constants>
 </class>
