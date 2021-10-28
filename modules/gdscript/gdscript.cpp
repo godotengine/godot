@@ -860,6 +860,8 @@ Error GDScript::reload(bool p_keep_state) {
 	GDScriptCompiler compiler;
 	err = compiler.compile(&parser, this, p_keep_state);
 
+	MutexLock lock(GDScriptLanguage::singleton->lock);
+
 #ifdef TOOLS_ENABLED
 	_update_doc();
 #endif

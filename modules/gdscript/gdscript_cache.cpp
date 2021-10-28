@@ -184,21 +184,28 @@ Ref<GDScript> GDScriptCache::get_shallow_script(const String &p_path, const Stri
 }
 
 Ref<GDScript> GDScriptCache::get_full_script(const String &p_path, Error &r_error, const String &p_owner) {
-	MutexLock lock(singleton->lock);
+	Ref<GDScript> script;
 
 	if (p_owner != String()) {
+		MutexLock lock(singleton->lock);
 		singleton->dependencies[p_owner].insert(p_path);
 	}
 
 	r_error = OK;
-	if (singleton->full_gdscript_cache.has(p_path)) {
-		return singleton->full_gdscript_cache[p_path];
+	{
+		MutexLock lock(singleton->lock);
+		if (singleton->full_gdscript_cache.has(p_path)) {
+			return Ref(singleton->full_gdscript_cache[p_path]);
+		}
 	}
 
-	Ref<GDScript> script = get_shallow_script(p_path);
+	script = get_shallow_script(p_path);
 	ERR_FAIL_COND_V(script.is_null(), Ref<GDScript>());
 
-	r_error = script->load_source_code(p_path);
+	{
+		MutexLock lock(singleton->lock);
+		r_error = script->load_source_code(p_path);
+	}
 
 	if (r_error) {
 		return script;
@@ -209,8 +216,11 @@ Ref<GDScript> GDScriptCache::get_full_script(const String &p_path, Error &r_erro
 		return script;
 	}
 
-	singleton->full_gdscript_cache[p_path] = script.ptr();
-	singleton->shallow_gdscript_cache.erase(p_path);
+	{
+		MutexLock lock(singleton->lock);
+		singleton->full_gdscript_cache[p_path] = script.ptr();
+		singleton->shallow_gdscript_cache.erase(p_path);
+	}
 
 	return script;
 }
