@@ -31,6 +31,7 @@ def get_opts():
         BoolVariable("use_ubsan", "Use LLVM/GCC compiler undefined behavior sanitizer (UBSAN)", False),
         BoolVariable("use_asan", "Use LLVM/GCC compiler address sanitizer (ASAN)", False),
         BoolVariable("use_tsan", "Use LLVM/GCC compiler thread sanitizer (TSAN)", False),
+        BoolVariable("use_coverage", "Use instrumentation codes in the binary (e.g. for code coverage)", False),
     ]
 
 
@@ -141,6 +142,10 @@ def configure(env):
         if env["use_tsan"]:
             env.Append(CCFLAGS=["-fsanitize=thread"])
             env.Append(LINKFLAGS=["-fsanitize=thread"])
+
+    if env["use_coverage"]:
+        env.Append(CCFLAGS=["-ftest-coverage", "-fprofile-arcs"])
+        env.Append(LINKFLAGS=["-ftest-coverage", "-fprofile-arcs"])
 
     ## Dependencies
 
