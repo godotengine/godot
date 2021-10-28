@@ -592,9 +592,9 @@ bool GDMono::load_assembly_from(const String &p_name, const String &p_path, GDMo
 ApiAssemblyInfo::Version ApiAssemblyInfo::Version::get_from_loaded_assembly(GDMonoAssembly *p_api_assembly, ApiAssemblyInfo::Type p_api_type) {
 	ApiAssemblyInfo::Version api_assembly_version;
 
-	const char *nativecalls_name = p_api_type == ApiAssemblyInfo::API_CORE ?
-			  BINDINGS_CLASS_NATIVECALLS :
-			  BINDINGS_CLASS_NATIVECALLS_EDITOR;
+	const char *nativecalls_name = p_api_type == ApiAssemblyInfo::API_CORE
+			? BINDINGS_CLASS_NATIVECALLS
+			: BINDINGS_CLASS_NATIVECALLS_EDITOR;
 
 	GDMonoClass *nativecalls_klass = p_api_assembly->get_class(BINDINGS_NAMESPACE, nativecalls_name);
 
@@ -754,14 +754,10 @@ bool GDMono::_temp_domain_load_are_assemblies_out_of_sync(const String &p_config
 }
 
 String GDMono::update_api_assemblies_from_prebuilt(const String &p_config, const bool *p_core_api_out_of_sync, const bool *p_editor_api_out_of_sync) {
-#define FAIL_REASON(m_out_of_sync, m_prebuilt_exists)                            \
-	(                                                                            \
-			(m_out_of_sync ?                                                     \
-							  String("The assembly is invalidated ") :             \
-							  String("The assembly was not found ")) +             \
-			(m_prebuilt_exists ?                                                 \
-							  String("and the prebuilt assemblies are missing.") : \
-							  String("and we failed to copy the prebuilt assemblies.")))
+#define FAIL_REASON(m_out_of_sync, m_prebuilt_exists)                                                          \
+	(                                                                                                          \
+			(m_out_of_sync ? String("The assembly is invalidated ") : String("The assembly was not found ")) + \
+			(m_prebuilt_exists ? String("and the prebuilt assemblies are missing.") : String("and we failed to copy the prebuilt assemblies.")))
 
 	String dst_assemblies_dir = GodotSharpDirs::get_res_assemblies_base_dir().plus_file(p_config);
 
@@ -819,9 +815,9 @@ bool GDMono::_load_core_api_assembly(LoadedApiAssembly &r_loaded_api_assembly, c
 	// For the editor and the editor player we want to load it from a specific path to make sure we can keep it up to date
 
 	// If running the project manager, load it from the prebuilt API directory
-	String assembly_dir = !Main::is_project_manager() ?
-			  GodotSharpDirs::get_res_assemblies_base_dir().plus_file(p_config) :
-			  GodotSharpDirs::get_data_editor_prebuilt_api_dir().plus_file(p_config);
+	String assembly_dir = !Main::is_project_manager()
+			? GodotSharpDirs::get_res_assemblies_base_dir().plus_file(p_config)
+			: GodotSharpDirs::get_data_editor_prebuilt_api_dir().plus_file(p_config);
 
 	String assembly_path = assembly_dir.plus_file(CORE_API_ASSEMBLY_NAME ".dll");
 
@@ -852,9 +848,9 @@ bool GDMono::_load_editor_api_assembly(LoadedApiAssembly &r_loaded_api_assembly,
 	// For the editor and the editor player we want to load it from a specific path to make sure we can keep it up to date
 
 	// If running the project manager, load it from the prebuilt API directory
-	String assembly_dir = !Main::is_project_manager() ?
-			  GodotSharpDirs::get_res_assemblies_base_dir().plus_file(p_config) :
-			  GodotSharpDirs::get_data_editor_prebuilt_api_dir().plus_file(p_config);
+	String assembly_dir = !Main::is_project_manager()
+			? GodotSharpDirs::get_res_assemblies_base_dir().plus_file(p_config)
+			: GodotSharpDirs::get_data_editor_prebuilt_api_dir().plus_file(p_config);
 
 	String assembly_path = assembly_dir.plus_file(EDITOR_API_ASSEMBLY_NAME ".dll");
 

@@ -365,8 +365,7 @@ String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterf
 				xml_output.append(link_target);
 				xml_output.append("</c>");
 			} else if (link_tag == "enum") {
-				StringName search_cname = !target_itype ? target_cname :
-															StringName(target_itype->name + "." + (String)target_cname);
+				StringName search_cname = !target_itype ? target_cname : StringName(target_itype->name + "." + (String)target_cname);
 
 				const Map<StringName, TypeInterface>::Element *enum_match = enum_types.find(search_cname);
 

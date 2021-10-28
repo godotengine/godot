@@ -265,8 +265,7 @@ public:
 		}
 
 		int32_t get_sign() const {
-			return ((int64_t)high < 0) ? -1 : (high || low) ? 1 :
-																0;
+			return ((int64_t)high < 0) ? -1 : ((high || low) ? 1 : 0);
 		}
 
 		bool operator<(const Int128 &b) const {
@@ -790,8 +789,7 @@ int32_t ConvexHullInternal::Rational128::compare(const Rational128 &b) const {
 int32_t ConvexHullInternal::Rational128::compare(int64_t b) const {
 	if (is_int_64) {
 		int64_t a = sign * (int64_t)numerator.low;
-		return (a > b) ? 1 : (a < b) ? -1 :
-										 0;
+		return (a > b) ? 1 : ((a < b) ? -1 : 0);
 	}
 	if (b > 0) {
 		if (sign <= 0) {
@@ -1443,8 +1441,7 @@ void ConvexHullInternal::merge(IntermediateHull &p_h0, IntermediateHull &p_h1) {
 			c1->edges = e;
 			return;
 		} else {
-			int32_t cmp = !min0 ? 1 : !min1 ? -1 :
-												min_cot0.compare(min_cot1);
+			int32_t cmp = !min0 ? 1 : (!min1 ? -1 : min_cot0.compare(min_cot1));
 #ifdef DEBUG_CONVEX_HULL
 			printf("    -> Result %d\n", cmp);
 #endif

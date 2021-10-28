@@ -3528,10 +3528,10 @@ Error CSharpScript::load_source_code(const String &p_path) {
 	Error ferr = read_all_file_utf8(p_path, source);
 
 	ERR_FAIL_COND_V_MSG(ferr != OK, ferr,
-			ferr == ERR_INVALID_DATA ?
-					  "Script '" + p_path + "' contains invalid unicode (UTF-8), so it was not loaded."
-										  " Please ensure that scripts are saved in valid UTF-8 unicode." :
-					  "Failed to read file: '" + p_path + "'.");
+			ferr == ERR_INVALID_DATA
+					? "Script '" + p_path + "' contains invalid unicode (UTF-8), so it was not loaded."
+											" Please ensure that scripts are saved in valid UTF-8 unicode."
+					: "Failed to read file: '" + p_path + "'.");
 
 #ifdef TOOLS_ENABLED
 	source_changed_cache = true;

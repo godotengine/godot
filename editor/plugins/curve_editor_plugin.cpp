@@ -354,9 +354,9 @@ void CurveEditor::open_context_menu(Vector2 pos) {
 
 				_context_menu->add_check_item(TTR("Linear"), CONTEXT_LINEAR);
 
-				bool is_linear = _selected_tangent == TANGENT_LEFT ?
-						  _curve_ref->get_point_left_mode(_selected_point) == Curve::TANGENT_LINEAR :
-						  _curve_ref->get_point_right_mode(_selected_point) == Curve::TANGENT_LINEAR;
+				bool is_linear = _selected_tangent == TANGENT_LEFT
+						? _curve_ref->get_point_left_mode(_selected_point) == Curve::TANGENT_LINEAR
+						: _curve_ref->get_point_right_mode(_selected_point) == Curve::TANGENT_LINEAR;
 
 				_context_menu->set_item_checked(_context_menu->get_item_index(CONTEXT_LINEAR), is_linear);
 

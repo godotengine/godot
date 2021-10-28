@@ -2498,8 +2498,7 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> state) {
 		ERR_FAIL_COND_V(!d.has("primitives"), ERR_PARSE_ERROR);
 
 		Array primitives = d["primitives"];
-		const Dictionary &extras = d.has("extras") ? (Dictionary)d["extras"] :
-													   Dictionary();
+		const Dictionary &extras = d.has("extras") ? (Dictionary)d["extras"] : Dictionary();
 		Ref<ImporterMesh> import_mesh;
 		import_mesh.instantiate();
 		String mesh_name = "mesh";

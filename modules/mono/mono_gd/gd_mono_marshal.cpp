@@ -1736,12 +1736,12 @@ Callable managed_to_callable(const M_Callable &p_managed_callable) {
 		CallableCustom *managed_callable = memnew(ManagedCallable(p_managed_callable.delegate));
 		return Callable(managed_callable);
 	} else {
-		Object *target = p_managed_callable.target ?
-				  unbox<Object *>(CACHED_FIELD(GodotObject, ptr)->get_value(p_managed_callable.target)) :
-				  nullptr;
-		StringName *method_ptr = p_managed_callable.method_string_name ?
-				  unbox<StringName *>(CACHED_FIELD(StringName, ptr)->get_value(p_managed_callable.method_string_name)) :
-				  nullptr;
+		Object *target = p_managed_callable.target
+				? unbox<Object *>(CACHED_FIELD(GodotObject, ptr)->get_value(p_managed_callable.target))
+				: nullptr;
+		StringName *method_ptr = p_managed_callable.method_string_name
+				? unbox<StringName *>(CACHED_FIELD(StringName, ptr)->get_value(p_managed_callable.method_string_name))
+				: nullptr;
 		StringName method = method_ptr ? *method_ptr : StringName();
 		return Callable(target, method);
 	}
@@ -1784,12 +1784,12 @@ M_Callable callable_to_managed(const Callable &p_callable) {
 }
 
 Signal managed_to_signal_info(const M_SignalInfo &p_managed_signal) {
-	Object *owner = p_managed_signal.owner ?
-			  unbox<Object *>(CACHED_FIELD(GodotObject, ptr)->get_value(p_managed_signal.owner)) :
-			  nullptr;
-	StringName *name_ptr = p_managed_signal.name_string_name ?
-			  unbox<StringName *>(CACHED_FIELD(StringName, ptr)->get_value(p_managed_signal.name_string_name)) :
-			  nullptr;
+	Object *owner = p_managed_signal.owner
+			? unbox<Object *>(CACHED_FIELD(GodotObject, ptr)->get_value(p_managed_signal.owner))
+			: nullptr;
+	StringName *name_ptr = p_managed_signal.name_string_name
+			? unbox<StringName *>(CACHED_FIELD(StringName, ptr)->get_value(p_managed_signal.name_string_name))
+			: nullptr;
 	StringName name = name_ptr ? *name_ptr : StringName();
 	return Signal(owner, name);
 }

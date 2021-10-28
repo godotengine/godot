@@ -94,11 +94,6 @@ void Node3D::_propagate_transform_changed(Node3D *p_origin) {
 		return;
 	}
 
-	/*
-	if (data.dirty&DIRTY_GLOBAL)
-		return; //already dirty
-	*/
-
 	data.children_lock++;
 
 	for (Node3D *&E : data.children) {
@@ -244,10 +239,9 @@ Quaternion Node3D::get_quaternion() const {
 }
 
 void Node3D::set_global_transform(const Transform3D &p_transform) {
-	Transform3D xform =
-			(data.parent && !data.top_level_active) ?
-			  data.parent->get_global_transform().affine_inverse() * p_transform :
-			  p_transform;
+	Transform3D xform = (data.parent && !data.top_level_active)
+			? data.parent->get_global_transform().affine_inverse() * p_transform
+			: p_transform;
 
 	set_transform(xform);
 }
