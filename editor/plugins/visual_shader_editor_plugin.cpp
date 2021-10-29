@@ -1426,13 +1426,23 @@ void VisualShaderEditor::_set_mode(int p_which) {
 		edit_type_standard->set_visible(false);
 		edit_type_particles->set_visible(false);
 		edit_type_sky->set_visible(true);
+		edit_type_fog->set_visible(false);
 		edit_type = edit_type_sky;
 		custom_mode_box->set_visible(false);
 		mode = MODE_FLAGS_SKY;
+	} else if (p_which == VisualShader::MODE_FOG) {
+		edit_type_standard->set_visible(false);
+		edit_type_particles->set_visible(false);
+		edit_type_sky->set_visible(false);
+		edit_type_fog->set_visible(true);
+		edit_type = edit_type_fog;
+		custom_mode_box->set_visible(false);
+		mode = MODE_FLAGS_FOG;
 	} else if (p_which == VisualShader::MODE_PARTICLES) {
 		edit_type_standard->set_visible(false);
 		edit_type_particles->set_visible(true);
 		edit_type_sky->set_visible(false);
+		edit_type_fog->set_visible(false);
 		edit_type = edit_type_particles;
 		if ((edit_type->get_selected() + 3) > VisualShader::TYPE_PROCESS) {
 			custom_mode_box->set_visible(false);
@@ -1444,6 +1454,7 @@ void VisualShaderEditor::_set_mode(int p_which) {
 		edit_type_particles->set_visible(false);
 		edit_type_standard->set_visible(true);
 		edit_type_sky->set_visible(false);
+		edit_type_fog->set_visible(false);
 		edit_type = edit_type_standard;
 		custom_mode_box->set_visible(false);
 		mode = MODE_FLAGS_SPATIAL_CANVASITEM;
@@ -1601,6 +1612,8 @@ VisualShader::Type VisualShaderEditor::get_current_shader_type() const {
 		type = VisualShader::Type(edit_type->get_selected() + 3 + (custom_mode_enabled ? 3 : 0));
 	} else if (mode & MODE_FLAGS_SKY) {
 		type = VisualShader::Type(edit_type->get_selected() + 8);
+	} else if (mode & MODE_FLAGS_FOG) {
+		type = VisualShader::Type(edit_type->get_selected() + 9);
 	} else {
 		type = VisualShader::Type(edit_type->get_selected());
 	}
@@ -3520,6 +3533,8 @@ void VisualShaderEditor::_mode_selected(int p_id) {
 		}
 	} else if (mode & MODE_FLAGS_SKY) {
 		offset = 8;
+	} else if (mode & MODE_FLAGS_FOG) {
+		offset = 9;
 	}
 
 	visual_shader->set_shader_type(VisualShader::Type(p_id + offset));
@@ -4062,6 +4077,11 @@ VisualShaderEditor::VisualShaderEditor() {
 	edit_type_sky->select(0);
 	edit_type_sky->connect("item_selected", callable_mp(this, &VisualShaderEditor::_mode_selected));
 
+	edit_type_fog = memnew(OptionButton);
+	edit_type_fog->add_item(TTR("Fog"));
+	edit_type_fog->select(0);
+	edit_type_fog->connect("item_selected", callable_mp(this, &VisualShaderEditor::_mode_selected));
+
 	edit_type = edit_type_standard;
 
 	graph->get_zoom_hbox()->add_child(custom_mode_box);
@@ -4072,6 +4092,8 @@ VisualShaderEditor::VisualShaderEditor() {
 	graph->get_zoom_hbox()->move_child(edit_type_particles, 0);
 	graph->get_zoom_hbox()->add_child(edit_type_sky);
 	graph->get_zoom_hbox()->move_child(edit_type_sky, 0);
+	graph->get_zoom_hbox()->add_child(edit_type_fog);
+	graph->get_zoom_hbox()->move_child(edit_type_fog, 0);
 
 	add_node = memnew(Button);
 	add_node->set_flat(true);
@@ -4340,6 +4362,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	const String input_param_for_fragment_and_light_shader_modes = TTR("'%s' input parameter for fragment and light shader modes.");
 	const String input_param_for_fragment_shader_mode = TTR("'%s' input parameter for fragment shader mode.");
 	const String input_param_for_sky_shader_mode = TTR("'%s' input parameter for sky shader mode.");
+	const String input_param_for_fog_shader_mode = TTR("'%s' input parameter for fog shader mode.");
 	const String input_param_for_light_shader_mode = TTR("'%s' input parameter for light shader mode.");
 	const String input_param_for_vertex_shader_mode = TTR("'%s' input parameter for vertex shader mode.");
 	const String input_param_for_start_shader_mode = TTR("'%s' input parameter for start shader mode.");
@@ -4458,6 +4481,16 @@ VisualShaderEditor::VisualShaderEditor() {
 	add_options.push_back(AddOption("ScreenUV", "Input", "Sky", "VisualShaderNodeInput", vformat(input_param_for_sky_shader_mode, "screen_uv"), "screen_uv", VisualShaderNode::PORT_TYPE_VECTOR, TYPE_FLAGS_SKY, Shader::MODE_SKY));
 	add_options.push_back(AddOption("SkyCoords", "Input", "Sky", "VisualShaderNodeInput", vformat(input_param_for_sky_shader_mode, "sky_coords"), "sky_coords", VisualShaderNode::PORT_TYPE_VECTOR, TYPE_FLAGS_SKY, Shader::MODE_SKY));
 	add_options.push_back(AddOption("Time", "Input", "Sky", "VisualShaderNodeInput", vformat(input_param_for_sky_shader_mode, "time"), "time", VisualShaderNode::PORT_TYPE_SCALAR, TYPE_FLAGS_SKY, Shader::MODE_SKY));
+
+	// FOG INPUTS
+
+	add_options.push_back(AddOption("WorldPosition", "Input", "Fog", "VisualShaderNodeInput", vformat(input_param_for_fog_shader_mode, "world_position"), "world_position", VisualShaderNode::PORT_TYPE_VECTOR, TYPE_FLAGS_FOG, Shader::MODE_FOG));
+	add_options.push_back(AddOption("ObjectPosition", "Input", "Fog", "VisualShaderNodeInput", vformat(input_param_for_fog_shader_mode, "object_position"), "object_position", VisualShaderNode::PORT_TYPE_VECTOR, TYPE_FLAGS_FOG, Shader::MODE_FOG));
+	add_options.push_back(AddOption("UVW", "Input", "Fog", "VisualShaderNodeInput", vformat(input_param_for_fog_shader_mode, "uvw"), "uvw", VisualShaderNode::PORT_TYPE_VECTOR, TYPE_FLAGS_FOG, Shader::MODE_FOG));
+	add_options.push_back(AddOption("Extents", "Input", "Fog", "VisualShaderNodeInput", vformat(input_param_for_fog_shader_mode, "extents"), "extents", VisualShaderNode::PORT_TYPE_VECTOR, TYPE_FLAGS_FOG, Shader::MODE_FOG));
+	add_options.push_back(AddOption("Transform", "Input", "Fog", "VisualShaderNodeInput", vformat(input_param_for_fog_shader_mode, "transform"), "transform", VisualShaderNode::PORT_TYPE_TRANSFORM, TYPE_FLAGS_FOG, Shader::MODE_FOG));
+	add_options.push_back(AddOption("SDF", "Input", "Fog", "VisualShaderNodeInput", vformat(input_param_for_fog_shader_mode, "sdf"), "sdf", VisualShaderNode::PORT_TYPE_SCALAR, TYPE_FLAGS_FOG, Shader::MODE_FOG));
+	add_options.push_back(AddOption("Time", "Input", "Fog", "VisualShaderNodeInput", vformat(input_param_for_fog_shader_mode, "time"), "time", VisualShaderNode::PORT_TYPE_SCALAR, TYPE_FLAGS_FOG, Shader::MODE_FOG));
 
 	// PARTICLES INPUTS
 
