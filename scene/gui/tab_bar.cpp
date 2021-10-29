@@ -175,7 +175,7 @@ void TabBar::gui_input(const Ref<InputEvent> &p_event) {
 		if (cb_pressing && !mb->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_LEFT) {
 			if (cb_hover != -1) {
 				// pressed
-				emit_signal(SNAME("tab_closed"), cb_hover);
+				emit_signal(SNAME("tab_close_pressed"), cb_hover);
 			}
 
 			cb_pressing = false;
@@ -1172,7 +1172,7 @@ void TabBar::_bind_methods() {
 
 	ADD_SIGNAL(MethodInfo("tab_changed", PropertyInfo(Variant::INT, "tab")));
 	ADD_SIGNAL(MethodInfo("tab_rmb_clicked", PropertyInfo(Variant::INT, "tab")));
-	ADD_SIGNAL(MethodInfo("tab_closed", PropertyInfo(Variant::INT, "tab")));
+	ADD_SIGNAL(MethodInfo("tab_close_pressed", PropertyInfo(Variant::INT, "tab")));
 	ADD_SIGNAL(MethodInfo("tab_hovered", PropertyInfo(Variant::INT, "tab")));
 	ADD_SIGNAL(MethodInfo("active_tab_rearranged", PropertyInfo(Variant::INT, "idx_to")));
 	ADD_SIGNAL(MethodInfo("tab_clicked", PropertyInfo(Variant::INT, "tab")));

@@ -6227,7 +6227,7 @@ EditorNode::EditorNode() {
 	scene_tabs->set_drag_to_rearrange_enabled(true);
 	scene_tabs->connect("tab_changed", callable_mp(this, &EditorNode::_scene_tab_changed));
 	scene_tabs->connect("tab_rmb_clicked", callable_mp(this, &EditorNode::_scene_tab_script_edited));
-	scene_tabs->connect("tab_closed", callable_mp(this, &EditorNode::_scene_tab_closed), varray(SCENE_TAB_CLOSE));
+	scene_tabs->connect("tab_close_pressed", callable_mp(this, &EditorNode::_scene_tab_closed), varray(SCENE_TAB_CLOSE));
 	scene_tabs->connect("tab_hovered", callable_mp(this, &EditorNode::_scene_tab_hovered));
 	scene_tabs->connect("mouse_exited", callable_mp(this, &EditorNode::_scene_tab_exit));
 	scene_tabs->connect("gui_input", callable_mp(this, &EditorNode::_scene_tab_input));
