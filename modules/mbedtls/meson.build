@@ -8,7 +8,6 @@ endif
 
 lib_module_mbedtls = library('module_mbedtls',
     _module_mbedtls_srcs,
-    gdivirtuals_gen,
     _certs_target,
     dependencies: [DEP_GODOT_ALL, DEP_MBEDTLS]
 )

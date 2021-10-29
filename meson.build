@@ -296,15 +296,6 @@ DEPENDENCIES = []
 # generator first
 subdir('splash')
 
-gdivirtuals_gen = custom_target('gdivirtuals.gen',
-    output: 'gdvirtual.gen.inc',
-    command: [SCRIPT_COMPAT, 'run', SCRIPT_VIRTUALS, '-o', '@OUTPUT@', '-t', 'core/object', '--fake-stamp', 'gdvirtual.gen.inc'],
-    build_by_default: true,
-    env: SCRIPTS_ENV
-)
-
-SOURCES += gdivirtuals_gen
-
 _modules_enabled_gen = custom_target(
     'modules_enabled',
     output: ['modules_enabled.gen.h'],

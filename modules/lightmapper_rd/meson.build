@@ -17,7 +17,7 @@ foreach glsl_file : _module_lmrd_raw_shaders
     _module_lmrd_src += [_raw_target]
 endforeach
 
-lib_module_lmrd = library('module_lightmapper_rd', _module_lmrd_src, gdivirtuals_gen, dependencies: [DEP_GODOT_ALL])
+lib_module_lmrd = library('module_lightmapper_rd', _module_lmrd_src, dependencies: [DEP_GODOT_ALL])
 
 DEP_MODULE_LIGHTMAPPER_RD = declare_dependency(link_with: lib_module_lmrd)
 
