@@ -11,6 +11,7 @@ endif
 
 lib_module_websocket = library('module_websocket',
                                _module_websocket_srcs,
+                               gdivirtuals_gen,
                                dependencies: _module_websocket_deps)
 
 DEP_MODULE_WEBSOCKET += declare_dependency(link_with: lib_module_websocket)
