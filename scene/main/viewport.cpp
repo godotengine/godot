@@ -647,10 +647,11 @@ void Viewport::_process_picking(bool p_ignore_paused) {
 			if (camera) {
 				Vector3 from = camera->project_ray_origin(pos);
 				Vector3 dir = camera->project_ray_normal(pos);
+				float far = camera->far;
 
 				PhysicsDirectSpaceState *space = PhysicsServer::get_singleton()->space_get_direct_state(find_world()->get_space());
 				if (space) {
-					bool col = space->intersect_ray(from, from + dir * 10000, result, Set<RID>(), 0xFFFFFFFF, true, true, true);
+					bool col = space->intersect_ray(from, from + dir * far, result, Set<RID>(), 0xFFFFFFFF, true, true, true);
 					ObjectID new_collider = 0;
 					if (col) {
 						CollisionObject *co = Object::cast_to<CollisionObject>(result.collider);
