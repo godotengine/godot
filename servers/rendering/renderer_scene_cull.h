@@ -269,6 +269,7 @@ public:
 			FLAG_VISIBILITY_DEPENDENCY_HIDDEN = (1 << 21),
 			FLAG_VISIBILITY_DEPENDENCY_FADE_CHILDREN = (1 << 22),
 			FLAG_GEOM_PROJECTOR_SOFTSHADOW_DIRTY = (1 << 23),
+			FLAG_IGNORE_ALL_CULLING = (1 << 24),
 		};
 
 		uint32_t flags = 0;
@@ -397,6 +398,7 @@ public:
 		float lod_bias;
 
 		bool ignore_occlusion_culling;
+		bool ignore_all_culling;
 
 		Vector<RID> materials;
 
@@ -535,6 +537,7 @@ public:
 			lightmap_cull_index = 0;
 			lod_bias = 1.0;
 			ignore_occlusion_culling = false;
+			ignore_all_culling = false;
 
 			scenario = nullptr;
 
@@ -626,6 +629,11 @@ public:
 
 	struct InstanceParticlesCollisionData : public InstanceBaseData {
 		RID instance;
+	};
+
+	struct InstanceFogVolumeData : public InstanceBaseData {
+		RID instance;
+		bool is_global;
 	};
 
 	struct InstanceVisibilityNotifierData : public InstanceBaseData {
@@ -792,6 +800,7 @@ public:
 		PagedArray<RID> decals;
 		PagedArray<RID> voxel_gi_instances;
 		PagedArray<RID> mesh_instances;
+		PagedArray<RID> fog_volumes;
 
 		struct DirectionalShadow {
 			PagedArray<RendererSceneRender::GeometryInstance *> cascade_geometry_instances[RendererSceneRender::MAX_DIRECTIONAL_LIGHT_CASCADES];
@@ -809,6 +818,7 @@ public:
 			decals.clear();
 			voxel_gi_instances.clear();
 			mesh_instances.clear();
+			fog_volumes.clear();
 			for (int i = 0; i < RendererSceneRender::MAX_DIRECTIONAL_LIGHTS; i++) {
 				for (int j = 0; j < RendererSceneRender::MAX_DIRECTIONAL_LIGHT_CASCADES; j++) {
 					directional_shadows[i].cascade_geometry_instances[j].clear();
@@ -833,6 +843,7 @@ public:
 			decals.reset();
 			voxel_gi_instances.reset();
 			mesh_instances.reset();
+			fog_volumes.reset();
 			for (int i = 0; i < RendererSceneRender::MAX_DIRECTIONAL_LIGHTS; i++) {
 				for (int j = 0; j < RendererSceneRender::MAX_DIRECTIONAL_LIGHT_CASCADES; j++) {
 					directional_shadows[i].cascade_geometry_instances[j].reset();
@@ -857,6 +868,7 @@ public:
 			decals.merge_unordered(p_cull_result.decals);
 			voxel_gi_instances.merge_unordered(p_cull_result.voxel_gi_instances);
 			mesh_instances.merge_unordered(p_cull_result.mesh_instances);
+			fog_volumes.merge_unordered(p_cull_result.fog_volumes);
 
 			for (int i = 0; i < RendererSceneRender::MAX_DIRECTIONAL_LIGHTS; i++) {
 				for (int j = 0; j < RendererSceneRender::MAX_DIRECTIONAL_LIGHT_CASCADES; j++) {
@@ -882,6 +894,7 @@ public:
 			decals.set_page_pool(p_rid_pool);
 			voxel_gi_instances.set_page_pool(p_rid_pool);
 			mesh_instances.set_page_pool(p_rid_pool);
+			fog_volumes.set_page_pool(p_rid_pool);
 			for (int i = 0; i < RendererSceneRender::MAX_DIRECTIONAL_LIGHTS; i++) {
 				for (int j = 0; j < RendererSceneRender::MAX_DIRECTIONAL_LIGHT_CASCADES; j++) {
 					directional_shadows[i].cascade_geometry_instances[j].set_page_pool(p_geometry_instance_pool);
@@ -933,6 +946,8 @@ public:
 	virtual void instance_set_extra_visibility_margin(RID p_instance, real_t p_margin);
 
 	virtual void instance_set_visibility_parent(RID p_instance, RID p_parent_instance);
+
+	virtual void instance_set_ignore_culling(RID p_instance, bool p_enabled);
 
 	bool _update_instance_visibility_depth(Instance *p_instance);
 	void _update_instance_visibility_dependencies(Instance *p_instance);
@@ -1101,7 +1116,7 @@ public:
 	PASS7(environment_set_adjustment, RID, bool, float, float, float, bool, RID)
 
 	PASS9(environment_set_fog, RID, bool, const Color &, float, float, float, float, float, float)
-	PASS10(environment_set_volumetric_fog, RID, bool, float, const Color &, float, float, float, float, bool, float)
+	PASS13(environment_set_volumetric_fog, RID, bool, float, const Color &, const Color &, float, float, float, float, float, bool, float, float)
 
 	PASS2(environment_set_volumetric_fog_volume_size, int, int)
 	PASS1(environment_set_volumetric_fog_filter_active, bool)

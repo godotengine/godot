@@ -248,23 +248,41 @@
 		<member name="tonemap_white" type="float" setter="set_tonemap_white" getter="get_tonemap_white" default="1.0">
 			The white reference value for tonemapping. Only effective if the [member tonemap_mode] isn't set to [constant TONE_MAPPER_LINEAR].
 		</member>
-		<member name="volumetric_fog_density" type="float" setter="set_volumetric_fog_density" getter="get_volumetric_fog_density" default="0.01">
+		<member name="volumetric_fog_albedo" type="Color" setter="set_volumetric_fog_albedo" getter="get_volumetric_fog_albedo" default="Color(1, 1, 1, 1)">
+			The [Color] of the volumetric fog when interacting with lights. Mist and fog have an albedo close to [code]Color(1, 1, 1, 1)[/code] while smoke has a darker albedo.
+		</member>
+		<member name="volumetric_fog_ambient_inject" type="float" setter="set_volumetric_fog_ambient_inject" getter="get_volumetric_fog_ambient_inject" default="0.0">
+			Scales the strength of ambient light used in the volumetric fog. A value of [code]0[/code] means that ambient light will not impact the volumetric fog.
+		</member>
+		<member name="volumetric_fog_anisotropy" type="float" setter="set_volumetric_fog_anisotropy" getter="get_volumetric_fog_anisotropy" default="0.2">
+			The direction of scattered light as it goes through the volumetric fog. A value close [code]1[/code] means almost all light is scattered forward. A value close to [code]0[/code] means light is scattered equally in all directions. A value close to [code]-1[/code] means light is scattered mostly backward. Fog and mist scatter light slightly forward, while smoke scatters light equally in all directions.
+		</member>
+		<member name="volumetric_fog_density" type="float" setter="set_volumetric_fog_density" getter="get_volumetric_fog_density" default="0.05">
+			The base density of the volumetric fog. Set this to the lowest density you want to have globally.
 		</member>
 		<member name="volumetric_fog_detail_spread" type="float" setter="set_volumetric_fog_detail_spread" getter="get_volumetric_fog_detail_spread" default="2.0">
+			The distribution of size down the length of the froxel buffer. A higher value compresses the froxels closer to the camera and places more detail closer to the camera.
+		</member>
+		<member name="volumetric_fog_emission" type="Color" setter="set_volumetric_fog_emission" getter="get_volumetric_fog_emission" default="Color(0, 0, 0, 1)">
+			The emitted light from the volumetric fog. Even with emission, volumetric fog will not cast light onto other surfaces. Emission is useful to establish an ambient color. As the volumetric fog effect uses single-scattering only, fog tends to need a little bit of emission to soften the harsh shadows.
+		</member>
+		<member name="volumetric_fog_emission_energy" type="float" setter="set_volumetric_fog_emission_energy" getter="get_volumetric_fog_emission_energy" default="1.0">
+			The brightness of the emitted light from the volumetric fog.
 		</member>
 		<member name="volumetric_fog_enabled" type="bool" setter="set_volumetric_fog_enabled" getter="is_volumetric_fog_enabled" default="false">
+			Enables the volumetric fog effect. Volumetric fog uses a screen-aligned froxel buffer to calculate accurate volumetric scattering in the short to medium range. Volumetric fog interacts with [FogVolume]s and lights to calculate localized and global fog. Volumetric fog uses a PBR single-scattering model based on extinction, scattering, and emission which it exposes to users as density, albedo, and emission.
 		</member>
 		<member name="volumetric_fog_gi_inject" type="float" setter="set_volumetric_fog_gi_inject" getter="get_volumetric_fog_gi_inject" default="0.0">
+			Scales the strength of Global Illumination used in the volumetric fog. A value of [code]0[/code] means that Global Illumination will not impact the volumetric fog.
 		</member>
 		<member name="volumetric_fog_length" type="float" setter="set_volumetric_fog_length" getter="get_volumetric_fog_length" default="64.0">
-		</member>
-		<member name="volumetric_fog_light" type="Color" setter="set_volumetric_fog_light" getter="get_volumetric_fog_light" default="Color(0, 0, 0, 1)">
-		</member>
-		<member name="volumetric_fog_light_energy" type="float" setter="set_volumetric_fog_light_energy" getter="get_volumetric_fog_light_energy" default="1.0">
+			The distance over which the volumetric fog is computed. Increase to compute fog over a greater range, decrease to add more detail when a long range is not needed. For best quality fog, keep this as low as possible.
 		</member>
 		<member name="volumetric_fog_temporal_reprojection_amount" type="float" setter="set_volumetric_fog_temporal_reprojection_amount" getter="get_volumetric_fog_temporal_reprojection_amount" default="0.9">
+			The amount by which to blend the last frame with the current frame. A higher number results in smoother volumetric fog, but makes "ghosting" much worse. A lower value reduces ghosting but can result in the per-frame temporal jitter becoming visible.
 		</member>
 		<member name="volumetric_fog_temporal_reprojection_enabled" type="bool" setter="set_volumetric_fog_temporal_reprojection_enabled" getter="is_volumetric_fog_temporal_reprojection_enabled" default="true">
+			Enables temporal reprojection in the volumetric fog. Temporal reprojection blends the current frame's volumetric fog with the last frame's volumetric fog to smooth out jagged edges. The performance cost is minimal, however it does lead to moving [FogVolume]s and [Light3D]s "ghosting" and leaving a trail behind them. When temporal reprojection is enabled, try to avoid moving [FogVolume]s or [Light3D]s too fast.
 		</member>
 	</members>
 	<constants>
@@ -348,14 +366,6 @@
 		<constant name="SDFGI_Y_SCALE_75_PERCENT" value="1" enum="SDFGIYScale">
 		</constant>
 		<constant name="SDFGI_Y_SCALE_50_PERCENT" value="2" enum="SDFGIYScale">
-		</constant>
-		<constant name="VOLUMETRIC_FOG_SHADOW_FILTER_DISABLED" value="0" enum="VolumetricFogShadowFilter">
-		</constant>
-		<constant name="VOLUMETRIC_FOG_SHADOW_FILTER_LOW" value="1" enum="VolumetricFogShadowFilter">
-		</constant>
-		<constant name="VOLUMETRIC_FOG_SHADOW_FILTER_MEDIUM" value="2" enum="VolumetricFogShadowFilter">
-		</constant>
-		<constant name="VOLUMETRIC_FOG_SHADOW_FILTER_HIGH" value="3" enum="VolumetricFogShadowFilter">
 		</constant>
 	</constants>
 </class>

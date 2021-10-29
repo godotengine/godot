@@ -41,6 +41,7 @@
 #include "scene/3d/world_environment.h"
 #include "scene/gui/panel_container.h"
 #include "scene/resources/environment.h"
+#include "scene/resources/fog_material.h"
 #include "scene/resources/sky_material.h"
 
 class Node3DEditor;

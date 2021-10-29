@@ -161,6 +161,7 @@ public:
 		SHADER_CANVAS_ITEM,
 		SHADER_PARTICLES,
 		SHADER_SKY,
+		SHADER_FOG,
 		SHADER_MAX
 	};
 
@@ -709,6 +710,20 @@ public:
 
 	virtual void particles_collision_set_height_field_resolution(RID p_particles_collision, ParticlesCollisionHeightfieldResolution p_resolution) = 0; //for SDF and vector field
 
+	/* FOG VOLUME API */
+
+	virtual RID fog_volume_create() = 0;
+
+	enum FogVolumeShape {
+		FOG_VOLUME_SHAPE_ELLIPSOID,
+		FOG_VOLUME_SHAPE_BOX,
+		FOG_VOLUME_SHAPE_WORLD,
+	};
+
+	virtual void fog_volume_set_shape(RID p_fog_volume, FogVolumeShape p_shape) = 0;
+	virtual void fog_volume_set_extents(RID p_fog_volume, const Vector3 &p_extents) = 0;
+	virtual void fog_volume_set_material(RID p_fog_volume, RID p_material) = 0;
+
 	/* VISIBILITY NOTIFIER API */
 
 	virtual RID visibility_notifier_create() = 0;
@@ -1053,7 +1068,7 @@ public:
 
 	virtual void environment_set_fog(RID p_env, bool p_enable, const Color &p_light_color, float p_light_energy, float p_sun_scatter, float p_density, float p_height, float p_height_density, float p_aerial_perspective) = 0;
 
-	virtual void environment_set_volumetric_fog(RID p_env, bool p_enable, float p_density, const Color &p_light, float p_light_energy, float p_length, float p_detail_spread, float p_gi_inject, bool p_temporal_reprojection, float p_temporal_reprojection_amount) = 0;
+	virtual void environment_set_volumetric_fog(RID p_env, bool p_enable, float p_density, const Color &p_albedo, const Color &p_emission, float p_emission_energy, float p_anisotropy, float p_length, float p_detail_spread, float p_gi_inject, bool p_temporal_reprojection, float p_temporal_reprojection_amount, float p_ambient_inject) = 0;
 	virtual void environment_set_volumetric_fog_volume_size(int p_size, int p_depth) = 0;
 	virtual void environment_set_volumetric_fog_filter_active(bool p_enable) = 0;
 
@@ -1118,6 +1133,7 @@ public:
 		INSTANCE_LIGHTMAP,
 		INSTANCE_OCCLUDER,
 		INSTANCE_VISIBLITY_NOTIFIER,
+		INSTANCE_FOG_VOLUME,
 		INSTANCE_MAX,
 
 		INSTANCE_GEOMETRY_MASK = (1 << INSTANCE_MESH) | (1 << INSTANCE_MULTIMESH) | (1 << INSTANCE_PARTICLES)
@@ -1142,6 +1158,8 @@ public:
 
 	virtual void instance_set_extra_visibility_margin(RID p_instance, real_t p_margin) = 0;
 	virtual void instance_set_visibility_parent(RID p_instance, RID p_parent_instance) = 0;
+
+	virtual void instance_set_ignore_culling(RID p_instance, bool p_enabled) = 0;
 
 	// don't use these in a game!
 	virtual Vector<ObjectID> instances_cull_aabb(const AABB &p_aabb, RID p_scenario = RID()) const = 0;
@@ -1542,6 +1560,7 @@ VARIANT_ENUM_CAST(RenderingServer::ParticlesDrawOrder);
 VARIANT_ENUM_CAST(RenderingServer::ParticlesEmitFlags);
 VARIANT_ENUM_CAST(RenderingServer::ParticlesCollisionType);
 VARIANT_ENUM_CAST(RenderingServer::ParticlesCollisionHeightfieldResolution);
+VARIANT_ENUM_CAST(RenderingServer::FogVolumeShape);
 VARIANT_ENUM_CAST(RenderingServer::ViewportUpdateMode);
 VARIANT_ENUM_CAST(RenderingServer::ViewportClearMode);
 VARIANT_ENUM_CAST(RenderingServer::ViewportMSAA);

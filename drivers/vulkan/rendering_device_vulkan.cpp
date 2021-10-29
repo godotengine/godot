@@ -8052,9 +8052,9 @@ void RenderingDeviceVulkan::compute_list_dispatch(ComputeListID p_list, uint32_t
 	ERR_FAIL_COND_MSG(p_x_groups > limits.maxComputeWorkGroupCount[0],
 			"Dispatch amount of X compute groups (" + itos(p_x_groups) + ") is larger than device limit (" + itos(limits.maxComputeWorkGroupCount[0]) + ")");
 	ERR_FAIL_COND_MSG(p_y_groups > limits.maxComputeWorkGroupCount[1],
-			"Dispatch amount of Y compute groups (" + itos(p_x_groups) + ") is larger than device limit (" + itos(limits.maxComputeWorkGroupCount[0]) + ")");
+			"Dispatch amount of Y compute groups (" + itos(p_y_groups) + ") is larger than device limit (" + itos(limits.maxComputeWorkGroupCount[1]) + ")");
 	ERR_FAIL_COND_MSG(p_z_groups > limits.maxComputeWorkGroupCount[2],
-			"Dispatch amount of Z compute groups (" + itos(p_x_groups) + ") is larger than device limit (" + itos(limits.maxComputeWorkGroupCount[0]) + ")");
+			"Dispatch amount of Z compute groups (" + itos(p_z_groups) + ") is larger than device limit (" + itos(limits.maxComputeWorkGroupCount[2]) + ")");
 
 	ERR_FAIL_COND_MSG(!cl->validation.active, "Submitted Compute Lists can no longer be modified.");
 #endif

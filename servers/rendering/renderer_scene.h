@@ -85,6 +85,8 @@ public:
 	virtual void instance_set_extra_visibility_margin(RID p_instance, real_t p_margin) = 0;
 	virtual void instance_set_visibility_parent(RID p_instance, RID p_parent_instance) = 0;
 
+	virtual void instance_set_ignore_culling(RID p_instance, bool p_enabled) = 0;
+
 	// don't use these in a game!
 	virtual Vector<ObjectID> instances_cull_aabb(const AABB &p_aabb, RID p_scenario = RID()) const = 0;
 	virtual Vector<ObjectID> instances_cull_ray(const Vector3 &p_from, const Vector3 &p_to, RID p_scenario = RID()) const = 0;
@@ -132,7 +134,7 @@ public:
 	virtual void environment_glow_set_use_bicubic_upscale(bool p_enable) = 0;
 	virtual void environment_glow_set_use_high_quality(bool p_enable) = 0;
 
-	virtual void environment_set_volumetric_fog(RID p_env, bool p_enable, float p_density, const Color &p_light, float p_light_energy, float p_length, float p_detail_spread, float p_gi_inject, bool p_temporal_reprojection, float p_temporal_reprojection_amount) = 0;
+	virtual void environment_set_volumetric_fog(RID p_env, bool p_enable, float p_density, const Color &p_albedo, const Color &p_emission, float p_emission_energy, float p_anisotropy, float p_length, float p_detail_spread, float p_gi_inject, bool p_temporal_reprojection, float p_temporal_reprojection_amount, float p_ambient_inject) = 0;
 
 	virtual void environment_set_volumetric_fog_volume_size(int p_size, int p_depth) = 0;
 	virtual void environment_set_volumetric_fog_filter_active(bool p_enable) = 0;

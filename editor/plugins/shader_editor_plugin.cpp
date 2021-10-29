@@ -178,6 +178,10 @@ void ShaderTextEditor::_check_shader_mode() {
 		mode = Shader::MODE_CANVAS_ITEM;
 	} else if (type == "particles") {
 		mode = Shader::MODE_PARTICLES;
+	} else if (type == "sky") {
+		mode = Shader::MODE_SKY;
+	} else if (type == "fog") {
+		mode = Shader::MODE_FOG;
 	} else {
 		mode = Shader::MODE_SPATIAL;
 	}
