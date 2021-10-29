@@ -1938,7 +1938,7 @@ FRAGMENT_SHADER_CODE
 		norm = normalize((radiance_inverse_xform * vec4(norm, 0.0)).xyz);
 		norm.xy /= 1.0 + abs(norm.z);
 		norm.xy = norm.xy * vec2(0.5, 0.25) + vec2(0.5, 0.25);
-		if (norm.z > 0.0) {
+		if (norm.z > 0.0001) {
 			norm.y = 0.5 - norm.y + 0.5;
 		}
 
