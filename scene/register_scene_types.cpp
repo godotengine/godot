@@ -792,6 +792,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(CurveTexture);
 	GDREGISTER_CLASS(CurveXYZTexture);
 	GDREGISTER_CLASS(GradientTexture);
+	GDREGISTER_CLASS(GradientTexture2D);
 	GDREGISTER_CLASS(ProxyTexture);
 	GDREGISTER_CLASS(AnimatedTexture);
 	GDREGISTER_CLASS(CameraTexture);
