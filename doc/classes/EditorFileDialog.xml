@@ -40,13 +40,13 @@
 		<member name="access" type="int" setter="set_access" getter="get_access" enum="EditorFileDialog.Access" default="0">
 			The location from which the user may select a file, including [code]res://[/code], [code]user://[/code], and the local file system.
 		</member>
-		<member name="current_dir" type="String" setter="set_current_dir" getter="get_current_dir" default="&quot;res://&quot;">
+		<member name="current_dir" type="String" setter="set_current_dir" getter="get_current_dir">
 			The currently occupied directory.
 		</member>
-		<member name="current_file" type="String" setter="set_current_file" getter="get_current_file" default="&quot;&quot;">
+		<member name="current_file" type="String" setter="set_current_file" getter="get_current_file">
 			The currently selected file.
 		</member>
-		<member name="current_path" type="String" setter="set_current_path" getter="get_current_path" default="&quot;res://&quot;">
+		<member name="current_path" type="String" setter="set_current_path" getter="get_current_path">
 			The file system path in the address bar.
 		</member>
 		<member name="dialog_hide_on_ok" type="bool" setter="set_hide_on_ok" getter="get_hide_on_ok" override="true" default="false" />

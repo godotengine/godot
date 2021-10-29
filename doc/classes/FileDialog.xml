@@ -54,13 +54,13 @@
 			The file system access scope. See enum [code]Access[/code] constants.
 			[b]Warning:[/b] Currently, in sandboxed environments such as HTML5 builds or sandboxed macOS apps, FileDialog cannot access the host file system. See [url=https://github.com/godotengine/godot-proposals/issues/1123]godot-proposals#1123[/url].
 		</member>
-		<member name="current_dir" type="String" setter="set_current_dir" getter="get_current_dir" default="&quot;res://&quot;">
+		<member name="current_dir" type="String" setter="set_current_dir" getter="get_current_dir">
 			The current working directory of the file dialog.
 		</member>
-		<member name="current_file" type="String" setter="set_current_file" getter="get_current_file" default="&quot;&quot;">
+		<member name="current_file" type="String" setter="set_current_file" getter="get_current_file">
 			The currently selected file of the file dialog.
 		</member>
-		<member name="current_path" type="String" setter="set_current_path" getter="get_current_path" default="&quot;res://&quot;">
+		<member name="current_path" type="String" setter="set_current_path" getter="get_current_path">
 			The currently selected file path of the file dialog.
 		</member>
 		<member name="dialog_hide_on_ok" type="bool" setter="set_hide_on_ok" getter="get_hide_on_ok" override="true" default="false" />
