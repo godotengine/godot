@@ -1203,7 +1203,7 @@ void CodeTextEditor::move_lines_up() {
 	text_editor->begin_complex_operation();
 	if (text_editor->has_selection()) {
 		int from_line = text_editor->get_selection_from_line();
-		int from_col = text_editor->get_selection_from_column();
+		int from_column = text_editor->get_selection_from_column();
 		int to_line = text_editor->get_selection_to_line();
 		int to_column = text_editor->get_selection_to_column();
 		int cursor_line = text_editor->get_caret_line();
@@ -1216,6 +1216,11 @@ void CodeTextEditor::move_lines_up() {
 				return;
 			}
 
+			// Prevent moving last line with no character selected
+			if (to_column == 0 && i == to_line) {
+				continue;
+			}
+
 			text_editor->unfold_line(line_id);
 			text_editor->unfold_line(next_id);
 
@@ -1225,7 +1230,7 @@ void CodeTextEditor::move_lines_up() {
 		int from_line_up = from_line > 0 ? from_line - 1 : from_line;
 		int to_line_up = to_line > 0 ? to_line - 1 : to_line;
 		int cursor_line_up = cursor_line > 0 ? cursor_line - 1 : cursor_line;
-		text_editor->select(from_line_up, from_col, to_line_up, to_column);
+		text_editor->select(from_line_up, from_column, to_line_up, to_column);
 		text_editor->set_caret_line(cursor_line_up);
 	} else {
 		int line_id = text_editor->get_caret_line();
@@ -1249,7 +1254,7 @@ void CodeTextEditor::move_lines_down() {
 	text_editor->begin_complex_operation();
 	if (text_editor->has_selection()) {
 		int from_line = text_editor->get_selection_from_line();
-		int from_col = text_editor->get_selection_from_column();
+		int from_column = text_editor->get_selection_from_column();
 		int to_line = text_editor->get_selection_to_line();
 		int to_column = text_editor->get_selection_to_column();
 		int cursor_line = text_editor->get_caret_line();
@@ -1262,6 +1267,11 @@ void CodeTextEditor::move_lines_down() {
 				return;
 			}
 
+			// Prevent moving last line with no character selected
+			if (to_column == 0 && i == to_line) {
+				continue;
+			}
+
 			text_editor->unfold_line(line_id);
 			text_editor->unfold_line(next_id);
 
@@ -1271,7 +1281,7 @@ void CodeTextEditor::move_lines_down() {
 		int from_line_down = from_line < text_editor->get_line_count() ? from_line + 1 : from_line;
 		int to_line_down = to_line < text_editor->get_line_count() ? to_line + 1 : to_line;
 		int cursor_line_down = cursor_line < text_editor->get_line_count() ? cursor_line + 1 : cursor_line;
-		text_editor->select(from_line_down, from_col, to_line_down, to_column);
+		text_editor->select(from_line_down, from_column, to_line_down, to_column);
 		text_editor->set_caret_line(cursor_line_down);
 	} else {
 		int line_id = text_editor->get_caret_line();
