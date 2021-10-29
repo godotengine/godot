@@ -74,17 +74,17 @@
 		</method>
 		<method name="interpolate_value">
 			<return type="Variant" />
-			<argument index="0" name="trans_type" type="Variant" />
-			<argument index="1" name="ease_type" type="Variant" />
+			<argument index="0" name="initial_value" type="Variant" />
+			<argument index="1" name="delta_value" type="Variant" />
 			<argument index="2" name="elapsed_time" type="float" />
-			<argument index="3" name="initial_value" type="float" />
-			<argument index="4" name="delta_value" type="int" enum="Tween.TransitionType" />
-			<argument index="5" name="duration" type="int" enum="Tween.EaseType" />
+			<argument index="3" name="duration" type="float" />
+			<argument index="4" name="trans_type" type="int" enum="Tween.TransitionType" />
+			<argument index="5" name="ease_type" type="int" enum="Tween.EaseType" />
 			<description>
 				This method can be used for manual interpolation of a value, when you don't want [Tween] to do animating for you. It's similar to [method @GlobalScope.lerp], but with support for custom transition and easing.
-				[code]elapsed_time[/code] is the time in seconds that passed after the interping started and it's used to control the position of the interpolation. E.g. when it's equal to half of the [code]duration[/code], the interpolated value will be halfway between initial and final values. This value can also be greater than [code]duration[/code] or lower than 0, which will extrapolate the value.
 				[code]initial_value[/code] is the starting value of the interpolation.
 				[code]delta_value[/code] is the change of the value in the interpolation, i.e. it's equal to [code]final_value - initial_value[/code].
+				[code]elapsed_time[/code] is the time in seconds that passed after the interpolation started and it's used to control the position of the interpolation. E.g. when it's equal to half of the [code]duration[/code], the interpolated value will be halfway between initial and final values. This value can also be greater than [code]duration[/code] or lower than 0, which will extrapolate the value.
 				[code]duration[/code] is the total time of the interpolation.
 				[b]Note:[/b] If [code]duration[/code] is equal to [code]0[/code], the method will always return the final value, regardless of [code]elapsed_time[/code] provided.
 			</description>
