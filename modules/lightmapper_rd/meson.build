@@ -9,7 +9,7 @@ foreach glsl_file : _module_lmrd_raw_shaders
         'raw_target_' + glsl_file,
         input: files(glsl_file),
         output: '@PLAINNAME@.gen.h',
-	env: SCRIPTS_ENV,
+        env: SCRIPTS_ENV,
         command: [SCRIPT_COMPAT, 'build_raw_headers', SCRIPT_GLSL_BUILDERS, '-i', '@INPUT@', '-o', '@OUTPUT@'],
         build_by_default: true
     )
