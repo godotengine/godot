@@ -7015,6 +7015,10 @@ EditorNode::EditorNode() {
 		spatial_mat_convert.instantiate();
 		resource_conversion_plugins.push_back(spatial_mat_convert);
 
+		Ref<ORMMaterial3DConversionPlugin> orm_mat_convert;
+		orm_mat_convert.instantiate();
+		resource_conversion_plugins.push_back(orm_mat_convert);
+
 		Ref<CanvasItemMaterialConversionPlugin> canvas_item_mat_convert;
 		canvas_item_mat_convert.instantiate();
 		resource_conversion_plugins.push_back(canvas_item_mat_convert);
