@@ -448,6 +448,49 @@ void VisualServerCanvas::canvas_item_set_update_when_visible(RID p_item, bool p_
 }
 
 void VisualServerCanvas::canvas_item_add_line(RID p_item, const Point2 &p_from, const Point2 &p_to, const Color &p_color, float p_width, bool p_antialiased) {
+	// Try drawing as a poly, because polys are batched and thus should run faster than thick lines,
+	// which run extremely slowly.
+	if (!p_antialiased && (p_width > 1.0)) {
+		// use poly drawing, as it is faster as it can use batching
+		static Vector<Point2> points;
+		static Vector<Color> colors;
+		static Vector<Point2> uvs;
+		if (points.size() != 4) {
+			// this should only be done once at runtime due to use of a static
+			points.resize(4);
+			colors.resize(4);
+			uvs.resize(4);
+		}
+
+		Vector2 side = p_to - p_from;
+		real_t length = side.length();
+		if (length == 0.0) {
+			// Not sure yet whether zero length is a noop operation later on,
+			// watch for visual errors. If there are visual errors, pass through
+			// to the line drawing routine below.
+			return;
+		}
+
+		// normalize
+		side /= length;
+
+		// 90 degrees
+		side = Vector2(-side.y, side.x);
+		side *= p_width;
+
+		points.set(0, p_from + side);
+		points.set(1, p_from - side);
+		points.set(2, p_to - side);
+		points.set(3, p_to + side);
+
+		for (int n = 0; n < 4; n++) {
+			colors.set(n, p_color);
+		}
+
+		canvas_item_add_polygon(p_item, points, colors, uvs, RID(), RID(), false);
+		return;
+	}
+
 	Item *canvas_item = canvas_item_owner.getornull(p_item);
 	ERR_FAIL_COND(!canvas_item);
 
