@@ -225,6 +225,90 @@ void TileMapPattern::_bind_methods() {
 
 /////////////////////////////// TileSet //////////////////////////////////////
 
+bool TileSet::TerrainsPattern::is_valid() const {
+	return valid;
+}
+
+bool TileSet::TerrainsPattern::is_erase_pattern() const {
+	return not_empty_terrains_count == 0;
+}
+
+bool TileSet::TerrainsPattern::operator<(const TerrainsPattern &p_terrains_pattern) const {
+	for (int i = 0; i < TileSet::CELL_NEIGHBOR_MAX; i++) {
+		if (is_valid_bit[i] != p_terrains_pattern.is_valid_bit[i]) {
+			return is_valid_bit[i] < p_terrains_pattern.is_valid_bit[i];
+		}
+	}
+	for (int i = 0; i < TileSet::CELL_NEIGHBOR_MAX; i++) {
+		if (is_valid_bit[i] && bits[i] != p_terrains_pattern.bits[i]) {
+			return bits[i] < p_terrains_pattern.bits[i];
+		}
+	}
+	return false;
+}
+
+bool TileSet::TerrainsPattern::operator==(const TerrainsPattern &p_terrains_pattern) const {
+	for (int i = 0; i < TileSet::CELL_NEIGHBOR_MAX; i++) {
+		if (is_valid_bit[i] != p_terrains_pattern.is_valid_bit[i]) {
+			return false;
+		}
+		if (is_valid_bit[i] && bits[i] != p_terrains_pattern.bits[i]) {
+			return false;
+		}
+	}
+	return true;
+}
+
+void TileSet::TerrainsPattern::set_terrain(TileSet::CellNeighbor p_peering_bit, int p_terrain) {
+	ERR_FAIL_COND(p_peering_bit == TileSet::CELL_NEIGHBOR_MAX);
+	ERR_FAIL_COND(!is_valid_bit[p_peering_bit]);
+	ERR_FAIL_COND(p_terrain < -1);
+
+	// Update the "is_erase_pattern" status.
+	if (p_terrain >= 0 && bits[p_peering_bit] < 0) {
+		not_empty_terrains_count++;
+	} else if (p_terrain < 0 && bits[p_peering_bit] >= 0) {
+		not_empty_terrains_count--;
+	}
+
+	bits[p_peering_bit] = p_terrain;
+}
+
+int TileSet::TerrainsPattern::get_terrain(TileSet::CellNeighbor p_peering_bit) const {
+	ERR_FAIL_COND_V(p_peering_bit == TileSet::CELL_NEIGHBOR_MAX, -1);
+	ERR_FAIL_COND_V(!is_valid_bit[p_peering_bit], -1);
+	return bits[p_peering_bit];
+}
+
+void TileSet::TerrainsPattern::set_terrains_from_array(Array p_terrains) {
+	int in_array_index = 0;
+	for (int i = 0; i < TileSet::CELL_NEIGHBOR_MAX; i++) {
+		if (is_valid_bit[i]) {
+			ERR_FAIL_COND(in_array_index >= p_terrains.size());
+			set_terrain(TileSet::CellNeighbor(i), p_terrains[in_array_index]);
+			in_array_index++;
+		}
+	}
+}
+
+Array TileSet::TerrainsPattern::get_terrains_as_array() const {
+	Array output;
+	for (int i = 0; i < TileSet::CELL_NEIGHBOR_MAX; i++) {
+		if (is_valid_bit[i]) {
+			output.push_back(bits[i]);
+		}
+	}
+	return output;
+}
+TileSet::TerrainsPattern::TerrainsPattern(const TileSet *p_tile_set, int p_terrain_set) {
+	ERR_FAIL_COND(p_terrain_set < 0);
+	for (int i = 0; i < TileSet::CELL_NEIGHBOR_MAX; i++) {
+		is_valid_bit[i] = (p_tile_set->is_valid_peering_bit_terrain(p_terrain_set, TileSet::CellNeighbor(i)));
+		bits[i] = -1;
+	}
+	valid = true;
+}
+
 const int TileSet::INVALID_SOURCE = -1;
 
 const char *TileSet::CELL_NEIGHBOR_ENUM_TO_TEXT[] = {
@@ -330,10 +414,13 @@ void TileSet::_update_terrains_cache() {
 							TileSet::TerrainsPattern terrains_pattern = tile_data->get_terrains_pattern();
 
 							// Terrain bits.
-							for (int i = 0; i < terrains_pattern.size(); i++) {
-								int terrain = terrains_pattern[i];
-								if (terrain >= 0) {
-									per_terrain_pattern_tiles[terrain_set][terrains_pattern].insert(cell);
+							for (int i = 0; i < TileSet::CELL_NEIGHBOR_MAX; i++) {
+								CellNeighbor bit = CellNeighbor(i);
+								if (is_valid_peering_bit_terrain(terrain_set, bit)) {
+									int terrain = terrains_pattern.get_terrain(bit);
+									if (terrain >= 0) {
+										per_terrain_pattern_tiles[terrain_set][terrains_pattern].insert(cell);
+									}
 								}
 							}
 						}
@@ -344,12 +431,7 @@ void TileSet::_update_terrains_cache() {
 
 		// Add the empty cell in the possible patterns and cells.
 		for (int i = 0; i < terrain_sets.size(); i++) {
-			TileSet::TerrainsPattern empty_pattern;
-			for (int j = 0; j < TileSet::CELL_NEIGHBOR_MAX; j++) {
-				if (is_valid_peering_bit_terrain(i, TileSet::CellNeighbor(j))) {
-					empty_pattern.push_back(-1);
-				}
-			}
+			TileSet::TerrainsPattern empty_pattern(this, i);
 
 			TileMapCell empty_cell;
 			empty_cell.source_id = TileSet::INVALID_SOURCE;
@@ -1283,7 +1365,7 @@ Set<TileMapCell> TileSet::get_tiles_for_terrains_pattern(int p_terrain_set, Terr
 	return per_terrain_pattern_tiles[p_terrain_set][p_terrain_tile_pattern];
 }
 
-TileMapCell TileSet::get_random_tile_from_pattern(int p_terrain_set, TileSet::TerrainsPattern p_terrain_tile_pattern) {
+TileMapCell TileSet::get_random_tile_from_terrains_pattern(int p_terrain_set, TileSet::TerrainsPattern p_terrain_tile_pattern) {
 	ERR_FAIL_INDEX_V(p_terrain_set, terrain_sets.size(), TileMapCell());
 	_update_terrains_cache();
 
@@ -4915,10 +4997,10 @@ bool TileData::is_valid_peering_bit_terrain(TileSet::CellNeighbor p_peering_bit)
 TileSet::TerrainsPattern TileData::get_terrains_pattern() const {
 	ERR_FAIL_COND_V(!tile_set, TileSet::TerrainsPattern());
 
-	TileSet::TerrainsPattern output;
+	TileSet::TerrainsPattern output(tile_set, terrain_set);
 	for (int i = 0; i < TileSet::CELL_NEIGHBOR_MAX; i++) {
 		if (tile_set->is_valid_peering_bit_terrain(terrain_set, TileSet::CellNeighbor(i))) {
-			output.push_back(get_peering_bit_terrain(TileSet::CellNeighbor(i)));
+			output.set_terrain(TileSet::CellNeighbor(i), get_peering_bit_terrain(TileSet::CellNeighbor(i)));
 		}
 	}
 	return output;

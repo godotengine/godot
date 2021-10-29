@@ -253,7 +253,30 @@ public:
 		Ref<PackedScene> scene;
 		Vector2 offset;
 	};
-	typedef Array TerrainsPattern;
+
+	class TerrainsPattern {
+		bool valid = false;
+		int bits[TileSet::CELL_NEIGHBOR_MAX];
+		bool is_valid_bit[TileSet::CELL_NEIGHBOR_MAX];
+
+		int not_empty_terrains_count = 0;
+
+	public:
+		bool is_valid() const;
+		bool is_erase_pattern() const;
+
+		bool operator<(const TerrainsPattern &p_terrains_pattern) const;
+		bool operator==(const TerrainsPattern &p_terrains_pattern) const;
+
+		void set_terrain(TileSet::CellNeighbor p_peering_bit, int p_terrain);
+		int get_terrain(TileSet::CellNeighbor p_peering_bit) const;
+
+		void set_terrains_from_array(Array p_terrains);
+		Array get_terrains_as_array() const;
+
+		TerrainsPattern(const TileSet *p_tile_set, int p_terrain_set);
+		TerrainsPattern() {}
+	};
 
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
@@ -478,7 +501,7 @@ public:
 	// Terrains.
 	Set<TerrainsPattern> get_terrains_pattern_set(int p_terrain_set);
 	Set<TileMapCell> get_tiles_for_terrains_pattern(int p_terrain_set, TerrainsPattern p_terrain_tile_pattern);
-	TileMapCell get_random_tile_from_pattern(int p_terrain_set, TerrainsPattern p_terrain_tile_pattern);
+	TileMapCell get_random_tile_from_terrains_pattern(int p_terrain_set, TerrainsPattern p_terrain_tile_pattern);
 
 	// Helpers
 	Vector<Vector2> get_tile_shape_polygon();
