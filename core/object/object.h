@@ -791,7 +791,14 @@ public:
 	void get_signals_connected_to_this(List<Connection> *p_connections) const;
 
 	Error connect(const StringName &p_signal, const Callable &p_callable, const Vector<Variant> &p_binds = Vector<Variant>(), uint32_t p_flags = 0);
+	_FORCE_INLINE_ Error connect(const StringName &p_signal, Object *p_to_object, const StringName &p_to_method,
+								 const Vector<Variant> &p_binds = Vector<Variant>(), uint32_t p_flags = 0) {
+		return this->connect(p_signal, Callable(p_to_object, p_to_method), p_binds, p_flags);
+	}
 	void disconnect(const StringName &p_signal, const Callable &p_callable);
+	_FORCE_INLINE_ void disconnect(const StringName &p_signal, Object *p_to_object, const StringName &p_to_method) {
+		this->disconnect(p_signal, Callable(p_to_object, p_to_method));
+	}
 	bool is_connected(const StringName &p_signal, const Callable &p_callable) const;
 
 	void call_deferred(const StringName &p_method, VARIANT_ARG_LIST);

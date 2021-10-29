@@ -1599,8 +1599,10 @@ void Object::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_signal_connection_list", "signal"), &Object::_get_signal_connection_list);
 	ClassDB::bind_method(D_METHOD("get_incoming_connections"), &Object::_get_incoming_connections);
 
-	ClassDB::bind_method(D_METHOD("connect", "signal", "callable", "binds", "flags"), &Object::connect, DEFVAL(Array()), DEFVAL(0));
-	ClassDB::bind_method(D_METHOD("disconnect", "signal", "callable"), &Object::disconnect);
+	Error (Object::*connect_func)(const StringName &, const Callable &, const Vector<Variant> &, uint32_t) = &Object::connect;
+	ClassDB::bind_method(D_METHOD("connect", "signal", "callable", "binds", "flags"), connect_func, DEFVAL(Array()), DEFVAL(0));
+	void (Object::*disconnect_func)(const StringName &, const Callable &) = &Object::disconnect;
+	ClassDB::bind_method(D_METHOD("disconnect", "signal", "callable"), disconnect_func);
 	ClassDB::bind_method(D_METHOD("is_connected", "signal", "callable"), &Object::is_connected);
 
 	ClassDB::bind_method(D_METHOD("set_block_signals", "enable"), &Object::set_block_signals);
