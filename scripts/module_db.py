@@ -177,9 +177,12 @@ def load_db(module_db_file: str) -> ModuleDb:
 
 
 def write_db(out_file: str, mdb: ModuleDb):
-    with open(out_file, "w") as f:
-        json.dump(mdb._encode(), f, indent="\t")
-    return
+    from modules_gen import replace_if_different
+
+    tmp_file = out_file + "~"
+    with open(tmp_file, "w") as f:
+        json.dump(mdb._encode(), f, indent="\t", sort_keys=True)
+    replace_if_different(out_file, tmp_file)
 
 
 ################################################################################
