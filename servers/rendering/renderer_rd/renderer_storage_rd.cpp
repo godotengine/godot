@@ -5291,7 +5291,19 @@ void RendererStorageRD::_particles_process(Particles *p_particles, double p_delt
 
 	RD::get_singleton()->buffer_update(p_particles->frame_params_buffer, 0, sizeof(ParticlesFrameParams) * p_particles->trail_params.size(), p_particles->trail_params.ptr());
 
-	ParticlesMaterialData *m = (ParticlesMaterialData *)material_get_data(p_particles->process_material, SHADER_TYPE_PARTICLES);
+	ParticlesMaterialData *m = nullptr;
+	if (p_particles->process_material.is_valid()) {
+		m = (ParticlesMaterialData *)material_get_data(p_particles->process_material, SHADER_TYPE_PARTICLES);
+		if (!m || !m->shader_data) {
+			m = nullptr;
+		} else if (m->last_frame != RendererCompositorRD::singleton->get_frame_number()) {
+			m->last_frame = RendererCompositorRD::singleton->get_frame_number();
+			if (!RD::get_singleton()->uniform_set_is_valid(m->uniform_set)) {
+				material_force_update_textures(p_particles->process_material, RendererStorageRD::SHADER_TYPE_PARTICLES);
+			}
+		}
+	}
+
 	if (!m) {
 		m = (ParticlesMaterialData *)material_get_data(particles_shader.default_material, SHADER_TYPE_PARTICLES);
 	}

@@ -30,6 +30,7 @@
 
 #include "render_forward_clustered.h"
 #include "core/config/project_settings.h"
+#include "servers/rendering/renderer_rd/renderer_compositor_rd.h"
 #include "servers/rendering/rendering_device.h"
 #include "servers/rendering/rendering_server_default.h"
 
@@ -2644,6 +2645,13 @@ void RenderForwardClustered::_geometry_instance_add_surface(GeometryInstanceForw
 		material = (SceneShaderForwardClustered::MaterialData *)storage->material_get_data(m_src, RendererStorageRD::SHADER_TYPE_3D);
 		if (!material || !material->shader_data->valid) {
 			material = nullptr;
+		} else if (material->last_frame != RendererCompositorRD::singleton->get_frame_number()) {
+			material->last_frame = RendererCompositorRD::singleton->get_frame_number();
+			if (!RD::get_singleton()->uniform_set_is_valid(material->uniform_set)) {
+				// Uniform set may be gone because a dependency was erased. In this case, it will happen
+				// if a texture is deleted, so just re-create it.
+				storage->material_force_update_textures(m_src, RendererStorageRD::SHADER_TYPE_3D);
+			}
 		}
 	}
 
@@ -2665,6 +2673,11 @@ void RenderForwardClustered::_geometry_instance_add_surface(GeometryInstanceForw
 		material = (SceneShaderForwardClustered::MaterialData *)storage->material_get_data(next_pass, RendererStorageRD::SHADER_TYPE_3D);
 		if (!material || !material->shader_data->valid) {
 			break;
+		} else if (material->last_frame != RendererCompositorRD::singleton->get_frame_number()) {
+			material->last_frame = RendererCompositorRD::singleton->get_frame_number();
+			if (!RD::get_singleton()->uniform_set_is_valid(material->uniform_set)) {
+				storage->material_force_update_textures(m_src, RendererStorageRD::SHADER_TYPE_3D);
+			}
 		}
 		if (ginstance->data->dirty_dependencies) {
 			storage->material_update_dependency(next_pass, &ginstance->data->dependency_tracker);

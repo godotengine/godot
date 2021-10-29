@@ -3903,6 +3903,11 @@ void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_e
 				material = (FogMaterialData *)storage->material_get_data(fog_material, RendererStorageRD::SHADER_TYPE_FOG);
 				if (!material || !material->shader_data->valid) {
 					material = nullptr;
+				} else if (material->last_frame != RendererCompositorRD::singleton->get_frame_number()) {
+					material->last_frame = RendererCompositorRD::singleton->get_frame_number();
+					if (!RD::get_singleton()->uniform_set_is_valid(material->uniform_set)) {
+						storage->material_force_update_textures(fog_material, RendererStorageRD::SHADER_TYPE_FOG);
+					}
 				}
 			}
 
