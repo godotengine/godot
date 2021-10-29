@@ -15,7 +15,6 @@ endif
 
 lib_module_webrtc = library('module_webrtc',
     _module_webrtc_srcs,
-    gdivirtuals_gen,
     dependencies: _module_webrtc_deps,
     cpp_args: _module_webrtc_compile_args)
 

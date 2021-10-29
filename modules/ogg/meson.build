@@ -2,7 +2,6 @@ ogg_sources = files(run_command(GLOB, '*.cpp').stdout().split('\n'))
 
 ogg_lib = library('ogg',
                   ogg_sources,
-                  gdivirtuals_gen,
                   include_directories: [INCDIRS],
                   cpp_args: CPP_ARGS,
                   dependencies: DEP_LIBOGG)

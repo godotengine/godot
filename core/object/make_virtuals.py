@@ -1,4 +1,20 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
+
+import pathlib
+import sys
+
+
+def replace_if_different(output_path_str, new_content_path_str):
+    output_path = pathlib.Path(output_path_str)
+    new_content_path = pathlib.Path(new_content_path_str)
+    if not output_path.exists():
+        new_content_path.replace(output_path)
+        return
+    if output_path.read_bytes() == new_content_path.read_bytes():
+        new_content_path.unlink()
+    else:
+        new_content_path.replace(output_path)
+
 
 proto = """
 #define GDVIRTUAL$VER($RET m_name $ARG) \\
@@ -170,7 +186,8 @@ def generate_version(argcount, const=False, returns=False):
     return s
 
 
-def run(target, source, env):
+def run(outfile):
+
     max_versions = 12
 
     txt = """
@@ -203,11 +220,10 @@ def run(target, source, env):
 
     txt += "#endif"
 
-    with open(target[0], "w") as f:
+    tmpfile = outfile + '~'
+    with open(tmpfile, "w") as f:
         f.write(txt)
-
+    replace_if_different(outfile, tmpfile)
 
 if __name__ == "__main__":
-    from platform_methods import subprocess_main
-
-    subprocess_main(globals())
+    run(sys.argv[1])

@@ -8,7 +8,6 @@ _module_fbx_incdirs = include_directories('.')
 
 lib_module_fbx = library('module_fbx',
                          _module_fbx_srcs,
-                         gdivirtuals_gen,
                          include_directories: _module_fbx_incdirs,
                          dependencies: [DEP_GODOT_ALL, DEP_ZLIB])
 

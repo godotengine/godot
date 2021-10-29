@@ -28,5 +28,4 @@ SCRIPT_EDITOR_ICON_BUILDERS = find_program(
 ).full_path()
 SCRIPT_CORE_BUILDERS = find_program(MESON_SOURCE_ROOT / 'core' / 'core_builders.py').full_path()
 SCRIPT_MAIN_BUILDERS = find_program(MESON_SOURCE_ROOT / 'main' / 'main_builders.py').full_path()
-SCRIPT_VIRTUALS = find_program(MESON_SOURCE_ROOT / 'core' / 'object' / 'make_virtuals.py').full_path()
 SCRIPT_COMPAT = find_program('scons_compat.py')
