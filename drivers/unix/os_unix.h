@@ -72,8 +72,8 @@ public:
 
 	virtual String get_name() const override;
 
-	virtual Date get_date(bool utc) const override;
-	virtual Time get_time(bool utc) const override;
+	virtual Date get_date(bool p_utc) const override;
+	virtual Time get_time(bool p_utc) const override;
 	virtual TimeZoneInfo get_time_zone_info() const override;
 
 	virtual double get_unix_time() const override;

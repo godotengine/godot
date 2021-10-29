@@ -185,8 +185,8 @@ public:
 
 	virtual String get_name() const;
 
-	virtual Date get_date(bool utc) const;
-	virtual Time get_time(bool utc) const;
+	virtual Date get_date(bool p_utc) const;
+	virtual Time get_time(bool p_utc) const;
 	virtual TimeZoneInfo get_time_zone_info() const;
 	virtual uint64_t get_unix_time() const;
 
