@@ -6,7 +6,7 @@ foreach glsl_file : _rd_shaders
         'rd_target_' + glsl_file,
         output: '@PLAINNAME@.gen.h',
         input: files(glsl_file),
-	env: SCRIPTS_ENV,
+        env: SCRIPTS_ENV,
         command: [SCRIPT_COMPAT, 'build_rd_headers', SCRIPT_GLSL_BUILDERS, '-i', '@INPUT@', '-o', '@OUTPUT@'],
         build_by_default: true
     )
