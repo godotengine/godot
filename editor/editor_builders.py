@@ -89,8 +89,14 @@ def make_translations_header(target, source, env, category):
 
     xl_names = []
     for i in range(len(sorted_paths)):
+        buf = bytes()
         with open(sorted_paths[i], "rb") as f:
-            buf = f.read()
+            for line in f.readlines():
+                # Strip comments (other than fuzzy comments, which are required by the translation parser).
+                # This reduces the generated translation header's size significantly.
+                if not (line.startswith(bytes("#", "utf-8")) and not line.startswith(bytes("#, fuzzy", "utf-8"))):
+                    buf += line
+
         decomp_size = len(buf)
         buf = zlib.compress(buf)
         name = os.path.splitext(os.path.basename(sorted_paths[i]))[0]
