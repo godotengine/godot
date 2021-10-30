@@ -52,6 +52,7 @@
 #include "scene/gui/texture_rect.h"
 #include "scene/main/window.h"
 #include "servers/display_server.h"
+#include "servers/navigation_server_3d.h"
 
 static inline String get_project_key_from_path(const String &dir) {
 	return dir.replace("/", "::");
@@ -2386,6 +2387,11 @@ ProjectManager::ProjectManager() {
 	if (!EditorSettings::get_singleton()) {
 		EditorSettings::create();
 	}
+
+	// Turn off some servers we aren't going to be using in the Project Manager.
+	NavigationServer3D::get_singleton()->set_active(false);
+	PhysicsServer3D::get_singleton()->set_active(false);
+	PhysicsServer2D::get_singleton()->set_active(false);
 
 	EditorSettings::get_singleton()->set_optimize_save(false); //just write settings as they came
 
