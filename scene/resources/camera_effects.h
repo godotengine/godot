@@ -52,6 +52,14 @@ private:
 	float dof_blur_amount = 0.1;
 	void _update_dof_blur();
 
+	// Vignette
+	float vignette_intensity = 0.0;
+	float vignette_inner_radius = 0.15;
+	float vignette_outer_radius = 1.0;
+	Color vignette_color = Color(0, 0, 0, 1);
+	Vector2 vignette_center = Vector2(0.5, 0.5);
+	void _update_vignette();
+
 	// Override exposure
 	bool override_exposure_enabled = false;
 	float override_exposure = 1.0;
@@ -81,6 +89,18 @@ public:
 
 	void set_dof_blur_amount(float p_amount);
 	float get_dof_blur_amount() const;
+
+	// Vignette
+	void set_vignette_intensity(float p_intensity);
+	float get_vignette_intensity() const;
+	void set_vignette_inner_radius(float p_inner_radius);
+	float get_vignette_inner_radius() const;
+	void set_vignette_outer_radius(float p_outer_radius);
+	float get_vignette_outer_radius() const;
+	void set_vignette_color(const Color &p_color);
+	Color get_vignette_color() const;
+	void set_vignette_center(const Vector2 &p_center);
+	Vector2 get_vignette_center() const;
 
 	// Override exposure
 	void set_override_exposure_enabled(bool p_enabled);

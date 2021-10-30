@@ -1392,6 +1392,17 @@ void RendererSceneRenderRD::camera_effects_set_dof_blur(RID p_camera_effects, bo
 	camfx->dof_blur_amount = p_amount;
 }
 
+void RendererSceneRenderRD::camera_effects_set_vignette(RID p_camera_effects, float p_intensity, float p_inner_radius, float p_outer_radius, const Color &p_color, const Vector2 &p_center) {
+	CameraEffects *camfx = camera_effects_owner.get_or_null(p_camera_effects);
+	ERR_FAIL_COND(!camfx);
+
+	camfx->vignette_intensity = p_intensity;
+	camfx->vignette_inner_radius = p_inner_radius;
+	camfx->vignette_outer_radius = p_outer_radius;
+	camfx->vignette_color = p_color;
+	camfx->vignette_center = p_center;
+}
+
 void RendererSceneRenderRD::camera_effects_set_custom_exposure(RID p_camera_effects, bool p_enable, float p_exposure) {
 	CameraEffects *camfx = camera_effects_owner.get_or_null(p_camera_effects);
 	ERR_FAIL_COND(!camfx);
@@ -2526,6 +2537,14 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 
 		tonemap.use_debanding = rb->use_debanding;
 		tonemap.texture_size = Vector2i(rb->internal_width, rb->internal_height);
+
+		if (camfx) {
+			tonemap.vignette_intensity = camfx->vignette_intensity;
+			tonemap.vignette_inner_radius = camfx->vignette_inner_radius;
+			tonemap.vignette_outer_radius = camfx->vignette_outer_radius;
+			tonemap.vignette_color = camfx->vignette_color;
+			tonemap.vignette_center = camfx->vignette_center;
+		}
 
 		if (env) {
 			tonemap.tonemap_mode = env->tone_mapper;

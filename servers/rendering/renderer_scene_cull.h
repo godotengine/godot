@@ -1145,6 +1145,7 @@ public:
 	PASS1(camera_effects_set_dof_blur_bokeh_shape, RS::DOFBokehShape)
 
 	PASS8(camera_effects_set_dof_blur, RID, bool, float, float, bool, float, float, float)
+	PASS6(camera_effects_set_vignette, RID, float, float, float, const Color &, const Vector2 &)
 	PASS3(camera_effects_set_custom_exposure, RID, bool, float)
 
 	PASS1(shadows_quality_set, RS::ShadowQuality)

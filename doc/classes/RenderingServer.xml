@@ -72,6 +72,18 @@
 			<description>
 			</description>
 		</method>
+		<method name="camera_effects_set_vignette">
+			<return type="void" />
+			<argument index="0" name="camera_effects" type="RID" />
+			<argument index="1" name="intensity" type="float" />
+			<argument index="2" name="inner_radius" type="float" />
+			<argument index="3" name="outer_radius" type="float" />
+			<argument index="4" name="color" type="Color" />
+			<argument index="5" name="center" type="Vector2" />
+			<description>
+				Sets the vignette associated with this [CameraEffects]. See the vignette properties in [CameraEffects] for more information.
+			</description>
+		</method>
 		<method name="camera_set_camera_effects">
 			<return type="void" />
 			<argument index="0" name="camera" type="RID" />

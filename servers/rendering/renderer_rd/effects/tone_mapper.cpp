@@ -133,6 +133,15 @@ void ToneMapper::tonemapper(RID p_source_color, RID p_dst_framebuffer, const Ton
 	}
 
 	tonemap.push_constant.tonemapper = p_settings.tonemap_mode;
+	tonemap.push_constant.vignette_intensity = p_settings.vignette_intensity;
+	tonemap.push_constant.vignette_color[0] = p_settings.vignette_color.r;
+	tonemap.push_constant.vignette_color[1] = p_settings.vignette_color.g;
+	tonemap.push_constant.vignette_color[2] = p_settings.vignette_color.b;
+	tonemap.push_constant.vignette_center[0] = p_settings.vignette_center.x;
+	tonemap.push_constant.vignette_center[1] = p_settings.vignette_center.y;
+	tonemap.push_constant.vignette_inner_radius = p_settings.vignette_inner_radius;
+	tonemap.push_constant.vignette_outer_radius = p_settings.vignette_outer_radius;
+
 	tonemap.push_constant.use_auto_exposure = p_settings.use_auto_exposure;
 	tonemap.push_constant.exposure = p_settings.exposure;
 	tonemap.push_constant.white = p_settings.white;
@@ -223,6 +232,15 @@ void ToneMapper::tonemapper(RD::DrawListID p_subpass_draw_list, RID p_source_col
 	}
 
 	tonemap.push_constant.tonemapper = p_settings.tonemap_mode;
+	tonemap.push_constant.vignette_intensity = p_settings.vignette_intensity;
+	tonemap.push_constant.vignette_color[0] = p_settings.vignette_color.r;
+	tonemap.push_constant.vignette_color[1] = p_settings.vignette_color.g;
+	tonemap.push_constant.vignette_color[2] = p_settings.vignette_color.b;
+	tonemap.push_constant.vignette_center[0] = p_settings.vignette_center.x;
+	tonemap.push_constant.vignette_center[1] = p_settings.vignette_center.y;
+	tonemap.push_constant.vignette_inner_radius = p_settings.vignette_inner_radius;
+	tonemap.push_constant.vignette_outer_radius = p_settings.vignette_outer_radius;
+
 	tonemap.push_constant.use_auto_exposure = p_settings.use_auto_exposure;
 	tonemap.push_constant.exposure = p_settings.exposure;
 	tonemap.push_constant.white = p_settings.white;

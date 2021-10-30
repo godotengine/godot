@@ -1133,6 +1133,7 @@ public:
 	virtual void camera_effects_set_dof_blur_bokeh_shape(DOFBokehShape p_shape) = 0;
 
 	virtual void camera_effects_set_dof_blur(RID p_camera_effects, bool p_far_enable, float p_far_distance, float p_far_transition, bool p_near_enable, float p_near_distance, float p_near_transition, float p_amount) = 0;
+	virtual void camera_effects_set_vignette(RID p_camera_effects, float p_intensity, float p_inner_radius, float p_outer_radius, const Color &p_color, const Vector2 &p_center) = 0;
 	virtual void camera_effects_set_custom_exposure(RID p_camera_effects, bool p_enable, float p_exposure) = 0;
 
 	/* SCENARIO API */

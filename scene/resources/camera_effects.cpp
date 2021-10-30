@@ -115,6 +115,63 @@ void CameraEffects::_update_dof_blur() {
 			dof_blur_amount);
 }
 
+// Vignette
+
+void CameraEffects::set_vignette_intensity(float p_intensity) {
+	vignette_intensity = p_intensity;
+	_update_vignette();
+}
+
+float CameraEffects::get_vignette_intensity() const {
+	return vignette_intensity;
+}
+
+void CameraEffects::set_vignette_inner_radius(float p_inner_radius) {
+	vignette_inner_radius = p_inner_radius;
+	_update_vignette();
+}
+
+float CameraEffects::get_vignette_inner_radius() const {
+	return vignette_inner_radius;
+}
+
+void CameraEffects::set_vignette_outer_radius(float p_outer_radius) {
+	vignette_outer_radius = p_outer_radius;
+	_update_vignette();
+}
+
+float CameraEffects::get_vignette_outer_radius() const {
+	return vignette_outer_radius;
+}
+
+void CameraEffects::set_vignette_color(const Color &p_color) {
+	vignette_color = p_color;
+	_update_vignette();
+}
+
+Color CameraEffects::get_vignette_color() const {
+	return vignette_color;
+}
+
+void CameraEffects::set_vignette_center(const Vector2 &p_center) {
+	vignette_center = p_center;
+	_update_vignette();
+}
+
+Vector2 CameraEffects::get_vignette_center() const {
+	return vignette_center;
+}
+
+void CameraEffects::_update_vignette() {
+	RS::get_singleton()->camera_effects_set_vignette(
+			camera_effects,
+			vignette_intensity,
+			vignette_inner_radius,
+			vignette_outer_radius,
+			vignette_color,
+			vignette_center);
+}
+
 // Custom exposure
 
 void CameraEffects::set_override_exposure_enabled(bool p_enabled) {
@@ -181,6 +238,26 @@ void CameraEffects::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "dof_blur_near_distance", PROPERTY_HINT_RANGE, "0.01,8192,0.01,exp"), "set_dof_blur_near_distance", "get_dof_blur_near_distance");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "dof_blur_near_transition", PROPERTY_HINT_RANGE, "0.01,8192,0.01,exp"), "set_dof_blur_near_transition", "get_dof_blur_near_transition");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "dof_blur_amount", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_dof_blur_amount", "get_dof_blur_amount");
+
+	// Vignette
+
+	ClassDB::bind_method(D_METHOD("set_vignette_intensity", "intensity"), &CameraEffects::set_vignette_intensity);
+	ClassDB::bind_method(D_METHOD("get_vignette_intensity"), &CameraEffects::get_vignette_intensity);
+	ClassDB::bind_method(D_METHOD("set_vignette_inner_radius", "inner_radius"), &CameraEffects::set_vignette_inner_radius);
+	ClassDB::bind_method(D_METHOD("get_vignette_inner_radius"), &CameraEffects::get_vignette_inner_radius);
+	ClassDB::bind_method(D_METHOD("set_vignette_outer_radius", "outer_radius"), &CameraEffects::set_vignette_outer_radius);
+	ClassDB::bind_method(D_METHOD("get_vignette_outer_radius"), &CameraEffects::get_vignette_outer_radius);
+	ClassDB::bind_method(D_METHOD("set_vignette_color", "color"), &CameraEffects::set_vignette_color);
+	ClassDB::bind_method(D_METHOD("get_vignette_color"), &CameraEffects::get_vignette_color);
+	ClassDB::bind_method(D_METHOD("set_vignette_center", "center"), &CameraEffects::set_vignette_center);
+	ClassDB::bind_method(D_METHOD("get_vignette_center"), &CameraEffects::get_vignette_center);
+
+	ADD_GROUP("Vignette", "vignette_");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "vignette_intensity", PROPERTY_HINT_RANGE, "0,1,0.001"), "set_vignette_intensity", "get_vignette_intensity");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "vignette_inner_radius", PROPERTY_HINT_RANGE, "0.001,1,0.001"), "set_vignette_inner_radius", "get_vignette_inner_radius");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "vignette_outer_radius", PROPERTY_HINT_RANGE, "0.001,1,0.001"), "set_vignette_outer_radius", "get_vignette_outer_radius");
+	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "vignette_color", PROPERTY_HINT_COLOR_NO_ALPHA), "set_vignette_color", "get_vignette_color");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "vignette_center"), "set_vignette_center", "get_vignette_center");
 
 	// Override exposure
 

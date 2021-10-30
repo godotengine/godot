@@ -37,5 +37,20 @@
 		<member name="override_exposure_enabled" type="bool" setter="set_override_exposure_enabled" getter="is_override_exposure_enabled" default="false">
 			If [code]true[/code], overrides the manual or automatic exposure defined in the [Environment] with the value in [member override_exposure].
 		</member>
+		<member name="vignette_center" type="Vector2" setter="set_vignette_center" getter="get_vignette_center" default="Vector2(0.5, 0.5)">
+			The center to use for vignetting ([code]Vector2(0.5, 0.5)[/code] is the center of the viewport). Only used if [member vignette_intensity] is greater than [code]0.0[/code].
+		</member>
+		<member name="vignette_color" type="Color" setter="set_vignette_color" getter="get_vignette_color" default="Color(0, 0, 0, 1)">
+			The color to use for vignetting. Only used if [member vignette_intensity] is greater than [code]0.0[/code].
+		</member>
+		<member name="vignette_inner_radius" type="float" setter="set_vignette_inner_radius" getter="get_vignette_inner_radius" default="0.15">
+			The inner radius to use for vignetting. Greater values don't obscure the vignette's center as much. Only used if [member vignette_intensity] is greater than [code]0.0[/code].
+		</member>
+		<member name="vignette_intensity" type="float" setter="set_vignette_intensity" getter="get_vignette_intensity" default="0.0">
+			If set to a value greater than [code]0.0[/code], applies [url=https://en.wikipedia.org/wiki/Vignetting]vignetting[/url] which darkens the image's corners. This creates an effect similar to the use of old/low-quality optical lenses, and can be used to focus attention to a specific point in the viewport (typically the center). Vignetting should be used sparingly; otherwise, it can become visually overwhelming.
+		</member>
+		<member name="vignette_outer_radius" type="float" setter="set_vignette_outer_radius" getter="get_vignette_outer_radius" default="1.0">
+			The outer radius to use for vignetting. Greater values don't obscure the vignette's edges and corners as much. Only used if [member vignette_intensity] is greater than [code]0.0[/code].
+		</member>
 	</members>
 </class>

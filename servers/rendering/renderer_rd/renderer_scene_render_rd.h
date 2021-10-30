@@ -439,6 +439,12 @@ private:
 
 		float dof_blur_amount = 0.1;
 
+		float vignette_intensity = 0.0;
+		float vignette_inner_radius = 0.15;
+		float vignette_outer_radius = 1.0;
+		Color vignette_color = Color(0, 0, 0, 1);
+		Vector2 vignette_center = Vector2(0.5, 0.5);
+
 		bool override_exposure_enabled = false;
 		float override_exposure = 1;
 	};
@@ -1105,6 +1111,7 @@ public:
 	virtual void camera_effects_set_dof_blur_bokeh_shape(RS::DOFBokehShape p_shape) override;
 
 	virtual void camera_effects_set_dof_blur(RID p_camera_effects, bool p_far_enable, float p_far_distance, float p_far_transition, bool p_near_enable, float p_near_distance, float p_near_transition, float p_amount) override;
+	virtual void camera_effects_set_vignette(RID p_camera_effects, float p_intensity, float p_inner_radius, float p_outer_radius, const Color &p_color, const Vector2 &p_center) override;
 	virtual void camera_effects_set_custom_exposure(RID p_camera_effects, bool p_enable, float p_exposure) override;
 
 	bool camera_effects_uses_dof(RID p_camera_effects) {

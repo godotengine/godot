@@ -54,29 +54,36 @@ layout(set = 3, binding = 0) uniform sampler3D source_color_correction;
 #endif
 
 layout(push_constant, std430) uniform Params {
-	vec3 bcs;
-	bool use_bcs;
+	vec3 bcs; // 12 - 12
+	bool use_bcs; // 4 - 16
 
-	bool use_glow;
-	bool use_auto_exposure;
-	bool use_color_correction;
-	uint tonemapper;
+	bool use_glow; // 4 - 20
+	bool use_auto_exposure; // 4 - 24
+	bool use_color_correction; // 4 - 28
+	uint tonemapper; // 4 - 32
 
-	uvec2 glow_texture_size;
-	float glow_intensity;
-	float glow_map_strength;
+	uvec2 glow_texture_size; // 8 - 40
+	float glow_intensity; // 4 - 44
+	float glow_map_strength; // 4 - 48
 
-	uint glow_mode;
-	float glow_levels[7];
+	uint glow_mode; // 4 - 52
+	float glow_levels[7]; // 28 - 80
 
-	float exposure;
-	float white;
-	float auto_exposure_grey;
-	float luminance_multiplier;
+	vec3 vignette_color; // 12 - 92
+	float vignette_intensity; // 4 - 96
 
-	vec2 pixel_size;
-	bool use_fxaa;
-	bool use_debanding;
+	vec2 vignette_center; // 8 - 104
+	float vignette_inner_radius; // 4 - 108
+	float vignette_outer_radius; // 4 - 112
+
+	float exposure; // 4 - 116
+	float white; // 4 - 120
+	float auto_exposure_grey; // 4 - 124
+	float luminance_multiplier; // 4 - 128
+
+	vec2 pixel_size; // 8 - 136
+	bool use_fxaa; // 4 - 140
+	bool use_debanding; // 4 - 144
 }
 params;
 
@@ -229,6 +236,14 @@ vec3 apply_tonemapping(vec3 color, float white) { // inputs are LINEAR, always o
 	} else { // TONEMAPPER_ACES
 		return tonemap_aces(max(vec3(0.0f), color), white);
 	}
+}
+
+vec3 apply_vignette(vec3 color, vec2 uv_interp) {
+	vec2 relative_position = uv_interp - params.vignette_center;
+	float len = length(relative_position);
+	float vignette = 1.0 - smoothstep(params.vignette_outer_radius, params.vignette_inner_radius, len);
+
+	return mix(color, params.vignette_color, vignette * params.vignette_intensity);
 }
 
 vec3 gather_glow(sampler2D tex, vec2 uv) { // sample all selected glow levels
@@ -424,6 +439,10 @@ void main() {
 	}
 
 	color = apply_tonemapping(color, params.white);
+
+	if (params.vignette_intensity >= 0.001) {
+		color = apply_vignette(color, uv_interp);
+	}
 
 	color = linear_to_srgb(color); // regular linear -> SRGB conversion
 

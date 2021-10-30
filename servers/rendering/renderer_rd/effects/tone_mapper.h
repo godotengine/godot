@@ -61,28 +61,35 @@ private:
 
 	struct TonemapPushConstant {
 		float bcs[3]; // 12 - 12
-		uint32_t use_bcs; //  4 - 16
+		uint32_t use_bcs; // 4 - 16
 
-		uint32_t use_glow; //  4 - 20
-		uint32_t use_auto_exposure; //  4 - 24
-		uint32_t use_color_correction; //  4 - 28
-		uint32_t tonemapper; //  4 - 32
+		uint32_t use_glow; // 4 - 20
+		uint32_t use_auto_exposure; // 4 - 24
+		uint32_t use_color_correction; // 4 - 28
+		uint32_t tonemapper; // 4 - 32
 
-		uint32_t glow_texture_size[2]; //  8 - 40
-		float glow_intensity; //  4 - 44
-		float glow_map_strength; //  4 - 48
+		uint32_t glow_texture_size[2]; // 8 - 40
+		float glow_intensity; // 4 - 44
+		float glow_map_strength; // 4 - 48
 
-		uint32_t glow_mode; //  4 - 52
+		uint32_t glow_mode; // 4 - 52
 		float glow_levels[7]; // 28 - 80
 
-		float exposure; //  4 - 84
-		float white; //  4 - 88
-		float auto_exposure_grey; //  4 - 92
-		float luminance_multiplier; //  4 - 96
+		float vignette_color[3]; // 12 - 92
+		float vignette_intensity; // 4 - 96
 
-		float pixel_size[2]; //  8 - 104
-		uint32_t use_fxaa; //  4 - 108
-		uint32_t use_debanding; //  4 - 112
+		float vignette_center[2]; // 8 - 104
+		float vignette_inner_radius; // 4 - 118
+		float vignette_outer_radius; // 4 - 112
+
+		float exposure; // 4 - 116
+		float white; // 4 - 120
+		float auto_exposure_grey; // 4 - 124
+		float luminance_multiplier; // 4 - 128
+
+		float pixel_size[2]; // 8 - 136
+		uint32_t use_fxaa; // 4 - 140
+		uint32_t use_debanding; // 4 - 144
 	};
 
 	/* tonemap actually writes to a framebuffer, which is
@@ -125,6 +132,12 @@ public:
 		RS::EnvironmentToneMapper tonemap_mode = RS::ENV_TONE_MAPPER_LINEAR;
 		float exposure = 1.0;
 		float white = 1.0;
+
+		float vignette_intensity = 0.0;
+		float vignette_inner_radius = 0.15;
+		float vignette_outer_radius = 1.0;
+		Color vignette_color = Color(0, 0, 0, 1);
+		Vector2 vignette_center = Vector2(0.5, 0.5);
 
 		bool use_auto_exposure = false;
 		float auto_exposure_grey = 0.5;
