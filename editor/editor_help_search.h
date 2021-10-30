@@ -99,7 +99,7 @@ class EditorHelpSearch::Runner : public RefCounted {
 	int phase = 0;
 
 	struct ClassMatch {
-		DocData::ClassDoc *doc;
+		DocData::ClassDoc *doc = nullptr;
 		bool name = false;
 		Vector<DocData::MethodDoc *> constructors;
 		Vector<DocData::MethodDoc *> methods;
