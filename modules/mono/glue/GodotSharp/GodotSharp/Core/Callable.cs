@@ -74,7 +74,7 @@ namespace Godot
         }
 
         /// <summary>
-        /// Constructs a new <see cref="Callable"/> for the given <paramref name="delegate"/>.
+        /// Constructs a new <see cref="Callable"/> for the given <paramref name="callback"/>.
         /// </summary>
         /// <param name="callback">Action method that will be called.</param>
         public Callable(Action callback)
