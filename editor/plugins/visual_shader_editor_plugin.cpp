@@ -104,7 +104,6 @@ void VisualShaderGraphPlugin::_bind_methods() {
 	ClassDB::bind_method("connect_nodes", &VisualShaderGraphPlugin::connect_nodes);
 	ClassDB::bind_method("disconnect_nodes", &VisualShaderGraphPlugin::disconnect_nodes);
 	ClassDB::bind_method("set_node_position", &VisualShaderGraphPlugin::set_node_position);
-	ClassDB::bind_method("set_node_size", &VisualShaderGraphPlugin::set_node_size);
 	ClassDB::bind_method("update_node", &VisualShaderGraphPlugin::update_node);
 	ClassDB::bind_method("update_node_deferred", &VisualShaderGraphPlugin::update_node_deferred);
 	ClassDB::bind_method("set_input_port_default_value", &VisualShaderGraphPlugin::set_input_port_default_value);
@@ -289,12 +288,6 @@ VisualShader::Type VisualShaderGraphPlugin::get_shader_type() const {
 void VisualShaderGraphPlugin::set_node_position(VisualShader::Type p_type, int p_id, const Vector2 &p_position) {
 	if (visual_shader->get_shader_type() == p_type && links.has(p_id)) {
 		links[p_id].graph_node->set_position_offset(p_position);
-	}
-}
-
-void VisualShaderGraphPlugin::set_node_size(VisualShader::Type p_type, int p_id, const Vector2 &p_size) {
-	if (visual_shader->get_shader_type() == p_type && links.has(p_id)) {
-		links[p_id].graph_node->set_size(p_size);
 	}
 }
 
@@ -1047,7 +1040,6 @@ void VisualShaderEditor::edit(VisualShader *p_visual_shader) {
 		hide();
 	} else {
 		if (changed) { // to avoid tree collapse
-			_clear_buffer();
 			_update_options_menu();
 			_update_preview();
 			_update_graph();
@@ -2765,9 +2757,6 @@ void VisualShaderEditor::_delete_nodes(int p_type, const List<int> &p_nodes) {
 		undo_redo->add_undo_method(visual_shader.ptr(), "add_node", type, node, visual_shader->get_node_position(type, F), F);
 		undo_redo->add_undo_method(graph_plugin.ptr(), "add_node", type, F);
 
-		undo_redo->add_do_method(this, "_clear_buffer");
-		undo_redo->add_undo_method(this, "_clear_buffer");
-
 		// restore size, inputs and outputs if node is group
 		VisualShaderNodeGroupBase *group = Object::cast_to<VisualShaderNodeGroupBase>(node.ptr());
 		if (group) {
@@ -3103,13 +3092,15 @@ void VisualShaderEditor::_graph_gui_input(const Ref<InputEvent> &p_event) {
 			selected_float_constant = -1;
 		}
 
-		if (to_change.is_empty() && copy_nodes_buffer.is_empty()) {
+		if (to_change.is_empty() && copy_items_buffer.is_empty()) {
 			_show_members_dialog(true);
 		} else {
+			popup_menu->set_item_disabled(NodeMenuOptions::CUT, to_change.is_empty());
 			popup_menu->set_item_disabled(NodeMenuOptions::COPY, to_change.is_empty());
-			popup_menu->set_item_disabled(NodeMenuOptions::PASTE, copy_nodes_buffer.is_empty());
+			popup_menu->set_item_disabled(NodeMenuOptions::PASTE, copy_items_buffer.is_empty());
 			popup_menu->set_item_disabled(NodeMenuOptions::DELETE, to_change.is_empty());
 			popup_menu->set_item_disabled(NodeMenuOptions::DUPLICATE, to_change.is_empty());
+			popup_menu->set_item_disabled(NodeMenuOptions::CLEAR_COPY_BUFFER, copy_items_buffer.is_empty());
 
 			int temp = popup_menu->get_item_index(NodeMenuOptions::SEPARATOR2);
 			if (temp != -1) {
@@ -3329,69 +3320,88 @@ void VisualShaderEditor::_node_changed(int p_id) {
 	}
 }
 
-void VisualShaderEditor::_dup_update_excluded(int p_type, Set<int> &r_excluded) {
-	r_excluded.clear();
-	VisualShader::Type type = (VisualShader::Type)p_type;
-
-	for (int i = 0; i < graph->get_child_count(); i++) {
-		GraphNode *gn = Object::cast_to<GraphNode>(graph->get_child(i));
-		if (gn) {
-			int id = String(gn->get_name()).to_int();
-			Ref<VisualShaderNode> node = visual_shader->get_node(type, id);
-			Ref<VisualShaderNodeOutput> output = node;
-			if (output.is_valid()) {
-				r_excluded.insert(id);
-				continue;
-			}
-			r_excluded.insert(id);
-		}
-	}
-}
-
-void VisualShaderEditor::_dup_copy_nodes(int p_type, List<int> &r_nodes, Set<int> &r_excluded) {
+void VisualShaderEditor::_dup_copy_nodes(int p_type, List<CopyItem> &r_items, List<VisualShader::Connection> &r_connections) {
 	VisualShader::Type type = (VisualShader::Type)p_type;
 
 	selection_center.x = 0.0f;
 	selection_center.y = 0.0f;
 
+	Set<int> nodes;
+
 	for (int i = 0; i < graph->get_child_count(); i++) {
 		GraphNode *gn = Object::cast_to<GraphNode>(graph->get_child(i));
 		if (gn) {
 			int id = String(gn->get_name()).to_int();
+
 			Ref<VisualShaderNode> node = visual_shader->get_node(type, id);
 			Ref<VisualShaderNodeOutput> output = node;
 			if (output.is_valid()) { // can't duplicate output
-				r_excluded.insert(id);
 				continue;
 			}
+
 			if (node.is_valid() && gn->is_selected()) {
 				Vector2 pos = visual_shader->get_node_position(type, id);
 				selection_center += pos;
-				r_nodes.push_back(id);
+
+				CopyItem item;
+				item.id = id;
+				item.node = visual_shader->get_node(type, id)->duplicate();
+				item.position = visual_shader->get_node_position(type, id);
+
+				Ref<VisualShaderNodeResizableBase> resizable_base = node;
+				if (resizable_base.is_valid()) {
+					item.size = resizable_base->get_size();
+				}
+
+				Ref<VisualShaderNodeGroupBase> group = node;
+				if (group.is_valid()) {
+					item.group_inputs = group->get_inputs();
+					item.group_outputs = group->get_outputs();
+				}
+
+				Ref<VisualShaderNodeExpression> expression = node;
+				if (expression.is_valid()) {
+					item.expression = expression->get_expression();
+				}
+
+				r_items.push_back(item);
+
+				nodes.insert(id);
 			}
-			r_excluded.insert(id);
 		}
 	}
 
-	selection_center /= (float)r_nodes.size();
+	List<VisualShader::Connection> connections;
+	visual_shader->get_node_connections(type, &connections);
+
+	for (const VisualShader::Connection &E : connections) {
+		if (nodes.has(E.from_node) && nodes.has(E.to_node)) {
+			r_connections.push_back(E);
+		}
+	}
+
+	selection_center /= (float)r_items.size();
 }
 
-void VisualShaderEditor::_dup_paste_nodes(int p_type, int p_pasted_type, List<int> &r_nodes, Set<int> &r_excluded, const Vector2 &p_offset, bool p_select) {
+void VisualShaderEditor::_dup_paste_nodes(int p_type, List<CopyItem> &r_items, const List<VisualShader::Connection> &p_connections, const Vector2 &p_offset, bool p_duplicate) {
+	if (p_duplicate) {
+		undo_redo->create_action(TTR("Duplicate VisualShader Node(s)"));
+	} else {
+		undo_redo->create_action(TTR("Paste VisualShader Node(s)"));
+	}
+
 	VisualShader::Type type = (VisualShader::Type)p_type;
-	VisualShader::Type pasted_type = (VisualShader::Type)p_pasted_type;
 
 	int base_id = visual_shader->get_valid_node_id(type);
 	int id_from = base_id;
 	Map<int, int> connection_remap;
 	Set<int> unsupported_set;
+	Set<int> added_set;
 
-	for (int &E : r_nodes) {
-		connection_remap[E] = id_from;
-		Ref<VisualShaderNode> node = visual_shader->get_node(pasted_type, E);
-
+	for (CopyItem &item : r_items) {
 		bool unsupported = false;
 		for (int i = 0; i < add_options.size(); i++) {
-			if (add_options[i].type == node->get_class_name()) {
+			if (add_options[i].type == item.node->get_class_name()) {
 				if (!_is_available(add_options[i].mode)) {
 					unsupported = true;
 				}
@@ -3399,48 +3409,47 @@ void VisualShaderEditor::_dup_paste_nodes(int p_type, int p_pasted_type, List<in
 			}
 		}
 		if (unsupported) {
-			unsupported_set.insert(E);
+			unsupported_set.insert(item.id);
 			continue;
 		}
+		connection_remap[item.id] = id_from;
+		Ref<VisualShaderNode> node = item.node->duplicate();
 
-		Ref<VisualShaderNode> dupli = node->duplicate();
+		Ref<VisualShaderNodeResizableBase> resizable_base = Object::cast_to<VisualShaderNodeResizableBase>(node.ptr());
+		if (resizable_base.is_valid()) {
+			undo_redo->add_do_method(node.ptr(), "set_size", item.size);
+		}
 
-		undo_redo->add_do_method(visual_shader.ptr(), "add_node", type, dupli, visual_shader->get_node_position(pasted_type, E) + p_offset, id_from);
+		Ref<VisualShaderNodeGroupBase> group = Object::cast_to<VisualShaderNodeGroupBase>(node.ptr());
+		if (group.is_valid()) {
+			undo_redo->add_do_method(node.ptr(), "set_inputs", item.group_inputs);
+			undo_redo->add_do_method(node.ptr(), "set_outputs", item.group_outputs);
+		}
+
+		Ref<VisualShaderNodeExpression> expression = Object::cast_to<VisualShaderNodeExpression>(node.ptr());
+		if (expression.is_valid()) {
+			undo_redo->add_do_method(node.ptr(), "set_expression", item.expression);
+		}
+
+		undo_redo->add_do_method(visual_shader.ptr(), "add_node", type, node, item.position + p_offset, id_from);
 		undo_redo->add_do_method(graph_plugin.ptr(), "add_node", type, id_from);
 
-		// duplicate size, inputs and outputs if node is group
-		Ref<VisualShaderNodeGroupBase> group = Object::cast_to<VisualShaderNodeGroupBase>(node.ptr());
-		if (!group.is_null()) {
-			undo_redo->add_do_method(dupli.ptr(), "set_size", group->get_size());
-			undo_redo->add_do_method(graph_plugin.ptr(), "set_node_size", type, id_from, group->get_size());
-			undo_redo->add_do_method(dupli.ptr(), "set_inputs", group->get_inputs());
-			undo_redo->add_do_method(dupli.ptr(), "set_outputs", group->get_outputs());
-		}
-		// duplicate expression text if node is expression
-		Ref<VisualShaderNodeExpression> expression = Object::cast_to<VisualShaderNodeExpression>(node.ptr());
-		if (!expression.is_null()) {
-			undo_redo->add_do_method(dupli.ptr(), "set_expression", expression->get_expression());
-		}
-
+		added_set.insert(id_from);
 		id_from++;
 	}
 
-	List<VisualShader::Connection> conns;
-	visual_shader->get_node_connections(pasted_type, &conns);
-
-	for (const VisualShader::Connection &E : conns) {
+	for (const VisualShader::Connection &E : p_connections) {
 		if (unsupported_set.has(E.from_node) || unsupported_set.has(E.to_node)) {
 			continue;
 		}
-		if (connection_remap.has(E.from_node) && connection_remap.has(E.to_node)) {
-			undo_redo->add_do_method(visual_shader.ptr(), "connect_nodes", type, connection_remap[E.from_node], E.from_port, connection_remap[E.to_node], E.to_port);
-			undo_redo->add_do_method(graph_plugin.ptr(), "connect_nodes", type, connection_remap[E.from_node], E.from_port, connection_remap[E.to_node], E.to_port);
-			undo_redo->add_undo_method(graph_plugin.ptr(), "disconnect_nodes", type, connection_remap[E.from_node], E.from_port, connection_remap[E.to_node], E.to_port);
-		}
+
+		undo_redo->add_do_method(visual_shader.ptr(), "connect_nodes", type, connection_remap[E.from_node], E.from_port, connection_remap[E.to_node], E.to_port);
+		undo_redo->add_do_method(graph_plugin.ptr(), "connect_nodes", type, connection_remap[E.from_node], E.from_port, connection_remap[E.to_node], E.to_port);
+		undo_redo->add_undo_method(graph_plugin.ptr(), "disconnect_nodes", type, connection_remap[E.from_node], E.from_port, connection_remap[E.to_node], E.to_port);
 	}
 
 	id_from = base_id;
-	for (int i = 0; i < r_nodes.size(); i++) {
+	for (int i = 0; i < r_items.size(); i++) {
 		undo_redo->add_undo_method(visual_shader.ptr(), "remove_node", type, id_from);
 		undo_redo->add_undo_method(graph_plugin.ptr(), "remove_node", type, id_from);
 		id_from++;
@@ -3448,54 +3457,61 @@ void VisualShaderEditor::_dup_paste_nodes(int p_type, int p_pasted_type, List<in
 
 	undo_redo->commit_action();
 
-	if (p_select) {
-		// reselect duplicated nodes by excluding the other ones
-		for (int i = 0; i < graph->get_child_count(); i++) {
-			GraphNode *gn = Object::cast_to<GraphNode>(graph->get_child(i));
-			if (gn) {
-				int id = String(gn->get_name()).to_int();
-				if (!r_excluded.has(id)) {
-					gn->set_selected(true);
-				} else {
-					gn->set_selected(false);
-				}
+	// reselect nodes by excluding the other ones
+	for (int i = 0; i < graph->get_child_count(); i++) {
+		GraphNode *gn = Object::cast_to<GraphNode>(graph->get_child(i));
+		if (gn) {
+			int id = String(gn->get_name()).to_int();
+			if (added_set.has(id)) {
+				gn->set_selected(true);
+			} else {
+				gn->set_selected(false);
 			}
 		}
 	}
 }
 
-void VisualShaderEditor::_clear_buffer() {
-	copy_nodes_buffer.clear();
-	copy_nodes_excluded_buffer.clear();
+void VisualShaderEditor::_clear_copy_buffer() {
+	copy_items_buffer.clear();
+	copy_connections_buffer.clear();
 }
 
 void VisualShaderEditor::_duplicate_nodes() {
 	int type = get_current_shader_type();
 
-	List<int> nodes;
-	Set<int> excluded;
+	List<CopyItem> items;
+	List<VisualShader::Connection> connections;
 
-	_dup_copy_nodes(type, nodes, excluded);
+	_dup_copy_nodes(type, items, connections);
 
-	if (nodes.is_empty()) {
+	if (items.is_empty()) {
 		return;
 	}
 
-	undo_redo->create_action(TTR("Duplicate VisualShader Node(s)"));
-
-	_dup_paste_nodes(type, type, nodes, excluded, Vector2(10, 10) * EDSCALE, true);
+	_dup_paste_nodes(type, items, connections, Vector2(10, 10) * EDSCALE, true);
 }
 
-void VisualShaderEditor::_copy_nodes() {
-	copy_type = get_current_shader_type();
+void VisualShaderEditor::_copy_nodes(bool p_cut) {
+	_clear_copy_buffer();
 
-	_clear_buffer();
+	_dup_copy_nodes(get_current_shader_type(), copy_items_buffer, copy_connections_buffer);
 
-	_dup_copy_nodes(copy_type, copy_nodes_buffer, copy_nodes_excluded_buffer);
+	if (p_cut) {
+		undo_redo->create_action(TTR("Cut VisualShader Node(s)"));
+
+		List<int> ids;
+		for (const CopyItem &E : copy_items_buffer) {
+			ids.push_back(E.id);
+		}
+
+		_delete_nodes(get_current_shader_type(), ids);
+
+		undo_redo->commit_action();
+	}
 }
 
 void VisualShaderEditor::_paste_nodes(bool p_use_custom_position, const Vector2 &p_custom_position) {
-	if (copy_nodes_buffer.is_empty()) {
+	if (copy_items_buffer.is_empty()) {
 		return;
 	}
 
@@ -3510,11 +3526,7 @@ void VisualShaderEditor::_paste_nodes(bool p_use_custom_position, const Vector2 
 		mpos = graph->get_local_mouse_position();
 	}
 
-	undo_redo->create_action(TTR("Paste VisualShader Node(s)"));
-
-	_dup_paste_nodes(type, copy_type, copy_nodes_buffer, copy_nodes_excluded_buffer, (graph->get_scroll_ofs() / scale + mpos / scale - selection_center), false);
-
-	_dup_update_excluded(type, copy_nodes_excluded_buffer); // to prevent selection of previous copies at new paste
+	_dup_paste_nodes(type, copy_items_buffer, copy_connections_buffer, graph->get_scroll_ofs() / scale + mpos / scale - selection_center, false);
 }
 
 void VisualShaderEditor::_mode_selected(int p_id) {
@@ -3540,6 +3552,8 @@ void VisualShaderEditor::_mode_selected(int p_id) {
 	visual_shader->set_shader_type(VisualShader::Type(p_id + offset));
 	_update_options_menu();
 	_update_graph();
+
+	graph->grab_focus();
 }
 
 void VisualShaderEditor::_custom_mode_toggled(bool p_enabled) {
@@ -3742,8 +3756,11 @@ void VisualShaderEditor::_node_menu_id_pressed(int p_idx) {
 		case NodeMenuOptions::ADD:
 			_show_members_dialog(true);
 			break;
+		case NodeMenuOptions::CUT:
+			_copy_nodes(true);
+			break;
 		case NodeMenuOptions::COPY:
-			_copy_nodes();
+			_copy_nodes(false);
 			break;
 		case NodeMenuOptions::PASTE:
 			_paste_nodes(true, menu_point);
@@ -3753,6 +3770,9 @@ void VisualShaderEditor::_node_menu_id_pressed(int p_idx) {
 			break;
 		case NodeMenuOptions::DUPLICATE:
 			_duplicate_nodes();
+			break;
+		case NodeMenuOptions::CLEAR_COPY_BUFFER:
+			_clear_copy_buffer();
 			break;
 		case NodeMenuOptions::CONVERT_CONSTANTS_TO_UNIFORMS:
 			_convert_constants_to_uniforms(false);
@@ -3968,7 +3988,7 @@ void VisualShaderEditor::_bind_methods() {
 	ClassDB::bind_method("_input_select_item", &VisualShaderEditor::_input_select_item);
 	ClassDB::bind_method("_uniform_select_item", &VisualShaderEditor::_uniform_select_item);
 	ClassDB::bind_method("_set_node_size", &VisualShaderEditor::_set_node_size);
-	ClassDB::bind_method("_clear_buffer", &VisualShaderEditor::_clear_buffer);
+	ClassDB::bind_method("_clear_copy_buffer", &VisualShaderEditor::_clear_copy_buffer);
 	ClassDB::bind_method("_update_uniforms", &VisualShaderEditor::_update_uniforms);
 	ClassDB::bind_method("_set_mode", &VisualShaderEditor::_set_mode);
 	ClassDB::bind_method("_nodes_dragged", &VisualShaderEditor::_nodes_dragged);
@@ -4022,7 +4042,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	graph->connect("node_selected", callable_mp(this, &VisualShaderEditor::_node_selected));
 	graph->connect("scroll_offset_changed", callable_mp(this, &VisualShaderEditor::_scroll_changed));
 	graph->connect("duplicate_nodes_request", callable_mp(this, &VisualShaderEditor::_duplicate_nodes));
-	graph->connect("copy_nodes_request", callable_mp(this, &VisualShaderEditor::_copy_nodes));
+	graph->connect("copy_nodes_request", callable_mp(this, &VisualShaderEditor::_copy_nodes), varray(false));
 	graph->connect("paste_nodes_request", callable_mp(this, &VisualShaderEditor::_paste_nodes), varray(false, Point2()));
 	graph->connect("delete_nodes_request", callable_mp(this, &VisualShaderEditor::_delete_nodes_request));
 	graph->connect("gui_input", callable_mp(this, &VisualShaderEditor::_graph_gui_input));
@@ -4148,10 +4168,12 @@ VisualShaderEditor::VisualShaderEditor() {
 	add_child(popup_menu);
 	popup_menu->add_item(TTR("Add Node"), NodeMenuOptions::ADD);
 	popup_menu->add_separator();
+	popup_menu->add_item(TTR("Cut"), NodeMenuOptions::CUT);
 	popup_menu->add_item(TTR("Copy"), NodeMenuOptions::COPY);
 	popup_menu->add_item(TTR("Paste"), NodeMenuOptions::PASTE);
 	popup_menu->add_item(TTR("Delete"), NodeMenuOptions::DELETE);
 	popup_menu->add_item(TTR("Duplicate"), NodeMenuOptions::DUPLICATE);
+	popup_menu->add_item(TTR("Clear Copy Buffer"), NodeMenuOptions::CLEAR_COPY_BUFFER);
 	popup_menu->connect("id_pressed", callable_mp(this, &VisualShaderEditor::_node_menu_id_pressed));
 
 	///////////////////////////////////////
