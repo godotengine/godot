@@ -359,11 +359,7 @@ void GodotStep3D::step(GodotSpace3D *p_space, real_t p_delta, int p_iterations) 
 
 	// Warning: _solve_island modifies the constraint islands for optimization purpose,
 	// their content is not reliable after these calls and shouldn't be used anymore.
-	if (island_count > 1) {
-		work_pool.do_work(island_count, this, &GodotStep3D::_solve_island, nullptr);
-	} else if (island_count > 0) {
-		_solve_island(0);
-	}
+	work_pool.do_work(island_count, this, &GodotStep3D::_solve_island, nullptr);
 
 	{ //profile
 		profile_endtime = OS::get_singleton()->get_ticks_usec();
