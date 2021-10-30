@@ -142,7 +142,7 @@ namespace Godot
         /// }
         /// </code>
         /// </summary>
-        /// <param name="callback"></param>
+        /// <param name="callback">Callback to call during idle time.</param>
         protected void Defer(Action callback)
         {
             new Callable(callback).CallDeferred();
