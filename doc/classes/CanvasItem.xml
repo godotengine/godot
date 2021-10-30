@@ -328,7 +328,7 @@
 		<method name="get_canvas_transform" qualifiers="const">
 			<return type="Transform2D" />
 			<description>
-				Returns the transform matrix of this item's canvas.
+				Returns the transform matrix of this item's canvas layer.
 			</description>
 		</method>
 		<method name="get_global_mouse_position" qualifiers="const">
@@ -340,13 +340,13 @@
 		<method name="get_global_transform" qualifiers="const">
 			<return type="Transform2D" />
 			<description>
-				Returns the global transform matrix of this item.
+				Returns the global transform matrix of this item with respect to its canvas layer.
 			</description>
 		</method>
 		<method name="get_global_transform_with_canvas" qualifiers="const">
 			<return type="Transform2D" />
 			<description>
-				Returns the global transform matrix of this item in relation to the canvas.
+				Returns the global transform matrix of this item with respect to the viewport. This is the same as get_canvas_transform() * get_global_transform(()
 			</description>
 		</method>
 		<method name="get_local_mouse_position" qualifiers="const">
@@ -370,7 +370,7 @@
 		<method name="get_viewport_transform" qualifiers="const">
 			<return type="Transform2D" />
 			<description>
-				Returns this item's transform in relation to the viewport.
+				Returns this item's canvas layer's transformation with respect to the screen. Meaning: applying this to a Vector2 given relative to this item's canvas layer, it returns the screen coordinates of this Vector2.
 			</description>
 		</method>
 		<method name="get_world_2d" qualifiers="const">
