@@ -383,13 +383,10 @@ void debug_print_unhandled_exception(MonoException *p_exc) {
 }
 
 void debug_send_unhandled_exception_error(MonoException *p_exc) {
+	ERR_PRINT(GDMonoUtils::get_exception_name_and_message(p_exc));
+
 #ifdef DEBUG_ENABLED
 	if (!EngineDebugger::is_active()) {
-#ifdef TOOLS_ENABLED
-		if (Engine::get_singleton()->is_editor_hint()) {
-			ERR_PRINT(GDMonoUtils::get_exception_name_and_message(p_exc));
-		}
-#endif
 		return;
 	}
 
