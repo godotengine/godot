@@ -133,6 +133,22 @@ namespace Godot
         }
 
         /// <summary>
+        /// Calls the specified <see cref="Action"/> during idle time. Example:
+        /// <code>
+        /// public override void _Process(float delta)
+        /// {
+        ///     var collisionShape = GetNode&lt;CollisionShape2D&gt;("CollisionShape2D");
+        ///     Defer(() => collisionShape.Disabled = true);
+        /// }
+        /// </code>
+        /// </summary>
+        /// <param name="callback"></param>
+        protected void Defer(Action callback)
+        {
+            new Callable(callback).CallDeferred();
+        }
+
+        /// <summary>
         /// Gets a new <see cref="DynamicGodotObject"/> associated with this instance.
         /// </summary>
         public dynamic DynamicObject => new DynamicGodotObject(this);
