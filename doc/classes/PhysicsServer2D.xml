@@ -123,8 +123,7 @@
 		<method name="area_set_area_monitor_callback">
 			<return type="void" />
 			<argument index="0" name="area" type="RID" />
-			<argument index="1" name="receiver" type="Object" />
-			<argument index="2" name="method" type="StringName" />
+			<argument index="1" name="callback" type="Callable" />
 			<description>
 			</description>
 		</method>
@@ -147,8 +146,7 @@
 		<method name="area_set_monitor_callback">
 			<return type="void" />
 			<argument index="0" name="area" type="RID" />
-			<argument index="1" name="receiver" type="Object" />
-			<argument index="2" name="method" type="StringName" />
+			<argument index="1" name="callback" type="Callable" />
 			<description>
 				Sets the function to call when any body/area enters or exits the area. This callback will be called for any object interacting with the area, and takes five parameters:
 				1: [constant AREA_BODY_ADDED] or [constant AREA_BODY_REMOVED], depending on whether the object entered or exited the area.

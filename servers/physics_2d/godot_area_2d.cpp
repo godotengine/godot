@@ -77,16 +77,17 @@ void GodotArea2D::set_space(GodotSpace2D *p_space) {
 	_set_space(p_space);
 }
 
-void GodotArea2D::set_monitor_callback(ObjectID p_id, const StringName &p_method) {
-	if (p_id == monitor_callback_id) {
-		monitor_callback_method = p_method;
+void GodotArea2D::set_monitor_callback(const Callable &p_callback) {
+	ObjectID id = p_callback.get_object_id();
+
+	if (id == monitor_callback.get_object_id()) {
+		monitor_callback = p_callback;
 		return;
 	}
 
 	_unregister_shapes();
 
-	monitor_callback_id = p_id;
-	monitor_callback_method = p_method;
+	monitor_callback = p_callback;
 
 	monitored_bodies.clear();
 	monitored_areas.clear();
@@ -98,16 +99,17 @@ void GodotArea2D::set_monitor_callback(ObjectID p_id, const StringName &p_method
 	}
 }
 
-void GodotArea2D::set_area_monitor_callback(ObjectID p_id, const StringName &p_method) {
-	if (p_id == area_monitor_callback_id) {
-		area_monitor_callback_method = p_method;
+void GodotArea2D::set_area_monitor_callback(const Callable &p_callback) {
+	ObjectID id = p_callback.get_object_id();
+
+	if (id == area_monitor_callback.get_object_id()) {
+		area_monitor_callback = p_callback;
 		return;
 	}
 
 	_unregister_shapes();
 
-	area_monitor_callback_id = p_id;
-	area_monitor_callback_method = p_method;
+	area_monitor_callback = p_callback;
 
 	monitored_bodies.clear();
 	monitored_areas.clear();
@@ -199,77 +201,75 @@ void GodotArea2D::set_monitorable(bool p_monitorable) {
 }
 
 void GodotArea2D::call_queries() {
-	if (monitor_callback_id.is_valid() && !monitored_bodies.is_empty()) {
-		Variant res[5];
-		Variant *resptr[5];
-		for (int i = 0; i < 5; i++) {
-			resptr[i] = &res[i];
-		}
+	if (!monitor_callback.is_null() && !monitored_bodies.is_empty()) {
+		if (monitor_callback.is_valid()) {
+			Variant res[5];
+			Variant *resptr[5];
+			for (int i = 0; i < 5; i++) {
+				resptr[i] = &res[i];
+			}
 
-		Object *obj = ObjectDB::get_instance(monitor_callback_id);
-		if (!obj) {
-			monitored_bodies.clear();
-			monitor_callback_id = ObjectID();
-			return;
-		}
+			for (Map<BodyKey, BodyState>::Element *E = monitored_bodies.front(); E;) {
+				if (E->get().state == 0) { // Nothing happened
+					Map<BodyKey, BodyState>::Element *next = E->next();
+					monitored_bodies.erase(E);
+					E = next;
+					continue;
+				}
 
-		for (Map<BodyKey, BodyState>::Element *E = monitored_bodies.front(); E;) {
-			if (E->get().state == 0) { // Nothing happened
+				res[0] = E->get().state > 0 ? PhysicsServer2D::AREA_BODY_ADDED : PhysicsServer2D::AREA_BODY_REMOVED;
+				res[1] = E->key().rid;
+				res[2] = E->key().instance_id;
+				res[3] = E->key().body_shape;
+				res[4] = E->key().area_shape;
+
 				Map<BodyKey, BodyState>::Element *next = E->next();
 				monitored_bodies.erase(E);
 				E = next;
-				continue;
+
+				Callable::CallError ce;
+				Variant ret;
+				monitor_callback.call((const Variant **)resptr, 5, ret, ce);
 			}
-
-			res[0] = E->get().state > 0 ? PhysicsServer2D::AREA_BODY_ADDED : PhysicsServer2D::AREA_BODY_REMOVED;
-			res[1] = E->key().rid;
-			res[2] = E->key().instance_id;
-			res[3] = E->key().body_shape;
-			res[4] = E->key().area_shape;
-
-			Map<BodyKey, BodyState>::Element *next = E->next();
-			monitored_bodies.erase(E);
-			E = next;
-
-			Callable::CallError ce;
-			obj->call(monitor_callback_method, (const Variant **)resptr, 5, ce);
+		} else {
+			monitored_bodies.clear();
+			monitor_callback = Callable();
 		}
 	}
 
-	if (area_monitor_callback_id.is_valid() && !monitored_areas.is_empty()) {
-		Variant res[5];
-		Variant *resptr[5];
-		for (int i = 0; i < 5; i++) {
-			resptr[i] = &res[i];
-		}
+	if (!area_monitor_callback.is_null() && !monitored_areas.is_empty()) {
+		if (area_monitor_callback.is_valid()) {
+			Variant res[5];
+			Variant *resptr[5];
+			for (int i = 0; i < 5; i++) {
+				resptr[i] = &res[i];
+			}
 
-		Object *obj = ObjectDB::get_instance(area_monitor_callback_id);
-		if (!obj) {
-			monitored_areas.clear();
-			area_monitor_callback_id = ObjectID();
-			return;
-		}
+			for (Map<BodyKey, BodyState>::Element *E = monitored_areas.front(); E;) {
+				if (E->get().state == 0) { // Nothing happened
+					Map<BodyKey, BodyState>::Element *next = E->next();
+					monitored_areas.erase(E);
+					E = next;
+					continue;
+				}
 
-		for (Map<BodyKey, BodyState>::Element *E = monitored_areas.front(); E;) {
-			if (E->get().state == 0) { // Nothing happened
+				res[0] = E->get().state > 0 ? PhysicsServer2D::AREA_BODY_ADDED : PhysicsServer2D::AREA_BODY_REMOVED;
+				res[1] = E->key().rid;
+				res[2] = E->key().instance_id;
+				res[3] = E->key().body_shape;
+				res[4] = E->key().area_shape;
+
 				Map<BodyKey, BodyState>::Element *next = E->next();
 				monitored_areas.erase(E);
 				E = next;
-				continue;
+
+				Callable::CallError ce;
+				Variant ret;
+				area_monitor_callback.call((const Variant **)resptr, 5, ret, ce);
 			}
-
-			res[0] = E->get().state > 0 ? PhysicsServer2D::AREA_BODY_ADDED : PhysicsServer2D::AREA_BODY_REMOVED;
-			res[1] = E->key().rid;
-			res[2] = E->key().instance_id;
-			res[3] = E->key().body_shape;
-			res[4] = E->key().area_shape;
-
-			Map<BodyKey, BodyState>::Element *next = E->next();
-			monitored_areas.erase(E);
-			E = next;
-
-			Callable::CallError ce;
-			obj->call(area_monitor_callback_method, (const Variant **)resptr, 5, ce);
+		} else {
+			monitored_areas.clear();
+			area_monitor_callback = Callable();
 		}
 	}
 }

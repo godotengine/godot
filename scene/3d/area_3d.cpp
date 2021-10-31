@@ -334,11 +334,11 @@ void Area3D::set_monitoring(bool p_enable) {
 	monitoring = p_enable;
 
 	if (monitoring) {
-		PhysicsServer3D::get_singleton()->area_set_monitor_callback(get_rid(), this, SceneStringNames::get_singleton()->_body_inout);
-		PhysicsServer3D::get_singleton()->area_set_area_monitor_callback(get_rid(), this, SceneStringNames::get_singleton()->_area_inout);
+		PhysicsServer3D::get_singleton()->area_set_monitor_callback(get_rid(), callable_mp(this, &Area3D::_body_inout));
+		PhysicsServer3D::get_singleton()->area_set_area_monitor_callback(get_rid(), callable_mp(this, &Area3D::_area_inout));
 	} else {
-		PhysicsServer3D::get_singleton()->area_set_monitor_callback(get_rid(), nullptr, StringName());
-		PhysicsServer3D::get_singleton()->area_set_area_monitor_callback(get_rid(), nullptr, StringName());
+		PhysicsServer3D::get_singleton()->area_set_monitor_callback(get_rid(), Callable());
+		PhysicsServer3D::get_singleton()->area_set_area_monitor_callback(get_rid(), Callable());
 		_clear_monitoring();
 	}
 }
@@ -629,9 +629,6 @@ void Area3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("overlaps_body", "body"), &Area3D::overlaps_body);
 	ClassDB::bind_method(D_METHOD("overlaps_area", "area"), &Area3D::overlaps_area);
-
-	ClassDB::bind_method(D_METHOD("_body_inout"), &Area3D::_body_inout);
-	ClassDB::bind_method(D_METHOD("_area_inout"), &Area3D::_area_inout);
 
 	ClassDB::bind_method(D_METHOD("set_audio_bus_override", "enable"), &Area3D::set_audio_bus_override);
 	ClassDB::bind_method(D_METHOD("is_overriding_audio_bus"), &Area3D::is_overriding_audio_bus);
