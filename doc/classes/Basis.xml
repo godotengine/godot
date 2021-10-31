@@ -18,36 +18,36 @@
 		<link title="3D Voxel Demo">https://godotengine.org/asset-library/asset/676</link>
 		<link title="2.5D Demo">https://godotengine.org/asset-library/asset/583</link>
 	</tutorials>
-	<methods>
-		<method name="Basis" qualifiers="constructor">
+	<constructors>
+		<constructor name="Basis">
 			<return type="Basis" />
 			<description>
 				Constructs a default-initialized [Basis] set to [constant IDENTITY].
 			</description>
-		</method>
-		<method name="Basis" qualifiers="constructor">
+		</constructor>
+		<constructor name="Basis">
 			<return type="Basis" />
 			<argument index="0" name="from" type="Basis" />
 			<description>
 				Constructs a [Basis] as a copy of the given [Basis].
 			</description>
-		</method>
-		<method name="Basis" qualifiers="constructor">
+		</constructor>
+		<constructor name="Basis">
 			<return type="Basis" />
 			<argument index="0" name="axis" type="Vector3" />
 			<argument index="1" name="phi" type="float" />
 			<description>
 				Constructs a pure rotation basis matrix, rotated around the given [code]axis[/code] by [code]phi[/code], in radians. The axis must be a normalized vector.
 			</description>
-		</method>
-		<method name="Basis" qualifiers="constructor">
+		</constructor>
+		<constructor name="Basis">
 			<return type="Basis" />
 			<argument index="0" name="from" type="Quaternion" />
 			<description>
 				Constructs a pure rotation basis matrix from the given quaternion.
 			</description>
-		</method>
-		<method name="Basis" qualifiers="constructor">
+		</constructor>
+		<constructor name="Basis">
 			<return type="Basis" />
 			<argument index="0" name="x_axis" type="Vector3" />
 			<argument index="1" name="y_axis" type="Vector3" />
@@ -55,7 +55,9 @@
 			<description>
 				Constructs a basis matrix from 3 axis vectors (matrix columns).
 			</description>
-		</method>
+		</constructor>
+	</constructors>
+	<methods>
 		<method name="determinant" qualifiers="const">
 			<return type="float" />
 			<description>
@@ -123,60 +125,6 @@
 			<description>
 				Creates a Basis with a rotation such that the forward axis (-Z) points towards the [code]target[/code] position.
 				The up axis (+Y) points as close to the [code]up[/code] vector as possible while staying perpendicular to the forward axis. The resulting Basis is orthonormalized. The [code]target[/code] and [code]up[/code] vectors cannot be zero, and cannot be parallel to each other.
-			</description>
-		</method>
-		<method name="operator !=" qualifiers="operator">
-			<return type="bool" />
-			<description>
-			</description>
-		</method>
-		<method name="operator !=" qualifiers="operator">
-			<return type="bool" />
-			<argument index="0" name="right" type="Basis" />
-			<description>
-			</description>
-		</method>
-		<method name="operator *" qualifiers="operator">
-			<return type="Vector3" />
-			<argument index="0" name="right" type="Vector3" />
-			<description>
-			</description>
-		</method>
-		<method name="operator *" qualifiers="operator">
-			<return type="Basis" />
-			<argument index="0" name="right" type="Basis" />
-			<description>
-			</description>
-		</method>
-		<method name="operator *" qualifiers="operator">
-			<return type="Basis" />
-			<argument index="0" name="right" type="float" />
-			<description>
-				This operator multiplies all components of the [Basis], which scales it uniformly.
-			</description>
-		</method>
-		<method name="operator *" qualifiers="operator">
-			<return type="Basis" />
-			<argument index="0" name="right" type="int" />
-			<description>
-				This operator multiplies all components of the [Basis], which scales it uniformly.
-			</description>
-		</method>
-		<method name="operator ==" qualifiers="operator">
-			<return type="bool" />
-			<description>
-			</description>
-		</method>
-		<method name="operator ==" qualifiers="operator">
-			<return type="bool" />
-			<argument index="0" name="right" type="Basis" />
-			<description>
-			</description>
-		</method>
-		<method name="operator []" qualifiers="operator">
-			<return type="Vector3" />
-			<argument index="0" name="index" type="int" />
-			<description>
 			</description>
 		</method>
 		<method name="orthonormalized" qualifiers="const">
@@ -274,4 +222,60 @@
 			The basis that will flip something along the Z axis when used in a transformation.
 		</constant>
 	</constants>
+	<operators>
+		<operator name="operator !=">
+			<return type="bool" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator !=">
+			<return type="bool" />
+			<argument index="0" name="right" type="Basis" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator *">
+			<return type="Basis" />
+			<argument index="0" name="right" type="Basis" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator *">
+			<return type="Vector3" />
+			<argument index="0" name="right" type="Vector3" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator *">
+			<return type="Basis" />
+			<argument index="0" name="right" type="float" />
+			<description>
+				This operator multiplies all components of the [Basis], which scales it uniformly.
+			</description>
+		</operator>
+		<operator name="operator *">
+			<return type="Basis" />
+			<argument index="0" name="right" type="int" />
+			<description>
+				This operator multiplies all components of the [Basis], which scales it uniformly.
+			</description>
+		</operator>
+		<operator name="operator ==">
+			<return type="bool" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator ==">
+			<return type="bool" />
+			<argument index="0" name="right" type="Basis" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator []">
+			<return type="Vector3" />
+			<argument index="0" name="index" type="int" />
+			<description>
+			</description>
+		</operator>
+	</operators>
 </class>

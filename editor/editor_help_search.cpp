@@ -226,7 +226,9 @@ EditorHelpSearch::EditorHelpSearch() {
 	filter_combo->add_item(TTR("Display All"), SEARCH_ALL);
 	filter_combo->add_separator();
 	filter_combo->add_item(TTR("Classes Only"), SEARCH_CLASSES);
+	filter_combo->add_item(TTR("Constructors Only"), SEARCH_CONSTRUCTORS);
 	filter_combo->add_item(TTR("Methods Only"), SEARCH_METHODS);
+	filter_combo->add_item(TTR("Operators Only"), SEARCH_OPERATORS);
 	filter_combo->add_item(TTR("Signals Only"), SEARCH_SIGNALS);
 	filter_combo->add_item(TTR("Constants Only"), SEARCH_CONSTANTS);
 	filter_combo->add_item(TTR("Properties Only"), SEARCH_PROPERTIES);
@@ -334,6 +336,17 @@ bool EditorHelpSearch::Runner::_phase_match_classes() {
 
 		// Match members if the term is long enough.
 		if (term.length() > 1) {
+			if (search_flags & SEARCH_CONSTRUCTORS) {
+				for (int i = 0; i < class_doc.constructors.size(); i++) {
+					String method_name = (search_flags & SEARCH_CASE_SENSITIVE) ? class_doc.constructors[i].name : class_doc.constructors[i].name.to_lower();
+					if (method_name.find(term) > -1 ||
+							(term.begins_with(".") && method_name.begins_with(term.substr(1))) ||
+							(term.ends_with("(") && method_name.ends_with(term.left(term.length() - 1).strip_edges())) ||
+							(term.begins_with(".") && term.ends_with("(") && method_name == term.substr(1, term.length() - 2).strip_edges())) {
+						match.constructors.push_back(const_cast<DocData::MethodDoc *>(&class_doc.constructors[i]));
+					}
+				}
+			}
 			if (search_flags & SEARCH_METHODS) {
 				for (int i = 0; i < class_doc.methods.size(); i++) {
 					String method_name = (search_flags & SEARCH_CASE_SENSITIVE) ? class_doc.methods[i].name : class_doc.methods[i].name.to_lower();
@@ -342,6 +355,17 @@ bool EditorHelpSearch::Runner::_phase_match_classes() {
 							(term.ends_with("(") && method_name.ends_with(term.left(term.length() - 1).strip_edges())) ||
 							(term.begins_with(".") && term.ends_with("(") && method_name == term.substr(1, term.length() - 2).strip_edges())) {
 						match.methods.push_back(const_cast<DocData::MethodDoc *>(&class_doc.methods[i]));
+					}
+				}
+			}
+			if (search_flags & SEARCH_OPERATORS) {
+				for (int i = 0; i < class_doc.operators.size(); i++) {
+					String method_name = (search_flags & SEARCH_CASE_SENSITIVE) ? class_doc.operators[i].name : class_doc.operators[i].name.to_lower();
+					if (method_name.find(term) > -1 ||
+							(term.begins_with(".") && method_name.begins_with(term.substr(1))) ||
+							(term.ends_with("(") && method_name.ends_with(term.left(term.length() - 1).strip_edges())) ||
+							(term.begins_with(".") && term.ends_with("(") && method_name == term.substr(1, term.length() - 2).strip_edges())) {
+						match.operators.push_back(const_cast<DocData::MethodDoc *>(&class_doc.operators[i]));
 					}
 				}
 			}

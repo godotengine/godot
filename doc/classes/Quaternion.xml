@@ -12,49 +12,49 @@
 		<link title="Using 3D transforms">https://docs.godotengine.org/en/latest/tutorials/3d/using_transforms.html#interpolating-with-quaternions</link>
 		<link title="Third Person Shooter Demo">https://godotengine.org/asset-library/asset/678</link>
 	</tutorials>
-	<methods>
-		<method name="Quaternion" qualifiers="constructor">
+	<constructors>
+		<constructor name="Quaternion">
 			<return type="Quaternion" />
 			<description>
 				Constructs a default-initialized quaternion with all components set to [code]0[/code].
 			</description>
-		</method>
-		<method name="Quaternion" qualifiers="constructor">
+		</constructor>
+		<constructor name="Quaternion">
 			<return type="Quaternion" />
 			<argument index="0" name="from" type="Quaternion" />
 			<description>
 				Constructs a [Quaternion] as a copy of the given [Quaternion].
 			</description>
-		</method>
-		<method name="Quaternion" qualifiers="constructor">
+		</constructor>
+		<constructor name="Quaternion">
 			<return type="Quaternion" />
 			<argument index="0" name="arc_from" type="Vector3" />
 			<argument index="1" name="arc_to" type="Vector3" />
 			<description>
 			</description>
-		</method>
-		<method name="Quaternion" qualifiers="constructor">
+		</constructor>
+		<constructor name="Quaternion">
 			<return type="Quaternion" />
 			<argument index="0" name="axis" type="Vector3" />
 			<argument index="1" name="angle" type="float" />
 			<description>
 				Constructs a quaternion that will rotate around the given axis by the specified angle. The axis must be a normalized vector.
 			</description>
-		</method>
-		<method name="Quaternion" qualifiers="constructor">
+		</constructor>
+		<constructor name="Quaternion">
 			<return type="Quaternion" />
 			<argument index="0" name="euler_yxz" type="Vector3" />
 			<description>
 			</description>
-		</method>
-		<method name="Quaternion" qualifiers="constructor">
+		</constructor>
+		<constructor name="Quaternion">
 			<return type="Quaternion" />
 			<argument index="0" name="from" type="Basis" />
 			<description>
 				Constructs a quaternion from the given [Basis].
 			</description>
-		</method>
-		<method name="Quaternion" qualifiers="constructor">
+		</constructor>
+		<constructor name="Quaternion">
 			<return type="Quaternion" />
 			<argument index="0" name="x" type="float" />
 			<argument index="1" name="y" type="float" />
@@ -63,7 +63,9 @@
 			<description>
 				Constructs a quaternion defined by the given values.
 			</description>
-		</method>
+		</constructor>
+	</constructors>
+	<methods>
 		<method name="angle_to" qualifiers="const">
 			<return type="float" />
 			<argument index="0" name="to" type="Quaternion" />
@@ -142,92 +144,6 @@
 				Returns a copy of the quaternion, normalized to unit length.
 			</description>
 		</method>
-		<method name="operator !=" qualifiers="operator">
-			<return type="bool" />
-			<description>
-			</description>
-		</method>
-		<method name="operator !=" qualifiers="operator">
-			<return type="bool" />
-			<argument index="0" name="right" type="Quaternion" />
-			<description>
-			</description>
-		</method>
-		<method name="operator *" qualifiers="operator">
-			<return type="Vector3" />
-			<argument index="0" name="right" type="Vector3" />
-			<description>
-			</description>
-		</method>
-		<method name="operator *" qualifiers="operator">
-			<return type="Quaternion" />
-			<argument index="0" name="right" type="Quaternion" />
-			<description>
-			</description>
-		</method>
-		<method name="operator *" qualifiers="operator">
-			<return type="Quaternion" />
-			<argument index="0" name="right" type="float" />
-			<description>
-			</description>
-		</method>
-		<method name="operator *" qualifiers="operator">
-			<return type="Quaternion" />
-			<argument index="0" name="right" type="int" />
-			<description>
-			</description>
-		</method>
-		<method name="operator +" qualifiers="operator">
-			<return type="Quaternion" />
-			<argument index="0" name="right" type="Quaternion" />
-			<description>
-			</description>
-		</method>
-		<method name="operator -" qualifiers="operator">
-			<return type="Quaternion" />
-			<argument index="0" name="right" type="Quaternion" />
-			<description>
-			</description>
-		</method>
-		<method name="operator /" qualifiers="operator">
-			<return type="Quaternion" />
-			<argument index="0" name="right" type="float" />
-			<description>
-			</description>
-		</method>
-		<method name="operator /" qualifiers="operator">
-			<return type="Quaternion" />
-			<argument index="0" name="right" type="int" />
-			<description>
-			</description>
-		</method>
-		<method name="operator ==" qualifiers="operator">
-			<return type="bool" />
-			<description>
-			</description>
-		</method>
-		<method name="operator ==" qualifiers="operator">
-			<return type="bool" />
-			<argument index="0" name="right" type="Quaternion" />
-			<description>
-			</description>
-		</method>
-		<method name="operator []" qualifiers="operator">
-			<return type="float" />
-			<argument index="0" name="index" type="int" />
-			<description>
-			</description>
-		</method>
-		<method name="operator unary+" qualifiers="operator">
-			<return type="Quaternion" />
-			<description>
-			</description>
-		</method>
-		<method name="operator unary-" qualifiers="operator">
-			<return type="Quaternion" />
-			<description>
-			</description>
-		</method>
 		<method name="slerp" qualifiers="const">
 			<return type="Quaternion" />
 			<argument index="0" name="to" type="Quaternion" />
@@ -269,4 +185,92 @@
 			The identity quaternion, representing no rotation. Equivalent to an identity [Basis] matrix. If a vector is transformed by an identity quaternion, it will not change.
 		</constant>
 	</constants>
+	<operators>
+		<operator name="operator !=">
+			<return type="bool" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator !=">
+			<return type="bool" />
+			<argument index="0" name="right" type="Quaternion" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator *">
+			<return type="Quaternion" />
+			<argument index="0" name="right" type="Quaternion" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator *">
+			<return type="Vector3" />
+			<argument index="0" name="right" type="Vector3" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator *">
+			<return type="Quaternion" />
+			<argument index="0" name="right" type="float" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator *">
+			<return type="Quaternion" />
+			<argument index="0" name="right" type="int" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator +">
+			<return type="Quaternion" />
+			<argument index="0" name="right" type="Quaternion" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator -">
+			<return type="Quaternion" />
+			<argument index="0" name="right" type="Quaternion" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator /">
+			<return type="Quaternion" />
+			<argument index="0" name="right" type="float" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator /">
+			<return type="Quaternion" />
+			<argument index="0" name="right" type="int" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator ==">
+			<return type="bool" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator ==">
+			<return type="bool" />
+			<argument index="0" name="right" type="Quaternion" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator []">
+			<return type="float" />
+			<argument index="0" name="index" type="int" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator unary+">
+			<return type="Quaternion" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator unary-">
+			<return type="Quaternion" />
+			<description>
+			</description>
+		</operator>
+	</operators>
 </class>
