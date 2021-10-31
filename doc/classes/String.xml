@@ -200,6 +200,19 @@
 				If the string is a valid file path, returns the filename.
 			</description>
 		</method>
+		<method name="get_slice" qualifiers="const">
+			<return type="String" />
+			<argument index="0" name="delimiter" type="String" />
+			<argument index="1" name="slice" type="int" />
+			<description>
+				Splits a string using a [code]delimiter[/code] and returns a substring at index [code]slice[/code]. Returns an empty string if the index doesn't exist.
+				This is a more performant alternative to [method split] for cases when you need only one element from the array at a fixed index.
+				Example:
+				[codeblock]
+				print("i/am/example/string".get_slice("/", 2)) # Prints 'example'.
+				[/codeblock]
+			</description>
+		</method>
 		<method name="hash" qualifiers="const">
 			<return type="int" />
 			<description>
@@ -676,6 +689,7 @@
 			<description>
 				Splits the string by a [code]delimiter[/code] string and returns an array of the substrings. The [code]delimiter[/code] can be of any length.
 				If [code]maxsplit[/code] is specified, it defines the number of splits to do from the left up to [code]maxsplit[/code]. The default value of [code]0[/code] means that all items are split.
+				If you need only one element from the array at a specific index, [method get_slice] is a more performant option.
 				Example:
 				[codeblocks]
 				[gdscript]
