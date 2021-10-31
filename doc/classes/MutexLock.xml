@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="MutexLock" inherits="RefCounted" version="4.0">
+	<brief_description>
+		A [Mutex] lock guard.
+	</brief_description>
+	<description>
+		A [Mutex] lock guard. This is used to automatically lock and unlock a [Mutex] within a scope.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="lock">
+			<return type="MutexLock" />
+			<argument index="0" name="mutex" type="Mutex" />
+			<description>
+				Assigns a [Mutex] to lock within the [MutexLock]'s scope. This automatically calls [method Mutex.lock]. When the [MutexLock] exits scope, it automatically calls [method Mutex.unlock].
+				[codeblock]
+				func thread_safe():
+				    var lock = MutexLock.new().lock(mutex)
+				[/codeblock]
+			</description>
+		</method>
+	</methods>
+</class>

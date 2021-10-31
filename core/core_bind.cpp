@@ -1762,6 +1762,28 @@ void Mutex::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("unlock"), &Mutex::unlock);
 }
 
+////// MutexLock //////
+
+Ref<MutexLock> MutexLock::lock(const Ref<Mutex> &p_mutex) {
+	ERR_FAIL_COND_V(p_mutex.is_null(), this);
+	ERR_FAIL_COND_V_MSG(mutex.is_valid(), this, "Cannot assign a mutex to a MutexLock more than once. Create an additional MutexLock.");
+	mutex = p_mutex;
+	mutex->lock();
+	return this;
+}
+
+void MutexLock::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("lock", "mutex"), &MutexLock::lock);
+}
+
+MutexLock::~MutexLock() {
+	if (mutex.is_valid()) {
+		mutex->unlock();
+	} else {
+		WARN_PRINT("A MutexLock was created without assigning a mutex.");
+	}
+}
+
 ////// Thread //////
 
 void Thread::_start_func(void *ud) {

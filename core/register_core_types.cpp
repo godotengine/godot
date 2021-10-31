@@ -215,6 +215,7 @@ void register_core_types() {
 	GDREGISTER_CLASS(core_bind::Directory);
 	GDREGISTER_CLASS(core_bind::Thread);
 	GDREGISTER_CLASS(core_bind::Mutex);
+	GDREGISTER_CLASS(core_bind::MutexLock);
 	GDREGISTER_CLASS(core_bind::Semaphore);
 
 	GDREGISTER_CLASS(XMLParser);

@@ -520,6 +520,18 @@ public:
 	void unlock();
 };
 
+class MutexLock : public RefCounted {
+	GDCLASS(MutexLock, RefCounted);
+	Ref<Mutex> mutex;
+
+	static void _bind_methods();
+
+public:
+	Ref<MutexLock> lock(const Ref<Mutex> &p_mutex);
+
+	~MutexLock();
+};
+
 class Semaphore : public RefCounted {
 	GDCLASS(Semaphore, RefCounted);
 	::Semaphore semaphore;
