@@ -119,8 +119,8 @@ protected:
 
 public:
 	enum VideoDriver {
-		VIDEO_DRIVER_GLES2,
 		VIDEO_DRIVER_VULKAN,
+		VIDEO_DRIVER_OPENGL_3,
 	};
 
 	enum Weekday {

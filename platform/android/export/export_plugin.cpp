@@ -1612,7 +1612,7 @@ Vector<String> EditorExportPlatformAndroid::get_enabled_abis(const Ref<EditorExp
 
 void EditorExportPlatformAndroid::get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) {
 	String driver = ProjectSettings::get_singleton()->get("rendering/driver/driver_name");
-	if (driver == "GLES2") {
+	if (driver == "OpenGL3") {
 		r_features->push_back("etc");
 	}
 	// FIXME: Review what texture formats are used for Vulkan.

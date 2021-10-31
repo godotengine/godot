@@ -51,13 +51,13 @@
 #include "drivers/xaudio2/audio_driver_xaudio2.h"
 #endif
 
-#if defined(OPENGL_ENABLED)
-#include "context_gl_windows.h"
-#endif
-
 #if defined(VULKAN_ENABLED)
 #include "drivers/vulkan/rendering_device_vulkan.h"
 #include "platform/windows/vulkan_context_win.h"
+#endif
+
+#if defined(GLES3_ENABLED)
+#include "gl_manager_windows.h"
 #endif
 
 #include <fcntl.h>
@@ -304,8 +304,8 @@ class DisplayServerWindows : public DisplayServer {
 	int old_x, old_y;
 	Point2i center;
 
-#if defined(OPENGL_ENABLED)
-	ContextGL_Windows *context_gles2;
+#if defined(GLES3_ENABLED)
+	GLManager_Windows *gl_manager;
 #endif
 
 #if defined(VULKAN_ENABLED)
@@ -477,6 +477,7 @@ public:
 
 	virtual void window_attach_instance_id(ObjectID p_instance, WindowID p_window = MAIN_WINDOW_ID) override;
 	virtual ObjectID window_get_attached_instance_id(WindowID p_window = MAIN_WINDOW_ID) const override;
+	virtual void gl_window_make_current(DisplayServer::WindowID p_window_id);
 
 	virtual void window_set_rect_changed_callback(const Callable &p_callable, WindowID p_window = MAIN_WINDOW_ID) override;
 

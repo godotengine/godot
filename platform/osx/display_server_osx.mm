@@ -45,7 +45,7 @@
 #include <IOKit/hid/IOHIDKeys.h>
 #include <IOKit/hid/IOHIDLib.h>
 
-#if defined(OPENGL_ENABLED)
+#if defined(GLES3_ENABLED)
 //TODO - reimplement OpenGLES
 
 #import <AppKit/NSOpenGLView.h>
@@ -166,7 +166,7 @@ static NSCursor *_cursorFromSelector(SEL selector, SEL fallback = nil) {
 		[pwd.window_object makeKeyAndOrderFront:nil]; // Move focus back to main window if there is no parent or other windows left.
 	}
 
-#if defined(OPENGL_ENABLED)
+#if defined(GLES3_ENABLED)
 	if (DS_OSX->rendering_driver == "opengl_es") {
 		//TODO - reimplement OpenGLES
 	}
@@ -271,7 +271,7 @@ static NSCursor *_cursorFromSelector(SEL selector, SEL fallback = nil) {
 		layer.contentsScale = scale;
 	}
 
-#if defined(OPENGL_ENABLED)
+#if defined(GLES3_ENABLED)
 	if (DS_OSX->rendering_driver == "opengl_es") {
 		//TODO - reimplement OpenGLES
 	}
@@ -405,7 +405,7 @@ static NSCursor *_cursorFromSelector(SEL selector, SEL fallback = nil) {
 }
 
 - (CALayer *)makeBackingLayer {
-#if defined(OPENGL_ENABLED)
+#if defined(GLES3_ENABLED)
 	if (DS_OSX->rendering_driver == "opengl_es") {
 		CALayer *layer = [[NSOpenGLLayer class] layer];
 		return layer;
@@ -421,7 +421,7 @@ static NSCursor *_cursorFromSelector(SEL selector, SEL fallback = nil) {
 }
 
 - (void)updateLayer {
-#if defined(OPENGL_ENABLED)
+#if defined(GLES3_ENABLED)
 	if (DS_OSX->rendering_driver == "opengl_es") {
 		[super updateLayer];
 		//TODO - reimplement OpenGLES
@@ -2586,7 +2586,7 @@ void DisplayServerOSX::_set_window_per_pixel_transparency_enabled(bool p_enabled
 				//TODO - implement transparency for Vulkan
 			}
 #endif
-#if defined(OPENGL_ENABLED)
+#if defined(GLES3_ENABLED)
 			if (rendering_driver == "opengl_es") {
 				//TODO - reimplement OpenGLES
 			}
@@ -2605,14 +2605,14 @@ void DisplayServerOSX::_set_window_per_pixel_transparency_enabled(bool p_enabled
 				//TODO - implement transparency for Vulkan
 			}
 #endif
-#if defined(OPENGL_ENABLED)
+#if defined(GLES3_ENABLED)
 			if (rendering_driver == "opengl_es") {
 				//TODO - reimplement OpenGLES
 			}
 #endif
 			wd.layered_window = false;
 		}
-#if defined(OPENGL_ENABLED)
+#if defined(GLES3_ENABLED)
 		if (rendering_driver == "opengl_es") {
 			//TODO - reimplement OpenGLES
 		}
@@ -3475,7 +3475,7 @@ Vector<String> DisplayServerOSX::get_rendering_drivers_func() {
 #if defined(VULKAN_ENABLED)
 	drivers.push_back("vulkan");
 #endif
-#if defined(OPENGL_ENABLED)
+#if defined(GLES3_ENABLED)
 	drivers.push_back("opengl_es");
 #endif
 
@@ -3579,7 +3579,7 @@ DisplayServerOSX::WindowID DisplayServerOSX::_create_window(WindowMode p_mode, V
 			}
 		}
 #endif
-#if defined(OPENGL_ENABLED)
+#if defined(GLES3_ENABLED)
 		if (rendering_driver == "opengl_es") {
 			//TODO - reimplement OpenGLES
 		}
@@ -3600,7 +3600,7 @@ DisplayServerOSX::WindowID DisplayServerOSX::_create_window(WindowMode p_mode, V
 		layer.contentsScale = scale;
 	}
 
-#if defined(OPENGL_ENABLED)
+#if defined(GLES3_ENABLED)
 	if (rendering_driver == "opengl_es") {
 		//TODO - reimplement OpenGLES
 	}
@@ -3750,7 +3750,7 @@ DisplayServerOSX::DisplayServerOSX(const String &p_rendering_driver, WindowMode 
 	[main_menu setSubmenu:apple_menu forItem:menu_item];
 
 	//!!!!!!!!!!!!!!!!!!!!!!!!!!
-	//TODO - do Vulkan and GLES2 support checks, driver selection and fallback
+	//TODO - do Vulkan and OpenGL support checks, driver selection and fallback
 	rendering_driver = p_rendering_driver;
 
 #ifndef _MSC_VER
@@ -3758,7 +3758,7 @@ DisplayServerOSX::DisplayServerOSX(const String &p_rendering_driver, WindowMode 
 #endif
 	rendering_driver = "vulkan";
 
-#if defined(OPENGL_ENABLED)
+#if defined(GLES3_ENABLED)
 	if (rendering_driver == "opengl_es") {
 		//TODO - reimplement OpenGLES
 	}
@@ -3787,7 +3787,7 @@ DisplayServerOSX::DisplayServerOSX(const String &p_rendering_driver, WindowMode 
 	}
 	show_window(MAIN_WINDOW_ID);
 
-#if defined(OPENGL_ENABLED)
+#if defined(GLES3_ENABLED)
 	if (rendering_driver == "opengl_es") {
 		//TODO - reimplement OpenGLES
 	}
@@ -3820,7 +3820,7 @@ DisplayServerOSX::~DisplayServerOSX() {
 	}
 
 	//destroy drivers
-#if defined(OPENGL_ENABLED)
+#if defined(GLES3_ENABLED)
 	if (rendering_driver == "opengl_es") {
 		//TODO - reimplement OpenGLES
 	}
