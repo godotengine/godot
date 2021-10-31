@@ -54,6 +54,7 @@ extern "C" {
 // for now, none of the optimizations below are available in emscripten
 #if !defined(EMSCRIPTEN)
 
+#if !defined(__clang__)
 #if defined(_MSC_VER) && _MSC_VER > 1310 && \
     (defined(_M_X64) || defined(_M_IX86))
 #define WEBP_MSC_SSE2  // Visual C++ SSE2 targets
@@ -62,6 +63,7 @@ extern "C" {
 #if defined(_MSC_VER) && _MSC_VER >= 1500 && \
     (defined(_M_X64) || defined(_M_IX86))
 #define WEBP_MSC_SSE41  // Visual C++ SSE4.1 targets
+#endif
 #endif
 
 // WEBP_HAVE_* are used to indicate the presence of the instruction set in dsp
