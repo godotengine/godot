@@ -225,7 +225,8 @@ void EditorSpinSlider::_value_input_gui_input(const Ref<InputEvent> &p_event) {
 					set_value(last_value + real_step);
 				}
 
-				value_input->set_text(get_text_value());
+				value_input_dirty = true;
+				set_process_internal(true);
 			} break;
 			case KEY_DOWN: {
 				_evaluate_input_text();
@@ -238,7 +239,8 @@ void EditorSpinSlider::_value_input_gui_input(const Ref<InputEvent> &p_event) {
 					set_value(last_value - real_step);
 				}
 
-				value_input->set_text(get_text_value());
+				value_input_dirty = true;
+				set_process_internal(true);
 			} break;
 		}
 	}
@@ -422,6 +424,14 @@ void EditorSpinSlider::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED:
 			_update_value_input_stylebox();
+			break;
+
+		case NOTIFICATION_INTERNAL_PROCESS:
+			if (value_input_dirty) {
+				value_input_dirty = false;
+				value_input->set_text(get_text_value());
+			}
+			set_process_internal(false);
 			break;
 
 		case NOTIFICATION_DRAW:
