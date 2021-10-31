@@ -746,6 +746,9 @@ def generate_vs_project(env, num_jobs):
                 if env["tests"]:
                     common_build_postfix.append("tests=yes")
 
+                if env["use_llvm"]:
+                    common_build_postfix.append("use_llvm=yes")
+
                 if env["custom_modules"]:
                     common_build_postfix.append("custom_modules=%s" % env["custom_modules"])
 
