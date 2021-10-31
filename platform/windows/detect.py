@@ -176,6 +176,11 @@ def setup_mingw(env):
 def configure_msvc(env, manual_msvc_config):
     """Configure env to work with MSVC"""
 
+    # Clang for windows support
+    if env["use_llvm"]:
+        env["CC"] = "clang-cl.exe"
+        env["CXX"] = "clang-cl.exe"
+
     # Build type
 
     if env["tests"]:

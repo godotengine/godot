@@ -887,7 +887,7 @@ def get_compiler_version(env):
     Returns an array of version numbers as ints: [major, minor, patch].
     The return array should have at least two values (major, minor).
     """
-    if not env.msvc:
+    if not env.msvc or using_clang(env):
         # Not using -dumpversion as some GCC distros only return major, and
         # Clang used to return hardcoded 4.2.1: # https://reviews.llvm.org/D56803
         try:
