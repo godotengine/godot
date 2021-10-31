@@ -126,7 +126,8 @@ void Button::_notification(int p_what) {
 					}
 				} break;
 				case DRAW_HOVER_PRESSED: {
-					if (has_theme_stylebox(SNAME("hover_pressed")) && has_theme_stylebox_override("hover_pressed")) {
+					// Edge case for CheckButton and CheckBox.
+					if (has_theme_stylebox("hover_pressed")) {
 						if (rtl && has_theme_stylebox(SNAME("hover_pressed_mirrored"))) {
 							style = get_theme_stylebox(SNAME("hover_pressed_mirrored"));
 						} else {
@@ -138,8 +139,6 @@ void Button::_notification(int p_what) {
 						}
 						if (has_theme_color(SNAME("font_hover_pressed_color"))) {
 							color = get_theme_color(SNAME("font_hover_pressed_color"));
-						} else {
-							color = get_theme_color(SNAME("font_color"));
 						}
 						if (has_theme_color(SNAME("icon_hover_pressed_color"))) {
 							color_icon = get_theme_color(SNAME("icon_hover_pressed_color"));
