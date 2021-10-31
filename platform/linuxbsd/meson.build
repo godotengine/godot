@@ -28,7 +28,6 @@ if PLATFORM == 'linuxbsd'
         'crash_handler_linuxbsd.cpp',
         'os_linuxbsd.cpp',
         'joypad_linux.cpp',
-        'context_gl_x11.cpp',
         'detect_prime_x11.cpp',
         'display_server_x11.cpp',
         'vulkan_context_x11.cpp',

@@ -23,7 +23,6 @@ if PLATFORM == 'windows'
 
     # the src files for the windows *platform* library
     _windows_srcs = files([
-        'context_gl_windows.cpp',
         'crash_handler_windows.cpp',
         'display_server_windows.cpp',
         'joypad_windows.cpp',
