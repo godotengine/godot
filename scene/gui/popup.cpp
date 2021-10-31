@@ -105,8 +105,6 @@ void Popup::_close_pressed() {
 	_deinitialize_visible_parents();
 
 	call_deferred(SNAME("hide"));
-
-	emit_signal(SNAME("cancelled"));
 }
 
 void Popup::set_as_minsize() {
