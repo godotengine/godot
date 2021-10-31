@@ -346,7 +346,7 @@ double AnimationNodeStateMachinePlayback::process(AnimationNodeStateMachine *p_s
 	bool do_start = (p_seek && p_time == 0) || play_start || current == StringName();
 
 	if (do_start) {
-		if (p_state_machine->start_node != StringName() && p_seek && p_time == 0) {
+		if (p_state_machine->start_node != StringName() && p_seek && p_time == 0 && current == StringName()) {
 			current = p_state_machine->start_node;
 		}
 
