@@ -3954,6 +3954,10 @@ void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_e
 				kernel_size = Vector3i(int32_t(rb->volumetric_fog->width), int32_t(rb->volumetric_fog->height), int32_t(rb->volumetric_fog->depth));
 			}
 
+			if (kernel_size.x == 0 || kernel_size.y == 0 || kernel_size.z == 0) {
+				continue;
+			}
+
 			volumetric_fog.push_constant.position[0] = position.x;
 			volumetric_fog.push_constant.position[1] = position.y;
 			volumetric_fog.push_constant.position[2] = position.z;
