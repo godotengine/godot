@@ -665,7 +665,7 @@ static int r128__clz64(R128_U64 x)
 // 32*32->64
 static R128_U64 r128__umul64(R128_U32 a, R128_U32 b)
 {
-#  if defined(_M_IX86) && !defined(R128_STDC_ONLY) && !defined(__MINGW32__)
+#  if defined(_M_IX86) && !defined(R128_STDC_ONLY) && !defined(__MINGW32__) && !defined(__clang__)
    return __emulu(a, b);
 #  elif defined(_M_ARM) && !defined(R128_STDC_ONLY)
    return _arm_umull(a, b);
@@ -677,10 +677,10 @@ static R128_U64 r128__umul64(R128_U32 a, R128_U32 b)
 // 64/32->32
 static R128_U32 r128__udiv64(R128_U32 nlo, R128_U32 nhi, R128_U32 d, R128_U32 *rem)
 {
-#  if defined(_M_IX86) && (_MSC_VER >= 1920) && !defined(R128_STDC_ONLY)
+#  if defined(_M_IX86) && (_MSC_VER >= 1920) && !defined(R128_STDC_ONLY) && !defined(__clang__)
    unsigned __int64 n = ((unsigned __int64)nhi << 32) | nlo;
    return _udiv64(n, d, rem);
-#  elif defined(_M_IX86) && !defined(R128_STDC_ONLY) && !defined(__MINGW32__)
+#  elif defined(_M_IX86) && !defined(R128_STDC_ONLY) && !defined(__MINGW32__) && !defined(__clang__)
    __asm {
       mov eax, nlo
       mov edx, nhi
@@ -1602,7 +1602,7 @@ void r128Shl(R128 *dst, const R128 *src, int amount)
    R128_ASSERT(dst != NULL);
    R128_ASSERT(src != NULL);
 
-#if defined(_M_IX86) && !defined(R128_STDC_ONLY) && !defined(__MINGW32__)
+#if defined(_M_IX86) && !defined(R128_STDC_ONLY) && !defined(__MINGW32__) && !defined(__clang__)
    __asm {
       // load src
       mov edx, dword ptr[src]
@@ -1664,7 +1664,7 @@ void r128Shr(R128 *dst, const R128 *src, int amount)
    R128_ASSERT(dst != NULL);
    R128_ASSERT(src != NULL);
 
-#if defined(_M_IX86) && !defined(R128_STDC_ONLY) && !defined(__MINGW32__)
+#if defined(_M_IX86) && !defined(R128_STDC_ONLY) && !defined(__MINGW32__) && !defined(__clang__)
    __asm {
       // load src
       mov edx, dword ptr[src]
@@ -1726,7 +1726,7 @@ void r128Sar(R128 *dst, const R128 *src, int amount)
    R128_ASSERT(dst != NULL);
    R128_ASSERT(src != NULL);
 
-#if defined(_M_IX86) && !defined(R128_STDC_ONLY) && !defined(__MINGW32__)
+#if defined(_M_IX86) && !defined(R128_STDC_ONLY) && !defined(__MINGW32__) && !defined(__clang__)
    __asm {
       // load src
       mov edx, dword ptr[src]
