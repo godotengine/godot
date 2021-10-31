@@ -716,7 +716,7 @@ public:
 
 	String get_word_at_pos(const Vector2 &p_pos) const;
 
-	Point2i get_line_column_at_pos(const Point2i &p_pos) const;
+	Point2i get_line_column_at_pos(const Point2i &p_pos, bool p_allow_out_of_bounds = true) const;
 	int get_minimap_line_at_pos(const Point2i &p_pos) const;
 
 	bool is_dragging_cursor() const;
@@ -822,6 +822,7 @@ public:
 	int get_last_full_visible_line_wrap_index() const;
 
 	int get_visible_line_count() const;
+	int get_visible_line_count_in_range(int p_from, int p_to) const;
 	int get_total_visible_line_count() const;
 
 	// Auto Adjust

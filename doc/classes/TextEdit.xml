@@ -233,8 +233,9 @@
 		<method name="get_line_column_at_pos" qualifiers="const">
 			<return type="Vector2i" />
 			<argument index="0" name="position" type="Vector2i" />
+			<argument index="1" name="allow_out_of_bounds" type="bool" default="true" />
 			<description>
-				Returns the line and column at the given position. In the returned vector, [code]x[/code] is the column, [code]y[/code] is the line.
+				Returns the line and column at the given position. In the returned vector, [code]x[/code] is the column, [code]y[/code] is the line. If [code]allow_out_of_bounds[/code] is [code]false[/code] and the position is not over the text, both vector values will be set to [code]-1[/code].
 			</description>
 		</method>
 		<method name="get_line_count" qualifiers="const">
@@ -451,6 +452,14 @@
 			<return type="int" />
 			<description>
 				Returns the number of visible lines, including wrapped text.
+			</description>
+		</method>
+		<method name="get_visible_line_count_in_range" qualifiers="const">
+			<return type="int" />
+			<argument index="0" name="from_line" type="int" />
+			<argument index="1" name="to_line" type="int" />
+			<description>
+				Returns the total number of visible + wrapped lines between the two lines.
 			</description>
 		</method>
 		<method name="get_word_at_pos" qualifiers="const">
