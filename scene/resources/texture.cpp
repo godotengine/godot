@@ -1503,6 +1503,7 @@ Ref<Curve> CurveTexture::get_curve() const {
 }
 
 void CurveTexture::set_texture_mode(TextureMode p_mode) {
+	ERR_FAIL_COND(p_mode < TEXTURE_MODE_RGB || p_mode > TEXTURE_MODE_RED);
 	if (texture_mode == p_mode) {
 		return;
 	}
