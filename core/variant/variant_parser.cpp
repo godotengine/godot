@@ -1443,7 +1443,7 @@ static String rtos_fix(double p_value) {
 	}
 }
 
-Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_string_func, void *p_store_string_ud, EncodeResourceFunc p_encode_res_func, void *p_encode_res_ud) {
+Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_string_func, void *p_store_string_ud, EncodeResourceFunc p_encode_res_func, void *p_encode_res_ud, int recursion_count) {
 	switch (p_variant.get_type()) {
 		case Variant::NIL: {
 			p_store_string_func(p_store_string_ud, "null");
@@ -1639,41 +1639,56 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 
 		case Variant::DICTIONARY: {
 			Dictionary dict = p_variant;
+			if (recursion_count > MAX_RECURSION) {
+				ERR_PRINT("Max recursion reached");
+				p_store_string_func(p_store_string_ud, "{}");
+			} else {
+				recursion_count++;
 
-			List<Variant> keys;
-			dict.get_key_list(&keys);
-			keys.sort();
+				List<Variant> keys;
+				dict.get_key_list(&keys);
+				keys.sort();
 
-			p_store_string_func(p_store_string_ud, "{\n");
-			for (List<Variant>::Element *E = keys.front(); E; E = E->next()) {
-				/*
-				if (!_check_type(dict[E]))
-					continue;
-				*/
-				write(E->get(), p_store_string_func, p_store_string_ud, p_encode_res_func, p_encode_res_ud);
-				p_store_string_func(p_store_string_ud, ": ");
-				write(dict[E->get()], p_store_string_func, p_store_string_ud, p_encode_res_func, p_encode_res_ud);
-				if (E->next()) {
-					p_store_string_func(p_store_string_ud, ",\n");
-				} else {
-					p_store_string_func(p_store_string_ud, "\n");
+				p_store_string_func(p_store_string_ud, "{\n");
+				for (List<Variant>::Element *E = keys.front(); E; E = E->next()) {
+					/*
+					if (!_check_type(dict[E->get()]))
+						continue;
+					*/
+					write(E->get(), p_store_string_func, p_store_string_ud, p_encode_res_func, p_encode_res_ud, recursion_count);
+					p_store_string_func(p_store_string_ud, ": ");
+					write(dict[E->get()], p_store_string_func, p_store_string_ud, p_encode_res_func, p_encode_res_ud, recursion_count);
+					if (E->next()) {
+						p_store_string_func(p_store_string_ud, ",\n");
+					} else {
+						p_store_string_func(p_store_string_ud, "\n");
+					}
 				}
-			}
 
-			p_store_string_func(p_store_string_ud, "}");
+				p_store_string_func(p_store_string_ud, "}");
+			}
 
 		} break;
+
 		case Variant::ARRAY: {
-			p_store_string_func(p_store_string_ud, "[");
-			Array array = p_variant;
-			int len = array.size();
-			for (int i = 0; i < len; i++) {
-				if (i > 0) {
-					p_store_string_func(p_store_string_ud, ", ");
+			if (recursion_count > MAX_RECURSION) {
+				ERR_PRINT("Max recursion reached");
+				p_store_string_func(p_store_string_ud, "[]");
+			} else {
+				recursion_count++;
+
+				p_store_string_func(p_store_string_ud, "[");
+				Array array = p_variant;
+				int len = array.size();
+				for (int i = 0; i < len; i++) {
+					if (i > 0) {
+						p_store_string_func(p_store_string_ud, ", ");
+					}
+					write(array[i], p_store_string_func, p_store_string_ud, p_encode_res_func, p_encode_res_ud, recursion_count);
 				}
-				write(array[i], p_store_string_func, p_store_string_ud, p_encode_res_func, p_encode_res_ud);
+
+				p_store_string_func(p_store_string_ud, "]");
 			}
-			p_store_string_func(p_store_string_ud, "]");
 
 		} break;
 

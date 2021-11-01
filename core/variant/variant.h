@@ -481,7 +481,8 @@ public:
 	static PTROperatorEvaluator get_ptr_operator_evaluator(Operator p_operator, Type p_type_a, Type p_type_b);
 
 	void zero();
-	Variant duplicate(bool deep = false) const;
+	Variant duplicate(bool p_deep = false) const;
+	Variant recursive_duplicate(bool p_deep, int recursion_count) const;
 	static void blend(const Variant &a, const Variant &b, float c, Variant &r_dst);
 	static void interpolate(const Variant &a, const Variant &b, float c, Variant &r_dst);
 
@@ -659,10 +660,11 @@ public:
 	bool operator!=(const Variant &p_variant) const;
 	bool operator<(const Variant &p_variant) const;
 	uint32_t hash() const;
+	uint32_t recursive_hash(int recursion_count) const;
 
-	bool hash_compare(const Variant &p_variant) const;
+	bool hash_compare(const Variant &p_variant, int recursion_count = 0) const;
 	bool booleanize() const;
-	String stringify(List<const void *> &stack) const;
+	String stringify(int recursion_count = 0) const;
 	String to_json_string() const;
 
 	void static_assign(const Variant &p_variant);
