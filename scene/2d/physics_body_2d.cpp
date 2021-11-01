@@ -684,6 +684,24 @@ real_t RigidDynamicBody2D::get_gravity_scale() const {
 	return gravity_scale;
 }
 
+void RigidDynamicBody2D::set_linear_damp_mode(DampMode p_mode) {
+	linear_damp_mode = p_mode;
+	PhysicsServer2D::get_singleton()->body_set_param(get_rid(), PhysicsServer2D::BODY_PARAM_LINEAR_DAMP_MODE, linear_damp_mode);
+}
+
+RigidDynamicBody2D::DampMode RigidDynamicBody2D::get_linear_damp_mode() const {
+	return linear_damp_mode;
+}
+
+void RigidDynamicBody2D::set_angular_damp_mode(DampMode p_mode) {
+	angular_damp_mode = p_mode;
+	PhysicsServer2D::get_singleton()->body_set_param(get_rid(), PhysicsServer2D::BODY_PARAM_ANGULAR_DAMP_MODE, angular_damp_mode);
+}
+
+RigidDynamicBody2D::DampMode RigidDynamicBody2D::get_angular_damp_mode() const {
+	return angular_damp_mode;
+}
+
 void RigidDynamicBody2D::set_linear_damp(real_t p_linear_damp) {
 	ERR_FAIL_COND(p_linear_damp < -1);
 	linear_damp = p_linear_damp;
@@ -916,6 +934,12 @@ void RigidDynamicBody2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_gravity_scale", "gravity_scale"), &RigidDynamicBody2D::set_gravity_scale);
 	ClassDB::bind_method(D_METHOD("get_gravity_scale"), &RigidDynamicBody2D::get_gravity_scale);
 
+	ClassDB::bind_method(D_METHOD("set_linear_damp_mode", "linear_damp_mode"), &RigidDynamicBody2D::set_linear_damp_mode);
+	ClassDB::bind_method(D_METHOD("get_linear_damp_mode"), &RigidDynamicBody2D::get_linear_damp_mode);
+
+	ClassDB::bind_method(D_METHOD("set_angular_damp_mode", "angular_damp_mode"), &RigidDynamicBody2D::set_angular_damp_mode);
+	ClassDB::bind_method(D_METHOD("get_angular_damp_mode"), &RigidDynamicBody2D::get_angular_damp_mode);
+
 	ClassDB::bind_method(D_METHOD("set_linear_damp", "linear_damp"), &RigidDynamicBody2D::set_linear_damp);
 	ClassDB::bind_method(D_METHOD("get_linear_damp"), &RigidDynamicBody2D::get_linear_damp);
 
@@ -992,9 +1016,11 @@ void RigidDynamicBody2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "freeze_mode", PROPERTY_HINT_ENUM, "Static,Kinematic"), "set_freeze_mode", "get_freeze_mode");
 	ADD_GROUP("Linear", "linear_");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "linear_velocity"), "set_linear_velocity", "get_linear_velocity");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "linear_damp_mode", PROPERTY_HINT_ENUM, "Combine,Replace"), "set_linear_damp_mode", "get_linear_damp_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "linear_damp", PROPERTY_HINT_RANGE, "-1,100,0.001,or_greater"), "set_linear_damp", "get_linear_damp");
 	ADD_GROUP("Angular", "angular_");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "angular_velocity"), "set_angular_velocity", "get_angular_velocity");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "angular_damp_mode", PROPERTY_HINT_ENUM, "Combine,Replace"), "set_angular_damp_mode", "get_angular_damp_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "angular_damp", PROPERTY_HINT_RANGE, "-1,100,0.001,or_greater"), "set_angular_damp", "get_angular_damp");
 	ADD_GROUP("Applied Forces", "applied_");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "applied_force"), "set_applied_force", "get_applied_force");
@@ -1011,6 +1037,9 @@ void RigidDynamicBody2D::_bind_methods() {
 
 	BIND_ENUM_CONSTANT(CENTER_OF_MASS_MODE_AUTO);
 	BIND_ENUM_CONSTANT(CENTER_OF_MASS_MODE_CUSTOM);
+
+	BIND_ENUM_CONSTANT(DAMP_MODE_COMBINE);
+	BIND_ENUM_CONSTANT(DAMP_MODE_REPLACE);
 
 	BIND_ENUM_CONSTANT(CCD_MODE_DISABLED);
 	BIND_ENUM_CONSTANT(CCD_MODE_CAST_RAY);

@@ -364,6 +364,11 @@ public:
 		BODY_MODE_DYNAMIC_LINEAR,
 	};
 
+	enum BodyDampMode {
+		BODY_DAMP_MODE_COMBINE,
+		BODY_DAMP_MODE_REPLACE,
+	};
+
 	virtual RID body_create() = 0;
 
 	virtual void body_set_space(RID p_body, RID p_space) = 0;
@@ -408,6 +413,8 @@ public:
 		BODY_PARAM_INERTIA,
 		BODY_PARAM_CENTER_OF_MASS,
 		BODY_PARAM_GRAVITY_SCALE,
+		BODY_PARAM_LINEAR_DAMP_MODE,
+		BODY_PARAM_ANGULAR_DAMP_MODE,
 		BODY_PARAM_LINEAR_DAMP,
 		BODY_PARAM_ANGULAR_DAMP,
 		BODY_PARAM_MAX,
@@ -890,6 +897,7 @@ VARIANT_ENUM_CAST(PhysicsServer3D::AreaParameter);
 VARIANT_ENUM_CAST(PhysicsServer3D::AreaSpaceOverrideMode);
 VARIANT_ENUM_CAST(PhysicsServer3D::BodyMode);
 VARIANT_ENUM_CAST(PhysicsServer3D::BodyParameter);
+VARIANT_ENUM_CAST(PhysicsServer3D::BodyDampMode);
 VARIANT_ENUM_CAST(PhysicsServer3D::BodyState);
 VARIANT_ENUM_CAST(PhysicsServer3D::BodyAxis);
 VARIANT_ENUM_CAST(PhysicsServer3D::PinJointParam);
