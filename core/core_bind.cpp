@@ -235,6 +235,19 @@ int OS::execute(const String &p_path, const Vector<String> &p_arguments, Array r
 	return exitcode;
 }
 
+int OS::create_instance(const Vector<String> &p_arguments) {
+	List<String> args;
+	for (int i = 0; i < p_arguments.size(); i++) {
+		args.push_back(p_arguments[i]);
+	}
+	::OS::ProcessID pid = 0;
+	Error err = ::OS::get_singleton()->create_instance(args, &pid);
+	if (err != OK) {
+		return -1;
+	}
+	return pid;
+}
+
 int OS::create_process(const String &p_path, const Vector<String> &p_arguments) {
 	List<String> args;
 	for (int i = 0; i < p_arguments.size(); i++) {
@@ -537,6 +550,7 @@ void OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_executable_path"), &OS::get_executable_path);
 	ClassDB::bind_method(D_METHOD("execute", "path", "arguments", "output", "read_stderr"), &OS::execute, DEFVAL(Array()), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("create_process", "path", "arguments"), &OS::create_process);
+	ClassDB::bind_method(D_METHOD("create_instance", "arguments"), &OS::create_instance);
 	ClassDB::bind_method(D_METHOD("kill", "pid"), &OS::kill);
 	ClassDB::bind_method(D_METHOD("shell_open", "uri"), &OS::shell_open);
 	ClassDB::bind_method(D_METHOD("get_process_id"), &OS::get_process_id);

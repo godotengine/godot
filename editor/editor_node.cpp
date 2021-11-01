@@ -3059,7 +3059,7 @@ void EditorNode::_discard_changes(const String &p_str) {
 			args.push_back(exec.get_base_dir());
 			args.push_back("--project-manager");
 
-			Error err = OS::get_singleton()->create_process(exec, args);
+			Error err = OS::get_singleton()->create_instance(args);
 			ERR_FAIL_COND(err);
 		} break;
 	}
@@ -5420,8 +5420,7 @@ void EditorNode::_global_menu_new_window(const Variant &p_tag) {
 	if (OS::get_singleton()->get_main_loop()) {
 		List<String> args;
 		args.push_back("-p");
-		String exec = OS::get_singleton()->get_executable_path();
-		OS::get_singleton()->create_process(exec, args);
+		OS::get_singleton()->create_instance(args);
 	}
 }
 
