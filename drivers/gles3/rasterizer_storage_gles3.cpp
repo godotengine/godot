@@ -625,6 +625,8 @@ void RasterizerStorageGLES3::texture_replace(RID p_texture, RID p_by_texture) {
 	for (int n = 0; n < tex_from->images.size(); n++) {
 		texture_set_data(p_texture, tex_from->images[n], n);
 	}
+
+	free(p_by_texture);
 }
 
 bool RasterizerStorageGLES3::_is_main_thread() {
