@@ -98,6 +98,7 @@
 				[codeblock]
 				[{function:bar, line:12, source:res://script.gd}, {function:foo, line:9, source:res://script.gd}, {function:_ready, line:6, source:res://script.gd}]
 				[/codeblock]
+				[b]Note:[/b] Not supported for calling from threads. Instead, this will return an empty array.
 			</description>
 		</method>
 		<method name="inst2dict">
@@ -160,17 +161,24 @@
 		<method name="print_debug" qualifiers="vararg">
 			<return type="void" />
 			<description>
-				Like [method @GlobalScope.print], but prints only when used in debug mode.
+				Like [method @GlobalScope.print], but includes the current stack frame when running with the debugger turned on.
+				Output in the console would look something like this:
+				[codeblock]
+				Test print
+				   At: res://test.gd:15:_process()
+				[/codeblock]
+				[b]Note:[/b] Not supported for calling from threads. Instead of the stack frame, this will print the thread ID.
 			</description>
 		</method>
 		<method name="print_stack">
 			<return type="void" />
 			<description>
-				Prints a stack track at code location, only works when running with debugger turned on.
+				Prints a stack trace at the current code location. Only works when running with debugger turned on.
 				Output in the console would look something like this:
 				[codeblock]
 				Frame 0 - res://test.gd:16 in function '_process'
 				[/codeblock]
+				[b]Note:[/b] Not supported for calling from threads. Instead of the stack trace, this will print the thread ID.
 			</description>
 		</method>
 		<method name="range" qualifiers="vararg">
