@@ -6,8 +6,13 @@ def can_build(env, platform):
     # would be a bit far-fetched.
     # Note: oneDNN doesn't support ARM64, OIDN needs updating to the latest version
     supported_platform = platform in ["x11", "osx", "windows", "server"]
-    supported_bits = env["bits"] == "64"
-    supported_arch = env["arch"] != "arm64" and not env["arch"].startswith("rv")
+    supported_arch = env["bits"] == "64"
+    if env["arch"] == "arm64":
+        supported_arch = False
+    if env["arch"].startswith("ppc"):
+        supported_arch = False
+    if env["arch"].startswith("rv"):
+        supported_arch = False
 
     # Hack to disable on Linux arm64. This won't work well for cross-compilation (checks
     # host, not target) and would need a more thorough fix by refactoring our arch and
@@ -17,7 +22,7 @@ def can_build(env, platform):
     if platform == "x11" and machine() != "x86_64":
         supported_arch = False
 
-    return env["tools"] and supported_platform and supported_bits and supported_arch
+    return env["tools"] and supported_platform and supported_arch
 
 
 def configure(env):
