@@ -546,7 +546,7 @@ void EditorSpinSlider::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_flat"), &EditorSpinSlider::is_flat);
 
 	ClassDB::bind_method(D_METHOD("_gui_input"), &EditorSpinSlider::_gui_input);
-	ClassDB::bind_method(D_METHOD("_value_input_gui_input"), &EditorSpinSlider::_value_input_gui_input);
+	ClassDB::bind_method(D_METHOD("_value_input_gui_input", "event"), &EditorSpinSlider::_value_input_gui_input);
 	ClassDB::bind_method(D_METHOD("_grabber_mouse_entered"), &EditorSpinSlider::_grabber_mouse_entered);
 	ClassDB::bind_method(D_METHOD("_grabber_mouse_exited"), &EditorSpinSlider::_grabber_mouse_exited);
 	ClassDB::bind_method(D_METHOD("_grabber_gui_input"), &EditorSpinSlider::_grabber_gui_input);
