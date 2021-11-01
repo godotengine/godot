@@ -603,6 +603,12 @@ private:
 
 	void _clear_tiles_outside_texture();
 
+	bool use_texture_padding = true;
+	Ref<ImageTexture> padded_texture;
+	bool padded_texture_needs_update = false;
+	void _queue_update_padded_texture();
+	void _update_padded_texture();
+
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
@@ -644,6 +650,10 @@ public:
 	Vector2i get_separation() const;
 	void set_texture_region_size(Vector2i p_tile_size);
 	Vector2i get_texture_region_size() const;
+
+	// Padding.
+	void set_use_texture_padding(bool p_use_padding);
+	bool get_use_texture_padding() const;
 
 	// Base tiles.
 	void create_tile(const Vector2i p_atlas_coords, const Vector2i p_size = Vector2i(1, 1));
@@ -689,6 +699,10 @@ public:
 	Vector2i get_atlas_grid_size() const;
 	Rect2i get_tile_texture_region(Vector2i p_atlas_coords, int p_frame = 0) const;
 	Vector2i get_tile_effective_texture_offset(Vector2i p_atlas_coords, int p_alternative_tile) const;
+
+	// Getters for texture and tile region (padded or not)
+	Ref<Texture2D> get_runtime_texture() const;
+	Rect2i get_runtime_tile_texture_region(Vector2i p_atlas_coords, int p_frame = 0) const;
 
 	~TileSetAtlasSource();
 };

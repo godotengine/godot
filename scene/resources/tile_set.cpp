@@ -3526,9 +3526,18 @@ void TileSetAtlasSource::reset_state() {
 }
 
 void TileSetAtlasSource::set_texture(Ref<Texture2D> p_texture) {
+	if (texture.is_valid()) {
+		texture->disconnect(SNAME("changed"), callable_mp(this, &TileSetAtlasSource::_queue_update_padded_texture));
+	}
+
 	texture = p_texture;
 
+	if (texture.is_valid()) {
+		texture->connect(SNAME("changed"), callable_mp(this, &TileSetAtlasSource::_queue_update_padded_texture));
+	}
+
 	_clear_tiles_outside_texture();
+	_queue_update_padded_texture();
 	emit_changed();
 }
 
@@ -3545,8 +3554,10 @@ void TileSetAtlasSource::set_margins(Vector2i p_margins) {
 	}
 
 	_clear_tiles_outside_texture();
+	_queue_update_padded_texture();
 	emit_changed();
 }
+
 Vector2i TileSetAtlasSource::get_margins() const {
 	return margins;
 }
@@ -3560,8 +3571,10 @@ void TileSetAtlasSource::set_separation(Vector2i p_separation) {
 	}
 
 	_clear_tiles_outside_texture();
+	_queue_update_padded_texture();
 	emit_changed();
 }
+
 Vector2i TileSetAtlasSource::get_separation() const {
 	return separation;
 }
@@ -3575,10 +3588,25 @@ void TileSetAtlasSource::set_texture_region_size(Vector2i p_tile_size) {
 	}
 
 	_clear_tiles_outside_texture();
+	_queue_update_padded_texture();
 	emit_changed();
 }
+
 Vector2i TileSetAtlasSource::get_texture_region_size() const {
 	return texture_region_size;
+}
+
+void TileSetAtlasSource::set_use_texture_padding(bool p_use_padding) {
+	if (use_texture_padding == p_use_padding) {
+		return;
+	}
+	use_texture_padding = p_use_padding;
+	_queue_update_padded_texture();
+	emit_changed();
+}
+
+bool TileSetAtlasSource::get_use_texture_padding() const {
+	return use_texture_padding;
 }
 
 Vector2i TileSetAtlasSource::get_atlas_grid_size() const {
@@ -3839,6 +3867,7 @@ void TileSetAtlasSource::create_tile(const Vector2i p_atlas_coords, const Vector
 	tiles_ids.sort();
 
 	_create_coords_mapping_cache(p_atlas_coords);
+	_queue_update_padded_texture();
 
 	emit_signal(SNAME("changed"));
 }
@@ -3858,6 +3887,8 @@ void TileSetAtlasSource::remove_tile(Vector2i p_atlas_coords) {
 	tiles.erase(p_atlas_coords);
 	tiles_ids.erase(p_atlas_coords);
 	tiles_ids.sort();
+
+	_queue_update_padded_texture();
 
 	emit_signal(SNAME("changed"));
 }
@@ -3887,6 +3918,7 @@ void TileSetAtlasSource::set_tile_animation_columns(const Vector2i p_atlas_coord
 	tiles[p_atlas_coords].animation_columns = p_frame_columns;
 
 	_create_coords_mapping_cache(p_atlas_coords);
+	_queue_update_padded_texture();
 
 	emit_signal(SNAME("changed"));
 }
@@ -3909,6 +3941,7 @@ void TileSetAtlasSource::set_tile_animation_separation(const Vector2i p_atlas_co
 	tiles[p_atlas_coords].animation_separation = p_separation;
 
 	_create_coords_mapping_cache(p_atlas_coords);
+	_queue_update_padded_texture();
 
 	emit_signal(SNAME("changed"));
 }
@@ -3953,6 +3986,7 @@ void TileSetAtlasSource::set_tile_animation_frames_count(const Vector2i p_atlas_
 	}
 
 	_create_coords_mapping_cache(p_atlas_coords);
+	_queue_update_padded_texture();
 
 	notify_property_list_changed();
 
@@ -4091,6 +4125,31 @@ Vector2i TileSetAtlasSource::get_tile_effective_texture_offset(Vector2i p_atlas_
 	return effective_texture_offset;
 }
 
+// Getters for texture and tile region (padded or not)
+Ref<Texture2D> TileSetAtlasSource::get_runtime_texture() const {
+	if (use_texture_padding) {
+		return padded_texture;
+	} else {
+		return texture;
+	}
+}
+
+Rect2i TileSetAtlasSource::get_runtime_tile_texture_region(Vector2i p_atlas_coords, int p_frame) const {
+	ERR_FAIL_COND_V_MSG(!tiles.has(p_atlas_coords), Rect2i(), vformat("TileSetAtlasSource has no tile at %s.", String(p_atlas_coords)));
+	ERR_FAIL_INDEX_V(p_frame, (int)tiles[p_atlas_coords].animation_frames_durations.size(), Rect2i());
+
+	Rect2i src_rect = get_tile_texture_region(p_atlas_coords, p_frame);
+	if (use_texture_padding) {
+		const TileAlternativesData &tad = tiles[p_atlas_coords];
+		Vector2i frame_coords = p_atlas_coords + (tad.size_in_atlas + tad.animation_separation) * ((tad.animation_columns > 0) ? Vector2i(p_frame % tad.animation_columns, p_frame / tad.animation_columns) : Vector2i(p_frame, 0));
+		Vector2i base_pos = frame_coords * (texture_region_size + Vector2i(2, 2)) + Vector2i(1, 1);
+
+		return Rect2i(base_pos, src_rect.size);
+	} else {
+		return src_rect;
+	}
+}
+
 void TileSetAtlasSource::move_tile_in_atlas(Vector2i p_atlas_coords, Vector2i p_new_atlas_coords, Vector2i p_new_size) {
 	ERR_FAIL_COND_MSG(!tiles.has(p_atlas_coords), vformat("TileSetAtlasSource has no tile at %s.", String(p_atlas_coords)));
 
@@ -4121,6 +4180,7 @@ void TileSetAtlasSource::move_tile_in_atlas(Vector2i p_atlas_coords, Vector2i p_
 	tiles[new_atlas_coords].size_in_atlas = new_size;
 
 	_create_coords_mapping_cache(new_atlas_coords);
+	_queue_update_padded_texture();
 
 	emit_signal(SNAME("changed"));
 }
@@ -4212,11 +4272,14 @@ void TileSetAtlasSource::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_separation"), &TileSetAtlasSource::get_separation);
 	ClassDB::bind_method(D_METHOD("set_texture_region_size", "texture_region_size"), &TileSetAtlasSource::set_texture_region_size);
 	ClassDB::bind_method(D_METHOD("get_texture_region_size"), &TileSetAtlasSource::get_texture_region_size);
+	ClassDB::bind_method(D_METHOD("set_use_texture_padding", "use_texture_padding"), &TileSetAtlasSource::set_use_texture_padding);
+	ClassDB::bind_method(D_METHOD("get_use_texture_padding"), &TileSetAtlasSource::get_use_texture_padding);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D", PROPERTY_USAGE_NO_EDITOR), "set_texture", "get_texture");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "margins", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_margins", "get_margins");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "separation", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_separation", "get_separation");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "texture_region_size", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_texture_region_size", "get_texture_region_size");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_texture_padding", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_use_texture_padding", "get_use_texture_padding");
 
 	// Base tiles
 	ClassDB::bind_method(D_METHOD("create_tile", "atlas_coords", "size"), &TileSetAtlasSource::create_tile, DEFVAL(Vector2i(1, 1)));
@@ -4251,6 +4314,11 @@ void TileSetAtlasSource::_bind_methods() {
 	// Helpers.
 	ClassDB::bind_method(D_METHOD("get_atlas_grid_size"), &TileSetAtlasSource::get_atlas_grid_size);
 	ClassDB::bind_method(D_METHOD("get_tile_texture_region", "atlas_coords", "frame"), &TileSetAtlasSource::get_tile_texture_region, DEFVAL(0));
+
+	// Getters for texture and tile region (padded or not)
+	ClassDB::bind_method(D_METHOD("_update_padded_texture"), &TileSetAtlasSource::_update_padded_texture);
+	ClassDB::bind_method(D_METHOD("get_runtime_texture"), &TileSetAtlasSource::get_runtime_texture);
+	ClassDB::bind_method(D_METHOD("get_runtime_tile_texture_region", "atlas_coords", "frame"), &TileSetAtlasSource::get_runtime_tile_texture_region);
 }
 
 TileSetAtlasSource::~TileSetAtlasSource() {
@@ -4335,6 +4403,69 @@ void TileSetAtlasSource::_clear_tiles_outside_texture() {
 	for (unsigned int i = 0; i < to_remove.size(); i++) {
 		remove_tile(to_remove[i]);
 	}
+}
+
+void TileSetAtlasSource::_queue_update_padded_texture() {
+	padded_texture_needs_update = true;
+	call_deferred("_update_padded_texture");
+}
+
+void TileSetAtlasSource::_update_padded_texture() {
+	if (!padded_texture_needs_update) {
+		return;
+	}
+	padded_texture_needs_update = false;
+	padded_texture = Ref<ImageTexture>();
+
+	if (!texture.is_valid()) {
+		return;
+	}
+
+	if (!use_texture_padding) {
+		return;
+	}
+
+	Size2 size = get_atlas_grid_size() * (texture_region_size + Vector2i(2, 2));
+
+	Ref<Image> src = texture->get_image();
+
+	Ref<Image> image;
+	image.instantiate();
+	image->create(size.x, size.y, false, Image::FORMAT_RGBA8);
+
+	for (KeyValue<Vector2i, TileAlternativesData> kv : tiles) {
+		for (int frame = 0; frame < (int)kv.value.animation_frames_durations.size(); frame++) {
+			// Compute the source rects.
+			Rect2i src_rect = get_tile_texture_region(kv.key, frame);
+
+			Rect2i top_src_rect = Rect2i(src_rect.position, Vector2i(src_rect.size.x, 1));
+			Rect2i bottom_src_rect = Rect2i(src_rect.position + Vector2i(0, src_rect.size.y - 1), Vector2i(src_rect.size.x, 1));
+			Rect2i left_src_rect = Rect2i(src_rect.position, Vector2i(1, src_rect.size.y));
+			Rect2i right_src_rect = Rect2i(src_rect.position + Vector2i(src_rect.size.x - 1, 0), Vector2i(1, src_rect.size.y));
+
+			// Copy the tile and the paddings.
+			Vector2i frame_coords = kv.key + (kv.value.size_in_atlas + kv.value.animation_separation) * ((kv.value.animation_columns > 0) ? Vector2i(frame % kv.value.animation_columns, frame / kv.value.animation_columns) : Vector2i(frame, 0));
+			Vector2i base_pos = frame_coords * (texture_region_size + Vector2i(2, 2)) + Vector2i(1, 1);
+
+			image->blit_rect(*src, src_rect, base_pos);
+
+			image->blit_rect(*src, top_src_rect, base_pos + Vector2i(0, -1));
+			image->blit_rect(*src, bottom_src_rect, base_pos + Vector2i(0, src_rect.size.y));
+			image->blit_rect(*src, left_src_rect, base_pos + Vector2i(-1, 0));
+			image->blit_rect(*src, right_src_rect, base_pos + Vector2i(src_rect.size.x, 0));
+
+			image->set_pixelv(base_pos + Vector2i(-1, -1), src->get_pixelv(src_rect.position));
+			image->set_pixelv(base_pos + Vector2i(src_rect.size.x, -1), src->get_pixelv(src_rect.position + Vector2i(src_rect.size.x - 1, 0)));
+			image->set_pixelv(base_pos + Vector2i(-1, src_rect.size.y), src->get_pixelv(src_rect.position + Vector2i(0, src_rect.size.y - 1)));
+			image->set_pixelv(base_pos + Vector2i(src_rect.size.x, src_rect.size.y), src->get_pixelv(src_rect.position + Vector2i(src_rect.size.x - 1, src_rect.size.y - 1)));
+		}
+	}
+
+	if (!padded_texture.is_valid()) {
+		padded_texture.instantiate();
+	}
+	padded_texture->create_from_image(image);
+	emit_changed();
 }
 
 /////////////////////////////// TileSetScenesCollectionSource //////////////////////////////////////
