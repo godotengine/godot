@@ -31,12 +31,13 @@
 #include "input_default.h"
 
 #include "core/input_map.h"
+#include "core/math/math_defs.h"
 #include "core/os/os.h"
 #include "main/default_controller_mappings.h"
 #include "scene/resources/texture.h"
 #include "servers/visual_server.h"
 
-void InputDefault::SpeedTrack::update(const Vector2 &p_delta_p) {
+void InputDefault::TouchTrack::update(const Vector2 &p_delta_p) {
 	uint64_t tick = OS::get_singleton()->get_ticks_usec();
 	uint32_t tdiff = tick - last_tick;
 	float delta_t = tdiff / 1000000.0;
@@ -44,6 +45,8 @@ void InputDefault::SpeedTrack::update(const Vector2 &p_delta_p) {
 
 	accum += p_delta_p;
 	accum_t += delta_t;
+	last_delta = p_delta_p;
+	position += p_delta_p;
 
 	if (accum_t > max_ref_frame * 10) {
 		accum_t = max_ref_frame * 10;
@@ -59,16 +62,25 @@ void InputDefault::SpeedTrack::update(const Vector2 &p_delta_p) {
 	}
 }
 
-void InputDefault::SpeedTrack::reset() {
+void InputDefault::TouchTrack::reset(const Vector2 &p_position_p) {
 	last_tick = OS::get_singleton()->get_ticks_usec();
 	speed = Vector2();
+	position = p_position_p;
+	last_delta = Vector2();
 	accum_t = 0;
 }
 
-InputDefault::SpeedTrack::SpeedTrack() {
+int InputDefault::TouchTrack::sector(const Vector2 &p_center_p) {
+	Point2 adjusted_position = p_center_p - position;
+	float raw_angle = fmod(adjusted_position.angle_to(last_delta) + (Math_PI / 4), Math_TAU);
+	float adjusted_angle = raw_angle >= 0 ? raw_angle : raw_angle + Math_TAU;
+	return floor(adjusted_angle / (Math_PI / 2));
+}
+
+InputDefault::TouchTrack::TouchTrack() {
 	min_ref_frame = 0.1;
 	max_ref_frame = 0.3;
-	reset();
+	reset(Vector2());
 }
 
 bool InputDefault::is_key_pressed(int p_scancode) const {
@@ -309,6 +321,7 @@ void InputDefault::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool 
 	//   require additional handling by this class.
 
 	Ref<InputEventKey> k = p_event;
+
 	if (k.is_valid() && !k->is_echo() && k->get_scancode() != 0) {
 		if (k->is_pressed()) {
 			keys_pressed.insert(k->get_scancode());
@@ -364,12 +377,11 @@ void InputDefault::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool 
 
 	if (st.is_valid()) {
 		if (st->is_pressed()) {
-			SpeedTrack &track = touch_speed_track[st->get_index()];
-			track.reset();
+			touch_track[st->get_index()].reset(st->get_position());
 		} else {
 			// Since a pointer index may not occur again (OSs may or may not reuse them),
 			// imperatively remove it from the map to keep no fossil entries in it
-			touch_speed_track.erase(st->get_index());
+			touch_track.erase(st->get_index());
 		}
 
 		if (emulate_mouse_from_touch) {
@@ -409,9 +421,9 @@ void InputDefault::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool 
 	Ref<InputEventScreenDrag> sd = p_event;
 
 	if (sd.is_valid()) {
-		SpeedTrack &track = touch_speed_track[sd->get_index()];
-		track.update(sd->get_relative());
-		sd->set_speed(track.speed);
+		TouchTrack &touch = touch_track[sd->get_index()];
+		touch.update(sd->get_relative());
+		sd->set_speed(touch.speed);
 
 		if (emulate_mouse_from_touch && sd->get_index() == mouse_from_touch_index) {
 			Ref<InputEventMouseMotion> motion_event;
@@ -426,6 +438,79 @@ void InputDefault::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool 
 			motion_event->set_pressure(1.f);
 
 			_parse_input_event_impl(motion_event, true);
+		}
+
+		int sz = touch_track.size();
+		if (sz > 1) {
+			Point2 center = Point2();
+			for (Map<int, TouchTrack>::Element *e = touch_track.front(); e; e = e->next()) {
+				center += e->get().position;
+			}
+			center /= sz;
+
+			int sector = -1;
+			for (Map<int, TouchTrack>::Element *e = touch_track.front(); e; e = e->next()) {
+				int e_sector = e->get().sector(center);
+				if (sector == -1) {
+					sector = e_sector;
+				} else if (sector != e_sector) {
+					sector = -1;
+					break;
+				}
+			}
+
+			if (sector == -1) {
+				Point2 speed = Point2();
+				Point2 relative = Point2();
+				for (Map<int, TouchTrack>::Element *e = touch_track.front(); e; e = e->next()) {
+					TouchTrack &track = e->get();
+					speed += track.speed;
+					relative += track.last_delta;
+				}
+				speed /= sz;
+				relative /= sz;
+
+				Ref<InputEventGesturePan> ev;
+				ev.instance();
+				ev->set_touches(sz);
+				ev->set_position(center);
+				ev->set_speed(speed);
+				ev->set_relative(relative);
+				_parse_input_event_impl(ev, false);
+			} else if (sector == 0 || sector == 2) {
+				float distance = 0;
+				float distance_p = 0;
+				for (Map<int, TouchTrack>::Element *e = touch_track.front(); e; e = e->next()) {
+					TouchTrack &track = e->get();
+					Vector2 d = track.position - center;
+					distance += d.length();
+					distance_p += (d + (track.last_delta / sz)).length();
+				}
+				distance /= sz;
+				distance_p /= sz;
+
+				Ref<InputEventGesturePinch> ev;
+				ev.instance();
+				ev->set_touches(sz);
+				ev->set_position(center);
+				ev->set_distance(distance);
+				ev->set_factor(distance / distance_p);
+				_parse_input_event_impl(ev, false);
+			} else if (sector == 1 || sector == 3) {
+				float rotation = 0;
+				for (Map<int, TouchTrack>::Element *e = touch_track.front(); e; e = e->next()) {
+					TouchTrack &track = e->get();
+					rotation += (track.position - center).angle_to(track.position + (track.last_delta / sz) - center);
+				}
+				rotation /= sz;
+
+				Ref<InputEventGestureTwist> ev;
+				ev.instance();
+				ev->set_touches(sz);
+				ev->set_position(center);
+				ev->set_rotation(rotation);
+				_parse_input_event_impl(ev, false);
+			}
 		}
 	}
 

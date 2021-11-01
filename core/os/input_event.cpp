@@ -1113,16 +1113,33 @@ void InputEventGesture::set_position(const Vector2 &p_pos) {
 	pos = p_pos;
 }
 
-void InputEventGesture::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_position", "position"), &InputEventGesture::set_position);
-	ClassDB::bind_method(D_METHOD("get_position"), &InputEventGesture::get_position);
-
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "position"), "set_position", "get_position");
-}
-
 Vector2 InputEventGesture::get_position() const {
 	return pos;
 }
+
+void InputEventGesture::set_touches(const int p_touches) {
+	touches = p_touches;
+}
+
+int InputEventGesture::get_touches() const {
+	return touches;
+}
+
+void InputEventGesture::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_position", "position"), &InputEventGesture::set_position);
+	ClassDB::bind_method(D_METHOD("get_position"), &InputEventGesture::get_position);
+	ClassDB::bind_method(D_METHOD("set_touches", "touches"), &InputEventGesture::set_touches);
+	ClassDB::bind_method(D_METHOD("get_touches"), &InputEventGesture::get_touches);
+
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "position"), "set_position", "get_position");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "touches"), "set_touches", "get_touches");
+}
+
+InputEventGesture::InputEventGesture() {
+	touches = 0;
+	pos = Vector2(0, 0);
+}
+
 /////////////////////////////
 
 void InputEventMagnifyGesture::set_factor(real_t p_factor) {
@@ -1179,6 +1196,7 @@ Ref<InputEvent> InputEventPanGesture::xformed_by(const Transform2D &p_xform, con
 
 	ev->set_position(p_xform.xform(get_position() + p_local_ofs));
 	ev->set_delta(get_delta());
+	ev->set_touches(get_touches());
 
 	return ev;
 }
@@ -1197,6 +1215,156 @@ void InputEventPanGesture::_bind_methods() {
 InputEventPanGesture::InputEventPanGesture() {
 	delta = Vector2(0, 0);
 }
+/////////////////////////////
+
+void InputEventGesturePan::set_relative(const Vector2 &p_relative) {
+	relative = p_relative;
+}
+
+Vector2 InputEventGesturePan::get_relative() const {
+	return relative;
+}
+
+Vector2 InputEventGesturePan::get_delta() const {
+	return relative / get_touches();
+}
+
+void InputEventGesturePan::set_speed(const Vector2 &p_speed) {
+	speed = p_speed;
+}
+
+Vector2 InputEventGesturePan::get_speed() const {
+	return speed;
+}
+
+Ref<InputEvent> InputEventGesturePan::xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs) const {
+	Ref<InputEventGesturePan> ev;
+	ev.instance();
+
+	ev->set_device(get_device());
+	ev->set_modifiers_from_event(this);
+
+	ev->set_position(p_xform.xform(get_position() + p_local_ofs));
+	ev->set_relative(p_xform.basis_xform(relative));
+	ev->set_speed(p_xform.basis_xform(speed));
+	ev->set_touches(get_touches());
+
+	return ev;
+}
+
+String InputEventGesturePan::as_text() const {
+	return "InputEventGesturePan : position=(" + String(get_position()) + "), relative=(" + String(get_relative()) + "), speed=(" + String(get_speed()) + ")";
+}
+
+void InputEventGesturePan::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_relative", "relative"), &InputEventGesturePan::set_relative);
+	ClassDB::bind_method(D_METHOD("get_relative"), &InputEventGesturePan::get_relative);
+
+	ClassDB::bind_method(D_METHOD("get_delta"), &InputEventGesturePan::get_delta);
+
+	ClassDB::bind_method(D_METHOD("set_speed", "speed"), &InputEventGesturePan::set_speed);
+	ClassDB::bind_method(D_METHOD("get_speed"), &InputEventGesturePan::get_speed);
+
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "relative"), "set_relative", "get_relative");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "speed"), "set_speed", "get_speed");
+}
+
+InputEventGesturePan::InputEventGesturePan() {
+	relative = Vector2(0, 0);
+	speed = Vector2(0, 0);
+}
+
+/////////////////////////////
+
+void InputEventGesturePinch::set_distance(float p_distance) {
+	distance = p_distance;
+}
+
+float InputEventGesturePinch::get_distance() const {
+	return distance;
+}
+
+void InputEventGesturePinch::set_factor(float p_factor) {
+	factor = p_factor;
+}
+
+float InputEventGesturePinch::get_factor() const {
+	return factor;
+}
+
+Ref<InputEvent> InputEventGesturePinch::xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs) const {
+	Ref<InputEventGesturePinch> ev;
+	ev.instance();
+
+	ev->set_device(get_device());
+	ev->set_modifiers_from_event(this);
+
+	ev->set_position(p_xform.xform(get_position() + p_local_ofs));
+	ev->set_distance(distance);
+	ev->set_factor(factor);
+	ev->set_touches(get_touches());
+
+	return ev;
+}
+
+String InputEventGesturePinch::as_text() const {
+	return "InputEventGesturePinch : position=(" + String(get_position()) + "), distance=(" + rtos(get_distance()) + "), factor=(" + rtos(get_factor()) + ")";
+}
+
+void InputEventGesturePinch::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_distance", "distance"), &InputEventGesturePinch::set_distance);
+	ClassDB::bind_method(D_METHOD("get_distance"), &InputEventGesturePinch::get_distance);
+
+	ClassDB::bind_method(D_METHOD("set_factor", "factor"), &InputEventGesturePinch::set_factor);
+	ClassDB::bind_method(D_METHOD("get_factor"), &InputEventGesturePinch::get_factor);
+
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "distance"), "set_distance", "get_distance");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "factor"), "set_factor", "get_factor");
+}
+
+InputEventGesturePinch::InputEventGesturePinch() {
+	distance = 0;
+	factor = 0;
+}
+
+/////////////////////////////
+
+void InputEventGestureTwist::set_rotation(float p_rotation) {
+	rotation = p_rotation;
+}
+
+float InputEventGestureTwist::get_rotation() const {
+	return rotation;
+}
+
+Ref<InputEvent> InputEventGestureTwist::xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs) const {
+	Ref<InputEventGestureTwist> ev;
+	ev.instance();
+
+	ev->set_device(get_device());
+	ev->set_modifiers_from_event(this);
+
+	ev->set_position(p_xform.xform(get_position() + p_local_ofs));
+	ev->set_rotation(rotation);
+
+	return ev;
+}
+
+String InputEventGestureTwist::as_text() const {
+	return "InputEventGestureTwist : position=(" + String(get_position()) + "), rotation=(" + rtos(get_rotation()) + ")";
+}
+
+void InputEventGestureTwist::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_rotation", "rotation"), &InputEventGestureTwist::set_rotation);
+	ClassDB::bind_method(D_METHOD("get_rotation"), &InputEventGestureTwist::get_rotation);
+
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "rotation"), "set_rotation", "get_rotation");
+}
+
+InputEventGestureTwist::InputEventGestureTwist() {
+	rotation = 0;
+}
+
 /////////////////////////////
 
 void InputEventMIDI::set_channel(const int p_channel) {

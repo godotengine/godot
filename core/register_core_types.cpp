@@ -145,6 +145,9 @@ void register_core_types() {
 	ClassDB::register_virtual_class<InputEventGesture>();
 	ClassDB::register_class<InputEventMagnifyGesture>();
 	ClassDB::register_class<InputEventPanGesture>();
+	ClassDB::register_class<InputEventGesturePan>();
+	ClassDB::register_class<InputEventGesturePinch>();
+	ClassDB::register_class<InputEventGestureTwist>();
 	ClassDB::register_class<InputEventMIDI>();
 
 	ClassDB::register_class<FuncRef>();
