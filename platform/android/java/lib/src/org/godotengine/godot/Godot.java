@@ -263,7 +263,7 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 		GodotLib.setup(command_line);
 
 		final String videoDriver = GodotLib.getGlobal("rendering/driver/driver_name");
-		if (videoDriver.equals("Vulkan")) {
+		if (videoDriver.equals("vulkan")) {
 			mRenderView = new GodotVulkanRenderView(activity, this);
 		} else {
 			mRenderView = new GodotGLRenderView(activity, this, xrMode, use_32_bits,
