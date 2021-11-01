@@ -228,7 +228,6 @@ public:
 	} sky_shader;
 
 	struct SkyMaterialData : public RendererStorageRD::MaterialData {
-		uint64_t last_frame;
 		SkyShaderData *shader_data;
 		RID uniform_set;
 		bool uniform_set_updated;

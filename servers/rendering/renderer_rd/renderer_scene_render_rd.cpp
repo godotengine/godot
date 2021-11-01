@@ -3665,7 +3665,6 @@ RendererStorageRD::ShaderData *RendererSceneRenderRD::_create_fog_shader_funcs()
 RendererStorageRD::MaterialData *RendererSceneRenderRD::_create_fog_material_func(FogShaderData *p_shader) {
 	FogMaterialData *material_data = memnew(FogMaterialData);
 	material_data->shader_data = p_shader;
-	material_data->last_frame = false;
 	//update will happen later anyway so do nothing.
 	return material_data;
 }

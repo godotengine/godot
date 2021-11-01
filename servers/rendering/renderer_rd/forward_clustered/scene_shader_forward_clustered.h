@@ -189,7 +189,6 @@ public:
 	}
 
 	struct MaterialData : public RendererStorageRD::MaterialData {
-		uint64_t last_frame;
 		ShaderData *shader_data;
 		RID uniform_set;
 		uint64_t last_pass = 0;

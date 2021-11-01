@@ -1373,14 +1373,6 @@ void RendererCanvasRenderRD::canvas_render_items(RID p_to_render_target, Item *p
 				if (md->shader_data->uses_time) {
 					time_used = true;
 				}
-				if (md->last_frame != RendererCompositorRD::singleton->get_frame_number()) {
-					md->last_frame = RendererCompositorRD::singleton->get_frame_number();
-					if (!RD::get_singleton()->uniform_set_is_valid(md->uniform_set)) {
-						// uniform set may be gone because a dependency was erased. In this case, it will happen
-						// if a texture is deleted, so just re-create it.
-						storage->material_force_update_textures(material, RendererStorageRD::SHADER_TYPE_2D);
-					}
-				}
 			}
 		}
 
@@ -2227,7 +2219,6 @@ RendererCanvasRenderRD::MaterialData::~MaterialData() {
 RendererStorageRD::MaterialData *RendererCanvasRenderRD::_create_material_func(ShaderData *p_shader) {
 	MaterialData *material_data = memnew(MaterialData);
 	material_data->shader_data = p_shader;
-	material_data->last_frame = false;
 	//update will happen later anyway so do nothing.
 	return material_data;
 }

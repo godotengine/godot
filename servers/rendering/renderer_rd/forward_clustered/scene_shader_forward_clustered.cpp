@@ -454,7 +454,6 @@ SceneShaderForwardClustered::MaterialData::~MaterialData() {
 RendererStorageRD::MaterialData *SceneShaderForwardClustered::_create_material_func(ShaderData *p_shader) {
 	MaterialData *material_data = memnew(MaterialData);
 	material_data->shader_data = p_shader;
-	material_data->last_frame = false;
 	//update will happen later anyway so do nothing.
 	return material_data;
 }

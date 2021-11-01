@@ -177,7 +177,7 @@ public:
 		Vector<RID> texture_cache;
 	};
 	typedef MaterialData *(*MaterialDataRequestFunction)(ShaderData *);
-	static void _material_uniform_set_erased(const RID &p_set, void *p_material);
+	static void _material_uniform_set_erased(void *p_material);
 
 	enum DefaultRDTexture {
 		DEFAULT_RD_TEXTURE_WHITE,
@@ -909,10 +909,8 @@ private:
 	}
 
 	struct ParticlesMaterialData : public MaterialData {
-		uint64_t last_frame = 0;
 		ParticlesShaderData *shader_data = nullptr;
 		RID uniform_set;
-		bool uniform_set_updated = false;
 
 		virtual void set_render_priority(int p_priority) {}
 		virtual void set_next_pass(RID p_pass) {}
@@ -1440,7 +1438,6 @@ public:
 	void material_get_instance_shader_parameters(RID p_material, List<InstanceShaderParam> *r_parameters);
 
 	void material_update_dependency(RID p_material, DependencyTracker *p_instance);
-	void material_force_update_textures(RID p_material, ShaderType p_shader_type);
 
 	void material_set_data_request_function(ShaderType p_shader_type, MaterialDataRequestFunction p_function);
 

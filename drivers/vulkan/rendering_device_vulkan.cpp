@@ -8428,11 +8428,11 @@ void RenderingDeviceVulkan::_free_internal(RID p_id) {
 	} else if (uniform_set_owner.owns(p_id)) {
 		UniformSet *uniform_set = uniform_set_owner.get_or_null(p_id);
 		frames[frame].uniform_sets_to_dispose_of.push_back(*uniform_set);
-		if (uniform_set->invalidated_callback != nullptr) {
-			uniform_set->invalidated_callback(p_id, uniform_set->invalidated_callback_userdata);
-		}
-
 		uniform_set_owner.free(p_id);
+
+		if (uniform_set->invalidated_callback != nullptr) {
+			uniform_set->invalidated_callback(uniform_set->invalidated_callback_userdata);
+		}
 	} else if (render_pipeline_owner.owns(p_id)) {
 		RenderPipeline *pipeline = render_pipeline_owner.get_or_null(p_id);
 		frames[frame].render_pipelines_to_dispose_of.push_back(*pipeline);
