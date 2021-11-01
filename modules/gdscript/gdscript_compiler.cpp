@@ -1072,8 +1072,8 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 				}
 
 				if (has_setter) {
-                    // Store stack slot for the temp value.
-                    target = codegen.add_temporary(_gdtype_from_datatype(assignment->assignee->get_datatype()));
+					// Store stack slot for the temp value.
+					target = codegen.add_temporary(_gdtype_from_datatype(assignment->assignee->get_datatype()));
 				} else {
 					target = _parse_expression(codegen, r_error, assignment->assignee);
 					if (r_error) {
