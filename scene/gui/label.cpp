@@ -487,6 +487,9 @@ void Label::_notification(int p_what) {
 					}
 				}
 			}
+			if (i >= lines_rid.size()) {
+				break;
+			}
 			ofs.y += TS->shaped_text_get_descent(lines_rid[i]) + vsep + line_spacing + font->get_spacing(TextServer::SPACING_BOTTOM);
 		}
 	}
