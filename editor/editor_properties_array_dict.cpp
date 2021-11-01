@@ -855,6 +855,7 @@ void EditorPropertyDictionary::update_property() {
 
 		object->set_dict(dict);
 		VBoxContainer *add_vbox = nullptr;
+		double default_float_step = EDITOR_GET("interface/inspector/default_float_step");
 
 		for (int i = 0; i < amount + 2; i++) {
 			String prop_name;
@@ -894,7 +895,7 @@ void EditorPropertyDictionary::update_property() {
 				} break;
 				case Variant::FLOAT: {
 					EditorPropertyFloat *editor = memnew(EditorPropertyFloat);
-					editor->setup(-100000, 100000, 0.001, true, false, true, true);
+					editor->setup(-100000, 100000, default_float_step, true, false, true, true);
 					prop = editor;
 				} break;
 				case Variant::STRING: {
@@ -905,7 +906,7 @@ void EditorPropertyDictionary::update_property() {
 				// Math types.
 				case Variant::VECTOR2: {
 					EditorPropertyVector2 *editor = memnew(EditorPropertyVector2);
-					editor->setup(-100000, 100000, 0.001, true);
+					editor->setup(-100000, 100000, default_float_step, true);
 					prop = editor;
 
 				} break;
@@ -917,7 +918,7 @@ void EditorPropertyDictionary::update_property() {
 				} break;
 				case Variant::RECT2: {
 					EditorPropertyRect2 *editor = memnew(EditorPropertyRect2);
-					editor->setup(-100000, 100000, 0.001, true);
+					editor->setup(-100000, 100000, default_float_step, true);
 					prop = editor;
 
 				} break;
@@ -929,7 +930,7 @@ void EditorPropertyDictionary::update_property() {
 				} break;
 				case Variant::VECTOR3: {
 					EditorPropertyVector3 *editor = memnew(EditorPropertyVector3);
-					editor->setup(-100000, 100000, 0.001, true);
+					editor->setup(-100000, 100000, default_float_step, true);
 					prop = editor;
 
 				} break;
@@ -941,37 +942,37 @@ void EditorPropertyDictionary::update_property() {
 				} break;
 				case Variant::TRANSFORM2D: {
 					EditorPropertyTransform2D *editor = memnew(EditorPropertyTransform2D);
-					editor->setup(-100000, 100000, 0.001, true);
+					editor->setup(-100000, 100000, default_float_step, true);
 					prop = editor;
 
 				} break;
 				case Variant::PLANE: {
 					EditorPropertyPlane *editor = memnew(EditorPropertyPlane);
-					editor->setup(-100000, 100000, 0.001, true);
+					editor->setup(-100000, 100000, default_float_step, true);
 					prop = editor;
 
 				} break;
 				case Variant::QUATERNION: {
 					EditorPropertyQuaternion *editor = memnew(EditorPropertyQuaternion);
-					editor->setup(-100000, 100000, 0.001, true);
+					editor->setup(-100000, 100000, default_float_step, true);
 					prop = editor;
 
 				} break;
 				case Variant::AABB: {
 					EditorPropertyAABB *editor = memnew(EditorPropertyAABB);
-					editor->setup(-100000, 100000, 0.001, true);
+					editor->setup(-100000, 100000, default_float_step, true);
 					prop = editor;
 
 				} break;
 				case Variant::BASIS: {
 					EditorPropertyBasis *editor = memnew(EditorPropertyBasis);
-					editor->setup(-100000, 100000, 0.001, true);
+					editor->setup(-100000, 100000, default_float_step, true);
 					prop = editor;
 
 				} break;
 				case Variant::TRANSFORM3D: {
 					EditorPropertyTransform3D *editor = memnew(EditorPropertyTransform3D);
-					editor->setup(-100000, 100000, 0.001, true);
+					editor->setup(-100000, 100000, default_float_step, true);
 					prop = editor;
 
 				} break;
