@@ -31,12 +31,21 @@
 				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
 			</description>
 		</method>
+		<method name="create_instance">
+			<return type="int" />
+			<argument index="0" name="arguments" type="PackedStringArray" />
+			<description>
+				Creates a new instance of Godot that runs independently. The [code]arguments[/code] are used in the given order and separated by a space.
+				If the process creation succeeds, the method will return the new process ID, which you can use to monitor the process (and potentially terminate it with [method kill]). If the process creation fails, the method will return [code]-1[/code].
+				[b]Note:[/b] This method is implemented on Android, iOS, Linux, macOS and Windows.
+			</description>
+		</method>
 		<method name="create_process">
 			<return type="int" />
 			<argument index="0" name="path" type="String" />
 			<argument index="1" name="arguments" type="PackedStringArray" />
 			<description>
-				Creates a new process that runs independently of Godot. It will not terminate if Godot terminates. The file specified in [code]path[/code] must exist and be executable. Platform path resolution will be used. The [code]arguments[/code] are used in the given order and separated by a space.
+				Creates a new process that runs independently of Godot. It will not terminate if Godot terminates. The path specified in [code]path[/code] must exist and be executable file or macOS .app bundle. Platform path resolution will be used. The [code]arguments[/code] are used in the given order and separated by a space.
 				If the process creation succeeds, the method will return the new process ID, which you can use to monitor the process (and potentially terminate it with [method kill]). If the process creation fails, the method will return [code]-1[/code].
 				For example, running another instance of the project:
 				[codeblocks]
@@ -49,7 +58,7 @@
 				[/codeblocks]
 				See [method execute] if you wish to run an external command and retrieve the results.
 				[b]Note:[/b] This method is implemented on Android, iOS, Linux, macOS and Windows.
-				[b]Note:[/b] On macOS, sandboxed applications are limited to run only embedded helper executables, specified during export.
+				[b]Note:[/b] On macOS, sandboxed applications are limited to run only embedded helper executables, specified during export or system .app bundle, system .app bundles will ignore arguments.
 			</description>
 		</method>
 		<method name="delay_msec" qualifiers="const">
@@ -201,6 +210,7 @@
 			<return type="String" />
 			<description>
 				Returns the path to the current engine executable.
+				[b]Note:[/b] On macOS, always use [method create_instance] instead of relying on executable path.
 			</description>
 		</method>
 		<method name="get_granted_permissions" qualifiers="const">

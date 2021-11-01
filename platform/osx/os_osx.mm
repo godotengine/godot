@@ -491,6 +491,64 @@ String OS_OSX::get_executable_path() const {
 	}
 }
 
+Error OS_OSX::create_instance(const List<String> &p_arguments, ProcessID *r_child_id) {
+	// If executable is bundled, always execute editor instances as an app bundle to ensure app window is registered and activated correctly.
+	NSString *nsappname = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleName"];
+	if (nsappname != nil) {
+		String path;
+		path.parse_utf8([[[NSBundle mainBundle] bundlePath] UTF8String]);
+		return create_process(path, p_arguments, r_child_id);
+	} else {
+		return create_process(get_executable_path(), p_arguments, r_child_id);
+	}
+}
+
+Error OS_OSX::create_process(const String &p_path, const List<String> &p_arguments, ProcessID *r_child_id) {
+	if (@available(macOS 10.15, *)) {
+		// Use NSWorkspace if path is an .app bundle.
+		NSURL *url = [NSURL fileURLWithPath:@(p_path.utf8().get_data())];
+		NSBundle *bundle = [NSBundle bundleWithURL:url];
+		if (bundle) {
+			NSMutableArray *arguments = [[NSMutableArray alloc] init];
+			for (const List<String>::Element *E = p_arguments.front(); E; E = E->next()) {
+				[arguments addObject:[NSString stringWithUTF8String:E->get().utf8().get_data()]];
+			}
+			NSWorkspaceOpenConfiguration *configuration = [[NSWorkspaceOpenConfiguration alloc] init];
+			[configuration setArguments:arguments];
+			[configuration setCreatesNewApplicationInstance:YES];
+			__block dispatch_semaphore_t lock = dispatch_semaphore_create(0);
+			__block Error err = ERR_TIMEOUT;
+			__block pid_t pid = 0;
+			[[NSWorkspace sharedWorkspace] openApplicationAtURL:url
+												  configuration:configuration
+											  completionHandler:^(NSRunningApplication *app, NSError *error) {
+												  if (error) {
+													  err = ERR_CANT_FORK;
+													  NSLog(@"Failed to execute: %@", error.localizedDescription);
+												  } else {
+													  pid = [app processIdentifier];
+													  err = OK;
+												  }
+												  dispatch_semaphore_signal(lock);
+											  }];
+			dispatch_semaphore_wait(lock, dispatch_time(DISPATCH_TIME_NOW, 20000000000)); // 20 sec timeout, wait for app to launch.
+			dispatch_release(lock);
+
+			if (err == OK) {
+				if (r_child_id) {
+					*r_child_id = (ProcessID)pid;
+				}
+			}
+
+			return err;
+		} else {
+			return OS_Unix::create_process(p_path, p_arguments, r_child_id);
+		}
+	} else {
+		return OS_Unix::create_process(p_path, p_arguments, r_child_id);
+	}
+}
+
 void OS_OSX::run() {
 	force_quit = false;
 
