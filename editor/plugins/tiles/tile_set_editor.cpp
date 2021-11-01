@@ -41,10 +41,10 @@
 
 TileSetEditor *TileSetEditor::singleton = nullptr;
 
-void TileSetEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) {
+void TileSetEditor::_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) {
 	ERR_FAIL_COND(!tile_set.is_valid());
 
-	if (!can_drop_data_fw(p_point, p_data, p_from)) {
+	if (!_can_drop_data_fw(p_point, p_data, p_from)) {
 		return;
 	}
 
@@ -81,7 +81,7 @@ void TileSetEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data, C
 	}
 }
 
-bool TileSetEditor::can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const {
+bool TileSetEditor::_can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const {
 	ERR_FAIL_COND_V(!tile_set.is_valid(), false);
 
 	if (p_from == sources_list) {
@@ -608,8 +608,8 @@ void TileSetEditor::_undo_redo_inspector_callback(Object *p_undo_redo, Object *p
 }
 
 void TileSetEditor::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_can_drop_data_fw"), &TileSetEditor::can_drop_data_fw);
-	ClassDB::bind_method(D_METHOD("_drop_data_fw"), &TileSetEditor::drop_data_fw);
+	ClassDB::bind_method(D_METHOD("_can_drop_data_fw"), &TileSetEditor::_can_drop_data_fw);
+	ClassDB::bind_method(D_METHOD("_drop_data_fw"), &TileSetEditor::_drop_data_fw);
 }
 
 void TileSetEditor::edit(Ref<TileSet> p_tile_set) {
