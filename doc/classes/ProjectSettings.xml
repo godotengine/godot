@@ -1557,8 +1557,9 @@
 		<member name="rendering/driver/depth_prepass/enable" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], performs a previous depth pass before rendering materials. This increases performance in scenes with high overdraw, when complex materials and lighting are used.
 		</member>
-		<member name="rendering/driver/driver_name" type="String" setter="" getter="" default="&quot;Vulkan&quot;">
-			The video driver to use (currently only "Vulkan" is implemented).
+		<member name="rendering/driver/driver_name" type="String" setter="" getter="" default="&quot;vulkan&quot;">
+			The video driver to use.
+			[b]Note:[/b] OpenGL support is currently incomplete. Only basic 2D rendering is supported, and single-window mode is required for correct operation.
 			[b]Note:[/b] The backend in use can be overridden at runtime via the [code]--rendering-driver[/code] command line argument.
 			[b]FIXME:[/b] No longer valid after DisplayServer split:
 			In such cases, this property is not updated, so use [code]OS.get_current_video_driver[/code] to query it at run-time.

@@ -1275,14 +1275,14 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	register_core_extensions(); //before display
 	// possibly be worth changing the default from vulkan to something lower spec,
 	// for the project manager, depending on how smooth the fallback is.
-	GLOBAL_DEF_RST("rendering/driver/driver_name", "Vulkan");
+	GLOBAL_DEF_RST("rendering/driver/driver_name", "vulkan");
 
 	// this list is hard coded, which makes it more difficult to add new backends.
 	// can potentially be changed to more of a plugin system at a later date.
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/driver/driver_name",
 			PropertyInfo(Variant::STRING,
 					"rendering/driver/driver_name",
-					PROPERTY_HINT_ENUM, "Vulkan,OpenGL"));
+					PROPERTY_HINT_ENUM, "vulkan,opengl3"));
 
 	// if not set on the command line
 	if (rendering_driver == "") {
