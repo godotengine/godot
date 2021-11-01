@@ -300,9 +300,9 @@ void EditorExportPlatformJavaScript::get_preset_features(const Ref<EditorExportP
 
 	if (p_preset->get("vram_texture_compression/for_mobile")) {
 		String driver = ProjectSettings::get_singleton()->get("rendering/driver/driver_name");
-		if (driver == "OpenGL3") {
+		if (driver == "opengl3") {
 			r_features->push_back("etc");
-		} else if (driver == "Vulkan") {
+		} else if (driver == "vulkan") {
 			// FIXME: Review if this is correct.
 			r_features->push_back("etc2");
 		}

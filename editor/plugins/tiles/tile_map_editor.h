@@ -75,14 +75,15 @@ private:
 	Button *line_tool_button;
 	Button *rect_tool_button;
 	Button *bucket_tool_button;
-	Button *picker_button;
 
 	HBoxContainer *tools_settings;
+
 	VSeparator *tools_settings_vsep;
+	Button *picker_button;
 	Button *erase_button;
-	CheckBox *bucket_continuous_checkbox;
 
 	VSeparator *tools_settings_vsep_2;
+	CheckBox *bucket_contiguous_checkbox;
 	CheckBox *random_tile_checkbox;
 	float scattering = 0.0;
 	Label *scatter_label;
@@ -108,17 +109,16 @@ private:
 		DRAG_TYPE_CLIPBOARD_PASTE,
 	};
 	DragType drag_type = DRAG_TYPE_NONE;
+	bool drag_erasing = false;
 	Vector2 drag_start_mouse_pos;
 	Vector2 drag_last_mouse_pos;
 	Map<Vector2i, TileMapCell> drag_modified;
-	bool rmb_erasing = false;
 
 	TileMapCell _pick_random_tile(Ref<TileMapPattern> p_pattern);
-	Map<Vector2i, TileMapCell> _draw_line(Vector2 p_start_drag_mouse_pos, Vector2 p_from_mouse_pos, Vector2 p_to_mouse_pos);
-	Map<Vector2i, TileMapCell> _draw_rect(Vector2i p_start_cell, Vector2i p_end_cell);
-	Map<Vector2i, TileMapCell> _draw_bucket_fill(Vector2i p_coords, bool p_contiguous);
+	Map<Vector2i, TileMapCell> _draw_line(Vector2 p_start_drag_mouse_pos, Vector2 p_from_mouse_pos, Vector2 p_to_mouse_pos, bool p_erase);
+	Map<Vector2i, TileMapCell> _draw_rect(Vector2i p_start_cell, Vector2i p_end_cell, bool p_erase);
+	Map<Vector2i, TileMapCell> _draw_bucket_fill(Vector2i p_coords, bool p_contiguous, bool p_erase);
 	void _stop_dragging();
-	bool _is_erasing() const;
 
 	///// Selection system. /////
 	Set<Vector2i> tile_map_selection;
@@ -220,31 +220,52 @@ private:
 
 	Ref<ButtonGroup> tool_buttons_group;
 	Button *paint_tool_button;
+	Button *line_tool_button;
+	Button *rect_tool_button;
+	Button *bucket_tool_button;
 
 	HBoxContainer *tools_settings;
+
 	VSeparator *tools_settings_vsep;
 	Button *picker_button;
 	Button *erase_button;
 
+	VSeparator *tools_settings_vsep_2;
+	CheckBox *bucket_contiguous_checkbox;
 	void _update_toolbar();
 
 	// Main vbox.
 	VBoxContainer *main_vbox_container;
 
 	// TileMap editing.
+	bool has_mouse = false;
+	void _mouse_exited_viewport();
+
 	enum DragType {
 		DRAG_TYPE_NONE = 0,
 		DRAG_TYPE_PAINT,
+		DRAG_TYPE_LINE,
+		DRAG_TYPE_RECT,
+		DRAG_TYPE_BUCKET,
 		DRAG_TYPE_PICK,
 	};
 	DragType drag_type = DRAG_TYPE_NONE;
+	bool drag_erasing = false;
 	Vector2 drag_start_mouse_pos;
 	Vector2 drag_last_mouse_pos;
 	Map<Vector2i, TileMapCell> drag_modified;
 
 	// Painting
 	Map<Vector2i, TileMapCell> _draw_terrains(const Map<Vector2i, TileSet::TerrainsPattern> &p_to_paint, int p_terrain_set) const;
+	Map<Vector2i, TileMapCell> _draw_line(Vector2i p_start_cell, Vector2i p_end_cell, bool p_erase);
+	Map<Vector2i, TileMapCell> _draw_rect(Vector2i p_start_cell, Vector2i p_end_cell, bool p_erase);
+	Set<Vector2i> _get_cells_for_bucket_fill(Vector2i p_coords, bool p_contiguous);
+	Map<Vector2i, TileMapCell> _draw_bucket_fill(Vector2i p_coords, bool p_contiguous, bool p_erase);
 	void _stop_dragging();
+
+	int selected_terrain_set = -1;
+	TileSet::TerrainsPattern selected_terrains_pattern;
+	void _update_selection();
 
 	// Bottom panel.
 	Tree *terrains_tree;
@@ -265,7 +286,7 @@ private:
 public:
 	virtual Vector<TabData> get_tabs() const override;
 	virtual bool forward_canvas_gui_input(const Ref<InputEvent> &p_event) override;
-	//virtual void forward_canvas_draw_over_viewport(Control *p_overlay) override;
+	virtual void forward_canvas_draw_over_viewport(Control *p_overlay) override;
 
 	TileMapEditorTerrainsPlugin();
 	~TileMapEditorTerrainsPlugin();
