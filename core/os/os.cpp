@@ -440,6 +440,15 @@ bool OS::has_feature(const String &p_feature) {
 	if (p_feature == "riscv") {
 		return true;
 	}
+#elif defined(__powerpc__)
+#if defined(__powerpc64__)
+	if (p_feature == "ppc64") {
+		return true;
+	}
+#endif
+	if (p_feature == "ppc") {
+		return true;
+	}
 #endif
 
 	if (_check_internal_feature_support(p_feature)) {
