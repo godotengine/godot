@@ -2146,18 +2146,16 @@ Set<TileSet::TerrainsPattern> TileMap::_get_valid_terrains_patterns_for_constrai
 	Set<TileSet::TerrainsPattern> compatible_terrain_tile_patterns;
 	for (TileSet::TerrainsPattern &terrain_pattern : tile_set->get_terrains_pattern_set(p_terrain_set)) {
 		int valid = true;
-		int in_pattern_count = 0;
 		for (int i = 0; i < TileSet::CELL_NEIGHBOR_MAX; i++) {
 			TileSet::CellNeighbor bit = TileSet::CellNeighbor(i);
 			if (tile_set->is_valid_peering_bit_terrain(p_terrain_set, bit)) {
 				// Check if the bit is compatible with the constraints.
-				TerrainConstraint terrain_bit_constraint = TerrainConstraint(this, p_position, bit, terrain_pattern[in_pattern_count]);
+				TerrainConstraint terrain_bit_constraint = TerrainConstraint(this, p_position, bit, terrain_pattern.get_terrain(bit));
 				Set<TerrainConstraint>::Element *in_set_constraint_element = p_constraints.find(terrain_bit_constraint);
 				if (in_set_constraint_element && in_set_constraint_element->get().get_terrain() != terrain_bit_constraint.get_terrain()) {
 					valid = false;
 					break;
 				}
-				in_pattern_count++;
 			}
 		}
 
@@ -2249,13 +2247,11 @@ Set<TileMap::TerrainConstraint> TileMap::get_terrain_constraints_from_added_tile
 
 	// Compute the constraints needed from the surrounding tiles.
 	Set<TerrainConstraint> output;
-	int in_pattern_count = 0;
 	for (uint32_t i = 0; i < TileSet::CELL_NEIGHBOR_MAX; i++) {
 		TileSet::CellNeighbor side = TileSet::CellNeighbor(i);
 		if (tile_set->is_valid_peering_bit_terrain(p_terrain_set, side)) {
-			TerrainConstraint c = TerrainConstraint(this, p_position, side, p_terrains_pattern[in_pattern_count]);
+			TerrainConstraint c = TerrainConstraint(this, p_position, side, p_terrains_pattern.get_terrain(side));
 			output.insert(c);
-			in_pattern_count++;
 		}
 	}
 
@@ -2312,8 +2308,11 @@ Map<Vector2i, TileSet::TerrainsPattern> TileMap::terrain_wave_function_collapse(
 		int pattern_index = 0;
 		for (const TileSet::TerrainsPattern &pattern : valid_tiles) {
 			Set<int> terrains;
-			for (int i = 0; i < pattern.size(); i++) {
-				terrains.insert(pattern[i]);
+			for (int i = 0; i < TileSet::CELL_NEIGHBOR_MAX; i++) {
+				TileSet::CellNeighbor side = TileSet::CellNeighbor(i);
+				if (tile_set->is_valid_peering_bit_terrain(p_terrain_set, side)) {
+					terrains.insert(pattern.get_terrain(side));
+				}
 			}
 			min_terrain_count = MIN(min_terrain_count, terrains.size());
 			terrains_counts.push_back(terrains.size());
@@ -2369,7 +2368,7 @@ void TileMap::set_cells_from_surrounding_terrains(int p_layer, TypedArray<Vector
 
 	Map<Vector2i, TileSet::TerrainsPattern> wfc_output = terrain_wave_function_collapse(coords_set, p_terrain_set, constraints);
 	for (const KeyValue<Vector2i, TileSet::TerrainsPattern> &kv : wfc_output) {
-		TileMapCell cell = tile_set->get_random_tile_from_pattern(p_terrain_set, kv.value);
+		TileMapCell cell = tile_set->get_random_tile_from_terrains_pattern(p_terrain_set, kv.value);
 		set_cell(p_layer, kv.key, cell.source_id, cell.get_atlas_coords(), cell.alternative_tile);
 	}
 }
