@@ -396,7 +396,7 @@ void PopupMenu::_gui_input(const Ref<InputEvent> &p_event) {
 		}
 	}
 
-	Ref<InputEventPanGesture> pan_gesture = p_event;
+	Ref<InputEventGesturePan> pan_gesture = p_event;
 	if (pan_gesture.is_valid()) {
 		if (get_global_position().y + get_size().y > get_viewport_rect().size.y || get_global_position().y < 0) {
 			_scroll(-pan_gesture->get_delta().y, pan_gesture->get_position());
