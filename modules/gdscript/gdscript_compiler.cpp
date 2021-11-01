@@ -1014,7 +1014,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 				}
 
 				// If this is a local member, also assign to it.
-				// This allow things like: position.x += 2.0
+				// This allows things like: position.x += 2.0
 				if (assign_property != StringName()) {
 					gen->write_set_member(assigned, assign_property);
 				}
@@ -1072,10 +1072,8 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 				}
 
 				if (has_setter) {
-					if (!is_in_setter) {
-						// Store stack slot for the temp value.
-						target = codegen.add_temporary(_gdtype_from_datatype(assignment->assignee->get_datatype()));
-					}
+                    // Store stack slot for the temp value.
+                    target = codegen.add_temporary(_gdtype_from_datatype(assignment->assignee->get_datatype()));
 				} else {
 					target = _parse_expression(codegen, r_error, assignment->assignee);
 					if (r_error) {
