@@ -83,7 +83,7 @@ uint32_t EditorSceneImporterFBX::get_import_flags() const {
 	return IMPORT_SCENE;
 }
 
-Node *EditorSceneImporterFBX::import_scene(const String &p_path, uint32_t p_flags, int p_bake_fps,
+Node *EditorSceneImporterFBX::import_scene(const String &p_path, uint32_t p_flags, int p_bake_fps, uint32_t p_compress_flags,
 		List<String> *r_missing_deps, Error *r_err) {
 	// done for performance when re-importing lots of files when testing importer in verbose only!
 	if (OS::get_singleton()->is_stdout_verbose()) {
@@ -188,7 +188,7 @@ Node *EditorSceneImporterFBX::import_scene(const String &p_path, uint32_t p_flag
 						   "For minimal breakage, please export FBX from Blender with -Z forward, and Y up.");
 			}
 
-			Spatial *spatial = _generate_scene(p_path, &doc, p_flags, p_bake_fps, 8, is_blender_fbx);
+			Spatial *spatial = _generate_scene(p_path, &doc, p_flags, p_bake_fps, p_compress_flags, 8, is_blender_fbx);
 			// todo: move to document shutdown (will need to be validated after moving; this code has been validated already)
 			for (FBXDocParser::TokenPtr token : tokens) {
 				if (token) {
@@ -364,6 +364,7 @@ Spatial *EditorSceneImporterFBX::_generate_scene(
 		const FBXDocParser::Document *p_document,
 		const uint32_t p_flags,
 		int p_bake_fps,
+		const uint32_t p_compress_flags,
 		const int32_t p_max_bone_weights,
 		bool p_is_blender_fbx) {
 	ImportState state;
@@ -664,7 +665,7 @@ Spatial *EditorSceneImporterFBX::_generate_scene(
 						mesh_data_precached->mesh_node = fbx_node;
 
 						// mesh node, mesh id
-						mesh_node = mesh_data_precached->create_fbx_mesh(state, mesh_geometry, fbx_node->fbx_model, (p_flags & IMPORT_USE_COMPRESSION) != 0);
+						mesh_node = mesh_data_precached->create_fbx_mesh(state, mesh_geometry, fbx_node->fbx_model, p_compress_flags);
 						if (!state.MeshNodes.has(mesh_id)) {
 							state.MeshNodes.insert(mesh_id, fbx_node);
 						}

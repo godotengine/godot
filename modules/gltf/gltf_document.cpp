@@ -2889,7 +2889,7 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> state) {
 				mat = mat3d;
 			}
 			int32_t mat_idx = import_mesh->get_surface_count();
-			import_mesh->add_surface_from_arrays(primitive, array, morphs);
+			import_mesh->add_surface_from_arrays(primitive, array, morphs, state->compress_flags);
 			import_mesh->surface_set_material(mat_idx, mat);
 		}
 

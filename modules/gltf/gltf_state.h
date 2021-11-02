@@ -66,6 +66,7 @@ class GLTFState : public Resource {
 
 	bool use_named_skin_binds = false;
 	bool use_legacy_names = false;
+	uint32_t compress_flags = 0;
 
 	Vector<Ref<GLTFNode>> nodes;
 	Vector<Vector<uint8_t>> buffers;

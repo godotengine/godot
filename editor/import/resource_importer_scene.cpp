@@ -64,7 +64,7 @@ void EditorSceneImporter::get_extensions(List<String> *r_extensions) const {
 
 	ERR_FAIL();
 }
-Node *EditorSceneImporter::import_scene(const String &p_path, uint32_t p_flags, int p_bake_fps, List<String> *r_missing_deps, Error *r_err) {
+Node *EditorSceneImporter::import_scene(const String &p_path, uint32_t p_flags, int p_bake_fps, uint32_t p_compress_flags, List<String> *r_missing_deps, Error *r_err) {
 	if (get_script_instance()) {
 		return get_script_instance()->call("_import_scene", p_path, p_flags, p_bake_fps);
 	}
@@ -83,8 +83,8 @@ Ref<Animation> EditorSceneImporter::import_animation(const String &p_path, uint3
 //for documenters, these functions are useful when an importer calls an external conversion helper (like, fbx2gltf),
 //and you want to load the resulting file
 
-Node *EditorSceneImporter::import_scene_from_other_importer(const String &p_path, uint32_t p_flags, int p_bake_fps) {
-	return ResourceImporterScene::get_singleton()->import_scene_from_other_importer(this, p_path, p_flags, p_bake_fps);
+Node *EditorSceneImporter::import_scene_from_other_importer(const String &p_path, uint32_t p_flags, int p_bake_fps, uint32_t p_compress_flags) {
+	return ResourceImporterScene::get_singleton()->import_scene_from_other_importer(this, p_path, p_flags, p_bake_fps, p_compress_flags);
 }
 
 Ref<Animation> EditorSceneImporter::import_animation_from_other_importer(const String &p_path, uint32_t p_flags, int p_bake_fps) {
@@ -92,7 +92,7 @@ Ref<Animation> EditorSceneImporter::import_animation_from_other_importer(const S
 }
 
 void EditorSceneImporter::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("import_scene_from_other_importer", "path", "flags", "bake_fps"), &EditorSceneImporter::import_scene_from_other_importer);
+	ClassDB::bind_method(D_METHOD("import_scene_from_other_importer", "path", "flags", "bake_fps", "compress_flags"), &EditorSceneImporter::import_scene_from_other_importer);
 	ClassDB::bind_method(D_METHOD("import_animation_from_other_importer", "path", "flags", "bake_fps"), &EditorSceneImporter::import_animation_from_other_importer);
 
 	BIND_VMETHOD(MethodInfo(Variant::INT, "_get_import_flags"));
@@ -114,7 +114,6 @@ void EditorSceneImporter::_bind_methods() {
 	BIND_CONSTANT(IMPORT_GENERATE_TANGENT_ARRAYS);
 	BIND_CONSTANT(IMPORT_FAIL_ON_MISSING_DEPENDENCIES);
 	BIND_CONSTANT(IMPORT_MATERIALS_IN_INSTANCES);
-	BIND_CONSTANT(IMPORT_USE_COMPRESSION);
 }
 
 /////////////////////////////////
@@ -1078,7 +1077,8 @@ void ResourceImporterScene::get_import_options(List<ImportOption> *r_options, in
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "materials/location", PROPERTY_HINT_ENUM, "Node,Mesh"), (meshes_out || materials_out) ? 1 : 0));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "materials/storage", PROPERTY_HINT_ENUM, "Built-In,Files (.material),Files (.tres)", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), materials_out ? 1 : 0));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "materials/keep_on_reimport"), materials_out));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "meshes/compress"), true));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "meshes/octahedral_compression"), true));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "meshes/compress", PROPERTY_HINT_FLAGS, "Vertex,Normal,Tangent,Color,TexUV,TexUV2,Bones,Weights,Index"), VS::ARRAY_COMPRESS_DEFAULT >> VS::ARRAY_COMPRESS_BASE));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "meshes/ensure_tangents"), true));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "meshes/storage", PROPERTY_HINT_ENUM, "Built-In,Files (.mesh),Files (.tres)"), meshes_out ? 1 : 0));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "meshes/light_baking", PROPERTY_HINT_ENUM, "Disabled,Enable,Gen Lightmaps", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), 0));
@@ -1128,7 +1128,7 @@ void ResourceImporterScene::_add_shapes(Node *p_node, const List<Ref<Shape>> &p_
 	}
 }
 
-Node *ResourceImporterScene::import_scene_from_other_importer(EditorSceneImporter *p_exception, const String &p_path, uint32_t p_flags, int p_bake_fps) {
+Node *ResourceImporterScene::import_scene_from_other_importer(EditorSceneImporter *p_exception, const String &p_path, uint32_t p_flags, int p_bake_fps, uint32_t p_compress_flags) {
 	Ref<EditorSceneImporter> importer;
 	String ext = p_path.get_extension().to_lower();
 
@@ -1155,7 +1155,7 @@ Node *ResourceImporterScene::import_scene_from_other_importer(EditorSceneImporte
 
 	List<String> missing;
 	Error err;
-	return importer->import_scene(p_path, p_flags, p_bake_fps, &missing, &err);
+	return importer->import_scene(p_path, p_flags, p_bake_fps, p_compress_flags, &missing, &err);
 }
 
 Ref<Animation> ResourceImporterScene::import_animation_from_other_importer(EditorSceneImporter *p_exception, const String &p_path, uint32_t p_flags, int p_bake_fps) {
@@ -1224,10 +1224,10 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 		import_flags |= EditorSceneImporter::IMPORT_ANIMATION;
 	}
 
-	if (int(p_options["meshes/compress"])) {
-		import_flags |= EditorSceneImporter::IMPORT_USE_COMPRESSION;
+	uint32_t compress_flags = int(p_options["meshes/compress"]) << VS::ARRAY_COMPRESS_BASE;
+	if (bool(p_options["meshes/octahedral_compression"])) {
+		compress_flags |= VS::ARRAY_FLAG_USE_OCTAHEDRAL_COMPRESSION;
 	}
-
 	if (bool(p_options["meshes/ensure_tangents"])) {
 		import_flags |= EditorSceneImporter::IMPORT_GENERATE_TANGENT_ARRAYS;
 	}
@@ -1246,7 +1246,7 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 
 	Error err = OK;
 	List<String> missing_deps; // for now, not much will be done with this
-	Node *scene = importer->import_scene(src_path, import_flags, fps, &missing_deps, &err);
+	Node *scene = importer->import_scene(src_path, import_flags, fps, compress_flags, &missing_deps, &err);
 	if (!scene || err != OK) {
 		return err;
 	}
@@ -1559,7 +1559,7 @@ uint32_t EditorSceneImporterESCN::get_import_flags() const {
 void EditorSceneImporterESCN::get_extensions(List<String> *r_extensions) const {
 	r_extensions->push_back("escn");
 }
-Node *EditorSceneImporterESCN::import_scene(const String &p_path, uint32_t p_flags, int p_bake_fps, List<String> *r_missing_deps, Error *r_err) {
+Node *EditorSceneImporterESCN::import_scene(const String &p_path, uint32_t p_flags, int p_bake_fps, uint32_t p_compress_flags, List<String> *r_missing_deps, Error *r_err) {
 	Error error;
 	Ref<PackedScene> ps = ResourceFormatLoaderText::singleton->load(p_path, p_path, &error);
 	ERR_FAIL_COND_V_MSG(!ps.is_valid(), nullptr, "Cannot load scene as text resource from path '" + p_path + "'.");

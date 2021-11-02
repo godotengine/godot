@@ -47,6 +47,7 @@
 			<argument index="0" name="path" type="String" />
 			<argument index="1" name="flags" type="int" />
 			<argument index="2" name="bake_fps" type="int" />
+			<argument index="3" name="compress_flags" type="int" />
 			<description>
 			</description>
 		</method>
@@ -69,8 +70,6 @@
 		<constant name="IMPORT_FAIL_ON_MISSING_DEPENDENCIES" value="512">
 		</constant>
 		<constant name="IMPORT_MATERIALS_IN_INSTANCES" value="1024">
-		</constant>
-		<constant name="IMPORT_USE_COMPRESSION" value="2048">
 		</constant>
 	</constants>
 </class>
