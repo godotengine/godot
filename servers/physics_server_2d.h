@@ -94,60 +94,15 @@ public:
 	PhysicsDirectBodyState2D();
 };
 
-//used for script
-class PhysicsShapeQueryParameters2D : public RefCounted {
-	GDCLASS(PhysicsShapeQueryParameters2D, RefCounted);
-	friend class PhysicsDirectSpaceState2D;
-
-	RES shape_ref;
-	RID shape;
-	Transform2D transform;
-	Vector2 motion;
-	real_t margin = 0.0;
-	Set<RID> exclude;
-	uint32_t collision_mask = UINT32_MAX;
-
-	bool collide_with_bodies = true;
-	bool collide_with_areas = false;
-
-protected:
-	static void _bind_methods();
-
-public:
-	void set_shape(const RES &p_shape_ref);
-	RES get_shape() const;
-	void set_shape_rid(const RID &p_shape);
-	RID get_shape_rid() const;
-
-	void set_transform(const Transform2D &p_transform);
-	Transform2D get_transform() const;
-
-	void set_motion(const Vector2 &p_motion);
-	Vector2 get_motion() const;
-
-	void set_margin(real_t p_margin);
-	real_t get_margin() const;
-
-	void set_collision_mask(uint32_t p_mask);
-	uint32_t get_collision_mask() const;
-
-	void set_collide_with_bodies(bool p_enable);
-	bool is_collide_with_bodies_enabled() const;
-
-	void set_collide_with_areas(bool p_enable);
-	bool is_collide_with_areas_enabled() const;
-
-	void set_exclude(const Vector<RID> &p_exclude);
-	Vector<RID> get_exclude() const;
-};
+class PhysicsRayQueryParameters2D;
+class PhysicsPointQueryParameters2D;
+class PhysicsShapeQueryParameters2D;
 
 class PhysicsDirectSpaceState2D : public Object {
 	GDCLASS(PhysicsDirectSpaceState2D, Object);
 
-	Dictionary _intersect_ray(const Vector2 &p_from, const Vector2 &p_to, const Vector<RID> &p_exclude = Vector<RID>(), uint32_t p_layers = 0, bool p_collide_with_bodies = true, bool p_collide_with_areas = false);
-	Array _intersect_point(const Vector2 &p_point, int p_max_results = 32, const Vector<RID> &p_exclude = Vector<RID>(), uint32_t p_layers = 0, bool p_collide_with_bodies = true, bool p_collide_with_areas = false);
-	Array _intersect_point_on_canvas(const Vector2 &p_point, ObjectID p_canvas_intance_id, int p_max_results = 32, const Vector<RID> &p_exclude = Vector<RID>(), uint32_t p_layers = 0, bool p_collide_with_bodies = true, bool p_collide_with_areas = false);
-	Array _intersect_point_impl(const Vector2 &p_point, int p_max_results, const Vector<RID> &p_exclud, uint32_t p_layers, bool p_collide_with_bodies, bool p_collide_with_areas, bool p_filter_by_canvas = false, ObjectID p_canvas_instance_id = ObjectID());
+	Dictionary _intersect_ray(const Ref<PhysicsRayQueryParameters2D> &p_ray_query);
+	Array _intersect_point(const Ref<PhysicsPointQueryParameters2D> &p_point_query, int p_max_results = 32);
 	Array _intersect_shape(const Ref<PhysicsShapeQueryParameters2D> &p_shape_query, int p_max_results = 32);
 	Array _cast_motion(const Ref<PhysicsShapeQueryParameters2D> &p_shape_query);
 	Array _collide_shape(const Ref<PhysicsShapeQueryParameters2D> &p_shape_query, int p_max_results = 32);
@@ -157,6 +112,16 @@ protected:
 	static void _bind_methods();
 
 public:
+	struct RayParameters {
+		Vector2 from;
+		Vector2 to;
+		Set<RID> exclude;
+		uint32_t collision_mask = UINT32_MAX;
+
+		bool collide_with_bodies = true;
+		bool collide_with_areas = false;
+	};
+
 	struct RayResult {
 		Vector2 position;
 		Vector2 normal;
@@ -166,7 +131,7 @@ public:
 		int shape = 0;
 	};
 
-	virtual bool intersect_ray(const Vector2 &p_from, const Vector2 &p_to, RayResult &r_result, const Set<RID> &p_exclude = Set<RID>(), uint32_t p_collision_layer = UINT32_MAX, bool p_collide_with_bodies = true, bool p_collide_with_areas = false) = 0;
+	virtual bool intersect_ray(const RayParameters &p_parameters, RayResult &r_result) = 0;
 
 	struct ShapeResult {
 		RID rid;
@@ -175,14 +140,31 @@ public:
 		int shape = 0;
 	};
 
-	virtual int intersect_point(const Vector2 &p_point, ShapeResult *r_results, int p_result_max, const Set<RID> &p_exclude = Set<RID>(), uint32_t p_collision_layer = UINT32_MAX, bool p_collide_with_bodies = true, bool p_collide_with_areas = false, bool p_pick_point = false) = 0;
-	virtual int intersect_point_on_canvas(const Vector2 &p_point, ObjectID p_canvas_instance_id, ShapeResult *r_results, int p_result_max, const Set<RID> &p_exclude = Set<RID>(), uint32_t p_collision_layer = UINT32_MAX, bool p_collide_with_bodies = true, bool p_collide_with_areas = false, bool p_pick_point = false) = 0;
+	struct PointParameters {
+		Vector2 position;
+		ObjectID canvas_instance_id;
+		Set<RID> exclude;
+		uint32_t collision_mask = UINT32_MAX;
 
-	virtual int intersect_shape(const RID &p_shape, const Transform2D &p_xform, const Vector2 &p_motion, real_t p_margin, ShapeResult *r_results, int p_result_max, const Set<RID> &p_exclude = Set<RID>(), uint32_t p_collision_layer = UINT32_MAX, bool p_collide_with_bodies = true, bool p_collide_with_areas = false) = 0;
+		bool collide_with_bodies = true;
+		bool collide_with_areas = false;
 
-	virtual bool cast_motion(const RID &p_shape, const Transform2D &p_xform, const Vector2 &p_motion, real_t p_margin, real_t &p_closest_safe, real_t &p_closest_unsafe, const Set<RID> &p_exclude = Set<RID>(), uint32_t p_collision_layer = UINT32_MAX, bool p_collide_with_bodies = true, bool p_collide_with_areas = false) = 0;
+		bool pick_point = false;
+	};
 
-	virtual bool collide_shape(RID p_shape, const Transform2D &p_shape_xform, const Vector2 &p_motion, real_t p_margin, Vector2 *r_results, int p_result_max, int &r_result_count, const Set<RID> &p_exclude = Set<RID>(), uint32_t p_collision_layer = UINT32_MAX, bool p_collide_with_bodies = true, bool p_collide_with_areas = false) = 0;
+	virtual int intersect_point(const PointParameters &p_parameters, ShapeResult *r_results, int p_result_max) = 0;
+
+	struct ShapeParameters {
+		RID shape_rid;
+		Transform2D transform;
+		Vector2 motion;
+		real_t margin = 0.0;
+		Set<RID> exclude;
+		uint32_t collision_mask = UINT32_MAX;
+
+		bool collide_with_bodies = true;
+		bool collide_with_areas = false;
+	};
 
 	struct ShapeRestInfo {
 		Vector2 point;
@@ -190,10 +172,13 @@ public:
 		RID rid;
 		ObjectID collider_id;
 		int shape = 0;
-		Vector2 linear_velocity; //velocity at contact point
+		Vector2 linear_velocity; // Velocity at contact point.
 	};
 
-	virtual bool rest_info(RID p_shape, const Transform2D &p_shape_xform, const Vector2 &p_motion, real_t p_margin, ShapeRestInfo *r_info, const Set<RID> &p_exclude = Set<RID>(), uint32_t p_collision_layer = UINT32_MAX, bool p_collide_with_bodies = true, bool p_collide_with_areas = false) = 0;
+	virtual int intersect_shape(const ShapeParameters &p_parameters, ShapeResult *r_results, int p_result_max) = 0;
+	virtual bool cast_motion(const ShapeParameters &p_parameters, real_t &p_closest_safe, real_t &p_closest_unsafe) = 0;
+	virtual bool collide_shape(const ShapeParameters &p_parameters, Vector2 *r_results, int p_result_max, int &r_result_count) = 0;
+	virtual bool rest_info(const ShapeParameters &p_parameters, ShapeRestInfo *r_info) = 0;
 
 	PhysicsDirectSpaceState2D();
 };
@@ -590,6 +575,107 @@ public:
 
 	PhysicsServer2D();
 	~PhysicsServer2D();
+};
+
+class PhysicsRayQueryParameters2D : public RefCounted {
+	GDCLASS(PhysicsRayQueryParameters2D, RefCounted);
+
+	PhysicsDirectSpaceState2D::RayParameters parameters;
+
+protected:
+	static void _bind_methods();
+
+public:
+	const PhysicsDirectSpaceState2D::RayParameters &get_parameters() const { return parameters; }
+
+	void set_from(const Vector2 &p_from) { parameters.from = p_from; }
+	const Vector2 &get_from() const { return parameters.from; }
+
+	void set_to(const Vector2 &p_to) { parameters.to = p_to; }
+	const Vector2 &get_to() const { return parameters.to; }
+
+	void set_collision_mask(uint32_t p_mask) { parameters.collision_mask = p_mask; }
+	uint32_t get_collision_mask() const { return parameters.collision_mask; }
+
+	void set_collide_with_bodies(bool p_enable) { parameters.collide_with_bodies = p_enable; }
+	bool is_collide_with_bodies_enabled() const { return parameters.collide_with_bodies; }
+
+	void set_collide_with_areas(bool p_enable) { parameters.collide_with_areas = p_enable; }
+	bool is_collide_with_areas_enabled() const { return parameters.collide_with_areas; }
+
+	void set_exclude(const Vector<RID> &p_exclude);
+	Vector<RID> get_exclude() const;
+};
+
+class PhysicsPointQueryParameters2D : public RefCounted {
+	GDCLASS(PhysicsPointQueryParameters2D, RefCounted);
+
+	PhysicsDirectSpaceState2D::PointParameters parameters;
+
+protected:
+	static void _bind_methods();
+
+public:
+	const PhysicsDirectSpaceState2D::PointParameters &get_parameters() const { return parameters; }
+
+	void set_position(const Vector2 &p_position) { parameters.position = p_position; }
+	const Vector2 &get_position() const { return parameters.position; }
+
+	void set_canvas_instance_id(ObjectID p_canvas_instance_id) { parameters.canvas_instance_id = p_canvas_instance_id; }
+	ObjectID get_canvas_instance_id() const { return parameters.canvas_instance_id; }
+
+	void set_collision_mask(uint32_t p_mask) { parameters.collision_mask = p_mask; }
+	uint32_t get_collision_mask() const { return parameters.collision_mask; }
+
+	void set_collide_with_bodies(bool p_enable) { parameters.collide_with_bodies = p_enable; }
+	bool is_collide_with_bodies_enabled() const { return parameters.collide_with_bodies; }
+
+	void set_collide_with_areas(bool p_enable) { parameters.collide_with_areas = p_enable; }
+	bool is_collide_with_areas_enabled() const { return parameters.collide_with_areas; }
+
+	void set_exclude(const Vector<RID> &p_exclude);
+	Vector<RID> get_exclude() const;
+};
+
+class PhysicsShapeQueryParameters2D : public RefCounted {
+	GDCLASS(PhysicsShapeQueryParameters2D, RefCounted);
+
+	PhysicsDirectSpaceState2D::ShapeParameters parameters;
+
+	RES shape_ref;
+
+protected:
+	static void _bind_methods();
+
+public:
+	const PhysicsDirectSpaceState2D::ShapeParameters &get_parameters() const { return parameters; }
+
+	void set_shape(const RES &p_shape_ref);
+	RES get_shape() const { return shape_ref; }
+
+	void set_shape_rid(const RID &p_shape);
+	RID get_shape_rid() const { return parameters.shape_rid; }
+
+	void set_transform(const Transform2D &p_transform) { parameters.transform = p_transform; }
+	const Transform2D &get_transform() const { return parameters.transform; }
+
+	void set_motion(const Vector2 &p_motion) { parameters.motion = p_motion; }
+	const Vector2 &get_motion() const { return parameters.motion; }
+
+	void set_margin(real_t p_margin) { parameters.margin = p_margin; }
+	real_t get_margin() const { return parameters.margin; }
+
+	void set_collision_mask(uint32_t p_mask) { parameters.collision_mask = p_mask; }
+	uint32_t get_collision_mask() const { return parameters.collision_mask; }
+
+	void set_collide_with_bodies(bool p_enable) { parameters.collide_with_bodies = p_enable; }
+	bool is_collide_with_bodies_enabled() const { return parameters.collide_with_bodies; }
+
+	void set_collide_with_areas(bool p_enable) { parameters.collide_with_areas = p_enable; }
+	bool is_collide_with_areas_enabled() const { return parameters.collide_with_areas; }
+
+	void set_exclude(const Vector<RID> &p_exclude);
+	Vector<RID> get_exclude() const;
 };
 
 class PhysicsTestMotionParameters2D : public RefCounted {

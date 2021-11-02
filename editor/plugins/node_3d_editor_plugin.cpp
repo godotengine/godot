@@ -3936,9 +3936,13 @@ Vector3 Node3DEditorViewport::_get_instance_position(const Point2 &p_pos) const 
 	Vector3 point = world_pos + world_ray * MAX_DISTANCE;
 
 	PhysicsDirectSpaceState3D *ss = get_tree()->get_root()->get_world_3d()->get_direct_space_state();
-	PhysicsDirectSpaceState3D::RayResult result;
 
-	if (ss->intersect_ray(world_pos, world_pos + world_ray * MAX_DISTANCE, result)) {
+	PhysicsDirectSpaceState3D::RayParameters ray_params;
+	ray_params.from = world_pos;
+	ray_params.to = world_pos + world_ray * MAX_DISTANCE;
+
+	PhysicsDirectSpaceState3D::RayResult result;
+	if (ss->intersect_ray(ray_params, result)) {
 		point = result.position;
 	}
 
@@ -6566,7 +6570,12 @@ void Node3DEditor::snap_selected_nodes_to_floor() {
 			Vector3 to = from - Vector3(0.0, max_snap_height, 0.0);
 			Set<RID> excluded = _get_physics_bodies_rid(sp);
 
-			if (ss->intersect_ray(from, to, result, excluded)) {
+			PhysicsDirectSpaceState3D::RayParameters ray_params;
+			ray_params.from = from;
+			ray_params.to = to;
+			ray_params.exclude = excluded;
+
+			if (ss->intersect_ray(ray_params, result)) {
 				snapped_to_floor = true;
 			}
 		}
@@ -6583,7 +6592,12 @@ void Node3DEditor::snap_selected_nodes_to_floor() {
 				Vector3 to = from - Vector3(0.0, max_snap_height, 0.0);
 				Set<RID> excluded = _get_physics_bodies_rid(sp);
 
-				if (ss->intersect_ray(from, to, result, excluded)) {
+				PhysicsDirectSpaceState3D::RayParameters ray_params;
+				ray_params.from = from;
+				ray_params.to = to;
+				ray_params.exclude = excluded;
+
+				if (ss->intersect_ray(ray_params, result)) {
 					Vector3 position_offset = d["position_offset"];
 					Transform3D new_transform = sp->get_global_transform();
 

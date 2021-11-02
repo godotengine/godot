@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="PhysicsPointQueryParameters2D" inherits="RefCounted" version="4.0">
+	<brief_description>
+		Parameters to be sent to a 2D point physics query.
+	</brief_description>
+	<description>
+		This class contains the position and other parameters to be used for [method PhysicsDirectSpaceState2D.intersect_point].
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="canvas_instance_id" type="int" setter="set_canvas_instance_id" getter="get_canvas_instance_id" default="0">
+			If different from [code]0[/code], restricts the query to a specific canvas layer specified by its instance id. See [method Object.get_instance_id].
+		</member>
+		<member name="collide_with_areas" type="bool" setter="set_collide_with_areas" getter="is_collide_with_areas_enabled" default="false">
+			If [code]true[/code], the query will take [Area2D]s into account.
+		</member>
+		<member name="collide_with_bodies" type="bool" setter="set_collide_with_bodies" getter="is_collide_with_bodies_enabled" default="true">
+			If [code]true[/code], the query will take [PhysicsBody2D]s into account.
+		</member>
+		<member name="collision_mask" type="int" setter="set_collision_mask" getter="get_collision_mask" default="4294967295">
+			The physics layers the query will detect (as a bitmask). By default, all collision layers are detected. See [url=https://docs.godotengine.org/en/latest/tutorials/physics/physics_introduction.html#collision-layers-and-masks]Collision layers and masks[/url] in the documentation for more information.
+		</member>
+		<member name="exclude" type="Array" setter="set_exclude" getter="get_exclude" default="[]">
+			The list of objects or object [RID]s that will be excluded from collisions.
+		</member>
+		<member name="position" type="Vector2" setter="set_position" getter="get_position" default="Vector2(0, 0)">
+			The position being queried for, in global coordinates.
+		</member>
+	</members>
+</class>
