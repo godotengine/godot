@@ -46,7 +46,7 @@
 #include <IOKit/hid/IOHIDLib.h>
 
 #if defined(GLES3_ENABLED)
-//TODO - reimplement OpenGLES
+#include "drivers/gles3/rasterizer_gles3.h"
 
 #import <AppKit/NSOpenGLView.h>
 #endif
@@ -167,8 +167,8 @@ static NSCursor *_cursorFromSelector(SEL selector, SEL fallback = nil) {
 	}
 
 #if defined(GLES3_ENABLED)
-	if (DS_OSX->rendering_driver == "opengl_es") {
-		//TODO - reimplement OpenGLES
+	if (DS_OSX->rendering_driver == "opengl3") {
+		DS_OSX->gl_manager->window_destroy(window_id);
 	}
 #endif
 #ifdef VULKAN_ENABLED
@@ -272,8 +272,8 @@ static NSCursor *_cursorFromSelector(SEL selector, SEL fallback = nil) {
 	}
 
 #if defined(GLES3_ENABLED)
-	if (DS_OSX->rendering_driver == "opengl_es") {
-		//TODO - reimplement OpenGLES
+	if (DS_OSX->rendering_driver == "opengl3") {
+		DS_OSX->gl_manager->window_resize(window_id, wd.size.width, wd.size.height);
 	}
 #endif
 #if defined(VULKAN_ENABLED)
@@ -377,7 +377,12 @@ static NSCursor *_cursorFromSelector(SEL selector, SEL fallback = nil) {
 /* GodotContentView                                                      */
 /*************************************************************************/
 
+#if defined(GLES3_ENABLED)
+@interface GodotContentView : NSOpenGLView <NSTextInputClient> {
+#else
 @interface GodotContentView : NSView <NSTextInputClient> {
+#endif
+
 	DisplayServerOSX::WindowID window_id;
 	NSTrackingArea *trackingArea;
 	NSMutableAttributedString *markedText;
@@ -405,12 +410,6 @@ static NSCursor *_cursorFromSelector(SEL selector, SEL fallback = nil) {
 }
 
 - (CALayer *)makeBackingLayer {
-#if defined(GLES3_ENABLED)
-	if (DS_OSX->rendering_driver == "opengl_es") {
-		CALayer *layer = [[NSOpenGLLayer class] layer];
-		return layer;
-	}
-#endif
 #if defined(VULKAN_ENABLED)
 	if (DS_OSX->rendering_driver == "vulkan") {
 		CALayer *layer = [[CAMetalLayer class] layer];
@@ -422,9 +421,8 @@ static NSCursor *_cursorFromSelector(SEL selector, SEL fallback = nil) {
 
 - (void)updateLayer {
 #if defined(GLES3_ENABLED)
-	if (DS_OSX->rendering_driver == "opengl_es") {
-		[super updateLayer];
-		//TODO - reimplement OpenGLES
+	if (DS_OSX->rendering_driver == "opengl3") {
+		DS_OSX->gl_manager->window_update(window_id);
 	}
 #endif
 #if defined(VULKAN_ENABLED)
@@ -2587,7 +2585,7 @@ void DisplayServerOSX::_set_window_per_pixel_transparency_enabled(bool p_enabled
 			}
 #endif
 #if defined(GLES3_ENABLED)
-			if (rendering_driver == "opengl_es") {
+			if (rendering_driver == "opengl3") {
 				//TODO - reimplement OpenGLES
 			}
 #endif
@@ -2606,14 +2604,14 @@ void DisplayServerOSX::_set_window_per_pixel_transparency_enabled(bool p_enabled
 			}
 #endif
 #if defined(GLES3_ENABLED)
-			if (rendering_driver == "opengl_es") {
+			if (rendering_driver == "opengl3") {
 				//TODO - reimplement OpenGLES
 			}
 #endif
 			wd.layered_window = false;
 		}
 #if defined(GLES3_ENABLED)
-		if (rendering_driver == "opengl_es") {
+		if (rendering_driver == "opengl3") {
 			//TODO - reimplement OpenGLES
 		}
 #endif
@@ -3455,18 +3453,31 @@ void DisplayServerOSX::set_icon(const Ref<Image> &p_icon) {
 
 void DisplayServerOSX::window_set_vsync_mode(DisplayServer::VSyncMode p_vsync_mode, WindowID p_window) {
 	_THREAD_SAFE_METHOD_
+#if defined(GLES3_ENABLED)
+	if (rendering_driver == "opengl3") {
+		gl_manager->swap_buffers();
+	}
+#endif
 #if defined(VULKAN_ENABLED)
-	context_vulkan->set_vsync_mode(p_window, p_vsync_mode);
+	if (rendering_driver == "vulkan") {
+		context_vulkan->set_vsync_mode(p_window, p_vsync_mode);
+	}
 #endif
 }
 
 DisplayServer::VSyncMode DisplayServerOSX::window_get_vsync_mode(WindowID p_window) const {
 	_THREAD_SAFE_METHOD_
-#if defined(VULKAN_ENABLED)
-	return context_vulkan->get_vsync_mode(p_window);
-#else
-	return DisplayServer::VSYNC_ENABLED;
+#if defined(GLES3_ENABLED)
+	if (rendering_driver == "opengl3") {
+		return (gl_manager->is_using_vsync() ? DisplayServer::VSyncMode::VSYNC_ENABLED : DisplayServer::VSyncMode::VSYNC_DISABLED);
+	}
 #endif
+#if defined(VULKAN_ENABLED)
+	if (rendering_driver == "vulkan") {
+		return context_vulkan->get_vsync_mode(p_window);
+	}
+#endif
+	return DisplayServer::VSYNC_ENABLED;
 }
 
 Vector<String> DisplayServerOSX::get_rendering_drivers_func() {
@@ -3476,10 +3487,16 @@ Vector<String> DisplayServerOSX::get_rendering_drivers_func() {
 	drivers.push_back("vulkan");
 #endif
 #if defined(GLES3_ENABLED)
-	drivers.push_back("opengl_es");
+	drivers.push_back("opengl3");
 #endif
 
 	return drivers;
+}
+
+void DisplayServerOSX::gl_window_make_current(DisplayServer::WindowID p_window_id) {
+#if defined(GLES3_ENABLED)
+	gl_manager->window_make_current(p_window_id);
+#endif
 }
 
 Point2i DisplayServerOSX::ime_get_selection() const {
@@ -3522,7 +3539,7 @@ ObjectID DisplayServerOSX::window_get_attached_instance_id(WindowID p_window) co
 DisplayServer *DisplayServerOSX::create_func(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error) {
 	DisplayServer *ds = memnew(DisplayServerOSX(p_rendering_driver, p_mode, p_vsync_mode, p_flags, p_resolution, r_error));
 	if (r_error != OK) {
-		OS::get_singleton()->alert("Your video card driver does not support any of the supported Metal versions.", "Unable to initialize Video driver");
+		OS::get_singleton()->alert("Your video card driver does not support any of the supported Vulkan or OpenGL versions.", "Unable to initialize Video driver");
 	}
 	return ds;
 }
@@ -3580,8 +3597,11 @@ DisplayServerOSX::WindowID DisplayServerOSX::_create_window(WindowMode p_mode, V
 		}
 #endif
 #if defined(GLES3_ENABLED)
-		if (rendering_driver == "opengl_es") {
-			//TODO - reimplement OpenGLES
+		if (rendering_driver == "opengl3") {
+			if (gl_manager) {
+				Error err = gl_manager->window_create(window_id_counter, wd.window_view, p_rect.size.width, p_rect.size.height);
+				ERR_FAIL_COND_V_MSG(err != OK, INVALID_WINDOW_ID, "Can't create an OpenGL context");
+			}
 		}
 #endif
 		id = window_id_counter++;
@@ -3601,8 +3621,8 @@ DisplayServerOSX::WindowID DisplayServerOSX::_create_window(WindowMode p_mode, V
 	}
 
 #if defined(GLES3_ENABLED)
-	if (rendering_driver == "opengl_es") {
-		//TODO - reimplement OpenGLES
+	if (rendering_driver == "opengl3") {
+		gl_manager->window_resize(id, wd.size.width, wd.size.height);
 	}
 #endif
 #if defined(VULKAN_ENABLED)
@@ -3654,15 +3674,15 @@ void DisplayServerOSX::_dispatch_input_event(const Ref<InputEvent> &p_event) {
 }
 
 void DisplayServerOSX::release_rendering_thread() {
-	//TODO - reimplement OpenGLES
 }
 
 void DisplayServerOSX::make_rendering_thread() {
-	//TODO - reimplement OpenGLES
 }
 
 void DisplayServerOSX::swap_buffers() {
-	//TODO - reimplement OpenGLES
+#if defined(GLES3_ENABLED)
+	gl_manager->swap_buffers();
+#endif
 }
 
 void DisplayServerOSX::console_set_visible(bool p_enabled) {
@@ -3753,14 +3773,17 @@ DisplayServerOSX::DisplayServerOSX(const String &p_rendering_driver, WindowMode 
 	//TODO - do Vulkan and OpenGL support checks, driver selection and fallback
 	rendering_driver = p_rendering_driver;
 
-#ifndef _MSC_VER
-#warning Forcing vulkan rendering driver because OpenGL not implemented yet
-#endif
-	rendering_driver = "vulkan";
-
 #if defined(GLES3_ENABLED)
-	if (rendering_driver == "opengl_es") {
-		//TODO - reimplement OpenGLES
+	if (rendering_driver == "opengl3") {
+		GLManager_OSX::ContextType opengl_api_type = GLManager_OSX::GLES_3_0_COMPATIBLE;
+		gl_manager = memnew(GLManager_OSX(opengl_api_type));
+		if (gl_manager->initialize() != OK) {
+			memdelete(gl_manager);
+			gl_manager = nullptr;
+			r_error = ERR_UNAVAILABLE;
+			ERR_FAIL_MSG("Could not initialize OpenGL");
+			return;
+		}
 	}
 #endif
 #if defined(VULKAN_ENABLED)
@@ -3788,8 +3811,8 @@ DisplayServerOSX::DisplayServerOSX(const String &p_rendering_driver, WindowMode 
 	show_window(MAIN_WINDOW_ID);
 
 #if defined(GLES3_ENABLED)
-	if (rendering_driver == "opengl_es") {
-		//TODO - reimplement OpenGLES
+	if (rendering_driver == "opengl3") {
+		RasterizerGLES3::make_current();
 	}
 #endif
 #if defined(VULKAN_ENABLED)
@@ -3821,20 +3844,21 @@ DisplayServerOSX::~DisplayServerOSX() {
 
 	//destroy drivers
 #if defined(GLES3_ENABLED)
-	if (rendering_driver == "opengl_es") {
-		//TODO - reimplement OpenGLES
+	if (gl_manager) {
+		memdelete(gl_manager);
+		gl_manager = nullptr;
 	}
 #endif
 #if defined(VULKAN_ENABLED)
-	if (rendering_driver == "vulkan") {
-		if (rendering_device_vulkan) {
-			rendering_device_vulkan->finalize();
-			memdelete(rendering_device_vulkan);
-		}
+	if (rendering_device_vulkan) {
+		rendering_device_vulkan->finalize();
+		memdelete(rendering_device_vulkan);
+		rendering_device_vulkan = nullptr;
+	}
 
-		if (context_vulkan) {
-			memdelete(context_vulkan);
-		}
+	if (context_vulkan) {
+		memdelete(context_vulkan);
+		context_vulkan = nullptr;
 	}
 #endif
 

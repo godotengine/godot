@@ -37,8 +37,7 @@
 #include "servers/display_server.h"
 
 #if defined(GLES3_ENABLED)
-#include "context_gl_osx.h"
-//TODO - reimplement OpenGLES
+#include "gl_manager_osx.h"
 #endif
 
 #if defined(VULKAN_ENABLED)
@@ -65,11 +64,11 @@ public:
 	void _menu_callback(id p_sender);
 
 #if defined(GLES3_ENABLED)
-	ContextGL_OSX *context_gles2;
+	GLManager_OSX *gl_manager = nullptr;
 #endif
 #if defined(VULKAN_ENABLED)
-	VulkanContextOSX *context_vulkan;
-	RenderingDeviceVulkan *rendering_device_vulkan;
+	VulkanContextOSX *context_vulkan = nullptr;
+	RenderingDeviceVulkan *rendering_device_vulkan = nullptr;
 #endif
 
 	const NSMenu *_get_menu_root(const String &p_menu_root) const;
@@ -109,9 +108,6 @@ public:
 
 		Vector<Vector2> mpath;
 
-#if defined(GLES3_ENABLED)
-		ContextGL_OSX *context_gles2 = nullptr;
-#endif
 		Point2i mouse_pos;
 
 		Size2i min_size;
@@ -287,6 +283,7 @@ public:
 
 	virtual void window_attach_instance_id(ObjectID p_instance, WindowID p_window = MAIN_WINDOW_ID) override;
 	virtual ObjectID window_get_attached_instance_id(WindowID p_window = MAIN_WINDOW_ID) const override;
+	virtual void gl_window_make_current(DisplayServer::WindowID p_window_id) override;
 
 	virtual void window_set_vsync_mode(DisplayServer::VSyncMode p_vsync_mode, WindowID p_window = MAIN_WINDOW_ID) override;
 	virtual DisplayServer::VSyncMode window_get_vsync_mode(WindowID p_vsync_mode) const override;

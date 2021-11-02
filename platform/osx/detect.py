@@ -183,10 +183,13 @@ def configure(env):
     )
     env.Append(LIBS=["pthread", "z"])
 
+    if env["opengl3"]:
+        env.Append(CPPDEFINES=["GLES_ENABLED", "GLES3_ENABLED"])
+        env.Append(CCFLAGS=["-Wno-deprecated-declarations"])  # Disable deprecation warnings
+        env.Append(LINKFLAGS=["-framework", "OpenGL"])
+
     if env["vulkan"]:
         env.Append(CPPDEFINES=["VULKAN_ENABLED"])
         env.Append(LINKFLAGS=["-framework", "Metal", "-framework", "QuartzCore", "-framework", "IOSurface"])
         if not env["use_volk"]:
             env.Append(LINKFLAGS=["-L$VULKAN_SDK_PATH/MoltenVK/MoltenVK.xcframework/macos-arm64_x86_64/", "-lMoltenVK"])
-
-    # env.Append(CPPDEFINES=['GLES_ENABLED', 'GLES3_ENABLED'])
