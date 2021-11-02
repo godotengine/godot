@@ -4394,6 +4394,14 @@
         ]
       },
       {
+        "name": "godot_variant_operator_assign",
+        "return_type": "void",
+        "arguments": [
+          ["godot_variant *", "r_dest"],
+          ["const godot_variant *", "p_v"]
+        ]
+      },
+      {
         "name": "godot_variant_new_copy",
         "return_type": "void",
         "arguments": [
