@@ -2606,7 +2606,7 @@ void ThemeTypeEditor::_constant_item_changed(float p_value, String p_item_name) 
 	edited_theme->set_constant(p_item_name, edited_type, int(p_value));
 }
 
-void ThemeTypeEditor::_edit_resource_item(RES p_resource) {
+void ThemeTypeEditor::_edit_resource_item(RES p_resource, bool p_edit) {
 	EditorNode::get_singleton()->edit_resource(p_resource);
 }
 
