@@ -369,6 +369,11 @@ void EditorSettingsDialog::_update_shortcuts() {
 		Array events; // Need to get the list of events into an array so it can be set as metadata on the item.
 		Vector<String> event_strings;
 
+		// Skip non-builtin actions.
+		if (!InputMap::get_singleton()->get_builtins_with_feature_overrides_applied().has(action_name)) {
+			continue;
+		}
+
 		List<Ref<InputEvent>> all_default_events = InputMap::get_singleton()->get_builtins_with_feature_overrides_applied().find(action_name).value();
 		List<Ref<InputEventKey>> key_default_events;
 		// Remove all non-key events from the defaults. Only check keys, since we are in the editor.
