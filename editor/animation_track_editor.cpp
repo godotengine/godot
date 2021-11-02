@@ -3632,13 +3632,15 @@ void AnimationTrackEditor::commit_insert_queue() {
 		}
 	}
 
-	if (bool(EDITOR_GET("editors/animation/confirm_insert_track")) && num_tracks > 0) {
+	// Skip the confirmation dialog if the user holds Shift while clicking the key icon.
+	if (!Input::get_singleton()->is_key_pressed(Key::SHIFT) && num_tracks > 0) {
+		String shortcut_hint = TTR("Hold Shift when clicking the key icon to skip this dialog.");
 		// Potentially a new key, does not exist.
 		if (num_tracks == 1) {
 			// TRANSLATORS: %s will be replaced by a phrase describing the target of track.
-			insert_confirm_text->set_text(vformat(TTR("Create new track for %s and insert key?"), last_track_query));
+			insert_confirm_text->set_text(vformat(TTR("Create new track for %s and insert key?") + "\n\n" + shortcut_hint, last_track_query));
 		} else {
-			insert_confirm_text->set_text(vformat(TTR("Create %d new tracks and insert keys?"), num_tracks));
+			insert_confirm_text->set_text(vformat(TTR("Create %d new tracks and insert keys?") + "\n\n" + shortcut_hint, num_tracks));
 		}
 
 		insert_confirm_bezier->set_visible(all_bezier);
