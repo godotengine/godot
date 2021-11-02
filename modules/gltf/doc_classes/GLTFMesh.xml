@@ -9,6 +9,8 @@
 	<members>
 		<member name="blend_weights" type="PackedFloat32Array" setter="set_blend_weights" getter="get_blend_weights" default="PackedFloat32Array()">
 		</member>
+		<member name="instance_materials" type="Array" setter="set_instance_materials" getter="get_instance_materials" default="[]">
+		</member>
 		<member name="mesh" type="ImporterMesh" setter="set_mesh" getter="get_mesh">
 		</member>
 	</members>
