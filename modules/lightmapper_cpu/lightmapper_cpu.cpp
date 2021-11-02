@@ -166,7 +166,7 @@ Error LightmapperCPU::_layout_atlas(int p_max_size, Vector2i *r_atlas_size, int 
 			}
 
 			float mem_utilization = static_cast<float>(mem_occupied) / mem_used;
-			if (slices * atlas_size.y < 16384) { // Maximum Image size
+			if (slices * atlas_size.y <= 16384) { // Maximum Image size
 				if (mem_used < best_atlas_memory || (mem_used == best_atlas_memory && mem_utilization > best_atlas_mem_utilization)) {
 					best_atlas_size = atlas_size;
 					best_atlas_offsets = curr_atlas_offsets;
