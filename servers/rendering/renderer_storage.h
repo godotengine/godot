@@ -535,6 +535,19 @@ public:
 	virtual bool particles_collision_is_heightfield(RID p_particles_collision) const = 0;
 	virtual RID particles_collision_get_heightfield_framebuffer(RID p_particles_collision) const = 0;
 
+	/* FOG VOLUMES */
+
+	virtual RID fog_volume_allocate() = 0;
+	virtual void fog_volume_initialize(RID p_rid) = 0;
+
+	virtual void fog_volume_set_shape(RID p_fog_volume, RS::FogVolumeShape p_shape) = 0;
+	virtual void fog_volume_set_extents(RID p_fog_volume, const Vector3 &p_extents) = 0;
+	virtual void fog_volume_set_material(RID p_fog_volume, RID p_material) = 0;
+	virtual AABB fog_volume_get_aabb(RID p_fog_volume) const = 0;
+	virtual RS::FogVolumeShape fog_volume_get_shape(RID p_fog_volume) const = 0;
+
+	/* VISIBILITY NOTIFIER */
+
 	virtual RID visibility_notifier_allocate() = 0;
 	virtual void visibility_notifier_initialize(RID p_notifier) = 0;
 	virtual void visibility_notifier_set_aabb(RID p_notifier, const AABB &p_aabb) = 0;

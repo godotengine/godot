@@ -25,6 +25,10 @@ SConscript("winmidi/SCsub")
 # Graphics drivers
 if env["vulkan"]:
     SConscript("vulkan/SCsub")
+    SConscript("gles3/SCsub")
+    SConscript("gl_context/SCsub")
+else:
+    SConscript("dummy/SCsub")
 
 # Core dependencies
 SConscript("png/SCsub")

@@ -129,6 +129,11 @@ void RendererViewport::_draw_viewport(Viewport *p_viewport) {
 		timestamp_vp_map[rt_id] = p_viewport->self;
 	}
 
+	if (OS::get_singleton()->get_current_rendering_driver_name() == "opengl3") {
+		// This is currently needed for GLES to keep the current window being rendered to up to date
+		DisplayServer::get_singleton()->gl_window_make_current(p_viewport->viewport_to_screen);
+	}
+
 	/* Camera should always be BEFORE any other 3D */
 
 	bool scenario_draw_canvas_bg = false; //draw canvas, or some layer of it, as BG for 3D instead of in front
@@ -747,7 +752,7 @@ void RendererViewport::viewport_attach_to_screen(RID p_viewport, const Rect2 &p_
 	ERR_FAIL_COND(!viewport);
 
 	if (p_screen != DisplayServer::INVALID_WINDOW_ID) {
-		// If using GLES2 we can optimize this operation by rendering directly to system_fbo
+		// If using OpenGL we can optimize this operation by rendering directly to system_fbo
 		// instead of rendering to fbo and copying to system_fbo after
 		if (RSG::rasterizer->is_low_end() && viewport->viewport_render_direct_to_screen) {
 			RSG::storage->render_target_set_size(viewport->render_target, p_rect.size.x, p_rect.size.y, viewport->get_view_count());

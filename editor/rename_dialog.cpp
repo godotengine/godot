@@ -626,7 +626,7 @@ void RenameDialog::reset() {
 
 bool RenameDialog::_is_main_field(LineEdit *line_edit) {
 	return line_edit &&
-		   (line_edit == lne_search || line_edit == lne_replace || line_edit == lne_prefix || line_edit == lne_suffix);
+			(line_edit == lne_search || line_edit == lne_replace || line_edit == lne_prefix || line_edit == lne_suffix);
 }
 
 void RenameDialog::_insert_text(String text) {

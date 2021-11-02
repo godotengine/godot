@@ -3654,10 +3654,10 @@ void TextServerAdvanced::shaped_text_overrun_trim_to_width(RID p_shaped_line, fl
 			width -= sd_glyphs[i].advance * sd_glyphs[i].repeat;
 		}
 		if (sd_glyphs[i].count > 0) {
-			bool above_min_char_treshold = ((is_rtl) ? sd_size - 1 - i : i) >= ell_min_characters;
+			bool above_min_char_threshold = ((is_rtl) ? sd_size - 1 - i : i) >= ell_min_characters;
 
-			if (width + (((above_min_char_treshold && add_ellipsis) || enforce_ellipsis) ? ellipsis_width : 0) <= p_width) {
-				if (cut_per_word && above_min_char_treshold) {
+			if (width + (((above_min_char_threshold && add_ellipsis) || enforce_ellipsis) ? ellipsis_width : 0) <= p_width) {
+				if (cut_per_word && above_min_char_threshold) {
 					if ((sd_glyphs[i].flags & GRAPHEME_IS_BREAK_SOFT) == GRAPHEME_IS_BREAK_SOFT) {
 						last_valid_cut = i;
 						found = true;
@@ -3669,7 +3669,7 @@ void TextServerAdvanced::shaped_text_overrun_trim_to_width(RID p_shaped_line, fl
 				if (found) {
 					trim_pos = last_valid_cut;
 
-					if (add_ellipsis && (above_min_char_treshold || enforce_ellipsis) && width - ellipsis_width <= p_width) {
+					if (add_ellipsis && (above_min_char_threshold || enforce_ellipsis) && width - ellipsis_width <= p_width) {
 						ellipsis_pos = trim_pos;
 					}
 					break;
@@ -4922,6 +4922,39 @@ String TextServerAdvanced::percent_sign(const String &p_language) const {
 		}
 	}
 	return "%";
+}
+
+String TextServerAdvanced::strip_diacritics(const String &p_string) const {
+	UErrorCode err = U_ZERO_ERROR;
+
+	// Get NFKD normalizer singleton.
+	const UNormalizer2 *unorm = unorm2_getNFKDInstance(&err);
+	ERR_FAIL_COND_V_MSG(U_FAILURE(err), TextServer::strip_diacritics(p_string), u_errorName(err));
+
+	// Convert to UTF-16.
+	Char16String utf16 = p_string.utf16();
+
+	// Normalize.
+	Char16String normalized;
+	err = U_ZERO_ERROR;
+	int32_t len = unorm2_normalize(unorm, utf16.ptr(), -1, nullptr, 0, &err);
+	ERR_FAIL_COND_V_MSG(err != U_BUFFER_OVERFLOW_ERROR, TextServer::strip_diacritics(p_string), u_errorName(err));
+	normalized.resize(len);
+	err = U_ZERO_ERROR;
+	unorm2_normalize(unorm, utf16.ptr(), -1, normalized.ptrw(), len, &err);
+	ERR_FAIL_COND_V_MSG(U_FAILURE(err), TextServer::strip_diacritics(p_string), u_errorName(err));
+
+	// Convert back to UTF-32.
+	String normalized_string = String::utf16(normalized.ptr(), len);
+
+	// Strip combining characters.
+	String result;
+	for (int i = 0; i < normalized_string.length(); i++) {
+		if (u_getCombiningClass(normalized_string[i]) == 0) {
+			result += normalized_string[i];
+		}
+	}
+	return result;
 }
 
 TextServerAdvanced::TextServerAdvanced() {

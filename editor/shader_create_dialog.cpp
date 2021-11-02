@@ -168,6 +168,11 @@ void ShaderCreateDialog::_create_new() {
 					code += "\t// Place sky code here.\n";
 					code += "}\n";
 					break;
+				case Shader::MODE_FOG:
+					code += "void fog() {\n";
+					code += "\t// Place fog code here.\n";
+					code += "}\n";
+					break;
 			}
 		}
 		text_shader->set_code(code.as_string());

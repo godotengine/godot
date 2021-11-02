@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  context_gl_x11.h                                                     */
+/*  fog_volume.h                                                         */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,53 +28,45 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef CONTEXT_GL_X11_H
-#define CONTEXT_GL_X11_H
+#ifndef FOG_VOLUME_H
+#define FOG_VOLUME_H
 
-#ifdef X11_ENABLED
+#include "core/templates/rid.h"
+#include "scene/3d/visual_instance_3d.h"
+#include "scene/main/node.h"
+#include "scene/main/viewport.h"
+#include "scene/resources/material.h"
 
-#if defined(OPENGL_ENABLED)
+class FogVolume : public VisualInstance3D {
+	GDCLASS(FogVolume, VisualInstance3D);
 
-#include "core/os/os.h"
-#include <X11/Xlib.h>
-#include <X11/extensions/Xrender.h>
+	Vector3 extents = Vector3(1, 1, 1);
+	Ref<Material> material;
+	RS::FogVolumeShape shape = RS::FOG_VOLUME_SHAPE_BOX;
 
-struct ContextGL_X11_Private;
+	RID volume;
 
-class ContextGL_X11 {
-public:
-	enum ContextType {
-		GLES_2_0_COMPATIBLE,
-	};
-
-private:
-	ContextGL_X11_Private *p;
-	OS::VideoMode default_video_mode;
-	::Display *x11_display;
-	::Window &x11_window;
-	bool double_buffer;
-	bool direct_render;
-	int glx_minor, glx_major;
-	bool use_vsync;
-	ContextType context_type;
+protected:
+	_FORCE_INLINE_ RID _get_volume() { return volume; }
+	static void _bind_methods();
+	virtual void _validate_property(PropertyInfo &property) const override;
 
 public:
-	void release_current();
-	void make_current();
-	void swap_buffers();
-	int get_window_width();
-	int get_window_height();
+	void set_extents(const Vector3 &p_extents);
+	Vector3 get_extents() const;
 
-	Error initialize();
+	void set_shape(RS::FogVolumeShape p_type);
+	RS::FogVolumeShape get_shape() const;
 
-	void set_use_vsync(bool p_use);
-	bool is_using_vsync() const;
+	void set_material(const Ref<Material> &p_material);
+	Ref<Material> get_material() const;
 
-	ContextGL_X11(::Display *p_x11_display, ::Window &p_x11_window, const OS::VideoMode &p_default_video_mode, ContextType p_context_type);
-	~ContextGL_X11();
+	virtual AABB get_aabb() const override;
+	virtual Vector<Face3> get_faces(uint32_t p_usage_flags) const override { return Vector<Face3>(); }
+	TypedArray<String> get_configuration_warnings() const override;
+
+	FogVolume();
+	~FogVolume();
 };
 
-#endif
-
-#endif
-#endif
+#endif // FOG_VOLUME_H

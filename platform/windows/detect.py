@@ -279,7 +279,7 @@ def configure_msvc(env, manual_msvc_config):
     if not env["use_volk"]:
         LIBS += ["vulkan"]
 
-    # env.AppendUnique(CPPDEFINES = ['OPENGL_ENABLED'])
+    env.AppendUnique(CPPDEFINES=["GLES3_ENABLED"])
     LIBS += ["opengl32"]
 
     env.Append(LINKFLAGS=[p + env["LIBSUFFIX"] for p in LIBS])
@@ -453,8 +453,7 @@ def configure_mingw(env):
     if not env["use_volk"]:
         env.Append(LIBS=["vulkan"])
 
-    ## TODO !!! Re-enable when OpenGLES Rendering Device is implemented !!!
-    # env.Append(CPPDEFINES=['OPENGL_ENABLED'])
+    env.Append(CPPDEFINES=["GLES3_ENABLED"])
     env.Append(LIBS=["opengl32"])
 
     env.Append(CPPDEFINES=["MINGW_ENABLED", ("MINGW_HAS_SECURE_API", 1)])

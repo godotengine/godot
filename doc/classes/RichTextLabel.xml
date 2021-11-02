@@ -379,6 +379,9 @@
 			The currently installed custom effects. This is an array of [RichTextEffect]s.
 			To add a custom effect, it's more convenient to use [method install_effect].
 		</member>
+		<member name="deselect_on_focus_loss_enabled" type="bool" setter="set_deselect_on_focus_loss_enabled" getter="is_deselect_on_focus_loss_enabled" default="true">
+			If [code]true[/code], the selected text will be deselected when focus is lost.
+		</member>
 		<member name="fit_content_height" type="bool" setter="set_fit_content_height" getter="is_fit_content_height_enabled" default="false">
 			If [code]true[/code], the label's height will be automatically updated to fit its content.
 			[b]Note:[/b] This property is used as a workaround to fix issues with [RichTextLabel] in [Container]s, but it's unreliable in some cases and will be removed in future versions.

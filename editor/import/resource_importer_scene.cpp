@@ -342,6 +342,7 @@ static String _fixstr(const String &p_what, const String &p_str) {
 
 static void _pre_gen_shape_list(Ref<ImporterMesh> &mesh, Vector<Ref<Shape3D>> &r_shape_list, bool p_convex) {
 	ERR_FAIL_NULL_MSG(mesh, "Cannot generate shape list with null mesh value");
+	ERR_FAIL_NULL_MSG(mesh->get_mesh(), "Cannot generate shape list with null mesh value");
 	if (!p_convex) {
 		Ref<Shape3D> shape = mesh->create_trimesh_shape();
 		r_shape_list.push_back(shape);
@@ -1299,27 +1300,28 @@ bool ResourceImporterScene::get_internal_option_visibility(InternalImportCategor
 			if (p_option == "primitive/position" || p_option == "primitive/rotation") {
 				const ShapeType physics_shape = (ShapeType)p_options["physics/shape_type"].operator int();
 				return generate_physics &&
-					   physics_shape >= SHAPE_TYPE_BOX;
+						physics_shape >= SHAPE_TYPE_BOX;
 			}
 
 			if (p_option == "primitive/size") {
 				const ShapeType physics_shape = (ShapeType)p_options["physics/shape_type"].operator int();
 				return generate_physics &&
-					   physics_shape == SHAPE_TYPE_BOX;
+						physics_shape == SHAPE_TYPE_BOX;
 			}
 
 			if (p_option == "primitive/radius") {
 				const ShapeType physics_shape = (ShapeType)p_options["physics/shape_type"].operator int();
-				return generate_physics && (physics_shape == SHAPE_TYPE_SPHERE ||
-												   physics_shape == SHAPE_TYPE_CYLINDER ||
-												   physics_shape == SHAPE_TYPE_CAPSULE);
+				return generate_physics &&
+						(physics_shape == SHAPE_TYPE_SPHERE ||
+								physics_shape == SHAPE_TYPE_CYLINDER ||
+								physics_shape == SHAPE_TYPE_CAPSULE);
 			}
 
 			if (p_option == "primitive/height") {
 				const ShapeType physics_shape = (ShapeType)p_options["physics/shape_type"].operator int();
 				return generate_physics &&
-					   (physics_shape == SHAPE_TYPE_CYLINDER ||
-							   physics_shape == SHAPE_TYPE_CAPSULE);
+						(physics_shape == SHAPE_TYPE_CYLINDER ||
+								physics_shape == SHAPE_TYPE_CAPSULE);
 			}
 		} break;
 		case INTERNAL_IMPORT_CATEGORY_MESH: {

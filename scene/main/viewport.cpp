@@ -715,10 +715,11 @@ void Viewport::_process_picking() {
 			if (camera_3d) {
 				Vector3 from = camera_3d->project_ray_origin(pos);
 				Vector3 dir = camera_3d->project_ray_normal(pos);
+				real_t far = camera_3d->far;
 
 				PhysicsDirectSpaceState3D *space = PhysicsServer3D::get_singleton()->space_get_direct_state(find_world_3d()->get_space());
 				if (space) {
-					bool col = space->intersect_ray(from, from + dir * 10000, result, Set<RID>(), 0xFFFFFFFF, true, true, true);
+					bool col = space->intersect_ray(from, from + dir * far, result, Set<RID>(), 0xFFFFFFFF, true, true, true);
 					ObjectID new_collider;
 					if (col) {
 						CollisionObject3D *co = Object::cast_to<CollisionObject3D>(result.collider);
@@ -1246,10 +1247,10 @@ void Viewport::_gui_call_input(Control *p_control, const Ref<InputEvent> &p_inpu
 	Ref<InputEventMouseButton> mb = p_input;
 
 	bool cant_stop_me_now = (mb.is_valid() &&
-							 (mb->get_button_index() == MOUSE_BUTTON_WHEEL_DOWN ||
-									 mb->get_button_index() == MOUSE_BUTTON_WHEEL_UP ||
-									 mb->get_button_index() == MOUSE_BUTTON_WHEEL_LEFT ||
-									 mb->get_button_index() == MOUSE_BUTTON_WHEEL_RIGHT));
+			(mb->get_button_index() == MOUSE_BUTTON_WHEEL_DOWN ||
+					mb->get_button_index() == MOUSE_BUTTON_WHEEL_UP ||
+					mb->get_button_index() == MOUSE_BUTTON_WHEEL_LEFT ||
+					mb->get_button_index() == MOUSE_BUTTON_WHEEL_RIGHT));
 	Ref<InputEventPanGesture> pn = p_input;
 	cant_stop_me_now = pn.is_valid() || cant_stop_me_now;
 
@@ -3860,7 +3861,7 @@ void SubViewport::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "size_2d_override_stretch"), "set_size_2d_override_stretch", "is_size_2d_override_stretch_enabled");
 	ADD_GROUP("Render Target", "render_target_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "render_target_clear_mode", PROPERTY_HINT_ENUM, "Always,Never,Next Frame"), "set_clear_mode", "get_clear_mode");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "render_target_update_mode", PROPERTY_HINT_ENUM, "Disabled,Once,When Visible,Always"), "set_update_mode", "get_update_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "render_target_update_mode", PROPERTY_HINT_ENUM, "Disabled,Once,When Visible,When Parent Visible,Always"), "set_update_mode", "get_update_mode");
 
 	BIND_ENUM_CONSTANT(CLEAR_MODE_ALWAYS);
 	BIND_ENUM_CONSTANT(CLEAR_MODE_NEVER);

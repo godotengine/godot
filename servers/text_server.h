@@ -194,6 +194,10 @@ protected:
 		Vector<Glyph> glyphs_logical;
 	};
 
+	Map<char32_t, char32_t> diacritics_map;
+	void _diacritics_map_add(const String &p_from, char32_t p_to);
+	void _init_diacritics_map();
+
 	static void _bind_methods();
 
 public:
@@ -427,6 +431,8 @@ public:
 	virtual String parse_number(const String &p_string, const String &p_language = "") const { return p_string; };
 	virtual String percent_sign(const String &p_language = "") const { return "%"; };
 
+	virtual String strip_diacritics(const String &p_string) const;
+
 	TextServer();
 	~TextServer();
 };
@@ -509,7 +515,6 @@ public:
 	_FORCE_INLINE_ Ref<TextServer> get_primary_interface() const {
 		return primary_interface;
 	}
-	Ref<TextServer> _get_primary_interface() const;
 	void set_primary_interface(const Ref<TextServer> &p_primary_interface);
 
 	TextServerManager();

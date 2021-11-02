@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  context_gl_windows.h                                                 */
+/*  rasterizer_canvas_gles3.h                                            */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,50 +28,44 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#if defined(OPENGL_ENABLED) || defined(GLES_ENABLED)
+#ifndef RASTERIZER_CANVAS_OPENGL_H
+#define RASTERIZER_CANVAS_OPENGL_H
 
-// Author: Juan Linietsky <reduzio@gmail.com>, (C) 2008
+#include "drivers/gles3/rasterizer_platforms.h"
+#ifdef GLES3_BACKEND_ENABLED
 
-#ifndef CONTEXT_GL_WIN_H
-#define CONTEXT_GL_WIN_H
+#include "drivers/gles3/rasterizer_canvas_batcher.h"
+#include "rasterizer_canvas_base_gles3.h"
 
-#include "core/error/error_list.h"
-#include "core/os/os.h"
+class RasterizerSceneGLES3;
 
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
+class RasterizerCanvasGLES3 : public RasterizerCanvasBaseGLES3, public RasterizerCanvasBatcher<RasterizerCanvasGLES3, RasterizerStorageGLES3> {
+	friend class RasterizerCanvasBatcher<RasterizerCanvasGLES3, RasterizerStorageGLES3>;
 
-typedef bool(APIENTRY *PFNWGLSWAPINTERVALEXTPROC)(int interval);
-typedef int(APIENTRY *PFNWGLGETSWAPINTERVALEXTPROC)(void);
+private:
+	// legacy codepath .. to remove after testing
+	void _legacy_canvas_render_item(Item *p_ci, RenderItemState &r_ris);
 
-class ContextGL_Windows {
-	HDC hDC;
-	HGLRC hRC;
-	unsigned int pixel_format;
-	HWND hWnd;
-	bool opengl_3_context;
-	bool use_vsync;
+	// high level batch funcs
+	void canvas_render_items_implementation(Item *p_item_list, int p_z, const Color &p_modulate, Light *p_light, const Transform2D &p_base_transform);
+	void render_batches(Item::Command *const *p_commands, Item *p_current_clip, bool &r_reclip, RasterizerStorageGLES3::Material *p_material);
 
-	PFNWGLSWAPINTERVALEXTPROC wglSwapIntervalEXT;
-	PFNWGLGETSWAPINTERVALEXTPROC wglGetSwapIntervalEXT;
+	// funcs used from rasterizer_canvas_batcher template
+	void gl_enable_scissor(int p_x, int p_y, int p_width, int p_height) const;
+	void gl_disable_scissor() const;
 
 public:
-	void release_current();
+	void canvas_render_items_begin(const Color &p_modulate, Light *p_light, const Transform2D &p_base_transform);
+	void canvas_render_items_end();
+	void canvas_render_items_internal(Item *p_item_list, int p_z, const Color &p_modulate, Light *p_light, const Transform2D &p_base_transform);
+	void canvas_begin() override;
+	void canvas_end() override;
 
-	void make_current();
+	void canvas_render_items(RID p_to_render_target, Item *p_item_list, const Color &p_modulate, Light *p_light_list, Light *p_directional_list, const Transform2D &p_canvas_transform, RS::CanvasItemTextureFilter p_default_filter, RS::CanvasItemTextureRepeat p_default_repeat, bool p_snap_2d_vertices_to_pixel, bool &r_sdf_used) override;
 
-	int get_window_width();
-	int get_window_height();
-	void swap_buffers();
-
-	Error initialize();
-
-	void set_use_vsync(bool p_use);
-	bool is_using_vsync() const;
-
-	ContextGL_Windows(HWND hwnd, bool p_opengl_3_context);
-	~ContextGL_Windows();
+	void initialize();
+	RasterizerCanvasGLES3();
 };
 
-#endif
-#endif
+#endif // GLES3_BACKEND_ENABLED
+#endif // RASTERIZER_CANVAS_OPENGL_H

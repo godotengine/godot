@@ -45,7 +45,6 @@ void AudioStreamPlayer::_notification(int p_what) {
 		Vector<Ref<AudioStreamPlayback>> playbacks_to_remove;
 		for (Ref<AudioStreamPlayback> &playback : stream_playbacks) {
 			if (playback.is_valid() && !AudioServer::get_singleton()->is_playback_active(playback) && !AudioServer::get_singleton()->is_playback_paused(playback)) {
-				emit_signal(SNAME("finished"));
 				playbacks_to_remove.push_back(playback);
 			}
 		}
@@ -57,6 +56,9 @@ void AudioStreamPlayer::_notification(int p_what) {
 			// This node is no longer actively playing audio.
 			active.clear();
 			set_process_internal(false);
+		}
+		if (!playbacks_to_remove.is_empty()) {
+			emit_signal(SNAME("finished"));
 		}
 	}
 

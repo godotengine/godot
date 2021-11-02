@@ -53,8 +53,15 @@ class GodotBody2D : public GodotCollisionObject2D {
 	Vector2 constant_linear_velocity;
 	real_t constant_angular_velocity = 0.0;
 
-	real_t linear_damp = -1.0;
-	real_t angular_damp = -1.0;
+	PhysicsServer2D::BodyDampMode linear_damp_mode = PhysicsServer2D::BODY_DAMP_MODE_COMBINE;
+	PhysicsServer2D::BodyDampMode angular_damp_mode = PhysicsServer2D::BODY_DAMP_MODE_COMBINE;
+
+	real_t linear_damp = 0.0;
+	real_t angular_damp = 0.0;
+
+	real_t total_linear_damp = 0.0;
+	real_t total_angular_damp = 0.0;
+
 	real_t gravity_scale = 1.0;
 
 	real_t bounce = 0.0;
@@ -73,8 +80,6 @@ class GodotBody2D : public GodotCollisionObject2D {
 	bool calculate_center_of_mass = true;
 
 	Vector2 gravity;
-	real_t area_linear_damp = 0.0;
-	real_t area_angular_damp = 0.0;
 
 	real_t still_time = 0.0;
 
@@ -276,14 +281,11 @@ public:
 	void update_mass_properties();
 	void reset_mass_properties();
 
-	_FORCE_INLINE_ Vector2 get_center_of_mass() const { return center_of_mass; }
+	_FORCE_INLINE_ const Vector2 &get_center_of_mass() const { return center_of_mass; }
 	_FORCE_INLINE_ real_t get_inv_mass() const { return _inv_mass; }
 	_FORCE_INLINE_ real_t get_inv_inertia() const { return _inv_inertia; }
 	_FORCE_INLINE_ real_t get_friction() const { return friction; }
-	_FORCE_INLINE_ Vector2 get_gravity() const { return gravity; }
 	_FORCE_INLINE_ real_t get_bounce() const { return bounce; }
-	_FORCE_INLINE_ real_t get_linear_damp() const { return linear_damp; }
-	_FORCE_INLINE_ real_t get_angular_damp() const { return angular_damp; }
 
 	void integrate_forces(real_t p_step);
 	void integrate_velocities(real_t p_step);

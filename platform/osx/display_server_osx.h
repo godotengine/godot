@@ -36,7 +36,7 @@
 #include "core/input/input.h"
 #include "servers/display_server.h"
 
-#if defined(OPENGL_ENABLED)
+#if defined(GLES3_ENABLED)
 #include "context_gl_osx.h"
 //TODO - reimplement OpenGLES
 #endif
@@ -64,7 +64,7 @@ public:
 	NSMenu *_get_dock_menu() const;
 	void _menu_callback(id p_sender);
 
-#if defined(OPENGL_ENABLED)
+#if defined(GLES3_ENABLED)
 	ContextGL_OSX *context_gles2;
 #endif
 #if defined(VULKAN_ENABLED)
@@ -109,7 +109,7 @@ public:
 
 		Vector<Vector2> mpath;
 
-#if defined(OPENGL_ENABLED)
+#if defined(GLES3_ENABLED)
 		ContextGL_OSX *context_gles2 = nullptr;
 #endif
 		Point2i mouse_pos;

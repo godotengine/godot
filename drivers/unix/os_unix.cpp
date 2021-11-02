@@ -160,10 +160,10 @@ double OS_Unix::get_unix_time() const {
 	return (double)tv_now.tv_sec + double(tv_now.tv_usec) / 1000000;
 };
 
-OS::Date OS_Unix::get_date(bool utc) const {
+OS::Date OS_Unix::get_date(bool p_utc) const {
 	time_t t = time(nullptr);
 	struct tm lt;
-	if (utc) {
+	if (p_utc) {
 		gmtime_r(&t, &lt);
 	} else {
 		localtime_r(&t, &lt);
@@ -181,10 +181,10 @@ OS::Date OS_Unix::get_date(bool utc) const {
 	return ret;
 }
 
-OS::Time OS_Unix::get_time(bool utc) const {
+OS::Time OS_Unix::get_time(bool p_utc) const {
 	time_t t = time(nullptr);
 	struct tm lt;
-	if (utc) {
+	if (p_utc) {
 		gmtime_r(&t, &lt);
 	} else {
 		localtime_r(&t, &lt);

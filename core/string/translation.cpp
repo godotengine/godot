@@ -1563,8 +1563,8 @@ const char32_t *TranslationServer::get_accented_version(char32_t p_character) co
 
 bool TranslationServer::is_placeholder(String &p_message, int p_index) const {
 	return p_message[p_index] == '%' && p_index < p_message.size() - 1 &&
-		   (p_message[p_index + 1] == 's' || p_message[p_index + 1] == 'c' || p_message[p_index + 1] == 'd' ||
-				   p_message[p_index + 1] == 'o' || p_message[p_index + 1] == 'x' || p_message[p_index + 1] == 'X' || p_message[p_index + 1] == 'f');
+			(p_message[p_index + 1] == 's' || p_message[p_index + 1] == 'c' || p_message[p_index + 1] == 'd' ||
+					p_message[p_index + 1] == 'o' || p_message[p_index + 1] == 'x' || p_message[p_index + 1] == 'X' || p_message[p_index + 1] == 'f');
 }
 
 void TranslationServer::_bind_methods() {

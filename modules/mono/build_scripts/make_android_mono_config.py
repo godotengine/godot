@@ -8,7 +8,9 @@ def generate_compressed_config(config_src, output_dir):
             decompr_size = len(buf)
             import zlib
 
-            buf = zlib.compress(buf)
+            # Use maximum zlib compression level to further reduce file size
+            # (at the cost of initial build times).
+            buf = zlib.compress(buf, zlib.Z_BEST_COMPRESSION)
             compr_size = len(buf)
 
             bytes_seq_str = ""

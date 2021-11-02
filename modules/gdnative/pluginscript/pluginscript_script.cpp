@@ -361,13 +361,6 @@ Error PluginScript::reload(bool p_keep_state) {
 		_properties_default_values[pi.name] = v["default_value"];
 	}
 
-#ifdef TOOLS_ENABLED
-/*for (Set<PlaceHolderScriptInstance*>::Element *E=placeholders.front();E;E=E->next()) {
-
-        _update_placeholder(E->get());
-    }*/
-#endif
-
 	FREE_SCRIPT_MANIFEST(manifest);
 	return OK;
 #undef FREE_SCRIPT_MANIFEST

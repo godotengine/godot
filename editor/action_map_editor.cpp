@@ -238,10 +238,16 @@ void InputEventConfigurationDialog::_listen_window_input(const Ref<InputEvent> &
 	Ref<InputEventJoypadButton> joyb = p_event;
 	Ref<InputEventJoypadMotion> joym = p_event;
 
-	int type = k.is_valid() ? INPUT_KEY : joyb.is_valid() ? INPUT_JOY_BUTTON :
-								  joym.is_valid()		  ? INPUT_JOY_MOTION :
-								  mb.is_valid()			  ? INPUT_MOUSE_BUTTON :
-															  0;
+	int type = 0;
+	if (k.is_valid()) {
+		type = INPUT_KEY;
+	} else if (joyb.is_valid()) {
+		type = INPUT_JOY_BUTTON;
+	} else if (joym.is_valid()) {
+		type = INPUT_JOY_MOTION;
+	} else if (mb.is_valid()) {
+		type = INPUT_MOUSE_BUTTON;
+	}
 
 	if (!(allowed_input_types & type)) {
 		return;

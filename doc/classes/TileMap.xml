@@ -16,6 +16,27 @@
 		<link title="2D Kinematic Character Demo">https://godotengine.org/asset-library/asset/113</link>
 	</tutorials>
 	<methods>
+		<method name="_tile_data_runtime_update" qualifiers="virtual">
+			<return type="void" />
+			<argument index="0" name="layer" type="int" />
+			<argument index="1" name="coords" type="Vector2i" />
+			<argument index="2" name="tile_data" type="TileData" />
+			<description>
+				Called with a TileData object about to be used internally by the TileMap, allowing its modification at runtime.
+				This method is only called if [method _use_tile_data_runtime_update] is implemented and returns [code]true[/code] for the given tile [code]coords[/coords] and [code]layer[/code].
+				[b]Warning:[/b] The [code]tile_data[/code] object's sub-resources are the same as the one in the TileSet. Modifying them might impact the whole TileSet. Instead, make sure to duplicate those resources.
+				[b]Note:[/b] If the properties of [code]tile_data[/code] object should change over time, use [method force_update] to trigger a TileMap update.
+			</description>
+		</method>
+		<method name="_use_tile_data_runtime_update" qualifiers="virtual">
+			<return type="bool" />
+			<argument index="0" name="layer" type="int" />
+			<argument index="1" name="coords" type="Vector2i" />
+			<description>
+				Should return [code]true[/code] if the tile at coordinates [code]coords[/coords] on layer [code]layer[/code] requires a runtime update.
+				[b]Warning:[/b] Make sure this function only return [code]true[/code] when needed. Any tile processed at runtime without a need for it will imply a significant performance penalty.
+			</description>
+		</method>
 		<method name="add_layer">
 			<return type="void" />
 			<argument index="0" name="to_position" type="int" />
@@ -40,6 +61,15 @@
 			<return type="void" />
 			<description>
 				Clears cells that do not exist in the tileset.
+			</description>
+		</method>
+		<method name="force_update">
+			<return type="void" />
+			<argument index="0" name="layer" type="int" default="-1" />
+			<description>
+				Triggers an update of the TileMap. If [code]layer[/code] is provided, only updates the given layer.
+				[b]Note:[/b] The TileMap node updates automatically when one of its properties is modified. A manual update is only needed if runtime modifications (implemented in [method _tile_data_runtime_update]) need to be applied.
+				[b]Warning:[/b] Updating the TileMap is a performance demanding task. Limit occurences of those updates to the minimum and limit the amount tiles they impact (by segregating tiles updated often to a dedicated layer for example).
 			</description>
 		</method>
 		<method name="get_cell_alternative_tile" qualifiers="const">

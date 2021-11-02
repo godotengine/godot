@@ -2498,8 +2498,7 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> state) {
 		ERR_FAIL_COND_V(!d.has("primitives"), ERR_PARSE_ERROR);
 
 		Array primitives = d["primitives"];
-		const Dictionary &extras = d.has("extras") ? (Dictionary)d["extras"] :
-													   Dictionary();
+		const Dictionary &extras = d.has("extras") ? (Dictionary)d["extras"] : Dictionary();
 		Ref<ImporterMesh> import_mesh;
 		import_mesh.instantiate();
 		String mesh_name = "mesh";
@@ -5447,7 +5446,7 @@ void GLTFDocument::_convert_multi_mesh_instance_to_gltf(
 			transform = p_multi_mesh_instance->get_transform() * transform;
 		} else if (multi_mesh->get_transform_format() == MultiMesh::TRANSFORM_3D) {
 			transform = p_multi_mesh_instance->get_transform() *
-						multi_mesh->get_instance_transform(instance_i);
+					multi_mesh->get_instance_transform(instance_i);
 		}
 		Ref<GLTFNode> new_gltf_node;
 		new_gltf_node.instantiate();

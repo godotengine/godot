@@ -68,6 +68,7 @@ layout(set = 0, binding = 4) uniform sampler light_projector_sampler;
 #define INSTANCE_FLAGS_MULTIMESH_HAS_COLOR (1 << 14)
 #define INSTANCE_FLAGS_MULTIMESH_HAS_CUSTOM_DATA (1 << 15)
 #define INSTANCE_FLAGS_PARTICLE_TRAIL_SHIFT 16
+#define INSTANCE_FLAGS_FADE_SHIFT 24
 //3 bits of stride
 #define INSTANCE_FLAGS_PARTICLE_TRAIL_MASK 0xFF
 

@@ -338,7 +338,9 @@ Error GDScriptWorkspace::initialize() {
 		}
 
 		Vector<DocData::MethodDoc> methods_signals;
+		methods_signals.append_array(class_data.constructors);
 		methods_signals.append_array(class_data.methods);
+		methods_signals.append_array(class_data.operators);
 		const int signal_start_idx = methods_signals.size();
 		methods_signals.append_array(class_data.signals);
 

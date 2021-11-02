@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="FogVolume" inherits="VisualInstance3D" version="4.0">
+	<brief_description>
+		A node used to add local fog with the volumetric fog effect.
+	</brief_description>
+	<description>
+		[FogVolume]s are used to add localized fog into the global volumetric fog effect.
+		Performance of [FogVolume]s is directly related to their relative size on the screen and the complexity of their attached [FogMaterial]. It is best to keep [FogVolume]s relatively small and simple where possible.
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="extents" type="Vector3" setter="set_extents" getter="get_extents" default="Vector3(1, 1, 1)">
+			Sets the size of the [FogVolume] when [member shape] is [constant RenderingServer.FOG_VOLUME_SHAPE_ELLIPSOID] or [constant RenderingServer.FOG_VOLUME_SHAPE_BOX].
+		</member>
+		<member name="material" type="Material" setter="set_material" getter="get_material">
+			Sets the [Material] to be used by the [FogVolume]. Can be either a [FogMaterial] or a custom [ShaderMaterial].
+		</member>
+		<member name="shape" type="int" setter="set_shape" getter="get_shape" enum="RenderingServer.FogVolumeShape" default="1">
+			Sets the shape of the [FogVolume] to either [constant RenderingServer.FOG_VOLUME_SHAPE_ELLIPSOID], [constant RenderingServer.FOG_VOLUME_SHAPE_BOX], or [constant RenderingServer.FOG_VOLUME_SHAPE_ELLIPSOID] or [constant RenderingServer.FOG_VOLUME_SHAPE_WORLD].
+		</member>
+	</members>
+</class>

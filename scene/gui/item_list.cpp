@@ -55,16 +55,8 @@ void ItemList::_shape(int p_idx) {
 int ItemList::add_item(const String &p_item, const Ref<Texture2D> &p_texture, bool p_selectable) {
 	Item item;
 	item.icon = p_texture;
-	item.icon_transposed = false;
-	item.icon_region = Rect2i();
-	item.icon_modulate = Color(1, 1, 1, 1);
 	item.text = p_item;
-	item.text_buf.instantiate();
 	item.selectable = p_selectable;
-	item.selected = false;
-	item.disabled = false;
-	item.tooltip_enabled = true;
-	item.custom_bg = Color(0, 0, 0, 0);
 	items.push_back(item);
 	int item_id = items.size() - 1;
 
@@ -72,27 +64,20 @@ int ItemList::add_item(const String &p_item, const Ref<Texture2D> &p_texture, bo
 
 	update();
 	shape_changed = true;
+	notify_property_list_changed();
 	return item_id;
 }
 
 int ItemList::add_icon_item(const Ref<Texture2D> &p_item, bool p_selectable) {
 	Item item;
 	item.icon = p_item;
-	item.icon_transposed = false;
-	item.icon_region = Rect2i();
-	item.icon_modulate = Color(1, 1, 1, 1);
-	//item.text=p_item;
-	item.text_buf.instantiate();
 	item.selectable = p_selectable;
-	item.selected = false;
-	item.disabled = false;
-	item.tooltip_enabled = true;
-	item.custom_bg = Color(0, 0, 0, 0);
 	items.push_back(item);
 	int item_id = items.size() - 1;
 
 	update();
 	shape_changed = true;
+	notify_property_list_changed();
 	return item_id;
 }
 
@@ -400,6 +385,15 @@ void ItemList::move_item(int p_from_idx, int p_to_idx) {
 
 	update();
 	shape_changed = true;
+	notify_property_list_changed();
+}
+
+void ItemList::set_item_count(int p_count) {
+	ERR_FAIL_COND(p_count < 0);
+	items.resize(p_count);
+	update();
+	shape_changed = true;
+	notify_property_list_changed();
 }
 
 int ItemList::get_item_count() const {
@@ -416,6 +410,7 @@ void ItemList::remove_item(int p_idx) {
 	update();
 	shape_changed = true;
 	defer_select_single = -1;
+	notify_property_list_changed();
 }
 
 void ItemList::clear() {
@@ -425,6 +420,7 @@ void ItemList::clear() {
 	update();
 	shape_changed = true;
 	defer_select_single = -1;
+	notify_property_list_changed();
 }
 
 void ItemList::set_fixed_column_width(int p_size) {
@@ -1446,32 +1442,6 @@ bool ItemList::is_anything_selected() {
 	return false;
 }
 
-void ItemList::_set_items(const Array &p_items) {
-	ERR_FAIL_COND(p_items.size() % 3);
-	clear();
-
-	for (int i = 0; i < p_items.size(); i += 3) {
-		String text = p_items[i + 0];
-		Ref<Texture2D> icon = p_items[i + 1];
-		bool disabled = p_items[i + 2];
-
-		int idx = get_item_count();
-		add_item(text, icon);
-		set_item_disabled(idx, disabled);
-	}
-}
-
-Array ItemList::_get_items() const {
-	Array items;
-	for (int i = 0; i < get_item_count(); i++) {
-		items.push_back(get_item_text(i));
-		items.push_back(get_item_icon(i));
-		items.push_back(is_item_disabled(i));
-	}
-
-	return items;
-}
-
 Size2 ItemList::get_minimum_size() const {
 	if (auto_height) {
 		return Size2(0, auto_height_value);
@@ -1506,6 +1476,74 @@ void ItemList::set_text_overrun_behavior(TextParagraph::OverrunBehavior p_behavi
 
 TextParagraph::OverrunBehavior ItemList::get_text_overrun_behavior() const {
 	return text_overrun_behavior;
+}
+
+bool ItemList::_set(const StringName &p_name, const Variant &p_value) {
+	Vector<String> components = String(p_name).split("/", true, 2);
+	if (components.size() >= 2 && components[0].begins_with("item_") && components[0].trim_prefix("item_").is_valid_int()) {
+		int item_index = components[0].trim_prefix("item_").to_int();
+		if (components[1] == "text") {
+			set_item_text(item_index, p_value);
+			return true;
+		} else if (components[1] == "icon") {
+			set_item_icon(item_index, p_value);
+			return true;
+		} else if (components[1] == "disabled") {
+			set_item_disabled(item_index, p_value);
+			return true;
+		}
+	}
+#ifndef DISABLE_DEPRECATED
+	// Compatibility.
+	if (p_name == "items") {
+		Array arr = p_value;
+		ERR_FAIL_COND_V(arr.size() % 3, false);
+		clear();
+
+		for (int i = 0; i < arr.size(); i += 3) {
+			String text = arr[i + 0];
+			Ref<Texture2D> icon = arr[i + 1];
+			bool disabled = arr[i + 2];
+
+			int idx = get_item_count();
+			add_item(text, icon);
+			set_item_disabled(idx, disabled);
+		}
+	}
+#endif
+	return false;
+}
+
+bool ItemList::_get(const StringName &p_name, Variant &r_ret) const {
+	Vector<String> components = String(p_name).split("/", true, 2);
+	if (components.size() >= 2 && components[0].begins_with("item_") && components[0].trim_prefix("item_").is_valid_int()) {
+		int item_index = components[0].trim_prefix("item_").to_int();
+		if (components[1] == "text") {
+			r_ret = get_item_text(item_index);
+			return true;
+		} else if (components[1] == "icon") {
+			r_ret = get_item_icon(item_index);
+			return true;
+		} else if (components[1] == "disabled") {
+			r_ret = is_item_disabled(item_index);
+			return true;
+		}
+	}
+	return false;
+}
+
+void ItemList::_get_property_list(List<PropertyInfo> *p_list) const {
+	for (int i = 0; i < items.size(); i++) {
+		p_list->push_back(PropertyInfo(Variant::STRING, vformat("item_%d/text", i)));
+
+		PropertyInfo pi = PropertyInfo(Variant::OBJECT, vformat("item_%d/icon", i), PROPERTY_HINT_RESOURCE_TYPE, "Texture2D");
+		pi.usage &= ~(get_item_icon(i).is_null() ? PROPERTY_USAGE_STORAGE : 0);
+		p_list->push_back(pi);
+
+		pi = PropertyInfo(Variant::BOOL, vformat("item_%d/disabled", i));
+		pi.usage &= ~(!is_item_disabled(i) ? PROPERTY_USAGE_STORAGE : 0);
+		p_list->push_back(pi);
+	}
 }
 
 void ItemList::_bind_methods() {
@@ -1567,6 +1605,7 @@ void ItemList::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("move_item", "from_idx", "to_idx"), &ItemList::move_item);
 
+	ClassDB::bind_method(D_METHOD("set_item_count"), &ItemList::set_item_count);
 	ClassDB::bind_method(D_METHOD("get_item_count"), &ItemList::get_item_count);
 	ClassDB::bind_method(D_METHOD("remove_item", "idx"), &ItemList::remove_item);
 
@@ -1614,13 +1653,8 @@ void ItemList::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_v_scroll"), &ItemList::get_v_scroll);
 
-	ClassDB::bind_method(D_METHOD("_set_items"), &ItemList::_set_items);
-	ClassDB::bind_method(D_METHOD("_get_items"), &ItemList::_get_items);
-
 	ClassDB::bind_method(D_METHOD("set_text_overrun_behavior", "overrun_behavior"), &ItemList::set_text_overrun_behavior);
 	ClassDB::bind_method(D_METHOD("get_text_overrun_behavior"), &ItemList::get_text_overrun_behavior);
-
-	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "items", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_items", "_get_items");
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "select_mode", PROPERTY_HINT_ENUM, "Single,Multi"), "set_select_mode", "get_select_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "allow_reselect"), "set_allow_reselect", "get_allow_reselect");
@@ -1628,6 +1662,7 @@ void ItemList::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_text_lines", PROPERTY_HINT_RANGE, "1,10,1,or_greater"), "set_max_text_lines", "get_max_text_lines");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "auto_height"), "set_auto_height", "has_auto_height");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "text_overrun_behavior", PROPERTY_HINT_ENUM, "Trim Nothing,Trim Characters,Trim Words,Ellipsis,Word Ellipsis"), "set_text_overrun_behavior", "get_text_overrun_behavior");
+	ADD_ARRAY_COUNT("Items", "items_count", "set_item_count", "get_item_count", "item_");
 	ADD_GROUP("Columns", "");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_columns", PROPERTY_HINT_RANGE, "0,10,1,or_greater"), "set_max_columns", "get_max_columns");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "same_column_width"), "set_same_column_width", "is_same_column_width");

@@ -239,7 +239,7 @@ bool AStar::are_points_connected(int p_id, int p_with_id, bool bidirectional) co
 	const Set<Segment>::Element *element = segments.find(s);
 
 	return element != nullptr &&
-		   (bidirectional || (element->get().direction & s.direction) == s.direction);
+			(bidirectional || (element->get().direction & s.direction) == s.direction);
 }
 
 void AStar::clear() {

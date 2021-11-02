@@ -1110,7 +1110,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					} else {
 #ifdef DEBUG_ENABLED
 						err_text = "Trying to assign value of type '" + Variant::get_type_name(src->get_type()) +
-								   "' to a variable of type '" + Variant::get_type_name(var_type) + "'.";
+								"' to a variable of type '" + Variant::get_type_name(var_type) + "'.";
 						OPCODE_BREAK;
 					}
 				} else {
@@ -1132,7 +1132,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				if (src->get_type() != Variant::ARRAY) {
 #ifdef DEBUG_ENABLED
 					err_text = "Trying to assign value of type '" + Variant::get_type_name(src->get_type()) +
-							   "' to a variable of type '" + +"'.";
+							"' to a variable of type '" + +"'.";
 #endif
 					OPCODE_BREAK;
 				}
@@ -1158,14 +1158,14 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				GD_ERR_BREAK(!nc);
 				if (src->get_type() != Variant::OBJECT && src->get_type() != Variant::NIL) {
 					err_text = "Trying to assign value of type '" + Variant::get_type_name(src->get_type()) +
-							   "' to a variable of type '" + nc->get_name() + "'.";
+							"' to a variable of type '" + nc->get_name() + "'.";
 					OPCODE_BREAK;
 				}
 				Object *src_obj = src->operator Object *();
 
 				if (src_obj && !ClassDB::is_parent_class(src_obj->get_class_name(), nc->get_name())) {
 					err_text = "Trying to assign value of type '" + src_obj->get_class_name() +
-							   "' to a variable of type '" + nc->get_name() + "'.";
+							"' to a variable of type '" + nc->get_name() + "'.";
 					OPCODE_BREAK;
 				}
 #endif // DEBUG_ENABLED
@@ -1195,7 +1195,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					ScriptInstance *scr_inst = src->operator Object *()->get_script_instance();
 					if (!scr_inst) {
 						err_text = "Trying to assign value of type '" + src->operator Object *()->get_class_name() +
-								   "' to a variable of type '" + base_type->get_path().get_file() + "'.";
+								"' to a variable of type '" + base_type->get_path().get_file() + "'.";
 						OPCODE_BREAK;
 					}
 
@@ -1212,7 +1212,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 
 					if (!valid) {
 						err_text = "Trying to assign value of type '" + src->operator Object *()->get_script_instance()->get_script()->get_path().get_file() +
-								   "' to a variable of type '" + base_type->get_path().get_file() + "'.";
+								"' to a variable of type '" + base_type->get_path().get_file() + "'.";
 						OPCODE_BREAK;
 					}
 				}

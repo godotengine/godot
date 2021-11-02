@@ -57,25 +57,21 @@ void DocTools::merge_from(const DocTools &p_data) {
 		c.brief_description = cf.brief_description;
 		c.tutorials = cf.tutorials;
 
-		for (int i = 0; i < c.methods.size(); i++) {
-			DocData::MethodDoc &m = c.methods.write[i];
+		for (int i = 0; i < c.constructors.size(); i++) {
+			DocData::MethodDoc &m = c.constructors.write[i];
 
-			for (int j = 0; j < cf.methods.size(); j++) {
-				if (cf.methods[j].name != m.name) {
+			for (int j = 0; j < cf.constructors.size(); j++) {
+				if (cf.constructors[j].name != m.name) {
 					continue;
 				}
 
-				const char *operator_prefix = "operator "; // Operators use a space at the end, making this prefix an invalid identifier (and differentiating from methods).
-
-				if (cf.methods[j].name == c.name || cf.methods[j].name.begins_with(operator_prefix)) {
-					// Since constructors and operators can repeat, we need to check the type of
+				{
+					// Since constructors can repeat, we need to check the type of
 					// the arguments so we make sure they are different.
-
-					if (cf.methods[j].arguments.size() != m.arguments.size()) {
+					if (cf.constructors[j].arguments.size() != m.arguments.size()) {
 						continue;
 					}
-
-					int arg_count = cf.methods[j].arguments.size();
+					int arg_count = cf.constructors[j].arguments.size();
 					Vector<bool> arg_used;
 					arg_used.resize(arg_count);
 					for (int l = 0; l < arg_count; ++l) {
@@ -85,7 +81,7 @@ void DocTools::merge_from(const DocTools &p_data) {
 					// have to check one by one so we make sure we have an exact match
 					for (int k = 0; k < arg_count; ++k) {
 						for (int l = 0; l < arg_count; ++l) {
-							if (cf.methods[j].arguments[k].type == m.arguments[l].type && !arg_used[l]) {
+							if (cf.constructors[j].arguments[k].type == m.arguments[l].type && !arg_used[l]) {
 								arg_used.write[l] = true;
 								break;
 							}
@@ -100,6 +96,21 @@ void DocTools::merge_from(const DocTools &p_data) {
 					if (not_the_same) {
 						continue;
 					}
+				}
+
+				const DocData::MethodDoc &mf = cf.constructors[j];
+
+				m.description = mf.description;
+				break;
+			}
+		}
+
+		for (int i = 0; i < c.methods.size(); i++) {
+			DocData::MethodDoc &m = c.methods.write[i];
+
+			for (int j = 0; j < cf.methods.size(); j++) {
+				if (cf.methods[j].name != m.name) {
+					continue;
 				}
 
 				const DocData::MethodDoc &mf = cf.methods[j];
@@ -161,6 +172,54 @@ void DocTools::merge_from(const DocTools &p_data) {
 				const DocData::ThemeItemDoc &pf = cf.theme_properties[j];
 
 				ti.description = pf.description;
+				break;
+			}
+		}
+
+		for (int i = 0; i < c.operators.size(); i++) {
+			DocData::MethodDoc &m = c.operators.write[i];
+
+			for (int j = 0; j < cf.operators.size(); j++) {
+				if (cf.operators[j].name != m.name) {
+					continue;
+				}
+
+				{
+					// Since operators can repeat, we need to check the type of
+					// the arguments so we make sure they are different.
+					if (cf.operators[j].arguments.size() != m.arguments.size()) {
+						continue;
+					}
+					int arg_count = cf.operators[j].arguments.size();
+					Vector<bool> arg_used;
+					arg_used.resize(arg_count);
+					for (int l = 0; l < arg_count; ++l) {
+						arg_used.write[l] = false;
+					}
+					// also there is no guarantee that argument ordering will match, so we
+					// have to check one by one so we make sure we have an exact match
+					for (int k = 0; k < arg_count; ++k) {
+						for (int l = 0; l < arg_count; ++l) {
+							if (cf.operators[j].arguments[k].type == m.arguments[l].type && !arg_used[l]) {
+								arg_used.write[l] = true;
+								break;
+							}
+						}
+					}
+					bool not_the_same = false;
+					for (int l = 0; l < arg_count; ++l) {
+						if (!arg_used[l]) { // at least one of the arguments was different
+							not_the_same = true;
+						}
+					}
+					if (not_the_same) {
+						continue;
+					}
+				}
+
+				const DocData::MethodDoc &mf = cf.operators[j];
+
+				m.description = mf.description;
 				break;
 			}
 		}
@@ -650,11 +709,6 @@ void DocTools::generate(bool p_basic_types) {
 			DocData::MethodDoc method;
 
 			method.name = mi.name;
-			if (method.name == cname) {
-				method.qualifiers = "constructor";
-			} else if (method.name.begins_with("operator")) {
-				method.qualifiers = "operator";
-			}
 
 			for (int j = 0; j < mi.arguments.size(); j++) {
 				PropertyInfo arginfo = mi.arguments[j];
@@ -694,7 +748,13 @@ void DocTools::generate(bool p_basic_types) {
 				method.qualifiers += "static";
 			}
 
-			c.methods.push_back(method);
+			if (method.name == cname) {
+				c.constructors.push_back(method);
+			} else if (method.name.begins_with("operator")) {
+				c.operators.push_back(method);
+			} else {
+				c.methods.push_back(method);
+			}
 		}
 
 		List<PropertyInfo> properties;
@@ -916,7 +976,7 @@ static Error _parse_methods(Ref<XMLParser> &parser, Vector<DocData::MethodDoc> &
 				methods.push_back(method);
 
 			} else {
-				ERR_FAIL_V_MSG(ERR_FILE_CORRUPT, "Invalid tag in doc file: " + parser->get_node_name() + ".");
+				ERR_FAIL_V_MSG(ERR_FILE_CORRUPT, "Invalid tag in doc file: " + parser->get_node_name() + ", expected " + element + ".");
 			}
 
 		} else if (parser->get_node_type() == XMLParser::NODE_ELEMENT_END && parser->get_node_name() == section) {
@@ -1044,10 +1104,15 @@ Error DocTools::_load(Ref<XMLParser> parser) {
 							break; // End of <tutorials>.
 						}
 					}
+				} else if (name2 == "constructors") {
+					Error err2 = _parse_methods(parser, c.constructors);
+					ERR_FAIL_COND_V(err2, err2);
 				} else if (name2 == "methods") {
 					Error err2 = _parse_methods(parser, c.methods);
 					ERR_FAIL_COND_V(err2, err2);
-
+				} else if (name2 == "operators") {
+					Error err2 = _parse_methods(parser, c.operators);
+					ERR_FAIL_COND_V(err2, err2);
 				} else if (name2 == "signals") {
 					Error err2 = _parse_methods(parser, c.signals);
 					ERR_FAIL_COND_V(err2, err2);
@@ -1269,6 +1334,8 @@ Error DocTools::save_classes(const String &p_default_path, const Map<String, Str
 		}
 		_write_string(f, 1, "</tutorials>");
 
+		_write_method_doc(f, "constructor", c.constructors);
+
 		_write_method_doc(f, "method", c.methods);
 
 		if (!c.properties.is_empty()) {
@@ -1343,6 +1410,8 @@ Error DocTools::save_classes(const String &p_default_path, const Map<String, Str
 			}
 			_write_string(f, 1, "</theme_items>");
 		}
+
+		_write_method_doc(f, "operator", c.operators);
 
 		_write_string(f, 0, "</class>");
 	}

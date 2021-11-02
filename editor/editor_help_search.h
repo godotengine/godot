@@ -43,12 +43,14 @@ class EditorHelpSearch : public ConfirmationDialog {
 
 	enum SearchFlags {
 		SEARCH_CLASSES = 1 << 0,
-		SEARCH_METHODS = 1 << 1,
-		SEARCH_SIGNALS = 1 << 2,
-		SEARCH_CONSTANTS = 1 << 3,
-		SEARCH_PROPERTIES = 1 << 4,
-		SEARCH_THEME_ITEMS = 1 << 5,
-		SEARCH_ALL = SEARCH_CLASSES | SEARCH_METHODS | SEARCH_SIGNALS | SEARCH_CONSTANTS | SEARCH_PROPERTIES | SEARCH_THEME_ITEMS,
+		SEARCH_CONSTRUCTORS = 1 << 1,
+		SEARCH_METHODS = 1 << 2,
+		SEARCH_OPERATORS = 1 << 3,
+		SEARCH_SIGNALS = 1 << 4,
+		SEARCH_CONSTANTS = 1 << 5,
+		SEARCH_PROPERTIES = 1 << 6,
+		SEARCH_THEME_ITEMS = 1 << 7,
+		SEARCH_ALL = SEARCH_CLASSES | SEARCH_CONSTRUCTORS | SEARCH_METHODS | SEARCH_OPERATORS | SEARCH_SIGNALS | SEARCH_CONSTANTS | SEARCH_PROPERTIES | SEARCH_THEME_ITEMS,
 		SEARCH_CASE_SENSITIVE = 1 << 29,
 		SEARCH_SHOW_HIERARCHY = 1 << 30
 	};
@@ -99,7 +101,9 @@ class EditorHelpSearch::Runner : public RefCounted {
 	struct ClassMatch {
 		DocData::ClassDoc *doc;
 		bool name = false;
+		Vector<DocData::MethodDoc *> constructors;
 		Vector<DocData::MethodDoc *> methods;
+		Vector<DocData::MethodDoc *> operators;
 		Vector<DocData::MethodDoc *> signals;
 		Vector<DocData::ConstantDoc *> constants;
 		Vector<DocData::PropertyDoc *> properties;

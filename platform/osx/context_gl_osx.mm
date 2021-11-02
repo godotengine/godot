@@ -30,7 +30,7 @@
 
 #include "context_gl_osx.h"
 
-#if defined(OPENGL_ENABLED) || defined(GLES_ENABLED)
+#if defined(GLES3_ENABLED) || defined(GLES_ENABLED)
 
 void ContextGL_OSX::release_current() {
 	[NSOpenGLContext clearCurrentContext];
@@ -98,7 +98,7 @@ Error ContextGL_OSX::initialize() {
 	ADD_ATTR(NSOpenGLPFADoubleBuffer);
 	ADD_ATTR(NSOpenGLPFAClosestPolicy);
 
-	if (!opengl_3_context) {
+	if (!gles3_context) {
 		ADD_ATTR2(NSOpenGLPFAOpenGLProfile, NSOpenGLProfileVersionLegacy);
 	} else {
 		//we now need OpenGL 3 or better, maybe even change this to 3_3Core ?
@@ -150,8 +150,8 @@ Error ContextGL_OSX::initialize() {
 	return OK;
 }
 
-ContextGL_OSX::ContextGL_OSX(id p_view, bool p_opengl_3_context) {
-	opengl_3_context = p_opengl_3_context;
+ContextGL_OSX::ContextGL_OSX(id p_view, bool p_gles3_context) {
+	gles3_context = p_gles3_context;
 	window_view = p_view;
 	use_vsync = false;
 }

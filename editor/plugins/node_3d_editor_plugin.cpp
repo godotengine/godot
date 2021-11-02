@@ -1855,7 +1855,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 						motion_snapped.snap(Vector3(snap, snap, snap));
 						// This might not be necessary anymore after issue #288 is solved (in 4.0?).
 						set_message(TTR("Scaling: ") + "(" + String::num(motion_snapped.x, snap_step_decimals) + ", " +
-									String::num(motion_snapped.y, snap_step_decimals) + ", " + String::num(motion_snapped.z, snap_step_decimals) + ")");
+								String::num(motion_snapped.y, snap_step_decimals) + ", " + String::num(motion_snapped.z, snap_step_decimals) + ")");
 
 						List<Node *> &selection = editor_selection->get_selected_node_list();
 						for (Node *E : selection) {
@@ -1954,7 +1954,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 						Vector3 motion_snapped = motion;
 						motion_snapped.snap(Vector3(snap, snap, snap));
 						set_message(TTR("Translating: ") + "(" + String::num(motion_snapped.x, snap_step_decimals) + ", " +
-									String::num(motion_snapped.y, snap_step_decimals) + ", " + String::num(motion_snapped.z, snap_step_decimals) + ")");
+								String::num(motion_snapped.y, snap_step_decimals) + ", " + String::num(motion_snapped.z, snap_step_decimals) + ")");
 
 						List<Node *> &selection = editor_selection->get_selected_node_list();
 						for (Node *E : selection) {
@@ -4376,7 +4376,7 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, Edito
 		const int wireframe_idx = view_menu->get_popup()->get_item_index(VIEW_DISPLAY_WIREFRAME);
 		const int overdraw_idx = view_menu->get_popup()->get_item_index(VIEW_DISPLAY_OVERDRAW);
 		const int shadeless_idx = view_menu->get_popup()->get_item_index(VIEW_DISPLAY_SHADELESS);
-		const String unsupported_tooltip = TTR("Not available when using the GLES2 renderer.");
+		const String unsupported_tooltip = TTR("Not available when using the OpenGL renderer.");
 
 		view_menu->get_popup()->set_item_disabled(normal_idx, true);
 		view_menu->get_popup()->set_item_tooltip(normal_idx, unsupported_tooltip);
@@ -7004,6 +7004,7 @@ void Node3DEditor::_register_all_gizmos() {
 	add_gizmo_plugin(Ref<NavigationRegion3DGizmoPlugin>(memnew(NavigationRegion3DGizmoPlugin)));
 	add_gizmo_plugin(Ref<Joint3DGizmoPlugin>(memnew(Joint3DGizmoPlugin)));
 	add_gizmo_plugin(Ref<PhysicalBone3DGizmoPlugin>(memnew(PhysicalBone3DGizmoPlugin)));
+	add_gizmo_plugin(Ref<FogVolumeGizmoPlugin>(memnew(FogVolumeGizmoPlugin)));
 }
 
 void Node3DEditor::_bind_methods() {

@@ -710,9 +710,11 @@ void GodotSoftBody3D::generate_bending_constraints(int p_distance) {
 // A small structure to track lists of dependent link calculations.
 class LinkDeps {
 public:
-	int value; // A link calculation that is dependent on this one
-			// Positive values = "input A" while negative values = "input B"
-	LinkDeps *next; // Next dependence in the list
+	// A link calculation that is dependent on this one.
+	// Positive values = "input A" while negative values = "input B".
+	int value;
+	// Next dependence in the list.
+	LinkDeps *next;
 };
 typedef LinkDeps *LinkDepsPtr;
 

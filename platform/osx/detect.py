@@ -31,6 +31,7 @@ def get_opts():
         BoolVariable("use_ubsan", "Use LLVM/GCC compiler undefined behavior sanitizer (UBSAN)", False),
         BoolVariable("use_asan", "Use LLVM/GCC compiler address sanitizer (ASAN)", False),
         BoolVariable("use_tsan", "Use LLVM/GCC compiler thread sanitizer (TSAN)", False),
+        BoolVariable("use_coverage", "Use instrumentation codes in the binary (e.g. for code coverage)", False),
     ]
 
 
@@ -142,6 +143,10 @@ def configure(env):
             env.Append(CCFLAGS=["-fsanitize=thread"])
             env.Append(LINKFLAGS=["-fsanitize=thread"])
 
+    if env["use_coverage"]:
+        env.Append(CCFLAGS=["-ftest-coverage", "-fprofile-arcs"])
+        env.Append(LINKFLAGS=["-ftest-coverage", "-fprofile-arcs"])
+
     ## Dependencies
 
     if env["builtin_libtheora"]:
@@ -184,4 +189,4 @@ def configure(env):
         if not env["use_volk"]:
             env.Append(LINKFLAGS=["-L$VULKAN_SDK_PATH/MoltenVK/MoltenVK.xcframework/macos-arm64_x86_64/", "-lMoltenVK"])
 
-    # env.Append(CPPDEFINES=['GLES_ENABLED', 'OPENGL_ENABLED'])
+    # env.Append(CPPDEFINES=['GLES_ENABLED', 'GLES3_ENABLED'])

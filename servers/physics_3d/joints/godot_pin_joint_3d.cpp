@@ -63,16 +63,18 @@ bool GodotPinJoint3D::setup(real_t p_step) {
 
 	for (int i = 0; i < 3; i++) {
 		normal[i] = 1;
-		memnew_placement(&m_jac[i], GodotJacobianEntry3D(
-											A->get_principal_inertia_axes().transposed(),
-											B->get_principal_inertia_axes().transposed(),
-											A->get_transform().xform(m_pivotInA) - A->get_transform().origin - A->get_center_of_mass(),
-											B->get_transform().xform(m_pivotInB) - B->get_transform().origin - B->get_center_of_mass(),
-											normal,
-											A->get_inv_inertia(),
-											A->get_inv_mass(),
-											B->get_inv_inertia(),
-											B->get_inv_mass()));
+		memnew_placement(
+				&m_jac[i],
+				GodotJacobianEntry3D(
+						A->get_principal_inertia_axes().transposed(),
+						B->get_principal_inertia_axes().transposed(),
+						A->get_transform().xform(m_pivotInA) - A->get_transform().origin - A->get_center_of_mass(),
+						B->get_transform().xform(m_pivotInB) - B->get_transform().origin - B->get_center_of_mass(),
+						normal,
+						A->get_inv_inertia(),
+						A->get_inv_mass(),
+						B->get_inv_inertia(),
+						B->get_inv_mass()));
 		normal[i] = 0;
 	}
 

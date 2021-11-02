@@ -60,5 +60,8 @@
 		<constant name="MODE_SKY" value="3" enum="Mode">
 			Mode used for drawing skies. Only works with shaders attached to [Sky] objects.
 		</constant>
+		<constant name="MODE_FOG" value="4" enum="Mode">
+			Mode used for setting the color and density of volumetric fog effect.
+		</constant>
 	</constants>
 </class>
