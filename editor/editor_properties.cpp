@@ -2236,8 +2236,8 @@ EditorPropertyRID::EditorPropertyRID() {
 
 ////////////// RESOURCE //////////////////////
 
-void EditorPropertyResource::_resource_selected(const RES &p_resource) {
-	if (_can_use_sub_inspector(p_resource)) {
+void EditorPropertyResource::_resource_selected(const RES &p_resource, bool p_edit) {
+	if (!p_edit && _can_use_sub_inspector(p_resource)) {
 		bool unfold = !get_edited_object()->editor_is_section_unfolded(get_edited_property());
 		get_edited_object()->editor_set_section_unfold(get_edited_property(), unfold);
 		update_property();
