@@ -166,8 +166,8 @@ public:
 	FUNC2(area_set_monitorable, RID, bool);
 	FUNC2(area_set_ray_pickable, RID, bool);
 
-	FUNC3(area_set_monitor_callback, RID, Object *, const StringName &);
-	FUNC3(area_set_area_monitor_callback, RID, Object *, const StringName &);
+	FUNC2(area_set_monitor_callback, RID, const Callable &);
+	FUNC2(area_set_area_monitor_callback, RID, const Callable &);
 
 	/* BODY API */
 
