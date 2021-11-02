@@ -523,7 +523,9 @@ void Polygon2D::set_bone_path(int p_index, const NodePath &p_path) {
 Array Polygon2D::_get_bones() const {
 	Array bones;
 	for (int i = 0; i < get_bone_count(); i++) {
-		bones.push_back(get_bone_path(i));
+		// Convert path property to String to avoid errors due to invalid node path in editor,
+		// because it's relative to the Skeleton2D node and not Polygon2D.
+		bones.push_back(String(get_bone_path(i)));
 		bones.push_back(get_bone_weights(i));
 	}
 	return bones;
@@ -532,7 +534,8 @@ void Polygon2D::_set_bones(const Array &p_bones) {
 	ERR_FAIL_COND(p_bones.size() & 1);
 	clear_bones();
 	for (int i = 0; i < p_bones.size(); i += 2) {
-		add_bone(p_bones[i], p_bones[i + 1]);
+		// Convert back from String to NodePath.
+		add_bone(NodePath(p_bones[i].operator String()), p_bones[i + 1]);
 	}
 }
 
