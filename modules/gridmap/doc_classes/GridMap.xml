@@ -189,6 +189,15 @@
 				Emitted when [member cell_size] changes.
 			</description>
 		</signal>
+		<signal name="cell_item_changed">
+			<argument index="0" name="object" type="Object" />
+			<argument index="1" name="cell" type="Vector3" />
+			<argument index="2" name="new" type="int" />
+			<argument index="3" name="old" type="int" />
+			<description>
+				Emitted when [member cell_item] changes.
+			</description>
+		</signal>
 	</signals>
 	<constants>
 		<constant name="INVALID_CELL_ITEM" value="-1">
