@@ -620,7 +620,7 @@ hb_font_funcs_destroy (hb_font_funcs_t *ffuncs)
   HB_FONT_FUNCS_IMPLEMENT_CALLBACKS
 #undef HB_FONT_FUNC_IMPLEMENT
 
-  free (ffuncs);
+  hb_free (ffuncs);
 }
 
 /**
@@ -1544,8 +1544,8 @@ _hb_font_adopt_var_coords (hb_font_t *font,
 			   float *design_coords,
 			   unsigned int coords_length)
 {
-  free (font->coords);
-  free (font->design_coords);
+  hb_free (font->coords);
+  hb_free (font->design_coords);
 
   font->coords = coords;
   font->design_coords = design_coords;
@@ -1586,8 +1586,8 @@ hb_font_create_sub_font (hb_font_t *parent)
   unsigned int num_coords = parent->num_coords;
   if (num_coords)
   {
-    int *coords = (int *) calloc (num_coords, sizeof (parent->coords[0]));
-    float *design_coords = (float *) calloc (num_coords, sizeof (parent->design_coords[0]));
+    int *coords = (int *) hb_calloc (num_coords, sizeof (parent->coords[0]));
+    float *design_coords = (float *) hb_calloc (num_coords, sizeof (parent->design_coords[0]));
     if (likely (coords && design_coords))
     {
       memcpy (coords, parent->coords, num_coords * sizeof (parent->coords[0]));
@@ -1596,8 +1596,8 @@ hb_font_create_sub_font (hb_font_t *parent)
     }
     else
     {
-      free (coords);
-      free (design_coords);
+      hb_free (coords);
+      hb_free (design_coords);
     }
   }
 
@@ -1659,10 +1659,10 @@ hb_font_destroy (hb_font_t *font)
   hb_face_destroy (font->face);
   hb_font_funcs_destroy (font->klass);
 
-  free (font->coords);
-  free (font->design_coords);
+  hb_free (font->coords);
+  hb_free (font->design_coords);
 
-  free (font);
+  hb_free (font);
 }
 
 /**
@@ -2052,29 +2052,30 @@ hb_font_set_variations (hb_font_t            *font,
     return;
   }
 
-  unsigned int coords_length = hb_ot_var_get_axis_count (font->face);
+  const OT::fvar &fvar = *font->face->table.fvar;
+  auto axes = fvar.get_axes ();
+  const unsigned coords_length = axes.length;
 
-  int *normalized = coords_length ? (int *) calloc (coords_length, sizeof (int)) : nullptr;
-  float *design_coords = coords_length ? (float *) calloc (coords_length, sizeof (float)) : nullptr;
+  int *normalized = coords_length ? (int *) hb_calloc (coords_length, sizeof (int)) : nullptr;
+  float *design_coords = coords_length ? (float *) hb_calloc (coords_length, sizeof (float)) : nullptr;
 
   if (unlikely (coords_length && !(normalized && design_coords)))
   {
-    free (normalized);
-    free (design_coords);
+    hb_free (normalized);
+    hb_free (design_coords);
     return;
   }
 
-  const OT::fvar &fvar = *font->face->table.fvar;
   for (unsigned int i = 0; i < variations_length; i++)
   {
-    hb_ot_var_axis_info_t info;
-    if (hb_ot_var_find_axis_info (font->face, variations[i].tag, &info) &&
-	info.axis_index < coords_length)
-    {
-      float v = variations[i].value;
-      design_coords[info.axis_index] = v;
-      normalized[info.axis_index] = fvar.normalize_axis_value (info.axis_index, v);
-    }
+    const auto tag = variations[i].tag;
+    const auto v = variations[i].value;
+    for (unsigned axis_index = 0; axis_index < coords_length; axis_index++)
+      if (axes[axis_index].axisTag == tag)
+      {
+	design_coords[axis_index] = v;
+	normalized[axis_index] = fvar.normalize_axis_value (axis_index, v);
+      }
   }
   font->face->table.avar->map_coords (normalized, coords_length);
 
@@ -2100,13 +2101,13 @@ hb_font_set_var_coords_design (hb_font_t    *font,
   if (hb_object_is_immutable (font))
     return;
 
-  int *normalized = coords_length ? (int *) calloc (coords_length, sizeof (int)) : nullptr;
-  float *design_coords = coords_length ? (float *) calloc (coords_length, sizeof (float)) : nullptr;
+  int *normalized = coords_length ? (int *) hb_calloc (coords_length, sizeof (int)) : nullptr;
+  float *design_coords = coords_length ? (float *) hb_calloc (coords_length, sizeof (float)) : nullptr;
 
   if (unlikely (coords_length && !(normalized && design_coords)))
   {
-    free (normalized);
-    free (design_coords);
+    hb_free (normalized);
+    hb_free (design_coords);
     return;
   }
 
@@ -2135,13 +2136,13 @@ hb_font_set_var_named_instance (hb_font_t *font,
 
   unsigned int coords_length = hb_ot_var_named_instance_get_design_coords (font->face, instance_index, nullptr, nullptr);
 
-  float *coords = coords_length ? (float *) calloc (coords_length, sizeof (float)) : nullptr;
+  float *coords = coords_length ? (float *) hb_calloc (coords_length, sizeof (float)) : nullptr;
   if (unlikely (coords_length && !coords))
     return;
 
   hb_ot_var_named_instance_get_design_coords (font->face, instance_index, &coords_length, coords);
   hb_font_set_var_coords_design (font, coords, coords_length);
-  free (coords);
+  hb_free (coords);
 }
 
 /**
@@ -2165,15 +2166,15 @@ hb_font_set_var_coords_normalized (hb_font_t    *font,
   if (hb_object_is_immutable (font))
     return;
 
-  int *copy = coords_length ? (int *) calloc (coords_length, sizeof (coords[0])) : nullptr;
-  int *unmapped = coords_length ? (int *) calloc (coords_length, sizeof (coords[0])) : nullptr;
-  float *design_coords = coords_length ? (float *) calloc (coords_length, sizeof (design_coords[0])) : nullptr;
+  int *copy = coords_length ? (int *) hb_calloc (coords_length, sizeof (coords[0])) : nullptr;
+  int *unmapped = coords_length ? (int *) hb_calloc (coords_length, sizeof (coords[0])) : nullptr;
+  float *design_coords = coords_length ? (float *) hb_calloc (coords_length, sizeof (design_coords[0])) : nullptr;
 
   if (unlikely (coords_length && !(copy && unmapped && design_coords)))
   {
-    free (copy);
-    free (unmapped);
-    free (design_coords);
+    hb_free (copy);
+    hb_free (unmapped);
+    hb_free (design_coords);
     return;
   }
 
@@ -2187,7 +2188,7 @@ hb_font_set_var_coords_normalized (hb_font_t    *font,
   font->face->table.avar->unmap_coords (unmapped, coords_length);
   for (unsigned int i = 0; i < coords_length; ++i)
     design_coords[i] = font->face->table.fvar->unnormalize_axis_value (i, unmapped[i]);
-  free (unmapped);
+  hb_free (unmapped);
 
   _hb_font_adopt_var_coords (font, copy, design_coords, coords_length);
 }
@@ -2267,7 +2268,7 @@ trampoline_create (FuncType           func,
 {
   typedef hb_trampoline_t<FuncType> trampoline_t;
 
-  trampoline_t *trampoline = (trampoline_t *) calloc (1, sizeof (trampoline_t));
+  trampoline_t *trampoline = (trampoline_t *) hb_calloc (1, sizeof (trampoline_t));
 
   if (unlikely (!trampoline))
     return nullptr;
@@ -2296,7 +2297,7 @@ trampoline_destroy (void *user_data)
 
   if (closure->destroy)
     closure->destroy (closure->user_data);
-  free (closure);
+  hb_free (closure);
 }
 
 typedef hb_trampoline_t<hb_font_get_glyph_func_t> hb_font_get_glyph_trampoline_t;

@@ -8,8 +8,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="operator" type="int" setter="set_operator" getter="get_operator" enum="VisualShaderNodeTransformOp.Operator" default="0">
 			The type of the operation to be performed on the transforms. See [enum Operator] for options.

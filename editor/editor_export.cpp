@@ -451,6 +451,9 @@ void EditorExportPlatform::_export_find_resources(EditorFileSystemDirectory *p_d
 	}
 
 	for (int i = 0; i < p_dir->get_file_count(); i++) {
+		if (p_dir->get_file_type(i) == "TextFile") {
+			continue;
+		}
 		p_paths.insert(p_dir->get_file_path(i));
 	}
 }
@@ -1043,17 +1046,19 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 			return err;
 		}
 	}
-	if (FileAccess::exists(ResourceUID::CACHE_FILE)) {
-		Vector<uint8_t> array = FileAccess::get_file_as_array(ResourceUID::CACHE_FILE);
-		err = p_func(p_udata, ResourceUID::CACHE_FILE, array, idx, total, enc_in_filters, enc_ex_filters, key);
+	String resource_cache_file = ResourceUID::get_cache_file();
+	if (FileAccess::exists(resource_cache_file)) {
+		Vector<uint8_t> array = FileAccess::get_file_as_array(resource_cache_file);
+		err = p_func(p_udata, resource_cache_file, array, idx, total, enc_in_filters, enc_ex_filters, key);
 		if (err != OK) {
 			return err;
 		}
 	}
 
-	if (FileAccess::exists(NativeExtension::EXTENSION_LIST_CONFIG_FILE)) {
-		Vector<uint8_t> array = FileAccess::get_file_as_array(NativeExtension::EXTENSION_LIST_CONFIG_FILE);
-		err = p_func(p_udata, NativeExtension::EXTENSION_LIST_CONFIG_FILE, array, idx, total, enc_in_filters, enc_ex_filters, key);
+	String extension_list_config_file = NativeExtension::get_extension_list_config_file();
+	if (FileAccess::exists(extension_list_config_file)) {
+		Vector<uint8_t> array = FileAccess::get_file_as_array(extension_list_config_file);
+		err = p_func(p_udata, extension_list_config_file, array, idx, total, enc_in_filters, enc_ex_filters, key);
 		if (err != OK) {
 			return err;
 		}
@@ -1486,13 +1491,16 @@ void EditorExport::add_export_preset(const Ref<EditorExportPreset> &p_preset, in
 }
 
 String EditorExportPlatform::test_etc2() const {
+	//	String driver = ProjectSettings::get_singleton()->get("rendering/driver/driver_name");
+	//	bool etc_supported = ProjectSettings::get_singleton()->get("rendering/textures/vram_compression/import_etc");
+	//	bool etc2_supported = ProjectSettings::get_singleton()->get("rendering/textures/vram_compression/import_etc2");
 	String driver = ProjectSettings::get_singleton()->get("rendering/driver/driver_name");
 	bool etc_supported = ProjectSettings::get_singleton()->get("rendering/textures/vram_compression/import_etc");
 	bool etc2_supported = ProjectSettings::get_singleton()->get("rendering/textures/vram_compression/import_etc2");
 
-	if (driver == "GLES2" && !etc_supported) {
-		return TTR("Target platform requires 'ETC' texture compression for GLES2. Enable 'Import Etc' in Project Settings.");
-	} else if (driver == "Vulkan" && !etc2_supported) {
+	if (driver == "opengl3" && !etc_supported) {
+		return TTR("Target platform requires 'ETC' texture compression for OpenGL. Enable 'Import Etc' in Project Settings.");
+	} else if (driver == "vulkan" && !etc2_supported) {
 		// FIXME: Review if this is true for Vulkan.
 		return TTR("Target platform requires 'ETC2' texture compression for Vulkan. Enable 'Import Etc 2' in Project Settings.");
 	}
@@ -1503,10 +1511,13 @@ String EditorExportPlatform::test_etc2_or_pvrtc() const {
 	String driver = ProjectSettings::get_singleton()->get("rendering/driver/driver_name");
 	bool etc2_supported = ProjectSettings::get_singleton()->get("rendering/textures/vram_compression/import_etc2");
 	bool pvrtc_supported = ProjectSettings::get_singleton()->get("rendering/textures/vram_compression/import_pvrtc");
+	//	String driver = ProjectSettings::get_singleton()->get("rendering/driver/driver_name");
+	//	bool etc2_supported = ProjectSettings::get_singleton()->get("rendering/textures/vram_compression/import_etc2");
+	//	bool pvrtc_supported = ProjectSettings::get_singleton()->get("rendering/textures/vram_compression/import_pvrtc");
 
-	if (driver == "GLES2" && !pvrtc_supported) {
-		return TTR("Target platform requires 'PVRTC' texture compression for GLES2. Enable 'Import Pvrtc' in Project Settings.");
-	} else if (driver == "Vulkan" && !etc2_supported && !pvrtc_supported) {
+	if (driver == "opengl3" && !pvrtc_supported) {
+		return TTR("Target platform requires 'PVRTC' texture compression for OpenGL. Enable 'Import Pvrtc' in Project Settings.");
+	} else if (driver == "vulkan" && !etc2_supported && !pvrtc_supported) {
 		// FIXME: Review if this is true for Vulkan.
 		return TTR("Target platform requires 'ETC2' or 'PVRTC' texture compression for Vulkan. Enable 'Import Etc 2' or 'Import Pvrtc' in Project Settings.");
 	}
@@ -1814,9 +1825,9 @@ bool EditorExportPlatformPC::can_export(const Ref<EditorExportPreset> &p_preset,
 
 List<String> EditorExportPlatformPC::get_binary_extensions(const Ref<EditorExportPreset> &p_preset) const {
 	List<String> list;
-	for (Map<String, String>::Element *E = extensions.front(); E; E = E->next()) {
-		if (p_preset->get(E->key())) {
-			list.push_back(extensions[E->key()]);
+	for (const KeyValue<String, String> &E : extensions) {
+		if (p_preset->get(E.key)) {
+			list.push_back(extensions[E.key]);
 			return list;
 		}
 	}
@@ -1948,7 +1959,7 @@ void EditorExportPlatformPC::set_debug_32(const String &p_file) {
 void EditorExportPlatformPC::get_platform_features(List<String> *r_features) {
 	r_features->push_back("pc"); //all pcs support "pc"
 	r_features->push_back("s3tc"); //all pcs support "s3tc" compression
-	r_features->push_back(get_os_name()); //OS name is a feature
+	r_features->push_back(get_os_name().to_lower()); //OS name is a feature
 }
 
 void EditorExportPlatformPC::resolve_platform_feature_priorities(const Ref<EditorExportPreset> &p_preset, Set<String> &p_features) {

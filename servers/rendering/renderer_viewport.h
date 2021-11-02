@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef VISUALSERVERVIEWPORT_H
-#define VISUALSERVERVIEWPORT_H
+#ifndef RENDERER_VIEWPORT_H
+#define RENDERER_VIEWPORT_H
 
 #include "core/templates/local_vector.h"
 #include "core/templates/rid_owner.h"
@@ -49,7 +49,7 @@ public:
 
 		bool use_xr; /* use xr interface to override camera positioning and projection matrices and control output */
 
-		RS::ViewportScale3D scale_3d = RenderingServer::VIEWPORT_SCALE_3D_DISABLED;
+		float scale_3d = 1.0;
 
 		Size2i size;
 		RID camera;
@@ -207,7 +207,7 @@ public:
 	void viewport_initialize(RID p_rid);
 
 	void viewport_set_use_xr(RID p_viewport, bool p_use_xr);
-	void viewport_set_scale_3d(RID p_viewport, RenderingServer::ViewportScale3D p_scale_3d);
+	void viewport_set_scale_3d(RID p_viewport, float p_scale_3d);
 
 	void viewport_set_size(RID p_viewport, int p_width, int p_height);
 
@@ -282,4 +282,4 @@ public:
 	virtual ~RendererViewport() {}
 };
 
-#endif // VISUALSERVERVIEWPORT_H
+#endif // RENDERER_VIEWPORT_H

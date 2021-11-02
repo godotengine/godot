@@ -34,6 +34,10 @@ real_t Vector2::angle() const {
 	return Math::atan2(y, x);
 }
 
+Vector2 Vector2::from_angle(const real_t p_angle) {
+	return Vector2(Math::cos(p_angle), Math::sin(p_angle));
+}
+
 real_t Vector2::length() const {
 	return Math::sqrt(x * x + y * y);
 }
@@ -75,7 +79,7 @@ real_t Vector2::angle_to(const Vector2 &p_vector2) const {
 }
 
 real_t Vector2::angle_to_point(const Vector2 &p_vector2) const {
-	return Math::atan2(y - p_vector2.y, x - p_vector2.x);
+	return (*this - p_vector2).angle();
 }
 
 real_t Vector2::dot(const Vector2 &p_other) const {
@@ -156,10 +160,11 @@ Vector2 Vector2::cubic_interpolate(const Vector2 &p_b, const Vector2 &p_pre_a, c
 	real_t t3 = t2 * t;
 
 	Vector2 out;
-	out = 0.5 * ((p1 * 2.0) +
-						(-p0 + p2) * t +
-						(2.0 * p0 - 5.0 * p1 + 4 * p2 - p3) * t2 +
-						(-p0 + 3.0 * p1 - 3.0 * p2 + p3) * t3);
+	out = 0.5 *
+			((p1 * 2.0) +
+					(-p0 + p2) * t +
+					(2.0 * p0 - 5.0 * p1 + 4 * p2 - p3) * t2 +
+					(-p0 + 3.0 * p1 - 3.0 * p2 + p3) * t3);
 	return out;
 }
 

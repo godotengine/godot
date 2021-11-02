@@ -29,6 +29,4 @@
 		<member name="occluder" type="Occluder3D" setter="set_occluder" getter="get_occluder">
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

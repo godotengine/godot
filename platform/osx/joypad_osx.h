@@ -106,7 +106,6 @@ private:
 	int get_joy_ref(IOHIDDeviceRef p_device) const;
 
 	void poll_joypads() const;
-	void setup_joypad_objects();
 	void config_hid_manager(CFArrayRef p_matching_array) const;
 
 	void joypad_vibration_start(int p_id, float p_magnitude, float p_duration, uint64_t p_timestamp);

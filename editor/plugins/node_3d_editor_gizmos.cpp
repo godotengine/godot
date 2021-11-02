@@ -34,26 +34,27 @@
 #include "core/math/geometry_2d.h"
 #include "core/math/geometry_3d.h"
 #include "editor/plugins/node_3d_editor_plugin.h"
+#include "scene/3d/audio_listener_3d.h"
 #include "scene/3d/audio_stream_player_3d.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/3d/collision_polygon_3d.h"
 #include "scene/3d/collision_shape_3d.h"
 #include "scene/3d/cpu_particles_3d.h"
 #include "scene/3d/decal.h"
+#include "scene/3d/fog_volume.h"
 #include "scene/3d/gpu_particles_3d.h"
 #include "scene/3d/gpu_particles_collision_3d.h"
+#include "scene/3d/joint_3d.h"
 #include "scene/3d/light_3d.h"
 #include "scene/3d/lightmap_gi.h"
 #include "scene/3d/lightmap_probe.h"
-#include "scene/3d/listener_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/3d/navigation_region_3d.h"
 #include "scene/3d/occluder_instance_3d.h"
-#include "scene/3d/physics_joint_3d.h"
 #include "scene/3d/position_3d.h"
 #include "scene/3d/ray_cast_3d.h"
 #include "scene/3d/reflection_probe.h"
-#include "scene/3d/soft_body_3d.h"
+#include "scene/3d/soft_dynamic_body_3d.h"
 #include "scene/3d/spring_arm_3d.h"
 #include "scene/3d/sprite_3d.h"
 #include "scene/3d/vehicle_body_3d.h"
@@ -69,7 +70,7 @@
 #include "scene/resources/separation_ray_shape_3d.h"
 #include "scene/resources/sphere_shape_3d.h"
 #include "scene/resources/surface_tool.h"
-#include "scene/resources/world_margin_shape_3d.h"
+#include "scene/resources/world_boundary_shape_3d.h"
 
 #define HANDLE_HALF_SIZE 9.5
 
@@ -682,7 +683,7 @@ bool EditorNode3DGizmo::intersect_ray(Camera3D *p_camera, const Point2 &p_point,
 	}
 
 	if (collision_segments.size()) {
-		Plane camp(p_camera->get_transform().origin, (-p_camera->get_transform().basis.get_axis(2)).normalized());
+		Plane camp(-p_camera->get_transform().basis.get_axis(2).normalized(), p_camera->get_transform().origin);
 
 		int vc = collision_segments.size();
 		const Vector3 *vptr = collision_segments.ptr();
@@ -832,7 +833,7 @@ void EditorNode3DGizmo::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_plugin"), &EditorNode3DGizmo::get_plugin);
 	ClassDB::bind_method(D_METHOD("clear"), &EditorNode3DGizmo::clear);
 	ClassDB::bind_method(D_METHOD("set_hidden", "hidden"), &EditorNode3DGizmo::set_hidden);
-	ClassDB::bind_method(D_METHOD("is_subgizmo_selected"), &EditorNode3DGizmo::is_subgizmo_selected);
+	ClassDB::bind_method(D_METHOD("is_subgizmo_selected", "id"), &EditorNode3DGizmo::is_subgizmo_selected);
 	ClassDB::bind_method(D_METHOD("get_subgizmo_selection"), &EditorNode3DGizmo::get_subgizmo_selection);
 
 	GDVIRTUAL_BIND(_redraw);
@@ -1003,7 +1004,9 @@ String EditorNode3DGizmoPlugin::get_gizmo_name() const {
 	if (get_script_instance() && get_script_instance()->has_method("_get_gizmo_name")) {
 		return get_script_instance()->call("_get_gizmo_name");
 	}
-	return TTR("Nameless gizmo");
+
+	WARN_PRINT_ONCE("A 3D editor gizmo has no name defined (it will appear as \"Unnamed Gizmo\" in the \"View > Gizmos\" menu). To resolve this, override the `_get_gizmo_name()` function to return a String in the script that extends EditorNode3DGizmoPlugin.");
+	return TTR("Unnamed Gizmo");
 }
 
 int EditorNode3DGizmoPlugin::get_priority() const {
@@ -1311,7 +1314,7 @@ void Light3DGizmoPlugin::set_handle(const EditorNode3DGizmo *p_gizmo, int p_id, 
 
 			light->set_param(Light3D::PARAM_RANGE, d);
 		} else if (Object::cast_to<OmniLight3D>(light)) {
-			Plane cp = Plane(gt.origin, p_camera->get_transform().basis.get_axis(2));
+			Plane cp = Plane(p_camera->get_transform().basis.get_axis(2), gt.origin);
 
 			Vector3 inters;
 			if (cp.intersects_ray(ray_from, ray_dir, &inters)) {
@@ -1481,8 +1484,6 @@ void Light3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	}
 }
 
-//////
-
 //// player gizmo
 AudioStreamPlayer3DGizmoPlugin::AudioStreamPlayer3DGizmoPlugin() {
 	Color gizmo_color = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/stream_player_3d", Color(0.4, 0.8, 1));
@@ -1616,6 +1617,29 @@ void AudioStreamPlayer3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 		p_gizmo->add_handles(handles, get_material("handles"));
 	}
 
+	p_gizmo->add_unscaled_billboard(icon, 0.05);
+}
+
+//////
+
+AudioListener3DGizmoPlugin::AudioListener3DGizmoPlugin() {
+	create_icon_material("audio_listener_3d_icon", Node3DEditor::get_singleton()->get_theme_icon("GizmoAudioListener3D", "EditorIcons"));
+}
+
+bool AudioListener3DGizmoPlugin::has_gizmo(Node3D *p_spatial) {
+	return Object::cast_to<AudioListener3D>(p_spatial) != nullptr;
+}
+
+String AudioListener3DGizmoPlugin::get_gizmo_name() const {
+	return "AudioListener3D";
+}
+
+int AudioListener3DGizmoPlugin::get_priority() const {
+	return -1;
+}
+
+void AudioListener3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
+	const Ref<Material> icon = get_material("audio_listener_3d_icon", p_gizmo);
 	p_gizmo->add_unscaled_billboard(icon, 0.05);
 }
 
@@ -1817,47 +1841,6 @@ void Camera3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 
 	p_gizmo->add_lines(lines, material);
 	p_gizmo->add_handles(handles, get_material("handles"));
-
-	ClippedCamera3D *clipcam = Object::cast_to<ClippedCamera3D>(camera);
-	if (clipcam) {
-		Node3D *parent = Object::cast_to<Node3D>(camera->get_parent());
-		if (!parent) {
-			return;
-		}
-		Vector3 cam_normal = -camera->get_global_transform().basis.get_axis(Vector3::AXIS_Z).normalized();
-		Vector3 cam_x = camera->get_global_transform().basis.get_axis(Vector3::AXIS_X).normalized();
-		Vector3 cam_y = camera->get_global_transform().basis.get_axis(Vector3::AXIS_Y).normalized();
-		Vector3 cam_pos = camera->get_global_transform().origin;
-		Vector3 parent_pos = parent->get_global_transform().origin;
-
-		Plane parent_plane(parent_pos, cam_normal);
-		Vector3 ray_from = parent_plane.project(cam_pos);
-
-		lines.clear();
-		lines.push_back(ray_from + cam_x * 0.5 + cam_y * 0.5);
-		lines.push_back(ray_from + cam_x * 0.5 + cam_y * -0.5);
-
-		lines.push_back(ray_from + cam_x * 0.5 + cam_y * -0.5);
-		lines.push_back(ray_from + cam_x * -0.5 + cam_y * -0.5);
-
-		lines.push_back(ray_from + cam_x * -0.5 + cam_y * -0.5);
-		lines.push_back(ray_from + cam_x * -0.5 + cam_y * 0.5);
-
-		lines.push_back(ray_from + cam_x * -0.5 + cam_y * 0.5);
-		lines.push_back(ray_from + cam_x * 0.5 + cam_y * 0.5);
-
-		if (parent_plane.distance_to(cam_pos) < 0) {
-			lines.push_back(ray_from);
-			lines.push_back(cam_pos);
-		}
-
-		Transform3D local = camera->get_global_transform().affine_inverse();
-		for (int i = 0; i < lines.size(); i++) {
-			lines.write[i] = local.xform(lines[i]);
-		}
-
-		p_gizmo->add_lines(lines, material);
-	}
 }
 
 //////
@@ -1866,7 +1849,7 @@ MeshInstance3DGizmoPlugin::MeshInstance3DGizmoPlugin() {
 }
 
 bool MeshInstance3DGizmoPlugin::has_gizmo(Node3D *p_spatial) {
-	return Object::cast_to<MeshInstance3D>(p_spatial) != nullptr && Object::cast_to<SoftBody3D>(p_spatial) == nullptr;
+	return Object::cast_to<MeshInstance3D>(p_spatial) != nullptr && Object::cast_to<SoftDynamicBody3D>(p_spatial) == nullptr;
 }
 
 String MeshInstance3DGizmoPlugin::get_gizmo_name() const {
@@ -2045,171 +2028,6 @@ void Position3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	p_gizmo->clear();
 	p_gizmo->add_mesh(pos3d_mesh);
 	p_gizmo->add_collision_segments(cursor_points);
-}
-
-/////
-
-Skeleton3DGizmoPlugin::Skeleton3DGizmoPlugin() {
-	Color gizmo_color = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/skeleton", Color(1, 0.8, 0.4));
-	create_material("skeleton_material", gizmo_color);
-}
-
-bool Skeleton3DGizmoPlugin::has_gizmo(Node3D *p_spatial) {
-	return Object::cast_to<Skeleton3D>(p_spatial) != nullptr;
-}
-
-String Skeleton3DGizmoPlugin::get_gizmo_name() const {
-	return "Skeleton3D";
-}
-
-int Skeleton3DGizmoPlugin::get_priority() const {
-	return -1;
-}
-
-void Skeleton3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
-	Skeleton3D *skel = Object::cast_to<Skeleton3D>(p_gizmo->get_spatial_node());
-
-	p_gizmo->clear();
-
-	Ref<Material> material = get_material("skeleton_material", p_gizmo);
-
-	Ref<SurfaceTool> surface_tool(memnew(SurfaceTool));
-
-	surface_tool->begin(Mesh::PRIMITIVE_LINES);
-	surface_tool->set_material(material);
-	LocalVector<Transform3D> grests;
-	grests.resize(skel->get_bone_count());
-
-	LocalVector<int> bones;
-	LocalVector<float> weights;
-	bones.resize(4);
-	weights.resize(4);
-
-	for (int i = 0; i < 4; i++) {
-		bones[i] = 0;
-		weights[i] = 0;
-	}
-
-	weights[0] = 1;
-
-	AABB aabb;
-
-	Color bonecolor = Color(1.0, 0.4, 0.4, 0.3);
-	Color rootcolor = Color(0.4, 1.0, 0.4, 0.1);
-
-	//LocalVector<int> bones_to_process = skel->get_parentless_bones();
-	LocalVector<int> bones_to_process;
-	bones_to_process = skel->get_parentless_bones();
-
-	while (bones_to_process.size() > 0) {
-		int current_bone_idx = bones_to_process[0];
-		bones_to_process.erase(current_bone_idx);
-
-		LocalVector<int> child_bones_vector;
-		child_bones_vector = skel->get_bone_children(current_bone_idx);
-		int child_bones_size = child_bones_vector.size();
-
-		// You have children but no parent, then you must be a root/parentless bone.
-		if (child_bones_size >= 0 && skel->get_bone_parent(current_bone_idx) <= 0) {
-			grests[current_bone_idx] = skel->global_pose_to_local_pose(current_bone_idx, skel->get_bone_global_pose(current_bone_idx));
-		}
-
-		for (int i = 0; i < child_bones_size; i++) {
-			int child_bone_idx = child_bones_vector[i];
-
-			grests[child_bone_idx] = skel->global_pose_to_local_pose(child_bone_idx, skel->get_bone_global_pose(child_bone_idx));
-			Vector3 v0 = grests[current_bone_idx].origin;
-			Vector3 v1 = grests[child_bone_idx].origin;
-			Vector3 d = skel->get_bone_rest(child_bone_idx).origin.normalized();
-			real_t dist = skel->get_bone_rest(child_bone_idx).origin.length();
-
-			// Find closest axis.
-			int closest = -1;
-			real_t closest_d = 0.0;
-			for (int j = 0; j < 3; j++) {
-				real_t dp = Math::abs(grests[current_bone_idx].basis[j].normalized().dot(d));
-				if (j == 0 || dp > closest_d) {
-					closest = j;
-				}
-			}
-
-			// Find closest other.
-			Vector3 first;
-			Vector3 points[4];
-			int point_idx = 0;
-			for (int j = 0; j < 3; j++) {
-				bones[0] = current_bone_idx;
-				surface_tool->set_bones(bones);
-				surface_tool->set_weights(weights);
-				surface_tool->set_color(rootcolor);
-				surface_tool->add_vertex(v0 - grests[current_bone_idx].basis[j].normalized() * dist * 0.05);
-				surface_tool->set_bones(bones);
-				surface_tool->set_weights(weights);
-				surface_tool->set_color(rootcolor);
-				surface_tool->add_vertex(v0 + grests[current_bone_idx].basis[j].normalized() * dist * 0.05);
-
-				if (j == closest) {
-					continue;
-				}
-
-				Vector3 axis;
-				if (first == Vector3()) {
-					axis = d.cross(d.cross(grests[current_bone_idx].basis[j])).normalized();
-					first = axis;
-				} else {
-					axis = d.cross(first).normalized();
-				}
-
-				for (int k = 0; k < 2; k++) {
-					if (k == 1) {
-						axis = -axis;
-					}
-					Vector3 point = v0 + d * dist * 0.2;
-					point += axis * dist * 0.1;
-
-					bones[0] = current_bone_idx;
-					surface_tool->set_bones(bones);
-					surface_tool->set_weights(weights);
-					surface_tool->set_color(bonecolor);
-					surface_tool->add_vertex(v0);
-					surface_tool->set_bones(bones);
-					surface_tool->set_weights(weights);
-					surface_tool->set_color(bonecolor);
-					surface_tool->add_vertex(point);
-
-					bones[0] = current_bone_idx;
-					surface_tool->set_bones(bones);
-					surface_tool->set_weights(weights);
-					surface_tool->set_color(bonecolor);
-					surface_tool->add_vertex(point);
-					bones[0] = child_bone_idx;
-					surface_tool->set_bones(bones);
-					surface_tool->set_weights(weights);
-					surface_tool->set_color(bonecolor);
-					surface_tool->add_vertex(v1);
-					points[point_idx++] = point;
-				}
-			}
-			SWAP(points[1], points[2]);
-			for (int j = 0; j < 4; j++) {
-				bones[0] = current_bone_idx;
-				surface_tool->set_bones(bones);
-				surface_tool->set_weights(weights);
-				surface_tool->set_color(bonecolor);
-				surface_tool->add_vertex(points[j]);
-				surface_tool->set_bones(bones);
-				surface_tool->set_weights(weights);
-				surface_tool->set_color(bonecolor);
-				surface_tool->add_vertex(points[(j + 1) % 4]);
-			}
-
-			// Add the bone's children to the list of bones to be processed.
-			bones_to_process.push_back(child_bones_vector[i]);
-		}
-	}
-
-	Ref<ArrayMesh> m = surface_tool->commit();
-	p_gizmo->add_mesh(m, Ref<Material>(), Transform3D(), skel->register_skin(Ref<Skin>()));
 }
 
 ////
@@ -2491,30 +2309,30 @@ void VehicleWheel3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 
 ///////////
 
-SoftBody3DGizmoPlugin::SoftBody3DGizmoPlugin() {
+SoftDynamicBody3DGizmoPlugin::SoftDynamicBody3DGizmoPlugin() {
 	Color gizmo_color = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/shape", Color(0.5, 0.7, 1));
 	create_material("shape_material", gizmo_color);
 	create_handle_material("handles");
 }
 
-bool SoftBody3DGizmoPlugin::has_gizmo(Node3D *p_spatial) {
-	return Object::cast_to<SoftBody3D>(p_spatial) != nullptr;
+bool SoftDynamicBody3DGizmoPlugin::has_gizmo(Node3D *p_spatial) {
+	return Object::cast_to<SoftDynamicBody3D>(p_spatial) != nullptr;
 }
 
-String SoftBody3DGizmoPlugin::get_gizmo_name() const {
-	return "SoftBody3D";
+String SoftDynamicBody3DGizmoPlugin::get_gizmo_name() const {
+	return "SoftDynamicBody3D";
 }
 
-int SoftBody3DGizmoPlugin::get_priority() const {
+int SoftDynamicBody3DGizmoPlugin::get_priority() const {
 	return -1;
 }
 
-bool SoftBody3DGizmoPlugin::is_selectable_when_hidden() const {
+bool SoftDynamicBody3DGizmoPlugin::is_selectable_when_hidden() const {
 	return true;
 }
 
-void SoftBody3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
-	SoftBody3D *soft_body = Object::cast_to<SoftBody3D>(p_gizmo->get_spatial_node());
+void SoftDynamicBody3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
+	SoftDynamicBody3D *soft_body = Object::cast_to<SoftDynamicBody3D>(p_gizmo->get_spatial_node());
 
 	p_gizmo->clear();
 
@@ -2550,22 +2368,22 @@ void SoftBody3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	p_gizmo->add_collision_triangles(tm);
 }
 
-String SoftBody3DGizmoPlugin::get_handle_name(const EditorNode3DGizmo *p_gizmo, int p_id) const {
-	return "SoftBody3D pin point";
+String SoftDynamicBody3DGizmoPlugin::get_handle_name(const EditorNode3DGizmo *p_gizmo, int p_id) const {
+	return "SoftDynamicBody3D pin point";
 }
 
-Variant SoftBody3DGizmoPlugin::get_handle_value(const EditorNode3DGizmo *p_gizmo, int p_id) const {
-	SoftBody3D *soft_body = Object::cast_to<SoftBody3D>(p_gizmo->get_spatial_node());
+Variant SoftDynamicBody3DGizmoPlugin::get_handle_value(const EditorNode3DGizmo *p_gizmo, int p_id) const {
+	SoftDynamicBody3D *soft_body = Object::cast_to<SoftDynamicBody3D>(p_gizmo->get_spatial_node());
 	return Variant(soft_body->is_point_pinned(p_id));
 }
 
-void SoftBody3DGizmoPlugin::commit_handle(const EditorNode3DGizmo *p_gizmo, int p_id, const Variant &p_restore, bool p_cancel) {
-	SoftBody3D *soft_body = Object::cast_to<SoftBody3D>(p_gizmo->get_spatial_node());
+void SoftDynamicBody3DGizmoPlugin::commit_handle(const EditorNode3DGizmo *p_gizmo, int p_id, const Variant &p_restore, bool p_cancel) {
+	SoftDynamicBody3D *soft_body = Object::cast_to<SoftDynamicBody3D>(p_gizmo->get_spatial_node());
 	soft_body->pin_point_toggle(p_id);
 }
 
-bool SoftBody3DGizmoPlugin::is_handle_highlighted(const EditorNode3DGizmo *p_gizmo, int p_id) const {
-	SoftBody3D *soft_body = Object::cast_to<SoftBody3D>(p_gizmo->get_spatial_node());
+bool SoftDynamicBody3DGizmoPlugin::is_handle_highlighted(const EditorNode3DGizmo *p_gizmo, int p_id) const {
+	SoftDynamicBody3D *soft_body = Object::cast_to<SoftDynamicBody3D>(p_gizmo->get_spatial_node());
 	return soft_body->is_point_pinned(p_id);
 }
 
@@ -2631,7 +2449,7 @@ void VisibleOnScreenNotifier3DGizmoPlugin::set_handle(const EditorNode3DGizmo *p
 
 	Vector3 sg[2] = { gi.xform(ray_from), gi.xform(ray_from + ray_dir * 4096) };
 
-	Vector3 ofs = aabb.position + aabb.size * 0.5;
+	Vector3 ofs = aabb.get_center();
 
 	Vector3 axis;
 	axis[p_id] = 1.0;
@@ -2707,7 +2525,7 @@ void VisibleOnScreenNotifier3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 		handles.push_back(ax);
 	}
 
-	Vector3 center = aabb.position + aabb.size * 0.5;
+	Vector3 center = aabb.get_center();
 	for (int i = 0; i < 3; i++) {
 		Vector3 ax;
 		ax[i] = 1.0;
@@ -2723,7 +2541,7 @@ void VisibleOnScreenNotifier3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 
 	if (p_gizmo->is_selected()) {
 		Ref<Material> solid_material = get_material("visibility_notifier_solid_material", p_gizmo);
-		p_gizmo->add_solid_box(solid_material, aabb.get_size(), aabb.get_position() + aabb.get_size() / 2.0);
+		p_gizmo->add_solid_box(solid_material, aabb.get_size(), aabb.get_center());
 	}
 
 	p_gizmo->add_handles(handles, get_material("handles"));
@@ -2822,7 +2640,7 @@ void GPUParticles3DGizmoPlugin::set_handle(const EditorNode3DGizmo *p_gizmo, int
 
 	Vector3 sg[2] = { gi.xform(ray_from), gi.xform(ray_from + ray_dir * 4096) };
 
-	Vector3 ofs = aabb.position + aabb.size * 0.5;
+	Vector3 ofs = aabb.get_center();
 
 	Vector3 axis;
 	axis[p_id] = 1.0;
@@ -2898,7 +2716,7 @@ void GPUParticles3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 		handles.push_back(ax);
 	}
 
-	Vector3 center = aabb.position + aabb.size * 0.5;
+	Vector3 center = aabb.get_center();
 	for (int i = 0; i < 3; i++) {
 		Vector3 ax;
 		ax[i] = 1.0;
@@ -2914,7 +2732,7 @@ void GPUParticles3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 
 	if (p_gizmo->is_selected()) {
 		Ref<Material> solid_material = get_material("particles_solid_material", p_gizmo);
-		p_gizmo->add_solid_box(solid_material, aabb.get_size(), aabb.get_position() + aabb.get_size() / 2.0);
+		p_gizmo->add_solid_box(solid_material, aabb.get_size(), aabb.get_center());
 	}
 
 	p_gizmo->add_handles(handles, get_material("handles"));
@@ -3824,15 +3642,15 @@ void LightmapGIGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 				const float c4 = 0.886227;
 				const float c5 = 0.247708;
 				Vector3 light = (c1 * sh_col[8] * (n.x * n.x - n.y * n.y) +
-								 c3 * sh_col[6] * n.z * n.z +
-								 c4 * sh_col[0] -
-								 c5 * sh_col[6] +
-								 2.0 * c1 * sh_col[4] * n.x * n.y +
-								 2.0 * c1 * sh_col[7] * n.x * n.z +
-								 2.0 * c1 * sh_col[5] * n.y * n.z +
-								 2.0 * c2 * sh_col[3] * n.x +
-								 2.0 * c2 * sh_col[1] * n.y +
-								 2.0 * c2 * sh_col[2] * n.z);
+						c3 * sh_col[6] * n.z * n.z +
+						c4 * sh_col[0] -
+						c5 * sh_col[6] +
+						2.0 * c1 * sh_col[4] * n.x * n.y +
+						2.0 * c1 * sh_col[7] * n.x * n.z +
+						2.0 * c1 * sh_col[5] * n.y * n.z +
+						2.0 * c2 * sh_col[3] * n.x +
+						2.0 * c2 * sh_col[1] * n.y +
+						2.0 * c2 * sh_col[2] * n.z);
 
 				colors.push_back(Color(light.x, light.y, light.z, 1));
 			}
@@ -4539,9 +4357,9 @@ void CollisionShape3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 		p_gizmo->add_handles(handles, handles_material);
 	}
 
-	if (Object::cast_to<WorldMarginShape3D>(*s)) {
-		Ref<WorldMarginShape3D> ps = s;
-		Plane p = ps->get_plane();
+	if (Object::cast_to<WorldBoundaryShape3D>(*s)) {
+		Ref<WorldBoundaryShape3D> wbs = s;
+		const Plane &p = wbs->get_plane();
 		Vector<Vector3> points;
 
 		Vector3 n1 = p.get_any_perpendicular_normal();
@@ -4752,10 +4570,10 @@ void NavigationRegion3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	}
 	Vector<Vector3> lines;
 
-	for (Map<_EdgeKey, bool>::Element *E = edge_map.front(); E; E = E->next()) {
-		if (E->get()) {
-			lines.push_back(E->key().from);
-			lines.push_back(E->key().to);
+	for (const KeyValue<_EdgeKey, bool> &E : edge_map) {
+		if (E.value) {
+			lines.push_back(E.key.from);
+			lines.push_back(E.key.to);
 		}
 	}
 
@@ -5455,3 +5273,119 @@ void Joint3DGizmoPlugin::CreateGeneric6DOFJointGizmo(
 
 #undef ADD_VTX
 }
+
+////
+
+FogVolumeGizmoPlugin::FogVolumeGizmoPlugin() {
+	Color gizmo_color = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/fog_volume", Color(0.5, 0.7, 1));
+	create_material("shape_material", gizmo_color);
+	gizmo_color.a = 0.15;
+	create_material("shape_material_internal", gizmo_color);
+
+	create_handle_material("handles");
+}
+
+bool FogVolumeGizmoPlugin::has_gizmo(Node3D *p_spatial) {
+	return (Object::cast_to<FogVolume>(p_spatial) != nullptr);
+}
+
+String FogVolumeGizmoPlugin::get_gizmo_name() const {
+	return "FogVolume";
+}
+
+int FogVolumeGizmoPlugin::get_priority() const {
+	return -1;
+}
+
+String FogVolumeGizmoPlugin::get_handle_name(const EditorNode3DGizmo *p_gizmo, int p_id) const {
+	return "Extents";
+}
+
+Variant FogVolumeGizmoPlugin::get_handle_value(const EditorNode3DGizmo *p_gizmo, int p_id) const {
+	return Vector3(p_gizmo->get_spatial_node()->call("get_extents"));
+}
+
+void FogVolumeGizmoPlugin::set_handle(const EditorNode3DGizmo *p_gizmo, int p_id, Camera3D *p_camera, const Point2 &p_point) {
+	Node3D *sn = p_gizmo->get_spatial_node();
+
+	Transform3D gt = sn->get_global_transform();
+	Transform3D gi = gt.affine_inverse();
+
+	Vector3 ray_from = p_camera->project_ray_origin(p_point);
+	Vector3 ray_dir = p_camera->project_ray_normal(p_point);
+
+	Vector3 sg[2] = { gi.xform(ray_from), gi.xform(ray_from + ray_dir * 4096) };
+
+	Vector3 axis;
+	axis[p_id] = 1.0;
+	Vector3 ra, rb;
+	Geometry3D::get_closest_points_between_segments(Vector3(), axis * 4096, sg[0], sg[1], ra, rb);
+	float d = ra[p_id];
+	if (Node3DEditor::get_singleton()->is_snap_enabled()) {
+		d = Math::snapped(d, Node3DEditor::get_singleton()->get_translate_snap());
+	}
+
+	if (d < 0.001) {
+		d = 0.001;
+	}
+
+	Vector3 he = sn->call("get_extents");
+	he[p_id] = d;
+	sn->call("set_extents", he);
+}
+
+void FogVolumeGizmoPlugin::commit_handle(const EditorNode3DGizmo *p_gizmo, int p_id, const Variant &p_restore, bool p_cancel) {
+	Node3D *sn = p_gizmo->get_spatial_node();
+
+	if (p_cancel) {
+		sn->call("set_extents", p_restore);
+		return;
+	}
+
+	UndoRedo *ur = Node3DEditor::get_singleton()->get_undo_redo();
+	ur->create_action(TTR("Change Fog Volume Extents"));
+	ur->add_do_method(sn, "set_extents", sn->call("get_extents"));
+	ur->add_undo_method(sn, "set_extents", p_restore);
+	ur->commit_action();
+}
+
+void FogVolumeGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
+	Node3D *cs = p_gizmo->get_spatial_node();
+
+	p_gizmo->clear();
+
+	if (RS::FogVolumeShape(int(p_gizmo->get_spatial_node()->call("get_shape"))) != RS::FOG_VOLUME_SHAPE_WORLD) {
+		const Ref<Material> material =
+				get_material("shape_material", p_gizmo);
+		const Ref<Material> material_internal =
+				get_material("shape_material_internal", p_gizmo);
+
+		Ref<Material> handles_material = get_material("handles");
+
+		Vector<Vector3> lines;
+		AABB aabb;
+		aabb.position = -cs->call("get_extents").operator Vector3();
+		aabb.size = aabb.position * -2;
+
+		for (int i = 0; i < 12; i++) {
+			Vector3 a, b;
+			aabb.get_edge(i, a, b);
+			lines.push_back(a);
+			lines.push_back(b);
+		}
+
+		Vector<Vector3> handles;
+
+		for (int i = 0; i < 3; i++) {
+			Vector3 ax;
+			ax[i] = cs->call("get_extents").operator Vector3()[i];
+			handles.push_back(ax);
+		}
+
+		p_gizmo->add_lines(lines, material);
+		p_gizmo->add_collision_segments(lines);
+		p_gizmo->add_handles(handles, handles_material);
+	}
+}
+
+/////

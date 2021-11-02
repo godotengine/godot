@@ -367,15 +367,15 @@ class EditorExportPlatformUWP : public EditorExportPlatform {
 
 	static bool _should_compress_asset(const String &p_path, const Vector<uint8_t> &p_data) {
 		/* TODO: This was copied verbatim from Android export. It should be
-    * refactored to the parent class and also be used for .zip export.
-    */
+		 * refactored to the parent class and also be used for .zip export.
+		 */
 
 		/*
-    *  By not compressing files with little or not benefit in doing so,
-    *  a performance gain is expected at runtime. Moreover, if the APK is
-    *  zip-aligned, assets stored as they are can be efficiently read by
-    *  Android by memory-mapping them.
-    */
+		 *  By not compressing files with little or not benefit in doing so,
+		 *  a performance gain is expected at runtime. Moreover, if the APK is
+		 *  zip-aligned, assets stored as they are can be efficiently read by
+		 *  Android by memory-mapping them.
+		 */
 
 		// -- Unconditional uncompress to mimic AAPT plus some other
 

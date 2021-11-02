@@ -601,7 +601,6 @@ void TParseContextBase::parseSwizzleSelector(const TSourceLoc& loc, const TStrin
         selector.push_back(0);
 }
 
-#ifdef ENABLE_HLSL
 //
 // Make the passed-in variable information become a member of the
 // global uniform block.  If this doesn't exist yet, make it.
@@ -646,7 +645,67 @@ void TParseContextBase::growGlobalUniformBlock(const TSourceLoc& loc, TType& mem
 
     ++firstNewMember;
 }
-#endif
+
+void TParseContextBase::growAtomicCounterBlock(int binding, const TSourceLoc& loc, TType& memberType, const TString& memberName, TTypeList* typeList) {
+    // Make the atomic counter block, if not yet made.
+    const auto &at  = atomicCounterBuffers.find(binding);
+    if (at == atomicCounterBuffers.end()) {
+        atomicCounterBuffers.insert({binding, (TVariable*)nullptr });
+        atomicCounterBlockFirstNewMember.insert({binding, 0});
+    }
+
+    TVariable*& atomicCounterBuffer = atomicCounterBuffers[binding];
+    int& bufferNewMember = atomicCounterBlockFirstNewMember[binding];
+
+    if (atomicCounterBuffer == nullptr) {
+        TQualifier blockQualifier;
+        blockQualifier.clear();
+        blockQualifier.storage = EvqBuffer;
+        
+        char charBuffer[512];
+        if (binding != TQualifier::layoutBindingEnd) {
+            snprintf(charBuffer, 512, "%s_%d", getAtomicCounterBlockName(), binding);
+        } else {
+            snprintf(charBuffer, 512, "%s_0", getAtomicCounterBlockName());
+        }
+        
+        TType blockType(new TTypeList, *NewPoolTString(charBuffer), blockQualifier);
+        setUniformBlockDefaults(blockType);
+        blockType.getQualifier().layoutPacking = ElpStd430;
+        atomicCounterBuffer = new TVariable(NewPoolTString(""), blockType, true);
+        // If we arn't auto mapping bindings then set the block to use the same
+        // binding as what the atomic was set to use
+        if (!intermediate.getAutoMapBindings()) {
+            atomicCounterBuffer->getWritableType().getQualifier().layoutBinding = binding;
+        }
+        bufferNewMember = 0;
+
+        atomicCounterBuffer->getWritableType().getQualifier().layoutSet = atomicCounterBlockSet;
+    }
+
+    // Add the requested member as a member to the global block.
+    TType* type = new TType;
+    type->shallowCopy(memberType);
+    type->setFieldName(memberName);
+    if (typeList)
+        type->setStruct(typeList);
+    TTypeLoc typeLoc = {type, loc};
+    atomicCounterBuffer->getType().getWritableStruct()->push_back(typeLoc);
+
+    // Insert into the symbol table.
+    if (bufferNewMember == 0) {
+        // This is the first request; we need a normal symbol table insert
+        if (symbolTable.insert(*atomicCounterBuffer))
+            trackLinkage(*atomicCounterBuffer);
+        else
+            error(loc, "failed to insert the global constant buffer", "buffer", "");
+    } else {
+        // This is a follow-on request; we need to amend the first insert
+        symbolTable.amend(*atomicCounterBuffer, bufferNewMember);
+    }
+
+    ++bufferNewMember;
+}
 
 void TParseContextBase::finish()
 {

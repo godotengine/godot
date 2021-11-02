@@ -249,8 +249,8 @@ void SceneDebugger::remove_from_cache(const String &p_filename, Node *p_node) {
 	Map<Node *, Map<ObjectID, Node *>> &remove_list = debugger->live_edit_remove_list;
 	Map<Node *, Map<ObjectID, Node *>>::Element *F = remove_list.find(p_node);
 	if (F) {
-		for (Map<ObjectID, Node *>::Element *G = F->get().front(); G; G = G->next()) {
-			memdelete(G->get());
+		for (const KeyValue<ObjectID, Node *> &G : F->get()) {
+			memdelete(G.value);
 		}
 		remove_list.erase(F);
 	}
@@ -339,15 +339,15 @@ void SceneDebuggerObject::_parse_script_properties(Script *p_script, ScriptInsta
 	}
 	// Constants
 	for (ScriptConstantsMap::Element *sc = constants.front(); sc; sc = sc->next()) {
-		for (Map<StringName, Variant>::Element *E = sc->get().front(); E; E = E->next()) {
+		for (const KeyValue<StringName, Variant> &E : sc->get()) {
 			String script_path = sc->key() == p_script ? "" : sc->key()->get_path().get_file() + "/";
-			if (E->value().get_type() == Variant::OBJECT) {
-				Variant id = ((Object *)E->value())->get_instance_id();
-				PropertyInfo pi(id.get_type(), "Constants/" + E->key(), PROPERTY_HINT_OBJECT_ID, "Object");
+			if (E.value.get_type() == Variant::OBJECT) {
+				Variant id = ((Object *)E.value)->get_instance_id();
+				PropertyInfo pi(id.get_type(), "Constants/" + E.key, PROPERTY_HINT_OBJECT_ID, "Object");
 				properties.push_back(SceneDebuggerProperty(pi, id));
 			} else {
-				PropertyInfo pi(E->value().get_type(), "Constants/" + script_path + E->key());
-				properties.push_back(SceneDebuggerProperty(pi, E->value()));
+				PropertyInfo pi(E.value.get_type(), "Constants/" + script_path + E.key);
+				properties.push_back(SceneDebuggerProperty(pi, E.value));
 			}
 		}
 	}

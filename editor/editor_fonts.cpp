@@ -67,7 +67,7 @@
 	m_name->add_data(FontJapanese);       \
 	m_name->add_data(FontFallback);
 
-#define MAKE_DEFAULT_FONT(m_name, m_variations, m_base_size)          \
+#define MAKE_DEFAULT_FONT(m_name, m_variations)                       \
 	Ref<Font> m_name;                                                 \
 	m_name.instantiate();                                             \
 	if (CustomFont.is_valid()) {                                      \
@@ -89,12 +89,11 @@
 		}                                                             \
 		m_name->set_variation_coordinates(variations);                \
 	}                                                                 \
-	m_name->set_base_size(m_base_size);                               \
 	m_name->set_spacing(TextServer::SPACING_TOP, -EDSCALE);           \
 	m_name->set_spacing(TextServer::SPACING_BOTTOM, -EDSCALE);        \
 	MAKE_FALLBACKS(m_name);
 
-#define MAKE_BOLD_FONT(m_name, m_variations, m_base_size)             \
+#define MAKE_BOLD_FONT(m_name, m_variations)                          \
 	Ref<Font> m_name;                                                 \
 	m_name.instantiate();                                             \
 	if (CustomFontBold.is_valid()) {                                  \
@@ -116,12 +115,11 @@
 		}                                                             \
 		m_name->set_variation_coordinates(variations);                \
 	}                                                                 \
-	m_name->set_base_size(m_base_size);                               \
 	m_name->set_spacing(TextServer::SPACING_TOP, -EDSCALE);           \
 	m_name->set_spacing(TextServer::SPACING_BOTTOM, -EDSCALE);        \
 	MAKE_FALLBACKS_BOLD(m_name);
 
-#define MAKE_SOURCE_FONT(m_name, m_variations, m_base_size)           \
+#define MAKE_SOURCE_FONT(m_name, m_variations)                        \
 	Ref<Font> m_name;                                                 \
 	m_name.instantiate();                                             \
 	if (CustomFontSource.is_valid()) {                                \
@@ -143,7 +141,6 @@
 		}                                                             \
 		m_name->set_variation_coordinates(variations);                \
 	}                                                                 \
-	m_name->set_base_size(m_base_size);                               \
 	m_name->set_spacing(TextServer::SPACING_TOP, -EDSCALE);           \
 	m_name->set_spacing(TextServer::SPACING_BOTTOM, -EDSCALE);        \
 	MAKE_FALLBACKS(m_name);
@@ -275,7 +272,7 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 	Ref<FontData> dfmono = load_cached_internal_font(_font_Hack_Regular, _font_Hack_Regular_size, font_hinting, font_antialiased, true);
 
 	// Default font
-	MAKE_DEFAULT_FONT(df, String(), default_font_size);
+	MAKE_DEFAULT_FONT(df, String());
 	p_theme->set_default_theme_font(df); // Default theme font
 	p_theme->set_default_theme_font_size(default_font_size);
 
@@ -283,7 +280,7 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 	p_theme->set_font("main", "EditorFonts", df);
 
 	// Bold font
-	MAKE_BOLD_FONT(df_bold, String(), default_font_size);
+	MAKE_BOLD_FONT(df_bold, String());
 	p_theme->set_font_size("bold_size", "EditorFonts", default_font_size);
 	p_theme->set_font("bold", "EditorFonts", df_bold);
 
@@ -310,7 +307,7 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 
 	// Documentation fonts
 	String code_font_custom_variations = EditorSettings::get_singleton()->get("interface/editor/code_font_custom_variations");
-	MAKE_SOURCE_FONT(df_code, code_font_custom_variations, default_font_size);
+	MAKE_SOURCE_FONT(df_code, code_font_custom_variations);
 	p_theme->set_font_size("doc_size", "EditorFonts", int(EDITOR_GET("text_editor/help/help_font_size")) * EDSCALE);
 	p_theme->set_font("doc", "EditorFonts", df);
 	p_theme->set_font_size("doc_bold_size", "EditorFonts", int(EDITOR_GET("text_editor/help/help_font_size")) * EDSCALE);

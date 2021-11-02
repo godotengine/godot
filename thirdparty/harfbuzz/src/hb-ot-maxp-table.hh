@@ -107,7 +107,7 @@ struct maxp
       maxpV1Tail *dest_v1 = c->serializer->embed<maxpV1Tail> (src_v1);
       if (unlikely (!dest_v1)) return_trace (false);
 
-      if (c->plan->drop_hints)
+      if (c->plan->flags & HB_SUBSET_FLAGS_NO_HINTING)
 	drop_hint_fields (dest_v1);
     }
 

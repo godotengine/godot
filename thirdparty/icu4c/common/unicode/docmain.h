@@ -47,7 +47,7 @@
  * <h3>API References for Previous Releases</h3>
  * <p>The API References for each release of ICU are also available as
  * a zip file from the ICU 
- * <a href="http://site.icu-project.org/download">download page</a>.</p>
+ * <a href="https://icu.unicode.org/download">download page</a>.</p>
  *
  * <hr>
  *

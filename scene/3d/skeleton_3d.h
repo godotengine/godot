@@ -76,15 +76,23 @@ private:
 		bool enabled;
 		int parent;
 
-		bool disable_rest = false;
 		Transform3D rest;
 
-		Transform3D pose;
+		_FORCE_INLINE_ void update_pose_cache() {
+			if (pose_cache_dirty) {
+				pose_cache.basis.set_quaternion_scale(pose_rotation, pose_scale);
+				pose_cache.origin = pose_position;
+				pose_cache_dirty = false;
+			}
+		}
+		bool pose_cache_dirty = true;
+		Transform3D pose_cache;
+		Vector3 pose_position;
+		Quaternion pose_rotation;
+		Vector3 pose_scale = Vector3(1, 1, 1);
+
 		Transform3D pose_global;
 		Transform3D pose_global_no_override;
-
-		bool custom_pose_enable = false;
-		Transform3D custom_pose;
 
 		real_t global_pose_override_amount = 0.0;
 		bool global_pose_override_reset = false;
@@ -107,8 +115,6 @@ private:
 		Bone() {
 			parent = -1;
 			enabled = true;
-			disable_rest = false;
-			custom_pose_enable = false;
 			global_pose_override_amount = 0;
 			global_pose_override_reset = false;
 #ifndef _3D_DISABLED
@@ -137,6 +143,8 @@ private:
 	void _make_dirty();
 	bool dirty = false;
 
+	bool show_rest_only = false;
+
 	uint64_t version = 1;
 
 	void _update_process_order();
@@ -145,6 +153,7 @@ protected:
 	bool _get(const StringName &p_path, Variant &r_ret) const;
 	bool _set(const StringName &p_path, const Variant &p_value);
 	void _get_property_list(List<PropertyInfo> *p_list) const;
+	virtual void _validate_property(PropertyInfo &property) const override;
 	void _notification(int p_what);
 	static void _bind_methods();
 
@@ -185,9 +194,6 @@ public:
 	void remove_bone_child(int p_bone, int p_child);
 	Vector<int> get_parentless_bones();
 
-	void set_bone_disable_rest(int p_bone, bool p_disable);
-	bool is_bone_rest_disabled(int p_bone) const;
-
 	int get_bone_count() const;
 
 	void set_bone_rest(int p_bone, const Transform3D &p_rest);
@@ -197,15 +203,22 @@ public:
 
 	void set_bone_enabled(int p_bone, bool p_enabled);
 	bool is_bone_enabled(int p_bone) const;
+
+	void set_show_rest_only(bool p_enabled);
+	bool is_show_rest_only() const;
 	void clear_bones();
 
 	// posing api
 
-	void set_bone_pose(int p_bone, const Transform3D &p_pose);
+	void set_bone_pose_position(int p_bone, const Vector3 &p_position);
+	void set_bone_pose_rotation(int p_bone, const Quaternion &p_rotation);
+	void set_bone_pose_scale(int p_bone, const Vector3 &p_scale);
+
 	Transform3D get_bone_pose(int p_bone) const;
 
-	void set_bone_custom_pose(int p_bone, const Transform3D &p_custom_pose);
-	Transform3D get_bone_custom_pose(int p_bone) const;
+	Vector3 get_bone_pose_position(int p_bone) const;
+	Quaternion get_bone_pose_rotation(int p_bone) const;
+	Vector3 get_bone_pose_scale(int p_bone) const;
 
 	void clear_bones_global_pose_override();
 	Transform3D get_bone_global_pose_override(int p_bone) const;
@@ -217,8 +230,11 @@ public:
 
 	void localize_rests(); // used for loaders and tools
 
+	Ref<Skin> create_skin_from_rest_transforms();
+
 	Ref<SkinReference> register_skin(const Ref<Skin> &p_skin);
 
+	void force_update_all_dirty_bones();
 	void force_update_all_bone_transforms();
 	void force_update_bone_children_transforms(int bone_idx);
 
@@ -244,7 +260,7 @@ public:
 
 	// Physical bone API
 
-	void set_animate_physical_bones(bool p_animate);
+	void set_animate_physical_bones(bool p_enabled);
 	bool get_animate_physical_bones() const;
 
 	void bind_physical_bone_to_bone(int p_bone, PhysicalBone3D *p_physical_bone);

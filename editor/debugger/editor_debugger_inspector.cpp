@@ -200,12 +200,12 @@ ObjectID EditorDebuggerInspector::add_object(const Array &p_arr) {
 }
 
 void EditorDebuggerInspector::clear_cache() {
-	for (Map<ObjectID, EditorDebuggerRemoteObject *>::Element *E = remote_objects.front(); E; E = E->next()) {
+	for (const KeyValue<ObjectID, EditorDebuggerRemoteObject *> &E : remote_objects) {
 		EditorNode *editor = EditorNode::get_singleton();
-		if (editor->get_editor_history()->get_current() == E->value()->get_instance_id()) {
+		if (editor->get_editor_history()->get_current() == E.value->get_instance_id()) {
 			editor->push_item(nullptr);
 		}
-		memdelete(E->value());
+		memdelete(E.value);
 	}
 	remote_objects.clear();
 	remote_dependencies.clear();

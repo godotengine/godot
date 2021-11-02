@@ -30,9 +30,9 @@
 
 #ifdef TOOLS_ENABLED
 
+#include "core/io/image.h"
 #include "core/object/object.h"
 #include "scene/3d/lightmapper.h"
-#include "scene/resources/mesh.h"
 
 #include <embree3/rtcore.h>
 

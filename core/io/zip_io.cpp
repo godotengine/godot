@@ -100,7 +100,7 @@ int zipio_testerror(voidpf opaque, voidpf stream) {
 }
 
 voidpf zipio_alloc(voidpf opaque, uInt items, uInt size) {
-	voidpf ptr = memalloc(items * size);
+	voidpf ptr = memalloc((size_t)items * size);
 	memset(ptr, 0, items * size);
 	return ptr;
 }

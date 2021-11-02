@@ -151,7 +151,7 @@ protected:
 	GDVIRTUAL1R(bool, _forward_canvas_gui_input, Ref<InputEvent>)
 	GDVIRTUAL1(_forward_canvas_draw_over_viewport, Control *)
 	GDVIRTUAL1(_forward_canvas_force_draw_over_viewport, Control *)
-	GDVIRTUAL2R(bool, _forward_3d_gui_input, Camera3D *, Ref<InputEvent>)
+	GDVIRTUAL2R(int, _forward_3d_gui_input, Camera3D *, Ref<InputEvent>)
 	GDVIRTUAL1(_forward_3d_draw_over_viewport, Control *)
 	GDVIRTUAL1(_forward_3d_force_draw_over_viewport, Control *)
 	GDVIRTUAL0RC(String, _get_plugin_name)
@@ -200,6 +200,12 @@ public:
 		DOCK_SLOT_MAX
 	};
 
+	enum AfterGUIInput {
+		AFTER_GUI_INPUT_PASS,
+		AFTER_GUI_INPUT_STOP,
+		AFTER_GUI_INPUT_DESELECT
+	};
+
 	//TODO: send a resource for editing to the editor node?
 
 	void add_control_to_container(CustomControlContainer p_location, Control *p_control);
@@ -228,7 +234,7 @@ public:
 	virtual void forward_canvas_draw_over_viewport(Control *p_overlay);
 	virtual void forward_canvas_force_draw_over_viewport(Control *p_overlay);
 
-	virtual bool forward_spatial_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event);
+	virtual EditorPlugin::AfterGUIInput forward_spatial_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event);
 	virtual void forward_spatial_draw_over_viewport(Control *p_overlay);
 	virtual void forward_spatial_force_draw_over_viewport(Control *p_overlay);
 
@@ -282,8 +288,11 @@ public:
 	void add_inspector_plugin(const Ref<EditorInspectorPlugin> &p_plugin);
 	void remove_inspector_plugin(const Ref<EditorInspectorPlugin> &p_plugin);
 
-	void add_scene_import_plugin(const Ref<EditorSceneImporter> &p_importer);
-	void remove_scene_import_plugin(const Ref<EditorSceneImporter> &p_importer);
+	void add_scene_format_importer_plugin(const Ref<EditorSceneFormatImporter> &p_importer);
+	void remove_scene_format_importer_plugin(const Ref<EditorSceneFormatImporter> &p_importer);
+
+	void add_scene_post_import_plugin(const Ref<EditorScenePostImportPlugin> &p_importer);
+	void remove_scene_post_import_plugin(const Ref<EditorScenePostImportPlugin> &p_importer);
 
 	void add_autoload_singleton(const String &p_name, const String &p_path);
 	void remove_autoload_singleton(const String &p_name);

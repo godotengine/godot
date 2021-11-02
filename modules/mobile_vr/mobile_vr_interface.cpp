@@ -126,6 +126,8 @@ void MobileVRInterface::set_position_from_sensors() {
 	// 9dof is a misleading marketing term coming from 3 accelerometer axis + 3 gyro axis + 3 magnetometer axis = 9 axis
 	// but in reality this only offers 3 dof (yaw, pitch, roll) orientation
 
+	Basis orientation;
+
 	uint64_t ticks = OS::get_singleton()->get_ticks_usec();
 	uint64_t ticks_elapsed = ticks - last_ticks;
 	float delta_time = (double)ticks_elapsed / 1000000.0;
@@ -207,8 +209,8 @@ void MobileVRInterface::set_position_from_sensors() {
 		};
 	};
 
-	// JIC
-	orientation.orthonormalize();
+	// and copy to our head transform
+	head_transform.basis = orientation.orthonormalized();
 
 	last_ticks = ticks;
 };
@@ -244,59 +246,59 @@ void MobileVRInterface::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "k2", PROPERTY_HINT_RANGE, "0.1,10.0,0.0001"), "set_k2", "get_k2");
 }
 
-void MobileVRInterface::set_eye_height(const real_t p_eye_height) {
+void MobileVRInterface::set_eye_height(const double p_eye_height) {
 	eye_height = p_eye_height;
 }
 
-real_t MobileVRInterface::get_eye_height() const {
+double MobileVRInterface::get_eye_height() const {
 	return eye_height;
 }
 
-void MobileVRInterface::set_iod(const real_t p_iod) {
+void MobileVRInterface::set_iod(const double p_iod) {
 	intraocular_dist = p_iod;
 };
 
-real_t MobileVRInterface::get_iod() const {
+double MobileVRInterface::get_iod() const {
 	return intraocular_dist;
 };
 
-void MobileVRInterface::set_display_width(const real_t p_display_width) {
+void MobileVRInterface::set_display_width(const double p_display_width) {
 	display_width = p_display_width;
 };
 
-real_t MobileVRInterface::get_display_width() const {
+double MobileVRInterface::get_display_width() const {
 	return display_width;
 };
 
-void MobileVRInterface::set_display_to_lens(const real_t p_display_to_lens) {
+void MobileVRInterface::set_display_to_lens(const double p_display_to_lens) {
 	display_to_lens = p_display_to_lens;
 };
 
-real_t MobileVRInterface::get_display_to_lens() const {
+double MobileVRInterface::get_display_to_lens() const {
 	return display_to_lens;
 };
 
-void MobileVRInterface::set_oversample(const real_t p_oversample) {
+void MobileVRInterface::set_oversample(const double p_oversample) {
 	oversample = p_oversample;
 };
 
-real_t MobileVRInterface::get_oversample() const {
+double MobileVRInterface::get_oversample() const {
 	return oversample;
 };
 
-void MobileVRInterface::set_k1(const real_t p_k1) {
+void MobileVRInterface::set_k1(const double p_k1) {
 	k1 = p_k1;
 };
 
-real_t MobileVRInterface::get_k1() const {
+double MobileVRInterface::get_k1() const {
 	return k1;
 };
 
-void MobileVRInterface::set_k2(const real_t p_k2) {
+void MobileVRInterface::set_k2(const double p_k2) {
 	k2 = p_k2;
 };
 
-real_t MobileVRInterface::get_k2() const {
+double MobileVRInterface::get_k2() const {
 	return k2;
 };
 
@@ -318,7 +320,7 @@ bool MobileVRInterface::initialize() {
 	ERR_FAIL_NULL_V(xr_server, false);
 
 	if (!initialized) {
-		// reset our sensor data and orientation
+		// reset our sensor data
 		mag_count = 0;
 		has_gyro = false;
 		sensor_first = true;
@@ -326,9 +328,15 @@ bool MobileVRInterface::initialize() {
 		mag_next_max = Vector3(-10000, -10000, -10000);
 		mag_current_min = Vector3(0, 0, 0);
 		mag_current_max = Vector3(0, 0, 0);
+		head_transform.basis = Basis();
+		head_transform.origin = Vector3(0.0, eye_height, 0.0);
 
-		// reset our orientation
-		orientation = Basis();
+		// we must create a tracker for our head
+		head.instantiate();
+		head->set_tracker_type(XRServer::TRACKER_HEAD);
+		head->set_tracker_name("head");
+		head->set_tracker_desc("Players head");
+		xr_server->add_tracker(head);
 
 		// make this our primary interface
 		xr_server->set_primary_interface(this);
@@ -343,15 +351,37 @@ bool MobileVRInterface::initialize() {
 
 void MobileVRInterface::uninitialize() {
 	if (initialized) {
+		// do any cleanup here...
 		XRServer *xr_server = XRServer::get_singleton();
-		if (xr_server != nullptr && xr_server->get_primary_interface() == this) {
-			// no longer our primary interface
-			xr_server->set_primary_interface(nullptr);
+		if (xr_server != nullptr) {
+			if (head.is_valid()) {
+				xr_server->remove_tracker(head);
+
+				head.unref();
+			}
+
+			if (xr_server->get_primary_interface() == this) {
+				// no longer our primary interface
+				xr_server->set_primary_interface(nullptr);
+			}
 		}
 
 		initialized = false;
 	};
 };
+
+bool MobileVRInterface::supports_play_area_mode(XRInterface::PlayAreaMode p_mode) {
+	// This interface has no positional tracking so fix this to 3DOF
+	return p_mode == XR_PLAY_AREA_3DOF;
+}
+
+XRInterface::PlayAreaMode MobileVRInterface::get_play_area_mode() const {
+	return XR_PLAY_AREA_3DOF;
+}
+
+bool MobileVRInterface::set_play_area_mode(XRInterface::PlayAreaMode p_mode) {
+	return p_mode == XR_PLAY_AREA_3DOF;
+}
 
 Size2 MobileVRInterface::get_render_target_size() {
 	_THREAD_SAFE_METHOD_
@@ -377,11 +407,10 @@ Transform3D MobileVRInterface::get_camera_transform() {
 		float world_scale = xr_server->get_world_scale();
 
 		// just scale our origin point of our transform
-		Transform3D hmd_transform;
-		hmd_transform.basis = orientation;
-		hmd_transform.origin = Vector3(0.0, eye_height * world_scale, 0.0);
+		Transform3D _head_transform = head_transform;
+		_head_transform.origin *= world_scale;
 
-		transform_for_eye = (xr_server->get_reference_frame()) * hmd_transform;
+		transform_for_eye = (xr_server->get_reference_frame()) * _head_transform;
 	}
 
 	return transform_for_eye;
@@ -409,11 +438,10 @@ Transform3D MobileVRInterface::get_transform_for_view(uint32_t p_view, const Tra
 		};
 
 		// just scale our origin point of our transform
-		Transform3D hmd_transform;
-		hmd_transform.basis = orientation;
-		hmd_transform.origin = Vector3(0.0, eye_height * world_scale, 0.0);
+		Transform3D _head_transform = head_transform;
+		_head_transform.origin *= world_scale;
 
-		transform_for_eye = p_cam_transform * (xr_server->get_reference_frame()) * hmd_transform * transform_for_eye;
+		transform_for_eye = p_cam_transform * (xr_server->get_reference_frame()) * _head_transform * transform_for_eye;
 	} else {
 		// huh? well just return what we got....
 		transform_for_eye = p_cam_transform;
@@ -422,7 +450,7 @@ Transform3D MobileVRInterface::get_transform_for_view(uint32_t p_view, const Tra
 	return transform_for_eye;
 };
 
-CameraMatrix MobileVRInterface::get_projection_for_view(uint32_t p_view, real_t p_aspect, real_t p_z_near, real_t p_z_far) {
+CameraMatrix MobileVRInterface::get_projection_for_view(uint32_t p_view, double p_aspect, double p_z_near, double p_z_far) {
 	_THREAD_SAFE_METHOD_
 
 	CameraMatrix eye;
@@ -455,16 +483,16 @@ Vector<BlitToScreen> MobileVRInterface::commit_views(RID p_render_target, const 
 	blit.lens_distortion.aspect_ratio = aspect;
 
 	// left eye
-	blit.rect = p_screen_rect;
-	blit.rect.size.width *= 0.5;
+	blit.dst_rect = p_screen_rect;
+	blit.dst_rect.size.width *= 0.5;
 	blit.multi_view.layer = 0;
 	blit.lens_distortion.eye_center.x = ((-intraocular_dist / 2.0) + (display_width / 4.0)) / (display_width / 2.0);
 	blit_to_screen.push_back(blit);
 
 	// right eye
-	blit.rect = p_screen_rect;
-	blit.rect.size.width *= 0.5;
-	blit.rect.position.x = blit.rect.size.width;
+	blit.dst_rect = p_screen_rect;
+	blit.dst_rect.size.width *= 0.5;
+	blit.dst_rect.position.x = blit.dst_rect.size.width;
 	blit.multi_view.layer = 1;
 	blit.lens_distortion.eye_center.x = ((intraocular_dist / 2.0) - (display_width / 4.0)) / (display_width / 2.0);
 	blit_to_screen.push_back(blit);
@@ -476,7 +504,16 @@ void MobileVRInterface::process() {
 	_THREAD_SAFE_METHOD_
 
 	if (initialized) {
+		// update our head transform orientation
 		set_position_from_sensors();
+
+		// update our head transform position (should be constant)
+		head_transform.origin = Vector3(0.0, eye_height, 0.0);
+
+		if (head.is_valid()) {
+			// Set our head position, note in real space, reference frame and world scale is applied later
+			head->set_pose("default", head_transform, Vector3(), Vector3());
+		}
 	};
 };
 

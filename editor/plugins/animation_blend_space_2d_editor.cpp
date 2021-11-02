@@ -129,8 +129,7 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_gui_input(const Ref<InputEven
 		add_point_pos += blend_space->get_min_space();
 
 		if (snap->is_pressed()) {
-			add_point_pos.x = Math::snapped(add_point_pos.x, blend_space->get_snap().x);
-			add_point_pos.y = Math::snapped(add_point_pos.y, blend_space->get_snap().y);
+			add_point_pos = add_point_pos.snapped(blend_space->get_snap());
 		}
 	}
 
@@ -215,8 +214,7 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_gui_input(const Ref<InputEven
 			Vector2 point = blend_space->get_blend_point_position(selected_point);
 			point += drag_ofs;
 			if (snap->is_pressed()) {
-				point.x = Math::snapped(point.x, blend_space->get_snap().x);
-				point.y = Math::snapped(point.y, blend_space->get_snap().y);
+				point = point.snapped(blend_space->get_snap());
 			}
 
 			updating = true;
@@ -467,8 +465,7 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_draw() {
 			if (dragging_selected && selected_point == point_idx) {
 				point += drag_ofs;
 				if (snap->is_pressed()) {
-					point.x = Math::snapped(point.x, blend_space->get_snap().x);
-					point.y = Math::snapped(point.y, blend_space->get_snap().y);
+					point = point.snapped(blend_space->get_snap());
 				}
 			}
 			point = (point - blend_space->get_min_space()) / (blend_space->get_max_space() - blend_space->get_min_space());
@@ -503,8 +500,7 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_draw() {
 		if (dragging_selected && selected_point == i) {
 			point += drag_ofs;
 			if (snap->is_pressed()) {
-				point.x = Math::snapped(point.x, blend_space->get_snap().x);
-				point.y = Math::snapped(point.y, blend_space->get_snap().y);
+				point = point.snapped(blend_space->get_snap());
 			}
 		}
 		point = (point - blend_space->get_min_space()) / (blend_space->get_max_space() - blend_space->get_min_space());
@@ -702,8 +698,7 @@ void AnimationNodeBlendSpace2DEditor::_update_edited_point_pos() {
 		if (dragging_selected) {
 			pos += drag_ofs;
 			if (snap->is_pressed()) {
-				pos.x = Math::snapped(pos.x, blend_space->get_snap().x);
-				pos.y = Math::snapped(pos.y, blend_space->get_snap().y);
+				pos = pos.snapped(blend_space->get_snap());
 			}
 		}
 		updating = true;

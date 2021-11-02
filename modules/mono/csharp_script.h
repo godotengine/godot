@@ -136,7 +136,7 @@ private:
 	Map<StringName, EventSignal> event_signals;
 	bool signals_invalidated = true;
 
-	Vector<MultiplayerAPI::RPCConfig> rpc_functions;
+	Vector<Multiplayer::RPCConfig> rpc_functions;
 
 #ifdef TOOLS_ENABLED
 	List<PropertyInfo> exported_members_cache; // members_cache
@@ -154,7 +154,7 @@ private:
 	Set<StringName> exported_members_names;
 #endif
 
-	Map<StringName, PropertyInfo> member_info;
+	OrderedHashMap<StringName, PropertyInfo> member_info;
 
 	void _clear();
 
@@ -179,7 +179,7 @@ private:
 	static void update_script_class_info(Ref<CSharpScript> p_script);
 	static void initialize_for_managed_type(Ref<CSharpScript> p_script, GDMonoClass *p_class, GDMonoClass *p_native);
 
-	MultiplayerAPI::RPCMode _member_get_rpc_mode(IMonoClassMember *p_member) const;
+	Multiplayer::RPCMode _member_get_rpc_mode(IMonoClassMember *p_member) const;
 
 protected:
 	static void _bind_methods();
@@ -215,7 +215,7 @@ public:
 	void get_script_signal_list(List<MethodInfo> *r_signals) const override;
 
 	bool get_property_default_value(const StringName &p_property, Variant &r_value) const override;
-	void get_script_property_list(List<PropertyInfo> *p_list) const override;
+	void get_script_property_list(List<PropertyInfo> *r_list) const override;
 	void update_exports() override;
 
 	void get_members(Set<StringName> *p_members) override;
@@ -234,7 +234,7 @@ public:
 
 	int get_member_line(const StringName &p_member) const override;
 
-	const Vector<MultiplayerAPI::RPCConfig> get_rpc_methods() const override;
+	const Vector<Multiplayer::RPCConfig> get_rpc_methods() const override;
 
 #ifdef TOOLS_ENABLED
 	bool is_placeholder_fallback_enabled() const override { return placeholder_fallback_enabled; }
@@ -293,7 +293,7 @@ public:
 	void get_property_list(List<PropertyInfo> *p_properties) const override;
 	Variant::Type get_property_type(const StringName &p_name, bool *r_is_valid) const override;
 
-	/* TODO */ void get_method_list(List<MethodInfo> *p_list) const override {}
+	void get_method_list(List<MethodInfo> *p_list) const override;
 	bool has_method(const StringName &p_method) const override;
 	Variant call(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) override;
 
@@ -311,7 +311,7 @@ public:
 	void refcount_incremented() override;
 	bool refcount_decremented() override;
 
-	const Vector<MultiplayerAPI::RPCConfig> get_rpc_methods() const override;
+	const Vector<Multiplayer::RPCConfig> get_rpc_methods() const override;
 
 	void notification(int p_notification) override;
 	void _call_notification(int p_notification);

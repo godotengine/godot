@@ -31,13 +31,13 @@
 #ifndef PHYSICAL_BONE_2D_H
 #define PHYSICAL_BONE_2D_H
 
-#include "scene/2d/joints_2d.h"
 #include "scene/2d/physics_body_2d.h"
-
 #include "scene/2d/skeleton_2d.h"
 
-class PhysicalBone2D : public RigidBody2D {
-	GDCLASS(PhysicalBone2D, RigidBody2D);
+class Joint2D;
+
+class PhysicalBone2D : public RigidDynamicBody2D {
+	GDCLASS(PhysicalBone2D, RigidDynamicBody2D);
 
 protected:
 	void _notification(int p_what);

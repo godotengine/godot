@@ -14,13 +14,9 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="type" type="int" setter="set_typed" getter="get_typed" enum="Variant.Type" default="0">
 			The input variables' type.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

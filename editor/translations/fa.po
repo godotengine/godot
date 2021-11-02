@@ -21,12 +21,15 @@
 # ItzMiad44909858f5774b6d <maidggg@gmail.com>, 2020.
 # YASAN <yasandev@gmail.com>, 2021.
 # duniyal ras <duniyalr@gmail.com>, 2021.
+# عبدالرئوف عابدی <abdolraoofabedi@gmail.com>, 2021.
+# Alireza Khodabande <alirezakhodabande74@gmail.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
+"Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-07-13 06:13+0000\n"
-"Last-Translator: duniyal ras <duniyalr@gmail.com>\n"
+"PO-Revision-Date: 2021-09-29 02:21+0000\n"
+"Last-Translator: Alireza Khodabande <alirezakhodabande74@gmail.com>\n"
 "Language-Team: Persian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fa/>\n"
 "Language: fa\n"
@@ -34,7 +37,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 4.7.2-dev\n"
+"X-Generator: Weblate 4.9-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -360,7 +363,7 @@ msgstr "حذف ترک انیمشین"
 #. TRANSLATORS: %s will be replaced by a phrase describing the target of track.
 #: editor/animation_track_editor.cpp
 msgid "Create NEW track for %s and insert key?"
-msgstr "یک ترک جدید برای s% بساز و کلید را درج کن؟"
+msgstr "یک ترک جدید برای %s بساز و کلید را درج کن؟"
 
 #: editor/animation_track_editor.cpp
 msgid "Create %d NEW tracks and insert keys?"
@@ -390,7 +393,6 @@ msgstr "در حال اتصال..."
 
 #. TRANSLATORS: This describes the target of new animation track, will be inserted into another string.
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "animation"
 msgstr "انیمیشن"
 
@@ -400,9 +402,8 @@ msgstr "انیمیشن پلیر نمی تواند خود را انیمیت کن�
 
 #. TRANSLATORS: This describes the target of new animation track, will be inserted into another string.
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "property '%s'"
-msgstr "ویژگی '%s' موجود نیست."
+msgstr "ویژگی \"٪ s\""
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Create & Insert"
@@ -610,9 +611,8 @@ msgid "Go to Previous Step"
 msgstr "برو به گام پیشین"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Apply Reset"
-msgstr "بازنشانی بزرگنمایی"
+msgstr "بازنشانی را اعمال کنید"
 
 #: editor/animation_track_editor.cpp
 msgid "Optimize Animation"
@@ -631,9 +631,8 @@ msgid "Use Bezier Curves"
 msgstr "بکارگیری منحنی بِزیِر"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Create RESET Track(s)"
-msgstr "جاگذاری مسیر ها"
+msgstr "ایجاد آهنگ (های) بازنشانی"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim. Optimizer"
@@ -905,11 +904,11 @@ msgstr "سیگنال:"
 
 #: editor/connections_dialog.cpp
 msgid "Connect '%s' to '%s'"
-msgstr "'s%' را به 's%' متصل کن"
+msgstr "'%s' را به '%s' متصل کن"
 
 #: editor/connections_dialog.cpp
 msgid "Disconnect '%s' from '%s'"
-msgstr "'s%' را از 's%' جدا کن"
+msgstr "'%s' را از '%s' جدا کن"
 
 #: editor/connections_dialog.cpp
 msgid "Disconnect all from signal: '%s'"
@@ -975,12 +974,13 @@ msgid "Create New %s"
 msgstr "ساختن %s جدید"
 
 #: editor/create_dialog.cpp editor/plugins/asset_library_editor_plugin.cpp
+#, fuzzy
 msgid "No results for \"%s\"."
-msgstr ""
+msgstr "هیچ نتیجه ای برای \"٪ s\" وجود ندارد."
 
 #: editor/create_dialog.cpp editor/property_selector.cpp
 msgid "No description available for %s."
-msgstr ""
+msgstr "توضیحی برای٪ s در دسترس نیست."
 
 #: editor/create_dialog.cpp editor/editor_file_dialog.cpp
 #: editor/filesystem_dock.cpp
@@ -1024,7 +1024,7 @@ msgid ""
 "Scene '%s' is currently being edited.\n"
 "Changes will only take effect when reloaded."
 msgstr ""
-"ویرایش صحنه 's%' شروع شده است.\n"
+"ویرایش صحنه '%s' شروع شده است.\n"
 "تغییرات تنها وقتی جلوه گرند که از نو بارگیری شوند."
 
 #: editor/dependency_editor.cpp
@@ -1032,7 +1032,7 @@ msgid ""
 "Resource '%s' is in use.\n"
 "Changes will only take effect when reloaded."
 msgstr ""
-"منابع 's%' بکار رفته‌اند.\n"
+"منابع '%s' بکار رفته‌اند.\n"
 "تغییرات تنها وقتی جلوه گرند که از نو بارگیری شوند."
 
 #: editor/dependency_editor.cpp
@@ -1040,7 +1040,7 @@ msgstr ""
 msgid "Dependencies"
 msgstr "بستگی‌ها"
 
-#: editor/dependency_editor.cpp
+#: editor/dependency_editor.cpp editor/editor_resource_picker.cpp
 msgid "Resource"
 msgstr "منبع"
 
@@ -1085,7 +1085,10 @@ msgid ""
 "Remove the selected files from the project? (Cannot be undone.)\n"
 "Depending on your filesystem configuration, the files will either be moved "
 "to the system trash or deleted permanently."
-msgstr "آیا پرونده‌های انتخاب شده از طرح حذف شوند؟ (غیر قابل بازیابی)"
+msgstr ""
+"فایلهای انتخابی از پروژه حذف شوند؟ (قابل واگرد نیست.)\n"
+"بسته به پیکربندی سیستم فایل شما ، فایل ها یا به سطل زباله سیستم منتقل می "
+"شوند و یا برای همیشه حذف می شوند."
 
 #: editor/dependency_editor.cpp
 #, fuzzy
@@ -1096,10 +1099,10 @@ msgid ""
 "Depending on your filesystem configuration, the files will either be moved "
 "to the system trash or deleted permanently."
 msgstr ""
-"پرونده‌هایی که می‌خواهید حذف شوند برای منابع دیگر مورد نیاز هستند تا کار "
-"کنند.\n"
-"آیا در هر صورت حذف شوند؟(بدون برگشت)\n"
-"شما میتوانید فایل های حذف شده را در سطل زباله سیستم عامل خود بیابید ."
+"فایل های در حال حذف توسط منابع دیگر مورد نیاز است تا بتوانند کار کنند.\n"
+"به هر حال آنها را حذف کنم؟ (قابل واگرد نیست.)\n"
+"بسته به پیکربندی سیستم فایل شما ، فایل ها یا به سطل زباله سیستم منتقل می "
+"شوند و یا برای همیشه حذف می شوند."
 
 #: editor/dependency_editor.cpp
 msgid "Cannot remove:"
@@ -1131,7 +1134,7 @@ msgstr "خطا در بارگذاری!"
 
 #: editor/dependency_editor.cpp
 msgid "Permanently delete %d item(s)? (No undo!)"
-msgstr "به طور دائمی تعداد 'd%' آیتم را حذف کند؟ (بدون undo !)"
+msgstr "به طور دائمی تعداد '%d' آیتم را حذف کند؟ (بدون undo !)"
 
 #: editor/dependency_editor.cpp
 msgid "Show Dependencies"
@@ -1516,7 +1519,7 @@ msgstr "کلمه کلیدی نمی تواند به عنوان یک نام خود
 
 #: editor/editor_autoload_settings.cpp
 msgid "Autoload '%s' already exists!"
-msgstr "بارگذاری خودکار 's%' هم اکنون موجود است!"
+msgstr "بارگذاری خودکار '%s' هم اکنون موجود است!"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Rename Autoload"
@@ -1687,13 +1690,13 @@ msgid ""
 "Enabled'."
 msgstr ""
 
-#: editor/editor_export.cpp platform/android/export/export.cpp
+#: editor/editor_export.cpp platform/android/export/export_plugin.cpp
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
 #: platform/osx/export/export.cpp platform/uwp/export/export.cpp
 msgid "Custom debug template not found."
 msgstr ""
 
-#: editor/editor_export.cpp platform/android/export/export.cpp
+#: editor/editor_export.cpp platform/android/export/export_plugin.cpp
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
 #: platform/osx/export/export.cpp platform/uwp/export/export.cpp
 msgid "Custom release template not found."
@@ -2073,7 +2076,7 @@ msgstr ""
 msgid "(Re)Importing Assets"
 msgstr "(در حال) وارد کردن دوباره عست ها"
 
-#: editor/editor_help.cpp editor/plugins/spatial_editor_plugin.cpp
+#: editor/editor_help.cpp
 msgid "Top"
 msgstr ""
 
@@ -2395,6 +2398,14 @@ msgid ""
 "be satisfied."
 msgstr ""
 
+#: editor/editor_node.cpp
+msgid "Could not save one or more scenes!"
+msgstr ""
+
+#: editor/editor_node.cpp
+msgid "Save All Scenes"
+msgstr "ذخیره صحنه"
+
 #: editor/editor_node.cpp editor/scene_tree_dock.cpp
 msgid "Can't overwrite scene that is still open!"
 msgstr ""
@@ -2511,6 +2522,10 @@ msgid "Save changes to '%s' before closing?"
 msgstr ""
 
 #: editor/editor_node.cpp
+msgid "%s no longer exists! Please specify a new save location."
+msgstr ""
+
+#: editor/editor_node.cpp
 msgid ""
 "The current scene has no root node, but %d modified external resource(s) "
 "were saved anyway."
@@ -2549,6 +2564,32 @@ msgstr ""
 #: editor/editor_node.cpp
 msgid "Current scene not saved. Open anyway?"
 msgstr ""
+
+#: editor/editor_node.cpp
+msgid "Can't undo while mouse buttons are pressed."
+msgstr ""
+
+#: editor/editor_node.cpp
+msgid "Nothing to undo."
+msgstr ""
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Undo: %s"
+msgstr "عقب‌گرد"
+
+#: editor/editor_node.cpp
+msgid "Can't redo while mouse buttons are pressed."
+msgstr ""
+
+#: editor/editor_node.cpp
+msgid "Nothing to redo."
+msgstr ""
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Redo: %s"
+msgstr "جلوگرد"
 
 #: editor/editor_node.cpp
 msgid "Can't reload a scene that was never saved."
@@ -2805,10 +2846,6 @@ msgstr ""
 #: editor/editor_node.cpp
 msgid "Save Scene"
 msgstr ""
-
-#: editor/editor_node.cpp
-msgid "Save All Scenes"
-msgstr "ذخیره صحنه"
 
 #: editor/editor_node.cpp
 msgid "Convert To..."
@@ -3194,6 +3231,11 @@ msgid "Merge With Existing"
 msgstr "ترکیب کردن با نمونه ی موجود"
 
 #: editor/editor_node.cpp
+#, fuzzy
+msgid "Apply MeshInstance Transforms"
+msgstr "تغییر دگرشکل متحرک"
+
+#: editor/editor_node.cpp
 msgid "Open & Run a Script"
 msgstr "گشودن و اجرای یک اسکریپت"
 
@@ -3446,6 +3488,10 @@ msgstr ""
 msgid ""
 "The selected resource (%s) does not match any type expected for this "
 "property (%s)."
+msgstr ""
+
+#: editor/editor_resource_picker.cpp
+msgid "Quick Load"
 msgstr ""
 
 #: editor/editor_resource_picker.cpp editor/property_editor.cpp
@@ -4145,7 +4191,7 @@ msgstr ""
 #: editor/groups_editor.cpp
 #, fuzzy
 msgid "Group name already exists."
-msgstr "بارگذاری خودکار 's%' هم اکنون موجود است!"
+msgstr "بارگذاری خودکار '%s' هم اکنون موجود است!"
 
 #: editor/groups_editor.cpp
 #, fuzzy
@@ -4177,11 +4223,11 @@ msgstr "صافی کردن گره‌ها"
 
 #: editor/groups_editor.cpp
 msgid "Nodes in Group"
-msgstr ""
+msgstr "گره ها در گروه"
 
 #: editor/groups_editor.cpp
 msgid "Empty groups will be automatically removed."
-msgstr ""
+msgstr "گروه های خالی به طور خودکار حذف خواهند شد."
 
 #: editor/groups_editor.cpp
 #, fuzzy
@@ -4226,7 +4272,7 @@ msgstr "وارد کردن با اشیا و مواد و انیمیشن ها"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Import as Multiple Scenes"
-msgstr ""
+msgstr "وارد کردن به عنوان صحنه های چندگانه"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Import as Multiple Scenes+Materials"
@@ -4239,7 +4285,7 @@ msgstr ""
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Importing Scene..."
-msgstr ""
+msgstr "وارد کردن صحنه..."
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Generating Lightmaps"
@@ -4306,6 +4352,18 @@ msgid "Clear Default for '%s'"
 msgstr ""
 
 #: editor/import_dock.cpp
+msgid "Reimport"
+msgstr "وارد کردن دوباره"
+
+#: editor/import_dock.cpp
+msgid ""
+"You have pending changes that haven't been applied yet. Click Reimport to "
+"apply changes made to the import options.\n"
+"Selecting another resource in the FileSystem dock without clicking Reimport "
+"first will discard changes made in the Import dock."
+msgstr ""
+
+#: editor/import_dock.cpp
 msgid "Import As:"
 msgstr ""
 
@@ -4313,10 +4371,6 @@ msgstr ""
 #, fuzzy
 msgid "Preset"
 msgstr "بازنشانی بزرگنمایی"
-
-#: editor/import_dock.cpp
-msgid "Reimport"
-msgstr "وارد کردن دوباره"
 
 #: editor/import_dock.cpp
 msgid "Save Scenes, Re-Import, and Restart"
@@ -4616,7 +4670,7 @@ msgstr "گره انیمیشن"
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 #, fuzzy
 msgid "Triangle already exists."
-msgstr "بارگذاری خودکار 's%' هم اکنون موجود است!"
+msgstr "بارگذاری خودکار '%s' هم اکنون موجود است!"
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 #, fuzzy
@@ -4821,7 +4875,7 @@ msgstr "نام نامعتبر."
 #: editor/plugins/animation_player_editor_plugin.cpp
 #, fuzzy
 msgid "Animation name already exists!"
-msgstr "بارگذاری خودکار 's%' هم اکنون موجود است!"
+msgstr "بارگذاری خودکار '%s' هم اکنون موجود است!"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
@@ -5643,6 +5697,18 @@ msgstr ""
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Move CanvasItem \"%s\" to (%d, %d)"
 msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Locked"
+msgstr "همه‌ی انتخاب ها"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Grouped"
+msgstr "گروه ها"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid ""
@@ -6598,7 +6664,13 @@ msgid "Remove Selected Item"
 msgstr "حذف مورد انتخاب‌شده"
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
-msgid "Import from Scene"
+#, fuzzy
+msgid "Import from Scene (Ignore Transforms)"
+msgstr "وارد کردن از صحنه"
+
+#: editor/plugins/mesh_library_editor_plugin.cpp
+#, fuzzy
+msgid "Import from Scene (Apply Transforms)"
 msgstr "وارد کردن از صحنه"
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
@@ -7204,6 +7276,16 @@ msgstr "حذف کن"
 msgid "Flip Portal"
 msgstr ""
 
+#: editor/plugins/room_manager_editor_plugin.cpp
+#, fuzzy
+msgid "Occluder Set Transform"
+msgstr "انتقال را در انیمیشن تغییر بده"
+
+#: editor/plugins/room_manager_editor_plugin.cpp
+#, fuzzy
+msgid "Center Node"
+msgstr "ساختن گره"
+
 #: editor/plugins/root_motion_editor_plugin.cpp
 msgid "AnimationTree has no path set to an AnimationPlayer"
 msgstr ""
@@ -7349,12 +7431,14 @@ msgid "Move Down"
 msgstr ""
 
 #: editor/plugins/script_editor_plugin.cpp
-msgid "Next script"
-msgstr ""
+#, fuzzy
+msgid "Next Script"
+msgstr "صحنه جدید"
 
 #: editor/plugins/script_editor_plugin.cpp
-msgid "Previous script"
-msgstr ""
+#, fuzzy
+msgid "Previous Script"
+msgstr "زبانه قبلی"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "File"
@@ -7522,7 +7606,7 @@ msgstr ""
 #, fuzzy
 msgid ""
 "Missing connected method '%s' for signal '%s' from node '%s' to node '%s'."
-msgstr "'s%' را از 's%' جدا کن"
+msgstr "'%s' را از '%s' جدا کن"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "[Ignore]"
@@ -7743,11 +7827,12 @@ msgid "Skeleton2D"
 msgstr ""
 
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
-msgid "Make Rest Pose (From Bones)"
-msgstr ""
+#, fuzzy
+msgid "Reset to Rest Pose"
+msgstr "بارگیری پیش فرض"
 
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
-msgid "Set Bones to Rest Pose"
+msgid "Overwrite Rest Pose"
 msgstr ""
 
 #: editor/plugins/skeleton_editor_plugin.cpp
@@ -7774,6 +7859,65 @@ msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Perspective"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Top Orthogonal"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Top Perspective"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Bottom Orthogonal"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Bottom Perspective"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Left Orthogonal"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Left Perspective"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Right Orthogonal"
+msgstr "دکمهٔ راست."
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Right Perspective"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Front Orthogonal"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Front Perspective"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Rear Orthogonal"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Rear Perspective"
+msgstr ""
+
+#. TRANSLATORS: This will be appended to the view name when Auto Orthogonal is enabled.
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid " [auto]"
+msgstr ""
+
+#. TRANSLATORS: This will be appended to the view name when Portal Occulusion is enabled.
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid " [portals active]"
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -7894,15 +8038,7 @@ msgid "Bottom View."
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Bottom"
-msgstr ""
-
-#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Left View."
-msgstr ""
-
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "Left"
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -7910,23 +8046,11 @@ msgid "Right View."
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Right"
-msgstr ""
-
-#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Front View."
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Front"
-msgstr ""
-
-#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Rear View."
-msgstr ""
-
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "Rear"
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -8128,6 +8252,26 @@ msgid "Right View"
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
+msgid "Orbit View Down"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Orbit View Left"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Orbit View Right"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Orbit View Up"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Orbit View 180"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Switch Perspective/Orthogonal View"
 msgstr ""
 
@@ -8201,6 +8345,11 @@ msgid "View Portal Culling"
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "View Occlusion Culling"
+msgstr "ویرایش سیگنال"
+
+#: editor/plugins/spatial_editor_plugin.cpp
 #: modules/gridmap/grid_map_editor_plugin.cpp
 #, fuzzy
 msgid "Settings..."
@@ -8267,8 +8416,9 @@ msgid "Post"
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Nameless gizmo"
-msgstr ""
+#, fuzzy
+msgid "Unnamed Gizmo"
+msgstr "پروژه بی نام"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 #, fuzzy
@@ -11127,7 +11277,7 @@ msgstr ""
 #: editor/project_settings_editor.cpp
 #, fuzzy
 msgid "An action with the name '%s' already exists."
-msgstr "بارگذاری خودکار 's%' هم اکنون موجود است!"
+msgstr "بارگذاری خودکار '%s' هم اکنون موجود است!"
 
 #: editor/project_settings_editor.cpp
 msgid "Rename Input Action Event"
@@ -12485,6 +12635,15 @@ msgstr "برداشتن موج"
 msgid "Set Portal Point Position"
 msgstr "برداشتن موج"
 
+#: editor/spatial_editor_gizmos.cpp
+msgid "Set Occluder Sphere Radius"
+msgstr ""
+
+#: editor/spatial_editor_gizmos.cpp
+#, fuzzy
+msgid "Set Occluder Sphere Position"
+msgstr "برداشتن موج"
+
 #: modules/csg/csg_gizmos.cpp
 msgid "Change Cylinder Radius"
 msgstr ""
@@ -12790,6 +12949,11 @@ msgstr ""
 #: modules/mono/csharp_script.cpp
 msgid "Class name can't be a reserved keyword"
 msgstr ""
+
+#: modules/mono/csharp_script.cpp
+#, fuzzy
+msgid "Build Solution"
+msgstr "همه‌ی انتخاب ها"
 
 #: modules/mono/mono_gd/gd_mono_utils.cpp
 msgid "End of inner exception stack trace"
@@ -13264,7 +13428,7 @@ msgstr "مسیر به یک نود نمیرسد!"
 
 #: modules/visual_script/visual_script_func_nodes.cpp
 msgid "Invalid index property name '%s' in node %s."
-msgstr "نام دارایی ایندکس نامعتبر 's%' در نود s%."
+msgstr "نام دارایی ایندکس نامعتبر '%s' در نود %s."
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid ": Invalid argument of type: "
@@ -13304,165 +13468,154 @@ msgstr "حذف گره اسکریپتِ دیداری"
 msgid "Get %s"
 msgstr "گرفتن %s"
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Package name is missing."
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Package segments must be of non-zero length."
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "The character '%s' is not allowed in Android application package names."
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "A digit cannot be the first character in a package segment."
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "The character '%s' cannot be the first character in a package segment."
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "The package must have at least one '.' separator."
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Select device from the list"
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Running on %s"
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 #, fuzzy
 msgid "Exporting APK..."
 msgstr "صدور"
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 #, fuzzy
 msgid "Uninstalling..."
 msgstr "نصب کردن"
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 #, fuzzy
 msgid "Installing to device, please wait..."
 msgstr "بارگیری"
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 #, fuzzy
 msgid "Could not install to device: %s"
 msgstr "نمی‌تواند یک پوشه ایجاد شود."
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Running on device..."
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 #, fuzzy
 msgid "Could not execute on device."
 msgstr "ناتوان در ساختن پوشه."
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Unable to find the 'apksigner' tool."
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid ""
 "Android build template not installed in the project. Install it from the "
 "Project menu."
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid ""
 "Either Debug Keystore, Debug User AND Debug Password settings must be "
 "configured OR none of them."
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Debug keystore not configured in the Editor Settings nor in the preset."
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid ""
 "Either Release Keystore, Release User AND Release Password settings must be "
 "configured OR none of them."
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Release keystore incorrectly configured in the export preset."
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "A valid Android SDK path is required in Editor Settings."
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Invalid Android SDK path in Editor Settings."
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Missing 'platform-tools' directory!"
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Unable to find Android SDK platform-tools' adb command."
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Please check in the Android SDK directory specified in Editor Settings."
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Missing 'build-tools' directory!"
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Unable to find Android SDK build-tools' apksigner command."
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Invalid public key for APK expansion."
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 #, fuzzy
 msgid "Invalid package name:"
 msgstr "نام نامعتبر."
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid ""
 "Invalid \"GodotPaymentV3\" module included in the \"android/modules\" "
 "project setting (changed in Godot 3.2.2).\n"
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "\"Use Custom Build\" must be enabled to use the plugins."
 msgstr ""
 
-#: platform/android/export/export.cpp
-msgid ""
-"\"Degrees Of Freedom\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR"
-"\"."
-msgstr ""
-
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid ""
 "\"Hand Tracking\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\"."
 msgstr ""
 
-#: platform/android/export/export.cpp
-msgid ""
-"\"Focus Awareness\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\"."
-msgstr ""
-
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "\"Export AAB\" is only valid when \"Use Custom Build\" is enabled."
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid ""
 "'apksigner' could not be found.\n"
 "Please check the command is available in the Android SDK build-tools "
@@ -13470,60 +13623,60 @@ msgid ""
 "The resulting %s is unsigned."
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Signing debug %s..."
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Signing release %s..."
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 #, fuzzy
 msgid "Could not find keystore, unable to export."
 msgstr "نمی‌تواند یک پوشه ایجاد شود."
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "'apksigner' returned with error #%d"
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 #, fuzzy
 msgid "Verifying %s..."
 msgstr "ترجیحات"
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "'apksigner' verification of %s failed."
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 #, fuzzy
 msgid "Exporting for Android"
 msgstr "صدور"
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Invalid filename! Android App Bundle requires the *.aab extension."
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "APK Expansion not compatible with Android App Bundle."
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Invalid filename! Android APK requires the *.apk extension."
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Unsupported export format!\n"
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid ""
 "Trying to build from a custom built template, but no version info for it "
 "exists. Please reinstall from the 'Project' menu."
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid ""
 "Android build version mismatch:\n"
 "   Template installed: %s\n"
@@ -13531,58 +13684,58 @@ msgid ""
 "Please reinstall Android build template from 'Project' menu."
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid ""
 "Unable to overwrite res://android/build/res/*.xml files with project name"
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Could not export project files to gradle project\n"
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 #, fuzzy
 msgid "Could not write expansion package file!"
 msgstr "نمی‌تواند یک پوشه ایجاد شود."
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Building Android Project (gradle)"
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid ""
 "Building of Android project failed, check output for the error.\n"
 "Alternatively visit docs.godotengine.org for Android build documentation."
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Moving output"
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid ""
 "Unable to copy and rename export file, check gradle project directory for "
 "outputs."
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 #, fuzzy
 msgid "Package not found: %s"
 msgstr "طول انیمیشن (به ثانیه)."
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 #, fuzzy
 msgid "Creating APK..."
 msgstr "در حال اتصال..."
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 #, fuzzy
 msgid ""
 "Could not find template APK to export:\n"
 "%s"
 msgstr "نمی‌تواند یک پوشه ایجاد شود."
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid ""
 "Missing libraries in the export template for the selected architectures: "
 "%s.\n"
@@ -13590,21 +13743,21 @@ msgid ""
 "architectures in the export preset."
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 #, fuzzy
 msgid "Adding files..."
 msgstr "یافتن"
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 #, fuzzy
 msgid "Could not export project files"
 msgstr "نمی‌تواند یک پوشه ایجاد شود."
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Aligning APK..."
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Could not unzip temporary unaligned APK."
 msgstr ""
 
@@ -14117,6 +14270,14 @@ msgstr ""
 "NavigationMeshInstance باید یک فرزند یا نوه‌ی یک گره Navigation باشد. این "
 "تنها داده‌ی پیمایش را فراهم می‌کند."
 
+#: scene/3d/occluder.cpp
+msgid "No shape is set."
+msgstr ""
+
+#: scene/3d/occluder.cpp
+msgid "Only uniform scales are supported."
+msgstr ""
+
 #: scene/3d/particles.cpp
 msgid ""
 "GPU-based particles are not supported by the GLES2 video driver.\n"
@@ -14335,14 +14496,13 @@ msgid "In node '%s', invalid animation: '%s'."
 msgstr ""
 
 #: scene/animation/animation_tree.cpp
-#, fuzzy
 msgid "Invalid animation: '%s'."
-msgstr "اندازهٔ قلم نامعتبر."
+msgstr "انیمیشن نامعتبر: '%s'."
 
 #: scene/animation/animation_tree.cpp
 #, fuzzy
 msgid "Nothing connected to input '%s' of node '%s'."
-msgstr "'s%' را از 's%' جدا کن"
+msgstr "'%s' را از '%s' جدا کن"
 
 #: scene/animation/animation_tree.cpp
 msgid "No root AnimationNode for the graph is set."
@@ -14383,7 +14543,7 @@ msgstr ""
 
 #: scene/gui/color_picker.cpp
 msgid "Raw"
-msgstr ""
+msgstr "خام"
 
 #: scene/gui/color_picker.cpp
 msgid "Switch between hexadecimal and code values."
@@ -14420,6 +14580,14 @@ msgstr "باید یک پسوند معتبر بکار گیرید."
 
 #: scene/gui/graph_edit.cpp
 msgid "Enable grid minimap."
+msgstr "فعال سازی شبکه نقشه کوچک."
+
+#: scene/gui/nine_patch_rect.cpp
+msgid ""
+"The Tile and Tile Fit options for Axis Stretch properties are only effective "
+"when using the GLES3 rendering backend.\n"
+"The GLES2 backend is currently in use, so these modes will act like Stretch "
+"instead."
 msgstr ""
 
 #: scene/gui/popup.cpp
@@ -14454,6 +14622,14 @@ msgid ""
 "Environment -> Default Environment) could not be loaded."
 msgstr ""
 
+#: scene/main/timer.cpp
+msgid ""
+"Very low timer wait times (< 0.05 seconds) may behave in significantly "
+"different ways depending on the rendered or physics frame rate.\n"
+"Consider using a script's process loop instead of relying on a Timer for "
+"very low wait times."
+msgstr ""
+
 #: scene/main/viewport.cpp
 msgid ""
 "This viewport is not set as render target. If you intend for it to display "
@@ -14467,7 +14643,13 @@ msgstr ""
 "بافت داخلی آن را برای نمایش به تعدادی گره تخصیص دهید."
 
 #: scene/main/viewport.cpp
-msgid "Viewport size must be greater than 0 to render anything."
+msgid ""
+"The Viewport size must be greater than or equal to 2 pixels on both "
+"dimensions to render anything."
+msgstr ""
+
+#: scene/resources/occluder_shape.cpp
+msgid "OccluderShapeSphere Set Spheres"
 msgstr ""
 
 #: scene/resources/visual_shader_nodes.cpp
@@ -14477,19 +14659,16 @@ msgid ""
 msgstr ""
 
 #: scene/resources/visual_shader_nodes.cpp
-#, fuzzy
 msgid "Invalid source for preview."
-msgstr "اندازهٔ قلم نامعتبر."
+msgstr "منبع نامعتبر برای پیش نمایش."
 
 #: scene/resources/visual_shader_nodes.cpp
-#, fuzzy
 msgid "Invalid source for shader."
-msgstr "اندازهٔ قلم نامعتبر."
+msgstr "منبع نامعتبر برای شیدر."
 
 #: scene/resources/visual_shader_nodes.cpp
-#, fuzzy
 msgid "Invalid comparison function for that type."
-msgstr "اندازهٔ قلم نامعتبر."
+msgstr "عمل مقایسه نامعتبر بزای این نوع."
 
 #: servers/visual/shader_language.cpp
 msgid "Varying may not be assigned in the '%s' function."
@@ -14647,7 +14826,7 @@ msgstr "ثوابت قابل تغییر نیستند."
 #~ msgstr "صحنه جدید"
 
 #~ msgid "Replaced %d occurrence(s)."
-#~ msgstr "تعداد d% رخداد جایگزین شد."
+#~ msgstr "تعداد %d رخداد جایگزین شد."
 
 #, fuzzy
 #~ msgid "Brief Description"
@@ -15053,7 +15232,7 @@ msgstr "ثوابت قابل تغییر نیستند."
 #~ "اسپرایت تنظیم شود تا کار کند."
 
 #~ msgid "Method List For '%s':"
-#~ msgstr "لیست متد برای 's%' :"
+#~ msgstr "لیست متد برای '%s' :"
 
 #~ msgid "Return:"
 #~ msgstr "بازگشت:"
@@ -15094,7 +15273,7 @@ msgstr "ثوابت قابل تغییر نیستند."
 #~ "SpatialSamplePlayer آهنگ را پخش کند."
 
 #~ msgid "Replaced %d Ocurrence(s)."
-#~ msgstr "تعداد d% رخداد جایگزین شد."
+#~ msgstr "تعداد %d رخداد جایگزین شد."
 
 #, fuzzy
 #~ msgid "Create Android keystore"

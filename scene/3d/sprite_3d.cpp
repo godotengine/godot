@@ -712,7 +712,7 @@ Rect2 Sprite3D::get_item_rect() const {
 		return CanvasItem::get_item_rect();
 	*/
 
-	Size2i s;
+	Size2 s;
 
 	if (region) {
 		s = region_rect.size;
@@ -743,6 +743,8 @@ void Sprite3D::_validate_property(PropertyInfo &property) const {
 	if (property.name == "frame_coords") {
 		property.usage |= PROPERTY_USAGE_KEYING_INCREMENTS;
 	}
+
+	SpriteBase3D::_validate_property(property);
 }
 
 void Sprite3D::_bind_methods() {
@@ -807,22 +809,20 @@ void AnimatedSprite3D::_draw() {
 		set_base(RID());
 		return; //no texuture no life
 	}
-	Vector2 tsize = texture->get_size();
+	Size2 tsize = texture->get_size();
 	if (tsize.x == 0 || tsize.y == 0) {
 		return;
 	}
 
-	Size2i s = tsize;
 	Rect2 src_rect;
-
-	src_rect.size = s;
+	src_rect.size = tsize;
 
 	Point2 ofs = get_offset();
 	if (is_centered()) {
-		ofs -= s / 2;
+		ofs -= tsize / 2;
 	}
 
-	Rect2 dst_rect(ofs, s);
+	Rect2 dst_rect(ofs, tsize);
 
 	Rect2 final_rect;
 	Rect2 final_src_rect;
@@ -1017,6 +1017,8 @@ void AnimatedSprite3D::_validate_property(PropertyInfo &property) const {
 		}
 		property.usage |= PROPERTY_USAGE_KEYING_INCREMENTS;
 	}
+
+	SpriteBase3D::_validate_property(property);
 }
 
 void AnimatedSprite3D::_notification(int p_what) {
@@ -1133,7 +1135,7 @@ Rect2 AnimatedSprite3D::get_item_rect() const {
 	if (t.is_null()) {
 		return Rect2(0, 0, 1, 1);
 	}
-	Size2i s = t->get_size();
+	Size2 s = t->get_size();
 
 	Point2 ofs = get_offset();
 	if (centered) {
@@ -1177,7 +1179,7 @@ void AnimatedSprite3D::stop() {
 }
 
 bool AnimatedSprite3D::is_playing() const {
-	return is_processing();
+	return playing;
 }
 
 void AnimatedSprite3D::_reset_timeout() {

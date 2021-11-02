@@ -32,12 +32,12 @@
 #define EDITOR_NODE_H
 
 #include "core/templates/safe_refcount.h"
-#include "editor/editor_command_palette.h"
 #include "editor/editor_data.h"
 #include "editor/editor_export.h"
 #include "editor/editor_folding.h"
 #include "editor/editor_native_shader_source_visualizer.h"
 #include "editor/editor_run.h"
+#include "editor/editor_toaster.h"
 #include "editor/inspector_dock.h"
 #include "editor/property_editor.h"
 #include "editor/scene_tree_dock.h"
@@ -85,7 +85,7 @@ class ProjectSettingsEditor;
 class RunSettingsDialog;
 class ScriptCreateDialog;
 class TabContainer;
-class Tabs;
+class TabBar;
 class TextureProgressBar;
 class Button;
 class VSplitContainer;
@@ -206,7 +206,7 @@ private:
 		HELP_ABOUT,
 		HELP_SUPPORT_GODOT_DEVELOPMENT,
 
-		SET_VIDEO_DRIVER_SAVE_AND_RESTART,
+		SET_RENDERING_DRIVER_SAVE_AND_RESTART,
 
 		GLOBAL_NEW_WINDOW,
 		GLOBAL_SCENE,
@@ -216,20 +216,20 @@ private:
 		TOOL_MENU_BASE = 1000
 	};
 
-	SubViewport *scene_root; //root of the scene being edited
+	SubViewport *scene_root; // root of the scene being edited
 
 	PanelContainer *scene_root_parent;
 	Control *theme_base;
 	Control *gui_base;
 	VBoxContainer *main_vbox;
-	OptionButton *video_driver;
+	OptionButton *rendering_driver;
 
 	ConfirmationDialog *video_restart_dialog;
 
-	int video_driver_current;
-	String video_driver_request;
-	void _video_driver_selected(int);
-	void _update_video_driver_color();
+	int rendering_driver_current;
+	String rendering_driver_request;
+	void _rendering_driver_selected(int);
+	void _update_rendering_driver_color();
 
 	// Split containers
 
@@ -250,7 +250,7 @@ private:
 
 	// Main tabs
 
-	Tabs *scene_tabs;
+	TabBar *scene_tabs;
 	PopupMenu *scene_tabs_context_menu;
 	Panel *tab_preview_panel;
 	TextureRect *tab_preview;
@@ -309,6 +309,7 @@ private:
 	ConfirmationDialog *pick_main_scene;
 	Button *select_current_scene_button;
 	AcceptDialog *accept;
+	AcceptDialog *save_accept;
 	EditorAbout *about;
 	AcceptDialog *warning;
 
@@ -323,7 +324,7 @@ private:
 
 	EditorSettingsDialog *settings_config_dialog;
 	ProjectSettingsEditor *project_settings;
-	bool settings_changed = true; //make it update settings on first frame
+	bool settings_changed = true; // make it update settings on first frame
 	void _update_from_settings();
 
 	PopupMenu *vcs_actions_menu;
@@ -335,6 +336,7 @@ private:
 	EditorFileDialog *file_script;
 	EditorFileDialog *file_android_build_source;
 	CheckBox *file_export_lib_merge;
+	CheckBox *file_export_lib_apply_xforms;
 	String current_path;
 	MenuButton *update_spinner;
 
@@ -405,7 +407,7 @@ private:
 
 	bool waiting_for_sources_changed;
 
-	uint32_t update_spinner_step_msec;
+	uint64_t update_spinner_step_msec;
 	uint64_t update_spinner_step_frame;
 	int update_spinner_step;
 
@@ -437,6 +439,7 @@ private:
 	HBoxContainer *bottom_panel_hb;
 	HBoxContainer *bottom_panel_hb_editors;
 	VBoxContainer *bottom_panel_vb;
+	EditorToaster *editor_toaster;
 	LinkButton *version_btn;
 	Button *bottom_panel_raise;
 
@@ -517,9 +520,6 @@ private:
 	void _run(bool p_current = false, const String &p_custom = "");
 	void _run_native(const Ref<EditorExportPreset> &p_preset);
 
-	void _save_optimized();
-	void _import_action(const String &p_action);
-	void _import(const String &p_file);
 	void _add_to_recent_scenes(const String &p_scene);
 	void _update_recent_scenes();
 	void _open_recent_scene(int p_idx);
@@ -541,6 +541,7 @@ private:
 
 	String import_reload_fn;
 
+	Set<String> textfile_extensions;
 	Set<FileDialog *> file_dialogs;
 	Set<EditorFileDialog *> editor_file_dialogs;
 
@@ -556,7 +557,6 @@ private:
 	static void _editor_file_dialog_register(EditorFileDialog *p_dialog);
 	static void _editor_file_dialog_unregister(EditorFileDialog *p_dialog);
 
-	void _cleanup_scene();
 	void _remove_edited_scene(bool p_change_tab = true);
 	void _remove_scene(int index, bool p_change_tab = true);
 	bool _find_and_save_resource(RES p_res, Map<RES, bool> &processed, int32_t flags);
@@ -654,8 +654,6 @@ private:
 	static int build_callback_count;
 	static EditorBuildCallback build_callbacks[MAX_BUILD_CALLBACKS];
 
-	void _license_tree_selected();
-
 	void _update_update_spinner();
 
 	Vector<Ref<EditorResourceConversionPlugin>> resource_conversion_plugins;
@@ -680,6 +678,8 @@ private:
 
 	bool immediate_dialog_confirmed = false;
 	void _immediate_dialog_confirmed();
+
+	void _select_default_main_screen_plugin();
 
 protected:
 	void _notification(int p_what);
@@ -769,10 +769,9 @@ public:
 
 	Node *get_edited_scene() { return editor_data.get_edited_scene_root(); }
 
-	SubViewport *get_scene_root() { return scene_root; } //root of the scene being edited
+	SubViewport *get_scene_root() { return scene_root; } // root of the scene being edited
 
 	void fix_dependencies(const String &p_for_file);
-	void clear_scene() { _cleanup_scene(); }
 	int new_scene();
 	Error load_scene(const String &p_scene, bool p_ignore_broken_deps = false, bool p_set_inherited = false, bool p_clear_errors = true, bool p_force_open_imported = false, bool p_silent_change_tab = false);
 	Error load_resource(const String &p_resource, bool p_ignore_broken_deps = false);
@@ -812,6 +811,7 @@ public:
 	Ref<Texture2D> get_class_icon(const String &p_class, const String &p_fallback = "Object") const;
 
 	void show_accept(const String &p_text, const String &p_title);
+	void show_save_accept(const String &p_text, const String &p_title);
 	void show_warning(const String &p_text, const String &p_title = TTR("Warning!"));
 
 	void _copy_warning(const String &p_str);
@@ -843,8 +843,6 @@ public:
 	}
 
 	bool is_scene_in_use(const String &p_path);
-
-	void scan_import_changes();
 
 	void save_layout();
 
@@ -887,7 +885,6 @@ public:
 
 	EditorNode();
 	~EditorNode();
-	void get_singleton(const char *arg1, bool arg2);
 
 	void add_resource_conversion_plugin(const Ref<EditorResourceConversionPlugin> &p_plugin);
 	void remove_resource_conversion_plugin(const Ref<EditorResourceConversionPlugin> &p_plugin);
@@ -898,6 +895,7 @@ public:
 
 	bool ensure_main_scene(bool p_from_native);
 
+	Error run_play_native(int p_idx, int p_platform);
 	void run_play();
 	void run_play_current();
 	void run_play_custom(const String &p_custom);
@@ -936,7 +934,7 @@ public:
 	bool forward_gui_input(const Ref<InputEvent> &p_event);
 	void forward_canvas_draw_over_viewport(Control *p_overlay);
 	void forward_canvas_force_draw_over_viewport(Control *p_overlay);
-	bool forward_spatial_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event, bool serve_when_force_input_enabled);
+	EditorPlugin::AfterGUIInput forward_spatial_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event, bool serve_when_force_input_enabled);
 	void forward_spatial_draw_over_viewport(Control *p_overlay);
 	void forward_spatial_force_draw_over_viewport(Control *p_overlay);
 	void add_plugin(EditorPlugin *p_plugin);

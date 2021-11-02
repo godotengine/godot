@@ -8,8 +8,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="cube_map" type="Cubemap" setter="set_cube_map" getter="get_cube_map">
 			The [Cubemap] texture to sample when using [constant SOURCE_TEXTURE] as [member source].

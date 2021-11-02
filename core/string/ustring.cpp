@@ -1551,19 +1551,21 @@ String String::num_real(double p_num, bool p_trailing) {
 
 	bool neg = p_num < 0;
 	p_num = ABS(p_num);
-	int intn = (int)p_num;
+	int64_t intn = (int64_t)p_num;
 
 	// Decimal part.
 
 	if (intn != p_num) {
-		double dec = p_num - (double)(intn);
+		double dec = p_num - (double)intn;
 
 		int digit = 0;
 
-#if REAL_T_IS_DOUBLE
+#ifdef REAL_T_IS_DOUBLE
 		int decimals = 14;
+		double tolerance = 1e-14;
 #else
 		int decimals = 6;
+		double tolerance = 1e-6;
 #endif
 		// We want to align the digits to the above sane default, so we only
 		// need to subtract log10 for numbers with a positive power of ten.
@@ -1575,16 +1577,21 @@ String String::num_real(double p_num, bool p_trailing) {
 			decimals = MAX_DECIMALS;
 		}
 
-		int dec_int = 0;
-		int dec_max = 0;
+		// In case the value ends up ending in "99999", we want to add a
+		// tiny bit to the value we're checking when deciding when to stop,
+		// so we multiply by slightly above 1 (1 + 1e-7 or 1e-15).
+		double check_multiplier = 1 + tolerance / 10;
+
+		int64_t dec_int = 0;
+		int64_t dec_max = 0;
 
 		while (true) {
 			dec *= 10.0;
-			dec_int = dec_int * 10 + (int)dec % 10;
+			dec_int = dec_int * 10 + (int64_t)dec % 10;
 			dec_max = dec_max * 10 + 9;
 			digit++;
 
-			if ((dec - (double)((int)dec)) < 1e-6) {
+			if ((dec - (double)(int64_t)(dec * check_multiplier)) < tolerance) {
 				break;
 			}
 
@@ -1594,7 +1601,7 @@ String String::num_real(double p_num, bool p_trailing) {
 		}
 
 		dec *= 10;
-		int last = (int)dec % 10;
+		int last = (int64_t)dec % 10;
 
 		if (last > 5) {
 			if (dec_int == dec_max) {
@@ -1653,13 +1660,13 @@ String String::num_scientific(double p_num) {
 
 #if defined(__GNUC__) || defined(_MSC_VER)
 
-#if (defined(__MINGW32__) || (defined(_MSC_VER) && _MSC_VER < 1900)) && defined(_TWO_DIGIT_EXPONENT) && !defined(_UCRT)
-	// MinGW and old MSC require _set_output_format() to conform to C99 output for printf
+#if defined(__MINGW32__) && defined(_TWO_DIGIT_EXPONENT) && !defined(_UCRT)
+	// MinGW requires _set_output_format() to conform to C99 output for printf
 	unsigned int old_exponent_format = _set_output_format(_TWO_DIGIT_EXPONENT);
 #endif
 	snprintf(buf, 256, "%lg", p_num);
 
-#if (defined(__MINGW32__) || (defined(_MSC_VER) && _MSC_VER < 1900)) && defined(_TWO_DIGIT_EXPONENT) && !defined(_UCRT)
+#if defined(__MINGW32__) && defined(_TWO_DIGIT_EXPONENT) && !defined(_UCRT)
 	_set_output_format(old_exponent_format);
 #endif
 
@@ -2130,7 +2137,7 @@ int64_t String::hex_to_int() const {
 		s++;
 	}
 
-	if (len > 2 && s[0] == '0' && s[1] == 'x') {
+	if (len > 2 && s[0] == '0' && lower_case(s[1]) == 'x') {
 		s += 2;
 	}
 
@@ -2144,7 +2151,7 @@ int64_t String::hex_to_int() const {
 		} else if (c >= 'a' && c <= 'f') {
 			n = (c - 'a') + 10;
 		} else {
-			return 0;
+			ERR_FAIL_COND_V_MSG(true, 0, "Invalid hexadecimal notation character \"" + chr(*s) + "\" in string \"" + *this + "\".");
 		}
 		// Check for overflow/underflow, with special case to ensure INT64_MIN does not result in error
 		bool overflow = ((hex > INT64_MAX / 16) && (sign == 1 || (sign == -1 && hex != (INT64_MAX >> 4) + 1))) || (sign == -1 && hex == (INT64_MAX >> 4) + 1 && c > '0');
@@ -2171,7 +2178,7 @@ int64_t String::bin_to_int() const {
 		s++;
 	}
 
-	if (len > 2 && s[0] == '0' && s[1] == 'b') {
+	if (len > 2 && s[0] == '0' && lower_case(s[1]) == 'b') {
 		s += 2;
 	}
 
@@ -2310,28 +2317,33 @@ bool String::is_numeric() const {
 }
 
 template <class C>
-static double built_in_strtod(const C *string, /* A decimal ASCII floating-point number,
-				 * optionally preceded by white space. Must
-				 * have form "-I.FE-X", where I is the integer
-				 * part of the mantissa, F is the fractional
-				 * part of the mantissa, and X is the
-				 * exponent. Either of the signs may be "+",
-				 * "-", or omitted. Either I or F may be
-				 * omitted, or both. The decimal point isn't
-				 * necessary unless F is present. The "E" may
-				 * actually be an "e". E and X may both be
-				 * omitted (but not just one). */
-		C **endPtr = nullptr) /* If non-nullptr, store terminating Cacter's
-				 * address here. */
-{
-	static const int maxExponent = 511; /* Largest possible base 10 exponent.  Any
-					 * exponent larger than this will already
-					 * produce underflow or overflow, so there's
-					 * no need to worry about additional digits.
-					 */
-	static const double powersOf10[] = { /* Table giving binary powers of 10.  Entry */
-		10., /* is 10^2^i.  Used to convert decimal */
-		100., /* exponents into floating-point numbers. */
+static double built_in_strtod(
+		/* A decimal ASCII floating-point number,
+		 * optionally preceded by white space. Must
+		 * have form "-I.FE-X", where I is the integer
+		 * part of the mantissa, F is the fractional
+		 * part of the mantissa, and X is the
+		 * exponent. Either of the signs may be "+",
+		 * "-", or omitted. Either I or F may be
+		 * omitted, or both. The decimal point isn't
+		 * necessary unless F is present. The "E" may
+		 * actually be an "e". E and X may both be
+		 * omitted (but not just one). */
+		const C *string,
+		/* If non-nullptr, store terminating Cacter's
+		 * address here. */
+		C **endPtr = nullptr) {
+	/* Largest possible base 10 exponent. Any
+	 * exponent larger than this will already
+	 * produce underflow or overflow, so there's
+	 * no need to worry about additional digits. */
+	static const int maxExponent = 511;
+	/* Table giving binary powers of 10. Entry
+	 * is 10^2^i. Used to convert decimal
+	 * exponents into floating-point numbers. */
+	static const double powersOf10[] = {
+		10.,
+		100.,
 		1.0e4,
 		1.0e8,
 		1.0e16,
@@ -2346,25 +2358,28 @@ static double built_in_strtod(const C *string, /* A decimal ASCII floating-point
 	const double *d;
 	const C *p;
 	int c;
-	int exp = 0; /* Exponent read from "EX" field. */
-	int fracExp = 0; /* Exponent that derives from the fractional
-				 * part. Under normal circumstances, it is
-				 * the negative of the number of digits in F.
-				 * However, if I is very long, the last digits
-				 * of I get dropped (otherwise a long I with a
-				 * large negative exponent could cause an
-				 * unnecessary overflow on I alone). In this
-				 * case, fracExp is incremented one for each
-				 * dropped digit. */
-	int mantSize; /* Number of digits in mantissa. */
-	int decPt; /* Number of mantissa digits BEFORE decimal
-				 * point. */
-	const C *pExp; /* Temporarily holds location of exponent in
-				 * string. */
+	/* Exponent read from "EX" field. */
+	int exp = 0;
+	/* Exponent that derives from the fractional
+	 * part. Under normal circumstances, it is
+	 * the negative of the number of digits in F.
+	 * However, if I is very long, the last digits
+	 * of I get dropped (otherwise a long I with a
+	 * large negative exponent could cause an
+	 * unnecessary overflow on I alone). In this
+	 * case, fracExp is incremented one for each
+	 * dropped digit. */
+	int fracExp = 0;
+	/* Number of digits in mantissa. */
+	int mantSize;
+	/* Number of mantissa digits BEFORE decimal point. */
+	int decPt;
+	/* Temporarily holds location of exponent in string. */
+	const C *pExp;
 
 	/*
-     * Strip off leading blanks and check for a sign.
-     */
+	 * Strip off leading blanks and check for a sign.
+	 */
 
 	p = string;
 	while (*p == ' ' || *p == '\t' || *p == '\n') {
@@ -2381,9 +2396,9 @@ static double built_in_strtod(const C *string, /* A decimal ASCII floating-point
 	}
 
 	/*
-     * Count the number of digits in the mantissa (including the decimal
-     * point), and also locate the decimal point.
-     */
+	 * Count the number of digits in the mantissa (including the decimal
+	 * point), and also locate the decimal point.
+	 */
 
 	decPt = -1;
 	for (mantSize = 0;; mantSize += 1) {
@@ -2398,11 +2413,11 @@ static double built_in_strtod(const C *string, /* A decimal ASCII floating-point
 	}
 
 	/*
-     * Now suck up the digits in the mantissa. Use two integers to collect 9
-     * digits each (this is faster than using floating-point). If the mantissa
-     * has more than 18 digits, ignore the extras, since they can't affect the
-     * value anyway.
-     */
+	 * Now suck up the digits in the mantissa. Use two integers to collect 9
+	 * digits each (this is faster than using floating-point). If the mantissa
+	 * has more than 18 digits, ignore the extras, since they can't affect the
+	 * value anyway.
+	 */
 
 	pExp = p;
 	p -= mantSize;
@@ -2448,8 +2463,8 @@ static double built_in_strtod(const C *string, /* A decimal ASCII floating-point
 	}
 
 	/*
-     * Skim off the exponent.
-     */
+	 * Skim off the exponent.
+	 */
 
 	p = pExp;
 	if ((*p == 'E') || (*p == 'e')) {
@@ -2479,10 +2494,10 @@ static double built_in_strtod(const C *string, /* A decimal ASCII floating-point
 	}
 
 	/*
-     * Generate a floating-point number that represents the exponent. Do this
-     * by processing the exponent one bit at a time to combine many powers of
-     * 2 of 10. Then combine the exponent with the fraction.
-     */
+	 * Generate a floating-point number that represents the exponent. Do this
+	 * by processing the exponent one bit at a time to combine many powers of
+	 * 2 of 10. Then combine the exponent with the fraction.
+	 */
 
 	if (exp < 0) {
 		expSign = true;
@@ -3555,7 +3570,7 @@ String String::strip_edges(bool left, bool right) const {
 	}
 
 	if (right) {
-		for (int i = (int)(len - 1); i >= 0; i--) {
+		for (int i = len - 1; i >= 0; i--) {
 			if (operator[](i) <= 32) {
 				end--;
 			} else {
@@ -4324,28 +4339,44 @@ bool String::is_resource_file() const {
 	return begins_with("res://") && find("::") == -1;
 }
 
-bool String::is_rel_path() const {
+bool String::is_relative_path() const {
 	return !is_absolute_path();
 }
 
 String String::get_base_dir() const {
-	int basepos = find(":/");
-	if (basepos == -1) {
-		basepos = find(":\\");
+	int end = 0;
+
+	// url scheme style base
+	int basepos = find("://");
+	if (basepos != -1) {
+		end = basepos + 3;
 	}
+
+	// windows top level directory base
+	if (end == 0) {
+		basepos = find(":/");
+		if (basepos == -1) {
+			basepos = find(":\\");
+		}
+		if (basepos != -1) {
+			end = basepos + 2;
+		}
+	}
+
+	// unix root directory base
+	if (end == 0) {
+		if (begins_with("/")) {
+			end = 1;
+		}
+	}
+
 	String rs;
 	String base;
-	if (basepos != -1) {
-		int end = basepos + 3;
+	if (end != 0) {
 		rs = substr(end, length());
 		base = substr(0, end);
 	} else {
-		if (begins_with("/")) {
-			rs = substr(1, length());
-			base = "/";
-		} else {
-			rs = *this;
-		}
+		rs = *this;
 	}
 
 	int sep = MAX(rs.rfind("/"), rs.rfind("\\"));

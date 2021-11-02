@@ -188,6 +188,4 @@
 			The NodePath to the node that is the target for the TwoBoneIK modification. This node is what the modification will attempt to rotate the bones to reach.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

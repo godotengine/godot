@@ -93,6 +93,8 @@ class VisualScriptEditor : public ScriptEditorBase {
 	ConfirmationDialog *function_create_dialog;
 
 	GraphEdit *graph;
+	HBoxContainer *status_bar;
+	Button *toggle_scripts_button;
 
 	VisualScriptEditorSignalEdit *signal_editor;
 
@@ -281,6 +283,8 @@ class VisualScriptEditor : public ScriptEditorBase {
 	void _member_rmb_selected(const Vector2 &p_pos);
 	void _member_option(int p_option);
 
+	void _toggle_scripts_pressed();
+
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
@@ -311,6 +315,8 @@ public:
 	virtual void tag_saved_version() override;
 	virtual void reload(bool p_soft) override;
 	virtual Array get_breakpoints() override;
+	virtual void set_breakpoint(int p_line, bool p_enable) override{};
+	virtual void clear_breakpoints() override{};
 	virtual void add_callback(const String &p_function, PackedStringArray p_args) override;
 	virtual void update_settings() override;
 	virtual bool show_members_overview() override;
@@ -327,6 +333,8 @@ public:
 	static void register_editor();
 
 	static void free_clipboard();
+
+	void update_toggle_scripts_button() override;
 
 	VisualScriptEditor();
 	~VisualScriptEditor();

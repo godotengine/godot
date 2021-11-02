@@ -120,33 +120,36 @@ void InputEventConfigurationDialog::_set_event(const Ref<InputEvent> &p_event) {
 		physical_key_checkbox->set_visible(show_phys_key);
 		additional_options_container->show();
 
-		// Update selected item in input list for keys, joybuttons and joyaxis only (since the mouse cannot be "listened" for).
-		if (k.is_valid() || joyb.is_valid() || joym.is_valid()) {
+		// Update selected item in input list.
+		if (k.is_valid() || joyb.is_valid() || joym.is_valid() || mb.is_valid()) {
 			TreeItem *category = input_list_tree->get_root()->get_first_child();
 			while (category) {
 				TreeItem *input_item = category->get_first_child();
 
-				// has_type this should be always true, unless the tree structure has been misconfigured.
-				bool has_type = input_item->get_parent()->has_meta("__type");
-				int input_type = input_item->get_parent()->get_meta("__type");
-				if (!has_type) {
-					return;
-				}
+				if (input_item != nullptr) {
+					// has_type this should be always true, unless the tree structure has been misconfigured.
+					bool has_type = input_item->get_parent()->has_meta("__type");
+					int input_type = input_item->get_parent()->get_meta("__type");
+					if (!has_type) {
+						return;
+					}
 
-				// If event type matches input types of this category.
-				if ((k.is_valid() && input_type == INPUT_KEY) || (joyb.is_valid() && input_type == INPUT_JOY_BUTTON) || (joym.is_valid() && input_type == INPUT_JOY_MOTION)) {
-					// Loop through all items of this category until one matches.
-					while (input_item) {
-						bool key_match = k.is_valid() && (Variant(k->get_keycode()) == input_item->get_meta("__keycode") || Variant(k->get_physical_keycode()) == input_item->get_meta("__keycode"));
-						bool joyb_match = joyb.is_valid() && Variant(joyb->get_button_index()) == input_item->get_meta("__index");
-						bool joym_match = joym.is_valid() && Variant(joym->get_axis()) == input_item->get_meta("__axis") && joym->get_axis_value() == (float)input_item->get_meta("__value");
-						if (key_match || joyb_match || joym_match) {
-							category->set_collapsed(false);
-							input_item->select(0);
-							input_list_tree->ensure_cursor_is_visible();
-							return;
+					// If event type matches input types of this category.
+					if ((k.is_valid() && input_type == INPUT_KEY) || (joyb.is_valid() && input_type == INPUT_JOY_BUTTON) || (joym.is_valid() && input_type == INPUT_JOY_MOTION) || (mb.is_valid() && input_type == INPUT_MOUSE_BUTTON)) {
+						// Loop through all items of this category until one matches.
+						while (input_item) {
+							bool key_match = k.is_valid() && (Variant(k->get_keycode()) == input_item->get_meta("__keycode") || Variant(k->get_physical_keycode()) == input_item->get_meta("__keycode"));
+							bool joyb_match = joyb.is_valid() && Variant(joyb->get_button_index()) == input_item->get_meta("__index");
+							bool joym_match = joym.is_valid() && Variant(joym->get_axis()) == input_item->get_meta("__axis") && joym->get_axis_value() == (float)input_item->get_meta("__value");
+							bool mb_match = mb.is_valid() && Variant(mb->get_button_index()) == input_item->get_meta("__index");
+							if (key_match || joyb_match || joym_match || mb_match) {
+								category->set_collapsed(false);
+								input_item->select(0);
+								input_list_tree->ensure_cursor_is_visible();
+								return;
+							}
+							input_item = input_item->get_next();
 						}
-						input_item = input_item->get_next();
 					}
 				}
 
@@ -165,7 +168,6 @@ void InputEventConfigurationDialog::_set_event(const Ref<InputEvent> &p_event) {
 		if (allowed_input_types & INPUT_KEY) {
 			strings.append(TTR("Key"));
 		}
-		// We don't check for INPUT_MOUSE_BUTTON since it is ignored in the "Listen Window Input" method.
 
 		if (allowed_input_types & INPUT_JOY_BUTTON) {
 			strings.append(TTR("Joypad Button"));
@@ -173,7 +175,9 @@ void InputEventConfigurationDialog::_set_event(const Ref<InputEvent> &p_event) {
 		if (allowed_input_types & INPUT_JOY_MOTION) {
 			strings.append(TTR("Joypad Axis"));
 		}
-
+		if (allowed_input_types & INPUT_MOUSE_BUTTON) {
+			strings.append(TTR("Mouse Button in area below"));
+		}
 		if (strings.size() == 0) {
 			text = TTR("Input Event dialog has been misconfigured: No input types are allowed.");
 			event_as_text->set_text(text);
@@ -214,10 +218,19 @@ void InputEventConfigurationDialog::_listen_window_input(const Ref<InputEvent> &
 		return;
 	}
 
-	// Ignore mouse
-	Ref<InputEventMouse> m = p_event;
-	if (m.is_valid()) {
+	// Ignore mouse motion
+	Ref<InputEventMouseMotion> mm = p_event;
+	if (mm.is_valid()) {
 		return;
+	}
+
+	// Ignore mouse button if not in the detection rect
+	Ref<InputEventMouseButton> mb = p_event;
+	if (mb.is_valid()) {
+		Rect2 r = mouse_detection_rect->get_rect();
+		if (!r.has_point(mouse_detection_rect->get_local_mouse_position() + r.get_position())) {
+			return;
+		}
 	}
 
 	// Check what the type is and if it is allowed.
@@ -225,9 +238,16 @@ void InputEventConfigurationDialog::_listen_window_input(const Ref<InputEvent> &
 	Ref<InputEventJoypadButton> joyb = p_event;
 	Ref<InputEventJoypadMotion> joym = p_event;
 
-	int type = k.is_valid() ? INPUT_KEY : joyb.is_valid() ? INPUT_JOY_BUTTON :
-								  joym.is_valid()		  ? INPUT_JOY_MOTION :
-															  0;
+	int type = 0;
+	if (k.is_valid()) {
+		type = INPUT_KEY;
+	} else if (joyb.is_valid()) {
+		type = INPUT_JOY_BUTTON;
+	} else if (joym.is_valid()) {
+		type = INPUT_JOY_MOTION;
+	} else if (mb.is_valid()) {
+		type = INPUT_MOUSE_BUTTON;
+	}
 
 	if (!(allowed_input_types & type)) {
 		return;
@@ -248,10 +268,8 @@ void InputEventConfigurationDialog::_listen_window_input(const Ref<InputEvent> &
 		k->set_pressed(false); // to avoid serialisation of 'pressed' property - doesn't matter for actions anyway.
 		// Maintain physical keycode option state
 		if (physical_key_checkbox->is_pressed()) {
-			k->set_physical_keycode(k->get_keycode());
 			k->set_keycode(KEY_NONE);
 		} else {
-			k->set_keycode((Key)k->get_physical_keycode());
 			k->set_physical_keycode(KEY_NONE);
 		}
 	}
@@ -539,6 +557,8 @@ void InputEventConfigurationDialog::_notification(int p_what) {
 			icon_cache.joypad_button = get_theme_icon(SNAME("JoyButton"), SNAME("EditorIcons"));
 			icon_cache.joypad_axis = get_theme_icon(SNAME("JoyAxis"), SNAME("EditorIcons"));
 
+			mouse_detection_rect->set_color(get_theme_color(SNAME("dark_color_2"), SNAME("Editor")));
+
 			_update_input_list();
 		} break;
 		default:
@@ -557,7 +577,13 @@ void InputEventConfigurationDialog::popup_and_configure(const Ref<InputEvent> &p
 		for (int i = 0; i < MOD_MAX; i++) {
 			mod_checkboxes[i]->set_pressed(false);
 		}
-		physical_key_checkbox->set_pressed(false);
+
+		// Enable the Physical Key checkbox by default to encourage its use.
+		// Physical Key should be used for most game inputs as it allows keys to work
+		// on non-QWERTY layouts out of the box.
+		// This is especially important for WASD movement layouts.
+		physical_key_checkbox->set_pressed(true);
+
 		store_command_checkbox->set_pressed(true);
 		_set_current_device(0);
 
@@ -577,7 +603,7 @@ void InputEventConfigurationDialog::set_allowed_input_types(int p_type_masks) {
 }
 
 InputEventConfigurationDialog::InputEventConfigurationDialog() {
-	allowed_input_types = INPUT_KEY | INPUT_MOUSE_BUTTON | INPUT_JOY_BUTTON | INPUT_JOY_MOTION;
+	allowed_input_types = INPUT_KEY | INPUT_MOUSE_BUTTON | INPUT_JOY_BUTTON | INPUT_JOY_MOTION | INPUT_MOUSE_BUTTON;
 
 	set_title(TTR("Event Configuration"));
 	set_min_size(Size2i(550 * EDSCALE, 0)); // Min width
@@ -592,12 +618,17 @@ InputEventConfigurationDialog::InputEventConfigurationDialog() {
 	tab_container->connect("tab_selected", callable_mp(this, &InputEventConfigurationDialog::_tab_selected));
 	main_vbox->add_child(tab_container);
 
-	CenterContainer *cc = memnew(CenterContainer);
-	cc->set_name(TTR("Listen for Input"));
+	// Listen to input tab
+	VBoxContainer *vb = memnew(VBoxContainer);
+	vb->set_name(TTR("Listen for Input"));
 	event_as_text = memnew(Label);
 	event_as_text->set_align(Label::ALIGN_CENTER);
-	cc->add_child(event_as_text);
-	tab_container->add_child(cc);
+	vb->add_child(event_as_text);
+	// Mouse button detection rect (Mouse button event outside this ColorRect will be ignored)
+	mouse_detection_rect = memnew(ColorRect);
+	mouse_detection_rect->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	vb->add_child(mouse_detection_rect);
+	tab_container->add_child(vb);
 
 	// List of all input options to manually select from.
 
@@ -683,7 +714,7 @@ InputEventConfigurationDialog::InputEventConfigurationDialog() {
 
 	physical_key_checkbox = memnew(CheckBox);
 	physical_key_checkbox->set_text(TTR("Use Physical Keycode"));
-	physical_key_checkbox->set_tooltip(TTR("Stores the physical position of the key on the keyboard rather than the keys value. Used for compatibility with non-latin layouts."));
+	physical_key_checkbox->set_tooltip(TTR("Stores the physical position of the key on the keyboard rather than the key's value. Used for compatibility with non-latin layouts.\nThis should generally be enabled for most game shortcuts, but not in non-game applications."));
 	physical_key_checkbox->connect("toggled", callable_mp(this, &InputEventConfigurationDialog::_physical_keycode_toggled));
 	physical_key_checkbox->hide();
 	additional_options_container->add_child(physical_key_checkbox);

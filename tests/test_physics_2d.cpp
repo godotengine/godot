@@ -199,7 +199,7 @@ protected:
 
 		if (mb.is_valid()) {
 			if (mb->is_pressed()) {
-				Point2 p(mb->get_position().x, mb->get_position().y);
+				Point2 p = mb->get_position();
 
 				if (mb->get_button_index() == 1) {
 					ray_to = p;
@@ -248,20 +248,20 @@ protected:
 		return body;
 	}
 
-	void _add_plane(const Vector2 &p_normal, real_t p_d) {
+	void _add_world_boundary(const Vector2 &p_normal, real_t p_d) {
 		PhysicsServer2D *ps = PhysicsServer2D::get_singleton();
 
 		Array arr;
 		arr.push_back(p_normal);
 		arr.push_back(p_d);
 
-		RID plane = ps->world_margin_shape_create();
-		ps->shape_set_data(plane, arr);
+		RID world_boundary = ps->world_boundary_shape_create();
+		ps->shape_set_data(world_boundary, arr);
 
 		RID plane_body = ps->body_create();
 		ps->body_set_mode(plane_body, PhysicsServer2D::BODY_MODE_STATIC);
 		ps->body_set_space(plane_body, space);
-		ps->body_add_shape(plane_body, plane);
+		ps->body_add_shape(plane_body, world_boundary);
 	}
 
 	void _add_concave(const Vector<Vector2> &p_points, const Transform2D &p_xform = Transform2D()) {
@@ -381,9 +381,9 @@ public:
 		}
 
 		_add_concave(parr);
-		//_add_plane(Vector2(0.0,-1).normalized(),-300);
-		//_add_plane(Vector2(1,0).normalized(),50);
-		//_add_plane(Vector2(-1,0).normalized(),-600);
+		//_add_world_boundary(Vector2(0.0,-1).normalized(),-300);
+		//_add_world_boundary(Vector2(1,0).normalized(),50);
+		//_add_world_boundary(Vector2(-1,0).normalized(),-600);
 	}
 
 	virtual bool process(double p_time) override {

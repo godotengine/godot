@@ -33,8 +33,8 @@
 
 #include "resource_importer_scene.h"
 
-class EditorOBJImporter : public EditorSceneImporter {
-	GDCLASS(EditorOBJImporter, EditorSceneImporter);
+class EditorOBJImporter : public EditorSceneFormatImporter {
+	GDCLASS(EditorOBJImporter, EditorSceneFormatImporter);
 
 public:
 	virtual uint32_t get_import_flags() const override;
@@ -63,6 +63,9 @@ public:
 	virtual bool get_option_visibility(const String &p_option, const Map<StringName, Variant> &p_options) const override;
 
 	virtual Error import(const String &p_source_file, const String &p_save_path, const Map<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files = nullptr, Variant *r_metadata = nullptr) override;
+
+	// Threaded import can currently cause deadlocks, see GH-48265.
+	virtual bool can_import_threaded() const override { return false; }
 
 	ResourceImporterOBJ();
 };

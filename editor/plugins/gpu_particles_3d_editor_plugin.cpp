@@ -362,6 +362,7 @@ void GPUParticles3DEditor::_generate_emission_points() {
 
 	Ref<ImageTexture> tex;
 	tex.instantiate();
+	tex->create_from_image(image);
 
 	Ref<ParticlesMaterial> material = node->get_process_material();
 	ERR_FAIL_COND(material.is_null());
@@ -390,6 +391,7 @@ void GPUParticles3DEditor::_generate_emission_points() {
 
 		Ref<ImageTexture> tex2;
 		tex2.instantiate();
+		tex2->create_from_image(image2);
 
 		material->set_emission_normal_texture(tex2);
 	} else {

@@ -34,6 +34,7 @@
 #include "core/object/class_db.h"
 #include "core/object/script_language.h"
 #include "core/templates/hashfuncs.h"
+#include "core/templates/search_array.h"
 #include "core/templates/vector.h"
 #include "core/variant/callable.h"
 #include "core/variant/variant.h"
@@ -96,11 +97,38 @@ void Array::clear() {
 }
 
 bool Array::operator==(const Array &p_array) const {
-	return _p == p_array._p;
+	return recursive_equal(p_array, 0);
 }
 
 bool Array::operator!=(const Array &p_array) const {
-	return !operator==(p_array);
+	return !recursive_equal(p_array, 0);
+}
+
+bool Array::recursive_equal(const Array &p_array, int recursion_count) const {
+	// Cheap checks
+	if (_p == p_array._p) {
+		return true;
+	}
+	const Vector<Variant> &a1 = _p->array;
+	const Vector<Variant> &a2 = p_array._p->array;
+	const int size = a1.size();
+	if (size != a2.size()) {
+		return false;
+	}
+
+	// Heavy O(n) check
+	if (recursion_count > MAX_RECURSION) {
+		ERR_PRINT("Max recursion reached");
+		return true;
+	}
+	recursion_count++;
+	for (int i = 0; i < size; i++) {
+		if (!a1[i].hash_compare(a2[i], recursion_count)) {
+			return false;
+		}
+	}
+
+	return true;
 }
 
 bool Array::operator<(const Array &p_array) const {
@@ -131,10 +159,20 @@ bool Array::operator>=(const Array &p_array) const {
 }
 
 uint32_t Array::hash() const {
-	uint32_t h = hash_djb2_one_32(0);
+	return recursive_hash(0);
+}
 
+uint32_t Array::recursive_hash(int recursion_count) const {
+	if (recursion_count > MAX_RECURSION) {
+		ERR_PRINT("Max recursion reached");
+		return 0;
+	}
+
+	uint32_t h = hash_djb2_one_32(Variant::ARRAY);
+
+	recursion_count++;
 	for (int i = 0; i < _p->array.size(); i++) {
-		h = hash_djb2_one_32(_p->array[i].hash(), h);
+		h = hash_djb2_one_32(_p->array[i].recursive_hash(recursion_count), h);
 	}
 	return h;
 }
@@ -203,9 +241,9 @@ Error Array::resize(int p_new_size) {
 	return _p->array.resize(p_new_size);
 }
 
-void Array::insert(int p_pos, const Variant &p_value) {
-	ERR_FAIL_COND(!_p->typed.validate(p_value, "insert"));
-	_p->array.insert(p_pos, p_value);
+Error Array::insert(int p_pos, const Variant &p_value) {
+	ERR_FAIL_COND_V(!_p->typed.validate(p_value, "insert"), ERR_INVALID_PARAMETER);
+	return _p->array.insert(p_pos, p_value);
 }
 
 void Array::fill(const Variant &p_value) {
@@ -299,12 +337,29 @@ const Variant &Array::get(int p_idx) const {
 }
 
 Array Array::duplicate(bool p_deep) const {
+	return recursive_duplicate(p_deep, 0);
+}
+
+Array Array::recursive_duplicate(bool p_deep, int recursion_count) const {
 	Array new_arr;
+
+	if (recursion_count > MAX_RECURSION) {
+		ERR_PRINT("Max recursion reached");
+		return new_arr;
+	}
+
 	int element_count = size();
 	new_arr.resize(element_count);
 	new_arr._p->typed = _p->typed;
-	for (int i = 0; i < element_count; i++) {
-		new_arr[i] = p_deep ? get(i).duplicate(p_deep) : get(i);
+	if (p_deep) {
+		recursion_count++;
+		for (int i = 0; i < element_count; i++) {
+			new_arr[i] = get(i).recursive_duplicate(true, recursion_count);
+		}
+	} else {
+		for (int i = 0; i < element_count; i++) {
+			new_arr[i] = get(i);
+		}
 	}
 
 	return new_arr;
@@ -484,44 +539,19 @@ void Array::shuffle() {
 	}
 }
 
-template <typename Less>
-_FORCE_INLINE_ int bisect(const Vector<Variant> &p_array, const Variant &p_value, bool p_before, const Less &p_less) {
-	int lo = 0;
-	int hi = p_array.size();
-	if (p_before) {
-		while (lo < hi) {
-			const int mid = (lo + hi) / 2;
-			if (p_less(p_array.get(mid), p_value)) {
-				lo = mid + 1;
-			} else {
-				hi = mid;
-			}
-		}
-	} else {
-		while (lo < hi) {
-			const int mid = (lo + hi) / 2;
-			if (p_less(p_value, p_array.get(mid))) {
-				hi = mid;
-			} else {
-				lo = mid + 1;
-			}
-		}
-	}
-	return lo;
-}
-
 int Array::bsearch(const Variant &p_value, bool p_before) {
 	ERR_FAIL_COND_V(!_p->typed.validate(p_value, "binary search"), -1);
-	return bisect(_p->array, p_value, p_before, _ArrayVariantSort());
+	SearchArray<Variant, _ArrayVariantSort> avs;
+	return avs.bisect(_p->array.ptrw(), _p->array.size(), p_value, p_before);
 }
 
 int Array::bsearch_custom(const Variant &p_value, Callable p_callable, bool p_before) {
 	ERR_FAIL_COND_V(!_p->typed.validate(p_value, "custom binary search"), -1);
 
-	_ArrayVariantSortCustom less;
-	less.func = p_callable;
+	SearchArray<Variant, _ArrayVariantSortCustom> avs;
+	avs.compare.func = p_callable;
 
-	return bisect(_p->array, p_value, p_before, less);
+	return avs.bisect(_p->array.ptrw(), _p->array.size(), p_value, p_before);
 }
 
 void Array::reverse() {

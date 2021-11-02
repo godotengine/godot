@@ -46,6 +46,7 @@ class WebXRInterfaceJS : public WebXRInterface {
 
 private:
 	bool initialized;
+	Ref<XRPositionalTracker> head_tracker;
 
 	String session_mode;
 	String required_features;
@@ -53,7 +54,9 @@ private:
 	String requested_reference_space_types;
 	String reference_space_type;
 
+	// TODO maybe turn into a vector to support more then 2 controllers...
 	bool controllers_state[2];
+	Ref<XRPositionalTracker> controllers[2];
 	Size2 render_targetsize;
 
 	Transform3D _js_matrix_to_transform(float *p_js_matrix);
@@ -86,7 +89,7 @@ public:
 	virtual uint32_t get_view_count() override;
 	virtual Transform3D get_camera_transform() override;
 	virtual Transform3D get_transform_for_view(uint32_t p_view, const Transform3D &p_cam_transform) override;
-	virtual CameraMatrix get_projection_for_view(uint32_t p_view, real_t p_aspect, real_t p_z_near, real_t p_z_far) override;
+	virtual CameraMatrix get_projection_for_view(uint32_t p_view, double p_aspect, double p_z_near, double p_z_far) override;
 	virtual Vector<BlitToScreen> commit_views(RID p_render_target, const Rect2 &p_screen_rect) override;
 
 	virtual void process() override;

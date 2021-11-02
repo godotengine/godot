@@ -51,6 +51,23 @@ class Node3D : public Node {
 	GDCLASS(Node3D, Node);
 	OBJ_CATEGORY("3D");
 
+public:
+	enum RotationEditMode {
+		ROTATION_EDIT_MODE_EULER,
+		ROTATION_EDIT_MODE_QUATERNION,
+		ROTATION_EDIT_MODE_BASIS,
+	};
+
+	enum RotationOrder {
+		ROTATION_ORDER_XYZ,
+		ROTATION_ORDER_XZY,
+		ROTATION_ORDER_YXZ,
+		ROTATION_ORDER_YZX,
+		ROTATION_ORDER_ZXY,
+		ROTATION_ORDER_ZYX
+	};
+
+private:
 	enum TransformDirty {
 		DIRTY_NONE = 0,
 		DIRTY_VECTORS = 1,
@@ -63,8 +80,10 @@ class Node3D : public Node {
 	struct Data {
 		mutable Transform3D global_transform;
 		mutable Transform3D local_transform;
+		mutable Basis::EulerOrder rotation_order = Basis::EULER_ORDER_YXZ;
 		mutable Vector3 rotation;
 		mutable Vector3 scale = Vector3(1, 1, 1);
+		mutable RotationEditMode rotation_edit_mode = ROTATION_EDIT_MODE_EULER;
 
 		mutable int dirty = DIRTY_NONE;
 
@@ -92,6 +111,7 @@ class Node3D : public Node {
 		Vector<Ref<Node3DGizmo>> gizmos;
 		bool gizmos_disabled = false;
 		bool gizmos_dirty = false;
+		bool transform_gizmo_visible = true;
 #endif
 
 	} data;
@@ -115,6 +135,8 @@ protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
+	virtual void _validate_property(PropertyInfo &property) const override;
+
 public:
 	enum {
 		NOTIFICATION_TRANSFORM_CHANGED = SceneTree::NOTIFICATION_TRANSFORM_CHANGED,
@@ -129,22 +151,35 @@ public:
 	Ref<World3D> get_world_3d() const;
 
 	void set_position(const Vector3 &p_position);
+
+	void set_rotation_edit_mode(RotationEditMode p_mode);
+	RotationEditMode get_rotation_edit_mode() const;
+
+	void set_rotation_order(RotationOrder p_order);
 	void set_rotation(const Vector3 &p_euler_rad);
 	void set_scale(const Vector3 &p_scale);
 
 	Vector3 get_position() const;
+
+	RotationOrder get_rotation_order() const;
 	Vector3 get_rotation() const;
 	Vector3 get_scale() const;
 
 	void set_transform(const Transform3D &p_transform);
+	void set_basis(const Basis &p_basis);
+	void set_quaternion(const Quaternion &p_quaternion);
 	void set_global_transform(const Transform3D &p_transform);
 
 	Transform3D get_transform() const;
+	Basis get_basis() const;
+	Quaternion get_quaternion() const;
 	Transform3D get_global_transform() const;
 
 #ifdef TOOLS_ENABLED
 	virtual Transform3D get_global_gizmo_transform() const;
 	virtual Transform3D get_local_gizmo_transform() const;
+	virtual void set_transform_gizmo_visible(bool p_enabled) { data.transform_gizmo_visible = p_enabled; };
+	virtual bool is_transform_gizmo_visible() const { return data.transform_gizmo_visible; };
 #endif
 
 	void set_as_top_level(bool p_enabled);
@@ -155,6 +190,7 @@ public:
 
 	void set_disable_gizmos(bool p_enabled);
 	void update_gizmos();
+	void set_subgizmo_selection(Ref<Node3DGizmo> p_gizmo, int p_id, Transform3D p_transform = Transform3D());
 	void clear_subgizmo_selection();
 	Vector<Ref<Node3DGizmo>> get_gizmos() const;
 	Array get_gizmos_bind() const;
@@ -209,5 +245,8 @@ public:
 
 	Node3D();
 };
+
+VARIANT_ENUM_CAST(Node3D::RotationEditMode)
+VARIANT_ENUM_CAST(Node3D::RotationOrder)
 
 #endif // NODE_3D_H

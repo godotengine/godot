@@ -105,7 +105,7 @@
 #define HB_SANITIZE_MAX_EDITS 32
 #endif
 #ifndef HB_SANITIZE_MAX_OPS_FACTOR
-#define HB_SANITIZE_MAX_OPS_FACTOR 8
+#define HB_SANITIZE_MAX_OPS_FACTOR 64
 #endif
 #ifndef HB_SANITIZE_MAX_OPS_MIN
 #define HB_SANITIZE_MAX_OPS_MIN 16384
@@ -233,7 +233,7 @@ struct hb_sanitize_context_t :
 	      (this->start <= p &&
 	       p <= this->end &&
 	       (unsigned int) (this->end - p) >= len &&
-	       this->max_ops-- > 0);
+	       (this->max_ops -= len) > 0);
 
     DEBUG_MSG_LEVEL (SANITIZE, p, this->debug_depth+1, 0,
 		     "check_range [%p..%p]"

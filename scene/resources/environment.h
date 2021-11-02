@@ -90,13 +90,6 @@ public:
 		GLOW_BLEND_MODE_MIX,
 	};
 
-	enum VolumetricFogShadowFilter {
-		VOLUMETRIC_FOG_SHADOW_FILTER_DISABLED,
-		VOLUMETRIC_FOG_SHADOW_FILTER_LOW,
-		VOLUMETRIC_FOG_SHADOW_FILTER_MEDIUM,
-		VOLUMETRIC_FOG_SHADOW_FILTER_HIGH,
-	};
-
 private:
 	RID environment;
 
@@ -116,7 +109,6 @@ private:
 	float ambient_energy = 1.0;
 	float ambient_sky_contribution = 1.0;
 	ReflectionSource reflection_source = REFLECTION_SOURCE_BG;
-	Color ao_color;
 	void _update_ambient_light();
 
 	// Tonemap
@@ -191,12 +183,15 @@ private:
 
 	// Volumetric Fog
 	bool volumetric_fog_enabled = false;
-	float volumetric_fog_density = 0.01;
-	Color volumetric_fog_light = Color(0.0, 0.0, 0.0);
-	float volumetric_fog_light_energy = 1.0;
+	float volumetric_fog_density = 0.05;
+	Color volumetric_fog_albedo = Color(1.0, 1.0, 1.0);
+	Color volumetric_fog_emission = Color(0.0, 0.0, 0.0);
+	float volumetric_fog_emission_energy = 1.0;
+	float volumetric_fog_anisotropy = 0.2;
 	float volumetric_fog_length = 64.0;
 	float volumetric_fog_detail_spread = 2.0;
 	float volumetric_fog_gi_inject = 0.0;
+	float volumetric_fog_ambient_inject = false;
 	bool volumetric_fog_temporal_reproject = true;
 	float volumetric_fog_temporal_reproject_amount = 0.9;
 	void _update_volumetric_fog();
@@ -250,8 +245,6 @@ public:
 	float get_ambient_light_sky_contribution() const;
 	void set_reflection_source(ReflectionSource p_source);
 	ReflectionSource get_reflection_source() const;
-	void set_ao_color(const Color &p_color);
-	Color get_ao_color() const;
 
 	// Tonemap
 	void set_tonemapper(ToneMapper p_tone_mapper);
@@ -378,16 +371,22 @@ public:
 	bool is_volumetric_fog_enabled() const;
 	void set_volumetric_fog_density(float p_density);
 	float get_volumetric_fog_density() const;
-	void set_volumetric_fog_light(Color p_color);
-	Color get_volumetric_fog_light() const;
-	void set_volumetric_fog_light_energy(float p_begin);
-	float get_volumetric_fog_light_energy() const;
+	void set_volumetric_fog_albedo(Color p_color);
+	Color get_volumetric_fog_albedo() const;
+	void set_volumetric_fog_emission(Color p_color);
+	Color get_volumetric_fog_emission() const;
+	void set_volumetric_fog_emission_energy(float p_begin);
+	float get_volumetric_fog_emission_energy() const;
+	void set_volumetric_fog_anisotropy(float p_anisotropy);
+	float get_volumetric_fog_anisotropy() const;
 	void set_volumetric_fog_length(float p_length);
 	float get_volumetric_fog_length() const;
 	void set_volumetric_fog_detail_spread(float p_detail_spread);
 	float get_volumetric_fog_detail_spread() const;
 	void set_volumetric_fog_gi_inject(float p_gi_inject);
 	float get_volumetric_fog_gi_inject() const;
+	void set_volumetric_fog_ambient_inject(float p_ambient_inject);
+	float get_volumetric_fog_ambient_inject() const;
 	void set_volumetric_fog_temporal_reprojection_enabled(bool p_enable);
 	bool is_volumetric_fog_temporal_reprojection_enabled() const;
 	void set_volumetric_fog_temporal_reprojection_amount(float p_amount);
@@ -416,6 +415,5 @@ VARIANT_ENUM_CAST(Environment::ToneMapper)
 VARIANT_ENUM_CAST(Environment::SDFGICascades)
 VARIANT_ENUM_CAST(Environment::SDFGIYScale)
 VARIANT_ENUM_CAST(Environment::GlowBlendMode)
-VARIANT_ENUM_CAST(Environment::VolumetricFogShadowFilter)
 
 #endif // ENVIRONMENT_H

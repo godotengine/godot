@@ -21,23 +21,36 @@ namespace Godot
         /// </summary>
         public enum Axis
         {
+            /// <summary>
+            /// The vector's X axis.
+            /// </summary>
             X = 0,
+            /// <summary>
+            /// The vector's Y axis.
+            /// </summary>
             Y
         }
 
         /// <summary>
-        /// The vector's X component. Also accessible by using the index position `[0]`.
+        /// The vector's X component. Also accessible by using the index position <c>[0]</c>.
         /// </summary>
         public int x;
+
         /// <summary>
-        /// The vector's Y component. Also accessible by using the index position `[1]`.
+        /// The vector's Y component. Also accessible by using the index position <c>[1]</c>.
         /// </summary>
         public int y;
 
         /// <summary>
         /// Access vector components using their index.
         /// </summary>
-        /// <value>`[0]` is equivalent to `.x`, `[1]` is equivalent to `.y`.</value>
+        /// <exception cref="IndexOutOfRangeException">
+        /// Thrown when the given the <paramref name="index"/> is not 0 or 1.
+        /// </exception>
+        /// <value>
+        /// <c>[0]</c> is equivalent to <see cref="x"/>,
+        /// <c>[1]</c> is equivalent to <see cref="y"/>.
+        /// </value>
         public int this[int index]
         {
             get
@@ -81,7 +94,7 @@ namespace Godot
         /// Returns this vector's angle with respect to the X axis, or (1, 0) vector, in radians.
         ///
         /// Equivalent to the result of <see cref="Mathf.Atan2(real_t, real_t)"/> when
-        /// called with the vector's `y` and `x` as parameters: `Mathf.Atan2(v.y, v.x)`.
+        /// called with the vector's <see cref="y"/> and <see cref="x"/> as parameters: <c>Mathf.Atan2(v.y, v.x)</c>.
         /// </summary>
         /// <returns>The angle of this vector, in radians.</returns>
         public real_t Angle()
@@ -110,9 +123,9 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns the aspect ratio of this vector, the ratio of `x` to `y`.
+        /// Returns the aspect ratio of this vector, the ratio of <see cref="x"/> to <see cref="y"/>.
         /// </summary>
-        /// <returns>The `x` component divided by the `y` component.</returns>
+        /// <returns>The <see cref="x"/> component divided by the <see cref="y"/> component.</returns>
         public real_t Aspect()
         {
             return x / (real_t)y;
@@ -120,7 +133,7 @@ namespace Godot
 
         /// <summary>
         /// Returns a new vector with all components clamped between the
-        /// components of `min` and `max` using
+        /// components of <paramref name="min"/> and <paramref name="max"/> using
         /// <see cref="Mathf.Clamp(int, int, int)"/>.
         /// </summary>
         /// <param name="min">The vector with minimum allowed values.</param>
@@ -136,7 +149,7 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns the cross product of this vector and `b`.
+        /// Returns the cross product of this vector and <paramref name="b"/>.
         /// </summary>
         /// <param name="b">The other vector.</param>
         /// <returns>The cross product vector.</returns>
@@ -146,7 +159,7 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns the squared distance between this vector and `b`.
+        /// Returns the squared distance between this vector and <paramref name="b"/>.
         /// This method runs faster than <see cref="DistanceTo"/>, so prefer it if
         /// you need to compare vectors or need the squared distance for some formula.
         /// </summary>
@@ -158,7 +171,7 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns the distance between this vector and `b`.
+        /// Returns the distance between this vector and <paramref name="b"/>.
         /// </summary>
         /// <param name="b">The other vector to use.</param>
         /// <returns>The distance between the two vectors.</returns>
@@ -168,7 +181,7 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns the dot product of this vector and `b`.
+        /// Returns the dot product of this vector and <paramref name="b"/>.
         /// </summary>
         /// <param name="b">The other vector to use.</param>
         /// <returns>The dot product of the two vectors.</returns>
@@ -180,6 +193,7 @@ namespace Godot
         /// <summary>
         /// Returns the length (magnitude) of this vector.
         /// </summary>
+        /// <seealso cref="LengthSquared"/>
         /// <returns>The length of this vector.</returns>
         public real_t Length()
         {
@@ -224,10 +238,13 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns a vector composed of the <see cref="Mathf.PosMod(int, int)"/> of this vector's components and `mod`.
+        /// Returns a vector composed of the <see cref="Mathf.PosMod(int, int)"/> of this vector's components
+        /// and <paramref name="mod"/>.
         /// </summary>
         /// <param name="mod">A value representing the divisor of the operation.</param>
-        /// <returns>A vector with each component <see cref="Mathf.PosMod(int, int)"/> by `mod`.</returns>
+        /// <returns>
+        /// A vector with each component <see cref="Mathf.PosMod(int, int)"/> by <paramref name="mod"/>.
+        /// </returns>
         public Vector2i PosMod(int mod)
         {
             Vector2i v = this;
@@ -237,10 +254,13 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns a vector composed of the <see cref="Mathf.PosMod(int, int)"/> of this vector's components and `modv`'s components.
+        /// Returns a vector composed of the <see cref="Mathf.PosMod(int, int)"/> of this vector's components
+        /// and <paramref name="modv"/>'s components.
         /// </summary>
         /// <param name="modv">A vector representing the divisors of the operation.</param>
-        /// <returns>A vector with each component <see cref="Mathf.PosMod(int, int)"/> by `modv`'s components.</returns>
+        /// <returns>
+        /// A vector with each component <see cref="Mathf.PosMod(int, int)"/> by <paramref name="modv"/>'s components.
+        /// </returns>
         public Vector2i PosMod(Vector2i modv)
         {
             Vector2i v = this;
@@ -254,7 +274,7 @@ namespace Godot
         /// on the signs of this vector's components, or zero if the component is zero,
         /// by calling <see cref="Mathf.Sign(int)"/> on each component.
         /// </summary>
-        /// <returns>A vector with all components as either `1`, `-1`, or `0`.</returns>
+        /// <returns>A vector with all components as either <c>1</c>, <c>-1</c>, or <c>0</c>.</returns>
         public Vector2i Sign()
         {
             Vector2i v = this;
@@ -283,35 +303,35 @@ namespace Godot
         private static readonly Vector2i _left = new Vector2i(-1, 0);
 
         /// <summary>
-        /// Zero vector, a vector with all components set to `0`.
+        /// Zero vector, a vector with all components set to <c>0</c>.
         /// </summary>
-        /// <value>Equivalent to `new Vector2i(0, 0)`</value>
+        /// <value>Equivalent to <c>new Vector2i(0, 0)</c>.</value>
         public static Vector2i Zero { get { return _zero; } }
         /// <summary>
-        /// One vector, a vector with all components set to `1`.
+        /// One vector, a vector with all components set to <c>1</c>.
         /// </summary>
-        /// <value>Equivalent to `new Vector2i(1, 1)`</value>
+        /// <value>Equivalent to <c>new Vector2i(1, 1)</c>.</value>
         public static Vector2i One { get { return _one; } }
 
         /// <summary>
         /// Up unit vector. Y is down in 2D, so this vector points -Y.
         /// </summary>
-        /// <value>Equivalent to `new Vector2i(0, -1)`</value>
+        /// <value>Equivalent to <c>new Vector2i(0, -1)</c>.</value>
         public static Vector2i Up { get { return _up; } }
         /// <summary>
         /// Down unit vector. Y is down in 2D, so this vector points +Y.
         /// </summary>
-        /// <value>Equivalent to `new Vector2i(0, 1)`</value>
+        /// <value>Equivalent to <c>new Vector2i(0, 1)</c>.</value>
         public static Vector2i Down { get { return _down; } }
         /// <summary>
         /// Right unit vector. Represents the direction of right.
         /// </summary>
-        /// <value>Equivalent to `new Vector2i(1, 0)`</value>
+        /// <value>Equivalent to <c>new Vector2i(1, 0)</c>.</value>
         public static Vector2i Right { get { return _right; } }
         /// <summary>
         /// Left unit vector. Represents the direction of left.
         /// </summary>
-        /// <value>Equivalent to `new Vector2i(-1, 0)`</value>
+        /// <value>Equivalent to <c>new Vector2i(-1, 0)</c>.</value>
         public static Vector2i Left { get { return _left; } }
 
         /// <summary>
@@ -476,16 +496,29 @@ namespace Godot
             return left.x >= right.x;
         }
 
+        /// <summary>
+        /// Converts this <see cref="Vector2i"/> to a <see cref="Vector2"/>.
+        /// </summary>
+        /// <param name="value">The vector to convert.</param>
         public static implicit operator Vector2(Vector2i value)
         {
             return new Vector2(value.x, value.y);
         }
 
+        /// <summary>
+        /// Converts a <see cref="Vector2"/> to a <see cref="Vector2i"/>.
+        /// </summary>
+        /// <param name="value">The vector to convert.</param>
         public static explicit operator Vector2i(Vector2 value)
         {
             return new Vector2i(value);
         }
 
+        /// <summary>
+        /// Returns <see langword="true"/> if this vector and <paramref name="obj"/> are equal.
+        /// </summary>
+        /// <param name="obj">The other object to compare.</param>
+        /// <returns>Whether or not the vector and the other object are equal.</returns>
         public override bool Equals(object obj)
         {
             if (obj is Vector2i)
@@ -496,21 +529,38 @@ namespace Godot
             return false;
         }
 
+        /// <summary>
+        /// Returns <see langword="true"/> if this vector and <paramref name="other"/> are equal.
+        /// </summary>
+        /// <param name="other">The other vector to compare.</param>
+        /// <returns>Whether or not the vectors are equal.</returns>
         public bool Equals(Vector2i other)
         {
             return x == other.x && y == other.y;
         }
 
+        /// <summary>
+        /// Serves as the hash function for <see cref="Vector2i"/>.
+        /// </summary>
+        /// <returns>A hash code for this vector.</returns>
         public override int GetHashCode()
         {
             return y.GetHashCode() ^ x.GetHashCode();
         }
 
+        /// <summary>
+        /// Converts this <see cref="Vector2i"/> to a string.
+        /// </summary>
+        /// <returns>A string representation of this vector.</returns>
         public override string ToString()
         {
             return $"({x}, {y})";
         }
 
+        /// <summary>
+        /// Converts this <see cref="Vector2i"/> to a string with the given <paramref name="format"/>.
+        /// </summary>
+        /// <returns>A string representation of this vector.</returns>
         public string ToString(string format)
         {
             return $"({x.ToString(format)}, {y.ToString(format)})";

@@ -757,6 +757,12 @@ VARIANT_ACCESSOR_NUMBER(Error)
 VARIANT_ACCESSOR_NUMBER(Side)
 
 template <>
+struct VariantInternalAccessor<Basis::EulerOrder> {
+	static _FORCE_INLINE_ Basis::EulerOrder get(const Variant *v) { return Basis::EulerOrder(*VariantInternal::get_int(v)); }
+	static _FORCE_INLINE_ void set(Variant *v, Basis::EulerOrder p_value) { *VariantInternal::get_int(v) = p_value; }
+};
+
+template <>
 struct VariantInternalAccessor<ObjectID> {
 	static _FORCE_INLINE_ ObjectID get(const Variant *v) { return ObjectID(*VariantInternal::get_int(v)); }
 	static _FORCE_INLINE_ void set(Variant *v, ObjectID p_value) { *VariantInternal::get_int(v) = p_value; }
@@ -1301,12 +1307,12 @@ struct VariantZeroAssigner<Signal> {
 
 template <>
 struct VariantZeroAssigner<Dictionary> {
-	static _FORCE_INLINE_ void zero(Variant *v) {}
+	static _FORCE_INLINE_ void zero(Variant *v) { *VariantInternal::get_dictionary(v) = Dictionary(); }
 };
 
 template <>
 struct VariantZeroAssigner<Array> {
-	static _FORCE_INLINE_ void zero(Variant *v) {}
+	static _FORCE_INLINE_ void zero(Variant *v) { *VariantInternal::get_array(v) = Array(); }
 };
 
 template <>

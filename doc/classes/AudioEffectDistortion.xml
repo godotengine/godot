@@ -11,8 +11,6 @@
 	<tutorials>
 		<link title="Audio buses">https://docs.godotengine.org/en/latest/tutorials/audio/audio_buses.html</link>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="drive" type="float" setter="set_drive" getter="get_drive" default="0.0">
 			Distortion power. Value can range from 0 to 1.

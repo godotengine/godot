@@ -31,12 +31,21 @@
 				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
 			</description>
 		</method>
+		<method name="create_instance">
+			<return type="int" />
+			<argument index="0" name="arguments" type="PackedStringArray" />
+			<description>
+				Creates a new instance of Godot that runs independently. The [code]arguments[/code] are used in the given order and separated by a space.
+				If the process creation succeeds, the method will return the new process ID, which you can use to monitor the process (and potentially terminate it with [method kill]). If the process creation fails, the method will return [code]-1[/code].
+				[b]Note:[/b] This method is implemented on Android, iOS, Linux, macOS and Windows.
+			</description>
+		</method>
 		<method name="create_process">
 			<return type="int" />
 			<argument index="0" name="path" type="String" />
 			<argument index="1" name="arguments" type="PackedStringArray" />
 			<description>
-				Creates a new process that runs independently of Godot. It will not terminate if Godot terminates. The file specified in [code]path[/code] must exist and be executable. Platform path resolution will be used. The [code]arguments[/code] are used in the given order and separated by a space.
+				Creates a new process that runs independently of Godot. It will not terminate if Godot terminates. The path specified in [code]path[/code] must exist and be executable file or macOS .app bundle. Platform path resolution will be used. The [code]arguments[/code] are used in the given order and separated by a space.
 				If the process creation succeeds, the method will return the new process ID, which you can use to monitor the process (and potentially terminate it with [method kill]). If the process creation fails, the method will return [code]-1[/code].
 				For example, running another instance of the project:
 				[codeblocks]
@@ -49,20 +58,25 @@
 				[/codeblocks]
 				See [method execute] if you wish to run an external command and retrieve the results.
 				[b]Note:[/b] This method is implemented on Android, iOS, Linux, macOS and Windows.
+				[b]Note:[/b] On macOS, sandboxed applications are limited to run only embedded helper executables, specified during export or system .app bundle, system .app bundles will ignore arguments.
 			</description>
 		</method>
 		<method name="delay_msec" qualifiers="const">
 			<return type="void" />
 			<argument index="0" name="msec" type="int" />
 			<description>
-				Delay execution of the current thread by [code]msec[/code] milliseconds. [code]msec[/code] must be greater than or equal to [code]0[/code]. Otherwise, [method delay_msec] will do nothing and will print an error message.
+				Delays execution of the current thread by [code]msec[/code] milliseconds. [code]msec[/code] must be greater than or equal to [code]0[/code]. Otherwise, [method delay_msec] will do nothing and will print an error message.
+				[b]Note:[/b] [method delay_msec] is a [i]blocking[/i] way to delay code execution. To delay code execution in a non-blocking way, see [method SceneTree.create_timer]. Awaiting with [method SceneTree.create_timer] will delay the execution of code placed below the [code]await[/code] without affecting the rest of the project (or editor, for [EditorPlugin]s and [EditorScript]s).
+				[b]Note:[/b] When [method delay_msec] is called on the main thread, it will freeze the project and will prevent it from redrawing and registering input until the delay has passed. When using [method delay_msec] as part of an [EditorPlugin] or [EditorScript], it will freeze the editor but won't freeze the project if it is currently running (since the project is an independent child process).
 			</description>
 		</method>
 		<method name="delay_usec" qualifiers="const">
 			<return type="void" />
 			<argument index="0" name="usec" type="int" />
 			<description>
-				Delay execution of the current thread by [code]usec[/code] microseconds. [code]usec[/code] must be greater than or equal to [code]0[/code]. Otherwise, [method delay_usec] will do nothing and will print an error message.
+				Delays execution of the current thread by [code]usec[/code] microseconds. [code]usec[/code] must be greater than or equal to [code]0[/code]. Otherwise, [method delay_usec] will do nothing and will print an error message.
+				[b]Note:[/b] [method delay_usec] is a [i]blocking[/i] way to delay code execution. To delay code execution in a non-blocking way, see [method SceneTree.create_timer]. Awaiting with [method SceneTree.create_timer] will delay the execution of code placed below the [code]await[/code] without affecting the rest of the project (or editor, for [EditorPlugin]s and [EditorScript]s).
+				[b]Note:[/b] When [method delay_usec] is called on the main thread, it will freeze the project and will prevent it from redrawing and registering input until the delay has passed. When using [method delay_usec] as part of an [EditorPlugin] or [EditorScript], it will freeze the editor but won't freeze the project if it is currently running (since the project is an independent child process).
 			</description>
 		</method>
 		<method name="dump_memory_to_file">
@@ -115,6 +129,7 @@
 				[/csharp]
 				[/codeblocks]
 				[b]Note:[/b] This method is implemented on Android, iOS, Linux, macOS and Windows.
+				[b]Note:[/b] On macOS, sandboxed applications are limited to run only embedded helper executables, specified during export.
 			</description>
 		</method>
 		<method name="find_keycode_from_string" qualifiers="const">
@@ -195,6 +210,7 @@
 			<return type="String" />
 			<description>
 				Returns the path to the current engine executable.
+				[b]Note:[/b] On macOS, always use [method create_instance] instead of relying on executable path.
 			</description>
 		</method>
 		<method name="get_granted_permissions" qualifiers="const">
@@ -215,12 +231,19 @@
 		<method name="get_locale" qualifiers="const">
 			<return type="String" />
 			<description>
-				Returns the host OS locale as a string of the form [code]language_Script_COUNTRY_VARIANT@extra[/code].
+				Returns the host OS locale as a string of the form [code]language_Script_COUNTRY_VARIANT@extra[/code]. If you want only the language code and not the fully specified locale from the OS, you can use [method get_locale_language].
 				[code]language[/code] - 2 or 3-letter [url=https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes]language code[/url], in lower case.
 				[code]Script[/code] - optional, 4-letter [url=https://en.wikipedia.org/wiki/ISO_15924]script code[/url], in title case.
 				[code]COUNTRY[/code] - optional, 2 or 3-letter [url=https://en.wikipedia.org/wiki/ISO_3166-1]country code[/url], in upper case.
 				[code]VARIANT[/code] - optional, language variant, region and sort order. Variant can have any number of underscored keywords.
 				[code]extra[/code] - optional, semicolon separated list of additional key words. Currency, calendar, sort order and numbering system information.
+			</description>
+		</method>
+		<method name="get_locale_language" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the host OS locale's 2 or 3-letter [url=https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes]language code[/url] as a string which should be consistent on all platforms. This is equivalent to extracting the [code]language[/code] part of the [method get_locale] string.
+				This can be used to narrow down fully specified locale strings to only the "common" language code, when you don't need the additional information about country code or variants. For example, for a French Canadian user with [code]fr_CA[/code] locale, this would return [code]fr[/code].
 			</description>
 		</method>
 		<method name="get_model_name" qualifiers="const">
@@ -233,7 +256,7 @@
 		<method name="get_name" qualifiers="const">
 			<return type="String" />
 			<description>
-				Returns the name of the host OS. Possible values are: [code]"Android"[/code], [code]"iOS"[/code], [code]"HTML5"[/code], [code]"OSX"[/code], [code]"Server"[/code], [code]"Windows"[/code], [code]"UWP"[/code], [code]"X11"[/code].
+				Returns the name of the host OS. Possible values are: [code]"Android"[/code], [code]"iOS"[/code], [code]"HTML5"[/code], [code]"macOS"[/code], [code]"Server"[/code], [code]"Windows"[/code], [code]"UWP"[/code], [code]"X11"[/code].
 			</description>
 		</method>
 		<method name="get_process_id" qualifiers="const">
@@ -331,7 +354,7 @@
 		<method name="is_stdout_verbose" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code] if the engine was executed with [code]-v[/code] (verbose stdout).
+				Returns [code]true[/code] if the engine was executed with the [code]--verbose[/code] or [code]-v[/code] command line argument, or if [member ProjectSettings.debug/settings/stdout/verbose_stdout] is [code]true[/code]. See also [method @GlobalScope.print_verbose].
 			</description>
 		</method>
 		<method name="is_userfs_persistent" qualifiers="const">
@@ -442,11 +465,11 @@
 		</member>
 	</members>
 	<constants>
-		<constant name="VIDEO_DRIVER_GLES2" value="0" enum="VideoDriver">
-			The GLES2 rendering backend. It uses OpenGL ES 2.0 on mobile devices, OpenGL 2.1 on desktop platforms and WebGL 1.0 on the web.
+		<constant name="VIDEO_DRIVER_VULKAN" value="0" enum="VideoDriver">
+			The Vulkan rendering backend. It requires Vulkan 1.0 support and automatically uses features from Vulkan 1.1 and 1.2 if available.
 		</constant>
-		<constant name="VIDEO_DRIVER_VULKAN" value="1" enum="VideoDriver">
-			The Vulkan rendering backend.
+		<constant name="VIDEO_DRIVER_OPENGL_3" value="1" enum="VideoDriver">
+			The OpenGL 3 rendering backend. It uses OpenGL 3.3 Core Profile on desktop platforms, OpenGL ES 3.0 on mobile devices, and WebGL 2.0 on HTML5.
 		</constant>
 		<constant name="DAY_SUNDAY" value="0" enum="Weekday">
 			Sunday.

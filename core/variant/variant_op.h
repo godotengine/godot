@@ -168,6 +168,54 @@ public:
 	static Variant::Type get_return_type() { return GetTypeInfo<R>::VARIANT_TYPE; }
 };
 
+template <>
+class OperatorEvaluatorDivNZ<Vector2i, Vector2i, Vector2i> {
+public:
+	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
+		const Vector2i &a = *VariantGetInternalPtr<Vector2i>::get_ptr(&p_left);
+		const Vector2i &b = *VariantGetInternalPtr<Vector2i>::get_ptr(&p_right);
+		if (unlikely(b.x == 0 || b.y == 0)) {
+			r_valid = false;
+			*r_ret = "Division by zero error";
+			return;
+		}
+		*r_ret = a / b;
+		r_valid = true;
+	}
+	static void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+		VariantTypeChanger<Vector2i>::change(r_ret);
+		*VariantGetInternalPtr<Vector2i>::get_ptr(r_ret) = *VariantGetInternalPtr<Vector2i>::get_ptr(left) / *VariantGetInternalPtr<Vector2i>::get_ptr(right);
+	}
+	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
+		PtrToArg<Vector2i>::encode(PtrToArg<Vector2i>::convert(left) / PtrToArg<Vector2i>::convert(right), r_ret);
+	}
+	static Variant::Type get_return_type() { return GetTypeInfo<Vector2i>::VARIANT_TYPE; }
+};
+
+template <>
+class OperatorEvaluatorDivNZ<Vector3i, Vector3i, Vector3i> {
+public:
+	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
+		const Vector3i &a = *VariantGetInternalPtr<Vector3i>::get_ptr(&p_left);
+		const Vector3i &b = *VariantGetInternalPtr<Vector3i>::get_ptr(&p_right);
+		if (unlikely(b.x == 0 || b.y == 0 || b.z == 0)) {
+			r_valid = false;
+			*r_ret = "Division by zero error";
+			return;
+		}
+		*r_ret = a / b;
+		r_valid = true;
+	}
+	static void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+		VariantTypeChanger<Vector3i>::change(r_ret);
+		*VariantGetInternalPtr<Vector3i>::get_ptr(r_ret) = *VariantGetInternalPtr<Vector3i>::get_ptr(left) / *VariantGetInternalPtr<Vector3i>::get_ptr(right);
+	}
+	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
+		PtrToArg<Vector3i>::encode(PtrToArg<Vector3i>::convert(left) / PtrToArg<Vector3i>::convert(right), r_ret);
+	}
+	static Variant::Type get_return_type() { return GetTypeInfo<Vector3i>::VARIANT_TYPE; }
+};
+
 template <class R, class A, class B>
 class OperatorEvaluatorMod {
 public:
@@ -207,6 +255,54 @@ public:
 		PtrToArg<R>::encode(PtrToArg<A>::convert(left) % PtrToArg<B>::convert(right), r_ret);
 	}
 	static Variant::Type get_return_type() { return GetTypeInfo<R>::VARIANT_TYPE; }
+};
+
+template <>
+class OperatorEvaluatorModNZ<Vector2i, Vector2i, Vector2i> {
+public:
+	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
+		const Vector2i &a = *VariantGetInternalPtr<Vector2i>::get_ptr(&p_left);
+		const Vector2i &b = *VariantGetInternalPtr<Vector2i>::get_ptr(&p_right);
+		if (unlikely(b.x == 0 || b.y == 0)) {
+			r_valid = false;
+			*r_ret = "Module by zero error";
+			return;
+		}
+		*r_ret = a % b;
+		r_valid = true;
+	}
+	static void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+		VariantTypeChanger<Vector2i>::change(r_ret);
+		*VariantGetInternalPtr<Vector2i>::get_ptr(r_ret) = *VariantGetInternalPtr<Vector2i>::get_ptr(left) % *VariantGetInternalPtr<Vector2i>::get_ptr(right);
+	}
+	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
+		PtrToArg<Vector2i>::encode(PtrToArg<Vector2i>::convert(left) / PtrToArg<Vector2i>::convert(right), r_ret);
+	}
+	static Variant::Type get_return_type() { return GetTypeInfo<Vector2i>::VARIANT_TYPE; }
+};
+
+template <>
+class OperatorEvaluatorModNZ<Vector3i, Vector3i, Vector3i> {
+public:
+	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
+		const Vector3i &a = *VariantGetInternalPtr<Vector3i>::get_ptr(&p_left);
+		const Vector3i &b = *VariantGetInternalPtr<Vector3i>::get_ptr(&p_right);
+		if (unlikely(b.x == 0 || b.y == 0 || b.z == 0)) {
+			r_valid = false;
+			*r_ret = "Module by zero error";
+			return;
+		}
+		*r_ret = a % b;
+		r_valid = true;
+	}
+	static void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+		VariantTypeChanger<Vector3i>::change(r_ret);
+		*VariantGetInternalPtr<Vector3i>::get_ptr(r_ret) = *VariantGetInternalPtr<Vector3i>::get_ptr(left) % *VariantGetInternalPtr<Vector3i>::get_ptr(right);
+	}
+	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
+		PtrToArg<Vector3i>::encode(PtrToArg<Vector3i>::convert(left) % PtrToArg<Vector3i>::convert(right), r_ret);
+	}
+	static Variant::Type get_return_type() { return GetTypeInfo<Vector3i>::VARIANT_TYPE; }
 };
 
 template <class R, class A>
@@ -1117,22 +1213,44 @@ public:
 
 ////
 
+template <class Left>
 class OperatorEvaluatorInStringFind {
 public:
 	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
-		const String &str_a = *VariantGetInternalPtr<String>::get_ptr(&p_left);
+		const Left &str_a = *VariantGetInternalPtr<Left>::get_ptr(&p_left);
 		const String &str_b = *VariantGetInternalPtr<String>::get_ptr(&p_right);
 
 		*r_ret = str_b.find(str_a) != -1;
 		r_valid = true;
 	}
 	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
-		const String &str_a = *VariantGetInternalPtr<String>::get_ptr(left);
+		const Left &str_a = *VariantGetInternalPtr<Left>::get_ptr(left);
 		const String &str_b = *VariantGetInternalPtr<String>::get_ptr(right);
 		*VariantGetInternalPtr<bool>::get_ptr(r_ret) = str_b.find(str_a) != -1;
 	}
 	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
-		PtrToArg<bool>::encode(PtrToArg<String>::convert(right).find(PtrToArg<String>::convert(left)) != -1, r_ret);
+		PtrToArg<bool>::encode(PtrToArg<String>::convert(right).find(PtrToArg<Left>::convert(left)) != -1, r_ret);
+	}
+	static Variant::Type get_return_type() { return Variant::BOOL; }
+};
+
+template <class Left>
+class OperatorEvaluatorInStringNameFind {
+public:
+	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
+		const Left &str_a = *VariantGetInternalPtr<Left>::get_ptr(&p_left);
+		const String str_b = VariantGetInternalPtr<StringName>::get_ptr(&p_right)->operator String();
+
+		*r_ret = str_b.find(str_a) != -1;
+		r_valid = true;
+	}
+	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+		const Left &str_a = *VariantGetInternalPtr<Left>::get_ptr(left);
+		const String str_b = VariantGetInternalPtr<StringName>::get_ptr(right)->operator String();
+		*VariantGetInternalPtr<bool>::get_ptr(r_ret) = str_b.find(str_a) != -1;
+	}
+	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
+		PtrToArg<bool>::encode(PtrToArg<StringName>::convert(right).operator String().find(PtrToArg<Left>::convert(left)) != -1, r_ret);
 	}
 	static Variant::Type get_return_type() { return Variant::BOOL; }
 };

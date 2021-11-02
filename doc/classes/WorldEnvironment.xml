@@ -14,8 +14,6 @@
 		<link title="2D HDR Demo">https://godotengine.org/asset-library/asset/110</link>
 		<link title="Third Person Shooter Demo">https://godotengine.org/asset-library/asset/678</link>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="camera_effects" type="CameraEffects" setter="set_camera_effects" getter="get_camera_effects">
 		</member>
@@ -23,6 +21,4 @@
 			The [Environment] resource used by this [WorldEnvironment], defining the default properties.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

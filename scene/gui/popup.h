@@ -80,7 +80,6 @@ protected:
 	virtual Size2 _get_contents_minimum_size() const override;
 
 public:
-	void set_child_rect(Control *p_child);
 	PopupPanel();
 };
 

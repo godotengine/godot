@@ -98,8 +98,6 @@ protected:
 	bool _get(const StringName &p_name, Variant &r_ret) const;
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 
-	void _reload_hook(const RID &p_hook);
-	virtual void _resource_path_changed() override;
 	static void _bind_methods();
 
 public:
@@ -251,6 +249,8 @@ public:
 	virtual bool get_rect_region(const Rect2 &p_rect, const Rect2 &p_src_rect, Rect2 &r_rect, Rect2 &r_src_rect) const override;
 
 	bool is_pixel_opaque(int p_x, int p_y) const override;
+
+	virtual Ref<Image> get_image() const override;
 
 	AtlasTexture();
 };
@@ -713,6 +713,77 @@ public:
 	GradientTexture();
 	virtual ~GradientTexture();
 };
+
+class GradientTexture2D : public Texture2D {
+	GDCLASS(GradientTexture2D, Texture2D);
+
+public:
+	enum Fill {
+		FILL_LINEAR,
+		FILL_RADIAL,
+	};
+	enum Repeat {
+		REPEAT_NONE,
+		REPEAT,
+		REPEAT_MIRROR,
+	};
+
+private:
+	Ref<Gradient> gradient;
+	mutable RID texture;
+
+	int width = 64;
+	int height = 64;
+
+	bool use_hdr = false;
+
+	Vector2 fill_from;
+	Vector2 fill_to = Vector2(1, 0);
+
+	Fill fill = FILL_LINEAR;
+	Repeat repeat = REPEAT_NONE;
+
+	float _get_gradient_offset_at(int x, int y) const;
+
+	bool update_pending = false;
+	void _queue_update();
+	void _update();
+
+protected:
+	static void _bind_methods();
+
+public:
+	void set_gradient(Ref<Gradient> p_gradient);
+	Ref<Gradient> get_gradient() const;
+
+	void set_width(int p_width);
+	virtual int get_width() const override;
+	void set_height(int p_height);
+	virtual int get_height() const override;
+
+	void set_use_hdr(bool p_enabled);
+	bool is_using_hdr() const;
+
+	void set_fill(Fill p_fill);
+	Fill get_fill() const;
+	void set_fill_from(Vector2 p_fill_from);
+	Vector2 get_fill_from() const;
+	void set_fill_to(Vector2 p_fill_to);
+	Vector2 get_fill_to() const;
+
+	void set_repeat(Repeat p_repeat);
+	Repeat get_repeat() const;
+
+	virtual RID get_rid() const override;
+	virtual bool has_alpha() const override { return true; }
+	virtual Ref<Image> get_image() const override;
+
+	GradientTexture2D();
+	virtual ~GradientTexture2D();
+};
+
+VARIANT_ENUM_CAST(GradientTexture2D::Fill);
+VARIANT_ENUM_CAST(GradientTexture2D::Repeat);
 
 class ProxyTexture : public Texture2D {
 	GDCLASS(ProxyTexture, Texture2D);

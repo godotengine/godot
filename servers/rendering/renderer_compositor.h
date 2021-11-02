@@ -41,7 +41,8 @@
 class RendererSceneRender;
 struct BlitToScreen {
 	RID render_target;
-	Rect2i rect;
+	Rect2 src_rect = Rect2(0.0, 0.0, 1.0, 1.0);
+	Rect2i dst_rect;
 
 	struct {
 		bool use_layer = false;

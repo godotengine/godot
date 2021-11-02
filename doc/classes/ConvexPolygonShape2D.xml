@@ -23,6 +23,4 @@
 			The polygon's list of vertices. Can be in either clockwise or counterclockwise order.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

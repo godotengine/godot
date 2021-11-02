@@ -128,7 +128,7 @@ void CanvasLayer::_notification(int p_what) {
 			} else {
 				vp = Node::get_viewport();
 			}
-			ERR_FAIL_COND(!vp);
+			ERR_FAIL_NULL_MSG(vp, "Viewport is not initialized.");
 
 			vp->_canvas_layer_add(this);
 			viewport = vp->get_viewport_rid();
@@ -140,6 +140,8 @@ void CanvasLayer::_notification(int p_what) {
 
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
+			ERR_FAIL_NULL_MSG(vp, "Viewport is not initialized.");
+
 			vp->_canvas_layer_remove(this);
 			RenderingServer::get_singleton()->viewport_remove_canvas(viewport, canvas);
 			viewport = RID();
@@ -160,6 +162,8 @@ Size2 CanvasLayer::get_viewport_size() const {
 		return Size2(1, 1);
 	}
 
+	ERR_FAIL_NULL_V_MSG(vp, Size2(1, 1), "Viewport is not initialized.");
+
 	Rect2 r = vp->get_visible_rect();
 	return r.size;
 }
@@ -169,7 +173,7 @@ RID CanvasLayer::get_viewport() const {
 }
 
 void CanvasLayer::set_custom_viewport(Node *p_viewport) {
-	ERR_FAIL_NULL(p_viewport);
+	ERR_FAIL_NULL_MSG(p_viewport, "Cannot set viewport to nullptr.");
 	if (is_inside_tree()) {
 		vp->_canvas_layer_remove(this);
 		RenderingServer::get_singleton()->viewport_remove_canvas(viewport, canvas);

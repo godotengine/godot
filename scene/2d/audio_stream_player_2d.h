@@ -51,10 +51,10 @@ private:
 		Viewport *viewport = nullptr; //pointer only used for reference to previous mix
 	};
 
-	Ref<AudioStreamPlayback> stream_playback;
+	Vector<Ref<AudioStreamPlayback>> stream_playbacks;
 	Ref<AudioStream> stream;
 
-	SafeFlag active;
+	SafeFlag active{ false };
 	SafeNumeric<float> setplay{ -1.0 };
 
 	Vector<AudioFrame> volume_vector;
@@ -64,7 +64,8 @@ private:
 	float volume_db = 0.0;
 	float pitch_scale = 1.0;
 	bool autoplay = false;
-	StringName default_bus = "Master";
+	StringName default_bus = SNAME("Master");
+	int max_polyphony = 1;
 
 	void _set_playing(bool p_enable);
 	bool _is_active() const;
@@ -118,6 +119,9 @@ public:
 
 	void set_stream_paused(bool p_pause);
 	bool get_stream_paused() const;
+
+	void set_max_polyphony(int p_max_polyphony);
+	int get_max_polyphony() const;
 
 	Ref<AudioStreamPlayback> get_stream_playback();
 

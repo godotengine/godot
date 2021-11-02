@@ -191,6 +191,61 @@ void EditorSpinSlider::_grabber_gui_input(const Ref<InputEvent> &p_event) {
 	}
 }
 
+void EditorSpinSlider::_value_input_gui_input(const Ref<InputEvent> &p_event) {
+	Ref<InputEventKey> k = p_event;
+	if (k.is_valid() && k->is_pressed()) {
+		double step = get_step();
+		double real_step = step;
+		if (step < 1) {
+			double divisor = 1.0 / get_step();
+
+			if (trunc(divisor) == divisor) {
+				step = 1.0;
+			}
+		}
+
+		if (k->is_ctrl_pressed()) {
+			step *= 100.0;
+		} else if (k->is_shift_pressed()) {
+			step *= 10.0;
+		} else if (k->is_alt_pressed()) {
+			step *= 0.1;
+		}
+
+		uint32_t code = k->get_keycode();
+		switch (code) {
+			case KEY_UP: {
+				_evaluate_input_text();
+
+				double last_value = get_value();
+				set_value(last_value + step);
+				double new_value = get_value();
+
+				if (new_value < CLAMP(last_value + step, get_min(), get_max())) {
+					set_value(last_value + real_step);
+				}
+
+				value_input_dirty = true;
+				set_process_internal(true);
+			} break;
+			case KEY_DOWN: {
+				_evaluate_input_text();
+
+				double last_value = get_value();
+				set_value(last_value - step);
+				double new_value = get_value();
+
+				if (new_value > CLAMP(last_value - step, get_min(), get_max())) {
+					set_value(last_value - real_step);
+				}
+
+				value_input_dirty = true;
+				set_process_internal(true);
+			} break;
+		}
+	}
+}
+
 void EditorSpinSlider::_update_value_input_stylebox() {
 	if (!value_input) {
 		return;
@@ -221,7 +276,7 @@ void EditorSpinSlider::_draw_spin_slider() {
 	bool rtl = is_layout_rtl();
 	Vector2 size = get_size();
 
-	Ref<StyleBox> sb = get_theme_stylebox(SNAME("normal"), SNAME("LineEdit"));
+	Ref<StyleBox> sb = get_theme_stylebox(is_read_only() ? SNAME("read_only") : SNAME("normal"), SNAME("LineEdit"));
 	if (!flat) {
 		draw_style_box(sb, Rect2(Vector2(), size));
 	}
@@ -233,7 +288,7 @@ void EditorSpinSlider::_draw_spin_slider() {
 	int label_width = font->get_string_size(label, font_size).width;
 	int number_width = size.width - sb->get_minimum_size().width - label_width - sep;
 
-	Ref<Texture2D> updown = get_theme_icon(SNAME("updown"), SNAME("SpinBox"));
+	Ref<Texture2D> updown = get_theme_icon(is_read_only() ? SNAME("updown_disabled") : SNAME("updown"), SNAME("SpinBox"));
 
 	if (get_step() == 1) {
 		number_width -= updown->get_width();
@@ -243,7 +298,7 @@ void EditorSpinSlider::_draw_spin_slider() {
 
 	int vofs = (size.height - font->get_height(font_size)) / 2 + font->get_ascent(font_size);
 
-	Color fc = get_theme_color(SNAME("font_color"), SNAME("LineEdit"));
+	Color fc = get_theme_color(is_read_only() ? SNAME("font_uneditable_color") : SNAME("font_color"), SNAME("LineEdit"));
 	Color lc;
 	if (use_custom_label_color) {
 		lc = custom_label_color;
@@ -277,9 +332,8 @@ void EditorSpinSlider::_draw_spin_slider() {
 
 	float text_start = rtl ? Math::round(sb->get_offset().x) : Math::round(sb->get_offset().x + label_width + sep);
 	Vector2 text_ofs = rtl ? Vector2(text_start + (number_width - TS->shaped_text_get_width(num_rid)), vofs) : Vector2(text_start, vofs);
-	const Vector<TextServer::Glyph> visual = TS->shaped_text_get_glyphs(num_rid);
-	int v_size = visual.size();
-	const TextServer::Glyph *glyphs = visual.ptr();
+	int v_size = TS->shaped_text_get_glyph_count(num_rid);
+	const Glyph *glyphs = TS->shaped_text_get_glyphs(num_rid);
 	for (int i = 0; i < v_size; i++) {
 		for (int j = 0; j < glyphs[i].repeat; j++) {
 			if (text_ofs.x >= text_start && (text_ofs.x + glyphs[i].advance) <= (text_start + number_width)) {
@@ -299,7 +353,7 @@ void EditorSpinSlider::_draw_spin_slider() {
 	TS->free(num_rid);
 
 	if (get_step() == 1) {
-		Ref<Texture2D> updown2 = get_theme_icon(SNAME("updown"), SNAME("SpinBox"));
+		Ref<Texture2D> updown2 = get_theme_icon(is_read_only() ? SNAME("updown_disabled") : SNAME("updown"), SNAME("SpinBox"));
 		int updown_vofs = (size.height - updown2->get_height()) / 2;
 		if (rtl) {
 			updown_offset = sb->get_margin(SIDE_LEFT);
@@ -328,7 +382,7 @@ void EditorSpinSlider::_draw_spin_slider() {
 		Rect2 grabber_rect = Rect2(ofs + gofs, svofs + 1, grabber_w, 2 * EDSCALE);
 		draw_rect(grabber_rect, c);
 
-		grabbing_spinner_mouse_pos = get_global_position() + grabber_rect.position + grabber_rect.size * 0.5;
+		grabbing_spinner_mouse_pos = get_global_position() + grabber_rect.get_center();
 
 		bool display_grabber = (mouse_over_spin || mouse_over_grabber) && !grabbing_spinner && !(value_input_popup && value_input_popup->is_visible());
 		if (grabber->is_visible() != display_grabber) {
@@ -354,7 +408,7 @@ void EditorSpinSlider::_draw_spin_slider() {
 			Vector2 scale = get_global_transform_with_canvas().get_scale();
 			grabber->set_scale(scale);
 			grabber->set_size(Size2(0, 0));
-			grabber->set_position(get_global_position() + (grabber_rect.position + grabber_rect.size * 0.5 - grabber->get_size() * 0.5) * scale);
+			grabber->set_position(get_global_position() + (grabber_rect.get_center() - grabber->get_size() * 0.5) * scale);
 
 			if (mousewheel_over_grabber) {
 				Input::get_singleton()->warp_mouse_position(grabber->get_position() + grabber_rect.size);
@@ -370,6 +424,14 @@ void EditorSpinSlider::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED:
 			_update_value_input_stylebox();
+			break;
+
+		case NOTIFICATION_INTERNAL_PROCESS:
+			if (value_input_dirty) {
+				value_input_dirty = false;
+				value_input->set_text(get_text_value());
+			}
+			set_process_internal(false);
 			break;
 
 		case NOTIFICATION_DRAW:
@@ -585,11 +647,13 @@ void EditorSpinSlider::_ensure_input_popup() {
 	value_input_popup->connect("popup_hide", callable_mp(this, &EditorSpinSlider::_value_input_closed));
 	value_input->connect("text_submitted", callable_mp(this, &EditorSpinSlider::_value_input_submitted));
 	value_input->connect("focus_exited", callable_mp(this, &EditorSpinSlider::_value_focus_exited));
+	value_input->connect("gui_input", callable_mp(this, &EditorSpinSlider::_value_input_gui_input));
 
 	if (is_inside_tree()) {
 		_update_value_input_stylebox();
 	}
 }
+
 EditorSpinSlider::EditorSpinSlider() {
 	flat = false;
 	grabbing_spinner_attempt = false;

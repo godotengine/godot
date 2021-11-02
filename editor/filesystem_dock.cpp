@@ -106,7 +106,7 @@ bool FileSystemDock::_create_tree(TreeItem *p_parent, EditorFileSystemDirectory 
 		List<FileInfo> file_list;
 		for (int i = 0; i < p_dir->get_file_count(); i++) {
 			String file_type = p_dir->get_file_type(i);
-			if (_is_file_type_disabled_by_feature_profile(file_type)) {
+			if (file_type != "TextFile" && _is_file_type_disabled_by_feature_profile(file_type)) {
 				// If type is disabled, file won't be displayed.
 				continue;
 			}
@@ -688,9 +688,11 @@ void FileSystemDock::_sort_file_info_list(List<FileSystemDock::FileInfo> &r_file
 			r_file_list.reverse();
 			break;
 		case FILE_SORT_NAME_REVERSE:
+			r_file_list.sort();
 			r_file_list.reverse();
 			break;
 		default: // FILE_SORT_NAME
+			r_file_list.sort();
 			break;
 	}
 }
@@ -1175,7 +1177,7 @@ void FileSystemDock::_try_move_item(const FileOrFolder &p_item, const String &p_
 				EditorData *ed = &editor->get_editor_data();
 				for (int j = 0; j < ed->get_edited_scene_count(); j++) {
 					if (ed->get_scene_path(j) == file_changed_paths[i]) {
-						ed->get_edited_scene_root(j)->set_filename(new_item_path);
+						ed->get_edited_scene_root(j)->set_scene_file_path(new_item_path);
 						editor->save_layout();
 						break;
 					}
@@ -1260,7 +1262,7 @@ void FileSystemDock::_update_resource_paths_after_move(const Map<String, String>
 				continue;
 			}
 
-			path = get_tree()->get_edited_scene_root()->get_filename();
+			path = get_tree()->get_edited_scene_root()->get_scene_file_path();
 		} else {
 			path = EditorNode::get_editor_data().get_scene_path(i);
 		}
@@ -1270,7 +1272,7 @@ void FileSystemDock::_update_resource_paths_after_move(const Map<String, String>
 		}
 
 		if (i == EditorNode::get_editor_data().get_edited_scene()) {
-			get_tree()->get_edited_scene_root()->set_filename(path);
+			get_tree()->get_edited_scene_root()->set_scene_file_path(path);
 		} else {
 			EditorNode::get_editor_data().set_scene_path(i, path);
 		}
@@ -1301,11 +1303,11 @@ void FileSystemDock::_update_dependencies_after_move(const Map<String, String> &
 void FileSystemDock::_update_project_settings_after_move(const Map<String, String> &p_renames) const {
 	// Find all project settings of type FILE and replace them if needed.
 	const Map<StringName, PropertyInfo> prop_info = ProjectSettings::get_singleton()->get_custom_property_info();
-	for (const Map<StringName, PropertyInfo>::Element *E = prop_info.front(); E; E = E->next()) {
-		if (E->get().hint == PROPERTY_HINT_FILE) {
-			String old_path = GLOBAL_GET(E->key());
+	for (const KeyValue<StringName, PropertyInfo> &E : prop_info) {
+		if (E.value.hint == PROPERTY_HINT_FILE) {
+			String old_path = GLOBAL_GET(E.key);
 			if (p_renames.has(old_path)) {
-				ProjectSettings::get_singleton()->set_setting(E->key(), p_renames[old_path]);
+				ProjectSettings::get_singleton()->set_setting(E.key, p_renames[old_path]);
 			}
 		};
 	}
@@ -1369,7 +1371,7 @@ void FileSystemDock::_make_dir_confirm() {
 		EditorNode::get_singleton()->show_warning(TTR("No name provided."));
 		return;
 	} else if (dir_name.find("/") != -1 || dir_name.find("\\") != -1 || dir_name.find(":") != -1 || dir_name.find("*") != -1 ||
-			   dir_name.find("|") != -1 || dir_name.find(">") != -1 || dir_name.ends_with(".") || dir_name.ends_with(" ")) {
+			dir_name.find("|") != -1 || dir_name.find(">") != -1 || dir_name.ends_with(".") || dir_name.ends_with(" ")) {
 		EditorNode::get_singleton()->show_warning(TTR("Provided name contains invalid characters."));
 		return;
 	}
@@ -1954,6 +1956,13 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 		case FILE_NEW_RESOURCE: {
 			new_resource_dialog->popup_create(true);
 		} break;
+		case FILE_NEW_TEXTFILE: {
+			String fpath = path;
+			if (!fpath.ends_with("/")) {
+				fpath = fpath.get_base_dir();
+			}
+			ScriptEditor::get_singleton()->open_text_file_create_dialog(fpath);
+		} break;
 	}
 }
 
@@ -2158,6 +2167,14 @@ bool FileSystemDock::can_drop_data_fw(const Point2 &p_point, const Variant &p_da
 		return true;
 	}
 
+	if (drag_data.has("type") && String(drag_data["type"]) == "nodes") {
+		// Save branch as scene.
+		String to_dir;
+		bool favorite;
+		_get_drag_target_folder(to_dir, favorite, p_point, p_from);
+		return !favorite && Array(drag_data["nodes"]).size() == 1;
+	}
+
 	return false;
 }
 
@@ -2295,6 +2312,13 @@ void FileSystemDock::drop_data_fw(const Point2 &p_point, const Variant &p_data, 
 			EditorSettings::get_singleton()->set_favorites(favorites);
 			_update_tree(_compute_uncollapsed_paths());
 		}
+	}
+
+	if (drag_data.has("type") && String(drag_data["type"]) == "nodes") {
+		String to_dir;
+		bool favorite;
+		_get_drag_target_folder(to_dir, favorite, p_point, p_from);
+		EditorNode::get_singleton()->get_scene_tree_dock()->save_branch_to_file(to_dir);
 	}
 }
 
@@ -2458,6 +2482,7 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, Vector<Str
 			p_popup->add_icon_item(get_theme_icon(SNAME("PackedScene"), SNAME("EditorIcons")), TTR("New Scene..."), FILE_NEW_SCENE);
 			p_popup->add_icon_item(get_theme_icon(SNAME("Script"), SNAME("EditorIcons")), TTR("New Script..."), FILE_NEW_SCRIPT);
 			p_popup->add_icon_item(get_theme_icon(SNAME("Object"), SNAME("EditorIcons")), TTR("New Resource..."), FILE_NEW_RESOURCE);
+			p_popup->add_icon_item(get_theme_icon(SNAME("TextFile"), SNAME("EditorIcons")), TTR("New TextFile..."), FILE_NEW_TEXTFILE);
 			p_popup->add_separator();
 		}
 
@@ -2498,6 +2523,7 @@ void FileSystemDock::_tree_rmb_empty(const Vector2 &p_pos) {
 	tree_popup->add_icon_item(get_theme_icon(SNAME("PackedScene"), SNAME("EditorIcons")), TTR("New Scene..."), FILE_NEW_SCENE);
 	tree_popup->add_icon_item(get_theme_icon(SNAME("Script"), SNAME("EditorIcons")), TTR("New Script..."), FILE_NEW_SCRIPT);
 	tree_popup->add_icon_item(get_theme_icon(SNAME("Object"), SNAME("EditorIcons")), TTR("New Resource..."), FILE_NEW_RESOURCE);
+	tree_popup->add_icon_item(get_theme_icon(SNAME("TextFile"), SNAME("EditorIcons")), TTR("New TextFile..."), FILE_NEW_TEXTFILE);
 	tree_popup->set_position(tree->get_global_position() + p_pos);
 	tree_popup->popup();
 }
@@ -2543,6 +2569,7 @@ void FileSystemDock::_file_list_rmb_pressed(const Vector2 &p_pos) {
 	file_list_popup->add_icon_item(get_theme_icon(SNAME("PackedScene"), SNAME("EditorIcons")), TTR("New Scene..."), FILE_NEW_SCENE);
 	file_list_popup->add_icon_item(get_theme_icon(SNAME("Script"), SNAME("EditorIcons")), TTR("New Script..."), FILE_NEW_SCRIPT);
 	file_list_popup->add_icon_item(get_theme_icon(SNAME("Object"), SNAME("EditorIcons")), TTR("New Resource..."), FILE_NEW_RESOURCE);
+	file_list_popup->add_icon_item(get_theme_icon(SNAME("TextFile"), SNAME("EditorIcons")), TTR("New TextFile..."), FILE_NEW_TEXTFILE);
 	file_list_popup->add_separator();
 	file_list_popup->add_icon_item(get_theme_icon(SNAME("Filesystem"), SNAME("EditorIcons")), TTR("Open in File Manager"), FILE_SHOW_IN_EXPLORER);
 	file_list_popup->set_position(files->get_global_position() + p_pos);

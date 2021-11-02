@@ -106,7 +106,7 @@ void EditorResourcePicker::_resource_selected() {
 		return;
 	}
 
-	emit_signal(SNAME("resource_selected"), edited_resource);
+	emit_signal(SNAME("resource_selected"), edited_resource, false);
 }
 
 void EditorResourcePicker::_file_selected(const String &p_path) {
@@ -135,13 +135,17 @@ void EditorResourcePicker::_file_selected(const String &p_path) {
 	_update_resource();
 }
 
+void EditorResourcePicker::_file_quick_selected() {
+	_file_selected(quick_open->get_selected());
+}
+
 void EditorResourcePicker::_update_menu() {
 	_update_menu_items();
 
 	Rect2 gt = edit_button->get_screen_rect();
 	edit_menu->set_as_minsize();
 	int ms = edit_menu->get_contents_minimum_size().width;
-	Vector2 popup_pos = gt.position + gt.size - Vector2(ms, 0);
+	Vector2 popup_pos = gt.get_end() - Vector2(ms, 0);
 	edit_menu->set_position(popup_pos);
 	edit_menu->popup();
 }
@@ -153,7 +157,10 @@ void EditorResourcePicker::_update_menu_items() {
 	// Add options for creating specific subtypes of the base resource type.
 	set_create_options(edit_menu);
 
-	// Add an option to load a resource from a file.
+	// Add an option to load a resource from a file using the QuickOpen dialog.
+	edit_menu->add_icon_item(get_theme_icon(SNAME("Load"), SNAME("EditorIcons")), TTR("Quick Load"), OBJ_MENU_QUICKLOAD);
+
+	// Add an option to load a resource from a file using the regular file dialog.
 	edit_menu->add_icon_item(get_theme_icon(SNAME("Load"), SNAME("EditorIcons")), TTR("Load"), OBJ_MENU_LOAD);
 
 	// Add options for changing existing value of the resource.
@@ -246,9 +253,20 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 			file_dialog->popup_file_dialog();
 		} break;
 
+		case OBJ_MENU_QUICKLOAD: {
+			if (!quick_open) {
+				quick_open = memnew(EditorQuickOpen);
+				add_child(quick_open);
+				quick_open->connect("quick_open", callable_mp(this, &EditorResourcePicker::_file_quick_selected));
+			}
+
+			quick_open->popup_dialog(base_type);
+			quick_open->set_title(TTR("Resource"));
+		} break;
+
 		case OBJ_MENU_EDIT: {
 			if (edited_resource.is_valid()) {
-				emit_signal(SNAME("resource_selected"), edited_resource);
+				emit_signal(SNAME("resource_selected"), edited_resource, true);
 			}
 		} break;
 
@@ -672,7 +690,7 @@ void EditorResourcePicker::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "editable"), "set_editable", "is_editable");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "toggle_mode"), "set_toggle_mode", "is_toggle_mode");
 
-	ADD_SIGNAL(MethodInfo("resource_selected", PropertyInfo(Variant::OBJECT, "resource", PROPERTY_HINT_RESOURCE_TYPE, "Resource")));
+	ADD_SIGNAL(MethodInfo("resource_selected", PropertyInfo(Variant::OBJECT, "resource", PROPERTY_HINT_RESOURCE_TYPE, "Resource"), PropertyInfo(Variant::BOOL, "edit")));
 	ADD_SIGNAL(MethodInfo("resource_changed", PropertyInfo(Variant::OBJECT, "resource", PROPERTY_HINT_RESOURCE_TYPE, "Resource")));
 }
 
@@ -906,7 +924,7 @@ void EditorShaderPicker::set_create_options(Object *p_menu_node) {
 		return;
 	}
 
-	menu_node->add_icon_item(get_theme_icon("Shader", "EditorIcons"), TTR("New Shader"), OBJ_MENU_NEW_SHADER);
+	menu_node->add_icon_item(get_theme_icon(SNAME("Shader"), SNAME("EditorIcons")), TTR("New Shader"), OBJ_MENU_NEW_SHADER);
 	menu_node->add_separator();
 }
 

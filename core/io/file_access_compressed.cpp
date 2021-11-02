@@ -233,7 +233,7 @@ uint64_t FileAccessCompressed::get_position() const {
 	if (writing) {
 		return write_pos;
 	} else {
-		return read_block * block_size + read_pos;
+		return (uint64_t)read_block * block_size + read_pos;
 	}
 }
 

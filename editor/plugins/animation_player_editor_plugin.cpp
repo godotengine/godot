@@ -120,7 +120,7 @@ void AnimationPlayerEditor::_notification(int p_what) {
 				Ref<Image> autoplay_img = autoplay_icon->get_image();
 				Ref<Image> reset_img = reset_icon->get_image();
 				Ref<Image> autoplay_reset_img;
-				Size2 icon_size = Size2(autoplay_img->get_width(), autoplay_img->get_height());
+				Size2 icon_size = autoplay_img->get_size();
 				autoplay_reset_img.instantiate();
 				autoplay_reset_img->create(icon_size.x * 2, icon_size.y, false, autoplay_img->get_format());
 				autoplay_reset_img->blit_rect(autoplay_img, Rect2(Point2(), icon_size), Point2());
@@ -298,7 +298,7 @@ void AnimationPlayerEditor::_animation_selected(int p_which) {
 
 	autoplay->set_pressed(current == player->get_autoplay());
 
-	AnimationPlayerEditor::singleton->get_track_editor()->update_keying();
+	AnimationPlayerEditor::get_singleton()->get_track_editor()->update_keying();
 	EditorNode::get_singleton()->update_keying();
 	_animation_key_editor_seek(timeline_position, false);
 }
@@ -826,7 +826,7 @@ void AnimationPlayerEditor::_update_player() {
 	pin->set_disabled(player == nullptr);
 
 	if (!player) {
-		AnimationPlayerEditor::singleton->get_track_editor()->update_keying();
+		AnimationPlayerEditor::get_singleton()->get_track_editor()->update_keying();
 		EditorNode::get_singleton()->update_keying();
 		return;
 	}
@@ -904,7 +904,7 @@ void AnimationPlayerEditor::edit(AnimationPlayer *p_player) {
 	}
 }
 
-void AnimationPlayerEditor::forward_canvas_force_draw_over_viewport(Control *p_overlay) {
+void AnimationPlayerEditor::forward_force_draw_over_viewport(Control *p_overlay) {
 	if (!onion.can_overlay) {
 		return;
 	}
@@ -1466,15 +1466,15 @@ void AnimationPlayerEditor::_prepare_onion_layers_2() {
 }
 
 void AnimationPlayerEditor::_start_onion_skinning() {
-	// FIXME: Using "idle_frame" makes onion layers update one frame behind the current.
-	if (!get_tree()->is_connected("idle_frame", callable_mp(this, &AnimationPlayerEditor::_prepare_onion_layers_1_deferred))) {
-		get_tree()->connect("idle_frame", callable_mp(this, &AnimationPlayerEditor::_prepare_onion_layers_1_deferred));
+	// FIXME: Using "process_frame" makes onion layers update one frame behind the current.
+	if (!get_tree()->is_connected("process_frame", callable_mp(this, &AnimationPlayerEditor::_prepare_onion_layers_1_deferred))) {
+		get_tree()->connect("process_frame", callable_mp(this, &AnimationPlayerEditor::_prepare_onion_layers_1_deferred));
 	}
 }
 
 void AnimationPlayerEditor::_stop_onion_skinning() {
-	if (get_tree()->is_connected("idle_frame", callable_mp(this, &AnimationPlayerEditor::_prepare_onion_layers_1_deferred))) {
-		get_tree()->disconnect("idle_frame", callable_mp(this, &AnimationPlayerEditor::_prepare_onion_layers_1_deferred));
+	if (get_tree()->is_connected("process_frame", callable_mp(this, &AnimationPlayerEditor::_prepare_onion_layers_1_deferred))) {
+		get_tree()->disconnect("process_frame", callable_mp(this, &AnimationPlayerEditor::_prepare_onion_layers_1_deferred));
 
 		_free_onion_layers();
 

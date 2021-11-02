@@ -80,6 +80,13 @@ Copyright: 2008-2016, The Android Open Source Project
  2002, Google, Inc.
 License: Apache-2.0
 
+Files: ./scene/animation/easing_equations.h
+Comment: Robert Penner's Easing Functions
+Copyright: 2001, Robert Penner
+ 2007-2021 Juan Linietsky, Ariel Manzur.
+ 2014-2021 Godot Engine contributors.
+License: Expat
+
 Files: ./servers/physics_3d/collision_solver_3d_sat.cpp
 Comment: Open Dynamics Engine
 Copyright: 2001-2003, Russell L. Smith, Alen Ladavac, Nguyen Binh
@@ -136,7 +143,7 @@ License: Expat
 
 Files: ./thirdparty/doctest/
 Comment: doctest
-Copyright: 2016-2020, Viktor Kirilov
+Copyright: 2016-2021, Viktor Kirilov
 License: Expat
 
 Files: ./thirdparty/embree/
@@ -169,11 +176,6 @@ Comment: Hack font
 Copyright: 2018, Source Foundry Authors
   2003, Bitstream Inc.
 License: Expat and Bitstream Vera Fonts Copyright
-
-Files: ./thirdparty/fonts/Tamsyn*.png
-Comment: Tamsyn font
-Copyright: 2015, Scott Fial
-License: Tamsyn
 
 Files: ./thirdparty/freetype/
 Comment: The FreeType Project
@@ -233,16 +235,6 @@ Copyright: 1995-2019, The PNG Reference Library Authors.
  1995-1996, Guy Eric Schalnat, Group 42, Inc.
 License: Zlib
 
-Files: ./thirdparty/libsimplewebm/
-Comment: libsimplewebm
-Copyright: 2016, Błażej Szczygieł
-License: Expat
-
-Files: ./thirdparty/libsimplewebm/libwebm/
-Comment: The WebM Project
-Copyright: 2010, Google Inc.
-License: BSD-3-clause
-
 Files: ./thirdparty/libtheora/
 Comment: OggTheora
 Copyright: 2002-2009, Xiph.org Foundation
@@ -252,17 +244,6 @@ Files: ./thirdparty/libvorbis/
 Comment: OggVorbis
 Copyright: 2002-2015, Xiph.org Foundation
 License: BSD-3-clause
-
-Files: ./thirdparty/libvpx/
-Comment: The WebM Project
-Copyright: 2010, The WebM Project authors.
-License: BSD-3-clause
-
-Files: ./thirdparty/libvpx/third_party/android/cpu-features.c
- ./thirdparty/libvpx/third_party/android/cpu-features.h
-Comment: The Android Open Source Project
-Copyright: 2010, The Android Open Source Project
-License: BSD-2-clause
 
 Files: ./thirdparty/libwebp/
 Comment: WebP codec
@@ -306,11 +287,6 @@ Files: ./thirdparty/misc/cubemap_coeffs.h
 Comment: Fast Filtering of Reflection Probes
 Copyright: 2016, Activision Publishing, Inc.
 License: Expat
-
-Files: ./thirdparty/misc/easing_equations.cpp
-Comment: Robert Penner's Easing Functions
-Copyright: 2001, Robert Penner
-License: BSD-3-clause
 
 Files: ./thirdparty/misc/fastlz.c
  ./thirdparty/misc/fastlz.h
@@ -367,7 +343,6 @@ Copyright: 2016-2020, Aras Pranckevicius
 License: public-domain or Unlicense or Expat
 
 Files: ./thirdparty/misc/stb_rect_pack.h
- ./thirdparty/misc/stb_vorbis.c
 Comment: stb libraries
 Copyright: Sean Barrett
 License: public-domain or Unlicense or Expat
@@ -391,14 +366,6 @@ Files: ./thirdparty/oidn/
 Comment: Intel Open Image Denoise
 Copyright: 2009-2019, Intel Corporation
 License: Apache-2.0
-
-Files: ./thirdparty/opus/
-Comment: Opus
-Copyright: 2001-2011, Xiph.Org, Skype Limited, Octasic,
- Jean-Marc Valin, Timothy B. Terriberry,
- CSIRO, Gregory Maxwell, Mark Borgerding,
- Erik de Castro Lopo
-License: BSD-3-clause
 
 Files: ./thirdparty/pcre2/
 Comment: PCRE2
@@ -1380,7 +1347,7 @@ License: HarfBuzz
  Copyright (C) 2009  Keith Stribley
  Copyright (C) 2009  Martin Hosken and SIL International
  Copyright (C) 2007  Chris Wilson
- Copyright (C) 2006  Behdad Esfahbod
+ Copyright (C) 2005,2006,2020,2021  Behdad Esfahbod
  Copyright (C) 2005  David Turner
  Copyright (C) 2004,2007,2008,2009,2010  Red Hat, Inc.
  Copyright (C) 1998-2004  David Turner and Werner Lemberg
@@ -1863,18 +1830,6 @@ License: OFL-1.1
  INCLUDING ANY GENERAL, SPECIAL, INDIRECT, INCIDENTAL, OR CONSEQUENTIAL
  DAMAGES, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
  FROM, OUT OF THE USE OR INABILITY TO USE THE FONT SOFTWARE.
-
-License: Tamsyn
- Tamsyn font is free.  You are hereby granted permission to use, copy, modify,
- and distribute it as you see fit.
- .
- Tamsyn font is provided "as is" without any express or implied warranty.
- .
- The author makes no representations about the suitability of this font for
- a particular purpose.
- .
- In no event will the author be held liable for damages arising from the use
- of this font.
 
 License: Unicode
  COPYRIGHT AND PERMISSION NOTICE (ICU 58 and later)

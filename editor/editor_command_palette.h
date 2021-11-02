@@ -47,18 +47,26 @@ class EditorCommandPalette : public ConfirmationDialog {
 		Callable callable;
 		String name;
 		String shortcut;
+		int last_used = 0; // Store time as int, because doubles have problems with text serialization.
 	};
 
 	struct CommandEntry {
 		String key_name;
 		String display_name;
 		String shortcut_text;
-		float score;
+		int last_used = 0;
+		float score = 0;
 	};
 
 	struct CommandEntryComparator {
 		_FORCE_INLINE_ bool operator()(const CommandEntry &A, const CommandEntry &B) const {
 			return A.score > B.score;
+		}
+	};
+
+	struct CommandHistoryComparator {
+		_FORCE_INLINE_ bool operator()(const CommandEntry &A, const CommandEntry &B) const {
+			return A.last_used > B.last_used;
 		}
 	};
 
@@ -74,6 +82,7 @@ class EditorCommandPalette : public ConfirmationDialog {
 	void _update_command_keys();
 	void _add_command(String p_command_name, String p_key_name, Callable p_binded_action, String p_shortcut_text = "None");
 	void _theme_changed();
+	void _save_history() const;
 	EditorCommandPalette();
 
 protected:

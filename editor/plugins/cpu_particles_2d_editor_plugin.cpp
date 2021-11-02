@@ -83,7 +83,7 @@ void CPUParticles2DEditorPlugin::_generate_emission_mask() {
 	}
 	img->convert(Image::FORMAT_RGBA8);
 	ERR_FAIL_COND(img->get_format() != Image::FORMAT_RGBA8);
-	Size2i s = Size2(img->get_width(), img->get_height());
+	Size2i s = img->get_size();
 	ERR_FAIL_COND(s.width == 0 || s.height == 0);
 
 	Vector<Point2> valid_positions;

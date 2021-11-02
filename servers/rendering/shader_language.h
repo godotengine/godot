@@ -692,8 +692,10 @@ public:
 
 			int order = 0;
 			int texture_order = 0;
+			int texture_binding = 0;
 			DataType type = TYPE_VOID;
 			DataPrecision precision = PRECISION_DEFAULT;
+			int array_size = 0;
 			Vector<ConstantNode::Value> default_value;
 			Scope scope = SCOPE_LOCAL;
 			Hint hint = HINT_NONE;
@@ -776,7 +778,7 @@ public:
 	static bool is_scalar_type(DataType p_type);
 	static bool is_float_type(DataType p_type);
 	static bool is_sampler_type(DataType p_type);
-	static Variant constant_value_to_variant(const Vector<ShaderLanguage::ConstantNode::Value> &p_value, DataType p_type, ShaderLanguage::ShaderNode::Uniform::Hint p_hint = ShaderLanguage::ShaderNode::Uniform::HINT_NONE);
+	static Variant constant_value_to_variant(const Vector<ShaderLanguage::ConstantNode::Value> &p_value, DataType p_type, int p_array_size, ShaderLanguage::ShaderNode::Uniform::Hint p_hint = ShaderLanguage::ShaderNode::Uniform::HINT_NONE);
 	static PropertyInfo uniform_to_property_info(const ShaderNode::Uniform &p_uniform);
 	static uint32_t get_type_size(DataType p_type);
 
@@ -874,7 +876,6 @@ private:
 
 	StringName current_function;
 	bool last_const = false;
-	bool pass_array = false;
 	StringName last_name;
 
 	VaryingFunctionNames varying_function_names;
@@ -948,8 +949,16 @@ private:
 	};
 
 	struct BuiltinFuncOutArgs { //arguments used as out in built in functions
+		enum { MAX_ARGS = 2 };
 		const char *name;
-		int argument;
+		const int arguments[MAX_ARGS];
+	};
+
+	struct BuiltinFuncConstArgs {
+		const char *name;
+		int arg;
+		int min;
+		int max;
 	};
 
 	CompletionType completion_type;
@@ -965,6 +974,7 @@ private:
 	bool _get_completable_identifier(BlockNode *p_block, CompletionType p_type, StringName &identifier);
 	static const BuiltinFuncDef builtin_func_defs[];
 	static const BuiltinFuncOutArgs builtin_func_out_args[];
+	static const BuiltinFuncConstArgs builtin_func_const_args[];
 
 	Error _validate_datatype(DataType p_type);
 	bool _compare_datatypes(DataType p_datatype_a, String p_datatype_name_a, int p_array_size_a, DataType p_datatype_b, String p_datatype_name_b, int p_array_size_b);
@@ -977,6 +987,10 @@ private:
 	bool _validate_varying_assign(ShaderNode::Varying &p_varying, String *r_message);
 	bool _validate_varying_using(ShaderNode::Varying &p_varying, String *r_message);
 	bool _check_node_constness(const Node *p_node) const;
+
+	Node *_parse_array_size(BlockNode *p_block, const FunctionInfo &p_function_info, int &r_array_size);
+	Error _parse_global_array_size(int &r_array_size);
+	Error _parse_local_array_size(BlockNode *p_block, const FunctionInfo &p_function_info, ArrayDeclarationNode *p_node, ArrayDeclarationNode::Declaration *p_decl, int &r_array_size, bool &r_is_unknown_size);
 
 	Node *_parse_expression(BlockNode *p_block, const FunctionInfo &p_function_info);
 	Node *_parse_array_constructor(BlockNode *p_block, const FunctionInfo &p_function_info);

@@ -37,7 +37,6 @@
 
 #ifdef TOOLS_ENABLED
 #include "editor/editor_node.h"
-#include "editor/editor_scale.h"
 #include "scene/main/window.h" // Only used to check for more modals when dimming the editor.
 #endif
 
@@ -319,7 +318,7 @@ AcceptDialog::AcceptDialog() {
 	set_clamp_to_embedder(true);
 
 	bg = memnew(Panel);
-	add_child(bg);
+	add_child(bg, false, INTERNAL_MODE_FRONT);
 
 	hbc = memnew(HBoxContainer);
 
@@ -331,9 +330,9 @@ AcceptDialog::AcceptDialog() {
 	label->set_anchor(SIDE_BOTTOM, Control::ANCHOR_END);
 	label->set_begin(Point2(margin, margin));
 	label->set_end(Point2(-margin, -button_margin - 10));
-	add_child(label);
+	add_child(label, false, INTERNAL_MODE_FRONT);
 
-	add_child(hbc);
+	add_child(hbc, false, INTERNAL_MODE_FRONT);
 
 	hbc->add_spacer();
 	ok = memnew(Button);
@@ -363,8 +362,7 @@ Button *ConfirmationDialog::get_cancel_button() {
 
 ConfirmationDialog::ConfirmationDialog() {
 	set_title(TTRC("Please Confirm..."));
-#ifdef TOOLS_ENABLED
-	set_min_size(Size2(200, 70) * EDSCALE);
-#endif
+	set_min_size(Size2(200, 70));
+
 	cancel = add_cancel_button();
 }

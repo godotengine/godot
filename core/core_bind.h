@@ -119,8 +119,8 @@ protected:
 
 public:
 	enum VideoDriver {
-		VIDEO_DRIVER_GLES2,
 		VIDEO_DRIVER_VULKAN,
+		VIDEO_DRIVER_OPENGL_3,
 	};
 
 	enum Weekday {
@@ -165,6 +165,7 @@ public:
 	String get_executable_path() const;
 	int execute(const String &p_path, const Vector<String> &p_arguments, Array r_output = Array(), bool p_read_stderr = false);
 	int create_process(const String &p_path, const Vector<String> &p_arguments);
+	int create_instance(const Vector<String> &p_arguments);
 	Error kill(int p_pid);
 	Error shell_open(String p_uri);
 
@@ -178,6 +179,7 @@ public:
 	Vector<String> get_cmdline_args();
 
 	String get_locale() const;
+	String get_locale_language() const;
 
 	String get_model_name() const;
 
@@ -204,7 +206,7 @@ public:
 
 	void delay_usec(int p_usec) const;
 	void delay_msec(int p_msec) const;
-	uint32_t get_ticks_msec() const;
+	uint64_t get_ticks_msec() const;
 	uint64_t get_ticks_usec() const;
 
 	bool can_use_threads() const;
@@ -537,9 +539,8 @@ class Thread : public RefCounted {
 protected:
 	Variant ret;
 	Variant userdata;
-	SafeFlag active;
-	Object *target_instance = nullptr;
-	StringName target_method;
+	SafeFlag running;
+	Callable target_callable;
 	::Thread thread;
 	static void _bind_methods();
 	static void _start_func(void *ud);
@@ -552,9 +553,10 @@ public:
 		PRIORITY_MAX
 	};
 
-	Error start(Object *p_instance, const StringName &p_method, const Variant &p_userdata = Variant(), Priority p_priority = PRIORITY_NORMAL);
+	Error start(const Callable &p_callable, const Variant &p_userdata = Variant(), Priority p_priority = PRIORITY_NORMAL);
 	String get_id() const;
-	bool is_active() const;
+	bool is_started() const;
+	bool is_alive() const;
 	Variant wait_to_finish();
 };
 
@@ -591,6 +593,11 @@ public:
 	bool has_integer_constant(const StringName &p_class, const StringName &p_name) const;
 	int get_integer_constant(const StringName &p_class, const StringName &p_name) const;
 	StringName get_category(const StringName &p_node) const;
+
+	bool has_enum(const StringName &p_class, const StringName &p_name, bool p_no_inheritance = false) const;
+	PackedStringArray get_enum_list(const StringName &p_class, bool p_no_inheritance = false) const;
+	PackedStringArray get_enum_constants(const StringName &p_class, const StringName &p_enum, bool p_no_inheritance = false) const;
+	StringName get_integer_constant_enum(const StringName &p_class, const StringName &p_name, bool p_no_inheritance = false) const;
 
 	bool is_class_enabled(StringName p_class) const;
 

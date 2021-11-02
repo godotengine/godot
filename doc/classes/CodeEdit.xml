@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		CodeEdit is a specialised [TextEdit] designed for editing plain text code files. It contains a bunch of features commonly found in code editors such as line numbers, line folding, code completion, indent management and string / comment management.
-		[b]Note[/b]: By default [CodeEdit] always use left-to-right text direction to correctly display source code.
+		[b]Note:[/b] By default [CodeEdit] always use left-to-right text direction to correctly display source code.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -51,7 +51,7 @@
 			<argument index="5" name="value" type="Variant" default="0" />
 			<description>
 				Submits an item to the queue of potential candidates for the autocomplete menu. Call [method update_code_completion_options] to update the list.
-				[b]Note[/b]: This list will replace all current candidates.
+				[b]Note:[/b] This list will replace all current candidates.
 			</description>
 		</method>
 		<method name="add_comment_delimiter">
@@ -431,7 +431,7 @@
 			<argument index="0" name="force" type="bool" />
 			<description>
 				Submits all completion options added with [method add_code_completion_option]. Will try to force the autoccomplete menu to popup, if [code]force[/code] is [code]true[/code].
-				[b]Note[/b]: This will replace all current candidates.
+				[b]Note:[/b] This will replace all current candidates.
 			</description>
 		</method>
 	</methods>
@@ -494,7 +494,6 @@
 		<member name="line_length_guidelines" type="int[]" setter="set_line_length_guidelines" getter="get_line_length_guidelines" default="[]">
 			Draws vertical lines at the provided columns. The first entry is considered a main hard guideline and is draw more prominently
 		</member>
-		<member name="structured_text_bidi_override_options" type="Array" setter="set_structured_text_bidi_override_options" getter="get_structured_text_bidi_override_options" override="true" default="[]" />
 		<member name="symbol_lookup_on_click" type="bool" setter="set_symbol_lookup_on_click_enabled" getter="is_symbol_lookup_on_click_enabled" default="false">
 			Set when a validated word from [signal symbol_validate] is clicked, the [signal symbol_lookup] should be emitted.
 		</member>
@@ -670,6 +669,12 @@
 		</theme_item>
 		<theme_item name="read_only" data_type="style" type="StyleBox">
 			Sets the [StyleBox] when [member TextEdit.editable] is disabled.
+		</theme_item>
+		<theme_item name="search_result_border_color" data_type="color" type="Color" default="Color(0.3, 0.3, 0.3, 0.4)">
+			[Color] of the border around text that matches the search query.
+		</theme_item>
+		<theme_item name="search_result_color" data_type="color" type="Color" default="Color(0.3, 0.3, 0.3, 1)">
+			[Color] behind the text that matches the search query.
 		</theme_item>
 		<theme_item name="selection_color" data_type="color" type="Color" default="Color(0.49, 0.49, 0.49, 1)">
 			Sets the highlight [Color] of text selections.

@@ -48,9 +48,6 @@
 #include "core/io/image_loader.h"
 #include "core/io/json.h"
 #include "core/io/marshalls.h"
-#include "core/io/multiplayer_api.h"
-#include "core/io/multiplayer_peer.h"
-#include "core/io/multiplayer_replicator.h"
 #include "core/io/packed_data_container.h"
 #include "core/io/packet_peer.h"
 #include "core/io/packet_peer_dtls.h"
@@ -70,6 +67,9 @@
 #include "core/math/geometry_3d.h"
 #include "core/math/random_number_generator.h"
 #include "core/math/triangle_mesh.h"
+#include "core/multiplayer/multiplayer_api.h"
+#include "core/multiplayer/multiplayer_peer.h"
+#include "core/multiplayer/multiplayer_replicator.h"
 #include "core/object/class_db.h"
 #include "core/object/undo_redo.h"
 #include "core/os/main_loop.h"
@@ -169,11 +169,13 @@ void register_core_types() {
 	GDREGISTER_VIRTUAL_CLASS(IP);
 
 	GDREGISTER_VIRTUAL_CLASS(StreamPeer);
+	GDREGISTER_CLASS(StreamPeerExtension);
 	GDREGISTER_CLASS(StreamPeerBuffer);
 	GDREGISTER_CLASS(StreamPeerTCP);
 	GDREGISTER_CLASS(TCPServer);
 
 	GDREGISTER_VIRTUAL_CLASS(PacketPeer);
+	GDREGISTER_CLASS(PacketPeerExtension);
 	GDREGISTER_CLASS(PacketPeerStream);
 	GDREGISTER_CLASS(PacketPeerUDP);
 	GDREGISTER_CLASS(UDPServer);
@@ -197,6 +199,7 @@ void register_core_types() {
 	ResourceLoader::add_resource_format_loader(resource_format_loader_crypto);
 
 	GDREGISTER_VIRTUAL_CLASS(MultiplayerPeer);
+	GDREGISTER_VIRTUAL_CLASS(MultiplayerPeerExtension);
 	GDREGISTER_VIRTUAL_CLASS(MultiplayerReplicator);
 	GDREGISTER_CLASS(MultiplayerAPI);
 	GDREGISTER_CLASS(MainLoop);

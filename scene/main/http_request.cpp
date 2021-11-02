@@ -104,9 +104,11 @@ Error HTTPRequest::request(const String &p_url, const Vector<String> &p_custom_h
 
 	CharString charstr = p_request_data.utf8();
 	size_t len = charstr.length();
-	raw_data.resize(len);
-	uint8_t *w = raw_data.ptrw();
-	memcpy(w, charstr.ptr(), len);
+	if (len > 0) {
+		raw_data.resize(len);
+		uint8_t *w = raw_data.ptrw();
+		memcpy(w, charstr.ptr(), len);
+	}
 
 	return request_raw(p_url, p_custom_headers, p_ssl_validate_domain, p_method, raw_data);
 }
@@ -597,7 +599,7 @@ void HTTPRequest::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_timeout", "timeout"), &HTTPRequest::set_timeout);
 	ClassDB::bind_method(D_METHOD("get_timeout"), &HTTPRequest::get_timeout);
 
-	ClassDB::bind_method(D_METHOD("set_download_chunk_size"), &HTTPRequest::set_download_chunk_size);
+	ClassDB::bind_method(D_METHOD("set_download_chunk_size", "chunk_size"), &HTTPRequest::set_download_chunk_size);
 	ClassDB::bind_method(D_METHOD("get_download_chunk_size"), &HTTPRequest::get_download_chunk_size);
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "download_file", PROPERTY_HINT_FILE), "set_download_file", "get_download_file");

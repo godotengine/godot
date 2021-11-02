@@ -69,9 +69,7 @@ public:
 
 	virtual ScriptLanguage *get_language();
 
-	void set_path(const String &p_path);
-
-	virtual const Vector<MultiplayerAPI::RPCConfig> get_rpc_methods() const;
+	virtual const Vector<Multiplayer::RPCConfig> get_rpc_methods() const;
 
 	virtual void refcount_incremented();
 	virtual bool refcount_decremented();

@@ -201,7 +201,6 @@ public:
 	void set_explosiveness_ratio(real_t p_ratio);
 	void set_randomness_ratio(real_t p_ratio);
 	void set_lifetime_randomness(double p_random);
-	void set_visibility_aabb(const Rect2 &p_aabb);
 	void set_use_local_coordinates(bool p_enable);
 	void set_speed_scale(double p_scale);
 
@@ -213,7 +212,6 @@ public:
 	real_t get_explosiveness_ratio() const;
 	real_t get_randomness_ratio() const;
 	double get_lifetime_randomness() const;
-	Rect2 get_visibility_aabb() const;
 	bool get_use_local_coordinates() const;
 	double get_speed_scale() const;
 
@@ -225,9 +223,6 @@ public:
 
 	void set_draw_order(DrawOrder p_order);
 	DrawOrder get_draw_order() const;
-
-	void set_draw_passes(int p_count);
-	int get_draw_passes() const;
 
 	void set_texture(const Ref<Texture2D> &p_texture);
 	Ref<Texture2D> get_texture() const;
@@ -264,7 +259,6 @@ public:
 	void set_emission_points(const Vector<Vector2> &p_points);
 	void set_emission_normals(const Vector<Vector2> &p_normals);
 	void set_emission_colors(const Vector<Color> &p_colors);
-	void set_emission_point_count(int p_count);
 	void set_scale_curve_x(Ref<Curve> p_scale_curve);
 	void set_scale_curve_y(Ref<Curve> p_scale_curve);
 	void set_split_scale(bool p_split_scale);
@@ -275,7 +269,6 @@ public:
 	Vector<Vector2> get_emission_points() const;
 	Vector<Vector2> get_emission_normals() const;
 	Vector<Color> get_emission_colors() const;
-	int get_emission_point_count() const;
 	Ref<Curve> get_scale_curve_x() const;
 	Ref<Curve> get_scale_curve_y() const;
 	bool get_split_scale();

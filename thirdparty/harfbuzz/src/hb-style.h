@@ -33,10 +33,46 @@
 
 HB_BEGIN_DECLS
 
-#ifdef HB_EXPERIMENTAL_API
+/**
+ * hb_style_tag_t:
+ * @HB_STYLE_TAG_ITALIC: Used to vary between non-italic and italic.
+ * A value of 0 can be interpreted as "Roman" (non-italic); a value of 1 can
+ * be interpreted as (fully) italic.
+ * @HB_STYLE_TAG_OPTICAL_SIZE: Used to vary design to suit different text sizes.
+ * Non-zero. Values can be interpreted as text size, in points.
+ * @HB_STYLE_TAG_SLANT_ANGLE: Used to vary between upright and slanted text. Values
+ * must be greater than -90 and less than +90. Values can be interpreted as
+ * the angle, in counter-clockwise degrees, of oblique slant from whatever the
+ * designer considers to be upright for that font design.
+ * @HB_STYLE_TAG_SLANT_RATIO: same as @HB_STYLE_TAG_SLANT_ANGLE expression as ratio.
+ * @HB_STYLE_TAG_WIDTH: Used to vary width of text from narrower to wider.
+ * Non-zero. Values can be interpreted as a percentage of whatever the font
+ * designer considers “normal width” for that font design.
+ * @HB_STYLE_TAG_WEIGHT: Used to vary stroke thicknesses or other design details
+ * to give variation from lighter to blacker. Values can be interpreted in direct
+ * comparison to values for usWeightClass in the OS/2 table,
+ * or the CSS font-weight property.
+ *
+ * Defined by [OpenType Design-Variation Axis Tag Registry](https://docs.microsoft.com/en-us/typography/opentype/spec/dvaraxisreg).
+ *
+ * Since: 3.0.0
+ **/
+typedef enum
+{
+  HB_STYLE_TAG_ITALIC		= HB_TAG ('i','t','a','l'),
+  HB_STYLE_TAG_OPTICAL_SIZE	= HB_TAG ('o','p','s','z'),
+  HB_STYLE_TAG_SLANT_ANGLE	= HB_TAG ('s','l','n','t'),
+  HB_STYLE_TAG_SLANT_RATIO	= HB_TAG ('S','l','n','t'),
+  HB_STYLE_TAG_WIDTH		= HB_TAG ('w','d','t','h'),
+  HB_STYLE_TAG_WEIGHT		= HB_TAG ('w','g','h','t'),
+
+  /*< private >*/
+  _HB_STYLE_TAG_MAX_VALUE	= HB_TAG_MAX_SIGNED /*< skip >*/
+} hb_style_tag_t;
+
+
 HB_EXTERN float
-hb_style_get_value (hb_font_t *font, hb_tag_t style_tag);
-#endif
+hb_style_get_value (hb_font_t *font, hb_style_tag_t style_tag);
 
 HB_END_DECLS
 

@@ -12,6 +12,7 @@ layout(location = 2) out vec2 uv_interp;
 layout(location = 3) out vec3 barycentric;
 layout(location = 4) flat out uvec3 vertex_indices;
 layout(location = 5) flat out vec3 face_normal;
+layout(location = 6) flat out uint fragment_action;
 
 layout(push_constant, binding = 0, std430) uniform Params {
 	vec2 atlas_size;
@@ -49,6 +50,14 @@ void main() {
 
 	face_normal = -normalize(cross((vertices.data[vertex_indices.x].position - vertices.data[vertex_indices.y].position), (vertices.data[vertex_indices.x].position - vertices.data[vertex_indices.z].position)));
 
+	{
+		const float FLAT_THRESHOLD = 0.99;
+		const vec3 norm_a = vec3(vertices.data[vertex_indices.x].normal_xy, vertices.data[vertex_indices.x].normal_z);
+		const vec3 norm_b = vec3(vertices.data[vertex_indices.y].normal_xy, vertices.data[vertex_indices.y].normal_z);
+		const vec3 norm_c = vec3(vertices.data[vertex_indices.z].normal_xy, vertices.data[vertex_indices.z].normal_z);
+		fragment_action = (dot(norm_a, norm_b) < FLAT_THRESHOLD || dot(norm_a, norm_c) < FLAT_THRESHOLD || dot(norm_b, norm_c) < FLAT_THRESHOLD) ? FA_SMOOTHEN_POSITION : FA_NONE;
+	}
+
 	gl_Position = vec4((uv_interp + params.uv_offset) * 2.0 - 1.0, 0.0001, 1.0);
 }
 
@@ -78,6 +87,7 @@ layout(location = 2) in vec2 uv_interp;
 layout(location = 3) in vec3 barycentric;
 layout(location = 4) in flat uvec3 vertex_indices;
 layout(location = 5) in flat vec3 face_normal;
+layout(location = 6) in flat uint fragment_action;
 
 layout(location = 0) out vec4 position;
 layout(location = 1) out vec4 normal;
@@ -86,7 +96,7 @@ layout(location = 2) out vec4 unocclude;
 void main() {
 	vec3 vertex_pos = vertex_interp;
 
-	{
+	if (fragment_action == FA_SMOOTHEN_POSITION) {
 		// smooth out vertex position by interpolating its projection in the 3 normal planes (normal plane is created by vertex pos and normal)
 		// because we don't want to interpolate inwards, normals found pointing inwards are pushed out.
 		vec3 pos_a = vertices.data[vertex_indices.x].position;

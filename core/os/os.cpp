@@ -36,7 +36,6 @@
 #include "core/io/file_access.h"
 #include "core/os/midi_driver.h"
 #include "core/version_generated.gen.h"
-#include "servers/audio_server.h"
 
 #include <stdarg.h>
 
@@ -76,12 +75,12 @@ void OS::add_logger(Logger *p_logger) {
 	}
 }
 
-void OS::print_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, Logger::ErrorType p_type) {
+void OS::print_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, bool p_editor_notify, Logger::ErrorType p_type) {
 	if (!_stderr_enabled) {
 		return;
 	}
 
-	_logger->log_error(p_function, p_file, p_line, p_code, p_rationale, p_type);
+	_logger->log_error(p_function, p_file, p_line, p_code, p_rationale, p_editor_notify, p_type);
 }
 
 void OS::print(const char *p_format, ...) {
@@ -144,6 +143,10 @@ void OS::vibrate_handheld(int p_duration_ms) {
 
 bool OS::is_stdout_verbose() const {
 	return _verbose_stdout;
+}
+
+bool OS::is_single_window() const {
+	return _single_window;
 }
 
 bool OS::is_stdout_debug_enabled() const {
@@ -227,6 +230,12 @@ String OS::get_locale() const {
 	return "en";
 }
 
+// Non-virtual helper to extract the 2 or 3-letter language code from
+// `get_locale()` in a way that's consistent for all platforms.
+String OS::get_locale_language() const {
+	return get_locale().left(3).replace("_", "");
+}
+
 // Helper function to ensure that a dir name/path will be valid on the OS
 String OS::get_safe_dir_name(const String &p_dir_name, bool p_allow_dir_separator) const {
 	Vector<String> invalid_chars = String(": * ? \" < > |").split(" ");
@@ -270,6 +279,11 @@ String OS::get_cache_path() const {
 // Path to macOS .app bundle resources
 String OS::get_bundle_resource_dir() const {
 	return ".";
+}
+
+// Path to macOS .app bundle embedded icon
+String OS::get_bundle_icon_path() const {
+	return String();
 }
 
 // OS specific path for user://
@@ -357,9 +371,17 @@ void OS::set_has_server_feature_callback(HasServerFeatureCallback p_callback) {
 }
 
 bool OS::has_feature(const String &p_feature) {
-	if (p_feature == get_name()) {
+	// Feature tags are always lowercase for consistency.
+	if (p_feature == get_name().to_lower()) {
 		return true;
 	}
+
+	// Catch-all `linuxbsd` feature tag that matches on both Linux and BSD.
+	// This is the one exposed in the project settings dialog.
+	if (p_feature == "linuxbsd" && (get_name() == "Linux" || get_name() == "FreeBSD" || get_name() == "NetBSD" || get_name() == "OpenBSD" || get_name() == "BSD")) {
+		return true;
+	}
+
 #ifdef DEBUG_ENABLED
 	if (p_feature == "debug") {
 		return true;
@@ -407,6 +429,24 @@ bool OS::has_feature(const String &p_feature) {
 	}
 #endif
 	if (p_feature == "arm") {
+		return true;
+	}
+#elif defined(__riscv)
+#if __riscv_xlen == 8
+	if (p_feature == "rv64") {
+		return true;
+	}
+#endif
+	if (p_feature == "riscv") {
+		return true;
+	}
+#elif defined(__powerpc__)
+#if defined(__powerpc64__)
+	if (p_feature == "ppc64") {
+		return true;
+	}
+#endif
+	if (p_feature == "ppc") {
 		return true;
 	}
 #endif

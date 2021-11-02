@@ -119,10 +119,10 @@ ShaderWarning::CodeFlags ShaderWarning::get_flags_from_codemap(const Map<Code, b
 		init_code_to_flags_map();
 	}
 
-	for (Map<Code, bool>::Element *E = p_map.front(); E; E = E->next()) {
-		if (E->get()) {
-			ERR_FAIL_COND_V(!code_to_flags_map->has((int)E->key()), ShaderWarning::NONE_FLAG);
-			result |= (*code_to_flags_map)[(int)E->key()];
+	for (const KeyValue<Code, bool> &E : p_map) {
+		if (E.value) {
+			ERR_FAIL_COND_V(!code_to_flags_map->has((int)E.key), ShaderWarning::NONE_FLAG);
+			result |= (*code_to_flags_map)[(int)E.key];
 		}
 	}
 	return (CodeFlags)result;

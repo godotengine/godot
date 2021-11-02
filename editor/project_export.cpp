@@ -752,6 +752,9 @@ bool ProjectExportDialog::_fill_tree(EditorFileSystemDirectory *p_dir, TreeItem 
 		if (p_only_scenes && type != "PackedScene") {
 			continue;
 		}
+		if (type == "TextFile") {
+			continue;
+		}
 
 		TreeItem *file = include_files->create_item(p_item);
 		file->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);

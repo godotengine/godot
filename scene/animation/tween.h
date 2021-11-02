@@ -43,6 +43,7 @@ public:
 	virtual void set_tween(Ref<Tween> p_tween);
 	virtual void start() = 0;
 	virtual bool step(float &r_delta) = 0;
+	void clear_tween();
 
 protected:
 	static void _bind_methods();
@@ -111,7 +112,7 @@ private:
 	bool started = false;
 	bool running = true;
 	bool dead = false;
-	bool invalid = true;
+	bool valid = false;
 	bool default_parallel = false;
 	bool parallel_enabled = false;
 
@@ -127,8 +128,8 @@ public:
 	Ref<PropertyTweener> tween_property(Object *p_target, NodePath p_property, Variant p_to, float p_duration);
 	Ref<IntervalTweener> tween_interval(float p_time);
 	Ref<CallbackTweener> tween_callback(Callable p_callback);
-	Ref<MethodTweener> tween_method(Callable p_callback, float p_from, float p_to, float p_duration);
-	Ref<Tween> append(Ref<Tweener> p_tweener);
+	Ref<MethodTweener> tween_method(Callable p_callback, Variant p_from, Variant p_to, float p_duration);
+	void append(Ref<Tweener> p_tweener);
 
 	bool custom_step(float p_delta);
 	void stop();
@@ -139,6 +140,7 @@ public:
 	bool is_running();
 	void set_valid(bool p_valid);
 	bool is_valid();
+	void clear();
 
 	Ref<Tween> bind_node(Node *p_node);
 	Ref<Tween> set_process_mode(TweenProcessMode p_mode);
@@ -256,7 +258,7 @@ public:
 	void start() override;
 	bool step(float &r_delta) override;
 
-	MethodTweener(Callable p_callback, float p_from, float p_to, float p_duration);
+	MethodTweener(Callable p_callback, Variant p_from, Variant p_to, float p_duration);
 	MethodTweener();
 
 protected:

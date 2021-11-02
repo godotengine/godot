@@ -86,28 +86,28 @@ void ResourceImporterTexture::update_imports() {
 			return;
 		}
 
-		for (Map<StringName, MakeInfo>::Element *E = make_flags.front(); E; E = E->next()) {
+		for (const KeyValue<StringName, MakeInfo> &E : make_flags) {
 			Ref<ConfigFile> cf;
 			cf.instantiate();
-			String src_path = String(E->key()) + ".import";
+			String src_path = String(E.key) + ".import";
 
 			Error err = cf->load(src_path);
 			ERR_CONTINUE(err != OK);
 
 			bool changed = false;
 
-			if (E->get().flags & MAKE_NORMAL_FLAG && int(cf->get_value("params", "compress/normal_map")) == 0) {
+			if (E.value.flags & MAKE_NORMAL_FLAG && int(cf->get_value("params", "compress/normal_map")) == 0) {
 				cf->set_value("params", "compress/normal_map", 1);
 				changed = true;
 			}
 
-			if (E->get().flags & MAKE_ROUGHNESS_FLAG && int(cf->get_value("params", "roughness/mode")) == 0) {
-				cf->set_value("params", "roughness/mode", E->get().channel_for_roughness + 2);
-				cf->set_value("params", "roughness/src_normal", E->get().normal_path_for_roughness);
+			if (E.value.flags & MAKE_ROUGHNESS_FLAG && int(cf->get_value("params", "roughness/mode")) == 0) {
+				cf->set_value("params", "roughness/mode", E.value.channel_for_roughness + 2);
+				cf->set_value("params", "roughness/src_normal", E.value.normal_path_for_roughness);
 				changed = true;
 			}
 
-			if (E->get().flags & MAKE_3D_FLAG && bool(cf->get_value("params", "detect_3d/compress_to"))) {
+			if (E.value.flags & MAKE_3D_FLAG && bool(cf->get_value("params", "detect_3d/compress_to"))) {
 				int compress_to = cf->get_value("params", "detect_3d/compress_to");
 				cf->set_value("params", "detect_3d/compress_to", 0);
 				if (compress_to == 1) {
@@ -121,7 +121,7 @@ void ResourceImporterTexture::update_imports() {
 
 			if (changed) {
 				cf->save(src_path);
-				to_reimport.push_back(E->key());
+				to_reimport.push_back(E.key);
 			}
 		}
 
@@ -218,7 +218,8 @@ void ResourceImporterTexture::get_import_options(List<ImportOption> *r_options, 
 void ResourceImporterTexture::save_to_stex_format(FileAccess *f, const Ref<Image> &p_image, CompressMode p_compress_mode, Image::UsedChannels p_channels, Image::CompressMode p_compress_format, float p_lossy_quality) {
 	switch (p_compress_mode) {
 		case COMPRESS_LOSSLESS: {
-			bool lossless_force_png = ProjectSettings::get_singleton()->get("rendering/textures/lossless_compression/force_png");
+			bool lossless_force_png = ProjectSettings::get_singleton()->get("rendering/textures/lossless_compression/force_png") ||
+					!Image::_webp_mem_loader_func; // WebP module disabled.
 			bool use_webp = !lossless_force_png && p_image->get_width() <= 16383 && p_image->get_height() <= 16383; // WebP has a size limit
 			f->store_32(use_webp ? StreamTexture2D::DATA_FORMAT_WEBP : StreamTexture2D::DATA_FORMAT_PNG);
 			f->store_16(p_image->get_width());
@@ -393,7 +394,7 @@ Error ResourceImporterTexture::import(const String &p_source_file, const String 
 	float lossy = p_options["compress/lossy_quality"];
 	int pack_channels = p_options["compress/channel_pack"];
 	bool mipmaps = p_options["mipmaps/generate"];
-	uint32_t mipmap_limit = int(mipmaps ? int(p_options["mipmaps/limit"]) : int(-1));
+	uint32_t mipmap_limit = mipmaps ? uint32_t(p_options["mipmaps/limit"]) : uint32_t(-1);
 	bool fix_alpha_border = p_options["process/fix_alpha_border"];
 	bool premult_alpha = p_options["process/premult_alpha"];
 	bool normal_map_invert_y = p_options["process/normal_map_invert_y"];

@@ -76,6 +76,12 @@ TEST_CASE("[Rect2] Basic getters") {
 	CHECK_MESSAGE(
 			rect.get_end().is_equal_approx(Vector2(1280, 820)),
 			"get_end() should return the expected value.");
+	CHECK_MESSAGE(
+			rect.get_center().is_equal_approx(Vector2(640, 460)),
+			"get_center() should return the expected value.");
+	CHECK_MESSAGE(
+			Rect2(0, 100, 1281, 721).get_center().is_equal_approx(Vector2(640.5, 460.5)),
+			"get_center() should return the expected value.");
 }
 
 TEST_CASE("[Rect2] Basic setters") {
@@ -288,6 +294,12 @@ TEST_CASE("[Rect2i] Basic getters") {
 	CHECK_MESSAGE(
 			rect.get_end() == Vector2i(1280, 820),
 			"get_end() should return the expected value.");
+	CHECK_MESSAGE(
+			rect.get_center() == Vector2i(640, 460),
+			"get_center() should return the expected value.");
+	CHECK_MESSAGE(
+			Rect2i(0, 100, 1281, 721).get_center() == Vector2i(640, 460),
+			"get_center() should return the expected value.");
 }
 
 TEST_CASE("[Rect2i] Basic setters") {

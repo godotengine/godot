@@ -436,6 +436,38 @@ void Builder::postProcessFeatures() {
             }
         }
     }
+
+    // If any Vulkan memory model-specific functionality is used, update the
+    // OpMemoryModel to match.
+    if (capabilities.find(spv::CapabilityVulkanMemoryModelKHR) != capabilities.end()) {
+        memoryModel = spv::MemoryModelVulkanKHR;
+        addIncorporatedExtension(spv::E_SPV_KHR_vulkan_memory_model, spv::Spv_1_5);
+    }
+
+    // Add Aliased decoration if there's more than one Workgroup Block variable.
+    if (capabilities.find(spv::CapabilityWorkgroupMemoryExplicitLayoutKHR) != capabilities.end()) {
+        assert(entryPoints.size() == 1);
+        auto &ep = entryPoints[0];
+
+        std::vector<Id> workgroup_variables;
+        for (int i = 0; i < (int)ep->getNumOperands(); i++) {
+            if (!ep->isIdOperand(i))
+                continue;
+
+            const Id id = ep->getIdOperand(i);
+            const Instruction *instr = module.getInstruction(id);
+            if (instr->getOpCode() != spv::OpVariable)
+                continue;
+
+            if (instr->getImmediateOperand(0) == spv::StorageClassWorkgroup)
+                workgroup_variables.push_back(id);
+        }
+
+        if (workgroup_variables.size() > 1) {
+            for (size_t i = 0; i < workgroup_variables.size(); i++)
+                addDecoration(workgroup_variables[i], spv::DecorationAliased);
+        }
+    }
 }
 #endif
 

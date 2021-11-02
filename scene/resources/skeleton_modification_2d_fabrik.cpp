@@ -247,7 +247,7 @@ void SkeletonModification2DFABRIK::chain_backwards() {
 		}
 
 		float current_bone2d_node_length = current_bone2d_node->get_length() * MIN(current_bone2d_node->get_global_scale().x, current_bone2d_node->get_global_scale().y);
-		float length = current_bone2d_node_length / (previous_pose.get_origin() - current_pose.get_origin()).length();
+		float length = current_bone2d_node_length / (current_pose.get_origin().distance_to(previous_pose.get_origin()));
 		Vector2 finish_position = previous_pose.get_origin().lerp(current_pose.get_origin(), length);
 		current_pose.set_origin(finish_position);
 
@@ -268,7 +268,7 @@ void SkeletonModification2DFABRIK::chain_forwards() {
 		Transform2D next_pose = fabrik_transform_chain[i + 1];
 
 		float current_bone2d_node_length = current_bone2d_node->get_length() * MIN(current_bone2d_node->get_global_scale().x, current_bone2d_node->get_global_scale().y);
-		float length = current_bone2d_node_length / (current_pose.get_origin() - next_pose.get_origin()).length();
+		float length = current_bone2d_node_length / (next_pose.get_origin().distance_to(current_pose.get_origin()));
 		Vector2 finish_position = current_pose.get_origin().lerp(next_pose.get_origin(), length);
 		current_pose.set_origin(finish_position);
 

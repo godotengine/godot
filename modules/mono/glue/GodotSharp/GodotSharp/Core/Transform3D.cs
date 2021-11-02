@@ -28,12 +28,13 @@ namespace Godot
         public Basis basis;
 
         /// <summary>
-        /// The origin vector (column 3, the fourth column). Equivalent to array index `[3]`.
+        /// The origin vector (column 3, the fourth column). Equivalent to array index <c>[3]</c>.
         /// </summary>
         public Vector3 origin;
 
         /// <summary>
-        /// Access whole columns in the form of Vector3. The fourth column is the origin vector.
+        /// Access whole columns in the form of <see cref="Vector3"/>.
+        /// The fourth column is the <see cref="origin"/> vector.
         /// </summary>
         /// <param name="column">Which column vector.</param>
         public Vector3 this[int column]
@@ -77,7 +78,8 @@ namespace Godot
         }
 
         /// <summary>
-        /// Access matrix elements in column-major order. The fourth column is the origin vector.
+        /// Access matrix elements in column-major order.
+        /// The fourth column is the <see cref="origin"/> vector.
         /// </summary>
         /// <param name="column">Which column, the matrix horizontal position.</param>
         /// <param name="row">Which row, the matrix vertical position.</param>
@@ -106,6 +108,7 @@ namespace Godot
         /// Returns the inverse of the transform, under the assumption that
         /// the transformation is composed of rotation, scaling, and translation.
         /// </summary>
+        /// <seealso cref="Inverse"/>
         /// <returns>The inverse transformation matrix.</returns>
         public Transform3D AffineInverse()
         {
@@ -114,7 +117,7 @@ namespace Godot
         }
 
         /// <summary>
-        /// Interpolates this transform to the other `transform` by `weight`.
+        /// Interpolates this transform to the other <paramref name="transform"/> by <paramref name="weight"/>.
         /// </summary>
         /// <param name="transform">The other transform.</param>
         /// <param name="weight">A value on the range of 0.0 to 1.0, representing the amount of interpolation.</param>
@@ -132,7 +135,9 @@ namespace Godot
             Vector3 destinationLocation = transform.origin;
 
             var interpolated = new Transform3D();
-            interpolated.basis.SetQuaternionScale(sourceRotation.Slerp(destinationRotation, weight).Normalized(), sourceScale.Lerp(destinationScale, weight));
+            Quaternion quaternion = sourceRotation.Slerp(destinationRotation, weight).Normalized();
+            Vector3 scale = sourceScale.Lerp(destinationScale, weight);
+            interpolated.basis.SetQuaternionScale(quaternion, scale);
             interpolated.origin = sourceLocation.Lerp(destinationLocation, weight);
 
             return interpolated;
@@ -152,11 +157,11 @@ namespace Godot
 
         /// <summary>
         /// Returns a copy of the transform rotated such that its
-        /// -Z axis (forward) points towards the target position.
+        /// -Z axis (forward) points towards the <paramref name="target"/> position.
         ///
-        /// The transform will first be rotated around the given up vector,
-        /// and then fully aligned to the target by a further rotation around
-        /// an axis perpendicular to both the target and up vectors.
+        /// The transform will first be rotated around the given <paramref name="up"/> vector,
+        /// and then fully aligned to the <paramref name="target"/> by a further rotation around
+        /// an axis perpendicular to both the <paramref name="target"/> and <paramref name="up"/> vectors.
         ///
         /// Operations take place in global space.
         /// </summary>
@@ -165,7 +170,7 @@ namespace Godot
         /// <returns>The resulting transform.</returns>
         public Transform3D LookingAt(Vector3 target, Vector3 up)
         {
-            var t = this;
+            Transform3D t = this;
             t.SetLookAt(origin, target, up);
             return t;
         }
@@ -181,7 +186,7 @@ namespace Godot
         }
 
         /// <summary>
-        /// Rotates the transform around the given `axis` by `phi` (in radians),
+        /// Rotates the transform around the given <paramref name="axis"/> by <paramref name="phi"/> (in radians),
         /// using matrix multiplication. The axis must be a normalized vector.
         /// </summary>
         /// <param name="axis">The axis to rotate around. Must be normalized.</param>
@@ -226,7 +231,7 @@ namespace Godot
         }
 
         /// <summary>
-        /// Translates the transform by the given `offset`,
+        /// Translates the transform by the given <paramref name="offset"/>,
         /// relative to the transform's basis vectors.
         ///
         /// Unlike <see cref="Rotated"/> and <see cref="Scaled"/>,
@@ -247,6 +252,7 @@ namespace Godot
         /// <summary>
         /// Returns a vector transformed (multiplied) by this transformation matrix.
         /// </summary>
+        /// <seealso cref="XformInv(Vector3)"/>
         /// <param name="v">A vector to transform.</param>
         /// <returns>The transformed vector.</returns>
         public Vector3 Xform(Vector3 v)
@@ -265,6 +271,7 @@ namespace Godot
         /// Note: This results in a multiplication by the inverse of the
         /// transformation matrix only if it represents a rotation-reflection.
         /// </summary>
+        /// <seealso cref="Xform(Vector3)"/>
         /// <param name="v">A vector to inversely transform.</param>
         /// <returns>The inversely transformed vector.</returns>
         public Vector3 XformInv(Vector3 v)
@@ -273,9 +280,9 @@ namespace Godot
 
             return new Vector3
             (
-                basis.Row0[0] * vInv.x + basis.Row1[0] * vInv.y + basis.Row2[0] * vInv.z,
-                basis.Row0[1] * vInv.x + basis.Row1[1] * vInv.y + basis.Row2[1] * vInv.z,
-                basis.Row0[2] * vInv.x + basis.Row1[2] * vInv.y + basis.Row2[2] * vInv.z
+                (basis.Row0[0] * vInv.x) + (basis.Row1[0] * vInv.y) + (basis.Row2[0] * vInv.z),
+                (basis.Row0[1] * vInv.x) + (basis.Row1[1] * vInv.y) + (basis.Row2[1] * vInv.z),
+                (basis.Row0[2] * vInv.x) + (basis.Row1[2] * vInv.y) + (basis.Row2[2] * vInv.z)
             );
         }
 
@@ -287,25 +294,25 @@ namespace Godot
 
         /// <summary>
         /// The identity transform, with no translation, rotation, or scaling applied.
-        /// This is used as a replacement for `Transform()` in GDScript.
-        /// Do not use `new Transform()` with no arguments in C#, because it sets all values to zero.
+        /// This is used as a replacement for <c>Transform()</c> in GDScript.
+        /// Do not use <c>new Transform()</c> with no arguments in C#, because it sets all values to zero.
         /// </summary>
-        /// <value>Equivalent to `new Transform(Vector3.Right, Vector3.Up, Vector3.Back, Vector3.Zero)`.</value>
+        /// <value>Equivalent to <c>new Transform(Vector3.Right, Vector3.Up, Vector3.Back, Vector3.Zero)</c>.</value>
         public static Transform3D Identity { get { return _identity; } }
         /// <summary>
         /// The transform that will flip something along the X axis.
         /// </summary>
-        /// <value>Equivalent to `new Transform(Vector3.Left, Vector3.Up, Vector3.Back, Vector3.Zero)`.</value>
+        /// <value>Equivalent to <c>new Transform(Vector3.Left, Vector3.Up, Vector3.Back, Vector3.Zero)</c>.</value>
         public static Transform3D FlipX { get { return _flipX; } }
         /// <summary>
         /// The transform that will flip something along the Y axis.
         /// </summary>
-        /// <value>Equivalent to `new Transform(Vector3.Right, Vector3.Down, Vector3.Back, Vector3.Zero)`.</value>
+        /// <value>Equivalent to <c>new Transform(Vector3.Right, Vector3.Down, Vector3.Back, Vector3.Zero)</c>.</value>
         public static Transform3D FlipY { get { return _flipY; } }
         /// <summary>
         /// The transform that will flip something along the Z axis.
         /// </summary>
-        /// <value>Equivalent to `new Transform(Vector3.Right, Vector3.Up, Vector3.Forward, Vector3.Zero)`.</value>
+        /// <value>Equivalent to <c>new Transform(Vector3.Right, Vector3.Up, Vector3.Forward, Vector3.Zero)</c>.</value>
         public static Transform3D FlipZ { get { return _flipZ; } }
 
         /// <summary>
@@ -322,9 +329,10 @@ namespace Godot
         }
 
         /// <summary>
-        /// Constructs a transformation matrix from the given quaternion and origin vector.
+        /// Constructs a transformation matrix from the given <paramref name="quaternion"/>
+        /// and <paramref name="origin"/> vector.
         /// </summary>
-        /// <param name="quaternion">The <see cref="Godot.Quaternion"/> to create the basis from.</param>
+        /// <param name="quaternion">The <see cref="Quaternion"/> to create the basis from.</param>
         /// <param name="origin">The origin vector, or column index 3.</param>
         public Transform3D(Quaternion quaternion, Vector3 origin)
         {
@@ -333,9 +341,10 @@ namespace Godot
         }
 
         /// <summary>
-        /// Constructs a transformation matrix from the given basis and origin vector.
+        /// Constructs a transformation matrix from the given <paramref name="basis"/> and
+        /// <paramref name="origin"/> vector.
         /// </summary>
-        /// <param name="basis">The <see cref="Godot.Basis"/> to create the basis from.</param>
+        /// <param name="basis">The <see cref="Basis"/> to create the basis from.</param>
         /// <param name="origin">The origin vector, or column index 3.</param>
         public Transform3D(Basis basis, Vector3 origin)
         {
@@ -360,6 +369,11 @@ namespace Godot
             return !left.Equals(right);
         }
 
+        /// <summary>
+        /// Returns <see langword="true"/> if this transform and <paramref name="obj"/> are equal.
+        /// </summary>
+        /// <param name="obj">The other object to compare.</param>
+        /// <returns>Whether or not the transform and the other object are equal.</returns>
         public override bool Equals(object obj)
         {
             if (obj is Transform3D)
@@ -370,14 +384,19 @@ namespace Godot
             return false;
         }
 
+        /// <summary>
+        /// Returns <see langword="true"/> if this transform and <paramref name="other"/> are equal.
+        /// </summary>
+        /// <param name="other">The other transform to compare.</param>
+        /// <returns>Whether or not the matrices are equal.</returns>
         public bool Equals(Transform3D other)
         {
             return basis.Equals(other.basis) && origin.Equals(other.origin);
         }
 
         /// <summary>
-        /// Returns true if this transform and `other` are approximately equal, by running
-        /// <see cref="Vector3.IsEqualApprox(Vector3)"/> on each component.
+        /// Returns <see langword="true"/> if this transform and <paramref name="other"/> are approximately equal,
+        /// by running <see cref="Vector3.IsEqualApprox(Vector3)"/> on each component.
         /// </summary>
         /// <param name="other">The other transform to compare.</param>
         /// <returns>Whether or not the matrices are approximately equal.</returns>
@@ -386,16 +405,28 @@ namespace Godot
             return basis.IsEqualApprox(other.basis) && origin.IsEqualApprox(other.origin);
         }
 
+        /// <summary>
+        /// Serves as the hash function for <see cref="Transform3D"/>.
+        /// </summary>
+        /// <returns>A hash code for this transform.</returns>
         public override int GetHashCode()
         {
             return basis.GetHashCode() ^ origin.GetHashCode();
         }
 
+        /// <summary>
+        /// Converts this <see cref="Transform3D"/> to a string.
+        /// </summary>
+        /// <returns>A string representation of this transform.</returns>
         public override string ToString()
         {
             return $"[X: {basis.x}, Y: {basis.y}, Z: {basis.z}, O: {origin}]";
         }
 
+        /// <summary>
+        /// Converts this <see cref="Transform3D"/> to a string with the given <paramref name="format"/>.
+        /// </summary>
+        /// <returns>A string representation of this transform.</returns>
         public string ToString(string format)
         {
             return $"[X: {basis.x.ToString(format)}, Y: {basis.y.ToString(format)}, Z: {basis.z.ToString(format)}, O: {origin.ToString(format)}]";

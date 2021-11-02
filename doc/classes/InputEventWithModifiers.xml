@@ -9,8 +9,6 @@
 	<tutorials>
 		<link title="InputEvent">https://docs.godotengine.org/en/latest/tutorials/inputs/inputevent.html</link>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="alt_pressed" type="bool" setter="set_alt_pressed" getter="is_alt_pressed" default="false">
 			State of the [kbd]Alt[/kbd] modifier.
@@ -32,6 +30,4 @@
 			This aids with cross-platform compatibility when developing e.g. on Windows for macOS, or vice-versa.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

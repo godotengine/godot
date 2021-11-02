@@ -178,7 +178,7 @@
 
 class OSXTerminalLogger : public StdLogger {
 public:
-	virtual void log_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, ErrorType p_type = ERR_ERROR) {
+	virtual void log_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, bool p_editor_notify, ErrorType p_type = ERR_ERROR) {
 		if (!should_log(true)) {
 			return;
 		}
@@ -314,17 +314,27 @@ String OS_OSX::get_name() const {
 	return "macOS";
 }
 
+_FORCE_INLINE_ String _get_framework_executable(const String p_path) {
+	// Append framework executable name, or return as is if p_path is not a framework.
+	DirAccessRef da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+	if (da->dir_exists(p_path) && da->file_exists(p_path.plus_file(p_path.get_file().get_basename()))) {
+		return p_path.plus_file(p_path.get_file().get_basename());
+	} else {
+		return p_path;
+	}
+}
+
 Error OS_OSX::open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path) {
-	String path = p_path;
+	String path = _get_framework_executable(p_path);
 
 	if (!FileAccess::exists(path)) {
-		//this code exists so gdnative can load .dylib files from within the executable path
-		path = get_executable_path().get_base_dir().plus_file(p_path.get_file());
+		// This code exists so gdnative can load .dylib files from within the executable path.
+		path = _get_framework_executable(get_executable_path().get_base_dir().plus_file(p_path.get_file()));
 	}
 
 	if (!FileAccess::exists(path)) {
-		//this code exists so gdnative can load .dylib files from a standard macOS location
-		path = get_executable_path().get_base_dir().plus_file("../Frameworks").plus_file(p_path.get_file());
+		// This code exists so gdnative can load .dylib files from a standard macOS location.
+		path = _get_framework_executable(get_executable_path().get_base_dir().plus_file("../Frameworks").plus_file(p_path.get_file()));
 	}
 
 	p_library_handle = dlopen(path.utf8().get_data(), RTLD_NOW);
@@ -379,14 +389,26 @@ String OS_OSX::get_cache_path() const {
 }
 
 String OS_OSX::get_bundle_resource_dir() const {
-	NSBundle *main = [NSBundle mainBundle];
-	NSString *resourcePath = [main resourcePath];
-
-	char *utfs = strdup([resourcePath UTF8String]);
 	String ret;
-	ret.parse_utf8(utfs);
-	free(utfs);
 
+	NSBundle *main = [NSBundle mainBundle];
+	if (main) {
+		NSString *resourcePath = [main resourcePath];
+		ret.parse_utf8([resourcePath UTF8String]);
+	}
+	return ret;
+}
+
+String OS_OSX::get_bundle_icon_path() const {
+	String ret;
+
+	NSBundle *main = [NSBundle mainBundle];
+	if (main) {
+		NSString *iconPath = [[main infoDictionary] objectForKey:@"CFBundleIconFile"];
+		if (iconPath) {
+			ret.parse_utf8([iconPath UTF8String]);
+		}
+	}
 	return ret;
 }
 
@@ -466,6 +488,64 @@ String OS_OSX::get_executable_path() const {
 		path.parse_utf8(pathbuf);
 
 		return path;
+	}
+}
+
+Error OS_OSX::create_instance(const List<String> &p_arguments, ProcessID *r_child_id) {
+	// If executable is bundled, always execute editor instances as an app bundle to ensure app window is registered and activated correctly.
+	NSString *nsappname = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleName"];
+	if (nsappname != nil) {
+		String path;
+		path.parse_utf8([[[NSBundle mainBundle] bundlePath] UTF8String]);
+		return create_process(path, p_arguments, r_child_id);
+	} else {
+		return create_process(get_executable_path(), p_arguments, r_child_id);
+	}
+}
+
+Error OS_OSX::create_process(const String &p_path, const List<String> &p_arguments, ProcessID *r_child_id) {
+	if (@available(macOS 10.15, *)) {
+		// Use NSWorkspace if path is an .app bundle.
+		NSURL *url = [NSURL fileURLWithPath:@(p_path.utf8().get_data())];
+		NSBundle *bundle = [NSBundle bundleWithURL:url];
+		if (bundle) {
+			NSMutableArray *arguments = [[NSMutableArray alloc] init];
+			for (const List<String>::Element *E = p_arguments.front(); E; E = E->next()) {
+				[arguments addObject:[NSString stringWithUTF8String:E->get().utf8().get_data()]];
+			}
+			NSWorkspaceOpenConfiguration *configuration = [[NSWorkspaceOpenConfiguration alloc] init];
+			[configuration setArguments:arguments];
+			[configuration setCreatesNewApplicationInstance:YES];
+			__block dispatch_semaphore_t lock = dispatch_semaphore_create(0);
+			__block Error err = ERR_TIMEOUT;
+			__block pid_t pid = 0;
+			[[NSWorkspace sharedWorkspace] openApplicationAtURL:url
+												  configuration:configuration
+											  completionHandler:^(NSRunningApplication *app, NSError *error) {
+												  if (error) {
+													  err = ERR_CANT_FORK;
+													  NSLog(@"Failed to execute: %@", error.localizedDescription);
+												  } else {
+													  pid = [app processIdentifier];
+													  err = OK;
+												  }
+												  dispatch_semaphore_signal(lock);
+											  }];
+			dispatch_semaphore_wait(lock, dispatch_time(DISPATCH_TIME_NOW, 20000000000)); // 20 sec timeout, wait for app to launch.
+			dispatch_release(lock);
+
+			if (err == OK) {
+				if (r_child_id) {
+					*r_child_id = (ProcessID)pid;
+				}
+			}
+
+			return err;
+		} else {
+			return OS_Unix::create_process(p_path, p_arguments, r_child_id);
+		}
+	} else {
+		return OS_Unix::create_process(p_path, p_arguments, r_child_id);
 	}
 }
 

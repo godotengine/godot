@@ -38,13 +38,16 @@
 #include "renderer_scene_cull.h"
 #include "rendering_server_globals.h"
 
-// careful, these may run in different threads than the visual server
+// careful, these may run in different threads than the rendering server
 
 int RenderingServerDefault::changes = 0;
 
 /* FREE */
 
 void RenderingServerDefault::_free(RID p_rid) {
+	if (unlikely(p_rid.is_null())) {
+		return;
+	}
 	if (RSG::storage->free(p_rid)) {
 		return;
 	}

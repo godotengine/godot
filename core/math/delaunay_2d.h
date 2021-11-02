@@ -101,7 +101,7 @@ public:
 		}
 
 		float delta_max = MAX(rect.size.width, rect.size.height);
-		Vector2 center = rect.position + rect.size * 0.5;
+		Vector2 center = rect.get_center();
 
 		points.push_back(Vector2(center.x - 20 * delta_max, center.y - delta_max));
 		points.push_back(Vector2(center.x, center.y + 20 * delta_max));

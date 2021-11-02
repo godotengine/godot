@@ -9,8 +9,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="editable" type="bool" setter="set_editable" getter="is_editable" default="true">
 			If [code]true[/code], the slider can be interacted with. If [code]false[/code], the value can be changed only by code.
@@ -27,6 +25,4 @@
 			If [code]true[/code], the slider will display ticks for minimum and maximum values.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

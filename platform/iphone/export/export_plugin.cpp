@@ -33,7 +33,7 @@
 void EditorExportPlatformIOS::get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) {
 	String driver = ProjectSettings::get_singleton()->get("rendering/driver/driver_name");
 	r_features->push_back("pvrtc");
-	if (driver == "Vulkan") {
+	if (driver == "vulkan") {
 		// FIXME: Review if this is correct.
 		r_features->push_back("etc2");
 	}
@@ -841,7 +841,7 @@ void EditorExportPlatformIOS::_add_assets_to_project(const Ref<EditorExportPrese
 	String pbx_embeded_frameworks;
 
 	const String file_info_format = String("$build_id = {isa = PBXBuildFile; fileRef = $ref_id; };\n") +
-									"$ref_id = {isa = PBXFileReference; lastKnownFileType = $file_type; name = \"$name\"; path = \"$file_path\"; sourceTree = \"<group>\"; };\n";
+			"$ref_id = {isa = PBXFileReference; lastKnownFileType = $file_type; name = \"$name\"; path = \"$file_path\"; sourceTree = \"<group>\"; };\n";
 
 	for (int i = 0; i < p_additional_assets.size(); ++i) {
 		String additional_asset_info_format = file_info_format;
@@ -1105,7 +1105,7 @@ Error EditorExportPlatformIOS::_export_additional_assets(const String &p_out_dir
 		for (int j = 0; j < project_static_libs.size(); j++) {
 			project_static_libs.write[j] = project_static_libs[j].get_file(); // Only the file name as it's copied to the project
 		}
-		err = _export_additional_assets(p_out_dir, project_static_libs, true, true, r_exported_assets);
+		err = _export_additional_assets(p_out_dir, project_static_libs, true, false, r_exported_assets);
 		ERR_FAIL_COND_V(err, err);
 
 		Vector<String> ios_bundle_files = export_plugins[i]->get_ios_bundle_files();
@@ -1261,8 +1261,8 @@ Error EditorExportPlatformIOS::_export_ios_plugins(const Ref<EditorExportPreset>
 		String deinitialization_method = plugin.deinitialization_method + "();\n";
 
 		plugin_definition_cpp_code += definition_comment +
-									  "extern void " + initialization_method +
-									  "extern void " + deinitialization_method + "\n";
+				"extern void " + initialization_method +
+				"extern void " + deinitialization_method + "\n";
 
 		plugin_initialization_cpp_code += "\t" + initialization_method;
 		plugin_deinitialization_cpp_code += "\t" + deinitialization_method;
@@ -1427,7 +1427,6 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 	}
 
 	bool found_library = false;
-	int total_size = 0;
 
 	const String project_file = "godot_ios.xcodeproj/project.pbxproj";
 	Set<String> files_to_parse;
@@ -1523,7 +1522,6 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 			file = file.replace("godot_ios", binary_name);
 
 			print_line("ADDING: " + file + " size: " + itos(data.size()));
-			total_size += data.size();
 
 			/* write it into our folder structure */
 			file = dest_dir + file;

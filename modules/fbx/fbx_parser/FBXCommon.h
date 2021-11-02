@@ -70,8 +70,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 /** @file FBXCommon.h
-* Some useful constants and enums for dealing with FBX files.
-*/
+ * Some useful constants and enums for dealing with FBX files.
+ */
 #ifndef FBX_COMMON_H
 #define FBX_COMMON_H
 

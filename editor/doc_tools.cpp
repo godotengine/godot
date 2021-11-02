@@ -44,8 +44,8 @@
 #include "modules/modules_enabled.gen.h"
 
 void DocTools::merge_from(const DocTools &p_data) {
-	for (Map<String, DocData::ClassDoc>::Element *E = class_list.front(); E; E = E->next()) {
-		DocData::ClassDoc &c = E->get();
+	for (KeyValue<String, DocData::ClassDoc> &E : class_list) {
+		DocData::ClassDoc &c = E.value;
 
 		if (!p_data.class_list.has(c.name)) {
 			continue;
@@ -57,25 +57,21 @@ void DocTools::merge_from(const DocTools &p_data) {
 		c.brief_description = cf.brief_description;
 		c.tutorials = cf.tutorials;
 
-		for (int i = 0; i < c.methods.size(); i++) {
-			DocData::MethodDoc &m = c.methods.write[i];
+		for (int i = 0; i < c.constructors.size(); i++) {
+			DocData::MethodDoc &m = c.constructors.write[i];
 
-			for (int j = 0; j < cf.methods.size(); j++) {
-				if (cf.methods[j].name != m.name) {
+			for (int j = 0; j < cf.constructors.size(); j++) {
+				if (cf.constructors[j].name != m.name) {
 					continue;
 				}
 
-				const char *operator_prefix = "operator "; // Operators use a space at the end, making this prefix an invalid identifier (and differentiating from methods).
-
-				if (cf.methods[j].name == c.name || cf.methods[j].name.begins_with(operator_prefix)) {
-					// Since constructors and operators can repeat, we need to check the type of
+				{
+					// Since constructors can repeat, we need to check the type of
 					// the arguments so we make sure they are different.
-
-					if (cf.methods[j].arguments.size() != m.arguments.size()) {
+					if (cf.constructors[j].arguments.size() != m.arguments.size()) {
 						continue;
 					}
-
-					int arg_count = cf.methods[j].arguments.size();
+					int arg_count = cf.constructors[j].arguments.size();
 					Vector<bool> arg_used;
 					arg_used.resize(arg_count);
 					for (int l = 0; l < arg_count; ++l) {
@@ -85,7 +81,7 @@ void DocTools::merge_from(const DocTools &p_data) {
 					// have to check one by one so we make sure we have an exact match
 					for (int k = 0; k < arg_count; ++k) {
 						for (int l = 0; l < arg_count; ++l) {
-							if (cf.methods[j].arguments[k].type == m.arguments[l].type && !arg_used[l]) {
+							if (cf.constructors[j].arguments[k].type == m.arguments[l].type && !arg_used[l]) {
 								arg_used.write[l] = true;
 								break;
 							}
@@ -100,6 +96,21 @@ void DocTools::merge_from(const DocTools &p_data) {
 					if (not_the_same) {
 						continue;
 					}
+				}
+
+				const DocData::MethodDoc &mf = cf.constructors[j];
+
+				m.description = mf.description;
+				break;
+			}
+		}
+
+		for (int i = 0; i < c.methods.size(); i++) {
+			DocData::MethodDoc &m = c.methods.write[i];
+
+			for (int j = 0; j < cf.methods.size(); j++) {
+				if (cf.methods[j].name != m.name) {
+					continue;
 				}
 
 				const DocData::MethodDoc &mf = cf.methods[j];
@@ -165,6 +176,54 @@ void DocTools::merge_from(const DocTools &p_data) {
 			}
 		}
 
+		for (int i = 0; i < c.operators.size(); i++) {
+			DocData::MethodDoc &m = c.operators.write[i];
+
+			for (int j = 0; j < cf.operators.size(); j++) {
+				if (cf.operators[j].name != m.name) {
+					continue;
+				}
+
+				{
+					// Since operators can repeat, we need to check the type of
+					// the arguments so we make sure they are different.
+					if (cf.operators[j].arguments.size() != m.arguments.size()) {
+						continue;
+					}
+					int arg_count = cf.operators[j].arguments.size();
+					Vector<bool> arg_used;
+					arg_used.resize(arg_count);
+					for (int l = 0; l < arg_count; ++l) {
+						arg_used.write[l] = false;
+					}
+					// also there is no guarantee that argument ordering will match, so we
+					// have to check one by one so we make sure we have an exact match
+					for (int k = 0; k < arg_count; ++k) {
+						for (int l = 0; l < arg_count; ++l) {
+							if (cf.operators[j].arguments[k].type == m.arguments[l].type && !arg_used[l]) {
+								arg_used.write[l] = true;
+								break;
+							}
+						}
+					}
+					bool not_the_same = false;
+					for (int l = 0; l < arg_count; ++l) {
+						if (!arg_used[l]) { // at least one of the arguments was different
+							not_the_same = true;
+						}
+					}
+					if (not_the_same) {
+						continue;
+					}
+				}
+
+				const DocData::MethodDoc &mf = cf.operators[j];
+
+				m.description = mf.description;
+				break;
+			}
+		}
+
 #ifndef MODULE_MONO_ENABLED
 		// The Mono module defines some properties that we want to keep when
 		// re-generating docs with a non-Mono build, to prevent pointless diffs
@@ -185,9 +244,9 @@ void DocTools::merge_from(const DocTools &p_data) {
 }
 
 void DocTools::remove_from(const DocTools &p_data) {
-	for (Map<String, DocData::ClassDoc>::Element *E = p_data.class_list.front(); E; E = E->next()) {
-		if (class_list.has(E->key())) {
-			class_list.erase(E->key());
+	for (const KeyValue<String, DocData::ClassDoc> &E : p_data.class_list) {
+		if (class_list.has(E.key)) {
+			class_list.erase(E.key);
 		}
 	}
 }
@@ -277,7 +336,7 @@ void DocTools::generate(bool p_basic_types) {
 				EO = EO->next();
 			}
 
-			if (E.usage & PROPERTY_USAGE_GROUP || E.usage & PROPERTY_USAGE_SUBGROUP || E.usage & PROPERTY_USAGE_CATEGORY || E.usage & PROPERTY_USAGE_INTERNAL) {
+			if (E.usage & PROPERTY_USAGE_GROUP || E.usage & PROPERTY_USAGE_SUBGROUP || E.usage & PROPERTY_USAGE_CATEGORY || E.usage & PROPERTY_USAGE_INTERNAL || (E.type == Variant::NIL && E.usage & PROPERTY_USAGE_ARRAY)) {
 				continue;
 			}
 
@@ -650,11 +709,6 @@ void DocTools::generate(bool p_basic_types) {
 			DocData::MethodDoc method;
 
 			method.name = mi.name;
-			if (method.name == cname) {
-				method.qualifiers = "constructor";
-			} else if (method.name.begins_with("operator")) {
-				method.qualifiers = "operator";
-			}
 
 			for (int j = 0; j < mi.arguments.size(); j++) {
 				PropertyInfo arginfo = mi.arguments[j];
@@ -694,7 +748,13 @@ void DocTools::generate(bool p_basic_types) {
 				method.qualifiers += "static";
 			}
 
-			c.methods.push_back(method);
+			if (method.name == cname) {
+				c.constructors.push_back(method);
+			} else if (method.name.begins_with("operator")) {
+				c.operators.push_back(method);
+			} else {
+				c.methods.push_back(method);
+			}
 		}
 
 		List<PropertyInfo> properties;
@@ -916,7 +976,7 @@ static Error _parse_methods(Ref<XMLParser> &parser, Vector<DocData::MethodDoc> &
 				methods.push_back(method);
 
 			} else {
-				ERR_FAIL_V_MSG(ERR_FILE_CORRUPT, "Invalid tag in doc file: " + parser->get_node_name() + ".");
+				ERR_FAIL_V_MSG(ERR_FILE_CORRUPT, "Invalid tag in doc file: " + parser->get_node_name() + ", expected " + element + ".");
 			}
 
 		} else if (parser->get_node_type() == XMLParser::NODE_ELEMENT_END && parser->get_node_name() == section) {
@@ -1044,10 +1104,15 @@ Error DocTools::_load(Ref<XMLParser> parser) {
 							break; // End of <tutorials>.
 						}
 					}
+				} else if (name2 == "constructors") {
+					Error err2 = _parse_methods(parser, c.constructors);
+					ERR_FAIL_COND_V(err2, err2);
 				} else if (name2 == "methods") {
 					Error err2 = _parse_methods(parser, c.methods);
 					ERR_FAIL_COND_V(err2, err2);
-
+				} else if (name2 == "operators") {
+					Error err2 = _parse_methods(parser, c.operators);
+					ERR_FAIL_COND_V(err2, err2);
 				} else if (name2 == "signals") {
 					Error err2 = _parse_methods(parser, c.signals);
 					ERR_FAIL_COND_V(err2, err2);
@@ -1173,9 +1238,62 @@ static void _write_string(FileAccess *f, int p_tablevel, const String &p_string)
 	f->store_string(tab + p_string + "\n");
 }
 
+static void _write_method_doc(FileAccess *f, const String &p_name, Vector<DocData::MethodDoc> &p_method_docs) {
+	if (!p_method_docs.is_empty()) {
+		p_method_docs.sort();
+		_write_string(f, 1, "<" + p_name + "s>");
+		for (int i = 0; i < p_method_docs.size(); i++) {
+			const DocData::MethodDoc &m = p_method_docs[i];
+
+			String qualifiers;
+			if (m.qualifiers != "") {
+				qualifiers += " qualifiers=\"" + m.qualifiers.xml_escape() + "\"";
+			}
+
+			_write_string(f, 2, "<" + p_name + " name=\"" + m.name.xml_escape() + "\"" + qualifiers + ">");
+
+			if (m.return_type != "") {
+				String enum_text;
+				if (m.return_enum != String()) {
+					enum_text = " enum=\"" + m.return_enum + "\"";
+				}
+				_write_string(f, 3, "<return type=\"" + m.return_type + "\"" + enum_text + " />");
+			}
+			if (m.errors_returned.size() > 0) {
+				for (int j = 0; j < m.errors_returned.size(); j++) {
+					_write_string(f, 3, "<returns_error number=\"" + itos(m.errors_returned[j]) + "\"/>");
+				}
+			}
+
+			for (int j = 0; j < m.arguments.size(); j++) {
+				const DocData::ArgumentDoc &a = m.arguments[j];
+
+				String enum_text;
+				if (a.enumeration != String()) {
+					enum_text = " enum=\"" + a.enumeration + "\"";
+				}
+
+				if (a.default_value != "") {
+					_write_string(f, 3, "<argument index=\"" + itos(j) + "\" name=\"" + a.name.xml_escape() + "\" type=\"" + a.type.xml_escape() + "\"" + enum_text + " default=\"" + a.default_value.xml_escape(true) + "\" />");
+				} else {
+					_write_string(f, 3, "<argument index=\"" + itos(j) + "\" name=\"" + a.name.xml_escape() + "\" type=\"" + a.type.xml_escape() + "\"" + enum_text + " />");
+				}
+			}
+
+			_write_string(f, 3, "<description>");
+			_write_string(f, 4, m.description.strip_edges().xml_escape());
+			_write_string(f, 3, "</description>");
+
+			_write_string(f, 2, "</" + p_name + ">");
+		}
+
+		_write_string(f, 1, "</" + p_name + "s>");
+	}
+}
+
 Error DocTools::save_classes(const String &p_default_path, const Map<String, String> &p_class_path) {
-	for (Map<String, DocData::ClassDoc>::Element *E = class_list.front(); E; E = E->next()) {
-		DocData::ClassDoc &c = E->get();
+	for (KeyValue<String, DocData::ClassDoc> &E : class_list) {
+		DocData::ClassDoc &c = E.value;
 
 		String save_path;
 		if (p_class_path.has(c.name)) {
@@ -1216,58 +1334,11 @@ Error DocTools::save_classes(const String &p_default_path, const Map<String, Str
 		}
 		_write_string(f, 1, "</tutorials>");
 
-		_write_string(f, 1, "<methods>");
+		_write_method_doc(f, "constructor", c.constructors);
 
-		c.methods.sort();
+		_write_method_doc(f, "method", c.methods);
 
-		for (int i = 0; i < c.methods.size(); i++) {
-			const DocData::MethodDoc &m = c.methods[i];
-
-			String qualifiers;
-			if (m.qualifiers != "") {
-				qualifiers += " qualifiers=\"" + m.qualifiers.xml_escape() + "\"";
-			}
-
-			_write_string(f, 2, "<method name=\"" + m.name.xml_escape() + "\"" + qualifiers + ">");
-
-			if (m.return_type != "") {
-				String enum_text;
-				if (m.return_enum != String()) {
-					enum_text = " enum=\"" + m.return_enum + "\"";
-				}
-				_write_string(f, 3, "<return type=\"" + m.return_type + "\"" + enum_text + " />");
-			}
-			if (m.errors_returned.size() > 0) {
-				for (int j = 0; j < m.errors_returned.size(); j++) {
-					_write_string(f, 3, "<returns_error number=\"" + itos(m.errors_returned[j]) + "\"/>");
-				}
-			}
-
-			for (int j = 0; j < m.arguments.size(); j++) {
-				const DocData::ArgumentDoc &a = m.arguments[j];
-
-				String enum_text;
-				if (a.enumeration != String()) {
-					enum_text = " enum=\"" + a.enumeration + "\"";
-				}
-
-				if (a.default_value != "") {
-					_write_string(f, 3, "<argument index=\"" + itos(j) + "\" name=\"" + a.name.xml_escape() + "\" type=\"" + a.type.xml_escape() + "\"" + enum_text + " default=\"" + a.default_value.xml_escape(true) + "\" />");
-				} else {
-					_write_string(f, 3, "<argument index=\"" + itos(j) + "\" name=\"" + a.name.xml_escape() + "\" type=\"" + a.type.xml_escape() + "\"" + enum_text + " />");
-				}
-			}
-
-			_write_string(f, 3, "<description>");
-			_write_string(f, 4, m.description.strip_edges().xml_escape());
-			_write_string(f, 3, "</description>");
-
-			_write_string(f, 2, "</method>");
-		}
-
-		_write_string(f, 1, "</methods>");
-
-		if (c.properties.size()) {
+		if (!c.properties.is_empty()) {
 			_write_string(f, 1, "<members>");
 
 			c.properties.sort();
@@ -1294,52 +1365,33 @@ Error DocTools::save_classes(const String &p_default_path, const Map<String, Str
 			_write_string(f, 1, "</members>");
 		}
 
-		if (c.signals.size()) {
-			c.signals.sort();
+		_write_method_doc(f, "signal", c.signals);
 
-			_write_string(f, 1, "<signals>");
-			for (int i = 0; i < c.signals.size(); i++) {
-				const DocData::MethodDoc &m = c.signals[i];
-				_write_string(f, 2, "<signal name=\"" + m.name + "\">");
-				for (int j = 0; j < m.arguments.size(); j++) {
-					const DocData::ArgumentDoc &a = m.arguments[j];
-					_write_string(f, 3, "<argument index=\"" + itos(j) + "\" name=\"" + a.name.xml_escape() + "\" type=\"" + a.type.xml_escape() + "\" />");
+		if (!c.constants.is_empty()) {
+			_write_string(f, 1, "<constants>");
+			for (int i = 0; i < c.constants.size(); i++) {
+				const DocData::ConstantDoc &k = c.constants[i];
+				if (k.is_value_valid) {
+					if (k.enumeration != String()) {
+						_write_string(f, 2, "<constant name=\"" + k.name + "\" value=\"" + k.value + "\" enum=\"" + k.enumeration + "\">");
+					} else {
+						_write_string(f, 2, "<constant name=\"" + k.name + "\" value=\"" + k.value + "\">");
+					}
+				} else {
+					if (k.enumeration != String()) {
+						_write_string(f, 2, "<constant name=\"" + k.name + "\" value=\"platform-dependent\" enum=\"" + k.enumeration + "\">");
+					} else {
+						_write_string(f, 2, "<constant name=\"" + k.name + "\" value=\"platform-dependent\">");
+					}
 				}
-
-				_write_string(f, 3, "<description>");
-				_write_string(f, 4, m.description.strip_edges().xml_escape());
-				_write_string(f, 3, "</description>");
-
-				_write_string(f, 2, "</signal>");
+				_write_string(f, 3, k.description.strip_edges().xml_escape());
+				_write_string(f, 2, "</constant>");
 			}
 
-			_write_string(f, 1, "</signals>");
+			_write_string(f, 1, "</constants>");
 		}
 
-		_write_string(f, 1, "<constants>");
-
-		for (int i = 0; i < c.constants.size(); i++) {
-			const DocData::ConstantDoc &k = c.constants[i];
-			if (k.is_value_valid) {
-				if (k.enumeration != String()) {
-					_write_string(f, 2, "<constant name=\"" + k.name + "\" value=\"" + k.value + "\" enum=\"" + k.enumeration + "\">");
-				} else {
-					_write_string(f, 2, "<constant name=\"" + k.name + "\" value=\"" + k.value + "\">");
-				}
-			} else {
-				if (k.enumeration != String()) {
-					_write_string(f, 2, "<constant name=\"" + k.name + "\" value=\"platform-dependent\" enum=\"" + k.enumeration + "\">");
-				} else {
-					_write_string(f, 2, "<constant name=\"" + k.name + "\" value=\"platform-dependent\">");
-				}
-			}
-			_write_string(f, 3, k.description.strip_edges().xml_escape());
-			_write_string(f, 2, "</constant>");
-		}
-
-		_write_string(f, 1, "</constants>");
-
-		if (c.theme_properties.size()) {
+		if (!c.theme_properties.is_empty()) {
 			c.theme_properties.sort();
 
 			_write_string(f, 1, "<theme_items>");
@@ -1358,6 +1410,8 @@ Error DocTools::save_classes(const String &p_default_path, const Map<String, Str
 			}
 			_write_string(f, 1, "</theme_items>");
 		}
+
+		_write_method_doc(f, "operator", c.operators);
 
 		_write_string(f, 0, "</class>");
 	}

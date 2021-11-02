@@ -80,6 +80,4 @@
 			Label of the virtual axis of the blend space.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

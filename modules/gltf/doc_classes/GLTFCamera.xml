@@ -6,18 +6,14 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
+		<member name="depth_far" type="float" setter="set_depth_far" getter="get_depth_far" default="4000.0">
+		</member>
+		<member name="depth_near" type="float" setter="set_depth_near" getter="get_depth_near" default="0.05">
+		</member>
 		<member name="fov_size" type="float" setter="set_fov_size" getter="get_fov_size" default="75.0">
 		</member>
 		<member name="perspective" type="bool" setter="set_perspective" getter="get_perspective" default="true">
 		</member>
-		<member name="zfar" type="float" setter="set_zfar" getter="get_zfar" default="4000.0">
-		</member>
-		<member name="znear" type="float" setter="set_znear" getter="get_znear" default="0.05">
-		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

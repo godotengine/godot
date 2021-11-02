@@ -65,6 +65,7 @@ public:
 			ShaderLanguage::TextureFilter filter;
 			ShaderLanguage::TextureRepeat repeat;
 			bool global;
+			int array_size;
 		};
 
 		Vector<Texture> texture_uniforms;

@@ -169,7 +169,7 @@
 		<constant name="RENDER_BUFFER_MEM_USED" value="15" enum="Monitor">
 		</constant>
 		<constant name="PHYSICS_2D_ACTIVE_OBJECTS" value="16" enum="Monitor">
-			Number of active [RigidBody2D] nodes in the game.
+			Number of active [RigidDynamicBody2D] nodes in the game.
 		</constant>
 		<constant name="PHYSICS_2D_COLLISION_PAIRS" value="17" enum="Monitor">
 			Number of collision pairs in the 2D physics engine.
@@ -178,7 +178,7 @@
 			Number of islands in the 2D physics engine.
 		</constant>
 		<constant name="PHYSICS_3D_ACTIVE_OBJECTS" value="19" enum="Monitor">
-			Number of active [RigidBody3D] and [VehicleBody3D] nodes in the game.
+			Number of active [RigidDynamicBody3D] and [VehicleBody3D] nodes in the game.
 		</constant>
 		<constant name="PHYSICS_3D_COLLISION_PAIRS" value="20" enum="Monitor">
 			Number of collision pairs in the 3D physics engine.

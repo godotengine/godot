@@ -532,7 +532,7 @@ void btMLCPSolver::createMLCP(const btContactSolverInfo& infoGlobal)
 	J_transpose = J.transpose();
 
 	btMatrixXu& tmp = m_scratchTmp;
-
+	//Minv.printMatrix("Minv=");
 	{
 		{
 			BT_PROFILE("J*Minv");
@@ -543,7 +543,7 @@ void btMLCPSolver::createMLCP(const btContactSolverInfo& infoGlobal)
 			m_A = tmp * J_transpose;
 		}
 	}
-
+	//J.printMatrix("J");
 	if (1)
 	{
 		// add cfm to the diagonal of m_A

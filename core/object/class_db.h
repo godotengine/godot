@@ -45,8 +45,6 @@
 
 #define DEFVAL(m_defval) (m_defval)
 
-#ifdef DEBUG_METHODS_ENABLED
-
 struct MethodDefinition {
 	StringName name;
 	Vector<StringName> args;
@@ -71,26 +69,6 @@ MethodDefinition D_METHOD(const char *p_name, const char *p_arg1, const char *p_
 MethodDefinition D_METHOD(const char *p_name, const char *p_arg1, const char *p_arg2, const char *p_arg3, const char *p_arg4, const char *p_arg5, const char *p_arg6, const char *p_arg7, const char *p_arg8, const char *p_arg9, const char *p_arg10, const char *p_arg11);
 MethodDefinition D_METHOD(const char *p_name, const char *p_arg1, const char *p_arg2, const char *p_arg3, const char *p_arg4, const char *p_arg5, const char *p_arg6, const char *p_arg7, const char *p_arg8, const char *p_arg9, const char *p_arg10, const char *p_arg11, const char *p_arg12);
 MethodDefinition D_METHOD(const char *p_name, const char *p_arg1, const char *p_arg2, const char *p_arg3, const char *p_arg4, const char *p_arg5, const char *p_arg6, const char *p_arg7, const char *p_arg8, const char *p_arg9, const char *p_arg10, const char *p_arg11, const char *p_arg12, const char *p_arg13);
-
-#else
-
-//#define NO_VARIADIC_MACROS
-
-#ifdef NO_VARIADIC_MACROS
-
-static _FORCE_INLINE_ const char *D_METHOD(const char *m_name, ...) {
-	return m_name;
-}
-
-#else
-
-// When DEBUG_METHODS_ENABLED is set this will let the engine know
-// the argument names for easier debugging.
-#define D_METHOD(m_c, ...) m_c
-
-#endif
-
-#endif
 
 class ClassDB {
 public:
@@ -156,11 +134,7 @@ public:
 	static HashMap<StringName, StringName> resource_base_extensions;
 	static HashMap<StringName, StringName> compat_classes;
 
-#ifdef DEBUG_METHODS_ENABLED
 	static MethodBind *bind_methodfi(uint32_t p_flags, MethodBind *p_bind, const MethodDefinition &method_name, const Variant **p_defs, int p_defcount);
-#else
-	static MethodBind *bind_methodfi(uint32_t p_flags, MethodBind *p_bind, const char *method_name, const Variant **p_defs, int p_defcount);
-#endif
 
 	static APIType current_api;
 
@@ -190,6 +164,7 @@ public:
 		t->creation_func = &creator<T>;
 		t->exposed = true;
 		t->class_ptr = T::get_class_ptr_static();
+		t->api = current_api;
 		T::register_custom_data_to_otdb();
 	}
 
@@ -201,6 +176,7 @@ public:
 		ERR_FAIL_COND(!t);
 		t->exposed = true;
 		t->class_ptr = T::get_class_ptr_static();
+		t->api = current_api;
 		//nothing
 	}
 
@@ -221,6 +197,7 @@ public:
 		t->creation_func = &_create_ptr_func<T>;
 		t->exposed = true;
 		t->class_ptr = T::get_class_ptr_static();
+		t->api = current_api;
 		T::register_custom_data_to_otdb();
 	}
 
@@ -234,6 +211,7 @@ public:
 	static bool is_parent_class(const StringName &p_class, const StringName &p_inherits);
 	static bool can_instantiate(const StringName &p_class);
 	static Object *instantiate(const StringName &p_class);
+	static Object *construct_object(Object *(*p_create_func)(), ObjectNativeExtension *p_extension);
 	static void instance_get_native_extension_data(ObjectNativeExtension **r_extension, GDExtensionClassInstancePtr *r_extension_instance, Object *p_base);
 
 	static APIType get_api_type(const StringName &p_class);
@@ -353,6 +331,8 @@ public:
 
 	static void add_property_group(const StringName &p_class, const String &p_name, const String &p_prefix = "");
 	static void add_property_subgroup(const StringName &p_class, const String &p_name, const String &p_prefix = "");
+	static void add_property_array_count(const StringName &p_class, const String &p_label, const StringName &p_count_property, const StringName &p_count_setter, const StringName &p_count_getter, const String &p_array_element_prefix, uint32_t p_count_usage = PROPERTY_USAGE_DEFAULT);
+	static void add_property_array(const StringName &p_class, const StringName &p_path, const String &p_array_element_prefix);
 	static void add_property(const StringName &p_class, const PropertyInfo &p_pinfo, const StringName &p_setter, const StringName &p_getter, int p_index = -1);
 	static void set_property_default_value(const StringName &p_class, const StringName &p_name, const Variant &p_default);
 	static void add_linked_property(const StringName &p_class, const String &p_property, const String &p_linked_property);

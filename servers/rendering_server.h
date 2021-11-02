@@ -161,6 +161,7 @@ public:
 		SHADER_CANVAS_ITEM,
 		SHADER_PARTICLES,
 		SHADER_SKY,
+		SHADER_FOG,
 		SHADER_MAX
 	};
 
@@ -295,7 +296,7 @@ public:
 
 		AABB aabb;
 		struct LOD {
-			float edge_length;
+			float edge_length = 0.0f;
 			Vector<uint8_t> index_data;
 		};
 		Vector<LOD> lods;
@@ -474,6 +475,7 @@ public:
 
 	enum ShadowQuality {
 		SHADOW_QUALITY_HARD,
+		SHADOW_QUALITY_SOFT_VERY_LOW,
 		SHADOW_QUALITY_SOFT_LOW,
 		SHADOW_QUALITY_SOFT_MEDIUM,
 		SHADOW_QUALITY_SOFT_HIGH,
@@ -708,6 +710,20 @@ public:
 
 	virtual void particles_collision_set_height_field_resolution(RID p_particles_collision, ParticlesCollisionHeightfieldResolution p_resolution) = 0; //for SDF and vector field
 
+	/* FOG VOLUME API */
+
+	virtual RID fog_volume_create() = 0;
+
+	enum FogVolumeShape {
+		FOG_VOLUME_SHAPE_ELLIPSOID,
+		FOG_VOLUME_SHAPE_BOX,
+		FOG_VOLUME_SHAPE_WORLD,
+	};
+
+	virtual void fog_volume_set_shape(RID p_fog_volume, FogVolumeShape p_shape) = 0;
+	virtual void fog_volume_set_extents(RID p_fog_volume, const Vector3 &p_extents) = 0;
+	virtual void fog_volume_set_material(RID p_fog_volume, RID p_material) = 0;
+
 	/* VISIBILITY NOTIFIER API */
 
 	virtual RID visibility_notifier_create() = 0;
@@ -752,19 +768,10 @@ public:
 		CANVAS_ITEM_TEXTURE_REPEAT_MAX,
 	};
 
-	enum ViewportScale3D {
-		VIEWPORT_SCALE_3D_DISABLED,
-		VIEWPORT_SCALE_3D_75_PERCENT,
-		VIEWPORT_SCALE_3D_50_PERCENT,
-		VIEWPORT_SCALE_3D_33_PERCENT,
-		VIEWPORT_SCALE_3D_25_PERCENT,
-		VIEWPORT_SCALE_3D_MAX,
-	};
-
 	virtual RID viewport_create() = 0;
 
 	virtual void viewport_set_use_xr(RID p_viewport, bool p_use_xr) = 0;
-	virtual void viewport_set_scale_3d(RID p_viewport, ViewportScale3D p_scale_3d) = 0;
+	virtual void viewport_set_scale_3d(RID p_viewport, float p_scale_3d) = 0;
 	virtual void viewport_set_size(RID p_viewport, int p_width, int p_height) = 0;
 	virtual void viewport_set_active(RID p_viewport, bool p_active) = 0;
 	virtual void viewport_set_parent_viewport(RID p_viewport, RID p_parent_viewport) = 0;
@@ -836,7 +843,6 @@ public:
 		VIEWPORT_MSAA_2X,
 		VIEWPORT_MSAA_4X,
 		VIEWPORT_MSAA_8X,
-		VIEWPORT_MSAA_16X,
 		VIEWPORT_MSAA_MAX,
 	};
 
@@ -962,7 +968,7 @@ public:
 	virtual void environment_set_bg_color(RID p_env, const Color &p_color) = 0;
 	virtual void environment_set_bg_energy(RID p_env, float p_energy) = 0;
 	virtual void environment_set_canvas_max_layer(RID p_env, int p_max_layer) = 0;
-	virtual void environment_set_ambient_light(RID p_env, const Color &p_color, EnvironmentAmbientSource p_ambient = ENV_AMBIENT_SOURCE_BG, float p_energy = 1.0, float p_sky_contribution = 0.0, EnvironmentReflectionSource p_reflection_source = ENV_REFLECTION_SOURCE_BG, const Color &p_ao_color = Color()) = 0;
+	virtual void environment_set_ambient_light(RID p_env, const Color &p_color, EnvironmentAmbientSource p_ambient = ENV_AMBIENT_SOURCE_BG, float p_energy = 1.0, float p_sky_contribution = 0.0, EnvironmentReflectionSource p_reflection_source = ENV_REFLECTION_SOURCE_BG) = 0;
 
 	enum EnvironmentGlowBlendMode {
 		ENV_GLOW_BLEND_MODE_ADDITIVE,
@@ -1062,7 +1068,7 @@ public:
 
 	virtual void environment_set_fog(RID p_env, bool p_enable, const Color &p_light_color, float p_light_energy, float p_sun_scatter, float p_density, float p_height, float p_height_density, float p_aerial_perspective) = 0;
 
-	virtual void environment_set_volumetric_fog(RID p_env, bool p_enable, float p_density, const Color &p_light, float p_light_energy, float p_length, float p_detail_spread, float p_gi_inject, bool p_temporal_reprojection, float p_temporal_reprojection_amount) = 0;
+	virtual void environment_set_volumetric_fog(RID p_env, bool p_enable, float p_density, const Color &p_albedo, const Color &p_emission, float p_emission_energy, float p_anisotropy, float p_length, float p_detail_spread, float p_gi_inject, bool p_temporal_reprojection, float p_temporal_reprojection_amount, float p_ambient_inject) = 0;
 	virtual void environment_set_volumetric_fog_volume_size(int p_size, int p_depth) = 0;
 	virtual void environment_set_volumetric_fog_filter_active(bool p_enable) = 0;
 
@@ -1127,6 +1133,7 @@ public:
 		INSTANCE_LIGHTMAP,
 		INSTANCE_OCCLUDER,
 		INSTANCE_VISIBLITY_NOTIFIER,
+		INSTANCE_FOG_VOLUME,
 		INSTANCE_MAX,
 
 		INSTANCE_GEOMETRY_MASK = (1 << INSTANCE_MESH) | (1 << INSTANCE_MULTIMESH) | (1 << INSTANCE_PARTICLES)
@@ -1152,6 +1159,8 @@ public:
 	virtual void instance_set_extra_visibility_margin(RID p_instance, real_t p_margin) = 0;
 	virtual void instance_set_visibility_parent(RID p_instance, RID p_parent_instance) = 0;
 
+	virtual void instance_set_ignore_culling(RID p_instance, bool p_enabled) = 0;
+
 	// don't use these in a game!
 	virtual Vector<ObjectID> instances_cull_aabb(const AABB &p_aabb, RID p_scenario = RID()) const = 0;
 	virtual Vector<ObjectID> instances_cull_ray(const Vector3 &p_from, const Vector3 &p_to, RID p_scenario = RID()) const = 0;
@@ -1176,12 +1185,19 @@ public:
 		SHADOW_CASTING_SETTING_SHADOWS_ONLY,
 	};
 
+	enum VisibilityRangeFadeMode {
+		VISIBILITY_RANGE_FADE_DISABLED,
+		VISIBILITY_RANGE_FADE_SELF,
+		VISIBILITY_RANGE_FADE_DEPENDENCIES,
+	};
+
 	virtual void instance_geometry_set_flag(RID p_instance, InstanceFlags p_flags, bool p_enabled) = 0;
 	virtual void instance_geometry_set_cast_shadows_setting(RID p_instance, ShadowCastingSetting p_shadow_casting_setting) = 0;
 	virtual void instance_geometry_set_material_override(RID p_instance, RID p_material) = 0;
-	virtual void instance_geometry_set_visibility_range(RID p_instance, float p_min, float p_max, float p_min_margin, float p_max_margin) = 0;
+	virtual void instance_geometry_set_visibility_range(RID p_instance, float p_min, float p_max, float p_min_margin, float p_max_margin, VisibilityRangeFadeMode p_fade_mode) = 0;
 	virtual void instance_geometry_set_lightmap(RID p_instance, RID p_lightmap, const Rect2 &p_lightmap_uv_scale, int p_lightmap_slice) = 0;
 	virtual void instance_geometry_set_lod_bias(RID p_instance, float p_lod_bias) = 0;
+	virtual void instance_geometry_set_transparency(RID p_instance, float p_transparency) = 0;
 
 	virtual void instance_geometry_set_shader_parameter(RID p_instance, const StringName &, const Variant &p_value) = 0;
 	virtual Variant instance_geometry_get_shader_parameter(RID p_instance, const StringName &) const = 0;
@@ -1417,7 +1433,7 @@ public:
 
 	/* FREE */
 
-	virtual void free(RID p_rid) = 0; ///< free RIDs associated with the visual server
+	virtual void free(RID p_rid) = 0; ///< free RIDs associated with the rendering server
 
 	virtual void request_frame_drawn_callback(Object *p_where, const StringName &p_method, const Variant &p_userdata) = 0;
 
@@ -1493,6 +1509,7 @@ public:
 
 	virtual void set_print_gpu_profile(bool p_enable) = 0;
 
+	RenderingDevice *get_rendering_device() const;
 	RenderingDevice *create_local_rendering_device() const;
 
 	bool is_render_loop_enabled() const;
@@ -1543,6 +1560,7 @@ VARIANT_ENUM_CAST(RenderingServer::ParticlesDrawOrder);
 VARIANT_ENUM_CAST(RenderingServer::ParticlesEmitFlags);
 VARIANT_ENUM_CAST(RenderingServer::ParticlesCollisionType);
 VARIANT_ENUM_CAST(RenderingServer::ParticlesCollisionHeightfieldResolution);
+VARIANT_ENUM_CAST(RenderingServer::FogVolumeShape);
 VARIANT_ENUM_CAST(RenderingServer::ViewportUpdateMode);
 VARIANT_ENUM_CAST(RenderingServer::ViewportClearMode);
 VARIANT_ENUM_CAST(RenderingServer::ViewportMSAA);
@@ -1553,7 +1571,6 @@ VARIANT_ENUM_CAST(RenderingServer::ViewportDebugDraw);
 VARIANT_ENUM_CAST(RenderingServer::ViewportOcclusionCullingBuildQuality);
 VARIANT_ENUM_CAST(RenderingServer::ViewportSDFOversize);
 VARIANT_ENUM_CAST(RenderingServer::ViewportSDFScale);
-VARIANT_ENUM_CAST(RenderingServer::ViewportScale3D);
 VARIANT_ENUM_CAST(RenderingServer::SkyMode);
 VARIANT_ENUM_CAST(RenderingServer::EnvironmentBG);
 VARIANT_ENUM_CAST(RenderingServer::EnvironmentAmbientSource);
@@ -1574,6 +1591,7 @@ VARIANT_ENUM_CAST(RenderingServer::ShadowQuality);
 VARIANT_ENUM_CAST(RenderingServer::InstanceType);
 VARIANT_ENUM_CAST(RenderingServer::InstanceFlags);
 VARIANT_ENUM_CAST(RenderingServer::ShadowCastingSetting);
+VARIANT_ENUM_CAST(RenderingServer::VisibilityRangeFadeMode);
 VARIANT_ENUM_CAST(RenderingServer::NinePatchAxisMode);
 VARIANT_ENUM_CAST(RenderingServer::CanvasItemTextureFilter);
 VARIANT_ENUM_CAST(RenderingServer::CanvasItemTextureRepeat);

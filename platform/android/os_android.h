@@ -47,8 +47,7 @@ private:
 
 	bool use_apk_expansion;
 
-#if defined(OPENGL_ENABLED)
-	bool use_16bits_fbo;
+#if defined(GLES3_ENABLED)
 	const char *gl_extensions;
 #endif
 
@@ -57,6 +56,7 @@ private:
 #endif
 
 	mutable String data_dir_cache;
+	mutable String cache_dir_cache;
 
 	AudioDriverOpenSL audio_driver_android;
 

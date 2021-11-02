@@ -35,11 +35,12 @@
  * @class Vector
  * @author Juan Linietsky
  * Vector container. Regular Vector Container. Use with care and for smaller arrays when possible. Use Vector for large arrays.
-*/
+ */
 
 #include "core/error/error_macros.h"
 #include "core/os/memory.h"
 #include "core/templates/cowdata.h"
+#include "core/templates/search_array.h"
 #include "core/templates/sort_array.h"
 
 template <class T>
@@ -92,7 +93,7 @@ public:
 
 	void append_array(Vector<T> p_other);
 
-	bool has(const T &p_val) {
+	bool has(const T &p_val) const {
 		return find(p_val, 0) != -1;
 	}
 
@@ -110,6 +111,11 @@ public:
 
 	void sort() {
 		sort_custom<_DefaultComparator<T>>();
+	}
+
+	int bsearch(const T &p_value, bool p_before) {
+		SearchArray<T> search;
+		return search.bisect(ptrw(), size(), p_value, p_before);
 	}
 
 	Vector<T> duplicate() {
@@ -229,7 +235,7 @@ public:
 		_FORCE_INLINE_ bool operator==(const ConstIterator &b) const { return elem_ptr == b.elem_ptr; }
 		_FORCE_INLINE_ bool operator!=(const ConstIterator &b) const { return elem_ptr != b.elem_ptr; }
 
-		ConstIterator(T *p_ptr) { elem_ptr = p_ptr; }
+		ConstIterator(const T *p_ptr) { elem_ptr = p_ptr; }
 		ConstIterator() {}
 		ConstIterator(const ConstIterator &p_it) { elem_ptr = p_it.elem_ptr; }
 

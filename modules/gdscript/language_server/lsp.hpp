@@ -263,19 +263,29 @@ struct WorkspaceEdit {
 	 */
 	Map<String, Vector<TextEdit>> changes;
 
+	_FORCE_INLINE_ void add_edit(const String &uri, const TextEdit &edit) {
+		if (changes.has(uri)) {
+			changes[uri].push_back(edit);
+		} else {
+			Vector<TextEdit> edits;
+			edits.push_back(edit);
+			changes[uri] = edits;
+		}
+	}
+
 	_FORCE_INLINE_ Dictionary to_json() const {
 		Dictionary dict;
 
 		Dictionary out_changes;
-		for (Map<String, Vector<TextEdit>>::Element *E = changes.front(); E; E = E->next()) {
+		for (const KeyValue<String, Vector<TextEdit>> &E : changes) {
 			Array edits;
-			for (int i = 0; i < E->get().size(); ++i) {
+			for (int i = 0; i < E.value.size(); ++i) {
 				Dictionary text_edit;
-				text_edit["range"] = E->get()[i].range.to_json();
-				text_edit["newText"] = E->get()[i].newText;
+				text_edit["range"] = E.value[i].range.to_json();
+				text_edit["newText"] = E.value[i].newText;
 				edits.push_back(text_edit);
 			}
-			out_changes[E->key()] = edits;
+			out_changes[E.key] = edits;
 		}
 		dict["changes"] = out_changes;
 
@@ -348,21 +358,21 @@ struct Command {
 
 namespace TextDocumentSyncKind {
 /**
-	 * Documents should not be synced at all.
-	 */
+ * Documents should not be synced at all.
+ */
 static const int None = 0;
 
 /**
-	 * Documents are synced by always sending the full content
-	 * of the document.
-	 */
+ * Documents are synced by always sending the full content
+ * of the document.
+ */
 static const int Full = 1;
 
 /**
-	 * Documents are synced by sending the full content on open.
-	 * After that only incremental updates to the document are
-	 * send.
-	 */
+ * Documents are synced by sending the full content on open.
+ * After that only incremental updates to the document are
+ * send.
+ */
 static const int Incremental = 2;
 }; // namespace TextDocumentSyncKind
 
@@ -657,20 +667,20 @@ struct TextDocumentContentChangeEvent {
 // Use namespace instead of enumeration to follow the LSP specifications
 namespace DiagnosticSeverity {
 /**
-	 * Reports an error.
-	 */
+ * Reports an error.
+ */
 static const int Error = 1;
 /**
-	 * Reports a warning.
-	 */
+ * Reports a warning.
+ */
 static const int Warning = 2;
 /**
-	 * Reports an information.
-	 */
+ * Reports an information.
+ */
 static const int Information = 3;
 /**
-	 * Reports a hint.
-	 */
+ * Reports a hint.
+ */
 static const int Hint = 4;
 }; // namespace DiagnosticSeverity
 
@@ -861,18 +871,18 @@ static const int TypeParameter = 25;
  */
 namespace InsertTextFormat {
 /**
-	 * The primary text to be inserted is treated as a plain string.
-	 */
+ * The primary text to be inserted is treated as a plain string.
+ */
 static const int PlainText = 1;
 
 /**
-	 * The primary text to be inserted is treated as a snippet.
-	 *
-	 * A snippet can define tab stops and placeholders with `$1`, `$2`
-	 * and `${3:foo}`. `$0` defines the final tab stop, it defaults to
-	 * the end of the snippet. Placeholders with equal identifiers are linked,
-	 * that is typing in one will update others too.
-	 */
+ * The primary text to be inserted is treated as a snippet.
+ *
+ * A snippet can define tab stops and placeholders with `$1`, `$2`
+ * and `${3:foo}`. `$0` defines the final tab stop, it defaults to
+ * the end of the snippet. Placeholders with equal identifiers are linked,
+ * that is typing in one will update others too.
+ */
 static const int Snippet = 2;
 }; // namespace InsertTextFormat
 
@@ -1322,6 +1332,18 @@ struct DocumentSymbol {
 	}
 };
 
+struct ApplyWorkspaceEditParams {
+	WorkspaceEdit edit;
+
+	Dictionary to_json() {
+		Dictionary dict;
+
+		dict["edit"] = edit.to_json();
+
+		return dict;
+	}
+};
+
 struct NativeSymbolInspectParams {
 	String native_class;
 	String symbol_name;
@@ -1337,16 +1359,16 @@ struct NativeSymbolInspectParams {
  */
 namespace FoldingRangeKind {
 /**
-	 * Folding range for a comment
-	 */
+ * Folding range for a comment
+ */
 static const String Comment = "comment";
 /**
-	 * Folding range for a imports or includes
-	 */
+ * Folding range for a imports or includes
+ */
 static const String Imports = "imports";
 /**
-	 * Folding range for a region (e.g. `#region`)
-	 */
+ * Folding range for a region (e.g. `#region`)
+ */
 static const String Region = "region";
 } // namespace FoldingRangeKind
 
@@ -1397,20 +1419,20 @@ struct FoldingRange {
  */
 namespace CompletionTriggerKind {
 /**
-	 * Completion was triggered by typing an identifier (24x7 code
-	 * complete), manual invocation (e.g Ctrl+Space) or via API.
-	 */
+ * Completion was triggered by typing an identifier (24x7 code
+ * complete), manual invocation (e.g Ctrl+Space) or via API.
+ */
 static const int Invoked = 1;
 
 /**
-	 * Completion was triggered by a trigger character specified by
-	 * the `triggerCharacters` properties of the `CompletionRegistrationOptions`.
-	 */
+ * Completion was triggered by a trigger character specified by
+ * the `triggerCharacters` properties of the `CompletionRegistrationOptions`.
+ */
 static const int TriggerCharacter = 2;
 
 /**
-	 * Completion was re-triggered as the current completion list is incomplete.
-	 */
+ * Completion was re-triggered as the current completion list is incomplete.
+ */
 static const int TriggerForIncompleteCompletions = 3;
 } // namespace CompletionTriggerKind
 
@@ -1419,8 +1441,8 @@ static const int TriggerForIncompleteCompletions = 3;
  */
 struct CompletionContext {
 	/**
-	* How the completion was triggered.
-	*/
+	 * How the completion was triggered.
+	 */
 	int triggerKind = CompletionTriggerKind::TriggerCharacter;
 
 	/**
@@ -1884,7 +1906,7 @@ struct GodotNativeClassInfo {
 struct GodotCapabilities {
 	/**
 	 * Native class list
-	*/
+	 */
 	List<GodotNativeClassInfo> native_classes;
 
 	Dictionary to_json() {

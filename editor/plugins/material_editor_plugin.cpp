@@ -32,6 +32,7 @@
 
 #include "editor/editor_scale.h"
 #include "scene/gui/subviewport_container.h"
+#include "scene/resources/fog_material.h"
 #include "scene/resources/particles_material.h"
 #include "scene/resources/sky_material.h"
 
@@ -278,6 +279,54 @@ Ref<Resource> StandardMaterial3DConversionPlugin::convert(const Ref<Resource> &p
 	}
 
 	smat->set_render_priority(mat->get_render_priority());
+	smat->set_local_to_scene(mat->is_local_to_scene());
+	smat->set_name(mat->get_name());
+	return smat;
+}
+
+String ORMMaterial3DConversionPlugin::converts_to() const {
+	return "ShaderMaterial";
+}
+
+bool ORMMaterial3DConversionPlugin::handles(const Ref<Resource> &p_resource) const {
+	Ref<ORMMaterial3D> mat = p_resource;
+	return mat.is_valid();
+}
+
+Ref<Resource> ORMMaterial3DConversionPlugin::convert(const Ref<Resource> &p_resource) const {
+	Ref<ORMMaterial3D> mat = p_resource;
+	ERR_FAIL_COND_V(!mat.is_valid(), Ref<Resource>());
+
+	Ref<ShaderMaterial> smat;
+	smat.instantiate();
+
+	Ref<Shader> shader;
+	shader.instantiate();
+
+	String code = RS::get_singleton()->shader_get_code(mat->get_shader_rid());
+
+	shader->set_code(code);
+
+	smat->set_shader(shader);
+
+	List<PropertyInfo> params;
+	RS::get_singleton()->shader_get_param_list(mat->get_shader_rid(), &params);
+
+	for (const PropertyInfo &E : params) {
+		// Texture parameter has to be treated specially since ORMMaterial3D saved it
+		// as RID but ShaderMaterial needs Texture itself
+		Ref<Texture2D> texture = mat->get_texture_by_name(E.name);
+		if (texture.is_valid()) {
+			smat->set_shader_param(E.name, texture);
+		} else {
+			Variant value = RS::get_singleton()->material_get_param(mat->get_rid(), E.name);
+			smat->set_shader_param(E.name, value);
+		}
+	}
+
+	smat->set_render_priority(mat->get_render_priority());
+	smat->set_local_to_scene(mat->is_local_to_scene());
+	smat->set_name(mat->get_name());
 	return smat;
 }
 
@@ -315,6 +364,8 @@ Ref<Resource> ParticlesMaterialConversionPlugin::convert(const Ref<Resource> &p_
 	}
 
 	smat->set_render_priority(mat->get_render_priority());
+	smat->set_local_to_scene(mat->is_local_to_scene());
+	smat->set_name(mat->get_name());
 	return smat;
 }
 
@@ -352,6 +403,8 @@ Ref<Resource> CanvasItemMaterialConversionPlugin::convert(const Ref<Resource> &p
 	}
 
 	smat->set_render_priority(mat->get_render_priority());
+	smat->set_local_to_scene(mat->is_local_to_scene());
+	smat->set_name(mat->get_name());
 	return smat;
 }
 
@@ -389,6 +442,8 @@ Ref<Resource> ProceduralSkyMaterialConversionPlugin::convert(const Ref<Resource>
 	}
 
 	smat->set_render_priority(mat->get_render_priority());
+	smat->set_local_to_scene(mat->is_local_to_scene());
+	smat->set_name(mat->get_name());
 	return smat;
 }
 
@@ -426,6 +481,8 @@ Ref<Resource> PanoramaSkyMaterialConversionPlugin::convert(const Ref<Resource> &
 	}
 
 	smat->set_render_priority(mat->get_render_priority());
+	smat->set_local_to_scene(mat->is_local_to_scene());
+	smat->set_name(mat->get_name());
 	return smat;
 }
 
@@ -440,6 +497,45 @@ bool PhysicalSkyMaterialConversionPlugin::handles(const Ref<Resource> &p_resourc
 
 Ref<Resource> PhysicalSkyMaterialConversionPlugin::convert(const Ref<Resource> &p_resource) const {
 	Ref<PhysicalSkyMaterial> mat = p_resource;
+	ERR_FAIL_COND_V(!mat.is_valid(), Ref<Resource>());
+
+	Ref<ShaderMaterial> smat;
+	smat.instantiate();
+
+	Ref<Shader> shader;
+	shader.instantiate();
+
+	String code = RS::get_singleton()->shader_get_code(mat->get_shader_rid());
+
+	shader->set_code(code);
+
+	smat->set_shader(shader);
+
+	List<PropertyInfo> params;
+	RS::get_singleton()->shader_get_param_list(mat->get_shader_rid(), &params);
+
+	for (const PropertyInfo &E : params) {
+		Variant value = RS::get_singleton()->material_get_param(mat->get_rid(), E.name);
+		smat->set_shader_param(E.name, value);
+	}
+
+	smat->set_render_priority(mat->get_render_priority());
+	smat->set_local_to_scene(mat->is_local_to_scene());
+	smat->set_name(mat->get_name());
+	return smat;
+}
+
+String FogMaterialConversionPlugin::converts_to() const {
+	return "ShaderMaterial";
+}
+
+bool FogMaterialConversionPlugin::handles(const Ref<Resource> &p_resource) const {
+	Ref<FogMaterial> mat = p_resource;
+	return mat.is_valid();
+}
+
+Ref<Resource> FogMaterialConversionPlugin::convert(const Ref<Resource> &p_resource) const {
+	Ref<FogMaterial> mat = p_resource;
 	ERR_FAIL_COND_V(!mat.is_valid(), Ref<Resource>());
 
 	Ref<ShaderMaterial> smat;

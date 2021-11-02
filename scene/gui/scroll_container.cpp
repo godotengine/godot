@@ -167,7 +167,7 @@ void ScrollContainer::gui_input(const Ref<InputEvent> &p_gui_input) {
 
 	if (mm.is_valid()) {
 		if (drag_touching && !drag_touching_deaccel) {
-			Vector2 motion = Vector2(mm->get_relative().x, mm->get_relative().y);
+			Vector2 motion = mm->get_relative();
 			drag_accum -= motion;
 
 			if (beyond_deadzone || (scroll_h && Math::abs(drag_accum.x) > deadzone) || (scroll_v && Math::abs(drag_accum.y) > deadzone)) {
@@ -227,9 +227,6 @@ void ScrollContainer::_update_scrollbar_position() {
 	v_scroll->set_anchor_and_offset(SIDE_RIGHT, ANCHOR_END, 0);
 	v_scroll->set_anchor_and_offset(SIDE_TOP, ANCHOR_BEGIN, 0);
 	v_scroll->set_anchor_and_offset(SIDE_BOTTOM, ANCHOR_END, 0);
-
-	h_scroll->raise();
-	v_scroll->raise();
 
 	_updating_scrollbars = false;
 }
@@ -618,12 +615,12 @@ void ScrollContainer::_bind_methods() {
 ScrollContainer::ScrollContainer() {
 	h_scroll = memnew(HScrollBar);
 	h_scroll->set_name("_h_scroll");
-	add_child(h_scroll);
+	add_child(h_scroll, false, INTERNAL_MODE_BACK);
 	h_scroll->connect("value_changed", callable_mp(this, &ScrollContainer::_scroll_moved));
 
 	v_scroll = memnew(VScrollBar);
 	v_scroll->set_name("_v_scroll");
-	add_child(v_scroll);
+	add_child(v_scroll, false, INTERNAL_MODE_BACK);
 	v_scroll->connect("value_changed", callable_mp(this, &ScrollContainer::_scroll_moved));
 
 	deadzone = GLOBAL_GET("gui/common/default_scroll_deadzone");

@@ -90,7 +90,7 @@ bool VisualScriptFunction::_set(const StringName &p_name, const Variant &p_value
 	}
 
 	if (p_name == "rpc/mode") {
-		rpc_mode = MultiplayerAPI::RPCMode(int(p_value));
+		rpc_mode = Multiplayer::RPCMode(int(p_value));
 		return true;
 	}
 
@@ -163,7 +163,7 @@ void VisualScriptFunction::_get_property_list(List<PropertyInfo> *p_list) const 
 		p_list->push_back(PropertyInfo(Variant::INT, "stack/size", PROPERTY_HINT_RANGE, "1,100000"));
 	}
 	p_list->push_back(PropertyInfo(Variant::BOOL, "stack/stackless"));
-	p_list->push_back(PropertyInfo(Variant::INT, "rpc/mode", PROPERTY_HINT_ENUM, "Disabled,Remote,Master,Puppet,Remote Sync,Master Sync,Puppet Sync"));
+	p_list->push_back(PropertyInfo(Variant::INT, "rpc/mode", PROPERTY_HINT_ENUM, "Disabled,Any,Authority"));
 }
 
 int VisualScriptFunction::get_output_sequence_port_count() const {
@@ -261,11 +261,11 @@ int VisualScriptFunction::get_argument_count() const {
 	return arguments.size();
 }
 
-void VisualScriptFunction::set_rpc_mode(MultiplayerAPI::RPCMode p_mode) {
+void VisualScriptFunction::set_rpc_mode(Multiplayer::RPCMode p_mode) {
 	rpc_mode = p_mode;
 }
 
-MultiplayerAPI::RPCMode VisualScriptFunction::get_rpc_mode() const {
+Multiplayer::RPCMode VisualScriptFunction::get_rpc_mode() const {
 	return rpc_mode;
 }
 
@@ -311,14 +311,14 @@ void VisualScriptFunction::reset_state() {
 	stack_size = 256;
 	stack_less = false;
 	sequenced = true;
-	rpc_mode = MultiplayerAPI::RPC_MODE_DISABLED;
+	rpc_mode = Multiplayer::RPC_MODE_DISABLED;
 }
 
 VisualScriptFunction::VisualScriptFunction() {
 	stack_size = 256;
 	stack_less = false;
 	sequenced = true;
-	rpc_mode = MultiplayerAPI::RPC_MODE_DISABLED;
+	rpc_mode = Multiplayer::RPC_MODE_DISABLED;
 }
 
 void VisualScriptFunction::set_stack_less(bool p_enable) {

@@ -100,8 +100,9 @@ typedef enum {
 typedef enum {
     GLSLANG_TARGET_VULKAN_1_0 = (1 << 22),
     GLSLANG_TARGET_VULKAN_1_1 = (1 << 22) | (1 << 12),
+    GLSLANG_TARGET_VULKAN_1_2 = (1 << 22) | (2 << 12),
     GLSLANG_TARGET_OPENGL_450 = 450,
-    LAST_ELEMENT_MARKER(GLSLANG_TARGET_CLIENT_VERSION_COUNT),
+    LAST_ELEMENT_MARKER(GLSLANG_TARGET_CLIENT_VERSION_COUNT = 4),
 } glslang_target_client_version_t;
 
 /* SH_TARGET_LanguageVersion counterpart */
@@ -112,7 +113,7 @@ typedef enum {
     GLSLANG_TARGET_SPV_1_3 = (1 << 16) | (3 << 8),
     GLSLANG_TARGET_SPV_1_4 = (1 << 16) | (4 << 8),
     GLSLANG_TARGET_SPV_1_5 = (1 << 16) | (5 << 8),
-    LAST_ELEMENT_MARKER(GLSLANG_TARGET_LANGUAGE_VERSION_COUNT),
+    LAST_ELEMENT_MARKER(GLSLANG_TARGET_LANGUAGE_VERSION_COUNT = 6),
 } glslang_target_language_version_t;
 
 /* EShExecutable counterpart */

@@ -87,15 +87,17 @@ void MenuButton::_popup_visibility_changed(bool p_visible) {
 
 void MenuButton::pressed() {
 	emit_signal(SNAME("about_to_popup"));
-	Size2 size = get_size();
-
-	Point2 gp = get_screen_position();
-	gp.y += get_size().y;
-
-	popup->set_position(gp);
+	Size2 size = get_size() * get_viewport()->get_canvas_transform().get_scale();
 
 	popup->set_size(Size2(size.width, 0));
-	popup->set_parent_rect(Rect2(Point2(gp - popup->get_position()), get_size()));
+	Point2 gp = get_screen_position();
+	gp.y += size.y;
+	if (is_layout_rtl()) {
+		gp.x += size.width - popup->get_size().width;
+	}
+	popup->set_position(gp);
+	popup->set_parent_rect(Rect2(Point2(gp - popup->get_position()), size));
+
 	popup->take_mouse_focus();
 	popup->popup();
 }
@@ -172,7 +174,7 @@ MenuButton::MenuButton() {
 
 	popup = memnew(PopupMenu);
 	popup->hide();
-	add_child(popup);
+	add_child(popup, false, INTERNAL_MODE_FRONT);
 	popup->connect("about_to_popup", callable_mp(this, &MenuButton::_popup_visibility_changed), varray(true));
 	popup->connect("popup_hide", callable_mp(this, &MenuButton::_popup_visibility_changed), varray(false));
 }

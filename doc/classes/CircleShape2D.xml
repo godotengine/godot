@@ -8,13 +8,9 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="radius" type="float" setter="set_radius" getter="get_radius" default="10.0">
 			The circle's radius.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

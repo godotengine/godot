@@ -86,9 +86,9 @@ void ImportDefaultsEditor::_save() {
 	if (settings->importer.is_valid()) {
 		Dictionary modified;
 
-		for (Map<StringName, Variant>::Element *E = settings->values.front(); E; E = E->next()) {
-			if (E->get() != settings->default_values[E->key()]) {
-				modified[E->key()] = E->get();
+		for (const KeyValue<StringName, Variant> &E : settings->values) {
+			if (E.value != settings->default_values[E.key]) {
+				modified[E.key] = E.value;
 			}
 		}
 

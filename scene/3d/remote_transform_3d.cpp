@@ -68,7 +68,7 @@ void RemoteTransform3D::_update_remote() {
 			Transform3D our_trans = get_global_transform();
 
 			if (update_remote_rotation) {
-				n->set_rotation(our_trans.basis.get_rotation());
+				n->set_rotation(our_trans.basis.get_euler_normalized(Basis::EulerOrder(n->get_rotation_order())));
 			}
 
 			if (update_remote_scale) {
@@ -90,7 +90,7 @@ void RemoteTransform3D::_update_remote() {
 			Transform3D our_trans = get_transform();
 
 			if (update_remote_rotation) {
-				n->set_rotation(our_trans.basis.get_rotation());
+				n->set_rotation(our_trans.basis.get_euler_normalized(Basis::EulerOrder(n->get_rotation_order())));
 			}
 
 			if (update_remote_scale) {

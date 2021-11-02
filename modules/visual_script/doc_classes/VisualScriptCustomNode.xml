@@ -131,7 +131,7 @@
 				The [code]inputs[/code] array contains the values of the input ports.
 				[code]outputs[/code] is an array whose indices should be set to the respective outputs.
 				The [code]start_mode[/code] is usually [constant START_MODE_BEGIN_SEQUENCE], unless you have used the [code]STEP_*[/code] constants.
-				[code]working_mem[/code] is an array which can be used to persist information between runs of the custom node.
+				[code]working_mem[/code] is an array which can be used to persist information between runs of the custom node. The size needs to be predefined using [method _get_working_memory_size].
 				When returning, you can mask the returned value with one of the [code]STEP_*[/code] constants.
 			</description>
 		</method>

@@ -9,8 +9,6 @@
 	<tutorials>
 		<link title="InputEvent">https://docs.godotengine.org/en/latest/tutorials/inputs/inputevent.html</link>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="axis" type="int" setter="set_axis" getter="get_axis" enum="JoyAxis" default="0">
 			Axis identifier. Use one of the [enum JoyAxis] axis constants.
@@ -19,6 +17,4 @@
 			Current position of the joystick on the given axis. The value ranges from [code]-1.0[/code] to [code]1.0[/code]. A value of [code]0[/code] means the axis is in its resting position.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

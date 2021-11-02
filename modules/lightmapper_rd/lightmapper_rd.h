@@ -36,6 +36,7 @@
 #include "scene/resources/mesh.h"
 #include "servers/rendering/rendering_device.h"
 
+class RDShaderFile;
 class LightmapperRD : public Lightmapper {
 	GDCLASS(LightmapperRD, Lightmapper)
 
@@ -72,13 +73,13 @@ class LightmapperRD : public Lightmapper {
 
 		bool operator==(const Vertex &p_vtx) const {
 			return (position[0] == p_vtx.position[0]) &&
-				   (position[1] == p_vtx.position[1]) &&
-				   (position[2] == p_vtx.position[2]) &&
-				   (uv[0] == p_vtx.uv[0]) &&
-				   (uv[1] == p_vtx.uv[1]) &&
-				   (normal_xy[0] == p_vtx.normal_xy[0]) &&
-				   (normal_xy[1] == p_vtx.normal_xy[1]) &&
-				   (normal_z == p_vtx.normal_z);
+					(position[1] == p_vtx.position[1]) &&
+					(position[2] == p_vtx.position[2]) &&
+					(uv[0] == p_vtx.uv[0]) &&
+					(uv[1] == p_vtx.uv[1]) &&
+					(normal_xy[0] == p_vtx.normal_xy[0]) &&
+					(normal_xy[1] == p_vtx.normal_xy[1]) &&
+					(normal_z == p_vtx.normal_z);
 		}
 	};
 
@@ -157,16 +158,13 @@ class LightmapperRD : public Lightmapper {
 		}
 	};
 
-	struct Box {
+	struct Triangle {
+		uint32_t indices[3] = {};
+		uint32_t slice = 0;
 		float min_bounds[3] = {};
 		float pad0 = 0.0;
 		float max_bounds[3] = {};
 		float pad1 = 0.0;
-	};
-
-	struct Triangle {
-		uint32_t indices[3] = {};
-		uint32_t slice = 0;
 		bool operator<(const Triangle &p_triangle) const {
 			return slice < p_triangle.slice;
 		}
@@ -231,8 +229,10 @@ class LightmapperRD : public Lightmapper {
 	Vector<Color> probe_values;
 
 	BakeError _blit_meshes_into_atlas(int p_max_texture_size, Vector<Ref<Image>> &albedo_images, Vector<Ref<Image>> &emission_images, AABB &bounds, Size2i &atlas_size, int &atlas_slices, BakeStepFunc p_step_function, void *p_bake_userdata);
-	void _create_acceleration_structures(RenderingDevice *rd, Size2i atlas_size, int atlas_slices, AABB &bounds, int grid_size, Vector<Probe> &probe_positions, GenerateProbes p_generate_probes, Vector<int> &slice_triangle_count, Vector<int> &slice_seam_count, RID &vertex_buffer, RID &triangle_buffer, RID &box_buffer, RID &lights_buffer, RID &triangle_cell_indices_buffer, RID &probe_positions_buffer, RID &grid_texture, RID &seams_buffer, BakeStepFunc p_step_function, void *p_bake_userdata);
+	void _create_acceleration_structures(RenderingDevice *rd, Size2i atlas_size, int atlas_slices, AABB &bounds, int grid_size, Vector<Probe> &probe_positions, GenerateProbes p_generate_probes, Vector<int> &slice_triangle_count, Vector<int> &slice_seam_count, RID &vertex_buffer, RID &triangle_buffer, RID &lights_buffer, RID &triangle_cell_indices_buffer, RID &probe_positions_buffer, RID &grid_texture, RID &seams_buffer, BakeStepFunc p_step_function, void *p_bake_userdata);
 	void _raster_geometry(RenderingDevice *rd, Size2i atlas_size, int atlas_slices, int grid_size, AABB bounds, float p_bias, Vector<int> slice_triangle_count, RID position_tex, RID unocclude_tex, RID normal_tex, RID raster_depth_buffer, RID rasterize_shader, RID raster_base_uniform);
+
+	BakeError _dilate(RenderingDevice *rd, Ref<RDShaderFile> &compute_shader, RID &compute_base_uniform_set, PushConstant &push_constant, RID &source_light_tex, RID &dest_light_tex, const Size2i &atlas_size, int atlas_slices);
 
 public:
 	virtual void add_mesh(const MeshData &p_mesh) override;

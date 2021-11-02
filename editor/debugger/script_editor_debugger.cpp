@@ -147,7 +147,7 @@ void ScriptEditorDebugger::update_tabs() {
 }
 
 void ScriptEditorDebugger::clear_style() {
-	tabs->add_theme_style_override("panel", nullptr);
+	tabs->remove_theme_style_override("panel");
 }
 
 void ScriptEditorDebugger::save_node(ObjectID p_id, const String &p_file) {
@@ -296,6 +296,7 @@ Size2 ScriptEditorDebugger::get_minimum_size() const {
 }
 
 void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_data) {
+	emit_signal(SNAME("debug_data"), p_msg, p_data);
 	if (p_msg == "debug_enter") {
 		_put_msg("get_stack_dump", Array());
 
@@ -396,15 +397,15 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 				s->select(0);
 			}
 		}
-		emit_signal("stack_dump", stack_dump_info);
+		emit_signal(SNAME("stack_dump"), stack_dump_info);
 	} else if (p_msg == "stack_frame_vars") {
 		inspector->clear_stack_variables();
 		ERR_FAIL_COND(p_data.size() != 1);
-		emit_signal("stack_frame_vars", p_data[0]);
+		emit_signal(SNAME("stack_frame_vars"), p_data[0]);
 
 	} else if (p_msg == "stack_frame_var") {
 		inspector->add_stack_variable(p_data);
-		emit_signal("stack_frame_var", p_data);
+		emit_signal(SNAME("stack_frame_var"), p_data);
 
 	} else if (p_msg == "output") {
 		ERR_FAIL_COND(p_data.size() != 2);
@@ -433,7 +434,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 				} break;
 			}
 			EditorNode::get_log()->add_message(output_strings[i], msg_type);
-			emit_signal("output", output_strings[i]);
+			emit_signal(SNAME("output"), output_strings[i]);
 		}
 	} else if (p_msg == "performance:profile_frame") {
 		Vector<float> frame_data;
@@ -499,6 +500,10 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 		error->set_icon(0, get_theme_icon(oe.warning ? "Warning" : "Error", "EditorIcons"));
 		error->set_text(0, time);
 		error->set_text_align(0, TreeItem::ALIGN_LEFT);
+
+		const Color color = get_theme_color(oe.warning ? SNAME("warning_color") : SNAME("error_color"), SNAME("Editor"));
+		error->set_custom_color(0, color);
+		error->set_custom_color(1, color);
 
 		String error_title;
 		if (oe.callstack.size() > 0) {
@@ -872,9 +877,18 @@ void ScriptEditorDebugger::_clear_execution() {
 	inspector->clear_stack_variables();
 }
 
+void ScriptEditorDebugger::_set_breakpoint(const String &p_file, const int &p_line, const bool &p_enabled) {
+	Ref<Script> script = ResourceLoader::load(p_file);
+	emit_signal("set_breakpoint", script, p_line - 1, p_enabled);
+	script.unref();
+}
+
+void ScriptEditorDebugger::_clear_breakpoints() {
+	emit_signal("clear_breakpoints");
+}
+
 void ScriptEditorDebugger::start(Ref<RemoteDebuggerPeer> p_peer) {
-	error_count = 0;
-	warning_count = 0;
+	_clear_errors_list();
 	stop();
 
 	peer = p_peer;
@@ -1224,7 +1238,7 @@ void ScriptEditorDebugger::update_live_edit_root() {
 	Array msg;
 	msg.push_back(np);
 	if (editor->get_edited_scene()) {
-		msg.push_back(editor->get_edited_scene()->get_filename());
+		msg.push_back(editor->get_edited_scene()->get_scene_file_path());
 	} else {
 		msg.push_back("");
 	}
@@ -1503,6 +1517,9 @@ void ScriptEditorDebugger::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("stack_dump", PropertyInfo(Variant::ARRAY, "stack_dump")));
 	ADD_SIGNAL(MethodInfo("stack_frame_vars", PropertyInfo(Variant::INT, "num_vars")));
 	ADD_SIGNAL(MethodInfo("stack_frame_var", PropertyInfo(Variant::ARRAY, "data")));
+	ADD_SIGNAL(MethodInfo("debug_data", PropertyInfo(Variant::STRING, "msg"), PropertyInfo(Variant::ARRAY, "data")));
+	ADD_SIGNAL(MethodInfo("set_breakpoint", PropertyInfo("script"), PropertyInfo(Variant::INT, "line"), PropertyInfo(Variant::BOOL, "enabled")));
+	ADD_SIGNAL(MethodInfo("clear_breakpoints"));
 }
 
 void ScriptEditorDebugger::add_debugger_plugin(const Ref<Script> &p_script) {

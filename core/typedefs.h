@@ -62,9 +62,9 @@
 #endif
 #endif
 
-// Should always inline, except in debug builds because it makes debugging harder.
+// Should always inline, except in dev builds because it makes debugging harder.
 #ifndef _FORCE_INLINE_
-#ifdef DISABLE_FORCED_INLINE
+#ifdef DEV_ENABLED
 #define _FORCE_INLINE_ inline
 #else
 #define _FORCE_INLINE_ _ALWAYS_INLINE_
@@ -276,6 +276,9 @@ struct BuildIndexSequence : BuildIndexSequence<N - 1, N - 1, Is...> {};
 
 template <size_t... Is>
 struct BuildIndexSequence<0, Is...> : IndexSequence<Is...> {};
+
+// Limit the depth of recursive algorithms when dealing with Array/Dictionary
+#define MAX_RECURSION 100
 
 #ifdef DEBUG_ENABLED
 #define DEBUG_METHODS_ENABLED

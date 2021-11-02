@@ -187,7 +187,7 @@ private:
 class Parser {
 public:
 	/** Parse given a token list. Does not take ownership of the tokens -
-     *  the objects must persist during the entire parser lifetime */
+	 *  the objects must persist during the entire parser lifetime */
 	Parser(const TokenList &tokens, bool is_binary);
 	~Parser();
 

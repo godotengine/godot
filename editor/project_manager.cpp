@@ -1297,8 +1297,7 @@ void ProjectList::update_dock_menu() {
 void ProjectList::_global_menu_new_window(const Variant &p_tag) {
 	List<String> args;
 	args.push_back("-p");
-	String exec = OS::get_singleton()->get_executable_path();
-	OS::get_singleton()->create_process(exec, args);
+	OS::get_singleton()->create_instance(args);
 }
 
 void ProjectList::_global_menu_open_project(const Variant &p_tag) {
@@ -1308,8 +1307,7 @@ void ProjectList::_global_menu_open_project(const Variant &p_tag) {
 		String conf = _projects[idx].path.plus_file("project.godot");
 		List<String> args;
 		args.push_back(conf);
-		String exec = OS::get_singleton()->get_executable_path();
-		OS::get_singleton()->create_process(exec, args);
+		OS::get_singleton()->create_instance(args);
 	}
 }
 
@@ -2051,8 +2049,11 @@ void ProjectManager::_open_selected_projects() {
 			args.push_back("--disable-crash-handler");
 		}
 
-		String exec = OS::get_singleton()->get_executable_path();
-		Error err = OS::get_singleton()->create_process(exec, args);
+		if (OS::get_singleton()->is_single_window()) {
+			args.push_back("--single-window");
+		}
+
+		Error err = OS::get_singleton()->create_instance(args);
 		ERR_FAIL_COND(err);
 	}
 
@@ -2119,8 +2120,8 @@ void ProjectManager::_run_project_confirm() {
 		const String &selected = selected_list[i].project_key;
 		String path = EditorSettings::get_singleton()->get("projects/" + selected);
 
-		// `.substr(6)` on `IMPORTED_FILES_PATH` strips away the leading "res://".
-		if (!DirAccess::exists(path.plus_file(ProjectSettings::IMPORTED_FILES_PATH.substr(6)))) {
+		// `.substr(6)` on `ProjectSettings::get_singleton()->get_imported_files_path()` strips away the leading "res://".
+		if (!DirAccess::exists(path.plus_file(ProjectSettings::get_singleton()->get_imported_files_path().substr(6)))) {
 			run_error_diag->set_text(TTR("Can't run project: Assets need to be imported.\nPlease edit the project to trigger the initial import."));
 			run_error_diag->popup_centered();
 			continue;
@@ -2137,8 +2138,7 @@ void ProjectManager::_run_project_confirm() {
 			args.push_back("--disable-crash-handler");
 		}
 
-		String exec = OS::get_singleton()->get_executable_path();
-		Error err = OS::get_singleton()->create_process(exec, args);
+		Error err = OS::get_singleton()->create_instance(args);
 		ERR_FAIL_COND(err);
 	}
 }
@@ -2267,8 +2267,7 @@ void ProjectManager::_language_selected(int p_id) {
 
 void ProjectManager::_restart_confirm() {
 	List<String> args = OS::get_singleton()->get_cmdline_args();
-	String exec = OS::get_singleton()->get_executable_path();
-	Error err = OS::get_singleton()->create_process(exec, args);
+	Error err = OS::get_singleton()->create_instance(args);
 	ERR_FAIL_COND(err);
 
 	_dim_window();

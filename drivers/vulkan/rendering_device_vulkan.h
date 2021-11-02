@@ -813,7 +813,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 	// When using split command lists, this is
 	// implemented internally using secondary command
 	// buffers. As they can be created in threads,
-	// each needs it's own command pool.
+	// each needs its own command pool.
 
 	struct SplitDrawListAllocator {
 		VkCommandPool command_pool = VK_NULL_HANDLE;
@@ -1226,6 +1226,8 @@ public:
 	virtual String get_device_vendor_name() const;
 	virtual String get_device_name() const;
 	virtual String get_device_pipeline_cache_uuid() const;
+
+	virtual uint64_t get_driver_resource(DriverResource p_resource, RID p_rid = RID(), uint64_t p_index = 0);
 
 	RenderingDeviceVulkan();
 	~RenderingDeviceVulkan();

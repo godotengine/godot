@@ -159,6 +159,14 @@ String DisplayServer::clipboard_get() const {
 	ERR_FAIL_V_MSG(String(), "Clipboard is not supported by this display server.");
 }
 
+void DisplayServer::clipboard_set_primary(const String &p_text) {
+	WARN_PRINT("Primary clipboard is not supported by this display server.");
+}
+
+String DisplayServer::clipboard_get_primary() const {
+	ERR_FAIL_V_MSG(String(), "Primary clipboard is not supported by this display server.");
+}
+
 void DisplayServer::screen_set_orientation(ScreenOrientation p_orientation, int p_screen) {
 	WARN_PRINT("Orientation not supported by this display server.");
 }
@@ -198,6 +206,10 @@ void DisplayServer::delete_sub_window(WindowID p_id) {
 
 void DisplayServer::window_set_mouse_passthrough(const Vector<Vector2> &p_region, WindowID p_window) {
 	ERR_FAIL_MSG("Mouse passthrough not supported by this display server.");
+}
+
+void DisplayServer::gl_window_make_current(DisplayServer::WindowID p_window_id) {
+	// noop except in gles
 }
 
 void DisplayServer::window_set_ime_active(const bool p_active, WindowID p_window) {
@@ -285,6 +297,10 @@ String DisplayServer::keyboard_get_layout_name(int p_index) const {
 	return "Not supported";
 }
 
+Key DisplayServer::keyboard_get_keycode_from_physical(Key p_keycode) const {
+	ERR_FAIL_V_MSG(p_keycode, "Not supported by this display server.");
+}
+
 void DisplayServer::force_process_and_drop_events() {
 }
 
@@ -356,6 +372,8 @@ void DisplayServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("clipboard_set", "clipboard"), &DisplayServer::clipboard_set);
 	ClassDB::bind_method(D_METHOD("clipboard_get"), &DisplayServer::clipboard_get);
+	ClassDB::bind_method(D_METHOD("clipboard_set_primary", "clipboard_primary"), &DisplayServer::clipboard_set_primary);
+	ClassDB::bind_method(D_METHOD("clipboard_get_primary"), &DisplayServer::clipboard_get_primary);
 
 	ClassDB::bind_method(D_METHOD("get_screen_count"), &DisplayServer::get_screen_count);
 	ClassDB::bind_method(D_METHOD("screen_get_position", "screen"), &DisplayServer::screen_get_position, DEFVAL(SCREEN_OF_MAIN_WINDOW));
@@ -452,6 +470,7 @@ void DisplayServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("keyboard_set_current_layout", "index"), &DisplayServer::keyboard_set_current_layout);
 	ClassDB::bind_method(D_METHOD("keyboard_get_layout_language", "index"), &DisplayServer::keyboard_get_layout_language);
 	ClassDB::bind_method(D_METHOD("keyboard_get_layout_name", "index"), &DisplayServer::keyboard_get_layout_name);
+	ClassDB::bind_method(D_METHOD("keyboard_get_keycode_from_physical", "keycode"), &DisplayServer::keyboard_get_keycode_from_physical);
 
 	ClassDB::bind_method(D_METHOD("process_events"), &DisplayServer::process_events);
 	ClassDB::bind_method(D_METHOD("force_process_and_drop_events"), &DisplayServer::force_process_and_drop_events);
@@ -482,6 +501,7 @@ void DisplayServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(FEATURE_NATIVE_ICON);
 	BIND_ENUM_CONSTANT(FEATURE_ORIENTATION);
 	BIND_ENUM_CONSTANT(FEATURE_SWAP_BUFFERS);
+	BIND_ENUM_CONSTANT(FEATURE_CLIPBOARD_PRIMARY);
 
 	BIND_ENUM_CONSTANT(MOUSE_MODE_VISIBLE);
 	BIND_ENUM_CONSTANT(MOUSE_MODE_HIDDEN);
@@ -605,4 +625,5 @@ DisplayServer::DisplayServer() {
 }
 
 DisplayServer::~DisplayServer() {
+	singleton = nullptr;
 }

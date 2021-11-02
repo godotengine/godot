@@ -128,6 +128,7 @@ class AnimationPlayerEditor : public VBoxContainer {
 	bool updating_blends;
 
 	AnimationTrackEditor *track_editor;
+	static AnimationPlayerEditor *singleton;
 
 	// Onion skinning.
 	struct {
@@ -186,7 +187,6 @@ class AnimationPlayerEditor : public VBoxContainer {
 	void _scale_changed(const String &p_scale);
 	void _save_animation(String p_file);
 	void _load_animations(Vector<String> p_files);
-	void _seek_frame_changed(const String &p_frame);
 	void _seek_value_changed(float p_value, bool p_set = false, bool p_timeline_only = false);
 	void _blend_editor_next_changed(const int p_idx);
 
@@ -216,7 +216,6 @@ class AnimationPlayerEditor : public VBoxContainer {
 
 	void _pin_pressed();
 
-	AnimationPlayerEditor();
 	~AnimationPlayerEditor();
 
 protected:
@@ -226,7 +225,8 @@ protected:
 
 public:
 	AnimationPlayer *get_player() const;
-	static AnimationPlayerEditor *singleton;
+
+	static AnimationPlayerEditor *get_singleton() { return singleton; }
 
 	bool is_pinned() const { return pin->is_pressed(); }
 	void unpin() { pin->set_pressed(false); }
@@ -238,7 +238,7 @@ public:
 
 	void set_undo_redo(UndoRedo *p_undo_redo) { undo_redo = p_undo_redo; }
 	void edit(AnimationPlayer *p_player);
-	void forward_canvas_force_draw_over_viewport(Control *p_overlay);
+	void forward_force_draw_over_viewport(Control *p_overlay);
 
 	AnimationPlayerEditor(EditorNode *p_editor, AnimationPlayerEditorPlugin *p_plugin);
 };
@@ -262,7 +262,8 @@ public:
 	virtual bool handles(Object *p_object) const override;
 	virtual void make_visible(bool p_visible) override;
 
-	virtual void forward_canvas_force_draw_over_viewport(Control *p_overlay) override { anim_editor->forward_canvas_force_draw_over_viewport(p_overlay); }
+	virtual void forward_canvas_force_draw_over_viewport(Control *p_overlay) override { anim_editor->forward_force_draw_over_viewport(p_overlay); }
+	virtual void forward_spatial_force_draw_over_viewport(Control *p_overlay) override { anim_editor->forward_force_draw_over_viewport(p_overlay); }
 
 	AnimationPlayerEditorPlugin(EditorNode *p_node);
 	~AnimationPlayerEditorPlugin();

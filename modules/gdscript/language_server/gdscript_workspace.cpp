@@ -42,6 +42,7 @@
 #include "scene/resources/packed_scene.h"
 
 void GDScriptWorkspace::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("apply_new_signal"), &GDScriptWorkspace::apply_new_signal);
 	ClassDB::bind_method(D_METHOD("didDeleteFiles"), &GDScriptWorkspace::did_delete_files);
 	ClassDB::bind_method(D_METHOD("symbol"), &GDScriptWorkspace::symbol);
 	ClassDB::bind_method(D_METHOD("parse_script", "path", "content"), &GDScriptWorkspace::parse_script);
@@ -50,6 +51,54 @@ void GDScriptWorkspace::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_file_uri", "path"), &GDScriptWorkspace::get_file_uri);
 	ClassDB::bind_method(D_METHOD("publish_diagnostics", "path"), &GDScriptWorkspace::publish_diagnostics);
 	ClassDB::bind_method(D_METHOD("generate_script_api", "path"), &GDScriptWorkspace::generate_script_api);
+}
+
+void GDScriptWorkspace::apply_new_signal(Object *obj, String function, PackedStringArray args) {
+	String function_signature = "func " + function;
+	Ref<Script> script = obj->get_script();
+
+	String source = script->get_source_code();
+
+	if (source.find(function_signature) != -1) {
+		return;
+	}
+
+	int first_class = source.find("\nclass ");
+	int start_line = 0;
+	if (first_class != -1) {
+		start_line = source.substr(0, first_class).split("\n").size();
+	} else {
+		start_line = source.split("\n").size();
+	}
+
+	String function_body = "\n\n" + function_signature + "(";
+	for (int i = 0; i < args.size(); ++i) {
+		function_body += args[i];
+		if (i < args.size() - 1) {
+			function_body += ", ";
+		}
+	}
+	function_body += ")";
+	if (EditorSettings::get_singleton()->get_setting("text_editor/completion/add_type_hints")) {
+		function_body += " -> void";
+	}
+	function_body += ":\n\tpass # Replace with function body.\n";
+
+	lsp::TextEdit text_edit;
+
+	if (first_class != -1) {
+		function_body += "\n\n";
+	}
+	text_edit.range.end.line = text_edit.range.start.line = start_line;
+
+	text_edit.newText = function_body;
+
+	String uri = get_file_uri(script->get_path());
+
+	lsp::ApplyWorkspaceEditParams params;
+	params.edit.add_edit(uri, text_edit);
+
+	GDScriptLanguageProtocol::get_singleton()->request_client("workspace/applyEdit", params.to_json());
 }
 
 void GDScriptWorkspace::did_delete_files(const Dictionary &p_params) {
@@ -212,9 +261,9 @@ Array GDScriptWorkspace::symbol(const Dictionary &p_params) {
 	String query = p_params["query"];
 	Array arr;
 	if (!query.is_empty()) {
-		for (Map<String, ExtendGDScriptParser *>::Element *E = scripts.front(); E; E = E->next()) {
+		for (const KeyValue<String, ExtendGDScriptParser *> &E : scripts) {
 			Vector<lsp::DocumentedSymbolInformation> script_symbols;
-			E->get()->get_symbols().symbol_tree_as_list(E->key(), script_symbols);
+			E.value->get_symbols().symbol_tree_as_list(E.key, script_symbols);
 			for (int i = 0; i < script_symbols.size(); ++i) {
 				if (query.is_subsequence_ofi(script_symbols[i].name)) {
 					lsp::DocumentedSymbolInformation symbol = script_symbols[i];
@@ -233,10 +282,10 @@ Error GDScriptWorkspace::initialize() {
 	}
 
 	DocTools *doc = EditorHelp::get_doc_data();
-	for (Map<String, DocData::ClassDoc>::Element *E = doc->class_list.front(); E; E = E->next()) {
-		const DocData::ClassDoc &class_data = E->value();
+	for (const KeyValue<String, DocData::ClassDoc> &E : doc->class_list) {
+		const DocData::ClassDoc &class_data = E.value;
 		lsp::DocumentSymbol class_symbol;
-		String class_name = E->key();
+		String class_name = E.key;
 		class_symbol.name = class_name;
 		class_symbol.native_class = class_name;
 		class_symbol.kind = lsp::SymbolKind::Class;
@@ -289,7 +338,9 @@ Error GDScriptWorkspace::initialize() {
 		}
 
 		Vector<DocData::MethodDoc> methods_signals;
+		methods_signals.append_array(class_data.constructors);
 		methods_signals.append_array(class_data.methods);
+		methods_signals.append_array(class_data.operators);
 		const int signal_start_idx = methods_signals.size();
 		methods_signals.append_array(class_data.signals);
 
@@ -344,21 +395,24 @@ Error GDScriptWorkspace::initialize() {
 	reload_all_workspace_scripts();
 
 	if (GDScriptLanguageProtocol::get_singleton()->is_smart_resolve_enabled()) {
-		for (Map<StringName, lsp::DocumentSymbol>::Element *E = native_symbols.front(); E; E = E->next()) {
+		for (const KeyValue<StringName, lsp::DocumentSymbol> &E : native_symbols) {
 			ClassMembers members;
-			const lsp::DocumentSymbol &class_symbol = E->get();
+			const lsp::DocumentSymbol &class_symbol = E.value;
 			for (int i = 0; i < class_symbol.children.size(); i++) {
 				const lsp::DocumentSymbol &symbol = class_symbol.children[i];
 				members.set(symbol.name, &symbol);
 			}
-			native_members.set(E->key(), members);
+			native_members.set(E.key, members);
 		}
 
 		// cache member completions
-		for (Map<String, ExtendGDScriptParser *>::Element *S = scripts.front(); S; S = S->next()) {
-			S->get()->get_member_completions();
+		for (const KeyValue<String, ExtendGDScriptParser *> &S : scripts) {
+			S.value->get_member_completions();
 		}
 	}
+
+	EditorNode *editor_node = EditorNode::get_singleton();
+	editor_node->connect("script_add_function_request", callable_mp(this, &GDScriptWorkspace::apply_new_signal));
 
 	return OK;
 }
@@ -551,7 +605,7 @@ void GDScriptWorkspace::completion(const lsp::CompletionParams &p_params, List<S
 	}
 }
 
-const lsp::DocumentSymbol *GDScriptWorkspace::resolve_symbol(const lsp::TextDocumentPositionParams &p_doc_pos, const String &p_symbol_name, bool p_func_requred) {
+const lsp::DocumentSymbol *GDScriptWorkspace::resolve_symbol(const lsp::TextDocumentPositionParams &p_doc_pos, const String &p_symbol_name, bool p_func_required) {
 	const lsp::DocumentSymbol *symbol = nullptr;
 
 	String path = get_file_path(p_doc_pos.textDocument.uri);
@@ -576,7 +630,10 @@ const lsp::DocumentSymbol *GDScriptWorkspace::resolve_symbol(const lsp::TextDocu
 
 			} else {
 				ScriptLanguage::LookupResult ret;
-				if (OK == GDScriptLanguage::get_singleton()->lookup_code(parser->get_text_for_lookup_symbol(pos, symbol_identifier, p_func_requred), symbol_identifier, path, nullptr, ret)) {
+				if (symbol_identifier == "new" && parser->get_lines()[p_doc_pos.position.line].replace(" ", "").replace("\t", "").find("new(") > -1) {
+					symbol_identifier = "_init";
+				}
+				if (OK == GDScriptLanguage::get_singleton()->lookup_code(parser->get_text_for_lookup_symbol(pos, symbol_identifier, p_func_required), symbol_identifier, path, nullptr, ret)) {
 					if (ret.type == ScriptLanguage::LookupResult::RESULT_SCRIPT_LOCATION) {
 						String target_script_path = path;
 						if (!ret.script.is_null()) {
@@ -630,8 +687,8 @@ void GDScriptWorkspace::resolve_related_symbols(const lsp::TextDocumentPositionP
 			class_ptr = native_members.next(class_ptr);
 		}
 
-		for (Map<String, ExtendGDScriptParser *>::Element *E = scripts.front(); E; E = E->next()) {
-			const ExtendGDScriptParser *script = E->get();
+		for (const KeyValue<String, ExtendGDScriptParser *> &E : scripts) {
+			const ExtendGDScriptParser *script = E.value;
 			const ClassMembers &members = script->get_members();
 			if (const lsp::DocumentSymbol *const *symbol = members.getptr(symbol_identifier)) {
 				r_list.push_back(*symbol);
@@ -731,12 +788,12 @@ GDScriptWorkspace::GDScriptWorkspace() {
 GDScriptWorkspace::~GDScriptWorkspace() {
 	Set<String> cached_parsers;
 
-	for (Map<String, ExtendGDScriptParser *>::Element *E = parse_results.front(); E; E = E->next()) {
-		cached_parsers.insert(E->key());
+	for (const KeyValue<String, ExtendGDScriptParser *> &E : parse_results) {
+		cached_parsers.insert(E.key);
 	}
 
-	for (Map<String, ExtendGDScriptParser *>::Element *E = scripts.front(); E; E = E->next()) {
-		cached_parsers.insert(E->key());
+	for (const KeyValue<String, ExtendGDScriptParser *> &E : scripts) {
+		cached_parsers.insert(E.key);
 	}
 
 	for (Set<String>::Element *E = cached_parsers.front(); E; E = E->next()) {

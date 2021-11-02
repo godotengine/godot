@@ -116,8 +116,8 @@ void FontData::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_scale", "cache_index", "size", "scale"), &FontData::set_scale);
 	ClassDB::bind_method(D_METHOD("get_scale", "cache_index", "size"), &FontData::get_scale);
 
-	ClassDB::bind_method(D_METHOD("set_spacing", "cache_index", "size", "spacing"), &FontData::set_spacing);
-	ClassDB::bind_method(D_METHOD("get_spacing", "cache_index", "size"), &FontData::get_spacing);
+	ClassDB::bind_method(D_METHOD("set_spacing", "cache_index", "size", "spacing_type", "value"), &FontData::set_spacing);
+	ClassDB::bind_method(D_METHOD("get_spacing", "cache_index", "size", "spacing_type"), &FontData::get_spacing);
 
 	ClassDB::bind_method(D_METHOD("get_texture_count", "cache_index", "size"), &FontData::get_texture_count);
 	ClassDB::bind_method(D_METHOD("clear_textures", "cache_index", "size"), &FontData::clear_textures);
@@ -175,7 +175,7 @@ void FontData::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("has_char", "char"), &FontData::has_char);
 	ClassDB::bind_method(D_METHOD("get_supported_chars"), &FontData::get_supported_chars);
 
-	ClassDB::bind_method(D_METHOD("get_glyph_index", "char", "variation_selector"), &FontData::get_glyph_index);
+	ClassDB::bind_method(D_METHOD("get_glyph_index", "size", "char", "variation_selector"), &FontData::get_glyph_index);
 
 	ClassDB::bind_method(D_METHOD("get_supported_feature_list"), &FontData::get_supported_feature_list);
 	ClassDB::bind_method(D_METHOD("get_supported_variation_list"), &FontData::get_supported_variation_list);
@@ -502,6 +502,11 @@ void FontData::set_data(const PackedByteArray &p_data) {
 }
 
 PackedByteArray FontData::get_data() const {
+	if (unlikely((size_t)data.size() != data_size)) {
+		PackedByteArray *data_w = const_cast<PackedByteArray *>(&data);
+		data_w->resize(data_size);
+		memcpy(data_w->ptrw(), data_ptr, data_size);
+	}
 	return data;
 }
 
@@ -689,227 +694,272 @@ void FontData::remove_cache(int p_cache_index) {
 }
 
 Array FontData::get_size_cache_list(int p_cache_index) const {
+	ERR_FAIL_COND_V(p_cache_index < 0, Array());
 	_ensure_rid(p_cache_index);
 	return TS->font_get_size_cache_list(cache[p_cache_index]);
 }
 
 void FontData::clear_size_cache(int p_cache_index) {
+	ERR_FAIL_COND(p_cache_index < 0);
 	_ensure_rid(p_cache_index);
 	TS->font_clear_size_cache(cache[p_cache_index]);
 }
 
 void FontData::remove_size_cache(int p_cache_index, const Vector2i &p_size) {
+	ERR_FAIL_COND(p_cache_index < 0);
 	_ensure_rid(p_cache_index);
 	TS->font_remove_size_cache(cache[p_cache_index], p_size);
 }
 
 void FontData::set_variation_coordinates(int p_cache_index, const Dictionary &p_variation_coordinates) {
+	ERR_FAIL_COND(p_cache_index < 0);
 	_ensure_rid(p_cache_index);
 	TS->font_set_variation_coordinates(cache[p_cache_index], p_variation_coordinates);
 	emit_changed();
 }
 
 Dictionary FontData::get_variation_coordinates(int p_cache_index) const {
+	ERR_FAIL_COND_V(p_cache_index < 0, Dictionary());
 	_ensure_rid(p_cache_index);
 	return TS->font_get_variation_coordinates(cache[p_cache_index]);
 }
 
 void FontData::set_ascent(int p_cache_index, int p_size, real_t p_ascent) {
+	ERR_FAIL_COND(p_cache_index < 0);
 	_ensure_rid(p_cache_index);
 	TS->font_set_ascent(cache[p_cache_index], p_size, p_ascent);
 }
 
 real_t FontData::get_ascent(int p_cache_index, int p_size) const {
+	ERR_FAIL_COND_V(p_cache_index < 0, 0.f);
 	_ensure_rid(p_cache_index);
 	return TS->font_get_ascent(cache[p_cache_index], p_size);
 }
 
 void FontData::set_descent(int p_cache_index, int p_size, real_t p_descent) {
+	ERR_FAIL_COND(p_cache_index < 0);
 	_ensure_rid(p_cache_index);
 	TS->font_set_descent(cache[p_cache_index], p_size, p_descent);
 }
 
 real_t FontData::get_descent(int p_cache_index, int p_size) const {
+	ERR_FAIL_COND_V(p_cache_index < 0, 0.f);
 	_ensure_rid(p_cache_index);
 	return TS->font_get_descent(cache[p_cache_index], p_size);
 }
 
 void FontData::set_underline_position(int p_cache_index, int p_size, real_t p_underline_position) {
+	ERR_FAIL_COND(p_cache_index < 0);
 	_ensure_rid(p_cache_index);
 	TS->font_set_underline_position(cache[p_cache_index], p_size, p_underline_position);
 }
 
 real_t FontData::get_underline_position(int p_cache_index, int p_size) const {
+	ERR_FAIL_COND_V(p_cache_index < 0, 0.f);
 	_ensure_rid(p_cache_index);
 	return TS->font_get_underline_position(cache[p_cache_index], p_size);
 }
 
 void FontData::set_underline_thickness(int p_cache_index, int p_size, real_t p_underline_thickness) {
+	ERR_FAIL_COND(p_cache_index < 0);
 	_ensure_rid(p_cache_index);
 	TS->font_set_underline_thickness(cache[p_cache_index], p_size, p_underline_thickness);
 }
 
 real_t FontData::get_underline_thickness(int p_cache_index, int p_size) const {
+	ERR_FAIL_COND_V(p_cache_index < 0, 0.f);
 	_ensure_rid(p_cache_index);
 	return TS->font_get_underline_thickness(cache[p_cache_index], p_size);
 }
 
 void FontData::set_scale(int p_cache_index, int p_size, real_t p_scale) {
+	ERR_FAIL_COND(p_cache_index < 0);
 	_ensure_rid(p_cache_index);
 	TS->font_set_scale(cache[p_cache_index], p_size, p_scale);
 }
 
 real_t FontData::get_scale(int p_cache_index, int p_size) const {
+	ERR_FAIL_COND_V(p_cache_index < 0, 0.f);
 	_ensure_rid(p_cache_index);
 	return TS->font_get_scale(cache[p_cache_index], p_size);
 }
 
 void FontData::set_spacing(int p_cache_index, int p_size, TextServer::SpacingType p_spacing, int p_value) {
+	ERR_FAIL_COND(p_cache_index < 0);
 	_ensure_rid(p_cache_index);
 	TS->font_set_spacing(cache[p_cache_index], p_size, p_spacing, p_value);
 }
 
 int FontData::get_spacing(int p_cache_index, int p_size, TextServer::SpacingType p_spacing) const {
+	ERR_FAIL_COND_V(p_cache_index < 0, 0);
 	_ensure_rid(p_cache_index);
 	return TS->font_get_spacing(cache[p_cache_index], p_size, p_spacing);
 }
 
 int FontData::get_texture_count(int p_cache_index, const Vector2i &p_size) const {
+	ERR_FAIL_COND_V(p_cache_index < 0, 0);
 	_ensure_rid(p_cache_index);
 	return TS->font_get_texture_count(cache[p_cache_index], p_size);
 }
 
 void FontData::clear_textures(int p_cache_index, const Vector2i &p_size) {
+	ERR_FAIL_COND(p_cache_index < 0);
 	_ensure_rid(p_cache_index);
 	TS->font_clear_textures(cache[p_cache_index], p_size);
 }
 
 void FontData::remove_texture(int p_cache_index, const Vector2i &p_size, int p_texture_index) {
+	ERR_FAIL_COND(p_cache_index < 0);
 	_ensure_rid(p_cache_index);
 	TS->font_remove_texture(cache[p_cache_index], p_size, p_texture_index);
 }
 
 void FontData::set_texture_image(int p_cache_index, const Vector2i &p_size, int p_texture_index, const Ref<Image> &p_image) {
+	ERR_FAIL_COND(p_cache_index < 0);
 	_ensure_rid(p_cache_index);
 	TS->font_set_texture_image(cache[p_cache_index], p_size, p_texture_index, p_image);
 }
 
 Ref<Image> FontData::get_texture_image(int p_cache_index, const Vector2i &p_size, int p_texture_index) const {
+	ERR_FAIL_COND_V(p_cache_index < 0, Ref<Image>());
 	_ensure_rid(p_cache_index);
 	return TS->font_get_texture_image(cache[p_cache_index], p_size, p_texture_index);
 }
 
 void FontData::set_texture_offsets(int p_cache_index, const Vector2i &p_size, int p_texture_index, const PackedInt32Array &p_offset) {
+	ERR_FAIL_COND(p_cache_index < 0);
 	_ensure_rid(p_cache_index);
 	TS->font_set_texture_offsets(cache[p_cache_index], p_size, p_texture_index, p_offset);
 }
 
 PackedInt32Array FontData::get_texture_offsets(int p_cache_index, const Vector2i &p_size, int p_texture_index) const {
+	ERR_FAIL_COND_V(p_cache_index < 0, PackedInt32Array());
 	_ensure_rid(p_cache_index);
 	return TS->font_get_texture_offsets(cache[p_cache_index], p_size, p_texture_index);
 }
 
 Array FontData::get_glyph_list(int p_cache_index, const Vector2i &p_size) const {
+	ERR_FAIL_COND_V(p_cache_index < 0, Array());
 	_ensure_rid(p_cache_index);
 	return TS->font_get_glyph_list(cache[p_cache_index], p_size);
 }
 
 void FontData::clear_glyphs(int p_cache_index, const Vector2i &p_size) {
+	ERR_FAIL_COND(p_cache_index < 0);
 	_ensure_rid(p_cache_index);
 	TS->font_clear_glyphs(cache[p_cache_index], p_size);
 }
 
 void FontData::remove_glyph(int p_cache_index, const Vector2i &p_size, int32_t p_glyph) {
+	ERR_FAIL_COND(p_cache_index < 0);
 	_ensure_rid(p_cache_index);
 	TS->font_remove_glyph(cache[p_cache_index], p_size, p_glyph);
 }
 
 void FontData::set_glyph_advance(int p_cache_index, int p_size, int32_t p_glyph, const Vector2 &p_advance) {
+	ERR_FAIL_COND(p_cache_index < 0);
 	_ensure_rid(p_cache_index);
 	TS->font_set_glyph_advance(cache[p_cache_index], p_size, p_glyph, p_advance);
 }
 
 Vector2 FontData::get_glyph_advance(int p_cache_index, int p_size, int32_t p_glyph) const {
+	ERR_FAIL_COND_V(p_cache_index < 0, Vector2());
 	_ensure_rid(p_cache_index);
 	return TS->font_get_glyph_advance(cache[p_cache_index], p_size, p_glyph);
 }
 
 void FontData::set_glyph_offset(int p_cache_index, const Vector2i &p_size, int32_t p_glyph, const Vector2 &p_offset) {
+	ERR_FAIL_COND(p_cache_index < 0);
 	_ensure_rid(p_cache_index);
 	TS->font_set_glyph_offset(cache[p_cache_index], p_size, p_glyph, p_offset);
 }
 
 Vector2 FontData::get_glyph_offset(int p_cache_index, const Vector2i &p_size, int32_t p_glyph) const {
+	ERR_FAIL_COND_V(p_cache_index < 0, Vector2());
 	_ensure_rid(p_cache_index);
 	return TS->font_get_glyph_offset(cache[p_cache_index], p_size, p_glyph);
 }
 
 void FontData::set_glyph_size(int p_cache_index, const Vector2i &p_size, int32_t p_glyph, const Vector2 &p_gl_size) {
+	ERR_FAIL_COND(p_cache_index < 0);
 	_ensure_rid(p_cache_index);
 	TS->font_set_glyph_size(cache[p_cache_index], p_size, p_glyph, p_gl_size);
 }
 
 Vector2 FontData::get_glyph_size(int p_cache_index, const Vector2i &p_size, int32_t p_glyph) const {
+	ERR_FAIL_COND_V(p_cache_index < 0, Vector2());
 	_ensure_rid(p_cache_index);
 	return TS->font_get_glyph_size(cache[p_cache_index], p_size, p_glyph);
 }
 
 void FontData::set_glyph_uv_rect(int p_cache_index, const Vector2i &p_size, int32_t p_glyph, const Rect2 &p_uv_rect) {
+	ERR_FAIL_COND(p_cache_index < 0);
 	_ensure_rid(p_cache_index);
 	TS->font_set_glyph_uv_rect(cache[p_cache_index], p_size, p_glyph, p_uv_rect);
 }
 
 Rect2 FontData::get_glyph_uv_rect(int p_cache_index, const Vector2i &p_size, int32_t p_glyph) const {
+	ERR_FAIL_COND_V(p_cache_index < 0, Rect2());
 	_ensure_rid(p_cache_index);
 	return TS->font_get_glyph_uv_rect(cache[p_cache_index], p_size, p_glyph);
 }
 
 void FontData::set_glyph_texture_idx(int p_cache_index, const Vector2i &p_size, int32_t p_glyph, int p_texture_idx) {
+	ERR_FAIL_COND(p_cache_index < 0);
 	_ensure_rid(p_cache_index);
 	TS->font_set_glyph_texture_idx(cache[p_cache_index], p_size, p_glyph, p_texture_idx);
 }
 
 int FontData::get_glyph_texture_idx(int p_cache_index, const Vector2i &p_size, int32_t p_glyph) const {
+	ERR_FAIL_COND_V(p_cache_index < 0, 0);
 	_ensure_rid(p_cache_index);
 	return TS->font_get_glyph_texture_idx(cache[p_cache_index], p_size, p_glyph);
 }
 
 Array FontData::get_kerning_list(int p_cache_index, int p_size) const {
+	ERR_FAIL_COND_V(p_cache_index < 0, Array());
 	_ensure_rid(p_cache_index);
 	return TS->font_get_kerning_list(cache[p_cache_index], p_size);
 }
 
 void FontData::clear_kerning_map(int p_cache_index, int p_size) {
+	ERR_FAIL_COND(p_cache_index < 0);
 	_ensure_rid(p_cache_index);
 	TS->font_clear_kerning_map(cache[p_cache_index], p_size);
 }
 
 void FontData::remove_kerning(int p_cache_index, int p_size, const Vector2i &p_glyph_pair) {
+	ERR_FAIL_COND(p_cache_index < 0);
 	_ensure_rid(p_cache_index);
 	TS->font_remove_kerning(cache[p_cache_index], p_size, p_glyph_pair);
 }
 
 void FontData::set_kerning(int p_cache_index, int p_size, const Vector2i &p_glyph_pair, const Vector2 &p_kerning) {
+	ERR_FAIL_COND(p_cache_index < 0);
 	_ensure_rid(p_cache_index);
 	TS->font_set_kerning(cache[p_cache_index], p_size, p_glyph_pair, p_kerning);
 }
 
 Vector2 FontData::get_kerning(int p_cache_index, int p_size, const Vector2i &p_glyph_pair) const {
+	ERR_FAIL_COND_V(p_cache_index < 0, Vector2());
 	_ensure_rid(p_cache_index);
 	return TS->font_get_kerning(cache[p_cache_index], p_size, p_glyph_pair);
 }
 
 void FontData::render_range(int p_cache_index, const Vector2i &p_size, char32_t p_start, char32_t p_end) {
+	ERR_FAIL_COND(p_cache_index < 0);
 	_ensure_rid(p_cache_index);
 	TS->font_render_range(cache[p_cache_index], p_size, p_start, p_end);
 }
 
 void FontData::render_glyph(int p_cache_index, const Vector2i &p_size, int32_t p_index) {
+	ERR_FAIL_COND(p_cache_index < 0);
 	_ensure_rid(p_cache_index);
 	TS->font_render_glyph(cache[p_cache_index], p_size, p_index);
 }
 
 RID FontData::get_cache_rid(int p_cache_index) const {
+	ERR_FAIL_COND_V(p_cache_index < 0, RID());
 	_ensure_rid(p_cache_index);
 	return cache[p_cache_index];
 }
@@ -1008,10 +1058,8 @@ void Font::_data_changed() {
 
 void Font::_ensure_rid(int p_index) const {
 	// Find or create cache record.
-	for (int i = 0; i < rids.size(); i++) {
-		if (!rids[i].is_valid() && data[i].is_valid()) {
-			rids.write[i] = data[i]->find_cache(variation_coordinates);
-		}
+	if (!rids[p_index].is_valid() && data[p_index].is_valid()) {
+		rids.write[p_index] = data[p_index]->find_cache(variation_coordinates);
 	}
 }
 
@@ -1024,10 +1072,6 @@ void Font::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("clear_data"), &Font::clear_data);
 	ClassDB::bind_method(D_METHOD("remove_data", "idx"), &Font::remove_data);
 
-	ClassDB::bind_method(D_METHOD("set_base_size", "size"), &Font::set_base_size);
-	ClassDB::bind_method(D_METHOD("get_base_size"), &Font::get_base_size);
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "base_size"), "set_base_size", "get_base_size");
-
 	ClassDB::bind_method(D_METHOD("set_variation_coordinates", "variation_coordinates"), &Font::set_variation_coordinates);
 	ClassDB::bind_method(D_METHOD("get_variation_coordinates"), &Font::get_variation_coordinates);
 	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "variation_coordinates"), "set_variation_coordinates", "get_variation_coordinates");
@@ -1039,20 +1083,20 @@ void Font::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::INT, "spacing_top"), "set_spacing", "get_spacing", TextServer::SPACING_TOP);
 	ADD_PROPERTYI(PropertyInfo(Variant::INT, "spacing_bottom"), "set_spacing", "get_spacing", TextServer::SPACING_BOTTOM);
 
-	ClassDB::bind_method(D_METHOD("get_height", "size"), &Font::get_height, DEFVAL(-1));
-	ClassDB::bind_method(D_METHOD("get_ascent", "size"), &Font::get_ascent, DEFVAL(-1));
-	ClassDB::bind_method(D_METHOD("get_descent", "size"), &Font::get_descent, DEFVAL(-1));
-	ClassDB::bind_method(D_METHOD("get_underline_position", "size"), &Font::get_underline_position, DEFVAL(-1));
-	ClassDB::bind_method(D_METHOD("get_underline_thickness", "size"), &Font::get_underline_thickness, DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("get_height", "size"), &Font::get_height, DEFVAL(DEFAULT_FONT_SIZE));
+	ClassDB::bind_method(D_METHOD("get_ascent", "size"), &Font::get_ascent, DEFVAL(DEFAULT_FONT_SIZE));
+	ClassDB::bind_method(D_METHOD("get_descent", "size"), &Font::get_descent, DEFVAL(DEFAULT_FONT_SIZE));
+	ClassDB::bind_method(D_METHOD("get_underline_position", "size"), &Font::get_underline_position, DEFVAL(DEFAULT_FONT_SIZE));
+	ClassDB::bind_method(D_METHOD("get_underline_thickness", "size"), &Font::get_underline_thickness, DEFVAL(DEFAULT_FONT_SIZE));
 
-	ClassDB::bind_method(D_METHOD("get_string_size", "text", "size", "align", "width", "flags"), &Font::get_string_size, DEFVAL(-1), DEFVAL(HALIGN_LEFT), DEFVAL(-1), DEFVAL(TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_WORD_BOUND));
-	ClassDB::bind_method(D_METHOD("get_multiline_string_size", "text", "width", "size", "flags"), &Font::get_multiline_string_size, DEFVAL(-1), DEFVAL(-1), DEFVAL(TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND));
+	ClassDB::bind_method(D_METHOD("get_string_size", "text", "size", "align", "width", "flags"), &Font::get_string_size, DEFVAL(DEFAULT_FONT_SIZE), DEFVAL(HALIGN_LEFT), DEFVAL(-1), DEFVAL(TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_WORD_BOUND));
+	ClassDB::bind_method(D_METHOD("get_multiline_string_size", "text", "width", "size", "flags"), &Font::get_multiline_string_size, DEFVAL(-1), DEFVAL(DEFAULT_FONT_SIZE), DEFVAL(TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND));
 
-	ClassDB::bind_method(D_METHOD("draw_string", "canvas_item", "pos", "text", "align", "width", "size", "modulate", "outline_size", "outline_modulate", "flags"), &Font::draw_string, DEFVAL(HALIGN_LEFT), DEFVAL(-1), DEFVAL(-1), DEFVAL(Color(1, 1, 1)), DEFVAL(0), DEFVAL(Color(1, 1, 1, 0)), DEFVAL(TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_WORD_BOUND));
-	ClassDB::bind_method(D_METHOD("draw_multiline_string", "canvas_item", "pos", "text", "align", "width", "max_lines", "size", "modulate", "outline_size", "outline_modulate", "flags"), &Font::draw_multiline_string, DEFVAL(HALIGN_LEFT), DEFVAL(-1), DEFVAL(-1), DEFVAL(-1), DEFVAL(Color(1, 1, 1)), DEFVAL(0), DEFVAL(Color(1, 1, 1, 0)), DEFVAL(TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND | TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_WORD_BOUND));
+	ClassDB::bind_method(D_METHOD("draw_string", "canvas_item", "pos", "text", "align", "width", "size", "modulate", "outline_size", "outline_modulate", "flags"), &Font::draw_string, DEFVAL(HALIGN_LEFT), DEFVAL(-1), DEFVAL(DEFAULT_FONT_SIZE), DEFVAL(Color(1, 1, 1)), DEFVAL(0), DEFVAL(Color(1, 1, 1, 0)), DEFVAL(TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_WORD_BOUND));
+	ClassDB::bind_method(D_METHOD("draw_multiline_string", "canvas_item", "pos", "text", "align", "width", "max_lines", "size", "modulate", "outline_size", "outline_modulate", "flags"), &Font::draw_multiline_string, DEFVAL(HALIGN_LEFT), DEFVAL(-1), DEFVAL(-1), DEFVAL(DEFAULT_FONT_SIZE), DEFVAL(Color(1, 1, 1)), DEFVAL(0), DEFVAL(Color(1, 1, 1, 0)), DEFVAL(TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND | TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_WORD_BOUND));
 
-	ClassDB::bind_method(D_METHOD("get_char_size", "char", "next", "size"), &Font::get_char_size, DEFVAL(0), DEFVAL(-1));
-	ClassDB::bind_method(D_METHOD("draw_char", "canvas_item", "pos", "char", "next", "size", "modulate", "outline_size", "outline_modulate"), &Font::draw_char, DEFVAL(0), DEFVAL(-1), DEFVAL(Color(1, 1, 1)), DEFVAL(0), DEFVAL(Color(1, 1, 1, 0)));
+	ClassDB::bind_method(D_METHOD("get_char_size", "char", "next", "size"), &Font::get_char_size, DEFVAL(0), DEFVAL(DEFAULT_FONT_SIZE));
+	ClassDB::bind_method(D_METHOD("draw_char", "canvas_item", "pos", "char", "next", "size", "modulate", "outline_size", "outline_modulate"), &Font::draw_char, DEFVAL(0), DEFVAL(DEFAULT_FONT_SIZE), DEFVAL(Color(1, 1, 1)), DEFVAL(0), DEFVAL(Color(1, 1, 1, 0)));
 
 	ClassDB::bind_method(D_METHOD("has_char", "char"), &Font::has_char);
 	ClassDB::bind_method(D_METHOD("get_supported_chars"), &Font::get_supported_chars);
@@ -1147,7 +1191,6 @@ void Font::reset_state() {
 	data.clear();
 	rids.clear();
 
-	base_size = 16;
 	variation_coordinates.clear();
 	spacing_bottom = 0;
 	spacing_top = 0;
@@ -1171,6 +1214,14 @@ void Font::add_data(const Ref<FontData> &p_data) {
 
 	if (data[data.size() - 1].is_valid()) {
 		data.write[data.size() - 1]->connect(SNAME("changed"), callable_mp(this, &Font::_data_changed), varray(), CONNECT_REFERENCE_COUNTED);
+		Dictionary data_var_list = p_data->get_supported_variation_list();
+		for (int j = 0; j < data_var_list.size(); j++) {
+			int32_t tag = data_var_list.get_key_at_index(j);
+			Vector3i value = data_var_list.get_value_at_index(j);
+			if (!variation_coordinates.has(tag) && !variation_coordinates.has(TS->tag_to_name(tag))) {
+				variation_coordinates[TS->tag_to_name(tag)] = value.z;
+			}
+		}
 	}
 
 	cache.clear();
@@ -1190,6 +1241,14 @@ void Font::set_data(int p_idx, const Ref<FontData> &p_data) {
 
 	data.write[p_idx] = p_data;
 	rids.write[p_idx] = RID();
+	Dictionary data_var_list = p_data->get_supported_variation_list();
+	for (int j = 0; j < data_var_list.size(); j++) {
+		int32_t tag = data_var_list.get_key_at_index(j);
+		Vector3i value = data_var_list.get_value_at_index(j);
+		if (!variation_coordinates.has(tag) && !variation_coordinates.has(TS->tag_to_name(tag))) {
+			variation_coordinates[TS->tag_to_name(tag)] = value.z;
+		}
+	}
 
 	if (data[p_idx].is_valid()) {
 		data.write[p_idx]->connect(SNAME("changed"), callable_mp(this, &Font::_data_changed), varray(), CONNECT_REFERENCE_COUNTED);
@@ -1244,14 +1303,6 @@ void Font::remove_data(int p_idx) {
 	notify_property_list_changed();
 }
 
-void Font::set_base_size(int p_size) {
-	base_size = p_size;
-}
-
-int Font::get_base_size() const {
-	return base_size;
-}
-
 void Font::set_variation_coordinates(const Dictionary &p_variation_coordinates) {
 	_data_changed();
 	variation_coordinates = p_variation_coordinates;
@@ -1291,59 +1342,52 @@ int Font::get_spacing(TextServer::SpacingType p_spacing) const {
 }
 
 real_t Font::get_height(int p_size) const {
-	int size = (p_size <= 0) ? base_size : p_size;
 	real_t ret = 0.f;
 	for (int i = 0; i < data.size(); i++) {
 		_ensure_rid(i);
-		ret = MAX(ret, TS->font_get_ascent(rids[i], size) + TS->font_get_descent(rids[i], size));
+		ret = MAX(ret, TS->font_get_ascent(rids[i], p_size) + TS->font_get_descent(rids[i], p_size));
 	}
 	return ret + spacing_bottom + spacing_top;
 }
 
 real_t Font::get_ascent(int p_size) const {
-	int size = (p_size <= 0) ? base_size : p_size;
 	real_t ret = 0.f;
 	for (int i = 0; i < data.size(); i++) {
 		_ensure_rid(i);
-		ret = MAX(ret, TS->font_get_ascent(rids[i], size));
+		ret = MAX(ret, TS->font_get_ascent(rids[i], p_size));
 	}
 	return ret + spacing_top;
 }
 
 real_t Font::get_descent(int p_size) const {
-	int size = (p_size <= 0) ? base_size : p_size;
 	real_t ret = 0.f;
 	for (int i = 0; i < data.size(); i++) {
 		_ensure_rid(i);
-		ret = MAX(ret, TS->font_get_descent(rids[i], size));
+		ret = MAX(ret, TS->font_get_descent(rids[i], p_size));
 	}
 	return ret + spacing_bottom;
 }
 
 real_t Font::get_underline_position(int p_size) const {
-	int size = (p_size <= 0) ? base_size : p_size;
 	real_t ret = 0.f;
 	for (int i = 0; i < data.size(); i++) {
 		_ensure_rid(i);
-		ret = MAX(ret, TS->font_get_underline_position(rids[i], size));
+		ret = MAX(ret, TS->font_get_underline_position(rids[i], p_size));
 	}
 	return ret + spacing_top;
 }
 
 real_t Font::get_underline_thickness(int p_size) const {
-	int size = (p_size <= 0) ? base_size : p_size;
 	real_t ret = 0.f;
 	for (int i = 0; i < data.size(); i++) {
 		_ensure_rid(i);
-		ret = MAX(ret, TS->font_get_underline_thickness(rids[i], size));
+		ret = MAX(ret, TS->font_get_underline_thickness(rids[i], p_size));
 	}
 	return ret;
 }
 
-Size2 Font::get_string_size(const String &p_text, int p_size, HAlign p_align, real_t p_width, uint8_t p_flags) const {
+Size2 Font::get_string_size(const String &p_text, int p_size, HAlign p_align, real_t p_width, uint16_t p_flags) const {
 	ERR_FAIL_COND_V(data.is_empty(), Size2());
-
-	int size = (p_size <= 0) ? base_size : p_size;
 
 	for (int i = 0; i < data.size(); i++) {
 		_ensure_rid(i);
@@ -1354,23 +1398,21 @@ Size2 Font::get_string_size(const String &p_text, int p_size, HAlign p_align, re
 		hash = hash_djb2_one_64(hash_djb2_one_float(p_width), hash);
 		hash = hash_djb2_one_64(p_flags, hash);
 	}
-	hash = hash_djb2_one_64(size, hash);
+	hash = hash_djb2_one_64(p_size, hash);
 
 	Ref<TextLine> buffer;
 	if (cache.has(hash)) {
 		buffer = cache.get(hash);
 	} else {
 		buffer.instantiate();
-		buffer->add_string(p_text, Ref<Font>(this), size, Dictionary(), TranslationServer::get_singleton()->get_tool_locale());
+		buffer->add_string(p_text, Ref<Font>(this), p_size, Dictionary(), TranslationServer::get_singleton()->get_tool_locale());
 		cache.insert(hash, buffer);
 	}
 	return buffer->get_size();
 }
 
-Size2 Font::get_multiline_string_size(const String &p_text, real_t p_width, int p_size, uint8_t p_flags) const {
+Size2 Font::get_multiline_string_size(const String &p_text, real_t p_width, int p_size, uint16_t p_flags) const {
 	ERR_FAIL_COND_V(data.is_empty(), Size2());
-
-	int size = (p_size <= 0) ? base_size : p_size;
 
 	for (int i = 0; i < data.size(); i++) {
 		_ensure_rid(i);
@@ -1379,14 +1421,14 @@ Size2 Font::get_multiline_string_size(const String &p_text, real_t p_width, int 
 	uint64_t hash = p_text.hash64();
 	uint64_t wrp_hash = hash_djb2_one_64(hash_djb2_one_float(p_width), hash);
 	wrp_hash = hash_djb2_one_64(p_flags, wrp_hash);
-	wrp_hash = hash_djb2_one_64(size, wrp_hash);
+	wrp_hash = hash_djb2_one_64(p_size, wrp_hash);
 
 	Ref<TextParagraph> lines_buffer;
 	if (cache_wrap.has(wrp_hash)) {
 		lines_buffer = cache_wrap.get(wrp_hash);
 	} else {
 		lines_buffer.instantiate();
-		lines_buffer->add_string(p_text, Ref<Font>(this), size, Dictionary(), TranslationServer::get_singleton()->get_tool_locale());
+		lines_buffer->add_string(p_text, Ref<Font>(this), p_size, Dictionary(), TranslationServer::get_singleton()->get_tool_locale());
 		lines_buffer->set_width(p_width);
 		lines_buffer->set_flags(p_flags);
 		cache_wrap.insert(wrp_hash, lines_buffer);
@@ -1406,10 +1448,8 @@ Size2 Font::get_multiline_string_size(const String &p_text, real_t p_width, int 
 	return ret;
 }
 
-void Font::draw_string(RID p_canvas_item, const Point2 &p_pos, const String &p_text, HAlign p_align, real_t p_width, int p_size, const Color &p_modulate, int p_outline_size, const Color &p_outline_modulate, uint8_t p_flags) const {
+void Font::draw_string(RID p_canvas_item, const Point2 &p_pos, const String &p_text, HAlign p_align, real_t p_width, int p_size, const Color &p_modulate, int p_outline_size, const Color &p_outline_modulate, uint16_t p_flags) const {
 	ERR_FAIL_COND(data.is_empty());
-
-	int size = (p_size <= 0) ? base_size : p_size;
 
 	for (int i = 0; i < data.size(); i++) {
 		_ensure_rid(i);
@@ -1420,14 +1460,14 @@ void Font::draw_string(RID p_canvas_item, const Point2 &p_pos, const String &p_t
 		hash = hash_djb2_one_64(hash_djb2_one_float(p_width), hash);
 		hash = hash_djb2_one_64(p_flags, hash);
 	}
-	hash = hash_djb2_one_64(size, hash);
+	hash = hash_djb2_one_64(p_size, hash);
 
 	Ref<TextLine> buffer;
 	if (cache.has(hash)) {
 		buffer = cache.get(hash);
 	} else {
 		buffer.instantiate();
-		buffer->add_string(p_text, Ref<Font>(this), size, Dictionary(), TranslationServer::get_singleton()->get_tool_locale());
+		buffer->add_string(p_text, Ref<Font>(this), p_size, Dictionary(), TranslationServer::get_singleton()->get_tool_locale());
 		cache.insert(hash, buffer);
 	}
 
@@ -1448,10 +1488,8 @@ void Font::draw_string(RID p_canvas_item, const Point2 &p_pos, const String &p_t
 	buffer->draw(p_canvas_item, ofs, p_modulate);
 }
 
-void Font::draw_multiline_string(RID p_canvas_item, const Point2 &p_pos, const String &p_text, HAlign p_align, float p_width, int p_max_lines, int p_size, const Color &p_modulate, int p_outline_size, const Color &p_outline_modulate, uint8_t p_flags) const {
+void Font::draw_multiline_string(RID p_canvas_item, const Point2 &p_pos, const String &p_text, HAlign p_align, float p_width, int p_max_lines, int p_size, const Color &p_modulate, int p_outline_size, const Color &p_outline_modulate, uint16_t p_flags) const {
 	ERR_FAIL_COND(data.is_empty());
-
-	int size = (p_size <= 0) ? base_size : p_size;
 
 	for (int i = 0; i < data.size(); i++) {
 		_ensure_rid(i);
@@ -1460,14 +1498,14 @@ void Font::draw_multiline_string(RID p_canvas_item, const Point2 &p_pos, const S
 	uint64_t hash = p_text.hash64();
 	uint64_t wrp_hash = hash_djb2_one_64(hash_djb2_one_float(p_width), hash);
 	wrp_hash = hash_djb2_one_64(p_flags, wrp_hash);
-	wrp_hash = hash_djb2_one_64(size, wrp_hash);
+	wrp_hash = hash_djb2_one_64(p_size, wrp_hash);
 
 	Ref<TextParagraph> lines_buffer;
 	if (cache_wrap.has(wrp_hash)) {
 		lines_buffer = cache_wrap.get(wrp_hash);
 	} else {
 		lines_buffer.instantiate();
-		lines_buffer->add_string(p_text, Ref<Font>(this), size, Dictionary(), TranslationServer::get_singleton()->get_tool_locale());
+		lines_buffer->add_string(p_text, Ref<Font>(this), p_size, Dictionary(), TranslationServer::get_singleton()->get_tool_locale());
 		lines_buffer->set_width(p_width);
 		lines_buffer->set_flags(p_flags);
 		cache_wrap.insert(wrp_hash, lines_buffer);
@@ -1509,16 +1547,14 @@ void Font::draw_multiline_string(RID p_canvas_item, const Point2 &p_pos, const S
 }
 
 Size2 Font::get_char_size(char32_t p_char, char32_t p_next, int p_size) const {
-	int size = (p_size <= 0) ? base_size : p_size;
-
 	for (int i = 0; i < data.size(); i++) {
 		_ensure_rid(i);
 		if (data[i]->has_char(p_char)) {
-			int32_t glyph_a = TS->font_get_glyph_index(rids[i], size, p_char, 0);
-			Size2 ret = Size2(TS->font_get_glyph_advance(rids[i], size, glyph_a).x, TS->font_get_ascent(rids[i], size) + TS->font_get_descent(rids[i], size));
+			int32_t glyph_a = TS->font_get_glyph_index(rids[i], p_size, p_char, 0);
+			Size2 ret = Size2(TS->font_get_glyph_advance(rids[i], p_size, glyph_a).x, TS->font_get_ascent(rids[i], p_size) + TS->font_get_descent(rids[i], p_size));
 			if ((p_next != 0) && data[i]->has_char(p_next)) {
-				int32_t glyph_b = TS->font_get_glyph_index(rids[i], size, p_next, 0);
-				ret.x -= TS->font_get_kerning(rids[i], size, Vector2i(glyph_a, glyph_b)).x;
+				int32_t glyph_b = TS->font_get_glyph_index(rids[i], p_size, p_next, 0);
+				ret.x -= TS->font_get_kerning(rids[i], p_size, Vector2i(glyph_a, glyph_b)).x;
 			}
 			return ret;
 		}
@@ -1527,22 +1563,20 @@ Size2 Font::get_char_size(char32_t p_char, char32_t p_next, int p_size) const {
 }
 
 real_t Font::draw_char(RID p_canvas_item, const Point2 &p_pos, char32_t p_char, char32_t p_next, int p_size, const Color &p_modulate, int p_outline_size, const Color &p_outline_modulate) const {
-	int size = (p_size <= 0) ? base_size : p_size;
-
 	for (int i = 0; i < data.size(); i++) {
 		_ensure_rid(i);
 		if (data[i]->has_char(p_char)) {
-			int32_t glyph_a = TS->font_get_glyph_index(rids[i], size, p_char, 0);
-			real_t ret = TS->font_get_glyph_advance(rids[i], size, glyph_a).x;
+			int32_t glyph_a = TS->font_get_glyph_index(rids[i], p_size, p_char, 0);
+			real_t ret = TS->font_get_glyph_advance(rids[i], p_size, glyph_a).x;
 			if ((p_next != 0) && data[i]->has_char(p_next)) {
-				int32_t glyph_b = TS->font_get_glyph_index(rids[i], size, p_next, 0);
-				ret -= TS->font_get_kerning(rids[i], size, Vector2i(glyph_a, glyph_b)).x;
+				int32_t glyph_b = TS->font_get_glyph_index(rids[i], p_size, p_next, 0);
+				ret -= TS->font_get_kerning(rids[i], p_size, Vector2i(glyph_a, glyph_b)).x;
 			}
 
 			if (p_outline_size > 0 && p_outline_modulate.a != 0.0f) {
-				TS->font_draw_glyph_outline(rids[i], p_canvas_item, size, p_outline_size, p_pos, glyph_a, p_outline_modulate);
+				TS->font_draw_glyph_outline(rids[i], p_canvas_item, p_size, p_outline_size, p_pos, glyph_a, p_outline_modulate);
 			}
-			TS->font_draw_glyph(rids[i], p_canvas_item, size, p_pos, glyph_a, p_modulate);
+			TS->font_draw_glyph(rids[i], p_canvas_item, p_size, p_pos, glyph_a, p_modulate);
 			return ret;
 		}
 	}

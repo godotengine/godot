@@ -98,9 +98,10 @@ Skeleton2DEditor::Skeleton2DEditor() {
 	options->set_text(TTR("Skeleton2D"));
 	options->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("Skeleton2D"), SNAME("EditorIcons")));
 
-	options->get_popup()->add_item(TTR("Make Rest Pose (From Bones)"), MENU_OPTION_MAKE_REST);
+	options->get_popup()->add_item(TTR("Reset to Rest Pose"), MENU_OPTION_MAKE_REST);
 	options->get_popup()->add_separator();
-	options->get_popup()->add_item(TTR("Set Bones to Rest Pose"), MENU_OPTION_SET_REST);
+	// Use the "Overwrite" word to highlight that this is a destructive operation.
+	options->get_popup()->add_item(TTR("Overwrite Rest Pose"), MENU_OPTION_SET_REST);
 	options->set_switch_on_hover(true);
 
 	options->get_popup()->connect("id_pressed", callable_mp(this, &Skeleton2DEditor::_menu_option));

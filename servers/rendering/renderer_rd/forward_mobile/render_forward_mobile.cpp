@@ -159,7 +159,6 @@ void RenderForwardMobile::RenderBufferDataForwardMobile::configure(RID p_color_b
 			RD::TEXTURE_SAMPLES_2,
 			RD::TEXTURE_SAMPLES_4,
 			RD::TEXTURE_SAMPLES_8,
-			RD::TEXTURE_SAMPLES_16
 		};
 
 		texture_samples = ts[p_msaa];
@@ -1323,7 +1322,7 @@ void RenderForwardMobile::_fill_render_list(RenderListType p_render_list, const 
 	}
 	uint32_t lightmap_captures_used = 0;
 
-	Plane near_plane(p_render_data->cam_transform.origin, -p_render_data->cam_transform.basis.get_axis(Vector3::AXIS_Z));
+	Plane near_plane(-p_render_data->cam_transform.basis.get_axis(Vector3::AXIS_Z), p_render_data->cam_transform.origin);
 	near_plane.d += p_render_data->cam_projection.get_z_near();
 	float z_max = p_render_data->cam_projection.get_z_far() - p_render_data->cam_projection.get_z_near();
 
@@ -1634,19 +1633,10 @@ void RenderForwardMobile::_setup_environment(const RenderDataRD *p_render_data, 
 		scene_state.ubo.ssao_ao_affect = environment_get_ssao_ao_affect(p_render_data->environment);
 		scene_state.ubo.ssao_light_affect = environment_get_ssao_light_affect(p_render_data->environment);
 
-		Color ao_color = environment_get_ao_color(p_render_data->environment).to_linear();
-		scene_state.ubo.ao_color[0] = ao_color.r;
-		scene_state.ubo.ao_color[1] = ao_color.g;
-		scene_state.ubo.ao_color[2] = ao_color.b;
-		scene_state.ubo.ao_color[3] = ao_color.a;
-
 		scene_state.ubo.fog_enabled = environment_is_fog_enabled(p_render_data->environment);
 		scene_state.ubo.fog_density = environment_get_fog_density(p_render_data->environment);
 		scene_state.ubo.fog_height = environment_get_fog_height(p_render_data->environment);
 		scene_state.ubo.fog_height_density = environment_get_fog_height_density(p_render_data->environment);
-		if (scene_state.ubo.fog_height_density >= 0.0001) {
-			scene_state.ubo.fog_height_density = 1.0 / scene_state.ubo.fog_height_density;
-		}
 		scene_state.ubo.fog_aerial_perspective = environment_get_fog_aerial_perspective(p_render_data->environment);
 
 		Color fog_color = environment_get_fog_light_color(p_render_data->environment).to_linear();
@@ -1982,7 +1972,7 @@ void RenderForwardMobile::_render_list_template(RenderingDevice::DrawListID p_dr
 
 		if (material_uniform_set != prev_material_uniform_set) {
 			// Update uniform set.
-			if (RD::get_singleton()->uniform_set_is_valid(material_uniform_set)) { // Material may not have a uniform set.
+			if (material_uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(material_uniform_set)) { // Material may not have a uniform set.
 				RD::get_singleton()->draw_list_bind_uniform_set(draw_list, material_uniform_set, MATERIAL_UNIFORM_SET);
 			}
 
@@ -2080,6 +2070,15 @@ void RenderForwardMobile::geometry_instance_set_lod_bias(GeometryInstance *p_geo
 	GeometryInstanceForwardMobile *ginstance = static_cast<GeometryInstanceForwardMobile *>(p_geometry_instance);
 	ERR_FAIL_COND(!ginstance);
 	ginstance->lod_bias = p_lod_bias;
+}
+
+void RenderForwardMobile::geometry_instance_set_fade_range(GeometryInstance *p_geometry_instance, bool p_enable_near, float p_near_begin, float p_near_end, bool p_enable_far, float p_far_begin, float p_far_end) {
+}
+
+void RenderForwardMobile::geometry_instance_set_transparency(GeometryInstance *p_geometry_instance, float p_transparency) {
+}
+
+void RenderForwardMobile::geometry_instance_set_parent_fade_alpha(GeometryInstance *p_geometry_instance, float p_alpha) {
 }
 
 void RenderForwardMobile::geometry_instance_set_use_baked_light(GeometryInstance *p_geometry_instance, bool p_enable) {
@@ -2441,7 +2440,7 @@ void RenderForwardMobile::_geometry_instance_update(GeometryInstance *p_geometry
 		} break;
 #if 0
 		case RS::INSTANCE_IMMEDIATE: {
-			RasterizerStorageGLES3::Immediate *immediate = storage->immediate_owner.getornull(inst->base);
+			RasterizerStorageGLES3::Immediate *immediate = storage->immediate_owner.get_or_null(inst->base);
 			ERR_CONTINUE(!immediate);
 
 			_add_geometry(immediate, inst, nullptr, -1, p_depth_pass, p_shadow_pass);

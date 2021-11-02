@@ -197,7 +197,7 @@ public:
 
 	virtual void add_syntax_highlighter(Ref<EditorSyntaxHighlighter> p_highlighter) override;
 	virtual void set_syntax_highlighter(Ref<EditorSyntaxHighlighter> p_highlighter) override;
-	void update_toggle_scripts_button();
+	void update_toggle_scripts_button() override;
 
 	virtual void apply_code() override;
 	virtual RES get_edited_resource() const override;
@@ -225,6 +225,8 @@ public:
 
 	virtual void reload(bool p_soft) override;
 	virtual Array get_breakpoints() override;
+	virtual void set_breakpoint(int p_line, bool p_enabled) override;
+	virtual void clear_breakpoints() override;
 
 	virtual void add_callback(const String &p_function, PackedStringArray p_args) override;
 	virtual void update_settings() override;

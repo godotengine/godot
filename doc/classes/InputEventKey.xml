@@ -44,6 +44,4 @@
 			The key Unicode identifier (when relevant). Unicode identifiers for the composite characters and complex scripts may not be available unless IME input mode is active. See [method Window.set_ime_active] for more information.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

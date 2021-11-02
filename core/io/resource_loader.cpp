@@ -156,8 +156,8 @@ void ResourceFormatLoader::get_dependencies(const String &p_path, List<String> *
 
 Error ResourceFormatLoader::rename_dependencies(const String &p_path, const Map<String, String> &p_map) {
 	Dictionary deps_dict;
-	for (Map<String, String>::Element *E = p_map.front(); E; E = E->next()) {
-		deps_dict[E->key()] = E->value();
+	for (KeyValue<String, String> E : p_map) {
+		deps_dict[E.key] = E.value;
 	}
 
 	int64_t err;
@@ -278,7 +278,7 @@ static String _validate_local_path(const String &p_path) {
 	ResourceUID::ID uid = ResourceUID::get_singleton()->text_to_id(p_path);
 	if (uid != ResourceUID::INVALID_ID) {
 		return ResourceUID::get_singleton()->get_id_path(uid);
-	} else if (p_path.is_rel_path()) {
+	} else if (p_path.is_relative_path()) {
 		return "res://" + p_path;
 	} else {
 		return ProjectSettings::get_singleton()->localize_path(p_path);

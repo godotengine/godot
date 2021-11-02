@@ -221,6 +221,9 @@ static const LauncherIcon launcher_adaptive_icon_backgrounds[icon_densities_coun
 static const int EXPORT_FORMAT_APK = 0;
 static const int EXPORT_FORMAT_AAB = 1;
 
+static const char *APK_ASSETS_DIRECTORY = "res://android/build/assets";
+static const char *AAB_ASSETS_DIRECTORY = "res://android/build/assetPacks/installTime/src/main/assets";
+
 void EditorExportPlatformAndroid::_check_for_changes_poll_thread(void *ud) {
 	EditorExportPlatformAndroid *ea = (EditorExportPlatformAndroid *)ud;
 
@@ -426,6 +429,10 @@ String EditorExportPlatformAndroid::get_package_name(const String &p_package) co
 	return pname;
 }
 
+String EditorExportPlatformAndroid::get_assets_directory(const Ref<EditorExportPreset> &p_preset, int p_export_format) const {
+	return p_export_format == EXPORT_FORMAT_AAB ? AAB_ASSETS_DIRECTORY : APK_ASSETS_DIRECTORY;
+}
+
 bool EditorExportPlatformAndroid::is_package_name_valid(const String &p_package, String *r_error) const {
 	String pname = p_package;
 
@@ -491,11 +498,11 @@ bool EditorExportPlatformAndroid::is_package_name_valid(const String &p_package,
 
 bool EditorExportPlatformAndroid::_should_compress_asset(const String &p_path, const Vector<uint8_t> &p_data) {
 	/*
-     *  By not compressing files with little or not benefit in doing so,
-     *  a performance gain is expected attime. Moreover, if the APK is
-     *  zip-aligned, assets stored as they are can be efficiently read by
-     *  Android by memory-mapping them.
-     */
+	 *  By not compressing files with little or not benefit in doing so,
+	 *  a performance gain is expected attime. Moreover, if the APK is
+	 *  zip-aligned, assets stored as they are can be efficiently read by
+	 *  Android by memory-mapping them.
+	 */
 
 	// -- Unconditional uncompress to mimic AAPT plus some other
 
@@ -844,16 +851,11 @@ void EditorExportPlatformAndroid::_fix_manifest(const Ref<EditorExportPreset> &p
 				int iofs = ofs + 8;
 
 				string_count = decode_uint32(&p_manifest[iofs]);
-				//styles_count = decode_uint32(&p_manifest[iofs + 4]);
+				// iofs + 4 is `styles_count`.
 				string_flags = decode_uint32(&p_manifest[iofs + 8]);
 				string_data_offset = decode_uint32(&p_manifest[iofs + 12]);
-				//styles_offset = decode_uint32(&p_manifest[iofs + 16]);
-				/*
-                printf("string count: %i\n",string_count);
-                printf("flags: %i\n",string_flags);
-                printf("sdata ofs: %i\n",string_data_offset);
-                printf("styles ofs: %i\n",styles_offset);
-                */
+				// iofs + 16 is `styles_offset`.
+
 				uint32_t st_offset = iofs + 20;
 				string_table.resize(string_count);
 				uint32_t string_end = 0;
@@ -977,6 +979,11 @@ void EditorExportPlatformAndroid::_fix_manifest(const Ref<EditorExportPreset> &p
 					Vector<int> feature_versions;
 
 					if (xr_mode_index == 1 /* XRMode.OVR */) {
+						// Set degrees of freedom
+						feature_names.push_back("android.hardware.vr.headtracking");
+						feature_required_list.push_back(true);
+						feature_versions.push_back(1);
+
 						// Check for hand tracking
 						int hand_tracking_index = p_preset->get("xr_features/hand_tracking"); // 0: none, 1: optional, 2: required
 						if (hand_tracking_index > 0) {
@@ -1605,11 +1612,11 @@ Vector<String> EditorExportPlatformAndroid::get_enabled_abis(const Ref<EditorExp
 
 void EditorExportPlatformAndroid::get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) {
 	String driver = ProjectSettings::get_singleton()->get("rendering/driver/driver_name");
-	if (driver == "GLES2") {
+	if (driver == "opengl3") {
 		r_features->push_back("etc");
 	}
 	// FIXME: Review what texture formats are used for Vulkan.
-	if (driver == "Vulkan") {
+	if (driver == "vulkan") {
 		r_features->push_back("etc2");
 	}
 
@@ -1632,10 +1639,12 @@ void EditorExportPlatformAndroid::get_export_options(List<ExportOption> *r_optio
 	}
 	plugins_changed.clear();
 
-	Vector<String> abis = get_abis();
+	const Vector<String> abis = get_abis();
 	for (int i = 0; i < abis.size(); ++i) {
-		String abi = abis[i];
-		bool is_default = (abi == "armeabi-v7a" || abi == "arm64-v8a");
+		const String abi = abis[i];
+		// All Android devices supporting Vulkan run 64-bit Android,
+		// so there is usually no point in exporting for 32-bit Android.
+		const bool is_default = abi == "arm64-v8a";
 		r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "architectures/" + abi), is_default));
 	}
 
@@ -2330,11 +2339,21 @@ Error EditorExportPlatformAndroid::sign_apk(const Ref<EditorExportPreset> &p_pre
 
 void EditorExportPlatformAndroid::_clear_assets_directory() {
 	DirAccessRef da_res = DirAccess::create(DirAccess::ACCESS_RESOURCES);
-	if (da_res->dir_exists("res://android/build/assets")) {
-		print_verbose("Clearing assets directory..");
-		DirAccessRef da_assets = DirAccess::open("res://android/build/assets");
+
+	// Clear the APK assets directory
+	if (da_res->dir_exists(APK_ASSETS_DIRECTORY)) {
+		print_verbose("Clearing APK assets directory..");
+		DirAccessRef da_assets = DirAccess::open(APK_ASSETS_DIRECTORY);
 		da_assets->erase_contents_recursive();
-		da_res->remove("res://android/build/assets");
+		da_res->remove(APK_ASSETS_DIRECTORY);
+	}
+
+	// Clear the AAB assets directory
+	if (da_res->dir_exists(AAB_ASSETS_DIRECTORY)) {
+		print_verbose("Clearing AAB assets directory..");
+		DirAccessRef da_assets = DirAccess::open(AAB_ASSETS_DIRECTORY);
+		da_assets->erase_contents_recursive();
+		da_res->remove(AAB_ASSETS_DIRECTORY);
 	}
 }
 
@@ -2454,6 +2473,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 				return ERR_UNCONFIGURED;
 			}
 		}
+		const String assets_directory = get_assets_directory(p_preset, export_format);
 		String sdk_path = EDITOR_GET("export/android/android_sdk_path");
 		ERR_FAIL_COND_V_MSG(sdk_path.is_empty(), ERR_UNCONFIGURED, "Android SDK path must be configured in Editor Settings at 'export/android/android_sdk_path'.");
 		print_verbose("Android sdk path: " + sdk_path);
@@ -2475,6 +2495,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 		if (!apk_expansion) {
 			print_verbose("Exporting project files..");
 			CustomExportData user_data;
+			user_data.assets_directory = assets_directory;
 			user_data.debug = p_debug;
 			err = export_project_files(p_preset, rename_and_store_file_in_gradle_project, &user_data, copy_gradle_so);
 			if (err != OK) {
@@ -2496,7 +2517,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 			}
 		}
 		print_verbose("Storing command line flags..");
-		store_file_at_path("res://android/build/assets/_cl_", command_line_flags);
+		store_file_at_path(assets_directory + "/_cl_", command_line_flags);
 
 		print_verbose("Updating ANDROID_HOME environment to " + sdk_path);
 		OS::get_singleton()->set_environment("ANDROID_HOME", sdk_path); //set and overwrite if required
@@ -2609,7 +2630,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 
 		String export_filename = p_path.get_file();
 		String export_path = p_path.get_base_dir();
-		if (export_path.is_rel_path()) {
+		if (export_path.is_relative_path()) {
 			export_path = OS::get_singleton()->get_resource_dir().plus_file(export_path);
 		}
 		export_path = ProjectSettings::get_singleton()->globalize_path(export_path).simplify_path();
@@ -2937,7 +2958,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 
 void EditorExportPlatformAndroid::get_platform_features(List<String> *r_features) {
 	r_features->push_back("mobile");
-	r_features->push_back("Android");
+	r_features->push_back("android");
 }
 
 void EditorExportPlatformAndroid::resolve_platform_feature_priorities(const Ref<EditorExportPreset> &p_preset, Set<String> &p_features) {

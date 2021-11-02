@@ -46,12 +46,21 @@ class TileSetEditor : public VBoxContainer {
 private:
 	Ref<TileSet> tile_set;
 	bool tile_set_changed_needs_update = false;
+	HSplitContainer *split_container;
 
+	// TabBar.
+	HBoxContainer *tile_set_toolbar;
+	TabBar *tabs_bar;
+
+	// Tiles.
 	Label *no_source_selected_label;
 	TileSetAtlasSourceEditor *tile_set_atlas_source_editor;
 	TileSetScenesCollectionSourceEditor *tile_set_scenes_collection_source_editor;
 
 	UndoRedo *undo_redo = EditorNode::get_undo_redo();
+
+	void _drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
+	bool _can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
 
 	void _update_sources_list(int force_selected_id = -1);
 
@@ -69,8 +78,18 @@ private:
 	AtlasMergingDialog *atlas_merging_dialog;
 	TileProxiesManagerDialog *tile_proxies_manager_dialog;
 
-	void _tile_set_changed();
+	// Patterns.
+	ItemList *patterns_item_list;
+	Label *patterns_help_label;
+	void _patterns_item_list_gui_input(const Ref<InputEvent> &p_event);
+	void _pattern_preview_done(Ref<TileMapPattern> p_pattern, Ref<Texture2D> p_texture);
+	bool select_last_pattern = false;
+	void _update_patterns_list();
 
+	void _tile_set_changed();
+	void _tab_changed(int p_tab_changed);
+
+	void _move_tile_set_array_element(Object *p_undo_redo, Object *p_edited, String p_array_prefix, int p_from_index, int p_to_pos);
 	void _undo_redo_inspector_callback(Object *p_undo_redo, Object *p_edited, String p_property, Variant p_new_value);
 
 protected:
@@ -81,8 +100,6 @@ public:
 	_FORCE_INLINE_ static TileSetEditor *get_singleton() { return singleton; }
 
 	void edit(Ref<TileSet> p_tile_set);
-	void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
-	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
 
 	TileSetEditor();
 	~TileSetEditor();

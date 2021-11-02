@@ -3,9 +3,6 @@
 Import("env")
 Import("env_modules")
 
-# Only kept to build the thirdparty library used by the theora and webm
-# modules. We now use stb_vorbis for AudioStreamOGGVorbis.
-
 env_vorbis = env_modules.Clone()
 
 # Thirdparty source files

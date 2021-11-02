@@ -383,7 +383,7 @@ public:
 	mutable RID_Owner<VoxelGIInstance> voxel_gi_instance_owner;
 
 	_FORCE_INLINE_ VoxelGIInstance *get_probe_instance(RID p_probe) const {
-		return voxel_gi_instance_owner.getornull(p_probe);
+		return voxel_gi_instance_owner.get_or_null(p_probe);
 	};
 
 	_FORCE_INLINE_ RID voxel_gi_instance_get_texture(RID p_probe) {
@@ -623,12 +623,11 @@ public:
 		float z_far;
 
 		float proj_info[4];
-		float ao_color[3];
-		uint32_t max_voxel_gi_instances;
 
+		uint32_t max_voxel_gi_instances;
 		uint32_t high_quality_vct;
 		uint32_t orthogonal;
-		uint32_t pad[2];
+		uint32_t pad;
 
 		float cam_rotation[12];
 	};

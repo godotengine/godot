@@ -32,6 +32,7 @@
 #define ANIMATION_PLAYER_H
 
 #include "scene/2d/node_2d.h"
+#include "scene/3d/mesh_instance_3d.h"
 #include "scene/3d/node_3d.h"
 #include "scene/3d/skeleton_3d.h"
 #include "scene/resources/animation.h"
@@ -88,6 +89,8 @@ private:
 		SP_NODE2D_SCALE,
 	};
 
+	uint32_t setup_pass = 1;
+
 	struct TrackNodeCache {
 		NodePath path;
 		uint32_t id = 0;
@@ -97,13 +100,20 @@ private:
 #ifndef _3D_DISABLED
 		Node3D *node_3d = nullptr;
 		Skeleton3D *skeleton = nullptr;
+		MeshInstance3D *node_blend_shape = nullptr;
+		int blend_shape_idx = -1;
 #endif // _3D_DISABLED
 		int bone_idx = -1;
 		// accumulated transforms
 
+		bool loc_used = false;
+		bool rot_used = false;
+		bool scale_used = false;
+
 		Vector3 loc_accum;
 		Quaternion rot_accum;
 		Vector3 scale_accum;
+		float blend_shape_accum = 0;
 		uint64_t accum_pass = 0;
 
 		bool audio_playing = false;
@@ -134,16 +144,22 @@ private:
 
 		Map<StringName, BezierAnim> bezier_anim;
 
+		uint32_t last_setup_pass = 0;
 		TrackNodeCache() {}
 	};
 
 	struct TrackNodeCacheKey {
 		ObjectID id;
 		int bone_idx = -1;
+		int blend_shape_idx = -1;
 
 		inline bool operator<(const TrackNodeCacheKey &p_right) const {
 			if (id == p_right.id) {
-				return bone_idx < p_right.bone_idx;
+				if (blend_shape_idx == p_right.blend_shape_idx) {
+					return bone_idx < p_right.bone_idx;
+				} else {
+					return blend_shape_idx < p_right.blend_shape_idx;
+				}
 			} else {
 				return id < p_right.id;
 			}
@@ -285,7 +301,6 @@ public:
 	void set_current_animation(const String &p_anim);
 	String get_assigned_animation() const;
 	void set_assigned_animation(const String &p_anim);
-	void stop_all();
 	void set_active(bool p_active);
 	bool is_active() const;
 	bool is_valid() const;

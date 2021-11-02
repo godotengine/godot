@@ -1,2 +1,2 @@
 func test():
-    var a = ("missing paren ->"
+	var a = ("missing paren ->"

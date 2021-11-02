@@ -265,8 +265,7 @@ public:
 		}
 
 		int32_t get_sign() const {
-			return ((int64_t)high < 0) ? -1 : (high || low) ? 1 :
-																0;
+			return ((int64_t)high < 0) ? -1 : ((high || low) ? 1 : 0);
 		}
 
 		bool operator<(const Int128 &b) const {
@@ -594,8 +593,6 @@ private:
 
 		IntermediateHull() {
 		}
-
-		void print();
 	};
 
 	enum Orientation { NONE,
@@ -737,8 +734,6 @@ int32_t ConvexHullInternal::Rational64::compare(const Rational64 &b) const {
 		return 0;
 	}
 
-	//	return (numerator * b.denominator > b.numerator * denominator) ? sign : (numerator * b.denominator < b.numerator * denominator) ? -sign : 0;
-
 #ifdef USE_X86_64_ASM
 
 	int32_t result;
@@ -759,10 +754,9 @@ int32_t ConvexHullInternal::Rational64::compare(const Rational64 &b) const {
 			: "=&b"(result), [tmp] "=&r"(tmp), "=a"(dummy)
 			: "a"(denominator), [bn] "g"(b.numerator), [tn] "g"(numerator), [bd] "g"(b.denominator)
 			: "%rdx", "cc");
-	return result ? result ^ sign // if sign is +1, only bit 0 of result is inverted, which does not change the sign of result (and cannot result in zero)
-					// if sign is -1, all bits of result are inverted, which changes the sign of result (and again cannot result in zero)
-					:
-					  0;
+	// if sign is +1, only bit 0 of result is inverted, which does not change the sign of result (and cannot result in zero)
+	// if sign is -1, all bits of result are inverted, which changes the sign of result (and again cannot result in zero)
+	return result ? result ^ sign : 0;
 
 #else
 
@@ -795,8 +789,7 @@ int32_t ConvexHullInternal::Rational128::compare(const Rational128 &b) const {
 int32_t ConvexHullInternal::Rational128::compare(int64_t b) const {
 	if (is_int_64) {
 		int64_t a = sign * (int64_t)numerator.low;
-		return (a > b) ? 1 : (a < b) ? -1 :
-										 0;
+		return (a > b) ? 1 : ((a < b) ? -1 : 0);
 	}
 	if (b > 0) {
 		if (sign <= 0) {
@@ -1448,8 +1441,7 @@ void ConvexHullInternal::merge(IntermediateHull &p_h0, IntermediateHull &p_h1) {
 			c1->edges = e;
 			return;
 		} else {
-			int32_t cmp = !min0 ? 1 : !min1 ? -1 :
-												min_cot0.compare(min_cot1);
+			int32_t cmp = !min0 ? 1 : (!min1 ? -1 : min_cot0.compare(min_cot1));
 #ifdef DEBUG_CONVEX_HULL
 			printf("    -> Result %d\n", cmp);
 #endif
@@ -2260,10 +2252,21 @@ Error ConvexHullComputer::convex_hull(const Vector<Vector3> &p_points, Geometry3
 
 	r_mesh.vertices = ch.vertices;
 
-	r_mesh.edges.resize(ch.edges.size());
+	// Copy the edges over. There's two "half-edges" for every edge, so we pick only one of them.
+	r_mesh.edges.resize(ch.edges.size() / 2);
+	uint32_t edges_copied = 0;
 	for (uint32_t i = 0; i < ch.edges.size(); i++) {
-		r_mesh.edges.write[i].a = (&ch.edges[i])->get_source_vertex();
-		r_mesh.edges.write[i].b = (&ch.edges[i])->get_target_vertex();
+		uint32_t a = (&ch.edges[i])->get_source_vertex();
+		uint32_t b = (&ch.edges[i])->get_target_vertex();
+		if (a < b) { // Copy only the "canonical" edge. For the reverse edge, this will be false.
+			ERR_BREAK(edges_copied >= (uint32_t)r_mesh.edges.size());
+			r_mesh.edges.write[edges_copied].a = a;
+			r_mesh.edges.write[edges_copied].b = b;
+			edges_copied++;
+		}
+	}
+	if (edges_copied != (uint32_t)r_mesh.edges.size()) {
+		ERR_PRINT("Invalid edge count.");
 	}
 
 	r_mesh.faces.resize(ch.faces.size());

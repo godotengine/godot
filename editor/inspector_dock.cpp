@@ -30,11 +30,22 @@
 
 #include "inspector_dock.h"
 
-#include "editor/editor_node.h"
-#include "editor/editor_settings.h"
+#include "editor/editor_scale.h"
 #include "editor/plugins/animation_player_editor_plugin.h"
 
 void InspectorDock::_menu_option(int p_option) {
+	_menu_option_confirm(p_option, false);
+}
+
+void InspectorDock::_menu_confirm_current() {
+	_menu_option_confirm(current_option, true);
+}
+
+void InspectorDock::_menu_option_confirm(int p_option, bool p_confirmed) {
+	if (!p_confirmed) {
+		current_option = p_option;
+	}
+
 	switch (p_option) {
 		case EXPAND_ALL: {
 			_menu_expandall();
@@ -82,39 +93,81 @@ void InspectorDock::_menu_option(int p_option) {
 		} break;
 
 		case OBJECT_UNIQUE_RESOURCES: {
-			editor_data->apply_changes_in_editors();
-			if (current) {
-				List<PropertyInfo> props;
-				current->get_property_list(&props);
-				Map<RES, RES> duplicates;
-				for (const PropertyInfo &E : props) {
-					if (!(E.usage & PROPERTY_USAGE_STORAGE)) {
-						continue;
+			if (!p_confirmed) {
+				Vector<String> resource_propnames;
+
+				if (current) {
+					List<PropertyInfo> props;
+					current->get_property_list(&props);
+
+					for (List<PropertyInfo>::Element *E = props.front(); E; E = E->next()) {
+						if (!(E->get().usage & PROPERTY_USAGE_STORAGE)) {
+							continue;
+						}
+
+						Variant v = current->get(E->get().name);
+						REF ref = v;
+						RES res = ref;
+						if (v.is_ref() && ref.is_valid() && res.is_valid()) {
+							// Valid resource which would be duplicated if action is confirmed.
+							resource_propnames.append(E->get().name);
+						}
+					}
+				}
+
+				if (resource_propnames.size()) {
+					unique_resources_list_tree->clear();
+					TreeItem *root = unique_resources_list_tree->create_item();
+
+					for (int i = 0; i < resource_propnames.size(); i++) {
+						String propname = resource_propnames[i].replace("/", " / ");
+
+						TreeItem *ti = unique_resources_list_tree->create_item(root);
+						ti->set_text(0, bool(EDITOR_GET("interface/inspector/capitalize_properties")) ? propname.capitalize() : propname);
 					}
 
-					Variant v = current->get(E.name);
-					if (v.is_ref()) {
-						REF ref = v;
-						if (ref.is_valid()) {
-							RES res = ref;
-							if (res.is_valid()) {
-								if (!duplicates.has(res)) {
-									duplicates[res] = res->duplicate();
-								}
-								res = duplicates[res];
+					unique_resources_confirmation->popup_centered();
+				} else {
+					unique_resources_confirmation->set_text(TTR("This object has no resources."));
+					current_option = -1;
+					unique_resources_confirmation->popup_centered();
+				}
+			} else {
+				editor_data->apply_changes_in_editors();
 
-								current->set(E.name, res);
-								editor->get_inspector()->update_property(E.name);
+				if (current) {
+					List<PropertyInfo> props;
+					current->get_property_list(&props);
+					Map<RES, RES> duplicates;
+					for (const PropertyInfo &prop_info : props) {
+						if (!(prop_info.usage & PROPERTY_USAGE_STORAGE)) {
+							continue;
+						}
+
+						Variant v = current->get(prop_info.name);
+						if (v.is_ref()) {
+							REF ref = v;
+							if (ref.is_valid()) {
+								RES res = ref;
+								if (res.is_valid()) {
+									if (!duplicates.has(res)) {
+										duplicates[res] = res->duplicate();
+									}
+									res = duplicates[res];
+
+									current->set(prop_info.name, res);
+									editor->get_inspector()->update_property(prop_info.name);
+								}
 							}
 						}
 					}
 				}
+
+				editor_data->get_undo_redo().clear_history();
+
+				editor->get_editor_plugins_over()->edit(nullptr);
+				editor->get_editor_plugins_over()->edit(current);
 			}
-
-			editor_data->get_undo_redo().clear_history();
-
-			editor->get_editor_plugins_over()->edit(nullptr);
-			editor->get_editor_plugins_over()->edit(current);
 
 		} break;
 
@@ -151,11 +204,24 @@ void InspectorDock::_load_resource(const String &p_type) {
 		load_resource_dialog->add_filter("*." + extensions[i] + " ; " + extensions[i].to_upper());
 	}
 
+	const Vector<String> textfile_ext = ((String)(EditorSettings::get_singleton()->get("docks/filesystem/textfile_extensions"))).split(",", false);
+	for (int i = 0; i < textfile_ext.size(); i++) {
+		load_resource_dialog->add_filter("*." + textfile_ext[i] + " ; " + textfile_ext[i].to_upper());
+	}
+
 	load_resource_dialog->popup_file_dialog();
 }
 
 void InspectorDock::_resource_file_selected(String p_file) {
-	RES res = ResourceLoader::load(p_file);
+	RES res;
+	if (ResourceLoader::exists(p_file, "")) {
+		res = ResourceLoader::load(p_file);
+	} else {
+		const Vector<String> textfile_ext = ((String)(EditorSettings::get_singleton()->get("docks/filesystem/textfile_extensions"))).split(",", false);
+		if (textfile_ext.has(p_file.get_extension())) {
+			res = ScriptEditor::get_singleton()->open_file(p_file);
+		}
+	}
 
 	if (res.is_null()) {
 		warning_dialog->set_text(TTR("Failed to load resource."));
@@ -317,7 +383,7 @@ void InspectorDock::_menu_expandall() {
 }
 
 void InspectorDock::_property_keyed(const String &p_keyed, const Variant &p_value, bool p_advance) {
-	AnimationPlayerEditor::singleton->get_track_editor()->insert_value_key(p_keyed, p_value, p_advance);
+	AnimationPlayerEditor::get_singleton()->get_track_editor()->insert_value_key(p_keyed, p_value, p_advance);
 }
 
 void InspectorDock::_transform_keyed(Object *sp, const String &p_sub, const Transform3D &p_key) {
@@ -325,7 +391,9 @@ void InspectorDock::_transform_keyed(Object *sp, const String &p_sub, const Tran
 	if (!s) {
 		return;
 	}
-	AnimationPlayerEditor::singleton->get_track_editor()->insert_transform_key(s, p_sub, p_key);
+	AnimationPlayerEditor::get_singleton()->get_track_editor()->insert_transform_key(s, p_sub, Animation::TYPE_POSITION_3D, p_key.origin);
+	AnimationPlayerEditor::get_singleton()->get_track_editor()->insert_transform_key(s, p_sub, Animation::TYPE_ROTATION_3D, p_key.basis.get_rotation_quaternion());
+	AnimationPlayerEditor::get_singleton()->get_track_editor()->insert_transform_key(s, p_sub, Animation::TYPE_SCALE_3D, p_key.basis.get_scale());
 }
 
 void InspectorDock::_warning_pressed() {
@@ -416,18 +484,19 @@ void InspectorDock::update(Object *p_object) {
 
 	const bool is_object = p_object != nullptr;
 	const bool is_resource = is_object && p_object->is_class("Resource");
+	const bool is_text_file = is_object && p_object->is_class("TextFile");
 	const bool is_node = is_object && p_object->is_class("Node");
 
-	object_menu->set_disabled(!is_object);
-	search->set_editable(is_object);
-	resource_save_button->set_disabled(!is_resource);
-	open_docs_button->set_disabled(!is_resource && !is_node);
+	object_menu->set_disabled(!is_object || is_text_file);
+	search->set_editable(is_object && !is_text_file);
+	resource_save_button->set_disabled(!is_resource || is_text_file);
+	open_docs_button->set_disabled(is_text_file || (!is_resource && !is_node));
 
 	PopupMenu *resource_extra_popup = resource_extra_button->get_popup();
-	resource_extra_popup->set_item_disabled(resource_extra_popup->get_item_index(RESOURCE_COPY), !is_resource);
-	resource_extra_popup->set_item_disabled(resource_extra_popup->get_item_index(RESOURCE_MAKE_BUILT_IN), !is_resource);
+	resource_extra_popup->set_item_disabled(resource_extra_popup->get_item_index(RESOURCE_COPY), !is_resource || is_text_file);
+	resource_extra_popup->set_item_disabled(resource_extra_popup->get_item_index(RESOURCE_MAKE_BUILT_IN), !is_resource || is_text_file);
 
-	if (!is_object) {
+	if (!is_object || is_text_file) {
 		warning->hide();
 		editor_path->clear_path();
 		return;
@@ -478,7 +547,7 @@ void InspectorDock::go_back() {
 void InspectorDock::update_keying() {
 	bool valid = false;
 
-	if (AnimationPlayerEditor::singleton->get_track_editor()->has_keying()) {
+	if (AnimationPlayerEditor::get_singleton()->get_track_editor()->has_keying()) {
 		EditorHistory *editor_history = EditorNode::get_singleton()->get_editor_history();
 		if (editor_history->get_path_size() >= 1) {
 			Object *obj = ObjectDB::get_instance(editor_history->get_path_object(0));
@@ -618,6 +687,29 @@ InspectorDock::InspectorDock(EditorNode *p_editor, EditorData &p_editor_data) {
 	warning->set_clip_text(true);
 	warning->hide();
 	warning->connect("pressed", callable_mp(this, &InspectorDock::_warning_pressed));
+
+	unique_resources_confirmation = memnew(ConfirmationDialog);
+	add_child(unique_resources_confirmation);
+
+	VBoxContainer *container = memnew(VBoxContainer);
+	unique_resources_confirmation->add_child(container);
+
+	Label *top_label = memnew(Label);
+	top_label->set_text(TTR("The following resources will be duplicated and embedded within this resource/object."));
+	container->add_child(top_label);
+
+	unique_resources_list_tree = memnew(Tree);
+	unique_resources_list_tree->set_hide_root(true);
+	unique_resources_list_tree->set_columns(1);
+	unique_resources_list_tree->set_column_title(0, TTR("Property"));
+	unique_resources_list_tree->set_custom_minimum_size(Size2(0, 200 * EDSCALE));
+	container->add_child(unique_resources_list_tree);
+
+	Label *bottom_label = memnew(Label);
+	bottom_label->set_text(TTR("This cannot be undone. Are you sure?"));
+	container->add_child(bottom_label);
+
+	unique_resources_confirmation->connect("confirmed", callable_mp(this, &InspectorDock::_menu_confirm_current));
 
 	warning_dialog = memnew(AcceptDialog);
 	editor->get_gui_base()->add_child(warning_dialog);

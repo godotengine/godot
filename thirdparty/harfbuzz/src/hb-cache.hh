@@ -30,7 +30,7 @@
 #include "hb.hh"
 
 
-/* Implements a lock-free cache for int->int functions. */
+/* Implements a lockfree cache for int->int functions. */
 
 template <unsigned int key_bits, unsigned int value_bits, unsigned int cache_bits>
 struct hb_cache_t

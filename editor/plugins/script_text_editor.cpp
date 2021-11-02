@@ -158,7 +158,6 @@ void ScriptTextEditor::enable_editor() {
 	editor_enabled = true;
 
 	_enable_code_editor();
-	_set_theme_for_script();
 
 	_validate_script();
 }
@@ -434,10 +433,12 @@ void ScriptTextEditor::_validate_script() {
 	int warning_nb = warnings.size();
 	warnings_panel->clear();
 
+	bool has_connections_table = false;
 	// Add missing connections.
 	if (GLOBAL_GET("debug/gdscript/warnings/enable").booleanize()) {
 		Node *base = get_tree()->get_edited_scene_root();
 		if (base && missing_connections.size() > 0) {
+			has_connections_table = true;
 			warnings_panel->push_table(1);
 			for (const Connection &connection : missing_connections) {
 				String base_path = base->get_name();
@@ -458,6 +459,10 @@ void ScriptTextEditor::_validate_script() {
 
 	code_editor->set_error_count(errors.size());
 	code_editor->set_warning_count(warning_nb);
+
+	if (has_connections_table) {
+		warnings_panel->add_newline();
+	}
 
 	// Add script warnings.
 	warnings_panel->push_table(3);
@@ -831,7 +836,7 @@ void ScriptTextEditor::_lookup_symbol(const String &p_symbol, int p_row, int p_c
 		if (info.is_singleton) {
 			EditorNode::get_singleton()->load_scene(info.path);
 		}
-	} else if (p_symbol.is_rel_path()) {
+	} else if (p_symbol.is_relative_path()) {
 		// Every symbol other than absolute path is relative path so keep this condition at last.
 		String path = _get_absolute_path(p_symbol);
 		if (FileAccess::exists(path)) {
@@ -858,7 +863,7 @@ void ScriptTextEditor::_validate_symbol(const String &p_symbol) {
 	ScriptLanguage::LookupResult result;
 	if (ScriptServer::is_global_class(p_symbol) || p_symbol.is_resource_file() || script->get_language()->lookup_code(code_editor->get_text_editor()->get_text_for_symbol_lookup(), p_symbol, script->get_path(), base, result) == OK || (ProjectSettings::get_singleton()->has_autoload(p_symbol) && ProjectSettings::get_singleton()->get_autoload(p_symbol).is_singleton)) {
 		text_edit->set_symbol_lookup_word_as_valid(true);
-	} else if (p_symbol.is_rel_path()) {
+	} else if (p_symbol.is_relative_path()) {
 		String path = _get_absolute_path(p_symbol);
 		if (FileAccess::exists(path)) {
 			text_edit->set_symbol_lookup_word_as_valid(true);
@@ -877,9 +882,7 @@ String ScriptTextEditor::_get_absolute_path(const String &rel_path) {
 }
 
 void ScriptTextEditor::update_toggle_scripts_button() {
-	if (code_editor != nullptr) {
-		code_editor->update_toggle_scripts_button();
-	}
+	code_editor->update_toggle_scripts_button();
 }
 
 void ScriptTextEditor::_update_connected_methods() {
@@ -1243,7 +1246,7 @@ void ScriptTextEditor::_edit_option(int p_op) {
 				tx->set_caret_line(bpoints[bpoints.size() - 1]);
 				tx->center_viewport_to_caret();
 			} else {
-				for (int i = bpoints.size(); i >= 0; i--) {
+				for (int i = bpoints.size() - 1; i >= 0; i--) {
 					int bline = bpoints[i];
 					if (bline < line) {
 						tx->unfold_line(bline);
@@ -1338,8 +1341,6 @@ void ScriptTextEditor::_bind_methods() {
 	ClassDB::bind_method("_get_drag_data_fw", &ScriptTextEditor::get_drag_data_fw);
 	ClassDB::bind_method("_can_drop_data_fw", &ScriptTextEditor::can_drop_data_fw);
 	ClassDB::bind_method("_drop_data_fw", &ScriptTextEditor::drop_data_fw);
-
-	ClassDB::bind_method(D_METHOD("add_syntax_highlighter", "highlighter"), &ScriptTextEditor::add_syntax_highlighter);
 }
 
 Control *ScriptTextEditor::get_edit_menu() {
@@ -1370,6 +1371,14 @@ Array ScriptTextEditor::get_breakpoints() {
 	return code_editor->get_text_editor()->get_breakpointed_lines();
 }
 
+void ScriptTextEditor::set_breakpoint(int p_line, bool p_enabled) {
+	code_editor->get_text_editor()->set_line_as_breakpoint(p_line, p_enabled);
+}
+
+void ScriptTextEditor::clear_breakpoints() {
+	code_editor->get_text_editor()->clear_breakpointed_lines();
+}
+
 void ScriptTextEditor::set_tooltip_request_func(String p_method, Object *p_obj) {
 	code_editor->get_text_editor()->set_tooltip_request_func(p_obj, p_method, this);
 }
@@ -1387,11 +1396,12 @@ Variant ScriptTextEditor::get_drag_data_fw(const Point2 &p_point, Control *p_fro
 
 bool ScriptTextEditor::can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const {
 	Dictionary d = p_data;
-	if (d.has("type") && (String(d["type"]) == "resource" ||
-								 String(d["type"]) == "files" ||
-								 String(d["type"]) == "nodes" ||
-								 String(d["type"]) == "obj_property" ||
-								 String(d["type"]) == "files_and_dirs")) {
+	if (d.has("type") &&
+			(String(d["type"]) == "resource" ||
+					String(d["type"]) == "files" ||
+					String(d["type"]) == "nodes" ||
+					String(d["type"]) == "obj_property" ||
+					String(d["type"]) == "files_and_dirs")) {
 		return true;
 	}
 
@@ -1696,7 +1706,6 @@ void ScriptTextEditor::_enable_code_editor() {
 	code_editor->connect("show_warnings_panel", callable_mp(this, &ScriptTextEditor::_show_warnings_panel));
 	code_editor->connect("validate_script", callable_mp(this, &ScriptTextEditor::_validate_script));
 	code_editor->connect("load_theme_settings", callable_mp(this, &ScriptTextEditor::_load_theme_settings));
-	code_editor->get_text_editor()->connect("breakpoint_toggled", callable_mp(this, &ScriptTextEditor::_breakpoint_toggled));
 	code_editor->get_text_editor()->connect("symbol_lookup", callable_mp(this, &ScriptTextEditor::_lookup_symbol));
 	code_editor->get_text_editor()->connect("symbol_validate", callable_mp(this, &ScriptTextEditor::_validate_symbol));
 	code_editor->get_text_editor()->connect("gutter_added", callable_mp(this, &ScriptTextEditor::_update_gutter_indexes));
@@ -1836,6 +1845,7 @@ ScriptTextEditor::ScriptTextEditor() {
 
 	code_editor->get_text_editor()->set_draw_breakpoints_gutter(true);
 	code_editor->get_text_editor()->set_draw_executing_lines_gutter(true);
+	code_editor->get_text_editor()->connect("breakpoint_toggled", callable_mp(this, &ScriptTextEditor::_breakpoint_toggled));
 
 	connection_gutter = 1;
 	code_editor->get_text_editor()->add_gutter(connection_gutter);
@@ -1956,11 +1966,8 @@ void ScriptTextEditor::register_editor() {
 	ED_SHORTCUT("script_text_editor/toggle_fold_line", TTR("Fold/Unfold Line"), KEY_MASK_ALT | KEY_F);
 	ED_SHORTCUT("script_text_editor/fold_all_lines", TTR("Fold All Lines"), KEY_NONE);
 	ED_SHORTCUT("script_text_editor/unfold_all_lines", TTR("Unfold All Lines"), KEY_NONE);
-#ifdef OSX_ENABLED
-	ED_SHORTCUT("script_text_editor/duplicate_selection", TTR("Duplicate Selection"), KEY_MASK_SHIFT | KEY_MASK_CMD | KEY_C);
-#else
 	ED_SHORTCUT("script_text_editor/duplicate_selection", TTR("Duplicate Selection"), KEY_MASK_SHIFT | KEY_MASK_CMD | KEY_D);
-#endif
+	ED_SHORTCUT_OVERRIDE("script_text_editor/duplicate_selection", "macos", KEY_MASK_SHIFT | KEY_MASK_CMD | KEY_C);
 	ED_SHORTCUT("script_text_editor/evaluate_selection", TTR("Evaluate Selection"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_E);
 	ED_SHORTCUT("script_text_editor/trim_trailing_whitespace", TTR("Trim Trailing Whitespace"), KEY_MASK_CMD | KEY_MASK_ALT | KEY_T);
 	ED_SHORTCUT("script_text_editor/convert_indent_to_spaces", TTR("Convert Indent to Spaces"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_Y);
@@ -1968,42 +1975,35 @@ void ScriptTextEditor::register_editor() {
 	ED_SHORTCUT("script_text_editor/auto_indent", TTR("Auto Indent"), KEY_MASK_CMD | KEY_I);
 
 	ED_SHORTCUT_AND_COMMAND("script_text_editor/find", TTR("Find..."), KEY_MASK_CMD | KEY_F);
-#ifdef OSX_ENABLED
-	ED_SHORTCUT("script_text_editor/find_next", TTR("Find Next"), KEY_MASK_CMD | KEY_G);
-	ED_SHORTCUT("script_text_editor/find_previous", TTR("Find Previous"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_G);
-	ED_SHORTCUT_AND_COMMAND("script_text_editor/replace", TTR("Replace..."), KEY_MASK_ALT | KEY_MASK_CMD | KEY_F);
-#else
+
 	ED_SHORTCUT("script_text_editor/find_next", TTR("Find Next"), KEY_F3);
+	ED_SHORTCUT_OVERRIDE("script_text_editor/find_next", "macos", KEY_MASK_CMD | KEY_G);
+
 	ED_SHORTCUT("script_text_editor/find_previous", TTR("Find Previous"), KEY_MASK_SHIFT | KEY_F3);
+	ED_SHORTCUT_OVERRIDE("script_text_editor/find_previous", "macos", KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_G);
+
 	ED_SHORTCUT_AND_COMMAND("script_text_editor/replace", TTR("Replace..."), KEY_MASK_CMD | KEY_R);
-#endif
+	ED_SHORTCUT_OVERRIDE("script_text_editor/replace", "macos", KEY_MASK_ALT | KEY_MASK_CMD | KEY_F);
 
 	ED_SHORTCUT("script_text_editor/find_in_files", TTR("Find in Files..."), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_F);
 	ED_SHORTCUT("script_text_editor/replace_in_files", TTR("Replace in Files..."), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_R);
 
-#ifdef OSX_ENABLED
-	ED_SHORTCUT("script_text_editor/contextual_help", TTR("Contextual Help"), KEY_MASK_ALT | KEY_MASK_SHIFT | KEY_SPACE);
-#else
 	ED_SHORTCUT("script_text_editor/contextual_help", TTR("Contextual Help"), KEY_MASK_ALT | KEY_F1);
-#endif
+	ED_SHORTCUT_OVERRIDE("script_text_editor/contextual_help", "macos", KEY_MASK_ALT | KEY_MASK_SHIFT | KEY_SPACE);
 
 	ED_SHORTCUT("script_text_editor/toggle_bookmark", TTR("Toggle Bookmark"), KEY_MASK_CMD | KEY_MASK_ALT | KEY_B);
 	ED_SHORTCUT("script_text_editor/goto_next_bookmark", TTR("Go to Next Bookmark"), KEY_MASK_CMD | KEY_B);
 	ED_SHORTCUT("script_text_editor/goto_previous_bookmark", TTR("Go to Previous Bookmark"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_B);
 	ED_SHORTCUT("script_text_editor/remove_all_bookmarks", TTR("Remove All Bookmarks"), KEY_NONE);
 
-#ifdef OSX_ENABLED
-	ED_SHORTCUT("script_text_editor/goto_function", TTR("Go to Function..."), KEY_MASK_CTRL | KEY_MASK_CMD | KEY_J);
-#else
 	ED_SHORTCUT("script_text_editor/goto_function", TTR("Go to Function..."), KEY_MASK_ALT | KEY_MASK_CMD | KEY_F);
-#endif
+	ED_SHORTCUT_OVERRIDE("script_text_editor/goto_function", "macos", KEY_MASK_CTRL | KEY_MASK_CMD | KEY_J);
+
 	ED_SHORTCUT("script_text_editor/goto_line", TTR("Go to Line..."), KEY_MASK_CMD | KEY_L);
 
-#ifdef OSX_ENABLED
-	ED_SHORTCUT("script_text_editor/toggle_breakpoint", TTR("Toggle Breakpoint"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_B);
-#else
 	ED_SHORTCUT("script_text_editor/toggle_breakpoint", TTR("Toggle Breakpoint"), KEY_F9);
-#endif
+	ED_SHORTCUT_OVERRIDE("script_text_editor/toggle_breakpoint", "macos", KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_B);
+
 	ED_SHORTCUT("script_text_editor/remove_all_breakpoints", TTR("Remove All Breakpoints"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_F9);
 	ED_SHORTCUT("script_text_editor/goto_next_breakpoint", TTR("Go to Next Breakpoint"), KEY_MASK_CMD | KEY_PERIOD);
 	ED_SHORTCUT("script_text_editor/goto_previous_breakpoint", TTR("Go to Previous Breakpoint"), KEY_MASK_CMD | KEY_COMMA);

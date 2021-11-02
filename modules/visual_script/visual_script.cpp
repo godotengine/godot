@@ -702,8 +702,8 @@ void VisualScript::rename_custom_signal(const StringName &p_name, const StringNa
 }
 
 void VisualScript::get_custom_signal_list(List<StringName> *r_custom_signals) const {
-	for (const Map<StringName, Vector<Argument>>::Element *E = custom_signals.front(); E; E = E->next()) {
-		r_custom_signals->push_back(E->key());
+	for (const KeyValue<StringName, Vector<Argument>> &E : custom_signals) {
+		r_custom_signals->push_back(E.key);
 	}
 
 	r_custom_signals->sort_custom<StringName::AlphCompare>();
@@ -848,13 +848,13 @@ bool VisualScript::has_script_signal(const StringName &p_signal) const {
 }
 
 void VisualScript::get_script_signal_list(List<MethodInfo> *r_signals) const {
-	for (const Map<StringName, Vector<Argument>>::Element *E = custom_signals.front(); E; E = E->next()) {
+	for (const KeyValue<StringName, Vector<Argument>> &E : custom_signals) {
 		MethodInfo mi;
-		mi.name = E->key();
-		for (int i = 0; i < E->get().size(); i++) {
+		mi.name = E.key;
+		for (int i = 0; i < E.value.size(); i++) {
 			PropertyInfo arg;
-			arg.type = E->get()[i].type;
-			arg.name = E->get()[i].name;
+			arg.type = E.value[i].type;
+			arg.name = E.value[i].name;
 			mi.arguments.push_back(arg);
 		}
 
@@ -955,7 +955,7 @@ bool VisualScript::are_subnodes_edited() const {
 }
 #endif
 
-const Vector<MultiplayerAPI::RPCConfig> VisualScript::get_rpc_methods() const {
+const Vector<Multiplayer::RPCConfig> VisualScript::get_rpc_methods() const {
 	return rpc_functions;
 }
 
@@ -1022,11 +1022,11 @@ void VisualScript::_set_data(const Dictionary &p_data) {
 		if (functions[E].func_id >= 0 && nodes.has(functions[E].func_id)) {
 			Ref<VisualScriptFunction> vsf = nodes[functions[E].func_id].node;
 			if (vsf.is_valid()) {
-				if (vsf->get_rpc_mode() != MultiplayerAPI::RPC_MODE_DISABLED) {
-					MultiplayerAPI::RPCConfig nd;
+				if (vsf->get_rpc_mode() != Multiplayer::RPC_MODE_DISABLED) {
+					Multiplayer::RPCConfig nd;
 					nd.name = E;
 					nd.rpc_mode = vsf->get_rpc_mode();
-					nd.transfer_mode = MultiplayerPeer::TRANSFER_MODE_RELIABLE; // TODO
+					nd.transfer_mode = Multiplayer::TRANSFER_MODE_RELIABLE; // TODO
 					if (rpc_functions.find(nd) == -1) {
 						rpc_functions.push_back(nd);
 					}
@@ -1036,7 +1036,7 @@ void VisualScript::_set_data(const Dictionary &p_data) {
 	}
 
 	// Sort so we are 100% that they are always the same.
-	rpc_functions.sort_custom<MultiplayerAPI::SortRPCConfig>();
+	rpc_functions.sort_custom<Multiplayer::SortRPCConfig>();
 }
 
 Dictionary VisualScript::_get_data() const {
@@ -1056,13 +1056,13 @@ Dictionary VisualScript::_get_data() const {
 	d["variables"] = vars;
 
 	Array sigs;
-	for (const Map<StringName, Vector<Argument>>::Element *E = custom_signals.front(); E; E = E->next()) {
+	for (const KeyValue<StringName, Vector<Argument>> &E : custom_signals) {
 		Dictionary cs;
-		cs["name"] = E->key();
+		cs["name"] = E.key;
 		Array args;
-		for (int i = 0; i < E->get().size(); i++) {
-			args.push_back(E->get()[i].name);
-			args.push_back(E->get()[i].type);
+		for (int i = 0; i < E.value.size(); i++) {
+			args.push_back(E.value[i].name);
+			args.push_back(E.value[i].type);
 		}
 		cs["arguments"] = args;
 
@@ -1688,7 +1688,7 @@ Variant VisualScriptInstance::_call_internal(const StringName &p_method, void *p
 		// debugger break did not happen
 
 		if (!VisualScriptLanguage::singleton->debug_break(error_str, false)) {
-			_err_print_error(err_func.utf8().get_data(), err_file.utf8().get_data(), err_line, error_str.utf8().get_data(), ERR_HANDLER_SCRIPT);
+			_err_print_error(err_func.utf8().get_data(), err_file.utf8().get_data(), err_line, error_str.utf8().get_data(), false, ERR_HANDLER_SCRIPT);
 		}
 
 		//}
@@ -1833,7 +1833,7 @@ Ref<Script> VisualScriptInstance::get_script() const {
 	return script;
 }
 
-const Vector<MultiplayerAPI::RPCConfig> VisualScriptInstance::get_rpc_methods() const {
+const Vector<Multiplayer::RPCConfig> VisualScriptInstance::get_rpc_methods() const {
 	return script->get_rpc_methods();
 }
 
@@ -2093,8 +2093,8 @@ VisualScriptInstance::~VisualScriptInstance() {
 		script->instances.erase(owner);
 	}
 
-	for (Map<int, VisualScriptNodeInstance *>::Element *E = instances.front(); E; E = E->next()) {
-		memdelete(E->get());
+	for (const KeyValue<int, VisualScriptNodeInstance *> &E : instances) {
+		memdelete(E.value);
 	}
 }
 
@@ -2370,7 +2370,6 @@ void VisualScriptLanguage::debug_get_stack_level_locals(int p_level, List<String
 	const StringName *f = _call_stack[l].function;
 
 	ERR_FAIL_COND(!_call_stack[l].instance->functions.has(*f));
-	//VisualScriptInstance::Function *func = &_call_stack[l].instance->functions[*f];
 
 	VisualScriptNodeInstance *node = _call_stack[l].instance->instances[*_call_stack[l].current_id];
 	ERR_FAIL_COND(!node);
@@ -2416,21 +2415,6 @@ void VisualScriptLanguage::debug_get_stack_level_locals(int p_level, List<String
 		p_locals->push_back("working_mem/mem_" + itos(i));
 		p_values->push_back((*_call_stack[l].work_mem)[i]);
 	}
-
-	/*
-    ERR_FAIL_INDEX(p_level,_debug_call_stack_pos);
-
-
-    VisualFunction *f = _call_stack[l].function;
-
-    List<Pair<StringName,int> > locals;
-
-    f->debug_get_stack_member_state(*_call_stack[l].line,&locals);
-    for( List<Pair<StringName,int> >::Element *E = locals.front();E;E=E->next() ) {
-	p_locals->push_back(E->get().first);
-	p_values->push_back(_call_stack[l].stack[E->get().second]);
-    }
-*/
 }
 
 void VisualScriptLanguage::debug_get_stack_level_members(int p_level, List<String> *p_members, List<Variant> *p_values, int p_max_subitems, int p_max_depth) {
@@ -2516,8 +2500,8 @@ Ref<VisualScriptNode> VisualScriptLanguage::create_node_from_name(const String &
 }
 
 void VisualScriptLanguage::get_registered_node_names(List<String> *r_names) {
-	for (Map<String, VisualScriptNodeRegisterFunc>::Element *E = register_funcs.front(); E; E = E->next()) {
-		r_names->push_back(E->key());
+	for (const KeyValue<String, VisualScriptNodeRegisterFunc> &E : register_funcs) {
+		r_names->push_back(E.key);
 	}
 }
 

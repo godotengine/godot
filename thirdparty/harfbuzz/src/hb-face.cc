@@ -33,6 +33,7 @@
 #include "hb-open-file.hh"
 #include "hb-ot-face.hh"
 #include "hb-ot-cmap-table.hh"
+#include "hb-map.hh"
 
 
 /**
@@ -106,9 +107,9 @@ DEFINE_NULL_INSTANCE (hb_face_t) =
  * convenient to provide data for individual tables instead of the whole font
  * data. With the caveat that hb_face_get_table_tags() does not currently work
  * with faces created this way.
- * 
+ *
  * Creates a new face object from the specified @user_data and @reference_table_func,
- * with the @destroy callback. 
+ * with the @destroy callback.
  *
  * Return value: (transfer full): The new face object
  *
@@ -150,7 +151,7 @@ _hb_face_for_data_closure_create (hb_blob_t *blob, unsigned int index)
 {
   hb_face_for_data_closure_t *closure;
 
-  closure = (hb_face_for_data_closure_t *) calloc (1, sizeof (hb_face_for_data_closure_t));
+  closure = (hb_face_for_data_closure_t *) hb_calloc (1, sizeof (hb_face_for_data_closure_t));
   if (unlikely (!closure))
     return nullptr;
 
@@ -166,7 +167,7 @@ _hb_face_for_data_closure_destroy (void *data)
   hb_face_for_data_closure_t *closure = (hb_face_for_data_closure_t *) data;
 
   hb_blob_destroy (closure->blob);
-  free (closure);
+  hb_free (closure);
 }
 
 static hb_blob_t *
@@ -265,7 +266,7 @@ hb_face_reference (hb_face_t *face)
 /**
  * hb_face_destroy: (skip)
  * @face: A face object
- * 
+ *
  * Decreases the reference count on a face object. When the
  * reference count reaches zero, the face is destroyed,
  * freeing all memory.
@@ -281,7 +282,7 @@ hb_face_destroy (hb_face_t *face)
   {
     hb_face_t::plan_node_t *next = node->next;
     hb_shape_plan_destroy (node->shape_plan);
-    free (node);
+    hb_free (node);
     node = next;
   }
 
@@ -291,7 +292,7 @@ hb_face_destroy (hb_face_t *face)
   if (face->destroy)
     face->destroy (face->user_data);
 
-  free (face);
+  hb_free (face);
 }
 
 /**
@@ -302,7 +303,7 @@ hb_face_destroy (hb_face_t *face)
  * @destroy: (nullable): A callback to call when @data is not needed anymore
  * @replace: Whether to replace an existing data with the same key
  *
- * Attaches a user-data key/data pair to the given face object. 
+ * Attaches a user-data key/data pair to the given face object.
  *
  * Return value: %true if success, %false otherwise
  *
@@ -441,7 +442,7 @@ hb_face_set_index (hb_face_t    *face,
  *
  * <note>Note: face indices within a collection are zero-based.</note>
  *
- * Return value: The index of @face. 
+ * Return value: The index of @face.
  *
  * Since: 0.9.2
  **/
@@ -623,26 +624,26 @@ hb_face_collect_variation_unicodes (hb_face_t *face,
 
 struct hb_face_builder_data_t
 {
-  struct table_entry_t
-  {
-    int cmp (hb_tag_t t) const
-    {
-      if (t < tag) return -1;
-      if (t > tag) return -1;
-      return 0;
-    }
-
-    hb_tag_t   tag;
-    hb_blob_t *blob;
-  };
-
-  hb_vector_t<table_entry_t> tables;
+  hb_hashmap_t<hb_tag_t, hb_blob_t *> tables;
 };
+
+static int compare_entries (const void* pa, const void* pb)
+{
+  const auto& a = * (const hb_pair_t<hb_tag_t, hb_blob_t*> *) pa;
+  const auto& b = * (const hb_pair_t<hb_tag_t, hb_blob_t*> *) pb;
+
+  /* Order by blob size first (smallest to largest) and then table tag */
+
+  if (a.second->length != b.second->length)
+    return a.second->length < b.second->length ? -1 : +1;
+
+  return a.first < b.first ? -1 : a.first == b.first ? 0 : +1;
+}
 
 static hb_face_builder_data_t *
 _hb_face_builder_data_create ()
 {
-  hb_face_builder_data_t *data = (hb_face_builder_data_t *) calloc (1, sizeof (hb_face_builder_data_t));
+  hb_face_builder_data_t *data = (hb_face_builder_data_t *) hb_calloc (1, sizeof (hb_face_builder_data_t));
   if (unlikely (!data))
     return nullptr;
 
@@ -656,25 +657,25 @@ _hb_face_builder_data_destroy (void *user_data)
 {
   hb_face_builder_data_t *data = (hb_face_builder_data_t *) user_data;
 
-  for (unsigned int i = 0; i < data->tables.length; i++)
-    hb_blob_destroy (data->tables[i].blob);
+  for (hb_blob_t* b : data->tables.values())
+    hb_blob_destroy (b);
 
   data->tables.fini ();
 
-  free (data);
+  hb_free (data);
 }
 
 static hb_blob_t *
 _hb_face_builder_data_reference_blob (hb_face_builder_data_t *data)
 {
 
-  unsigned int table_count = data->tables.length;
+  unsigned int table_count = data->tables.get_population ();
   unsigned int face_length = table_count * 16 + 12;
 
-  for (unsigned int i = 0; i < table_count; i++)
-    face_length += hb_ceil_to_4 (hb_blob_get_length (data->tables[i].blob));
+  for (hb_blob_t* b : data->tables.values())
+    face_length += hb_ceil_to_4 (hb_blob_get_length (b));
 
-  char *buf = (char *) malloc (face_length);
+  char *buf = (char *) hb_malloc (face_length);
   if (unlikely (!buf))
     return nullptr;
 
@@ -682,20 +683,31 @@ _hb_face_builder_data_reference_blob (hb_face_builder_data_t *data)
   c.propagate_error (data->tables);
   OT::OpenTypeFontFile *f = c.start_serialize<OT::OpenTypeFontFile> ();
 
-  bool is_cff = data->tables.lsearch (HB_TAG ('C','F','F',' ')) || data->tables.lsearch (HB_TAG ('C','F','F','2'));
+  bool is_cff = (data->tables.has (HB_TAG ('C','F','F',' '))
+                 || data->tables.has (HB_TAG ('C','F','F','2')));
   hb_tag_t sfnt_tag = is_cff ? OT::OpenTypeFontFile::CFFTag : OT::OpenTypeFontFile::TrueTypeTag;
 
-  bool ret = f->serialize_single (&c, sfnt_tag, data->tables.as_array ());
+  // Sort the tags so that produced face is deterministic.
+  hb_vector_t<hb_pair_t <hb_tag_t, hb_blob_t*>> sorted_entries;
+  data->tables.iter () | hb_sink (sorted_entries);
+  if (unlikely (sorted_entries.in_error ()))
+  {
+    hb_free (buf);
+    return nullptr;
+  }
+
+  sorted_entries.qsort (compare_entries);
+  bool ret = f->serialize_single (&c, sfnt_tag, + sorted_entries.iter());
 
   c.end_serialize ();
 
   if (unlikely (!ret))
   {
-    free (buf);
+    hb_free (buf);
     return nullptr;
   }
 
-  return hb_blob_create (buf, face_length, HB_MEMORY_MODE_WRITABLE, buf, free);
+  return hb_blob_create (buf, face_length, HB_MEMORY_MODE_WRITABLE, buf, hb_free);
 }
 
 static hb_blob_t *
@@ -706,11 +718,7 @@ _hb_face_builder_reference_table (hb_face_t *face HB_UNUSED, hb_tag_t tag, void 
   if (!tag)
     return _hb_face_builder_data_reference_blob (data);
 
-  hb_face_builder_data_t::table_entry_t *entry = data->tables.lsearch (tag);
-  if (entry)
-    return hb_blob_reference (entry->blob);
-
-  return nullptr;
+  return hb_blob_reference (data->tables[tag]);
 }
 
 
@@ -750,17 +758,21 @@ hb_face_builder_create ()
 hb_bool_t
 hb_face_builder_add_table (hb_face_t *face, hb_tag_t tag, hb_blob_t *blob)
 {
+  if (tag == HB_MAP_VALUE_INVALID)
+    return false;
+
   if (unlikely (face->destroy != (hb_destroy_func_t) _hb_face_builder_data_destroy))
     return false;
 
   hb_face_builder_data_t *data = (hb_face_builder_data_t *) face->user_data;
 
-  hb_face_builder_data_t::table_entry_t *entry = data->tables.push ();
-  if (unlikely (data->tables.in_error()))
+  hb_blob_t* previous = data->tables.get (tag);
+  if (!data->tables.set (tag, hb_blob_reference (blob)))
+  {
+    hb_blob_destroy (blob);
     return false;
+  }
 
-  entry->tag = tag;
-  entry->blob = hb_blob_reference (blob);
-
+  hb_blob_destroy (previous);
   return true;
 }

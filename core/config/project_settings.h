@@ -42,7 +42,7 @@ class ProjectSettings : public Object {
 
 public:
 	typedef Map<String, Variant> CustomMap;
-	static const String IMPORTED_FILES_PATH;
+	static const String PROJECT_DATA_DIR_NAME_SUFFIX;
 
 	enum {
 		//properties that are not for built in values begin from this value, so builtin ones are displayed first
@@ -94,6 +94,8 @@ protected:
 
 	OrderedHashMap<StringName, AutoloadInfo> autoloads;
 
+	String project_data_dir_name;
+
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
 	void _get_property_list(List<PropertyInfo> *p_list) const;
@@ -141,7 +143,10 @@ public:
 	bool property_can_revert(const String &p_name);
 	Variant property_get_revert(const String &p_name);
 
+	String get_project_data_dir_name() const;
+	String get_project_data_path() const;
 	String get_resource_path() const;
+	String get_imported_files_path() const;
 
 	static ProjectSettings *get_singleton();
 

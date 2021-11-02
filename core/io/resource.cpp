@@ -136,6 +136,7 @@ String Resource::get_scene_unique_id() const {
 
 void Resource::set_name(const String &p_name) {
 	name = p_name;
+	emit_changed();
 }
 
 String Resource::get_name() const {
@@ -540,9 +541,9 @@ void ResourceCache::dump(const char *p_file, bool p_short) {
 		}
 	}
 
-	for (Map<String, int>::Element *E = type_count.front(); E; E = E->next()) {
+	for (const KeyValue<String, int> &E : type_count) {
 		if (f) {
-			f->store_line(E->key() + " count: " + itos(E->get()));
+			f->store_line(E.key + " count: " + itos(E.value));
 		}
 	}
 	if (f) {

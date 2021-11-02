@@ -249,6 +249,19 @@ public:
 	AudioStreamPlayer3DGizmoPlugin();
 };
 
+class AudioListener3DGizmoPlugin : public EditorNode3DGizmoPlugin {
+	GDCLASS(AudioListener3DGizmoPlugin, EditorNode3DGizmoPlugin);
+
+public:
+	bool has_gizmo(Node3D *p_spatial) override;
+	String get_gizmo_name() const override;
+	int get_priority() const override;
+
+	void redraw(EditorNode3DGizmo *p_gizmo) override;
+
+	AudioListener3DGizmoPlugin();
+};
+
 class Camera3DGizmoPlugin : public EditorNode3DGizmoPlugin {
 	GDCLASS(Camera3DGizmoPlugin, EditorNode3DGizmoPlugin);
 
@@ -319,18 +332,6 @@ public:
 	Position3DGizmoPlugin();
 };
 
-class Skeleton3DGizmoPlugin : public EditorNode3DGizmoPlugin {
-	GDCLASS(Skeleton3DGizmoPlugin, EditorNode3DGizmoPlugin);
-
-public:
-	bool has_gizmo(Node3D *p_spatial) override;
-	String get_gizmo_name() const override;
-	int get_priority() const override;
-	void redraw(EditorNode3DGizmo *p_gizmo) override;
-
-	Skeleton3DGizmoPlugin();
-};
-
 class PhysicalBone3DGizmoPlugin : public EditorNode3DGizmoPlugin {
 	GDCLASS(PhysicalBone3DGizmoPlugin, EditorNode3DGizmoPlugin);
 
@@ -379,8 +380,8 @@ public:
 	VehicleWheel3DGizmoPlugin();
 };
 
-class SoftBody3DGizmoPlugin : public EditorNode3DGizmoPlugin {
-	GDCLASS(SoftBody3DGizmoPlugin, EditorNode3DGizmoPlugin);
+class SoftDynamicBody3DGizmoPlugin : public EditorNode3DGizmoPlugin {
+	GDCLASS(SoftDynamicBody3DGizmoPlugin, EditorNode3DGizmoPlugin);
 
 public:
 	bool has_gizmo(Node3D *p_spatial) override;
@@ -394,7 +395,7 @@ public:
 	void commit_handle(const EditorNode3DGizmo *p_gizmo, int p_id, const Variant &p_restore, bool p_cancel = false) override;
 	bool is_handle_highlighted(const EditorNode3DGizmo *p_gizmo, int p_id) const override;
 
-	SoftBody3DGizmoPlugin();
+	SoftDynamicBody3DGizmoPlugin();
 };
 
 class VisibleOnScreenNotifier3DGizmoPlugin : public EditorNode3DGizmoPlugin {
@@ -666,6 +667,23 @@ public:
 			Vector<Vector3> *r_body_b_points);
 
 	Joint3DGizmoPlugin();
+};
+
+class FogVolumeGizmoPlugin : public EditorNode3DGizmoPlugin {
+	GDCLASS(FogVolumeGizmoPlugin, EditorNode3DGizmoPlugin);
+
+public:
+	bool has_gizmo(Node3D *p_spatial) override;
+	String get_gizmo_name() const override;
+	int get_priority() const override;
+	void redraw(EditorNode3DGizmo *p_gizmo) override;
+
+	String get_handle_name(const EditorNode3DGizmo *p_gizmo, int p_id) const override;
+	Variant get_handle_value(const EditorNode3DGizmo *p_gizmo, int p_id) const override;
+	void set_handle(const EditorNode3DGizmo *p_gizmo, int p_id, Camera3D *p_camera, const Point2 &p_point) override;
+	void commit_handle(const EditorNode3DGizmo *p_gizmo, int p_id, const Variant &p_restore, bool p_cancel = false) override;
+
+	FogVolumeGizmoPlugin();
 };
 
 #endif // NODE_3D_EDITOR_GIZMOS_H

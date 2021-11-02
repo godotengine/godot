@@ -132,6 +132,8 @@ enum PropertyUsageFlags {
 	PROPERTY_USAGE_DEFERRED_SET_RESOURCE = 1 << 26, // when loading, the resource for this property can be set at the end of loading
 	PROPERTY_USAGE_EDITOR_INSTANTIATE_OBJECT = 1 << 27, // For Object properties, instantiate them when creating in editor.
 	PROPERTY_USAGE_EDITOR_BASIC_SETTING = 1 << 28, //for project or editor settings, show when basic settings are selected
+	PROPERTY_USAGE_READ_ONLY = 1 << 29, // Mark a property as read-only in the inspector.
+	PROPERTY_USAGE_ARRAY = 1 << 30, // Used in the inspector to group properties as elements of an array.
 
 	PROPERTY_USAGE_DEFAULT = PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_NETWORK,
 	PROPERTY_USAGE_DEFAULT_INTL = PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_NETWORK | PROPERTY_USAGE_INTERNATIONALIZED,
@@ -145,6 +147,10 @@ enum PropertyUsageFlags {
 #define ADD_GROUP(m_name, m_prefix) ::ClassDB::add_property_group(get_class_static(), m_name, m_prefix)
 #define ADD_SUBGROUP(m_name, m_prefix) ::ClassDB::add_property_subgroup(get_class_static(), m_name, m_prefix)
 #define ADD_LINKED_PROPERTY(m_property, m_linked_property) ::ClassDB::add_linked_property(get_class_static(), m_property, m_linked_property)
+
+#define ADD_ARRAY_COUNT(m_label, m_count_property, m_count_property_setter, m_count_property_getter, m_prefix) ClassDB::add_property_array_count(get_class_static(), m_label, m_count_property, _scs_create(m_count_property_setter), _scs_create(m_count_property_getter), m_prefix)
+#define ADD_ARRAY_COUNT_WITH_USAGE_FLAGS(m_label, m_count_property, m_count_property_setter, m_count_property_getter, m_prefix, m_property_usage_flags) ClassDB::add_property_array_count(get_class_static(), m_label, m_count_property, _scs_create(m_count_property_setter), _scs_create(m_count_property_getter), m_prefix, m_property_usage_flags)
+#define ADD_ARRAY(m_array_path, m_prefix) ClassDB::add_property_array(get_class_static(), m_array_path, m_prefix)
 
 struct PropertyInfo {
 	Variant::Type type = Variant::NIL;
@@ -397,7 +403,7 @@ protected:                                                                      
 		initialize_class();                                                                                                                      \
 	}                                                                                                                                            \
 	_FORCE_INLINE_ bool (Object::*_get_get() const)(const StringName &p_name, Variant &) const {                                                 \
-		return (bool (Object::*)(const StringName &, Variant &) const) & m_class::_get;                                                          \
+		return (bool(Object::*)(const StringName &, Variant &) const) & m_class::_get;                                                           \
 	}                                                                                                                                            \
 	virtual bool _getv(const StringName &p_name, Variant &r_ret) const override {                                                                \
 		if (m_class::_get_get() != m_inherits::_get_get()) {                                                                                     \
@@ -408,7 +414,7 @@ protected:                                                                      
 		return m_inherits::_getv(p_name, r_ret);                                                                                                 \
 	}                                                                                                                                            \
 	_FORCE_INLINE_ bool (Object::*_get_set() const)(const StringName &p_name, const Variant &p_property) {                                       \
-		return (bool (Object::*)(const StringName &, const Variant &)) & m_class::_set;                                                          \
+		return (bool(Object::*)(const StringName &, const Variant &)) & m_class::_set;                                                           \
 	}                                                                                                                                            \
 	virtual bool _setv(const StringName &p_name, const Variant &p_property) override {                                                           \
 		if (m_inherits::_setv(p_name, p_property)) {                                                                                             \
@@ -420,7 +426,7 @@ protected:                                                                      
 		return false;                                                                                                                            \
 	}                                                                                                                                            \
 	_FORCE_INLINE_ void (Object::*_get_get_property_list() const)(List<PropertyInfo> * p_list) const {                                           \
-		return (void (Object::*)(List<PropertyInfo> *) const) & m_class::_get_property_list;                                                     \
+		return (void(Object::*)(List<PropertyInfo> *) const) & m_class::_get_property_list;                                                      \
 	}                                                                                                                                            \
 	virtual void _get_property_listv(List<PropertyInfo> *p_list, bool p_reversed) const override {                                               \
 		if (!p_reversed) {                                                                                                                       \
@@ -441,7 +447,7 @@ protected:                                                                      
 		}                                                                                                                                        \
 	}                                                                                                                                            \
 	_FORCE_INLINE_ void (Object::*_get_notification() const)(int) {                                                                              \
-		return (void (Object::*)(int)) & m_class::_notification;                                                                                 \
+		return (void(Object::*)(int)) & m_class::_notification;                                                                                  \
 	}                                                                                                                                            \
 	virtual void _notificationv(int p_notification, bool p_reversed) override {                                                                  \
 		if (!p_reversed) {                                                                                                                       \

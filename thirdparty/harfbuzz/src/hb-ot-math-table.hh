@@ -49,7 +49,7 @@ struct MathValueRecord
 
   protected:
   HBINT16		value;		/* The X or Y value in design units */
-  OffsetTo<Device>	deviceTable;	/* Offset to the device table - from the
+  Offset16To<Device>	deviceTable;	/* Offset to the device table - from the
 					 * beginning of parent table.  May be NULL.
 					 * Suggested format for device table is 1. */
 
@@ -181,11 +181,11 @@ struct MathItalicsCorrectionInfo
   }
 
   protected:
-  OffsetTo<Coverage>       coverage;		/* Offset to Coverage table -
+  Offset16To<Coverage>       coverage;		/* Offset to Coverage table -
 						 * from the beginning of
 						 * MathItalicsCorrectionInfo
 						 * table. */
-  ArrayOf<MathValueRecord> italicsCorrection;	/* Array of MathValueRecords
+  Array16Of<MathValueRecord> italicsCorrection;	/* Array of MathValueRecords
 						 * defining italics correction
 						 * values for each
 						 * covered glyph. */
@@ -214,11 +214,11 @@ struct MathTopAccentAttachment
   }
 
   protected:
-  OffsetTo<Coverage>       topAccentCoverage;   /* Offset to Coverage table -
+  Offset16To<Coverage>       topAccentCoverage;   /* Offset to Coverage table -
 						 * from the beginning of
 						 * MathTopAccentAttachment
 						 * table. */
-  ArrayOf<MathValueRecord> topAccentAttachment; /* Array of MathValueRecords
+  Array16Of<MathValueRecord> topAccentAttachment; /* Array of MathValueRecords
 						 * defining top accent
 						 * attachment points for each
 						 * covered glyph. */
@@ -320,7 +320,7 @@ struct MathKernInfoRecord
   protected:
   /* Offset to MathKern table for each corner -
    * from the beginning of MathKernInfo table.  May be NULL. */
-  OffsetTo<MathKern> mathKern[4];
+  Offset16To<MathKern> mathKern[4];
 
   public:
   DEFINE_SIZE_STATIC (8);
@@ -346,12 +346,12 @@ struct MathKernInfo
   }
 
   protected:
-  OffsetTo<Coverage>
+  Offset16To<Coverage>
 		mathKernCoverage;
 				/* Offset to Coverage table -
 				 * from the beginning of the
 				 * MathKernInfo table. */
-  ArrayOf<MathKernInfoRecord>
+  Array16Of<MathKernInfoRecord>
 		mathKernInfoRecords;
 				/* Array of MathKernInfoRecords,
 				 * per-glyph information for
@@ -395,22 +395,22 @@ struct MathGlyphInfo
   protected:
   /* Offset to MathItalicsCorrectionInfo table -
    * from the beginning of MathGlyphInfo table. */
-  OffsetTo<MathItalicsCorrectionInfo> mathItalicsCorrectionInfo;
+  Offset16To<MathItalicsCorrectionInfo> mathItalicsCorrectionInfo;
 
   /* Offset to MathTopAccentAttachment table -
    * from the beginning of MathGlyphInfo table. */
-  OffsetTo<MathTopAccentAttachment> mathTopAccentAttachment;
+  Offset16To<MathTopAccentAttachment> mathTopAccentAttachment;
 
   /* Offset to coverage table for Extended Shape glyphs -
    * from the beginning of MathGlyphInfo table. When the left or right glyph of
    * a box is an extended shape variant, the (ink) box (and not the default
    * position defined by values in MathConstants table) should be used for
    * vertical positioning purposes.  May be NULL.. */
-  OffsetTo<Coverage> extendedShapeCoverage;
+  Offset16To<Coverage> extendedShapeCoverage;
 
    /* Offset to MathKernInfo table -
     * from the beginning of MathGlyphInfo table. */
-  OffsetTo<MathKernInfo> mathKernInfo;
+  Offset16To<MathKernInfo> mathKernInfo;
 
   public:
   DEFINE_SIZE_STATIC (8);
@@ -532,7 +532,7 @@ struct MathGlyphAssembly
 				/* Italics correction of this
 				 * MathGlyphAssembly. Should not
 				 * depend on the assembly size. */
-  ArrayOf<MathGlyphPartRecord>
+  Array16Of<MathGlyphPartRecord>
 		partRecords;	/* Array of part records, from
 				 * left to right and bottom to
 				 * top. */
@@ -572,10 +572,10 @@ struct MathGlyphConstruction
   protected:
   /* Offset to MathGlyphAssembly table for this shape - from the beginning of
      MathGlyphConstruction table.  May be NULL. */
-  OffsetTo<MathGlyphAssembly>	  glyphAssembly;
+  Offset16To<MathGlyphAssembly>	  glyphAssembly;
 
   /* MathGlyphVariantRecords for alternative variants of the glyphs. */
-  ArrayOf<MathGlyphVariantRecord> mathGlyphVariantRecord;
+  Array16Of<MathGlyphVariantRecord> mathGlyphVariantRecord;
 
   public:
   DEFINE_SIZE_ARRAY (4, mathGlyphVariantRecord);
@@ -636,7 +636,7 @@ struct MathVariants
   {
     bool vertical = HB_DIRECTION_IS_VERTICAL (direction);
     unsigned int count = vertical ? vertGlyphCount : horizGlyphCount;
-    const OffsetTo<Coverage> &coverage = vertical ? vertGlyphCoverage
+    const Offset16To<Coverage> &coverage = vertical ? vertGlyphCoverage
 						  : horizGlyphCoverage;
 
     unsigned int index = (this+coverage).get_coverage (glyph);
@@ -653,11 +653,11 @@ struct MathVariants
 				/* Minimum overlap of connecting
 				 * glyphs during glyph construction,
 				 * in design units. */
-  OffsetTo<Coverage> vertGlyphCoverage;
+  Offset16To<Coverage> vertGlyphCoverage;
 				/* Offset to Coverage table -
 				 * from the beginning of MathVariants
 				 * table. */
-  OffsetTo<Coverage> horizGlyphCoverage;
+  Offset16To<Coverage> horizGlyphCoverage;
 				/* Offset to Coverage table -
 				 * from the beginning of MathVariants
 				 * table. */
@@ -671,7 +671,7 @@ struct MathVariants
   /* Array of offsets to MathGlyphConstruction tables - from the beginning of
      the MathVariants table, for shapes growing in vertical/horizontal
      direction. */
-  UnsizedArrayOf<OffsetTo<MathGlyphConstruction>>
+  UnsizedArrayOf<Offset16To<MathGlyphConstruction>>
 			glyphConstruction;
 
   public:
@@ -711,11 +711,11 @@ struct MATH
   protected:
   FixedVersion<>version;	/* Version of the MATH table
 				 * initially set to 0x00010000u */
-  OffsetTo<MathConstants>
+  Offset16To<MathConstants>
 		mathConstants;	/* MathConstants table */
-  OffsetTo<MathGlyphInfo>
+  Offset16To<MathGlyphInfo>
 		mathGlyphInfo;	/* MathGlyphInfo table */
-  OffsetTo<MathVariants>
+  Offset16To<MathVariants>
 		mathVariants;	/* MathVariants table */
 
   public:

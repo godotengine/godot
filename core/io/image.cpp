@@ -797,7 +797,7 @@ static void _scale_bilinear(const uint8_t *__restrict p_src, uint8_t *__restrict
 					uint32_t interp_down = p01 + (((p11 - p01) * src_xofs_frac) >> FRAC_BITS);
 					uint32_t interp = interp_up + (((interp_down - interp_up) * src_yofs_frac) >> FRAC_BITS);
 					interp >>= FRAC_BITS;
-					p_dst[i * p_dst_width * CC + j * CC + l] = interp;
+					p_dst[i * p_dst_width * CC + j * CC + l] = uint8_t(interp);
 				} else if (sizeof(T) == 2) { //half float
 
 					float xofs_frac = float(src_xofs_frac) / (1 << FRAC_BITS);
@@ -2506,7 +2506,7 @@ void Image::blit_rect(const Ref<Image> &p_src, const Rect2 &p_src_rect, const Po
 		clipped_src_rect.position.y = ABS(p_dest.y);
 	}
 
-	if (clipped_src_rect.size.x <= 0 || clipped_src_rect.size.y <= 0) {
+	if (clipped_src_rect.has_no_area()) {
 		return;
 	}
 
@@ -2561,7 +2561,7 @@ void Image::blit_rect_mask(const Ref<Image> &p_src, const Ref<Image> &p_mask, co
 		clipped_src_rect.position.y = ABS(p_dest.y);
 	}
 
-	if (clipped_src_rect.size.x <= 0 || clipped_src_rect.size.y <= 0) {
+	if (clipped_src_rect.has_no_area()) {
 		return;
 	}
 
@@ -2615,7 +2615,7 @@ void Image::blend_rect(const Ref<Image> &p_src, const Rect2 &p_src_rect, const P
 		clipped_src_rect.position.y = ABS(p_dest.y);
 	}
 
-	if (clipped_src_rect.size.x <= 0 || clipped_src_rect.size.y <= 0) {
+	if (clipped_src_rect.has_no_area()) {
 		return;
 	}
 
@@ -2664,7 +2664,7 @@ void Image::blend_rect_mask(const Ref<Image> &p_src, const Ref<Image> &p_mask, c
 		clipped_src_rect.position.y = ABS(p_dest.y);
 	}
 
-	if (clipped_src_rect.size.x <= 0 || clipped_src_rect.size.y <= 0) {
+	if (clipped_src_rect.has_no_area()) {
 		return;
 	}
 

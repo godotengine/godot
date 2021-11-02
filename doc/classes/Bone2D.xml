@@ -90,6 +90,4 @@
 			Rest transform of the bone. You can reset the node's transforms to this value using [method apply_rest].
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

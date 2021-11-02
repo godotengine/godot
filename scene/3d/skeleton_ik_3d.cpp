@@ -99,7 +99,7 @@ bool FabrikInverseKinematic::build_chain(Task *p_task, bool p_force_simple_chain
 				child_ci->current_pos = child_ci->initial_transform.origin;
 
 				if (child_ci->parent_item) {
-					child_ci->length = (child_ci->current_pos - child_ci->parent_item->current_pos).length();
+					child_ci->length = child_ci->parent_item->current_pos.distance_to(child_ci->current_pos);
 				}
 			}
 
@@ -140,7 +140,7 @@ void FabrikInverseKinematic::solve_simple(Task *p_task, bool p_solve_magnet, Vec
 		solve_simple_backwards(p_task->chain, p_solve_magnet);
 		solve_simple_forwards(p_task->chain, p_solve_magnet, p_origin_pos);
 
-		distance_to_goal = (p_task->chain.tips[0].chain_item->current_pos - p_task->chain.tips[0].end_effector->goal_transform.origin).length();
+		distance_to_goal = p_task->chain.tips[0].end_effector->goal_transform.origin.distance_to(p_task->chain.tips[0].chain_item->current_pos);
 	}
 }
 
@@ -291,14 +291,10 @@ void FabrikInverseKinematic::solve(Task *p_task, real_t blending_delta, bool ove
 		new_bone_pose.origin = ci->current_pos;
 
 		if (!ci->children.is_empty()) {
-			/// Rotate basis
-			const Vector3 initial_ori((ci->children[0].initial_transform.origin - ci->initial_transform.origin).normalized());
-			const Vector3 rot_axis(initial_ori.cross(ci->current_ori).normalized());
-
-			if (rot_axis[0] != 0 && rot_axis[1] != 0 && rot_axis[2] != 0) {
-				const real_t rot_angle(Math::acos(CLAMP(initial_ori.dot(ci->current_ori), -1, 1)));
-				new_bone_pose.basis.rotate(rot_axis, rot_angle);
-			}
+			p_task->skeleton->update_bone_rest_forward_vector(ci->bone);
+			Vector3 forward_vector = p_task->skeleton->get_bone_axis_forward_vector(ci->bone);
+			// Rotate the bone towards the next bone in the chain:
+			new_bone_pose.basis.rotate_to_align(forward_vector, new_bone_pose.origin.direction_to(ci->children[0].current_pos));
 
 		} else {
 			// Set target orientation to tip
@@ -355,6 +351,8 @@ void SkeletonIK3D::_validate_property(PropertyInfo &property) const {
 			property.hint_string = "";
 		}
 	}
+
+	Node::_validate_property(property);
 }
 
 void SkeletonIK3D::_bind_methods() {
@@ -542,7 +540,7 @@ Transform3D SkeletonIK3D::_get_target_transform() {
 		target_node_override = Object::cast_to<Node3D>(get_node(target_node_path_override));
 	}
 
-	if (target_node_override) {
+	if (target_node_override && target_node_override->is_inside_tree()) {
 		return target_node_override->get_global_transform();
 	} else {
 		return target;

@@ -10,8 +10,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="dither_strength" type="float" setter="set_dither_strength" getter="get_dither_strength" default="1.0">
 			Sets the amount of dithering to use. Dithering helps reduce banding that appears from the smooth changes in color in the sky. Use the lowest value possible, higher amounts may add fuzziness to the sky.
@@ -47,6 +45,4 @@
 			Sets the thickness of the atmosphere. High turbidity creates a foggy looking atmosphere, while a low turbidity results in a clearer atmosphere.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

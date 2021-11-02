@@ -5,6 +5,7 @@
 	</brief_description>
 	<description>
 		Displays a color picker widget. Useful for selecting a color from an RGB/RGBA colorspace.
+		[b]Note:[/b] This control is the color picker widget itself. You can use a [ColorPickerButton] instead if you need a button that brings up a [ColorPicker] in a pop-up.
 	</description>
 	<tutorials>
 		<link title="Tween Demo">https://godotengine.org/asset-library/asset/146</link>
@@ -15,7 +16,7 @@
 			<argument index="0" name="color" type="Color" />
 			<description>
 				Adds the given color to a list of color presets. The presets are displayed in the color picker and the user will be able to select them.
-				[b]Note:[/b] the presets list is only for [i]this[/i] color picker.
+				[b]Note:[/b] The presets list is only for [i]this[/i] color picker.
 			</description>
 		</method>
 		<method name="erase_preset">

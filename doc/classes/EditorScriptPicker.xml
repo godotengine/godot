@@ -9,13 +9,9 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="script_owner" type="Node" setter="set_script_owner" getter="get_script_owner">
 			The owner [Node] of the script property that holds the edited resource.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

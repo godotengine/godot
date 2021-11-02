@@ -96,37 +96,25 @@ float SkeletonModification2D::clamp_angle(float p_angle, float p_min_bound, floa
 		p_max_bound = Math_TAU + p_max_bound;
 	}
 	if (p_min_bound > p_max_bound) {
-		float tmp = p_min_bound;
-		p_min_bound = p_max_bound;
-		p_max_bound = tmp;
+		SWAP(p_min_bound, p_max_bound);
 	}
+
+	bool is_beyond_bounds = (p_angle < p_min_bound || p_angle > p_max_bound);
+	bool is_within_bounds = (p_angle > p_min_bound && p_angle < p_max_bound);
 
 	// Note: May not be the most optimal way to clamp, but it always constraints to the nearest angle.
-	if (p_invert == false) {
-		if (p_angle < p_min_bound || p_angle > p_max_bound) {
-			Vector2 min_bound_vec = Vector2(Math::cos(p_min_bound), Math::sin(p_min_bound));
-			Vector2 max_bound_vec = Vector2(Math::cos(p_max_bound), Math::sin(p_max_bound));
-			Vector2 angle_vec = Vector2(Math::cos(p_angle), Math::sin(p_angle));
+	if ((!p_invert && is_beyond_bounds) || (p_invert && is_within_bounds)) {
+		Vector2 min_bound_vec = Vector2(Math::cos(p_min_bound), Math::sin(p_min_bound));
+		Vector2 max_bound_vec = Vector2(Math::cos(p_max_bound), Math::sin(p_max_bound));
+		Vector2 angle_vec = Vector2(Math::cos(p_angle), Math::sin(p_angle));
 
-			if (angle_vec.distance_squared_to(min_bound_vec) <= angle_vec.distance_squared_to(max_bound_vec)) {
-				p_angle = p_min_bound;
-			} else {
-				p_angle = p_max_bound;
-			}
-		}
-	} else {
-		if (p_angle > p_min_bound && p_angle < p_max_bound) {
-			Vector2 min_bound_vec = Vector2(Math::cos(p_min_bound), Math::sin(p_min_bound));
-			Vector2 max_bound_vec = Vector2(Math::cos(p_max_bound), Math::sin(p_max_bound));
-			Vector2 angle_vec = Vector2(Math::cos(p_angle), Math::sin(p_angle));
-
-			if (angle_vec.distance_squared_to(min_bound_vec) <= angle_vec.distance_squared_to(max_bound_vec)) {
-				p_angle = p_min_bound;
-			} else {
-				p_angle = p_max_bound;
-			}
+		if (angle_vec.distance_squared_to(min_bound_vec) <= angle_vec.distance_squared_to(max_bound_vec)) {
+			p_angle = p_min_bound;
+		} else {
+			p_angle = p_max_bound;
 		}
 	}
+
 	return p_angle;
 }
 
@@ -152,9 +140,7 @@ void SkeletonModification2D::editor_draw_angle_constraints(Bone2D *p_operation_b
 		arc_angle_max = (Math_PI * 2) + arc_angle_max;
 	}
 	if (arc_angle_min > arc_angle_max) {
-		float tmp = arc_angle_min;
-		arc_angle_min = arc_angle_max;
-		arc_angle_max = tmp;
+		SWAP(arc_angle_min, arc_angle_max);
 	}
 	arc_angle_min += p_operation_bone->get_bone_angle();
 	arc_angle_max += p_operation_bone->get_bone_angle();

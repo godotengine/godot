@@ -449,7 +449,7 @@ void Polygon2DEditor::_uv_input(const Ref<InputEvent> &p_input) {
 	if (mb.is_valid()) {
 		if (mb->get_button_index() == MOUSE_BUTTON_LEFT) {
 			if (mb->is_pressed()) {
-				uv_drag_from = snap_point(Vector2(mb->get_position().x, mb->get_position().y));
+				uv_drag_from = snap_point(mb->get_position());
 				uv_drag = true;
 				points_prev = node->get_uv();
 
@@ -463,7 +463,7 @@ void Polygon2DEditor::_uv_input(const Ref<InputEvent> &p_input) {
 				if (uv_move_current == UV_MODE_CREATE) {
 					if (!uv_create) {
 						points_prev.resize(0);
-						Vector2 tuv = mtx.affine_inverse().xform(snap_point(Vector2(mb->get_position().x, mb->get_position().y)));
+						Vector2 tuv = mtx.affine_inverse().xform(snap_point(mb->get_position()));
 						points_prev.push_back(tuv);
 						uv_create_to = tuv;
 						point_drag_index = 0;
@@ -483,7 +483,7 @@ void Polygon2DEditor::_uv_input(const Ref<InputEvent> &p_input) {
 
 						uv_edit_draw->update();
 					} else {
-						Vector2 tuv = mtx.affine_inverse().xform(snap_point(Vector2(mb->get_position().x, mb->get_position().y)));
+						Vector2 tuv = mtx.affine_inverse().xform(snap_point(mb->get_position()));
 
 						// Close the polygon if selected point is near start. Threshold for closing scaled by zoom level
 						if (points_prev.size() > 2 && tuv.distance_to(points_prev[0]) < (8 / uv_draw_zoom)) {
@@ -527,7 +527,7 @@ void Polygon2DEditor::_uv_input(const Ref<InputEvent> &p_input) {
 					uv_create_bones_prev = node->call("_get_bones");
 					int internal_vertices = node->get_internal_vertex_count();
 
-					Vector2 pos = mtx.affine_inverse().xform(snap_point(Vector2(mb->get_position().x, mb->get_position().y)));
+					Vector2 pos = mtx.affine_inverse().xform(snap_point(mb->get_position()));
 
 					uv_create_poly_prev.push_back(pos);
 					uv_create_uv_prev.push_back(pos);
@@ -573,7 +573,7 @@ void Polygon2DEditor::_uv_input(const Ref<InputEvent> &p_input) {
 
 					for (int i = points_prev.size() - internal_vertices; i < points_prev.size(); i++) {
 						Vector2 tuv = mtx.xform(uv_create_poly_prev[i]);
-						real_t dist = tuv.distance_to(Vector2(mb->get_position().x, mb->get_position().y));
+						real_t dist = tuv.distance_to(mb->get_position());
 						if (dist < 8 && dist < closest_dist) {
 							closest = i;
 							closest_dist = dist;
@@ -626,7 +626,7 @@ void Polygon2DEditor::_uv_input(const Ref<InputEvent> &p_input) {
 					point_drag_index = -1;
 					for (int i = 0; i < points_prev.size(); i++) {
 						Vector2 tuv = mtx.xform(points_prev[i]);
-						if (tuv.distance_to(Vector2(mb->get_position().x, mb->get_position().y)) < 8) {
+						if (tuv.distance_to(mb->get_position()) < 8) {
 							uv_drag_from = tuv;
 							point_drag_index = i;
 						}
@@ -643,7 +643,7 @@ void Polygon2DEditor::_uv_input(const Ref<InputEvent> &p_input) {
 
 					for (int i = 0; i < points_prev.size(); i++) {
 						Vector2 tuv = mtx.xform(points_prev[i]);
-						real_t dist = tuv.distance_to(Vector2(mb->get_position().x, mb->get_position().y));
+						real_t dist = tuv.distance_to(mb->get_position());
 						if (dist < 8 && dist < closest_dist) {
 							closest = i;
 							closest_dist = dist;
@@ -695,7 +695,7 @@ void Polygon2DEditor::_uv_input(const Ref<InputEvent> &p_input) {
 							polys.write[j] = mtx.xform(points_prev[idx]);
 						}
 
-						if (Geometry2D::is_point_in_polygon(Vector2(mb->get_position().x, mb->get_position().y), polys)) {
+						if (Geometry2D::is_point_in_polygon(mb->get_position(), polys)) {
 							erase_index = i;
 							break;
 						}
@@ -779,7 +779,7 @@ void Polygon2DEditor::_uv_input(const Ref<InputEvent> &p_input) {
 
 	if (mm.is_valid()) {
 		if ((mm->get_button_mask() & MOUSE_BUTTON_MASK_MIDDLE) || Input::get_singleton()->is_key_pressed(KEY_SPACE)) {
-			Vector2 drag(mm->get_relative().x, mm->get_relative().y);
+			Vector2 drag = mm->get_relative();
 			uv_hscroll->set_value(uv_hscroll->get_value() - drag.x);
 			uv_vscroll->set_value(uv_vscroll->get_value() - drag.y);
 
@@ -791,7 +791,7 @@ void Polygon2DEditor::_uv_input(const Ref<InputEvent> &p_input) {
 			switch (uv_move_current) {
 				case UV_MODE_CREATE: {
 					if (uv_create) {
-						uv_create_to = mtx.affine_inverse().xform(snap_point(Vector2(mm->get_position().x, mm->get_position().y)));
+						uv_create_to = mtx.affine_inverse().xform(snap_point(mm->get_position()));
 					}
 				} break;
 				case UV_MODE_EDIT_POINT: {
@@ -870,7 +870,7 @@ void Polygon2DEditor::_uv_input(const Ref<InputEvent> &p_input) {
 				} break;
 				case UV_MODE_PAINT_WEIGHT:
 				case UV_MODE_CLEAR_WEIGHT: {
-					bone_paint_pos = Vector2(mm->get_position().x, mm->get_position().y);
+					bone_paint_pos = mm->get_position();
 				} break;
 				default: {
 				}
@@ -905,10 +905,10 @@ void Polygon2DEditor::_uv_input(const Ref<InputEvent> &p_input) {
 			uv_edit_draw->update();
 			CanvasItemEditor::get_singleton()->update_viewport();
 		} else if (polygon_create.size()) {
-			uv_create_to = mtx.affine_inverse().xform(Vector2(mm->get_position().x, mm->get_position().y));
+			uv_create_to = mtx.affine_inverse().xform(mm->get_position());
 			uv_edit_draw->update();
 		} else if (uv_mode == UV_MODE_PAINT_WEIGHT || uv_mode == UV_MODE_CLEAR_WEIGHT) {
-			bone_paint_pos = Vector2(mm->get_position().x, mm->get_position().y);
+			bone_paint_pos = mm->get_position();
 			uv_edit_draw->update();
 		}
 	}

@@ -45,7 +45,7 @@
 #include "scene/resources/primitive_meshes.h"
 #include "scene/resources/shape_3d.h"
 #include "scene/resources/sphere_shape_3d.h"
-#include "scene/resources/world_margin_shape_3d.h"
+#include "scene/resources/world_boundary_shape_3d.h"
 
 #ifdef TOOLS_ENABLED
 #include "editor/editor_node.h"
@@ -489,7 +489,7 @@ NavigationMeshGenerator::~NavigationMeshGenerator() {
 }
 
 void NavigationMeshGenerator::bake(Ref<NavigationMesh> p_nav_mesh, Node *p_node) {
-	ERR_FAIL_COND(!p_nav_mesh.is_valid());
+	ERR_FAIL_COND_MSG(!p_nav_mesh.is_valid(), "Invalid navigation mesh.");
 
 #ifdef TOOLS_ENABLED
 	EditorProgress *ep(nullptr);

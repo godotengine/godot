@@ -8,8 +8,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="layer" type="int" setter="set_layer" getter="get_layer" override="true" default="-100" />
 		<member name="scroll_base_offset" type="Vector2" setter="set_scroll_base_offset" getter="get_scroll_base_offset" default="Vector2(0, 0)">
@@ -31,6 +29,4 @@
 			The ParallaxBackground's scroll value. Calculated automatically when using a [Camera2D], but can be used to manually manage scrolling when no camera is present.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

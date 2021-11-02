@@ -31,7 +31,8 @@
 #include "scene_import_settings.h"
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
-#include "editor/import/scene_importer_mesh_node_3d.h"
+#include "scene/3d/importer_mesh_instance_3d.h"
+#include "scene/resources/importer_mesh.h"
 #include "scene/resources/surface_tool.h"
 
 class SceneImportSettingsData : public Object {
@@ -53,6 +54,11 @@ class SceneImportSettingsData : public Object {
 			}
 
 			current[p_name] = p_value;
+
+			if (ResourceImporterScene::get_singleton()->get_internal_option_update_view_required(category, p_name, current)) {
+				SceneImportSettings::get_singleton()->update_view();
+			}
+
 			return true;
 		}
 		return false;
@@ -235,7 +241,7 @@ void SceneImportSettings::_fill_scene(Node *p_node, TreeItem *p_parent_item) {
 		p_node->set_meta("import_id", import_id);
 	}
 
-	EditorSceneImporterMeshNode3D *src_mesh_node = Object::cast_to<EditorSceneImporterMeshNode3D>(p_node);
+	ImporterMeshInstance3D *src_mesh_node = Object::cast_to<ImporterMeshInstance3D>(p_node);
 
 	if (src_mesh_node) {
 		MeshInstance3D *mesh_node = memnew(MeshInstance3D);
@@ -244,7 +250,7 @@ void SceneImportSettings::_fill_scene(Node *p_node, TreeItem *p_parent_item) {
 		mesh_node->set_skin(src_mesh_node->get_skin());
 		mesh_node->set_skeleton_path(src_mesh_node->get_skeleton_path());
 		if (src_mesh_node->get_mesh().is_valid()) {
-			Ref<EditorSceneImporterMesh> editor_mesh = src_mesh_node->get_mesh();
+			Ref<ImporterMesh> editor_mesh = src_mesh_node->get_mesh();
 			mesh_node->set_mesh(editor_mesh->get_mesh());
 		}
 
@@ -317,6 +323,13 @@ void SceneImportSettings::_fill_scene(Node *p_node, TreeItem *p_parent_item) {
 	if (mesh_node && mesh_node->get_mesh().is_valid()) {
 		_fill_mesh(scene_tree, mesh_node->get_mesh(), item);
 
+		// Add the collider view.
+		MeshInstance3D *collider_view = memnew(MeshInstance3D);
+		collider_view->set_name("collider_view");
+		collider_view->set_visible(false);
+		mesh_node->add_child(collider_view);
+		collider_view->set_owner(mesh_node);
+
 		Transform3D accum_xform;
 		Node3D *base = mesh_node;
 		while (base) {
@@ -344,6 +357,54 @@ void SceneImportSettings::_update_scene() {
 	mesh_tree->create_item();
 
 	_fill_scene(scene, nullptr);
+}
+
+void SceneImportSettings::_update_view_gizmos() {
+	for (const KeyValue<String, NodeData> &e : node_map) {
+		bool generate_collider = false;
+		if (e.value.settings.has(SNAME("generate/physics"))) {
+			generate_collider = e.value.settings[SNAME("generate/physics")];
+		}
+
+		MeshInstance3D *mesh_node = Object::cast_to<MeshInstance3D>(e.value.node);
+		if (mesh_node == nullptr || mesh_node->get_mesh().is_null()) {
+			// Nothing to do
+			continue;
+		}
+
+		MeshInstance3D *collider_view = static_cast<MeshInstance3D *>(mesh_node->find_node("collider_view"));
+		CRASH_COND_MSG(collider_view == nullptr, "This is unreachable, since the collider view is always created even when the collision is not used! If this is triggered there is a bug on the function `_fill_scene`.");
+
+		collider_view->set_visible(generate_collider);
+		if (generate_collider) {
+			// This collider_view doesn't have a mesh so we need to generate a new one.
+
+			// Generate the mesh collider.
+			Vector<Ref<Shape3D>> shapes = ResourceImporterScene::get_collision_shapes(mesh_node->get_mesh(), e.value.settings);
+			const Transform3D transform = ResourceImporterScene::get_collision_shapes_transform(e.value.settings);
+
+			Ref<ArrayMesh> collider_view_mesh;
+			collider_view_mesh.instantiate();
+			for (Ref<Shape3D> shape : shapes) {
+				Ref<ArrayMesh> debug_shape_mesh;
+				if (shape.is_valid()) {
+					debug_shape_mesh = shape->get_debug_mesh();
+				}
+				if (debug_shape_mesh.is_valid()) {
+					collider_view_mesh->add_surface_from_arrays(
+							debug_shape_mesh->surface_get_primitive_type(0),
+							debug_shape_mesh->surface_get_arrays(0));
+
+					collider_view_mesh->surface_set_material(
+							collider_view_mesh->get_surface_count() - 1,
+							collider_mat);
+				}
+			}
+
+			collider_view->set_mesh(collider_view_mesh);
+			collider_view->set_transform(transform);
+		}
+	}
 }
 
 void SceneImportSettings::_update_camera() {
@@ -374,7 +435,7 @@ void SceneImportSettings::_update_camera() {
 		}
 	}
 
-	Vector3 center = camera_aabb.position + camera_aabb.size * 0.5;
+	Vector3 center = camera_aabb.get_center();
 	float camera_size = camera_aabb.get_longest_axis_size();
 
 	camera->set_orthogonal(camera_size * zoom, 0.0001, camera_size * 2);
@@ -404,11 +465,16 @@ void SceneImportSettings::_load_default_subresource_settings(Map<StringName, Var
 	}
 }
 
+void SceneImportSettings::update_view() {
+	_update_view_gizmos();
+}
+
 void SceneImportSettings::open_settings(const String &p_path) {
 	if (scene) {
 		memdelete(scene);
 		scene = nullptr;
 	}
+	scene_import_settings_data->settings = nullptr;
 	scene = ResourceImporterScene::get_singleton()->pre_import(p_path);
 	if (scene == nullptr) {
 		EditorNode::get_singleton()->show_warning(TTR("Error opening scene"));
@@ -463,6 +529,7 @@ void SceneImportSettings::open_settings(const String &p_path) {
 	}
 
 	popup_centered_ratio();
+	_update_view_gizmos();
 	_update_camera();
 
 	set_title(vformat(TTR("Advanced Import Settings for '%s'"), base_path.get_file()));
@@ -629,6 +696,7 @@ void SceneImportSettings::_material_tree_selected() {
 
 	_select(material_tree, type, import_id);
 }
+
 void SceneImportSettings::_mesh_tree_selected() {
 	if (selecting) {
 		return;
@@ -640,6 +708,7 @@ void SceneImportSettings::_mesh_tree_selected() {
 
 	_select(mesh_tree, type, import_id);
 }
+
 void SceneImportSettings::_scene_tree_selected() {
 	if (selecting) {
 		return;
@@ -703,52 +772,52 @@ void SceneImportSettings::_re_import() {
 
 	Dictionary subresources;
 
-	for (Map<String, NodeData>::Element *E = node_map.front(); E; E = E->next()) {
-		if (E->get().settings.size()) {
+	for (KeyValue<String, NodeData> &E : node_map) {
+		if (E.value.settings.size()) {
 			Dictionary d;
-			for (Map<StringName, Variant>::Element *F = E->get().settings.front(); F; F = F->next()) {
-				d[String(F->key())] = F->get();
+			for (const KeyValue<StringName, Variant> &F : E.value.settings) {
+				d[String(F.key)] = F.value;
 			}
-			nodes[E->key()] = d;
+			nodes[E.key] = d;
 		}
 	}
 	if (nodes.size()) {
 		subresources["nodes"] = nodes;
 	}
 
-	for (Map<String, MaterialData>::Element *E = material_map.front(); E; E = E->next()) {
-		if (E->get().settings.size()) {
+	for (KeyValue<String, MaterialData> &E : material_map) {
+		if (E.value.settings.size()) {
 			Dictionary d;
-			for (Map<StringName, Variant>::Element *F = E->get().settings.front(); F; F = F->next()) {
-				d[String(F->key())] = F->get();
+			for (const KeyValue<StringName, Variant> &F : E.value.settings) {
+				d[String(F.key)] = F.value;
 			}
-			materials[E->key()] = d;
+			materials[E.key] = d;
 		}
 	}
 	if (materials.size()) {
 		subresources["materials"] = materials;
 	}
 
-	for (Map<String, MeshData>::Element *E = mesh_map.front(); E; E = E->next()) {
-		if (E->get().settings.size()) {
+	for (KeyValue<String, MeshData> &E : mesh_map) {
+		if (E.value.settings.size()) {
 			Dictionary d;
-			for (Map<StringName, Variant>::Element *F = E->get().settings.front(); F; F = F->next()) {
-				d[String(F->key())] = F->get();
+			for (const KeyValue<StringName, Variant> &F : E.value.settings) {
+				d[String(F.key)] = F.value;
 			}
-			meshes[E->key()] = d;
+			meshes[E.key] = d;
 		}
 	}
 	if (meshes.size()) {
 		subresources["meshes"] = meshes;
 	}
 
-	for (Map<String, AnimationData>::Element *E = animation_map.front(); E; E = E->next()) {
-		if (E->get().settings.size()) {
+	for (KeyValue<String, AnimationData> &E : animation_map) {
+		if (E.value.settings.size()) {
 			Dictionary d;
-			for (Map<StringName, Variant>::Element *F = E->get().settings.front(); F; F = F->next()) {
-				d[String(F->key())] = F->get();
+			for (const KeyValue<StringName, Variant> &F : E.value.settings) {
+				d[String(F.key)] = F.value;
 			}
-			animations[E->key()] = d;
+			animations[E.key] = d;
 		}
 	}
 	if (animations.size()) {
@@ -821,8 +890,8 @@ void SceneImportSettings::_save_dir_callback(const String &p_path) {
 
 	switch (current_action) {
 		case ACTION_EXTRACT_MATERIALS: {
-			for (Map<String, MaterialData>::Element *E = material_map.front(); E; E = E->next()) {
-				MaterialData &md = material_map[E->key()];
+			for (const KeyValue<String, MaterialData> &E : material_map) {
+				MaterialData &md = material_map[E.key];
 
 				TreeItem *item = external_path_tree->create_item(root);
 
@@ -837,7 +906,7 @@ void SceneImportSettings::_save_dir_callback(const String &p_path) {
 						item->set_text(2, "Already External");
 						item->set_tooltip(2, TTR("This material already references an external file, no action will be taken.\nDisable the external property for it to be extracted again."));
 					} else {
-						item->set_metadata(0, E->key());
+						item->set_metadata(0, E.key);
 						item->set_editable(0, true);
 						item->set_checked(0, true);
 						String path = p_path.plus_file(name);
@@ -874,8 +943,8 @@ void SceneImportSettings::_save_dir_callback(const String &p_path) {
 			external_paths->get_ok_button()->set_text(TTR("Extract"));
 		} break;
 		case ACTION_CHOOSE_MESH_SAVE_PATHS: {
-			for (Map<String, MeshData>::Element *E = mesh_map.front(); E; E = E->next()) {
-				MeshData &md = mesh_map[E->key()];
+			for (const KeyValue<String, MeshData> &E : mesh_map) {
+				MeshData &md = mesh_map[E.key];
 
 				TreeItem *item = external_path_tree->create_item(root);
 
@@ -890,7 +959,7 @@ void SceneImportSettings::_save_dir_callback(const String &p_path) {
 						item->set_text(2, "Already Saving");
 						item->set_tooltip(2, TTR("This mesh already saves to an external resource, no action will be taken."));
 					} else {
-						item->set_metadata(0, E->key());
+						item->set_metadata(0, E.key);
 						item->set_editable(0, true);
 						item->set_checked(0, true);
 						String path = p_path.plus_file(name);
@@ -927,8 +996,8 @@ void SceneImportSettings::_save_dir_callback(const String &p_path) {
 			external_paths->get_ok_button()->set_text(TTR("Set Paths"));
 		} break;
 		case ACTION_CHOOSE_ANIMATION_SAVE_PATHS: {
-			for (Map<String, AnimationData>::Element *E = animation_map.front(); E; E = E->next()) {
-				AnimationData &ad = animation_map[E->key()];
+			for (const KeyValue<String, AnimationData> &E : animation_map) {
+				AnimationData &ad = animation_map[E.key];
 
 				TreeItem *item = external_path_tree->create_item(root);
 
@@ -942,7 +1011,7 @@ void SceneImportSettings::_save_dir_callback(const String &p_path) {
 					item->set_text(2, "Already Saving");
 					item->set_tooltip(2, TTR("This animation already saves to an external resource, no action will be taken."));
 				} else {
-					item->set_metadata(0, E->key());
+					item->set_metadata(0, E.key);
 					item->set_editable(0, true);
 					item->set_checked(0, true);
 					String path = p_path.plus_file(name);
@@ -1142,6 +1211,12 @@ SceneImportSettings::SceneImportSettings() {
 		mesh_preview->hide();
 
 		material_preview.instantiate();
+	}
+
+	{
+		collider_mat.instantiate();
+		collider_mat->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
+		collider_mat->set_albedo(Color(0.5, 0.5, 1.0));
 	}
 
 	inspector = memnew(EditorInspector);

@@ -33,6 +33,7 @@
 #include "core/config/project_settings.h"
 #include "core/input/input.h"
 #include "core/os/keyboard.h"
+#include "core/os/os.h"
 
 InputMap *InputMap::singleton = nullptr;
 
@@ -317,36 +318,36 @@ static const _BuiltinActionDisplayName _builtin_action_display_names[] = {
     { "ui_text_dedent",                                TTRC("Dedent") },
     { "ui_text_backspace",                             TTRC("Backspace") },
     { "ui_text_backspace_word",                        TTRC("Backspace Word") },
-    { "ui_text_backspace_word.OSX",                    TTRC("Backspace Word") },
+    { "ui_text_backspace_word.macos",                  TTRC("Backspace Word") },
     { "ui_text_backspace_all_to_left",                 TTRC("Backspace all to Left") },
-    { "ui_text_backspace_all_to_left.OSX",             TTRC("Backspace all to Left") },
+    { "ui_text_backspace_all_to_left.macos",           TTRC("Backspace all to Left") },
     { "ui_text_delete",                                TTRC("Delete") },
     { "ui_text_delete_word",                           TTRC("Delete Word") },
-    { "ui_text_delete_word.OSX",                       TTRC("Delete Word") },
+    { "ui_text_delete_word.macos",                     TTRC("Delete Word") },
     { "ui_text_delete_all_to_right",                   TTRC("Delete all to Right") },
-    { "ui_text_delete_all_to_right.OSX",               TTRC("Delete all to Right") },
+    { "ui_text_delete_all_to_right.macos",             TTRC("Delete all to Right") },
     { "ui_text_caret_left",                            TTRC("Caret Left") },
     { "ui_text_caret_word_left",                       TTRC("Caret Word Left") },
-    { "ui_text_caret_word_left.OSX",                   TTRC("Caret Word Left") },
+    { "ui_text_caret_word_left.macos",                 TTRC("Caret Word Left") },
     { "ui_text_caret_right",                           TTRC("Caret Right") },
     { "ui_text_caret_word_right",                      TTRC("Caret Word Right") },
-    { "ui_text_caret_word_right.OSX",                  TTRC("Caret Word Right") },
+    { "ui_text_caret_word_right.macos",                TTRC("Caret Word Right") },
     { "ui_text_caret_up",                              TTRC("Caret Up") },
     { "ui_text_caret_down",                            TTRC("Caret Down") },
     { "ui_text_caret_line_start",                      TTRC("Caret Line Start") },
-    { "ui_text_caret_line_start.OSX",                  TTRC("Caret Line Start") },
+    { "ui_text_caret_line_start.macos",                TTRC("Caret Line Start") },
     { "ui_text_caret_line_end",                        TTRC("Caret Line End") },
-    { "ui_text_caret_line_end.OSX",                    TTRC("Caret Line End") },
+    { "ui_text_caret_line_end.macos",                  TTRC("Caret Line End") },
     { "ui_text_caret_page_up",                         TTRC("Caret Page Up") },
     { "ui_text_caret_page_down",                       TTRC("Caret Page Down") },
     { "ui_text_caret_document_start",                  TTRC("Caret Document Start") },
-    { "ui_text_caret_document_start.OSX",              TTRC("Caret Document Start") },
+    { "ui_text_caret_document_start.macos",            TTRC("Caret Document Start") },
     { "ui_text_caret_document_end",                    TTRC("Caret Document End") },
-    { "ui_text_caret_document_end.OSX",                TTRC("Caret Document End") },
+    { "ui_text_caret_document_end.macos",              TTRC("Caret Document End") },
     { "ui_text_scroll_up",                             TTRC("Scroll Up") },
-    { "ui_text_scroll_up.OSX",                         TTRC("Scroll Up") },
+    { "ui_text_scroll_up.macos",                       TTRC("Scroll Up") },
     { "ui_text_scroll_down",                           TTRC("Scroll Down") },
-    { "ui_text_scroll_down.OSX",                       TTRC("Scroll Down") },
+    { "ui_text_scroll_down.macos",                     TTRC("Scroll Down") },
     { "ui_text_select_all",                            TTRC("Select All") },
     { "ui_text_select_word_under_caret",               TTRC("Select Word Under Caret") },
     { "ui_text_toggle_insert_mode",                    TTRC("Toggle Insert Mode") },
@@ -466,7 +467,7 @@ const OrderedHashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins() {
 
 	// ///// UI Text Input Shortcuts /////
 	inputs = List<Ref<InputEvent>>();
-	inputs.push_back(InputEventKey::create_reference(KEY_SPACE | KEY_MASK_CMD));
+	inputs.push_back(InputEventKey::create_reference(KEY_SPACE | KEY_MASK_CTRL));
 	default_builtin_cache.insert("ui_text_completion_query", inputs);
 
 	inputs = List<Ref<InputEvent>>();
@@ -516,14 +517,14 @@ const OrderedHashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins() {
 
 	inputs = List<Ref<InputEvent>>();
 	inputs.push_back(InputEventKey::create_reference(KEY_BACKSPACE | KEY_MASK_ALT));
-	default_builtin_cache.insert("ui_text_backspace_word.OSX", inputs);
+	default_builtin_cache.insert("ui_text_backspace_word.macos", inputs);
 
 	inputs = List<Ref<InputEvent>>();
 	default_builtin_cache.insert("ui_text_backspace_all_to_left", inputs);
 
 	inputs = List<Ref<InputEvent>>();
 	inputs.push_back(InputEventKey::create_reference(KEY_BACKSPACE | KEY_MASK_CMD));
-	default_builtin_cache.insert("ui_text_backspace_all_to_left.OSX", inputs);
+	default_builtin_cache.insert("ui_text_backspace_all_to_left.macos", inputs);
 
 	inputs = List<Ref<InputEvent>>();
 	inputs.push_back(InputEventKey::create_reference(KEY_DELETE));
@@ -535,14 +536,14 @@ const OrderedHashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins() {
 
 	inputs = List<Ref<InputEvent>>();
 	inputs.push_back(InputEventKey::create_reference(KEY_DELETE | KEY_MASK_ALT));
-	default_builtin_cache.insert("ui_text_delete_word.OSX", inputs);
+	default_builtin_cache.insert("ui_text_delete_word.macos", inputs);
 
 	inputs = List<Ref<InputEvent>>();
 	default_builtin_cache.insert("ui_text_delete_all_to_right", inputs);
 
 	inputs = List<Ref<InputEvent>>();
 	inputs.push_back(InputEventKey::create_reference(KEY_DELETE | KEY_MASK_CMD));
-	default_builtin_cache.insert("ui_text_delete_all_to_right.OSX", inputs);
+	default_builtin_cache.insert("ui_text_delete_all_to_right.macos", inputs);
 
 	// Text Caret Movement Left/Right
 
@@ -556,7 +557,7 @@ const OrderedHashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins() {
 
 	inputs = List<Ref<InputEvent>>();
 	inputs.push_back(InputEventKey::create_reference(KEY_LEFT | KEY_MASK_ALT));
-	default_builtin_cache.insert("ui_text_caret_word_left.OSX", inputs);
+	default_builtin_cache.insert("ui_text_caret_word_left.macos", inputs);
 
 	inputs = List<Ref<InputEvent>>();
 	inputs.push_back(InputEventKey::create_reference(KEY_RIGHT));
@@ -568,7 +569,7 @@ const OrderedHashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins() {
 
 	inputs = List<Ref<InputEvent>>();
 	inputs.push_back(InputEventKey::create_reference(KEY_RIGHT | KEY_MASK_ALT));
-	default_builtin_cache.insert("ui_text_caret_word_right.OSX", inputs);
+	default_builtin_cache.insert("ui_text_caret_word_right.macos", inputs);
 
 	// Text Caret Movement Up/Down
 
@@ -589,7 +590,7 @@ const OrderedHashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins() {
 	inputs = List<Ref<InputEvent>>();
 	inputs.push_back(InputEventKey::create_reference(KEY_A | KEY_MASK_CTRL));
 	inputs.push_back(InputEventKey::create_reference(KEY_LEFT | KEY_MASK_CMD));
-	default_builtin_cache.insert("ui_text_caret_line_start.OSX", inputs);
+	default_builtin_cache.insert("ui_text_caret_line_start.macos", inputs);
 
 	inputs = List<Ref<InputEvent>>();
 	inputs.push_back(InputEventKey::create_reference(KEY_END));
@@ -598,7 +599,7 @@ const OrderedHashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins() {
 	inputs = List<Ref<InputEvent>>();
 	inputs.push_back(InputEventKey::create_reference(KEY_E | KEY_MASK_CTRL));
 	inputs.push_back(InputEventKey::create_reference(KEY_RIGHT | KEY_MASK_CMD));
-	default_builtin_cache.insert("ui_text_caret_line_end.OSX", inputs);
+	default_builtin_cache.insert("ui_text_caret_line_end.macos", inputs);
 
 	// Text Caret Movement Page Up/Down
 
@@ -618,7 +619,7 @@ const OrderedHashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins() {
 
 	inputs = List<Ref<InputEvent>>();
 	inputs.push_back(InputEventKey::create_reference(KEY_UP | KEY_MASK_CMD));
-	default_builtin_cache.insert("ui_text_caret_document_start.OSX", inputs);
+	default_builtin_cache.insert("ui_text_caret_document_start.macos", inputs);
 
 	inputs = List<Ref<InputEvent>>();
 	inputs.push_back(InputEventKey::create_reference(KEY_END | KEY_MASK_CMD));
@@ -626,7 +627,7 @@ const OrderedHashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins() {
 
 	inputs = List<Ref<InputEvent>>();
 	inputs.push_back(InputEventKey::create_reference(KEY_DOWN | KEY_MASK_CMD));
-	default_builtin_cache.insert("ui_text_caret_document_end.OSX", inputs);
+	default_builtin_cache.insert("ui_text_caret_document_end.macos", inputs);
 
 	// Text Scrolling
 
@@ -636,7 +637,7 @@ const OrderedHashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins() {
 
 	inputs = List<Ref<InputEvent>>();
 	inputs.push_back(InputEventKey::create_reference(KEY_UP | KEY_MASK_CMD | KEY_MASK_ALT));
-	default_builtin_cache.insert("ui_text_scroll_up.OSX", inputs);
+	default_builtin_cache.insert("ui_text_scroll_up.macos", inputs);
 
 	inputs = List<Ref<InputEvent>>();
 	inputs.push_back(InputEventKey::create_reference(KEY_DOWN | KEY_MASK_CMD));
@@ -644,7 +645,7 @@ const OrderedHashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins() {
 
 	inputs = List<Ref<InputEvent>>();
 	inputs.push_back(InputEventKey::create_reference(KEY_DOWN | KEY_MASK_CMD | KEY_MASK_ALT));
-	default_builtin_cache.insert("ui_text_scroll_down.OSX", inputs);
+	default_builtin_cache.insert("ui_text_scroll_down.macos", inputs);
 
 	// Text Misc
 
@@ -699,34 +700,57 @@ const OrderedHashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins() {
 	return default_builtin_cache;
 }
 
-void InputMap::load_default() {
+const OrderedHashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins_with_feature_overrides_applied() {
+	if (default_builtin_with_overrides_cache.size() > 0) {
+		return default_builtin_with_overrides_cache;
+	}
+
 	OrderedHashMap<String, List<Ref<InputEvent>>> builtins = get_builtins();
 
-	// List of Builtins which have an override for OSX.
-	Vector<String> osx_builtins;
+	// Get a list of all built in inputs which are valid overrides for the OS
+	// Key = builtin name (e.g. ui_accept)
+	// Value = override/feature names (e.g. macos, if it was defined as "ui_accept.macos" and the platform supports that feature)
+	Map<String, Vector<String>> builtins_with_overrides;
 	for (OrderedHashMap<String, List<Ref<InputEvent>>>::Element E = builtins.front(); E; E = E.next()) {
-		if (String(E.key()).ends_with(".OSX")) {
-			// Strip .OSX from name: some_input_name.OSX -> some_input_name
-			osx_builtins.push_back(String(E.key()).split(".")[0]);
+		String fullname = E.key();
+
+		Vector<String> split = fullname.split(".");
+		String name = split[0];
+		String override_for = split.size() > 1 ? split[1] : String();
+
+		if (override_for != String() && OS::get_singleton()->has_feature(override_for)) {
+			builtins_with_overrides[name].push_back(override_for);
 		}
 	}
 
 	for (OrderedHashMap<String, List<Ref<InputEvent>>>::Element E = builtins.front(); E; E = E.next()) {
 		String fullname = E.key();
-		String name = fullname.split(".")[0];
-		String override_for = fullname.split(".").size() > 1 ? fullname.split(".")[1] : "";
 
-#ifdef APPLE_STYLE_KEYS
-		if (osx_builtins.has(name) && override_for != "OSX") {
-			// Name has osx builtin but this particular one is for non-osx systems - so skip.
+		Vector<String> split = fullname.split(".");
+		String name = split[0];
+		String override_for = split.size() > 1 ? split[1] : String();
+
+		if (builtins_with_overrides.has(name) && override_for == String()) {
+			// Builtin has an override but this particular one is not an override, so skip.
 			continue;
 		}
-#else
-		if (override_for == "OSX") {
-			// Override for OSX - not needed on non-osx platforms.
+
+		if (override_for != String() && !OS::get_singleton()->has_feature(override_for)) {
+			// OS does not support this override - skip.
 			continue;
 		}
-#endif
+
+		default_builtin_with_overrides_cache.insert(name, E.value());
+	}
+
+	return default_builtin_with_overrides_cache;
+}
+
+void InputMap::load_default() {
+	OrderedHashMap<String, List<Ref<InputEvent>>> builtins = get_builtins_with_feature_overrides_applied();
+
+	for (OrderedHashMap<String, List<Ref<InputEvent>>>::Element E = builtins.front(); E; E = E.next()) {
+		String name = E.key();
 
 		add_action(name);
 
@@ -745,4 +769,8 @@ void InputMap::load_default() {
 InputMap::InputMap() {
 	ERR_FAIL_COND_MSG(singleton, "Singleton in InputMap already exist.");
 	singleton = this;
+}
+
+InputMap::~InputMap() {
+	singleton = nullptr;
 }

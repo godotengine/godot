@@ -133,13 +133,12 @@ GDScriptTestRunner::GDScriptTestRunner(const String &p_source_dir, bool p_init_l
 
 	if (do_init_languages) {
 		init_language(p_source_dir);
-
-		// Enable all warnings for GDScript, so we can test them.
-		ProjectSettings::get_singleton()->set_setting("debug/gdscript/warnings/enable", true);
-		for (int i = 0; i < (int)GDScriptWarning::WARNING_MAX; i++) {
-			String warning = GDScriptWarning::get_name_from_code((GDScriptWarning::Code)i).to_lower();
-			ProjectSettings::get_singleton()->set_setting("debug/gdscript/warnings/" + warning, true);
-		}
+	}
+	// Enable all warnings for GDScript, so we can test them.
+	ProjectSettings::get_singleton()->set_setting("debug/gdscript/warnings/enable", true);
+	for (int i = 0; i < (int)GDScriptWarning::WARNING_MAX; i++) {
+		String warning = GDScriptWarning::get_name_from_code((GDScriptWarning::Code)i).to_lower();
+		ProjectSettings::get_singleton()->set_setting("debug/gdscript/warnings/" + warning, true);
 	}
 
 	// Enable printing to show results
@@ -335,7 +334,7 @@ void GDScriptTest::print_handler(void *p_this, const String &p_message, bool p_e
 	result->output += p_message + "\n";
 }
 
-void GDScriptTest::error_handler(void *p_this, const char *p_function, const char *p_file, int p_line, const char *p_error, const char *p_explanation, ErrorHandlerType p_type) {
+void GDScriptTest::error_handler(void *p_this, const char *p_function, const char *p_file, int p_line, const char *p_error, const char *p_explanation, bool p_editor_notify, ErrorHandlerType p_type) {
 	ErrorHandlerData *data = (ErrorHandlerData *)p_this;
 	GDScriptTest *self = data->self;
 	TestResult *result = data->result;
@@ -415,6 +414,7 @@ GDScriptTest::TestResult GDScriptTest::execute_test_code(bool p_is_generating) {
 	TestResult result;
 	result.status = GDTEST_OK;
 	result.output = String();
+	result.passed = false;
 
 	Error err = OK;
 
@@ -496,7 +496,12 @@ GDScriptTest::TestResult GDScriptTest::execute_test_code(bool p_is_generating) {
 		}
 		return result;
 	}
-
+	// Script files matching this pattern are allowed to not contain a test() function.
+	if (source_file.match("*.notest.gd")) {
+		enable_stdout();
+		result.passed = check_output(result.output);
+		return result;
+	}
 	// Test running.
 	const Map<StringName, GDScriptFunction *>::Element *test_function_element = script->get_member_functions().find(GDScriptTestRunner::test_function_name);
 	if (test_function_element == nullptr) {

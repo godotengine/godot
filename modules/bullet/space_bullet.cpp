@@ -122,7 +122,7 @@ int BulletPhysicsDirectSpaceState::intersect_shape(const RID &p_shape, const Tra
 		return 0;
 	}
 
-	ShapeBullet *shape = space->get_physics_server()->get_shape_owner()->getornull(p_shape);
+	ShapeBullet *shape = space->get_physics_server()->get_shape_owner()->get_or_null(p_shape);
 	ERR_FAIL_COND_V(!shape, 0);
 
 	btCollisionShape *btShape = shape->create_bt_shape(p_xform.basis.get_scale_abs(), p_margin);
@@ -158,7 +158,7 @@ bool BulletPhysicsDirectSpaceState::cast_motion(const RID &p_shape, const Transf
 	btVector3 bt_motion;
 	G_TO_B(p_motion, bt_motion);
 
-	ShapeBullet *shape = space->get_physics_server()->get_shape_owner()->getornull(p_shape);
+	ShapeBullet *shape = space->get_physics_server()->get_shape_owner()->get_or_null(p_shape);
 	ERR_FAIL_COND_V(!shape, false);
 
 	btCollisionShape *btShape = shape->create_bt_shape(p_xform.basis.get_scale(), p_margin);
@@ -219,7 +219,7 @@ bool BulletPhysicsDirectSpaceState::collide_shape(RID p_shape, const Transform3D
 		return false;
 	}
 
-	ShapeBullet *shape = space->get_physics_server()->get_shape_owner()->getornull(p_shape);
+	ShapeBullet *shape = space->get_physics_server()->get_shape_owner()->get_or_null(p_shape);
 	ERR_FAIL_COND_V(!shape, false);
 
 	btCollisionShape *btShape = shape->create_bt_shape(p_shape_xform.basis.get_scale_abs(), p_margin);
@@ -251,7 +251,7 @@ bool BulletPhysicsDirectSpaceState::collide_shape(RID p_shape, const Transform3D
 }
 
 bool BulletPhysicsDirectSpaceState::rest_info(RID p_shape, const Transform3D &p_shape_xform, real_t p_margin, ShapeRestInfo *r_info, const Set<RID> &p_exclude, uint32_t p_collision_mask, bool p_collide_with_bodies, bool p_collide_with_areas) {
-	ShapeBullet *shape = space->get_physics_server()->get_shape_owner()->getornull(p_shape);
+	ShapeBullet *shape = space->get_physics_server()->get_shape_owner()->get_or_null(p_shape);
 	ERR_FAIL_COND_V(!shape, false);
 
 	btCollisionShape *btShape = shape->create_bt_shape(p_shape_xform.basis.get_scale_abs(), p_margin);
@@ -947,7 +947,6 @@ bool SpaceBullet::test_body_motion(RigidBodyBullet *p_body, const Transform3D &p
 
 	if (!p_body->get_kinematic_utilities()) {
 		p_body->init_kinematic_utilities();
-		p_body->reload_kinematic_shapes();
 	}
 
 	btVector3 initial_recover_motion(0, 0, 0);
@@ -1089,7 +1088,6 @@ int SpaceBullet::test_ray_separation(RigidBodyBullet *p_body, const Transform3D 
 
 	if (!p_body->get_kinematic_utilities()) {
 		p_body->init_kinematic_utilities();
-		p_body->reload_kinematic_shapes();
 	}
 
 	btVector3 recover_motion(0, 0, 0);

@@ -9,8 +9,6 @@
 	<tutorials>
 		<link title="2D meshes">https://docs.godotengine.org/en/latest/tutorials/2d/2d_meshes.html</link>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="mesh" type="Mesh" setter="set_mesh" getter="get_mesh">
 			The [Mesh] that will be drawn by the [MeshInstance2D].
@@ -30,6 +28,4 @@
 			</description>
 		</signal>
 	</signals>
-	<constants>
-	</constants>
 </class>

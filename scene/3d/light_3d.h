@@ -86,8 +86,6 @@ private:
 protected:
 	RID light;
 
-	virtual bool _can_gizmo_scale() const;
-
 	static void _bind_methods();
 	void _notification(int p_what);
 	virtual void _validate_property(PropertyInfo &property) const override;
@@ -154,6 +152,7 @@ private:
 
 protected:
 	static void _bind_methods();
+	virtual void _validate_property(PropertyInfo &property) const override;
 
 public:
 	void set_shadow_mode(ShadowMode p_mode);

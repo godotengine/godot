@@ -8,13 +8,9 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="constant" type="String" setter="set_singleton" getter="get_singleton" default="&quot;&quot;">
 			The singleton's name.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

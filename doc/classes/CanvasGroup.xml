@@ -6,8 +6,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="clear_margin" type="float" setter="set_clear_margin" getter="get_clear_margin" default="10.0">
 		</member>
@@ -16,6 +14,4 @@
 		<member name="use_mipmaps" type="bool" setter="set_use_mipmaps" getter="is_using_mipmaps" default="false">
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

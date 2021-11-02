@@ -22,7 +22,7 @@
 			<argument index="0" name="time_sec" type="float" default="-1" />
 			<description>
 				Starts the timer. Sets [code]wait_time[/code] to [code]time_sec[/code] if [code]time_sec &gt; 0[/code]. This also resets the remaining time to [code]wait_time[/code].
-				[b]Note:[/b] this method will not resume a paused timer. See [member paused].
+				[b]Note:[/b] This method will not resume a paused timer. See [member paused].
 			</description>
 		</method>
 		<method name="stop">
@@ -51,7 +51,8 @@
 			[b]Note:[/b] You cannot set this value. To change the timer's remaining time, use [method start].
 		</member>
 		<member name="wait_time" type="float" setter="set_wait_time" getter="get_wait_time" default="1.0">
-			Wait time in seconds.
+			The wait time in seconds.
+			[b]Note:[/b] Timers can only emit once per rendered frame at most (or once per physics frame if [member process_callback] is [constant TIMER_PROCESS_PHYSICS]). This means very low wait times (lower than 0.05 seconds) will behave in significantly different ways depending on the rendered framerate. For very low wait times, it is recommended to use a process loop in a script instead of using a Timer node.
 		</member>
 	</members>
 	<signals>

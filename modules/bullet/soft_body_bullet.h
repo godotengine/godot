@@ -32,7 +32,6 @@
 #define SOFT_BODY_BULLET_H
 
 #include "collision_object_bullet.h"
-#include "scene/resources/material.h" // TODO remove this please
 
 #ifdef None
 /// This is required to remove the macro None defined by x11 compiler because this word "None" is used internally by Bullet
@@ -42,7 +41,6 @@
 
 #include "BulletSoftBody/btSoftBodyHelpers.h"
 #include "collision_object_bullet.h"
-#include "scene/resources/mesh.h"
 #include "servers/physics_server_3d.h"
 
 #ifdef x11_None
@@ -64,7 +62,7 @@ private:
 	btSoftBody::Material *mat0 = nullptr; // This is just a copy of pointer managed by btSoftBody
 	bool isScratched = false;
 
-	Ref<Mesh> soft_mesh;
+	RID soft_mesh;
 
 	int simulation_precision = 5;
 	real_t total_mass = 1.;
@@ -100,7 +98,7 @@ public:
 
 	void update_rendering_server(RenderingServerHandler *p_rendering_server_handler);
 
-	void set_soft_mesh(const Ref<Mesh> &p_mesh);
+	void set_soft_mesh(RID p_mesh);
 	void destroy_soft_body();
 
 	// Special function. This function has bad performance
@@ -139,7 +137,7 @@ public:
 	_FORCE_INLINE_ real_t get_drag_coefficient() const { return drag_coefficient; }
 
 private:
-	void set_trimesh_body_shape(Vector<int> p_indices, Vector<Vector3> p_vertices);
+	bool set_trimesh_body_shape(Vector<int> p_indices, Vector<Vector3> p_vertices);
 	void setup_soft_body();
 
 	void pin_node(int p_node_index);

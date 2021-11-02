@@ -51,26 +51,32 @@ VBoxContainer *FileDialog::get_vbox() {
 void FileDialog::_theme_changed() {
 	Color font_color = vbox->get_theme_color(SNAME("font_color"), SNAME("Button"));
 	Color font_hover_color = vbox->get_theme_color(SNAME("font_hover_color"), SNAME("Button"));
+	Color font_focus_color = vbox->get_theme_color(SNAME("font_focus_color"), SNAME("Button"));
 	Color font_pressed_color = vbox->get_theme_color(SNAME("font_pressed_color"), SNAME("Button"));
 
 	dir_up->add_theme_color_override("icon_normal_color", font_color);
 	dir_up->add_theme_color_override("icon_hover_color", font_hover_color);
+	dir_up->add_theme_color_override("icon_focus_color", font_focus_color);
 	dir_up->add_theme_color_override("icon_pressed_color", font_pressed_color);
 
 	dir_prev->add_theme_color_override("icon_color_normal", font_color);
 	dir_prev->add_theme_color_override("icon_color_hover", font_hover_color);
+	dir_prev->add_theme_color_override("icon_focus_color", font_focus_color);
 	dir_prev->add_theme_color_override("icon_color_pressed", font_pressed_color);
 
 	dir_next->add_theme_color_override("icon_color_normal", font_color);
 	dir_next->add_theme_color_override("icon_color_hover", font_hover_color);
+	dir_next->add_theme_color_override("icon_focus_color", font_focus_color);
 	dir_next->add_theme_color_override("icon_color_pressed", font_pressed_color);
 
 	refresh->add_theme_color_override("icon_normal_color", font_color);
 	refresh->add_theme_color_override("icon_hover_color", font_hover_color);
+	refresh->add_theme_color_override("icon_focus_color", font_focus_color);
 	refresh->add_theme_color_override("icon_pressed_color", font_pressed_color);
 
 	show_hidden->add_theme_color_override("icon_normal_color", font_color);
 	show_hidden->add_theme_color_override("icon_hover_color", font_hover_color);
+	show_hidden->add_theme_color_override("icon_focus_color", font_focus_color);
 	show_hidden->add_theme_color_override("icon_pressed_color", font_pressed_color);
 }
 
@@ -342,7 +348,7 @@ bool FileDialog::_is_open_should_be_disabled() {
 
 	// Opening a file, but selected a folder? Forbidden.
 	return ((mode == FILE_MODE_OPEN_FILE || mode == FILE_MODE_OPEN_FILES) && d["dir"]) || // Flipped case, also forbidden.
-		   (mode == FILE_MODE_OPEN_DIR && !d["dir"]);
+			(mode == FILE_MODE_OPEN_DIR && !d["dir"]);
 }
 
 void FileDialog::_go_up() {
@@ -924,7 +930,7 @@ FileDialog::FileDialog() {
 	show_hidden_files = default_show_hidden_files;
 
 	vbox = memnew(VBoxContainer);
-	add_child(vbox);
+	add_child(vbox, false, INTERNAL_MODE_FRONT);
 	vbox->connect("theme_changed", callable_mp(this, &FileDialog::_theme_changed));
 
 	mode = FILE_MODE_SAVE_FILE;
@@ -1023,8 +1029,7 @@ FileDialog::FileDialog() {
 	filter->connect("item_selected", callable_mp(this, &FileDialog::_filter_selected));
 
 	confirm_save = memnew(ConfirmationDialog);
-	//	confirm_save->set_as_top_level(true);
-	add_child(confirm_save);
+	add_child(confirm_save, false, INTERNAL_MODE_FRONT);
 
 	confirm_save->connect("confirmed", callable_mp(this, &FileDialog::_save_confirm_pressed));
 
@@ -1036,16 +1041,16 @@ FileDialog::FileDialog() {
 	makedirname = memnew(LineEdit);
 	makedirname->set_structured_text_bidi_override(Control::STRUCTURED_TEXT_FILE);
 	makevb->add_margin_child(TTRC("Name:"), makedirname);
-	add_child(makedialog);
+	add_child(makedialog, false, INTERNAL_MODE_FRONT);
 	makedialog->register_text_enter(makedirname);
 	makedialog->connect("confirmed", callable_mp(this, &FileDialog::_make_dir_confirm));
 	mkdirerr = memnew(AcceptDialog);
 	mkdirerr->set_text(TTRC("Could not create folder."));
-	add_child(mkdirerr);
+	add_child(mkdirerr, false, INTERNAL_MODE_FRONT);
 
 	exterr = memnew(AcceptDialog);
 	exterr->set_text(TTRC("Must use a valid extension."));
-	add_child(exterr);
+	add_child(exterr, false, INTERNAL_MODE_FRONT);
 
 	update_filters();
 	update_dir();

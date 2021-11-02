@@ -31,6 +31,9 @@
 #include "graph_node.h"
 
 #include "core/string/translation.h"
+#ifdef TOOLS_ENABLED
+#include "graph_edit.h"
+#endif
 
 struct _MinSizeCache {
 	int min_size;
@@ -400,28 +403,28 @@ void GraphNode::_notification(int p_what) {
 				close_rect = Rect2();
 			}
 
-			for (Map<int, Slot>::Element *E = slot_info.front(); E; E = E->next()) {
-				if (E->key() < 0 || E->key() >= cache_y.size()) {
+			for (const KeyValue<int, Slot> &E : slot_info) {
+				if (E.key < 0 || E.key >= cache_y.size()) {
 					continue;
 				}
-				if (!slot_info.has(E->key())) {
+				if (!slot_info.has(E.key)) {
 					continue;
 				}
-				const Slot &s = slot_info[E->key()];
+				const Slot &s = slot_info[E.key];
 				//left
 				if (s.enable_left) {
 					Ref<Texture2D> p = port;
 					if (s.custom_slot_left.is_valid()) {
 						p = s.custom_slot_left;
 					}
-					p->draw(get_canvas_item(), icofs + Point2(edgeofs, cache_y[E->key()]), s.color_left);
+					p->draw(get_canvas_item(), icofs + Point2(edgeofs, cache_y[E.key]), s.color_left);
 				}
 				if (s.enable_right) {
 					Ref<Texture2D> p = port;
 					if (s.custom_slot_right.is_valid()) {
 						p = s.custom_slot_right;
 					}
-					p->draw(get_canvas_item(), icofs + Point2(get_size().x - edgeofs, cache_y[E->key()]), s.color_right);
+					p->draw(get_canvas_item(), icofs + Point2(get_size().x - edgeofs, cache_y[E.key]), s.color_right);
 				}
 			}
 
@@ -457,6 +460,27 @@ void GraphNode::_shape() {
 	}
 	title_buf->add_string(title, font, font_size, opentype_features, (language != "") ? language : TranslationServer::get_singleton()->get_tool_locale());
 }
+
+#ifdef TOOLS_ENABLED
+void GraphNode::_edit_set_position(const Point2 &p_position) {
+	GraphEdit *graph = Object::cast_to<GraphEdit>(get_parent());
+	if (graph) {
+		Point2 offset = (p_position + graph->get_scroll_ofs()) * graph->get_zoom();
+		set_position_offset(offset);
+	}
+	set_position(p_position);
+}
+
+void GraphNode::_validate_property(PropertyInfo &property) const {
+	Control::_validate_property(property);
+	GraphEdit *graph = Object::cast_to<GraphEdit>(get_parent());
+	if (graph) {
+		if (property.name == "rect_position") {
+			property.usage |= PROPERTY_USAGE_READ_ONLY;
+		}
+	}
+}
+#endif
 
 void GraphNode::set_slot(int p_idx, bool p_enable_left, int p_type_left, const Color &p_color_left, bool p_enable_right, int p_type_right, const Color &p_color_right, const Ref<Texture2D> &p_custom_left, const Ref<Texture2D> &p_custom_right) {
 	ERR_FAIL_COND_MSG(p_idx < 0, vformat("Cannot set slot with p_idx (%d) lesser than zero.", p_idx));
@@ -871,7 +895,7 @@ void GraphNode::gui_input(const Ref<InputEvent> &p_ev) {
 		ERR_FAIL_COND_MSG(get_parent_control() == nullptr, "GraphNode must be the child of a GraphEdit node.");
 
 		if (mb->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_LEFT) {
-			Vector2 mpos = Vector2(mb->get_position().x, mb->get_position().y);
+			Vector2 mpos = mb->get_position();
 			if (close_rect.size != Size2() && close_rect.has_point(mpos)) {
 				//send focus to parent
 				get_parent_control()->grab_focus();

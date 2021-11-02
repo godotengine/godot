@@ -575,7 +575,7 @@ class BindingsGenerator {
 
 			StaticCString::create(_STR(PackedByteArray)),
 			StaticCString::create(_STR(PackedInt32Array)),
-			StaticCString::create(_STR(PackedInt64rray)),
+			StaticCString::create(_STR(PackedInt64Array)),
 			StaticCString::create(_STR(PackedFloat32Array)),
 			StaticCString::create(_STR(PackedFloat64Array)),
 			StaticCString::create(_STR(PackedStringArray)),

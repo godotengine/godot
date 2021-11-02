@@ -90,6 +90,12 @@ void CharFXTransform::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_glyph_index"), &CharFXTransform::get_glyph_index);
 	ClassDB::bind_method(D_METHOD("set_glyph_index", "glyph_index"), &CharFXTransform::set_glyph_index);
 
+	ClassDB::bind_method(D_METHOD("get_glyph_count"), &CharFXTransform::get_glyph_count);
+	ClassDB::bind_method(D_METHOD("set_glyph_count", "glyph_count"), &CharFXTransform::set_glyph_count);
+
+	ClassDB::bind_method(D_METHOD("get_glyph_flags"), &CharFXTransform::get_glyph_flags);
+	ClassDB::bind_method(D_METHOD("set_glyph_flags", "glyph_flags"), &CharFXTransform::set_glyph_flags);
+
 	ClassDB::bind_method(D_METHOD("get_font"), &CharFXTransform::get_font);
 	ClassDB::bind_method(D_METHOD("set_font", "font"), &CharFXTransform::set_font);
 
@@ -101,5 +107,7 @@ void CharFXTransform::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "color"), "set_color", "get_color");
 	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "env"), "set_environment", "get_environment");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "glyph_index"), "set_glyph_index", "get_glyph_index");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "glyph_count"), "set_glyph_count", "get_glyph_count");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "glyph_flags"), "set_glyph_flags", "get_glyph_flags");
 	ADD_PROPERTY(PropertyInfo(Variant::RID, "font"), "set_font", "get_font");
 }

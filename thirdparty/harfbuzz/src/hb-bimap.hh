@@ -58,10 +58,15 @@ struct hb_bimap_t
 
   void set (hb_codepoint_t lhs, hb_codepoint_t rhs)
   {
+    if (in_error ()) return;
     if (unlikely (lhs == HB_MAP_VALUE_INVALID)) return;
     if (unlikely (rhs == HB_MAP_VALUE_INVALID)) { del (lhs); return; }
+
     forw_map.set (lhs, rhs);
+    if (in_error ()) return;
+
     back_map.set (rhs, lhs);
+    if (in_error ()) forw_map.del (lhs);
   }
 
   hb_codepoint_t get (hb_codepoint_t lhs) const { return forw_map.get (lhs); }

@@ -204,7 +204,7 @@ public:
 
 	virtual void get_platform_features(List<String> *r_features) override {
 		r_features->push_back("mobile");
-		r_features->push_back("iOS");
+		r_features->push_back("ios");
 	}
 
 	virtual void resolve_platform_feature_priorities(const Ref<EditorExportPreset> &p_preset, Set<String> &p_features) override {

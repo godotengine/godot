@@ -214,7 +214,7 @@ private:
 	int code_completion_longest_line = 0;
 	Rect2i code_completion_rect;
 
-	Set<String> code_completion_prefixes;
+	Set<char32_t> code_completion_prefixes;
 	List<ScriptCodeCompletionOption> code_completion_option_submitted;
 	List<ScriptCodeCompletionOption> code_completion_option_sources;
 	String code_completion_base;
@@ -240,6 +240,7 @@ private:
 	int line_spacing = 1;
 
 	/* Callbacks */
+	int lines_edited_changed = 0;
 	int lines_edited_from = -1;
 	int lines_edited_to = -1;
 
@@ -248,7 +249,6 @@ private:
 	void _text_changed();
 
 protected:
-	void gui_input(const Ref<InputEvent> &p_gui_input) override;
 	void _notification(int p_what);
 
 	static void _bind_methods();
@@ -265,6 +265,7 @@ protected:
 
 public:
 	/* General overrides */
+	virtual void gui_input(const Ref<InputEvent> &p_gui_input) override;
 	virtual CursorShape get_cursor_shape(const Point2 &p_pos = Point2i()) const override;
 
 	/* Indent management */

@@ -35,10 +35,6 @@
 #include "core/input/input_map.h"
 #include "core/os/os.h"
 
-#ifdef TOOLS_ENABLED
-#include "editor/editor_settings.h"
-#endif
-
 static const char *_joy_buttons[JOY_BUTTON_SDL_MAX] = {
 	"a",
 	"b",
@@ -121,6 +117,10 @@ void Input::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_accelerometer"), &Input::get_accelerometer);
 	ClassDB::bind_method(D_METHOD("get_magnetometer"), &Input::get_magnetometer);
 	ClassDB::bind_method(D_METHOD("get_gyroscope"), &Input::get_gyroscope);
+	ClassDB::bind_method(D_METHOD("set_gravity", "value"), &Input::set_gravity);
+	ClassDB::bind_method(D_METHOD("set_accelerometer", "value"), &Input::set_accelerometer);
+	ClassDB::bind_method(D_METHOD("set_magnetometer", "value"), &Input::set_magnetometer);
+	ClassDB::bind_method(D_METHOD("set_gyroscope", "value"), &Input::set_gyroscope);
 	ClassDB::bind_method(D_METHOD("get_last_mouse_speed"), &Input::get_last_mouse_speed);
 	ClassDB::bind_method(D_METHOD("get_mouse_button_mask"), &Input::get_mouse_button_mask);
 	ClassDB::bind_method(D_METHOD("set_mouse_mode", "mode"), &Input::set_mouse_mode);
@@ -133,6 +133,7 @@ void Input::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_custom_mouse_cursor", "image", "shape", "hotspot"), &Input::set_custom_mouse_cursor, DEFVAL(CURSOR_ARROW), DEFVAL(Vector2()));
 	ClassDB::bind_method(D_METHOD("parse_input_event", "event"), &Input::parse_input_event);
 	ClassDB::bind_method(D_METHOD("set_use_accumulated_input", "enable"), &Input::set_use_accumulated_input);
+	ClassDB::bind_method(D_METHOD("flush_buffered_events"), &Input::flush_buffered_events);
 
 	BIND_ENUM_CONSTANT(MOUSE_MODE_VISIBLE);
 	BIND_ENUM_CONSTANT(MOUSE_MODE_HIDDEN);
@@ -162,14 +163,12 @@ void Input::_bind_methods() {
 }
 
 void Input::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
-#ifdef TOOLS_ENABLED
-	const String quote_style = EDITOR_GET("text_editor/completion/use_single_quotes") ? "'" : "\"";
-
 	String pf = p_function;
-	if (p_idx == 0 && (pf == "is_action_pressed" || pf == "action_press" || pf == "action_release" ||
-							  pf == "is_action_just_pressed" || pf == "is_action_just_released" ||
-							  pf == "get_action_strength" || pf == "get_action_raw_strength" ||
-							  pf == "get_axis" || pf == "get_vector")) {
+	if (p_idx == 0 &&
+			(pf == "is_action_pressed" || pf == "action_press" || pf == "action_release" ||
+					pf == "is_action_just_pressed" || pf == "is_action_just_released" ||
+					pf == "get_action_strength" || pf == "get_action_raw_strength" ||
+					pf == "get_axis" || pf == "get_vector")) {
 		List<PropertyInfo> pinfo;
 		ProjectSettings::get_singleton()->get_property_list(&pinfo);
 
@@ -179,10 +178,9 @@ void Input::get_argument_options(const StringName &p_function, int p_idx, List<S
 			}
 
 			String name = pi.name.substr(pi.name.find("/") + 1, pi.name.length());
-			r_options->push_back(name.quote(quote_style));
+			r_options->push_back(name.quote());
 		}
 	}
-#endif
 }
 
 void Input::SpeedTrack::update(const Vector2 &p_delta_p) {
@@ -318,11 +316,11 @@ Vector2 Input::get_vector(const StringName &p_negative_x, const StringName &p_po
 
 	if (p_deadzone < 0.0f) {
 		// If the deadzone isn't specified, get it from the average of the actions.
-		p_deadzone = (InputMap::get_singleton()->action_get_deadzone(p_positive_x) +
-							 InputMap::get_singleton()->action_get_deadzone(p_negative_x) +
-							 InputMap::get_singleton()->action_get_deadzone(p_positive_y) +
-							 InputMap::get_singleton()->action_get_deadzone(p_negative_y)) /
-					 4;
+		p_deadzone = 0.25 *
+				(InputMap::get_singleton()->action_get_deadzone(p_positive_x) +
+						InputMap::get_singleton()->action_get_deadzone(p_negative_x) +
+						InputMap::get_singleton()->action_get_deadzone(p_positive_y) +
+						InputMap::get_singleton()->action_get_deadzone(p_negative_y));
 	}
 
 	// Circular length limiting and deadzone.
@@ -863,9 +861,9 @@ void Input::release_pressed_events() {
 	joy_buttons_pressed.clear();
 	_joy_axis.clear();
 
-	for (Map<StringName, Input::Action>::Element *E = action_state.front(); E; E = E->next()) {
-		if (E->get().pressed) {
-			action_release(E->key());
+	for (const KeyValue<StringName, Input::Action> &E : action_state) {
+		if (E.value.pressed) {
+			action_release(E.key);
 		}
 	}
 }
@@ -1322,8 +1320,8 @@ void Input::add_joy_mapping(String p_mapping, bool p_update_existing) {
 	if (p_update_existing) {
 		Vector<String> entry = p_mapping.split(",");
 		String uid = entry[0];
-		for (Map<int, Joypad>::Element *E = joy_names.front(); E; E = E->next()) {
-			Joypad &joy = E->get();
+		for (KeyValue<int, Joypad> &E : joy_names) {
+			Joypad &joy = E.value;
 			if (joy.uid == uid) {
 				joy.mapping = map_db.size() - 1;
 			}
@@ -1337,8 +1335,8 @@ void Input::remove_joy_mapping(String p_guid) {
 			map_db.remove(i);
 		}
 	}
-	for (Map<int, Joypad>::Element *E = joy_names.front(); E; E = E->next()) {
-		Joypad &joy = E->get();
+	for (KeyValue<int, Joypad> &E : joy_names) {
+		Joypad &joy = E.value;
 		if (joy.uid == p_guid) {
 			joy.mapping = -1;
 		}

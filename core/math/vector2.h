@@ -147,6 +147,7 @@ struct Vector2 {
 	bool operator>=(const Vector2 &p_vec2) const { return x == p_vec2.x ? (y >= p_vec2.y) : (x > p_vec2.x); }
 
 	real_t angle() const;
+	static Vector2 from_angle(const real_t p_angle);
 
 	_FORCE_INLINE_ Vector2 abs() const {
 		return Vector2(Math::abs(x), Math::abs(y));

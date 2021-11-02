@@ -79,7 +79,7 @@ void TabContainer::gui_input(const Ref<InputEvent> &p_event) {
 	Popup *popup = get_popup();
 
 	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_LEFT) {
-		Point2 pos(mb->get_position().x, mb->get_position().y);
+		Point2 pos = mb->get_position();
 		Size2 size = get_size();
 
 		// Click must be on tabs in the tab header area.
@@ -190,7 +190,7 @@ void TabContainer::gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseMotion> mm = p_event;
 
 	if (mm.is_valid()) {
-		Point2 pos(mm->get_position().x, mm->get_position().y);
+		Point2 pos = mm->get_position();
 		Size2 size = get_size();
 
 		// Mouse must be on tabs in the tab header area.
@@ -434,14 +434,14 @@ void TabContainer::_notification(int p_what) {
 				}
 
 				int tab_width = tab_widths[i];
-				if (get_tab_disabled(index)) {
+				if (index == current) {
+					x_current = x;
+				} else if (get_tab_disabled(index)) {
 					if (rtl) {
 						_draw_tab(tab_disabled, font_disabled_color, index, size.width - (tabs_ofs_cache + x) - tab_width);
 					} else {
 						_draw_tab(tab_disabled, font_disabled_color, index, tabs_ofs_cache + x);
 					}
-				} else if (index == current) {
-					x_current = x;
 				} else {
 					if (rtl) {
 						_draw_tab(tab_unselected, font_unselected_color, index, size.width - (tabs_ofs_cache + x) - tab_width);
@@ -459,12 +459,13 @@ void TabContainer::_notification(int p_what) {
 				panel->draw(canvas, Rect2(0, header_height, size.width, size.height - header_height));
 			}
 
-			// Draw selected tab in front. only draw selected tab when it's in visible range.
+			// Draw selected tab in front. Only draw selected tab when it's in visible range.
 			if (tabs.size() > 0 && current - first_tab_cache < tab_widths.size() && current >= first_tab_cache) {
+				Ref<StyleBox> current_style_box = get_tab_disabled(current) ? tab_disabled : tab_selected;
 				if (rtl) {
-					_draw_tab(tab_selected, font_selected_color, current, size.width - (tabs_ofs_cache + x_current) - tab_widths[current]);
+					_draw_tab(current_style_box, font_selected_color, current, size.width - (tabs_ofs_cache + x_current) - tab_widths[current]);
 				} else {
-					_draw_tab(tab_selected, font_selected_color, current, tabs_ofs_cache + x_current);
+					_draw_tab(current_style_box, font_selected_color, current, tabs_ofs_cache + x_current);
 				}
 			}
 
@@ -537,7 +538,6 @@ void TabContainer::_notification(int p_what) {
 void TabContainer::_draw_tab(Ref<StyleBox> &p_tab_style, Color &p_font_color, int p_index, float p_x) {
 	Control *control = get_tab_control(p_index);
 	RID canvas = get_canvas_item();
-	Ref<Font> font = get_theme_font(SNAME("font"));
 	Color font_outline_color = get_theme_color(SNAME("font_outline_color"));
 	int outline_size = get_theme_constant(SNAME("outline_size"));
 	int icon_text_distance = get_theme_constant(SNAME("icon_separation"));
@@ -640,8 +640,8 @@ void TabContainer::_on_mouse_exited() {
 
 int TabContainer::_get_tab_width(int p_index) const {
 	ERR_FAIL_INDEX_V(p_index, get_tab_count(), 0);
-	Control *control = Object::cast_to<Control>(_get_tabs()[p_index]);
-	if (!control || control->is_set_as_top_level() || get_tab_hidden(p_index)) {
+	Control *control = get_tab_control(p_index);
+	if (!control || get_tab_hidden(p_index)) {
 		return 0;
 	}
 
@@ -905,7 +905,7 @@ void TabContainer::drop_data(const Point2 &p_point, const Variant &p_data) {
 			if (from_tabc && from_tabc->get_tabs_rearrange_group() == get_tabs_rearrange_group()) {
 				Control *moving_tabc = from_tabc->get_tab_control(tab_from_id);
 				from_tabc->remove_child(moving_tabc);
-				add_child(moving_tabc);
+				add_child(moving_tabc, false, INTERNAL_MODE_FRONT);
 				if (hover_now < 0) {
 					hover_now = get_tab_count() - 1;
 				}
@@ -1133,7 +1133,6 @@ Size2 TabContainer::get_minimum_size() const {
 	Ref<StyleBox> tab_unselected = get_theme_stylebox(SNAME("tab_unselected"));
 	Ref<StyleBox> tab_selected = get_theme_stylebox(SNAME("tab_selected"));
 	Ref<StyleBox> tab_disabled = get_theme_stylebox(SNAME("tab_disabled"));
-	Ref<Font> font = get_theme_font(SNAME("font"));
 
 	if (tabs_visible) {
 		ms.y += MAX(MAX(tab_unselected->get_minimum_size().y, tab_selected->get_minimum_size().y), tab_disabled->get_minimum_size().y);
@@ -1211,6 +1210,9 @@ void TabContainer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_tab_icon", "tab_idx"), &TabContainer::get_tab_icon);
 	ClassDB::bind_method(D_METHOD("set_tab_disabled", "tab_idx", "disabled"), &TabContainer::set_tab_disabled);
 	ClassDB::bind_method(D_METHOD("get_tab_disabled", "tab_idx"), &TabContainer::get_tab_disabled);
+	ClassDB::bind_method(D_METHOD("set_tab_hidden", "tab_idx", "hidden"), &TabContainer::set_tab_hidden);
+	ClassDB::bind_method(D_METHOD("get_tab_hidden", "tab_idx"), &TabContainer::get_tab_hidden);
+	ClassDB::bind_method(D_METHOD("get_tab_idx_at_point", "point"), &TabContainer::get_tab_idx_at_point);
 	ClassDB::bind_method(D_METHOD("set_popup", "popup"), &TabContainer::set_popup);
 	ClassDB::bind_method(D_METHOD("get_popup"), &TabContainer::get_popup);
 	ClassDB::bind_method(D_METHOD("set_drag_to_rearrange_enabled", "enabled"), &TabContainer::set_drag_to_rearrange_enabled);

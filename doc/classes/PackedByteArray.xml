@@ -8,27 +8,29 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-		<method name="PackedByteArray" qualifiers="constructor">
+	<constructors>
+		<constructor name="PackedByteArray">
 			<return type="PackedByteArray" />
 			<description>
 				Constructs an empty [PackedByteArray].
 			</description>
-		</method>
-		<method name="PackedByteArray" qualifiers="constructor">
+		</constructor>
+		<constructor name="PackedByteArray">
 			<return type="PackedByteArray" />
 			<argument index="0" name="from" type="PackedByteArray" />
 			<description>
 				Constructs a [PackedByteArray] as a copy of the given [PackedByteArray].
 			</description>
-		</method>
-		<method name="PackedByteArray" qualifiers="constructor">
+		</constructor>
+		<constructor name="PackedByteArray">
 			<return type="PackedByteArray" />
 			<argument index="0" name="from" type="Array" />
 			<description>
 				Constructs a new [PackedByteArray]. Optionally, you can pass in a generic [Array] that will be converted.
 			</description>
-		</method>
+		</constructor>
+	</constructors>
+	<methods>
 		<method name="append">
 			<return type="bool" />
 			<argument index="0" name="value" type="int" />
@@ -41,6 +43,15 @@
 			<argument index="0" name="array" type="PackedByteArray" />
 			<description>
 				Appends a [PackedByteArray] at the end of this array.
+			</description>
+		</method>
+		<method name="bsearch">
+			<return type="int" />
+			<argument index="0" name="value" type="int" />
+			<argument index="1" name="before" type="bool" default="true" />
+			<description>
+				Finds the index of an existing value (or the insertion index that maintains sorting order, if the value is not yet present in the array) using binary search. Optionally, a [code]before[/code] specifier can be passed. If [code]false[/code], the returned index comes after all existing entries of the value in the array.
+				[b]Note:[/b] Calling [method bsearch] on an unsorted array results in unexpected behavior.
 			</description>
 		</method>
 		<method name="compress" qualifiers="const">
@@ -270,7 +281,7 @@
 				Converts UTF-8 encoded array to [String]. Slower than [method get_string_from_ascii] but supports UTF-8 encoded data. Use this function if you are unsure about the source of the data. For user input this function should always be preferred. Returns empty string if source array is not valid UTF-8 string.
 			</description>
 		</method>
-		<method name="has">
+		<method name="has" qualifiers="const">
 			<return type="bool" />
 			<argument index="0" name="value" type="int" />
 			<description>
@@ -312,30 +323,6 @@
 			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if the array is empty.
-			</description>
-		</method>
-		<method name="operator !=" qualifiers="operator">
-			<return type="bool" />
-			<argument index="0" name="right" type="PackedByteArray" />
-			<description>
-			</description>
-		</method>
-		<method name="operator +" qualifiers="operator">
-			<return type="PackedByteArray" />
-			<argument index="0" name="right" type="PackedByteArray" />
-			<description>
-			</description>
-		</method>
-		<method name="operator ==" qualifiers="operator">
-			<return type="bool" />
-			<argument index="0" name="right" type="PackedByteArray" />
-			<description>
-			</description>
-		</method>
-		<method name="operator []" qualifiers="operator">
-			<return type="int" />
-			<argument index="0" name="index" type="int" />
-			<description>
 			</description>
 		</method>
 		<method name="push_back">
@@ -426,6 +413,40 @@
 			</description>
 		</method>
 	</methods>
-	<constants>
-	</constants>
+	<operators>
+		<operator name="operator !=">
+			<return type="bool" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator !=">
+			<return type="bool" />
+			<argument index="0" name="right" type="PackedByteArray" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator +">
+			<return type="PackedByteArray" />
+			<argument index="0" name="right" type="PackedByteArray" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator ==">
+			<return type="bool" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator ==">
+			<return type="bool" />
+			<argument index="0" name="right" type="PackedByteArray" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator []">
+			<return type="int" />
+			<argument index="0" name="index" type="int" />
+			<description>
+			</description>
+		</operator>
+	</operators>
 </class>

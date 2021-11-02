@@ -287,7 +287,7 @@ void Collada::_parse_image(XMLParser &parser) {
 	if (state.version < State::Version(1, 4, 0)) {
 		/* <1.4 */
 		String path = parser.get_attribute_value("source").strip_edges();
-		if (path.find("://") == -1 && path.is_rel_path()) {
+		if (path.find("://") == -1 && path.is_relative_path()) {
 			// path is relative to file being loaded, so convert to a resource path
 			image.path = ProjectSettings::get_singleton()->localize_path(state.local_path.get_base_dir().plus_file(path.uri_decode()));
 		}
@@ -300,7 +300,7 @@ void Collada::_parse_image(XMLParser &parser) {
 					parser.read();
 					String path = parser.get_node_data().strip_edges().uri_decode();
 
-					if (path.find("://") == -1 && path.is_rel_path()) {
+					if (path.find("://") == -1 && path.is_relative_path()) {
 						// path is relative to file being loaded, so convert to a resource path
 						path = ProjectSettings::get_singleton()->localize_path(state.local_path.get_base_dir().plus_file(path));
 
@@ -541,7 +541,10 @@ void Collada::_parse_effect_material(XMLParser &parser, Effect &effect, String &
 
 			COLLADA_PRINT("node name: " + parser.get_node_name());
 
-			if (!parser.is_empty() && (parser.get_node_name() == "profile_COMMON" || parser.get_node_name() == "technique" || parser.get_node_name() == "extra")) {
+			if (!parser.is_empty() &&
+					(parser.get_node_name() == "profile_COMMON" ||
+							parser.get_node_name() == "technique" ||
+							parser.get_node_name() == "extra")) {
 				_parse_effect_material(parser, effect, id); // try again
 
 			} else if (parser.get_node_name() == "newparam") {
@@ -551,9 +554,9 @@ void Collada::_parse_effect_material(XMLParser &parser, Effect &effect, String &
 				COLLADA_PRINT("param: " + name + " value:" + String(value));
 
 			} else if (parser.get_node_name() == "constant" ||
-					   parser.get_node_name() == "lambert" ||
-					   parser.get_node_name() == "phong" ||
-					   parser.get_node_name() == "blinn") {
+					parser.get_node_name() == "lambert" ||
+					parser.get_node_name() == "phong" ||
+					parser.get_node_name() == "blinn") {
 				COLLADA_PRINT("shade model: " + parser.get_node_name());
 				while (parser.read() == OK) {
 					if (parser.get_node_type() == XMLParser::NODE_ELEMENT) {
@@ -627,10 +630,11 @@ void Collada::_parse_effect_material(XMLParser &parser, Effect &effect, String &
 						} else if (what == "shininess") {
 							effect.shininess = _parse_param(parser);
 						}
-					} else if (parser.get_node_type() == XMLParser::NODE_ELEMENT_END && (parser.get_node_name() == "constant" ||
-																								parser.get_node_name() == "lambert" ||
-																								parser.get_node_name() == "phong" ||
-																								parser.get_node_name() == "blinn")) {
+					} else if (parser.get_node_type() == XMLParser::NODE_ELEMENT_END &&
+							(parser.get_node_name() == "constant" ||
+									parser.get_node_name() == "lambert" ||
+									parser.get_node_name() == "phong" ||
+									parser.get_node_name() == "blinn")) {
 						break;
 					}
 				}
@@ -681,10 +685,10 @@ void Collada::_parse_effect_material(XMLParser &parser, Effect &effect, String &
 				parser.skip_section();
 			}
 		} else if (parser.get_node_type() == XMLParser::NODE_ELEMENT_END &&
-				   (parser.get_node_name() == "effect" ||
-						   parser.get_node_name() == "profile_COMMON" ||
-						   parser.get_node_name() == "technique" ||
-						   parser.get_node_name() == "extra")) {
+				(parser.get_node_name() == "effect" ||
+						parser.get_node_name() == "profile_COMMON" ||
+						parser.get_node_name() == "technique" ||
+						parser.get_node_name() == "extra")) {
 			break;
 		}
 	}
@@ -2095,19 +2099,19 @@ void Collada::_merge_skeletons(VisualScene *p_vscene, Node *p_node) {
 }
 
 void Collada::_merge_skeletons2(VisualScene *p_vscene) {
-	for (Map<String, SkinControllerData>::Element *E = state.skin_controller_data_map.front(); E; E = E->next()) {
-		SkinControllerData &cd = E->get();
+	for (KeyValue<String, SkinControllerData> &E : state.skin_controller_data_map) {
+		SkinControllerData &cd = E.value;
 
 		NodeSkeleton *skeleton = nullptr;
 
-		for (Map<String, Transform3D>::Element *F = cd.bone_rest_map.front(); F; F = F->next()) {
+		for (const KeyValue<String, Transform3D> &F : cd.bone_rest_map) {
 			String name;
 
-			if (!state.sid_to_node_map.has(F->key())) {
+			if (!state.sid_to_node_map.has(F.key)) {
 				continue;
 			}
 
-			name = state.sid_to_node_map[F->key()];
+			name = state.sid_to_node_map[F.key];
 
 			ERR_CONTINUE(!state.scene_map.has(name));
 
@@ -2248,9 +2252,9 @@ bool Collada::_move_geometry_to_skeletons(VisualScene *p_vscene, Node *p_node, L
 			p_node->default_transform = skel_inv * (skin.bind_shape /* p_node->get_global_transform()*/); // i honestly have no idea what to do with a previous model xform.. most exporters ignore it
 
 			//make rests relative to the skeleton (they seem to be always relative to world)
-			for (Map<String, Transform3D>::Element *E = skin.bone_rest_map.front(); E; E = E->next()) {
-				E->get() = skel_inv * E->get(); //make the bone rest local to the skeleton
-				state.bone_rest_map[E->key()] = E->get(); // make it remember where the bone is globally, now that it's relative
+			for (KeyValue<String, Transform3D> &E : skin.bone_rest_map) {
+				E.value = skel_inv * E.value; //make the bone rest local to the skeleton
+				state.bone_rest_map[E.key] = E.value; // make it remember where the bone is globally, now that it's relative
 			}
 
 			//but most exporters seem to work only if i do this..
@@ -2302,8 +2306,8 @@ void Collada::_find_morph_nodes(VisualScene *p_vscene, Node *p_node) {
 }
 
 void Collada::_optimize() {
-	for (Map<String, VisualScene>::Element *E = state.visual_scene_map.front(); E; E = E->next()) {
-		VisualScene &vs = E->get();
+	for (KeyValue<String, VisualScene> &E : state.visual_scene_map) {
+		VisualScene &vs = E.value;
 		for (int i = 0; i < vs.root_nodes.size(); i++) {
 			_create_skeletons(&vs.root_nodes.write[i]);
 		}

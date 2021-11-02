@@ -424,7 +424,7 @@ Error ResourceLoaderText::load() {
 			}
 		}
 
-		if (path.find("://") == -1 && path.is_rel_path()) {
+		if (path.find("://") == -1 && path.is_relative_path()) {
 			// path is relative to file being loaded, so convert to a resource path
 			path = ProjectSettings::get_singleton()->localize_path(local_path.get_base_dir().plus_file(path));
 		}
@@ -768,7 +768,7 @@ void ResourceLoaderText::get_dependencies(FileAccess *p_f, List<String> *p_depen
 			}
 		}
 
-		if (!using_uid && path.find("://") == -1 && path.is_rel_path()) {
+		if (!using_uid && path.find("://") == -1 && path.is_relative_path()) {
 			// path is relative to file being loaded, so convert to a resource path
 			path = ProjectSettings::get_singleton()->localize_path(local_path.get_base_dir().plus_file(path));
 		}
@@ -1653,55 +1653,55 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const RES &p_r
 #ifdef TOOLS_ENABLED
 	// Keep order from cached ids.
 	Set<String> cached_ids_found;
-	for (Map<RES, String>::Element *E = external_resources.front(); E; E = E->next()) {
-		String cached_id = E->key()->get_id_for_path(local_path);
+	for (KeyValue<RES, String> &E : external_resources) {
+		String cached_id = E.key->get_id_for_path(local_path);
 		if (cached_id == "" || cached_ids_found.has(cached_id)) {
-			int sep_pos = E->get().find("_");
+			int sep_pos = E.value.find("_");
 			if (sep_pos != -1) {
-				E->get() = E->get().substr(0, sep_pos + 1); // Keep the order found, for improved thread loading performance.
+				E.value = E.value.substr(0, sep_pos + 1); // Keep the order found, for improved thread loading performance.
 			} else {
-				E->get() = "";
+				E.value = "";
 			}
 
 		} else {
-			E->get() = cached_id;
+			E.value = cached_id;
 			cached_ids_found.insert(cached_id);
 		}
 	}
 	// Create IDs for non cached resources.
-	for (Map<RES, String>::Element *E = external_resources.front(); E; E = E->next()) {
-		if (cached_ids_found.has(E->get())) { // Already cached, go on.
+	for (KeyValue<RES, String> &E : external_resources) {
+		if (cached_ids_found.has(E.value)) { // Already cached, go on.
 			continue;
 		}
 
 		String attempt;
 		while (true) {
-			attempt = E->get() + Resource::generate_scene_unique_id();
+			attempt = E.value + Resource::generate_scene_unique_id();
 			if (!cached_ids_found.has(attempt)) {
 				break;
 			}
 		}
 
 		cached_ids_found.insert(attempt);
-		E->get() = attempt;
+		E.value = attempt;
 		// Update also in resource.
-		Ref<Resource> res = E->key();
+		Ref<Resource> res = E.key;
 		res->set_id_for_path(local_path, attempt);
 	}
 #else
 	// Make sure to start from one, as it makes format more readable.
 	int counter = 1;
-	for (Map<RES, String>::Element *E = external_resources.front(); E; E = E->next()) {
-		E->get() = itos(counter++);
+	for (KeyValue<RES, String> &E : external_resources) {
+		E.value = itos(counter++);
 	}
 #endif
 
 	Vector<ResourceSort> sorted_er;
 
-	for (Map<RES, String>::Element *E = external_resources.front(); E; E = E->next()) {
+	for (const KeyValue<RES, String> &E : external_resources) {
 		ResourceSort rs;
-		rs.resource = E->key();
-		rs.id = E->get();
+		rs.resource = E.key;
+		rs.id = E.value;
 		sorted_er.push_back(rs);
 	}
 
@@ -1849,10 +1849,16 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const RES &p_r
 			}
 
 			if (groups.size()) {
+				// Write all groups on the same line as they're part of a section header.
+				// This improves readability while not impacting VCS friendliness too much,
+				// since it's rare to have more than 5 groups assigned to a single node.
 				groups.sort_custom<StringName::AlphCompare>();
-				String sgroups = " groups=[\n";
+				String sgroups = " groups=[";
 				for (int j = 0; j < groups.size(); j++) {
-					sgroups += "\"" + String(groups[j]).c_escape() + "\",\n";
+					sgroups += "\"" + String(groups[j]).c_escape() + "\"";
+					if (j < groups.size() - 1) {
+						sgroups += ", ";
+					}
 				}
 				sgroups += "]";
 				header += sgroups;

@@ -8,8 +8,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="condition" type="int" setter="set_condition" getter="get_condition" enum="VisualShaderNodeCompare.Condition" default="0">
 			Extra condition which is applied if [member type] is set to [constant CTYPE_VECTOR].

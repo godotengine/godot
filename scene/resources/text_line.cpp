@@ -53,7 +53,7 @@ void TextLine::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "preserve_control"), "set_preserve_control", "get_preserve_control");
 
-	ClassDB::bind_method(D_METHOD("set_bidi_override", "override"), &TextLine::_set_bidi_override);
+	ClassDB::bind_method(D_METHOD("set_bidi_override", "override"), &TextLine::set_bidi_override);
 
 	ClassDB::bind_method(D_METHOD("add_string", "text", "fonts", "size", "opentype_features", "language"), &TextLine::add_string, DEFVAL(Dictionary()), DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("add_object", "key", "size", "inline_align", "length"), &TextLine::add_object, DEFVAL(INLINE_ALIGN_CENTER), DEFVAL(1));
@@ -112,7 +112,7 @@ void TextLine::_shape() {
 			TS->shaped_text_tab_align(rid, tab_stops);
 		}
 
-		uint8_t overrun_flags = TextServer::OVERRUN_NO_TRIMMING;
+		uint16_t overrun_flags = TextServer::OVERRUN_NO_TRIMMING;
 		if (overrun_behavior != OVERRUN_NO_TRIMMING) {
 			switch (overrun_behavior) {
 				case OVERRUN_TRIM_WORD_ELLIPSIS:
@@ -195,15 +195,7 @@ TextServer::Orientation TextLine::get_orientation() const {
 	return TS->shaped_text_get_orientation(rid);
 }
 
-void TextLine::_set_bidi_override(const Array &p_override) {
-	Vector<Vector2i> overrides;
-	for (int i = 0; i < p_override.size(); i++) {
-		overrides.push_back(p_override[i]);
-	}
-	set_bidi_override(overrides);
-}
-
-void TextLine::set_bidi_override(const Vector<Vector2i> &p_override) {
+void TextLine::set_bidi_override(const Array &p_override) {
 	TS->shaped_text_set_bidi_override(rid, p_override);
 	dirty = true;
 }
@@ -256,14 +248,14 @@ void TextLine::tab_align(const Vector<float> &p_tab_stops) {
 	dirty = true;
 }
 
-void TextLine::set_flags(uint8_t p_flags) {
+void TextLine::set_flags(uint16_t p_flags) {
 	if (flags != p_flags) {
 		flags = p_flags;
 		dirty = true;
 	}
 }
 
-uint8_t TextLine::get_flags() const {
+uint16_t TextLine::get_flags() const {
 	return flags;
 }
 

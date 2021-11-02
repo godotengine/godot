@@ -8,15 +8,16 @@
 		[b]Note:[/b] In C#, resources will not be freed instantly after they are no longer in use. Instead, garbage collection will run periodically and will free resources that are no longer in use. This means that unused resources will linger on for a while before being removed.
 	</description>
 	<tutorials>
-		<link title="Resources">https://docs.godotengine.org/en/latest/getting_started/step_by_step/resources.html</link>
-		<link title="When and how to avoid using nodes for everything">https://docs.godotengine.org/en/latest/getting_started/workflow/best_practices/node_alternatives.html</link>
+		<link title="Resources">https://docs.godotengine.org/en/latest/tutorials/scripting/resources.html</link>
+		<link title="When and how to avoid using nodes for everything">https://docs.godotengine.org/en/latest/tutorials/best_practices/node_alternatives.html</link>
 	</tutorials>
 	<methods>
 		<method name="duplicate" qualifiers="const">
 			<return type="Resource" />
 			<argument index="0" name="subresources" type="bool" default="false" />
 			<description>
-				Duplicates the resource, returning a new resource. By default, sub-resources are shared between resource copies for efficiency. This can be changed by passing [code]true[/code] to the [code]subresources[/code] argument which will copy the subresources.
+				Duplicates the resource, returning a new resource with the exported members copied. [b]Note:[/b] To duplicate the resource the constructor is called without arguments. This method will error when the constructor doesn't have default values.
+				By default, sub-resources are shared between resource copies for efficiency. This can be changed by passing [code]true[/code] to the [code]subresources[/code] argument which will copy the subresources.
 				[b]Note:[/b] If [code]subresources[/code] is [code]true[/code], this method will only perform a shallow copy. Nested resources within subresources will not be duplicated and will still be shared.
 				[b]Note:[/b] When duplicating a resource, only [code]export[/code]ed properties are copied. Other properties will be set to their default value in the new resource.
 			</description>
@@ -83,6 +84,4 @@
 			</description>
 		</signal>
 	</signals>
-	<constants>
-	</constants>
 </class>

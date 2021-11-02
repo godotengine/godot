@@ -288,15 +288,12 @@ void GPUParticlesCollisionSDF::_find_closest_distance(const Vector3 &p_pos, cons
 			Vector3 nor = ba.cross(ac);
 
 			inside_d = Math::sqrt(
-					(SGN(ba.cross(nor).dot(pa)) +
-									SGN(cb.cross(nor).dot(pb)) +
-									SGN(ac.cross(nor).dot(pc)) <
-							2.0) ?
-							  MIN(MIN(
-										Vector3_dot2(ba * CLAMP(ba.dot(pa) / Vector3_dot2(ba), 0.0, 1.0) - pa),
-										Vector3_dot2(cb * CLAMP(cb.dot(pb) / Vector3_dot2(cb), 0.0, 1.0) - pb)),
-									Vector3_dot2(ac * CLAMP(ac.dot(pc) / Vector3_dot2(ac), 0.0, 1.0) - pc)) :
-							  nor.dot(pa) * nor.dot(pa) / Vector3_dot2(nor));
+					(SGN(ba.cross(nor).dot(pa)) + SGN(cb.cross(nor).dot(pb)) + SGN(ac.cross(nor).dot(pc)) < 2.0)
+							? MIN(MIN(
+										  Vector3_dot2(ba * CLAMP(ba.dot(pa) / Vector3_dot2(ba), 0.0, 1.0) - pa),
+										  Vector3_dot2(cb * CLAMP(cb.dot(pb) / Vector3_dot2(cb), 0.0, 1.0) - pb)),
+									  Vector3_dot2(ac * CLAMP(ac.dot(pc) / Vector3_dot2(ac), 0.0, 1.0) - pc))
+							: nor.dot(pa) * nor.dot(pa) / Vector3_dot2(nor));
 
 			closest_distance = MIN(closest_distance, inside_d);
 		}
@@ -420,7 +417,7 @@ Ref<Image> GPUParticlesCollisionSDF::bake() {
 					}
 
 					//test against original bounds
-					if (!Geometry3D::triangle_box_overlap(aabb.position + aabb.size * 0.5, aabb.size * 0.5, face.vertex)) {
+					if (!Geometry3D::triangle_box_overlap(aabb.get_center(), aabb.size * 0.5, face.vertex)) {
 						continue;
 					}
 
@@ -438,7 +435,7 @@ Ref<Image> GPUParticlesCollisionSDF::bake() {
 					}
 
 					//test against original bounds
-					if (!Geometry3D::triangle_box_overlap(aabb.position + aabb.size * 0.5, aabb.size * 0.5, face.vertex)) {
+					if (!Geometry3D::triangle_box_overlap(aabb.get_center(), aabb.size * 0.5, face.vertex)) {
 						continue;
 					}
 
@@ -475,7 +472,7 @@ Ref<Image> GPUParticlesCollisionSDF::bake() {
 	_create_bvh(bvh, face_pos.ptr(), face_pos.size(), faces.ptr(), th);
 
 	Vector<uint8_t> data;
-	data.resize(sdf_size.z * sdf_size.y * sdf_size.x * sizeof(float));
+	data.resize(sdf_size.z * sdf_size.y * sdf_size.x * (int)sizeof(float));
 
 	if (bake_step_function) {
 		bake_step_function(0, "Baking SDF");

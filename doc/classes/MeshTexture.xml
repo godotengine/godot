@@ -8,8 +8,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="base_texture" type="Texture2D" setter="set_base_texture" getter="get_base_texture">
 			Sets the base texture that the Mesh will use to draw.
@@ -21,6 +19,4 @@
 			Sets the mesh used to draw. It must be a mesh using 2D vertices.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

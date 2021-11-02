@@ -54,6 +54,7 @@ private:
 	GDScriptParser *parser = nullptr;
 	GDScriptAnalyzer *analyzer = nullptr;
 	Status status = EMPTY;
+	Error result = OK;
 	String path;
 
 	friend class GDScriptCache;

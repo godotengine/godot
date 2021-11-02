@@ -37,8 +37,6 @@
 #define OBJTYPE_RLOCK RWLockRead _rw_lockr_(lock);
 #define OBJTYPE_WLOCK RWLockWrite _rw_lockw_(lock);
 
-#ifdef DEBUG_METHODS_ENABLED
-
 MethodDefinition D_METHOD(const char *p_name) {
 	MethodDefinition md;
 	md.name = StaticCString::create(p_name);
@@ -225,8 +223,6 @@ MethodDefinition D_METHOD(const char *p_name, const char *p_arg1, const char *p_
 	md.args.write[12] = StaticCString::create(p_arg13);
 	return md;
 }
-
-#endif
 
 ClassDB::APIType ClassDB::current_api = API_CORE;
 
@@ -529,7 +525,7 @@ Object *ClassDB::instantiate(const StringName &p_class) {
 		}
 		ERR_FAIL_COND_V_MSG(!ti, nullptr, "Cannot get class '" + String(p_class) + "'.");
 		ERR_FAIL_COND_V_MSG(ti->disabled, nullptr, "Class '" + String(p_class) + "' is disabled.");
-		ERR_FAIL_COND_V(!ti->creation_func, nullptr);
+		ERR_FAIL_COND_V_MSG(!ti->creation_func, nullptr, "Class '" + String(p_class) + "' or its base class cannot be instantiated.");
 	}
 #ifdef TOOLS_ENABLED
 	if (ti->api == API_EDITOR && !Engine::get_singleton()->is_editor_hint()) {
@@ -543,6 +539,15 @@ Object *ClassDB::instantiate(const StringName &p_class) {
 		initializing_extension_instance = ti->native_extension->create_instance(ti->native_extension->class_userdata);
 	}
 	return ti->creation_func();
+}
+
+Object *ClassDB::construct_object(Object *(*p_create_func)(), ObjectNativeExtension *p_extension) {
+	if (p_extension) {
+		initializing_with_extension = true;
+		initializing_extension = p_extension;
+		initializing_extension_instance = p_extension->create_instance(p_extension->class_userdata);
+	}
+	return p_create_func();
 }
 
 bool ClassDB::can_instantiate(const StringName &p_class) {
@@ -580,7 +585,6 @@ void ClassDB::_add_class2(const StringName &p_class, const StringName &p_inherit
 	}
 }
 
-#ifdef DEBUG_METHODS_ENABLED
 static MethodInfo info_from_bind(MethodBind *p_method) {
 	MethodInfo minfo;
 	minfo.name = p_method->get_name();
@@ -601,7 +605,6 @@ static MethodInfo info_from_bind(MethodBind *p_method) {
 
 	return minfo;
 }
-#endif
 
 void ClassDB::get_method_list(const StringName &p_class, List<MethodInfo> *p_methods, bool p_no_inheritance, bool p_exclude_from_properties) {
 	OBJTYPE_RLOCK;
@@ -641,9 +644,8 @@ void ClassDB::get_method_list(const StringName &p_class, List<MethodInfo> *p_met
 
 		while ((K = type->method_map.next(K))) {
 			MethodBind *m = type->method_map[*K];
-			MethodInfo mi;
-			mi.name = m->get_name();
-			p_methods->push_back(mi);
+			MethodInfo minfo = info_from_bind(m);
+			p_methods->push_back(minfo);
 		}
 
 #endif
@@ -689,9 +691,8 @@ bool ClassDB::get_method_info(const StringName &p_class, const StringName &p_met
 		if (type->method_map.has(p_method)) {
 			if (r_info) {
 				MethodBind *m = type->method_map[p_method];
-				MethodInfo mi;
-				mi.name = m->get_name();
-				*r_info = mi;
+				MethodInfo minfo = info_from_bind(m);
+				*r_info = minfo;
 			}
 			return true;
 		}
@@ -1026,6 +1027,18 @@ void ClassDB::add_property_subgroup(const StringName &p_class, const String &p_n
 	ERR_FAIL_COND(!type);
 
 	type->property_list.push_back(PropertyInfo(Variant::NIL, p_name, PROPERTY_HINT_NONE, p_prefix, PROPERTY_USAGE_SUBGROUP));
+}
+
+void ClassDB::add_property_array_count(const StringName &p_class, const String &p_label, const StringName &p_count_property, const StringName &p_count_setter, const StringName &p_count_getter, const String &p_array_element_prefix, uint32_t p_count_usage) {
+	add_property(p_class, PropertyInfo(Variant::INT, p_count_property, PROPERTY_HINT_NONE, "", p_count_usage | PROPERTY_USAGE_ARRAY, vformat("%s,%s", p_label, p_array_element_prefix)), p_count_setter, p_count_getter);
+}
+
+void ClassDB::add_property_array(const StringName &p_class, const StringName &p_path, const String &p_array_element_prefix) {
+	OBJTYPE_WLOCK;
+	ClassInfo *type = classes.getptr(p_class);
+	ERR_FAIL_COND(!type);
+
+	type->property_list.push_back(PropertyInfo(Variant::NIL, p_path, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_ARRAY, p_array_element_prefix));
 }
 
 // NOTE: For implementation simplicity reasons, this method doesn't allow setters to have optional arguments at the end.
@@ -1390,13 +1403,8 @@ void ClassDB::bind_method_custom(const StringName &p_class, MethodBind *p_method
 	type->method_map[p_method->get_name()] = p_method;
 }
 
-#ifdef DEBUG_METHODS_ENABLED
 MethodBind *ClassDB::bind_methodfi(uint32_t p_flags, MethodBind *p_bind, const MethodDefinition &method_name, const Variant **p_defs, int p_defcount) {
 	StringName mdname = method_name.name;
-#else
-MethodBind *ClassDB::bind_methodfi(uint32_t p_flags, MethodBind *p_bind, const char *method_name, const Variant **p_defs, int p_defcount) {
-	StringName mdname = StaticCString::create(method_name);
-#endif
 
 	OBJTYPE_WLOCK;
 	ERR_FAIL_COND_V(!p_bind, nullptr);

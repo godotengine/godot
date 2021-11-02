@@ -351,11 +351,11 @@ MarginContainer *VBoxContainer::add_margin_child(const String &p_label, Control 
 	Label *l = memnew(Label);
 	l->set_theme_type_variation("HeaderSmall");
 	l->set_text(p_label);
-	add_child(l);
+	add_child(l, false, INTERNAL_MODE_FRONT);
 	MarginContainer *mc = memnew(MarginContainer);
 	mc->add_theme_constant_override("margin_left", 0);
 	mc->add_child(p_control);
-	add_child(mc);
+	add_child(mc, false, INTERNAL_MODE_FRONT);
 	if (p_expand) {
 		mc->set_v_size_flags(SIZE_EXPAND_FILL);
 	}

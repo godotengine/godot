@@ -44,8 +44,10 @@ public:
 		PROJECTION_FRUSTUM
 	};
 
-	enum KeepAspect { KEEP_WIDTH,
-		KEEP_HEIGHT };
+	enum KeepAspect {
+		KEEP_WIDTH,
+		KEEP_HEIGHT
+	};
 
 	enum DopplerTracking {
 		DOPPLER_TRACKING_DISABLED,
@@ -79,14 +81,15 @@ private:
 	Ref<Environment> environment;
 	Ref<CameraEffects> effects;
 
-	virtual bool _can_gizmo_scale() const;
-
 	// void _camera_make_current(Node *p_camera);
 	friend class Viewport;
 	void _update_audio_listener_state();
 
 	DopplerTracking doppler_tracking = DOPPLER_TRACKING_DISABLED;
 	Ref<VelocityTracker3D> velocity_tracker;
+
+	RID pyramid_shape;
+	Vector<Vector3> pyramid_shape_points;
 
 protected:
 	void _update_camera();
@@ -111,7 +114,7 @@ public:
 
 	void make_current();
 	void clear_current(bool p_enable_next = true);
-	void set_current(bool p_current);
+	void set_current(bool p_enabled);
 	bool is_current() const;
 
 	RID get_camera() const;
@@ -170,6 +173,8 @@ public:
 
 	Vector3 get_doppler_tracked_velocity() const;
 
+	RID get_pyramid_shape_rid();
+
 	Camera3D();
 	~Camera3D();
 };
@@ -178,63 +183,4 @@ VARIANT_ENUM_CAST(Camera3D::Projection);
 VARIANT_ENUM_CAST(Camera3D::KeepAspect);
 VARIANT_ENUM_CAST(Camera3D::DopplerTracking);
 
-class ClippedCamera3D : public Camera3D {
-	GDCLASS(ClippedCamera3D, Camera3D);
-
-public:
-	enum ClipProcessCallback {
-		CLIP_PROCESS_PHYSICS,
-		CLIP_PROCESS_IDLE,
-	};
-
-private:
-	ClipProcessCallback process_callback = CLIP_PROCESS_PHYSICS;
-	RID pyramid_shape;
-	real_t margin = 0.0;
-	real_t clip_offset = 0.0;
-	uint32_t collision_mask = 1;
-	bool clip_to_areas = false;
-	bool clip_to_bodies = true;
-
-	Set<RID> exclude;
-
-	Vector<Vector3> points;
-
-protected:
-	void _notification(int p_what);
-	static void _bind_methods();
-	virtual Transform3D get_camera_transform() const override;
-
-public:
-	void set_clip_to_areas(bool p_clip);
-	bool is_clip_to_areas_enabled() const;
-
-	void set_clip_to_bodies(bool p_clip);
-	bool is_clip_to_bodies_enabled() const;
-
-	void set_margin(real_t p_margin);
-	real_t get_margin() const;
-
-	void set_process_callback(ClipProcessCallback p_mode);
-	ClipProcessCallback get_process_callback() const;
-
-	void set_collision_mask(uint32_t p_mask);
-	uint32_t get_collision_mask() const;
-
-	void set_collision_mask_value(int p_layer_number, bool p_value);
-	bool get_collision_mask_value(int p_layer_number) const;
-
-	void add_exception_rid(const RID &p_rid);
-	void add_exception(const Object *p_object);
-	void remove_exception_rid(const RID &p_rid);
-	void remove_exception(const Object *p_object);
-	void clear_exceptions();
-
-	real_t get_clip_offset() const;
-
-	ClippedCamera3D();
-	~ClippedCamera3D();
-};
-
-VARIANT_ENUM_CAST(ClippedCamera3D::ClipProcessCallback);
 #endif

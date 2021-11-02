@@ -86,7 +86,7 @@ void EditorFileDialog::_notification(int p_what) {
 				if (preview_wheel_index >= 8) {
 					preview_wheel_index = 0;
 				}
-				Ref<Texture2D> frame = item_list->get_theme_icon("Progress" + itos(preview_wheel_index + 1), "EditorIcons");
+				Ref<Texture2D> frame = item_list->get_theme_icon("Progress" + itos(preview_wheel_index + 1), SNAME("EditorIcons"));
 				preview->set_texture(frame);
 				preview_wheel_timeout = 0.1;
 			}
@@ -588,7 +588,7 @@ void EditorFileDialog::_item_list_item_rmb_selected(int p_item, const Vector2 &p
 			continue;
 		}
 		Dictionary item_meta = item_list->get_item_metadata(i);
-		if (String(item_meta["path"]).begins_with("res://.godot")) {
+		if (String(item_meta["path"]).begins_with(ProjectSettings::get_singleton()->get_project_data_path())) {
 			allow_delete = false;
 			break;
 		}
@@ -958,7 +958,7 @@ String EditorFileDialog::get_current_path() const {
 }
 
 void EditorFileDialog::set_current_dir(const String &p_dir) {
-	if (p_dir.is_rel_path()) {
+	if (p_dir.is_relative_path()) {
 		dir_access->change_dir(OS::get_singleton()->get_resource_dir());
 	}
 	dir_access->change_dir(p_dir);

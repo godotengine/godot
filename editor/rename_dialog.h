@@ -31,6 +31,9 @@
 #ifndef RENAME_DIALOG_H
 #define RENAME_DIALOG_H
 
+#include "modules/modules_enabled.gen.h"
+#ifdef MODULE_REGEX_ENABLED
+
 #include "scene/gui/check_box.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/option_button.h"
@@ -60,7 +63,7 @@ class RenameDialog : public ConfirmationDialog {
 	String _postprocess(const String &subject);
 	void _update_preview(String new_text = "");
 	void _update_preview_int(int new_value = 0);
-	static void _error_handler(void *p_self, const char *p_func, const char *p_file, int p_line, const char *p_error, const char *p_errorexp, ErrorHandlerType p_type);
+	static void _error_handler(void *p_self, const char *p_func, const char *p_file, int p_line, const char *p_error, const char *p_errorexp, bool p_editor_notify, ErrorHandlerType p_type);
 
 	SceneTreeEditor *scene_tree_editor;
 	UndoRedo *undo_redo;
@@ -113,4 +116,6 @@ public:
 	~RenameDialog() {}
 };
 
-#endif
+#endif // MODULE_REGEX_ENABLED
+
+#endif // RENAME_DIALOG_H

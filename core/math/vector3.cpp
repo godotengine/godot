@@ -93,10 +93,11 @@ Vector3 Vector3::cubic_interpolate(const Vector3 &p_b, const Vector3 &p_pre_a, c
 	real_t t3 = t2 * t;
 
 	Vector3 out;
-	out = 0.5 * ((p1 * 2.0) +
-						(-p0 + p2) * t +
-						(2.0 * p0 - 5.0 * p1 + 4.0 * p2 - p3) * t2 +
-						(-p0 + 3.0 * p1 - 3.0 * p2 + p3) * t3);
+	out = 0.5 *
+			((p1 * 2.0) +
+					(-p0 + p2) * t +
+					(2.0 * p0 - 5.0 * p1 + 4.0 * p2 - p3) * t2 +
+					(-p0 + 3.0 * p1 - 3.0 * p2 + p3) * t3);
 	return out;
 }
 
@@ -113,12 +114,6 @@ Basis Vector3::outer(const Vector3 &p_b) const {
 	Vector3 row2(z * p_b.x, z * p_b.y, z * p_b.z);
 
 	return Basis(row0, row1, row2);
-}
-
-Basis Vector3::to_diagonal_matrix() const {
-	return Basis(x, 0, 0,
-			0, y, 0,
-			0, 0, z);
 }
 
 bool Vector3::is_equal_approx(const Vector3 &p_v) const {

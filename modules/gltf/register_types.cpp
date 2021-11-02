@@ -38,6 +38,8 @@
 #include "gltf_buffer_view.h"
 #include "gltf_camera.h"
 #include "gltf_document.h"
+#include "gltf_document_extension.h"
+#include "gltf_document_extension_convert_importer_mesh.h"
 #include "gltf_light.h"
 #include "gltf_mesh.h"
 #include "gltf_node.h"
@@ -50,7 +52,7 @@
 #ifndef _3D_DISABLED
 #ifdef TOOLS_ENABLED
 static void _editor_init() {
-	Ref<EditorSceneImporterGLTF> import_gltf;
+	Ref<EditorSceneFormatImporterGLTF> import_gltf;
 	import_gltf.instantiate();
 	ResourceImporterScene::get_singleton()->add_importer(import_gltf);
 }
@@ -62,7 +64,7 @@ void register_gltf_types() {
 #ifdef TOOLS_ENABLED
 	ClassDB::APIType prev_api = ClassDB::get_current_api();
 	ClassDB::set_current_api(ClassDB::API_EDITOR);
-	GDREGISTER_CLASS(EditorSceneImporterGLTF);
+	GDREGISTER_CLASS(EditorSceneFormatImporterGLTF);
 	GDREGISTER_CLASS(GLTFMesh);
 	EditorPlugins::add_by_type<SceneExporterGLTFPlugin>();
 	ClassDB::set_current_api(prev_api);
@@ -79,8 +81,9 @@ void register_gltf_types() {
 	GDREGISTER_CLASS(GLTFCamera);
 	GDREGISTER_CLASS(GLTFLight);
 	GDREGISTER_CLASS(GLTFState);
+	GDREGISTER_CLASS(GLTFDocumentExtensionConvertImporterMesh);
+	GDREGISTER_CLASS(GLTFDocumentExtension);
 	GDREGISTER_CLASS(GLTFDocument);
-	GDREGISTER_CLASS(PackedSceneGLTF);
 #endif
 }
 

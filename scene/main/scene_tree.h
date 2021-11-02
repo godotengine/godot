@@ -31,7 +31,7 @@
 #ifndef SCENE_TREE_H
 #define SCENE_TREE_H
 
-#include "core/io/multiplayer_api.h"
+#include "core/multiplayer/multiplayer_api.h"
 #include "core/os/main_loop.h"
 #include "core/os/thread_safe.h"
 #include "core/templates/self_list.h"
@@ -136,7 +136,6 @@ private:
 	void _flush_ugc();
 
 	_FORCE_INLINE_ void _update_group_order(Group &g, bool p_use_priority = false);
-	void _update_listener();
 
 	Array _get_nodes_in_group(const StringName &p_group);
 
@@ -264,9 +263,6 @@ public:
 
 	void set_pause(bool p_enabled);
 	bool is_paused() const;
-
-	void set_camera(const RID &p_camera);
-	RID get_camera() const;
 
 #ifdef DEBUG_ENABLED
 	void set_debug_collisions_hint(bool p_enabled);

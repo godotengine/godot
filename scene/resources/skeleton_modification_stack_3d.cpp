@@ -125,6 +125,7 @@ Ref<SkeletonModification3D> SkeletonModificationStack3D::get_modification(int p_
 }
 
 void SkeletonModificationStack3D::add_modification(Ref<SkeletonModification3D> p_mod) {
+	ERR_FAIL_NULL(p_mod);
 	p_mod->_setup_modification(this);
 	modifications.push_back(p_mod);
 }
@@ -200,7 +201,7 @@ void SkeletonModificationStack3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("delete_modification", "mod_idx"), &SkeletonModificationStack3D::delete_modification);
 	ClassDB::bind_method(D_METHOD("set_modification", "mod_idx", "modification"), &SkeletonModificationStack3D::set_modification);
 
-	ClassDB::bind_method(D_METHOD("set_modification_count"), &SkeletonModificationStack3D::set_modification_count);
+	ClassDB::bind_method(D_METHOD("set_modification_count", "count"), &SkeletonModificationStack3D::set_modification_count);
 	ClassDB::bind_method(D_METHOD("get_modification_count"), &SkeletonModificationStack3D::get_modification_count);
 
 	ClassDB::bind_method(D_METHOD("get_is_setup"), &SkeletonModificationStack3D::get_is_setup);

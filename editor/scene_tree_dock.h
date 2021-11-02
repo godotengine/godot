@@ -62,7 +62,9 @@ class SceneTreeDock : public VBoxContainer {
 		TOOL_COPY,
 		TOOL_PASTE,
 		TOOL_RENAME,
+#ifdef MODULE_REGEX_ENABLED
 		TOOL_BATCH_RENAME,
+#endif // MODULE_REGEX_ENABLED
 		TOOL_REPLACE,
 		TOOL_EXTEND_SCRIPT,
 		TOOL_ATTACH_SCRIPT,
@@ -79,6 +81,7 @@ class SceneTreeDock : public VBoxContainer {
 		TOOL_COPY_NODE_PATH,
 		TOOL_BUTTON_MAX,
 		TOOL_OPEN_DOCUMENTATION,
+		TOOL_AUTO_EXPAND,
 		TOOL_SCENE_EDITABLE_CHILDREN,
 		TOOL_SCENE_USE_PLACEHOLDER,
 		TOOL_SCENE_MAKE_LOCAL,
@@ -105,12 +108,15 @@ class SceneTreeDock : public VBoxContainer {
 
 	int current_option;
 	CreateDialog *create_dialog;
+#ifdef MODULE_REGEX_ENABLED
 	RenameDialog *rename_dialog;
+#endif // MODULE_REGEX_ENABLED
 
 	Button *button_add;
 	Button *button_instance;
 	Button *button_create_script;
 	Button *button_detach_script;
+	Button *button_tree_menu;
 
 	Button *button_2d;
 	Button *button_3d;
@@ -233,13 +239,12 @@ class SceneTreeDock : public VBoxContainer {
 	void _quick_open();
 
 	void _tree_rmb(const Vector2 &p_menu_pos);
+	void _open_tree_menu();
 
 	void _filter_changed(const String &p_filter);
 
 	void _perform_instantiate_scenes(const Vector<String> &p_files, Node *parent, int p_pos);
 	void _replace_with_branch_scene(const String &p_file, Node *base);
-
-	void _file_selected(String p_file);
 
 	void _remote_tree_selected();
 	void _local_tree_selected();
@@ -269,6 +274,7 @@ protected:
 public:
 	String get_filter();
 	void set_filter(const String &p_filter);
+	void save_branch_to_file(String p_directory);
 
 	void _focus_node();
 

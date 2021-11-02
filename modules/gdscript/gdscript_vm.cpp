@@ -88,9 +88,9 @@ static String _get_var_type(const Variant *p_var) {
 		Object *bobj = p_var->get_validated_object_with_check(was_freed);
 		if (!bobj) {
 			if (was_freed) {
-				basestr = "null instance";
-			} else {
 				basestr = "previously freed";
+			} else {
+				basestr = "null instance";
 			}
 		} else {
 			basestr = bobj->get_class();
@@ -322,6 +322,7 @@ void (*type_init_function_table[])(Variant *) = {
 		&&OPCODE_ITERATE_PACKED_VECTOR3_ARRAY,       \
 		&&OPCODE_ITERATE_PACKED_COLOR_ARRAY,         \
 		&&OPCODE_ITERATE_OBJECT,                     \
+		&&OPCODE_STORE_GLOBAL,                       \
 		&&OPCODE_STORE_NAMED_GLOBAL,                 \
 		&&OPCODE_TYPE_ADJUST_BOOL,                   \
 		&&OPCODE_TYPE_ADJUST_INT,                    \
@@ -530,8 +531,8 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 
 	memnew_placement(&stack[ADDR_STACK_CLASS], Variant(script));
 
-	for (const Map<int, Variant::Type>::Element *E = temporary_slots.front(); E; E = E->next()) {
-		type_init_function_table[E->get()](&stack[E->key()]);
+	for (const KeyValue<int, Variant::Type> &E : temporary_slots) {
+		type_init_function_table[E.value](&stack[E.key]);
 	}
 
 	String err_text;
@@ -1109,7 +1110,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					} else {
 #ifdef DEBUG_ENABLED
 						err_text = "Trying to assign value of type '" + Variant::get_type_name(src->get_type()) +
-								   "' to a variable of type '" + Variant::get_type_name(var_type) + "'.";
+								"' to a variable of type '" + Variant::get_type_name(var_type) + "'.";
 						OPCODE_BREAK;
 					}
 				} else {
@@ -1131,7 +1132,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				if (src->get_type() != Variant::ARRAY) {
 #ifdef DEBUG_ENABLED
 					err_text = "Trying to assign value of type '" + Variant::get_type_name(src->get_type()) +
-							   "' to a variable of type '" + +"'.";
+							"' to a variable of type '" + +"'.";
 #endif
 					OPCODE_BREAK;
 				}
@@ -1157,14 +1158,14 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				GD_ERR_BREAK(!nc);
 				if (src->get_type() != Variant::OBJECT && src->get_type() != Variant::NIL) {
 					err_text = "Trying to assign value of type '" + Variant::get_type_name(src->get_type()) +
-							   "' to a variable of type '" + nc->get_name() + "'.";
+							"' to a variable of type '" + nc->get_name() + "'.";
 					OPCODE_BREAK;
 				}
 				Object *src_obj = src->operator Object *();
 
 				if (src_obj && !ClassDB::is_parent_class(src_obj->get_class_name(), nc->get_name())) {
 					err_text = "Trying to assign value of type '" + src_obj->get_class_name() +
-							   "' to a variable of type '" + nc->get_name() + "'.";
+							"' to a variable of type '" + nc->get_name() + "'.";
 					OPCODE_BREAK;
 				}
 #endif // DEBUG_ENABLED
@@ -1194,7 +1195,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					ScriptInstance *scr_inst = src->operator Object *()->get_script_instance();
 					if (!scr_inst) {
 						err_text = "Trying to assign value of type '" + src->operator Object *()->get_class_name() +
-								   "' to a variable of type '" + base_type->get_path().get_file() + "'.";
+								"' to a variable of type '" + base_type->get_path().get_file() + "'.";
 						OPCODE_BREAK;
 					}
 
@@ -1211,7 +1212,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 
 					if (!valid) {
 						err_text = "Trying to assign value of type '" + src->operator Object *()->get_script_instance()->get_script()->get_path().get_file() +
-								   "' to a variable of type '" + base_type->get_path().get_file() + "'.";
+								"' to a variable of type '" + base_type->get_path().get_file() + "'.";
 						OPCODE_BREAK;
 					}
 				}
@@ -1230,6 +1231,13 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				Variant::Type to_type = (Variant::Type)_code_ptr[ip + 3];
 
 				GD_ERR_BREAK(to_type < 0 || to_type >= Variant::VARIANT_MAX);
+
+#ifdef DEBUG_ENABLED
+				if (src->operator Object *() && !src->get_validated_object()) {
+					err_text = "Trying to cast a freed object.";
+					OPCODE_BREAK;
+				}
+#endif
 
 				Callable::CallError err;
 				Variant::construct(to_type, *dst, (const Variant **)&src, 1, err);
@@ -1255,6 +1263,10 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				GD_ERR_BREAK(!nc);
 
 #ifdef DEBUG_ENABLED
+				if (src->operator Object *() && !src->get_validated_object()) {
+					err_text = "Trying to cast a freed object.";
+					OPCODE_BREAK;
+				}
 				if (src->get_type() != Variant::OBJECT && src->get_type() != Variant::NIL) {
 					err_text = "Invalid cast: can't convert a non-object value to an object type.";
 					OPCODE_BREAK;
@@ -1283,6 +1295,10 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				GD_ERR_BREAK(!base_type);
 
 #ifdef DEBUG_ENABLED
+				if (src->operator Object *() && !src->get_validated_object()) {
+					err_text = "Trying to cast a freed object.";
+					OPCODE_BREAK;
+				}
 				if (src->get_type() != Variant::OBJECT && src->get_type() != Variant::NIL) {
 					err_text = "Trying to assign a non-object value to a variable of type '" + base_type->get_path().get_file() + "'.";
 					OPCODE_BREAK;
@@ -1703,6 +1719,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 #define OPCODE_CALL_PTR(m_type)                                                   \
 	OPCODE(OPCODE_CALL_PTRCALL_##m_type) {                                        \
 		CHECK_SPACE(3 + instr_arg_count);                                         \
+		ip += instr_arg_count;                                                    \
 		int argc = _code_ptr[ip + 1];                                             \
 		GET_INSTRUCTION_ARG(base, argc);                                          \
 		MethodBind *method = _methods_ptr[_code_ptr[ip + 2]];                     \
@@ -2081,8 +2098,10 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					}
 
 					if (result.get_type() != Variant::SIGNAL) {
+						// Not async, return immediately using the target from OPCODE_AWAIT_RESUME.
+						GET_VARIANT_PTR(target, 3);
+						*target = result;
 						ip += 4; // Skip OPCODE_AWAIT_RESUME and its data.
-						// The stack pointer should be the same, so we don't need to set a return value.
 						is_signal = false;
 					} else {
 						sig = result;
@@ -2122,7 +2141,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 
 					retvalue = gdfs;
 
-					Error err = sig.connect(Callable(gdfs.ptr(), "_signal_callback"), varray(gdfs), Object::CONNECT_ONESHOT);
+					Error err = sig.connect(callable_bind(Callable(gdfs.ptr(), "_signal_callback"), retvalue), Object::CONNECT_ONESHOT);
 					if (err != OK) {
 						err_text = "Error connecting to signal: " + sig.get_name() + " during await.";
 						OPCODE_BREAK;
@@ -3116,6 +3135,18 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			}
 			DISPATCH_OPCODE;
 
+			OPCODE(OPCODE_STORE_GLOBAL) {
+				CHECK_SPACE(3);
+				int global_idx = _code_ptr[ip + 2];
+				GD_ERR_BREAK(global_idx < 0 || global_idx >= GDScriptLanguage::get_singleton()->get_global_array_size());
+
+				GET_INSTRUCTION_ARG(dst, 0);
+				*dst = GDScriptLanguage::get_singleton()->get_global_array()[global_idx];
+
+				ip += 3;
+			}
+			DISPATCH_OPCODE;
+
 			OPCODE(OPCODE_STORE_NAMED_GLOBAL) {
 				CHECK_SPACE(3);
 				int globalname_idx = _code_ptr[ip + 2];
@@ -3284,7 +3315,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 		if (!GDScriptLanguage::get_singleton()->debug_break(err_text, false)) {
 			// debugger break did not happen
 
-			_err_print_error(err_func.utf8().get_data(), err_file.utf8().get_data(), err_line, err_text.utf8().get_data(), ERR_HANDLER_SCRIPT);
+			_err_print_error(err_func.utf8().get_data(), err_file.utf8().get_data(), err_line, err_text.utf8().get_data(), false, ERR_HANDLER_SCRIPT);
 		}
 
 #endif

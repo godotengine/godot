@@ -230,10 +230,13 @@ String OS_Android::get_user_data_dir() const {
 }
 
 String OS_Android::get_cache_path() const {
+	if (cache_dir_cache != String())
+		return cache_dir_cache;
+
 	String cache_dir = godot_io_java->get_cache_dir();
 	if (cache_dir != "") {
-		cache_dir = _remove_symlink(cache_dir);
-		return cache_dir;
+		cache_dir_cache = _remove_symlink(cache_dir);
+		return cache_dir_cache;
 	}
 	return ".";
 }
@@ -259,15 +262,14 @@ Size2i OS_Android::get_display_size() const {
 }
 
 void OS_Android::set_context_is_16_bits(bool p_is_16) {
-#if defined(OPENGL_ENABLED)
-	//use_16bits_fbo = p_is_16;
+#if defined(GLES3_ENABLED)
 	//if (rasterizer)
 	//	rasterizer->set_force_16_bits_fbo(p_is_16);
 #endif
 }
 
 void OS_Android::set_opengl_extensions(const char *p_gl_extensions) {
-#if defined(OPENGL_ENABLED)
+#if defined(GLES3_ENABLED)
 	ERR_FAIL_COND(!p_gl_extensions);
 	gl_extensions = p_gl_extensions;
 #endif
@@ -319,10 +321,9 @@ OS_Android::OS_Android(GodotJavaWrapper *p_godot_java, GodotIOJavaWrapper *p_god
 
 	main_loop = nullptr;
 
-#if defined(OPENGL_ENABLED)
+#if defined(GLES3_ENABLED)
 	gl_extensions = nullptr;
 	use_gl2 = false;
-	use_16bits_fbo = false;
 #endif
 
 #if defined(VULKAN_ENABLED)

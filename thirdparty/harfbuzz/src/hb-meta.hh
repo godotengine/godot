@@ -101,14 +101,14 @@ HB_FUNCOBJ (hb_addressof);
 template <typename T> static inline T hb_declval ();
 #define hb_declval(T) (hb_declval<T> ())
 
-template <typename T> struct hb_match_const		: hb_type_identity_t<T>, hb_bool_constant<false>{};
-template <typename T> struct hb_match_const<const T>	: hb_type_identity_t<T>, hb_bool_constant<true>	{};
+template <typename T> struct hb_match_const		: hb_type_identity_t<T>, hb_false_type	{};
+template <typename T> struct hb_match_const<const T>	: hb_type_identity_t<T>, hb_true_type	{};
 template <typename T> using hb_remove_const = typename hb_match_const<T>::type;
 template <typename T> using hb_add_const = const T;
 #define hb_is_const(T) hb_match_const<T>::value
-template <typename T> struct hb_match_reference		: hb_type_identity_t<T>, hb_bool_constant<false>{};
-template <typename T> struct hb_match_reference<T &>	: hb_type_identity_t<T>, hb_bool_constant<true>	{};
-template <typename T> struct hb_match_reference<T &&>	: hb_type_identity_t<T>, hb_bool_constant<true>	{};
+template <typename T> struct hb_match_reference		: hb_type_identity_t<T>, hb_false_type	{};
+template <typename T> struct hb_match_reference<T &>	: hb_type_identity_t<T>, hb_true_type	{};
+template <typename T> struct hb_match_reference<T &&>	: hb_type_identity_t<T>, hb_true_type	{};
 template <typename T> using hb_remove_reference = typename hb_match_reference<T>::type;
 template <typename T> auto _hb_try_add_lvalue_reference (hb_priority<1>) -> hb_type_identity<T&>;
 template <typename T> auto _hb_try_add_lvalue_reference (hb_priority<0>) -> hb_type_identity<T>;
@@ -117,8 +117,8 @@ template <typename T> auto _hb_try_add_rvalue_reference (hb_priority<1>) -> hb_t
 template <typename T> auto _hb_try_add_rvalue_reference (hb_priority<0>) -> hb_type_identity<T>;
 template <typename T> using hb_add_rvalue_reference = decltype (_hb_try_add_rvalue_reference<T> (hb_prioritize));
 #define hb_is_reference(T) hb_match_reference<T>::value
-template <typename T> struct hb_match_pointer		: hb_type_identity_t<T>, hb_bool_constant<false>{};
-template <typename T> struct hb_match_pointer<T *>	: hb_type_identity_t<T>, hb_bool_constant<true>	{};
+template <typename T> struct hb_match_pointer		: hb_type_identity_t<T>, hb_false_type	{};
+template <typename T> struct hb_match_pointer<T *>	: hb_type_identity_t<T>, hb_true_type	{};
 template <typename T> using hb_remove_pointer = typename hb_match_pointer<T>::type;
 template <typename T> auto _hb_try_add_pointer (hb_priority<1>) -> hb_type_identity<hb_remove_reference<T>*>;
 template <typename T> auto _hb_try_add_pointer (hb_priority<1>) -> hb_type_identity<T>;
@@ -259,15 +259,15 @@ using hb_is_arithmetic = hb_bool_constant<
 #define hb_is_arithmetic(T) hb_is_arithmetic<T>::value
 
 
-template <typename T>
-using hb_is_signed = hb_conditional<hb_is_arithmetic (T),
-				    hb_bool_constant<(T) -1 < (T) 0>,
-				    hb_false_type>;
+template <typename T, bool is_arithmetic> struct hb_is_signed_;
+template <typename T> struct hb_is_signed_<T, false>	: hb_false_type {};
+template <typename T> struct hb_is_signed_<T, true>	: hb_bool_constant<(T) -1 < (T) 0> {};
+template <typename T> struct hb_is_signed : hb_is_signed_<T, hb_is_arithmetic (T)> {};
 #define hb_is_signed(T) hb_is_signed<T>::value
-template <typename T>
-using hb_is_unsigned = hb_conditional<hb_is_arithmetic (T),
-				      hb_bool_constant<(T) 0 < (T) -1>,
-				      hb_false_type>;
+template <typename T, bool is_arithmetic> struct hb_is_unsigned_;
+template <typename T> struct hb_is_unsigned_<T, false>	: hb_false_type {};
+template <typename T> struct hb_is_unsigned_<T, true>	: hb_bool_constant<(T) 0 < (T) -1> {};
+template <typename T> struct hb_is_unsigned : hb_is_unsigned_<T, hb_is_arithmetic (T)> {};
 #define hb_is_unsigned(T) hb_is_unsigned<T>::value
 
 template <typename T> struct hb_int_min;
@@ -282,6 +282,7 @@ template <> struct hb_int_min<signed long>		: hb_integral_constant<signed long,	
 template <> struct hb_int_min<unsigned long>		: hb_integral_constant<unsigned long,		0>		{};
 template <> struct hb_int_min<signed long long>		: hb_integral_constant<signed long long,	LLONG_MIN>	{};
 template <> struct hb_int_min<unsigned long long>	: hb_integral_constant<unsigned long long,	0>		{};
+template <typename T> struct hb_int_min<T *>		: hb_integral_constant<T *,			nullptr>	{};
 #define hb_int_min(T) hb_int_min<T>::value
 template <typename T> struct hb_int_max;
 template <> struct hb_int_max<char>			: hb_integral_constant<char,			CHAR_MAX>	{};

@@ -34,6 +34,7 @@
 #include "core/config/engine.h"
 #include "core/math/audio_frame.h"
 #include "core/object/ref_counted.h"
+#include "core/templates/ring_buffer.h"
 #include "core/templates/vector.h"
 #include "servers/audio/audio_effect.h"
 #include "servers/audio_server.h"

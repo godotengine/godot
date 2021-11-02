@@ -82,6 +82,7 @@ public:
 	virtual String get_data_path() const override;
 	virtual String get_cache_path() const override;
 	virtual String get_bundle_resource_dir() const override;
+	virtual String get_bundle_icon_path() const override;
 	virtual String get_godot_dir_name() const override;
 
 	virtual String get_system_dir(SystemDir p_dir, bool p_shared_storage = true) const override;
@@ -91,6 +92,8 @@ public:
 	String get_locale() const override;
 
 	virtual String get_executable_path() const override;
+	virtual Error create_process(const String &p_path, const List<String> &p_arguments, ProcessID *r_child_id = nullptr) override;
+	virtual Error create_instance(const List<String> &p_arguments, ProcessID *r_child_id = nullptr) override;
 
 	virtual String get_unique_id() const override; //++
 

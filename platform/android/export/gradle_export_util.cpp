@@ -121,17 +121,33 @@ Error store_string_at_path(const String &p_path, const String &p_data) {
 // It's functionality mirrors that of the method save_apk_file.
 // This method will be called ONLY when custom build is enabled.
 Error rename_and_store_file_in_gradle_project(void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key) {
-	String dst_path = p_path.replace_first("res://", "res://android/build/assets/");
+	CustomExportData *export_data = (CustomExportData *)p_userdata;
+	String dst_path = p_path.replace_first("res://", export_data->assets_directory + "/");
 	print_verbose("Saving project files from " + p_path + " into " + dst_path);
 	Error err = store_file_at_path(dst_path, p_data);
 	return err;
+}
+
+String _android_xml_escape(const String &p_string) {
+	// Android XML requires strings to be both valid XML (`xml_escape()`) but also
+	// to escape characters which are valid XML but have special meaning in Android XML.
+	// https://developer.android.com/guide/topics/resources/string-resource.html#FormattingAndStyling
+	// Note: Didn't handle U+XXXX unicode chars, could be done if needed.
+	return p_string
+			.replace("@", "\\@")
+			.replace("?", "\\?")
+			.replace("'", "\\'")
+			.replace("\"", "\\\"")
+			.replace("\n", "\\n")
+			.replace("\t", "\\t")
+			.xml_escape(false);
 }
 
 // Creates strings.xml files inside the gradle project for different locales.
 Error _create_project_name_strings_files(const Ref<EditorExportPreset> &p_preset, const String &project_name) {
 	print_verbose("Creating strings resources for supported locales for project " + project_name);
 	// Stores the string into the default values directory.
-	String processed_default_xml_string = vformat(godot_project_name_xml_string, project_name.xml_escape(true));
+	String processed_default_xml_string = vformat(godot_project_name_xml_string, _android_xml_escape(project_name));
 	store_string_at_path("res://android/build/res/values/godot_project_name_string.xml", processed_default_xml_string);
 
 	// Searches the Gradle project res/ directory to find all supported locales
@@ -157,7 +173,7 @@ Error _create_project_name_strings_files(const Ref<EditorExportPreset> &p_preset
 		String locale_directory = "res://android/build/res/" + file + "/godot_project_name_string.xml";
 		if (ProjectSettings::get_singleton()->has_setting(property_name)) {
 			String locale_project_name = ProjectSettings::get_singleton()->get(property_name);
-			String processed_xml_string = vformat(godot_project_name_xml_string, locale_project_name.xml_escape(true));
+			String processed_xml_string = vformat(godot_project_name_xml_string, _android_xml_escape(locale_project_name));
 			print_verbose("Storing project name for locale " + locale + " under " + locale_directory);
 			store_string_at_path(locale_directory, processed_xml_string);
 		} else {
@@ -175,7 +191,7 @@ String bool_to_string(bool v) {
 
 String _get_gles_tag() {
 	bool min_gles3 = ProjectSettings::get_singleton()->get("rendering/driver/driver_name") == "GLES3" &&
-					 !ProjectSettings::get_singleton()->get("rendering/driver/fallback_to_gles2");
+			!ProjectSettings::get_singleton()->get("rendering/driver/fallback_to_gles2");
 	return min_gles3 ? "    <uses-feature android:glEsVersion=\"0x00030000\" android:required=\"true\" />\n" : "";
 }
 
@@ -197,6 +213,8 @@ String _get_xr_features_tag(const Ref<EditorExportPreset> &p_preset) {
 	String manifest_xr_features;
 	bool uses_xr = (int)(p_preset->get("xr_features/xr_mode")) == 1;
 	if (uses_xr) {
+		manifest_xr_features += "    <uses-feature tools:node=\"replace\" android:name=\"android.hardware.vr.headtracking\" android:required=\"true\" android:version=\"1\" />\n";
+
 		int hand_tracking_index = p_preset->get("xr_features/hand_tracking"); // 0: none, 1: optional, 2: required
 		if (hand_tracking_index == 1) {
 			manifest_xr_features += "    <uses-feature tools:node=\"replace\" android:name=\"oculus.software.handtracking\" android:required=\"false\" />\n";
@@ -228,7 +246,9 @@ String _get_activity_tag(const Ref<EditorExportPreset> &p_preset) {
 			"tools:replace=\"android:screenOrientation\" "
 			"android:screenOrientation=\"%s\">\n",
 			orientation);
-	if (!uses_xr) {
+	if (uses_xr) {
+		manifest_activity_text += "            <meta-data tools:node=\"replace\" android:name=\"com.oculus.vr.focusaware\" android:value=\"true\" />\n";
+	} else {
 		manifest_activity_text += "            <meta-data tools:node=\"remove\" android:name=\"com.oculus.vr.focusaware\" />\n";
 	}
 	manifest_activity_text += "        </activity>\n";

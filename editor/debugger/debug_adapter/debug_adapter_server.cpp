@@ -36,7 +36,8 @@
 
 DebugAdapterServer::DebugAdapterServer() {
 	_EDITOR_DEF("network/debug_adapter/remote_port", remote_port);
-	_EDITOR_DEF("network/debug_adapter/use_thread", use_thread);
+	_EDITOR_DEF("network/debug_adapter/request_timeout", protocol._request_timeout);
+	_EDITOR_DEF("network/debug_adapter/sync_breakpoints", protocol._sync_breakpoints);
 }
 
 void DebugAdapterServer::_notification(int p_what) {
@@ -50,16 +51,17 @@ void DebugAdapterServer::_notification(int p_what) {
 		case NOTIFICATION_INTERNAL_PROCESS: {
 			// The main loop can be run again during request processing, which modifies internal state of the protocol.
 			// Thus, "polling" is needed to prevent it from parsing other requests while the current one isn't finished.
-			if (started && !use_thread && !polling) {
+			if (started && !polling) {
 				polling = true;
 				protocol.poll();
 				polling = false;
 			}
 		} break;
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+			protocol._request_timeout = EditorSettings::get_singleton()->get("network/debug_adapter/request_timeout");
+			protocol._sync_breakpoints = EditorSettings::get_singleton()->get("network/debug_adapter/sync_breakpoints");
 			int remote_port = (int)_EDITOR_GET("network/debug_adapter/remote_port");
-			bool use_thread = (bool)_EDITOR_GET("network/debug_adapter/use_thread");
-			if (remote_port != this->remote_port || use_thread != this->use_thread) {
+			if (remote_port != this->remote_port) {
 				this->stop();
 				this->start();
 			}
@@ -67,35 +69,16 @@ void DebugAdapterServer::_notification(int p_what) {
 	}
 }
 
-void DebugAdapterServer::thread_func(void *p_userdata) {
-	DebugAdapterServer *self = static_cast<DebugAdapterServer *>(p_userdata);
-	while (self->thread_running) {
-		// Poll 20 times per second
-		self->protocol.poll();
-		OS::get_singleton()->delay_usec(50000);
-	}
-}
-
 void DebugAdapterServer::start() {
 	remote_port = (int)_EDITOR_GET("network/debug_adapter/remote_port");
-	use_thread = (bool)_EDITOR_GET("network/debug_adapter/use_thread");
 	if (protocol.start(remote_port, IPAddress("127.0.0.1")) == OK) {
 		EditorNode::get_log()->add_message("--- Debug adapter server started ---", EditorLog::MSG_TYPE_EDITOR);
-		if (use_thread) {
-			thread_running = true;
-			thread.start(DebugAdapterServer::thread_func, this);
-		}
-		set_process_internal(!use_thread);
+		set_process_internal(true);
 		started = true;
 	}
 }
 
 void DebugAdapterServer::stop() {
-	if (use_thread) {
-		ERR_FAIL_COND(!thread.is_started());
-		thread_running = false;
-		thread.wait_to_finish();
-	}
 	protocol.stop();
 	started = false;
 	EditorNode::get_log()->add_message("--- Debug adapter server stopped ---", EditorLog::MSG_TYPE_EDITOR);

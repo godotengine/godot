@@ -5,6 +5,7 @@
 	</brief_description>
 	<description>
 		StreamPeer is an abstraction and base class for stream-based protocols (such as TCP). It provides an API for sending and receiving data through streams as raw data or strings.
+		[b]Note:[/b] When exporting to Android, make sure to enable the [code]INTERNET[/code] permission in the Android export preset before exporting the project or using one-click deploy. Otherwise, network communication of any kind will be blocked by Android.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -172,7 +173,7 @@
 			<argument index="0" name="value" type="String" />
 			<description>
 				Puts a zero-terminated ASCII string into the stream prepended by a 32-bit unsigned integer representing its size.
-				Note: To put an ASCII string without prepending its size, you can use [method put_data]:
+				[b]Note:[/b] To put an ASCII string without prepending its size, you can use [method put_data]:
 				[codeblocks]
 				[gdscript]
 				put_data("Hello world".to_ascii())
@@ -216,7 +217,7 @@
 			<argument index="0" name="value" type="String" />
 			<description>
 				Puts a zero-terminated UTF-8 string into the stream prepended by a 32 bits unsigned integer representing its size.
-				Note: To put an UTF-8 string without prepending its size, you can use [method put_data]:
+				[b]Note:[/b] To put an UTF-8 string without prepending its size, you can use [method put_data]:
 				[codeblocks]
 				[gdscript]
 				put_data("Hello world".to_utf8())
@@ -241,6 +242,4 @@
 			If [code]true[/code], this [StreamPeer] will using big-endian format for encoding and decoding.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

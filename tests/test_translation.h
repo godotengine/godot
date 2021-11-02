@@ -35,6 +35,10 @@
 #include "core/string/translation.h"
 #include "core/string/translation_po.h"
 
+#ifdef TOOLS_ENABLED
+#include "editor/import/resource_importer_csv_translation.h"
+#endif
+
 #include "thirdparty/doctest/doctest.h"
 
 namespace TestTranslation {
@@ -144,6 +148,33 @@ TEST_CASE("[OptimizedTranslation] Generate from Translation and read messages") 
 	CHECK(optimized_translation->get_message_count() == 0);
 	CHECK(messages.size() == 0);
 }
+
+#ifdef TOOLS_ENABLED
+TEST_CASE("[Translation] CSV import") {
+	Ref<ResourceImporterCSVTranslation> import_csv_translation = memnew(ResourceImporterCSVTranslation);
+
+	Map<StringName, Variant> options;
+	options["compress"] = false;
+	options["delimiter"] = 0;
+
+	List<String> gen_files;
+
+	Error result = import_csv_translation->import(TestUtils::get_data_path("translations.csv"),
+			"", options, nullptr, &gen_files);
+	CHECK(result == OK);
+	CHECK(gen_files.size() == 2);
+
+	for (const String &file : gen_files) {
+		Ref<Translation> translation = ResourceLoader::load(file);
+		CHECK(translation.is_valid());
+		TranslationServer::get_singleton()->add_translation(translation);
+	}
+
+	TranslationServer::get_singleton()->set_locale("de");
+
+	CHECK(Object().tr("GOOD_MORNING", "") == "Guten Morgen");
+}
+#endif // TOOLS_ENABLED
 
 } // namespace TestTranslation
 

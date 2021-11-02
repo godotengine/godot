@@ -48,7 +48,7 @@ public:
 	void _peer_disconnected(int p_peer, bool p_was_clean);
 
 	void poll() override;
-	Error start() override;
+	Error start(const String &p_uri) override;
 	void stop() override;
 	bool is_active() const override;
 	bool is_connection_available() const override;

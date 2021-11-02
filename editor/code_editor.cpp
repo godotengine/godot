@@ -715,7 +715,27 @@ void CodeTextEditor::input(const Ref<InputEvent> &event) {
 	ERR_FAIL_COND(event.is_null());
 
 	const Ref<InputEventKey> key_event = event;
-	if (!key_event.is_valid() || !key_event->is_pressed() || !text_editor->has_focus()) {
+
+	if (!key_event.is_valid()) {
+		return;
+	}
+	if (!key_event->is_pressed()) {
+		return;
+	}
+
+	if (!text_editor->has_focus()) {
+		if ((find_replace_bar != nullptr && find_replace_bar->is_visible()) && (find_replace_bar->has_focus() || find_replace_bar->is_ancestor_of(get_focus_owner()))) {
+			if (ED_IS_SHORTCUT("script_text_editor/find_next", key_event)) {
+				find_replace_bar->search_next();
+				accept_event();
+				return;
+			}
+			if (ED_IS_SHORTCUT("script_text_editor/find_previous", key_event)) {
+				find_replace_bar->search_prev();
+				accept_event();
+				return;
+			}
+		}
 		return;
 	}
 
@@ -814,11 +834,9 @@ void CodeTextEditor::_line_col_changed() {
 	}
 
 	StringBuilder sb;
-	sb.append("(");
-	sb.append(itos(text_editor->get_caret_line() + 1).lpad(3));
-	sb.append(",");
+	sb.append(itos(text_editor->get_caret_line() + 1).lpad(4));
+	sb.append(" : ");
 	sb.append(itos(positional_column + 1).lpad(3));
-	sb.append(")");
 
 	line_and_col_txt->set_text(sb.as_string());
 }
@@ -1282,7 +1300,9 @@ void CodeTextEditor::_delete_line(int p_line) {
 		text_editor->set_caret_column(0);
 	}
 	text_editor->backspace();
-	text_editor->unfold_line(p_line);
+	if (p_line < text_editor->get_line_count()) {
+		text_editor->unfold_line(p_line);
+	}
 	text_editor->set_caret_line(p_line);
 }
 
@@ -1559,17 +1579,10 @@ void CodeTextEditor::_update_text_editor_theme() {
 }
 
 void CodeTextEditor::_on_settings_change() {
-	if (settings_changed) {
-		return;
-	}
-
-	settings_changed = true;
-	MessageQueue::get_singleton()->push_callable(callable_mp(this, &CodeTextEditor::_apply_settings_change));
+	_apply_settings_change();
 }
 
 void CodeTextEditor::_apply_settings_change() {
-	settings_changed = false;
-
 	_update_text_editor_theme();
 
 	font_size = EditorSettings::get_singleton()->get("interface/editor/code_font_size");
@@ -1635,11 +1648,8 @@ void CodeTextEditor::_set_show_warnings_panel(bool p_show) {
 }
 
 void CodeTextEditor::_toggle_scripts_pressed() {
-	if (is_layout_rtl()) {
-		toggle_scripts_button->set_icon(ScriptEditor::get_singleton()->toggle_scripts_panel() ? get_theme_icon(SNAME("Forward"), SNAME("EditorIcons")) : get_theme_icon(SNAME("Back"), SNAME("EditorIcons")));
-	} else {
-		toggle_scripts_button->set_icon(ScriptEditor::get_singleton()->toggle_scripts_panel() ? get_theme_icon(SNAME("Back"), SNAME("EditorIcons")) : get_theme_icon(SNAME("Forward"), SNAME("EditorIcons")));
-	}
+	ScriptEditor::get_singleton()->toggle_scripts_panel();
+	update_toggle_scripts_button();
 }
 
 void CodeTextEditor::_error_pressed(const Ref<InputEvent> &p_event) {
@@ -1735,7 +1745,7 @@ void CodeTextEditor::goto_prev_bookmark() {
 		text_editor->set_caret_line(bmarks[bmarks.size() - 1]);
 		text_editor->center_viewport_to_caret();
 	} else {
-		for (int i = bmarks.size(); i >= 0; i--) {
+		for (int i = bmarks.size() - 1; i >= 0; i--) {
 			int bmark_line = bmarks[i];
 			if (bmark_line < line) {
 				text_editor->unfold_line(bmark_line);
@@ -1769,11 +1779,11 @@ void CodeTextEditor::show_toggle_scripts_button() {
 
 void CodeTextEditor::update_toggle_scripts_button() {
 	if (is_layout_rtl()) {
-		toggle_scripts_button->set_icon(ScriptEditor::get_singleton()->is_scripts_panel_toggled() ? get_theme_icon(SNAME("Forward"), SNAME("EditorIcons")) : get_theme_icon(SNAME("Back"), SNAME("EditorIcons")));
+		toggle_scripts_button->set_icon(get_theme_icon(ScriptEditor::get_singleton()->is_scripts_panel_toggled() ? SNAME("Forward") : SNAME("Back"), SNAME("EditorIcons")));
 	} else {
-		toggle_scripts_button->set_icon(ScriptEditor::get_singleton()->is_scripts_panel_toggled() ? get_theme_icon(SNAME("Back"), SNAME("EditorIcons")) : get_theme_icon(SNAME("Forward"), SNAME("EditorIcons")));
+		toggle_scripts_button->set_icon(get_theme_icon(ScriptEditor::get_singleton()->is_scripts_panel_toggled() ? SNAME("Back") : SNAME("Forward"), SNAME("EditorIcons")));
 	}
-	toggle_scripts_button->set_tooltip(TTR("Toggle Scripts Panel") + " (" + ED_GET_SHORTCUT("script_editor/toggle_scripts_panel")->get_as_text() + ")");
+	toggle_scripts_button->set_tooltip(vformat("%s (%s)", TTR("Toggle Scripts Panel"), ED_GET_SHORTCUT("script_editor/toggle_scripts_panel")->get_as_text()));
 }
 
 CodeTextEditor::CodeTextEditor() {
@@ -1814,6 +1824,7 @@ CodeTextEditor::CodeTextEditor() {
 	text_editor->set_draw_line_numbers(true);
 	text_editor->set_highlight_matching_braces_enabled(true);
 	text_editor->set_auto_indent_enabled(true);
+	text_editor->set_deselect_on_focus_loss_enabled(false);
 
 	status_bar = memnew(HBoxContainer);
 	add_child(status_bar);

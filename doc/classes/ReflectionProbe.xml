@@ -10,8 +10,6 @@
 	<tutorials>
 		<link title="Reflection probes">https://docs.godotengine.org/en/latest/tutorials/3d/reflection_probes.html</link>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="ambient_color" type="Color" setter="set_ambient_color" getter="get_ambient_color" default="Color(0, 0, 0, 1)">
 		</member>

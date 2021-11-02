@@ -97,6 +97,7 @@ private:
 	float full_width = 0.0;
 
 	bool selecting_enabled = true;
+	bool deselect_on_focus_loss_enabled = true;
 
 	bool context_menu_enabled = true;
 	PopupMenu *menu = nullptr;
@@ -126,6 +127,8 @@ private:
 
 	bool virtual_keyboard_enabled = true;
 
+	bool middle_mouse_paste_enabled = true;
+
 	Ref<Texture2D> right_icon;
 
 	struct Selection {
@@ -136,7 +139,6 @@ private:
 		bool creating = false;
 		bool double_click = false;
 		bool drag_attempt = false;
-		uint64_t last_dblclk = 0;
 	} selection;
 
 	struct TextOperation {
@@ -152,6 +154,9 @@ private:
 		bool press_attempt = false;
 		bool pressing_inside = false;
 	} clear_button_status;
+
+	uint64_t last_dblclk = 0;
+	Vector2 last_dblclk_pos;
 
 	bool caret_blink_enabled = false;
 	bool caret_force_displayed = false;
@@ -185,7 +190,6 @@ private:
 	void _toggle_draw_caret();
 
 	void clear_internal();
-	void changed_internal();
 
 	void _editor_settings_changed();
 
@@ -229,6 +233,9 @@ public:
 	void select_all();
 	void selection_delete();
 	void deselect();
+	bool has_selection() const;
+	int get_selection_from_column() const;
+	int get_selection_to_column() const;
 
 	void delete_char();
 	void delete_text(int p_from_column, int p_to_column);
@@ -313,8 +320,14 @@ public:
 	void set_virtual_keyboard_enabled(bool p_enable);
 	bool is_virtual_keyboard_enabled() const;
 
+	void set_middle_mouse_paste_enabled(bool p_enabled);
+	bool is_middle_mouse_paste_enabled() const;
+
 	void set_selecting_enabled(bool p_enabled);
 	bool is_selecting_enabled() const;
+
+	void set_deselect_on_focus_loss_enabled(const bool p_enabled);
+	bool is_deselect_on_focus_loss_enabled() const;
 
 	void set_right_icon(const Ref<Texture2D> &p_icon);
 	Ref<Texture2D> get_right_icon();

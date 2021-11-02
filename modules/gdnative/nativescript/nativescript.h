@@ -71,7 +71,7 @@ struct NativeScriptDesc {
 	};
 
 	Map<StringName, Method> methods;
-	Vector<MultiplayerAPI::RPCConfig> rpc_methods;
+	Vector<Multiplayer::RPCConfig> rpc_methods;
 	OrderedHashMap<StringName, Property> properties;
 	Map<StringName, Signal> signals_; // QtCreator doesn't like the name signals
 	StringName base;
@@ -175,7 +175,7 @@ public:
 	virtual void get_script_method_list(List<MethodInfo> *p_list) const override;
 	virtual void get_script_property_list(List<PropertyInfo> *p_list) const override;
 
-	virtual const Vector<MultiplayerAPI::RPCConfig> get_rpc_methods() const override;
+	virtual const Vector<Multiplayer::RPCConfig> get_rpc_methods() const override;
 
 	String get_class_documentation() const;
 	String get_method_documentation(const StringName &p_method) const;
@@ -213,7 +213,7 @@ public:
 	String to_string(bool *r_valid);
 	virtual Ref<Script> get_script() const;
 
-	virtual const Vector<MultiplayerAPI::RPCConfig> get_rpc_methods() const;
+	virtual const Vector<Multiplayer::RPCConfig> get_rpc_methods() const;
 
 	virtual ScriptLanguage *get_language();
 
@@ -269,7 +269,6 @@ private:
 	};
 
 	Map<StringName, ProfileData> profile_data;
-	bool profiling = false;
 
 public:
 	// These two maps must only be touched on the main thread
@@ -294,8 +293,6 @@ public:
 	inline static NativeScriptLanguage *get_singleton() {
 		return singleton;
 	}
-
-	void _hacky_api_anchor();
 
 	_FORCE_INLINE_ void set_language_index(int p_idx) { lang_idx = p_idx; }
 

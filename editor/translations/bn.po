@@ -14,6 +14,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
+"Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
 "PO-Revision-Date: 2021-08-03 06:20+0000\n"
 "Last-Translator: Oymate <dhruboadittya96@gmail.com>\n"
@@ -1052,7 +1053,7 @@ msgstr ""
 msgid "Dependencies"
 msgstr "নির্ভরতা-সমূহ"
 
-#: editor/dependency_editor.cpp
+#: editor/dependency_editor.cpp editor/editor_resource_picker.cpp
 msgid "Resource"
 msgstr "রিসোর্স"
 
@@ -1723,14 +1724,14 @@ msgid ""
 "Enabled'."
 msgstr ""
 
-#: editor/editor_export.cpp platform/android/export/export.cpp
+#: editor/editor_export.cpp platform/android/export/export_plugin.cpp
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
 #: platform/osx/export/export.cpp platform/uwp/export/export.cpp
 #, fuzzy
 msgid "Custom debug template not found."
 msgstr "স্বনির্মিত ডিবাগ (debug) প্যাকেজ খুঁজে পাওয়া যায়নি।"
 
-#: editor/editor_export.cpp platform/android/export/export.cpp
+#: editor/editor_export.cpp platform/android/export/export_plugin.cpp
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
 #: platform/osx/export/export.cpp platform/uwp/export/export.cpp
 #, fuzzy
@@ -2147,7 +2148,7 @@ msgstr ""
 msgid "(Re)Importing Assets"
 msgstr "পুনরায় ইম্পোর্ট হচ্ছে"
 
-#: editor/editor_help.cpp editor/plugins/spatial_editor_plugin.cpp
+#: editor/editor_help.cpp
 msgid "Top"
 msgstr "শীর্ষ"
 
@@ -2513,6 +2514,16 @@ msgstr ""
 "দৃশ্যটি সংরক্ষণ করা সম্ভব হচ্ছে না। সম্ভবত যেসবের (ইন্সট্যান্স) উপর নির্ভর করছে তাদের "
 "সন্তুষ্ট করা সম্ভব হচ্ছে না।"
 
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Could not save one or more scenes!"
+msgstr "রূপান্তরিত গঠনবিন্যাস সংরক্ষণ করা সম্ভব হচ্ছে না:"
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Save All Scenes"
+msgstr "সকল দৃশ্য সংরক্ষণ করুন"
+
 #: editor/editor_node.cpp editor/scene_tree_dock.cpp
 msgid "Can't overwrite scene that is still open!"
 msgstr ""
@@ -2646,6 +2657,10 @@ msgid "Save changes to '%s' before closing?"
 msgstr "'%s' বন্ধ করার পূর্বে পরিবর্তনসমূহ সংরক্ষণ করবেন?"
 
 #: editor/editor_node.cpp
+msgid "%s no longer exists! Please specify a new save location."
+msgstr ""
+
+#: editor/editor_node.cpp
 msgid ""
 "The current scene has no root node, but %d modified external resource(s) "
 "were saved anyway."
@@ -2687,6 +2702,32 @@ msgstr "দৃশ্য ছাড়া এটি করা সম্ভব হব�
 #: editor/editor_node.cpp
 msgid "Current scene not saved. Open anyway?"
 msgstr "বর্তমান দৃশ্যটি সংরক্ষিত হয়নি। তবুও খুলবেন?"
+
+#: editor/editor_node.cpp
+msgid "Can't undo while mouse buttons are pressed."
+msgstr ""
+
+#: editor/editor_node.cpp
+msgid "Nothing to undo."
+msgstr ""
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Undo: %s"
+msgstr "সাবেক অবস্থায় যান/আনডু"
+
+#: editor/editor_node.cpp
+msgid "Can't redo while mouse buttons are pressed."
+msgstr ""
+
+#: editor/editor_node.cpp
+msgid "Nothing to redo."
+msgstr ""
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Redo: %s"
+msgstr "পুনরায় করুন"
 
 #: editor/editor_node.cpp
 msgid "Can't reload a scene that was never saved."
@@ -2981,11 +3022,6 @@ msgstr "সাম্প্রতিকসমূহ খুলুন"
 #: editor/editor_node.cpp
 msgid "Save Scene"
 msgstr "দৃশ্য সংরক্ষণ করুন"
-
-#: editor/editor_node.cpp
-#, fuzzy
-msgid "Save All Scenes"
-msgstr "সকল দৃশ্য সংরক্ষণ করুন"
 
 #: editor/editor_node.cpp
 msgid "Convert To..."
@@ -3407,6 +3443,11 @@ msgid "Merge With Existing"
 msgstr "বিদ্যমানের সাথে একত্রিত করুন"
 
 #: editor/editor_node.cpp
+#, fuzzy
+msgid "Apply MeshInstance Transforms"
+msgstr "অ্যানিমেশন (Anim) ট্রান্সফর্ম পরিবর্তন করুন"
+
+#: editor/editor_node.cpp
 msgid "Open & Run a Script"
 msgstr "একটি স্ক্রিপ্ট খুলুন এবং চালান"
 
@@ -3679,6 +3720,10 @@ msgstr ""
 msgid ""
 "The selected resource (%s) does not match any type expected for this "
 "property (%s)."
+msgstr ""
+
+#: editor/editor_resource_picker.cpp
+msgid "Quick Load"
 msgstr ""
 
 #: editor/editor_resource_picker.cpp editor/property_editor.cpp
@@ -4587,6 +4632,19 @@ msgstr "'%s' এর জন্য ডিফল্ট ক্লিয়ার  ক�
 
 #: editor/import_dock.cpp
 #, fuzzy
+msgid "Reimport"
+msgstr "পুন-ইম্পোর্ট"
+
+#: editor/import_dock.cpp
+msgid ""
+"You have pending changes that haven't been applied yet. Click Reimport to "
+"apply changes made to the import options.\n"
+"Selecting another resource in the FileSystem dock without clicking Reimport "
+"first will discard changes made in the Import dock."
+msgstr ""
+
+#: editor/import_dock.cpp
+#, fuzzy
 msgid "Import As:"
 msgstr "ইম্পোর্ট"
 
@@ -4594,11 +4652,6 @@ msgstr "ইম্পোর্ট"
 #, fuzzy
 msgid "Preset"
 msgstr "প্রিসেট..."
-
-#: editor/import_dock.cpp
-#, fuzzy
-msgid "Reimport"
-msgstr "পুন-ইম্পোর্ট"
 
 #: editor/import_dock.cpp
 msgid "Save Scenes, Re-Import, and Restart"
@@ -5971,6 +6024,18 @@ msgid "Move CanvasItem \"%s\" to (%d, %d)"
 msgstr "CanvasItem সম্পাদন করুন"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Locked"
+msgstr "নির্বাচন করুন"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Grouped"
+msgstr "গ্রুপ"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid ""
 "Children of containers have their anchors and margins values overridden by "
 "their parent."
@@ -6977,7 +7042,13 @@ msgid "Remove Selected Item"
 msgstr "নির্বাচিত বস্তুটি অপসারণ করুন"
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
-msgid "Import from Scene"
+#, fuzzy
+msgid "Import from Scene (Ignore Transforms)"
+msgstr "দৃশ্য হতে ইম্পোর্ট করুন"
+
+#: editor/plugins/mesh_library_editor_plugin.cpp
+#, fuzzy
+msgid "Import from Scene (Apply Transforms)"
 msgstr "দৃশ্য হতে ইম্পোর্ট করুন"
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
@@ -7609,6 +7680,16 @@ msgstr "উৎপাদিত বিন্দুর সংখ্যা:"
 msgid "Flip Portal"
 msgstr ""
 
+#: editor/plugins/room_manager_editor_plugin.cpp
+#, fuzzy
+msgid "Occluder Set Transform"
+msgstr "রুপান্তর"
+
+#: editor/plugins/room_manager_editor_plugin.cpp
+#, fuzzy
+msgid "Center Node"
+msgstr "নোড তৈরি করুন"
+
 #: editor/plugins/root_motion_editor_plugin.cpp
 msgid "AnimationTree has no path set to an AnimationPlayer"
 msgstr ""
@@ -7757,11 +7838,13 @@ msgid "Move Down"
 msgstr "নীচে যান"
 
 #: editor/plugins/script_editor_plugin.cpp
-msgid "Next script"
+#, fuzzy
+msgid "Next Script"
 msgstr "পরবর্তী স্ক্রিপ্ট"
 
 #: editor/plugins/script_editor_plugin.cpp
-msgid "Previous script"
+#, fuzzy
+msgid "Previous Script"
 msgstr "পূর্ববর্তী স্ক্রিপ্ট"
 
 #: editor/plugins/script_editor_plugin.cpp
@@ -8158,12 +8241,14 @@ msgid "Skeleton2D"
 msgstr "স্কেলেটন/কাঠাম..."
 
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
-msgid "Make Rest Pose (From Bones)"
-msgstr ""
+#, fuzzy
+msgid "Reset to Rest Pose"
+msgstr "প্রাথমিক sRGB ব্যবহার করুন"
 
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
-msgid "Set Bones to Rest Pose"
-msgstr ""
+#, fuzzy
+msgid "Overwrite Rest Pose"
+msgstr "প্রতিস্থাপন"
 
 #: editor/plugins/skeleton_editor_plugin.cpp
 #, fuzzy
@@ -8192,6 +8277,76 @@ msgstr "সমকোণীয় (Orthogonal)"
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Perspective"
 msgstr "পরিপ্রেক্ষিত (Perspective)"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Top Orthogonal"
+msgstr "সমকোণীয় (Orthogonal)"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Top Perspective"
+msgstr "পরিপ্রেক্ষিত (Perspective)"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Bottom Orthogonal"
+msgstr "সমকোণীয় (Orthogonal)"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Bottom Perspective"
+msgstr "পরিপ্রেক্ষিত (Perspective)"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Left Orthogonal"
+msgstr "সমকোণীয় (Orthogonal)"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Left Perspective"
+msgstr "পরিপ্রেক্ষিত (Perspective)"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Right Orthogonal"
+msgstr "সমকোণীয় (Orthogonal)"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Right Perspective"
+msgstr "পরিপ্রেক্ষিত (Perspective)"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Front Orthogonal"
+msgstr "সমকোণীয় (Orthogonal)"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Front Perspective"
+msgstr "পরিপ্রেক্ষিত (Perspective)"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Rear Orthogonal"
+msgstr "সমকোণীয় (Orthogonal)"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Rear Perspective"
+msgstr "পরিপ্রেক্ষিত (Perspective)"
+
+#. TRANSLATORS: This will be appended to the view name when Auto Orthogonal is enabled.
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid " [auto]"
+msgstr ""
+
+#. TRANSLATORS: This will be appended to the view name when Portal Occulusion is enabled.
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid " [portals active]"
+msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Transform Aborted."
@@ -8315,40 +8470,20 @@ msgid "Bottom View."
 msgstr "নিম্ন দর্শন।"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Bottom"
-msgstr "নিম্ন"
-
-#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Left View."
 msgstr "বাম দর্শন।"
-
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "Left"
-msgstr "বাম"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Right View."
 msgstr "ডান দর্শন।"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Right"
-msgstr "ডান"
-
-#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Front View."
 msgstr "সন্মুখ দর্শন।"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Front"
-msgstr "সন্মুখ"
-
-#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Rear View."
 msgstr "পশ্চাৎ দর্শন।"
-
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "Rear"
-msgstr "পশ্চাৎ"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 #, fuzzy
@@ -8559,6 +8694,27 @@ msgid "Right View"
 msgstr "ডান দর্শন"
 
 #: editor/plugins/spatial_editor_plugin.cpp
+msgid "Orbit View Down"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Orbit View Left"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Orbit View Right"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Orbit View Up"
+msgstr "সন্মুখ দর্শন"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Orbit View 180"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
 #, fuzzy
 msgid "Switch Perspective/Orthogonal View"
 msgstr "পরিপ্রেক্ষিত/সমকোণীয় (Perspective/Orthogonal) দর্শন পরিবর্তন করুন"
@@ -8637,6 +8793,11 @@ msgid "View Portal Culling"
 msgstr "Viewport সেটিংস"
 
 #: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "View Occlusion Culling"
+msgstr "Viewport সেটিংস"
+
+#: editor/plugins/spatial_editor_plugin.cpp
 #: modules/gridmap/grid_map_editor_plugin.cpp
 #, fuzzy
 msgid "Settings..."
@@ -8703,8 +8864,9 @@ msgid "Post"
 msgstr "পরবর্তী (Post)"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Nameless gizmo"
-msgstr ""
+#, fuzzy
+msgid "Unnamed Gizmo"
+msgstr "নামহীন প্রকল্প"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 #, fuzzy
@@ -13073,6 +13235,16 @@ msgstr "বক্ররেখার বিন্দুর স্থান নি
 msgid "Set Portal Point Position"
 msgstr "বক্ররেখার বিন্দুর স্থান নির্ধারণ করুন"
 
+#: editor/spatial_editor_gizmos.cpp
+#, fuzzy
+msgid "Set Occluder Sphere Radius"
+msgstr "Capsule Shape এর ব্যাসার্ধ পরিবর্তন করুন"
+
+#: editor/spatial_editor_gizmos.cpp
+#, fuzzy
+msgid "Set Occluder Sphere Position"
+msgstr "আন্ত-বক্ররেখার স্থান নির্ধারণ করুন"
+
 #: modules/csg/csg_gizmos.cpp
 #, fuzzy
 msgid "Change Cylinder Radius"
@@ -13390,6 +13562,11 @@ msgstr "ছবিসমূহ ব্লিটিং (Blitting) করা হচ�
 #: modules/mono/csharp_script.cpp
 msgid "Class name can't be a reserved keyword"
 msgstr ""
+
+#: modules/mono/csharp_script.cpp
+#, fuzzy
+msgid "Build Solution"
+msgstr "সব সিলেক্ট করুন"
 
 #: modules/mono/mono_gd/gd_mono_utils.cpp
 msgid "End of inner exception stack trace"
@@ -13927,166 +14104,155 @@ msgstr "Shader Graph Node অপসারণ করুন"
 msgid "Get %s"
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Package name is missing."
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Package segments must be of non-zero length."
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "The character '%s' is not allowed in Android application package names."
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "A digit cannot be the first character in a package segment."
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "The character '%s' cannot be the first character in a package segment."
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "The package must have at least one '.' separator."
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Select device from the list"
 msgstr "লিস্ট থেকে ডিভাইস সিলেক্ট করুন"
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Running on %s"
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 #, fuzzy
 msgid "Exporting APK..."
 msgstr "%s এর জন্য এক্সপোর্ট (export) হচ্ছে"
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 #, fuzzy
 msgid "Uninstalling..."
 msgstr "ইন্সটল"
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 #, fuzzy
 msgid "Installing to device, please wait..."
 msgstr "মিরর রিট্রাইভ করা হচ্ছে, দযা করে অপেক্ষা করুন..."
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 #, fuzzy
 msgid "Could not install to device: %s"
 msgstr "দৃশ্য ইন্সট্যান্স করা সম্ভব হয়নি!"
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 #, fuzzy
 msgid "Running on device..."
 msgstr "স্বনির্মিত স্ক্রিপ্ট চালানো হচ্ছে..."
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 #, fuzzy
 msgid "Could not execute on device."
 msgstr "ফোল্ডার তৈরী করা সম্ভব হয়নি।"
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Unable to find the 'apksigner' tool."
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid ""
 "Android build template not installed in the project. Install it from the "
 "Project menu."
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid ""
 "Either Debug Keystore, Debug User AND Debug Password settings must be "
 "configured OR none of them."
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Debug keystore not configured in the Editor Settings nor in the preset."
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid ""
 "Either Release Keystore, Release User AND Release Password settings must be "
 "configured OR none of them."
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Release keystore incorrectly configured in the export preset."
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "A valid Android SDK path is required in Editor Settings."
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Invalid Android SDK path in Editor Settings."
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Missing 'platform-tools' directory!"
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Unable to find Android SDK platform-tools' adb command."
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Please check in the Android SDK directory specified in Editor Settings."
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Missing 'build-tools' directory!"
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Unable to find Android SDK build-tools' apksigner command."
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Invalid public key for APK expansion."
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 #, fuzzy
 msgid "Invalid package name:"
 msgstr "অগ্রহণযোগ্য ক্লাস নাম"
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid ""
 "Invalid \"GodotPaymentV3\" module included in the \"android/modules\" "
 "project setting (changed in Godot 3.2.2).\n"
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "\"Use Custom Build\" must be enabled to use the plugins."
 msgstr ""
 
-#: platform/android/export/export.cpp
-msgid ""
-"\"Degrees Of Freedom\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR"
-"\"."
-msgstr ""
-
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid ""
 "\"Hand Tracking\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\"."
 msgstr ""
 
-#: platform/android/export/export.cpp
-msgid ""
-"\"Focus Awareness\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\"."
-msgstr ""
-
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "\"Export AAB\" is only valid when \"Use Custom Build\" is enabled."
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid ""
 "'apksigner' could not be found.\n"
 "Please check the command is available in the Android SDK build-tools "
@@ -14094,63 +14260,63 @@ msgid ""
 "The resulting %s is unsigned."
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Signing debug %s..."
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 #, fuzzy
 msgid "Signing release %s..."
 msgstr ""
 "ফাইল স্ক্যান করা হচ্ছে,\n"
 "অনুগ্রহপূর্বক অপেক্ষা করুন..."
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 #, fuzzy
 msgid "Could not find keystore, unable to export."
 msgstr "ফোল্ডার তৈরী করা সম্ভব হয়নি।"
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "'apksigner' returned with error #%d"
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 #, fuzzy
 msgid "Verifying %s..."
 msgstr "%s সংযুক্ত হচ্ছে..."
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "'apksigner' verification of %s failed."
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 #, fuzzy
 msgid "Exporting for Android"
 msgstr "%s এর জন্য এক্সপোর্ট (export) হচ্ছে"
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Invalid filename! Android App Bundle requires the *.aab extension."
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "APK Expansion not compatible with Android App Bundle."
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Invalid filename! Android APK requires the *.apk extension."
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Unsupported export format!\n"
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid ""
 "Trying to build from a custom built template, but no version info for it "
 "exists. Please reinstall from the 'Project' menu."
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid ""
 "Android build version mismatch:\n"
 "   Template installed: %s\n"
@@ -14158,59 +14324,59 @@ msgid ""
 "Please reinstall Android build template from 'Project' menu."
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid ""
 "Unable to overwrite res://android/build/res/*.xml files with project name"
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 #, fuzzy
 msgid "Could not export project files to gradle project\n"
 msgstr "প্রকল্পের পথে engine.cfg তৈরি করা সম্ভব হয়নি।"
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 #, fuzzy
 msgid "Could not write expansion package file!"
 msgstr "টাইলটি খুঁজে পাওয়া যায়নি:"
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Building Android Project (gradle)"
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid ""
 "Building of Android project failed, check output for the error.\n"
 "Alternatively visit docs.godotengine.org for Android build documentation."
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Moving output"
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid ""
 "Unable to copy and rename export file, check gradle project directory for "
 "outputs."
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 #, fuzzy
 msgid "Package not found: %s"
 msgstr "অ্যানিমেশনের সরঞ্জামসমূহ"
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 #, fuzzy
 msgid "Creating APK..."
 msgstr "ওকট্রী (octree) গঠনবিন্যাস তৈরি করা হচ্ছে"
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 #, fuzzy
 msgid ""
 "Could not find template APK to export:\n"
 "%s"
 msgstr "ফোল্ডার তৈরী করা সম্ভব হয়নি।"
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid ""
 "Missing libraries in the export template for the selected architectures: "
 "%s.\n"
@@ -14218,21 +14384,21 @@ msgid ""
 "architectures in the export preset."
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 #, fuzzy
 msgid "Adding files..."
 msgstr "%s সংযুক্ত হচ্ছে..."
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 #, fuzzy
 msgid "Could not export project files"
 msgstr "টাইলটি খুঁজে পাওয়া যায়নি:"
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Aligning APK..."
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Could not unzip temporary unaligned APK."
 msgstr ""
 
@@ -14744,6 +14910,14 @@ msgstr ""
 "NavigationMeshInstance-কে অবশ্যই Navigation-এর অংশ অথবা অংশের অংশ হতে হবে। "
 "এটা শুধুমাত্র ন্যাভিগেশনের তথ্য প্রদান করে।"
 
+#: scene/3d/occluder.cpp
+msgid "No shape is set."
+msgstr ""
+
+#: scene/3d/occluder.cpp
+msgid "Only uniform scales are supported."
+msgstr ""
+
 #: scene/3d/particles.cpp
 msgid ""
 "GPU-based particles are not supported by the GLES2 video driver.\n"
@@ -15047,6 +15221,14 @@ msgstr "একটি কার্যকর এক্সটেনশন ব্য
 msgid "Enable grid minimap."
 msgstr "স্ন্যাপ সক্রিয় করুন"
 
+#: scene/gui/nine_patch_rect.cpp
+msgid ""
+"The Tile and Tile Fit options for Axis Stretch properties are only effective "
+"when using the GLES3 rendering backend.\n"
+"The GLES2 backend is currently in use, so these modes will act like Stretch "
+"instead."
+msgstr ""
+
 #: scene/gui/popup.cpp
 #, fuzzy
 msgid ""
@@ -15079,6 +15261,14 @@ msgid ""
 "Environment -> Default Environment) could not be loaded."
 msgstr ""
 
+#: scene/main/timer.cpp
+msgid ""
+"Very low timer wait times (< 0.05 seconds) may behave in significantly "
+"different ways depending on the rendered or physics frame rate.\n"
+"Consider using a script's process loop instead of relying on a Timer for "
+"very low wait times."
+msgstr ""
+
 #: scene/main/viewport.cpp
 msgid ""
 "This viewport is not set as render target. If you intend for it to display "
@@ -15092,7 +15282,13 @@ msgstr ""
 "দৃশ্যাবলিকে (texture) দৃশ্যমান করতে কোনো নোডে হস্তান্তর করুন।"
 
 #: scene/main/viewport.cpp
-msgid "Viewport size must be greater than 0 to render anything."
+msgid ""
+"The Viewport size must be greater than or equal to 2 pixels on both "
+"dimensions to render anything."
+msgstr ""
+
+#: scene/resources/occluder_shape.cpp
+msgid "OccluderShapeSphere Set Spheres"
 msgstr ""
 
 #: scene/resources/visual_shader_nodes.cpp
@@ -15147,6 +15343,21 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr ""
+
+#~ msgid "Bottom"
+#~ msgstr "নিম্ন"
+
+#~ msgid "Left"
+#~ msgstr "বাম"
+
+#~ msgid "Right"
+#~ msgstr "ডান"
+
+#~ msgid "Front"
+#~ msgstr "সন্মুখ"
+
+#~ msgid "Rear"
+#~ msgstr "পশ্চাৎ"
 
 #, fuzzy
 #~ msgid "Package Contents:"
@@ -16705,9 +16916,6 @@ msgstr ""
 #~ msgid "Couldn't save atlas image:"
 #~ msgstr "এটলাস/মানচিত্রাবলীর ছবি সংরক্ষণ করা সম্ভব হচ্ছে না:"
 
-#~ msgid "Couldn't save converted texture:"
-#~ msgstr "রূপান্তরিত গঠনবিন্যাস সংরক্ষণ করা সম্ভব হচ্ছে না:"
-
 #~ msgid "Invalid translation source!"
 #~ msgstr "অকার্যকর অনুবাদের উৎস!"
 
@@ -17071,9 +17279,6 @@ msgstr ""
 
 #~ msgid "Images:"
 #~ msgstr "ছবিসমূহ:"
-
-#~ msgid "Group"
-#~ msgstr "গ্রুপ"
 
 #~ msgid "Sample Conversion Mode: (.wav files):"
 #~ msgstr "নমুনা রূপান্তর মোড: (.wav ফাইল):"

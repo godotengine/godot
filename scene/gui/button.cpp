@@ -111,9 +111,18 @@ void Button::_notification(int p_what) {
 					if (!flat) {
 						style->draw(ci, Rect2(Point2(0, 0), size));
 					}
-					color = get_theme_color(SNAME("font_color"));
-					if (has_theme_color(SNAME("icon_normal_color"))) {
-						color_icon = get_theme_color(SNAME("icon_normal_color"));
+
+					// Focus colors only take precedence over normal state.
+					if (has_focus()) {
+						color = get_theme_color(SNAME("font_focus_color"));
+						if (has_theme_color(SNAME("icon_focus_color"))) {
+							color_icon = get_theme_color(SNAME("icon_focus_color"));
+						}
+					} else {
+						color = get_theme_color(SNAME("font_color"));
+						if (has_theme_color(SNAME("icon_normal_color"))) {
+							color_icon = get_theme_color(SNAME("icon_normal_color"));
+						}
 					}
 				} break;
 				case DRAW_HOVER_PRESSED: {
@@ -427,9 +436,9 @@ Ref<Texture2D> Button::get_icon() const {
 	return icon;
 }
 
-void Button::set_expand_icon(bool p_expand_icon) {
-	if (expand_icon != p_expand_icon) {
-		expand_icon = p_expand_icon;
+void Button::set_expand_icon(bool p_enabled) {
+	if (expand_icon != p_enabled) {
+		expand_icon = p_enabled;
 		update();
 		minimum_size_changed();
 	}
@@ -439,9 +448,9 @@ bool Button::is_expand_icon() const {
 	return expand_icon;
 }
 
-void Button::set_flat(bool p_flat) {
-	if (flat != p_flat) {
-		flat = p_flat;
+void Button::set_flat(bool p_enabled) {
+	if (flat != p_enabled) {
+		flat = p_enabled;
 		update();
 	}
 }
@@ -450,9 +459,9 @@ bool Button::is_flat() const {
 	return flat;
 }
 
-void Button::set_clip_text(bool p_clip_text) {
-	if (clip_text != p_clip_text) {
-		clip_text = p_clip_text;
+void Button::set_clip_text(bool p_enabled) {
+	if (clip_text != p_enabled) {
+		clip_text = p_enabled;
 		update();
 		minimum_size_changed();
 	}
@@ -553,7 +562,7 @@ void Button::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_text_align"), &Button::get_text_align);
 	ClassDB::bind_method(D_METHOD("set_icon_align", "icon_align"), &Button::set_icon_align);
 	ClassDB::bind_method(D_METHOD("get_icon_align"), &Button::get_icon_align);
-	ClassDB::bind_method(D_METHOD("set_expand_icon"), &Button::set_expand_icon);
+	ClassDB::bind_method(D_METHOD("set_expand_icon", "enabled"), &Button::set_expand_icon);
 	ClassDB::bind_method(D_METHOD("is_expand_icon"), &Button::is_expand_icon);
 
 	BIND_ENUM_CONSTANT(ALIGN_LEFT);

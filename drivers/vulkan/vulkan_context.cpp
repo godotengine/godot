@@ -137,10 +137,10 @@ VKAPI_ATTR VkBool32 VKAPI_CALL VulkanContext::_debug_messenger_callback(
 	}
 
 	String error_message(type_string +
-						 " - Message Id Number: " + String::num_int64(pCallbackData->messageIdNumber) +
-						 " | Message Id Name: " + pCallbackData->pMessageIdName +
-						 "\n\t" + pCallbackData->pMessage +
-						 objects_string + labels_string);
+			" - Message Id Number: " + String::num_int64(pCallbackData->messageIdNumber) +
+			" | Message Id Name: " + pCallbackData->pMessageIdName +
+			"\n\t" + pCallbackData->pMessage +
+			objects_string + labels_string);
 
 	// Convert VK severity to our own log macros.
 	switch (messageSeverity) {
@@ -175,7 +175,7 @@ VKAPI_ATTR VkBool32 VKAPI_CALL VulkanContext::_debug_report_callback(
 		const char *pMessage,
 		void *pUserData) {
 	String debugMessage = String("Vulkan Debug Report: object - ") +
-						  String::num_int64(object) + "\n" + pMessage;
+			String::num_int64(object) + "\n" + pMessage;
 
 	switch (flags) {
 		case VK_DEBUG_REPORT_DEBUG_BIT_EXT:
@@ -275,22 +275,21 @@ Error VulkanContext::_obtain_vulkan_version() {
 		if (res == VK_SUCCESS) {
 			vulkan_major = VK_VERSION_MAJOR(api_version);
 			vulkan_minor = VK_VERSION_MINOR(api_version);
-			uint32_t vulkan_patch = VK_VERSION_PATCH(api_version);
-
-			print_line("Vulkan API " + itos(vulkan_major) + "." + itos(vulkan_minor) + "." + itos(vulkan_patch));
+			vulkan_patch = VK_VERSION_PATCH(api_version);
 		} else {
 			// according to the documentation this shouldn't fail with anything except a memory allocation error
 			// in which case we're in deep trouble anyway
 			ERR_FAIL_V(ERR_CANT_CREATE);
 		}
 	} else {
-		print_line("vkEnumerateInstanceVersion not available, assuming Vulkan 1.0");
+		print_line("vkEnumerateInstanceVersion not available, assuming Vulkan 1.0.");
 	}
 
 	// we don't go above 1.2
 	if ((vulkan_major > 1) || (vulkan_major == 1 && vulkan_minor > 2)) {
 		vulkan_major = 1;
 		vulkan_minor = 2;
+		vulkan_patch = 0;
 	}
 
 	return OK;
@@ -526,7 +525,7 @@ Error VulkanContext::_check_capabilities() {
 		// check our extended features
 		VkPhysicalDeviceMultiviewFeatures multiview_features;
 		multiview_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_FEATURES;
-		multiview_features.pNext = NULL;
+		multiview_features.pNext = nullptr;
 
 		VkPhysicalDeviceFeatures2 device_features;
 		device_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
@@ -632,10 +631,10 @@ Error VulkanContext::_create_physical_device() {
 	}
 
 	/*
-	   * This is info for a temp callback to use during CreateInstance.
-	   * After the instance is created, we use the instance-based
-	   * function to register the final callback.
-	   */
+	 * This is info for a temp callback to use during CreateInstance.
+	 * After the instance is created, we use the instance-based
+	 * function to register the final callback.
+	 */
 	VkDebugUtilsMessengerCreateInfoEXT dbg_messenger_create_info;
 	VkDebugReportCallbackCreateInfoEXT dbg_report_callback_create_info{};
 	if (enabled_debug_utils) {
@@ -646,18 +645,18 @@ Error VulkanContext::_create_physical_device() {
 		dbg_messenger_create_info.messageSeverity =
 				VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
 		dbg_messenger_create_info.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT |
-												VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
-												VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
+				VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
+				VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
 		dbg_messenger_create_info.pfnUserCallback = _debug_messenger_callback;
 		dbg_messenger_create_info.pUserData = this;
 		inst_info.pNext = &dbg_messenger_create_info;
 	} else if (enabled_debug_report) {
 		dbg_report_callback_create_info.sType = VK_STRUCTURE_TYPE_DEBUG_REPORT_CALLBACK_CREATE_INFO_EXT;
 		dbg_report_callback_create_info.flags = VK_DEBUG_REPORT_INFORMATION_BIT_EXT |
-												VK_DEBUG_REPORT_WARNING_BIT_EXT |
-												VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT |
-												VK_DEBUG_REPORT_ERROR_BIT_EXT |
-												VK_DEBUG_REPORT_DEBUG_BIT_EXT;
+				VK_DEBUG_REPORT_WARNING_BIT_EXT |
+				VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT |
+				VK_DEBUG_REPORT_ERROR_BIT_EXT |
+				VK_DEBUG_REPORT_DEBUG_BIT_EXT;
 		dbg_report_callback_create_info.pfnCallback = _debug_report_callback;
 		dbg_report_callback_create_info.pUserData = this;
 		inst_info.pNext = &dbg_report_callback_create_info;
@@ -759,7 +758,9 @@ Error VulkanContext::_create_physical_device() {
 		}
 	}
 
-	print_line("Using Vulkan Device #" + itos(device_index) + ": " + device_vendor + " - " + device_name);
+	print_line(
+			"Vulkan API " + itos(vulkan_major) + "." + itos(vulkan_minor) + "." + itos(vulkan_patch) +
+			" - " + "Using Vulkan Device #" + itos(device_index) + ": " + device_vendor + " - " + device_name);
 
 	device_api_version = gpu_props.apiVersion;
 
@@ -1754,8 +1755,8 @@ Error VulkanContext::prepare_buffers() {
 	vkWaitForFences(device, 1, &fences[frame_index], VK_TRUE, UINT64_MAX);
 	vkResetFences(device, 1, &fences[frame_index]);
 
-	for (Map<int, Window>::Element *E = windows.front(); E; E = E->next()) {
-		Window *w = &E->get();
+	for (KeyValue<int, Window> &E : windows) {
+		Window *w = &E.value;
 
 		w->semaphore_acquired = false;
 
@@ -1836,8 +1837,8 @@ Error VulkanContext::swap_buffers() {
 	VkSemaphore *semaphores_to_acquire = (VkSemaphore *)alloca(windows.size() * sizeof(VkSemaphore));
 	uint32_t semaphores_to_acquire_count = 0;
 
-	for (Map<int, Window>::Element *E = windows.front(); E; E = E->next()) {
-		Window *w = &E->get();
+	for (KeyValue<int, Window> &E : windows) {
+		Window *w = &E.value;
 
 		if (w->semaphore_acquired) {
 			semaphores_to_acquire[semaphores_to_acquire_count++] = w->image_acquired_semaphores[frame_index];
@@ -1875,8 +1876,8 @@ Error VulkanContext::swap_buffers() {
 		VkCommandBuffer *cmdbufptr = (VkCommandBuffer *)alloca(sizeof(VkCommandBuffer *) * windows.size());
 		submit_info.pCommandBuffers = cmdbufptr;
 
-		for (Map<int, Window>::Element *E = windows.front(); E; E = E->next()) {
-			Window *w = &E->get();
+		for (KeyValue<int, Window> &E : windows) {
+			Window *w = &E.value;
 
 			if (w->swapchain == VK_NULL_HANDLE) {
 				continue;
@@ -1910,8 +1911,8 @@ Error VulkanContext::swap_buffers() {
 	present.pSwapchains = pSwapchains;
 	present.pImageIndices = pImageIndices;
 
-	for (Map<int, Window>::Element *E = windows.front(); E; E = E->next()) {
-		Window *w = &E->get();
+	for (KeyValue<int, Window> &E : windows) {
+		Window *w = &E.value;
 
 		if (w->swapchain == VK_NULL_HANDLE) {
 			continue;
@@ -2028,7 +2029,11 @@ int VulkanContext::get_swapchain_image_count() const {
 	return swapchainImageCount;
 }
 
-uint32_t VulkanContext::get_graphics_queue() const {
+VkQueue VulkanContext::get_graphics_queue() const {
+	return graphics_queue;
+}
+
+uint32_t VulkanContext::get_graphics_queue_family_index() const {
 	return graphics_queue_family_index;
 }
 
@@ -2079,12 +2084,12 @@ RID VulkanContext::local_device_create() {
 }
 
 VkDevice VulkanContext::local_device_get_vk_device(RID p_local_device) {
-	LocalDevice *ld = local_device_owner.getornull(p_local_device);
+	LocalDevice *ld = local_device_owner.get_or_null(p_local_device);
 	return ld->device;
 }
 
 void VulkanContext::local_device_push_command_buffers(RID p_local_device, const VkCommandBuffer *p_buffers, int p_count) {
-	LocalDevice *ld = local_device_owner.getornull(p_local_device);
+	LocalDevice *ld = local_device_owner.get_or_null(p_local_device);
 	ERR_FAIL_COND(ld->waiting);
 
 	VkSubmitInfo submit_info;
@@ -2114,7 +2119,7 @@ void VulkanContext::local_device_push_command_buffers(RID p_local_device, const 
 }
 
 void VulkanContext::local_device_sync(RID p_local_device) {
-	LocalDevice *ld = local_device_owner.getornull(p_local_device);
+	LocalDevice *ld = local_device_owner.get_or_null(p_local_device);
 	ERR_FAIL_COND(!ld->waiting);
 
 	vkDeviceWaitIdle(ld->device);
@@ -2122,7 +2127,7 @@ void VulkanContext::local_device_sync(RID p_local_device) {
 }
 
 void VulkanContext::local_device_free(RID p_local_device) {
-	LocalDevice *ld = local_device_owner.getornull(p_local_device);
+	LocalDevice *ld = local_device_owner.get_or_null(p_local_device);
 	vkDestroyDevice(ld->device, nullptr);
 	local_device_owner.free(p_local_device);
 }

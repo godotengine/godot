@@ -437,8 +437,8 @@ void ThemeItemImportTree::_update_total_selected(Theme::DataType p_data_type) {
 	}
 
 	int count = 0;
-	for (Map<ThemeItem, ItemCheckedState>::Element *E = selected_items.front(); E; E = E->next()) {
-		ThemeItem ti = E->key();
+	for (const KeyValue<ThemeItem, ItemCheckedState> &E : selected_items) {
+		ThemeItem ti = E.key;
 		if (ti.data_type == p_data_type) {
 			count++;
 		}
@@ -759,7 +759,7 @@ void ThemeItemImportTree::_import_selected() {
 	ProgressDialog::get_singleton()->add_task("import_theme_items", TTR("Importing Theme Items"), selected_items.size() + 2);
 
 	int idx = 0;
-	for (Map<ThemeItem, ItemCheckedState>::Element *E = selected_items.front(); E; E = E->next()) {
+	for (KeyValue<ThemeItem, ItemCheckedState> &E : selected_items) {
 		// Arbitrary number of items to skip from reporting.
 		// Reduces the number of UI updates that this causes when copying large themes.
 		if (idx % 10 == 0) {
@@ -769,8 +769,8 @@ void ThemeItemImportTree::_import_selected() {
 			ProgressDialog::get_singleton()->task_step("import_theme_items", TTR("Importing items {n}/{n}").format(arr, "{n}"), idx);
 		}
 
-		ItemCheckedState cs = E->get();
-		ThemeItem ti = E->key();
+		ItemCheckedState cs = E.value;
+		ThemeItem ti = E.key;
 
 		if (cs == SELECT_IMPORT_DEFINITION || cs == SELECT_IMPORT_FULL) {
 			Variant item_value = Variant();
@@ -2848,7 +2848,7 @@ void ThemeTypeEditor::_font_size_item_changed(float p_value, String p_item_name)
 	edited_theme->set_font_size(p_item_name, edited_type, int(p_value));
 }
 
-void ThemeTypeEditor::_edit_resource_item(RES p_resource) {
+void ThemeTypeEditor::_edit_resource_item(RES p_resource, bool p_edit) {
 	EditorNode::get_singleton()->edit_resource(p_resource);
 }
 
@@ -3204,7 +3204,7 @@ void ThemeEditor::_add_preview_tab(ThemeEditorPreview *p_preview_tab, const Stri
 
 	preview_tabs->add_tab(p_preview_name, p_icon);
 	preview_tabs_content->add_child(p_preview_tab);
-	preview_tabs->set_tab_right_button(preview_tabs->get_tab_count() - 1, EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("close"), SNAME("Tabs")));
+	preview_tabs->set_tab_right_button(preview_tabs->get_tab_count() - 1, EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("close"), SNAME("TabBar")));
 	p_preview_tab->connect("control_picked", callable_mp(this, &ThemeEditor::_preview_control_picked));
 
 	preview_tabs->set_current_tab(preview_tabs->get_tab_count() - 1);
@@ -3328,12 +3328,12 @@ ThemeEditor::ThemeEditor() {
 	preview_tabs_content->set_draw_behind_parent(true);
 	preview_tabs_vb->add_child(preview_tabs_content);
 
-	preview_tabs = memnew(Tabs);
-	preview_tabs->set_tab_align(Tabs::ALIGN_LEFT);
+	preview_tabs = memnew(TabBar);
+	preview_tabs->set_tab_align(TabBar::ALIGN_LEFT);
 	preview_tabs->set_h_size_flags(SIZE_EXPAND_FILL);
 	preview_tabbar_hb->add_child(preview_tabs);
 	preview_tabs->connect("tab_changed", callable_mp(this, &ThemeEditor::_change_preview_tab));
-	preview_tabs->connect("right_button_pressed", callable_mp(this, &ThemeEditor::_remove_preview_tab));
+	preview_tabs->connect("tab_rmb_clicked", callable_mp(this, &ThemeEditor::_remove_preview_tab));
 
 	HBoxContainer *add_preview_button_hb = memnew(HBoxContainer);
 	preview_tabbar_hb->add_child(add_preview_button_hb);

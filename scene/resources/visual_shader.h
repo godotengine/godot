@@ -57,6 +57,7 @@ public:
 		TYPE_START_CUSTOM,
 		TYPE_PROCESS_CUSTOM,
 		TYPE_SKY,
+		TYPE_FOG,
 		TYPE_MAX
 	};
 
@@ -253,6 +254,8 @@ public:
 	bool is_input_port_connected(int p_port) const;
 	void set_input_port_connected(int p_port, bool p_connected);
 	virtual bool is_generate_input_var(int p_port) const;
+
+	virtual bool has_output_port_preview(int p_port) const;
 
 	virtual bool is_output_port_expandable(int p_port) const;
 	void _set_output_ports_expanded(const Array &p_data);

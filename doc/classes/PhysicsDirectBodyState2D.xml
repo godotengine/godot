@@ -4,9 +4,10 @@
 		Direct access object to a physics body in the [PhysicsServer2D].
 	</brief_description>
 	<description>
-		Provides direct access to a physics body in the [PhysicsServer2D], allowing safe changes to physics properties. This object is passed via the direct state callback of dynamic bodies, and is intended for changing the direct state of that body. See [method RigidBody2D._integrate_forces].
+		Provides direct access to a physics body in the [PhysicsServer2D], allowing safe changes to physics properties. This object is passed via the direct state callback of dynamic bodies, and is intended for changing the direct state of that body. See [method RigidDynamicBody2D._integrate_forces].
 	</description>
 	<tutorials>
+		<link title="Physics introduction">https://docs.godotengine.org/en/latest/tutorials/physics/physics_introduction.html</link>
 		<link title="Ray-casting">https://docs.godotengine.org/en/latest/tutorials/physics/ray-casting.html</link>
 	</tutorials>
 	<methods>
@@ -89,13 +90,6 @@
 				Returns the collider's shape index.
 			</description>
 		</method>
-		<method name="get_contact_collider_shape_metadata" qualifiers="const">
-			<return type="Variant" />
-			<argument index="0" name="contact_idx" type="int" />
-			<description>
-				Returns the collided shape's metadata. This metadata is different from [method Object.get_meta], and is set with [method PhysicsServer2D.shape_set_data].
-			</description>
-		</method>
 		<method name="get_contact_collider_velocity_at_position" qualifiers="const">
 			<return type="Vector2" />
 			<argument index="0" name="contact_idx" type="int" />
@@ -107,7 +101,7 @@
 			<return type="int" />
 			<description>
 				Returns the number of contacts this body has with other bodies.
-				[b]Note:[/b] By default, this returns 0 unless bodies are configured to monitor contacts. See [member RigidBody2D.contact_monitor].
+				[b]Note:[/b] By default, this returns 0 unless bodies are configured to monitor contacts. See [member RigidDynamicBody2D.contact_monitor].
 			</description>
 		</method>
 		<method name="get_contact_local_normal" qualifiers="const">
@@ -155,6 +149,9 @@
 		<member name="angular_velocity" type="float" setter="set_angular_velocity" getter="get_angular_velocity">
 			The body's rotational velocity.
 		</member>
+		<member name="center_of_mass" type="Vector2" setter="" getter="get_center_of_mass">
+			The body's center of mass.
+		</member>
 		<member name="inverse_inertia" type="float" setter="" getter="get_inverse_inertia">
 			The inverse of the inertia of the body.
 		</member>
@@ -183,6 +180,4 @@
 			The body's transformation matrix.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

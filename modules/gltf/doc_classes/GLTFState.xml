@@ -209,6 +209,4 @@
 		<member name="use_named_skin_binds" type="bool" setter="set_use_named_skin_binds" getter="get_use_named_skin_binds" default="false">
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

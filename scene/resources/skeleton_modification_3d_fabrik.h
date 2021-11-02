@@ -55,6 +55,8 @@ private:
 	};
 
 	LocalVector<FABRIK_Joint_Data> fabrik_data_chain;
+	LocalVector<Transform3D> fabrik_transforms;
+
 	NodePath target_node;
 	ObjectID target_node_cache;
 

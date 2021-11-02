@@ -32,6 +32,7 @@
 #define EDITOR_RESOURCE_PICKER_H
 
 #include "editor_file_dialog.h"
+#include "quick_open.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/popup_menu.h"
@@ -54,9 +55,11 @@ class EditorResourcePicker : public HBoxContainer {
 	TextureRect *preview_rect;
 	Button *edit_button;
 	EditorFileDialog *file_dialog = nullptr;
+	EditorQuickOpen *quick_open = nullptr;
 
 	enum MenuOption {
 		OBJ_MENU_LOAD,
+		OBJ_MENU_QUICKLOAD,
 		OBJ_MENU_EDIT,
 		OBJ_MENU_CLEAR,
 		OBJ_MENU_MAKE_UNIQUE,
@@ -75,6 +78,7 @@ class EditorResourcePicker : public HBoxContainer {
 	void _update_resource_preview(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, ObjectID p_obj);
 
 	void _resource_selected();
+	void _file_quick_selected();
 	void _file_selected(const String &p_path);
 
 	void _update_menu();

@@ -35,7 +35,7 @@
 #include "editor/editor_spin_slider.h"
 #include "editor/property_editor.h"
 #include "editor/property_selector.h"
-#include "scene/animation/animation_cache.h"
+
 #include "scene/gui/control.h"
 #include "scene/gui/file_dialog.h"
 #include "scene/gui/menu_button.h"
@@ -352,10 +352,7 @@ class AnimationTrackEditor : public VBoxContainer {
 	CheckBox *insert_confirm_reset;
 	ConfirmationDialog *insert_confirm;
 	bool insert_queue;
-	bool inserting;
-	bool insert_query;
 	List<InsertData> insert_data;
-	uint64_t insert_frame;
 
 	void _query_insert(const InsertData &p_id);
 	Ref<Animation> _create_and_get_reset_animation();
@@ -370,7 +367,7 @@ class AnimationTrackEditor : public VBoxContainer {
 		}
 	};
 	TrackIndices _confirm_insert(InsertData p_id, TrackIndices p_next_tracks, bool p_create_reset, Ref<Animation> p_reset_anim, bool p_create_beziers);
-	void _insert_delay(bool p_create_reset, bool p_create_beziers);
+	void _insert_track(bool p_create_reset, bool p_create_beziers);
 
 	void _root_removed(Node *p_root);
 
@@ -530,7 +527,10 @@ public:
 	void set_anim_pos(float p_pos);
 	void insert_node_value_key(Node *p_node, const String &p_property, const Variant &p_value, bool p_only_if_exists = false);
 	void insert_value_key(const String &p_property, const Variant &p_value, bool p_advance);
-	void insert_transform_key(Node3D *p_node, const String &p_sub, const Transform3D &p_xform);
+	void insert_transform_key(Node3D *p_node, const String &p_sub, const Animation::TrackType p_type, const Variant p_value);
+	bool has_track(Node3D *p_node, const String &p_sub, const Animation::TrackType p_type);
+	void make_insert_queue();
+	void commit_insert_queue();
 
 	void show_select_node_warning(bool p_show);
 

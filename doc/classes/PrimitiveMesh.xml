@@ -40,6 +40,4 @@
 			The current [Material] of the primitive mesh.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

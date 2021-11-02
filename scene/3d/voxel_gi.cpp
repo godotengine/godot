@@ -398,7 +398,7 @@ void VoxelGI::bake(Node *p_from_node, bool p_create_visual_debug) {
 
 	baker.end_bake();
 
-	//create the data for visual server
+	//create the data for rendering server
 
 	if (p_create_visual_debug) {
 		MultiMeshInstance3D *mmi = memnew(MultiMeshInstance3D);
@@ -458,7 +458,7 @@ TypedArray<String> VoxelGI::get_configuration_warnings() const {
 	TypedArray<String> warnings = Node::get_configuration_warnings();
 
 	if (RenderingServer::get_singleton()->is_low_end()) {
-		warnings.push_back(TTR("VoxelGIs are not supported by the GLES2 video driver.\nUse a LightmapGI instead."));
+		warnings.push_back(TTR("VoxelGIs are not supported by the OpenGL video driver.\nUse a LightmapGI instead."));
 	} else if (probe_data.is_null()) {
 		warnings.push_back(TTR("No VoxelGI data set, so this node is disabled. Bake static objects to enable GI."));
 	}

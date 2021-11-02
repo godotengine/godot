@@ -63,6 +63,4 @@
 			This object will only be visible for [Camera3D]s whose cull mask includes the render object this [VisualInstance3D] is set to.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

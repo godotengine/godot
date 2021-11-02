@@ -35,7 +35,6 @@
 #include "core/os/os.h"
 
 #ifdef TOOLS_ENABLED
-#include "editor/editor_settings.h"
 #include "main/main.h"
 #endif
 
@@ -810,9 +809,12 @@ static const char *locale_names[] = {
 // - https://msdn.microsoft.com/en-us/library/windows/desktop/ms693062(v=vs.85).aspx
 
 static const char *locale_renames[][2] = {
-	{ "in", "id" }, //  Indonesian
-	{ "iw", "he" }, //  Hebrew
-	{ "no", "nb" }, //  Norwegian Bokmål
+	{ "in", "id" }, // Indonesian
+	{ "iw", "he" }, // Hebrew
+	{ "no", "nb" }, // Norwegian Bokmål
+	{ "C", "en" }, // "C" is the simple/default/untranslated Computer locale.
+	// ASCII-only, English, no currency symbols. Godot treats this as "en".
+	// See https://unix.stackexchange.com/a/87763/164141 "The C locale is"...
 	{ nullptr, nullptr }
 };
 
@@ -820,8 +822,8 @@ static const char *locale_renames[][2] = {
 
 Dictionary Translation::_get_messages() const {
 	Dictionary d;
-	for (const Map<StringName, StringName>::Element *E = translation_map.front(); E; E = E->next()) {
-		d[E->key()] = E->value();
+	for (const KeyValue<StringName, StringName> &E : translation_map) {
+		d[E.key] = E.value;
 	}
 	return d;
 }
@@ -830,8 +832,8 @@ Vector<String> Translation::_get_message_list() const {
 	Vector<String> msgs;
 	msgs.resize(translation_map.size());
 	int idx = 0;
-	for (const Map<StringName, StringName>::Element *E = translation_map.front(); E; E = E->next()) {
-		msgs.set(idx, E->key());
+	for (const KeyValue<StringName, StringName> &E : translation_map) {
+		msgs.set(idx, E.key);
 		idx += 1;
 	}
 
@@ -875,6 +877,11 @@ void Translation::add_plural_message(const StringName &p_src_text, const Vector<
 }
 
 StringName Translation::get_message(const StringName &p_src_text, const StringName &p_context) const {
+	StringName ret;
+	if (GDVIRTUAL_CALL(_get_message, p_src_text, p_context, ret)) {
+		return ret;
+	}
+
 	if (p_context != StringName()) {
 		WARN_PRINT("Translation class doesn't handle context. Using context in get_message() on a Translation instance is probably a mistake. \nUse a derived Translation class that handles context, such as TranslationPO class");
 	}
@@ -888,6 +895,11 @@ StringName Translation::get_message(const StringName &p_src_text, const StringNa
 }
 
 StringName Translation::get_plural_message(const StringName &p_src_text, const StringName &p_plural_text, int p_n, const StringName &p_context) const {
+	StringName ret;
+	if (GDVIRTUAL_CALL(_get_plural_message, p_src_text, p_plural_text, p_n, p_context, ret)) {
+		return ret;
+	}
+
 	WARN_PRINT("Translation class doesn't handle plural messages. Calling get_plural_message() on a Translation instance is probably a mistake. \nUse a derived Translation class that handles plurals, such as TranslationPO class");
 	return get_message(p_src_text);
 }
@@ -901,8 +913,8 @@ void Translation::erase_message(const StringName &p_src_text, const StringName &
 }
 
 void Translation::get_message_list(List<StringName> *r_messages) const {
-	for (const Map<StringName, StringName>::Element *E = translation_map.front(); E; E = E->next()) {
-		r_messages->push_back(E->key());
+	for (const KeyValue<StringName, StringName> &E : translation_map) {
+		r_messages->push_back(E.key);
 	}
 }
 
@@ -922,6 +934,9 @@ void Translation::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_message_count"), &Translation::get_message_count);
 	ClassDB::bind_method(D_METHOD("_set_messages"), &Translation::_set_messages);
 	ClassDB::bind_method(D_METHOD("_get_messages"), &Translation::_get_messages);
+
+	GDVIRTUAL_BIND(_get_plural_message, "src_message", "src_plural_message", "n", "context");
+	GDVIRTUAL_BIND(_get_message, "src_message", "context");
 
 	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "messages", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_messages", "_get_messages");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "locale"), "set_locale", "get_locale");
@@ -1548,8 +1563,8 @@ const char32_t *TranslationServer::get_accented_version(char32_t p_character) co
 
 bool TranslationServer::is_placeholder(String &p_message, int p_index) const {
 	return p_message[p_index] == '%' && p_index < p_message.size() - 1 &&
-		   (p_message[p_index + 1] == 's' || p_message[p_index + 1] == 'c' || p_message[p_index + 1] == 'd' ||
-				   p_message[p_index + 1] == 'o' || p_message[p_index + 1] == 'x' || p_message[p_index + 1] == 'X' || p_message[p_index + 1] == 'f');
+			(p_message[p_index + 1] == 's' || p_message[p_index + 1] == 'c' || p_message[p_index + 1] == 'd' ||
+					p_message[p_index + 1] == 'o' || p_message[p_index + 1] == 'x' || p_message[p_index + 1] == 'X' || p_message[p_index + 1] == 'f');
 }
 
 void TranslationServer::_bind_methods() {

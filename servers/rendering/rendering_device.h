@@ -60,6 +60,23 @@ public:
 		DEVICE_DIRECTX
 	};
 
+	enum DriverResource {
+		DRIVER_RESOURCE_VULKAN_DEVICE = 0,
+		DRIVER_RESOURCE_VULKAN_PHYSICAL_DEVICE,
+		DRIVER_RESOURCE_VULKAN_INSTANCE,
+		DRIVER_RESOURCE_VULKAN_QUEUE,
+		DRIVER_RESOURCE_VULKAN_QUEUE_FAMILY_INDEX,
+		DRIVER_RESOURCE_VULKAN_IMAGE,
+		DRIVER_RESOURCE_VULKAN_IMAGE_VIEW,
+		DRIVER_RESOURCE_VULKAN_IMAGE_NATIVE_TEXTURE_FORMAT,
+		DRIVER_RESOURCE_VULKAN_SAMPLER,
+		DRIVER_RESOURCE_VULKAN_DESCRIPTOR_SET,
+		DRIVER_RESOURCE_VULKAN_BUFFER,
+		DRIVER_RESOURCE_VULKAN_COMPUTE_PIPELINE,
+		DRIVER_RESOURCE_VULKAN_RENDER_PIPELINE,
+		//next driver continue enum from 1000 to keep order
+	};
+
 	enum ShaderStage {
 		SHADER_STAGE_VERTEX,
 		SHADER_STAGE_FRAGMENT,
@@ -1183,6 +1200,8 @@ public:
 	virtual String get_device_name() const = 0;
 	virtual String get_device_pipeline_cache_uuid() const = 0;
 
+	virtual uint64_t get_driver_resource(DriverResource p_resource, RID p_rid = RID(), uint64_t p_index = 0) = 0;
+
 	static RenderingDevice *get_singleton();
 	RenderingDevice();
 
@@ -1217,6 +1236,7 @@ protected:
 	Vector<int64_t> _draw_list_switch_to_next_pass_split(uint32_t p_splits);
 };
 
+VARIANT_ENUM_CAST(RenderingDevice::DriverResource)
 VARIANT_ENUM_CAST(RenderingDevice::ShaderStage)
 VARIANT_ENUM_CAST(RenderingDevice::ShaderLanguage)
 VARIANT_ENUM_CAST(RenderingDevice::CompareOperator)

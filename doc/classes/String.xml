@@ -7,36 +7,38 @@
 		This is the built-in string class (and the one used by GDScript). It supports Unicode and provides all necessary means for string handling. Strings are reference-counted and use a copy-on-write approach, so passing them around is cheap in resources.
 	</description>
 	<tutorials>
-		<link title="GDScript format strings">https://docs.godotengine.org/en/latest/getting_started/scripting/gdscript/gdscript_format_string.html</link>
+		<link title="GDScript format strings">https://docs.godotengine.org/en/latest/tutorials/scripting/gdscript/gdscript_format_string.html</link>
 	</tutorials>
-	<methods>
-		<method name="String" qualifiers="constructor">
+	<constructors>
+		<constructor name="String">
 			<return type="String" />
 			<description>
 				Constructs an empty [String] ([code]""[/code]).
 			</description>
-		</method>
-		<method name="String" qualifiers="constructor">
+		</constructor>
+		<constructor name="String">
 			<return type="String" />
 			<argument index="0" name="from" type="String" />
 			<description>
 				Constructs a [String] as a copy of the given [String].
 			</description>
-		</method>
-		<method name="String" qualifiers="constructor">
+		</constructor>
+		<constructor name="String">
 			<return type="String" />
 			<argument index="0" name="from" type="NodePath" />
 			<description>
 				Constructs a new String from the given [NodePath].
 			</description>
-		</method>
-		<method name="String" qualifiers="constructor">
+		</constructor>
+		<constructor name="String">
 			<return type="String" />
 			<argument index="0" name="from" type="StringName" />
 			<description>
 				Constructs a new String from the given [StringName].
 			</description>
-		</method>
+		</constructor>
+	</constructors>
+	<methods>
 		<method name="begins_with" qualifiers="const">
 			<return type="bool" />
 			<argument index="0" name="text" type="String" />
@@ -56,11 +58,11 @@
 				Converts a string containing a binary number into an integer. Binary strings can either be prefixed with [code]0b[/code] or not, and they can also start with a [code]-[/code] before the optional prefix.
 				[codeblocks]
 				[gdscript]
-				print("0x101".bin_to_int()) # Prints "5".
+				print("0b101".bin_to_int()) # Prints "5".
 				print("101".bin_to_int()) # Prints "5".
 				[/gdscript]
 				[csharp]
-				GD.Print("0x101".BinToInt()); // Prints "5".
+				GD.Print("0b101".BinToInt()); // Prints "5".
 				GD.Print("101".BinToInt()); // Prints "5".
 				[/csharp]
 				[/codeblocks]
@@ -200,6 +202,19 @@
 				If the string is a valid file path, returns the filename.
 			</description>
 		</method>
+		<method name="get_slice" qualifiers="const">
+			<return type="String" />
+			<argument index="0" name="delimiter" type="String" />
+			<argument index="1" name="slice" type="int" />
+			<description>
+				Splits a string using a [code]delimiter[/code] and returns a substring at index [code]slice[/code]. Returns an empty string if the index doesn't exist.
+				This is a more performant alternative to [method split] for cases when you need only one element from the array at a fixed index.
+				Example:
+				[codeblock]
+				print("i/am/example/string".get_slice("/", 2)) # Prints 'example'.
+				[/codeblock]
+			</description>
+		</method>
 		<method name="hash" qualifiers="const">
 			<return type="int" />
 			<description>
@@ -248,7 +263,7 @@
 				Returns [code]true[/code] if the length of the string equals [code]0[/code].
 			</description>
 		</method>
-		<method name="is_rel_path" qualifiers="const">
+		<method name="is_relative_path" qualifiers="const">
 			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if the string is a path to a file or directory and its starting point is implicitly defined within the context it is being used. The starting point may refer to the current directory ([code]./[/code]), or the current [Node].
@@ -443,66 +458,6 @@
 			<description>
 			</description>
 		</method>
-		<method name="operator !=" qualifiers="operator">
-			<return type="bool" />
-			<argument index="0" name="right" type="String" />
-			<description>
-			</description>
-		</method>
-		<method name="operator !=" qualifiers="operator">
-			<return type="bool" />
-			<argument index="0" name="right" type="StringName" />
-			<description>
-			</description>
-		</method>
-		<method name="operator %" qualifiers="operator">
-			<return type="String" />
-			<argument index="0" name="right" type="Variant" />
-			<description>
-			</description>
-		</method>
-		<method name="operator +" qualifiers="operator">
-			<return type="String" />
-			<argument index="0" name="right" type="String" />
-			<description>
-			</description>
-		</method>
-		<method name="operator &lt;" qualifiers="operator">
-			<return type="bool" />
-			<argument index="0" name="right" type="String" />
-			<description>
-			</description>
-		</method>
-		<method name="operator &lt;=" qualifiers="operator">
-			<return type="bool" />
-			<argument index="0" name="right" type="String" />
-			<description>
-			</description>
-		</method>
-		<method name="operator ==" qualifiers="operator">
-			<return type="bool" />
-			<argument index="0" name="right" type="String" />
-			<description>
-			</description>
-		</method>
-		<method name="operator ==" qualifiers="operator">
-			<return type="bool" />
-			<argument index="0" name="right" type="StringName" />
-			<description>
-			</description>
-		</method>
-		<method name="operator &gt;" qualifiers="operator">
-			<return type="bool" />
-			<argument index="0" name="right" type="String" />
-			<description>
-			</description>
-		</method>
-		<method name="operator &gt;=" qualifiers="operator">
-			<return type="bool" />
-			<argument index="0" name="right" type="String" />
-			<description>
-			</description>
-		</method>
 		<method name="pad_decimals" qualifiers="const">
 			<return type="String" />
 			<argument index="0" name="digits" type="int" />
@@ -660,6 +615,7 @@
 			<description>
 				Splits the string by a [code]delimiter[/code] string and returns an array of the substrings. The [code]delimiter[/code] can be of any length.
 				If [code]maxsplit[/code] is specified, it defines the number of splits to do from the left up to [code]maxsplit[/code]. The default value of [code]0[/code] means that all items are split.
+				If you need only one element from the array at a specific index, [method get_slice] is a more performant option.
 				Example:
 				[codeblocks]
 				[gdscript]
@@ -827,6 +783,82 @@
 			</description>
 		</method>
 	</methods>
-	<constants>
-	</constants>
+	<operators>
+		<operator name="operator !=">
+			<return type="bool" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator !=">
+			<return type="bool" />
+			<argument index="0" name="right" type="String" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator !=">
+			<return type="bool" />
+			<argument index="0" name="right" type="StringName" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator %">
+			<return type="String" />
+			<argument index="0" name="right" type="Variant" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator +">
+			<return type="String" />
+			<argument index="0" name="right" type="String" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator &lt;">
+			<return type="bool" />
+			<argument index="0" name="right" type="String" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator &lt;=">
+			<return type="bool" />
+			<argument index="0" name="right" type="String" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator ==">
+			<return type="bool" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator ==">
+			<return type="bool" />
+			<argument index="0" name="right" type="String" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator ==">
+			<return type="bool" />
+			<argument index="0" name="right" type="StringName" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator &gt;">
+			<return type="bool" />
+			<argument index="0" name="right" type="String" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator &gt;=">
+			<return type="bool" />
+			<argument index="0" name="right" type="String" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator []">
+			<return type="String" />
+			<argument index="0" name="index" type="int" />
+			<description>
+			</description>
+		</operator>
+	</operators>
 </class>

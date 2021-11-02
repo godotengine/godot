@@ -36,10 +36,6 @@
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 
-#ifdef TOOLS_ENABLED
-#include "editor/editor_scale.h"
-#endif
-
 constexpr int MINIMAP_OFFSET = 12;
 constexpr int MINIMAP_PADDING = 5;
 
@@ -356,17 +352,6 @@ void GraphEdit::_graph_node_raised(Node *p_gn) {
 	} else {
 		gn->raise();
 	}
-	int first_not_comment = 0;
-	for (int i = 0; i < get_child_count(); i++) {
-		GraphNode *gn2 = Object::cast_to<GraphNode>(get_child(i));
-		if (gn2 && !gn2->is_comment()) {
-			first_not_comment = i;
-			break;
-		}
-	}
-
-	move_child(connections_layer, first_not_comment);
-	top_layer->raise();
 	emit_signal(SNAME("node_selected"), p_gn);
 }
 
@@ -447,6 +432,8 @@ void GraphEdit::_notification(int p_what) {
 		snap_button->set_icon(get_theme_icon(SNAME("snap")));
 		minimap_button->set_icon(get_theme_icon(SNAME("minimap")));
 		layout_button->set_icon(get_theme_icon(SNAME("layout")));
+
+		zoom_label->set_custom_minimum_size(Size2(48, 0) * get_theme_default_base_scale());
 	}
 	if (p_what == NOTIFICATION_READY) {
 		Size2 hmin = h_scroll->get_combined_minimum_size();
@@ -708,7 +695,7 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 			} else if (!just_disconnected) {
 				String from = connecting_from;
 				int from_slot = connecting_index;
-				Vector2 ofs = Vector2(mb->get_position().x, mb->get_position().y);
+				Vector2 ofs = mb->get_position();
 
 				if (!connecting_out) {
 					emit_signal(SNAME("connection_from_empty"), from, from_slot, ofs);
@@ -827,11 +814,7 @@ void GraphEdit::_draw_connection_line(CanvasItem *p_where, const Vector2 &p_from
 		scaled_points.push_back(points[i] * p_zoom);
 	}
 
-#ifdef TOOLS_ENABLED
-	p_where->draw_polyline_colors(scaled_points, colors, Math::floor(p_width * EDSCALE), lines_antialiased);
-#else
-	p_where->draw_polyline_colors(scaled_points, colors, p_width, lines_antialiased);
-#endif
+	p_where->draw_polyline_colors(scaled_points, colors, Math::floor(p_width * get_theme_default_base_scale()), lines_antialiased);
 }
 
 void GraphEdit::_connections_layer_draw() {
@@ -1082,10 +1065,7 @@ void GraphEdit::gui_input(const Ref<InputEvent> &p_ev) {
 	if (mm.is_valid() && box_selecting) {
 		box_selecting_to = mm->get_position();
 
-		box_selecting_rect = Rect2(MIN(box_selecting_from.x, box_selecting_to.x),
-				MIN(box_selecting_from.y, box_selecting_to.y),
-				ABS(box_selecting_from.x - box_selecting_to.x),
-				ABS(box_selecting_from.y - box_selecting_to.y));
+		box_selecting_rect = Rect2(box_selecting_from.min(box_selecting_to), (box_selecting_from - box_selecting_to).abs());
 
 		for (int i = get_child_count() - 1; i >= 0; i--) {
 			GraphNode *gn = Object::cast_to<GraphNode>(get_child(i));
@@ -2114,7 +2094,7 @@ void GraphEdit::arrange_nodes() {
 		largest_node_size = 0.0f;
 	}
 
-	emit_signal("begin_node_move");
+	emit_signal(SNAME("begin_node_move"));
 	for (const Set<StringName>::Element *E = selected_nodes.front(); E; E = E->next()) {
 		GraphNode *gn = Object::cast_to<GraphNode>(node_names[E->get()]);
 		gn->set_drag(true);
@@ -2127,7 +2107,7 @@ void GraphEdit::arrange_nodes() {
 		gn->set_position_offset(pos);
 		gn->set_drag(false);
 	}
-	emit_signal("end_node_move");
+	emit_signal(SNAME("end_node_move"));
 	arranging_graph = false;
 }
 
@@ -2246,14 +2226,14 @@ GraphEdit::GraphEdit() {
 	zoom_max = (1 * Math::pow(zoom_step, 4));
 
 	top_layer = memnew(GraphEditFilter(this));
-	add_child(top_layer);
+	add_child(top_layer, false, INTERNAL_MODE_BACK);
 	top_layer->set_mouse_filter(MOUSE_FILTER_PASS);
 	top_layer->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
 	top_layer->connect("draw", callable_mp(this, &GraphEdit::_top_layer_draw));
 	top_layer->connect("gui_input", callable_mp(this, &GraphEdit::_top_layer_input));
 
 	connections_layer = memnew(Control);
-	add_child(connections_layer);
+	add_child(connections_layer, false, INTERNAL_MODE_FRONT);
 	connections_layer->connect("draw", callable_mp(this, &GraphEdit::_connections_layer_draw));
 	connections_layer->set_name("CLAYER");
 	connections_layer->set_disable_visibility_clip(true); // so it can draw freely and be offset
@@ -2286,11 +2266,7 @@ GraphEdit::GraphEdit() {
 	zoom_label->set_visible(false);
 	zoom_label->set_v_size_flags(Control::SIZE_SHRINK_CENTER);
 	zoom_label->set_align(Label::ALIGN_CENTER);
-#ifdef TOOLS_ENABLED
-	zoom_label->set_custom_minimum_size(Size2(48, 0) * EDSCALE);
-#else
 	zoom_label->set_custom_minimum_size(Size2(48, 0));
-#endif
 	_update_zoom_label();
 
 	zoom_minus = memnew(Button);

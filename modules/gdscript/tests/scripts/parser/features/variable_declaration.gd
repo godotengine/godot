@@ -1,12 +1,20 @@
-var a # No init.
-var b = 42 # Init.
+var m1 # No init.
+var m2 = 22 # Init.
+var m3: String # No init, typed.
+var m4: String = "44" # Init, typed.
+
 
 func test():
-	var c # No init, local.
-	var d = 23 # Init, local.
+	var loc5 # No init, local.
+	var loc6 = 66 # Init, local.
+	var loc7: String # No init, typed.
+	var loc8: String = "88" # Init, typed.
 
-	a = 1
-	c = 2
+	m1 = 11
+	m3 = "33"
 
-	prints(a, b, c, d)
+	loc5 = 55
+	loc7 = "77"
+
+	prints(m1, m2, m3, m4, loc5, loc6, loc7, loc8)
 	print("OK")

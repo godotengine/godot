@@ -6,8 +6,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="curve_x" type="Curve" setter="set_curve_x" getter="get_curve_x">
 		</member>
@@ -18,6 +16,4 @@
 		<member name="width" type="int" setter="set_width" getter="get_width" default="2048">
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

@@ -99,8 +99,8 @@ void EditorExportPlatformJavaScript::_replace_strings(Map<String, String> p_repl
 	Vector<String> lines = str_template.split("\n");
 	for (int i = 0; i < lines.size(); i++) {
 		String current_line = lines[i];
-		for (Map<String, String>::Element *E = p_replaces.front(); E; E = E->next()) {
-			current_line = current_line.replace(E->key(), E->get());
+		for (const KeyValue<String, String> &E : p_replaces) {
+			current_line = current_line.replace(E.key, E.value);
 		}
 		out += current_line + "\n";
 	}
@@ -140,7 +140,7 @@ void EditorExportPlatformJavaScript::_fix_html(Vector<uint8_t> &p_html, const Re
 	if (p_preset->get("progressive_web_app/enabled")) {
 		head_include += "<link rel='manifest' href='" + p_name + ".manifest.json'>\n";
 		head_include += "<script type='application/javascript'>window.addEventListener('load', () => {if ('serviceWorker' in navigator) {navigator.serviceWorker.register('" +
-						p_name + ".service.worker.js');}});</script>\n";
+				p_name + ".service.worker.js');}});</script>\n";
 	}
 
 	// Replaces HTML string
@@ -300,9 +300,9 @@ void EditorExportPlatformJavaScript::get_preset_features(const Ref<EditorExportP
 
 	if (p_preset->get("vram_texture_compression/for_mobile")) {
 		String driver = ProjectSettings::get_singleton()->get("rendering/driver/driver_name");
-		if (driver == "GLES2") {
+		if (driver == "opengl3") {
 			r_features->push_back("etc");
-		} else if (driver == "Vulkan") {
+		} else if (driver == "vulkan") {
 			// FIXME: Review if this is correct.
 			r_features->push_back("etc2");
 		}

@@ -34,11 +34,13 @@
 
 Size2 CheckBox::get_icon_size() const {
 	Ref<Texture2D> checked = Control::get_theme_icon(SNAME("checked"));
-	Ref<Texture2D> checked_disabled = Control::get_theme_icon(SNAME("checked_disabled"));
 	Ref<Texture2D> unchecked = Control::get_theme_icon(SNAME("unchecked"));
-	Ref<Texture2D> unchecked_disabled = Control::get_theme_icon(SNAME("unchecked_disabled"));
 	Ref<Texture2D> radio_checked = Control::get_theme_icon(SNAME("radio_checked"));
 	Ref<Texture2D> radio_unchecked = Control::get_theme_icon(SNAME("radio_unchecked"));
+	Ref<Texture2D> checked_disabled = Control::get_theme_icon(SNAME("checked_disabled"));
+	Ref<Texture2D> unchecked_disabled = Control::get_theme_icon(SNAME("unchecked_disabled"));
+	Ref<Texture2D> radio_checked_disabled = Control::get_theme_icon(SNAME("radio_checked_disabled"));
+	Ref<Texture2D> radio_unchecked_disabled = Control::get_theme_icon(SNAME("radio_unchecked_disabled"));
 
 	Size2 tex_size = Size2(0, 0);
 	if (!checked.is_null()) {
@@ -52,6 +54,18 @@ Size2 CheckBox::get_icon_size() const {
 	}
 	if (!radio_unchecked.is_null()) {
 		tex_size = Size2(MAX(tex_size.width, radio_unchecked->get_width()), MAX(tex_size.height, radio_unchecked->get_height()));
+	}
+	if (!checked_disabled.is_null()) {
+		tex_size = Size2(MAX(tex_size.width, checked_disabled->get_width()), MAX(tex_size.height, checked_disabled->get_height()));
+	}
+	if (!unchecked_disabled.is_null()) {
+		tex_size = Size2(MAX(tex_size.width, unchecked_disabled->get_width()), MAX(tex_size.height, unchecked_disabled->get_height()));
+	}
+	if (!radio_checked_disabled.is_null()) {
+		tex_size = Size2(MAX(tex_size.width, radio_checked_disabled->get_width()), MAX(tex_size.height, radio_checked_disabled->get_height()));
+	}
+	if (!radio_unchecked_disabled.is_null()) {
+		tex_size = Size2(MAX(tex_size.width, radio_unchecked_disabled->get_width()), MAX(tex_size.height, radio_unchecked_disabled->get_height()));
 	}
 	return tex_size;
 }

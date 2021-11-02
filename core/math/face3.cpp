@@ -151,8 +151,8 @@ Face3::Side Face3::get_side_of(const Face3 &p_face, ClockDirection p_clock_dir) 
 }
 
 Vector3 Face3::get_random_point_inside() const {
-	real_t a = Math::random(0, 1);
-	real_t b = Math::random(0, 1);
+	real_t a = Math::random(0.0, 1.0);
+	real_t b = Math::random(0.0, 1.0);
 	if (a > b) {
 		SWAP(a, b);
 	}
@@ -229,7 +229,7 @@ bool Face3::intersects_aabb(const AABB &p_aabb) const {
 			axis.normalize();
 
 			real_t minA, maxA, minB, maxB;
-			p_aabb.project_range_in_plane(Plane(axis, 0), minA, maxA);
+			p_aabb.project_range_in_plane(Plane(axis), minA, maxA);
 			project_range(axis, Transform3D(), minB, maxB);
 
 			if (maxA < minB || maxB < minA) {

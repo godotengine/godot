@@ -97,15 +97,6 @@ Size2i TileAtlasView::_compute_base_tiles_control_size() {
 	if (texture.is_valid()) {
 		size = texture->get_size();
 	}
-
-	// Extend the size to all existing tiles.
-	Size2i grid_size = tile_set_atlas_source->get_atlas_grid_size();
-	for (int i = 0; i < tile_set_atlas_source->get_tiles_count(); i++) {
-		Vector2i tile_id = tile_set_atlas_source->get_tile_id(i);
-		grid_size = grid_size.max(tile_id + Vector2i(1, 1));
-	}
-	size = size.max(grid_size * (tile_set_atlas_source->get_texture_region_size() + tile_set_atlas_source->get_separation()) + tile_set_atlas_source->get_margins());
-
 	return size;
 }
 
@@ -213,54 +204,89 @@ void TileAtlasView::_draw_base_tiles() {
 	Ref<Texture2D> texture = tile_set_atlas_source->get_texture();
 	if (texture.is_valid()) {
 		Vector2i margins = tile_set_atlas_source->get_margins();
+		Vector2i separation = tile_set_atlas_source->get_separation();
 		Vector2i texture_region_size = tile_set_atlas_source->get_texture_region_size();
-
-		// Draw the texture, square by square.
 		Size2i grid_size = tile_set_atlas_source->get_atlas_grid_size();
+
+		// Draw the texture where there is no tile.
 		for (int x = 0; x < grid_size.x; x++) {
 			for (int y = 0; y < grid_size.y; y++) {
 				Vector2i coords = Vector2i(x, y);
 				if (tile_set_atlas_source->get_tile_at_coords(coords) == TileSetSource::INVALID_ATLAS_COORDS) {
-					Rect2i rect = Rect2i(texture_region_size * coords + margins, texture_region_size);
-					base_tiles_draw->draw_texture_rect_region(texture, rect, rect);
+					Rect2i rect = Rect2i((texture_region_size + separation) * coords + margins, texture_region_size + separation);
+					rect = rect.intersection(Rect2i(Vector2(), texture->get_size()));
+					if (rect.size.x > 0 && rect.size.y > 0) {
+						base_tiles_draw->draw_texture_rect_region(texture, rect, rect);
+						base_tiles_draw->draw_rect(rect, Color(0.0, 0.0, 0.0, 0.5));
+					}
 				}
 			}
 		}
 
 		// Draw the texture around the grid.
 		Rect2i rect;
+
 		// Top.
 		rect.position = Vector2i();
 		rect.set_end(Vector2i(texture->get_size().x, margins.y));
 		base_tiles_draw->draw_texture_rect_region(texture, rect, rect);
+		base_tiles_draw->draw_rect(rect, Color(0.0, 0.0, 0.0, 0.5));
+
 		// Bottom
-		int bottom_border = margins.y + (grid_size.y * texture_region_size.y);
+		int bottom_border = margins.y + (grid_size.y * (texture_region_size.y + separation.y));
 		if (bottom_border < texture->get_size().y) {
 			rect.position = Vector2i(0, bottom_border);
 			rect.set_end(texture->get_size());
 			base_tiles_draw->draw_texture_rect_region(texture, rect, rect);
+			base_tiles_draw->draw_rect(rect, Color(0.0, 0.0, 0.0, 0.5));
 		}
+
 		// Left
 		rect.position = Vector2i(0, margins.y);
-		rect.set_end(Vector2i(margins.x, margins.y + (grid_size.y * texture_region_size.y)));
+		rect.set_end(Vector2i(margins.x, margins.y + (grid_size.y * (texture_region_size.y + separation.y))));
 		base_tiles_draw->draw_texture_rect_region(texture, rect, rect);
+		base_tiles_draw->draw_rect(rect, Color(0.0, 0.0, 0.0, 0.5));
+
 		// Right.
-		int right_border = margins.x + (grid_size.x * texture_region_size.x);
+		int right_border = margins.x + (grid_size.x * (texture_region_size.x + separation.x));
 		if (right_border < texture->get_size().x) {
 			rect.position = Vector2i(right_border, margins.y);
-			rect.set_end(Vector2i(texture->get_size().x, margins.y + (grid_size.y * texture_region_size.y)));
+			rect.set_end(Vector2i(texture->get_size().x, margins.y + (grid_size.y * (texture_region_size.y + separation.y))));
 			base_tiles_draw->draw_texture_rect_region(texture, rect, rect);
+			base_tiles_draw->draw_rect(rect, Color(0.0, 0.0, 0.0, 0.5));
 		}
 
 		// Draw actual tiles, using their properties (modulation, etc...)
 		for (int i = 0; i < tile_set_atlas_source->get_tiles_count(); i++) {
 			Vector2i atlas_coords = tile_set_atlas_source->get_tile_id(i);
 
-			// Update the y to max value.
-			Vector2i offset_pos = (margins + (atlas_coords * texture_region_size) + tile_set_atlas_source->get_tile_texture_region(atlas_coords).size / 2 + tile_set_atlas_source->get_tile_effective_texture_offset(atlas_coords, 0));
+			for (int frame = 0; frame < tile_set_atlas_source->get_tile_animation_frames_count(atlas_coords); frame++) {
+				// Update the y to max value.
+				Rect2i base_frame_rect = tile_set_atlas_source->get_tile_texture_region(atlas_coords, frame);
+				Vector2i offset_pos = base_frame_rect.get_center() + tile_set_atlas_source->get_tile_effective_texture_offset(atlas_coords, 0);
 
-			// Draw the tile.
-			TileMap::draw_tile(base_tiles_draw->get_canvas_item(), offset_pos, tile_set, source_id, atlas_coords, 0);
+				// Draw the tile.
+				TileMap::draw_tile(base_tiles_draw->get_canvas_item(), offset_pos, tile_set, source_id, atlas_coords, 0, frame);
+
+				// Draw, the texture in the separation areas
+				if (separation.x > 0) {
+					Rect2i right_sep_rect = Rect2i(base_frame_rect.get_position() + Vector2i(base_frame_rect.size.x, 0), Vector2i(separation.x, base_frame_rect.size.y));
+					right_sep_rect = right_sep_rect.intersection(Rect2i(Vector2(), texture->get_size()));
+					if (right_sep_rect.size.x > 0 && right_sep_rect.size.y > 0) {
+						base_tiles_draw->draw_texture_rect_region(texture, right_sep_rect, right_sep_rect);
+						base_tiles_draw->draw_rect(right_sep_rect, Color(0.0, 0.0, 0.0, 0.5));
+					}
+				}
+
+				if (separation.y > 0) {
+					Rect2i bottom_sep_rect = Rect2i(base_frame_rect.get_position() + Vector2i(0, base_frame_rect.size.y), Vector2i(base_frame_rect.size.x + separation.x, separation.y));
+					bottom_sep_rect = bottom_sep_rect.intersection(Rect2i(Vector2(), texture->get_size()));
+					if (bottom_sep_rect.size.x > 0 && bottom_sep_rect.size.y > 0) {
+						base_tiles_draw->draw_texture_rect_region(texture, bottom_sep_rect, bottom_sep_rect);
+						base_tiles_draw->draw_rect(bottom_sep_rect, Color(0.0, 0.0, 0.0, 0.5));
+					}
+				}
+			}
 		}
 	}
 }
@@ -295,30 +321,6 @@ void TileAtlasView::_draw_base_tiles_texture_grid() {
 	}
 }
 
-void TileAtlasView::_draw_base_tiles_dark() {
-	Ref<Texture2D> texture = tile_set_atlas_source->get_texture();
-	if (texture.is_valid()) {
-		Vector2i margins = tile_set_atlas_source->get_margins();
-		Vector2i separation = tile_set_atlas_source->get_separation();
-		Vector2i texture_region_size = tile_set_atlas_source->get_texture_region_size();
-
-		Size2i grid_size = tile_set_atlas_source->get_atlas_grid_size();
-
-		// Draw each tile texture region.
-		for (int x = 0; x < grid_size.x; x++) {
-			for (int y = 0; y < grid_size.y; y++) {
-				Vector2i origin = margins + (Vector2i(x, y) * (texture_region_size + separation));
-				Vector2i base_tile_coords = tile_set_atlas_source->get_tile_at_coords(Vector2i(x, y));
-
-				if (base_tile_coords == TileSetSource::INVALID_ATLAS_COORDS) {
-					// Draw the grid.
-					base_tiles_dark->draw_rect(Rect2i(origin, texture_region_size), Color(0.0, 0.0, 0.0, 0.5), true);
-				}
-			}
-		}
-	}
-}
-
 void TileAtlasView::_draw_base_tiles_shape_grid() {
 	// Draw the shapes.
 	Color grid_color = EditorSettings::get_singleton()->get("editors/tiles_editor/grid_color");
@@ -326,11 +328,18 @@ void TileAtlasView::_draw_base_tiles_shape_grid() {
 	for (int i = 0; i < tile_set_atlas_source->get_tiles_count(); i++) {
 		Vector2i tile_id = tile_set_atlas_source->get_tile_id(i);
 		Vector2 in_tile_base_offset = tile_set_atlas_source->get_tile_effective_texture_offset(tile_id, 0);
-		Rect2i texture_region = tile_set_atlas_source->get_tile_texture_region(tile_id);
-		Vector2 origin = texture_region.position + (texture_region.size - tile_shape_size) / 2 + in_tile_base_offset;
 
-		// Draw only if the tile shape fits in the texture region
-		tile_set->draw_tile_shape(base_tiles_shape_grid, Rect2(origin, tile_shape_size), grid_color);
+		for (int frame = 0; frame < tile_set_atlas_source->get_tile_animation_frames_count(tile_id); frame++) {
+			Color color = grid_color;
+			if (frame > 0) {
+				color.a *= 0.3;
+			}
+			Rect2i texture_region = tile_set_atlas_source->get_tile_texture_region(tile_id);
+			Transform2D tile_xform;
+			tile_xform.set_origin(texture_region.get_center() + in_tile_base_offset);
+			tile_xform.set_scale(tile_shape_size);
+			tile_set->draw_tile_shape(base_tiles_shape_grid, tile_xform, color);
+		}
 	}
 }
 
@@ -358,7 +367,7 @@ void TileAtlasView::_draw_alternatives() {
 			Vector2i atlas_coords = tile_set_atlas_source->get_tile_id(i);
 			current_pos.x = 0;
 			int y_increment = 0;
-			Rect2i texture_region = tile_set_atlas_source->get_tile_texture_region(atlas_coords);
+			Size2i texture_region_size = tile_set_atlas_source->get_tile_texture_region(atlas_coords).size;
 			int alternatives_count = tile_set_atlas_source->get_alternative_tiles_count(atlas_coords);
 			for (int j = 1; j < alternatives_count; j++) {
 				int alternative_id = tile_set_atlas_source->get_alternative_tile_id(atlas_coords, j);
@@ -368,18 +377,18 @@ void TileAtlasView::_draw_alternatives() {
 				// Update the y to max value.
 				Vector2i offset_pos = current_pos;
 				if (transposed) {
-					offset_pos = (current_pos + Vector2(texture_region.size.y, texture_region.size.x) / 2 + tile_set_atlas_source->get_tile_effective_texture_offset(atlas_coords, alternative_id));
-					y_increment = MAX(y_increment, texture_region.size.x);
+					offset_pos = (current_pos + Vector2(texture_region_size.y, texture_region_size.x) / 2 + tile_set_atlas_source->get_tile_effective_texture_offset(atlas_coords, alternative_id));
+					y_increment = MAX(y_increment, texture_region_size.x);
 				} else {
-					offset_pos = (current_pos + texture_region.size / 2 + tile_set_atlas_source->get_tile_effective_texture_offset(atlas_coords, alternative_id));
-					y_increment = MAX(y_increment, texture_region.size.y);
+					offset_pos = (current_pos + texture_region_size / 2 + tile_set_atlas_source->get_tile_effective_texture_offset(atlas_coords, alternative_id));
+					y_increment = MAX(y_increment, texture_region_size.y);
 				}
 
 				// Draw the tile.
 				TileMap::draw_tile(alternatives_draw->get_canvas_item(), offset_pos, tile_set, source_id, atlas_coords, alternative_id);
 
 				// Increment the x position.
-				current_pos.x += transposed ? texture_region.size.y : texture_region.size.x;
+				current_pos.x += transposed ? texture_region_size.y : texture_region_size.x;
 			}
 			if (alternatives_count > 1) {
 				current_pos.y += y_increment;
@@ -442,7 +451,6 @@ void TileAtlasView::set_atlas_source(TileSet *p_tile_set, TileSetAtlasSource *p_
 	base_tiles_draw->update();
 	base_tiles_texture_grid->update();
 	base_tiles_shape_grid->update();
-	base_tiles_dark->update();
 	alternatives_draw->update();
 	background_left->update();
 	background_right->update();
@@ -511,10 +519,10 @@ void TileAtlasView::_update_alternative_tiles_rect_cache() {
 }
 
 Vector3i TileAtlasView::get_alternative_tile_at_pos(const Vector2 p_pos) const {
-	for (Map<Vector2, Map<int, Rect2i>>::Element *E_coords = alternative_tiles_rect_cache.front(); E_coords; E_coords = E_coords->next()) {
-		for (Map<int, Rect2i>::Element *E_alternative = E_coords->value().front(); E_alternative; E_alternative = E_alternative->next()) {
-			if (E_alternative->value().has_point(p_pos)) {
-				return Vector3i(E_coords->key().x, E_coords->key().y, E_alternative->key());
+	for (const KeyValue<Vector2, Map<int, Rect2i>> &E_coords : alternative_tiles_rect_cache) {
+		for (const KeyValue<int, Rect2i> &E_alternative : E_coords.value) {
+			if (E_alternative.value.has_point(p_pos)) {
+				return Vector3i(E_coords.key.x, E_coords.key.y, E_alternative.key);
 			}
 		}
 	}
@@ -533,7 +541,6 @@ void TileAtlasView::update() {
 	base_tiles_draw->update();
 	base_tiles_texture_grid->update();
 	base_tiles_shape_grid->update();
-	base_tiles_dark->update();
 	alternatives_draw->update();
 	background_left->update();
 	background_right->update();
@@ -648,12 +655,6 @@ TileAtlasView::TileAtlasView() {
 	base_tiles_shape_grid->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
 	base_tiles_shape_grid->connect("draw", callable_mp(this, &TileAtlasView::_draw_base_tiles_shape_grid));
 	base_tiles_drawing_root->add_child(base_tiles_shape_grid);
-
-	base_tiles_dark = memnew(Control);
-	base_tiles_dark->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
-	base_tiles_dark->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
-	base_tiles_dark->connect("draw", callable_mp(this, &TileAtlasView::_draw_base_tiles_dark));
-	base_tiles_drawing_root->add_child(base_tiles_dark);
 
 	// Alternative tiles.
 	Label *alternative_tiles_label = memnew(Label);

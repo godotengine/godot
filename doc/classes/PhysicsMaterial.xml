@@ -8,8 +8,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="absorbent" type="bool" setter="set_absorbent" getter="is_absorbent" default="false">
 			If [code]true[/code], subtracts the bounciness from the colliding object's bounciness instead of adding it.
@@ -24,6 +22,4 @@
 			If [code]true[/code], the physics engine will use the friction of the object marked as "rough" when two objects collide. If [code]false[/code], the physics engine will use the lowest friction of all colliding objects instead. If [code]true[/code] for both colliding objects, the physics engine will use the highest friction.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

@@ -51,13 +51,13 @@ static void gdnative_free(void *p_mem) {
 
 // Helper print functions.
 static void gdnative_print_error(const char *p_description, const char *p_function, const char *p_file, int32_t p_line) {
-	_err_print_error(p_function, p_file, p_line, p_description, ERR_HANDLER_ERROR);
+	_err_print_error(p_function, p_file, p_line, p_description, false, ERR_HANDLER_ERROR);
 }
 static void gdnative_print_warning(const char *p_description, const char *p_function, const char *p_file, int32_t p_line) {
-	_err_print_error(p_function, p_file, p_line, p_description, ERR_HANDLER_WARNING);
+	_err_print_error(p_function, p_file, p_line, p_description, false, ERR_HANDLER_WARNING);
 }
 static void gdnative_print_script_error(const char *p_description, const char *p_function, const char *p_file, int32_t p_line) {
-	_err_print_error(p_function, p_file, p_line, p_description, ERR_HANDLER_SCRIPT);
+	_err_print_error(p_function, p_file, p_line, p_description, false, ERR_HANDLER_SCRIPT);
 }
 
 // Variant functions
@@ -661,6 +661,128 @@ static const char32_t *gdnative_string_operator_index_const(const GDNativeString
 	return &self->ptr()[p_index];
 }
 
+/* Packed array functions */
+
+static uint8_t *gdnative_packed_byte_array_operator_index(GDNativeTypePtr p_self, GDNativeInt p_index) {
+	PackedByteArray *self = (PackedByteArray *)p_self;
+	ERR_FAIL_INDEX_V(p_index, self->size(), nullptr);
+	return &self->ptrw()[p_index];
+}
+
+static const uint8_t *gdnative_packed_byte_array_operator_index_const(const GDNativeTypePtr p_self, GDNativeInt p_index) {
+	const PackedByteArray *self = (const PackedByteArray *)p_self;
+	ERR_FAIL_INDEX_V(p_index, self->size(), nullptr);
+	return &self->ptr()[p_index];
+}
+
+static GDNativeTypePtr gdnative_packed_color_array_operator_index(GDNativeTypePtr p_self, GDNativeInt p_index) {
+	PackedColorArray *self = (PackedColorArray *)p_self;
+	ERR_FAIL_INDEX_V(p_index, self->size(), nullptr);
+	return (GDNativeTypePtr)&self->ptrw()[p_index];
+}
+
+static GDNativeTypePtr gdnative_packed_color_array_operator_index_const(const GDNativeTypePtr p_self, GDNativeInt p_index) {
+	const PackedColorArray *self = (const PackedColorArray *)p_self;
+	ERR_FAIL_INDEX_V(p_index, self->size(), nullptr);
+	return (GDNativeTypePtr)&self->ptr()[p_index];
+}
+
+static float *gdnative_packed_float32_array_operator_index(GDNativeTypePtr p_self, GDNativeInt p_index) {
+	PackedFloat32Array *self = (PackedFloat32Array *)p_self;
+	ERR_FAIL_INDEX_V(p_index, self->size(), nullptr);
+	return &self->ptrw()[p_index];
+}
+
+static const float *gdnative_packed_float32_array_operator_index_const(const GDNativeTypePtr p_self, GDNativeInt p_index) {
+	const PackedFloat32Array *self = (const PackedFloat32Array *)p_self;
+	ERR_FAIL_INDEX_V(p_index, self->size(), nullptr);
+	return &self->ptr()[p_index];
+}
+
+static double *gdnative_packed_float64_array_operator_index(GDNativeTypePtr p_self, GDNativeInt p_index) {
+	PackedFloat64Array *self = (PackedFloat64Array *)p_self;
+	ERR_FAIL_INDEX_V(p_index, self->size(), nullptr);
+	return &self->ptrw()[p_index];
+}
+
+static const double *gdnative_packed_float64_array_operator_index_const(const GDNativeTypePtr p_self, GDNativeInt p_index) {
+	const PackedFloat64Array *self = (const PackedFloat64Array *)p_self;
+	ERR_FAIL_INDEX_V(p_index, self->size(), nullptr);
+	return &self->ptr()[p_index];
+}
+
+static int32_t *gdnative_packed_int32_array_operator_index(GDNativeTypePtr p_self, GDNativeInt p_index) {
+	PackedInt32Array *self = (PackedInt32Array *)p_self;
+	ERR_FAIL_INDEX_V(p_index, self->size(), nullptr);
+	return &self->ptrw()[p_index];
+}
+
+static const int32_t *gdnative_packed_int32_array_operator_index_const(const GDNativeTypePtr p_self, GDNativeInt p_index) {
+	const PackedInt32Array *self = (const PackedInt32Array *)p_self;
+	ERR_FAIL_INDEX_V(p_index, self->size(), nullptr);
+	return &self->ptr()[p_index];
+}
+
+static int64_t *gdnative_packed_int64_array_operator_index(GDNativeTypePtr p_self, GDNativeInt p_index) {
+	PackedInt64Array *self = (PackedInt64Array *)p_self;
+	ERR_FAIL_INDEX_V(p_index, self->size(), nullptr);
+	return &self->ptrw()[p_index];
+}
+
+static const int64_t *gdnative_packed_int64_array_operator_index_const(const GDNativeTypePtr p_self, GDNativeInt p_index) {
+	const PackedInt64Array *self = (const PackedInt64Array *)p_self;
+	ERR_FAIL_INDEX_V(p_index, self->size(), nullptr);
+	return &self->ptr()[p_index];
+}
+
+static GDNativeStringPtr gdnative_packed_string_array_operator_index(GDNativeTypePtr p_self, GDNativeInt p_index) {
+	PackedStringArray *self = (PackedStringArray *)p_self;
+	ERR_FAIL_INDEX_V(p_index, self->size(), nullptr);
+	return (GDNativeStringPtr)&self->ptrw()[p_index];
+}
+
+static GDNativeStringPtr gdnative_packed_string_array_operator_index_const(const GDNativeTypePtr p_self, GDNativeInt p_index) {
+	const PackedStringArray *self = (const PackedStringArray *)p_self;
+	ERR_FAIL_INDEX_V(p_index, self->size(), nullptr);
+	return (GDNativeStringPtr)&self->ptr()[p_index];
+}
+
+static GDNativeTypePtr gdnative_packed_vector2_array_operator_index(GDNativeTypePtr p_self, GDNativeInt p_index) {
+	PackedVector2Array *self = (PackedVector2Array *)p_self;
+	ERR_FAIL_INDEX_V(p_index, self->size(), nullptr);
+	return (GDNativeTypePtr)&self->ptrw()[p_index];
+}
+
+static GDNativeTypePtr gdnative_packed_vector2_array_operator_index_const(const GDNativeTypePtr p_self, GDNativeInt p_index) {
+	const PackedVector2Array *self = (const PackedVector2Array *)p_self;
+	ERR_FAIL_INDEX_V(p_index, self->size(), nullptr);
+	return (GDNativeTypePtr)&self->ptr()[p_index];
+}
+
+static GDNativeTypePtr gdnative_packed_vector3_array_operator_index(GDNativeTypePtr p_self, GDNativeInt p_index) {
+	PackedVector3Array *self = (PackedVector3Array *)p_self;
+	ERR_FAIL_INDEX_V(p_index, self->size(), nullptr);
+	return (GDNativeTypePtr)&self->ptrw()[p_index];
+}
+
+static GDNativeTypePtr gdnative_packed_vector3_array_operator_index_const(const GDNativeTypePtr p_self, GDNativeInt p_index) {
+	const PackedVector3Array *self = (const PackedVector3Array *)p_self;
+	ERR_FAIL_INDEX_V(p_index, self->size(), nullptr);
+	return (GDNativeTypePtr)&self->ptr()[p_index];
+}
+
+static GDNativeVariantPtr gdnative_array_operator_index(GDNativeTypePtr p_self, GDNativeInt p_index) {
+	Array *self = (Array *)p_self;
+	ERR_FAIL_INDEX_V(p_index, self->size(), nullptr);
+	return (GDNativeTypePtr)&self[p_index];
+}
+
+static GDNativeVariantPtr gdnative_array_operator_index_const(const GDNativeTypePtr p_self, GDNativeInt p_index) {
+	const Array *self = (const Array *)p_self;
+	ERR_FAIL_INDEX_V(p_index, self->size(), nullptr);
+	return (GDNativeTypePtr)&self[p_index];
+}
+
 /* OBJECT API */
 
 static void gdnative_object_method_bind_call(const GDNativeMethodBindPtr p_method_bind, GDNativeObjectPtr p_instance, const GDNativeVariantPtr *p_args, GDNativeInt p_arg_count, GDNativeVariantPtr r_return, GDNativeCallError *r_error) {
@@ -732,12 +854,19 @@ static GDNativeMethodBindPtr gdnative_classdb_get_method_bind(const char *p_clas
 	return (GDNativeMethodBindPtr)mb;
 }
 
-static GDNativeClassConstructor gdnative_classdb_get_constructor(const char *p_classname) {
+static GDNativeClassConstructor gdnative_classdb_get_constructor(const char *p_classname, GDNativeExtensionPtr *r_extension) {
 	ClassDB::ClassInfo *class_info = ClassDB::classes.getptr(StringName(p_classname));
 	if (class_info) {
+		if (r_extension) {
+			*r_extension = class_info->native_extension;
+		}
 		return (GDNativeClassConstructor)class_info->creation_func;
 	}
 	return nullptr;
+}
+
+static GDNativeObjectPtr gdnative_classdb_construct_object(GDNativeClassConstructor p_constructor, GDNativeExtensionPtr p_extension) {
+	return (GDNativeObjectPtr)ClassDB::construct_object((Object * (*)()) p_constructor, (ObjectNativeExtension *)p_extension);
 }
 
 static void *gdnative_classdb_get_class_tag(const char *p_classname) {
@@ -843,6 +972,35 @@ void gdnative_setup_interface(GDNativeInterface *p_interface) {
 	gdni.string_operator_index = gdnative_string_operator_index;
 	gdni.string_operator_index_const = gdnative_string_operator_index_const;
 
+	/* Packed array functions */
+
+	gdni.packed_byte_array_operator_index = gdnative_packed_byte_array_operator_index;
+	gdni.packed_byte_array_operator_index_const = gdnative_packed_byte_array_operator_index_const;
+
+	gdni.packed_color_array_operator_index = gdnative_packed_color_array_operator_index;
+	gdni.packed_color_array_operator_index_const = gdnative_packed_color_array_operator_index_const;
+
+	gdni.packed_float32_array_operator_index = gdnative_packed_float32_array_operator_index;
+	gdni.packed_float32_array_operator_index_const = gdnative_packed_float32_array_operator_index_const;
+	gdni.packed_float64_array_operator_index = gdnative_packed_float64_array_operator_index;
+	gdni.packed_float64_array_operator_index_const = gdnative_packed_float64_array_operator_index_const;
+
+	gdni.packed_int32_array_operator_index = gdnative_packed_int32_array_operator_index;
+	gdni.packed_int32_array_operator_index_const = gdnative_packed_int32_array_operator_index_const;
+	gdni.packed_int64_array_operator_index = gdnative_packed_int64_array_operator_index;
+	gdni.packed_int64_array_operator_index_const = gdnative_packed_int64_array_operator_index_const;
+
+	gdni.packed_string_array_operator_index = gdnative_packed_string_array_operator_index;
+	gdni.packed_string_array_operator_index_const = gdnative_packed_string_array_operator_index_const;
+
+	gdni.packed_vector2_array_operator_index = gdnative_packed_vector2_array_operator_index;
+	gdni.packed_vector2_array_operator_index_const = gdnative_packed_vector2_array_operator_index_const;
+	gdni.packed_vector3_array_operator_index = gdnative_packed_vector3_array_operator_index;
+	gdni.packed_vector3_array_operator_index_const = gdnative_packed_vector3_array_operator_index_const;
+
+	gdni.array_operator_index = gdnative_array_operator_index;
+	gdni.array_operator_index_const = gdnative_array_operator_index_const;
+
 	/* OBJECT */
 
 	gdni.object_method_bind_call = gdnative_object_method_bind_call;
@@ -859,6 +1017,7 @@ void gdnative_setup_interface(GDNativeInterface *p_interface) {
 	/* CLASSDB */
 
 	gdni.classdb_get_constructor = gdnative_classdb_get_constructor;
+	gdni.classdb_construct_object = gdnative_classdb_construct_object;
 	gdni.classdb_get_method_bind = gdnative_classdb_get_method_bind;
 	gdni.classdb_get_class_tag = gdnative_classdb_get_class_tag;
 
@@ -869,6 +1028,8 @@ void gdnative_setup_interface(GDNativeInterface *p_interface) {
 	gdni.classdb_register_extension_class_method = nullptr;
 	gdni.classdb_register_extension_class_integer_constant = nullptr;
 	gdni.classdb_register_extension_class_property = nullptr;
+	gdni.classdb_register_extension_class_property_group = nullptr;
+	gdni.classdb_register_extension_class_property_subgroup = nullptr;
 	gdni.classdb_register_extension_class_signal = nullptr;
 	gdni.classdb_unregister_extension_class = nullptr;
 }

@@ -64,6 +64,7 @@ class SceneTreeEditor : public Control {
 	AcceptDialog *error;
 	AcceptDialog *warning;
 
+	bool auto_expand_selected = true;
 	bool connect_to_script_mode;
 	bool connecting_signal;
 
@@ -113,8 +114,6 @@ class SceneTreeEditor : public Control {
 	void _node_visibility_changed(Node *p_node);
 	void _update_visibility_color(Node *p_node, TreeItem *p_item);
 
-	void _node_replace_owner(Node *p_base, Node *p_node, Node *p_root);
-
 	void _selection_changed();
 	Node *get_scene_node();
 
@@ -152,6 +151,7 @@ public:
 
 	void update_tree() { _update_tree(); }
 
+	void set_auto_expand_selected(bool p_auto, bool p_update_settings);
 	void set_connect_to_script_mode(bool p_enable);
 	void set_connecting_signal(bool p_enable);
 
@@ -171,7 +171,6 @@ class SceneTreeDialog : public ConfirmationDialog {
 	//Button *cancel;
 	LineEdit *filter;
 
-	void update_tree();
 	void _select();
 	void _cancel();
 	void _filter_changed(const String &p_filter);

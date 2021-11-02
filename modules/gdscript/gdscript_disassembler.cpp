@@ -914,6 +914,14 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				incr += 5;
 			} break;
 				DISASSEMBLE_ITERATE_TYPES(DISASSEMBLE_ITERATE);
+			case OPCODE_STORE_GLOBAL: {
+				text += "store global ";
+				text += DADDR(1);
+				text += " = ";
+				text += String::num_int64(_code_ptr[ip + 2]);
+
+				incr += 3;
+			} break;
 			case OPCODE_STORE_NAMED_GLOBAL: {
 				text += "store named global ";
 				text += DADDR(1);

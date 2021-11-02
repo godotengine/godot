@@ -71,7 +71,11 @@ void OptionButton::_notification(int p_what) {
 						clr = get_theme_color(SNAME("font_disabled_color"));
 						break;
 					default:
-						clr = get_theme_color(SNAME("font_color"));
+						if (has_focus()) {
+							clr = get_theme_color(SNAME("font_focus_color"));
+						} else {
+							clr = get_theme_color(SNAME("font_color"));
+						}
 				}
 			}
 
@@ -115,7 +119,7 @@ void OptionButton::_selected(int p_which) {
 }
 
 void OptionButton::pressed() {
-	Size2 size = get_size();
+	Size2 size = get_size() * get_viewport()->get_canvas_transform().get_scale();
 	popup->set_position(get_screen_position() + Size2(0, size.height * get_global_transform().get_scale().y));
 	popup->set_size(Size2(size.width, 0));
 	popup->popup();
@@ -351,7 +355,7 @@ OptionButton::OptionButton() {
 
 	popup = memnew(PopupMenu);
 	popup->hide();
-	add_child(popup);
+	add_child(popup, false, INTERNAL_MODE_FRONT);
 	popup->connect("index_pressed", callable_mp(this, &OptionButton::_selected));
 	popup->connect("id_focused", callable_mp(this, &OptionButton::_focused));
 	popup->connect("popup_hide", callable_mp((BaseButton *)this, &BaseButton::set_pressed), varray(false));

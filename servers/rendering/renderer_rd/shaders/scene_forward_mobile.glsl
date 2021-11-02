@@ -550,14 +550,14 @@ vec4 fog_process(vec3 vertex) {
 		}
 	}
 
-	float fog_amount = 1.0 - exp(min(0.0, vertex.z * scene_data.fog_density));
+	float fog_amount = 1.0 - exp(min(0.0, -length(vertex) * scene_data.fog_density));
 
-	if (abs(scene_data.fog_height_density) > 0.001) {
+	if (abs(scene_data.fog_height_density) >= 0.0001) {
 		float y = (scene_data.camera_matrix * vec4(vertex, 1.0)).y;
 
-		float y_dist = scene_data.fog_height - y;
+		float y_dist = y - scene_data.fog_height;
 
-		float vfog_amount = clamp(exp(y_dist * scene_data.fog_height_density), 0.0, 1.0);
+		float vfog_amount = 1.0 - exp(min(0.0, y_dist * scene_data.fog_height_density));
 
 		fog_amount = max(vfog_amount, fog_amount);
 	}
@@ -868,6 +868,7 @@ void main() {
 
 	if (scene_data.use_reflection_cubemap) {
 		vec3 ref_vec = reflect(-view, normal);
+		float horizon = min(1.0 + dot(ref_vec, normal), 1.0);
 		ref_vec = scene_data.radiance_inverse_xform * ref_vec;
 #ifdef USE_RADIANCE_CUBEMAP_ARRAY
 
@@ -880,7 +881,6 @@ void main() {
 		specular_light = textureLod(samplerCube(radiance_cubemap, material_samplers[SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP]), ref_vec, roughness * MAX_ROUGHNESS_LOD).rgb;
 
 #endif //USE_RADIANCE_CUBEMAP_ARRAY
-		float horizon = min(1.0 + dot(ref_vec, normal), 1.0);
 		specular_light *= horizon * horizon;
 		specular_light *= scene_data.ambient_light_color_energy.a;
 	}
@@ -930,15 +930,15 @@ void main() {
 		const float c4 = 0.886227;
 		const float c5 = 0.247708;
 		ambient_light += (c1 * lightmap_captures.data[index].sh[8].rgb * (wnormal.x * wnormal.x - wnormal.y * wnormal.y) +
-						  c3 * lightmap_captures.data[index].sh[6].rgb * wnormal.z * wnormal.z +
-						  c4 * lightmap_captures.data[index].sh[0].rgb -
-						  c5 * lightmap_captures.data[index].sh[6].rgb +
-						  2.0 * c1 * lightmap_captures.data[index].sh[4].rgb * wnormal.x * wnormal.y +
-						  2.0 * c1 * lightmap_captures.data[index].sh[7].rgb * wnormal.x * wnormal.z +
-						  2.0 * c1 * lightmap_captures.data[index].sh[5].rgb * wnormal.y * wnormal.z +
-						  2.0 * c2 * lightmap_captures.data[index].sh[3].rgb * wnormal.x +
-						  2.0 * c2 * lightmap_captures.data[index].sh[1].rgb * wnormal.y +
-						  2.0 * c2 * lightmap_captures.data[index].sh[2].rgb * wnormal.z);
+				c3 * lightmap_captures.data[index].sh[6].rgb * wnormal.z * wnormal.z +
+				c4 * lightmap_captures.data[index].sh[0].rgb -
+				c5 * lightmap_captures.data[index].sh[6].rgb +
+				2.0 * c1 * lightmap_captures.data[index].sh[4].rgb * wnormal.x * wnormal.y +
+				2.0 * c1 * lightmap_captures.data[index].sh[7].rgb * wnormal.x * wnormal.z +
+				2.0 * c1 * lightmap_captures.data[index].sh[5].rgb * wnormal.y * wnormal.z +
+				2.0 * c2 * lightmap_captures.data[index].sh[3].rgb * wnormal.x +
+				2.0 * c2 * lightmap_captures.data[index].sh[1].rgb * wnormal.y +
+				2.0 * c2 * lightmap_captures.data[index].sh[2].rgb * wnormal.z);
 
 	} else if (bool(draw_call.flags & INSTANCE_FLAGS_USE_LIGHTMAP)) { // has actual lightmap
 		bool uses_sh = bool(draw_call.flags & INSTANCE_FLAGS_USE_SH_LIGHTMAP);
@@ -1046,7 +1046,7 @@ void main() {
 #if !defined(MODE_RENDER_DEPTH) && !defined(MODE_UNSHADED)
 
 	if (!sc_disable_directional_lights) { //directional light
-
+#ifndef SHADOWS_DISABLED
 		// Do shadow and lighting in two passes to reduce register pressure
 		uint shadow0 = 0;
 		uint shadow1 = 0;
@@ -1322,6 +1322,8 @@ void main() {
 			}
 		}
 
+#endif // SHADOWS_DISABLED
+
 		for (uint i = 0; i < 8; i++) {
 			if (i >= scene_data.directional_light_count) {
 				break;
@@ -1334,13 +1336,13 @@ void main() {
 			// We're not doing light transmittence
 
 			float shadow = 1.0;
-
+#ifndef SHADOWS_DISABLED
 			if (i < 4) {
 				shadow = float(shadow0 >> (i * 8) & 0xFF) / 255.0;
 			} else {
 				shadow = float(shadow1 >> ((i - 4) * 8) & 0xFF) / 255.0;
 			}
-
+#endif
 			blur_shadow(shadow);
 
 			light_compute(normal, directional_lights.data[i].direction, normalize(view), 0.0, directional_lights.data[i].color * directional_lights.data[i].energy, shadow, f0, orms, 1.0,

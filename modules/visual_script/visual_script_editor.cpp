@@ -2546,16 +2546,11 @@ void VisualScriptEditor::goto_line(int p_line, bool p_with_error) {
 		error_line = p_line;
 	}
 
-	List<StringName> functions;
-	script->get_function_list(&functions);
-	for (const StringName &E : functions) {
-		if (script->has_node(p_line)) {
-			_update_graph();
-			_update_members();
+	if (script->has_node(p_line)) {
+		_update_graph();
+		_update_members();
 
-			call_deferred(SNAME("call_deferred"), "_center_on_node", E, p_line); //editor might be just created and size might not exist yet
-			return;
-		}
+		call_deferred(SNAME("call_deferred"), "_center_on_node", p_line); // The editor might be just created and size might not exist yet.
 	}
 }
 
@@ -3422,7 +3417,7 @@ void VisualScriptEditor::connect_seq(Ref<VisualScriptNode> vnode_old, Ref<Visual
 		undo_redo->add_do_method(script.ptr(), "sequence_connect", port_action_node, pass_port, new_id);
 		undo_redo->add_undo_method(script.ptr(), "sequence_disconnect", port_action_node, pass_port, new_id);
 	} else if (vnode_old->get_output_value_port_info(port_action_output).name == String("return") &&
-			   !script->get_output_sequence_ports_connected(port_action_node).has(return_port)) {
+			!script->get_output_sequence_ports_connected(port_action_node).has(return_port)) {
 		undo_redo->add_do_method(script.ptr(), "sequence_connect", port_action_node, return_port, new_id);
 		undo_redo->add_undo_method(script.ptr(), "sequence_disconnect", port_action_node, return_port, new_id);
 	} else {
@@ -3592,6 +3587,11 @@ void VisualScriptEditor::_hide_timer() {
 	hint_text->hide();
 }
 
+void VisualScriptEditor::_toggle_scripts_pressed() {
+	ScriptEditor::get_singleton()->toggle_scripts_panel();
+	update_toggle_scripts_button();
+}
+
 void VisualScriptEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_READY: {
@@ -3605,6 +3605,8 @@ void VisualScriptEditor::_notification(int p_what) {
 			if (p_what != NOTIFICATION_READY && !is_visible_in_tree()) {
 				return;
 			}
+
+			update_toggle_scripts_button();
 
 			edit_variable_edit->add_theme_style_override("bg", get_theme_stylebox(SNAME("bg"), SNAME("Tree")));
 			edit_signal_edit->add_theme_style_override("bg", get_theme_stylebox(SNAME("bg"), SNAME("Tree")));
@@ -3630,17 +3632,17 @@ void VisualScriptEditor::_notification(int p_what) {
 				node_colors["constants"] = Color(0.94, 0.18, 0.49);
 			}
 
-			for (Map<StringName, Color>::Element *E = node_colors.front(); E; E = E->next()) {
+			for (const KeyValue<StringName, Color> &E : node_colors) {
 				const Ref<StyleBoxFlat> sb = tm->get_stylebox(SNAME("frame"), SNAME("GraphNode"));
 
 				if (!sb.is_null()) {
 					Ref<StyleBoxFlat> frame_style = sb->duplicate();
 					// Adjust the border color to be close to the GraphNode's background color.
 					// This keeps the node's title area from being too distracting.
-					Color color = dark_theme ? E->get().darkened(0.75) : E->get().lightened(0.75);
+					Color color = dark_theme ? E.value.darkened(0.75) : E.value.lightened(0.75);
 					color.a = 0.9;
 					frame_style->set_border_color(color);
-					node_styles[E->key()] = frame_style;
+					node_styles[E.key] = frame_style;
 				}
 			}
 
@@ -3650,6 +3652,7 @@ void VisualScriptEditor::_notification(int p_what) {
 			}
 		} break;
 		case NOTIFICATION_VISIBILITY_CHANGED: {
+			update_toggle_scripts_button();
 			members_section->set_visible(is_visible_in_tree());
 		} break;
 	}
@@ -3810,15 +3813,15 @@ void VisualScriptEditor::_menu_option(int p_what) {
 				}
 			}
 
-			for (Map<int, Ref<VisualScriptNode>>::Element *E = clipboard->nodes.front(); E; E = E->next()) {
-				Ref<VisualScriptNode> node = E->get()->duplicate();
+			for (KeyValue<int, Ref<VisualScriptNode>> &E : clipboard->nodes) {
+				Ref<VisualScriptNode> node = E.value->duplicate();
 
 				int new_id = idc++;
 				to_select.insert(new_id);
 
-				remap[E->key()] = new_id;
+				remap[E.key] = new_id;
 
-				Vector2 paste_pos = clipboard->nodes_positions[E->key()];
+				Vector2 paste_pos = clipboard->nodes_positions[E.key];
 
 				while (existing_positions.has(paste_pos.snapped(Vector2(2, 2)))) {
 					paste_pos += Vector2(20, 20) * EDSCALE;
@@ -3903,16 +3906,16 @@ void VisualScriptEditor::_menu_option(int p_what) {
 					// the user wants to connect the nodes.
 					int top_nd = -1;
 					Vector2 top;
-					for (Map<int, Ref<VisualScriptNode>>::Element *E = nodes.front(); E; E = E->next()) {
-						Ref<VisualScriptNode> nd = script->get_node(E->key());
+					for (const KeyValue<int, Ref<VisualScriptNode>> &E : nodes) {
+						Ref<VisualScriptNode> nd = script->get_node(E.key);
 						if (nd.is_valid() && nd->has_input_sequence_port()) {
 							if (top_nd < 0) {
-								top_nd = E->key();
+								top_nd = E.key;
 								top = script->get_node_position(top_nd);
 							}
-							Vector2 pos = script->get_node_position(E->key());
+							Vector2 pos = script->get_node_position(E.key);
 							if (top.y > pos.y) {
-								top_nd = E->key();
+								top_nd = E.key;
 								top = pos;
 							}
 						}
@@ -4232,6 +4235,15 @@ void VisualScriptEditor::add_syntax_highlighter(Ref<EditorSyntaxHighlighter> p_h
 void VisualScriptEditor::set_syntax_highlighter(Ref<EditorSyntaxHighlighter> p_highlighter) {
 }
 
+void VisualScriptEditor::update_toggle_scripts_button() {
+	if (is_layout_rtl()) {
+		toggle_scripts_button->set_icon(Control::get_theme_icon(ScriptEditor::get_singleton()->is_scripts_panel_toggled() ? SNAME("Forward") : SNAME("Back"), SNAME("EditorIcons")));
+	} else {
+		toggle_scripts_button->set_icon(Control::get_theme_icon(ScriptEditor::get_singleton()->is_scripts_panel_toggled() ? SNAME("Back") : SNAME("Forward"), SNAME("EditorIcons")));
+	}
+	toggle_scripts_button->set_tooltip(vformat("%s (%s)", TTR("Toggle Scripts Panel"), ED_GET_SHORTCUT("script_editor/toggle_scripts_panel")->get_as_text()));
+}
+
 void VisualScriptEditor::_bind_methods() {
 	ClassDB::bind_method("_move_node", &VisualScriptEditor::_move_node);
 	ClassDB::bind_method("_update_graph", &VisualScriptEditor::_update_graph, DEFVAL(-1));
@@ -4250,8 +4262,6 @@ void VisualScriptEditor::_bind_methods() {
 	ClassDB::bind_method("_update_members", &VisualScriptEditor::_update_members);
 
 	ClassDB::bind_method("_generic_search", &VisualScriptEditor::_generic_search);
-
-	ClassDB::bind_method(D_METHOD("add_syntax_highlighter", "highlighter"), &VisualScriptEditor::add_syntax_highlighter);
 }
 
 VisualScriptEditor::VisualScriptEditor() {
@@ -4332,6 +4342,16 @@ VisualScriptEditor::VisualScriptEditor() {
 	graph->set_minimap_opacity(graph_minimap_opacity);
 	graph->hide();
 	graph->connect("scroll_offset_changed", callable_mp(this, &VisualScriptEditor::_graph_ofs_changed));
+
+	status_bar = memnew(HBoxContainer);
+	add_child(status_bar);
+	status_bar->set_h_size_flags(SIZE_EXPAND_FILL);
+	status_bar->set_custom_minimum_size(Size2(0, 24 * EDSCALE));
+
+	toggle_scripts_button = memnew(Button);
+	toggle_scripts_button->set_flat(true);
+	toggle_scripts_button->connect("pressed", callable_mp(this, &VisualScriptEditor::_toggle_scripts_pressed));
+	status_bar->add_child(toggle_scripts_button);
 
 	/// Add Buttons to Top Bar/Zoom bar.
 	HBoxContainer *graph_hbc = graph->get_zoom_hbox();

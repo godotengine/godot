@@ -57,6 +57,4 @@
 			To know more about how to perform a shape cast or a ray cast, please consult the [PhysicsDirectSpaceState3D] documentation.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

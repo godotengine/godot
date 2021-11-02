@@ -136,6 +136,8 @@ public:
 
 	virtual float get_length() const override; //if supported, otherwise return 0
 
+	virtual bool is_monophonic() const override;
+
 	void set_data(const Vector<uint8_t> &p_data);
 	Vector<uint8_t> get_data() const;
 

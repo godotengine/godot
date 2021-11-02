@@ -94,7 +94,6 @@ public:
 	virtual int get_surface_count() const override;
 	virtual int surface_get_array_len(int p_idx) const override;
 	virtual int surface_get_array_index_len(int p_idx) const override;
-	virtual bool surface_is_softbody_friendly(int p_idx) const override;
 	virtual Array surface_get_arrays(int p_surface) const override;
 	virtual Array surface_get_blend_shape_arrays(int p_surface) const override;
 	virtual Dictionary surface_get_lods(int p_surface) const override;

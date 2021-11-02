@@ -16,8 +16,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="as_normal_map" type="bool" setter="set_as_normal_map" getter="is_normal_map" default="false">
 			If [code]true[/code], the resulting texture contains a normal map created from the original noise interpreted as a bump map.
@@ -42,6 +40,4 @@
 			Width of the generated texture.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

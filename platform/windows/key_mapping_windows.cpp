@@ -345,6 +345,16 @@ unsigned int KeyMappingWindows::get_keysym(unsigned int p_code) {
 	return KEY_UNKNOWN;
 }
 
+unsigned int KeyMappingWindows::get_scancode(Key p_keycode) {
+	for (int i = 0; _scancode_to_keycode[i].keysym != KEY_UNKNOWN; i++) {
+		if (_scancode_to_keycode[i].keysym == p_keycode) {
+			return _scancode_to_keycode[i].keycode;
+		}
+	}
+
+	return 0;
+}
+
 unsigned int KeyMappingWindows::get_scansym(unsigned int p_code, bool p_extended) {
 	unsigned int keycode = KEY_UNKNOWN;
 	for (int i = 0; _scancode_to_keycode[i].keysym != KEY_UNKNOWN; i++) {
@@ -416,13 +426,13 @@ unsigned int KeyMappingWindows::get_scansym(unsigned int p_code, bool p_extended
 
 bool KeyMappingWindows::is_extended_key(unsigned int p_code) {
 	return p_code == VK_INSERT ||
-		   p_code == VK_DELETE ||
-		   p_code == VK_HOME ||
-		   p_code == VK_END ||
-		   p_code == VK_PRIOR ||
-		   p_code == VK_NEXT ||
-		   p_code == VK_LEFT ||
-		   p_code == VK_UP ||
-		   p_code == VK_RIGHT ||
-		   p_code == VK_DOWN;
+			p_code == VK_DELETE ||
+			p_code == VK_HOME ||
+			p_code == VK_END ||
+			p_code == VK_PRIOR ||
+			p_code == VK_NEXT ||
+			p_code == VK_LEFT ||
+			p_code == VK_UP ||
+			p_code == VK_RIGHT ||
+			p_code == VK_DOWN;
 }

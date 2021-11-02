@@ -93,7 +93,6 @@ class AudioEffectRecord : public AudioEffect {
 
 protected:
 	static void _bind_methods();
-	static void debug(uint64_t time_diff, int p_frame_count);
 
 public:
 	Ref<AudioEffectInstance> instantiate() override;

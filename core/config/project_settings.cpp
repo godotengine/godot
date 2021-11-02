@@ -42,24 +42,32 @@
 #include "core/os/os.h"
 #include "core/variant/variant_parser.h"
 
+const String ProjectSettings::PROJECT_DATA_DIR_NAME_SUFFIX = "godot";
+
 ProjectSettings *ProjectSettings::singleton = nullptr;
 
 ProjectSettings *ProjectSettings::get_singleton() {
 	return singleton;
 }
 
+String ProjectSettings::get_project_data_dir_name() const {
+	return project_data_dir_name;
+}
+
+String ProjectSettings::get_project_data_path() const {
+	return "res://" + get_project_data_dir_name();
+}
+
 String ProjectSettings::get_resource_path() const {
 	return resource_path;
 }
 
-const String ProjectSettings::IMPORTED_FILES_PATH("res://.godot/imported");
+String ProjectSettings::get_imported_files_path() const {
+	return get_project_data_path().plus_file("imported");
+}
 
 String ProjectSettings::localize_path(const String &p_path) const {
-	if (resource_path == "") {
-		return p_path; //not initialized yet
-	}
-
-	if (p_path.begins_with("res://") || p_path.begins_with("user://") ||
+	if (resource_path.is_empty() || p_path.begins_with("res://") || p_path.begins_with("user://") ||
 			(p_path.is_absolute_path() && !p_path.begins_with(resource_path))) {
 		return p_path.simplify_path();
 	}
@@ -256,15 +264,15 @@ void ProjectSettings::_get_property_list(List<PropertyInfo> *p_list) const {
 
 	Set<_VCSort> vclist;
 
-	for (Map<StringName, VariantContainer>::Element *E = props.front(); E; E = E->next()) {
-		const VariantContainer *v = &E->get();
+	for (const KeyValue<StringName, VariantContainer> &E : props) {
+		const VariantContainer *v = &E.value;
 
 		if (v->hide_from_editor) {
 			continue;
 		}
 
 		_VCSort vc;
-		vc.name = E->key();
+		vc.name = E.key;
 		vc.order = v->order;
 		vc.type = v->variant.get_type();
 		if (vc.name.begins_with("input/") || vc.name.begins_with("import/") || vc.name.begins_with("export/") || vc.name.begins_with("/remap") || vc.name.begins_with("/locale") || vc.name.begins_with("/autoload")) {
@@ -322,14 +330,14 @@ bool ProjectSettings::_load_resource_pack(const String &p_pack, bool p_replace_f
 void ProjectSettings::_convert_to_last_version(int p_from_version) {
 	if (p_from_version <= 3) {
 		// Converts the actions from array to dictionary (array of events to dictionary with deadzone + events)
-		for (Map<StringName, ProjectSettings::VariantContainer>::Element *E = props.front(); E; E = E->next()) {
-			Variant value = E->get().variant;
-			if (String(E->key()).begins_with("input/") && value.get_type() == Variant::ARRAY) {
+		for (KeyValue<StringName, ProjectSettings::VariantContainer> &E : props) {
+			Variant value = E.value.variant;
+			if (String(E.key).begins_with("input/") && value.get_type() == Variant::ARRAY) {
 				Array array = value;
 				Dictionary action;
 				action["deadzone"] = Variant(0.5f);
 				action["events"] = array;
-				E->get().variant = action;
+				E.value.variant = action;
 			}
 		}
 	}
@@ -513,6 +521,11 @@ Error ProjectSettings::setup(const String &p_path, const String &p_main_pack, bo
 			_load_settings_text(custom_settings);
 		}
 	}
+
+	// Updating the default value after the project settings have loaded.
+	bool use_hidden_directory = GLOBAL_GET("application/config/use_hidden_project_data_directory");
+	project_data_dir_name = (use_hidden_directory ? "." : "") + PROJECT_DATA_DIR_NAME_SUFFIX;
+
 	// Using GLOBAL_GET on every block for compressing can be slow, so assigning here.
 	Compression::zstd_long_distance_matching = GLOBAL_GET("compression/formats/zstd/long_distance_matching");
 	Compression::zstd_level = GLOBAL_GET("compression/formats/zstd/compression_level");
@@ -699,8 +712,8 @@ Error ProjectSettings::_save_settings_binary(const String &p_file, const Map<Str
 
 	int count = 0;
 
-	for (Map<String, List<String>>::Element *E = props.front(); E; E = E->next()) {
-		count += E->get().size();
+	for (const KeyValue<String, List<String>> &E : props) {
+		count += E.value.size();
 	}
 
 	if (p_custom_features != String()) {
@@ -792,7 +805,7 @@ Error ProjectSettings::_save_settings_text(const String &p_file, const Map<Strin
 	}
 	file->store_string("\n");
 
-	for (Map<String, List<String>>::Element *E = props.front(); E; E = E->next()) {
+	for (const Map<String, List<String>>::Element *E = props.front(); E; E = E->next()) {
 		if (E != props.front()) {
 			file->store_string("\n");
 		}
@@ -835,19 +848,19 @@ Error ProjectSettings::save_custom(const String &p_path, const CustomMap &p_cust
 	Set<_VCSort> vclist;
 
 	if (p_merge_with_current) {
-		for (Map<StringName, VariantContainer>::Element *G = props.front(); G; G = G->next()) {
-			const VariantContainer *v = &G->get();
+		for (const KeyValue<StringName, VariantContainer> &G : props) {
+			const VariantContainer *v = &G.value;
 
 			if (v->hide_from_editor) {
 				continue;
 			}
 
-			if (p_custom.has(G->key())) {
+			if (p_custom.has(G.key)) {
 				continue;
 			}
 
 			_VCSort vc;
-			vc.name = G->key(); //*k;
+			vc.name = G.key; //*k;
 			vc.order = v->order;
 			vc.type = v->variant.get_type();
 			vc.flags = PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_STORAGE;
@@ -859,14 +872,14 @@ Error ProjectSettings::save_custom(const String &p_path, const CustomMap &p_cust
 		}
 	}
 
-	for (const Map<String, Variant>::Element *E = p_custom.front(); E; E = E->next()) {
+	for (const KeyValue<String, Variant> &E : p_custom) {
 		// Lookup global prop to store in the same order
-		Map<StringName, VariantContainer>::Element *global_prop = props.find(E->key());
+		Map<StringName, VariantContainer>::Element *global_prop = props.find(E.key);
 
 		_VCSort vc;
-		vc.name = E->key();
+		vc.name = E.key;
 		vc.order = global_prop ? global_prop->get().order : 0xFFFFFFF;
-		vc.type = E->get().get_type();
+		vc.type = E.value.get_type();
 		vc.flags = PROPERTY_USAGE_STORAGE;
 		vclist.insert(vc);
 	}
@@ -1084,6 +1097,7 @@ ProjectSettings::ProjectSettings() {
 	custom_prop_info["application/run/main_scene"] = PropertyInfo(Variant::STRING, "application/run/main_scene", PROPERTY_HINT_FILE, "*.tscn,*.scn,*.res");
 	GLOBAL_DEF("application/run/disable_stdout", false);
 	GLOBAL_DEF("application/run/disable_stderr", false);
+	GLOBAL_DEF_RST("application/config/use_hidden_project_data_directory", true);
 	GLOBAL_DEF("application/config/use_custom_user_dir", false);
 	GLOBAL_DEF("application/config/custom_user_dir_name", "");
 	GLOBAL_DEF("application/config/project_settings_override", "");

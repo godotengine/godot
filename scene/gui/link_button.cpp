@@ -41,12 +41,16 @@ void LinkButton::_shape() {
 	} else {
 		text_buf->set_direction((TextServer::Direction)text_direction);
 	}
-	TS->shaped_text_set_bidi_override(text_buf->get_rid(), structured_text_parser(st_parser, st_args, text));
-	text_buf->add_string(text, font, font_size, opentype_features, (language != "") ? language : TranslationServer::get_singleton()->get_tool_locale());
+	TS->shaped_text_set_bidi_override(text_buf->get_rid(), structured_text_parser(st_parser, st_args, xl_text));
+	text_buf->add_string(xl_text, font, font_size, opentype_features, (language != "") ? language : TranslationServer::get_singleton()->get_tool_locale());
 }
 
 void LinkButton::set_text(const String &p_text) {
+	if (text == p_text) {
+		return;
+	}
 	text = p_text;
+	xl_text = atr(text);
 	_shape();
 	minimum_size_changed();
 	update();
@@ -141,7 +145,13 @@ Size2 LinkButton::get_minimum_size() const {
 
 void LinkButton::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_TRANSLATION_CHANGED:
+		case NOTIFICATION_TRANSLATION_CHANGED: {
+			xl_text = atr(text);
+			_shape();
+
+			minimum_size_changed();
+			update();
+		} break;
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED: {
 			update();
 		} break;
@@ -158,7 +168,12 @@ void LinkButton::_notification(int p_what) {
 
 			switch (get_draw_mode()) {
 				case DRAW_NORMAL: {
-					color = get_theme_color(SNAME("font_color"));
+					if (has_focus()) {
+						color = get_theme_color(SNAME("font_focus_color"));
+					} else {
+						color = get_theme_color(SNAME("font_color"));
+					}
+
 					do_underline = underline_mode == UNDERLINE_MODE_ALWAYS;
 				} break;
 				case DRAW_HOVER_PRESSED:

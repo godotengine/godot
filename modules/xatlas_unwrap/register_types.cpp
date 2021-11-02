@@ -114,7 +114,7 @@ bool xatlas_mesh_lightmap_unwrap_callback(float p_texel_size, const float *p_ver
 		input_mesh.vertexPositionStride = sizeof(float) * 3;
 		input_mesh.vertexNormalData = p_normals;
 		input_mesh.vertexNormalStride = sizeof(uint32_t) * 3;
-		input_mesh.vertexUvData = NULL;
+		input_mesh.vertexUvData = nullptr;
 		input_mesh.vertexUvStride = 0;
 
 		xatlas::ChartOptions chart_options;

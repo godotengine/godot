@@ -56,7 +56,7 @@ struct DataMap
 
   protected:
   Tag		tag;		/* A tag indicating the type of metadata. */
-  LNNOffsetTo<UnsizedArrayOf<HBUINT8>>
+  NNOffset32To<UnsizedArrayOf<HBUINT8>>
 		dataZ;		/* Offset in bytes from the beginning of the
 				 * metadata table to the data for this tag. */
   HBUINT32	dataLength;	/* Length of the data. The data is not required to
@@ -113,7 +113,7 @@ struct meta
 				 * Offset from the beginning of the table to the data.
 				 * Per OT specification:
 				 * Reserved. Not used; should be set to 0. */
-  LArrayOf<DataMap>
+  Array32Of<DataMap>
 		dataMaps;/* Array of data map records. */
   public:
   DEFINE_SIZE_ARRAY (16, dataMaps);

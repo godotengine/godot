@@ -61,6 +61,11 @@ cpp_files = [
     "kernels/bvh/bvh_builder_twolevel.cpp",
     "kernels/bvh/bvh_intersector1.cpp",
     "kernels/bvh/bvh_intersector1_bvh4.cpp",
+    "kernels/bvh/bvh_intersector_hybrid4_bvh4.cpp",
+    "kernels/bvh/bvh_intersector_stream_bvh4.cpp",
+    "kernels/bvh/bvh_intersector_stream_filters.cpp",
+    "kernels/bvh/bvh_intersector_hybrid.cpp",
+    "kernels/bvh/bvh_intersector_stream.cpp",
 ]
 
 os.chdir("../../thirdparty")
@@ -117,7 +122,7 @@ with open(os.path.join(dest_dir, "kernels/config.h"), "w") as config_file:
 /* #undef EMBREE_GEOMETRY_INSTANCE */
 /* #undef EMBREE_GEOMETRY_GRID */
 /* #undef EMBREE_GEOMETRY_POINT */
-/* #undef EMBREE_RAY_PACKETS */
+#define EMBREE_RAY_PACKETS
 /* #undef EMBREE_COMPACT_POLYS */
 
 #define EMBREE_CURVE_SELF_INTERSECTION_AVOIDANCE_FACTOR 2.0
@@ -249,3 +254,8 @@ with open(os.path.join(dest_dir, "include/embree3/rtcore_config.h"), "w") as con
 
 os.chdir("..")
 shutil.rmtree("embree-tmp")
+
+subprocess.run(["git", "restore", "embree/patches"])
+
+for patch in os.listdir("embree/patches"):
+    subprocess.run(["git", "apply", "embree/patches/" + patch])

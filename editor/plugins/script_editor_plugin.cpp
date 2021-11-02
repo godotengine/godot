@@ -37,6 +37,7 @@
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
 #include "editor/debugger/editor_debugger_node.h"
+#include "editor/debugger/script_editor_debugger.h"
 #include "editor/editor_node.h"
 #include "editor/editor_run_script.h"
 #include "editor/editor_scale.h"
@@ -45,6 +46,7 @@
 #include "editor/find_in_files.h"
 #include "editor/node_dock.h"
 #include "editor/plugins/shader_editor_plugin.h"
+#include "modules/visual_script/visual_script_editor.h"
 #include "scene/main/window.h"
 #include "scene/scene_string_names.h"
 #include "script_text_editor.h"
@@ -212,6 +214,7 @@ Ref<EditorSyntaxHighlighter> EditorPlainTextSyntaxHighlighter::_create() const {
 
 void ScriptEditorBase::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_base_editor"), &ScriptEditorBase::get_base_editor);
+	ClassDB::bind_method(D_METHOD("add_syntax_highlighter", "highlighter"), &ScriptEditorBase::add_syntax_highlighter);
 
 	ADD_SIGNAL(MethodInfo("name_changed"));
 	ADD_SIGNAL(MethodInfo("edited_script_changed"));
@@ -312,10 +315,7 @@ void ScriptEditorQuickOpen::_text_changed(const String &p_newtext) {
 void ScriptEditorQuickOpen::_sbox_input(const Ref<InputEvent> &p_ie) {
 	Ref<InputEventKey> k = p_ie;
 
-	if (k.is_valid() && (k->get_keycode() == KEY_UP ||
-								k->get_keycode() == KEY_DOWN ||
-								k->get_keycode() == KEY_PAGEUP ||
-								k->get_keycode() == KEY_PAGEDOWN)) {
+	if (k.is_valid() && (k->get_keycode() == KEY_UP || k->get_keycode() == KEY_DOWN || k->get_keycode() == KEY_PAGEUP || k->get_keycode() == KEY_PAGEDOWN)) {
 		search_options->gui_input(k);
 		search_box->accept_event();
 	}
@@ -477,6 +477,75 @@ void ScriptEditor::_clear_execution(REF p_script) {
 			}
 		}
 	}
+}
+
+void ScriptEditor::_set_breakpoint(REF p_script, int p_line, bool p_enabled) {
+	Ref<Script> script = Object::cast_to<Script>(*p_script);
+	if (script.is_valid() && (script->has_source_code() || script->get_path().is_resource_file())) {
+		// Update if open.
+		for (int i = 0; i < tab_container->get_child_count(); i++) {
+			ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(tab_container->get_child(i));
+			if (se && se->get_edited_resource()->get_path() == script->get_path()) {
+				se->set_breakpoint(p_line, p_enabled);
+				return;
+			}
+		}
+
+		// Handle closed.
+		Dictionary state = script_editor_cache->get_value(script->get_path(), "state");
+		Array breakpoints;
+		if (state.has("breakpoints")) {
+			breakpoints = state["breakpoints"];
+		}
+
+		if (breakpoints.has(p_line)) {
+			if (!p_enabled) {
+				breakpoints.erase(p_line);
+			}
+		} else if (p_enabled) {
+			breakpoints.push_back(p_line);
+		}
+		state["breakpoints"] = breakpoints;
+		script_editor_cache->set_value(script->get_path(), "state", state);
+		EditorDebuggerNode::get_singleton()->set_breakpoint(script->get_path(), p_line + 1, false);
+	}
+}
+
+void ScriptEditor::_clear_breakpoints() {
+	for (int i = 0; i < tab_container->get_child_count(); i++) {
+		ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(tab_container->get_child(i));
+		if (se) {
+			se->clear_breakpoints();
+		}
+	}
+
+	// Clear from closed scripts.
+	List<String> cached_editors;
+	script_editor_cache->get_sections(&cached_editors);
+	for (const String &E : cached_editors) {
+		Array breakpoints = _get_cached_breakpoints_for_script(E);
+		for (int i = 0; i < breakpoints.size(); i++) {
+			EditorDebuggerNode::get_singleton()->set_breakpoint(E, (int)breakpoints[i] + 1, false);
+		}
+
+		if (breakpoints.size() > 0) {
+			Dictionary state = script_editor_cache->get_value(E, "state");
+			state["breakpoints"] = Array();
+			script_editor_cache->set_value(E, "state", state);
+		}
+	}
+}
+
+Array ScriptEditor::_get_cached_breakpoints_for_script(const String &p_path) const {
+	if (!ResourceLoader::exists(p_path, "Script") || p_path.begins_with("local://") || !script_editor_cache->has_section_key(p_path, "state")) {
+		return Array();
+	}
+
+	Dictionary state = script_editor_cache->get_value(p_path, "state");
+	if (!state.has("breakpoints")) {
+		return Array();
+	}
+	return state["breakpoints"];
 }
 
 ScriptEditorBase *ScriptEditor::_get_current_editor() const {
@@ -691,20 +760,24 @@ void ScriptEditor::_close_tab(int p_idx, bool p_save, bool p_history_back) {
 
 	ScriptEditorBase *current = Object::cast_to<ScriptEditorBase>(tselected);
 	if (current) {
-		Ref<Script> script = current->get_edited_resource();
-		if (p_save && script.is_valid()) {
+		RES file = current->get_edited_resource();
+		if (p_save && file.is_valid()) {
 			// Do not try to save internal scripts, but prompt to save in-memory
 			// scripts which are not saved to disk yet (have empty path).
-			if (script->get_path().find("local://") == -1 && script->get_path().find("::") == -1) {
+			if (file->get_path().find("local://") == -1 && file->get_path().find("::") == -1) {
 				save_current_script();
 			}
 		}
-		if (script.is_valid()) {
-			if (!script->get_path().is_empty()) {
+		if (file.is_valid()) {
+			if (!file->get_path().is_empty()) {
 				// Only saved scripts can be restored.
-				previous_scripts.push_back(script->get_path());
+				previous_scripts.push_back(file->get_path());
 			}
-			notify_script_close(script);
+
+			Ref<Script> script = file;
+			if (script.is_valid()) {
+				notify_script_close(script);
+			}
 		}
 	}
 
@@ -731,6 +804,7 @@ void ScriptEditor::_close_tab(int p_idx, bool p_save, bool p_history_back) {
 	int idx = tab_container->get_current_tab();
 	if (current) {
 		current->clear_edit_menu();
+		_save_editor_state(current);
 	}
 	memdelete(tselected);
 	if (idx >= tab_container->get_child_count()) {
@@ -783,39 +857,35 @@ void ScriptEditor::_copy_script_path() {
 }
 
 void ScriptEditor::_close_other_tabs() {
-	int child_count = tab_container->get_child_count();
 	int current_idx = tab_container->get_current_tab();
-	for (int i = child_count - 1; i >= 0; i--) {
-		if (i == current_idx) {
-			continue;
+	for (int i = tab_container->get_child_count() - 1; i >= 0; i--) {
+		if (i != current_idx) {
+			script_close_queue.push_back(i);
 		}
-
-		tab_container->set_current_tab(i);
-		ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(tab_container->get_child(i));
-
-		if (se) {
-			// Maybe there are unsaved changes
-			if (se->is_unsaved()) {
-				_ask_close_current_unsaved_tab(se);
-				continue;
-			}
-		}
-
-		_close_current_tab(false);
 	}
+	_queue_close_tabs();
 }
 
 void ScriptEditor::_close_all_tabs() {
-	int child_count = tab_container->get_child_count();
-	for (int i = child_count - 1; i >= 0; i--) {
-		tab_container->set_current_tab(i);
-		ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(tab_container->get_child(i));
+	for (int i = tab_container->get_child_count() - 1; i >= 0; i--) {
+		script_close_queue.push_back(i);
+	}
+	_queue_close_tabs();
+}
 
+void ScriptEditor::_queue_close_tabs() {
+	while (!script_close_queue.is_empty()) {
+		int idx = script_close_queue.front()->get();
+		script_close_queue.pop_front();
+
+		tab_container->set_current_tab(idx);
+		ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(tab_container->get_child(idx));
 		if (se) {
-			// Maybe there are unsaved changes
+			// Maybe there are unsaved changes.
 			if (se->is_unsaved()) {
 				_ask_close_current_unsaved_tab(se);
-				continue;
+				erase_tab_confirm->connect(SceneStringNames::get_singleton()->visibility_changed, callable_mp(this, &ScriptEditor::_queue_close_tabs), varray(), CONNECT_ONESHOT);
+				break;
 			}
 		}
 
@@ -1009,35 +1079,21 @@ void ScriptEditor::_file_dialog_action(String p_file) {
 			}
 			file->close();
 			memdelete(file);
+
+			if (EditorFileSystem::get_singleton()) {
+				if (textfile_extensions.has(p_file.get_extension())) {
+					EditorFileSystem::get_singleton()->update_file(p_file);
+				}
+			}
+
+			if (!open_textfile_after_create) {
+				return;
+			}
 			[[fallthrough]];
 		}
 		case FILE_OPEN: {
-			List<String> extensions;
-			ResourceLoader::get_recognized_extensions_for_type("Script", &extensions);
-			if (extensions.find(p_file.get_extension())) {
-				Ref<Script> scr = ResourceLoader::load(p_file);
-				if (!scr.is_valid()) {
-					editor->show_warning(TTR("Could not load file at:") + "\n\n" + p_file, TTR("Error!"));
-					file_dialog_option = -1;
-					return;
-				}
-
-				edit(scr);
-				file_dialog_option = -1;
-				return;
-			}
-
-			Error error;
-			Ref<TextFile> text_file = _load_text_file(p_file, &error);
-			if (error != OK) {
-				editor->show_warning(TTR("Could not load file at:") + "\n\n" + p_file, TTR("Error!"));
-			}
-
-			if (text_file.is_valid()) {
-				edit(text_file);
-				file_dialog_option = -1;
-				return;
-			}
+			open_file(p_file);
+			file_dialog_option = -1;
 		} break;
 		case FILE_SAVE_AS: {
 			ScriptEditorBase *current = _get_current_editor();
@@ -1112,8 +1168,12 @@ void ScriptEditor::_menu_option(int p_option) {
 			file_dialog_option = FILE_NEW_TEXTFILE;
 
 			file_dialog->clear_filters();
+			for (const String &E : textfile_extensions) {
+				file_dialog->add_filter("*." + E + " ; " + E.to_upper());
+			}
 			file_dialog->popup_file_dialog();
 			file_dialog->set_title(TTR("New Text File..."));
+			open_textfile_after_create = true;
 		} break;
 		case FILE_OPEN: {
 			file_dialog->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
@@ -1125,6 +1185,10 @@ void ScriptEditor::_menu_option(int p_option) {
 			file_dialog->clear_filters();
 			for (int i = 0; i < extensions.size(); i++) {
 				file_dialog->add_filter("*." + extensions[i] + " ; " + extensions[i].to_upper());
+			}
+
+			for (const String &E : textfile_extensions) {
+				file_dialog->add_filter("*." + E + " ; " + E.to_upper());
 			}
 
 			file_dialog->popup_file_dialog();
@@ -1212,14 +1276,15 @@ void ScriptEditor::_menu_option(int p_option) {
 			_update_script_names();
 		} break;
 		case TOGGLE_SCRIPTS_PANEL: {
+			toggle_scripts_panel();
 			if (current) {
-				ScriptTextEditor *editor = Object::cast_to<ScriptTextEditor>(current);
-				toggle_scripts_panel();
-				if (editor) {
-					editor->update_toggle_scripts_button();
-				}
+				current->update_toggle_scripts_button();
 			} else {
-				toggle_scripts_panel();
+				Control *tab = tab_container->get_current_tab_control();
+				EditorHelp *editor_help = Object::cast_to<EditorHelp>(tab);
+				if (editor_help) {
+					editor_help->update_toggle_scripts_button();
+				}
 			}
 		}
 	}
@@ -1466,6 +1531,7 @@ void ScriptEditor::_notification(int p_what) {
 			editor->connect("stop_pressed", callable_mp(this, &ScriptEditor::_editor_stop));
 			editor->connect("script_add_function_request", callable_mp(this, &ScriptEditor::_add_callback));
 			editor->connect("resource_saved", callable_mp(this, &ScriptEditor::_res_saved_callback));
+			editor->get_filesystem_dock()->connect("files_moved", callable_mp(this, &ScriptEditor::_files_moved));
 			editor->get_filesystem_dock()->connect("file_removed", callable_mp(this, &ScriptEditor::_file_removed));
 			script_list->connect("item_selected", callable_mp(this, &ScriptEditor::_script_selected));
 
@@ -1475,6 +1541,7 @@ void ScriptEditor::_notification(int p_what) {
 
 			EditorSettings::get_singleton()->connect("settings_changed", callable_mp(this, &ScriptEditor::_editor_settings_changed));
 			EditorFileSystem::get_singleton()->connect("filesystem_changed", callable_mp(this, &ScriptEditor::_filesystem_changed));
+			_editor_settings_changed();
 			[[fallthrough]];
 		}
 		case NOTIFICATION_TRANSLATION_CHANGED:
@@ -1578,6 +1645,7 @@ void ScriptEditor::notify_script_changed(const Ref<Script> &p_script) {
 }
 
 void ScriptEditor::get_breakpoints(List<String> *p_breakpoints) {
+	Set<String> loaded_scripts;
 	for (int i = 0; i < tab_container->get_child_count(); i++) {
 		ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(tab_container->get_child(i));
 		if (!se) {
@@ -1590,6 +1658,7 @@ void ScriptEditor::get_breakpoints(List<String> *p_breakpoints) {
 		}
 
 		String base = script->get_path();
+		loaded_scripts.insert(base);
 		if (base.begins_with("local://") || base == "") {
 			continue;
 		}
@@ -1597,6 +1666,20 @@ void ScriptEditor::get_breakpoints(List<String> *p_breakpoints) {
 		Array bpoints = se->get_breakpoints();
 		for (int j = 0; j < bpoints.size(); j++) {
 			p_breakpoints->push_back(base + ":" + itos((int)bpoints[j] + 1));
+		}
+	}
+
+	// Load breakpoints that are in closed scripts.
+	List<String> cached_editors;
+	script_editor_cache->get_sections(&cached_editors);
+	for (const String &E : cached_editors) {
+		if (loaded_scripts.has(E)) {
+			continue;
+		}
+
+		Array breakpoints = _get_cached_breakpoints_for_script(E);
+		for (int i = 0; i < breakpoints.size(); i++) {
+			p_breakpoints->push_back(E + ":" + itos((int)breakpoints[i] + 1));
 		}
 	}
 }
@@ -2034,7 +2117,7 @@ void ScriptEditor::_update_script_connections() {
 	}
 }
 
-Ref<TextFile> ScriptEditor::_load_text_file(const String &p_path, Error *r_error) {
+Ref<TextFile> ScriptEditor::_load_text_file(const String &p_path, Error *r_error) const {
 	if (r_error) {
 		*r_error = ERR_FILE_CANT_OPEN;
 	}
@@ -2256,6 +2339,10 @@ bool ScriptEditor::edit(const RES &p_resource, int p_line, int p_col, bool p_gra
 		_add_recent_script(p_resource->get_path());
 	}
 
+	if (script_editor_cache->has_section(p_resource->get_path())) {
+		se->set_edit_state(script_editor_cache->get_value(p_resource->get_path(), "state"));
+	}
+
 	_sort_list_on_update = true;
 	_update_script_names();
 	_save_layout();
@@ -2414,6 +2501,41 @@ void ScriptEditor::open_script_create_dialog(const String &p_base_name, const St
 	script_create_dialog->config(p_base_name, p_base_path);
 }
 
+void ScriptEditor::open_text_file_create_dialog(const String &p_base_path, const String &p_base_name) {
+	file_dialog->set_current_file(p_base_name);
+	file_dialog->set_current_dir(p_base_path);
+	_menu_option(FILE_NEW_TEXTFILE);
+	open_textfile_after_create = false;
+}
+
+RES ScriptEditor::open_file(const String &p_file) {
+	List<String> extensions;
+	ResourceLoader::get_recognized_extensions_for_type("Script", &extensions);
+	if (extensions.find(p_file.get_extension())) {
+		Ref<Script> scr = ResourceLoader::load(p_file);
+		if (!scr.is_valid()) {
+			editor->show_warning(TTR("Could not load file at:") + "\n\n" + p_file, TTR("Error!"));
+			return RES();
+		}
+
+		edit(scr);
+		return scr;
+	}
+
+	Error error;
+	Ref<TextFile> text_file = _load_text_file(p_file, &error);
+	if (error != OK) {
+		editor->show_warning(TTR("Could not load file at:") + "\n\n" + p_file, TTR("Error!"));
+		return RES();
+	}
+
+	if (text_file.is_valid()) {
+		edit(text_file);
+		return text_file;
+	}
+	return RES();
+}
+
 void ScriptEditor::_editor_stop() {
 	for (int i = 0; i < tab_container->get_child_count(); i++) {
 		ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(tab_container->get_child(i));
@@ -2456,6 +2578,20 @@ void ScriptEditor::_add_callback(Object *p_obj, const String &p_function, const 
 	}
 }
 
+void ScriptEditor::_save_editor_state(ScriptEditorBase *p_editor) {
+	if (restoring_layout) {
+		return;
+	}
+
+	const String &path = p_editor->get_edited_resource()->get_path();
+	if (!path.is_resource_file()) {
+		return;
+	}
+
+	script_editor_cache->set_value(path, "state", p_editor->get_edit_state());
+	// This is saved later when we save the editor layout.
+}
+
 void ScriptEditor::_save_layout() {
 	if (restoring_layout) {
 		return;
@@ -2465,6 +2601,12 @@ void ScriptEditor::_save_layout() {
 }
 
 void ScriptEditor::_editor_settings_changed() {
+	textfile_extensions.clear();
+	const Vector<String> textfile_ext = ((String)(EditorSettings::get_singleton()->get("docks/filesystem/textfile_extensions"))).split(",", false);
+	for (const String &E : textfile_ext) {
+		textfile_extensions.insert(E);
+	}
+
 	trim_trailing_whitespace_on_save = EditorSettings::get_singleton()->get("text_editor/behavior/files/trim_trailing_whitespace_on_save");
 	convert_indent_on_save = EditorSettings::get_singleton()->get("text_editor/behavior/files/convert_indent_on_save");
 	use_space_indentation = EditorSettings::get_singleton()->get("text_editor/behavior/indent/type");
@@ -2501,6 +2643,26 @@ void ScriptEditor::_filesystem_changed() {
 	_update_script_names();
 }
 
+void ScriptEditor::_files_moved(const String &p_old_file, const String &p_new_file) {
+	if (!script_editor_cache->has_section(p_old_file)) {
+		return;
+	}
+	Variant state = script_editor_cache->get_value(p_old_file, "state");
+	script_editor_cache->erase_section(p_old_file);
+	script_editor_cache->set_value(p_new_file, "state", state);
+
+	// If Script, update breakpoints with debugger.
+	Array breakpoints = _get_cached_breakpoints_for_script(p_new_file);
+	for (int i = 0; i < breakpoints.size(); i++) {
+		int line = (int)breakpoints[i] + 1;
+		EditorDebuggerNode::get_singleton()->set_breakpoint(p_old_file, line, false);
+		if (!p_new_file.begins_with("local://") && ResourceLoader::exists(p_new_file, "Script")) {
+			EditorDebuggerNode::get_singleton()->set_breakpoint(p_new_file, line, true);
+		}
+	}
+	// This is saved later when we save the editor layout.
+}
+
 void ScriptEditor::_file_removed(const String &p_removed_file) {
 	for (int i = 0; i < tab_container->get_child_count(); i++) {
 		ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(tab_container->get_child(i));
@@ -2511,6 +2673,15 @@ void ScriptEditor::_file_removed(const String &p_removed_file) {
 			// The script is deleted with no undo, so just close the tab.
 			_close_tab(i, false, false);
 		}
+	}
+
+	// Check closed.
+	if (script_editor_cache->has_section(p_removed_file)) {
+		Array breakpoints = _get_cached_breakpoints_for_script(p_removed_file);
+		for (int i = 0; i < breakpoints.size(); i++) {
+			EditorDebuggerNode::get_singleton()->set_breakpoint(p_removed_file, (int)breakpoints[i] + 1, false);
+		}
+		script_editor_cache->erase_section(p_removed_file);
 	}
 }
 
@@ -2642,12 +2813,22 @@ bool ScriptEditor::can_drop_data_fw(const Point2 &p_point, const Variant &p_data
 			if (file == "" || !FileAccess::exists(file)) {
 				continue;
 			}
-			Ref<Script> scr = ResourceLoader::load(file);
-			if (scr.is_valid()) {
-				return true;
+			if (ResourceLoader::exists(file, "Script")) {
+				Ref<Script> scr = ResourceLoader::load(file);
+				if (scr.is_valid()) {
+					return true;
+				}
+			}
+
+			if (textfile_extensions.has(file.get_extension())) {
+				Error err;
+				Ref<TextFile> text_file = _load_text_file(file, &err);
+				if (text_file.is_valid() && err == OK) {
+					return true;
+				}
 			}
 		}
-		return true;
+		return false;
 	}
 
 	return false;
@@ -2712,9 +2893,13 @@ void ScriptEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data, Co
 			if (file == "" || !FileAccess::exists(file)) {
 				continue;
 			}
-			Ref<Script> scr = ResourceLoader::load(file);
-			if (scr.is_valid()) {
-				edit(scr);
+
+			if (!ResourceLoader::exists(file, "Script") && !textfile_extensions.has(file.get_extension())) {
+				continue;
+			}
+
+			RES res = open_file(file);
+			if (res.is_valid()) {
 				if (tab_container->get_child_count() > num_tabs_before) {
 					tab_container->move_child(tab_container->get_child(tab_container->get_child_count() - 1), new_index);
 					num_tabs_before = tab_container->get_child_count();
@@ -2725,6 +2910,29 @@ void ScriptEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data, Co
 		}
 		tab_container->set_current_tab(new_index);
 		_update_script_names();
+	}
+}
+
+void ScriptEditor::input(const Ref<InputEvent> &p_event) {
+	// This is implemented in `input()` rather than `unhandled_input()` to allow
+	// the shortcut to be used regardless of the click location.
+	// This feature can be disabled to avoid interfering with other uses of the additional
+	// mouse buttons, such as push-to-talk in a VoIP program.
+	if (EDITOR_GET("interface/editor/mouse_extra_buttons_navigate_history")) {
+		const Ref<InputEventMouseButton> mb = p_event;
+
+		// Navigate the script history using additional mouse buttons present on some mice.
+		// This must be hardcoded as the editor shortcuts dialog doesn't allow assigning
+		// more than one shortcut per action.
+		if (mb.is_valid() && mb->is_pressed() && is_visible_in_tree()) {
+			if (mb->get_button_index() == MOUSE_BUTTON_XBUTTON1) {
+				_history_back();
+			}
+
+			if (mb->get_button_index() == MOUSE_BUTTON_XBUTTON2) {
+				_history_forward();
+			}
+		}
 	}
 }
 
@@ -2839,6 +3047,7 @@ void ScriptEditor::set_window_layout(Ref<ConfigFile> p_layout) {
 
 	restoring_layout = true;
 
+	Set<String> loaded_scripts;
 	List<String> extensions;
 	ResourceLoader::get_recognized_extensions_for_type("Script", &extensions);
 
@@ -2851,8 +3060,12 @@ void ScriptEditor::set_window_layout(Ref<ConfigFile> p_layout) {
 		}
 
 		if (!FileAccess::exists(path)) {
+			if (script_editor_cache->has_section(path)) {
+				script_editor_cache->erase_section(path);
+			}
 			continue;
 		}
+		loaded_scripts.insert(path);
 
 		if (extensions.find(path.get_extension())) {
 			Ref<Script> scr = ResourceLoader::load(path);
@@ -2897,6 +3110,26 @@ void ScriptEditor::set_window_layout(Ref<ConfigFile> p_layout) {
 		script_split->set_split_offset(p_layout->get_value("ScriptEditor", "split_offset"));
 	}
 
+	// Remove any deleted editors that have been removed between launches.
+	// and if a Script, register breakpoints with the debugger.
+	List<String> cached_editors;
+	script_editor_cache->get_sections(&cached_editors);
+	for (const String &E : cached_editors) {
+		if (loaded_scripts.has(E)) {
+			continue;
+		}
+
+		if (!FileAccess::exists(E)) {
+			script_editor_cache->erase_section(E);
+			continue;
+		}
+
+		Array breakpoints = _get_cached_breakpoints_for_script(E);
+		for (int i = 0; i < breakpoints.size(); i++) {
+			EditorDebuggerNode::get_singleton()->set_breakpoint(E, (int)breakpoints[i] + 1, true);
+		}
+	}
+
 	restoring_layout = false;
 
 	_update_script_names();
@@ -2914,11 +3147,8 @@ void ScriptEditor::get_window_layout(Ref<ConfigFile> p_layout) {
 				continue;
 			}
 
-			Dictionary script_info;
-			script_info["path"] = path;
-			script_info["state"] = se->get_edit_state();
-
-			scripts.push_back(script_info);
+			_save_editor_state(se);
+			scripts.push_back(path);
 		}
 
 		EditorHelp *eh = Object::cast_to<EditorHelp>(tab_container->get_child(i));
@@ -2931,6 +3161,9 @@ void ScriptEditor::get_window_layout(Ref<ConfigFile> p_layout) {
 	p_layout->set_value("ScriptEditor", "open_scripts", scripts);
 	p_layout->set_value("ScriptEditor", "open_help", helps);
 	p_layout->set_value("ScriptEditor", "split_offset", script_split->get_split_offset());
+
+	// Save the cache.
+	script_editor_cache->save(EditorSettings::get_singleton()->get_project_settings_dir().plus_file("script_editor_cache.cfg"));
 }
 
 void ScriptEditor::_help_class_open(const String &p_class) {
@@ -3272,7 +3505,6 @@ void ScriptEditor::_bind_methods() {
 	ClassDB::bind_method("_update_script_connections", &ScriptEditor::_update_script_connections);
 	ClassDB::bind_method("_help_class_open", &ScriptEditor::_help_class_open);
 	ClassDB::bind_method("_live_auto_reload_running_scripts", &ScriptEditor::_live_auto_reload_running_scripts);
-
 	ClassDB::bind_method("_update_members_overview", &ScriptEditor::_update_members_overview);
 	ClassDB::bind_method("_update_recent_scripts", &ScriptEditor::_update_recent_scripts);
 
@@ -3297,6 +3529,9 @@ void ScriptEditor::_bind_methods() {
 
 ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	current_theme = "";
+
+	script_editor_cache.instantiate();
+	script_editor_cache->load(EditorSettings::get_singleton()->get_project_settings_dir().plus_file("script_editor_cache.cfg"));
 
 	completion_cache = memnew(EditorScriptCodeCompletionCache);
 	restoring_layout = false;
@@ -3405,9 +3640,11 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	ED_SHORTCUT("script_editor/window_sort", TTR("Sort"));
 	ED_SHORTCUT("script_editor/window_move_up", TTR("Move Up"), KEY_MASK_SHIFT | KEY_MASK_ALT | KEY_UP);
 	ED_SHORTCUT("script_editor/window_move_down", TTR("Move Down"), KEY_MASK_SHIFT | KEY_MASK_ALT | KEY_DOWN);
-	ED_SHORTCUT("script_editor/next_script", TTR("Next Script"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_PERIOD); // these should be KEY_GREATER and KEY_LESS but those don't work
+	// FIXME: These should be `KEY_GREATER` and `KEY_LESS` but those don't work.
+	ED_SHORTCUT("script_editor/next_script", TTR("Next Script"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_PERIOD);
 	ED_SHORTCUT("script_editor/prev_script", TTR("Previous Script"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_COMMA);
-	set_process_unhandled_key_input(true);
+	set_process_input(true);
+	set_process_unhandled_input(true);
 
 	file_menu = memnew(MenuButton);
 	file_menu->set_text(TTR("File"));
@@ -3484,6 +3721,8 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	debugger->connect("set_execution", callable_mp(this, &ScriptEditor::_set_execution));
 	debugger->connect("clear_execution", callable_mp(this, &ScriptEditor::_clear_execution));
 	debugger->connect("breaked", callable_mp(this, &ScriptEditor::_breaked));
+	debugger->get_default_debugger()->connect("set_breakpoint", callable_mp(this, &ScriptEditor::_set_breakpoint));
+	debugger->get_default_debugger()->connect("clear_breakpoints", callable_mp(this, &ScriptEditor::_clear_breakpoints));
 
 	menu_hb->add_spacer();
 

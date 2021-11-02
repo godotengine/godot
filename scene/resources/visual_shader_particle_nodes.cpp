@@ -47,6 +47,10 @@ String VisualShaderNodeParticleEmitter::get_output_port_name(int p_port) const {
 	return String();
 }
 
+bool VisualShaderNodeParticleEmitter::has_output_port_preview(int p_port) const {
+	return false;
+}
+
 VisualShaderNodeParticleEmitter::VisualShaderNodeParticleEmitter() {
 }
 
@@ -265,6 +269,10 @@ Vector<StringName> VisualShaderNodeParticleMultiplyByAxisAngle::get_editable_pro
 	return props;
 }
 
+bool VisualShaderNodeParticleMultiplyByAxisAngle::has_output_port_preview(int p_port) const {
+	return false;
+}
+
 VisualShaderNodeParticleMultiplyByAxisAngle::VisualShaderNodeParticleMultiplyByAxisAngle() {
 	set_input_port_default_value(1, Vector3(1, 0, 0));
 	set_input_port_default_value(2, 0.0);
@@ -311,6 +319,10 @@ String VisualShaderNodeParticleConeVelocity::get_output_port_name(int p_port) co
 		return "velocity";
 	}
 	return String();
+}
+
+bool VisualShaderNodeParticleConeVelocity::has_output_port_preview(int p_port) const {
+	return false;
 }
 
 String VisualShaderNodeParticleConeVelocity::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
@@ -421,6 +433,10 @@ VisualShaderNodeParticleRandomness::OpType VisualShaderNodeParticleRandomness::g
 	return op_type;
 }
 
+bool VisualShaderNodeParticleRandomness::has_output_port_preview(int p_port) const {
+	return false;
+}
+
 VisualShaderNodeParticleRandomness::VisualShaderNodeParticleRandomness() {
 	set_input_port_default_value(0, 0.0);
 	set_input_port_default_value(1, 1.0);
@@ -519,6 +535,10 @@ void VisualShaderNodeParticleAccelerator::set_mode(Mode p_mode) {
 
 VisualShaderNodeParticleAccelerator::Mode VisualShaderNodeParticleAccelerator::get_mode() const {
 	return mode;
+}
+
+bool VisualShaderNodeParticleAccelerator::has_output_port_preview(int p_port) const {
+	return false;
 }
 
 VisualShaderNodeParticleAccelerator::VisualShaderNodeParticleAccelerator() {

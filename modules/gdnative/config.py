@@ -10,14 +10,9 @@ def get_doc_classes():
     return [
         "GDNative",
         "GDNativeLibrary",
-        "MultiplayerPeerGDNative",
         "NativeScript",
-        "PacketPeerGDNative",
         "PluginScript",
-        "StreamPeerGDNative",
         "VideoStreamGDNative",
-        "WebRTCPeerConnectionGDNative",
-        "WebRTCDataChannelGDNative",
     ]
 
 
