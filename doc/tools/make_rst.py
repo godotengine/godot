@@ -108,7 +108,9 @@ class ClassDef:
         self.constants = OrderedDict()  # type: OrderedDict[str, ConstantDef]
         self.enums = OrderedDict()  # type: OrderedDict[str, EnumDef]
         self.properties = OrderedDict()  # type: OrderedDict[str, PropertyDef]
+        self.constructors = OrderedDict()  # type: OrderedDict[str, List[MethodDef]]
         self.methods = OrderedDict()  # type: OrderedDict[str, List[MethodDef]]
+        self.operators = OrderedDict()  # type: OrderedDict[str, List[MethodDef]]
         self.signals = OrderedDict()  # type: OrderedDict[str, SignalDef]
         self.theme_items = OrderedDict()  # type: OrderedDict[str, ThemeItemDef]
         self.inherits = None  # type: Optional[str]
@@ -169,6 +171,34 @@ class State:
                 )
                 class_def.properties[property_name] = property_def
 
+        constructors = class_root.find("constructors")
+        if constructors is not None:
+            for constructor in constructors:
+                assert constructor.tag == "constructor"
+
+                method_name = constructor.attrib["name"]
+                qualifiers = constructor.get("qualifiers")
+
+                return_element = constructor.find("return")
+                if return_element is not None:
+                    return_type = TypeName.from_element(return_element)
+
+                else:
+                    return_type = TypeName("void")
+
+                params = parse_arguments(constructor)
+
+                desc_element = constructor.find("description")
+                method_desc = None
+                if desc_element is not None:
+                    method_desc = desc_element.text
+
+                method_def = MethodDef(method_name, return_type, params, method_desc, qualifiers)
+                if method_name not in class_def.constructors:
+                    class_def.constructors[method_name] = []
+
+                class_def.constructors[method_name].append(method_def)
+
         methods = class_root.find("methods")
         if methods is not None:
             for method in methods:
@@ -196,6 +226,34 @@ class State:
                     class_def.methods[method_name] = []
 
                 class_def.methods[method_name].append(method_def)
+
+        operators = class_root.find("operators")
+        if operators is not None:
+            for operator in operators:
+                assert operator.tag == "operator"
+
+                method_name = operator.attrib["name"]
+                qualifiers = operator.get("qualifiers")
+
+                return_element = operator.find("return")
+                if return_element is not None:
+                    return_type = TypeName.from_element(return_element)
+
+                else:
+                    return_type = TypeName("void")
+
+                params = parse_arguments(operator)
+
+                desc_element = operator.find("description")
+                method_desc = None
+                if desc_element is not None:
+                    method_desc = desc_element.text
+
+                method_def = MethodDef(method_name, return_type, params, method_desc, qualifiers)
+                if method_name not in class_def.operators:
+                    class_def.operators[method_name] = []
+
+                class_def.operators[method_name].append(method_def)
 
         constants = class_root.find("constants")
         if constants is not None:
@@ -471,13 +529,29 @@ def make_rst_class(class_def, state, dry_run, output_dir):  # type: (ClassDef, S
                 ml.append((type_rst, ref, default))
         format_table(f, ml, True)
 
-    # Methods overview
+    # Constructors, Methods, Operators overview
+    if len(class_def.constructors) > 0:
+        f.write(make_heading("Constructors", "-"))
+        ml = []
+        for method_list in class_def.constructors.values():
+            for m in method_list:
+                ml.append(make_method_signature(class_def, m, "constructor", state))
+        format_table(f, ml)
+
     if len(class_def.methods) > 0:
         f.write(make_heading("Methods", "-"))
         ml = []
         for method_list in class_def.methods.values():
             for m in method_list:
-                ml.append(make_method_signature(class_def, m, True, state))
+                ml.append(make_method_signature(class_def, m, "method", state))
+        format_table(f, ml)
+
+    if len(class_def.operators) > 0:
+        f.write(make_heading("Operators", "-"))
+        ml = []
+        for method_list in class_def.operators.values():
+            for m in method_list:
+                ml.append(make_method_signature(class_def, m, "operator", state))
         format_table(f, ml)
 
     # Theme properties
@@ -501,7 +575,7 @@ def make_rst_class(class_def, state, dry_run, output_dir):  # type: (ClassDef, S
                 f.write("----\n\n")
 
             f.write(".. _class_{}_signal_{}:\n\n".format(class_name, signal.name))
-            _, signature = make_method_signature(class_def, signal, False, state)
+            _, signature = make_method_signature(class_def, signal, "", state)
             f.write("- {}\n\n".format(signature))
 
             if signal.description is not None and signal.description.strip() != "":
@@ -582,7 +656,27 @@ def make_rst_class(class_def, state, dry_run, output_dir):  # type: (ClassDef, S
 
             index += 1
 
-    # Method descriptions
+    # Constructor, Method, Operator descriptions
+    if len(class_def.constructors) > 0:
+        f.write(make_heading("Constructor Descriptions", "-"))
+        index = 0
+
+        for method_list in class_def.constructors.values():
+            for i, m in enumerate(method_list):
+                if index != 0:
+                    f.write("----\n\n")
+
+                if i == 0:
+                    f.write(".. _class_{}_constructor_{}:\n\n".format(class_name, m.name))
+
+                ret_type, signature = make_method_signature(class_def, m, "", state)
+                f.write("- {} {}\n\n".format(ret_type, signature))
+
+                if m.description is not None and m.description.strip() != "":
+                    f.write(rstize_text(m.description.strip(), state) + "\n\n")
+
+                index += 1
+
     if len(class_def.methods) > 0:
         f.write(make_heading("Method Descriptions", "-"))
         index = 0
@@ -595,7 +689,31 @@ def make_rst_class(class_def, state, dry_run, output_dir):  # type: (ClassDef, S
                 if i == 0:
                     f.write(".. _class_{}_method_{}:\n\n".format(class_name, m.name))
 
-                ret_type, signature = make_method_signature(class_def, m, False, state)
+                ret_type, signature = make_method_signature(class_def, m, "", state)
+                f.write("- {} {}\n\n".format(ret_type, signature))
+
+                if m.description is not None and m.description.strip() != "":
+                    f.write(rstize_text(m.description.strip(), state) + "\n\n")
+
+                index += 1
+
+    if len(class_def.operators) > 0:
+        f.write(make_heading("Operator Descriptions", "-"))
+        index = 0
+
+        for method_list in class_def.operators.values():
+            for i, m in enumerate(method_list):
+                if index != 0:
+                    f.write("----\n\n")
+
+                if i == 0:
+                    f.write(
+                        ".. _class_{}_operator_{}_{}:\n\n".format(
+                            class_name, sanitize_operator_name(m.name, state), m.return_type.type_name
+                        )
+                    )
+
+                ret_type, signature = make_method_signature(class_def, m, "", state)
                 f.write("- {} {}\n\n".format(ret_type, signature))
 
                 if m.description is not None and m.description.strip() != "":
@@ -810,10 +928,20 @@ def rstize_text(text, state):  # type: (str, State) -> str
                 ref_type = ""
                 if class_param in state.classes:
                     class_def = state.classes[class_param]
+                    if cmd.startswith("constructor"):
+                        if method_param not in class_def.constructors:
+                            print_error(
+                                "Unresolved constructor '{}', file: {}".format(param, state.current_class), state
+                            )
+                        ref_type = "_constructor"
                     if cmd.startswith("method"):
                         if method_param not in class_def.methods:
                             print_error("Unresolved method '{}', file: {}".format(param, state.current_class), state)
                         ref_type = "_method"
+                    if cmd.startswith("operator"):
+                        if method_param not in class_def.operators:
+                            print_error("Unresolved operator '{}', file: {}".format(param, state.current_class), state)
+                        ref_type = "_operator"
 
                     elif cmd.startswith("member"):
                         if method_param not in class_def.properties:
@@ -1046,24 +1174,26 @@ def make_enum(t, state):  # type: (str, State) -> str
 
 
 def make_method_signature(
-    class_def, method_def, make_ref, state
-):  # type: (ClassDef, Union[MethodDef, SignalDef], bool, State) -> Tuple[str, str]
+    class_def, method_def, ref_type, state
+):  # type: (ClassDef, Union[MethodDef, SignalDef], str, State) -> Tuple[str, str]
     ret_type = " "
 
-    ref_type = "signal"
     if isinstance(method_def, MethodDef):
         ret_type = method_def.return_type.to_rst(state)
-        ref_type = "method"
-
-    # FIXME: Need to add proper support for operator methods, but generating a unique
-    # and valid ref for them is not trivial.
-    if method_def.name.startswith("operator "):
-        make_ref = False
 
     out = ""
 
-    if make_ref:
-        out += ":ref:`{0}<class_{1}_{2}_{0}>` ".format(method_def.name, class_def.name, ref_type)
+    if ref_type != "":
+        if ref_type == "operator":
+            out += ":ref:`{0}<class_{1}_{2}_{3}_{4}>` ".format(
+                method_def.name,
+                class_def.name,
+                ref_type,
+                sanitize_operator_name(method_def.name, state),
+                method_def.return_type.type_name,
+            )
+        else:
+            out += ":ref:`{0}<class_{1}_{2}_{0}>` ".format(method_def.name, class_def.name, ref_type)
     else:
         out += "**{}** ".format(method_def.name)
 
@@ -1137,6 +1267,62 @@ def make_link(url, title):  # type: (str, str) -> str
             return "`" + title + " <" + url + ">`__"
         else:
             return "`" + url + " <" + url + ">`__"
+
+
+def sanitize_operator_name(dirty_name, state):  # type: (str, State) -> str
+    clear_name = dirty_name.replace("operator ", "")
+
+    if clear_name == "!=":
+        clear_name = "neq"
+    elif clear_name == "==":
+        clear_name = "eq"
+
+    elif clear_name == "<":
+        clear_name = "lt"
+    elif clear_name == "<=":
+        clear_name = "lte"
+    elif clear_name == ">":
+        clear_name = "gt"
+    elif clear_name == ">=":
+        clear_name = "gte"
+
+    elif clear_name == "+":
+        clear_name = "sum"
+    elif clear_name == "-":
+        clear_name = "dif"
+    elif clear_name == "*":
+        clear_name = "mul"
+    elif clear_name == "/":
+        clear_name = "div"
+    elif clear_name == "%":
+        clear_name = "mod"
+
+    elif clear_name == "unary+":
+        clear_name = "unplus"
+    elif clear_name == "unary-":
+        clear_name = "unminus"
+
+    elif clear_name == "<<":
+        clear_name = "bwsl"
+    elif clear_name == ">>":
+        clear_name = "bwsr"
+    elif clear_name == "&":
+        clear_name = "bwand"
+    elif clear_name == "|":
+        clear_name = "bwor"
+    elif clear_name == "^":
+        clear_name = "bwxor"
+    elif clear_name == "~":
+        clear_name = "bwnot"
+
+    elif clear_name == "[]":
+        clear_name = "idx"
+
+    else:
+        clear_name = "xxx"
+        print_error("Unsupported operator type '{}', please add the missing rule.".format(dirty_name), state)
+
+    return clear_name
 
 
 if __name__ == "__main__":
