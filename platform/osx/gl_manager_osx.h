@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  context_gl_osx.h                                                     */
+/*  gl_manager_osx.h                                                     */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,47 +28,79 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef CONTEXT_GL_OSX_H
-#define CONTEXT_GL_OSX_H
+#ifndef GL_MANAGER_OSX_H
+#define GL_MANAGER_OSX_H
 
-#if defined(GLES3_ENABLED) || defined(GLES_ENABLED)
+#if defined(OSX_ENABLED) && defined(GLES3_ENABLED)
 
 #include "core/error/error_list.h"
 #include "core/os/os.h"
+#include "core/templates/local_vector.h"
+#include "servers/display_server.h"
 
 #include <AppKit/AppKit.h>
 #include <ApplicationServices/ApplicationServices.h>
 #include <CoreVideo/CoreVideo.h>
 
-class ContextGL_OSX {
-	bool gles3_context;
-	bool use_vsync;
+class GLManager_OSX {
+public:
+	enum ContextType {
+		GLES_3_0_COMPATIBLE,
+	};
 
-	void *framework;
-	id window_view;
-	NSOpenGLPixelFormat *pixelFormat;
-	NSOpenGLContext *context;
+private:
+	struct GLWindow {
+		GLWindow() { in_use = false; }
+		bool in_use;
+
+		DisplayServer::WindowID window_id;
+		int width;
+		int height;
+
+		id window_view;
+		NSOpenGLContext *context;
+	};
+
+	LocalVector<GLWindow> _windows;
+
+	NSOpenGLContext *_shared_context = nullptr;
+	GLWindow *_current_window;
+
+	Error _create_context(GLWindow &win);
+	void _internal_set_current_window(GLWindow *p_win);
+
+	GLWindow &get_window(unsigned int id) { return _windows[id]; }
+	const GLWindow &get_window(unsigned int id) const { return _windows[id]; }
+
+	bool use_vsync;
+	ContextType context_type;
 
 public:
+	Error window_create(DisplayServer::WindowID p_window_id, id p_view, int p_width, int p_height);
+	void window_destroy(DisplayServer::WindowID p_window_id);
+	void window_resize(DisplayServer::WindowID p_window_id, int p_width, int p_height);
+
+	// get directly from the cached GLWindow
+	int window_get_width(DisplayServer::WindowID p_window_id = 0);
+	int window_get_height(DisplayServer::WindowID p_window_id = 0);
+
 	void release_current();
-
 	void make_current();
-	void update();
-
-	void set_opacity(GLint p_opacity);
-
-	int get_window_width();
-	int get_window_height();
 	void swap_buffers();
+
+	void window_make_current(DisplayServer::WindowID p_window_id);
+
+	void window_update(DisplayServer::WindowID p_window_id);
 
 	Error initialize();
 
 	void set_use_vsync(bool p_use);
 	bool is_using_vsync() const;
 
-	ContextGL_OSX(id p_view, bool p_gles3_context);
-	~ContextGL_OSX();
+	GLManager_OSX(ContextType p_context_type);
+	~GLManager_OSX();
 };
 
-#endif
-#endif
+#endif // defined(OSX_ENABLED) && defined(GLES3_ENABLED)
+
+#endif // GL_MANAGER_OSX_H
