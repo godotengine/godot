@@ -70,6 +70,7 @@
 #include "core/project_settings.h"
 #include "core/translation.h"
 #include "core/undo_redo.h"
+#include "core/io/redirect.h"
 
 static Ref<ResourceFormatSaverBinary> resource_saver_binary;
 static Ref<ResourceFormatLoaderBinary> resource_loader_binary;
@@ -87,6 +88,7 @@ static _ClassDB *_classdb = nullptr;
 static _Marshalls *_marshalls = nullptr;
 static _JSON *_json = nullptr;
 
+static Redirect *redir = nullptr;
 static IP *ip = nullptr;
 
 static _Geometry *_geometry = nullptr;
@@ -212,6 +214,7 @@ void register_core_types() {
 	ClassDB::register_virtual_class<ResourceImporter>();
 
 	ip = IP::create();
+	redir = Redirect::create();
 
 	_geometry = memnew(_Geometry);
 
@@ -250,6 +253,7 @@ void register_core_singletons() {
 	ClassDB::register_class<InputMap>();
 	ClassDB::register_class<_JSON>();
 	ClassDB::register_class<Expression>();
+	ClassDB::register_class<Redirect>();
 
 	Engine::get_singleton()->add_singleton(Engine::Singleton("ProjectSettings", ProjectSettings::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("IP", IP::get_singleton()));
@@ -264,6 +268,7 @@ void register_core_singletons() {
 	Engine::get_singleton()->add_singleton(Engine::Singleton("Input", Input::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("InputMap", InputMap::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("JSON", _JSON::get_singleton()));
+	Engine::get_singleton()->add_singleton(Engine::Singleton("Redirect", Redirect::get_singleton()));
 }
 
 void unregister_core_types() {
