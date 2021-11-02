@@ -2821,8 +2821,8 @@ void EditorPropertyResource::_set_read_only(bool p_read_only) {
 	resource_picker->set_editable(!p_read_only);
 };
 
-void EditorPropertyResource::_resource_selected(const RES &p_resource) {
-	if (use_sub_inspector) {
+void EditorPropertyResource::_resource_selected(const RES &p_resource, bool p_edit) {
+	if (!p_edit && use_sub_inspector) {
 		bool unfold = !get_edited_object()->editor_is_section_unfolded(get_edited_property());
 		get_edited_object()->editor_set_section_unfold(get_edited_property(), unfold);
 		update_property();
