@@ -168,9 +168,6 @@
 			The dimensions of the grid's cells.
 			This does not affect the size of the meshes. See [member cell_scale].
 		</member>
-		<member name="cell_item" type="int" setter="set_cell_item" getter="get_cell_item" default="-1">
-			The index of the item contained within the grid's cell.
-		</member>
 		<member name="collision_layer" type="int" setter="set_collision_layer" getter="get_collision_layer" default="1">
 			The physics layers this GridMap is in.
 			GridMaps act as static bodies, meaning they aren't affected by gravity or other forces. They only affect other physics bodies that collide with them.
@@ -192,7 +189,7 @@
 			<argument index="2" name="new" type="int" />
 			<argument index="3" name="previous" type="int" />
 			<description>
-				Emitted when [member cell_item] changes.
+				Emitted when a GridMap's cell item changes.
 			</description>
 		</signal>
 		<signal name="cell_size_changed">
