@@ -75,7 +75,7 @@ void SceneExporterGLTFPlugin::_gltf2_dialog_action(String p_file) {
 	List<String> deps;
 	Ref<GLTFDocument> doc;
 	doc.instantiate();
-	Error err = doc->save_scene(root, p_file, p_file, 0, 30.0f, Ref<GLTFState>());
+	Error err = doc->save_scene(root, p_file, 0, 30.0f, Ref<GLTFState>());
 	if (err != OK) {
 		ERR_PRINT(vformat("glTF2 save scene error %s.", itos(err)));
 	}

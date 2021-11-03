@@ -122,8 +122,7 @@ public:
 	Node *import_scene(const String &p_path, uint32_t p_flags, int32_t p_bake_fps, Ref<GLTFState> r_state);
 	Node *import_scene_gltf(const String &p_path, uint32_t p_flags, int32_t p_bake_fps, Ref<GLTFState> r_state, List<String> *r_missing_deps, Error *r_err = nullptr);
 	Error save_scene(Node *p_node, const String &p_path,
-			const String &p_src_path, uint32_t p_flags,
-			float p_bake_fps, Ref<GLTFState> r_state);
+			uint32_t p_flags, float p_bake_fps, Ref<GLTFState> r_state);
 	void set_extensions(TypedArray<GLTFDocumentExtension> p_extensions);
 	TypedArray<GLTFDocumentExtension> get_extensions() const;
 

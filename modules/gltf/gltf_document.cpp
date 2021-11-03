@@ -6841,8 +6841,7 @@ Error GLTFDocument::_serialize_file(Ref<GLTFState> state, const String p_path) {
 }
 
 Error GLTFDocument::save_scene(Node *p_node, const String &p_path,
-		const String &p_src_path, uint32_t p_flags,
-		float p_bake_fps, Ref<GLTFState> r_state) {
+		uint32_t p_flags, float p_bake_fps, Ref<GLTFState> r_state) {
 	ERR_FAIL_NULL_V(p_node, ERR_INVALID_PARAMETER);
 
 	Ref<GLTFDocument> gltf_document;
@@ -6919,7 +6918,7 @@ Node *GLTFDocument::import_scene_gltf(const String &p_path, uint32_t p_flags, in
 }
 
 void GLTFDocument::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("save_scene", "node", "path", "src_path", "flags", "bake_fps", "state"),
+	ClassDB::bind_method(D_METHOD("save_scene", "node", "path", "flags", "bake_fps", "state"),
 			&GLTFDocument::save_scene, DEFVAL(0), DEFVAL(30), DEFVAL(Ref<GLTFState>()));
 	ClassDB::bind_method(D_METHOD("import_scene", "path", "flags", "bake_fps", "state"),
 			&GLTFDocument::import_scene, DEFVAL(0), DEFVAL(30), DEFVAL(Ref<GLTFState>()));
