@@ -173,11 +173,7 @@ void EditorToaster::_error_handler(void *p_self, const char *p_func, const char 
 		}
 
 		Severity severity = (p_type == ERR_HANDLER_WARNING) ? SEVERITY_WARNING : SEVERITY_ERROR;
-		if (Thread::get_caller_id() != Thread::get_main_id()) {
-			EditorToaster::get_singleton()->call_deferred(SNAME("popup_str"), err_str, severity, tooltip_str);
-		} else {
-			EditorToaster::get_singleton()->popup_str(err_str, severity, tooltip_str);
-		}
+		EditorToaster::get_singleton()->queue_popup_str(err_str, severity, tooltip_str);
 	}
 }
 
@@ -331,6 +327,24 @@ void EditorToaster::_repop_old() {
 	}
 }
 
+void EditorToaster::_flush_popups() {
+	Vector<QueuedPopup> queued;
+	{
+		MutexLock lock(popup_queue_mutex);
+
+		ERR_FAIL_COND(!popups_dirty);
+		popups_dirty = false;
+
+		// Duplicate in case popup_str happens to create errors (hopefully not recursive?)
+		queued = queued_popups.duplicate();
+		queued_popups.clear();
+	}
+
+	for (EditorToaster::QueuedPopup popup : queued) {
+		popup_str(popup.message, popup.severity, popup.tooltip);
+	}
+}
+
 Control *EditorToaster::popup(Control *p_control, Severity p_severity, double p_time, String p_tooltip) {
 	// Create the panel according to the severity.
 	PanelContainer *panel = memnew(PanelContainer);
@@ -427,6 +441,16 @@ void EditorToaster::popup_str(String p_message, Severity p_severity, String p_to
 		label->set_text(p_message);
 	} else {
 		label->set_text(vformat("%s (%d)", p_message, toasts[control].count));
+	}
+}
+
+void EditorToaster::queue_popup_str(String p_message, Severity p_severity, String p_tooltip) {
+	MutexLock lock(popup_queue_mutex);
+
+	queued_popups.append({ p_message, p_severity, p_tooltip });
+	if (!popups_dirty) {
+		popups_dirty = true;
+		callable_mp(this, &EditorToaster::_flush_popups).call_deferred({}, 0);
 	}
 }
 

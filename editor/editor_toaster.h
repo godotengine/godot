@@ -82,6 +82,15 @@ private:
 	};
 	Map<Control *, Toast> toasts;
 
+	struct QueuedPopup {
+		String message;
+		Severity severity;
+		String tooltip;
+	};
+	Vector<QueuedPopup> queued_popups;
+	bool popups_dirty = false;
+	Mutex popup_queue_mutex;
+
 	const double default_message_duration = 5.0;
 
 	static void _error_handler(void *p_self, const char *p_func, const char *p_file, int p_line, const char *p_error, const char *p_errorexp, bool p_editor_notify, ErrorHandlerType p_type);
@@ -95,6 +104,8 @@ private:
 	void _set_notifications_enabled(bool p_enabled);
 	void _repop_old();
 
+	void _flush_popups();
+
 protected:
 	static EditorToaster *singleton;
 
@@ -105,6 +116,7 @@ public:
 
 	Control *popup(Control *p_control, Severity p_severity = SEVERITY_INFO, double p_time = 0.0, String p_tooltip = String());
 	void popup_str(String p_message, Severity p_severity = SEVERITY_INFO, String p_tooltip = String());
+	void queue_popup_str(String p_message, Severity p_severity = SEVERITY_INFO, String p_tooltip = String());
 	void close(Control *p_control);
 
 	EditorToaster();
