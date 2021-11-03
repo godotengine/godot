@@ -41,7 +41,7 @@
 			<return type="void" />
 			<param index="0" name="to_position" type="int" />
 			<description>
-				Adds a layer at the given position [param to_position] in the array. If [param to_position] is -1, adds it at the end of the array.
+				Adds a layer at the given position [param to_position] in the array. If [param to_position] is negative, the position is counted from the end, with [code]-1[/code] adding the layer at the end of the array.
 			</description>
 		</method>
 		<method name="clear">
@@ -285,14 +285,16 @@
 			<param index="1" name="enabled" type="bool" />
 			<description>
 				Enables or disables the layer [param layer]. A disabled layer is not processed at all (no rendering, no physics, etc...).
+				If [param layer] is negative, the layers are accessed from the last one.
 			</description>
 		</method>
 		<method name="set_layer_modulate">
 			<return type="void" />
 			<param index="0" name="layer" type="int" />
-			<param index="1" name="enabled" type="Color" />
+			<param index="1" name="modulate" type="Color" />
 			<description>
 				Sets a layer's color. It will be multiplied by tile's color and TileMap's modulate.
+				If [code]layer[/code] is negative, the layers are accessed from the last one.
 			</description>
 		</method>
 		<method name="set_layer_name">
@@ -301,6 +303,7 @@
 			<param index="1" name="name" type="String" />
 			<description>
 				Sets a layer's name. This is mostly useful in the editor.
+				If [code]layer[/code] is negative, the layers are accessed from the last one.
 			</description>
 		</method>
 		<method name="set_layer_y_sort_enabled">
@@ -310,6 +313,7 @@
 			<description>
 				Enables or disables a layer's Y-sorting. If a layer is Y-sorted, the layer will behave as a CanvasItem node where each of its tile gets Y-sorted.
 				Y-sorted layers should usually be on different Z-index values than not Y-sorted layers, otherwise, each of those layer will be Y-sorted as whole with the Y-sorted one. This is usually an undesired behvaior.
+				If [code]layer[/code] is negative, the layers are accessed from the last one.
 			</description>
 		</method>
 		<method name="set_layer_y_sort_origin">
@@ -319,6 +323,7 @@
 			<description>
 				Sets a layer's Y-sort origin value. This Y-sort origin value is added to each tile's Y-sort origin value.
 				This allows, for example, to fake a different height level on each layer. This can be useful for top-down view games.
+				If [code]layer[/code] is negative, the layers are accessed from the last one.
 			</description>
 		</method>
 		<method name="set_layer_z_index">
@@ -327,6 +332,7 @@
 			<param index="1" name="z_index" type="int" />
 			<description>
 				Sets a layers Z-index value. This Z-index is added to each tile's Z-index value.
+				If [code]layer[/code] is negative, the layers are accessed from the last one.
 			</description>
 		</method>
 		<method name="set_pattern">
