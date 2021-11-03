@@ -934,7 +934,7 @@ bool EditorShaderPicker::handle_menu_selected(int p_which) {
 	switch (p_which) {
 		case OBJ_MENU_NEW_SHADER: {
 			if (material.is_valid()) {
-				EditorNode::get_singleton()->get_scene_tree_dock()->open_shader_dialog(material);
+				EditorNode::get_singleton()->get_scene_tree_dock()->open_shader_dialog(material, preferred_mode);
 				return true;
 			}
 		} break;
@@ -950,6 +950,10 @@ void EditorShaderPicker::set_edited_material(ShaderMaterial *p_material) {
 
 ShaderMaterial *EditorShaderPicker::get_edited_material() const {
 	return edited_material;
+}
+
+void EditorShaderPicker::set_preferred_mode(int p_mode) {
+	preferred_mode = p_mode;
 }
 
 EditorShaderPicker::EditorShaderPicker() {
