@@ -3,31 +3,23 @@
 # Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).
 # This file is distributed under the same license as the Godot source code.
 #
-# Jethro Parker <lionbearjet@hotmail.com>, 2020.
-# Pierre Stempin <pierre.stempin@gmail.com>, 2020.
+# karl kivi <karl97kivi@gmail.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine class reference\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
-"PO-Revision-Date: 2020-10-07 06:10+0000\n"
-"Last-Translator: Pierre Stempin <pierre.stempin@gmail.com>\n"
-"Language-Team: Filipino <https://hosted.weblate.org/projects/godot-engine/"
-"godot-class-reference/fil/>\n"
-"Language: fil\n"
+"Language: et\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
-"Plural-Forms: nplurals=2; plural=n != 1 && n != 2 && n != 3 && (n % 10 == 4 "
-"|| n % 10 == 6 || n % 10 == 9);\n"
-"X-Generator: Weblate 4.3-dev\n"
 
 #: doc/tools/make_rst.py
 msgid "Description"
-msgstr "Paglalarawan"
+msgstr ""
 
 #: doc/tools/make_rst.py
 msgid "Tutorials"
-msgstr "Mga tutorial"
+msgstr ""
 
 #: doc/tools/make_rst.py
 msgid "Properties"
@@ -3558,22 +3550,19 @@ msgstr ""
 #: doc/classes/Rect2.xml:12 doc/classes/Transform.xml:11
 #: doc/classes/Transform2D.xml:11 doc/classes/Vector2.xml:11
 #: doc/classes/Vector3.xml:11
-#, fuzzy
 msgid "https://docs.godotengine.org/en/3.4/tutorials/math/index.html"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/math/index.html"
+msgstr ""
 
 #: doc/classes/AABB.xml:13 doc/classes/Rect2.xml:13 doc/classes/Vector2.xml:12
 #: doc/classes/Vector3.xml:12
-#, fuzzy
 msgid "https://docs.godotengine.org/en/3.4/tutorials/math/vector_math.html"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/math/index.html"
+msgstr ""
 
 #: doc/classes/AABB.xml:14 doc/classes/Rect2.xml:14 doc/classes/Vector2.xml:13
 #: doc/classes/Vector3.xml:13
-#, fuzzy
 msgid ""
 "https://docs.godotengine.org/en/3.4/tutorials/math/vectors_advanced.html"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/math/index.html"
+msgstr ""
 
 #: doc/classes/AABB.xml:22
 msgid "Constructs an [AABB] from a position and size."
@@ -3900,10 +3889,9 @@ msgstr ""
 
 #: doc/classes/AnimatedSprite.xml:11 doc/classes/AnimatedSprite3D.xml:10
 #: doc/classes/AnimationPlayer.xml:13
-#, fuzzy
 msgid ""
 "https://docs.godotengine.org/en/3.4/tutorials/2d/2d_sprite_animation.html"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/2d/2d_transforms.html"
+msgstr ""
 
 #: doc/classes/AnimatedSprite.xml:12 doc/classes/Area2D.xml:11
 #: doc/classes/AudioStreamPlayer.xml:12 doc/classes/Button.xml:24
@@ -3912,9 +3900,8 @@ msgstr "https://docs.godotengine.org/en/latest/tutorials/2d/2d_transforms.html"
 #: doc/classes/InputEvent.xml:12 doc/classes/InputEventAction.xml:11
 #: doc/classes/Label.xml:12 doc/classes/Particles2D.xml:15
 #: doc/classes/Timer.xml:11 doc/classes/VisibilityNotifier2D.xml:12
-#, fuzzy
 msgid "https://godotengine.org/asset-library/asset/515"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
+msgstr ""
 
 #: doc/classes/AnimatedSprite.xml:18 doc/classes/AnimatedSprite3D.xml:16
 msgid "Returns [code]true[/code] if an animation is currently being played."
@@ -4128,9 +4115,8 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Animation.xml:20 doc/classes/AnimationPlayer.xml:12
-#, fuzzy
 msgid "https://docs.godotengine.org/en/3.4/tutorials/animation/index.html"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/animation/index.html"
+msgstr ""
 
 #: doc/classes/Animation.xml:28
 msgid "Adds a track to the Animation."
@@ -4577,12 +4563,9 @@ msgstr ""
 #: doc/classes/AnimationNodeTimeSeek.xml:21
 #: doc/classes/AnimationNodeTransition.xml:10 doc/classes/AnimationTree.xml:11
 #: doc/classes/AnimationTreePlayer.xml:12
-#, fuzzy
 msgid ""
 "https://docs.godotengine.org/en/3.4/tutorials/animation/animation_tree.html"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/animation/animation_tree."
-"html"
 
 #: doc/classes/AnimationNode.xml:18
 msgid ""
@@ -4781,9 +4764,8 @@ msgstr ""
 #: doc/classes/Quat.xml:13 doc/classes/Skeleton.xml:13
 #: doc/classes/SpotLight.xml:12 doc/classes/StaticBody.xml:12
 #: doc/classes/WorldEnvironment.xml:15
-#, fuzzy
 msgid "https://godotengine.org/asset-library/asset/678"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
+msgstr ""
 
 #: doc/classes/AnimationNodeAnimation.xml:4
 msgid "Input animation to use in an [AnimationNodeBlendTree]."
@@ -4806,9 +4788,8 @@ msgstr ""
 #: doc/classes/KinematicBody.xml:14 doc/classes/Mesh.xml:12
 #: doc/classes/MeshInstance.xml:12 doc/classes/MeshLibrary.xml:11
 #: doc/classes/ProjectSettings.xml:14 doc/classes/Transform.xml:15
-#, fuzzy
 msgid "https://godotengine.org/asset-library/asset/125"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
+msgstr ""
 
 #: doc/classes/AnimationNodeAnimation.xml:18
 msgid ""
@@ -6204,9 +6185,8 @@ msgstr ""
 
 #: doc/classes/Area.xml:11 doc/classes/QuadMesh.xml:10
 #: doc/classes/Viewport.xml:17 doc/classes/ViewportTexture.xml:11
-#, fuzzy
 msgid "https://godotengine.org/asset-library/asset/127"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
+msgstr ""
 
 #: doc/classes/Area.xml:17
 msgid ""
@@ -6441,24 +6421,20 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Area2D.xml:10
-#, fuzzy
 msgid ""
 "https://docs.godotengine.org/en/3.4/tutorials/physics/using_area_2d.html"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/physics/using_area_2d.html"
 
 #: doc/classes/Area2D.xml:12 doc/classes/CollisionShape2D.xml:12
 #: doc/classes/RectangleShape2D.xml:10
-#, fuzzy
 msgid "https://godotengine.org/asset-library/asset/121"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
+msgstr ""
 
 #: doc/classes/Area2D.xml:13 doc/classes/Camera2D.xml:12
 #: doc/classes/KinematicBody2D.xml:15 doc/classes/TileMap.xml:12
 #: doc/classes/TileSet.xml:12
-#, fuzzy
 msgid "https://godotengine.org/asset-library/asset/120"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
+msgstr ""
 
 #: doc/classes/Area2D.xml:19
 msgid ""
@@ -7040,13 +7016,10 @@ msgid ""
 msgstr ""
 
 #: doc/classes/ArrayMesh.xml:29
-#, fuzzy
 msgid ""
 "https://docs.godotengine.org/en/3.4/tutorials/content/procedural_geometry/"
 "arraymesh.html"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/content/procedural_geometry/"
-"arraymesh.html"
 
 #: doc/classes/ArrayMesh.xml:36
 msgid ""
@@ -7352,9 +7325,8 @@ msgstr ""
 #: doc/classes/ARVRCamera.xml:11 doc/classes/ARVRController.xml:12
 #: doc/classes/ARVRInterface.xml:11 doc/classes/ARVROrigin.xml:13
 #: doc/classes/ARVRPositionalTracker.xml:12 doc/classes/ARVRServer.xml:10
-#, fuzzy
 msgid "https://docs.godotengine.org/en/3.4/tutorials/vr/index.html"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
+msgstr ""
 
 #: doc/classes/ARVRController.xml:4
 msgid "A spatial node representing a spatially-tracked controller."
@@ -8477,9 +8449,8 @@ msgstr ""
 #: doc/classes/AudioEffect.xml:10 doc/classes/AudioEffectRecord.xml:11
 #: doc/classes/AudioServer.xml:12 doc/classes/AudioStream.xml:12
 #: doc/classes/AudioStreamPlayer.xml:15
-#, fuzzy
 msgid "https://godotengine.org/asset-library/asset/527"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
+msgstr ""
 
 #: doc/classes/AudioEffectAmplify.xml:4
 msgid ""
@@ -8780,10 +8751,8 @@ msgstr ""
 #: doc/classes/AudioEffectFilter.xml:10
 #: doc/classes/AudioEffectHighShelfFilter.xml:9
 #: doc/classes/AudioEffectLowShelfFilter.xml:9 doc/classes/AudioServer.xml:10
-#, fuzzy
 msgid "https://docs.godotengine.org/en/3.4/tutorials/audio/audio_buses.html"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/audio/audio_buses.html"
 
 #: doc/classes/AudioEffectDistortion.xml:18
 msgid "Distortion power. Value can range from 0 to 1."
@@ -9173,13 +9142,10 @@ msgid ""
 msgstr ""
 
 #: doc/classes/AudioEffectRecord.xml:10
-#, fuzzy
 msgid ""
 "https://docs.godotengine.org/en/3.4/tutorials/audio/"
 "recording_with_microphone.html"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/audio/"
-"recording_with_microphone.html"
 
 #: doc/classes/AudioEffectRecord.xml:17
 msgid "Returns the recorded sample."
@@ -9317,15 +9283,13 @@ msgid ""
 msgstr ""
 
 #: doc/classes/AudioServer.xml:11 doc/classes/AudioStreamPlayer.xml:13
-#, fuzzy
 msgid "https://godotengine.org/asset-library/asset/525"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
+msgstr ""
 
 #: doc/classes/AudioServer.xml:13 doc/classes/AudioStream.xml:13
 #: doc/classes/AudioStreamPlayer.xml:16 doc/classes/CanvasItem.xml:17
-#, fuzzy
 msgid "https://godotengine.org/asset-library/asset/528"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
+msgstr ""
 
 #: doc/classes/AudioServer.xml:20
 msgid "Adds a bus at [code]at_position[/code]."
@@ -9552,17 +9516,14 @@ msgstr ""
 #: doc/classes/AudioStream.xml:10 doc/classes/AudioStreamPlayer.xml:11
 #: doc/classes/AudioStreamPlayer2D.xml:12
 #: doc/classes/AudioStreamPlayer3D.xml:13
-#, fuzzy
 msgid "https://docs.godotengine.org/en/3.4/tutorials/audio/audio_streams.html"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/audio/audio_streams.html"
 
 #: doc/classes/AudioStream.xml:11 doc/classes/AudioStreamGenerator.xml:12
 #: doc/classes/AudioStreamGeneratorPlayback.xml:10
 #: doc/classes/AudioStreamPlayback.xml:10 doc/classes/AudioStreamPlayer.xml:14
-#, fuzzy
 msgid "https://godotengine.org/asset-library/asset/526"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
+msgstr ""
 
 #: doc/classes/AudioStream.xml:19
 msgid "Returns the length of the audio stream in seconds."
@@ -10178,10 +10139,8 @@ msgid ""
 msgstr ""
 
 #: doc/classes/BakedLightmap.xml:11
-#, fuzzy
 msgid "https://docs.godotengine.org/en/3.4/tutorials/3d/baked_lightmaps.html"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/3d/using_gridmaps.html"
 
 #: doc/classes/BakedLightmap.xml:19
 msgid ""
@@ -10615,26 +10574,20 @@ msgstr ""
 
 #: doc/classes/Basis.xml:14 doc/classes/Transform.xml:12
 #: doc/classes/Transform2D.xml:12
-#, fuzzy
 msgid ""
 "https://docs.godotengine.org/en/3.4/tutorials/math/matrices_and_transforms."
 "html"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/math/"
-"matrices_and_transforms.html"
 
 #: doc/classes/Basis.xml:15 doc/classes/Transform.xml:13
-#, fuzzy
 msgid "https://docs.godotengine.org/en/3.4/tutorials/3d/using_transforms.html"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/3d/using_transforms.html"
 
 #: doc/classes/Basis.xml:16 doc/classes/Line2D.xml:11
 #: doc/classes/Transform.xml:14 doc/classes/Transform2D.xml:13
 #: doc/classes/Vector2.xml:15 doc/classes/Vector3.xml:15
-#, fuzzy
 msgid "https://godotengine.org/asset-library/asset/584"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
+msgstr ""
 
 #: doc/classes/Basis.xml:18 doc/classes/CylinderShape.xml:12
 #: doc/classes/Dictionary.xml:88 doc/classes/DynamicFont.xml:18
@@ -10645,15 +10598,13 @@ msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
 #: doc/classes/StaticBody.xml:13 doc/classes/SurfaceTool.xml:22
 #: doc/classes/TextureButton.xml:12 doc/classes/TextureRect.xml:11
 #: doc/classes/Thread.xml:13 doc/classes/VBoxContainer.xml:10
-#, fuzzy
 msgid "https://godotengine.org/asset-library/asset/676"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
+msgstr ""
 
 #: doc/classes/Basis.xml:19 doc/classes/Line2D.xml:12
 #: doc/classes/Transform.xml:16 doc/classes/Transform2D.xml:14
-#, fuzzy
 msgid "https://godotengine.org/asset-library/asset/583"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
+msgstr ""
 
 #: doc/classes/Basis.xml:26
 msgid "Constructs a pure rotation basis matrix from the given quaternion."
@@ -11131,17 +11082,15 @@ msgstr ""
 #: doc/classes/CylinderShape.xml:11 doc/classes/ProjectSettings.xml:13
 #: doc/classes/RigidBody.xml:16 doc/classes/SphereShape.xml:10
 #: doc/classes/StaticBody.xml:11
-#, fuzzy
 msgid "https://godotengine.org/asset-library/asset/675"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
+msgstr ""
 
 #: doc/classes/BoxShape.xml:11 doc/classes/CollisionShape.xml:11
 #: modules/gridmap/doc_classes/GridMap.xml:16 doc/classes/KinematicBody.xml:13
 #: doc/classes/Mesh.xml:11 doc/classes/MeshInstance.xml:11
 #: doc/classes/MeshLibrary.xml:10
-#, fuzzy
 msgid "https://godotengine.org/asset-library/asset/126"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
+msgstr ""
 
 #: doc/classes/BoxShape.xml:18
 msgid ""
@@ -11183,9 +11132,8 @@ msgstr ""
 #: doc/classes/GridContainer.xml:12 doc/classes/OS.xml:10
 #: doc/classes/PoolStringArray.xml:11 doc/classes/ProjectSettings.xml:15
 #: doc/classes/ResourceLoader.xml:11 doc/classes/RichTextLabel.xml:17
-#, fuzzy
 msgid "https://godotengine.org/asset-library/asset/677"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
+msgstr ""
 
 #: doc/classes/Button.xml:31
 msgid ""
@@ -11615,15 +11563,13 @@ msgstr ""
 
 #: doc/classes/Camera2D.xml:13 doc/classes/TileMap.xml:13
 #: doc/classes/TileSet.xml:13
-#, fuzzy
 msgid "https://godotengine.org/asset-library/asset/112"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
+msgstr ""
 
 #: doc/classes/Camera2D.xml:14 doc/classes/Environment.xml:18
 #: doc/classes/WorldEnvironment.xml:14
-#, fuzzy
 msgid "https://godotengine.org/asset-library/asset/110"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
+msgstr ""
 
 #: doc/classes/Camera2D.xml:20
 msgid "Aligns the camera to the tracked node."
@@ -12037,17 +11983,14 @@ msgstr ""
 
 #: doc/classes/CanvasItem.xml:15 doc/classes/CanvasLayer.xml:10
 #: doc/classes/InputEvent.xml:11 doc/classes/Viewport.xml:15
-#, fuzzy
 msgid "https://docs.godotengine.org/en/3.4/tutorials/2d/2d_transforms.html"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/2d/2d_transforms.html"
+msgstr ""
 
 #: doc/classes/CanvasItem.xml:16 doc/classes/Control.xml:18
 #: doc/classes/Node2D.xml:10
-#, fuzzy
 msgid ""
 "https://docs.godotengine.org/en/3.4/tutorials/2d/custom_drawing_in_2d.html"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/2d/custom_drawing_in_2d.html"
 
 #: doc/classes/CanvasItem.xml:23
 msgid ""
@@ -12521,9 +12464,8 @@ msgid ""
 msgstr ""
 
 #: doc/classes/CanvasLayer.xml:11
-#, fuzzy
 msgid "https://docs.godotengine.org/en/3.4/tutorials/2d/canvas_layers.html"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/2d/canvas_layers.html"
+msgstr ""
 
 #: doc/classes/CanvasLayer.xml:18
 msgid "Returns the RID of the canvas used by this layer."
@@ -12654,19 +12596,15 @@ msgstr ""
 
 #: doc/classes/CharFXTransform.xml:10 doc/classes/RichTextEffect.xml:16
 #: doc/classes/RichTextLabel.xml:15
-#, fuzzy
 msgid ""
 "https://docs.godotengine.org/en/3.4/tutorials/gui/bbcode_in_richtextlabel."
 "html"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/gui/bbcode_in_richtextlabel."
-"html"
 
 #: doc/classes/CharFXTransform.xml:11 doc/classes/RichTextEffect.xml:17
 msgid ""
 "https://github.com/Eoin-ONeill-Yokai/Godot-Rich-Text-Effect-Test-Project"
 msgstr ""
-"https://github.com/Eoin-ONeill-Yokai/Godot-Rich-Text-Effect-Test-Project"
 
 #: doc/classes/CharFXTransform.xml:17 doc/classes/CharFXTransform.xml:45
 msgid ""
@@ -13573,13 +13511,10 @@ msgstr ""
 #: doc/classes/PhysicsBody2D.xml:10 doc/classes/PhysicsDirectBodyState.xml:10
 #: doc/classes/PhysicsDirectSpaceState.xml:10 doc/classes/RigidBody.xml:14
 #: doc/classes/Shape.xml:10 doc/classes/Shape2D.xml:10
-#, fuzzy
 msgid ""
 "https://docs.godotengine.org/en/3.4/tutorials/physics/physics_introduction."
 "html"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/physics/"
-"physics_introduction.html"
 
 #: doc/classes/CollisionShape.xml:19
 msgid ""
@@ -13618,9 +13553,8 @@ msgstr ""
 #: doc/classes/CollisionShape2D.xml:13 doc/classes/KinematicBody2D.xml:14
 #: doc/classes/RectangleShape2D.xml:11 doc/classes/TileMap.xml:17
 #: doc/classes/TileSet.xml:17
-#, fuzzy
 msgid "https://godotengine.org/asset-library/asset/113"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
+msgstr ""
 
 #: doc/classes/CollisionShape2D.xml:19
 msgid ""
@@ -13665,19 +13599,16 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Color.xml:14 doc/classes/ColorPickerButton.xml:13
-#, fuzzy
 msgid "https://godotengine.org/asset-library/asset/517"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
+msgstr ""
 
 #: doc/classes/Color.xml:15 doc/classes/ColorPicker.xml:11
-#, fuzzy
 msgid "https://godotengine.org/asset-library/asset/146"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
+msgstr ""
 
 #: doc/classes/Color.xml:16 doc/classes/ColorPickerButton.xml:12
-#, fuzzy
 msgid "https://godotengine.org/asset-library/asset/133"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
+msgstr ""
 
 #: doc/classes/Color.xml:23
 msgid ""
@@ -15131,22 +15062,17 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Control.xml:17
-#, fuzzy
 msgid "https://docs.godotengine.org/en/3.4/tutorials/gui/index.html"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/gui/index.html"
+msgstr ""
 
 #: doc/classes/Control.xml:19
-#, fuzzy
 msgid ""
 "https://docs.godotengine.org/en/3.4/tutorials/gui/control_node_gallery.html"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/gui/index.html"
+msgstr ""
 
 #: doc/classes/Control.xml:20
-#, fuzzy
 msgid "https://github.com/godotengine/godot-demo-projects/tree/master/gui"
 msgstr ""
-"https://github.com/godotengine/godot-demo-projects/tree/master/audio/"
-"generator"
 
 #: doc/classes/Control.xml:26
 msgid ""
@@ -17171,11 +17097,9 @@ msgid ""
 msgstr ""
 
 #: doc/classes/CPUParticles2D.xml:12 doc/classes/Particles2D.xml:14
-#, fuzzy
 msgid ""
 "https://docs.godotengine.org/en/3.4/tutorials/2d/particle_systems_2d.html"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/2d/particle_systems_2d.html"
 
 #: doc/classes/CPUParticles2D.xml:19
 msgid ""
@@ -17886,13 +17810,10 @@ msgid ""
 msgstr ""
 
 #: modules/mono/doc_classes/CSharpScript.xml:11
-#, fuzzy
 msgid ""
 "https://docs.godotengine.org/en/3.4/getting_started/scripting/c_sharp/index."
 "html"
 msgstr ""
-"https://docs.godotengine.org/en/latest/getting_started/scripting/c_sharp/"
-"index.html"
 
 #: modules/mono/doc_classes/CSharpScript.xml:18
 #: modules/gdnative/doc_classes/PluginScript.xml:13
@@ -18772,13 +18693,10 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Dictionary.xml:87
-#, fuzzy
 msgid ""
 "https://docs.godotengine.org/en/3.4/getting_started/scripting/gdscript/"
 "gdscript_basics.html#dictionary"
 msgstr ""
-"https://docs.godotengine.org/en/latest/getting_started/scripting/gdscript/"
-"gdscript_basics.html#dictionary"
 
 #: doc/classes/Dictionary.xml:94
 msgid "Clear the dictionary, removing all key/value pairs."
@@ -18873,11 +18791,9 @@ msgstr ""
 
 #: doc/classes/DirectionalLight.xml:10 doc/classes/Light.xml:10
 #: doc/classes/OmniLight.xml:11 doc/classes/SpotLight.xml:11
-#, fuzzy
 msgid ""
 "https://docs.godotengine.org/en/3.4/tutorials/3d/lights_and_shadows.html"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/3d/lights_and_shadows.html"
 
 #: doc/classes/DirectionalLight.xml:16
 msgid ""
@@ -19002,13 +18918,10 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Directory.xml:28 doc/classes/File.xml:28
-#, fuzzy
 msgid ""
 "https://docs.godotengine.org/en/3.4/getting_started/step_by_step/filesystem."
 "html"
 msgstr ""
-"https://docs.godotengine.org/en/latest/getting_started/step_by_step/"
-"filesystem.html"
 
 #: doc/classes/Directory.xml:35
 msgid ""
@@ -20010,13 +19923,10 @@ msgid ""
 msgstr ""
 
 #: doc/classes/EditorImportPlugin.xml:51 doc/classes/ResourceImporter.xml:10
-#, fuzzy
 msgid ""
 "https://docs.godotengine.org/en/3.4/tutorials/plugins/editor/import_plugins."
 "html"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/plugins/editor/"
-"import_plugins.html"
 
 #: doc/classes/EditorImportPlugin.xml:58
 msgid ""
@@ -20192,13 +20102,10 @@ msgid ""
 msgstr ""
 
 #: doc/classes/EditorInspectorPlugin.xml:16
-#, fuzzy
 msgid ""
 "https://docs.godotengine.org/en/3.4/tutorials/plugins/editor/"
 "inspector_plugins.html"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/plugins/editor/"
-"import_plugins.html"
 
 #: doc/classes/EditorInspectorPlugin.xml:23
 msgid "Adds a custom control, which is not necessarily a property editor."
@@ -20452,10 +20359,8 @@ msgid ""
 msgstr ""
 
 #: doc/classes/EditorPlugin.xml:10
-#, fuzzy
 msgid "https://docs.godotengine.org/en/3.4/tutorials/plugins/editor/index.html"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/plugins/editor/index.html"
 
 #: doc/classes/EditorPlugin.xml:18
 msgid ""
@@ -21311,13 +21216,10 @@ msgid ""
 msgstr ""
 
 #: doc/classes/EditorScenePostImport.xml:29
-#, fuzzy
 msgid ""
 "https://docs.godotengine.org/en/3.4/getting_started/workflow/assets/"
 "importing_scenes.html#custom-script"
 msgstr ""
-"https://docs.godotengine.org/en/latest/getting_started/workflow/assets/"
-"importing_scenes.html#custom-script"
 
 #: doc/classes/EditorScenePostImport.xml:35
 msgid ""
@@ -21732,13 +21634,10 @@ msgid ""
 msgstr ""
 
 #: doc/classes/EditorSpatialGizmoPlugin.xml:10
-#, fuzzy
 msgid ""
 "https://docs.godotengine.org/en/3.4/tutorials/plugins/editor/spatial_gizmos."
 "html"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/plugins/editor/"
-"spatial_gizmos.html"
 
 #: doc/classes/EditorSpatialGizmoPlugin.xml:18
 msgid ""
@@ -22248,27 +22147,21 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Environment.xml:15 doc/classes/WorldEnvironment.xml:12
-#, fuzzy
 msgid ""
 "https://docs.godotengine.org/en/3.4/tutorials/3d/"
 "environment_and_post_processing.html"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/3d/"
-"environment_and_post_processing.html"
 
 #: doc/classes/Environment.xml:16
-#, fuzzy
 msgid ""
 "https://docs.godotengine.org/en/3.4/tutorials/3d/high_dynamic_range.html"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/3d/high_dynamic_range.html"
 
 #: doc/classes/Environment.xml:17 doc/classes/Material.xml:10
 #: doc/classes/Mesh.xml:10 doc/classes/MeshInstance.xml:10
 #: doc/classes/WorldEnvironment.xml:13
-#, fuzzy
 msgid "https://godotengine.org/asset-library/asset/123"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
+msgstr ""
 
 #: doc/classes/Environment.xml:26
 msgid ""
@@ -23769,22 +23662,16 @@ msgid ""
 msgstr ""
 
 #: modules/gdnative/doc_classes/GDNativeLibrary.xml:10
-#, fuzzy
 msgid ""
 "https://docs.godotengine.org/en/3.4/tutorials/plugins/gdnative/gdnative-c-"
 "example.html"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/plugins/gdnative/gdnative-c-"
-"example.html"
 
 #: modules/gdnative/doc_classes/GDNativeLibrary.xml:11
-#, fuzzy
 msgid ""
 "https://docs.godotengine.org/en/3.4/tutorials/plugins/gdnative/gdnative-cpp-"
 "example.html"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/plugins/gdnative/gdnative-"
-"cpp-example.html"
 
 #: modules/gdnative/doc_classes/GDNativeLibrary.xml:17
 msgid ""
@@ -23856,13 +23743,10 @@ msgid ""
 msgstr ""
 
 #: modules/gdscript/doc_classes/GDScript.xml:11
-#, fuzzy
 msgid ""
 "https://docs.godotengine.org/en/3.4/getting_started/scripting/gdscript/index."
 "html"
 msgstr ""
-"https://docs.godotengine.org/en/latest/getting_started/scripting/gdscript/"
-"index.html"
 
 #: modules/gdscript/doc_classes/GDScript.xml:17
 msgid "Returns byte code for the script source code."
@@ -24889,9 +24773,8 @@ msgid ""
 msgstr ""
 
 #: doc/classes/GIProbe.xml:13
-#, fuzzy
 msgid "https://docs.godotengine.org/en/3.4/tutorials/3d/gi_probes.html"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/3d/gi_probes.html"
+msgstr ""
 
 #: doc/classes/GIProbe.xml:22
 msgid ""
@@ -25825,10 +25708,8 @@ msgid ""
 msgstr ""
 
 #: modules/gridmap/doc_classes/GridMap.xml:14
-#, fuzzy
 msgid "https://docs.godotengine.org/en/3.4/tutorials/3d/using_gridmaps.html"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/3d/using_gridmaps.html"
 
 #: modules/gridmap/doc_classes/GridMap.xml:22
 msgid "Clear all cells."
@@ -26426,23 +26307,17 @@ msgid ""
 msgstr ""
 
 #: doc/classes/HTTPClient.xml:16
-#, fuzzy
 msgid ""
 "https://docs.godotengine.org/en/3.4/tutorials/networking/http_client_class."
 "html"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/networking/"
-"http_client_class.html"
 
 #: doc/classes/HTTPClient.xml:17 doc/classes/HTTPRequest.xml:71
 #: doc/classes/StreamPeerSSL.xml:10
-#, fuzzy
 msgid ""
 "https://docs.godotengine.org/en/3.4/tutorials/networking/ssl_certificates."
 "html"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/networking/ssl_certificates."
-"html"
 
 #: doc/classes/HTTPClient.xml:23
 msgid "Closes the current connection, allowing reuse of this [HTTPClient]."
@@ -27221,13 +27096,10 @@ msgid ""
 msgstr ""
 
 #: doc/classes/HTTPRequest.xml:70
-#, fuzzy
 msgid ""
 "https://docs.godotengine.org/en/3.4/tutorials/networking/http_request_class."
 "html"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/networking/"
-"http_request_class.html"
 
 #: doc/classes/HTTPRequest.xml:77
 msgid "Cancels the current request."
@@ -27374,13 +27246,10 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Image.xml:12 doc/classes/ImageTexture.xml:31
-#, fuzzy
 msgid ""
 "https://docs.godotengine.org/en/3.4/getting_started/workflow/assets/"
 "importing_images.html"
 msgstr ""
-"https://docs.godotengine.org/en/latest/getting_started/workflow/assets/"
-"importing_scenes.html#custom-script"
 
 #: doc/classes/Image.xml:21
 msgid ""
@@ -28285,9 +28154,8 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Input.xml:10
-#, fuzzy
 msgid "https://docs.godotengine.org/en/3.4/tutorials/inputs/index.html"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/inputs/index.html"
+msgstr ""
 
 #: doc/classes/Input.xml:20
 msgid ""
@@ -28809,10 +28677,8 @@ msgstr ""
 #: doc/classes/InputEventMouse.xml:10 doc/classes/InputEventScreenDrag.xml:10
 #: doc/classes/InputEventScreenTouch.xml:11
 #: doc/classes/InputEventWithModifiers.xml:10
-#, fuzzy
 msgid "https://docs.godotengine.org/en/3.4/tutorials/inputs/inputevent.html"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/inputs/inputevent.html"
 
 #: doc/classes/InputEvent.xml:20
 msgid ""
@@ -28924,12 +28790,9 @@ msgid ""
 msgstr ""
 
 #: doc/classes/InputEventAction.xml:10
-#, fuzzy
 msgid ""
 "https://docs.godotengine.org/en/3.4/tutorials/inputs/inputevent.html#actions"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/inputs/inputevent."
-"html#actions"
 
 #: doc/classes/InputEventAction.xml:18
 msgid "The action's name. Actions are accessed via this [String]."
@@ -29114,13 +28977,10 @@ msgstr ""
 
 #: doc/classes/InputEventMouseButton.xml:10
 #: doc/classes/InputEventMouseMotion.xml:11
-#, fuzzy
 msgid ""
 "https://docs.godotengine.org/en/3.4/tutorials/inputs/"
 "mouse_and_input_coordinates.html"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/inputs/"
-"mouse_and_input_coordinates.html"
 
 #: doc/classes/InputEventMouseButton.xml:16
 msgid ""
@@ -29285,12 +29145,9 @@ msgid ""
 msgstr ""
 
 #: doc/classes/InputMap.xml:10
-#, fuzzy
 msgid ""
 "https://docs.godotengine.org/en/3.4/tutorials/inputs/inputevent.html#inputmap"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/inputs/inputevent."
-"html#inputmap"
 
 #: doc/classes/InputMap.xml:18
 msgid ""
@@ -30046,13 +29903,10 @@ msgid ""
 msgstr ""
 
 #: doc/classes/JavaScript.xml:11
-#, fuzzy
 msgid ""
 "https://docs.godotengine.org/en/3.4/getting_started/workflow/export/"
 "exporting_for_web.html#calling-javascript-from-script"
 msgstr ""
-"https://docs.godotengine.org/en/latest/getting_started/workflow/export/"
-"exporting_for_web.html#calling-javascript-from-script"
 
 #: doc/classes/JavaScript.xml:19
 msgid ""
@@ -30162,13 +30016,10 @@ msgid ""
 msgstr ""
 
 #: doc/classes/JNISingleton.xml:10
-#, fuzzy
 msgid ""
 "https://docs.godotengine.org/en/3.4/tutorials/plugins/android/android_plugin."
 "html"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/plugins/editor/"
-"import_plugins.html"
 
 #: doc/classes/Joint.xml:4
 msgid "Base class for all 3D joints."
@@ -30183,9 +30034,8 @@ msgstr ""
 
 #: doc/classes/Joint.xml:10 doc/classes/RigidBody.xml:15
 #: doc/classes/VehicleBody.xml:12 doc/classes/VehicleWheel.xml:11
-#, fuzzy
 msgid "https://godotengine.org/asset-library/asset/524"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
+msgstr ""
 
 #: doc/classes/Joint.xml:16
 msgid ""
@@ -30435,13 +30285,10 @@ msgid ""
 msgstr ""
 
 #: doc/classes/KinematicBody.xml:12 doc/classes/KinematicBody2D.xml:12
-#, fuzzy
 msgid ""
 "https://docs.godotengine.org/en/3.4/tutorials/physics/kinematic_character_2d."
 "html"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/physics/"
-"kinematic_character_2d.html"
 
 #: doc/classes/KinematicBody.xml:23
 msgid ""
@@ -30664,13 +30511,10 @@ msgid ""
 msgstr ""
 
 #: doc/classes/KinematicBody2D.xml:13
-#, fuzzy
 msgid ""
 "https://docs.godotengine.org/en/3.4/tutorials/physics/"
 "using_kinematic_body_2d.html"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/physics/"
-"using_kinematic_body_2d.html"
 
 #: doc/classes/KinematicBody2D.xml:22
 msgid ""
@@ -31303,12 +31147,9 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Light2D.xml:11 doc/classes/LightOccluder2D.xml:10
-#, fuzzy
 msgid ""
 "https://docs.godotengine.org/en/3.4/tutorials/2d/2d_lights_and_shadows.html"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/2d/2d_lights_and_shadows."
-"html"
 
 #: doc/classes/Light2D.xml:17
 msgid "The Light2D's [Color]."
@@ -33155,9 +32996,8 @@ msgid ""
 msgstr ""
 
 #: doc/classes/MeshInstance2D.xml:10
-#, fuzzy
 msgid "https://docs.godotengine.org/en/3.4/tutorials/2d/2d_meshes.html"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/2d/2d_meshes.html"
+msgstr ""
 
 #: doc/classes/MeshInstance2D.xml:16
 msgid "The [Mesh] that will be drawn by the [MeshInstance2D]."
@@ -33391,22 +33231,16 @@ msgid ""
 msgstr ""
 
 #: doc/classes/MultiMesh.xml:13 doc/classes/MultiMeshInstance.xml:11
-#, fuzzy
 msgid ""
 "https://docs.godotengine.org/en/3.4/tutorials/3d/vertex_animation/"
 "animating_thousands_of_fish.html"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/3d/vertex_animation/"
-"animating_thousands_of_fish.html"
 
 #: doc/classes/MultiMesh.xml:14 doc/classes/MultiMeshInstance.xml:13
-#, fuzzy
 msgid ""
 "https://docs.godotengine.org/en/3.4/tutorials/optimization/using_multimesh."
 "html"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/optimization/"
-"using_multimesh.html"
 
 #: doc/classes/MultiMesh.xml:20
 msgid ""
@@ -33551,13 +33385,10 @@ msgid ""
 msgstr ""
 
 #: doc/classes/MultiMeshInstance.xml:12
-#, fuzzy
 msgid ""
 "https://docs.godotengine.org/en/3.4/tutorials/3d/using_multi_mesh_instance."
 "html"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/3d/"
-"using_multi_mesh_instance.html"
 
 #: doc/classes/MultiMeshInstance.xml:19
 msgid ""
@@ -33803,13 +33634,10 @@ msgstr ""
 
 #: doc/classes/Mutex.xml:10 doc/classes/Semaphore.xml:10
 #: doc/classes/Thread.xml:11
-#, fuzzy
 msgid ""
 "https://docs.godotengine.org/en/3.4/tutorials/threads/using_multiple_threads."
 "html"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/threads/"
-"using_multiple_threads.html"
 
 #: doc/classes/Mutex.xml:16
 msgid ""
@@ -33885,9 +33713,8 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Navigation.xml:11 doc/classes/NavigationMesh.xml:10
-#, fuzzy
 msgid "https://godotengine.org/asset-library/asset/124"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
+msgstr ""
 
 #: doc/classes/Navigation.xml:18 doc/classes/Navigation2D.xml:18
 msgid ""
@@ -33967,9 +33794,8 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Navigation2D.xml:11 doc/classes/NavigationPolygon.xml:27
-#, fuzzy
 msgid "https://godotengine.org/asset-library/asset/117"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
+msgstr ""
 
 #: doc/classes/Navigation2D.xml:25
 msgid ""
@@ -34399,13 +34225,10 @@ msgstr ""
 
 #: modules/enet/doc_classes/NetworkedMultiplayerENet.xml:12
 #: doc/classes/NetworkedMultiplayerPeer.xml:11
-#, fuzzy
 msgid ""
 "https://docs.godotengine.org/en/3.4/tutorials/networking/"
 "high_level_multiplayer.html"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/networking/"
-"high_level_multiplayer.html"
 
 #: modules/enet/doc_classes/NetworkedMultiplayerENet.xml:13
 msgid "http://enet.bespin.org/usergroup0.html"
@@ -34650,9 +34473,8 @@ msgid ""
 msgstr ""
 
 #: doc/classes/NetworkedMultiplayerPeer.xml:12
-#, fuzzy
 msgid "https://godotengine.org/asset-library/asset/537"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
+msgstr ""
 
 #: doc/classes/NetworkedMultiplayerPeer.xml:18
 msgid ""
@@ -34942,18 +34764,14 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Node.xml:20
-#, fuzzy
 msgid ""
 "https://docs.godotengine.org/en/3.4/getting_started/step_by_step/"
 "scenes_and_nodes.html"
 msgstr ""
-"https://docs.godotengine.org/en/latest/getting_started/step_by_step/"
-"scenes_and_nodes.html"
 
 #: doc/classes/Node.xml:21
-#, fuzzy
 msgid "https://github.com/godotengine/godot-demo-projects/"
-msgstr "https://github.com/godotengine/tps-demo"
+msgstr ""
 
 #: doc/classes/Node.xml:27
 msgid ""
@@ -35923,11 +35741,8 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Node2D.xml:11 doc/classes/Vector2.xml:16
-#, fuzzy
 msgid "https://github.com/godotengine/godot-demo-projects/tree/master/2d"
 msgstr ""
-"https://github.com/godotengine/godot-demo-projects/tree/master/audio/"
-"generator"
 
 #: doc/classes/Node2D.xml:18
 msgid "Multiplies the current scale by the [code]ratio[/code] vector."
@@ -36094,9 +35909,8 @@ msgstr ""
 #: doc/classes/NodePath.xml:26 doc/classes/PackedScene.xml:41
 #: doc/classes/Panel.xml:10 doc/classes/PanelContainer.xml:10
 #: doc/classes/TileMap.xml:16 doc/classes/TileSet.xml:16
-#, fuzzy
 msgid "https://godotengine.org/asset-library/asset/520"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
+msgstr ""
 
 #: doc/classes/NodePath.xml:33
 msgid ""
@@ -36309,22 +36123,16 @@ msgstr ""
 
 #: doc/classes/Object.xml:24 doc/classes/Reference.xml:13
 #: doc/classes/Resource.xml:12
-#, fuzzy
 msgid ""
 "https://docs.godotengine.org/en/3.4/getting_started/workflow/best_practices/"
 "node_alternatives.html"
 msgstr ""
-"https://docs.godotengine.org/en/latest/getting_started/workflow/"
-"best_practices/node_alternatives.html"
 
 #: doc/classes/Object.xml:25
-#, fuzzy
 msgid ""
 "https://docs.godotengine.org/en/3.4/getting_started/scripting/gdscript/"
 "gdscript_exports.html#advanced-exports"
 msgstr ""
-"https://docs.godotengine.org/en/latest/getting_started/scripting/gdscript/"
-"gdscript_basics.html#dictionary"
 
 #: doc/classes/Object.xml:32
 msgid ""
@@ -38896,15 +38704,13 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Panel.xml:11
-#, fuzzy
 msgid "https://godotengine.org/asset-library/asset/516"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
+msgstr ""
 
 #: doc/classes/Panel.xml:12 doc/classes/Skeleton.xml:12
 #: doc/classes/SkeletonIK.xml:29
-#, fuzzy
 msgid "https://godotengine.org/asset-library/asset/523"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
+msgstr ""
 
 #: doc/classes/Panel.xml:20
 msgid "The style of this [Panel]."
@@ -39051,13 +38857,10 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Particles.xml:13
-#, fuzzy
 msgid ""
 "https://docs.godotengine.org/en/3.4/tutorials/3d/vertex_animation/"
 "controlling_thousands_of_fish.html"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/3d/vertex_animation/"
-"controlling_thousands_of_fish.html"
 
 #: doc/classes/Particles.xml:20
 msgid ""
@@ -39917,10 +39720,8 @@ msgstr ""
 #: doc/classes/PhysicsDirectSpaceState.xml:11 doc/classes/RayCast.xml:14
 #: doc/classes/RayCast2D.xml:14 doc/classes/World.xml:10
 #: doc/classes/World2D.xml:10
-#, fuzzy
 msgid "https://docs.godotengine.org/en/3.4/tutorials/physics/ray-casting.html"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/physics/ray-casting.html"
 
 #: doc/classes/Physics2DDirectBodyState.xml:18 doc/classes/RigidBody2D.xml:30
 msgid "Adds a constant directional force without affecting rotation."
@@ -42475,9 +42276,8 @@ msgstr ""
 
 #: doc/classes/PoolVector2Array.xml:11 doc/classes/TileMap.xml:15
 #: doc/classes/TileSet.xml:15
-#, fuzzy
 msgid "https://godotengine.org/asset-library/asset/519"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
+msgstr ""
 
 #: doc/classes/PoolVector2Array.xml:18
 msgid ""
@@ -46185,9 +45985,8 @@ msgstr ""
 
 #: doc/classes/QuadMesh.xml:11 doc/classes/Viewport.xml:19
 #: doc/classes/ViewportTexture.xml:13
-#, fuzzy
 msgid "https://godotengine.org/asset-library/asset/129"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
+msgstr ""
 
 #: doc/classes/QuadMesh.xml:17
 msgid "Offset of the generated Quad. Useful for particles."
@@ -46214,13 +46013,10 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Quat.xml:12
-#, fuzzy
 msgid ""
 "https://docs.godotengine.org/en/3.4/tutorials/3d/using_transforms."
 "html#interpolating-with-quaternions"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/3d/using_transforms."
-"html#interpolating-with-quaternions"
 
 #: doc/classes/Quat.xml:20
 msgid "Constructs a quaternion from the given [Basis]."
@@ -46387,11 +46183,10 @@ msgid ""
 msgstr ""
 
 #: doc/classes/RandomNumberGenerator.xml:19
-#, fuzzy
 msgid ""
 "https://docs.godotengine.org/en/3.4/tutorials/math/random_number_generation."
 "html"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/math/index.html"
+msgstr ""
 
 #: doc/classes/RandomNumberGenerator.xml:25
 msgid ""
@@ -46990,10 +46785,8 @@ msgid ""
 msgstr ""
 
 #: doc/classes/ReflectionProbe.xml:13
-#, fuzzy
 msgid "https://docs.godotengine.org/en/3.4/tutorials/3d/reflection_probes.html"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/3d/reflection_probes.html"
 
 #: doc/classes/ReflectionProbe.xml:19
 msgid ""
@@ -47367,13 +47160,10 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Resource.xml:11
-#, fuzzy
 msgid ""
 "https://docs.godotengine.org/en/3.4/getting_started/step_by_step/resources."
 "html"
 msgstr ""
-"https://docs.godotengine.org/en/latest/getting_started/step_by_step/"
-"resources.html"
 
 #: doc/classes/Resource.xml:18
 msgid ""
@@ -47909,9 +47699,8 @@ msgid ""
 msgstr ""
 
 #: doc/classes/RichTextLabel.xml:16
-#, fuzzy
 msgid "https://godotengine.org/asset-library/asset/132"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
+msgstr ""
 
 #: doc/classes/RichTextLabel.xml:26
 msgid ""
@@ -48705,14 +48494,12 @@ msgid ""
 msgstr ""
 
 #: doc/classes/RigidBody2D.xml:15
-#, fuzzy
 msgid "https://godotengine.org/asset-library/asset/119"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
+msgstr ""
 
 #: doc/classes/RigidBody2D.xml:16 doc/classes/Sprite.xml:10
-#, fuzzy
 msgid "https://godotengine.org/asset-library/asset/148"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
+msgstr ""
 
 #: doc/classes/RigidBody2D.xml:23
 msgid ""
@@ -49286,13 +49073,10 @@ msgid ""
 msgstr ""
 
 #: doc/classes/RootMotionView.xml:11
-#, fuzzy
 msgid ""
 "https://docs.godotengine.org/en/latest/tutorials/animation/animation_tree."
 "html#root-motion"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/animation/animation_tree."
-"html"
 
 #: doc/classes/RootMotionView.xml:17
 msgid "Path to an [AnimationTree] node to use as a basis for root motion."
@@ -49491,22 +49275,16 @@ msgid ""
 msgstr ""
 
 #: doc/classes/SceneTree.xml:12
-#, fuzzy
 msgid ""
 "https://docs.godotengine.org/en/3.4/getting_started/step_by_step/scene_tree."
 "html"
 msgstr ""
-"https://docs.godotengine.org/en/latest/getting_started/step_by_step/"
-"scene_tree.html"
 
 #: doc/classes/SceneTree.xml:13
-#, fuzzy
 msgid ""
 "https://docs.godotengine.org/en/3.4/tutorials/viewports/multiple_resolutions."
 "html"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/viewports/"
-"multiple_resolutions.html"
 
 #: doc/classes/SceneTree.xml:21
 msgid ""
@@ -49951,13 +49729,10 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Script.xml:11
-#, fuzzy
 msgid ""
 "https://docs.godotengine.org/en/3.4/getting_started/step_by_step/scripting."
 "html"
 msgstr ""
-"https://docs.godotengine.org/en/latest/getting_started/step_by_step/"
-"scripting.html"
 
 #: doc/classes/Script.xml:17
 msgid "Returns [code]true[/code] if the script can be instanced."
@@ -50256,18 +50031,14 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Shader.xml:10 doc/classes/ShaderMaterial.xml:11
-#, fuzzy
 msgid "https://docs.godotengine.org/en/3.4/tutorials/shading/index.html"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/shading/index.html"
+msgstr ""
 
 #: doc/classes/Shader.xml:11
-#, fuzzy
 msgid ""
 "https://docs.godotengine.org/en/3.4/tutorials/shading/your_first_shader/"
 "what_are_shaders.html"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/shading/your_first_shader/"
-"what_are_shaders.html"
 
 #: doc/classes/Shader.xml:18
 msgid ""
@@ -50597,11 +50368,9 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Skeleton2D.xml:10
-#, fuzzy
 msgid ""
 "https://docs.godotengine.org/en/3.4/tutorials/animation/2d_skeletons.html"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/animation/2d_skeletons.html"
 
 #: doc/classes/Skeleton2D.xml:17
 msgid ""
@@ -50907,10 +50676,8 @@ msgid ""
 msgstr ""
 
 #: doc/classes/SoftBody.xml:10
-#, fuzzy
 msgid "https://docs.godotengine.org/en/3.4/tutorials/physics/soft_body.html"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/physics/soft_body.html"
 
 #: doc/classes/SoftBody.xml:44
 msgid "Returns local translation of a vertex in the surface array."
@@ -50994,18 +50761,13 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Spatial.xml:12
-#, fuzzy
 msgid ""
 "https://docs.godotengine.org/en/3.4/tutorials/3d/introduction_to_3d.html"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/3d/introduction_to_3d.html"
 
 #: doc/classes/Spatial.xml:13 doc/classes/Vector3.xml:16
-#, fuzzy
 msgid "https://github.com/godotengine/godot-demo-projects/tree/master/3d"
 msgstr ""
-"https://github.com/godotengine/godot-demo-projects/tree/master/audio/"
-"generator"
 
 #: doc/classes/Spatial.xml:25
 msgid ""
@@ -51308,10 +51070,8 @@ msgid ""
 msgstr ""
 
 #: doc/classes/SpatialMaterial.xml:10
-#, fuzzy
 msgid "https://docs.godotengine.org/en/3.4/tutorials/3d/spatial_material.html"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/3d/spatial_material.html"
 
 #: doc/classes/SpatialMaterial.xml:17
 msgid "Returns [code]true[/code], if the specified [enum Feature] is enabled."
@@ -53326,13 +53086,10 @@ msgid ""
 msgstr ""
 
 #: doc/classes/String.xml:10
-#, fuzzy
 msgid ""
 "https://docs.godotengine.org/en/3.4/getting_started/scripting/gdscript/"
 "gdscript_format_string.html"
 msgstr ""
-"https://docs.godotengine.org/en/latest/getting_started/scripting/gdscript/"
-"gdscript_format_string.html"
 
 #: doc/classes/String.xml:17
 msgid "Constructs a new String from the given [bool]."
@@ -56297,9 +56054,8 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Theme.xml:11
-#, fuzzy
 msgid "https://docs.godotengine.org/en/3.4/tutorials/gui/gui_skinning.html"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/gui/gui_skinning.html"
+msgstr ""
 
 #: doc/classes/Theme.xml:17
 msgid "Clears all values on the theme."
@@ -56667,12 +56423,9 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Thread.xml:12
-#, fuzzy
 msgid ""
 "https://docs.godotengine.org/en/3.4/tutorials/threads/thread_safe_apis.html"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/threads/thread_safe_apis."
-"html"
 
 #: doc/classes/Thread.xml:19
 msgid ""
@@ -56747,15 +56500,12 @@ msgid ""
 msgstr ""
 
 #: doc/classes/TileMap.xml:11 doc/classes/TileSet.xml:11
-#, fuzzy
 msgid "https://docs.godotengine.org/en/3.4/tutorials/2d/using_tilemaps.html"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/2d/using_tilemaps.html"
 
 #: doc/classes/TileMap.xml:14 doc/classes/TileSet.xml:14
-#, fuzzy
 msgid "https://godotengine.org/asset-library/asset/111"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
+msgstr ""
 
 #: doc/classes/TileMap.xml:23
 msgid "Clears all cells."
@@ -57911,18 +57661,14 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Translation.xml:10 doc/classes/TranslationServer.xml:10
-#, fuzzy
 msgid ""
 "https://docs.godotengine.org/en/3.4/tutorials/i18n/internationalizing_games."
 "html"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/i18n/"
-"internationalizing_games.html"
 
 #: doc/classes/Translation.xml:11 doc/classes/TranslationServer.xml:11
-#, fuzzy
 msgid "https://docs.godotengine.org/en/3.4/tutorials/i18n/locales.html"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/i18n/locales.html"
+msgstr ""
 
 #: doc/classes/Translation.xml:18
 msgid "Virtual method to override [method get_message]."
@@ -59932,10 +59678,8 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Variant.xml:53
-#, fuzzy
 msgid "https://docs.godotengine.org/en/3.4/development/cpp/variant_class.html"
 msgstr ""
-"https://docs.godotengine.org/en/latest/development/cpp/variant_class.html"
 
 #: doc/classes/VBoxContainer.xml:4
 msgid "Vertical box container."
@@ -60835,29 +60579,24 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Viewport.xml:16
-#, fuzzy
 msgid "https://docs.godotengine.org/en/3.4/tutorials/viewports/index.html"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/viewports/index.html"
+msgstr ""
 
 #: doc/classes/Viewport.xml:18 doc/classes/ViewportTexture.xml:12
-#, fuzzy
 msgid "https://godotengine.org/asset-library/asset/128"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
+msgstr ""
 
 #: doc/classes/Viewport.xml:20
-#, fuzzy
 msgid "https://godotengine.org/asset-library/asset/130"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
+msgstr ""
 
 #: doc/classes/Viewport.xml:21
-#, fuzzy
 msgid "https://godotengine.org/asset-library/asset/541"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
+msgstr ""
 
 #: doc/classes/Viewport.xml:22 doc/classes/ViewportTexture.xml:14
-#, fuzzy
 msgid "https://godotengine.org/asset-library/asset/586"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
+msgstr ""
 
 #: doc/classes/Viewport.xml:28
 msgid ""
@@ -61678,13 +61417,10 @@ msgid ""
 msgstr ""
 
 #: modules/visual_script/doc_classes/VisualScript.xml:12
-#, fuzzy
 msgid ""
 "https://docs.godotengine.org/en/3.4/getting_started/scripting/visual_script/"
 "index.html"
 msgstr ""
-"https://docs.godotengine.org/en/latest/getting_started/scripting/"
-"visual_script/index.html"
 
 #: modules/visual_script/doc_classes/VisualScript.xml:19
 msgid "Add a custom signal with the specified name to the VisualScript."
@@ -63445,12 +63181,9 @@ msgid ""
 msgstr ""
 
 #: doc/classes/VisualServer.xml:18
-#, fuzzy
 msgid ""
 "https://docs.godotengine.org/en/3.4/tutorials/optimization/using_servers.html"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/optimization/using_servers."
-"html"
 
 #: doc/classes/VisualServer.xml:28
 msgid "Sets images to be rendered in the window margin."
@@ -66552,11 +66285,9 @@ msgid ""
 msgstr ""
 
 #: doc/classes/VisualShaderNode.xml:10
-#, fuzzy
 msgid ""
 "https://docs.godotengine.org/en/3.4/tutorials/shading/visual_shaders.html"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/shading/visual_shaders.html"
 
 #: doc/classes/VisualShaderNode.xml:16
 msgid ""
@@ -66999,13 +66730,10 @@ msgid ""
 msgstr ""
 
 #: doc/classes/VisualShaderNodeCustom.xml:16
-#, fuzzy
 msgid ""
 "https://docs.godotengine.org/en/3.4/tutorials/plugins/editor/"
 "visual_shader_plugins.html"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/plugins/editor/"
-"visual_shader_plugins.html"
 
 #: doc/classes/VisualShaderNodeCustom.xml:22
 msgid ""
@@ -67345,13 +67073,10 @@ msgid ""
 msgstr ""
 
 #: doc/classes/VisualShaderNodeInput.xml:9
-#, fuzzy
 msgid ""
 "https://docs.godotengine.org/en/3.4/tutorials/shading/shading_reference/"
 "index.html"
 msgstr ""
-"https://docs.godotengine.org/en/stable/tutorials/shading/shading_reference/"
-"index.html"
 
 #: doc/classes/VisualShaderNodeInput.xml:20
 msgid ""
@@ -69602,10 +69327,3 @@ msgstr ""
 msgid ""
 "If [code]true[/code], child nodes are sorted, otherwise sorting is disabled."
 msgstr ""
-
-#~ msgid ""
-#~ "https://docs.godotengine.org/en/latest/getting_started/step_by_step/"
-#~ "animations.html"
-#~ msgstr ""
-#~ "https://docs.godotengine.org/en/latest/getting_started/step_by_step/"
-#~ "animations.html"

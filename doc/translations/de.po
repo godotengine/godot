@@ -32,12 +32,14 @@
 # Ron Eric Hackländer <mail@roneric.net>, 2021.
 # Stephan Kerbl <stephankerbl@gmail.com>, 2021.
 # jmih03 <joerni@mail.de>, 2021.
+# spoadr <spoadr@gmx.ch>, 2021.
+# Tim <tim14speckenwirth@gmail.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine class reference\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
-"PO-Revision-Date: 2021-06-28 22:34+0000\n"
-"Last-Translator: jmih03 <joerni@mail.de>\n"
+"PO-Revision-Date: 2021-10-31 22:17+0000\n"
+"Last-Translator: Tim <tim14speckenwirth@gmail.com>\n"
 "Language-Team: German <https://hosted.weblate.org/projects/godot-engine/"
 "godot-class-reference/de/>\n"
 "Language: de\n"
@@ -45,45 +47,45 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.7.1-dev\n"
+"X-Generator: Weblate 4.9-dev\n"
 
-#: doc/tools/makerst.py
+#: doc/tools/make_rst.py
 msgid "Description"
 msgstr "Beschreibung"
 
-#: doc/tools/makerst.py
+#: doc/tools/make_rst.py
 msgid "Tutorials"
-msgstr "Anleitungen"
+msgstr "Tutorials"
 
-#: doc/tools/makerst.py
+#: doc/tools/make_rst.py
 msgid "Properties"
 msgstr "Eigenschaften"
 
-#: doc/tools/makerst.py
+#: doc/tools/make_rst.py
 msgid "Methods"
 msgstr "Methoden"
 
-#: doc/tools/makerst.py
+#: doc/tools/make_rst.py
 msgid "Theme Properties"
 msgstr "Theme-Eigenschaften"
 
-#: doc/tools/makerst.py
+#: doc/tools/make_rst.py
 msgid "Signals"
 msgstr "Signale"
 
-#: doc/tools/makerst.py
+#: doc/tools/make_rst.py
 msgid "Enumerations"
 msgstr "Aufzählungen"
 
-#: doc/tools/makerst.py
+#: doc/tools/make_rst.py
 msgid "Constants"
 msgstr "Konstanten"
 
-#: doc/tools/makerst.py
+#: doc/tools/make_rst.py
 msgid "Property Descriptions"
 msgstr "Eigenschaften-Beschreibung"
 
-#: doc/tools/makerst.py
+#: doc/tools/make_rst.py
 msgid "Method Descriptions"
 msgstr "Methoden-Beschreibung"
 
@@ -144,7 +146,6 @@ msgstr ""
 "Konstanten."
 
 #: modules/gdscript/doc_classes/@GDScript.xml:45
-#, fuzzy
 msgid ""
 "Returns the absolute value of parameter [code]s[/code] (i.e. positive "
 "value).\n"
@@ -152,11 +153,10 @@ msgid ""
 "a = abs(-1) # a is 1\n"
 "[/codeblock]"
 msgstr ""
-"Gibt den absoluten Wert des Parameters [code]s[/code] zurück (d.h. "
-"vorzeichenloser Wert).\n"
+"Gibt den absoluten Wert des Parameters [code]s[/code] zurück (d.h. positiver "
+"Wert).\n"
 "[codeblock]\n"
-"# a ist 1\n"
-"a = abs(-1)\n"
+"a = abs(-1) # a ist 1\n"
 "[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:55
@@ -313,7 +313,6 @@ msgstr ""
 "Winkel)."
 
 #: modules/gdscript/doc_classes/@GDScript.xml:135
-#, fuzzy
 msgid ""
 "Rounds [code]s[/code] upward (towards positive infinity), returning the "
 "smallest whole number that is not less than [code]s[/code].\n"
@@ -325,10 +324,11 @@ msgid ""
 msgstr ""
 "Rundet [code]s[/code] nach oben auf und gibt die kleinste ganze Zahl zurück, "
 "die nicht geringer ist als [code]s[/code].\n"
-"[Codeblock]\n"
-"i = ceil(1,45) # i ist 2\n"
-"i = ceil(1.001) # i ist 2\n"
-"[/codeblock]"
+"[codeblock]\n"
+"a = ceil(1.45)  # a ist 2.0\n"
+"a = ceil(1.001) # a ist 2.0\n"
+"[/codeblock]\n"
+"Siehe auch [method floor], [method round], [method stepify] und [int]."
 
 #: modules/gdscript/doc_classes/@GDScript.xml:147
 msgid ""
@@ -341,13 +341,13 @@ msgid ""
 "[/codeblock]\n"
 "This is the inverse of [method ord]."
 msgstr ""
-"Gibt ein Zeichen als Zeichenfolge des angegebenen Unicode-Codepunkts zurück "
-"(der mit ASCII-Code kompatibel ist).\n"
-"[Codeblock]\n"
-"a = char (65) # a ist \"A\"\n"
-"a = char (65 + 32) # a ist \"a\"\n"
-"a = char (8364) # a ist \"€\"\n"
-"[/ codeblock]\n"
+"Gibt ein Zeichen als Zeichenkette mit dem angegebenen Unicode-Codepunkt (der "
+"mit dem ASCII-Code kompatibel ist) zurück.\n"
+"[codeblock]\n"
+"a = char(65)      # a ist \"A\"\n"
+"a = char(65 + 32) # a ist \"a\"\n"
+"a = char(8364)    # a ist \"€\"\n"
+"[/codeblock]\n"
 "Dies ist die Umkehrung von [method ord]."
 
 #: modules/gdscript/doc_classes/@GDScript.xml:162
@@ -431,7 +431,7 @@ msgstr "Konvertiert von Dezibel in lineare Energie (Audio)."
 
 #: modules/gdscript/doc_classes/@GDScript.xml:218
 msgid "Deprecated alias for [method step_decimals]."
-msgstr ""
+msgstr "Veralteter Alias für [method step_decimals]."
 
 #: modules/gdscript/doc_classes/@GDScript.xml:227
 #, fuzzy
@@ -1318,7 +1318,6 @@ msgstr ""
 "[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:758
-#, fuzzy
 msgid ""
 "Pushes an error message to Godot's built-in debugger and to the OS "
 "terminal.\n"
@@ -1330,12 +1329,16 @@ msgid ""
 "print an error message and pause project execution in debug builds, use "
 "[code]assert(false, \"test error\")[/code] instead."
 msgstr ""
-"Gibt eine Fehlermeldung in Godot's integriertem Debugger und in der OS "
-"Konsole aus.\n"
+"Gibt eine Fehlermeldung an Godots integrierten Debugger und an das "
+"Betriebssystem-Terminal aus.\n"
 "[codeblock]\n"
-"push_error(\"test error\") # Gibt\"test error\" im Debugger und im Terminal "
-"als Fehlermeldung aus\n"
-"[/codeblock]"
+"push_error(\"test error\") # Gibt \"test error\" als Fehleraufruf an "
+"Debugger und Terminal aus\n"
+"[/codeblock]\n"
+"[b]Hinweis:[/b] Fehler, die auf diese Weise ausgegeben werden, halten die "
+"Projektausführung nicht an. Um eine Fehlermeldung auszugeben und die "
+"Projektausführung in Debug-Builds anzuhalten, verwenden Sie stattdessen "
+"[code]assert(false, \"test error\")[/code]."
 
 #: modules/gdscript/doc_classes/@GDScript.xml:769
 msgid ""
@@ -1503,7 +1506,6 @@ msgstr ""
 "[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:884
-#, fuzzy
 msgid ""
 "Rounds [code]s[/code] to the nearest whole number, with halfway cases "
 "rounded away from zero.\n"
@@ -1514,11 +1516,14 @@ msgid ""
 "[/codeblock]\n"
 "See also [method floor], [method ceil], [method stepify], and [int]."
 msgstr ""
-"Rundet [code]s[/code] auf die nächste ganze Zahle, wobei Mittelwerte von "
-"Null weg gerundet werden.\n"
+"Rundet [code]s[/code] auf die nächstliegende ganze Zahl, wobei halbe Werte "
+"aufgerundet werden.\n"
 "[codeblock]\n"
-"round(2.6) # Liefert 3\n"
-"[/codeblock]"
+"a = round(2.49) # a ist 2.0\n"
+"a = round(2.5)  # a ist 3.0\n"
+"a = round(2.51) # a ist 3,0\n"
+"[/codeblock]\n"
+"Siehe auch [method floor], [method ceil], [method stepify], und [int]."
 
 #: modules/gdscript/doc_classes/@GDScript.xml:897
 msgid ""
@@ -1666,7 +1671,6 @@ msgstr ""
 "[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:984
-#, fuzzy
 msgid ""
 "Snaps float value [code]s[/code] to a given [code]step[/code]. This can also "
 "be used to round a floating point number to an arbitrary number of "
@@ -1681,9 +1685,10 @@ msgstr ""
 "code]. Dies kann auch zum Runden einer Gleitkommazahl auf eine willkürliche "
 "Anzahl von Dezimalzen genutzt werden.\n"
 "[codeblock]\n"
-"stepify(100, 32) # Returns 96\n"
-"stepify(3.14159, 0.01) # Returns 3.14\n"
-"[/codeblock]"
+"stepify(100, 32) # Gibt 96.0 aus\n"
+"stepify(3.14159, 0.01) # Gibt 3.14 aus\n"
+"[/codeblock]\n"
+"Siehe auch [method ceil], [method floor], [method round], und [int]."
 
 #: modules/gdscript/doc_classes/@GDScript.xml:995
 #, fuzzy
@@ -3373,7 +3378,7 @@ msgstr "ungültige Zeitdauer."
 
 #: doc/classes/@GlobalScope.xml:941
 msgid "Gamepad button 0."
-msgstr ""
+msgstr "Gamepad-Taste 0."
 
 #: doc/classes/@GlobalScope.xml:944
 #, fuzzy
@@ -3387,83 +3392,83 @@ msgstr "Extra Maustaste 2 Maske."
 
 #: doc/classes/@GlobalScope.xml:950
 msgid "Gamepad button 3."
-msgstr ""
+msgstr "Gamepad-Taste 3."
 
 #: doc/classes/@GlobalScope.xml:953
 msgid "Gamepad button 4."
-msgstr ""
+msgstr "Gamepad-Taste 4."
 
 #: doc/classes/@GlobalScope.xml:956
 msgid "Gamepad button 5."
-msgstr ""
+msgstr "Gamepad-Taste 5."
 
 #: doc/classes/@GlobalScope.xml:959
 msgid "Gamepad button 6."
-msgstr ""
+msgstr "Gamepad-Taste 6."
 
 #: doc/classes/@GlobalScope.xml:962
 msgid "Gamepad button 7."
-msgstr ""
+msgstr "Gamepad-Taste 7."
 
 #: doc/classes/@GlobalScope.xml:965
 msgid "Gamepad button 8."
-msgstr ""
+msgstr "Gamepad-Taste 8."
 
 #: doc/classes/@GlobalScope.xml:968
 msgid "Gamepad button 9."
-msgstr ""
+msgstr "Gamepad-Taste 9."
 
 #: doc/classes/@GlobalScope.xml:971
 msgid "Gamepad button 10."
-msgstr ""
+msgstr "Gamepad-Taste 10."
 
 #: doc/classes/@GlobalScope.xml:974
 msgid "Gamepad button 11."
-msgstr ""
+msgstr "Gamepad-Taste 11."
 
 #: doc/classes/@GlobalScope.xml:977
 msgid "Gamepad button 12."
-msgstr ""
+msgstr "Gamepad-Taste 12."
 
 #: doc/classes/@GlobalScope.xml:980
 msgid "Gamepad button 13."
-msgstr ""
+msgstr "Gamepad-Taste 13."
 
 #: doc/classes/@GlobalScope.xml:983
 msgid "Gamepad button 14."
-msgstr ""
+msgstr "Gamepad-Taste 14."
 
 #: doc/classes/@GlobalScope.xml:986
 msgid "Gamepad button 15."
-msgstr ""
+msgstr "Gamepad-Taste 15."
 
 #: doc/classes/@GlobalScope.xml:989
 msgid "Gamepad button 16."
-msgstr ""
+msgstr "Gamepad-Taste 16."
 
 #: doc/classes/@GlobalScope.xml:992
 msgid "Gamepad button 17."
-msgstr ""
+msgstr "Gamepad-Taste 17."
 
 #: doc/classes/@GlobalScope.xml:995
 msgid "Gamepad button 18."
-msgstr ""
+msgstr "Gamepad-Taste 18."
 
 #: doc/classes/@GlobalScope.xml:998
 msgid "Gamepad button 19."
-msgstr ""
+msgstr "Gamepad-Taste 19."
 
 #: doc/classes/@GlobalScope.xml:1001
 msgid "Gamepad button 20."
-msgstr ""
+msgstr "Gamepad-Taste 20."
 
 #: doc/classes/@GlobalScope.xml:1004
 msgid "Gamepad button 21."
-msgstr ""
+msgstr "Gamepad-Taste 21."
 
 #: doc/classes/@GlobalScope.xml:1007
 msgid "Gamepad button 22."
-msgstr ""
+msgstr "Gamepad-Taste 22."
 
 #: doc/classes/@GlobalScope.xml:1010
 #, fuzzy
@@ -3472,19 +3477,19 @@ msgstr "Die maximale Anzahl der Tasten des Game Controllers."
 
 #: doc/classes/@GlobalScope.xml:1013
 msgid "DualShock circle button."
-msgstr ""
+msgstr "DualShock-Kreis-Taste."
 
 #: doc/classes/@GlobalScope.xml:1016
 msgid "DualShock X button."
-msgstr ""
+msgstr "DualShock-X-Taste."
 
 #: doc/classes/@GlobalScope.xml:1019
 msgid "DualShock square button."
-msgstr ""
+msgstr "DualShock-Quadrat-Taste."
 
 #: doc/classes/@GlobalScope.xml:1022
 msgid "DualShock triangle button."
-msgstr ""
+msgstr "DualShock-Dreieck-Taste."
 
 #: doc/classes/@GlobalScope.xml:1025
 #, fuzzy
@@ -3543,44 +3548,49 @@ msgid ""
 "A button on the right Oculus Touch controller, X button on the left "
 "controller (also when used in OpenVR)."
 msgstr ""
+"A-Taste auf dem rechten Oculus Touch Controller, X-Taste auf dem linken "
+"Controller (auch bei Verwendung in OpenVR)."
 
 #: doc/classes/@GlobalScope.xml:1061
 msgid ""
 "B button on the right Oculus Touch controller, Y button on the left "
 "controller (also when used in OpenVR)."
 msgstr ""
+"B-Taste auf dem rechten Oculus Touch Controller, Y-Taste auf dem linken "
+"Controller (auch bei Verwendung in OpenVR)."
 
 #: doc/classes/@GlobalScope.xml:1064
 msgid "Menu button on either Oculus Touch controller."
-msgstr ""
+msgstr "Menütaste auf einem der beiden Oculus Touch Controller."
 
 #: doc/classes/@GlobalScope.xml:1067
 msgid "Menu button in OpenVR (Except when Oculus Touch controllers are used)."
 msgstr ""
+"Menütaste in OpenVR (außer wenn Oculus Touch Controller verwendet werden)."
 
 #: doc/classes/@GlobalScope.xml:1070
 msgid "Gamepad button Select."
-msgstr ""
+msgstr "Gamepad-Taste Auswählen."
 
 #: doc/classes/@GlobalScope.xml:1073
 msgid "Gamepad button Start."
-msgstr ""
+msgstr "Gamepad-Taste Start."
 
 #: doc/classes/@GlobalScope.xml:1076
 msgid "Gamepad DPad up."
-msgstr ""
+msgstr "Gamepad DPad oben."
 
 #: doc/classes/@GlobalScope.xml:1079
 msgid "Gamepad DPad down."
-msgstr ""
+msgstr "Gamepad DPad unten."
 
 #: doc/classes/@GlobalScope.xml:1082
 msgid "Gamepad DPad left."
-msgstr ""
+msgstr "Gamepad DPad links."
 
 #: doc/classes/@GlobalScope.xml:1085
 msgid "Gamepad DPad right."
-msgstr ""
+msgstr "Gamepad DPad rechts."
 
 #: doc/classes/@GlobalScope.xml:1088
 #, fuzzy
@@ -3690,7 +3700,7 @@ msgstr ""
 
 #: doc/classes/@GlobalScope.xml:1157
 msgid "Represents the maximum number of joystick axes supported."
-msgstr ""
+msgstr "Stellt die maximale Anzahl der unterstützten Joystick-Achsen dar."
 
 #: doc/classes/@GlobalScope.xml:1172
 msgid "Gamepad left analog trigger."
@@ -3715,12 +3725,16 @@ msgid ""
 "OpenVR touchpad X axis (Joystick axis on Oculus Touch and Windows MR "
 "controllers)."
 msgstr ""
+"OpenVR-Touchpad X-Achse (Joystick-Achse bei Oculus Touch und Windows MR-"
+"Controllern)."
 
 #: doc/classes/@GlobalScope.xml:1187
 msgid ""
 "OpenVR touchpad Y axis (Joystick axis on Oculus Touch and Windows MR "
 "controllers)."
 msgstr ""
+"OpenVR-Touchpad Y-Achse (Joystick-Achse bei Oculus Touch und Windows MR-"
+"Controllern)."
 
 #: doc/classes/@GlobalScope.xml:1190
 msgid "MIDI note OFF message."
@@ -3992,15 +4006,14 @@ msgid ""
 "or_greater,or_lesser\"[/code]."
 msgstr ""
 "Weist darauf hin, dass eine Integer- oder Float-Eigenschaft innerhalb eines "
-"Bereichs liegen sollte, der mit der Hinweiszeichenfolge [code]\"min,max\"[/"
+"Bereichs liegen sollte, der mit der Hinweiszeichenkette [code]\"min,max\"[/"
 "code] oder [code]\"min,max,step\"[/code] angegeben wird. Die "
-"Hinweiszeichenfolge kann optional [code]\"oder_größer\"[/code] und/oder "
-"[code]\"oder_kleiner\"[/code] enthalten, um eine manuelle Eingabe oberhalb "
-"der Maximal- bzw. unterhalb der Minimalwerte zu ermöglichen. Beispiel: "
+"Hinweiszeichenkette kann optional [code]\"or_greater\"[/code] und/oder "
+"[code]\"or_lesser\"[/code] enthalten, um eine manuelle Eingabe oberhalb der "
+"Höchst- bzw. unterhalb der Mindestwerte zu ermöglichen. Beispiel: "
 "[code]\"-360,360,1,or_greater,or_lesser\"[/code]."
 
 #: doc/classes/@GlobalScope.xml:1373
-#, fuzzy
 msgid ""
 "Hints that a float property should be within an exponential range specified "
 "via the hint string [code]\"min,max\"[/code] or [code]\"min,max,step\"[/"
@@ -4009,12 +4022,12 @@ msgid ""
 "above the max or below the min values. Example: [code]\"0.01,100,0.01,"
 "or_greater\"[/code]."
 msgstr ""
-"Weist darauf hin, dass eine Integer- oder Float-Eigenschaft innerhalb eines "
-"exponentiellen Bereichs liegen sollte, der mit der Hinweiszeichenfolge "
-"[code]\"min,max\"[/code] oder [code]\"min,max,step\"[/code] angegeben wird. "
-"Die Hinweiszeichenfolge kann optional [code]\"oder_größer\"[/code] und/oder "
-"[code]\"oder_kleiner\"[/code] enthalten, um eine manuelle Eingabe oberhalb "
-"der Maximal- bzw. unterhalb der Minimalwerte zu ermöglichen. Beispiel: "
+"Weist darauf hin, dass eine Float-Eigenschaft innerhalb eines exponentiellen "
+"Bereichs liegen sollte, der durch die Hinweiszeichenkette [code]\"min,max\"[/"
+"code] oder [code]\"min,max,step\"[/code] festgelegt wird. Die "
+"Hinweiszeichenkettekann optional [code]\"or_greater\"[/code] und/oder "
+"[code]\"or_lesser\"[/code] enthalten, um eine manuelle Eingabe oberhalb der "
+"Maximal- bzw. unterhalb der Minimalwerte zu ermöglichen. Beispiel: "
 "[code]\"0.01,100,0.01,or_greater\"[/code]."
 
 #: doc/classes/@GlobalScope.xml:1376
@@ -4023,9 +4036,10 @@ msgid ""
 "pick in a list specified via a hint string such as [code]\"Hello,Something,"
 "Else\"[/code]."
 msgstr ""
-"Weist darauf hin, dass eine Integer-, Float- oder String-Eigenschaft ein "
-"Aufzählungswert ist, der in einer über eine Hinweiszeichenfolge wie "
-"[code]\"Hello,Something,Else\"[/code] angegebenen Liste auszuwählen ist."
+"Weist darauf hin, dass es sich bei einer Integer-, Float- oder Zeichenketten-"
+"Eigenschaft um einen Aufzählungswert handelt, der in einer über eine "
+"Hinweiszeichenkette wie [code]\"Hello,Something,Else\"[/code] angegebenen "
+"Liste auszuwählen ist."
 
 #: doc/classes/@GlobalScope.xml:1379
 msgid ""
@@ -8005,23 +8019,12 @@ msgstr "https://docs.godotengine.org/de/latest/tutorials/vr/index.html"
 #: doc/classes/Area.xml:17
 #, fuzzy
 msgid ""
-"Returns a list of intersecting [Area]s. For performance reasons (collisions "
-"are all processed at the same time) this list is modified once during the "
-"physics step, not immediately after objects are moved. Consider using "
-"signals instead."
-msgstr ""
-"Gibt eine Liste der sich schneidenden [Area2D]s zurück. Aus Leistungsgründen "
-"(Kollisionen werden alle gleichzeitig verarbeitet) wird diese Liste einmal "
-"während des Physikschritts geändert, nicht sofort nach dem Verschieben von "
-"Objekten. Erwägen Sie stattdessen die Verwendung von Signalen."
-
-#: doc/classes/Area.xml:23
-#, fuzzy
-msgid ""
-"Returns a list of intersecting [PhysicsBody]s. For performance reasons "
-"(collisions are all processed at the same time) this list is modified once "
-"during the physics step, not immediately after objects are moved. Consider "
-"using signals instead."
+"Returns a list of intersecting [Area]s. The overlapping area's [member "
+"CollisionObject.collision_layer] must be part of this area's [member "
+"CollisionObject.collision_mask] in order to be detected.\n"
+"For performance reasons (collisions are all processed at the same time) this "
+"list is modified once during the physics step, not immediately after objects "
+"are moved. Consider using signals instead."
 msgstr ""
 "Gibt eine Liste der sich schneidenden [PhysicsBody2D]s zurück. Aus "
 "Leistungsgründen (Kollisionen werden alle gleichzeitig verarbeitet) wird "
@@ -8029,7 +8032,23 @@ msgstr ""
 "dem Verschieben von Objekten. Erwägen Sie stattdessen die Verwendung von "
 "Signalen."
 
-#: doc/classes/Area.xml:30
+#: doc/classes/Area.xml:24
+#, fuzzy
+msgid ""
+"Returns a list of intersecting [PhysicsBody]s. The overlapping body's "
+"[member CollisionObject.collision_layer] must be part of this area's [member "
+"CollisionObject.collision_mask] in order to be detected.\n"
+"For performance reasons (collisions are all processed at the same time) this "
+"list is modified once during the physics step, not immediately after objects "
+"are moved. Consider using signals instead."
+msgstr ""
+"Gibt eine Liste der sich schneidenden [PhysicsBody2D]s zurück. Aus "
+"Leistungsgründen (Kollisionen werden alle gleichzeitig verarbeitet) wird "
+"diese Liste einmal während des Physikschritts geändert, nicht sofort nach "
+"dem Verschieben von Objekten. Erwägen Sie stattdessen die Verwendung von "
+"Signalen."
+
+#: doc/classes/Area.xml:32
 #, fuzzy
 msgid ""
 "If [code]true[/code], the given area overlaps the Area.\n"
@@ -8043,7 +8062,7 @@ msgstr ""
 "Überlappungen einmal pro Frame und vor dem Physikschritt aktualisiert. "
 "Erwägen Sie stattdessen die Verwendung von Signalen."
 
-#: doc/classes/Area.xml:38
+#: doc/classes/Area.xml:40
 #, fuzzy
 msgid ""
 "If [code]true[/code], the given physics body overlaps the Area.\n"
@@ -8064,7 +8083,7 @@ msgstr ""
 "registrieren sie ihre Kacheln mit Kollisionsformen als virtuellen "
 "Physikkörper)."
 
-#: doc/classes/Area.xml:46
+#: doc/classes/Area.xml:48
 #, fuzzy
 msgid ""
 "The rate at which objects stop spinning in this area. Represents the angular "
@@ -8076,18 +8095,18 @@ msgstr ""
 "den Winkelgeschwindigkeitsverlust pro Sekunde dar. Die Werte reichen von "
 "[code]0[/code] (keine Dämpfung) bis [code]1[/code] (volle Dämpfung)."
 
-#: doc/classes/Area.xml:50 doc/classes/Area2D.xml:52
+#: doc/classes/Area.xml:52 doc/classes/Area2D.xml:54
 msgid "The name of the area's audio bus."
 msgstr "Der Name des Audiobusses des Bereichs."
 
-#: doc/classes/Area.xml:53 doc/classes/Area2D.xml:55
+#: doc/classes/Area.xml:55 doc/classes/Area2D.xml:57
 msgid ""
 "If [code]true[/code], the area's audio bus overrides the default audio bus."
 msgstr ""
 "Wenn [code]true[/code], hat der Audiobus des Bereichs Vorrang vor dem "
 "Standard-Audiobus."
 
-#: doc/classes/Area.xml:56
+#: doc/classes/Area.xml:58
 #, fuzzy
 msgid ""
 "The area's gravity intensity (in meters per second squared). This value "
@@ -8098,7 +8117,7 @@ msgstr ""
 "Wert multipliziert den Schwerkraftvektor. Dies ist nützlich, um die "
 "Schwerkraft zu ändern, ohne ihre Richtung zu ändern."
 
-#: doc/classes/Area.xml:59 doc/classes/Area2D.xml:61
+#: doc/classes/Area.xml:61 doc/classes/Area2D.xml:63
 msgid ""
 "The falloff factor for point gravity. The greater the value, the faster "
 "gravity decreases with distance."
@@ -8106,7 +8125,7 @@ msgstr ""
 "Der Falloff-Faktor für die Punktgravitation. Je größer der Wert, desto "
 "schneller nimmt die Schwerkraft mit der Entfernung ab."
 
-#: doc/classes/Area.xml:62 doc/classes/Area2D.xml:64
+#: doc/classes/Area.xml:64 doc/classes/Area2D.xml:66
 msgid ""
 "If [code]true[/code], gravity is calculated from a point (set via [member "
 "gravity_vec]). See also [member space_override]."
@@ -8114,7 +8133,7 @@ msgstr ""
 "Wenn [code]true[/code], wird die Schwerkraft von einem Punkt aus berechnet "
 "(eingestellt über [member gravity_vec]). Siehe auch [member space_override]."
 
-#: doc/classes/Area.xml:65 doc/classes/Area2D.xml:67
+#: doc/classes/Area.xml:67 doc/classes/Area2D.xml:69
 msgid ""
 "The area's gravity vector (not normalized). If gravity is a point (see "
 "[member gravity_point]), this will be the point of attraction."
@@ -8122,7 +8141,7 @@ msgstr ""
 "Der Gravitationsvektor der Fläche (nicht normiert). Wenn die Schwerkraft ein "
 "Punkt ist (siehe [member gravity_point]), wird dies der Anziehungspunkt sein."
 
-#: doc/classes/Area.xml:68
+#: doc/classes/Area.xml:70
 #, fuzzy
 msgid ""
 "The rate at which objects stop moving in this area. Represents the linear "
@@ -8134,13 +8153,13 @@ msgstr ""
 "den linearen Geschwindigkeitsverlust pro Sekunde dar. Die Werte reichen von "
 "[code]0[/code] (keine Dämpfung) bis [code]1[/code] (volle Dämpfung)."
 
-#: doc/classes/Area.xml:72 doc/classes/Area2D.xml:74
+#: doc/classes/Area.xml:74 doc/classes/Area2D.xml:76
 msgid "If [code]true[/code], other monitoring areas can detect this area."
 msgstr ""
 "Wenn [code]true[/code], können andere Überwachungsbereiche diesen Bereich "
 "erkennen."
 
-#: doc/classes/Area.xml:75 doc/classes/Area2D.xml:77
+#: doc/classes/Area.xml:77 doc/classes/Area2D.xml:79
 msgid ""
 "If [code]true[/code], the area detects bodies or areas entering and exiting "
 "it."
@@ -8148,52 +8167,52 @@ msgstr ""
 "If [code]true[/code], erkennt die area ob andere Körper oder area's ihn "
 "betreten oder verlassen."
 
-#: doc/classes/Area.xml:78 doc/classes/Area2D.xml:80
+#: doc/classes/Area.xml:80 doc/classes/Area2D.xml:82
 msgid "The area's priority. Higher priority areas are processed first."
 msgstr ""
 "Die Area Priorität. Area's mit höherer Priorität werden zuerst bearbeitet."
 
-#: doc/classes/Area.xml:81
+#: doc/classes/Area.xml:83
 msgid ""
 "The degree to which this area applies reverb to its associated audio. Ranges "
 "from [code]0[/code] to [code]1[/code] with [code]0.1[/code] precision."
 msgstr ""
 
-#: doc/classes/Area.xml:84
+#: doc/classes/Area.xml:86
 msgid "If [code]true[/code], the area applies reverb to its associated audio."
 msgstr ""
 
-#: doc/classes/Area.xml:87
+#: doc/classes/Area.xml:89
 msgid "The reverb bus name to use for this area's associated audio."
 msgstr ""
 
-#: doc/classes/Area.xml:90
+#: doc/classes/Area.xml:92
 msgid ""
 "The degree to which this area's reverb is a uniform effect. Ranges from "
 "[code]0[/code] to [code]1[/code] with [code]0.1[/code] precision."
 msgstr ""
 
-#: doc/classes/Area.xml:93 doc/classes/Area2D.xml:83
+#: doc/classes/Area.xml:95 doc/classes/Area2D.xml:85
 msgid ""
 "Override mode for gravity and damping calculations within this area. See "
 "[enum SpaceOverride] for possible values."
 msgstr ""
 
-#: doc/classes/Area.xml:100
+#: doc/classes/Area.xml:102
 msgid ""
 "Emitted when another Area enters this Area. Requires [member monitoring] to "
 "be set to [code]true[/code].\n"
 "[code]area[/code] the other Area."
 msgstr ""
 
-#: doc/classes/Area.xml:107
+#: doc/classes/Area.xml:109
 msgid ""
 "Emitted when another Area exits this Area. Requires [member monitoring] to "
 "be set to [code]true[/code].\n"
 "[code]area[/code] the other Area."
 msgstr ""
 
-#: doc/classes/Area.xml:117 doc/classes/Area.xml:130
+#: doc/classes/Area.xml:119 doc/classes/Area.xml:132
 msgid ""
 "Emitted when one of another Area's [Shape]s enters one of this Area's "
 "[Shape]s. Requires [member monitoring] to be set to [code]true[/code].\n"
@@ -8208,7 +8227,7 @@ msgid ""
 "shape_owner_get_owner(local_shape_index)[/code]."
 msgstr ""
 
-#: doc/classes/Area.xml:140
+#: doc/classes/Area.xml:142
 msgid ""
 "Emitted when a [PhysicsBody] or [GridMap] enters this Area. Requires [member "
 "monitoring] to be set to [code]true[/code]. [GridMap]s are detected if the "
@@ -8217,7 +8236,7 @@ msgid ""
 "[PhysicsBody] or [GridMap]."
 msgstr ""
 
-#: doc/classes/Area.xml:147
+#: doc/classes/Area.xml:149
 msgid ""
 "Emitted when a [PhysicsBody] or [GridMap] exits this Area. Requires [member "
 "monitoring] to be set to [code]true[/code]. [GridMap]s are detected if the "
@@ -8226,7 +8245,7 @@ msgid ""
 "[PhysicsBody] or [GridMap]."
 msgstr ""
 
-#: doc/classes/Area.xml:157 doc/classes/Area.xml:170
+#: doc/classes/Area.xml:159 doc/classes/Area.xml:172
 msgid ""
 "Emitted when one of a [PhysicsBody] or [GridMap]'s [Shape]s enters one of "
 "this Area's [Shape]s. Requires [member monitoring] to be set to [code]true[/"
@@ -8243,29 +8262,29 @@ msgid ""
 "shape_owner_get_owner(local_shape_index)[/code]."
 msgstr ""
 
-#: doc/classes/Area.xml:180 doc/classes/Area2D.xml:170
+#: doc/classes/Area.xml:182 doc/classes/Area2D.xml:172
 msgid "This area does not affect gravity/damping."
 msgstr "Diese Area hat keinen Einfluss auf die Gravitation oder die Dämpfung."
 
-#: doc/classes/Area.xml:183 doc/classes/Area2D.xml:173
+#: doc/classes/Area.xml:185 doc/classes/Area2D.xml:175
 msgid ""
 "This area adds its gravity/damping values to whatever has been calculated so "
 "far (in [member priority] order)."
 msgstr ""
 
-#: doc/classes/Area.xml:186 doc/classes/Area2D.xml:176
+#: doc/classes/Area.xml:188 doc/classes/Area2D.xml:178
 msgid ""
 "This area adds its gravity/damping values to whatever has been calculated so "
 "far (in [member priority] order), ignoring any lower priority areas."
 msgstr ""
 
-#: doc/classes/Area.xml:189 doc/classes/Area2D.xml:179
+#: doc/classes/Area.xml:191 doc/classes/Area2D.xml:181
 msgid ""
 "This area replaces any gravity/damping, even the defaults, ignoring any "
 "lower priority areas."
 msgstr ""
 
-#: doc/classes/Area.xml:192 doc/classes/Area2D.xml:182
+#: doc/classes/Area.xml:194 doc/classes/Area2D.xml:184
 msgid ""
 "This area replaces any gravity/damping calculated so far (in [member "
 "priority] order), but keeps calculating the rest of the areas."
@@ -8308,23 +8327,29 @@ msgid "https://godotengine.org/asset-library/asset/120"
 msgstr "https://docs.godotengine.org/de/latest/tutorials/vr/index.html"
 
 #: doc/classes/Area2D.xml:19
+#, fuzzy
 msgid ""
-"Returns a list of intersecting [Area2D]s. For performance reasons "
-"(collisions are all processed at the same time) this list is modified once "
-"during the physics step, not immediately after objects are moved. Consider "
-"using signals instead."
+"Returns a list of intersecting [Area2D]s. The overlapping area's [member "
+"CollisionObject2D.collision_layer] must be part of this area's [member "
+"CollisionObject2D.collision_mask] in order to be detected.\n"
+"For performance reasons (collisions are all processed at the same time) this "
+"list is modified once during the physics step, not immediately after objects "
+"are moved. Consider using signals instead."
 msgstr ""
 "Gibt eine Liste der sich schneidenden [Area2D]s zurück. Aus Leistungsgründen "
 "(Kollisionen werden alle gleichzeitig verarbeitet) wird diese Liste einmal "
 "während des Physikschritts geändert, nicht sofort nach dem Verschieben von "
 "Objekten. Erwägen Sie stattdessen die Verwendung von Signalen."
 
-#: doc/classes/Area2D.xml:25
+#: doc/classes/Area2D.xml:26
+#, fuzzy
 msgid ""
-"Returns a list of intersecting [PhysicsBody2D]s. For performance reasons "
-"(collisions are all processed at the same time) this list is modified once "
-"during the physics step, not immediately after objects are moved. Consider "
-"using signals instead."
+"Returns a list of intersecting [PhysicsBody2D]s. The overlapping body's "
+"[member CollisionObject2D.collision_layer] must be part of this area's "
+"[member CollisionObject2D.collision_mask] in order to be detected.\n"
+"For performance reasons (collisions are all processed at the same time) this "
+"list is modified once during the physics step, not immediately after objects "
+"are moved. Consider using signals instead."
 msgstr ""
 "Gibt eine Liste der sich schneidenden [PhysicsBody2D]s zurück. Aus "
 "Leistungsgründen (Kollisionen werden alle gleichzeitig verarbeitet) wird "
@@ -8332,7 +8357,7 @@ msgstr ""
 "dem Verschieben von Objekten. Erwägen Sie stattdessen die Verwendung von "
 "Signalen."
 
-#: doc/classes/Area2D.xml:32
+#: doc/classes/Area2D.xml:34
 #, fuzzy
 msgid ""
 "If [code]true[/code], the given area overlaps the Area2D.\n"
@@ -8346,7 +8371,7 @@ msgstr ""
 "Überlappungen einmal pro Frame und vor dem Physikschritt aktualisiert. "
 "Erwägen Sie stattdessen die Verwendung von Signalen."
 
-#: doc/classes/Area2D.xml:40
+#: doc/classes/Area2D.xml:42
 #, fuzzy
 msgid ""
 "If [code]true[/code], the given physics body overlaps the Area2D.\n"
@@ -8367,7 +8392,7 @@ msgstr ""
 "registrieren sie ihre Kacheln mit Kollisionsformen als virtuellen "
 "Physikkörper)."
 
-#: doc/classes/Area2D.xml:48
+#: doc/classes/Area2D.xml:50
 #, fuzzy
 msgid ""
 "The rate at which objects stop spinning in this area. Represents the angular "
@@ -8379,7 +8404,7 @@ msgstr ""
 "den Winkelgeschwindigkeitsverlust pro Sekunde dar. Die Werte reichen von "
 "[code]0[/code] (keine Dämpfung) bis [code]1[/code] (volle Dämpfung)."
 
-#: doc/classes/Area2D.xml:58
+#: doc/classes/Area2D.xml:60
 #, fuzzy
 msgid ""
 "The area's gravity intensity (in pixels per second squared). This value "
@@ -8390,7 +8415,7 @@ msgstr ""
 "Wert multipliziert den Schwerkraftvektor. Dies ist nützlich, um die "
 "Schwerkraft zu ändern, ohne ihre Richtung zu ändern."
 
-#: doc/classes/Area2D.xml:70
+#: doc/classes/Area2D.xml:72
 #, fuzzy
 msgid ""
 "The rate at which objects stop moving in this area. Represents the linear "
@@ -8402,21 +8427,21 @@ msgstr ""
 "den linearen Geschwindigkeitsverlust pro Sekunde dar. Die Werte reichen von "
 "[code]0[/code] (keine Dämpfung) bis [code]1[/code] (volle Dämpfung)."
 
-#: doc/classes/Area2D.xml:90
+#: doc/classes/Area2D.xml:92
 msgid ""
 "Emitted when another Area2D enters this Area2D. Requires [member monitoring] "
 "to be set to [code]true[/code].\n"
 "[code]area[/code] the other Area2D."
 msgstr ""
 
-#: doc/classes/Area2D.xml:97
+#: doc/classes/Area2D.xml:99
 msgid ""
 "Emitted when another Area2D exits this Area2D. Requires [member monitoring] "
 "to be set to [code]true[/code].\n"
 "[code]area[/code] the other Area2D."
 msgstr ""
 
-#: doc/classes/Area2D.xml:107
+#: doc/classes/Area2D.xml:109
 msgid ""
 "Emitted when one of another Area2D's [Shape2D]s enters one of this Area2D's "
 "[Shape2D]s. Requires [member monitoring] to be set to [code]true[/code].\n"
@@ -8431,7 +8456,7 @@ msgid ""
 "[code]self.shape_owner_get_owner(local_shape_index)[/code]."
 msgstr ""
 
-#: doc/classes/Area2D.xml:120
+#: doc/classes/Area2D.xml:122
 msgid ""
 "Emitted when one of another Area2D's [Shape2D]s exits one of this Area2D's "
 "[Shape2D]s. Requires [member monitoring] to be set to [code]true[/code].\n"
@@ -8446,7 +8471,7 @@ msgid ""
 "[code]self.shape_owner_get_owner(local_shape_index)[/code]."
 msgstr ""
 
-#: doc/classes/Area2D.xml:130
+#: doc/classes/Area2D.xml:132
 msgid ""
 "Emitted when a [PhysicsBody2D] or [TileMap] enters this Area2D. Requires "
 "[member monitoring] to be set to [code]true[/code]. [TileMap]s are detected "
@@ -8455,7 +8480,7 @@ msgid ""
 "[PhysicsBody2D] or [TileMap]."
 msgstr ""
 
-#: doc/classes/Area2D.xml:137
+#: doc/classes/Area2D.xml:139
 msgid ""
 "Emitted when a [PhysicsBody2D] or [TileMap] exits this Area2D. Requires "
 "[member monitoring] to be set to [code]true[/code]. [TileMap]s are detected "
@@ -8464,7 +8489,7 @@ msgid ""
 "[PhysicsBody2D] or [TileMap]."
 msgstr ""
 
-#: doc/classes/Area2D.xml:147
+#: doc/classes/Area2D.xml:149
 msgid ""
 "Emitted when one of a [PhysicsBody2D] or [TileMap]'s [Shape2D]s enters one "
 "of this Area2D's [Shape2D]s. Requires [member monitoring] to be set to "
@@ -8483,7 +8508,7 @@ msgid ""
 "[code]self.shape_owner_get_owner(local_shape_index)[/code]."
 msgstr ""
 
-#: doc/classes/Area2D.xml:160
+#: doc/classes/Area2D.xml:162
 msgid ""
 "Emitted when one of a [PhysicsBody2D] or [TileMap]'s [Shape2D]s exits one of "
 "this Area2D's [Shape2D]s. Requires [member monitoring] to be set to "
@@ -12094,7 +12119,8 @@ msgstr ""
 msgid ""
 "Bakes the lightmap, scanning from the given [code]from_node[/code] root and "
 "saves the resulting [BakedLightmapData] in [code]data_save_path[/code]. If "
-"no save path is provided it will try to match the path from the current "
+"no root node is provided, parent of this node will be used as root instead. "
+"If no save path is provided it will try to match the path from the current "
 "[member light_data]."
 msgstr ""
 
@@ -12295,19 +12321,31 @@ msgstr ""
 msgid "Returns if user cancels baking."
 msgstr ""
 
-#: doc/classes/BakedLightmap.xml:133
+#: doc/classes/BakedLightmap.xml:131
+msgid ""
+"Returns if lightmapper can't be created. Unless you are using a custom "
+"lightmapper, please report this as bug."
+msgstr ""
+
+#: doc/classes/BakedLightmap.xml:134
+msgid ""
+"There is no root node to start baking from. Either provide [code]from_node[/"
+"code] argument or attach this node to a parent that should be used as root."
+msgstr ""
+
+#: doc/classes/BakedLightmap.xml:137
 msgid "No environment is used during baking."
 msgstr ""
 
-#: doc/classes/BakedLightmap.xml:136
+#: doc/classes/BakedLightmap.xml:140
 msgid "The baked environment is automatically picked from the current scene."
 msgstr ""
 
-#: doc/classes/BakedLightmap.xml:139
+#: doc/classes/BakedLightmap.xml:143
 msgid "A custom sky is used as environment during baking."
 msgstr ""
 
-#: doc/classes/BakedLightmap.xml:142
+#: doc/classes/BakedLightmap.xml:146
 msgid "A custom solid color is used as environment during baking."
 msgstr ""
 
@@ -13156,26 +13194,33 @@ msgid "Text [Color] used when the [Button] is disabled."
 msgstr ""
 
 #: doc/classes/Button.xml:77
-msgid "Text [Color] used when the [Button] is being hovered."
+msgid ""
+"Text [Color] used when the [Button] is focused. Only replaces the normal "
+"text color of the button. Disabled, hovered, and pressed states take "
+"precedence over this color."
 msgstr ""
 
 #: doc/classes/Button.xml:80
-msgid "Text [Color] used when the [Button] is being pressed."
+msgid "Text [Color] used when the [Button] is being hovered."
 msgstr ""
 
 #: doc/classes/Button.xml:83
-msgid "[StyleBox] used when the [Button] is being hovered."
+msgid "Text [Color] used when the [Button] is being pressed."
 msgstr ""
 
 #: doc/classes/Button.xml:86
-msgid "The horizontal space between [Button]'s icon and text."
+msgid "[StyleBox] used when the [Button] is being hovered."
 msgstr ""
 
 #: doc/classes/Button.xml:89
-msgid "Default [StyleBox] for the [Button]."
+msgid "The horizontal space between [Button]'s icon and text."
 msgstr ""
 
 #: doc/classes/Button.xml:92
+msgid "Default [StyleBox] for the [Button]."
+msgstr ""
+
+#: doc/classes/Button.xml:95
 msgid "[StyleBox] used when the [Button] is being pressed."
 msgstr ""
 
@@ -14666,78 +14711,94 @@ msgstr ""
 msgid "The check icon to display when the [CheckBox] is checked."
 msgstr ""
 
-#: doc/classes/CheckBox.xml:30
+#: doc/classes/CheckBox.xml:28
+msgid "The check icon to display when the [CheckBox] is checked and disabled."
+msgstr ""
+
+#: doc/classes/CheckBox.xml:31
 msgid ""
 "The [StyleBox] to display as a background when the [CheckBox] is disabled."
 msgstr ""
 
-#: doc/classes/CheckBox.xml:33
+#: doc/classes/CheckBox.xml:34
 msgid ""
 "The [StyleBox] to display as a background when the [CheckBox] is focused."
 msgstr ""
 
-#: doc/classes/CheckBox.xml:36
+#: doc/classes/CheckBox.xml:37
 msgid "The [Font] to use for the [CheckBox] text."
 msgstr ""
 
-#: doc/classes/CheckBox.xml:39
+#: doc/classes/CheckBox.xml:40
 msgid "The [CheckBox] text's font color."
 msgstr ""
 
-#: doc/classes/CheckBox.xml:42
+#: doc/classes/CheckBox.xml:43
 msgid "The [CheckBox] text's font color when it's disabled."
 msgstr ""
 
-#: doc/classes/CheckBox.xml:45
+#: doc/classes/CheckBox.xml:46
+msgid ""
+"The [CheckBox] text's font color when it's focused. Only replaces the normal "
+"text color of the checkbox. Disabled, hovered, and pressed states take "
+"precedence over this color."
+msgstr ""
+
+#: doc/classes/CheckBox.xml:49
 msgid "The [CheckBox] text's font color when it's hovered."
 msgstr ""
 
-#: doc/classes/CheckBox.xml:48
+#: doc/classes/CheckBox.xml:52
 msgid "The [CheckBox] text's font color when it's hovered and pressed."
 msgstr ""
 
-#: doc/classes/CheckBox.xml:51
+#: doc/classes/CheckBox.xml:55
 msgid "The [CheckBox] text's font color when it's pressed."
 msgstr ""
 
-#: doc/classes/CheckBox.xml:54
+#: doc/classes/CheckBox.xml:58
 msgid ""
 "The [StyleBox] to display as a background when the [CheckBox] is hovered."
 msgstr ""
 
-#: doc/classes/CheckBox.xml:57
+#: doc/classes/CheckBox.xml:61
 msgid ""
 "The [StyleBox] to display as a background when the [CheckBox] is hovered and "
 "pressed."
 msgstr ""
 
-#: doc/classes/CheckBox.xml:60
+#: doc/classes/CheckBox.xml:64
 msgid "The separation between the check icon and the text (in pixels)."
 msgstr ""
 
-#: doc/classes/CheckBox.xml:63 doc/classes/CheckButton.xml:58
+#: doc/classes/CheckBox.xml:67 doc/classes/CheckButton.xml:61
 msgid "The [StyleBox] to display as a background."
 msgstr ""
 
-#: doc/classes/CheckBox.xml:66
+#: doc/classes/CheckBox.xml:70
 msgid ""
 "The [StyleBox] to display as a background when the [CheckBox] is pressed."
 msgstr ""
 
-#: doc/classes/CheckBox.xml:69
+#: doc/classes/CheckBox.xml:73
 msgid ""
 "If the [CheckBox] is configured as a radio button, the icon to display when "
 "the [CheckBox] is checked."
 msgstr ""
 
-#: doc/classes/CheckBox.xml:74
+#: doc/classes/CheckBox.xml:78
 msgid ""
 "If the [CheckBox] is configured as a radio button, the icon to display when "
 "the [CheckBox] is unchecked."
 msgstr ""
 
-#: doc/classes/CheckBox.xml:79
+#: doc/classes/CheckBox.xml:83
 msgid "The check icon to display when the [CheckBox] is unchecked."
+msgstr ""
+
+#: doc/classes/CheckBox.xml:86
+msgid ""
+"The check icon to display when the [CheckBox] is unchecked and disabled."
 msgstr ""
 
 #: doc/classes/CheckButton.xml:4
@@ -14783,49 +14844,56 @@ msgid "The [CheckButton] text's font color when it's disabled."
 msgstr ""
 
 #: doc/classes/CheckButton.xml:40
-msgid "The [CheckButton] text's font color when it's hovered."
+msgid ""
+"The [CheckButton] text's font color when it's focused. Only replaces the "
+"normal text color of the button. Disabled, hovered, and pressed states take "
+"precedence over this color."
 msgstr ""
 
 #: doc/classes/CheckButton.xml:43
-msgid "The [CheckButton] text's font color when it's hovered and pressed."
+msgid "The [CheckButton] text's font color when it's hovered."
 msgstr ""
 
 #: doc/classes/CheckButton.xml:46
-msgid "The [CheckButton] text's font color when it's pressed."
+msgid "The [CheckButton] text's font color when it's hovered and pressed."
 msgstr ""
 
 #: doc/classes/CheckButton.xml:49
+msgid "The [CheckButton] text's font color when it's pressed."
+msgstr ""
+
+#: doc/classes/CheckButton.xml:52
 msgid ""
 "The [StyleBox] to display as a background when the [CheckButton] is hovered."
 msgstr ""
 
-#: doc/classes/CheckButton.xml:52
+#: doc/classes/CheckButton.xml:55
 msgid ""
 "The [StyleBox] to display as a background when the [CheckButton] is hovered "
 "and pressed."
 msgstr ""
 
-#: doc/classes/CheckButton.xml:55
+#: doc/classes/CheckButton.xml:58
 msgid "The separation between the toggle icon and the text (in pixels)."
 msgstr ""
 
-#: doc/classes/CheckButton.xml:61
+#: doc/classes/CheckButton.xml:64
 msgid "The icon to display when the [CheckButton] is unchecked."
 msgstr ""
 
-#: doc/classes/CheckButton.xml:64
+#: doc/classes/CheckButton.xml:67
 msgid "The icon to display when the [CheckButton] is unchecked and disabled."
 msgstr ""
 
-#: doc/classes/CheckButton.xml:67
+#: doc/classes/CheckButton.xml:70
 msgid "The icon to display when the [CheckButton] is checked."
 msgstr ""
 
-#: doc/classes/CheckButton.xml:70
+#: doc/classes/CheckButton.xml:73
 msgid "The icon to display when the [CheckButton] is checked and disabled."
 msgstr ""
 
-#: doc/classes/CheckButton.xml:73
+#: doc/classes/CheckButton.xml:76
 msgid ""
 "The [StyleBox] to display as a background when the [CheckButton] is pressed."
 msgstr ""
@@ -14843,7 +14911,7 @@ msgstr ""
 
 #: doc/classes/CircleShape2D.xml:15
 msgid "The circle's radius."
-msgstr "Radius des Kreises"
+msgstr "Der Radius des Kreises."
 
 #: doc/classes/ClassDB.xml:4
 msgid "Class information repository."
@@ -15826,6 +15894,8 @@ msgstr ""
 msgid ""
 "The color's alpha (transparency) component, typically on the range of 0 to 1."
 msgstr ""
+"Die Alpha-Komponente (Transparenz) der Farbe, normalerweise im Bereich von 0 "
+"bis 1."
 
 #: doc/classes/Color.xml:245
 msgid "Wrapper for [member a] that uses the range 0 to 255 instead of 0 to 1."
@@ -15833,7 +15903,7 @@ msgstr ""
 
 #: doc/classes/Color.xml:248
 msgid "The color's blue component, typically on the range of 0 to 1."
-msgstr ""
+msgstr "Der Blauanteil der Farbe, normalerweise im Bereich von 0 bis 1."
 
 #: doc/classes/Color.xml:251
 msgid "Wrapper for [member b] that uses the range 0 to 255 instead of 0 to 1."
@@ -15841,7 +15911,7 @@ msgstr ""
 
 #: doc/classes/Color.xml:254
 msgid "The color's green component, typically on the range of 0 to 1."
-msgstr ""
+msgstr "Der Grünanteil der Farbe, normalerweise im Bereich von 0 bis 1."
 
 #: doc/classes/Color.xml:257
 msgid "Wrapper for [member g] that uses the range 0 to 255 instead of 0 to 1."
@@ -15849,11 +15919,11 @@ msgstr ""
 
 #: doc/classes/Color.xml:260
 msgid "The HSV hue of this color, on the range 0 to 1."
-msgstr ""
+msgstr "Der HSV-Farbton dieser Farbe, im Bereich von 0 bis 1."
 
 #: doc/classes/Color.xml:263
 msgid "The color's red component, typically on the range of 0 to 1."
-msgstr ""
+msgstr "Der Rotanteil der Farbe, normalerweise im Bereich von 0 bis 1."
 
 #: doc/classes/Color.xml:266
 msgid "Wrapper for [member r] that uses the range 0 to 255 instead of 0 to 1."
@@ -15861,15 +15931,15 @@ msgstr ""
 
 #: doc/classes/Color.xml:269
 msgid "The HSV saturation of this color, on the range 0 to 1."
-msgstr ""
+msgstr "Die HSV-Sättigung dieser Farbe, im Bereich von 0 bis 1."
 
 #: doc/classes/Color.xml:272
 msgid "The HSV value (brightness) of this color, on the range 0 to 1."
-msgstr ""
+msgstr "Der HSV-Wert (Helligkeit) dieser Farbe, im Bereich von 0 bis 1."
 
 #: doc/classes/Color.xml:277
 msgid "Alice blue color."
-msgstr ""
+msgstr "Aliceblau Farbe."
 
 #: doc/classes/Color.xml:280
 msgid "Antique white color."
@@ -15877,7 +15947,7 @@ msgstr ""
 
 #: doc/classes/Color.xml:283
 msgid "Aqua color."
-msgstr "Farbe Aqua."
+msgstr "Aqua Farbe."
 
 #: doc/classes/Color.xml:286
 msgid "Aquamarine color."
@@ -15897,563 +15967,563 @@ msgstr "Biskuit Farbe."
 
 #: doc/classes/Color.xml:298
 msgid "Black color."
-msgstr ""
+msgstr "Schwarze Farbe."
 
 #: doc/classes/Color.xml:301
 msgid "Blanche almond color."
-msgstr ""
+msgstr "Blanche Mandel Farbe."
 
 #: doc/classes/Color.xml:304
 msgid "Blue color."
-msgstr ""
+msgstr "Blaue Farbe."
 
 #: doc/classes/Color.xml:307
 msgid "Blue violet color."
-msgstr ""
+msgstr "Blauviolette Farbe."
 
 #: doc/classes/Color.xml:310
 msgid "Brown color."
-msgstr ""
+msgstr "Braune Farbe."
 
 #: doc/classes/Color.xml:313
 msgid "Burly wood color."
-msgstr ""
+msgstr "Kräftige Holzfarbe."
 
 #: doc/classes/Color.xml:316
 msgid "Cadet blue color."
-msgstr ""
+msgstr "Kadettblaue Farbe."
 
 #: doc/classes/Color.xml:319
 msgid "Chartreuse color."
-msgstr ""
+msgstr "Chartreuse Farbe."
 
 #: doc/classes/Color.xml:322
 msgid "Chocolate color."
-msgstr ""
+msgstr "Schokolade Farbe."
 
 #: doc/classes/Color.xml:325
 msgid "Coral color."
-msgstr ""
+msgstr "Korallenrote Farbe."
 
 #: doc/classes/Color.xml:328
 msgid "Cornflower color."
-msgstr ""
+msgstr "Kornblumenblaue Farbe."
 
 #: doc/classes/Color.xml:331
 msgid "Corn silk color."
-msgstr ""
+msgstr "Maisseide Farbe."
 
 #: doc/classes/Color.xml:334
 msgid "Crimson color."
-msgstr ""
+msgstr "Karminrote Farbe."
 
 #: doc/classes/Color.xml:337
 msgid "Cyan color."
-msgstr ""
+msgstr "Cyan Farbe."
 
 #: doc/classes/Color.xml:340
 msgid "Dark blue color."
-msgstr "Dunkelblaue Farbe"
+msgstr "Dunkelblaue Farbe."
 
 #: doc/classes/Color.xml:343
 msgid "Dark cyan color."
-msgstr ""
+msgstr "Dunkelcyan Farben."
 
 #: doc/classes/Color.xml:346
 msgid "Dark goldenrod color."
-msgstr ""
+msgstr "Dunkle goldgelbe Farbe."
 
 #: doc/classes/Color.xml:349
 msgid "Dark gray color."
-msgstr "Dunkelgraue Farbe"
+msgstr "Dunkelgraue Farbe."
 
 #: doc/classes/Color.xml:352
 msgid "Dark green color."
-msgstr "Dunkelgrüne Farbe"
+msgstr "Dunkelgrüne Farbe."
 
 #: doc/classes/Color.xml:355
 msgid "Dark khaki color."
-msgstr ""
+msgstr "Dunkel Khaki Farbe."
 
 #: doc/classes/Color.xml:358
 msgid "Dark magenta color."
-msgstr ""
+msgstr "Dunkle Magenta Farbe."
 
 #: doc/classes/Color.xml:361
 msgid "Dark olive green color."
-msgstr ""
+msgstr "Dunkle olivgrüne Farbe."
 
 #: doc/classes/Color.xml:364
 msgid "Dark orange color."
-msgstr ""
+msgstr "Dunkelorange Farbe."
 
 #: doc/classes/Color.xml:367
 msgid "Dark orchid color."
-msgstr ""
+msgstr "Dunkle Orchidee Farbe."
 
 #: doc/classes/Color.xml:370
 msgid "Dark red color."
-msgstr ""
+msgstr "Dunkelrote Farbe."
 
 #: doc/classes/Color.xml:373
 msgid "Dark salmon color."
-msgstr ""
+msgstr "Dunkle lachsfarbene Farbe."
 
 #: doc/classes/Color.xml:376
 msgid "Dark sea green color."
-msgstr ""
+msgstr "Dunkle meergrüne Farbe."
 
 #: doc/classes/Color.xml:379
 msgid "Dark slate blue color."
-msgstr ""
+msgstr "Dunkle schieferblaue Farbe."
 
 #: doc/classes/Color.xml:382
 msgid "Dark slate gray color."
-msgstr ""
+msgstr "Dunkle schiefergraue Farbe."
 
 #: doc/classes/Color.xml:385
 msgid "Dark turquoise color."
-msgstr ""
+msgstr "Dunkeltürkise Farbe."
 
 #: doc/classes/Color.xml:388
 msgid "Dark violet color."
-msgstr ""
+msgstr "Dunkelviolette Farbe."
 
 #: doc/classes/Color.xml:391
 msgid "Deep pink color."
-msgstr ""
+msgstr "Tiefrosa Farbe."
 
 #: doc/classes/Color.xml:394
 msgid "Deep sky blue color."
-msgstr ""
+msgstr "Tiefe himmelblaue Farbe."
 
 #: doc/classes/Color.xml:397
 msgid "Dim gray color."
-msgstr ""
+msgstr "Gedämpfte graue Farbe."
 
 #: doc/classes/Color.xml:400
 msgid "Dodger blue color."
-msgstr ""
+msgstr "Dodgerblaue Farbe."
 
 #: doc/classes/Color.xml:403
 msgid "Firebrick color."
-msgstr ""
+msgstr "Feuerstein Farbe."
 
 #: doc/classes/Color.xml:406
 msgid "Floral white color."
-msgstr ""
+msgstr "Florale weiße Farbe."
 
 #: doc/classes/Color.xml:409
 msgid "Forest green color."
-msgstr ""
+msgstr "Waldgrüne Farbe."
 
 #: doc/classes/Color.xml:412
 msgid "Fuchsia color."
-msgstr ""
+msgstr "Fuchsia Farbe."
 
 #: doc/classes/Color.xml:415
 msgid "Gainsboro color."
-msgstr ""
+msgstr "Gainsboro Farbe."
 
 #: doc/classes/Color.xml:418
 msgid "Ghost white color."
-msgstr ""
+msgstr "Geisterweiße Farbe."
 
 #: doc/classes/Color.xml:421
 msgid "Gold color."
-msgstr ""
+msgstr "Goldene Farbe."
 
 #: doc/classes/Color.xml:424
 msgid "Goldenrod color."
-msgstr ""
+msgstr "Goldrute Farbe."
 
 #: doc/classes/Color.xml:427
 msgid "Gray color."
-msgstr ""
+msgstr "Graue Farbe."
 
 #: doc/classes/Color.xml:430
 msgid "Green color."
-msgstr ""
+msgstr "Grüne Farbe."
 
 #: doc/classes/Color.xml:433
 msgid "Green yellow color."
-msgstr ""
+msgstr "Grün-gelbe Farbe."
 
 #: doc/classes/Color.xml:436
 msgid "Honeydew color."
-msgstr ""
+msgstr "Honigtau Farbe."
 
 #: doc/classes/Color.xml:439
 msgid "Hot pink color."
-msgstr ""
+msgstr "Heiße rosa Farbe."
 
 #: doc/classes/Color.xml:442
 msgid "Indian red color."
-msgstr ""
+msgstr "Indisch rote Farbe."
 
 #: doc/classes/Color.xml:445
 msgid "Indigo color."
-msgstr ""
+msgstr "Indigo Farbe."
 
 #: doc/classes/Color.xml:448
 msgid "Ivory color."
-msgstr ""
+msgstr "Elfenbein Farbe."
 
 #: doc/classes/Color.xml:451
 msgid "Khaki color."
-msgstr ""
+msgstr "Khaki Farbe."
 
 #: doc/classes/Color.xml:454
 msgid "Lavender color."
-msgstr ""
+msgstr "Lavendel Farbe."
 
 #: doc/classes/Color.xml:457
 msgid "Lavender blush color."
-msgstr ""
+msgstr "Lavendelrote Farbe."
 
 #: doc/classes/Color.xml:460
 msgid "Lawn green color."
-msgstr ""
+msgstr "Rasengrüne Farbe."
 
 #: doc/classes/Color.xml:463
 msgid "Lemon chiffon color."
-msgstr ""
+msgstr "Zitrone Chiffon Farbe."
 
 #: doc/classes/Color.xml:466
 msgid "Light blue color."
-msgstr ""
+msgstr "Hellblaue Farbe."
 
 #: doc/classes/Color.xml:469
 msgid "Light coral color."
-msgstr ""
+msgstr "Helle korallenrote Farbe."
 
 #: doc/classes/Color.xml:472
 msgid "Light cyan color."
-msgstr ""
+msgstr "Helle Cyan Farbe."
 
 #: doc/classes/Color.xml:475
 msgid "Light goldenrod color."
-msgstr ""
+msgstr "Helle Goldrute Farbe."
 
 #: doc/classes/Color.xml:478
 msgid "Light gray color."
-msgstr ""
+msgstr "Hellgraue Farbe."
 
 #: doc/classes/Color.xml:481
 msgid "Light green color."
-msgstr ""
+msgstr "Hellgrüne Farbe."
 
 #: doc/classes/Color.xml:484
 msgid "Light pink color."
-msgstr ""
+msgstr "Hellrosa Farbe."
 
 #: doc/classes/Color.xml:487
 msgid "Light salmon color."
-msgstr ""
+msgstr "Helle lachsfarbene Farbe."
 
 #: doc/classes/Color.xml:490
 msgid "Light sea green color."
-msgstr ""
+msgstr "Helle meergrüne Farbe."
 
 #: doc/classes/Color.xml:493
 msgid "Light sky blue color."
-msgstr ""
+msgstr "Helle himmelblaue Farbe."
 
 #: doc/classes/Color.xml:496
 msgid "Light slate gray color."
-msgstr ""
+msgstr "Helle schiefergraue Farbe."
 
 #: doc/classes/Color.xml:499
 msgid "Light steel blue color."
-msgstr ""
+msgstr "Helle stahlblaue Farbe."
 
 #: doc/classes/Color.xml:502
 msgid "Light yellow color."
-msgstr ""
+msgstr "Hellgelbe Farbe."
 
 #: doc/classes/Color.xml:505
 msgid "Lime color."
-msgstr ""
+msgstr "Limette Farbe."
 
 #: doc/classes/Color.xml:508
 msgid "Lime green color."
-msgstr ""
+msgstr "Limonengrüne Farbe."
 
 #: doc/classes/Color.xml:511
 msgid "Linen color."
-msgstr ""
+msgstr "Leinen Farbe."
 
 #: doc/classes/Color.xml:514
 msgid "Magenta color."
-msgstr ""
+msgstr "Magenta Farbe."
 
 #: doc/classes/Color.xml:517
 msgid "Maroon color."
-msgstr ""
+msgstr "Kastanienbraune Farbe."
 
 #: doc/classes/Color.xml:520
 msgid "Medium aquamarine color."
-msgstr ""
+msgstr "Mittlere Aquamarin Farbe."
 
 #: doc/classes/Color.xml:523
 msgid "Medium blue color."
-msgstr ""
+msgstr "Mittelblaue Farbe."
 
 #: doc/classes/Color.xml:526
 msgid "Medium orchid color."
-msgstr ""
+msgstr "Mittlere Orchideen Farbe."
 
 #: doc/classes/Color.xml:529
 msgid "Medium purple color."
-msgstr ""
+msgstr "Mittlere violette Farbe."
 
 #: doc/classes/Color.xml:532
 msgid "Medium sea green color."
-msgstr ""
+msgstr "Mittlere meergrüne Farbe."
 
 #: doc/classes/Color.xml:535
 msgid "Medium slate blue color."
-msgstr ""
+msgstr "Mittlere schieferblaue Farbe."
 
 #: doc/classes/Color.xml:538
 msgid "Medium spring green color."
-msgstr ""
+msgstr "Mittlere frühlingsgrüne Farbe."
 
 #: doc/classes/Color.xml:541
 msgid "Medium turquoise color."
-msgstr ""
+msgstr "Mittlere türkise Farbe."
 
 #: doc/classes/Color.xml:544
 msgid "Medium violet red color."
-msgstr ""
+msgstr "Mittlere violettrote Farbe."
 
 #: doc/classes/Color.xml:547
 msgid "Midnight blue color."
-msgstr ""
+msgstr "Mitternachtsblaue Farbe."
 
 #: doc/classes/Color.xml:550
 msgid "Mint cream color."
-msgstr ""
+msgstr "Mint-Creme Farbe."
 
 #: doc/classes/Color.xml:553
 msgid "Misty rose color."
-msgstr ""
+msgstr "Neblige rosa Farbe."
 
 #: doc/classes/Color.xml:556
 msgid "Moccasin color."
-msgstr ""
+msgstr "Mokassin Farbe."
 
 #: doc/classes/Color.xml:559
 msgid "Navajo white color."
-msgstr ""
+msgstr "Navajo weiße Farbe."
 
 #: doc/classes/Color.xml:562
 msgid "Navy blue color."
-msgstr ""
+msgstr "Marineblaue Farbe."
 
 #: doc/classes/Color.xml:565
 msgid "Old lace color."
-msgstr ""
+msgstr "Alte Spitze Farbe."
 
 #: doc/classes/Color.xml:568
 msgid "Olive color."
-msgstr ""
+msgstr "Olive Farbe."
 
 #: doc/classes/Color.xml:571
 msgid "Olive drab color."
-msgstr ""
+msgstr "Olivgrüne Farbe."
 
 #: doc/classes/Color.xml:574
 msgid "Orange color."
-msgstr ""
+msgstr "Orange Farbe."
 
 #: doc/classes/Color.xml:577
 msgid "Orange red color."
-msgstr ""
+msgstr "Orangerote Farbe."
 
 #: doc/classes/Color.xml:580
 msgid "Orchid color."
-msgstr ""
+msgstr "Orchidee Farbe."
 
 #: doc/classes/Color.xml:583
 msgid "Pale goldenrod color."
-msgstr ""
+msgstr "Blasse Goldrute Farbe."
 
 #: doc/classes/Color.xml:586
 msgid "Pale green color."
-msgstr ""
+msgstr "Blassgrüne Farbe."
 
 #: doc/classes/Color.xml:589
 msgid "Pale turquoise color."
-msgstr ""
+msgstr "Blasse türkise Farbe."
 
 #: doc/classes/Color.xml:592
 msgid "Pale violet red color."
-msgstr ""
+msgstr "Blass violettrote Farbe."
 
 #: doc/classes/Color.xml:595
 msgid "Papaya whip color."
-msgstr ""
+msgstr "Papaya-Peitsche Farbe."
 
 #: doc/classes/Color.xml:598
 msgid "Peach puff color."
-msgstr ""
+msgstr "Pfirsich Puff Farbe."
 
 #: doc/classes/Color.xml:601
 msgid "Peru color."
-msgstr ""
+msgstr "Peru Farbe."
 
 #: doc/classes/Color.xml:604
 msgid "Pink color."
-msgstr ""
+msgstr "Rosa Farbe."
 
 #: doc/classes/Color.xml:607
 msgid "Plum color."
-msgstr ""
+msgstr "Pflaume Farbe."
 
 #: doc/classes/Color.xml:610
 msgid "Powder blue color."
-msgstr ""
+msgstr "Pulverblaue Farbe."
 
 #: doc/classes/Color.xml:613
 msgid "Purple color."
-msgstr ""
+msgstr "Violette Farbe."
 
 #: doc/classes/Color.xml:616
 msgid "Rebecca purple color."
-msgstr ""
+msgstr "Rebecca violette Farbe."
 
 #: doc/classes/Color.xml:619
 msgid "Red color."
-msgstr ""
+msgstr "Rote Farbe."
 
 #: doc/classes/Color.xml:622
 msgid "Rosy brown color."
-msgstr ""
+msgstr "Rosigbraune Farbe."
 
 #: doc/classes/Color.xml:625
 msgid "Royal blue color."
-msgstr ""
+msgstr "Königsblaue Farbe."
 
 #: doc/classes/Color.xml:628
 msgid "Saddle brown color."
-msgstr ""
+msgstr "Sattelbraune Farbe."
 
 #: doc/classes/Color.xml:631
 msgid "Salmon color."
-msgstr ""
+msgstr "Lachsfarbige Farbe."
 
 #: doc/classes/Color.xml:634
 msgid "Sandy brown color."
-msgstr ""
+msgstr "Sandige braune Farbe."
 
 #: doc/classes/Color.xml:637
 msgid "Sea green color."
-msgstr ""
+msgstr "Meeresgrüne Farbe."
 
 #: doc/classes/Color.xml:640
 msgid "Seashell color."
-msgstr ""
+msgstr "Muschel Farbe."
 
 #: doc/classes/Color.xml:643
 msgid "Sienna color."
-msgstr ""
+msgstr "Siena Farbe."
 
 #: doc/classes/Color.xml:646
 msgid "Silver color."
-msgstr ""
+msgstr "Silberne Farbe."
 
 #: doc/classes/Color.xml:649
 msgid "Sky blue color."
-msgstr ""
+msgstr "Himmelblaue Farbe."
 
 #: doc/classes/Color.xml:652
 msgid "Slate blue color."
-msgstr ""
+msgstr "Schieferblaue Farbe."
 
 #: doc/classes/Color.xml:655
 msgid "Slate gray color."
-msgstr ""
+msgstr "Schiefergraue Farbe."
 
 #: doc/classes/Color.xml:658
 msgid "Snow color."
-msgstr ""
+msgstr "Schnee Farbe."
 
 #: doc/classes/Color.xml:661
 msgid "Spring green color."
-msgstr ""
+msgstr "Frühlingsgrüne Farbe."
 
 #: doc/classes/Color.xml:664
 msgid "Steel blue color."
-msgstr ""
+msgstr "Stahlblaue Farbe."
 
 #: doc/classes/Color.xml:667
 msgid "Tan color."
-msgstr ""
+msgstr "Hellbraune Farbe."
 
 #: doc/classes/Color.xml:670
 msgid "Teal color."
-msgstr ""
+msgstr "Blaugrüne Farbe."
 
 #: doc/classes/Color.xml:673
 msgid "Thistle color."
-msgstr ""
+msgstr "Distel Farbe."
 
 #: doc/classes/Color.xml:676
 msgid "Tomato color."
-msgstr ""
+msgstr "Tomaten Farbe."
 
 #: doc/classes/Color.xml:679
 msgid "Transparent color (white with no alpha)."
-msgstr ""
+msgstr "Transparente Farbe (weiß ohne Alpha)."
 
 #: doc/classes/Color.xml:682
 msgid "Turquoise color."
-msgstr ""
+msgstr "Türkise Farbe."
 
 #: doc/classes/Color.xml:685
 msgid "Violet color."
-msgstr ""
+msgstr "Violette Farbe."
 
 #: doc/classes/Color.xml:688
 msgid "Web gray color."
-msgstr ""
+msgstr "Web graue Farbe."
 
 #: doc/classes/Color.xml:691
 msgid "Web green color."
-msgstr ""
+msgstr "Web grüne Farbe."
 
 #: doc/classes/Color.xml:694
 msgid "Web maroon color."
-msgstr ""
+msgstr "Web kastanienbraune Farbe."
 
 #: doc/classes/Color.xml:697
 msgid "Web purple color."
-msgstr ""
+msgstr "Web violette Farbe."
 
 #: doc/classes/Color.xml:700
 msgid "Wheat color."
-msgstr ""
+msgstr "Weizen Farbe."
 
 #: doc/classes/Color.xml:703
 msgid "White color."
-msgstr ""
+msgstr "Weiße Farbe."
 
 #: doc/classes/Color.xml:706
 msgid "White smoke color."
-msgstr ""
+msgstr "Rauchweiße Farbe."
 
 #: doc/classes/Color.xml:709
 msgid "Yellow color."
-msgstr ""
+msgstr "Gelbe Farbe."
 
 #: doc/classes/Color.xml:712
 msgid "Yellow green color."
-msgstr ""
+msgstr "Gelbgrüne Farbe."
 
 #: doc/classes/ColorPicker.xml:4
 msgid "Color picker control."
-msgstr ""
+msgstr "Farbauswahl-Steuerung."
 
 #: doc/classes/ColorPicker.xml:7
 msgid ""
@@ -16463,6 +16533,12 @@ msgid ""
 "[ColorPickerButton] instead if you need a button that brings up a "
 "[ColorPicker] in a pop-up."
 msgstr ""
+"Zeigt ein Element zur Farbauswahl an. Nützlich für die Auswahl einer Farbe "
+"aus einem RGB/RGBA-Farbraum.\n"
+"[b]Hinweis:[/b] Dieses Steuerelement ist das Farbwähler-Element selbst. Sie "
+"können stattdessen einen [ColorPickerButton] verwenden, wenn Sie eine "
+"Schaltfläche benötigen, die einen [ColorPicker] in einem Popup-Fenster "
+"aufruft."
 
 #: doc/classes/ColorPicker.xml:18
 msgid ""
@@ -16470,19 +16546,25 @@ msgid ""
 "in the color picker and the user will be able to select them.\n"
 "[b]Note:[/b] The presets list is only for [i]this[/i] color picker."
 msgstr ""
+"Fügt die angegebene Farbe zu einer Liste von Farbvorlagen hinzu. Die "
+"Vorlagen werden in der Farbauswahl angezeigt und der Benutzer kann sie "
+"auswählen.\n"
+"[b]Hinweis:[/b] Die Liste der Vorlagen gilt nur für [i]diesen[/i] Farbwähler."
 
 #: doc/classes/ColorPicker.xml:26
 msgid ""
 "Removes the given color from the list of color presets of this color picker."
 msgstr ""
+"Entfernt die angegebene Farbe aus der Liste der Farbvorlagen für diesen "
+"Farbwähler."
 
 #: doc/classes/ColorPicker.xml:32
 msgid "Returns the list of colors in the presets of the color picker."
-msgstr ""
+msgstr "Gibt die Liste der Farben in den Vorlagen des Farbwählers zurück."
 
 #: doc/classes/ColorPicker.xml:38 doc/classes/ColorPickerButton.xml:33
 msgid "The currently selected color."
-msgstr ""
+msgstr "Die aktuell ausgewählte Farbe."
 
 #: doc/classes/ColorPicker.xml:41
 msgid ""
@@ -16490,10 +16572,15 @@ msgid ""
 "mouse button, otherwise it will apply immediately even in mouse motion event "
 "(which can cause performance issues)."
 msgstr ""
+"Wenn [code]true[/code], wird die Farbe erst angewendet, wenn der Benutzer "
+"die Maustaste loslässt, andernfalls wird sie auch bei Mausbewegungen sofort "
+"angewendet (was zu Leistungsproblemen führen kann)."
 
 #: doc/classes/ColorPicker.xml:44
 msgid "If [code]true[/code], shows an alpha channel slider (transparency)."
 msgstr ""
+"Wenn [code]true[/code], wird ein Alphakanal-Schieberegler (Transparenz) "
+"angezeigt."
 
 #: doc/classes/ColorPicker.xml:47
 msgid ""
@@ -16501,14 +16588,20 @@ msgid ""
 "sliders.\n"
 "[b]Note:[/b] Cannot be enabled if raw mode is on."
 msgstr ""
+"Wenn [code]true[/code], kann die Farbe mit den Schiebereglern Farbton/"
+"Sättigung/Wert bearbeitet werden.\n"
+"[b]Hinweis:[/b] Kann nicht aktiviert werden, wenn der Raw-Modus aktiviert "
+"ist."
 
 #: doc/classes/ColorPicker.xml:51
 msgid "If [code]true[/code], the \"add preset\" button is enabled."
 msgstr ""
+"Wenn [code]true[/code], ist die Schaltfläche \"Vorlage hinzufügen\" "
+"aktiviert."
 
 #: doc/classes/ColorPicker.xml:54
 msgid "If [code]true[/code], saved color presets are visible."
-msgstr ""
+msgstr "Wenn [code]true[/code], sind gespeicherte Farbvorlagen sichtbar."
 
 #: doc/classes/ColorPicker.xml:57
 msgid ""
@@ -16517,56 +16610,66 @@ msgid ""
 "tinting without darkening or rendering sprites in HDR).\n"
 "[b]Note:[/b] Cannot be enabled if HSV mode is on."
 msgstr ""
+"Wenn [code]true[/code], können die Farbwerte der R, G, B Komponenten über "
+"1.0 hinausgehen, was für bestimmte spezielle Operationen, die dies "
+"erfordern, verwendet werden kann (z. B. Abtönen ohne Abdunkeln oder Rendern "
+"von Sprites in HDR).\n"
+"[b]Hinweis:[/b] Kann nicht aktiviert werden, wenn der HSV-Modus aktiviert "
+"ist."
 
 #: doc/classes/ColorPicker.xml:65
 msgid "Emitted when the color is changed."
-msgstr ""
+msgstr "Wird ausgegeben, wenn die Farbe geändert wird."
 
 #: doc/classes/ColorPicker.xml:71
 msgid "Emitted when a preset is added."
-msgstr ""
+msgstr "Wird ausgegeben, wenn eine Vorlage hinzugefügt wird."
 
 #: doc/classes/ColorPicker.xml:77
 msgid "Emitted when a preset is removed."
-msgstr ""
+msgstr "Wird ausgegeben, wenn eine Vorlage entfernt wird."
 
 #: doc/classes/ColorPicker.xml:85
 msgid "The icon for the \"Add Preset\" button."
-msgstr ""
+msgstr "Das Symbol für die Schaltfläche \" Vorlage hinzufügen\"."
 
 #: doc/classes/ColorPicker.xml:88
 msgid "Custom texture for the hue selection slider on the right."
 msgstr ""
+"Benutzerdefinierte Textur für den Schieberegler zur Farbauswahl auf der "
+"rechten Seite."
 
 #: doc/classes/ColorPicker.xml:93
 msgid "The width of the hue selection slider."
-msgstr ""
+msgstr "Die Breite des Schiebereglers für die Farbauswahl."
 
 #: doc/classes/ColorPicker.xml:98
 msgid "The margin around the [ColorPicker]."
-msgstr ""
+msgstr "Der Rand um den [ColorPicker]."
 
 #: doc/classes/ColorPicker.xml:101
 msgid ""
 "The indicator used to signalize that the color value is outside the 0-1 "
 "range."
 msgstr ""
+"Der Indikator, der signalisiert, dass der Farbwert außerhalb des Bereichs "
+"0-1 liegt."
 
 #: doc/classes/ColorPicker.xml:106
 msgid "The icon for the screen color picker button."
-msgstr ""
+msgstr "Das Symbol für die Schaltfläche des Bildschirmfarbwählers."
 
 #: doc/classes/ColorPicker.xml:109
 msgid "The height of the saturation-value selection box."
-msgstr ""
+msgstr "Die Höhe des Auswahlfeldes für den Sättigungswert."
 
 #: doc/classes/ColorPicker.xml:112
 msgid "The width of the saturation-value selection box."
-msgstr ""
+msgstr "Die Breite des Auswahlfeldes für den Sättigungswert."
 
 #: doc/classes/ColorPickerButton.xml:4
 msgid "Button that pops out a [ColorPicker]."
-msgstr ""
+msgstr "Schaltfläche, die einen [ColorPicker] erscheinen lässt."
 
 #: doc/classes/ColorPickerButton.xml:7
 msgid ""
@@ -16578,6 +16681,15 @@ msgid ""
 "preview swatch to be visible. Make sure to set [member Control."
 "rect_min_size] to a big enough value to give the button enough space."
 msgstr ""
+"Verkapselt einen [ColorPicker] und macht ihn durch Drücken einer "
+"Schaltfläche zugänglich. Durch Drücken der Schaltfläche wird die "
+"Sichtbarkeit des [ColorPicker] umgeschaltet.\n"
+"Siehe auch [BaseButton], das allgemeine Eigenschaften und Methoden im "
+"Zusammenhang mit diesem Node enthält.\n"
+"[b]Hinweis:[/b] Standardmäßig ist die Schaltfläche möglicherweise nicht "
+"breit genug, damit das Farbvorschaumuster sichtbar ist. Achte darauf, "
+"[member Control.rect_min_size] auf einen ausreichend großen Wert zu setzen, "
+"damit die Schaltfläche genügend Platz hat."
 
 #: doc/classes/ColorPickerButton.xml:19
 msgid ""
@@ -16586,6 +16698,11 @@ msgid ""
 "may cause a crash. If you wish to hide it or any of its children, use their "
 "[member CanvasItem.visible] property."
 msgstr ""
+"Gibt den [ColorPicker] aus, den dieser Node umschaltet.\n"
+"[b]Warnung:[/b] Dies ist ein erforderlicher interner Node, sein Entfernen "
+"und Freigeben kann zu einem Absturz führen. Wenn Sie ihn oder eines seiner "
+"Kinder ausblenden möchten, verwenden Sie deren Eigenschaft [member "
+"CanvasItem.visible]."
 
 #: doc/classes/ColorPickerButton.xml:26
 msgid ""
@@ -16596,26 +16713,37 @@ msgid ""
 "may cause a crash. If you wish to hide it or any of its children, use their "
 "[member CanvasItem.visible] property."
 msgstr ""
+"Gibt das [PopupPanel] des Steuerelements aus, mit dem Sie eine Verbindung zu "
+"Popup-Signalen herstellen können. So können Sie Ereignisse handhaben, wenn "
+"der Farbwähler angezeigt oder ausgeblendet wird.\n"
+"[b]Warnung:[/b] Dies ist ein erforderlicher interner Node, sein Entfernen "
+"und Freigeben kann zu einem Absturz führen. Wenn Sie ihn oder eines seiner "
+"Kinder ausblenden möchten, verwenden Sie deren Eigenschaft [member "
+"CanvasItem.visible]."
 
 #: doc/classes/ColorPickerButton.xml:36
 msgid ""
 "If [code]true[/code], the alpha channel in the displayed [ColorPicker] will "
 "be visible."
 msgstr ""
+"Wenn [code]true[/code], wird der Alphakanal im angezeigten [ColorPicker] "
+"sichtbar sein."
 
 #: doc/classes/ColorPickerButton.xml:44
 msgid "Emitted when the color changes."
-msgstr ""
+msgstr "Wird ausgegeben, wenn sich die Farbe ändert."
 
 #: doc/classes/ColorPickerButton.xml:49
 msgid ""
 "Emitted when the [ColorPicker] is created (the button is pressed for the "
 "first time)."
 msgstr ""
+"Wird ausgegeben, wenn der [ColorPicker] erstellt wird (wenn die Schaltfläche "
+"zum ersten Mal gedrückt wird)."
 
 #: doc/classes/ColorPickerButton.xml:54
 msgid "Emitted when the [ColorPicker] is closed."
-msgstr ""
+msgstr "Wird ausgegeben, wenn der [ColorPicker] geschlossen wird."
 
 #: doc/classes/ColorPickerButton.xml:62
 msgid "The background of the color preview rect on the button."
@@ -16645,26 +16773,33 @@ msgid "Text [Color] used when the [ColorPickerButton] is disabled."
 msgstr ""
 
 #: doc/classes/ColorPickerButton.xml:80
-msgid "Text [Color] used when the [ColorPickerButton] is being hovered."
+msgid ""
+"Text [Color] used when the [ColorPickerButton] is focused. Only replaces the "
+"normal text color of the button. Disabled, hovered, and pressed states take "
+"precedence over this color."
 msgstr ""
 
 #: doc/classes/ColorPickerButton.xml:83
-msgid "Text [Color] used when the [ColorPickerButton] is being pressed."
+msgid "Text [Color] used when the [ColorPickerButton] is being hovered."
 msgstr ""
 
 #: doc/classes/ColorPickerButton.xml:86
-msgid "[StyleBox] used when the [ColorPickerButton] is being hovered."
+msgid "Text [Color] used when the [ColorPickerButton] is being pressed."
 msgstr ""
 
 #: doc/classes/ColorPickerButton.xml:89
-msgid "The horizontal space between [ColorPickerButton]'s icon and text."
+msgid "[StyleBox] used when the [ColorPickerButton] is being hovered."
 msgstr ""
 
 #: doc/classes/ColorPickerButton.xml:92
-msgid "Default [StyleBox] for the [ColorPickerButton]."
+msgid "The horizontal space between [ColorPickerButton]'s icon and text."
 msgstr ""
 
 #: doc/classes/ColorPickerButton.xml:95
+msgid "Default [StyleBox] for the [ColorPickerButton]."
+msgstr ""
+
+#: doc/classes/ColorPickerButton.xml:98
 msgid "[StyleBox] used when the [ColorPickerButton] is being pressed."
 msgstr ""
 
@@ -21938,7 +22073,8 @@ msgid ""
 "get_resource_type]. They may optionally specify some import presets that "
 "affect the import process. EditorImportPlugins are responsible for creating "
 "the resources and saving them in the [code].import[/code] directory (see "
-"[member ProjectSettings.application/config/project_data_dir_name]).\n"
+"[member ProjectSettings.application/config/"
+"use_hidden_project_data_directory]).\n"
 "Below is an example EditorImportPlugin that imports a [Mesh] from a file "
 "with the extension \".special\" or \".spec\":\n"
 "[codeblock]\n"
@@ -22065,7 +22201,7 @@ msgstr ""
 msgid ""
 "Gets the extension used to save this resource in the [code].import[/code] "
 "directory (see [member ProjectSettings.application/config/"
-"project_data_dir_name])."
+"use_hidden_project_data_directory])."
 msgstr ""
 
 #: doc/classes/EditorImportPlugin.xml:130
@@ -23107,8 +23243,11 @@ msgstr ""
 msgid "Emitted when the value of the edited resource was changed."
 msgstr "Gesendet wenn das Rechteck Element geändert wurde."
 
-#: doc/classes/EditorResourcePicker.xml:89
-msgid "Emitted when the resource value was set and user clicked to edit it."
+#: doc/classes/EditorResourcePicker.xml:90
+msgid ""
+"Emitted when the resource value was set and user clicked to edit it. When "
+"[code]edit[/code] is [code]true[/code], the signal was caused by the context "
+"menu \"Edit\" option."
 msgstr ""
 
 #: doc/classes/EditorResourcePreview.xml:4
@@ -29779,16 +29918,18 @@ msgstr ""
 #: doc/classes/Image.xml:436
 msgid ""
 "OpenGL texture format [code]RED[/code] with a single component and a "
-"bitdepth of 8."
+"bitdepth of 8.\n"
+"[b]Note:[/b] When using the GLES2 backend, this uses the alpha channel "
+"instead of the red channel for storage."
 msgstr ""
 
-#: doc/classes/Image.xml:439
+#: doc/classes/Image.xml:440
 msgid ""
 "OpenGL texture format [code]RG[/code] with two components and a bitdepth of "
 "8 for each."
 msgstr ""
 
-#: doc/classes/Image.xml:442
+#: doc/classes/Image.xml:443
 msgid ""
 "OpenGL texture format [code]RGB[/code] with three components, each with a "
 "bitdepth of 8.\n"
@@ -29796,7 +29937,7 @@ msgid ""
 "conversion is performed."
 msgstr ""
 
-#: doc/classes/Image.xml:446
+#: doc/classes/Image.xml:447
 msgid ""
 "OpenGL texture format [code]RGBA[/code] with four components, each with a "
 "bitdepth of 8.\n"
@@ -29804,73 +29945,73 @@ msgid ""
 "conversion is performed."
 msgstr ""
 
-#: doc/classes/Image.xml:450
+#: doc/classes/Image.xml:451
 msgid ""
 "OpenGL texture format [code]RGBA[/code] with four components, each with a "
 "bitdepth of 4."
 msgstr ""
 
-#: doc/classes/Image.xml:453
+#: doc/classes/Image.xml:454
 msgid ""
 "OpenGL texture format [code]GL_RGB5_A1[/code] where 5 bits of depth for each "
 "component of RGB and one bit for alpha."
 msgstr ""
 
-#: doc/classes/Image.xml:456
+#: doc/classes/Image.xml:457
 msgid ""
 "OpenGL texture format [code]GL_R32F[/code] where there's one component, a 32-"
 "bit floating-point value."
 msgstr ""
 
-#: doc/classes/Image.xml:459
+#: doc/classes/Image.xml:460
 msgid ""
 "OpenGL texture format [code]GL_RG32F[/code] where there are two components, "
 "each a 32-bit floating-point values."
 msgstr ""
 
-#: doc/classes/Image.xml:462
+#: doc/classes/Image.xml:463
 msgid ""
 "OpenGL texture format [code]GL_RGB32F[/code] where there are three "
 "components, each a 32-bit floating-point values."
 msgstr ""
 
-#: doc/classes/Image.xml:465
+#: doc/classes/Image.xml:466
 msgid ""
 "OpenGL texture format [code]GL_RGBA32F[/code] where there are four "
 "components, each a 32-bit floating-point values."
 msgstr ""
 
-#: doc/classes/Image.xml:468
+#: doc/classes/Image.xml:469
 msgid ""
 "OpenGL texture format [code]GL_R32F[/code] where there's one component, a 16-"
 "bit \"half-precision\" floating-point value."
 msgstr ""
 
-#: doc/classes/Image.xml:471
+#: doc/classes/Image.xml:472
 msgid ""
 "OpenGL texture format [code]GL_RG32F[/code] where there are two components, "
 "each a 16-bit \"half-precision\" floating-point value."
 msgstr ""
 
-#: doc/classes/Image.xml:474
+#: doc/classes/Image.xml:475
 msgid ""
 "OpenGL texture format [code]GL_RGB32F[/code] where there are three "
 "components, each a 16-bit \"half-precision\" floating-point value."
 msgstr ""
 
-#: doc/classes/Image.xml:477
+#: doc/classes/Image.xml:478
 msgid ""
 "OpenGL texture format [code]GL_RGBA32F[/code] where there are four "
 "components, each a 16-bit \"half-precision\" floating-point value."
 msgstr ""
 
-#: doc/classes/Image.xml:480
+#: doc/classes/Image.xml:481
 msgid ""
 "A special OpenGL texture format where the three color components have 9 bits "
 "of precision and all three share a single 5-bit exponent."
 msgstr ""
 
-#: doc/classes/Image.xml:483
+#: doc/classes/Image.xml:484
 msgid ""
 "The [url=https://en.wikipedia.org/wiki/S3_Texture_Compression]S3TC[/url] "
 "texture format that uses Block Compression 1, and is the smallest variation "
@@ -29880,7 +30021,7 @@ msgid ""
 "conversion is performed."
 msgstr ""
 
-#: doc/classes/Image.xml:487
+#: doc/classes/Image.xml:488
 msgid ""
 "The [url=https://en.wikipedia.org/wiki/S3_Texture_Compression]S3TC[/url] "
 "texture format that uses Block Compression 2, and color data is interpreted "
@@ -29890,7 +30031,7 @@ msgid ""
 "conversion is performed."
 msgstr ""
 
-#: doc/classes/Image.xml:491
+#: doc/classes/Image.xml:492
 msgid ""
 "The [url=https://en.wikipedia.org/wiki/S3_Texture_Compression]S3TC[/url] "
 "texture format also known as Block Compression 3 or BC3 that contains 64 "
@@ -29901,7 +30042,7 @@ msgid ""
 "conversion is performed."
 msgstr ""
 
-#: doc/classes/Image.xml:495
+#: doc/classes/Image.xml:496
 msgid ""
 "Texture format that uses [url=https://www.khronos.org/opengl/wiki/"
 "Red_Green_Texture_Compression]Red Green Texture Compression[/url], "
@@ -29909,7 +30050,7 @@ msgid ""
 "DXT5 uses for the alpha channel."
 msgstr ""
 
-#: doc/classes/Image.xml:498
+#: doc/classes/Image.xml:499
 msgid ""
 "Texture format that uses [url=https://www.khronos.org/opengl/wiki/"
 "Red_Green_Texture_Compression]Red Green Texture Compression[/url], "
@@ -29917,7 +30058,7 @@ msgid ""
 "algorithm that DXT5 uses for the alpha channel."
 msgstr ""
 
-#: doc/classes/Image.xml:501
+#: doc/classes/Image.xml:502
 msgid ""
 "Texture format that uses [url=https://www.khronos.org/opengl/wiki/"
 "BPTC_Texture_Compression]BPTC[/url] compression with unsigned normalized "
@@ -29926,21 +30067,21 @@ msgid ""
 "conversion is performed."
 msgstr ""
 
-#: doc/classes/Image.xml:505
+#: doc/classes/Image.xml:506
 msgid ""
 "Texture format that uses [url=https://www.khronos.org/opengl/wiki/"
 "BPTC_Texture_Compression]BPTC[/url] compression with signed floating-point "
 "RGB components."
 msgstr ""
 
-#: doc/classes/Image.xml:508
+#: doc/classes/Image.xml:509
 msgid ""
 "Texture format that uses [url=https://www.khronos.org/opengl/wiki/"
 "BPTC_Texture_Compression]BPTC[/url] compression with unsigned floating-point "
 "RGB components."
 msgstr ""
 
-#: doc/classes/Image.xml:511
+#: doc/classes/Image.xml:512
 msgid ""
 "Texture format used on PowerVR-supported mobile platforms, uses 2-bit color "
 "depth with no alpha. More information can be found [url=https://en.wikipedia."
@@ -29949,25 +30090,25 @@ msgid ""
 "conversion is performed."
 msgstr ""
 
-#: doc/classes/Image.xml:515
+#: doc/classes/Image.xml:516
 msgid ""
 "Same as [url=https://en.wikipedia.org/wiki/PVRTC]PVRTC2[/url], but with an "
 "alpha component."
 msgstr ""
 
-#: doc/classes/Image.xml:518
+#: doc/classes/Image.xml:519
 msgid ""
 "Similar to [url=https://en.wikipedia.org/wiki/PVRTC]PVRTC2[/url], but with 4-"
 "bit color depth and no alpha."
 msgstr ""
 
-#: doc/classes/Image.xml:521
+#: doc/classes/Image.xml:522
 msgid ""
 "Same as [url=https://en.wikipedia.org/wiki/PVRTC]PVRTC4[/url], but with an "
 "alpha component."
 msgstr ""
 
-#: doc/classes/Image.xml:524
+#: doc/classes/Image.xml:525
 msgid ""
 "[url=https://en.wikipedia.org/wiki/"
 "Ericsson_Texture_Compression#ETC1]Ericsson Texture Compression format 1[/"
@@ -29975,7 +30116,7 @@ msgid ""
 "standard. This format cannot store an alpha channel."
 msgstr ""
 
-#: doc/classes/Image.xml:527
+#: doc/classes/Image.xml:528
 msgid ""
 "[url=https://en.wikipedia.org/wiki/"
 "Ericsson_Texture_Compression#ETC2_and_EAC]Ericsson Texture Compression "
@@ -29983,7 +30124,7 @@ msgid ""
 "unsigned data."
 msgstr ""
 
-#: doc/classes/Image.xml:530
+#: doc/classes/Image.xml:531
 msgid ""
 "[url=https://en.wikipedia.org/wiki/"
 "Ericsson_Texture_Compression#ETC2_and_EAC]Ericsson Texture Compression "
@@ -29991,7 +30132,7 @@ msgid ""
 "channel of signed data."
 msgstr ""
 
-#: doc/classes/Image.xml:533
+#: doc/classes/Image.xml:534
 msgid ""
 "[url=https://en.wikipedia.org/wiki/"
 "Ericsson_Texture_Compression#ETC2_and_EAC]Ericsson Texture Compression "
@@ -29999,7 +30140,7 @@ msgid ""
 "of unsigned data."
 msgstr ""
 
-#: doc/classes/Image.xml:536
+#: doc/classes/Image.xml:537
 msgid ""
 "[url=https://en.wikipedia.org/wiki/"
 "Ericsson_Texture_Compression#ETC2_and_EAC]Ericsson Texture Compression "
@@ -30007,7 +30148,7 @@ msgid ""
 "channels of signed data."
 msgstr ""
 
-#: doc/classes/Image.xml:539
+#: doc/classes/Image.xml:540
 msgid ""
 "[url=https://en.wikipedia.org/wiki/"
 "Ericsson_Texture_Compression#ETC2_and_EAC]Ericsson Texture Compression "
@@ -30017,7 +30158,7 @@ msgid ""
 "conversion is performed."
 msgstr ""
 
-#: doc/classes/Image.xml:543
+#: doc/classes/Image.xml:544
 msgid ""
 "[url=https://en.wikipedia.org/wiki/"
 "Ericsson_Texture_Compression#ETC2_and_EAC]Ericsson Texture Compression "
@@ -30027,7 +30168,7 @@ msgid ""
 "conversion is performed."
 msgstr ""
 
-#: doc/classes/Image.xml:547
+#: doc/classes/Image.xml:548
 msgid ""
 "[url=https://en.wikipedia.org/wiki/"
 "Ericsson_Texture_Compression#ETC2_and_EAC]Ericsson Texture Compression "
@@ -30038,31 +30179,31 @@ msgid ""
 "conversion is performed."
 msgstr ""
 
-#: doc/classes/Image.xml:551
+#: doc/classes/Image.xml:552
 msgid "Represents the size of the [enum Format] enum."
 msgstr ""
 
-#: doc/classes/Image.xml:554
+#: doc/classes/Image.xml:555
 msgid ""
 "Performs nearest-neighbor interpolation. If the image is resized, it will be "
 "pixelated."
 msgstr ""
 
-#: doc/classes/Image.xml:557
+#: doc/classes/Image.xml:558
 msgid ""
 "Performs bilinear interpolation. If the image is resized, it will be blurry. "
 "This mode is faster than [constant INTERPOLATE_CUBIC], but it results in "
 "lower quality."
 msgstr ""
 
-#: doc/classes/Image.xml:560
+#: doc/classes/Image.xml:561
 msgid ""
 "Performs cubic interpolation. If the image is resized, it will be blurry. "
 "This mode often gives better results compared to [constant "
 "INTERPOLATE_BILINEAR], at the cost of being slower."
 msgstr ""
 
-#: doc/classes/Image.xml:563
+#: doc/classes/Image.xml:564
 msgid ""
 "Performs bilinear separately on the two most-suited mipmap levels, then "
 "linearly interpolates between them.\n"
@@ -30077,55 +30218,55 @@ msgid ""
 "a new set will be generated for the resulting image."
 msgstr ""
 
-#: doc/classes/Image.xml:570
+#: doc/classes/Image.xml:571
 msgid ""
 "Performs Lanczos interpolation. This is the slowest image resizing mode, but "
 "it typically gives the best results, especially when downscalng images."
 msgstr ""
 
-#: doc/classes/Image.xml:573
+#: doc/classes/Image.xml:574
 msgid "Image does not have alpha."
 msgstr ""
 
-#: doc/classes/Image.xml:576
+#: doc/classes/Image.xml:577
 msgid "Image stores alpha in a single bit."
 msgstr ""
 
-#: doc/classes/Image.xml:579
+#: doc/classes/Image.xml:580
 msgid "Image uses alpha."
 msgstr ""
 
-#: doc/classes/Image.xml:582
+#: doc/classes/Image.xml:583
 msgid "Use S3TC compression."
 msgstr ""
 
-#: doc/classes/Image.xml:585
+#: doc/classes/Image.xml:586
 msgid "Use PVRTC2 compression."
 msgstr ""
 
-#: doc/classes/Image.xml:588
+#: doc/classes/Image.xml:589
 msgid "Use PVRTC4 compression."
 msgstr ""
 
-#: doc/classes/Image.xml:591
+#: doc/classes/Image.xml:592
 msgid "Use ETC compression."
 msgstr ""
 
-#: doc/classes/Image.xml:594
+#: doc/classes/Image.xml:595
 msgid "Use ETC2 compression."
 msgstr ""
 
-#: doc/classes/Image.xml:597
+#: doc/classes/Image.xml:598
 msgid ""
 "Source texture (before compression) is a regular texture. Default for all "
 "textures."
 msgstr ""
 
-#: doc/classes/Image.xml:600
+#: doc/classes/Image.xml:601
 msgid "Source texture (before compression) is in sRGB space."
 msgstr ""
 
-#: doc/classes/Image.xml:603
+#: doc/classes/Image.xml:604
 msgid ""
 "Source texture (before compression) is a normal texture (e.g. it can be "
 "compressed into two channels)."
@@ -30351,6 +30492,17 @@ msgstr ""
 
 #: doc/classes/Input.xml:43
 msgid ""
+"Sends all input events which are in the current buffer to the game loop. "
+"These events may have been buffered as a result of accumulated input "
+"([method set_use_accumulated_input]) or agile input flushing ([member "
+"ProjectSettings.input_devices/buffering/agile_event_flushing]).\n"
+"The engine will already do this itself at key execution points (at least "
+"once per frame). However, this can be useful in advanced cases where you "
+"want precise control over the timing of event handling."
+msgstr ""
+
+#: doc/classes/Input.xml:50
+msgid ""
 "Returns the acceleration of the device's accelerometer sensor, if the device "
 "has one. Otherwise, the method returns [constant Vector3.ZERO].\n"
 "Note this method returns an empty [Vector3] when running from the editor "
@@ -30362,7 +30514,7 @@ msgid ""
 "the Earth's gravitational acceleration [code]g[/code] (~9.81 m/s²)."
 msgstr ""
 
-#: doc/classes/Input.xml:53
+#: doc/classes/Input.xml:60
 msgid ""
 "Returns a value between 0 and 1 representing the raw intensity of the given "
 "action, ignoring the action's deadzone. In most cases, you should use "
@@ -30372,7 +30524,7 @@ msgid ""
 "for [InputEventJoypadMotion] events."
 msgstr ""
 
-#: doc/classes/Input.xml:62
+#: doc/classes/Input.xml:69
 msgid ""
 "Returns a value between 0 and 1 representing the intensity of the given "
 "action. In a joypad, for example, the further away the axis (analog sticks "
@@ -30384,7 +30536,7 @@ msgid ""
 "for [InputEventJoypadMotion] events."
 msgstr ""
 
-#: doc/classes/Input.xml:71
+#: doc/classes/Input.xml:78
 msgid ""
 "Get axis input by specifying two actions, one negative and one positive.\n"
 "This is a shorthand for writing [code]Input."
@@ -30392,17 +30544,17 @@ msgid ""
 "get_action_strength(\"negative_action\")[/code]."
 msgstr ""
 
-#: doc/classes/Input.xml:78
+#: doc/classes/Input.xml:85
 msgid ""
 "Returns an [Array] containing the device IDs of all currently connected "
 "joypads."
 msgstr ""
 
-#: doc/classes/Input.xml:84
+#: doc/classes/Input.xml:91
 msgid "Returns the currently assigned cursor shape (see [enum CursorShape])."
 msgstr ""
 
-#: doc/classes/Input.xml:90
+#: doc/classes/Input.xml:97
 msgid ""
 "Returns the gravity of the device's accelerometer sensor, if the device has "
 "one. Otherwise, the method returns [constant Vector3.ZERO].\n"
@@ -30412,7 +30564,7 @@ msgid ""
 "Earth's gravitational acceleration [code]g[/code] (~9.81 m/s²)."
 msgstr ""
 
-#: doc/classes/Input.xml:97
+#: doc/classes/Input.xml:104
 msgid ""
 "Returns the rotation rate in rad/s around a device's X, Y, and Z axes of the "
 "gyroscope sensor, if the device has one. Otherwise, the method returns "
@@ -30421,53 +30573,53 @@ msgid ""
 "it always returns [constant Vector3.ZERO]."
 msgstr ""
 
-#: doc/classes/Input.xml:106
+#: doc/classes/Input.xml:113
 msgid ""
 "Returns the current value of the joypad axis at given index (see [enum "
 "JoystickList])."
 msgstr ""
 
-#: doc/classes/Input.xml:113
+#: doc/classes/Input.xml:120
 msgid "Returns the index of the provided axis name."
 msgstr ""
 
-#: doc/classes/Input.xml:120
+#: doc/classes/Input.xml:127
 msgid ""
 "Receives a [enum JoystickList] axis and returns its equivalent name as a "
 "string."
 msgstr ""
 
-#: doc/classes/Input.xml:127
+#: doc/classes/Input.xml:134
 msgid "Returns the index of the provided button name."
 msgstr ""
 
-#: doc/classes/Input.xml:134
+#: doc/classes/Input.xml:141
 msgid ""
 "Receives a gamepad button from [enum JoystickList] and returns its "
 "equivalent name as a string."
 msgstr ""
 
-#: doc/classes/Input.xml:141
+#: doc/classes/Input.xml:148
 msgid ""
 "Returns a SDL2-compatible device GUID on platforms that use gamepad "
 "remapping. Returns [code]\"Default Gamepad\"[/code] otherwise."
 msgstr ""
 
-#: doc/classes/Input.xml:148
+#: doc/classes/Input.xml:155
 msgid "Returns the name of the joypad at the specified device index."
 msgstr ""
 
-#: doc/classes/Input.xml:155
+#: doc/classes/Input.xml:162
 msgid "Returns the duration of the current vibration effect in seconds."
 msgstr ""
 
-#: doc/classes/Input.xml:162
+#: doc/classes/Input.xml:169
 msgid ""
 "Returns the strength of the joypad vibration: x is the strength of the weak "
 "motor, and y is the strength of the strong motor."
 msgstr ""
 
-#: doc/classes/Input.xml:168
+#: doc/classes/Input.xml:175
 msgid ""
 "Returns the mouse speed for the last time the cursor was moved, and this "
 "until the next frame where the mouse moves. This means that even if the "
@@ -30475,7 +30627,7 @@ msgid ""
 "motion."
 msgstr ""
 
-#: doc/classes/Input.xml:174
+#: doc/classes/Input.xml:181
 msgid ""
 "Returns the magnetic field strength in micro-Tesla for all axes of the "
 "device's magnetometer sensor, if the device has one. Otherwise, the method "
@@ -30484,17 +30636,17 @@ msgid ""
 "platforms, it always returns [constant Vector3.ZERO]."
 msgstr ""
 
-#: doc/classes/Input.xml:181
+#: doc/classes/Input.xml:188
 msgid ""
 "Returns mouse buttons as a bitmask. If multiple mouse buttons are pressed at "
 "the same time, the bits are added together."
 msgstr ""
 
-#: doc/classes/Input.xml:187
+#: doc/classes/Input.xml:194
 msgid "Returns the mouse mode. See the constants for more information."
 msgstr ""
 
-#: doc/classes/Input.xml:198
+#: doc/classes/Input.xml:205
 msgid ""
 "Gets an input vector by specifying four actions for the positive and "
 "negative X and Y axes.\n"
@@ -30507,7 +30659,7 @@ msgid ""
 "want (on the range of 0 to 1)."
 msgstr ""
 
-#: doc/classes/Input.xml:208
+#: doc/classes/Input.xml:215
 msgid ""
 "Returns [code]true[/code] when the user starts pressing the action event, "
 "meaning it's [code]true[/code] only on the frame that the user pressed down "
@@ -30519,7 +30671,7 @@ msgid ""
 "for [InputEventJoypadMotion] events."
 msgstr ""
 
-#: doc/classes/Input.xml:218
+#: doc/classes/Input.xml:225
 msgid ""
 "Returns [code]true[/code] when the user stops pressing the action event, "
 "meaning it's [code]true[/code] only on the frame that the user released the "
@@ -30529,7 +30681,7 @@ msgid ""
 "for [InputEventJoypadMotion] events."
 msgstr ""
 
-#: doc/classes/Input.xml:227
+#: doc/classes/Input.xml:234
 msgid ""
 "Returns [code]true[/code] if you are pressing the action event. Note that if "
 "an action has multiple buttons assigned and more than one of them is "
@@ -30540,7 +30692,7 @@ msgid ""
 "for [InputEventJoypadMotion] events."
 msgstr ""
 
-#: doc/classes/Input.xml:236
+#: doc/classes/Input.xml:243
 #, fuzzy
 msgid ""
 "Returns [code]true[/code] if you are pressing the joypad button (see [enum "
@@ -30549,7 +30701,7 @@ msgstr ""
 "Gibt [code]true[/code] zurück, wenn ein Übergang zwischen den übergebenen "
 "Nodes existiert."
 
-#: doc/classes/Input.xml:243
+#: doc/classes/Input.xml:250
 msgid ""
 "Returns [code]true[/code] if the system knows the specified device. This "
 "means that it sets all button and axis indices exactly as defined in [enum "
@@ -30557,20 +30709,20 @@ msgid ""
 "but you can still retrieve events from them."
 msgstr ""
 
-#: doc/classes/Input.xml:250
+#: doc/classes/Input.xml:257
 #, fuzzy
 msgid ""
 "Returns [code]true[/code] if you are pressing the key. You can pass a [enum "
 "KeyList] constant."
 msgstr "Gibt [code]true[/code] zurück, wenn eine Animation abgespielt wird."
 
-#: doc/classes/Input.xml:257
+#: doc/classes/Input.xml:264
 msgid ""
 "Returns [code]true[/code] if you are pressing the mouse button specified "
 "with [enum ButtonList]."
 msgstr ""
 
-#: doc/classes/Input.xml:267
+#: doc/classes/Input.xml:274
 msgid ""
 "Notifies the [Input] singleton that a connection has changed, to update the "
 "state for the [code]device[/code] index.\n"
@@ -30579,7 +30731,7 @@ msgid ""
 "triggered internally."
 msgstr ""
 
-#: doc/classes/Input.xml:275
+#: doc/classes/Input.xml:282
 msgid ""
 "Feeds an [InputEvent] to the game. Can be used to artificially trigger input "
 "events from code. Also generates [method Node._input] calls.\n"
@@ -30592,12 +30744,21 @@ msgid ""
 "[/codeblock]"
 msgstr ""
 
-#: doc/classes/Input.xml:289
+#: doc/classes/Input.xml:296
 msgid ""
 "Removes all mappings from the internal database that match the given GUID."
 msgstr ""
 
-#: doc/classes/Input.xml:298
+#: doc/classes/Input.xml:303
+msgid ""
+"Sets the acceleration value of the accelerometer sensor. Can be used for "
+"debugging on devices without a hardware sensor, for example in an editor on "
+"a PC.\n"
+"[b]Note:[/b] This value can be immediately overwritten by the hardware "
+"sensor value on Android and iOS."
+msgstr ""
+
+#: doc/classes/Input.xml:313
 msgid ""
 "Sets a custom mouse cursor image, which is only visible inside the game "
 "window. The hotspot can also be specified. Passing [code]null[/code] to the "
@@ -30612,7 +30773,7 @@ msgid ""
 "compression mode can't be used for custom cursors."
 msgstr ""
 
-#: doc/classes/Input.xml:309
+#: doc/classes/Input.xml:324
 msgid ""
 "Sets the default cursor shape to be used in the viewport instead of "
 "[constant CURSOR_ARROW].\n"
@@ -30622,11 +30783,38 @@ msgid ""
 "cursor immediately."
 msgstr ""
 
-#: doc/classes/Input.xml:318
+#: doc/classes/Input.xml:333
+msgid ""
+"Sets the gravity value of the accelerometer sensor. Can be used for "
+"debugging on devices without a hardware sensor, for example in an editor on "
+"a PC.\n"
+"[b]Note:[/b] This value can be immediately overwritten by the hardware "
+"sensor value on Android and iOS."
+msgstr ""
+
+#: doc/classes/Input.xml:341
+msgid ""
+"Sets the value of the rotation rate of the gyroscope sensor. Can be used for "
+"debugging on devices without a hardware sensor, for example in an editor on "
+"a PC.\n"
+"[b]Note:[/b] This value can be immediately overwritten by the hardware "
+"sensor value on Android and iOS."
+msgstr ""
+
+#: doc/classes/Input.xml:349
+msgid ""
+"Sets the value of the magnetic field of the magnetometer sensor. Can be used "
+"for debugging on devices without a hardware sensor, for example in an editor "
+"on a PC.\n"
+"[b]Note:[/b] This value can be immediately overwritten by the hardware "
+"sensor value on Android and iOS."
+msgstr ""
+
+#: doc/classes/Input.xml:357
 msgid "Sets the mouse mode. See the constants for more information."
 msgstr ""
 
-#: doc/classes/Input.xml:325
+#: doc/classes/Input.xml:364
 msgid ""
 "Enables or disables the accumulation of similar input events sent by the "
 "operating system. When input accumulation is enabled, all input events "
@@ -30640,7 +30828,7 @@ msgid ""
 "results that closely follow the actual input."
 msgstr ""
 
-#: doc/classes/Input.xml:336
+#: doc/classes/Input.xml:375
 msgid ""
 "Starts to vibrate the joypad. Joypads usually come with two rumble motors, a "
 "strong and a weak one. [code]weak_magnitude[/code] is the strength of the "
@@ -30653,34 +30841,34 @@ msgid ""
 "few seconds."
 msgstr ""
 
-#: doc/classes/Input.xml:344
+#: doc/classes/Input.xml:383
 msgid "Stops the vibration of the joypad."
 msgstr ""
 
-#: doc/classes/Input.xml:351
+#: doc/classes/Input.xml:390
 msgid ""
 "Vibrate Android and iOS devices.\n"
 "[b]Note:[/b] It needs [code]VIBRATE[/code] permission for Android at export "
 "settings. iOS does not support duration."
 msgstr ""
 
-#: doc/classes/Input.xml:359
+#: doc/classes/Input.xml:398
 msgid "Sets the mouse position to the specified vector."
 msgstr ""
 
-#: doc/classes/Input.xml:368
+#: doc/classes/Input.xml:407
 msgid "Emitted when a joypad device has been connected or disconnected."
 msgstr ""
 
-#: doc/classes/Input.xml:374
+#: doc/classes/Input.xml:413
 msgid "Makes the mouse cursor visible if it is hidden."
 msgstr ""
 
-#: doc/classes/Input.xml:377
+#: doc/classes/Input.xml:416
 msgid "Makes the mouse cursor hidden if it is visible."
 msgstr ""
 
-#: doc/classes/Input.xml:380
+#: doc/classes/Input.xml:419
 msgid ""
 "Captures the mouse. The mouse will be hidden and its position locked at the "
 "center of the screen.\n"
@@ -30688,83 +30876,83 @@ msgid ""
 "need to use [member InputEventMouseMotion.relative]."
 msgstr ""
 
-#: doc/classes/Input.xml:384
+#: doc/classes/Input.xml:423
 msgid "Makes the mouse cursor visible but confines it to the game window."
 msgstr ""
 
-#: doc/classes/Input.xml:387
+#: doc/classes/Input.xml:426
 msgid "Arrow cursor. Standard, default pointing cursor."
 msgstr ""
 
-#: doc/classes/Input.xml:390
+#: doc/classes/Input.xml:429
 msgid ""
 "I-beam cursor. Usually used to show where the text cursor will appear when "
 "the mouse is clicked."
 msgstr ""
 
-#: doc/classes/Input.xml:393
+#: doc/classes/Input.xml:432
 msgid ""
 "Pointing hand cursor. Usually used to indicate the pointer is over a link or "
 "other interactable item."
 msgstr ""
 
-#: doc/classes/Input.xml:396
+#: doc/classes/Input.xml:435
 msgid ""
 "Cross cursor. Typically appears over regions in which a drawing operation "
 "can be performed or for selections."
 msgstr ""
 
-#: doc/classes/Input.xml:399
+#: doc/classes/Input.xml:438
 msgid ""
 "Wait cursor. Indicates that the application is busy performing an operation. "
 "This cursor shape denotes that the application is still usable during the "
 "operation."
 msgstr ""
 
-#: doc/classes/Input.xml:402
+#: doc/classes/Input.xml:441
 msgid ""
 "Busy cursor. Indicates that the application is busy performing an operation. "
 "This cursor shape denotes that the application isn't usable during the "
 "operation (e.g. something is blocking its main thread)."
 msgstr ""
 
-#: doc/classes/Input.xml:405
+#: doc/classes/Input.xml:444
 msgid "Drag cursor. Usually displayed when dragging something."
 msgstr ""
 
-#: doc/classes/Input.xml:408
+#: doc/classes/Input.xml:447
 msgid ""
 "Can drop cursor. Usually displayed when dragging something to indicate that "
 "it can be dropped at the current position."
 msgstr ""
 
-#: doc/classes/Input.xml:411
+#: doc/classes/Input.xml:450
 msgid ""
 "Forbidden cursor. Indicates that the current action is forbidden (for "
 "example, when dragging something) or that the control at a position is "
 "disabled."
 msgstr ""
 
-#: doc/classes/Input.xml:414
+#: doc/classes/Input.xml:453
 msgid ""
 "Vertical resize mouse cursor. A double-headed vertical arrow. It tells the "
 "user they can resize the window or the panel vertically."
 msgstr ""
 
-#: doc/classes/Input.xml:417
+#: doc/classes/Input.xml:456
 msgid ""
 "Horizontal resize mouse cursor. A double-headed horizontal arrow. It tells "
 "the user they can resize the window or the panel horizontally."
 msgstr ""
 
-#: doc/classes/Input.xml:420
+#: doc/classes/Input.xml:459
 msgid ""
 "Window resize mouse cursor. The cursor is a double-headed arrow that goes "
 "from the bottom left to the top right. It tells the user they can resize the "
 "window or the panel both horizontally and vertically."
 msgstr ""
 
-#: doc/classes/Input.xml:423
+#: doc/classes/Input.xml:462
 msgid ""
 "Window resize mouse cursor. The cursor is a double-headed arrow that goes "
 "from the top left to the bottom right, the opposite of [constant "
@@ -30772,23 +30960,23 @@ msgid ""
 "both horizontally and vertically."
 msgstr ""
 
-#: doc/classes/Input.xml:426
+#: doc/classes/Input.xml:465
 msgid "Move cursor. Indicates that something can be moved."
 msgstr ""
 
-#: doc/classes/Input.xml:429
+#: doc/classes/Input.xml:468
 msgid ""
 "Vertical split mouse cursor. On Windows, it's the same as [constant "
 "CURSOR_VSIZE]."
 msgstr ""
 
-#: doc/classes/Input.xml:432
+#: doc/classes/Input.xml:471
 msgid ""
 "Horizontal split mouse cursor. On Windows, it's the same as [constant "
 "CURSOR_HSIZE]."
 msgstr ""
 
-#: doc/classes/Input.xml:435
+#: doc/classes/Input.xml:474
 msgid "Help cursor. Usually a question mark."
 msgstr ""
 
@@ -34058,14 +34246,21 @@ msgid "Default text [Color] of the [LinkButton]."
 msgstr ""
 
 #: doc/classes/LinkButton.xml:46
-msgid "Text [Color] used when the [LinkButton] is being hovered."
+msgid ""
+"Text [Color] used when the [LinkButton] is focused. Only replaces the normal "
+"text color of the button. Disabled, hovered, and pressed states take "
+"precedence over this color."
 msgstr ""
 
 #: doc/classes/LinkButton.xml:49
-msgid "Text [Color] used when the [LinkButton] is being pressed."
+msgid "Text [Color] used when the [LinkButton] is being hovered."
 msgstr ""
 
 #: doc/classes/LinkButton.xml:52
+msgid "Text [Color] used when the [LinkButton] is being pressed."
+msgstr ""
+
+#: doc/classes/LinkButton.xml:55
 msgid "The vertical space between the baseline of text and the underline."
 msgstr ""
 
@@ -34560,26 +34755,33 @@ msgid "Text [Color] used when the [MenuButton] is disabled."
 msgstr ""
 
 #: doc/classes/MenuButton.xml:64
-msgid "Text [Color] used when the [MenuButton] is being hovered."
+msgid ""
+"Text [Color] used when the [MenuButton] is focused. Only replaces the normal "
+"text color of the button. Disabled, hovered, and pressed states take "
+"precedence over this color."
 msgstr ""
 
 #: doc/classes/MenuButton.xml:67
-msgid "Text [Color] used when the [MenuButton] is being pressed."
+msgid "Text [Color] used when the [MenuButton] is being hovered."
 msgstr ""
 
 #: doc/classes/MenuButton.xml:70
-msgid "[StyleBox] used when the [MenuButton] is being hovered."
+msgid "Text [Color] used when the [MenuButton] is being pressed."
 msgstr ""
 
 #: doc/classes/MenuButton.xml:73
-msgid "The horizontal space between [MenuButton]'s icon and text."
+msgid "[StyleBox] used when the [MenuButton] is being hovered."
 msgstr ""
 
 #: doc/classes/MenuButton.xml:76
-msgid "Default [StyleBox] for the [MenuButton]."
+msgid "The horizontal space between [MenuButton]'s icon and text."
 msgstr ""
 
 #: doc/classes/MenuButton.xml:79
+msgid "Default [StyleBox] for the [MenuButton]."
+msgstr ""
+
+#: doc/classes/MenuButton.xml:82
 msgid "[StyleBox] used when the [MenuButton] is being pressed."
 msgstr ""
 
@@ -39215,26 +39417,33 @@ msgid "Text [Color] used when the [OptionButton] is disabled."
 msgstr ""
 
 #: doc/classes/OptionButton.xml:212
-msgid "Text [Color] used when the [OptionButton] is being hovered."
+msgid ""
+"Text [Color] used when the [OptionButton] is focused. Only replaces the "
+"normal text color of the button. Disabled, hovered, and pressed states take "
+"precedence over this color."
 msgstr ""
 
 #: doc/classes/OptionButton.xml:215
-msgid "Text [Color] used when the [OptionButton] is being pressed."
+msgid "Text [Color] used when the [OptionButton] is being hovered."
 msgstr ""
 
 #: doc/classes/OptionButton.xml:218
-msgid "[StyleBox] used when the [OptionButton] is being hovered."
+msgid "Text [Color] used when the [OptionButton] is being pressed."
 msgstr ""
 
 #: doc/classes/OptionButton.xml:221
-msgid "The horizontal space between [OptionButton]'s icon and text."
+msgid "[StyleBox] used when the [OptionButton] is being hovered."
 msgstr ""
 
 #: doc/classes/OptionButton.xml:224
-msgid "Default [StyleBox] for the [OptionButton]."
+msgid "The horizontal space between [OptionButton]'s icon and text."
 msgstr ""
 
 #: doc/classes/OptionButton.xml:227
+msgid "Default [StyleBox] for the [OptionButton]."
+msgstr ""
+
+#: doc/classes/OptionButton.xml:230
 msgid "[StyleBox] used when the [OptionButton] is being pressed."
 msgstr ""
 
@@ -44381,30 +44590,31 @@ msgstr ""
 msgid "Removes an element from the array by index."
 msgstr "Entfernt das Element der Arrays dessen Position übergeben wurde."
 
-#: doc/classes/PoolByteArray.xml:114 doc/classes/PoolColorArray.xml:66
-#: doc/classes/PoolIntArray.xml:67 doc/classes/PoolRealArray.xml:67
-#: doc/classes/PoolStringArray.xml:74 doc/classes/PoolVector2Array.xml:67
-#: doc/classes/PoolVector3Array.xml:66
+#: doc/classes/PoolByteArray.xml:114 doc/classes/PoolIntArray.xml:67
+#: doc/classes/PoolRealArray.xml:67
+#, fuzzy
 msgid ""
 "Sets the size of the array. If the array is grown, reserves elements at the "
 "end of the array. If the array is shrunk, truncates the array to the new "
-"size."
+"size.\n"
+"[b]Note:[/b] Added elements are not automatically initialized to 0 and will "
+"contain garbage, i.e. indeterminate values."
 msgstr ""
 "Legt die Größe des Arrays fest. Sollte das Array dadurch wachsen, werden "
 "neue Elemente am Ende des Arrays reserviert. Sollte es schrumpfen, werden "
 "Elemente am Ende entsprechend weggeschnitten."
 
-#: doc/classes/PoolByteArray.xml:121
+#: doc/classes/PoolByteArray.xml:122
 msgid "Changes the byte at the given index."
 msgstr ""
 
-#: doc/classes/PoolByteArray.xml:127 doc/classes/PoolColorArray.xml:79
-#: doc/classes/PoolRealArray.xml:80 doc/classes/PoolStringArray.xml:87
+#: doc/classes/PoolByteArray.xml:128 doc/classes/PoolColorArray.xml:79
+#: doc/classes/PoolRealArray.xml:81 doc/classes/PoolStringArray.xml:87
 #: doc/classes/PoolVector2Array.xml:80 doc/classes/PoolVector3Array.xml:79
 msgid "Returns the size of the array."
 msgstr "Gibt die Größe des Arrays zurück."
 
-#: doc/classes/PoolByteArray.xml:135
+#: doc/classes/PoolByteArray.xml:136
 msgid ""
 "Returns the slice of the [PoolByteArray] between indices (inclusive) as a "
 "new [PoolByteArray]. Any negative index is considered to be from the end of "
@@ -44445,6 +44655,17 @@ msgstr "Hängt ein [PackedVector2Array] am Ende dieses Arrays an."
 #: doc/classes/PoolColorArray.xml:54 doc/classes/PoolIntArray.xml:55
 msgid "Appends a value to the array."
 msgstr ""
+
+#: doc/classes/PoolColorArray.xml:66 doc/classes/PoolStringArray.xml:74
+#: doc/classes/PoolVector2Array.xml:67 doc/classes/PoolVector3Array.xml:66
+msgid ""
+"Sets the size of the array. If the array is grown, reserves elements at the "
+"end of the array. If the array is shrunk, truncates the array to the new "
+"size."
+msgstr ""
+"Legt die Größe des Arrays fest. Sollte das Array dadurch wachsen, werden "
+"neue Elemente am Ende des Arrays reserviert. Sollte es schrumpfen, werden "
+"Elemente am Ende entsprechend weggeschnitten."
 
 #: doc/classes/PoolColorArray.xml:73
 msgid "Changes the [Color] at the given index."
@@ -44490,12 +44711,12 @@ msgstr ""
 "Fügt ein neues Element an der übergebenen Position ein. Die Position muss "
 "innerhalb des Arrays oder eins dahinter liegen([code]index == size()[/code])."
 
-#: doc/classes/PoolIntArray.xml:74
+#: doc/classes/PoolIntArray.xml:75
 #, fuzzy
 msgid "Changes the int at the given index."
 msgstr "Ändert den [Vector2] am übergeben Index."
 
-#: doc/classes/PoolIntArray.xml:80
+#: doc/classes/PoolIntArray.xml:81
 msgid "Returns the array size."
 msgstr ""
 
@@ -44532,7 +44753,7 @@ msgstr ""
 msgid "Appends a [PoolRealArray] at the end of this array."
 msgstr "Hängt ein [PackedVector2Array] am Ende dieses Arrays an."
 
-#: doc/classes/PoolRealArray.xml:74
+#: doc/classes/PoolRealArray.xml:75
 msgid "Changes the float at the given index."
 msgstr ""
 
@@ -45843,18 +46064,6 @@ msgstr ""
 
 #: doc/classes/ProjectSettings.xml:204
 msgid ""
-"The project data directory is used for storing project-specific data "
-"(metadata, shader cache, etc.).\n"
-"[b]Note:[/b] Restart the application after changing this setting.\n"
-"[b]Note:[/b] Changing this value can help on platforms or with third-party "
-"tools where specific directory patterns are disallowed. Only modify this "
-"setting if you know that your environment requires it, as changing the "
-"default can impact compatibility with some external tools or plugins which "
-"expect the default [code].import[/code] folder."
-msgstr ""
-
-#: doc/classes/ProjectSettings.xml:209
-msgid ""
 "Specifies a file to override project settings. For example: [code]user://"
 "custom_settings.cfg[/code]. See \"Overriding\" in the [ProjectSettings] "
 "class description at the top for more information.\n"
@@ -45862,7 +46071,7 @@ msgid ""
 "code] will still be read to override the project settings."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:213
+#: doc/classes/ProjectSettings.xml:208
 msgid ""
 "If [code]true[/code], the project will save user data to its own user "
 "directory (see [member application/config/custom_user_dir_name]). This "
@@ -45872,13 +46081,28 @@ msgid ""
 "user data directory)/Godot/app_userdata/(project name)[/code]."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:216
+#: doc/classes/ProjectSettings.xml:211
+msgid ""
+"If [code]true[/code], the project will use a hidden directory ([code]."
+"import[/code]) for storing project-specific data (metadata, shader cache, "
+"etc.).\n"
+"If [code]false[/code], a non-hidden directory ([code]import[/code]) will be "
+"used instead.\n"
+"[b]Note:[/b] Restart the application after changing this setting.\n"
+"[b]Note:[/b] Changing this value can help on platforms or with third-party "
+"tools where hidden directory patterns are disallowed. Only modify this "
+"setting if you know that your environment requires it, as changing the "
+"default can impact compatibility with some external tools or plugins which "
+"expect the default [code].import[/code] folder."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml:217
 msgid ""
 "Icon set in [code].ico[/code] format used on Windows to set the game's icon. "
 "This is done automatically on start by calling [method OS.set_native_icon]."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:219
+#: doc/classes/ProjectSettings.xml:220
 msgid ""
 "Time samples for frame deltas are subject to random variation introduced by "
 "the platform, even when frames are displayed at regular intervals thanks to "
@@ -45892,14 +46116,14 @@ msgid ""
 "adequate to render frames at the refresh rate."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:224
+#: doc/classes/ProjectSettings.xml:225
 msgid ""
 "[b]Experimental.[/b] Shifts the measurement of delta time for each frame to "
 "just after the drawing has taken place. This may lead to more consistent "
 "deltas and a reduction in frame stutters."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:227
+#: doc/classes/ProjectSettings.xml:228
 msgid ""
 "If [code]true[/code], disables printing to standard error. If [code]true[/"
 "code], this also hides error and warning messages printed by [method "
@@ -45908,7 +46132,7 @@ msgid ""
 "Changes to this setting will only be applied upon restarting the application."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:231
+#: doc/classes/ProjectSettings.xml:232
 msgid ""
 "If [code]true[/code], disables printing to standard output. This is "
 "equivalent to starting the editor or project with the [code]--quiet[/code] "
@@ -45916,7 +46140,7 @@ msgid ""
 "Changes to this setting will only be applied upon restarting the application."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:235
+#: doc/classes/ProjectSettings.xml:236
 msgid ""
 "If [code]true[/code], flushes the standard output stream every time a line "
 "is printed. This affects both terminal logging and file logging.\n"
@@ -45932,20 +46156,20 @@ msgid ""
 "Changes to this setting will only be applied upon restarting the application."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:241
+#: doc/classes/ProjectSettings.xml:242
 msgid ""
 "Debug build override for [member application/run/flush_stdout_on_print], as "
 "performance is less important during debugging.\n"
 "Changes to this setting will only be applied upon restarting the application."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:245
+#: doc/classes/ProjectSettings.xml:246
 msgid ""
 "Forces a delay between frames in the main loop (in milliseconds). This may "
 "be useful if you plan to disable vertical synchronization."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:248
+#: doc/classes/ProjectSettings.xml:249
 msgid ""
 "If [code]true[/code], enables low-processor usage mode. This setting only "
 "works on desktop platforms. The screen is not redrawn if nothing changes "
@@ -45953,75 +46177,75 @@ msgid ""
 "useless (and can hurt performance) in most games."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:251
+#: doc/classes/ProjectSettings.xml:252
 msgid ""
 "Amount of sleeping between frames when the low-processor usage mode is "
 "enabled (in microseconds). Higher values will result in lower CPU usage."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:254
+#: doc/classes/ProjectSettings.xml:255
 msgid "Path to the main scene file that will be loaded when the project runs."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:257 doc/classes/ProjectSettings.xml:260
+#: doc/classes/ProjectSettings.xml:258 doc/classes/ProjectSettings.xml:261
 msgid ""
 "Audio buses will disable automatically when sound goes below a given dB "
 "threshold for a given time. This saves CPU as effects assigned to that bus "
 "will no longer do any processing."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:263
+#: doc/classes/ProjectSettings.xml:264
 msgid ""
 "Default [AudioBusLayout] resource file to use in the project, unless "
 "overridden by the scene."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:266
+#: doc/classes/ProjectSettings.xml:267
 msgid ""
 "Specifies the audio driver to use. This setting is platform-dependent as "
 "each platform supports different audio drivers. If left empty, the default "
 "audio driver will be used."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:269
+#: doc/classes/ProjectSettings.xml:270
 msgid ""
 "If [code]true[/code], microphone input will be allowed. This requires "
 "appropriate permissions to be set when exporting to Android or iOS."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:272
+#: doc/classes/ProjectSettings.xml:273
 msgid ""
 "The mixing rate used for audio (in Hz). In general, it's better to not touch "
 "this and leave it to the host operating system."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:275
+#: doc/classes/ProjectSettings.xml:276
 msgid ""
 "Safer override for [member audio/mix_rate] in the Web platform. Here "
 "[code]0[/code] means \"let the browser choose\" (since some browsers do not "
 "like forcing the mix rate)."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:278
+#: doc/classes/ProjectSettings.xml:279
 msgid ""
 "Output latency in milliseconds for audio. Lower values will result in lower "
 "audio latency at the cost of increased CPU usage. Low values may result in "
 "audible cracking on slower hardware."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:281
+#: doc/classes/ProjectSettings.xml:282
 msgid ""
 "Safer override for [member audio/output_latency] in the Web platform, to "
 "avoid audio issues especially on mobile devices."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:284
+#: doc/classes/ProjectSettings.xml:285
 msgid ""
 "Setting to hardcode audio delay when playing video. Best to leave this "
 "untouched unless you know what you are doing."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:287
+#: doc/classes/ProjectSettings.xml:288
 msgid ""
 "The default compression level for gzip. Affects compressed scenes and "
 "resources. Higher levels result in smaller files at the cost of compression "
@@ -46031,7 +46255,7 @@ msgid ""
 "updates."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:290
+#: doc/classes/ProjectSettings.xml:291
 msgid ""
 "The default compression level for Zlib. Affects compressed scenes and "
 "resources. Higher levels result in smaller files at the cost of compression "
@@ -46041,14 +46265,14 @@ msgid ""
 "updates."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:293
+#: doc/classes/ProjectSettings.xml:294
 msgid ""
 "The default compression level for Zstandard. Affects compressed scenes and "
 "resources. Higher levels result in smaller files at the cost of compression "
 "speed. Decompression speed is mostly unaffected by the compression level."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:296
+#: doc/classes/ProjectSettings.xml:297
 msgid ""
 "Enables [url=https://github.com/facebook/zstd/releases/tag/v1.3.2]long-"
 "distance matching[/url] in Zstandard."
@@ -46056,14 +46280,14 @@ msgstr ""
 "Aktiviert [url=https://github.com/facebook/zstd/releases/tag/v1.3.2]long-"
 "distance matching[/url] in Zstandard."
 
-#: doc/classes/ProjectSettings.xml:299
+#: doc/classes/ProjectSettings.xml:300
 msgid ""
 "Largest size limit (in power of 2) allowed when compressing using long-"
 "distance matching with Zstandard. Higher values can result in better "
 "compression, but will require more memory when compressing and decompressing."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:302
+#: doc/classes/ProjectSettings.xml:303
 msgid ""
 "If [code]true[/code], displays getters and setters in autocompletion results "
 "in the script editor. This setting is meant to be used when porting old "
@@ -46071,81 +46295,81 @@ msgid ""
 "Godot 3 onwards."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:305
+#: doc/classes/ProjectSettings.xml:306
 msgid ""
 "If [code]true[/code], enables warnings when a constant is used as a function."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:308
+#: doc/classes/ProjectSettings.xml:309
 msgid ""
 "If [code]true[/code], enables warnings when deprecated keywords such as "
 "[code]slave[/code] are used."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:311
+#: doc/classes/ProjectSettings.xml:312
 msgid ""
 "If [code]true[/code], enables specific GDScript warnings (see [code]debug/"
 "gdscript/warnings/*[/code] settings). If [code]false[/code], disables all "
 "GDScript warnings."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:314
+#: doc/classes/ProjectSettings.xml:315
 msgid ""
 "If [code]true[/code], scripts in the [code]res://addons[/code] folder will "
 "not generate warnings."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:317
+#: doc/classes/ProjectSettings.xml:318
 msgid ""
 "If [code]true[/code], enables warnings when a function is declared with the "
 "same name as a constant."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:320
+#: doc/classes/ProjectSettings.xml:321
 msgid ""
 "If [code]true[/code], enables warnings when a function is declared with the "
 "same name as a variable. This will turn into an error in a future version "
 "when first-class functions become supported in GDScript."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:323
+#: doc/classes/ProjectSettings.xml:324
 msgid ""
 "If [code]true[/code], enables warnings when a function assigned to a "
 "variable may yield and return a function state instead of a value."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:326
+#: doc/classes/ProjectSettings.xml:327
 msgid ""
 "If [code]true[/code], enables warnings when using a function as if it was a "
 "property."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:329
+#: doc/classes/ProjectSettings.xml:330
 msgid ""
 "If [code]true[/code], enables warnings when a ternary operator may emit "
 "values with incompatible types."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:332
+#: doc/classes/ProjectSettings.xml:333
 msgid ""
 "If [code]true[/code], enables warnings when dividing an integer by another "
 "integer (the decimal part will be discarded)."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:335
+#: doc/classes/ProjectSettings.xml:336
 msgid ""
 "If [code]true[/code], enables warnings when passing a floating-point value "
 "to a function that expects an integer (it will be converted and lose "
 "precision)."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:338
+#: doc/classes/ProjectSettings.xml:339
 msgid ""
 "If [code]true[/code], enables warnings when using a property as if it was a "
 "function."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:341
+#: doc/classes/ProjectSettings.xml:342
 msgid ""
 "If [code]true[/code], enables warnings when calling a function without using "
 "its return value (by assigning it to a variable or using it as a function "
@@ -46153,74 +46377,74 @@ msgid ""
 "using the [enum Error] enum."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:344
+#: doc/classes/ProjectSettings.xml:345
 msgid ""
 "If [code]true[/code], enables warnings when defining a local or subclass "
 "member variable that would shadow a variable at an upper level (such as a "
 "member variable)."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:347
+#: doc/classes/ProjectSettings.xml:348
 msgid ""
 "If [code]true[/code], enables warnings when calling an expression that has "
 "no effect on the surrounding code, such as writing [code]2 + 2[/code] as a "
 "statement."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:350
+#: doc/classes/ProjectSettings.xml:351
 msgid ""
 "If [code]true[/code], enables warnings when calling a ternary expression "
 "that has no effect on the surrounding code, such as writing [code]42 if "
 "active else 0[/code] as a statement."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:353
+#: doc/classes/ProjectSettings.xml:354
 msgid ""
 "If [code]true[/code], all warnings will be reported as if they were errors."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:356
+#: doc/classes/ProjectSettings.xml:357
 msgid ""
 "If [code]true[/code], enables warnings when using a variable that wasn't "
 "previously assigned."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:359
+#: doc/classes/ProjectSettings.xml:360
 msgid ""
 "If [code]true[/code], enables warnings when assigning a variable using an "
 "assignment operator like [code]+=[/code] if the variable wasn't previously "
 "assigned."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:362
+#: doc/classes/ProjectSettings.xml:363
 msgid ""
 "If [code]true[/code], enables warnings when unreachable code is detected "
 "(such as after a [code]return[/code] statement that will always be executed)."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:365
+#: doc/classes/ProjectSettings.xml:366
 msgid ""
 "If [code]true[/code], enables warnings when using an expression whose type "
 "may not be compatible with the function parameter expected."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:368
+#: doc/classes/ProjectSettings.xml:369
 msgid "If [code]true[/code], enables warnings when performing an unsafe cast."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:371
+#: doc/classes/ProjectSettings.xml:372
 msgid ""
 "If [code]true[/code], enables warnings when calling a method whose presence "
 "is not guaranteed at compile-time in the class."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:374
+#: doc/classes/ProjectSettings.xml:375
 msgid ""
 "If [code]true[/code], enables warnings when accessing a property whose "
 "presence is not guaranteed at compile-time in the class."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:377
+#: doc/classes/ProjectSettings.xml:378
 #, fuzzy
 msgid ""
 "If [code]true[/code], enables warnings when a function parameter is unused."
@@ -46228,38 +46452,38 @@ msgstr ""
 "Wenn [code]true[/code], können andere Überwachungsbereiche diesen Bereich "
 "erkennen."
 
-#: doc/classes/ProjectSettings.xml:380
+#: doc/classes/ProjectSettings.xml:381
 #, fuzzy
 msgid ""
 "If [code]true[/code], enables warnings when a member variable is unused."
 msgstr "Wenn [code]true[/code], ist die Filterung aktiviert."
 
-#: doc/classes/ProjectSettings.xml:383
+#: doc/classes/ProjectSettings.xml:384
 msgid "If [code]true[/code], enables warnings when a signal is unused."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:386
+#: doc/classes/ProjectSettings.xml:387
 msgid "If [code]true[/code], enables warnings when a local variable is unused."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:389
+#: doc/classes/ProjectSettings.xml:390
 msgid ""
 "If [code]true[/code], enables warnings when a variable is declared with the "
 "same name as a function. This will turn into an error in a future version "
 "when first-class functions become supported in GDScript."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:392
+#: doc/classes/ProjectSettings.xml:393
 msgid ""
 "If [code]true[/code], enables warnings when assigning the result of a "
 "function that returns [code]void[/code] to a variable."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:395
+#: doc/classes/ProjectSettings.xml:396
 msgid "Message to be displayed before the backtrace when the engine crashes."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:398
+#: doc/classes/ProjectSettings.xml:399
 msgid ""
 "Maximum number of frames per second allowed. The actual number of frames per "
 "second may still be below this value if the game is lagging.\n"
@@ -46270,91 +46494,91 @@ msgid ""
 "project under lag conditions."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:403
+#: doc/classes/ProjectSettings.xml:404
 msgid "Maximum call stack allowed for debugging GDScript."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:406
+#: doc/classes/ProjectSettings.xml:407
 msgid "Maximum amount of functions per frame allowed when profiling."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:409
+#: doc/classes/ProjectSettings.xml:410
 msgid "Print frames per second to standard output every second."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:412
+#: doc/classes/ProjectSettings.xml:413
 msgid ""
 "Print more information to standard output when running. It displays "
 "information such as memory leaks, which scenes and resources are being "
 "loaded, etc."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:415
+#: doc/classes/ProjectSettings.xml:416
 msgid "Maximum call stack in visual scripting, to avoid infinite recursion."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:418
+#: doc/classes/ProjectSettings.xml:419
 msgid ""
 "Color of the contact points between collision shapes, visible when \"Visible "
 "Collision Shapes\" is enabled in the Debug menu."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:421
+#: doc/classes/ProjectSettings.xml:422
 msgid ""
 "Sets whether 2D physics will display collision outlines in game when "
 "\"Visible Collision Shapes\" is enabled in the Debug menu."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:424
+#: doc/classes/ProjectSettings.xml:425
 msgid ""
 "Maximum number of contact points between collision shapes to display when "
 "\"Visible Collision Shapes\" is enabled in the Debug menu."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:427
+#: doc/classes/ProjectSettings.xml:428
 msgid ""
 "Color of the collision shapes, visible when \"Visible Collision Shapes\" is "
 "enabled in the Debug menu."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:430
+#: doc/classes/ProjectSettings.xml:431
 msgid ""
 "Color of the disabled navigation geometry, visible when \"Visible Navigation"
 "\" is enabled in the Debug menu."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:433
+#: doc/classes/ProjectSettings.xml:434
 msgid ""
 "Color of the navigation geometry, visible when \"Visible Navigation\" is "
 "enabled in the Debug menu."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:436
+#: doc/classes/ProjectSettings.xml:437
 msgid "Custom image for the mouse cursor (limited to 256×256)."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:439
+#: doc/classes/ProjectSettings.xml:440
 msgid "Hotspot for the custom mouse cursor image."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:442
+#: doc/classes/ProjectSettings.xml:443
 msgid "Position offset for tooltips, relative to the mouse cursor's hotspot."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:445
+#: doc/classes/ProjectSettings.xml:446
 msgid ""
 "If [code]true[/code], allows HiDPI display on Windows, macOS, and the HTML5 "
 "platform. This setting has no effect on desktop Linux, as DPI-awareness "
 "fallbacks are not supported there."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:448
+#: doc/classes/ProjectSettings.xml:449
 msgid ""
 "If [code]true[/code], keeps the screen on (even in case of inactivity), so "
 "the screensaver does not take over. Works on desktop and mobile platforms."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:451
+#: doc/classes/ProjectSettings.xml:452
 msgid ""
 "The default screen orientation to use on mobile devices.\n"
 "[b]Note:[/b] When set to a portrait orientation, this project setting does "
@@ -46363,13 +46587,13 @@ msgid ""
 "window/size/height] accordingly."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:455
+#: doc/classes/ProjectSettings.xml:456
 msgid ""
 "If [code]true[/code], the home indicator is hidden automatically. This only "
 "affects iOS devices without a physical home button."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:458
+#: doc/classes/ProjectSettings.xml:459
 msgid ""
 "If [code]true[/code], allows per-pixel transparency for the window "
 "background. This affects performance, so leave it on [code]false[/code] "
@@ -46379,7 +46603,7 @@ msgid ""
 "and Android."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:463
+#: doc/classes/ProjectSettings.xml:464
 msgid ""
 "Sets the window background to transparent when it starts.\n"
 "See [member OS.window_per_pixel_transparency_enabled] for more details.\n"
@@ -46387,19 +46611,19 @@ msgid ""
 "and Android."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:468
+#: doc/classes/ProjectSettings.xml:469
 msgid ""
 "Forces the main window to be always on top.\n"
 "[b]Note:[/b] This setting is ignored on iOS, Android, and HTML5."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:472
+#: doc/classes/ProjectSettings.xml:473
 msgid ""
 "Forces the main window to be borderless.\n"
 "[b]Note:[/b] This setting is ignored on iOS, Android, and HTML5."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:476
+#: doc/classes/ProjectSettings.xml:477
 msgid ""
 "Sets the main window to full screen when the project starts. Note that this "
 "is not [i]exclusive[/i] fullscreen. On Windows and Linux, a borderless "
@@ -46413,45 +46637,45 @@ msgid ""
 "[b]Note:[/b] This setting is ignored on iOS, Android, and HTML5."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:481
+#: doc/classes/ProjectSettings.xml:482
 msgid ""
 "Sets the game's main viewport height. On desktop platforms, this is the "
 "default window size. Stretch mode settings also use this as a reference when "
 "enabled."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:484
+#: doc/classes/ProjectSettings.xml:485
 msgid ""
 "Allows the window to be resizable by default.\n"
 "[b]Note:[/b] This setting is ignored on iOS and Android."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:488
+#: doc/classes/ProjectSettings.xml:489
 msgid ""
 "If greater than zero, overrides the window height when running the game. "
 "Useful for testing stretch modes."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:491
+#: doc/classes/ProjectSettings.xml:492
 msgid ""
 "If greater than zero, overrides the window width when running the game. "
 "Useful for testing stretch modes."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:494
+#: doc/classes/ProjectSettings.xml:495
 msgid ""
 "Sets the game's main viewport width. On desktop platforms, this is the "
 "default window size. Stretch mode settings also use this as a reference when "
 "enabled."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:497
+#: doc/classes/ProjectSettings.xml:498
 msgid ""
 "Specifies the tablet driver to use. If left empty, the default driver will "
 "be used."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:500
+#: doc/classes/ProjectSettings.xml:501
 msgid ""
 "If [code]true[/code], enables vertical synchronization. This eliminates "
 "tearing that may appear in moving scenes, at the cost of higher input "
@@ -46460,7 +46684,7 @@ msgid ""
 "regardless (such as mobile platforms and HTML5)."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:503
+#: doc/classes/ProjectSettings.xml:504
 msgid ""
 "If [code]Use Vsync[/code] is enabled and this setting is [code]true[/code], "
 "enables vertical synchronization via the operating system's window "
@@ -46471,7 +46695,7 @@ msgid ""
 "framerate halving (e.g. from 60 FPS to 30 FPS) when using it."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:507
+#: doc/classes/ProjectSettings.xml:508
 msgid ""
 "The command-line arguments to append to Godot's own command line when "
 "running the project. This doesn't affect the editor itself.\n"
@@ -46487,14 +46711,14 @@ msgid ""
 "[/codeblock]"
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:515
+#: doc/classes/ProjectSettings.xml:516
 msgid ""
 "Search path for project-specific script templates. Godot will search for "
 "script templates both in the editor-specific path and in this project-"
 "specific path."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:518
+#: doc/classes/ProjectSettings.xml:519
 msgid ""
 "Text-based file extensions to include in the script editor's \"Find in Files"
 "\" feature. You can add e.g. [code]tscn[/code] if you wish to also parse "
@@ -46502,49 +46726,49 @@ msgid ""
 "serialized in the scene files."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:521
+#: doc/classes/ProjectSettings.xml:522
 msgid ""
 "Default value for [member ScrollContainer.scroll_deadzone], which will be "
 "used for all [ScrollContainer]s unless overridden."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:524
+#: doc/classes/ProjectSettings.xml:525
 msgid ""
 "If [code]true[/code], swaps OK and Cancel buttons in dialogs on Windows and "
 "UWP to follow interface conventions."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:529
+#: doc/classes/ProjectSettings.xml:530
 msgid ""
 "Path to a custom [Theme] resource file to use for the project ([code]theme[/"
 "code] or generic [code]tres[/code]/[code]res[/code] extension)."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:532
+#: doc/classes/ProjectSettings.xml:533
 msgid ""
 "Path to a custom [Font] resource to use as default for all GUI elements of "
 "the project."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:535
+#: doc/classes/ProjectSettings.xml:536
 msgid "If [code]true[/code], makes sure the theme used works with HiDPI."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:538
+#: doc/classes/ProjectSettings.xml:539
 msgid ""
 "Timer setting for incremental search in [Tree], [ItemList], etc. controls "
 "(in milliseconds)."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:541
+#: doc/classes/ProjectSettings.xml:542
 msgid "Timer for detecting idle in [TextEdit] (in seconds)."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:544
+#: doc/classes/ProjectSettings.xml:545
 msgid "Default delay for tooltips (in seconds)."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:547
+#: doc/classes/ProjectSettings.xml:548
 msgid ""
 "Default [InputEventAction] to confirm a focused button, menu or list item, "
 "or validate input.\n"
@@ -46553,7 +46777,7 @@ msgid ""
 "to the action can however be modified."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:551
+#: doc/classes/ProjectSettings.xml:552
 msgid ""
 "Default [InputEventAction] to discard a modal or pending input.\n"
 "[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are "
@@ -46561,7 +46785,7 @@ msgid ""
 "to the action can however be modified."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:555
+#: doc/classes/ProjectSettings.xml:556
 msgid ""
 "Default [InputEventAction] to move down in the UI.\n"
 "[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are "
@@ -46569,7 +46793,7 @@ msgid ""
 "to the action can however be modified."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:559
+#: doc/classes/ProjectSettings.xml:560
 msgid ""
 "Default [InputEventAction] to go to the end position of a [Control] (e.g. "
 "last item in an [ItemList] or a [Tree]), matching the behavior of [constant "
@@ -46579,7 +46803,7 @@ msgid ""
 "to the action can however be modified."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:563
+#: doc/classes/ProjectSettings.xml:564
 msgid ""
 "Default [InputEventAction] to focus the next [Control] in the scene. The "
 "focus behavior can be configured via [member Control.focus_next].\n"
@@ -46588,7 +46812,7 @@ msgid ""
 "to the action can however be modified."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:567
+#: doc/classes/ProjectSettings.xml:568
 msgid ""
 "Default [InputEventAction] to focus the previous [Control] in the scene. The "
 "focus behavior can be configured via [member Control.focus_previous].\n"
@@ -46597,7 +46821,7 @@ msgid ""
 "to the action can however be modified."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:571
+#: doc/classes/ProjectSettings.xml:572
 msgid ""
 "Default [InputEventAction] to go to the start position of a [Control] (e.g. "
 "first item in an [ItemList] or a [Tree]), matching the behavior of [constant "
@@ -46607,7 +46831,7 @@ msgid ""
 "to the action can however be modified."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:575
+#: doc/classes/ProjectSettings.xml:576
 msgid ""
 "Default [InputEventAction] to move left in the UI.\n"
 "[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are "
@@ -46615,7 +46839,7 @@ msgid ""
 "to the action can however be modified."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:579
+#: doc/classes/ProjectSettings.xml:580
 msgid ""
 "Default [InputEventAction] to go down a page in a [Control] (e.g. in an "
 "[ItemList] or a [Tree]), matching the behavior of [constant KEY_PAGEDOWN] on "
@@ -46625,7 +46849,7 @@ msgid ""
 "to the action can however be modified."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:583
+#: doc/classes/ProjectSettings.xml:584
 msgid ""
 "Default [InputEventAction] to go up a page in a [Control] (e.g. in an "
 "[ItemList] or a [Tree]), matching the behavior of [constant KEY_PAGEUP] on "
@@ -46635,7 +46859,7 @@ msgid ""
 "to the action can however be modified."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:587
+#: doc/classes/ProjectSettings.xml:588
 msgid ""
 "Default [InputEventAction] to move right in the UI.\n"
 "[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are "
@@ -46643,7 +46867,7 @@ msgid ""
 "to the action can however be modified."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:591
+#: doc/classes/ProjectSettings.xml:592
 msgid ""
 "Default [InputEventAction] to select an item in a [Control] (e.g. in an "
 "[ItemList] or a [Tree]).\n"
@@ -46652,7 +46876,7 @@ msgid ""
 "to the action can however be modified."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:595
+#: doc/classes/ProjectSettings.xml:596
 msgid ""
 "Default [InputEventAction] to move up in the UI.\n"
 "[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are "
@@ -46660,7 +46884,7 @@ msgid ""
 "to the action can however be modified."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:599
+#: doc/classes/ProjectSettings.xml:600
 msgid ""
 "If [code]true[/code], key/touch/joystick events will be flushed just before "
 "every idle and physics frame.\n"
@@ -46672,477 +46896,477 @@ msgid ""
 "[b]Note:[/b] Currently implemented only in Android."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:605
+#: doc/classes/ProjectSettings.xml:606
 msgid ""
 "If [code]true[/code], sends mouse input events when tapping or swiping on "
 "the touchscreen."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:608
+#: doc/classes/ProjectSettings.xml:609
 msgid ""
 "If [code]true[/code], sends touch input events when clicking or dragging the "
 "mouse."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:611
+#: doc/classes/ProjectSettings.xml:612
 msgid "Default delay for touch events. This only affects iOS devices."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:614
+#: doc/classes/ProjectSettings.xml:615
 msgid "Optional name for the 2D physics layer 1."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:617
+#: doc/classes/ProjectSettings.xml:618
 msgid "Optional name for the 2D physics layer 10."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:620
+#: doc/classes/ProjectSettings.xml:621
 msgid "Optional name for the 2D physics layer 11."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:623
+#: doc/classes/ProjectSettings.xml:624
 msgid "Optional name for the 2D physics layer 12."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:626
+#: doc/classes/ProjectSettings.xml:627
 msgid "Optional name for the 2D physics layer 13."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:629
+#: doc/classes/ProjectSettings.xml:630
 msgid "Optional name for the 2D physics layer 14."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:632
+#: doc/classes/ProjectSettings.xml:633
 msgid "Optional name for the 2D physics layer 15."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:635
+#: doc/classes/ProjectSettings.xml:636
 msgid "Optional name for the 2D physics layer 16."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:638
+#: doc/classes/ProjectSettings.xml:639
 msgid "Optional name for the 2D physics layer 17."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:641
+#: doc/classes/ProjectSettings.xml:642
 msgid "Optional name for the 2D physics layer 18."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:644
+#: doc/classes/ProjectSettings.xml:645
 msgid "Optional name for the 2D physics layer 19."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:647
+#: doc/classes/ProjectSettings.xml:648
 msgid "Optional name for the 2D physics layer 2."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:650
+#: doc/classes/ProjectSettings.xml:651
 msgid "Optional name for the 2D physics layer 20."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:653
+#: doc/classes/ProjectSettings.xml:654
 msgid "Optional name for the 2D physics layer 21."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:656
+#: doc/classes/ProjectSettings.xml:657
 msgid "Optional name for the 2D physics layer 22."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:659
+#: doc/classes/ProjectSettings.xml:660
 msgid "Optional name for the 2D physics layer 23."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:662
+#: doc/classes/ProjectSettings.xml:663
 msgid "Optional name for the 2D physics layer 24."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:665
+#: doc/classes/ProjectSettings.xml:666
 msgid "Optional name for the 2D physics layer 25."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:668
+#: doc/classes/ProjectSettings.xml:669
 msgid "Optional name for the 2D physics layer 26."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:671
+#: doc/classes/ProjectSettings.xml:672
 msgid "Optional name for the 2D physics layer 27."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:674
+#: doc/classes/ProjectSettings.xml:675
 msgid "Optional name for the 2D physics layer 28."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:677
+#: doc/classes/ProjectSettings.xml:678
 msgid "Optional name for the 2D physics layer 29."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:680
+#: doc/classes/ProjectSettings.xml:681
 msgid "Optional name for the 2D physics layer 3."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:683
+#: doc/classes/ProjectSettings.xml:684
 msgid "Optional name for the 2D physics layer 30."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:686
+#: doc/classes/ProjectSettings.xml:687
 msgid "Optional name for the 2D physics layer 31."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:689
+#: doc/classes/ProjectSettings.xml:690
 msgid "Optional name for the 2D physics layer 32."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:692
+#: doc/classes/ProjectSettings.xml:693
 msgid "Optional name for the 2D physics layer 4."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:695
+#: doc/classes/ProjectSettings.xml:696
 msgid "Optional name for the 2D physics layer 5."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:698
+#: doc/classes/ProjectSettings.xml:699
 msgid "Optional name for the 2D physics layer 6."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:701
+#: doc/classes/ProjectSettings.xml:702
 msgid "Optional name for the 2D physics layer 7."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:704
+#: doc/classes/ProjectSettings.xml:705
 msgid "Optional name for the 2D physics layer 8."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:707
+#: doc/classes/ProjectSettings.xml:708
 msgid "Optional name for the 2D physics layer 9."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:710
+#: doc/classes/ProjectSettings.xml:711
 msgid "Optional name for the 2D render layer 1."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:713
+#: doc/classes/ProjectSettings.xml:714
 msgid "Optional name for the 2D render layer 10."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:716
+#: doc/classes/ProjectSettings.xml:717
 msgid "Optional name for the 2D render layer 11."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:719
+#: doc/classes/ProjectSettings.xml:720
 msgid "Optional name for the 2D render layer 12."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:722
+#: doc/classes/ProjectSettings.xml:723
 msgid "Optional name for the 2D render layer 13."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:725
+#: doc/classes/ProjectSettings.xml:726
 msgid "Optional name for the 2D render layer 14."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:728
+#: doc/classes/ProjectSettings.xml:729
 msgid "Optional name for the 2D render layer 15."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:731
+#: doc/classes/ProjectSettings.xml:732
 msgid "Optional name for the 2D render layer 16."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:734
+#: doc/classes/ProjectSettings.xml:735
 msgid "Optional name for the 2D render layer 17."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:737
+#: doc/classes/ProjectSettings.xml:738
 msgid "Optional name for the 2D render layer 18."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:740
+#: doc/classes/ProjectSettings.xml:741
 msgid "Optional name for the 2D render layer 19."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:743
+#: doc/classes/ProjectSettings.xml:744
 msgid "Optional name for the 2D render layer 2."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:746
+#: doc/classes/ProjectSettings.xml:747
 msgid "Optional name for the 2D render layer 20."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:749
+#: doc/classes/ProjectSettings.xml:750
 msgid "Optional name for the 2D render layer 3."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:752
+#: doc/classes/ProjectSettings.xml:753
 msgid "Optional name for the 2D render layer 4."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:755
+#: doc/classes/ProjectSettings.xml:756
 msgid "Optional name for the 2D render layer 5."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:758
+#: doc/classes/ProjectSettings.xml:759
 msgid "Optional name for the 2D render layer 6."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:761
+#: doc/classes/ProjectSettings.xml:762
 msgid "Optional name for the 2D render layer 7."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:764
+#: doc/classes/ProjectSettings.xml:765
 msgid "Optional name for the 2D render layer 8."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:767
+#: doc/classes/ProjectSettings.xml:768
 msgid "Optional name for the 2D render layer 9."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:770
+#: doc/classes/ProjectSettings.xml:771
 msgid "Optional name for the 3D physics layer 1."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:773
+#: doc/classes/ProjectSettings.xml:774
 msgid "Optional name for the 3D physics layer 10."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:776
+#: doc/classes/ProjectSettings.xml:777
 msgid "Optional name for the 3D physics layer 11."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:779
+#: doc/classes/ProjectSettings.xml:780
 msgid "Optional name for the 3D physics layer 12."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:782
+#: doc/classes/ProjectSettings.xml:783
 msgid "Optional name for the 3D physics layer 13."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:785
+#: doc/classes/ProjectSettings.xml:786
 msgid "Optional name for the 3D physics layer 14."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:788
+#: doc/classes/ProjectSettings.xml:789
 msgid "Optional name for the 3D physics layer 15."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:791
+#: doc/classes/ProjectSettings.xml:792
 msgid "Optional name for the 3D physics layer 16."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:794
+#: doc/classes/ProjectSettings.xml:795
 msgid "Optional name for the 3D physics layer 17."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:797
+#: doc/classes/ProjectSettings.xml:798
 msgid "Optional name for the 3D physics layer 18."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:800
+#: doc/classes/ProjectSettings.xml:801
 msgid "Optional name for the 3D physics layer 19."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:803
+#: doc/classes/ProjectSettings.xml:804
 msgid "Optional name for the 3D physics layer 2."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:806
+#: doc/classes/ProjectSettings.xml:807
 msgid "Optional name for the 3D physics layer 20."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:809
+#: doc/classes/ProjectSettings.xml:810
 msgid "Optional name for the 3D physics layer 21."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:812
+#: doc/classes/ProjectSettings.xml:813
 msgid "Optional name for the 3D physics layer 22."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:815
+#: doc/classes/ProjectSettings.xml:816
 msgid "Optional name for the 3D physics layer 23."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:818
+#: doc/classes/ProjectSettings.xml:819
 msgid "Optional name for the 3D physics layer 24."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:821
+#: doc/classes/ProjectSettings.xml:822
 msgid "Optional name for the 3D physics layer 25."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:824
+#: doc/classes/ProjectSettings.xml:825
 msgid "Optional name for the 3D physics layer 26."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:827
+#: doc/classes/ProjectSettings.xml:828
 msgid "Optional name for the 3D physics layer 27."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:830
+#: doc/classes/ProjectSettings.xml:831
 msgid "Optional name for the 3D physics layer 28."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:833
+#: doc/classes/ProjectSettings.xml:834
 msgid "Optional name for the 3D physics layer 29."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:836
+#: doc/classes/ProjectSettings.xml:837
 msgid "Optional name for the 3D physics layer 3."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:839
+#: doc/classes/ProjectSettings.xml:840
 msgid "Optional name for the 3D physics layer 30."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:842
+#: doc/classes/ProjectSettings.xml:843
 msgid "Optional name for the 3D physics layer 31."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:845
+#: doc/classes/ProjectSettings.xml:846
 msgid "Optional name for the 3D physics layer 32."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:848
+#: doc/classes/ProjectSettings.xml:849
 msgid "Optional name for the 3D physics layer 4."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:851
+#: doc/classes/ProjectSettings.xml:852
 msgid "Optional name for the 3D physics layer 5."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:854
+#: doc/classes/ProjectSettings.xml:855
 msgid "Optional name for the 3D physics layer 6."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:857
+#: doc/classes/ProjectSettings.xml:858
 msgid "Optional name for the 3D physics layer 7."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:860
+#: doc/classes/ProjectSettings.xml:861
 msgid "Optional name for the 3D physics layer 8."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:863
+#: doc/classes/ProjectSettings.xml:864
 msgid "Optional name for the 3D physics layer 9."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:866
+#: doc/classes/ProjectSettings.xml:867
 msgid "Optional name for the 3D render layer 1."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:869
+#: doc/classes/ProjectSettings.xml:870
 msgid "Optional name for the 3D render layer 10."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:872
+#: doc/classes/ProjectSettings.xml:873
 msgid "Optional name for the 3D render layer 11."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:875
+#: doc/classes/ProjectSettings.xml:876
 msgid "Optional name for the 3D render layer 12."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:878
+#: doc/classes/ProjectSettings.xml:879
 msgid "Optional name for the 3D render layer 13."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:881
+#: doc/classes/ProjectSettings.xml:882
 msgid "Optional name for the 3D render layer 14"
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:884
+#: doc/classes/ProjectSettings.xml:885
 msgid "Optional name for the 3D render layer 15."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:887
+#: doc/classes/ProjectSettings.xml:888
 msgid "Optional name for the 3D render layer 16."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:890
+#: doc/classes/ProjectSettings.xml:891
 msgid "Optional name for the 3D render layer 17."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:893
+#: doc/classes/ProjectSettings.xml:894
 msgid "Optional name for the 3D render layer 18."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:896
+#: doc/classes/ProjectSettings.xml:897
 msgid "Optional name for the 3D render layer 19."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:899
+#: doc/classes/ProjectSettings.xml:900
 msgid "Optional name for the 3D render layer 2."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:902
+#: doc/classes/ProjectSettings.xml:903
 msgid "Optional name for the 3D render layer 20."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:905
+#: doc/classes/ProjectSettings.xml:906
 msgid "Optional name for the 3D render layer 3."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:908
+#: doc/classes/ProjectSettings.xml:909
 msgid "Optional name for the 3D render layer 4."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:911
+#: doc/classes/ProjectSettings.xml:912
 msgid "Optional name for the 3D render layer 5."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:914
+#: doc/classes/ProjectSettings.xml:915
 msgid "Optional name for the 3D render layer 6."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:917
+#: doc/classes/ProjectSettings.xml:918
 msgid "Optional name for the 3D render layer 7."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:920
+#: doc/classes/ProjectSettings.xml:921
 msgid "Optional name for the 3D render layer 8."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:923
+#: doc/classes/ProjectSettings.xml:924
 msgid "Optional name for the 3D render layer 9."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:926
+#: doc/classes/ProjectSettings.xml:927
 msgid ""
 "The locale to fall back to if a translation isn't available in a given "
 "language. If left empty, [code]en[/code] (English) will be used."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:929
+#: doc/classes/ProjectSettings.xml:930
 msgid ""
 "If non-empty, this locale will be used when running the project from the "
 "editor."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:932
+#: doc/classes/ProjectSettings.xml:933
 msgid "If [code]true[/code], logs all output to files."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:935
+#: doc/classes/ProjectSettings.xml:936
 msgid ""
 "Desktop override for [member logging/file_logging/enable_file_logging], as "
 "log files are not readily accessible on mobile/Web platforms."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:938
+#: doc/classes/ProjectSettings.xml:939
 msgid ""
 "Path to logs within the project. Using an [code]user://[/code] path is "
 "recommended."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:941
+#: doc/classes/ProjectSettings.xml:942
 msgid "Specifies the maximum amount of log files allowed (used for rotation)."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:946
+#: doc/classes/ProjectSettings.xml:947
 msgid ""
 "Godot uses a message queue to defer some function calls. If you run out of "
 "space on it (you will see an error), you can increase the size here."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:949
+#: doc/classes/ProjectSettings.xml:950
 msgid ""
 "This is used by servers when used in multi-threading mode (servers and "
 "visual). RIDs are preallocated to avoid stalling the server requesting them "
@@ -47150,92 +47374,92 @@ msgid ""
 "thread, increase this number."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:952
+#: doc/classes/ProjectSettings.xml:953
 msgid ""
 "Maximum amount of characters allowed to send as output from the debugger. "
 "Over this value, content is dropped. This helps not to stall the debugger "
 "connection."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:955
+#: doc/classes/ProjectSettings.xml:956
 msgid ""
 "Maximum number of errors allowed to be sent as output from the debugger. "
 "Over this value, content is dropped. This helps not to stall the debugger "
 "connection."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:958
+#: doc/classes/ProjectSettings.xml:959
 msgid ""
 "Maximum amount of messages allowed to send as output from the debugger. Over "
 "this value, content is dropped. This helps not to stall the debugger "
 "connection."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:961
+#: doc/classes/ProjectSettings.xml:962
 msgid ""
 "Maximum number of warnings allowed to be sent as output from the debugger. "
 "Over this value, content is dropped. This helps not to stall the debugger "
 "connection."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:964
+#: doc/classes/ProjectSettings.xml:965
 msgid ""
 "Default size of packet peer stream for deserializing Godot data (in bytes, "
 "specified as a power of two). The default value [code]16[/code] is equal to "
 "65,536 bytes. Over this size, data is dropped."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:967
+#: doc/classes/ProjectSettings.xml:968
 msgid "Timeout (in seconds) for connection attempts using TCP."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:970
+#: doc/classes/ProjectSettings.xml:971
 msgid "Maximum size (in kiB) for the [WebRTCDataChannel] input buffer."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:973
+#: doc/classes/ProjectSettings.xml:974
 msgid "Maximum size (in kiB) for the [WebSocketClient] input buffer."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:976
+#: doc/classes/ProjectSettings.xml:977
 msgid "Maximum number of concurrent input packets for [WebSocketClient]."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:979
+#: doc/classes/ProjectSettings.xml:980
 msgid "Maximum size (in kiB) for the [WebSocketClient] output buffer."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:982
+#: doc/classes/ProjectSettings.xml:983
 msgid "Maximum number of concurrent output packets for [WebSocketClient]."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:985
+#: doc/classes/ProjectSettings.xml:986
 msgid "Maximum size (in kiB) for the [WebSocketServer] input buffer."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:988
+#: doc/classes/ProjectSettings.xml:989
 msgid "Maximum number of concurrent input packets for [WebSocketServer]."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:991
+#: doc/classes/ProjectSettings.xml:992
 msgid "Maximum size (in kiB) for the [WebSocketServer] output buffer."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:994
+#: doc/classes/ProjectSettings.xml:995
 msgid "Maximum number of concurrent output packets for [WebSocketServer]."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:997
+#: doc/classes/ProjectSettings.xml:998
 msgid ""
 "Amount of read ahead used by remote filesystem. Higher values decrease the "
 "effects of latency at the cost of higher bandwidth usage."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1000
+#: doc/classes/ProjectSettings.xml:1001
 msgid "Page size used by remote filesystem (in bytes)."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1003
+#: doc/classes/ProjectSettings.xml:1004
 msgid ""
 "The CA certificates bundle to use for SSL connections. If this is set to a "
 "non-empty value, this will [i]override[/i] Godot's default [url=https://"
@@ -47245,33 +47469,33 @@ msgid ""
 "If in doubt, leave this setting empty."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1007
+#: doc/classes/ProjectSettings.xml:1008
 msgid ""
 "When creating node names automatically, set the type of casing in this "
 "project. This is mostly an editor setting."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1010
+#: doc/classes/ProjectSettings.xml:1011
 msgid ""
 "What to use to separate node name from number. This is mostly an editor "
 "setting."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1013
+#: doc/classes/ProjectSettings.xml:1014
 msgid ""
 "Size of the hash table used for the broad-phase 2D hash grid algorithm.\n"
 "[b]Note:[/b] Not used if [member ProjectSettings.physics/2d/use_bvh] is "
 "enabled."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1017
+#: doc/classes/ProjectSettings.xml:1018
 msgid ""
 "Cell size used for the broad-phase 2D hash grid algorithm (in pixels).\n"
 "[b]Note:[/b] Not used if [member ProjectSettings.physics/2d/use_bvh] is "
 "enabled."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1021
+#: doc/classes/ProjectSettings.xml:1022
 msgid ""
 "The default angular damp in 2D.\n"
 "[b]Note:[/b] Good values are in the range [code]0[/code] to [code]1[/code]. "
@@ -47284,7 +47508,7 @@ msgid ""
 "stop in one iteration."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1025
+#: doc/classes/ProjectSettings.xml:1026
 msgid ""
 "The default gravity strength in 2D (in pixels per second squared).\n"
 "[b]Note:[/b] This property is only read when the project starts. To change "
@@ -47296,7 +47520,7 @@ msgid ""
 "[/codeblock]"
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1033
+#: doc/classes/ProjectSettings.xml:1034
 msgid ""
 "The default gravity direction in 2D.\n"
 "[b]Note:[/b] This property is only read when the project starts. To change "
@@ -47308,7 +47532,7 @@ msgid ""
 "[/codeblock]"
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1041
+#: doc/classes/ProjectSettings.xml:1042
 msgid ""
 "The default linear damp in 2D.\n"
 "[b]Note:[/b] Good values are in the range [code]0[/code] to [code]1[/code]. "
@@ -47321,7 +47545,7 @@ msgid ""
 "stop in one iteration."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1045
+#: doc/classes/ProjectSettings.xml:1046
 msgid ""
 "Threshold defining the surface size that constitutes a large object with "
 "regard to cells in the broad-phase 2D hash grid algorithm.\n"
@@ -47329,28 +47553,28 @@ msgid ""
 "enabled."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1049
+#: doc/classes/ProjectSettings.xml:1050
 msgid ""
 "Sets which physics engine to use for 2D physics.\n"
 "\"DEFAULT\" and \"GodotPhysics\" are the same, as there is currently no "
 "alternative 2D physics server implemented."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1053
+#: doc/classes/ProjectSettings.xml:1054
 msgid ""
 "Threshold angular velocity under which a 2D physics body will be considered "
 "inactive. See [constant Physics2DServer."
 "SPACE_PARAM_BODY_ANGULAR_VELOCITY_SLEEP_THRESHOLD]."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1056
+#: doc/classes/ProjectSettings.xml:1057
 msgid ""
 "Threshold linear velocity under which a 2D physics body will be considered "
 "inactive. See [constant Physics2DServer."
 "SPACE_PARAM_BODY_LINEAR_VELOCITY_SLEEP_THRESHOLD]."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1059
+#: doc/classes/ProjectSettings.xml:1060
 msgid ""
 "Sets whether physics is run on the main thread or a separate one. Running "
 "the server on a thread increases performance, but restricts API access to "
@@ -47360,25 +47584,25 @@ msgid ""
 "give you extra performance and no regressions when using it."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1063
+#: doc/classes/ProjectSettings.xml:1064
 msgid ""
 "Time (in seconds) of inactivity before which a 2D physics body will put to "
 "sleep. See [constant Physics2DServer.SPACE_PARAM_BODY_TIME_TO_SLEEP]."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1066
+#: doc/classes/ProjectSettings.xml:1067
 msgid ""
 "Enables the use of bounding volume hierarchy instead of hash grid for 2D "
 "physics spatial partitioning. This may give better performance."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1069
+#: doc/classes/ProjectSettings.xml:1070
 msgid ""
 "Sets whether the 3D physics world will be created with support for "
 "[SoftBody] physics. Only applies to the Bullet physics engine."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1072
+#: doc/classes/ProjectSettings.xml:1073
 msgid ""
 "The default angular damp in 3D.\n"
 "[b]Note:[/b] Good values are in the range [code]0[/code] to [code]1[/code]. "
@@ -47391,7 +47615,7 @@ msgid ""
 "stop in one iteration."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1076
+#: doc/classes/ProjectSettings.xml:1077
 msgid ""
 "The default gravity strength in 3D (in meters per second squared).\n"
 "[b]Note:[/b] This property is only read when the project starts. To change "
@@ -47403,7 +47627,7 @@ msgid ""
 "[/codeblock]"
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1084
+#: doc/classes/ProjectSettings.xml:1085
 msgid ""
 "The default gravity direction in 3D.\n"
 "[b]Note:[/b] This property is only read when the project starts. To change "
@@ -47415,7 +47639,7 @@ msgid ""
 "[/codeblock]"
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1092
+#: doc/classes/ProjectSettings.xml:1093
 msgid ""
 "The default linear damp in 3D.\n"
 "[b]Note:[/b] Good values are in the range [code]0[/code] to [code]1[/code]. "
@@ -47428,13 +47652,13 @@ msgid ""
 "stop in one iteration."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1096
+#: doc/classes/ProjectSettings.xml:1097
 msgid ""
 "Enables the use of bounding volume hierarchy instead of octree for 3D "
 "physics spatial partitioning. This may give better performance."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1099
+#: doc/classes/ProjectSettings.xml:1100
 msgid ""
 "Sets which physics engine to use for 3D physics.\n"
 "\"DEFAULT\" is currently the [url=https://bulletphysics.org]Bullet[/url] "
@@ -47442,11 +47666,11 @@ msgid ""
 "alternative."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1103
+#: doc/classes/ProjectSettings.xml:1104
 msgid "Enables [member Viewport.physics_object_picking] on the root viewport."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1106
+#: doc/classes/ProjectSettings.xml:1107
 msgid ""
 "If enabled, 2D and 3D physics picking behaves this way in relation to "
 "pause:\n"
@@ -47460,7 +47684,7 @@ msgid ""
 "that queue on resume, against the state of the 2D/3D world at that point."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1112
+#: doc/classes/ProjectSettings.xml:1113
 msgid ""
 "The number of fixed iterations per second. This controls how often physics "
 "simulation and [method Node._physics_process] methods are run.\n"
@@ -47469,7 +47693,7 @@ msgid ""
 "instead."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1116
+#: doc/classes/ProjectSettings.xml:1117
 msgid ""
 "Controls how much physics ticks are synchronized with real time. For 0 or "
 "less, the ticks are synchronized. Such values are recommended for network "
@@ -47485,7 +47709,7 @@ msgid ""
 "the physics FPS at runtime, set [member Engine.physics_jitter_fix] instead."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1121
+#: doc/classes/ProjectSettings.xml:1122
 msgid ""
 "[b]Experimental.[/b] Calls [code]glBufferData[/code] with NULL data prior to "
 "uploading batching data. This may not be necessary but can be used for "
@@ -47495,7 +47719,7 @@ msgid ""
 "adversely affect performance for end users."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1125
+#: doc/classes/ProjectSettings.xml:1126
 msgid ""
 "[b]Experimental.[/b] If set to on, uses the [code]GL_STREAM_DRAW[/code] flag "
 "for batching buffer uploads. If off, uses the [code]GL_DYNAMIC_DRAW[/code] "
@@ -47505,7 +47729,7 @@ msgid ""
 "adversely affect performance for end users."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1129
+#: doc/classes/ProjectSettings.xml:1130
 msgid ""
 "[b]Experimental.[/b] If set to on, this applies buffer orphaning - "
 "[code]glBufferData[/code] is called with NULL data and the full buffer size "
@@ -47516,7 +47740,7 @@ msgid ""
 "adversely affect performance for end users."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1133
+#: doc/classes/ProjectSettings.xml:1134
 msgid ""
 "[b]Experimental.[/b] If set to on, uses the [code]GL_STREAM_DRAW[/code] flag "
 "for legacy buffer uploads. If off, uses the [code]GL_DYNAMIC_DRAW[/code] "
@@ -47526,7 +47750,7 @@ msgid ""
 "adversely affect performance for end users."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1137
+#: doc/classes/ProjectSettings.xml:1138
 msgid ""
 "Choose between fixed mode where corner scalings are preserved matching the "
 "artwork, and scaling mode.\n"
@@ -47534,7 +47758,7 @@ msgid ""
 "is off."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1141
+#: doc/classes/ProjectSettings.xml:1142
 msgid ""
 "Some NVIDIA GPU drivers have a bug which produces flickering issues for the "
 "[code]draw_rect[/code] method, especially as used in [TileMap]. Refer to "
@@ -47545,7 +47769,7 @@ msgid ""
 "rendering, but only on desktop platforms."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1145
+#: doc/classes/ProjectSettings.xml:1146
 msgid ""
 "If [code]true[/code], performs 2D skinning on the CPU rather than the GPU. "
 "This provides greater compatibility with a wide range of hardware, and also "
@@ -47560,7 +47784,7 @@ msgid ""
 "skinning."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1151
+#: doc/classes/ProjectSettings.xml:1152
 msgid ""
 "If [code]true[/code], forces snapping of vertices to pixels in 2D rendering. "
 "May help in some pixel art styles.\n"
@@ -47569,13 +47793,13 @@ msgid ""
 "uv_contract] to prevent artifacts."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1156
+#: doc/classes/ProjectSettings.xml:1157
 msgid ""
 "When batching is on, this regularly prints a frame diagnosis log. Note that "
 "this will degrade performance."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1159
+#: doc/classes/ProjectSettings.xml:1160
 msgid ""
 "[b]Experimental.[/b] For regression testing against the old renderer. If "
 "this is switched on, and [code]use_batching[/code] is set, the renderer will "
@@ -47584,7 +47808,7 @@ msgid ""
 "Performance will be degraded."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1162
+#: doc/classes/ProjectSettings.xml:1163
 msgid ""
 "Lights have the potential to prevent joining items, and break many of the "
 "performance benefits of batching. This setting enables some complex logic to "
@@ -47594,7 +47818,7 @@ msgid ""
 "returns."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1165
+#: doc/classes/ProjectSettings.xml:1166
 msgid ""
 "Sets the proportion of the total screen area (in pixels) that must be saved "
 "by a scissor operation in order to activate light scissoring. This can "
@@ -47606,7 +47830,7 @@ msgid ""
 "a lot of lighting."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1168
+#: doc/classes/ProjectSettings.xml:1169
 msgid ""
 "Enabling this setting uses the legacy method to draw batches containing only "
 "one rect. The legacy method is faster (approx twice as fast), but can cause "
@@ -47616,24 +47840,24 @@ msgid ""
 "this method."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1171
+#: doc/classes/ProjectSettings.xml:1172
 msgid ""
 "Turns 2D batching on and off. Batching increases performance by reducing the "
 "amount of graphics API drawcalls."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1174
+#: doc/classes/ProjectSettings.xml:1175
 msgid "Switches on 2D batching within the editor."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1177
+#: doc/classes/ProjectSettings.xml:1178
 msgid ""
 "Size of buffer reserved for batched vertices. Larger size enables larger "
 "batches, but there are diminishing returns for the memory used. This should "
 "only have a minor effect on performance."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1180
+#: doc/classes/ProjectSettings.xml:1181
 msgid ""
 "Including color in the vertex format has a cost, however, not including "
 "color prevents batching across color changes. This threshold determines the "
@@ -47642,7 +47866,7 @@ msgid ""
 "0 will always use colored vertices, 1 will never use colored vertices."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1183
+#: doc/classes/ProjectSettings.xml:1184
 msgid ""
 "In certain circumstances, the batcher can reorder items in order to better "
 "join them. This may result in better performance. An overlap test is needed "
@@ -47650,7 +47874,7 @@ msgid ""
 "returns. If you are getting no benefit, setting this to 0 will switch it off."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1186
+#: doc/classes/ProjectSettings.xml:1187
 msgid ""
 "Sets the number of commands to lookahead to determine whether to batch "
 "render items. A value of 1 can join items consisting of single commands, 0 "
@@ -47659,7 +47883,7 @@ msgid ""
 "recommended."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1189
+#: doc/classes/ProjectSettings.xml:1190
 msgid ""
 "On some platforms (especially mobile), precision issues in shaders can lead "
 "to reading 1 texel outside of bounds, particularly where rects are scaled. "
@@ -47669,7 +47893,7 @@ msgid ""
 "texels."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1193
+#: doc/classes/ProjectSettings.xml:1194
 msgid ""
 "The amount of UV contraction. This figure is divided by 1000000, and is a "
 "proportion of the total texture dimensions, where the width and height are "
@@ -47677,31 +47901,31 @@ msgid ""
 "Use the default unless correcting for a problem on particular hardware."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1197
+#: doc/classes/ProjectSettings.xml:1198
 msgid ""
 "Amount of light samples taken when using [constant BakedLightmap."
 "BAKE_QUALITY_HIGH]."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1200
+#: doc/classes/ProjectSettings.xml:1201
 msgid ""
 "Amount of light samples taken when using [constant BakedLightmap."
 "BAKE_QUALITY_LOW]."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1203
+#: doc/classes/ProjectSettings.xml:1204
 msgid ""
 "Amount of light samples taken when using [constant BakedLightmap."
 "BAKE_QUALITY_MEDIUM]."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1206
+#: doc/classes/ProjectSettings.xml:1207
 msgid ""
 "Amount of light samples taken when using [constant BakedLightmap."
 "BAKE_QUALITY_ULTRA]."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1209
+#: doc/classes/ProjectSettings.xml:1210
 msgid ""
 "Default background clear color. Overridable per [Viewport] using its "
 "[Environment]. See [member Environment.background_mode] and [member "
@@ -47709,7 +47933,7 @@ msgid ""
 "programmatically, use [method VisualServer.set_default_clear_color]."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1212
+#: doc/classes/ProjectSettings.xml:1213
 msgid ""
 "[Environment] that will be used as a fallback environment in case a scene "
 "does not specify its own environment. The default environment is loaded in "
@@ -47719,46 +47943,53 @@ msgid ""
 "here."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1215
+#: doc/classes/ProjectSettings.xml:1216
 msgid ""
 "The use of half-float vertex compression may be producing rendering errors "
 "on some platforms (especially iOS). These have been seen particularly in "
 "particles. Disabling half-float may resolve these problems."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1218
+#: doc/classes/ProjectSettings.xml:1219
 msgid ""
-"If [code]true[/code] and available on the target device, enables high "
-"floating point precision for all shader computations in GLES2.\n"
+"iOS specific override for [member rendering/gles2/compatibility/"
+"disable_half_float], due to poor support for half-float vertex compression "
+"on many devices."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml:1222
+msgid ""
+"If [code]true[/code] and available on the target Android device, enables "
+"high floating point precision for all shader computations in GLES2.\n"
 "[b]Warning:[/b] High floating point precision can be extremely slow on older "
 "devices and is often not available at all. Use with caution."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1222
+#: doc/classes/ProjectSettings.xml:1226
 msgid ""
 "Max buffer size for blend shapes. Any blend shape bigger than this will not "
 "work."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1225
+#: doc/classes/ProjectSettings.xml:1229
 msgid ""
 "Max buffer size for drawing polygons. Any polygon bigger than this will not "
 "work."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1228
+#: doc/classes/ProjectSettings.xml:1232
 msgid ""
 "Max index buffer size for drawing polygons. Any polygon bigger than this "
 "will not work."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1231
+#: doc/classes/ProjectSettings.xml:1235
 msgid ""
 "Max buffer size for drawing immediate objects (ImmediateGeometry nodes). "
 "Nodes using more than this size will not work."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1234
+#: doc/classes/ProjectSettings.xml:1238
 msgid ""
 "Max number of lights renderable per object. This is further limited by "
 "hardware support. Most devices only support 409 lights, while many devices "
@@ -47766,7 +47997,7 @@ msgid ""
 "memory usage and may decrease shader compile times."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1237
+#: doc/classes/ProjectSettings.xml:1241
 msgid ""
 "Max amount of elements renderable in a frame. If more elements than this are "
 "visible per frame, they will not be drawn. Keep in mind elements refer to "
@@ -47776,7 +48007,7 @@ msgid ""
 "much as possible on web export."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1240
+#: doc/classes/ProjectSettings.xml:1244
 msgid ""
 "Max number of lights renderable in a frame. If more lights than this number "
 "are used, they will be ignored. Setting this low will slightly reduce memory "
@@ -47785,7 +48016,7 @@ msgid ""
 "possible on web export."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1243
+#: doc/classes/ProjectSettings.xml:1247
 msgid ""
 "Max number of reflection probes renderable in a frame. If more reflection "
 "probes than this number are used, they will be ignored. Setting this low "
@@ -47794,20 +48025,20 @@ msgid ""
 "consider lowering as much as possible on web export."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1246
+#: doc/classes/ProjectSettings.xml:1250
 msgid ""
 "Shaders have a time variable that constantly increases. At some point, it "
 "needs to be rolled back to zero to avoid precision errors on shader "
 "animations. This setting specifies when (in seconds)."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1249
+#: doc/classes/ProjectSettings.xml:1253
 msgid ""
 "If [code]true[/code], the texture importer will import lossless textures "
 "using the PNG format. Otherwise, it will default to using WebP."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1252
+#: doc/classes/ProjectSettings.xml:1256
 msgid ""
 "The default compression level for lossless WebP. Higher levels result in "
 "smaller files at the cost of compression speed. Decompression speed is "
@@ -47816,7 +48047,7 @@ msgid ""
 "savings."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1255
+#: doc/classes/ProjectSettings.xml:1259
 msgid ""
 "On import, mesh vertex data will be split into two streams within a single "
 "vertex buffer, one for position data and the other for interleaved "
@@ -47824,7 +48055,7 @@ msgid ""
 "Requires manual reimport of meshes after toggling."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1258
+#: doc/classes/ProjectSettings.xml:1262
 msgid ""
 "Determines the maximum number of sphere occluders that will be used at any "
 "one time.\n"
@@ -47833,7 +48064,7 @@ msgid ""
 "to give the best overall performance."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1262
+#: doc/classes/ProjectSettings.xml:1266
 msgid ""
 "The default convention is for portal normals to point outward (face outward) "
 "from the source room.\n"
@@ -47843,20 +48074,20 @@ msgid ""
 "convertion to [Portal] nodes."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1267
+#: doc/classes/ProjectSettings.xml:1271
 msgid ""
 "Show conversion logs.\n"
 "[b]Note:[/b] This will automatically be disabled in exports."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1271
+#: doc/classes/ProjectSettings.xml:1275
 msgid ""
 "If [code]true[/code], gameplay callbacks will be sent as [code]signals[/"
 "code]. If [code]false[/code], they will be sent as [code]notifications[/"
 "code]."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1274
+#: doc/classes/ProjectSettings.xml:1278
 msgid ""
 "If enabled, while merging meshes, the system will also attempt to remove "
 "[Spatial] nodes that no longer have any children.\n"
@@ -47865,13 +48096,13 @@ msgid ""
 "for markers or some other purpose."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1278
+#: doc/classes/ProjectSettings.xml:1282
 msgid ""
 "Show logs during PVS generation.\n"
 "[b]Note:[/b] This will automatically be disabled in exports."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1282
+#: doc/classes/ProjectSettings.xml:1286
 msgid ""
 "Uses a simplified method of generating PVS (potentially visible set) data. "
 "The results may not be accurate where more than one portal join adjacent "
@@ -47881,46 +48112,46 @@ msgid ""
 "default method."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1286
+#: doc/classes/ProjectSettings.xml:1290
 msgid ""
 "If [code]true[/code], allocates the main framebuffer with high dynamic "
 "range. High dynamic range allows the use of [Color] values greater than 1.\n"
 "[b]Note:[/b] Only available on the GLES3 backend."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1290
+#: doc/classes/ProjectSettings.xml:1294
 msgid ""
 "Lower-end override for [member rendering/quality/depth/hdr] on mobile "
 "devices, due to performance concerns or driver support."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1293
+#: doc/classes/ProjectSettings.xml:1297
 msgid ""
 "Disables depth pre-pass for some GPU vendors (usually mobile), as their "
 "architecture already does this."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1296
+#: doc/classes/ProjectSettings.xml:1300
 msgid ""
 "If [code]true[/code], performs a previous depth pass before rendering "
 "materials. This increases performance in scenes with high overdraw, when "
 "complex materials and lighting are used."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1299
+#: doc/classes/ProjectSettings.xml:1303
 msgid ""
 "The directional shadow's size in pixels. Higher values will result in "
 "sharper shadows, at the cost of performance. The value will be rounded up to "
 "the nearest power of 2."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1302
+#: doc/classes/ProjectSettings.xml:1306
 msgid ""
 "Lower-end override for [member rendering/quality/directional_shadow/size] on "
 "mobile devices, due to performance concerns or driver support."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1305
+#: doc/classes/ProjectSettings.xml:1309
 msgid ""
 "The video driver to use (\"GLES2\" or \"GLES3\").\n"
 "[b]Note:[/b] The backend in use can be overridden at runtime via the [code]--"
@@ -47930,7 +48161,7 @@ msgid ""
 "updated, so use [method OS.get_current_video_driver] to query it at run-time."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1309
+#: doc/classes/ProjectSettings.xml:1313
 msgid ""
 "If [code]true[/code], allows falling back to the GLES2 driver if the GLES3 "
 "driver is not supported.\n"
@@ -47942,7 +48173,7 @@ msgid ""
 "data pack's size."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1313
+#: doc/classes/ProjectSettings.xml:1317
 msgid ""
 "Maximum anisotropic filter level used for textures with anisotropy enabled. "
 "Higher values will result in sharper textures when viewed from oblique "
@@ -47950,7 +48181,7 @@ msgid ""
 "4, 8, 16)."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1316
+#: doc/classes/ProjectSettings.xml:1320
 msgid ""
 "Sets the number of MSAA samples to use. MSAA is used to reduce aliasing "
 "around the edges of polygons. A higher MSAA value results in smoother edges "
@@ -47958,7 +48189,7 @@ msgid ""
 "[b]Note:[/b] MSAA is not available on HTML5 export using the GLES2 backend."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1320
+#: doc/classes/ProjectSettings.xml:1324
 msgid ""
 "If set to a value greater than [code]0.0[/code], contrast-adaptive "
 "sharpening will be applied to the 3D viewport. This has a low performance "
@@ -47967,7 +48198,7 @@ msgid ""
 "[member rendering/quality/filters/use_fxaa]."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1323
+#: doc/classes/ProjectSettings.xml:1327
 msgid ""
 "If [code]true[/code], uses a fast post-processing filter to make banding "
 "significantly less visible. In some cases, debanding may introduce a "
@@ -47981,7 +48212,7 @@ msgid ""
 "disabled when targeting mobile platforms."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1328
+#: doc/classes/ProjectSettings.xml:1332
 msgid ""
 "Enables FXAA in the root Viewport. FXAA is a popular screen-space "
 "antialiasing method, which is fast but will make the image look blurry, "
@@ -47991,7 +48222,7 @@ msgid ""
 "quality/filters/sharpen_intensity])."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1331
+#: doc/classes/ProjectSettings.xml:1335
 msgid ""
 "If [code]true[/code], uses nearest-neighbor mipmap filtering when using "
 "mipmaps (also called \"bilinear filtering\"), which will result in visible "
@@ -48000,7 +48231,7 @@ msgid ""
 "mipmap filtering (also called \"trilinear filtering\") is used."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1334
+#: doc/classes/ProjectSettings.xml:1338
 msgid ""
 "Strategy used for framebuffer allocation. The simpler it is, the less "
 "resources it uses (but the less features it supports). If set to \"2D "
@@ -48010,54 +48241,54 @@ msgid ""
 "be available in the [Environment]."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1337
+#: doc/classes/ProjectSettings.xml:1341
 msgid ""
 "Lower-end override for [member rendering/quality/intended_usage/"
 "framebuffer_allocation] on mobile devices, due to performance concerns or "
 "driver support."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1340
+#: doc/classes/ProjectSettings.xml:1344
 msgid ""
 "Enable usage of bicubic sampling in baked lightmaps. This results in "
 "smoother looking lighting at the expense of more bandwidth usage. On GLES2, "
 "changes to this setting will only be applied upon restarting the application."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1343
+#: doc/classes/ProjectSettings.xml:1347
 msgid ""
 "Lower-end override for [member rendering/quality/lightmapping/"
 "use_bicubic_sampling] on mobile devices, in order to reduce bandwidth usage."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1346
+#: doc/classes/ProjectSettings.xml:1350
 msgid ""
 "Size of the atlas used by reflection probes. A larger size can result in "
 "higher visual quality, while a smaller size will be faster and take up less "
 "memory."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1349
+#: doc/classes/ProjectSettings.xml:1353
 msgid ""
 "Number of subdivisions to use for the reflection atlas. A higher number "
 "lowers the quality of each atlas, but allows you to use more."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1352
+#: doc/classes/ProjectSettings.xml:1356
 msgid ""
 "If [code]true[/code], uses a high amount of samples to create blurred "
 "variants of reflection probes and panorama backgrounds (sky). Those blurred "
 "variants are used by rough materials."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1355
+#: doc/classes/ProjectSettings.xml:1359
 msgid ""
 "Lower-end override for [member rendering/quality/reflections/"
 "high_quality_ggx] on mobile devices, due to performance concerns or driver "
 "support."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1358
+#: doc/classes/ProjectSettings.xml:1362
 msgid ""
 "Limits the size of the irradiance map which is normally determined by "
 "[member Sky.radiance_size]. A higher size results in a higher quality "
@@ -48068,61 +48299,61 @@ msgid ""
 "maps well and may crash if this is set too high."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1362
+#: doc/classes/ProjectSettings.xml:1366
 msgid ""
 "If [code]true[/code], uses texture arrays instead of mipmaps for reflection "
 "probes and panorama backgrounds (sky). This reduces jitter noise on "
 "reflections, but costs more performance and memory."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1365
+#: doc/classes/ProjectSettings.xml:1369
 msgid ""
 "Lower-end override for [member rendering/quality/reflections/"
 "texture_array_reflections] on mobile devices, due to performance concerns or "
 "driver support."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1368
+#: doc/classes/ProjectSettings.xml:1372
 msgid ""
 "If [code]true[/code], uses faster but lower-quality Blinn model to generate "
 "blurred reflections instead of the GGX model."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1371
+#: doc/classes/ProjectSettings.xml:1375
 msgid ""
 "Lower-end override for [member rendering/quality/shading/"
 "force_blinn_over_ggx] on mobile devices, due to performance concerns or "
 "driver support."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1374
+#: doc/classes/ProjectSettings.xml:1378
 msgid ""
 "If [code]true[/code], uses faster but lower-quality Lambert material "
 "lighting model instead of Burley."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1377
+#: doc/classes/ProjectSettings.xml:1381
 msgid ""
 "Lower-end override for [member rendering/quality/shading/"
 "force_lambert_over_burley] on mobile devices, due to performance concerns or "
 "driver support."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1380
+#: doc/classes/ProjectSettings.xml:1384
 msgid ""
 "If [code]true[/code], forces vertex shading for all rendering. This can "
 "increase performance a lot, but also reduces quality immensely. Can be used "
 "to optimize performance on low-end mobile devices."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1383
+#: doc/classes/ProjectSettings.xml:1387
 msgid ""
 "Lower-end override for [member rendering/quality/shading/"
 "force_vertex_shading] on mobile devices, due to performance concerns or "
 "driver support."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1386
+#: doc/classes/ProjectSettings.xml:1390
 msgid ""
 "If [code]true[/code], enables new physical light attenuation for "
 "[OmniLight]s and [SpotLight]s. This results in more realistic lighting "
@@ -48133,7 +48364,7 @@ msgid ""
 "Changes to this setting will only be applied upon restarting the application."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1390
+#: doc/classes/ProjectSettings.xml:1394
 msgid ""
 "Size for cubemap into which the shadow is rendered before being copied into "
 "the shadow atlas. A higher number can result in higher resolution shadows "
@@ -48142,26 +48373,26 @@ msgid ""
 "size] will not result in a perceptible increase in visual quality."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1393 doc/classes/ProjectSettings.xml:1396
-#: doc/classes/ProjectSettings.xml:1399 doc/classes/ProjectSettings.xml:1402
+#: doc/classes/ProjectSettings.xml:1397 doc/classes/ProjectSettings.xml:1400
+#: doc/classes/ProjectSettings.xml:1403 doc/classes/ProjectSettings.xml:1406
 msgid ""
 "Subdivision quadrant size for shadow mapping. See shadow mapping "
 "documentation."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1405
+#: doc/classes/ProjectSettings.xml:1409
 msgid ""
 "Size for shadow atlas (used for OmniLights and SpotLights). See "
 "documentation."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1408
+#: doc/classes/ProjectSettings.xml:1412
 msgid ""
 "Lower-end override for [member rendering/quality/shadow_atlas/size] on "
 "mobile devices, due to performance concerns or driver support."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1411
+#: doc/classes/ProjectSettings.xml:1415
 msgid ""
 "Shadow filter mode. Higher-quality settings result in smoother shadows that "
 "flicker less when moving. \"Disabled\" is the fastest option, but also has "
@@ -48172,20 +48403,20 @@ msgid ""
 "shadow appearance similar to the one produced by the GLES3 backend."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1415
+#: doc/classes/ProjectSettings.xml:1419
 msgid ""
 "Lower-end override for [member rendering/quality/shadows/filter_mode] on "
 "mobile devices, due to performance concerns or driver support."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1418
+#: doc/classes/ProjectSettings.xml:1422
 msgid ""
 "Forces [MeshInstance] to always perform skinning on the CPU (applies to both "
 "GLES2 and GLES3).\n"
 "See also [member rendering/quality/skinning/software_skinning_fallback]."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1422
+#: doc/classes/ProjectSettings.xml:1426
 msgid ""
 "Allows [MeshInstance] to perform skinning on the CPU when the hardware "
 "doesn't support the default GPU skinning process with GLES2.\n"
@@ -48197,52 +48428,52 @@ msgid ""
 "already applied to the modelview matrix."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1428
+#: doc/classes/ProjectSettings.xml:1432
 msgid ""
 "The rendering octree balance can be changed to favor smaller ([code]0[/"
 "code]), or larger ([code]1[/code]) branches.\n"
 "Larger branches can increase performance significantly in some projects."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1432
+#: doc/classes/ProjectSettings.xml:1436
 msgid ""
 "Enables the use of bounding volume hierarchy instead of octree for rendering "
 "spatial partitioning. This may give better performance."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1435
+#: doc/classes/ProjectSettings.xml:1439
 msgid ""
 "Improves quality of subsurface scattering, but cost significantly increases."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1438
+#: doc/classes/ProjectSettings.xml:1442
 msgid "Quality setting for subsurface scattering (samples taken)."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1441
+#: doc/classes/ProjectSettings.xml:1445
 msgid "Max radius used for subsurface scattering samples."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1444
+#: doc/classes/ProjectSettings.xml:1448
 msgid ""
 "Weight subsurface scattering samples. Helps to avoid reading samples from "
 "unrelated parts of the screen."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1447
+#: doc/classes/ProjectSettings.xml:1451
 msgid ""
 "Use high-quality voxel cone tracing. This results in better-looking "
 "reflections, but is much more expensive on the GPU."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1450
+#: doc/classes/ProjectSettings.xml:1454
 msgid ""
 "Thread model for rendering. Rendering on a thread can vastly improve "
 "performance, but synchronizing to the main thread can cause a bit more "
 "jitter."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1453
+#: doc/classes/ProjectSettings.xml:1457
 msgid ""
 "If [code]true[/code], a thread safe version of BVH (bounding volume "
 "hierarchy) will be used in rendering and Godot physics.\n"
@@ -48250,7 +48481,7 @@ msgid ""
 "incorrect object visibility)."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1457
+#: doc/classes/ProjectSettings.xml:1461
 msgid ""
 "If [code]true[/code], the texture importer will import VRAM-compressed "
 "textures using the BPTC algorithm. This texture compression algorithm is "
@@ -48260,10 +48491,10 @@ msgid ""
 "already imported before. To make this setting apply to textures that were "
 "already imported, exit the editor, remove the [code].import/[/code] folder "
 "located inside the project folder then restart the editor (see [member "
-"application/config/project_data_dir_name])."
+"application/config/use_hidden_project_data_directory])."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1461
+#: doc/classes/ProjectSettings.xml:1465
 msgid ""
 "If [code]true[/code], the texture importer will import VRAM-compressed "
 "textures using the Ericsson Texture Compression algorithm. This algorithm "
@@ -48272,10 +48503,10 @@ msgid ""
 "already imported before. To make this setting apply to textures that were "
 "already imported, exit the editor, remove the [code].import/[/code] folder "
 "located inside the project folder then restart the editor (see [member "
-"application/config/project_data_dir_name])."
+"application/config/use_hidden_project_data_directory])."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1465
+#: doc/classes/ProjectSettings.xml:1469
 msgid ""
 "If [code]true[/code], the texture importer will import VRAM-compressed "
 "textures using the Ericsson Texture Compression 2 algorithm. This texture "
@@ -48284,10 +48515,10 @@ msgid ""
 "already imported before. To make this setting apply to textures that were "
 "already imported, exit the editor, remove the [code].import/[/code] folder "
 "located inside the project folder then restart the editor (see [member "
-"application/config/project_data_dir_name])."
+"application/config/use_hidden_project_data_directory])."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1469
+#: doc/classes/ProjectSettings.xml:1473
 msgid ""
 "If [code]true[/code], the texture importer will import VRAM-compressed "
 "textures using the PowerVR Texture Compression algorithm. This texture "
@@ -48296,10 +48527,10 @@ msgid ""
 "already imported before. To make this setting apply to textures that were "
 "already imported, exit the editor, remove the [code].import/[/code] folder "
 "located inside the project folder then restart the editor (see [member "
-"application/config/project_data_dir_name])."
+"application/config/use_hidden_project_data_directory])."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1473
+#: doc/classes/ProjectSettings.xml:1477
 msgid ""
 "If [code]true[/code], the texture importer will import VRAM-compressed "
 "textures using the S3 Texture Compression algorithm. This algorithm is only "
@@ -48308,10 +48539,10 @@ msgid ""
 "already imported before. To make this setting apply to textures that were "
 "already imported, exit the editor, remove the [code].import/[/code] folder "
 "located inside the project folder then restart the editor (see [member "
-"application/config/project_data_dir_name])."
+"application/config/use_hidden_project_data_directory])."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1477
+#: doc/classes/ProjectSettings.xml:1481
 msgid ""
 "Cell size used for the 2D hash grid that [VisibilityNotifier2D] uses (in "
 "pixels)."
@@ -59840,26 +60071,33 @@ msgid "Text [Color] used when the [ToolButton] is disabled."
 msgstr ""
 
 #: doc/classes/ToolButton.xml:39
-msgid "Text [Color] used when the [ToolButton] is being hovered."
+msgid ""
+"Text [Color] used when the [ToolButton] is focused. Only replaces the normal "
+"text color of the button. Disabled, hovered, and pressed states take "
+"precedence over this color."
 msgstr ""
 
 #: doc/classes/ToolButton.xml:42
-msgid "Text [Color] used when the [ToolButton] is being pressed."
+msgid "Text [Color] used when the [ToolButton] is being hovered."
 msgstr ""
 
 #: doc/classes/ToolButton.xml:45
-msgid "[StyleBox] used when the [ToolButton] is being hovered."
+msgid "Text [Color] used when the [ToolButton] is being pressed."
 msgstr ""
 
 #: doc/classes/ToolButton.xml:48
-msgid "The horizontal space between [ToolButton]'s icon and text."
+msgid "[StyleBox] used when the [ToolButton] is being hovered."
 msgstr ""
 
 #: doc/classes/ToolButton.xml:51
-msgid "Default [StyleBox] for the [ToolButton]."
+msgid "The horizontal space between [ToolButton]'s icon and text."
 msgstr ""
 
 #: doc/classes/ToolButton.xml:54
+msgid "Default [StyleBox] for the [ToolButton]."
+msgstr ""
+
+#: doc/classes/ToolButton.xml:57
 msgid "[StyleBox] used when the [ToolButton] is being pressed."
 msgstr ""
 
@@ -72196,6 +72434,19 @@ msgid ""
 msgstr ""
 "Wenn [code]true[/code], dann werden untergeordnete Nodes sortiert, "
 "anderenfalls wird die Sortierung deaktiviert."
+
+#, fuzzy
+#~ msgid ""
+#~ "Returns a list of intersecting [Area]s. For performance reasons "
+#~ "(collisions are all processed at the same time) this list is modified "
+#~ "once during the physics step, not immediately after objects are moved. "
+#~ "Consider using signals instead."
+#~ msgstr ""
+#~ "Gibt eine Liste der sich schneidenden [Area2D]s zurück. Aus "
+#~ "Leistungsgründen (Kollisionen werden alle gleichzeitig verarbeitet) wird "
+#~ "diese Liste einmal während des Physikschritts geändert, nicht sofort nach "
+#~ "dem Verschieben von Objekten. Erwägen Sie stattdessen die Verwendung von "
+#~ "Signalen."
 
 #~ msgid "Returns the label used for built-in text."
 #~ msgstr "Gibt das für den eingebauten Text verwendete Label zurück."
