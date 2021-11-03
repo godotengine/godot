@@ -1760,7 +1760,7 @@ void VisualScriptEditor::_on_nodes_paste() {
 		Vector2 paste_pos = clipboard->nodes_positions[E.key];
 
 		if (first_paste) {
-			position_offset = _get_pos_in_graph(mouse_up_position) - paste_pos;
+			position_offset = _get_pos_in_graph(mouse_up_position - graph->get_global_position()) - paste_pos;
 			first_paste = false;
 		}
 
