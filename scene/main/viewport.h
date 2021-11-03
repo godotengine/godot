@@ -330,6 +330,7 @@ private:
 		int mouse_focus_mask = 0;
 		Control *key_focus = nullptr;
 		Control *mouse_over = nullptr;
+		Control *unfocused_mouse_over = nullptr;
 		Control *drag_mouse_over = nullptr;
 		Vector2 drag_mouse_over_pos;
 		Control *tooltip_control = nullptr;
@@ -367,6 +368,7 @@ private:
 	DefaultCanvasItemTextureRepeat default_canvas_item_texture_repeat = DEFAULT_CANVAS_ITEM_TEXTURE_REPEAT_DISABLED;
 
 	bool disable_input = false;
+	bool force_mouse_events = false;
 
 	void _gui_call_input(Control *p_control, const Ref<InputEvent> &p_input);
 	void _gui_call_notification(Control *p_control, int p_what);
@@ -521,6 +523,9 @@ public:
 
 	void set_disable_input(bool p_disable);
 	bool is_input_disabled() const;
+
+	void set_force_mouse_events(bool p_disable);
+	bool is_mouse_events_forced() const;
 
 	Vector2 get_mouse_position() const;
 	void warp_mouse(const Vector2 &p_pos);

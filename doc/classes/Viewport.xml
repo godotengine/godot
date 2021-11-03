@@ -196,6 +196,9 @@
 		</member>
 		<member name="gui_embed_subwindows" type="bool" setter="set_embed_subwindows_hint" getter="get_embed_subwindows_hint" default="false">
 		</member>
+		<member name="gui_force_mouse_events" type="bool" setter="set_force_mouse_events" getter="is_mouse_events_forced" default="false">
+			If [code]true[/code], the viewport will emit mouse_entered and mouse_exited signals even when dragging a [Control].
+		</member>
 		<member name="gui_snap_controls_to_pixels" type="bool" setter="set_snap_controls_to_pixels" getter="is_snap_controls_to_pixels_enabled" default="true">
 			If [code]true[/code], the GUI controls on the viewport will lay pixel perfectly.
 		</member>
