@@ -1695,7 +1695,7 @@ BaseMaterial3D::TextureFilter BaseMaterial3D::get_texture_filter() const {
 
 void BaseMaterial3D::_validate_feature(const String &text, Feature feature, PropertyInfo &property) const {
 	if (property.name.begins_with(text) && property.name != text + "_enabled" && !features[feature]) {
-		property.usage = PROPERTY_USAGE_NOEDITOR;
+		property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
 }
 
@@ -1729,23 +1729,23 @@ void BaseMaterial3D::_validate_property(PropertyInfo &property) const {
 	}
 
 	if (property.name == "billboard_keep_scale" && billboard_mode == BILLBOARD_DISABLED) {
-		property.usage = PROPERTY_USAGE_NOEDITOR;
+		property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
 
 	if (property.name == "grow_amount" && !grow_enabled) {
-		property.usage = PROPERTY_USAGE_NOEDITOR;
+		property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
 
 	if (property.name == "point_size" && !flags[FLAG_USE_POINT_SIZE]) {
-		property.usage = PROPERTY_USAGE_NOEDITOR;
+		property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
 
 	if (property.name == "proximity_fade_distance" && !proximity_fade_enabled) {
-		property.usage = PROPERTY_USAGE_NOEDITOR;
+		property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
 
 	if ((property.name == "distance_fade_max_distance" || property.name == "distance_fade_min_distance") && distance_fade == DISTANCE_FADE_DISABLED) {
-		property.usage = PROPERTY_USAGE_NOEDITOR;
+		property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
 
 	// you can only enable anti-aliasing (in materials) on alpha scissor and alpha hash

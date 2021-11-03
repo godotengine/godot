@@ -136,7 +136,7 @@ void VisualScriptExpression::_get_property_list(List<PropertyInfo> *p_list) cons
 		argt += "," + Variant::get_type_name(Variant::Type(i));
 	}
 
-	p_list->push_back(PropertyInfo(Variant::STRING, "expression", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
+	p_list->push_back(PropertyInfo(Variant::STRING, "expression", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
 	p_list->push_back(PropertyInfo(Variant::INT, "out_type", PROPERTY_HINT_ENUM, argt));
 	p_list->push_back(PropertyInfo(Variant::INT, "input_count", PROPERTY_HINT_RANGE, "0,64,1"));
 	p_list->push_back(PropertyInfo(Variant::BOOL, "sequenced"));

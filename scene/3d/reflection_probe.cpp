@@ -185,7 +185,7 @@ Vector<Face3> ReflectionProbe::get_faces(uint32_t p_usage_flags) const {
 void ReflectionProbe::_validate_property(PropertyInfo &property) const {
 	if (property.name == "interior/ambient_color" || property.name == "interior/ambient_color_energy") {
 		if (ambient_mode != AMBIENT_COLOR) {
-			property.usage = PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL;
+			property.usage = PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL;
 		}
 	}
 	VisualInstance3D::_validate_property(property);

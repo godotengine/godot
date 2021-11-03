@@ -790,7 +790,7 @@ float StyleBoxFlat::get_style_margin(Side p_side) const {
 
 void StyleBoxFlat::_validate_property(PropertyInfo &property) const {
 	if (!anti_aliased && property.name == "anti_aliasing_size") {
-		property.usage = PROPERTY_USAGE_NOEDITOR;
+		property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
 }
 

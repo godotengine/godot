@@ -572,9 +572,9 @@ void CSGShape3D::_validate_property(PropertyInfo &property) const {
 	bool is_collision_prefixed = property.name.begins_with("collision_");
 	if ((is_collision_prefixed || property.name.begins_with("use_collision")) && is_inside_tree() && !is_root_shape()) {
 		//hide collision if not root
-		property.usage = PROPERTY_USAGE_NOEDITOR;
+		property.usage = PROPERTY_USAGE_NO_EDITOR;
 	} else if (is_collision_prefixed && !bool(get("use_collision"))) {
-		property.usage = PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL;
+		property.usage = PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL;
 	}
 	GeometryInstance3D::_validate_property(property);
 }
