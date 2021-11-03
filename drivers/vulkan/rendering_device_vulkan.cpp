@@ -7186,6 +7186,7 @@ RenderingDeviceVulkan::DrawList *RenderingDeviceVulkan::_get_draw_list_ptr(DrawL
 }
 
 void RenderingDeviceVulkan::draw_list_bind_render_pipeline(DrawListID p_list, RID p_render_pipeline) {
+	_THREAD_SAFE_METHOD_
 	DrawList *dl = _get_draw_list_ptr(p_list);
 	ERR_FAIL_COND(!dl);
 #ifdef DEBUG_ENABLED
@@ -7309,6 +7310,7 @@ void RenderingDeviceVulkan::draw_list_bind_uniform_set(DrawListID p_list, RID p_
 }
 
 void RenderingDeviceVulkan::draw_list_bind_vertex_array(DrawListID p_list, RID p_vertex_array) {
+	_THREAD_SAFE_METHOD_
 	DrawList *dl = _get_draw_list_ptr(p_list);
 	ERR_FAIL_COND(!dl);
 #ifdef DEBUG_ENABLED
@@ -7333,6 +7335,7 @@ void RenderingDeviceVulkan::draw_list_bind_vertex_array(DrawListID p_list, RID p
 }
 
 void RenderingDeviceVulkan::draw_list_bind_index_array(DrawListID p_list, RID p_index_array) {
+	_THREAD_SAFE_METHOD_
 	DrawList *dl = _get_draw_list_ptr(p_list);
 	ERR_FAIL_COND(!dl);
 #ifdef DEBUG_ENABLED
@@ -7357,6 +7360,7 @@ void RenderingDeviceVulkan::draw_list_bind_index_array(DrawListID p_list, RID p_
 }
 
 void RenderingDeviceVulkan::draw_list_set_line_width(DrawListID p_list, float p_width) {
+	_THREAD_SAFE_METHOD_
 	DrawList *dl = _get_draw_list_ptr(p_list);
 	ERR_FAIL_COND(!dl);
 #ifdef DEBUG_ENABLED
@@ -7367,6 +7371,7 @@ void RenderingDeviceVulkan::draw_list_set_line_width(DrawListID p_list, float p_
 }
 
 void RenderingDeviceVulkan::draw_list_set_push_constant(DrawListID p_list, const void *p_data, uint32_t p_data_size) {
+	_THREAD_SAFE_METHOD_
 	DrawList *dl = _get_draw_list_ptr(p_list);
 	ERR_FAIL_COND(!dl);
 
@@ -7385,6 +7390,7 @@ void RenderingDeviceVulkan::draw_list_set_push_constant(DrawListID p_list, const
 }
 
 void RenderingDeviceVulkan::draw_list_draw(DrawListID p_list, bool p_use_indices, uint32_t p_instances, uint32_t p_procedural_vertices) {
+	_THREAD_SAFE_METHOD_
 	DrawList *dl = _get_draw_list_ptr(p_list);
 	ERR_FAIL_COND(!dl);
 #ifdef DEBUG_ENABLED
@@ -7496,6 +7502,7 @@ void RenderingDeviceVulkan::draw_list_draw(DrawListID p_list, bool p_use_indices
 }
 
 void RenderingDeviceVulkan::draw_list_enable_scissor(DrawListID p_list, const Rect2 &p_rect) {
+	_THREAD_SAFE_METHOD_
 	DrawList *dl = _get_draw_list_ptr(p_list);
 
 	ERR_FAIL_COND(!dl);
@@ -7520,6 +7527,7 @@ void RenderingDeviceVulkan::draw_list_enable_scissor(DrawListID p_list, const Re
 }
 
 void RenderingDeviceVulkan::draw_list_disable_scissor(DrawListID p_list) {
+	_THREAD_SAFE_METHOD_
 	DrawList *dl = _get_draw_list_ptr(p_list);
 	ERR_FAIL_COND(!dl);
 #ifdef DEBUG_ENABLED
@@ -7539,6 +7547,7 @@ uint32_t RenderingDeviceVulkan::draw_list_get_current_pass() {
 }
 
 RenderingDevice::DrawListID RenderingDeviceVulkan::draw_list_switch_to_next_pass() {
+	_THREAD_SAFE_METHOD_
 	ERR_FAIL_COND_V(draw_list == nullptr, INVALID_ID);
 	ERR_FAIL_COND_V(draw_list_current_subpass >= draw_list_subpass_count - 1, INVALID_FORMAT_ID);
 
@@ -7554,6 +7563,7 @@ RenderingDevice::DrawListID RenderingDeviceVulkan::draw_list_switch_to_next_pass
 	return int64_t(ID_TYPE_DRAW_LIST) << ID_BASE_SHIFT;
 }
 Error RenderingDeviceVulkan::draw_list_switch_to_next_pass_split(uint32_t p_splits, DrawListID *r_split_ids) {
+	_THREAD_SAFE_METHOD_
 	ERR_FAIL_COND_V(draw_list == nullptr, ERR_INVALID_PARAMETER);
 	ERR_FAIL_COND_V(draw_list_current_subpass >= draw_list_subpass_count - 1, ERR_INVALID_PARAMETER);
 
@@ -7805,6 +7815,7 @@ RenderingDevice::ComputeListID RenderingDeviceVulkan::compute_list_begin(bool p_
 }
 
 void RenderingDeviceVulkan::compute_list_bind_compute_pipeline(ComputeListID p_list, RID p_compute_pipeline) {
+	_THREAD_SAFE_METHOD_
 	ERR_FAIL_COND(p_list != ID_TYPE_COMPUTE_LIST);
 	ERR_FAIL_COND(!compute_list);
 
@@ -7870,6 +7881,7 @@ void RenderingDeviceVulkan::compute_list_bind_compute_pipeline(ComputeListID p_l
 
 void RenderingDeviceVulkan::compute_list_bind_uniform_set(ComputeListID p_list, RID p_uniform_set, uint32_t p_index) {
 	ERR_FAIL_COND(p_list != ID_TYPE_COMPUTE_LIST);
+	_THREAD_SAFE_METHOD_
 	ERR_FAIL_COND(!compute_list);
 
 	ComputeList *cl = compute_list;
@@ -8024,6 +8036,7 @@ void RenderingDeviceVulkan::compute_list_bind_uniform_set(ComputeListID p_list, 
 
 void RenderingDeviceVulkan::compute_list_set_push_constant(ComputeListID p_list, const void *p_data, uint32_t p_data_size) {
 	ERR_FAIL_COND(p_list != ID_TYPE_COMPUTE_LIST);
+	_THREAD_SAFE_METHOD_
 	ERR_FAIL_COND(!compute_list);
 
 	ComputeList *cl = compute_list;
@@ -8044,6 +8057,7 @@ void RenderingDeviceVulkan::compute_list_set_push_constant(ComputeListID p_list,
 
 void RenderingDeviceVulkan::compute_list_dispatch(ComputeListID p_list, uint32_t p_x_groups, uint32_t p_y_groups, uint32_t p_z_groups) {
 	ERR_FAIL_COND(p_list != ID_TYPE_COMPUTE_LIST);
+	_THREAD_SAFE_METHOD_
 	ERR_FAIL_COND(!compute_list);
 
 	ComputeList *cl = compute_list;
@@ -8131,6 +8145,7 @@ void RenderingDeviceVulkan::compute_list_dispatch_threads(ComputeListID p_list, 
 
 void RenderingDeviceVulkan::compute_list_dispatch_indirect(ComputeListID p_list, RID p_buffer, uint32_t p_offset) {
 	ERR_FAIL_COND(p_list != ID_TYPE_COMPUTE_LIST);
+	_THREAD_SAFE_METHOD_
 	ERR_FAIL_COND(!compute_list);
 
 	ComputeList *cl = compute_list;
@@ -8186,6 +8201,7 @@ void RenderingDeviceVulkan::compute_list_dispatch_indirect(ComputeListID p_list,
 }
 
 void RenderingDeviceVulkan::compute_list_add_barrier(ComputeListID p_list) {
+	_THREAD_SAFE_METHOD_
 #ifdef FORCE_FULL_BARRIER
 	_full_barrier(true);
 #else
@@ -8194,6 +8210,7 @@ void RenderingDeviceVulkan::compute_list_add_barrier(ComputeListID p_list) {
 }
 
 void RenderingDeviceVulkan::compute_list_end(uint32_t p_post_barrier) {
+	_THREAD_SAFE_METHOD_
 	ERR_FAIL_COND(!compute_list);
 
 	uint32_t barrier_flags = 0;
@@ -8273,6 +8290,8 @@ void RenderingDeviceVulkan::compute_list_end(uint32_t p_post_barrier) {
 }
 
 void RenderingDeviceVulkan::barrier(uint32_t p_from, uint32_t p_to) {
+	_THREAD_SAFE_METHOD_
+
 	uint32_t src_barrier_flags = 0;
 	uint32_t src_access_flags = 0;
 	if (p_from & BARRIER_MASK_COMPUTE) {
@@ -8315,6 +8334,7 @@ void RenderingDeviceVulkan::barrier(uint32_t p_from, uint32_t p_to) {
 }
 
 void RenderingDeviceVulkan::full_barrier() {
+	_THREAD_SAFE_METHOD_
 #ifndef DEBUG_ENABLED
 	ERR_PRINT("Full barrier is debug-only, should not be used in production");
 #endif
@@ -8609,6 +8629,7 @@ void RenderingDeviceVulkan::swap_buffers() {
 void RenderingDeviceVulkan::submit() {
 	ERR_FAIL_COND_MSG(local_device.is_null(), "Only local devices can submit and sync.");
 	ERR_FAIL_COND_MSG(local_device_processing, "device already submitted, call sync to wait until done.");
+	_THREAD_SAFE_METHOD_
 
 	_finalize_command_bufers();
 
@@ -8979,6 +9000,7 @@ void RenderingDeviceVulkan::_free_rids(T &p_owner, const char *p_type) {
 }
 
 void RenderingDeviceVulkan::capture_timestamp(const String &p_name) {
+	_THREAD_SAFE_METHOD_
 	ERR_FAIL_COND_MSG(draw_list != nullptr, "Capturing timestamps during draw list creation is not allowed. Offending timestap was: " + p_name);
 	ERR_FAIL_COND(frames[frame].timestamp_count >= max_timestamp_query_elements);
 
