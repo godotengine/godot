@@ -403,7 +403,7 @@ void VoxelGI::bake(Node *p_from_node, bool p_create_visual_debug) {
 	if (p_create_visual_debug) {
 		MultiMeshInstance3D *mmi = memnew(MultiMeshInstance3D);
 		mmi->set_multimesh(baker.create_debug_multimesh());
-		add_child(mmi);
+		add_child(mmi, true);
 #ifdef TOOLS_ENABLED
 		if (is_inside_tree() && get_tree()->get_edited_scene_root() == this) {
 			mmi->set_owner(this);
