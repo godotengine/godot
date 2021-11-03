@@ -110,20 +110,22 @@ PopupMenu *MenuButton::get_popup() const {
 	return popup;
 }
 
-void MenuButton::_set_items(const Array &p_items) {
-	popup->set("items", p_items);
-}
-
-Array MenuButton::_get_items() const {
-	return popup->get("items");
-}
-
 void MenuButton::set_switch_on_hover(bool p_enabled) {
 	switch_on_hover = p_enabled;
 }
 
 bool MenuButton::is_switch_on_hover() {
 	return switch_on_hover;
+}
+
+void MenuButton::set_item_count(int p_count) {
+	ERR_FAIL_COND(p_count < 0);
+	popup->set_item_count(p_count);
+	notify_property_list_changed();
+}
+
+int MenuButton::get_item_count() const {
+	return popup->get_item_count();
 }
 
 void MenuButton::_notification(int p_what) {
@@ -146,16 +148,66 @@ void MenuButton::_notification(int p_what) {
 	}
 }
 
+bool MenuButton::_set(const StringName &p_name, const Variant &p_value) {
+	Vector<String> components = String(p_name).split("/", true, 2);
+	if (components.size() >= 2 && components[0] == "popup") {
+		bool valid;
+		popup->set(String(p_name).trim_prefix("popup/"), p_value, &valid);
+		return valid;
+	}
+	return false;
+}
+
+bool MenuButton::_get(const StringName &p_name, Variant &r_ret) const {
+	Vector<String> components = String(p_name).split("/", true, 2);
+	if (components.size() >= 2 && components[0] == "popup") {
+		bool valid;
+		r_ret = popup->get(String(p_name).trim_prefix("popup/"), &valid);
+		return valid;
+	}
+	return false;
+}
+
+void MenuButton::_get_property_list(List<PropertyInfo> *p_list) const {
+	for (int i = 0; i < popup->get_item_count(); i++) {
+		p_list->push_back(PropertyInfo(Variant::STRING, vformat("popup/item_%d/text", i)));
+
+		PropertyInfo pi = PropertyInfo(Variant::OBJECT, vformat("popup/item_%d/icon", i), PROPERTY_HINT_RESOURCE_TYPE, "Texture2D");
+		pi.usage &= ~(popup->get_item_icon(i).is_null() ? PROPERTY_USAGE_STORAGE : 0);
+		p_list->push_back(pi);
+
+		pi = PropertyInfo(Variant::INT, vformat("popup/item_%d/checkable", i), PROPERTY_HINT_ENUM, "No,As checkbox,As radio button");
+		pi.usage &= ~(!popup->is_item_checkable(i) ? PROPERTY_USAGE_STORAGE : 0);
+		p_list->push_back(pi);
+
+		pi = PropertyInfo(Variant::BOOL, vformat("popup/item_%d/checked", i));
+		pi.usage &= ~(!popup->is_item_checked(i) ? PROPERTY_USAGE_STORAGE : 0);
+		p_list->push_back(pi);
+
+		pi = PropertyInfo(Variant::INT, vformat("popup/item_%d/id", i), PROPERTY_HINT_RANGE, "1,10,1,or_greater");
+		p_list->push_back(pi);
+
+		pi = PropertyInfo(Variant::BOOL, vformat("popup/item_%d/disabled", i));
+		pi.usage &= ~(!popup->is_item_disabled(i) ? PROPERTY_USAGE_STORAGE : 0);
+		p_list->push_back(pi);
+
+		pi = PropertyInfo(Variant::BOOL, vformat("popup/item_%d/separator", i));
+		pi.usage &= ~(!popup->is_item_separator(i) ? PROPERTY_USAGE_STORAGE : 0);
+		p_list->push_back(pi);
+	}
+}
+
 void MenuButton::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_popup"), &MenuButton::get_popup);
-	ClassDB::bind_method(D_METHOD("_set_items"), &MenuButton::_set_items);
-	ClassDB::bind_method(D_METHOD("_get_items"), &MenuButton::_get_items);
 	ClassDB::bind_method(D_METHOD("set_switch_on_hover", "enable"), &MenuButton::set_switch_on_hover);
 	ClassDB::bind_method(D_METHOD("is_switch_on_hover"), &MenuButton::is_switch_on_hover);
 	ClassDB::bind_method(D_METHOD("set_disable_shortcuts", "disabled"), &MenuButton::set_disable_shortcuts);
 
-	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "items", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_items", "_get_items");
+	ClassDB::bind_method(D_METHOD("set_item_count"), &MenuButton::set_item_count);
+	ClassDB::bind_method(D_METHOD("get_item_count"), &MenuButton::get_item_count);
+
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "switch_on_hover"), "set_switch_on_hover", "is_switch_on_hover");
+	ADD_ARRAY_COUNT("Items", "items_count", "set_item_count", "get_item_count", "popup/item_");
 
 	ADD_SIGNAL(MethodInfo("about_to_popup"));
 }
