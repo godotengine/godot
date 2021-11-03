@@ -49,6 +49,7 @@ name is available.
     Bhuvan Vemula (Bhu1-V)
     Błażej Szczygieł (zaps166)
     Bojidar Marinov (bojidar-bg)
+    Brian Semrau (briansemrau)
     Bruno Lourenço (MadEqua)
     bruvzg
     Cameron Reikes (creikey)
@@ -68,6 +69,7 @@ name is available.
     Dmitry Koteroff (Krakean)
     Dominik Jasiński (dreamsComeTrue)
     DualMatrix
+    Duroxxigar
     Ellen Poe (ellenhp)
     Emmanuel Barroga (codecustard)
     Emmanuel Leblond (touilleMan)
@@ -133,8 +135,8 @@ name is available.
     Liz Haas (27thLiz)
     Lucien Menassol (Kanabenki)
     Lyuma
-    m4nu3lf
     Maganty Rushyendra (mrushyendra)
+    Manuele Finocchiaro (m4nu3lf)
     Marcel Admiraal (madmiraal)
     Marcelo Fernandez (marcelofg55)
     Marc Gilleron (Zylann)
@@ -212,6 +214,7 @@ name is available.
     박한얼 (volzhs)
     V. Vamsi Krishna (vkbsb)
     Wilhem Barbier (nounoursheureux)
+    William Deurwaarder (williamd67)
     Will Nations (willnationsdev)
     Wilson E. Alvarez (Rubonnek)
     Xavier Cho (mysticfall)
