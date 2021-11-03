@@ -309,6 +309,8 @@ public:
 
 	int get_canvas_layer() const;
 
+	RS::CanvasItemTextureFilter get_texture_filter_cache();
+
 	CanvasItem();
 	~CanvasItem();
 };

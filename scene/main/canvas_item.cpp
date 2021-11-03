@@ -1144,6 +1144,10 @@ CanvasItem::TextureRepeat CanvasItem::get_texture_repeat() const {
 	return texture_repeat;
 }
 
+RS::CanvasItemTextureFilter CanvasItem::get_texture_filter_cache() {
+	return texture_filter_cache;
+}
+
 CanvasItem::CanvasItem() :
 		xform_change(this) {
 	canvas_item = RenderingServer::get_singleton()->canvas_item_create();

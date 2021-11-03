@@ -63,14 +63,17 @@ void draw_margin_line(Control *edit_draw, Vector2 from, Vector2 to) {
 
 void TextureRegionEditor::_region_draw() {
 	Ref<Texture2D> base_tex = nullptr;
+	RenderingServer::CanvasItemTextureFilter tex_filter = RS::CANVAS_ITEM_TEXTURE_FILTER_DEFAULT;
 	if (atlas_tex.is_valid()) {
 		base_tex = atlas_tex->get_atlas();
 	} else if (node_sprite_2d) {
 		base_tex = node_sprite_2d->get_texture();
+		tex_filter = node_sprite_2d->get_texture_filter_cache();
 	} else if (node_sprite_3d) {
 		base_tex = node_sprite_3d->get_texture();
 	} else if (node_ninepatch) {
 		base_tex = node_ninepatch->get_texture();
+		tex_filter = node_ninepatch->get_texture_filter_cache();
 	} else if (obj_styleBox.is_valid()) {
 		base_tex = obj_styleBox->get_texture();
 	}
@@ -84,6 +87,7 @@ void TextureRegionEditor::_region_draw() {
 	mtx.scale_basis(Vector2(draw_zoom, draw_zoom));
 
 	RS::get_singleton()->canvas_item_add_set_transform(edit_draw->get_canvas_item(), mtx);
+	RS::get_singleton()->canvas_item_set_default_texture_filter(edit_draw->get_canvas_item(), tex_filter);
 	edit_draw->draw_texture(base_tex, Point2());
 	RS::get_singleton()->canvas_item_add_set_transform(edit_draw->get_canvas_item(), Transform2D());
 
