@@ -69,7 +69,6 @@ name is available.
     Dmitry Koteroff (Krakean)
     Dominik Jasiński (dreamsComeTrue)
     DualMatrix
-    Duroxxigar
     Ellen Poe (ellenhp)
     Emmanuel Barroga (codecustard)
     Emmanuel Leblond (touilleMan)
@@ -110,6 +109,7 @@ name is available.
     Ilaria Cislaghi (QbieShay)
     Indah Sylvia (ISylvox)
     J08nY
+    Jake Young (Duroxxigar)
     Jakub Grzesik (kubecz3k)
     James Buck (jbuck3)
     Jean-Michel Bernard (jmb462)
