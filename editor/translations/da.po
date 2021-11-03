@@ -23,7 +23,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-04-26 22:31+0000\n"
+"PO-Revision-Date: 2021-10-31 22:17+0000\n"
 "Last-Translator: Kim Nielsen <kimmowich@stofanet.dk>\n"
 "Language-Team: Danish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/da/>\n"
@@ -32,7 +32,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.7-dev\n"
+"X-Generator: Weblate 4.9-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -5291,7 +5291,7 @@ msgstr "Slut"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Immediate"
-msgstr "Umiddelbart"
+msgstr "Umiddelbar"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Sync"
@@ -5332,8 +5332,8 @@ msgid ""
 "Shift+LMB to create connections."
 msgstr ""
 "Vælg og flyt nodes.\n"
-"RMB for at tilføje ny nodes.\n"
-"Shift+LMB for at oprette forbindelse."
+"RMB for at tilføje nye nodes.\n"
+"Shift+LMB for at oprette forbindelser."
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Create new nodes."
@@ -5367,7 +5367,7 @@ msgstr "Afspil Mode:"
 #: editor/plugins/animation_tree_editor_plugin.cpp
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "AnimationTree"
-msgstr "Animation Tree"
+msgstr "Animation Træ"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "New name:"
@@ -5380,11 +5380,11 @@ msgstr "Skalér:"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Fade In (s):"
-msgstr ""
+msgstr "Fade ind (s):"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Fade Out (s):"
-msgstr ""
+msgstr "Fade Ud (s):"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Blend"
@@ -5409,7 +5409,7 @@ msgstr ""
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Start!"
-msgstr ""
+msgstr "Start!"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 #: editor/plugins/multimesh_editor_plugin.cpp
@@ -5442,11 +5442,11 @@ msgstr "Tilføj Input"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Clear Auto-Advance"
-msgstr ""
+msgstr "Ryd Automatisk Fremrykning"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Set Auto-Advance"
-msgstr ""
+msgstr "Sæt Automatisk Fremrykning"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 #, fuzzy
@@ -5463,7 +5463,7 @@ msgstr "Animationstræ er ugyldigt."
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Animation Node"
-msgstr ""
+msgstr "Animations Node"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "OneShot Node"
@@ -5487,15 +5487,15 @@ msgstr ""
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "TimeScale Node"
-msgstr ""
+msgstr "Tidsskala Node"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "TimeSeek Node"
-msgstr ""
+msgstr "Tidssøgning Node"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Transition Node"
-msgstr ""
+msgstr "Overgangs Node"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 #, fuzzy
@@ -5525,52 +5525,49 @@ msgid "Download"
 msgstr "Download"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Connection error, please try again."
 msgstr "Forbindelsesfejl, prøv venligst igen."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Can't connect."
-msgstr "Ingen forbindelse."
+msgstr "Kan ikke oprette forbindelse."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Can't connect to host:"
-msgstr "Kan ikke forbinde til host:"
+msgstr "Kan ikke forbinde til værten:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "No response from host:"
-msgstr "Ingen respons fra host:"
+msgstr "Intet svar fra værten:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "No response."
-msgstr "Ingen reaktion."
+msgstr "Intet svar."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
+#, fuzzy
 msgid "Can't resolve hostname:"
-msgstr ""
+msgstr "Kan ikke løse værtsnavnet:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Can't resolve."
 msgstr "Kan ikke løses."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Request failed, return code:"
 msgstr "Forespørgsel mislykkedes, returkode:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Cannot save response to:"
-msgstr "Kan ikke gemme respons i:"
+msgstr "Kan ikke gemme svar til:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Write error."
 msgstr "Skrivefejl."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Request failed, too many redirects"
-msgstr ""
+msgstr "Anmodningen mislykkedes, for mange omdirigeringer"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 #, fuzzy
@@ -5578,12 +5575,10 @@ msgid "Redirect loop."
 msgstr "Omdiriger Løkke."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Request failed, timeout"
 msgstr "Forespørgsel mislykkedes, tiden udløb."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Timeout."
 msgstr "Tiden udløb."
 
@@ -5593,23 +5588,24 @@ msgstr "Fejlet:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Bad download hash, assuming file has been tampered with."
-msgstr ""
+msgstr "Dårligt download-hash, formoder at filen er blevet manipuleret."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Expected:"
-msgstr ""
+msgstr "Forventet:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Got:"
-msgstr ""
+msgstr "Fik:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Failed SHA-256 hash check"
-msgstr ""
+msgstr "Mislykkedes SHA-256 hash-tjek"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
+#, fuzzy
 msgid "Asset Download Error:"
-msgstr ""
+msgstr "Asset Download Fejl:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Downloading (%s / %s)..."
@@ -5620,8 +5616,9 @@ msgid "Downloading..."
 msgstr "Downloader..."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
+#, fuzzy
 msgid "Resolving..."
-msgstr ""
+msgstr "Løser..."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Error making request"
@@ -5632,9 +5629,8 @@ msgid "Idle"
 msgstr ""
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Install..."
-msgstr "Installér..."
+msgstr "Installere.."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 #, fuzzy
@@ -5643,19 +5639,20 @@ msgstr "Prøv igen"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Download Error"
-msgstr ""
+msgstr "Fejl i Download"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Download for this asset is already in progress!"
-msgstr ""
+msgstr "Download for dette asset er allerede i gang!"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Recently Updated"
-msgstr ""
+msgstr "Nyligt Opdateret"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
+#, fuzzy
 msgid "Least Recently Updated"
-msgstr ""
+msgstr "Seneste Nyligt Opdateret"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Name (A-Z)"
@@ -5678,9 +5675,8 @@ msgid "First"
 msgstr "Første"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Previous"
-msgstr "Forrige fane"
+msgstr "Forrige"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Next"
@@ -5696,11 +5692,12 @@ msgstr "Alle"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Search templates, projects, and demos"
-msgstr ""
+msgstr "Søg skabeloner, projekter og demoer"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
+#, fuzzy
 msgid "Search assets (excluding templates, projects, and demos)"
-msgstr ""
+msgstr "Søge assets (undtagen skabeloner, projekter og demoer)"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Import..."
@@ -5743,14 +5740,18 @@ msgid "Assets ZIP File"
 msgstr "Assets zipfil"
 
 #: editor/plugins/audio_stream_editor_plugin.cpp
+#, fuzzy
 msgid "Audio Preview Play/Pause"
-msgstr ""
+msgstr "Lyd forhåndsvisning Afspil/pause"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
+#, fuzzy
 msgid ""
 "Can't determine a save path for lightmap images.\n"
 "Save your scene and try again."
 msgstr ""
+"Kan ikke finde et sted at gemme lightmap images.\n"
+"Gem din scene, og prøv igen."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid ""
@@ -11420,11 +11421,11 @@ msgid ""
 msgstr ""
 
 #: editor/project_settings_editor.cpp
-msgid "Key "
+msgid "Physical Key"
 msgstr ""
 
 #: editor/project_settings_editor.cpp
-msgid "Physical Key"
+msgid "Key "
 msgstr ""
 
 #: editor/project_settings_editor.cpp

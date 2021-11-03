@@ -14,13 +14,14 @@
 # Bishwajeet Parhi <bishwajeet.techmaster@gmail.com>, 2020.
 # l4KKY <greenforcesave@gmail.com>, 2020.
 # harvinder rathor <harvinderr09@gmail.com>, 2021.
+# Sumanyu Aggarwal <sumanyu.code@gmail.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-05-03 21:29+0000\n"
-"Last-Translator: harvinder rathor <harvinderr09@gmail.com>\n"
+"PO-Revision-Date: 2021-10-28 22:09+0000\n"
+"Last-Translator: Sumanyu Aggarwal <sumanyu.code@gmail.com>\n"
 "Language-Team: Hindi <https://hosted.weblate.org/projects/godot-engine/godot/"
 "hi/>\n"
 "Language: hi\n"
@@ -28,7 +29,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.7-dev\n"
+"X-Generator: Weblate 4.9-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -383,7 +384,7 @@ msgstr ""
 #: editor/animation_track_editor.cpp
 #, fuzzy
 msgid "animation"
-msgstr "कार्यों:"
+msgstr "एनिमेशन"
 
 #: editor/animation_track_editor.cpp
 msgid "AnimationPlayer can't animate itself, only other players."
@@ -3677,14 +3678,12 @@ msgid "Can't resolve the requested address."
 msgstr ""
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Can't connect to the mirror."
-msgstr "कनेक्ट नहीं कर सकते।"
+msgstr "शीशे से जोड़ नहीं सकते|"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "No response from the mirror."
-msgstr "कोई जवाब नहीं।"
+msgstr "शीशे से कोई जवाब नहीं।"
 
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
@@ -10996,11 +10995,11 @@ msgid ""
 msgstr ""
 
 #: editor/project_settings_editor.cpp
-msgid "Key "
+msgid "Physical Key"
 msgstr ""
 
 #: editor/project_settings_editor.cpp
-msgid "Physical Key"
+msgid "Key "
 msgstr ""
 
 #: editor/project_settings_editor.cpp

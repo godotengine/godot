@@ -11131,12 +11131,12 @@ msgstr ""
 "бути принаймні один символ «/»."
 
 #: editor/project_settings_editor.cpp
-msgid "Key "
-msgstr "Клавіша "
-
-#: editor/project_settings_editor.cpp
 msgid "Physical Key"
 msgstr "Фізична клавіша"
+
+#: editor/project_settings_editor.cpp
+msgid "Key "
+msgstr "Клавіша "
 
 #: editor/project_settings_editor.cpp
 msgid "Joy Button"

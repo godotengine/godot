@@ -12346,13 +12346,13 @@ msgstr ""
 "карактер."
 
 #: editor/project_settings_editor.cpp
+msgid "Physical Key"
+msgstr ""
+
+#: editor/project_settings_editor.cpp
 #, fuzzy
 msgid "Key "
 msgstr "Кључ"
-
-#: editor/project_settings_editor.cpp
-msgid "Physical Key"
-msgstr ""
 
 #: editor/project_settings_editor.cpp
 #, fuzzy
