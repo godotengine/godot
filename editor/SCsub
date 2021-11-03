@@ -87,7 +87,7 @@ if env["tools"]:
     )
 
     # Documentation translations
-    to_include = "es,fr,ja,zh_CN".split(",")
+    to_include = "de,es,fr,ja,zh_CN".split(",")
     tlist = [env.Dir("#doc/translations").abspath + "/" + f + ".po" for f in to_include]
     env.Depends("#editor/doc_translations.gen.h", tlist)
     env.CommandNoCache(
