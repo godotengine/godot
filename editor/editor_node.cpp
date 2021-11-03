@@ -1497,6 +1497,21 @@ static void _reset_animation_players(Node *p_node, List<Ref<AnimatedValuesBackup
 	}
 }
 
+static void _reset_animated_sprites(Node *p_node, List<Ref<SpriteFrameBackup>> *r_sprite_frame_backups) {
+	for (int i = 0; i < p_node->get_child_count(); i++) {
+		AnimatedSprite3D *anim_sprite3d = Object::cast_to<AnimatedSprite3D>(p_node->get_child(i));
+		if (anim_sprite3d && anim_sprite3d->is_playing()) {
+			Ref<SpriteFrameBackup> backup_frame;
+			backup_frame.instance();
+			backup_frame->from_animated_sprite(anim_sprite3d);
+			r_sprite_frame_backups->push_back(backup_frame);
+
+			anim_sprite3d->set_frame(0);
+		}
+		_reset_animated_sprites(p_node->get_child(i), r_sprite_frame_backups);
+	}
+}
+
 void EditorNode::_save_scene(String p_file, int idx) {
 	Node *scene = editor_data.get_edited_scene_root(idx);
 
@@ -1513,6 +1528,9 @@ void EditorNode::_save_scene(String p_file, int idx) {
 	editor_data.apply_changes_in_editors();
 	List<Ref<AnimatedValuesBackup>> anim_backups;
 	_reset_animation_players(scene, &anim_backups);
+
+	List<Ref<SpriteFrameBackup>> sprite_frame_backups;
+	_reset_animated_sprites(scene, &sprite_frame_backups);
 	_save_default_environment();
 
 	_set_scene_metadata(p_file, idx);
@@ -1553,6 +1571,10 @@ void EditorNode::_save_scene(String p_file, int idx) {
 	editor_data.save_editor_external_data();
 
 	for (List<Ref<AnimatedValuesBackup>>::Element *E = anim_backups.front(); E; E = E->next()) {
+		E->get()->restore();
+	}
+
+	for (List<Ref<SpriteFrameBackup>>::Element *E = sprite_frame_backups.front(); E; E = E->next()) {
 		E->get()->restore();
 	}
 

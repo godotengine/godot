@@ -246,6 +246,22 @@ public:
 	AnimatedSprite3D();
 };
 
+#if TOOLS_ENABLED
+class SpriteFrameBackup : public Reference {
+	GDCLASS(SpriteFrameBackup, Reference);
+
+	AnimatedSprite3D *anim_sprite;
+	int value;
+
+protected:
+	static void _bind_methods();
+
+public:
+	void from_animated_sprite(AnimatedSprite3D *sprite);
+	void restore() const;
+};
+#endif
+
 VARIANT_ENUM_CAST(SpriteBase3D::DrawFlags);
 VARIANT_ENUM_CAST(SpriteBase3D::AlphaCutMode);
 #endif // SPRITE_3D_H

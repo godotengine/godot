@@ -1176,6 +1176,23 @@ String AnimatedSprite3D::get_configuration_warning() const {
 	return warning;
 }
 
+#if TOOLS_ENABLED
+void SpriteFrameBackup::restore() const {
+	anim_sprite->set_frame(value);
+}
+
+void SpriteFrameBackup::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("restore"), &SpriteFrameBackup::restore);
+}
+
+void SpriteFrameBackup::from_animated_sprite(AnimatedSprite3D *sprite)  {
+	if (sprite) {
+		anim_sprite = sprite;
+		value = sprite->get_frame();
+	}
+}
+#endif
+
 void AnimatedSprite3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_sprite_frames", "sprite_frames"), &AnimatedSprite3D::set_sprite_frames);
 	ClassDB::bind_method(D_METHOD("get_sprite_frames"), &AnimatedSprite3D::get_sprite_frames);
