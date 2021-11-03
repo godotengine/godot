@@ -11177,12 +11177,12 @@ msgstr ""
 "хотя бы один символ `/`."
 
 #: editor/project_settings_editor.cpp
-msgid "Key "
-msgstr "Клавиша "
-
-#: editor/project_settings_editor.cpp
 msgid "Physical Key"
 msgstr "Физическая клавиша"
+
+#: editor/project_settings_editor.cpp
+msgid "Key "
+msgstr "Клавиша "
 
 #: editor/project_settings_editor.cpp
 msgid "Joy Button"

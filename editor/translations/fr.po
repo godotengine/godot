@@ -11266,12 +11266,12 @@ msgstr ""
 "recherche doit inclure au moins un caractère `/`."
 
 #: editor/project_settings_editor.cpp
-msgid "Key "
-msgstr "Touche "
-
-#: editor/project_settings_editor.cpp
 msgid "Physical Key"
 msgstr "Touche physique"
+
+#: editor/project_settings_editor.cpp
+msgid "Key "
+msgstr "Touche "
 
 #: editor/project_settings_editor.cpp
 msgid "Joy Button"

@@ -17,7 +17,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-10-18 15:35+0000\n"
+"PO-Revision-Date: 2021-10-28 22:09+0000\n"
 "Last-Translator: Tapani Niemi <tapani.niemi@kapsi.fi>\n"
 "Language-Team: Finnish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fi/>\n"
@@ -1302,7 +1302,7 @@ msgstr "Assettien asentaja"
 
 #: editor/editor_audio_buses.cpp
 msgid "Speakers"
-msgstr "Kaiuttimiet"
+msgstr "Kaiuttimet"
 
 #: editor/editor_audio_buses.cpp
 msgid "Add Effect"
@@ -2210,7 +2210,7 @@ msgstr "Signaali"
 
 #: editor/editor_help_search.cpp
 msgid "Constant"
-msgstr "Muuttumaton"
+msgstr "Vakio"
 
 #: editor/editor_help_search.cpp
 msgid "Property"
@@ -5027,7 +5027,7 @@ msgstr "Pakota valkoisen modulaatio"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Include Gizmos (3D)"
-msgstr "Näytä 3D-muokkaimet"
+msgstr "Näytä 3D-vempaimet"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Pin AnimationPlayer"
@@ -7997,7 +7997,7 @@ msgstr "Näytä ympäristö"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "View Gizmos"
-msgstr "Näytä muokkaimet"
+msgstr "Näytä vempaimet"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "View Information"
@@ -8100,9 +8100,9 @@ msgid ""
 msgstr ""
 "Napsauta vaihtaaksesi näkyvyystilojen välillä.\n"
 "\n"
-"Avoin silmä: muokkain on näkyvissä.\n"
-"Suljettu silmä: muokkain on piilotettu.\n"
-"Puoliavoin silmä: muokkain on näkyvissä myös läpikuultamattomien pintojen "
+"Avoin silmä: vempain on näkyvissä.\n"
+"Suljettu silmä: vempain on piilotettu.\n"
+"Puoliavoin silmä: vempain on näkyvissä myös läpikuultamattomien pintojen "
 "läpi (\"röntgen\")."
 
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -8228,7 +8228,7 @@ msgstr "4 Näyttöruutua"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Gizmos"
-msgstr "Muokkaimet"
+msgstr "Vempaimet"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "View Origin"
@@ -8313,7 +8313,7 @@ msgstr "Jälki"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Unnamed Gizmo"
-msgstr "Nimetön muokkain"
+msgstr "Nimetön vempain"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Create Mesh2D"
@@ -8481,7 +8481,7 @@ msgstr "Lisää tekstuuri tiedostosta"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Add Frames from a Sprite Sheet"
-msgstr "Lisää ruudut Sprite Sheetistä"
+msgstr "Lisää ruudut sprite-arkista"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Insert Empty (Before)"
@@ -8517,7 +8517,7 @@ msgstr "Valitse tai tyhjää kaikki ruudut"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Create Frames from Sprite Sheet"
-msgstr "Luo ruudut Sprite Sheetistä"
+msgstr "Luo ruudut sprite-arkista"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "SpriteFrames"
@@ -11083,12 +11083,12 @@ msgstr ""
 "mukana vähintään yksi `/` merkki."
 
 #: editor/project_settings_editor.cpp
-msgid "Key "
-msgstr "Näppäin "
-
-#: editor/project_settings_editor.cpp
 msgid "Physical Key"
 msgstr "Fyysinen avain"
+
+#: editor/project_settings_editor.cpp
+msgid "Key "
+msgstr "Näppäin "
 
 #: editor/project_settings_editor.cpp
 msgid "Joy Button"

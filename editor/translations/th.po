@@ -11110,12 +11110,12 @@ msgstr ""
 "แบบสอบถามต้องมีอักขระ `/` อย่างน้อยหนึ่งตัวเพื่อกรองตามชื่อโครงการและที่อยู่แบบเต็ม"
 
 #: editor/project_settings_editor.cpp
-msgid "Key "
-msgstr "ปุ่ม "
-
-#: editor/project_settings_editor.cpp
 msgid "Physical Key"
 msgstr ""
+
+#: editor/project_settings_editor.cpp
+msgid "Key "
+msgstr "ปุ่ม "
 
 #: editor/project_settings_editor.cpp
 msgid "Joy Button"

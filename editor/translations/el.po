@@ -11340,12 +11340,12 @@ msgstr ""
 "περιέχει τουλάχιστον έναν χαρακτήρα `/`."
 
 #: editor/project_settings_editor.cpp
-msgid "Key "
-msgstr "Κλειδί "
-
-#: editor/project_settings_editor.cpp
 msgid "Physical Key"
 msgstr ""
+
+#: editor/project_settings_editor.cpp
+msgid "Key "
+msgstr "Κλειδί "
 
 #: editor/project_settings_editor.cpp
 msgid "Joy Button"

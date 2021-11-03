@@ -70,13 +70,14 @@
 # Erick Figueroa <querecuto@hotmail.com>, 2021.
 # jonagamerpro1234 ss <js398704@gmail.com>, 2021.
 # davidrogel <david.rogel.pernas@icloud.com>, 2021.
+# Anderson Guzman Abreu <chicobello1111@gmail.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-10-23 10:13+0000\n"
-"Last-Translator: Lisandro Lorea <lisandrolorea@gmail.com>\n"
+"PO-Revision-Date: 2021-10-31 22:17+0000\n"
+"Last-Translator: Anderson Guzman Abreu <chicobello1111@gmail.com>\n"
 "Language-Team: Spanish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/es/>\n"
 "Language: es\n"
@@ -2233,7 +2234,7 @@ msgstr "Buscar en la Ayuda"
 
 #: editor/editor_help_search.cpp
 msgid "Case Sensitive"
-msgstr "Respetar Mayus./Minus."
+msgstr "Respeta Mayus./Minus."
 
 #: editor/editor_help_search.cpp
 msgid "Show Hierarchy"
@@ -11212,12 +11213,12 @@ msgstr ""
 "al menos un carácter `/`."
 
 #: editor/project_settings_editor.cpp
-msgid "Key "
-msgstr "Tecla "
-
-#: editor/project_settings_editor.cpp
 msgid "Physical Key"
 msgstr "Tecla Física"
+
+#: editor/project_settings_editor.cpp
+msgid "Key "
+msgstr "Tecla "
 
 #: editor/project_settings_editor.cpp
 msgid "Joy Button"

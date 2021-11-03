@@ -66,8 +66,8 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-10-11 15:44+0000\n"
-"Last-Translator: Luigi <luibass92@live.it>\n"
+"PO-Revision-Date: 2021-10-24 20:52+0000\n"
+"Last-Translator: Riteo Siuga <riteo@posteo.net>\n"
 "Language-Team: Italian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/it/>\n"
 "Language: it\n"
@@ -1948,7 +1948,7 @@ msgstr "Rendi attuale"
 #: editor/editor_feature_profile.cpp editor/editor_node.cpp
 #: editor/plugins/theme_editor_plugin.cpp editor/project_manager.cpp
 msgid "Import"
-msgstr "Importazione"
+msgstr "Importa"
 
 #: editor/editor_feature_profile.cpp editor/project_export.cpp
 msgid "Export"
@@ -11471,12 +11471,12 @@ msgstr ""
 "contenere almeno un carattere `/`."
 
 #: editor/project_settings_editor.cpp
-msgid "Key "
-msgstr "Tasto "
-
-#: editor/project_settings_editor.cpp
 msgid "Physical Key"
 msgstr ""
+
+#: editor/project_settings_editor.cpp
+msgid "Key "
+msgstr "Tasto "
 
 #: editor/project_settings_editor.cpp
 msgid "Joy Button"
