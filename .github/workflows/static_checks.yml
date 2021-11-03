@@ -27,7 +27,7 @@ jobs:
           sudo apt-get install -qq dos2unix recode clang-format-13
           sudo update-alternatives --remove-all clang-format
           sudo update-alternatives --install /usr/bin/clang-format clang-format /usr/bin/clang-format-13 100
-          sudo pip3 install black==20.8b1 pygments
+          sudo pip3 install black==21.10b0 pygments
 
       - name: File formatting checks (file_format.sh)
         run: |
