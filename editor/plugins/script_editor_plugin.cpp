@@ -227,12 +227,6 @@ void ScriptEditorBase::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("replace_in_files_requested", PropertyInfo(Variant::STRING, "text")));
 }
 
-static bool _is_built_in_script(Script *p_script) {
-	String path = p_script->get_path();
-
-	return path.find("::") != -1;
-}
-
 class EditorScriptCodeCompletionCache : public ScriptCodeCompletionCache {
 	struct Cache {
 		uint64_t time_loaded = 0;
@@ -1159,7 +1153,7 @@ void ScriptEditor::_menu_option(int p_option) {
 	ScriptEditorBase *current = _get_current_editor();
 	switch (p_option) {
 		case FILE_NEW: {
-			script_create_dialog->config("Node", "new_script", false, false);
+			script_create_dialog->config("Node", "new_script", false);
 			script_create_dialog->popup_centered();
 		} break;
 		case FILE_NEW_TEXTFILE: {
@@ -1205,23 +1199,8 @@ void ScriptEditor::_menu_option(int p_option) {
 
 			List<String> extensions;
 			ResourceLoader::get_recognized_extensions_for_type("Script", &extensions);
-			bool built_in = !path.is_resource_file();
 
-			if (extensions.find(path.get_extension()) || built_in) {
-				if (built_in) {
-					String res_path = path.get_slice("::", 0);
-					if (ResourceLoader::get_resource_type(res_path) == "PackedScene") {
-						if (!EditorNode::get_singleton()->is_scene_open(res_path)) {
-							EditorNode::get_singleton()->load_scene(res_path);
-							script_editor->call_deferred(SNAME("_menu_option"), p_option);
-							previous_scripts.push_back(path); //repeat the operation
-							return;
-						}
-					} else {
-						EditorNode::get_singleton()->load_resource(res_path);
-					}
-				}
-
+			if (extensions.find(path.get_extension())) {
 				Ref<Script> scr = ResourceLoader::load(path);
 				if (!scr.is_valid()) {
 					editor->show_warning(TTR("Could not load file at:") + "\n\n" + path, TTR("Error!"));
@@ -1614,24 +1593,6 @@ bool ScriptEditor::can_take_away_focus() const {
 	}
 }
 
-void ScriptEditor::close_builtin_scripts_from_scene(const String &p_scene) {
-	for (int i = 0; i < tab_container->get_child_count(); i++) {
-		ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(tab_container->get_child(i));
-
-		if (se) {
-			Ref<Script> script = se->get_edited_resource();
-			if (script == nullptr || !script.is_valid()) {
-				continue;
-			}
-
-			if (script->get_path().find("::") != -1 && script->get_path().begins_with(p_scene)) { //is an internal script and belongs to scene being closed
-				_close_tab(i);
-				i--;
-			}
-		}
-	}
-}
-
 void ScriptEditor::edited_scene_changed() {
 	_update_modified_scripts_for_external_editor();
 }
@@ -1818,9 +1779,7 @@ void ScriptEditor::_update_members_overview() {
 	}
 
 	String path = se->get_edited_resource()->get_path();
-	bool built_in = !path.is_resource_file();
-	String name = built_in ? path.get_file() : se->get_name();
-	filename->set_text(name);
+	filename->set_text(se->get_name());
 }
 
 void ScriptEditor::_update_help_overview_visibility() {
@@ -1932,20 +1891,7 @@ void ScriptEditor::_update_script_names() {
 				// to update original path to previously edited resource.
 				se->set_meta("_edit_res_path", path);
 			}
-			bool built_in = !path.is_resource_file();
-			String name;
-
-			if (built_in) {
-				name = path.get_file();
-				const String &resource_name = se->get_edited_resource()->get_name();
-				if (resource_name != "") {
-					// If the built-in script has a custom resource name defined,
-					// display the built-in script name as follows: `ResourceName (scene_file.tscn)`
-					name = vformat("%s (%s)", resource_name, name.substr(0, name.find("::", 0)));
-				}
-			} else {
-				name = se->get_name();
-			}
+			const String name = se->get_name();
 
 			_ScriptEditorItemData sd;
 			sd.icon = icon;
@@ -2570,9 +2516,7 @@ void ScriptEditor::_add_callback(Object *p_obj, const String &p_function, const 
 		script_list->select(script_list->find_metadata(i));
 
 		// Save the current script so the changes can be picked up by an external editor.
-		if (!_is_built_in_script(script.ptr())) { // But only if it's not built-in script.
-			save_current_script();
-		}
+		save_current_script();
 
 		break;
 	}
@@ -3858,15 +3802,6 @@ void ScriptEditorPlugin::edit(Object *p_object) {
 		Script *p_script = Object::cast_to<Script>(p_object);
 		String res_path = p_script->get_path().get_slice("::", 0);
 
-		if (_is_built_in_script(p_script)) {
-			if (ResourceLoader::get_resource_type(res_path) == "PackedScene") {
-				if (!EditorNode::get_singleton()->is_scene_open(res_path)) {
-					EditorNode::get_singleton()->load_scene(res_path);
-				}
-			} else {
-				EditorNode::get_singleton()->load_resource(res_path);
-			}
-		}
 		script_editor->edit(p_script);
 	} else if (Object::cast_to<TextFile>(p_object)) {
 		script_editor->edit(Object::cast_to<TextFile>(p_object));

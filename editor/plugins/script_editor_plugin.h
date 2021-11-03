@@ -500,8 +500,6 @@ public:
 	void notify_script_close(const Ref<Script> &p_script);
 	void notify_script_changed(const Ref<Script> &p_script);
 
-	void close_builtin_scripts_from_scene(const String &p_scene);
-
 	void goto_help(const String &p_desc) { _help_class_goto(p_desc); }
 	void update_doc(const String &p_name);
 

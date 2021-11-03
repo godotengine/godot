@@ -78,7 +78,6 @@ public:
 	virtual bool validate(const String &p_script, const String &p_path = "", List<String> *r_functions = nullptr, List<ScriptLanguage::ScriptError> *r_errors = nullptr, List<ScriptLanguage::Warning> *r_warnings = nullptr, Set<int> *r_safe_lines = nullptr) const;
 	virtual Script *create_script() const;
 	virtual bool has_named_classes() const;
-	virtual bool supports_builtin_mode() const;
 	virtual bool can_inherit_from_file() const;
 	virtual int find_function(const String &p_function, const String &p_code) const;
 	virtual String make_function(const String &p_class, const String &p_name, const PackedStringArray &p_args) const;

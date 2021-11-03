@@ -2506,7 +2506,7 @@ void EditorInspector::update_tree() {
 				}
 			}
 			if (category->icon.is_null()) {
-				if (type != String()) { // Can happen for built-in scripts.
+				if (type != String()) {
 					category->icon = EditorNode::get_singleton()->get_class_icon(type, "Object");
 				}
 			}

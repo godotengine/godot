@@ -48,7 +48,6 @@ class ScriptCreateDialog : public ConfirmationDialog {
 	LineEdit *class_name;
 	Label *error_label;
 	Label *path_error_label;
-	Label *builtin_warning_label;
 	Label *script_name_warning_label;
 	PanelContainer *status_panel;
 	LineEdit *parent_name;
@@ -70,12 +69,9 @@ class ScriptCreateDialog : public ConfirmationDialog {
 	bool is_new_script_created;
 	bool is_path_valid;
 	bool has_named_classes;
-	bool supports_built_in;
 	bool can_inherit_from_file;
 	bool is_parent_name_valid;
 	bool is_class_name_valid;
-	bool is_built_in;
-	bool built_in_enabled;
 	bool load_enabled;
 	int current_language;
 	int default_language;
@@ -102,11 +98,9 @@ class ScriptCreateDialog : public ConfirmationDialog {
 	String base_type;
 
 	void _path_hbox_sorted();
-	bool _can_be_built_in();
 	void _path_changed(const String &p_path = String());
 	void _path_submitted(const String &p_path = String());
 	void _lang_changed(int l = 0);
-	void _built_in_pressed();
 	bool _validate_parent(const String &p_string);
 	bool _validate_class(const String &p_string);
 	String _validate_path(const String &p_path, bool p_file_must_exist);
@@ -130,7 +124,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	void config(const String &p_base_name, const String &p_base_path, bool p_built_in_enabled = true, bool p_load_enabled = true);
+	void config(const String &p_base_name, const String &p_base_path, bool p_load_enabled = true);
 	void set_inheritance_base_type(const String &p_base);
 	ScriptCreateDialog();
 };

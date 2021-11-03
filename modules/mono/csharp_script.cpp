@@ -422,10 +422,6 @@ bool CSharpLanguage::has_named_classes() const {
 	return false;
 }
 
-bool CSharpLanguage::supports_builtin_mode() const {
-	return false;
-}
-
 #ifdef TOOLS_ENABLED
 static String variant_type_to_managed_name(const String &p_var_type_name) {
 	if (p_var_type_name.is_empty()) {
