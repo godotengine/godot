@@ -1049,7 +1049,7 @@ void RigidDynamicBody2D::_bind_methods() {
 void RigidDynamicBody2D::_validate_property(PropertyInfo &property) const {
 	if (center_of_mass_mode != CENTER_OF_MASS_MODE_CUSTOM) {
 		if (property.name == "center_of_mass") {
-			property.usage = PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL;
+			property.usage = PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL;
 		}
 	}
 }
@@ -1715,9 +1715,9 @@ void CharacterBody2D::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "motion_mode", PROPERTY_HINT_ENUM, "Grounded,Free", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), "set_motion_mode", "get_motion_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "up_direction"), "set_up_direction", "get_up_direction");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "motion_velocity", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_motion_velocity", "get_motion_velocity");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "motion_velocity", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_motion_velocity", "get_motion_velocity");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "slide_on_ceiling"), "set_slide_on_ceiling_enabled", "is_slide_on_ceiling_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_slides", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_max_slides", "get_max_slides");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_slides", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_max_slides", "get_max_slides");
 
 	ADD_GROUP("Free Mode", "free_mode_");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "free_mode_min_slide_angle", PROPERTY_HINT_RANGE, "0,180,0.1,radians", PROPERTY_USAGE_DEFAULT), "set_free_mode_min_slide_angle", "get_free_mode_min_slide_angle");
@@ -1744,11 +1744,11 @@ void CharacterBody2D::_bind_methods() {
 void CharacterBody2D::_validate_property(PropertyInfo &property) const {
 	if (motion_mode == MOTION_MODE_FREE) {
 		if (property.name.begins_with("floor_") || property.name == "up_direction" || property.name == "slide_on_ceiling") {
-			property.usage = PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL;
+			property.usage = PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL;
 		}
 	} else {
 		if (property.name == "free_mode_min_slide_angle") {
-			property.usage = PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL;
+			property.usage = PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL;
 		}
 	}
 }

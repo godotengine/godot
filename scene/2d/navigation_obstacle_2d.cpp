@@ -46,7 +46,7 @@ void NavigationObstacle2D::_bind_methods() {
 void NavigationObstacle2D::_validate_property(PropertyInfo &p_property) const {
 	if (p_property.name == "radius") {
 		if (estimate_radius) {
-			p_property.usage = PROPERTY_USAGE_NOEDITOR;
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 		}
 	}
 }

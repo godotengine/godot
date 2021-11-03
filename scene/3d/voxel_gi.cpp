@@ -225,7 +225,7 @@ void VoxelGIData::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_set_data", "data"), &VoxelGIData::_set_data);
 	ClassDB::bind_method(D_METHOD("_get_data"), &VoxelGIData::_get_data);
 
-	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "_data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_data", "_get_data");
+	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "_data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_data", "_get_data");
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "dynamic_range", PROPERTY_HINT_RANGE, "0,8,0.01"), "set_dynamic_range", "get_dynamic_range");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "energy", PROPERTY_HINT_RANGE, "0,64,0.01"), "set_energy", "get_energy");

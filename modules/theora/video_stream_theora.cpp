@@ -673,7 +673,7 @@ void VideoStreamTheora::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_file", "file"), &VideoStreamTheora::set_file);
 	ClassDB::bind_method(D_METHOD("get_file"), &VideoStreamTheora::get_file);
 
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "file", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "set_file", "get_file");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "file", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "set_file", "get_file");
 }
 
 ////////////

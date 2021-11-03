@@ -133,7 +133,7 @@ void Skin::_get_property_list(List<PropertyInfo> *p_list) const {
 	p_list->push_back(PropertyInfo(Variant::INT, "bind_count", PROPERTY_HINT_RANGE, "0,16384,1,or_greater"));
 	for (int i = 0; i < get_bind_count(); i++) {
 		p_list->push_back(PropertyInfo(Variant::STRING_NAME, "bind/" + itos(i) + "/name"));
-		p_list->push_back(PropertyInfo(Variant::INT, "bind/" + itos(i) + "/bone", PROPERTY_HINT_RANGE, "0,16384,1,or_greater", get_bind_name(i) != StringName() ? PROPERTY_USAGE_NOEDITOR : PROPERTY_USAGE_DEFAULT));
+		p_list->push_back(PropertyInfo(Variant::INT, "bind/" + itos(i) + "/bone", PROPERTY_HINT_RANGE, "0,16384,1,or_greater", get_bind_name(i) != StringName() ? PROPERTY_USAGE_NO_EDITOR : PROPERTY_USAGE_DEFAULT));
 		p_list->push_back(PropertyInfo(Variant::TRANSFORM3D, "bind/" + itos(i) + "/pose"));
 	}
 }

@@ -909,14 +909,14 @@ void AnimationNodeStateMachine::_get_property_list(List<PropertyInfo> *p_list) c
 	names.sort_custom<StringName::AlphCompare>();
 
 	for (const StringName &name : names) {
-		p_list->push_back(PropertyInfo(Variant::OBJECT, "states/" + name + "/node", PROPERTY_HINT_RESOURCE_TYPE, "AnimationNode", PROPERTY_USAGE_NOEDITOR));
-		p_list->push_back(PropertyInfo(Variant::VECTOR2, "states/" + name + "/position", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
+		p_list->push_back(PropertyInfo(Variant::OBJECT, "states/" + name + "/node", PROPERTY_HINT_RESOURCE_TYPE, "AnimationNode", PROPERTY_USAGE_NO_EDITOR));
+		p_list->push_back(PropertyInfo(Variant::VECTOR2, "states/" + name + "/position", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
 	}
 
-	p_list->push_back(PropertyInfo(Variant::ARRAY, "transitions", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
-	p_list->push_back(PropertyInfo(Variant::STRING_NAME, "start_node", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
-	p_list->push_back(PropertyInfo(Variant::STRING_NAME, "end_node", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
-	p_list->push_back(PropertyInfo(Variant::VECTOR2, "graph_offset", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
+	p_list->push_back(PropertyInfo(Variant::ARRAY, "transitions", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
+	p_list->push_back(PropertyInfo(Variant::STRING_NAME, "start_node", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
+	p_list->push_back(PropertyInfo(Variant::STRING_NAME, "end_node", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
+	p_list->push_back(PropertyInfo(Variant::VECTOR2, "graph_offset", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
 }
 
 void AnimationNodeStateMachine::reset_state() {

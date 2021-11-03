@@ -197,7 +197,7 @@ bool Light3D::is_editor_only() const {
 
 void Light3D::_validate_property(PropertyInfo &property) const {
 	if (!shadow && (property.name == "shadow_color" || property.name == "shadow_bias" || property.name == "shadow_normal_bias" || property.name == "shadow_reverse_cull_face" || property.name == "shadow_transmittance_bias" || property.name == "shadow_fog_fade" || property.name == "shadow_blur")) {
-		property.usage = PROPERTY_USAGE_NOEDITOR;
+		property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
 
 	if (get_light_type() != RS::LIGHT_DIRECTIONAL && property.name == "light_angular_distance") {
@@ -379,12 +379,12 @@ bool DirectionalLight3D::is_sky_only() const {
 void DirectionalLight3D::_validate_property(PropertyInfo &property) const {
 	if (shadow_mode == SHADOW_ORTHOGONAL && (property.name == "directional_shadow_split_1" || property.name == "directional_shadow_blend_splits")) {
 		// Split 2 and split blending are only used with the PSSM 2 Splits and PSSM 4 Splits shadow modes.
-		property.usage = PROPERTY_USAGE_NOEDITOR;
+		property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
 
 	if ((shadow_mode == SHADOW_ORTHOGONAL || shadow_mode == SHADOW_PARALLEL_2_SPLITS) && (property.name == "directional_shadow_split_2" || property.name == "directional_shadow_split_3")) {
 		// Splits 3 and 4 are only used with the PSSM 4 Splits shadow mode.
-		property.usage = PROPERTY_USAGE_NOEDITOR;
+		property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
 
 	if (property.name == "light_size" || property.name == "light_projector" || property.name == "light_specular") {
