@@ -22,9 +22,7 @@ generous deed immortalized in the next stable release of Godot Engine.
 
 ## Silver sponsors
 
-    ABE
     ASIFA-Hollywood <https://www.asifa-hollywood.org>
-    jong
 
 ## Bronze sponsors
 
