@@ -178,6 +178,11 @@
 				Returns the number of elements in the array.
 			</description>
 		</method>
+		<method name="sort">
+			<description>
+				Sorts the elements of the array in ascending order.
+			</description>
+		</method>
 		<method name="subarray">
 			<return type="PoolByteArray" />
 			<argument index="0" name="from" type="int" />
