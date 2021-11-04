@@ -313,7 +313,6 @@ bool Variant::can_convert(Variant::Type p_type_from, Variant::Type p_type_to) {
 		case BASIS: {
 			static const Type valid[] = {
 				QUATERNION,
-				VECTOR3,
 				NIL
 			};
 
@@ -620,7 +619,6 @@ bool Variant::can_convert_strict(Variant::Type p_type_from, Variant::Type p_type
 		case BASIS: {
 			static const Type valid[] = {
 				QUATERNION,
-				VECTOR3,
 				NIL
 			};
 
@@ -786,16 +784,11 @@ bool Variant::can_convert_strict(Variant::Type p_type_from, Variant::Type p_type
 }
 
 bool Variant::operator==(const Variant &p_variant) const {
-	if (type != p_variant.type) { //evaluation of operator== needs to be more strict
-		return false;
-	}
-	bool v;
-	Variant r;
-	evaluate(OP_EQUAL, *this, p_variant, r, v);
-	return r;
+	return hash_compare(p_variant);
 }
 
 bool Variant::operator!=(const Variant &p_variant) const {
+	// Don't use `!hash_compare(p_variant)` given it makes use of OP_EQUAL
 	if (type != p_variant.type) { //evaluation of operator== needs to be more strict
 		return true;
 	}
@@ -1619,25 +1612,23 @@ struct _VariantStrPair {
 };
 
 Variant::operator String() const {
-	List<const void *> stack;
-
-	return stringify(stack);
+	return stringify(0);
 }
 
 template <class T>
-String stringify_vector(const T &vec, List<const void *> &stack) {
+String stringify_vector(const T &vec, int recursion_count) {
 	String str("[");
 	for (int i = 0; i < vec.size(); i++) {
 		if (i > 0) {
 			str += ", ";
 		}
-		str = str + Variant(vec[i]).stringify(stack);
+		str = str + Variant(vec[i]).stringify(recursion_count);
 	}
 	str += "]";
 	return str;
 }
 
-String Variant::stringify(List<const void *> &stack) const {
+String Variant::stringify(int recursion_count) const {
 	switch (type) {
 		case NIL:
 			return "null";
@@ -1681,23 +1672,22 @@ String Variant::stringify(List<const void *> &stack) const {
 			return operator Color();
 		case DICTIONARY: {
 			const Dictionary &d = *reinterpret_cast<const Dictionary *>(_data._mem);
-			if (stack.find(d.id())) {
+			if (recursion_count > MAX_RECURSION) {
+				ERR_PRINT("Max recursion reached");
 				return "{...}";
 			}
 
-			stack.push_back(d.id());
-
-			//const String *K=nullptr;
 			String str("{");
 			List<Variant> keys;
 			d.get_key_list(&keys);
 
 			Vector<_VariantStrPair> pairs;
 
-			for (const Variant &E : keys) {
+			recursion_count++;
+			for (List<Variant>::Element *E = keys.front(); E; E = E->next()) {
 				_VariantStrPair sp;
-				sp.key = E.stringify(stack);
-				sp.value = d[E].stringify(stack);
+				sp.key = E->get().stringify(recursion_count);
+				sp.value = d[E->get()].stringify(recursion_count);
 
 				pairs.push_back(sp);
 			}
@@ -1712,46 +1702,43 @@ String Variant::stringify(List<const void *> &stack) const {
 			}
 			str += "}";
 
-			stack.erase(d.id());
 			return str;
 		} break;
 		case PACKED_VECTOR2_ARRAY: {
-			return stringify_vector(operator Vector<Vector2>(), stack);
+			return stringify_vector(operator Vector<Vector2>(), recursion_count);
 		} break;
 		case PACKED_VECTOR3_ARRAY: {
-			return stringify_vector(operator Vector<Vector3>(), stack);
+			return stringify_vector(operator Vector<Vector3>(), recursion_count);
 		} break;
 		case PACKED_COLOR_ARRAY: {
-			return stringify_vector(operator Vector<Color>(), stack);
+			return stringify_vector(operator Vector<Color>(), recursion_count);
 		} break;
 		case PACKED_STRING_ARRAY: {
-			return stringify_vector(operator Vector<String>(), stack);
+			return stringify_vector(operator Vector<String>(), recursion_count);
 		} break;
 		case PACKED_BYTE_ARRAY: {
-			return stringify_vector(operator Vector<uint8_t>(), stack);
+			return stringify_vector(operator Vector<uint8_t>(), recursion_count);
 		} break;
 		case PACKED_INT32_ARRAY: {
-			return stringify_vector(operator Vector<int32_t>(), stack);
+			return stringify_vector(operator Vector<int32_t>(), recursion_count);
 		} break;
 		case PACKED_INT64_ARRAY: {
-			return stringify_vector(operator Vector<int64_t>(), stack);
+			return stringify_vector(operator Vector<int64_t>(), recursion_count);
 		} break;
 		case PACKED_FLOAT32_ARRAY: {
-			return stringify_vector(operator Vector<float>(), stack);
+			return stringify_vector(operator Vector<float>(), recursion_count);
 		} break;
 		case PACKED_FLOAT64_ARRAY: {
-			return stringify_vector(operator Vector<double>(), stack);
+			return stringify_vector(operator Vector<double>(), recursion_count);
 		} break;
 		case ARRAY: {
 			Array arr = operator Array();
-			if (stack.find(arr.id())) {
+			if (recursion_count > MAX_RECURSION) {
+				ERR_PRINT("Max recursion reached");
 				return "[...]";
 			}
-			stack.push_back(arr.id());
 
-			String str = stringify_vector(arr, stack);
-
-			stack.erase(arr.id());
+			String str = stringify_vector(arr, recursion_count);
 			return str;
 
 		} break;
@@ -1889,8 +1876,6 @@ Variant::operator Basis() const {
 		return *_data._basis;
 	} else if (type == QUATERNION) {
 		return *reinterpret_cast<const Quaternion *>(_data._mem);
-	} else if (type == VECTOR3) {
-		return Basis(*reinterpret_cast<const Vector3 *>(_data._mem));
 	} else if (type == TRANSFORM3D) { // unexposed in Variant::can_convert?
 		return _data._transform3d->basis;
 	} else {
@@ -2772,6 +2757,10 @@ Variant::Variant(const Variant &p_variant) {
 }
 
 uint32_t Variant::hash() const {
+	return recursive_hash(0);
+}
+
+uint32_t Variant::recursive_hash(int recursion_count) const {
 	switch (type) {
 		case NIL: {
 			return 0;
@@ -2899,7 +2888,7 @@ uint32_t Variant::hash() const {
 			return reinterpret_cast<const NodePath *>(_data._mem)->hash();
 		} break;
 		case DICTIONARY: {
-			return reinterpret_cast<const Dictionary *>(_data._mem)->hash();
+			return reinterpret_cast<const Dictionary *>(_data._mem)->recursive_hash(recursion_count);
 
 		} break;
 		case CALLABLE: {
@@ -2913,7 +2902,7 @@ uint32_t Variant::hash() const {
 		} break;
 		case ARRAY: {
 			const Array &arr = *reinterpret_cast<const Array *>(_data._mem);
-			return arr.hash();
+			return arr.recursive_hash(recursion_count);
 
 		} break;
 		case PACKED_BYTE_ARRAY: {
@@ -3087,7 +3076,7 @@ uint32_t Variant::hash() const {
                                                                         \
 	return true
 
-bool Variant::hash_compare(const Variant &p_variant) const {
+bool Variant::hash_compare(const Variant &p_variant, int recursion_count) const {
 	if (type != p_variant.type) {
 		return false;
 	}
@@ -3122,7 +3111,7 @@ bool Variant::hash_compare(const Variant &p_variant) const {
 			const Rect2 *r = reinterpret_cast<const Rect2 *>(p_variant._data._mem);
 
 			return (hash_compare_vector2(l->position, r->position)) &&
-				   (hash_compare_vector2(l->size, r->size));
+					(hash_compare_vector2(l->size, r->size));
 		} break;
 		case RECT2I: {
 			const Rect2i *l = reinterpret_cast<const Rect2i *>(_data._mem);
@@ -3162,7 +3151,7 @@ bool Variant::hash_compare(const Variant &p_variant) const {
 			const Plane *r = reinterpret_cast<const Plane *>(p_variant._data._mem);
 
 			return (hash_compare_vector3(l->normal, r->normal)) &&
-				   (hash_compare_scalar(l->d, r->d));
+					(hash_compare_scalar(l->d, r->d));
 		} break;
 
 		case AABB: {
@@ -3218,14 +3207,19 @@ bool Variant::hash_compare(const Variant &p_variant) const {
 			const Array &l = *(reinterpret_cast<const Array *>(_data._mem));
 			const Array &r = *(reinterpret_cast<const Array *>(p_variant._data._mem));
 
-			if (l.size() != r.size()) {
+			if (!l.recursive_equal(r, recursion_count + 1)) {
 				return false;
 			}
 
-			for (int i = 0; i < l.size(); ++i) {
-				if (!l[i].hash_compare(r[i])) {
-					return false;
-				}
+			return true;
+		} break;
+
+		case DICTIONARY: {
+			const Dictionary &l = *(reinterpret_cast<const Dictionary *>(_data._mem));
+			const Dictionary &r = *(reinterpret_cast<const Dictionary *>(p_variant._data._mem));
+
+			if (!l.recursive_equal(r, recursion_count + 1)) {
+				return false;
 			}
 
 			return true;

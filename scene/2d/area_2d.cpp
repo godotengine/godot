@@ -369,12 +369,11 @@ void Area2D::set_monitoring(bool p_enable) {
 	monitoring = p_enable;
 
 	if (monitoring) {
-		PhysicsServer2D::get_singleton()->area_set_monitor_callback(get_rid(), this, SceneStringNames::get_singleton()->_body_inout);
-		PhysicsServer2D::get_singleton()->area_set_area_monitor_callback(get_rid(), this, SceneStringNames::get_singleton()->_area_inout);
-
+		PhysicsServer2D::get_singleton()->area_set_monitor_callback(get_rid(), callable_mp(this, &Area2D::_body_inout));
+		PhysicsServer2D::get_singleton()->area_set_area_monitor_callback(get_rid(), callable_mp(this, &Area2D::_area_inout));
 	} else {
-		PhysicsServer2D::get_singleton()->area_set_monitor_callback(get_rid(), nullptr, StringName());
-		PhysicsServer2D::get_singleton()->area_set_area_monitor_callback(get_rid(), nullptr, StringName());
+		PhysicsServer2D::get_singleton()->area_set_monitor_callback(get_rid(), Callable());
+		PhysicsServer2D::get_singleton()->area_set_area_monitor_callback(get_rid(), Callable());
 		_clear_monitoring();
 	}
 }
@@ -529,9 +528,6 @@ void Area2D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_audio_bus_override", "enable"), &Area2D::set_audio_bus_override);
 	ClassDB::bind_method(D_METHOD("is_overriding_audio_bus"), &Area2D::is_overriding_audio_bus);
-
-	ClassDB::bind_method(D_METHOD("_body_inout"), &Area2D::_body_inout);
-	ClassDB::bind_method(D_METHOD("_area_inout"), &Area2D::_area_inout);
 
 	ADD_SIGNAL(MethodInfo("body_shape_entered", PropertyInfo(Variant::RID, "body_rid"), PropertyInfo(Variant::OBJECT, "body", PROPERTY_HINT_RESOURCE_TYPE, "Node2D"), PropertyInfo(Variant::INT, "body_shape_index"), PropertyInfo(Variant::INT, "local_shape_index")));
 	ADD_SIGNAL(MethodInfo("body_shape_exited", PropertyInfo(Variant::RID, "body_rid"), PropertyInfo(Variant::OBJECT, "body", PROPERTY_HINT_RESOURCE_TYPE, "Node2D"), PropertyInfo(Variant::INT, "body_shape_index"), PropertyInfo(Variant::INT, "local_shape_index")));

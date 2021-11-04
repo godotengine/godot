@@ -184,6 +184,9 @@
 		<member name="context_menu_enabled" type="bool" setter="set_context_menu_enabled" getter="is_context_menu_enabled" default="true">
 			If [code]true[/code], the context menu will appear when right-clicked.
 		</member>
+		<member name="deselect_on_focus_loss_enabled" type="bool" setter="set_deselect_on_focus_loss_enabled" getter="is_deselect_on_focus_loss_enabled" default="true">
+			If [code]true[/code], the selected text will be deselected when focus is lost.
+		</member>
 		<member name="draw_control_chars" type="bool" setter="set_draw_control_chars" getter="get_draw_control_chars" default="false">
 			If [code]true[/code], control characters are displayed.
 		</member>
@@ -221,6 +224,10 @@
 			// `text_change_rejected` is emitted with "bye" as parameter.
 			[/csharp]
 			[/codeblocks]
+		</member>
+		<member name="middle_mouse_paste_enabled" type="bool" setter="set_middle_mouse_paste_enabled" getter="is_middle_mouse_paste_enabled" default="true">
+			If [code]false[/code], using middle mouse button to paste clipboard will be disabled.
+			[b]Note:[/b] This method is only implemented on Linux.
 		</member>
 		<member name="mouse_default_cursor_shape" type="int" setter="set_default_cursor_shape" getter="get_default_cursor_shape" override="true" enum="Control.CursorShape" default="1" />
 		<member name="placeholder_alpha" type="float" setter="set_placeholder_alpha" getter="get_placeholder_alpha" default="0.6">

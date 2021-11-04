@@ -72,8 +72,8 @@ public:
 
 	virtual String get_name() const override;
 
-	virtual Date get_date(bool utc) const override;
-	virtual Time get_time(bool utc) const override;
+	virtual Date get_date(bool p_utc) const override;
+	virtual Time get_time(bool p_utc) const override;
 	virtual TimeZoneInfo get_time_zone_info() const override;
 
 	virtual double get_unix_time() const override;
@@ -102,7 +102,7 @@ public:
 
 class UnixTerminalLogger : public StdLogger {
 public:
-	virtual void log_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, ErrorType p_type = ERR_ERROR);
+	virtual void log_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, bool p_editor_notify, ErrorType p_type = ERR_ERROR);
 	virtual ~UnixTerminalLogger();
 };
 

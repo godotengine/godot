@@ -44,7 +44,7 @@ real_t Quaternion::angle_to(const Quaternion &p_to) const {
 // This implementation uses XYZ convention (Z is the first rotation).
 Vector3 Quaternion::get_euler_xyz() const {
 	Basis m(*this);
-	return m.get_euler_xyz();
+	return m.get_euler(Basis::EULER_ORDER_XYZ);
 }
 
 // get_euler_yxz returns a vector containing the Euler angles in the format
@@ -56,7 +56,7 @@ Vector3 Quaternion::get_euler_yxz() const {
 	ERR_FAIL_COND_V_MSG(!is_normalized(), Vector3(0, 0, 0), "The quaternion must be normalized.");
 #endif
 	Basis m(*this);
-	return m.get_euler_yxz();
+	return m.get_euler(Basis::EULER_ORDER_YXZ);
 }
 
 void Quaternion::operator*=(const Quaternion &p_q) {
@@ -187,6 +187,15 @@ Quaternion Quaternion::cubic_slerp(const Quaternion &p_b, const Quaternion &p_pr
 
 Quaternion::operator String() const {
 	return "(" + String::num_real(x, false) + ", " + String::num_real(y, false) + ", " + String::num_real(z, false) + ", " + String::num_real(w, false) + ")";
+}
+
+Vector3 Quaternion::get_axis() const {
+	real_t r = ((real_t)1) / Math::sqrt(1 - w * w);
+	return Vector3(x * r, y * r, z * r);
+}
+
+float Quaternion::get_angle() const {
+	return 2 * Math::acos(w);
 }
 
 Quaternion::Quaternion(const Vector3 &p_axis, real_t p_angle) {

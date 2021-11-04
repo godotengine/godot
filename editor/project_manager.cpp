@@ -1297,8 +1297,7 @@ void ProjectList::update_dock_menu() {
 void ProjectList::_global_menu_new_window(const Variant &p_tag) {
 	List<String> args;
 	args.push_back("-p");
-	String exec = OS::get_singleton()->get_executable_path();
-	OS::get_singleton()->create_process(exec, args);
+	OS::get_singleton()->create_instance(args);
 }
 
 void ProjectList::_global_menu_open_project(const Variant &p_tag) {
@@ -1308,8 +1307,7 @@ void ProjectList::_global_menu_open_project(const Variant &p_tag) {
 		String conf = _projects[idx].path.plus_file("project.godot");
 		List<String> args;
 		args.push_back(conf);
-		String exec = OS::get_singleton()->get_executable_path();
-		OS::get_singleton()->create_process(exec, args);
+		OS::get_singleton()->create_instance(args);
 	}
 }
 
@@ -2055,8 +2053,7 @@ void ProjectManager::_open_selected_projects() {
 			args.push_back("--single-window");
 		}
 
-		String exec = OS::get_singleton()->get_executable_path();
-		Error err = OS::get_singleton()->create_process(exec, args);
+		Error err = OS::get_singleton()->create_instance(args);
 		ERR_FAIL_COND(err);
 	}
 
@@ -2141,8 +2138,7 @@ void ProjectManager::_run_project_confirm() {
 			args.push_back("--disable-crash-handler");
 		}
 
-		String exec = OS::get_singleton()->get_executable_path();
-		Error err = OS::get_singleton()->create_process(exec, args);
+		Error err = OS::get_singleton()->create_instance(args);
 		ERR_FAIL_COND(err);
 	}
 }
@@ -2271,8 +2267,7 @@ void ProjectManager::_language_selected(int p_id) {
 
 void ProjectManager::_restart_confirm() {
 	List<String> args = OS::get_singleton()->get_cmdline_args();
-	String exec = OS::get_singleton()->get_executable_path();
-	Error err = OS::get_singleton()->create_process(exec, args);
+	Error err = OS::get_singleton()->create_instance(args);
 	ERR_FAIL_COND(err);
 
 	_dim_window();

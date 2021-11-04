@@ -413,18 +413,18 @@ void BulletPhysicsServer3D::area_set_monitorable(RID p_area, bool p_monitorable)
 	area->set_monitorable(p_monitorable);
 }
 
-void BulletPhysicsServer3D::area_set_monitor_callback(RID p_area, Object *p_receiver, const StringName &p_method) {
+void BulletPhysicsServer3D::area_set_monitor_callback(RID p_area, const Callable &p_callback) {
 	AreaBullet *area = area_owner.get_or_null(p_area);
 	ERR_FAIL_COND(!area);
 
-	area->set_event_callback(CollisionObjectBullet::TYPE_RIGID_BODY, p_receiver ? p_receiver->get_instance_id() : ObjectID(), p_method);
+	area->set_event_callback(CollisionObjectBullet::TYPE_RIGID_BODY, p_callback.is_valid() ? p_callback : Callable());
 }
 
-void BulletPhysicsServer3D::area_set_area_monitor_callback(RID p_area, Object *p_receiver, const StringName &p_method) {
+void BulletPhysicsServer3D::area_set_area_monitor_callback(RID p_area, const Callable &p_callback) {
 	AreaBullet *area = area_owner.get_or_null(p_area);
 	ERR_FAIL_COND(!area);
 
-	area->set_event_callback(CollisionObjectBullet::TYPE_AREA, p_receiver ? p_receiver->get_instance_id() : ObjectID(), p_method);
+	area->set_event_callback(CollisionObjectBullet::TYPE_AREA, p_callback.is_valid() ? p_callback : Callable());
 }
 
 void BulletPhysicsServer3D::area_set_ray_pickable(RID p_area, bool p_enable) {

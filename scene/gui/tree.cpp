@@ -3570,7 +3570,9 @@ int Tree::_get_title_button_height() const {
 
 void Tree::_notification(int p_what) {
 	if (p_what == NOTIFICATION_FOCUS_ENTER) {
-		focus_in_id = get_viewport()->get_processed_events_count();
+		if (get_viewport()) {
+			focus_in_id = get_viewport()->get_processed_events_count();
+		}
 	}
 	if (p_what == NOTIFICATION_MOUSE_EXIT) {
 		if (cache.hover_type != Cache::CLICK_NONE) {
@@ -4035,7 +4037,7 @@ int Tree::get_column_minimum_width(int p_column) const {
 
 	// Check if the visible title of the column is wider.
 	if (show_column_titles) {
-		min_width = MAX(cache.font->get_string_size(columns[p_column].title).width + cache.bg->get_margin(SIDE_LEFT) + cache.bg->get_margin(SIDE_RIGHT), min_width);
+		min_width = MAX(cache.font->get_string_size(columns[p_column].title, cache.font_size).width + cache.bg->get_margin(SIDE_LEFT) + cache.bg->get_margin(SIDE_RIGHT), min_width);
 	}
 
 	if (!columns[p_column].clip_content) {

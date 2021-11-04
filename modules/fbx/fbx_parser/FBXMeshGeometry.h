@@ -226,7 +226,7 @@ public:
 	const std::vector<Vector3> &GetVertices() const;
 
 	/** Get a list of all vertex normals or an empty array if
-    *  no normals are specified. */
+	 *  no normals are specified. */
 	const std::vector<Vector3> &GetNormals() const;
 
 	/** Return list of vertex indices. */
@@ -238,8 +238,8 @@ private:
 	std::vector<unsigned int> m_indices;
 };
 /**
-*  DOM class for FBX geometry of type "Line"
-*/
+ *  DOM class for FBX geometry of type "Line"
+ */
 class LineGeometry : public Geometry {
 public:
 	/** The class constructor */

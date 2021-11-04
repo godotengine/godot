@@ -117,11 +117,6 @@ private:
 
 	Windows::System::Display::DisplayRequest ^ display_request;
 
-	void _post_dpad(DWORD p_dpad, int p_device, bool p_pressed);
-
-	void _drag_event(int idx, UINT uMsg, WPARAM wParam, LPARAM lParam);
-	void _touch_event(int idx, UINT uMsg, WPARAM wParam, LPARAM lParam);
-
 	ref class ManagedType {
 	public:
 		property bool alert_close_handle;
@@ -190,8 +185,8 @@ public:
 
 	virtual String get_name() const;
 
-	virtual Date get_date(bool utc) const;
-	virtual Time get_time(bool utc) const;
+	virtual Date get_date(bool p_utc) const;
+	virtual Time get_time(bool p_utc) const;
 	virtual TimeZoneInfo get_time_zone_info() const;
 	virtual uint64_t get_unix_time() const;
 

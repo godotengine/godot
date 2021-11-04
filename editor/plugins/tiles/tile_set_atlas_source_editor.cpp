@@ -66,10 +66,15 @@ int TileSetAtlasSourceEditor::TileSetAtlasSourceProxyObject::get_id() {
 }
 
 bool TileSetAtlasSourceEditor::TileSetAtlasSourceProxyObject::_set(const StringName &p_name, const Variant &p_value) {
+	String name = p_name;
+	if (name == "name") {
+		// Use the resource_name property to store the source's name.
+		name = "resource_name";
+	}
 	bool valid = false;
-	tile_set_atlas_source->set(p_name, p_value, &valid);
+	tile_set_atlas_source->set(name, p_value, &valid);
 	if (valid) {
-		emit_signal(SNAME("changed"), String(p_name).utf8().get_data());
+		emit_signal(SNAME("changed"), String(name).utf8().get_data());
 	}
 	return valid;
 }
@@ -78,12 +83,18 @@ bool TileSetAtlasSourceEditor::TileSetAtlasSourceProxyObject::_get(const StringN
 	if (!tile_set_atlas_source) {
 		return false;
 	}
+	String name = p_name;
+	if (name == "name") {
+		// Use the resource_name property to store the source's name.
+		name = "resource_name";
+	}
 	bool valid = false;
-	r_ret = tile_set_atlas_source->get(p_name, &valid);
+	r_ret = tile_set_atlas_source->get(name, &valid);
 	return valid;
 }
 
 void TileSetAtlasSourceEditor::TileSetAtlasSourceProxyObject::_get_property_list(List<PropertyInfo> *p_list) const {
+	p_list->push_back(PropertyInfo(Variant::STRING, "name", PROPERTY_HINT_NONE, ""));
 	p_list->push_back(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"));
 	p_list->push_back(PropertyInfo(Variant::VECTOR2I, "margins", PROPERTY_HINT_NONE, ""));
 	p_list->push_back(PropertyInfo(Variant::VECTOR2I, "separation", PROPERTY_HINT_NONE, ""));
@@ -105,6 +116,10 @@ void TileSetAtlasSourceEditor::TileSetAtlasSourceProxyObject::edit(Ref<TileSet> 
 	ERR_FAIL_COND(!p_tile_set_atlas_source);
 	ERR_FAIL_COND(p_source_id < 0);
 	ERR_FAIL_COND(p_tile_set->get_source(p_source_id) != p_tile_set_atlas_source);
+
+	if (p_tile_set == tile_set && p_tile_set_atlas_source == tile_set_atlas_source && p_source_id == source_id) {
+		return;
+	}
 
 	// Disconnect to changes.
 	if (tile_set_atlas_source) {
@@ -157,7 +172,7 @@ bool TileSetAtlasSourceEditor::AtlasTileProxyObject::_set(const StringName &p_na
 			} else if (p_name == "size_in_atlas") {
 				Vector2i as_vector2i = Vector2i(p_value);
 				bool has_room_for_tile = tile_set_atlas_source->has_room_for_tile(coords, as_vector2i, tile_set_atlas_source->get_tile_animation_columns(coords), tile_set_atlas_source->get_tile_animation_separation(coords), tile_set_atlas_source->get_tile_animation_frames_count(coords), coords);
-				ERR_FAIL_COND_V(!has_room_for_tile, false);
+				ERR_FAIL_COND_V_EDMSG(!has_room_for_tile, false, "Invalid size or not enough room in the atlas for the tile.");
 				tile_set_atlas_source->move_tile_in_atlas(coords, TileSetSource::INVALID_ATLAS_COORDS, as_vector2i);
 				emit_signal(SNAME("changed"), "size_in_atlas");
 				return true;
@@ -826,7 +841,11 @@ void TileSetAtlasSourceEditor::_tile_data_editor_dropdown_button_draw() {
 				clr = get_theme_color(SNAME("font_disabled_color"));
 				break;
 			default:
-				clr = get_theme_color(SNAME("font_color"));
+				if (tile_data_editor_dropdown_button->has_focus()) {
+					clr = get_theme_color(SNAME("font_focus_color"));
+				} else {
+					clr = get_theme_color(SNAME("font_color"));
+				}
 		}
 	}
 
@@ -909,7 +928,7 @@ void TileSetAtlasSourceEditor::_update_atlas_view() {
 	tile_atlas_view->update();
 
 	// Synchronize atlas view.
-	TilesEditor::get_singleton()->synchronize_atlas_view(tile_atlas_view);
+	TilesEditorPlugin::get_singleton()->synchronize_atlas_view(tile_atlas_view);
 }
 
 void TileSetAtlasSourceEditor::_update_toolbar() {
@@ -2461,7 +2480,7 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 	tile_atlas_view = memnew(TileAtlasView);
 	tile_atlas_view->set_h_size_flags(SIZE_EXPAND_FILL);
 	tile_atlas_view->set_v_size_flags(SIZE_EXPAND_FILL);
-	tile_atlas_view->connect("transform_changed", callable_mp(TilesEditor::get_singleton(), &TilesEditor::set_atlas_view_transform));
+	tile_atlas_view->connect("transform_changed", callable_mp(TilesEditorPlugin::get_singleton(), &TilesEditorPlugin::set_atlas_view_transform));
 	tile_atlas_view->connect("transform_changed", callable_mp(this, &TileSetAtlasSourceEditor::_tile_atlas_view_transform_changed).unbind(2));
 	right_panel->add_child(tile_atlas_view);
 

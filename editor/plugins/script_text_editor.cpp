@@ -375,7 +375,7 @@ void ScriptTextEditor::ensure_focus() {
 String ScriptTextEditor::get_name() {
 	String name;
 
-	if (script->get_path().find("local://") == -1 && script->get_path().find("::") == -1) {
+	if (!script->is_built_in()) {
 		name = script->get_path().get_file();
 		if (is_unsaved()) {
 			if (script->get_path().is_empty()) {
@@ -658,7 +658,7 @@ void ScriptEditor::_update_modified_scripts_for_external_editor(Ref<Script> p_fo
 			continue;
 		}
 
-		if (script->get_path() == "" || script->get_path().find("local://") != -1 || script->get_path().find("::") != -1) {
+		if (script->is_built_in()) {
 			continue; //internal script, who cares, though weird
 		}
 
@@ -1396,11 +1396,12 @@ Variant ScriptTextEditor::get_drag_data_fw(const Point2 &p_point, Control *p_fro
 
 bool ScriptTextEditor::can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const {
 	Dictionary d = p_data;
-	if (d.has("type") && (String(d["type"]) == "resource" ||
-								 String(d["type"]) == "files" ||
-								 String(d["type"]) == "nodes" ||
-								 String(d["type"]) == "obj_property" ||
-								 String(d["type"]) == "files_and_dirs")) {
+	if (d.has("type") &&
+			(String(d["type"]) == "resource" ||
+					String(d["type"]) == "files" ||
+					String(d["type"]) == "nodes" ||
+					String(d["type"]) == "obj_property" ||
+					String(d["type"]) == "files_and_dirs")) {
 		return true;
 	}
 

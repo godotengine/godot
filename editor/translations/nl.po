@@ -55,8 +55,8 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-10-04 13:31+0000\n"
-"Last-Translator: Edgar <Edgar@anotherfoxguy.com>\n"
+"PO-Revision-Date: 2021-10-24 20:52+0000\n"
+"Last-Translator: Stijn Hinlopen <f.a.hinlopen@gmail.com>\n"
 "Language-Team: Dutch <https://hosted.weblate.org/projects/godot-engine/godot/"
 "nl/>\n"
 "Language: nl\n"
@@ -990,9 +990,8 @@ msgid "Edit..."
 msgstr "Bewerken..."
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Go to Method"
-msgstr "Naar methode springen"
+msgstr "Ga naar methode"
 
 #: editor/create_dialog.cpp
 msgid "Change %s Type"
@@ -1814,13 +1813,12 @@ msgid ""
 msgstr ""
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "(current)"
-msgstr "(Huidig)"
+msgstr "(huidig)"
 
 #: editor/editor_feature_profile.cpp
 msgid "(none)"
-msgstr ""
+msgstr "(geen)"
 
 #: editor/editor_feature_profile.cpp
 msgid "Remove currently selected profile, '%s'? Cannot be undone."
@@ -11316,12 +11314,12 @@ msgstr ""
 "`/` karakter bevatten."
 
 #: editor/project_settings_editor.cpp
-msgid "Key "
-msgstr "Toets "
-
-#: editor/project_settings_editor.cpp
 msgid "Physical Key"
 msgstr ""
+
+#: editor/project_settings_editor.cpp
+msgid "Key "
+msgstr "Toets "
 
 #: editor/project_settings_editor.cpp
 msgid "Joy Button"

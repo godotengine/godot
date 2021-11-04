@@ -1364,6 +1364,10 @@ void TextEdit::_notification(int p_what) {
 			if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_VIRTUAL_KEYBOARD) && virtual_keyboard_enabled) {
 				DisplayServer::get_singleton()->virtual_keyboard_hide();
 			}
+
+			if (deselect_on_focus_loss_enabled) {
+				deselect();
+			}
 		} break;
 		case MainLoop::NOTIFICATION_OS_IME_UPDATE: {
 			if (has_focus()) {
@@ -1534,6 +1538,10 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 				update();
 			}
 
+			if (is_middle_mouse_paste_enabled() && mb->get_button_index() == MOUSE_BUTTON_MIDDLE && DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_CLIPBOARD_PRIMARY)) {
+				paste_primary_clipboard();
+			}
+
 			if (mb->get_button_index() == MOUSE_BUTTON_RIGHT && context_menu_enabled) {
 				_reset_caret_blink_timer();
 
@@ -1571,6 +1579,9 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 				dragging_selection = false;
 				can_drag_minimap = false;
 				click_select_held->stop();
+				if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_CLIPBOARD_PRIMARY)) {
+					DisplayServer::get_singleton()->clipboard_set_primary(get_selected_text());
+				}
 			}
 
 			// Notify to show soft keyboard.
@@ -2596,6 +2607,14 @@ bool TextEdit::is_virtual_keyboard_enabled() const {
 	return virtual_keyboard_enabled;
 }
 
+void TextEdit::set_middle_mouse_paste_enabled(bool p_enabled) {
+	middle_mouse_paste_enabled = p_enabled;
+}
+
+bool TextEdit::is_middle_mouse_paste_enabled() const {
+	return middle_mouse_paste_enabled;
+}
+
 // Text manipulation
 void TextEdit::clear() {
 	setting_text = true;
@@ -2913,6 +2932,13 @@ void TextEdit::paste() {
 		return;
 	}
 	_paste_internal();
+}
+
+void TextEdit::paste_primary_clipboard() {
+	if (GDVIRTUAL_CALL(_paste_primary_clipboard)) {
+		return;
+	}
+	_paste_primary_clipboard_internal();
 }
 
 // Context menu.
@@ -3647,6 +3673,17 @@ bool TextEdit::is_selecting_enabled() const {
 	return selecting_enabled;
 }
 
+void TextEdit::set_deselect_on_focus_loss_enabled(const bool p_enabled) {
+	deselect_on_focus_loss_enabled = p_enabled;
+	if (p_enabled && selection.active && !has_focus()) {
+		deselect();
+	}
+}
+
+bool TextEdit::is_deselect_on_focus_loss_enabled() const {
+	return deselect_on_focus_loss_enabled;
+}
+
 void TextEdit::set_override_selected_font_color(bool p_override_selected_font_color) {
 	override_selected_font_color = p_override_selected_font_color;
 }
@@ -4039,7 +4076,7 @@ int TextEdit::get_visible_line_count() const {
 }
 
 int TextEdit::get_total_visible_line_count() const {
-	/* Returns the total number of (lines + wraped - hidden). */
+	/* Returns the total number of (lines + wrapped - hidden). */
 	if (!_is_hiding_enabled() && get_line_wrapping_mode() == LineWrappingMode::LINE_WRAPPING_NONE) {
 		return text.size();
 	}
@@ -4536,6 +4573,9 @@ void TextEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_virtual_keyboard_enabled", "enabled"), &TextEdit::set_virtual_keyboard_enabled);
 	ClassDB::bind_method(D_METHOD("is_virtual_keyboard_enabled"), &TextEdit::is_virtual_keyboard_enabled);
 
+	ClassDB::bind_method(D_METHOD("set_middle_mouse_paste_enabled", "enabled"), &TextEdit::set_middle_mouse_paste_enabled);
+	ClassDB::bind_method(D_METHOD("is_middle_mouse_paste_enabled"), &TextEdit::is_middle_mouse_paste_enabled);
+
 	// Text manipulation
 	ClassDB::bind_method(D_METHOD("clear"), &TextEdit::clear);
 
@@ -4575,6 +4615,7 @@ void TextEdit::_bind_methods() {
 	GDVIRTUAL_BIND(_cut)
 	GDVIRTUAL_BIND(_copy)
 	GDVIRTUAL_BIND(_paste)
+	GDVIRTUAL_BIND(_paste_primary_clipboard)
 
 	// Context Menu
 	BIND_ENUM_CONSTANT(MENU_CUT);
@@ -4689,6 +4730,9 @@ void TextEdit::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_selecting_enabled", "enable"), &TextEdit::set_selecting_enabled);
 	ClassDB::bind_method(D_METHOD("is_selecting_enabled"), &TextEdit::is_selecting_enabled);
+
+	ClassDB::bind_method(D_METHOD("set_deselect_on_focus_loss_enabled", "enable"), &TextEdit::set_deselect_on_focus_loss_enabled);
+	ClassDB::bind_method(D_METHOD("is_deselect_on_focus_loss_enabled"), &TextEdit::is_deselect_on_focus_loss_enabled);
 
 	ClassDB::bind_method(D_METHOD("set_override_selected_font_color", "override"), &TextEdit::set_override_selected_font_color);
 	ClassDB::bind_method(D_METHOD("is_overriding_selected_font_color"), &TextEdit::is_overriding_selected_font_color);
@@ -4849,8 +4893,9 @@ void TextEdit::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "context_menu_enabled"), "set_context_menu_enabled", "is_context_menu_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "shortcut_keys_enabled"), "set_shortcut_keys_enabled", "is_shortcut_keys_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "selecting_enabled"), "set_selecting_enabled", "is_selecting_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "deselect_on_focus_loss_enabled"), "set_deselect_on_focus_loss_enabled", "is_deselect_on_focus_loss_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "virtual_keyboard_enabled"), "set_virtual_keyboard_enabled", "is_virtual_keyboard_enabled");
-
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "middle_mouse_paste_enabled"), "set_middle_mouse_paste_enabled", "is_middle_mouse_paste_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "wrap_mode", PROPERTY_HINT_ENUM, "None,Boundary"), "set_line_wrapping_mode", "get_line_wrapping_mode");
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "override_selected_font_color"), "set_override_selected_font_color", "is_overriding_selected_font_color");
@@ -5141,6 +5186,24 @@ void TextEdit::_paste_internal() {
 	end_complex_operation();
 }
 
+void TextEdit::_paste_primary_clipboard_internal() {
+	if (!is_editable() || !DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_CLIPBOARD_PRIMARY)) {
+		return;
+	}
+
+	String paste_buffer = DisplayServer::get_singleton()->clipboard_get_primary();
+
+	Point2i pos = get_line_column_at_pos(get_local_mouse_pos());
+	deselect();
+	set_caret_line(pos.y, true, false);
+	set_caret_column(pos.x);
+	if (!paste_buffer.is_empty()) {
+		insert_text_at_caret(paste_buffer);
+	}
+
+	grab_focus();
+}
+
 /* Text. */
 // Context menu.
 void TextEdit::_generate_context_menu() {
@@ -5150,32 +5213,32 @@ void TextEdit::_generate_context_menu() {
 
 		menu_dir = memnew(PopupMenu);
 		menu_dir->set_name("DirMenu");
-		menu_dir->add_radio_check_item(RTR("Same as layout direction"), MENU_DIR_INHERITED);
-		menu_dir->add_radio_check_item(RTR("Auto-detect direction"), MENU_DIR_AUTO);
-		menu_dir->add_radio_check_item(RTR("Left-to-right"), MENU_DIR_LTR);
-		menu_dir->add_radio_check_item(RTR("Right-to-left"), MENU_DIR_RTL);
+		menu_dir->add_radio_check_item(RTR("Same as Layout Direction"), MENU_DIR_INHERITED);
+		menu_dir->add_radio_check_item(RTR("Auto-Detect Direction"), MENU_DIR_AUTO);
+		menu_dir->add_radio_check_item(RTR("Left-to-Right"), MENU_DIR_LTR);
+		menu_dir->add_radio_check_item(RTR("Right-to-Left"), MENU_DIR_RTL);
 		menu->add_child(menu_dir, false, INTERNAL_MODE_FRONT);
 
 		menu_ctl = memnew(PopupMenu);
 		menu_ctl->set_name("CTLMenu");
-		menu_ctl->add_item(RTR("Left-to-right mark (LRM)"), MENU_INSERT_LRM);
-		menu_ctl->add_item(RTR("Right-to-left mark (RLM)"), MENU_INSERT_RLM);
-		menu_ctl->add_item(RTR("Start of left-to-right embedding (LRE)"), MENU_INSERT_LRE);
-		menu_ctl->add_item(RTR("Start of right-to-left embedding (RLE)"), MENU_INSERT_RLE);
-		menu_ctl->add_item(RTR("Start of left-to-right override (LRO)"), MENU_INSERT_LRO);
-		menu_ctl->add_item(RTR("Start of right-to-left override (RLO)"), MENU_INSERT_RLO);
-		menu_ctl->add_item(RTR("Pop direction formatting (PDF)"), MENU_INSERT_PDF);
+		menu_ctl->add_item(RTR("Left-to-Right Mark (LRM)"), MENU_INSERT_LRM);
+		menu_ctl->add_item(RTR("Right-to-Left Mark (RLM)"), MENU_INSERT_RLM);
+		menu_ctl->add_item(RTR("Start of Left-to-Right Embedding (LRE)"), MENU_INSERT_LRE);
+		menu_ctl->add_item(RTR("Start of Right-to-Left Embedding (RLE)"), MENU_INSERT_RLE);
+		menu_ctl->add_item(RTR("Start of Left-to-Right Override (LRO)"), MENU_INSERT_LRO);
+		menu_ctl->add_item(RTR("Start of Right-to-Left Override (RLO)"), MENU_INSERT_RLO);
+		menu_ctl->add_item(RTR("Pop Direction Formatting (PDF)"), MENU_INSERT_PDF);
 		menu_ctl->add_separator();
-		menu_ctl->add_item(RTR("Arabic letter mark (ALM)"), MENU_INSERT_ALM);
-		menu_ctl->add_item(RTR("Left-to-right isolate (LRI)"), MENU_INSERT_LRI);
-		menu_ctl->add_item(RTR("Right-to-left isolate (RLI)"), MENU_INSERT_RLI);
-		menu_ctl->add_item(RTR("First strong isolate (FSI)"), MENU_INSERT_FSI);
-		menu_ctl->add_item(RTR("Pop direction isolate (PDI)"), MENU_INSERT_PDI);
+		menu_ctl->add_item(RTR("Arabic Letter Mark (ALM)"), MENU_INSERT_ALM);
+		menu_ctl->add_item(RTR("Left-to-Right Isolate (LRI)"), MENU_INSERT_LRI);
+		menu_ctl->add_item(RTR("Right-to-Left Isolate (RLI)"), MENU_INSERT_RLI);
+		menu_ctl->add_item(RTR("First Strong Isolate (FSI)"), MENU_INSERT_FSI);
+		menu_ctl->add_item(RTR("Pop Direction Isolate (PDI)"), MENU_INSERT_PDI);
 		menu_ctl->add_separator();
-		menu_ctl->add_item(RTR("Zero width joiner (ZWJ)"), MENU_INSERT_ZWJ);
-		menu_ctl->add_item(RTR("Zero width non-joiner (ZWNJ)"), MENU_INSERT_ZWNJ);
-		menu_ctl->add_item(RTR("Word joiner (WJ)"), MENU_INSERT_WJ);
-		menu_ctl->add_item(RTR("Soft hyphen (SHY)"), MENU_INSERT_SHY);
+		menu_ctl->add_item(RTR("Zero-Width Joiner (ZWJ)"), MENU_INSERT_ZWJ);
+		menu_ctl->add_item(RTR("Zero-Width Non-Joiner (ZWNJ)"), MENU_INSERT_ZWNJ);
+		menu_ctl->add_item(RTR("Word Joiner (WJ)"), MENU_INSERT_WJ);
+		menu_ctl->add_item(RTR("Soft Hyphen (SHY)"), MENU_INSERT_SHY);
 		menu->add_child(menu_ctl, false, INTERNAL_MODE_FRONT);
 
 		menu->connect("id_pressed", callable_mp(this, &TextEdit::menu_option));
@@ -5203,12 +5266,12 @@ void TextEdit::_generate_context_menu() {
 		menu->add_item(RTR("Redo"), MENU_REDO, is_shortcut_keys_enabled() ? _get_menu_action_accelerator("ui_redo") : 0);
 	}
 	menu->add_separator();
-	menu->add_submenu_item(RTR("Text writing direction"), "DirMenu");
+	menu->add_submenu_item(RTR("Text Writing Direction"), "DirMenu");
 	menu->add_separator();
-	menu->add_check_item(RTR("Display control characters"), MENU_DISPLAY_UCC);
+	menu->add_check_item(RTR("Display Control Characters"), MENU_DISPLAY_UCC);
 	menu->set_item_checked(menu->get_item_index(MENU_DISPLAY_UCC), draw_control_chars);
 	if (editable) {
-		menu->add_submenu_item(RTR("Insert control character"), "CTLMenu");
+		menu->add_submenu_item(RTR("Insert Control Character"), "CTLMenu");
 	}
 	menu_dir->set_item_checked(menu_dir->get_item_index(MENU_DIR_INHERITED), text_direction == TEXT_DIRECTION_INHERITED);
 	menu_dir->set_item_checked(menu_dir->get_item_index(MENU_DIR_AUTO), text_direction == TEXT_DIRECTION_AUTO);
@@ -5477,6 +5540,10 @@ void TextEdit::_update_selection_mode_word() {
 		}
 	}
 
+	if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_CLIPBOARD_PRIMARY)) {
+		DisplayServer::get_singleton()->clipboard_set_primary(get_selected_text());
+	}
+
 	update();
 
 	click_select_held->start();
@@ -5504,6 +5571,10 @@ void TextEdit::_update_selection_mode_line() {
 	set_caret_column(0);
 
 	select(selection.selecting_line, selection.selecting_column, line, col);
+	if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_CLIPBOARD_PRIMARY)) {
+		DisplayServer::get_singleton()->clipboard_set_primary(get_selected_text());
+	}
+
 	update();
 
 	click_select_held->start();

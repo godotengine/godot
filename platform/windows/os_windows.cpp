@@ -290,12 +290,13 @@ String OS_Windows::get_name() const {
 	return "Windows";
 }
 
-OS::Date OS_Windows::get_date(bool utc) const {
+OS::Date OS_Windows::get_date(bool p_utc) const {
 	SYSTEMTIME systemtime;
-	if (utc)
+	if (p_utc) {
 		GetSystemTime(&systemtime);
-	else
+	} else {
 		GetLocalTime(&systemtime);
+	}
 
 	Date date;
 	date.day = systemtime.wDay;
@@ -306,12 +307,13 @@ OS::Date OS_Windows::get_date(bool utc) const {
 	return date;
 }
 
-OS::Time OS_Windows::get_time(bool utc) const {
+OS::Time OS_Windows::get_time(bool p_utc) const {
 	SYSTEMTIME systemtime;
-	if (utc)
+	if (p_utc) {
 		GetSystemTime(&systemtime);
-	else
+	} else {
 		GetLocalTime(&systemtime);
+	}
 
 	Time time;
 	time.hour = systemtime.wHour;
@@ -445,7 +447,7 @@ Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments,
 	ZeroMemory(&pi.pi, sizeof(pi.pi));
 	LPSTARTUPINFOW si_w = (LPSTARTUPINFOW)&pi.si;
 
-	int ret = CreateProcessW(nullptr, (LPWSTR)(command.utf16().ptrw()), nullptr, nullptr, false, NORMAL_PRIORITY_CLASS & CREATE_NO_WINDOW, nullptr, nullptr, si_w, &pi.pi);
+	int ret = CreateProcessW(nullptr, (LPWSTR)(command.utf16().ptrw()), nullptr, nullptr, false, NORMAL_PRIORITY_CLASS | CREATE_NO_WINDOW, nullptr, nullptr, si_w, &pi.pi);
 	ERR_FAIL_COND_V_MSG(ret == 0, ERR_CANT_FORK, "Could not create child process: " + command);
 
 	WaitForSingleObject(pi.pi.hProcess, INFINITE);
@@ -473,7 +475,7 @@ Error OS_Windows::create_process(const String &p_path, const List<String> &p_arg
 	ZeroMemory(&pi.pi, sizeof(pi.pi));
 	LPSTARTUPINFOW si_w = (LPSTARTUPINFOW)&pi.si;
 
-	int ret = CreateProcessW(nullptr, (LPWSTR)(command.utf16().ptrw()), nullptr, nullptr, false, NORMAL_PRIORITY_CLASS & CREATE_NO_WINDOW, nullptr, nullptr, si_w, &pi.pi);
+	int ret = CreateProcessW(nullptr, (LPWSTR)(command.utf16().ptrw()), nullptr, nullptr, false, NORMAL_PRIORITY_CLASS | CREATE_NO_WINDOW, nullptr, nullptr, si_w, &pi.pi);
 	ERR_FAIL_COND_V_MSG(ret == 0, ERR_CANT_FORK, "Could not create child process: " + command);
 
 	ProcessID pid = pi.pi.dwProcessId;

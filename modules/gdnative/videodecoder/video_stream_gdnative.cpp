@@ -341,7 +341,7 @@ void VideoStreamGDNative::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_file", "file"), &VideoStreamGDNative::set_file);
 	ClassDB::bind_method(D_METHOD("get_file"), &VideoStreamGDNative::get_file);
 
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "file", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "set_file", "get_file");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "file", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "set_file", "get_file");
 }
 
 void VideoStreamGDNative::set_audio_track(int p_track) {

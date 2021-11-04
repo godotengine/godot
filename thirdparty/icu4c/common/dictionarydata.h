@@ -107,8 +107,8 @@ public:
     virtual ~UCharsDictionaryMatcher();
     virtual int32_t matches(UText *text, int32_t maxLength, int32_t limit,
                             int32_t *lengths, int32_t *cpLengths, int32_t *values,
-                            int32_t *prefix) const;
-    virtual int32_t getType() const;
+                            int32_t *prefix) const override;
+    virtual int32_t getType() const override;
 private:
     const UChar *characters;
     UDataMemory *file;
@@ -125,8 +125,8 @@ public:
     virtual ~BytesDictionaryMatcher();
     virtual int32_t matches(UText *text, int32_t maxLength, int32_t limit,
                             int32_t *lengths, int32_t *cpLengths, int32_t *values,
-                            int32_t *prefix) const;
-    virtual int32_t getType() const;
+                            int32_t *prefix) const override;
+    virtual int32_t getType() const override;
 private:
     UChar32 transform(UChar32 c) const;
 
@@ -159,7 +159,7 @@ udict_swap(const UDataSwapper *ds, const void *inData, int32_t length, void *out
  * Constants are defined in the DictionaryData class.
  *
  * For the data structure of BytesTrie & UCharsTrie see
- * http://site.icu-project.org/design/struct/tries
+ * https://icu.unicode.org/design/struct/tries
  * and the bytestrie.h and ucharstrie.h header files.
  *
  * int32_t indexes[indexesLength]; -- indexesLength=indexes[IX_STRING_TRIE_OFFSET]/4;

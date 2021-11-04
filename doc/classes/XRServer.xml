@@ -90,20 +90,21 @@
 		<method name="get_reference_frame" qualifiers="const">
 			<return type="Transform3D" />
 			<description>
-				Returns the reference frame transform. Mostly used internally and exposed for GDNative build interfaces.
+				Returns the reference frame transform. Mostly used internally and exposed for GDExtension build interfaces.
 			</description>
 		</method>
 		<method name="get_tracker" qualifiers="const">
 			<return type="XRPositionalTracker" />
-			<argument index="0" name="idx" type="int" />
+			<argument index="0" name="tracker_name" type="StringName" />
 			<description>
-				Returns the positional tracker at the given ID.
+				Returns the positional tracker with this name.
 			</description>
 		</method>
-		<method name="get_tracker_count" qualifiers="const">
-			<return type="int" />
+		<method name="get_trackers">
+			<return type="Dictionary" />
+			<argument index="0" name="tracker_types" type="int" />
 			<description>
-				Returns the number of trackers currently registered.
+				Returns a dictionary of trackers for this type.
 			</description>
 		</method>
 		<method name="remove_interface">
@@ -145,7 +146,6 @@
 		<signal name="tracker_added">
 			<argument index="0" name="tracker_name" type="StringName" />
 			<argument index="1" name="type" type="int" />
-			<argument index="2" name="id" type="int" />
 			<description>
 				Emitted when a new tracker has been added. If you don't use a fixed number of controllers or if you're using [XRAnchor3D]s for an AR solution, it is important to react to this signal to add the appropriate [XRController3D] or [XRAnchor3D] nodes related to this new tracker.
 			</description>
@@ -153,20 +153,29 @@
 		<signal name="tracker_removed">
 			<argument index="0" name="tracker_name" type="StringName" />
 			<argument index="1" name="type" type="int" />
-			<argument index="2" name="id" type="int" />
 			<description>
 				Emitted when a tracker is removed. You should remove any [XRController3D] or [XRAnchor3D] points if applicable. This is not mandatory, the nodes simply become inactive and will be made active again when a new tracker becomes available (i.e. a new controller is switched on that takes the place of the previous one).
 			</description>
 		</signal>
+		<signal name="tracker_updated">
+			<argument index="0" name="tracker_name" type="StringName" />
+			<argument index="1" name="type" type="int" />
+			<description>
+				Emitted when an existing tracker has been updated. This can happen if the user switches controllers.
+			</description>
+		</signal>
 	</signals>
 	<constants>
-		<constant name="TRACKER_CONTROLLER" value="1" enum="TrackerType">
+		<constant name="TRACKER_HEAD" value="1" enum="TrackerType">
+			The tracker tracks the location of the players head. This is usually a location centered between the players eyes. Note that for handheld AR devices this can be the current location of the device.
+		</constant>
+		<constant name="TRACKER_CONTROLLER" value="2" enum="TrackerType">
 			The tracker tracks the location of a controller.
 		</constant>
-		<constant name="TRACKER_BASESTATION" value="2" enum="TrackerType">
+		<constant name="TRACKER_BASESTATION" value="4" enum="TrackerType">
 			The tracker tracks the location of a base station.
 		</constant>
-		<constant name="TRACKER_ANCHOR" value="4" enum="TrackerType">
+		<constant name="TRACKER_ANCHOR" value="8" enum="TrackerType">
 			The tracker tracks the location and size of an AR anchor.
 		</constant>
 		<constant name="TRACKER_ANY_KNOWN" value="127" enum="TrackerType">

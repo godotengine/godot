@@ -80,7 +80,7 @@ void NoiseTexture::_bind_methods() {
 void NoiseTexture::_validate_property(PropertyInfo &property) const {
 	if (property.name == "bump_strength") {
 		if (!as_normal_map) {
-			property.usage = PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL;
+			property.usage = PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL;
 		}
 	}
 }

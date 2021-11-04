@@ -135,8 +135,6 @@ private:
 	Vector<Callable> undo_redo_callbacks;
 	Map<StringName, Callable> move_element_functions;
 
-	void _cleanup_history();
-
 	Vector<EditedScene> edited_scene;
 	int current_edited_scene;
 

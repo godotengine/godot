@@ -97,6 +97,7 @@ private:
 	float full_width = 0.0;
 
 	bool selecting_enabled = true;
+	bool deselect_on_focus_loss_enabled = true;
 
 	bool context_menu_enabled = true;
 	PopupMenu *menu = nullptr;
@@ -125,6 +126,8 @@ private:
 	bool shortcut_keys_enabled = true;
 
 	bool virtual_keyboard_enabled = true;
+
+	bool middle_mouse_paste_enabled = true;
 
 	Ref<Texture2D> right_icon;
 
@@ -187,7 +190,6 @@ private:
 	void _toggle_draw_caret();
 
 	void clear_internal();
-	void changed_internal();
 
 	void _editor_settings_changed();
 
@@ -318,8 +320,14 @@ public:
 	void set_virtual_keyboard_enabled(bool p_enable);
 	bool is_virtual_keyboard_enabled() const;
 
+	void set_middle_mouse_paste_enabled(bool p_enabled);
+	bool is_middle_mouse_paste_enabled() const;
+
 	void set_selecting_enabled(bool p_enabled);
 	bool is_selecting_enabled() const;
+
+	void set_deselect_on_focus_loss_enabled(const bool p_enabled);
+	bool is_deselect_on_focus_loss_enabled() const;
 
 	void set_right_icon(const Ref<Texture2D> &p_icon);
 	Ref<Texture2D> get_right_icon();

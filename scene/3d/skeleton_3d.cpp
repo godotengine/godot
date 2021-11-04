@@ -155,13 +155,13 @@ bool Skeleton3D::_get(const StringName &p_path, Variant &r_ret) const {
 void Skeleton3D::_get_property_list(List<PropertyInfo> *p_list) const {
 	for (int i = 0; i < bones.size(); i++) {
 		String prep = "bones/" + itos(i) + "/";
-		p_list->push_back(PropertyInfo(Variant::STRING, prep + "name", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
-		p_list->push_back(PropertyInfo(Variant::INT, prep + "parent", PROPERTY_HINT_RANGE, "-1," + itos(bones.size() - 1) + ",1", PROPERTY_USAGE_NOEDITOR));
-		p_list->push_back(PropertyInfo(Variant::TRANSFORM3D, prep + "rest", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
-		p_list->push_back(PropertyInfo(Variant::BOOL, prep + "enabled", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
-		p_list->push_back(PropertyInfo(Variant::VECTOR3, prep + "position", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
-		p_list->push_back(PropertyInfo(Variant::QUATERNION, prep + "rotation", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
-		p_list->push_back(PropertyInfo(Variant::VECTOR3, prep + "scale", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
+		p_list->push_back(PropertyInfo(Variant::STRING, prep + "name", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
+		p_list->push_back(PropertyInfo(Variant::INT, prep + "parent", PROPERTY_HINT_RANGE, "-1," + itos(bones.size() - 1) + ",1", PROPERTY_USAGE_NO_EDITOR));
+		p_list->push_back(PropertyInfo(Variant::TRANSFORM3D, prep + "rest", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
+		p_list->push_back(PropertyInfo(Variant::BOOL, prep + "enabled", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
+		p_list->push_back(PropertyInfo(Variant::VECTOR3, prep + "position", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
+		p_list->push_back(PropertyInfo(Variant::QUATERNION, prep + "rotation", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
+		p_list->push_back(PropertyInfo(Variant::VECTOR3, prep + "scale", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
 	}
 
 #ifndef _3D_DISABLED
@@ -178,32 +178,32 @@ void Skeleton3D::_get_property_list(List<PropertyInfo> *p_list) const {
 }
 
 void Skeleton3D::_validate_property(PropertyInfo &property) const {
-	PackedStringArray spr = property.name.split("/");
-	if (spr.size() == 3 && spr[0] == "bones") {
-		if (spr[2] == "rest") {
+	PackedStringArray split = property.name.split("/");
+	if (split.size() == 3 && split[0] == "bones") {
+		if (split[2] == "rest") {
 			property.usage |= PROPERTY_USAGE_READ_ONLY;
 		}
 		if (is_show_rest_only()) {
-			if (spr[2] == "enabled") {
+			if (split[2] == "enabled") {
 				property.usage |= PROPERTY_USAGE_READ_ONLY;
 			}
-			if (spr[2] == "position") {
+			if (split[2] == "position") {
 				property.usage |= PROPERTY_USAGE_READ_ONLY;
 			}
-			if (spr[2] == "rotation") {
+			if (split[2] == "rotation") {
 				property.usage |= PROPERTY_USAGE_READ_ONLY;
 			}
-			if (spr[2] == "scale") {
+			if (split[2] == "scale") {
 				property.usage |= PROPERTY_USAGE_READ_ONLY;
 			}
-		} else if (!is_bone_enabled(spr[1].to_int())) {
-			if (spr[2] == "position") {
+		} else if (!is_bone_enabled(split[1].to_int())) {
+			if (split[2] == "position") {
 				property.usage |= PROPERTY_USAGE_READ_ONLY;
 			}
-			if (spr[2] == "rotation") {
+			if (split[2] == "rotation") {
 				property.usage |= PROPERTY_USAGE_READ_ONLY;
 			}
-			if (spr[2] == "scale") {
+			if (split[2] == "scale") {
 				property.usage |= PROPERTY_USAGE_READ_ONLY;
 			}
 		}

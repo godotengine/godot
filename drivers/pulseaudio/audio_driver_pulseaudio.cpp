@@ -371,7 +371,7 @@ void AudioDriverPulseAudio::thread_func(void *p_udata) {
 	AudioDriverPulseAudio *ad = (AudioDriverPulseAudio *)p_udata;
 	unsigned int write_ofs = 0;
 	size_t avail_bytes = 0;
-	uint32_t default_device_msec = OS::get_singleton()->get_ticks_msec();
+	uint64_t default_device_msec = OS::get_singleton()->get_ticks_msec();
 
 	while (!ad->exit_thread) {
 		size_t read_bytes = 0;
@@ -382,15 +382,15 @@ void AudioDriverPulseAudio::thread_func(void *p_udata) {
 			ad->start_counting_ticks();
 
 			if (!ad->active) {
-				for (unsigned int i = 0; i < ad->pa_buffer_size; i++) {
-					ad->samples_out.write[i] = 0;
-				}
+				ad->samples_out.fill(0);
 			} else {
 				ad->audio_server_process(ad->buffer_frames, ad->samples_in.ptrw());
 
+				int16_t *out_ptr = ad->samples_out.ptrw();
+
 				if (ad->channels == ad->pa_map.channels) {
 					for (unsigned int i = 0; i < ad->pa_buffer_size; i++) {
-						ad->samples_out.write[i] = ad->samples_in[i] >> 16;
+						out_ptr[i] = ad->samples_in[i] >> 16;
 					}
 				} else {
 					// Uneven amount of channels
@@ -399,11 +399,11 @@ void AudioDriverPulseAudio::thread_func(void *p_udata) {
 
 					for (unsigned int i = 0; i < ad->buffer_frames; i++) {
 						for (int j = 0; j < ad->pa_map.channels - 1; j++) {
-							ad->samples_out.write[out_idx++] = ad->samples_in[in_idx++] >> 16;
+							out_ptr[out_idx++] = ad->samples_in[in_idx++] >> 16;
 						}
 						uint32_t l = ad->samples_in[in_idx++] >> 16;
 						uint32_t r = ad->samples_in[in_idx++] >> 16;
-						ad->samples_out.write[out_idx++] = (l + r) / 2;
+						out_ptr[out_idx++] = (l + r) / 2;
 					}
 				}
 			}
@@ -463,7 +463,7 @@ void AudioDriverPulseAudio::thread_func(void *p_udata) {
 
 		// If we're using the default device check that the current device is still the default
 		if (ad->device_name == "Default") {
-			uint32_t msec = OS::get_singleton()->get_ticks_msec();
+			uint64_t msec = OS::get_singleton()->get_ticks_msec();
 			if (msec > (default_device_msec + 1000)) {
 				String old_default_device = ad->default_device;
 

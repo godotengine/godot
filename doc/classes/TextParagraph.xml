@@ -199,7 +199,7 @@
 				Returns width (for horizontal layout) or height (for vertical) of the line of text.
 			</description>
 		</method>
-		<method name="get_non_wraped_size" qualifiers="const">
+		<method name="get_non_wrapped_size" qualifiers="const">
 			<return type="Vector2" />
 			<description>
 				Returns the size of the bounding box of the paragraph, without line breaks.

@@ -88,6 +88,8 @@ void CollisionShape2D::_notification(int p_what) {
 
 		} break;
 		case NOTIFICATION_DRAW: {
+			ERR_FAIL_COND(!is_inside_tree());
+
 			if (!Engine::get_singleton()->is_editor_hint() && !get_tree()->is_debugging_collisions_hint()) {
 				break;
 			}

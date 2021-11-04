@@ -452,8 +452,13 @@ bool InputEventKey::is_match(const Ref<InputEvent> &p_event, bool p_exact_match)
 		return false;
 	}
 
-	return keycode == key->keycode &&
-		   (!p_exact_match || get_modifiers_mask() == key->get_modifiers_mask());
+	if (keycode == 0) {
+		return physical_keycode == key->physical_keycode &&
+				(!p_exact_match || get_modifiers_mask() == key->get_modifiers_mask());
+	} else {
+		return keycode == key->keycode &&
+				(!p_exact_match || get_modifiers_mask() == key->get_modifiers_mask());
+	}
 }
 
 void InputEventKey::_bind_methods() {
@@ -611,7 +616,7 @@ bool InputEventMouseButton::is_match(const Ref<InputEvent> &p_event, bool p_exac
 	}
 
 	return button_index == mb->button_index &&
-		   (!p_exact_match || get_modifiers_mask() == mb->get_modifiers_mask());
+			(!p_exact_match || get_modifiers_mask() == mb->get_modifiers_mask());
 }
 
 static const char *_mouse_button_descriptions[9] = {
@@ -930,7 +935,7 @@ bool InputEventJoypadMotion::is_match(const Ref<InputEvent> &p_event, bool p_exa
 	}
 
 	return axis == jm->axis &&
-		   (!p_exact_match || ((axis_value < 0) == (jm->axis_value < 0)));
+			(!p_exact_match || ((axis_value < 0) == (jm->axis_value < 0)));
 }
 
 static const char *_joy_axis_descriptions[JOY_AXIS_MAX] = {

@@ -201,7 +201,7 @@ Files extracted from upstream source:
 ## icu4c
 
 - Upstream: https://github.com/unicode-org/icu
-- Version: 69.1 (0e7b4428866f3133b4abba2d932ee3faa708db1d, 2021)
+- Version: 70.1 (a56dde820dc35665a66f2e9ee8ba58e75049b668, 2021)
 - License: Unicode
 
 Files extracted from upstream source:
@@ -211,9 +211,14 @@ Files extracted from upstream source:
 
 Files generated from upstream source:
 
-- the `icudt69l.dat` built with the provided `godot_data.json` config file (see
+- the `icudt70l.dat` built with the provided `godot_data.json` config file (see
   https://github.com/unicode-org/icu/blob/master/docs/userguide/icu_data/buildtool.md
-  for instructions)
+  for instructions).
+
+- Step 1: Build ICU with default options - `./runConfigureICU {PLATFORM} && make`.
+- Step 2: Reconfigure ICU with custom data config - `ICU_DATA_FILTER_FILE={GODOT_SOURCE}/thirdparty/icu4c/godot_data.json ./runConfigureICU {PLATFORM} --with-data-packaging=common`.
+- Step 3: Delete `data/out` folder and rebuild data - `cd data && rm -rf ./out && make`.
+- Step 4: Copy `source/data/out/icudt70l.dat` to the `{GODOT_SOURCE}/thirdparty/icu4c/icudt70l.dat`.
 
 
 ## jpeg-compressor
@@ -318,6 +323,9 @@ File extracted from upstream release tarball:
   pre-defined symbol.
 - Applied the patch in `patches/pr4948-fix-clang12-opt.patch`. Upstream bugfix
   from PR 4948 to fix a bug caused by Clang 12 optimizations.
+- Applied the patch in `patches/pr4819-faster-base64.patch`. This fixes a certs
+  parsing speed regression since 2.16.10 (upstream PR:
+  https://github.com/ARMmbed/mbedtls/pull/4819).
 - Added 2 files `godot_core_mbedtls_platform.c` and `godot_core_mbedtls_config.h`
   providing configuration for light bundling with core.
 

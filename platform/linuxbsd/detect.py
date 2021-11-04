@@ -119,6 +119,21 @@ def configure(env):
     if env["bits"] == "default":
         env["bits"] = "64" if is64 else "32"
 
+    machines = {
+        "riscv64": "rv64",
+        "ppc64le": "ppc64",
+        "ppc64": "ppc64",
+        "ppcle": "ppc",
+        "ppc": "ppc",
+    }
+
+    if env["arch"] == "" and platform.machine() in machines:
+        env["arch"] = machines[platform.machine()]
+
+    if env["arch"] == "rv64":
+        # G = General-purpose extensions, C = Compression extension (very common).
+        env.Append(CCFLAGS=["-march=rv64gc"])
+
     ## Compiler configuration
 
     if "CXX" in env and "clang" in os.path.basename(env["CXX"]):
@@ -374,8 +389,8 @@ def configure(env):
             # No pkgconfig file for glslang so far
             env.Append(LIBS=["glslang", "SPIRV"])
 
-        # env.Append(CPPDEFINES=['OPENGL_ENABLED'])
-        env.Append(LIBS=["GL"])
+    env.Append(CPPDEFINES=["GLES3_ENABLED"])
+    env.Append(LIBS=["GL"])
 
     env.Append(LIBS=["pthread"])
 

@@ -249,29 +249,29 @@ private:
 
 public:
 	/**
-	* return a const iterator to the beginning of the list.
-	*/
+	 * return a const iterator to the beginning of the list.
+	 */
 	_FORCE_INLINE_ const Element *front() const {
 		return _data ? _data->first : nullptr;
 	}
 
 	/**
-	* return an iterator to the beginning of the list.
-	*/
+	 * return an iterator to the beginning of the list.
+	 */
 	_FORCE_INLINE_ Element *front() {
 		return _data ? _data->first : nullptr;
 	}
 
 	/**
- 	* return a const iterator to the last member of the list.
-	*/
+	 * return a const iterator to the last member of the list.
+	 */
 	_FORCE_INLINE_ const Element *back() const {
 		return _data ? _data->last : nullptr;
 	}
 
 	/**
- 	* return an iterator to the last member of the list.
-	*/
+	 * return an iterator to the last member of the list.
+	 */
 	_FORCE_INLINE_ Element *back() {
 		return _data ? _data->last : nullptr;
 	}

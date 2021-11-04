@@ -42,6 +42,7 @@ class ProjectSettings : public Object {
 
 public:
 	typedef Map<String, Variant> CustomMap;
+	static const String PROJECT_DATA_DIR_NAME_SUFFIX;
 
 	enum {
 		//properties that are not for built in values begin from this value, so builtin ones are displayed first

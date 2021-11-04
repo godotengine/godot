@@ -584,7 +584,8 @@ public:
 			} break;
 			case Animation::TYPE_METHOD: {
 				p_list->push_back(PropertyInfo(Variant::STRING_NAME, "name"));
-				p_list->push_back(PropertyInfo(Variant::INT, "arg_count", PROPERTY_HINT_RANGE, "0,5,1"));
+				static_assert(VARIANT_ARG_MAX == 8, "PROPERTY_HINT_RANGE needs to be updated if VARIANT_ARG_MAX != 8");
+				p_list->push_back(PropertyInfo(Variant::INT, "arg_count", PROPERTY_HINT_RANGE, "0,8,1"));
 
 				Dictionary d = animation->track_get_key_value(track, key);
 				ERR_FAIL_COND(!d.has("args"));
@@ -1247,7 +1248,8 @@ public:
 				} break;
 				case Animation::TYPE_METHOD: {
 					p_list->push_back(PropertyInfo(Variant::STRING_NAME, "name"));
-					p_list->push_back(PropertyInfo(Variant::INT, "arg_count", PROPERTY_HINT_RANGE, "0,5,1"));
+					static_assert(VARIANT_ARG_MAX == 8, "PROPERTY_HINT_RANGE needs to be updated if VARIANT_ARG_MAX != 8");
+					p_list->push_back(PropertyInfo(Variant::INT, "arg_count", PROPERTY_HINT_RANGE, "0,8,1"));
 
 					Dictionary d = animation->track_get_key_value(first_track, first_key);
 					ERR_FAIL_COND(!d.has("args"));
@@ -2037,7 +2039,7 @@ void AnimationTrackEdit::_notification(int p_what) {
 				update_mode_rect.position.y = int(get_size().height - update_icon->get_height()) / 2;
 				update_mode_rect.size = update_icon->get_size();
 
-				if (animation->track_get_type(track) == Animation::TYPE_VALUE) {
+				if (!animation->track_is_compressed(track) && animation->track_get_type(track) == Animation::TYPE_VALUE) {
 					draw_texture(update_icon, update_mode_rect.position);
 				}
 				// Make it easier to click.
@@ -2079,7 +2081,7 @@ void AnimationTrackEdit::_notification(int p_what) {
 				interp_mode_rect.position.y = int(get_size().height - icon->get_height()) / 2;
 				interp_mode_rect.size = icon->get_size();
 
-				if (animation->track_get_type(track) == Animation::TYPE_VALUE || animation->track_get_type(track) == Animation::TYPE_BLEND_SHAPE || animation->track_get_type(track) == Animation::TYPE_POSITION_3D || animation->track_get_type(track) == Animation::TYPE_SCALE_3D || animation->track_get_type(track) == Animation::TYPE_ROTATION_3D) {
+				if (!animation->track_is_compressed(track) && (animation->track_get_type(track) == Animation::TYPE_VALUE || animation->track_get_type(track) == Animation::TYPE_BLEND_SHAPE || animation->track_get_type(track) == Animation::TYPE_POSITION_3D || animation->track_get_type(track) == Animation::TYPE_SCALE_3D || animation->track_get_type(track) == Animation::TYPE_ROTATION_3D)) {
 					draw_texture(icon, interp_mode_rect.position);
 				}
 				// Make it easier to click.
@@ -2089,7 +2091,7 @@ void AnimationTrackEdit::_notification(int p_what) {
 				ofs += icon->get_width() + hsep;
 				interp_mode_rect.size.x += hsep;
 
-				if (animation->track_get_type(track) == Animation::TYPE_VALUE || animation->track_get_type(track) == Animation::TYPE_BLEND_SHAPE || animation->track_get_type(track) == Animation::TYPE_POSITION_3D || animation->track_get_type(track) == Animation::TYPE_SCALE_3D || animation->track_get_type(track) == Animation::TYPE_ROTATION_3D) {
+				if (!animation->track_is_compressed(track) && (animation->track_get_type(track) == Animation::TYPE_VALUE || animation->track_get_type(track) == Animation::TYPE_BLEND_SHAPE || animation->track_get_type(track) == Animation::TYPE_POSITION_3D || animation->track_get_type(track) == Animation::TYPE_SCALE_3D || animation->track_get_type(track) == Animation::TYPE_ROTATION_3D)) {
 					draw_texture(down_icon, Vector2(ofs, int(get_size().height - down_icon->get_height()) / 2));
 					interp_mode_rect.size.x += down_icon->get_width();
 				} else {
@@ -2112,7 +2114,7 @@ void AnimationTrackEdit::_notification(int p_what) {
 				loop_mode_rect.position.y = int(get_size().height - icon->get_height()) / 2;
 				loop_mode_rect.size = icon->get_size();
 
-				if (animation->track_get_type(track) == Animation::TYPE_VALUE || animation->track_get_type(track) == Animation::TYPE_BLEND_SHAPE || animation->track_get_type(track) == Animation::TYPE_POSITION_3D || animation->track_get_type(track) == Animation::TYPE_SCALE_3D || animation->track_get_type(track) == Animation::TYPE_ROTATION_3D) {
+				if (!animation->track_is_compressed(track) && (animation->track_get_type(track) == Animation::TYPE_VALUE || animation->track_get_type(track) == Animation::TYPE_BLEND_SHAPE || animation->track_get_type(track) == Animation::TYPE_POSITION_3D || animation->track_get_type(track) == Animation::TYPE_SCALE_3D || animation->track_get_type(track) == Animation::TYPE_ROTATION_3D)) {
 					draw_texture(icon, loop_mode_rect.position);
 				}
 
@@ -2122,7 +2124,7 @@ void AnimationTrackEdit::_notification(int p_what) {
 				ofs += icon->get_width() + hsep;
 				loop_mode_rect.size.x += hsep;
 
-				if (animation->track_get_type(track) == Animation::TYPE_VALUE || animation->track_get_type(track) == Animation::TYPE_BLEND_SHAPE || animation->track_get_type(track) == Animation::TYPE_POSITION_3D || animation->track_get_type(track) == Animation::TYPE_SCALE_3D || animation->track_get_type(track) == Animation::TYPE_ROTATION_3D) {
+				if (!animation->track_is_compressed(track) && (animation->track_get_type(track) == Animation::TYPE_VALUE || animation->track_get_type(track) == Animation::TYPE_BLEND_SHAPE || animation->track_get_type(track) == Animation::TYPE_POSITION_3D || animation->track_get_type(track) == Animation::TYPE_SCALE_3D || animation->track_get_type(track) == Animation::TYPE_ROTATION_3D)) {
 					draw_texture(down_icon, Vector2(ofs, int(get_size().height - down_icon->get_height()) / 2));
 					loop_mode_rect.size.x += down_icon->get_width();
 				} else {
@@ -2137,7 +2139,7 @@ void AnimationTrackEdit::_notification(int p_what) {
 			{
 				// Erase.
 
-				Ref<Texture2D> icon = get_theme_icon(SNAME("Remove"), SNAME("EditorIcons"));
+				Ref<Texture2D> icon = get_theme_icon(animation->track_is_compressed(track) ? SNAME("Lock") : SNAME("Remove"), SNAME("EditorIcons"));
 
 				remove_rect.position.x = ofs + ((get_size().width - ofs) - icon->get_width()) / 2;
 				remove_rect.position.y = int(get_size().height - icon->get_height()) / 2;
@@ -2709,60 +2711,63 @@ void AnimationTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 
 		// Check keyframes.
 
-		float scale = timeline->get_zoom_scale();
-		int limit = timeline->get_name_limit();
-		int limit_end = get_size().width - timeline->get_buttons_width();
-		// Left Border including space occupied by keyframes on t=0.
-		int limit_start_hitbox = limit - type_icon->get_width();
+		if (!animation->track_is_compressed(track)) { // Selecting compressed keyframes for editing is not possible.
 
-		if (pos.x >= limit_start_hitbox && pos.x <= limit_end) {
-			int key_idx = -1;
-			float key_distance = 1e20;
+			float scale = timeline->get_zoom_scale();
+			int limit = timeline->get_name_limit();
+			int limit_end = get_size().width - timeline->get_buttons_width();
+			// Left Border including space occupied by keyframes on t=0.
+			int limit_start_hitbox = limit - type_icon->get_width();
 
-			// Select should happen in the opposite order of drawing for more accurate overlap select.
-			for (int i = animation->track_get_key_count(track) - 1; i >= 0; i--) {
-				Rect2 rect = get_key_rect(i, scale);
-				float offset = animation->track_get_key_time(track, i) - timeline->get_value();
-				offset = offset * scale + limit;
-				rect.position.x += offset;
+			if (pos.x >= limit_start_hitbox && pos.x <= limit_end) {
+				int key_idx = -1;
+				float key_distance = 1e20;
 
-				if (rect.has_point(pos)) {
-					if (is_key_selectable_by_distance()) {
-						float distance = ABS(offset - pos.x);
-						if (key_idx == -1 || distance < key_distance) {
+				// Select should happen in the opposite order of drawing for more accurate overlap select.
+				for (int i = animation->track_get_key_count(track) - 1; i >= 0; i--) {
+					Rect2 rect = get_key_rect(i, scale);
+					float offset = animation->track_get_key_time(track, i) - timeline->get_value();
+					offset = offset * scale + limit;
+					rect.position.x += offset;
+
+					if (rect.has_point(pos)) {
+						if (is_key_selectable_by_distance()) {
+							float distance = ABS(offset - pos.x);
+							if (key_idx == -1 || distance < key_distance) {
+								key_idx = i;
+								key_distance = distance;
+							}
+						} else {
+							// First one does it.
 							key_idx = i;
-							key_distance = distance;
+							break;
+						}
+					}
+				}
+
+				if (key_idx != -1) {
+					if (mb->is_command_pressed() || mb->is_shift_pressed()) {
+						if (editor->is_key_selected(track, key_idx)) {
+							emit_signal(SNAME("deselect_key"), key_idx);
+						} else {
+							emit_signal(SNAME("select_key"), key_idx, false);
+							moving_selection_attempt = true;
+							select_single_attempt = -1;
+							moving_selection_from_ofs = (mb->get_position().x - limit) / timeline->get_zoom_scale();
 						}
 					} else {
-						// First one does it.
-						key_idx = i;
-						break;
-					}
-				}
-			}
+						if (!editor->is_key_selected(track, key_idx)) {
+							emit_signal(SNAME("select_key"), key_idx, true);
+							select_single_attempt = -1;
+						} else {
+							select_single_attempt = key_idx;
+						}
 
-			if (key_idx != -1) {
-				if (mb->is_command_pressed() || mb->is_shift_pressed()) {
-					if (editor->is_key_selected(track, key_idx)) {
-						emit_signal(SNAME("deselect_key"), key_idx);
-					} else {
-						emit_signal(SNAME("select_key"), key_idx, false);
 						moving_selection_attempt = true;
-						select_single_attempt = -1;
 						moving_selection_from_ofs = (mb->get_position().x - limit) / timeline->get_zoom_scale();
 					}
-				} else {
-					if (!editor->is_key_selected(track, key_idx)) {
-						emit_signal(SNAME("select_key"), key_idx, true);
-						select_single_attempt = -1;
-					} else {
-						select_single_attempt = key_idx;
-					}
-
-					moving_selection_attempt = true;
-					moving_selection_from_ofs = (mb->get_position().x - limit) / timeline->get_zoom_scale();
+					accept_event();
 				}
-				accept_event();
 			}
 		}
 	}
@@ -2994,6 +2999,9 @@ void AnimationTrackEdit::set_in_group(bool p_enable) {
 }
 
 void AnimationTrackEdit::append_to_selection(const Rect2 &p_box, bool p_deselection) {
+	if (animation->track_is_compressed(track)) {
+		return; // Compressed keyframes can't be edited
+	}
 	// Left Border including space occupied by keyframes on t=0.
 	int limit_start_hitbox = timeline->get_name_limit() - type_icon->get_width();
 	Rect2 select_rect(limit_start_hitbox, 0, get_size().width - timeline->get_name_limit() - timeline->get_buttons_width(), get_size().height);
@@ -3337,6 +3345,10 @@ void AnimationTrackEditor::_timeline_changed(float p_new_pos, bool p_drag, bool 
 }
 
 void AnimationTrackEditor::_track_remove_request(int p_track) {
+	if (animation->track_is_compressed(p_track)) {
+		EditorNode::get_singleton()->show_warning(TTR("Compressed tracks can't be edited or removed. Re-import the animation with compression disabled in order to edit."));
+		return;
+	}
 	int idx = p_track;
 	if (idx >= 0 && idx < animation->get_track_count()) {
 		undo_redo->create_action(TTR("Remove Anim Track"));
@@ -3487,7 +3499,7 @@ void AnimationTrackEditor::_query_insert(const InsertData &p_id) {
 
 	for (const InsertData &E : insert_data) {
 		// Prevent insertion of multiple tracks.
-		if (E.path == p_id.path) {
+		if (E.path == p_id.path && E.type == p_id.type) {
 			return; // Already inserted a track this frame.
 		}
 	}
@@ -3537,7 +3549,11 @@ void AnimationTrackEditor::_insert_track(bool p_create_reset, bool p_create_bezi
 	}
 }
 
-void AnimationTrackEditor::insert_transform_key(Node3D *p_node, const String &p_sub, const Transform3D &p_xform) {
+void AnimationTrackEditor::insert_transform_key(Node3D *p_node, const String &p_sub, const Animation::TrackType p_type, const Variant p_value) {
+	ERR_FAIL_COND(!root);
+	ERR_FAIL_COND_MSG(
+			(p_type != Animation::TYPE_POSITION_3D && p_type != Animation::TYPE_ROTATION_3D && p_type != Animation::TYPE_SCALE_3D),
+			"Track type must be Position/Rotation/Scale 3D.");
 	if (!keying) {
 		return;
 	}
@@ -3545,7 +3561,6 @@ void AnimationTrackEditor::insert_transform_key(Node3D *p_node, const String &p_
 		return;
 	}
 
-	ERR_FAIL_COND(!root);
 	// Let's build a node path.
 	String path = root->get_path_to(p_node);
 	if (p_sub != "") {
@@ -3554,24 +3569,16 @@ void AnimationTrackEditor::insert_transform_key(Node3D *p_node, const String &p_
 
 	NodePath np = path;
 
-	int position_idx = -1;
-	int rotation_idx = -1;
-	int scale_idx = -1;
+	int track_idx = -1;
 
 	for (int i = 0; i < animation->get_track_count(); i++) {
 		if (animation->track_get_path(i) != np) {
 			continue;
 		}
-
-		if (animation->track_get_type(i) == Animation::TYPE_POSITION_3D) {
-			position_idx = i;
+		if (animation->track_get_type(i) != p_type) {
+			continue;
 		}
-		if (animation->track_get_type(i) == Animation::TYPE_ROTATION_3D) {
-			rotation_idx = i;
-		}
-		if (animation->track_get_type(i) == Animation::TYPE_SCALE_3D) {
-			scale_idx = i;
-		}
+		track_idx = i;
 	}
 
 	InsertData id;
@@ -3579,48 +3586,30 @@ void AnimationTrackEditor::insert_transform_key(Node3D *p_node, const String &p_
 	// TRANSLATORS: This describes the target of new animation track, will be inserted into another string.
 	id.query = vformat(TTR("node '%s'"), p_node->get_name());
 	id.advance = false;
-
-	{
-		id.track_idx = position_idx;
-		id.value = p_xform.origin;
-		id.type = Animation::TYPE_POSITION_3D;
-		_query_insert(id);
-	}
-	{
-		id.track_idx = rotation_idx;
-		id.value = p_xform.basis.get_rotation_quaternion();
-		id.type = Animation::TYPE_ROTATION_3D;
-		_query_insert(id);
-	}
-	{
-		id.track_idx = scale_idx;
-		id.value = p_xform.basis.get_scale();
-		id.type = Animation::TYPE_SCALE_3D;
-		_query_insert(id);
-	}
+	id.track_idx = track_idx;
+	id.value = p_value;
+	id.type = p_type;
+	_query_insert(id);
 }
 
-bool AnimationTrackEditor::has_transform_track(Node3D *p_node, const String &p_sub) {
+bool AnimationTrackEditor::has_track(Node3D *p_node, const String &p_sub, const Animation::TrackType p_type) {
+	ERR_FAIL_COND_V(!root, false);
 	if (!keying) {
 		return false;
 	}
 	if (!animation.is_valid()) {
 		return false;
 	}
-	if (!root) {
-		return false;
-	}
 
-	//let's build a node path
+	// Let's build a node path.
 	String path = root->get_path_to(p_node);
 	if (p_sub != "") {
 		path += ":" + p_sub;
 	}
-	int track_id = animation->find_track(path);
+
+	int track_id = animation->find_track(path, p_type);
 	if (track_id >= 0) {
-		if (animation->track_get_type(track_id) == Animation::TYPE_POSITION_3D || animation->track_get_type(track_id) == Animation::TYPE_ROTATION_3D || animation->track_get_type(track_id) == Animation::TYPE_SCALE_3D) {
-			return true;
-		}
+		return true;
 	}
 	return false;
 }

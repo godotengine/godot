@@ -117,7 +117,7 @@ void ThemeEditorPreview::_draw_picker_overlay() {
 		}
 
 		Rect2 highlight_label_rect = highlight_rect;
-		highlight_label_rect.size = theme_cache.preview_picker_font->get_string_size(highlight_name);
+		highlight_label_rect.size = theme_cache.preview_picker_font->get_string_size(highlight_name, theme_cache.font_size);
 
 		int margin_top = theme_cache.preview_picker_label->get_margin(SIDE_TOP);
 		int margin_left = theme_cache.preview_picker_label->get_margin(SIDE_LEFT);
@@ -133,7 +133,7 @@ void ThemeEditorPreview::_draw_picker_overlay() {
 		Point2 label_pos = highlight_label_rect.position;
 		label_pos.y += highlight_label_rect.size.y - margin_bottom;
 		label_pos.x += margin_left;
-		picker_overlay->draw_string(theme_cache.preview_picker_font, label_pos, highlight_name);
+		picker_overlay->draw_string(theme_cache.preview_picker_font, label_pos, highlight_name, HALIGN_LEFT, -1, theme_cache.font_size);
 	}
 }
 
@@ -188,6 +188,7 @@ void ThemeEditorPreview::_notification(int p_what) {
 			theme_cache.preview_picker_overlay_color = get_theme_color(SNAME("preview_picker_overlay_color"), SNAME("ThemeEditor"));
 			theme_cache.preview_picker_label = get_theme_stylebox(SNAME("preview_picker_label"), SNAME("ThemeEditor"));
 			theme_cache.preview_picker_font = get_theme_font(SNAME("status_source"), SNAME("EditorFonts"));
+			theme_cache.font_size = get_theme_font_size(SNAME("font_size"), SNAME("EditorFonts"));
 		} break;
 		case NOTIFICATION_PROCESS: {
 			time_left -= get_process_delta_time();

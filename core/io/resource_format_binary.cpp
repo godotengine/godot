@@ -1572,7 +1572,7 @@ void ResourceFormatSaverBinaryInstance::write_variant(FileAccess *f, const Varia
 				return; // don't save it
 			}
 
-			if (res->get_path().length() && res->get_path().find("::") == -1) {
+			if (!res->is_built_in()) {
 				f->store_32(OBJECT_EXTERNAL_RESOURCE_INDEX);
 				f->store_32(external_resources[res]);
 			} else {
@@ -1743,7 +1743,7 @@ void ResourceFormatSaverBinaryInstance::_find_resources(const Variant &p_variant
 				return;
 			}
 
-			if (!p_main && (!bundle_resources) && res->get_path().length() && res->get_path().find("::") == -1) {
+			if (!p_main && (!bundle_resources) && !res->is_built_in()) {
 				if (res->get_path() == path) {
 					ERR_PRINT("Circular reference to resource being saved found: '" + local_path + "' will be null next time it's loaded.");
 					return;
@@ -1978,7 +1978,7 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const RES &p
 	Set<String> used_unique_ids;
 
 	for (RES &r : saved_resources) {
-		if (r->get_path() == "" || r->get_path().find("::") != -1) {
+		if (r->is_built_in()) {
 			if (r->get_scene_unique_id() != "") {
 				if (used_unique_ids.has(r->get_scene_unique_id())) {
 					r->set_scene_unique_id("");
@@ -1992,7 +1992,7 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const RES &p
 	Map<RES, int> resource_map;
 	int res_index = 0;
 	for (RES &r : saved_resources) {
-		if (r->get_path() == "" || r->get_path().find("::") != -1) {
+		if (r->is_built_in()) {
 			if (r->get_scene_unique_id() == "") {
 				String new_id;
 

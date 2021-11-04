@@ -612,8 +612,8 @@ void PhysicsServer3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("area_attach_object_instance_id", "area", "id"), &PhysicsServer3D::area_attach_object_instance_id);
 	ClassDB::bind_method(D_METHOD("area_get_object_instance_id", "area"), &PhysicsServer3D::area_get_object_instance_id);
 
-	ClassDB::bind_method(D_METHOD("area_set_monitor_callback", "area", "receiver", "method"), &PhysicsServer3D::area_set_monitor_callback);
-	ClassDB::bind_method(D_METHOD("area_set_area_monitor_callback", "area", "receiver", "method"), &PhysicsServer3D::area_set_area_monitor_callback);
+	ClassDB::bind_method(D_METHOD("area_set_monitor_callback", "area", "callback"), &PhysicsServer3D::area_set_monitor_callback);
+	ClassDB::bind_method(D_METHOD("area_set_area_monitor_callback", "area", "callback"), &PhysicsServer3D::area_set_area_monitor_callback);
 	ClassDB::bind_method(D_METHOD("area_set_monitorable", "area", "monitorable"), &PhysicsServer3D::area_set_monitorable);
 
 	ClassDB::bind_method(D_METHOD("area_set_ray_pickable", "area", "enable"), &PhysicsServer3D::area_set_ray_pickable);
@@ -863,9 +863,14 @@ void PhysicsServer3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(BODY_PARAM_INERTIA);
 	BIND_ENUM_CONSTANT(BODY_PARAM_CENTER_OF_MASS);
 	BIND_ENUM_CONSTANT(BODY_PARAM_GRAVITY_SCALE);
+	BIND_ENUM_CONSTANT(BODY_PARAM_LINEAR_DAMP_MODE);
+	BIND_ENUM_CONSTANT(BODY_PARAM_ANGULAR_DAMP_MODE);
 	BIND_ENUM_CONSTANT(BODY_PARAM_LINEAR_DAMP);
 	BIND_ENUM_CONSTANT(BODY_PARAM_ANGULAR_DAMP);
 	BIND_ENUM_CONSTANT(BODY_PARAM_MAX);
+
+	BIND_ENUM_CONSTANT(BODY_DAMP_MODE_COMBINE);
+	BIND_ENUM_CONSTANT(BODY_DAMP_MODE_REPLACE);
 
 	BIND_ENUM_CONSTANT(BODY_STATE_TRANSFORM);
 	BIND_ENUM_CONSTANT(BODY_STATE_LINEAR_VELOCITY);

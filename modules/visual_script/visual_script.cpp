@@ -113,7 +113,7 @@ void VisualScriptNode::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_set_default_input_values", "values"), &VisualScriptNode::_set_default_input_values);
 	ClassDB::bind_method(D_METHOD("_get_default_input_values"), &VisualScriptNode::_get_default_input_values);
 
-	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "_default_input_values", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_default_input_values", "_get_default_input_values");
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "_default_input_values", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_default_input_values", "_get_default_input_values");
 	ADD_SIGNAL(MethodInfo("ports_changed"));
 }
 
@@ -1172,7 +1172,7 @@ void VisualScript::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_set_data", "data"), &VisualScript::_set_data);
 	ClassDB::bind_method(D_METHOD("_get_data"), &VisualScript::_get_data);
 
-	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_data", "_get_data");
+	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_data", "_get_data");
 
 	ADD_SIGNAL(MethodInfo("node_ports_changed", PropertyInfo(Variant::INT, "id")));
 }
@@ -1688,7 +1688,7 @@ Variant VisualScriptInstance::_call_internal(const StringName &p_method, void *p
 		// debugger break did not happen
 
 		if (!VisualScriptLanguage::singleton->debug_break(error_str, false)) {
-			_err_print_error(err_func.utf8().get_data(), err_file.utf8().get_data(), err_line, error_str.utf8().get_data(), ERR_HANDLER_SCRIPT);
+			_err_print_error(err_func.utf8().get_data(), err_file.utf8().get_data(), err_line, error_str.utf8().get_data(), false, ERR_HANDLER_SCRIPT);
 		}
 
 		//}
@@ -2370,7 +2370,6 @@ void VisualScriptLanguage::debug_get_stack_level_locals(int p_level, List<String
 	const StringName *f = _call_stack[l].function;
 
 	ERR_FAIL_COND(!_call_stack[l].instance->functions.has(*f));
-	//VisualScriptInstance::Function *func = &_call_stack[l].instance->functions[*f];
 
 	VisualScriptNodeInstance *node = _call_stack[l].instance->instances[*_call_stack[l].current_id];
 	ERR_FAIL_COND(!node);
@@ -2416,21 +2415,6 @@ void VisualScriptLanguage::debug_get_stack_level_locals(int p_level, List<String
 		p_locals->push_back("working_mem/mem_" + itos(i));
 		p_values->push_back((*_call_stack[l].work_mem)[i]);
 	}
-
-	/*
-    ERR_FAIL_INDEX(p_level,_debug_call_stack_pos);
-
-
-    VisualFunction *f = _call_stack[l].function;
-
-    List<Pair<StringName,int> > locals;
-
-    f->debug_get_stack_member_state(*_call_stack[l].line,&locals);
-    for( List<Pair<StringName,int> >::Element *E = locals.front();E;E=E->next() ) {
-	p_locals->push_back(E->get().first);
-	p_values->push_back(_call_stack[l].stack[E->get().second]);
-    }
-*/
 }
 
 void VisualScriptLanguage::debug_get_stack_level_members(int p_level, List<String> *p_members, List<Variant> *p_values, int p_max_subitems, int p_max_depth) {

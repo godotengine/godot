@@ -25,13 +25,15 @@
 # Postive_ Cloud <postive12@gmail.com>, 2021.
 # dewcked <dewcked@protonmail.ch>, 2021.
 # SteamB23 <steamb23@outlook.com>, 2021.
+# Jaemin Park <ppparkje@naver.com>, 2021.
+# 신동규 <rlsl0422@gmail.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-10-07 10:25+0000\n"
-"Last-Translator: SteamB23 <steamb23@outlook.com>\n"
+"PO-Revision-Date: 2021-11-03 13:15+0000\n"
+"Last-Translator: Myeongjin Lee <aranet100@gmail.com>\n"
 "Language-Team: Korean <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ko/>\n"
 "Language: ko\n"
@@ -522,18 +524,18 @@ msgid ""
 "Alternatively, use an import preset that imports animations to separate "
 "files."
 msgstr ""
-"이 애니메이션은 불러온 씬에 속해 있습니다. 불러온 트랙의 변경사항은 저장되지 "
+"이 애니메이션은 가져온 씬에 속해 있습니다. 가져온 트랙의 변경사항은 저장되지 "
 "않습니다.\n"
 "\n"
-"저장 기능을 활성화하려면 커스텀 트랙을 추가하고, 씬의 불러오기기 설정으로 가"
+"저장 기능을 활성화하려면 커스텀 트랙을 추가하고, 씬의 가져오기 설정으로 가"
 "서\n"
 "\"Animation > Storage\" 설정을 \"Files\"로, \"Animation > Keep Custom Tracks"
 "\" 설정을 활성화한 뒤, 다시 가져오십시오.\n"
-"아니면 불러오기 프리셋으로 애니메이션을 별도의 파일로 불러올 수도 있습니다."
+"아니면 가져오기 프리셋으로 애니메이션을 별도의 파일로 가져올 수도 있습니다."
 
 #: editor/animation_track_editor.cpp
 msgid "Warning: Editing imported animation"
-msgstr "경고: 불러온 애니메이션을 편집하고 있음"
+msgstr "경고: 가져온 애니메이션을 편집하고 있음"
 
 #: editor/animation_track_editor.cpp
 msgid "Select an AnimationPlayer node to create and edit animations."
@@ -1740,7 +1742,7 @@ msgstr "파일시스템 독"
 
 #: editor/editor_feature_profile.cpp
 msgid "Import Dock"
-msgstr "독 불러오기"
+msgstr "독 가져오기"
 
 #: editor/editor_feature_profile.cpp
 msgid "Allows to view and edit 3D scenes."
@@ -1773,7 +1775,7 @@ msgid ""
 "Allows to configure import settings for individual assets. Requires the "
 "FileSystem dock to function."
 msgstr ""
-"개별 애셋에 대한 불러오기 설정을 구성할 수 있게 합니다. 작동하려면 파일시스"
+"개별 애셋에 대한 가져오기 설정을 구성할 수 있게 합니다. 작동하려면 파일시스"
 "템 독이 필요합니다."
 
 #: editor/editor_feature_profile.cpp
@@ -1830,15 +1832,15 @@ msgstr "노드와 클래스:"
 
 #: editor/editor_feature_profile.cpp
 msgid "File '%s' format is invalid, import aborted."
-msgstr "파일 '%s' 형식이 올바르지 않습니다. 불러오기를 중단합니다."
+msgstr "파일 '%s' 형식이 올바르지 않습니다. 가져오기를 중단합니다."
 
 #: editor/editor_feature_profile.cpp
 msgid ""
 "Profile '%s' already exists. Remove it first before importing, import "
 "aborted."
 msgstr ""
-"프로필 '%s'이(가) 이미 있습니다. 불러오기 전에 이미 있는 프로필을 먼저 제거하"
-"세요. 불러오기를 중단합니다."
+"프로필 '%s'이(가) 이미 있습니다. 가져오기 전에 이미 있는 프로필을 먼저 제거하"
+"세요. 가져오기를 중단합니다."
 
 #: editor/editor_feature_profile.cpp
 msgid "Error saving profile to path: '%s'."
@@ -1871,7 +1873,7 @@ msgstr "현재 프로필로 설정"
 #: editor/editor_feature_profile.cpp editor/editor_node.cpp
 #: editor/plugins/theme_editor_plugin.cpp editor/project_manager.cpp
 msgid "Import"
-msgstr "불러오기"
+msgstr "가져오기"
 
 #: editor/editor_feature_profile.cpp editor/project_export.cpp
 msgid "Export"
@@ -1887,7 +1889,7 @@ msgstr "별도의 옵션:"
 
 #: editor/editor_feature_profile.cpp
 msgid "Create or import a profile to edit available classes and properties."
-msgstr "사용 가능한 클래스와 속성을 편집하려면 프로필을 만들거나 불러오세요."
+msgstr "사용 가능한 클래스와 속성을 편집하려면 프로필을 만들거나 가져오세요."
 
 #: editor/editor_feature_profile.cpp
 msgid "New profile name:"
@@ -1899,7 +1901,7 @@ msgstr "Godot 기능 프로필"
 
 #: editor/editor_feature_profile.cpp
 msgid "Import Profile(s)"
-msgstr "프로필 불러오기"
+msgstr "프로필 가져오기"
 
 #: editor/editor_feature_profile.cpp
 msgid "Export Profile"
@@ -2074,7 +2076,7 @@ msgstr ""
 
 #: editor/editor_file_system.cpp
 msgid "(Re)Importing Assets"
-msgstr "애셋 (다시) 불러오기"
+msgstr "애셋 (다시) 가져오는 중"
 
 #: editor/editor_help.cpp
 msgid "Top"
@@ -2323,7 +2325,7 @@ msgstr "에디터 창에 변화가 있을 때마다 회전합니다."
 
 #: editor/editor_node.cpp
 msgid "Imported resources can't be saved."
-msgstr "불러온 리소스를 저장할 수 없습니다."
+msgstr "가져온 리소스를 저장할 수 없습니다."
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/theme_editor_plugin.cpp
@@ -2412,9 +2414,8 @@ msgstr ""
 "는 것 같습니다."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Could not save one or more scenes!"
-msgstr "변환된 텍스쳐를 저장할 수 없음:"
+msgstr "하나 이상의 장면을 저장할수 없습니다!"
 
 #: editor/editor_node.cpp
 msgid "Save All Scenes"
@@ -2472,8 +2473,8 @@ msgid ""
 "Please read the documentation relevant to importing scenes to better "
 "understand this workflow."
 msgstr ""
-"이 리소스는 불러온 씬에 속한 리소스이므로 편집할 수 없습니다.\n"
-"이 워크플로를 이해하려면 씬 불러오기(Importing Scenes)와 관련된 문서를 읽어주"
+"이 리소스는 가져온 씬에 속한 리소스이므로 편집할 수 없습니다.\n"
+"이 워크플로를 이해하려면 씬 가져오기(Importing Scenes)와 관련된 문서를 읽어주"
 "세요."
 
 #: editor/editor_node.cpp
@@ -2489,8 +2490,8 @@ msgid ""
 "This resource was imported, so it's not editable. Change its settings in the "
 "import panel and then re-import."
 msgstr ""
-"이 리소스는 불러온 것이므로 편집할 수 없습니다. 불러오기 패널에서 설정을 변경"
-"한 뒤 다시 불러오세요."
+"이 리소스는 가져온 것이므로 편집할 수 없습니다. 가져오기 패널에서 설정을 변경"
+"한 뒤 다시 가져오세요."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2499,9 +2500,9 @@ msgid ""
 "Please read the documentation relevant to importing scenes to better "
 "understand this workflow."
 msgstr ""
-"이 씬은 불러온 것이므로 변경사항이 유지되지 않습니다.\n"
+"이 씬은 가져온 것이므로 변경사항이 유지되지 않습니다.\n"
 "이 씬을 인스턴스화하거나 상속하면 편집할 수 있습니다.\n"
-"이 워크플로를 이해하려면 씬 불러오기(Importing Scenes)와 관련된 문서를 읽어주"
+"이 워크플로를 이해하려면 씬 가져오기(Importing Scenes)와 관련된 문서를 읽어주"
 "세요."
 
 #: editor/editor_node.cpp
@@ -2555,7 +2556,7 @@ msgstr "닫기 전에 '%s'에 변경사항을 저장하시겠습니까?"
 
 #: editor/editor_node.cpp
 msgid "%s no longer exists! Please specify a new save location."
-msgstr ""
+msgstr "%s은(는) 더 이상 존재하지 않습니다! 새 저장 위치를 지정해 주세요."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2736,7 +2737,7 @@ msgid ""
 "Scene '%s' was automatically imported, so it can't be modified.\n"
 "To make changes to it, a new inherited scene can be created."
 msgstr ""
-"씬 '%s'을(를) 자동으로 불러왔으므로 수정할 수 없습니다.\n"
+"씬 '%s'을(를) 자동으로 가져왔으므로 수정할 수 없습니다.\n"
 "이 씬을 편집하려면 새로운 상속 씬을 만들어야 합니다."
 
 #: editor/editor_node.cpp
@@ -2745,7 +2746,7 @@ msgid ""
 "open the scene, then save it inside the project path."
 msgstr ""
 "씬을 불러오는 중 오류가 발생했습니다. 씬은 프로젝트 경로 안에 있어야 합니다. "
-"'불러오기'를 사용해서 씬을 열고, 그 씬을 프로젝트 경로 안에 저장하세요."
+"'가져오기'를 사용해서 씬을 열고, 그 씬을 프로젝트 경로 안에 저장하세요."
 
 #: editor/editor_node.cpp
 msgid "Scene '%s' has broken dependencies:"
@@ -3285,7 +3286,7 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Import Templates From ZIP File"
-msgstr "ZIP 파일에서 템플릿 불러오기"
+msgstr "ZIP 파일에서 템플릿 가져오기"
 
 #: editor/editor_node.cpp
 msgid "Template Package"
@@ -3636,7 +3637,7 @@ msgstr "%s를 눌러 정수로 반올림합니다. Shift를 눌러 좀 더 정�
 
 #: editor/editor_sub_scene.cpp
 msgid "Select Node(s) to Import"
-msgstr "불러올 노드 선택"
+msgstr "가져올 노드 선택"
 
 #: editor/editor_sub_scene.cpp editor/project_manager.cpp
 msgid "Browse"
@@ -3648,7 +3649,7 @@ msgstr "씬 경로:"
 
 #: editor/editor_sub_scene.cpp
 msgid "Import From Node:"
-msgstr "노드에서 불러오기:"
+msgstr "노드에서 가져오기:"
 
 #: editor/export_template_manager.cpp
 msgid "Open the folder containing these templates."
@@ -3803,7 +3804,7 @@ msgstr "내보내기 템플릿 압축 푸는 중"
 
 #: editor/export_template_manager.cpp
 msgid "Importing:"
-msgstr "불러오는 중:"
+msgstr "가져오는 중:"
 
 #: editor/export_template_manager.cpp
 msgid "Remove templates for the version '%s'?"
@@ -3921,14 +3922,14 @@ msgstr "즐겨찾기"
 #: editor/filesystem_dock.cpp
 msgid "Status: Import of file failed. Please fix file and reimport manually."
 msgstr ""
-"상태: 파일 불러오기에 실패했습니다. 수동으로 파일을 수정하고 다시 불러와주세"
+"상태: 파일 가져오기에 실패했습니다. 수동으로 파일을 수정하고 다시 가져와주세"
 "요."
 
 #: editor/filesystem_dock.cpp
 msgid ""
 "Importing has been disabled for this file, so it can't be opened for editing."
 msgstr ""
-"이 파일에 대해 불러오기가 비활성화되었으며, 편집을 위해 열 수 없습니다."
+"이 파일에 대해 가져오기가 비활성화되었으며, 편집을 위해 열 수 없습니다."
 
 #: editor/filesystem_dock.cpp
 msgid "Cannot move/rename resources root."
@@ -4264,52 +4265,52 @@ msgstr "그룹 관리"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Import as Single Scene"
-msgstr "단일 씬으로 불러오기"
+msgstr "단일 씬으로 가져오기"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Import with Separate Animations"
-msgstr "별도의 애니메이션으로 불러오기"
+msgstr "별도의 애니메이션으로 가져오기"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Import with Separate Materials"
-msgstr "별도의 머티리얼로 불러오기"
+msgstr "별도의 머티리얼로 가져오기"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Import with Separate Objects"
-msgstr "별도의 오브젝트로 불러오기"
+msgstr "별도의 오브젝트로 가져오기"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Import with Separate Objects+Materials"
-msgstr "별도의 오브젝트와 머티리얼로 불러오기"
+msgstr "별도의 오브젝트와 머티리얼로 가져오기"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Import with Separate Objects+Animations"
-msgstr "별도의 오브젝트와 애니메이션으로 불러오기"
+msgstr "별도의 오브젝트와 애니메이션으로 가져오기"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Import with Separate Materials+Animations"
-msgstr "별도의 머티리얼과 애니메이션으로 불러오기"
+msgstr "별도의 머티리얼과 애니메이션으로 가져오기"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Import with Separate Objects+Materials+Animations"
-msgstr "별도의 오브젝트, 머티리얼과 애니메이션으로 불러오기"
+msgstr "별도의 오브젝트, 머티리얼과 애니메이션으로 가져오기"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Import as Multiple Scenes"
-msgstr "여러 개의 씬으로 불러오기"
+msgstr "여러 개의 씬으로 가져오기"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Import as Multiple Scenes+Materials"
-msgstr "여러 개의 씬과 머티리얼로 불러오기"
+msgstr "여러 개의 씬과 머티리얼로 가져오기"
 
 #: editor/import/resource_importer_scene.cpp
 #: editor/plugins/mesh_library_editor_plugin.cpp
 msgid "Import Scene"
-msgstr "씬 불러오기"
+msgstr "씬 가져오기"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Importing Scene..."
-msgstr "씬 불러오는 중..."
+msgstr "씬 가져오는 중..."
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Generating Lightmaps"
@@ -4357,7 +4358,7 @@ msgstr "디폴트로 재설정"
 
 #: editor/import_dock.cpp
 msgid "Keep File (No Import)"
-msgstr "파일 유지 (불러오기 없음)"
+msgstr "파일 유지 (가져오기 없음)"
 
 #: editor/import_dock.cpp
 msgid "%d Files"
@@ -4365,7 +4366,7 @@ msgstr "파일 %d개"
 
 #: editor/import_dock.cpp
 msgid "Set as Default for '%s'"
-msgstr "'%s'을(를) 디폴트으로 설정"
+msgstr "'%s'을(를) 디폴트로 설정"
 
 #: editor/import_dock.cpp
 msgid "Clear Default for '%s'"
@@ -4373,7 +4374,7 @@ msgstr "'%s'을(를) 디폴트에서 지우기"
 
 #: editor/import_dock.cpp
 msgid "Reimport"
-msgstr "다시 불러오기"
+msgstr "다시 가져오기"
 
 #: editor/import_dock.cpp
 msgid ""
@@ -4385,7 +4386,7 @@ msgstr ""
 
 #: editor/import_dock.cpp
 msgid "Import As:"
-msgstr "다음 형식으로 불러오기:"
+msgstr "다음 형식으로 가져오기:"
 
 #: editor/import_dock.cpp
 msgid "Preset"
@@ -4393,11 +4394,11 @@ msgstr "프리셋"
 
 #: editor/import_dock.cpp
 msgid "Save Scenes, Re-Import, and Restart"
-msgstr "씬 저장, 다시 불러오기 및 다시 시작"
+msgstr "씬 저장, 다시 가져오기 및 다시 시작"
 
 #: editor/import_dock.cpp
 msgid "Changing the type of an imported file requires editor restart."
-msgstr "불러온 파일의 타입을 바꾸려면 에디터를 다시 시작해야 합니다."
+msgstr "가져온 파일의 타입을 바꾸려면 에디터를 다시 시작해야 합니다."
 
 #: editor/import_dock.cpp
 msgid ""
@@ -5271,7 +5272,7 @@ msgstr "전환 노드"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Import Animations..."
-msgstr "애니메이션 불러오기..."
+msgstr "애니메이션 가져오기..."
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Edit Node Filters"
@@ -5355,7 +5356,7 @@ msgstr "실패함:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Bad download hash, assuming file has been tampered with."
-msgstr "잘못된 다운로드 해시. 파일이 변조된 것 같아요."
+msgstr "잘못된 다운로드 해시. 파일이 변조된 것 같습니다."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Expected:"
@@ -5463,7 +5464,7 @@ msgstr "애셋 검색 (템플릿, 프로젝트, 및 데모 제외)"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Import..."
-msgstr "불러오기..."
+msgstr "가져오기..."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Plugins..."
@@ -6600,11 +6601,11 @@ msgstr "선택한 항목 제거"
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
 msgid "Import from Scene (Ignore Transforms)"
-msgstr "씬에서 불러오기 (변형 무시)"
+msgstr "씬에서 가져오기 (변형 무시)"
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
 msgid "Import from Scene (Apply Transforms)"
-msgstr "씬에서 불러오기 (변형 적용)"
+msgstr "씬에서 가져오기 (변형 적용)"
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
 msgid "Update from Scene"
@@ -7240,11 +7241,11 @@ msgstr "저장 중 오류"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Error importing theme."
-msgstr "테마 불러오는 중 오류."
+msgstr "테마 가져오는 중 오류."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Error Importing"
-msgstr "불러오는 중 오류"
+msgstr "가져오는 중 오류"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "New Text File..."
@@ -7279,7 +7280,7 @@ msgstr ""
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Import Theme"
-msgstr "테마 불러오기"
+msgstr "테마 가져오기"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Error while saving theme"
@@ -7336,12 +7337,10 @@ msgid "Move Down"
 msgstr "아래로 이동"
 
 #: editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Next Script"
 msgstr "다음 스크립트"
 
 #: editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Previous Script"
 msgstr "이전 스크립트"
 
@@ -7384,7 +7383,7 @@ msgstr "테마"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Import Theme..."
-msgstr "테마 불러오기..."
+msgstr "테마 가져오기..."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Reload Theme"
@@ -7759,9 +7758,8 @@ msgid "Left Orthogonal"
 msgstr "좌측 직교"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Left Perspective"
-msgstr "원근"
+msgstr "좌측 원근"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Right Orthogonal"
@@ -8116,25 +8114,29 @@ msgid "Right View"
 msgstr "우측 뷰"
 
 #: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
 msgid "Orbit View Down"
-msgstr ""
+msgstr "선회 뷰 아래로"
 
 #: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
 msgid "Orbit View Left"
-msgstr ""
+msgstr "선회 뷰 왼쪽으로"
 
 #: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
 msgid "Orbit View Right"
-msgstr ""
+msgstr "선회 뷰 오른쪽으로"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 #, fuzzy
 msgid "Orbit View Up"
-msgstr "정면 뷰"
+msgstr "선회 뷰 위로"
 
 #: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
 msgid "Orbit View 180"
-msgstr ""
+msgstr "선회 뷰 180으로"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Switch Perspective/Orthogonal View"
@@ -8592,15 +8594,15 @@ msgstr "현재 선택 {num}개"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Nothing was selected for the import."
-msgstr "불러올 것이 선택되지 않았습니다."
+msgstr "가져올 것이 선택되지 않았습니다."
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Importing Theme Items"
-msgstr "테마 항목을 불러오는 중"
+msgstr "테마 항목을 가져오는 중"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Importing items {n}/{n}"
-msgstr "항목을 불러오는 중 {n}/{n}"
+msgstr "항목 {n}/{n}을 가져오는 중"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Updating the editor"
@@ -8719,7 +8721,7 @@ msgstr "모든 테마 항목을 선택 해제합니다."
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Import Selected"
-msgstr "선택된 항목 불러오기"
+msgstr "선택된 항목 가져오기"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid ""
@@ -8727,7 +8729,7 @@ msgid ""
 "closing this window.\n"
 "Close anyway?"
 msgstr ""
-"항목 불러오기 탭에 일부 항목이 선택되어 있습니다. 이 창을 닫으면 선택을 잃게 "
+"항목 가져오기 탭에 일부 항목이 선택되어 있습니다. 이 창을 닫으면 선택을 잃게 "
 "됩니다.\n"
 "무시하고 닫으시겠습니까?"
 
@@ -8737,7 +8739,7 @@ msgid ""
 "You can add a custom type or import a type with its items from another theme."
 msgstr ""
 "테마의 항목을 편집하려면 목록에서 테마 타입을 선택하세요.\n"
-"커스텀 타입을 추가하거나 다른 테마의 항목과 함께 타입을 불러올 수 있습니다."
+"커스텀 타입을 추가하거나 다른 테마의 항목과 함께 타입을 가져올 수 있습니다."
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Remove All Color Items"
@@ -8769,7 +8771,7 @@ msgid ""
 "Add more items to it manually or by importing from another theme."
 msgstr ""
 "이 테마 타입은 비어 있습니다.\n"
-"직접 또는 다른 테마에서 불러와서 테마에 더 많은 항목을 추가하세요."
+"직접 또는 다른 테마에서 가져와서 테마에 더 많은 항목을 추가하세요."
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Add Color Item"
@@ -8869,7 +8871,7 @@ msgstr "이전 이름:"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Import Items"
-msgstr "항목 불러오기"
+msgstr "항목 가져오기"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Default Theme"
@@ -8949,7 +8951,7 @@ msgstr "항목 관리..."
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Add, remove, organize and import Theme items."
-msgstr "테마 항목을 추가, 제거, 구성 및 불러옵니다."
+msgstr "테마 항목을 추가, 제거, 구성 및 가져옵니다."
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Add Preview"
@@ -9020,7 +9022,6 @@ msgid "Subitem 2"
 msgstr "하위 항목 2"
 
 #: editor/plugins/theme_editor_preview.cpp
-#, fuzzy
 msgid "Has"
 msgstr "갖춤"
 
@@ -9053,9 +9054,8 @@ msgid "Subtree"
 msgstr "하위 트리"
 
 #: editor/plugins/theme_editor_preview.cpp
-#, fuzzy
 msgid "Has,Many,Options"
-msgstr "많은,옵션,갖춤"
+msgstr "갖춤,많은,옵션"
 
 #: editor/plugins/theme_editor_preview.cpp
 msgid "Invalid path, the PackedScene resource was probably moved or removed."
@@ -10665,7 +10665,7 @@ msgstr "새 게임 프로젝트"
 
 #: editor/project_manager.cpp
 msgid "Imported Project"
-msgstr "불러온 프로젝트"
+msgstr "가져온 프로젝트"
 
 #: editor/project_manager.cpp
 msgid "Invalid project name."
@@ -10721,11 +10721,11 @@ msgstr "프로젝트 이름 바꾸기"
 
 #: editor/project_manager.cpp
 msgid "Import Existing Project"
-msgstr "기존 프로젝트 불러오기"
+msgstr "기존 프로젝트 가져오기"
 
 #: editor/project_manager.cpp
 msgid "Import & Edit"
-msgstr "불러오기 & 편집"
+msgstr "가져오기 & 편집"
 
 #: editor/project_manager.cpp
 msgid "Create New Project"
@@ -10880,8 +10880,8 @@ msgid ""
 "Can't run project: Assets need to be imported.\n"
 "Please edit the project to trigger the initial import."
 msgstr ""
-"프로젝트를 실행할 수 없음: 애셋을 불러와야 합니다.\n"
-"프로젝트를 편집해서 최초 불러오기가 실행되도록 하세요."
+"프로젝트를 실행할 수 없음: 애셋을 가져와야 합니다.\n"
+"프로젝트를 편집해서 최초 가져오기가 실행되도록 하세요."
 
 #: editor/project_manager.cpp
 msgid "Are you sure to run %d projects at once?"
@@ -10962,7 +10962,7 @@ msgstr "새 프로젝트"
 
 #: editor/project_manager.cpp
 msgid "Import Project"
-msgstr "프로젝트 불러오기"
+msgstr "프로젝트 가져오기"
 
 #: editor/project_manager.cpp
 msgid "Remove Project"
@@ -11019,12 +11019,12 @@ msgstr ""
 "상 포함시켜야 합니다."
 
 #: editor/project_settings_editor.cpp
-msgid "Key "
-msgstr "키 "
-
-#: editor/project_settings_editor.cpp
 msgid "Physical Key"
 msgstr "물리 키"
+
+#: editor/project_settings_editor.cpp
+msgid "Key "
+msgstr "키 "
 
 #: editor/project_settings_editor.cpp
 msgid "Joy Button"
@@ -11144,7 +11144,7 @@ msgstr "이벤트 추가"
 
 #: editor/project_settings_editor.cpp
 msgid "Button"
-msgstr "Button"
+msgstr "버튼"
 
 #: editor/project_settings_editor.cpp
 msgid "Left Button."
@@ -11348,7 +11348,7 @@ msgstr "플러그인(Plugin)"
 
 #: editor/project_settings_editor.cpp
 msgid "Import Defaults"
-msgstr "디폴트 불러오기"
+msgstr "디폴트 가져오기"
 
 #: editor/property_editor.cpp
 msgid "Preset..."
@@ -12247,7 +12247,7 @@ msgstr "형식"
 
 #: editor/script_editor_debugger.cpp
 msgid "Usage"
-msgstr "사용"
+msgstr "사용례"
 
 #: editor/script_editor_debugger.cpp
 msgid "Misc"

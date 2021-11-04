@@ -269,8 +269,6 @@ private:
 	Error _reparent_non_joint_skeleton_subtrees(
 			Ref<GLTFState> state, Ref<GLTFSkeleton> skeleton,
 			const Vector<GLTFNodeIndex> &non_joints);
-	Error _reparent_to_fake_joint(Ref<GLTFState> state, Ref<GLTFSkeleton> skeleton,
-			const GLTFNodeIndex node_index);
 	Error _determine_skeleton_roots(Ref<GLTFState> state,
 			const GLTFSkeletonIndex skel_i);
 	Error _create_skeletons(Ref<GLTFState> state);

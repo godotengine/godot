@@ -60,27 +60,27 @@ Basis EulerToBasis(RotOrder mode, const Vector3 &p_rotation) {
 	Basis ret;
 	switch (mode) {
 		case EulerXYZ:
-			ret.set_euler_xyz(p_rotation);
+			ret.set_euler(p_rotation, Basis::EULER_ORDER_XYZ);
 			break;
 
 		case EulerXZY:
-			ret.set_euler_xzy(p_rotation);
+			ret.set_euler(p_rotation, Basis::EULER_ORDER_XZY);
 			break;
 
 		case EulerYZX:
-			ret.set_euler_yzx(p_rotation);
+			ret.set_euler(p_rotation, Basis::EULER_ORDER_YZX);
 			break;
 
 		case EulerYXZ:
-			ret.set_euler_yxz(p_rotation);
+			ret.set_euler(p_rotation, Basis::EULER_ORDER_YXZ);
 			break;
 
 		case EulerZXY:
-			ret.set_euler_zxy(p_rotation);
+			ret.set_euler(p_rotation, Basis::EULER_ORDER_ZXY);
 			break;
 
 		case EulerZYX:
-			ret.set_euler_zyx(p_rotation);
+			ret.set_euler(p_rotation, Basis::EULER_ORDER_ZYX);
 			break;
 
 		default:
@@ -94,22 +94,22 @@ Basis EulerToBasis(RotOrder mode, const Vector3 &p_rotation) {
 Vector3 BasisToEuler(RotOrder mode, const Basis &p_rotation) {
 	switch (mode) {
 		case EulerXYZ:
-			return p_rotation.get_euler_xyz();
+			return p_rotation.get_euler(Basis::EULER_ORDER_XYZ);
 
 		case EulerXZY:
-			return p_rotation.get_euler_xzy();
+			return p_rotation.get_euler(Basis::EULER_ORDER_XZY);
 
 		case EulerYZX:
-			return p_rotation.get_euler_yzx();
+			return p_rotation.get_euler(Basis::EULER_ORDER_YZX);
 
 		case EulerYXZ:
-			return p_rotation.get_euler_yxz();
+			return p_rotation.get_euler(Basis::EULER_ORDER_YXZ);
 
 		case EulerZXY:
-			return p_rotation.get_euler_zxy();
+			return p_rotation.get_euler(Basis::EULER_ORDER_ZXY);
 
 		case EulerZYX:
-			return p_rotation.get_euler_zyx();
+			return p_rotation.get_euler(Basis::EULER_ORDER_ZYX);
 
 		default:
 			// If you land here, Please integrate all rotation orders.
@@ -170,9 +170,9 @@ void test_rotation(Vector3 deg_original_euler, RotOrder rot_order) {
 	CHECK_MESSAGE((res.get_axis(2) - Vector3(0.0, 0.0, 1.0)).length() <= 0.1, vformat("Fail due to Z %s\n", String(res.get_axis(2))).utf8().ptr());
 
 	// Double check `to_rotation` decomposing with XYZ rotation order.
-	const Vector3 euler_xyz_from_rotation = to_rotation.get_euler_xyz();
+	const Vector3 euler_xyz_from_rotation = to_rotation.get_euler(Basis::EULER_ORDER_XYZ);
 	Basis rotation_from_xyz_computed_euler;
-	rotation_from_xyz_computed_euler.set_euler_xyz(euler_xyz_from_rotation);
+	rotation_from_xyz_computed_euler.set_euler(euler_xyz_from_rotation, Basis::EULER_ORDER_XYZ);
 
 	res = to_rotation.inverse() * rotation_from_xyz_computed_euler;
 

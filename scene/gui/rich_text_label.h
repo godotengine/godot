@@ -278,12 +278,12 @@ private:
 
 		uint64_t offset_random(int index) {
 			return (_current_rng >> (index % 64)) |
-				   (_current_rng << (64 - (index % 64)));
+					(_current_rng << (64 - (index % 64)));
 		}
 
 		uint64_t offset_previous_random(int index) {
 			return (_previous_rng >> (index % 64)) |
-				   (_previous_rng << (64 - (index % 64)));
+					(_previous_rng << (64 - (index % 64)));
 		}
 	};
 
@@ -399,6 +399,7 @@ private:
 	};
 
 	Selection selection;
+	bool deselect_on_focus_loss_enabled = true;
 
 	int visible_characters = -1;
 	float percent_visible = 1.0;
@@ -551,9 +552,11 @@ public:
 	int get_selection_to() const;
 	String get_selected_text() const;
 	void selection_copy();
+	void set_deselect_on_focus_loss_enabled(const bool p_enabled);
+	bool is_deselect_on_focus_loss_enabled() const;
 
-	Error parse_bbcode(const String &p_bbcode);
-	Error append_text(const String &p_bbcode);
+	void parse_bbcode(const String &p_bbcode);
+	void append_text(const String &p_bbcode);
 
 	void set_use_bbcode(bool p_enable);
 	bool is_using_bbcode() const;

@@ -71,12 +71,6 @@
 				When there is no item at that point, -1 will be returned if [code]exact[/code] is [code]true[/code], and the closest item index will be returned otherwise.
 			</description>
 		</method>
-		<method name="get_item_count" qualifiers="const">
-			<return type="int" />
-			<description>
-				Returns the number of items currently in the list.
-			</description>
-		</method>
 		<method name="get_item_custom_bg_color" qualifiers="const">
 			<return type="Color" />
 			<argument index="0" name="idx" type="int" />
@@ -386,6 +380,9 @@
 		</member>
 		<member name="icon_scale" type="float" setter="set_icon_scale" getter="get_icon_scale" default="1.0">
 			The scale of icon applied after [member fixed_icon_size] and transposing takes effect.
+		</member>
+		<member name="items_count" type="int" setter="set_item_count" getter="get_item_count" default="0">
+			The number of items currently in the list.
 		</member>
 		<member name="max_columns" type="int" setter="set_max_columns" getter="get_max_columns" default="1">
 			Maximum columns the list will have.

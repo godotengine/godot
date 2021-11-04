@@ -117,9 +117,6 @@ class PopupMenu : public Popup {
 	bool hide_on_multistate_item_selection = false;
 	Vector2 moved;
 
-	Array _get_items() const;
-	void _set_items(const Array &p_items);
-
 	Map<Ref<Shortcut>, int> shortcut_refcount;
 
 	void _ref_shortcut(Ref<Shortcut> p_sc);
@@ -141,6 +138,9 @@ class PopupMenu : public Popup {
 
 protected:
 	void _notification(int p_what);
+	bool _set(const StringName &p_name, const Variant &p_value);
+	bool _get(const StringName &p_name, Variant &r_ret) const;
+	void _get_property_list(List<PropertyInfo> *p_list) const;
 	static void _bind_methods();
 
 public:
@@ -213,6 +213,8 @@ public:
 	int get_item_state(int p_idx) const;
 
 	int get_current_index() const;
+
+	void set_item_count(int p_count);
 	int get_item_count() const;
 
 	bool activate_item_by_event(const Ref<InputEvent> &p_event, bool p_for_global_only = false);

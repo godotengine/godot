@@ -74,7 +74,7 @@ private:
 	bool read_only;
 	bool checkable;
 	bool checked;
-	bool draw_red;
+	bool draw_warning;
 	bool keying;
 	bool deletable;
 
@@ -96,8 +96,6 @@ private:
 	bool draw_top_bg;
 
 	void _ensure_popup();
-	bool _is_property_different(const Variant &p_current, const Variant &p_orig);
-	bool _get_instantiated_node_original_property(const StringName &p_prop, Variant &value);
 	void _focusable_focused(int p_index);
 
 	bool selectable;
@@ -150,8 +148,8 @@ public:
 	void set_checked(bool p_checked);
 	bool is_checked() const;
 
-	void set_draw_red(bool p_draw_red);
-	bool is_draw_red() const;
+	void set_draw_warning(bool p_draw_warning);
+	bool is_draw_warning() const;
 
 	void set_keying(bool p_keying);
 	bool is_keying() const;
@@ -280,8 +278,6 @@ public:
 	VBoxContainer *get_vbox();
 	void unfold();
 	void fold();
-
-	Object *get_edited_object();
 
 	EditorInspectorSection();
 	~EditorInspectorSection();

@@ -13,28 +13,30 @@
 		<link title="Vector math">https://docs.godotengine.org/en/latest/tutorials/math/vector_math.html</link>
 		<link title="Advanced vector math">https://docs.godotengine.org/en/latest/tutorials/math/vectors_advanced.html</link>
 	</tutorials>
-	<methods>
-		<method name="AABB" qualifiers="constructor">
+	<constructors>
+		<constructor name="AABB">
 			<return type="AABB" />
 			<description>
 				Constructs a default-initialized [AABB] with default (zero) values of [member position] and [member size].
 			</description>
-		</method>
-		<method name="AABB" qualifiers="constructor">
+		</constructor>
+		<constructor name="AABB">
 			<return type="AABB" />
 			<argument index="0" name="from" type="AABB" />
 			<description>
 				Constructs an [AABB] as a copy of the given [AABB].
 			</description>
-		</method>
-		<method name="AABB" qualifiers="constructor">
+		</constructor>
+		<constructor name="AABB">
 			<return type="AABB" />
 			<argument index="0" name="position" type="Vector3" />
 			<argument index="1" name="size" type="Vector3" />
 			<description>
 				Constructs an [AABB] from a position and size.
 			</description>
-		</method>
+		</constructor>
+	</constructors>
+	<methods>
 		<method name="abs" qualifiers="const">
 			<return type="AABB" />
 			<description>
@@ -193,34 +195,6 @@
 				Returns a larger [AABB] that contains both this [AABB] and [code]with[/code].
 			</description>
 		</method>
-		<method name="operator !=" qualifiers="operator">
-			<return type="bool" />
-			<description>
-			</description>
-		</method>
-		<method name="operator !=" qualifiers="operator">
-			<return type="bool" />
-			<argument index="0" name="right" type="AABB" />
-			<description>
-			</description>
-		</method>
-		<method name="operator *" qualifiers="operator">
-			<return type="AABB" />
-			<argument index="0" name="right" type="Transform3D" />
-			<description>
-			</description>
-		</method>
-		<method name="operator ==" qualifiers="operator">
-			<return type="bool" />
-			<description>
-			</description>
-		</method>
-		<method name="operator ==" qualifiers="operator">
-			<return type="bool" />
-			<argument index="0" name="right" type="AABB" />
-			<description>
-			</description>
-		</method>
 	</methods>
 	<members>
 		<member name="end" type="Vector3" setter="" getter="" default="Vector3(0, 0, 0)">
@@ -234,4 +208,34 @@
 			If the size is negative, you can use [method abs] to fix it.
 		</member>
 	</members>
+	<operators>
+		<operator name="operator !=">
+			<return type="bool" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator !=">
+			<return type="bool" />
+			<argument index="0" name="right" type="AABB" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator *">
+			<return type="AABB" />
+			<argument index="0" name="right" type="Transform3D" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator ==">
+			<return type="bool" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator ==">
+			<return type="bool" />
+			<argument index="0" name="right" type="AABB" />
+			<description>
+			</description>
+		</operator>
+	</operators>
 </class>

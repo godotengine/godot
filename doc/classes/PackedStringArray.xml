@@ -9,27 +9,29 @@
 	<tutorials>
 		<link title="OS Test Demo">https://godotengine.org/asset-library/asset/677</link>
 	</tutorials>
-	<methods>
-		<method name="PackedStringArray" qualifiers="constructor">
+	<constructors>
+		<constructor name="PackedStringArray">
 			<return type="PackedStringArray" />
 			<description>
 				Constructs an empty [PackedStringArray].
 			</description>
-		</method>
-		<method name="PackedStringArray" qualifiers="constructor">
+		</constructor>
+		<constructor name="PackedStringArray">
 			<return type="PackedStringArray" />
 			<argument index="0" name="from" type="PackedStringArray" />
 			<description>
 				Constructs a [PackedStringArray] as a copy of the given [PackedStringArray].
 			</description>
-		</method>
-		<method name="PackedStringArray" qualifiers="constructor">
+		</constructor>
+		<constructor name="PackedStringArray">
 			<return type="PackedStringArray" />
 			<argument index="0" name="from" type="Array" />
 			<description>
 				Constructs a new [PackedStringArray]. Optionally, you can pass in a generic [Array] that will be converted.
 			</description>
-		</method>
+		</constructor>
+	</constructors>
+	<methods>
 		<method name="append">
 			<return type="bool" />
 			<argument index="0" name="value" type="String" />
@@ -85,40 +87,6 @@
 			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if the array is empty.
-			</description>
-		</method>
-		<method name="operator !=" qualifiers="operator">
-			<return type="bool" />
-			<description>
-			</description>
-		</method>
-		<method name="operator !=" qualifiers="operator">
-			<return type="bool" />
-			<argument index="0" name="right" type="PackedStringArray" />
-			<description>
-			</description>
-		</method>
-		<method name="operator +" qualifiers="operator">
-			<return type="PackedStringArray" />
-			<argument index="0" name="right" type="PackedStringArray" />
-			<description>
-			</description>
-		</method>
-		<method name="operator ==" qualifiers="operator">
-			<return type="bool" />
-			<description>
-			</description>
-		</method>
-		<method name="operator ==" qualifiers="operator">
-			<return type="bool" />
-			<argument index="0" name="right" type="PackedStringArray" />
-			<description>
-			</description>
-		</method>
-		<method name="operator []" qualifiers="operator">
-			<return type="String" />
-			<argument index="0" name="index" type="int" />
-			<description>
 			</description>
 		</method>
 		<method name="push_back">
@@ -181,4 +149,40 @@
 			</description>
 		</method>
 	</methods>
+	<operators>
+		<operator name="operator !=">
+			<return type="bool" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator !=">
+			<return type="bool" />
+			<argument index="0" name="right" type="PackedStringArray" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator +">
+			<return type="PackedStringArray" />
+			<argument index="0" name="right" type="PackedStringArray" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator ==">
+			<return type="bool" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator ==">
+			<return type="bool" />
+			<argument index="0" name="right" type="PackedStringArray" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator []">
+			<return type="String" />
+			<argument index="0" name="index" type="int" />
+			<description>
+			</description>
+		</operator>
+	</operators>
 </class>

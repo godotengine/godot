@@ -1366,6 +1366,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(String, naturalnocasecmp_to, sarray("to"), varray());
 	bind_method(String, length, sarray(), varray());
 	bind_method(String, substr, sarray("from", "len"), varray(-1));
+	bind_method(String, get_slice, sarray("delimiter", "slice"), varray());
 	bind_methodv(String, find, static_cast<int (String::*)(const String &, int) const>(&String::find), sarray("what", "from"), varray(0));
 	bind_method(String, count, sarray("what", "from", "to"), varray(0, 0));
 	bind_method(String, countn, sarray("what", "from", "to"), varray(0, 0));
@@ -1581,6 +1582,8 @@ static void _register_variant_builtin_methods() {
 	bind_method(Vector3, bounce, sarray("n"), varray());
 	bind_method(Vector3, reflect, sarray("n"), varray());
 	bind_method(Vector3, sign, sarray(), varray());
+	bind_method(Vector3, octahedron_encode, sarray(), varray());
+	bind_static_method(Vector3, octahedron_decode, sarray("uv"), varray());
 
 	/* Vector3i */
 
@@ -1617,6 +1620,8 @@ static void _register_variant_builtin_methods() {
 	bind_method(Quaternion, slerpni, sarray("to", "weight"), varray());
 	bind_method(Quaternion, cubic_slerp, sarray("b", "pre_a", "post_b", "weight"), varray());
 	bind_method(Quaternion, get_euler, sarray(), varray());
+	bind_method(Quaternion, get_axis, sarray(), varray());
+	bind_method(Quaternion, get_angle, sarray(), varray());
 
 	/* Color */
 
@@ -1727,7 +1732,7 @@ static void _register_variant_builtin_methods() {
 	bind_methodv(Basis, rotated, static_cast<Basis (Basis::*)(const Vector3 &, real_t) const>(&Basis::rotated), sarray("axis", "phi"), varray());
 	bind_method(Basis, scaled, sarray("scale"), varray());
 	bind_method(Basis, get_scale, sarray(), varray());
-	bind_method(Basis, get_euler, sarray(), varray());
+	bind_method(Basis, get_euler, sarray("order"), varray(Basis::EULER_ORDER_YXZ));
 	bind_method(Basis, tdotx, sarray("with"), varray());
 	bind_method(Basis, tdoty, sarray("with"), varray());
 	bind_method(Basis, tdotz, sarray("with"), varray());
@@ -1737,6 +1742,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(Basis, get_rotation_quaternion, sarray(), varray());
 	bind_static_method(Basis, looking_at, sarray("target", "up"), varray(Vector3(0, 1, 0)));
 	bind_static_method(Basis, from_scale, sarray("scale"), varray());
+	bind_static_method(Basis, from_euler, sarray("euler", "order"), varray(Basis::EULER_ORDER_YXZ));
 
 	/* AABB */
 
@@ -2104,6 +2110,13 @@ static void _register_variant_builtin_methods() {
 	_VariantCall::add_variant_constant(Variant::VECTOR2I, "RIGHT", Vector2i(1, 0));
 	_VariantCall::add_variant_constant(Variant::VECTOR2I, "UP", Vector2i(0, -1));
 	_VariantCall::add_variant_constant(Variant::VECTOR2I, "DOWN", Vector2i(0, 1));
+
+	_VariantCall::add_constant(Variant::BASIS, "EULER_ORDER_XYZ", Basis::EULER_ORDER_XYZ);
+	_VariantCall::add_constant(Variant::BASIS, "EULER_ORDER_XZY", Basis::EULER_ORDER_XZY);
+	_VariantCall::add_constant(Variant::BASIS, "EULER_ORDER_YXZ", Basis::EULER_ORDER_YXZ);
+	_VariantCall::add_constant(Variant::BASIS, "EULER_ORDER_YZX", Basis::EULER_ORDER_YZX);
+	_VariantCall::add_constant(Variant::BASIS, "EULER_ORDER_ZXY", Basis::EULER_ORDER_ZXY);
+	_VariantCall::add_constant(Variant::BASIS, "EULER_ORDER_ZYX", Basis::EULER_ORDER_ZYX);
 
 	_VariantCall::add_variant_constant(Variant::TRANSFORM2D, "IDENTITY", Transform2D());
 	_VariantCall::add_variant_constant(Variant::TRANSFORM2D, "FLIP_X", Transform2D(-1, 0, 0, 1, 0, 0));

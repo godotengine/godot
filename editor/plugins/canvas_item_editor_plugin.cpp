@@ -2983,18 +2983,16 @@ void CanvasItemEditor::_draw_ruler_tool() {
 
 			const Vector2 end_to_begin = (end - begin);
 
-			real_t arc_1_start_angle =
-					end_to_begin.x < 0 ?
-							  (end_to_begin.y < 0 ? 3.0 * Math_PI / 2.0 - vertical_angle_rad : Math_PI / 2.0) :
-							  (end_to_begin.y < 0 ? 3.0 * Math_PI / 2.0 : Math_PI / 2.0 - vertical_angle_rad);
+			real_t arc_1_start_angle = end_to_begin.x < 0
+					? (end_to_begin.y < 0 ? 3.0 * Math_PI / 2.0 - vertical_angle_rad : Math_PI / 2.0)
+					: (end_to_begin.y < 0 ? 3.0 * Math_PI / 2.0 : Math_PI / 2.0 - vertical_angle_rad);
 			real_t arc_1_end_angle = arc_1_start_angle + vertical_angle_rad;
 			// Constrain arc to triangle height & max size
 			real_t arc_1_radius = MIN(MIN(arc_radius_max_length_percent * ruler_length, ABS(end_to_begin.y)), arc_max_radius);
 
-			real_t arc_2_start_angle =
-					end_to_begin.x < 0 ?
-							  (end_to_begin.y < 0 ? 0.0 : -horizontal_angle_rad) :
-							  (end_to_begin.y < 0 ? Math_PI - horizontal_angle_rad : Math_PI);
+			real_t arc_2_start_angle = end_to_begin.x < 0
+					? (end_to_begin.y < 0 ? 0.0 : -horizontal_angle_rad)
+					: (end_to_begin.y < 0 ? Math_PI - horizontal_angle_rad : Math_PI);
 			real_t arc_2_end_angle = arc_2_start_angle + horizontal_angle_rad;
 			// Constrain arc to triangle width & max size
 			real_t arc_2_radius = MIN(MIN(arc_radius_max_length_percent * ruler_length, ABS(end_to_begin.x)), arc_max_radius);
@@ -3565,7 +3563,7 @@ void CanvasItemEditor::_draw_hover() {
 
 		Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
 		int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
-		Size2 node_name_size = font->get_string_size(node_name);
+		Size2 node_name_size = font->get_string_size(node_name, font_size);
 		Size2 item_size = Size2(node_icon->get_size().x + 4 + node_name_size.x, MAX(node_icon->get_size().y, node_name_size.y - 3));
 
 		Point2 pos = transform.xform(hovering_results[i].position) - Point2(0, item_size.y) + (Point2(node_icon->get_size().x, -node_icon->get_size().y) / 4);
@@ -4777,10 +4775,6 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 					if (key_pos) {
 						ctrl->set_position(Point2());
 					}
-					/*
-                                   if (key_scale)
-				   AnimationPlayerEditor::get_singleton()->get_track_editor()->insert_node_value_key(ctrl,"rect/size",ctrl->get_size());
-                                   */
 				}
 			}
 
@@ -5842,7 +5836,7 @@ void CanvasItemEditorViewport::_create_nodes(Node *parent, Node *child, String &
 	Ref<Texture2D> texture = Ref<Texture2D>(Object::cast_to<Texture2D>(ResourceCache::get(path)));
 
 	if (parent) {
-		editor_data->get_undo_redo().add_do_method(parent, "add_child", child);
+		editor_data->get_undo_redo().add_do_method(parent, "add_child", child, true);
 		editor_data->get_undo_redo().add_do_method(child, "set_owner", editor->get_edited_scene());
 		editor_data->get_undo_redo().add_do_reference(child);
 		editor_data->get_undo_redo().add_undo_method(parent, "remove_child", child);

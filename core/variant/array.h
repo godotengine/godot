@@ -63,8 +63,10 @@ public:
 
 	bool operator==(const Array &p_array) const;
 	bool operator!=(const Array &p_array) const;
+	bool recursive_equal(const Array &p_array, int recursion_count) const;
 
 	uint32_t hash() const;
+	uint32_t recursive_hash(int recursion_count) const;
 	void operator=(const Array &p_array);
 
 	void push_back(const Variant &p_value);
@@ -100,6 +102,7 @@ public:
 	Variant pop_at(int p_pos);
 
 	Array duplicate(bool p_deep = false) const;
+	Array recursive_duplicate(bool p_deep, int recursion_count) const;
 
 	Array slice(int p_begin, int p_end, int p_step = 1, bool p_deep = false) const;
 	Array filter(const Callable &p_callable) const;

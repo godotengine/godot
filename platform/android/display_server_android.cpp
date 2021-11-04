@@ -344,8 +344,8 @@ void DisplayServerAndroid::process_events() {
 Vector<String> DisplayServerAndroid::get_rendering_drivers_func() {
 	Vector<String> drivers;
 
-#ifdef OPENGL_ENABLED
-	drivers.push_back("opengl");
+#ifdef GLES3_ENABLED
+	drivers.push_back("opengl3");
 #endif
 #ifdef VULKAN_ENABLED
 	drivers.push_back("vulkan");
@@ -407,13 +407,13 @@ DisplayServerAndroid::DisplayServerAndroid(const String &p_rendering_driver, Dis
 
 	keep_screen_on = GLOBAL_GET("display/window/energy_saving/keep_screen_on");
 
-#if defined(OPENGL_ENABLED)
-	if (rendering_driver == "opengl") {
+#if defined(GLES3_ENABLED)
+	if (rendering_driver == "opengl3") {
 		bool gl_initialization_error = false;
 
-		if (RasterizerGLES2::is_viable() == OK) {
-			RasterizerGLES2::register_config();
-			RasterizerGLES2::make_current();
+		if (RasterizerGLES3::is_viable() == OK) {
+			RasterizerGLES3::register_config();
+			RasterizerGLES3::make_current();
 		} else {
 			gl_initialization_error = true;
 		}

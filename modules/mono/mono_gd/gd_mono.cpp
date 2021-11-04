@@ -151,7 +151,7 @@ void gd_mono_debug_init() {
 
 	if (da_args.length() == 0) {
 		da_args = String("--debugger-agent=transport=dt_socket,address=127.0.0.1:" + itos(da_port) +
-						 ",embedding=1,server=y,suspend=" + (da_suspend ? "y,timeout=" + itos(da_timeout) : "n"))
+				",embedding=1,server=y,suspend=" + (da_suspend ? "y,timeout=" + itos(da_timeout) : "n"))
 						  .utf8();
 	}
 #else
@@ -592,9 +592,9 @@ bool GDMono::load_assembly_from(const String &p_name, const String &p_path, GDMo
 ApiAssemblyInfo::Version ApiAssemblyInfo::Version::get_from_loaded_assembly(GDMonoAssembly *p_api_assembly, ApiAssemblyInfo::Type p_api_type) {
 	ApiAssemblyInfo::Version api_assembly_version;
 
-	const char *nativecalls_name = p_api_type == ApiAssemblyInfo::API_CORE ?
-											 BINDINGS_CLASS_NATIVECALLS :
-											 BINDINGS_CLASS_NATIVECALLS_EDITOR;
+	const char *nativecalls_name = p_api_type == ApiAssemblyInfo::API_CORE
+			? BINDINGS_CLASS_NATIVECALLS
+			: BINDINGS_CLASS_NATIVECALLS_EDITOR;
 
 	GDMonoClass *nativecalls_klass = p_api_assembly->get_class(BINDINGS_NAMESPACE, nativecalls_name);
 
@@ -702,11 +702,11 @@ static bool try_get_cached_api_hash_for(const String &p_api_assemblies_dir, bool
 	}
 
 	r_out_of_sync = GodotSharpBindings::get_bindings_version() != (uint32_t)cfg->get_value("core", "bindings_version") ||
-					GodotSharpBindings::get_cs_glue_version() != (uint32_t)cfg->get_value("core", "cs_glue_version") ||
-					GodotSharpBindings::get_bindings_version() != (uint32_t)cfg->get_value("editor", "bindings_version") ||
-					GodotSharpBindings::get_cs_glue_version() != (uint32_t)cfg->get_value("editor", "cs_glue_version") ||
-					GodotSharpBindings::get_core_api_hash() != (uint64_t)cfg->get_value("core", "api_hash") ||
-					GodotSharpBindings::get_editor_api_hash() != (uint64_t)cfg->get_value("editor", "api_hash");
+			GodotSharpBindings::get_cs_glue_version() != (uint32_t)cfg->get_value("core", "cs_glue_version") ||
+			GodotSharpBindings::get_bindings_version() != (uint32_t)cfg->get_value("editor", "bindings_version") ||
+			GodotSharpBindings::get_cs_glue_version() != (uint32_t)cfg->get_value("editor", "cs_glue_version") ||
+			GodotSharpBindings::get_core_api_hash() != (uint64_t)cfg->get_value("core", "api_hash") ||
+			GodotSharpBindings::get_editor_api_hash() != (uint64_t)cfg->get_value("editor", "api_hash");
 
 	return true;
 }
@@ -754,14 +754,10 @@ bool GDMono::_temp_domain_load_are_assemblies_out_of_sync(const String &p_config
 }
 
 String GDMono::update_api_assemblies_from_prebuilt(const String &p_config, const bool *p_core_api_out_of_sync, const bool *p_editor_api_out_of_sync) {
-#define FAIL_REASON(m_out_of_sync, m_prebuilt_exists)                            \
-	(                                                                            \
-			(m_out_of_sync ?                                                     \
-							  String("The assembly is invalidated ") :             \
-							  String("The assembly was not found ")) +             \
-			(m_prebuilt_exists ?                                                 \
-							  String("and the prebuilt assemblies are missing.") : \
-							  String("and we failed to copy the prebuilt assemblies.")))
+#define FAIL_REASON(m_out_of_sync, m_prebuilt_exists)                                                          \
+	(                                                                                                          \
+			(m_out_of_sync ? String("The assembly is invalidated ") : String("The assembly was not found ")) + \
+			(m_prebuilt_exists ? String("and the prebuilt assemblies are missing.") : String("and we failed to copy the prebuilt assemblies.")))
 
 	String dst_assemblies_dir = GodotSharpDirs::get_res_assemblies_base_dir().plus_file(p_config);
 
@@ -819,14 +815,14 @@ bool GDMono::_load_core_api_assembly(LoadedApiAssembly &r_loaded_api_assembly, c
 	// For the editor and the editor player we want to load it from a specific path to make sure we can keep it up to date
 
 	// If running the project manager, load it from the prebuilt API directory
-	String assembly_dir = !Main::is_project_manager() ?
-									GodotSharpDirs::get_res_assemblies_base_dir().plus_file(p_config) :
-									GodotSharpDirs::get_data_editor_prebuilt_api_dir().plus_file(p_config);
+	String assembly_dir = !Main::is_project_manager()
+			? GodotSharpDirs::get_res_assemblies_base_dir().plus_file(p_config)
+			: GodotSharpDirs::get_data_editor_prebuilt_api_dir().plus_file(p_config);
 
 	String assembly_path = assembly_dir.plus_file(CORE_API_ASSEMBLY_NAME ".dll");
 
 	bool success = FileAccess::exists(assembly_path) &&
-				   load_assembly_from(CORE_API_ASSEMBLY_NAME, assembly_path, &r_loaded_api_assembly.assembly, p_refonly);
+			load_assembly_from(CORE_API_ASSEMBLY_NAME, assembly_path, &r_loaded_api_assembly.assembly, p_refonly);
 #else
 	bool success = load_assembly(CORE_API_ASSEMBLY_NAME, &r_loaded_api_assembly.assembly, p_refonly);
 #endif
@@ -834,8 +830,8 @@ bool GDMono::_load_core_api_assembly(LoadedApiAssembly &r_loaded_api_assembly, c
 	if (success) {
 		ApiAssemblyInfo::Version api_assembly_ver = ApiAssemblyInfo::Version::get_from_loaded_assembly(r_loaded_api_assembly.assembly, ApiAssemblyInfo::API_CORE);
 		r_loaded_api_assembly.out_of_sync = GodotSharpBindings::get_core_api_hash() != api_assembly_ver.godot_api_hash ||
-											GodotSharpBindings::get_bindings_version() != api_assembly_ver.bindings_version ||
-											GodotSharpBindings::get_cs_glue_version() != api_assembly_ver.cs_glue_version;
+				GodotSharpBindings::get_bindings_version() != api_assembly_ver.bindings_version ||
+				GodotSharpBindings::get_cs_glue_version() != api_assembly_ver.cs_glue_version;
 	} else {
 		r_loaded_api_assembly.out_of_sync = false;
 	}
@@ -852,20 +848,20 @@ bool GDMono::_load_editor_api_assembly(LoadedApiAssembly &r_loaded_api_assembly,
 	// For the editor and the editor player we want to load it from a specific path to make sure we can keep it up to date
 
 	// If running the project manager, load it from the prebuilt API directory
-	String assembly_dir = !Main::is_project_manager() ?
-									GodotSharpDirs::get_res_assemblies_base_dir().plus_file(p_config) :
-									GodotSharpDirs::get_data_editor_prebuilt_api_dir().plus_file(p_config);
+	String assembly_dir = !Main::is_project_manager()
+			? GodotSharpDirs::get_res_assemblies_base_dir().plus_file(p_config)
+			: GodotSharpDirs::get_data_editor_prebuilt_api_dir().plus_file(p_config);
 
 	String assembly_path = assembly_dir.plus_file(EDITOR_API_ASSEMBLY_NAME ".dll");
 
 	bool success = FileAccess::exists(assembly_path) &&
-				   load_assembly_from(EDITOR_API_ASSEMBLY_NAME, assembly_path, &r_loaded_api_assembly.assembly, p_refonly);
+			load_assembly_from(EDITOR_API_ASSEMBLY_NAME, assembly_path, &r_loaded_api_assembly.assembly, p_refonly);
 
 	if (success) {
 		ApiAssemblyInfo::Version api_assembly_ver = ApiAssemblyInfo::Version::get_from_loaded_assembly(r_loaded_api_assembly.assembly, ApiAssemblyInfo::API_EDITOR);
 		r_loaded_api_assembly.out_of_sync = GodotSharpBindings::get_editor_api_hash() != api_assembly_ver.godot_api_hash ||
-											GodotSharpBindings::get_bindings_version() != api_assembly_ver.bindings_version ||
-											GodotSharpBindings::get_cs_glue_version() != api_assembly_ver.cs_glue_version;
+				GodotSharpBindings::get_bindings_version() != api_assembly_ver.bindings_version ||
+				GodotSharpBindings::get_cs_glue_version() != api_assembly_ver.cs_glue_version;
 	} else {
 		r_loaded_api_assembly.out_of_sync = false;
 	}
@@ -985,7 +981,7 @@ bool GDMono::_load_tools_assemblies() {
 	}
 
 	bool success = load_assembly(TOOLS_ASM_NAME, &tools_assembly) &&
-				   load_assembly(TOOLS_PROJECT_EDITOR_ASM_NAME, &tools_project_editor_assembly);
+			load_assembly(TOOLS_PROJECT_EDITOR_ASM_NAME, &tools_project_editor_assembly);
 
 	return success;
 }
@@ -1363,8 +1359,8 @@ int32_t GodotSharp::get_scripts_domain_id() {
 
 bool GodotSharp::is_scripts_domain_loaded() {
 	return GDMono::get_singleton() != nullptr &&
-		   GDMono::get_singleton()->is_runtime_initialized() &&
-		   GDMono::get_singleton()->get_scripts_domain() != nullptr;
+			GDMono::get_singleton()->is_runtime_initialized() &&
+			GDMono::get_singleton()->get_scripts_domain() != nullptr;
 }
 
 bool GodotSharp::_is_domain_finalizing_for_unload(int32_t p_domain_id) {

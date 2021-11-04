@@ -199,12 +199,6 @@
 				Returns the accelerator of the item at index [code]idx[/code]. Accelerators are special combinations of keys that activate the item, no matter which control is focused.
 			</description>
 		</method>
-		<method name="get_item_count" qualifiers="const">
-			<return type="int" />
-			<description>
-				Returns the number of items in the [PopupMenu].
-			</description>
-		</method>
 		<method name="get_item_icon" qualifiers="const">
 			<return type="Texture2D" />
 			<argument index="0" name="idx" type="int" />
@@ -510,6 +504,9 @@
 		</member>
 		<member name="hide_on_state_item_selection" type="bool" setter="set_hide_on_state_item_selection" getter="is_hide_on_state_item_selection" default="false">
 			If [code]true[/code], hides the [PopupMenu] when a state item is selected.
+		</member>
+		<member name="items_count" type="int" setter="set_item_count" getter="get_item_count" default="0">
+			The number of items currently in the list.
 		</member>
 		<member name="submenu_popup_delay" type="float" setter="set_submenu_popup_delay" getter="get_submenu_popup_delay" default="0.3">
 			Sets the delay time in seconds for the submenu item to popup on mouse hovering. If the popup menu is added as a child of another (acting as a submenu), it will inherit the delay time of the parent menu item.

@@ -119,8 +119,8 @@ protected:
 
 public:
 	enum VideoDriver {
-		VIDEO_DRIVER_GLES2,
 		VIDEO_DRIVER_VULKAN,
+		VIDEO_DRIVER_OPENGL_3,
 	};
 
 	enum Weekday {
@@ -165,6 +165,7 @@ public:
 	String get_executable_path() const;
 	int execute(const String &p_path, const Vector<String> &p_arguments, Array r_output = Array(), bool p_read_stderr = false);
 	int create_process(const String &p_path, const Vector<String> &p_arguments);
+	int create_instance(const Vector<String> &p_arguments);
 	Error kill(int p_pid);
 	Error shell_open(String p_uri);
 
@@ -205,7 +206,7 @@ public:
 
 	void delay_usec(int p_usec) const;
 	void delay_msec(int p_msec) const;
-	uint32_t get_ticks_msec() const;
+	uint64_t get_ticks_msec() const;
 	uint64_t get_ticks_usec() const;
 
 	bool can_use_threads() const;

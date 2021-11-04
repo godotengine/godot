@@ -313,22 +313,22 @@ void CSharpLanguage::get_reserved_words(List<String> *p_words) const {
 
 bool CSharpLanguage::is_control_flow_keyword(String p_keyword) const {
 	return p_keyword == "break" ||
-		   p_keyword == "case" ||
-		   p_keyword == "catch" ||
-		   p_keyword == "continue" ||
-		   p_keyword == "default" ||
-		   p_keyword == "do" ||
-		   p_keyword == "else" ||
-		   p_keyword == "finally" ||
-		   p_keyword == "for" ||
-		   p_keyword == "foreach" ||
-		   p_keyword == "goto" ||
-		   p_keyword == "if" ||
-		   p_keyword == "return" ||
-		   p_keyword == "switch" ||
-		   p_keyword == "throw" ||
-		   p_keyword == "try" ||
-		   p_keyword == "while";
+			p_keyword == "case" ||
+			p_keyword == "catch" ||
+			p_keyword == "continue" ||
+			p_keyword == "default" ||
+			p_keyword == "do" ||
+			p_keyword == "else" ||
+			p_keyword == "finally" ||
+			p_keyword == "for" ||
+			p_keyword == "foreach" ||
+			p_keyword == "goto" ||
+			p_keyword == "if" ||
+			p_keyword == "return" ||
+			p_keyword == "switch" ||
+			p_keyword == "throw" ||
+			p_keyword == "try" ||
+			p_keyword == "while";
 }
 
 void CSharpLanguage::get_comment_delimiters(List<String> *p_delimiters) const {
@@ -1660,7 +1660,7 @@ bool CSharpInstance::set(const StringName &p_name, const Variant &p_value) {
 		GDMonoProperty *property = top->get_property(p_name);
 
 		if (property) {
-			property->set_value(mono_object, GDMonoMarshal::variant_to_mono_object(p_value, property->get_type()));
+			property->set_value_from_variant(mono_object, p_value);
 			return true;
 		}
 
@@ -1813,8 +1813,9 @@ void CSharpInstance::get_event_signals_state_for_reloading(List<Pair<StringName,
 }
 
 void CSharpInstance::get_property_list(List<PropertyInfo> *p_properties) const {
-	for (const KeyValue<StringName, PropertyInfo> &E : script->member_info) {
-		p_properties->push_back(E.value);
+	List<PropertyInfo> props;
+	for (OrderedHashMap<StringName, PropertyInfo>::ConstElement E = script->member_info.front(); E; E = E.next()) {
+		props.push_front(E.value());
 	}
 
 	// Call _get_property_list
@@ -1837,15 +1838,18 @@ void CSharpInstance::get_property_list(List<PropertyInfo> *p_properties) const {
 			if (ret) {
 				Array array = Array(GDMonoMarshal::mono_object_to_variant(ret));
 				for (int i = 0, size = array.size(); i < size; i++) {
-					p_properties->push_back(PropertyInfo::from_dict(array.get(i)));
+					props.push_back(PropertyInfo::from_dict(array.get(i)));
 				}
-				return;
 			}
 
 			break;
 		}
 
 		top = top->get_parent_class();
+	}
+
+	for (const PropertyInfo &prop : props) {
+		p_properties->push_back(prop);
 	}
 }
 
@@ -1865,8 +1869,9 @@ Variant::Type CSharpInstance::get_property_type(const StringName &p_name, bool *
 }
 
 void CSharpInstance::get_method_list(List<MethodInfo> *p_list) const {
-	if (!script->is_valid() || !script->script_class)
+	if (!script->is_valid() || !script->script_class) {
 		return;
+	}
 
 	GD_MONO_SCOPE_THREAD_ATTACH;
 
@@ -2976,7 +2981,7 @@ bool CSharpScript::_set(const StringName &p_name, const Variant &p_value) {
 }
 
 void CSharpScript::_get_property_list(List<PropertyInfo> *p_properties) const {
-	p_properties->push_back(PropertyInfo(Variant::STRING, CSharpLanguage::singleton->string_names._script_source, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL));
+	p_properties->push_back(PropertyInfo(Variant::STRING, CSharpLanguage::singleton->string_names._script_source, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL));
 }
 
 void CSharpScript::_bind_methods() {
@@ -3265,8 +3270,7 @@ ScriptInstance *CSharpScript::instance_create(Object *p_this) {
 						"Script inherits from native type '" + String(native_name) +
 								"', so it can't be instantiated in object of type: '" + p_this->get_class() + "'");
 			}
-			ERR_FAIL_V_MSG(nullptr, "Script inherits from native type '" + String(native_name) +
-											"', so it can't be instantiated in object of type: '" + p_this->get_class() + "'.");
+			ERR_FAIL_V_MSG(nullptr, "Script inherits from native type '" + String(native_name) + "', so it can't be instantiated in object of type: '" + p_this->get_class() + "'.");
 		}
 	}
 
@@ -3499,9 +3503,15 @@ Ref<Script> CSharpScript::get_base_script() const {
 	return Ref<Script>();
 }
 
-void CSharpScript::get_script_property_list(List<PropertyInfo> *p_list) const {
-	for (const KeyValue<StringName, PropertyInfo> &E : member_info) {
-		p_list->push_back(E.value);
+void CSharpScript::get_script_property_list(List<PropertyInfo> *r_list) const {
+	List<PropertyInfo> props;
+
+	for (OrderedHashMap<StringName, PropertyInfo>::ConstElement E = member_info.front(); E; E = E.next()) {
+		props.push_front(E.value());
+	}
+
+	for (const PropertyInfo &prop : props) {
+		r_list->push_back(prop);
 	}
 }
 
@@ -3529,10 +3539,10 @@ Error CSharpScript::load_source_code(const String &p_path) {
 	Error ferr = read_all_file_utf8(p_path, source);
 
 	ERR_FAIL_COND_V_MSG(ferr != OK, ferr,
-			ferr == ERR_INVALID_DATA ?
-					  "Script '" + p_path + "' contains invalid unicode (UTF-8), so it was not loaded."
-										  " Please ensure that scripts are saved in valid UTF-8 unicode." :
-					  "Failed to read file: '" + p_path + "'.");
+			ferr == ERR_INVALID_DATA
+					? "Script '" + p_path + "' contains invalid unicode (UTF-8), so it was not loaded."
+											" Please ensure that scripts are saved in valid UTF-8 unicode."
+					: "Failed to read file: '" + p_path + "'.");
 
 #ifdef TOOLS_ENABLED
 	source_changed_cache = true;

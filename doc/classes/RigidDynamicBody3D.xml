@@ -91,9 +91,12 @@
 		</method>
 	</methods>
 	<members>
-		<member name="angular_damp" type="float" setter="set_angular_damp" getter="get_angular_damp" default="-1.0">
-			Damps RigidDynamicBody3D's rotational forces.
+		<member name="angular_damp" type="float" setter="set_angular_damp" getter="get_angular_damp" default="0.0">
+			Damps the body's rotation. By default, the body will use the [b]Default Angular Damp[/b] in [b]Project &gt; Project Settings &gt; Physics &gt; 3d[/b] or any value override set by an [Area3D] the body is in. Depending on [member angular_damp_mode], you can set [member angular_damp] to be added to or to replace the body's damping value.
 			See [member ProjectSettings.physics/3d/default_angular_damp] for more details about damping.
+		</member>
+		<member name="angular_damp_mode" type="int" setter="set_angular_damp_mode" getter="get_angular_damp_mode" enum="RigidDynamicBody3D.DampMode" default="0">
+			Defines how [member angular_damp] is applied. See [enum DampMode] for possible values.
 		</member>
 		<member name="angular_velocity" type="Vector3" setter="set_angular_velocity" getter="get_angular_velocity" default="Vector3(0, 0, 0)">
 			RigidDynamicBody3D's rotational velocity.
@@ -138,9 +141,12 @@
 			The body's moment of inertia. This is like mass, but for rotation: it determines how much torque it takes to rotate the body on each axis. The moment of inertia is usually computed automatically from the mass and the shapes, but this property allows you to set a custom value.
 			If set to [code]Vector3.ZERO[/code], inertia is automatically computed (default value).
 		</member>
-		<member name="linear_damp" type="float" setter="set_linear_damp" getter="get_linear_damp" default="-1.0">
-			The body's linear damp. Cannot be less than -1.0. If this value is different from -1.0, any linear damp derived from the world or areas will be overridden.
+		<member name="linear_damp" type="float" setter="set_linear_damp" getter="get_linear_damp" default="0.0">
+			Damps the body's movement. By default, the body will use the [b]Default Linear Damp[/b] in [b]Project &gt; Project Settings &gt; Physics &gt; 3d[/b] or any value override set by an [Area3D] the body is in. Depending on [member linear_damp_mode], you can set [member linear_damp] to be added to or to replace the body's damping value.
 			See [member ProjectSettings.physics/3d/default_linear_damp] for more details about damping.
+		</member>
+		<member name="linear_damp_mode" type="int" setter="set_linear_damp_mode" getter="get_linear_damp_mode" enum="RigidDynamicBody3D.DampMode" default="0">
+			Defines how [member linear_damp] is applied. See [enum DampMode] for possible values.
 		</member>
 		<member name="linear_velocity" type="Vector3" setter="set_linear_velocity" getter="get_linear_velocity" default="Vector3(0, 0, 0)">
 			The body's linear velocity. Can be used sporadically, but [b]don't set this every frame[/b], because physics may run in another thread and runs at a different granularity. Use [method _integrate_forces] as your process loop for precise control of the body state.
@@ -221,6 +227,12 @@
 		</constant>
 		<constant name="CENTER_OF_MASS_MODE_CUSTOM" value="1" enum="CenterOfMassMode">
 			In this mode, the body's center of mass is set through [member center_of_mass]. Defaults to the body's origin position.
+		</constant>
+		<constant name="DAMP_MODE_COMBINE" value="0" enum="DampMode">
+			In this mode, the body's damping value is added to any value set in areas or the default value.
+		</constant>
+		<constant name="DAMP_MODE_REPLACE" value="1" enum="DampMode">
+			In this mode, the body's damping value replaces any value set in areas or the default value.
 		</constant>
 	</constants>
 </class>

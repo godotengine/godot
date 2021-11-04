@@ -11177,12 +11177,12 @@ msgstr ""
 "` karakteri içermesi gereklidir."
 
 #: editor/project_settings_editor.cpp
-msgid "Key "
-msgstr "Anahtar "
-
-#: editor/project_settings_editor.cpp
 msgid "Physical Key"
 msgstr "Fiziksel Anahtar"
+
+#: editor/project_settings_editor.cpp
+msgid "Key "
+msgstr "Anahtar "
 
 #: editor/project_settings_editor.cpp
 msgid "Joy Button"

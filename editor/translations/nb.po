@@ -18,13 +18,15 @@
 # Patrick Sletvold <patricksletvold@hotmail.com>, 2021.
 # Kristoffer <kskau93@gmail.com>, 2021.
 # Lili Zoey <sayaks1@gmail.com>, 2021.
+# slasken06 <ask.skivdal@gmail.com>, 2021.
+# Daniel Skogly <daniel@klungo.no>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-08-12 21:32+0000\n"
-"Last-Translator: Petter Reinholdtsen <pere-weblate@hungry.com>\n"
+"PO-Revision-Date: 2021-11-03 13:15+0000\n"
+"Last-Translator: Daniel Skogly <daniel@klungo.no>\n"
 "Language-Team: Norwegian Bokmål <https://hosted.weblate.org/projects/godot-"
 "engine/godot/nb_NO/>\n"
 "Language: nb\n"
@@ -32,7 +34,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.8-dev\n"
+"X-Generator: Weblate 4.9-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -11532,11 +11534,11 @@ msgid ""
 msgstr ""
 
 #: editor/project_settings_editor.cpp
-msgid "Key "
+msgid "Physical Key"
 msgstr ""
 
 #: editor/project_settings_editor.cpp
-msgid "Physical Key"
+msgid "Key "
 msgstr ""
 
 #: editor/project_settings_editor.cpp
