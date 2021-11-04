@@ -47,7 +47,7 @@
 /* Defined externally, i.e. in config.h; must have typedef'ed hb_mutex_impl_t as well. */
 
 
-#elif !defined(HB_NO_MT) && (defined(HAVE_PTHREAD) || defined(__APPLE__))
+#elif !defined(HB_NO_MT) && !defined(HB_MUTEX_IMPL_STD_MUTEX) && (defined(HAVE_PTHREAD) || defined(__APPLE__))
 
 #include <pthread.h>
 typedef pthread_mutex_t hb_mutex_impl_t;
@@ -57,7 +57,7 @@ typedef pthread_mutex_t hb_mutex_impl_t;
 #define hb_mutex_impl_finish(M)	pthread_mutex_destroy (M)
 
 
-#elif !defined(HB_NO_MT) && defined(_WIN32)
+#elif !defined(HB_NO_MT) && !defined(HB_MUTEX_IMPL_STD_MUTEX) && defined(_WIN32)
 
 typedef CRITICAL_SECTION hb_mutex_impl_t;
 #if !WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
@@ -70,7 +70,17 @@ typedef CRITICAL_SECTION hb_mutex_impl_t;
 #define hb_mutex_impl_finish(M)	DeleteCriticalSection (M)
 
 
-#elif defined(HB_NO_MT)
+#elif !defined(HB_NO_MT)
+
+#include <mutex>
+typedef std::mutex              hb_mutex_impl_t;
+#define hb_mutex_impl_init(M)   HB_STMT_START { new (M) hb_mutex_impl_t; } HB_STMT_END
+#define hb_mutex_impl_lock(M)   (M)->lock ()
+#define hb_mutex_impl_unlock(M) (M)->unlock ()
+#define hb_mutex_impl_finish(M) HB_STMT_START { (M)->~hb_mutex_impl_t(); } HB_STMT_END
+
+
+#else /* defined(HB_NO_MT) */
 
 typedef int hb_mutex_impl_t;
 #define hb_mutex_impl_init(M)	HB_STMT_START {} HB_STMT_END
@@ -79,22 +89,21 @@ typedef int hb_mutex_impl_t;
 #define hb_mutex_impl_finish(M)	HB_STMT_START {} HB_STMT_END
 
 
-#else
-
-#error "Could not find any system to define mutex macros."
-#error "Check hb-mutex.hh for possible resolutions."
-
 #endif
 
 
 struct hb_mutex_t
 {
-  hb_mutex_impl_t m;
+  /* Create space for, but do not initialize m. */
+  alignas(hb_mutex_impl_t) char m[sizeof (hb_mutex_impl_t)];
 
-  void init   () { hb_mutex_impl_init   (&m); }
-  void lock   () { hb_mutex_impl_lock   (&m); }
-  void unlock () { hb_mutex_impl_unlock (&m); }
-  void fini ()   { hb_mutex_impl_finish (&m); }
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wcast-align"
+  void init   () { hb_mutex_impl_init   ((hb_mutex_impl_t *) m); }
+  void lock   () { hb_mutex_impl_lock   ((hb_mutex_impl_t *) m); }
+  void unlock () { hb_mutex_impl_unlock ((hb_mutex_impl_t *) m); }
+  void fini   () { hb_mutex_impl_finish ((hb_mutex_impl_t *) m); }
+#pragma GCC diagnostic pop
 };
 
 struct hb_lock_t

@@ -302,7 +302,7 @@ struct hb_auto_trace_t
   {
     if (unlikely (returned)) {
       fprintf (stderr, "OUCH, double calls to return_trace().  This is a bug, please report.\n");
-      return hb_forward<T> (v);
+      return std::forward<T> (v);
     }
 
     _hb_debug_msg<max_level> (what, obj, func, true, plevel ? *plevel : 1, -1,
@@ -311,7 +311,7 @@ struct hb_auto_trace_t
     if (plevel) --*plevel;
     plevel = nullptr;
     returned = true;
-    return hb_forward<T> (v);
+    return std::forward<T> (v);
   }
 
   private:
@@ -333,7 +333,7 @@ struct hb_auto_trace_t<0, ret_t>
   template <typename T>
   T ret (T&& v,
 	 const char *func HB_UNUSED = nullptr,
-	 unsigned int line HB_UNUSED = 0) { return hb_forward<T> (v); }
+	 unsigned int line HB_UNUSED = 0) { return std::forward<T> (v); }
 };
 
 /* For disabled tracing; optimize out everything.
@@ -343,7 +343,7 @@ struct hb_no_trace_t {
   template <typename T>
   T ret (T&& v,
 	 const char *func HB_UNUSED = nullptr,
-	 unsigned int line HB_UNUSED = 0) { return hb_forward<T> (v); }
+	 unsigned int line HB_UNUSED = 0) { return std::forward<T> (v); }
 };
 
 #define return_trace(RET) return trace.ret (RET, HB_FUNC, __LINE__)

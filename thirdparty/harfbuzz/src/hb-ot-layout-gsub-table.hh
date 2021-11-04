@@ -225,7 +225,7 @@ struct SingleSubstFormat2
     + hb_zip (this+coverage, substitute)
     | hb_filter (glyphset, hb_first)
     | hb_filter (glyphset, hb_second)
-    | hb_map_retains_sorting ([&] (hb_pair_t<hb_codepoint_t, const HBGlyphID &> p) -> hb_codepoint_pair_t
+    | hb_map_retains_sorting ([&] (hb_pair_t<hb_codepoint_t, const HBGlyphID16 &> p) -> hb_codepoint_pair_t
 			      { return hb_pair (glyph_map[p.first], glyph_map[p.second]); })
     ;
 
@@ -245,7 +245,7 @@ struct SingleSubstFormat2
   Offset16To<Coverage>
 		coverage;		/* Offset to Coverage table--from
 					 * beginning of Substitution table */
-  Array16Of<HBGlyphID>
+  Array16Of<HBGlyphID16>
 		substitute;		/* Array of substitute
 					 * GlyphIDs--ordered by Coverage Index */
   public:
@@ -290,8 +290,8 @@ struct SingleSubst
     TRACE_DISPATCH (this, u.format);
     if (unlikely (!c->may_dispatch (this, &u.format))) return_trace (c->no_dispatch_return_value ());
     switch (u.format) {
-    case 1: return_trace (c->dispatch (u.format1, hb_forward<Ts> (ds)...));
-    case 2: return_trace (c->dispatch (u.format2, hb_forward<Ts> (ds)...));
+    case 1: return_trace (c->dispatch (u.format1, std::forward<Ts> (ds)...));
+    case 2: return_trace (c->dispatch (u.format2, std::forward<Ts> (ds)...));
     default:return_trace (c->default_return_value ());
     }
   }
@@ -391,7 +391,7 @@ struct Sequence
   }
 
   protected:
-  Array16Of<HBGlyphID>
+  Array16Of<HBGlyphID16>
 		substitute;		/* String of GlyphIDs to substitute */
   public:
   DEFINE_SIZE_ARRAY (2, substitute);
@@ -443,9 +443,9 @@ struct MultipleSubstFormat1
   }
 
   bool serialize (hb_serialize_context_t *c,
-		  hb_sorted_array_t<const HBGlyphID> glyphs,
+		  hb_sorted_array_t<const HBGlyphID16> glyphs,
 		  hb_array_t<const unsigned int> substitute_len_list,
-		  hb_array_t<const HBGlyphID> substitute_glyphs_list)
+		  hb_array_t<const HBGlyphID16> substitute_glyphs_list)
   {
     TRACE_SERIALIZE (this);
     if (unlikely (!c->extend_min (this))) return_trace (false);
@@ -504,9 +504,9 @@ struct MultipleSubstFormat1
 struct MultipleSubst
 {
   bool serialize (hb_serialize_context_t *c,
-		  hb_sorted_array_t<const HBGlyphID> glyphs,
+		  hb_sorted_array_t<const HBGlyphID16> glyphs,
 		  hb_array_t<const unsigned int> substitute_len_list,
-		  hb_array_t<const HBGlyphID> substitute_glyphs_list)
+		  hb_array_t<const HBGlyphID16> substitute_glyphs_list)
   {
     TRACE_SERIALIZE (this);
     if (unlikely (!c->extend_min (u.format))) return_trace (false);
@@ -524,7 +524,7 @@ struct MultipleSubst
     TRACE_DISPATCH (this, u.format);
     if (unlikely (!c->may_dispatch (this, &u.format))) return_trace (c->no_dispatch_return_value ());
     switch (u.format) {
-    case 1: return_trace (c->dispatch (u.format1, hb_forward<Ts> (ds)...));
+    case 1: return_trace (c->dispatch (u.format1, std::forward<Ts> (ds)...));
     default:return_trace (c->default_return_value ());
     }
   }
@@ -624,7 +624,7 @@ struct AlternateSet
   }
 
   protected:
-  Array16Of<HBGlyphID>
+  Array16Of<HBGlyphID16>
 		alternates;		/* Array of alternate GlyphIDs--in
 					 * arbitrary order */
   public:
@@ -686,9 +686,9 @@ struct AlternateSubstFormat1
   }
 
   bool serialize (hb_serialize_context_t *c,
-		  hb_sorted_array_t<const HBGlyphID> glyphs,
+		  hb_sorted_array_t<const HBGlyphID16> glyphs,
 		  hb_array_t<const unsigned int> alternate_len_list,
-		  hb_array_t<const HBGlyphID> alternate_glyphs_list)
+		  hb_array_t<const HBGlyphID16> alternate_glyphs_list)
   {
     TRACE_SERIALIZE (this);
     if (unlikely (!c->extend_min (this))) return_trace (false);
@@ -747,9 +747,9 @@ struct AlternateSubstFormat1
 struct AlternateSubst
 {
   bool serialize (hb_serialize_context_t *c,
-		  hb_sorted_array_t<const HBGlyphID> glyphs,
+		  hb_sorted_array_t<const HBGlyphID16> glyphs,
 		  hb_array_t<const unsigned int> alternate_len_list,
-		  hb_array_t<const HBGlyphID> alternate_glyphs_list)
+		  hb_array_t<const HBGlyphID16> alternate_glyphs_list)
   {
     TRACE_SERIALIZE (this);
     if (unlikely (!c->extend_min (u.format))) return_trace (false);
@@ -767,7 +767,7 @@ struct AlternateSubst
     TRACE_DISPATCH (this, u.format);
     if (unlikely (!c->may_dispatch (this, &u.format))) return_trace (c->no_dispatch_return_value ());
     switch (u.format) {
-    case 1: return_trace (c->dispatch (u.format1, hb_forward<Ts> (ds)...));
+    case 1: return_trace (c->dispatch (u.format1, std::forward<Ts> (ds)...));
     default:return_trace (c->default_return_value ());
     }
   }
@@ -861,13 +861,15 @@ struct Ligature
     return_trace (true);
   }
 
-  bool subset (hb_subset_context_t *c) const
+  bool subset (hb_subset_context_t *c, unsigned coverage_idx) const
   {
     TRACE_SUBSET (this);
     const hb_set_t &glyphset = *c->plan->glyphset_gsub ();
     const hb_map_t &glyph_map = *c->plan->glyph_map;
 
     if (!intersects (&glyphset) || !glyphset.has (ligGlyph)) return_trace (false);
+    // Ensure Coverage table is always packed after this.
+    c->serializer->add_virtual_link (coverage_idx);
 
     auto it =
       + hb_iter (component)
@@ -888,8 +890,8 @@ struct Ligature
   }
 
   protected:
-  HBGlyphID	ligGlyph;		/* GlyphID of ligature to substitute */
-  HeadlessArrayOf<HBGlyphID>
+  HBGlyphID16	ligGlyph;		/* GlyphID of ligature to substitute */
+  HeadlessArrayOf<HBGlyphID16>
 		component;		/* Array of component GlyphIDs--start
 					 * with the second  component--ordered
 					 * in writing direction */
@@ -949,9 +951,9 @@ struct LigatureSet
   }
 
   bool serialize (hb_serialize_context_t *c,
-		  hb_array_t<const HBGlyphID> ligatures,
+		  hb_array_t<const HBGlyphID16> ligatures,
 		  hb_array_t<const unsigned int> component_count_list,
-		  hb_array_t<const HBGlyphID> &component_list /* Starting from second for each ligature */)
+		  hb_array_t<const HBGlyphID16> &component_list /* Starting from second for each ligature */)
   {
     TRACE_SERIALIZE (this);
     if (unlikely (!c->extend_min (this))) return_trace (false);
@@ -968,16 +970,21 @@ struct LigatureSet
     return_trace (true);
   }
 
-  bool subset (hb_subset_context_t *c) const
+  bool subset (hb_subset_context_t *c, unsigned coverage_idx) const
   {
     TRACE_SUBSET (this);
     auto *out = c->serializer->start_embed (*this);
     if (unlikely (!c->serializer->extend_min (out))) return_trace (false);
 
     + hb_iter (ligature)
-    | hb_filter (subset_offset_array (c, out->ligature, this))
+    | hb_filter (subset_offset_array (c, out->ligature, this, coverage_idx))
     | hb_drain
     ;
+
+    if (bool (out->ligature))
+      // Ensure Coverage table is always packed after this.
+      c->serializer->add_virtual_link (coverage_idx);
+
     return_trace (bool (out->ligature));
   }
 
@@ -1059,11 +1066,11 @@ struct LigatureSubstFormat1
   }
 
   bool serialize (hb_serialize_context_t *c,
-		  hb_sorted_array_t<const HBGlyphID> first_glyphs,
+		  hb_sorted_array_t<const HBGlyphID16> first_glyphs,
 		  hb_array_t<const unsigned int> ligature_per_first_glyph_count_list,
-		  hb_array_t<const HBGlyphID> ligatures_list,
+		  hb_array_t<const HBGlyphID16> ligatures_list,
 		  hb_array_t<const unsigned int> component_count_list,
-		  hb_array_t<const HBGlyphID> component_list /* Starting from second for each ligature */)
+		  hb_array_t<const HBGlyphID16> component_list /* Starting from second for each ligature */)
   {
     TRACE_SERIALIZE (this);
     if (unlikely (!c->extend_min (this))) return_trace (false);
@@ -1092,15 +1099,38 @@ struct LigatureSubstFormat1
     if (unlikely (!c->serializer->extend_min (out))) return_trace (false);
     out->format = format;
 
-    hb_sorted_vector_t<hb_codepoint_t> new_coverage;
-    + hb_zip (this+coverage, ligatureSet)
+    // Due to a bug in some older versions of windows 7 the Coverage table must be
+    // packed after the LigatureSet and Ligature tables, so serialize Coverage first
+    // which places it last in the packed order.
+    hb_set_t new_coverage;
+    + hb_zip (this+coverage, hb_iter (ligatureSet) | hb_map (hb_add (this)))
     | hb_filter (glyphset, hb_first)
-    | hb_filter (subset_offset_array (c, out->ligatureSet, this), hb_second)
+    | hb_filter ([&] (const LigatureSet& _) {
+      return _.intersects (&glyphset);
+    }, hb_second)
     | hb_map (hb_first)
-    | hb_map (glyph_map)
-    | hb_sink (new_coverage)
+    | hb_sink (new_coverage);
+
+    if (!c->serializer->push<Coverage> ()
+        ->serialize (c->serializer,
+                     + new_coverage.iter () | hb_map_retains_sorting (glyph_map)))
+    {
+      c->serializer->pop_discard ();
+      return_trace (false);
+    }
+
+    unsigned coverage_idx = c->serializer->pop_pack ();
+     c->serializer->add_link (out->coverage, coverage_idx);
+
+    + hb_zip (this+coverage, ligatureSet)
+    | hb_filter (new_coverage, hb_first)
+    | hb_map (hb_second)
+    // to ensure that the repacker always orders the coverage table after the LigatureSet
+    // and LigatureSubtable's they will be linked to the Coverage table via a virtual link
+    // the coverage table object idx is passed down to facilitate this.
+    | hb_apply (subset_offset_array (c, out->ligatureSet, this, coverage_idx))
     ;
-    out->coverage.serialize_serialize (c->serializer, new_coverage.iter ());
+
     return_trace (bool (new_coverage));
   }
 
@@ -1125,11 +1155,11 @@ struct LigatureSubstFormat1
 struct LigatureSubst
 {
   bool serialize (hb_serialize_context_t *c,
-		  hb_sorted_array_t<const HBGlyphID> first_glyphs,
+		  hb_sorted_array_t<const HBGlyphID16> first_glyphs,
 		  hb_array_t<const unsigned int> ligature_per_first_glyph_count_list,
-		  hb_array_t<const HBGlyphID> ligatures_list,
+		  hb_array_t<const HBGlyphID16> ligatures_list,
 		  hb_array_t<const unsigned int> component_count_list,
-		  hb_array_t<const HBGlyphID> component_list /* Starting from second for each ligature */)
+		  hb_array_t<const HBGlyphID16> component_list /* Starting from second for each ligature */)
   {
     TRACE_SERIALIZE (this);
     if (unlikely (!c->extend_min (u.format))) return_trace (false);
@@ -1152,7 +1182,7 @@ struct LigatureSubst
     TRACE_DISPATCH (this, u.format);
     if (unlikely (!c->may_dispatch (this, &u.format))) return_trace (c->no_dispatch_return_value ());
     switch (u.format) {
-    case 1: return_trace (c->dispatch (u.format1, hb_forward<Ts> (ds)...));
+    case 1: return_trace (c->dispatch (u.format1, std::forward<Ts> (ds)...));
     default:return_trace (c->default_return_value ());
     }
   }
@@ -1208,7 +1238,7 @@ struct ReverseChainSingleSubstFormat1
     if (!intersects (c->glyphs)) return;
 
     const Array16OfOffset16To<Coverage> &lookahead = StructAfter<Array16OfOffset16To<Coverage>> (backtrack);
-    const Array16Of<HBGlyphID> &substitute = StructAfter<Array16Of<HBGlyphID>> (lookahead);
+    const Array16Of<HBGlyphID16> &substitute = StructAfter<Array16Of<HBGlyphID16>> (lookahead);
 
     + hb_zip (this+coverage, substitute)
     | hb_filter (c->parent_active_glyphs (), hb_first)
@@ -1234,7 +1264,7 @@ struct ReverseChainSingleSubstFormat1
     for (unsigned int i = 0; i < count; i++)
       if (unlikely (!(this+lookahead[i]).collect_coverage (c->after))) return;
 
-    const Array16Of<HBGlyphID> &substitute = StructAfter<Array16Of<HBGlyphID>> (lookahead);
+    const Array16Of<HBGlyphID16> &substitute = StructAfter<Array16Of<HBGlyphID16>> (lookahead);
     count = substitute.len;
     c->output->add_array (substitute.arrayZ, substitute.len);
   }
@@ -1254,7 +1284,7 @@ struct ReverseChainSingleSubstFormat1
     if (likely (index == NOT_COVERED)) return_trace (false);
 
     const Array16OfOffset16To<Coverage> &lookahead = StructAfter<Array16OfOffset16To<Coverage>> (backtrack);
-    const Array16Of<HBGlyphID> &substitute = StructAfter<Array16Of<HBGlyphID>> (lookahead);
+    const Array16Of<HBGlyphID16> &substitute = StructAfter<Array16Of<HBGlyphID16>> (lookahead);
 
     if (unlikely (index >= substitute.len)) return_trace (false);
 
@@ -1317,7 +1347,7 @@ struct ReverseChainSingleSubstFormat1
     if (!serialize_coverage_offset_array (c, backtrack_iter)) return_trace (false);
     if (!serialize_coverage_offset_array (c, lookahead_iter)) return_trace (false);
 
-    auto *substitute_out = c->serializer->start_embed<Array16Of<HBGlyphID>> ();
+    auto *substitute_out = c->serializer->start_embed<Array16Of<HBGlyphID16>> ();
     auto substitutes =
     + coverage_subst_iter
     | hb_map (hb_second)
@@ -1342,13 +1372,13 @@ struct ReverseChainSingleSubstFormat1
     const hb_map_t &glyph_map = *c->plan->glyph_map;
 
     const Array16OfOffset16To<Coverage> &lookahead = StructAfter<Array16OfOffset16To<Coverage>> (backtrack);
-    const Array16Of<HBGlyphID> &substitute = StructAfter<Array16Of<HBGlyphID>> (lookahead);
+    const Array16Of<HBGlyphID16> &substitute = StructAfter<Array16Of<HBGlyphID16>> (lookahead);
 
     auto it =
     + hb_zip (this+coverage, substitute)
     | hb_filter (glyphset, hb_first)
     | hb_filter (glyphset, hb_second)
-    | hb_map_retains_sorting ([&] (hb_pair_t<hb_codepoint_t, const HBGlyphID &> p) -> hb_codepoint_pair_t
+    | hb_map_retains_sorting ([&] (hb_pair_t<hb_codepoint_t, const HBGlyphID16 &> p) -> hb_codepoint_pair_t
                               { return hb_pair (glyph_map[p.first], glyph_map[p.second]); })
     ;
 
@@ -1363,7 +1393,7 @@ struct ReverseChainSingleSubstFormat1
     const Array16OfOffset16To<Coverage> &lookahead = StructAfter<Array16OfOffset16To<Coverage>> (backtrack);
     if (!lookahead.sanitize (c, this))
       return_trace (false);
-    const Array16Of<HBGlyphID> &substitute = StructAfter<Array16Of<HBGlyphID>> (lookahead);
+    const Array16Of<HBGlyphID16> &substitute = StructAfter<Array16Of<HBGlyphID16>> (lookahead);
     return_trace (substitute.sanitize (c));
   }
 
@@ -1380,7 +1410,7 @@ struct ReverseChainSingleSubstFormat1
 		lookaheadX;		/* Array of coverage tables
 					 * in lookahead sequence, in glyph
 					 * sequence order */
-  Array16Of<HBGlyphID>
+  Array16Of<HBGlyphID16>
 		substituteX;		/* Array of substitute
 					 * GlyphIDs--ordered by Coverage Index */
   public:
@@ -1395,7 +1425,7 @@ struct ReverseChainSingleSubst
     TRACE_DISPATCH (this, u.format);
     if (unlikely (!c->may_dispatch (this, &u.format))) return_trace (c->no_dispatch_return_value ());
     switch (u.format) {
-    case 1: return_trace (c->dispatch (u.format1, hb_forward<Ts> (ds)...));
+    case 1: return_trace (c->dispatch (u.format1, std::forward<Ts> (ds)...));
     default:return_trace (c->default_return_value ());
     }
   }
@@ -1434,14 +1464,14 @@ struct SubstLookupSubTable
   {
     TRACE_DISPATCH (this, lookup_type);
     switch (lookup_type) {
-    case Single:		return_trace (u.single.dispatch (c, hb_forward<Ts> (ds)...));
-    case Multiple:		return_trace (u.multiple.dispatch (c, hb_forward<Ts> (ds)...));
-    case Alternate:		return_trace (u.alternate.dispatch (c, hb_forward<Ts> (ds)...));
-    case Ligature:		return_trace (u.ligature.dispatch (c, hb_forward<Ts> (ds)...));
-    case Context:		return_trace (u.context.dispatch (c, hb_forward<Ts> (ds)...));
-    case ChainContext:		return_trace (u.chainContext.dispatch (c, hb_forward<Ts> (ds)...));
-    case Extension:		return_trace (u.extension.dispatch (c, hb_forward<Ts> (ds)...));
-    case ReverseChainSingle:	return_trace (u.reverseChainContextSingle.dispatch (c, hb_forward<Ts> (ds)...));
+    case Single:		return_trace (u.single.dispatch (c, std::forward<Ts> (ds)...));
+    case Multiple:		return_trace (u.multiple.dispatch (c, std::forward<Ts> (ds)...));
+    case Alternate:		return_trace (u.alternate.dispatch (c, std::forward<Ts> (ds)...));
+    case Ligature:		return_trace (u.ligature.dispatch (c, std::forward<Ts> (ds)...));
+    case Context:		return_trace (u.context.dispatch (c, std::forward<Ts> (ds)...));
+    case ChainContext:		return_trace (u.chainContext.dispatch (c, std::forward<Ts> (ds)...));
+    case Extension:		return_trace (u.extension.dispatch (c, std::forward<Ts> (ds)...));
+    case ReverseChainSingle:	return_trace (u.reverseChainContextSingle.dispatch (c, std::forward<Ts> (ds)...));
     default:			return_trace (c->default_return_value ());
     }
   }
@@ -1561,8 +1591,8 @@ struct SubstLookup : Lookup
 
   bool serialize_single (hb_serialize_context_t *c,
 			 uint32_t lookup_props,
-			 hb_sorted_array_t<const HBGlyphID> glyphs,
-			 hb_array_t<const HBGlyphID> substitutes)
+			 hb_sorted_array_t<const HBGlyphID16> glyphs,
+			 hb_array_t<const HBGlyphID16> substitutes)
   {
     TRACE_SERIALIZE (this);
     if (unlikely (!Lookup::serialize (c, SubTable::Single, lookup_props, 1))) return_trace (false);
@@ -1577,9 +1607,9 @@ struct SubstLookup : Lookup
 
   bool serialize_multiple (hb_serialize_context_t *c,
 			   uint32_t lookup_props,
-			   hb_sorted_array_t<const HBGlyphID> glyphs,
+			   hb_sorted_array_t<const HBGlyphID16> glyphs,
 			   hb_array_t<const unsigned int> substitute_len_list,
-			   hb_array_t<const HBGlyphID> substitute_glyphs_list)
+			   hb_array_t<const HBGlyphID16> substitute_glyphs_list)
   {
     TRACE_SERIALIZE (this);
     if (unlikely (!Lookup::serialize (c, SubTable::Multiple, lookup_props, 1))) return_trace (false);
@@ -1598,9 +1628,9 @@ struct SubstLookup : Lookup
 
   bool serialize_alternate (hb_serialize_context_t *c,
 			    uint32_t lookup_props,
-			    hb_sorted_array_t<const HBGlyphID> glyphs,
+			    hb_sorted_array_t<const HBGlyphID16> glyphs,
 			    hb_array_t<const unsigned int> alternate_len_list,
-			    hb_array_t<const HBGlyphID> alternate_glyphs_list)
+			    hb_array_t<const HBGlyphID16> alternate_glyphs_list)
   {
     TRACE_SERIALIZE (this);
     if (unlikely (!Lookup::serialize (c, SubTable::Alternate, lookup_props, 1))) return_trace (false);
@@ -1620,11 +1650,11 @@ struct SubstLookup : Lookup
 
   bool serialize_ligature (hb_serialize_context_t *c,
 			   uint32_t lookup_props,
-			   hb_sorted_array_t<const HBGlyphID> first_glyphs,
+			   hb_sorted_array_t<const HBGlyphID16> first_glyphs,
 			   hb_array_t<const unsigned int> ligature_per_first_glyph_count_list,
-			   hb_array_t<const HBGlyphID> ligatures_list,
+			   hb_array_t<const HBGlyphID16> ligatures_list,
 			   hb_array_t<const unsigned int> component_count_list,
-			   hb_array_t<const HBGlyphID> component_list /* Starting from second for each ligature */)
+			   hb_array_t<const HBGlyphID16> component_list /* Starting from second for each ligature */)
   {
     TRACE_SERIALIZE (this);
     if (unlikely (!Lookup::serialize (c, SubTable::Ligature, lookup_props, 1))) return_trace (false);
@@ -1667,7 +1697,7 @@ struct SubstLookup : Lookup
 
   template <typename context_t, typename ...Ts>
   typename context_t::return_t dispatch (context_t *c, Ts&&... ds) const
-  { return Lookup::dispatch<SubTable> (c, hb_forward<Ts> (ds)...); }
+  { return Lookup::dispatch<SubTable> (c, std::forward<Ts> (ds)...); }
 
   bool subset (hb_subset_context_t *c) const
   { return Lookup::subset<SubTable> (c); }

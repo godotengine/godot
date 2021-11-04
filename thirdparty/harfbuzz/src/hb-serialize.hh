@@ -189,8 +189,8 @@ struct hb_serialize_context_t
   { return check_success (!hb_deref (obj).in_error ()); }
 
   template <typename T1, typename... Ts> bool propagate_error (T1 &&o1, Ts&&... os)
-  { return propagate_error (hb_forward<T1> (o1)) &&
-	   propagate_error (hb_forward<Ts> (os)...); }
+  { return propagate_error (std::forward<T1> (o1)) &&
+	   propagate_error (std::forward<Ts> (os)...); }
 
   /* To be called around main operation. */
   template <typename Type>
@@ -358,6 +358,35 @@ struct hb_serialize_context_t
       assert (packed.tail ()->head == tail);
   }
 
+  // Adds a virtual link from the current object to objidx. A virtual link is not associated with
+  // an actual offset field. They are solely used to enforce ordering constraints between objects.
+  // Adding a virtual link from object a to object b will ensure that object b is always packed after
+  // object a in the final serialized order.
+  //
+  // This is useful in certain situtations where there needs to be a specific ordering in the
+  // final serialization. Such as when platform bugs require certain orderings, or to provide
+  //  guidance to the repacker for better offset overflow resolution.
+  void add_virtual_link (objidx_t objidx)
+  {
+    if (unlikely (in_error ())) return;
+
+    if (!objidx)
+      return;
+
+    assert (current);
+
+    auto& link = *current->links.push ();
+    if (current->links.in_error ())
+      err (HB_SERIALIZE_ERROR_OTHER);
+
+    link.width = 0;
+    link.objidx = objidx;
+    link.is_signed = 0;
+    link.whence = 0;
+    link.position = 0;
+    link.bias = 0;
+  }
+
   template <typename T>
   void add_link (T &ofs, objidx_t objidx,
 		 whence_t whence = Head,
@@ -376,11 +405,22 @@ struct hb_serialize_context_t
       err (HB_SERIALIZE_ERROR_OTHER);
 
     link.width = sizeof (T);
-    link.is_signed = hb_is_signed (hb_unwrap_type (T));
+    link.objidx = objidx;
+    if (unlikely (!sizeof (T)))
+    {
+      // This link is not associated with an actual offset and exists merely to enforce
+      // an ordering constraint.
+      link.is_signed = 0;
+      link.whence = 0;
+      link.position = 0;
+      link.bias = 0;
+      return;
+    }
+
+    link.is_signed = std::is_signed<hb_unwrap_type (T)>::value;
     link.whence = (unsigned) whence;
     link.position = (const char *) &ofs - current->head;
     link.bias = bias;
-    link.objidx = objidx;
   }
 
   unsigned to_bias (const void *base) const
@@ -402,6 +442,8 @@ struct hb_serialize_context_t
     for (const object_t* parent : ++hb_iter (packed))
       for (const object_t::link_t &link : parent->links)
       {
+        if (unlikely (!link.width)) continue; // Don't need to resolve virtual offsets
+
 	const object_t* child = packed[link.objidx];
 	if (unlikely (!child)) { err (HB_SERIALIZE_ERROR_OTHER); return; }
 	unsigned offset = 0;
@@ -494,7 +536,7 @@ struct hb_serialize_context_t
 
   template <typename Type, typename ...Ts> auto
   _copy (const Type &src, hb_priority<1>, Ts&&... ds) HB_RETURN
-  (Type *, src.copy (this, hb_forward<Ts> (ds)...))
+  (Type *, src.copy (this, std::forward<Ts> (ds)...))
 
   template <typename Type> auto
   _copy (const Type &src, hb_priority<0>) -> decltype (&(hb_declval<Type> () = src))
@@ -509,16 +551,16 @@ struct hb_serialize_context_t
    * instead of memcpy(). */
   template <typename Type, typename ...Ts>
   Type *copy (const Type &src, Ts&&... ds)
-  { return _copy (src, hb_prioritize, hb_forward<Ts> (ds)...); }
+  { return _copy (src, hb_prioritize, std::forward<Ts> (ds)...); }
   template <typename Type, typename ...Ts>
   Type *copy (const Type *src, Ts&&... ds)
-  { return copy (*src, hb_forward<Ts> (ds)...); }
+  { return copy (*src, std::forward<Ts> (ds)...); }
 
   template<typename Iterator,
 	   hb_requires (hb_is_iterator (Iterator)),
 	   typename ...Ts>
   void copy_all (Iterator it, Ts&&... ds)
-  { for (decltype (*it) _ : it) copy (_, hb_forward<Ts> (ds)...); }
+  { for (decltype (*it) _ : it) copy (_, std::forward<Ts> (ds)...); }
 
   template <typename Type>
   hb_serialize_context_t& operator << (const Type &obj) & { embed (obj); return *this; }
@@ -546,10 +588,10 @@ struct hb_serialize_context_t
 
   template <typename Type, typename ...Ts>
   Type *extend (Type *obj, Ts&&... ds)
-  { return extend_size (obj, obj->get_size (hb_forward<Ts> (ds)...)); }
+  { return extend_size (obj, obj->get_size (std::forward<Ts> (ds)...)); }
   template <typename Type, typename ...Ts>
   Type *extend (Type &obj, Ts&&... ds)
-  { return extend (hb_addressof (obj), hb_forward<Ts> (ds)...); }
+  { return extend (hb_addressof (obj), std::forward<Ts> (ds)...); }
 
   /* Output routines. */
   hb_bytes_t copy_bytes () const

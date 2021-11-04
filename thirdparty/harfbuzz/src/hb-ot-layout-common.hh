@@ -89,7 +89,7 @@ static inline void ClassDef_serialize (hb_serialize_context_t *c,
 
 static void ClassDef_remap_and_serialize (hb_serialize_context_t *c,
 					  const hb_map_t &gid_klass_map,
-					  hb_sorted_vector_t<HBGlyphID> &glyphs,
+					  hb_sorted_vector_t<HBGlyphID16> &glyphs,
 					  const hb_set_t &klasses,
 					  bool use_class_zero,
 					  hb_map_t *klass_map /*INOUT*/);
@@ -237,9 +237,9 @@ struct subset_offset_array_t
   template <typename T>
   bool operator () (T&& offset)
   {
+    auto snap = subset_context->serializer->snapshot ();
     auto *o = out.serialize_append (subset_context->serializer);
     if (unlikely (!o)) return false;
-    auto snap = subset_context->serializer->snapshot ();
     bool ret = o->serialize_subset (subset_context, offset, base);
     if (!ret)
     {
@@ -268,9 +268,9 @@ struct subset_offset_array_arg_t
   template <typename T>
   bool operator () (T&& offset)
   {
+    auto snap = subset_context->serializer->snapshot ();
     auto *o = out.serialize_append (subset_context->serializer);
     if (unlikely (!o)) return false;
-    auto snap = subset_context->serializer->snapshot ();
     bool ret = o->serialize_subset (subset_context, offset, base, arg);
     if (!ret)
     {
@@ -345,6 +345,43 @@ struct
   { return subset_record_array_t<OutputArray> (c, out, base); }
 }
 HB_FUNCOBJ (subset_record_array);
+
+
+template<typename OutputArray>
+struct serialize_math_record_array_t
+{
+  serialize_math_record_array_t (hb_serialize_context_t *serialize_context_,
+                         OutputArray& out_,
+                         const void *base_) : serialize_context (serialize_context_),
+                                              out (out_), base (base_) {}
+
+  template <typename T>
+  bool operator () (T&& record)
+  {
+    if (!serialize_context->copy (record, base)) return false;
+    out.len++;
+    return true;
+  }
+
+  private:
+  hb_serialize_context_t *serialize_context;
+  OutputArray &out;
+  const void *base;
+};
+
+/*
+ * Helper to serialize an array of MATH records.
+ */
+struct
+{
+  template<typename OutputArray>
+  serialize_math_record_array_t<OutputArray>
+  operator () (hb_serialize_context_t *serialize_context, OutputArray& out,
+               const void *base) const
+  { return serialize_math_record_array_t<OutputArray> (serialize_context, out, base); }
+
+}
+HB_FUNCOBJ (serialize_math_record_array);
 
 /*
  *
@@ -508,8 +545,8 @@ struct RangeRecord
   bool collect_coverage (set_t *glyphs) const
   { return glyphs->add_range (first, last); }
 
-  HBGlyphID	first;		/* First GlyphID in the range */
-  HBGlyphID	last;		/* Last GlyphID in the range */
+  HBGlyphID16	first;		/* First GlyphID in the range */
+  HBGlyphID16	last;		/* Last GlyphID in the range */
   HBUINT16	value;		/* Value */
   public:
   DEFINE_SIZE_STATIC (6);
@@ -1249,7 +1286,7 @@ struct Lookup
     TRACE_DISPATCH (this, lookup_type);
     unsigned int count = get_subtable_count ();
     for (unsigned int i = 0; i < count; i++) {
-      typename context_t::return_t r = get_subtable<TSubTable> (i).dispatch (c, lookup_type, hb_forward<Ts> (ds)...);
+      typename context_t::return_t r = get_subtable<TSubTable> (i).dispatch (c, lookup_type, std::forward<Ts> (ds)...);
       if (c->stop_sublookup_iteration (r))
 	return_trace (r);
     }
@@ -1299,7 +1336,7 @@ struct Lookup
       outMarkFilteringSet = markFilteringSet;
     }
 
-    return_trace (true);
+    return_trace (out->subTable.len);
   }
 
   template <typename TSubTable>
@@ -1454,7 +1491,7 @@ struct CoverageFormat1
 
   protected:
   HBUINT16	coverageFormat;	/* Format identifier--format = 1 */
-  SortedArray16Of<HBGlyphID>
+  SortedArray16Of<HBGlyphID16>
 		glyphArray;	/* Array of GlyphIDs--in numerical order */
   public:
   DEFINE_SIZE_ARRAY (4, glyphArray);
@@ -1832,7 +1869,7 @@ Coverage_serialize (hb_serialize_context_t *c,
 
 static void ClassDef_remap_and_serialize (hb_serialize_context_t *c,
 					  const hb_map_t &gid_klass_map,
-					  hb_sorted_vector_t<HBGlyphID> &glyphs,
+					  hb_sorted_vector_t<HBGlyphID16> &glyphs,
 					  const hb_set_t &klasses,
                                           bool use_class_zero,
 					  hb_map_t *klass_map /*INOUT*/)
@@ -1859,7 +1896,7 @@ static void ClassDef_remap_and_serialize (hb_serialize_context_t *c,
 
   auto it =
   + glyphs.iter ()
-  | hb_map_retains_sorting ([&] (const HBGlyphID& gid) -> hb_pair_t<hb_codepoint_t, unsigned>
+  | hb_map_retains_sorting ([&] (const HBGlyphID16& gid) -> hb_pair_t<hb_codepoint_t, unsigned>
 			    {
 			      unsigned new_klass = klass_map->get (gid_klass_map[gid]);
 			      return hb_pair ((hb_codepoint_t)gid, new_klass);
@@ -1926,7 +1963,7 @@ struct ClassDefFormat1
     const hb_set_t &glyphset = *c->plan->glyphset_gsub ();
     const hb_map_t &glyph_map = *c->plan->glyph_map;
 
-    hb_sorted_vector_t<HBGlyphID> glyphs;
+    hb_sorted_vector_t<HBGlyphID16> glyphs;
     hb_set_t orig_klasses;
     hb_map_t gid_org_klass_map;
 
@@ -2044,9 +2081,25 @@ struct ClassDefFormat1
         intersect_glyphs->add (startGlyph + i);
   }
 
+  void intersected_classes (const hb_set_t *glyphs, hb_set_t *intersect_classes) const
+  {
+    if (glyphs->is_empty ()) return;
+    hb_codepoint_t end_glyph = startGlyph + classValue.len - 1;
+    if (glyphs->get_min () < startGlyph ||
+        glyphs->get_max () > end_glyph)
+      intersect_classes->add (0);
+
+    for (const auto& _ : + hb_enumerate (classValue))
+    {
+      hb_codepoint_t g = startGlyph + _.first;
+      if (glyphs->has (g))
+        intersect_classes->add (_.second);
+    }
+  }
+
   protected:
   HBUINT16	classFormat;	/* Format identifier--format = 1 */
-  HBGlyphID	startGlyph;	/* First GlyphID of the classValueArray */
+  HBGlyphID16	startGlyph;	/* First GlyphID of the classValueArray */
   Array16Of<HBUINT16>
 		classValue;	/* Array of Class Values--one per GlyphID */
   public:
@@ -2128,7 +2181,7 @@ struct ClassDefFormat2
     const hb_set_t &glyphset = *c->plan->glyphset_gsub ();
     const hb_map_t &glyph_map = *c->plan->glyph_map;
 
-    hb_sorted_vector_t<HBGlyphID> glyphs;
+    hb_sorted_vector_t<HBGlyphID16> glyphs;
     hb_set_t orig_klasses;
     hb_map_t gid_org_klass_map;
 
@@ -2275,6 +2328,31 @@ struct ClassDefFormat2
           break;
       }
     }
+  }
+
+  void intersected_classes (const hb_set_t *glyphs, hb_set_t *intersect_classes) const
+  {
+    if (glyphs->is_empty ()) return;
+
+    unsigned count = rangeRecord.len;
+    hb_codepoint_t g = HB_SET_VALUE_INVALID;
+    for (unsigned int i = 0; i < count; i++)
+    {
+      if (!hb_set_next (glyphs, &g))
+        break;
+      if (g < rangeRecord[i].first)
+      {
+        intersect_classes->add (0);
+        break;
+      }
+      g = rangeRecord[i].last;
+    }
+    if (g != HB_SET_VALUE_INVALID && hb_set_next (glyphs, &g))
+      intersect_classes->add (0);
+
+    for (const RangeRecord& record : rangeRecord.iter ())
+      if (record.intersects (glyphs))
+        intersect_classes->add (record.value);
   }
 
   protected:
@@ -2429,6 +2507,16 @@ struct ClassDef
     }
   }
 
+  void intersected_classes (const hb_set_t *glyphs, hb_set_t *intersect_classes) const
+  {
+    switch (u.format) {
+    case 1: return u.format1.intersected_classes (glyphs, intersect_classes);
+    case 2: return u.format2.intersected_classes (glyphs, intersect_classes);
+    default:return;
+    }
+  }
+
+
   protected:
   union {
   HBUINT16		format;		/* Format identifier */
@@ -2543,7 +2631,7 @@ struct VarRegionList
 
   public:
   HBUINT16	axisCount;
-  HBUINT16	regionCount;
+  HBUINT15	regionCount;
   protected:
   UnsizedArrayOf<VarRegionAxis>
 		axesZ;
@@ -2947,7 +3035,7 @@ struct Condition
     TRACE_DISPATCH (this, u.format);
     if (unlikely (!c->may_dispatch (this, &u.format))) return_trace (c->no_dispatch_return_value ());
     switch (u.format) {
-    case 1: return_trace (c->dispatch (u.format1, hb_forward<Ts> (ds)...));
+    case 1: return_trace (c->dispatch (u.format1, std::forward<Ts> (ds)...));
     default:return_trace (c->default_return_value ());
     }
   }

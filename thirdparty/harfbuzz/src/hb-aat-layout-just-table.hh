@@ -100,7 +100,7 @@ struct UnconditionalAddGlyphAction
   protected:
   ActionSubrecordHeader
 		header;
-  HBGlyphID	addGlyph;	/* Glyph that should be added if the distance factor
+  HBGlyphID16	addGlyph;	/* Glyph that should be added if the distance factor
 				 * is growing. */
 
   public:
@@ -121,11 +121,11 @@ struct ConditionalAddGlyphAction
   HBFixed	substThreshold; /* Distance growth factor (in ems) at which
 				 * this glyph is replaced and the growth factor
 				 * recalculated. */
-  HBGlyphID	addGlyph;	/* Glyph to be added as kashida. If this value is
+  HBGlyphID16	addGlyph;	/* Glyph to be added as kashida. If this value is
 				 * 0xFFFF, no extra glyph will be added. Note that
 				 * generally when a glyph is added, justification
 				 * will need to be redone. */
-  HBGlyphID	substGlyph;	/* Glyph to be substituted for this glyph if the
+  HBGlyphID16	substGlyph;	/* Glyph to be substituted for this glyph if the
 				 * growth factor equals or exceeds the value of
 				 * substThreshold. */
   public:
@@ -170,7 +170,7 @@ struct RepeatedAddGlyphAction
   ActionSubrecordHeader
 		header;
   HBUINT16	flags;		/* Currently unused; set to 0. */
-  HBGlyphID	glyph;		/* Glyph that should be added if the distance factor
+  HBGlyphID16	glyph;		/* Glyph that should be added if the distance factor
 				 * is growing. */
   public:
   DEFINE_SIZE_STATIC (10);
