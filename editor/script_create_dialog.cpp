@@ -315,7 +315,9 @@ void ScriptCreateDialog::_create_new() {
 		}
 	}
 
-	if (!is_built_in) {
+	if (is_built_in) {
+		scr->set_name(internal_name->get_text());
+	} else {
 		String lpath = ProjectSettings::get_singleton()->localize_path(file_path->get_text());
 		scr->set_path(lpath);
 		Error err = ResourceSaver::save(lpath, scr, ResourceSaver::FLAG_CHANGE_PATH);
@@ -684,6 +686,11 @@ void ScriptCreateDialog::_update_dialog() {
 
 	builtin_warning_label->set_visible(is_built_in);
 
+	path_controls[0]->set_visible(!is_built_in);
+	path_controls[1]->set_visible(!is_built_in);
+	name_controls[0]->set_visible(is_built_in);
+	name_controls[1]->set_visible(is_built_in);
+
 	// Check if the script name is the same as the parent class.
 	// This warning isn't relevant if the script is built-in.
 	script_name_warning_label->set_visible(!is_built_in && _get_class_name() == parent_name->get_text());
@@ -884,9 +891,24 @@ ScriptCreateDialog::ScriptCreateDialog() {
 	path_button->set_flat(true);
 	path_button->connect("pressed", this, "_browse_path", varray(false, true));
 	hb->add_child(path_button);
-	gc->add_child(memnew(Label(TTR("Path:"))));
+	Label *label = memnew(Label(TTR("Path:")));
+	gc->add_child(label);
 	gc->add_child(hb);
 	re_check_path = false;
+	path_controls[0] = label;
+	path_controls[1] = hb;
+
+	/* Name */
+
+	internal_name = memnew(LineEdit);
+	internal_name->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	label = memnew(Label(TTR("Name:")));
+	gc->add_child(label);
+	gc->add_child(internal_name);
+	name_controls[0] = label;
+	name_controls[1] = internal_name;
+	label->hide();
+	internal_name->hide();
 
 	/* Dialog Setup */
 
