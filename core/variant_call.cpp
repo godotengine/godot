@@ -706,6 +706,7 @@ struct _VariantCall {
 	VCALL_LOCALMEM2R(PoolByteArray, rfind);
 	VCALL_LOCALMEM1R(PoolByteArray, count);
 	VCALL_LOCALMEM1R(PoolByteArray, has);
+	VCALL_LOCALMEM0(PoolByteArray, sort);
 
 	VCALL_LOCALMEM0R(PoolIntArray, size);
 	VCALL_LOCALMEM0R(PoolIntArray, empty);
@@ -723,6 +724,7 @@ struct _VariantCall {
 	VCALL_LOCALMEM2R(PoolIntArray, rfind);
 	VCALL_LOCALMEM1R(PoolIntArray, count);
 	VCALL_LOCALMEM1R(PoolIntArray, has);
+	VCALL_LOCALMEM0(PoolIntArray, sort);
 
 	VCALL_LOCALMEM0R(PoolRealArray, size);
 	VCALL_LOCALMEM0R(PoolRealArray, empty);
@@ -740,6 +742,7 @@ struct _VariantCall {
 	VCALL_LOCALMEM2R(PoolRealArray, rfind);
 	VCALL_LOCALMEM1R(PoolRealArray, count);
 	VCALL_LOCALMEM1R(PoolRealArray, has);
+	VCALL_LOCALMEM0(PoolRealArray, sort);
 
 	VCALL_LOCALMEM0R(PoolStringArray, size);
 	VCALL_LOCALMEM0R(PoolStringArray, empty);
@@ -758,6 +761,7 @@ struct _VariantCall {
 	VCALL_LOCALMEM2R(PoolStringArray, rfind);
 	VCALL_LOCALMEM1R(PoolStringArray, count);
 	VCALL_LOCALMEM1R(PoolStringArray, has);
+	VCALL_LOCALMEM0(PoolStringArray, sort)
 
 	VCALL_LOCALMEM0R(PoolVector2Array, size);
 	VCALL_LOCALMEM0R(PoolVector2Array, empty);
@@ -775,6 +779,7 @@ struct _VariantCall {
 	VCALL_LOCALMEM2R(PoolVector2Array, rfind);
 	VCALL_LOCALMEM1R(PoolVector2Array, count);
 	VCALL_LOCALMEM1R(PoolVector2Array, has);
+	VCALL_LOCALMEM0(PoolVector2Array, sort);
 
 	VCALL_LOCALMEM0R(PoolVector3Array, size);
 	VCALL_LOCALMEM0R(PoolVector3Array, empty);
@@ -792,6 +797,7 @@ struct _VariantCall {
 	VCALL_LOCALMEM2R(PoolVector3Array, rfind);
 	VCALL_LOCALMEM1R(PoolVector3Array, count);
 	VCALL_LOCALMEM1R(PoolVector3Array, has);
+	VCALL_LOCALMEM0(PoolVector3Array, sort);
 
 	VCALL_LOCALMEM0R(PoolColorArray, size);
 	VCALL_LOCALMEM0R(PoolColorArray, empty);
@@ -809,6 +815,7 @@ struct _VariantCall {
 	VCALL_LOCALMEM2R(PoolColorArray, rfind);
 	VCALL_LOCALMEM1R(PoolColorArray, count);
 	VCALL_LOCALMEM1R(PoolColorArray, has);
+	VCALL_LOCALMEM0(PoolColorArray, sort);
 
 #define VCALL_PTR0(m_type, m_method) \
 	static void _call_##m_type##_##m_method(Variant &r_ret, Variant &p_self, const Variant **p_args) { reinterpret_cast<m_type *>(p_self._data._ptr)->m_method(); }
@@ -1980,6 +1987,7 @@ void register_variant_methods() {
 	ADDFUNC2R(POOL_BYTE_ARRAY, INT, PoolByteArray, rfind, INT, "value", INT, "from", varray(-1));
 	ADDFUNC1R(POOL_BYTE_ARRAY, INT, PoolByteArray, count, INT, "value", varray());
 	ADDFUNC1R(POOL_BYTE_ARRAY, BOOL, PoolByteArray, has, INT, "value", varray());
+	ADDFUNC0(POOL_BYTE_ARRAY, NIL, PoolByteArray, sort, varray());
 
 	ADDFUNC0R(POOL_BYTE_ARRAY, STRING, PoolByteArray, get_string_from_ascii, varray());
 	ADDFUNC0R(POOL_BYTE_ARRAY, STRING, PoolByteArray, get_string_from_utf8, varray());
@@ -2003,6 +2011,7 @@ void register_variant_methods() {
 	ADDFUNC2R(POOL_INT_ARRAY, INT, PoolIntArray, rfind, INT, "value", INT, "from", varray(-1));
 	ADDFUNC1R(POOL_INT_ARRAY, INT, PoolIntArray, count, INT, "value", varray());
 	ADDFUNC1R(POOL_INT_ARRAY, BOOL, PoolIntArray, has, INT, "value", varray());
+	ADDFUNC0(POOL_INT_ARRAY, NIL, PoolIntArray, sort, varray());
 
 	ADDFUNC0R(POOL_REAL_ARRAY, INT, PoolRealArray, size, varray());
 	ADDFUNC0R(POOL_REAL_ARRAY, BOOL, PoolRealArray, empty, varray());
@@ -2019,6 +2028,7 @@ void register_variant_methods() {
 	ADDFUNC2R(POOL_REAL_ARRAY, INT, PoolRealArray, rfind, REAL, "value", INT, "from", varray(-1));
 	ADDFUNC1R(POOL_REAL_ARRAY, INT, PoolRealArray, count, REAL, "value", varray());
 	ADDFUNC1R(POOL_REAL_ARRAY, BOOL, PoolRealArray, has, REAL, "value", varray());
+	ADDFUNC0(POOL_REAL_ARRAY, NIL, PoolRealArray, sort, varray());
 
 	ADDFUNC0R(POOL_STRING_ARRAY, INT, PoolStringArray, size, varray());
 	ADDFUNC0R(POOL_STRING_ARRAY, BOOL, PoolStringArray, empty, varray());
@@ -2036,6 +2046,7 @@ void register_variant_methods() {
 	ADDFUNC2R(POOL_STRING_ARRAY, INT, PoolStringArray, rfind, STRING, "value", INT, "from", varray(-1));
 	ADDFUNC1R(POOL_STRING_ARRAY, INT, PoolStringArray, count, STRING, "value", varray());
 	ADDFUNC1R(POOL_STRING_ARRAY, BOOL, PoolStringArray, has, STRING, "value", varray());
+	ADDFUNC0(POOL_STRING_ARRAY, NIL, PoolStringArray, sort, varray());
 
 	ADDFUNC0R(POOL_VECTOR2_ARRAY, INT, PoolVector2Array, size, varray());
 	ADDFUNC0R(POOL_VECTOR2_ARRAY, BOOL, PoolVector2Array, empty, varray());
@@ -2052,6 +2063,7 @@ void register_variant_methods() {
 	ADDFUNC2R(POOL_VECTOR2_ARRAY, INT, PoolVector2Array, rfind, VECTOR2, "value", INT, "from", varray(-1));
 	ADDFUNC1R(POOL_VECTOR2_ARRAY, INT, PoolVector2Array, count, VECTOR2, "value", varray());
 	ADDFUNC1R(POOL_VECTOR2_ARRAY, BOOL, PoolVector2Array, has, VECTOR2, "value", varray());
+	ADDFUNC0(POOL_VECTOR2_ARRAY, NIL, PoolVector2Array, sort, varray());
 
 	ADDFUNC0R(POOL_VECTOR3_ARRAY, INT, PoolVector3Array, size, varray());
 	ADDFUNC0R(POOL_VECTOR3_ARRAY, BOOL, PoolVector3Array, empty, varray());
@@ -2068,6 +2080,7 @@ void register_variant_methods() {
 	ADDFUNC2R(POOL_VECTOR3_ARRAY, INT, PoolVector3Array, rfind, VECTOR3, "value", INT, "from", varray(-1));
 	ADDFUNC1R(POOL_VECTOR3_ARRAY, INT, PoolVector3Array, count, VECTOR3, "value", varray());
 	ADDFUNC1R(POOL_VECTOR3_ARRAY, BOOL, PoolVector3Array, has, VECTOR3, "value", varray());
+	ADDFUNC0(POOL_VECTOR3_ARRAY, NIL, PoolVector3Array, sort, varray());
 
 	ADDFUNC0R(POOL_COLOR_ARRAY, INT, PoolColorArray, size, varray());
 	ADDFUNC0R(POOL_COLOR_ARRAY, BOOL, PoolColorArray, empty, varray());
@@ -2084,6 +2097,7 @@ void register_variant_methods() {
 	ADDFUNC2R(POOL_COLOR_ARRAY, INT, PoolColorArray, rfind, COLOR, "value", INT, "from", varray(-1));
 	ADDFUNC1R(POOL_COLOR_ARRAY, INT, PoolColorArray, count, COLOR, "value", varray());
 	ADDFUNC1R(POOL_COLOR_ARRAY, BOOL, PoolColorArray, has, COLOR, "value", varray());
+	ADDFUNC0(POOL_COLOR_ARRAY, NIL, PoolColorArray, sort, varray());
 
 	//pointerbased
 
