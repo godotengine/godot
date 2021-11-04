@@ -250,7 +250,7 @@ void main() {
 #endif
 
 	float amount = smoothstep(dof_begin, dof_end, depth);
-	float k_accum = 0.0;
+	vec4 k_accum = vec4(0.0);
 
 	for (int i = 0; i < dof_kernel_size; i++) {
 		int int_ofs = i - dof_kernel_from;
@@ -267,14 +267,16 @@ void main() {
 #endif
 		float tap_amount = int_ofs == 0 ? 1.0 : smoothstep(dof_begin, dof_end, tap_depth);
 		tap_amount *= tap_amount * tap_amount; //prevent undesired glow effect
+		tap_amount *= tap_k;
 
-		vec4 tap_color = texture2DLod(source_color, tap_uv, 0.0) * tap_k;
+		vec4 tap_color = texture2DLod(source_color, tap_uv, 0.0);
 
-		k_accum += tap_k * tap_amount;
-		color_accum += tap_color * tap_amount;
+		vec4 w = vec4(tap_amount) * vec4(vec3(tap_color.a), 1.0);
+		k_accum += w;
+		color_accum += tap_color * w;
 	}
 
-	if (k_accum > 0.0) {
+	if (k_accum.r > 0.0) {
 		color_accum /= k_accum;
 	}
 
@@ -287,6 +289,7 @@ void main() {
 	vec4 color_accum = vec4(0.0);
 
 	float max_accum = 0.0;
+	float k_accum = 0.0;
 
 	for (int i = 0; i < dof_kernel_size; i++) {
 		int int_ofs = i - dof_kernel_from;
@@ -296,6 +299,7 @@ void main() {
 		float tap_k = dof_kernel[i];
 
 		vec4 tap_color = texture2DLod(source_color, tap_uv, 0.0);
+		float w = tap_color.a;
 
 		float tap_depth = texture2D(dof_source_depth, tap_uv, 0.0).r;
 		tap_depth = tap_depth * 2.0 - 1.0;
@@ -315,9 +319,14 @@ void main() {
 
 		max_accum = max(max_accum, tap_amount * ofs_influence);
 
+		k_accum += w;
+		tap_color.rgb *= w;
 		color_accum += tap_color * tap_k;
 	}
 
+	if (k_accum > 0.0) {
+		color_accum.rgb /= k_accum / dof_kernel_size;
+	}
 	color_accum.a = max(color_accum.a, sqrt(max_accum));
 
 	gl_FragColor = color_accum;
