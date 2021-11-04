@@ -57,6 +57,7 @@ class ScriptCreateDialog : public ConfirmationDialog {
 	OptionButton *language_menu;
 	OptionButton *template_menu;
 	LineEdit *file_path;
+	LineEdit *internal_name;
 	Button *path_button;
 	EditorFileDialog *file_browse;
 	CheckBox *internal;
@@ -80,6 +81,9 @@ class ScriptCreateDialog : public ConfirmationDialog {
 	int current_language;
 	int default_language;
 	bool re_check_path;
+
+	Control *path_controls[2];
+	Control *name_controls[2];
 
 	enum ScriptOrigin {
 		SCRIPT_ORIGIN_PROJECT,
