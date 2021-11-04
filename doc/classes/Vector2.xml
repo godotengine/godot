@@ -351,72 +351,97 @@
 			<return type="bool" />
 			<argument index="0" name="right" type="Vector2" />
 			<description>
+				Returns [code]true[/code] if the vectors are not equal.
+				[b]Note:[/b] Due to floating-point precision errors, consider using [method is_equal_approx] instead, which is more reliable.
 			</description>
 		</operator>
 		<operator name="operator *">
 			<return type="Vector2" />
 			<argument index="0" name="right" type="Vector2" />
 			<description>
+				Multiplies each component of the [Vector2] by the components of the given [Vector2].
+				[codeblock]
+				print(Vector2(10, 20) * Vector2(3, 4)) # Prints "(30, 80)"
+				[/codeblock]
 			</description>
 		</operator>
 		<operator name="operator *">
 			<return type="Vector2" />
 			<argument index="0" name="right" type="Transform2D" />
 			<description>
+				Inversely transforms (multiplies) the [Vector2] by the given [Transform2D] transformation matrix.
 			</description>
 		</operator>
 		<operator name="operator *">
 			<return type="Vector2" />
 			<argument index="0" name="right" type="float" />
 			<description>
+				Multiplies each component of the [Vector2] by the given [float].
 			</description>
 		</operator>
 		<operator name="operator *">
 			<return type="Vector2" />
 			<argument index="0" name="right" type="int" />
 			<description>
+				Multiplies each component of the [Vector2] by the given [int].
 			</description>
 		</operator>
 		<operator name="operator +">
 			<return type="Vector2" />
 			<argument index="0" name="right" type="Vector2" />
 			<description>
+				Adds each component of the [Vector2] by the components of the given [Vector2].
+				[codeblock]
+				print(Vector2(10, 20) + Vector2(3, 4)) # Prints "(13, 24)"
+				[/codeblock]
 			</description>
 		</operator>
 		<operator name="operator -">
 			<return type="Vector2" />
 			<argument index="0" name="right" type="Vector2" />
 			<description>
+				Subtracts each component of the [Vector2] by the components of the given [Vector2].
+				[codeblock]
+				print(Vector2(10, 20) - Vector2(3, 4)) # Prints "(7, 16)"
+				[/codeblock]
 			</description>
 		</operator>
 		<operator name="operator /">
 			<return type="Vector2" />
 			<argument index="0" name="right" type="Vector2" />
 			<description>
+				Divides each component of the [Vector2] by the components of the given [Vector2].
+				[codeblock]
+				print(Vector2(10, 20) / Vector2(2, 5)) # Prints "(5, 4)"
+				[/codeblock]
 			</description>
 		</operator>
 		<operator name="operator /">
 			<return type="Vector2" />
 			<argument index="0" name="right" type="float" />
 			<description>
+				Divides each component of the [Vector2] by the given [float].
 			</description>
 		</operator>
 		<operator name="operator /">
 			<return type="Vector2" />
 			<argument index="0" name="right" type="int" />
 			<description>
+				Divides each component of the [Vector2] by the given [int].
 			</description>
 		</operator>
 		<operator name="operator &lt;">
 			<return type="bool" />
 			<argument index="0" name="right" type="Vector2" />
 			<description>
+				Compares two [Vector2] vectors by first checking if the X value of the left vector is less than the X value of the [code]right[/code] vector. If the X values are exactly equal, then it repeats this check with the Y values of the two vectors. This operator is useful for sorting vectors.
 			</description>
 		</operator>
 		<operator name="operator &lt;=">
 			<return type="bool" />
 			<argument index="0" name="right" type="Vector2" />
 			<description>
+				Compares two [Vector2] vectors by first checking if the X value of the left vector is less than or equal to the X value of the [code]right[/code] vector. If the X values are exactly equal, then it repeats this check with the Y values of the two vectors. This operator is useful for sorting vectors.
 			</description>
 		</operator>
 		<operator name="operator ==">
@@ -428,34 +453,41 @@
 			<return type="bool" />
 			<argument index="0" name="right" type="Vector2" />
 			<description>
+				Returns [code]true[/code] if the vectors are exactly equal.
+				[b]Note:[/b] Due to floating-point precision errors, consider using [method is_equal_approx] instead, which is more reliable.
 			</description>
 		</operator>
 		<operator name="operator &gt;">
 			<return type="bool" />
 			<argument index="0" name="right" type="Vector2" />
 			<description>
+				Compares two [Vector2] vectors by first checking if the X value of the left vector is greater than the X value of the [code]right[/code] vector. If the X values are exactly equal, then it repeats this check with the Y values of the two vectors. This operator is useful for sorting vectors.
 			</description>
 		</operator>
 		<operator name="operator &gt;=">
 			<return type="bool" />
 			<argument index="0" name="right" type="Vector2" />
 			<description>
+				Compares two [Vector2] vectors by first checking if the X value of the left vector is greater than or equal to the X value of the [code]right[/code] vector. If the X values are exactly equal, then it repeats this check with the Y values of the two vectors. This operator is useful for sorting vectors.
 			</description>
 		</operator>
 		<operator name="operator []">
 			<return type="float" />
 			<argument index="0" name="index" type="int" />
 			<description>
+				Access vector components using their index. [code]v[0][/code] is equivalent to [code]v.x[/code], and [code]v[1][/code] is equivalent to [code]v.y[/code].
 			</description>
 		</operator>
 		<operator name="operator unary+">
 			<return type="Vector2" />
 			<description>
+				Returns the same value as if the [code]+[/code] was not there. Unary [code]+[/code] does nothing, but sometimes it can make your code more readable.
 			</description>
 		</operator>
 		<operator name="operator unary-">
 			<return type="Vector2" />
 			<description>
+				Returns the negative value of the [Vector2]. This is the same as writing [code]Vector2(-v.x, -v.y)[/code]. This operation flips the direction of the vector while keeping the same magnitude. With floats, the number zero can be either positive or negative.
 			</description>
 		</operator>
 	</operators>

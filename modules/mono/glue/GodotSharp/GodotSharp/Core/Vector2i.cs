@@ -366,6 +366,13 @@ namespace Godot
             this.y = Mathf.RoundToInt(v.y);
         }
 
+        /// <summary>
+        /// Adds each component of the <see cref="Vector2i"/>
+        /// with the components of the given <see cref="Vector2i"/>.
+        /// </summary>
+        /// <param name="left">The left vector.</param>
+        /// <param name="right">The right vector.</param>
+        /// <returns>The added vector.</returns>
         public static Vector2i operator +(Vector2i left, Vector2i right)
         {
             left.x += right.x;
@@ -373,6 +380,13 @@ namespace Godot
             return left;
         }
 
+        /// <summary>
+        /// Subtracts each component of the <see cref="Vector2i"/>
+        /// by the components of the given <see cref="Vector2i"/>.
+        /// </summary>
+        /// <param name="left">The left vector.</param>
+        /// <param name="right">The right vector.</param>
+        /// <returns>The subtracted vector.</returns>
         public static Vector2i operator -(Vector2i left, Vector2i right)
         {
             left.x -= right.x;
@@ -380,6 +394,14 @@ namespace Godot
             return left;
         }
 
+        /// <summary>
+        /// Returns the negative value of the <see cref="Vector2i"/>.
+        /// This is the same as writing <c>new Vector2i(-v.x, -v.y)</c>.
+        /// This operation flips the direction of the vector while
+        /// keeping the same magnitude.
+        /// </summary>
+        /// <param name="vec">The vector to negate/flip.</param>
+        /// <returns>The negated/flipped vector.</returns>
         public static Vector2i operator -(Vector2i vec)
         {
             vec.x = -vec.x;
@@ -387,6 +409,13 @@ namespace Godot
             return vec;
         }
 
+        /// <summary>
+        /// Multiplies each component of the <see cref="Vector2i"/>
+        /// by the given <see langword="int"/>.
+        /// </summary>
+        /// <param name="vec">The vector to multiply.</param>
+        /// <param name="scale">The scale to multiply by.</param>
+        /// <returns>The multiplied vector.</returns>
         public static Vector2i operator *(Vector2i vec, int scale)
         {
             vec.x *= scale;
@@ -394,6 +423,13 @@ namespace Godot
             return vec;
         }
 
+        /// <summary>
+        /// Multiplies each component of the <see cref="Vector2i"/>
+        /// by the given <see langword="int"/>.
+        /// </summary>
+        /// <param name="scale">The scale to multiply by.</param>
+        /// <param name="vec">The vector to multiply.</param>
+        /// <returns>The multiplied vector.</returns>
         public static Vector2i operator *(int scale, Vector2i vec)
         {
             vec.x *= scale;
@@ -401,6 +437,13 @@ namespace Godot
             return vec;
         }
 
+        /// <summary>
+        /// Multiplies each component of the <see cref="Vector2i"/>
+        /// by the components of the given <see cref="Vector2i"/>.
+        /// </summary>
+        /// <param name="left">The left vector.</param>
+        /// <param name="right">The right vector.</param>
+        /// <returns>The multiplied vector.</returns>
         public static Vector2i operator *(Vector2i left, Vector2i right)
         {
             left.x *= right.x;
@@ -408,6 +451,13 @@ namespace Godot
             return left;
         }
 
+        /// <summary>
+        /// Multiplies each component of the <see cref="Vector2i"/>
+        /// by the given <see langword="int"/>.
+        /// </summary>
+        /// <param name="vec">The dividend vector.</param>
+        /// <param name="divisor">The divisor value.</param>
+        /// <returns>The divided vector.</returns>
         public static Vector2i operator /(Vector2i vec, int divisor)
         {
             vec.x /= divisor;
@@ -415,6 +465,13 @@ namespace Godot
             return vec;
         }
 
+        /// <summary>
+        /// Divides each component of the <see cref="Vector2i"/>
+        /// by the components of the given <see cref="Vector2i"/>.
+        /// </summary>
+        /// <param name="vec">The dividend vector.</param>
+        /// <param name="divisorv">The divisor vector.</param>
+        /// <returns>The divided vector.</returns>
         public static Vector2i operator /(Vector2i vec, Vector2i divisorv)
         {
             vec.x /= divisorv.x;
@@ -422,6 +479,22 @@ namespace Godot
             return vec;
         }
 
+        /// <summary>
+        /// Gets the remainder of each component of the <see cref="Vector2i"/>
+        /// with the components of the given <see langword="int"/>.
+        /// This operation uses truncated division, which is often not desired
+        /// as it does not work well with negative numbers.
+        /// Consider using <see cref="PosMod(int)"/> instead
+        /// if you want to handle negative numbers.
+        /// </summary>
+        /// <example>
+        /// <code>
+        /// GD.Print(new Vector2i(10, -20) % 7); // Prints "(3, -6)"
+        /// </code>
+        /// </example>
+        /// <param name="vec">The dividend vector.</param>
+        /// <param name="divisor">The divisor value.</param>
+        /// <returns>The remainder vector.</returns>
         public static Vector2i operator %(Vector2i vec, int divisor)
         {
             vec.x %= divisor;
@@ -429,6 +502,22 @@ namespace Godot
             return vec;
         }
 
+        /// <summary>
+        /// Gets the remainder of each component of the <see cref="Vector2i"/>
+        /// with the components of the given <see cref="Vector2i"/>.
+        /// This operation uses truncated division, which is often not desired
+        /// as it does not work well with negative numbers.
+        /// Consider using <see cref="PosMod(Vector2i)"/> instead
+        /// if you want to handle negative numbers.
+        /// </summary>
+        /// <example>
+        /// <code>
+        /// GD.Print(new Vector2i(10, -20) % new Vector2i(7, 8)); // Prints "(3, -4)"
+        /// </code>
+        /// </example>
+        /// <param name="vec">The dividend vector.</param>
+        /// <param name="divisorv">The divisor vector.</param>
+        /// <returns>The remainder vector.</returns>
         public static Vector2i operator %(Vector2i vec, Vector2i divisorv)
         {
             vec.x %= divisorv.x;
@@ -436,6 +525,13 @@ namespace Godot
             return vec;
         }
 
+        /// <summary>
+        /// Performs a bitwise AND operation with this <see cref="Vector2i"/>
+        /// and the given <see langword="int"/>.
+        /// </summary>
+        /// <param name="vec">The vector to AND with.</param>
+        /// <param name="and">The integer to AND with.</param>
+        /// <returns>The result of the bitwise AND.</returns>
         public static Vector2i operator &(Vector2i vec, int and)
         {
             vec.x &= and;
@@ -443,6 +539,13 @@ namespace Godot
             return vec;
         }
 
+        /// <summary>
+        /// Performs a bitwise AND operation with this <see cref="Vector2i"/>
+        /// and the given <see cref="Vector2i"/>.
+        /// </summary>
+        /// <param name="vec">The left vector to AND with.</param>
+        /// <param name="andv">The right vector to AND with.</param>
+        /// <returns>The result of the bitwise AND.</returns>
         public static Vector2i operator &(Vector2i vec, Vector2i andv)
         {
             vec.x &= andv.x;
@@ -450,50 +553,106 @@ namespace Godot
             return vec;
         }
 
+        /// <summary>
+        /// Returns <see langword="true"/> if the vectors are equal.
+        /// </summary>
+        /// <param name="left">The left vector.</param>
+        /// <param name="right">The right vector.</param>
+        /// <returns>Whether or not the vectors are equal.</returns>
         public static bool operator ==(Vector2i left, Vector2i right)
         {
             return left.Equals(right);
         }
 
+        /// <summary>
+        /// Returns <see langword="true"/> if the vectors are not equal.
+        /// </summary>
+        /// <param name="left">The left vector.</param>
+        /// <param name="right">The right vector.</param>
+        /// <returns>Whether or not the vectors are not equal.</returns>
         public static bool operator !=(Vector2i left, Vector2i right)
         {
             return !left.Equals(right);
         }
 
+        /// <summary>
+        /// Compares two <see cref="Vector2i"/> vectors by first checking if
+        /// the X value of the <paramref name="left"/> vector is less than
+        /// the X value of the <paramref name="right"/> vector.
+        /// If the X values are exactly equal, then it repeats this check
+        /// with the Y values of the two vectors.
+        /// This operator is useful for sorting vectors.
+        /// </summary>
+        /// <param name="left">The left vector.</param>
+        /// <param name="right">The right vector.</param>
+        /// <returns>Whether or not the left is less than the right.</returns>
         public static bool operator <(Vector2i left, Vector2i right)
         {
-            if (left.x.Equals(right.x))
+            if (left.x == right.x)
             {
                 return left.y < right.y;
             }
             return left.x < right.x;
         }
 
+        /// <summary>
+        /// Compares two <see cref="Vector2i"/> vectors by first checking if
+        /// the X value of the <paramref name="left"/> vector is greater than
+        /// the X value of the <paramref name="right"/> vector.
+        /// If the X values are exactly equal, then it repeats this check
+        /// with the Y values of the two vectors.
+        /// This operator is useful for sorting vectors.
+        /// </summary>
+        /// <param name="left">The left vector.</param>
+        /// <param name="right">The right vector.</param>
+        /// <returns>Whether or not the left is greater than the right.</returns>
         public static bool operator >(Vector2i left, Vector2i right)
         {
-            if (left.x.Equals(right.x))
+            if (left.x == right.x)
             {
                 return left.y > right.y;
             }
             return left.x > right.x;
         }
 
+        /// <summary>
+        /// Compares two <see cref="Vector2i"/> vectors by first checking if
+        /// the X value of the <paramref name="left"/> vector is less than
+        /// or equal to the X value of the <paramref name="right"/> vector.
+        /// If the X values are exactly equal, then it repeats this check
+        /// with the Y values of the two vectors.
+        /// This operator is useful for sorting vectors.
+        /// </summary>
+        /// <param name="left">The left vector.</param>
+        /// <param name="right">The right vector.</param>
+        /// <returns>Whether or not the left is less than or equal to the right.</returns>
         public static bool operator <=(Vector2i left, Vector2i right)
         {
-            if (left.x.Equals(right.x))
+            if (left.x == right.x)
             {
                 return left.y <= right.y;
             }
-            return left.x <= right.x;
+            return left.x < right.x;
         }
 
+        /// <summary>
+        /// Compares two <see cref="Vector2i"/> vectors by first checking if
+        /// the X value of the <paramref name="left"/> vector is greater than
+        /// or equal to the X value of the <paramref name="right"/> vector.
+        /// If the X values are exactly equal, then it repeats this check
+        /// with the Y values of the two vectors.
+        /// This operator is useful for sorting vectors.
+        /// </summary>
+        /// <param name="left">The left vector.</param>
+        /// <param name="right">The right vector.</param>
+        /// <returns>Whether or not the left is greater than or equal to the right.</returns>
         public static bool operator >=(Vector2i left, Vector2i right)
         {
-            if (left.x.Equals(right.x))
+            if (left.x == right.x)
             {
                 return left.y >= right.y;
             }
-            return left.x >= right.x;
+            return left.x > right.x;
         }
 
         /// <summary>
@@ -515,10 +674,11 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns <see langword="true"/> if this vector and <paramref name="obj"/> are equal.
+        /// Returns <see langword="true"/> if the vector is equal
+        /// to the given object (<see paramref="obj"/>).
         /// </summary>
-        /// <param name="obj">The other object to compare.</param>
-        /// <returns>Whether or not the vector and the other object are equal.</returns>
+        /// <param name="obj">The object to compare with.</param>
+        /// <returns>Whether or not the vector and the object are equal.</returns>
         public override bool Equals(object obj)
         {
             if (obj is Vector2i)
@@ -530,9 +690,9 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns <see langword="true"/> if this vector and <paramref name="other"/> are equal.
+        /// Returns <see langword="true"/> if the vectors are equal.
         /// </summary>
-        /// <param name="other">The other vector to compare.</param>
+        /// <param name="other">The other vector.</param>
         /// <returns>Whether or not the vectors are equal.</returns>
         public bool Equals(Vector2i other)
         {

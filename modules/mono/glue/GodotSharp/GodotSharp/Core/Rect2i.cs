@@ -377,11 +377,25 @@ namespace Godot
             _size = new Vector2i(width, height);
         }
 
+        /// <summary>
+        /// Returns <see langword="true"/> if the
+        /// <see cref="Rect2i"/>s are exactly equal.
+        /// </summary>
+        /// <param name="left">The left rect.</param>
+        /// <param name="right">The right rect.</param>
+        /// <returns>Whether or not the rects are equal.</returns>
         public static bool operator ==(Rect2i left, Rect2i right)
         {
             return left.Equals(right);
         }
 
+        /// <summary>
+        /// Returns <see langword="true"/> if the
+        /// <see cref="Rect2i"/>s are not equal.
+        /// </summary>
+        /// <param name="left">The left rect.</param>
+        /// <param name="right">The right rect.</param>
+        /// <returns>Whether or not the rects are not equal.</returns>
         public static bool operator !=(Rect2i left, Rect2i right)
         {
             return !left.Equals(right);

@@ -827,6 +827,14 @@ namespace Godot
             Row2 = new Vector3(xz, yz, zz);
         }
 
+        /// <summary>
+        /// Composes these two basis matrices by multiplying them
+        /// together. This has the effect of transforming the second basis
+        /// (the child) by the first basis (the parent).
+        /// </summary>
+        /// <param name="left">The parent basis.</param>
+        /// <param name="right">The child basis.</param>
+        /// <returns>The composed basis.</returns>
         public static Basis operator *(Basis left, Basis right)
         {
             return new Basis
@@ -837,21 +845,40 @@ namespace Godot
             );
         }
 
+        /// <summary>
+        /// Returns <see langword="true"/> if the basis matrices are exactly
+        /// equal. Note: Due to floating-point precision errors, consider using
+        /// <see cref="IsEqualApprox"/> instead, which is more reliable.
+        /// </summary>
+        /// <param name="left">The left basis.</param>
+        /// <param name="right">The right basis.</param>
+        /// <returns>Whether or not the basis matrices are exactly equal.</returns>
         public static bool operator ==(Basis left, Basis right)
         {
             return left.Equals(right);
         }
 
+        /// <summary>
+        /// Returns <see langword="true"/> if the basis matrices are not equal.
+        /// Note: Due to floating-point precision errors, consider using
+        /// <see cref="IsEqualApprox"/> instead, which is more reliable.
+        /// </summary>
+        /// <param name="left">The left basis.</param>
+        /// <param name="right">The right basis.</param>
+        /// <returns>Whether or not the basis matrices are not equal.</returns>
         public static bool operator !=(Basis left, Basis right)
         {
             return !left.Equals(right);
         }
 
         /// <summary>
-        /// Returns <see langword="true"/> if this basis and <paramref name="obj"/> are equal.
+        /// Returns <see langword="true"/> if the <see cref="Basis"/> is
+        /// exactly equal to the given object (<see paramref="obj"/>).
+        /// Note: Due to floating-point precision errors, consider using
+        /// <see cref="IsEqualApprox"/> instead, which is more reliable.
         /// </summary>
-        /// <param name="obj">The other object to compare.</param>
-        /// <returns>Whether or not the basis and the other object are equal.</returns>
+        /// <param name="obj">The object to compare with.</param>
+        /// <returns>Whether or not the basis matrix and the object are exactly equal.</returns>
         public override bool Equals(object obj)
         {
             if (obj is Basis)
@@ -863,10 +890,12 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns <see langword="true"/> if this basis and <paramref name="other"/> are equal
+        /// Returns <see langword="true"/> if the basis matrices are exactly
+        /// equal. Note: Due to floating-point precision errors, consider using
+        /// <see cref="IsEqualApprox"/> instead, which is more reliable.
         /// </summary>
-        /// <param name="other">The other basis to compare.</param>
-        /// <returns>Whether or not the bases are equal.</returns>
+        /// <param name="other">The other basis.</param>
+        /// <returns>Whether or not the basis matrices are exactly equal.</returns>
         public bool Equals(Basis other)
         {
             return Row0.Equals(other.Row0) && Row1.Equals(other.Row1) && Row2.Equals(other.Row2);

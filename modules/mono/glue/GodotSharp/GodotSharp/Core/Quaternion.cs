@@ -446,6 +446,14 @@ namespace Godot
             }
         }
 
+        /// <summary>
+        /// Composes these two quaternions by multiplying them together.
+        /// This has the effect of rotating the second quaternion
+        /// (the child) by the first quaternion (the parent).
+        /// </summary>
+        /// <param name="left">The parent quaternion.</param>
+        /// <param name="right">The child quaternion.</param>
+        /// <returns>The composed quaternion.</returns>
         public static Quaternion operator *(Quaternion left, Quaternion right)
         {
             return new Quaternion
@@ -457,21 +465,55 @@ namespace Godot
             );
         }
 
+        /// <summary>
+        /// Adds each component of the left <see cref="Quaternion"/>
+        /// to the right <see cref="Quaternion"/>. This operation is not
+        /// meaningful on its own, but it can be used as a part of a
+        /// larger expression, such as approximating an intermediate
+        /// rotation between two nearby rotations.
+        /// </summary>
+        /// <param name="left">The left quaternion to add.</param>
+        /// <param name="right">The right quaternion to add.</param>
+        /// <returns>The added quaternion.</returns>
         public static Quaternion operator +(Quaternion left, Quaternion right)
         {
             return new Quaternion(left.x + right.x, left.y + right.y, left.z + right.z, left.w + right.w);
         }
 
+        /// <summary>
+        /// Subtracts each component of the left <see cref="Quaternion"/>
+        /// by the right <see cref="Quaternion"/>. This operation is not
+        /// meaningful on its own, but it can be used as a part of a
+        /// larger expression.
+        /// </summary>
+        /// <param name="left">The left quaternion to subtract.</param>
+        /// <param name="right">The right quaternion to subtract.</param>
+        /// <returns>The subtracted quaternion.</returns>
         public static Quaternion operator -(Quaternion left, Quaternion right)
         {
             return new Quaternion(left.x - right.x, left.y - right.y, left.z - right.z, left.w - right.w);
         }
 
-        public static Quaternion operator -(Quaternion left)
+        /// <summary>
+        /// Returns the negative value of the <see cref="Quaternion"/>.
+        /// This is the same as writing
+        /// <c>new Quaternion(-q.x, -q.y, -q.z, -q.w)</c>. This operation
+        /// results in a quaternion that represents the same rotation.
+        /// </summary>
+        /// <param name="quat">The quaternion to negate.</param>
+        /// <returns>The negated quaternion.</returns>
+        public static Quaternion operator -(Quaternion quat)
         {
-            return new Quaternion(-left.x, -left.y, -left.z, -left.w);
+            return new Quaternion(-quat.x, -quat.y, -quat.z, -quat.w);
         }
 
+        /// <summary>
+        /// Rotates (multiplies) the <see cref="Vector3"/>
+        /// by the given <see cref="Quaternion"/>.
+        /// </summary>
+        /// <param name="quat">The quaternion to rotate by.</param>
+        /// <param name="vec">The vector to rotate.</param>
+        /// <returns>The rotated vector.</returns>
         public static Vector3 operator *(Quaternion quat, Vector3 vec)
         {
 #if DEBUG
@@ -485,31 +527,81 @@ namespace Godot
             return vec + (((uv * quat.w) + u.Cross(uv)) * 2);
         }
 
+        /// <summary>
+        /// Inversely rotates (multiplies) the <see cref="Vector3"/>
+        /// by the given <see cref="Quaternion"/>.
+        /// </summary>
+        /// <param name="vec">The vector to rotate.</param>
+        /// <param name="quat">The quaternion to rotate by.</param>
+        /// <returns>The inversely rotated vector.</returns>
         public static Vector3 operator *(Vector3 vec, Quaternion quat)
         {
             return quat.Inverse() * vec;
         }
 
+        /// <summary>
+        /// Multiplies each component of the <see cref="Quaternion"/>
+        /// by the given <see cref="real_t"/>. This operation is not
+        /// meaningful on its own, but it can be used as a part of a
+        /// larger expression.
+        /// </summary>
+        /// <param name="left">The quaternion to multiply.</param>
+        /// <param name="right">The value to multiply by.</param>
+        /// <returns>The multiplied quaternion.</returns>
         public static Quaternion operator *(Quaternion left, real_t right)
         {
             return new Quaternion(left.x * right, left.y * right, left.z * right, left.w * right);
         }
 
+        /// <summary>
+        /// Multiplies each component of the <see cref="Quaternion"/>
+        /// by the given <see cref="real_t"/>. This operation is not
+        /// meaningful on its own, but it can be used as a part of a
+        /// larger expression.
+        /// </summary>
+        /// <param name="left">The value to multiply by.</param>
+        /// <param name="right">The quaternion to multiply.</param>
+        /// <returns>The multiplied quaternion.</returns>
         public static Quaternion operator *(real_t left, Quaternion right)
         {
             return new Quaternion(right.x * left, right.y * left, right.z * left, right.w * left);
         }
 
+        /// <summary>
+        /// Divides each component of the <see cref="Quaternion"/>
+        /// by the given <see cref="real_t"/>. This operation is not
+        /// meaningful on its own, but it can be used as a part of a
+        /// larger expression.
+        /// </summary>
+        /// <param name="left">The quaternion to divide.</param>
+        /// <param name="right">The value to divide by.</param>
+        /// <returns>The divided quaternion.</returns>
         public static Quaternion operator /(Quaternion left, real_t right)
         {
             return left * (1.0f / right);
         }
 
+        /// <summary>
+        /// Returns <see langword="true"/> if the quaternions are exactly equal.
+        /// Note: Due to floating-point precision errors, consider using
+        /// <see cref="IsEqualApprox"/> instead, which is more reliable.
+        /// </summary>
+        /// <param name="left">The left quaternion.</param>
+        /// <param name="right">The right quaternion.</param>
+        /// <returns>Whether or not the quaternions are exactly equal.</returns>
         public static bool operator ==(Quaternion left, Quaternion right)
         {
             return left.Equals(right);
         }
 
+        /// <summary>
+        /// Returns <see langword="true"/> if the quaternions are not equal.
+        /// Note: Due to floating-point precision errors, consider using
+        /// <see cref="IsEqualApprox"/> instead, which is more reliable.
+        /// </summary>
+        /// <param name="left">The left quaternion.</param>
+        /// <param name="right">The right quaternion.</param>
+        /// <returns>Whether or not the quaternions are not equal.</returns>
         public static bool operator !=(Quaternion left, Quaternion right)
         {
             return !left.Equals(right);
@@ -519,7 +611,7 @@ namespace Godot
         /// Returns <see langword="true"/> if this quaternion and <paramref name="obj"/> are equal.
         /// </summary>
         /// <param name="obj">The other object to compare.</param>
-        /// <returns>Whether or not the quaternion and the other object are equal.</returns>
+        /// <returns>Whether or not the quaternion and the other object are exactly equal.</returns>
         public override bool Equals(object obj)
         {
             if (obj is Quaternion)
@@ -534,7 +626,7 @@ namespace Godot
         /// Returns <see langword="true"/> if this quaternion and <paramref name="other"/> are equal.
         /// </summary>
         /// <param name="other">The other quaternion to compare.</param>
-        /// <returns>Whether or not the quaternions are equal.</returns>
+        /// <returns>Whether or not the quaternions are exactly equal.</returns>
         public bool Equals(Quaternion other)
         {
             return x == other.x && y == other.y && z == other.z && w == other.w;
