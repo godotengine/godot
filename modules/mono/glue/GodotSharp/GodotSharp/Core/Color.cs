@@ -834,6 +834,13 @@ namespace Godot
                 throw new ArgumentOutOfRangeException("Invalid color code. Blue part is not valid hexadecimal: " + rgba);
         }
 
+        /// <summary>
+        /// Adds each component of the <see cref="Color"/>
+        /// with the components of the given <see cref="Color"/>.
+        /// </summary>
+        /// <param name="left">The left color.</param>
+        /// <param name="right">The right color.</param>
+        /// <returns>The added color.</returns>
         public static Color operator +(Color left, Color right)
         {
             left.r += right.r;
@@ -843,6 +850,13 @@ namespace Godot
             return left;
         }
 
+        /// <summary>
+        /// Subtracts each component of the <see cref="Color"/>
+        /// by the components of the given <see cref="Color"/>.
+        /// </summary>
+        /// <param name="left">The left color.</param>
+        /// <param name="right">The right color.</param>
+        /// <returns>The subtracted color.</returns>
         public static Color operator -(Color left, Color right)
         {
             left.r -= right.r;
@@ -852,11 +866,25 @@ namespace Godot
             return left;
         }
 
+        /// <summary>
+        /// Inverts the given color. This is equivalent to
+        /// <c>Colors.White - c</c> or
+        /// <c>new Color(1 - c.r, 1 - c.g, 1 - c.b, 1 - c.a)</c>.
+        /// </summary>
+        /// <param name="color">The color to invert.</param>
+        /// <returns>The inverted color</returns>
         public static Color operator -(Color color)
         {
             return Colors.White - color;
         }
 
+        /// <summary>
+        /// Multiplies each component of the <see cref="Color"/>
+        /// by the given <see langword="float"/>.
+        /// </summary>
+        /// <param name="color">The color to multiply.</param>
+        /// <param name="scale">The value to multiply by.</param>
+        /// <returns>The multiplied color.</returns>
         public static Color operator *(Color color, float scale)
         {
             color.r *= scale;
@@ -866,6 +894,13 @@ namespace Godot
             return color;
         }
 
+        /// <summary>
+        /// Multiplies each component of the <see cref="Color"/>
+        /// by the given <see langword="float"/>.
+        /// </summary>
+        /// <param name="scale">The value to multiply by.</param>
+        /// <param name="color">The color to multiply.</param>
+        /// <returns>The multiplied color.</returns>
         public static Color operator *(float scale, Color color)
         {
             color.r *= scale;
@@ -875,6 +910,13 @@ namespace Godot
             return color;
         }
 
+        /// <summary>
+        /// Multiplies each component of the <see cref="Color"/>
+        /// by the components of the given <see cref="Color"/>.
+        /// </summary>
+        /// <param name="left">The left color.</param>
+        /// <param name="right">The right color.</param>
+        /// <returns>The multiplied color.</returns>
         public static Color operator *(Color left, Color right)
         {
             left.r *= right.r;
@@ -884,6 +926,13 @@ namespace Godot
             return left;
         }
 
+        /// <summary>
+        /// Divides each component of the <see cref="Color"/>
+        /// by the given <see langword="float"/>.
+        /// </summary>
+        /// <param name="color">The dividend vector.</param>
+        /// <param name="scale">The divisor value.</param>
+        /// <returns>The divided color.</returns>
         public static Color operator /(Color color, float scale)
         {
             color.r /= scale;
@@ -893,6 +942,13 @@ namespace Godot
             return color;
         }
 
+        /// <summary>
+        /// Divides each component of the <see cref="Color"/>
+        /// by the components of the given <see cref="Color"/>.
+        /// </summary>
+        /// <param name="left">The dividend color.</param>
+        /// <param name="right">The divisor color.</param>
+        /// <returns>The divided color.</returns>
         public static Color operator /(Color left, Color right)
         {
             left.r /= right.r;
@@ -902,16 +958,44 @@ namespace Godot
             return left;
         }
 
+        /// <summary>
+        /// Returns <see langword="true"/> if the colors are exactly equal.
+        /// Note: Due to floating-point precision errors, consider using
+        /// <see cref="IsEqualApprox"/> instead, which is more reliable.
+        /// </summary>
+        /// <param name="left">The left color.</param>
+        /// <param name="right">The right color.</param>
+        /// <returns>Whether or not the colors are equal.</returns>
         public static bool operator ==(Color left, Color right)
         {
             return left.Equals(right);
         }
 
+        /// <summary>
+        /// Returns <see langword="true"/> if the colors are not equal.
+        /// Note: Due to floating-point precision errors, consider using
+        /// <see cref="IsEqualApprox"/> instead, which is more reliable.
+        /// </summary>
+        /// <param name="left">The left color.</param>
+        /// <param name="right">The right color.</param>
+        /// <returns>Whether or not the colors are equal.</returns>
         public static bool operator !=(Color left, Color right)
         {
             return !left.Equals(right);
         }
 
+        /// <summary>
+        /// Compares two <see cref="Color"/>s by first checking if
+        /// the red value of the <paramref name="left"/> color is less than
+        /// the red value of the <paramref name="right"/> color.
+        /// If the red values are exactly equal, then it repeats this check
+        /// with the green values of the two colors, then with the blue values,
+        /// and then with the alpha value.
+        /// This operator is useful for sorting colors.
+        /// </summary>
+        /// <param name="left">The left color.</param>
+        /// <param name="right">The right color.</param>
+        /// <returns>Whether or not the left is less than the right.</returns>
         public static bool operator <(Color left, Color right)
         {
             if (Mathf.IsEqualApprox(left.r, right.r))
@@ -929,6 +1013,18 @@ namespace Godot
             return left.r < right.r;
         }
 
+        /// <summary>
+        /// Compares two <see cref="Color"/>s by first checking if
+        /// the red value of the <paramref name="left"/> color is greater than
+        /// the red value of the <paramref name="right"/> color.
+        /// If the red values are exactly equal, then it repeats this check
+        /// with the green values of the two colors, then with the blue values,
+        /// and then with the alpha value.
+        /// This operator is useful for sorting colors.
+        /// </summary>
+        /// <param name="left">The left color.</param>
+        /// <param name="right">The right color.</param>
+        /// <returns>Whether or not the left is greater than the right.</returns>
         public static bool operator >(Color left, Color right)
         {
             if (Mathf.IsEqualApprox(left.r, right.r))
@@ -962,9 +1058,11 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns <see langword="true"/> if this color and <paramref name="other"/> are equal
+        /// Returns <see langword="true"/> if the colors are exactly equal.
+        /// Note: Due to floating-point precision errors, consider using
+        /// <see cref="IsEqualApprox"/> instead, which is more reliable.
         /// </summary>
-        /// <param name="other">The other color to compare.</param>
+        /// <param name="other">The other color.</param>
         /// <returns>Whether or not the colors are equal.</returns>
         public bool Equals(Color other)
         {
