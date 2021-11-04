@@ -1733,7 +1733,7 @@ void PopupMenu::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_item_shortcut", "idx"), &PopupMenu::get_item_shortcut);
 
 	ClassDB::bind_method(D_METHOD("get_current_index"), &PopupMenu::get_current_index);
-	ClassDB::bind_method(D_METHOD("set_item_count"), &PopupMenu::set_item_count);
+	ClassDB::bind_method(D_METHOD("set_item_count", "count"), &PopupMenu::set_item_count);
 	ClassDB::bind_method(D_METHOD("get_item_count"), &PopupMenu::get_item_count);
 
 	ClassDB::bind_method(D_METHOD("remove_item", "idx"), &PopupMenu::remove_item);

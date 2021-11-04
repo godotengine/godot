@@ -203,7 +203,7 @@ void MenuButton::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_switch_on_hover"), &MenuButton::is_switch_on_hover);
 	ClassDB::bind_method(D_METHOD("set_disable_shortcuts", "disabled"), &MenuButton::set_disable_shortcuts);
 
-	ClassDB::bind_method(D_METHOD("set_item_count"), &MenuButton::set_item_count);
+	ClassDB::bind_method(D_METHOD("set_item_count", "count"), &MenuButton::set_item_count);
 	ClassDB::bind_method(D_METHOD("get_item_count"), &MenuButton::get_item_count);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "switch_on_hover"), "set_switch_on_hover", "is_switch_on_hover");
