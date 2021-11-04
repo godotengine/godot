@@ -3152,7 +3152,7 @@ void SceneTreeDock::_create_remap_for_node(Node *p_node, Map<RES, RES> &r_remap)
 					}
 				}
 
-				if ((res->get_path() == "" || res->get_path().find("::") > -1) && !r_remap.has(res)) {
+				if (res->is_built_in() && !r_remap.has(res)) {
 					_create_remap_for_resource(res, r_remap);
 				}
 			}
@@ -3179,7 +3179,7 @@ void SceneTreeDock::_create_remap_for_resource(RES p_resource, Map<RES, RES> &r_
 		if (v.is_ref()) {
 			RES res = v;
 			if (res.is_valid()) {
-				if ((res->get_path() == "" || res->get_path().find("::") > -1) && !r_remap.has(res)) {
+				if (res->is_built_in() && !r_remap.has(res)) {
 					_create_remap_for_resource(res, r_remap);
 				}
 			}

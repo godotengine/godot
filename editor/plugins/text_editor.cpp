@@ -65,7 +65,7 @@ void TextEditor::_load_theme_settings() {
 String TextEditor::get_name() {
 	String name;
 
-	if (text_file->get_path().find("local://") == -1 && text_file->get_path().find("::") == -1) {
+	if (!text_file->is_built_in()) {
 		name = text_file->get_path().get_file();
 		if (is_unsaved()) {
 			if (text_file->get_path().is_empty()) {
