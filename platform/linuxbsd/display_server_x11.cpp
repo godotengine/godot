@@ -733,6 +733,16 @@ Size2i DisplayServerX11::screen_get_size(int p_screen) const {
 	return _screen_get_rect(p_screen).size;
 }
 
+bool g_bad_window = false;
+int bad_window_error_handler(Display *display, XErrorEvent *error) {
+	if (error->error_code == BadWindow) {
+		g_bad_window = true;
+	} else {
+		ERR_PRINT("Unhandled XServer error code: " + itos(error->error_code));
+	}
+	return 0;
+}
+
 Rect2i DisplayServerX11::screen_get_usable_rect(int p_screen) const {
 	_THREAD_SAFE_METHOD_
 
@@ -869,7 +879,13 @@ Rect2i DisplayServerX11::screen_get_usable_rect(int p_screen) const {
 					if (desktop_valid) {
 						use_simple_method = false;
 
+						// Handle bad window errors silently because there's no other way to check
+						// that one of the windows has been destroyed in the meantime.
+						int (*oldHandler)(Display *, XErrorEvent *) = XSetErrorHandler(&bad_window_error_handler);
+
 						for (unsigned long win_index = 0; win_index < clients_len; ++win_index) {
+							g_bad_window = false;
+
 							// Remove strut size from desktop size to get a more accurate result.
 							bool strut_found = false;
 							unsigned long strut_len = 0;
@@ -881,7 +897,7 @@ Rect2i DisplayServerX11::screen_get_usable_rect(int p_screen) const {
 								}
 							}
 							// Fallback to older strut property.
-							if (!strut_found) {
+							if (!g_bad_window && !strut_found) {
 								Atom strut_prop = XInternAtom(x11_display, "_NET_WM_STRUT", True);
 								if (strut_prop != None) {
 									if (XGetWindowProperty(x11_display, windows_data[win_index], strut_prop, 0, LONG_MAX, False, XA_CARDINAL, &type, &format, &strut_len, &remaining, &strut_data) == Success) {
@@ -889,7 +905,7 @@ Rect2i DisplayServerX11::screen_get_usable_rect(int p_screen) const {
 									}
 								}
 							}
-							if (strut_found && (format == 32) && (strut_len >= 4) && strut_data) {
+							if (!g_bad_window && strut_found && (format == 32) && (strut_len >= 4) && strut_data) {
 								long *struts = (long *)strut_data;
 
 								long left = struts[0];
@@ -961,6 +977,9 @@ Rect2i DisplayServerX11::screen_get_usable_rect(int p_screen) const {
 								XFree(strut_data);
 							}
 						}
+
+						// Restore default error handler.
+						XSetErrorHandler(oldHandler);
 					}
 				}
 			}
