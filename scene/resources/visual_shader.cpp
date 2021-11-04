@@ -199,6 +199,10 @@ Vector<StringName> VisualShaderNode::get_editable_properties() const {
 	return Vector<StringName>();
 }
 
+Map<StringName, String> VisualShaderNode::get_editable_properties_names() const {
+	return Map<StringName, String>();
+}
+
 Array VisualShaderNode::get_default_input_values() const {
 	Array ret;
 	for (const KeyValue<int, Variant> &E : default_input_values) {
@@ -1920,6 +1924,10 @@ void VisualShader::_update_shader() const {
 		global_compute_code += "	float c = cos(angle);\n";
 		global_compute_code += "	float oc = 1.0 - c;\n";
 		global_compute_code += "	return mat4(vec4(oc * axis.x * axis.x + c, oc * axis.x * axis.y - axis.z * s, oc * axis.z * axis.x + axis.y * s, 0), vec4(oc * axis.x * axis.y + axis.z * s, oc * axis.y * axis.y + c, oc * axis.y * axis.z - axis.x * s, 0), vec4(oc * axis.z * axis.x - axis.y * s, oc * axis.y * axis.z + axis.x * s, oc * axis.z * axis.z + c, 0), vec4(0, 0, 0, 1));\n";
+		global_compute_code += "}\n\n";
+
+		global_compute_code += "vec2 __get_random_unit_vec2(inout uint seed) {\n";
+		global_compute_code += "	return normalize(vec2(__rand_from_seed_m1_p1(seed), __rand_from_seed_m1_p1(seed)));\n";
 		global_compute_code += "}\n\n";
 
 		global_compute_code += "vec3 __get_random_unit_vec3(inout uint seed) {\n";
