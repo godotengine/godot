@@ -48,7 +48,7 @@
 			<argument index="0" name="pixels" type="int" />
 			<argument index="1" name="rect" type="Rect2" />
 			<description>
-				Applies morphological dilation to the bitmap. The first argument is the dilation amount, Rect2 is the area where the dilation will be applied.
+				Applies morphological dilation or erosion to the bitmap. If [code]pixels[/code] is positive, dilation is applied to the bitmap. If [code]pixels[/code] is negative, erosion is applied to the bitmap. [code]rect[/code] defines the area where the morphological operation is applied. Pixels located outside the [code]rect[/code] are unaffected by [method grow_mask].
 			</description>
 		</method>
 		<method name="opaque_to_polygons" qualifiers="const">
