@@ -84,6 +84,7 @@ bool DisplayServerWindows::has_feature(Feature p_feature) const {
 		case FEATURE_NATIVE_ICON:
 		case FEATURE_SWAP_BUFFERS:
 		case FEATURE_KEEP_SCREEN_ON:
+		case FEATURE_TEXT_TO_SPEECH:
 			return true;
 		default:
 			return false;
@@ -131,6 +132,41 @@ void DisplayServerWindows::_set_mouse_mode_impl(MouseMode p_mode) {
 		cursor_shape = CURSOR_MAX;
 		cursor_set_shape(c);
 	}
+}
+
+bool DisplayServerWindows::tts_is_speaking() const {
+	ERR_FAIL_COND_V(!tts, false);
+	return tts->is_speaking();
+}
+
+bool DisplayServerWindows::tts_is_paused() const {
+	ERR_FAIL_COND_V(!tts, false);
+	return tts->is_paused();
+}
+
+Array DisplayServerWindows::tts_get_voices() const {
+	ERR_FAIL_COND_V(!tts, Array());
+	return tts->get_voices();
+}
+
+void DisplayServerWindows::tts_speak(const String &p_text, const String &p_voice, int p_volume, float p_pitch, float p_rate, int p_utterance_id, bool p_interrupt) {
+	ERR_FAIL_COND(!tts);
+	tts->speak(p_text, p_voice, p_volume, p_pitch, p_rate, p_utterance_id, p_interrupt);
+}
+
+void DisplayServerWindows::tts_pause() {
+	ERR_FAIL_COND(!tts);
+	tts->pause();
+}
+
+void DisplayServerWindows::tts_resume() {
+	ERR_FAIL_COND(!tts);
+	tts->resume();
+}
+
+void DisplayServerWindows::tts_stop() {
+	ERR_FAIL_COND(!tts);
+	tts->stop();
 }
 
 void DisplayServerWindows::mouse_set_mode(MouseMode p_mode) {
@@ -3497,6 +3533,9 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 
 	rendering_driver = p_rendering_driver;
 
+	// Init TTS
+	tts = memnew(TTS_Windows);
+
 	// Note: Wacom WinTab driver API for pen input, for devices incompatible with Windows Ink.
 	HMODULE wintab_lib = LoadLibraryW(L"wintab32.dll");
 	if (wintab_lib) {
@@ -3739,4 +3778,8 @@ DisplayServerWindows::~DisplayServerWindows() {
 		gl_manager = nullptr;
 	}
 #endif
+	if (tts) {
+		memdelete(tts);
+	}
+	CoUninitialize();
 }

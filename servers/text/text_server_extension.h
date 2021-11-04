@@ -485,6 +485,9 @@ public:
 	virtual String strip_diacritics(const String &p_string) const override;
 	GDVIRTUAL1RC(String, strip_diacritics, const String &);
 
+	virtual PackedInt32Array string_get_word_breaks(const String &p_string, const String &p_language = "") const override;
+	GDVIRTUAL2RC(PackedInt32Array, string_get_word_breaks, const String &, const String &);
+
 	virtual String string_to_upper(const String &p_string, const String &p_language = "") const override;
 	virtual String string_to_lower(const String &p_string, const String &p_language = "") const override;
 	GDVIRTUAL2RC(String, string_to_upper, const String &, const String &);

@@ -293,6 +293,8 @@ void TextServerExtension::_bind_methods() {
 
 	GDVIRTUAL_BIND(strip_diacritics, "string");
 
+	GDVIRTUAL_BIND(string_get_word_breaks, "string", "language");
+
 	GDVIRTUAL_BIND(string_to_upper, "string", "language");
 	GDVIRTUAL_BIND(string_to_lower, "string", "language");
 
@@ -1501,6 +1503,14 @@ Array TextServerExtension::parse_structured_text(StructuredTextParser p_parser_t
 		return ret;
 	}
 	return Array();
+}
+
+PackedInt32Array TextServerExtension::string_get_word_breaks(const String &p_string, const String &p_language) const {
+	PackedInt32Array ret;
+	if (GDVIRTUAL_CALL(string_get_word_breaks, p_string, p_language, ret)) {
+		return ret;
+	}
+	return PackedInt32Array();
 }
 
 TextServerExtension::TextServerExtension() {

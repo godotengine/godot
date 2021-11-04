@@ -1461,6 +1461,14 @@
 				[b]Note:[/b] This method is used by default line/word breaking methods, and its implementation might be omitted if custom line breaking in implemented.
 			</description>
 		</method>
+		<method name="string_get_word_breaks" qualifiers="virtual const">
+			<return type="PackedInt32Array" />
+			<argument index="0" name="string" type="String" />
+			<argument index="1" name="language" type="String" />
+			<description>
+				Returns array of the word break character offsets.
+			</description>
+		</method>
 		<method name="string_to_lower" qualifiers="virtual const">
 			<return type="String" />
 			<argument index="0" name="string" type="String" />

@@ -75,6 +75,7 @@ def get_opts():
         BoolVariable("use_msan", "Use LLVM compiler memory sanitizer (MSAN)", False),
         BoolVariable("pulseaudio", "Detect and use PulseAudio", True),
         BoolVariable("dbus", "Detect and use D-Bus to handle screensaver", True),
+        BoolVariable("speechd", "Detect and use Speech Dispatcher for Text-to-Speech support", True),
         BoolVariable("udev", "Use udev for gamepad connection callbacks", True),
         BoolVariable("x11", "Enable X11 display", True),
         BoolVariable("debug_symbols", "Add debugging symbols to release/release_debug builds", True),
@@ -336,6 +337,13 @@ def configure(env):
             env.ParseConfig("pkg-config dbus-1 --cflags --libs")
         else:
             print("Warning: D-Bus development libraries not found. Disabling screensaver prevention.")
+
+    if env["speechd"]:
+        if os.system("pkg-config --exists speech-dispatcher") == 0:  # 0 means found
+            env.Append(CPPDEFINES=["SPEECHD_ENABLED"])
+            env.ParseConfig("pkg-config speech-dispatcher --cflags")  # Only cflags, we dlopen the library.
+        else:
+            print("Warning: Speech Dispatcher development libraries not found. Disabling Text-to-Speech support.")
 
     if platform.system() == "Linux":
         env.Append(CPPDEFINES=["JOYDEV_ENABLED"])

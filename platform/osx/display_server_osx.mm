@@ -37,6 +37,8 @@
 #include "key_mapping_osx.h"
 #include "os_osx.h"
 
+#include "tts_osx.h"
+
 #include "core/io/marshalls.h"
 #include "core/math/geometry_2d.h"
 #include "core/os/keyboard.h"
@@ -702,6 +704,7 @@ bool DisplayServerOSX::has_feature(Feature p_feature) const {
 		case FEATURE_NATIVE_ICON:
 		//case FEATURE_KEEP_SCREEN_ON:
 		case FEATURE_SWAP_BUFFERS:
+		case FEATURE_TEXT_TO_SPEECH:
 			return true;
 		default: {
 		}
@@ -1456,6 +1459,41 @@ void DisplayServerOSX::global_menu_clear(const String &p_menu_root) {
 			[menu setSubmenu:apple_menu forItem:menu_item];
 		}
 	}
+}
+
+bool DisplayServerOSX::tts_is_speaking() const {
+	ERR_FAIL_COND_V(!tts, false);
+	return [tts isSpeaking];
+}
+
+bool DisplayServerOSX::tts_is_paused() const {
+	ERR_FAIL_COND_V(!tts, false);
+	return [tts isPaused];
+}
+
+Array DisplayServerOSX::tts_get_voices() const {
+	ERR_FAIL_COND_V(!tts, Array());
+	return [tts getVoices];
+}
+
+void DisplayServerOSX::tts_speak(const String &p_text, const String &p_voice, int p_volume, float p_pitch, float p_rate, int p_utterance_id, bool p_interrupt) {
+	ERR_FAIL_COND(!tts);
+	[tts speak:p_text voice:p_voice volume:p_volume pitch:p_pitch rate:p_rate utterance_id:p_utterance_id interrupt:p_interrupt];
+}
+
+void DisplayServerOSX::tts_pause() {
+	ERR_FAIL_COND(!tts);
+	[tts pauseSpeaking];
+}
+
+void DisplayServerOSX::tts_resume() {
+	ERR_FAIL_COND(!tts);
+	[tts resumeSpeaking];
+}
+
+void DisplayServerOSX::tts_stop() {
+	ERR_FAIL_COND(!tts);
+	[tts stopSpeaking];
 }
 
 Error DisplayServerOSX::dialog_show(String p_title, String p_description, Vector<String> p_buttons, const Callable &p_callback) {
@@ -3120,6 +3158,9 @@ DisplayServerOSX::DisplayServerOSX(const String &p_rendering_driver, WindowMode 
 
 	// Register to be notified on displays arrangement changes.
 	CGDisplayRegisterReconfigurationCallback(_displays_arrangement_changed, nullptr);
+
+	// Init TTS
+	tts = [[TTS_OSX alloc] init];
 
 	NSMenuItem *menu_item;
 	NSString *title;

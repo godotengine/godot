@@ -121,6 +121,7 @@ public:
 		FEATURE_SWAP_BUFFERS,
 		FEATURE_KEEP_SCREEN_ON,
 		FEATURE_CLIPBOARD_PRIMARY,
+		FEATURE_TEXT_TO_SPEECH,
 	};
 
 	virtual bool has_feature(Feature p_feature) const = 0;
@@ -171,6 +172,40 @@ public:
 
 	virtual void global_menu_remove_item(const String &p_menu_root, int p_idx);
 	virtual void global_menu_clear(const String &p_menu_root);
+
+	struct TTSUtterance {
+		String text;
+		String voice;
+		int volume = 50;
+		float pitch = 1.f;
+		float rate = 1.f;
+		int id = 0;
+	};
+
+	enum TTSUtteranceEvent {
+		TTS_UTTERANCE_STARTED,
+		TTS_UTTERANCE_ENDED,
+		TTS_UTTERANCE_CANCELED,
+		TTS_UTTERANCE_BOUNDARY,
+		TTS_UTTERANCE_MAX,
+	};
+
+private:
+	Callable utterance_callback[TTS_UTTERANCE_MAX];
+
+public:
+	virtual bool tts_is_speaking() const;
+	virtual bool tts_is_paused() const;
+	virtual Array tts_get_voices() const;
+	virtual PackedStringArray tts_get_voices_for_language(const String &p_language) const;
+
+	virtual void tts_speak(const String &p_text, const String &p_voice, int p_volume = 50, float p_pitch = 1.f, float p_rate = 1.f, int p_utterance_id = 0, bool p_interrupt = false);
+	virtual void tts_pause();
+	virtual void tts_resume();
+	virtual void tts_stop();
+
+	virtual void tts_set_utterance_callback(TTSUtteranceEvent p_event, const Callable &p_callable);
+	virtual void tts_post_utterance_event(TTSUtteranceEvent p_event, int p_id, int p_pos = 0);
 
 	enum MouseMode {
 		MOUSE_MODE_VISIBLE,
@@ -431,5 +466,6 @@ VARIANT_ENUM_CAST(DisplayServer::WindowFlags)
 VARIANT_ENUM_CAST(DisplayServer::HandleType)
 VARIANT_ENUM_CAST(DisplayServer::CursorShape)
 VARIANT_ENUM_CAST(DisplayServer::VSyncMode)
+VARIANT_ENUM_CAST(DisplayServer::TTSUtteranceEvent)
 
 #endif // DISPLAY_SERVER_H

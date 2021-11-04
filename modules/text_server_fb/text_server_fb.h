@@ -573,6 +573,8 @@ public:
 	virtual double shaped_text_get_underline_position(const RID &p_shaped) const override;
 	virtual double shaped_text_get_underline_thickness(const RID &p_shaped) const override;
 
+	virtual PackedInt32Array string_get_word_breaks(const String &p_string, const String &p_language = "") const override;
+
 	virtual String string_to_upper(const String &p_string, const String &p_language = "") const override;
 	virtual String string_to_lower(const String &p_string, const String &p_language = "") const override;
 

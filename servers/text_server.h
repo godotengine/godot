@@ -431,6 +431,9 @@ public:
 	virtual String parse_number(const String &p_string, const String &p_language = "") const = 0;
 	virtual String percent_sign(const String &p_language = "") const = 0;
 
+	// String functions.
+	virtual PackedInt32Array string_get_word_breaks(const String &p_string, const String &p_language = "") const = 0;
+
 	virtual String strip_diacritics(const String &p_string) const;
 
 	// Other string operations.

@@ -3079,7 +3079,7 @@ bool TextServerFallback::shaped_text_update_breaks(const RID &p_shaped) {
 		if (sd_glyphs[i].count > 0) {
 			char32_t c = sd->text[sd_glyphs[i].start - sd->start];
 			if (c_punct_size == 0) {
-				if (is_punct(c)) {
+				if (is_punct(c) && c != 0x005F) {
 					sd_glyphs[i].flags |= GRAPHEME_IS_PUNCTUATION;
 				}
 			} else {
@@ -3621,6 +3621,29 @@ String TextServerFallback::string_to_lower(const String &p_string, const String 
 	}
 
 	return lower;
+}
+
+PackedInt32Array TextServerFallback::string_get_word_breaks(const String &p_string, const String &p_language) const {
+	PackedInt32Array ret;
+	for (int i = 0; i < p_string.length(); i++) {
+		char32_t c = p_string[i];
+		if (c == 0xfffc) {
+			continue;
+		}
+		if (is_punct(c) && c != 0x005F) {
+			ret.push_back(i);
+			continue;
+		}
+		if (is_underscore(c)) {
+			ret.push_back(i);
+			continue;
+		}
+		if (is_whitespace(c) || is_linebreak(c)) {
+			ret.push_back(i);
+			continue;
+		}
+	}
+	return ret;
 }
 
 TextServerFallback::TextServerFallback() {
