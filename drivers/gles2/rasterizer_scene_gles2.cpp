@@ -2794,9 +2794,8 @@ void RasterizerSceneGLES2::_post_process(Environment *env, const CameraMatrix &p
 	glDepthFunc(GL_LEQUAL);
 	glColorMask(1, 1, 1, 1);
 
-	//no post process on small, transparent or render targets without an env
-	bool use_post_process = env && !storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_TRANSPARENT];
-	use_post_process = use_post_process && storage->frame.current_rt->width >= 4 && storage->frame.current_rt->height >= 4;
+	//no post process on small or render targets without an env
+	bool use_post_process = env && storage->frame.current_rt->width >= 4 && storage->frame.current_rt->height >= 4;
 	use_post_process = use_post_process && storage->frame.current_rt->mip_maps_allocated;
 
 	if (env) {
