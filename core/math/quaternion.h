@@ -86,13 +86,6 @@ public:
 	void operator*=(const Quaternion &p_q);
 	Quaternion operator*(const Quaternion &p_q) const;
 
-	Quaternion operator*(const Vector3 &v) const {
-		return Quaternion(w * v.x + y * v.z - z * v.y,
-				w * v.y + z * v.x - x * v.z,
-				w * v.z + x * v.y - y * v.x,
-				-x * v.x - y * v.y - z * v.z);
-	}
-
 	_FORCE_INLINE_ Vector3 xform(const Vector3 &v) const {
 #ifdef MATH_CHECKS
 		ERR_FAIL_COND_V_MSG(!is_normalized(), v, "The quaternion must be normalized.");
