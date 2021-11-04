@@ -947,6 +947,64 @@ namespace Godot
         }
 
         /// <summary>
+        /// Compares two <see cref="Color"/>s by first checking if
+        /// the red value of the <paramref name="left"/> color is less than
+        /// or equal to the red value of the <paramref name="right"/> color.
+        /// If the red values are exactly equal, then it repeats this check
+        /// with the green values of the two colors, then with the blue values,
+        /// and then with the alpha value.
+        /// This operator is useful for sorting colors.
+        /// </summary>
+        /// <param name="left">The left color.</param>
+        /// <param name="right">The right color.</param>
+        /// <returns>Whether or not the left is less than or equal to the right.</returns>
+        public static bool operator <=(Color left, Color right)
+        {
+            if (left.r == right.r)
+            {
+                if (left.g == right.g)
+                {
+                    if (left.b == right.b)
+                    {
+                        return left.a <= right.a;
+                    }
+                    return left.b < right.b;
+                }
+                return left.g < right.g;
+            }
+            return left.r < right.r;
+        }
+
+        /// <summary>
+        /// Compares two <see cref="Color"/>s by first checking if
+        /// the red value of the <paramref name="left"/> color is greater than
+        /// or equal to the red value of the <paramref name="right"/> color.
+        /// If the red values are exactly equal, then it repeats this check
+        /// with the green values of the two colors, then with the blue values,
+        /// and then with the alpha value.
+        /// This operator is useful for sorting colors.
+        /// </summary>
+        /// <param name="left">The left color.</param>
+        /// <param name="right">The right color.</param>
+        /// <returns>Whether or not the left is greater than or equal to the right.</returns>
+        public static bool operator >=(Color left, Color right)
+        {
+            if (left.r == right.r)
+            {
+                if (left.g == right.g)
+                {
+                    if (left.b == right.b)
+                    {
+                        return left.a >= right.a;
+                    }
+                    return left.b > right.b;
+                }
+                return left.g > right.g;
+            }
+            return left.r > right.r;
+        }
+
+        /// <summary>
         /// Returns <see langword="true"/> if this color and <paramref name="obj"/> are equal.
         /// </summary>
         /// <param name="obj">The other object to compare.</param>

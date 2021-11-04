@@ -171,6 +171,7 @@ namespace Godot
         /// </summary>
         /// <param name="length">The length to limit to.</param>
         /// <returns>The vector with its length limited.</returns>
+        [Obsolete("Clamped is deprecated because it has been renamed to LimitLength.")]
         public Vector2 Clamped(real_t length)
         {
             var v = this;
@@ -345,6 +346,25 @@ namespace Godot
                 Mathf.Lerp(x, to.x, weight.x),
                 Mathf.Lerp(y, to.y, weight.y)
             );
+        }
+
+        /// <summary>
+        /// Returns the vector with a maximum length by limiting its length to <paramref name="length"/>.
+        /// </summary>
+        /// <param name="length">The length to limit to.</param>
+        /// <returns>The vector with its length limited.</returns>
+        public Vector2 LimitLength(real_t length = 1.0f)
+        {
+            Vector2 v = this;
+            real_t l = Length();
+
+            if (l > 0 && length < l)
+            {
+                v /= l;
+                v *= length;
+            }
+
+            return v;
         }
 
         /// <summary>

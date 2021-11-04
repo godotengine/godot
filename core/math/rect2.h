@@ -46,6 +46,8 @@ struct Rect2 {
 
 	real_t get_area() const { return size.width * size.height; }
 
+	_FORCE_INLINE_ Vector2 get_center() const { return position + (size * 0.5); }
+
 	inline bool intersects(const Rect2 &p_rect, const bool p_include_borders = false) const {
 		if (p_include_borders) {
 			if (position.x > (p_rect.position.x + p_rect.size.width)) {
@@ -267,6 +269,8 @@ struct Rect2i {
 	void set_size(const Size2i &p_size) { size = p_size; }
 
 	int get_area() const { return size.width * size.height; }
+
+	_FORCE_INLINE_ Vector2i get_center() const { return position + (size / 2); }
 
 	inline bool intersects(const Rect2i &p_rect) const {
 		if (position.x > (p_rect.position.x + p_rect.size.width)) {
