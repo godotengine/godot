@@ -41,6 +41,7 @@ class GodotAreaPair2D : public GodotConstraint2D {
 	int body_shape = 0;
 	int area_shape = 0;
 	bool colliding = false;
+	bool has_space_override = false;
 	bool process_collision = false;
 
 public:

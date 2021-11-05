@@ -605,9 +605,6 @@ void PhysicsServer2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("area_set_space", "area", "space"), &PhysicsServer2D::area_set_space);
 	ClassDB::bind_method(D_METHOD("area_get_space", "area"), &PhysicsServer2D::area_get_space);
 
-	ClassDB::bind_method(D_METHOD("area_set_space_override_mode", "area", "mode"), &PhysicsServer2D::area_set_space_override_mode);
-	ClassDB::bind_method(D_METHOD("area_get_space_override_mode", "area"), &PhysicsServer2D::area_get_space_override_mode);
-
 	ClassDB::bind_method(D_METHOD("area_add_shape", "area", "shape", "transform", "disabled"), &PhysicsServer2D::area_add_shape, DEFVAL(Transform2D()), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("area_set_shape", "area", "shape_idx", "shape"), &PhysicsServer2D::area_set_shape);
 	ClassDB::bind_method(D_METHOD("area_set_shape_transform", "area", "shape_idx", "transform"), &PhysicsServer2D::area_set_shape_transform);
@@ -751,12 +748,15 @@ void PhysicsServer2D::_bind_methods() {
 	BIND_ENUM_CONSTANT(SHAPE_CONCAVE_POLYGON);
 	BIND_ENUM_CONSTANT(SHAPE_CUSTOM);
 
+	BIND_ENUM_CONSTANT(AREA_PARAM_GRAVITY_OVERRIDE_MODE);
 	BIND_ENUM_CONSTANT(AREA_PARAM_GRAVITY);
 	BIND_ENUM_CONSTANT(AREA_PARAM_GRAVITY_VECTOR);
 	BIND_ENUM_CONSTANT(AREA_PARAM_GRAVITY_IS_POINT);
 	BIND_ENUM_CONSTANT(AREA_PARAM_GRAVITY_DISTANCE_SCALE);
 	BIND_ENUM_CONSTANT(AREA_PARAM_GRAVITY_POINT_ATTENUATION);
+	BIND_ENUM_CONSTANT(AREA_PARAM_LINEAR_DAMP_OVERRIDE_MODE);
 	BIND_ENUM_CONSTANT(AREA_PARAM_LINEAR_DAMP);
+	BIND_ENUM_CONSTANT(AREA_PARAM_ANGULAR_DAMP_OVERRIDE_MODE);
 	BIND_ENUM_CONSTANT(AREA_PARAM_ANGULAR_DAMP);
 	BIND_ENUM_CONSTANT(AREA_PARAM_PRIORITY);
 

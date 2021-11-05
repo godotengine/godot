@@ -232,7 +232,7 @@ private:
 
 	void add_velocity(const Vector3 &p_velocity);
 
-	void apply_forces(bool p_has_wind_forces);
+	void apply_forces(const LocalVector<GodotArea3D *> &p_wind_areas);
 
 	bool create_from_trimesh(const Vector<int> &p_indices, const Vector<Vector3> &p_vertices);
 	void generate_bending_constraints(int p_distance);
