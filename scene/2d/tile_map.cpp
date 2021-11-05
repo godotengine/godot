@@ -90,7 +90,9 @@ void TileMap::_notification(int p_what) {
 				}
 
 				for (Map<PosKey, Quadrant::Occluder>::Element *F = q.occluder_instances.front(); F; F = F->next()) {
-					VS::get_singleton()->free(F->get().id);
+					if (F->get().id.is_valid()) {
+						VS::get_singleton()->free(F->get().id);
+					}
 				}
 				q.occluder_instances.clear();
 			}
@@ -359,9 +361,10 @@ void TileMap::update_dirty_quadrants() {
 		Quadrant &q = *dirty_quadrant_list.first()->self();
 
 		for (List<RID>::Element *E = q.canvas_items.front(); E; E = E->next()) {
-			vs->free(E->get());
+			if (E->get().is_valid()) {
+				vs->free(E->get());
+			}
 		}
-
 		q.canvas_items.clear();
 
 		if (!use_parent) {
@@ -379,7 +382,9 @@ void TileMap::update_dirty_quadrants() {
 		}
 
 		for (Map<PosKey, Quadrant::Occluder>::Element *E = q.occluder_instances.front(); E; E = E->next()) {
-			VS::get_singleton()->free(E->get().id);
+			if (E->get().id.is_valid()) {
+				VS::get_singleton()->free(E->get().id);
+			}
 		}
 		q.occluder_instances.clear();
 		Ref<ShaderMaterial> prev_material;
@@ -788,13 +793,18 @@ Map<TileMap::PosKey, TileMap::Quadrant>::Element *TileMap::_create_quadrant(cons
 void TileMap::_erase_quadrant(Map<PosKey, Quadrant>::Element *Q) {
 	Quadrant &q = Q->get();
 	if (!use_parent) {
-		Physics2DServer::get_singleton()->free(q.body);
+		if (q.body.is_valid()) {
+			Physics2DServer::get_singleton()->free(q.body);
+			q.body = RID();
+		}
 	} else if (collision_parent) {
 		collision_parent->remove_shape_owner(q.shape_owner_id);
 	}
 
 	for (List<RID>::Element *E = q.canvas_items.front(); E; E = E->next()) {
-		VisualServer::get_singleton()->free(E->get());
+		if (E->get().is_valid()) {
+			VisualServer::get_singleton()->free(E->get());
+		}
 	}
 	q.canvas_items.clear();
 	if (q.dirty_list.in_list()) {
@@ -809,7 +819,9 @@ void TileMap::_erase_quadrant(Map<PosKey, Quadrant>::Element *Q) {
 	}
 
 	for (Map<PosKey, Quadrant::Occluder>::Element *E = q.occluder_instances.front(); E; E = E->next()) {
-		VS::get_singleton()->free(E->get().id);
+		if (E->get().id.is_valid()) {
+			VS::get_singleton()->free(E->get().id);
+		}
 	}
 	q.occluder_instances.clear();
 
