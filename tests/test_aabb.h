@@ -90,38 +90,38 @@ TEST_CASE("[AABB] Basic setters") {
 			"set_size() should result in the expected AABB.");
 }
 
-TEST_CASE("[AABB] Area getters") {
+TEST_CASE("[AABB] Volume getters") {
 	AABB aabb = AABB(Vector3(-1.5, 2, -2.5), Vector3(4, 5, 6));
 	CHECK_MESSAGE(
-			Math::is_equal_approx(aabb.get_area(), 120),
-			"get_area() should return the expected value with positive size.");
+			Math::is_equal_approx(aabb.get_volume(), 120),
+			"get_volume() should return the expected value with positive size.");
 	CHECK_MESSAGE(
-			!aabb.has_no_area(),
-			"Non-empty volumetric AABB should have an area.");
+			!aabb.has_no_volume(),
+			"Non-empty volumetric AABB should have a volume.");
 
 	aabb = AABB(Vector3(-1.5, 2, -2.5), Vector3(-4, 5, 6));
 	CHECK_MESSAGE(
-			Math::is_equal_approx(aabb.get_area(), -120),
-			"get_area() should return the expected value with negative size (1 component).");
+			Math::is_equal_approx(aabb.get_volume(), -120),
+			"get_volume() should return the expected value with negative size (1 component).");
 
 	aabb = AABB(Vector3(-1.5, 2, -2.5), Vector3(-4, -5, 6));
 	CHECK_MESSAGE(
-			Math::is_equal_approx(aabb.get_area(), 120),
-			"get_area() should return the expected value with negative size (2 components).");
+			Math::is_equal_approx(aabb.get_volume(), 120),
+			"get_volume() should return the expected value with negative size (2 components).");
 
 	aabb = AABB(Vector3(-1.5, 2, -2.5), Vector3(-4, -5, -6));
 	CHECK_MESSAGE(
-			Math::is_equal_approx(aabb.get_area(), -120),
-			"get_area() should return the expected value with negative size (3 components).");
+			Math::is_equal_approx(aabb.get_volume(), -120),
+			"get_volume() should return the expected value with negative size (3 components).");
 
 	aabb = AABB(Vector3(-1.5, 2, -2.5), Vector3(4, 0, 6));
 	CHECK_MESSAGE(
-			aabb.has_no_area(),
-			"Non-empty flat AABB should not have an area.");
+			aabb.has_no_volume(),
+			"Non-empty flat AABB should not have a volume.");
 
 	CHECK_MESSAGE(
-			AABB().has_no_area(),
-			"Empty AABB should not have an area.");
+			AABB().has_no_volume(),
+			"Empty AABB should not have a volume.");
 }
 
 TEST_CASE("[AABB] Surface getters") {

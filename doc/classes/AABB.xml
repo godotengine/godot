@@ -57,12 +57,6 @@
 				Returns this [AABB] expanded to include a given point.
 			</description>
 		</method>
-		<method name="get_area" qualifiers="const">
-			<return type="float" />
-			<description>
-				Returns the volume of the [AABB].
-			</description>
-		</method>
 		<method name="get_center" qualifiers="const">
 			<return type="Vector3" />
 			<description>
@@ -119,6 +113,12 @@
 				Returns the support point in a given direction. This is useful for collision detection algorithms.
 			</description>
 		</method>
+		<method name="get_volume" qualifiers="const">
+			<return type="float" />
+			<description>
+				Returns the volume of the [AABB].
+			</description>
+		</method>
 		<method name="grow" qualifiers="const">
 			<return type="AABB" />
 			<argument index="0" name="by" type="float" />
@@ -126,16 +126,16 @@
 				Returns a copy of the [AABB] grown a given amount of units towards all the sides.
 			</description>
 		</method>
-		<method name="has_no_area" qualifiers="const">
-			<return type="bool" />
-			<description>
-				Returns [code]true[/code] if the [AABB] is flat or empty.
-			</description>
-		</method>
 		<method name="has_no_surface" qualifiers="const">
 			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if the [AABB] is empty.
+			</description>
+		</method>
+		<method name="has_no_volume" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the [AABB] is flat or empty.
 			</description>
 		</method>
 		<method name="has_point" qualifiers="const">
