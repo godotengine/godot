@@ -31,7 +31,12 @@
 #ifndef NAVIGATION_MESH_GENERATOR_H
 #define NAVIGATION_MESH_GENERATOR_H
 
+#ifdef TOOLS_ENABLED
+
 #include "editor/editor_node.h"
+
+#endif
+
 #include "scene/3d/navigation_mesh.h"
 
 #include <Recast.h>
@@ -50,9 +55,20 @@ protected:
 	static void _parse_geometry(Transform p_accumulated_transform, Node *p_node, Vector<float> &p_verticies, Vector<int> &p_indices, NavigationMesh::ParsedGeometryType p_generate_from, uint32_t p_collision_mask, bool p_recurse_children);
 
 	static void _convert_detail_mesh_to_native_navigation_mesh(const rcPolyMeshDetail *p_detail_mesh, Ref<NavigationMesh> p_nav_mesh);
-	static void _build_recast_navigation_mesh(Ref<NavigationMesh> p_nav_mesh, EditorProgress *ep,
+
+#ifdef TOOLS_ENABLED
+
+	static void _build_recast_navigation_mesh(Ref<NavigationMesh> p_nav_mesh,
+			rcHeightfield *hf, rcCompactHeightfield *chf, rcContourSet *cset, rcPolyMesh *poly_mesh,
+			rcPolyMeshDetail *detail_mesh, Vector<float> &vertices, Vector<int> &indices, EditorProgress *ep);
+
+#else
+
+	static void _build_recast_navigation_mesh(Ref<NavigationMesh> p_nav_mesh,
 			rcHeightfield *hf, rcCompactHeightfield *chf, rcContourSet *cset, rcPolyMesh *poly_mesh,
 			rcPolyMeshDetail *detail_mesh, Vector<float> &vertices, Vector<int> &indices);
+
+#endif
 
 public:
 	static EditorNavigationMeshGenerator *get_singleton();
