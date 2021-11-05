@@ -101,7 +101,7 @@ TexturePreview::TexturePreview(Ref<Texture2D> p_texture, bool p_show_metadata) {
 		metadata_label->add_theme_color_override("font_outline_color", Color::named("black"));
 		metadata_label->add_theme_constant_override("outline_size", 2 * EDSCALE);
 
-		metadata_label->add_theme_constant_override("shadow_as_outline", 1);
+		metadata_label->add_theme_constant_override("shadow_outline_size", 1);
 		metadata_label->set_h_size_flags(Control::SIZE_SHRINK_END);
 		metadata_label->set_v_size_flags(Control::SIZE_SHRINK_END);
 
