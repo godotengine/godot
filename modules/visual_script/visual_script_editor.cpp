@@ -1674,6 +1674,139 @@ String VisualScriptEditor::_validate_name(const String &p_name) const {
 	return valid;
 }
 
+void VisualScriptEditor::_on_nodes_copy() {
+	clipboard->nodes.clear();
+	clipboard->data_connections.clear();
+	clipboard->sequence_connections.clear();
+
+	Set<String> funcs;
+	for (int i = 0; i < graph->get_child_count(); i++) {
+		GraphNode *gn = Object::cast_to<GraphNode>(graph->get_child(i));
+		if (gn) {
+			if (gn->is_selected()) {
+				int id = String(gn->get_name()).to_int();
+				StringName func = _get_function_of_node(id);
+				Ref<VisualScriptNode> node = script->get_node(func, id);
+				if (Object::cast_to<VisualScriptFunction>(*node)) {
+					EditorNode::get_singleton()->show_warning(TTR("Can't copy the function node."));
+					return;
+				}
+				if (node.is_valid()) {
+					clipboard->nodes[id] = node->duplicate(true);
+					clipboard->nodes_positions[id] = script->get_node_position(func, id);
+					funcs.insert(String(func));
+				}
+			}
+		}
+	}
+
+	if (clipboard->nodes.empty()) {
+		return;
+	}
+
+	for (Set<String>::Element *F = funcs.front(); F; F = F->next()) {
+		List<VisualScript::SequenceConnection> sequence_connections;
+
+		script->get_sequence_connection_list(F->get(), &sequence_connections);
+
+		for (List<VisualScript::SequenceConnection>::Element *E = sequence_connections.front(); E; E = E->next()) {
+			if (clipboard->nodes.has(E->get().from_node) && clipboard->nodes.has(E->get().to_node)) {
+				clipboard->sequence_connections.insert(E->get());
+			}
+		}
+
+		List<VisualScript::DataConnection> data_connections;
+
+		script->get_data_connection_list(F->get(), &data_connections);
+
+		for (List<VisualScript::DataConnection>::Element *E = data_connections.front(); E; E = E->next()) {
+			if (clipboard->nodes.has(E->get().from_node) && clipboard->nodes.has(E->get().to_node)) {
+				clipboard->data_connections.insert(E->get());
+			}
+		}
+	}
+}
+
+void VisualScriptEditor::_on_nodes_paste() {
+	if (clipboard->nodes.empty()) {
+		EditorNode::get_singleton()->show_warning(TTR("Clipboard is empty!"));
+		return;
+	}
+
+	Map<int, int> remap;
+
+	undo_redo->create_action(TTR("Paste VisualScript Nodes"));
+	int idc = script->get_available_id() + 1;
+
+	Set<int> to_select;
+
+	Set<Vector2> existing_positions;
+
+	{
+		List<StringName> functions;
+		script->get_function_list(&functions);
+		for (List<StringName>::Element *F = functions.front(); F; F = F->next()) {
+			List<int> nodes;
+			script->get_node_list(F->get(), &nodes);
+			for (List<int>::Element *E = nodes.front(); E; E = E->next()) {
+				Vector2 pos = script->get_node_position(F->get(), E->get()).snapped(Vector2(2, 2));
+				existing_positions.insert(pos);
+			}
+		}
+	}
+
+	bool first_paste = true;
+	Vector2 position_offset = Vector2(0, 0);
+
+	for (Map<int, Ref<VisualScriptNode>>::Element *E = clipboard->nodes.front(); E; E = E->next()) {
+		Ref<VisualScriptNode> node = E->get()->duplicate();
+
+		int new_id = idc++;
+		to_select.insert(new_id);
+
+		remap[E->key()] = new_id;
+
+		Vector2 paste_pos = clipboard->nodes_positions[E->key()];
+
+		if (first_paste) {
+			position_offset = _get_pos_in_graph(mouse_up_position - graph->get_global_position()) - paste_pos;
+			first_paste = false;
+		}
+
+		paste_pos += position_offset;
+
+		while (existing_positions.has(paste_pos.snapped(Vector2(2, 2)))) {
+			paste_pos += Vector2(20, 20) * EDSCALE;
+		}
+
+		undo_redo->add_do_method(script.ptr(), "add_node", default_func, new_id, node, paste_pos);
+		undo_redo->add_undo_method(script.ptr(), "remove_node", default_func, new_id);
+	}
+
+	for (Set<VisualScript::SequenceConnection>::Element *E = clipboard->sequence_connections.front(); E; E = E->next()) {
+		undo_redo->add_do_method(script.ptr(), "sequence_connect", default_func, remap[E->get().from_node], E->get().from_output, remap[E->get().to_node]);
+		undo_redo->add_undo_method(script.ptr(), "sequence_disconnect", default_func, remap[E->get().from_node], E->get().from_output, remap[E->get().to_node]);
+	}
+
+	for (Set<VisualScript::DataConnection>::Element *E = clipboard->data_connections.front(); E; E = E->next()) {
+		undo_redo->add_do_method(script.ptr(), "data_connect", default_func, remap[E->get().from_node], E->get().from_port, remap[E->get().to_node], E->get().to_port);
+		undo_redo->add_undo_method(script.ptr(), "data_disconnect", default_func, remap[E->get().from_node], E->get().from_port, remap[E->get().to_node], E->get().to_port);
+	}
+
+	undo_redo->add_do_method(this, "_update_graph");
+	undo_redo->add_undo_method(this, "_update_graph");
+
+	undo_redo->commit_action();
+
+	for (int i = 0; i < graph->get_child_count(); i++) {
+		GraphNode *gn = Object::cast_to<GraphNode>(graph->get_child(i));
+		if (gn) {
+			int id = gn->get_name().operator String().to_int();
+			gn->set_selected(to_select.has(id));
+		}
+	}
+}
+
 void VisualScriptEditor::_on_nodes_delete() {
 	// delete all the selected nodes
 
@@ -4120,139 +4253,15 @@ void VisualScriptEditor::_menu_option(int p_what) {
 		case EDIT_FIND_NODE_TYPE: {
 			_generic_search(script->get_instance_base_type());
 		} break;
-		case EDIT_COPY_NODES:
+		case EDIT_COPY_NODES: {
+			_on_nodes_copy();
+		} break;
 		case EDIT_CUT_NODES: {
-			if (!script->has_function(default_func)) {
-				break;
-			}
-
-			clipboard->nodes.clear();
-			clipboard->data_connections.clear();
-			clipboard->sequence_connections.clear();
-
-			Set<String> funcs;
-			for (int i = 0; i < graph->get_child_count(); i++) {
-				GraphNode *gn = Object::cast_to<GraphNode>(graph->get_child(i));
-				if (gn) {
-					if (gn->is_selected()) {
-						int id = String(gn->get_name()).to_int();
-						StringName func = _get_function_of_node(id);
-						Ref<VisualScriptNode> node = script->get_node(func, id);
-						if (Object::cast_to<VisualScriptFunction>(*node)) {
-							EditorNode::get_singleton()->show_warning(TTR("Can't copy the function node."));
-							return;
-						}
-						if (node.is_valid()) {
-							clipboard->nodes[id] = node->duplicate(true);
-							clipboard->nodes_positions[id] = script->get_node_position(func, id);
-							funcs.insert(String(func));
-						}
-					}
-				}
-			}
-
-			if (clipboard->nodes.empty()) {
-				break;
-			}
-
-			for (Set<String>::Element *F = funcs.front(); F; F = F->next()) {
-				List<VisualScript::SequenceConnection> sequence_connections;
-
-				script->get_sequence_connection_list(F->get(), &sequence_connections);
-
-				for (List<VisualScript::SequenceConnection>::Element *E = sequence_connections.front(); E; E = E->next()) {
-					if (clipboard->nodes.has(E->get().from_node) && clipboard->nodes.has(E->get().to_node)) {
-						clipboard->sequence_connections.insert(E->get());
-					}
-				}
-
-				List<VisualScript::DataConnection> data_connections;
-
-				script->get_data_connection_list(F->get(), &data_connections);
-
-				for (List<VisualScript::DataConnection>::Element *E = data_connections.front(); E; E = E->next()) {
-					if (clipboard->nodes.has(E->get().from_node) && clipboard->nodes.has(E->get().to_node)) {
-						clipboard->data_connections.insert(E->get());
-					}
-				}
-			}
-			if (p_what == EDIT_CUT_NODES) {
-				_on_nodes_delete(); // oh yeah, also delete on cut
-			}
-
+			_on_nodes_copy();
+			_on_nodes_delete();
 		} break;
 		case EDIT_PASTE_NODES: {
-			if (!script->has_function(default_func)) {
-				break;
-			}
-
-			if (clipboard->nodes.empty()) {
-				EditorNode::get_singleton()->show_warning(TTR("Clipboard is empty!"));
-				break;
-			}
-
-			Map<int, int> remap;
-
-			undo_redo->create_action(TTR("Paste VisualScript Nodes"));
-			int idc = script->get_available_id() + 1;
-
-			Set<int> to_select;
-
-			Set<Vector2> existing_positions;
-
-			{
-				List<StringName> functions;
-				script->get_function_list(&functions);
-				for (List<StringName>::Element *F = functions.front(); F; F = F->next()) {
-					List<int> nodes;
-					script->get_node_list(F->get(), &nodes);
-					for (List<int>::Element *E = nodes.front(); E; E = E->next()) {
-						Vector2 pos = script->get_node_position(F->get(), E->get()).snapped(Vector2(2, 2));
-						existing_positions.insert(pos);
-					}
-				}
-			}
-
-			for (Map<int, Ref<VisualScriptNode>>::Element *E = clipboard->nodes.front(); E; E = E->next()) {
-				Ref<VisualScriptNode> node = E->get()->duplicate();
-
-				int new_id = idc++;
-				to_select.insert(new_id);
-
-				remap[E->key()] = new_id;
-
-				Vector2 paste_pos = clipboard->nodes_positions[E->key()];
-
-				while (existing_positions.has(paste_pos.snapped(Vector2(2, 2)))) {
-					paste_pos += Vector2(20, 20) * EDSCALE;
-				}
-
-				undo_redo->add_do_method(script.ptr(), "add_node", default_func, new_id, node, paste_pos);
-				undo_redo->add_undo_method(script.ptr(), "remove_node", default_func, new_id);
-			}
-
-			for (Set<VisualScript::SequenceConnection>::Element *E = clipboard->sequence_connections.front(); E; E = E->next()) {
-				undo_redo->add_do_method(script.ptr(), "sequence_connect", default_func, remap[E->get().from_node], E->get().from_output, remap[E->get().to_node]);
-				undo_redo->add_undo_method(script.ptr(), "sequence_disconnect", default_func, remap[E->get().from_node], E->get().from_output, remap[E->get().to_node]);
-			}
-
-			for (Set<VisualScript::DataConnection>::Element *E = clipboard->data_connections.front(); E; E = E->next()) {
-				undo_redo->add_do_method(script.ptr(), "data_connect", default_func, remap[E->get().from_node], E->get().from_port, remap[E->get().to_node], E->get().to_port);
-				undo_redo->add_undo_method(script.ptr(), "data_disconnect", default_func, remap[E->get().from_node], E->get().from_port, remap[E->get().to_node], E->get().to_port);
-			}
-
-			undo_redo->add_do_method(this, "_update_graph");
-			undo_redo->add_undo_method(this, "_update_graph");
-
-			undo_redo->commit_action();
-
-			for (int i = 0; i < graph->get_child_count(); i++) {
-				GraphNode *gn = Object::cast_to<GraphNode>(graph->get_child(i));
-				if (gn) {
-					int id = gn->get_name().operator String().to_int();
-					gn->set_selected(to_select.has(id));
-				}
-			}
+			_on_nodes_paste();
 		} break;
 		case EDIT_CREATE_FUNCTION: {
 			StringName function = "";
@@ -4722,6 +4731,8 @@ void VisualScriptEditor::_bind_methods() {
 	ClassDB::bind_method("_input", &VisualScriptEditor::_input);
 	ClassDB::bind_method("_graph_gui_input", &VisualScriptEditor::_graph_gui_input);
 
+	ClassDB::bind_method("_on_nodes_copy", &VisualScriptEditor::_on_nodes_copy);
+	ClassDB::bind_method("_on_nodes_paste", &VisualScriptEditor::_on_nodes_paste);
 	ClassDB::bind_method("_on_nodes_delete", &VisualScriptEditor::_on_nodes_delete);
 	ClassDB::bind_method("_on_nodes_duplicate", &VisualScriptEditor::_on_nodes_duplicate);
 
@@ -4809,6 +4820,8 @@ VisualScriptEditor::VisualScriptEditor() {
 	graph->connect("node_selected", this, "_node_selected");
 	graph->connect("_begin_node_move", this, "_begin_node_move");
 	graph->connect("_end_node_move", this, "_end_node_move");
+	graph->connect("copy_nodes_request", this, "_on_nodes_copy");
+	graph->connect("paste_nodes_request", this, "_on_nodes_paste");
 	graph->connect("delete_nodes_request", this, "_on_nodes_delete");
 	graph->connect("duplicate_nodes_request", this, "_on_nodes_duplicate");
 	graph->connect("gui_input", this, "_graph_gui_input");
