@@ -3191,16 +3191,39 @@ void SpatialEditorViewport::_init_gizmo_instance(int p_idx) {
 
 void SpatialEditorViewport::_finish_gizmo_instances() {
 	for (int i = 0; i < 3; i++) {
-		VS::get_singleton()->free(move_gizmo_instance[i]);
-		VS::get_singleton()->free(move_plane_gizmo_instance[i]);
-		VS::get_singleton()->free(rotate_gizmo_instance[i]);
-		VS::get_singleton()->free(scale_gizmo_instance[i]);
-		VS::get_singleton()->free(scale_plane_gizmo_instance[i]);
+		if (move_gizmo_instance[i].is_valid()) {
+			VS::get_singleton()->free(move_gizmo_instance[i]);
+			move_gizmo_instance[i] = RID();
+		}
+
+		if (move_plane_gizmo_instance[i].is_valid()) {
+			VS::get_singleton()->free(move_plane_gizmo_instance[i]);
+			move_plane_gizmo_instance[i] = RID();
+		}
+
+		if (rotate_gizmo_instance[i].is_valid()) {
+			VS::get_singleton()->free(rotate_gizmo_instance[i]);
+			rotate_gizmo_instance[i] = RID();
+		}
+
+		if (scale_gizmo_instance[i].is_valid()) {
+			VS::get_singleton()->free(scale_gizmo_instance[i]);
+			scale_gizmo_instance[i] = RID();
+		}
+
+		if (scale_plane_gizmo_instance[i].is_valid()) {
+			VS::get_singleton()->free(scale_plane_gizmo_instance[i]);
+			scale_plane_gizmo_instance[i] = RID();
+		}
 	}
 
-	// Rotation white outline
-	VS::get_singleton()->free(rotate_gizmo_instance[3]);
+	// Rotation white outline. All of the arrays above have 3 elements, this has 4.
+	if (rotate_gizmo_instance[3].is_valid()) {
+		VS::get_singleton()->free(rotate_gizmo_instance[3]);
+		rotate_gizmo_instance[3] = RID();
+	}
 }
+
 void SpatialEditorViewport::_toggle_camera_preview(bool p_activate) {
 	ERR_FAIL_COND(p_activate && !preview);
 	ERR_FAIL_COND(!p_activate && !previewing);
@@ -5855,16 +5878,30 @@ void SpatialEditor::_init_grid() {
 }
 
 void SpatialEditor::_finish_indicators() {
-	VisualServer::get_singleton()->free(origin_instance);
-	VisualServer::get_singleton()->free(origin);
+	if (origin_instance.is_valid()) {
+		VisualServer::get_singleton()->free(origin_instance);
+		origin_instance = RID();
+	}
+
+	if (origin.is_valid()) {
+		VisualServer::get_singleton()->free(origin);
+		origin = RID();
+	}
 
 	_finish_grid();
 }
 
 void SpatialEditor::_finish_grid() {
 	for (int i = 0; i < 3; i++) {
-		VisualServer::get_singleton()->free(grid_instance[i]);
-		VisualServer::get_singleton()->free(grid[i]);
+		if (grid_instance[i].is_valid()) {
+			VisualServer::get_singleton()->free(grid_instance[i]);
+			grid_instance[i] = RID();
+		}
+
+		if (grid[i].is_valid()) {
+			VisualServer::get_singleton()->free(grid[i]);
+			grid[i] = RID();
+		}
 	}
 }
 
