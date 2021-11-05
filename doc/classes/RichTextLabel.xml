@@ -741,7 +741,7 @@
 		<theme_item name="default_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
 			The default text color.
 		</theme_item>
-		<theme_item name="font_outline_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
+		<theme_item name="font_outline_color" data_type="color" type="Color" default="Color(0, 0, 0, 1)">
 			The default tint of text outline.
 		</theme_item>
 		<theme_item name="font_selected_color" data_type="color" type="Color" default="Color(0, 0, 0, 0)">
