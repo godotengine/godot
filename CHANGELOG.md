@@ -4,7 +4,9 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
-## [3.4] - TBD
+## [3.4] - 2021-11-05
+
+See the [release announcement](https://godotengine.org/article/godot-3-4-is-released) for details.
 
 ### Added
 
@@ -114,6 +116,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 #### Localization
 
 - Add support for translating the class reference ([GH-53511](https://github.com/godotengine/godot/pull/53511)).
+  * Includes Chinese (Simplified) and Spanish translations with high completion ratio, and initial translations for French, Japanese, and German.
 - Allow overriding `get_message` with virtual method ([GH-53207](https://github.com/godotengine/godot/pull/53207)).
 
 #### Mono (C#)
