@@ -13,7 +13,7 @@
 	<methods>
 		<method name="cast_motion">
 			<return type="Array" />
-			<argument index="0" name="shape" type="PhysicsShapeQueryParameters2D" />
+			<argument index="0" name="parameters" type="PhysicsShapeQueryParameters2D" />
 			<description>
 				Checks how far a [Shape2D] can move without colliding. All the parameters for the query, including the shape and the motion, are supplied through a [PhysicsShapeQueryParameters2D] object.
 				Returns an array with the safe and unsafe proportions (between 0 and 1) of the motion. The safe proportion is the maximum fraction of the motion that can be made without a collision. The unsafe proportion is the minimum fraction of the distance that must be moved for a collision. If no collision is detected a result of [code][1.0, 1.0][/code] will be returned.
@@ -22,7 +22,7 @@
 		</method>
 		<method name="collide_shape">
 			<return type="Array" />
-			<argument index="0" name="shape" type="PhysicsShapeQueryParameters2D" />
+			<argument index="0" name="parameters" type="PhysicsShapeQueryParameters2D" />
 			<argument index="1" name="max_results" type="int" default="32" />
 			<description>
 				Checks the intersections of a shape, given through a [PhysicsShapeQueryParameters2D] object, against the space. The resulting array contains a list of points where the shape intersects another. Like with [method intersect_shape], the number of returned results can be limited to save processing time.
@@ -31,7 +31,7 @@
 		</method>
 		<method name="get_rest_info">
 			<return type="Dictionary" />
-			<argument index="0" name="shape" type="PhysicsShapeQueryParameters2D" />
+			<argument index="0" name="parameters" type="PhysicsShapeQueryParameters2D" />
 			<description>
 				Checks the intersections of a shape, given through a [PhysicsShapeQueryParameters2D] object, against the space. If it collides with more than one shape, the nearest one is selected. If the shape did not intersect anything, then an empty dictionary is returned instead.
 				[b]Note:[/b] This method does not take into account the [code]motion[/code] property of the object. The returned object is a dictionary containing the following fields:
@@ -45,51 +45,23 @@
 		</method>
 		<method name="intersect_point">
 			<return type="Array" />
-			<argument index="0" name="point" type="Vector2" />
+			<argument index="0" name="parameters" type="PhysicsPointQueryParameters2D" />
 			<argument index="1" name="max_results" type="int" default="32" />
-			<argument index="2" name="exclude" type="Array" default="[]" />
-			<argument index="3" name="collision_mask" type="int" default="4294967295" />
-			<argument index="4" name="collide_with_bodies" type="bool" default="true" />
-			<argument index="5" name="collide_with_areas" type="bool" default="false" />
 			<description>
-				Checks whether a point is inside any solid shape. The shapes the point is inside of are returned in an array containing dictionaries with the following fields:
+				Checks whether a point is inside any solid shape. Position and other parameters are defined through [PhysicsPointQueryParameters2D]. The shapes the point is inside of are returned in an array containing dictionaries with the following fields:
 				[code]collider[/code]: The colliding object.
 				[code]collider_id[/code]: The colliding object's ID.
 				[code]rid[/code]: The intersecting object's [RID].
 				[code]shape[/code]: The shape index of the colliding shape.
-				Additionally, the method can take an [code]exclude[/code] array of objects or [RID]s that are to be excluded from collisions, a [code]collision_mask[/code] bitmask representing the physics layers to detect (all layers by default), or booleans to determine if the ray should collide with [PhysicsBody2D]s or [Area2D]s, respectively.
-				[b]Note:[/b] [ConcavePolygonShape2D]s and [CollisionPolygon2D]s in [code]Segments[/code] build mode are not solid shapes. Therefore, they will not be detected.
-			</description>
-		</method>
-		<method name="intersect_point_on_canvas">
-			<return type="Array" />
-			<argument index="0" name="point" type="Vector2" />
-			<argument index="1" name="canvas_instance_id" type="int" />
-			<argument index="2" name="max_results" type="int" default="32" />
-			<argument index="3" name="exclude" type="Array" default="[]" />
-			<argument index="4" name="collision_mask" type="int" default="4294967295" />
-			<argument index="5" name="collide_with_bodies" type="bool" default="true" />
-			<argument index="6" name="collide_with_areas" type="bool" default="false" />
-			<description>
-				Checks whether a point is inside any solid shape, in a specific canvas layer given by [code]canvas_instance_id[/code]. The shapes the point is inside of are returned in an array containing dictionaries with the following fields:
-				[code]collider[/code]: The colliding object.
-				[code]collider_id[/code]: The colliding object's ID.
-				[code]rid[/code]: The intersecting object's [RID].
-				[code]shape[/code]: The shape index of the colliding shape.
-				Additionally, the method can take an [code]exclude[/code] array of objects or [RID]s that are to be excluded from collisions, a [code]collision_mask[/code] bitmask representing the physics layers to detect (all layers by default), or booleans to determine if the ray should collide with [PhysicsBody2D]s or [Area2D]s, respectively.
+				The number of intersections can be limited with the [code]max_results[/code] parameter, to reduce the processing time.
 				[b]Note:[/b] [ConcavePolygonShape2D]s and [CollisionPolygon2D]s in [code]Segments[/code] build mode are not solid shapes. Therefore, they will not be detected.
 			</description>
 		</method>
 		<method name="intersect_ray">
 			<return type="Dictionary" />
-			<argument index="0" name="from" type="Vector2" />
-			<argument index="1" name="to" type="Vector2" />
-			<argument index="2" name="exclude" type="Array" default="[]" />
-			<argument index="3" name="collision_mask" type="int" default="4294967295" />
-			<argument index="4" name="collide_with_bodies" type="bool" default="true" />
-			<argument index="5" name="collide_with_areas" type="bool" default="false" />
+			<argument index="0" name="parameters" type="PhysicsRayQueryParameters2D" />
 			<description>
-				Intersects a ray in a given space. The returned object is a dictionary with the following fields:
+				Intersects a ray in a given space. Ray position and other parameters are defined through [PhysicsRayQueryParameters2D]. The returned object is a dictionary with the following fields:
 				[code]collider[/code]: The colliding object.
 				[code]collider_id[/code]: The colliding object's ID.
 				[code]normal[/code]: The object's surface normal at the intersection point.
@@ -97,16 +69,14 @@
 				[code]rid[/code]: The intersecting object's [RID].
 				[code]shape[/code]: The shape index of the colliding shape.
 				If the ray did not intersect anything, then an empty dictionary is returned instead.
-				Additionally, the method can take an [code]exclude[/code] array of objects or [RID]s that are to be excluded from collisions, a [code]collision_mask[/code] bitmask representing the physics layers to detect (all layers by default), or booleans to determine if the ray should collide with [PhysicsBody2D]s or [Area2D]s, respectively.
 			</description>
 		</method>
 		<method name="intersect_shape">
 			<return type="Array" />
-			<argument index="0" name="shape" type="PhysicsShapeQueryParameters2D" />
+			<argument index="0" name="parameters" type="PhysicsShapeQueryParameters2D" />
 			<argument index="1" name="max_results" type="int" default="32" />
 			<description>
-				Checks the intersections of a shape, given through a [PhysicsShapeQueryParameters2D] object, against the space.
-				[b]Note:[/b] This method does not take into account the [code]motion[/code] property of the object. The intersected shapes are returned in an array containing dictionaries with the following fields:
+				Checks the intersections of a shape, given through a [PhysicsShapeQueryParameters2D] object, against the space. The intersected shapes are returned in an array containing dictionaries with the following fields:
 				[code]collider[/code]: The colliding object.
 				[code]collider_id[/code]: The colliding object's ID.
 				[code]rid[/code]: The intersecting object's [RID].

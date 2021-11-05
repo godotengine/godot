@@ -134,95 +134,132 @@ PhysicsDirectBodyState2D::PhysicsDirectBodyState2D() {}
 
 ///////////////////////////////////////////////////////
 
-void PhysicsShapeQueryParameters2D::set_shape(const RES &p_shape_ref) {
-	ERR_FAIL_COND(p_shape_ref.is_null());
-	shape_ref = p_shape_ref;
-	shape = p_shape_ref->get_rid();
-}
-
-RES PhysicsShapeQueryParameters2D::get_shape() const {
-	return shape_ref;
-}
-
-void PhysicsShapeQueryParameters2D::set_shape_rid(const RID &p_shape) {
-	if (shape != p_shape) {
-		shape_ref = RES();
-		shape = p_shape;
-	}
-}
-
-RID PhysicsShapeQueryParameters2D::get_shape_rid() const {
-	return shape;
-}
-
-void PhysicsShapeQueryParameters2D::set_transform(const Transform2D &p_transform) {
-	transform = p_transform;
-}
-
-Transform2D PhysicsShapeQueryParameters2D::get_transform() const {
-	return transform;
-}
-
-void PhysicsShapeQueryParameters2D::set_motion(const Vector2 &p_motion) {
-	motion = p_motion;
-}
-
-Vector2 PhysicsShapeQueryParameters2D::get_motion() const {
-	return motion;
-}
-
-void PhysicsShapeQueryParameters2D::set_margin(real_t p_margin) {
-	margin = p_margin;
-}
-
-real_t PhysicsShapeQueryParameters2D::get_margin() const {
-	return margin;
-}
-
-void PhysicsShapeQueryParameters2D::set_collision_mask(uint32_t p_collision_mask) {
-	collision_mask = p_collision_mask;
-}
-
-uint32_t PhysicsShapeQueryParameters2D::get_collision_mask() const {
-	return collision_mask;
-}
-
-void PhysicsShapeQueryParameters2D::set_exclude(const Vector<RID> &p_exclude) {
-	exclude.clear();
+void PhysicsRayQueryParameters2D::set_exclude(const Vector<RID> &p_exclude) {
+	parameters.exclude.clear();
 	for (int i = 0; i < p_exclude.size(); i++) {
-		exclude.insert(p_exclude[i]);
+		parameters.exclude.insert(p_exclude[i]);
 	}
 }
 
-Vector<RID> PhysicsShapeQueryParameters2D::get_exclude() const {
+Vector<RID> PhysicsRayQueryParameters2D::get_exclude() const {
 	Vector<RID> ret;
-	ret.resize(exclude.size());
+	ret.resize(parameters.exclude.size());
 	int idx = 0;
-	for (Set<RID>::Element *E = exclude.front(); E; E = E->next()) {
+	for (Set<RID>::Element *E = parameters.exclude.front(); E; E = E->next()) {
 		ret.write[idx++] = E->get();
 	}
 	return ret;
 }
 
-void PhysicsShapeQueryParameters2D::set_collide_with_bodies(bool p_enable) {
-	collide_with_bodies = p_enable;
+void PhysicsRayQueryParameters2D::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_from", "from"), &PhysicsRayQueryParameters2D::set_from);
+	ClassDB::bind_method(D_METHOD("get_from"), &PhysicsRayQueryParameters2D::get_from);
+
+	ClassDB::bind_method(D_METHOD("set_to", "to"), &PhysicsRayQueryParameters2D::set_to);
+	ClassDB::bind_method(D_METHOD("get_to"), &PhysicsRayQueryParameters2D::get_to);
+
+	ClassDB::bind_method(D_METHOD("set_collision_mask", "collision_mask"), &PhysicsRayQueryParameters2D::set_collision_mask);
+	ClassDB::bind_method(D_METHOD("get_collision_mask"), &PhysicsRayQueryParameters2D::get_collision_mask);
+
+	ClassDB::bind_method(D_METHOD("set_exclude", "exclude"), &PhysicsRayQueryParameters2D::set_exclude);
+	ClassDB::bind_method(D_METHOD("get_exclude"), &PhysicsRayQueryParameters2D::get_exclude);
+
+	ClassDB::bind_method(D_METHOD("set_collide_with_bodies", "enable"), &PhysicsRayQueryParameters2D::set_collide_with_bodies);
+	ClassDB::bind_method(D_METHOD("is_collide_with_bodies_enabled"), &PhysicsRayQueryParameters2D::is_collide_with_bodies_enabled);
+
+	ClassDB::bind_method(D_METHOD("set_collide_with_areas", "enable"), &PhysicsRayQueryParameters2D::set_collide_with_areas);
+	ClassDB::bind_method(D_METHOD("is_collide_with_areas_enabled"), &PhysicsRayQueryParameters2D::is_collide_with_areas_enabled);
+
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "from"), "set_from", "get_from");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "to"), "set_to", "get_to");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_mask", PROPERTY_HINT_LAYERS_2D_PHYSICS), "set_collision_mask", "get_collision_mask");
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "exclude", PROPERTY_HINT_ARRAY_TYPE, "RID"), "set_exclude", "get_exclude");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "collide_with_bodies"), "set_collide_with_bodies", "is_collide_with_bodies_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "collide_with_areas"), "set_collide_with_areas", "is_collide_with_areas_enabled");
 }
 
-bool PhysicsShapeQueryParameters2D::is_collide_with_bodies_enabled() const {
-	return collide_with_bodies;
+///////////////////////////////////////////////////////
+
+void PhysicsPointQueryParameters2D::set_exclude(const Vector<RID> &p_exclude) {
+	parameters.exclude.clear();
+	for (int i = 0; i < p_exclude.size(); i++) {
+		parameters.exclude.insert(p_exclude[i]);
+	}
 }
 
-void PhysicsShapeQueryParameters2D::set_collide_with_areas(bool p_enable) {
-	collide_with_areas = p_enable;
+Vector<RID> PhysicsPointQueryParameters2D::get_exclude() const {
+	Vector<RID> ret;
+	ret.resize(parameters.exclude.size());
+	int idx = 0;
+	for (Set<RID>::Element *E = parameters.exclude.front(); E; E = E->next()) {
+		ret.write[idx++] = E->get();
+	}
+	return ret;
 }
 
-bool PhysicsShapeQueryParameters2D::is_collide_with_areas_enabled() const {
-	return collide_with_areas;
+void PhysicsPointQueryParameters2D::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_position", "position"), &PhysicsPointQueryParameters2D::set_position);
+	ClassDB::bind_method(D_METHOD("get_position"), &PhysicsPointQueryParameters2D::get_position);
+
+	ClassDB::bind_method(D_METHOD("set_canvas_instance_id", "canvas_instance_id"), &PhysicsPointQueryParameters2D::set_canvas_instance_id);
+	ClassDB::bind_method(D_METHOD("get_canvas_instance_id"), &PhysicsPointQueryParameters2D::get_canvas_instance_id);
+
+	ClassDB::bind_method(D_METHOD("set_collision_mask", "collision_mask"), &PhysicsPointQueryParameters2D::set_collision_mask);
+	ClassDB::bind_method(D_METHOD("get_collision_mask"), &PhysicsPointQueryParameters2D::get_collision_mask);
+
+	ClassDB::bind_method(D_METHOD("set_exclude", "exclude"), &PhysicsPointQueryParameters2D::set_exclude);
+	ClassDB::bind_method(D_METHOD("get_exclude"), &PhysicsPointQueryParameters2D::get_exclude);
+
+	ClassDB::bind_method(D_METHOD("set_collide_with_bodies", "enable"), &PhysicsPointQueryParameters2D::set_collide_with_bodies);
+	ClassDB::bind_method(D_METHOD("is_collide_with_bodies_enabled"), &PhysicsPointQueryParameters2D::is_collide_with_bodies_enabled);
+
+	ClassDB::bind_method(D_METHOD("set_collide_with_areas", "enable"), &PhysicsPointQueryParameters2D::set_collide_with_areas);
+	ClassDB::bind_method(D_METHOD("is_collide_with_areas_enabled"), &PhysicsPointQueryParameters2D::is_collide_with_areas_enabled);
+
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "position"), "set_position", "get_position");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "canvas_instance_id", PROPERTY_HINT_OBJECT_ID), "set_canvas_instance_id", "get_canvas_instance_id");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_mask", PROPERTY_HINT_LAYERS_2D_PHYSICS), "set_collision_mask", "get_collision_mask");
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "exclude", PROPERTY_HINT_ARRAY_TYPE, "RID"), "set_exclude", "get_exclude");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "collide_with_bodies"), "set_collide_with_bodies", "is_collide_with_bodies_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "collide_with_areas"), "set_collide_with_areas", "is_collide_with_areas_enabled");
+}
+
+///////////////////////////////////////////////////////
+
+void PhysicsShapeQueryParameters2D::set_shape(const RES &p_shape_ref) {
+	ERR_FAIL_COND(p_shape_ref.is_null());
+	shape_ref = p_shape_ref;
+	parameters.shape_rid = p_shape_ref->get_rid();
+}
+
+void PhysicsShapeQueryParameters2D::set_shape_rid(const RID &p_shape) {
+	if (parameters.shape_rid != p_shape) {
+		shape_ref = RES();
+		parameters.shape_rid = p_shape;
+	}
+}
+
+void PhysicsShapeQueryParameters2D::set_exclude(const Vector<RID> &p_exclude) {
+	parameters.exclude.clear();
+	for (int i = 0; i < p_exclude.size(); i++) {
+		parameters.exclude.insert(p_exclude[i]);
+	}
+}
+
+Vector<RID> PhysicsShapeQueryParameters2D::get_exclude() const {
+	Vector<RID> ret;
+	ret.resize(parameters.exclude.size());
+	int idx = 0;
+	for (Set<RID>::Element *E = parameters.exclude.front(); E; E = E->next()) {
+		ret.write[idx++] = E->get();
+	}
+	return ret;
 }
 
 void PhysicsShapeQueryParameters2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_shape", "shape"), &PhysicsShapeQueryParameters2D::set_shape);
 	ClassDB::bind_method(D_METHOD("get_shape"), &PhysicsShapeQueryParameters2D::get_shape);
+
 	ClassDB::bind_method(D_METHOD("set_shape_rid", "shape"), &PhysicsShapeQueryParameters2D::set_shape_rid);
 	ClassDB::bind_method(D_METHOD("get_shape_rid"), &PhysicsShapeQueryParameters2D::get_shape_rid);
 
@@ -248,7 +285,7 @@ void PhysicsShapeQueryParameters2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_collide_with_areas_enabled"), &PhysicsShapeQueryParameters2D::is_collide_with_areas_enabled);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_mask", PROPERTY_HINT_LAYERS_2D_PHYSICS), "set_collision_mask", "get_collision_mask");
-	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "exclude", PROPERTY_HINT_NONE, itos(Variant::RID) + ":"), "set_exclude", "get_exclude");
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "exclude", PROPERTY_HINT_ARRAY_TYPE, "RID"), "set_exclude", "get_exclude");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "margin", PROPERTY_HINT_RANGE, "0,100,0.01"), "set_margin", "get_margin");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "motion"), "set_motion", "get_motion");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shape", PROPERTY_HINT_RESOURCE_TYPE, "Shape2D"), "set_shape", "get_shape");
@@ -258,80 +295,34 @@ void PhysicsShapeQueryParameters2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "collide_with_areas"), "set_collide_with_areas", "is_collide_with_areas_enabled");
 }
 
-Dictionary PhysicsDirectSpaceState2D::_intersect_ray(const Vector2 &p_from, const Vector2 &p_to, const Vector<RID> &p_exclude, uint32_t p_layers, bool p_collide_with_bodies, bool p_collide_with_areas) {
-	RayResult inters;
-	Set<RID> exclude;
-	for (int i = 0; i < p_exclude.size(); i++) {
-		exclude.insert(p_exclude[i]);
-	}
+///////////////////////////////////////////////////////
 
-	bool res = intersect_ray(p_from, p_to, inters, exclude, p_layers, p_collide_with_bodies, p_collide_with_areas);
+Dictionary PhysicsDirectSpaceState2D::_intersect_ray(const Ref<PhysicsRayQueryParameters2D> &p_ray_query) {
+	ERR_FAIL_COND_V(!p_ray_query.is_valid(), Dictionary());
+
+	RayResult result;
+	bool res = intersect_ray(p_ray_query->get_parameters(), result);
 
 	if (!res) {
 		return Dictionary();
 	}
 
 	Dictionary d;
-	d["position"] = inters.position;
-	d["normal"] = inters.normal;
-	d["collider_id"] = inters.collider_id;
-	d["collider"] = inters.collider;
-	d["shape"] = inters.shape;
-	d["rid"] = inters.rid;
+	d["position"] = result.position;
+	d["normal"] = result.normal;
+	d["collider_id"] = result.collider_id;
+	d["collider"] = result.collider;
+	d["shape"] = result.shape;
+	d["rid"] = result.rid;
 
 	return d;
 }
 
-Array PhysicsDirectSpaceState2D::_intersect_shape(const Ref<PhysicsShapeQueryParameters2D> &p_shape_query, int p_max_results) {
-	ERR_FAIL_COND_V(!p_shape_query.is_valid(), Array());
-
-	Vector<ShapeResult> sr;
-	sr.resize(p_max_results);
-	int rc = intersect_shape(p_shape_query->shape, p_shape_query->transform, p_shape_query->motion, p_shape_query->margin, sr.ptrw(), sr.size(), p_shape_query->exclude, p_shape_query->collision_mask, p_shape_query->collide_with_bodies, p_shape_query->collide_with_areas);
-	Array ret;
-	ret.resize(rc);
-	for (int i = 0; i < rc; i++) {
-		Dictionary d;
-		d["rid"] = sr[i].rid;
-		d["collider_id"] = sr[i].collider_id;
-		d["collider"] = sr[i].collider;
-		d["shape"] = sr[i].shape;
-		ret[i] = d;
-	}
-
-	return ret;
-}
-
-Array PhysicsDirectSpaceState2D::_cast_motion(const Ref<PhysicsShapeQueryParameters2D> &p_shape_query) {
-	ERR_FAIL_COND_V(!p_shape_query.is_valid(), Array());
-
-	real_t closest_safe, closest_unsafe;
-	bool res = cast_motion(p_shape_query->shape, p_shape_query->transform, p_shape_query->motion, p_shape_query->margin, closest_safe, closest_unsafe, p_shape_query->exclude, p_shape_query->collision_mask, p_shape_query->collide_with_bodies, p_shape_query->collide_with_areas);
-	if (!res) {
-		return Array();
-	}
-	Array ret;
-	ret.resize(2);
-	ret[0] = closest_safe;
-	ret[1] = closest_unsafe;
-	return ret;
-}
-
-Array PhysicsDirectSpaceState2D::_intersect_point_impl(const Vector2 &p_point, int p_max_results, const Vector<RID> &p_exclude, uint32_t p_layers, bool p_collide_with_bodies, bool p_collide_with_areas, bool p_filter_by_canvas, ObjectID p_canvas_instance_id) {
-	Set<RID> exclude;
-	for (int i = 0; i < p_exclude.size(); i++) {
-		exclude.insert(p_exclude[i]);
-	}
-
+Array PhysicsDirectSpaceState2D::_intersect_point(const Ref<PhysicsPointQueryParameters2D> &p_point_query, int p_max_results) {
 	Vector<ShapeResult> ret;
 	ret.resize(p_max_results);
 
-	int rc;
-	if (p_filter_by_canvas) {
-		rc = intersect_point(p_point, ret.ptrw(), ret.size(), exclude, p_layers, p_collide_with_bodies, p_collide_with_areas);
-	} else {
-		rc = intersect_point_on_canvas(p_point, p_canvas_instance_id, ret.ptrw(), ret.size(), exclude, p_layers, p_collide_with_bodies, p_collide_with_areas);
-	}
+	int rc = intersect_point(p_point_query->get_parameters(), ret.ptrw(), ret.size());
 
 	if (rc == 0) {
 		return Array();
@@ -350,12 +341,39 @@ Array PhysicsDirectSpaceState2D::_intersect_point_impl(const Vector2 &p_point, i
 	return r;
 }
 
-Array PhysicsDirectSpaceState2D::_intersect_point(const Vector2 &p_point, int p_max_results, const Vector<RID> &p_exclude, uint32_t p_layers, bool p_collide_with_bodies, bool p_collide_with_areas) {
-	return _intersect_point_impl(p_point, p_max_results, p_exclude, p_layers, p_collide_with_bodies, p_collide_with_areas);
+Array PhysicsDirectSpaceState2D::_intersect_shape(const Ref<PhysicsShapeQueryParameters2D> &p_shape_query, int p_max_results) {
+	ERR_FAIL_COND_V(!p_shape_query.is_valid(), Array());
+
+	Vector<ShapeResult> sr;
+	sr.resize(p_max_results);
+	int rc = intersect_shape(p_shape_query->get_parameters(), sr.ptrw(), sr.size());
+	Array ret;
+	ret.resize(rc);
+	for (int i = 0; i < rc; i++) {
+		Dictionary d;
+		d["rid"] = sr[i].rid;
+		d["collider_id"] = sr[i].collider_id;
+		d["collider"] = sr[i].collider;
+		d["shape"] = sr[i].shape;
+		ret[i] = d;
+	}
+
+	return ret;
 }
 
-Array PhysicsDirectSpaceState2D::_intersect_point_on_canvas(const Vector2 &p_point, ObjectID p_canvas_intance_id, int p_max_results, const Vector<RID> &p_exclude, uint32_t p_layers, bool p_collide_with_bodies, bool p_collide_with_areas) {
-	return _intersect_point_impl(p_point, p_max_results, p_exclude, p_layers, p_collide_with_bodies, p_collide_with_areas, true, p_canvas_intance_id);
+Array PhysicsDirectSpaceState2D::_cast_motion(const Ref<PhysicsShapeQueryParameters2D> &p_shape_query) {
+	ERR_FAIL_COND_V(!p_shape_query.is_valid(), Array());
+
+	real_t closest_safe, closest_unsafe;
+	bool res = cast_motion(p_shape_query->get_parameters(), closest_safe, closest_unsafe);
+	if (!res) {
+		return Array();
+	}
+	Array ret;
+	ret.resize(2);
+	ret[0] = closest_safe;
+	ret[1] = closest_unsafe;
+	return ret;
 }
 
 Array PhysicsDirectSpaceState2D::_collide_shape(const Ref<PhysicsShapeQueryParameters2D> &p_shape_query, int p_max_results) {
@@ -364,7 +382,7 @@ Array PhysicsDirectSpaceState2D::_collide_shape(const Ref<PhysicsShapeQueryParam
 	Vector<Vector2> ret;
 	ret.resize(p_max_results * 2);
 	int rc = 0;
-	bool res = collide_shape(p_shape_query->shape, p_shape_query->transform, p_shape_query->motion, p_shape_query->margin, ret.ptrw(), p_max_results, rc, p_shape_query->exclude, p_shape_query->collision_mask, p_shape_query->collide_with_bodies, p_shape_query->collide_with_areas);
+	bool res = collide_shape(p_shape_query->get_parameters(), ret.ptrw(), p_max_results, rc);
 	if (!res) {
 		return Array();
 	}
@@ -381,7 +399,7 @@ Dictionary PhysicsDirectSpaceState2D::_get_rest_info(const Ref<PhysicsShapeQuery
 
 	ShapeRestInfo sri;
 
-	bool res = rest_info(p_shape_query->shape, p_shape_query->transform, p_shape_query->motion, p_shape_query->margin, &sri, p_shape_query->exclude, p_shape_query->collision_mask, p_shape_query->collide_with_bodies, p_shape_query->collide_with_areas);
+	bool res = rest_info(p_shape_query->get_parameters(), &sri);
 	Dictionary r;
 	if (!res) {
 		return r;
@@ -401,13 +419,12 @@ PhysicsDirectSpaceState2D::PhysicsDirectSpaceState2D() {
 }
 
 void PhysicsDirectSpaceState2D::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("intersect_point", "point", "max_results", "exclude", "collision_mask", "collide_with_bodies", "collide_with_areas"), &PhysicsDirectSpaceState2D::_intersect_point, DEFVAL(32), DEFVAL(Array()), DEFVAL(UINT32_MAX), DEFVAL(true), DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("intersect_point_on_canvas", "point", "canvas_instance_id", "max_results", "exclude", "collision_mask", "collide_with_bodies", "collide_with_areas"), &PhysicsDirectSpaceState2D::_intersect_point_on_canvas, DEFVAL(32), DEFVAL(Array()), DEFVAL(UINT32_MAX), DEFVAL(true), DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("intersect_ray", "from", "to", "exclude", "collision_mask", "collide_with_bodies", "collide_with_areas"), &PhysicsDirectSpaceState2D::_intersect_ray, DEFVAL(Array()), DEFVAL(UINT32_MAX), DEFVAL(true), DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("intersect_shape", "shape", "max_results"), &PhysicsDirectSpaceState2D::_intersect_shape, DEFVAL(32));
-	ClassDB::bind_method(D_METHOD("cast_motion", "shape"), &PhysicsDirectSpaceState2D::_cast_motion);
-	ClassDB::bind_method(D_METHOD("collide_shape", "shape", "max_results"), &PhysicsDirectSpaceState2D::_collide_shape, DEFVAL(32));
-	ClassDB::bind_method(D_METHOD("get_rest_info", "shape"), &PhysicsDirectSpaceState2D::_get_rest_info);
+	ClassDB::bind_method(D_METHOD("intersect_point", "parameters", "max_results"), &PhysicsDirectSpaceState2D::_intersect_point, DEFVAL(32));
+	ClassDB::bind_method(D_METHOD("intersect_ray", "parameters"), &PhysicsDirectSpaceState2D::_intersect_ray);
+	ClassDB::bind_method(D_METHOD("intersect_shape", "parameters", "max_results"), &PhysicsDirectSpaceState2D::_intersect_shape, DEFVAL(32));
+	ClassDB::bind_method(D_METHOD("cast_motion", "parameters"), &PhysicsDirectSpaceState2D::_cast_motion);
+	ClassDB::bind_method(D_METHOD("collide_shape", "parameters", "max_results"), &PhysicsDirectSpaceState2D::_collide_shape, DEFVAL(32));
+	ClassDB::bind_method(D_METHOD("get_rest_info", "parameters"), &PhysicsDirectSpaceState2D::_get_rest_info);
 }
 
 ///////////////////////////////
@@ -473,7 +490,7 @@ void PhysicsTestMotionParameters2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "motion"), "set_motion", "get_motion");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "margin"), "set_margin", "get_margin");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "collide_separation_ray"), "set_collide_separation_ray_enabled", "is_collide_separation_ray_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "exclude_bodies"), "set_exclude_bodies", "get_exclude_bodies");
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "exclude_bodies", PROPERTY_HINT_ARRAY_TYPE, "RID"), "set_exclude_bodies", "get_exclude_bodies");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "exclude_objects"), "set_exclude_objects", "get_exclude_objects");
 }
 
