@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Label" inherits="Control" version="3.4">
+<class name="Label" inherits="Control" version="3.5">
 	<brief_description>
 		Displays plain text in a line or wrapped inside a rectangle. For formatted text, use [RichTextLabel].
 	</brief_description>

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AudioServer" inherits="Object" version="3.4">
+<class name="AudioServer" inherits="Object" version="3.5">
 	<brief_description>
 		Server interface for low-level audio access.
 	</brief_description>

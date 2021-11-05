@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="MeshDataTool" inherits="Reference" version="3.4">
+<class name="MeshDataTool" inherits="Reference" version="3.5">
 	<brief_description>
 		Helper tool to access and edit [Mesh] data.
 	</brief_description>

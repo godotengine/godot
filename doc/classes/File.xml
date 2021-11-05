@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="File" inherits="Reference" version="3.4">
+<class name="File" inherits="Reference" version="3.5">
 	<brief_description>
 		Type to handle file reading and writing operations.
 	</brief_description>

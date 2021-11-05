@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="InputEventMagnifyGesture" inherits="InputEventGesture" version="3.4">
+<class name="InputEventMagnifyGesture" inherits="InputEventGesture" version="3.5">
 	<brief_description>
 	</brief_description>
 	<description>

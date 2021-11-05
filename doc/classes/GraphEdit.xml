@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="GraphEdit" inherits="Control" version="3.4">
+<class name="GraphEdit" inherits="Control" version="3.5">
 	<brief_description>
 		GraphEdit is an area capable of showing various GraphNodes. It manages connection events between them.
 	</brief_description>

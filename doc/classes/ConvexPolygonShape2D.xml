@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ConvexPolygonShape2D" inherits="Shape2D" version="3.4">
+<class name="ConvexPolygonShape2D" inherits="Shape2D" version="3.5">
 	<brief_description>
 		Convex polygon shape for 2D physics.
 	</brief_description>

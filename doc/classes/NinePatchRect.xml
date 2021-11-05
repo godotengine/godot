@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="NinePatchRect" inherits="Control" version="3.4">
+<class name="NinePatchRect" inherits="Control" version="3.5">
 	<brief_description>
 		Scalable texture-based frame that tiles the texture's centers and sides, but keeps the corners' original size. Perfect for panels and dialog boxes.
 	</brief_description>

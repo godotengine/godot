@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Curve" inherits="Resource" version="3.4">
+<class name="Curve" inherits="Resource" version="3.5">
 	<brief_description>
 		A mathematic curve.
 	</brief_description>

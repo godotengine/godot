@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="VisualShaderNodeExpression" inherits="VisualShaderNodeGroupBase" version="3.4">
+<class name="VisualShaderNodeExpression" inherits="VisualShaderNodeGroupBase" version="3.5">
 	<brief_description>
 		A custom visual shader graph expression written in Godot Shading Language.
 	</brief_description>

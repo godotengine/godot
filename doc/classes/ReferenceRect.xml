@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ReferenceRect" inherits="Control" version="3.4">
+<class name="ReferenceRect" inherits="Control" version="3.5">
 	<brief_description>
 		Reference frame for GUI.
 	</brief_description>

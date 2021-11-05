@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AudioStreamSample" inherits="AudioStream" version="3.4">
+<class name="AudioStreamSample" inherits="AudioStream" version="3.5">
 	<brief_description>
 		Stores audio data loaded from WAV files.
 	</brief_description>

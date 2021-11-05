@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AudioEffectEQ" inherits="AudioEffect" version="3.4">
+<class name="AudioEffectEQ" inherits="AudioEffect" version="3.5">
 	<brief_description>
 		Base class for audio equalizers. Gives you control over frequencies.
 		Use it to create a custom equalizer if [AudioEffectEQ6], [AudioEffectEQ10] or [AudioEffectEQ21] don't fit your needs.

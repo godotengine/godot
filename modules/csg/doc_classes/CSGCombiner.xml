@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="CSGCombiner" inherits="CSGShape" version="3.4">
+<class name="CSGCombiner" inherits="CSGShape" version="3.5">
 	<brief_description>
 		A CSG node that allows you to combine other CSG modifiers.
 	</brief_description>

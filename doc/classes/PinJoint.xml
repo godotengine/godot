@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="PinJoint" inherits="Joint" version="3.4">
+<class name="PinJoint" inherits="Joint" version="3.5">
 	<brief_description>
 		Pin joint for 3D PhysicsBodies.
 	</brief_description>

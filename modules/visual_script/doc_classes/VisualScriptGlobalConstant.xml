@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="VisualScriptGlobalConstant" inherits="VisualScriptNode" version="3.4">
+<class name="VisualScriptGlobalConstant" inherits="VisualScriptNode" version="3.5">
 	<brief_description>
 		A Visual Script node returning a constant from [@GlobalScope].
 	</brief_description>

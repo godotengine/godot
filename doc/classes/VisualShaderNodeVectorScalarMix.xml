@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="VisualShaderNodeVectorScalarMix" inherits="VisualShaderNode" version="3.4">
+<class name="VisualShaderNodeVectorScalarMix" inherits="VisualShaderNode" version="3.5">
 	<brief_description>
 		Linearly interpolates between two vectors using a scalar. For use within the visual shader graph.
 	</brief_description>

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Camera" inherits="Spatial" version="3.4">
+<class name="Camera" inherits="Spatial" version="3.5">
 	<brief_description>
 		Camera node, displays from a point of view.
 	</brief_description>

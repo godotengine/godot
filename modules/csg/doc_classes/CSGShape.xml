@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="CSGShape" inherits="GeometryInstance" version="3.4">
+<class name="CSGShape" inherits="GeometryInstance" version="3.5">
 	<brief_description>
 		The CSG base class.
 	</brief_description>

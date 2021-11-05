@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="RoomManager" inherits="Spatial" version="3.4">
+<class name="RoomManager" inherits="Spatial" version="3.5">
 	<brief_description>
 		The RoomManager node is used to control the portal culling system.
 	</brief_description>

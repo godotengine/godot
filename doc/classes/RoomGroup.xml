@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="RoomGroup" inherits="Spatial" version="3.4">
+<class name="RoomGroup" inherits="Spatial" version="3.5">
 	<brief_description>
 		Groups [Room]s together to allow common functionality.
 	</brief_description>

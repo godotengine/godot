@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="NavigationPolygon" inherits="Resource" version="3.4">
+<class name="NavigationPolygon" inherits="Resource" version="3.5">
 	<brief_description>
 		A node that has methods to draw outlines or use indices of vertices to create navigation polygons.
 	</brief_description>

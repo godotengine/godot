@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="PhysicsBody2D" inherits="CollisionObject2D" version="3.4">
+<class name="PhysicsBody2D" inherits="CollisionObject2D" version="3.5">
 	<brief_description>
 		Base class for all objects affected by physics in 2D space.
 	</brief_description>

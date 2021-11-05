@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="InstancePlaceholder" inherits="Node" version="3.4">
+<class name="InstancePlaceholder" inherits="Node" version="3.5">
 	<brief_description>
 		Placeholder for the root [Node] of a [PackedScene].
 	</brief_description>

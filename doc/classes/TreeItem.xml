@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="TreeItem" inherits="Object" version="3.4">
+<class name="TreeItem" inherits="Object" version="3.5">
 	<brief_description>
 		Control for a single item inside a [Tree].
 	</brief_description>

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="PrimitiveMesh" inherits="Mesh" version="3.4">
+<class name="PrimitiveMesh" inherits="Mesh" version="3.5">
 	<brief_description>
 		Base class for all primitive meshes. Handles applying a [Material] to a primitive mesh.
 	</brief_description>

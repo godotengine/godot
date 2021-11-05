@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="HeightMapShape" inherits="Shape" version="3.4">
+<class name="HeightMapShape" inherits="Shape" version="3.5">
 	<brief_description>
 		Height map shape for 3D physics.
 	</brief_description>

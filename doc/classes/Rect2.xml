@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Rect2" version="3.4">
+<class name="Rect2" version="3.5">
 	<brief_description>
 		2D axis-aligned bounding box.
 	</brief_description>

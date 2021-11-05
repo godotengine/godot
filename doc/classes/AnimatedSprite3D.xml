@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AnimatedSprite3D" inherits="SpriteBase3D" version="3.4">
+<class name="AnimatedSprite3D" inherits="SpriteBase3D" version="3.5">
 	<brief_description>
 		2D sprite node in 3D world, that can use multiple 2D textures for animation.
 	</brief_description>

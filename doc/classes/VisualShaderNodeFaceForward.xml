@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="VisualShaderNodeFaceForward" inherits="VisualShaderNode" version="3.4">
+<class name="VisualShaderNodeFaceForward" inherits="VisualShaderNode" version="3.5">
 	<brief_description>
 		Returns the vector that points in the same direction as a reference vector within the visual shader graph.
 	</brief_description>

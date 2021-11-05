@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="PoolVector2Array" version="3.4">
+<class name="PoolVector2Array" version="3.5">
 	<brief_description>
 		A pooled [Array] of [Vector2].
 	</brief_description>

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="HMACContext" inherits="Reference" version="3.4">
+<class name="HMACContext" inherits="Reference" version="3.5">
 	<brief_description>
 		Used to create an HMAC for a message using a key.
 	</brief_description>

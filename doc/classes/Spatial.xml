@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Spatial" inherits="Node" version="3.4">
+<class name="Spatial" inherits="Node" version="3.5">
 	<brief_description>
 		Most basic 3D game object, parent of all 3D-related nodes.
 	</brief_description>
