@@ -1224,6 +1224,36 @@ TypedArray<String> AnimatedSprite3D::get_configuration_warnings() const {
 	return warnings;
 }
 
+#if TOOLS_ENABLED
+void SpriteFrameBackup::restore() const {
+	if (sprite_type == ANIMATED_SPRITE_3D) {
+		anim_sprite3d->set_frame(frame);
+	} else if (sprite_type == ANIMATED_SPRITE_2D) {
+		anim_sprite2d->set_frame(frame);
+	}
+}
+
+void SpriteFrameBackup::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("restore"), &SpriteFrameBackup::restore);
+}
+
+void SpriteFrameBackup::from_animated_sprite(AnimatedSprite3D *sprite) {
+	if (sprite) {
+		sprite_type = ANIMATED_SPRITE_3D;
+		anim_sprite3d = sprite;
+		frame = sprite->get_frame();
+	}
+}
+
+void SpriteFrameBackup::from_animated_sprite(AnimatedSprite2D *sprite) {
+	if (sprite) {
+		sprite_type = ANIMATED_SPRITE_2D;
+		anim_sprite2d = sprite;
+		frame = sprite->get_frame();
+	}
+}
+#endif
+
 void AnimatedSprite3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_sprite_frames", "sprite_frames"), &AnimatedSprite3D::set_sprite_frames);
 	ClassDB::bind_method(D_METHOD("get_sprite_frames"), &AnimatedSprite3D::get_sprite_frames);

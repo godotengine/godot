@@ -244,6 +244,33 @@ public:
 	AnimatedSprite3D();
 };
 
+#if TOOLS_ENABLED
+#include "scene/2d/animated_sprite_2d.h"
+class SpriteFrameBackup : public RefCounted {
+	GDCLASS(SpriteFrameBackup, RefCounted);
+
+	enum Type {
+		ANIMATED_SPRITE_2D,
+		ANIMATED_SPRITE_3D,
+	};
+
+	union {
+		AnimatedSprite3D *anim_sprite3d;
+		AnimatedSprite2D *anim_sprite2d;
+	};
+	int frame;
+	SpriteFrameBackup::Type sprite_type;
+
+protected:
+	static void _bind_methods();
+
+public:
+	void from_animated_sprite(AnimatedSprite3D *sprite);
+	void from_animated_sprite(AnimatedSprite2D *sprite);
+	void restore() const;
+};
+#endif
+
 VARIANT_ENUM_CAST(SpriteBase3D::DrawFlags);
 VARIANT_ENUM_CAST(SpriteBase3D::AlphaCutMode);
 
