@@ -59,6 +59,9 @@ private:
 
 	UndoRedo *undo_redo = EditorNode::get_undo_redo();
 
+	void _drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
+	bool _can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
+
 	void _update_sources_list(int force_selected_id = -1);
 
 	// Sources management.
@@ -97,9 +100,6 @@ public:
 	_FORCE_INLINE_ static TileSetEditor *get_singleton() { return singleton; }
 
 	void edit(Ref<TileSet> p_tile_set);
-
-	void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
-	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
 
 	TileSetEditor();
 	~TileSetEditor();

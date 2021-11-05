@@ -157,8 +157,8 @@ public:
 
 	virtual void area_set_monitorable(RID p_area, bool p_monitorable) override;
 
-	virtual void area_set_monitor_callback(RID p_area, Object *p_receiver, const StringName &p_method) override;
-	virtual void area_set_area_monitor_callback(RID p_area, Object *p_receiver, const StringName &p_method) override;
+	virtual void area_set_monitor_callback(RID p_area, const Callable &p_callback) override;
+	virtual void area_set_area_monitor_callback(RID p_area, const Callable &p_callback) override;
 
 	/* BODY API */
 

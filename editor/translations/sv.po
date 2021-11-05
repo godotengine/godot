@@ -23,13 +23,14 @@
 # Marcus Toftedahl <marcus.toftedahl@his.se>, 2020.
 # Alex25820 <Alexander_sjogren@hotmail.se>, 2021.
 # Leon <joel.lundborg@gmail.com>, 2021.
+# Kent Jofur <kent.jofur@gmail.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-10-21 10:31+0000\n"
-"Last-Translator: Christoffer Sundbom <christoffer_karlsson@live.se>\n"
+"PO-Revision-Date: 2021-11-03 13:15+0000\n"
+"Last-Translator: Kent Jofur <kent.jofur@gmail.com>\n"
 "Language-Team: Swedish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/sv/>\n"
 "Language: sv\n"
@@ -385,15 +386,13 @@ msgstr "Anim Infoga"
 
 #. TRANSLATORS: This describes the target of new animation track, will be inserted into another string.
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "node '%s'"
-msgstr "Kan inte öppna '%s'."
+msgstr "nod '%s'"
 
 #. TRANSLATORS: This describes the target of new animation track, will be inserted into another string.
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "animation"
-msgstr "Animation"
+msgstr "animering"
 
 #: editor/animation_track_editor.cpp
 msgid "AnimationPlayer can't animate itself, only other players."
@@ -402,9 +401,8 @@ msgstr ""
 
 #. TRANSLATORS: This describes the target of new animation track, will be inserted into another string.
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "property '%s'"
-msgstr "Egenskaper"
+msgstr "egenskapen '%s'"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Create & Insert"
@@ -874,9 +872,8 @@ msgstr ""
 "vilotid."
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Oneshot"
-msgstr "Oneshot"
+msgstr "Ett skott"
 
 #: editor/connections_dialog.cpp
 msgid "Disconnects the signal after its first emission."
@@ -1304,9 +1301,8 @@ msgid "(and %s more files)"
 msgstr "(och %s fler filer)"
 
 #: editor/editor_asset_installer.cpp
-#, fuzzy
 msgid "Asset \"%s\" installed successfully!"
-msgstr "Paketet installerades!"
+msgstr "Paketet \"%s\" har installerats!"
 
 #: editor/editor_asset_installer.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
@@ -1830,9 +1826,8 @@ msgid "Enable Contextual Editor"
 msgstr "Aktivera kontextuell redigerare"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Class Properties:"
-msgstr "Expandera alla"
+msgstr "Klassegenskaper:"
 
 #: editor/editor_feature_profile.cpp
 #, fuzzy
@@ -2176,7 +2171,7 @@ msgstr ""
 
 #: editor/editor_help.cpp
 msgid "Method Descriptions"
-msgstr "Metodbeskrivningar"
+msgstr "Metodbeskrivning"
 
 #: editor/editor_help.cpp
 msgid ""
@@ -2606,13 +2601,15 @@ msgstr "Spara ändringar i '%s' innan stängning?"
 
 #: editor/editor_node.cpp
 msgid "%s no longer exists! Please specify a new save location."
-msgstr ""
+msgstr "%s finns inte längre! Vänligen ange en ny lagringsplats."
 
 #: editor/editor_node.cpp
 msgid ""
 "The current scene has no root node, but %d modified external resource(s) "
 "were saved anyway."
 msgstr ""
+"Den aktuella scenen har ingen rotnod, men %d modifierade externa resurser "
+"sparades ändå."
 
 #: editor/editor_node.cpp
 #, fuzzy
@@ -2651,29 +2648,27 @@ msgstr "Nuvarande scen inte sparad. Öppna ändå?"
 
 #: editor/editor_node.cpp
 msgid "Can't undo while mouse buttons are pressed."
-msgstr ""
+msgstr "Det går inte att ångra medan musknapparna är nedtryckta."
 
 #: editor/editor_node.cpp
 msgid "Nothing to undo."
-msgstr ""
+msgstr "Inget att ångra."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Undo: %s"
-msgstr "Ångra"
+msgstr "Ångra: %s"
 
 #: editor/editor_node.cpp
 msgid "Can't redo while mouse buttons are pressed."
-msgstr ""
+msgstr "Det går inte att göra om medan musknapparna är nedtryckta."
 
 #: editor/editor_node.cpp
 msgid "Nothing to redo."
-msgstr ""
+msgstr "Inget att göra om."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Redo: %s"
-msgstr "Återställ"
+msgstr "Gör om: %s"
 
 #: editor/editor_node.cpp
 msgid "Can't reload a scene that was never saved."
@@ -3278,9 +3273,8 @@ msgid "Inspector"
 msgstr "Inspektör"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Expand Bottom Panel"
-msgstr "Expandera alla"
+msgstr "Expandera Nedre Panel"
 
 #: editor/editor_node.cpp
 msgid "Output"
@@ -3452,9 +3446,8 @@ msgid "Update"
 msgstr "Uppdatera"
 
 #: editor/editor_plugin_settings.cpp
-#, fuzzy
 msgid "Version"
-msgstr "Version:"
+msgstr "Version"
 
 #: editor/editor_plugin_settings.cpp
 #, fuzzy
@@ -3721,9 +3714,8 @@ msgid "Error requesting URL:"
 msgstr "Fel vid laddning:"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Connecting to the mirror..."
-msgstr "Anslut Till Node:"
+msgstr "Ansluter till spegeln..."
 
 #: editor/export_template_manager.cpp
 msgid "Can't resolve the requested address."
@@ -3749,9 +3741,8 @@ msgid "Request ended up in a redirect loop."
 msgstr ""
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Request failed:"
-msgstr "Förfrågning Misslyckades."
+msgstr "Förfrågning misslyckades:"
 
 #: editor/export_template_manager.cpp
 msgid "Download complete; extracting templates..."
@@ -3902,9 +3893,8 @@ msgid "Uninstall templates for the current version."
 msgstr ""
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Download from:"
-msgstr "Ladda ner"
+msgstr "Ladda ner från:"
 
 #: editor/export_template_manager.cpp
 #, fuzzy
@@ -4405,19 +4395,19 @@ msgstr "Genererar Lightmaps"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Generating for Mesh: "
-msgstr ""
+msgstr "Generera för mesh: "
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Running Custom Script..."
-msgstr ""
+msgstr "Kör anpassat skript..."
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Couldn't load post-import script:"
-msgstr ""
+msgstr "Det gick inte att läsa in skript efter import:"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Invalid/broken script for post-import (check console):"
-msgstr ""
+msgstr "Ogiltigt/felaktigt skript för efterimport (kontrollera konsolen):"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Error running post-import script:"
@@ -4432,22 +4422,20 @@ msgid "Saving..."
 msgstr "Sparar..."
 
 #: editor/import_defaults_editor.cpp
-#, fuzzy
 msgid "Select Importer"
-msgstr "Välj Node"
+msgstr "Välj Importör"
 
 #: editor/import_defaults_editor.cpp
 msgid "Importer:"
 msgstr "Importör:"
 
 #: editor/import_defaults_editor.cpp
-#, fuzzy
 msgid "Reset to Defaults"
-msgstr "Ladda Standard"
+msgstr "Återställ till standardvärden"
 
 #: editor/import_dock.cpp
 msgid "Keep File (No Import)"
-msgstr ""
+msgstr "Behåll fil (ingen import)"
 
 #: editor/import_dock.cpp
 msgid "%d Files"
@@ -4472,6 +4460,10 @@ msgid ""
 "Selecting another resource in the FileSystem dock without clicking Reimport "
 "first will discard changes made in the Import dock."
 msgstr ""
+"Du har väntande ändringar som inte har tillämpats ännu. Klicka på "
+"Återimportera för att tillämpa ändringar som gjorts i importalternativen.\n"
+"Om du väljer en annan resurs i FilSystem-dockan utan att först klicka på "
+"Återimportera kommer ändringar som gjorts i importdockan att ignoreras."
 
 #: editor/import_dock.cpp
 msgid "Import As:"
@@ -4484,16 +4476,18 @@ msgstr "Återställ Zoom"
 
 #: editor/import_dock.cpp
 msgid "Save Scenes, Re-Import, and Restart"
-msgstr ""
+msgstr "Spara scener, återimportera och starta om"
 
 #: editor/import_dock.cpp
 msgid "Changing the type of an imported file requires editor restart."
-msgstr ""
+msgstr "Att ändra typen av en importerad fil kräver omstart av editorn."
 
 #: editor/import_dock.cpp
 msgid ""
 "WARNING: Assets exist that use this resource, they may stop loading properly."
 msgstr ""
+"VARNING: Det finns tillgångar som använder den här resursen, de kan sluta "
+"laddas in korrekt."
 
 #: editor/inspector_dock.cpp
 msgid "Failed to load resource."
@@ -4519,7 +4513,7 @@ msgstr "Skapa en ny resurs i minnet och ändra den."
 
 #: editor/inspector_dock.cpp
 msgid "Load an existing resource from disk and edit it."
-msgstr ""
+msgstr "Ladda en befintlig resurs från disken och redigera den."
 
 #: editor/inspector_dock.cpp
 msgid "Save the currently edited resource."
@@ -4835,9 +4829,8 @@ msgid "Blend:"
 msgstr ""
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
-#, fuzzy
 msgid "Parameter Changed:"
-msgstr "Uppdatera Ändringar"
+msgstr "Parameter ändrad:"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
@@ -5469,9 +5462,8 @@ msgid "Request failed, timeout"
 msgstr ""
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Timeout."
-msgstr "Tid:"
+msgstr "Tidsgräns."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Failed:"
@@ -8028,9 +8020,8 @@ msgid "Translate"
 msgstr "Översättningar"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Scale"
-msgstr "Skala:"
+msgstr "Skala"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Scaling: "
@@ -8062,28 +8053,24 @@ msgid "Yaw:"
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Size:"
-msgstr "Storlek: "
+msgstr "Storlek:"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Objects Drawn:"
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Material Changes:"
-msgstr "Uppdatera Ändringar"
+msgstr "Materialförändringar:"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Shader Changes:"
-msgstr "Ändra"
+msgstr "Shader Ändringar:"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Surface Changes:"
-msgstr "Ändra"
+msgstr "Ytförändringar:"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Draw Calls:"
@@ -8838,9 +8825,8 @@ msgid "Importing items {n}/{n}"
 msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Updating the editor"
-msgstr "Stäng redigeraren?"
+msgstr "Uppdaterar editorn"
 
 #: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
@@ -8857,9 +8843,8 @@ msgid "With Data"
 msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Select by data type:"
-msgstr "Välj en Node"
+msgstr "Välj efter datatyp:"
 
 #: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
@@ -9101,9 +9086,8 @@ msgid "Add StyleBox Item"
 msgstr "Stil"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Remove Items:"
-msgstr "Ta Bort Mall"
+msgstr "Ta bort objekt:"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Remove Class Items"
@@ -9143,9 +9127,8 @@ msgid "Editor Theme"
 msgstr "Redigera Tema"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Select Another Theme Resource:"
-msgstr "Ta bort Resurs"
+msgstr "Välj en annan temaresurs:"
 
 #: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
@@ -9201,18 +9184,16 @@ msgid "Show default type items alongside items that have been overridden."
 msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Override All"
-msgstr "skriv över:"
+msgstr "Åsidosätt Alla"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Override all default type items."
 msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Theme:"
-msgstr "Tema"
+msgstr "Tema:"
 
 #: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
@@ -9234,9 +9215,8 @@ msgid "Default Preview"
 msgstr "Förhandsgranska"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Select UI Scene:"
-msgstr "Återställ Scen"
+msgstr "Välj UI-scen:"
 
 #: editor/plugins/theme_editor_preview.cpp
 msgid ""
@@ -9386,9 +9366,8 @@ msgid "Erase TileMap"
 msgstr ""
 
 #: editor/plugins/tile_map_editor_plugin.cpp
-#, fuzzy
 msgid "Find Tile"
-msgstr "Hitta Nästa"
+msgstr "Hitta Bricka"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Transpose"
@@ -9559,9 +9538,8 @@ msgid "Navigation Mode"
 msgstr "Animations-Node"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Bitmask Mode"
-msgstr "Raw-Läge"
+msgstr "Bitmaskläge"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 #, fuzzy
@@ -9569,9 +9547,8 @@ msgid "Priority Mode"
 msgstr "Exportera Projekt"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Icon Mode"
-msgstr "Växla Läge"
+msgstr "Icon Läge"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Z Index Mode"
@@ -9857,9 +9834,8 @@ msgid "Detect new changes"
 msgstr "Skapa Ny"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Changes"
-msgstr "Ändra"
+msgstr "Ändringar"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Modified"
@@ -10723,9 +10699,8 @@ msgid "VisualShader"
 msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Edit Visual Property:"
-msgstr "Redigera Filter"
+msgstr "Redigera Visuell Egenskap:"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Visual Shader Mode Changed"
@@ -11147,14 +11122,12 @@ msgid "Are you sure to run %d projects at once?"
 msgstr ""
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Remove %d projects from the list?"
-msgstr "Välj enhet från listan"
+msgstr "Ta bort %d projekt från listan?"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Remove this project from the list?"
-msgstr "Välj enhet från listan"
+msgstr "Vill du ta bort det här projektet från listan?"
 
 #: editor/project_manager.cpp
 msgid ""
@@ -11279,12 +11252,12 @@ msgid ""
 msgstr ""
 
 #: editor/project_settings_editor.cpp
-msgid "Key "
-msgstr "Nyckel "
-
-#: editor/project_settings_editor.cpp
 msgid "Physical Key"
 msgstr ""
+
+#: editor/project_settings_editor.cpp
+msgid "Key "
+msgstr "Nyckel "
 
 #: editor/project_settings_editor.cpp
 msgid "Joy Button"
@@ -13584,9 +13557,8 @@ msgstr ""
 "Snälla Vänta..."
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "Could not find keystore, unable to export."
-msgstr "Kunde inte öppna mall för export:"
+msgstr "Det gick inte att hitta nyckellager, det gick inte att exportera."
 
 #: platform/android/export/export_plugin.cpp
 msgid "'apksigner' returned with error #%d"
@@ -13646,9 +13618,8 @@ msgid "Could not export project files to gradle project\n"
 msgstr ""
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "Could not write expansion package file!"
-msgstr "Kunde inte skriva till filen:"
+msgstr "Kunde inte skriva expansionspaketfil!"
 
 #: platform/android/export/export_plugin.cpp
 msgid "Building Android Project (gradle)"
@@ -13701,9 +13672,8 @@ msgid "Adding files..."
 msgstr "Lägger till %s..."
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "Could not export project files"
-msgstr "Kunde inte skriva till filen:"
+msgstr "Kunde inte exportera projektfiler"
 
 #: platform/android/export/export_plugin.cpp
 msgid "Aligning APK..."
@@ -13768,14 +13738,12 @@ msgid "Could not read HTML shell:"
 msgstr "Kunde inte skriva till filen:"
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Could not create HTTP server directory:"
-msgstr "Kunde inte skapa mapp."
+msgstr "Kunde inte skapa HTTP-serverkatalog:"
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Error starting HTTP server:"
-msgstr "Fel vid sparande av scenen."
+msgstr "Fel vid start av HTTP-server:"
 
 #: platform/osx/export/export.cpp
 #, fuzzy
@@ -14574,9 +14542,8 @@ msgid "Invalid source for shader."
 msgstr "Ogiltig teckenstorlek."
 
 #: scene/resources/visual_shader_nodes.cpp
-#, fuzzy
 msgid "Invalid comparison function for that type."
-msgstr "Ogiltig teckenstorlek."
+msgstr "Ogiltig jämförelsefunktion för den typen."
 
 #: servers/visual/shader_language.cpp
 msgid "Varying may not be assigned in the '%s' function."
@@ -14607,8 +14574,9 @@ msgid "Assignment to uniform."
 msgstr ""
 
 #: servers/visual/shader_language.cpp
+#, fuzzy
 msgid "Constants cannot be modified."
-msgstr ""
+msgstr "Konstanter kan inte ändras."
 
 #~ msgid "Bottom"
 #~ msgstr "Botten"

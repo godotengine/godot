@@ -51,6 +51,38 @@ bool VisualShaderNodeParticleEmitter::has_output_port_preview(int p_port) const 
 	return false;
 }
 
+void VisualShaderNodeParticleEmitter::set_mode_2d(bool p_enabled) {
+	mode_2d = p_enabled;
+	emit_changed();
+}
+
+bool VisualShaderNodeParticleEmitter::is_mode_2d() const {
+	return mode_2d;
+}
+
+Vector<StringName> VisualShaderNodeParticleEmitter::get_editable_properties() const {
+	Vector<StringName> props;
+	props.push_back("mode_2d");
+	return props;
+}
+
+Map<StringName, String> VisualShaderNodeParticleEmitter::get_editable_properties_names() const {
+	Map<StringName, String> names;
+	names.insert("mode_2d", TTR("2D Mode"));
+	return names;
+}
+
+bool VisualShaderNodeParticleEmitter::is_show_prop_names() const {
+	return true;
+}
+
+void VisualShaderNodeParticleEmitter::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_mode_2d", "enabled"), &VisualShaderNodeParticleEmitter::set_mode_2d);
+	ClassDB::bind_method(D_METHOD("is_mode_2d"), &VisualShaderNodeParticleEmitter::is_mode_2d);
+
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "mode_2d"), "set_mode_2d", "is_mode_2d");
+}
+
 VisualShaderNodeParticleEmitter::VisualShaderNodeParticleEmitter() {
 }
 
@@ -79,15 +111,27 @@ String VisualShaderNodeParticleSphereEmitter::get_input_port_name(int p_port) co
 
 String VisualShaderNodeParticleSphereEmitter::generate_global_per_node(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const {
 	String code;
+
+	code += "vec2 __get_random_point_in_circle(inout uint seed, float radius, float inner_radius) {\n";
+	code += "	return __get_random_unit_vec2(seed) * __randf_range(seed, inner_radius, radius);\n";
+	code += "}\n\n";
+
 	code += "vec3 __get_random_point_in_sphere(inout uint seed, float radius, float inner_radius) {\n";
 	code += "	return __get_random_unit_vec3(seed) * __randf_range(seed, inner_radius, radius);\n";
 	code += "}\n\n";
+
 	return code;
 }
 
 String VisualShaderNodeParticleSphereEmitter::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
 	String code;
-	code += "	" + p_output_vars[0] + " = __get_random_point_in_sphere(__seed, " + (p_input_vars[0].is_empty() ? (String)get_input_port_default_value(0) : p_input_vars[0]) + ", " + (p_input_vars[1].is_empty() ? (String)get_input_port_default_value(1) : p_input_vars[1]) + ");\n";
+
+	if (mode_2d) {
+		code += "	" + p_output_vars[0] + " = vec3(__get_random_point_in_circle(__seed, " + (p_input_vars[0].is_empty() ? (String)get_input_port_default_value(0) : p_input_vars[0]) + ", " + (p_input_vars[1].is_empty() ? (String)get_input_port_default_value(1) : p_input_vars[1]) + "), 0.0);\n";
+	} else {
+		code += "	" + p_output_vars[0] + " = __get_random_point_in_sphere(__seed, " + (p_input_vars[0].is_empty() ? (String)get_input_port_default_value(0) : p_input_vars[0]) + ", " + (p_input_vars[1].is_empty() ? (String)get_input_port_default_value(1) : p_input_vars[1]) + ");\n";
+	}
+
 	return code;
 }
 
@@ -122,16 +166,27 @@ String VisualShaderNodeParticleBoxEmitter::get_input_port_name(int p_port) const
 
 String VisualShaderNodeParticleBoxEmitter::generate_global_per_node(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const {
 	String code;
-	code += "vec3 __get_random_point_in_box(inout uint seed, vec3 extents) {\n";
+
+	code += "vec2 __get_random_point_in_box2d(inout uint seed, vec2 extents) {\n";
+	code += "	vec2 half_extents = extents / 2.0;\n";
+	code += "	return vec2(__randf_range(seed, -half_extents.x, half_extents.x), __randf_range(seed, -half_extents.y, half_extents.y));\n";
+	code += "}\n\n";
+
+	code += "vec3 __get_random_point_in_box3d(inout uint seed, vec3 extents) {\n";
 	code += "	vec3 half_extents = extents / 2.0;\n";
 	code += "	return vec3(__randf_range(seed, -half_extents.x, half_extents.x), __randf_range(seed, -half_extents.y, half_extents.y), __randf_range(seed, -half_extents.z, half_extents.z));\n";
 	code += "}\n\n";
+
 	return code;
 }
 
 String VisualShaderNodeParticleBoxEmitter::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
 	String code;
-	code += "	" + p_output_vars[0] + " = __get_random_point_in_box(__seed, " + (p_input_vars[0].is_empty() ? (String)get_input_port_default_value(0) : p_input_vars[0]) + ");\n";
+	if (mode_2d) {
+		code += "	" + p_output_vars[0] + " = vec3(__get_random_point_in_box2d(__seed, " + (p_input_vars[0].is_empty() ? (String)get_input_port_default_value(0) : p_input_vars[0]) + ".xy), 0.0);\n";
+	} else {
+		code += "	" + p_output_vars[0] + " = __get_random_point_in_box3d(__seed, " + (p_input_vars[0].is_empty() ? (String)get_input_port_default_value(0) : p_input_vars[0]) + ");\n";
+	}
 	return code;
 }
 
@@ -166,17 +221,31 @@ String VisualShaderNodeParticleRingEmitter::get_input_port_name(int p_port) cons
 
 String VisualShaderNodeParticleRingEmitter::generate_global_per_node(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const {
 	String code;
-	code += "vec3 __get_random_point_on_ring(inout uint seed, float radius, float inner_radius, float height) {\n";
-	code += "	float angle = __rand_from_seed(seed) * PI * 2.0;\n";
+
+	code += "vec2 __get_random_point_on_ring2d(inout uint seed, float radius, float inner_radius) {\n";
+	code += "	float angle = __rand_from_seed(seed) * TAU;\n";
+	code += "	vec2 ring = vec2(sin(angle), cos(angle)) * __randf_range(seed, inner_radius, radius);\n";
+	code += "	return vec2(ring.x, ring.y);\n";
+	code += "}\n\n";
+
+	code += "vec3 __get_random_point_on_ring3d(inout uint seed, float radius, float inner_radius, float height) {\n";
+	code += "	float angle = __rand_from_seed(seed) * TAU;\n";
 	code += "	vec2 ring = vec2(sin(angle), cos(angle)) * __randf_range(seed, inner_radius, radius);\n";
 	code += "	return vec3(ring.x, __randf_range(seed, min(0.0, height), max(0.0, height)), ring.y);\n";
 	code += "}\n\n";
+
 	return code;
 }
 
 String VisualShaderNodeParticleRingEmitter::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
 	String code;
-	code = "	" + p_output_vars[0] + " = __get_random_point_on_ring(__seed, " + (p_input_vars[0].is_empty() ? (String)get_input_port_default_value(0) : p_input_vars[0]) + ", " + (p_input_vars[1].is_empty() ? (String)get_input_port_default_value(1) : p_input_vars[1]) + ", " + (p_input_vars[2].is_empty() ? (String)get_input_port_default_value(2) : p_input_vars[2]) + ");\n";
+
+	if (mode_2d) {
+		code = "	" + p_output_vars[0] + " = vec3(__get_random_point_on_ring2d(__seed, " + (p_input_vars[0].is_empty() ? (String)get_input_port_default_value(0) : p_input_vars[0]) + ", " + (p_input_vars[1].is_empty() ? (String)get_input_port_default_value(1) : p_input_vars[1]) + "), 0.0);\n";
+	} else {
+		code = "	" + p_output_vars[0] + " = __get_random_point_on_ring3d(__seed, " + (p_input_vars[0].is_empty() ? (String)get_input_port_default_value(0) : p_input_vars[0]) + ", " + (p_input_vars[1].is_empty() ? (String)get_input_port_default_value(1) : p_input_vars[1]) + ", " + (p_input_vars[2].is_empty() ? (String)get_input_port_default_value(2) : p_input_vars[2]) + ");\n";
+	}
+
 	return code;
 }
 

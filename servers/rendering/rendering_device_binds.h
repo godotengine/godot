@@ -427,7 +427,7 @@ protected:
 		ClassDB::bind_method(D_METHOD("_set_versions", "versions"), &RDShaderFile::_set_versions);
 		ClassDB::bind_method(D_METHOD("_get_versions"), &RDShaderFile::_get_versions);
 
-		ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "_versions", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_versions", "_get_versions");
+		ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "_versions", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_versions", "_get_versions");
 		ADD_PROPERTY(PropertyInfo(Variant::STRING, "base_error"), "set_base_error", "get_base_error");
 	}
 };

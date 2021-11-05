@@ -3954,6 +3954,10 @@ void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_e
 				kernel_size = Vector3i(int32_t(rb->volumetric_fog->width), int32_t(rb->volumetric_fog->height), int32_t(rb->volumetric_fog->depth));
 			}
 
+			if (kernel_size.x == 0 || kernel_size.y == 0 || kernel_size.z == 0) {
+				continue;
+			}
+
 			volumetric_fog.push_constant.position[0] = position.x;
 			volumetric_fog.push_constant.position[1] = position.y;
 			volumetric_fog.push_constant.position[2] = position.z;
@@ -4167,7 +4171,7 @@ void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_e
 			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 			u.binding = 19;
 			RID radiance_texture = storage->texture_rd_get_default(is_using_radiance_cubemap_array() ? RendererStorageRD::DEFAULT_RD_TEXTURE_CUBEMAP_ARRAY_BLACK : RendererStorageRD::DEFAULT_RD_TEXTURE_CUBEMAP_BLACK);
-			RID sky_texture = sky.sky_get_radiance_texture_rd(env->sky);
+			RID sky_texture = env->sky.is_valid() ? sky.sky_get_radiance_texture_rd(env->sky) : RID();
 			u.ids.push_back(sky_texture.is_valid() ? sky_texture : radiance_texture);
 			uniforms.push_back(u);
 		}

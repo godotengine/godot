@@ -4376,7 +4376,7 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, Edito
 		const int wireframe_idx = view_menu->get_popup()->get_item_index(VIEW_DISPLAY_WIREFRAME);
 		const int overdraw_idx = view_menu->get_popup()->get_item_index(VIEW_DISPLAY_OVERDRAW);
 		const int shadeless_idx = view_menu->get_popup()->get_item_index(VIEW_DISPLAY_SHADELESS);
-		const String unsupported_tooltip = TTR("Not available when using the GLES2 renderer.");
+		const String unsupported_tooltip = TTR("Not available when using the OpenGL renderer.");
 
 		view_menu->get_popup()->set_item_disabled(normal_idx, true);
 		view_menu->get_popup()->set_item_tooltip(normal_idx, unsupported_tooltip);

@@ -9370,15 +9370,6 @@ Error ShaderLanguage::complete(const String &p_code, const Map<StringName, Funct
 					limit = 4;
 
 				} break;
-				case TYPE_MAT2:
-					limit = 2;
-					break;
-				case TYPE_MAT3:
-					limit = 3;
-					break;
-				case TYPE_MAT4:
-					limit = 4;
-					break;
 				default: {
 				}
 			}

@@ -158,7 +158,7 @@ Vector<Face3> Decal::get_faces(uint32_t p_usage_flags) const {
 
 void Decal::_validate_property(PropertyInfo &property) const {
 	if (!distance_fade_enabled && (property.name == "distance_fade_begin" || property.name == "distance_fade_length")) {
-		property.usage = PROPERTY_USAGE_NOEDITOR;
+		property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
 	VisualInstance3D::_validate_property(property);
 }

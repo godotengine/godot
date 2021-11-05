@@ -589,6 +589,11 @@ void EditorNode::_notification(int p_what) {
 				settings_changed = false;
 				emit_signal(SNAME("project_settings_changed"));
 			}
+
+			ResourceImporterTexture::get_singleton()->update_imports();
+
+			// if using a main thread only renderer, we need to update the resource previews
+			EditorResourcePreview::get_singleton()->update();
 		} break;
 
 		case NOTIFICATION_ENTER_TREE: {
@@ -2251,7 +2256,8 @@ void EditorNode::_edit_current() {
 
 		if (main_plugin) {
 			// special case if use of external editor is true
-			if (main_plugin->get_name() == "Script" && current_obj->get_class_name() != StringName("VisualScript") && (bool(EditorSettings::get_singleton()->get("text_editor/external/use_external_editor")) || overrides_external_editor(current_obj))) {
+			Resource *res = Object::cast_to<Resource>(current_obj);
+			if (main_plugin->get_name() == "Script" && current_obj->get_class_name() != StringName("VisualScript") && res && !res->is_built_in() && (bool(EditorSettings::get_singleton()->get("text_editor/external/use_external_editor")) || overrides_external_editor(current_obj))) {
 				if (!changing_scene) {
 					main_plugin->edit(current_obj);
 				}
@@ -2903,8 +2909,13 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			OS::get_singleton()->shell_open("https://godotengine.org/donate");
 		} break;
 
-		case SET_VIDEO_DRIVER_SAVE_AND_RESTART: {
-			ProjectSettings::get_singleton()->set("rendering/driver/driver_name", video_driver_request);
+			//		case SET_VIDEO_DRIVER_SAVE_AND_RESTART: {
+			//			ProjectSettings::get_singleton()->set("rendering/driver/driver_name", video_driver_request);
+			//			save_all_scenes();
+			//			restart_editor();
+			//		} break;
+		case SET_RENDERING_DRIVER_SAVE_AND_RESTART: {
+			ProjectSettings::get_singleton()->set("rendering/driver/driver_name", rendering_driver_request);
 			ProjectSettings::get_singleton()->save();
 
 			save_all_scenes();
@@ -3049,7 +3060,7 @@ void EditorNode::_discard_changes(const String &p_str) {
 			args.push_back(exec.get_base_dir());
 			args.push_back("--project-manager");
 
-			Error err = OS::get_singleton()->create_process(exec, args);
+			Error err = OS::get_singleton()->create_instance(args);
 			ERR_FAIL_COND(err);
 		} break;
 	}
@@ -3346,7 +3357,7 @@ void EditorNode::set_edited_scene(Node *p_scene) {
 
 	if (p_scene) {
 		if (p_scene->get_parent() != scene_root) {
-			scene_root->add_child(p_scene);
+			scene_root->add_child(p_scene, true);
 		}
 	}
 }
@@ -3478,7 +3489,7 @@ void EditorNode::set_current_scene(int p_idx) {
 
 	if (new_scene) {
 		if (new_scene->get_parent() != scene_root) {
-			scene_root->add_child(new_scene);
+			scene_root->add_child(new_scene, true);
 		}
 	}
 
@@ -5410,8 +5421,7 @@ void EditorNode::_global_menu_new_window(const Variant &p_tag) {
 	if (OS::get_singleton()->get_main_loop()) {
 		List<String> args;
 		args.push_back("-p");
-		String exec = OS::get_singleton()->get_executable_path();
-		OS::get_singleton()->create_process(exec, args);
+		OS::get_singleton()->create_instance(args);
 	}
 }
 
@@ -5585,17 +5595,16 @@ void EditorNode::_bottom_panel_raise_toggled(bool p_pressed) {
 	top_split->set_visible(!p_pressed);
 }
 
-void EditorNode::_update_video_driver_color() {
-	// TODO: Probably should de-hardcode this and add to editor settings.
-	if (video_driver->get_text() == "GLES2") {
-		video_driver->add_theme_color_override("font_color", Color::hex(0x5586a4ff));
-	} else if (video_driver->get_text() == "Vulkan") {
-		video_driver->add_theme_color_override("font_color", theme_base->get_theme_color(SNAME("vulkan_color"), SNAME("Editor")));
+void EditorNode::_update_rendering_driver_color() {
+	if (rendering_driver->get_text() == "opengl3") {
+		rendering_driver->add_theme_color_override("font_color", Color::hex(0x5586a4ff));
+	} else if (rendering_driver->get_text() == "vulkan") {
+		rendering_driver->add_theme_color_override("font_color", theme_base->get_theme_color("vulkan_color", "Editor"));
 	}
 }
 
-void EditorNode::_video_driver_selected(int p_which) {
-	String driver = video_driver->get_item_metadata(p_which);
+void EditorNode::_rendering_driver_selected(int p_which) {
+	String driver = rendering_driver->get_item_metadata(p_which);
 
 	String current = ""; // OS::get_singleton()->get_video_driver_name(OS::get_singleton()->get_current_video_driver());
 
@@ -5603,10 +5612,10 @@ void EditorNode::_video_driver_selected(int p_which) {
 		return;
 	}
 
-	video_driver_request = driver;
+	rendering_driver_request = driver;
 	video_restart_dialog->popup_centered();
-	video_driver->select(video_driver_current);
-	_update_video_driver_color();
+	rendering_driver->select(rendering_driver_current);
+	_update_rendering_driver_color();
 }
 
 void EditorNode::_resource_saved(RES p_resource, const String &p_path) {
@@ -6610,40 +6619,50 @@ EditorNode::EditorNode() {
 	HBoxContainer *right_menu_hb = memnew(HBoxContainer);
 	menu_hb->add_child(right_menu_hb);
 
-	// Toggle for video driver
-	video_driver = memnew(OptionButton);
-	video_driver->set_focus_mode(Control::FOCUS_NONE);
-	video_driver->connect("item_selected", callable_mp(this, &EditorNode::_video_driver_selected));
-	video_driver->add_theme_font_override("font", gui_base->get_theme_font(SNAME("bold"), SNAME("EditorFonts")));
-	video_driver->add_theme_font_size_override("font_size", gui_base->get_theme_font_size(SNAME("bold_size"), SNAME("EditorFonts")));
-	// TODO: Show again when OpenGL is ported.
-	video_driver->set_visible(false);
-	right_menu_hb->add_child(video_driver);
+	rendering_driver = memnew(OptionButton);
 
-#ifndef _MSC_VER
-#warning needs to be reimplemented
-#endif
-#if 0
-	String video_drivers = ProjectSettings::get_singleton()->get_custom_property_info()["rendering/driver/driver_name"].hint_string;
-	String current_video_driver = OS::get_singleton()->get_video_driver_name(OS::get_singleton()->get_current_video_driver());
-	video_driver_current = 0;
-	for (int i = 0; i < video_drivers.get_slice_count(","); i++) {
-		String driver = video_drivers.get_slice(",", i);
-		video_driver->add_item(driver);
-		video_driver->set_item_metadata(i, driver);
+	// Hide the renderer selection dropdown until OpenGL support is more mature.
+	// The renderer can still be changed in the project settings or using `--rendering-driver opengl3`.
+	rendering_driver->set_visible(false);
 
-		if (current_video_driver == driver) {
-			video_driver->select(i);
-			video_driver_current = i;
+	rendering_driver->set_flat(true);
+	rendering_driver->set_focus_mode(Control::FOCUS_NONE);
+	rendering_driver->connect("item_selected", callable_mp(this, &EditorNode::_rendering_driver_selected));
+	rendering_driver->add_theme_font_override("font", gui_base->get_theme_font("bold", "EditorFonts"));
+	rendering_driver->add_theme_font_size_override("font_size", gui_base->get_theme_font_size("bold_size", "EditorFonts"));
+
+	right_menu_hb->add_child(rendering_driver);
+
+	// Only display the render drivers that are available for this display driver.
+	int display_driver_idx = OS::get_singleton()->get_display_driver_id();
+	Vector<String> render_drivers = DisplayServer::get_create_function_rendering_drivers(display_driver_idx);
+	String current_rendering_driver = OS::get_singleton()->get_current_rendering_driver_name();
+
+	// As we are doing string comparisons, keep in standard case to prevent problems with capitals
+	// "vulkan" in particular uses lowercase "v" in the code, and uppercase in the UI.
+	current_rendering_driver = current_rendering_driver.to_lower();
+
+	for (int i = 0; i < render_drivers.size(); i++) {
+		String driver = render_drivers[i];
+
+		// Add the driver to the UI.
+		rendering_driver->add_item(driver);
+		rendering_driver->set_item_metadata(i, driver);
+
+		// Lowercase for standard comparison.
+		driver = driver.to_lower();
+
+		if (current_rendering_driver == driver) {
+			rendering_driver->select(i);
+			rendering_driver_current = i;
 		}
 	}
+	_update_rendering_driver_color();
 
-	_update_video_driver_color();
-#endif
 	video_restart_dialog = memnew(ConfirmationDialog);
 	video_restart_dialog->set_text(TTR("Changing the video driver requires restarting the editor."));
 	video_restart_dialog->get_ok_button()->set_text(TTR("Save & Restart"));
-	video_restart_dialog->connect("confirmed", callable_mp(this, &EditorNode::_menu_option), varray(SET_VIDEO_DRIVER_SAVE_AND_RESTART));
+	video_restart_dialog->connect("confirmed", callable_mp(this, &EditorNode::_menu_option), varray(SET_RENDERING_DRIVER_SAVE_AND_RESTART));
 	gui_base->add_child(video_restart_dialog);
 
 	progress_hb = memnew(BackgroundProgress);
@@ -7120,8 +7139,6 @@ EditorNode::EditorNode() {
 	EditorFileSystem::get_singleton()->connect("resources_reload", callable_mp(this, &EditorNode::_resources_changed));
 
 	_build_icon_type_cache();
-
-	Node::set_human_readable_collision_renaming(true);
 
 	pick_main_scene = memnew(ConfirmationDialog);
 	gui_base->add_child(pick_main_scene);

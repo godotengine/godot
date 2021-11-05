@@ -25,21 +25,21 @@
 	<tutorials>
 		<link title="2D Role Playing Game Demo">https://godotengine.org/asset-library/asset/520</link>
 	</tutorials>
-	<methods>
-		<method name="NodePath" qualifiers="constructor">
+	<constructors>
+		<constructor name="NodePath">
 			<return type="NodePath" />
 			<description>
 				Constructs an empty [NodePath].
 			</description>
-		</method>
-		<method name="NodePath" qualifiers="constructor">
+		</constructor>
+		<constructor name="NodePath">
 			<return type="NodePath" />
 			<argument index="0" name="from" type="NodePath" />
 			<description>
 				Constructs a [NodePath] as a copy of the given [NodePath].
 			</description>
-		</method>
-		<method name="NodePath" qualifiers="constructor">
+		</constructor>
+		<constructor name="NodePath">
 			<return type="NodePath" />
 			<argument index="0" name="from" type="String" />
 			<description>
@@ -61,7 +61,9 @@
 				"/root/Level/Path2D"
 				[/codeblock]
 			</description>
-		</method>
+		</constructor>
+	</constructors>
+	<methods>
 		<method name="get_as_property_path" qualifiers="const">
 			<return type="NodePath" />
 			<description>
@@ -166,27 +168,29 @@
 				Returns [code]true[/code] if the node path is empty.
 			</description>
 		</method>
-		<method name="operator !=" qualifiers="operator">
-			<return type="bool" />
-			<description>
-			</description>
-		</method>
-		<method name="operator !=" qualifiers="operator">
-			<return type="bool" />
-			<argument index="0" name="right" type="NodePath" />
-			<description>
-			</description>
-		</method>
-		<method name="operator ==" qualifiers="operator">
-			<return type="bool" />
-			<description>
-			</description>
-		</method>
-		<method name="operator ==" qualifiers="operator">
-			<return type="bool" />
-			<argument index="0" name="right" type="NodePath" />
-			<description>
-			</description>
-		</method>
 	</methods>
+	<operators>
+		<operator name="operator !=">
+			<return type="bool" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator !=">
+			<return type="bool" />
+			<argument index="0" name="right" type="NodePath" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator ==">
+			<return type="bool" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator ==">
+			<return type="bool" />
+			<argument index="0" name="right" type="NodePath" />
+			<description>
+			</description>
+		</operator>
+	</operators>
 </class>

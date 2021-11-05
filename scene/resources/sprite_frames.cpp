@@ -233,7 +233,7 @@ void SpriteFrames::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_set_animations"), &SpriteFrames::_set_animations);
 	ClassDB::bind_method(D_METHOD("_get_animations"), &SpriteFrames::_get_animations);
 
-	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "animations", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_animations", "_get_animations"); //compatibility
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "animations", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_animations", "_get_animations"); //compatibility
 }
 
 SpriteFrames::SpriteFrames() {

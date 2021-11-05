@@ -125,13 +125,15 @@
 # Zenvasca <zenvasca@gmail.com>, 2021.
 # Wladimir Roberto Barbosa <wladrbarbosa@gmail.com>, 2021.
 # Mário Victor Ribeiro Silva <mariovictorrs@gmail.com>, 2021.
+# jak3z <jose_renato06@outlook.com>, 2021.
+# Henrique Darko <henridark00@gmail.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: 2016-05-30\n"
-"PO-Revision-Date: 2021-10-21 10:31+0000\n"
-"Last-Translator: Mário Victor Ribeiro Silva <mariovictorrs@gmail.com>\n"
+"PO-Revision-Date: 2021-11-03 13:15+0000\n"
+"Last-Translator: jak3z <jose_renato06@outlook.com>\n"
 "Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/pt_BR/>\n"
 "Language: pt_BR\n"
@@ -551,7 +553,7 @@ msgstr "Não é possível adicionar uma nova trilha sem uma raiz"
 
 #: editor/animation_track_editor.cpp
 msgid "Invalid track for Bezier (no suitable sub-properties)"
-msgstr "Trilha inválida para Bézier (sem subpropriedades adequadas)"
+msgstr "Trilha inválida para Bézier (sem sub-propriedades adequadas)"
 
 #: editor/animation_track_editor.cpp
 msgid "Add Bezier Track"
@@ -576,7 +578,7 @@ msgstr "Adicionar Trilha Chave"
 #: editor/animation_track_editor.cpp
 msgid "Track path is invalid, so can't add a method key."
 msgstr ""
-"Caminho da trilha é inválido,então não pode adicionar uma chave de método."
+"Caminho da trilha é inválido, então não pode adicionar uma chave de método."
 
 #: editor/animation_track_editor.cpp
 msgid "Add Method Track Key"
@@ -607,7 +609,8 @@ msgstr "Alterar Escala das Chaves na Anim"
 msgid ""
 "This option does not work for Bezier editing, as it's only a single track."
 msgstr ""
-"Essa opção não funciona para edição por Bezier,pois é apenas uma faixa única."
+"Essa opção não funciona para edição por Bézier, pois é apenas uma trilha "
+"única."
 
 #: editor/animation_track_editor.cpp
 msgid ""
@@ -3791,9 +3794,8 @@ msgid "There are no mirrors available."
 msgstr "Não há espelhos disponíveis."
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Retrieving the mirror list..."
-msgstr "Reconectando, por favor aguarde."
+msgstr "Reconectando a lista de espelhos..."
 
 #: editor/export_template_manager.cpp
 msgid "Starting the download..."
@@ -3853,7 +3855,6 @@ msgid "Error getting the list of mirrors."
 msgstr "Erro ao obter a lista de espelhos."
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Error parsing JSON with the list of mirrors. Please report this issue!"
 msgstr ""
 "Erro ao analisar o JSON da lista de espelhos. Por favor, reporte este "
@@ -3942,9 +3943,8 @@ msgid "Importing:"
 msgstr "Importando:"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Remove templates for the version '%s'?"
-msgstr "Remover versão '%s' do modelo?"
+msgstr "Remover modelo para a versão '%s'?"
 
 #: editor/export_template_manager.cpp
 msgid "Uncompressing Android Build Sources"
@@ -3982,9 +3982,8 @@ msgid "Uninstall"
 msgstr "Desinstalar"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Uninstall templates for the current version."
-msgstr "Valor inicial para o contador"
+msgstr "Desinstalar modelos da versão atual."
 
 #: editor/export_template_manager.cpp
 msgid "Download from:"
@@ -3995,9 +3994,8 @@ msgid "Open in Web Browser"
 msgstr "Abrir no Navegador"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Copy Mirror URL"
-msgstr "Copiar Erro"
+msgstr "Copiar URL do Espelho"
 
 #: editor/export_template_manager.cpp
 msgid "Download and Install"
@@ -4022,9 +4020,8 @@ msgid "Install from File"
 msgstr "Instalar a Partir do Arquivo"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Install templates from a local file."
-msgstr "Importar Modelos de um Arquivo ZIP"
+msgstr "Importar modelos de um arquivo local."
 
 #: editor/export_template_manager.cpp editor/find_in_files.cpp
 #: editor/progress_dialog.cpp scene/gui/dialogs.cpp
@@ -4034,7 +4031,7 @@ msgstr "Cancelar"
 #: editor/export_template_manager.cpp
 #, fuzzy
 msgid "Cancel the download of the templates."
-msgstr "Não se pôde abrir zip dos modelos de exportação."
+msgstr "Cancelar download dos modelos."
 
 #: editor/export_template_manager.cpp
 msgid "Other Installed Versions:"
@@ -4226,14 +4223,12 @@ msgid "Sort by Type (Descending)"
 msgstr "Ordenar por Tipo (Descendente)"
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Sort by Last Modified"
-msgstr "Ultima Modificação"
+msgstr "Ordenar por Último Modificado"
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Sort by First Modified"
-msgstr "Ultima Modificação"
+msgstr "Ordenar por Primeiro Modificado"
 
 #: editor/filesystem_dock.cpp
 msgid "Duplicate..."
@@ -4532,6 +4527,11 @@ msgid ""
 "Selecting another resource in the FileSystem dock without clicking Reimport "
 "first will discard changes made in the Import dock."
 msgstr ""
+"Você tem mudanças pendentes que não foram aplicadas ainda. Clique em "
+"Reimportar para aplicar as mudanças feitas nas opções de importação.\n"
+"Selecionado outro recurso no painel do Sistema de Arquivos sem ter clicado "
+"em Reimportar primeiro ira descartar as mudanças feitas no painel de "
+"Importar."
 
 #: editor/import_dock.cpp
 msgid "Import As:"
@@ -4592,21 +4592,18 @@ msgid "Save As..."
 msgstr "Salvar Como..."
 
 #: editor/inspector_dock.cpp
-#, fuzzy
 msgid "Extra resource options."
-msgstr "Não está no caminho de recursos."
+msgstr "Opções de recursos extras."
 
 #: editor/inspector_dock.cpp
-#, fuzzy
 msgid "Edit Resource from Clipboard"
-msgstr "Editar Área de Transferência de Recursos"
+msgstr "Editar Recursos da Área de Transferência"
 
 #: editor/inspector_dock.cpp
 msgid "Copy Resource"
 msgstr "Copiar Recurso"
 
 #: editor/inspector_dock.cpp
-#, fuzzy
 msgid "Make Resource Built-In"
 msgstr "Tornar Embutido"
 
@@ -4635,9 +4632,8 @@ msgid "Filter properties"
 msgstr "Filtrar propriedades"
 
 #: editor/inspector_dock.cpp
-#, fuzzy
 msgid "Manage object properties."
-msgstr "Propriedades do objeto."
+msgstr "Gerenciar propriedades do objeto."
 
 #: editor/inspector_dock.cpp
 msgid "Changes may be lost!"
@@ -5676,13 +5672,13 @@ msgstr ""
 "Salve sua cena e tente novamente."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "No meshes to bake. Make sure they contain an UV2 channel and that the 'Use "
 "In Baked Light' and 'Generate Lightmap' flags are on."
 msgstr ""
-"Não há malhas para preparar. Certifique-se de que elas possuem um canal UV2 "
-"e que a propriedade \"Preparar Luz\" está habilitada."
+"Não há malhas para pré-calcular. Certifique-se de que elas possuem um canal "
+"UV2 e que as propriedades \"Use In Baked Light\" e \"Generate Lightmap\" "
+"está habilitada."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Failed creating lightmap images, make sure path is writable."
@@ -5826,15 +5822,13 @@ msgstr "Mover CanvaItem \"%s\" para (%d, %d)"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Locked"
 msgstr "Fixar Seleção"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Grouped"
-msgstr "Grupo"
+msgstr "Agrupado"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid ""
@@ -5938,13 +5932,13 @@ msgstr "Alterar Âncoras"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "Project Camera Override\n"
 "Overrides the running project's camera with the editor viewport camera."
 msgstr ""
-"Sobrepor Câmera de Jogo\n"
-"Sobrepõe a câmera de jogo com a janela de exibição da câmera."
+"Sobrepor câmera do projeto.\n"
+"Sobrepõe a câmera do projeto em execução com a câmera da janela de exibição "
+"do editor."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -5953,6 +5947,9 @@ msgid ""
 "No project instance running. Run the project from the editor to use this "
 "feature."
 msgstr ""
+"Sobrepor câmera do projeto.\n"
+"Sem instâncias do projeto em execução. Execute o projeto pelo editor para "
+"usar essa funcionalidade."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -6020,25 +6017,23 @@ msgstr "Modo de Seleção"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Drag: Rotate selected node around pivot."
-msgstr "Remover nó ou trilha selecionada."
+msgstr "Arrastar: Gire nó em tono do pivô."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Alt+Drag: Move selected node."
 msgstr "Alt+Arrastar: Mover nó selecionado."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "V: Set selected node's pivot position."
-msgstr "Remover nó ou trilha selecionada."
+msgstr "V: Define a posição do pivô do nó selecionado."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Alt+RMB: Show list of all nodes at position clicked, including locked."
 msgstr ""
-"Alt+BDM:  Mostra uma lista de todos os nodes na posição clicada, incluindo "
-"os bloqueados."
+"Alt+Botão Esquerdo do Mouse: Mostrar a lista de todos os nós na posição "
+"clicada, incluindo os bloqueados."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "RMB: Add node at position clicked."
@@ -6582,9 +6577,8 @@ msgid "Couldn't create a single convex collision shape."
 msgstr "Não foi possível criar uma forma de colisão convexa simples."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#, fuzzy
 msgid "Create Simplified Convex Shape"
-msgstr "Criar Forma(s) Convexa(s) Simples"
+msgstr "Criar Forma(s) Convexa(s) Simplificadas"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Single Convex Shape"
@@ -6619,9 +6613,8 @@ msgid "No mesh to debug."
 msgstr "Nenhuma malha para depurar."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#, fuzzy
 msgid "Mesh has no UV in layer %d."
-msgstr "Modelo não tem uma UV nesta camada"
+msgstr "Modelo não tem UV na camada %d."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "MeshInstance lacks a Mesh!"
@@ -6686,9 +6679,8 @@ msgstr ""
 "Esta é a opção mais rápida (mas menos precisa) para detecção de colisão."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#, fuzzy
 msgid "Create Simplified Convex Collision Sibling"
-msgstr "Criar um irmão de Colisão Convexa"
+msgstr "Criar Colisão Convexa Simplificada Irmã"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid ""
@@ -6705,14 +6697,14 @@ msgid "Create Multiple Convex Collision Siblings"
 msgstr "Criar Múltipla Colisão Convexa Irmã(s)"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "Creates a polygon-based collision shape.\n"
 "This is a performance middle-ground between a single convex collision and a "
 "polygon-based collision."
 msgstr ""
-"Cria um polígono base de colisão forma.\n"
-"Este é um meio-termo entre as duas opções acima."
+"Cria uma forma de colisão baseada em polígonos.\n"
+"Este é um meio-termo em desempenho entre uma única colisão convexa e uma "
+"colisão baseada em polígono."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Outline Mesh..."
@@ -6779,14 +6771,12 @@ msgid "Remove Selected Item"
 msgstr "Remover Item Selecionado"
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
-#, fuzzy
 msgid "Import from Scene (Ignore Transforms)"
-msgstr "Importar da Cena"
+msgstr "Importar da Cena (Ignora Transforms)"
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
-#, fuzzy
 msgid "Import from Scene (Apply Transforms)"
-msgstr "Importar da Cena"
+msgstr "Importar da Cena (Aplica Transforms)"
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
 msgid "Update from Scene"
@@ -7365,24 +7355,20 @@ msgid "ResourcePreloader"
 msgstr "ResourcePreloader"
 
 #: editor/plugins/room_manager_editor_plugin.cpp
-#, fuzzy
 msgid "Flip Portals"
 msgstr "Inverter Horizontalmente"
 
 #: editor/plugins/room_manager_editor_plugin.cpp
-#, fuzzy
 msgid "Room Generate Points"
-msgstr "Gerar Contagem de Pontos:"
+msgstr "Gerar Contagem de Pontos"
 
 #: editor/plugins/room_manager_editor_plugin.cpp
-#, fuzzy
 msgid "Generate Points"
-msgstr "Gerar Contagem de Pontos:"
+msgstr "Gerar Pontos"
 
 #: editor/plugins/room_manager_editor_plugin.cpp
-#, fuzzy
 msgid "Flip Portal"
-msgstr "Inverter Horizontalmente"
+msgstr "Virar Portal"
 
 #: editor/plugins/room_manager_editor_plugin.cpp
 #, fuzzy
@@ -7894,14 +7880,12 @@ msgid "Skeleton2D"
 msgstr "Esqueleto2D"
 
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Reset to Rest Pose"
-msgstr "Definir os ossos para descansar Pose"
+msgstr "Redefinir para Pose de Descanso"
 
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Overwrite Rest Pose"
-msgstr "Sobrescrever Cena Existente"
+msgstr "Sobrescrever Pose de Descanso"
 
 #: editor/plugins/skeleton_editor_plugin.cpp
 msgid "Create physical bones"
@@ -7928,74 +7912,62 @@ msgid "Perspective"
 msgstr "Perspectiva"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Top Orthogonal"
-msgstr "Ortogonal"
+msgstr "Ortogonal Topo"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Top Perspective"
-msgstr "Perspectiva"
+msgstr "Perspectiva Topo"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Bottom Orthogonal"
-msgstr "Ortogonal"
+msgstr "Ortogonal Baixo"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Bottom Perspective"
-msgstr "Perspectiva"
+msgstr "Perspectiva Baixo"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Left Orthogonal"
-msgstr "Ortogonal"
+msgstr "Ortogonal Esquerda"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Left Perspective"
-msgstr "Perspectiva"
+msgstr "Perspectiva Esquerda"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Right Orthogonal"
-msgstr "Ortogonal"
+msgstr "Ortogonal Direita"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Right Perspective"
-msgstr "Perspectiva"
+msgstr "Perspectiva Direita"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Front Orthogonal"
-msgstr "Ortogonal"
+msgstr "Ortogonal Dianteira"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Front Perspective"
-msgstr "Perspectiva"
+msgstr "Perspectiva Dianteira"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Rear Orthogonal"
-msgstr "Ortogonal"
+msgstr "Ortogonal Traseira"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Rear Perspective"
-msgstr "Perspectiva"
+msgstr "Perspectiva Traseira"
 
 #. TRANSLATORS: This will be appended to the view name when Auto Orthogonal is enabled.
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid " [auto]"
-msgstr ""
+msgstr " [automático]"
 
 #. TRANSLATORS: This will be appended to the view name when Portal Occulusion is enabled.
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid " [portals active]"
-msgstr ""
+msgstr " [portais ativados]"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Transform Aborted."
@@ -8057,9 +8029,8 @@ msgid "Animation Key Inserted."
 msgstr "Chave de Animação Inserida."
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Pitch:"
-msgstr "Tom"
+msgstr "Tom:"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Yaw:"
@@ -8253,9 +8224,8 @@ msgstr ""
 "Ele não deve ser usado como indicação confiável de desempenho do jogo."
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Convert Rooms"
-msgstr "Converter Para %s"
+msgstr "Converter Salas"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "XForm Dialog"
@@ -8277,9 +8247,8 @@ msgstr ""
 "x\")."
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Snap Nodes to Floor"
-msgstr "Encaixar Nó(s) no Chão"
+msgstr "Atrair Nó(s) ao Chão"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Couldn't find a solid floor to snap the selection to."
@@ -8295,7 +8264,7 @@ msgstr "Use Encaixar"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Converts rooms for portal culling."
-msgstr ""
+msgstr "Converter salas para portal culling."
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Bottom View"
@@ -8741,19 +8710,16 @@ msgid "TextureRegion"
 msgstr "Região da Textura"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Colors"
-msgstr "Cor"
+msgstr "Cores"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Fonts"
-msgstr "Fonte"
+msgstr "Fontes"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Icons"
-msgstr "Ícone"
+msgstr "Ícones"
 
 #: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
@@ -8762,7 +8728,7 @@ msgstr "StyleBox"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "{num} color(s)"
-msgstr ""
+msgstr "{num} cor(es)"
 
 #: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
@@ -8770,9 +8736,8 @@ msgid "No colors found."
 msgstr "Nenhum sub-recurso encontrado."
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "{num} constant(s)"
-msgstr "Constantes"
+msgstr "{num} constante(s)"
 
 #: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
@@ -8781,21 +8746,19 @@ msgstr "Cor constante."
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "{num} font(s)"
-msgstr ""
+msgstr "{num} fonte(s)"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "No fonts found."
-msgstr "Não encontrado!"
+msgstr "Fontes não encontradas."
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "{num} icon(s)"
-msgstr ""
+msgstr "{num} ícone(s)"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "No icons found."
-msgstr "Não encontrado!"
+msgstr "Ícones não encontrados."
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "{num} stylebox(es)"
@@ -8821,36 +8784,31 @@ msgstr "Importar Tema"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Importing items {n}/{n}"
-msgstr ""
+msgstr "Importando itens {n}/{n}"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Updating the editor"
-msgstr "Sair do editor?"
+msgstr "Atualizando o editor"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Finalizing"
-msgstr "Analisando"
+msgstr "Finalizando"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Filter:"
-msgstr "Filtro: "
+msgstr "Filtro:"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "With Data"
-msgstr ""
+msgstr "Com Dados"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Select by data type:"
-msgstr "Selecione um Nó"
+msgstr "Selecione por tipo de dados:"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Select all visible color items."
-msgstr "Selecione um item de configuração primeiro!"
+msgstr "Selecione todos os itens de cor visíveis."
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Select all visible color items and their data."
@@ -8861,9 +8819,8 @@ msgid "Deselect all visible color items."
 msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Select all visible constant items."
-msgstr "Selecione um item de configuração primeiro!"
+msgstr "Selecione todos os itens constantes visíveis."
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Select all visible constant items and their data."
@@ -8874,9 +8831,8 @@ msgid "Deselect all visible constant items."
 msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Select all visible font items."
-msgstr "Selecione um item de configuração primeiro!"
+msgstr "Selecione todos os itens de fonte visíveis."
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Select all visible font items and their data."
@@ -8887,19 +8843,16 @@ msgid "Deselect all visible font items."
 msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Select all visible icon items."
-msgstr "Selecione um item de configuração primeiro!"
+msgstr "Selecione todos os itens de ícones visíveis."
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Select all visible icon items and their data."
-msgstr "Selecione um item de configuração primeiro!"
+msgstr "Selecione todos os itens de ícones visíveis e seus dados."
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Deselect all visible icon items."
-msgstr "Selecione um item de configuração primeiro!"
+msgstr "Desmarque todos os itens de ícones visíveis."
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Select all visible stylebox items."
@@ -8955,9 +8908,8 @@ msgid "Deselect all Theme items."
 msgstr "Desselecionar todos os itens do Tema."
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Import Selected"
-msgstr "Importar Cena"
+msgstr "Importar Selecionado"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid ""
@@ -8981,9 +8933,8 @@ msgid "Remove All Color Items"
 msgstr "Remover Todos os Itens"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Rename Item"
-msgstr "Remover Item"
+msgstr "Renomear Item"
 
 #: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
@@ -9093,9 +9044,8 @@ msgid "Add Type:"
 msgstr "Tipo:"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Add Item:"
-msgstr "Adicionar Item"
+msgstr "Adicionar Item:"
 
 #: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
@@ -9103,9 +9053,8 @@ msgid "Add StyleBox Item"
 msgstr "Adicionar Todos os Itens"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Remove Items:"
-msgstr "Remover Item"
+msgstr "Remover Itens:"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Remove Class Items"
@@ -9191,9 +9140,8 @@ msgid "Add Item Type"
 msgstr "Adicionar Item"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Node Types:"
-msgstr "Tipo de nó"
+msgstr "Tipos de Nó:"
 
 #: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
@@ -9214,9 +9162,8 @@ msgid "Override all default type items."
 msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Theme:"
-msgstr "Tema"
+msgstr "Tema:"
 
 #: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
@@ -10744,9 +10691,8 @@ msgid "VisualShader"
 msgstr "VisualShader"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Edit Visual Property:"
-msgstr "Editar Propriedade Visual"
+msgstr "Editar Propriedade Visual:"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Visual Shader Mode Changed"
@@ -11199,12 +11145,11 @@ msgstr "Tem certeza de que quer executar %d projetos ao mesmo tempo?"
 #: editor/project_manager.cpp
 #, fuzzy
 msgid "Remove %d projects from the list?"
-msgstr "Selecione um dispositivo da lista"
+msgstr "Remover projetos %d da lista?"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Remove this project from the list?"
-msgstr "Selecione um dispositivo da lista"
+msgstr "Remover esse projeto da lista?"
 
 #: editor/project_manager.cpp
 msgid ""
@@ -11342,12 +11287,12 @@ msgstr ""
 "conter pelo menos um caractere `/`."
 
 #: editor/project_settings_editor.cpp
-msgid "Key "
-msgstr "Tecla "
-
-#: editor/project_settings_editor.cpp
 msgid "Physical Key"
 msgstr ""
+
+#: editor/project_settings_editor.cpp
+msgid "Key "
+msgstr "Tecla "
 
 #: editor/project_settings_editor.cpp
 msgid "Joy Button"
@@ -13521,7 +13466,7 @@ msgstr "Carregando, por favor aguarde."
 #: platform/android/export/export_plugin.cpp
 #, fuzzy
 msgid "Could not install to device: %s"
-msgstr "Não foi possível instanciar cena!"
+msgstr "Não foi possível instalar para o dispositivo: %s"
 
 #: platform/android/export/export_plugin.cpp
 msgid "Running on device..."
@@ -13657,7 +13602,7 @@ msgstr "Assinando lançamento %s..."
 #: platform/android/export/export_plugin.cpp
 #, fuzzy
 msgid "Could not find keystore, unable to export."
-msgstr "Não foi possível abrir o modelo para exportar:"
+msgstr "Não foi possível encontrar a keystore, incapaz de exportar."
 
 #: platform/android/export/export_plugin.cpp
 msgid "'apksigner' returned with error #%d"
@@ -13723,9 +13668,8 @@ msgstr ""
 "Não foi possível exportar os arquivos do projeto ao projeto do gradle\n"
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "Could not write expansion package file!"
-msgstr "Não foi possível escrever o arquivo:"
+msgstr "Não foi possível escrever o arquivo do pacote de expansão!"
 
 #: platform/android/export/export_plugin.cpp
 msgid "Building Android Project (gradle)"
@@ -13782,9 +13726,8 @@ msgid "Adding files..."
 msgstr "Adicionando arquivos..."
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "Could not export project files"
-msgstr "Não foi possível escrever o arquivo:"
+msgstr "Não foi possível exportar os arquivos do projeto"
 
 #: platform/android/export/export_plugin.cpp
 msgid "Aligning APK..."
@@ -13857,7 +13800,7 @@ msgstr "Não foi possível criar a pasta."
 #: platform/javascript/export/export.cpp
 #, fuzzy
 msgid "Error starting HTTP server:"
-msgstr "Erro ao salvar cena."
+msgstr "Erro iniciando servidor HTTP:"
 
 #: platform/osx/export/export.cpp
 #, fuzzy

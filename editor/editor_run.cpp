@@ -236,7 +236,7 @@ Error EditorRun::run(const String &p_scene, const String &p_custom_args, const L
 	int instances = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_debug_instances", 1);
 	for (int i = 0; i < instances; i++) {
 		OS::ProcessID pid = 0;
-		Error err = OS::get_singleton()->create_process(exec, args, &pid);
+		Error err = OS::get_singleton()->create_instance(args, &pid);
 		ERR_FAIL_COND_V(err, err);
 		pids.push_back(pid);
 	}

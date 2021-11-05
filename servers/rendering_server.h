@@ -1435,9 +1435,9 @@ public:
 
 	virtual void free(RID p_rid) = 0; ///< free RIDs associated with the rendering server
 
-	virtual void request_frame_drawn_callback(Object *p_where, const StringName &p_method, const Variant &p_userdata) = 0;
-
 	/* EVENT QUEUING */
+
+	virtual void request_frame_drawn_callback(const Callable &p_callable) = 0;
 
 	virtual void draw(bool p_swap_buffers = true, double frame_step = 0.0) = 0;
 	virtual void sync() = 0;

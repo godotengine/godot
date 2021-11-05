@@ -61,8 +61,8 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-09-19 11:14+0000\n"
-"Last-Translator: Mohammed Mubarak <modymu9@gmail.com>\n"
+"PO-Revision-Date: 2021-10-30 00:50+0000\n"
+"Last-Translator: HASSAN GAMER - حسن جيمر <gamerhassan55@gmail.com>\n"
 "Language-Team: Arabic <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ar/>\n"
 "Language: ar\n"
@@ -641,9 +641,8 @@ msgid "Go to Previous Step"
 msgstr "إذهب إلى الخطوة السابقة"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Apply Reset"
-msgstr "إعادة تعيين"
+msgstr "طَبق إعادة تعيين"
 
 #: editor/animation_track_editor.cpp
 msgid "Optimize Animation"
@@ -1108,17 +1107,16 @@ msgid "Owners Of:"
 msgstr "ملاك:"
 
 #: editor/dependency_editor.cpp
-#, fuzzy
 msgid ""
 "Remove the selected files from the project? (Cannot be undone.)\n"
 "Depending on your filesystem configuration, the files will either be moved "
 "to the system trash or deleted permanently."
 msgstr ""
-"حذف الملفات المختارة من المشروع؟ (لا يمكن استعادتها)\n"
-"يمكنك إيجاد الملفات المحذوفة في سلة مهملات النظام حيث يمكنك إسترجاعها."
+"حذف الملفات المُختارة من المشروع؟ (لا يمكن استعادتها).\n"
+"حسب إِعدادات مُدير ملفاتِك, إِما سيتم نقل الملقات إِلى سلة المُهملات أَو سيتم حذفها "
+"نهائياً."
 
 #: editor/dependency_editor.cpp
-#, fuzzy
 msgid ""
 "The files being removed are required by other resources in order for them to "
 "work.\n"
@@ -1126,9 +1124,10 @@ msgid ""
 "Depending on your filesystem configuration, the files will either be moved "
 "to the system trash or deleted permanently."
 msgstr ""
-"الملفات التي يتم إزالتها مطلوبة من قبل موارد أخرى من اجل ان تعمل.\n"
-"هل تريد إزالتها على أي حال؟ (لا تراجع)\n"
-"يمكنك العثور على الملفات التي تمت إزالتها في مهملات النظام لاستعادتها."
+"الملفات التي يتم إزالتها مطلوبة من قبل موارد أخرى من اجل أَن تعمل.\n"
+"هل تريد إزالتها على أي حال؟ (لا تراجع).\n"
+"حسب إِعدادات مُدير ملفاتِك, إِما سيتم نقل الملقات إِلى سلة المُهملات أَو سيتم حذفها "
+"نهائياً."
 
 #: editor/dependency_editor.cpp
 msgid "Cannot remove:"
@@ -11284,12 +11283,12 @@ msgstr ""
 "عنه query على الأقل حرف `/` واحد."
 
 #: editor/project_settings_editor.cpp
-msgid "Key "
-msgstr "زر "
-
-#: editor/project_settings_editor.cpp
 msgid "Physical Key"
 msgstr "الزر الفيزيائي"
+
+#: editor/project_settings_editor.cpp
+msgid "Key "
+msgstr "زر "
 
 #: editor/project_settings_editor.cpp
 msgid "Joy Button"

@@ -50,6 +50,7 @@ void FogVolume::_validate_property(PropertyInfo &property) const {
 		property.usage = PROPERTY_USAGE_NONE;
 		return;
 	}
+	VisualInstance3D::_validate_property(property);
 }
 
 void FogVolume::set_extents(const Vector3 &p_extents) {

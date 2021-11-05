@@ -385,7 +385,7 @@ void Sprite2D::_validate_property(PropertyInfo &property) const {
 	}
 
 	if (!region_enabled && (property.name == "region_rect" || property.name == "region_filter_clip")) {
-		property.usage = PROPERTY_USAGE_NOEDITOR;
+		property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
 }
 

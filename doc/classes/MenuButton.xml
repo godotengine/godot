@@ -30,6 +30,9 @@
 		<member name="action_mode" type="int" setter="set_action_mode" getter="get_action_mode" override="true" enum="BaseButton.ActionMode" default="0" />
 		<member name="flat" type="bool" setter="set_flat" getter="is_flat" override="true" default="true" />
 		<member name="focus_mode" type="int" setter="set_focus_mode" getter="get_focus_mode" override="true" enum="Control.FocusMode" default="0" />
+		<member name="items_count" type="int" setter="set_item_count" getter="get_item_count" default="0">
+			The number of items currently in the list.
+		</member>
 		<member name="switch_on_hover" type="bool" setter="set_switch_on_hover" getter="is_switch_on_hover" default="false">
 			If [code]true[/code], when the cursor hovers above another [MenuButton] within the same parent which also has [code]switch_on_hover[/code] enabled, it will close the current [MenuButton] and open the other one.
 		</member>

@@ -52,11 +52,9 @@ class GodotArea2D : public GodotCollisionObject2D {
 	int priority = 0;
 	bool monitorable = false;
 
-	ObjectID monitor_callback_id;
-	StringName monitor_callback_method;
+	Callable monitor_callback;
 
-	ObjectID area_monitor_callback_id;
-	StringName area_monitor_callback_method;
+	Callable area_monitor_callback;
 
 	SelfList<GodotArea2D> monitor_query_list;
 	SelfList<GodotArea2D> moved_list;
@@ -99,11 +97,11 @@ class GodotArea2D : public GodotCollisionObject2D {
 	void _queue_monitor_update();
 
 public:
-	void set_monitor_callback(ObjectID p_id, const StringName &p_method);
-	_FORCE_INLINE_ bool has_monitor_callback() const { return monitor_callback_id.is_valid(); }
+	void set_monitor_callback(const Callable &p_callback);
+	_FORCE_INLINE_ bool has_monitor_callback() const { return !monitor_callback.is_null(); }
 
-	void set_area_monitor_callback(ObjectID p_id, const StringName &p_method);
-	_FORCE_INLINE_ bool has_area_monitor_callback() const { return area_monitor_callback_id.is_valid(); }
+	void set_area_monitor_callback(const Callable &p_callback);
+	_FORCE_INLINE_ bool has_area_monitor_callback() const { return !area_monitor_callback.is_null(); }
 
 	_FORCE_INLINE_ void add_body_to_query(GodotBody2D *p_body, uint32_t p_body_shape, uint32_t p_area_shape);
 	_FORCE_INLINE_ void remove_body_from_query(GodotBody2D *p_body, uint32_t p_body_shape, uint32_t p_area_shape);

@@ -203,7 +203,7 @@ bool TileMapPattern::_get(const StringName &p_name, Variant &r_ret) const {
 }
 
 void TileMapPattern::_get_property_list(List<PropertyInfo> *p_list) const {
-	p_list->push_back(PropertyInfo(Variant::OBJECT, "tile_data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL));
+	p_list->push_back(PropertyInfo(Variant::OBJECT, "tile_data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL));
 }
 
 void TileMapPattern::_bind_methods() {
@@ -212,7 +212,7 @@ void TileMapPattern::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_cell", "coords", "source_id", "atlas_coords", "alternative_tile"), &TileMapPattern::set_cell, DEFVAL(TileSet::INVALID_SOURCE), DEFVAL(TileSetSource::INVALID_ATLAS_COORDS), DEFVAL(TileSetSource::INVALID_TILE_ALTERNATIVE));
 	ClassDB::bind_method(D_METHOD("has_cell", "coords"), &TileMapPattern::has_cell);
-	ClassDB::bind_method(D_METHOD("remove_cell", "coords"), &TileMapPattern::remove_cell);
+	ClassDB::bind_method(D_METHOD("remove_cell", "coords", "update_size"), &TileMapPattern::remove_cell);
 	ClassDB::bind_method(D_METHOD("get_cell_source_id", "coords"), &TileMapPattern::get_cell_source_id);
 	ClassDB::bind_method(D_METHOD("get_cell_atlas_coords", "coords"), &TileMapPattern::get_cell_atlas_coords);
 	ClassDB::bind_method(D_METHOD("get_cell_alternative_tile", "coords"), &TileMapPattern::get_cell_alternative_tile);
@@ -224,6 +224,90 @@ void TileMapPattern::_bind_methods() {
 }
 
 /////////////////////////////// TileSet //////////////////////////////////////
+
+bool TileSet::TerrainsPattern::is_valid() const {
+	return valid;
+}
+
+bool TileSet::TerrainsPattern::is_erase_pattern() const {
+	return not_empty_terrains_count == 0;
+}
+
+bool TileSet::TerrainsPattern::operator<(const TerrainsPattern &p_terrains_pattern) const {
+	for (int i = 0; i < TileSet::CELL_NEIGHBOR_MAX; i++) {
+		if (is_valid_bit[i] != p_terrains_pattern.is_valid_bit[i]) {
+			return is_valid_bit[i] < p_terrains_pattern.is_valid_bit[i];
+		}
+	}
+	for (int i = 0; i < TileSet::CELL_NEIGHBOR_MAX; i++) {
+		if (is_valid_bit[i] && bits[i] != p_terrains_pattern.bits[i]) {
+			return bits[i] < p_terrains_pattern.bits[i];
+		}
+	}
+	return false;
+}
+
+bool TileSet::TerrainsPattern::operator==(const TerrainsPattern &p_terrains_pattern) const {
+	for (int i = 0; i < TileSet::CELL_NEIGHBOR_MAX; i++) {
+		if (is_valid_bit[i] != p_terrains_pattern.is_valid_bit[i]) {
+			return false;
+		}
+		if (is_valid_bit[i] && bits[i] != p_terrains_pattern.bits[i]) {
+			return false;
+		}
+	}
+	return true;
+}
+
+void TileSet::TerrainsPattern::set_terrain(TileSet::CellNeighbor p_peering_bit, int p_terrain) {
+	ERR_FAIL_COND(p_peering_bit == TileSet::CELL_NEIGHBOR_MAX);
+	ERR_FAIL_COND(!is_valid_bit[p_peering_bit]);
+	ERR_FAIL_COND(p_terrain < -1);
+
+	// Update the "is_erase_pattern" status.
+	if (p_terrain >= 0 && bits[p_peering_bit] < 0) {
+		not_empty_terrains_count++;
+	} else if (p_terrain < 0 && bits[p_peering_bit] >= 0) {
+		not_empty_terrains_count--;
+	}
+
+	bits[p_peering_bit] = p_terrain;
+}
+
+int TileSet::TerrainsPattern::get_terrain(TileSet::CellNeighbor p_peering_bit) const {
+	ERR_FAIL_COND_V(p_peering_bit == TileSet::CELL_NEIGHBOR_MAX, -1);
+	ERR_FAIL_COND_V(!is_valid_bit[p_peering_bit], -1);
+	return bits[p_peering_bit];
+}
+
+void TileSet::TerrainsPattern::set_terrains_from_array(Array p_terrains) {
+	int in_array_index = 0;
+	for (int i = 0; i < TileSet::CELL_NEIGHBOR_MAX; i++) {
+		if (is_valid_bit[i]) {
+			ERR_FAIL_COND(in_array_index >= p_terrains.size());
+			set_terrain(TileSet::CellNeighbor(i), p_terrains[in_array_index]);
+			in_array_index++;
+		}
+	}
+}
+
+Array TileSet::TerrainsPattern::get_terrains_as_array() const {
+	Array output;
+	for (int i = 0; i < TileSet::CELL_NEIGHBOR_MAX; i++) {
+		if (is_valid_bit[i]) {
+			output.push_back(bits[i]);
+		}
+	}
+	return output;
+}
+TileSet::TerrainsPattern::TerrainsPattern(const TileSet *p_tile_set, int p_terrain_set) {
+	ERR_FAIL_COND(p_terrain_set < 0);
+	for (int i = 0; i < TileSet::CELL_NEIGHBOR_MAX; i++) {
+		is_valid_bit[i] = (p_tile_set->is_valid_peering_bit_terrain(p_terrain_set, TileSet::CellNeighbor(i)));
+		bits[i] = -1;
+	}
+	valid = true;
+}
 
 const int TileSet::INVALID_SOURCE = -1;
 
@@ -330,10 +414,13 @@ void TileSet::_update_terrains_cache() {
 							TileSet::TerrainsPattern terrains_pattern = tile_data->get_terrains_pattern();
 
 							// Terrain bits.
-							for (int i = 0; i < terrains_pattern.size(); i++) {
-								int terrain = terrains_pattern[i];
-								if (terrain >= 0) {
-									per_terrain_pattern_tiles[terrain_set][terrains_pattern].insert(cell);
+							for (int i = 0; i < TileSet::CELL_NEIGHBOR_MAX; i++) {
+								CellNeighbor bit = CellNeighbor(i);
+								if (is_valid_peering_bit_terrain(terrain_set, bit)) {
+									int terrain = terrains_pattern.get_terrain(bit);
+									if (terrain >= 0) {
+										per_terrain_pattern_tiles[terrain_set][terrains_pattern].insert(cell);
+									}
 								}
 							}
 						}
@@ -344,12 +431,7 @@ void TileSet::_update_terrains_cache() {
 
 		// Add the empty cell in the possible patterns and cells.
 		for (int i = 0; i < terrain_sets.size(); i++) {
-			TileSet::TerrainsPattern empty_pattern;
-			for (int j = 0; j < TileSet::CELL_NEIGHBOR_MAX; j++) {
-				if (is_valid_peering_bit_terrain(i, TileSet::CellNeighbor(j))) {
-					empty_pattern.push_back(-1);
-				}
-			}
+			TileSet::TerrainsPattern empty_pattern(this, i);
 
 			TileMapCell empty_cell;
 			empty_cell.source_id = TileSet::INVALID_SOURCE;
@@ -1283,7 +1365,7 @@ Set<TileMapCell> TileSet::get_tiles_for_terrains_pattern(int p_terrain_set, Terr
 	return per_terrain_pattern_tiles[p_terrain_set][p_terrain_tile_pattern];
 }
 
-TileMapCell TileSet::get_random_tile_from_pattern(int p_terrain_set, TileSet::TerrainsPattern p_terrain_tile_pattern) {
+TileMapCell TileSet::get_random_tile_from_terrains_pattern(int p_terrain_set, TileSet::TerrainsPattern p_terrain_tile_pattern) {
 	ERR_FAIL_INDEX_V(p_terrain_set, terrain_sets.size(), TileMapCell());
 	_update_terrains_cache();
 
@@ -3042,19 +3124,19 @@ void TileSet::_get_property_list(List<PropertyInfo> *p_list) const {
 	// Sources.
 	// Note: sources have to be listed in at the end as some TileData rely on the TileSet properties being initialized first.
 	for (const KeyValue<int, Ref<TileSetSource>> &E_source : sources) {
-		p_list->push_back(PropertyInfo(Variant::INT, vformat("sources/%d", E_source.key), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
+		p_list->push_back(PropertyInfo(Variant::INT, vformat("sources/%d", E_source.key), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
 	}
 
 	// Tile Proxies.
 	// Note: proxies need to be set after sources are set.
 	p_list->push_back(PropertyInfo(Variant::NIL, "Tile Proxies", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_GROUP));
-	p_list->push_back(PropertyInfo(Variant::ARRAY, "tile_proxies/source_level", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
-	p_list->push_back(PropertyInfo(Variant::ARRAY, "tile_proxies/coords_level", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
-	p_list->push_back(PropertyInfo(Variant::ARRAY, "tile_proxies/alternative_level", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
+	p_list->push_back(PropertyInfo(Variant::ARRAY, "tile_proxies/source_level", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
+	p_list->push_back(PropertyInfo(Variant::ARRAY, "tile_proxies/coords_level", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
+	p_list->push_back(PropertyInfo(Variant::ARRAY, "tile_proxies/alternative_level", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
 
 	// Patterns.
 	for (unsigned int pattern_index = 0; pattern_index < patterns.size(); pattern_index++) {
-		p_list->push_back(PropertyInfo(Variant::OBJECT, vformat("pattern_%d", pattern_index), PROPERTY_HINT_RESOURCE_TYPE, "TileMapPattern", PROPERTY_USAGE_NOEDITOR));
+		p_list->push_back(PropertyInfo(Variant::OBJECT, vformat("pattern_%d", pattern_index), PROPERTY_HINT_RESOURCE_TYPE, "TileMapPattern", PROPERTY_USAGE_NO_EDITOR));
 	}
 }
 
@@ -3655,35 +3737,35 @@ void TileSetAtlasSource::_get_property_list(List<PropertyInfo> *p_list) const {
 		List<PropertyInfo> tile_property_list;
 
 		// size_in_atlas
-		property_info = PropertyInfo(Variant::VECTOR2I, "size_in_atlas", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR);
+		property_info = PropertyInfo(Variant::VECTOR2I, "size_in_atlas", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR);
 		if (E_tile.value.size_in_atlas == Vector2i(1, 1)) {
 			property_info.usage ^= PROPERTY_USAGE_STORAGE;
 		}
 		tile_property_list.push_back(property_info);
 
 		// next_alternative_id
-		property_info = PropertyInfo(Variant::INT, "next_alternative_id", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR);
+		property_info = PropertyInfo(Variant::INT, "next_alternative_id", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR);
 		if (E_tile.value.next_alternative_id == 1) {
 			property_info.usage ^= PROPERTY_USAGE_STORAGE;
 		}
 		tile_property_list.push_back(property_info);
 
 		// animation_columns.
-		property_info = PropertyInfo(Variant::INT, "animation_columns", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR);
+		property_info = PropertyInfo(Variant::INT, "animation_columns", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR);
 		if (E_tile.value.animation_columns == 0) {
 			property_info.usage ^= PROPERTY_USAGE_STORAGE;
 		}
 		tile_property_list.push_back(property_info);
 
 		// animation_separation.
-		property_info = PropertyInfo(Variant::INT, "animation_separation", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR);
+		property_info = PropertyInfo(Variant::INT, "animation_separation", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR);
 		if (E_tile.value.animation_separation == Vector2i()) {
 			property_info.usage ^= PROPERTY_USAGE_STORAGE;
 		}
 		tile_property_list.push_back(property_info);
 
 		// animation_speed.
-		property_info = PropertyInfo(Variant::FLOAT, "animation_speed", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR);
+		property_info = PropertyInfo(Variant::FLOAT, "animation_speed", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR);
 		if (E_tile.value.animation_speed == 1.0) {
 			property_info.usage ^= PROPERTY_USAGE_STORAGE;
 		}
@@ -3695,7 +3777,7 @@ void TileSetAtlasSource::_get_property_list(List<PropertyInfo> *p_list) const {
 		// animation_frame_*.
 		bool store_durations = tiles[E_tile.key].animation_frames_durations.size() >= 2;
 		for (int i = 0; i < (int)tiles[E_tile.key].animation_frames_durations.size(); i++) {
-			property_info = PropertyInfo(Variant::FLOAT, vformat("animation_frame_%d/duration", i), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR);
+			property_info = PropertyInfo(Variant::FLOAT, vformat("animation_frame_%d/duration", i), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR);
 			if (!store_durations) {
 				property_info.usage ^= PROPERTY_USAGE_STORAGE;
 			}
@@ -3704,7 +3786,7 @@ void TileSetAtlasSource::_get_property_list(List<PropertyInfo> *p_list) const {
 
 		for (const KeyValue<int, TileData *> &E_alternative : E_tile.value.alternatives) {
 			// Add a dummy property to show the alternative exists.
-			tile_property_list.push_back(PropertyInfo(Variant::INT, vformat("%d", E_alternative.key), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
+			tile_property_list.push_back(PropertyInfo(Variant::INT, vformat("%d", E_alternative.key), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
 
 			// Get the alternative tile's properties and append them to the list of properties.
 			List<PropertyInfo> alternative_property_list;
@@ -4123,10 +4205,10 @@ void TileSetAtlasSource::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_texture_region_size", "texture_region_size"), &TileSetAtlasSource::set_texture_region_size);
 	ClassDB::bind_method(D_METHOD("get_texture_region_size"), &TileSetAtlasSource::get_texture_region_size);
 
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D", PROPERTY_USAGE_NOEDITOR), "set_texture", "get_texture");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "margins", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_margins", "get_margins");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "separation", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_separation", "get_separation");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "texture_region_size", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_texture_region_size", "get_texture_region_size");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D", PROPERTY_USAGE_NO_EDITOR), "set_texture", "get_texture");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "margins", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_margins", "get_margins");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "separation", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_separation", "get_separation");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "texture_region_size", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_texture_region_size", "get_texture_region_size");
 
 	// Base tiles
 	ClassDB::bind_method(D_METHOD("create_tile", "atlas_coords", "size"), &TileSetAtlasSource::create_tile, DEFVAL(Vector2i(1, 1)));
@@ -4864,8 +4946,8 @@ int TileData::get_collision_polygon_shapes_count(int p_layer_id, int p_polygon_i
 Ref<ConvexPolygonShape2D> TileData::get_collision_polygon_shape(int p_layer_id, int p_polygon_index, int shape_index) const {
 	ERR_FAIL_INDEX_V(p_layer_id, physics.size(), 0);
 	ERR_FAIL_INDEX_V(p_polygon_index, physics[p_layer_id].polygons.size(), Ref<ConvexPolygonShape2D>());
-	ERR_FAIL_INDEX_V(shape_index, (int)physics[p_layer_id].polygons[shape_index].shapes.size(), Ref<ConvexPolygonShape2D>());
-	return physics[p_layer_id].polygons[shape_index].shapes[shape_index];
+	ERR_FAIL_INDEX_V(shape_index, (int)physics[p_layer_id].polygons[p_polygon_index].shapes.size(), Ref<ConvexPolygonShape2D>());
+	return physics[p_layer_id].polygons[p_polygon_index].shapes[shape_index];
 }
 
 // Terrain
@@ -4915,10 +4997,10 @@ bool TileData::is_valid_peering_bit_terrain(TileSet::CellNeighbor p_peering_bit)
 TileSet::TerrainsPattern TileData::get_terrains_pattern() const {
 	ERR_FAIL_COND_V(!tile_set, TileSet::TerrainsPattern());
 
-	TileSet::TerrainsPattern output;
+	TileSet::TerrainsPattern output(tile_set, terrain_set);
 	for (int i = 0; i < TileSet::CELL_NEIGHBOR_MAX; i++) {
 		if (tile_set->is_valid_peering_bit_terrain(terrain_set, TileSet::CellNeighbor(i))) {
-			output.push_back(get_peering_bit_terrain(TileSet::CellNeighbor(i)));
+			output.set_terrain(TileSet::CellNeighbor(i), get_peering_bit_terrain(TileSet::CellNeighbor(i)));
 		}
 	}
 	return output;

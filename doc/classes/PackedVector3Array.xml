@@ -8,27 +8,29 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-		<method name="PackedVector3Array" qualifiers="constructor">
+	<constructors>
+		<constructor name="PackedVector3Array">
 			<return type="PackedVector3Array" />
 			<description>
 				Constructs an empty [PackedVector3Array].
 			</description>
-		</method>
-		<method name="PackedVector3Array" qualifiers="constructor">
+		</constructor>
+		<constructor name="PackedVector3Array">
 			<return type="PackedVector3Array" />
 			<argument index="0" name="from" type="PackedVector3Array" />
 			<description>
 				Constructs a [PackedVector3Array] as a copy of the given [PackedVector3Array].
 			</description>
-		</method>
-		<method name="PackedVector3Array" qualifiers="constructor">
+		</constructor>
+		<constructor name="PackedVector3Array">
 			<return type="PackedVector3Array" />
 			<argument index="0" name="from" type="Array" />
 			<description>
 				Constructs a new [PackedVector3Array]. Optionally, you can pass in a generic [Array] that will be converted.
 			</description>
-		</method>
+		</constructor>
+	</constructors>
+	<methods>
 		<method name="append">
 			<return type="bool" />
 			<argument index="0" name="value" type="Vector3" />
@@ -84,46 +86,6 @@
 			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if the array is empty.
-			</description>
-		</method>
-		<method name="operator !=" qualifiers="operator">
-			<return type="bool" />
-			<description>
-			</description>
-		</method>
-		<method name="operator !=" qualifiers="operator">
-			<return type="bool" />
-			<argument index="0" name="right" type="PackedVector3Array" />
-			<description>
-			</description>
-		</method>
-		<method name="operator *" qualifiers="operator">
-			<return type="PackedVector3Array" />
-			<argument index="0" name="right" type="Transform3D" />
-			<description>
-			</description>
-		</method>
-		<method name="operator +" qualifiers="operator">
-			<return type="PackedVector3Array" />
-			<argument index="0" name="right" type="PackedVector3Array" />
-			<description>
-			</description>
-		</method>
-		<method name="operator ==" qualifiers="operator">
-			<return type="bool" />
-			<description>
-			</description>
-		</method>
-		<method name="operator ==" qualifiers="operator">
-			<return type="bool" />
-			<argument index="0" name="right" type="PackedVector3Array" />
-			<description>
-			</description>
-		</method>
-		<method name="operator []" qualifiers="operator">
-			<return type="Vector3" />
-			<argument index="0" name="index" type="int" />
-			<description>
 			</description>
 		</method>
 		<method name="push_back">
@@ -186,4 +148,46 @@
 			</description>
 		</method>
 	</methods>
+	<operators>
+		<operator name="operator !=">
+			<return type="bool" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator !=">
+			<return type="bool" />
+			<argument index="0" name="right" type="PackedVector3Array" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator *">
+			<return type="PackedVector3Array" />
+			<argument index="0" name="right" type="Transform3D" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator +">
+			<return type="PackedVector3Array" />
+			<argument index="0" name="right" type="PackedVector3Array" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator ==">
+			<return type="bool" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator ==">
+			<return type="bool" />
+			<argument index="0" name="right" type="PackedVector3Array" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator []">
+			<return type="Vector3" />
+			<argument index="0" name="index" type="int" />
+			<description>
+			</description>
+		</operator>
+	</operators>
 </class>

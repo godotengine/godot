@@ -47,7 +47,7 @@
 
 TilesEditorPlugin *TilesEditorPlugin::singleton = nullptr;
 
-void TilesEditorPlugin::_pattern_preview_done(const Variant &p_udata) {
+void TilesEditorPlugin::_pattern_preview_done() {
 	pattern_preview_done.set();
 }
 
@@ -113,7 +113,7 @@ void TilesEditorPlugin::_thread() {
 				EditorNode::get_singleton()->add_child(viewport);
 
 				pattern_preview_done.clear();
-				RS::get_singleton()->request_frame_drawn_callback(const_cast<TilesEditorPlugin *>(this), "_pattern_preview_done", Variant());
+				RS::get_singleton()->request_frame_drawn_callback(callable_mp(const_cast<TilesEditorPlugin *>(this), &TilesEditorPlugin::_pattern_preview_done));
 
 				while (!pattern_preview_done.is_set()) {
 					OS::get_singleton()->delay_usec(10);
@@ -272,10 +272,6 @@ void TilesEditorPlugin::edit(Object *p_object) {
 
 bool TilesEditorPlugin::handles(Object *p_object) const {
 	return p_object->is_class("TileMap") || p_object->is_class("TileSet");
-}
-
-void TilesEditorPlugin::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_pattern_preview_done", "pattern"), &TilesEditorPlugin::_pattern_preview_done);
 }
 
 TilesEditorPlugin::TilesEditorPlugin(EditorNode *p_node) {

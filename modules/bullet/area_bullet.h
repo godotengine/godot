@@ -47,8 +47,7 @@ class AreaBullet : public RigidCollisionObjectBullet {
 
 public:
 	struct InOutEventCallback {
-		ObjectID event_callback_id;
-		StringName event_callback_method;
+		Callable event_callback;
 
 		InOutEventCallback() {}
 	};
@@ -162,7 +161,7 @@ public:
 	void set_param(PhysicsServer3D::AreaParameter p_param, const Variant &p_value);
 	Variant get_param(PhysicsServer3D::AreaParameter p_param) const;
 
-	void set_event_callback(Type p_callbackObjectType, ObjectID p_id, const StringName &p_method);
+	void set_event_callback(Type p_callbackObjectType, const Callable &p_callback);
 	bool has_event_callback(Type p_callbackObjectType);
 
 	virtual void on_enter_area(AreaBullet *p_area);

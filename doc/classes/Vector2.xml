@@ -16,35 +16,37 @@
 		<link title="Matrix Transform Demo">https://godotengine.org/asset-library/asset/584</link>
 		<link title="All 2D Demos">https://github.com/godotengine/godot-demo-projects/tree/master/2d</link>
 	</tutorials>
-	<methods>
-		<method name="Vector2" qualifiers="constructor">
+	<constructors>
+		<constructor name="Vector2">
 			<return type="Vector2" />
 			<description>
 				Constructs a default-initialized [Vector2] with all components set to [code]0[/code].
 			</description>
-		</method>
-		<method name="Vector2" qualifiers="constructor">
+		</constructor>
+		<constructor name="Vector2">
 			<return type="Vector2" />
 			<argument index="0" name="from" type="Vector2" />
 			<description>
 				Constructs a [Vector2] as a copy of the given [Vector2].
 			</description>
-		</method>
-		<method name="Vector2" qualifiers="constructor">
+		</constructor>
+		<constructor name="Vector2">
 			<return type="Vector2" />
 			<argument index="0" name="from" type="Vector2i" />
 			<description>
 				Constructs a new [Vector2] from [Vector2i].
 			</description>
-		</method>
-		<method name="Vector2" qualifiers="constructor">
+		</constructor>
+		<constructor name="Vector2">
 			<return type="Vector2" />
 			<argument index="0" name="x" type="float" />
 			<argument index="1" name="y" type="float" />
 			<description>
 				Constructs a new [Vector2] from the given [code]x[/code] and [code]y[/code].
 			</description>
-		</method>
+		</constructor>
+	</constructors>
+	<methods>
 		<method name="abs" qualifiers="const">
 			<return type="Vector2" />
 			<description>
@@ -225,122 +227,6 @@
 				Returns the vector scaled to unit length. Equivalent to [code]v / v.length()[/code].
 			</description>
 		</method>
-		<method name="operator !=" qualifiers="operator">
-			<return type="bool" />
-			<description>
-			</description>
-		</method>
-		<method name="operator !=" qualifiers="operator">
-			<return type="bool" />
-			<argument index="0" name="right" type="Vector2" />
-			<description>
-			</description>
-		</method>
-		<method name="operator *" qualifiers="operator">
-			<return type="Vector2" />
-			<argument index="0" name="right" type="Vector2" />
-			<description>
-			</description>
-		</method>
-		<method name="operator *" qualifiers="operator">
-			<return type="Vector2" />
-			<argument index="0" name="right" type="Transform2D" />
-			<description>
-			</description>
-		</method>
-		<method name="operator *" qualifiers="operator">
-			<return type="Vector2" />
-			<argument index="0" name="right" type="float" />
-			<description>
-			</description>
-		</method>
-		<method name="operator *" qualifiers="operator">
-			<return type="Vector2" />
-			<argument index="0" name="right" type="int" />
-			<description>
-			</description>
-		</method>
-		<method name="operator +" qualifiers="operator">
-			<return type="Vector2" />
-			<argument index="0" name="right" type="Vector2" />
-			<description>
-			</description>
-		</method>
-		<method name="operator -" qualifiers="operator">
-			<return type="Vector2" />
-			<argument index="0" name="right" type="Vector2" />
-			<description>
-			</description>
-		</method>
-		<method name="operator /" qualifiers="operator">
-			<return type="Vector2" />
-			<argument index="0" name="right" type="Vector2" />
-			<description>
-			</description>
-		</method>
-		<method name="operator /" qualifiers="operator">
-			<return type="Vector2" />
-			<argument index="0" name="right" type="float" />
-			<description>
-			</description>
-		</method>
-		<method name="operator /" qualifiers="operator">
-			<return type="Vector2" />
-			<argument index="0" name="right" type="int" />
-			<description>
-			</description>
-		</method>
-		<method name="operator &lt;" qualifiers="operator">
-			<return type="bool" />
-			<argument index="0" name="right" type="Vector2" />
-			<description>
-			</description>
-		</method>
-		<method name="operator &lt;=" qualifiers="operator">
-			<return type="bool" />
-			<argument index="0" name="right" type="Vector2" />
-			<description>
-			</description>
-		</method>
-		<method name="operator ==" qualifiers="operator">
-			<return type="bool" />
-			<description>
-			</description>
-		</method>
-		<method name="operator ==" qualifiers="operator">
-			<return type="bool" />
-			<argument index="0" name="right" type="Vector2" />
-			<description>
-			</description>
-		</method>
-		<method name="operator &gt;" qualifiers="operator">
-			<return type="bool" />
-			<argument index="0" name="right" type="Vector2" />
-			<description>
-			</description>
-		</method>
-		<method name="operator &gt;=" qualifiers="operator">
-			<return type="bool" />
-			<argument index="0" name="right" type="Vector2" />
-			<description>
-			</description>
-		</method>
-		<method name="operator []" qualifiers="operator">
-			<return type="float" />
-			<argument index="0" name="index" type="int" />
-			<description>
-			</description>
-		</method>
-		<method name="operator unary+" qualifiers="operator">
-			<return type="Vector2" />
-			<description>
-			</description>
-		</method>
-		<method name="operator unary-" qualifiers="operator">
-			<return type="Vector2" />
-			<description>
-			</description>
-		</method>
 		<method name="orthogonal" qualifiers="const">
 			<return type="Vector2" />
 			<description>
@@ -455,4 +341,122 @@
 			Down unit vector. Y is down in 2D, so this vector points +Y.
 		</constant>
 	</constants>
+	<operators>
+		<operator name="operator !=">
+			<return type="bool" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator !=">
+			<return type="bool" />
+			<argument index="0" name="right" type="Vector2" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator *">
+			<return type="Vector2" />
+			<argument index="0" name="right" type="Vector2" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator *">
+			<return type="Vector2" />
+			<argument index="0" name="right" type="Transform2D" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator *">
+			<return type="Vector2" />
+			<argument index="0" name="right" type="float" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator *">
+			<return type="Vector2" />
+			<argument index="0" name="right" type="int" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator +">
+			<return type="Vector2" />
+			<argument index="0" name="right" type="Vector2" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator -">
+			<return type="Vector2" />
+			<argument index="0" name="right" type="Vector2" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator /">
+			<return type="Vector2" />
+			<argument index="0" name="right" type="Vector2" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator /">
+			<return type="Vector2" />
+			<argument index="0" name="right" type="float" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator /">
+			<return type="Vector2" />
+			<argument index="0" name="right" type="int" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator &lt;">
+			<return type="bool" />
+			<argument index="0" name="right" type="Vector2" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator &lt;=">
+			<return type="bool" />
+			<argument index="0" name="right" type="Vector2" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator ==">
+			<return type="bool" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator ==">
+			<return type="bool" />
+			<argument index="0" name="right" type="Vector2" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator &gt;">
+			<return type="bool" />
+			<argument index="0" name="right" type="Vector2" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator &gt;=">
+			<return type="bool" />
+			<argument index="0" name="right" type="Vector2" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator []">
+			<return type="float" />
+			<argument index="0" name="index" type="int" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator unary+">
+			<return type="Vector2" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator unary-">
+			<return type="Vector2" />
+			<description>
+			</description>
+		</operator>
+	</operators>
 </class>

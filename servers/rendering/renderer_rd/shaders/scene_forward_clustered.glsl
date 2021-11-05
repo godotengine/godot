@@ -108,12 +108,13 @@ void main() {
 #endif
 
 	uint instance_index = draw_call.instance_index;
-	instance_index_interp = instance_index;
 
 	bool is_multimesh = bool(instances.data[instance_index].flags & INSTANCE_FLAGS_MULTIMESH);
 	if (!is_multimesh) {
 		instance_index += gl_InstanceIndex;
 	}
+
+	instance_index_interp = instance_index;
 
 	mat4 world_matrix = instances.data[instance_index].transform;
 
@@ -565,12 +566,8 @@ void main() {
 		discard;
 #endif
 
-#ifdef USE_SUBGROUPS
-	//ensures instance_index is in sgpr
-	uint instance_index = subgroupBroadcastFirst(instance_index_interp);
-#else
 	uint instance_index = instance_index_interp;
-#endif
+
 	//lay out everything, whathever is unused is optimized away anyway
 	vec3 vertex = vertex_interp;
 	vec3 view = -normalize(vertex_interp);

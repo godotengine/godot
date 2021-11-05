@@ -59,7 +59,7 @@
 		<method name="remove_cell">
 			<return type="void" />
 			<argument index="0" name="coords" type="Vector2i" />
-			<argument index="1" name="arg1" type="bool" />
+			<argument index="1" name="update_size" type="bool" />
 			<description>
 				Remove the cell at the given coordinates.
 			</description>

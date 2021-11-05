@@ -73,13 +73,14 @@
 # jmih03 <joerni@mail.de>, 2021.
 # Dominik Moos <dominik.moos@protonmail.com>, 2021.
 # Zae Chao <zaevi@live.com>, 2021.
+# Tim <tim14speckenwirth@gmail.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-10-23 10:13+0000\n"
-"Last-Translator: Zae Chao <zaevi@live.com>\n"
+"PO-Revision-Date: 2021-10-31 22:17+0000\n"
+"Last-Translator: Tim <tim14speckenwirth@gmail.com>\n"
 "Language-Team: German <https://hosted.weblate.org/projects/godot-engine/"
 "godot/de/>\n"
 "Language: de\n"
@@ -11218,12 +11219,12 @@ msgstr ""
 "der Suchanfrage vorhanden sein."
 
 #: editor/project_settings_editor.cpp
-msgid "Key "
-msgstr "Taste "
-
-#: editor/project_settings_editor.cpp
 msgid "Physical Key"
 msgstr "Physische Taste"
+
+#: editor/project_settings_editor.cpp
+msgid "Key "
+msgstr "Taste "
 
 #: editor/project_settings_editor.cpp
 msgid "Joy Button"
@@ -14383,7 +14384,7 @@ msgid ""
 "Please check the RoomList branch has been assigned in the RoomManager."
 msgstr ""
 "RoomList-Pfad ist ungültig.\n"
-"Wurde der RoomList-Zweig im RoomManager zugewiesen?"
+"Bitte überprüfen Sie, ob der RoomList-Zweig im RoomManager zugewiesen wurde."
 
 #: scene/3d/room_manager.cpp
 msgid "RoomList contains no Rooms, aborting."
@@ -14420,8 +14421,9 @@ msgid ""
 "Error calculating room bounds.\n"
 "Ensure all rooms contain geometry or manual bounds."
 msgstr ""
-"Fehler beim Berechnen der Raumbegrenzungen.\n"
-"Enthalten alle Räume Geometrie oder manuelle Begrenzungen?"
+"Fehler bei der Berechnung von Raumbegrenzungen.\n"
+"Stellen Sie sicher, dass alle Räume Geometrie oder manuelle Begrenzungen "
+"enthalten."
 
 #: scene/3d/soft_body.cpp
 msgid "This body will be ignored until you set a mesh."

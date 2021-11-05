@@ -954,39 +954,39 @@ void Environment::_update_adjustment() {
 void Environment::_validate_property(PropertyInfo &property) const {
 	if (property.name == "sky" || property.name == "sky_custom_fov" || property.name == "sky_rotation" || property.name == "ambient_light/sky_contribution") {
 		if (bg_mode != BG_SKY && ambient_source != AMBIENT_SOURCE_SKY && reflection_source != REFLECTION_SOURCE_SKY) {
-			property.usage = PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL;
+			property.usage = PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL;
 		}
 	}
 
 	if (property.name == "fog_aerial_perspective") {
 		if (bg_mode != BG_SKY) {
-			property.usage = PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL;
+			property.usage = PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL;
 		}
 	}
 
 	if (property.name == "glow_intensity" && glow_blend_mode == GLOW_BLEND_MODE_MIX) {
-		property.usage = PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL;
+		property.usage = PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL;
 	}
 
 	if (property.name == "glow_mix" && glow_blend_mode != GLOW_BLEND_MODE_MIX) {
-		property.usage = PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL;
+		property.usage = PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL;
 	}
 
 	if (property.name == "background_color") {
 		if (bg_mode != BG_COLOR && ambient_source != AMBIENT_SOURCE_COLOR) {
-			property.usage = PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL;
+			property.usage = PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL;
 		}
 	}
 
 	if (property.name == "background_canvas_max_layer") {
 		if (bg_mode != BG_CANVAS) {
-			property.usage = PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL;
+			property.usage = PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL;
 		}
 	}
 
 	if (property.name == "background_camera_feed_id") {
 		if (bg_mode != BG_CAMERA_FEED) {
-			property.usage = PROPERTY_USAGE_NOEDITOR;
+			property.usage = PROPERTY_USAGE_NO_EDITOR;
 		}
 	}
 
@@ -1018,7 +1018,7 @@ void Environment::_validate_property(PropertyInfo &property) const {
 
 		String enabled = prefix + "enabled";
 		if (property.name.begins_with(prefix) && property.name != enabled && !bool(get(enabled))) {
-			property.usage = PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL;
+			property.usage = PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL;
 			return;
 		}
 
@@ -1031,7 +1031,7 @@ void Environment::_validate_property(PropertyInfo &property) const {
 			String prefix = String(*prefixes);
 
 			if (property.name.begins_with(prefix)) {
-				property.usage = PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL;
+				property.usage = PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL;
 				return;
 			}
 

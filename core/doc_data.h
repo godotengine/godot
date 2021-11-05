@@ -140,7 +140,9 @@ public:
 		String brief_description;
 		String description;
 		Vector<TutorialDoc> tutorials;
+		Vector<MethodDoc> constructors;
 		Vector<MethodDoc> methods;
+		Vector<MethodDoc> operators;
 		Vector<MethodDoc> signals;
 		Vector<ConstantDoc> constants;
 		Map<String, String> enums;

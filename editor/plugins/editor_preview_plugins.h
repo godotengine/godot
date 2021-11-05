@@ -94,10 +94,7 @@ class EditorMaterialPreviewPlugin : public EditorResourcePreviewGenerator {
 	RID camera;
 	mutable SafeFlag preview_done;
 
-	void _preview_done(const Variant &p_udata);
-
-protected:
-	static void _bind_methods();
+	void _preview_done();
 
 public:
 	virtual bool handles(const String &p_type) const override;
@@ -138,10 +135,7 @@ class EditorMeshPreviewPlugin : public EditorResourcePreviewGenerator {
 	RID camera;
 	mutable SafeFlag preview_done;
 
-	void _preview_done(const Variant &p_udata);
-
-protected:
-	static void _bind_methods();
+	void _preview_done();
 
 public:
 	virtual bool handles(const String &p_type) const override;
@@ -160,10 +154,7 @@ class EditorFontPreviewPlugin : public EditorResourcePreviewGenerator {
 	RID canvas_item;
 	mutable SafeFlag preview_done;
 
-	void _preview_done(const Variant &p_udata);
-
-protected:
-	static void _bind_methods();
+	void _preview_done();
 
 public:
 	virtual bool handles(const String &p_type) const override;
@@ -179,10 +170,7 @@ class EditorTileMapPatternPreviewPlugin : public EditorResourcePreviewGenerator 
 
 	mutable SafeFlag preview_done;
 
-	void _preview_done(const Variant &p_udata);
-
-protected:
-	static void _bind_methods();
+	void _preview_done();
 
 public:
 	virtual bool handles(const String &p_type) const override;

@@ -229,6 +229,14 @@ void GodotBody3D::set_param(PhysicsServer3D::BodyParameter p_param, const Varian
 		case PhysicsServer3D::BODY_PARAM_GRAVITY_SCALE: {
 			gravity_scale = p_value;
 		} break;
+		case PhysicsServer3D::BODY_PARAM_LINEAR_DAMP_MODE: {
+			int mode_value = p_value;
+			linear_damp_mode = (PhysicsServer3D::BodyDampMode)mode_value;
+		} break;
+		case PhysicsServer3D::BODY_PARAM_ANGULAR_DAMP_MODE: {
+			int mode_value = p_value;
+			angular_damp_mode = (PhysicsServer3D::BodyDampMode)mode_value;
+		} break;
 		case PhysicsServer3D::BODY_PARAM_LINEAR_DAMP: {
 			linear_damp = p_value;
 		} break;
@@ -264,6 +272,12 @@ Variant GodotBody3D::get_param(PhysicsServer3D::BodyParameter p_param) const {
 		case PhysicsServer3D::BODY_PARAM_GRAVITY_SCALE: {
 			return gravity_scale;
 		} break;
+		case PhysicsServer3D::BODY_PARAM_LINEAR_DAMP_MODE: {
+			return linear_damp_mode;
+		}
+		case PhysicsServer3D::BODY_PARAM_ANGULAR_DAMP_MODE: {
+			return angular_damp_mode;
+		}
 		case PhysicsServer3D::BODY_PARAM_LINEAR_DAMP: {
 			return linear_damp;
 		} break;
@@ -448,8 +462,8 @@ void GodotBody3D::_compute_area_gravity_and_damping(const GodotArea3D *p_area) {
 	p_area->compute_gravity(get_transform().get_origin(), area_gravity);
 	gravity += area_gravity;
 
-	area_linear_damp += p_area->get_linear_damp();
-	area_angular_damp += p_area->get_angular_damp();
+	total_linear_damp += p_area->get_linear_damp();
+	total_angular_damp += p_area->get_angular_damp();
 }
 
 void GodotBody3D::set_axis_lock(PhysicsServer3D::BodyAxis p_axis, bool lock) {
@@ -469,19 +483,17 @@ void GodotBody3D::integrate_forces(real_t p_step) {
 		return;
 	}
 
-	GodotArea3D *def_area = get_space()->get_default_area();
-
-	ERR_FAIL_COND(!def_area);
-
 	int ac = areas.size();
 	bool stopped = false;
 	gravity = Vector3(0, 0, 0);
-	area_linear_damp = 0;
-	area_angular_damp = 0;
+
+	total_linear_damp = 0.0;
+	total_angular_damp = 0.0;
+
+	// Combine gravity and damping from overlapping areas in priority order.
 	if (ac) {
 		areas.sort();
 		const AreaCMP *aa = &areas[0];
-		// damp_area = aa[ac-1].area;
 		for (int i = ac - 1; i >= 0 && !stopped; i--) {
 			PhysicsServer3D::AreaSpaceOverrideMode mode = aa[i].area->get_space_override_mode();
 			switch (mode) {
@@ -493,8 +505,8 @@ void GodotBody3D::integrate_forces(real_t p_step) {
 				case PhysicsServer3D::AREA_SPACE_OVERRIDE_REPLACE:
 				case PhysicsServer3D::AREA_SPACE_OVERRIDE_REPLACE_COMBINE: {
 					gravity = Vector3(0, 0, 0);
-					area_angular_damp = 0;
-					area_linear_damp = 0;
+					total_linear_damp = 0.0;
+					total_angular_damp = 0.0;
 					_compute_area_gravity_and_damping(aa[i].area);
 					stopped = mode == PhysicsServer3D::AREA_SPACE_OVERRIDE_REPLACE;
 				} break;
@@ -504,28 +516,35 @@ void GodotBody3D::integrate_forces(real_t p_step) {
 		}
 	}
 
+	// Add default gravity and damping from space area.
 	if (!stopped) {
+		GodotArea3D *def_area = get_space()->get_default_area();
+		ERR_FAIL_COND(!def_area);
+
 		_compute_area_gravity_and_damping(def_area);
 	}
 
+	// Override linear damping with body's value.
+	switch (linear_damp_mode) {
+		case PhysicsServer3D::BODY_DAMP_MODE_COMBINE: {
+			total_linear_damp += linear_damp;
+		} break;
+		case PhysicsServer3D::BODY_DAMP_MODE_REPLACE: {
+			total_linear_damp = linear_damp;
+		} break;
+	}
+
+	// Override angular damping with body's value.
+	switch (angular_damp_mode) {
+		case PhysicsServer3D::BODY_DAMP_MODE_COMBINE: {
+			total_angular_damp += angular_damp;
+		} break;
+		case PhysicsServer3D::BODY_DAMP_MODE_REPLACE: {
+			total_angular_damp = angular_damp;
+		} break;
+	}
+
 	gravity *= gravity_scale;
-
-	// If less than 0, override dampenings with that of the Body
-	if (angular_damp >= 0) {
-		area_angular_damp = angular_damp;
-	}
-	/*
-	else
-		area_angular_damp=damp_area->get_angular_damp();
-	*/
-
-	if (linear_damp >= 0) {
-		area_linear_damp = linear_damp;
-	}
-	/*
-	else
-		area_linear_damp=damp_area->get_linear_damp();
-	*/
 
 	Vector3 motion;
 	bool do_motion = false;
@@ -552,13 +571,13 @@ void GodotBody3D::integrate_forces(real_t p_step) {
 			force += applied_force;
 			Vector3 torque = applied_torque;
 
-			real_t damp = 1.0 - p_step * area_linear_damp;
+			real_t damp = 1.0 - p_step * total_linear_damp;
 
 			if (damp < 0) { // reached zero in the given time
 				damp = 0;
 			}
 
-			real_t angular_damp = 1.0 - p_step * area_angular_damp;
+			real_t angular_damp = 1.0 - p_step * total_angular_damp;
 
 			if (angular_damp < 0) { // reached zero in the given time
 				angular_damp = 0;
@@ -580,8 +599,6 @@ void GodotBody3D::integrate_forces(real_t p_step) {
 	applied_force = Vector3();
 	applied_torque = Vector3();
 
-	//motion=linear_velocity*p_step;
-
 	biased_angular_velocity = Vector3();
 	biased_linear_velocity = Vector3();
 
@@ -589,7 +606,6 @@ void GodotBody3D::integrate_forces(real_t p_step) {
 		_update_shapes_with_motion(motion);
 	}
 
-	def_area = nullptr; // clear the area, so it is set in the next frame
 	contact_count = 0;
 }
 

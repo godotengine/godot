@@ -127,6 +127,11 @@ public:
 		CENTER_OF_MASS_MODE_CUSTOM,
 	};
 
+	enum DampMode {
+		DAMP_MODE_COMBINE,
+		DAMP_MODE_REPLACE,
+	};
+
 	enum CCDMode {
 		CCD_MODE_DISABLED,
 		CCD_MODE_CAST_RAY,
@@ -146,8 +151,12 @@ private:
 
 	Ref<PhysicsMaterial> physics_material_override;
 	real_t gravity_scale = 1.0;
-	real_t linear_damp = -1.0;
-	real_t angular_damp = -1.0;
+
+	DampMode linear_damp_mode = DAMP_MODE_COMBINE;
+	DampMode angular_damp_mode = DAMP_MODE_COMBINE;
+
+	real_t linear_damp = 0.0;
+	real_t angular_damp = 0.0;
 
 	Vector2 linear_velocity;
 	real_t angular_velocity = 0.0;
@@ -241,6 +250,12 @@ public:
 	void set_gravity_scale(real_t p_gravity_scale);
 	real_t get_gravity_scale() const;
 
+	void set_linear_damp_mode(DampMode p_mode);
+	DampMode get_linear_damp_mode() const;
+
+	void set_angular_damp_mode(DampMode p_mode);
+	DampMode get_angular_damp_mode() const;
+
 	void set_linear_damp(real_t p_linear_damp);
 	real_t get_linear_damp() const;
 
@@ -300,6 +315,7 @@ private:
 
 VARIANT_ENUM_CAST(RigidDynamicBody2D::FreezeMode);
 VARIANT_ENUM_CAST(RigidDynamicBody2D::CenterOfMassMode);
+VARIANT_ENUM_CAST(RigidDynamicBody2D::DampMode);
 VARIANT_ENUM_CAST(RigidDynamicBody2D::CCDMode);
 
 class CharacterBody2D : public PhysicsBody2D {

@@ -5836,7 +5836,7 @@ void CanvasItemEditorViewport::_create_nodes(Node *parent, Node *child, String &
 	Ref<Texture2D> texture = Ref<Texture2D>(Object::cast_to<Texture2D>(ResourceCache::get(path)));
 
 	if (parent) {
-		editor_data->get_undo_redo().add_do_method(parent, "add_child", child);
+		editor_data->get_undo_redo().add_do_method(parent, "add_child", child, true);
 		editor_data->get_undo_redo().add_do_method(child, "set_owner", editor->get_edited_scene());
 		editor_data->get_undo_redo().add_do_reference(child);
 		editor_data->get_undo_redo().add_undo_method(parent, "remove_child", child);

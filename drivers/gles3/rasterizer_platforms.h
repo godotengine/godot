@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  context_gl_x11.h                                                     */
+/*  rasterizer_platforms.h                                               */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,53 +28,21 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef CONTEXT_GL_X11_H
-#define CONTEXT_GL_X11_H
+#ifndef RASTERIZER_PLATFORMS_H
+#define RASTERIZER_PLATFORMS_H
 
-#ifdef X11_ENABLED
+/////////////////////////////////////////////////////
+// override for intellisense .. ONLY FOR DEVELOPMENT
+//#ifndef X11_ENABLED
+//#define X11_ENABLED
+//#endif
+//#define GLES3_BACKEND_ENABLED
+/////////////////////////////////////////////////////
 
-#if defined(OPENGL_ENABLED)
+#if defined(GLES3_ENABLED) || defined(GLES_ENABLED)
 
-#include "core/os/os.h"
-#include <X11/Xlib.h>
-#include <X11/extensions/Xrender.h>
+#define GLES3_BACKEND_ENABLED
 
-struct ContextGL_X11_Private;
+#endif // defined(GLES3_ENABLED) || defined(GLES_ENABLED)
 
-class ContextGL_X11 {
-public:
-	enum ContextType {
-		GLES_2_0_COMPATIBLE,
-	};
-
-private:
-	ContextGL_X11_Private *p;
-	OS::VideoMode default_video_mode;
-	::Display *x11_display;
-	::Window &x11_window;
-	bool double_buffer;
-	bool direct_render;
-	int glx_minor, glx_major;
-	bool use_vsync;
-	ContextType context_type;
-
-public:
-	void release_current();
-	void make_current();
-	void swap_buffers();
-	int get_window_width();
-	int get_window_height();
-
-	Error initialize();
-
-	void set_use_vsync(bool p_use);
-	bool is_using_vsync() const;
-
-	ContextGL_X11(::Display *p_x11_display, ::Window &p_x11_window, const OS::VideoMode &p_default_video_mode, ContextType p_context_type);
-	~ContextGL_X11();
-};
-
-#endif
-
-#endif
-#endif
+#endif // RASTERIZER_PLATFORMS_H

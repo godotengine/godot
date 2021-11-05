@@ -1034,7 +1034,7 @@ Ref<Image> RendererStorageRD::texture_2d_get(RID p_texture) const {
 	ERR_FAIL_COND_V(!tex, Ref<Image>());
 
 #ifdef TOOLS_ENABLED
-	if (tex->image_cache_2d.is_valid()) {
+	if (tex->image_cache_2d.is_valid() && !tex->is_render_target) {
 		return tex->image_cache_2d;
 	}
 #endif
@@ -1049,7 +1049,7 @@ Ref<Image> RendererStorageRD::texture_2d_get(RID p_texture) const {
 	}
 
 #ifdef TOOLS_ENABLED
-	if (Engine::get_singleton()->is_editor_hint()) {
+	if (Engine::get_singleton()->is_editor_hint() && !tex->is_render_target) {
 		tex->image_cache_2d = image;
 	}
 #endif
@@ -4419,7 +4419,8 @@ void RendererStorageRD::_update_dirty_multimeshes() {
 						if (multimesh->data_cache_dirty_regions[i]) {
 							uint32_t offset = i * region_size;
 							uint32_t size = multimesh->stride_cache * (uint32_t)multimesh->instances * (uint32_t)sizeof(float);
-							RD::get_singleton()->buffer_update(multimesh->buffer, offset, MIN(region_size, size - offset), &data[i * region_size]);
+							uint32_t region_start_index = multimesh->stride_cache * MULTIMESH_DIRTY_REGION_SIZE * i;
+							RD::get_singleton()->buffer_update(multimesh->buffer, offset, MIN(region_size, size - offset), &data[region_start_index]);
 						}
 					}
 				}

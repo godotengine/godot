@@ -39,8 +39,12 @@ class NavigationObstacle3D : public Node {
 	Node3D *parent_node3d = nullptr;
 	RID agent;
 
+	bool estimate_radius = true;
+	real_t radius = 1.0;
+
 protected:
 	static void _bind_methods();
+	void _validate_property(PropertyInfo &p_property) const override;
 	void _notification(int p_what);
 
 public:
@@ -51,10 +55,21 @@ public:
 		return agent;
 	}
 
+	void set_estimate_radius(bool p_estimate_radius);
+	bool is_radius_estimated() const {
+		return estimate_radius;
+	}
+	void set_radius(real_t p_radius);
+	real_t get_radius() const {
+		return radius;
+	}
+
 	TypedArray<String> get_configuration_warnings() const override;
 
 private:
-	void update_agent_shape();
+	void initialize_agent();
+	void reevaluate_agent_radius();
+	real_t estimate_agent_radius() const;
 };
 
 #endif

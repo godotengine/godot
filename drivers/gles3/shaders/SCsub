@@ -1,0 +1,14 @@
+#!/usr/bin/env python
+
+Import("env")
+
+if "GLES3_GLSL" in env["BUILDERS"]:
+    env.GLES3_GLSL("copy.glsl")
+    env.GLES3_GLSL("canvas.glsl")
+    env.GLES3_GLSL("canvas_shadow.glsl")
+    env.GLES3_GLSL("scene.glsl")
+    env.GLES3_GLSL("cubemap_filter.glsl")
+    env.GLES3_GLSL("cube_to_dp.glsl")
+    env.GLES3_GLSL("effect_blur.glsl")
+    env.GLES3_GLSL("tonemap.glsl")
+    env.GLES3_GLSL("lens_distorted.glsl")

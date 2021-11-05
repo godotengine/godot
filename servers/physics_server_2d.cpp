@@ -616,8 +616,8 @@ void PhysicsServer2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("area_attach_canvas_instance_id", "area", "id"), &PhysicsServer2D::area_attach_canvas_instance_id);
 	ClassDB::bind_method(D_METHOD("area_get_canvas_instance_id", "area"), &PhysicsServer2D::area_get_canvas_instance_id);
 
-	ClassDB::bind_method(D_METHOD("area_set_monitor_callback", "area", "receiver", "method"), &PhysicsServer2D::area_set_monitor_callback);
-	ClassDB::bind_method(D_METHOD("area_set_area_monitor_callback", "area", "receiver", "method"), &PhysicsServer2D::area_set_area_monitor_callback);
+	ClassDB::bind_method(D_METHOD("area_set_monitor_callback", "area", "callback"), &PhysicsServer2D::area_set_monitor_callback);
+	ClassDB::bind_method(D_METHOD("area_set_area_monitor_callback", "area", "callback"), &PhysicsServer2D::area_set_area_monitor_callback);
 	ClassDB::bind_method(D_METHOD("area_set_monitorable", "area", "monitorable"), &PhysicsServer2D::area_set_monitorable);
 
 	ClassDB::bind_method(D_METHOD("body_create"), &PhysicsServer2D::body_create);
@@ -758,9 +758,14 @@ void PhysicsServer2D::_bind_methods() {
 	BIND_ENUM_CONSTANT(BODY_PARAM_INERTIA);
 	BIND_ENUM_CONSTANT(BODY_PARAM_CENTER_OF_MASS);
 	BIND_ENUM_CONSTANT(BODY_PARAM_GRAVITY_SCALE);
+	BIND_ENUM_CONSTANT(BODY_PARAM_LINEAR_DAMP_MODE);
+	BIND_ENUM_CONSTANT(BODY_PARAM_ANGULAR_DAMP_MODE);
 	BIND_ENUM_CONSTANT(BODY_PARAM_LINEAR_DAMP);
 	BIND_ENUM_CONSTANT(BODY_PARAM_ANGULAR_DAMP);
 	BIND_ENUM_CONSTANT(BODY_PARAM_MAX);
+
+	BIND_ENUM_CONSTANT(BODY_DAMP_MODE_COMBINE);
+	BIND_ENUM_CONSTANT(BODY_DAMP_MODE_REPLACE);
 
 	BIND_ENUM_CONSTANT(BODY_STATE_TRANSFORM);
 	BIND_ENUM_CONSTANT(BODY_STATE_LINEAR_VELOCITY);

@@ -11,36 +11,36 @@
 		<link title="Math documentation index">https://docs.godotengine.org/en/latest/tutorials/math/index.html</link>
 		<link title="Vector math">https://docs.godotengine.org/en/latest/tutorials/math/vector_math.html</link>
 	</tutorials>
-	<methods>
-		<method name="Rect2i" qualifiers="constructor">
+	<constructors>
+		<constructor name="Rect2i">
 			<return type="Rect2i" />
 			<description>
 				Constructs a default-initialized [Rect2i] with default (zero) values of [member position] and [member size].
 			</description>
-		</method>
-		<method name="Rect2i" qualifiers="constructor">
+		</constructor>
+		<constructor name="Rect2i">
 			<return type="Rect2i" />
 			<argument index="0" name="from" type="Rect2i" />
 			<description>
 				Constructs a [Rect2i] as a copy of the given [Rect2i].
 			</description>
-		</method>
-		<method name="Rect2i" qualifiers="constructor">
+		</constructor>
+		<constructor name="Rect2i">
 			<return type="Rect2i" />
 			<argument index="0" name="from" type="Rect2" />
 			<description>
 				Constructs a new [Rect2i] from [Rect2]. The floating point coordinates will be truncated.
 			</description>
-		</method>
-		<method name="Rect2i" qualifiers="constructor">
+		</constructor>
+		<constructor name="Rect2i">
 			<return type="Rect2i" />
 			<argument index="0" name="position" type="Vector2i" />
 			<argument index="1" name="size" type="Vector2i" />
 			<description>
 				Constructs a [Rect2i] by position and size.
 			</description>
-		</method>
-		<method name="Rect2i" qualifiers="constructor">
+		</constructor>
+		<constructor name="Rect2i">
 			<return type="Rect2i" />
 			<argument index="0" name="x" type="int" />
 			<argument index="1" name="y" type="int" />
@@ -49,7 +49,9 @@
 			<description>
 				Constructs a [Rect2i] by x, y, width, and height.
 			</description>
-		</method>
+		</constructor>
+	</constructors>
+	<methods>
 		<method name="abs" qualifiers="const">
 			<return type="Rect2i" />
 			<description>
@@ -144,28 +146,6 @@
 				Returns a larger [Rect2i] that contains this [Rect2i] and [code]b[/code].
 			</description>
 		</method>
-		<method name="operator !=" qualifiers="operator">
-			<return type="bool" />
-			<description>
-			</description>
-		</method>
-		<method name="operator !=" qualifiers="operator">
-			<return type="bool" />
-			<argument index="0" name="right" type="Rect2i" />
-			<description>
-			</description>
-		</method>
-		<method name="operator ==" qualifiers="operator">
-			<return type="bool" />
-			<description>
-			</description>
-		</method>
-		<method name="operator ==" qualifiers="operator">
-			<return type="bool" />
-			<argument index="0" name="right" type="Rect2i" />
-			<description>
-			</description>
-		</method>
 	</methods>
 	<members>
 		<member name="end" type="Vector2i" setter="" getter="" default="Vector2i(0, 0)">
@@ -179,4 +159,28 @@
 			If the size is negative, you can use [method abs] to fix it.
 		</member>
 	</members>
+	<operators>
+		<operator name="operator !=">
+			<return type="bool" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator !=">
+			<return type="bool" />
+			<argument index="0" name="right" type="Rect2i" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator ==">
+			<return type="bool" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator ==">
+			<return type="bool" />
+			<argument index="0" name="right" type="Rect2i" />
+			<description>
+			</description>
+		</operator>
+	</operators>
 </class>

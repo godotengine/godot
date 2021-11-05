@@ -2135,7 +2135,7 @@ void LineEdit::_get_property_list(List<PropertyInfo> *p_list) const {
 
 void LineEdit::_validate_property(PropertyInfo &property) const {
 	if (!caret_blink_enabled && property.name == "caret_blink_speed") {
-		property.usage = PROPERTY_USAGE_NOEDITOR;
+		property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
 }
 

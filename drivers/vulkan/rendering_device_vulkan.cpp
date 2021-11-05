@@ -8049,6 +8049,9 @@ void RenderingDeviceVulkan::compute_list_dispatch(ComputeListID p_list, uint32_t
 	ComputeList *cl = compute_list;
 
 #ifdef DEBUG_ENABLED
+	ERR_FAIL_COND_MSG(p_x_groups == 0, "Dispatch amount of X compute groups (" + itos(p_x_groups) + ") is zero.");
+	ERR_FAIL_COND_MSG(p_z_groups == 0, "Dispatch amount of Z compute groups (" + itos(p_z_groups) + ") is zero.");
+	ERR_FAIL_COND_MSG(p_y_groups == 0, "Dispatch amount of Y compute groups (" + itos(p_y_groups) + ") is zero.");
 	ERR_FAIL_COND_MSG(p_x_groups > limits.maxComputeWorkGroupCount[0],
 			"Dispatch amount of X compute groups (" + itos(p_x_groups) + ") is larger than device limit (" + itos(limits.maxComputeWorkGroupCount[0]) + ")");
 	ERR_FAIL_COND_MSG(p_y_groups > limits.maxComputeWorkGroupCount[1],
@@ -8102,6 +8105,12 @@ void RenderingDeviceVulkan::compute_list_dispatch(ComputeListID p_list, uint32_t
 void RenderingDeviceVulkan::compute_list_dispatch_threads(ComputeListID p_list, uint32_t p_x_threads, uint32_t p_y_threads, uint32_t p_z_threads) {
 	ERR_FAIL_COND(p_list != ID_TYPE_COMPUTE_LIST);
 	ERR_FAIL_COND(!compute_list);
+
+#ifdef DEBUG_ENABLED
+	ERR_FAIL_COND_MSG(p_x_threads == 0, "Dispatch amount of X compute threads (" + itos(p_x_threads) + ") is zero.");
+	ERR_FAIL_COND_MSG(p_y_threads == 0, "Dispatch amount of Y compute threads (" + itos(p_y_threads) + ") is zero.");
+	ERR_FAIL_COND_MSG(p_z_threads == 0, "Dispatch amount of Z compute threads (" + itos(p_z_threads) + ") is zero.");
+#endif
 
 	ComputeList *cl = compute_list;
 

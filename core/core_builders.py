@@ -35,7 +35,9 @@ def make_certs_header(target, source, env):
     decomp_size = len(buf)
     import zlib
 
-    buf = zlib.compress(buf)
+    # Use maximum zlib compression level to further reduce file size
+    # (at the cost of initial build times).
+    buf = zlib.compress(buf, zlib.Z_BEST_COMPRESSION)
 
     g.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
     g.write("#ifndef CERTS_COMPRESSED_GEN_H\n")

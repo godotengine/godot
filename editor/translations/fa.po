@@ -11249,11 +11249,11 @@ msgstr ""
 "`کاراکتر باشد."
 
 #: editor/project_settings_editor.cpp
-msgid "Key "
+msgid "Physical Key"
 msgstr ""
 
 #: editor/project_settings_editor.cpp
-msgid "Physical Key"
+msgid "Key "
 msgstr ""
 
 #: editor/project_settings_editor.cpp

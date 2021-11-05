@@ -145,7 +145,7 @@ void Shader::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("has_param", "name"), &Shader::has_param);
 
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "code", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_code", "get_code");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "code", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_code", "get_code");
 
 	BIND_ENUM_CONSTANT(MODE_SPATIAL);
 	BIND_ENUM_CONSTANT(MODE_CANVAS_ITEM);

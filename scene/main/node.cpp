@@ -908,15 +908,10 @@ void Node::set_name(const String &p_name) {
 	}
 }
 
-static bool node_hrcr = false;
 static SafeRefCount node_hrcr_count;
 
 void Node::init_node_hrcr() {
 	node_hrcr_count.init(1);
-}
-
-void Node::set_human_readable_collision_renaming(bool p_enabled) {
-	node_hrcr = p_enabled;
 }
 
 #ifdef TOOLS_ENABLED
@@ -930,7 +925,7 @@ String Node::validate_child_name(Node *p_child) {
 void Node::_validate_child_name(Node *p_child, bool p_force_human_readable) {
 	/* Make sure the name is unique */
 
-	if (node_hrcr || p_force_human_readable) {
+	if (p_force_human_readable) {
 		//this approach to autoset node names is human readable but very slow
 		//it's turned on while running in the editor
 
@@ -2750,7 +2745,7 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_set_import_path", "import_path"), &Node::set_import_path);
 	ClassDB::bind_method(D_METHOD("_get_import_path"), &Node::get_import_path);
 
-	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "_import_path", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_import_path", "_get_import_path");
+	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "_import_path", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_import_path", "_get_import_path");
 
 	{
 		MethodInfo mi;

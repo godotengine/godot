@@ -147,7 +147,7 @@ void ResourcePreloader::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_resource", "name"), &ResourcePreloader::get_resource);
 	ClassDB::bind_method(D_METHOD("get_resource_list"), &ResourcePreloader::_get_resource_list);
 
-	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "resources", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_resources", "_get_resources");
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "resources", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_resources", "_get_resources");
 }
 
 ResourcePreloader::ResourcePreloader() {

@@ -181,20 +181,22 @@
 		<link title="3D Voxel Demo">https://godotengine.org/asset-library/asset/676</link>
 		<link title="OS Test Demo">https://godotengine.org/asset-library/asset/677</link>
 	</tutorials>
-	<methods>
-		<method name="Dictionary" qualifiers="constructor">
+	<constructors>
+		<constructor name="Dictionary">
 			<return type="Dictionary" />
 			<description>
 				Constructs an empty [Dictionary].
 			</description>
-		</method>
-		<method name="Dictionary" qualifiers="constructor">
+		</constructor>
+		<constructor name="Dictionary">
 			<return type="Dictionary" />
 			<argument index="0" name="from" type="Dictionary" />
 			<description>
 				Constructs a [Dictionary] as a copy of the given [Dictionary].
 			</description>
-		</method>
+		</constructor>
+	</constructors>
+	<methods>
 		<method name="clear">
 			<return type="void" />
 			<description>
@@ -288,34 +290,6 @@
 				Returns the list of keys in the [Dictionary].
 			</description>
 		</method>
-		<method name="operator !=" qualifiers="operator">
-			<return type="bool" />
-			<description>
-			</description>
-		</method>
-		<method name="operator !=" qualifiers="operator">
-			<return type="bool" />
-			<argument index="0" name="right" type="Dictionary" />
-			<description>
-			</description>
-		</method>
-		<method name="operator ==" qualifiers="operator">
-			<return type="bool" />
-			<description>
-			</description>
-		</method>
-		<method name="operator ==" qualifiers="operator">
-			<return type="bool" />
-			<argument index="0" name="right" type="Dictionary" />
-			<description>
-			</description>
-		</method>
-		<method name="operator []" qualifiers="operator">
-			<return type="Variant" />
-			<argument index="0" name="key" type="Variant" />
-			<description>
-			</description>
-		</method>
 		<method name="size" qualifiers="const">
 			<return type="int" />
 			<description>
@@ -329,4 +303,34 @@
 			</description>
 		</method>
 	</methods>
+	<operators>
+		<operator name="operator !=">
+			<return type="bool" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator !=">
+			<return type="bool" />
+			<argument index="0" name="right" type="Dictionary" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator ==">
+			<return type="bool" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator ==">
+			<return type="bool" />
+			<argument index="0" name="right" type="Dictionary" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator []">
+			<return type="Variant" />
+			<argument index="0" name="key" type="Variant" />
+			<description>
+			</description>
+		</operator>
+	</operators>
 </class>

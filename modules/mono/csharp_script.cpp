@@ -1813,8 +1813,9 @@ void CSharpInstance::get_event_signals_state_for_reloading(List<Pair<StringName,
 }
 
 void CSharpInstance::get_property_list(List<PropertyInfo> *p_properties) const {
+	List<PropertyInfo> props;
 	for (OrderedHashMap<StringName, PropertyInfo>::ConstElement E = script->member_info.front(); E; E = E.next()) {
-		p_properties->push_front(E.value());
+		props.push_front(E.value());
 	}
 
 	// Call _get_property_list
@@ -1837,14 +1838,18 @@ void CSharpInstance::get_property_list(List<PropertyInfo> *p_properties) const {
 			if (ret) {
 				Array array = Array(GDMonoMarshal::mono_object_to_variant(ret));
 				for (int i = 0, size = array.size(); i < size; i++) {
-					p_properties->push_back(PropertyInfo::from_dict(array.get(i)));
+					props.push_back(PropertyInfo::from_dict(array.get(i)));
 				}
 			}
 
-			return;
+			break;
 		}
 
 		top = top->get_parent_class();
+	}
+
+	for (const PropertyInfo &prop : props) {
+		p_properties->push_back(prop);
 	}
 }
 
@@ -2976,7 +2981,7 @@ bool CSharpScript::_set(const StringName &p_name, const Variant &p_value) {
 }
 
 void CSharpScript::_get_property_list(List<PropertyInfo> *p_properties) const {
-	p_properties->push_back(PropertyInfo(Variant::STRING, CSharpLanguage::singleton->string_names._script_source, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL));
+	p_properties->push_back(PropertyInfo(Variant::STRING, CSharpLanguage::singleton->string_names._script_source, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL));
 }
 
 void CSharpScript::_bind_methods() {
@@ -3499,8 +3504,14 @@ Ref<Script> CSharpScript::get_base_script() const {
 }
 
 void CSharpScript::get_script_property_list(List<PropertyInfo> *r_list) const {
+	List<PropertyInfo> props;
+
 	for (OrderedHashMap<StringName, PropertyInfo>::ConstElement E = member_info.front(); E; E = E.next()) {
-		r_list->push_front(E.value());
+		props.push_front(E.value());
+	}
+
+	for (const PropertyInfo &prop : props) {
+		r_list->push_back(prop);
 	}
 }
 

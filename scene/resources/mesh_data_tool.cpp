@@ -421,6 +421,7 @@ Vector<int> MeshDataTool::get_vertex_bones(int p_idx) const {
 
 void MeshDataTool::set_vertex_bones(int p_idx, const Vector<int> &p_bones) {
 	ERR_FAIL_INDEX(p_idx, vertices.size());
+	ERR_FAIL_COND(p_bones.size() != 4);
 	vertices.write[p_idx].bones = p_bones;
 	format |= Mesh::ARRAY_FORMAT_BONES;
 }
@@ -432,6 +433,7 @@ Vector<float> MeshDataTool::get_vertex_weights(int p_idx) const {
 
 void MeshDataTool::set_vertex_weights(int p_idx, const Vector<float> &p_weights) {
 	ERR_FAIL_INDEX(p_idx, vertices.size());
+	ERR_FAIL_COND(p_weights.size() != 4);
 	vertices.write[p_idx].weights = p_weights;
 	format |= Mesh::ARRAY_FORMAT_WEIGHTS;
 }

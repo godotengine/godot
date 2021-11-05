@@ -10934,12 +10934,12 @@ msgstr ""
 "如果要根据名称和完整路径筛选，搜索内容应至少包含一个“/”字符。"
 
 #: editor/project_settings_editor.cpp
-msgid "Key "
-msgstr "按键 "
-
-#: editor/project_settings_editor.cpp
 msgid "Physical Key"
 msgstr "物理按键"
+
+#: editor/project_settings_editor.cpp
+msgid "Key "
+msgstr "按键 "
 
 #: editor/project_settings_editor.cpp
 msgid "Joy Button"

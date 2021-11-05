@@ -657,7 +657,7 @@ class EditorPropertyResource : public EditorProperty {
 	bool updating_theme = false;
 	bool opened_editor = false;
 
-	void _resource_selected(const RES &p_resource);
+	void _resource_selected(const RES &p_resource, bool p_edit);
 	void _resource_changed(const RES &p_resource);
 
 	void _viewport_selected(const NodePath &p_path);
@@ -669,6 +669,7 @@ class EditorPropertyResource : public EditorProperty {
 	void _open_editor_pressed();
 	void _fold_other_editors(Object *p_self);
 	void _update_property_bg();
+	void _update_preferred_shader();
 
 protected:
 	virtual void _set_read_only(bool p_read_only) override;

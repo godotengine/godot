@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "item_list.h"
+
 #include "core/config/project_settings.h"
 #include "core/os/os.h"
 #include "core/string/translation.h"
@@ -1605,7 +1606,7 @@ void ItemList::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("move_item", "from_idx", "to_idx"), &ItemList::move_item);
 
-	ClassDB::bind_method(D_METHOD("set_item_count"), &ItemList::set_item_count);
+	ClassDB::bind_method(D_METHOD("set_item_count", "count"), &ItemList::set_item_count);
 	ClassDB::bind_method(D_METHOD("get_item_count"), &ItemList::get_item_count);
 	ClassDB::bind_method(D_METHOD("remove_item", "idx"), &ItemList::remove_item);
 

@@ -12,61 +12,70 @@
 		<link title="Wikipedia: Double-precision floating-point format">https://en.wikipedia.org/wiki/Double-precision_floating-point_format</link>
 		<link title="Wikipedia: Single-precision floating-point format">https://en.wikipedia.org/wiki/Single-precision_floating-point_format</link>
 	</tutorials>
-	<methods>
-		<method name="float" qualifiers="constructor">
+	<constructors>
+		<constructor name="float">
 			<return type="float" />
 			<description>
 				Constructs a default-initialized [float] set to [code]0.0[/code].
 			</description>
-		</method>
-		<method name="float" qualifiers="constructor">
+		</constructor>
+		<constructor name="float">
 			<return type="float" />
 			<argument index="0" name="from" type="float" />
 			<description>
 				Constructs a [float] as a copy of the given [float].
 			</description>
-		</method>
-		<method name="float" qualifiers="constructor">
+		</constructor>
+		<constructor name="float">
 			<return type="float" />
 			<argument index="0" name="from" type="bool" />
 			<description>
 				Cast a [bool] value to a floating-point value, [code]float(true)[/code] will be equal to 1.0 and [code]float(false)[/code] will be equal to 0.0.
 			</description>
-		</method>
-		<method name="float" qualifiers="constructor">
+		</constructor>
+		<constructor name="float">
 			<return type="float" />
 			<argument index="0" name="from" type="int" />
 			<description>
 				Cast an [int] value to a floating-point value, [code]float(1)[/code] will be equal to [code]1.0[/code].
 			</description>
-		</method>
-		<method name="operator !=" qualifiers="operator">
+		</constructor>
+	</constructors>
+	<operators>
+		<operator name="operator !=">
 			<return type="bool" />
 			<description>
 			</description>
-		</method>
-		<method name="operator !=" qualifiers="operator">
+		</operator>
+		<operator name="operator !=">
 			<return type="bool" />
 			<argument index="0" name="right" type="float" />
 			<description>
 				Returns [code]true[/code] if two floats are different from each other.
 			</description>
-		</method>
-		<method name="operator !=" qualifiers="operator">
+		</operator>
+		<operator name="operator !=">
 			<return type="bool" />
 			<argument index="0" name="right" type="int" />
 			<description>
 				Returns [code]true[/code] if the integer has different value than the float.
 			</description>
-		</method>
-		<method name="operator *" qualifiers="operator">
+		</operator>
+		<operator name="operator *">
 			<return type="float" />
 			<argument index="0" name="right" type="float" />
 			<description>
 				Multiplies two [float]s.
 			</description>
-		</method>
-		<method name="operator *" qualifiers="operator">
+		</operator>
+		<operator name="operator *">
+			<return type="Quaternion" />
+			<argument index="0" name="right" type="Quaternion" />
+			<description>
+				Multiplies each component of the [Quaternion] by the given [float].
+			</description>
+		</operator>
+		<operator name="operator *">
 			<return type="Vector2" />
 			<argument index="0" name="right" type="Vector2" />
 			<description>
@@ -75,8 +84,8 @@
 				print(2.5 * Vector2(1, 1)) # Vector2(2.5, 2.5)
 				[/codeblock]
 			</description>
-		</method>
-		<method name="operator *" qualifiers="operator">
+		</operator>
+		<operator name="operator *">
 			<return type="Vector2i" />
 			<argument index="0" name="right" type="Vector2i" />
 			<description>
@@ -85,29 +94,22 @@
 				print(2.0 * Vector2i(1, 1)) # Vector2i(2.0, 2.0)
 				[/codeblock]
 			</description>
-		</method>
-		<method name="operator *" qualifiers="operator">
+		</operator>
+		<operator name="operator *">
 			<return type="Vector3" />
 			<argument index="0" name="right" type="Vector3" />
 			<description>
 				Multiplies each component of the [Vector3] by the given [float].
 			</description>
-		</method>
-		<method name="operator *" qualifiers="operator">
+		</operator>
+		<operator name="operator *">
 			<return type="Vector3i" />
 			<argument index="0" name="right" type="Vector3i" />
 			<description>
 				Multiplies each component of the [Vector3i] by the given [float].
 			</description>
-		</method>
-		<method name="operator *" qualifiers="operator">
-			<return type="Quaternion" />
-			<argument index="0" name="right" type="Quaternion" />
-			<description>
-				Multiplies each component of the [Quaternion] by the given [float].
-			</description>
-		</method>
-		<method name="operator *" qualifiers="operator">
+		</operator>
+		<operator name="operator *">
 			<return type="Color" />
 			<argument index="0" name="right" type="Color" />
 			<description>
@@ -116,143 +118,143 @@
 				print(1.5 * Color(0.5, 0.5, 0.5)) # Color(0.75, 0.75, 0.75)
 				[/codeblock]
 			</description>
-		</method>
-		<method name="operator *" qualifiers="operator">
+		</operator>
+		<operator name="operator *">
 			<return type="float" />
 			<argument index="0" name="right" type="int" />
 			<description>
 				Multiplies a [float] and an [int]. The result is a [float].
 			</description>
-		</method>
-		<method name="operator +" qualifiers="operator">
+		</operator>
+		<operator name="operator +">
 			<return type="float" />
 			<argument index="0" name="right" type="float" />
 			<description>
 				Adds two floats.
 			</description>
-		</method>
-		<method name="operator +" qualifiers="operator">
+		</operator>
+		<operator name="operator +">
 			<return type="float" />
 			<argument index="0" name="right" type="int" />
 			<description>
 				Adds a [float] and an [int]. The result is a [float].
 			</description>
-		</method>
-		<method name="operator -" qualifiers="operator">
+		</operator>
+		<operator name="operator -">
 			<return type="float" />
 			<argument index="0" name="right" type="float" />
 			<description>
 				Subtracts a float from a float.
 			</description>
-		</method>
-		<method name="operator -" qualifiers="operator">
+		</operator>
+		<operator name="operator -">
 			<return type="float" />
 			<argument index="0" name="right" type="int" />
 			<description>
 				Subtracts an [int] from a [float]. The result is a [float].
 			</description>
-		</method>
-		<method name="operator /" qualifiers="operator">
+		</operator>
+		<operator name="operator /">
 			<return type="float" />
 			<argument index="0" name="right" type="float" />
 			<description>
 				Divides two floats.
 			</description>
-		</method>
-		<method name="operator /" qualifiers="operator">
+		</operator>
+		<operator name="operator /">
 			<return type="float" />
 			<argument index="0" name="right" type="int" />
 			<description>
 				Divides a [float] by an [int]. The result is a [float].
 			</description>
-		</method>
-		<method name="operator &lt;" qualifiers="operator">
+		</operator>
+		<operator name="operator &lt;">
 			<return type="bool" />
 			<argument index="0" name="right" type="float" />
 			<description>
 				Returns [code]true[/code] the left float is less than the right one.
 			</description>
-		</method>
-		<method name="operator &lt;" qualifiers="operator">
+		</operator>
+		<operator name="operator &lt;">
 			<return type="bool" />
 			<argument index="0" name="right" type="int" />
 			<description>
 				Returns [code]true[/code] if this [float] is less than the given [int].
 			</description>
-		</method>
-		<method name="operator &lt;=" qualifiers="operator">
+		</operator>
+		<operator name="operator &lt;=">
 			<return type="bool" />
 			<argument index="0" name="right" type="float" />
 			<description>
 				Returns [code]true[/code] the left integer is less than or equal to the right one.
 			</description>
-		</method>
-		<method name="operator &lt;=" qualifiers="operator">
+		</operator>
+		<operator name="operator &lt;=">
 			<return type="bool" />
 			<argument index="0" name="right" type="int" />
 			<description>
 				Returns [code]true[/code] if this [float] is less than or equal to the given [int].
 			</description>
-		</method>
-		<method name="operator ==" qualifiers="operator">
+		</operator>
+		<operator name="operator ==">
 			<return type="bool" />
 			<description>
 			</description>
-		</method>
-		<method name="operator ==" qualifiers="operator">
+		</operator>
+		<operator name="operator ==">
 			<return type="bool" />
 			<argument index="0" name="right" type="float" />
 			<description>
 				Returns [code]true[/code] if both floats are exactly equal.
 				[b]Note:[/b] Due to floating-point precision errors, consider using [method @GlobalScope.is_equal_approx] or [method @GlobalScope.is_zero_approx] instead, which are more reliable.
 			</description>
-		</method>
-		<method name="operator ==" qualifiers="operator">
+		</operator>
+		<operator name="operator ==">
 			<return type="bool" />
 			<argument index="0" name="right" type="int" />
 			<description>
 				Returns [code]true[/code] if the [float] and the given [int] are equal.
 			</description>
-		</method>
-		<method name="operator &gt;" qualifiers="operator">
+		</operator>
+		<operator name="operator &gt;">
 			<return type="bool" />
 			<argument index="0" name="right" type="float" />
 			<description>
 				Returns [code]true[/code] the left float is greater than the right one.
 			</description>
-		</method>
-		<method name="operator &gt;" qualifiers="operator">
+		</operator>
+		<operator name="operator &gt;">
 			<return type="bool" />
 			<argument index="0" name="right" type="int" />
 			<description>
 				Returns [code]true[/code] if this [float] is greater than the given [int].
 			</description>
-		</method>
-		<method name="operator &gt;=" qualifiers="operator">
+		</operator>
+		<operator name="operator &gt;=">
 			<return type="bool" />
 			<argument index="0" name="right" type="float" />
 			<description>
 				Returns [code]true[/code] the left float is greater than or equal to the right one.
 			</description>
-		</method>
-		<method name="operator &gt;=" qualifiers="operator">
+		</operator>
+		<operator name="operator &gt;=">
 			<return type="bool" />
 			<argument index="0" name="right" type="int" />
 			<description>
 				Returns [code]true[/code] if this [float] is greater than or equal to the given [int].
 			</description>
-		</method>
-		<method name="operator unary+" qualifiers="operator">
+		</operator>
+		<operator name="operator unary+">
 			<return type="float" />
 			<description>
 				Returns the same value as if the [code]+[/code] was not there. Unary [code]+[/code] does nothing, but sometimes it can make your code more readable.
 			</description>
-		</method>
-		<method name="operator unary-" qualifiers="operator">
+		</operator>
+		<operator name="operator unary-">
 			<return type="float" />
 			<description>
 				Returns the negative value of the [float]. If positive, turns the number negative. If negative, turns the number positive. With floats, the number zero can be either positive or negative.
 			</description>
-		</method>
-	</methods>
+		</operator>
+	</operators>
 </class>

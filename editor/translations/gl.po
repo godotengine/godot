@@ -11089,12 +11089,12 @@ msgstr ""
 "polo menos un carácter '/'."
 
 #: editor/project_settings_editor.cpp
-msgid "Key "
-msgstr "Botón: "
-
-#: editor/project_settings_editor.cpp
 msgid "Physical Key"
 msgstr ""
+
+#: editor/project_settings_editor.cpp
+msgid "Key "
+msgstr "Botón: "
 
 #: editor/project_settings_editor.cpp
 msgid "Joy Button"
