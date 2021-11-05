@@ -70,6 +70,8 @@ protected:
 
 #endif
 
+#endif
+
 public:
 	static EditorNavigationMeshGenerator *get_singleton();
 
