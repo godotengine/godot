@@ -162,15 +162,15 @@ class DynamicFontAtSize : public Reference {
 		int y;
 	};
 
-	const Pair<const Character *, DynamicFontAtSize *> _find_char_with_font(CharType p_char, const Vector<Ref<DynamicFontAtSize>> &p_fallbacks) const;
-	Character _make_outline_char(CharType p_char);
-	float _get_kerning_advance(const DynamicFontAtSize *font, CharType p_char, CharType p_next) const;
+	const Pair<const Character *, DynamicFontAtSize *> _find_char_with_font(int32_t p_char, const Vector<Ref<DynamicFontAtSize>> &p_fallbacks) const;
+	Character _make_outline_char(int32_t p_char);
+	float _get_kerning_advance(const DynamicFontAtSize *font, int32_t p_char, int32_t p_next) const;
 	TexturePosition _find_texture_pos_for_glyph(int p_color_size, Image::Format p_image_format, int p_width, int p_height);
 	Character _bitmap_to_character(FT_Bitmap bitmap, int yofs, int xofs, float advance);
 
-	HashMap<CharType, Character> char_map;
+	HashMap<int32_t, Character> char_map;
 
-	_FORCE_INLINE_ void _update_char(CharType p_char);
+	_FORCE_INLINE_ void _update_char(int32_t p_char);
 
 	friend class DynamicFontData;
 	Ref<DynamicFontData> font;

@@ -135,7 +135,7 @@ public:
 	};
 
 private:
-	HashMap<CharType, Character> char_map;
+	HashMap<int32_t, Character> char_map;
 	Map<KerningPairKey, int> kerning_map;
 
 	float height;
@@ -165,17 +165,17 @@ public:
 	float get_descent() const;
 
 	void add_texture(const Ref<Texture> &p_texture);
-	void add_char(CharType p_char, int p_texture_idx, const Rect2 &p_rect, const Size2 &p_align, float p_advance = -1);
+	void add_char(int32_t p_char, int p_texture_idx, const Rect2 &p_rect, const Size2 &p_align, float p_advance = -1);
 
 	int get_character_count() const;
-	Vector<CharType> get_char_keys() const;
-	Character get_character(CharType p_char) const;
+	Vector<int32_t> get_char_keys() const;
+	Character get_character(int32_t p_char) const;
 
 	int get_texture_count() const;
 	Ref<Texture> get_texture(int p_idx) const;
 
-	void add_kerning_pair(CharType p_A, CharType p_B, int p_kerning);
-	int get_kerning_pair(CharType p_A, CharType p_B) const;
+	void add_kerning_pair(int32_t p_A, int32_t p_B, int p_kerning);
+	int get_kerning_pair(int32_t p_A, int32_t p_B) const;
 	Vector<KerningPairKey> get_kerning_pair_keys() const;
 
 	Size2 get_char_size(CharType p_char, CharType p_next = 0) const;
