@@ -64,7 +64,7 @@ public:
 		FEATURE_CIRCLE,
 	};
 
-	virtual real_t get_area() const { return aabb.get_area(); }
+	virtual real_t get_volume() const { return aabb.get_volume(); }
 
 	_FORCE_INLINE_ void set_self(const RID &p_self) { self = p_self; }
 	_FORCE_INLINE_ RID get_self() const { return self; }
@@ -120,7 +120,7 @@ class GodotWorldBoundaryShape3D : public GodotShape3D {
 public:
 	Plane get_plane() const;
 
-	virtual real_t get_area() const override { return INFINITY; }
+	virtual real_t get_volume() const override { return INFINITY; }
 	virtual PhysicsServer3D::ShapeType get_type() const override { return PhysicsServer3D::SHAPE_WORLD_BOUNDARY; }
 	virtual void project_range(const Vector3 &p_normal, const Transform3D &p_transform, real_t &r_min, real_t &r_max) const override;
 	virtual Vector3 get_support(const Vector3 &p_normal) const override;
@@ -147,7 +147,7 @@ public:
 	real_t get_length() const;
 	bool get_slide_on_slope() const;
 
-	virtual real_t get_area() const override { return 0.0; }
+	virtual real_t get_volume() const override { return 0.0; }
 	virtual PhysicsServer3D::ShapeType get_type() const override { return PhysicsServer3D::SHAPE_SEPARATION_RAY; }
 	virtual void project_range(const Vector3 &p_normal, const Transform3D &p_transform, real_t &r_min, real_t &r_max) const override;
 	virtual Vector3 get_support(const Vector3 &p_normal) const override;
@@ -173,7 +173,7 @@ class GodotSphereShape3D : public GodotShape3D {
 public:
 	real_t get_radius() const;
 
-	virtual real_t get_area() const override { return 4.0 / 3.0 * Math_PI * radius * radius * radius; }
+	virtual real_t get_volume() const override { return 4.0 / 3.0 * Math_PI * radius * radius * radius; }
 
 	virtual PhysicsServer3D::ShapeType get_type() const override { return PhysicsServer3D::SHAPE_SPHERE; }
 
@@ -198,7 +198,7 @@ class GodotBoxShape3D : public GodotShape3D {
 
 public:
 	_FORCE_INLINE_ Vector3 get_half_extents() const { return half_extents; }
-	virtual real_t get_area() const override { return 8 * half_extents.x * half_extents.y * half_extents.z; }
+	virtual real_t get_volume() const override { return 8 * half_extents.x * half_extents.y * half_extents.z; }
 
 	virtual PhysicsServer3D::ShapeType get_type() const override { return PhysicsServer3D::SHAPE_BOX; }
 
@@ -227,7 +227,7 @@ public:
 	_FORCE_INLINE_ real_t get_height() const { return height; }
 	_FORCE_INLINE_ real_t get_radius() const { return radius; }
 
-	virtual real_t get_area() const override { return 4.0 / 3.0 * Math_PI * radius * radius * radius + (height - radius * 2.0) * Math_PI * radius * radius; }
+	virtual real_t get_volume() const override { return 4.0 / 3.0 * Math_PI * radius * radius * radius + (height - radius * 2.0) * Math_PI * radius * radius; }
 
 	virtual PhysicsServer3D::ShapeType get_type() const override { return PhysicsServer3D::SHAPE_CAPSULE; }
 
@@ -256,7 +256,7 @@ public:
 	_FORCE_INLINE_ real_t get_height() const { return height; }
 	_FORCE_INLINE_ real_t get_radius() const { return radius; }
 
-	virtual real_t get_area() const override { return height * Math_PI * radius * radius; }
+	virtual real_t get_volume() const override { return height * Math_PI * radius * radius; }
 
 	virtual PhysicsServer3D::ShapeType get_type() const override { return PhysicsServer3D::SHAPE_CYLINDER; }
 

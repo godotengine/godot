@@ -1748,8 +1748,8 @@ static void _register_variant_builtin_methods() {
 
 	bind_method(AABB, abs, sarray(), varray());
 	bind_method(AABB, get_center, sarray(), varray());
-	bind_method(AABB, get_area, sarray(), varray());
-	bind_method(AABB, has_no_area, sarray(), varray());
+	bind_method(AABB, get_volume, sarray(), varray());
+	bind_method(AABB, has_no_volume, sarray(), varray());
 	bind_method(AABB, has_no_surface, sarray(), varray());
 	bind_method(AABB, has_point, sarray("point"), varray());
 	bind_method(AABB, is_equal_approx, sarray("aabb"), varray());
