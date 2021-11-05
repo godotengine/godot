@@ -628,6 +628,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(VisualShaderNodeParticleSphereEmitter);
 	GDREGISTER_CLASS(VisualShaderNodeParticleBoxEmitter);
 	GDREGISTER_CLASS(VisualShaderNodeParticleRingEmitter);
+	GDREGISTER_CLASS(VisualShaderNodeParticleMeshEmitter);
 	GDREGISTER_CLASS(VisualShaderNodeParticleMultiplyByAxisAngle);
 	GDREGISTER_CLASS(VisualShaderNodeParticleConeVelocity);
 	GDREGISTER_CLASS(VisualShaderNodeParticleRandomness);

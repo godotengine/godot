@@ -494,11 +494,6 @@ String VisualShaderNodeTexture::get_input_port_default_hint(int p_port) const {
 	return "";
 }
 
-static String make_unique_id(VisualShader::Type p_type, int p_id, const String &p_name) {
-	static const char *typepf[VisualShader::TYPE_MAX] = { "vtx", "frg", "lgt" };
-	return p_name + "_" + String(typepf[p_type]) + "_" + itos(p_id);
-}
-
 Vector<VisualShader::DefaultTextureParam> VisualShaderNodeTexture::get_default_texture_parameters(VisualShader::Type p_type, int p_id) const {
 	VisualShader::DefaultTextureParam dtp;
 	dtp.name = make_unique_id(p_type, p_id, "tex");

@@ -697,4 +697,6 @@ public:
 	VisualShaderNodeGlobalExpression();
 };
 
+extern String make_unique_id(VisualShader::Type p_type, int p_id, const String &p_name);
+
 #endif // VISUAL_SHADER_H
