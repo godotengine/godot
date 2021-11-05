@@ -320,11 +320,11 @@ void AndroidInputHandler::process_double_tap(int event_android_button_mask, Poin
 }
 
 void AndroidInputHandler::process_scroll(Point2 p_pos) {
-	Ref<InputEventPanGesture> ev;
+	Ref<InputEventGesturePan> ev;
 	ev.instance();
 	_set_key_modifier_state(ev);
 	ev->set_position(p_pos);
-	ev->set_delta(p_pos - scroll_prev_pos);
+	ev->set_relative(p_pos - scroll_prev_pos);
 	input->parse_input_event(ev);
 	scroll_prev_pos = p_pos;
 }
