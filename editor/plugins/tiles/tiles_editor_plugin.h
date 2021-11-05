@@ -78,13 +78,12 @@ private:
 	SafeFlag pattern_thread_exit;
 	SafeFlag pattern_thread_exited;
 	mutable SafeFlag pattern_preview_done;
-	void _pattern_preview_done(const Variant &p_udata);
+	void _pattern_preview_done();
 	static void _thread_func(void *ud);
 	void _thread();
 
 protected:
 	void _notification(int p_what);
-	static void _bind_methods();
 
 public:
 	_FORCE_INLINE_ static TilesEditorPlugin *get_singleton() { return singleton; }

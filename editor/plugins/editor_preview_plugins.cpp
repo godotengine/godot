@@ -297,12 +297,8 @@ EditorPackedScenePreviewPlugin::EditorPackedScenePreviewPlugin() {
 
 //////////////////////////////////////////////////////////////////
 
-void EditorMaterialPreviewPlugin::_preview_done(const Variant &p_udata) {
+void EditorMaterialPreviewPlugin::_preview_done() {
 	preview_done.set();
-}
-
-void EditorMaterialPreviewPlugin::_bind_methods() {
-	ClassDB::bind_method("_preview_done", &EditorMaterialPreviewPlugin::_preview_done);
 }
 
 bool EditorMaterialPreviewPlugin::handles(const String &p_type) const {
@@ -323,7 +319,7 @@ Ref<Texture2D> EditorMaterialPreviewPlugin::generate(const RES &p_from, const Si
 		RS::get_singleton()->viewport_set_update_mode(viewport, RS::VIEWPORT_UPDATE_ONCE); //once used for capture
 
 		preview_done.clear();
-		RS::get_singleton()->request_frame_drawn_callback(const_cast<EditorMaterialPreviewPlugin *>(this), "_preview_done", Variant());
+		RS::get_singleton()->request_frame_drawn_callback(callable_mp(const_cast<EditorMaterialPreviewPlugin *>(this), &EditorMaterialPreviewPlugin::_preview_done));
 
 		while (!preview_done.is_set()) {
 			OS::get_singleton()->delay_usec(10);
@@ -699,12 +695,8 @@ EditorAudioStreamPreviewPlugin::EditorAudioStreamPreviewPlugin() {
 
 ///////////////////////////////////////////////////////////////////////////
 
-void EditorMeshPreviewPlugin::_preview_done(const Variant &p_udata) {
+void EditorMeshPreviewPlugin::_preview_done() {
 	preview_done.set();
-}
-
-void EditorMeshPreviewPlugin::_bind_methods() {
-	ClassDB::bind_method("_preview_done", &EditorMeshPreviewPlugin::_preview_done);
 }
 
 bool EditorMeshPreviewPlugin::handles(const String &p_type) const {
@@ -738,7 +730,7 @@ Ref<Texture2D> EditorMeshPreviewPlugin::generate(const RES &p_from, const Size2 
 	RS::get_singleton()->viewport_set_update_mode(viewport, RS::VIEWPORT_UPDATE_ONCE); //once used for capture
 
 	preview_done.clear();
-	RS::get_singleton()->request_frame_drawn_callback(const_cast<EditorMeshPreviewPlugin *>(this), "_preview_done", Variant());
+	RS::get_singleton()->request_frame_drawn_callback(callable_mp(const_cast<EditorMeshPreviewPlugin *>(this), &EditorMeshPreviewPlugin::_preview_done));
 
 	while (!preview_done.is_set()) {
 		OS::get_singleton()->delay_usec(10);
@@ -814,12 +806,8 @@ EditorMeshPreviewPlugin::~EditorMeshPreviewPlugin() {
 
 ///////////////////////////////////////////////////////////////////////////
 
-void EditorFontPreviewPlugin::_preview_done(const Variant &p_udata) {
+void EditorFontPreviewPlugin::_preview_done() {
 	preview_done.set();
-}
-
-void EditorFontPreviewPlugin::_bind_methods() {
-	ClassDB::bind_method("_preview_done", &EditorFontPreviewPlugin::_preview_done);
 }
 
 bool EditorFontPreviewPlugin::handles(const String &p_type) const {
@@ -859,7 +847,7 @@ Ref<Texture2D> EditorFontPreviewPlugin::generate_from_path(const String &p_path,
 
 	preview_done.clear();
 	RS::get_singleton()->viewport_set_update_mode(viewport, RS::VIEWPORT_UPDATE_ONCE); //once used for capture
-	RS::get_singleton()->request_frame_drawn_callback(const_cast<EditorFontPreviewPlugin *>(this), "_preview_done", Variant());
+	RS::get_singleton()->request_frame_drawn_callback(callable_mp(const_cast<EditorFontPreviewPlugin *>(this), &EditorFontPreviewPlugin::_preview_done));
 
 	while (!preview_done.is_set()) {
 		OS::get_singleton()->delay_usec(10);
