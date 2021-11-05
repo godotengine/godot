@@ -1275,7 +1275,15 @@ int PopupMenu::get_current_index() const {
 
 void PopupMenu::set_item_count(int p_count) {
 	ERR_FAIL_COND(p_count < 0);
+	int prev_size = items.size();
 	items.resize(p_count);
+
+	if (prev_size < p_count) {
+		for (int i = prev_size; i < p_count; i++) {
+			items.write[i].id = i;
+		}
+	}
+
 	control->update();
 	child_controls_changed();
 	notify_property_list_changed();
@@ -1658,7 +1666,7 @@ void PopupMenu::_get_property_list(List<PropertyInfo> *p_list) const {
 		pi.usage &= ~(!is_item_checked(i) ? PROPERTY_USAGE_STORAGE : 0);
 		p_list->push_back(pi);
 
-		pi = PropertyInfo(Variant::INT, vformat("item_%d/id", i), PROPERTY_HINT_RANGE, "1,10,1,or_greater");
+		pi = PropertyInfo(Variant::INT, vformat("item_%d/id", i), PROPERTY_HINT_RANGE, "0,10,1,or_greater");
 		p_list->push_back(pi);
 
 		pi = PropertyInfo(Variant::BOOL, vformat("item_%d/disabled", i));
