@@ -92,8 +92,9 @@ class EditorMaterialPreviewPlugin : public EditorResourcePreviewGenerator {
 	RID light2;
 	RID light_instance2;
 	RID camera;
-	mutable SafeFlag preview_done;
+	Semaphore preview_done;
 
+	void _generate_frame_started();
 	void _preview_done();
 
 public:
@@ -133,8 +134,9 @@ class EditorMeshPreviewPlugin : public EditorResourcePreviewGenerator {
 	RID light2;
 	RID light_instance2;
 	RID camera;
-	mutable SafeFlag preview_done;
+	Semaphore preview_done;
 
+	void _generate_frame_started();
 	void _preview_done();
 
 public:
@@ -152,8 +154,9 @@ class EditorFontPreviewPlugin : public EditorResourcePreviewGenerator {
 	RID viewport_texture;
 	RID canvas;
 	RID canvas_item;
-	mutable SafeFlag preview_done;
+	Semaphore preview_done;
 
+	void _generate_frame_started();
 	void _preview_done();
 
 public:
@@ -168,8 +171,9 @@ public:
 class EditorTileMapPatternPreviewPlugin : public EditorResourcePreviewGenerator {
 	GDCLASS(EditorTileMapPatternPreviewPlugin, EditorResourcePreviewGenerator);
 
-	mutable SafeFlag preview_done;
+	Semaphore preview_done;
 
+	void _generate_frame_started();
 	void _preview_done();
 
 public:
