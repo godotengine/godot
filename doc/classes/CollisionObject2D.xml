@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="CollisionObject2D" inherits="Node2D" version="3.4">
+<class name="CollisionObject2D" inherits="Node2D" version="3.5">
 	<brief_description>
 		Base node for 2D collision objects.
 	</brief_description>

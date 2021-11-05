@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="WebSocketClient" inherits="WebSocketMultiplayerPeer" version="3.4">
+<class name="WebSocketClient" inherits="WebSocketMultiplayerPeer" version="3.5">
 	<brief_description>
 		A WebSocket client implementation.
 	</brief_description>

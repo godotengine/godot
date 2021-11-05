@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ImageTexture" inherits="Texture" version="3.4">
+<class name="ImageTexture" inherits="Texture" version="3.5">
 	<brief_description>
 		A [Texture] based on an [Image].
 	</brief_description>

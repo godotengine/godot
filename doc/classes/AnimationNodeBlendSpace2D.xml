@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AnimationNodeBlendSpace2D" inherits="AnimationRootNode" version="3.4">
+<class name="AnimationNodeBlendSpace2D" inherits="AnimationRootNode" version="3.5">
 	<brief_description>
 		Blends linearly between three [AnimationNode] of any type placed in a 2D space.
 	</brief_description>

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="X509Certificate" inherits="Resource" version="3.4">
+<class name="X509Certificate" inherits="Resource" version="3.5">
 	<brief_description>
 		An X509 certificate (e.g. for SSL).
 	</brief_description>

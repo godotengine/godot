@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="VisualShaderNodeVectorDecompose" inherits="VisualShaderNode" version="3.4">
+<class name="VisualShaderNodeVectorDecompose" inherits="VisualShaderNode" version="3.5">
 	<brief_description>
 		Decomposes a [Vector3] into three scalars within the visual shader graph.
 	</brief_description>

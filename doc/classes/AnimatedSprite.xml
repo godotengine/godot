@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AnimatedSprite" inherits="Node2D" version="3.4">
+<class name="AnimatedSprite" inherits="Node2D" version="3.5">
 	<brief_description>
 		Sprite node that can use multiple textures for animation.
 	</brief_description>

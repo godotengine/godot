@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="VisualScriptReturn" inherits="VisualScriptNode" version="3.4">
+<class name="VisualScriptReturn" inherits="VisualScriptNode" version="3.5">
 	<brief_description>
 		Exits a function and returns an optional value.
 	</brief_description>

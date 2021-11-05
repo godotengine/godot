@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="InputEventMouseButton" inherits="InputEventMouse" version="3.4">
+<class name="InputEventMouseButton" inherits="InputEventMouse" version="3.5">
 	<brief_description>
 		Input event type for mouse button events.
 	</brief_description>

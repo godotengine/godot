@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="YSort" inherits="Node2D" version="3.4">
+<class name="YSort" inherits="Node2D" version="3.5">
 	<brief_description>
 		Sort all child nodes based on their Y positions.
 	</brief_description>

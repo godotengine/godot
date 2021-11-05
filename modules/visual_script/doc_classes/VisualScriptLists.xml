@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="VisualScriptLists" inherits="VisualScriptNode" version="3.4">
+<class name="VisualScriptLists" inherits="VisualScriptNode" version="3.5">
 	<brief_description>
 		A Visual Script virtual class for in-graph editable nodes.
 	</brief_description>

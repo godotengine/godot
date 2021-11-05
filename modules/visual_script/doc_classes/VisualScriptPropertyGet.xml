@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="VisualScriptPropertyGet" inherits="VisualScriptNode" version="3.4">
+<class name="VisualScriptPropertyGet" inherits="VisualScriptNode" version="3.5">
 	<brief_description>
 		A Visual Script node returning a value of a property from an [Object].
 	</brief_description>

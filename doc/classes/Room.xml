@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Room" inherits="Spatial" version="3.4">
+<class name="Room" inherits="Spatial" version="3.5">
 	<brief_description>
 		Room node, used to group objects together locally for [Portal] culling.
 	</brief_description>

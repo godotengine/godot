@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Object" version="3.4">
+<class name="Object" version="3.5">
 	<brief_description>
 		Base class for all non-built-in types.
 	</brief_description>

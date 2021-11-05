@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="CSharpScript" inherits="Script" version="3.4">
+<class name="CSharpScript" inherits="Script" version="3.5">
 	<brief_description>
 		A script implemented in the C# programming language (Mono-enabled builds only).
 	</brief_description>

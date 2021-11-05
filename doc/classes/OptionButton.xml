@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="OptionButton" inherits="Button" version="3.4">
+<class name="OptionButton" inherits="Button" version="3.5">
 	<brief_description>
 		Button control that provides selectable options when pressed.
 	</brief_description>

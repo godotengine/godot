@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="PackedScene" inherits="Resource" version="3.4">
+<class name="PackedScene" inherits="Resource" version="3.5">
 	<brief_description>
 		An abstraction of a serialized scene.
 	</brief_description>

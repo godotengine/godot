@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="VisualScriptSequence" inherits="VisualScriptNode" version="3.4">
+<class name="VisualScriptSequence" inherits="VisualScriptNode" version="3.5">
 	<brief_description>
 		Executes a series of Sequence ports.
 	</brief_description>

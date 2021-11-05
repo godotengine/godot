@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="EditorInspector" inherits="ScrollContainer" version="3.4">
+<class name="EditorInspector" inherits="ScrollContainer" version="3.5">
 	<brief_description>
 		A tab used to edit properties of the selected node.
 	</brief_description>

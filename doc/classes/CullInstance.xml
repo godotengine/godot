@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="CullInstance" inherits="Spatial" version="3.4">
+<class name="CullInstance" inherits="Spatial" version="3.5">
 	<brief_description>
 		Parent of all nodes that can be culled by the Portal system.
 	</brief_description>

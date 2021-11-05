@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="InputEventScreenTouch" inherits="InputEvent" version="3.4">
+<class name="InputEventScreenTouch" inherits="InputEvent" version="3.5">
 	<brief_description>
 		Input event type for screen touch events.
 		(only available on mobile devices)

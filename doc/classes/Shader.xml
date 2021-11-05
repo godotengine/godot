@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Shader" inherits="Resource" version="3.4">
+<class name="Shader" inherits="Resource" version="3.5">
 	<brief_description>
 		A custom shader program.
 	</brief_description>

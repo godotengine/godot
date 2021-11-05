@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="SpatialMaterial" inherits="Material" version="3.4">
+<class name="SpatialMaterial" inherits="Material" version="3.5">
 	<brief_description>
 		Default 3D rendering material.
 	</brief_description>

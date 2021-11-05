@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="CollisionShape2D" inherits="Node2D" version="3.4">
+<class name="CollisionShape2D" inherits="Node2D" version="3.5">
 	<brief_description>
 		Node that represents collision shape data in 2D space.
 	</brief_description>

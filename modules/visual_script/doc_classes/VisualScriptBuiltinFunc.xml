@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="VisualScriptBuiltinFunc" inherits="VisualScriptNode" version="3.4">
+<class name="VisualScriptBuiltinFunc" inherits="VisualScriptNode" version="3.5">
 	<brief_description>
 		A Visual Script node used to call built-in functions.
 	</brief_description>

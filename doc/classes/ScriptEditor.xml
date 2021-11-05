@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ScriptEditor" inherits="PanelContainer" version="3.4">
+<class name="ScriptEditor" inherits="PanelContainer" version="3.5">
 	<brief_description>
 		Godot editor's script editor.
 	</brief_description>
