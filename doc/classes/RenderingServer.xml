@@ -2575,12 +2575,9 @@
 		</method>
 		<method name="request_frame_drawn_callback">
 			<return type="void" />
-			<argument index="0" name="where" type="Object" />
-			<argument index="1" name="method" type="StringName" />
-			<argument index="2" name="userdata" type="Variant" />
+			<argument index="0" name="callable" type="Callable" />
 			<description>
-				Schedules a callback to the corresponding named [code]method[/code] on [code]where[/code] after a frame has been drawn.
-				The callback method must use only 1 argument which will be called with [code]userdata[/code].
+				Schedules a callback to the given callable after a frame has been drawn.
 			</description>
 		</method>
 		<method name="scenario_create">
