@@ -11092,12 +11092,12 @@ msgstr ""
 "とも1つ必要です。"
 
 #: editor/project_settings_editor.cpp
-msgid "Key "
-msgstr "キー "
-
-#: editor/project_settings_editor.cpp
 msgid "Physical Key"
 msgstr "物理キー"
+
+#: editor/project_settings_editor.cpp
+msgid "Key "
+msgstr "キー "
 
 #: editor/project_settings_editor.cpp
 msgid "Joy Button"

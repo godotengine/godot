@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  context_gl_osx.h                                                     */
+/*  fog_volume.h                                                         */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,47 +28,45 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef CONTEXT_GL_OSX_H
-#define CONTEXT_GL_OSX_H
+#ifndef FOG_VOLUME_H
+#define FOG_VOLUME_H
 
-#if defined(OPENGL_ENABLED) || defined(GLES_ENABLED)
+#include "core/templates/rid.h"
+#include "scene/3d/visual_instance_3d.h"
+#include "scene/main/node.h"
+#include "scene/main/viewport.h"
+#include "scene/resources/material.h"
 
-#include "core/error/error_list.h"
-#include "core/os/os.h"
+class FogVolume : public VisualInstance3D {
+	GDCLASS(FogVolume, VisualInstance3D);
 
-#include <AppKit/AppKit.h>
-#include <ApplicationServices/ApplicationServices.h>
-#include <CoreVideo/CoreVideo.h>
+	Vector3 extents = Vector3(1, 1, 1);
+	Ref<Material> material;
+	RS::FogVolumeShape shape = RS::FOG_VOLUME_SHAPE_BOX;
 
-class ContextGL_OSX {
-	bool opengl_3_context;
-	bool use_vsync;
+	RID volume;
 
-	void *framework;
-	id window_view;
-	NSOpenGLPixelFormat *pixelFormat;
-	NSOpenGLContext *context;
+protected:
+	_FORCE_INLINE_ RID _get_volume() { return volume; }
+	static void _bind_methods();
+	virtual void _validate_property(PropertyInfo &property) const override;
 
 public:
-	void release_current();
+	void set_extents(const Vector3 &p_extents);
+	Vector3 get_extents() const;
 
-	void make_current();
-	void update();
+	void set_shape(RS::FogVolumeShape p_type);
+	RS::FogVolumeShape get_shape() const;
 
-	void set_opacity(GLint p_opacity);
+	void set_material(const Ref<Material> &p_material);
+	Ref<Material> get_material() const;
 
-	int get_window_width();
-	int get_window_height();
-	void swap_buffers();
+	virtual AABB get_aabb() const override;
+	virtual Vector<Face3> get_faces(uint32_t p_usage_flags) const override { return Vector<Face3>(); }
+	TypedArray<String> get_configuration_warnings() const override;
 
-	Error initialize();
-
-	void set_use_vsync(bool p_use);
-	bool is_using_vsync() const;
-
-	ContextGL_OSX(id p_view, bool p_opengl_3_context);
-	~ContextGL_OSX();
+	FogVolume();
+	~FogVolume();
 };
 
-#endif
-#endif
+#endif // FOG_VOLUME_H

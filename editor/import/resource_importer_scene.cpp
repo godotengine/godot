@@ -342,6 +342,7 @@ static String _fixstr(const String &p_what, const String &p_str) {
 
 static void _pre_gen_shape_list(Ref<ImporterMesh> &mesh, Vector<Ref<Shape3D>> &r_shape_list, bool p_convex) {
 	ERR_FAIL_NULL_MSG(mesh, "Cannot generate shape list with null mesh value");
+	ERR_FAIL_NULL_MSG(mesh->get_mesh(), "Cannot generate shape list with null mesh value");
 	if (!p_convex) {
 		Ref<Shape3D> shape = mesh->create_trimesh_shape();
 		r_shape_list.push_back(shape);
@@ -501,7 +502,7 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, Map<Ref<I
 				sphereShape->set_radius(1);
 				colshape->set_shape(sphereShape);
 			}
-			sb->add_child(colshape);
+			sb->add_child(colshape, true);
 			colshape->set_owner(sb->get_owner());
 		}
 
@@ -527,7 +528,7 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, Map<Ref<I
 			rigid_body->set_transform(mi->get_transform());
 			p_node = rigid_body;
 			mi->set_transform(Transform3D());
-			rigid_body->add_child(mi);
+			rigid_body->add_child(mi, true);
 			mi->set_owner(rigid_body->get_owner());
 
 			_add_shapes(rigid_body, shapes);
@@ -565,7 +566,7 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, Map<Ref<I
 
 			if (shapes.size()) {
 				StaticBody3D *col = memnew(StaticBody3D);
-				mi->add_child(col);
+				mi->add_child(col, true);
 				col->set_owner(mi->get_owner());
 
 				_add_shapes(col, shapes);
@@ -613,7 +614,7 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, Map<Ref<I
 
 			if (shapes.size()) {
 				StaticBody3D *col = memnew(StaticBody3D);
-				p_node->add_child(col);
+				p_node->add_child(col, true);
 				col->set_owner(p_node->get_owner());
 
 				_add_shapes(col, shapes);
@@ -748,7 +749,7 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, Map<Ref<
 						switch (mesh_physics_mode) {
 							case MESH_PHYSICS_MESH_AND_STATIC_COLLIDER: {
 								StaticBody3D *col = memnew(StaticBody3D);
-								p_node->add_child(col);
+								p_node->add_child(col, true);
 								col->set_owner(p_node->get_owner());
 								col->set_transform(get_collision_shapes_transform(node_settings));
 								base = col;
@@ -760,7 +761,7 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, Map<Ref<
 								rigid_body->set_transform(mi->get_transform() * get_collision_shapes_transform(node_settings));
 								p_node = rigid_body;
 								mi->set_transform(Transform3D());
-								rigid_body->add_child(mi);
+								rigid_body->add_child(mi, true);
 								mi->set_owner(rigid_body->get_owner());
 								base = rigid_body;
 							} break;
@@ -789,7 +790,7 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, Map<Ref<
 						for (const Ref<Shape3D> &E : shapes) {
 							CollisionShape3D *cshape = memnew(CollisionShape3D);
 							cshape->set_shape(E);
-							base->add_child(cshape);
+							base->add_child(cshape, true);
 
 							cshape->set_owner(base->get_owner());
 							idx++;
@@ -822,7 +823,7 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, Map<Ref<
 						memdelete(p_node);
 						p_node = nmi;
 					} else {
-						mi->add_child(nmi);
+						mi->add_child(nmi, true);
 						nmi->set_owner(mi->get_owner());
 					}
 				}
@@ -1299,27 +1300,28 @@ bool ResourceImporterScene::get_internal_option_visibility(InternalImportCategor
 			if (p_option == "primitive/position" || p_option == "primitive/rotation") {
 				const ShapeType physics_shape = (ShapeType)p_options["physics/shape_type"].operator int();
 				return generate_physics &&
-					   physics_shape >= SHAPE_TYPE_BOX;
+						physics_shape >= SHAPE_TYPE_BOX;
 			}
 
 			if (p_option == "primitive/size") {
 				const ShapeType physics_shape = (ShapeType)p_options["physics/shape_type"].operator int();
 				return generate_physics &&
-					   physics_shape == SHAPE_TYPE_BOX;
+						physics_shape == SHAPE_TYPE_BOX;
 			}
 
 			if (p_option == "primitive/radius") {
 				const ShapeType physics_shape = (ShapeType)p_options["physics/shape_type"].operator int();
-				return generate_physics && (physics_shape == SHAPE_TYPE_SPHERE ||
-												   physics_shape == SHAPE_TYPE_CYLINDER ||
-												   physics_shape == SHAPE_TYPE_CAPSULE);
+				return generate_physics &&
+						(physics_shape == SHAPE_TYPE_SPHERE ||
+								physics_shape == SHAPE_TYPE_CYLINDER ||
+								physics_shape == SHAPE_TYPE_CAPSULE);
 			}
 
 			if (p_option == "primitive/height") {
 				const ShapeType physics_shape = (ShapeType)p_options["physics/shape_type"].operator int();
 				return generate_physics &&
-					   (physics_shape == SHAPE_TYPE_CYLINDER ||
-							   physics_shape == SHAPE_TYPE_CAPSULE);
+						(physics_shape == SHAPE_TYPE_CYLINDER ||
+								physics_shape == SHAPE_TYPE_CAPSULE);
 			}
 		} break;
 		case INTERNAL_IMPORT_CATEGORY_MESH: {
@@ -1429,7 +1431,7 @@ void ResourceImporterScene::get_import_options(List<ImportOption> *r_options, in
 	r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "animation/fps", PROPERTY_HINT_RANGE, "1,120,1"), 15));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::STRING, "import_script/path", PROPERTY_HINT_FILE, script_ext_hint), ""));
 
-	r_options->push_back(ImportOption(PropertyInfo(Variant::DICTIONARY, "_subresources", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), Dictionary()));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::DICTIONARY, "_subresources", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), Dictionary()));
 
 	for (int i = 0; i < post_importer_plugins.size(); i++) {
 		post_importer_plugins.write[i]->get_import_options(r_options);
@@ -1678,7 +1680,7 @@ void ResourceImporterScene::_add_shapes(Node *p_node, const Vector<Ref<Shape3D>>
 	for (const Ref<Shape3D> &E : p_shapes) {
 		CollisionShape3D *cshape = memnew(CollisionShape3D);
 		cshape->set_shape(E);
-		p_node->add_child(cshape);
+		p_node->add_child(cshape, true);
 
 		cshape->set_owner(p_node->get_owner());
 	}

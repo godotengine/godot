@@ -137,10 +137,10 @@ VKAPI_ATTR VkBool32 VKAPI_CALL VulkanContext::_debug_messenger_callback(
 	}
 
 	String error_message(type_string +
-						 " - Message Id Number: " + String::num_int64(pCallbackData->messageIdNumber) +
-						 " | Message Id Name: " + pCallbackData->pMessageIdName +
-						 "\n\t" + pCallbackData->pMessage +
-						 objects_string + labels_string);
+			" - Message Id Number: " + String::num_int64(pCallbackData->messageIdNumber) +
+			" | Message Id Name: " + pCallbackData->pMessageIdName +
+			"\n\t" + pCallbackData->pMessage +
+			objects_string + labels_string);
 
 	// Convert VK severity to our own log macros.
 	switch (messageSeverity) {
@@ -175,7 +175,7 @@ VKAPI_ATTR VkBool32 VKAPI_CALL VulkanContext::_debug_report_callback(
 		const char *pMessage,
 		void *pUserData) {
 	String debugMessage = String("Vulkan Debug Report: object - ") +
-						  String::num_int64(object) + "\n" + pMessage;
+			String::num_int64(object) + "\n" + pMessage;
 
 	switch (flags) {
 		case VK_DEBUG_REPORT_DEBUG_BIT_EXT:
@@ -631,10 +631,10 @@ Error VulkanContext::_create_physical_device() {
 	}
 
 	/*
-	   * This is info for a temp callback to use during CreateInstance.
-	   * After the instance is created, we use the instance-based
-	   * function to register the final callback.
-	   */
+	 * This is info for a temp callback to use during CreateInstance.
+	 * After the instance is created, we use the instance-based
+	 * function to register the final callback.
+	 */
 	VkDebugUtilsMessengerCreateInfoEXT dbg_messenger_create_info;
 	VkDebugReportCallbackCreateInfoEXT dbg_report_callback_create_info{};
 	if (enabled_debug_utils) {
@@ -645,18 +645,18 @@ Error VulkanContext::_create_physical_device() {
 		dbg_messenger_create_info.messageSeverity =
 				VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
 		dbg_messenger_create_info.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT |
-												VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
-												VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
+				VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
+				VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
 		dbg_messenger_create_info.pfnUserCallback = _debug_messenger_callback;
 		dbg_messenger_create_info.pUserData = this;
 		inst_info.pNext = &dbg_messenger_create_info;
 	} else if (enabled_debug_report) {
 		dbg_report_callback_create_info.sType = VK_STRUCTURE_TYPE_DEBUG_REPORT_CALLBACK_CREATE_INFO_EXT;
 		dbg_report_callback_create_info.flags = VK_DEBUG_REPORT_INFORMATION_BIT_EXT |
-												VK_DEBUG_REPORT_WARNING_BIT_EXT |
-												VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT |
-												VK_DEBUG_REPORT_ERROR_BIT_EXT |
-												VK_DEBUG_REPORT_DEBUG_BIT_EXT;
+				VK_DEBUG_REPORT_WARNING_BIT_EXT |
+				VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT |
+				VK_DEBUG_REPORT_ERROR_BIT_EXT |
+				VK_DEBUG_REPORT_DEBUG_BIT_EXT;
 		dbg_report_callback_create_info.pfnCallback = _debug_report_callback;
 		dbg_report_callback_create_info.pUserData = this;
 		inst_info.pNext = &dbg_report_callback_create_info;

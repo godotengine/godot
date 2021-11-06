@@ -164,10 +164,11 @@ void Input::_bind_methods() {
 
 void Input::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
 	String pf = p_function;
-	if (p_idx == 0 && (pf == "is_action_pressed" || pf == "action_press" || pf == "action_release" ||
-							  pf == "is_action_just_pressed" || pf == "is_action_just_released" ||
-							  pf == "get_action_strength" || pf == "get_action_raw_strength" ||
-							  pf == "get_axis" || pf == "get_vector")) {
+	if (p_idx == 0 &&
+			(pf == "is_action_pressed" || pf == "action_press" || pf == "action_release" ||
+					pf == "is_action_just_pressed" || pf == "is_action_just_released" ||
+					pf == "get_action_strength" || pf == "get_action_raw_strength" ||
+					pf == "get_axis" || pf == "get_vector")) {
 		List<PropertyInfo> pinfo;
 		ProjectSettings::get_singleton()->get_property_list(&pinfo);
 
@@ -315,11 +316,11 @@ Vector2 Input::get_vector(const StringName &p_negative_x, const StringName &p_po
 
 	if (p_deadzone < 0.0f) {
 		// If the deadzone isn't specified, get it from the average of the actions.
-		p_deadzone = (InputMap::get_singleton()->action_get_deadzone(p_positive_x) +
-							 InputMap::get_singleton()->action_get_deadzone(p_negative_x) +
-							 InputMap::get_singleton()->action_get_deadzone(p_positive_y) +
-							 InputMap::get_singleton()->action_get_deadzone(p_negative_y)) /
-					 4;
+		p_deadzone = 0.25 *
+				(InputMap::get_singleton()->action_get_deadzone(p_positive_x) +
+						InputMap::get_singleton()->action_get_deadzone(p_negative_x) +
+						InputMap::get_singleton()->action_get_deadzone(p_positive_y) +
+						InputMap::get_singleton()->action_get_deadzone(p_negative_y));
 	}
 
 	// Circular length limiting and deadzone.
@@ -1238,7 +1239,7 @@ void Input::parse_mapping(String p_mapping) {
 		String output = entry[idx].get_slice(":", 0).replace(" ", "");
 		String input = entry[idx].get_slice(":", 1).replace(" ", "");
 		ERR_CONTINUE_MSG(output.length() < 1 || input.length() < 2,
-				String(entry[idx] + "\nInvalid device mapping entry: " + entry[idx]));
+				vformat("Invalid device mapping entry \"%s\" in mapping:\n%s", entry[idx], p_mapping));
 
 		if (output == "platform" || output == "hint") {
 			continue;
@@ -1246,7 +1247,8 @@ void Input::parse_mapping(String p_mapping) {
 
 		JoyAxisRange output_range = FULL_AXIS;
 		if (output[0] == '+' || output[0] == '-') {
-			ERR_CONTINUE_MSG(output.length() < 2, String(entry[idx] + "\nInvalid output: " + entry[idx]));
+			ERR_CONTINUE_MSG(output.length() < 2,
+					vformat("Invalid output entry \"%s\" in mapping:\n%s", entry[idx], p_mapping));
 			if (output[0] == '+') {
 				output_range = POSITIVE_HALF_AXIS;
 			} else if (output[0] == '-') {
@@ -1272,9 +1274,9 @@ void Input::parse_mapping(String p_mapping) {
 		JoyButton output_button = _get_output_button(output);
 		JoyAxis output_axis = _get_output_axis(output);
 		ERR_CONTINUE_MSG(output_button == JOY_BUTTON_INVALID && output_axis == JOY_AXIS_INVALID,
-				String(entry[idx] + "\nUnrecognised output string: " + output));
+				vformat("Unrecognised output string \"%s\" in mapping:\n%s", output, p_mapping));
 		ERR_CONTINUE_MSG(output_button != JOY_BUTTON_INVALID && output_axis != JOY_AXIS_INVALID,
-				String("BUG: Output string matched both button and axis: " + output));
+				vformat("Output string \"%s\" matched both button and axis in mapping:\n%s", output, p_mapping));
 
 		JoyBinding binding;
 		if (output_button != JOY_BUTTON_INVALID) {
@@ -1299,13 +1301,13 @@ void Input::parse_mapping(String p_mapping) {
 				break;
 			case 'h':
 				ERR_CONTINUE_MSG(input.length() != 4 || input[2] != '.',
-						String(entry[idx] + "\nInvalid hat input: " + input));
+						vformat("Invalid had input \"%s\" in mapping:\n%s", input, p_mapping));
 				binding.inputType = TYPE_HAT;
 				binding.input.hat.hat = (HatDir)input.substr(1, 1).to_int();
 				binding.input.hat.hat_mask = static_cast<HatMask>(input.substr(3).to_int());
 				break;
 			default:
-				ERR_CONTINUE_MSG(true, String(entry[idx] + "\nUnrecognised input string: " + input));
+				ERR_CONTINUE_MSG(true, vformat("Unrecognized input string \"%s\" in mapping:\n%s", input, p_mapping));
 		}
 
 		mapping.bindings.push_back(binding);

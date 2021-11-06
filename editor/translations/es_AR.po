@@ -11148,12 +11148,12 @@ msgstr ""
 "al menos un carácter `/`."
 
 #: editor/project_settings_editor.cpp
-msgid "Key "
-msgstr "Tecla "
-
-#: editor/project_settings_editor.cpp
 msgid "Physical Key"
 msgstr "Tecla Física"
+
+#: editor/project_settings_editor.cpp
+msgid "Key "
+msgstr "Tecla "
 
 #: editor/project_settings_editor.cpp
 msgid "Joy Button"

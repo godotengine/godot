@@ -385,8 +385,8 @@ void TileSetScenesCollectionSourceEditor::edit(Ref<TileSet> p_tile_set, TileSetS
 	_update_tile_inspector();
 }
 
-void TileSetScenesCollectionSourceEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) {
-	if (!can_drop_data_fw(p_point, p_data, p_from)) {
+void TileSetScenesCollectionSourceEditor::_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) {
+	if (!_can_drop_data_fw(p_point, p_data, p_from)) {
 		return;
 	}
 
@@ -412,7 +412,7 @@ void TileSetScenesCollectionSourceEditor::drop_data_fw(const Point2 &p_point, co
 	}
 }
 
-bool TileSetScenesCollectionSourceEditor::can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const {
+bool TileSetScenesCollectionSourceEditor::_can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const {
 	if (p_from == scene_tiles_list) {
 		Dictionary d = p_data;
 
@@ -447,8 +447,8 @@ void TileSetScenesCollectionSourceEditor::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("source_id_changed", PropertyInfo(Variant::INT, "source_id")));
 
 	ClassDB::bind_method(D_METHOD("_scene_thumbnail_done"), &TileSetScenesCollectionSourceEditor::_scene_thumbnail_done);
-	ClassDB::bind_method(D_METHOD("can_drop_data_fw"), &TileSetScenesCollectionSourceEditor::can_drop_data_fw);
-	ClassDB::bind_method(D_METHOD("drop_data_fw"), &TileSetScenesCollectionSourceEditor::drop_data_fw);
+	ClassDB::bind_method(D_METHOD("_can_drop_data_fw"), &TileSetScenesCollectionSourceEditor::_can_drop_data_fw);
+	ClassDB::bind_method(D_METHOD("_drop_data_fw"), &TileSetScenesCollectionSourceEditor::_drop_data_fw);
 }
 
 TileSetScenesCollectionSourceEditor::TileSetScenesCollectionSourceEditor() {

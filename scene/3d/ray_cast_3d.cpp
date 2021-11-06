@@ -212,9 +212,16 @@ void RayCast3D::_update_raycast_state() {
 		to = Vector3(0, 0.01, 0);
 	}
 
-	PhysicsDirectSpaceState3D::RayResult rr;
+	PhysicsDirectSpaceState3D::RayParameters ray_params;
+	ray_params.from = gt.get_origin();
+	ray_params.to = gt.xform(to);
+	ray_params.exclude = exclude;
+	ray_params.collision_mask = collision_mask;
+	ray_params.collide_with_bodies = collide_with_bodies;
+	ray_params.collide_with_areas = collide_with_areas;
 
-	if (dss->intersect_ray(gt.get_origin(), gt.xform(to), rr, exclude, collision_mask, collide_with_bodies, collide_with_areas)) {
+	PhysicsDirectSpaceState3D::RayResult rr;
+	if (dss->intersect_ray(ray_params, rr)) {
 		collided = true;
 		against = rr.collider_id;
 		collision_point = rr.position;

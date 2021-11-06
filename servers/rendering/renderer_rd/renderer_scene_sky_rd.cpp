@@ -292,7 +292,12 @@ void RendererSceneSkyRD::_render_sky(RD::DrawListID p_list, float p_time, RID p_
 			RD::get_singleton()->draw_list_bind_uniform_set(draw_list, p_uniform_set, 1);
 		}
 		RD::get_singleton()->draw_list_bind_uniform_set(draw_list, p_texture_set, 2);
-		RD::get_singleton()->draw_list_bind_uniform_set(draw_list, sky_scene_state.fog_uniform_set, 3);
+		// Fog uniform set can be invalidated before drawing, so validate at draw time
+		if (sky_scene_state.fog_uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(sky_scene_state.fog_uniform_set)) {
+			RD::get_singleton()->draw_list_bind_uniform_set(draw_list, sky_scene_state.fog_uniform_set, 3);
+		} else {
+			RD::get_singleton()->draw_list_bind_uniform_set(draw_list, sky_scene_state.default_fog_uniform_set, 3);
+		}
 	}
 
 	RD::get_singleton()->draw_list_bind_index_array(draw_list, index_array);
@@ -1165,14 +1170,8 @@ void RendererSceneSkyRD::setup(RendererSceneEnvironmentRD *p_env, RID p_render_b
 			} else {
 				sky_scene_state.ubo.volumetric_fog_detail_spread = 1.0;
 			}
-		}
 
-		RID fog_uniform_set = p_scene_render->render_buffers_get_volumetric_fog_sky_uniform_set(p_render_buffers);
-
-		if (fog_uniform_set != RID()) {
-			sky_scene_state.fog_uniform_set = fog_uniform_set;
-		} else {
-			sky_scene_state.fog_uniform_set = sky_scene_state.default_fog_uniform_set;
+			sky_scene_state.fog_uniform_set = p_scene_render->render_buffers_get_volumetric_fog_sky_uniform_set(p_render_buffers);
 		}
 	}
 

@@ -225,7 +225,7 @@ void VoxelGIData::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_set_data", "data"), &VoxelGIData::_set_data);
 	ClassDB::bind_method(D_METHOD("_get_data"), &VoxelGIData::_get_data);
 
-	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "_data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_data", "_get_data");
+	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "_data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_data", "_get_data");
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "dynamic_range", PROPERTY_HINT_RANGE, "0,8,0.01"), "set_dynamic_range", "get_dynamic_range");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "energy", PROPERTY_HINT_RANGE, "0,64,0.01"), "set_energy", "get_energy");
@@ -403,7 +403,7 @@ void VoxelGI::bake(Node *p_from_node, bool p_create_visual_debug) {
 	if (p_create_visual_debug) {
 		MultiMeshInstance3D *mmi = memnew(MultiMeshInstance3D);
 		mmi->set_multimesh(baker.create_debug_multimesh());
-		add_child(mmi);
+		add_child(mmi, true);
 #ifdef TOOLS_ENABLED
 		if (is_inside_tree() && get_tree()->get_edited_scene_root() == this) {
 			mmi->set_owner(this);
@@ -458,7 +458,7 @@ TypedArray<String> VoxelGI::get_configuration_warnings() const {
 	TypedArray<String> warnings = Node::get_configuration_warnings();
 
 	if (RenderingServer::get_singleton()->is_low_end()) {
-		warnings.push_back(TTR("VoxelGIs are not supported by the GLES2 video driver.\nUse a LightmapGI instead."));
+		warnings.push_back(TTR("VoxelGIs are not supported by the OpenGL video driver.\nUse a LightmapGI instead."));
 	} else if (probe_data.is_null()) {
 		warnings.push_back(TTR("No VoxelGI data set, so this node is disabled. Bake static objects to enable GI."));
 	}

@@ -1233,6 +1233,13 @@
 				Aligns shaped text to the given tab-stops.
 			</description>
 		</method>
+		<method name="strip_diacritics" qualifiers="const">
+			<return type="String" />
+			<argument index="0" name="string" type="String" />
+			<description>
+				Strips diacritics from the string.
+			</description>
+		</method>
 		<method name="tag_to_name" qualifiers="const">
 			<return type="String" />
 			<argument index="0" name="tag" type="int" />

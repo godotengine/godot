@@ -35,6 +35,9 @@
 #include "editor_node.h"
 #include "editor_properties_array_dict.h"
 #include "editor_scale.h"
+#include "scene/2d/gpu_particles_2d.h"
+#include "scene/3d/fog_volume.h"
+#include "scene/3d/gpu_particles_3d.h"
 #include "scene/main/window.h"
 #include "scene/resources/font.h"
 
@@ -2821,8 +2824,8 @@ void EditorPropertyResource::_set_read_only(bool p_read_only) {
 	resource_picker->set_editable(!p_read_only);
 };
 
-void EditorPropertyResource::_resource_selected(const RES &p_resource) {
-	if (use_sub_inspector) {
+void EditorPropertyResource::_resource_selected(const RES &p_resource, bool p_edit) {
+	if (!p_edit && use_sub_inspector) {
 		bool unfold = !get_edited_object()->editor_is_section_unfolded(get_edited_property());
 		get_edited_object()->editor_set_section_unfold(get_edited_property(), unfold);
 		update_property();
@@ -2969,6 +2972,35 @@ void EditorPropertyResource::_update_property_bg() {
 	update();
 }
 
+void EditorPropertyResource::_update_preferred_shader() {
+	Node *parent = get_parent();
+	EditorProperty *parent_property = nullptr;
+
+	while (parent && !parent_property) {
+		parent_property = Object::cast_to<EditorProperty>(parent);
+		parent = parent->get_parent();
+	}
+
+	if (parent_property) {
+		EditorShaderPicker *shader_picker = Object::cast_to<EditorShaderPicker>(resource_picker);
+		Object *object = parent_property->get_edited_object();
+		const StringName &property = parent_property->get_edited_property();
+
+		// Set preferred shader based on edited parent type.
+		if ((Object::cast_to<GPUParticles2D>(object) || Object::cast_to<GPUParticles3D>(object)) && property == SNAME("process_material")) {
+			shader_picker->set_preferred_mode(Shader::MODE_PARTICLES);
+		} else if (Object::cast_to<FogVolume>(object)) {
+			shader_picker->set_preferred_mode(Shader::MODE_FOG);
+		} else if (Object::cast_to<CanvasItem>(object)) {
+			shader_picker->set_preferred_mode(Shader::MODE_CANVAS_ITEM);
+		} else if (Object::cast_to<Node3D>(object)) {
+			shader_picker->set_preferred_mode(Shader::MODE_SPATIAL);
+		} else if (Object::cast_to<Sky>(object)) {
+			shader_picker->set_preferred_mode(Shader::MODE_SKY);
+		}
+	}
+}
+
 void EditorPropertyResource::_viewport_selected(const NodePath &p_path) {
 	Node *to_node = get_node(p_path);
 	if (!Object::cast_to<Viewport>(to_node)) {
@@ -3000,6 +3032,7 @@ void EditorPropertyResource::setup(Object *p_object, const String &p_path, const
 		EditorShaderPicker *shader_picker = memnew(EditorShaderPicker);
 		shader_picker->set_edited_material(Object::cast_to<ShaderMaterial>(p_object));
 		resource_picker = shader_picker;
+		connect(SNAME("ready"), callable_mp(this, &EditorPropertyResource::_update_preferred_shader));
 	} else {
 		resource_picker = memnew(EditorResourcePicker);
 	}
@@ -3237,11 +3270,11 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 				return editor;
 
 			} else if (p_hint == PROPERTY_HINT_LAYERS_2D_PHYSICS ||
-					   p_hint == PROPERTY_HINT_LAYERS_2D_RENDER ||
-					   p_hint == PROPERTY_HINT_LAYERS_2D_NAVIGATION ||
-					   p_hint == PROPERTY_HINT_LAYERS_3D_PHYSICS ||
-					   p_hint == PROPERTY_HINT_LAYERS_3D_RENDER ||
-					   p_hint == PROPERTY_HINT_LAYERS_3D_NAVIGATION) {
+					p_hint == PROPERTY_HINT_LAYERS_2D_RENDER ||
+					p_hint == PROPERTY_HINT_LAYERS_2D_NAVIGATION ||
+					p_hint == PROPERTY_HINT_LAYERS_3D_PHYSICS ||
+					p_hint == PROPERTY_HINT_LAYERS_3D_RENDER ||
+					p_hint == PROPERTY_HINT_LAYERS_3D_NAVIGATION) {
 				EditorPropertyLayers::LayerType lt = EditorPropertyLayers::LAYER_RENDER_2D;
 				switch (p_hint) {
 					case PROPERTY_HINT_LAYERS_2D_RENDER:
@@ -3336,13 +3369,13 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 				}
 				return editor;
 			} else if (p_hint == PROPERTY_HINT_METHOD_OF_VARIANT_TYPE ||
-					   p_hint == PROPERTY_HINT_METHOD_OF_BASE_TYPE ||
-					   p_hint == PROPERTY_HINT_METHOD_OF_INSTANCE ||
-					   p_hint == PROPERTY_HINT_METHOD_OF_SCRIPT ||
-					   p_hint == PROPERTY_HINT_PROPERTY_OF_VARIANT_TYPE ||
-					   p_hint == PROPERTY_HINT_PROPERTY_OF_BASE_TYPE ||
-					   p_hint == PROPERTY_HINT_PROPERTY_OF_INSTANCE ||
-					   p_hint == PROPERTY_HINT_PROPERTY_OF_SCRIPT) {
+					p_hint == PROPERTY_HINT_METHOD_OF_BASE_TYPE ||
+					p_hint == PROPERTY_HINT_METHOD_OF_INSTANCE ||
+					p_hint == PROPERTY_HINT_METHOD_OF_SCRIPT ||
+					p_hint == PROPERTY_HINT_PROPERTY_OF_VARIANT_TYPE ||
+					p_hint == PROPERTY_HINT_PROPERTY_OF_BASE_TYPE ||
+					p_hint == PROPERTY_HINT_PROPERTY_OF_INSTANCE ||
+					p_hint == PROPERTY_HINT_PROPERTY_OF_SCRIPT) {
 				EditorPropertyMember *editor = memnew(EditorPropertyMember);
 
 				EditorPropertyMember::Type type = EditorPropertyMember::MEMBER_METHOD_OF_BASE_TYPE;

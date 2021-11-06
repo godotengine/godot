@@ -795,6 +795,9 @@ Error GLTFDocument::_encode_buffer_views(Ref<GLTFState> state) {
 		buffers.push_back(d);
 	}
 	print_verbose("glTF: Total buffer views: " + itos(state->buffer_views.size()));
+	if (!buffers.size()) {
+		return OK;
+	}
 	state->json["bufferViews"] = buffers;
 	return OK;
 }
@@ -884,6 +887,9 @@ Error GLTFDocument::_encode_accessors(Ref<GLTFState> state) {
 		accessors.push_back(d);
 	}
 
+	if (!accessors.size()) {
+		return OK;
+	}
 	state->json["accessors"] = accessors;
 	ERR_FAIL_COND_V(!state->json.has("accessors"), ERR_FILE_CORRUPT);
 	print_verbose("glTF: Total accessors: " + itos(state->accessors.size()));
@@ -2112,6 +2118,7 @@ Error GLTFDocument::_serialize_meshes(Ref<GLTFState> state) {
 		if (import_mesh.is_null()) {
 			continue;
 		}
+		Array instance_materials = state->meshes.write[gltf_mesh_i]->get_instance_materials();
 		Array primitives;
 		Dictionary gltf_mesh;
 		Array target_names;
@@ -2431,7 +2438,14 @@ Error GLTFDocument::_serialize_meshes(Ref<GLTFState> state) {
 				}
 			}
 
-			Ref<BaseMaterial3D> mat = import_mesh->get_surface_material(surface_i);
+			Variant v;
+			if (surface_i < instance_materials.size()) {
+				v = instance_materials.get(surface_i);
+			}
+			Ref<BaseMaterial3D> mat = v;
+			if (!mat.is_valid()) {
+				mat = import_mesh->get_surface_material(surface_i);
+			}
 			if (mat.is_valid()) {
 				Map<Ref<BaseMaterial3D>, GLTFMaterialIndex>::Element *material_cache_i = state->material_cache.find(mat);
 				if (material_cache_i && material_cache_i->get() != -1) {
@@ -2475,6 +2489,9 @@ Error GLTFDocument::_serialize_meshes(Ref<GLTFState> state) {
 		meshes.push_back(gltf_mesh);
 	}
 
+	if (!meshes.size()) {
+		return OK;
+	}
 	state->json["meshes"] = meshes;
 	print_verbose("glTF: Total meshes: " + itos(meshes.size()));
 
@@ -2498,8 +2515,7 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> state) {
 		ERR_FAIL_COND_V(!d.has("primitives"), ERR_PARSE_ERROR);
 
 		Array primitives = d["primitives"];
-		const Dictionary &extras = d.has("extras") ? (Dictionary)d["extras"] :
-													   Dictionary();
+		const Dictionary &extras = d.has("extras") ? (Dictionary)d["extras"] : Dictionary();
 		Ref<ImporterMesh> import_mesh;
 		import_mesh.instantiate();
 		String mesh_name = "mesh";
@@ -3454,6 +3470,9 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> state) {
 			d["alphaMode"] = "BLEND";
 		}
 		materials.push_back(d);
+	}
+	if (!materials.size()) {
+		return OK;
 	}
 	state->json["materials"] = materials;
 	print_verbose("Total materials: " + itos(state->materials.size()));
@@ -4838,6 +4857,9 @@ Error GLTFDocument::_serialize_animations(Ref<GLTFState> state) {
 		}
 	}
 
+	if (!animations.size()) {
+		return OK;
+	}
 	state->json["animations"] = animations;
 
 	print_verbose("glTF: Total animations '" + itos(state->animations.size()) + "'.");
@@ -5058,6 +5080,18 @@ GLTFMeshIndex GLTFDocument::_convert_mesh_to_gltf(Ref<GLTFState> state, MeshInst
 	}
 	Ref<GLTFMesh> gltf_mesh;
 	gltf_mesh.instantiate();
+	Array instance_materials;
+	for (int32_t surface_i = 0; surface_i < current_mesh->get_surface_count(); surface_i++) {
+		Ref<Material> mat = current_mesh->get_surface_material(surface_i);
+		if (p_mesh_instance->get_surface_override_material(surface_i).is_valid()) {
+			mat = p_mesh_instance->get_surface_override_material(surface_i);
+		}
+		if (p_mesh_instance->get_material_override().is_valid()) {
+			mat = p_mesh_instance->get_material_override();
+		}
+		instance_materials.append(mat);
+	}
+	gltf_mesh->set_instance_materials(instance_materials);
 	gltf_mesh->set_mesh(current_mesh);
 	gltf_mesh->set_blend_weights(blend_weights);
 	GLTFMeshIndex mesh_i = state->meshes.size();
@@ -5447,7 +5481,7 @@ void GLTFDocument::_convert_multi_mesh_instance_to_gltf(
 			transform = p_multi_mesh_instance->get_transform() * transform;
 		} else if (multi_mesh->get_transform_format() == MultiMesh::TRANSFORM_3D) {
 			transform = p_multi_mesh_instance->get_transform() *
-						multi_mesh->get_instance_transform(instance_i);
+					multi_mesh->get_instance_transform(instance_i);
 		}
 		Ref<GLTFNode> new_gltf_node;
 		new_gltf_node.instantiate();
@@ -5571,7 +5605,7 @@ void GLTFDocument::_generate_scene_node(Ref<GLTFState> state, Node *scene_parent
 		// Bone Attachment - Parent Case
 		BoneAttachment3D *bone_attachment = _generate_bone_attachment(state, active_skeleton, node_index, gltf_node->parent);
 
-		scene_parent->add_child(bone_attachment);
+		scene_parent->add_child(bone_attachment, true);
 		bone_attachment->set_owner(scene_root);
 
 		// There is no gltf_node that represent this, so just directly create a unique name
@@ -5594,7 +5628,7 @@ void GLTFDocument::_generate_scene_node(Ref<GLTFState> state, Node *scene_parent
 		current_node = _generate_spatial(state, scene_parent, node_index);
 	}
 
-	scene_parent->add_child(current_node);
+	scene_parent->add_child(current_node, true);
 	if (current_node != scene_root) {
 		current_node->set_owner(scene_root);
 	}
@@ -5624,7 +5658,7 @@ void GLTFDocument::_generate_skeleton_bone_node(Ref<GLTFState> state, Node *scen
 			// Bone Attachment - Direct Parented Skeleton Case
 			BoneAttachment3D *bone_attachment = _generate_bone_attachment(state, active_skeleton, node_index, gltf_node->parent);
 
-			scene_parent->add_child(bone_attachment);
+			scene_parent->add_child(bone_attachment, true);
 			bone_attachment->set_owner(scene_root);
 
 			// There is no gltf_node that represent this, so just directly create a unique name
@@ -5638,7 +5672,7 @@ void GLTFDocument::_generate_skeleton_bone_node(Ref<GLTFState> state, Node *scen
 
 		// Add it to the scene if it has not already been added
 		if (skeleton->get_parent() == nullptr) {
-			scene_parent->add_child(skeleton);
+			scene_parent->add_child(skeleton, true);
 			skeleton->set_owner(scene_root);
 		}
 	}
@@ -5652,7 +5686,7 @@ void GLTFDocument::_generate_skeleton_bone_node(Ref<GLTFState> state, Node *scen
 			// Bone Attachment - Same Node Case
 			BoneAttachment3D *bone_attachment = _generate_bone_attachment(state, active_skeleton, node_index, node_index);
 
-			scene_parent->add_child(bone_attachment);
+			scene_parent->add_child(bone_attachment, true);
 			bone_attachment->set_owner(scene_root);
 
 			// There is no gltf_node that represent this, so just directly create a unique name
@@ -5672,7 +5706,7 @@ void GLTFDocument::_generate_skeleton_bone_node(Ref<GLTFState> state, Node *scen
 			current_node = _generate_light(state, scene_parent, node_index);
 		}
 
-		scene_parent->add_child(current_node);
+		scene_parent->add_child(current_node, true);
 		if (current_node != scene_root) {
 			current_node->set_owner(scene_root);
 		}
@@ -6186,7 +6220,7 @@ void GLTFDocument::_process_mesh_instances(Ref<GLTFState> state, Node *scene_roo
 			ERR_CONTINUE_MSG(skeleton == nullptr, vformat("Unable to find Skeleton for node %d skin %d", node_i, skin_i));
 
 			mi->get_parent()->remove_child(mi);
-			skeleton->add_child(mi);
+			skeleton->add_child(mi, true);
 			mi->set_owner(skeleton->get_owner());
 
 			mi->set_skin(state->skins.write[skin_i]->godot_skin);
@@ -6866,7 +6900,7 @@ Node *GLTFDocument::import_scene_gltf(const String &p_path, uint32_t p_flags, in
 	gltf_document->_process_mesh_instances(r_state, root);
 	if (r_state->animations.size()) {
 		AnimationPlayer *ap = memnew(AnimationPlayer);
-		root->add_child(ap);
+		root->add_child(ap, true);
 		ap->set_owner(root);
 		for (int i = 0; i < r_state->animations.size(); i++) {
 			gltf_document->_import_animation(r_state, ap, i, p_bake_fps);

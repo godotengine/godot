@@ -172,10 +172,11 @@ void EditorToaster::_error_handler(void *p_self, const char *p_func, const char 
 			}
 		}
 
-		if (p_type == ERR_HANDLER_WARNING) {
-			EditorToaster::get_singleton()->popup_str(err_str, SEVERITY_WARNING, tooltip_str);
+		Severity severity = (p_type == ERR_HANDLER_WARNING) ? SEVERITY_WARNING : SEVERITY_ERROR;
+		if (Thread::get_caller_id() != Thread::get_main_id()) {
+			EditorToaster::get_singleton()->call_deferred(SNAME("popup_str"), err_str, severity, tooltip_str);
 		} else {
-			EditorToaster::get_singleton()->popup_str(err_str, SEVERITY_ERROR, tooltip_str);
+			EditorToaster::get_singleton()->popup_str(err_str, severity, tooltip_str);
 		}
 	}
 }

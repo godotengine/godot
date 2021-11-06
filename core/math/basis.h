@@ -324,7 +324,7 @@ Vector3 Basis::xform_inv(const Vector3 &p_vector) const {
 
 real_t Basis::determinant() const {
 	return elements[0][0] * (elements[1][1] * elements[2][2] - elements[2][1] * elements[1][2]) -
-		   elements[1][0] * (elements[0][1] * elements[2][2] - elements[2][1] * elements[0][2]) +
-		   elements[2][0] * (elements[0][1] * elements[1][2] - elements[1][1] * elements[0][2]);
+			elements[1][0] * (elements[0][1] * elements[2][2] - elements[2][1] * elements[0][2]) +
+			elements[2][0] * (elements[0][1] * elements[1][2] - elements[1][1] * elements[0][2]);
 }
 #endif // BASIS_H

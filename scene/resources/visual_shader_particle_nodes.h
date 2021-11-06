@@ -38,11 +38,22 @@
 class VisualShaderNodeParticleEmitter : public VisualShaderNode {
 	GDCLASS(VisualShaderNodeParticleEmitter, VisualShaderNode);
 
+protected:
+	bool mode_2d = false;
+	static void _bind_methods();
+
 public:
 	virtual int get_output_port_count() const override;
 	virtual PortType get_output_port_type(int p_port) const override;
 	virtual String get_output_port_name(int p_port) const override;
 	virtual bool has_output_port_preview(int p_port) const override;
+
+	void set_mode_2d(bool p_enabled);
+	bool is_mode_2d() const;
+
+	Vector<StringName> get_editable_properties() const override;
+	Map<StringName, String> get_editable_properties_names() const override;
+	bool is_show_prop_names() const override;
 
 	VisualShaderNodeParticleEmitter();
 };

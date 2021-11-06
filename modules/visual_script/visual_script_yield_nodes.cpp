@@ -186,7 +186,7 @@ void VisualScriptYield::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_wait_time", "sec"), &VisualScriptYield::set_wait_time);
 	ClassDB::bind_method(D_METHOD("get_wait_time"), &VisualScriptYield::get_wait_time);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "mode", PROPERTY_HINT_ENUM, "Frame,Physics Frame,Time", PROPERTY_USAGE_NOEDITOR), "set_yield_mode", "get_yield_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "mode", PROPERTY_HINT_ENUM, "Frame,Physics Frame,Time", PROPERTY_USAGE_NO_EDITOR), "set_yield_mode", "get_yield_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "wait_time"), "set_wait_time", "get_wait_time");
 
 	BIND_ENUM_CONSTANT(YIELD_FRAME);
@@ -415,7 +415,7 @@ VisualScriptYieldSignal::CallMode VisualScriptYieldSignal::get_call_mode() const
 void VisualScriptYieldSignal::_validate_property(PropertyInfo &property) const {
 	if (property.name == "base_type") {
 		if (call_mode != CALL_MODE_INSTANCE) {
-			property.usage = PROPERTY_USAGE_NOEDITOR;
+			property.usage = PROPERTY_USAGE_NO_EDITOR;
 		}
 	}
 

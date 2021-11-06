@@ -244,7 +244,7 @@ Node *MeshInstance3D::create_trimesh_collision_node() {
 	StaticBody3D *static_body = memnew(StaticBody3D);
 	CollisionShape3D *cshape = memnew(CollisionShape3D);
 	cshape->set_shape(shape);
-	static_body->add_child(cshape);
+	static_body->add_child(cshape, true);
 	return static_body;
 }
 
@@ -253,7 +253,7 @@ void MeshInstance3D::create_trimesh_collision() {
 	ERR_FAIL_COND(!static_body);
 	static_body->set_name(String(get_name()) + "_col");
 
-	add_child(static_body);
+	add_child(static_body, true);
 	if (get_owner()) {
 		CollisionShape3D *cshape = Object::cast_to<CollisionShape3D>(static_body->get_child(0));
 		static_body->set_owner(get_owner());
@@ -274,7 +274,7 @@ Node *MeshInstance3D::create_convex_collision_node(bool p_clean, bool p_simplify
 	StaticBody3D *static_body = memnew(StaticBody3D);
 	CollisionShape3D *cshape = memnew(CollisionShape3D);
 	cshape->set_shape(shape);
-	static_body->add_child(cshape);
+	static_body->add_child(cshape, true);
 	return static_body;
 }
 
@@ -283,7 +283,7 @@ void MeshInstance3D::create_convex_collision(bool p_clean, bool p_simplify) {
 	ERR_FAIL_COND(!static_body);
 	static_body->set_name(String(get_name()) + "_col");
 
-	add_child(static_body);
+	add_child(static_body, true);
 	if (get_owner()) {
 		CollisionShape3D *cshape = Object::cast_to<CollisionShape3D>(static_body->get_child(0));
 		static_body->set_owner(get_owner());
@@ -306,7 +306,7 @@ Node *MeshInstance3D::create_multiple_convex_collisions_node() {
 	for (int i = 0; i < shapes.size(); i++) {
 		CollisionShape3D *cshape = memnew(CollisionShape3D);
 		cshape->set_shape(shapes[i]);
-		static_body->add_child(cshape);
+		static_body->add_child(cshape, true);
 	}
 	return static_body;
 }
@@ -316,7 +316,7 @@ void MeshInstance3D::create_multiple_convex_collisions() {
 	ERR_FAIL_COND(!static_body);
 	static_body->set_name(String(get_name()) + "_col");
 
-	add_child(static_body);
+	add_child(static_body, true);
 	if (get_owner()) {
 		static_body->set_owner(get_owner());
 		int count = static_body->get_child_count();
@@ -460,7 +460,7 @@ void MeshInstance3D::create_debug_tangents() {
 		MeshInstance3D *mi = memnew(MeshInstance3D);
 		mi->set_mesh(am);
 		mi->set_name("DebugTangents");
-		add_child(mi);
+		add_child(mi, true);
 #ifdef TOOLS_ENABLED
 
 		if (is_inside_tree() && this == get_tree()->get_edited_scene_root()) {

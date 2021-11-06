@@ -118,8 +118,8 @@ struct Rect2 {
 
 	inline bool encloses(const Rect2 &p_rect) const {
 		return (p_rect.position.x >= position.x) && (p_rect.position.y >= position.y) &&
-			   ((p_rect.position.x + p_rect.size.x) <= (position.x + size.x)) &&
-			   ((p_rect.position.y + p_rect.size.y) <= (position.y + size.y));
+				((p_rect.position.x + p_rect.size.x) <= (position.x + size.x)) &&
+				((p_rect.position.y + p_rect.size.y) <= (position.y + size.y));
 	}
 
 	_FORCE_INLINE_ bool has_no_area() const {
@@ -257,7 +257,7 @@ struct Rect2 {
 		return Vector2(
 					   (p_normal.x > 0) ? -half_extents.x : half_extents.x,
 					   (p_normal.y > 0) ? -half_extents.y : half_extents.y) +
-			   ofs;
+				ofs;
 	}
 
 	_FORCE_INLINE_ bool intersects_filled_polygon(const Vector2 *p_points, int p_point_count) const {
@@ -367,8 +367,8 @@ struct Rect2i {
 
 	inline bool encloses(const Rect2i &p_rect) const {
 		return (p_rect.position.x >= position.x) && (p_rect.position.y >= position.y) &&
-			   ((p_rect.position.x + p_rect.size.x) < (position.x + size.x)) &&
-			   ((p_rect.position.y + p_rect.size.y) < (position.y + size.y));
+				((p_rect.position.x + p_rect.size.x) < (position.x + size.x)) &&
+				((p_rect.position.y + p_rect.size.y) < (position.y + size.y));
 	}
 
 	_FORCE_INLINE_ bool has_no_area() const {

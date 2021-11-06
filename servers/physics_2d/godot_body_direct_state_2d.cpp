@@ -39,11 +39,11 @@ Vector2 GodotPhysicsDirectBodyState2D::get_total_gravity() const {
 }
 
 real_t GodotPhysicsDirectBodyState2D::get_total_angular_damp() const {
-	return body->area_angular_damp;
+	return body->total_angular_damp;
 }
 
 real_t GodotPhysicsDirectBodyState2D::get_total_linear_damp() const {
-	return body->area_linear_damp;
+	return body->total_linear_damp;
 }
 
 Vector2 GodotPhysicsDirectBodyState2D::get_center_of_mass() const {

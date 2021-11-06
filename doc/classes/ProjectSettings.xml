@@ -1475,6 +1475,18 @@
 			The number of fixed iterations per second. This controls how often physics simulation and [method Node._physics_process] methods are run.
 			[b]Note:[/b] This property is only read when the project starts. To change the physics FPS at runtime, set [member Engine.physics_ticks_per_second] instead.
 		</member>
+		<member name="rendering/2d/opengl/batching_send_null" type="int" setter="" getter="" default="0">
+		</member>
+		<member name="rendering/2d/opengl/batching_stream" type="int" setter="" getter="" default="0">
+		</member>
+		<member name="rendering/2d/opengl/legacy_orphan_buffers" type="int" setter="" getter="" default="0">
+		</member>
+		<member name="rendering/2d/opengl/legacy_stream" type="int" setter="" getter="" default="0">
+		</member>
+		<member name="rendering/2d/options/ninepatch_mode" type="int" setter="" getter="" default="1">
+		</member>
+		<member name="rendering/2d/options/use_software_skinning" type="bool" setter="" getter="" default="true">
+		</member>
 		<member name="rendering/2d/sdf/oversize" type="int" setter="" getter="" default="1">
 		</member>
 		<member name="rendering/2d/sdf/scale" type="int" setter="" getter="" default="1">
@@ -1504,6 +1516,32 @@
 		</member>
 		<member name="rendering/anti_aliasing/screen_space_roughness_limiter/limit" type="float" setter="" getter="" default="0.18">
 		</member>
+		<member name="rendering/batching/debug/diagnose_frame" type="bool" setter="" getter="" default="false">
+		</member>
+		<member name="rendering/batching/debug/flash_batching" type="bool" setter="" getter="" default="false">
+		</member>
+		<member name="rendering/batching/lights/max_join_items" type="int" setter="" getter="" default="32">
+		</member>
+		<member name="rendering/batching/lights/scissor_area_threshold" type="float" setter="" getter="" default="1.0">
+		</member>
+		<member name="rendering/batching/options/single_rect_fallback" type="bool" setter="" getter="" default="false">
+		</member>
+		<member name="rendering/batching/options/use_batching" type="bool" setter="" getter="" default="false">
+		</member>
+		<member name="rendering/batching/options/use_batching_in_editor" type="bool" setter="" getter="" default="false">
+		</member>
+		<member name="rendering/batching/parameters/batch_buffer_size" type="int" setter="" getter="" default="16384">
+		</member>
+		<member name="rendering/batching/parameters/colored_vertex_format_threshold" type="float" setter="" getter="" default="0.25">
+		</member>
+		<member name="rendering/batching/parameters/item_reordering_lookahead" type="int" setter="" getter="" default="4">
+		</member>
+		<member name="rendering/batching/parameters/max_join_item_commands" type="int" setter="" getter="" default="16">
+		</member>
+		<member name="rendering/batching/precision/uv_contract" type="bool" setter="" getter="" default="false">
+		</member>
+		<member name="rendering/batching/precision/uv_contract_amount" type="int" setter="" getter="" default="100">
+		</member>
 		<member name="rendering/camera/depth_of_field/depth_of_field_bokeh_quality" type="int" setter="" getter="" default="1">
 			Sets the quality of the depth of field effect. Higher quality takes more samples, which is slower but looks smoother.
 		</member>
@@ -1519,8 +1557,9 @@
 		<member name="rendering/driver/depth_prepass/enable" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], performs a previous depth pass before rendering materials. This increases performance in scenes with high overdraw, when complex materials and lighting are used.
 		</member>
-		<member name="rendering/driver/driver_name" type="String" setter="" getter="" default="&quot;Vulkan&quot;">
-			The video driver to use (currently only "Vulkan" is implemented).
+		<member name="rendering/driver/driver_name" type="String" setter="" getter="" default="&quot;vulkan&quot;">
+			The video driver to use.
+			[b]Note:[/b] OpenGL support is currently incomplete. Only basic 2D rendering is supported, and single-window mode is required for correct operation.
 			[b]Note:[/b] The backend in use can be overridden at runtime via the [code]--rendering-driver[/code] command line argument.
 			[b]FIXME:[/b] No longer valid after DisplayServer split:
 			In such cases, this property is not updated, so use [code]OS.get_current_video_driver[/code] to query it at run-time.
@@ -1577,10 +1616,17 @@
 			Scales the distance over which samples are taken for subsurface scattering effect. Changing this does not impact performance, but higher values will result in significant artifacts as the samples will become obviously spread out. A lower value results in a smaller spread of scattered light.
 		</member>
 		<member name="rendering/environment/volumetric_fog/use_filter" type="int" setter="" getter="" default="1">
+			Enables filtering of the volumetric fog effect prior to integration. This substantially blurs the fog which reduces fine details but also smooths out harsh edges and aliasing artifacts. Disable when more detail is required.
 		</member>
-		<member name="rendering/environment/volumetric_fog/volume_depth" type="int" setter="" getter="" default="128">
+		<member name="rendering/environment/volumetric_fog/volume_depth" type="int" setter="" getter="" default="64">
+			Number of slices to use along the depth of the froxel buffer for volumetric fog. A lower number will be more efficient but may result in artifacts appearing during camera movement.
 		</member>
 		<member name="rendering/environment/volumetric_fog/volume_size" type="int" setter="" getter="" default="64">
+			Base size used to determine size of froxel buffer in the camera X-axis and Y-axis. The final size is scaled by the aspect ratio of the screen, so actual values may differ from what is set. Set a larger size for more detailed fog, set a smaller size for better performance.
+		</member>
+		<member name="rendering/gles2/compatibility/disable_half_float" type="bool" setter="" getter="" default="false">
+		</member>
+		<member name="rendering/gles2/compatibility/enable_high_float.Android" type="bool" setter="" getter="" default="false">
 		</member>
 		<member name="rendering/global_illumination/gi/use_half_resolution" type="bool" setter="" getter="" default="false">
 		</member>

@@ -68,6 +68,11 @@ class OS {
 	bool restart_on_exit = false;
 	List<String> restart_commandline;
 
+	// for the user interface we keep a record of the current display driver
+	// so we can retrieve the rendering drivers available
+	int _display_driver_id = -1;
+	String _current_rendering_driver_name = "";
+
 protected:
 	void _set_logger(CompositeLogger *p_logger);
 
@@ -81,6 +86,11 @@ public:
 		RENDER_SEPARATE_THREAD
 	};
 
+	enum RenderMainThreadMode {
+		RENDER_MAIN_THREAD_ONLY,
+		RENDER_ANY_THREAD,
+	};
+
 protected:
 	friend class Main;
 	// Needed by tests to setup command-line args.
@@ -88,12 +98,16 @@ protected:
 
 	HasServerFeatureCallback has_server_feature_callback = nullptr;
 	RenderThreadMode _render_thread_mode = RENDER_THREAD_SAFE;
+	RenderMainThreadMode _render_main_thread_mode = RENDER_ANY_THREAD;
 
 	// Functions used by Main to initialize/deinitialize the OS.
 	void add_logger(Logger *p_logger);
 
 	virtual void initialize() = 0;
 	virtual void initialize_joypads() = 0;
+
+	void set_current_rendering_driver_name(String p_driver_name) { _current_rendering_driver_name = p_driver_name; }
+	void set_display_driver_id(int p_display_driver_id) { _display_driver_id = p_display_driver_id; }
 
 	virtual void set_main_loop(MainLoop *p_main_loop) = 0;
 	virtual void delete_main_loop() = 0;
@@ -109,6 +123,9 @@ public:
 	typedef int64_t ProcessID;
 
 	static OS *get_singleton();
+
+	String get_current_rendering_driver_name() const { return _current_rendering_driver_name; }
+	int get_display_driver_id() const { return _display_driver_id; }
 
 	void print_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, bool p_editor_notify = false, Logger::ErrorType p_type = Logger::ERR_ERROR);
 	void print(const char *p_format, ...) _PRINTF_FORMAT_ATTRIBUTE_2_3;
@@ -134,6 +151,7 @@ public:
 	virtual String get_executable_path() const;
 	virtual Error execute(const String &p_path, const List<String> &p_arguments, String *r_pipe = nullptr, int *r_exitcode = nullptr, bool read_stderr = false, Mutex *p_pipe_mutex = nullptr) = 0;
 	virtual Error create_process(const String &p_path, const List<String> &p_arguments, ProcessID *r_child_id = nullptr) = 0;
+	virtual Error create_instance(const List<String> &p_arguments, ProcessID *r_child_id = nullptr) { return create_process(get_executable_path(), p_arguments, r_child_id); };
 	virtual Error kill(const ProcessID &p_pid) = 0;
 	virtual int get_process_id() const;
 	virtual void vibrate_handheld(int p_duration_ms = 500);
@@ -204,8 +222,8 @@ public:
 		String name;
 	};
 
-	virtual Date get_date(bool local = false) const = 0;
-	virtual Time get_time(bool local = false) const = 0;
+	virtual Date get_date(bool p_utc = false) const = 0;
+	virtual Time get_time(bool p_utc = false) const = 0;
 	virtual TimeZoneInfo get_time_zone_info() const = 0;
 	virtual double get_unix_time() const;
 
@@ -241,6 +259,8 @@ public:
 	virtual uint64_t get_free_static_memory() const;
 
 	RenderThreadMode get_render_thread_mode() const { return _render_thread_mode; }
+	RenderMainThreadMode get_render_main_thread_mode() const { return _render_main_thread_mode; }
+	void set_render_main_thread_mode(RenderMainThreadMode p_thread_mode) { _render_main_thread_mode = p_thread_mode; }
 
 	virtual String get_locale() const;
 	String get_locale_language() const;

@@ -843,7 +843,7 @@ Node3D *EditorSceneFormatImporterFBX::_generate_scene(
 				if (state.animation_player == nullptr) {
 					print_verbose("Creating animation player");
 					state.animation_player = memnew(AnimationPlayer);
-					state.root->add_child(state.animation_player);
+					state.root->add_child(state.animation_player, true);
 					state.animation_player->set_owner(state.root_owner);
 				}
 

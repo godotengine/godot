@@ -231,7 +231,7 @@ udata_open(const char *path, const char *type, const char *name,
  * logically prepended to the ICU data directory string.</p>
  *
  * <p>For details about ICU data loading see the User Guide
- * Data Management chapter. (http://icu-project.org/userguide/icudata.html)</p>
+ * Data Management chapter. (https://unicode-org.github.io/icu/userguide/icu_data/)</p>
  *
  * @param path Specifies an absolute path and/or a basename for the
  *             finding of the data in the file system.
@@ -362,7 +362,7 @@ udata_setCommonData(const void *data, UErrorCode *err);
  *
  *
  * Warning:  setAppData will set a U_USING_DEFAULT_WARNING code if
- *           data with the specifed path that has already been opened, or
+ *           data with the specified path that has already been opened, or
  *           if setAppData with the same path has already been called.
  *           Any such calls to setAppData will have no effect.
  *

@@ -248,8 +248,7 @@ Error ImageLoaderBMP::load_image(Ref<Image> p_image, FileAccess *f,
 			}
 			// Don't rely on sizeof(bmp_file_header) as structure padding
 			// adds 2 bytes offset leading to misaligned color table reading
-			uint32_t ct_offset = BITMAP_FILE_HEADER_SIZE +
-								 bmp_header.bmp_info_header.bmp_header_size;
+			uint32_t ct_offset = BITMAP_FILE_HEADER_SIZE + bmp_header.bmp_info_header.bmp_header_size;
 			f->seek(ct_offset);
 
 			uint32_t color_table_size = 0;
@@ -271,8 +270,7 @@ Error ImageLoaderBMP::load_image(Ref<Image> p_image, FileAccess *f,
 
 			f->seek(bmp_header.bmp_file_header.bmp_file_offset);
 
-			uint32_t bmp_buffer_size = (bmp_header.bmp_file_header.bmp_file_size -
-										bmp_header.bmp_file_header.bmp_file_offset);
+			uint32_t bmp_buffer_size = (bmp_header.bmp_file_header.bmp_file_size - bmp_header.bmp_file_header.bmp_file_offset);
 
 			Vector<uint8_t> bmp_buffer;
 			err = bmp_buffer.resize(bmp_buffer_size);

@@ -1064,7 +1064,8 @@ void GDScriptTokenizer::check_indent() {
 			// First time indenting, choose character now.
 			indent_char = current_indent_char;
 		} else if (current_indent_char != indent_char) {
-			Token error = make_error(vformat("Used \"%s\" for indentation instead \"%s\" as used before in the file.", String(&current_indent_char, 1).c_escape(), String(&indent_char, 1).c_escape()));
+			Token error = make_error(vformat("Used %s character for indentation instead of %s as used before in the file.",
+					_get_indent_char_name(current_indent_char), _get_indent_char_name(indent_char)));
 			error.start_line = line;
 			error.start_column = 1;
 			error.leftmost_column = 1;
@@ -1112,6 +1113,12 @@ void GDScriptTokenizer::check_indent() {
 		}
 		break; // Get out of the loop in any case.
 	}
+}
+
+String GDScriptTokenizer::_get_indent_char_name(char32_t ch) {
+	ERR_FAIL_COND_V(ch != ' ' && ch != '\t', String(&ch, 1).c_escape());
+
+	return ch == ' ' ? "space" : "tab";
 }
 
 void GDScriptTokenizer::_skip_whitespace() {

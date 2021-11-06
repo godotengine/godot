@@ -235,10 +235,19 @@
 				Emitted when a tab is clicked, even if it is the current tab.
 			</description>
 		</signal>
-		<signal name="tab_closed">
+		<signal name="tab_close_pressed">
 			<argument index="0" name="tab" type="int" />
 			<description>
-				Emitted when a tab is closed.
+				Emitted when a tab's close button is pressed.
+				[b]Note:[/b] Tabs are not removed automatically once the close button is pressed, this behaviour needs to be programmed manually. For example:
+				[codeblocks]
+				[gdscript]
+				$TabBar.tab_close_pressed.connect($TabBar.remove_tab)
+				[/gdscript]
+				[csharp]
+				GetNode&lt;TabBar&gt;("TabBar").TabClosePressed += GetNode&lt;TabBar&gt;("TabBar").RemoveTab;
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</signal>
 		<signal name="tab_hovered">

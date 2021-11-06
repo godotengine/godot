@@ -398,8 +398,7 @@ MonoArray *variant_to_mono_array(const Variant &p_var, GDMonoClass *p_type_class
 		return Array_to_mono_array(p_var.operator ::Array(), array_type->eklass);
 	}
 
-	ERR_FAIL_V_MSG(nullptr, "Attempted to convert Variant to array of unsupported element type:" +
-									GDMonoClass::get_full_name(array_type->eklass) + "'.");
+	ERR_FAIL_V_MSG(nullptr, "Attempted to convert Variant to array of unsupported element type:" + GDMonoClass::get_full_name(array_type->eklass) + "'.");
 }
 
 MonoObject *variant_to_mono_object_of_class(const Variant &p_var, GDMonoClass *p_type_class) {
@@ -432,8 +431,7 @@ MonoObject *variant_to_mono_object_of_class(const Variant &p_var, GDMonoClass *p
 		return GDMonoUtils::create_managed_from(p_var.operator Array(), CACHED_CLASS(Array));
 	}
 
-	ERR_FAIL_V_MSG(nullptr, "Attempted to convert Variant to unsupported type: '" +
-									p_type_class->get_full_name() + "'.");
+	ERR_FAIL_V_MSG(nullptr, "Attempted to convert Variant to unsupported type: '" + p_type_class->get_full_name() + "'.");
 }
 
 MonoObject *variant_to_mono_object_of_genericinst(const Variant &p_var, GDMonoClass *p_type_class) {
@@ -488,8 +486,7 @@ MonoObject *variant_to_mono_object_of_genericinst(const Variant &p_var, GDMonoCl
 		return GDMonoUtils::unmanaged_get_managed(p_var.operator Object *());
 	}
 
-	ERR_FAIL_V_MSG(nullptr, "Attempted to convert Variant to unsupported generic type: '" +
-									p_type_class->get_full_name() + "'.");
+	ERR_FAIL_V_MSG(nullptr, "Attempted to convert Variant to unsupported generic type: '" + p_type_class->get_full_name() + "'.");
 }
 
 MonoObject *variant_to_mono_object(const Variant &p_var) {
@@ -824,14 +821,12 @@ void *variant_to_managed_unboxed(const Variant &p_var, const ManagedType &p_type
 						RETURN_TYPE_VAL(uint64_t, val);
 					}
 					default: {
-						ERR_FAIL_V_MSG(nullptr, "Attempted to convert Variant to enum value of unsupported base type: '" +
-														GDMonoClass::get_full_name(mono_class_from_mono_type(enum_basetype)) + "'.");
+						ERR_FAIL_V_MSG(nullptr, "Attempted to convert Variant to enum value of unsupported base type: '" + GDMonoClass::get_full_name(mono_class_from_mono_type(enum_basetype)) + "'.");
 					}
 				}
 			}
 
-			ERR_FAIL_V_MSG(nullptr, "Attempted to convert Variant to unsupported value type: '" +
-											p_type.type_class->get_full_name() + "'.");
+			ERR_FAIL_V_MSG(nullptr, "Attempted to convert Variant to unsupported value type: '" + p_type.type_class->get_full_name() + "'.");
 		} break;
 #undef RETURN_TYPE_VAL
 		case MONO_TYPE_STRING:
@@ -847,8 +842,7 @@ void *variant_to_managed_unboxed(const Variant &p_var, const ManagedType &p_type
 			return variant_to_mono_object(p_var);
 	}
 
-	ERR_FAIL_V_MSG(nullptr, "Attempted to convert Variant to unsupported type with encoding: " +
-									itos(p_type.type_encoding) + ".");
+	ERR_FAIL_V_MSG(nullptr, "Attempted to convert Variant to unsupported type with encoding: " + itos(p_type.type_encoding) + ".");
 }
 
 MonoObject *variant_to_mono_object(const Variant &p_var, const ManagedType &p_type) {
@@ -981,14 +975,12 @@ MonoObject *variant_to_mono_object(const Variant &p_var, const ManagedType &p_ty
 						return BOX_ENUM(enum_baseclass, val);
 					}
 					default: {
-						ERR_FAIL_V_MSG(nullptr, "Attempted to convert Variant to enum value of unsupported base type: '" +
-														GDMonoClass::get_full_name(enum_baseclass) + "'.");
+						ERR_FAIL_V_MSG(nullptr, "Attempted to convert Variant to enum value of unsupported base type: '" + GDMonoClass::get_full_name(enum_baseclass) + "'.");
 					}
 				}
 			}
 
-			ERR_FAIL_V_MSG(nullptr, "Attempted to convert Variant to unsupported value type: '" +
-											p_type.type_class->get_full_name() + "'.");
+			ERR_FAIL_V_MSG(nullptr, "Attempted to convert Variant to unsupported value type: '" + p_type.type_class->get_full_name() + "'.");
 		} break;
 		case MONO_TYPE_STRING:
 			return (MonoObject *)variant_to_mono_string(p_var);
@@ -1003,8 +995,7 @@ MonoObject *variant_to_mono_object(const Variant &p_var, const ManagedType &p_ty
 			return variant_to_mono_object(p_var);
 	}
 
-	ERR_FAIL_V_MSG(nullptr, "Attempted to convert Variant to unsupported type with encoding: " +
-									itos(p_type.type_encoding) + ".");
+	ERR_FAIL_V_MSG(nullptr, "Attempted to convert Variant to unsupported type with encoding: " + itos(p_type.type_encoding) + ".");
 }
 
 Variant mono_object_to_variant_impl(MonoObject *p_obj, const ManagedType &p_type, bool p_fail_with_err = true) {
@@ -1271,8 +1262,7 @@ Variant mono_object_to_variant_impl(MonoObject *p_obj, const ManagedType &p_type
 	}
 
 	if (p_fail_with_err) {
-		ERR_FAIL_V_MSG(Variant(), "Attempted to convert an unmarshallable managed type to Variant. Name: '" +
-										  p_type.type_class->get_name() + "' Encoding: " + itos(p_type.type_encoding) + ".");
+		ERR_FAIL_V_MSG(Variant(), "Attempted to convert an unmarshallable managed type to Variant. Name: '" + p_type.type_class->get_name() + "' Encoding: " + itos(p_type.type_encoding) + ".");
 	} else {
 		return Variant();
 	}
@@ -1332,7 +1322,7 @@ String mono_object_to_variant_string(MonoObject *p_obj, MonoException **r_exc) {
 
 MonoObject *Dictionary_to_system_generic_dict(const Dictionary &p_dict, GDMonoClass *p_class, MonoReflectionType *p_key_reftype, MonoReflectionType *p_value_reftype) {
 	String ctor_desc = ":.ctor(System.Collections.Generic.IDictionary`2<" + GDMonoUtils::get_type_desc(p_key_reftype) +
-					   ", " + GDMonoUtils::get_type_desc(p_value_reftype) + ">)";
+			", " + GDMonoUtils::get_type_desc(p_value_reftype) + ">)";
 	GDMonoMethod *ctor = p_class->get_method_with_desc(ctor_desc, true);
 	CRASH_COND(ctor == nullptr);
 
@@ -1354,7 +1344,7 @@ MonoObject *Dictionary_to_system_generic_dict(const Dictionary &p_dict, GDMonoCl
 Dictionary system_generic_dict_to_Dictionary(MonoObject *p_obj, [[maybe_unused]] GDMonoClass *p_class, MonoReflectionType *p_key_reftype, MonoReflectionType *p_value_reftype) {
 	GDMonoClass *godot_dict_class = GDMonoUtils::Marshal::make_generic_dictionary_type(p_key_reftype, p_value_reftype);
 	String ctor_desc = ":.ctor(System.Collections.Generic.IDictionary`2<" + GDMonoUtils::get_type_desc(p_key_reftype) +
-					   ", " + GDMonoUtils::get_type_desc(p_value_reftype) + ">)";
+			", " + GDMonoUtils::get_type_desc(p_value_reftype) + ">)";
 	GDMonoMethod *godot_dict_ctor = godot_dict_class->get_method_with_desc(ctor_desc, true);
 	CRASH_COND(godot_dict_ctor == nullptr);
 
@@ -1746,12 +1736,12 @@ Callable managed_to_callable(const M_Callable &p_managed_callable) {
 		CallableCustom *managed_callable = memnew(ManagedCallable(p_managed_callable.delegate));
 		return Callable(managed_callable);
 	} else {
-		Object *target = p_managed_callable.target ?
-								   unbox<Object *>(CACHED_FIELD(GodotObject, ptr)->get_value(p_managed_callable.target)) :
-								   nullptr;
-		StringName *method_ptr = p_managed_callable.method_string_name ?
-										   unbox<StringName *>(CACHED_FIELD(StringName, ptr)->get_value(p_managed_callable.method_string_name)) :
-										   nullptr;
+		Object *target = p_managed_callable.target
+				? unbox<Object *>(CACHED_FIELD(GodotObject, ptr)->get_value(p_managed_callable.target))
+				: nullptr;
+		StringName *method_ptr = p_managed_callable.method_string_name
+				? unbox<StringName *>(CACHED_FIELD(StringName, ptr)->get_value(p_managed_callable.method_string_name))
+				: nullptr;
 		StringName method = method_ptr ? *method_ptr : StringName();
 		return Callable(target, method);
 	}
@@ -1794,12 +1784,12 @@ M_Callable callable_to_managed(const Callable &p_callable) {
 }
 
 Signal managed_to_signal_info(const M_SignalInfo &p_managed_signal) {
-	Object *owner = p_managed_signal.owner ?
-							  unbox<Object *>(CACHED_FIELD(GodotObject, ptr)->get_value(p_managed_signal.owner)) :
-							  nullptr;
-	StringName *name_ptr = p_managed_signal.name_string_name ?
-									 unbox<StringName *>(CACHED_FIELD(StringName, ptr)->get_value(p_managed_signal.name_string_name)) :
-									 nullptr;
+	Object *owner = p_managed_signal.owner
+			? unbox<Object *>(CACHED_FIELD(GodotObject, ptr)->get_value(p_managed_signal.owner))
+			: nullptr;
+	StringName *name_ptr = p_managed_signal.name_string_name
+			? unbox<StringName *>(CACHED_FIELD(StringName, ptr)->get_value(p_managed_signal.name_string_name))
+			: nullptr;
 	StringName name = name_ptr ? *name_ptr : StringName();
 	return Signal(owner, name);
 }

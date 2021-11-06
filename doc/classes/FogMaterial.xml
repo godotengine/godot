@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="FogMaterial" inherits="Material" version="4.0">
+	<brief_description>
+		[Material] used with a [FogVolume] to draw things with the volumetric fog effect.
+	</brief_description>
+	<description>
+		A [Material] resource that can be used by [FogVolume]s to draw volumetric effects.
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="albedo" type="Color" setter="set_albedo" getter="get_albedo" default="Color(1, 1, 1, 1)">
+			Sets the single-scattering [Color] of the [FogVolume]. Internally [member albedo] is converted into single-scattering which is additively blended with other [FogVolume]s and the [member Environment.volumetric_fog_albedo].
+		</member>
+		<member name="density" type="float" setter="set_density" getter="get_density" default="1.0">
+			Sets the density of the [FogVolume]. Denser objects are more opaque, but may suffer from under-sampling artifacts that look like stripes.
+		</member>
+		<member name="density_texture" type="Texture3D" setter="set_density_texture" getter="get_density_texture">
+			Sets a 3D texture that is used to scale the [member density] of the [FogVolume].
+		</member>
+		<member name="edge_fade" type="float" setter="set_edge_fade" getter="get_edge_fade" default="0.1">
+			Sets the hardness of the edges of the [FogVolume]. A higher number will result in softer edges while a lower number will result in harder edges.
+		</member>
+		<member name="emission" type="Color" setter="set_emission" getter="get_emission" default="Color(0, 0, 0, 1)">
+			Sets the [Color] of the light emitted by the [FogVolume]. Emitted light will not cast light or shadows on other objects, but can be useful for modulating the [Color] of the [FogVolume] independently from light sources.
+		</member>
+		<member name="height_falloff" type="float" setter="set_height_falloff" getter="get_height_falloff" default="0.0">
+			Sets the rate by which the height-based fog decreases in density as height increases in world space. A high falloff will result in a sharp transition, while a low falloff will result in a smoother transition. A value of [code]0[/code] results in uniform-density fog. The height threshold is determined by the height of the associated [FogVolume].
+		</member>
+	</members>
+</class>

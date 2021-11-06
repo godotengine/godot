@@ -31,6 +31,8 @@
 #ifndef DISPLAY_SERVER_X11_H
 #define DISPLAY_SERVER_X11_H
 
+#include "drivers/gles3/rasterizer_platforms.h"
+
 #ifdef X11_ENABLED
 
 #include "servers/display_server.h"
@@ -46,8 +48,8 @@
 #include "servers/rendering/renderer_compositor.h"
 #include "servers/rendering_server.h"
 
-#if defined(OPENGL_ENABLED)
-#include "context_gl_x11.h"
+#if defined(GLES3_ENABLED)
+#include "gl_manager_x11.h"
 #endif
 
 #if defined(VULKAN_ENABLED)
@@ -99,12 +101,12 @@ class DisplayServerX11 : public DisplayServer {
 	Atom requested;
 	int xdnd_version;
 
-#if defined(OPENGL_ENABLED)
-	ContextGL_X11 *context_gles2;
+#if defined(GLES3_ENABLED)
+	GLManager_X11 *gl_manager = nullptr;
 #endif
 #if defined(VULKAN_ENABLED)
-	VulkanContextX11 *context_vulkan;
-	RenderingDeviceVulkan *rendering_device_vulkan;
+	VulkanContextX11 *context_vulkan = nullptr;
+	RenderingDeviceVulkan *rendering_device_vulkan = nullptr;
 #endif
 
 #if defined(DBUS_ENABLED)
@@ -197,6 +199,8 @@ class DisplayServerX11 : public DisplayServer {
 
 	bool _refresh_device_info();
 
+	Rect2i _screen_get_rect(int p_screen) const;
+
 	MouseButton _get_mouse_button_state(MouseButton p_x11_button, int p_x11_type);
 	void _get_key_modifier_state(unsigned int p_x11_state, Ref<InputEventWithModifiers> state);
 	void _flush_mouse_motion();
@@ -268,6 +272,7 @@ class DisplayServerX11 : public DisplayServer {
 	static void _poll_events_thread(void *ud);
 	bool _wait_for_events() const;
 	void _poll_events();
+	void _check_pending_events(LocalVector<XEvent> &r_events);
 
 	static Bool _predicate_all_events(Display *display, XEvent *event, XPointer arg);
 	static Bool _predicate_clipboard_selection(Display *display, XEvent *event, XPointer arg);
@@ -334,6 +339,7 @@ public:
 
 	virtual void window_set_max_size(const Size2i p_size, WindowID p_window = MAIN_WINDOW_ID) override;
 	virtual Size2i window_get_max_size(WindowID p_window = MAIN_WINDOW_ID) const override;
+	virtual void gl_window_make_current(DisplayServer::WindowID p_window_id) override;
 
 	virtual void window_set_transient(WindowID p_window, WindowID p_parent) override;
 

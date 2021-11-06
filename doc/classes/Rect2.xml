@@ -13,36 +13,36 @@
 		<link title="Vector math">https://docs.godotengine.org/en/latest/tutorials/math/vector_math.html</link>
 		<link title="Advanced vector math">https://docs.godotengine.org/en/latest/tutorials/math/vectors_advanced.html</link>
 	</tutorials>
-	<methods>
-		<method name="Rect2" qualifiers="constructor">
+	<constructors>
+		<constructor name="Rect2">
 			<return type="Rect2" />
 			<description>
 				Constructs a default-initialized [Rect2] with default (zero) values of [member position] and [member size].
 			</description>
-		</method>
-		<method name="Rect2" qualifiers="constructor">
+		</constructor>
+		<constructor name="Rect2">
 			<return type="Rect2" />
 			<argument index="0" name="from" type="Rect2" />
 			<description>
 				Constructs a [Rect2] as a copy of the given [Rect2].
 			</description>
-		</method>
-		<method name="Rect2" qualifiers="constructor">
+		</constructor>
+		<constructor name="Rect2">
 			<return type="Rect2" />
 			<argument index="0" name="from" type="Rect2i" />
 			<description>
 				Constructs a [Rect2] from a [Rect2i].
 			</description>
-		</method>
-		<method name="Rect2" qualifiers="constructor">
+		</constructor>
+		<constructor name="Rect2">
 			<return type="Rect2" />
 			<argument index="0" name="position" type="Vector2" />
 			<argument index="1" name="size" type="Vector2" />
 			<description>
 				Constructs a [Rect2] by position and size.
 			</description>
-		</method>
-		<method name="Rect2" qualifiers="constructor">
+		</constructor>
+		<constructor name="Rect2">
 			<return type="Rect2" />
 			<argument index="0" name="x" type="float" />
 			<argument index="1" name="y" type="float" />
@@ -51,7 +51,9 @@
 			<description>
 				Constructs a [Rect2] by x, y, width, and height.
 			</description>
-		</method>
+		</constructor>
+	</constructors>
+	<methods>
 		<method name="abs" qualifiers="const">
 			<return type="Rect2" />
 			<description>
@@ -153,34 +155,6 @@
 				Returns a larger [Rect2] that contains this [Rect2] and [code]b[/code].
 			</description>
 		</method>
-		<method name="operator !=" qualifiers="operator">
-			<return type="bool" />
-			<description>
-			</description>
-		</method>
-		<method name="operator !=" qualifiers="operator">
-			<return type="bool" />
-			<argument index="0" name="right" type="Rect2" />
-			<description>
-			</description>
-		</method>
-		<method name="operator *" qualifiers="operator">
-			<return type="Rect2" />
-			<argument index="0" name="right" type="Transform2D" />
-			<description>
-			</description>
-		</method>
-		<method name="operator ==" qualifiers="operator">
-			<return type="bool" />
-			<description>
-			</description>
-		</method>
-		<method name="operator ==" qualifiers="operator">
-			<return type="bool" />
-			<argument index="0" name="right" type="Rect2" />
-			<description>
-			</description>
-		</method>
 	</methods>
 	<members>
 		<member name="end" type="Vector2" setter="" getter="" default="Vector2(0, 0)">
@@ -194,4 +168,34 @@
 			If the size is negative, you can use [method abs] to fix it.
 		</member>
 	</members>
+	<operators>
+		<operator name="operator !=">
+			<return type="bool" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator !=">
+			<return type="bool" />
+			<argument index="0" name="right" type="Rect2" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator *">
+			<return type="Rect2" />
+			<argument index="0" name="right" type="Transform2D" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator ==">
+			<return type="bool" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator ==">
+			<return type="bool" />
+			<argument index="0" name="right" type="Rect2" />
+			<description>
+			</description>
+		</operator>
+	</operators>
 </class>

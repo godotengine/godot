@@ -139,24 +139,24 @@ bool is_csharp_keyword(const String &p_name) {
 	// Reserved keywords
 
 	return p_name == "abstract" || p_name == "as" || p_name == "base" || p_name == "bool" ||
-		   p_name == "break" || p_name == "byte" || p_name == "case" || p_name == "catch" ||
-		   p_name == "char" || p_name == "checked" || p_name == "class" || p_name == "const" ||
-		   p_name == "continue" || p_name == "decimal" || p_name == "default" || p_name == "delegate" ||
-		   p_name == "do" || p_name == "double" || p_name == "else" || p_name == "enum" ||
-		   p_name == "event" || p_name == "explicit" || p_name == "extern" || p_name == "false" ||
-		   p_name == "finally" || p_name == "fixed" || p_name == "float" || p_name == "for" ||
-		   p_name == "forech" || p_name == "goto" || p_name == "if" || p_name == "implicit" ||
-		   p_name == "in" || p_name == "int" || p_name == "interface" || p_name == "internal" ||
-		   p_name == "is" || p_name == "lock" || p_name == "long" || p_name == "namespace" ||
-		   p_name == "new" || p_name == "null" || p_name == "object" || p_name == "operator" ||
-		   p_name == "out" || p_name == "override" || p_name == "params" || p_name == "private" ||
-		   p_name == "protected" || p_name == "public" || p_name == "readonly" || p_name == "ref" ||
-		   p_name == "return" || p_name == "sbyte" || p_name == "sealed" || p_name == "short" ||
-		   p_name == "sizeof" || p_name == "stackalloc" || p_name == "static" || p_name == "string" ||
-		   p_name == "struct" || p_name == "switch" || p_name == "this" || p_name == "throw" ||
-		   p_name == "true" || p_name == "try" || p_name == "typeof" || p_name == "uint" || p_name == "ulong" ||
-		   p_name == "unchecked" || p_name == "unsafe" || p_name == "ushort" || p_name == "using" ||
-		   p_name == "virtual" || p_name == "volatile" || p_name == "void" || p_name == "while";
+			p_name == "break" || p_name == "byte" || p_name == "case" || p_name == "catch" ||
+			p_name == "char" || p_name == "checked" || p_name == "class" || p_name == "const" ||
+			p_name == "continue" || p_name == "decimal" || p_name == "default" || p_name == "delegate" ||
+			p_name == "do" || p_name == "double" || p_name == "else" || p_name == "enum" ||
+			p_name == "event" || p_name == "explicit" || p_name == "extern" || p_name == "false" ||
+			p_name == "finally" || p_name == "fixed" || p_name == "float" || p_name == "for" ||
+			p_name == "forech" || p_name == "goto" || p_name == "if" || p_name == "implicit" ||
+			p_name == "in" || p_name == "int" || p_name == "interface" || p_name == "internal" ||
+			p_name == "is" || p_name == "lock" || p_name == "long" || p_name == "namespace" ||
+			p_name == "new" || p_name == "null" || p_name == "object" || p_name == "operator" ||
+			p_name == "out" || p_name == "override" || p_name == "params" || p_name == "private" ||
+			p_name == "protected" || p_name == "public" || p_name == "readonly" || p_name == "ref" ||
+			p_name == "return" || p_name == "sbyte" || p_name == "sealed" || p_name == "short" ||
+			p_name == "sizeof" || p_name == "stackalloc" || p_name == "static" || p_name == "string" ||
+			p_name == "struct" || p_name == "switch" || p_name == "this" || p_name == "throw" ||
+			p_name == "true" || p_name == "try" || p_name == "typeof" || p_name == "uint" || p_name == "ulong" ||
+			p_name == "unchecked" || p_name == "unsafe" || p_name == "ushort" || p_name == "using" ||
+			p_name == "virtual" || p_name == "volatile" || p_name == "void" || p_name == "while";
 }
 
 String escape_csharp_keyword(const String &p_name) {
@@ -201,11 +201,11 @@ String str_format(const char *p_format, ...) {
 }
 
 #if defined(MINGW_ENABLED)
-#define gd_vsnprintf(m_buffer, m_count, m_format, m_args_copy) vsnprintf_s(m_buffer, m_count, _TRUNCATE, m_format, m_args_copy)
-#define gd_vscprintf(m_format, m_args_copy) _vscprintf(m_format, m_args_copy)
+#define RSnprintf(m_buffer, m_count, m_format, m_args_copy) vsnprintf_s(m_buffer, m_count, _TRUNCATE, m_format, m_args_copy)
+#define RScprintf(m_format, m_args_copy) _vscprintf(m_format, m_args_copy)
 #else
-#define gd_vsnprintf(m_buffer, m_count, m_format, m_args_copy) vsnprintf(m_buffer, m_count, m_format, m_args_copy)
-#define gd_vscprintf(m_format, m_args_copy) vsnprintf(nullptr, 0, p_format, m_args_copy)
+#define RSnprintf(m_buffer, m_count, m_format, m_args_copy) vsnprintf(m_buffer, m_count, m_format, m_args_copy)
+#define RScprintf(m_format, m_args_copy) vsnprintf(nullptr, 0, p_format, m_args_copy)
 #endif
 
 String str_format(const char *p_format, va_list p_list) {
@@ -231,7 +231,7 @@ char *str_format_new(const char *p_format, va_list p_list) {
 	va_list list;
 
 	va_copy(list, p_list);
-	int len = gd_vscprintf(p_format, list);
+	int len = RScprintf(p_format, list);
 	va_end(list);
 
 	len += 1; // for the trailing '/0'
@@ -239,7 +239,7 @@ char *str_format_new(const char *p_format, va_list p_list) {
 	char *buffer(memnew_arr(char, len));
 
 	va_copy(list, p_list);
-	gd_vsnprintf(buffer, len, p_format, list);
+	RSnprintf(buffer, len, p_format, list);
 	va_end(list);
 
 	return buffer;

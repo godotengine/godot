@@ -489,7 +489,7 @@ ObjectID Node3DEditorViewport::_select_ray(const Point2 &p_pos) {
 		RS::get_singleton()->sdfgi_set_debug_probe_select(pos, ray);
 	}
 
-	Vector<ObjectID> instances = RenderingServer::get_singleton()->instances_cull_ray(pos, ray, get_tree()->get_root()->get_world_3d()->get_scenario());
+	Vector<ObjectID> instances = RenderingServer::get_singleton()->instances_cull_ray(pos, pos + ray * camera->get_far(), get_tree()->get_root()->get_world_3d()->get_scenario());
 	Set<Ref<EditorNode3DGizmo>> found_gizmos;
 
 	Node *edited_scene = get_tree()->get_edited_scene_root();
@@ -552,7 +552,7 @@ void Node3DEditorViewport::_find_items_at_pos(const Point2 &p_pos, Vector<_RayRe
 	Vector3 ray = _get_ray(p_pos);
 	Vector3 pos = _get_ray_pos(p_pos);
 
-	Vector<ObjectID> instances = RenderingServer::get_singleton()->instances_cull_ray(pos, ray, get_tree()->get_root()->get_world_3d()->get_scenario());
+	Vector<ObjectID> instances = RenderingServer::get_singleton()->instances_cull_ray(pos, pos + ray * camera->get_far(), get_tree()->get_root()->get_world_3d()->get_scenario());
 	Set<Node3D *> found_nodes;
 
 	for (int i = 0; i < instances.size(); i++) {
@@ -1855,7 +1855,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 						motion_snapped.snap(Vector3(snap, snap, snap));
 						// This might not be necessary anymore after issue #288 is solved (in 4.0?).
 						set_message(TTR("Scaling: ") + "(" + String::num(motion_snapped.x, snap_step_decimals) + ", " +
-									String::num(motion_snapped.y, snap_step_decimals) + ", " + String::num(motion_snapped.z, snap_step_decimals) + ")");
+								String::num(motion_snapped.y, snap_step_decimals) + ", " + String::num(motion_snapped.z, snap_step_decimals) + ")");
 
 						List<Node *> &selection = editor_selection->get_selected_node_list();
 						for (Node *E : selection) {
@@ -1954,7 +1954,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 						Vector3 motion_snapped = motion;
 						motion_snapped.snap(Vector3(snap, snap, snap));
 						set_message(TTR("Translating: ") + "(" + String::num(motion_snapped.x, snap_step_decimals) + ", " +
-									String::num(motion_snapped.y, snap_step_decimals) + ", " + String::num(motion_snapped.z, snap_step_decimals) + ")");
+								String::num(motion_snapped.y, snap_step_decimals) + ", " + String::num(motion_snapped.z, snap_step_decimals) + ")");
 
 						List<Node *> &selection = editor_selection->get_selected_node_list();
 						for (Node *E : selection) {
@@ -3936,9 +3936,13 @@ Vector3 Node3DEditorViewport::_get_instance_position(const Point2 &p_pos) const 
 	Vector3 point = world_pos + world_ray * MAX_DISTANCE;
 
 	PhysicsDirectSpaceState3D *ss = get_tree()->get_root()->get_world_3d()->get_direct_space_state();
-	PhysicsDirectSpaceState3D::RayResult result;
 
-	if (ss->intersect_ray(world_pos, world_pos + world_ray * MAX_DISTANCE, result)) {
+	PhysicsDirectSpaceState3D::RayParameters ray_params;
+	ray_params.from = world_pos;
+	ray_params.to = world_pos + world_ray * MAX_DISTANCE;
+
+	PhysicsDirectSpaceState3D::RayResult result;
+	if (ss->intersect_ray(ray_params, result)) {
 		point = result.position;
 	}
 
@@ -4376,7 +4380,7 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, Edito
 		const int wireframe_idx = view_menu->get_popup()->get_item_index(VIEW_DISPLAY_WIREFRAME);
 		const int overdraw_idx = view_menu->get_popup()->get_item_index(VIEW_DISPLAY_OVERDRAW);
 		const int shadeless_idx = view_menu->get_popup()->get_item_index(VIEW_DISPLAY_SHADELESS);
-		const String unsupported_tooltip = TTR("Not available when using the GLES2 renderer.");
+		const String unsupported_tooltip = TTR("Not available when using the OpenGL renderer.");
 
 		view_menu->get_popup()->set_item_disabled(normal_idx, true);
 		view_menu->get_popup()->set_item_tooltip(normal_idx, unsupported_tooltip);
@@ -6566,7 +6570,12 @@ void Node3DEditor::snap_selected_nodes_to_floor() {
 			Vector3 to = from - Vector3(0.0, max_snap_height, 0.0);
 			Set<RID> excluded = _get_physics_bodies_rid(sp);
 
-			if (ss->intersect_ray(from, to, result, excluded)) {
+			PhysicsDirectSpaceState3D::RayParameters ray_params;
+			ray_params.from = from;
+			ray_params.to = to;
+			ray_params.exclude = excluded;
+
+			if (ss->intersect_ray(ray_params, result)) {
 				snapped_to_floor = true;
 			}
 		}
@@ -6583,7 +6592,12 @@ void Node3DEditor::snap_selected_nodes_to_floor() {
 				Vector3 to = from - Vector3(0.0, max_snap_height, 0.0);
 				Set<RID> excluded = _get_physics_bodies_rid(sp);
 
-				if (ss->intersect_ray(from, to, result, excluded)) {
+				PhysicsDirectSpaceState3D::RayParameters ray_params;
+				ray_params.from = from;
+				ray_params.to = to;
+				ray_params.exclude = excluded;
+
+				if (ss->intersect_ray(ray_params, result)) {
 					Vector3 position_offset = d["position_offset"];
 					Transform3D new_transform = sp->get_global_transform();
 
@@ -7004,6 +7018,7 @@ void Node3DEditor::_register_all_gizmos() {
 	add_gizmo_plugin(Ref<NavigationRegion3DGizmoPlugin>(memnew(NavigationRegion3DGizmoPlugin)));
 	add_gizmo_plugin(Ref<Joint3DGizmoPlugin>(memnew(Joint3DGizmoPlugin)));
 	add_gizmo_plugin(Ref<PhysicalBone3DGizmoPlugin>(memnew(PhysicalBone3DGizmoPlugin)));
+	add_gizmo_plugin(Ref<FogVolumeGizmoPlugin>(memnew(FogVolumeGizmoPlugin)));
 }
 
 void Node3DEditor::_bind_methods() {

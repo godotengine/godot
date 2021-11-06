@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  context_gl_windows.h                                                 */
+/*  callable_glue.cpp                                                    */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,50 +28,52 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#if defined(OPENGL_ENABLED) || defined(GLES_ENABLED)
+#ifdef MONO_GLUE_ENABLED
 
-// Author: Juan Linietsky <reduzio@gmail.com>, (C) 2008
+#include "../mono_gd/gd_mono_marshal.h"
+#include "arguments_vector.h"
 
-#ifndef CONTEXT_GL_WIN_H
-#define CONTEXT_GL_WIN_H
+MonoObject *godot_icall_Callable_Call(GDMonoMarshal::M_Callable *p_callable, MonoArray *p_args) {
+	Callable callable = GDMonoMarshal::managed_to_callable(*p_callable);
 
-#include "core/error/error_list.h"
-#include "core/os/os.h"
+	int argc = mono_array_length(p_args);
 
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
+	ArgumentsVector<Variant> arg_store(argc);
+	ArgumentsVector<const Variant *> args(argc);
 
-typedef bool(APIENTRY *PFNWGLSWAPINTERVALEXTPROC)(int interval);
-typedef int(APIENTRY *PFNWGLGETSWAPINTERVALEXTPROC)(void);
+	for (int i = 0; i < argc; i++) {
+		MonoObject *elem = mono_array_get(p_args, MonoObject *, i);
+		arg_store.set(i, GDMonoMarshal::mono_object_to_variant(elem));
+		args.set(i, &arg_store.get(i));
+	}
 
-class ContextGL_Windows {
-	HDC hDC;
-	HGLRC hRC;
-	unsigned int pixel_format;
-	HWND hWnd;
-	bool opengl_3_context;
-	bool use_vsync;
+	Variant result;
+	Callable::CallError error;
+	callable.call(args.ptr(), argc, result, error);
 
-	PFNWGLSWAPINTERVALEXTPROC wglSwapIntervalEXT;
-	PFNWGLGETSWAPINTERVALEXTPROC wglGetSwapIntervalEXT;
+	return GDMonoMarshal::variant_to_mono_object(result);
+}
 
-public:
-	void release_current();
+void godot_icall_Callable_CallDeferred(GDMonoMarshal::M_Callable *p_callable, MonoArray *p_args) {
+	Callable callable = GDMonoMarshal::managed_to_callable(*p_callable);
 
-	void make_current();
+	int argc = mono_array_length(p_args);
 
-	int get_window_width();
-	int get_window_height();
-	void swap_buffers();
+	ArgumentsVector<Variant> arg_store(argc);
+	ArgumentsVector<const Variant *> args(argc);
 
-	Error initialize();
+	for (int i = 0; i < argc; i++) {
+		MonoObject *elem = mono_array_get(p_args, MonoObject *, i);
+		arg_store.set(i, GDMonoMarshal::mono_object_to_variant(elem));
+		args.set(i, &arg_store.get(i));
+	}
 
-	void set_use_vsync(bool p_use);
-	bool is_using_vsync() const;
+	callable.call_deferred(args.ptr(), argc);
+}
 
-	ContextGL_Windows(HWND hwnd, bool p_opengl_3_context);
-	~ContextGL_Windows();
-};
+void godot_register_callable_icalls() {
+	GDMonoUtils::add_internal_call("Godot.Callable::godot_icall_Callable_Call", godot_icall_Callable_Call);
+	GDMonoUtils::add_internal_call("Godot.Callable::godot_icall_Callable_CallDeferred", godot_icall_Callable_CallDeferred);
+}
 
-#endif
-#endif
+#endif // MONO_GLUE_ENABLED

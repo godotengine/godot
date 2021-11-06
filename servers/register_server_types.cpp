@@ -209,13 +209,17 @@ void register_server_types() {
 
 	GDREGISTER_VIRTUAL_CLASS(PhysicsDirectBodyState2D);
 	GDREGISTER_VIRTUAL_CLASS(PhysicsDirectSpaceState2D);
+	GDREGISTER_CLASS(PhysicsRayQueryParameters2D);
+	GDREGISTER_CLASS(PhysicsPointQueryParameters2D);
+	GDREGISTER_CLASS(PhysicsShapeQueryParameters2D);
 	GDREGISTER_CLASS(PhysicsTestMotionParameters2D);
 	GDREGISTER_CLASS(PhysicsTestMotionResult2D);
-	GDREGISTER_CLASS(PhysicsShapeQueryParameters2D);
 
-	GDREGISTER_CLASS(PhysicsShapeQueryParameters3D);
 	GDREGISTER_VIRTUAL_CLASS(PhysicsDirectBodyState3D);
 	GDREGISTER_VIRTUAL_CLASS(PhysicsDirectSpaceState3D);
+	GDREGISTER_CLASS(PhysicsRayQueryParameters3D);
+	GDREGISTER_CLASS(PhysicsPointQueryParameters3D);
+	GDREGISTER_CLASS(PhysicsShapeQueryParameters3D);
 	GDREGISTER_CLASS(PhysicsTestMotionParameters3D);
 	GDREGISTER_CLASS(PhysicsTestMotionResult3D);
 

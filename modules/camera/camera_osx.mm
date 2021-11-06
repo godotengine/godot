@@ -181,7 +181,7 @@
 			uint8_t *w = img_data[1].ptrw();
 			memcpy(w, dataCbCr, 2 * new_width * new_height);
 
-			///TODO GLES2 doesn't support FORMAT_RG8, need to do some form of conversion
+			///TODO OpenGL doesn't support FORMAT_RG8, need to do some form of conversion
 			img[1].instantiate();
 			img[1]->create(new_width, new_height, 0, Image::FORMAT_RG8, img_data[1]);
 		}

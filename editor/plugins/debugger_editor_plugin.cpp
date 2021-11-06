@@ -34,6 +34,7 @@
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/debugger/editor_debugger_server.h"
 #include "editor/editor_node.h"
+#include "editor/editor_scale.h"
 #include "editor/fileserver/editor_file_server.h"
 #include "scene/gui/menu_button.h"
 
@@ -52,6 +53,8 @@ DebuggerEditorPlugin::DebuggerEditorPlugin(EditorNode *p_editor, MenuButton *p_d
 
 	EditorDebuggerNode *debugger = memnew(EditorDebuggerNode);
 	Button *db = EditorNode::get_singleton()->add_bottom_panel_item(TTR("Debugger"), debugger);
+	// Add separation for the warning/error icon that is displayed later.
+	db->add_theme_constant_override("hseparation", 6 * EDSCALE);
 	debugger->set_tool_button(db);
 
 	// Main editor debug menu.

@@ -11169,12 +11169,12 @@ msgstr ""
 "mengandung paling tidak satu karakter `/`."
 
 #: editor/project_settings_editor.cpp
-msgid "Key "
-msgstr "Kunci "
-
-#: editor/project_settings_editor.cpp
 msgid "Physical Key"
 msgstr ""
+
+#: editor/project_settings_editor.cpp
+msgid "Key "
+msgstr "Kunci "
 
 #: editor/project_settings_editor.cpp
 msgid "Joy Button"

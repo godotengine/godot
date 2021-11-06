@@ -292,7 +292,6 @@ void AudioStreamPlayer3D::_notification(int p_what) {
 			Vector<Ref<AudioStreamPlayback>> playbacks_to_remove;
 			for (Ref<AudioStreamPlayback> &playback : stream_playbacks) {
 				if (playback.is_valid() && !AudioServer::get_singleton()->is_playback_active(playback) && !AudioServer::get_singleton()->is_playback_paused(playback)) {
-					emit_signal(SNAME("finished"));
 					playbacks_to_remove.push_back(playback);
 				}
 			}
@@ -304,6 +303,9 @@ void AudioStreamPlayer3D::_notification(int p_what) {
 				// This node is no longer actively playing audio.
 				active.clear();
 				set_physics_process_internal(false);
+			}
+			if (!playbacks_to_remove.is_empty()) {
+				emit_signal(SNAME("finished"));
 			}
 		}
 
@@ -325,7 +327,13 @@ Area3D *AudioStreamPlayer3D::_get_overriding_area() {
 
 	PhysicsDirectSpaceState3D::ShapeResult sr[MAX_INTERSECT_AREAS];
 
-	int areas = space_state->intersect_point(global_pos, sr, MAX_INTERSECT_AREAS, Set<RID>(), area_mask, false, true);
+	PhysicsDirectSpaceState3D::PointParameters point_params;
+	point_params.position = global_pos;
+	point_params.collision_mask = area_mask;
+	point_params.collide_with_bodies = false;
+	point_params.collide_with_areas = true;
+
+	int areas = space_state->intersect_point(point_params, sr, MAX_INTERSECT_AREAS);
 
 	for (int i = 0; i < areas; i++) {
 		if (!sr[i].collider) {

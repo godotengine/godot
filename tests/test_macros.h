@@ -33,6 +33,7 @@
 
 #include "core/object/callable_method_pointer.h"
 #include "core/object/class_db.h"
+#include "core/string/print_string.h"
 #include "core/templates/map.h"
 #include "core/variant/variant.h"
 

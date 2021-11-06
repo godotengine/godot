@@ -2453,7 +2453,7 @@
 		<constant name="PROPERTY_USAGE_DEFAULT_INTL" value="71" enum="PropertyUsageFlags">
 			Default usage for translatable strings (storage, editor, network and internationalized).
 		</constant>
-		<constant name="PROPERTY_USAGE_NOEDITOR" value="5" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_NO_EDITOR" value="5" enum="PropertyUsageFlags">
 			Default usage but without showing the property in the editor (storage, network).
 		</constant>
 		<constant name="METHOD_FLAG_NORMAL" value="1" enum="MethodFlags">

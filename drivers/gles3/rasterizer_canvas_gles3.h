@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  context_gl_x11.h                                                     */
+/*  rasterizer_canvas_gles3.h                                            */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,53 +28,44 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef CONTEXT_GL_X11_H
-#define CONTEXT_GL_X11_H
+#ifndef RASTERIZER_CANVAS_OPENGL_H
+#define RASTERIZER_CANVAS_OPENGL_H
 
-#ifdef X11_ENABLED
+#include "drivers/gles3/rasterizer_platforms.h"
+#ifdef GLES3_BACKEND_ENABLED
 
-#if defined(OPENGL_ENABLED)
+#include "drivers/gles3/rasterizer_canvas_batcher.h"
+#include "rasterizer_canvas_base_gles3.h"
 
-#include "core/os/os.h"
-#include <X11/Xlib.h>
-#include <X11/extensions/Xrender.h>
+class RasterizerSceneGLES3;
 
-struct ContextGL_X11_Private;
-
-class ContextGL_X11 {
-public:
-	enum ContextType {
-		GLES_2_0_COMPATIBLE,
-	};
+class RasterizerCanvasGLES3 : public RasterizerCanvasBaseGLES3, public RasterizerCanvasBatcher<RasterizerCanvasGLES3, RasterizerStorageGLES3> {
+	friend class RasterizerCanvasBatcher<RasterizerCanvasGLES3, RasterizerStorageGLES3>;
 
 private:
-	ContextGL_X11_Private *p;
-	OS::VideoMode default_video_mode;
-	::Display *x11_display;
-	::Window &x11_window;
-	bool double_buffer;
-	bool direct_render;
-	int glx_minor, glx_major;
-	bool use_vsync;
-	ContextType context_type;
+	// legacy codepath .. to remove after testing
+	void _legacy_canvas_render_item(Item *p_ci, RenderItemState &r_ris);
+
+	// high level batch funcs
+	void canvas_render_items_implementation(Item *p_item_list, int p_z, const Color &p_modulate, Light *p_light, const Transform2D &p_base_transform);
+	void render_batches(Item::Command *const *p_commands, Item *p_current_clip, bool &r_reclip, RasterizerStorageGLES3::Material *p_material);
+
+	// funcs used from rasterizer_canvas_batcher template
+	void gl_enable_scissor(int p_x, int p_y, int p_width, int p_height) const;
+	void gl_disable_scissor() const;
 
 public:
-	void release_current();
-	void make_current();
-	void swap_buffers();
-	int get_window_width();
-	int get_window_height();
+	void canvas_render_items_begin(const Color &p_modulate, Light *p_light, const Transform2D &p_base_transform);
+	void canvas_render_items_end();
+	void canvas_render_items_internal(Item *p_item_list, int p_z, const Color &p_modulate, Light *p_light, const Transform2D &p_base_transform);
+	void canvas_begin() override;
+	void canvas_end() override;
 
-	Error initialize();
+	void canvas_render_items(RID p_to_render_target, Item *p_item_list, const Color &p_modulate, Light *p_light_list, Light *p_directional_list, const Transform2D &p_canvas_transform, RS::CanvasItemTextureFilter p_default_filter, RS::CanvasItemTextureRepeat p_default_repeat, bool p_snap_2d_vertices_to_pixel, bool &r_sdf_used) override;
 
-	void set_use_vsync(bool p_use);
-	bool is_using_vsync() const;
-
-	ContextGL_X11(::Display *p_x11_display, ::Window &p_x11_window, const OS::VideoMode &p_default_video_mode, ContextType p_context_type);
-	~ContextGL_X11();
+	void initialize();
+	RasterizerCanvasGLES3();
 };
 
-#endif
-
-#endif
-#endif
+#endif // GLES3_BACKEND_ENABLED
+#endif // RASTERIZER_CANVAS_OPENGL_H

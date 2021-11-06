@@ -92,12 +92,10 @@ class EditorMaterialPreviewPlugin : public EditorResourcePreviewGenerator {
 	RID light2;
 	RID light_instance2;
 	RID camera;
-	mutable SafeFlag preview_done;
+	Semaphore preview_done;
 
-	void _preview_done(const Variant &p_udata);
-
-protected:
-	static void _bind_methods();
+	void _generate_frame_started();
+	void _preview_done();
 
 public:
 	virtual bool handles(const String &p_type) const override;
@@ -136,12 +134,10 @@ class EditorMeshPreviewPlugin : public EditorResourcePreviewGenerator {
 	RID light2;
 	RID light_instance2;
 	RID camera;
-	mutable SafeFlag preview_done;
+	Semaphore preview_done;
 
-	void _preview_done(const Variant &p_udata);
-
-protected:
-	static void _bind_methods();
+	void _generate_frame_started();
+	void _preview_done();
 
 public:
 	virtual bool handles(const String &p_type) const override;
@@ -158,12 +154,10 @@ class EditorFontPreviewPlugin : public EditorResourcePreviewGenerator {
 	RID viewport_texture;
 	RID canvas;
 	RID canvas_item;
-	mutable SafeFlag preview_done;
+	Semaphore preview_done;
 
-	void _preview_done(const Variant &p_udata);
-
-protected:
-	static void _bind_methods();
+	void _generate_frame_started();
+	void _preview_done();
 
 public:
 	virtual bool handles(const String &p_type) const override;
@@ -177,12 +171,10 @@ public:
 class EditorTileMapPatternPreviewPlugin : public EditorResourcePreviewGenerator {
 	GDCLASS(EditorTileMapPatternPreviewPlugin, EditorResourcePreviewGenerator);
 
-	mutable SafeFlag preview_done;
+	Semaphore preview_done;
 
-	void _preview_done(const Variant &p_udata);
-
-protected:
-	static void _bind_methods();
+	void _generate_frame_started();
+	void _preview_done();
 
 public:
 	virtual bool handles(const String &p_type) const override;

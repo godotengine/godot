@@ -3273,10 +3273,10 @@ bool RenderingDeviceVulkan::texture_is_format_supported_for_usage(DataFormat p_f
 VkRenderPass RenderingDeviceVulkan::_render_pass_create(const Vector<AttachmentFormat> &p_attachments, const Vector<FramebufferPass> &p_passes, InitialAction p_initial_action, FinalAction p_final_action, InitialAction p_initial_depth_action, FinalAction p_final_depth_action, uint32_t p_view_count, Vector<TextureSamples> *r_samples) {
 	// Set up dependencies from/to external equivalent to the default (implicit) one, and then amend them
 	const VkPipelineStageFlags default_access_mask = VK_ACCESS_INPUT_ATTACHMENT_READ_BIT |
-													 VK_ACCESS_COLOR_ATTACHMENT_READ_BIT |
-													 VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT |
-													 VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT |
-													 VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT; // From Section 7.1 of Vulkan API Spec v1.1.148
+			VK_ACCESS_COLOR_ATTACHMENT_READ_BIT |
+			VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT |
+			VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT |
+			VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT; // From Section 7.1 of Vulkan API Spec v1.1.148
 
 	VkPipelineStageFlags reading_stages = VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT | VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_TRANSFER_BIT;
 	VkSubpassDependency dependencies[2] = { { VK_SUBPASS_EXTERNAL, 0, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT, 0, default_access_mask, 0 },
@@ -8049,12 +8049,15 @@ void RenderingDeviceVulkan::compute_list_dispatch(ComputeListID p_list, uint32_t
 	ComputeList *cl = compute_list;
 
 #ifdef DEBUG_ENABLED
+	ERR_FAIL_COND_MSG(p_x_groups == 0, "Dispatch amount of X compute groups (" + itos(p_x_groups) + ") is zero.");
+	ERR_FAIL_COND_MSG(p_z_groups == 0, "Dispatch amount of Z compute groups (" + itos(p_z_groups) + ") is zero.");
+	ERR_FAIL_COND_MSG(p_y_groups == 0, "Dispatch amount of Y compute groups (" + itos(p_y_groups) + ") is zero.");
 	ERR_FAIL_COND_MSG(p_x_groups > limits.maxComputeWorkGroupCount[0],
 			"Dispatch amount of X compute groups (" + itos(p_x_groups) + ") is larger than device limit (" + itos(limits.maxComputeWorkGroupCount[0]) + ")");
 	ERR_FAIL_COND_MSG(p_y_groups > limits.maxComputeWorkGroupCount[1],
-			"Dispatch amount of Y compute groups (" + itos(p_x_groups) + ") is larger than device limit (" + itos(limits.maxComputeWorkGroupCount[0]) + ")");
+			"Dispatch amount of Y compute groups (" + itos(p_y_groups) + ") is larger than device limit (" + itos(limits.maxComputeWorkGroupCount[1]) + ")");
 	ERR_FAIL_COND_MSG(p_z_groups > limits.maxComputeWorkGroupCount[2],
-			"Dispatch amount of Z compute groups (" + itos(p_x_groups) + ") is larger than device limit (" + itos(limits.maxComputeWorkGroupCount[0]) + ")");
+			"Dispatch amount of Z compute groups (" + itos(p_z_groups) + ") is larger than device limit (" + itos(limits.maxComputeWorkGroupCount[2]) + ")");
 
 	ERR_FAIL_COND_MSG(!cl->validation.active, "Submitted Compute Lists can no longer be modified.");
 #endif
@@ -8102,6 +8105,12 @@ void RenderingDeviceVulkan::compute_list_dispatch(ComputeListID p_list, uint32_t
 void RenderingDeviceVulkan::compute_list_dispatch_threads(ComputeListID p_list, uint32_t p_x_threads, uint32_t p_y_threads, uint32_t p_z_threads) {
 	ERR_FAIL_COND(p_list != ID_TYPE_COMPUTE_LIST);
 	ERR_FAIL_COND(!compute_list);
+
+#ifdef DEBUG_ENABLED
+	ERR_FAIL_COND_MSG(p_x_threads == 0, "Dispatch amount of X compute threads (" + itos(p_x_threads) + ") is zero.");
+	ERR_FAIL_COND_MSG(p_y_threads == 0, "Dispatch amount of Y compute threads (" + itos(p_y_threads) + ") is zero.");
+	ERR_FAIL_COND_MSG(p_z_threads == 0, "Dispatch amount of Z compute threads (" + itos(p_z_threads) + ") is zero.");
+#endif
 
 	ComputeList *cl = compute_list;
 
@@ -8980,35 +8989,35 @@ void RenderingDeviceVulkan::capture_timestamp(const String &p_name) {
 		memoryBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
 		memoryBarrier.pNext = nullptr;
 		memoryBarrier.srcAccessMask = VK_ACCESS_INDIRECT_COMMAND_READ_BIT |
-									  VK_ACCESS_INDEX_READ_BIT |
-									  VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT |
-									  VK_ACCESS_UNIFORM_READ_BIT |
-									  VK_ACCESS_INPUT_ATTACHMENT_READ_BIT |
-									  VK_ACCESS_SHADER_READ_BIT |
-									  VK_ACCESS_SHADER_WRITE_BIT |
-									  VK_ACCESS_COLOR_ATTACHMENT_READ_BIT |
-									  VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT |
-									  VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT |
-									  VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT |
-									  VK_ACCESS_TRANSFER_READ_BIT |
-									  VK_ACCESS_TRANSFER_WRITE_BIT |
-									  VK_ACCESS_HOST_READ_BIT |
-									  VK_ACCESS_HOST_WRITE_BIT;
+				VK_ACCESS_INDEX_READ_BIT |
+				VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT |
+				VK_ACCESS_UNIFORM_READ_BIT |
+				VK_ACCESS_INPUT_ATTACHMENT_READ_BIT |
+				VK_ACCESS_SHADER_READ_BIT |
+				VK_ACCESS_SHADER_WRITE_BIT |
+				VK_ACCESS_COLOR_ATTACHMENT_READ_BIT |
+				VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT |
+				VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT |
+				VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT |
+				VK_ACCESS_TRANSFER_READ_BIT |
+				VK_ACCESS_TRANSFER_WRITE_BIT |
+				VK_ACCESS_HOST_READ_BIT |
+				VK_ACCESS_HOST_WRITE_BIT;
 		memoryBarrier.dstAccessMask = VK_ACCESS_INDIRECT_COMMAND_READ_BIT |
-									  VK_ACCESS_INDEX_READ_BIT |
-									  VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT |
-									  VK_ACCESS_UNIFORM_READ_BIT |
-									  VK_ACCESS_INPUT_ATTACHMENT_READ_BIT |
-									  VK_ACCESS_SHADER_READ_BIT |
-									  VK_ACCESS_SHADER_WRITE_BIT |
-									  VK_ACCESS_COLOR_ATTACHMENT_READ_BIT |
-									  VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT |
-									  VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT |
-									  VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT |
-									  VK_ACCESS_TRANSFER_READ_BIT |
-									  VK_ACCESS_TRANSFER_WRITE_BIT |
-									  VK_ACCESS_HOST_READ_BIT |
-									  VK_ACCESS_HOST_WRITE_BIT;
+				VK_ACCESS_INDEX_READ_BIT |
+				VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT |
+				VK_ACCESS_UNIFORM_READ_BIT |
+				VK_ACCESS_INPUT_ATTACHMENT_READ_BIT |
+				VK_ACCESS_SHADER_READ_BIT |
+				VK_ACCESS_SHADER_WRITE_BIT |
+				VK_ACCESS_COLOR_ATTACHMENT_READ_BIT |
+				VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT |
+				VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT |
+				VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT |
+				VK_ACCESS_TRANSFER_READ_BIT |
+				VK_ACCESS_TRANSFER_WRITE_BIT |
+				VK_ACCESS_HOST_READ_BIT |
+				VK_ACCESS_HOST_WRITE_BIT;
 
 		vkCmdPipelineBarrier(frames[frame].draw_command_buffer, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, 0, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
 	}

@@ -15,21 +15,14 @@
 		<link title="Tween Demo">https://godotengine.org/asset-library/asset/146</link>
 		<link title="GUI Drag And Drop Demo">https://godotengine.org/asset-library/asset/133</link>
 	</tutorials>
-	<methods>
-		<method name="Color" qualifiers="constructor">
+	<constructors>
+		<constructor name="Color">
 			<return type="Color" />
 			<description>
 				Constructs a default-initialized [Color] with all components set to [code]0[/code].
 			</description>
-		</method>
-		<method name="Color" qualifiers="constructor">
-			<return type="Color" />
-			<argument index="0" name="from" type="Color" />
-			<description>
-				Constructs a [Color] as a copy of the given [Color].
-			</description>
-		</method>
-		<method name="Color" qualifiers="constructor">
+		</constructor>
+		<constructor name="Color">
 			<return type="Color" />
 			<argument index="0" name="from" type="Color" />
 			<argument index="1" name="alpha" type="float" />
@@ -44,23 +37,47 @@
 				[/csharp]
 				[/codeblocks]
 			</description>
-		</method>
-		<method name="Color" qualifiers="constructor">
+		</constructor>
+		<constructor name="Color">
+			<return type="Color" />
+			<argument index="0" name="from" type="Color" />
+			<description>
+				Constructs a [Color] as a copy of the given [Color].
+			</description>
+		</constructor>
+		<constructor name="Color">
 			<return type="Color" />
 			<argument index="0" name="code" type="String" />
 			<description>
 				Constructs a [Color] either from an HTML color code or from a standardized color name. Supported color names are the same as the constants.
 			</description>
-		</method>
-		<method name="Color" qualifiers="constructor">
+		</constructor>
+		<constructor name="Color">
 			<return type="Color" />
 			<argument index="0" name="code" type="String" />
 			<argument index="1" name="alpha" type="float" />
 			<description>
 				Constructs a [Color] either from an HTML color code or from a standardized color name, with [code]alpha[/code] on the range of 0 to 1. Supported color names are the same as the constants.
 			</description>
-		</method>
-		<method name="Color" qualifiers="constructor">
+		</constructor>
+		<constructor name="Color">
+			<return type="Color" />
+			<argument index="0" name="r" type="float" />
+			<argument index="1" name="g" type="float" />
+			<argument index="2" name="b" type="float" />
+			<description>
+				Constructs a [Color] from RGB values, typically between 0 and 1. Alpha will be 1.
+				[codeblocks]
+				[gdscript]
+				var color = Color(0.2, 1.0, 0.7) # Similar to `Color8(51, 255, 178, 255)`
+				[/gdscript]
+				[csharp]
+				var color = new Color(0.2f, 1.0f, 0.7f); // Similar to `Color.Color8(51, 255, 178, 255)`
+				[/csharp]
+				[/codeblocks]
+			</description>
+		</constructor>
+		<constructor name="Color">
 			<return type="Color" />
 			<argument index="0" name="r" type="float" />
 			<argument index="1" name="g" type="float" />
@@ -77,24 +94,9 @@
 				[/csharp]
 				[/codeblocks]
 			</description>
-		</method>
-		<method name="Color" qualifiers="constructor">
-			<return type="Color" />
-			<argument index="0" name="r" type="float" />
-			<argument index="1" name="g" type="float" />
-			<argument index="2" name="b" type="float" />
-			<description>
-				Constructs a [Color] from RGB values, typically between 0 and 1. Alpha will be 1.
-				[codeblocks]
-				[gdscript]
-				var color = Color(0.2, 1.0, 0.7) # Similar to `Color8(51, 255, 178, 255)`
-				[/gdscript]
-				[csharp]
-				var color = new Color(0.2f, 1.0f, 0.7f); // Similar to `Color.Color8(51, 255, 178, 255)`
-				[/csharp]
-				[/codeblocks]
-			</description>
-		</method>
+		</constructor>
+	</constructors>
+	<methods>
 		<method name="blend" qualifiers="const">
 			<return type="Color" />
 			<argument index="0" name="over" type="Color" />
@@ -257,92 +259,6 @@
 				Color lightgreen = green.Lightened(0.2f); // 20% lighter than regular green
 				[/csharp]
 				[/codeblocks]
-			</description>
-		</method>
-		<method name="operator !=" qualifiers="operator">
-			<return type="bool" />
-			<description>
-			</description>
-		</method>
-		<method name="operator !=" qualifiers="operator">
-			<return type="bool" />
-			<argument index="0" name="right" type="Color" />
-			<description>
-			</description>
-		</method>
-		<method name="operator *" qualifiers="operator">
-			<return type="Color" />
-			<argument index="0" name="right" type="Color" />
-			<description>
-			</description>
-		</method>
-		<method name="operator *" qualifiers="operator">
-			<return type="Color" />
-			<argument index="0" name="right" type="float" />
-			<description>
-			</description>
-		</method>
-		<method name="operator *" qualifiers="operator">
-			<return type="Color" />
-			<argument index="0" name="right" type="int" />
-			<description>
-			</description>
-		</method>
-		<method name="operator +" qualifiers="operator">
-			<return type="Color" />
-			<argument index="0" name="right" type="Color" />
-			<description>
-			</description>
-		</method>
-		<method name="operator -" qualifiers="operator">
-			<return type="Color" />
-			<argument index="0" name="right" type="Color" />
-			<description>
-			</description>
-		</method>
-		<method name="operator /" qualifiers="operator">
-			<return type="Color" />
-			<argument index="0" name="right" type="Color" />
-			<description>
-			</description>
-		</method>
-		<method name="operator /" qualifiers="operator">
-			<return type="Color" />
-			<argument index="0" name="right" type="float" />
-			<description>
-			</description>
-		</method>
-		<method name="operator /" qualifiers="operator">
-			<return type="Color" />
-			<argument index="0" name="right" type="int" />
-			<description>
-			</description>
-		</method>
-		<method name="operator ==" qualifiers="operator">
-			<return type="bool" />
-			<description>
-			</description>
-		</method>
-		<method name="operator ==" qualifiers="operator">
-			<return type="bool" />
-			<argument index="0" name="right" type="Color" />
-			<description>
-			</description>
-		</method>
-		<method name="operator []" qualifiers="operator">
-			<return type="float" />
-			<argument index="0" name="index" type="int" />
-			<description>
-			</description>
-		</method>
-		<method name="operator unary+" qualifiers="operator">
-			<return type="Color" />
-			<description>
-			</description>
-		</method>
-		<method name="operator unary-" qualifiers="operator">
-			<return type="Color" />
-			<description>
 			</description>
 		</method>
 		<method name="to_abgr32" qualifiers="const">
@@ -937,4 +853,92 @@
 			Yellow green color.
 		</constant>
 	</constants>
+	<operators>
+		<operator name="operator !=">
+			<return type="bool" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator !=">
+			<return type="bool" />
+			<argument index="0" name="right" type="Color" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator *">
+			<return type="Color" />
+			<argument index="0" name="right" type="Color" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator *">
+			<return type="Color" />
+			<argument index="0" name="right" type="float" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator *">
+			<return type="Color" />
+			<argument index="0" name="right" type="int" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator +">
+			<return type="Color" />
+			<argument index="0" name="right" type="Color" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator -">
+			<return type="Color" />
+			<argument index="0" name="right" type="Color" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator /">
+			<return type="Color" />
+			<argument index="0" name="right" type="Color" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator /">
+			<return type="Color" />
+			<argument index="0" name="right" type="float" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator /">
+			<return type="Color" />
+			<argument index="0" name="right" type="int" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator ==">
+			<return type="bool" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator ==">
+			<return type="bool" />
+			<argument index="0" name="right" type="Color" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator []">
+			<return type="float" />
+			<argument index="0" name="index" type="int" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator unary+">
+			<return type="Color" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator unary-">
+			<return type="Color" />
+			<description>
+			</description>
+		</operator>
+	</operators>
 </class>

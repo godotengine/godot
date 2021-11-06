@@ -88,7 +88,7 @@ bool Plane::intersect_3(const Plane &p_plane1, const Plane &p_plane2, Vector3 *r
 		*r_result = ((vec3_cross(normal1, normal2) * p_plane0.d) +
 							(vec3_cross(normal2, normal0) * p_plane1.d) +
 							(vec3_cross(normal0, normal1) * p_plane2.d)) /
-					denom;
+				denom;
 	}
 
 	return true;

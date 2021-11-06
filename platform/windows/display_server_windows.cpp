@@ -38,6 +38,10 @@
 
 #include <avrt.h>
 
+#if defined(GLES3_ENABLED)
+#include "drivers/gles3/rasterizer_gles3.h"
+#endif
+
 static String format_error_message(DWORD id) {
 	LPWSTR messageBuffer = nullptr;
 	size_t size = FormatMessageW(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
@@ -533,6 +537,11 @@ void DisplayServerWindows::delete_sub_window(WindowID p_window) {
 		context_vulkan->window_destroy(p_window);
 	}
 #endif
+#ifdef GLES3_ENABLED
+	if (rendering_driver == "opengl3") {
+		gl_manager->window_destroy(p_window);
+	}
+#endif
 
 	if ((tablet_get_current_driver() == "wintab") && wintab_available && windows[p_window].wtctx) {
 		wintab_WTClose(windows[p_window].wtctx);
@@ -540,6 +549,12 @@ void DisplayServerWindows::delete_sub_window(WindowID p_window) {
 	}
 	DestroyWindow(windows[p_window].hWnd);
 	windows.erase(p_window);
+}
+
+void DisplayServerWindows::gl_window_make_current(DisplayServer::WindowID p_window_id) {
+#if defined(GLES3_ENABLED)
+	gl_manager->window_make_current(p_window_id);
+#endif
 }
 
 void DisplayServerWindows::window_attach_instance_id(ObjectID p_instance, WindowID p_window) {
@@ -810,6 +825,11 @@ void DisplayServerWindows::window_set_size(const Size2i p_size, WindowID p_windo
 #if defined(VULKAN_ENABLED)
 	if (rendering_driver == "vulkan") {
 		context_vulkan->window_resize(p_window, w, h);
+	}
+#endif
+#if defined(GLES3_ENABLED)
+	if (rendering_driver == "opengl3") {
+		gl_manager->window_resize(p_window, w, h);
 	}
 #endif
 
@@ -1591,6 +1611,9 @@ void DisplayServerWindows::make_rendering_thread() {
 }
 
 void DisplayServerWindows::swap_buffers() {
+#if defined(GLES3_ENABLED)
+	gl_manager->swap_buffers();
+#endif
 }
 
 void DisplayServerWindows::set_native_icon(const String &p_filename) {
@@ -1742,17 +1765,18 @@ void DisplayServerWindows::set_icon(const Ref<Image> &p_icon) {
 void DisplayServerWindows::window_set_vsync_mode(DisplayServer::VSyncMode p_vsync_mode, WindowID p_window) {
 	_THREAD_SAFE_METHOD_
 #if defined(VULKAN_ENABLED)
-	context_vulkan->set_vsync_mode(p_window, p_vsync_mode);
+	// TODO disabling for now
+	//context_vulkan->set_vsync_mode(p_window, p_vsync_mode);
 #endif
 }
 
 DisplayServer::VSyncMode DisplayServerWindows::window_get_vsync_mode(WindowID p_window) const {
 	_THREAD_SAFE_METHOD_
 #if defined(VULKAN_ENABLED)
-	return context_vulkan->get_vsync_mode(p_window);
-#else
-	return DisplayServer::VSYNC_ENABLED;
+	//TODO disabling for now
+	//return context_vulkan->get_vsync_mode(p_window);
 #endif
+	return DisplayServer::VSYNC_ENABLED;
 }
 
 void DisplayServerWindows::set_context(Context p_context) {
@@ -3086,6 +3110,13 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 		}
 #endif
 
+#ifdef GLES3_ENABLED
+		if (rendering_driver == "opengl3") {
+			Error err = gl_manager->window_create(id, wd.hWnd, hInstance, WindowRect.right - WindowRect.left, WindowRect.bottom - WindowRect.top);
+			ERR_FAIL_COND_V_MSG(err != OK, INVALID_WINDOW_ID, "Failed to create an OpenGL window.");
+		}
+#endif
+
 		RegisterTouchWindow(wd.hWnd, 0);
 
 		TRACKMOUSEEVENT tme;
@@ -3216,6 +3247,8 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 
 	outside = true;
 
+	rendering_driver = p_rendering_driver;
+
 	// Note: Wacom WinTab driver API for pen input, for devices incompatible with Windows Ink.
 	HMODULE wintab_lib = LoadLibraryW(L"wintab32.dll");
 	if (wintab_lib) {
@@ -3292,8 +3325,6 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 		use_raw_input = false;
 	}
 
-	rendering_driver = "vulkan";
-
 #if defined(VULKAN_ENABLED)
 	if (rendering_driver == "vulkan") {
 		context_vulkan = memnew(VulkanContextWindows);
@@ -3305,27 +3336,23 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 		}
 	}
 #endif
+	// Init context and rendering device
+#if defined(GLES3_ENABLED)
 
-#if defined(OPENGL_ENABLED)
-	if (rendering_driver_index == VIDEO_DRIVER_GLES2) {
-		context_gles2 = memnew(ContextGL_Windows(hWnd, false));
+	if (rendering_driver == "opengl3") {
+		GLManager_Windows::ContextType opengl_api_type = GLManager_Windows::GLES_3_0_COMPATIBLE;
 
-		if (context_gles2->initialize() != OK) {
-			memdelete(context_gles2);
-			context_gles2 = nullptr;
-			ERR_FAIL_V(ERR_UNAVAILABLE);
+		gl_manager = memnew(GLManager_Windows(opengl_api_type));
+
+		if (gl_manager->initialize() != OK) {
+			memdelete(gl_manager);
+			gl_manager = nullptr;
+			r_error = ERR_UNAVAILABLE;
+			return;
 		}
 
-		context_gles2->set_use_vsync(video_mode.use_vsync);
-
-		if (RasterizerGLES2::is_viable() == OK) {
-			RasterizerGLES2::register_config();
-			RasterizerGLES2::make_current();
-		} else {
-			memdelete(context_gles2);
-			context_gles2 = nullptr;
-			ERR_FAIL_V(ERR_UNAVAILABLE);
-		}
+		//		gl_manager->set_use_vsync(current_videomode.use_vsync);
+		RasterizerGLES3::make_current();
 	}
 #endif
 
@@ -3386,8 +3413,8 @@ Vector<String> DisplayServerWindows::get_rendering_drivers_func() {
 #ifdef VULKAN_ENABLED
 	drivers.push_back("vulkan");
 #endif
-#ifdef OPENGL_ENABLED
-	drivers.push_back("opengl");
+#ifdef GLES3_ENABLED
+	drivers.push_back("opengl3");
 #endif
 
 	return drivers;
@@ -3396,7 +3423,7 @@ Vector<String> DisplayServerWindows::get_rendering_drivers_func() {
 DisplayServer *DisplayServerWindows::create_func(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error) {
 	DisplayServer *ds = memnew(DisplayServerWindows(p_rendering_driver, p_mode, p_vsync_mode, p_flags, p_resolution, r_error));
 	if (r_error != OK) {
-		OS::get_singleton()->alert("Your video card driver does not support any of the supported Vulkan versions.\n"
+		OS::get_singleton()->alert("Your video card driver does not support any of the supported Vulkan or OpenGL versions.\n"
 								   "Please update your drivers or if you have a very old or integrated GPU upgrade it.",
 				"Unable to initialize Video driver");
 	}
@@ -3416,6 +3443,10 @@ DisplayServerWindows::~DisplayServerWindows() {
 	if (user_proc) {
 		SetWindowLongPtr(windows[MAIN_WINDOW_ID].hWnd, GWLP_WNDPROC, (LONG_PTR)user_proc);
 	};
+
+#ifdef GLES3_ENABLED
+		// destroy windows .. NYI?
+#endif
 
 	if (windows.has(MAIN_WINDOW_ID)) {
 #ifdef VULKAN_ENABLED
@@ -3445,4 +3476,10 @@ DisplayServerWindows::~DisplayServerWindows() {
 	if (restore_mouse_trails > 1) {
 		SystemParametersInfoA(SPI_SETMOUSETRAILS, restore_mouse_trails, 0, 0);
 	}
+#ifdef GLES3_ENABLED
+	if (gl_manager) {
+		memdelete(gl_manager);
+		gl_manager = nullptr;
+	}
+#endif
 }

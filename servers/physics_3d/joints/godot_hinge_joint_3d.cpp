@@ -149,16 +149,18 @@ bool GodotHingeJoint3D::setup(real_t p_step) {
 		plane_space(normal[0], normal[1], normal[2]);
 
 		for (int i = 0; i < 3; i++) {
-			memnew_placement(&m_jac[i], GodotJacobianEntry3D(
-												A->get_principal_inertia_axes().transposed(),
-												B->get_principal_inertia_axes().transposed(),
-												pivotAInW - A->get_transform().origin - A->get_center_of_mass(),
-												pivotBInW - B->get_transform().origin - B->get_center_of_mass(),
-												normal[i],
-												A->get_inv_inertia(),
-												A->get_inv_mass(),
-												B->get_inv_inertia(),
-												B->get_inv_mass()));
+			memnew_placement(
+					&m_jac[i],
+					GodotJacobianEntry3D(
+							A->get_principal_inertia_axes().transposed(),
+							B->get_principal_inertia_axes().transposed(),
+							pivotAInW - A->get_transform().origin - A->get_center_of_mass(),
+							pivotBInW - B->get_transform().origin - B->get_center_of_mass(),
+							normal[i],
+							A->get_inv_inertia(),
+							A->get_inv_mass(),
+							B->get_inv_inertia(),
+							B->get_inv_mass()));
 		}
 	}
 
@@ -175,23 +177,32 @@ bool GodotHingeJoint3D::setup(real_t p_step) {
 	Vector3 jointAxis1 = A->get_transform().basis.xform(jointAxis1local);
 	Vector3 hingeAxisWorld = A->get_transform().basis.xform(m_rbAFrame.basis.get_axis(2));
 
-	memnew_placement(&m_jacAng[0], GodotJacobianEntry3D(jointAxis0,
-										   A->get_principal_inertia_axes().transposed(),
-										   B->get_principal_inertia_axes().transposed(),
-										   A->get_inv_inertia(),
-										   B->get_inv_inertia()));
+	memnew_placement(
+			&m_jacAng[0],
+			GodotJacobianEntry3D(
+					jointAxis0,
+					A->get_principal_inertia_axes().transposed(),
+					B->get_principal_inertia_axes().transposed(),
+					A->get_inv_inertia(),
+					B->get_inv_inertia()));
 
-	memnew_placement(&m_jacAng[1], GodotJacobianEntry3D(jointAxis1,
-										   A->get_principal_inertia_axes().transposed(),
-										   B->get_principal_inertia_axes().transposed(),
-										   A->get_inv_inertia(),
-										   B->get_inv_inertia()));
+	memnew_placement(
+			&m_jacAng[1],
+			GodotJacobianEntry3D(
+					jointAxis1,
+					A->get_principal_inertia_axes().transposed(),
+					B->get_principal_inertia_axes().transposed(),
+					A->get_inv_inertia(),
+					B->get_inv_inertia()));
 
-	memnew_placement(&m_jacAng[2], GodotJacobianEntry3D(hingeAxisWorld,
-										   A->get_principal_inertia_axes().transposed(),
-										   B->get_principal_inertia_axes().transposed(),
-										   A->get_inv_inertia(),
-										   B->get_inv_inertia()));
+	memnew_placement(
+			&m_jacAng[2],
+			GodotJacobianEntry3D(
+					hingeAxisWorld,
+					A->get_principal_inertia_axes().transposed(),
+					B->get_principal_inertia_axes().transposed(),
+					A->get_inv_inertia(),
+					B->get_inv_inertia()));
 
 	// Compute limit information
 	real_t hingeAngle = get_hinge_angle();
@@ -220,8 +231,7 @@ bool GodotHingeJoint3D::setup(real_t p_step) {
 
 	//Compute K = J*W*J' for hinge axis
 	Vector3 axisA = A->get_transform().basis.xform(m_rbAFrame.basis.get_axis(2));
-	m_kHinge = 1.0f / (A->compute_angular_impulse_denominator(axisA) +
-							  B->compute_angular_impulse_denominator(axisA));
+	m_kHinge = 1.0f / (A->compute_angular_impulse_denominator(axisA) + B->compute_angular_impulse_denominator(axisA));
 
 	return true;
 }
@@ -284,7 +294,7 @@ void GodotHingeJoint3D::solve(real_t p_step) {
 			if (len > real_t(0.00001)) {
 				Vector3 normal = velrelOrthog.normalized();
 				real_t denom = A->compute_angular_impulse_denominator(normal) +
-							   B->compute_angular_impulse_denominator(normal);
+						B->compute_angular_impulse_denominator(normal);
 				// scale for mass and relaxation
 				velrelOrthog *= (real_t(1.) / denom) * m_relaxationFactor;
 			}
@@ -295,7 +305,7 @@ void GodotHingeJoint3D::solve(real_t p_step) {
 			if (len2 > real_t(0.00001)) {
 				Vector3 normal2 = angularError.normalized();
 				real_t denom2 = A->compute_angular_impulse_denominator(normal2) +
-								B->compute_angular_impulse_denominator(normal2);
+						B->compute_angular_impulse_denominator(normal2);
 				angularError *= (real_t(1.) / denom2) * relaxation;
 			}
 

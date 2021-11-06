@@ -1,9 +1,15 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="VisualShaderNodeParticleEmitter" inherits="VisualShaderNode" version="4.0">
 	<brief_description>
+		A base class for particle emitters.
 	</brief_description>
 	<description>
 	</description>
 	<tutorials>
 	</tutorials>
+	<members>
+		<member name="mode_2d" type="bool" setter="set_mode_2d" getter="is_mode_2d" default="false">
+			If [code]true[/code], the result of this emitter is projected to 2D space. By default it is [code]false[/code] and meant for use in 3D space.
+		</member>
+	</members>
 </class>

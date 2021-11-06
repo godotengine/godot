@@ -327,7 +327,7 @@ void SceneImportSettings::_fill_scene(Node *p_node, TreeItem *p_parent_item) {
 		MeshInstance3D *collider_view = memnew(MeshInstance3D);
 		collider_view->set_name("collider_view");
 		collider_view->set_visible(false);
-		mesh_node->add_child(collider_view);
+		mesh_node->add_child(collider_view, true);
 		collider_view->set_owner(mesh_node);
 
 		Transform3D accum_xform;

@@ -7,28 +7,30 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-		<method name="Signal" qualifiers="constructor">
+	<constructors>
+		<constructor name="Signal">
 			<return type="Signal" />
 			<description>
 				Constructs a null [Signal] with no object nor signal name bound.
 			</description>
-		</method>
-		<method name="Signal" qualifiers="constructor">
+		</constructor>
+		<constructor name="Signal">
 			<return type="Signal" />
 			<argument index="0" name="from" type="Signal" />
 			<description>
 				Constructs a [Signal] as a copy of the given [Signal].
 			</description>
-		</method>
-		<method name="Signal" qualifiers="constructor">
+		</constructor>
+		<constructor name="Signal">
 			<return type="Signal" />
 			<argument index="0" name="object" type="Object" />
 			<argument index="1" name="signal" type="StringName" />
 			<description>
 				Creates a new [Signal] with the name [code]signal[/code] in the specified [code]object[/code].
 			</description>
-		</method>
+		</constructor>
+	</constructors>
+	<methods>
 		<method name="connect">
 			<return type="int" />
 			<argument index="0" name="callable" type="Callable" />
@@ -93,27 +95,29 @@
 			<description>
 			</description>
 		</method>
-		<method name="operator !=" qualifiers="operator">
-			<return type="bool" />
-			<description>
-			</description>
-		</method>
-		<method name="operator !=" qualifiers="operator">
-			<return type="bool" />
-			<argument index="0" name="right" type="Signal" />
-			<description>
-			</description>
-		</method>
-		<method name="operator ==" qualifiers="operator">
-			<return type="bool" />
-			<description>
-			</description>
-		</method>
-		<method name="operator ==" qualifiers="operator">
-			<return type="bool" />
-			<argument index="0" name="right" type="Signal" />
-			<description>
-			</description>
-		</method>
 	</methods>
+	<operators>
+		<operator name="operator !=">
+			<return type="bool" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator !=">
+			<return type="bool" />
+			<argument index="0" name="right" type="Signal" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator ==">
+			<return type="bool" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator ==">
+			<return type="bool" />
+			<argument index="0" name="right" type="Signal" />
+			<description>
+			</description>
+		</operator>
+	</operators>
 </class>

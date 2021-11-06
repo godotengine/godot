@@ -129,16 +129,18 @@ bool GodotConeTwistJoint3D::setup(real_t p_timestep) {
 		plane_space(normal[0], normal[1], normal[2]);
 
 		for (int i = 0; i < 3; i++) {
-			memnew_placement(&m_jac[i], GodotJacobianEntry3D(
-												A->get_principal_inertia_axes().transposed(),
-												B->get_principal_inertia_axes().transposed(),
-												pivotAInW - A->get_transform().origin - A->get_center_of_mass(),
-												pivotBInW - B->get_transform().origin - B->get_center_of_mass(),
-												normal[i],
-												A->get_inv_inertia(),
-												A->get_inv_mass(),
-												B->get_inv_inertia(),
-												B->get_inv_mass()));
+			memnew_placement(
+					&m_jac[i],
+					GodotJacobianEntry3D(
+							A->get_principal_inertia_axes().transposed(),
+							B->get_principal_inertia_axes().transposed(),
+							pivotAInW - A->get_transform().origin - A->get_center_of_mass(),
+							pivotBInW - B->get_transform().origin - B->get_center_of_mass(),
+							normal[i],
+							A->get_inv_inertia(),
+							A->get_inv_mass(),
+							B->get_inv_inertia(),
+							B->get_inv_mass()));
 		}
 	}
 
@@ -192,8 +194,7 @@ bool GodotConeTwistJoint3D::setup(real_t p_timestep) {
 		real_t swingAxisSign = (b2Axis1.dot(b1Axis1) >= 0.0f) ? 1.0f : -1.0f;
 		m_swingAxis *= swingAxisSign;
 
-		m_kSwing = real_t(1.) / (A->compute_angular_impulse_denominator(m_swingAxis) +
-										B->compute_angular_impulse_denominator(m_swingAxis));
+		m_kSwing = real_t(1.) / (A->compute_angular_impulse_denominator(m_swingAxis) + B->compute_angular_impulse_denominator(m_swingAxis));
 	}
 
 	// Twist limits
@@ -212,8 +213,7 @@ bool GodotConeTwistJoint3D::setup(real_t p_timestep) {
 			m_twistAxis.normalize();
 			m_twistAxis *= -1.0f;
 
-			m_kTwist = real_t(1.) / (A->compute_angular_impulse_denominator(m_twistAxis) +
-											B->compute_angular_impulse_denominator(m_twistAxis));
+			m_kTwist = real_t(1.) / (A->compute_angular_impulse_denominator(m_twistAxis) + B->compute_angular_impulse_denominator(m_twistAxis));
 
 		} else if (twist > m_twistSpan * lockedFreeFactor) {
 			m_twistCorrection = (twist - m_twistSpan);
@@ -222,8 +222,7 @@ bool GodotConeTwistJoint3D::setup(real_t p_timestep) {
 			m_twistAxis = (b2Axis1 + b1Axis1) * 0.5f;
 			m_twistAxis.normalize();
 
-			m_kTwist = real_t(1.) / (A->compute_angular_impulse_denominator(m_twistAxis) +
-											B->compute_angular_impulse_denominator(m_twistAxis));
+			m_kTwist = real_t(1.) / (A->compute_angular_impulse_denominator(m_twistAxis) + B->compute_angular_impulse_denominator(m_twistAxis));
 		}
 	}
 

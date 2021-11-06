@@ -129,6 +129,7 @@ public:
 		SHADER_TYPE_3D,
 		SHADER_TYPE_PARTICLES,
 		SHADER_TYPE_SKY,
+		SHADER_TYPE_FOG,
 		SHADER_TYPE_MAX
 	};
 
@@ -188,6 +189,7 @@ public:
 		DEFAULT_RD_TEXTURE_CUBEMAP_ARRAY_BLACK,
 		DEFAULT_RD_TEXTURE_CUBEMAP_WHITE,
 		DEFAULT_RD_TEXTURE_3D_WHITE,
+		DEFAULT_RD_TEXTURE_3D_BLACK,
 		DEFAULT_RD_TEXTURE_2D_ARRAY_WHITE,
 		DEFAULT_RD_TEXTURE_2D_UINT,
 		DEFAULT_RD_TEXTURE_MAX
@@ -956,6 +958,19 @@ private:
 	};
 
 	mutable RID_Owner<ParticlesCollisionInstance> particles_collision_instance_owner;
+
+	/* FOG VOLUMES */
+
+	struct FogVolume {
+		RID material;
+		Vector3 extents = Vector3(1, 1, 1);
+
+		RS::FogVolumeShape shape = RS::FOG_VOLUME_SHAPE_BOX;
+
+		Dependency dependency;
+	};
+
+	mutable RID_Owner<FogVolume, true> fog_volume_owner;
 
 	/* visibility_notifier */
 
@@ -2258,6 +2273,21 @@ public:
 	virtual Vector3 particles_collision_get_extents(RID p_particles_collision) const;
 	virtual bool particles_collision_is_heightfield(RID p_particles_collision) const;
 	RID particles_collision_get_heightfield_framebuffer(RID p_particles_collision) const;
+
+	/* FOG VOLUMES */
+
+	virtual RID fog_volume_allocate();
+	virtual void fog_volume_initialize(RID p_rid);
+
+	virtual void fog_volume_set_shape(RID p_fog_volume, RS::FogVolumeShape p_shape);
+	virtual void fog_volume_set_extents(RID p_fog_volume, const Vector3 &p_extents);
+	virtual void fog_volume_set_material(RID p_fog_volume, RID p_material);
+	virtual RS::FogVolumeShape fog_volume_get_shape(RID p_fog_volume) const;
+	virtual RID fog_volume_get_material(RID p_fog_volume) const;
+	virtual AABB fog_volume_get_aabb(RID p_fog_volume) const;
+	virtual Vector3 fog_volume_get_extents(RID p_fog_volume) const;
+
+	/* VISIBILITY NOTIFIER */
 
 	virtual RID visibility_notifier_allocate();
 	virtual void visibility_notifier_initialize(RID p_notifier);

@@ -11061,12 +11061,12 @@ msgid ""
 msgstr ""
 
 #: editor/project_settings_editor.cpp
-msgid "Key "
-msgstr "Klavo "
-
-#: editor/project_settings_editor.cpp
 msgid "Physical Key"
 msgstr ""
+
+#: editor/project_settings_editor.cpp
+msgid "Key "
+msgstr "Klavo "
 
 #: editor/project_settings_editor.cpp
 msgid "Joy Button"

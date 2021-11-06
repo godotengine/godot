@@ -15,29 +15,29 @@
 		<link title="3D Platformer Demo">https://godotengine.org/asset-library/asset/125</link>
 		<link title="2.5D Demo">https://godotengine.org/asset-library/asset/583</link>
 	</tutorials>
-	<methods>
-		<method name="Transform3D" qualifiers="constructor">
+	<constructors>
+		<constructor name="Transform3D">
 			<return type="Transform3D" />
 			<description>
 				Constructs a default-initialized [Transform3D] set to [constant IDENTITY].
 			</description>
-		</method>
-		<method name="Transform3D" qualifiers="constructor">
+		</constructor>
+		<constructor name="Transform3D">
 			<return type="Transform3D" />
 			<argument index="0" name="from" type="Transform3D" />
 			<description>
 				Constructs a [Transform3D] as a copy of the given [Transform3D].
 			</description>
-		</method>
-		<method name="Transform3D" qualifiers="constructor">
+		</constructor>
+		<constructor name="Transform3D">
 			<return type="Transform3D" />
 			<argument index="0" name="basis" type="Basis" />
 			<argument index="1" name="origin" type="Vector3" />
 			<description>
 				Constructs a Transform3D from a [Basis] and [Vector3].
 			</description>
-		</method>
-		<method name="Transform3D" qualifiers="constructor">
+		</constructor>
+		<constructor name="Transform3D">
 			<return type="Transform3D" />
 			<argument index="0" name="x_axis" type="Vector3" />
 			<argument index="1" name="y_axis" type="Vector3" />
@@ -46,7 +46,9 @@
 			<description>
 				Constructs a Transform3D from four [Vector3] values (matrix columns). Each axis corresponds to local basis vectors (some of which may be scaled).
 			</description>
-		</method>
+		</constructor>
+	</constructors>
+	<methods>
 		<method name="affine_inverse" qualifiers="const">
 			<return type="Transform3D" />
 			<description>
@@ -81,66 +83,6 @@
 			<description>
 				Returns a copy of the transform rotated such that the forward axis (-Z) points towards the [code]target[/code] position.
 				The up axis (+Y) points as close to the [code]up[/code] vector as possible while staying perpendicular to the forward axis. The resulting transform is orthonormalized. The existing rotation, scale, and skew information from the original transform is discarded. The [code]target[/code] and [code]up[/code] vectors cannot be zero, cannot be parallel to each other, and are defined in global/parent space.
-			</description>
-		</method>
-		<method name="operator !=" qualifiers="operator">
-			<return type="bool" />
-			<description>
-			</description>
-		</method>
-		<method name="operator !=" qualifiers="operator">
-			<return type="bool" />
-			<argument index="0" name="right" type="Transform3D" />
-			<description>
-			</description>
-		</method>
-		<method name="operator *" qualifiers="operator">
-			<return type="PackedVector3Array" />
-			<argument index="0" name="right" type="PackedVector3Array" />
-			<description>
-			</description>
-		</method>
-		<method name="operator *" qualifiers="operator">
-			<return type="Transform3D" />
-			<argument index="0" name="right" type="Transform3D" />
-			<description>
-			</description>
-		</method>
-		<method name="operator *" qualifiers="operator">
-			<return type="AABB" />
-			<argument index="0" name="right" type="AABB" />
-			<description>
-			</description>
-		</method>
-		<method name="operator *" qualifiers="operator">
-			<return type="Vector3" />
-			<argument index="0" name="right" type="Vector3" />
-			<description>
-			</description>
-		</method>
-		<method name="operator *" qualifiers="operator">
-			<return type="Transform3D" />
-			<argument index="0" name="right" type="float" />
-			<description>
-				This operator multiplies all components of the [Transform3D], including the origin vector, which scales it uniformly.
-			</description>
-		</method>
-		<method name="operator *" qualifiers="operator">
-			<return type="Transform3D" />
-			<argument index="0" name="right" type="int" />
-			<description>
-				This operator multiplies all components of the [Transform3D], including the origin vector, which scales it uniformly.
-			</description>
-		</method>
-		<method name="operator ==" qualifiers="operator">
-			<return type="bool" />
-			<description>
-			</description>
-		</method>
-		<method name="operator ==" qualifiers="operator">
-			<return type="bool" />
-			<argument index="0" name="right" type="Transform3D" />
-			<description>
 			</description>
 		</method>
 		<method name="orthonormalized" qualifiers="const">
@@ -195,4 +137,66 @@
 			[Transform3D] with mirroring applied perpendicular to the XY plane.
 		</constant>
 	</constants>
+	<operators>
+		<operator name="operator !=">
+			<return type="bool" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator !=">
+			<return type="bool" />
+			<argument index="0" name="right" type="Transform3D" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator *">
+			<return type="PackedVector3Array" />
+			<argument index="0" name="right" type="PackedVector3Array" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator *">
+			<return type="Transform3D" />
+			<argument index="0" name="right" type="Transform3D" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator *">
+			<return type="AABB" />
+			<argument index="0" name="right" type="AABB" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator *">
+			<return type="Vector3" />
+			<argument index="0" name="right" type="Vector3" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator *">
+			<return type="Transform3D" />
+			<argument index="0" name="right" type="float" />
+			<description>
+				This operator multiplies all components of the [Transform3D], including the origin vector, which scales it uniformly.
+			</description>
+		</operator>
+		<operator name="operator *">
+			<return type="Transform3D" />
+			<argument index="0" name="right" type="int" />
+			<description>
+				This operator multiplies all components of the [Transform3D], including the origin vector, which scales it uniformly.
+			</description>
+		</operator>
+		<operator name="operator ==">
+			<return type="bool" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator ==">
+			<return type="bool" />
+			<argument index="0" name="right" type="Transform3D" />
+			<description>
+			</description>
+		</operator>
+	</operators>
 </class>
