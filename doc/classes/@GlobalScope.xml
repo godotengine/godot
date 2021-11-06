@@ -14,6 +14,26 @@
 			<return type="Variant" />
 			<argument index="0" name="x" type="Variant" />
 			<description>
+				Returns the absolute value of a [Variant] parameter [code]x[/code] (i.e. non-negative value). Variant types [int], [float] (real), [Vector2], [Vector2i], [Vector3] and [Vector3i] are supported.
+				[codeblock]
+				var a = abs(-1)
+				# a is 1
+
+				var b = abs(-1.2)
+				# b is 1.2
+
+				var c = abs(Vector2(-3.5, -4))
+				# c is (3.5, 4)
+
+				var d = abs(Vector2i(-5, -6))
+				# d is (5, 6)
+
+				var e = abs(Vector3(-7, 8.5, -3.8))
+				# e is (7, 8.5, 3.8)
+
+				var f = abs(Vector3i(-7, -8, -9))
+				# f is (7, 8, 9)
+				[/codeblock]
 			</description>
 		</method>
 		<method name="absf">
@@ -118,6 +138,26 @@
 			<argument index="1" name="min" type="Variant" />
 			<argument index="2" name="max" type="Variant" />
 			<description>
+				Clamps the [Variant] [code]value[/code] and returns a value not less than [code]min[/code] and not more than [code]max[/code]. Variant types [int], [float] (real), [Vector2], [Vector2i], [Vector3] and [Vector3i] are supported.
+				[codeblock]
+				var a = clamp(-10, -1, 5)
+				# a is -1
+
+				var b = clamp(8.1, 0.9, 5.5)
+				# b is 5.5
+
+				var c = clamp(Vector2(-3.5, -4), Vector2(-3.2, -2), Vector2(2, 6.5))
+				# c is (-3.2, -2)
+
+				var d = clamp(Vector2i(7, 8), Vector2i(-3, -2), Vector2i(2, 6))
+				# d is (2, 6)
+
+				var e = clamp(Vector3(-7, 8.5, -3.8), Vector3(-3, -2, 5.4), Vector3(-2, 6, -4.1))
+				# e is (-3, -2, 5.4)
+
+				var f = clamp(Vector3i(-7, -8, -9), Vector3i(-1, 2, 3), Vector3i(-4, -5, -6))
+				# f is (-4, -5, -6)
+				[/codeblock]
 			</description>
 		</method>
 		<method name="clampf">
@@ -347,6 +387,7 @@
 			<return type="bool" />
 			<argument index="0" name="id" type="int" />
 			<description>
+				Returns [code]true[/code] if the Object that corresponds to [code]instance_id[/code] is a valid object (e.g. has not been deleted from memory). All Objects have a unique instance ID.
 			</description>
 		</method>
 		<method name="is_instance_valid">
@@ -750,6 +791,14 @@
 			<return type="Variant" />
 			<argument index="0" name="x" type="Variant" />
 			<description>
+				Returns the sign of [code]x[/code] as same type of [Variant] as [code]x[/code] with each component being -1, 0 and 1 for each negative, zero and positive values respectivelu. Variant types [int], [float] (real), [Vector2], [Vector2i], [Vector3] and [Vector3i] are supported.
+				[codeblock]
+				sign(-6.0) # Returns -1
+				sign(0.0)  # Returns 0
+				sign(6.0)  # Returns 1
+
+				sign(Vector3(-6.0, 0.0, 6.0) # Returns (-1, 0, 1)
+				[/codeblock]
 			</description>
 		</method>
 		<method name="signf">
