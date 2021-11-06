@@ -1015,6 +1015,11 @@ void ScriptEditor::_scene_saved_callback(const String &p_path) {
 		if (edited_res->get_path().get_slice("::", 0) == p_path) {
 			se->tag_saved_version();
 		}
+
+		Ref<Script> scr = edited_res;
+		if (scr.is_valid() && scr->is_tool()) {
+			scr->reload(true);
+		}
 	}
 }
 
