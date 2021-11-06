@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  test_utils.cpp                                                       */
+/*  test_xml_parser.h                                                    */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,15 +28,44 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "tests/test_utils.h"
+#ifndef TEST_XML_PARSER_H
+#define TEST_XML_PARSER_H
 
-#include "core/os/os.h"
+#include "core/io/xml_parser.h"
 
-String TestUtils::get_data_path(const String &p_file) {
-	String data_path = "../tests/data";
-	return get_executable_dir().plus_file(data_path.plus_file(p_file));
+#include "tests/test_macros.h"
+
+namespace TestXMLParser {
+TEST_CASE("[XMLParser] End-to-end") {
+	String source = "<?xml version = \"1.0\" encoding=\"UTF-8\" ?>\
+<top attr=\"attr value\">\
+  Text&lt;&#65;&#x42;&gt;\
+</top>";
+	Vector<uint8_t> buff = source.to_utf8_buffer();
+
+	XMLParser parser;
+	parser.open_buffer(buff);
+
+	// <?xml ...?> gets parsed as NODE_UNKNOWN
+	CHECK(parser.read() == OK);
+	CHECK(parser.get_node_type() == XMLParser::NodeType::NODE_UNKNOWN);
+
+	CHECK(parser.read() == OK);
+	CHECK(parser.get_node_type() == XMLParser::NodeType::NODE_ELEMENT);
+	CHECK(parser.get_node_name() == "top");
+	CHECK(parser.has_attribute("attr"));
+	CHECK(parser.get_attribute_value("attr") == "attr value");
+
+	CHECK(parser.read() == OK);
+	CHECK(parser.get_node_type() == XMLParser::NodeType::NODE_TEXT);
+	CHECK(parser.get_node_data().lstrip(" \t") == "Text<AB>");
+
+	CHECK(parser.read() == OK);
+	CHECK(parser.get_node_type() == XMLParser::NodeType::NODE_ELEMENT_END);
+	CHECK(parser.get_node_name() == "top");
+
+	parser.close();
 }
+} // namespace TestXMLParser
 
-String TestUtils::get_executable_dir() {
-	return OS::get_singleton()->get_executable_path().get_base_dir();
-}
+#endif // TEST_XML_PARSER_H

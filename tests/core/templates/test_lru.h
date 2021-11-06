@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  test_utils.cpp                                                       */
+/*  test_lru.h                                                           */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,15 +28,72 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "tests/test_utils.h"
+#ifndef TEST_LRU_H
+#define TEST_LRU_H
 
-#include "core/os/os.h"
+#include "core/templates/lru.h"
 
-String TestUtils::get_data_path(const String &p_file) {
-	String data_path = "../tests/data";
-	return get_executable_dir().plus_file(data_path.plus_file(p_file));
+#include "tests/test_macros.h"
+
+namespace TestLRU {
+
+TEST_CASE("[LRU] Store and read") {
+	LRUCache<int, int> lru;
+
+	lru.set_capacity(3);
+	lru.insert(1, 1);
+	lru.insert(50, 2);
+	lru.insert(100, 5);
+
+	CHECK(lru.has(1));
+	CHECK(lru.has(50));
+	CHECK(lru.has(100));
+	CHECK(!lru.has(200));
+
+	CHECK(lru.get(1) == 1);
+	CHECK(lru.get(50) == 2);
+	CHECK(lru.get(100) == 5);
+
+	CHECK(lru.getptr(1) != nullptr);
+	CHECK(lru.getptr(1000) == nullptr);
+
+	lru.insert(600, 600); // Erase <50>
+	CHECK(lru.has(600));
+	CHECK(!lru.has(50));
 }
 
-String TestUtils::get_executable_dir() {
-	return OS::get_singleton()->get_executable_path().get_base_dir();
+TEST_CASE("[LRU] Resize and clear") {
+	LRUCache<int, int> lru;
+
+	lru.set_capacity(3);
+	lru.insert(1, 1);
+	lru.insert(2, 2);
+	lru.insert(3, 3);
+
+	CHECK(lru.get_capacity() == 3);
+
+	lru.set_capacity(5);
+	CHECK(lru.get_capacity() == 5);
+
+	CHECK(lru.has(1));
+	CHECK(lru.has(2));
+	CHECK(lru.has(3));
+	CHECK(!lru.has(4));
+
+	lru.set_capacity(2);
+	CHECK(lru.get_capacity() == 2);
+
+	CHECK(!lru.has(1));
+	CHECK(lru.has(2));
+	CHECK(lru.has(3));
+	CHECK(!lru.has(4));
+
+	lru.clear();
+	CHECK(!lru.has(1));
+	CHECK(!lru.has(2));
+	CHECK(!lru.has(3));
+	CHECK(!lru.has(4));
 }
+} // namespace TestLRU
+
+#endif // TEST_LRU_H
