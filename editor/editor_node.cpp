@@ -1716,8 +1716,10 @@ void EditorNode::_save_scene(String p_file, int idx) {
 
 	err = ResourceSaver::save(p_file, sdata, flg);
 
-	_save_external_resources();
+	// This needs to be emitted before saving external resources.
+	emit_signal(SNAME("scene_saved"), p_file);
 
+	_save_external_resources();
 	editor_data.save_editor_external_data();
 
 	for (Ref<AnimatedValuesBackup> &E : anim_backups) {
@@ -5711,6 +5713,7 @@ void EditorNode::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("request_help_search"));
 	ADD_SIGNAL(MethodInfo("script_add_function_request", PropertyInfo(Variant::OBJECT, "obj"), PropertyInfo(Variant::STRING, "function"), PropertyInfo(Variant::PACKED_STRING_ARRAY, "args")));
 	ADD_SIGNAL(MethodInfo("resource_saved", PropertyInfo(Variant::OBJECT, "obj")));
+	ADD_SIGNAL(MethodInfo("scene_saved", PropertyInfo(Variant::STRING, "path")));
 	ADD_SIGNAL(MethodInfo("project_settings_changed"));
 }
 

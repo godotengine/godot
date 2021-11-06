@@ -989,10 +989,6 @@ void ScriptEditor::_res_saved_callback(const Ref<Resource> &p_res) {
 
 		RES script = se->get_edited_resource();
 
-		if (script->is_built_in()) {
-			continue; //internal script, who cares
-		}
-
 		if (script == p_res) {
 			se->tag_saved_version();
 		}
@@ -1000,6 +996,26 @@ void ScriptEditor::_res_saved_callback(const Ref<Resource> &p_res) {
 
 	_update_script_names();
 	_trigger_live_script_reload();
+}
+
+void ScriptEditor::_scene_saved_callback(const String &p_path) {
+	// If scene was saved, mark all built-in scripts from that scene as saved.
+	for (int i = 0; i < tab_container->get_child_count(); i++) {
+		ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(tab_container->get_child(i));
+		if (!se) {
+			continue;
+		}
+
+		RES edited_res = se->get_edited_resource();
+
+		if (!edited_res->is_built_in()) {
+			continue; // External script, who cares.
+		}
+
+		if (edited_res->get_path().get_slice("::", 0) == p_path) {
+			se->tag_saved_version();
+		}
+	}
 }
 
 void ScriptEditor::_trigger_live_script_reload() {
@@ -1525,6 +1541,7 @@ void ScriptEditor::_notification(int p_what) {
 			editor->connect("stop_pressed", callable_mp(this, &ScriptEditor::_editor_stop));
 			editor->connect("script_add_function_request", callable_mp(this, &ScriptEditor::_add_callback));
 			editor->connect("resource_saved", callable_mp(this, &ScriptEditor::_res_saved_callback));
+			editor->connect("scene_saved", callable_mp(this, &ScriptEditor::_scene_saved_callback));
 			editor->get_filesystem_dock()->connect("files_moved", callable_mp(this, &ScriptEditor::_files_moved));
 			editor->get_filesystem_dock()->connect("file_removed", callable_mp(this, &ScriptEditor::_file_removed));
 			script_list->connect("item_selected", callable_mp(this, &ScriptEditor::_script_selected));
@@ -1619,7 +1636,7 @@ void ScriptEditor::close_builtin_scripts_from_scene(const String &p_scene) {
 			}
 
 			if (script->is_built_in() && script->get_path().begins_with(p_scene)) { //is an internal script and belongs to scene being closed
-				_close_tab(i);
+				_close_tab(i, false);
 				i--;
 			}
 		}
@@ -1926,20 +1943,7 @@ void ScriptEditor::_update_script_names() {
 				// to update original path to previously edited resource.
 				se->set_meta("_edit_res_path", path);
 			}
-			bool built_in = !path.is_resource_file();
-			String name;
-
-			if (built_in) {
-				name = path.get_file();
-				const String &resource_name = se->get_edited_resource()->get_name();
-				if (resource_name != "") {
-					// If the built-in script has a custom resource name defined,
-					// display the built-in script name as follows: `ResourceName (scene_file.tscn)`
-					name = vformat("%s (%s)", resource_name, name.substr(0, name.find("::", 0)));
-				}
-			} else {
-				name = se->get_name();
-			}
+			String name = se->get_name();
 
 			_ScriptEditorItemData sd;
 			sd.icon = icon;
@@ -2403,7 +2407,17 @@ void ScriptEditor::save_current_script() {
 		}
 	}
 
-	editor->save_resource(resource);
+	if (resource->is_built_in()) {
+		// If built-in script, save the scene instead.
+		const String scene_path = resource->get_path().get_slice("::", 0);
+		if (!scene_path.is_empty()) {
+			Vector<String> scene_to_save;
+			scene_to_save.push_back(scene_path);
+			editor->save_scene_list(scene_to_save);
+		}
+	} else {
+		editor->save_resource(resource);
+	}
 
 	if (script != nullptr) {
 		const Vector<DocData::ClassDoc> &documentations = script->get_documentation();
@@ -2416,6 +2430,8 @@ void ScriptEditor::save_current_script() {
 }
 
 void ScriptEditor::save_all_scripts() {
+	Vector<String> scenes_to_save;
+
 	for (int i = 0; i < tab_container->get_child_count(); i++) {
 		ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(tab_container->get_child(i));
 		if (!se) {
@@ -2474,7 +2490,17 @@ void ScriptEditor::save_all_scripts() {
 					update_doc(doc.name);
 				}
 			}
+		} else {
+			// For built-in scripts, save their scenes instead.
+			const String scene_path = edited_res->get_path().get_slice("::", 0);
+			if (!scenes_to_save.has(scene_path)) {
+				scenes_to_save.push_back(scene_path);
+			}
 		}
+	}
+
+	if (!scenes_to_save.is_empty()) {
+		editor->save_scene_list(scenes_to_save);
 	}
 
 	_update_script_names();

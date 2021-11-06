@@ -365,6 +365,7 @@ class ScriptEditor : public PanelContainer {
 
 	void _add_callback(Object *p_obj, const String &p_function, const PackedStringArray &p_args);
 	void _res_saved_callback(const Ref<Resource> &p_res);
+	void _scene_saved_callback(const String &p_path);
 
 	bool open_textfile_after_create = true;
 	bool trim_trailing_whitespace_on_save;
