@@ -350,7 +350,7 @@
 			<return type="int" />
 			<argument index="0" name="screen" type="int" default="-1" />
 			<description>
-				Returns the dots per inch density of the specified screen. If [code]screen[/code] is [/code]-1[/code] (the default value), the current screen will be used.
+				Returns the dots per inch density of the specified screen. If [code]screen[/code] is [code]-1[/code] (the default value), the current screen will be used.
 				[b]Note:[/b] On macOS, returned value is inaccurate if fractional display scaling mode is used.
 				[b]Note:[/b] On Android devices, the actual screen densities are grouped into six generalized densities:
 				[codeblock]
@@ -376,14 +376,14 @@
 			<return type="Vector2" />
 			<argument index="0" name="screen" type="int" default="-1" />
 			<description>
-				Returns the position of the specified screen by index. If [code]screen[/code] is [/code]-1[/code] (the default value), the current screen will be used.
+				Returns the position of the specified screen by index. If [code]screen[/code] is [code]-1[/code] (the default value), the current screen will be used.
 			</description>
 		</method>
 		<method name="get_screen_scale" qualifiers="const">
 			<return type="float" />
 			<argument index="0" name="screen" type="int" default="-1" />
 			<description>
-				Return the scale factor of the specified screen by index. If [code]screen[/code] is [/code]-1[/code] (the default value), the current screen will be used.
+				Return the scale factor of the specified screen by index. If [code]screen[/code] is [code]-1[/code] (the default value), the current screen will be used.
 				[b]Note:[/b] On macOS returned value is [code]2.0[/code] for hiDPI (Retina) screen, and [code]1.0[/code] for all other cases.
 				[b]Note:[/b] This method is implemented on macOS.
 			</description>
@@ -392,7 +392,7 @@
 			<return type="Vector2" />
 			<argument index="0" name="screen" type="int" default="-1" />
 			<description>
-				Returns the dimensions in pixels of the specified screen. If [code]screen[/code] is [/code]-1[/code] (the default value), the current screen will be used.
+				Returns the dimensions in pixels of the specified screen. If [code]screen[/code] is [code]-1[/code] (the default value), the current screen will be used.
 			</description>
 		</method>
 		<method name="get_splash_tick_msec" qualifiers="const">
