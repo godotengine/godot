@@ -6650,7 +6650,7 @@ void Node3DEditor::_add_sun_to_scene(bool p_already_added_environment) {
 	Node *new_sun = preview_sun->duplicate();
 
 	undo_redo->create_action(TTR("Add Preview Sun to Scene"));
-	undo_redo->add_do_method(base, "add_child", new_sun);
+	undo_redo->add_do_method(base, "add_child", new_sun, true);
 	// Move to the beginning of the scene tree since more "global" nodes
 	// generally look better when placed at the top.
 	undo_redo->add_do_method(base, "move_child", new_sun, 0);
@@ -6680,7 +6680,7 @@ void Node3DEditor::_add_environment_to_scene(bool p_already_added_sun) {
 	new_env->set_environment(preview_environment->get_environment()->duplicate(true));
 
 	undo_redo->create_action(TTR("Add Preview Environment to Scene"));
-	undo_redo->add_do_method(base, "add_child", new_env);
+	undo_redo->add_do_method(base, "add_child", new_env, true);
 	// Move to the beginning of the scene tree since more "global" nodes
 	// generally look better when placed at the top.
 	undo_redo->add_do_method(base, "move_child", new_env, 0);
@@ -7146,7 +7146,7 @@ void Node3DEditor::_update_preview_environment() {
 
 	} else {
 		if (!preview_sun->get_parent()) {
-			add_child(preview_sun);
+			add_child(preview_sun, true);
 			sun_state->hide();
 			sun_vb->show();
 		}
