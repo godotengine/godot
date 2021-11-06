@@ -2913,14 +2913,6 @@ void CanvasItemEditor::_draw_ruler_tool() {
 		Point2 corner = Point2(begin.x, end.y);
 		Vector2 length_vector = (begin - end).abs() / zoom;
 
-		bool draw_secondary_lines = !(Math::is_equal_approx(begin.y, corner.y) || Math::is_equal_approx(end.x, corner.x));
-
-		viewport->draw_line(begin, end, ruler_primary_color, Math::round(EDSCALE * 3));
-		if (draw_secondary_lines) {
-			viewport->draw_line(begin, corner, ruler_secondary_color, Math::round(EDSCALE));
-			viewport->draw_line(corner, end, ruler_secondary_color, Math::round(EDSCALE));
-		}
-
 		Ref<Font> font = get_theme_font(SNAME("bold"), SNAME("EditorFonts"));
 		int font_size = get_theme_font_size(SNAME("bold_size"), SNAME("EditorFonts"));
 		Color font_color = get_theme_color(SNAME("font_color"), SNAME("Editor"));
@@ -2936,7 +2928,23 @@ void CanvasItemEditor::_draw_ruler_tool() {
 		Point2 text_pos = (begin + end) / 2 - Vector2(text_width / 2, text_height / 2);
 		text_pos.x = CLAMP(text_pos.x, text_width / 2, viewport->get_rect().size.x - text_width * 1.5);
 		text_pos.y = CLAMP(text_pos.y, text_height * 1.5, viewport->get_rect().size.y - text_height * 1.5);
+
+		if (begin.is_equal_approx(end)) {
+			viewport->draw_string(font, text_pos, (String)ruler_tool_origin, HALIGN_LEFT, -1, font_size, font_color, outline_size, outline_color);
+			Ref<Texture2D> position_icon = get_theme_icon(SNAME("EditorPosition"), SNAME("EditorIcons"));
+			viewport->draw_texture(get_theme_icon(SNAME("EditorPosition"), SNAME("EditorIcons")), (ruler_tool_origin - view_offset) * zoom - position_icon->get_size() / 2);
+			return;
+		}
+
 		viewport->draw_string(font, text_pos, TS->format_number(vformat("%.1f px", length_vector.length())), HALIGN_LEFT, -1, font_size, font_color, outline_size, outline_color);
+
+		bool draw_secondary_lines = !(Math::is_equal_approx(begin.y, corner.y) || Math::is_equal_approx(end.x, corner.x));
+
+		viewport->draw_line(begin, end, ruler_primary_color, Math::round(EDSCALE * 3));
+		if (draw_secondary_lines) {
+			viewport->draw_line(begin, corner, ruler_secondary_color, Math::round(EDSCALE));
+			viewport->draw_line(corner, end, ruler_secondary_color, Math::round(EDSCALE));
+		}
 
 		if (draw_secondary_lines) {
 			const real_t horizontal_angle_rad = length_vector.angle();
