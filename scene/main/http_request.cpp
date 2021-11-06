@@ -383,7 +383,7 @@ bool HTTPRequest::_update_connection() {
 
 void HTTPRequest::_request_done(int p_status, int p_code, const PoolStringArray &p_headers, const PoolByteArray &p_data) {
 	cancel_request();
-	emit_signal("request_completed", p_status, p_code, headers, p_data);
+	emit_signal("request_completed", p_status, p_code, p_headers, p_data);
 }
 
 void HTTPRequest::_notification(int p_what) {
