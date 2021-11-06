@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "shader_language.h"
+#include "shader_preprocessor.h"
 #include "core/os/os.h"
 #include "core/string/print_string.h"
 #include "servers/rendering_server.h"
@@ -7399,6 +7400,24 @@ Error ShaderLanguage::_validate_datatype(DataType p_type) {
 	return OK;
 }
 
+String ShaderLanguage::_preprocess_shader(const String& p_code, Error* p_error) {
+	*p_error = OK;
+
+	ShaderPreprocessor processor(p_code);
+	String processed = processor.preprocess();
+
+	PreprocessorState* state = processor.get_state();
+	if (!state->error.is_empty()) {
+		error_line = state->error_line;
+		error_set = true;
+		error_str = state->error;
+
+		*p_error = FAILED;
+	}
+
+	return processed;
+}
+
 Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_functions, const Vector<ModeInfo> &p_render_modes, const Set<String> &p_shader_types) {
 	Token tk = _get_token();
 	TkPos prev_pos;
@@ -8965,14 +8984,21 @@ uint32_t ShaderLanguage::get_warning_flags() const {
 Error ShaderLanguage::compile(const String &p_code, const ShaderCompileInfo &p_info) {
 	clear();
 
-	code = p_code;
+	Error err = OK;
+	code = _preprocess_shader(p_code, &err);
+	if (err != OK)
+	{
+		return err;
+	}
+
 	global_var_get_type_func = p_info.global_variable_type_func;
 	varying_function_names = p_info.varying_function_names;
 
 	nodes = nullptr;
 
+	char_idx = 0; // reset char idx after preprocess because this compiler exists in a singleton and can be overwritten when called recursively.
 	shader = alloc_node<ShaderNode>();
-	Error err = _parse_shader(p_info.functions, p_info.render_modes, p_info.shader_types);
+	err = _parse_shader(p_info.functions, p_info.render_modes, p_info.shader_types);
 
 #ifdef DEBUG_ENABLED
 	if (check_warnings) {
@@ -8989,7 +9015,12 @@ Error ShaderLanguage::compile(const String &p_code, const ShaderCompileInfo &p_i
 Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_info, List<ScriptCodeCompletionOption> *r_options, String &r_call_hint) {
 	clear();
 
-	code = p_code;
+	Error err = OK;
+	code = _preprocess_shader(p_code, &err);
+	if (err != OK) {
+		return err;
+	}
+
 	varying_function_names = p_info.varying_function_names;
 
 	nodes = nullptr;

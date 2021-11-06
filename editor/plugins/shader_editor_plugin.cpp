@@ -42,6 +42,7 @@
 #include "editor/property_editor.h"
 #include "servers/display_server.h"
 #include "servers/rendering/shader_types.h"
+#include "servers/rendering/shader_preprocessor.h"
 
 /*** SHADER SCRIPT EDITOR ****/
 
@@ -172,6 +173,18 @@ void ShaderTextEditor::_load_theme_settings() {
 	if (!text_editor->has_auto_brace_completion_open_key("/*")) {
 		text_editor->add_auto_brace_completion_pair("/*", "*/");
 	}
+
+	// Colorize shader preprocessor directives
+	List<String> preprocessor_keywords;
+	ShaderPreprocessor::get_keyword_list(&preprocessor_keywords);
+
+	for (List<String>::Element* E = preprocessor_keywords.front(); E; E = E->next()) {
+		syntax_highlighter->add_keyword_color(E->get(), keyword_color);
+	}
+
+	//colorize preprocessor include strings
+	const Color string_color = EDITOR_GET("text_editor/theme/highlighting/string_color");
+	syntax_highlighter->add_color_region("\"", "\"", string_color, false);
 
 	if (warnings_panel) {
 		// Warnings panel
@@ -573,6 +586,8 @@ void ShaderEditor::apply_shaders() {
 			shader->set_code(editor_code);
 			shader->set_edited(true);
 		}
+
+		ShaderPreprocessor::refresh_shader_dependencies(*shader);
 	}
 }
 
