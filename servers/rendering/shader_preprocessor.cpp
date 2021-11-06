@@ -143,7 +143,10 @@ public:
 		while (index < code.size()) {
 			CharType c = code[index++];
 
-			if (c == '"') {
+			if (c < 0) {
+				// skip invalid chars.
+				continue;
+			} else if (c == '"') {
 				if (strings_open <= 0) {
 					strings_open++;
 				} else {
@@ -894,18 +897,25 @@ void ShaderDependencyGraph::populate(ShaderDependencyNode* node) {
 		if (!tokenizer.advance('#').is_empty()) {
 			String directive = tokenizer.get_identifier();
 			if (directive == "include") {
-				tokenizer.advance('"');
-				String path = tokens_to_string(tokenizer.advance('"'));
-				path.erase(path.length() - 1, 1);
-				tokenizer.skip_whitespace();
-				Ref<Shader> shader_reference = Object::cast_to<Shader>(*ResourceLoader::load(path));
+				if (!tokenizer.advance('"').is_empty()) {
+					String path = tokens_to_string(tokenizer.advance('"'));
+					path.erase(path.length() - 1, 1);
+					tokenizer.skip_whitespace();
+					if (!path.is_empty()) {
+						RES res = ResourceLoader::load(path);
+						if (!res.is_null())
+						{
+							Ref<Shader> shader_reference = Object::cast_to<Shader>(*res);
 
-				// skip this shader if we've picked it up as a dependency already
-				if (!visited_shaders.find(shader_reference)) {
-					ShaderDependencyNode* new_node = new ShaderDependencyNode(shader_reference);
-					visited_shaders.push_back(new_node->shader);
-					populate(new_node);
-					node->dependencies.insert(new_node);
+							// skip this shader if we've picked it up as a dependency already
+							if (shader_reference != nullptr && !visited_shaders.find(shader_reference)) {
+								ShaderDependencyNode* new_node = new ShaderDependencyNode(shader_reference);
+								visited_shaders.push_back(new_node->shader);
+								populate(new_node);
+								node->dependencies.insert(new_node);
+							}
+						}
+					}
 				}
 			}
 		}
