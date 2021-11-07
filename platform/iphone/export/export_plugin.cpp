@@ -1685,8 +1685,10 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 	archive_args.push_back("archive");
 	archive_args.push_back("-archivePath");
 	archive_args.push_back(archive_path);
-	err = OS::get_singleton()->execute("xcodebuild", archive_args);
+	String archive_str;
+	err = OS::get_singleton()->execute("xcodebuild", archive_args, &archive_str, nullptr, true);
 	ERR_FAIL_COND_V(err, err);
+	print_line("xcodebuild (.xcarchive):\n" + archive_str);
 
 	if (ep.step("Making .ipa", 4)) {
 		return ERR_SKIP;
@@ -1700,8 +1702,10 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 	export_args.push_back("-allowProvisioningUpdates");
 	export_args.push_back("-exportPath");
 	export_args.push_back(dest_dir);
-	err = OS::get_singleton()->execute("xcodebuild", export_args);
+	String export_str;
+	err = OS::get_singleton()->execute("xcodebuild", export_args, &export_str, nullptr, true);
 	ERR_FAIL_COND_V(err, err);
+	print_line("xcodebuild (.ipa):\n" + export_str);
 #else
 	print_line(".ipa can only be built on macOS. Leaving Xcode project without building the package.");
 #endif
