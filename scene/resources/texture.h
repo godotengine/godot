@@ -669,8 +669,8 @@ public:
 	~CurveXYZTexture();
 };
 
-class GradientTexture : public Texture2D {
-	GDCLASS(GradientTexture, Texture2D);
+class GradientTexture1D : public Texture2D {
+	GDCLASS(GradientTexture1D, Texture2D);
 
 public:
 	struct Point {
@@ -710,8 +710,8 @@ public:
 
 	virtual Ref<Image> get_image() const override;
 
-	GradientTexture();
-	virtual ~GradientTexture();
+	GradientTexture1D();
+	virtual ~GradientTexture1D();
 };
 
 class GradientTexture2D : public Texture2D {

@@ -84,7 +84,7 @@ void EditorResourcePicker::_update_resource_preview(const String &p_path, const 
 	if (p_preview.is_valid()) {
 		preview_rect->set_offset(SIDE_LEFT, assign_button->get_icon()->get_width() + assign_button->get_theme_stylebox(SNAME("normal"))->get_default_margin(SIDE_LEFT) + get_theme_constant(SNAME("hseparation"), SNAME("Button")));
 
-		if (type == "GradientTexture") {
+		if (type == "GradientTexture1D") {
 			preview_rect->set_stretch_mode(TextureRect::STRETCH_SCALE);
 			assign_button->set_custom_minimum_size(Size2(1, 1));
 		} else {

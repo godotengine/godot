@@ -1729,53 +1729,53 @@ CurveXYZTexture::~CurveXYZTexture() {
 
 //////////////////
 
-GradientTexture::GradientTexture() {
+GradientTexture1D::GradientTexture1D() {
 	_queue_update();
 }
 
-GradientTexture::~GradientTexture() {
+GradientTexture1D::~GradientTexture1D() {
 	if (texture.is_valid()) {
 		RS::get_singleton()->free(texture);
 	}
 }
 
-void GradientTexture::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_gradient", "gradient"), &GradientTexture::set_gradient);
-	ClassDB::bind_method(D_METHOD("get_gradient"), &GradientTexture::get_gradient);
+void GradientTexture1D::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_gradient", "gradient"), &GradientTexture1D::set_gradient);
+	ClassDB::bind_method(D_METHOD("get_gradient"), &GradientTexture1D::get_gradient);
 
-	ClassDB::bind_method(D_METHOD("set_width", "width"), &GradientTexture::set_width);
+	ClassDB::bind_method(D_METHOD("set_width", "width"), &GradientTexture1D::set_width);
 	// The `get_width()` method is already exposed by the parent class Texture2D.
 
-	ClassDB::bind_method(D_METHOD("set_use_hdr", "enabled"), &GradientTexture::set_use_hdr);
-	ClassDB::bind_method(D_METHOD("is_using_hdr"), &GradientTexture::is_using_hdr);
+	ClassDB::bind_method(D_METHOD("set_use_hdr", "enabled"), &GradientTexture1D::set_use_hdr);
+	ClassDB::bind_method(D_METHOD("is_using_hdr"), &GradientTexture1D::is_using_hdr);
 
-	ClassDB::bind_method(D_METHOD("_update"), &GradientTexture::_update);
+	ClassDB::bind_method(D_METHOD("_update"), &GradientTexture1D::_update);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "gradient", PROPERTY_HINT_RESOURCE_TYPE, "Gradient"), "set_gradient", "get_gradient");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "width", PROPERTY_HINT_RANGE, "1,4096"), "set_width", "get_width");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_hdr"), "set_use_hdr", "is_using_hdr");
 }
 
-void GradientTexture::set_gradient(Ref<Gradient> p_gradient) {
+void GradientTexture1D::set_gradient(Ref<Gradient> p_gradient) {
 	if (p_gradient == gradient) {
 		return;
 	}
 	if (gradient.is_valid()) {
-		gradient->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &GradientTexture::_update));
+		gradient->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &GradientTexture1D::_update));
 	}
 	gradient = p_gradient;
 	if (gradient.is_valid()) {
-		gradient->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &GradientTexture::_update));
+		gradient->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &GradientTexture1D::_update));
 	}
 	_update();
 	emit_changed();
 }
 
-Ref<Gradient> GradientTexture::get_gradient() const {
+Ref<Gradient> GradientTexture1D::get_gradient() const {
 	return gradient;
 }
 
-void GradientTexture::_queue_update() {
+void GradientTexture1D::_queue_update() {
 	if (update_pending) {
 		return;
 	}
@@ -1784,7 +1784,7 @@ void GradientTexture::_queue_update() {
 	call_deferred(SNAME("_update"));
 }
 
-void GradientTexture::_update() {
+void GradientTexture1D::_update() {
 	update_pending = false;
 
 	if (gradient.is_null()) {
@@ -1839,17 +1839,17 @@ void GradientTexture::_update() {
 	emit_changed();
 }
 
-void GradientTexture::set_width(int p_width) {
+void GradientTexture1D::set_width(int p_width) {
 	ERR_FAIL_COND(p_width <= 0);
 	width = p_width;
 	_queue_update();
 }
 
-int GradientTexture::get_width() const {
+int GradientTexture1D::get_width() const {
 	return width;
 }
 
-void GradientTexture::set_use_hdr(bool p_enabled) {
+void GradientTexture1D::set_use_hdr(bool p_enabled) {
 	if (p_enabled == use_hdr) {
 		return;
 	}
@@ -1858,11 +1858,11 @@ void GradientTexture::set_use_hdr(bool p_enabled) {
 	_queue_update();
 }
 
-bool GradientTexture::is_using_hdr() const {
+bool GradientTexture1D::is_using_hdr() const {
 	return use_hdr;
 }
 
-Ref<Image> GradientTexture::get_image() const {
+Ref<Image> GradientTexture1D::get_image() const {
 	if (!texture.is_valid()) {
 		return Ref<Image>();
 	}
