@@ -46,6 +46,10 @@ void CPUParticles2D::set_emitting(bool p_emitting) {
 	}
 }
 
+void CPUParticles2D::set_autostart(bool p_autostart) {
+	autostart = p_autostart;
+}
+
 void CPUParticles2D::set_amount(int p_amount) {
 	ERR_FAIL_COND_MSG(p_amount < 1, "Amount of particles must be greater than 0.");
 
@@ -97,6 +101,9 @@ void CPUParticles2D::set_speed_scale(float p_scale) {
 
 bool CPUParticles2D::is_emitting() const {
 	return emitting;
+}
+bool CPUParticles2D::has_autostart() const {
+	return autostart;
 }
 int CPUParticles2D::get_amount() const {
 	return particles.size();
@@ -1021,6 +1028,9 @@ void CPUParticles2D::_update_render_thread() {
 
 void CPUParticles2D::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE) {
+		if (autostart) {
+			set_emitting(true);
+		}
 		set_process_internal(emitting);
 	}
 
@@ -1093,6 +1103,7 @@ void CPUParticles2D::convert_from_particles(Node *p_particles) {
 	ERR_FAIL_COND_MSG(!particles, "Only Particles2D nodes can be converted to CPUParticles2D.");
 
 	set_emitting(particles->is_emitting());
+	set_autostart(particles->has_autostart());
 	set_amount(particles->get_amount());
 	set_lifetime(particles->get_lifetime());
 	set_one_shot(particles->get_one_shot());
@@ -1165,6 +1176,7 @@ void CPUParticles2D::convert_from_particles(Node *p_particles) {
 
 void CPUParticles2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_emitting", "emitting"), &CPUParticles2D::set_emitting);
+	ClassDB::bind_method(D_METHOD("set_autostart", "autostart"), &CPUParticles2D::set_autostart);
 	ClassDB::bind_method(D_METHOD("set_amount", "amount"), &CPUParticles2D::set_amount);
 	ClassDB::bind_method(D_METHOD("set_lifetime", "secs"), &CPUParticles2D::set_lifetime);
 	ClassDB::bind_method(D_METHOD("set_one_shot", "enable"), &CPUParticles2D::set_one_shot);
@@ -1178,6 +1190,7 @@ void CPUParticles2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_speed_scale", "scale"), &CPUParticles2D::set_speed_scale);
 
 	ClassDB::bind_method(D_METHOD("is_emitting"), &CPUParticles2D::is_emitting);
+	ClassDB::bind_method(D_METHOD("has_autostart"), &CPUParticles2D::has_autostart);
 	ClassDB::bind_method(D_METHOD("get_amount"), &CPUParticles2D::get_amount);
 	ClassDB::bind_method(D_METHOD("get_lifetime"), &CPUParticles2D::get_lifetime);
 	ClassDB::bind_method(D_METHOD("get_one_shot"), &CPUParticles2D::get_one_shot);
@@ -1203,6 +1216,7 @@ void CPUParticles2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("restart"), &CPUParticles2D::restart);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "emitting"), "set_emitting", "is_emitting");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "autostart"), "set_autostart", "has_autostart");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "amount", PROPERTY_HINT_EXP_RANGE, "1,1000000,1"), "set_amount", "get_amount");
 	ADD_GROUP("Time", "");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "lifetime", PROPERTY_HINT_RANGE, "0.01,600.0,0.01,or_greater"), "set_lifetime", "get_lifetime");
@@ -1375,6 +1389,7 @@ CPUParticles2D::CPUParticles2D() {
 	cycle = 0;
 	redraw = false;
 	emitting = false;
+	autostart = false;
 
 	mesh = VisualServer::get_singleton()->mesh_create();
 	multimesh = VisualServer::get_singleton()->multimesh_create();
@@ -1382,6 +1397,7 @@ CPUParticles2D::CPUParticles2D() {
 
 	set_emitting(true);
 	set_one_shot(false);
+	set_autostart(false);
 	set_amount(8);
 	set_lifetime(1);
 	set_fixed_fps(0);
