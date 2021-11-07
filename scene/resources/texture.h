@@ -900,9 +900,6 @@ public:
 	virtual RID get_rid() const override;
 	virtual bool has_alpha() const override;
 
-	virtual void set_flags(uint32_t p_flags);
-	virtual uint32_t get_flags() const;
-
 	virtual Ref<Image> get_image() const override;
 
 	void set_camera_feed_id(int p_new_id);
