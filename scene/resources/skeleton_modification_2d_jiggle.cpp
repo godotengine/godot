@@ -194,9 +194,13 @@ void SkeletonModification2DJiggle::_execute_jiggle_joint(int p_joint_idx, Node2D
 			PhysicsDirectSpaceState2D *space_state = PhysicsServer2D::get_singleton()->space_get_direct_state(world_2d->get_space());
 			PhysicsDirectSpaceState2D::RayResult ray_result;
 
+			PhysicsDirectSpaceState2D::RayParameters ray_params;
+			ray_params.from = operation_bone_trans.get_origin();
+			ray_params.to = jiggle_data_chain[p_joint_idx].dynamic_position;
+			ray_params.collision_mask = collision_mask;
+
 			// Add exception support?
-			bool ray_hit = space_state->intersect_ray(operation_bone_trans.get_origin(), jiggle_data_chain[p_joint_idx].dynamic_position,
-					ray_result, Set<RID>(), collision_mask);
+			bool ray_hit = space_state->intersect_ray(ray_params, ray_result);
 
 			if (ray_hit) {
 				jiggle_data_chain.write[p_joint_idx].dynamic_position = jiggle_data_chain[p_joint_idx].last_noncollision_position;

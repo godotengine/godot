@@ -927,7 +927,6 @@ void Node::_validate_child_name(Node *p_child, bool p_force_human_readable) {
 
 	if (p_force_human_readable) {
 		//this approach to autoset node names is human readable but very slow
-		//it's turned on while running in the editor
 
 		StringName name = p_child->data.name;
 		_generate_serial_child_name(p_child, name);

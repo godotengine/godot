@@ -47,8 +47,12 @@
 
 TilesEditorPlugin *TilesEditorPlugin::singleton = nullptr;
 
+void TilesEditorPlugin::_preview_frame_started() {
+	RS::get_singleton()->request_frame_drawn_callback(callable_mp(const_cast<TilesEditorPlugin *>(this), &TilesEditorPlugin::_pattern_preview_done));
+}
+
 void TilesEditorPlugin::_pattern_preview_done() {
-	pattern_preview_done.set();
+	pattern_preview_done.post();
 }
 
 void TilesEditorPlugin::_thread_func(void *ud) {
@@ -112,12 +116,9 @@ void TilesEditorPlugin::_thread() {
 				// Add the viewport at the lasst moment to avoid rendering too early.
 				EditorNode::get_singleton()->add_child(viewport);
 
-				pattern_preview_done.clear();
-				RS::get_singleton()->request_frame_drawn_callback(callable_mp(const_cast<TilesEditorPlugin *>(this), &TilesEditorPlugin::_pattern_preview_done));
+				RS::get_singleton()->connect(SNAME("frame_pre_draw"), callable_mp(const_cast<TilesEditorPlugin *>(this), &TilesEditorPlugin::_preview_frame_started), Vector<Variant>(), Object::CONNECT_ONESHOT);
 
-				while (!pattern_preview_done.is_set()) {
-					OS::get_singleton()->delay_usec(10);
-				}
+				pattern_preview_done.wait();
 
 				Ref<Image> image = viewport->get_texture()->get_image();
 				Ref<ImageTexture> image_texture;

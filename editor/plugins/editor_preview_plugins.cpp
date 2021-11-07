@@ -297,8 +297,14 @@ EditorPackedScenePreviewPlugin::EditorPackedScenePreviewPlugin() {
 
 //////////////////////////////////////////////////////////////////
 
+void EditorMaterialPreviewPlugin::_generate_frame_started() {
+	RS::get_singleton()->viewport_set_update_mode(viewport, RS::VIEWPORT_UPDATE_ONCE); //once used for capture
+
+	RS::get_singleton()->request_frame_drawn_callback(callable_mp(const_cast<EditorMaterialPreviewPlugin *>(this), &EditorMaterialPreviewPlugin::_preview_done));
+}
+
 void EditorMaterialPreviewPlugin::_preview_done() {
-	preview_done.set();
+	preview_done.post();
 }
 
 bool EditorMaterialPreviewPlugin::handles(const String &p_type) const {
@@ -316,14 +322,9 @@ Ref<Texture2D> EditorMaterialPreviewPlugin::generate(const RES &p_from, const Si
 	if (material->get_shader_mode() == Shader::MODE_SPATIAL) {
 		RS::get_singleton()->mesh_surface_set_material(sphere, 0, material->get_rid());
 
-		RS::get_singleton()->viewport_set_update_mode(viewport, RS::VIEWPORT_UPDATE_ONCE); //once used for capture
+		RS::get_singleton()->connect(SNAME("frame_pre_draw"), callable_mp(const_cast<EditorMaterialPreviewPlugin *>(this), &EditorMaterialPreviewPlugin::_generate_frame_started), Vector<Variant>(), Object::CONNECT_ONESHOT);
 
-		preview_done.clear();
-		RS::get_singleton()->request_frame_drawn_callback(callable_mp(const_cast<EditorMaterialPreviewPlugin *>(this), &EditorMaterialPreviewPlugin::_preview_done));
-
-		while (!preview_done.is_set()) {
-			OS::get_singleton()->delay_usec(10);
-		}
+		preview_done.wait();
 
 		Ref<Image> img = RS::get_singleton()->texture_2d_get(viewport_texture);
 		RS::get_singleton()->mesh_surface_set_material(sphere, 0, RID());
@@ -695,8 +696,14 @@ EditorAudioStreamPreviewPlugin::EditorAudioStreamPreviewPlugin() {
 
 ///////////////////////////////////////////////////////////////////////////
 
+void EditorMeshPreviewPlugin::_generate_frame_started() {
+	RS::get_singleton()->viewport_set_update_mode(viewport, RS::VIEWPORT_UPDATE_ONCE); //once used for capture
+
+	RS::get_singleton()->request_frame_drawn_callback(callable_mp(const_cast<EditorMeshPreviewPlugin *>(this), &EditorMeshPreviewPlugin::_preview_done));
+}
+
 void EditorMeshPreviewPlugin::_preview_done() {
-	preview_done.set();
+	preview_done.post();
 }
 
 bool EditorMeshPreviewPlugin::handles(const String &p_type) const {
@@ -727,14 +734,9 @@ Ref<Texture2D> EditorMeshPreviewPlugin::generate(const RES &p_from, const Size2 
 	xform.origin.z -= rot_aabb.size.z * 2;
 	RS::get_singleton()->instance_set_transform(mesh_instance, xform);
 
-	RS::get_singleton()->viewport_set_update_mode(viewport, RS::VIEWPORT_UPDATE_ONCE); //once used for capture
+	RS::get_singleton()->connect(SNAME("frame_pre_draw"), callable_mp(const_cast<EditorMeshPreviewPlugin *>(this), &EditorMeshPreviewPlugin::_generate_frame_started), Vector<Variant>(), Object::CONNECT_ONESHOT);
 
-	preview_done.clear();
-	RS::get_singleton()->request_frame_drawn_callback(callable_mp(const_cast<EditorMeshPreviewPlugin *>(this), &EditorMeshPreviewPlugin::_preview_done));
-
-	while (!preview_done.is_set()) {
-		OS::get_singleton()->delay_usec(10);
-	}
+	preview_done.wait();
 
 	Ref<Image> img = RS::get_singleton()->texture_2d_get(viewport_texture);
 	ERR_FAIL_COND_V(img.is_null(), Ref<ImageTexture>());
@@ -806,8 +808,14 @@ EditorMeshPreviewPlugin::~EditorMeshPreviewPlugin() {
 
 ///////////////////////////////////////////////////////////////////////////
 
+void EditorFontPreviewPlugin::_generate_frame_started() {
+	RS::get_singleton()->viewport_set_update_mode(viewport, RS::VIEWPORT_UPDATE_ONCE); //once used for capture
+
+	RS::get_singleton()->request_frame_drawn_callback(callable_mp(const_cast<EditorFontPreviewPlugin *>(this), &EditorFontPreviewPlugin::_preview_done));
+}
+
 void EditorFontPreviewPlugin::_preview_done() {
-	preview_done.set();
+	preview_done.post();
 }
 
 bool EditorFontPreviewPlugin::handles(const String &p_type) const {
@@ -845,13 +853,9 @@ Ref<Texture2D> EditorFontPreviewPlugin::generate_from_path(const String &p_path,
 
 	font->draw_string(canvas_item, pos, sample, HALIGN_LEFT, -1.f, 50, Color(1, 1, 1));
 
-	preview_done.clear();
-	RS::get_singleton()->viewport_set_update_mode(viewport, RS::VIEWPORT_UPDATE_ONCE); //once used for capture
-	RS::get_singleton()->request_frame_drawn_callback(callable_mp(const_cast<EditorFontPreviewPlugin *>(this), &EditorFontPreviewPlugin::_preview_done));
+	RS::get_singleton()->connect(SNAME("frame_pre_draw"), callable_mp(const_cast<EditorFontPreviewPlugin *>(this), &EditorFontPreviewPlugin::_generate_frame_started), Vector<Variant>(), Object::CONNECT_ONESHOT);
 
-	while (!preview_done.is_set()) {
-		OS::get_singleton()->delay_usec(10);
-	}
+	preview_done.wait();
 
 	RS::get_singleton()->canvas_item_clear(canvas_item);
 

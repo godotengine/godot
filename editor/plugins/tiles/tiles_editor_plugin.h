@@ -77,7 +77,8 @@ private:
 	Thread pattern_preview_thread;
 	SafeFlag pattern_thread_exit;
 	SafeFlag pattern_thread_exited;
-	mutable SafeFlag pattern_preview_done;
+	Semaphore pattern_preview_done;
+	void _preview_frame_started();
 	void _pattern_preview_done();
 	static void _thread_func(void *ud);
 	void _thread();
