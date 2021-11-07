@@ -34,6 +34,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/os/os.h"
+#include "core/version.h"
 
 #ifdef ALSAMIDI_ENABLED
 #include "drivers/alsa/asound-so_wrap.h"
@@ -293,7 +294,17 @@ Error AudioDriverPulseAudio::init() {
 	pa_ml = pa_mainloop_new();
 	ERR_FAIL_COND_V(pa_ml == nullptr, ERR_CANT_OPEN);
 
-	pa_ctx = pa_context_new(pa_mainloop_get_api(pa_ml), "Godot");
+	String context_name;
+	if (Engine::get_singleton()->is_editor_hint()) {
+		context_name = VERSION_NAME " Editor";
+	} else {
+		context_name = GLOBAL_GET("application/config/name");
+		if (context_name.is_empty()) {
+			context_name = VERSION_NAME " Project";
+		}
+	}
+
+	pa_ctx = pa_context_new(pa_mainloop_get_api(pa_ml), context_name.utf8().ptr());
 	ERR_FAIL_COND_V(pa_ctx == nullptr, ERR_CANT_OPEN);
 
 	pa_ready = 0;
