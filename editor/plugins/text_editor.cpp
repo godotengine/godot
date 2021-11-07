@@ -272,8 +272,10 @@ void TextEditor::update_settings() {
 	code_editor->update_editor_settings();
 }
 
-void TextEditor::set_tooltip_request_func(String p_method, Object *p_obj) {
-	code_editor->get_text_editor()->set_tooltip_request_func(p_obj, p_method, this);
+void TextEditor::set_tooltip_request_func(const Callable &p_toolip_callback) {
+	Variant args[1] = { this };
+	const Variant *argp[] = { &args[0] };
+	code_editor->get_text_editor()->set_tooltip_request_func(p_toolip_callback.bind(argp, 1));
 }
 
 Control *TextEditor::get_edit_menu() {

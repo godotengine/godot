@@ -2347,7 +2347,7 @@ bool ScriptEditor::edit(const RES &p_resource, int p_line, int p_col, bool p_gra
 	// If we delete a script within the filesystem, the original resource path
 	// is lost, so keep it as metadata to figure out the exact tab to delete.
 	se->set_meta("_edit_res_path", p_resource->get_path());
-	se->set_tooltip_request_func("_get_debug_tooltip", this);
+	se->set_tooltip_request_func(callable_mp(this, &ScriptEditor::_get_debug_tooltip));
 	if (se->get_edit_menu()) {
 		se->get_edit_menu()->hide();
 		menu_hb->add_child(se->get_edit_menu());
@@ -3547,7 +3547,6 @@ void ScriptEditor::_bind_methods() {
 	ClassDB::bind_method("_goto_script_line2", &ScriptEditor::_goto_script_line2);
 	ClassDB::bind_method("_copy_script_path", &ScriptEditor::_copy_script_path);
 
-	ClassDB::bind_method("_get_debug_tooltip", &ScriptEditor::_get_debug_tooltip);
 	ClassDB::bind_method("_update_script_connections", &ScriptEditor::_update_script_connections);
 	ClassDB::bind_method("_help_class_open", &ScriptEditor::_help_class_open);
 	ClassDB::bind_method("_live_auto_reload_running_scripts", &ScriptEditor::_live_auto_reload_running_scripts);

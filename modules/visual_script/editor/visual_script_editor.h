@@ -328,7 +328,7 @@ public:
 	virtual void update_settings() override;
 	virtual bool show_members_overview() override;
 	virtual void set_debugger_active(bool p_active) override;
-	virtual void set_tooltip_request_func(String p_method, Object *p_obj) override;
+	virtual void set_tooltip_request_func(const Callable &p_toolip_callback) override;
 	virtual Control *get_edit_menu() override;
 	virtual void clear_edit_menu() override;
 	virtual void set_find_replace_bar(FindReplaceBar *p_bar) override { p_bar->hide(); }; // Not needed here.

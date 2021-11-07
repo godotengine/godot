@@ -165,7 +165,7 @@ public:
 
 	virtual bool show_members_overview() = 0;
 
-	virtual void set_tooltip_request_func(String p_method, Object *p_obj) = 0;
+	virtual void set_tooltip_request_func(const Callable &p_toolip_callback) = 0;
 	virtual Control *get_edit_menu() = 0;
 	virtual void clear_edit_menu() = 0;
 	virtual void set_find_replace_bar(FindReplaceBar *p_bar) = 0;

@@ -2085,8 +2085,6 @@ void CodeEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_auto_brace_completion_close_key", "open_key"), &CodeEdit::get_auto_brace_completion_close_key);
 
 	/* Main Gutter */
-	ClassDB::bind_method(D_METHOD("_main_gutter_draw_callback"), &CodeEdit::_main_gutter_draw_callback);
-
 	ClassDB::bind_method(D_METHOD("set_draw_breakpoints_gutter", "enable"), &CodeEdit::set_draw_breakpoints_gutter);
 	ClassDB::bind_method(D_METHOD("is_drawing_breakpoints_gutter"), &CodeEdit::is_drawing_breakpoints_gutter);
 
@@ -2115,16 +2113,12 @@ void CodeEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_executing_lines"), &CodeEdit::get_executing_lines);
 
 	/* Line numbers */
-	ClassDB::bind_method(D_METHOD("_line_number_draw_callback"), &CodeEdit::_line_number_draw_callback);
-
 	ClassDB::bind_method(D_METHOD("set_draw_line_numbers", "enable"), &CodeEdit::set_draw_line_numbers);
 	ClassDB::bind_method(D_METHOD("is_draw_line_numbers_enabled"), &CodeEdit::is_draw_line_numbers_enabled);
 	ClassDB::bind_method(D_METHOD("set_line_numbers_zero_padded", "enable"), &CodeEdit::set_line_numbers_zero_padded);
 	ClassDB::bind_method(D_METHOD("is_line_numbers_zero_padded"), &CodeEdit::is_line_numbers_zero_padded);
 
 	/* Fold Gutter */
-	ClassDB::bind_method(D_METHOD("_fold_gutter_draw_callback"), &CodeEdit::_fold_gutter_draw_callback);
-
 	ClassDB::bind_method(D_METHOD("set_draw_fold_gutter", "enable"), &CodeEdit::set_draw_fold_gutter);
 	ClassDB::bind_method(D_METHOD("is_drawing_fold_gutter"), &CodeEdit::is_drawing_fold_gutter);
 
@@ -3084,7 +3078,7 @@ CodeEdit::CodeEdit() {
 	set_gutter_draw(gutter_idx, false);
 	set_gutter_overwritable(gutter_idx, true);
 	set_gutter_type(gutter_idx, GUTTER_TYPE_CUSTOM);
-	set_gutter_custom_draw(gutter_idx, this, "_main_gutter_draw_callback");
+	set_gutter_custom_draw(gutter_idx, callable_mp(this, &CodeEdit::_main_gutter_draw_callback));
 	gutter_idx++;
 
 	/* Line numbers */
@@ -3092,7 +3086,7 @@ CodeEdit::CodeEdit() {
 	set_gutter_name(gutter_idx, "line_numbers");
 	set_gutter_draw(gutter_idx, false);
 	set_gutter_type(gutter_idx, GUTTER_TYPE_CUSTOM);
-	set_gutter_custom_draw(gutter_idx, this, "_line_number_draw_callback");
+	set_gutter_custom_draw(gutter_idx, callable_mp(this, &CodeEdit::_line_number_draw_callback));
 	gutter_idx++;
 
 	/* Fold Gutter */
@@ -3100,7 +3094,7 @@ CodeEdit::CodeEdit() {
 	set_gutter_name(gutter_idx, "fold_gutter");
 	set_gutter_draw(gutter_idx, false);
 	set_gutter_type(gutter_idx, GUTTER_TYPE_CUSTOM);
-	set_gutter_custom_draw(gutter_idx, this, "_fold_gutter_draw_callback");
+	set_gutter_custom_draw(gutter_idx, callable_mp(this, &CodeEdit::_fold_gutter_draw_callback));
 	gutter_idx++;
 
 	connect("lines_edited_from", callable_mp(this, &CodeEdit::_lines_edited_from));

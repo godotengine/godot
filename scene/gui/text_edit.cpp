@@ -1008,15 +1008,17 @@ void TextEdit::_notification(int p_what) {
 									icon->draw_rect(ci, gutter_rect, false, get_line_gutter_item_color(line, g));
 								} break;
 								case GUTTER_TYPE_CUSTOM: {
-									if (gutter.custom_draw_obj.is_valid()) {
-										Object *cdo = ObjectDB::get_instance(gutter.custom_draw_obj);
-										if (cdo) {
-											Rect2i gutter_rect = Rect2i(Point2i(gutter_offset, ofs_y), Size2i(gutter.width, row_height));
-											if (rtl) {
-												gutter_rect.position.x = size.width - gutter_rect.position.x - gutter_rect.size.x;
-											}
-											cdo->call(gutter.custom_draw_callback, line, g, Rect2(gutter_rect));
+									if (gutter.custom_draw_callback.is_valid()) {
+										Rect2i gutter_rect = Rect2i(Point2i(gutter_offset, ofs_y), Size2i(gutter.width, row_height));
+										if (rtl) {
+											gutter_rect.position.x = size.width - gutter_rect.position.x - gutter_rect.size.x;
 										}
+
+										Variant args[3] = { line, g, Rect2(gutter_rect) };
+										const Variant *argp[] = { &args[0], &args[1], &args[2] };
+										Callable::CallError ce;
+										Variant ret;
+										gutter.custom_draw_callback.call(argp, 3, ret, ce);
 									}
 								} break;
 							}
@@ -2598,8 +2600,7 @@ Control::CursorShape TextEdit::get_cursor_shape(const Point2 &p_pos) const {
 }
 
 String TextEdit::get_tooltip(const Point2 &p_pos) const {
-	Object *tooltip_obj = ObjectDB::get_instance(tooltip_obj_id);
-	if (!tooltip_obj) {
+	if (!tooltip_callback.is_valid()) {
 		return Control::get_tooltip(p_pos);
 	}
 	Point2i pos = get_line_column_at_pos(p_pos);
@@ -2612,19 +2613,20 @@ String TextEdit::get_tooltip(const Point2 &p_pos) const {
 	}
 	int beg, end;
 	if (select_word(s, col, beg, end)) {
-		String tt = tooltip_obj->call(tooltip_func, s.substr(beg, end - beg), tooltip_ud);
-
-		return tt;
+		Variant args[1] = { s.substr(beg, end - beg) };
+		const Variant *argp[] = { &args[0] };
+		Callable::CallError ce;
+		Variant ret;
+		tooltip_callback.call(argp, 1, ret, ce);
+		ERR_FAIL_COND_V_MSG(ce.error != Callable::CallError::CALL_OK, "", "Failed to call custom tooltip.");
+		return ret;
 	}
 
 	return Control::get_tooltip(p_pos);
 }
 
-void TextEdit::set_tooltip_request_func(Object *p_obj, const StringName &p_function, const Variant &p_udata) {
-	ERR_FAIL_NULL(p_obj);
-	tooltip_obj_id = p_obj->get_instance_id();
-	tooltip_func = p_function;
-	tooltip_ud = p_udata;
+void TextEdit::set_tooltip_request_func(const Callable &p_tooltip_callback) {
+	tooltip_callback = p_tooltip_callback;
 }
 
 /* Text */
@@ -4658,12 +4660,10 @@ void TextEdit::merge_gutters(int p_from_line, int p_to_line) {
 	update();
 }
 
-void TextEdit::set_gutter_custom_draw(int p_gutter, Object *p_object, const StringName &p_callback) {
+void TextEdit::set_gutter_custom_draw(int p_gutter, const Callable &p_draw_callback) {
 	ERR_FAIL_INDEX(p_gutter, gutters.size());
-	ERR_FAIL_NULL(p_object);
 
-	gutters.write[p_gutter].custom_draw_obj = p_object->get_instance_id();
-	gutters.write[p_gutter].custom_draw_callback = p_callback;
+	gutters.write[p_gutter].custom_draw_callback = p_draw_callback;
 	update();
 }
 
@@ -4953,7 +4953,7 @@ void TextEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("search", "text", "flags", "from_line", "from_colum"), &TextEdit::search);
 
 	/* Tooltip */
-	ClassDB::bind_method(D_METHOD("set_tooltip_request_func", "object", "callback", "data"), &TextEdit::set_tooltip_request_func);
+	ClassDB::bind_method(D_METHOD("set_tooltip_request_func", "callback"), &TextEdit::set_tooltip_request_func);
 
 	/* Mouse */
 	ClassDB::bind_method(D_METHOD("get_local_mouse_pos"), &TextEdit::get_local_mouse_pos);
@@ -5125,7 +5125,7 @@ void TextEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_gutter_overwritable", "gutter", "overwritable"), &TextEdit::set_gutter_overwritable);
 	ClassDB::bind_method(D_METHOD("is_gutter_overwritable", "gutter"), &TextEdit::is_gutter_overwritable);
 	ClassDB::bind_method(D_METHOD("merge_gutters", "from_line", "to_line"), &TextEdit::merge_gutters);
-	ClassDB::bind_method(D_METHOD("set_gutter_custom_draw", "column", "object", "callback"), &TextEdit::set_gutter_custom_draw);
+	ClassDB::bind_method(D_METHOD("set_gutter_custom_draw", "column", "draw_callback"), &TextEdit::set_gutter_custom_draw);
 	ClassDB::bind_method(D_METHOD("get_total_gutter_width"), &TextEdit::get_total_gutter_width);
 
 	// Line gutters.

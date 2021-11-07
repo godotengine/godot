@@ -2846,7 +2846,7 @@ Control *VisualScriptEditor::get_base_editor() const {
 	return graph;
 }
 
-void VisualScriptEditor::set_tooltip_request_func(String p_method, Object *p_obj) {
+void VisualScriptEditor::set_tooltip_request_func(const Callable &p_toolip_callback) {
 }
 
 Control *VisualScriptEditor::get_edit_menu() {

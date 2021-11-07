@@ -1375,8 +1375,10 @@ void ScriptTextEditor::clear_breakpoints() {
 	code_editor->get_text_editor()->clear_breakpointed_lines();
 }
 
-void ScriptTextEditor::set_tooltip_request_func(String p_method, Object *p_obj) {
-	code_editor->get_text_editor()->set_tooltip_request_func(p_obj, p_method, this);
+void ScriptTextEditor::set_tooltip_request_func(const Callable &p_toolip_callback) {
+	Variant args[1] = { this };
+	const Variant *argp[] = { &args[0] };
+	code_editor->get_text_editor()->set_tooltip_request_func(p_toolip_callback.bind(argp, 1));
 }
 
 void ScriptTextEditor::set_debugger_active(bool p_active) {
