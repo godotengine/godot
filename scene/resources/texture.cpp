@@ -2871,15 +2871,6 @@ RID CameraTexture::get_rid() const {
 	}
 }
 
-void CameraTexture::set_flags(uint32_t p_flags) {
-	// not supported
-}
-
-uint32_t CameraTexture::get_flags() const {
-	// not supported
-	return 0;
-}
-
 Ref<Image> CameraTexture::get_image() const {
 	// not (yet) supported
 	return Ref<Image>();
