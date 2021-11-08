@@ -133,6 +133,9 @@ public:
 	void set_use_hidden_tabs_for_min_size(bool p_use_hidden_tabs);
 	bool get_use_hidden_tabs_for_min_size() const;
 
+	virtual Vector<int> get_allowed_size_flags_horizontal() const override;
+	virtual Vector<int> get_allowed_size_flags_vertical() const override;
+
 	TabContainer();
 };
 

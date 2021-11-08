@@ -331,6 +331,30 @@ Control *BoxContainer::add_spacer(bool p_begin) {
 	return c;
 }
 
+Vector<int> BoxContainer::get_allowed_size_flags_horizontal() const {
+	Vector<int> flags;
+	flags.append(SIZE_FILL);
+	if (!vertical) {
+		flags.append(SIZE_EXPAND);
+	}
+	flags.append(SIZE_SHRINK_BEGIN);
+	flags.append(SIZE_SHRINK_CENTER);
+	flags.append(SIZE_SHRINK_END);
+	return flags;
+}
+
+Vector<int> BoxContainer::get_allowed_size_flags_vertical() const {
+	Vector<int> flags;
+	flags.append(SIZE_FILL);
+	if (vertical) {
+		flags.append(SIZE_EXPAND);
+	}
+	flags.append(SIZE_SHRINK_BEGIN);
+	flags.append(SIZE_SHRINK_CENTER);
+	flags.append(SIZE_SHRINK_END);
+	return flags;
+}
+
 BoxContainer::BoxContainer(bool p_vertical) {
 	vertical = p_vertical;
 }

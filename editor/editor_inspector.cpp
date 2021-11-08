@@ -1181,6 +1181,15 @@ void EditorInspectorSection::_notification(int p_what) {
 			header_height += get_theme_constant(SNAME("vseparation"), SNAME("Tree"));
 
 			int inspector_margin = get_theme_constant(SNAME("inspector_margin"), SNAME("Editor"));
+			int section_indent_size = get_theme_constant(SNAME("indent_size"), SNAME("EditorInspectorSection"));
+			if (indent_depth > 0 && section_indent_size > 0) {
+				inspector_margin += indent_depth * section_indent_size;
+			}
+			Ref<StyleBoxFlat> section_indent_style = get_theme_stylebox(SNAME("indent_box"), SNAME("EditorInspectorSection"));
+			if (indent_depth > 0 && section_indent_style.is_valid()) {
+				inspector_margin += section_indent_style->get_margin(SIDE_LEFT) + section_indent_style->get_margin(SIDE_RIGHT);
+			}
+
 			Size2 size = get_size() - Vector2(inspector_margin, 0);
 			Vector2 offset = Vector2(is_layout_rtl() ? 0 : inspector_margin, header_height);
 			for (int i = 0; i < get_child_count(); i++) {
@@ -1216,14 +1225,31 @@ void EditorInspectorSection::_notification(int p_what) {
 
 			bool rtl = is_layout_rtl();
 
-			// Compute the height of the section header.
+			// Compute the height and width of the section header.
 			int header_height = font->get_height(font_size);
 			if (arrow.is_valid()) {
 				header_height = MAX(header_height, arrow->get_height());
 			}
 			header_height += get_theme_constant(SNAME("vseparation"), SNAME("Tree"));
 
-			Rect2 header_rect = Rect2(Vector2(), Vector2(get_size().width, header_height));
+			int section_indent = 0;
+			int section_indent_size = get_theme_constant(SNAME("indent_size"), SNAME("EditorInspectorSection"));
+			if (indent_depth > 0 && section_indent_size > 0) {
+				section_indent = indent_depth * section_indent_size;
+			}
+			Ref<StyleBoxFlat> section_indent_style = get_theme_stylebox(SNAME("indent_box"), SNAME("EditorInspectorSection"));
+			if (indent_depth > 0 && section_indent_style.is_valid()) {
+				section_indent += section_indent_style->get_margin(SIDE_LEFT) + section_indent_style->get_margin(SIDE_RIGHT);
+			}
+
+			int header_width = get_size().width - section_indent;
+			int header_offset_x = 0.0;
+			if (!rtl) {
+				header_offset_x += section_indent;
+			}
+
+			// Draw header area.
+			Rect2 header_rect = Rect2(Vector2(header_offset_x, 0.0), Vector2(header_width, header_height));
 			Color c = bg_color;
 			c.a *= 0.4;
 			if (foldable && header_rect.has_point(get_local_mouse_position())) {
@@ -1231,23 +1257,45 @@ void EditorInspectorSection::_notification(int p_what) {
 			}
 			draw_rect(header_rect, c);
 
+			// Draw header title and folding arrow.
 			const int arrow_margin = 2;
 			const int arrow_width = arrow.is_valid() ? arrow->get_width() : 0;
 			Color color = get_theme_color(SNAME("font_color"));
-			float text_width = get_size().width - Math::round(arrow_width + arrow_margin * EDSCALE);
-			draw_string(font, Point2(rtl ? 0 : Math::round(arrow_width + arrow_margin * EDSCALE), font->get_ascent(font_size) + (header_height - font->get_height(font_size)) / 2).floor(), label, rtl ? HORIZONTAL_ALIGNMENT_RIGHT : HORIZONTAL_ALIGNMENT_LEFT, text_width, font_size, color);
+			float text_width = get_size().width - Math::round(arrow_width + arrow_margin * EDSCALE) - section_indent;
+			Point2 text_offset = Point2(0, font->get_ascent(font_size) + (header_height - font->get_height(font_size)) / 2);
+			HorizontalAlignment text_align = HORIZONTAL_ALIGNMENT_LEFT;
+			if (rtl) {
+				text_align = HORIZONTAL_ALIGNMENT_RIGHT;
+			} else {
+				text_offset.x = section_indent + Math::round(arrow_width + arrow_margin * EDSCALE);
+			}
+			draw_string(font, text_offset.floor(), label, text_align, text_width, font_size, color);
 
 			if (arrow.is_valid()) {
+				Point2 arrow_position = Point2(0, (header_height - arrow->get_height()) / 2);
 				if (rtl) {
-					draw_texture(arrow, Point2(get_size().width - arrow->get_width() - Math::round(arrow_margin * EDSCALE), (header_height - arrow->get_height()) / 2).floor());
+					arrow_position.x = get_size().width - section_indent - arrow->get_width() - Math::round(arrow_margin * EDSCALE);
 				} else {
-					draw_texture(arrow, Point2(Math::round(arrow_margin * EDSCALE), (header_height - arrow->get_height()) / 2).floor());
+					arrow_position.x = section_indent + Math::round(arrow_margin * EDSCALE);
 				}
+				draw_texture(arrow, arrow_position.floor());
 			}
 
+			// Draw dropping highlight.
 			if (dropping && !vbox->is_visible_in_tree()) {
 				Color accent_color = get_theme_color(SNAME("accent_color"), SNAME("Editor"));
 				draw_rect(Rect2(Point2(), get_size()), accent_color, false);
+			}
+
+			// Draw section indentation.
+			if (section_indent_style.is_valid() && section_indent > 0) {
+				Rect2 indent_rect = Rect2(Vector2(), Vector2(indent_depth * section_indent_size, get_size().height));
+				if (rtl) {
+					indent_rect.position.x = get_size().width - section_indent + section_indent_style->get_margin(SIDE_RIGHT);
+				} else {
+					indent_rect.position.x = section_indent_style->get_margin(SIDE_LEFT);
+				}
+				draw_style_box(section_indent_style, indent_rect);
 			}
 		} break;
 		case NOTIFICATION_DRAG_BEGIN: {
@@ -1311,15 +1359,25 @@ Size2 EditorInspectorSection::get_minimum_size() const {
 	ms.height += font->get_height(font_size) + get_theme_constant(SNAME("vseparation"), SNAME("Tree"));
 	ms.width += get_theme_constant(SNAME("inspector_margin"), SNAME("Editor"));
 
+	int section_indent_size = get_theme_constant(SNAME("indent_size"), SNAME("EditorInspectorSection"));
+	if (indent_depth > 0 && section_indent_size > 0) {
+		ms.width += indent_depth * section_indent_size;
+	}
+	Ref<StyleBoxFlat> section_indent_style = get_theme_stylebox(SNAME("indent_box"), SNAME("EditorInspectorSection"));
+	if (indent_depth > 0 && section_indent_style.is_valid()) {
+		ms.width += section_indent_style->get_margin(SIDE_LEFT) + section_indent_style->get_margin(SIDE_RIGHT);
+	}
+
 	return ms;
 }
 
-void EditorInspectorSection::setup(const String &p_section, const String &p_label, Object *p_object, const Color &p_bg_color, bool p_foldable) {
+void EditorInspectorSection::setup(const String &p_section, const String &p_label, Object *p_object, const Color &p_bg_color, bool p_foldable, int p_indent_depth) {
 	section = p_section;
 	label = p_label;
 	object = p_object;
 	bg_color = p_bg_color;
 	foldable = p_foldable;
+	indent_depth = p_indent_depth;
 
 	if (!foldable && !vbox_added) {
 		add_child(vbox);
@@ -1401,12 +1459,8 @@ void EditorInspectorSection::_bind_methods() {
 }
 
 EditorInspectorSection::EditorInspectorSection() {
-	object = nullptr;
-	foldable = false;
 	vbox = memnew(VBoxContainer);
-	vbox_added = false;
 
-	dropping = false;
 	dropping_unfold_timer = memnew(Timer);
 	dropping_unfold_timer->set_wait_time(0.6);
 	dropping_unfold_timer->set_one_shot(true);
@@ -2004,7 +2058,7 @@ void EditorInspectorArray::setup_with_move_element_function(Object *p_object, St
 	array_element_prefix = p_array_element_prefix;
 	page = p_page;
 
-	EditorInspectorSection::setup(String(p_array_element_prefix) + "_array", p_label, p_object, p_bg_color, p_foldable);
+	EditorInspectorSection::setup(String(p_array_element_prefix) + "_array", p_label, p_object, p_bg_color, p_foldable, 0);
 
 	_setup();
 }
@@ -2015,7 +2069,7 @@ void EditorInspectorArray::setup_with_count_property(Object *p_object, String p_
 	array_element_prefix = p_array_element_prefix;
 	page = p_page;
 
-	EditorInspectorSection::setup(String(count_property) + "_array", p_label, p_object, p_bg_color, p_foldable);
+	EditorInspectorSection::setup(String(count_property) + "_array", p_label, p_object, p_bg_color, p_foldable, 0);
 
 	_setup();
 }
@@ -2376,6 +2430,7 @@ void EditorInspector::update_tree() {
 	String group_base;
 	String subgroup;
 	String subgroup_base;
+	int section_depth = 0;
 	VBoxContainer *category_vbox = nullptr;
 
 	List<PropertyInfo> plist;
@@ -2400,14 +2455,29 @@ void EditorInspector::update_tree() {
 		if (p.usage & PROPERTY_USAGE_SUBGROUP) {
 			// Setup a property sub-group.
 			subgroup = p.name;
-			subgroup_base = p.hint_string;
+
+			Vector<String> hint_parts = p.hint_string.split(",");
+			subgroup_base = hint_parts[0];
+			if (hint_parts.size() > 1) {
+				section_depth = hint_parts[1].to_int();
+			} else {
+				section_depth = 0;
+			}
 
 			continue;
 
 		} else if (p.usage & PROPERTY_USAGE_GROUP) {
 			// Setup a property group.
 			group = p.name;
-			group_base = p.hint_string;
+
+			Vector<String> hint_parts = p.hint_string.split(",");
+			group_base = hint_parts[0];
+			if (hint_parts.size() > 1) {
+				section_depth = hint_parts[1].to_int();
+			} else {
+				section_depth = 0;
+			}
+
 			subgroup = "";
 			subgroup_base = "";
 
@@ -2419,6 +2489,7 @@ void EditorInspector::update_tree() {
 			group_base = "";
 			subgroup = "";
 			subgroup_base = "";
+			section_depth = 0;
 
 			if (!show_categories) {
 				continue;
@@ -2660,7 +2731,7 @@ void EditorInspector::update_tree() {
 
 				Color c = sscolor;
 				c.a /= level;
-				section->setup(acc_path, component, object, c, use_folding);
+				section->setup(acc_path, component, object, c, use_folding, section_depth);
 
 				// Add editors at the start of a group.
 				for (Ref<EditorInspectorPlugin> &ped : valid_plugins) {

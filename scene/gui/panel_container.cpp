@@ -60,6 +60,24 @@ Size2 PanelContainer::get_minimum_size() const {
 	return ms;
 }
 
+Vector<int> PanelContainer::get_allowed_size_flags_horizontal() const {
+	Vector<int> flags;
+	flags.append(SIZE_FILL);
+	flags.append(SIZE_SHRINK_BEGIN);
+	flags.append(SIZE_SHRINK_CENTER);
+	flags.append(SIZE_SHRINK_END);
+	return flags;
+}
+
+Vector<int> PanelContainer::get_allowed_size_flags_vertical() const {
+	Vector<int> flags;
+	flags.append(SIZE_FILL);
+	flags.append(SIZE_SHRINK_BEGIN);
+	flags.append(SIZE_SHRINK_CENTER);
+	flags.append(SIZE_SHRINK_END);
+	return flags;
+}
+
 void PanelContainer::_notification(int p_what) {
 	if (p_what == NOTIFICATION_DRAW) {
 		RID ci = get_canvas_item();
