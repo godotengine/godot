@@ -3685,11 +3685,18 @@ void DisplayServerX11::process_events() {
 			} break;
 			case KeyPress:
 			case KeyRelease: {
+#ifdef DISPLAY_SERVER_X11_DEBUG_LOGS_ENABLED
+				if (event.type == KeyPress) {
+					DEBUG_LOG_X11("[%u] KeyPress window=%lu (%u), keycode=%u, time=%lu \n", frame, event.xkey.window, window_id, event.xkey.keycode, event.xkey.time);
+				} else {
+					DEBUG_LOG_X11("[%u] KeyRelease window=%lu (%u), keycode=%u, time=%lu \n", frame, event.xkey.window, window_id, event.xkey.keycode, event.xkey.time);
+				}
+#endif
 				last_timestamp = event.xkey.time;
 
 				// key event is a little complex, so
 				// it will be handled in its own function.
-				_handle_key_event(window_id, (XKeyEvent *)&event, events, event_index);
+				_handle_key_event(window_id, &event.xkey, events, event_index);
 			} break;
 
 			case SelectionNotify:
