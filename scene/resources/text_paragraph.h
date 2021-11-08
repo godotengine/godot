@@ -96,6 +96,9 @@ public:
 
 	void set_bidi_override(const Array &p_override);
 
+	void set_custom_punctuation(const String &p_punct);
+	String get_custom_punctuation() const;
+
 	bool set_dropcap(const String &p_text, const Ref<Font> &p_fonts, int p_size, const Rect2 &p_dropcap_margins = Rect2(), const Dictionary &p_opentype_features = Dictionary(), const String &p_language = "");
 	void clear_dropcap();
 

@@ -347,6 +347,9 @@ void TextServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("shaped_text_set_bidi_override", "shaped", "override"), &TextServer::shaped_text_set_bidi_override);
 
+	ClassDB::bind_method(D_METHOD("shaped_text_set_custom_punctuation", "shaped", "punct"), &TextServer::shaped_text_set_custom_punctuation);
+	ClassDB::bind_method(D_METHOD("shaped_text_get_custom_punctuation", "shaped"), &TextServer::shaped_text_get_custom_punctuation);
+
 	ClassDB::bind_method(D_METHOD("shaped_text_set_orientation", "shaped", "orientation"), &TextServer::shaped_text_set_orientation, DEFVAL(ORIENTATION_HORIZONTAL));
 	ClassDB::bind_method(D_METHOD("shaped_text_get_orientation", "shaped"), &TextServer::shaped_text_get_orientation);
 

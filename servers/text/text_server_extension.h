@@ -316,6 +316,11 @@ public:
 	virtual void shaped_text_set_bidi_override(RID p_shaped, const Array &p_override) override;
 	GDVIRTUAL2(_shaped_text_set_bidi_override, RID, const Array &);
 
+	virtual void shaped_text_set_custom_punctuation(RID p_shaped, const String &p_punct) override;
+	virtual String shaped_text_get_custom_punctuation(RID p_shaped) const override;
+	GDVIRTUAL2(_shaped_text_set_custom_punctuation, RID, String);
+	GDVIRTUAL1RC(String, _shaped_text_get_custom_punctuation, RID);
+
 	virtual void shaped_text_set_orientation(RID p_shaped, Orientation p_orientation = ORIENTATION_HORIZONTAL) override;
 	virtual Orientation shaped_text_get_orientation(RID p_shaped) const override;
 	GDVIRTUAL2(_shaped_text_set_orientation, RID, Orientation);

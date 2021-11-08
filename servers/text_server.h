@@ -150,6 +150,7 @@ protected:
 		int end = 0; // Substring end offset in the parent string.
 
 		String text;
+		String custom_punct;
 		TextServer::Direction direction = DIRECTION_LTR; // Desired text direction.
 		TextServer::Orientation orientation = ORIENTATION_HORIZONTAL;
 
@@ -368,6 +369,9 @@ public:
 	virtual Direction shaped_text_get_direction(RID p_shaped) const = 0;
 
 	virtual void shaped_text_set_bidi_override(RID p_shaped, const Array &p_override) = 0;
+
+	virtual void shaped_text_set_custom_punctuation(RID p_shaped, const String &p_punct) = 0;
+	virtual String shaped_text_get_custom_punctuation(RID p_shaped) const = 0;
 
 	virtual void shaped_text_set_orientation(RID p_shaped, Orientation p_orientation = ORIENTATION_HORIZONTAL) = 0;
 	virtual Orientation shaped_text_get_orientation(RID p_shaped) const = 0;

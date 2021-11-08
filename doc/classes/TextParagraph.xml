@@ -278,6 +278,9 @@
 		<member name="align" type="int" setter="set_align" getter="get_align" enum="HAlign" default="0">
 			Paragraph horizontal alignment.
 		</member>
+		<member name="custom_punctuation" type="String" setter="set_custom_punctuation" getter="get_custom_punctuation" default="&quot;&quot;">
+			Custom punctuation character list, used for word breaking. If set to empty string, server defaults are used.
+		</member>
 		<member name="direction" type="int" setter="set_direction" getter="get_direction" enum="TextServer.Direction" default="0">
 			Text writing direction.
 		</member>

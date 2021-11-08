@@ -3008,6 +3008,27 @@ TextServer::Direction TextServerAdvanced::shaped_text_get_direction(RID p_shaped
 	return sd->direction;
 }
 
+void TextServerAdvanced::shaped_text_set_custom_punctuation(RID p_shaped, const String &p_punct) {
+	_THREAD_SAFE_METHOD_
+	ShapedTextDataAdvanced *sd = shaped_owner.get_or_null(p_shaped);
+	ERR_FAIL_COND(!sd);
+
+	if (sd->custom_punct != p_punct) {
+		if (sd->parent != RID()) {
+			full_copy(sd);
+		}
+		sd->custom_punct = p_punct;
+		invalidate(sd);
+	}
+}
+
+String TextServerAdvanced::shaped_text_get_custom_punctuation(RID p_shaped) const {
+	_THREAD_SAFE_METHOD_
+	const ShapedTextDataAdvanced *sd = shaped_owner.get_or_null(p_shaped);
+	ERR_FAIL_COND_V(!sd, String());
+	return sd->custom_punct;
+}
+
 void TextServerAdvanced::shaped_text_set_bidi_override(RID p_shaped, const Array &p_override) {
 	ShapedTextDataAdvanced *sd = shaped_owner.get_or_null(p_shaped);
 	ERR_FAIL_COND(!sd);
@@ -3307,6 +3328,7 @@ RID TextServerAdvanced::shaped_text_substr(RID p_shaped, int p_start, int p_leng
 
 	new_sd->orientation = sd->orientation;
 	new_sd->direction = sd->direction;
+	new_sd->custom_punct = sd->custom_punct;
 	new_sd->para_direction = sd->para_direction;
 	new_sd->line_breaks_valid = sd->line_breaks_valid;
 	new_sd->justification_ops_valid = sd->justification_ops_valid;
@@ -3887,6 +3909,9 @@ bool TextServerAdvanced::shaped_text_update_breaks(RID p_shaped) {
 	const char32_t *ch = sd->text.ptr();
 	Glyph *sd_glyphs = sd->glyphs.ptrw();
 
+	int c_punct_size = sd->custom_punct.length();
+	const char32_t *c_punct = sd->custom_punct.ptr();
+
 	for (i = 0; i < sd_size; i++) {
 		if (sd_glyphs[i].count > 0) {
 			char32_t c = ch[sd_glyphs[i].start - sd->start];
@@ -3899,11 +3924,20 @@ bool TextServerAdvanced::shaped_text_update_breaks(RID p_shaped) {
 			if (is_whitespace(c)) {
 				sd_glyphs[i].flags |= GRAPHEME_IS_SPACE;
 			}
+			if (c_punct_size == 0) {
+				if (u_ispunct(c) && c != 0x005F) {
+					sd_glyphs[i].flags |= GRAPHEME_IS_PUNCTUATION;
+				}
+			} else {
+				for (int j = 0; j < c_punct_size; j++) {
+					if (c_punct[j] == c) {
+						sd_glyphs[i].flags |= GRAPHEME_IS_PUNCTUATION;
+						break;
+					}
+				}
+			}
 			if (is_underscore(c)) {
 				sd_glyphs[i].flags |= GRAPHEME_IS_UNDERSCORE;
-			}
-			if (u_ispunct(c) && c != 0x005F) {
-				sd_glyphs[i].flags |= GRAPHEME_IS_PUNCTUATION;
 			}
 			if (breaks.has(sd->glyphs[i].start)) {
 				if (breaks[sd->glyphs[i].start]) {

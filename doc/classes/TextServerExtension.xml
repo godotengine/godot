@@ -969,6 +969,13 @@
 				Returns shapes of the carets corresponding to the character offset [code]position[/code] in the text. Returned caret shape is 1 pixel wide rectangle.
 			</description>
 		</method>
+		<method name="_shaped_text_get_custom_punctuation" qualifiers="virtual const">
+			<return type="String" />
+			<argument index="0" name="shaped" type="RID" />
+			<description>
+				Returns custom punctuation character list, used for word breaking. If set to empty string, server defaults are used.
+			</description>
+		</method>
 		<method name="_shaped_text_get_descent" qualifiers="virtual const">
 			<return type="float" />
 			<argument index="0" name="shaped" type="RID" />
@@ -1219,6 +1226,14 @@
 			<description>
 				Overrides BiDi for the structured text.
 				Override ranges should cover full source text without overlaps. BiDi algorithm will be used on each range separately.
+			</description>
+		</method>
+		<method name="_shaped_text_set_custom_punctuation" qualifiers="virtual">
+			<return type="void" />
+			<argument index="0" name="shaped" type="RID" />
+			<argument index="1" name="punct" type="String" />
+			<description>
+				Sets custom punctuation character list, used for word breaking. If set to empty string, server defaults are used.
 			</description>
 		</method>
 		<method name="_shaped_text_set_direction" qualifiers="virtual">

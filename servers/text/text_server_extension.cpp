@@ -194,6 +194,9 @@ void TextServerExtension::_bind_methods() {
 
 	GDVIRTUAL_BIND(_shaped_text_set_bidi_override, "shaped", "override");
 
+	GDVIRTUAL_BIND(_shaped_text_set_custom_punctuation, "shaped", "punct");
+	GDVIRTUAL_BIND(_shaped_text_get_custom_punctuation, "shaped");
+
 	GDVIRTUAL_BIND(_shaped_text_set_orientation, "shaped", "orientation");
 	GDVIRTUAL_BIND(_shaped_text_get_orientation, "shaped");
 
@@ -949,6 +952,18 @@ TextServer::Orientation TextServerExtension::shaped_text_get_orientation(RID p_s
 
 void TextServerExtension::shaped_text_set_bidi_override(RID p_shaped, const Array &p_override) {
 	GDVIRTUAL_CALL(_shaped_text_set_bidi_override, p_shaped, p_override);
+}
+
+void TextServerExtension::shaped_text_set_custom_punctuation(RID p_shaped, const String &p_punct) {
+	GDVIRTUAL_CALL(_shaped_text_set_custom_punctuation, p_shaped, p_punct);
+}
+
+String TextServerExtension::shaped_text_get_custom_punctuation(RID p_shaped) const {
+	String ret;
+	if (GDVIRTUAL_CALL(_shaped_text_get_custom_punctuation, p_shaped, ret)) {
+		return ret;
+	}
+	return String();
 }
 
 void TextServerExtension::shaped_text_set_preserve_invalid(RID p_shaped, bool p_enabled) {

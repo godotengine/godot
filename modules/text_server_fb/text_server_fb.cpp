@@ -2107,6 +2107,27 @@ TextServer::Direction TextServerFallback::shaped_text_get_direction(RID p_shaped
 	return TextServer::DIRECTION_LTR;
 }
 
+void TextServerFallback::shaped_text_set_custom_punctuation(RID p_shaped, const String &p_punct) {
+	_THREAD_SAFE_METHOD_
+	ShapedTextData *sd = shaped_owner.get_or_null(p_shaped);
+	ERR_FAIL_COND(!sd);
+
+	if (sd->custom_punct != p_punct) {
+		if (sd->parent != RID()) {
+			full_copy(sd);
+		}
+		sd->custom_punct = p_punct;
+		invalidate(sd);
+	}
+}
+
+String TextServerFallback::shaped_text_get_custom_punctuation(RID p_shaped) const {
+	_THREAD_SAFE_METHOD_
+	const ShapedTextData *sd = shaped_owner.get_or_null(p_shaped);
+	ERR_FAIL_COND_V(!sd, String());
+	return sd->custom_punct;
+}
+
 void TextServerFallback::shaped_text_set_orientation(RID p_shaped, TextServer::Orientation p_orientation) {
 	ShapedTextData *sd = shaped_owner.get_or_null(p_shaped);
 	ERR_FAIL_COND(!sd);
@@ -2409,6 +2430,7 @@ RID TextServerFallback::shaped_text_substr(RID p_shaped, int p_start, int p_leng
 
 	new_sd->orientation = sd->orientation;
 	new_sd->direction = sd->direction;
+	new_sd->custom_punct = sd->custom_punct;
 	new_sd->para_direction = sd->para_direction;
 	new_sd->line_breaks_valid = sd->line_breaks_valid;
 	new_sd->justification_ops_valid = sd->justification_ops_valid;
@@ -2692,27 +2714,41 @@ bool TextServerFallback::shaped_text_update_breaks(RID p_shaped) {
 	}
 
 	int sd_size = sd->glyphs.size();
+	Glyph *sd_glyphs = sd->glyphs.ptrw();
+
+	int c_punct_size = sd->custom_punct.length();
+	const char32_t *c_punct = sd->custom_punct.ptr();
+
 	for (int i = 0; i < sd_size; i++) {
-		if (sd->glyphs[i].count > 0) {
-			char32_t c = sd->text[sd->glyphs[i].start];
-			if (is_punct(c)) {
-				sd->glyphs.write[i].flags |= GRAPHEME_IS_PUNCTUATION;
+		if (sd_glyphs[i].count > 0) {
+			char32_t c = sd->text[sd_glyphs[i].start];
+			if (c_punct_size == 0) {
+				if (is_punct(c)) {
+					sd_glyphs[i].flags |= GRAPHEME_IS_PUNCTUATION;
+				}
+			} else {
+				for (int j = 0; j < c_punct_size; j++) {
+					if (c_punct[j] == c) {
+						sd_glyphs[i].flags |= GRAPHEME_IS_PUNCTUATION;
+						break;
+					}
+				}
 			}
 			if (is_underscore(c)) {
 				sd->glyphs.write[i].flags |= GRAPHEME_IS_UNDERSCORE;
 			}
 			if (is_whitespace(c) && !is_linebreak(c)) {
-				sd->glyphs.write[i].flags |= GRAPHEME_IS_SPACE;
-				sd->glyphs.write[i].flags |= GRAPHEME_IS_BREAK_SOFT;
+				sd_glyphs[i].flags |= GRAPHEME_IS_SPACE;
+				sd_glyphs[i].flags |= GRAPHEME_IS_BREAK_SOFT;
 			}
 			if (is_linebreak(c)) {
-				sd->glyphs.write[i].flags |= GRAPHEME_IS_BREAK_HARD;
+				sd_glyphs[i].flags |= GRAPHEME_IS_BREAK_HARD;
 			}
 			if (c == 0x0009 || c == 0x000b) {
-				sd->glyphs.write[i].flags |= GRAPHEME_IS_TAB;
+				sd_glyphs[i].flags |= GRAPHEME_IS_TAB;
 			}
 
-			i += (sd->glyphs[i].count - 1);
+			i += (sd_glyphs[i].count - 1);
 		}
 	}
 	sd->line_breaks_valid = true;
