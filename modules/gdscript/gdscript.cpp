@@ -961,6 +961,8 @@ bool GDScriptInstance::set(const StringName &p_name, const Variant &p_value) {
 				call(member->setter, &val, 1, err);
 				if (err.error == Variant::CallError::CALL_OK) {
 					return true; //function exists, call was successful
+				} else {
+					return false;
 				}
 			} else {
 				if (!member->data_type.is_type(p_value)) {
