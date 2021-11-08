@@ -1893,6 +1893,56 @@ Node *Node::get_deepest_editable_node(Node *p_start_node) const {
 	return node;
 }
 
+#ifdef TOOLS_ENABLED
+void Node::set_property_pinned(const String &p_property, bool p_pinned) {
+	bool current_pinned = false;
+	bool has_pinned = has_meta("_edit_pinned_properties_");
+	Array pinned;
+	String psa = get_property_store_alias(p_property);
+	if (has_pinned) {
+		pinned = get_meta("_edit_pinned_properties_");
+		current_pinned = pinned.has(psa);
+	}
+
+	if (current_pinned != p_pinned) {
+		if (p_pinned) {
+			pinned.append(psa);
+			if (!has_pinned) {
+				set_meta("_edit_pinned_properties_", pinned);
+			}
+		} else {
+			pinned.erase(psa);
+			if (pinned.is_empty()) {
+				remove_meta("_edit_pinned_properties_");
+			}
+		}
+	}
+}
+
+bool Node::is_property_pinned(const StringName &p_property) const {
+	if (!has_meta("_edit_pinned_properties_")) {
+		return false;
+	}
+	Array pinned = get_meta("_edit_pinned_properties_");
+	String psa = get_property_store_alias(p_property);
+	return pinned.has(psa);
+}
+
+StringName Node::get_property_store_alias(const StringName &p_property) const {
+	return p_property;
+}
+#endif
+
+void Node::get_storable_properties(Set<StringName> &r_storable_properties) const {
+	List<PropertyInfo> pi;
+	get_property_list(&pi);
+	for (List<PropertyInfo>::Element *E = pi.front(); E; E = E->next()) {
+		if ((E->get().usage & PROPERTY_USAGE_STORAGE)) {
+			r_storable_properties.insert(E->get().name);
+		}
+	}
+}
+
 String Node::to_string() {
 	if (get_script_instance()) {
 		bool valid;
@@ -2743,6 +2793,10 @@ void Node::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_set_import_path", "import_path"), &Node::set_import_path);
 	ClassDB::bind_method(D_METHOD("_get_import_path"), &Node::get_import_path);
+
+#ifdef TOOLS_ENABLED
+	ClassDB::bind_method(D_METHOD("_set_property_pinned", "property", "pinned"), &Node::set_property_pinned);
+#endif
 
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "_import_path", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_import_path", "_get_import_path");
 

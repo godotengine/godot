@@ -363,6 +363,13 @@ public:
 	bool is_editable_instance(const Node *p_node) const;
 	Node *get_deepest_editable_node(Node *p_start_node) const;
 
+#ifdef TOOLS_ENABLED
+	void set_property_pinned(const String &p_property, bool p_pinned);
+	bool is_property_pinned(const StringName &p_property) const;
+	virtual StringName get_property_store_alias(const StringName &p_property) const;
+#endif
+	void get_storable_properties(Set<StringName> &r_storable_properties) const;
+
 	virtual String to_string() override;
 
 	/* NOTIFICATIONS */
