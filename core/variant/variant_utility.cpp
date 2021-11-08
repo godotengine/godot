@@ -151,10 +151,10 @@ struct VariantUtilityFunctions {
 		r_error.error = Callable::CallError::CALL_OK;
 		switch (x.get_type()) {
 			case Variant::INT: {
-				return SGN(VariantInternalAccessor<int64_t>::get(&x));
+				return SIGN(VariantInternalAccessor<int64_t>::get(&x));
 			} break;
 			case Variant::FLOAT: {
-				return SGN(VariantInternalAccessor<double>::get(&x));
+				return SIGN(VariantInternalAccessor<double>::get(&x));
 			} break;
 			case Variant::VECTOR2: {
 				return VariantInternalAccessor<Vector2>::get(&x).sign();
@@ -176,11 +176,11 @@ struct VariantUtilityFunctions {
 	}
 
 	static inline double signf(double x) {
-		return SGN(x);
+		return SIGN(x);
 	}
 
 	static inline int64_t signi(int64_t x) {
-		return SGN(x);
+		return SIGN(x);
 	}
 
 	static inline double pow(double x, double y) {

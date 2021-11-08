@@ -759,7 +759,7 @@ EditorPlugin::AfterGUIInput GridMapEditor::forward_spatial_input_event(Camera3D 
 			accumulated_floor_delta += delta;
 			int step = 0;
 			if (ABS(accumulated_floor_delta) > 1.0) {
-				step = SGN(accumulated_floor_delta);
+				step = SIGN(accumulated_floor_delta);
 				accumulated_floor_delta -= step;
 			}
 			if (step) {

@@ -260,7 +260,7 @@ void InputEventConfigurationDialog::_listen_window_input(const Ref<InputEvent> &
 			return;
 		} else {
 			// Always make the value 1 or -1 for display consistency
-			joym->set_axis_value(SGN(axis_value));
+			joym->set_axis_value(SIGN(axis_value));
 		}
 	}
 

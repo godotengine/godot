@@ -116,7 +116,7 @@ private:
 	RID voxel_gi;
 
 	Subdiv subdiv = SUBDIV_128;
-	Vector3 extents = Vector3(10, 10, 10);
+	Vector3 size = Vector3(20, 20, 20);
 
 	struct PlotMesh {
 		Ref<Material> override_material;
@@ -142,8 +142,8 @@ public:
 	void set_subdiv(Subdiv p_subdiv);
 	Subdiv get_subdiv() const;
 
-	void set_extents(const Vector3 &p_extents);
-	Vector3 get_extents() const;
+	void set_size(const Vector3 &p_size);
+	Vector3 get_size() const;
 	Vector3i get_estimated_cell_size() const;
 
 	void bake(Node *p_from_node = nullptr, bool p_create_visual_debug = false);

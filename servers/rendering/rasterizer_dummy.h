@@ -444,7 +444,7 @@ public:
 	void reflection_probe_set_ambient_color(RID p_probe, const Color &p_color) override {}
 	void reflection_probe_set_ambient_energy(RID p_probe, float p_energy) override {}
 	void reflection_probe_set_max_distance(RID p_probe, float p_distance) override {}
-	void reflection_probe_set_extents(RID p_probe, const Vector3 &p_extents) override {}
+	void reflection_probe_set_size(RID p_probe, const Vector3 &p_size) override {}
 	void reflection_probe_set_origin_offset(RID p_probe, const Vector3 &p_offset) override {}
 	void reflection_probe_set_as_interior(RID p_probe, bool p_enable) override {}
 	void reflection_probe_set_enable_box_projection(RID p_probe, bool p_enable) override {}
@@ -455,7 +455,7 @@ public:
 	AABB reflection_probe_get_aabb(RID p_probe) const override { return AABB(); }
 	RS::ReflectionProbeUpdateMode reflection_probe_get_update_mode(RID p_probe) const override { return RenderingServer::REFLECTION_PROBE_UPDATE_ONCE; }
 	uint32_t reflection_probe_get_cull_mask(RID p_probe) const override { return 0; }
-	Vector3 reflection_probe_get_extents(RID p_probe) const override { return Vector3(); }
+	Vector3 reflection_probe_get_size(RID p_probe) const override { return Vector3(); }
 	Vector3 reflection_probe_get_origin_offset(RID p_probe) const override { return Vector3(); }
 	float reflection_probe_get_origin_max_distance(RID p_probe) const override { return 0.0; }
 	bool reflection_probe_renders_shadows(RID p_probe) const override { return false; }
@@ -622,7 +622,7 @@ public:
 	void fog_volume_initialize(RID p_rid) override {}
 
 	void fog_volume_set_shape(RID p_fog_volume, RS::FogVolumeShape p_shape) override {}
-	void fog_volume_set_extents(RID p_fog_volume, const Vector3 &p_extents) override {}
+	void fog_volume_set_size(RID p_fog_volume, const Vector3 &p_size) override {}
 	void fog_volume_set_material(RID p_fog_volume, RID p_material) override {}
 	AABB fog_volume_get_aabb(RID p_fog_volume) const override { return AABB(); }
 	RS::FogVolumeShape fog_volume_get_shape(RID p_fog_volume) const override { return RS::FOG_VOLUME_SHAPE_BOX; }

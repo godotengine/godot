@@ -963,7 +963,7 @@ private:
 
 	struct FogVolume {
 		RID material;
-		Vector3 extents = Vector3(1, 1, 1);
+		Vector3 size = Vector3(1, 1, 1);
 
 		RS::FogVolumeShape shape = RS::FOG_VOLUME_SHAPE_BOX;
 
@@ -1046,7 +1046,7 @@ private:
 		Color ambient_color;
 		float ambient_color_energy = 1.0;
 		float max_distance = 0;
-		Vector3 extents = Vector3(1, 1, 1);
+		Vector3 size = Vector3(2, 2, 2);
 		Vector3 origin_offset;
 		bool interior = false;
 		bool box_projection = false;
@@ -1940,7 +1940,7 @@ public:
 	void reflection_probe_set_ambient_color(RID p_probe, const Color &p_color);
 	void reflection_probe_set_ambient_energy(RID p_probe, float p_energy);
 	void reflection_probe_set_max_distance(RID p_probe, float p_distance);
-	void reflection_probe_set_extents(RID p_probe, const Vector3 &p_extents);
+	void reflection_probe_set_size(RID p_probe, const Vector3 &p_size);
 	void reflection_probe_set_origin_offset(RID p_probe, const Vector3 &p_offset);
 	void reflection_probe_set_as_interior(RID p_probe, bool p_enable);
 	void reflection_probe_set_enable_box_projection(RID p_probe, bool p_enable);
@@ -1952,7 +1952,7 @@ public:
 	AABB reflection_probe_get_aabb(RID p_probe) const;
 	RS::ReflectionProbeUpdateMode reflection_probe_get_update_mode(RID p_probe) const;
 	uint32_t reflection_probe_get_cull_mask(RID p_probe) const;
-	Vector3 reflection_probe_get_extents(RID p_probe) const;
+	Vector3 reflection_probe_get_size(RID p_probe) const;
 	Vector3 reflection_probe_get_origin_offset(RID p_probe) const;
 	float reflection_probe_get_origin_max_distance(RID p_probe) const;
 	float reflection_probe_get_lod_threshold(RID p_probe) const;
@@ -2280,12 +2280,12 @@ public:
 	virtual void fog_volume_initialize(RID p_rid);
 
 	virtual void fog_volume_set_shape(RID p_fog_volume, RS::FogVolumeShape p_shape);
-	virtual void fog_volume_set_extents(RID p_fog_volume, const Vector3 &p_extents);
+	virtual void fog_volume_set_size(RID p_fog_volume, const Vector3 &p_size);
 	virtual void fog_volume_set_material(RID p_fog_volume, RID p_material);
 	virtual RS::FogVolumeShape fog_volume_get_shape(RID p_fog_volume) const;
 	virtual RID fog_volume_get_material(RID p_fog_volume) const;
 	virtual AABB fog_volume_get_aabb(RID p_fog_volume) const;
-	virtual Vector3 fog_volume_get_extents(RID p_fog_volume) const;
+	virtual Vector3 fog_volume_get_size(RID p_fog_volume) const;
 
 	/* VISIBILITY NOTIFIER */
 

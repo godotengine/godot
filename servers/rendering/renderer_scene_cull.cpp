@@ -3286,13 +3286,13 @@ bool RendererSceneCull::_render_reflection_probe_step(Instance *p_instance, int 
 			Vector3(0, -1, 0)
 		};
 
-		Vector3 extents = RSG::storage->reflection_probe_get_extents(p_instance->base);
+		Vector3 size_vector = RSG::storage->reflection_probe_get_size(p_instance->base);
 		Vector3 origin_offset = RSG::storage->reflection_probe_get_origin_offset(p_instance->base);
 		float max_distance = RSG::storage->reflection_probe_get_origin_max_distance(p_instance->base);
 		float size = scene_render->reflection_atlas_get_size(scenario->reflection_atlas);
 		float lod_threshold = RSG::storage->reflection_probe_get_lod_threshold(p_instance->base) / size;
 
-		Vector3 edge = view_normals[p_step] * extents;
+		Vector3 edge = view_normals[p_step] * size_vector / 2;
 		float distance = ABS(view_normals[p_step].dot(edge) - view_normals[p_step].dot(origin_offset)); //distance from origin offset to actual view distance limit
 
 		max_distance = MAX(max_distance, distance);

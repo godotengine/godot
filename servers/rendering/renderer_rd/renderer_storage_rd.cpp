@@ -6062,11 +6062,11 @@ void RendererStorageRD::fog_volume_set_shape(RID p_fog_volume, RS::FogVolumeShap
 	fog_volume->dependency.changed_notify(DEPENDENCY_CHANGED_AABB);
 }
 
-void RendererStorageRD::fog_volume_set_extents(RID p_fog_volume, const Vector3 &p_extents) {
+void RendererStorageRD::fog_volume_set_size(RID p_fog_volume, const Vector3 &p_size) {
 	FogVolume *fog_volume = fog_volume_owner.get_or_null(p_fog_volume);
 	ERR_FAIL_COND(!fog_volume);
 
-	fog_volume->extents = p_extents;
+	fog_volume->size = p_size;
 	fog_volume->dependency.changed_notify(DEPENDENCY_CHANGED_AABB);
 }
 
@@ -6098,8 +6098,8 @@ AABB RendererStorageRD::fog_volume_get_aabb(RID p_fog_volume) const {
 		case RS::FOG_VOLUME_SHAPE_ELLIPSOID:
 		case RS::FOG_VOLUME_SHAPE_BOX: {
 			AABB aabb;
-			aabb.position = -fog_volume->extents;
-			aabb.size = fog_volume->extents * 2;
+			aabb.position = -fog_volume->size / 2;
+			aabb.size = fog_volume->size;
 			return aabb;
 		}
 		default: {
@@ -6111,10 +6111,10 @@ AABB RendererStorageRD::fog_volume_get_aabb(RID p_fog_volume) const {
 	return AABB();
 }
 
-Vector3 RendererStorageRD::fog_volume_get_extents(RID p_fog_volume) const {
+Vector3 RendererStorageRD::fog_volume_get_size(RID p_fog_volume) const {
 	const FogVolume *fog_volume = fog_volume_owner.get_or_null(p_fog_volume);
 	ERR_FAIL_COND_V(!fog_volume, Vector3());
-	return fog_volume->extents;
+	return fog_volume->size;
 }
 
 /* VISIBILITY NOTIFIER */
@@ -6695,14 +6695,14 @@ void RendererStorageRD::reflection_probe_set_max_distance(RID p_probe, float p_d
 	reflection_probe->dependency.changed_notify(DEPENDENCY_CHANGED_REFLECTION_PROBE);
 }
 
-void RendererStorageRD::reflection_probe_set_extents(RID p_probe, const Vector3 &p_extents) {
+void RendererStorageRD::reflection_probe_set_size(RID p_probe, const Vector3 &p_size) {
 	ReflectionProbe *reflection_probe = reflection_probe_owner.get_or_null(p_probe);
 	ERR_FAIL_COND(!reflection_probe);
 
-	if (reflection_probe->extents == p_extents) {
+	if (reflection_probe->size == p_size) {
 		return;
 	}
-	reflection_probe->extents = p_extents;
+	reflection_probe->size = p_size;
 	reflection_probe->dependency.changed_notify(DEPENDENCY_CHANGED_REFLECTION_PROBE);
 }
 
@@ -6767,8 +6767,8 @@ AABB RendererStorageRD::reflection_probe_get_aabb(RID p_probe) const {
 	ERR_FAIL_COND_V(!reflection_probe, AABB());
 
 	AABB aabb;
-	aabb.position = -reflection_probe->extents;
-	aabb.size = reflection_probe->extents * 2.0;
+	aabb.position = -reflection_probe->size / 2.0;
+	aabb.size = reflection_probe->size;
 
 	return aabb;
 }
@@ -6787,11 +6787,11 @@ uint32_t RendererStorageRD::reflection_probe_get_cull_mask(RID p_probe) const {
 	return reflection_probe->cull_mask;
 }
 
-Vector3 RendererStorageRD::reflection_probe_get_extents(RID p_probe) const {
+Vector3 RendererStorageRD::reflection_probe_get_size(RID p_probe) const {
 	const ReflectionProbe *reflection_probe = reflection_probe_owner.get_or_null(p_probe);
 	ERR_FAIL_COND_V(!reflection_probe, Vector3());
 
-	return reflection_probe->extents;
+	return reflection_probe->size;
 }
 
 Vector3 RendererStorageRD::reflection_probe_get_origin_offset(RID p_probe) const {

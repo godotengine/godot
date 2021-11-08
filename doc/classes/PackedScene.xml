@@ -124,6 +124,6 @@
 		<constant name="GEN_EDIT_STATE_MAIN_INHERITED" value="3" enum="GenEditState">
 			It's similar to [constant GEN_EDIT_STATE_MAIN], but for the case where the scene is being instantiated to be the base of another one.
 			[b]Note:[/b] Only available in editor builds.
-		</constant>
+		</constant
 	</constants>
 </class>

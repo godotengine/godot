@@ -3164,7 +3164,7 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 			} else {
 				const TreeItem::Cell &c = popup_edited_item->cells[popup_edited_item_col];
 				float diff_y = -mm->get_relative().y;
-				diff_y = Math::pow(ABS(diff_y), 1.8f) * SGN(diff_y);
+				diff_y = Math::pow(ABS(diff_y), 1.8f) * SIGN(diff_y);
 				diff_y *= 0.1;
 				range_drag_base = CLAMP(range_drag_base + c.step * diff_y, c.min, c.max);
 				popup_edited_item->set_range(popup_edited_item_col, range_drag_base);

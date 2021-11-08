@@ -1154,10 +1154,10 @@
 				Creates a new fog volume and allocates an RID.
 			</description>
 		</method>
-		<method name="fog_volume_set_extents">
+		<method name="fog_volume_set_size">
 			<return type="void" />
 			<argument index="0" name="fog_volume" type="RID" />
-			<argument index="1" name="extents" type="Vector3" />
+			<argument index="1" name="size" type="Vector3" />
 			<description>
 				Sets the size of the fog volume when shape is [constant FOG_VOLUME_SHAPE_ELLIPSOID] or [constant FOG_VOLUME_SHAPE_BOX].
 			</description>
@@ -2519,10 +2519,10 @@
 				If [code]true[/code], computes shadows in the reflection probe. This makes the reflection much slower to compute. Equivalent to [member ReflectionProbe.enable_shadows].
 			</description>
 		</method>
-		<method name="reflection_probe_set_extents">
+		<method name="reflection_probe_set_size">
 			<return type="void" />
 			<argument index="0" name="probe" type="RID" />
-			<argument index="1" name="extents" type="Vector3" />
+			<argument index="1" name="size" type="Vector3" />
 			<description>
 				Sets the size of the area that the reflection probe will capture. Equivalent to [member ReflectionProbe.extents].
 			</description>

@@ -430,7 +430,7 @@ Vector3 GodotBoxShape3D::get_closest_point_to(const Vector3 &p_point) const {
 			if (outside == 1) {
 				//use plane if only one side matches
 				Vector3 n;
-				n[i] = SGN(p_point[i]);
+				n[i] = SIGN(p_point[i]);
 
 				Plane p(n, half_extents[i]);
 				min_point = p.project(p_point);

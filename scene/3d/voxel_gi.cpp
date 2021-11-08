@@ -271,13 +271,13 @@ VoxelGI::Subdiv VoxelGI::get_subdiv() const {
 	return subdiv;
 }
 
-void VoxelGI::set_extents(const Vector3 &p_extents) {
-	extents = p_extents;
+void VoxelGI::set_size(const Vector3 &p_size) {
+	size = p_size;
 	update_gizmos();
 }
 
-Vector3 VoxelGI::get_extents() const {
-	return extents;
+Vector3 VoxelGI::get_size() const {
+	return size;
 }
 
 void VoxelGI::_find_meshes(Node *p_at_node, List<PlotMesh> &plot_meshes) {
@@ -289,7 +289,7 @@ void VoxelGI::_find_meshes(Node *p_at_node, List<PlotMesh> &plot_meshes) {
 
 			Transform3D xf = get_global_transform().affine_inverse() * mi->get_global_transform();
 
-			if (AABB(-extents, extents * 2).intersects(xf.xform(aabb))) {
+			if (AABB(-size / 2, size).intersects(xf.xform(aabb))) {
 				PlotMesh pm;
 				pm.local_xform = xf;
 				pm.mesh = mesh;
@@ -317,7 +317,7 @@ void VoxelGI::_find_meshes(Node *p_at_node, List<PlotMesh> &plot_meshes) {
 
 				Transform3D xf = get_global_transform().affine_inverse() * (s->get_global_transform() * mxf);
 
-				if (AABB(-extents, extents * 2).intersects(xf.xform(aabb))) {
+				if (AABB(-size / 2, size).intersects(xf.xform(aabb))) {
 					PlotMesh pm;
 					pm.local_xform = xf;
 					pm.mesh = mesh;
@@ -341,7 +341,7 @@ Vector3i VoxelGI::get_estimated_cell_size() const {
 	static const int subdiv_value[SUBDIV_MAX] = { 6, 7, 8, 9 };
 	int cell_subdiv = subdiv_value[subdiv];
 	int axis_cell_size[3];
-	AABB bounds = AABB(-extents, extents * 2.0);
+	AABB bounds = AABB(-size / 2.0, size);
 	int longest_axis = bounds.get_longest_axis_index();
 	axis_cell_size[longest_axis] = 1 << cell_subdiv;
 
@@ -371,7 +371,7 @@ void VoxelGI::bake(Node *p_from_node, bool p_create_visual_debug) {
 
 	Voxelizer baker;
 
-	baker.begin_bake(subdiv_value[subdiv], AABB(-extents, extents * 2.0));
+	baker.begin_bake(subdiv_value[subdiv], AABB(-size / 2.0, size));
 
 	List<PlotMesh> mesh_list;
 
@@ -427,7 +427,7 @@ void VoxelGI::bake(Node *p_from_node, bool p_create_visual_debug) {
 
 		Vector<uint8_t> df = baker.get_sdf_3d_image();
 
-		probe_data->allocate(baker.get_to_cell_space_xform(), AABB(-extents, extents * 2.0), baker.get_voxel_gi_octree_size(), baker.get_voxel_gi_octree_cells(), baker.get_voxel_gi_data_cells(), df, baker.get_voxel_gi_level_cell_count());
+		probe_data->allocate(baker.get_to_cell_space_xform(), AABB(-size / 2.0, size), baker.get_voxel_gi_octree_size(), baker.get_voxel_gi_octree_cells(), baker.get_voxel_gi_data_cells(), df, baker.get_voxel_gi_level_cell_count());
 
 		set_probe_data(probe_data);
 #ifdef TOOLS_ENABLED
@@ -447,7 +447,7 @@ void VoxelGI::_debug_bake() {
 }
 
 AABB VoxelGI::get_aabb() const {
-	return AABB(-extents, extents * 2);
+	return AABB(-size / 2, size);
 }
 
 Vector<Face3> VoxelGI::get_faces(uint32_t p_usage_flags) const {
@@ -472,15 +472,15 @@ void VoxelGI::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_subdiv", "subdiv"), &VoxelGI::set_subdiv);
 	ClassDB::bind_method(D_METHOD("get_subdiv"), &VoxelGI::get_subdiv);
 
-	ClassDB::bind_method(D_METHOD("set_extents", "extents"), &VoxelGI::set_extents);
-	ClassDB::bind_method(D_METHOD("get_extents"), &VoxelGI::get_extents);
+	ClassDB::bind_method(D_METHOD("set_size", "size"), &VoxelGI::set_size);
+	ClassDB::bind_method(D_METHOD("get_size"), &VoxelGI::get_size);
 
 	ClassDB::bind_method(D_METHOD("bake", "from_node", "create_visual_debug"), &VoxelGI::bake, DEFVAL(Variant()), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("debug_bake"), &VoxelGI::_debug_bake);
 	ClassDB::set_method_flags(get_class_static(), _scs_create("debug_bake"), METHOD_FLAGS_DEFAULT | METHOD_FLAG_EDITOR);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "subdiv", PROPERTY_HINT_ENUM, "64,128,256,512"), "set_subdiv", "get_subdiv");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "extents"), "set_extents", "get_extents");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "size"), "set_size", "get_size");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "data", PROPERTY_HINT_RESOURCE_TYPE, "VoxelGIData", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_DO_NOT_SHARE_ON_DUPLICATE), "set_probe_data", "get_probe_data");
 
 	BIND_ENUM_CONSTANT(SUBDIV_64);

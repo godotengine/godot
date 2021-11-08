@@ -360,7 +360,7 @@ public:
 	virtual void reflection_probe_set_ambient_color(RID p_probe, const Color &p_color) = 0;
 	virtual void reflection_probe_set_ambient_energy(RID p_probe, float p_energy) = 0;
 	virtual void reflection_probe_set_max_distance(RID p_probe, float p_distance) = 0;
-	virtual void reflection_probe_set_extents(RID p_probe, const Vector3 &p_extents) = 0;
+	virtual void reflection_probe_set_size(RID p_probe, const Vector3 &p_size) = 0;
 	virtual void reflection_probe_set_origin_offset(RID p_probe, const Vector3 &p_offset) = 0;
 	virtual void reflection_probe_set_as_interior(RID p_probe, bool p_enable) = 0;
 	virtual void reflection_probe_set_enable_box_projection(RID p_probe, bool p_enable) = 0;
@@ -371,7 +371,7 @@ public:
 	virtual AABB reflection_probe_get_aabb(RID p_probe) const = 0;
 	virtual RS::ReflectionProbeUpdateMode reflection_probe_get_update_mode(RID p_probe) const = 0;
 	virtual uint32_t reflection_probe_get_cull_mask(RID p_probe) const = 0;
-	virtual Vector3 reflection_probe_get_extents(RID p_probe) const = 0;
+	virtual Vector3 reflection_probe_get_size(RID p_probe) const = 0;
 	virtual Vector3 reflection_probe_get_origin_offset(RID p_probe) const = 0;
 	virtual float reflection_probe_get_origin_max_distance(RID p_probe) const = 0;
 	virtual bool reflection_probe_renders_shadows(RID p_probe) const = 0;
@@ -541,7 +541,7 @@ public:
 	virtual void fog_volume_initialize(RID p_rid) = 0;
 
 	virtual void fog_volume_set_shape(RID p_fog_volume, RS::FogVolumeShape p_shape) = 0;
-	virtual void fog_volume_set_extents(RID p_fog_volume, const Vector3 &p_extents) = 0;
+	virtual void fog_volume_set_size(RID p_fog_volume, const Vector3 &p_size) = 0;
 	virtual void fog_volume_set_material(RID p_fog_volume, RID p_material) = 0;
 	virtual AABB fog_volume_get_aabb(RID p_fog_volume) const = 0;
 	virtual RS::FogVolumeShape fog_volume_get_shape(RID p_fog_volume) const = 0;

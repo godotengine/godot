@@ -2583,7 +2583,7 @@ void RasterizerStorageGLES3::reflection_probe_set_ambient_energy(RID p_probe, fl
 void RasterizerStorageGLES3::reflection_probe_set_max_distance(RID p_probe, float p_distance) {
 }
 
-void RasterizerStorageGLES3::reflection_probe_set_extents(RID p_probe, const Vector3 &p_extents) {
+void RasterizerStorageGLES3::reflection_probe_set_size(RID p_probe, const Vector3 &p_size) {
 }
 
 void RasterizerStorageGLES3::reflection_probe_set_origin_offset(RID p_probe, const Vector3 &p_offset) {
@@ -2616,7 +2616,7 @@ uint32_t RasterizerStorageGLES3::reflection_probe_get_cull_mask(RID p_probe) con
 	return 0;
 }
 
-Vector3 RasterizerStorageGLES3::reflection_probe_get_extents(RID p_probe) const {
+Vector3 RasterizerStorageGLES3::reflection_probe_get_size(RID p_probe) const {
 	return Vector3();
 }
 
@@ -3033,7 +3033,7 @@ void RasterizerStorageGLES3::fog_volume_initialize(RID p_rid) {
 void RasterizerStorageGLES3::fog_volume_set_shape(RID p_fog_volume, RS::FogVolumeShape p_shape) {
 }
 
-void RasterizerStorageGLES3::fog_volume_set_extents(RID p_fog_volume, const Vector3 &p_extents) {
+void RasterizerStorageGLES3::fog_volume_set_size(RID p_fog_volume, const Vector3 &p_size) {
 }
 
 void RasterizerStorageGLES3::fog_volume_set_material(RID p_fog_volume, RID p_material) {
