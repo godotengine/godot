@@ -65,6 +65,8 @@ GDMonoProperty::GDMonoProperty(MonoProperty *p_mono_property, GDMonoClass *p_own
 		type.type_class = GDMono::get_singleton()->get_class(param_type_class);
 	}
 
+	param_buffer_size = GDMonoMarshal::variant_get_managed_unboxed_size(type);
+
 	attrs_fetched = false;
 	attributes = NULL;
 }
@@ -141,25 +143,20 @@ bool GDMonoProperty::has_setter() {
 	return mono_property_get_set_method(mono_property) != NULL;
 }
 
-void GDMonoProperty::set_value(MonoObject *p_object, MonoObject *p_value, MonoException **r_exc) {
-	MonoMethod *prop_method = mono_property_get_set_method(mono_property);
-	MonoArray *params = mono_array_new(mono_domain_get(), CACHED_CLASS_RAW(MonoObject), 1);
-	mono_array_setref(params, 0, p_value);
-	MonoException *exc = NULL;
-	GDMonoUtils::runtime_invoke_array(prop_method, p_object, params, &exc);
-	if (exc) {
-		if (r_exc) {
-			*r_exc = exc;
-		} else {
-			GDMonoUtils::set_pending_exception(exc);
-		}
-	}
-}
+void GDMonoProperty::set_value_from_variant(MonoObject *p_object, const Variant &p_value, MonoException **r_exc) {
+	uint8_t *buffer = (uint8_t *)alloca(param_buffer_size);
+	unsigned int offset = 0;
 
-void GDMonoProperty::set_value(MonoObject *p_object, void **p_params, MonoException **r_exc) {
-	MonoException *exc = NULL;
-	GDMonoUtils::property_set_value(mono_property, p_object, p_params, &exc);
+	void *params[1] = {
+		GDMonoMarshal::variant_to_managed_unboxed(p_value, type, buffer, offset)
+	};
 
+#ifdef DEBUG_ENABLED
+	CRASH_COND(offset != param_buffer_size);
+#endif
+
+	MonoException *exc = NULL;
+	GDMonoUtils::property_set_value(mono_property, p_object, params, &exc);
 	if (exc) {
 		if (r_exc) {
 			*r_exc = exc;

@@ -45,6 +45,8 @@ class GDMonoProperty : public IMonoClassMember {
 	bool attrs_fetched;
 	MonoCustomAttrInfo *attributes;
 
+	unsigned int param_buffer_size;
+
 public:
 	virtual GDMonoClass *get_enclosing_class() const GD_FINAL { return owner; }
 
@@ -64,8 +66,7 @@ public:
 
 	_FORCE_INLINE_ ManagedType get_type() const { return type; }
 
-	void set_value(MonoObject *p_object, MonoObject *p_value, MonoException **r_exc = NULL);
-	void set_value(MonoObject *p_object, void **p_params, MonoException **r_exc = NULL);
+	void set_value_from_variant(MonoObject *p_object, const Variant &p_value, MonoException **r_exc = NULL);
 	MonoObject *get_value(MonoObject *p_object, MonoException **r_exc = NULL);
 
 	bool get_bool_value(MonoObject *p_object);

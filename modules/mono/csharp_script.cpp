@@ -1465,7 +1465,7 @@ bool CSharpInstance::set(const StringName &p_name, const Variant &p_value) {
 		GDMonoProperty *property = top->get_property(p_name);
 
 		if (property) {
-			property->set_value(mono_object, GDMonoMarshal::variant_to_mono_object(p_value, property->get_type()));
+			property->set_value_from_variant(mono_object, p_value);
 			return true;
 		}
 
@@ -2479,7 +2479,7 @@ bool CSharpScript::_get_signal(GDMonoClass *p_class, GDMonoClass *p_delegate, Ve
 
 		if (mono_type_get_type(raw_type) == MONO_TYPE_CLASS) {
 			// Arguments are accessibles as arguments of .Invoke method
-			GDMonoMethod *invoke = p_delegate->get_method("Invoke", -1);
+			GDMonoMethod *invoke = p_delegate->get_method(mono_get_delegate_invoke(p_delegate->get_mono_ptr()));
 
 			Vector<StringName> names;
 			Vector<ManagedType> types;

@@ -75,6 +75,10 @@ void GDMonoMethod::_update_signature(MonoMethodSignature *p_method_sig) {
 	// clear the cache
 	method_info_fetched = false;
 	method_info = MethodInfo();
+
+	for (int i = 0; i < params_count; i++) {
+		params_buffer_size += GDMonoMarshal::variant_get_managed_unboxed_size(param_types[i]);
+	}
 }
 
 GDMonoClass *GDMonoMethod::get_enclosing_class() const {
@@ -102,50 +106,42 @@ IMonoClassMember::Visibility GDMonoMethod::get_visibility() {
 	}
 }
 
-MonoObject *GDMonoMethod::invoke(MonoObject *p_object, const Variant **p_params, MonoException **r_exc) {
-	if (get_return_type().type_encoding != MONO_TYPE_VOID || get_parameters_count() > 0) {
-		MonoArray *params = mono_array_new(mono_domain_get(), CACHED_CLASS_RAW(MonoObject), get_parameters_count());
+MonoObject *GDMonoMethod::invoke(MonoObject *p_object, const Variant **p_params, MonoException **r_exc) const {
+	MonoException *exc = NULL;
+	MonoObject *ret;
+
+	if (params_count > 0) {
+		void **params = (void **)alloca(params_count * sizeof(void *));
+		uint8_t *buffer = (uint8_t *)alloca(params_buffer_size);
+		unsigned int offset = 0;
 
 		for (int i = 0; i < params_count; i++) {
-			MonoObject *boxed_param = GDMonoMarshal::variant_to_mono_object(p_params[i], param_types[i]);
-			mono_array_setref(params, i, boxed_param);
+			params[i] = GDMonoMarshal::variant_to_managed_unboxed(p_params[i], param_types[i], buffer + offset, offset);
 		}
 
-		MonoException *exc = NULL;
-		MonoObject *ret = GDMonoUtils::runtime_invoke_array(mono_method, p_object, params, &exc);
-
-		if (exc) {
-			ret = NULL;
-			if (r_exc) {
-				*r_exc = exc;
-			} else {
-				GDMonoUtils::set_pending_exception(exc);
-			}
-		}
-
-		return ret;
+		ret = GDMonoUtils::runtime_invoke(mono_method, p_object, params, &exc);
 	} else {
-		MonoException *exc = NULL;
-		GDMonoUtils::runtime_invoke(mono_method, p_object, NULL, &exc);
-
-		if (exc) {
-			if (r_exc) {
-				*r_exc = exc;
-			} else {
-				GDMonoUtils::set_pending_exception(exc);
-			}
-		}
-
-		return NULL;
+		ret = GDMonoUtils::runtime_invoke(mono_method, p_object, NULL, &exc);
 	}
+
+	if (exc) {
+		ret = NULL;
+		if (r_exc) {
+			*r_exc = exc;
+		} else {
+			GDMonoUtils::set_pending_exception(exc);
+		}
+	}
+
+	return ret;
 }
 
-MonoObject *GDMonoMethod::invoke(MonoObject *p_object, MonoException **r_exc) {
+MonoObject *GDMonoMethod::invoke(MonoObject *p_object, MonoException **r_exc) const {
 	ERR_FAIL_COND_V(get_parameters_count() > 0, NULL);
 	return invoke_raw(p_object, NULL, r_exc);
 }
 
-MonoObject *GDMonoMethod::invoke_raw(MonoObject *p_object, void **p_params, MonoException **r_exc) {
+MonoObject *GDMonoMethod::invoke_raw(MonoObject *p_object, void **p_params, MonoException **r_exc) const {
 	MonoException *exc = NULL;
 	MonoObject *ret = GDMonoUtils::runtime_invoke(mono_method, p_object, p_params, &exc);
 

@@ -103,15 +103,40 @@ _FORCE_INLINE_ MonoString *mono_string_from_godot(const String &p_string) {
 
 // Variant
 
-MonoObject *variant_to_mono_object(const Variant *p_var, const ManagedType &p_type);
-MonoObject *variant_to_mono_object(const Variant *p_var);
+size_t variant_get_managed_unboxed_size(const ManagedType &p_type);
+void *variant_to_managed_unboxed(const Variant &p_var, const ManagedType &p_type, void *r_buffer, unsigned int &r_offset);
+MonoObject *variant_to_mono_object(const Variant &p_var, const ManagedType &p_type);
 
-_FORCE_INLINE_ MonoObject *variant_to_mono_object(const Variant &p_var) {
-	return variant_to_mono_object(&p_var);
+MonoObject *variant_to_mono_object(const Variant &p_var);
+MonoArray *variant_to_mono_array(const Variant &p_var, GDMonoClass *p_type_class);
+MonoObject *variant_to_mono_object_of_class(const Variant &p_var, GDMonoClass *p_type_class);
+MonoObject *variant_to_mono_object_of_genericinst(const Variant &p_var, GDMonoClass *p_type_class);
+MonoString *variant_to_mono_string(const Variant &p_var);
+
+// These overloads were added to avoid passing a `const Variant *` to the `const Variant &`
+// parameter. That would result in the `Variant(bool)` copy constructor being called as
+// pointers are implicitly converted to bool. Implicit conversions are f-ing evil.
+
+_FORCE_INLINE_ void *variant_to_managed_unboxed(const Variant *p_var, const ManagedType &p_type, void *r_buffer, unsigned int &r_offset) {
+	return variant_to_managed_unboxed(*p_var, p_type, r_buffer, r_offset);
 }
-
-_FORCE_INLINE_ MonoObject *variant_to_mono_object(const Variant &p_var, const ManagedType &p_type) {
-	return variant_to_mono_object(&p_var, p_type);
+_FORCE_INLINE_ MonoObject *variant_to_mono_object(const Variant *p_var, const ManagedType &p_type) {
+	return variant_to_mono_object(*p_var, p_type);
+}
+_FORCE_INLINE_ MonoObject *variant_to_mono_object(const Variant *p_var) {
+	return variant_to_mono_object(*p_var);
+}
+_FORCE_INLINE_ MonoArray *variant_to_mono_array(const Variant *p_var, GDMonoClass *p_type_class) {
+	return variant_to_mono_array(*p_var, p_type_class);
+}
+_FORCE_INLINE_ MonoObject *variant_to_mono_object_of_class(const Variant *p_var, GDMonoClass *p_type_class) {
+	return variant_to_mono_object_of_class(*p_var, p_type_class);
+}
+_FORCE_INLINE_ MonoObject *variant_to_mono_object_of_genericinst(const Variant *p_var, GDMonoClass *p_type_class) {
+	return variant_to_mono_object_of_genericinst(*p_var, p_type_class);
+}
+_FORCE_INLINE_ MonoString *variant_to_mono_string(const Variant *p_var) {
+	return variant_to_mono_string(*p_var);
 }
 
 Variant mono_object_to_variant(MonoObject *p_obj);
@@ -133,7 +158,7 @@ Variant system_generic_list_to_Array_variant(MonoObject *p_obj, GDMonoClass *p_c
 // Array
 
 MonoArray *Array_to_mono_array(const Array &p_array);
-MonoArray *Array_to_mono_array(const Array &p_array, GDMonoClass *p_array_type_class);
+MonoArray *Array_to_mono_array(const Array &p_array, MonoClass *p_array_type_class);
 Array mono_array_to_Array(MonoArray *p_array);
 
 // PoolIntArray
