@@ -173,7 +173,7 @@ public:
 
 	virtual void update_exports() override; //editor tool
 	virtual void get_script_method_list(List<MethodInfo> *p_list) const override;
-	virtual void get_script_property_list(List<PropertyInfo> *p_list) const override;
+	virtual void get_script_property_list(List<PropertyInfo> *p_list, const ScriptInstance *p_instance = nullptr) const override;
 
 	virtual const Vector<Multiplayer::RPCConfig> get_rpc_methods() const override;
 

@@ -68,7 +68,7 @@ Variant::Type PluginScriptInstance::get_property_type(const StringName &p_name, 
 }
 
 void PluginScriptInstance::get_property_list(List<PropertyInfo> *p_properties) const {
-	_script->get_script_property_list(p_properties);
+	_script->get_script_property_list(p_properties, this);
 }
 
 void PluginScriptInstance::get_method_list(List<MethodInfo> *p_list) const {

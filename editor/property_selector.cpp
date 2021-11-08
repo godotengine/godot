@@ -105,7 +105,7 @@ void PropertySelector::_update_search() {
 			Object *obj = ObjectDB::get_instance(script);
 			if (Object::cast_to<Script>(obj)) {
 				props.push_back(PropertyInfo(Variant::NIL, "Script Variables", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_CATEGORY));
-				Object::cast_to<Script>(obj)->get_script_property_list(&props);
+				Object::cast_to<Script>(obj)->get_script_property_list(&props, obj->get_script_instance());
 			}
 
 			StringName base = base_type;

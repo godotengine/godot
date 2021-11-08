@@ -3503,7 +3503,7 @@ Ref<Script> CSharpScript::get_base_script() const {
 	return Ref<Script>();
 }
 
-void CSharpScript::get_script_property_list(List<PropertyInfo> *r_list) const {
+void CSharpScript::get_script_property_list(List<PropertyInfo> *r_list, const ScriptInstance *p_instance) const {
 	List<PropertyInfo> props;
 
 	for (OrderedHashMap<StringName, PropertyInfo>::ConstElement E = member_info.front(); E; E = E.next()) {

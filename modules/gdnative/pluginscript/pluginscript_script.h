@@ -132,7 +132,7 @@ public:
 
 	virtual void update_exports() override;
 	virtual void get_script_method_list(List<MethodInfo> *r_methods) const override;
-	virtual void get_script_property_list(List<PropertyInfo> *r_properties) const override;
+	virtual void get_script_property_list(List<PropertyInfo> *r_properties, const ScriptInstance *p_instance = nullptr) const override;
 
 	virtual int get_member_line(const StringName &p_member) const override;
 

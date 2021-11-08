@@ -1938,7 +1938,7 @@ static bool _guess_identifier_type_from_base(GDScriptParser::CompletionContext &
 
 					if (!is_static) {
 						List<PropertyInfo> members;
-						scr->get_script_property_list(&members);
+						scr->get_script_property_list(&members, nullptr);
 						for (const PropertyInfo &prop : members) {
 							if (prop.name == p_identifier) {
 								r_type = _type_from_property(prop);

@@ -154,7 +154,7 @@ void VisualScriptPropertySelector::_update_search() {
 			} else {
 				Object *obj = ObjectDB::get_instance(script);
 				if (Object::cast_to<Script>(obj)) {
-					Object::cast_to<Script>(obj)->get_script_property_list(&props);
+					Object::cast_to<Script>(obj)->get_script_property_list(&props, obj->get_script_instance());
 				} else {
 					ClassDB::get_property_list(E, &props, true);
 				}

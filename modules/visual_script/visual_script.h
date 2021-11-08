@@ -358,7 +358,7 @@ public:
 	virtual bool has_method(const StringName &p_method) const override;
 	virtual MethodInfo get_method_info(const StringName &p_method) const override;
 
-	virtual void get_script_property_list(List<PropertyInfo> *p_list) const override;
+	virtual void get_script_property_list(List<PropertyInfo> *p_list, const ScriptInstance *instance = nullptr) const override;
 
 	virtual int get_member_line(const StringName &p_member) const override;
 

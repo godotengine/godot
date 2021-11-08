@@ -280,6 +280,68 @@ void GDScript::get_script_method_list(List<MethodInfo> *r_list) const {
 	_get_script_method_list(r_list, true);
 }
 
+void GDScript::_call_get_script_property_list(List<PropertyInfo> *r_list, const ScriptInstance *p_instance, bool p_include_base) const {
+	const GDScript *sptr = this;
+	List<PropertyInfo> props;
+
+	while (sptr) {
+		const Map<StringName, GDScriptFunction *>::Element *E = sptr->member_functions.find(GDScriptLanguage::get_singleton()->strings._get_property_list);
+		if (E) {
+			Callable::CallError err;
+			Variant ret = const_cast<GDScriptFunction *>(E->get())->call(const_cast<GDScriptInstance *>(dynamic_cast<const GDScriptInstance *>(p_instance)), nullptr, 0, err);
+			if (err.error == Callable::CallError::CALL_OK) {
+				ERR_FAIL_COND_MSG(ret.get_type() != Variant::ARRAY, "Wrong type for _get_property_list, must be an array of dictionaries.");
+
+				Array arr = ret;
+				for (int i = 0; i < arr.size(); i++) {
+					Dictionary d = arr[i];
+					ERR_CONTINUE(!d.has("name"));
+					ERR_CONTINUE(!d.has("type"));
+					PropertyInfo pinfo;
+					pinfo.type = Variant::Type(d["type"].operator int());
+					ERR_CONTINUE(pinfo.type < 0 || pinfo.type >= Variant::VARIANT_MAX);
+					pinfo.name = d["name"];
+					ERR_CONTINUE(pinfo.name == "");
+					if (d.has("hint")) {
+						pinfo.hint = PropertyHint(d["hint"].operator int());
+					}
+					if (d.has("hint_string")) {
+						pinfo.hint_string = d["hint_string"];
+					}
+					if (d.has("usage")) {
+						pinfo.usage = d["usage"];
+					}
+
+					props.push_back(pinfo);
+				}
+			}
+		}
+
+		//instance a fake script for editing the values
+
+		Vector<_GDScriptMemberSort> msort;
+		for (const KeyValue<StringName, PropertyInfo> &F : sptr->member_info) {
+			_GDScriptMemberSort ms;
+			ERR_CONTINUE(!sptr->member_indices.has(F.key));
+			ms.index = sptr->member_indices[F.key].index;
+			ms.name = F.key;
+			msort.push_back(ms);
+		}
+
+		msort.sort();
+		msort.reverse();
+		for (int i = 0; i < msort.size(); i++) {
+			props.push_front(sptr->member_info[msort[i].name]);
+		}
+
+		sptr = sptr->_base;
+	}
+
+	for (const PropertyInfo &E : props) {
+		r_list->push_back(E);
+	}
+}
+
 void GDScript::_get_script_property_list(List<PropertyInfo> *r_list, bool p_include_base) const {
 	const GDScript *sptr = this;
 	List<PropertyInfo> props;
@@ -311,8 +373,12 @@ void GDScript::_get_script_property_list(List<PropertyInfo> *r_list, bool p_incl
 	}
 }
 
-void GDScript::get_script_property_list(List<PropertyInfo> *r_list) const {
+void GDScript::get_script_property_list(List<PropertyInfo> *r_list, const ScriptInstance *p_instance) const {
 	_get_script_property_list(r_list, true);
+
+	if (p_instance) {
+		_call_get_script_property_list(r_list, p_instance, true);
+	}
 }
 
 bool GDScript::has_method(const StringName &p_method) const {
@@ -1414,64 +1480,7 @@ void GDScriptInstance::get_property_list(List<PropertyInfo> *p_properties) const
 	// exported members, not done yet!
 
 	const GDScript *sptr = script.ptr();
-	List<PropertyInfo> props;
-
-	while (sptr) {
-		const Map<StringName, GDScriptFunction *>::Element *E = sptr->member_functions.find(GDScriptLanguage::get_singleton()->strings._get_property_list);
-		if (E) {
-			Callable::CallError err;
-			Variant ret = const_cast<GDScriptFunction *>(E->get())->call(const_cast<GDScriptInstance *>(this), nullptr, 0, err);
-			if (err.error == Callable::CallError::CALL_OK) {
-				ERR_FAIL_COND_MSG(ret.get_type() != Variant::ARRAY, "Wrong type for _get_property_list, must be an array of dictionaries.");
-
-				Array arr = ret;
-				for (int i = 0; i < arr.size(); i++) {
-					Dictionary d = arr[i];
-					ERR_CONTINUE(!d.has("name"));
-					ERR_CONTINUE(!d.has("type"));
-					PropertyInfo pinfo;
-					pinfo.type = Variant::Type(d["type"].operator int());
-					ERR_CONTINUE(pinfo.type < 0 || pinfo.type >= Variant::VARIANT_MAX);
-					pinfo.name = d["name"];
-					ERR_CONTINUE(pinfo.name == "");
-					if (d.has("hint")) {
-						pinfo.hint = PropertyHint(d["hint"].operator int());
-					}
-					if (d.has("hint_string")) {
-						pinfo.hint_string = d["hint_string"];
-					}
-					if (d.has("usage")) {
-						pinfo.usage = d["usage"];
-					}
-
-					props.push_back(pinfo);
-				}
-			}
-		}
-
-		//instance a fake script for editing the values
-
-		Vector<_GDScriptMemberSort> msort;
-		for (const KeyValue<StringName, PropertyInfo> &F : sptr->member_info) {
-			_GDScriptMemberSort ms;
-			ERR_CONTINUE(!sptr->member_indices.has(F.key));
-			ms.index = sptr->member_indices[F.key].index;
-			ms.name = F.key;
-			msort.push_back(ms);
-		}
-
-		msort.sort();
-		msort.reverse();
-		for (int i = 0; i < msort.size(); i++) {
-			props.push_front(sptr->member_info[msort[i].name]);
-		}
-
-		sptr = sptr->_base;
-	}
-
-	for (const PropertyInfo &E : props) {
-		p_properties->push_back(E);
-	}
+	sptr->_call_get_script_property_list(p_properties, this, true);
 }
 
 void GDScriptInstance::get_method_list(List<MethodInfo> *p_list) const {

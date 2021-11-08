@@ -3478,7 +3478,7 @@ void EditorInspector::_update_script_class_properties(const Object &p_object, Li
 		}
 
 		List<PropertyInfo> props;
-		s->get_script_property_list(&props);
+		s->get_script_property_list(&props, p_object.get_script_instance());
 
 		// Script Variables -> NodeA -> bottom (insert_here)
 		List<PropertyInfo>::Element *category = r_list.insert_before(insert_here, PropertyInfo(Variant::NIL, name, PROPERTY_HINT_NONE, path, PROPERTY_USAGE_CATEGORY));
@@ -3500,11 +3500,24 @@ void EditorInspector::_update_script_class_properties(const Object &p_object, Li
 
 	// NodeC -> C props... -> NodeB..C..
 	if (script_variables) {
-		r_list.erase(script_variables);
-		List<PropertyInfo>::Element *to_delete = bottom->next();
-		while (to_delete && !(to_delete->get().usage & PROPERTY_USAGE_CATEGORY)) {
-			r_list.erase(to_delete);
-			to_delete = bottom->next();
+		bool properties_left = false;
+		List<PropertyInfo>::Element *current = bottom->next();
+		List<PropertyInfo>::Element *previous = bottom;
+		while (current && !(current->get().usage & PROPERTY_USAGE_CATEGORY)) {
+			// Fallback check so that we don't lose editor fields
+			// for properties coming from _get_property_list
+			if (added.has(current->get().name)) {
+				r_list.erase(current);
+			} else {
+				properties_left = true;
+				previous = current;
+			}
+
+			current = previous->next();
+		}
+
+		if (!properties_left) {
+			r_list.erase(script_variables);
 		}
 		r_list.erase(bottom);
 	}

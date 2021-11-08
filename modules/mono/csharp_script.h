@@ -215,7 +215,7 @@ public:
 	void get_script_signal_list(List<MethodInfo> *r_signals) const override;
 
 	bool get_property_default_value(const StringName &p_property, Variant &r_value) const override;
-	void get_script_property_list(List<PropertyInfo> *r_list) const override;
+	void get_script_property_list(List<PropertyInfo> *r_list, const ScriptInstance *p_instance = nullptr) const override;
 	void update_exports() override;
 
 	void get_members(Set<StringName> *p_members) override;

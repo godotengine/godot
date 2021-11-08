@@ -96,7 +96,7 @@ void NativeScript::_update_placeholder(PlaceHolderScriptInstance *p_placeholder)
 	ERR_FAIL_COND(!script_data);
 
 	List<PropertyInfo> info;
-	get_script_property_list(&info);
+	get_script_property_list(&info, p_placeholder);
 	Map<StringName, Variant> values;
 	for (const PropertyInfo &E : info) {
 		Variant value;
@@ -413,7 +413,7 @@ void NativeScript::get_script_method_list(List<MethodInfo> *p_list) const {
 	}
 }
 
-void NativeScript::get_script_property_list(List<PropertyInfo> *p_list) const {
+void NativeScript::get_script_property_list(List<PropertyInfo> *p_list, const ScriptInstance *p_instance) const {
 	NativeScriptDesc *script_data = get_script_desc();
 
 	Set<StringName> existing_properties;
@@ -651,7 +651,7 @@ bool NativeScriptInstance::get(const StringName &p_name, Variant &r_ret) const {
 }
 
 void NativeScriptInstance::get_property_list(List<PropertyInfo> *p_properties) const {
-	script->get_script_property_list(p_properties);
+	script->get_script_property_list(p_properties, this);
 
 	NativeScriptDesc *script_data = GET_SCRIPT_DESC();
 

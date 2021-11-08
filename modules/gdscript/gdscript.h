@@ -228,10 +228,11 @@ public:
 	bool get_property_default_value(const StringName &p_property, Variant &r_value) const override;
 
 	virtual void get_script_method_list(List<MethodInfo> *p_list) const override;
+	void _call_get_script_property_list(List<PropertyInfo> *r_list, const ScriptInstance *p_instance, bool p_include_base) const;
 	virtual bool has_method(const StringName &p_method) const override;
 	virtual MethodInfo get_method_info(const StringName &p_method) const override;
 
-	virtual void get_script_property_list(List<PropertyInfo> *p_list) const override;
+	virtual void get_script_property_list(List<PropertyInfo> *p_list, const ScriptInstance *p_instance = nullptr) const override;
 
 	virtual ScriptLanguage *get_language() const override;
 

@@ -925,7 +925,7 @@ MethodInfo VisualScript::get_method_info(const StringName &p_method) const {
 	return mi;
 }
 
-void VisualScript::get_script_property_list(List<PropertyInfo> *p_list) const {
+void VisualScript::get_script_property_list(List<PropertyInfo> *p_list, const ScriptInstance *instance) const {
 	List<StringName> vars;
 	get_variable_list(&vars);
 
