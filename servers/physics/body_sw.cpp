@@ -287,6 +287,8 @@ PhysicsServer::BodyMode BodySW::get_mode() const {
 
 void BodySW::_shapes_changed() {
 	_update_inertia();
+	wakeup();
+	wakeup_neighbours();
 }
 
 void BodySW::set_state(PhysicsServer::BodyState p_state, const Variant &p_variant) {
