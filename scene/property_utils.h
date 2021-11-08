@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  canvas_layer.h                                                       */
+/*  property_utils.h                                                     */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,86 +28,24 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef CANVAS_LAYER_H
-#define CANVAS_LAYER_H
+#ifndef PROPERTY_UTILS_H
+#define PROPERTY_UTILS_H
 
 #include "scene/main/node.h"
-#include "scene/resources/world_2d.h"
+#include "scene/resources/packed_scene.h"
 
-class Viewport;
-class CanvasLayer : public Node {
-	GDCLASS(CanvasLayer, Node);
-
-	bool locrotscale_dirty;
-	Vector2 ofs;
-	Size2 scale;
-	real_t rot;
-	int layer;
-	Transform2D transform;
-	RID canvas;
-
-	ObjectID custom_viewport_id; // to check validity
-	Viewport *custom_viewport;
-
-	RID viewport;
-	Viewport *vp;
-
-	int sort_index;
-
-	bool follow_viewport;
-	float follow_viewport_scale;
-
-	void _update_xform();
-	void _update_locrotscale();
-	void _update_follow_viewport(bool p_force_exit = false);
-
-protected:
-	void _notification(int p_what);
-	static void _bind_methods();
-
+class PropertyUtils {
 public:
-	void set_layer(int p_xform);
-	int get_layer() const;
+	static bool is_property_value_different(const Variant &p_a, const Variant &p_b);
+	// Gets the most pure default value, the one that would be set when the node has just been instantiated
+	static Variant get_property_default_value(const Object *p_object, const StringName &p_property, const Vector<SceneState::PackState> *p_states_stack_cache = nullptr, bool p_update_exports = false, const Node *p_owner = nullptr, bool *r_is_class_default = nullptr);
 
-	void set_transform(const Transform2D &p_xform);
-	Transform2D get_transform() const;
-
-	void set_offset(const Vector2 &p_offset);
-	Vector2 get_offset() const;
-
-	void set_rotation(real_t p_radians);
-	real_t get_rotation() const;
-
-	void set_rotation_degrees(real_t p_degrees);
-	real_t get_rotation_degrees() const;
-
-	void set_scale(const Size2 &p_scale);
-	Size2 get_scale() const;
-
-	Size2 get_viewport_size() const;
-
-	RID get_viewport() const;
-
-	void set_custom_viewport(Node *p_viewport);
-	Node *get_custom_viewport() const;
-
-	void reset_sort_index();
-	int get_sort_index();
-
-	void set_follow_viewport(bool p_enable);
-	bool is_following_viewport() const;
-
-	void set_follow_viewport_scale(float p_ratio);
-	float get_follow_viewport_scale() const;
-
-	RID get_canvas() const;
-
-#ifdef TOOLS_ENABLED
-	StringName get_property_store_alias(const StringName &p_property) const;
-#endif
-
-	CanvasLayer();
-	~CanvasLayer();
+	// Gets the instance/inheritance states of this node, in order of precedence,
+	// that is, from the topmost (the most able to override values) to the lowermost
+	// (Note that in nested instancing the one with the greatest precedence is the furthest
+	// in the tree, since every owner found while traversing towards the root gets a chance
+	// to override property values.)
+	static Vector<SceneState::PackState> get_node_states_stack(const Node *p_node, const Node *p_owner = nullptr, bool *r_instanced_by_owner = nullptr);
 };
 
-#endif // CANVAS_LAYER_H
+#endif // PROPERTY_UTILS_H
