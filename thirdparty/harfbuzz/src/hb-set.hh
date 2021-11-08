@@ -42,9 +42,22 @@ struct hb_sparseset_t
   ~hb_sparseset_t () { fini (); }
 
   hb_sparseset_t (const hb_sparseset_t& other) : hb_sparseset_t () { set (other); }
-  void operator= (const hb_sparseset_t& other) { set (other); }
-  // TODO Add move construtor/assign
-  // TODO Add constructor for Iterator
+  hb_sparseset_t (hb_sparseset_t&& other) : hb_sparseset_t () { s = std::move (other.s); }
+  hb_sparseset_t& operator= (const hb_sparseset_t& other) { set (other); return *this; }
+  hb_sparseset_t& operator= (hb_sparseset_t&& other) { hb_swap (*this, other); return *this; }
+  friend void swap (hb_sparseset_t& a, hb_sparseset_t& b) { hb_swap (a.s, b.s); }
+
+  hb_sparseset_t (std::initializer_list<hb_codepoint_t> lst) : hb_sparseset_t ()
+  {
+    for (auto&& item : lst)
+      add (item);
+  }
+  template <typename Iterable,
+	    hb_requires (hb_is_iterable (Iterable))>
+  hb_sparseset_t (const Iterable &o) : hb_sparseset_t ()
+  {
+    hb_copy (o, *this);
+  }
 
   void init_shallow () { s.init (); }
   void init ()
@@ -140,7 +153,18 @@ struct hb_sparseset_t
   operator iter_t () const { return iter (); }
 };
 
-struct hb_set_t : hb_sparseset_t<hb_bit_set_invertible_t> {};
+struct hb_set_t : hb_sparseset_t<hb_bit_set_invertible_t>
+{
+  hb_set_t () = default;
+  ~hb_set_t () = default;
+  hb_set_t (hb_set_t& o) = default;
+  hb_set_t& operator= (const hb_set_t& other) = default;
+  hb_set_t& operator= (hb_set_t&& other) = default;
+  hb_set_t (std::initializer_list<hb_codepoint_t> lst) : hb_sparseset_t<hb_bit_set_invertible_t> (lst) {}
+  template <typename Iterable,
+	    hb_requires (hb_is_iterable (Iterable))>
+  hb_set_t (const Iterable &o) : hb_sparseset_t<hb_bit_set_invertible_t> (o) {}
+};
 
 static_assert (hb_set_t::INVALID == HB_SET_VALUE_INVALID, "");
 

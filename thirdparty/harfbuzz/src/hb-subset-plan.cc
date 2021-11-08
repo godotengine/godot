@@ -38,6 +38,7 @@
 #include "hb-ot-color-colrv1-closure.hh"
 #include "hb-ot-var-fvar-table.hh"
 #include "hb-ot-stat-table.hh"
+#include "hb-ot-math-table.hh"
 
 
 typedef hb_hashmap_t<unsigned, hb_set_t *, (unsigned)-1, nullptr> script_langsys_map;
@@ -221,6 +222,50 @@ _cmap_closure (hb_face_t	   *face,
   cmap.fini ();
 }
 
+static void _colr_closure (hb_face_t *face,
+                           hb_map_t *layers_map,
+                           hb_map_t *palettes_map,
+                           hb_set_t *glyphs_colred)
+{
+  OT::COLR::accelerator_t colr;
+  colr.init (face);
+  if (!colr.is_valid ()) return;
+
+  unsigned iteration_count = 0;
+  hb_set_t palette_indices, layer_indices;
+  unsigned glyphs_num;
+  {
+    glyphs_num = glyphs_colred->get_population ();
+
+    // Collect all glyphs referenced by COLRv0
+    hb_set_t glyphset_colrv0;
+    for (hb_codepoint_t gid : glyphs_colred->iter ())
+      colr.closure_glyphs (gid, &glyphset_colrv0);
+    
+    glyphs_colred->union_ (glyphset_colrv0);
+    
+    //closure for COLRv1
+    colr.closure_forV1 (glyphs_colred, &layer_indices, &palette_indices);
+  } while (iteration_count++ <= HB_CLOSURE_MAX_STAGES &&
+           glyphs_num != glyphs_colred->get_population ());
+
+  colr.closure_V0palette_indices (glyphs_colred, &palette_indices);
+  _remap_indexes (&layer_indices, layers_map);
+  _remap_palette_indexes (&palette_indices, palettes_map);
+  colr.fini ();
+}
+
+static inline void
+_math_closure (hb_face_t           *face,
+               hb_set_t            *glyphset)
+{
+  hb_blob_ptr_t<OT::MATH> math = hb_sanitize_context_t ().reference_table<OT::MATH> (face);
+  if (math->has_data ())
+    math->closure_glyphs (glyphset);
+  math.destroy ();
+}
+
+
 static inline void
 _remove_invalid_gids (hb_set_t *glyphs,
 		      unsigned int num_glyphs)
@@ -301,12 +346,10 @@ _populate_gids_to_retain (hb_subset_plan_t* plan,
 #ifndef HB_NO_SUBSET_CFF
   OT::cff1::accelerator_t cff;
 #endif
-  OT::COLR::accelerator_t colr;
   glyf.init (plan->source);
 #ifndef HB_NO_SUBSET_CFF
   cff.init (plan->source);
 #endif
-  colr.init (plan->source);
 
   plan->_glyphset_gsub->add (0); // Not-def
 
@@ -334,30 +377,17 @@ _populate_gids_to_retain (hb_subset_plan_t* plan,
 #endif
   _remove_invalid_gids (plan->_glyphset_gsub, plan->source->get_num_glyphs ());
 
-  // Collect all glyphs referenced by COLRv0
-  hb_set_t* cur_glyphset = plan->_glyphset_gsub;
-  hb_set_t glyphset_colrv0;
-  if (colr.is_valid ())
-  {
-    glyphset_colrv0.union_ (*cur_glyphset);
-    for (hb_codepoint_t gid : cur_glyphset->iter ())
-      colr.closure_glyphs (gid, &glyphset_colrv0);
-    cur_glyphset = &glyphset_colrv0;
-  }
+  hb_set_set (plan->_glyphset_mathed, plan->_glyphset_gsub);
+  _math_closure (plan->source, plan->_glyphset_mathed);
+  _remove_invalid_gids (plan->_glyphset_mathed, plan->source->get_num_glyphs ());
 
-  hb_set_t palette_indices;
-  colr.closure_V0palette_indices (cur_glyphset, &palette_indices);
-
-  hb_set_t layer_indices;
-  colr.closure_forV1 (cur_glyphset, &layer_indices, &palette_indices);
-  _remap_indexes (&layer_indices, plan->colrv1_layers);
-  _remap_palette_indexes (&palette_indices, plan->colr_palettes);
-  colr.fini ();
-  _remove_invalid_gids (cur_glyphset, plan->source->get_num_glyphs ());
+  hb_set_t cur_glyphset = *plan->_glyphset_mathed;
+  _colr_closure (plan->source, plan->colrv1_layers, plan->colr_palettes, &cur_glyphset);
+  _remove_invalid_gids (&cur_glyphset, plan->source->get_num_glyphs ());
 
   // Populate a full set of glyphs to retain by adding all referenced
   // composite glyphs.
-  for (hb_codepoint_t gid : cur_glyphset->iter ())
+  for (hb_codepoint_t gid : cur_glyphset.iter ())
   {
     glyf.add_gid_and_children (gid, plan->_glyphset);
 #ifndef HB_NO_SUBSET_CFF
@@ -468,6 +498,7 @@ hb_subset_plan_create (hb_face_t	 *face,
 
   plan->_glyphset = hb_set_create ();
   plan->_glyphset_gsub = hb_set_create ();
+  plan->_glyphset_mathed = hb_set_create ();
   plan->codepoint_to_glyph = hb_map_create ();
   plan->glyph_map = hb_map_create ();
   plan->reverse_glyph_map = hb_map_create ();
@@ -535,6 +566,7 @@ hb_subset_plan_destroy (hb_subset_plan_t *plan)
   hb_map_destroy (plan->reverse_glyph_map);
   hb_set_destroy (plan->_glyphset);
   hb_set_destroy (plan->_glyphset_gsub);
+  hb_set_destroy (plan->_glyphset_mathed);
   hb_map_destroy (plan->gsub_lookups);
   hb_map_destroy (plan->gpos_lookups);
   hb_map_destroy (plan->gsub_features);

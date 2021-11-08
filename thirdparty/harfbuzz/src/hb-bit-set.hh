@@ -35,13 +35,22 @@
 
 struct hb_bit_set_t
 {
-  hb_bit_set_t () { init (); }
-  ~hb_bit_set_t () { fini (); }
+  hb_bit_set_t () = default;
+  ~hb_bit_set_t () = default;
 
   hb_bit_set_t (const hb_bit_set_t& other) : hb_bit_set_t () { set (other); }
-  void operator= (const hb_bit_set_t& other) { set (other); }
-  // TODO Add move construtor/assign
-  // TODO Add constructor for Iterator; with specialization for (sorted) vector / array?
+  hb_bit_set_t ( hb_bit_set_t&& other) : hb_bit_set_t () { hb_swap (*this, other); }
+  hb_bit_set_t& operator= (const hb_bit_set_t& other) { set (other); return *this; }
+  hb_bit_set_t& operator= (hb_bit_set_t&& other) { hb_swap (*this, other); return *this; }
+  friend void swap (hb_bit_set_t &a, hb_bit_set_t &b)
+  {
+    if (likely (!a.successful || !b.successful))
+      return;
+    hb_swap (a.population, b.population);
+    hb_swap (a.last_page_lookup, b.last_page_lookup);
+    hb_swap (a.page_map, b.page_map);
+    hb_swap (a.pages, b.pages);
+  }
 
   void init ()
   {
@@ -67,9 +76,9 @@ struct hb_bit_set_t
     uint32_t index;
   };
 
-  bool successful; /* Allocations successful */
-  mutable unsigned int population;
-  mutable unsigned int last_page_lookup;
+  bool successful = true; /* Allocations successful */
+  mutable unsigned int population = 0;
+  mutable unsigned int last_page_lookup = 0;
   hb_sorted_vector_t<page_map_t> page_map;
   hb_vector_t<page_t> pages;
 

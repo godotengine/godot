@@ -73,7 +73,7 @@ struct BaseCoordFormat2
   protected:
   HBUINT16	format;		/* Format identifier--format = 2 */
   FWORD		coordinate;	/* X or Y value, in design units */
-  HBGlyphID	referenceGlyph;	/* Glyph ID of control glyph */
+  HBGlyphID16	referenceGlyph;	/* Glyph ID of control glyph */
   HBUINT16	coordPoint;	/* Index of contour point on the
 				 * reference glyph */
   public:

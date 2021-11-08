@@ -604,7 +604,7 @@ struct CmapSubtableTrimmed
   UINT		length;		/* Byte length of this subtable. */
   UINT		language;	/* Ignore. */
   UINT		startCharCode;	/* First character code covered. */
-  ArrayOf<HBGlyphID, UINT>
+  ArrayOf<HBGlyphID16, UINT>
 		glyphIdArray;	/* Array of glyph index values for character
 				 * codes in the range. */
   public:
@@ -900,7 +900,7 @@ struct UVSMapping
   }
 
   HBUINT24	unicodeValue;	/* Base Unicode value of the UVS */
-  HBGlyphID	glyphID;	/* Glyph ID of the UVS */
+  HBGlyphID16	glyphID;	/* Glyph ID of the UVS */
   public:
   DEFINE_SIZE_STATIC (5);
 };

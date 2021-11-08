@@ -77,6 +77,7 @@ struct hb_subset_plan_t
   unsigned int _num_output_glyphs;
   hb_set_t *_glyphset;
   hb_set_t *_glyphset_gsub;
+  hb_set_t *_glyphset_mathed;
 
   //active lookups we'd like to retain
   hb_map_t *gsub_lookups;
