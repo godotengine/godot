@@ -88,6 +88,13 @@
 #define VALUATOR_TILTX 3
 #define VALUATOR_TILTY 4
 
+//#define DISPLAY_SERVER_X11_DEBUG_LOGS_ENABLED
+#ifdef DISPLAY_SERVER_X11_DEBUG_LOGS_ENABLED
+#define DEBUG_LOG_X11(...) printf(__VA_ARGS__)
+#else
+#define DEBUG_LOG_X11(...)
+#endif
+
 static const double abs_resolution_mult = 10000.0;
 static const double abs_resolution_range_mult = 10.0;
 
@@ -2344,6 +2351,11 @@ void OS_X11::_check_pending_events(LocalVector<XEvent> &r_events) {
 void OS_X11::process_xevents() {
 	//printf("checking events %i\n", XPending(x11_display));
 
+#ifdef DISPLAY_SERVER_X11_DEBUG_LOGS_ENABLED
+	static int frame = 0;
+	++frame;
+#endif
+
 	do_mouse_warp = false;
 
 	// Is the current mouse mode one where it needs to be grabbed.
@@ -2524,30 +2536,45 @@ void OS_X11::process_xevents() {
 		XFreeEventData(x11_display, &event.xcookie);
 
 		switch (event.type) {
-			case Expose:
-				Main::force_redraw();
-				break;
+			case Expose: {
+				DEBUG_LOG_X11("[%u] Expose window=%lu, count='%u' \n", frame, event.xexpose.window, event.xexpose.count);
 
-			case NoExpose:
+				Main::force_redraw();
+			} break;
+
+			case NoExpose: {
+				DEBUG_LOG_X11("[%u] NoExpose drawable=%lu \n", frame, event.xnoexpose.drawable);
+
 				minimized = true;
-				break;
+			} break;
 
 			case VisibilityNotify: {
+				DEBUG_LOG_X11("[%u] VisibilityNotify window=%lu, state=%u \n", frame, event.xvisibility.window, event.xvisibility.state);
+
 				XVisibilityEvent *visibility = (XVisibilityEvent *)&event;
 				minimized = (visibility->state == VisibilityFullyObscured);
 			} break;
+
 			case LeaveNotify: {
+				DEBUG_LOG_X11("[%u] LeaveNotify window=%lu, mode='%u' \n", frame, event.xcrossing.window, event.xcrossing.mode);
+
 				if (main_loop && !mouse_mode_grab) {
 					main_loop->notification(MainLoop::NOTIFICATION_WM_MOUSE_EXIT);
 				}
 
 			} break;
+
 			case EnterNotify: {
+				DEBUG_LOG_X11("[%u] EnterNotify window=%lu, mode='%u' \n", frame, event.xcrossing.window, event.xcrossing.mode);
+
 				if (main_loop && !mouse_mode_grab) {
 					main_loop->notification(MainLoop::NOTIFICATION_WM_MOUSE_ENTER);
 				}
 			} break;
-			case FocusIn:
+
+			case FocusIn: {
+				DEBUG_LOG_X11("[%u] FocusIn window=%lu, mode='%u' \n", frame, event.xfocus.window, event.xfocus.mode);
+
 				minimized = false;
 				window_has_focus = true;
 				main_loop->notification(MainLoop::NOTIFICATION_WM_FOCUS_IN);
@@ -2578,9 +2605,11 @@ void OS_X11::process_xevents() {
 					MutexLock mutex_lock(events_mutex);
 					XSetICFocus(xic);
 				}
-				break;
+			} break;
 
-			case FocusOut:
+			case FocusOut: {
+				DEBUG_LOG_X11("[%u] FocusOut window=%lu, mode='%u' \n", frame, event.xfocus.window, event.xfocus.mode);
+
 				window_has_focus = false;
 				input->release_pressed_events();
 				main_loop->notification(MainLoop::NOTIFICATION_WM_FOCUS_OUT);
@@ -2616,11 +2645,14 @@ void OS_X11::process_xevents() {
 					MutexLock mutex_lock(events_mutex);
 					XUnsetICFocus(xic);
 				}
-				break;
+			} break;
 
-			case ConfigureNotify:
+			case ConfigureNotify: {
+				DEBUG_LOG_X11("[%u] ConfigureNotify window=%lu, event=%lu, above=%lu, override_redirect=%u \n", frame, event.xconfigure.window, event.xconfigure.event, event.xconfigure.above, event.xconfigure.override_redirect);
+
 				_window_changed(&event);
-				break;
+			} break;
+
 			case ButtonPress:
 			case ButtonRelease: {
 				/* exit in case of a mouse button press */
@@ -2647,6 +2679,8 @@ void OS_X11::process_xevents() {
 				mb->set_pressed((event.type == ButtonPress));
 
 				if (event.type == ButtonPress) {
+					DEBUG_LOG_X11("[%u] ButtonPress window=%lu, button_index=%u \n", frame, event.xbutton.window, mb->get_button_index());
+
 					uint64_t diff = get_ticks_usec() / 1000 - last_click_ms;
 
 					if (mb->get_button_index() == last_click_button_index) {
@@ -2665,6 +2699,8 @@ void OS_X11::process_xevents() {
 						last_click_ms += diff;
 						last_click_pos = Point2(event.xbutton.x, event.xbutton.y);
 					}
+				} else {
+					DEBUG_LOG_X11("[%u] ButtonRelease window=%lu, button_index=%u \n", frame, event.xbutton.window, mb->get_button_index());
 				}
 
 				input->parse_input_event(mb);
@@ -2786,13 +2822,21 @@ void OS_X11::process_xevents() {
 				}
 
 			} break;
+
 			case KeyPress:
 			case KeyRelease: {
+#ifdef DISPLAY_SERVER_X11_DEBUG_LOGS_ENABLED
+				if (event.type == KeyPress) {
+					DEBUG_LOG_X11("[%u] KeyPress window=%lu, keycode=%u, time=%lu \n", frame, event.xkey.window, event.xkey.keycode, event.xkey.time);
+				} else {
+					DEBUG_LOG_X11("[%u] KeyRelease window=%lu, keycode=%u, time=%lu \n", frame, event.xkey.window, event.xkey.keycode, event.xkey.time);
+				}
+#endif
 				last_timestamp = event.xkey.time;
 
 				// key event is a little complex, so
 				// it will be handled in its own function.
-				_handle_key_event((XKeyEvent *)&event, events, event_index);
+				_handle_key_event(&event.xkey, events, event_index);
 			} break;
 
 			case SelectionNotify:
@@ -3001,6 +3045,8 @@ String OS_X11::_get_clipboard_impl(Atom p_source, Window x11_window, Atom target
 
 		if (type == XInternAtom(x11_display, "INCR", 0)) {
 			// Data is going to be received incrementally.
+			DEBUG_LOG_X11("INCR selection started.\n");
+
 			LocalVector<uint8_t> incr_data;
 			uint32_t data_size = 0;
 			bool success = false;
@@ -3028,6 +3074,8 @@ String OS_X11::_get_clipboard_impl(Atom p_source, Window x11_window, Atom target
 							&format, // return format
 							&len, &bytes_left, // data length
 							&data);
+
+					DEBUG_LOG_X11("PropertyNotify: len=%lu, format=%i\n", len, format);
 
 					if (result == Success) {
 						if (data && (len > 0)) {
