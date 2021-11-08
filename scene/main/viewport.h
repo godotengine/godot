@@ -368,7 +368,7 @@ private:
 
 	bool disable_input = false;
 
-	void _gui_call_input(Control *p_control, const Ref<InputEvent> &p_input, bool &is_event_accepted);
+	void _gui_call_input(Control *p_control, const Ref<InputEvent> &p_input);
 	void _gui_call_notification(Control *p_control, int p_what);
 
 	void _gui_sort_roots();
