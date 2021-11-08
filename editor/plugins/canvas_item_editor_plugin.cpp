@@ -2264,9 +2264,9 @@ bool CanvasItemEditor::_gui_input_select(const Ref<InputEvent> &p_event) {
 			}
 		}
 
-		if (b.is_valid() && b->is_pressed() && b->get_button_index() == MOUSE_BUTTON_RIGHT && b->is_ctrl_pressed()) {
-			add_node_menu->set_position(get_global_transform().xform(get_local_mouse_position()));
+		if (b.is_valid() && b->is_pressed() && b->get_button_index() == MOUSE_BUTTON_RIGHT) {
 			add_node_menu->set_size(Vector2(1, 1));
+			add_node_menu->set_position(get_screen_position() + b->get_position());
 			add_node_menu->popup();
 			node_create_position = transform.affine_inverse().xform((get_local_mouse_position()));
 			return true;
