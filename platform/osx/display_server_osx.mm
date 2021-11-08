@@ -289,14 +289,6 @@ static NSCursor *_cursorFromSelector(SEL selector, SEL fallback = nil) {
 		Callable::CallError ce;
 		wd.rect_changed_callback.call((const Variant **)&sizep, 1, ret, ce);
 	}
-
-	if (OS_OSX::get_singleton()->get_main_loop()) {
-		Main::force_redraw();
-		//Event retrieval blocks until resize is over. Call Main::iteration() directly.
-		if (!Main::is_iterating()) { //avoid cyclic loop
-			Main::iteration();
-		}
-	}
 }
 
 - (void)windowDidMove:(NSNotification *)notification {

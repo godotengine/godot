@@ -57,6 +57,8 @@ class OS_OSX : public OS_Unix {
 
 	MainLoop *main_loop;
 
+	static void pre_wait_observer_cb(CFRunLoopObserverRef p_observer, CFRunLoopActivity p_activiy, void *p_context);
+
 public:
 	String open_with_filename;
 
