@@ -1674,6 +1674,11 @@ Error OS_OSX::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 	CGLSetParameter((CGLContextObj)[context CGLContextObj], kCGLCPSurfaceBackingSize, &dim[0]);
 	CGLEnable((CGLContextObj)[context CGLContextObj], kCGLCESurfaceBackingSize);
 
+	if (get_render_thread_mode() != RENDER_THREAD_UNSAFE) {
+		CGLError err = CGLEnable((CGLContextObj)[context CGLContextObj], kCGLCEMPEngine); // Enable multithreading.
+		ERR_FAIL_COND_V(err != kCGLNoError, ERR_UNAVAILABLE);
+	}
+
 	set_use_vsync(p_desired.use_vsync);
 
 	if (!is_no_window_mode_enabled()) {
