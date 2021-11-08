@@ -1223,7 +1223,9 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 
 				tokenizer->advance(1);
 
+				parenthesis++;
 				Node *subexpr = _parse_expression(op, p_static, p_allow_assign, p_parsing_constant);
+				parenthesis--;
 				if (!subexpr) {
 					return nullptr;
 				}
