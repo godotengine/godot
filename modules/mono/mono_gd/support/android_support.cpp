@@ -109,16 +109,18 @@ bool jni_exception_check(JNIEnv *p_env) {
 String app_native_lib_dir_cache;
 
 String determine_app_native_lib_dir() {
+	// The JNI code is the equivalent of:
+	//
+	// return godotActivity.getApplicationInfo().nativeLibraryDir;
+
 	JNIEnv *env = get_jni_env();
 
-	ScopedLocalRef<jclass> activityThreadClass(env, env->FindClass("android/app/ActivityThread"));
-	jmethodID currentActivityThread = env->GetStaticMethodID(activityThreadClass, "currentActivityThread", "()Landroid/app/ActivityThread;");
-	ScopedLocalRef<jobject> activityThread(env, env->CallStaticObjectMethod(activityThreadClass, currentActivityThread));
-	jmethodID getApplication = env->GetMethodID(activityThreadClass, "getApplication", "()Landroid/app/Application;");
-	ScopedLocalRef<jobject> ctx(env, env->CallObjectMethod(activityThread, getApplication));
+	GodotJavaWrapper *godot_java = static_cast<OS_Android *>(OS::get_singleton())->get_godot_java();
+	jobject activity = godot_java->get_activity();
 
-	jmethodID getApplicationInfo = env->GetMethodID(env->GetObjectClass(ctx), "getApplicationInfo", "()Landroid/content/pm/ApplicationInfo;");
-	ScopedLocalRef<jobject> applicationInfo(env, env->CallObjectMethod(ctx, getApplicationInfo));
+	ScopedLocalRef<jclass> contextClass(env, env->FindClass("android/content/Context"));
+	jmethodID getApplicationInfo = env->GetMethodID(contextClass, "getApplicationInfo", "()Landroid/content/pm/ApplicationInfo;");
+	ScopedLocalRef<jobject> applicationInfo(env, env->CallObjectMethod(activity, getApplicationInfo));
 	jfieldID nativeLibraryDirField = env->GetFieldID(env->GetObjectClass(applicationInfo), "nativeLibraryDir", "Ljava/lang/String;");
 	ScopedLocalRef<jstring> nativeLibraryDir(env, (jstring)env->GetObjectField(applicationInfo, nativeLibraryDirField));
 
@@ -369,6 +371,7 @@ void initialize() {
 	String so_path = path::join(app_native_lib_dir, godot_so_name);
 
 	godot_dl_handle = try_dlopen(so_path, gd_mono_convert_dl_flags(MONO_DL_LAZY));
+	ERR_FAIL_COND(!godot_dl_handle);
 }
 
 void cleanup() {
