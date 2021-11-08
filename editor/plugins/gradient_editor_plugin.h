@@ -50,11 +50,27 @@ protected:
 public:
 	virtual Size2 get_minimum_size() const override;
 	void set_gradient(const Ref<Gradient> &p_gradient);
+	void reverse_gradient();
 	GradientEditor();
+};
+
+class GradientReverseButton : public BaseButton {
+	GDCLASS(GradientReverseButton, BaseButton);
+
+	int margin = 2;
+
+	void _notification(int p_what);
+	virtual Size2 get_minimum_size() const override;
 };
 
 class EditorInspectorPluginGradient : public EditorInspectorPlugin {
 	GDCLASS(EditorInspectorPluginGradient, EditorInspectorPlugin);
+
+	GradientEditor *editor;
+	HBoxContainer *gradient_tools_hbox;
+	GradientReverseButton *reverse_btn;
+
+	void _reverse_button_pressed();
 
 public:
 	virtual bool can_handle(Object *p_object) override;

@@ -45,6 +45,10 @@ class GradientEdit : public Control {
 	bool grabbing = false;
 	int grabbed = -1;
 	Vector<Gradient::Point> points;
+	Gradient::InterpolationMode interpolation_mode = Gradient::GRADIENT_INTERPOLATE_LINEAR;
+
+	Ref<Gradient> gradient_cache;
+	Ref<GradientTexture1D> preview_texture;
 
 	// Make sure to use the scaled value below.
 	const int BASE_SPACING = 3;
@@ -69,6 +73,9 @@ public:
 	Vector<Color> get_colors() const;
 	void set_points(Vector<Gradient::Point> &p_points);
 	Vector<Gradient::Point> &get_points();
+	void set_interpolation_mode(Gradient::InterpolationMode p_interp_mode);
+	Gradient::InterpolationMode get_interpolation_mode();
+
 	virtual Size2 get_minimum_size() const override;
 
 	GradientEdit();
