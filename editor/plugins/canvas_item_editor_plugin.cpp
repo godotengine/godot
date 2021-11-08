@@ -6192,14 +6192,14 @@ CanvasItemEditorViewport::CanvasItemEditorViewport(EditorNode *p_node, CanvasIte
 
 	label = memnew(Label);
 	label->add_theme_color_override("font_shadow_color", Color(0, 0, 0, 1));
-	label->add_theme_constant_override("shadow_as_outline", 1 * EDSCALE);
+	label->add_theme_constant_override("shadow_outline_size", 1 * EDSCALE);
 	label->hide();
 	canvas_item_editor->get_controls_container()->add_child(label);
 
 	label_desc = memnew(Label);
 	label_desc->add_theme_color_override("font_color", Color(0.6f, 0.6f, 0.6f, 1));
 	label_desc->add_theme_color_override("font_shadow_color", Color(0.2f, 0.2f, 0.2f, 1));
-	label_desc->add_theme_constant_override("shadow_as_outline", 1 * EDSCALE);
+	label_desc->add_theme_constant_override("shadow_outline_size", 1 * EDSCALE);
 	label_desc->add_theme_constant_override("line_spacing", 0);
 	label_desc->hide();
 	canvas_item_editor->get_controls_container()->add_child(label_desc);
