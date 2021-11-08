@@ -84,6 +84,21 @@ public:
 	GDVIRTUAL2(_font_set_data, RID, const PackedByteArray &);
 	GDVIRTUAL3(_font_set_data_ptr, RID, GDNativeConstPtr<const uint8_t>, uint64_t);
 
+	virtual void font_set_style(RID p_font_rid, uint32_t /*FontStyle*/ p_style) override;
+	virtual uint32_t /*FontStyle*/ font_get_style(RID p_font_rid) const override;
+	GDVIRTUAL2(_font_set_style, RID, uint32_t);
+	GDVIRTUAL1RC(uint32_t, _font_get_style, RID);
+
+	virtual void font_set_name(RID p_font_rid, const String &p_name) override;
+	virtual String font_get_name(RID p_font_rid) const override;
+	GDVIRTUAL2(_font_set_name, RID, const String &);
+	GDVIRTUAL1RC(String, _font_get_name, RID);
+
+	virtual void font_set_style_name(RID p_font_rid, const String &p_name) override;
+	virtual String font_get_style_name(RID p_font_rid) const override;
+	GDVIRTUAL2(_font_set_style_name, RID, const String &);
+	GDVIRTUAL1RC(String, _font_get_style_name, RID);
+
 	virtual void font_set_antialiased(RID p_font_rid, bool p_antialiased) override;
 	virtual bool font_is_antialiased(RID p_font_rid) const override;
 	GDVIRTUAL2(_font_set_antialiased, RID, bool);

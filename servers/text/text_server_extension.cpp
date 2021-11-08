@@ -55,6 +55,15 @@ void TextServerExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_font_set_data, "font_rid", "data");
 	GDVIRTUAL_BIND(_font_set_data_ptr, "font_rid", "data_ptr", "data_size");
 
+	GDVIRTUAL_BIND(_font_set_style, "font_rid", "style");
+	GDVIRTUAL_BIND(_font_get_style, "font_rid");
+
+	GDVIRTUAL_BIND(_font_set_name, "font_rid", "name");
+	GDVIRTUAL_BIND(_font_get_name, "font_rid");
+
+	GDVIRTUAL_BIND(_font_set_style_name, "font_rid", "name_style");
+	GDVIRTUAL_BIND(_font_get_style_name, "font_rid");
+
 	GDVIRTUAL_BIND(_font_set_antialiased, "font_rid", "antialiased");
 	GDVIRTUAL_BIND(_font_is_antialiased, "font_rid");
 
@@ -366,6 +375,42 @@ void TextServerExtension::font_set_data(RID p_font_rid, const PackedByteArray &p
 
 void TextServerExtension::font_set_data_ptr(RID p_font_rid, const uint8_t *p_data_ptr, size_t p_data_size) {
 	GDVIRTUAL_CALL(_font_set_data_ptr, p_font_rid, p_data_ptr, p_data_size);
+}
+
+void TextServerExtension::font_set_style(RID p_font_rid, uint32_t /*FontStyle*/ p_style) {
+	GDVIRTUAL_CALL(_font_set_style, p_font_rid, p_style);
+}
+
+uint32_t /*FontStyle*/ TextServerExtension::font_get_style(RID p_font_rid) const {
+	uint32_t ret;
+	if (GDVIRTUAL_CALL(_font_get_style, p_font_rid, ret)) {
+		return ret;
+	}
+	return 0;
+}
+
+void TextServerExtension::font_set_style_name(RID p_font_rid, const String &p_name) {
+	GDVIRTUAL_CALL(_font_set_style_name, p_font_rid, p_name);
+}
+
+String TextServerExtension::font_get_style_name(RID p_font_rid) const {
+	String ret;
+	if (GDVIRTUAL_CALL(_font_get_style_name, p_font_rid, ret)) {
+		return ret;
+	}
+	return String();
+}
+
+void TextServerExtension::font_set_name(RID p_font_rid, const String &p_name) {
+	GDVIRTUAL_CALL(_font_set_name, p_font_rid, p_name);
+}
+
+String TextServerExtension::font_get_name(RID p_font_rid) const {
+	String ret;
+	if (GDVIRTUAL_CALL(_font_get_name, p_font_rid, ret)) {
+		return ret;
+	}
+	return String();
 }
 
 void TextServerExtension::font_set_antialiased(RID p_font_rid, bool p_antialiased) {

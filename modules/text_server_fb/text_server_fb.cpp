@@ -736,6 +736,23 @@ _FORCE_INLINE_ bool TextServerFallback::_ensure_cache_for_size(FontDataFallback 
 		fd->underline_thickness = (FT_MulFix(fd->face->underline_thickness, fd->face->size->metrics.y_scale) / 64.0) / fd->oversampling * fd->scale;
 
 		if (!p_font_data->face_init) {
+			// Get style flags and name.
+			if (fd->face->family_name != nullptr) {
+				p_font_data->font_name = String::utf8((const char *)fd->face->family_name);
+			}
+			if (fd->face->style_name != nullptr) {
+				p_font_data->style_name = String::utf8((const char *)fd->face->style_name);
+			}
+			p_font_data->style_flags = 0;
+			if (fd->face->style_flags & FT_STYLE_FLAG_BOLD) {
+				p_font_data->style_flags |= FONT_BOLD;
+			}
+			if (fd->face->style_flags & FT_STYLE_FLAG_ITALIC) {
+				p_font_data->style_flags |= FONT_ITALIC;
+			}
+			if (fd->face->face_flags & FT_FACE_FLAG_FIXED_WIDTH) {
+				p_font_data->style_flags |= FONT_FIXED_WIDTH;
+			}
 			// Read OpenType variations.
 			p_font_data->supported_varaitions.clear();
 			if (fd->face->face_flags & FT_FACE_FLAG_MULTIPLE_MASTERS) {
@@ -824,6 +841,66 @@ void TextServerFallback::font_set_data_ptr(RID p_font_rid, const uint8_t *p_data
 	fd->data.clear();
 	fd->data_ptr = p_data_ptr;
 	fd->data_size = p_data_size;
+}
+
+void TextServerFallback::font_set_style(RID p_font_rid, uint32_t /*FontStyle*/ p_style) {
+	FontDataFallback *fd = font_owner.get_or_null(p_font_rid);
+	ERR_FAIL_COND(!fd);
+
+	MutexLock lock(fd->mutex);
+	Vector2i size = _get_size(fd, 16);
+	ERR_FAIL_COND(!_ensure_cache_for_size(fd, size));
+	fd->style_flags = p_style;
+}
+
+uint32_t /*FontStyle*/ TextServerFallback::font_get_style(RID p_font_rid) const {
+	FontDataFallback *fd = font_owner.get_or_null(p_font_rid);
+	ERR_FAIL_COND_V(!fd, 0);
+
+	MutexLock lock(fd->mutex);
+	Vector2i size = _get_size(fd, 16);
+	ERR_FAIL_COND_V(!_ensure_cache_for_size(fd, size), 0);
+	return fd->style_flags;
+}
+
+void TextServerFallback::font_set_style_name(RID p_font_rid, const String &p_name) {
+	FontDataFallback *fd = font_owner.get_or_null(p_font_rid);
+	ERR_FAIL_COND(!fd);
+
+	MutexLock lock(fd->mutex);
+	Vector2i size = _get_size(fd, 16);
+	ERR_FAIL_COND(!_ensure_cache_for_size(fd, size));
+	fd->style_name = p_name;
+}
+
+String TextServerFallback::font_get_style_name(RID p_font_rid) const {
+	FontDataFallback *fd = font_owner.get_or_null(p_font_rid);
+	ERR_FAIL_COND_V(!fd, String());
+
+	MutexLock lock(fd->mutex);
+	Vector2i size = _get_size(fd, 16);
+	ERR_FAIL_COND_V(!_ensure_cache_for_size(fd, size), String());
+	return fd->style_name;
+}
+
+void TextServerFallback::font_set_name(RID p_font_rid, const String &p_name) {
+	FontDataFallback *fd = font_owner.get_or_null(p_font_rid);
+	ERR_FAIL_COND(!fd);
+
+	MutexLock lock(fd->mutex);
+	Vector2i size = _get_size(fd, 16);
+	ERR_FAIL_COND(!_ensure_cache_for_size(fd, size));
+	fd->font_name = p_name;
+}
+
+String TextServerFallback::font_get_name(RID p_font_rid) const {
+	FontDataFallback *fd = font_owner.get_or_null(p_font_rid);
+	ERR_FAIL_COND_V(!fd, String());
+
+	MutexLock lock(fd->mutex);
+	Vector2i size = _get_size(fd, 16);
+	ERR_FAIL_COND_V(!_ensure_cache_for_size(fd, size), String());
+	return fd->font_name;
 }
 
 void TextServerFallback::font_set_antialiased(RID p_font_rid, bool p_antialiased) {

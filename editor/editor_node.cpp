@@ -174,6 +174,7 @@
 #include "editor/plugins/sprite_frames_editor_plugin.h"
 #include "editor/plugins/style_box_editor_plugin.h"
 #include "editor/plugins/sub_viewport_preview_editor_plugin.h"
+#include "editor/plugins/text_control_editor_plugin.h"
 #include "editor/plugins/text_editor.h"
 #include "editor/plugins/texture_3d_editor_plugin.h"
 #include "editor/plugins/texture_editor_plugin.h"
@@ -7010,6 +7011,7 @@ EditorNode::EditorNode() {
 	add_editor_plugin(memnew(GPUParticlesCollisionSDFEditorPlugin(this)));
 	add_editor_plugin(memnew(InputEventEditorPlugin(this)));
 	add_editor_plugin(memnew(SubViewportPreviewEditorPlugin(this)));
+	add_editor_plugin(memnew(TextControlEditorPlugin(this)));
 
 	for (int i = 0; i < EditorPlugins::get_plugin_count(); i++) {
 		add_editor_plugin(EditorPlugins::create(i, this));
