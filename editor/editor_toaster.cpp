@@ -158,11 +158,11 @@ void EditorToaster::_error_handler(void *p_self, const char *p_func, const char 
 	if (p_editor_notify || (show_all_setting == 0 && in_dev) || show_all_setting == 1) {
 		String err_str;
 		if (p_errorexp && p_errorexp[0]) {
-			err_str = p_errorexp;
+			err_str = String::utf8(p_errorexp);
 		} else {
-			err_str = String(p_error);
+			err_str = String::utf8(p_error);
 		}
-		String tooltip_str = String(p_file) + ":" + itos(p_line);
+		String tooltip_str = String::utf8(p_file) + ":" + itos(p_line);
 
 		if (!p_editor_notify) {
 			if (p_type == ERR_HANDLER_WARNING) {
