@@ -917,7 +917,7 @@ float Environment::get_adjustment_saturation() const {
 
 void Environment::set_adjustment_color_correction(Ref<Texture> p_color_correction) {
 	adjustment_color_correction = p_color_correction;
-	Ref<GradientTexture> grad_tex = p_color_correction;
+	Ref<GradientTexture1D> grad_tex = p_color_correction;
 	if (grad_tex.is_valid()) {
 		if (!grad_tex->is_connected(CoreStringNames::get_singleton()->changed, callable_mp(this, &Environment::_update_adjustment))) {
 			grad_tex->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &Environment::_update_adjustment));
