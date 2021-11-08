@@ -251,7 +251,7 @@ bool SoftBody::_get_property_pinned_points(int p_item, const String &p_what, Var
 }
 
 void SoftBody::_changed_callback(Object *p_changed, const char *p_prop) {
-	prepare_physics_server();
+	_prepare_physics_server();
 	_reset_points_offsets();
 #ifdef TOOLS_ENABLED
 	if (p_changed == this) {
@@ -269,7 +269,7 @@ void SoftBody::_notification(int p_what) {
 
 			RID space = get_world()->get_space();
 			PhysicsServer::get_singleton()->soft_body_set_space(physics_rid, space);
-			prepare_physics_server();
+			_prepare_physics_server();
 		} break;
 		case NOTIFICATION_READY: {
 			if (!parent_collision_ignore.is_empty()) {
@@ -396,7 +396,7 @@ void SoftBody::_bind_methods() {
 String SoftBody::get_configuration_warning() const {
 	String warning = MeshInstance::get_configuration_warning();
 
-	if (get_mesh().is_null()) {
+	if (mesh.is_null()) {
 		if (!warning.empty()) {
 			warning += "\n\n";
 		}
@@ -433,11 +433,17 @@ void SoftBody::_update_physics_server() {
 }
 
 void SoftBody::_draw_soft_mesh() {
-	if (get_mesh().is_null()) {
+	if (mesh.is_null()) {
 		return;
 	}
 
-	const RID mesh_rid = get_mesh()->get_rid();
+	RID mesh_rid = mesh->get_rid();
+	if (owned_mesh != mesh_rid) {
+		_become_mesh_owner();
+		mesh_rid = mesh->get_rid();
+		PhysicsServer::get_singleton()->soft_body_set_mesh(physics_rid, mesh);
+	}
+
 	if (!visual_server_handler.is_ready(mesh_rid)) {
 		visual_server_handler.prepare(mesh_rid, 0);
 
@@ -456,10 +462,10 @@ void SoftBody::_draw_soft_mesh() {
 	visual_server_handler.commit_changes();
 }
 
-void SoftBody::prepare_physics_server() {
+void SoftBody::_prepare_physics_server() {
 	if (Engine::get_singleton()->is_editor_hint()) {
-		if (get_mesh().is_valid()) {
-			PhysicsServer::get_singleton()->soft_body_set_mesh(physics_rid, get_mesh());
+		if (mesh.is_valid()) {
+			PhysicsServer::get_singleton()->soft_body_set_mesh(physics_rid, mesh);
 		} else {
 			PhysicsServer::get_singleton()->soft_body_set_mesh(physics_rid, nullptr);
 		}
@@ -467,9 +473,11 @@ void SoftBody::prepare_physics_server() {
 		return;
 	}
 
-	if (get_mesh().is_valid() && physics_enabled) {
-		become_mesh_owner();
-		PhysicsServer::get_singleton()->soft_body_set_mesh(physics_rid, get_mesh());
+	if (mesh.is_valid() && physics_enabled) {
+		if (owned_mesh != mesh->get_rid()) {
+			_become_mesh_owner();
+		}
+		PhysicsServer::get_singleton()->soft_body_set_mesh(physics_rid, mesh);
 		VS::get_singleton()->connect("frame_pre_draw", this, "_draw_soft_mesh");
 	} else {
 		PhysicsServer::get_singleton()->soft_body_set_mesh(physics_rid, nullptr);
@@ -479,38 +487,32 @@ void SoftBody::prepare_physics_server() {
 	}
 }
 
-void SoftBody::become_mesh_owner() {
-	if (mesh.is_null()) {
-		return;
+void SoftBody::_become_mesh_owner() {
+	Vector<Ref<Material>> copy_materials;
+	copy_materials.append_array(materials);
+
+	ERR_FAIL_COND(!mesh->get_surface_count());
+
+	// Get current mesh array and create new mesh array with necessary flag for softbody
+	Array surface_arrays = mesh->surface_get_arrays(0);
+	Array surface_blend_arrays = mesh->surface_get_blend_shape_arrays(0);
+	uint32_t surface_format = mesh->surface_get_format(0);
+
+	surface_format &= ~(Mesh::ARRAY_COMPRESS_VERTEX | Mesh::ARRAY_COMPRESS_NORMAL);
+	surface_format |= Mesh::ARRAY_FLAG_USE_DYNAMIC_UPDATE;
+
+	Ref<ArrayMesh> soft_mesh;
+	soft_mesh.instance();
+	soft_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, surface_arrays, surface_blend_arrays, surface_format);
+	soft_mesh->surface_set_material(0, mesh->surface_get_material(0));
+
+	set_mesh(soft_mesh);
+
+	for (int i = copy_materials.size() - 1; 0 <= i; --i) {
+		set_surface_material(i, copy_materials[i]);
 	}
 
-	if (!mesh_owner) {
-		mesh_owner = true;
-
-		Vector<Ref<Material>> copy_materials;
-		copy_materials.append_array(materials);
-
-		ERR_FAIL_COND(!mesh->get_surface_count());
-
-		// Get current mesh array and create new mesh array with necessary flag for softbody
-		Array surface_arrays = mesh->surface_get_arrays(0);
-		Array surface_blend_arrays = mesh->surface_get_blend_shape_arrays(0);
-		uint32_t surface_format = mesh->surface_get_format(0);
-
-		surface_format &= ~(Mesh::ARRAY_COMPRESS_VERTEX | Mesh::ARRAY_COMPRESS_NORMAL);
-		surface_format |= Mesh::ARRAY_FLAG_USE_DYNAMIC_UPDATE;
-
-		Ref<ArrayMesh> soft_mesh;
-		soft_mesh.instance();
-		soft_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, surface_arrays, surface_blend_arrays, surface_format);
-		soft_mesh->surface_set_material(0, mesh->surface_get_material(0));
-
-		set_mesh(soft_mesh);
-
-		for (int i = copy_materials.size() - 1; 0 <= i; --i) {
-			set_surface_material(i, copy_materials[i]);
-		}
-	}
+	owned_mesh = soft_mesh->get_rid();
 }
 
 void SoftBody::set_collision_mask(uint32_t p_mask) {
@@ -578,7 +580,7 @@ void SoftBody::set_physics_enabled(bool p_enabled) {
 	physics_enabled = p_enabled;
 
 	if (is_inside_tree()) {
-		prepare_physics_server();
+		_prepare_physics_server();
 	}
 }
 
@@ -730,7 +732,6 @@ bool SoftBody::is_ray_pickable() const {
 
 SoftBody::SoftBody() :
 		physics_rid(PhysicsServer::get_singleton()->soft_body_create()),
-		mesh_owner(false),
 		collision_mask(1),
 		collision_layer(1),
 		simulation_started(false),
