@@ -5282,18 +5282,28 @@ RasterizerSceneGLES3::RasterizerSceneGLES3() {
 }
 
 RasterizerSceneGLES3::~RasterizerSceneGLES3() {
-	memdelete(storage->material_owner.getptr(default_material));
-	memdelete(storage->material_owner.getptr(default_material_twosided));
-	memdelete(storage->shader_owner.getptr(default_shader));
-	memdelete(storage->shader_owner.getptr(default_shader_twosided));
+	storage->free(default_material);
+	default_material = RID();
+	storage->free(default_material_twosided);
+	default_material_twosided = RID();
+	storage->free(default_shader);
+	default_shader = RID();
+	storage->free(default_shader_twosided);
+	default_shader_twosided = RID();
 
-	memdelete(storage->material_owner.getptr(default_worldcoord_material));
-	memdelete(storage->material_owner.getptr(default_worldcoord_material_twosided));
-	memdelete(storage->shader_owner.getptr(default_worldcoord_shader));
-	memdelete(storage->shader_owner.getptr(default_worldcoord_shader_twosided));
+	storage->free(default_worldcoord_material);
+	default_worldcoord_material = RID();
+	storage->free(default_worldcoord_material_twosided);
+	default_worldcoord_material_twosided = RID();
+	storage->free(default_worldcoord_shader);
+	default_worldcoord_shader = RID();
+	storage->free(default_worldcoord_shader_twosided);
+	default_worldcoord_shader_twosided = RID();
 
-	memdelete(storage->material_owner.getptr(default_overdraw_material));
-	memdelete(storage->shader_owner.getptr(default_overdraw_shader));
+	storage->free(default_overdraw_material);
+	default_overdraw_material = RID();
+	storage->free(default_overdraw_shader);
+	default_overdraw_shader = RID();
 
 	memfree(state.spot_array_tmp);
 	memfree(state.omni_array_tmp);
