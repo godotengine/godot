@@ -65,18 +65,21 @@ void TextEditor::_load_theme_settings() {
 String TextEditor::get_name() {
 	String name;
 
-	if (!text_file->is_built_in()) {
-		name = text_file->get_path().get_file();
-		if (is_unsaved()) {
-			if (text_file->get_path().is_empty()) {
-				name = TTR("[unsaved]");
-			}
-			name += "(*)";
+	name = text_file->get_path().get_file();
+	if (name.is_empty()) {
+		// This appears for newly created built-in text_files before saving the scene.
+		name = TTR("[unsaved]");
+	} else if (text_file->is_built_in()) {
+		const String &text_file_name = text_file->get_name();
+		if (text_file_name != "") {
+			// If the built-in text_file has a custom resource name defined,
+			// display the built-in text_file name as follows: `ResourceName (scene_file.tscn)`
+			name = vformat("%s (%s)", text_file_name, name.get_slice("::", 0));
 		}
-	} else if (text_file->get_name() != "") {
-		name = text_file->get_name();
-	} else {
-		name = text_file->get_class() + "(" + itos(text_file->get_instance_id()) + ")";
+	}
+
+	if (is_unsaved()) {
+		name += "(*)";
 	}
 
 	return name;
