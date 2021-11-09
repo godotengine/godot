@@ -1074,6 +1074,10 @@ Vector3 KinematicBody::_move_and_slide_internal(const Vector3 &p_linear_velocity
 			Transform gt = get_global_transform();
 			Vector3 local_position = gt.origin - bs->get_transform().origin;
 			current_floor_velocity = bs->get_velocity_at_local_position(local_position);
+		} else {
+			// Body is removed or destroyed, invalidate floor.
+			current_floor_velocity = Vector3();
+			on_floor_body = RID();
 		}
 	}
 
