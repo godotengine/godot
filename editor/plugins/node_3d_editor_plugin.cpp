@@ -2887,13 +2887,13 @@ void Node3DEditorViewport::_notification(int p_what) {
 
 			// Color labels depending on performance level ("good" = green, "OK" = yellow, "bad" = red).
 			// Middle point is at 15 ms.
-			cpu_time_label->set_text(vformat(TTR("CPU Time: %s ms"), rtos(cpu_time).pad_decimals(1)));
+			cpu_time_label->set_text(vformat(TTR("CPU Time: %s ms"), rtos(cpu_time).pad_decimals(2)));
 			cpu_time_label->add_theme_color_override(
 					"font_color",
 					frame_time_gradient->get_color_at_offset(
 							Math::range_lerp(cpu_time, 0, 30, 0, 1)));
 
-			gpu_time_label->set_text(vformat(TTR("GPU Time: %s ms"), rtos(gpu_time).pad_decimals(1)));
+			gpu_time_label->set_text(vformat(TTR("GPU Time: %s ms"), rtos(gpu_time).pad_decimals(2)));
 			// Middle point is at 15 ms.
 			gpu_time_label->add_theme_color_override(
 					"font_color",
