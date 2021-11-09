@@ -56,6 +56,10 @@ Ref<Shader> ShaderTextEditor::get_edited_shader() const {
 }
 
 void ShaderTextEditor::set_edited_shader(const Ref<Shader> &p_shader) {
+	set_edited_shader(p_shader, p_shader->get_code());
+}
+
+void ShaderTextEditor::set_edited_shader(const Ref<Shader>& p_shader, String code) {
 	if (shader == p_shader) {
 		return;
 	}
@@ -63,7 +67,7 @@ void ShaderTextEditor::set_edited_shader(const Ref<Shader> &p_shader) {
 
 	_load_theme_settings();
 
-	get_text_editor()->set_text(p_shader->get_code());
+	get_text_editor()->set_text(code);
 	get_text_editor()->clear_undo_history();
 	get_text_editor()->call_deferred(SNAME("set_h_scroll"), 0);
 	get_text_editor()->call_deferred(SNAME("set_v_scroll"), 0);
@@ -94,6 +98,10 @@ void ShaderTextEditor::reload_text() {
 
 void ShaderTextEditor::set_warnings_panel(RichTextLabel *p_warnings_panel) {
 	warnings_panel = p_warnings_panel;
+}
+
+void ShaderTextEditor::set_shader_dependency_tree(Tree* tree) {
+	shader_dependency_tree = tree;
 }
 
 void ShaderTextEditor::_load_theme_settings() {
@@ -557,6 +565,15 @@ void ShaderEditor::edit(const Ref<Shader> &p_shader) {
 
 	shader = p_shader;
 
+	// create shader dependencies and update tree.
+	// TODO need to call this on edit as well. if the script changes there could be new dpendencies.
+	// this needs to be updated constantly
+	shader_rolling_code.clear();
+	shader_dependencies.populate(shader);
+	_update_shader_dependency_tree();
+
+	shader_rolling_code[shader->get_path()] = p_shader->get_code();
+
 	shader_editor->set_edited_shader(p_shader);
 
 	//vertex_editor->set_edited_shader(shader,ShaderLanguage::SHADER_MATERIAL_VERTEX);
@@ -581,10 +598,23 @@ void ShaderEditor::save_external_data(const String &p_str) {
 void ShaderEditor::apply_shaders() {
 	if (shader.is_valid()) {
 		String shader_code = shader->get_code();
-		String editor_code = shader_editor->get_text_editor()->get_text();
-		if (shader_code != editor_code) {
-			shader->set_code(editor_code);
-			shader->set_edited(true);
+
+		// shader_rolling_code
+
+		Ref<Shader> currently_edited_shader = shader_editor->get_edited_shader();
+		if (currently_edited_shader == shader)
+		{
+			String editor_code = shader_editor->get_text_editor()->get_text(); // TODO get cached version of root node shader code to apply. Then set all dep code too. Do this in reverse order up the tree?
+			if (shader_code != editor_code) {
+				shader->set_code(editor_code);
+				shader->set_edited(true);
+			}
+		}
+		else
+		{
+			String editor_code = shader_editor->get_text_editor()->get_text();
+			currently_edited_shader->set_code(editor_code);
+			currently_edited_shader->set_edited(true);
 		}
 
 		ShaderPreprocessor::refresh_shader_dependencies(*shader);
@@ -692,6 +722,80 @@ void ShaderEditor::_make_context_menu(bool p_selection, Vector2 p_position) {
 	context_menu->popup();
 }
 
+void ShaderEditor::_tree_activate_shader()
+{
+	TreeItem *selected = shader_dependency_tree->get_selected();
+	if (selected) {
+		String path = selected->get_metadata(0);
+
+		auto rollingCode = shader_rolling_code.find(path);
+
+		if (rollingCode)
+		{
+			RES res = ResourceLoader::load(path);
+			if (!res.is_null()) {
+				Shader* shader = Object::cast_to<Shader>(*res);
+				if (shader != nullptr) {
+					shader_editor->set_edited_shader(shader, rollingCode->get());
+				}
+			}
+		}
+		else
+		{
+			// TODO pull from shader dependency graph which can hold cache data, or store directly in tree?
+			// using only to pull code. how to cache data? hash set in editor panel with path lookup?
+			RES res = ResourceLoader::load(path);
+			if (!res.is_null()) {
+				Shader* shader = Object::cast_to<Shader>(*res);
+				if (shader != nullptr) {
+					String included = shader->get_code();
+					shader_rolling_code[path] = included;
+					shader_editor->set_edited_shader(shader);
+				}
+			}
+		}
+
+		/*TreeItem* parent = selected->get_parent();
+		bool is_favorite = parent != nullptr && parent->get_metadata(0) == "Favorites";
+
+		if ((!is_favorite && path.ends_with("/")) || path == "Favorites") {
+			bool collapsed = selected->is_collapsed();
+			selected->set_collapsed(!collapsed);
+		}
+		else {
+			_select_file(path, is_favorite && !path.ends_with("/"));
+		}*/
+	}
+}
+
+void ShaderEditor::_update_shader_dependency_tree()
+{
+	shader_dependency_tree->clear();
+	TreeItem *root = shader_dependency_tree->create_item();
+	root->select(0);
+
+	for (ShaderDependencyNode *node : shader_dependencies.nodes) {
+		TreeItem *shader_parent_item = shader_dependency_tree->create_item(root);
+		shader_parent_item->set_text(0, TTR(node->shader->get_path()));
+		shader_parent_item->set_metadata(0, node->shader->get_path());
+		shader_parent_item->set_icon(0, get_theme_icon(SNAME("Shader"), SNAME("EditorIcons")));
+
+		_update_shader_dependency_tree_items(shader_parent_item, node);
+	}
+}
+
+void ShaderEditor::_update_shader_dependency_tree_items(TreeItem* parent_tree_item, ShaderDependencyNode* node)
+{
+	for (ShaderDependencyNode *child_node : node->dependencies) {
+		TreeItem *shader_child_item = shader_dependency_tree->create_item(parent_tree_item);
+		shader_child_item->set_text(0, TTR(child_node->shader->get_path()));
+		shader_child_item->set_metadata(0, child_node->shader->get_path());
+		shader_child_item->set_icon(0, get_theme_icon(SNAME("Shader"), SNAME("EditorIcons")));
+
+		_update_shader_dependency_tree_items(shader_child_item, child_node);
+	}
+}
+
 ShaderEditor::ShaderEditor(EditorNode *p_node) {
 	GLOBAL_DEF("debug/shader_language/warnings/enable", true);
 	GLOBAL_DEF("debug/shader_language/warnings/treat_warnings_as_errors", false);
@@ -722,7 +826,26 @@ ShaderEditor::ShaderEditor(EditorNode *p_node) {
 	add_child(context_menu);
 	context_menu->connect("id_pressed", callable_mp(this, &ShaderEditor::_menu_option));
 
+	HSplitContainer* panel_split = memnew(HSplitContainer);
+	panel_split->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
+	panel_split->set_v_size_flags(SIZE_EXPAND_FILL);
+	add_child(panel_split);
+
 	VBoxContainer *main_container = memnew(VBoxContainer);
+	panel_split->add_child(main_container);
+
+	shader_dependency_tree = memnew(Tree);
+	shader_dependency_tree->set_hide_root(true);
+	shader_dependency_tree->set_allow_rmb_select(true);
+	shader_dependency_tree->set_select_mode(Tree::SELECT_SINGLE);
+	// shader_dependency_tree->set_custom_minimum_size(Size2(0, 15 * EDSCALE));
+
+	shader_dependency_tree->connect("item_activated", callable_mp(this, &ShaderEditor::_tree_activate_shader));
+
+	panel_split->add_child(shader_dependency_tree);
+	shader_editor->set_shader_dependency_tree(shader_dependency_tree);
+	
+
 	HBoxContainer *hbc = memnew(HBoxContainer);
 
 	edit_menu = memnew(MenuButton);

@@ -42,7 +42,7 @@
 #include "scene/resources/shader.h"
 
 class PreproprocessorTokenizer;
-class PPToken;
+struct PPToken;
 
 typedef char CharType;
 

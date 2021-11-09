@@ -881,6 +881,9 @@ bool operator==(ShaderDependencyNode left, ShaderDependencyNode right) {
 
 void ShaderDependencyGraph::populate(Ref<Shader> shader) {
 	cyclic_dep_tracker.clear();
+	nodes.clear(); // TODO actually delete these if we're refreshing
+	visited_shaders.clear();
+
 	ShaderDependencyNode* node = new ShaderDependencyNode(shader);
 	nodes.insert(node);
 	populate(node);

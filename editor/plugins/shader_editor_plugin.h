@@ -38,9 +38,11 @@
 #include "scene/gui/rich_text_label.h"
 #include "scene/gui/tab_container.h"
 #include "scene/gui/text_edit.h"
+#include "scene/gui/tree.h"
 #include "scene/main/timer.h"
 #include "scene/resources/shader.h"
 #include "servers/rendering/shader_warnings.h"
+#include "servers/rendering/shader_preprocessor.h"
 
 class ShaderTextEditor : public CodeTextEditor {
 	GDCLASS(ShaderTextEditor, CodeTextEditor);
@@ -53,11 +55,13 @@ class ShaderTextEditor : public CodeTextEditor {
 
 	Ref<CodeHighlighter> syntax_highlighter;
 	RichTextLabel *warnings_panel = nullptr;
+	Tree *shader_dependency_tree;
 	Ref<Shader> shader;
 	List<ShaderWarning> warnings;
 
 	void _check_shader_mode();
 	void _update_warning_panel();
+	void _update_shader_dependency_tree_items(TreeItem* parent_tree_item, ShaderDependencyNode* node);
 
 protected:
 	static void _bind_methods();
@@ -71,8 +75,13 @@ public:
 	void reload_text();
 	void set_warnings_panel(RichTextLabel *p_warnings_panel);
 
+	// TODO even necessary now?
+	void set_shader_dependency_tree(Tree* tree);
+	void update_shader_dependency_tree();
+
 	Ref<Shader> get_edited_shader() const;
 	void set_edited_shader(const Ref<Shader> &p_shader);
+	void set_edited_shader(const Ref<Shader> &p_shader, String code);
 	ShaderTextEditor();
 };
 
@@ -120,6 +129,10 @@ class ShaderEditor : public PanelContainer {
 
 	ShaderTextEditor *shader_editor;
 
+	Map<String, String> shader_rolling_code;
+	ShaderDependencyGraph shader_dependencies;
+	Tree *shader_dependency_tree;
+
 	void _menu_option(int p_option);
 	mutable Ref<Shader> shader;
 
@@ -131,6 +144,10 @@ class ShaderEditor : public PanelContainer {
 	void _show_warnings_panel(bool p_show);
 	void _warning_clicked(Variant p_line);
 	void _update_warnings(bool p_validate);
+
+	void _tree_activate_shader();
+	void _update_shader_dependency_tree();
+	void _update_shader_dependency_tree_items(TreeItem* parent_tree_item, ShaderDependencyNode* node);
 
 protected:
 	void _notification(int p_what);
