@@ -88,6 +88,30 @@ void Array::clear() {
 	_p->array.clear();
 }
 
+bool Array::deep_equal(const Array &p_array, int p_recursion_count) const {
+	// Cheap checks
+	ERR_FAIL_COND_V_MSG(p_recursion_count > MAX_RECURSION, true, "Max recursion reached");
+	if (_p == p_array._p) {
+		return true;
+	}
+	const Vector<Variant> &a1 = _p->array;
+	const Vector<Variant> &a2 = p_array._p->array;
+	const int size = a1.size();
+	if (size != a2.size()) {
+		return false;
+	}
+
+	// Heavy O(n) check
+	p_recursion_count++;
+	for (int i = 0; i < size; i++) {
+		if (!a1[i].deep_equal(a2[i], p_recursion_count)) {
+			return false;
+		}
+	}
+
+	return true;
+}
+
 bool Array::operator==(const Array &p_array) const {
 	return _p == p_array._p;
 }

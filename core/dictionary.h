@@ -68,6 +68,7 @@ public:
 
 	bool erase(const Variant &p_key);
 
+	bool deep_equal(const Dictionary &p_dictionary, int p_recursion_count = 0) const;
 	bool operator==(const Dictionary &p_dictionary) const;
 	bool operator!=(const Dictionary &p_dictionary) const;
 
