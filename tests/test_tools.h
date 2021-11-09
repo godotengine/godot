@@ -31,8 +31,6 @@
 #ifndef TEST_TOOLS_H
 #define TEST_TOOLS_H
 
-#include "core/error/error_macros.h"
-
 struct ErrorDetector {
 	ErrorDetector() {
 		eh.errfunc = _detect_error;

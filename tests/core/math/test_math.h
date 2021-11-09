@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  test_utils.cpp                                                       */
+/*  test_math.h                                                          */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,15 +28,14 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "tests/test_utils.h"
+#ifndef TEST_MATH_H
+#define TEST_MATH_H
 
-#include "core/os/os.h"
+class MainLoop;
 
-String TestUtils::get_data_path(const String &p_file) {
-	String data_path = "../tests/data";
-	return get_executable_dir().plus_file(data_path.plus_file(p_file));
+namespace TestMath {
+
+MainLoop *test();
 }
 
-String TestUtils::get_executable_dir() {
-	return OS::get_singleton()->get_executable_path().get_base_dir();
-}
+#endif

@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  test_utils.cpp                                                       */
+/*  test_path_3d.h                                                       */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,15 +28,57 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "tests/test_utils.h"
+#ifndef TEST_PATH_3D_H
+#define TEST_PATH_3D_H
 
-#include "core/os/os.h"
+#include "scene/3d/path_3d.h"
 
-String TestUtils::get_data_path(const String &p_file) {
-	String data_path = "../tests/data";
-	return get_executable_dir().plus_file(data_path.plus_file(p_file));
+#include "tests/test_macros.h"
+
+namespace TestPath3D {
+
+TEST_CASE("[Path3D] Initialization") {
+	SUBCASE("Path should be empty right after initialization") {
+		Path3D *test_path = memnew(Path3D);
+		CHECK(test_path->get_curve() == nullptr);
+		memdelete(test_path);
+	}
 }
 
-String TestUtils::get_executable_dir() {
-	return OS::get_singleton()->get_executable_path().get_base_dir();
+TEST_CASE("[Path3D] Curve setter and getter") {
+	SUBCASE("Curve passed to the class should remain the same") {
+		Path3D *test_path = memnew(Path3D);
+		const Ref<Curve3D> &curve = memnew(Curve3D);
+
+		test_path->set_curve(curve);
+		CHECK(test_path->get_curve() == curve);
+		memdelete(test_path);
+	}
+	SUBCASE("Curve passed many times to the class should remain the same") {
+		Path3D *test_path = memnew(Path3D);
+		const Ref<Curve3D> &curve = memnew(Curve3D);
+
+		test_path->set_curve(curve);
+		test_path->set_curve(curve);
+		test_path->set_curve(curve);
+		CHECK(test_path->get_curve() == curve);
+		memdelete(test_path);
+	}
+	SUBCASE("Curve rewrite testing") {
+		Path3D *test_path = memnew(Path3D);
+		const Ref<Curve3D> &curve1 = memnew(Curve3D);
+		const Ref<Curve3D> &curve2 = memnew(Curve3D);
+
+		test_path->set_curve(curve1);
+		test_path->set_curve(curve2);
+		CHECK_MESSAGE(test_path->get_curve() != curve1,
+				"After rewrite, second curve should be in class");
+		CHECK_MESSAGE(test_path->get_curve() == curve2,
+				"After rewrite, second curve should be in class");
+		memdelete(test_path);
+	}
 }
+
+} // namespace TestPath3D
+
+#endif // TEST_PATH_3D
