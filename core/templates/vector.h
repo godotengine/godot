@@ -257,6 +257,10 @@ public:
 		return ConstIterator(ptr() + size());
 	}
 
+	_FORCE_INLINE_ int64_t id() const {
+		return reinterpret_cast<int64_t>(ptr());
+	}
+
 	_FORCE_INLINE_ Vector() {}
 	_FORCE_INLINE_ Vector(const Vector &p_from) { _cowdata._ref(p_from._cowdata); }
 

@@ -303,6 +303,15 @@
 				[b]Note:[/b] Arrays with equal contents can still produce different hashes. Only the exact same arrays will produce the same hashed integer value.
 			</description>
 		</method>
+		<method name="id" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns a number that uniquely identifies the piece of memory backing this array.
+				[b]Note:[/b]
+				This is useful in cases where there's a need to check if two variables refer to the same array, like this: [code]a.id() == b.id()[/code]
+				When both arrays are [b]the same[/b], `==` will give the same result and as quickly. However, when both arrays are [b]not the same[/b], `==` will perform a deep comparison of their contents to still be able to tell if they [b]are equal[/b] at least.
+			</description>
+		</method>
 		<method name="insert">
 			<return type="int" />
 			<argument index="0" name="position" type="int" />

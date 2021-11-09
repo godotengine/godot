@@ -736,8 +736,8 @@ public:
 		memdelete_arr(aux_buffer);
 	}
 
-	const void *id() const {
-		return (void *)_data;
+	int64_t id() const {
+		return reinterpret_cast<int64_t>(_data);
 	}
 
 	/**

@@ -117,7 +117,7 @@ public:
 	Variant min() const;
 	Variant max() const;
 
-	const void *id() const;
+	int64_t id() const;
 
 	bool typed_assign(const Array &p_other);
 	void set_typed(uint32_t p_type, const StringName &p_class_name, const Variant &p_script);

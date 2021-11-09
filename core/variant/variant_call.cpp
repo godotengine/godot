@@ -1794,6 +1794,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(Dictionary, clear, sarray(), varray());
 	bind_method(Dictionary, has, sarray("key"), varray());
 	bind_method(Dictionary, has_all, sarray("keys"), varray());
+	bind_method(Dictionary, id, sarray(), varray());
 	bind_method(Dictionary, erase, sarray("key"), varray());
 	bind_method(Dictionary, hash, sarray(), varray());
 	bind_method(Dictionary, keys, sarray(), varray());
@@ -1811,6 +1812,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(Array, push_front, sarray("value"), varray());
 	bind_method(Array, append, sarray("value"), varray());
 	bind_method(Array, append_array, sarray("array"), varray());
+	bind_method(Array, id, sarray(), varray());
 	bind_method(Array, resize, sarray("size"), varray());
 	bind_method(Array, insert, sarray("position", "value"), varray());
 	bind_method(Array, remove, sarray("position"), varray());

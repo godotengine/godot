@@ -651,8 +651,8 @@ Variant Array::max() const {
 	return maxval;
 }
 
-const void *Array::id() const {
-	return _p->array.ptr();
+int64_t Array::id() const {
+	return _p->array.id();
 }
 
 Array::Array(const Array &p_from, uint32_t p_type, const StringName &p_class_name, const Variant &p_script) {

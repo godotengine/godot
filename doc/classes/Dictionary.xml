@@ -278,6 +278,15 @@
 				[b]Note:[/b] Dictionaries with the same keys/values but in a different order will have a different hash.
 			</description>
 		</method>
+		<method name="id" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns a number that uniquely identifies the piece of memory backing this dictionary.
+				[b]Note:[/b]
+				This is useful in cases where there's a need to check if two variables refer to the same dictionary, like this: [code]a.id() == b.id()[/code]
+				When both dictionaries are [b]the same[/b], `==` will give the same result and as quickly. However, when both dictionaries are [b]not the same[/b], `==` will perform a deep comparison of their contents to still be able to tell if they [b]are equal[/b] at least.
+			</description>
+		</method>
 		<method name="is_empty" qualifiers="const">
 			<return type="bool" />
 			<description>

@@ -84,7 +84,7 @@ public:
 	Dictionary duplicate(bool p_deep = false) const;
 	Dictionary recursive_duplicate(bool p_deep, int recursion_count) const;
 
-	const void *id() const;
+	int64_t id() const;
 
 	Dictionary(const Dictionary &p_from);
 	Dictionary();
