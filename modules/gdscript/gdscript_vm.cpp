@@ -3309,7 +3309,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 		}
 		int err_line = line;
 		if (err_text == "") {
-			err_text = "Internal Script Error! - opcode #" + itos(last_opcode) + " (report please).";
+			err_text = "Internal script error! Opcode: " + itos(last_opcode) + " (please report).";
 		}
 
 		if (!GDScriptLanguage::get_singleton()->debug_break(err_text, false)) {
