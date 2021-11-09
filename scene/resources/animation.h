@@ -75,6 +75,8 @@ public:
 	enum HandleMode {
 		HANDLE_MODE_FREE,
 		HANDLE_MODE_BALANCED,
+		HANDLE_MODE_AUTOMATIC,
+		HANDLE_MODE_LINEAR
 	};
 
 private:
@@ -361,6 +363,9 @@ private:
 	void _scale_track_optimize(int p_idx, real_t p_allowed_linear_err);
 	void _blend_shape_track_optimize(int p_idx, real_t p_allowed_unit_error);
 
+	void _update_bezier_handles_automatic(int p_track, int p_index);
+	void _update_bezier_handles_balanced(int p_track, int p_index);
+
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
@@ -425,7 +430,7 @@ public:
 	InterpolationType track_get_interpolation_type(int p_track) const;
 
 	int bezier_track_insert_key(int p_track, double p_time, real_t p_value, const Vector2 &p_in_handle, const Vector2 &p_out_handle, const HandleMode p_handle_mode = HandleMode::HANDLE_MODE_BALANCED);
-	void bezier_track_set_key_handle_mode(int p_track, int p_index, HandleMode p_mode, double p_balanced_value_time_ratio = 1.0);
+	void bezier_track_set_key_handle_mode(int p_track, int p_index, HandleMode p_mode);
 	void bezier_track_set_key_value(int p_track, int p_index, real_t p_value);
 	void bezier_track_set_key_in_handle(int p_track, int p_index, const Vector2 &p_handle, double p_balanced_value_time_ratio = 1.0);
 	void bezier_track_set_key_out_handle(int p_track, int p_index, const Vector2 &p_handle, double p_balanced_value_time_ratio = 1.0);

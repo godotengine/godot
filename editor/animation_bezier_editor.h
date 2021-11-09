@@ -32,6 +32,7 @@
 #define ANIMATION_BEZIER_EDITOR_H
 
 #include "animation_track_editor.h"
+#include "core/templates/hashfuncs.h"
 
 class ViewPanner;
 
@@ -44,6 +45,8 @@ class AnimationBezierTrackEdit : public Control {
 		MENU_KEY_DELETE,
 		MENU_KEY_SET_HANDLE_FREE,
 		MENU_KEY_SET_HANDLE_BALANCED,
+		MENU_KEY_SET_HANDLE_AUTOMATIC,
+		MENU_KEY_SET_HANDLE_LINEAR,
 	};
 
 	AnimationTimelineEdit *timeline = nullptr;
@@ -109,12 +112,24 @@ class AnimationBezierTrackEdit : public Control {
 	Vector2 box_selection_from;
 	Vector2 box_selection_to;
 
-	int moving_handle = 0; //0 no move -1 or +1 out
+	int moving_handle = 0; //0 no move -1 or +1 out, 2 both (drawing only)
 	int moving_handle_key = 0;
 	int moving_handle_track = 0;
 	Vector2 moving_handle_left;
 	Vector2 moving_handle_right;
 	int moving_handle_mode; // value from Animation::HandleMode
+
+	struct PairHasher {
+		static _FORCE_INLINE_ uint32_t hash(const Pair<int, int> &p_value) {
+			int32_t hash = 23;
+			hash = hash * 31 * hash_one_uint64(p_value.first);
+			hash = hash * 31 * hash_one_uint64(p_value.second);
+			return hash;
+		}
+	};
+
+	HashMap<Pair<int, int>, Vector2, PairHasher> additional_moving_handle_lefts;
+	HashMap<Pair<int, int>, Vector2, PairHasher> additional_moving_handle_rights;
 
 	void _clear_selection();
 	void _clear_selection_for_anim(const Ref<Animation> &p_anim);
@@ -142,7 +157,7 @@ class AnimationBezierTrackEdit : public Control {
 
 	Vector<EditPoint> edit_points;
 
-	struct SelectionCompare {
+	struct PairCompare {
 		bool operator()(const IntPair &lh, const IntPair &rh) {
 			if (lh.first == rh.first) {
 				return lh.second < rh.second;
@@ -152,7 +167,7 @@ class AnimationBezierTrackEdit : public Control {
 		}
 	};
 
-	typedef Set<IntPair, SelectionCompare> SelectionSet;
+	typedef Set<IntPair, PairCompare> SelectionSet;
 
 	SelectionSet selection;
 
