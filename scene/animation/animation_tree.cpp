@@ -32,6 +32,7 @@
 
 #include "animation_blend_tree.h"
 #include "core/config/engine.h"
+#include "scene/resources/animation.h"
 #include "scene/scene_string_names.h"
 #include "servers/audio/audio_stream.h"
 
@@ -87,7 +88,7 @@ void AnimationNode::get_child_nodes(List<ChildNode> *r_child_nodes) {
 	}
 }
 
-void AnimationNode::blend_animation(const StringName &p_animation, real_t p_time, real_t p_delta, bool p_seeked, real_t p_blend) {
+void AnimationNode::blend_animation(const StringName &p_animation, real_t p_time, real_t p_delta, bool p_seeked, real_t p_blend, int p_pingponged) {
 	ERR_FAIL_COND(!state);
 	ERR_FAIL_COND(!state->player->has_animation(p_animation));
 
@@ -113,6 +114,7 @@ void AnimationNode::blend_animation(const StringName &p_animation, real_t p_time
 	anim_state.time = p_time;
 	anim_state.animation = animation;
 	anim_state.seeked = p_seeked;
+	anim_state.pingponged = p_pingponged;
 
 	state->animation_states.push_back(anim_state);
 }
@@ -418,7 +420,7 @@ void AnimationNode::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_set_filters", "filters"), &AnimationNode::_set_filters);
 	ClassDB::bind_method(D_METHOD("_get_filters"), &AnimationNode::_get_filters);
 
-	ClassDB::bind_method(D_METHOD("blend_animation", "animation", "time", "delta", "seeked", "blend"), &AnimationNode::blend_animation);
+	ClassDB::bind_method(D_METHOD("blend_animation", "animation", "time", "delta", "seeked", "blend", "pingponged"), &AnimationNode::blend_animation, DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("blend_node", "name", "node", "time", "seek", "blend", "filter", "optimize"), &AnimationNode::blend_node, DEFVAL(FILTER_IGNORE), DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("blend_input", "input_index", "time", "seek", "blend", "filter", "optimize"), &AnimationNode::blend_input, DEFVAL(FILTER_IGNORE), DEFVAL(true));
 
@@ -898,6 +900,8 @@ void AnimationTree::_process_graph(real_t p_delta) {
 			double delta = as.delta;
 			real_t weight = as.blend;
 			bool seeked = as.seeked;
+			int pingponged = as.pingponged;
+			bool backward = signbit(delta);
 
 			for (int i = 0; i < a->get_track_count(); i++) {
 				NodePath path = a->track_get_path(i);
@@ -939,27 +943,63 @@ void AnimationTree::_process_graph(real_t p_delta) {
 						}
 
 						if (track->root_motion) {
-							real_t prev_time = time - delta;
-							if (prev_time < 0) {
-								if (!a->has_loop()) {
-									prev_time = 0;
-								} else {
-									prev_time = a->get_length() + prev_time;
+							double prev_time = time - delta;
+							if (!backward) {
+								if (prev_time < 0) {
+									switch (a->get_loop_mode()) {
+										case Animation::LOOP_NONE: {
+											prev_time = 0;
+										} break;
+										case Animation::LOOP_LINEAR: {
+											prev_time = Math::fposmod(prev_time, (double)a->get_length());
+										} break;
+										case Animation::LOOP_PINGPONG: {
+											prev_time = Math::pingpong(prev_time, (double)a->get_length());
+										} break;
+										default:
+											break;
+									}
+								}
+							} else {
+								if (prev_time > a->get_length()) {
+									switch (a->get_loop_mode()) {
+										case Animation::LOOP_NONE: {
+											prev_time = (double)a->get_length();
+										} break;
+										case Animation::LOOP_LINEAR: {
+											prev_time = Math::fposmod(prev_time, (double)a->get_length());
+										} break;
+										case Animation::LOOP_PINGPONG: {
+											prev_time = Math::pingpong(prev_time, (double)a->get_length());
+										} break;
+										default:
+											break;
+									}
 								}
 							}
 
 							Vector3 loc[2];
 
-							if (prev_time > time) {
-								Error err = a->position_track_interpolate(i, prev_time, &loc[0]);
-								if (err != OK) {
-									continue;
+							if (!backward) {
+								if (prev_time > time) {
+									Error err = a->position_track_interpolate(i, prev_time, &loc[0]);
+									if (err != OK) {
+										continue;
+									}
+									a->position_track_interpolate(i, (double)a->get_length(), &loc[1]);
+									t->loc += (loc[1] - loc[0]) * blend;
+									prev_time = 0;
 								}
-
-								a->position_track_interpolate(i, a->get_length(), &loc[1]);
-
-								t->loc += (loc[1] - loc[0]) * blend;
-								prev_time = 0;
+							} else {
+								if (prev_time < time) {
+									Error err = a->position_track_interpolate(i, prev_time, &loc[0]);
+									if (err != OK) {
+										continue;
+									}
+									a->position_track_interpolate(i, 0, &loc[1]);
+									t->loc += (loc[1] - loc[0]) * blend;
+									prev_time = 0;
+								}
 							}
 
 							Error err = a->position_track_interpolate(i, prev_time, &loc[0]);
@@ -968,17 +1008,13 @@ void AnimationTree::_process_graph(real_t p_delta) {
 							}
 
 							a->position_track_interpolate(i, time, &loc[1]);
-
 							t->loc += (loc[1] - loc[0]) * blend;
-
-							prev_time = 0;
+							prev_time = !backward ? 0 : (double)a->get_length();
 
 						} else {
 							Vector3 loc;
 
 							Error err = a->position_track_interpolate(i, time, &loc);
-							//ERR_CONTINUE(err!=OK); //used for testing, should be removed
-
 							if (err != OK) {
 								continue;
 							}
@@ -1000,29 +1036,65 @@ void AnimationTree::_process_graph(real_t p_delta) {
 						}
 
 						if (track->root_motion) {
-							real_t prev_time = time - delta;
-							if (prev_time < 0) {
-								if (!a->has_loop()) {
-									prev_time = 0;
-								} else {
-									prev_time = a->get_length() + prev_time;
+							double prev_time = time - delta;
+							if (!backward) {
+								if (prev_time < 0) {
+									switch (a->get_loop_mode()) {
+										case Animation::LOOP_NONE: {
+											prev_time = 0;
+										} break;
+										case Animation::LOOP_LINEAR: {
+											prev_time = Math::fposmod(prev_time, (double)a->get_length());
+										} break;
+										case Animation::LOOP_PINGPONG: {
+											prev_time = Math::pingpong(prev_time, (double)a->get_length());
+										} break;
+										default:
+											break;
+									}
+								}
+							} else {
+								if (prev_time > a->get_length()) {
+									switch (a->get_loop_mode()) {
+										case Animation::LOOP_NONE: {
+											prev_time = (double)a->get_length();
+										} break;
+										case Animation::LOOP_LINEAR: {
+											prev_time = Math::fposmod(prev_time, (double)a->get_length());
+										} break;
+										case Animation::LOOP_PINGPONG: {
+											prev_time = Math::pingpong(prev_time, (double)a->get_length());
+										} break;
+										default:
+											break;
+									}
 								}
 							}
 
 							Quaternion rot[2];
 
-							if (prev_time > time) {
-								Error err = a->rotation_track_interpolate(i, prev_time, &rot[0]);
-								if (err != OK) {
-									continue;
+							if (!backward) {
+								if (prev_time > time) {
+									Error err = a->rotation_track_interpolate(i, prev_time, &rot[0]);
+									if (err != OK) {
+										continue;
+									}
+									a->rotation_track_interpolate(i, (double)a->get_length(), &rot[1]);
+									Quaternion q = Quaternion().slerp(rot[0].normalized().inverse() * rot[1].normalized(), blend).normalized();
+									t->rot = (t->rot * q).normalized();
+									prev_time = 0;
 								}
-
-								a->rotation_track_interpolate(i, a->get_length(), &rot[1]);
-
-								Quaternion q = Quaternion().slerp(rot[0].normalized().inverse() * rot[1].normalized(), blend).normalized();
-								t->rot = (t->rot * q).normalized();
-
-								prev_time = 0;
+							} else {
+								if (prev_time < time) {
+									Error err = a->rotation_track_interpolate(i, prev_time, &rot[0]);
+									if (err != OK) {
+										continue;
+									}
+									a->rotation_track_interpolate(i, 0, &rot[1]);
+									Quaternion q = Quaternion().slerp(rot[0].normalized().inverse() * rot[1].normalized(), blend).normalized();
+									t->rot = (t->rot * q).normalized();
+									prev_time = 0;
+								}
 							}
 
 							Error err = a->rotation_track_interpolate(i, prev_time, &rot[0]);
@@ -1031,18 +1103,14 @@ void AnimationTree::_process_graph(real_t p_delta) {
 							}
 
 							a->rotation_track_interpolate(i, time, &rot[1]);
-
 							Quaternion q = Quaternion().slerp(rot[0].normalized().inverse() * rot[1].normalized(), blend).normalized();
 							t->rot = (t->rot * q).normalized();
-
-							prev_time = 0;
+							prev_time = !backward ? 0 : (double)a->get_length();
 
 						} else {
 							Quaternion rot;
 
 							Error err = a->rotation_track_interpolate(i, time, &rot);
-							//ERR_CONTINUE(err!=OK); //used for testing, should be removed
-
 							if (err != OK) {
 								continue;
 							}
@@ -1071,28 +1139,63 @@ void AnimationTree::_process_graph(real_t p_delta) {
 						}
 
 						if (track->root_motion) {
-							real_t prev_time = time - delta;
-							if (prev_time < 0) {
-								if (!a->has_loop()) {
-									prev_time = 0;
-								} else {
-									prev_time = a->get_length() + prev_time;
+							double prev_time = time - delta;
+							if (!backward) {
+								if (prev_time < 0) {
+									switch (a->get_loop_mode()) {
+										case Animation::LOOP_NONE: {
+											prev_time = 0;
+										} break;
+										case Animation::LOOP_LINEAR: {
+											prev_time = Math::fposmod(prev_time, (double)a->get_length());
+										} break;
+										case Animation::LOOP_PINGPONG: {
+											prev_time = Math::pingpong(prev_time, (double)a->get_length());
+										} break;
+										default:
+											break;
+									}
+								}
+							} else {
+								if (prev_time > a->get_length()) {
+									switch (a->get_loop_mode()) {
+										case Animation::LOOP_NONE: {
+											prev_time = (double)a->get_length();
+										} break;
+										case Animation::LOOP_LINEAR: {
+											prev_time = Math::fposmod(prev_time, (double)a->get_length());
+										} break;
+										case Animation::LOOP_PINGPONG: {
+											prev_time = Math::pingpong(prev_time, (double)a->get_length());
+										} break;
+										default:
+											break;
+									}
 								}
 							}
 
 							Vector3 scale[2];
 
-							if (prev_time > time) {
-								Error err = a->scale_track_interpolate(i, prev_time, &scale[0]);
-								if (err != OK) {
-									continue;
+							if (!backward) {
+								if (prev_time > time) {
+									Error err = a->scale_track_interpolate(i, prev_time, &scale[0]);
+									if (err != OK) {
+										continue;
+									}
+									a->scale_track_interpolate(i, (double)a->get_length(), &scale[1]);
+									t->scale += (scale[1] - scale[0]) * blend;
+									prev_time = 0;
 								}
-
-								a->scale_track_interpolate(i, a->get_length(), &scale[1]);
-
-								t->scale += (scale[1] - scale[0]) * blend;
-
-								prev_time = 0;
+							} else {
+								if (prev_time < time) {
+									Error err = a->scale_track_interpolate(i, prev_time, &scale[0]);
+									if (err != OK) {
+										continue;
+									}
+									a->scale_track_interpolate(i, 0, &scale[1]);
+									t->scale += (scale[1] - scale[0]) * blend;
+									prev_time = 0;
+								}
 							}
 
 							Error err = a->scale_track_interpolate(i, prev_time, &scale[0]);
@@ -1101,17 +1204,13 @@ void AnimationTree::_process_graph(real_t p_delta) {
 							}
 
 							a->scale_track_interpolate(i, time, &scale[1]);
-
 							t->scale += (scale[1] - scale[0]) * blend;
-
-							prev_time = 0;
+							prev_time = !backward ? 0 : (double)a->get_length();
 
 						} else {
 							Vector3 scale;
 
 							Error err = a->scale_track_interpolate(i, time, &scale);
-							//ERR_CONTINUE(err!=OK); //used for testing, should be removed
-
 							if (err != OK) {
 								continue;
 							}
@@ -1164,7 +1263,7 @@ void AnimationTree::_process_graph(real_t p_delta) {
 
 						} else {
 							List<int> indices;
-							a->value_track_get_key_indices(i, time, delta, &indices);
+							a->value_track_get_key_indices(i, time, delta, &indices, pingponged);
 
 							for (int &F : indices) {
 								Variant value = a->track_get_key_value(i, F);
@@ -1181,7 +1280,7 @@ void AnimationTree::_process_graph(real_t p_delta) {
 
 						List<int> indices;
 
-						a->method_track_get_key_indices(i, time, delta, &indices);
+						a->method_track_get_key_indices(i, time, delta, &indices, pingponged);
 
 						for (int &F : indices) {
 							StringName method = a->method_track_get_name(i, F);
@@ -1264,7 +1363,7 @@ void AnimationTree::_process_graph(real_t p_delta) {
 						} else {
 							//find stuff to play
 							List<int> to_play;
-							a->track_get_key_indices_in_range(i, time, delta, &to_play);
+							a->track_get_key_indices_in_range(i, time, delta, &to_play, pingponged);
 							if (to_play.size()) {
 								int idx = to_play.back()->get();
 
@@ -1292,12 +1391,20 @@ void AnimationTree::_process_graph(real_t p_delta) {
 									t->start = time;
 								}
 							} else if (t->playing) {
-								bool loop = a->has_loop();
+								bool loop = a->get_loop_mode() != Animation::LoopMode::LOOP_NONE;
 
 								bool stop = false;
 
-								if (!loop && time < t->start) {
-									stop = true;
+								if (!loop) {
+									if (delta > 0) {
+										if (time < t->start) {
+											stop = true;
+										}
+									} else if (delta < 0) {
+										if (time > t->start) {
+											stop = true;
+										}
+									}
 								} else if (t->len > 0) {
 									real_t len = t->start > time ? (a->get_length() - t->start) + time : time - t->start;
 
@@ -1331,7 +1438,7 @@ void AnimationTree::_process_graph(real_t p_delta) {
 							continue;
 						}
 
-						if (delta == 0 || seeked) {
+						if (seeked) {
 							//seek
 							int idx = a->track_find_key(i, time);
 							if (idx < 0) {
@@ -1347,12 +1454,20 @@ void AnimationTree::_process_graph(real_t p_delta) {
 
 							Ref<Animation> anim = player2->get_animation(anim_name);
 
-							real_t at_anim_pos;
+							real_t at_anim_pos = 0.0;
 
-							if (anim->has_loop()) {
-								at_anim_pos = Math::fposmod(time - pos, (double)anim->get_length()); //seek to loop
-							} else {
-								at_anim_pos = MAX(anim->get_length(), time - pos); //seek to end
+							switch (anim->get_loop_mode()) {
+								case Animation::LoopMode::LOOP_NONE: {
+									at_anim_pos = MAX((double)anim->get_length(), time - pos); //seek to end
+								} break;
+								case Animation::LoopMode::LOOP_LINEAR: {
+									at_anim_pos = Math::fposmod(time - pos, (double)anim->get_length()); //seek to loop
+								} break;
+								case Animation::LoopMode::LOOP_PINGPONG: {
+									at_anim_pos = Math::pingpong(time - pos, (double)a->get_length());
+								} break;
+								default:
+									break;
 							}
 
 							if (player2->is_playing() || seeked) {
@@ -1367,7 +1482,7 @@ void AnimationTree::_process_graph(real_t p_delta) {
 						} else {
 							//find stuff to play
 							List<int> to_play;
-							a->track_get_key_indices_in_range(i, time, delta, &to_play);
+							a->track_get_key_indices_in_range(i, time, delta, &to_play, pingponged);
 							if (to_play.size()) {
 								int idx = to_play.back()->get();
 

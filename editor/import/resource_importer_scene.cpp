@@ -424,10 +424,10 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, Map<Ref<I
 
 			String animname = E;
 			const int loop_string_count = 3;
-			static const char *loop_strings[loop_string_count] = { "loops", "loop", "cycle" };
+			static const char *loop_strings[loop_string_count] = { "loop_mode", "loop", "cycle" };
 			for (int i = 0; i < loop_string_count; i++) {
 				if (_teststr(animname, loop_strings[i])) {
-					anim->set_loop(true);
+					anim->set_loop_mode(Animation::LoopMode::LOOP_LINEAR);
 					animname = _fixstr(animname, loop_strings[i]);
 					ap->rename_animation(E, animname);
 				}
@@ -868,7 +868,7 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, Map<Ref<
 				String name = node_settings["clip_" + itos(i + 1) + "/name"];
 				int from_frame = node_settings["clip_" + itos(i + 1) + "/start_frame"];
 				int end_frame = node_settings["clip_" + itos(i + 1) + "/end_frame"];
-				bool loop = node_settings["clip_" + itos(i + 1) + "/loops"];
+				Animation::LoopMode loop_mode = static_cast<Animation::LoopMode>((int)node_settings["clip_" + itos(i + 1) + "/loop_mode"]);
 				bool save_to_file = node_settings["clip_" + itos(i + 1) + "/save_to_file/enabled"];
 				bool save_to_path = node_settings["clip_" + itos(i + 1) + "/save_to_file/path"];
 				bool save_to_file_keep_custom = node_settings["clip_" + itos(i + 1) + "/save_to_file/keep_custom_tracks"];
@@ -876,7 +876,7 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, Map<Ref<
 				animation_clips.push_back(name);
 				animation_clips.push_back(from_frame / p_animation_fps);
 				animation_clips.push_back(end_frame / p_animation_fps);
-				animation_clips.push_back(loop);
+				animation_clips.push_back(loop_mode);
 				animation_clips.push_back(save_to_file);
 				animation_clips.push_back(save_to_path);
 				animation_clips.push_back(save_to_file_keep_custom);
@@ -903,7 +903,7 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, Map<Ref<
 						}
 					}
 
-					anim->set_loop(anim_settings["settings/loops"]);
+					anim->set_loop_mode(static_cast<Animation::LoopMode>((int)anim_settings["settings/loop_mode"]));
 					bool save = anim_settings["save_to_file/enabled"];
 					String path = anim_settings["save_to_file/path"];
 					bool keep_custom = anim_settings["save_to_file/keep_custom_tracks"];
@@ -977,7 +977,7 @@ Ref<Animation> ResourceImporterScene::_save_animation_to_file(Ref<Animation> ani
 					old_anim->copy_track(i, anim);
 				}
 			}
-			anim->set_loop(old_anim->has_loop());
+			anim->set_loop_mode(old_anim->get_loop_mode());
 		}
 	}
 
@@ -1005,7 +1005,7 @@ void ResourceImporterScene::_create_clips(AnimationPlayer *anim, const Array &p_
 		String name = p_clips[i];
 		float from = p_clips[i + 1];
 		float to = p_clips[i + 2];
-		bool loop = p_clips[i + 3];
+		Animation::LoopMode loop_mode = static_cast<Animation::LoopMode>((int)p_clips[i + 3]);
 		bool save_to_file = p_clips[i + 4];
 		String save_to_path = p_clips[i + 5];
 		bool keep_current = p_clips[i + 6];
@@ -1135,7 +1135,7 @@ void ResourceImporterScene::_create_clips(AnimationPlayer *anim, const Array &p_
 			}
 		}
 
-		new_anim->set_loop(loop);
+		new_anim->set_loop_mode(loop_mode);
 		new_anim->set_length(to - from);
 		anim->add_animation(name, new_anim);
 
@@ -1218,7 +1218,7 @@ void ResourceImporterScene::get_internal_import_options(InternalImportCategory p
 			r_options->push_back(ImportOption(PropertyInfo(Variant::STRING, "use_external/path", PROPERTY_HINT_FILE, "*.material,*.res,*.tres"), ""));
 		} break;
 		case INTERNAL_IMPORT_CATEGORY_ANIMATION: {
-			r_options->push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::BOOL, "settings/loops"), false));
+			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "settings/loop_mode"), 0));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "save_to_file/enabled", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), false));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::STRING, "save_to_file/path", PROPERTY_HINT_SAVE_FILE, "*.res,*.tres"), ""));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "save_to_file/keep_custom_tracks"), ""));
@@ -1240,7 +1240,7 @@ void ResourceImporterScene::get_internal_import_options(InternalImportCategory p
 				r_options->push_back(ImportOption(PropertyInfo(Variant::STRING, "slice_" + itos(i + 1) + "/name"), ""));
 				r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "slice_" + itos(i + 1) + "/start_frame"), 0));
 				r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "slice_" + itos(i + 1) + "/end_frame"), 0));
-				r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "slice_" + itos(i + 1) + "/loops"), false));
+				r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "slice_" + itos(i + 1) + "/loop_mode"), 0));
 				r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "slice_" + itos(i + 1) + "/save_to_file/enabled", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), false));
 				r_options->push_back(ImportOption(PropertyInfo(Variant::STRING, "slice_" + itos(i + 1) + "/save_to_file/path", PROPERTY_HINT_SAVE_FILE, ".res,*.tres"), ""));
 				r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "slice_" + itos(i + 1) + "/save_to_file/keep_custom_tracks"), false));
