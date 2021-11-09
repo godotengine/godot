@@ -63,6 +63,7 @@
 #include "scene/2d/position_2d.h"
 #include "scene/2d/ray_cast_2d.h"
 #include "scene/2d/remote_transform_2d.h"
+#include "scene/2d/shape_cast_2d.h"
 #include "scene/2d/skeleton_2d.h"
 #include "scene/2d/sprite_2d.h"
 #include "scene/2d/tile_map.h"
@@ -665,6 +666,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(CollisionShape2D);
 	GDREGISTER_CLASS(CollisionPolygon2D);
 	GDREGISTER_CLASS(RayCast2D);
+	GDREGISTER_CLASS(ShapeCast2D);
 	GDREGISTER_CLASS(VisibleOnScreenNotifier2D);
 	GDREGISTER_CLASS(VisibleOnScreenEnabler2D);
 	GDREGISTER_CLASS(Polygon2D);
