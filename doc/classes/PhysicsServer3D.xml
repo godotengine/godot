@@ -1287,7 +1287,7 @@
 			Constant to set/get a body's inertia.
 		</constant>
 		<constant name="BODY_PARAM_CENTER_OF_MASS" value="4" enum="BodyParameter">
-			Constant to set/get a body's center of mass.
+			Constant to set/get a body's center of mass position in the body's local coordinate system.
 		</constant>
 		<constant name="BODY_PARAM_GRAVITY_SCALE" value="5" enum="BodyParameter">
 			Constant to set/get a body's gravity multiplier.

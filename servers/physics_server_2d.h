@@ -49,6 +49,7 @@ public:
 	virtual real_t get_total_angular_damp() const = 0; // get density of this body space/area
 
 	virtual Vector2 get_center_of_mass() const = 0;
+	virtual Vector2 get_center_of_mass_local() const = 0;
 	virtual real_t get_inverse_mass() const = 0; // get the mass
 	virtual real_t get_inverse_inertia() const = 0; // get density of this body space
 

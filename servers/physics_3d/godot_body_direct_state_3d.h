@@ -46,6 +46,7 @@ public:
 	virtual real_t get_total_linear_damp() const override;
 
 	virtual Vector3 get_center_of_mass() const override;
+	virtual Vector3 get_center_of_mass_local() const override;
 	virtual Basis get_principal_inertia_axes() const override;
 
 	virtual real_t get_inverse_mass() const override;

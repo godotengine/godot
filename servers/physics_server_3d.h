@@ -48,6 +48,7 @@ public:
 	virtual real_t get_total_linear_damp() const = 0;
 
 	virtual Vector3 get_center_of_mass() const = 0;
+	virtual Vector3 get_center_of_mass_local() const = 0;
 	virtual Basis get_principal_inertia_axes() const = 0;
 	virtual real_t get_inverse_mass() const = 0; // get the mass
 	virtual Vector3 get_inverse_inertia() const = 0; // get density of this body space
