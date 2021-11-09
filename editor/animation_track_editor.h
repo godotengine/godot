@@ -164,7 +164,6 @@ class AnimationTrackEdit : public Control {
 	Rect2 interp_mode_rect;
 	Rect2 loop_wrap_rect;
 	Rect2 remove_rect;
-	Rect2 bezier_edit_rect;
 
 	Ref<Texture2D> type_icon;
 	Ref<Texture2D> selected_icon;
@@ -300,6 +299,7 @@ class AnimationTrackEditor : public VBoxContainer {
 	EditorSpinSlider *step;
 	TextureRect *zoom_icon;
 	Button *snap;
+	Button *bezier_edit_icon;
 	OptionButton *snap_mode;
 
 	Button *imported_anim_warning;
@@ -406,7 +406,7 @@ class AnimationTrackEditor : public VBoxContainer {
 
 	Map<SelectedKey, KeyInfo> selection;
 
-	void _key_selected(int p_key, bool p_single, int p_track);
+	void _key_selected(int p_track, int p_key, bool p_single);
 	void _key_deselected(int p_key, int p_track);
 
 	bool moving_selection;
@@ -431,6 +431,7 @@ class AnimationTrackEditor : public VBoxContainer {
 
 	Vector<Ref<AnimationTrackEditPlugin>> track_edit_plugins;
 
+	void _toggle_bezier_edit();
 	void _cancel_bezier_edit();
 	void _bezier_edit(int p_for_track);
 

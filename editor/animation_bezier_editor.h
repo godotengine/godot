@@ -46,9 +46,6 @@ class AnimationBezierTrackEdit : public Control {
 		MENU_KEY_SET_HANDLE_BALANCED,
 	};
 
-	VBoxContainer *right_column;
-	Button *close_button;
-
 	AnimationTimelineEdit *timeline = nullptr;
 	UndoRedo *undo_redo = nullptr;
 	Node *root = nullptr;
@@ -56,7 +53,7 @@ class AnimationBezierTrackEdit : public Control {
 	float play_position_pos = 0;
 
 	Ref<Animation> animation;
-	int track;
+	int selected_track;
 
 	Vector<Rect2> view_rects;
 
@@ -66,12 +63,28 @@ class AnimationBezierTrackEdit : public Control {
 
 	Map<int, Rect2> subtracks;
 
+	enum {
+		REMOVE_ICON,
+		LOCK_ICON,
+		SOLO_ICON,
+		VISIBILITY_ICON
+	};
+
+	Map<int, Map<int, Rect2>> subtrack_icons;
+	Set<int> locked_tracks;
+	Set<int> hidden_tracks;
+	int solo_track = -1;
+	bool is_filtered = false;
+
 	float v_scroll = 0;
 	float v_zoom = 1;
 
 	PopupMenu *menu = nullptr;
 
 	void _zoom_changed();
+
+	void _update_locked_tracks_after(int p_track);
+	void _update_hidden_tracks_after(int p_track);
 
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 	void _menu_selected(int p_index);
@@ -80,10 +93,13 @@ class AnimationBezierTrackEdit : public Control {
 
 	Vector2 insert_at_pos;
 
+	typedef Pair<int, int> IntPair;
+
 	bool moving_selection_attempt = false;
-	int select_single_attempt = -1;
+	IntPair select_single_attempt;
 	bool moving_selection = false;
 	int moving_selection_from_key;
+	int moving_selection_from_track;
 
 	Vector2 moving_selection_offset;
 
@@ -95,6 +111,7 @@ class AnimationBezierTrackEdit : public Control {
 
 	int moving_handle = 0; //0 no move -1 or +1 out
 	int moving_handle_key = 0;
+	int moving_handle_track = 0;
 	Vector2 moving_handle_left;
 	Vector2 moving_handle_right;
 	int moving_handle_mode; // value from Animation::HandleMode
@@ -119,11 +136,25 @@ class AnimationBezierTrackEdit : public Control {
 		Rect2 point_rect;
 		Rect2 in_rect;
 		Rect2 out_rect;
+		int track;
+		int key;
 	};
 
 	Vector<EditPoint> edit_points;
 
-	Set<int> selection;
+	struct SelectionCompare {
+		bool operator()(const IntPair &lh, const IntPair &rh) {
+			if (lh.first == rh.first) {
+				return lh.second < rh.second;
+			} else {
+				return lh.first < rh.first;
+			}
+		}
+	};
+
+	typedef Set<IntPair, SelectionCompare> SelectionSet;
+
+	SelectionSet selection;
 
 	Ref<ViewPanner> panner;
 	void _scroll_callback(Vector2 p_scroll_vec, bool p_alt);
@@ -151,6 +182,7 @@ public:
 	void set_timeline(AnimationTimelineEdit *p_timeline);
 	void set_editor(AnimationTrackEditor *p_editor);
 	void set_root(Node *p_root);
+	void set_filtered(bool p_filtered);
 
 	void set_play_position(float p_pos);
 	void update_play_position();
