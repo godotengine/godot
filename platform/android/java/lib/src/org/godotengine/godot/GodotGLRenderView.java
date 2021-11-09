@@ -78,10 +78,10 @@ public class GodotGLRenderView extends GLSurfaceView implements GodotRenderView 
 	private final GodotRenderer godotRenderer;
 	private PointerIcon pointerIcon;
 
-	public GodotGLRenderView(Context context, Godot godot, XRMode xrMode, boolean p_use_32_bits,
+	public GodotGLRenderView(Context context, Godot godot, XRMode xrMode, int p_depth_buffer_bits,
 			boolean p_use_debug_opengl) {
 		super(context);
-		GLUtils.use_32 = p_use_32_bits;
+		GLUtils.depth_buffer_bits = p_depth_buffer_bits;
 		GLUtils.use_debug_opengl = p_use_debug_opengl;
 
 		this.godot = godot;
@@ -209,18 +209,16 @@ public class GodotGLRenderView extends GLSurfaceView implements GodotRenderView 
 				 * below.
 				 */
 
-				if (GLUtils.use_32) {
-					setEGLConfigChooser(translucent
-									? new RegularFallbackConfigChooser(8, 8, 8, 8, 24, stencil,
-											  new RegularConfigChooser(8, 8, 8, 8, 16, stencil))
-									: new RegularFallbackConfigChooser(8, 8, 8, 8, 24, stencil,
-											  new RegularConfigChooser(5, 6, 5, 0, 16, stencil)));
-
-				} else {
-					setEGLConfigChooser(translucent
-									? new RegularConfigChooser(8, 8, 8, 8, 16, stencil)
-									: new RegularConfigChooser(5, 6, 5, 0, 16, stencil));
+				RegularConfigChooser configChooser =
+						new RegularFallbackConfigChooser(8, 8, 8, 8, 16, stencil,
+								new RegularConfigChooser(5, 6, 5, 0, 16, stencil));
+				if (GLUtils.depth_buffer_bits >= 24) {
+					configChooser = new RegularFallbackConfigChooser(8, 8, 8, 8, 24, stencil, configChooser);
+					if (GLUtils.depth_buffer_bits >= 32) {
+						configChooser = new RegularFallbackConfigChooser(8, 8, 8, 8, 32, stencil, configChooser);
+					}
 				}
+				setEGLConfigChooser(configChooser);
 				break;
 		}
 
