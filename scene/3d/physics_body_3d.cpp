@@ -1145,6 +1145,10 @@ bool CharacterBody3D::move_and_slide() {
 			if (bs) {
 				Vector3 local_position = gt.origin - bs->get_transform().origin;
 				current_platform_velocity = bs->get_velocity_at_local_position(local_position);
+			} else {
+				// Body is removed or destroyed, invalidate floor.
+				current_platform_velocity = Vector3();
+				platform_rid = RID();
 			}
 		} else {
 			current_platform_velocity = Vector3();
