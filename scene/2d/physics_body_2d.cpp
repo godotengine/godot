@@ -1120,6 +1120,10 @@ Vector2 KinematicBody2D::_move_and_slide_internal(const Vector2 &p_linear_veloci
 			Transform2D gt = get_global_transform();
 			Vector2 local_position = gt.elements[2] - bs->get_transform().elements[2];
 			current_floor_velocity = bs->get_velocity_at_local_position(local_position);
+		} else {
+			// Body is removed or destroyed, invalidate floor.
+			current_floor_velocity = Vector2();
+			on_floor_body = RID();
 		}
 	}
 

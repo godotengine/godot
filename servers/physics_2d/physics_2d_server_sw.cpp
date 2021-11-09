@@ -962,7 +962,11 @@ Physics2DDirectBodyState *Physics2DServerSW::body_get_direct_state(RID p_body) {
 
 	Body2DSW *body = body_owner.get(p_body);
 	ERR_FAIL_COND_V(!body, nullptr);
-	ERR_FAIL_COND_V(!body->get_space(), nullptr);
+
+	if (!body->get_space()) {
+		return nullptr;
+	}
+
 	ERR_FAIL_COND_V_MSG(body->get_space()->is_locked(), nullptr, "Body state is inaccessible right now, wait for iteration or physics process notification.");
 
 	direct_state->body = body;
