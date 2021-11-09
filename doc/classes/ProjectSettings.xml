@@ -1315,8 +1315,6 @@
 		</member>
 		<member name="mono/profiler/enabled" type="bool" setter="" getter="" default="false">
 		</member>
-		<member name="mono/project/auto_update_project" type="bool" setter="" getter="" default="true">
-		</member>
 		<member name="mono/unhandled_exception_policy" type="int" setter="" getter="" default="0">
 		</member>
 		<member name="navigation/2d/default_cell_size" type="int" setter="" getter="" default="10">

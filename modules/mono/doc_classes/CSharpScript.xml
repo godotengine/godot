@@ -12,13 +12,10 @@
 	</tutorials>
 	<methods>
 		<method name="new" qualifiers="vararg">
-			<return type="Variant">
-			</return>
+			<return type="Variant" />
 			<description>
 				Returns a new instance of the script.
 			</description>
 		</method>
 	</methods>
-	<constants>
-	</constants>
 </class>
