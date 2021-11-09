@@ -881,8 +881,17 @@ int PhysicsServerSW::body_test_ray_separation(RID p_body, const Transform &p_tra
 }
 
 PhysicsDirectBodyState *PhysicsServerSW::body_get_direct_state(RID p_body) {
+	if (!body_owner.owns(p_body)) {
+		return nullptr;
+	}
+
 	BodySW *body = body_owner.get(p_body);
 	ERR_FAIL_COND_V(!body, nullptr);
+
+	if (!body->get_space()) {
+		return nullptr;
+	}
+
 	ERR_FAIL_COND_V_MSG(body->get_space()->is_locked(), nullptr, "Body state is inaccessible right now, wait for iteration or physics process notification.");
 
 	direct_state->body = body;
