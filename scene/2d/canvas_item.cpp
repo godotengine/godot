@@ -1265,7 +1265,7 @@ int CanvasItem::get_canvas_layer() const {
 
 CanvasItem::CanvasItem() :
 		xform_change(this) {
-	canvas_item = VisualServer::get_singleton()->canvas_item_create();
+	canvas_item = RID_PRIME(VisualServer::get_singleton()->canvas_item_create());
 	visible = true;
 	pending_update = false;
 	modulate = Color(1, 1, 1, 1);

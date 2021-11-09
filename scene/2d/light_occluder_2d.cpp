@@ -143,7 +143,7 @@ void OccluderPolygon2D::_bind_methods() {
 }
 
 OccluderPolygon2D::OccluderPolygon2D() {
-	occ_polygon = VS::get_singleton()->canvas_occluder_polygon_create();
+	occ_polygon = RID_PRIME(VS::get_singleton()->canvas_occluder_polygon_create());
 	closed = true;
 	cull = CULL_DISABLED;
 	rect_cache_dirty = true;
@@ -277,7 +277,7 @@ void LightOccluder2D::_bind_methods() {
 }
 
 LightOccluder2D::LightOccluder2D() {
-	occluder = VS::get_singleton()->canvas_light_occluder_create();
+	occluder = RID_PRIME(VS::get_singleton()->canvas_light_occluder_create());
 	mask = 1;
 	set_notify_transform(true);
 }

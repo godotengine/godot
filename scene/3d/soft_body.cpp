@@ -731,7 +731,7 @@ bool SoftBody::is_ray_pickable() const {
 }
 
 SoftBody::SoftBody() :
-		physics_rid(PhysicsServer::get_singleton()->soft_body_create()),
+		physics_rid(RID_PRIME(PhysicsServer::get_singleton()->soft_body_create())),
 		collision_mask(1),
 		collision_layer(1),
 		simulation_started(false),

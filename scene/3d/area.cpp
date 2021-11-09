@@ -615,7 +615,7 @@ void Area::_bind_methods() {
 }
 
 Area::Area() :
-		CollisionObject(PhysicsServer::get_singleton()->area_create(), true) {
+		CollisionObject(RID_PRIME(PhysicsServer::get_singleton()->area_create()), true) {
 	space_override = SPACE_OVERRIDE_DISABLED;
 	set_gravity(9.8);
 	locked = false;

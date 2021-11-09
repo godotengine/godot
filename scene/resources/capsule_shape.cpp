@@ -107,7 +107,7 @@ void CapsuleShape::_bind_methods() {
 }
 
 CapsuleShape::CapsuleShape() :
-		Shape(PhysicsServer::get_singleton()->shape_create(PhysicsServer::SHAPE_CAPSULE)) {
+		Shape(RID_PRIME(PhysicsServer::get_singleton()->shape_create(PhysicsServer::SHAPE_CAPSULE))) {
 	radius = 1.0;
 	height = 1.0;
 	_update_shape();

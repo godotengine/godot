@@ -415,7 +415,7 @@ void TileMap::update_dirty_quadrants() {
 			RID debug_canvas_item;
 
 			if (prev_canvas_item == RID() || prev_material != mat || prev_z_index != z_index) {
-				canvas_item = vs->canvas_item_create();
+				canvas_item = RID_PRIME(vs->canvas_item_create());
 				if (mat.is_valid()) {
 					vs->canvas_item_set_material(canvas_item, mat->get_rid());
 				}
@@ -430,7 +430,7 @@ void TileMap::update_dirty_quadrants() {
 				q.canvas_items.push_back(canvas_item);
 
 				if (debug_shapes) {
-					debug_canvas_item = vs->canvas_item_create();
+					debug_canvas_item = RID_PRIME(vs->canvas_item_create());
 					vs->canvas_item_set_parent(debug_canvas_item, canvas_item);
 					vs->canvas_item_set_z_as_relative_to_parent(debug_canvas_item, false);
 					vs->canvas_item_set_z_index(debug_canvas_item, VS::CANVAS_ITEM_Z_MAX - 1);
@@ -619,7 +619,7 @@ void TileMap::update_dirty_quadrants() {
 					q.navpoly_ids[E->key()] = np;
 
 					if (debug_navigation) {
-						RID debug_navigation_item = vs->canvas_item_create();
+						RID debug_navigation_item = RID_PRIME(vs->canvas_item_create());
 						vs->canvas_item_set_parent(debug_navigation_item, canvas_item);
 						vs->canvas_item_set_z_as_relative_to_parent(debug_navigation_item, false);
 						vs->canvas_item_set_z_index(debug_navigation_item, VS::CANVAS_ITEM_Z_MAX - 2); // Display one below collision debug
@@ -679,7 +679,7 @@ void TileMap::update_dirty_quadrants() {
 				xform.set_origin(offset.floor() + q.pos);
 				_fix_cell_transform(xform, c, occluder_ofs, s);
 
-				RID orid = VS::get_singleton()->canvas_light_occluder_create();
+				RID orid = RID_PRIME(VS::get_singleton()->canvas_light_occluder_create());
 				VS::get_singleton()->canvas_light_occluder_set_transform(orid, get_global_transform() * xform);
 				VS::get_singleton()->canvas_light_occluder_set_polygon(orid, occluder->get_rid());
 				VS::get_singleton()->canvas_light_occluder_attach_to_canvas(orid, get_canvas());
@@ -757,7 +757,7 @@ Map<TileMap::PosKey, TileMap::Quadrant>::Element *TileMap::_create_quadrant(cons
 	xform.set_origin(q.pos);
 	//q.canvas_item = VisualServer::get_singleton()->canvas_item_create();
 	if (!use_parent) {
-		q.body = Physics2DServer::get_singleton()->body_create();
+		q.body = RID_PRIME(Physics2DServer::get_singleton()->body_create());
 		Physics2DServer::get_singleton()->body_set_mode(q.body, use_kinematic ? Physics2DServer::BODY_MODE_KINEMATIC : Physics2DServer::BODY_MODE_STATIC);
 
 		Physics2DServer::get_singleton()->body_attach_object_instance_id(q.body, get_instance_id());

@@ -175,7 +175,7 @@ void GIProbeData::_bind_methods() {
 }
 
 GIProbeData::GIProbeData() {
-	probe = VS::get_singleton()->gi_probe_create();
+	probe = RID_PRIME(VS::get_singleton()->gi_probe_create());
 }
 
 GIProbeData::~GIProbeData() {
@@ -522,7 +522,7 @@ GIProbe::GIProbe() {
 	interior = false;
 	compress = false;
 
-	gi_probe = VS::get_singleton()->gi_probe_create();
+	gi_probe = RID_PRIME(VS::get_singleton()->gi_probe_create());
 	set_disable_scale(true);
 }
 

@@ -159,7 +159,7 @@ RID VisualServer::get_test_texture() {
 
 	Ref<Image> data = memnew(Image(TEST_TEXTURE_SIZE, TEST_TEXTURE_SIZE, false, Image::FORMAT_RGB8, test_data));
 
-	test_texture = texture_create_from_image(data);
+	test_texture = RID_PRIME(texture_create_from_image(data));
 
 	return test_texture;
 }
@@ -325,7 +325,7 @@ RID VisualServer::get_white_texture() {
 		}
 	}
 	Ref<Image> white = memnew(Image(4, 4, 0, Image::FORMAT_RGB8, wt));
-	white_texture = texture_create();
+	white_texture = RID_PRIME(texture_create());
 	texture_allocate(white_texture, 4, 4, 0, Image::FORMAT_RGB8, TEXTURE_TYPE_2D);
 	texture_set_data(white_texture, white);
 	return white_texture;

@@ -62,9 +62,9 @@ Array EditorInterface::_make_mesh_previews(const Array &p_meshes, int p_preview_
 Vector<Ref<Texture>> EditorInterface::make_mesh_previews(const Vector<Ref<Mesh>> &p_meshes, Vector<Transform> *p_transforms, int p_preview_size) {
 	int size = p_preview_size;
 
-	RID scenario = VS::get_singleton()->scenario_create();
+	RID scenario = RID_PRIME(VS::get_singleton()->scenario_create());
 
-	RID viewport = VS::get_singleton()->viewport_create();
+	RID viewport = RID_PRIME(VS::get_singleton()->viewport_create());
 	VS::get_singleton()->viewport_set_update_mode(viewport, VS::VIEWPORT_UPDATE_ALWAYS);
 	VS::get_singleton()->viewport_set_vflip(viewport, true);
 	VS::get_singleton()->viewport_set_scenario(viewport, scenario);
@@ -73,10 +73,10 @@ Vector<Ref<Texture>> EditorInterface::make_mesh_previews(const Vector<Ref<Mesh>>
 	VS::get_singleton()->viewport_set_active(viewport, true);
 	RID viewport_texture = VS::get_singleton()->viewport_get_texture(viewport);
 
-	RID camera = VS::get_singleton()->camera_create();
+	RID camera = RID_PRIME(VS::get_singleton()->camera_create());
 	VS::get_singleton()->viewport_attach_camera(viewport, camera);
 
-	RID light = VS::get_singleton()->directional_light_create();
+	RID light = RID_PRIME(VS::get_singleton()->directional_light_create());
 	RID light_instance = VS::get_singleton()->instance_create2(light, scenario);
 
 	RID light2 = VS::get_singleton()->directional_light_create();

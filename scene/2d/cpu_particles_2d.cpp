@@ -1376,8 +1376,8 @@ CPUParticles2D::CPUParticles2D() {
 	redraw = false;
 	emitting = false;
 
-	mesh = VisualServer::get_singleton()->mesh_create();
-	multimesh = VisualServer::get_singleton()->multimesh_create();
+	mesh = RID_PRIME(VisualServer::get_singleton()->mesh_create());
+	multimesh = RID_PRIME(VisualServer::get_singleton()->multimesh_create());
 	VisualServer::get_singleton()->multimesh_set_mesh(multimesh, mesh);
 
 	set_emitting(true);

@@ -246,7 +246,7 @@ ReflectionProbe::ReflectionProbe() {
 	cull_mask = (1 << 20) - 1;
 	update_mode = UPDATE_ONCE;
 
-	probe = VisualServer::get_singleton()->reflection_probe_create();
+	probe = RID_PRIME(VisualServer::get_singleton()->reflection_probe_create());
 	VS::get_singleton()->instance_set_base(get_instance(), probe);
 	set_disable_scale(true);
 }

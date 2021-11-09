@@ -191,7 +191,7 @@ RootMotionView::RootMotionView() {
 	radius = 10;
 	cell_size = 1;
 	set_process_internal(true);
-	immediate = VisualServer::get_singleton()->immediate_create();
+	immediate = RID_PRIME(VisualServer::get_singleton()->immediate_create());
 	set_base(immediate);
 	color = Color(0.5, 0.5, 1.0);
 }

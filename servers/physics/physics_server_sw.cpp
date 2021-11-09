@@ -129,13 +129,13 @@ RID PhysicsServerSW::space_create() {
 	SpaceSW *space = memnew(SpaceSW);
 	RID id = space_owner.make_rid(space);
 	space->set_self(id);
-	RID area_id = area_create();
+	RID area_id = RID_PRIME(area_create());
 	AreaSW *area = area_owner.get(area_id);
 	ERR_FAIL_COND_V(!area, RID());
 	space->set_default_area(area);
 	area->set_space(space);
 	area->set_priority(-1);
-	RID sgb = body_create();
+	RID sgb = RID_PRIME(body_create());
 	body_set_space(sgb, id);
 	body_set_mode(sgb, BODY_MODE_STATIC);
 	space->set_static_global_body(sgb);

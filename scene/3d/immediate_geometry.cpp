@@ -144,7 +144,7 @@ void ImmediateGeometry::_bind_methods() {
 }
 
 ImmediateGeometry::ImmediateGeometry() {
-	im = VisualServer::get_singleton()->immediate_create();
+	im = RID_PRIME(VisualServer::get_singleton()->immediate_create());
 	set_base(im);
 	empty = true;
 }

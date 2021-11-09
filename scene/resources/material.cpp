@@ -96,7 +96,7 @@ void Material::_bind_methods() {
 }
 
 Material::Material() {
-	material = VisualServer::get_singleton()->material_create();
+	material = RID_PRIME(VisualServer::get_singleton()->material_create());
 	render_priority = 0;
 }
 

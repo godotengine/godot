@@ -73,7 +73,7 @@ public:
 		print_line("INITIALIZING TEST RENDER");
 		VisualServer *vs = VisualServer::get_singleton();
 		test_cube = vs->get_test_cube();
-		scenario = vs->scenario_create();
+		scenario = RID_PRIME(vs->scenario_create());
 
 		Vector<Vector3> vts;
 
@@ -120,7 +120,7 @@ public:
 		Geometry::MeshData md;
 		Error err = ConvexHullComputer::convex_hull(vts, md);
 		print_line("ERR: " + itos(err));
-		test_cube = vs->mesh_create();
+		test_cube = RID_PRIME(vs->mesh_create());
 		vs->mesh_add_surface_from_mesh_data(test_cube, md);
 		//vs->scenario_set_debug(scenario,VS::SCENARIO_DEBUG_WIREFRAME);
 
@@ -154,11 +154,11 @@ public:
 			instances.push_back(ii);
 		}
 
-		camera = vs->camera_create();
+		camera = RID_PRIME(vs->camera_create());
 
 		// 		vs->camera_set_perspective( camera, 60.0,0.1, 100.0 );
 
-		viewport = vs->viewport_create();
+		viewport = RID_PRIME(vs->viewport_create());
 		Size2i screen_size = OS::get_singleton()->get_window_size();
 		vs->viewport_set_size(viewport, screen_size.x, screen_size.y);
 		vs->viewport_attach_to_screen(viewport, Rect2(Vector2(), screen_size));

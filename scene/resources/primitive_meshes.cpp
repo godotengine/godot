@@ -252,7 +252,7 @@ bool PrimitiveMesh::get_flip_faces() const {
 PrimitiveMesh::PrimitiveMesh() {
 	flip_faces = false;
 	// defaults
-	mesh = VisualServer::get_singleton()->mesh_create();
+	mesh = RID_PRIME(VisualServer::get_singleton()->mesh_create());
 
 	// assume primitive triangles as the type, correct for all but one and it will change this :)
 	primitive_type = Mesh::PRIMITIVE_TRIANGLES;

@@ -813,7 +813,7 @@ Ref<SkinReference> Skeleton::register_skin(const Ref<Skin> &p_skin) {
 
 	skin_ref->skeleton_node = this;
 	skin_ref->bind_count = 0;
-	skin_ref->skeleton = VisualServer::get_singleton()->skeleton_create();
+	skin_ref->skeleton = RID_PRIME(VisualServer::get_singleton()->skeleton_create());
 	skin_ref->skeleton_node = this;
 	skin_ref->skin = skin;
 

@@ -127,13 +127,13 @@ struct TNode {
 
 // instead of using linked list we maintain
 // item references (for quick lookup)
-PooledList<ItemRef, true> _refs;
-PooledList<ItemExtra, true> _extra;
+PooledList<ItemRef, uint32_t, true> _refs;
+PooledList<ItemExtra, uint32_t, true> _extra;
 PooledList<ItemPairs> _pairs;
 
 // these 2 are not in sync .. nodes != leaves!
-PooledList<TNode, true> _nodes;
-PooledList<TLeaf, true> _leaves;
+PooledList<TNode, uint32_t, true> _nodes;
+PooledList<TLeaf, uint32_t, true> _leaves;
 
 // we can maintain an un-ordered list of which references are active,
 // in order to do a slow incremental optimize of the tree over each frame.

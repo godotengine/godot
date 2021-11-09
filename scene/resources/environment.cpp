@@ -1175,7 +1175,7 @@ Environment::Environment() :
 		glow_blend_mode(GLOW_BLEND_MODE_ADDITIVE),
 		dof_blur_far_quality(DOF_BLUR_QUALITY_LOW),
 		dof_blur_near_quality(DOF_BLUR_QUALITY_LOW) {
-	environment = VS::get_singleton()->environment_create();
+	environment = RID_PRIME(VS::get_singleton()->environment_create());
 
 	bg_mode = BG_CLEAR_COLOR;
 	bg_sky_custom_fov = 0;

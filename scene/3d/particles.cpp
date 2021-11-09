@@ -384,7 +384,7 @@ void Particles::_bind_methods() {
 }
 
 Particles::Particles() {
-	particles = VS::get_singleton()->particles_create();
+	particles = RID_PRIME(VS::get_singleton()->particles_create());
 	set_base(particles);
 	one_shot = false; // Needed so that set_emitting doesn't access uninitialized values
 	set_emitting(true);

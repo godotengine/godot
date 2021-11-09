@@ -99,7 +99,7 @@ void Room::clear() {
 }
 
 Room::Room() {
-	_room_rid = VisualServer::get_singleton()->room_create();
+	_room_rid = RID_PRIME(VisualServer::get_singleton()->room_create());
 }
 
 Room::~Room() {

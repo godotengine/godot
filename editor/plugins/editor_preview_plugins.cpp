@@ -352,9 +352,9 @@ Ref<Texture> EditorMaterialPreviewPlugin::generate(const RES &p_from, const Size
 }
 
 EditorMaterialPreviewPlugin::EditorMaterialPreviewPlugin() {
-	scenario = VS::get_singleton()->scenario_create();
+	scenario = RID_PRIME(VS::get_singleton()->scenario_create());
 
-	viewport = VS::get_singleton()->viewport_create();
+	viewport = RID_PRIME(VS::get_singleton()->viewport_create());
 	VS::get_singleton()->viewport_set_update_mode(viewport, VS::VIEWPORT_UPDATE_DISABLED);
 	VS::get_singleton()->viewport_set_scenario(viewport, scenario);
 	VS::get_singleton()->viewport_set_size(viewport, 128, 128);
@@ -363,16 +363,16 @@ EditorMaterialPreviewPlugin::EditorMaterialPreviewPlugin() {
 	VS::get_singleton()->viewport_set_vflip(viewport, true);
 	viewport_texture = VS::get_singleton()->viewport_get_texture(viewport);
 
-	camera = VS::get_singleton()->camera_create();
+	camera = RID_PRIME(VS::get_singleton()->camera_create());
 	VS::get_singleton()->viewport_attach_camera(viewport, camera);
 	VS::get_singleton()->camera_set_transform(camera, Transform(Basis(), Vector3(0, 0, 3)));
 	VS::get_singleton()->camera_set_perspective(camera, 45, 0.1, 10);
 
-	light = VS::get_singleton()->directional_light_create();
+	light = RID_PRIME(VS::get_singleton()->directional_light_create());
 	light_instance = VS::get_singleton()->instance_create2(light, scenario);
 	VS::get_singleton()->instance_set_transform(light_instance, Transform().looking_at(Vector3(-1, -1, -1), Vector3(0, 1, 0)));
 
-	light2 = VS::get_singleton()->directional_light_create();
+	light2 = RID_PRIME(VS::get_singleton()->directional_light_create());
 	VS::get_singleton()->light_set_color(light2, Color(0.7, 0.7, 0.7));
 	//VS::get_singleton()->light_set_color(light2, Color(0.7, 0.7, 0.7));
 
@@ -380,7 +380,7 @@ EditorMaterialPreviewPlugin::EditorMaterialPreviewPlugin() {
 
 	VS::get_singleton()->instance_set_transform(light_instance2, Transform().looking_at(Vector3(0, 1, 0), Vector3(0, 0, 1)));
 
-	sphere = VS::get_singleton()->mesh_create();
+	sphere = RID_PRIME(VS::get_singleton()->mesh_create());
 	sphere_instance = VS::get_singleton()->instance_create2(sphere, scenario);
 
 	int lats = 32;
@@ -779,9 +779,9 @@ Ref<Texture> EditorMeshPreviewPlugin::generate(const RES &p_from, const Size2 &p
 }
 
 EditorMeshPreviewPlugin::EditorMeshPreviewPlugin() {
-	scenario = VS::get_singleton()->scenario_create();
+	scenario = RID_PRIME(VS::get_singleton()->scenario_create());
 
-	viewport = VS::get_singleton()->viewport_create();
+	viewport = RID_PRIME(VS::get_singleton()->viewport_create());
 	VS::get_singleton()->viewport_set_update_mode(viewport, VS::VIEWPORT_UPDATE_DISABLED);
 	VS::get_singleton()->viewport_set_vflip(viewport, true);
 	VS::get_singleton()->viewport_set_scenario(viewport, scenario);
@@ -807,8 +807,8 @@ EditorMeshPreviewPlugin::EditorMeshPreviewPlugin() {
 
 	VS::get_singleton()->instance_set_transform(light_instance2, Transform().looking_at(Vector3(0, 1, 0), Vector3(0, 0, 1)));
 
-	//sphere = VS::get_singleton()->mesh_create();
-	mesh_instance = VS::get_singleton()->instance_create();
+	//sphere = RID_PRIME(VS::get_singleton()->mesh_create());
+	mesh_instance = RID_PRIME(VS::get_singleton()->instance_create());
 	VS::get_singleton()->instance_set_scenario(mesh_instance, scenario);
 }
 
@@ -910,15 +910,15 @@ Ref<Texture> EditorFontPreviewPlugin::generate(const RES &p_from, const Size2 &p
 }
 
 EditorFontPreviewPlugin::EditorFontPreviewPlugin() {
-	viewport = VS::get_singleton()->viewport_create();
+	viewport = RID_PRIME(VS::get_singleton()->viewport_create());
 	VS::get_singleton()->viewport_set_update_mode(viewport, VS::VIEWPORT_UPDATE_DISABLED);
 	VS::get_singleton()->viewport_set_vflip(viewport, true);
 	VS::get_singleton()->viewport_set_size(viewport, 128, 128);
 	VS::get_singleton()->viewport_set_active(viewport, true);
 	viewport_texture = VS::get_singleton()->viewport_get_texture(viewport);
 
-	canvas = VS::get_singleton()->canvas_create();
-	canvas_item = VS::get_singleton()->canvas_item_create();
+	canvas = RID_PRIME(VS::get_singleton()->canvas_create());
+	canvas_item = RID_PRIME(VS::get_singleton()->canvas_item_create());
 
 	VS::get_singleton()->viewport_attach_canvas(viewport, canvas);
 	VS::get_singleton()->canvas_item_set_parent(canvas_item, canvas);

@@ -43,7 +43,7 @@ void CSGShape::set_use_collision(bool p_enable) {
 
 	if (use_collision) {
 		root_collision_shape.instance();
-		root_collision_instance = PhysicsServer::get_singleton()->body_create(PhysicsServer::BODY_MODE_STATIC);
+		root_collision_instance = RID_PRIME(PhysicsServer::get_singleton()->body_create(PhysicsServer::BODY_MODE_STATIC));
 		PhysicsServer::get_singleton()->body_set_state(root_collision_instance, PhysicsServer::BODY_STATE_TRANSFORM, get_global_transform());
 		PhysicsServer::get_singleton()->body_add_shape(root_collision_instance, root_collision_shape->get_rid());
 		PhysicsServer::get_singleton()->body_set_space(root_collision_instance, get_world()->get_space());
@@ -501,7 +501,7 @@ void CSGShape::_notification(int p_what) {
 
 		if (use_collision && is_root_shape()) {
 			root_collision_shape.instance();
-			root_collision_instance = PhysicsServer::get_singleton()->body_create(PhysicsServer::BODY_MODE_STATIC);
+			root_collision_instance = RID_PRIME(PhysicsServer::get_singleton()->body_create(PhysicsServer::BODY_MODE_STATIC));
 			PhysicsServer::get_singleton()->body_set_state(root_collision_instance, PhysicsServer::BODY_STATE_TRANSFORM, get_global_transform());
 			PhysicsServer::get_singleton()->body_add_shape(root_collision_instance, root_collision_shape->get_rid());
 			PhysicsServer::get_singleton()->body_set_space(root_collision_instance, get_world()->get_space());

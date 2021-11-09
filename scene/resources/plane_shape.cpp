@@ -84,6 +84,6 @@ void PlaneShape::_bind_methods() {
 }
 
 PlaneShape::PlaneShape() :
-		Shape(PhysicsServer::get_singleton()->shape_create(PhysicsServer::SHAPE_PLANE)) {
+		Shape(RID_PRIME(PhysicsServer::get_singleton()->shape_create(PhysicsServer::SHAPE_PLANE))) {
 	set_plane(Plane(0, 1, 0, 0));
 }

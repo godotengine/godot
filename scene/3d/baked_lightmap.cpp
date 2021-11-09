@@ -147,7 +147,7 @@ void BakedLightmapData::clear_data() {
 	if (baked_light.is_valid()) {
 		VS::get_singleton()->free(baked_light);
 	}
-	baked_light = VS::get_singleton()->lightmap_capture_create();
+	baked_light = RID_PRIME(VS::get_singleton()->lightmap_capture_create());
 }
 
 void BakedLightmapData::_set_user_data(const Array &p_data) {
@@ -243,7 +243,7 @@ void BakedLightmapData::_bind_methods() {
 }
 
 BakedLightmapData::BakedLightmapData() {
-	baked_light = VS::get_singleton()->lightmap_capture_create();
+	baked_light = RID_PRIME(VS::get_singleton()->lightmap_capture_create());
 	energy = 1;
 	cell_subdiv = 1;
 	interior = false;

@@ -347,7 +347,7 @@ void MultiMesh::_bind_methods() {
 }
 
 MultiMesh::MultiMesh() {
-	multimesh = VisualServer::get_singleton()->multimesh_create();
+	multimesh = RID_PRIME(VisualServer::get_singleton()->multimesh_create());
 	color_format = COLOR_NONE;
 	custom_data_format = CUSTOM_DATA_NONE;
 	transform_format = TRANSFORM_2D;

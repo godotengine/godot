@@ -293,7 +293,7 @@ Skeleton2D::Skeleton2D() {
 	bone_setup_dirty = true;
 	transform_dirty = true;
 
-	skeleton = VS::get_singleton()->skeleton_create();
+	skeleton = RID_PRIME(VS::get_singleton()->skeleton_create());
 	set_notify_transform(true);
 }
 

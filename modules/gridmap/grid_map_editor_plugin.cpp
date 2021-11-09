@@ -1033,7 +1033,7 @@ void GridMapEditor::_notification(int p_what) {
 			get_tree()->connect("node_removed", this, "_node_removed");
 			mesh_library_palette->connect("item_selected", this, "_item_selected_cbk");
 			for (int i = 0; i < 3; i++) {
-				grid[i] = VS::get_singleton()->mesh_create();
+				grid[i] = RID_PRIME(VS::get_singleton()->mesh_create());
 				grid_instance[i] = VS::get_singleton()->instance_create2(grid[i], get_tree()->get_root()->get_world()->get_scenario());
 				VS::get_singleton()->instance_set_layer_mask(grid_instance[i], 1 << SpatialEditorViewport::MISC_TOOL_LAYER);
 				selection_level_instance[i] = VisualServer::get_singleton()->instance_create2(selection_level_mesh[i], get_tree()->get_root()->get_world()->get_scenario());
@@ -1327,8 +1327,8 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 	lock_view = false;
 	cursor_rot = 0;
 
-	selection_mesh = VisualServer::get_singleton()->mesh_create();
-	paste_mesh = VisualServer::get_singleton()->mesh_create();
+	selection_mesh = RID_PRIME(VisualServer::get_singleton()->mesh_create());
+	paste_mesh = RID_PRIME(VisualServer::get_singleton()->mesh_create());
 
 	{
 		// Selection mesh create.
@@ -1438,7 +1438,7 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 
 		for (int i = 0; i < 3; i++) {
 			d[VS::ARRAY_VERTEX] = square[i];
-			selection_level_mesh[i] = VS::get_singleton()->mesh_create();
+			selection_level_mesh[i] = RID_PRIME(VS::get_singleton()->mesh_create());
 			VisualServer::get_singleton()->mesh_add_surface_from_arrays(selection_level_mesh[i], VS::PRIMITIVE_LINES, d);
 			VisualServer::get_singleton()->mesh_surface_set_material(selection_level_mesh[i], 0, selection_floor_mat->get_rid());
 		}

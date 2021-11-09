@@ -291,7 +291,7 @@ private:
 
 	// occluders
 	TrackedPooledList<VSOccluder> _occluder_pool;
-	TrackedPooledList<VSOccluder_Sphere> _occluder_sphere_pool;
+	TrackedPooledList<VSOccluder_Sphere, uint32_t, true> _occluder_sphere_pool;
 
 	PVS _pvs;
 
