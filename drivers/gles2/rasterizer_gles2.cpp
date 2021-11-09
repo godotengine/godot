@@ -537,5 +537,8 @@ RasterizerGLES2::RasterizerGLES2() {
 RasterizerGLES2::~RasterizerGLES2() {
 	memdelete(scene);
 	memdelete(canvas);
+
+	// Storage needs to be deleted after canvas as canvas destructor frees RIDs
+	// stored in storage RID owners.
 	memdelete(storage);
 }

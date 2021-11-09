@@ -492,5 +492,8 @@ RasterizerGLES3::RasterizerGLES3() {
 RasterizerGLES3::~RasterizerGLES3() {
 	memdelete(scene);
 	memdelete(canvas);
+
+	// storage must be deleted last,
+	// because it contains RID_owners that are used by scene and canvas destructors
 	memdelete(storage);
 }
