@@ -76,7 +76,7 @@ class GodotRenderer implements GLSurfaceView.Renderer {
 	}
 
 	public void onSurfaceCreated(GL10 gl, EGLConfig config) {
-		GodotLib.newcontext(GLUtils.use_32);
+		GodotLib.newcontext();
 		for (GodotPlugin plugin : pluginRegistry.getAllPlugins()) {
 			plugin.onGLSurfaceCreated(gl, config);
 		}

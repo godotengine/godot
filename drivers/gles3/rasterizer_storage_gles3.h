@@ -35,6 +35,7 @@
 #include "drivers/gles_common/rasterizer_asserts.h"
 #include "servers/visual/rasterizer.h"
 #include "servers/visual/shader_language.h"
+#include "shader_cache_gles3.h"
 #include "shader_compiler_gles3.h"
 #include "shader_gles3.h"
 
@@ -49,6 +50,8 @@
 void glGetBufferSubData(GLenum target, GLintptr offset, GLsizeiptr size, GLvoid *data);
 #endif
 
+template <class K>
+class ThreadedCallableQueue;
 class RasterizerCanvasGLES3;
 class RasterizerSceneGLES3;
 
@@ -113,12 +116,20 @@ public:
 		// in some cases the legacy render didn't orphan. We will mark these
 		// so the user can switch orphaning off for them.
 		bool should_orphan;
+
+		bool program_binary_supported;
+		bool parallel_shader_compile_supported;
+		bool async_compilation_enabled;
+		bool shader_cache_enabled;
 	} config;
 
 	mutable struct Shaders {
 		CopyShaderGLES3 copy;
 
 		ShaderCompilerGLES3 compiler;
+		ShaderCacheGLES3 *cache;
+		ThreadedCallableQueue<GLuint> *cache_write_queue;
+		ThreadedCallableQueue<GLuint> *compile_queue;
 
 		CubemapFilterShaderGLES3 cubemap_filter;
 
@@ -546,6 +557,9 @@ public:
 	virtual void shader_add_custom_define(RID p_shader, const String &p_define);
 	virtual void shader_get_custom_defines(RID p_shader, Vector<String> *p_defines) const;
 	virtual void shader_remove_custom_define(RID p_shader, const String &p_define);
+
+	virtual void set_shader_async_hidden_forbidden(bool p_forbidden);
+	virtual bool is_shader_async_hidden_forbidden();
 
 	void _update_shader(Shader *p_shader) const;
 
@@ -1476,6 +1490,7 @@ public:
 		float time[4];
 		float delta;
 		uint64_t count;
+		int shader_compiles_started;
 
 	} frame;
 
@@ -1500,6 +1515,7 @@ public:
 	bool safe_buffer_sub_data(unsigned int p_total_buffer_size, GLenum p_target, unsigned int p_offset, unsigned int p_data_size, const void *p_data, unsigned int &r_offset_after) const;
 
 	RasterizerStorageGLES3();
+	~RasterizerStorageGLES3();
 };
 
 inline bool RasterizerStorageGLES3::safe_buffer_sub_data(unsigned int p_total_buffer_size, GLenum p_target, unsigned int p_offset, unsigned int p_data_size, const void *p_data, unsigned int &r_offset_after) const {

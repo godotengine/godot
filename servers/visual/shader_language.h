@@ -33,6 +33,7 @@
 
 #include "core/list.h"
 #include "core/map.h"
+#include "core/ordered_hash_map.h"
 #include "core/script_language.h"
 #include "core/string_name.h"
 #include "core/typedefs.h"
@@ -652,8 +653,8 @@ public:
 		};
 
 		Map<StringName, Constant> constants;
-		Map<StringName, Varying> varyings;
-		Map<StringName, Uniform> uniforms;
+		OrderedHashMap<StringName, Varying> varyings;
+		OrderedHashMap<StringName, Uniform> uniforms;
 		Map<StringName, Struct> structs;
 		Vector<StringName> render_modes;
 

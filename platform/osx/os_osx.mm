@@ -1666,6 +1666,8 @@ Error OS_OSX::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 
 	[window_view setOpenGLContext:context];
 
+	context_offscreen = [[NSOpenGLContext alloc] initWithFormat:pixelFormat shareContext:nil];
+
 	[context makeCurrentContext];
 
 	GLint dim[2];
@@ -2430,6 +2432,18 @@ OS::VideoMode OS_OSX::get_video_mode(int p_screen) const {
 }
 
 void OS_OSX::get_fullscreen_mode_list(List<VideoMode> *p_list, int p_screen) const {
+}
+
+bool OS_OSX::is_offscreen_gl_available() const {
+	return context_offscreen != nil;
+}
+
+void OS_OSX::set_offscreen_gl_current(bool p_current) {
+	if (p_current) {
+		[context makeCurrentContext];
+	} else {
+		[NSOpenGLContext clearCurrentContext];
+	}
 }
 
 int OS_OSX::get_screen_count() const {
@@ -3431,6 +3445,7 @@ OS_OSX *OS_OSX::singleton = NULL;
 
 OS_OSX::OS_OSX() {
 	context = nullptr;
+	context_offscreen = nullptr;
 
 	memset(cursors, 0, sizeof(cursors));
 	key_event_pos = 0;

@@ -876,6 +876,24 @@ void OS_X11::finalize() {
 	args.clear();
 }
 
+bool OS_X11::is_offscreen_gl_available() const {
+#if defined(OPENGL_ENABLED)
+	return context_gl->is_offscreen_available();
+#else
+	return false;
+#endif
+}
+
+void OS_X11::set_offscreen_gl_current(bool p_current) {
+#if defined(OPENGL_ENABLED)
+	if (p_current) {
+		return context_gl->make_offscreen_current();
+	} else {
+		return context_gl->release_offscreen_current();
+	}
+#endif
+}
+
 void OS_X11::set_mouse_mode(MouseMode p_mode) {
 	if (p_mode == mouse_mode) {
 		return;

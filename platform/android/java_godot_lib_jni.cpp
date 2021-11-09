@@ -152,6 +152,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_ondestroy(JNIEnv *env
 		delete godot_io_java;
 	}
 	if (godot_java) {
+		godot_java->destroy_offscreen_gl(env);
 		delete godot_java;
 	}
 	if (input_handler) {
@@ -212,11 +213,11 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_resize(JNIEnv *env, j
 		os_android->set_display_size(Size2(width, height));
 }
 
-JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_newcontext(JNIEnv *env, jclass clazz, jboolean p_32_bits) {
+JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_newcontext(JNIEnv *env, jclass clazz) {
 	if (os_android) {
 		if (step.get() == 0) {
 			// During startup
-			os_android->set_context_is_16_bits(!p_32_bits);
+			os_android->set_offscreen_gl_available(godot_java->create_offscreen_gl(env));
 		} else {
 			// GL context recreated because it was lost; restart app to let it reload everything
 			step.set(-1); // Ensure no further steps are attempted and no further events are sent

@@ -266,6 +266,9 @@ public:
 	void shader_get_custom_defines(RID p_shader, Vector<String> *p_defines) const {}
 	void shader_remove_custom_define(RID p_shader, const String &p_define) {}
 
+	void set_shader_async_hidden_forbidden(bool p_forbidden) {}
+	bool is_shader_async_hidden_forbidden() { return false; }
+
 	/* COMMON MATERIAL API */
 
 	RID material_create() { return RID(); }

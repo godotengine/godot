@@ -48,6 +48,9 @@ class VisualServer : public Object {
 
 	int mm_policy;
 	bool render_loop_enabled = true;
+#ifdef DEBUG_ENABLED
+	bool force_shader_fallbacks = false;
+#endif
 
 	void _camera_set_orthogonal(RID p_camera, float p_size, float p_z_near, float p_z_far);
 	void _canvas_item_add_style_box(RID p_item, const Rect2 &p_rect, const Rect2 &p_source, RID p_texture, const Vector<float> &p_margins, const Color &p_modulate = Color(1, 1, 1));
@@ -203,6 +206,8 @@ public:
 	virtual void shader_add_custom_define(RID p_shader, const String &p_define) = 0;
 	virtual void shader_get_custom_defines(RID p_shader, Vector<String> *p_defines) const = 0;
 	virtual void shader_remove_custom_define(RID p_shader, const String &p_define) = 0;
+
+	virtual void set_shader_async_hidden_forbidden(bool p_forbidden) = 0;
 
 	/* COMMON MATERIAL API */
 
@@ -1156,6 +1161,11 @@ public:
 
 	bool is_render_loop_enabled() const;
 	void set_render_loop_enabled(bool p_enabled);
+
+#ifdef DEBUG_ENABLED
+	bool is_force_shader_fallbacks_enabled() const;
+	void set_force_shader_fallbacks_enabled(bool p_enabled);
+#endif
 
 	VisualServer();
 	virtual ~VisualServer();

@@ -29,10 +29,22 @@
 /*************************************************************************/
 
 #include "rasterizer_storage_gles3.h"
+
 #include "core/engine.h"
+#include "core/os/os.h"
 #include "core/project_settings.h"
+#include "core/threaded_callable_queue.h"
 #include "rasterizer_canvas_gles3.h"
 #include "rasterizer_scene_gles3.h"
+#include "servers/visual_server.h"
+
+#if defined(IPHONE_ENABLED) || defined(ANDROID_ENABLED)
+#include <dlfcn.h>
+#endif
+
+#ifdef TOOLS_ENABLED
+#include "editor/editor_settings.h"
+#endif
 
 /* TEXTURE API */
 
@@ -2169,6 +2181,8 @@ void RasterizerStorageGLES3::_update_shader(Shader *p_shader) const {
 	ShaderCompilerGLES3::GeneratedCode gen_code;
 	ShaderCompilerGLES3::IdentifierActions *actions = nullptr;
 
+	int async_mode = (int)ShaderGLES3::ASYNC_MODE_VISIBLE;
+
 	switch (p_shader->mode) {
 		case VS::SHADER_CANVAS_ITEM: {
 			p_shader->canvas_item.light_mode = Shader::CanvasItem::LIGHT_MODE_NORMAL;
@@ -2249,6 +2263,9 @@ void RasterizerStorageGLES3::_update_shader(Shader *p_shader) const {
 			shaders.actions_scene.render_mode_values["cull_back"] = Pair<int *, int>(&p_shader->spatial.cull_mode, Shader::Spatial::CULL_MODE_BACK);
 			shaders.actions_scene.render_mode_values["cull_disabled"] = Pair<int *, int>(&p_shader->spatial.cull_mode, Shader::Spatial::CULL_MODE_DISABLED);
 
+			shaders.actions_scene.render_mode_values["async_visible"] = Pair<int *, int>(&async_mode, (int)ShaderGLES3::ASYNC_MODE_VISIBLE);
+			shaders.actions_scene.render_mode_values["async_hidden"] = Pair<int *, int>(&async_mode, (int)ShaderGLES3::ASYNC_MODE_HIDDEN);
+
 			shaders.actions_scene.render_mode_flags["unshaded"] = &p_shader->spatial.unshaded;
 			shaders.actions_scene.render_mode_flags["depth_test_disable"] = &p_shader->spatial.no_depth_test;
 
@@ -2293,8 +2310,6 @@ void RasterizerStorageGLES3::_update_shader(Shader *p_shader) const {
 		return;
 	}
 
-	p_shader->shader->set_custom_shader_code(p_shader->custom_code_id, gen_code.vertex, gen_code.vertex_global, gen_code.fragment, gen_code.light, gen_code.fragment_global, gen_code.uniforms, gen_code.texture_uniforms, gen_code.defines);
-
 	p_shader->ubo_size = gen_code.uniform_total_size;
 	p_shader->ubo_offsets = gen_code.uniform_offsets;
 	p_shader->texture_count = gen_code.texture_uniforms.size();
@@ -2316,6 +2331,8 @@ void RasterizerStorageGLES3::_update_shader(Shader *p_shader) const {
 			p_shader->canvas_item.batch_flags |= RasterizerStorageCommon::PREVENT_ITEM_JOINING;
 		}
 	}
+
+	p_shader->shader->set_custom_shader_code(p_shader->custom_code_id, gen_code.vertex, gen_code.vertex_global, gen_code.fragment, gen_code.light, gen_code.fragment_global, gen_code.uniforms, gen_code.texture_uniforms, gen_code.defines, (ShaderGLES3::AsyncMode)async_mode);
 
 	//all materials using this shader will have to be invalidated, unfortunately
 
@@ -2507,6 +2524,14 @@ void RasterizerStorageGLES3::shader_remove_custom_define(RID p_shader, const Str
 	shader->shader->remove_custom_define(p_define);
 
 	_shader_make_dirty(shader);
+}
+
+void RasterizerStorageGLES3::set_shader_async_hidden_forbidden(bool p_forbidden) {
+	ShaderGLES3::async_hidden_forbidden = p_forbidden;
+}
+
+bool RasterizerStorageGLES3::is_shader_async_hidden_forbidden() {
+	return ShaderGLES3::async_hidden_forbidden;
 }
 
 /* COMMON MATERIAL API */
@@ -3407,6 +3432,8 @@ void RasterizerStorageGLES3::mesh_add_surface(RID p_mesh, uint32_t p_format, VS:
 					attribs[i].size = 2;
 					attribs[i].type = GL_SHORT;
 					attributes_stride += 4;
+					// Storing normal/tangent in the tangent attrib makes it easier to ubershaderify the scene shader
+					attribs[i].index = VS::ARRAY_TANGENT;
 				} else {
 					attribs[i].size = 3;
 
@@ -8061,7 +8088,6 @@ void RasterizerStorageGLES3::initialize() {
 	config.texture_float_linear_supported = true;
 	config.framebuffer_float_supported = true;
 	config.framebuffer_half_float_supported = true;
-
 #else
 	config.etc2_supported = true;
 	config.s3tc_supported = config.extensions.has("GL_EXT_texture_compression_dxt1") || config.extensions.has("GL_EXT_texture_compression_s3tc") || config.extensions.has("WEBGL_compressed_texture_s3tc");
@@ -8069,7 +8095,6 @@ void RasterizerStorageGLES3::initialize() {
 	config.texture_float_linear_supported = config.extensions.has("GL_OES_texture_float_linear");
 	config.framebuffer_float_supported = config.extensions.has("GL_EXT_color_buffer_float");
 	config.framebuffer_half_float_supported = config.extensions.has("GL_EXT_color_buffer_half_float") || config.framebuffer_float_supported;
-
 #endif
 
 	// not yet detected on GLES3 (is this mandated?)
@@ -8085,7 +8110,102 @@ void RasterizerStorageGLES3::initialize() {
 		config.anisotropic_level = MIN(int(ProjectSettings::get_singleton()->get("rendering/quality/filters/anisotropic_filter_level")), config.anisotropic_level);
 	}
 
+#ifdef GLES_OVER_GL
+	config.program_binary_supported = GLAD_GL_ARB_get_program_binary;
+	config.parallel_shader_compile_supported = GLAD_GL_ARB_parallel_shader_compile || GLAD_GL_KHR_parallel_shader_compile;
+#else
+#ifdef JAVASCRIPT_ENABLED
+	config.program_binary_supported = false;
+#else
+	config.program_binary_supported = true;
+#endif
+	config.parallel_shader_compile_supported = config.extensions.has("GL_KHR_parallel_shader_compile") || config.extensions.has("GL_ARB_parallel_shader_compile");
+#endif
+	if (Engine::get_singleton()->is_editor_hint()) {
+		config.async_compilation_enabled = false;
+		config.shader_cache_enabled = false;
+	} else {
+		int compilation_mode = ProjectSettings::get_singleton()->get("rendering/gles3/shaders/shader_compilation_mode");
+		config.async_compilation_enabled = compilation_mode >= 1;
+		config.shader_cache_enabled = compilation_mode == 2;
+	}
+	if (config.async_compilation_enabled) {
+		ShaderGLES3::max_simultaneous_compiles = MAX(1, (int)ProjectSettings::get_singleton()->get("rendering/gles3/shaders/max_simultaneous_compiles"));
+#ifdef GLES_OVER_GL
+		if (GLAD_GL_ARB_parallel_shader_compile) {
+			glMaxShaderCompilerThreadsARB(ShaderGLES3::max_simultaneous_compiles);
+		} else if (GLAD_GL_KHR_parallel_shader_compile) {
+			glMaxShaderCompilerThreadsKHR(ShaderGLES3::max_simultaneous_compiles);
+		}
+#else
+#if defined(IPHONE_ENABLED) || defined(ANDROID_ENABLED) // TODO: Consider more platforms?
+		void *gles3_lib = nullptr;
+		void (*MaxShaderCompilerThreads)(GLuint) = nullptr;
+#if defined(IPHONE_ENABLED)
+		gles3_lib = dlopen(nullptr, RTLD_LAZY);
+#elif defined(ANDROID_ENABLED)
+		gles3_lib = dlopen("libGLESv3.so", RTLD_LAZY);
+#endif
+		if (gles3_lib) {
+			MaxShaderCompilerThreads = (void (*)(GLuint))dlsym(gles3_lib, "glMaxShaderCompilerThreadsARB");
+			if (!MaxShaderCompilerThreads) {
+				MaxShaderCompilerThreads = (void (*)(GLuint))dlsym(gles3_lib, "glMaxShaderCompilerThreadsKHR");
+			}
+		}
+		if (MaxShaderCompilerThreads) {
+			MaxShaderCompilerThreads(ShaderGLES3::max_simultaneous_compiles);
+		} else {
+#ifdef DEBUG_ENABLED
+			print_line("Async. shader compilation: No MaxShaderCompilerThreads function found.");
+#endif
+		}
+#endif
+#endif
+	} else {
+		ShaderGLES3::max_simultaneous_compiles = 0;
+	}
+#ifdef DEBUG_ENABLED
+	ShaderGLES3::log_active_async_compiles_count = (bool)ProjectSettings::get_singleton()->get("rendering/gles3/shaders/log_active_async_compiles_count");
+#endif
+
 	frame.clear_request = false;
+
+	shaders.compile_queue = nullptr;
+	shaders.cache = nullptr;
+	shaders.cache_write_queue = nullptr;
+	bool effectively_on = false;
+	if (config.async_compilation_enabled) {
+		if (config.parallel_shader_compile_supported) {
+			print_line("Async. shader compilation: ON (full native support)");
+			effectively_on = true;
+		} else if (config.program_binary_supported && OS::get_singleton()->is_offscreen_gl_available()) {
+			shaders.compile_queue = memnew(ThreadedCallableQueue<GLuint>());
+			shaders.compile_queue->enqueue(0, []() { OS::get_singleton()->set_offscreen_gl_current(true); });
+			print_line("Async. shader compilation: ON (via secondary context)");
+			effectively_on = true;
+		} else {
+			print_line("Async. shader compilation: OFF (enabled for " + String(Engine::get_singleton()->is_editor_hint() ? "editor" : "project") + ", but not supported)");
+		}
+		if (effectively_on) {
+			if (config.shader_cache_enabled) {
+				if (config.program_binary_supported) {
+					print_line("Shader cache: ON");
+					shaders.cache = memnew(ShaderCacheGLES3);
+					shaders.cache_write_queue = memnew(ThreadedCallableQueue<GLuint>());
+				} else {
+					print_line("Shader cache: OFF (enabled, but not supported)");
+				}
+			} else {
+				print_line("Shader cache: OFF");
+			}
+		}
+	} else {
+		print_line("Async. shader compilation: OFF");
+	}
+	ShaderGLES3::compile_queue = shaders.compile_queue;
+	ShaderGLES3::parallel_compile_supported = config.parallel_shader_compile_supported;
+	ShaderGLES3::shader_cache = shaders.cache;
+	ShaderGLES3::cache_write_queue = shaders.cache_write_queue;
 
 	shaders.copy.init();
 
@@ -8233,6 +8353,9 @@ void RasterizerStorageGLES3::initialize() {
 	bool ggx_hq = GLOBAL_GET("rendering/quality/reflections/high_quality_ggx");
 	shaders.cubemap_filter.set_conditional(CubemapFilterShaderGLES3::LOW_QUALITY, !ggx_hq);
 	shaders.particles.init();
+	if (config.async_compilation_enabled) {
+		shaders.particles.init_async_compilation();
+	}
 
 #ifdef GLES_OVER_GL
 	glEnable(_EXT_TEXTURE_CUBE_MAP_SEAMLESS);
@@ -8302,4 +8425,17 @@ void RasterizerStorageGLES3::update_dirty_resources() {
 
 RasterizerStorageGLES3::RasterizerStorageGLES3() {
 	config.should_orphan = true;
+}
+
+RasterizerStorageGLES3::~RasterizerStorageGLES3() {
+	if (shaders.cache) {
+		memdelete(shaders.cache);
+	}
+	if (shaders.cache_write_queue) {
+		memdelete(shaders.cache_write_queue);
+	}
+	if (shaders.compile_queue) {
+		shaders.compile_queue->enqueue(0, []() { OS::get_singleton()->set_offscreen_gl_current(false); });
+		memdelete(shaders.compile_queue);
+	}
 }

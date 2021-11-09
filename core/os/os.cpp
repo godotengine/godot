@@ -719,6 +719,12 @@ const char *OS::get_video_driver_name(int p_driver) const {
 	}
 }
 
+bool OS::is_offscreen_gl_available() const {
+	return false;
+}
+
+void OS::set_offscreen_gl_current(bool p_current) {}
+
 int OS::get_audio_driver_count() const {
 	return AudioDriverManager::get_driver_count();
 }

@@ -448,8 +448,8 @@ String ShaderCompilerGLES3::_dump_node_code(const SL::Node *p_node, int p_level,
 			int max_texture_uniforms = 0;
 			int max_uniforms = 0;
 
-			for (Map<StringName, SL::ShaderNode::Uniform>::Element *E = pnode->uniforms.front(); E; E = E->next()) {
-				if (SL::is_sampler_type(E->get().type)) {
+			for (OrderedHashMap<StringName, SL::ShaderNode::Uniform>::Element E = pnode->uniforms.front(); E; E = E.next()) {
+				if (SL::is_sampler_type(E.get().type)) {
 					max_texture_uniforms++;
 				} else {
 					max_uniforms++;
@@ -468,34 +468,34 @@ String ShaderCompilerGLES3::_dump_node_code(const SL::Node *p_node, int p_level,
 			uniform_defines.resize(max_uniforms);
 			bool uses_uniforms = false;
 
-			for (Map<StringName, SL::ShaderNode::Uniform>::Element *E = pnode->uniforms.front(); E; E = E->next()) {
+			for (OrderedHashMap<StringName, SL::ShaderNode::Uniform>::Element E = pnode->uniforms.front(); E; E = E.next()) {
 				String ucode;
 
-				if (SL::is_sampler_type(E->get().type)) {
+				if (SL::is_sampler_type(E.get().type)) {
 					ucode = "uniform ";
 				}
 
-				ucode += _prestr(E->get().precision);
-				ucode += _typestr(E->get().type);
-				ucode += " " + _mkid(E->key());
+				ucode += _prestr(E.get().precision);
+				ucode += _typestr(E.get().type);
+				ucode += " " + _mkid(E.key());
 				ucode += ";\n";
-				if (SL::is_sampler_type(E->get().type)) {
+				if (SL::is_sampler_type(E.get().type)) {
 					r_gen_code.vertex_global += ucode;
 					r_gen_code.fragment_global += ucode;
-					r_gen_code.texture_uniforms.write[E->get().texture_order] = _mkid(E->key());
-					r_gen_code.texture_hints.write[E->get().texture_order] = E->get().hint;
-					r_gen_code.texture_types.write[E->get().texture_order] = E->get().type;
+					r_gen_code.texture_uniforms.write[E.get().texture_order] = _mkid(E.key());
+					r_gen_code.texture_hints.write[E.get().texture_order] = E.get().hint;
+					r_gen_code.texture_types.write[E.get().texture_order] = E.get().type;
 				} else {
 					if (!uses_uniforms) {
 						r_gen_code.defines.push_back(String("#define USE_MATERIAL\n").ascii());
 						uses_uniforms = true;
 					}
-					uniform_defines.write[E->get().order] = ucode;
-					uniform_sizes.write[E->get().order] = _get_datatype_size(E->get().type);
-					uniform_alignments.write[E->get().order] = _get_datatype_alignment(E->get().type);
+					uniform_defines.write[E.get().order] = ucode;
+					uniform_sizes.write[E.get().order] = _get_datatype_size(E.get().type);
+					uniform_alignments.write[E.get().order] = _get_datatype_alignment(E.get().type);
 				}
 
-				p_actions.uniforms->insert(E->key(), E->get());
+				p_actions.uniforms->insert(E.key(), E.get());
 			}
 
 			for (int i = 0; i < max_uniforms; i++) {
@@ -523,20 +523,20 @@ String ShaderCompilerGLES3::_dump_node_code(const SL::Node *p_node, int p_level,
 
 			List<Pair<StringName, SL::ShaderNode::Varying>> var_frag_to_light;
 
-			for (Map<StringName, SL::ShaderNode::Varying>::Element *E = pnode->varyings.front(); E; E = E->next()) {
-				if (E->get().stage == SL::ShaderNode::Varying::STAGE_FRAGMENT_TO_LIGHT || E->get().stage == SL::ShaderNode::Varying::STAGE_FRAGMENT) {
-					var_frag_to_light.push_back(Pair<StringName, SL::ShaderNode::Varying>(E->key(), E->get()));
-					fragment_varyings.insert(E->key());
+			for (OrderedHashMap<StringName, SL::ShaderNode::Varying>::Element E = pnode->varyings.front(); E; E = E.next()) {
+				if (E.get().stage == SL::ShaderNode::Varying::STAGE_FRAGMENT_TO_LIGHT || E.get().stage == SL::ShaderNode::Varying::STAGE_FRAGMENT) {
+					var_frag_to_light.push_back(Pair<StringName, SL::ShaderNode::Varying>(E.key(), E.get()));
+					fragment_varyings.insert(E.key());
 					continue;
 				}
 				String vcode;
-				String interp_mode = _interpstr(E->get().interpolation);
-				vcode += _prestr(E->get().precision);
-				vcode += _typestr(E->get().type);
-				vcode += " " + _mkid(E->key());
-				if (E->get().array_size > 0) {
+				String interp_mode = _interpstr(E.get().interpolation);
+				vcode += _prestr(E.get().precision);
+				vcode += _typestr(E.get().type);
+				vcode += " " + _mkid(E.key());
+				if (E.get().array_size > 0) {
 					vcode += "[";
-					vcode += itos(E->get().array_size);
+					vcode += itos(E.get().array_size);
 					vcode += "]";
 				}
 				vcode += ";\n";

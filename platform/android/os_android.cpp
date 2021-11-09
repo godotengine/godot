@@ -452,10 +452,13 @@ String OS_Android::get_user_data_dir() const {
 }
 
 String OS_Android::get_cache_path() const {
+	if (cache_dir_cache != String())
+		return cache_dir_cache;
+
 	String cache_dir = godot_io_java->get_cache_dir();
 	if (cache_dir != "") {
-		cache_dir = _remove_symlink(cache_dir);
-		return cache_dir;
+		cache_dir_cache = _remove_symlink(cache_dir);
+		return cache_dir_cache;
 	}
 	return ".";
 }
@@ -481,10 +484,18 @@ String OS_Android::get_system_dir(SystemDir p_dir, bool p_shared_storage) const 
 	return godot_io_java->get_system_dir(p_dir, p_shared_storage);
 }
 
-void OS_Android::set_context_is_16_bits(bool p_is_16) {
-	//use_16bits_fbo = p_is_16;
-	//if (rasterizer)
-	//	rasterizer->set_force_16_bits_fbo(p_is_16);
+void OS_Android::set_offscreen_gl_available(bool p_available) {
+	secondary_gl_available = p_available;
+}
+
+bool OS_Android::is_offscreen_gl_available() const {
+	return secondary_gl_available;
+}
+
+void OS_Android::set_offscreen_gl_current(bool p_current) {
+	if (secondary_gl_available) {
+		godot_java->set_offscreen_gl_current(nullptr, p_current);
+	}
 }
 
 bool OS_Android::is_joy_known(int p_device) {

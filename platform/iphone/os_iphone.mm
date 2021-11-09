@@ -417,6 +417,22 @@ void OSIPhone::get_fullscreen_mode_list(List<VideoMode> *p_list, int p_screen) c
 	p_list->push_back(video_mode);
 }
 
+void OSIPhone::set_offscreen_gl_context(EAGLContext *p_context) {
+	offscreen_gl_context = p_context;
+}
+
+bool OSIPhone::is_offscreen_gl_available() const {
+	return offscreen_gl_context;
+}
+
+void OSIPhone::set_offscreen_gl_current(bool p_current) {
+	if (p_current) {
+		[EAGLContext setCurrentContext:offscreen_gl_context];
+	} else {
+		[EAGLContext setCurrentContext:nil];
+	}
+}
+
 bool OSIPhone::can_draw() const {
 	if (native_video_is_playing())
 		return false;
@@ -492,6 +508,10 @@ String OSIPhone::get_clipboard() const {
 	NSString *text = [UIPasteboard generalPasteboard].string;
 
 	return String::utf8([text UTF8String]);
+}
+
+String OSIPhone::get_cache_path() const {
+	return cache_dir;
 }
 
 String OSIPhone::get_model_name() const {
@@ -668,7 +688,7 @@ void add_ios_init_callback(init_callback cb) {
 	}
 }
 
-OSIPhone::OSIPhone(String p_data_dir) {
+OSIPhone::OSIPhone(String p_data_dir, String p_cache_dir) {
 	for (int i = 0; i < ios_init_callbacks_count; ++i) {
 		ios_init_callbacks[i]();
 	}
@@ -679,10 +699,12 @@ OSIPhone::OSIPhone(String p_data_dir) {
 
 	main_loop = NULL;
 	visual_server = NULL;
+	offscreen_gl_context = NULL;
 
 	// can't call set_data_dir from here, since it requires DirAccess
 	// which is initialized in initialize_core
 	data_dir = p_data_dir;
+	cache_dir = p_cache_dir;
 
 	Vector<Logger *> loggers;
 	loggers.push_back(memnew(SyslogLogger));

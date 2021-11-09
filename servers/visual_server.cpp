@@ -30,8 +30,13 @@
 
 #include "visual_server.h"
 
+#include "core/engine.h"
 #include "core/method_bind_ext.gen.inc"
 #include "core/project_settings.h"
+
+#ifdef TOOLS_ENABLED
+#include "editor/editor_settings.h"
+#endif
 
 VisualServer *VisualServer::singleton = nullptr;
 VisualServer *(*VisualServer::create_func)() = nullptr;
@@ -1868,6 +1873,7 @@ void VisualServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("shader_get_param_list", "shader"), &VisualServer::_shader_get_param_list_bind);
 	ClassDB::bind_method(D_METHOD("shader_set_default_texture_param", "shader", "name", "texture"), &VisualServer::shader_set_default_texture_param);
 	ClassDB::bind_method(D_METHOD("shader_get_default_texture_param", "shader", "name"), &VisualServer::shader_get_default_texture_param);
+	ClassDB::bind_method(D_METHOD("set_shader_async_hidden_forbidden", "forbidden"), &VisualServer::set_shader_async_hidden_forbidden);
 
 	ClassDB::bind_method(D_METHOD("material_create"), &VisualServer::material_create);
 	ClassDB::bind_method(D_METHOD("material_set_shader", "shader_material", "shader"), &VisualServer::material_set_shader);
@@ -2582,6 +2588,16 @@ void VisualServer::set_render_loop_enabled(bool p_enabled) {
 	render_loop_enabled = p_enabled;
 }
 
+#ifdef DEBUG_ENABLED
+bool VisualServer::is_force_shader_fallbacks_enabled() const {
+	return force_shader_fallbacks;
+}
+
+void VisualServer::set_force_shader_fallbacks_enabled(bool p_enabled) {
+	force_shader_fallbacks = p_enabled;
+}
+#endif
+
 VisualServer::VisualServer() {
 	//ERR_FAIL_COND(singleton);
 	singleton = this;
@@ -2701,6 +2717,22 @@ VisualServer::VisualServer() {
 	// Occlusion culling
 	GLOBAL_DEF("rendering/misc/occlusion_culling/max_active_spheres", 8);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/misc/occlusion_culling/max_active_spheres", PropertyInfo(Variant::INT, "rendering/misc/occlusion_culling/max_active_spheres", PROPERTY_HINT_RANGE, "0,64"));
+
+	// Async. compilation and caching
+#ifdef DEBUG_ENABLED
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		force_shader_fallbacks = GLOBAL_GET("rendering/gles3/shaders/debug_shader_fallbacks");
+	}
+#endif
+	GLOBAL_DEF("rendering/gles3/shaders/shader_compilation_mode", 0);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/gles3/shaders/shader_compilation_mode", PropertyInfo(Variant::INT, "rendering/gles3/shaders/shader_compilation_mode", PROPERTY_HINT_ENUM, "Synchronous,Asynchronous,Asynchronous + Cache"));
+	GLOBAL_DEF("rendering/gles3/shaders/max_simultaneous_compiles", 2);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/gles3/shaders/max_simultaneous_compiles", PropertyInfo(Variant::INT, "rendering/gles3/shaders/max_simultaneous_compiles", PROPERTY_HINT_RANGE, "1,8,1"));
+	GLOBAL_DEF("rendering/gles3/shaders/max_simultaneous_compiles.mobile", 1);
+	GLOBAL_DEF("rendering/gles3/shaders/log_active_async_compiles_count", false);
+	GLOBAL_DEF("rendering/gles3/shaders/shader_cache_size_mb", 512);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/gles3/shaders/shader_cache_size_mb", PropertyInfo(Variant::INT, "rendering/gles3/shaders/shader_cache_size_mb", PROPERTY_HINT_RANGE, "128,4096,128"));
+	GLOBAL_DEF("rendering/gles3/shaders/shader_cache_size_mb.mobile", 128);
 }
 
 VisualServer::~VisualServer() {

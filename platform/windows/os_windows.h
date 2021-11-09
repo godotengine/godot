@@ -386,6 +386,9 @@ protected:
 	virtual void initialize_core();
 	virtual Error initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver);
 
+	virtual bool is_offscreen_gl_available() const;
+	virtual void set_offscreen_gl_current(bool p_current);
+
 	virtual void set_main_loop(MainLoop *p_main_loop);
 	virtual void delete_main_loop();
 

@@ -72,10 +72,9 @@ public class GodotLib {
 
 	/**
 	 * Invoked on the GL thread when the underlying Android surface is created or recreated.
-	 * @param p_32_bits
 	 * @see android.opengl.GLSurfaceView.Renderer#onSurfaceCreated(GL10, EGLConfig)
 	 */
-	public static native void newcontext(boolean p_32_bits);
+	public static native void newcontext();
 
 	/**
 	 * Forward {@link Activity#onBackPressed()} event from the main thread to the GL thread.

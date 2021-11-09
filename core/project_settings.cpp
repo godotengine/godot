@@ -127,6 +127,11 @@ void ProjectSettings::set_restart_if_changed(const String &p_name, bool p_restar
 	props[p_name].restart_if_changed = p_restart;
 }
 
+void ProjectSettings::set_hide_from_editor(const String &p_name, bool p_hide_from_editor) {
+	ERR_FAIL_COND_MSG(!props.has(p_name), "Request for nonexistent project setting: " + p_name + ".");
+	props[p_name].hide_from_editor = p_hide_from_editor;
+}
+
 void ProjectSettings::set_ignore_value_in_docs(const String &p_name, bool p_ignore) {
 	ERR_FAIL_COND_MSG(!props.has(p_name), "Request for nonexistent project setting: " + p_name + ".");
 #ifdef DEBUG_METHODS_ENABLED

@@ -407,6 +407,18 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 		}
 	}
 
+	public boolean createOffscreenGL() {
+		return mView.createOffscreenGL();
+	}
+
+	public void destroyOffscreenGL() {
+		mView.destroyOffscreenGL();
+	}
+
+	public void setOffscreenGLCurrent(boolean p_current) {
+		mView.setOffscreenGLCurrent(p_current);
+	}
+
 	public void setKeepScreenOn(final boolean p_enabled) {
 		runOnUiThread(() -> {
 			if (p_enabled) {

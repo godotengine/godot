@@ -1,6 +1,10 @@
 /* clang-format off */
 [vertex]
 
+#if defined(IS_UBERSHADER)
+uniform highp int ubershader_flags;
+#endif
+
 #define M_PI 3.14159265359
 
 #define SHADER_IS_SRGB false
@@ -25,17 +29,17 @@ ARRAY_INDEX=8,
 
 layout(location = 0) in highp vec4 vertex_attrib;
 /* clang-format on */
-#ifdef ENABLE_OCTAHEDRAL_COMPRESSION
-layout(location = 1) in vec4 normal_tangent_attrib;
-#else
+#ifdef ENABLE_OCTAHEDRAL_COMPRESSION //ubershader-skip
+layout(location = 2) in vec4 normal_tangent_attrib;
+#else //ubershader-skip
 layout(location = 1) in vec3 normal_attrib;
-#endif
+#endif //ubershader-skip
 #if defined(ENABLE_TANGENT_INTERP) || defined(ENABLE_NORMALMAP) || defined(LIGHT_USE_ANISOTROPY)
-#ifdef ENABLE_OCTAHEDRAL_COMPRESSION
+#ifdef ENABLE_OCTAHEDRAL_COMPRESSION //ubershader-skip
 // packed into normal_attrib zw component
-#else
-layout(location = 2) in vec4 tangent_attrib;
-#endif
+#else //ubershader-skip
+layout(location = 2) in vec4 normal_tangent_attrib; //ubershader-skip
+#endif //ubershader-skip
 #endif
 
 #if defined(ENABLE_COLOR_INTERP)
@@ -46,16 +50,20 @@ layout(location = 3) in vec4 color_attrib;
 layout(location = 4) in vec2 uv_attrib;
 #endif
 
-#if defined(ENABLE_UV2_INTERP) || defined(USE_LIGHTMAP)
+#if defined(ENABLE_UV2_INTERP)
 layout(location = 5) in vec2 uv2_attrib;
+#else
+#ifdef USE_LIGHTMAP //ubershader-skip
+layout(location = 5) in vec2 uv2_attrib;
+#endif //ubershader-skip
 #endif
 
-#ifdef USE_SKELETON
+#ifdef USE_SKELETON //ubershader-skip
 layout(location = 6) in uvec4 bone_indices; // attrib:6
 layout(location = 7) in highp vec4 bone_weights; // attrib:7
-#endif
+#endif //ubershader-skip
 
-#ifdef USE_INSTANCING
+#ifdef USE_INSTANCING //ubershader-skip
 
 layout(location = 8) in highp vec4 instance_xform0;
 layout(location = 9) in highp vec4 instance_xform1;
@@ -66,7 +74,7 @@ layout(location = 11) in lowp vec4 instance_color;
 layout(location = 12) in highp vec4 instance_custom_data;
 #endif
 
-#endif
+#endif //ubershader-skip
 
 layout(std140) uniform SceneData { // ubo:0
 
@@ -119,11 +127,11 @@ layout(std140) uniform SceneData { // ubo:0
 
 uniform highp mat4 world_transform;
 
-#ifdef USE_LIGHTMAP
+#ifdef USE_LIGHTMAP //ubershader-skip
 uniform highp vec4 lightmap_uv_rect;
-#endif
+#endif //ubershader-skip
 
-#ifdef USE_LIGHT_DIRECTIONAL
+#ifdef USE_LIGHT_DIRECTIONAL //ubershader-skip
 
 layout(std140) uniform DirectionalLightData { //ubo:3
 
@@ -140,9 +148,9 @@ layout(std140) uniform DirectionalLightData { //ubo:3
 	mediump vec4 shadow_split_offsets;
 };
 
-#endif
+#endif //ubershader-skip
 
-#ifdef USE_VERTEX_LIGHTING
+#ifdef USE_VERTEX_LIGHTING //ubershader-skip
 //omni and spot
 
 struct LightData {
@@ -165,7 +173,7 @@ layout(std140) uniform SpotLightData { //ubo:5
 	LightData spot_lights[MAX_LIGHT_DATA_STRUCTS];
 };
 
-#ifdef USE_FORWARD_LIGHTING
+#ifdef USE_FORWARD_LIGHTING //ubershader-skip
 
 uniform int omni_light_indices[MAX_FORWARD_LIGHTS];
 uniform int omni_light_count;
@@ -173,7 +181,7 @@ uniform int omni_light_count;
 uniform int spot_light_indices[MAX_FORWARD_LIGHTS];
 uniform int spot_light_count;
 
-#endif
+#endif //ubershader-skip
 
 out vec4 diffuse_light_interp;
 out vec4 specular_light_interp;
@@ -279,16 +287,16 @@ void light_process_spot(int idx, vec3 vertex, vec3 eye_vec, vec3 normal, float r
 	light_compute(normal, normalize(light_rel_vec), eye_vec, spot_lights[idx].light_color_energy.rgb * light_attenuation, roughness, diffuse, specular);
 }
 
-#endif
+#endif //ubershader-skip
 
-#ifdef ENABLE_OCTAHEDRAL_COMPRESSION
+#ifdef ENABLE_OCTAHEDRAL_COMPRESSION //ubershader-skip
 vec3 oct_to_vec3(vec2 e) {
 	vec3 v = vec3(e.xy, 1.0 - abs(e.x) - abs(e.y));
 	float t = max(-v.z, 0.0);
 	v.xy += t * -sign(v.xy);
 	return normalize(v);
 }
-#endif
+#endif //ubershader-skip
 
 /* Varyings */
 
@@ -303,8 +311,12 @@ out vec4 color_interp;
 out vec2 uv_interp;
 #endif
 
-#if defined(ENABLE_UV2_INTERP) || defined(USE_LIGHTMAP)
+#if defined(ENABLE_UV2_INTERP)
 out vec2 uv2_interp;
+#else
+#ifdef USE_LIGHTMAP //ubershader-skip
+out vec2 uv2_interp;
+#endif //ubershader-skip
 #endif
 
 #if defined(ENABLE_TANGENT_INTERP) || defined(ENABLE_NORMALMAP) || defined(LIGHT_USE_ANISOTROPY)
@@ -330,17 +342,17 @@ VERTEX_SHADER_GLOBALS
 
 /* clang-format on */
 
-#ifdef RENDER_DEPTH_DUAL_PARABOLOID
+#ifdef RENDER_DEPTH_DUAL_PARABOLOID //ubershader-skip
 
 out highp float dp_clip;
 
-#endif
+#endif //ubershader-skip
 
 #define SKELETON_TEXTURE_WIDTH 256
 
-#ifdef USE_SKELETON
+#ifdef USE_SKELETON //ubershader-skip
 uniform highp sampler2D skeleton_texture; // texunit:-1
-#endif
+#endif //ubershader-skip
 
 out highp vec4 position_interp;
 
@@ -353,35 +365,38 @@ void main() {
 
 	highp mat4 world_matrix = world_transform;
 
-#ifdef USE_INSTANCING
+#ifdef USE_INSTANCING //ubershader-runtime
 
 	{
 		highp mat4 m = mat4(instance_xform0, instance_xform1, instance_xform2, vec4(0.0, 0.0, 0.0, 1.0));
 		world_matrix = world_matrix * transpose(m);
 	}
-#endif
+#endif //ubershader-runtime
 
-#ifdef ENABLE_OCTAHEDRAL_COMPRESSION
-	vec3 normal = oct_to_vec3(normal_tangent_attrib.xy);
-#else
-	vec3 normal = normal_attrib;
-#endif
+	vec3 normal;
+#ifdef ENABLE_OCTAHEDRAL_COMPRESSION //ubershader-runtime
+	normal = oct_to_vec3(normal_tangent_attrib.xy);
+#else //ubershader-runtime
+	normal = normal_attrib;
+#endif //ubershader-runtime
 
 #if defined(ENABLE_TANGENT_INTERP) || defined(ENABLE_NORMALMAP) || defined(LIGHT_USE_ANISOTROPY)
-#ifdef ENABLE_OCTAHEDRAL_COMPRESSION
-	vec3 tangent = oct_to_vec3(vec2(normal_tangent_attrib.z, abs(normal_tangent_attrib.w) * 2.0 - 1.0));
-	float binormalf = sign(normal_tangent_attrib.w);
-#else
-	vec3 tangent = tangent_attrib.xyz;
-	float binormalf = tangent_attrib.a;
-#endif
+	vec3 tangent;
+	float binormalf;
+#ifdef ENABLE_OCTAHEDRAL_COMPRESSION //ubershader-runtime
+	tangent = oct_to_vec3(vec2(normal_tangent_attrib.z, abs(normal_tangent_attrib.w) * 2.0 - 1.0));
+	binormalf = sign(normal_tangent_attrib.w);
+#else //ubershader-runtime
+	tangent = normal_tangent_attrib.xyz;
+	binormalf = normal_tangent_attrib.a;
+#endif //ubershader-runtime
 #endif
 
 #if defined(ENABLE_COLOR_INTERP)
 	color_interp = color_attrib;
-#if defined(USE_INSTANCING)
+#ifdef USE_INSTANCING //ubershader-runtime
 	color_interp *= instance_color;
-#endif
+#endif //ubershader-runtime
 
 #endif
 
@@ -393,21 +408,28 @@ void main() {
 	uv_interp = uv_attrib;
 #endif
 
-#if defined(USE_LIGHTMAP)
+#ifdef USE_LIGHTMAP //ubershader-runtime
 	uv2_interp = lightmap_uv_rect.zw * uv2_attrib + lightmap_uv_rect.xy;
-#elif defined(ENABLE_UV2_INTERP)
+#else //ubershader-runtime
+#if defined(ENABLE_UV2_INTERP)
 	uv2_interp = uv2_attrib;
 #endif
+#endif //ubershader-runtime
 
-#ifdef OVERRIDE_POSITION
+#if defined(OVERRIDE_POSITION)
 	highp vec4 position;
 #endif
 
-#if defined(USE_INSTANCING) && defined(ENABLE_INSTANCE_CUSTOM)
-	vec4 instance_custom = instance_custom_data;
+	vec4 instance_custom;
+#ifdef USE_INSTANCING //ubershader-runtime
+#if defined(ENABLE_INSTANCE_CUSTOM)
+	instance_custom = instance_custom_data;
 #else
-	vec4 instance_custom = vec4(0.0);
+	instance_custom = vec4(0.0);
 #endif
+#else //ubershader-runtime
+	instance_custom = vec4(0.0);
+#endif //ubershader-runtime
 
 	highp mat4 local_projection = projection_matrix;
 
@@ -436,7 +458,7 @@ void main() {
 #define projection_matrix local_projection
 #define world_transform world_matrix
 
-#ifdef USE_SKELETON
+#ifdef USE_SKELETON //ubershader-runtime
 	{
 		//skeleton transform
 		ivec4 bone_indicesi = ivec4(bone_indices); // cast to signed int
@@ -479,7 +501,7 @@ void main() {
 
 		world_matrix = world_matrix * transpose(m);
 	}
-#endif
+#endif //ubershader-runtime
 
 	float point_size = 1.0;
 
@@ -534,9 +556,9 @@ VERTEX_SHADER_CODE
 	binormal_interp = binormal;
 #endif
 
-#ifdef RENDER_DEPTH
+#ifdef RENDER_DEPTH //ubershader-runtime
 
-#ifdef RENDER_DEPTH_DUAL_PARABOLOID
+#ifdef RENDER_DEPTH_DUAL_PARABOLOID //ubershader-runtime
 
 	vertex_interp.z *= shadow_dual_paraboloid_render_side;
 	normal_interp.z *= shadow_dual_paraboloid_render_side;
@@ -554,17 +576,17 @@ VERTEX_SHADER_CODE
 
 	vertex_interp = vtx;
 
-#else
+#else //ubershader-runtime
 
 	float z_ofs = z_offset;
 	z_ofs += (1.0 - abs(normal_interp.z)) * z_slope_scale;
 	vertex_interp.z -= z_ofs;
 
-#endif //RENDER_DEPTH_DUAL_PARABOLOID
+#endif //RENDER_DEPTH_DUAL_PARABOLOID //ubershader-runtime
 
-#endif //RENDER_DEPTH
+#endif //RENDER_DEPTH //ubershader-runtime
 
-#ifdef OVERRIDE_POSITION
+#if defined(OVERRIDE_POSITION)
 	gl_Position = position;
 #else
 	gl_Position = projection_matrix * vec4(vertex_interp, 1.0);
@@ -572,12 +594,12 @@ VERTEX_SHADER_CODE
 
 	position_interp = gl_Position;
 
-#ifdef USE_VERTEX_LIGHTING
+#ifdef USE_VERTEX_LIGHTING //ubershader-runtime
 
 	diffuse_light_interp = vec4(0.0);
 	specular_light_interp = vec4(0.0);
 
-#ifdef USE_FORWARD_LIGHTING
+#ifdef USE_FORWARD_LIGHTING //ubershader-runtime
 
 	for (int i = 0; i < omni_light_count; i++) {
 		light_process_omni(omni_light_indices[i], vertex_interp, -normalize(vertex_interp), normal_interp, roughness, diffuse_light_interp.rgb, specular_light_interp.rgb);
@@ -586,9 +608,9 @@ VERTEX_SHADER_CODE
 	for (int i = 0; i < spot_light_count; i++) {
 		light_process_spot(spot_light_indices[i], vertex_interp, -normalize(vertex_interp), normal_interp, roughness, diffuse_light_interp.rgb, specular_light_interp.rgb);
 	}
-#endif
+#endif //ubershader-runtime
 
-#ifdef USE_LIGHT_DIRECTIONAL
+#ifdef USE_LIGHT_DIRECTIONAL //ubershader-runtime
 
 	vec3 directional_diffuse = vec3(0.0);
 	vec3 directional_specular = vec3(0.0);
@@ -614,27 +636,34 @@ VERTEX_SHADER_CODE
 
 	specular_light_interp.rgb += directional_specular;
 
-#endif //USE_LIGHT_DIRECTIONAL
+#endif //USE_LIGHT_DIRECTIONAL //ubershader-runtime
 
-#endif // USE_VERTEX_LIGHTING
+#endif // USE_VERTEX_LIGHTING //ubershader-runtime
 }
 
 /* clang-format off */
 [fragment]
 
+#if defined(IS_UBERSHADER)
+uniform highp int ubershader_flags;
+// These are more performant and make the ubershaderification simpler
+#define VCT_QUALITY_HIGH
+#define USE_LIGHTMAP_FILTER_BICUBIC
+#endif
 
 /* texture unit usage, N is max_texture_unity-N
 
 1-skeleton
 2-radiance
-3-reflection_atlas
-4-directional_shadow
-5-shadow_atlas
-6-decal_atlas
-7-screen
-8-depth
-9-probe1
-10-probe2
+3-radiance_array
+4-reflection_atlas
+5-directional_shadow
+6-shadow_atlas
+7-irradiance
+8-screen
+9-depth
+10-probe1, lightmap
+11-probe2, lightmap_array
 
 */
 
@@ -654,8 +683,12 @@ in vec4 color_interp;
 in vec2 uv_interp;
 #endif
 
-#if defined(ENABLE_UV2_INTERP) || defined(USE_LIGHTMAP)
+#if defined(ENABLE_UV2_INTERP)
 in vec2 uv2_interp;
+#else
+#ifdef USE_LIGHTMAP //ubershader-skip
+in vec2 uv2_interp;
+#endif //ubershader-skip
 #endif
 
 #if defined(ENABLE_TANGENT_INTERP) || defined(ENABLE_NORMALMAP) || defined(LIGHT_USE_ANISOTROPY)
@@ -668,7 +701,7 @@ in vec3 normal_interp;
 
 /* PBR CHANNELS */
 
-#ifdef USE_RADIANCE_MAP
+#ifdef USE_RADIANCE_MAP //ubershader-skip
 
 layout(std140) uniform Radiance { // ubo:2
 
@@ -678,13 +711,13 @@ layout(std140) uniform Radiance { // ubo:2
 
 #define RADIANCE_MAX_LOD 5.0
 
-uniform sampler2D irradiance_map; // texunit:-6
+uniform sampler2D irradiance_map; // texunit:-7
 
-#ifdef USE_RADIANCE_MAP_ARRAY
+#ifdef USE_RADIANCE_MAP_ARRAY //ubershader-skip
 
-uniform sampler2DArray radiance_map; // texunit:-2
+uniform sampler2DArray radiance_map_array; // texunit:-3
 
-vec3 textureDualParaboloid(sampler2DArray p_tex, vec3 p_vec, float p_roughness) {
+vec3 textureDualParaboloidArray(sampler2DArray p_tex, vec3 p_vec, float p_roughness) {
 	vec3 norm = normalize(p_vec);
 	norm.xy /= 1.0 + abs(norm.z);
 	norm.xy = norm.xy * vec2(0.5, 0.25) + vec2(0.5, 0.25);
@@ -707,7 +740,7 @@ vec3 textureDualParaboloid(sampler2DArray p_tex, vec3 p_vec, float p_roughness) 
 	return mix(base, next, float(indexi % 256) / 256.0);
 }
 
-#else
+#else //ubershader-skip
 
 uniform sampler2D radiance_map; // texunit:-2
 
@@ -721,9 +754,9 @@ vec3 textureDualParaboloid(sampler2D p_tex, vec3 p_vec, float p_roughness) {
 	return textureLod(p_tex, norm.xy, p_roughness * RADIANCE_MAX_LOD).xyz;
 }
 
-#endif
+#endif //ubershader-skip
 
-#endif
+#endif //ubershader-skip
 
 /* Material Uniforms */
 
@@ -795,7 +828,7 @@ FRAGMENT_SHADER_GLOBALS
 
 //directional light data
 
-#ifdef USE_LIGHT_DIRECTIONAL
+#ifdef USE_LIGHT_DIRECTIONAL //ubershader-skip
 
 layout(std140) uniform DirectionalLightData {
 	highp vec4 light_pos_inv_radius;
@@ -811,14 +844,14 @@ layout(std140) uniform DirectionalLightData {
 	mediump vec4 shadow_split_offsets;
 };
 
-uniform highp sampler2DShadow directional_shadow; // texunit:-4
+uniform highp sampler2DShadow directional_shadow; // texunit:-5
 
-#endif
+#endif //ubershader-skip
 
-#ifdef USE_VERTEX_LIGHTING
+#ifdef USE_VERTEX_LIGHTING //ubershader-skip
 in vec4 diffuse_light_interp;
 in vec4 specular_light_interp;
-#endif
+#endif //ubershader-skip
 // omni and spot
 
 struct LightData {
@@ -841,7 +874,7 @@ layout(std140) uniform SpotLightData { // ubo:5
 	LightData spot_lights[MAX_LIGHT_DATA_STRUCTS];
 };
 
-uniform highp sampler2DShadow shadow_atlas; // texunit:-5
+uniform highp sampler2DShadow shadow_atlas; // texunit:-6
 
 struct ReflectionData {
 	mediump vec4 box_extents;
@@ -857,9 +890,9 @@ layout(std140) uniform ReflectionProbeData { //ubo:6
 
 	ReflectionData reflections[MAX_REFLECTION_DATA_STRUCTS];
 };
-uniform mediump sampler2D reflection_atlas; // texunit:-3
+uniform mediump sampler2D reflection_atlas; // texunit:-4
 
-#ifdef USE_FORWARD_LIGHTING
+#ifdef USE_FORWARD_LIGHTING //ubershader-skip
 
 uniform int omni_light_indices[MAX_FORWARD_LIGHTS];
 uniform int omni_light_count;
@@ -870,33 +903,31 @@ uniform int spot_light_count;
 uniform int reflection_indices[MAX_FORWARD_LIGHTS];
 uniform int reflection_count;
 
-#endif
+#endif //ubershader-skip
 
 #if defined(SCREEN_TEXTURE_USED)
 
-uniform highp sampler2D screen_texture; // texunit:-7
+uniform highp sampler2D screen_texture; // texunit:-8
 
 #endif
 
-#ifdef USE_MULTIPLE_RENDER_TARGETS
+layout(location = 0) out vec4 frag_color;
 
-layout(location = 0) out vec4 diffuse_buffer;
+#ifdef USE_MULTIPLE_RENDER_TARGETS //ubershader-skip
+
+#define diffuse_buffer frag_color
 layout(location = 1) out vec4 specular_buffer;
 layout(location = 2) out vec4 normal_mr_buffer;
 #if defined(ENABLE_SSS)
 layout(location = 3) out float sss_buffer;
 #endif
 
-#else
-
-layout(location = 0) out vec4 frag_color;
-
-#endif
+#endif //ubershader-skip
 
 in highp vec4 position_interp;
-uniform highp sampler2D depth_buffer; // texunit:-8
+uniform highp sampler2D depth_buffer; // texunit:-9
 
-#ifdef USE_CONTACT_SHADOWS
+#ifdef USE_CONTACT_SHADOWS //ubershader-skip
 
 float contact_shadow_compute(vec3 pos, vec3 dir, float max_distance) {
 	if (abs(dir.z) > 0.99)
@@ -962,7 +993,7 @@ float contact_shadow_compute(vec3 pos, vec3 dir, float max_distance) {
 	return 1.0;
 }
 
-#endif
+#endif //ubershader-skip
 
 // This returns the G_GGX function divided by 2 cos_theta_m, where in practice cos_theta_m is either N.L or N.V.
 // We're dividing this factor off because the overall term we'll end up looks like
@@ -1222,7 +1253,7 @@ LIGHT_SHADER_CODE
 #endif
 	}
 
-#ifdef USE_SHADOW_TO_OPACITY
+#if defined(USE_SHADOW_TO_OPACITY)
 	alpha = min(alpha, clamp(1.0 - length(attenuation), 0.0, 1.0));
 #endif
 
@@ -1230,7 +1261,7 @@ LIGHT_SHADER_CODE
 }
 
 float sample_shadow(highp sampler2DShadow shadow, vec2 shadow_pixel_size, vec2 pos, float depth, vec4 clamp_rect) {
-#ifdef SHADOW_MODE_PCF_13
+#ifdef SHADOW_MODE_PCF_13 //ubershader-runtime
 
 	float avg = textureProj(shadow, vec4(pos, depth, 1.0));
 	avg += textureProj(shadow, vec4(pos + vec2(shadow_pixel_size.x, 0.0), depth, 1.0));
@@ -1246,9 +1277,9 @@ float sample_shadow(highp sampler2DShadow shadow, vec2 shadow_pixel_size, vec2 p
 	avg += textureProj(shadow, vec4(pos + vec2(0.0, shadow_pixel_size.y * 2.0), depth, 1.0));
 	avg += textureProj(shadow, vec4(pos + vec2(0.0, -shadow_pixel_size.y * 2.0), depth, 1.0));
 	return avg * (1.0 / 13.0);
-#endif
+#endif //ubershader-runtime
 
-#ifdef SHADOW_MODE_PCF_5
+#ifdef SHADOW_MODE_PCF_5 //ubershader-runtime
 
 	float avg = textureProj(shadow, vec4(pos, depth, 1.0));
 	avg += textureProj(shadow, vec4(pos + vec2(shadow_pixel_size.x, 0.0), depth, 1.0));
@@ -1257,20 +1288,22 @@ float sample_shadow(highp sampler2DShadow shadow, vec2 shadow_pixel_size, vec2 p
 	avg += textureProj(shadow, vec4(pos + vec2(0.0, -shadow_pixel_size.y), depth, 1.0));
 	return avg * (1.0 / 5.0);
 
-#endif
+#endif //ubershader-runtime
 
-#if !defined(SHADOW_MODE_PCF_5) || !defined(SHADOW_MODE_PCF_13)
+#ifndef SHADOW_MODE_PCF_5 //ubershader-runtime
+#ifndef SHADOW_MODE_PCF_13 //ubershader-runtime
 
 	return textureProj(shadow, vec4(pos, depth, 1.0));
 
-#endif
+#endif //ubershader-runtime
+#endif //ubershader-runtime
 }
 
-#ifdef RENDER_DEPTH_DUAL_PARABOLOID
+#ifdef RENDER_DEPTH_DUAL_PARABOLOID //ubershader-skip
 
 in highp float dp_clip;
 
-#endif
+#endif //ubershader-skip
 
 #ifdef USE_PHYSICAL_LIGHT_ATTENUATION
 float get_omni_attenuation(float distance, float inv_range, float decay) {
@@ -1300,7 +1333,7 @@ void light_process_omni(int idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 bi
 	vec3 light_attenuation = vec3(omni_attenuation);
 
 #if !defined(SHADOWS_DISABLED)
-#ifdef USE_SHADOW
+#ifdef USE_SHADOW //ubershader-runtime
 	if (omni_lights[idx].light_params.w > 0.5) {
 		// there is a shadowmap
 
@@ -1333,16 +1366,16 @@ void light_process_omni(int idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 bi
 		splane.xy = clamp_rect.xy + splane.xy * clamp_rect.zw;
 		float shadow = sample_shadow(shadow_atlas, shadow_atlas_pixel_size, splane.xy, splane.z, clamp_rect);
 
-#ifdef USE_CONTACT_SHADOWS
+#ifdef USE_CONTACT_SHADOWS //ubershader-runtime
 
 		if (shadow > 0.01 && omni_lights[idx].shadow_color_contact.a > 0.0) {
 			float contact_shadow = contact_shadow_compute(vertex, normalize(light_rel_vec), min(light_length, omni_lights[idx].shadow_color_contact.a));
 			shadow = min(shadow, contact_shadow);
 		}
-#endif
+#endif //ubershader-runtime
 		light_attenuation *= mix(omni_lights[idx].shadow_color_contact.rgb, vec3(1.0), shadow);
 	}
-#endif //USE_SHADOW
+#endif //USE_SHADOW //ubershader-runtime
 #endif //SHADOWS_DISABLED
 	light_compute(normal, normalize(light_rel_vec), eye_vec, binormal, tangent, omni_lights[idx].light_color_energy.rgb, light_attenuation, albedo, transmission, omni_lights[idx].light_params.z * p_blob_intensity, roughness, metallic, specular, rim * omni_attenuation, rim_tint, clearcoat, clearcoat_gloss, anisotropy, diffuse_light, specular_light, alpha);
 }
@@ -1369,7 +1402,7 @@ void light_process_spot(int idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 bi
 	vec3 light_attenuation = vec3(spot_attenuation);
 
 #if !defined(SHADOWS_DISABLED)
-#ifdef USE_SHADOW
+#ifdef USE_SHADOW //ubershader-runtime
 	if (spot_lights[idx].light_params.w > 0.5) {
 		//there is a shadowmap
 		highp vec4 splane = (spot_lights[idx].shadow_matrix * vec4(vertex, 1.0));
@@ -1377,15 +1410,15 @@ void light_process_spot(int idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 bi
 
 		float shadow = sample_shadow(shadow_atlas, shadow_atlas_pixel_size, splane.xy, splane.z, spot_lights[idx].light_clamp);
 
-#ifdef USE_CONTACT_SHADOWS
+#ifdef USE_CONTACT_SHADOWS //ubershader-runtime
 		if (shadow > 0.01 && spot_lights[idx].shadow_color_contact.a > 0.0) {
 			float contact_shadow = contact_shadow_compute(vertex, normalize(light_rel_vec), min(light_length, spot_lights[idx].shadow_color_contact.a));
 			shadow = min(shadow, contact_shadow);
 		}
-#endif
+#endif //ubershader-runtime
 		light_attenuation *= mix(spot_lights[idx].shadow_color_contact.rgb, vec3(1.0), shadow);
 	}
-#endif //USE_SHADOW
+#endif //USE_SHADOW //ubershader-runtime
 #endif //SHADOWS_DISABLED
 
 	light_compute(normal, normalize(light_rel_vec), eye_vec, binormal, tangent, spot_lights[idx].light_color_energy.rgb, light_attenuation, albedo, transmission, spot_lights[idx].light_params.z * p_blob_intensity, roughness, metallic, specular, rim * spot_attenuation, rim_tint, clearcoat, clearcoat_gloss, anisotropy, diffuse_light, specular_light, alpha);
@@ -1447,7 +1480,8 @@ void reflection_process(int idx, vec3 vertex, vec3 normal, vec3 binormal, vec3 t
 
 		reflection_accum += reflection;
 	}
-#if !defined(USE_LIGHTMAP) && !defined(USE_LIGHTMAP_CAPTURE)
+#ifndef USE_LIGHTMAP //ubershader-runtime
+#ifndef USE_LIGHTMAP_CAPTURE //ubershader-runtime
 	if (reflections[idx].ambient.a > 0.0) { //compute ambient using skybox
 
 		vec3 local_amb_vec = (reflections[idx].local_matrix * vec4(normal, 0.0)).xyz;
@@ -1490,16 +1524,17 @@ void reflection_process(int idx, vec3 vertex, vec3 normal, vec3 binormal, vec3 t
 		ambient_out.rgb *= ambient_out.a;
 		ambient_accum += ambient_out;
 	}
-#endif
+#endif //ubershader-runtime
+#endif //ubershader-runtime
 }
 
-#ifdef USE_LIGHTMAP
-#ifdef USE_LIGHTMAP_LAYERED
-uniform mediump sampler2DArray lightmap; //texunit:-9
+#ifdef USE_LIGHTMAP //ubershader-skip
+#ifdef USE_LIGHTMAP_LAYERED //ubershader-skip
+uniform mediump sampler2DArray lightmap_array; //texunit:-11
 uniform int lightmap_layer;
-#else
-uniform mediump sampler2D lightmap; //texunit:-9
-#endif
+#else //ubershader-skip
+uniform mediump sampler2D lightmap; //texunit:-10
+#endif //ubershader-skip
 
 uniform mediump float lightmap_energy;
 
@@ -1597,15 +1632,15 @@ vec4 textureArray_bicubic(sampler2DArray tex, vec3 uv) {
 #define LIGHTMAP_TEXTURE_LAYERED_SAMPLE(m_tex, m_uv) texture(m_tex, m_uv)
 
 #endif //USE_LIGHTMAP_FILTER_BICUBIC
-#endif
+#endif //ubershader-skip
 
-#ifdef USE_LIGHTMAP_CAPTURE
+#ifdef USE_LIGHTMAP_CAPTURE //ubershader-skip
 uniform mediump vec4[12] lightmap_captures;
-#endif
+#endif //ubershader-skip
 
-#ifdef USE_GI_PROBES
+#ifdef USE_GI_PROBES //ubershader-skip
 
-uniform mediump sampler3D gi_probe1; //texunit:-9
+uniform mediump sampler3D gi_probe1; //texunit:-10
 uniform highp mat4 gi_probe_xform1;
 uniform highp vec3 gi_probe_bounds1;
 uniform highp vec3 gi_probe_cell_size1;
@@ -1614,7 +1649,7 @@ uniform highp float gi_probe_bias1;
 uniform highp float gi_probe_normal_bias1;
 uniform bool gi_probe_blend_ambient1;
 
-uniform mediump sampler3D gi_probe2; //texunit:-10
+uniform mediump sampler3D gi_probe2; //texunit:-11
 uniform highp mat4 gi_probe_xform2;
 uniform highp vec3 gi_probe_bounds2;
 uniform highp vec3 gi_probe_cell_size2;
@@ -1759,14 +1794,14 @@ void gi_probes_compute(vec3 pos, vec3 normal, float roughness, inout vec3 out_sp
 	out_ambient += diff_accum.rgb;
 }
 
-#endif
+#endif //ubershader-skip
 
 void main() {
-#ifdef RENDER_DEPTH_DUAL_PARABOLOID
+#ifdef RENDER_DEPTH_DUAL_PARABOLOID //ubershader-runtime
 
 	if (dp_clip > 0.0)
 		discard;
-#endif
+#endif //ubershader-runtime
 
 	//lay out everything, whathever is unused is optimized away anyway
 	highp vec3 vertex = vertex_interp;
@@ -1814,8 +1849,12 @@ void main() {
 	vec2 uv = uv_interp;
 #endif
 
-#if defined(ENABLE_UV2_INTERP) || defined(USE_LIGHTMAP)
+#if defined(ENABLE_UV2_INTERP)
 	vec2 uv2 = uv2_interp;
+#else
+#ifdef USE_LIGHTMAP //ubershader-skip
+	vec2 uv2 = uv2_interp;
+#endif //ubershader-skip
 #endif
 
 #if defined(ENABLE_COLOR_INTERP)
@@ -1853,13 +1892,13 @@ FRAGMENT_SHADER_CODE
 	}
 #endif // ALPHA_SCISSOR_USED
 
-#ifdef USE_OPAQUE_PREPASS
+#ifdef USE_OPAQUE_PREPASS //ubershader-runtime
 
 	if (alpha < opaque_prepass_threshold) {
 		discard;
 	}
 
-#endif // USE_OPAQUE_PREPASS
+#endif // USE_OPAQUE_PREPASS //ubershader-runtime
 
 #endif // !USE_SHADOW_TO_OPACITY
 
@@ -1884,27 +1923,22 @@ FRAGMENT_SHADER_CODE
 
 #endif
 
-#ifdef ENABLE_CLIP_ALPHA
-	if (albedo.a < 0.99) {
-		//used for doublepass and shadowmapping
-		discard;
-	}
-#endif
-
 	/////////////////////// LIGHTING //////////////////////////////
 
 	//apply energy conservation
 
-#ifdef USE_VERTEX_LIGHTING
+	vec3 specular_light;
+	vec3 diffuse_light;
+#ifdef USE_VERTEX_LIGHTING //ubershader-runtime
 
-	vec3 specular_light = specular_light_interp.rgb;
-	vec3 diffuse_light = diffuse_light_interp.rgb;
-#else
+	specular_light = specular_light_interp.rgb;
+	diffuse_light = diffuse_light_interp.rgb;
+#else //ubershader-runtime
 
-	vec3 specular_light = vec3(0.0, 0.0, 0.0);
-	vec3 diffuse_light = vec3(0.0, 0.0, 0.0);
+	specular_light = vec3(0.0, 0.0, 0.0);
+	diffuse_light = vec3(0.0, 0.0, 0.0);
 
-#endif
+#endif //ubershader-runtime
 
 	vec3 ambient_light;
 	vec3 env_reflection_light = vec3(0.0, 0.0, 0.0);
@@ -1916,9 +1950,9 @@ FRAGMENT_SHADER_CODE
 	vec3 f0 = F0(metallic, specular, albedo);
 	vec3 F = f0 + (max(vec3(1.0 - roughness), f0) - f0) * pow(1.0 - ndotv, 5.0);
 
-#ifdef USE_RADIANCE_MAP
+#ifdef USE_RADIANCE_MAP //ubershader-runtime
 
-#ifdef AMBIENT_LIGHT_DISABLED
+#if defined(AMBIENT_LIGHT_DISABLED)
 	ambient_light = vec3(0.0, 0.0, 0.0);
 #else
 	{
@@ -1927,12 +1961,17 @@ FRAGMENT_SHADER_CODE
 			vec3 ref_vec = reflect(-eye_vec, normal);
 			float horizon = min(1.0 + dot(ref_vec, normal), 1.0);
 			ref_vec = normalize((radiance_inverse_xform * vec4(ref_vec, 0.0)).xyz);
-			vec3 radiance = textureDualParaboloid(radiance_map, ref_vec, roughness) * bg_energy;
+			vec3 radiance;
+#ifdef USE_RADIANCE_MAP_ARRAY //ubershader-runtime
+			radiance = textureDualParaboloidArray(radiance_map_array, ref_vec, roughness) * bg_energy;
+#else //ubershader-runtime
+			radiance = textureDualParaboloid(radiance_map, ref_vec, roughness) * bg_energy;
+#endif //ubershader-runtime
 			env_reflection_light = radiance;
 			env_reflection_light *= horizon * horizon;
 		}
 	}
-#ifndef USE_LIGHTMAP
+#ifndef USE_LIGHTMAP //ubershader-runtime
 	{
 		vec3 norm = normal;
 		norm = normalize((radiance_inverse_xform * vec4(norm, 0.0)).xyz);
@@ -1947,19 +1986,19 @@ FRAGMENT_SHADER_CODE
 
 		ambient_light = mix(ambient_light_color.rgb, env_ambient, radiance_ambient_contribution);
 	}
-#endif
+#endif //ubershader-runtime
 #endif //AMBIENT_LIGHT_DISABLED
 
-#else
+#else //ubershader-runtime
 
-#ifdef AMBIENT_LIGHT_DISABLED
+#if defined(AMBIENT_LIGHT_DISABLED)
 	ambient_light = vec3(0.0, 0.0, 0.0);
 #else
 	ambient_light = ambient_light_color.rgb;
 	env_reflection_light = bg_color.rgb * bg_energy;
 #endif //AMBIENT_LIGHT_DISABLED
 
-#endif
+#endif //ubershader-runtime
 
 	ambient_light *= ambient_energy;
 
@@ -1969,20 +2008,20 @@ FRAGMENT_SHADER_CODE
 	specular_blob_intensity *= specular * 2.0;
 #endif
 
-#ifdef USE_GI_PROBES
+#ifdef USE_GI_PROBES //ubershader-runtime
 	gi_probes_compute(vertex, normal, roughness, env_reflection_light, ambient_light);
 
-#endif
+#endif //ubershader-runtime
 
-#ifdef USE_LIGHTMAP
-#ifdef USE_LIGHTMAP_LAYERED
-	ambient_light = LIGHTMAP_TEXTURE_LAYERED_SAMPLE(lightmap, vec3(uv2, float(lightmap_layer))).rgb * lightmap_energy;
-#else
+#ifdef USE_LIGHTMAP //ubershader-runtime
+#ifdef USE_LIGHTMAP_LAYERED //ubershader-runtime
+	ambient_light = LIGHTMAP_TEXTURE_LAYERED_SAMPLE(lightmap_array, vec3(uv2, float(lightmap_layer))).rgb * lightmap_energy;
+#else //ubershader-runtime
 	ambient_light = LIGHTMAP_TEXTURE_SAMPLE(lightmap, uv2).rgb * lightmap_energy;
-#endif
-#endif
+#endif //ubershader-runtime
+#endif //ubershader-runtime
 
-#ifdef USE_LIGHTMAP_CAPTURE
+#ifdef USE_LIGHTMAP_CAPTURE //ubershader-runtime
 	{
 		vec3 cone_dirs[12] = vec3[](
 				vec3(0.0, 0.0, 1.0),
@@ -2016,9 +2055,9 @@ FRAGMENT_SHADER_CODE
 			ambient_light = captured.rgb;
 		}
 	}
-#endif
+#endif //ubershader-runtime
 
-#ifdef USE_FORWARD_LIGHTING
+#ifdef USE_FORWARD_LIGHTING //ubershader-runtime
 
 	highp vec4 reflection_accum = vec4(0.0, 0.0, 0.0, 0.0);
 	highp vec4 ambient_accum = vec4(0.0, 0.0, 0.0, 0.0);
@@ -2031,12 +2070,15 @@ FRAGMENT_SHADER_CODE
 	} else {
 		specular_light += env_reflection_light;
 	}
-#if !defined(USE_LIGHTMAP) && !defined(USE_LIGHTMAP_CAPTURE)
+#ifndef USE_LIGHTMAP //ubershader-runtime
+#ifndef USE_LIGHTMAP_CAPTURE //ubershader-runtime
 	if (ambient_accum.a > 0.0) {
 		ambient_light = ambient_accum.rgb / ambient_accum.a;
 	}
-#endif
-#endif
+#endif //ubershader-runtime
+#endif //ubershader-runtime
+
+#endif //ubershader-runtime
 
 	{
 #if defined(DIFFUSE_TOON)
@@ -2057,152 +2099,157 @@ FRAGMENT_SHADER_CODE
 #endif
 	}
 
-#if defined(USE_LIGHT_DIRECTIONAL)
+#ifdef USE_LIGHT_DIRECTIONAL //ubershader-runtime
 
 	vec3 light_attenuation = vec3(1.0);
 
 	float depth_z = -vertex.z;
-#ifdef LIGHT_DIRECTIONAL_SHADOW
+#ifdef LIGHT_DIRECTIONAL_SHADOW //ubershader-runtime
 #if !defined(SHADOWS_DISABLED)
 
-#ifdef LIGHT_USE_PSSM4
-	if (depth_z < shadow_split_offsets.w) {
-#elif defined(LIGHT_USE_PSSM2)
-	if (depth_z < shadow_split_offsets.y) {
-#else
-	if (depth_z < shadow_split_offsets.x) {
-#endif //LIGHT_USE_PSSM4
-
+	float value;
+#ifdef LIGHT_USE_PSSM4 //ubershader-runtime
+	value = shadow_split_offsets.w;
+#else //ubershader-runtime
+#ifdef LIGHT_USE_PSSM2 //ubershader-runtime
+	value = shadow_split_offsets.y;
+#else //ubershader-runtime
+	value = shadow_split_offsets.x;
+#endif //ubershader-runtime
+#endif //LIGHT_USE_PSSM4 //ubershader-runtime
+	if (depth_z < value) {
 		vec3 pssm_coord;
 		float pssm_fade = 0.0;
 
-#ifdef LIGHT_USE_PSSM_BLEND
+#ifdef LIGHT_USE_PSSM_BLEND //ubershader-skip
 		float pssm_blend;
 		vec3 pssm_coord2;
 		bool use_blend = true;
-#endif
+#endif //ubershader-skip
 
-#ifdef LIGHT_USE_PSSM4
+#ifdef LIGHT_USE_PSSM4 //ubershader-runtime
 
 		if (depth_z < shadow_split_offsets.y) {
 			if (depth_z < shadow_split_offsets.x) {
 				highp vec4 splane = (shadow_matrix1 * vec4(vertex, 1.0));
 				pssm_coord = splane.xyz / splane.w;
 
-#if defined(LIGHT_USE_PSSM_BLEND)
+#ifdef LIGHT_USE_PSSM_BLEND //ubershader-runtime
 
 				splane = (shadow_matrix2 * vec4(vertex, 1.0));
 				pssm_coord2 = splane.xyz / splane.w;
 				pssm_blend = smoothstep(0.0, shadow_split_offsets.x, depth_z);
-#endif
+#endif //ubershader-runtime
 
 			} else {
 				highp vec4 splane = (shadow_matrix2 * vec4(vertex, 1.0));
 				pssm_coord = splane.xyz / splane.w;
 
-#if defined(LIGHT_USE_PSSM_BLEND)
+#ifdef LIGHT_USE_PSSM_BLEND //ubershader-runtime
 				splane = (shadow_matrix3 * vec4(vertex, 1.0));
 				pssm_coord2 = splane.xyz / splane.w;
 				pssm_blend = smoothstep(shadow_split_offsets.x, shadow_split_offsets.y, depth_z);
-#endif
+#endif //ubershader-runtime
 			}
 		} else {
 			if (depth_z < shadow_split_offsets.z) {
 				highp vec4 splane = (shadow_matrix3 * vec4(vertex, 1.0));
 				pssm_coord = splane.xyz / splane.w;
 
-#if defined(LIGHT_USE_PSSM_BLEND)
+#ifdef LIGHT_USE_PSSM_BLEND //ubershader-runtime
 				splane = (shadow_matrix4 * vec4(vertex, 1.0));
 				pssm_coord2 = splane.xyz / splane.w;
 				pssm_blend = smoothstep(shadow_split_offsets.y, shadow_split_offsets.z, depth_z);
-#endif
+#endif //ubershader-runtime
 
 			} else {
 				highp vec4 splane = (shadow_matrix4 * vec4(vertex, 1.0));
 				pssm_coord = splane.xyz / splane.w;
 				pssm_fade = smoothstep(shadow_split_offsets.z, shadow_split_offsets.w, depth_z);
 
-#if defined(LIGHT_USE_PSSM_BLEND)
+#ifdef LIGHT_USE_PSSM_BLEND //ubershader-runtime
 				use_blend = false;
 
-#endif
+#endif //ubershader-runtime
 			}
 		}
 
-#endif //LIGHT_USE_PSSM4
+#endif //LIGHT_USE_PSSM4 //ubershader-runtime
 
-#ifdef LIGHT_USE_PSSM2
+#ifdef LIGHT_USE_PSSM2 //ubershader-runtime
 
 		if (depth_z < shadow_split_offsets.x) {
 			highp vec4 splane = (shadow_matrix1 * vec4(vertex, 1.0));
 			pssm_coord = splane.xyz / splane.w;
 
-#if defined(LIGHT_USE_PSSM_BLEND)
+#ifdef LIGHT_USE_PSSM_BLEND //ubershader-runtime
 
 			splane = (shadow_matrix2 * vec4(vertex, 1.0));
 			pssm_coord2 = splane.xyz / splane.w;
 			pssm_blend = smoothstep(0.0, shadow_split_offsets.x, depth_z);
-#endif
+#endif //ubershader-runtime
 
 		} else {
 			highp vec4 splane = (shadow_matrix2 * vec4(vertex, 1.0));
 			pssm_coord = splane.xyz / splane.w;
 			pssm_fade = smoothstep(shadow_split_offsets.x, shadow_split_offsets.y, depth_z);
-#if defined(LIGHT_USE_PSSM_BLEND)
+#ifdef LIGHT_USE_PSSM_BLEND //ubershader-runtime
 			use_blend = false;
 
-#endif
+#endif //ubershader-runtime
 		}
 
-#endif //LIGHT_USE_PSSM2
+#endif //LIGHT_USE_PSSM2 //ubershader-runtime
 
-#if !defined(LIGHT_USE_PSSM4) && !defined(LIGHT_USE_PSSM2)
+#ifndef LIGHT_USE_PSSM2 //ubershader-runtime
+#ifndef LIGHT_USE_PSSM4 //ubershader-runtime
 		{ //regular orthogonal
 			highp vec4 splane = (shadow_matrix1 * vec4(vertex, 1.0));
 			pssm_coord = splane.xyz / splane.w;
 		}
-#endif
+#endif //ubershader-runtime
+#endif //ubershader-runtime
 
 		//one one sample
 
 		float shadow = sample_shadow(directional_shadow, directional_shadow_pixel_size, pssm_coord.xy, pssm_coord.z, light_clamp);
 
-#if defined(LIGHT_USE_PSSM_BLEND)
+#ifdef LIGHT_USE_PSSM_BLEND //ubershader-runtime
 
 		if (use_blend) {
 			shadow = mix(shadow, sample_shadow(directional_shadow, directional_shadow_pixel_size, pssm_coord2.xy, pssm_coord2.z, light_clamp), pssm_blend);
 		}
-#endif
+#endif //ubershader-runtime
 
-#ifdef USE_CONTACT_SHADOWS
+#ifdef USE_CONTACT_SHADOWS //ubershader-runtime
 		if (shadow > 0.01 && shadow_color_contact.a > 0.0) {
 			float contact_shadow = contact_shadow_compute(vertex, -light_direction_attenuation.xyz, shadow_color_contact.a);
 			shadow = min(shadow, contact_shadow);
 		}
-#endif
+#endif //ubershader-runtime
 		light_attenuation = mix(mix(shadow_color_contact.rgb, vec3(1.0), shadow), vec3(1.0), pssm_fade);
 	}
 
 #endif // !defined(SHADOWS_DISABLED)
-#endif //LIGHT_DIRECTIONAL_SHADOW
+#endif //LIGHT_DIRECTIONAL_SHADOW //ubershader-runtime
 
-#ifdef USE_VERTEX_LIGHTING
+#ifdef USE_VERTEX_LIGHTING //ubershader-runtime
 	diffuse_light *= mix(vec3(1.0), light_attenuation, diffuse_light_interp.a);
 	specular_light *= mix(vec3(1.0), light_attenuation, specular_light_interp.a);
 
-#else
+#else //ubershader-runtime
 	light_compute(normal, -light_direction_attenuation.xyz, eye_vec, binormal, tangent, light_color_energy.rgb, light_attenuation, albedo, transmission, light_params.z * specular_blob_intensity, roughness, metallic, specular, rim, rim_tint, clearcoat, clearcoat_gloss, anisotropy, diffuse_light, specular_light, alpha);
-#endif
+#endif //ubershader-runtime
 
-#endif //#USE_LIGHT_DIRECTIONAL
+#endif //#USE_LIGHT_DIRECTIONAL //ubershader-runtime
 
-#ifdef USE_VERTEX_LIGHTING
+#ifdef USE_VERTEX_LIGHTING //ubershader-runtime
 	diffuse_light *= albedo;
-#endif
+#endif //ubershader-runtime
 
-#ifdef USE_FORWARD_LIGHTING
+#ifdef USE_FORWARD_LIGHTING //ubershader-runtime
 
-#ifndef USE_VERTEX_LIGHTING
+#ifndef USE_VERTEX_LIGHTING //ubershader-runtime
 
 	for (int i = 0; i < omni_light_count; i++) {
 		light_process_omni(omni_light_indices[i], vertex, eye_vec, normal, binormal, tangent, albedo, transmission, roughness, metallic, specular, rim, rim_tint, clearcoat, clearcoat_gloss, anisotropy, specular_blob_intensity, diffuse_light, specular_light, alpha);
@@ -2212,11 +2259,11 @@ FRAGMENT_SHADER_CODE
 		light_process_spot(spot_light_indices[i], vertex, eye_vec, normal, binormal, tangent, albedo, transmission, roughness, metallic, specular, rim, rim_tint, clearcoat, clearcoat_gloss, anisotropy, specular_blob_intensity, diffuse_light, specular_light, alpha);
 	}
 
-#endif //USE_VERTEX_LIGHTING
+#endif //USE_VERTEX_LIGHTING //ubershader-runtime
 
-#endif
+#endif //ubershader-runtime
 
-#ifdef USE_SHADOW_TO_OPACITY
+#if defined(USE_SHADOW_TO_OPACITY)
 	alpha = min(alpha, clamp(length(ambient_light), 0.0, 1.0));
 
 #if defined(ALPHA_SCISSOR_USED)
@@ -2225,19 +2272,18 @@ FRAGMENT_SHADER_CODE
 	}
 #endif // ALPHA_SCISSOR_USED
 
-#ifdef USE_OPAQUE_PREPASS
-
+#ifdef USE_OPAQUE_PREPASS //ubershader-runtime
 	if (alpha < opaque_prepass_threshold) {
 		discard;
 	}
 
-#endif // USE_OPAQUE_PREPASS
+#endif // USE_OPAQUE_PREPASS //ubershader-runtime
 
 #endif // USE_SHADOW_TO_OPACITY
 
-#ifdef RENDER_DEPTH
+#ifdef RENDER_DEPTH //ubershader-runtime
 //nothing happens, so a tree-ssa optimizer will result in no fragment shader :)
-#else
+#else //ubershader-runtime
 
 	specular_light *= reflection_multiplier;
 	ambient_light *= albedo; //ambient must be multiplied by albedo at the end
@@ -2256,13 +2302,14 @@ FRAGMENT_SHADER_CODE
 	if (fog_color_enabled.a > 0.5) {
 		float fog_amount = 0.0;
 
-#ifdef USE_LIGHT_DIRECTIONAL
+		vec3 fog_color;
+#ifdef USE_LIGHT_DIRECTIONAL //ubershader-runtime
 
-		vec3 fog_color = mix(fog_color_enabled.rgb, fog_sun_color_amount.rgb, fog_sun_color_amount.a * pow(max(dot(normalize(vertex), -light_direction_attenuation.xyz), 0.0), 8.0));
-#else
+		fog_color = mix(fog_color_enabled.rgb, fog_sun_color_amount.rgb, fog_sun_color_amount.a * pow(max(dot(normalize(vertex), -light_direction_attenuation.xyz), 0.0), 8.0));
+#else //ubershader-runtime
 
-		vec3 fog_color = fog_color_enabled.rgb;
-#endif
+		fog_color = fog_color_enabled.rgb;
+#endif //ubershader-runtime
 
 		//apply fog
 
@@ -2292,13 +2339,13 @@ FRAGMENT_SHADER_CODE
 		diffuse_light *= rev_amount;
 	}
 
-#ifdef USE_MULTIPLE_RENDER_TARGETS
+#ifdef USE_MULTIPLE_RENDER_TARGETS //ubershader-runtime
 
-#ifdef SHADELESS
+#ifdef SHADELESS //ubershader-runtime
 	diffuse_buffer = vec4(albedo.rgb, 0.0);
 	specular_buffer = vec4(0.0);
 
-#else
+#else //ubershader-runtime
 
 	//approximate ambient scale for SSAO, since we will lack full ambient
 	float max_emission = max(emission.r, max(emission.g, emission.b));
@@ -2319,7 +2366,7 @@ FRAGMENT_SHADER_CODE
 #ifdef USE_FORWARD_LIGHTING
 	diffuse_buffer.rgb += emission;
 #endif
-#endif //SHADELESS
+#endif //SHADELESS //ubershader-runtime
 
 	normal_mr_buffer = vec4(normalize(normal) * 0.5 + 0.5, roughness);
 
@@ -2327,18 +2374,18 @@ FRAGMENT_SHADER_CODE
 	sss_buffer = sss_strength;
 #endif
 
-#else //USE_MULTIPLE_RENDER_TARGETS
+#else //USE_MULTIPLE_RENDER_TARGETS //ubershader-runtime
 
-#ifdef SHADELESS
+#ifdef SHADELESS //ubershader-runtime
 	frag_color = vec4(albedo, alpha);
-#else
+#else //ubershader-runtime
 	frag_color = vec4(ambient_light + diffuse_light + specular_light, alpha);
 #ifdef USE_FORWARD_LIGHTING
 	frag_color.rgb += emission;
 #endif
-#endif //SHADELESS
+#endif //SHADELESS //ubershader-runtime
 
-#endif //USE_MULTIPLE_RENDER_TARGETS
+#endif //USE_MULTIPLE_RENDER_TARGETS //ubershader-runtime
 
-#endif //RENDER_DEPTH
+#endif //RENDER_DEPTH //ubershader-runtime
 }

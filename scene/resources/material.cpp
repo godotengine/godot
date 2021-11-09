@@ -1047,6 +1047,17 @@ void SpatialMaterial::_update_shader() {
 
 	code += "}\n";
 
+	String fallback_mode_str;
+	switch (async_mode) {
+		case ASYNC_MODE_VISIBLE: {
+			fallback_mode_str = "async_visible";
+		} break;
+		case ASYNC_MODE_HIDDEN: {
+			fallback_mode_str = "async_hidden";
+		} break;
+	}
+	code = code.replace_first("render_mode ", "render_mode " + fallback_mode_str + ",");
+
 	ShaderData shader_data;
 	shader_data.shader = VS::get_singleton()->shader_create();
 	shader_data.users = 1;
@@ -1822,6 +1833,16 @@ Shader::Mode SpatialMaterial::get_shader_mode() const {
 	return Shader::MODE_SPATIAL;
 }
 
+void SpatialMaterial::set_async_mode(AsyncMode p_mode) {
+	async_mode = p_mode;
+	_queue_shader_change();
+	_change_notify();
+}
+
+SpatialMaterial::AsyncMode SpatialMaterial::get_async_mode() const {
+	return async_mode;
+}
+
 void SpatialMaterial::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_albedo", "albedo"), &SpatialMaterial::set_albedo);
 	ClassDB::bind_method(D_METHOD("get_albedo"), &SpatialMaterial::get_albedo);
@@ -1994,6 +2015,9 @@ void SpatialMaterial::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_distance_fade_min_distance", "distance"), &SpatialMaterial::set_distance_fade_min_distance);
 	ClassDB::bind_method(D_METHOD("get_distance_fade_min_distance"), &SpatialMaterial::get_distance_fade_min_distance);
 
+	ClassDB::bind_method(D_METHOD("set_async_mode", "mode"), &SpatialMaterial::set_async_mode);
+	ClassDB::bind_method(D_METHOD("get_async_mode"), &SpatialMaterial::get_async_mode);
+
 	ADD_GROUP("Flags", "flags_");
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "flags_transparent"), "set_feature", "get_feature", FEATURE_TRANSPARENT);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "flags_use_shadow_to_opacity"), "set_flag", "get_flag", FLAG_USE_SHADOW_TO_OPACITY);
@@ -2136,6 +2160,8 @@ void SpatialMaterial::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "distance_fade_min_distance", PROPERTY_HINT_RANGE, "0,4096,0.01"), "set_distance_fade_min_distance", "get_distance_fade_min_distance");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "distance_fade_max_distance", PROPERTY_HINT_RANGE, "0,4096,0.01"), "set_distance_fade_max_distance", "get_distance_fade_max_distance");
 
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "async_mode", PROPERTY_HINT_ENUM, "Visible,Hidden"), "set_async_mode", "get_async_mode");
+
 	BIND_ENUM_CONSTANT(TEXTURE_ALBEDO);
 	BIND_ENUM_CONSTANT(TEXTURE_METALLIC);
 	BIND_ENUM_CONSTANT(TEXTURE_ROUGHNESS);
@@ -2236,6 +2262,9 @@ void SpatialMaterial::_bind_methods() {
 	BIND_ENUM_CONSTANT(DISTANCE_FADE_PIXEL_ALPHA);
 	BIND_ENUM_CONSTANT(DISTANCE_FADE_PIXEL_DITHER);
 	BIND_ENUM_CONSTANT(DISTANCE_FADE_OBJECT_DITHER);
+
+	BIND_ENUM_CONSTANT(ASYNC_MODE_VISIBLE);
+	BIND_ENUM_CONSTANT(ASYNC_MODE_HIDDEN);
 }
 
 SpatialMaterial::SpatialMaterial() :
@@ -2308,6 +2337,8 @@ SpatialMaterial::SpatialMaterial() :
 
 	diffuse_mode = DIFFUSE_BURLEY;
 	specular_mode = SPECULAR_SCHLICK_GGX;
+
+	async_mode = ASYNC_MODE_VISIBLE;
 
 	for (int i = 0; i < FEATURE_MAX; i++) {
 		features[i] = false;
