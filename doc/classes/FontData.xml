@@ -93,6 +93,24 @@
 				Returns font descent (number of pixels below the baseline).
 			</description>
 		</method>
+		<method name="get_font_name" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns font family name.
+			</description>
+		</method>
+		<method name="get_font_style" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns font style flags, see [enum TextServer.FontStyle].
+			</description>
+		</method>
+		<method name="get_font_style_name" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns font style name.
+			</description>
+		</method>
 		<method name="get_glyph_advance" qualifiers="const">
 			<return type="Vector2" />
 			<argument index="0" name="cache_index" type="int" />
@@ -461,6 +479,27 @@
 			<argument index="2" name="descent" type="float" />
 			<description>
 				Sets the font descent (number of pixels below the baseline).
+			</description>
+		</method>
+		<method name="set_font_name">
+			<return type="void" />
+			<argument index="0" name="name" type="String" />
+			<description>
+				Sets the font family name.
+			</description>
+		</method>
+		<method name="set_font_style">
+			<return type="void" />
+			<argument index="0" name="style" type="int" />
+			<description>
+				Sets the font style flags, see [enum TextServer.FontStyle].
+			</description>
+		</method>
+		<method name="set_font_style_name">
+			<return type="void" />
+			<argument index="0" name="name" type="String" />
+			<description>
+				Sets the font style name.
 			</description>
 		</method>
 		<method name="set_force_autohinter">

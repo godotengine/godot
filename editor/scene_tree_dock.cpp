@@ -47,6 +47,7 @@
 #include "editor/plugins/script_editor_plugin.h"
 #include "editor/shader_create_dialog.h"
 #include "scene/main/window.h"
+#include "scene/property_utils.h"
 #include "scene/resources/packed_scene.h"
 #include "servers/display_server.h"
 #include "servers/rendering_server.h"
@@ -3132,7 +3133,9 @@ void SceneTreeDock::_clear_clipboard() {
 void SceneTreeDock::_create_remap_for_node(Node *p_node, Map<RES, RES> &r_remap) {
 	List<PropertyInfo> props;
 	p_node->get_property_list(&props);
-	bool is_instantiated = EditorPropertyRevert::may_node_be_in_instance(p_node);
+
+	Vector<SceneState::PackState> states_stack;
+	bool states_stack_ready = false;
 
 	for (const PropertyInfo &E : props) {
 		if (!(E.usage & PROPERTY_USAGE_STORAGE)) {
@@ -3143,13 +3146,14 @@ void SceneTreeDock::_create_remap_for_node(Node *p_node, Map<RES, RES> &r_remap)
 		if (v.is_ref()) {
 			RES res = v;
 			if (res.is_valid()) {
-				if (is_instantiated) {
-					Variant orig;
-					if (EditorPropertyRevert::get_instantiated_node_original_property(p_node, E.name, orig)) {
-						if (!EditorPropertyRevert::is_node_property_different(p_node, v, orig)) {
-							continue;
-						}
-					}
+				if (!states_stack_ready) {
+					states_stack = PropertyUtils::get_node_states_stack(p_node);
+					states_stack_ready = true;
+				}
+
+				Variant orig = PropertyUtils::get_property_default_value(p_node, E.name, &states_stack);
+				if (!PropertyUtils::is_property_value_different(v, orig)) {
+					continue;
 				}
 
 				if (res->is_built_in() && !r_remap.has(res)) {

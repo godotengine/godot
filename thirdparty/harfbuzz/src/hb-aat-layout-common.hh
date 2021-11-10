@@ -96,8 +96,8 @@ struct LookupSegmentSingle
     return_trace (c->check_struct (this) && value.sanitize (c, base));
   }
 
-  HBGlyphID	last;		/* Last GlyphID in this segment */
-  HBGlyphID	first;		/* First GlyphID in this segment */
+  HBGlyphID16	last;		/* Last GlyphID in this segment */
+  HBGlyphID16	first;		/* First GlyphID in this segment */
   T		value;		/* The lookup value (only one) */
   public:
   DEFINE_SIZE_STATIC (4 + T::static_size);
@@ -162,11 +162,11 @@ struct LookupSegmentArray
     TRACE_SANITIZE (this);
     return_trace (c->check_struct (this) &&
 		  first <= last &&
-		  valuesZ.sanitize (c, base, last - first + 1, hb_forward<Ts> (ds)...));
+		  valuesZ.sanitize (c, base, last - first + 1, std::forward<Ts> (ds)...));
   }
 
-  HBGlyphID	last;		/* Last GlyphID in this segment */
-  HBGlyphID	first;		/* First GlyphID in this segment */
+  HBGlyphID16	last;		/* Last GlyphID in this segment */
+  HBGlyphID16	first;		/* First GlyphID in this segment */
   NNOffset16To<UnsizedArrayOf<T>>
 		valuesZ;	/* A 16-bit offset from the start of
 				 * the table to the data. */
@@ -225,7 +225,7 @@ struct LookupSingle
     return_trace (c->check_struct (this) && value.sanitize (c, base));
   }
 
-  HBGlyphID	glyph;		/* Last GlyphID */
+  HBGlyphID16	glyph;		/* Last GlyphID */
   T		value;		/* The lookup value (only one) */
   public:
   DEFINE_SIZE_STATIC (2 + T::static_size);
@@ -287,7 +287,7 @@ struct LookupFormat8
 
   protected:
   HBUINT16	format;		/* Format identifier--format = 8 */
-  HBGlyphID	firstGlyph;	/* First glyph index included in the trimmed array. */
+  HBGlyphID16	firstGlyph;	/* First glyph index included in the trimmed array. */
   HBUINT16	glyphCount;	/* Total number of glyphs (equivalent to the last
 				 * glyph minus the value of firstGlyph plus 1). */
   UnsizedArrayOf<T>
@@ -329,7 +329,7 @@ struct LookupFormat10
   protected:
   HBUINT16	format;		/* Format identifier--format = 8 */
   HBUINT16	valueSize;	/* Byte size of each value. */
-  HBGlyphID	firstGlyph;	/* First glyph index included in the trimmed array. */
+  HBGlyphID16	firstGlyph;	/* First glyph index included in the trimmed array. */
   HBUINT16	glyphCount;	/* Total number of glyphs (equivalent to the last
 				 * glyph minus the value of firstGlyph plus 1). */
   UnsizedArrayOf<HBUINT8>
@@ -661,7 +661,7 @@ struct ClassTable
     return_trace (c->check_struct (this) && classArray.sanitize (c));
   }
   protected:
-  HBGlyphID		firstGlyph;	/* First glyph index included in the trimmed array. */
+  HBGlyphID16		firstGlyph;	/* First glyph index included in the trimmed array. */
   Array16Of<HBUCHAR>	classArray;	/* The class codes (indexed by glyph index minus
 					 * firstGlyph). */
   public:

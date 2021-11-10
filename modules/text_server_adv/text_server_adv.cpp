@@ -1279,6 +1279,23 @@ _FORCE_INLINE_ bool TextServerAdvanced::_ensure_cache_for_size(FontDataAdvanced 
 		fd->underline_thickness = (FT_MulFix(fd->face->underline_thickness, fd->face->size->metrics.y_scale) / 64.0) / fd->oversampling * fd->scale;
 
 		if (!p_font_data->face_init) {
+			// Get style flags and name.
+			if (fd->face->family_name != nullptr) {
+				p_font_data->font_name = String::utf8((const char *)fd->face->family_name);
+			}
+			if (fd->face->style_name != nullptr) {
+				p_font_data->style_name = String::utf8((const char *)fd->face->style_name);
+			}
+			p_font_data->style_flags = 0;
+			if (fd->face->style_flags & FT_STYLE_FLAG_BOLD) {
+				p_font_data->style_flags |= FONT_BOLD;
+			}
+			if (fd->face->style_flags & FT_STYLE_FLAG_ITALIC) {
+				p_font_data->style_flags |= FONT_ITALIC;
+			}
+			if (fd->face->face_flags & FT_FACE_FLAG_FIXED_WIDTH) {
+				p_font_data->style_flags |= FONT_FIXED_WIDTH;
+			}
 			// Get supported scripts from OpenType font data.
 			p_font_data->supported_scripts.clear();
 			unsigned int count = hb_ot_layout_table_get_script_tags(hb_font_get_face(fd->hb_handle), HB_OT_TAG_GSUB, 0, nullptr, nullptr);
@@ -1646,6 +1663,66 @@ void TextServerAdvanced::font_set_data_ptr(RID p_font_rid, const uint8_t *p_data
 	fd->data.clear();
 	fd->data_ptr = p_data_ptr;
 	fd->data_size = p_data_size;
+}
+
+void TextServerAdvanced::font_set_style(RID p_font_rid, uint32_t /*FontStyle*/ p_style) {
+	FontDataAdvanced *fd = font_owner.get_or_null(p_font_rid);
+	ERR_FAIL_COND(!fd);
+
+	MutexLock lock(fd->mutex);
+	Vector2i size = _get_size(fd, 16);
+	ERR_FAIL_COND(!_ensure_cache_for_size(fd, size));
+	fd->style_flags = p_style;
+}
+
+uint32_t /*FontStyle*/ TextServerAdvanced::font_get_style(RID p_font_rid) const {
+	FontDataAdvanced *fd = font_owner.get_or_null(p_font_rid);
+	ERR_FAIL_COND_V(!fd, 0);
+
+	MutexLock lock(fd->mutex);
+	Vector2i size = _get_size(fd, 16);
+	ERR_FAIL_COND_V(!_ensure_cache_for_size(fd, size), 0);
+	return fd->style_flags;
+}
+
+void TextServerAdvanced::font_set_style_name(RID p_font_rid, const String &p_name) {
+	FontDataAdvanced *fd = font_owner.get_or_null(p_font_rid);
+	ERR_FAIL_COND(!fd);
+
+	MutexLock lock(fd->mutex);
+	Vector2i size = _get_size(fd, 16);
+	ERR_FAIL_COND(!_ensure_cache_for_size(fd, size));
+	fd->style_name = p_name;
+}
+
+String TextServerAdvanced::font_get_style_name(RID p_font_rid) const {
+	FontDataAdvanced *fd = font_owner.get_or_null(p_font_rid);
+	ERR_FAIL_COND_V(!fd, String());
+
+	MutexLock lock(fd->mutex);
+	Vector2i size = _get_size(fd, 16);
+	ERR_FAIL_COND_V(!_ensure_cache_for_size(fd, size), String());
+	return fd->style_name;
+}
+
+void TextServerAdvanced::font_set_name(RID p_font_rid, const String &p_name) {
+	FontDataAdvanced *fd = font_owner.get_or_null(p_font_rid);
+	ERR_FAIL_COND(!fd);
+
+	MutexLock lock(fd->mutex);
+	Vector2i size = _get_size(fd, 16);
+	ERR_FAIL_COND(!_ensure_cache_for_size(fd, size));
+	fd->font_name = p_name;
+}
+
+String TextServerAdvanced::font_get_name(RID p_font_rid) const {
+	FontDataAdvanced *fd = font_owner.get_or_null(p_font_rid);
+	ERR_FAIL_COND_V(!fd, String());
+
+	MutexLock lock(fd->mutex);
+	Vector2i size = _get_size(fd, 16);
+	ERR_FAIL_COND_V(!_ensure_cache_for_size(fd, size), String());
+	return fd->font_name;
 }
 
 void TextServerAdvanced::font_set_antialiased(RID p_font_rid, bool p_antialiased) {
@@ -2931,6 +3008,27 @@ TextServer::Direction TextServerAdvanced::shaped_text_get_direction(RID p_shaped
 	return sd->direction;
 }
 
+void TextServerAdvanced::shaped_text_set_custom_punctuation(RID p_shaped, const String &p_punct) {
+	_THREAD_SAFE_METHOD_
+	ShapedTextDataAdvanced *sd = shaped_owner.get_or_null(p_shaped);
+	ERR_FAIL_COND(!sd);
+
+	if (sd->custom_punct != p_punct) {
+		if (sd->parent != RID()) {
+			full_copy(sd);
+		}
+		sd->custom_punct = p_punct;
+		invalidate(sd);
+	}
+}
+
+String TextServerAdvanced::shaped_text_get_custom_punctuation(RID p_shaped) const {
+	_THREAD_SAFE_METHOD_
+	const ShapedTextDataAdvanced *sd = shaped_owner.get_or_null(p_shaped);
+	ERR_FAIL_COND_V(!sd, String());
+	return sd->custom_punct;
+}
+
 void TextServerAdvanced::shaped_text_set_bidi_override(RID p_shaped, const Array &p_override) {
 	ShapedTextDataAdvanced *sd = shaped_owner.get_or_null(p_shaped);
 	ERR_FAIL_COND(!sd);
@@ -3230,6 +3328,7 @@ RID TextServerAdvanced::shaped_text_substr(RID p_shaped, int p_start, int p_leng
 
 	new_sd->orientation = sd->orientation;
 	new_sd->direction = sd->direction;
+	new_sd->custom_punct = sd->custom_punct;
 	new_sd->para_direction = sd->para_direction;
 	new_sd->line_breaks_valid = sd->line_breaks_valid;
 	new_sd->justification_ops_valid = sd->justification_ops_valid;
@@ -3810,6 +3909,9 @@ bool TextServerAdvanced::shaped_text_update_breaks(RID p_shaped) {
 	const char32_t *ch = sd->text.ptr();
 	Glyph *sd_glyphs = sd->glyphs.ptrw();
 
+	int c_punct_size = sd->custom_punct.length();
+	const char32_t *c_punct = sd->custom_punct.ptr();
+
 	for (i = 0; i < sd_size; i++) {
 		if (sd_glyphs[i].count > 0) {
 			char32_t c = ch[sd_glyphs[i].start - sd->start];
@@ -3822,11 +3924,20 @@ bool TextServerAdvanced::shaped_text_update_breaks(RID p_shaped) {
 			if (is_whitespace(c)) {
 				sd_glyphs[i].flags |= GRAPHEME_IS_SPACE;
 			}
+			if (c_punct_size == 0) {
+				if (u_ispunct(c) && c != 0x005F) {
+					sd_glyphs[i].flags |= GRAPHEME_IS_PUNCTUATION;
+				}
+			} else {
+				for (int j = 0; j < c_punct_size; j++) {
+					if (c_punct[j] == c) {
+						sd_glyphs[i].flags |= GRAPHEME_IS_PUNCTUATION;
+						break;
+					}
+				}
+			}
 			if (is_underscore(c)) {
 				sd_glyphs[i].flags |= GRAPHEME_IS_UNDERSCORE;
-			}
-			if (u_ispunct(c) && c != 0x005F) {
-				sd_glyphs[i].flags |= GRAPHEME_IS_PUNCTUATION;
 			}
 			if (breaks.has(sd->glyphs[i].start)) {
 				if (breaks[sd->glyphs[i].start]) {

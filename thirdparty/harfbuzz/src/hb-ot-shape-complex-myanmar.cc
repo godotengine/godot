@@ -185,7 +185,7 @@ initial_reordering_consonant_syllable (hb_buffer_t *buffer,
       info[i].myanmar_position() = POS_BASE_C;
       i++;
     }
-    indic_position_t pos = POS_AFTER_MAIN;
+    myanmar_position_t pos = POS_AFTER_MAIN;
     /* The following loop may be ugly, but it implements all of
      * Myanmar reordering! */
     for (; i < end; i++)

@@ -46,8 +46,8 @@ public:
 	Vector3 position;
 	Vector3 size;
 
-	real_t get_area() const; /// get area
-	_FORCE_INLINE_ bool has_no_area() const {
+	real_t get_volume() const;
+	_FORCE_INLINE_ bool has_no_volume() const {
 		return (size.x <= 0 || size.y <= 0 || size.z <= 0);
 	}
 

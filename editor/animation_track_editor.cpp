@@ -1377,8 +1377,20 @@ void AnimationTimelineEdit::_anim_length_changed(double p_new_len) {
 
 void AnimationTimelineEdit::_anim_loop_pressed() {
 	undo_redo->create_action(TTR("Change Animation Loop"));
-	undo_redo->add_do_method(animation.ptr(), "set_loop", loop->is_pressed());
-	undo_redo->add_undo_method(animation.ptr(), "set_loop", animation->has_loop());
+	switch (animation->get_loop_mode()) {
+		case Animation::LoopMode::LOOP_NONE: {
+			undo_redo->add_do_method(animation.ptr(), "set_loop_mode", Animation::LoopMode::LOOP_LINEAR);
+		} break;
+		case Animation::LoopMode::LOOP_LINEAR: {
+			undo_redo->add_do_method(animation.ptr(), "set_loop_mode", Animation::LoopMode::LOOP_PINGPONG);
+		} break;
+		case Animation::LoopMode::LOOP_PINGPONG: {
+			undo_redo->add_do_method(animation.ptr(), "set_loop_mode", Animation::LoopMode::LOOP_NONE);
+		} break;
+		default:
+			break;
+	}
+	undo_redo->add_undo_method(animation.ptr(), "set_loop_mode", animation->get_loop_mode());
 	undo_redo->commit_action();
 }
 
@@ -1664,7 +1676,24 @@ void AnimationTimelineEdit::update_values() {
 		length->set_tooltip(TTR("Animation length (seconds)"));
 		time_icon->set_tooltip(TTR("Animation length (seconds)"));
 	}
-	loop->set_pressed(animation->has_loop());
+
+	switch (animation->get_loop_mode()) {
+		case Animation::LoopMode::LOOP_NONE: {
+			loop->set_icon(get_theme_icon("Loop", "EditorIcons"));
+			loop->set_pressed(false);
+		} break;
+		case Animation::LoopMode::LOOP_LINEAR: {
+			loop->set_icon(get_theme_icon("Loop", "EditorIcons"));
+			loop->set_pressed(true);
+		} break;
+		case Animation::LoopMode::LOOP_PINGPONG: {
+			loop->set_icon(get_theme_icon("PingPongLoop", "EditorIcons"));
+			loop->set_pressed(true);
+		} break;
+		default:
+			break;
+	}
+
 	editing = false;
 }
 
@@ -2110,25 +2139,25 @@ void AnimationTrackEdit::_notification(int p_what) {
 
 				Ref<Texture2D> icon = wrap_icon[loop_wrap ? 1 : 0];
 
-				loop_mode_rect.position.x = ofs;
-				loop_mode_rect.position.y = int(get_size().height - icon->get_height()) / 2;
-				loop_mode_rect.size = icon->get_size();
+				loop_wrap_rect.position.x = ofs;
+				loop_wrap_rect.position.y = int(get_size().height - icon->get_height()) / 2;
+				loop_wrap_rect.size = icon->get_size();
 
 				if (!animation->track_is_compressed(track) && (animation->track_get_type(track) == Animation::TYPE_VALUE || animation->track_get_type(track) == Animation::TYPE_BLEND_SHAPE || animation->track_get_type(track) == Animation::TYPE_POSITION_3D || animation->track_get_type(track) == Animation::TYPE_SCALE_3D || animation->track_get_type(track) == Animation::TYPE_ROTATION_3D)) {
-					draw_texture(icon, loop_mode_rect.position);
+					draw_texture(icon, loop_wrap_rect.position);
 				}
 
-				loop_mode_rect.position.y = 0;
-				loop_mode_rect.size.y = get_size().height;
+				loop_wrap_rect.position.y = 0;
+				loop_wrap_rect.size.y = get_size().height;
 
 				ofs += icon->get_width() + hsep;
-				loop_mode_rect.size.x += hsep;
+				loop_wrap_rect.size.x += hsep;
 
 				if (!animation->track_is_compressed(track) && (animation->track_get_type(track) == Animation::TYPE_VALUE || animation->track_get_type(track) == Animation::TYPE_BLEND_SHAPE || animation->track_get_type(track) == Animation::TYPE_POSITION_3D || animation->track_get_type(track) == Animation::TYPE_SCALE_3D || animation->track_get_type(track) == Animation::TYPE_ROTATION_3D)) {
 					draw_texture(down_icon, Vector2(ofs, int(get_size().height - down_icon->get_height()) / 2));
-					loop_mode_rect.size.x += down_icon->get_width();
+					loop_wrap_rect.size.x += down_icon->get_width();
 				} else {
-					loop_mode_rect = Rect2();
+					loop_wrap_rect = Rect2();
 				}
 
 				ofs += down_icon->get_width();
@@ -2478,7 +2507,7 @@ String AnimationTrackEdit::get_tooltip(const Point2 &p_pos) const {
 		return TTR("Interpolation Mode");
 	}
 
-	if (loop_mode_rect.has_point(p_pos)) {
+	if (loop_wrap_rect.has_point(p_pos)) {
 		return TTR("Loop Wrap Mode (Interpolate end with beginning on loop)");
 	}
 
@@ -2681,7 +2710,7 @@ void AnimationTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 			accept_event();
 		}
 
-		if (loop_mode_rect.has_point(pos)) {
+		if (loop_wrap_rect.has_point(pos)) {
 			if (!menu) {
 				menu = memnew(PopupMenu);
 				add_child(menu);
@@ -2692,7 +2721,7 @@ void AnimationTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 			menu->add_icon_item(get_theme_icon(SNAME("InterpWrapLoop"), SNAME("EditorIcons")), TTR("Wrap Loop Interp"), MENU_LOOP_WRAP);
 			menu->set_as_minsize();
 
-			Vector2 popup_pos = get_screen_position() + loop_mode_rect.position + Vector2(0, loop_mode_rect.size.height);
+			Vector2 popup_pos = get_screen_position() + loop_wrap_rect.position + Vector2(0, loop_wrap_rect.size.height);
 			menu->set_position(popup_pos);
 			menu->popup();
 			accept_event();

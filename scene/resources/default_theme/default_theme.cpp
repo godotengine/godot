@@ -940,7 +940,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	theme->set_constant("shadow_offset_x", "RichTextLabel", 1 * scale);
 	theme->set_constant("shadow_offset_y", "RichTextLabel", 1 * scale);
-	theme->set_constant("shadow_as_outline", "RichTextLabel", 0 * scale);
+	theme->set_constant("shadow_outline_size", "RichTextLabel", 1 * scale);
 
 	theme->set_constant("line_separation", "RichTextLabel", 0 * scale);
 	theme->set_constant("table_hseparation", "RichTextLabel", 3 * scale);

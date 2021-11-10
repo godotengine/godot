@@ -41,6 +41,16 @@ struct MathValueRecord
   hb_position_t get_y_value (hb_font_t *font, const void *base) const
   { return font->em_scale_y (value) + (base+deviceTable).get_y_delta (font); }
 
+  MathValueRecord* copy (hb_serialize_context_t *c, const void *base) const
+  {
+    TRACE_SERIALIZE (this);
+    auto *out = c->embed (this);
+    if (unlikely (!out)) return_trace (nullptr);
+    out->deviceTable.serialize_copy (c, deviceTable, base, 0, hb_serialize_context_t::Head);
+
+    return_trace (out);
+  }
+
   bool sanitize (hb_sanitize_context_t *c, const void *base) const
   {
     TRACE_SANITIZE (this);
@@ -59,6 +69,29 @@ struct MathValueRecord
 
 struct MathConstants
 {
+  MathConstants* copy (hb_serialize_context_t *c) const
+  {
+    TRACE_SERIALIZE (this);
+    auto *out = c->start_embed (this);
+    if (unlikely (!out)) return_trace (nullptr);
+
+    HBINT16 *p = c->allocate_size<HBINT16> (HBINT16::static_size * 2);
+    if (unlikely (!p)) return_trace (nullptr);
+    memcpy (p, percentScaleDown, HBINT16::static_size * 2);
+
+    HBUINT16 *m = c->allocate_size<HBUINT16> (HBUINT16::static_size * 2);
+    if (unlikely (!m)) return_trace (nullptr);
+    memcpy (m, minHeight, HBUINT16::static_size * 2);
+
+    unsigned count = ARRAY_LENGTH (mathValueRecords);
+    for (unsigned i = 0; i < count; i++)
+      if (!c->copy (mathValueRecords[i], this))
+        return_trace (nullptr);
+
+    if (!c->embed (radicalDegreeBottomRaisePercent)) return_trace (nullptr);
+    return_trace (out);
+  }
+
   bool sanitize_math_value_records (hb_sanitize_context_t *c) const
   {
     TRACE_SANITIZE (this);
@@ -165,6 +198,28 @@ struct MathConstants
 
 struct MathItalicsCorrectionInfo
 {
+  bool subset (hb_subset_context_t *c) const
+  {
+    TRACE_SUBSET (this);
+    const hb_set_t &glyphset = *c->plan->_glyphset_mathed;
+    const hb_map_t &glyph_map = *c->plan->glyph_map;
+
+    auto *out = c->serializer->start_embed (*this);
+    if (unlikely (!c->serializer->extend_min (out))) return_trace (false);
+
+    hb_sorted_vector_t<hb_codepoint_t> new_coverage;
+    + hb_zip (this+coverage, italicsCorrection)
+    | hb_filter (glyphset, hb_first)
+    | hb_filter (serialize_math_record_array (c->serializer, out->italicsCorrection, this), hb_second)
+    | hb_map (hb_first)
+    | hb_map (glyph_map)
+    | hb_sink (new_coverage)
+    ;
+
+    out->coverage.serialize_serialize (c->serializer, new_coverage.iter ());
+    return_trace (true);
+  }
+
   bool sanitize (hb_sanitize_context_t *c) const
   {
     TRACE_SANITIZE (this);
@@ -196,6 +251,28 @@ struct MathItalicsCorrectionInfo
 
 struct MathTopAccentAttachment
 {
+  bool subset (hb_subset_context_t *c) const
+  {
+    TRACE_SUBSET (this);
+    const hb_set_t &glyphset = *c->plan->_glyphset_mathed;
+    const hb_map_t &glyph_map = *c->plan->glyph_map;
+
+    auto *out = c->serializer->start_embed (*this);
+    if (unlikely (!c->serializer->extend_min (out))) return_trace (false);
+
+    hb_sorted_vector_t<hb_codepoint_t> new_coverage;
+    + hb_zip (this+topAccentCoverage, topAccentAttachment)
+    | hb_filter (glyphset, hb_first)
+    | hb_filter (serialize_math_record_array (c->serializer, out->topAccentAttachment, this), hb_second)
+    | hb_map (hb_first)
+    | hb_map (glyph_map)
+    | hb_sink (new_coverage)
+    ;
+
+    out->topAccentCoverage.serialize_serialize (c->serializer, new_coverage.iter ());
+    return_trace (true);
+  }
+
   bool sanitize (hb_sanitize_context_t *c) const
   {
     TRACE_SANITIZE (this);
@@ -229,6 +306,22 @@ struct MathTopAccentAttachment
 
 struct MathKern
 {
+  MathKern* copy (hb_serialize_context_t *c) const
+  {
+    TRACE_SERIALIZE (this);
+    auto *out = c->start_embed (this);
+    if (unlikely (!out)) return_trace (nullptr);
+
+    if (unlikely (!c->embed (heightCount))) return_trace (nullptr);
+
+    unsigned count = 2 * heightCount + 1;
+    for (unsigned i = 0; i < count; i++)
+      if (!c->copy (mathValueRecordsZ.arrayZ[i], this))
+        return_trace (nullptr);
+
+    return_trace (out);
+  }
+
   bool sanitize_math_value_records (hb_sanitize_context_t *c) const
   {
     TRACE_SANITIZE (this);
@@ -295,6 +388,19 @@ struct MathKern
 
 struct MathKernInfoRecord
 {
+  MathKernInfoRecord* copy (hb_serialize_context_t *c, const void *base) const
+  {
+    TRACE_SERIALIZE (this);
+    auto *out = c->embed (this);
+    if (unlikely (!out)) return_trace (nullptr);
+
+    unsigned count = ARRAY_LENGTH (mathKern);
+    for (unsigned i = 0; i < count; i++)
+      out->mathKern[i].serialize_copy (c, mathKern[i], base, 0, hb_serialize_context_t::Head);
+
+    return_trace (out);
+  }
+
   bool sanitize (hb_sanitize_context_t *c, const void *base) const
   {
     TRACE_SANITIZE (this);
@@ -328,6 +434,28 @@ struct MathKernInfoRecord
 
 struct MathKernInfo
 {
+  bool subset (hb_subset_context_t *c) const
+  {
+    TRACE_SUBSET (this);
+    const hb_set_t &glyphset = *c->plan->_glyphset_mathed;
+    const hb_map_t &glyph_map = *c->plan->glyph_map;
+
+    auto *out = c->serializer->start_embed (*this);
+    if (unlikely (!c->serializer->extend_min (out))) return_trace (false);
+
+    hb_sorted_vector_t<hb_codepoint_t> new_coverage;
+    + hb_zip (this+mathKernCoverage, mathKernInfoRecords)
+    | hb_filter (glyphset, hb_first)
+    | hb_filter (serialize_math_record_array (c->serializer, out->mathKernInfoRecords, this), hb_second)
+    | hb_map (hb_first)
+    | hb_map (glyph_map)
+    | hb_sink (new_coverage)
+    ;
+
+    out->mathKernCoverage.serialize_serialize (c->serializer, new_coverage.iter ());
+    return_trace (true);
+  }
+
   bool sanitize (hb_sanitize_context_t *c) const
   {
     TRACE_SANITIZE (this);
@@ -365,6 +493,30 @@ struct MathKernInfo
 
 struct MathGlyphInfo
 {
+  bool subset (hb_subset_context_t *c) const
+  {
+    TRACE_SUBSET (this);
+    auto *out = c->serializer->embed (*this);
+    if (unlikely (!out)) return_trace (false);
+
+    out->mathItalicsCorrectionInfo.serialize_subset (c, mathItalicsCorrectionInfo, this);
+    out->mathTopAccentAttachment.serialize_subset (c, mathTopAccentAttachment, this);
+
+    const hb_set_t &glyphset = *c->plan->_glyphset_mathed;
+    const hb_map_t &glyph_map = *c->plan->glyph_map;
+
+    auto it =
+    + hb_iter (this+extendedShapeCoverage)
+    | hb_filter (glyphset)
+    | hb_map_retains_sorting (glyph_map)
+    ;
+
+    out->extendedShapeCoverage.serialize_serialize (c->serializer, it);
+
+    out->mathKernInfo.serialize_subset (c, mathKernInfo, this);
+    return_trace (true);
+  }
+
   bool sanitize (hb_sanitize_context_t *c) const
   {
     TRACE_SANITIZE (this);
@@ -420,14 +572,27 @@ struct MathGlyphVariantRecord
 {
   friend struct MathGlyphConstruction;
 
+  bool subset (hb_subset_context_t *c) const
+  {
+    TRACE_SUBSET (this);
+    auto *out = c->serializer->embed (this);
+    if (unlikely (!out)) return_trace (false);
+
+    const hb_map_t& glyph_map = *c->plan->glyph_map;
+    return_trace (c->serializer->check_assign (out->variantGlyph, glyph_map.get (variantGlyph), HB_SERIALIZE_ERROR_INT_OVERFLOW));
+  }
+
   bool sanitize (hb_sanitize_context_t *c) const
   {
     TRACE_SANITIZE (this);
     return_trace (c->check_struct (this));
   }
 
+  void closure_glyphs (hb_set_t *variant_glyphs) const
+  { variant_glyphs->add (variantGlyph); }
+
   protected:
-  HBGlyphID variantGlyph;       /* Glyph ID for the variant. */
+  HBGlyphID16 variantGlyph;       /* Glyph ID for the variant. */
   HBUINT16  advanceMeasurement; /* Advance width/height, in design units, of the
 				 * variant, in the direction of requested
 				 * glyph extension. */
@@ -450,6 +615,16 @@ struct PartFlags : HBUINT16
 
 struct MathGlyphPartRecord
 {
+  bool subset (hb_subset_context_t *c) const
+  {
+    TRACE_SUBSET (this);
+    auto *out = c->serializer->embed (this);
+    if (unlikely (!out)) return_trace (false);
+
+    const hb_map_t& glyph_map = *c->plan->glyph_map;
+    return_trace (c->serializer->check_assign (out->glyph, glyph_map.get (glyph), HB_SERIALIZE_ERROR_INT_OVERFLOW));
+  }
+
   bool sanitize (hb_sanitize_context_t *c) const
   {
     TRACE_SANITIZE (this);
@@ -474,8 +649,11 @@ struct MathGlyphPartRecord
 		(partFlags & PartFlags::Defined);
   }
 
+  void closure_glyphs (hb_set_t *variant_glyphs) const
+  { variant_glyphs->add (glyph); }
+
   protected:
-  HBGlyphID	glyph;		/* Glyph ID for the part. */
+  HBGlyphID16	glyph;		/* Glyph ID for the part. */
   HBUINT16	startConnectorLength;
 				/* Advance width/ height of the straight bar
 				 * connector material, in design units, is at
@@ -497,6 +675,20 @@ struct MathGlyphPartRecord
 
 struct MathGlyphAssembly
 {
+  bool subset (hb_subset_context_t *c) const
+  {
+    TRACE_SUBSET (this);
+    auto *out = c->serializer->start_embed (*this);
+    if (unlikely (!out)) return_trace (false);
+
+    if (!c->serializer->copy (italicsCorrection, this)) return_trace (false);
+    if (!c->serializer->copy<HBUINT16> (partRecords.len)) return_trace (false);
+
+    for (const auto& record : partRecords.iter ())
+      if (!record.subset (c)) return_trace (false);
+    return_trace (true);
+  }
+
   bool sanitize (hb_sanitize_context_t *c) const
   {
     TRACE_SANITIZE (this);
@@ -526,6 +718,12 @@ struct MathGlyphAssembly
     return partRecords.len;
   }
 
+  void closure_glyphs (hb_set_t *variant_glyphs) const
+  {
+    for (const auto& _ : partRecords.iter ())
+      _.closure_glyphs (variant_glyphs);
+  }
+
   protected:
   MathValueRecord
 		italicsCorrection;
@@ -543,6 +741,22 @@ struct MathGlyphAssembly
 
 struct MathGlyphConstruction
 {
+  bool subset (hb_subset_context_t *c) const
+  {
+    TRACE_SUBSET (this);
+    auto *out = c->serializer->start_embed (*this);
+    if (unlikely (!c->serializer->extend_min (out))) return_trace (false);
+
+    out->glyphAssembly.serialize_subset (c, glyphAssembly, this);
+
+    if (!c->serializer->check_assign (out->mathGlyphVariantRecord.len, mathGlyphVariantRecord.len, HB_SERIALIZE_ERROR_INT_OVERFLOW))
+      return_trace (false);
+    for (const auto& record : mathGlyphVariantRecord.iter ())
+      if (!record.subset (c)) return_trace (false);
+
+    return_trace (true);
+  }
+
   bool sanitize (hb_sanitize_context_t *c) const
   {
     TRACE_SANITIZE (this);
@@ -569,6 +783,14 @@ struct MathGlyphConstruction
     return mathGlyphVariantRecord.len;
   }
 
+  void closure_glyphs (hb_set_t *variant_glyphs) const
+  {
+    (this+glyphAssembly).closure_glyphs (variant_glyphs);
+
+    for (const auto& _ : mathGlyphVariantRecord.iter ())
+      _.closure_glyphs (variant_glyphs);
+  }
+
   protected:
   /* Offset to MathGlyphAssembly table for this shape - from the beginning of
      MathGlyphConstruction table.  May be NULL. */
@@ -583,6 +805,91 @@ struct MathGlyphConstruction
 
 struct MathVariants
 {
+  void closure_glyphs (const hb_set_t *glyph_set,
+                       hb_set_t *variant_glyphs) const
+  {
+    const hb_array_t<const Offset16To<MathGlyphConstruction>> glyph_construction_offsets = glyphConstruction.as_array (vertGlyphCount + horizGlyphCount);
+
+    if (vertGlyphCoverage)
+    {
+      const auto vert_offsets = glyph_construction_offsets.sub_array (0, vertGlyphCount);
+      + hb_zip (this+vertGlyphCoverage, vert_offsets)
+      | hb_filter (glyph_set, hb_first)
+      | hb_map (hb_second)
+      | hb_map (hb_add (this))
+      | hb_apply ([=] (const MathGlyphConstruction &_) { _.closure_glyphs (variant_glyphs); })
+      ;
+    }
+
+    if (horizGlyphCoverage)
+    {
+      const auto hori_offsets = glyph_construction_offsets.sub_array (vertGlyphCount, horizGlyphCount);
+      + hb_zip (this+horizGlyphCoverage, hori_offsets)
+      | hb_filter (glyph_set, hb_first)
+      | hb_map (hb_second)
+      | hb_map (hb_add (this))
+      | hb_apply ([=] (const MathGlyphConstruction &_) { _.closure_glyphs (variant_glyphs); })
+      ;
+    }
+  }
+
+  void collect_coverage_and_indices (hb_sorted_vector_t<hb_codepoint_t>& new_coverage,
+                                     const Offset16To<Coverage>& coverage,
+                                     unsigned i,
+                                     unsigned end_index,
+                                     hb_set_t& indices,
+                                     const hb_set_t& glyphset,
+                                     const hb_map_t& glyph_map) const
+  {
+    if (!coverage) return;
+
+    for (const auto _ : (this+coverage).iter ())
+    {
+      if (i >= end_index) return;
+      if (glyphset.has (_))
+      {
+        unsigned new_gid = glyph_map.get (_);
+        new_coverage.push (new_gid);
+        indices.add (i);
+      }
+      i++;
+    }
+  }
+
+  bool subset (hb_subset_context_t *c) const
+  {
+    TRACE_SUBSET (this);
+    const hb_set_t &glyphset = *c->plan->_glyphset_mathed;
+    const hb_map_t &glyph_map = *c->plan->glyph_map;
+
+    auto *out = c->serializer->start_embed (*this);
+    if (unlikely (!c->serializer->extend_min (out))) return_trace (false);
+    if (!c->serializer->check_assign (out->minConnectorOverlap, minConnectorOverlap, HB_SERIALIZE_ERROR_INT_OVERFLOW))
+      return_trace (false);
+    
+    hb_sorted_vector_t<hb_codepoint_t> new_vert_coverage;
+    hb_sorted_vector_t<hb_codepoint_t> new_hori_coverage;
+    hb_set_t indices;
+    collect_coverage_and_indices (new_vert_coverage, vertGlyphCoverage, 0, vertGlyphCount, indices, glyphset, glyph_map);
+    collect_coverage_and_indices (new_hori_coverage, horizGlyphCoverage, vertGlyphCount, vertGlyphCount + horizGlyphCount, indices, glyphset, glyph_map);
+    
+    if (!c->serializer->check_assign (out->vertGlyphCount, new_vert_coverage.length, HB_SERIALIZE_ERROR_INT_OVERFLOW))
+      return_trace (false);
+    if (!c->serializer->check_assign (out->horizGlyphCount, new_hori_coverage.length, HB_SERIALIZE_ERROR_INT_OVERFLOW))
+      return_trace (false);
+
+    for (unsigned i : indices.iter ())
+    {
+      auto *o = c->serializer->embed (glyphConstruction[i]);
+      if (!o) return_trace (false);
+      o->serialize_subset (c, glyphConstruction[i], this);
+    }
+
+    out->vertGlyphCoverage.serialize_serialize (c->serializer, new_vert_coverage.iter ());
+    out->horizGlyphCoverage.serialize_serialize (c->serializer, new_hori_coverage.iter ());
+    return_trace (true);
+  }
+
   bool sanitize_offsets (hb_sanitize_context_t *c) const
   {
     TRACE_SANITIZE (this);
@@ -689,6 +996,28 @@ struct MATH
   static constexpr hb_tag_t tableTag = HB_OT_TAG_MATH;
 
   bool has_data () const { return version.to_int (); }
+
+  void closure_glyphs (hb_set_t *glyph_set) const
+  {
+    if (mathVariants)
+    {
+      hb_set_t variant_glyphs;
+      (this+mathVariants).closure_glyphs (glyph_set, &variant_glyphs);
+      hb_set_union (glyph_set, &variant_glyphs);
+    }
+  }
+
+  bool subset (hb_subset_context_t *c) const
+  {
+    TRACE_SUBSET (this);
+    auto *out = c->serializer->embed (*this);
+    if (unlikely (!out)) return_trace (false);
+
+    out->mathConstants.serialize_copy (c->serializer, mathConstants, this, 0, hb_serialize_context_t::Head);
+    out->mathGlyphInfo.serialize_subset (c, mathGlyphInfo, this);
+    out->mathVariants.serialize_subset (c, mathVariants, this);
+    return_trace (true);
+  }
 
   bool sanitize (hb_sanitize_context_t *c) const
   {

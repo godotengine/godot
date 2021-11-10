@@ -1328,7 +1328,7 @@ void CPUParticles3D::convert_from_particles(Node *p_particles) {
 
 	set_color(material->get_color());
 
-	Ref<GradientTexture> gt = material->get_color_ramp();
+	Ref<GradientTexture1D> gt = material->get_color_ramp();
 	if (gt.is_valid()) {
 		set_color_ramp(gt->get_gradient());
 	}

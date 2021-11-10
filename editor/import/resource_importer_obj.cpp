@@ -405,11 +405,11 @@ static Error _parse_obj(const String &p_path, List<Ref<Mesh>> &r_meshes, bool p_
 			current_material_library = l.replace("mtllib", "").strip_edges();
 			if (!material_map.has(current_material_library)) {
 				Map<String, Ref<StandardMaterial3D>> lib;
-				Error err = _parse_material_library(current_material_library, lib, r_missing_deps);
-				if (err == ERR_CANT_OPEN) {
-					String dir = p_path.get_base_dir();
-					err = _parse_material_library(dir.plus_file(current_material_library), lib, r_missing_deps);
+				String lib_path = current_material_library;
+				if (lib_path.is_relative_path()) {
+					lib_path = p_path.get_base_dir().plus_file(current_material_library);
 				}
+				Error err = _parse_material_library(lib_path, lib, r_missing_deps);
 				if (err == OK) {
 					material_map[current_material_library] = lib;
 				}

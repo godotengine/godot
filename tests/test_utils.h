@@ -31,7 +31,7 @@
 #ifndef TEST_UTILS_H
 #define TEST_UTILS_H
 
-#include "core/string/ustring.h"
+class String;
 
 namespace TestUtils {
 

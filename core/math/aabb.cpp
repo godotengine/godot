@@ -33,7 +33,7 @@
 #include "core/string/print_string.h"
 #include "core/variant/variant.h"
 
-real_t AABB::get_area() const {
+real_t AABB::get_volume() const {
 	return size.x * size.y * size.z;
 }
 

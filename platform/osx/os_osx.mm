@@ -549,13 +549,30 @@ Error OS_OSX::create_process(const String &p_path, const List<String> &p_argumen
 	}
 }
 
+void OS_OSX::pre_wait_observer_cb(CFRunLoopObserverRef p_observer, CFRunLoopActivity p_activiy, void *p_context) {
+	// Prevent main loop from sleeping and redraw window during resize / modal popups.
+
+	if (get_singleton()->get_main_loop()) {
+		Main::force_redraw();
+		if (!Main::is_iterating()) { // Avoid cyclic loop.
+			Main::iteration();
+		}
+	}
+
+	CFRunLoopWakeUp(CFRunLoopGetCurrent()); // Prevent main loop from sleeping.
+}
+
 void OS_OSX::run() {
 	force_quit = false;
 
-	if (!main_loop)
+	if (!main_loop) {
 		return;
+	}
 
 	main_loop->initialize();
+
+	CFRunLoopObserverRef pre_wait_observer = CFRunLoopObserverCreate(kCFAllocatorDefault, kCFRunLoopBeforeWaiting, true, 0, &pre_wait_observer_cb, nullptr);
+	CFRunLoopAddObserver(CFRunLoopGetCurrent(), pre_wait_observer, kCFRunLoopCommonModes);
 
 	bool quit = false;
 	while (!force_quit && !quit) {
@@ -572,6 +589,10 @@ void OS_OSX::run() {
 			ERR_PRINT("NSException: " + String([exception reason].UTF8String));
 		}
 	};
+
+	CFRunLoopRemoveObserver(CFRunLoopGetCurrent(), pre_wait_observer, kCFRunLoopCommonModes);
+	CFRelease(pre_wait_observer);
+
 	main_loop->finalize();
 }
 

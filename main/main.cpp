@@ -2050,9 +2050,7 @@ bool Main::start() {
 		GLOBAL_DEF("mono/debugger_agent/wait_timeout", 3000);
 		GLOBAL_DEF("mono/profiler/args", "log:calls,alloc,sample,output=output.mlpd");
 		GLOBAL_DEF("mono/profiler/enabled", false);
-		GLOBAL_DEF("mono/unhandled_exception_policy", 0);
-		// From editor/csharp_project.cpp.
-		GLOBAL_DEF("mono/project/auto_update_project", true);
+		GLOBAL_DEF("mono/runtime/unhandled_exception_policy", 0);
 #endif
 
 		DocTools doc;
@@ -2689,10 +2687,10 @@ bool Main::iteration() {
 	if (frame > 1000000) {
 		if (editor || project_manager) {
 			if (print_fps) {
-				print_line(vformat("Editor FPS: %d (%s mspf)", frames, rtos(1000.0 / frames).pad_decimals(1)));
+				print_line(vformat("Editor FPS: %d (%s mspf)", frames, rtos(1000.0 / frames).pad_decimals(2)));
 			}
 		} else if (GLOBAL_GET("debug/settings/stdout/print_fps") || print_fps) {
-			print_line(vformat("Project FPS: %d (%s mspf)", frames, rtos(1000.0 / frames).pad_decimals(1)));
+			print_line(vformat("Project FPS: %d (%s mspf)", frames, rtos(1000.0 / frames).pad_decimals(2)));
 		}
 
 		Engine::get_singleton()->_fps = frames;

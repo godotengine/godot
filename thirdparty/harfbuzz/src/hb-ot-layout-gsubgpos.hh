@@ -1210,15 +1210,14 @@ static inline bool match_lookahead (hb_ot_apply_context_t *c,
 
 struct LookupRecord
 {
-  LookupRecord* copy (hb_serialize_context_t *c,
-		      const hb_map_t         *lookup_map) const
+  bool serialize (hb_serialize_context_t *c,
+		  const hb_map_t         *lookup_map) const
   {
     TRACE_SERIALIZE (this);
     auto *out = c->embed (*this);
-    if (unlikely (!out)) return_trace (nullptr);
+    if (unlikely (!out)) return_trace (false);
 
-    out->lookupListIndex = hb_map_get (lookup_map, lookupListIndex);
-    return_trace (out);
+    return_trace (c->check_assign (out->lookupListIndex, lookup_map->get (lookupListIndex), HB_SERIALIZE_ERROR_INT_OVERFLOW));
   }
 
   bool sanitize (hb_sanitize_context_t *c) const
@@ -1234,6 +1233,24 @@ struct LookupRecord
   public:
   DEFINE_SIZE_STATIC (4);
 };
+
+static unsigned serialize_lookuprecord_array (hb_serialize_context_t *c,
+					      const hb_array_t<const LookupRecord> lookupRecords,
+					      const hb_map_t *lookup_map)
+{
+  unsigned count = 0;
+  for (const LookupRecord& r : lookupRecords)
+  {
+    if (!lookup_map->has (r.lookupListIndex))
+      continue;
+
+    if (!r.serialize (c, lookup_map))
+      return 0;
+
+    count++;
+  }
+  return count;
+}
 
 enum ContextFormat { SimpleContext = 1, ClassBasedContext = 2, CoverageBasedContext = 3 };
 
@@ -1605,8 +1622,6 @@ struct Rule
     if (unlikely (!c->extend_min (out))) return_trace (false);
 
     out->inputCount = inputCount;
-    out->lookupCount = lookupCount;
-
     const hb_array_t<const HBUINT16> input = inputZ.as_array (inputCount - 1);
     for (const auto org : input)
     {
@@ -1617,17 +1632,9 @@ struct Rule
 
     const UnsizedArrayOf<LookupRecord> &lookupRecord = StructAfter<UnsizedArrayOf<LookupRecord>>
 						       (inputZ.as_array ((inputCount ? inputCount - 1 : 0)));
-    for (unsigned i = 0; i < (unsigned) lookupCount; i++)
-    {
-      if (!lookup_map->has (lookupRecord[i].lookupListIndex))
-      {
-        out->lookupCount--;
-        continue;
-      }
-      c->copy (lookupRecord[i], lookup_map);
-    }
 
-    return_trace (true);
+    unsigned count = serialize_lookuprecord_array (c, lookupRecord.as_array (lookupCount), lookup_map);
+    return_trace (c->check_assign (out->lookupCount, count, HB_SERIALIZE_ERROR_INT_OVERFLOW));
   }
 
   bool subset (hb_subset_context_t *c,
@@ -1752,10 +1759,10 @@ struct RuleSet
     for (const Offset16To<Rule>& _ : rule)
     {
       if (!_) continue;
+      auto o_snap = c->serializer->snapshot ();
       auto *o = out->rule.serialize_append (c->serializer);
       if (unlikely (!o)) continue;
 
-      auto o_snap = c->serializer->snapshot ();
       if (!o->serialize_subset (c, _, this, lookup_map, klass_map))
       {
 	out->rule.pop ();
@@ -1943,12 +1950,20 @@ struct ContextFormat2
       &class_def
     };
 
+    hb_set_t retained_coverage_glyphs;
+    (this+coverage).intersected_coverage_glyphs (glyphs, &retained_coverage_glyphs);
+
+    hb_set_t coverage_glyph_classes;
+    class_def.intersected_classes (&retained_coverage_glyphs, &coverage_glyph_classes);
+
+
     return
     + hb_iter (ruleSet)
     | hb_map (hb_add (this))
     | hb_enumerate
     | hb_map ([&] (const hb_pair_t<unsigned, const RuleSet &> p)
 	      { return class_def.intersects_class (glyphs, p.first) &&
+		       coverage_glyph_classes.has (p.first) &&
 		       p.second.intersects (glyphs, lookup_context); })
     | hb_any
     ;
@@ -2069,9 +2084,16 @@ struct ContextFormat2
     hb_map_t klass_map;
     out->classDef.serialize_subset (c, classDef, this, &klass_map);
 
+    const hb_set_t* glyphset = c->plan->glyphset_gsub ();
+    hb_set_t retained_coverage_glyphs;
+    (this+coverage).intersected_coverage_glyphs (glyphset, &retained_coverage_glyphs);
+
+    hb_set_t coverage_glyph_classes;
+    (this+classDef).intersected_classes (&retained_coverage_glyphs, &coverage_glyph_classes);
+
     const hb_map_t *lookup_map = c->table_tag == HB_OT_TAG_GSUB ? c->plan->gsub_lookups : c->plan->gpos_lookups;
     bool ret = true;
-    int non_zero_index = 0, index = 0;
+    int non_zero_index = -1, index = 0;
     for (const auto& _ : + hb_enumerate (ruleSet)
 			 | hb_filter (klass_map, hb_first))
     {
@@ -2082,13 +2104,14 @@ struct ContextFormat2
 	break;
       }
 
-      if (o->serialize_subset (c, _.second, this, lookup_map, &klass_map))
+      if (coverage_glyph_classes.has (_.first) &&
+	  o->serialize_subset (c, _.second, this, lookup_map, &klass_map))
 	non_zero_index = index;
 
       index++;
     }
 
-    if (!ret) return_trace (ret);
+    if (!ret || non_zero_index == -1) return_trace (false);
 
     //prune empty trailing ruleSets
     --index;
@@ -2226,7 +2249,6 @@ struct ContextFormat3
 
     out->format = format;
     out->glyphCount = glyphCount;
-    out->lookupCount = lookupCount;
 
     auto coverages = coverageZ.as_array (glyphCount);
 
@@ -2238,19 +2260,12 @@ struct ContextFormat3
       if (!o->serialize_subset (c, offset, this)) return_trace (false);
     }
 
-    const LookupRecord *lookupRecord = &StructAfter<LookupRecord> (coverageZ.as_array (glyphCount));
+    const UnsizedArrayOf<LookupRecord>& lookupRecord = StructAfter<UnsizedArrayOf<LookupRecord>> (coverageZ.as_array (glyphCount));
     const hb_map_t *lookup_map = c->table_tag == HB_OT_TAG_GSUB ? c->plan->gsub_lookups : c->plan->gpos_lookups;
-    for (unsigned i = 0; i < (unsigned) lookupCount; i++)
-    {
-      if (!lookup_map->has (lookupRecord[i].lookupListIndex))
-      {
-        out->lookupCount--;
-        continue;
-      }
-      c->serializer->copy (lookupRecord[i], lookup_map);
-    }
 
-    return_trace (true);
+
+    unsigned count = serialize_lookuprecord_array (c->serializer, lookupRecord.as_array (lookupCount), lookup_map);
+    return_trace (c->serializer->check_assign (out->lookupCount, count, HB_SERIALIZE_ERROR_INT_OVERFLOW));
   }
 
   bool sanitize (hb_sanitize_context_t *c) const
@@ -2289,9 +2304,9 @@ struct Context
     TRACE_DISPATCH (this, u.format);
     if (unlikely (!c->may_dispatch (this, &u.format))) return_trace (c->no_dispatch_return_value ());
     switch (u.format) {
-    case 1: return_trace (c->dispatch (u.format1, hb_forward<Ts> (ds)...));
-    case 2: return_trace (c->dispatch (u.format2, hb_forward<Ts> (ds)...));
-    case 3: return_trace (c->dispatch (u.format3, hb_forward<Ts> (ds)...));
+    case 1: return_trace (c->dispatch (u.format1, std::forward<Ts> (ds)...));
+    case 2: return_trace (c->dispatch (u.format2, std::forward<Ts> (ds)...));
+    case 3: return_trace (c->dispatch (u.format3, std::forward<Ts> (ds)...));
     default:return_trace (c->default_return_value ());
     }
   }
@@ -2539,15 +2554,15 @@ struct ChainRule
       c->copy ((HBUINT16) g);
   }
 
-  ChainRule* copy (hb_serialize_context_t *c,
-		   const hb_map_t *lookup_map,
-		   const hb_map_t *backtrack_map,
-		   const hb_map_t *input_map = nullptr,
-		   const hb_map_t *lookahead_map = nullptr) const
+  bool serialize (hb_serialize_context_t *c,
+		  const hb_map_t *lookup_map,
+		  const hb_map_t *backtrack_map,
+		  const hb_map_t *input_map = nullptr,
+		  const hb_map_t *lookahead_map = nullptr) const
   {
     TRACE_SERIALIZE (this);
     auto *out = c->start_embed (this);
-    if (unlikely (!out)) return_trace (nullptr);
+    if (unlikely (!out)) return_trace (false);
 
     const hb_map_t *mapping = backtrack_map;
     serialize_array (c, backtrack.len, + backtrack.iter ()
@@ -2566,19 +2581,10 @@ struct ChainRule
     const Array16Of<LookupRecord> &lookupRecord = StructAfter<Array16Of<LookupRecord>> (lookahead);
 
     HBUINT16* lookupCount = c->embed (&(lookupRecord.len));
-    if (!lookupCount) return_trace (nullptr);
+    if (!lookupCount) return_trace (false);
 
-    for (unsigned i = 0; i < lookupRecord.len; i++)
-    {
-      if (!lookup_map->has (lookupRecord[i].lookupListIndex))
-      {
-        (*lookupCount)--;
-        continue;
-      }
-      if (!c->copy (lookupRecord[i], lookup_map)) return_trace (nullptr);
-    }
-
-    return_trace (out);
+    unsigned count = serialize_lookuprecord_array (c, lookupRecord.as_array (), lookup_map);
+    return_trace (c->check_assign (*lookupCount, count, HB_SERIALIZE_ERROR_INT_OVERFLOW));
   }
 
   bool subset (hb_subset_context_t *c,
@@ -2600,7 +2606,7 @@ struct ChainRule
 	  !hb_all (lookahead, glyphset))
 	return_trace (false);
 
-      copy (c->serializer, lookup_map, c->plan->glyph_map);
+      serialize (c->serializer, lookup_map, c->plan->glyph_map);
     }
     else
     {
@@ -2609,7 +2615,7 @@ struct ChainRule
 	  !hb_all (lookahead, lookahead_map))
 	return_trace (false);
 
-      copy (c->serializer, lookup_map, backtrack_map, input_map, lookahead_map);
+      serialize (c->serializer, lookup_map, backtrack_map, input_map, lookahead_map);
     }
 
     return_trace (true);
@@ -2724,10 +2730,10 @@ struct ChainRuleSet
     for (const Offset16To<ChainRule>& _ : rule)
     {
       if (!_) continue;
+      auto o_snap = c->serializer->snapshot ();
       auto *o = out->rule.serialize_append (c->serializer);
       if (unlikely (!o)) continue;
 
-      auto o_snap = c->serializer->snapshot ();
       if (!o->serialize_subset (c, _, this,
 				lookup_map,
 				backtrack_klass_map,
@@ -2920,12 +2926,19 @@ struct ChainContextFormat2
        &lookahead_class_def}
     };
 
+    hb_set_t retained_coverage_glyphs;
+    (this+coverage).intersected_coverage_glyphs (glyphs, &retained_coverage_glyphs);
+
+    hb_set_t coverage_glyph_classes;
+    input_class_def.intersected_classes (&retained_coverage_glyphs, &coverage_glyph_classes);
+
     return
     + hb_iter (ruleSet)
     | hb_map (hb_add (this))
     | hb_enumerate
     | hb_map ([&] (const hb_pair_t<unsigned, const ChainRuleSet &> p)
 	      { return input_class_def.intersects_class (glyphs, p.first) &&
+		       coverage_glyph_classes.has (p.first) &&
 		       p.second.intersects (glyphs, lookup_context); })
     | hb_any
     ;
@@ -3080,13 +3093,19 @@ struct ChainContextFormat2
 						   lookahead_klass_map)))
       return_trace (false);
 
+    const hb_set_t* glyphset = c->plan->glyphset_gsub ();
+    hb_set_t retained_coverage_glyphs;
+    (this+coverage).intersected_coverage_glyphs (glyphset, &retained_coverage_glyphs);
+
+    hb_set_t coverage_glyph_classes;
+    (this+inputClassDef).intersected_classes (&retained_coverage_glyphs, &coverage_glyph_classes);
+
     int non_zero_index = -1, index = 0;
     bool ret = true;
     const hb_map_t *lookup_map = c->table_tag == HB_OT_TAG_GSUB ? c->plan->gsub_lookups : c->plan->gpos_lookups;
     auto last_non_zero = c->serializer->snapshot ();
-    for (const Offset16To<ChainRuleSet>& _ : + hb_enumerate (ruleSet)
-					   | hb_filter (input_klass_map, hb_first)
-					   | hb_map (hb_second))
+    for (const auto& _ : + hb_enumerate (ruleSet)
+			 | hb_filter (input_klass_map, hb_first))
     {
       auto *o = out->ruleSet.serialize_append (c->serializer);
       if (unlikely (!o))
@@ -3094,7 +3113,8 @@ struct ChainContextFormat2
 	ret = false;
 	break;
       }
-      if (o->serialize_subset (c, _, this,
+      if (coverage_glyph_classes.has (_.first) &&
+          o->serialize_subset (c, _.second, this,
 			       lookup_map,
 			       &backtrack_klass_map,
 			       &input_klass_map,
@@ -3107,7 +3127,7 @@ struct ChainContextFormat2
       index++;
     }
 
-    if (!ret) return_trace (ret);
+    if (!ret || non_zero_index == -1) return_trace (false);
 
     // prune empty trailing ruleSets
     if (index > non_zero_index) {
@@ -3318,22 +3338,12 @@ struct ChainContextFormat3
 
     const Array16Of<LookupRecord> &lookupRecord = StructAfter<Array16Of<LookupRecord>> (lookahead);
     const hb_map_t *lookup_map = c->table_tag == HB_OT_TAG_GSUB ? c->plan->gsub_lookups : c->plan->gpos_lookups;
-    hb_set_t lookup_indices;
-    for (unsigned i = 0; i < (unsigned) lookupRecord.len; i++)
-      if (lookup_map->has (lookupRecord[i].lookupListIndex))
-        lookup_indices.add (i);
 
-    HBUINT16 lookupCount;
-    lookupCount = lookup_indices.get_population ();
-    if (!c->serializer->copy (lookupCount)) return_trace (false);
+    HBUINT16 *lookupCount = c->serializer->copy<HBUINT16> (lookupRecord.len);
+    if (!lookupCount) return_trace (false);
 
-    for (unsigned i : lookup_indices.iter ())
-    {
-      if (!c->serializer->copy (lookupRecord[i], lookup_map))
-        return_trace (false);
-    }
-
-    return_trace (true);
+    unsigned count = serialize_lookuprecord_array (c->serializer, lookupRecord.as_array (), lookup_map);
+    return_trace (c->serializer->check_assign (*lookupCount, count, HB_SERIALIZE_ERROR_INT_OVERFLOW));
   }
 
   bool sanitize (hb_sanitize_context_t *c) const
@@ -3378,9 +3388,9 @@ struct ChainContext
     TRACE_DISPATCH (this, u.format);
     if (unlikely (!c->may_dispatch (this, &u.format))) return_trace (c->no_dispatch_return_value ());
     switch (u.format) {
-    case 1: return_trace (c->dispatch (u.format1, hb_forward<Ts> (ds)...));
-    case 2: return_trace (c->dispatch (u.format2, hb_forward<Ts> (ds)...));
-    case 3: return_trace (c->dispatch (u.format3, hb_forward<Ts> (ds)...));
+    case 1: return_trace (c->dispatch (u.format1, std::forward<Ts> (ds)...));
+    case 2: return_trace (c->dispatch (u.format2, std::forward<Ts> (ds)...));
+    case 3: return_trace (c->dispatch (u.format3, std::forward<Ts> (ds)...));
     default:return_trace (c->default_return_value ());
     }
   }
@@ -3409,7 +3419,7 @@ struct ExtensionFormat1
   {
     TRACE_DISPATCH (this, format);
     if (unlikely (!c->may_dispatch (this, this))) return_trace (c->no_dispatch_return_value ());
-    return_trace (get_subtable<typename T::SubTable> ().dispatch (c, get_type (), hb_forward<Ts> (ds)...));
+    return_trace (get_subtable<typename T::SubTable> ().dispatch (c, get_type (), std::forward<Ts> (ds)...));
   }
 
   void collect_variation_indices (hb_collect_variation_indices_context_t *c) const
@@ -3489,7 +3499,7 @@ struct Extension
     TRACE_DISPATCH (this, u.format);
     if (unlikely (!c->may_dispatch (this, &u.format))) return_trace (c->no_dispatch_return_value ());
     switch (u.format) {
-    case 1: return_trace (u.format1.dispatch (c, hb_forward<Ts> (ds)...));
+    case 1: return_trace (u.format1.dispatch (c, std::forward<Ts> (ds)...));
     default:return_trace (c->default_return_value ());
     }
   }
@@ -3678,57 +3688,72 @@ struct GSUBGPOS
                                 const hb_set_t *feature_indices,
                                 hb_map_t *duplicate_feature_map /* OUT */) const
   {
+    if (feature_indices->is_empty ()) return;
+    hb_hashmap_t<hb_tag_t, hb_set_t *, (unsigned)-1, nullptr> unique_features;
     //find out duplicate features after subset
-    unsigned prev = 0xFFFFu;
     for (unsigned i : feature_indices->iter ())
     {
-      if (prev == 0xFFFFu)
-      {
-        duplicate_feature_map->set (i, i);
-        prev = i;
-        continue;
-      }
-
       hb_tag_t t = get_feature_tag (i);
-      hb_tag_t prev_t = get_feature_tag (prev);
-      if (t != prev_t)
+      if (t == unique_features.INVALID_KEY) continue;
+      if (!unique_features.has (t))
       {
+        hb_set_t* indices = hb_set_create ();
+        if (unlikely (indices == hb_set_get_empty () ||
+                      !unique_features.set (t, indices)))
+        {
+          hb_set_destroy (indices);
+          for (auto _ : unique_features.iter ())
+            hb_set_destroy (_.second);
+          return;
+        }
+        if (unique_features.get (t))
+          unique_features.get (t)->add (i);
         duplicate_feature_map->set (i, i);
-        prev = i;
         continue;
       }
 
-      const Feature& f = get_feature (i);
-      const Feature& prev_f = get_feature (prev);
+      bool found = false;
 
-      auto f_iter =
-      + hb_iter (f.lookupIndex)
-      | hb_filter (lookup_indices)
-      ;
-
-      auto prev_iter =
-      + hb_iter (prev_f.lookupIndex)
-      | hb_filter (lookup_indices)
-      ;
-
-      if (f_iter.len () != prev_iter.len ())
+      hb_set_t* same_tag_features = unique_features.get (t);
+      for (unsigned other_f_index : same_tag_features->iter ())
       {
-        duplicate_feature_map->set (i, i);
-        prev = i;
-        continue;
+        const Feature& f = get_feature (i);
+        const Feature& other_f = get_feature (other_f_index);
+
+        auto f_iter =
+        + hb_iter (f.lookupIndex)
+        | hb_filter (lookup_indices)
+        ;
+
+        auto other_f_iter =
+        + hb_iter (other_f.lookupIndex)
+        | hb_filter (lookup_indices)
+        ;
+
+        bool is_equal = true;
+        for (; f_iter && other_f_iter; f_iter++, other_f_iter++)
+        {
+          unsigned a = *f_iter;
+          unsigned b = *other_f_iter;
+          if (a != b) { is_equal = false; break; }
+        }
+
+        if (is_equal == false || f_iter || other_f_iter) continue;
+
+        found = true;
+        duplicate_feature_map->set (i, other_f_index);
+        break;
       }
 
-      bool is_equal = true;
-      for (auto _ : + hb_zip (f_iter, prev_iter))
-        if (_.first != _.second) { is_equal = false; break; }
-
-      if (is_equal == true) duplicate_feature_map->set (i, prev);
-      else
+      if (found == false)
       {
+        same_tag_features->add (i);
         duplicate_feature_map->set (i, i);
-        prev = i;
       }
     }
+
+    for (auto _ : unique_features.iter ())
+      hb_set_destroy (_.second);
   }
 
   void prune_features (const hb_map_t *lookup_indices, /* IN */

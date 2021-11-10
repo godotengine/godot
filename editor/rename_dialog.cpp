@@ -461,7 +461,7 @@ String RenameDialog::_substitute(const String &subject, const Node *node, int co
 
 void RenameDialog::_error_handler(void *p_self, const char *p_func, const char *p_file, int p_line, const char *p_error, const char *p_errorexp, bool p_editor_notify, ErrorHandlerType p_type) {
 	RenameDialog *self = (RenameDialog *)p_self;
-	String source_file(p_file);
+	String source_file = String::utf8(p_file);
 
 	// Only show first error that is related to "regex"
 	if (self->has_errors || source_file.find("regex") < 0) {
@@ -470,9 +470,9 @@ void RenameDialog::_error_handler(void *p_self, const char *p_func, const char *
 
 	String err_str;
 	if (p_errorexp && p_errorexp[0]) {
-		err_str = p_errorexp;
+		err_str = String::utf8(p_errorexp);
 	} else {
-		err_str = p_error;
+		err_str = String::utf8(p_error);
 	}
 
 	self->has_errors = true;

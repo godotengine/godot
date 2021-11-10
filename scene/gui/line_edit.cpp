@@ -664,7 +664,9 @@ void LineEdit::_notification(int p_what) {
 			}
 			Ref<Font> font = get_theme_font(SNAME("font"));
 
-			style->draw(ci, Rect2(Point2(), size));
+			if (!flat) {
+				style->draw(ci, Rect2(Point2(), size));
+			}
 
 			if (has_focus()) {
 				get_theme_stylebox(SNAME("focus"))->draw(ci, Rect2(Point2(), size));
@@ -1966,6 +1968,17 @@ Ref<Texture2D> LineEdit::get_right_icon() {
 	return right_icon;
 }
 
+void LineEdit::set_flat(bool p_enabled) {
+	if (flat != p_enabled) {
+		flat = p_enabled;
+		update();
+	}
+}
+
+bool LineEdit::is_flat() const {
+	return flat;
+}
+
 void LineEdit::_text_changed() {
 	_emit_text_change();
 	_clear_redo();
@@ -2214,6 +2227,8 @@ void LineEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_deselect_on_focus_loss_enabled"), &LineEdit::is_deselect_on_focus_loss_enabled);
 	ClassDB::bind_method(D_METHOD("set_right_icon", "icon"), &LineEdit::set_right_icon);
 	ClassDB::bind_method(D_METHOD("get_right_icon"), &LineEdit::get_right_icon);
+	ClassDB::bind_method(D_METHOD("set_flat", "enabled"), &LineEdit::set_flat);
+	ClassDB::bind_method(D_METHOD("is_flat"), &LineEdit::is_flat);
 
 	ADD_SIGNAL(MethodInfo("text_changed", PropertyInfo(Variant::STRING, "new_text")));
 	ADD_SIGNAL(MethodInfo("text_change_rejected", PropertyInfo(Variant::STRING, "rejected_substring")));
@@ -2269,6 +2284,7 @@ void LineEdit::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "selecting_enabled"), "set_selecting_enabled", "is_selecting_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "deselect_on_focus_loss_enabled"), "set_deselect_on_focus_loss_enabled", "is_deselect_on_focus_loss_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "right_icon", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_right_icon", "get_right_icon");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flat"), "set_flat", "is_flat");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "text_direction", PROPERTY_HINT_ENUM, "Auto,Left-to-Right,Right-to-Left,Inherited"), "set_text_direction", "get_text_direction");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "language"), "set_language", "get_language");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "draw_control_chars"), "set_draw_control_chars", "get_draw_control_chars");

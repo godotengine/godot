@@ -261,13 +261,6 @@ Size2i OS_Android::get_display_size() const {
 	return display_size;
 }
 
-void OS_Android::set_context_is_16_bits(bool p_is_16) {
-#if defined(GLES3_ENABLED)
-	//if (rasterizer)
-	//	rasterizer->set_force_16_bits_fbo(p_is_16);
-#endif
-}
-
 void OS_Android::set_opengl_extensions(const char *p_gl_extensions) {
 #if defined(GLES3_ENABLED)
 	ERR_FAIL_COND(!p_gl_extensions);

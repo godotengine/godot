@@ -50,10 +50,10 @@ struct hb_array_t : hb_iter_with_fallback_t<hb_array_t<Type>, Type&>
   /*
    * Constructors.
    */
-  hb_array_t () : arrayZ (nullptr), length (0), backwards_length (0) {}
-  hb_array_t (Type *array_, unsigned int length_) : arrayZ (array_), length (length_), backwards_length (0) {}
+  hb_array_t () = default;
+  hb_array_t (Type *array_, unsigned int length_) : arrayZ (array_), length (length_) {}
   template <unsigned int length_>
-  hb_array_t (Type (&array_)[length_]) : arrayZ (array_), length (length_), backwards_length (0) {}
+  hb_array_t (Type (&array_)[length_]) : hb_array_t (array_, length_) {}
 
   template <typename U,
 	    hb_enable_if (hb_is_cr_convertible(U, Type))>
@@ -281,9 +281,9 @@ struct hb_array_t : hb_iter_with_fallback_t<hb_array_t<Type>, Type&>
    */
 
   public:
-  Type *arrayZ;
-  unsigned int length;
-  unsigned int backwards_length;
+  Type *arrayZ = nullptr;
+  unsigned int length = 0;
+  unsigned int backwards_length = 0;
 };
 template <typename T> inline hb_array_t<T>
 hb_array (T *array, unsigned int length)
@@ -302,7 +302,7 @@ struct hb_sorted_array_t :
   static constexpr bool is_random_access_iterator = true;
   static constexpr bool is_sorted_iterator = true;
 
-  hb_sorted_array_t () : hb_array_t<Type> () {}
+  hb_sorted_array_t () = default;
   hb_sorted_array_t (Type *array_, unsigned int length_) : hb_array_t<Type> (array_, length_) {}
   template <unsigned int length_>
   hb_sorted_array_t (Type (&array_)[length_]) : hb_array_t<Type> (array_) {}

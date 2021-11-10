@@ -196,6 +196,9 @@
 		<member name="expand_to_text_length" type="bool" setter="set_expand_to_text_length_enabled" getter="is_expand_to_text_length_enabled" default="false">
 			If [code]true[/code], the [LineEdit] width will increase to stay longer than the [member text]. It will [b]not[/b] compress if the [member text] is shortened.
 		</member>
+		<member name="flat" type="bool" setter="set_flat" getter="is_flat" default="false">
+			If [code]true[/code], the [LineEdit] don't display decoration.
+		</member>
 		<member name="focus_mode" type="int" setter="set_focus_mode" getter="get_focus_mode" override="true" enum="Control.FocusMode" default="2" />
 		<member name="language" type="String" setter="set_language" getter="get_language" default="&quot;&quot;">
 			Language code used for line-breaking and text shaping algorithms, if left empty current locale is used instead.

@@ -472,26 +472,22 @@ namespace Godot
             return new Quaternion(-left.x, -left.y, -left.z, -left.w);
         }
 
-        public static Quaternion operator *(Quaternion left, Vector3 right)
+        public static Vector3 operator *(Quaternion quat, Vector3 vec)
         {
-            return new Quaternion
-            (
-                (left.w * right.x) + (left.y * right.z) - (left.z * right.y),
-                (left.w * right.y) + (left.z * right.x) - (left.x * right.z),
-                (left.w * right.z) + (left.x * right.y) - (left.y * right.x),
-                -(left.x * right.x) - (left.y * right.y) - (left.z * right.z)
-            );
+#if DEBUG
+            if (!quat.IsNormalized())
+            {
+                throw new InvalidOperationException("Quaternion is not normalized.");
+            }
+#endif
+            var u = new Vector3(quat.x, quat.y, quat.z);
+            Vector3 uv = u.Cross(vec);
+            return vec + (((uv * quat.w) + u.Cross(uv)) * 2);
         }
 
-        public static Quaternion operator *(Vector3 left, Quaternion right)
+        public static Vector3 operator *(Vector3 vec, Quaternion quat)
         {
-            return new Quaternion
-            (
-                (right.w * left.x) + (right.y * left.z) - (right.z * left.y),
-                (right.w * left.y) + (right.z * left.x) - (right.x * left.z),
-                (right.w * left.z) + (right.x * left.y) - (right.y * left.x),
-                -(right.x * left.x) - (right.y * left.y) - (right.z * left.z)
-            );
+            return quat.Inverse() * vec;
         }
 
         public static Quaternion operator *(Quaternion left, real_t right)

@@ -621,7 +621,7 @@ void RichTextLabel::_shape_line(ItemFrame *p_frame, int p_line, const Ref<Font> 
 	}
 }
 
-int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_ofs, int p_width, const Color &p_base_color, int p_outline_size, const Color &p_outline_color, const Color &p_font_shadow_color, bool p_shadow_as_outline, const Point2 &p_shadow_ofs) {
+int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_ofs, int p_width, const Color &p_base_color, int p_outline_size, const Color &p_outline_color, const Color &p_font_shadow_color, int p_shadow_outline_size, const Point2 &p_shadow_ofs) {
 	Vector2 off;
 
 	ERR_FAIL_COND_V(p_frame == nullptr, 0);
@@ -804,7 +804,7 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 							}
 
 							for (int j = 0; j < frame->lines.size(); j++) {
-								_draw_line(frame, j, p_ofs + rect.position + off + Vector2(0, frame->lines[j].offset.y), rect.size.x, p_base_color, p_outline_size, p_outline_color, p_font_shadow_color, p_shadow_as_outline, p_shadow_ofs);
+								_draw_line(frame, j, p_ofs + rect.position + off + Vector2(0, frame->lines[j].offset.y), rect.size.x, p_base_color, p_outline_size, p_outline_color, p_font_shadow_color, p_shadow_outline_size, p_shadow_ofs);
 							}
 							idx++;
 						}
@@ -824,7 +824,8 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 			Item *it = _get_item_at_pos(it_from, it_to, glyphs[i].start);
 			int size = _find_outline_size(it, p_outline_size);
 			Color font_color = _find_outline_color(it, p_outline_color);
-			if (size <= 0) {
+			Color font_shadow_color = p_font_shadow_color;
+			if ((size <= 0 || font_color.a == 0) && (font_shadow_color.a == 0)) {
 				gloff.x += glyphs[i].advance;
 				continue;
 			}
@@ -871,9 +872,10 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 					faded_visibility = faded_visibility < 0.0f ? 0.0f : faded_visibility;
 				}
 				font_color.a = faded_visibility;
+				font_shadow_color.a = faded_visibility;
 			}
 
-			bool visible = (font_color.a != 0);
+			bool visible = (font_color.a != 0) || (font_shadow_color.a != 0);
 
 			for (int j = 0; j < fx_stack.size(); j++) {
 				ItemFX *item_fx = fx_stack[j];
@@ -942,18 +944,19 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 				}
 			}
 
-			Point2 shadow_ofs(get_theme_constant(SNAME("shadow_offset_x")), get_theme_constant(SNAME("shadow_offset_y")));
-
 			// Draw glyph outlines.
 			for (int j = 0; j < glyphs[i].repeat; j++) {
 				if (visible) {
 					if (frid != RID()) {
-						if (p_shadow_as_outline) {
-							TS->font_draw_glyph_outline(frid, ci, glyphs[i].font_size, size, p_ofs + fx_offset + gloff + Vector2(-shadow_ofs.x, shadow_ofs.y), gl, p_font_shadow_color);
-							TS->font_draw_glyph_outline(frid, ci, glyphs[i].font_size, size, p_ofs + fx_offset + gloff + Vector2(shadow_ofs.x, -shadow_ofs.y), gl, p_font_shadow_color);
-							TS->font_draw_glyph_outline(frid, ci, glyphs[i].font_size, size, p_ofs + fx_offset + gloff + Vector2(-shadow_ofs.x, -shadow_ofs.y), gl, p_font_shadow_color);
+						if (font_shadow_color.a > 0) {
+							TS->font_draw_glyph(frid, ci, glyphs[i].font_size, p_ofs + fx_offset + gloff + p_shadow_ofs, gl, font_shadow_color);
 						}
-						TS->font_draw_glyph_outline(frid, ci, glyphs[i].font_size, size, p_ofs + fx_offset + gloff, gl, font_color);
+						if (font_shadow_color.a > 0 && p_shadow_outline_size > 0) {
+							TS->font_draw_glyph_outline(frid, ci, glyphs[i].font_size, p_shadow_outline_size, p_ofs + fx_offset + gloff + p_shadow_ofs, gl, font_shadow_color);
+						}
+						if (font_color.a != 0.0 && size > 0) {
+							TS->font_draw_glyph_outline(frid, ci, glyphs[i].font_size, size, p_ofs + fx_offset + gloff, gl, font_color);
+						}
 					}
 				}
 				gloff.x += glyphs[i].advance;
@@ -1470,7 +1473,7 @@ void RichTextLabel::_notification(int p_what) {
 			Color outline_color = get_theme_color(SNAME("font_outline_color"));
 			int outline_size = get_theme_constant(SNAME("outline_size"));
 			Color font_shadow_color = get_theme_color(SNAME("font_shadow_color"));
-			bool use_outline = get_theme_constant(SNAME("shadow_as_outline"));
+			int shadow_outline_size = get_theme_constant(SNAME("shadow_outline_size"));
 			Point2 shadow_ofs(get_theme_constant(SNAME("shadow_offset_x")), get_theme_constant(SNAME("shadow_offset_y")));
 
 			visible_paragraph_count = 0;
@@ -1480,7 +1483,7 @@ void RichTextLabel::_notification(int p_what) {
 			Point2 ofs = text_rect.get_position() + Vector2(0, main->lines[from_line].offset.y - vofs);
 			while (ofs.y < size.height && from_line < main->lines.size()) {
 				visible_paragraph_count++;
-				visible_line_count += _draw_line(main, from_line, ofs, text_rect.size.x, base_color, outline_size, outline_color, font_shadow_color, use_outline, shadow_ofs);
+				visible_line_count += _draw_line(main, from_line, ofs, text_rect.size.x, base_color, outline_size, outline_color, font_shadow_color, shadow_outline_size, shadow_ofs);
 				ofs.y += main->lines[from_line].text_buf->get_size().y + get_theme_constant(SNAME("line_separation"));
 				from_line++;
 			}

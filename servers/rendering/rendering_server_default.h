@@ -58,13 +58,7 @@ class RenderingServerDefault : public RenderingServer {
 	static int changes;
 	RID test_cube;
 
-	struct FrameDrawnCallbacks {
-		ObjectID object;
-		StringName method;
-		Variant param;
-	};
-
-	List<FrameDrawnCallbacks> frame_drawn_callbacks;
+	List<Callable> frame_drawn_callbacks;
 
 	static void _changes_changed() {}
 
@@ -880,7 +874,7 @@ public:
 
 	/* EVENT QUEUING */
 
-	virtual void request_frame_drawn_callback(Object *p_where, const StringName &p_method, const Variant &p_userdata) override;
+	virtual void request_frame_drawn_callback(const Callable &p_callable) override;
 
 	virtual void draw(bool p_swap_buffers, double frame_step) override;
 	virtual void sync() override;

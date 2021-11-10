@@ -199,6 +199,10 @@ Vector<StringName> VisualShaderNode::get_editable_properties() const {
 	return Vector<StringName>();
 }
 
+Map<StringName, String> VisualShaderNode::get_editable_properties_names() const {
+	return Map<StringName, String>();
+}
+
 Array VisualShaderNode::get_default_input_values() const {
 	Array ret;
 	for (const KeyValue<int, Variant> &E : default_input_values) {
@@ -350,7 +354,7 @@ String VisualShaderNodeCustom::generate_code(Shader::Mode p_mode, VisualShader::
 	}
 	String code = "	{\n";
 	String _code;
-	GDVIRTUAL_CALL(_get_code, input_vars, output_vars, (int)p_mode, (int)p_type, _code);
+	GDVIRTUAL_CALL(_get_code, input_vars, output_vars, p_mode, p_type, _code);
 	bool nend = _code.ends_with("\n");
 	_code = _code.insert(0, "		");
 	_code = _code.replace("\n", "\n		");
@@ -367,7 +371,7 @@ String VisualShaderNodeCustom::generate_code(Shader::Mode p_mode, VisualShader::
 
 String VisualShaderNodeCustom::generate_global_per_node(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const {
 	String ret;
-	if (GDVIRTUAL_CALL(_get_global_code, (int)p_mode, ret)) {
+	if (GDVIRTUAL_CALL(_get_global_code, p_mode, ret)) {
 		String code = "// " + get_caption() + "\n";
 		code += ret;
 		code += "\n";
@@ -1920,6 +1924,10 @@ void VisualShader::_update_shader() const {
 		global_compute_code += "	float c = cos(angle);\n";
 		global_compute_code += "	float oc = 1.0 - c;\n";
 		global_compute_code += "	return mat4(vec4(oc * axis.x * axis.x + c, oc * axis.x * axis.y - axis.z * s, oc * axis.z * axis.x + axis.y * s, 0), vec4(oc * axis.x * axis.y + axis.z * s, oc * axis.y * axis.y + c, oc * axis.y * axis.z - axis.x * s, 0), vec4(oc * axis.z * axis.x - axis.y * s, oc * axis.y * axis.z + axis.x * s, oc * axis.z * axis.z + c, 0), vec4(0, 0, 0, 1));\n";
+		global_compute_code += "}\n\n";
+
+		global_compute_code += "vec2 __get_random_unit_vec2(inout uint seed) {\n";
+		global_compute_code += "	return normalize(vec2(__rand_from_seed_m1_p1(seed), __rand_from_seed_m1_p1(seed)));\n";
 		global_compute_code += "}\n\n";
 
 		global_compute_code += "vec3 __get_random_unit_vec3(inout uint seed) {\n";

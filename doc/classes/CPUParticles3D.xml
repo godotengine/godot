@@ -126,7 +126,7 @@
 			Each particle's initial color. To have particle display color in a [BaseMaterial3D] make sure to set [member BaseMaterial3D.vertex_color_use_as_albedo] to [code]true[/code].
 		</member>
 		<member name="color_ramp" type="Gradient" setter="set_color_ramp" getter="get_color_ramp">
-			Each particle's color will vary along this [GradientTexture] over its lifetime (multiplied with [member color]).
+			Each particle's color will vary along this [GradientTexture1D] over its lifetime (multiplied with [member color]).
 		</member>
 		<member name="damping_curve" type="Curve" setter="set_param_curve" getter="get_param_curve">
 			Damping will vary along this [Curve].

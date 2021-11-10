@@ -27,8 +27,8 @@
 			<return type="String" />
 			<argument index="0" name="input_vars" type="PackedStringArray" />
 			<argument index="1" name="output_vars" type="String[]" />
-			<argument index="2" name="mode" type="int" />
-			<argument index="3" name="type" type="int" />
+			<argument index="2" name="mode" type="int" enum="Shader.Mode" />
+			<argument index="3" name="type" type="int" enum="VisualShader.Type" />
 			<description>
 				Override this method to define the actual shader code of the associated custom node. The shader code should be returned as a string, which can have multiple lines (the [code]"""[/code] multiline string construct can be used for convenience).
 				The [code]input_vars[/code] and [code]output_vars[/code] arrays contain the string names of the various input and output variables, as defined by [code]_get_input_*[/code] and [code]_get_output_*[/code] virtual methods in this class.
@@ -46,7 +46,7 @@
 		</method>
 		<method name="_get_global_code" qualifiers="virtual const">
 			<return type="String" />
-			<argument index="0" name="mode" type="int" />
+			<argument index="0" name="mode" type="int" enum="Shader.Mode" />
 			<description>
 				Override this method to add shader code on top of the global shader, to define your own standard library of reusable methods, varyings, constants, uniforms, etc. The shader code should be returned as a string, which can have multiple lines (the [code]"""[/code] multiline string construct can be used for convenience).
 				Be careful with this functionality as it can cause name conflicts with other custom nodes, so be sure to give the defined entities unique names.

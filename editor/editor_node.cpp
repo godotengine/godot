@@ -174,6 +174,7 @@
 #include "editor/plugins/sprite_frames_editor_plugin.h"
 #include "editor/plugins/style_box_editor_plugin.h"
 #include "editor/plugins/sub_viewport_preview_editor_plugin.h"
+#include "editor/plugins/text_control_editor_plugin.h"
 #include "editor/plugins/text_editor.h"
 #include "editor/plugins/texture_3d_editor_plugin.h"
 #include "editor/plugins/texture_editor_plugin.h"
@@ -1716,8 +1717,10 @@ void EditorNode::_save_scene(String p_file, int idx) {
 
 	err = ResourceSaver::save(p_file, sdata, flg);
 
-	_save_external_resources();
+	// This needs to be emitted before saving external resources.
+	emit_signal(SNAME("scene_saved"), p_file);
 
+	_save_external_resources();
 	editor_data.save_editor_external_data();
 
 	for (Ref<AnimatedValuesBackup> &E : anim_backups) {
@@ -1791,7 +1794,7 @@ void EditorNode::_save_all_scenes() {
 				} else {
 					_save_scene_with_preview(scene->get_scene_file_path());
 				}
-			} else {
+			} else if (scene->get_scene_file_path() != "") {
 				all_saved = false;
 			}
 		}
@@ -3623,7 +3626,7 @@ Error EditorNode::load_scene(const String &p_scene, bool p_ignore_broken_deps, b
 		sdata->set_path(lpath, true); // take over path
 	}
 
-	Node *new_scene = sdata->instantiate(PackedScene::GEN_EDIT_STATE_MAIN);
+	Node *new_scene = sdata->instantiate(p_set_inherited ? PackedScene::GEN_EDIT_STATE_MAIN_INHERITED : PackedScene::GEN_EDIT_STATE_MAIN);
 
 	if (!new_scene) {
 		sdata.unref();
@@ -5711,6 +5714,7 @@ void EditorNode::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("request_help_search"));
 	ADD_SIGNAL(MethodInfo("script_add_function_request", PropertyInfo(Variant::OBJECT, "obj"), PropertyInfo(Variant::STRING, "function"), PropertyInfo(Variant::PACKED_STRING_ARRAY, "args")));
 	ADD_SIGNAL(MethodInfo("resource_saved", PropertyInfo(Variant::OBJECT, "obj")));
+	ADD_SIGNAL(MethodInfo("scene_saved", PropertyInfo(Variant::STRING, "path")));
 	ADD_SIGNAL(MethodInfo("project_settings_changed"));
 }
 
@@ -7010,6 +7014,7 @@ EditorNode::EditorNode() {
 	add_editor_plugin(memnew(GPUParticlesCollisionSDFEditorPlugin(this)));
 	add_editor_plugin(memnew(InputEventEditorPlugin(this)));
 	add_editor_plugin(memnew(SubViewportPreviewEditorPlugin(this)));
+	add_editor_plugin(memnew(TextControlEditorPlugin(this)));
 
 	for (int i = 0; i < EditorPlugins::get_plugin_count(); i++) {
 		add_editor_plugin(EditorPlugins::create(i, this));

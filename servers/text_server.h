@@ -125,6 +125,12 @@ public:
 		SPACING_BOTTOM,
 	};
 
+	enum FontStyle {
+		FONT_BOLD = 1 << 0,
+		FONT_ITALIC = 1 << 1,
+		FONT_FIXED_WIDTH = 1 << 2,
+	};
+
 	void _draw_hex_code_box_number(RID p_canvas, int p_size, const Vector2 &p_pos, uint8_t p_index, const Color &p_color) const;
 
 protected:
@@ -144,6 +150,7 @@ protected:
 		int end = 0; // Substring end offset in the parent string.
 
 		String text;
+		String custom_punct;
 		TextServer::Direction direction = DIRECTION_LTR; // Desired text direction.
 		TextServer::Orientation orientation = ORIENTATION_HORIZONTAL;
 
@@ -223,6 +230,15 @@ public:
 
 	virtual void font_set_data(RID p_font_rid, const PackedByteArray &p_data) = 0;
 	virtual void font_set_data_ptr(RID p_font_rid, const uint8_t *p_data_ptr, size_t p_data_size) = 0;
+
+	virtual void font_set_style(RID p_font_rid, uint32_t /*FontStyle*/ p_style) = 0;
+	virtual uint32_t /*FontStyle*/ font_get_style(RID p_font_rid) const = 0;
+
+	virtual void font_set_name(RID p_font_rid, const String &p_name) = 0;
+	virtual String font_get_name(RID p_font_rid) const = 0;
+
+	virtual void font_set_style_name(RID p_font_rid, const String &p_name) = 0;
+	virtual String font_get_style_name(RID p_font_rid) const = 0;
 
 	virtual void font_set_antialiased(RID p_font_rid, bool p_antialiased) = 0;
 	virtual bool font_is_antialiased(RID p_font_rid) const = 0;
@@ -353,6 +369,9 @@ public:
 	virtual Direction shaped_text_get_direction(RID p_shaped) const = 0;
 
 	virtual void shaped_text_set_bidi_override(RID p_shaped, const Array &p_override) = 0;
+
+	virtual void shaped_text_set_custom_punctuation(RID p_shaped, const String &p_punct) = 0;
+	virtual String shaped_text_get_custom_punctuation(RID p_shaped) const = 0;
 
 	virtual void shaped_text_set_orientation(RID p_shaped, Orientation p_orientation = ORIENTATION_HORIZONTAL) = 0;
 	virtual Orientation shaped_text_get_orientation(RID p_shaped) const = 0;
@@ -535,6 +554,7 @@ VARIANT_ENUM_CAST(TextServer::Hinting);
 VARIANT_ENUM_CAST(TextServer::Feature);
 VARIANT_ENUM_CAST(TextServer::ContourPointTag);
 VARIANT_ENUM_CAST(TextServer::SpacingType);
+VARIANT_ENUM_CAST(TextServer::FontStyle);
 
 GDVIRTUAL_NATIVE_PTR(Glyph);
 GDVIRTUAL_NATIVE_PTR(Glyph *);

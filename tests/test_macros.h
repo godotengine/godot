@@ -31,10 +31,8 @@
 #ifndef TEST_MACROS_H
 #define TEST_MACROS_H
 
-#include "core/object/callable_method_pointer.h"
-#include "core/object/class_db.h"
-#include "core/string/print_string.h"
-#include "core/templates/map.h"
+#include "core/input/input_map.h"
+#include "core/object/message_queue.h"
 #include "core/variant/variant.h"
 
 // See documentation for doctest at:

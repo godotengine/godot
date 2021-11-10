@@ -92,7 +92,7 @@ public:
 	enum LoopMode {
 		LOOP_DISABLED,
 		LOOP_FORWARD,
-		LOOP_PING_PONG,
+		LOOP_PINGPONG,
 		LOOP_BACKWARD
 	};
 

@@ -4977,7 +4977,7 @@ public:
 		}
 	}
 
-	void setup(Ref<Resource> p_parent_resource, Vector<EditorProperty *> p_properties, const Vector<StringName> &p_names, Ref<VisualShaderNode> p_node) {
+	void setup(Ref<Resource> p_parent_resource, Vector<EditorProperty *> p_properties, const Vector<StringName> &p_names, const Map<StringName, String> &p_overrided_names, Ref<VisualShaderNode> p_node) {
 		parent_resource = p_parent_resource;
 		updating = false;
 		node = p_node;
@@ -4993,7 +4993,11 @@ public:
 
 			Label *prop_name = memnew(Label);
 			String prop_name_str = p_names[i];
-			prop_name_str = prop_name_str.capitalize() + ":";
+			if (p_overrided_names.has(p_names[i])) {
+				prop_name_str = p_overrided_names[p_names[i]] + ":";
+			} else {
+				prop_name_str = prop_name_str.capitalize() + ":";
+			}
 			prop_name->set_text(prop_name_str);
 			prop_name->set_visible(false);
 			hbox->add_child(prop_name);
@@ -5085,7 +5089,7 @@ Control *VisualShaderNodePluginDefault::create_editor(const Ref<Resource> &p_par
 		properties.push_back(pinfo[i].name);
 	}
 	VisualShaderNodePluginDefaultEditor *editor = memnew(VisualShaderNodePluginDefaultEditor);
-	editor->setup(p_parent_resource, editors, properties, p_node);
+	editor->setup(p_parent_resource, editors, properties, p_node->get_editable_properties_names(), p_node);
 	return editor;
 }
 

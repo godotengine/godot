@@ -4,7 +4,7 @@
 		Parameters to be sent to a 3D shape physics query.
 	</brief_description>
 	<description>
-		This class contains the shape and other parameters for 3D intersection/collision queries.
+		This class contains the shape and other parameters for [PhysicsDirectSpaceState3D] intersection/collision queries.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -23,6 +23,9 @@
 		</member>
 		<member name="margin" type="float" setter="set_margin" getter="get_margin" default="0.0">
 			The collision margin for the shape.
+		</member>
+		<member name="motion" type="Vector3" setter="set_motion" getter="get_motion" default="Vector3(0, 0, 0)">
+			The motion of the shape being queried for.
 		</member>
 		<member name="shape" type="Resource" setter="set_shape" getter="get_shape">
 			The [Shape3D] that will be used for collision/intersection queries. This stores the actual reference which avoids the shape to be released while being used for queries, so always prefer using this over [member shape_rid].

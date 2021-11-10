@@ -56,6 +56,7 @@ struct hb_ot_shape_normalize_context_t
   hb_buffer_t *buffer;
   hb_font_t *font;
   hb_unicode_funcs_t *unicode;
+  const hb_codepoint_t not_found;
   bool (*decompose) (const hb_ot_shape_normalize_context_t *c,
 		     hb_codepoint_t  ab,
 		     hb_codepoint_t *a,

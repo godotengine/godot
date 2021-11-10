@@ -388,7 +388,7 @@ struct glyf
 
     protected:
     HBUINT16	flags;
-    HBGlyphID	glyphIndex;
+    HBGlyphID16	glyphIndex;
     public:
     DEFINE_SIZE_MIN (4);
   };
@@ -1118,7 +1118,7 @@ struct glyf
       while (it)
       {
         auto item = *(it++);
-        operation_count +=
+        operation_count =
             add_gid_and_children (item.get_glyph_index (), gids_to_retain, depth, operation_count);
       }
 

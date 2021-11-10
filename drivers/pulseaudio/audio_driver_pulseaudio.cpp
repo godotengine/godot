@@ -34,6 +34,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/os/os.h"
+#include "core/version.h"
 
 #ifdef ALSAMIDI_ENABLED
 #include "drivers/alsa/asound-so_wrap.h"
@@ -191,7 +192,7 @@ Error AudioDriverPulseAudio::init_device() {
 	Error err = detect_channels();
 	if (err != OK) {
 		// This most likely means there are no sinks.
-		ERR_PRINT("PulseAudio: init device failed to detect number of channels");
+		ERR_PRINT("PulseAudio: init device failed to detect number of output channels");
 		return err;
 	}
 
@@ -211,7 +212,7 @@ Error AudioDriverPulseAudio::init_device() {
 			break;
 
 		default:
-			WARN_PRINT("PulseAudio: Unsupported number of channels: " + itos(pa_map.channels));
+			WARN_PRINT("PulseAudio: Unsupported number of output channels: " + itos(pa_map.channels));
 			pa_channel_map_init_stereo(&pa_map);
 			channels = 2;
 			break;
@@ -221,8 +222,8 @@ Error AudioDriverPulseAudio::init_device() {
 	buffer_frames = closest_power_of_2(latency * mix_rate / 1000);
 	pa_buffer_size = buffer_frames * pa_map.channels;
 
-	print_verbose("PulseAudio: detected " + itos(pa_map.channels) + " channels");
-	print_verbose("PulseAudio: audio buffer frames: " + itos(buffer_frames) + " calculated latency: " + itos(buffer_frames * 1000 / mix_rate) + "ms");
+	print_verbose("PulseAudio: detected " + itos(pa_map.channels) + " output channels");
+	print_verbose("PulseAudio: audio buffer frames: " + itos(buffer_frames) + " calculated output latency: " + itos(buffer_frames * 1000 / mix_rate) + "ms");
 
 	pa_sample_spec spec;
 	spec.format = PA_SAMPLE_S16LE;
@@ -293,7 +294,17 @@ Error AudioDriverPulseAudio::init() {
 	pa_ml = pa_mainloop_new();
 	ERR_FAIL_COND_V(pa_ml == nullptr, ERR_CANT_OPEN);
 
-	pa_ctx = pa_context_new(pa_mainloop_get_api(pa_ml), "Godot");
+	String context_name;
+	if (Engine::get_singleton()->is_editor_hint()) {
+		context_name = VERSION_NAME " Editor";
+	} else {
+		context_name = GLOBAL_GET("application/config/name");
+		if (context_name.is_empty()) {
+			context_name = VERSION_NAME " Project";
+		}
+	}
+
+	pa_ctx = pa_context_new(pa_mainloop_get_api(pa_ml), context_name.utf8().ptr());
 	ERR_FAIL_COND_V(pa_ctx == nullptr, ERR_CANT_OPEN);
 
 	pa_ready = 0;
@@ -688,6 +699,8 @@ Error AudioDriverPulseAudio::capture_init_device() {
 			pa_channel_map_init_stereo(&pa_rec_map);
 			break;
 	}
+
+	print_verbose("PulseAudio: detected " + itos(pa_rec_map.channels) + " input channels");
 
 	pa_sample_spec spec;
 

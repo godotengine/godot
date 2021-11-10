@@ -267,7 +267,7 @@ Variant GodotBody3D::get_param(PhysicsServer3D::BodyParameter p_param) const {
 			}
 		} break;
 		case PhysicsServer3D::BODY_PARAM_CENTER_OF_MASS: {
-			return center_of_mass;
+			return center_of_mass_local;
 		} break;
 		case PhysicsServer3D::BODY_PARAM_GRAVITY_SCALE: {
 			return gravity_scale;

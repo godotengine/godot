@@ -346,7 +346,7 @@
 			<return type="PhysicsDirectBodyState2D" />
 			<argument index="0" name="body" type="RID" />
 			<description>
-				Returns the [PhysicsDirectBodyState2D] of the body.
+				Returns the [PhysicsDirectBodyState2D] of the body. Returns [code]null[/code] if the body is destroyed or removed from the physics space.
 			</description>
 		</method>
 		<method name="body_get_max_contacts_reported" qualifiers="const">
@@ -919,7 +919,7 @@
 			Constant to set/get a body's inertia.
 		</constant>
 		<constant name="BODY_PARAM_CENTER_OF_MASS" value="4" enum="BodyParameter">
-			Constant to set/get a body's center of mass.
+			Constant to set/get a body's center of mass position in the body's local coordinate system.
 		</constant>
 		<constant name="BODY_PARAM_GRAVITY_SCALE" value="5" enum="BodyParameter">
 			Constant to set/get a body's gravity multiplier.

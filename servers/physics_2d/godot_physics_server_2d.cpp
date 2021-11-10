@@ -963,10 +963,17 @@ bool GodotPhysicsServer2D::body_test_motion(RID p_body, const MotionParameters &
 PhysicsDirectBodyState2D *GodotPhysicsServer2D::body_get_direct_state(RID p_body) {
 	ERR_FAIL_COND_V_MSG((using_threads && !doing_sync), nullptr, "Body state is inaccessible right now, wait for iteration or physics process notification.");
 
+	if (!body_owner.owns(p_body)) {
+		return nullptr;
+	}
+
 	GodotBody2D *body = body_owner.get_or_null(p_body);
 	ERR_FAIL_COND_V(!body, nullptr);
 
-	ERR_FAIL_COND_V(!body->get_space(), nullptr);
+	if (!body->get_space()) {
+		return nullptr;
+	}
+
 	ERR_FAIL_COND_V_MSG(body->get_space()->is_locked(), nullptr, "Body state is inaccessible right now, wait for iteration or physics process notification.");
 
 	return body->get_direct_state();

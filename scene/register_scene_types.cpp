@@ -791,7 +791,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(MeshTexture);
 	GDREGISTER_CLASS(CurveTexture);
 	GDREGISTER_CLASS(CurveXYZTexture);
-	GDREGISTER_CLASS(GradientTexture);
+	GDREGISTER_CLASS(GradientTexture1D);
 	GDREGISTER_CLASS(GradientTexture2D);
 	GDREGISTER_CLASS(ProxyTexture);
 	GDREGISTER_CLASS(AnimatedTexture);
@@ -922,6 +922,7 @@ void register_scene_types() {
 	ClassDB::add_compatibility_class("EditorSpatialGizmo", "EditorNode3DGizmo");
 	ClassDB::add_compatibility_class("EditorSpatialGizmoPlugin", "EditorNode3DGizmoPlugin");
 	ClassDB::add_compatibility_class("Generic6DOFJoint", "Generic6DOFJoint3D");
+	ClassDB::add_compatibility_class("GradientTexture", "GradientTexture1D");
 	ClassDB::add_compatibility_class("HeightMapShape", "HeightMapShape3D");
 	ClassDB::add_compatibility_class("HingeJoint", "HingeJoint3D");
 	ClassDB::add_compatibility_class("Joint", "Joint3D");

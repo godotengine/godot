@@ -13,8 +13,7 @@
 	<methods>
 		<method name="cast_motion">
 			<return type="Array" />
-			<argument index="0" name="shape" type="PhysicsShapeQueryParameters3D" />
-			<argument index="1" name="motion" type="Vector3" />
+			<argument index="0" name="parameters" type="PhysicsShapeQueryParameters3D" />
 			<description>
 				Checks how far a [Shape3D] can move without colliding. All the parameters for the query, including the shape, are supplied through a [PhysicsShapeQueryParameters3D] object.
 				Returns an array with the safe and unsafe proportions (between 0 and 1) of the motion. The safe proportion is the maximum fraction of the motion that can be made without a collision. The unsafe proportion is the minimum fraction of the distance that must be moved for a collision. If no collision is detected a result of [code][1.0, 1.0][/code] will be returned.
@@ -23,16 +22,17 @@
 		</method>
 		<method name="collide_shape">
 			<return type="Array" />
-			<argument index="0" name="shape" type="PhysicsShapeQueryParameters3D" />
+			<argument index="0" name="parameters" type="PhysicsShapeQueryParameters3D" />
 			<argument index="1" name="max_results" type="int" default="32" />
 			<description>
 				Checks the intersections of a shape, given through a [PhysicsShapeQueryParameters3D] object, against the space. The resulting array contains a list of points where the shape intersects another. Like with [method intersect_shape], the number of returned results can be limited to save processing time.
 				Returned points are a list of pairs of contact points. For each pair the first one is in the shape passed in [PhysicsShapeQueryParameters3D] object, second one is in the collided shape from the physics space.
+				[b]Note:[/b] This method does not take into account the [code]motion[/code] property of the object.
 			</description>
 		</method>
 		<method name="get_rest_info">
 			<return type="Dictionary" />
-			<argument index="0" name="shape" type="PhysicsShapeQueryParameters3D" />
+			<argument index="0" name="parameters" type="PhysicsShapeQueryParameters3D" />
 			<description>
 				Checks the intersections of a shape, given through a [PhysicsShapeQueryParameters3D] object, against the space. If it collides with more than one shape, the nearest one is selected. The returned object is a dictionary containing the following fields:
 				[code]collider_id[/code]: The colliding object's ID.
@@ -42,18 +42,27 @@
 				[code]rid[/code]: The intersecting object's [RID].
 				[code]shape[/code]: The shape index of the colliding shape.
 				If the shape did not intersect anything, then an empty dictionary is returned instead.
+				[b]Note:[/b] This method does not take into account the [code]motion[/code] property of the object.
+			</description>
+		</method>
+		<method name="intersect_point">
+			<return type="Array" />
+			<argument index="0" name="parameters" type="PhysicsPointQueryParameters3D" />
+			<argument index="1" name="max_results" type="int" default="32" />
+			<description>
+				Checks whether a point is inside any solid shape. Position and other parameters are defined through [PhysicsPointQueryParameters3D]. The shapes the point is inside of are returned in an array containing dictionaries with the following fields:
+				[code]collider[/code]: The colliding object.
+				[code]collider_id[/code]: The colliding object's ID.
+				[code]rid[/code]: The intersecting object's [RID].
+				[code]shape[/code]: The shape index of the colliding shape.
+				The number of intersections can be limited with the [code]max_results[/code] parameter, to reduce the processing time.
 			</description>
 		</method>
 		<method name="intersect_ray">
 			<return type="Dictionary" />
-			<argument index="0" name="from" type="Vector3" />
-			<argument index="1" name="to" type="Vector3" />
-			<argument index="2" name="exclude" type="Array" default="[]" />
-			<argument index="3" name="collision_mask" type="int" default="4294967295" />
-			<argument index="4" name="collide_with_bodies" type="bool" default="true" />
-			<argument index="5" name="collide_with_areas" type="bool" default="false" />
+			<argument index="0" name="parameters" type="PhysicsRayQueryParameters3D" />
 			<description>
-				Intersects a ray in a given space. The returned object is a dictionary with the following fields:
+				Intersects a ray in a given space. Ray position and other parameters are defined through [PhysicsRayQueryParameters3D]. The returned object is a dictionary with the following fields:
 				[code]collider[/code]: The colliding object.
 				[code]collider_id[/code]: The colliding object's ID.
 				[code]normal[/code]: The object's surface normal at the intersection point.
@@ -61,12 +70,11 @@
 				[code]rid[/code]: The intersecting object's [RID].
 				[code]shape[/code]: The shape index of the colliding shape.
 				If the ray did not intersect anything, then an empty dictionary is returned instead.
-				Additionally, the method can take an [code]exclude[/code] array of objects or [RID]s that are to be excluded from collisions, a [code]collision_mask[/code] bitmask representing the physics layers to detect (all layers by default), or booleans to determine if the ray should collide with [PhysicsBody3D]s or [Area3D]s, respectively.
 			</description>
 		</method>
 		<method name="intersect_shape">
 			<return type="Array" />
-			<argument index="0" name="shape" type="PhysicsShapeQueryParameters3D" />
+			<argument index="0" name="parameters" type="PhysicsShapeQueryParameters3D" />
 			<argument index="1" name="max_results" type="int" default="32" />
 			<description>
 				Checks the intersections of a shape, given through a [PhysicsShapeQueryParameters3D] object, against the space. The intersected shapes are returned in an array containing dictionaries with the following fields:
@@ -75,6 +83,7 @@
 				[code]rid[/code]: The intersecting object's [RID].
 				[code]shape[/code]: The shape index of the colliding shape.
 				The number of intersections can be limited with the [code]max_results[/code] parameter, to reduce the processing time.
+				[b]Note:[/b] This method does not take into account the [code]motion[/code] property of the object.
 			</description>
 		</method>
 	</methods>

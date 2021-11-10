@@ -150,23 +150,25 @@ hb_ot_shape_planner_t::compile (hb_ot_shape_plan_t           &plan,
    */
 
 #ifndef HB_NO_AAT_SHAPE
-  bool has_gsub = hb_ot_layout_has_substitution (face);
+  bool has_kerx = hb_aat_layout_has_positioning (face);
+  bool has_gsub = !apply_morx && hb_ot_layout_has_substitution (face);
 #endif
   bool has_gpos = !disable_gpos && hb_ot_layout_has_positioning (face);
   if (false)
     ;
 #ifndef HB_NO_AAT_SHAPE
-  else if (hb_aat_layout_has_positioning (face) && !(has_gsub && has_gpos))
+  /* Prefer GPOS over kerx if GSUB is present;
+   * https://github.com/harfbuzz/harfbuzz/issues/3008 */
+  else if (has_kerx && !(has_gsub && has_gpos))
     plan.apply_kerx = true;
 #endif
-  else if (!apply_morx && has_gpos)
+  else if (has_gpos)
     plan.apply_gpos = true;
 
   if (!plan.apply_kerx && (!has_gpos_kern || !plan.apply_gpos))
   {
-    /* Apparently Apple applies kerx if GPOS kern was not applied. */
 #ifndef HB_NO_AAT_SHAPE
-    if (hb_aat_layout_has_positioning (face))
+    if (has_kerx)
       plan.apply_kerx = true;
     else
 #endif

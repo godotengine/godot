@@ -70,6 +70,15 @@ void FontData::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_antialiased", "antialiased"), &FontData::set_antialiased);
 	ClassDB::bind_method(D_METHOD("is_antialiased"), &FontData::is_antialiased);
 
+	ClassDB::bind_method(D_METHOD("set_font_name", "name"), &FontData::set_font_name);
+	ClassDB::bind_method(D_METHOD("get_font_name"), &FontData::get_font_name);
+
+	ClassDB::bind_method(D_METHOD("set_font_style_name", "name"), &FontData::set_font_style_name);
+	ClassDB::bind_method(D_METHOD("get_font_style_name"), &FontData::get_font_style_name);
+
+	ClassDB::bind_method(D_METHOD("set_font_style", "style"), &FontData::set_font_style);
+	ClassDB::bind_method(D_METHOD("get_font_style"), &FontData::get_font_style);
+
 	ClassDB::bind_method(D_METHOD("set_multichannel_signed_distance_field", "msdf"), &FontData::set_multichannel_signed_distance_field);
 	ClassDB::bind_method(D_METHOD("is_multichannel_signed_distance_field"), &FontData::is_multichannel_signed_distance_field);
 
@@ -190,6 +199,15 @@ bool FontData::_set(const StringName &p_name, const Variant &p_value) {
 		} else if (tokens[0] == "antialiased") {
 			set_antialiased(p_value);
 			return true;
+		} else if (tokens[0] == "font_name") {
+			set_font_name(p_value);
+			return true;
+		} else if (tokens[0] == "style_name") {
+			set_font_style_name(p_value);
+			return true;
+		} else if (tokens[0] == "font_style") {
+			set_font_style(p_value);
+			return true;
 		} else if (tokens[0] == "multichannel_signed_distance_field") {
 			set_multichannel_signed_distance_field(p_value);
 			return true;
@@ -295,6 +313,15 @@ bool FontData::_get(const StringName &p_name, Variant &r_ret) const {
 		} else if (tokens[0] == "antialiased") {
 			r_ret = is_antialiased();
 			return true;
+		} else if (tokens[0] == "font_name") {
+			r_ret = get_font_name();
+			return true;
+		} else if (tokens[0] == "style_name") {
+			r_ret = get_font_style_name();
+			return true;
+		} else if (tokens[0] == "font_style") {
+			r_ret = get_font_style();
+			return true;
 		} else if (tokens[0] == "multichannel_signed_distance_field") {
 			r_ret = is_multichannel_signed_distance_field();
 			return true;
@@ -394,6 +421,9 @@ bool FontData::_get(const StringName &p_name, Variant &r_ret) const {
 void FontData::_get_property_list(List<PropertyInfo> *p_list) const {
 	p_list->push_back(PropertyInfo(Variant::PACKED_BYTE_ARRAY, "data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE));
 
+	p_list->push_back(PropertyInfo(Variant::STRING, "font_name", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE));
+	p_list->push_back(PropertyInfo(Variant::STRING, "style_name", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE));
+	p_list->push_back(PropertyInfo(Variant::INT, "font_style", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE));
 	p_list->push_back(PropertyInfo(Variant::BOOL, "antialiased", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE));
 	p_list->push_back(PropertyInfo(Variant::BOOL, "multichannel_signed_distance_field", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE));
 	p_list->push_back(PropertyInfo(Variant::INT, "msdf_pixel_range", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE));
@@ -508,6 +538,36 @@ PackedByteArray FontData::get_data() const {
 		memcpy(data_w->ptrw(), data_ptr, data_size);
 	}
 	return data;
+}
+
+void FontData::set_font_name(const String &p_name) {
+	_ensure_rid(0);
+	TS->font_set_name(cache[0], p_name);
+}
+
+String FontData::get_font_name() const {
+	_ensure_rid(0);
+	return TS->font_get_name(cache[0]);
+}
+
+void FontData::set_font_style_name(const String &p_name) {
+	_ensure_rid(0);
+	TS->font_set_style_name(cache[0], p_name);
+}
+
+String FontData::get_font_style_name() const {
+	_ensure_rid(0);
+	return TS->font_get_style_name(cache[0]);
+}
+
+void FontData::set_font_style(uint32_t p_style) {
+	_ensure_rid(0);
+	TS->font_set_style(cache[0], p_style);
+}
+
+uint32_t FontData::get_font_style() const {
+	_ensure_rid(0);
+	return TS->font_get_style(cache[0]);
 }
 
 void FontData::set_antialiased(bool p_antialiased) {

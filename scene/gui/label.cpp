@@ -243,11 +243,9 @@ inline void draw_glyph_outline(const Glyph &p_gl, const RID &p_canvas, const Col
 	if (p_gl.font_rid != RID()) {
 		if (p_font_shadow_color.a > 0) {
 			TS->font_draw_glyph(p_gl.font_rid, p_canvas, p_gl.font_size, p_ofs + Vector2(p_gl.x_off, p_gl.y_off) + shadow_ofs, p_gl.index, p_font_shadow_color);
-			if (p_shadow_outline_size > 0) {
-				TS->font_draw_glyph_outline(p_gl.font_rid, p_canvas, p_gl.font_size, p_shadow_outline_size, p_ofs + Vector2(p_gl.x_off, p_gl.y_off) + Vector2(-shadow_ofs.x, shadow_ofs.y), p_gl.index, p_font_shadow_color);
-				TS->font_draw_glyph_outline(p_gl.font_rid, p_canvas, p_gl.font_size, p_shadow_outline_size, p_ofs + Vector2(p_gl.x_off, p_gl.y_off) + Vector2(shadow_ofs.x, -shadow_ofs.y), p_gl.index, p_font_shadow_color);
-				TS->font_draw_glyph_outline(p_gl.font_rid, p_canvas, p_gl.font_size, p_shadow_outline_size, p_ofs + Vector2(p_gl.x_off, p_gl.y_off) + Vector2(-shadow_ofs.x, -shadow_ofs.y), p_gl.index, p_font_shadow_color);
-			}
+		}
+		if (p_font_shadow_color.a > 0 && p_shadow_outline_size > 0) {
+			TS->font_draw_glyph_outline(p_gl.font_rid, p_canvas, p_gl.font_size, p_shadow_outline_size, p_ofs + Vector2(p_gl.x_off, p_gl.y_off) + shadow_ofs, p_gl.index, p_font_shadow_color);
 		}
 		if (p_font_outline_color.a != 0.0 && p_outline_size > 0) {
 			TS->font_draw_glyph_outline(p_gl.font_rid, p_canvas, p_gl.font_size, p_outline_size, p_ofs + Vector2(p_gl.x_off, p_gl.y_off), p_gl.index, p_font_outline_color);
@@ -397,7 +395,7 @@ void Label::_notification(int p_what) {
 			int ellipsis_gl_size = TS->shaped_text_get_ellipsis_glyph_count(lines_rid[i]);
 
 			// Draw outline. Note: Do not merge this into the single loop with the main text, to prevent overlaps.
-			if (font_shadow_color.a > 0 || (font_outline_color.a != 0.0 && outline_size > 0)) {
+			if ((outline_size > 0 && font_outline_color.a != 0) || (font_shadow_color.a != 0)) {
 				Vector2 offset = ofs;
 				// Draw RTL ellipsis string when necessary.
 				if (rtl && ellipsis_pos >= 0) {

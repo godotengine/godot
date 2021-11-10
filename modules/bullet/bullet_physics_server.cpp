@@ -837,8 +837,17 @@ void BulletPhysicsServer3D::body_set_ray_pickable(RID p_body, bool p_enable) {
 }
 
 PhysicsDirectBodyState3D *BulletPhysicsServer3D::body_get_direct_state(RID p_body) {
+	if (!rigid_body_owner.owns(p_body)) {
+		return nullptr;
+	}
+
 	RigidBodyBullet *body = rigid_body_owner.get_or_null(p_body);
 	ERR_FAIL_COND_V(!body, nullptr);
+
+	if (!body->get_space()) {
+		return nullptr;
+	}
+
 	return BulletPhysicsDirectBodyState3D::get_singleton(body);
 }
 

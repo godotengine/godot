@@ -30,6 +30,7 @@
 
 #include "hb-open-type.hh"
 #include "hb-ot-layout-common.hh"
+#include "hb-ot-var-common.hh"
 
 /*
  * COLR -- Color
@@ -42,7 +43,7 @@
 #endif
 
 #ifndef COLRV1_ENABLE_SUBSETTING
-#define COLRV1_ENABLE_SUBSETTING 0
+#define COLRV1_ENABLE_SUBSETTING 1
 #endif
 
 namespace OT {
@@ -121,7 +122,7 @@ struct LayerRecord
   }
 
   public:
-  HBGlyphID	glyphId;	/* Glyph ID of layer glyph */
+  HBGlyphID16	glyphId;	/* Glyph ID of layer glyph */
   Index		colorIdx;	/* Index value to use with a
 				 * selected color palette.
 				 * An index value of 0xFFFF
@@ -148,7 +149,7 @@ struct BaseGlyphRecord
   }
 
   public:
-  HBGlyphID	glyphId;	/* Glyph ID of reference glyph */
+  HBGlyphID16	glyphId;	/* Glyph ID of reference glyph */
   HBUINT16	firstLayerIdx;	/* Index (from beginning of
 				 * the Layer Records) to the
 				 * layer record. There will be
@@ -163,15 +164,31 @@ struct BaseGlyphRecord
 template <typename T>
 struct Variable
 {
+  Variable<T>* copy (hb_serialize_context_t *c) const
+  {
+    TRACE_SERIALIZE (this);
+    return_trace (c->embed (this));
+  }
+
+  void closurev1 (hb_colrv1_closure_context_t* c) const
+  { value.closurev1 (c); }
+
+  bool subset (hb_subset_context_t *c) const
+  {
+    TRACE_SUBSET (this);
+    if (!value.subset (c)) return_trace (false);
+    return_trace (c->serializer->embed (varIdxBase));
+  }
+
   bool sanitize (hb_sanitize_context_t *c) const
   {
     TRACE_SANITIZE (this);
-    return_trace (c->check_struct (this));
+    return_trace (c->check_struct (this) && value.sanitize (c));
   }
 
   protected:
   T      value;
-  VarIdx varIdx;
+  VarIdx varIdxBase;
   public:
   DEFINE_SIZE_STATIC (4 + T::static_size);
 };
@@ -179,10 +196,25 @@ struct Variable
 template <typename T>
 struct NoVariable
 {
+  NoVariable<T>* copy (hb_serialize_context_t *c) const
+  {
+    TRACE_SERIALIZE (this);
+    return_trace (c->embed (this));
+  }
+
+  void closurev1 (hb_colrv1_closure_context_t* c) const
+  { value.closurev1 (c); }
+
+  bool subset (hb_subset_context_t *c) const
+  {
+    TRACE_SUBSET (this);
+    return_trace (value.subset (c));
+  }
+
   bool sanitize (hb_sanitize_context_t *c) const
   {
     TRACE_SANITIZE (this);
-    return_trace (c->check_struct (this));
+    return_trace (c->check_struct (this) && value.sanitize (c));
   }
 
   T      value;
@@ -192,9 +224,11 @@ struct NoVariable
 
 // Color structures
 
-template <template<typename> class Var>
-struct ColorIndex
+struct ColorStop
 {
+  void closurev1 (hb_colrv1_closure_context_t* c) const
+  { c->add_palette_index (paletteIndex); }
+
   bool subset (hb_subset_context_t *c) const
   {
     TRACE_SUBSET (this);
@@ -210,32 +244,11 @@ struct ColorIndex
     return_trace (c->check_struct (this));
   }
 
+  F2DOT14	stopOffset;
   HBUINT16	paletteIndex;
-  Var<F2DOT14>	alpha;
+  F2DOT14	alpha;
   public:
-  DEFINE_SIZE_STATIC (2 + Var<F2DOT14>::static_size);
-};
-
-template <template<typename> class Var>
-struct ColorStop
-{
-  bool subset (hb_subset_context_t *c) const
-  {
-    TRACE_SUBSET (this);
-    if (unlikely (!c->serializer->embed (stopOffset))) return_trace (false);
-    return_trace (color.subset (c));
-  }
-
-  bool sanitize (hb_sanitize_context_t *c) const
-  {
-    TRACE_SANITIZE (this);
-    return_trace (c->check_struct (this));
-  }
-
-  Var<F2DOT14>		stopOffset;
-  ColorIndex<Var>		color;
-  public:
-  DEFINE_SIZE_STATIC (Var<F2DOT14>::static_size + ColorIndex<Var>::static_size);
+  DEFINE_SIZE_STATIC (2 + 2 * F2DOT14::static_size);
 };
 
 struct Extend : HBUINT8
@@ -252,6 +265,12 @@ struct Extend : HBUINT8
 template <template<typename> class Var>
 struct ColorLine
 {
+  void closurev1 (hb_colrv1_closure_context_t* c) const
+  {
+    for (const auto &stop : stops.iter ())
+      stop.closurev1 (c);
+  }
+
   bool subset (hb_subset_context_t *c) const
   {
     TRACE_SUBSET (this);
@@ -276,8 +295,8 @@ struct ColorLine
                   stops.sanitize (c));
   }
 
-  Extend			extend;
-  Array16Of<ColorStop<Var>>	stops;
+  Extend	extend;
+  Array16Of<Var<ColorStop>>	stops;
   public:
   DEFINE_SIZE_ARRAY_SIZED (3, stops);
 };
@@ -331,7 +350,6 @@ struct CompositeMode : HBUINT8
   DEFINE_SIZE_STATIC (1);
 };
 
-template <template<typename> class Var>
 struct Affine2x3
 {
   bool sanitize (hb_sanitize_context_t *c) const
@@ -340,14 +358,14 @@ struct Affine2x3
     return_trace (c->check_struct (this));
   }
 
-  Var<HBFixed> xx;
-  Var<HBFixed> yx;
-  Var<HBFixed> xy;
-  Var<HBFixed> yy;
-  Var<HBFixed> dx;
-  Var<HBFixed> dy;
+  HBFixed xx;
+  HBFixed yx;
+  HBFixed xy;
+  HBFixed yy;
+  HBFixed dx;
+  HBFixed dy;
   public:
-  DEFINE_SIZE_STATIC (6 * Var<HBFixed>::static_size);
+  DEFINE_SIZE_STATIC (6 * HBFixed::static_size);
 };
 
 struct PaintColrLayers
@@ -373,22 +391,23 @@ struct PaintColrLayers
 
   HBUINT8	format; /* format = 1 */
   HBUINT8	numLayers;
-  HBUINT32	firstLayerIndex;  /* index into COLRv1::layersV1 */
+  HBUINT32	firstLayerIndex;  /* index into COLRv1::layerList */
   public:
   DEFINE_SIZE_STATIC (6);
 };
 
-template <template<typename> class Var>
 struct PaintSolid
 {
   void closurev1 (hb_colrv1_closure_context_t* c) const
-  { c->add_palette_index (color.paletteIndex); }
+  { c->add_palette_index (paletteIndex); }
 
   bool subset (hb_subset_context_t *c) const
   {
     TRACE_SUBSET (this);
-    if (unlikely (!c->serializer->embed (format))) return_trace (false);
-    return_trace (color.subset (c));
+    auto *out = c->serializer->embed (*this);
+    if (unlikely (!out)) return_trace (false);
+    return_trace (c->serializer->check_assign (out->paletteIndex, c->plan->colr_palettes->get (paletteIndex),
+                                               HB_SERIALIZE_ERROR_INT_OVERFLOW));
   }
 
   bool sanitize (hb_sanitize_context_t *c) const
@@ -397,20 +416,18 @@ struct PaintSolid
     return_trace (c->check_struct (this));
   }
 
-  HBUINT8		format; /* format = 2(noVar) or 3(Var)*/
-  ColorIndex<Var>	color;
+  HBUINT8	format; /* format = 2(noVar) or 3(Var)*/
+  HBUINT16	paletteIndex;
+  F2DOT14	alpha;
   public:
-  DEFINE_SIZE_STATIC (1 + ColorIndex<Var>::static_size);
+  DEFINE_SIZE_STATIC (3 + F2DOT14::static_size);
 };
 
 template <template<typename> class Var>
 struct PaintLinearGradient
 {
   void closurev1 (hb_colrv1_closure_context_t* c) const
-  {
-    for (const auto &stop : (this+colorLine).stops.iter ())
-      c->add_palette_index (stop.color.paletteIndex);
-  }
+  { (this+colorLine).closurev1 (c); }
 
   bool subset (hb_subset_context_t *c) const
   {
@@ -430,19 +447,22 @@ struct PaintLinearGradient
   HBUINT8			format; /* format = 4(noVar) or 5 (Var) */
   Offset24To<ColorLine<Var>>	colorLine; /* Offset (from beginning of PaintLinearGradient
                                             * table) to ColorLine subtable. */
-  Var<FWORD>			x0;
-  Var<FWORD>			y0;
-  Var<FWORD>			x1;
-  Var<FWORD>			y1;
-  Var<FWORD>			x2;
-  Var<FWORD>			y2;
+  FWORD			x0;
+  FWORD			y0;
+  FWORD			x1;
+  FWORD			y1;
+  FWORD			x2;
+  FWORD			y2;
   public:
-  DEFINE_SIZE_STATIC (4 + 6 * Var<FWORD>::static_size);
+  DEFINE_SIZE_STATIC (4 + 6 * FWORD::static_size);
 };
 
 template <template<typename> class Var>
 struct PaintRadialGradient
 {
+  void closurev1 (hb_colrv1_closure_context_t* c) const
+  { (this+colorLine).closurev1 (c); }
+
   bool subset (hb_subset_context_t *c) const
   {
     TRACE_SUBSET (this);
@@ -450,12 +470,6 @@ struct PaintRadialGradient
     if (unlikely (!out)) return_trace (false);
 
     return_trace (out->colorLine.serialize_subset (c, colorLine, this));
-  }
-
-  void closurev1 (hb_colrv1_closure_context_t* c) const
-  {
-    for (const auto &stop : (this+colorLine).stops.iter ())
-      c->add_palette_index (stop.color.paletteIndex);
   }
 
   bool sanitize (hb_sanitize_context_t *c) const
@@ -467,19 +481,22 @@ struct PaintRadialGradient
   HBUINT8			format; /* format = 6(noVar) or 7 (Var) */
   Offset24To<ColorLine<Var>>	colorLine; /* Offset (from beginning of PaintRadialGradient
                                             * table) to ColorLine subtable. */
-  Var<FWORD>			x0;
-  Var<FWORD>			y0;
-  Var<UFWORD>			radius0;
-  Var<FWORD>			x1;
-  Var<FWORD>			y1;
-  Var<UFWORD>			radius1;
+  FWORD			x0;
+  FWORD			y0;
+  UFWORD		radius0;
+  FWORD			x1;
+  FWORD			y1;
+  UFWORD		radius1;
   public:
-  DEFINE_SIZE_STATIC (4 + 6 * Var<FWORD>::static_size);
+  DEFINE_SIZE_STATIC (4 + 6 * FWORD::static_size);
 };
 
 template <template<typename> class Var>
 struct PaintSweepGradient
 {
+  void closurev1 (hb_colrv1_closure_context_t* c) const
+  { (this+colorLine).closurev1 (c); }
+
   bool subset (hb_subset_context_t *c) const
   {
     TRACE_SUBSET (this);
@@ -487,12 +504,6 @@ struct PaintSweepGradient
     if (unlikely (!out)) return_trace (false);
 
     return_trace (out->colorLine.serialize_subset (c, colorLine, this));
-  }
-
-  void closurev1 (hb_colrv1_closure_context_t* c) const
-  {
-    for (const auto &stop : (this+colorLine).stops.iter ())
-      c->add_palette_index (stop.color.paletteIndex);
   }
 
   bool sanitize (hb_sanitize_context_t *c) const
@@ -504,12 +515,12 @@ struct PaintSweepGradient
   HBUINT8			format; /* format = 8(noVar) or 9 (Var) */
   Offset24To<ColorLine<Var>>	colorLine; /* Offset (from beginning of PaintSweepGradient
                                             * table) to ColorLine subtable. */
-  Var<FWORD>			centerX;
-  Var<FWORD>			centerY;
-  Var<HBFixed>			startAngle;
-  Var<HBFixed>			endAngle;
+  FWORD			centerX;
+  FWORD			centerY;
+  F2DOT14		startAngle;
+  F2DOT14		endAngle;
   public:
-  DEFINE_SIZE_STATIC (2 * Var<FWORD>::static_size + 2 * Var<HBFixed>::static_size);
+  DEFINE_SIZE_STATIC (4 + 2 * FWORD::static_size + 2 * F2DOT14::static_size);
 };
 
 struct Paint;
@@ -580,24 +591,25 @@ struct PaintTransform
     TRACE_SUBSET (this);
     auto *out = c->serializer->embed (this);
     if (unlikely (!out)) return_trace (false);
-
+    if (!out->transform.serialize_copy (c->serializer, transform, this)) return_trace (false);
     return_trace (out->src.serialize_subset (c, src, this));
   }
 
   bool sanitize (hb_sanitize_context_t *c) const
   {
     TRACE_SANITIZE (this);
-    return_trace (c->check_struct (this) && src.sanitize (c, this));
+    return_trace (c->check_struct (this) &&
+                  src.sanitize (c, this) &&
+                  transform.sanitize (c, this));
   }
 
-  HBUINT8		format; /* format = 12(noVar) or 13 (Var) */
-  Offset24To<Paint>	src; /* Offset (from beginning of PaintTransform table) to Paint subtable. */
-  Affine2x3<Var>	transform;
+  HBUINT8			format; /* format = 12(noVar) or 13 (Var) */
+  Offset24To<Paint>		src; /* Offset (from beginning of PaintTransform table) to Paint subtable. */
+  Offset24To<Var<Affine2x3>>	transform;
   public:
-  DEFINE_SIZE_STATIC (4 + Affine2x3<Var>::static_size);
+  DEFINE_SIZE_STATIC (7);
 };
 
-template <template<typename> class Var>
 struct PaintTranslate
 {
   HB_INTERNAL void closurev1 (hb_colrv1_closure_context_t* c) const;
@@ -619,14 +631,13 @@ struct PaintTranslate
 
   HBUINT8		format; /* format = 14(noVar) or 15 (Var) */
   Offset24To<Paint>	src; /* Offset (from beginning of PaintTranslate table) to Paint subtable. */
-  Var<HBFixed>		dx;
-  Var<HBFixed>		dy;
+  FWORD		dx;
+  FWORD		dy;
   public:
-  DEFINE_SIZE_STATIC (4 + Var<HBFixed>::static_size);
+  DEFINE_SIZE_STATIC (4 + 2 * FWORD::static_size);
 };
 
-template <template<typename> class Var>
-struct PaintRotate
+struct PaintScale
 {
   HB_INTERNAL void closurev1 (hb_colrv1_closure_context_t* c) const;
 
@@ -646,15 +657,150 @@ struct PaintRotate
   }
 
   HBUINT8		format; /* format = 16 (noVar) or 17(Var) */
-  Offset24To<Paint>	src; /* Offset (from beginning of PaintRotate table) to Paint subtable. */
-  Var<HBFixed>		angle;
-  Var<HBFixed>		centerX;
-  Var<HBFixed>		centerY;
+  Offset24To<Paint>	src; /* Offset (from beginning of PaintScale table) to Paint subtable. */
+  F2DOT14		scaleX;
+  F2DOT14		scaleY;
   public:
-  DEFINE_SIZE_STATIC (4 + 3 * Var<HBFixed>::static_size);
+  DEFINE_SIZE_STATIC (4 + 2 * F2DOT14::static_size);
 };
 
-template <template<typename> class Var>
+struct PaintScaleAroundCenter
+{
+  HB_INTERNAL void closurev1 (hb_colrv1_closure_context_t* c) const;
+
+  bool subset (hb_subset_context_t *c) const
+  {
+    TRACE_SUBSET (this);
+    auto *out = c->serializer->embed (this);
+    if (unlikely (!out)) return_trace (false);
+
+    return_trace (out->src.serialize_subset (c, src, this));
+  }
+
+  bool sanitize (hb_sanitize_context_t *c) const
+  {
+    TRACE_SANITIZE (this);
+    return_trace (c->check_struct (this) && src.sanitize (c, this));
+  }
+
+  HBUINT8		format; /* format = 18 (noVar) or 19(Var) */
+  Offset24To<Paint>	src; /* Offset (from beginning of PaintScaleAroundCenter table) to Paint subtable. */
+  F2DOT14	scaleX;
+  F2DOT14	scaleY;
+  FWORD		centerX;
+  FWORD		centerY;
+  public:
+  DEFINE_SIZE_STATIC (4 + 2 * F2DOT14::static_size + 2 * FWORD::static_size);
+};
+
+struct PaintScaleUniform
+{
+  HB_INTERNAL void closurev1 (hb_colrv1_closure_context_t* c) const;
+
+  bool subset (hb_subset_context_t *c) const
+  {
+    TRACE_SUBSET (this);
+    auto *out = c->serializer->embed (this);
+    if (unlikely (!out)) return_trace (false);
+
+    return_trace (out->src.serialize_subset (c, src, this));
+  }
+
+  bool sanitize (hb_sanitize_context_t *c) const
+  {
+    TRACE_SANITIZE (this);
+    return_trace (c->check_struct (this) && src.sanitize (c, this));
+  }
+
+  HBUINT8		format; /* format = 20 (noVar) or 21(Var) */
+  Offset24To<Paint>	src; /* Offset (from beginning of PaintScaleUniform table) to Paint subtable. */
+  F2DOT14		scale;
+  public:
+  DEFINE_SIZE_STATIC (4 + F2DOT14::static_size);
+};
+
+struct PaintScaleUniformAroundCenter
+{
+  HB_INTERNAL void closurev1 (hb_colrv1_closure_context_t* c) const;
+
+  bool subset (hb_subset_context_t *c) const
+  {
+    TRACE_SUBSET (this);
+    auto *out = c->serializer->embed (this);
+    if (unlikely (!out)) return_trace (false);
+
+    return_trace (out->src.serialize_subset (c, src, this));
+  }
+
+  bool sanitize (hb_sanitize_context_t *c) const
+  {
+    TRACE_SANITIZE (this);
+    return_trace (c->check_struct (this) && src.sanitize (c, this));
+  }
+
+  HBUINT8		format; /* format = 22 (noVar) or 23(Var) */
+  Offset24To<Paint>	src; /* Offset (from beginning of PaintScaleUniformAroundCenter table) to Paint subtable. */
+  F2DOT14	scale;
+  FWORD		centerX;
+  FWORD		centerY;
+  public:
+  DEFINE_SIZE_STATIC (4 + F2DOT14::static_size + 2 * FWORD::static_size);
+};
+
+struct PaintRotate
+{
+  HB_INTERNAL void closurev1 (hb_colrv1_closure_context_t* c) const;
+
+  bool subset (hb_subset_context_t *c) const
+  {
+    TRACE_SUBSET (this);
+    auto *out = c->serializer->embed (this);
+    if (unlikely (!out)) return_trace (false);
+
+    return_trace (out->src.serialize_subset (c, src, this));
+  }
+
+  bool sanitize (hb_sanitize_context_t *c) const
+  {
+    TRACE_SANITIZE (this);
+    return_trace (c->check_struct (this) && src.sanitize (c, this));
+  }
+
+  HBUINT8		format; /* format = 24 (noVar) or 25(Var) */
+  Offset24To<Paint>	src; /* Offset (from beginning of PaintRotate table) to Paint subtable. */
+  F2DOT14		angle;
+  public:
+  DEFINE_SIZE_STATIC (4 + F2DOT14::static_size);
+};
+
+struct PaintRotateAroundCenter
+{
+  HB_INTERNAL void closurev1 (hb_colrv1_closure_context_t* c) const;
+
+  bool subset (hb_subset_context_t *c) const
+  {
+    TRACE_SUBSET (this);
+    auto *out = c->serializer->embed (this);
+    if (unlikely (!out)) return_trace (false);
+
+    return_trace (out->src.serialize_subset (c, src, this));
+  }
+
+  bool sanitize (hb_sanitize_context_t *c) const
+  {
+    TRACE_SANITIZE (this);
+    return_trace (c->check_struct (this) && src.sanitize (c, this));
+  }
+
+  HBUINT8		format; /* format = 26 (noVar) or 27(Var) */
+  Offset24To<Paint>	src; /* Offset (from beginning of PaintRotateAroundCenter table) to Paint subtable. */
+  F2DOT14	angle;
+  FWORD		centerX;
+  FWORD		centerY;
+  public:
+  DEFINE_SIZE_STATIC (4 + F2DOT14::static_size + 2 * FWORD::static_size);
+};
+
 struct PaintSkew
 {
   HB_INTERNAL void closurev1 (hb_colrv1_closure_context_t* c) const;
@@ -674,14 +820,41 @@ struct PaintSkew
     return_trace (c->check_struct (this) && src.sanitize (c, this));
   }
 
-  HBUINT8		format; /* format = 18(noVar) or 19 (Var) */
+  HBUINT8		format; /* format = 28(noVar) or 29 (Var) */
   Offset24To<Paint>	src; /* Offset (from beginning of PaintSkew table) to Paint subtable. */
-  Var<HBFixed>		xSkewAngle;
-  Var<HBFixed>		ySkewAngle;
-  Var<HBFixed>		centerX;
-  Var<HBFixed>		centerY;
+  F2DOT14		xSkewAngle;
+  F2DOT14		ySkewAngle;
   public:
-  DEFINE_SIZE_STATIC (4 + 4 * Var<HBFixed>::static_size);
+  DEFINE_SIZE_STATIC (4 + 2 * F2DOT14::static_size);
+};
+
+struct PaintSkewAroundCenter
+{
+  HB_INTERNAL void closurev1 (hb_colrv1_closure_context_t* c) const;
+
+  bool subset (hb_subset_context_t *c) const
+  {
+    TRACE_SUBSET (this);
+    auto *out = c->serializer->embed (this);
+    if (unlikely (!out)) return_trace (false);
+
+    return_trace (out->src.serialize_subset (c, src, this));
+  }
+
+  bool sanitize (hb_sanitize_context_t *c) const
+  {
+    TRACE_SANITIZE (this);
+    return_trace (c->check_struct (this) && src.sanitize (c, this));
+  }
+
+  HBUINT8		format; /* format = 30(noVar) or 31 (Var) */
+  Offset24To<Paint>	src; /* Offset (from beginning of PaintSkewAroundCenter table) to Paint subtable. */
+  F2DOT14	xSkewAngle;
+  F2DOT14	ySkewAngle;
+  FWORD		centerX;
+  FWORD		centerY;
+  public:
+  DEFINE_SIZE_STATIC (4 + 2 * F2DOT14::static_size + 2 * FWORD::static_size);
 };
 
 struct PaintComposite
@@ -706,12 +879,185 @@ struct PaintComposite
                   backdrop.sanitize (c, this));
   }
 
-  HBUINT8		format; /* format = 20 */
+  HBUINT8		format; /* format = 32 */
   Offset24To<Paint>	src; /* Offset (from beginning of PaintComposite table) to source Paint subtable. */
   CompositeMode		mode;   /* If mode is unrecognized use COMPOSITE_CLEAR */
   Offset24To<Paint>	backdrop; /* Offset (from beginning of PaintComposite table) to backdrop Paint subtable. */
   public:
   DEFINE_SIZE_STATIC (8);
+};
+
+struct ClipBoxFormat1
+{
+  bool sanitize (hb_sanitize_context_t *c) const
+  {
+    TRACE_SANITIZE (this);
+    return_trace (c->check_struct (this));
+  }
+
+  public:
+  HBUINT8	format; /* format = 1(noVar) or 2(Var)*/
+  FWORD		xMin;
+  FWORD		yMin;
+  FWORD		xMax;
+  FWORD		yMax;
+  public:
+  DEFINE_SIZE_STATIC (1 + 4 * FWORD::static_size);
+};
+
+struct ClipBoxFormat2 : Variable<ClipBoxFormat1> {};
+
+struct ClipBox
+{
+  ClipBox* copy (hb_serialize_context_t *c) const
+  {
+    TRACE_SERIALIZE (this);
+    switch (u.format) {
+    case 1: return_trace (reinterpret_cast<ClipBox *> (c->embed (u.format1)));
+    case 2: return_trace (reinterpret_cast<ClipBox *> (c->embed (u.format2)));
+    default:return_trace (nullptr);
+    }
+  }
+
+  template <typename context_t, typename ...Ts>
+  typename context_t::return_t dispatch (context_t *c, Ts&&... ds) const
+  {
+    TRACE_DISPATCH (this, u.format);
+    if (unlikely (!c->may_dispatch (this, &u.format))) return_trace (c->no_dispatch_return_value ());
+    switch (u.format) {
+    case 1: return_trace (c->dispatch (u.format1, std::forward<Ts> (ds)...));
+    case 2: return_trace (c->dispatch (u.format2, std::forward<Ts> (ds)...));
+    default:return_trace (c->default_return_value ());
+    }
+  }
+
+  protected:
+  union {
+  HBUINT8		format;         /* Format identifier */
+  ClipBoxFormat1	format1;
+  ClipBoxFormat2	format2;
+  } u;
+};
+
+struct ClipRecord
+{
+  ClipRecord* copy (hb_serialize_context_t *c, const void *base) const
+  {
+    TRACE_SERIALIZE (this);
+    auto *out = c->embed (this);
+    if (unlikely (!out)) return_trace (nullptr);
+    if (!out->clipBox.serialize_copy (c, clipBox, base)) return_trace (nullptr);
+    return_trace (out);
+  }
+
+  bool sanitize (hb_sanitize_context_t *c, const void *base) const
+  {
+    TRACE_SANITIZE (this);
+    return_trace (c->check_struct (this) && clipBox.sanitize (c, base));
+  }
+
+  public:
+  HBUINT16		startGlyphID;  // first gid clip applies to
+  HBUINT16		endGlyphID;    // last gid clip applies to, inclusive
+  Offset24To<ClipBox>	clipBox;   // Box or VarBox
+  public:
+  DEFINE_SIZE_STATIC (7);
+};
+
+struct ClipList
+{
+  unsigned serialize_clip_records (hb_serialize_context_t *c,
+                                   const hb_set_t& gids,
+                                   const hb_map_t& gid_offset_map) const
+  {
+    TRACE_SERIALIZE (this);
+    if (gids.is_empty () ||
+        gid_offset_map.get_population () != gids.get_population ())
+      return_trace (0);
+
+    unsigned count  = 0;
+
+    hb_codepoint_t start_gid= gids.get_min ();
+    hb_codepoint_t prev_gid = start_gid;
+
+    unsigned offset = gid_offset_map.get (start_gid);
+    unsigned prev_offset = offset;
+    for (const hb_codepoint_t _ : gids.iter ())
+    {
+      if (_ == start_gid) continue;
+      
+      offset = gid_offset_map.get (_);
+      if (_ == prev_gid + 1 &&  offset == prev_offset)
+      {
+        prev_gid = _;
+        continue;
+      }
+
+      ClipRecord record;
+      record.startGlyphID = start_gid;
+      record.endGlyphID = prev_gid;
+      record.clipBox = prev_offset;
+
+      if (!c->copy (record, this)) return_trace (0);
+      count++;
+
+      start_gid = _;
+      prev_gid = _;
+      prev_offset = offset;
+    }
+
+    //last one
+    {
+      ClipRecord record;
+      record.startGlyphID = start_gid;
+      record.endGlyphID = prev_gid;
+      record.clipBox = prev_offset;
+      if (!c->copy (record, this)) return_trace (0);
+      count++;
+    }
+    return_trace (count);
+  }
+
+  bool subset (hb_subset_context_t *c) const
+  {
+    TRACE_SUBSET (this);
+    auto *out = c->serializer->start_embed (*this);
+    if (unlikely (!c->serializer->extend_min (out))) return_trace (false);
+    if (!c->serializer->check_assign (out->format, format, HB_SERIALIZE_ERROR_INT_OVERFLOW)) return_trace (false);
+
+    const hb_set_t& glyphset = *c->plan->_glyphset;
+    const hb_map_t &glyph_map = *c->plan->glyph_map;
+    
+    hb_map_t new_gid_offset_map;
+    hb_set_t new_gids;
+    for (const ClipRecord& record : clips.iter ())
+    {
+      unsigned start_gid = record.startGlyphID;
+      unsigned end_gid = record.endGlyphID;
+      for (unsigned gid = start_gid; gid <= end_gid; gid++)
+      {
+        if (!glyphset.has (gid) || !glyph_map.has (gid)) continue;
+        unsigned new_gid = glyph_map.get (gid);
+        new_gid_offset_map.set (new_gid, record.clipBox);
+        new_gids.add (new_gid);
+      }
+    }
+
+    unsigned count = serialize_clip_records (c->serializer, new_gids, new_gid_offset_map);
+    if (!count) return_trace (false);
+    return_trace (c->serializer->check_assign (out->clips.len, count, HB_SERIALIZE_ERROR_INT_OVERFLOW));
+  }
+
+  bool sanitize (hb_sanitize_context_t *c) const
+  {
+    TRACE_SANITIZE (this);
+    return_trace (c->check_struct (this) && clips.sanitize (c, this));
+  }
+
+  HBUINT8			format;  // Set to 1.
+  Array32Of<ClipRecord>		clips;  // Clip records, sorted by startGlyphID
+  public:
+  DEFINE_SIZE_ARRAY_SIZED (5, clips);
 };
 
 struct Paint
@@ -722,57 +1068,81 @@ struct Paint
     TRACE_DISPATCH (this, u.format);
     if (unlikely (!c->may_dispatch (this, &u.format))) return_trace (c->no_dispatch_return_value ());
     switch (u.format) {
-    case 1: return_trace (c->dispatch (u.paintformat1, hb_forward<Ts> (ds)...));
-    case 2: return_trace (c->dispatch (u.paintformat2, hb_forward<Ts> (ds)...));
-    case 3: return_trace (c->dispatch (u.paintformat3, hb_forward<Ts> (ds)...));
-    case 4: return_trace (c->dispatch (u.paintformat4, hb_forward<Ts> (ds)...));
-    case 5: return_trace (c->dispatch (u.paintformat5, hb_forward<Ts> (ds)...));
-    case 6: return_trace (c->dispatch (u.paintformat6, hb_forward<Ts> (ds)...));
-    case 7: return_trace (c->dispatch (u.paintformat7, hb_forward<Ts> (ds)...));
-    case 8: return_trace (c->dispatch (u.paintformat8, hb_forward<Ts> (ds)...));
-    case 9: return_trace (c->dispatch (u.paintformat9, hb_forward<Ts> (ds)...));
-    case 10: return_trace (c->dispatch (u.paintformat10, hb_forward<Ts> (ds)...));
-    case 11: return_trace (c->dispatch (u.paintformat11, hb_forward<Ts> (ds)...));
-    case 12: return_trace (c->dispatch (u.paintformat12, hb_forward<Ts> (ds)...));
-    case 13: return_trace (c->dispatch (u.paintformat13, hb_forward<Ts> (ds)...));
-    case 14: return_trace (c->dispatch (u.paintformat14, hb_forward<Ts> (ds)...));
-    case 15: return_trace (c->dispatch (u.paintformat15, hb_forward<Ts> (ds)...));
-    case 16: return_trace (c->dispatch (u.paintformat16, hb_forward<Ts> (ds)...));
-    case 17: return_trace (c->dispatch (u.paintformat17, hb_forward<Ts> (ds)...));
-    case 18: return_trace (c->dispatch (u.paintformat18, hb_forward<Ts> (ds)...));
-    case 19: return_trace (c->dispatch (u.paintformat19, hb_forward<Ts> (ds)...));
-    case 20: return_trace (c->dispatch (u.paintformat20, hb_forward<Ts> (ds)...));
+    case 1: return_trace (c->dispatch (u.paintformat1, std::forward<Ts> (ds)...));
+    case 2: return_trace (c->dispatch (u.paintformat2, std::forward<Ts> (ds)...));
+    case 3: return_trace (c->dispatch (u.paintformat3, std::forward<Ts> (ds)...));
+    case 4: return_trace (c->dispatch (u.paintformat4, std::forward<Ts> (ds)...));
+    case 5: return_trace (c->dispatch (u.paintformat5, std::forward<Ts> (ds)...));
+    case 6: return_trace (c->dispatch (u.paintformat6, std::forward<Ts> (ds)...));
+    case 7: return_trace (c->dispatch (u.paintformat7, std::forward<Ts> (ds)...));
+    case 8: return_trace (c->dispatch (u.paintformat8, std::forward<Ts> (ds)...));
+    case 9: return_trace (c->dispatch (u.paintformat9, std::forward<Ts> (ds)...));
+    case 10: return_trace (c->dispatch (u.paintformat10, std::forward<Ts> (ds)...));
+    case 11: return_trace (c->dispatch (u.paintformat11, std::forward<Ts> (ds)...));
+    case 12: return_trace (c->dispatch (u.paintformat12, std::forward<Ts> (ds)...));
+    case 13: return_trace (c->dispatch (u.paintformat13, std::forward<Ts> (ds)...));
+    case 14: return_trace (c->dispatch (u.paintformat14, std::forward<Ts> (ds)...));
+    case 15: return_trace (c->dispatch (u.paintformat15, std::forward<Ts> (ds)...));
+    case 16: return_trace (c->dispatch (u.paintformat16, std::forward<Ts> (ds)...));
+    case 17: return_trace (c->dispatch (u.paintformat17, std::forward<Ts> (ds)...));
+    case 18: return_trace (c->dispatch (u.paintformat18, std::forward<Ts> (ds)...));
+    case 19: return_trace (c->dispatch (u.paintformat19, std::forward<Ts> (ds)...));
+    case 20: return_trace (c->dispatch (u.paintformat20, std::forward<Ts> (ds)...));
+    case 21: return_trace (c->dispatch (u.paintformat21, std::forward<Ts> (ds)...));
+    case 22: return_trace (c->dispatch (u.paintformat22, std::forward<Ts> (ds)...));
+    case 23: return_trace (c->dispatch (u.paintformat23, std::forward<Ts> (ds)...));
+    case 24: return_trace (c->dispatch (u.paintformat24, std::forward<Ts> (ds)...));
+    case 25: return_trace (c->dispatch (u.paintformat25, std::forward<Ts> (ds)...));
+    case 26: return_trace (c->dispatch (u.paintformat26, std::forward<Ts> (ds)...));
+    case 27: return_trace (c->dispatch (u.paintformat27, std::forward<Ts> (ds)...));
+    case 28: return_trace (c->dispatch (u.paintformat28, std::forward<Ts> (ds)...));
+    case 29: return_trace (c->dispatch (u.paintformat29, std::forward<Ts> (ds)...));
+    case 30: return_trace (c->dispatch (u.paintformat30, std::forward<Ts> (ds)...));
+    case 31: return_trace (c->dispatch (u.paintformat31, std::forward<Ts> (ds)...));
+    case 32: return_trace (c->dispatch (u.paintformat32, std::forward<Ts> (ds)...));
     default:return_trace (c->default_return_value ());
     }
   }
 
   protected:
   union {
-  HBUINT8				format;
-  PaintColrLayers			paintformat1;
-  PaintSolid<NoVariable>		paintformat2;
-  PaintSolid<Variable>			paintformat3;
-  PaintLinearGradient<NoVariable>	paintformat4;
-  PaintLinearGradient<Variable>		paintformat5;
-  PaintRadialGradient<NoVariable>	paintformat6;
-  PaintRadialGradient<Variable>		paintformat7;
-  PaintSweepGradient<NoVariable>	paintformat8;
-  PaintSweepGradient<Variable>		paintformat9;
-  PaintGlyph				paintformat10;
-  PaintColrGlyph			paintformat11;
-  PaintTransform<NoVariable>		paintformat12;
-  PaintTransform<Variable>		paintformat13;
-  PaintTranslate<NoVariable>		paintformat14;
-  PaintTranslate<Variable>		paintformat15;
-  PaintRotate<NoVariable>		paintformat16;
-  PaintRotate<Variable>			paintformat17;
-  PaintSkew<NoVariable>			paintformat18;
-  PaintSkew<Variable>			paintformat19;
-  PaintComposite			paintformat20;
+  HBUINT8					format;
+  PaintColrLayers				paintformat1;
+  PaintSolid					paintformat2;
+  Variable<PaintSolid>				paintformat3;
+  PaintLinearGradient<NoVariable>		paintformat4;
+  Variable<PaintLinearGradient<Variable>>	paintformat5;
+  PaintRadialGradient<NoVariable>		paintformat6;
+  Variable<PaintRadialGradient<Variable>>	paintformat7;
+  PaintSweepGradient<NoVariable>		paintformat8;
+  Variable<PaintSweepGradient<Variable>>	paintformat9;
+  PaintGlyph					paintformat10;
+  PaintColrGlyph				paintformat11;
+  PaintTransform<NoVariable>			paintformat12;
+  PaintTransform<Variable>			paintformat13;
+  PaintTranslate				paintformat14;
+  Variable<PaintTranslate>			paintformat15;
+  PaintScale					paintformat16;
+  Variable<PaintScale>				paintformat17;
+  PaintScaleAroundCenter			paintformat18;
+  Variable<PaintScaleAroundCenter>		paintformat19;
+  PaintScaleUniform				paintformat20;
+  Variable<PaintScaleUniform>			paintformat21;
+  PaintScaleUniformAroundCenter			paintformat22;
+  Variable<PaintScaleUniformAroundCenter>	paintformat23;
+  PaintRotate					paintformat24;
+  Variable<PaintRotate>				paintformat25;
+  PaintRotateAroundCenter			paintformat26;
+  Variable<PaintRotateAroundCenter>		paintformat27;
+  PaintSkew					paintformat28;
+  Variable<PaintSkew>				paintformat29;
+  PaintSkewAroundCenter				paintformat30;
+  Variable<PaintSkewAroundCenter>		paintformat31;
+  PaintComposite				paintformat32;
   } u;
 };
 
-struct BaseGlyphV1Record
+struct BaseGlyphPaintRecord
 {
   int cmp (hb_codepoint_t g) const
   { return g < glyphId ? -1 : g > glyphId ? 1 : 0; }
@@ -797,14 +1167,14 @@ struct BaseGlyphV1Record
   }
 
   public:
-  HBGlyphID		glyphId;    /* Glyph ID of reference glyph */
-  Offset32To<Paint>	paint;      /* Offset (from beginning of BaseGlyphV1Record array) to Paint,
+  HBGlyphID16		glyphId;    /* Glyph ID of reference glyph */
+  Offset32To<Paint>	paint;      /* Offset (from beginning of BaseGlyphPaintRecord array) to Paint,
                                      * Typically PaintColrLayers */
   public:
   DEFINE_SIZE_STATIC (6);
 };
 
-struct BaseGlyphV1List : SortedArray32Of<BaseGlyphV1Record>
+struct BaseGlyphList : SortedArray32Of<BaseGlyphPaintRecord>
 {
   bool subset (hb_subset_context_t *c) const
   {
@@ -828,11 +1198,11 @@ struct BaseGlyphV1List : SortedArray32Of<BaseGlyphV1Record>
   bool sanitize (hb_sanitize_context_t *c) const
   {
     TRACE_SANITIZE (this);
-    return_trace (SortedArray32Of<BaseGlyphV1Record>::sanitize (c, this));
+    return_trace (SortedArray32Of<BaseGlyphPaintRecord>::sanitize (c, this));
   }
 };
 
-struct LayerV1List : Array32OfOffset32To<Paint>
+struct LayerList : Array32OfOffset32To<Paint>
 {
   const Paint& get_paint (unsigned i) const
   { return this+(*this)[i]; }
@@ -952,24 +1322,24 @@ struct COLR
     hb_set_t visited_glyphs;
 
     hb_colrv1_closure_context_t c (this, &visited_glyphs, layer_indices, palette_indices);
-    const BaseGlyphV1List &baseglyphV1_records = this+baseGlyphsV1List;
+    const BaseGlyphList &baseglyph_paintrecords = this+baseGlyphList;
 
-    for (const BaseGlyphV1Record &baseglyphV1record: baseglyphV1_records.iter ())
+    for (const BaseGlyphPaintRecord &baseglyph_paintrecord: baseglyph_paintrecords.iter ())
     {
-      unsigned gid = baseglyphV1record.glyphId;
+      unsigned gid = baseglyph_paintrecord.glyphId;
       if (!glyphset->has (gid)) continue;
 
-      const Paint &paint = &baseglyphV1_records+baseglyphV1record.paint;
+      const Paint &paint = &baseglyph_paintrecords+baseglyph_paintrecord.paint;
       paint.dispatch (&c);
     }
     hb_set_union (glyphset, &visited_glyphs);
   }
 
-  const LayerV1List& get_layerV1List () const
-  { return (this+layersV1); }
+  const LayerList& get_layerList () const
+  { return (this+layerList); }
 
-  const BaseGlyphV1List& get_baseglyphV1List () const
-  { return (this+baseGlyphsV1List); }
+  const BaseGlyphList& get_baseglyphList () const
+  { return (this+baseGlyphList); }
 
   bool sanitize (hb_sanitize_context_t *c) const
   {
@@ -979,8 +1349,10 @@ struct COLR
                   (this+layersZ).sanitize (c, numLayers) &&
                   (version == 0 ||
 		   (COLRV1_ENABLE_SUBSETTING && version == 1 &&
-		    baseGlyphsV1List.sanitize (c, this) &&
-		    layersV1.sanitize (c, this) &&
+		    baseGlyphList.sanitize (c, this) &&
+		    layerList.sanitize (c, this) &&
+		    clipList.sanitize (c, this) &&
+		    varIdxMap.sanitize (c, this) &&
 		    varStore.sanitize (c, this))));
   }
 
@@ -996,19 +1368,17 @@ struct COLR
     if (unlikely (base_it.len () != layer_it.len ()))
       return_trace (false);
 
-    if (unlikely (!c->extend_min (this))) return_trace (false);
     this->version = version;
     numLayers = 0;
     numBaseGlyphs = base_it.len ();
-    if (base_it.len () == 0)
+    if (numBaseGlyphs == 0)
     {
       baseGlyphsZ = 0;
       layersZ = 0;
       return_trace (true);
     }
-    baseGlyphsZ = COLR::min_size;
-    layersZ = COLR::min_size + numBaseGlyphs * BaseGlyphRecord::min_size;
 
+    c->push ();
     for (const hb_item_type<BaseIterator> _ : + base_it.iter ())
     {
       auto* record = c->embed (_);
@@ -1016,9 +1386,13 @@ struct COLR
       record->firstLayerIdx = numLayers;
       numLayers += record->numLayers;
     }
+    c->add_link (baseGlyphsZ, c->pop_pack ());
 
+    c->push ();
     for (const hb_item_type<LayerIterator>& _ : + layer_it.iter ())
       _.as_array ().copy (c);
+
+    c->add_link (layersZ, c->pop_pack ());
 
     return_trace (true);
   }
@@ -1033,9 +1407,9 @@ struct COLR
     return record;
   }
 
-  const BaseGlyphV1Record* get_base_glyphV1_record (hb_codepoint_t gid) const
+  const BaseGlyphPaintRecord* get_base_glyph_paintrecord (hb_codepoint_t gid) const
   {
-    const BaseGlyphV1Record* record = &(this+baseGlyphsV1List).bsearch ((unsigned) gid);
+    const BaseGlyphPaintRecord* record = &(this+baseGlyphList).bsearch ((unsigned) gid);
     if ((record && (hb_codepoint_t) record->glyphId != gid))
       record = nullptr;
     return record;
@@ -1101,23 +1475,26 @@ struct COLR
       return_trace (false);
 
     COLR *colr_prime = c->serializer->start_embed<COLR> ();
-    bool ret = colr_prime->serialize_V0 (c->serializer, version, base_it, layer_it);
+    if (unlikely (!c->serializer->extend_min (colr_prime)))  return_trace (false);
 
-    if (version == 0) return_trace (ret);
+    if (version == 0)
+    return_trace (colr_prime->serialize_V0 (c->serializer, version, base_it, layer_it));
+
     auto snap = c->serializer->snapshot ();
-    if (!c->serializer->allocate_size<void> (3 * HBUINT32::static_size)) return_trace (false);
-    if (!colr_prime->baseGlyphsV1List.serialize_subset (c, baseGlyphsV1List, this))
+    if (!c->serializer->allocate_size<void> (5 * HBUINT32::static_size)) return_trace (false);
+    if (!colr_prime->baseGlyphList.serialize_subset (c, baseGlyphList, this))
     {
       if (c->serializer->in_error ()) return_trace (false);
       //no more COLRv1 glyphs: downgrade to version 0
       c->serializer->revert (snap);
-      colr_prime->version = 0;
-      return_trace (true);
+      return_trace (colr_prime->serialize_V0 (c->serializer, 0, base_it, layer_it));
     }
 
-    if (!colr_prime->layersV1.serialize_subset (c, layersV1, this)) return_trace (false);
+    if (!colr_prime->serialize_V0 (c->serializer, version, base_it, layer_it)) return_trace (false);
 
-    colr_prime->varStore = 0;
+    colr_prime->layerList.serialize_subset (c, layerList, this);
+    colr_prime->clipList.serialize_subset (c, clipList, this);
+    colr_prime->varIdxMap.serialize_copy (c->serializer, varIdxMap, this);
     //TODO: subset varStore once it's implemented in fonttools
     return_trace (true);
   }
@@ -1131,8 +1508,10 @@ struct COLR
 		layersZ;	/* Offset to Layer Records. */
   HBUINT16	numLayers;	/* Number of Layer Records. */
   // Version-1 additions
-  Offset32To<BaseGlyphV1List>		baseGlyphsV1List;
-  Offset32To<LayerV1List>		layersV1;
+  Offset32To<BaseGlyphList>		baseGlyphList;
+  Offset32To<LayerList>			layerList;
+  Offset32To<ClipList>			clipList;   // Offset to ClipList table (may be NULL)
+  Offset32To<DeltaSetIndexMap>		varIdxMap;  // Offset to DeltaSetIndexMap table (may be NULL)
   Offset32To<VariationStore>		varStore;
   public:
   DEFINE_SIZE_MIN (14);

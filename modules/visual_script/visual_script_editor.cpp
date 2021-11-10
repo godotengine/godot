@@ -2195,20 +2195,20 @@ void VisualScriptEditor::drop_data_fw(const Point2 &p_point, const Variant &p_da
 
 		Ref<VisualScriptNode> vnode;
 		if (use_set) {
-			Ref<VisualScriptVariableSet> vnodes;
-			vnodes.instantiate();
-			vnodes->set_variable(d["variable"]);
-			vnode = vnodes;
+			Ref<VisualScriptPropertySet> pset;
+			pset.instantiate();
+			vnode = pset;
 		} else {
-			Ref<VisualScriptVariableGet> vnodeg;
-			vnodeg.instantiate();
-			vnodeg->set_variable(d["variable"]);
-			vnode = vnodeg;
+			Ref<VisualScriptPropertyGet> pget;
+			pget.instantiate();
+			vnode = pget;
 		}
 
 		int new_id = script->get_available_id();
-
 		undo_redo->create_action(TTR("Add Node"));
+		undo_redo->add_do_method(vnode.ptr(), "set_property", d["variable"]);
+		undo_redo->add_do_method(vnode.ptr(), "set_base_script", script->get_path());
+
 		undo_redo->add_do_method(script.ptr(), "add_node", new_id, vnode, pos);
 		undo_redo->add_undo_method(script.ptr(), "remove_node", new_id);
 		undo_redo->add_do_method(this, "_update_graph");
@@ -2451,12 +2451,14 @@ void VisualScriptEditor::drop_data_fw(const Point2 &p_point, const Variant &p_da
 				pget.instantiate();
 				pget->set_call_mode(VisualScriptPropertyGet::CALL_MODE_INSTANCE);
 				pget->set_base_type(obj->get_class());
-
 				vnode = pget;
 			}
 
 			undo_redo->add_do_method(script.ptr(), "add_node", base_id, vnode, pos);
 			undo_redo->add_do_method(vnode.ptr(), "set_property", d["property"]);
+			if (!obj->get_script().is_null()) {
+				undo_redo->add_do_method(vnode.ptr(), "set_base_script", Ref<Script>(obj->get_script())->get_path());
+			}
 			if (!use_get) {
 				undo_redo->add_do_method(vnode.ptr(), "set_default_input_value", 0, d["value"]);
 			}
@@ -2487,7 +2489,6 @@ void VisualScriptEditor::drop_data_fw(const Point2 &p_point, const Variant &p_da
 					pset->set_call_mode(VisualScriptPropertySet::CALL_MODE_NODE_PATH);
 					pset->set_base_path(sn->get_path_to(node));
 				}
-
 				vnode = pset;
 			} else {
 				Ref<VisualScriptPropertyGet> pget;
@@ -2502,9 +2503,13 @@ void VisualScriptEditor::drop_data_fw(const Point2 &p_point, const Variant &p_da
 			}
 			undo_redo->add_do_method(script.ptr(), "add_node", base_id, vnode, pos);
 			undo_redo->add_do_method(vnode.ptr(), "set_property", d["property"]);
+			if (!obj->get_script().is_null()) {
+				undo_redo->add_do_method(vnode.ptr(), "set_base_script", Ref<Script>(obj->get_script())->get_path());
+			}
 			if (!use_get) {
 				undo_redo->add_do_method(vnode.ptr(), "set_default_input_value", 0, d["value"]);
 			}
+
 			undo_redo->add_undo_method(script.ptr(), "remove_node", base_id);
 
 			undo_redo->add_do_method(this, "_update_graph");
@@ -2582,18 +2587,21 @@ void VisualScriptEditor::reload_text() {
 String VisualScriptEditor::get_name() {
 	String name;
 
-	if (!script->is_built_in()) {
-		name = script->get_path().get_file();
-		if (is_unsaved()) {
-			if (script->get_path().is_empty()) {
-				name = TTR("[unsaved]");
-			}
-			name += "(*)";
+	name = script->get_path().get_file();
+	if (name.is_empty()) {
+		// This appears for newly created built-in scripts before saving the scene.
+		name = TTR("[unsaved]");
+	} else if (script->is_built_in()) {
+		const String &script_name = script->get_name();
+		if (script_name != "") {
+			// If the built-in script has a custom resource name defined,
+			// display the built-in script name as follows: `ResourceName (scene_file.tscn)`
+			name = vformat("%s (%s)", script_name, name.get_slice("::", 0));
 		}
-	} else if (script->get_name() != "") {
-		name = script->get_name();
-	} else {
-		name = script->get_class() + "(" + itos(script->get_instance_id()) + ")";
+	}
+
+	if (is_unsaved()) {
+		name += "(*)";
 	}
 
 	return name;

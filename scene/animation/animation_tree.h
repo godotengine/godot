@@ -66,6 +66,7 @@ public:
 		const Vector<real_t> *track_blends = nullptr;
 		real_t blend = 0.0;
 		bool seeked = false;
+		int pingponged = 0;
 	};
 
 	struct State {
@@ -98,9 +99,10 @@ public:
 	real_t _blend_node(const StringName &p_subpath, const Vector<StringName> &p_connections, AnimationNode *p_new_parent, Ref<AnimationNode> p_node, real_t p_time, bool p_seek, real_t p_blend, FilterAction p_filter = FILTER_IGNORE, bool p_optimize = true, real_t *r_max = nullptr);
 
 protected:
-	void blend_animation(const StringName &p_animation, real_t p_time, real_t p_delta, bool p_seeked, real_t p_blend);
+	void blend_animation(const StringName &p_animation, real_t p_time, real_t p_delta, bool p_seeked, real_t p_blend, int p_pingponged = 0);
 	real_t blend_node(const StringName &p_sub_path, Ref<AnimationNode> p_node, real_t p_time, bool p_seek, real_t p_blend, FilterAction p_filter = FILTER_IGNORE, bool p_optimize = true);
 	real_t blend_input(int p_input, real_t p_time, bool p_seek, real_t p_blend, FilterAction p_filter = FILTER_IGNORE, bool p_optimize = true);
+
 	void make_invalid(const String &p_reason);
 
 	static void _bind_methods();
