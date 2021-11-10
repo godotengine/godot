@@ -67,7 +67,7 @@ float AnimationNodeAnimation::process(float p_time, bool p_seek) {
 	AnimationPlayer *ap = state->player;
 	ERR_FAIL_COND_V(!ap, 0);
 
-	float time = get_parameter(this->time);
+	const float current_time = get_parameter(this->time);
 
 	if (!ap->has_animation(animation)) {
 		AnimationNodeBlendTree *tree = Object::cast_to<AnimationNodeBlendTree>(parent);
@@ -84,6 +84,7 @@ float AnimationNodeAnimation::process(float p_time, bool p_seek) {
 
 	Ref<Animation> anim = ap->get_animation(animation);
 
+	float time = current_time;
 	float step;
 
 	if (p_seek) {
@@ -103,6 +104,7 @@ float AnimationNodeAnimation::process(float p_time, bool p_seek) {
 
 	} else if (time > anim_size) {
 		time = anim_size;
+		step = anim_size - current_time;
 	}
 
 	blend_animation(animation, time, step, p_seek, 1.0);
