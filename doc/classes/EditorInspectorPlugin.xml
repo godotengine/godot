@@ -25,8 +25,9 @@
 		</method>
 		<method name="_parse_begin" qualifiers="virtual">
 			<return type="void" />
+			<argument index="0" name="object" type="Object" />
 			<description>
-				Called to allow adding controls at the beginning of the list.
+				Called to allow adding controls at the beginning of the property list for [code]object[/code].
 			</description>
 		</method>
 		<method name="_parse_category" qualifiers="virtual">
@@ -34,12 +35,22 @@
 			<argument index="0" name="object" type="Object" />
 			<argument index="1" name="category" type="String" />
 			<description>
+				Called to allow adding controls at the beginning of a category in the property list for [code]object[/code].
 			</description>
 		</method>
 		<method name="_parse_end" qualifiers="virtual">
 			<return type="void" />
+			<argument index="0" name="object" type="Object" />
 			<description>
-				Called to allow adding controls at the end of the list.
+				Called to allow adding controls at the end of the property list for [code]object[/code].
+			</description>
+		</method>
+		<method name="_parse_group" qualifiers="virtual">
+			<return type="void" />
+			<argument index="0" name="object" type="Object" />
+			<argument index="1" name="group" type="String" />
+			<description>
+				Called to allow adding controls at the beginning of a group or a sub-group in the property list for [code]object[/code].
 			</description>
 		</method>
 		<method name="_parse_property" qualifiers="virtual">
@@ -52,7 +63,7 @@
 			<argument index="5" name="usage_flags" type="int" />
 			<argument index="6" name="wide" type="bool" />
 			<description>
-				Called to allow adding property specific editors to the inspector. Usually these inherit [EditorProperty]. Returning [code]true[/code] removes the built-in editor for this property, otherwise allows to insert a custom editor before the built-in one.
+				Called to allow adding property-specific editors to the property list for [code]object[/code]. The added editor control must extend [EditorProperty]. Returning [code]true[/code] removes the built-in editor for this property, otherwise allows to insert a custom editor before the built-in one.
 			</description>
 		</method>
 		<method name="add_custom_control">
