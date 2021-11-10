@@ -125,6 +125,9 @@ public:
 		bool collide_with_bodies = true;
 		bool collide_with_areas = false;
 
+		bool hit_from_inside = false;
+		bool hit_back_faces = true;
+
 		bool pick_ray = false;
 	};
 
@@ -804,6 +807,12 @@ public:
 
 	void set_collide_with_areas(bool p_enable) { parameters.collide_with_areas = p_enable; }
 	bool is_collide_with_areas_enabled() const { return parameters.collide_with_areas; }
+
+	void set_hit_from_inside(bool p_enable) { parameters.hit_from_inside = p_enable; }
+	bool is_hit_from_inside_enabled() const { return parameters.hit_from_inside; }
+
+	void set_hit_back_faces(bool p_enable) { parameters.hit_back_faces = p_enable; }
+	bool is_hit_back_faces_enabled() const { return parameters.hit_back_faces; }
 
 	void set_exclude(const Vector<RID> &p_exclude);
 	Vector<RID> get_exclude() const;

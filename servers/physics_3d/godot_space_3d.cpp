@@ -148,7 +148,23 @@ bool GodotPhysicsDirectSpaceState3D::intersect_ray(const RayParameters &p_parame
 
 		Vector3 shape_point, shape_normal;
 
-		if (shape->intersect_segment(local_from, local_to, shape_point, shape_normal)) {
+		if (shape->intersect_point(local_from)) {
+			if (p_parameters.hit_from_inside) {
+				// Hit shape at starting point.
+				min_d = 0;
+				res_point = local_from;
+				res_normal = Vector3();
+				res_shape = shape_idx;
+				res_obj = col_obj;
+				collided = true;
+				break;
+			} else {
+				// Ignore shape when starting inside.
+				continue;
+			}
+		}
+
+		if (shape->intersect_segment(local_from, local_to, shape_point, shape_normal, p_parameters.hit_back_faces)) {
 			Transform3D xform = col_obj->get_transform() * col_obj->get_shape_transform(shape_idx);
 			shape_point = xform.xform(shape_point);
 
