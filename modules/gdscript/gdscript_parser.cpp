@@ -740,10 +740,24 @@ void GDScriptParser::parse_class_member(T *(GDScriptParser::*p_parse_function)()
 #endif // TOOLS_ENABLED
 
 	if (member->identifier != nullptr) {
-		// Enums may be unnamed.
-		// TODO: Consider names in outer scope too, for constants and classes (and static functions?)
-		if (current_class->members_indices.has(member->identifier->name)) {
-			push_error(vformat(R"(%s "%s" has the same name as a previously declared %s.)", p_member_kind.capitalize(), member->identifier->name, current_class->get_member(member->identifier->name).get_type_name()), member->identifier);
+		if (!((String)member->identifier->name).is_empty()) { // Enums may be unnamed.
+			List<MethodInfo> gdscript_funcs;
+			GDScriptLanguage::get_singleton()->get_public_functions(&gdscript_funcs);
+			for (MethodInfo &info : gdscript_funcs) {
+				if (info.name == member->identifier->name) {
+					push_error(vformat(R"(%s "%s" has the same name as a built-in function.)", p_member_kind.capitalize(), member->identifier->name), member->identifier);
+					return;
+				}
+			}
+			if (current_class->members_indices.has(member->identifier->name)) {
+				push_error(vformat(R"(%s "%s" has the same name as a previously declared %s.)", p_member_kind.capitalize(), member->identifier->name, current_class->get_member(member->identifier->name).get_type_name()), member->identifier);
+			} else if (Variant::has_utility_function(member->identifier->name)) {
+				push_error(vformat(R"(%s "%s" has the same name as a built-in function.)", p_member_kind.capitalize(), member->identifier->name), member->identifier);
+			} else if (ClassDB::class_exists(member->identifier->name)) {
+				push_error(vformat(R"(%s "%s" has the same name as a global class.)", p_member_kind.capitalize(), member->identifier->name), member->identifier);
+			} else {
+				current_class->add_member(member);
+			}
 		} else {
 			current_class->add_member(member);
 		}
@@ -811,9 +825,27 @@ GDScriptParser::VariableNode *GDScriptParser::parse_variable(bool p_allow_proper
 		return nullptr;
 	}
 
+	GDScriptParser::IdentifierNode *identifier = parse_identifier();
+
+	List<MethodInfo> gdscript_funcs;
+	GDScriptLanguage::get_singleton()->get_public_functions(&gdscript_funcs);
+	for (MethodInfo &info : gdscript_funcs) {
+		if (info.name == identifier->name) {
+			push_error(vformat(R"(Local var "%s" has the same name as a built-in function.)", identifier->name), identifier);
+			return nullptr;
+		}
+	}
+	if (Variant::has_utility_function(identifier->name)) {
+		push_error(vformat(R"(Local var "%s" has the same name as a built-in function.)", identifier->name), identifier);
+		return nullptr;
+	} else if (ClassDB::class_exists(identifier->name)) {
+		push_error(vformat(R"(Local var "%s" has the same name as a global class.)", identifier->name), identifier);
+		return nullptr;
+	}
+
 	VariableNode *variable = alloc_node<VariableNode>();
-	variable->identifier = parse_identifier();
-	variable->export_info.name = variable->identifier->name;
+	variable->identifier = identifier;
+	variable->export_info.name = identifier->name;
 
 	if (match(GDScriptTokenizer::Token::COLON)) {
 		if (check(GDScriptTokenizer::Token::NEWLINE)) {
@@ -1066,8 +1098,26 @@ GDScriptParser::ParameterNode *GDScriptParser::parse_parameter() {
 		return nullptr;
 	}
 
+	GDScriptParser::IdentifierNode *identifier = parse_identifier();
+
+	List<MethodInfo> gdscript_funcs;
+	GDScriptLanguage::get_singleton()->get_public_functions(&gdscript_funcs);
+	for (MethodInfo &info : gdscript_funcs) {
+		if (info.name == identifier->name) {
+			push_error(vformat(R"(Parameter "%s" has the same name as a built-in function.)", identifier->name), identifier);
+			return nullptr;
+		}
+	}
+	if (Variant::has_utility_function(identifier->name)) {
+		push_error(vformat(R"(Parameter "%s" has the same name as a built-in function.)", identifier->name), identifier);
+		return nullptr;
+	} else if (ClassDB::class_exists(identifier->name)) {
+		push_error(vformat(R"(Parameter "%s" has the same name as a global class.)", identifier->name), identifier);
+		return nullptr;
+	}
+
 	ParameterNode *parameter = alloc_node<ParameterNode>();
-	parameter->identifier = parse_identifier();
+	parameter->identifier = identifier;
 
 	if (match(GDScriptTokenizer::Token::COLON)) {
 		if (check((GDScriptTokenizer::Token::EQUAL))) {
@@ -1145,13 +1195,31 @@ GDScriptParser::EnumNode *GDScriptParser::parse_enum() {
 
 	HashMap<StringName, int> elements;
 
+	List<MethodInfo> gdscript_funcs;
+	GDScriptLanguage::get_singleton()->get_public_functions(&gdscript_funcs);
+
 	do {
 		if (check(GDScriptTokenizer::Token::BRACE_CLOSE)) {
 			break; // Allow trailing comma.
 		}
 		if (consume(GDScriptTokenizer::Token::IDENTIFIER, R"(Expected identifier for enum key.)")) {
 			EnumNode::Value item;
-			item.identifier = parse_identifier();
+			GDScriptParser::IdentifierNode *identifier = parse_identifier();
+
+			for (MethodInfo &info : gdscript_funcs) {
+				if (info.name == identifier->name) {
+					push_error(vformat(R"(Enum member "%s" has the same name as a built-in function.)", identifier->name), identifier);
+					return nullptr;
+				}
+			}
+			if (Variant::has_utility_function(identifier->name)) {
+				push_error(vformat(R"(Enum member "%s" has the same name as a built-in function.)", identifier->name), identifier);
+				return nullptr;
+			} else if (ClassDB::class_exists(identifier->name)) {
+				push_error(vformat(R"(Enum member "%s" has the same name as a global class.)", identifier->name), identifier);
+				return nullptr;
+			}
+			item.identifier = identifier;
 			item.parent_enum = enum_node;
 			item.line = previous.start_line;
 			item.leftmost_column = previous.leftmost_column;
