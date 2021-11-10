@@ -2050,7 +2050,7 @@ bool Main::start() {
 		GLOBAL_DEF("mono/debugger_agent/wait_timeout", 3000);
 		GLOBAL_DEF("mono/profiler/args", "log:calls,alloc,sample,output=output.mlpd");
 		GLOBAL_DEF("mono/profiler/enabled", false);
-		GLOBAL_DEF("mono/unhandled_exception_policy", 0);
+		GLOBAL_DEF("mono/runtime/unhandled_exception_policy", 0);
 #endif
 
 		DocTools doc;
