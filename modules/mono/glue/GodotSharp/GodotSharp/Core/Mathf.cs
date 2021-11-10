@@ -709,7 +709,7 @@ namespace Godot
         /// <returns>The ping-ponged value.</returns>
         public static real_t PingPong(real_t value, real_t length)
         {
-            return (length != 0.0) ? Math.Abs(Mathf.Fract((value - length) / (length * 2.0)) * length * 2.0 - length) : 0.0;
+            return (length != (real_t)0.0) ? Abs(Fract((value - length) / (length * (real_t)2.0)) * length * (real_t)2.0 - length) : (real_t)0.0;
         }
     }
 }
