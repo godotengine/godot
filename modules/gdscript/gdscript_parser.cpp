@@ -2774,6 +2774,23 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_get_node(ExpressionNode *p
 			get_node->chain.push_back(identifier);
 		} while (match(GDScriptTokenizer::Token::SLASH));
 		return get_node;
+	} else if (match(GDScriptTokenizer::Token::SLASH)) {
+		GetNodeNode *get_node = alloc_node<GetNodeNode>();
+		IdentifierNode *identifier_root = alloc_node<IdentifierNode>();
+		get_node->chain.push_back(identifier_root);
+		int chain_position = 0;
+		do {
+			make_completion_context(COMPLETION_GET_NODE, get_node, chain_position++);
+			if (!current.is_node_name()) {
+				push_error(R"(Expect node path after "/".)");
+				return nullptr;
+			}
+			advance();
+			IdentifierNode *identifier = alloc_node<IdentifierNode>();
+			identifier->name = previous.get_identifier();
+			get_node->chain.push_back(identifier);
+		} while (match(GDScriptTokenizer::Token::SLASH));
+		return get_node;
 	} else {
 		push_error(R"(Expect node path as string or identifier after "$".)");
 		return nullptr;
