@@ -174,9 +174,12 @@ bool PhysicsBody3D::test_move(const Transform3D &p_from, const Vector3 &p_linear
 	ERR_FAIL_COND_V(!is_inside_tree(), false);
 
 	PhysicsServer3D::MotionResult *r = nullptr;
+	PhysicsServer3D::MotionResult temp_result;
 	if (r_collision.is_valid()) {
 		// Needs const_cast because method bindings don't support non-const Ref.
 		r = const_cast<PhysicsServer3D::MotionResult *>(&r_collision->result);
+	} else {
+		r = &temp_result;
 	}
 
 	// Hack in order to work with calling from _process as well as from _physics_process; calling from thread is risky
@@ -184,7 +187,14 @@ bool PhysicsBody3D::test_move(const Transform3D &p_from, const Vector3 &p_linear
 
 	PhysicsServer3D::MotionParameters parameters(p_from, p_linear_velocity * delta, p_margin);
 
-	return PhysicsServer3D::get_singleton()->body_test_motion(get_rid(), parameters, r);
+	bool colliding = PhysicsServer3D::get_singleton()->body_test_motion(get_rid(), parameters, r);
+
+	if (colliding) {
+		// Don't report collision when the whole motion is done.
+		return (r->collision_safe_fraction < 1.0);
+	} else {
+		return false;
+	}
 }
 
 void PhysicsBody3D::set_axis_lock(PhysicsServer3D::BodyAxis p_axis, bool p_lock) {

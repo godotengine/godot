@@ -30,7 +30,7 @@
 			<argument index="2" name="safe_margin" type="float" default="0.08" />
 			<description>
 				Moves the body along the vector [code]linear_velocity[/code]. This method should be used in [method Node._physics_process] (or in a method called by [method Node._physics_process]), as it uses the physics step's [code]delta[/code] value automatically in calculations. Otherwise, the simulation will run at an incorrect speed.
-				The body will stop if it collides. Returns a [KinematicCollision2D], which contains information about the collision.
+				The body will stop if it collides. Returns a [KinematicCollision2D], which contains information about the collision when stopped, or when touching another body along the motion.
 				If [code]test_only[/code] is [code]true[/code], the body does not move but the would-be collision information is given.
 				[code]safe_margin[/code] is the extra margin used for collision recovery (see [member CharacterBody2D.collision/safe_margin] for more details).
 			</description>
@@ -50,8 +50,8 @@
 			<argument index="3" name="safe_margin" type="float" default="0.08" />
 			<description>
 				Checks for collisions without moving the body. This method should be used in [method Node._physics_process] (or in a method called by [method Node._physics_process]), as it uses the physics step's [code]delta[/code] value automatically in calculations. Otherwise, the simulation will run at an incorrect speed.
-				Virtually sets the node's position, scale and rotation to that of the given [Transform2D], then tries to move the body along the vector [code]linear_velocity[/code]. Returns [code]true[/code] if a collision would occur.
-				[code]collision[/code] is an optional object of type [KinematicCollision2D], which contains additional information about the collision (should there be one).
+				Virtually sets the node's position, scale and rotation to that of the given [Transform2D], then tries to move the body along the vector [code]linear_velocity[/code]. Returns [code]true[/code] if a collision would stop the body from moving along the whole path.
+				[code]collision[/code] is an optional object of type [KinematicCollision2D], which contains additional information about the collision when stopped, or when touching another body along the motion.
 				[code]safe_margin[/code] is the extra margin used for collision recovery (see [member CharacterBody2D.collision/safe_margin] for more details).
 			</description>
 		</method>
