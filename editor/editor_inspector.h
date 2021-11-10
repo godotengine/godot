@@ -215,10 +215,11 @@ protected:
 	static void _bind_methods();
 
 	GDVIRTUAL1RC(bool, _can_handle, Variant)
-	GDVIRTUAL0(_parse_begin)
+	GDVIRTUAL1(_parse_begin, Object *)
 	GDVIRTUAL2(_parse_category, Object *, String)
+	GDVIRTUAL2(_parse_group, Object *, String)
 	GDVIRTUAL7R(bool, _parse_property, Object *, int, String, int, String, int, bool)
-	GDVIRTUAL0(_parse_end)
+	GDVIRTUAL1(_parse_end, Object *)
 
 public:
 	void add_custom_control(Control *control);
@@ -227,9 +228,10 @@ public:
 
 	virtual bool can_handle(Object *p_object);
 	virtual void parse_begin(Object *p_object);
-	virtual void parse_category(Object *p_object, const String &p_parse_category);
+	virtual void parse_category(Object *p_object, const String &p_category);
+	virtual void parse_group(Object *p_object, const String &p_group);
 	virtual bool parse_property(Object *p_object, const Variant::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const uint32_t p_usage, const bool p_wide = false);
-	virtual void parse_end();
+	virtual void parse_end(Object *p_object);
 };
 
 class EditorInspectorCategory : public Control {

@@ -3170,11 +3170,7 @@ EditorPropertyResource::EditorPropertyResource() {
 ////////////// DEFAULT PLUGIN //////////////////////
 
 bool EditorInspectorDefaultPlugin::can_handle(Object *p_object) {
-	return true; //can handle everything
-}
-
-void EditorInspectorDefaultPlugin::parse_begin(Object *p_object) {
-	//do none
+	return true; // Can handle everything.
 }
 
 bool EditorInspectorDefaultPlugin::parse_property(Object *p_object, const Variant::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const uint32_t p_usage, const bool p_wide) {
@@ -3183,10 +3179,6 @@ bool EditorInspectorDefaultPlugin::parse_property(Object *p_object, const Varian
 		add_property_editor(p_path, editor);
 	}
 	return false;
-}
-
-void EditorInspectorDefaultPlugin::parse_end() {
-	//do none
 }
 
 struct EditorPropertyRangeHint {

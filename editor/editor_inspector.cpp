@@ -1014,11 +1014,15 @@ bool EditorInspectorPlugin::can_handle(Object *p_object) {
 }
 
 void EditorInspectorPlugin::parse_begin(Object *p_object) {
-	GDVIRTUAL_CALL(_parse_begin);
+	GDVIRTUAL_CALL(_parse_begin, p_object);
 }
 
-void EditorInspectorPlugin::parse_category(Object *p_object, const String &p_parse_category) {
-	GDVIRTUAL_CALL(_parse_category, p_object, p_parse_category);
+void EditorInspectorPlugin::parse_category(Object *p_object, const String &p_category) {
+	GDVIRTUAL_CALL(_parse_category, p_object, p_category);
+}
+
+void EditorInspectorPlugin::parse_group(Object *p_object, const String &p_group) {
+	GDVIRTUAL_CALL(_parse_group, p_object, p_group);
 }
 
 bool EditorInspectorPlugin::parse_property(Object *p_object, const Variant::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const uint32_t p_usage, const bool p_wide) {
@@ -1029,8 +1033,8 @@ bool EditorInspectorPlugin::parse_property(Object *p_object, const Variant::Type
 	return false;
 }
 
-void EditorInspectorPlugin::parse_end() {
-	GDVIRTUAL_CALL(_parse_end);
+void EditorInspectorPlugin::parse_end(Object *p_object) {
+	GDVIRTUAL_CALL(_parse_end, p_object);
 }
 
 void EditorInspectorPlugin::_bind_methods() {
@@ -1039,10 +1043,11 @@ void EditorInspectorPlugin::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_property_editor_for_multiple_properties", "label", "properties", "editor"), &EditorInspectorPlugin::add_property_editor_for_multiple_properties);
 
 	GDVIRTUAL_BIND(_can_handle, "object")
-	GDVIRTUAL_BIND(_parse_begin)
+	GDVIRTUAL_BIND(_parse_begin, "object")
 	GDVIRTUAL_BIND(_parse_category, "object", "category")
+	GDVIRTUAL_BIND(_parse_group, "object", "group")
 	GDVIRTUAL_BIND(_parse_property, "object", "type", "name", "hint_type", "hint_string", "usage_flags", "wide");
-	GDVIRTUAL_BIND(_parse_end)
+	GDVIRTUAL_BIND(_parse_end, "object")
 }
 
 ////////////////////////////////////////////////
@@ -2628,6 +2633,12 @@ void EditorInspector::update_tree() {
 				c.a /= level;
 				section->setup(acc_path, component, object, c, use_folding);
 
+				// Add editors at the start of a group.
+				for (Ref<EditorInspectorPlugin> &ped : valid_plugins) {
+					ped->parse_group(object, path);
+					_parse_added_editors(section->get_vbox(), ped);
+				}
+
 				vbox_per_path[root_vbox][acc_path] = section->get_vbox();
 			}
 
@@ -2837,7 +2848,7 @@ void EditorInspector::update_tree() {
 
 	// Get the lists of to add at the end.
 	for (Ref<EditorInspectorPlugin> &ped : valid_plugins) {
-		ped->parse_end();
+		ped->parse_end(object);
 		_parse_added_editors(main_vbox, ped);
 	}
 }
