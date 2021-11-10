@@ -30,6 +30,8 @@
 
 #include "visual_shader_particle_nodes.h"
 
+#include "core/core_string_names.h"
+
 // VisualShaderNodeParticleEmitter
 
 int VisualShaderNodeParticleEmitter::get_output_port_count() const {
@@ -255,6 +257,283 @@ VisualShaderNodeParticleRingEmitter::VisualShaderNodeParticleRingEmitter() {
 	set_input_port_default_value(2, 0.0);
 }
 
+// VisualShaderNodeParticleMeshEmitter
+
+String VisualShaderNodeParticleMeshEmitter::get_caption() const {
+	return "MeshEmitter";
+}
+
+int VisualShaderNodeParticleMeshEmitter::get_output_port_count() const {
+	return 2;
+}
+
+VisualShaderNodeParticleBoxEmitter::PortType VisualShaderNodeParticleMeshEmitter::get_output_port_type(int p_port) const {
+	switch (p_port) {
+		case 0:
+			return PORT_TYPE_VECTOR; // position
+		case 1:
+			return PORT_TYPE_VECTOR; // normal
+	}
+	return PORT_TYPE_SCALAR;
+}
+
+String VisualShaderNodeParticleMeshEmitter::get_output_port_name(int p_port) const {
+	switch (p_port) {
+		case 0:
+			return "position";
+		case 1:
+			return "normal";
+	}
+	return String();
+}
+
+int VisualShaderNodeParticleMeshEmitter::get_input_port_count() const {
+	return 0;
+}
+
+VisualShaderNodeParticleBoxEmitter::PortType VisualShaderNodeParticleMeshEmitter::get_input_port_type(int p_port) const {
+	return PORT_TYPE_SCALAR;
+}
+
+String VisualShaderNodeParticleMeshEmitter::get_input_port_name(int p_port) const {
+	return String();
+}
+
+String VisualShaderNodeParticleMeshEmitter::generate_global_per_node(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const {
+	String code;
+
+	if (mesh.is_valid()) {
+		code += "uniform sampler2D " + make_unique_id(p_type, p_id, "mesh_vx") + ";\n";
+		code += "uniform sampler2D " + make_unique_id(p_type, p_id, "mesh_nm") + ";\n";
+	}
+
+	return code;
+}
+
+String VisualShaderNodeParticleMeshEmitter::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
+	String code;
+
+	code += "	__scalar_ibuff = int(__rand_from_seed(__seed) * 65535.0) % " + itos(position_texture->get_width()) + ";\n";
+
+	if (position_texture->get_width() == 0) {
+		code += "		" + p_output_vars[0] + " = vec3(0.0);\n";
+	} else {
+		if (mode_2d) {
+			code += "	" + p_output_vars[0] + " = vec3(";
+			code += "texelFetch(";
+			code += make_unique_id(p_type, p_id, "mesh_vx") + ", ";
+			code += "ivec2(__scalar_ibuff, 0), 0).xy, 0.0);\n";
+		} else {
+			code += "	" + p_output_vars[0] + " = texelFetch(";
+			code += make_unique_id(p_type, p_id, "mesh_vx") + ", ";
+			code += "ivec2(__scalar_ibuff, 0), 0).xyz;\n";
+		}
+	}
+
+	if (normal_texture->get_width() == 0) {
+		code += "		" + p_output_vars[1] + " = vec3(0.0);\n";
+	} else {
+		if (mode_2d) {
+			code += "	" + p_output_vars[1] + " = vec3(";
+			code += "texelFetch(";
+			code += make_unique_id(p_type, p_id, "mesh_nm") + ", ";
+			code += "ivec2(__scalar_ibuff, 0), 0).xy, 0.0);\n";
+		} else {
+			code += "	" + p_output_vars[1] + " = texelFetch(";
+			code += make_unique_id(p_type, p_id, "mesh_nm") + ", ";
+			code += "ivec2(__scalar_ibuff, 0), 0).xyz;\n";
+		}
+	}
+
+	return code;
+}
+
+Vector<VisualShader::DefaultTextureParam> VisualShaderNodeParticleMeshEmitter::get_default_texture_parameters(VisualShader::Type p_type, int p_id) const {
+	VisualShader::DefaultTextureParam dtp_vx;
+	dtp_vx.name = make_unique_id(p_type, p_id, "mesh_vx");
+	dtp_vx.param = position_texture;
+
+	VisualShader::DefaultTextureParam dtp_nm;
+	dtp_nm.name = make_unique_id(p_type, p_id, "mesh_nm");
+	dtp_nm.param = normal_texture;
+
+	Vector<VisualShader::DefaultTextureParam> ret;
+	ret.push_back(dtp_vx);
+	ret.push_back(dtp_nm);
+	return ret;
+}
+
+void VisualShaderNodeParticleMeshEmitter::update_texture() {
+	if (!mesh.is_valid()) {
+		return;
+	}
+
+	Vector<Vector3> vertices;
+	Vector<Vector3> normals;
+
+	if (use_all_surfaces) {
+		for (int i = 0; i < max_surface_index; i++) {
+			Array vertex_array = mesh->surface_get_arrays(i)[Mesh::ARRAY_VERTEX];
+			for (int j = 0; j < vertex_array.size(); j++) {
+				vertices.push_back((Vector3)vertex_array[j]);
+			}
+
+			Array normal_array = mesh->surface_get_arrays(i)[Mesh::ARRAY_NORMAL];
+			for (int j = 0; j < vertex_array.size(); j++) {
+				normals.push_back((Vector3)vertex_array[j]);
+			}
+		}
+	} else {
+		Array vertex_array = mesh->surface_get_arrays(surface_index)[Mesh::ARRAY_VERTEX];
+		for (int i = 0; i < vertex_array.size(); i++) {
+			vertices.push_back((Vector3)vertex_array[i]);
+		}
+
+		Array normal_array = mesh->surface_get_arrays(surface_index)[Mesh::ARRAY_NORMAL];
+		for (int i = 0; i < normal_array.size(); i++) {
+			normals.push_back((Vector3)normal_array[i]);
+		}
+	}
+
+	// vertices
+	{
+		Ref<Image> image;
+		image.instantiate();
+		image->create(vertices.size(), 1, false, Image::Format::FORMAT_RGBF);
+
+		for (int i = 0; i < vertices.size(); i++) {
+			Vector3 v = vertices[i];
+			image->set_pixel(i, 0, Color(v.x, v.y, v.z));
+		}
+		if (position_texture->get_width() != vertices.size()) {
+			position_texture->create_from_image(image);
+		} else {
+			position_texture->update(image);
+		}
+	}
+
+	// normals
+	{
+		Ref<Image> image;
+		image.instantiate();
+		image->create(normals.size(), 1, false, Image::Format::FORMAT_RGBF);
+
+		for (int i = 0; i < normals.size(); i++) {
+			Vector3 v = normals[i];
+			image->set_pixel(i, 0, Color(v.x, v.y, v.z));
+		}
+		if (normal_texture->get_width() != normals.size()) {
+			normal_texture->create_from_image(image);
+		} else {
+			normal_texture->update(image);
+		}
+	}
+}
+
+void VisualShaderNodeParticleMeshEmitter::set_mesh(Ref<Mesh> p_mesh) {
+	if (mesh == p_mesh) {
+		return;
+	}
+
+	if (p_mesh.is_valid()) {
+		max_surface_index = p_mesh->get_surface_count();
+	} else {
+		max_surface_index = 0;
+	}
+
+	if (mesh.is_valid()) {
+		Callable callable = callable_mp(this, &VisualShaderNodeParticleMeshEmitter::update_texture);
+
+		if (mesh->is_connected(CoreStringNames::get_singleton()->changed, callable)) {
+			mesh->disconnect(CoreStringNames::get_singleton()->changed, callable);
+		}
+	}
+
+	mesh = p_mesh;
+
+	if (mesh.is_valid()) {
+		Callable callable = callable_mp(this, &VisualShaderNodeParticleMeshEmitter::update_texture);
+
+		if (!mesh->is_connected(CoreStringNames::get_singleton()->changed, callable)) {
+			mesh->connect(CoreStringNames::get_singleton()->changed, callable);
+		}
+	}
+
+	emit_changed();
+}
+
+Ref<Mesh> VisualShaderNodeParticleMeshEmitter::get_mesh() const {
+	return mesh;
+}
+
+void VisualShaderNodeParticleMeshEmitter::set_use_all_surfaces(bool p_enabled) {
+	if (use_all_surfaces == p_enabled) {
+		return;
+	}
+	use_all_surfaces = p_enabled;
+	emit_changed();
+}
+
+bool VisualShaderNodeParticleMeshEmitter::is_use_all_surfaces() const {
+	return use_all_surfaces;
+}
+
+void VisualShaderNodeParticleMeshEmitter::set_surface_index(int p_surface_index) {
+	if (p_surface_index == surface_index || p_surface_index < 0 || p_surface_index >= max_surface_index) {
+		return;
+	}
+	surface_index = p_surface_index;
+	emit_changed();
+}
+
+int VisualShaderNodeParticleMeshEmitter::get_surface_index() const {
+	return surface_index;
+}
+
+Vector<StringName> VisualShaderNodeParticleMeshEmitter::get_editable_properties() const {
+	Vector<StringName> props = VisualShaderNodeParticleEmitter::get_editable_properties();
+
+	props.push_back("mesh");
+	props.push_back("use_all_surfaces");
+	if (!use_all_surfaces) {
+		props.push_back("surface_index");
+	}
+
+	return props;
+}
+
+Map<StringName, String> VisualShaderNodeParticleMeshEmitter::get_editable_properties_names() const {
+	Map<StringName, String> names = VisualShaderNodeParticleEmitter::get_editable_properties_names();
+
+	names.insert("mesh", TTR("Mesh"));
+	names.insert("use_all_surfaces", TTR("Use All Surfaces"));
+	if (!use_all_surfaces) {
+		names.insert("surface_index", TTR("Surface Index"));
+	}
+
+	return names;
+}
+
+void VisualShaderNodeParticleMeshEmitter::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_mesh", "mesh"), &VisualShaderNodeParticleMeshEmitter::set_mesh);
+	ClassDB::bind_method(D_METHOD("get_mesh"), &VisualShaderNodeParticleMeshEmitter::get_mesh);
+	ClassDB::bind_method(D_METHOD("set_use_all_surfaces", "enabled"), &VisualShaderNodeParticleMeshEmitter::set_use_all_surfaces);
+	ClassDB::bind_method(D_METHOD("is_use_all_surfaces"), &VisualShaderNodeParticleMeshEmitter::is_use_all_surfaces);
+	ClassDB::bind_method(D_METHOD("set_surface_index", "surface_index"), &VisualShaderNodeParticleMeshEmitter::set_surface_index);
+	ClassDB::bind_method(D_METHOD("get_surface_index"), &VisualShaderNodeParticleMeshEmitter::get_surface_index);
+
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "mesh", PROPERTY_HINT_RESOURCE_TYPE, "Mesh"), "set_mesh", "get_mesh");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_all_surfaces"), "set_use_all_surfaces", "is_use_all_surfaces");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "surface_index"), "set_surface_index", "get_surface_index");
+}
+
+VisualShaderNodeParticleMeshEmitter::VisualShaderNodeParticleMeshEmitter() {
+	connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &VisualShaderNodeParticleMeshEmitter::update_texture));
+
+	position_texture.instantiate();
+	normal_texture.instantiate();
+}
+
 // VisualShaderNodeParticleMultiplyByAxisAngle
 
 void VisualShaderNodeParticleMultiplyByAxisAngle::_bind_methods() {
@@ -334,7 +613,6 @@ bool VisualShaderNodeParticleMultiplyByAxisAngle::is_degrees_mode() const {
 Vector<StringName> VisualShaderNodeParticleMultiplyByAxisAngle::get_editable_properties() const {
 	Vector<StringName> props;
 	props.push_back("degrees_mode");
-	props.push_back("axis_amount");
 	return props;
 }
 

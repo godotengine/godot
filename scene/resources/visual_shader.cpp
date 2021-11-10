@@ -36,6 +36,11 @@
 #include "visual_shader_particle_nodes.h"
 #include "visual_shader_sdf_nodes.h"
 
+String make_unique_id(VisualShader::Type p_type, int p_id, const String &p_name) {
+	static const char *typepf[VisualShader::TYPE_MAX] = { "vtx", "frg", "lgt", "start", "process", "collide", "start_custom", "process_custom", "sky", "fog" };
+	return p_name + "_" + String(typepf[p_type]) + "_" + itos(p_id);
+}
+
 bool VisualShaderNode::is_simple_decl() const {
 	return simple_decl;
 }
@@ -1829,6 +1834,7 @@ void VisualShader::_update_shader() const {
 			code += "	vec3 __vec3_buff2;\n";
 			code += "	float __scalar_buff1;\n";
 			code += "	float __scalar_buff2;\n";
+			code += "	int __scalar_ibuff;\n";
 			code += "	vec3 __ndiff = normalize(__diff);\n\n";
 		}
 		if (has_start) {

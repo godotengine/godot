@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="VisualShaderNodeParticleMeshEmitter" inherits="VisualShaderNodeParticleEmitter" version="4.0">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="mesh" type="Mesh" setter="set_mesh" getter="get_mesh">
+		</member>
+		<member name="surface_index" type="int" setter="set_surface_index" getter="get_surface_index" default="0">
+		</member>
+		<member name="use_all_surfaces" type="bool" setter="set_use_all_surfaces" getter="is_use_all_surfaces" default="true">
+		</member>
+	</members>
+</class>
