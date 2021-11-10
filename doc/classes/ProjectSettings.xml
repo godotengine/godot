@@ -1315,7 +1315,9 @@
 		</member>
 		<member name="mono/profiler/enabled" type="bool" setter="" getter="" default="false">
 		</member>
-		<member name="mono/unhandled_exception_policy" type="int" setter="" getter="" default="0">
+		<member name="mono/runtime/unhandled_exception_policy" type="int" setter="" getter="" default="0">
+			The policy to use for unhandled Mono (C#) exceptions. The default "Terminate Application" exits the project as soon as an unhandled exception is thrown. "Log Error" logs an error message to the console instead, and will not interrupt the project execution when an unhandled exception is thrown.
+			[b]Note:[/b] The unhandled exception policy is always set to "Log Error" in the editor, which also includes C# [code]tool[/code] scripts running within the editor as well as editor plugin code.
 		</member>
 		<member name="navigation/2d/default_cell_size" type="int" setter="" getter="" default="10">
 			Default cell size for 2D navigation maps. See [method NavigationServer2D.map_set_cell_size].
