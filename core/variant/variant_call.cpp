@@ -750,42 +750,13 @@ struct _VariantCall {
 		return 0;
 	}
 
-	static PackedInt32Array func_PackedByteArray_decode_s32_array(PackedByteArray *p_instance) {
+	template <typename T>
+	static Vector<T> func_PackedByteArray_decode_T_array(PackedByteArray *p_instance) {
 		uint64_t size = p_instance->size();
-		PackedInt32Array dest;
-		ERR_FAIL_COND_V_MSG(size < sizeof(int32_t), dest, "Size didn't match array of size int32_t, maybe you are trying to convert to the wrong type?");
 		const uint8_t *r = p_instance->ptr();
-		dest.resize(size / sizeof(int32_t));
-		memcpy(dest.ptrw(), r, size);
-		return dest;
-	}
-
-	static PackedInt64Array func_PackedByteArray_decode_s64_array(PackedByteArray *p_instance) {
-		uint64_t size = p_instance->size();
-		PackedInt64Array dest;
-		ERR_FAIL_COND_V_MSG(size < sizeof(int64_t), dest, "Size didn't match array of size int64_t, maybe you are trying to convert to the wrong type?");
-		const uint8_t *r = p_instance->ptr();
-		dest.resize(size / sizeof(int64_t));
-		memcpy(dest.ptrw(), r, size);
-		return dest;
-	}
-
-	static PackedFloat32Array func_PackedByteArray_decode_float_array(PackedByteArray *p_instance) {
-		uint64_t size = p_instance->size();
-		PackedFloat32Array dest;
-		ERR_FAIL_COND_V_MSG(size < sizeof(float), dest, "Size didn't match array of size float, maybe you are trying to convert to the wrong type?");
-		const uint8_t *r = p_instance->ptr();
-		dest.resize(size / sizeof(float));
-		memcpy(dest.ptrw(), r, size);
-		return dest;
-	}
-
-	static PackedFloat64Array func_PackedByteArray_decode_double_array(PackedByteArray *p_instance) {
-		uint64_t size = p_instance->size();
-		PackedFloat64Array dest;
-		ERR_FAIL_COND_V_MSG(size < sizeof(double), dest, "Size didn't match array of size double, maybe you are trying to convert to the wrong type?");
-		const uint8_t *r = p_instance->ptr();
-		dest.resize(size / sizeof(double));
+		Vector<T> dest;
+		ERR_FAIL_COND_V_MSG(size < sizeof(T), dest, "Size didn't match an array of " + itos(sizeof(T)) + "-bytes elements, maybe you are trying to convert to the wrong type?");
+		dest.resize(size / sizeof(T));
 		memcpy(dest.ptrw(), r, size);
 		return dest;
 	}
@@ -1887,10 +1858,13 @@ static void _register_variant_builtin_methods() {
 	bind_function(PackedByteArray, decode_var, _VariantCall::func_PackedByteArray_decode_var, sarray("byte_offset", "allow_objects"), varray(false));
 	bind_function(PackedByteArray, decode_var_size, _VariantCall::func_PackedByteArray_decode_var_size, sarray("byte_offset", "allow_objects"), varray(false));
 
-	bind_function(PackedByteArray, to_int32_array, _VariantCall::func_PackedByteArray_decode_s32_array, sarray(), varray());
-	bind_function(PackedByteArray, to_int64_array, _VariantCall::func_PackedByteArray_decode_s64_array, sarray(), varray());
-	bind_function(PackedByteArray, to_float32_array, _VariantCall::func_PackedByteArray_decode_float_array, sarray(), varray());
-	bind_function(PackedByteArray, to_float64_array, _VariantCall::func_PackedByteArray_decode_double_array, sarray(), varray());
+	bind_function(PackedByteArray, to_int32_array, _VariantCall::func_PackedByteArray_decode_T_array<int32_t>, sarray(), varray());
+	bind_function(PackedByteArray, to_int64_array, _VariantCall::func_PackedByteArray_decode_T_array<int64_t>, sarray(), varray());
+	bind_function(PackedByteArray, to_float32_array, _VariantCall::func_PackedByteArray_decode_T_array<float>, sarray(), varray());
+	bind_function(PackedByteArray, to_float64_array, _VariantCall::func_PackedByteArray_decode_T_array<double>, sarray(), varray());
+	bind_function(PackedByteArray, to_vector2_array, _VariantCall::func_PackedByteArray_decode_T_array<Vector2>, sarray(), varray());
+	bind_function(PackedByteArray, to_vector3_array, _VariantCall::func_PackedByteArray_decode_T_array<Vector3>, sarray(), varray());
+	bind_function(PackedByteArray, to_color_array, _VariantCall::func_PackedByteArray_decode_T_array<Color>, sarray(), varray());
 
 	bind_functionnc(PackedByteArray, encode_u8, _VariantCall::func_PackedByteArray_encode_u8, sarray("byte_offset", "value"), varray());
 	bind_functionnc(PackedByteArray, encode_s8, _VariantCall::func_PackedByteArray_encode_s8, sarray("byte_offset", "value"), varray());
