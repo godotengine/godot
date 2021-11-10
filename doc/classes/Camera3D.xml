@@ -166,7 +166,7 @@
 			The [Environment] to use for this camera.
 		</member>
 		<member name="far" type="float" setter="set_far" getter="get_far" default="4000.0">
-			The distance to the far culling boundary for this camera relative to its local Z axis.
+			The distance to the far culling boundary for this camera relative to its local Z axis. Higher values make it possible to see further away, but will reduce performance in large scenes since fewer distant objects will be culled by the clipping plane. To fade objects smoothly in the distance instead of having them cut off suddenly, consider using [Environment] fog.
 		</member>
 		<member name="fov" type="float" setter="set_fov" getter="get_fov" default="75.0">
 			The camera's field of view angle (in degrees). Only applicable in perspective mode. Since [member keep_aspect] locks one axis, [code]fov[/code] sets the other axis' field of view angle.
@@ -186,7 +186,8 @@
 			The axis to lock during [member fov]/[member size] adjustments. Can be either [constant KEEP_WIDTH] or [constant KEEP_HEIGHT].
 		</member>
 		<member name="near" type="float" setter="set_near" getter="get_near" default="0.05">
-			The distance to the near culling boundary for this camera relative to its local Z axis.
+			The distance to the near culling boundary for this camera relative to its local Z axis. Lower values prevent nearby objects from appearing cut off by the clipping plane, but will reduce the depth buffer precision available. This can result in distant objects appearing to flicker when the camera moves due to Z-fighting.
+			[b]Note:[/b] Negative [member near] values are only valid when the camera's projection is [constant PROJECTION_ORTHOGONAL]. When using [constant PROJECTION_PERSPECTIVE] or [constant PROJECTION_FRUSTUM], the [member near] value is clamped to a value of [code]0.001[/code] or greater.
 		</member>
 		<member name="projection" type="int" setter="set_projection" getter="get_projection" enum="Camera3D.Projection" default="0">
 			The camera's projection mode. In [constant PROJECTION_PERSPECTIVE] mode, objects' Z distance from the camera's local space scales their perceived size.
