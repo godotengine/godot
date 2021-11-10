@@ -354,7 +354,7 @@ String VisualShaderNodeCustom::generate_code(Shader::Mode p_mode, VisualShader::
 	}
 	String code = "	{\n";
 	String _code;
-	GDVIRTUAL_CALL(_get_code, input_vars, output_vars, (int)p_mode, (int)p_type, _code);
+	GDVIRTUAL_CALL(_get_code, input_vars, output_vars, p_mode, p_type, _code);
 	bool nend = _code.ends_with("\n");
 	_code = _code.insert(0, "		");
 	_code = _code.replace("\n", "\n		");
@@ -371,7 +371,7 @@ String VisualShaderNodeCustom::generate_code(Shader::Mode p_mode, VisualShader::
 
 String VisualShaderNodeCustom::generate_global_per_node(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const {
 	String ret;
-	if (GDVIRTUAL_CALL(_get_global_code, (int)p_mode, ret)) {
+	if (GDVIRTUAL_CALL(_get_global_code, p_mode, ret)) {
 		String code = "// " + get_caption() + "\n";
 		code += ret;
 		code += "\n";
