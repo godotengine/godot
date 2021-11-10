@@ -67,6 +67,7 @@ private:
 	// Sources management.
 	Button *sources_delete_button;
 	MenuButton *sources_add_button;
+	MenuButton *source_sort_button;
 	MenuButton *sources_advanced_menu_button;
 	ItemList *sources_list;
 	Ref<Texture2D> missing_texture_texture;
@@ -74,6 +75,7 @@ private:
 	void _source_delete_pressed();
 	void _source_add_id_pressed(int p_id_pressed);
 	void _sources_advanced_menu_id_pressed(int p_id_pressed);
+	void _set_source_sort(int p_sort);
 
 	AtlasMergingDialog *atlas_merging_dialog;
 	TileProxiesManagerDialog *tile_proxies_manager_dialog;
