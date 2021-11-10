@@ -499,7 +499,7 @@ void GDMono::_init_godot_api_hashes() {
 }
 
 void GDMono::_init_exception_policy() {
-	PropertyInfo exc_policy_prop = PropertyInfo(Variant::INT, "mono/unhandled_exception_policy", PROPERTY_HINT_ENUM,
+	PropertyInfo exc_policy_prop = PropertyInfo(Variant::INT, "mono/runtime/unhandled_exception_policy", PROPERTY_HINT_ENUM,
 			vformat("Terminate Application:%s,Log Error:%s", (int)POLICY_TERMINATE_APP, (int)POLICY_LOG_ERROR));
 	unhandled_exception_policy = (UnhandledExceptionPolicy)(int)GLOBAL_DEF(exc_policy_prop.name, (int)POLICY_TERMINATE_APP);
 	ProjectSettings::get_singleton()->set_custom_property_info(exc_policy_prop.name, exc_policy_prop);
