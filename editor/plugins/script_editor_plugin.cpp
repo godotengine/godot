@@ -3465,6 +3465,9 @@ void ScriptEditor::_on_find_in_files_result_selected(String fpath, int line_numb
 			shader_editor->make_visible(true);
 			shader_editor->get_shader_editor()->goto_line_selection(line_number - 1, begin, end);
 			return;
+		} else if (fpath.get_extension() == "tscn") {
+			editor->load_scene(fpath);
+			return;
 		} else {
 			Ref<Script> script = res;
 			if (script.is_valid()) {
