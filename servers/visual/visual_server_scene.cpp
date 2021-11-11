@@ -63,6 +63,21 @@ void VisualServerScene::camera_set_perspective(RID p_camera, float p_fovy_degree
 	camera->zfar = p_z_far;
 }
 
+void VisualServerScene::camera_set_oblique(RID p_camera, float p_fovy_degrees, const Transform &p_camera_gt, const Vector3 &p_ob_normal, const Vector3 &p_ob_position, float p_ob_offset, float p_z_near, float p_z_far) {
+	int dot = int(p_ob_normal.dot(p_ob_position - p_camera_gt.origin) >= 0.0f ? 1.0f : -1.0f);
+	Vector3 cam_space_pos = p_camera_gt.inverse().xform(p_ob_position);
+	Vector3 cam_space_normal = p_camera_gt.basis.inverse().xform(p_ob_normal) * dot;
+	real_t cam_space_dst = -cam_space_pos.dot(cam_space_normal) + p_ob_offset;
+
+	Camera *camera = camera_owner.get(p_camera);
+	ERR_FAIL_COND(!camera);
+	camera->type = Camera::OBLIQUE;
+	camera->fov = p_fovy_degrees;
+	camera->oblique_plane = Plane(cam_space_normal, cam_space_dst);
+	camera->znear = p_z_near;
+	camera->zfar = p_z_far;
+}
+
 void VisualServerScene::camera_set_orthogonal(RID p_camera, float p_size, float p_z_near, float p_z_far) {
 	Camera *camera = camera_owner.get(p_camera);
 	ERR_FAIL_COND(!camera);
@@ -2850,7 +2865,17 @@ void VisualServerScene::render_camera(RID p_camera, RID p_scenario, Size2 p_view
 					camera->zfar,
 					camera->vaspect);
 			ortho = false;
-
+		} break;
+		case Camera::OBLIQUE: {
+			Quat oblique_plane = Quat(camera->oblique_plane.normal.x, camera->oblique_plane.normal.y, camera->oblique_plane.normal.z, camera->oblique_plane.d);
+			camera_matrix.set_oblique(
+					camera->fov,
+					p_viewport_size.width / (float)p_viewport_size.height,
+					camera->znear,
+					camera->zfar,
+					oblique_plane,
+					camera->vaspect);
+			ortho = false;
 		} break;
 		case Camera::FRUSTUM: {
 			camera_matrix.set_frustum(

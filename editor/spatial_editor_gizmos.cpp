@@ -1443,7 +1443,29 @@ void CameraSpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 			nside.x *= 0.25;
 			Vector3 tup(0, up.y * 3 / 2, side.z);
 			ADD_TRIANGLE(tup + offset, side + up + offset, nside + up + offset);
-		}
+
+		} break;
+		case Camera::PROJECTION_OBLIQUE: {
+			// The real FOV is halved for accurate representation
+			float fov = camera->get_fov() / 2.0;
+
+			Vector3 side = Vector3(Math::sin(Math::deg2rad(fov)), 0, -Math::cos(Math::deg2rad(fov)));
+			Vector3 nside = side;
+			nside.x = -nside.x;
+			Vector3 up = Vector3(0, side.x, 0);
+
+			ADD_TRIANGLE(Vector3(), side + up, side - up);
+			ADD_TRIANGLE(Vector3(), nside + up, nside - up);
+			ADD_TRIANGLE(Vector3(), side + up, nside + up);
+			ADD_TRIANGLE(Vector3(), side - up, nside - up);
+
+			handles.push_back(side);
+			side.x *= 0.25;
+			nside.x *= 0.25;
+			Vector3 tup(0, up.y * 3 / 2, side.z);
+			ADD_TRIANGLE(tup, side + up, nside + up);
+
+		} break;
 	}
 
 #undef ADD_TRIANGLE

@@ -72,6 +72,20 @@
 				Sets camera to use frustum projection. This mode allows adjusting the [code]offset[/code] argument to create "tilted frustum" effects.
 			</description>
 		</method>
+		<method name="camera_set_oblique">
+			<return type="void" />
+			<argument index="0" name="camera" type="RID" />
+			<argument index="1" name="fovy_degrees" type="float" />
+			<argument index="2" name="camera_gt" type="Transform" />
+			<argument index="3" name="oblique_normal" type="Vector3" />
+			<argument index="4" name="oblique_position" type="Vector3" />
+			<argument index="5" name="oblique_offset" type="float" />
+			<argument index="6" name="z_near" type="float" />
+			<argument index="7" name="z_far" type="float" />
+			<description>
+				Sets camera to use oblique projection. This mode allows adjusting the [code]normal[/code], [code]position[/code], and [code]offset[/code] arguments to create an oblique near clipping plane.
+			</description>
+		</method>
 		<method name="camera_set_orthogonal">
 			<return type="void" />
 			<argument index="0" name="camera" type="RID" />

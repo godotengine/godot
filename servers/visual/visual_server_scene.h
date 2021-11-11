@@ -69,10 +69,12 @@ public:
 		enum Type {
 			PERSPECTIVE,
 			ORTHOGONAL,
-			FRUSTUM
+			FRUSTUM,
+			OBLIQUE
 		};
 		Type type;
 		float fov;
+		Plane oblique_plane;
 		float znear, zfar;
 		float size;
 		Vector2 offset;
@@ -113,6 +115,7 @@ public:
 
 	virtual RID camera_create();
 	virtual void camera_set_perspective(RID p_camera, float p_fovy_degrees, float p_z_near, float p_z_far);
+	virtual void camera_set_oblique(RID p_camera, float p_fovy_degrees, const Transform &p_camera_gt, const Vector3 &p_ob_normal, const Vector3 &p_ob_position, float p_ob_offset, float p_z_near, float p_z_far);
 	virtual void camera_set_orthogonal(RID p_camera, float p_size, float p_z_near, float p_z_far);
 	virtual void camera_set_frustum(RID p_camera, float p_size, Vector2 p_offset, float p_z_near, float p_z_far);
 	virtual void camera_set_transform(RID p_camera, const Transform &p_transform);

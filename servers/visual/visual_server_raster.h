@@ -461,6 +461,7 @@ public:
 
 	BIND0R(RID, camera_create)
 	BIND4(camera_set_perspective, RID, float, float, float)
+	BIND8(camera_set_oblique, RID, float, const Transform &, const Vector3 &, const Vector3 &, float, float, float)
 	BIND4(camera_set_orthogonal, RID, float, float, float)
 	BIND5(camera_set_frustum, RID, float, Vector2, float, float)
 	BIND2(camera_set_transform, RID, const Transform &)

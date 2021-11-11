@@ -2057,6 +2057,7 @@ void VisualServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("camera_create"), &VisualServer::camera_create);
 	ClassDB::bind_method(D_METHOD("camera_set_perspective", "camera", "fovy_degrees", "z_near", "z_far"), &VisualServer::camera_set_perspective);
+	ClassDB::bind_method(D_METHOD("camera_set_oblique", "camera", "fovy_degrees", "camera_gt", "oblique_normal", "oblique_position", "oblique_offset", "z_near", "z_far"), &VisualServer::camera_set_oblique);
 	ClassDB::bind_method(D_METHOD("camera_set_orthogonal", "camera", "size", "z_near", "z_far"), &VisualServer::camera_set_orthogonal);
 	ClassDB::bind_method(D_METHOD("camera_set_frustum", "camera", "size", "offset", "z_near", "z_far"), &VisualServer::camera_set_frustum);
 	ClassDB::bind_method(D_METHOD("camera_set_transform", "camera", "transform"), &VisualServer::camera_set_transform);
