@@ -795,6 +795,15 @@ GDScriptTokenizer::Token GDScriptTokenizer::string() {
 
 		char32_t ch = _peek();
 
+		if (ch == 0x200E || ch == 0x200F || (ch >= 0x202A && ch <= 0x202E) || (ch >= 0x2066 && ch <= 0x2069)) {
+			Token error = make_error("Invisible text direction control character present in the string, escape it (\"\\u" + String::num_int64(ch, 16) + "\") to avoid confusion.");
+			error.start_column = column;
+			error.leftmost_column = error.start_column;
+			error.end_column = column + 1;
+			error.rightmost_column = error.end_column;
+			push_error(error);
+		}
+
 		if (ch == '\\') {
 			// Escape pattern.
 			_advance();
