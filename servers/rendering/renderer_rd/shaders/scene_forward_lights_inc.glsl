@@ -73,7 +73,7 @@ vec3 F0(float metallic, float specular, vec3 albedo) {
 	return mix(vec3(dielectric), albedo, vec3(metallic));
 }
 
-void light_compute(vec3 N, vec3 L, vec3 V, float A, vec3 light_color, float attenuation, vec3 f0, uint orms, float specular_amount,
+void light_compute(vec3 N, vec3 L, vec3 V, float A, vec3 light_color, float attenuation, vec3 f0, uint orms, float specular_amount, vec3 albedo, inout float alpha,
 #ifdef LIGHT_BACKLIGHT_USED
 		vec3 backlight,
 #endif
@@ -84,16 +84,13 @@ void light_compute(vec3 N, vec3 L, vec3 V, float A, vec3 light_color, float atte
 		float transmittance_z,
 #endif
 #ifdef LIGHT_RIM_USED
-		float rim, float rim_tint, vec3 rim_color,
+		float rim, float rim_tint,
 #endif
 #ifdef LIGHT_CLEARCOAT_USED
 		float clearcoat, float clearcoat_gloss,
 #endif
 #ifdef LIGHT_ANISOTROPY_USED
 		vec3 B, vec3 T, float anisotropy,
-#endif
-#ifdef USE_SHADOW_TO_OPACITY
-		inout float alpha,
 #endif
 		inout vec3 diffuse_light, inout vec3 specular_light) {
 
@@ -171,7 +168,7 @@ void light_compute(vec3 N, vec3 L, vec3 V, float A, vec3 light_color, float atte
 
 #if defined(LIGHT_RIM_USED)
 		float rim_light = pow(max(0.0, 1.0 - cNdotV), max(0.0, (1.0 - roughness) * 16.0));
-		diffuse_light += rim_light * rim * mix(vec3(1.0), rim_color, rim_tint) * light_color;
+		diffuse_light += rim_light * rim * mix(vec3(1.0), albedo, rim_tint) * light_color;
 #endif
 
 #ifdef LIGHT_TRANSMITTANCE_USED
@@ -577,7 +574,7 @@ float light_process_omni_shadow(uint idx, vec3 vertex, vec3 normal) {
 	return 1.0;
 }
 
-void light_process_omni(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 vertex_ddx, vec3 vertex_ddy, vec3 f0, uint orms, float shadow,
+void light_process_omni(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 vertex_ddx, vec3 vertex_ddy, vec3 f0, uint orms, float shadow, vec3 albedo, inout float alpha,
 #ifdef LIGHT_BACKLIGHT_USED
 		vec3 backlight,
 #endif
@@ -587,16 +584,13 @@ void light_process_omni(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 v
 		float transmittance_boost,
 #endif
 #ifdef LIGHT_RIM_USED
-		float rim, float rim_tint, vec3 rim_color,
+		float rim, float rim_tint,
 #endif
 #ifdef LIGHT_CLEARCOAT_USED
 		float clearcoat, float clearcoat_gloss,
 #endif
 #ifdef LIGHT_ANISOTROPY_USED
 		vec3 binormal, vec3 tangent, float anisotropy,
-#endif
-#ifdef USE_SHADOW_TO_OPACITY
-		inout float alpha,
 #endif
 		inout vec3 diffuse_light, inout vec3 specular_light) {
 	vec3 light_rel_vec = omni_lights.data[idx].position - vertex;
@@ -703,7 +697,7 @@ void light_process_omni(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 v
 
 	light_attenuation *= shadow;
 
-	light_compute(normal, normalize(light_rel_vec), eye_vec, size_A, color, light_attenuation, f0, orms, omni_lights.data[idx].specular_amount,
+	light_compute(normal, normalize(light_rel_vec), eye_vec, size_A, color, light_attenuation, f0, orms, omni_lights.data[idx].specular_amount, albedo, alpha,
 #ifdef LIGHT_BACKLIGHT_USED
 			backlight,
 #endif
@@ -714,16 +708,13 @@ void light_process_omni(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 v
 			transmittance_z,
 #endif
 #ifdef LIGHT_RIM_USED
-			rim * omni_attenuation, rim_tint, rim_color,
+			rim * omni_attenuation, rim_tint,
 #endif
 #ifdef LIGHT_CLEARCOAT_USED
 			clearcoat, clearcoat_gloss,
 #endif
 #ifdef LIGHT_ANISOTROPY_USED
 			binormal, tangent, anisotropy,
-#endif
-#ifdef USE_SHADOW_TO_OPACITY
-			alpha,
 #endif
 			diffuse_light,
 			specular_light);
@@ -823,7 +814,7 @@ vec2 normal_to_panorama(vec3 n) {
 	return panorama_coords;
 }
 
-void light_process_spot(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 vertex_ddx, vec3 vertex_ddy, vec3 f0, uint orms, float shadow,
+void light_process_spot(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 vertex_ddx, vec3 vertex_ddy, vec3 f0, uint orms, float shadow, vec3 albedo, inout float alpha,
 #ifdef LIGHT_BACKLIGHT_USED
 		vec3 backlight,
 #endif
@@ -833,16 +824,13 @@ void light_process_spot(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 v
 		float transmittance_boost,
 #endif
 #ifdef LIGHT_RIM_USED
-		float rim, float rim_tint, vec3 rim_color,
+		float rim, float rim_tint,
 #endif
 #ifdef LIGHT_CLEARCOAT_USED
 		float clearcoat, float clearcoat_gloss,
 #endif
 #ifdef LIGHT_ANISOTROPY_USED
 		vec3 binormal, vec3 tangent, float anisotropy,
-#endif
-#ifdef USE_SHADOW_TO_OPACITY
-		inout float alpha,
 #endif
 		inout vec3 diffuse_light,
 		inout vec3 specular_light) {
@@ -910,7 +898,7 @@ void light_process_spot(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 v
 	}
 	light_attenuation *= shadow;
 
-	light_compute(normal, normalize(light_rel_vec), eye_vec, size_A, color, light_attenuation, f0, orms, spot_lights.data[idx].specular_amount,
+	light_compute(normal, normalize(light_rel_vec), eye_vec, size_A, color, light_attenuation, f0, orms, spot_lights.data[idx].specular_amount, albedo, alpha,
 #ifdef LIGHT_BACKLIGHT_USED
 			backlight,
 #endif
@@ -921,16 +909,13 @@ void light_process_spot(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 v
 			transmittance_z,
 #endif
 #ifdef LIGHT_RIM_USED
-			rim * spot_attenuation, rim_tint, rim_color,
+			rim * spot_attenuation, rim_tint,
 #endif
 #ifdef LIGHT_CLEARCOAT_USED
 			clearcoat, clearcoat_gloss,
 #endif
 #ifdef LIGHT_ANISOTROPY_USED
 			binormal, tangent, anisotropy,
-#endif
-#ifdef USE_SHADOW_TO_OPACITY
-			alpha,
 #endif
 			diffuse_light, specular_light);
 }
