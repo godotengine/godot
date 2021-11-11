@@ -297,13 +297,13 @@ bool AABB::has_point(const Vector3 &p_point) const {
 	if (p_point.z < position.z) {
 		return false;
 	}
-	if (p_point.x > position.x + size.x) {
+	if (p_point.x >= position.x + size.x) {
 		return false;
 	}
-	if (p_point.y > position.y + size.y) {
+	if (p_point.y >= position.y + size.y) {
 		return false;
 	}
-	if (p_point.z > position.z + size.z) {
+	if (p_point.z >= position.z + size.z) {
 		return false;
 	}
 
