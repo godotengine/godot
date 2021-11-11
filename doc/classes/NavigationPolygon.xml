@@ -28,7 +28,7 @@
 		var polygon = NavigationPolygon.new()
 		var vertices = PackedVector2Array([Vector2(0, 0), Vector2(0, 50), Vector2(50, 50), Vector2(50, 0)])
 		polygon.vertices = vertices
-		var indices = PackedInt32Array(0, 3, 1)
+		var indices = PackedInt32Array([0, 1, 2, 3])
 		polygon.add_polygon(indices)
 		$NavigationRegion2D.navpoly = polygon
 		[/gdscript]
@@ -36,7 +36,7 @@
 		var polygon = new NavigationPolygon();
 		var vertices = new Vector2[] { new Vector2(0, 0), new Vector2(0, 50), new Vector2(50, 50), new Vector2(50, 0) };
 		polygon.Vertices = vertices;
-		var indices = new int[] { 0, 3, 1 };
+		var indices = new int[] { 0, 1, 2, 3 };
 		polygon.AddPolygon(indices);
 		GetNode&lt;NavigationRegion2D&gt;("NavigationRegion2D").Navpoly = polygon;
 		[/csharp]
