@@ -361,7 +361,7 @@ ScriptInstance *GDScript::instance_create(Object *p_this) {
 	if (top->native.is_valid()) {
 		if (!ClassDB::is_parent_class(p_this->get_class_name(), top->native->get_name())) {
 			if (EngineDebugger::is_active()) {
-				GDScriptLanguage::get_singleton()->debug_break_parse(get_path(), 1, "Script inherits from native type '" + String(top->native->get_name()) + "', so it can't be instantiated in object of type: '" + p_this->get_class() + "'");
+				GDScriptLanguage::get_singleton()->debug_break_parse(_get_debug_path(), 1, "Script inherits from native type '" + String(top->native->get_name()) + "', so it can't be instantiated in object of type: '" + p_this->get_class() + "'");
 			}
 			ERR_FAIL_V_MSG(nullptr, "Script inherits from native type '" + String(top->native->get_name()) + "', so it can't be instantiated in object of type '" + p_this->get_class() + "'" + ".");
 		}
@@ -789,6 +789,14 @@ void GDScript::_set_subclass_path(Ref<GDScript> &p_sc, const String &p_path) {
 	}
 }
 
+String GDScript::_get_debug_path() const {
+	if (is_built_in() && !get_name().is_empty()) {
+		return get_name() + " (" + get_path().get_slice("::", 0) + ")";
+	} else {
+		return get_path();
+	}
+}
+
 Error GDScript::reload(bool p_keep_state) {
 	bool has_instances;
 	{
@@ -832,7 +840,7 @@ Error GDScript::reload(bool p_keep_state) {
 	Error err = parser.parse(source, path, false);
 	if (err) {
 		if (EngineDebugger::is_active()) {
-			GDScriptLanguage::get_singleton()->debug_break_parse(get_path(), parser.get_errors().front()->get().line, "Parser Error: " + parser.get_errors().front()->get().message);
+			GDScriptLanguage::get_singleton()->debug_break_parse(_get_debug_path(), parser.get_errors().front()->get().line, "Parser Error: " + parser.get_errors().front()->get().message);
 		}
 		// TODO: Show all error messages.
 		_err_print_error("GDScript::reload", path.is_empty() ? "built-in" : (const char *)path.utf8().get_data(), parser.get_errors().front()->get().line, ("Parse Error: " + parser.get_errors().front()->get().message).utf8().get_data(), false, ERR_HANDLER_SCRIPT);
@@ -844,7 +852,7 @@ Error GDScript::reload(bool p_keep_state) {
 
 	if (err) {
 		if (EngineDebugger::is_active()) {
-			GDScriptLanguage::get_singleton()->debug_break_parse(get_path(), parser.get_errors().front()->get().line, "Parser Error: " + parser.get_errors().front()->get().message);
+			GDScriptLanguage::get_singleton()->debug_break_parse(_get_debug_path(), parser.get_errors().front()->get().line, "Parser Error: " + parser.get_errors().front()->get().message);
 		}
 
 		const List<GDScriptParser::ParserError>::Element *e = parser.get_errors().front();
@@ -867,7 +875,7 @@ Error GDScript::reload(bool p_keep_state) {
 	if (err) {
 		if (can_run) {
 			if (EngineDebugger::is_active()) {
-				GDScriptLanguage::get_singleton()->debug_break_parse(get_path(), compiler.get_error_line(), "Parser Error: " + compiler.get_error());
+				GDScriptLanguage::get_singleton()->debug_break_parse(_get_debug_path(), compiler.get_error_line(), "Parser Error: " + compiler.get_error());
 			}
 			_err_print_error("GDScript::reload", path.is_empty() ? "built-in" : (const char *)path.utf8().get_data(), compiler.get_error_line(), ("Compile Error: " + compiler.get_error()).utf8().get_data(), false, ERR_HANDLER_SCRIPT);
 			ERR_FAIL_V(ERR_COMPILATION_FAILED);
