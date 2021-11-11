@@ -69,7 +69,21 @@
 			<return type="Rect2i" />
 			<argument index="0" name="to" type="Vector2i" />
 			<description>
-				Returns this [Rect2i] expanded to include a given point.
+				Returns a copy of this [Rect2i] expanded to include a given point.
+				[codeblocks]
+				[gdscript]
+				# position (-3, 2), size (1, 1)
+				var rect = Rect2i(Vector2i(-3, 2), Vector2i(1, 1))
+				# position (-3, -1), size (3, 4), so we fit both rect and Vector2i(0, -1)
+				var rect2 = rect.expand(Vector2i(0, -1))
+				[/gdscript]
+				[csharp]
+				# position (-3, 2), size (1, 1)
+				var rect = new Rect2i(new Vector2i(-3, 2), new Vector2i(1, 1));
+				# position (-3, -1), size (3, 4), so we fit both rect and Vector2i(0, -1)
+				var rect2 = rect.Expand(new Vector2i(0, -1));
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="get_area" qualifiers="const">
@@ -120,7 +134,8 @@
 			<return type="bool" />
 			<argument index="0" name="point" type="Vector2i" />
 			<description>
-				Returns [code]true[/code] if the [Rect2i] contains a point.
+				Returns [code]true[/code] if the [Rect2i] contains a point. By convention, the right and bottom edges of the [Rect2i] are considered exclusive, so points on these edges are [b]not[/b] included.
+				[b]Note:[/b] This method is not reliable for [Rect2i] with a [i]negative size[/i]. Use [method abs] to get a positive sized equivalent rectangle to check for contained points.
 			</description>
 		</method>
 		<method name="intersection" qualifiers="const">

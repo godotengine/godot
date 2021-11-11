@@ -211,26 +211,74 @@ TEST_CASE("[Rect2] Growing") {
 }
 
 TEST_CASE("[Rect2] Has point") {
+	Rect2 rect = Rect2(0, 100, 1280, 720);
 	CHECK_MESSAGE(
-			Rect2(0, 100, 1280, 720).has_point(Vector2(500, 600)),
+			rect.has_point(Vector2(500, 600)),
 			"has_point() with contained Vector2 should return the expected result.");
 	CHECK_MESSAGE(
-			!Rect2(0, 100, 1280, 720).has_point(Vector2(0, 0)),
+			!rect.has_point(Vector2(0, 0)),
 			"has_point() with non-contained Vector2 should return the expected result.");
 
 	CHECK_MESSAGE(
-			Rect2(0, 100, 1280, 720).has_point(Vector2(0, 110)),
-			"has_point() with positive Vector2 on left edge should return the expected result.");
+			rect.has_point(rect.position),
+			"has_point() with positive size should include `position`.");
 	CHECK_MESSAGE(
-			!Rect2(0, 100, 1280, 720).has_point(Vector2(1280, 110)),
-			"has_point() with positive Vector2 on right edge should return the expected result.");
+			rect.has_point(rect.position + Vector2(1, 1)),
+			"has_point() with positive size should include `position + (1, 1)`.");
+	CHECK_MESSAGE(
+			!rect.has_point(rect.position + Vector2(1, -1)),
+			"has_point() with positive size should not include `position + (1, -1)`.");
+	CHECK_MESSAGE(
+			!rect.has_point(rect.position + rect.size),
+			"has_point() with positive size should not include `position + size`.");
+	CHECK_MESSAGE(
+			!rect.has_point(rect.position + rect.size + Vector2(1, 1)),
+			"has_point() with positive size should not include `position + size + (1, 1)`.");
+	CHECK_MESSAGE(
+			rect.has_point(rect.position + rect.size + Vector2(-1, -1)),
+			"has_point() with positive size should include `position + size + (-1, -1)`.");
+	CHECK_MESSAGE(
+			!rect.has_point(rect.position + rect.size + Vector2(-1, 1)),
+			"has_point() with positive size should not include `position + size + (-1, 1)`.");
 
 	CHECK_MESSAGE(
-			Rect2(-4000, 100, 1280, 720).has_point(Vector2(-4000, 110)),
-			"has_point() with negative Vector2 on left edge should return the expected result.");
+			rect.has_point(rect.position + Vector2(0, 10)),
+			"has_point() with point located on left edge should return true.");
 	CHECK_MESSAGE(
-			!Rect2(-4000, 100, 1280, 720).has_point(Vector2(-2720, 110)),
-			"has_point() with negative Vector2 on right edge should return the expected result.");
+			!rect.has_point(rect.position + Vector2(rect.size.x, 10)),
+			"has_point() with point located on right edge should return false.");
+	CHECK_MESSAGE(
+			rect.has_point(rect.position + Vector2(10, 0)),
+			"has_point() with point located on top edge should return true.");
+	CHECK_MESSAGE(
+			!rect.has_point(rect.position + Vector2(10, rect.size.y)),
+			"has_point() with point located on bottom edge should return false.");
+
+	/*
+	// FIXME: Disabled for now until GH-37617 is fixed one way or another.
+	// More tests should then be written like for the positive size case.
+	rect = Rect2(0, 100, -1280, -720);
+	CHECK_MESSAGE(
+			rect.has_point(rect.position),
+			"has_point() with negative size should include `position`.");
+	CHECK_MESSAGE(
+			!rect.has_point(rect.position + rect.size),
+			"has_point() with negative size should not include `position + size`.");
+	*/
+
+	rect = Rect2(-4000, -200, 1280, 720);
+	CHECK_MESSAGE(
+			rect.has_point(rect.position + Vector2(0, 10)),
+			"has_point() with negative position and point located on left edge should return true.");
+	CHECK_MESSAGE(
+			!rect.has_point(rect.position + Vector2(rect.size.x, 10)),
+			"has_point() with negative position and point located on right edge should return false.");
+	CHECK_MESSAGE(
+			rect.has_point(rect.position + Vector2(10, 0)),
+			"has_point() with negative position and point located on top edge should return true.");
+	CHECK_MESSAGE(
+			!rect.has_point(rect.position + Vector2(10, rect.size.y)),
+			"has_point() with negative position and point located on bottom edge should return false.");
 }
 
 TEST_CASE("[Rect2] Intersection") {
@@ -429,26 +477,74 @@ TEST_CASE("[Rect2i] Growing") {
 }
 
 TEST_CASE("[Rect2i] Has point") {
+	Rect2i rect = Rect2i(0, 100, 1280, 720);
 	CHECK_MESSAGE(
-			Rect2i(0, 100, 1280, 720).has_point(Vector2i(500, 600)),
+			rect.has_point(Vector2i(500, 600)),
 			"has_point() with contained Vector2i should return the expected result.");
 	CHECK_MESSAGE(
-			!Rect2i(0, 100, 1280, 720).has_point(Vector2i(0, 0)),
+			!rect.has_point(Vector2i(0, 0)),
 			"has_point() with non-contained Vector2i should return the expected result.");
 
 	CHECK_MESSAGE(
-			Rect2i(0, 100, 1280, 720).has_point(Vector2(0, 110)),
-			"has_point() with positive Vector2 on left edge should return the expected result.");
+			rect.has_point(rect.position),
+			"has_point() with positive size should include `position`.");
 	CHECK_MESSAGE(
-			!Rect2i(0, 100, 1280, 720).has_point(Vector2(1280, 110)),
-			"has_point() with positive Vector2 on right edge should return the expected result.");
+			rect.has_point(rect.position + Vector2i(1, 1)),
+			"has_point() with positive size should include `position + (1, 1)`.");
+	CHECK_MESSAGE(
+			!rect.has_point(rect.position + Vector2i(1, -1)),
+			"has_point() with positive size should not include `position + (1, -1)`.");
+	CHECK_MESSAGE(
+			!rect.has_point(rect.position + rect.size),
+			"has_point() with positive size should not include `position + size`.");
+	CHECK_MESSAGE(
+			!rect.has_point(rect.position + rect.size + Vector2i(1, 1)),
+			"has_point() with positive size should not include `position + size + (1, 1)`.");
+	CHECK_MESSAGE(
+			rect.has_point(rect.position + rect.size + Vector2i(-1, -1)),
+			"has_point() with positive size should include `position + size + (-1, -1)`.");
+	CHECK_MESSAGE(
+			!rect.has_point(rect.position + rect.size + Vector2i(-1, 1)),
+			"has_point() with positive size should not include `position + size + (-1, 1)`.");
 
 	CHECK_MESSAGE(
-			Rect2i(-4000, 100, 1280, 720).has_point(Vector2(-4000, 110)),
-			"has_point() with negative Vector2 on left edge should return the expected result.");
+			rect.has_point(rect.position + Vector2i(0, 10)),
+			"has_point() with point located on left edge should return true.");
 	CHECK_MESSAGE(
-			!Rect2i(-4000, 100, 1280, 720).has_point(Vector2(-2720, 110)),
-			"has_point() with negative Vector2 on right edge should return the expected result.");
+			!rect.has_point(rect.position + Vector2i(rect.size.x, 10)),
+			"has_point() with point located on right edge should return false.");
+	CHECK_MESSAGE(
+			rect.has_point(rect.position + Vector2i(10, 0)),
+			"has_point() with point located on top edge should return true.");
+	CHECK_MESSAGE(
+			!rect.has_point(rect.position + Vector2i(10, rect.size.y)),
+			"has_point() with point located on bottom edge should return false.");
+
+	/*
+	// FIXME: Disabled for now until GH-37617 is fixed one way or another.
+	// More tests should then be written like for the positive size case.
+	rect = Rect2i(0, 100, -1280, -720);
+	CHECK_MESSAGE(
+			rect.has_point(rect.position),
+			"has_point() with negative size should include `position`.");
+	CHECK_MESSAGE(
+			!rect.has_point(rect.position + rect.size),
+			"has_point() with negative size should not include `position + size`.");
+	*/
+
+	rect = Rect2i(-4000, -200, 1280, 720);
+	CHECK_MESSAGE(
+			rect.has_point(rect.position + Vector2i(0, 10)),
+			"has_point() with negative position and point located on left edge should return true.");
+	CHECK_MESSAGE(
+			!rect.has_point(rect.position + Vector2i(rect.size.x, 10)),
+			"has_point() with negative position and point located on right edge should return false.");
+	CHECK_MESSAGE(
+			rect.has_point(rect.position + Vector2i(10, 0)),
+			"has_point() with negative position and point located on top edge should return true.");
+	CHECK_MESSAGE(
+			!rect.has_point(rect.position + Vector2i(10, rect.size.y)),
+			"has_point() with negative position and point located on bottom edge should return false.");
 }
 
 TEST_CASE("[Rect2i] Intersection") {
