@@ -41,7 +41,10 @@ class GodotBody2D;
 class GodotConstraint2D;
 
 class GodotArea2D : public GodotCollisionObject2D {
-	PhysicsServer2D::AreaSpaceOverrideMode space_override_mode = PhysicsServer2D::AREA_SPACE_OVERRIDE_DISABLED;
+	PhysicsServer2D::AreaSpaceOverrideMode gravity_override_mode = PhysicsServer2D::AREA_SPACE_OVERRIDE_DISABLED;
+	PhysicsServer2D::AreaSpaceOverrideMode linear_damping_override_mode = PhysicsServer2D::AREA_SPACE_OVERRIDE_DISABLED;
+	PhysicsServer2D::AreaSpaceOverrideMode angular_damping_override_mode = PhysicsServer2D::AREA_SPACE_OVERRIDE_DISABLED;
+
 	real_t gravity = 9.80665;
 	Vector2 gravity_vector = Vector2(0, -1);
 	bool gravity_is_point = false;
@@ -96,6 +99,8 @@ class GodotArea2D : public GodotCollisionObject2D {
 	virtual void _shapes_changed();
 	void _queue_monitor_update();
 
+	void _set_space_override_mode(PhysicsServer2D::AreaSpaceOverrideMode &r_mode, PhysicsServer2D::AreaSpaceOverrideMode p_new_mode);
+
 public:
 	void set_monitor_callback(const Callable &p_callback);
 	_FORCE_INLINE_ bool has_monitor_callback() const { return !monitor_callback.is_null(); }
@@ -111,9 +116,6 @@ public:
 
 	void set_param(PhysicsServer2D::AreaParameter p_param, const Variant &p_value);
 	Variant get_param(PhysicsServer2D::AreaParameter p_param) const;
-
-	void set_space_override_mode(PhysicsServer2D::AreaSpaceOverrideMode p_mode);
-	PhysicsServer2D::AreaSpaceOverrideMode get_space_override_mode() const { return space_override_mode; }
 
 	_FORCE_INLINE_ void set_gravity(real_t p_gravity) { gravity = p_gravity; }
 	_FORCE_INLINE_ real_t get_gravity() const { return gravity; }

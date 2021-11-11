@@ -48,6 +48,9 @@
 			The rate at which objects stop spinning in this area. Represents the angular velocity lost per second.
 			See [member ProjectSettings.physics/3d/default_angular_damp] for more details about damping.
 		</member>
+		<member name="angular_damp_space_override" type="int" setter="set_angular_damp_space_override_mode" getter="get_angular_damp_space_override_mode" enum="Area3D.SpaceOverride" default="0">
+			Override mode for angular damping calculations within this area. See [enum SpaceOverride] for possible values.
+		</member>
 		<member name="audio_bus_name" type="StringName" setter="set_audio_bus_name" getter="get_audio_bus_name" default="&amp;&quot;Master&quot;">
 			The name of the area's audio bus.
 		</member>
@@ -55,20 +58,29 @@
 			If [code]true[/code], the area's audio bus overrides the default audio bus.
 		</member>
 		<member name="gravity" type="float" setter="set_gravity" getter="get_gravity" default="9.8">
-			The area's gravity intensity (in meters per second squared). This value multiplies the gravity vector. This is useful to alter the force of gravity without altering its direction.
+			The area's gravity intensity (in meters per second squared). This value multiplies the gravity direction. This is useful to alter the force of gravity without altering its direction.
 		</member>
-		<member name="gravity_distance_scale" type="float" setter="set_gravity_distance_scale" getter="get_gravity_distance_scale" default="0.0">
-			The falloff factor for point gravity. The greater the value, the faster gravity decreases with distance.
+		<member name="gravity_direction" type="Vector3" setter="set_gravity_direction" getter="get_gravity_direction" default="Vector3(0, -1, 0)">
+			The area's gravity vector (not normalized).
 		</member>
 		<member name="gravity_point" type="bool" setter="set_gravity_is_point" getter="is_gravity_a_point" default="false">
-			If [code]true[/code], gravity is calculated from a point (set via [member gravity_vec]). See also [member space_override].
+			If [code]true[/code], gravity is calculated from a point (set via [member gravity_point_center]). See also [member gravity_space_override].
 		</member>
-		<member name="gravity_vec" type="Vector3" setter="set_gravity_vector" getter="get_gravity_vector" default="Vector3(0, -1, 0)">
-			The area's gravity vector (not normalized). If gravity is a point (see [member gravity_point]), this will be the point of attraction.
+		<member name="gravity_point_center" type="Vector3" setter="set_gravity_point_center" getter="get_gravity_point_center" default="Vector3(0, -1, 0)">
+			If gravity is a point (see [member gravity_point]), this will be the point of attraction.
+		</member>
+		<member name="gravity_point_distance_scale" type="float" setter="set_gravity_point_distance_scale" getter="get_gravity_point_distance_scale" default="0.0">
+			The falloff factor for point gravity. The greater the value, the faster gravity decreases with distance.
+		</member>
+		<member name="gravity_space_override" type="int" setter="set_gravity_space_override_mode" getter="get_gravity_space_override_mode" enum="Area3D.SpaceOverride" default="0">
+			Override mode for gravity calculations within this area. See [enum SpaceOverride] for possible values.
 		</member>
 		<member name="linear_damp" type="float" setter="set_linear_damp" getter="get_linear_damp" default="0.1">
 			The rate at which objects stop moving in this area. Represents the linear velocity lost per second.
 			See [member ProjectSettings.physics/3d/default_linear_damp] for more details about damping.
+		</member>
+		<member name="linear_damp_space_override" type="int" setter="set_linear_damp_space_override_mode" getter="get_linear_damp_space_override_mode" enum="Area3D.SpaceOverride" default="0">
+			Override mode for linear damping calculations within this area. See [enum SpaceOverride] for possible values.
 		</member>
 		<member name="monitorable" type="bool" setter="set_monitorable" getter="is_monitorable" default="true">
 			If [code]true[/code], other monitoring areas can detect this area.
@@ -90,9 +102,6 @@
 		</member>
 		<member name="reverb_bus_uniformity" type="float" setter="set_reverb_uniformity" getter="get_reverb_uniformity" default="0.0">
 			The degree to which this area's reverb is a uniform effect. Ranges from [code]0[/code] to [code]1[/code] with [code]0.1[/code] precision.
-		</member>
-		<member name="space_override" type="int" setter="set_space_override_mode" getter="get_space_override_mode" enum="Area3D.SpaceOverride" default="0">
-			Override mode for gravity and damping calculations within this area. See [enum SpaceOverride] for possible values.
 		</member>
 		<member name="wind_attenuation_factor" type="float" setter="set_wind_attenuation_factor" getter="get_wind_attenuation_factor" default="0.0">
 			The exponential rate at which wind force decreases with distance from its origin.

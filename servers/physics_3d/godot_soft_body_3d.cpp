@@ -917,9 +917,7 @@ void GodotSoftBody3D::add_velocity(const Vector3 &p_velocity) {
 	}
 }
 
-void GodotSoftBody3D::apply_forces(bool p_has_wind_forces) {
-	int ac = areas.size();
-
+void GodotSoftBody3D::apply_forces(const LocalVector<GodotArea3D *> &p_wind_areas) {
 	if (nodes.is_empty()) {
 		return;
 	}
@@ -932,7 +930,6 @@ void GodotSoftBody3D::apply_forces(bool p_has_wind_forces) {
 
 	// Iterate over faces (try not to iterate elsewhere if possible).
 	for (i = 0, ni = faces.size(); i < ni; ++i) {
-		bool stopped = false;
 		const Face &face = faces[i];
 
 		Vector3 wind_force(0, 0, 0);
@@ -941,24 +938,10 @@ void GodotSoftBody3D::apply_forces(bool p_has_wind_forces) {
 		volume += vec3_dot(face.n[0]->x - org, vec3_cross(face.n[1]->x - org, face.n[2]->x - org));
 
 		// Compute nodal forces from area winds.
-		if (ac && p_has_wind_forces) {
-			const AreaCMP *aa = &areas[0];
-			for (j = ac - 1; j >= 0 && !stopped; j--) {
-				PhysicsServer3D::AreaSpaceOverrideMode mode = aa[j].area->get_space_override_mode();
-				switch (mode) {
-					case PhysicsServer3D::AREA_SPACE_OVERRIDE_COMBINE:
-					case PhysicsServer3D::AREA_SPACE_OVERRIDE_COMBINE_REPLACE: {
-						wind_force += _compute_area_windforce(aa[j].area, &face);
-						stopped = mode == PhysicsServer3D::AREA_SPACE_OVERRIDE_COMBINE_REPLACE;
-					} break;
-					case PhysicsServer3D::AREA_SPACE_OVERRIDE_REPLACE:
-					case PhysicsServer3D::AREA_SPACE_OVERRIDE_REPLACE_COMBINE: {
-						wind_force = _compute_area_windforce(aa[j].area, &face);
-						stopped = mode == PhysicsServer3D::AREA_SPACE_OVERRIDE_REPLACE;
-					} break;
-					default: {
-					}
-				}
+		int wind_area_count = p_wind_areas.size();
+		if (wind_area_count > 0) {
+			for (j = 0; j < wind_area_count; j++) {
+				wind_force += _compute_area_windforce(p_wind_areas[j], &face);
 			}
 
 			for (j = 0; j < 3; j++) {
@@ -1004,44 +987,59 @@ void GodotSoftBody3D::predict_motion(real_t p_delta) {
 
 	ERR_FAIL_COND(!get_space());
 
-	GodotArea3D *def_area = get_space()->get_default_area();
-	ERR_FAIL_COND(!def_area);
-	gravity = def_area->get_gravity_vector() * def_area->get_gravity();
-
 	int ac = areas.size();
-	bool stopped = false;
-	bool has_wind_forces = false;
+
+	bool gravity_done = false;
+
+	LocalVector<GodotArea3D *> wind_areas;
 
 	if (ac) {
 		areas.sort();
 		const AreaCMP *aa = &areas[0];
-		for (int i = ac - 1; i >= 0 && !stopped; i--) {
-			// Avoids unnecessary loop in apply_forces().
-			has_wind_forces = has_wind_forces || aa[i].area->get_wind_force_magnitude() > CMP_EPSILON;
-
-			PhysicsServer3D::AreaSpaceOverrideMode mode = aa[i].area->get_space_override_mode();
-			switch (mode) {
-				case PhysicsServer3D::AREA_SPACE_OVERRIDE_COMBINE:
-				case PhysicsServer3D::AREA_SPACE_OVERRIDE_COMBINE_REPLACE: {
-					_compute_area_gravity(aa[i].area);
-					stopped = mode == PhysicsServer3D::AREA_SPACE_OVERRIDE_COMBINE_REPLACE;
-				} break;
-				case PhysicsServer3D::AREA_SPACE_OVERRIDE_REPLACE:
-				case PhysicsServer3D::AREA_SPACE_OVERRIDE_REPLACE_COMBINE: {
-					gravity = Vector3(0, 0, 0);
-					_compute_area_gravity(aa[i].area);
-					stopped = mode == PhysicsServer3D::AREA_SPACE_OVERRIDE_REPLACE;
-				} break;
-				default: {
+		for (int i = ac - 1; i >= 0; i--) {
+			if (!gravity_done) {
+				PhysicsServer3D::AreaSpaceOverrideMode area_gravity_mode = (PhysicsServer3D::AreaSpaceOverrideMode)(int)aa[i].area->get_param(PhysicsServer3D::AREA_PARAM_GRAVITY_OVERRIDE_MODE);
+				if (area_gravity_mode != PhysicsServer3D::AREA_SPACE_OVERRIDE_DISABLED) {
+					Vector3 area_gravity;
+					aa[i].area->compute_gravity(get_transform().get_origin(), area_gravity);
+					switch (area_gravity_mode) {
+						case PhysicsServer3D::AREA_SPACE_OVERRIDE_COMBINE:
+						case PhysicsServer3D::AREA_SPACE_OVERRIDE_COMBINE_REPLACE: {
+							gravity += area_gravity;
+							gravity_done = area_gravity_mode == PhysicsServer3D::AREA_SPACE_OVERRIDE_COMBINE_REPLACE;
+						} break;
+						case PhysicsServer3D::AREA_SPACE_OVERRIDE_REPLACE:
+						case PhysicsServer3D::AREA_SPACE_OVERRIDE_REPLACE_COMBINE: {
+							gravity = Vector3(0, 0, 0);
+							gravity = area_gravity;
+							gravity_done = area_gravity_mode == PhysicsServer3D::AREA_SPACE_OVERRIDE_REPLACE;
+						} break;
+						default: {
+						}
+					}
 				}
+			}
+
+			if (aa[i].area->get_wind_force_magnitude() > CMP_EPSILON) {
+				wind_areas.push_back(aa[i].area);
 			}
 		}
 	}
 
+	// Add default gravity and damping from space area.
+	if (!gravity_done) {
+		GodotArea3D *default_area = get_space()->get_default_area();
+		ERR_FAIL_COND(!default_area);
+
+		Vector3 default_gravity;
+		default_area->compute_gravity(get_transform().get_origin(), default_gravity);
+		gravity += default_gravity;
+	}
+
 	// Apply forces.
 	add_velocity(gravity * p_delta);
-	if (pressure_coefficient > CMP_EPSILON || has_wind_forces) {
-		apply_forces(has_wind_forces);
+	if (pressure_coefficient > CMP_EPSILON || !wind_areas.is_empty()) {
+		apply_forces(wind_areas);
 	}
 
 	// Avoid soft body from 'exploding' so use some upper threshold of maximum motion

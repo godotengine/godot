@@ -39,10 +39,18 @@ bool GodotAreaPair3D::setup(real_t p_step) {
 	}
 
 	process_collision = false;
+	has_space_override = false;
 	if (result != colliding) {
-		if (area->get_space_override_mode() != PhysicsServer3D::AREA_SPACE_OVERRIDE_DISABLED) {
-			process_collision = true;
-		} else if (area->has_monitor_callback()) {
+		if ((int)area->get_param(PhysicsServer3D::AREA_PARAM_GRAVITY_OVERRIDE_MODE) != PhysicsServer3D::AREA_SPACE_OVERRIDE_DISABLED) {
+			has_space_override = true;
+		} else if ((int)area->get_param(PhysicsServer3D::AREA_PARAM_LINEAR_DAMP_OVERRIDE_MODE) != PhysicsServer3D::AREA_SPACE_OVERRIDE_DISABLED) {
+			has_space_override = true;
+		} else if ((int)area->get_param(PhysicsServer3D::AREA_PARAM_ANGULAR_DAMP_OVERRIDE_MODE) != PhysicsServer3D::AREA_SPACE_OVERRIDE_DISABLED) {
+			has_space_override = true;
+		}
+		process_collision = has_space_override;
+
+		if (area->has_monitor_callback()) {
 			process_collision = true;
 		}
 
@@ -58,7 +66,7 @@ bool GodotAreaPair3D::pre_solve(real_t p_step) {
 	}
 
 	if (colliding) {
-		if (area->get_space_override_mode() != PhysicsServer3D::AREA_SPACE_OVERRIDE_DISABLED) {
+		if (has_space_override) {
 			body->add_area(area);
 		}
 
@@ -66,7 +74,7 @@ bool GodotAreaPair3D::pre_solve(real_t p_step) {
 			area->add_body_to_query(body, body_shape, area_shape);
 		}
 	} else {
-		if (area->get_space_override_mode() != PhysicsServer3D::AREA_SPACE_OVERRIDE_DISABLED) {
+		if (has_space_override) {
 			body->remove_area(area);
 		}
 
@@ -96,7 +104,7 @@ GodotAreaPair3D::GodotAreaPair3D(GodotBody3D *p_body, int p_body_shape, GodotAre
 
 GodotAreaPair3D::~GodotAreaPair3D() {
 	if (colliding) {
-		if (area->get_space_override_mode() != PhysicsServer3D::AREA_SPACE_OVERRIDE_DISABLED) {
+		if (has_space_override) {
 			body->remove_area(area);
 		}
 		if (area->has_monitor_callback()) {
@@ -207,10 +215,15 @@ bool GodotAreaSoftBodyPair3D::setup(real_t p_step) {
 	}
 
 	process_collision = false;
+	has_space_override = false;
 	if (result != colliding) {
-		if (area->get_space_override_mode() != PhysicsServer3D::AREA_SPACE_OVERRIDE_DISABLED) {
-			process_collision = true;
-		} else if (area->has_monitor_callback()) {
+		if ((int)area->get_param(PhysicsServer3D::AREA_PARAM_GRAVITY_OVERRIDE_MODE) != PhysicsServer3D::AREA_SPACE_OVERRIDE_DISABLED) {
+			has_space_override = true;
+		} else if (area->get_wind_force_magnitude() > CMP_EPSILON) {
+			has_space_override = true;
+		}
+
+		if (area->has_monitor_callback()) {
 			process_collision = true;
 		}
 
@@ -226,7 +239,7 @@ bool GodotAreaSoftBodyPair3D::pre_solve(real_t p_step) {
 	}
 
 	if (colliding) {
-		if (area->get_space_override_mode() != PhysicsServer3D::AREA_SPACE_OVERRIDE_DISABLED) {
+		if (has_space_override) {
 			soft_body->add_area(area);
 		}
 
@@ -234,7 +247,7 @@ bool GodotAreaSoftBodyPair3D::pre_solve(real_t p_step) {
 			area->add_soft_body_to_query(soft_body, soft_body_shape, area_shape);
 		}
 	} else {
-		if (area->get_space_override_mode() != PhysicsServer3D::AREA_SPACE_OVERRIDE_DISABLED) {
+		if (has_space_override) {
 			soft_body->remove_area(area);
 		}
 
@@ -261,7 +274,7 @@ GodotAreaSoftBodyPair3D::GodotAreaSoftBodyPair3D(GodotSoftBody3D *p_soft_body, i
 
 GodotAreaSoftBodyPair3D::~GodotAreaSoftBodyPair3D() {
 	if (colliding) {
-		if (area->get_space_override_mode() != PhysicsServer3D::AREA_SPACE_OVERRIDE_DISABLED) {
+		if (has_space_override) {
 			soft_body->remove_area(area);
 		}
 		if (area->has_monitor_callback()) {
