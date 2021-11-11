@@ -60,7 +60,7 @@ Vector<Vector3> CylinderShape3D::get_debug_mesh_lines() const {
 }
 
 real_t CylinderShape3D::get_enclosing_radius() const {
-	return Vector2(radius, height * 0.5).length();
+	return radius;
 }
 
 void CylinderShape3D::_update_shape() {

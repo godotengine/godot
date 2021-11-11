@@ -67,7 +67,7 @@ Vector<Vector3> CapsuleShape3D::get_debug_mesh_lines() const {
 }
 
 real_t CapsuleShape3D::get_enclosing_radius() const {
-	return height * 0.5;
+	return radius;
 }
 
 void CapsuleShape3D::_update_shape() {
