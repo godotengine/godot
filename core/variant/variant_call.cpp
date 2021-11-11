@@ -1422,8 +1422,6 @@ static void _register_variant_builtin_methods() {
 	bind_method(String, sha1_buffer, sarray(), varray());
 	bind_method(String, sha256_buffer, sarray(), varray());
 	bind_method(String, is_empty, sarray(), varray());
-	// FIXME: Static function, not sure how to bind
-	//bind_method(String, humanize_size, sarray("size"), varray());
 
 	bind_method(String, is_absolute_path, sarray(), varray());
 	bind_method(String, is_relative_path, sarray(), varray());
@@ -1635,17 +1633,15 @@ static void _register_variant_builtin_methods() {
 	bind_method(Color, to_argb64, sarray(), varray());
 	bind_method(Color, to_abgr64, sarray(), varray());
 	bind_method(Color, to_rgba64, sarray(), varray());
+	bind_method(Color, to_html, sarray("with_alpha"), varray(true));
 
 	bind_method(Color, clamp, sarray("min", "max"), varray(Color(0, 0, 0, 0), Color(1, 1, 1, 1)));
 	bind_method(Color, inverted, sarray(), varray());
 	bind_method(Color, lerp, sarray("to", "weight"), varray());
 	bind_method(Color, lightened, sarray("amount"), varray());
 	bind_method(Color, darkened, sarray("amount"), varray());
-	bind_method(Color, to_html, sarray("with_alpha"), varray(true));
 	bind_method(Color, blend, sarray("over"), varray());
 
-	// FIXME: Color is immutable, need to probably find a way to do this via constructor
-	//ADDFUNC4R(COLOR, COLOR, Color, from_hsv, FLOAT, "h", FLOAT, "s", FLOAT, "v", FLOAT, "a", varray(1.0));
 	bind_method(Color, is_equal_approx, sarray("to"), varray());
 
 	bind_static_method(Color, hex, sarray("hex"), varray());
@@ -1657,6 +1653,7 @@ static void _register_variant_builtin_methods() {
 	bind_static_method(Color, get_named_color_name, sarray("idx"), varray());
 	bind_static_method(Color, get_named_color, sarray("idx"), varray());
 	bind_static_method(Color, from_string, sarray("str", "default"), varray());
+	bind_static_method(Color, from_hsv, sarray("h", "s", "v", "alpha"), varray(1.0));
 	bind_static_method(Color, from_rgbe9995, sarray("rgbe"), varray());
 
 	/* RID */
