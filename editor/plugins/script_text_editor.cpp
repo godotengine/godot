@@ -1629,10 +1629,7 @@ void ScriptTextEditor::_color_changed(const Color &p_color) {
 	}
 
 	String line = code_editor->get_text_editor()->get_line(color_position.x);
-	int color_args_pos = line.find(color_args, color_position.y);
-	String line_with_replaced_args = line;
-	line_with_replaced_args.erase(color_args_pos, color_args.length());
-	line_with_replaced_args = line_with_replaced_args.insert(color_args_pos, new_args);
+	String line_with_replaced_args = line.replace(color_args, new_args);
 
 	color_args = new_args;
 	code_editor->get_text_editor()->begin_complex_operation();

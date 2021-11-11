@@ -952,10 +952,6 @@ const char32_t *String::get_data() const {
 	return size() ? &operator[](0) : &zero;
 }
 
-void String::erase(int p_pos, int p_chars) {
-	*this = left(MAX(p_pos, 0)) + substr(p_pos + p_chars, length() - ((p_pos + p_chars)));
-}
-
 String String::capitalize() const {
 	String aux = this->camelcase_to_underscore(true).replace("_", " ").strip_edges();
 	String cap;

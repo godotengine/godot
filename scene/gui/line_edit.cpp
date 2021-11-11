@@ -577,13 +577,12 @@ void LineEdit::drop_data(const Point2 &p_point, const Variant &p_data) {
 
 	if (p_data.get_type() == Variant::STRING) {
 		set_caret_at_pixel_pos(p_point.x);
-		int selected = selection.end - selection.begin;
 
-		text.erase(selection.begin, selected);
+		text = text.left(selection.begin) + text.substr(selection.end);
 		_shape();
 
 		insert_text_at_caret(p_data);
-		selection.begin = caret_column - selected;
+		selection.begin = caret_column - (selection.end - selection.begin);
 		selection.end = caret_column;
 	}
 }
@@ -1244,7 +1243,7 @@ void LineEdit::delete_char() {
 		return;
 	}
 
-	text.erase(caret_column - 1, 1);
+	text = text.left(caret_column - 1) + text.substr(caret_column);
 	_shape();
 
 	set_caret_column(get_caret_column() - 1);
@@ -1256,7 +1255,7 @@ void LineEdit::delete_text(int p_from_column, int p_to_column) {
 	ERR_FAIL_COND_MSG(p_from_column < 0 || p_from_column > p_to_column || p_to_column > text.length(),
 			vformat("Positional parameters (from: %d, to: %d) are inverted or outside the text length (%d).", p_from_column, p_to_column, text.length()));
 
-	text.erase(p_from_column, p_to_column - p_from_column);
+	text = text.left(p_from_column) + text.substr(p_to_column);
 	_shape();
 
 	caret_column -= CLAMP(caret_column - p_from_column, 0, p_to_column - p_from_column);
