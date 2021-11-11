@@ -146,7 +146,7 @@ static void handle_crash(int sig) {
 				String out = "";
 				Error err = OS::get_singleton()->execute(String("atos"), args, &out, &ret);
 				if (err == OK && out.substr(0, 2) != "0x") {
-					out.erase(out.length() - 1, 1);
+					out = out.substr(0, out.length() - 1);
 					output = out;
 				}
 			}

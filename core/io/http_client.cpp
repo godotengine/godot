@@ -85,8 +85,7 @@ String HTTPClient::query_string_from_dict(const Dictionary &p_dict) {
 			}
 		}
 	}
-	query.erase(0, 1);
-	return query;
+	return query.substr(1);
 }
 
 Dictionary HTTPClient::_get_response_headers_as_dictionary() {

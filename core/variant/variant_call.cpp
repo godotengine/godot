@@ -1412,8 +1412,6 @@ static void _register_variant_builtin_methods() {
 	bind_method(String, plus_file, sarray("file"), varray());
 	bind_method(String, unicode_at, sarray("at"), varray());
 	bind_method(String, dedent, sarray(), varray());
-	// FIXME: String needs to be immutable when binding
-	//bind_method(String, erase, sarray("position", "chars"), varray());
 	bind_method(String, hash, sarray(), varray());
 	bind_method(String, md5_text, sarray(), varray());
 	bind_method(String, sha1_text, sarray(), varray());
