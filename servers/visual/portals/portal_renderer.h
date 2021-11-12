@@ -156,7 +156,10 @@ public:
 	void rooms_finalize(bool p_generate_pvs, bool p_cull_using_pvs, bool p_use_secondary_pvs, bool p_use_signals, String p_pvs_filename, bool p_use_simple_pvs, bool p_log_pvs_generation);
 	void rooms_override_camera(bool p_override, const Vector3 &p_point, const Vector<Plane> *p_convex);
 	void rooms_set_active(bool p_active) { _active = p_active; }
-	void rooms_set_params(int p_portal_depth_limit) { _tracer.set_depth_limit(p_portal_depth_limit); }
+	void rooms_set_params(int p_portal_depth_limit, real_t p_roaming_expansion_margin) {
+		_tracer.set_depth_limit(p_portal_depth_limit);
+		_roaming_expansion_margin = p_roaming_expansion_margin;
+	}
 	void rooms_set_cull_using_pvs(bool p_enable) { _cull_using_pvs = p_enable; }
 	void rooms_update_gameplay_monitor(const Vector<Vector3> &p_camera_positions);
 
