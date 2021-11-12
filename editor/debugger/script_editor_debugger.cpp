@@ -578,6 +578,12 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 		error->set_tooltip(0, tooltip);
 		error->set_tooltip(1, tooltip);
 
+		if (warning_count == 0 && error_count == 0) {
+			expand_all_button->set_disabled(false);
+			collapse_all_button->set_disabled(false);
+			clear_button->set_disabled(false);
+		}
+
 		if (oe.warning) {
 			warning_count++;
 		} else {
@@ -1404,6 +1410,11 @@ void ScriptEditorDebugger::_clear_errors_list() {
 	error_tree->clear();
 	error_count = 0;
 	warning_count = 0;
+	update_tabs();
+
+	expand_all_button->set_disabled(true);
+	collapse_all_button->set_disabled(true);
+	clear_button->set_disabled(true);
 }
 
 // Right click on specific file(s) or folder(s).
@@ -1662,28 +1673,31 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 		errors_tab = memnew(VBoxContainer);
 		errors_tab->set_name(TTR("Errors"));
 
-		HBoxContainer *errhb = memnew(HBoxContainer);
-		errors_tab->add_child(errhb);
+		HBoxContainer *error_hbox = memnew(HBoxContainer);
+		errors_tab->add_child(error_hbox);
 
-		Button *expand_all = memnew(Button);
-		expand_all->set_text(TTR("Expand All"));
-		expand_all->connect("pressed", callable_mp(this, &ScriptEditorDebugger::_expand_errors_list));
-		errhb->add_child(expand_all);
+		expand_all_button = memnew(Button);
+		expand_all_button->set_text(TTR("Expand All"));
+		expand_all_button->set_disabled(true);
+		expand_all_button->connect("pressed", callable_mp(this, &ScriptEditorDebugger::_expand_errors_list));
+		error_hbox->add_child(expand_all_button);
 
-		Button *collapse_all = memnew(Button);
-		collapse_all->set_text(TTR("Collapse All"));
-		collapse_all->connect("pressed", callable_mp(this, &ScriptEditorDebugger::_collapse_errors_list));
-		errhb->add_child(collapse_all);
+		collapse_all_button = memnew(Button);
+		collapse_all_button->set_text(TTR("Collapse All"));
+		collapse_all_button->set_disabled(true);
+		collapse_all_button->connect("pressed", callable_mp(this, &ScriptEditorDebugger::_collapse_errors_list));
+		error_hbox->add_child(collapse_all_button);
 
 		Control *space = memnew(Control);
 		space->set_h_size_flags(SIZE_EXPAND_FILL);
-		errhb->add_child(space);
+		error_hbox->add_child(space);
 
-		clearbutton = memnew(Button);
-		clearbutton->set_text(TTR("Clear"));
-		clearbutton->set_h_size_flags(0);
-		clearbutton->connect("pressed", callable_mp(this, &ScriptEditorDebugger::_clear_errors_list));
-		errhb->add_child(clearbutton);
+		clear_button = memnew(Button);
+		clear_button->set_text(TTR("Clear"));
+		clear_button->set_h_size_flags(0);
+		clear_button->set_disabled(true);
+		clear_button->connect("pressed", callable_mp(this, &ScriptEditorDebugger::_clear_errors_list));
+		error_hbox->add_child(clear_button);
 
 		error_tree = memnew(Tree);
 		error_tree->set_columns(2);
