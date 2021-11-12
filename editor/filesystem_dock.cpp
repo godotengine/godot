@@ -2789,7 +2789,11 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 	ED_SHORTCUT("filesystem_dock/copy_path", TTR("Copy Path"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_C);
 	ED_SHORTCUT("filesystem_dock/duplicate", TTR("Duplicate..."), KEY_MASK_CMD | KEY_D);
 	ED_SHORTCUT("filesystem_dock/delete", TTR("Delete"), KEY_DELETE);
+#ifdef OSX_ENABLED
+	ED_SHORTCUT("filesystem_dock/rename", TTR("Rename..."), KEY_ENTER);
+#else
 	ED_SHORTCUT("filesystem_dock/rename", TTR("Rename..."), KEY_F2);
+#endif
 	ED_SHORTCUT("filesystem_dock/open_search", TTR("Focus the search box"), KEY_MASK_CMD | KEY_F);
 
 	VBoxContainer *top_vbc = memnew(VBoxContainer);
