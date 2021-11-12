@@ -580,7 +580,7 @@ public:
 
 		SelfList<Shader> dirty_list;
 
-		Map<StringName, RID> default_textures;
+		Map<StringName, Map<int, RID>> default_textures;
 
 		Vector<ShaderLanguage::ShaderNode::Uniform::Hint> texture_hints;
 
@@ -706,8 +706,8 @@ public:
 	String shader_get_code(RID p_shader) const override;
 	void shader_get_param_list(RID p_shader, List<PropertyInfo> *p_param_list) const override;
 
-	void shader_set_default_texture_param(RID p_shader, const StringName &p_name, RID p_texture) override;
-	RID shader_get_default_texture_param(RID p_shader, const StringName &p_name) const override;
+	void shader_set_default_texture_param(RID p_shader, const StringName &p_name, RID p_texture, int p_index) override;
+	RID shader_get_default_texture_param(RID p_shader, const StringName &p_name, int p_index) const override;
 
 	RS::ShaderNativeSourceCode shader_get_native_source_code(RID p_shader) const override { return RS::ShaderNativeSourceCode(); };
 

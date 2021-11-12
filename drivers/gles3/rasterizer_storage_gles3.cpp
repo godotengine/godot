@@ -1871,31 +1871,38 @@ void RasterizerStorageGLES3::shader_get_param_list(RID p_shader, List<PropertyIn
 	}
 }
 
-void RasterizerStorageGLES3::shader_set_default_texture_param(RID p_shader, const StringName &p_name, RID p_texture) {
+void RasterizerStorageGLES3::shader_set_default_texture_param(RID p_shader, const StringName &p_name, RID p_texture, int p_index) {
 	Shader *shader = shader_owner.get_or_null(p_shader);
 	ERR_FAIL_COND(!shader);
 	ERR_FAIL_COND(p_texture.is_valid() && !texture_owner.owns(p_texture));
 
-	if (p_texture.is_valid()) {
-		shader->default_textures[p_name] = p_texture;
+	if (!p_texture.is_valid()) {
+		if (shader->default_textures.has(p_name) && shader->default_textures[p_name].has(p_index)) {
+			shader->default_textures[p_name].erase(p_index);
+
+			if (shader->default_textures[p_name].is_empty()) {
+				shader->default_textures.erase(p_name);
+			}
+		}
 	} else {
-		shader->default_textures.erase(p_name);
+		if (!shader->default_textures.has(p_name)) {
+			shader->default_textures[p_name] = Map<int, RID>();
+		}
+		shader->default_textures[p_name][p_index] = p_texture;
 	}
 
 	_shader_make_dirty(shader);
 }
 
-RID RasterizerStorageGLES3::shader_get_default_texture_param(RID p_shader, const StringName &p_name) const {
+RID RasterizerStorageGLES3::shader_get_default_texture_param(RID p_shader, const StringName &p_name, int p_index) const {
 	const Shader *shader = shader_owner.get_or_null(p_shader);
 	ERR_FAIL_COND_V(!shader, RID());
 
-	const Map<StringName, RID>::Element *E = shader->default_textures.find(p_name);
-
-	if (!E) {
-		return RID();
+	if (shader->default_textures.has(p_name) && shader->default_textures[p_name].has(p_index)) {
+		return shader->default_textures[p_name][p_index];
 	}
 
-	return E->get();
+	return RID();
 }
 
 void RasterizerStorageGLES3::shader_add_custom_define(RID p_shader, const String &p_define) {
@@ -2195,10 +2202,11 @@ void RasterizerStorageGLES3::_update_material(Material *p_material) {
 			}
 
 			if (!texture.is_valid()) {
-				Map<StringName, RID>::Element *W = p_material->shader->default_textures.find(E->key());
+				Map<StringName, Map<int, RID>>::Element *W = p_material->shader->default_textures.find(E->key());
 
-				if (W) {
-					texture = W->get();
+				// TODO: make texture uniform array properly works with GLES3
+				if (W && W->get().has(0)) {
+					texture = W->get()[0];
 				}
 			}
 

@@ -3558,11 +3558,20 @@ void RendererSceneRenderRD::FogShaderData::set_code(const String &p_code) {
 	valid = true;
 }
 
-void RendererSceneRenderRD::FogShaderData::set_default_texture_param(const StringName &p_name, RID p_texture) {
+void RendererSceneRenderRD::FogShaderData::set_default_texture_param(const StringName &p_name, RID p_texture, int p_index) {
 	if (!p_texture.is_valid()) {
-		default_texture_params.erase(p_name);
+		if (default_texture_params.has(p_name) && default_texture_params[p_name].has(p_index)) {
+			default_texture_params[p_name].erase(p_index);
+
+			if (default_texture_params[p_name].is_empty()) {
+				default_texture_params.erase(p_name);
+			}
+		}
 	} else {
-		default_texture_params[p_name] = p_texture;
+		if (!default_texture_params.has(p_name)) {
+			default_texture_params[p_name] = Map<int, RID>();
+		}
+		default_texture_params[p_name][p_index] = p_texture;
 	}
 }
 

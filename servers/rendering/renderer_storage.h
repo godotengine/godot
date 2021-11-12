@@ -183,8 +183,8 @@ public:
 	virtual String shader_get_code(RID p_shader) const = 0;
 	virtual void shader_get_param_list(RID p_shader, List<PropertyInfo> *p_param_list) const = 0;
 
-	virtual void shader_set_default_texture_param(RID p_shader, const StringName &p_name, RID p_texture) = 0;
-	virtual RID shader_get_default_texture_param(RID p_shader, const StringName &p_name) const = 0;
+	virtual void shader_set_default_texture_param(RID p_shader, const StringName &p_name, RID p_texture, int p_index) = 0;
+	virtual RID shader_get_default_texture_param(RID p_shader, const StringName &p_name, int p_index) const = 0;
 	virtual Variant shader_get_param_default(RID p_material, const StringName &p_param) const = 0;
 
 	virtual RS::ShaderNativeSourceCode shader_get_native_source_code(RID p_shader) const = 0;

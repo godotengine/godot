@@ -5217,7 +5217,9 @@ void VisualShaderNodePortPreview::_shader_changed() {
 	preview_shader.instantiate();
 	preview_shader->set_code(shader_code);
 	for (int i = 0; i < default_textures.size(); i++) {
-		preview_shader->set_default_texture_param(default_textures[i].name, default_textures[i].param);
+		for (int j = 0; j < default_textures[i].params.size(); j++) {
+			preview_shader->set_default_texture_param(default_textures[i].name, default_textures[i].params[j], j);
+		}
 	}
 
 	Ref<ShaderMaterial> material;
