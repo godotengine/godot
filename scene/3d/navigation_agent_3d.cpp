@@ -106,6 +106,9 @@ void NavigationAgent3D::_notification(int p_what) {
 		case NOTIFICATION_EXIT_TREE: {
 			agent_parent = nullptr;
 			set_physics_process_internal(false);
+			// Want to call ready again when the node enters the tree again. We're not using enter_tree notification because
+			// the navigation map may not be ready at that time. This fixes issues with taking the agent out of the scene tree.
+			request_ready();
 		} break;
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
 			if (agent_parent) {
