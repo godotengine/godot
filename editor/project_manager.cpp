@@ -2554,6 +2554,7 @@ ProjectManager::ProjectManager() {
 
 	Button *rename = memnew(Button);
 	rename->set_text(TTR("Rename"));
+	// The F2 shortcut isn't overridden with Enter on macOS as Enter is already used to edit a project.
 	rename->set_shortcut(ED_SHORTCUT("project_manager/rename_project", TTR("Rename Project"), KEY_F2));
 	tree_vb->add_child(rename);
 	rename->connect("pressed", this, "_rename_project");
