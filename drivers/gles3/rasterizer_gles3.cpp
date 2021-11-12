@@ -77,7 +77,9 @@
 
 #if !defined(GLES_OVER_GL) && defined(CAN_DEBUG)
 #include <GLES3/gl3.h>
+#if !defined(USE_OPENGL_ANGLE)
 #include <GLES3/gl3ext.h>
+#endif
 #include <GLES3/gl3platform.h>
 
 #include <EGL/egl.h>

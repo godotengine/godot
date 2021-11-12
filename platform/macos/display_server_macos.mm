@@ -239,7 +239,7 @@ void DisplayServerMacOS::_set_window_per_pixel_transparency_enabled(bool p_enabl
 				[layer setBackgroundColor:[NSColor clearColor].CGColor];
 				[layer setOpaque:NO];
 			}
-#if defined(GLES3_ENABLED)
+#if defined(USE_OPENGL_LEGACY)
 			if (gl_manager) {
 				gl_manager->window_set_per_pixel_transparency_enabled(p_window, true);
 			}
@@ -254,7 +254,7 @@ void DisplayServerMacOS::_set_window_per_pixel_transparency_enabled(bool p_enabl
 				[layer setBackgroundColor:[NSColor colorWithCalibratedWhite:1 alpha:1].CGColor];
 				[layer setOpaque:YES];
 			}
-#if defined(GLES3_ENABLED)
+#if defined(USE_OPENGL_LEGACY)
 			if (gl_manager) {
 				gl_manager->window_set_per_pixel_transparency_enabled(p_window, false);
 			}

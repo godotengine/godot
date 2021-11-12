@@ -33,6 +33,7 @@
 #include "config.h"
 #include "core/config/project_settings.h"
 #include "core/templates/vector.h"
+#include "texture_storage.h"
 
 using namespace GLES3;
 

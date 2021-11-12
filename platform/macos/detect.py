@@ -25,6 +25,7 @@ def get_opts():
         ("osxcross_sdk", "OSXCross SDK version", "darwin16"),
         ("MACOS_SDK_PATH", "Path to the macOS SDK", ""),
         ("vulkan_sdk_path", "Path to the Vulkan SDK", ""),
+        ("angle_path", "Path to the ANGLE build root or MetalANGLE Framework", ""),
         EnumVariable("macports_clang", "Build using Clang from MacPorts", "no", ("no", "5.0", "devel")),
         BoolVariable("debug_symbols", "Add debugging symbols to release/release_debug builds", True),
         BoolVariable("separate_debug_symbols", "Create a separate file containing debugging symbols", False),
@@ -32,6 +33,9 @@ def get_opts():
         BoolVariable("use_asan", "Use LLVM/GCC compiler address sanitizer (ASAN)", False),
         BoolVariable("use_tsan", "Use LLVM/GCC compiler thread sanitizer (TSAN)", False),
         BoolVariable("use_coverage", "Use instrumentation codes in the binary (e.g. for code coverage)", False),
+        EnumVariable(
+            "opengl_implementation", "Build using OpenGL implementation", "legacy", ("legacy", "metalangle", "angle")
+        ),
     ]
 
 
@@ -220,11 +224,24 @@ def configure(env):
         ]
     )
     env.Append(LIBS=["pthread", "z"])
+    env.Append(CCFLAGS=["-Wno-deprecated-declarations"])  # Disable deprecation warnings
 
     if env["opengl3"]:
-        env.Append(CPPDEFINES=["GLES_ENABLED", "GLES3_ENABLED"])
-        env.Append(CCFLAGS=["-Wno-deprecated-declarations"])  # Disable deprecation warnings
-        env.Append(LINKFLAGS=["-framework", "OpenGL"])
+        env.Append(CPPDEFINES=["GLES3_ENABLED"])
+
+        if env["opengl_implementation"] == "legacy":  # Use deprecated system OpenGL implementation
+            env.Append(CPPDEFINES=["USE_OPENGL_LEGACY"])
+            env.Append(LINKFLAGS=["-framework", "OpenGL"])
+
+        elif env["opengl_implementation"] == "angle":  # Use Upstream ANGLE OpenGL ES to Metal translation layer
+            env.Append(CPPDEFINES=["USE_OPENGL_ANGLE"])
+            env.Append(CCFLAGS=["-I$angle_path/../../include"])
+            env.Append(LINKFLAGS=["-L$angle_path", "-lEGL", "-lGLESv2"])
+
+        elif env["opengl_implementation"] == "metalangle":  # Use MetalANGLE OpenGL ES to Metal translation layer
+            env.Append(CPPDEFINES=["USE_OPENGL_ANGLE"])
+            env.Append(CCFLAGS=["-I$angle_path/MetalANGLE.framework/Headers"])
+            env.Append(LINKFLAGS=["-F$angle_path/", "-framework", "MetalANGLE"])
 
     env.Append(LINKFLAGS=["-rpath", "@executable_path/../Frameworks", "-rpath", "@executable_path"])
 

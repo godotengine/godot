@@ -31,7 +31,7 @@
 #ifndef GL_MANAGER_MACOS_LEGACY_H
 #define GL_MANAGER_MACOS_LEGACY_H
 
-#if defined(MACOS_ENABLED) && defined(GLES3_ENABLED)
+#if defined(MACOS_ENABLED) && defined(USE_OPENGL_LEGACY)
 
 #include "core/error/error_list.h"
 #include "core/os/os.h"
@@ -93,5 +93,5 @@ public:
 	~GLManager_MacOS();
 };
 
-#endif // MACOS_ENABLED && GLES3_ENABLED
+#endif // MACOS_ENABLED && USE_OPENGL_LEGACY
 #endif // GL_MANAGER_MACOS_LEGACY_H
