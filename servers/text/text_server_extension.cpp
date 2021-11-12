@@ -301,6 +301,9 @@ void TextServerExtension::_bind_methods() {
 
 	GDVIRTUAL_BIND(string_get_word_breaks, "string", "language");
 
+	GDVIRTUAL_BIND(is_confusable, "string", "dict");
+	GDVIRTUAL_BIND(spoof_check, "string");
+
 	GDVIRTUAL_BIND(string_to_upper, "string", "language");
 	GDVIRTUAL_BIND(string_to_lower, "string", "language");
 
@@ -1545,6 +1548,22 @@ PackedInt32Array TextServerExtension::string_get_word_breaks(const String &p_str
 		return ret;
 	}
 	return PackedInt32Array();
+}
+
+int TextServerExtension::is_confusable(const String &p_string, const PackedStringArray &p_dict) const {
+	int ret;
+	if (GDVIRTUAL_CALL(is_confusable, p_string, p_dict, ret)) {
+		return ret;
+	}
+	return TextServer::is_confusable(p_string, p_dict);
+}
+
+bool TextServerExtension::spoof_check(const String &p_string) const {
+	bool ret;
+	if (GDVIRTUAL_CALL(spoof_check, p_string, ret)) {
+		return ret;
+	}
+	return TextServer::spoof_check(p_string);
 }
 
 TextServerExtension::TextServerExtension() {

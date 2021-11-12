@@ -937,6 +937,16 @@
 				Returns [code]true[/code] if the server supports a feature.
 			</description>
 		</method>
+		<method name="is_confusable" qualifiers="const">
+			<return type="int" />
+			<argument index="0" name="string" type="String" />
+			<argument index="1" name="dict" type="PackedStringArray" />
+			<description>
+				Returns index of the first string in [code]dict[/dict] which is visually confusable with the [code]string[/string], or [code]-1[/code] if none is found.
+				[b]Note:[/b] This method doesn't detect invisible characters, for spoof detection use it in combination with [method spoof_check].
+				[b]Note:[/b] Always returns [code]-1[/code] if the server does not support the [constant FEATURE_UNICODE_SECURITY] feature.
+			</description>
+		</method>
 		<method name="is_locale_right_to_left" qualifiers="const">
 			<return type="bool" />
 			<argument index="0" name="locale" type="String" />
@@ -1476,6 +1486,14 @@
 				Aligns shaped text to the given tab-stops.
 			</description>
 		</method>
+		<method name="spoof_check" qualifiers="const">
+			<return type="bool" />
+			<argument index="0" name="string" type="String" />
+			<description>
+				Returns [code]true[/code] if [code]string[/code] is likely to be an attempt at confusing the reader.
+				[b]Note:[/b] Always returns [code]false[/code] if the server does not support the [constant FEATURE_UNICODE_SECURITY] feature.
+			</description>
+		</method>
 		<method name="string_get_word_breaks" qualifiers="const">
 			<return type="PackedInt32Array" />
 			<argument index="0" name="string" type="String" />
@@ -1732,6 +1750,9 @@
 		</constant>
 		<constant name="FEATURE_UNICODE_IDENTIFIERS" value="8192" enum="Feature">
 			TextServer supports UAX #31 identifier validation, see [method is_valid_identifier].
+		</constant>
+		<constant name="FEATURE_UNICODE_SECURITY" value="16384" enum="Feature">
+			TextServer supports [url=https://unicode.org/reports/tr36/]Unicode Technical Report #36[/url] and [url=https://unicode.org/reports/tr39/]Unicode Technical Standard #39[/url] based spoof detection features.
 		</constant>
 		<constant name="CONTOUR_CURVE_TAG_ON" value="1" enum="ContourPointTag">
 			Contour point is on the curve.

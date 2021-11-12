@@ -507,6 +507,11 @@ public:
 	Array parse_structured_text(StructuredTextParser p_parser_type, const Array &p_args, const String &p_text) const;
 	GDVIRTUAL3RC(Array, parse_structured_text, StructuredTextParser, const Array &, const String &);
 
+	virtual int is_confusable(const String &p_string, const PackedStringArray &p_dict) const override;
+	virtual bool spoof_check(const String &p_string) const override;
+	GDVIRTUAL2RC(int, is_confusable, const String &, const PackedStringArray &);
+	GDVIRTUAL1RC(bool, spoof_check, const String &);
+
 	TextServerExtension();
 	~TextServerExtension();
 };

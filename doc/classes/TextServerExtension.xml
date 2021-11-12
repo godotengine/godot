@@ -934,6 +934,14 @@
 				Returns [code]true[/code] if the server supports a feature.
 			</description>
 		</method>
+		<method name="is_confusable" qualifiers="virtual const">
+			<return type="int" />
+			<argument index="0" name="string" type="String" />
+			<argument index="1" name="dict" type="PackedStringArray" />
+			<description>
+				Returns index of the first string in [code]dict[/dict] which is visually confusable with the [code]string[/string], or [code]-1[/code] if none is found.
+			</description>
+		</method>
 		<method name="is_locale_right_to_left" qualifiers="virtual const">
 			<return type="bool" />
 			<argument index="0" name="locale" type="String" />
@@ -1486,6 +1494,13 @@
 			<description>
 				Updates line justification positions (word breaks and elongations) in the text buffer.
 				[b]Note:[/b] This method is used by default line/word breaking methods, and its implementation might be omitted if custom line breaking in implemented.
+			</description>
+		</method>
+		<method name="spoof_check" qualifiers="virtual const">
+			<return type="bool" />
+			<argument index="0" name="string" type="String" />
+			<description>
+				Returns [code]true[/code] if [code]string[/code] is likely to be an attempt at confusing the reader.
 			</description>
 		</method>
 		<method name="string_get_word_breaks" qualifiers="virtual const">

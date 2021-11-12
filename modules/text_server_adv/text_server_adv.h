@@ -101,6 +101,7 @@ using namespace godot;
 #include <unicode/uloc.h>
 #include <unicode/unorm2.h>
 #include <unicode/uscript.h>
+#include <unicode/uspoof.h>
 #include <unicode/ustring.h>
 #include <unicode/utypes.h>
 
@@ -700,6 +701,9 @@ public:
 	virtual String percent_sign(const String &p_language = "") const override;
 
 	virtual PackedInt32Array string_get_word_breaks(const String &p_string, const String &p_language = "") const override;
+
+	virtual int is_confusable(const String &p_string, const PackedStringArray &p_dict) const override;
+	virtual bool spoof_check(const String &p_string) const override;
 
 	virtual String strip_diacritics(const String &p_string) const override;
 	virtual bool is_valid_identifier(const String &p_string) const override;
