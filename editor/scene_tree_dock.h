@@ -50,13 +50,14 @@
 #include "scene/gui/tree.h"
 #include "scene_tree_editor.h"
 
+#include "modules/modules_enabled.gen.h" // For regex.
+
 class EditorNode;
 
 class SceneTreeDock : public VBoxContainer {
 	GDCLASS(SceneTreeDock, VBoxContainer);
 
 	enum Tool {
-
 		TOOL_NEW,
 		TOOL_INSTANCE,
 		TOOL_EXPAND_COLLAPSE,
@@ -96,7 +97,6 @@ class SceneTreeDock : public VBoxContainer {
 		TOOL_CREATE_3D_SCENE,
 		TOOL_CREATE_USER_INTERFACE,
 		TOOL_CREATE_FAVORITE,
-
 	};
 
 	enum {
