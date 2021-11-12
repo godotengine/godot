@@ -16,7 +16,8 @@ common_win = [
     "tts_windows.cpp",
     "windows_terminal_logger.cpp",
     "vulkan_context_win.cpp",
-    "gl_manager_windows.cpp",
+    "gl_manager_windows_native.cpp",
+    "gl_manager_windows_angle.cpp",
 ]
 
 common_win_wrap = [

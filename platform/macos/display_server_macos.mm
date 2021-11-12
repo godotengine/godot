@@ -185,7 +185,11 @@ DisplayServerMacOS::WindowID DisplayServerMacOS::_create_window(WindowMode p_mod
 #endif
 #if defined(GLES3_ENABLED)
 		if (gl_manager) {
+#ifdef USE_OPENGL_LEGACY
 			Error err = gl_manager->window_create(window_id_counter, wd.window_view, p_rect.size.width, p_rect.size.height);
+#else
+			Error err = gl_manager->window_create(window_id_counter, nullptr, (__bridge void *)[wd.window_view layer], p_rect.size.width, p_rect.size.height);
+#endif
 			ERR_FAIL_COND_V_MSG(err != OK, INVALID_WINDOW_ID, "Can't create an OpenGL context");
 		}
 		window_set_vsync_mode(p_vsync_mode, window_id_counter);
@@ -277,7 +281,7 @@ void DisplayServerMacOS::_set_window_per_pixel_transparency_enabled(bool p_enabl
 				[layer setBackgroundColor:[NSColor clearColor].CGColor];
 				[layer setOpaque:NO];
 			}
-#if defined(GLES3_ENABLED)
+#if defined(USE_OPENGL_LEGACY)
 			if (gl_manager) {
 				gl_manager->window_set_per_pixel_transparency_enabled(p_window, true);
 			}
@@ -297,7 +301,7 @@ void DisplayServerMacOS::_set_window_per_pixel_transparency_enabled(bool p_enabl
 				[layer setBackgroundColor:bg_color.CGColor];
 				[layer setOpaque:YES];
 			}
-#if defined(GLES3_ENABLED)
+#if defined(USE_OPENGL_LEGACY)
 			if (gl_manager) {
 				gl_manager->window_set_per_pixel_transparency_enabled(p_window, false);
 			}
@@ -3879,8 +3883,7 @@ DisplayServerMacOS::DisplayServerMacOS(const String &p_rendering_driver, WindowM
 
 #if defined(GLES3_ENABLED)
 	if (rendering_driver == "opengl3") {
-		GLManager_MacOS::ContextType opengl_api_type = GLManager_MacOS::GLES_3_0_COMPATIBLE;
-		gl_manager = memnew(GLManager_MacOS(opengl_api_type));
+		gl_manager = memnew(GLManager_MacOS);
 		if (gl_manager->initialize() != OK) {
 			memdelete(gl_manager);
 			gl_manager = nullptr;

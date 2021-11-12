@@ -189,6 +189,7 @@ def get_opts():
         BoolVariable("use_static_cpp", "Link MinGW/MSVC C++ runtime libraries statically", True),
         BoolVariable("use_asan", "Use address sanitizer (ASAN)", False),
         BoolVariable("debug_crt", "Compile with MSVC's debug CRT (/MDd)", False),
+        EnumVariable("opengl_implementation", "Build using OpenGL implementation", "native", ("native", "angle")),
     ]
 
 
@@ -416,7 +417,14 @@ def configure_msvc(env, vcvars_msvc_config):
 
     if env["opengl3"]:
         env.AppendUnique(CPPDEFINES=["GLES3_ENABLED"])
-        LIBS += ["opengl32"]
+
+        if env["opengl_implementation"] == "native":  # Use native system OpenGL implementation
+            env.Append(CPPDEFINES=["USE_OPENGL_NATIVE"])
+            LIBS += ["opengl32"]
+
+        elif env["opengl_implementation"] == "angle":  # Use Upstream ANGLE OpenGL ES to Metal translation layer
+            env.Append(CPPDEFINES=["USE_OPENGL_ANGLE"])
+            env.Prepend(CPPPATH=["#thirdparty/angle"])
 
     env.Append(LINKFLAGS=[p + env["LIBSUFFIX"] for p in LIBS])
 
@@ -594,7 +602,14 @@ def configure_mingw(env):
 
     if env["opengl3"]:
         env.Append(CPPDEFINES=["GLES3_ENABLED"])
-        env.Append(LIBS=["opengl32"])
+
+        if env["opengl_implementation"] == "native":  # Use native system OpenGL implementation
+            env.Append(CPPDEFINES=["USE_OPENGL_NATIVE"])
+            env.Append(LIBS=["opengl32"])
+
+        elif env["opengl_implementation"] == "angle":  # Use Upstream ANGLE OpenGL ES to Metal translation layer
+            env.Append(CPPDEFINES=["USE_OPENGL_ANGLE"])
+            env.Prepend(CPPPATH=["#thirdparty/angle"])
 
     env.Append(CPPDEFINES=["MINGW_ENABLED", ("MINGW_HAS_SECURE_API", 1)])
 

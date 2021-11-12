@@ -73,7 +73,7 @@
 #include "extensions/openxr_vulkan_extension.h"
 #endif
 
-#ifdef GLES3_ENABLED
+#if defined(GLES3_ENABLED) && !defined(USE_OPENGL_ANGLE)
 #include "extensions/openxr_opengl_extension.h"
 #endif
 
@@ -1261,7 +1261,7 @@ bool OpenXRAPI::initialize(const String &p_rendering_driver) {
 		ERR_FAIL_V(false);
 #endif
 	} else if (p_rendering_driver == "opengl3") {
-#ifdef GLES3_ENABLED
+#if defined(GLES3_ENABLED) && !defined(USE_OPENGL_ANGLE)
 		graphics_extension = memnew(OpenXROpenGLExtension);
 		register_extension_wrapper(graphics_extension);
 #else

@@ -57,9 +57,12 @@
 #include "platform/windows/vulkan_context_win.h"
 #endif
 
-#if defined(GLES3_ENABLED)
-#include "gl_manager_windows.h"
-#endif
+#if defined(USE_OPENGL_ANGLE)
+#include "gl_manager_windows_angle.h"
+#endif // USE_OPENGL_ANGLE
+#if defined(USE_OPENGL_NATIVE)
+#include "gl_manager_windows_native.h"
+#endif // USE_OPENGL_NATIVE
 
 #include <io.h>
 #include <stdio.h>

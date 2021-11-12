@@ -17,6 +17,17 @@ Files extracted from upstream source:
 - `license.txt`
 
 
+## angle
+
+- Upstream: https://chromium.googlesource.com/angle/angle/
+- Version: git (25f7d39fca094a871ae2232234c9e790248e6842, 2023)
+- License: BSD-3-Clause
+
+Files extracted from upstream source:
+
+- `include\EGL`, `include\GLES3` and `include\KHR` folders
+
+
 ## astcenc
 
 - Upstream: https://github.com/ARM-software/astc-encoder

@@ -33,14 +33,18 @@
 #include "config.h"
 #include "core/config/project_settings.h"
 #include "core/templates/vector.h"
+#include "texture_storage.h"
 
-#ifdef ANDROID_ENABLED
+#if defined(ANDROID_ENABLED)
+#include <EGL/egl.h>
+#include <EGL/eglext.h>
 #include <GLES3/gl3.h>
 #include <GLES3/gl3ext.h>
 #include <GLES3/gl3platform.h>
+#endif
 
-#include <EGL/egl.h>
-#include <EGL/eglext.h>
+#if defined(GLAD_ENABLED) && defined(EGL_ENABLED)
+#include "thirdparty/glad/glad/egl.h"
 #endif
 
 using namespace GLES3;
@@ -101,7 +105,7 @@ Config::Config() {
 	}
 
 	multiview_supported = extensions.has("GL_OVR_multiview2") || extensions.has("GL_OVR_multiview");
-#ifdef ANDROID_ENABLED
+#if defined(ANDROID_ENABLED) || defined(USE_OPENGL_ANGLE)
 	if (multiview_supported) {
 		eglFramebufferTextureMultiviewOVR = (PFNGLFRAMEBUFFERTEXTUREMULTIVIEWOVRPROC)eglGetProcAddress("glFramebufferTextureMultiviewOVR");
 		if (eglFramebufferTextureMultiviewOVR == nullptr) {

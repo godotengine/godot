@@ -36,6 +36,7 @@ def get_opts():
         BoolVariable("use_asan", "Use LLVM/GCC compiler address sanitizer (ASAN)", False),
         BoolVariable("use_tsan", "Use LLVM/GCC compiler thread sanitizer (TSAN)", False),
         BoolVariable("use_coverage", "Use instrumentation codes in the binary (e.g. for code coverage)", False),
+        EnumVariable("opengl_implementation", "Build using OpenGL implementation", "legacy", ("legacy", "angle")),
     ]
 
 
@@ -228,10 +229,18 @@ def configure(env: "Environment"):
         ]
     )
     env.Append(LIBS=["pthread", "z"])
+    env.Append(CCFLAGS=["-Wno-deprecated-declarations"])  # Disable deprecation warnings
 
     if env["opengl3"]:
         env.Append(CPPDEFINES=["GLES3_ENABLED"])
-        env.Append(LINKFLAGS=["-framework", "OpenGL"])
+
+        if env["opengl_implementation"] == "legacy":  # Use deprecated system OpenGL implementation
+            env.Append(CPPDEFINES=["USE_OPENGL_LEGACY"])
+            env.Append(LINKFLAGS=["-framework", "OpenGL"])
+
+        elif env["opengl_implementation"] == "angle":  # Use Upstream ANGLE OpenGL ES to Metal translation layer
+            env.Append(CPPDEFINES=["USE_OPENGL_ANGLE"])
+            env.Prepend(CPPPATH=["#thirdparty/angle"])
 
     env.Append(LINKFLAGS=["-rpath", "@executable_path/../Frameworks", "-rpath", "@executable_path"])
 

@@ -31,7 +31,7 @@
 #include "gl_manager_macos_legacy.h"
 
 #ifdef MACOS_ENABLED
-#ifdef GLES3_ENABLED
+#ifdef USE_OPENGL_LEGACY
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations" // OpenGL is deprecated in macOS 10.14
@@ -67,8 +67,6 @@ Error GLManager_MacOS::create_context(GLWindow &win) {
 
 Error GLManager_MacOS::window_create(DisplayServer::WindowID p_window_id, id p_view, int p_width, int p_height) {
 	GLWindow win;
-	win.width = p_width;
-	win.height = p_height;
 	win.window_view = p_view;
 
 	if (create_context(win) != OK) {
@@ -88,9 +86,6 @@ void GLManager_MacOS::window_resize(DisplayServer::WindowID p_window_id, int p_w
 
 	GLWindow &win = windows[p_window_id];
 
-	win.width = p_width;
-	win.height = p_height;
-
 	GLint dim[2];
 	dim[0] = p_width;
 	dim[1] = p_height;
@@ -103,24 +98,6 @@ void GLManager_MacOS::window_resize(DisplayServer::WindowID p_window_id, int p_w
 	}
 
 	[win.context update];
-}
-
-int GLManager_MacOS::window_get_width(DisplayServer::WindowID p_window_id) {
-	if (!windows.has(p_window_id)) {
-		return 0;
-	}
-
-	GLWindow &win = windows[p_window_id];
-	return win.width;
-}
-
-int GLManager_MacOS::window_get_height(DisplayServer::WindowID p_window_id) {
-	if (!windows.has(p_window_id)) {
-		return 0;
-	}
-
-	GLWindow &win = windows[p_window_id];
-	return win.height;
 }
 
 void GLManager_MacOS::window_destroy(DisplayServer::WindowID p_window_id) {
@@ -227,9 +204,7 @@ NSOpenGLContext *GLManager_MacOS::get_context(DisplayServer::WindowID p_window_i
 	return win.context;
 }
 
-GLManager_MacOS::GLManager_MacOS(ContextType p_context_type) {
-	context_type = p_context_type;
-}
+GLManager_MacOS::GLManager_MacOS() {}
 
 GLManager_MacOS::~GLManager_MacOS() {
 	release_current();
@@ -237,5 +212,5 @@ GLManager_MacOS::~GLManager_MacOS() {
 
 #pragma clang diagnostic pop
 
-#endif // GLES3_ENABLED
+#endif // USE_OPENGL_LEGACY
 #endif // MACOS_ENABLED

@@ -849,6 +849,7 @@ int64_t DisplayServerWindows::window_get_native_handle(HandleType p_handle_type,
 			return (int64_t)windows[p_window].hWnd;
 		}
 #if defined(GLES3_ENABLED)
+#ifdef USE_OPENGL_NATIVE
 		case WINDOW_VIEW: {
 			if (gl_manager) {
 				return (int64_t)gl_manager->get_hdc(p_window);
@@ -861,6 +862,14 @@ int64_t DisplayServerWindows::window_get_native_handle(HandleType p_handle_type,
 			}
 			return 0;
 		}
+#else
+		case OPENGL_CONTEXT: {
+			if (gl_manager) {
+				return (int64_t)gl_manager->get_context(p_window);
+			}
+			return 0;
+		}
+#endif
 #endif
 		default: {
 			return 0;
@@ -2184,7 +2193,11 @@ void DisplayServerWindows::window_set_vsync_mode(DisplayServer::VSyncMode p_vsyn
 
 #if defined(GLES3_ENABLED)
 	if (gl_manager) {
+#ifdef USE_OPENGL_NATIVE
 		gl_manager->set_use_vsync(p_window, p_vsync_mode != DisplayServer::VSYNC_DISABLED);
+#else
+		gl_manager->set_use_vsync(p_vsync_mode != DisplayServer::VSYNC_DISABLED);
+#endif
 	}
 #endif
 }
@@ -2199,7 +2212,11 @@ DisplayServer::VSyncMode DisplayServerWindows::window_get_vsync_mode(WindowID p_
 
 #if defined(GLES3_ENABLED)
 	if (gl_manager) {
+#ifdef USE_OPENGL_NATIVE
 		return gl_manager->is_using_vsync(p_window) ? DisplayServer::VSYNC_ENABLED : DisplayServer::VSYNC_DISABLED;
+#else
+		return gl_manager->is_using_vsync() ? DisplayServer::VSYNC_ENABLED : DisplayServer::VSYNC_DISABLED;
+#endif
 	}
 #endif
 
@@ -3897,7 +3914,11 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 
 #ifdef GLES3_ENABLED
 		if (gl_manager) {
+#ifdef USE_OPENGL_NATIVE
 			if (gl_manager->window_create(id, wd.hWnd, hInstance, WindowRect.right - WindowRect.left, WindowRect.bottom - WindowRect.top) != OK) {
+#else
+			if (gl_manager->window_create(id, nullptr, wd.hWnd, WindowRect.right - WindowRect.left, WindowRect.bottom - WindowRect.top) != OK) {
+#endif
 				memdelete(gl_manager);
 				gl_manager = nullptr;
 				windows.erase(id);
@@ -4180,9 +4201,7 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 #if defined(GLES3_ENABLED)
 
 	if (rendering_driver == "opengl3") {
-		GLManager_Windows::ContextType opengl_api_type = GLManager_Windows::GLES_3_0_COMPATIBLE;
-
-		gl_manager = memnew(GLManager_Windows(opengl_api_type));
+		gl_manager = memnew(GLManager_Windows);
 
 		if (gl_manager->initialize() != OK) {
 			memdelete(gl_manager);

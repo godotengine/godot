@@ -36,9 +36,12 @@
 #include "core/input/input.h"
 #include "servers/display_server.h"
 
-#if defined(GLES3_ENABLED)
+#if defined(USE_OPENGL_ANGLE)
+#include "gl_manager_macos_angle.h"
+#endif // USE_OPENGL_ANGLE
+#if defined(USE_OPENGL_LEGACY)
 #include "gl_manager_macos_legacy.h"
-#endif // GLES3_ENABLED
+#endif // USE_OPENGL_LEGACY
 
 #if defined(VULKAN_ENABLED)
 #include "drivers/vulkan/rendering_device_vulkan.h"

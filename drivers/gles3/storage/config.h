@@ -44,7 +44,7 @@
 #include OPENGL_INCLUDE_H
 #endif
 
-#ifdef ANDROID_ENABLED
+#if defined(ANDROID_ENABLED) || defined(USE_OPENGL_ANGLE)
 typedef void (*PFNGLFRAMEBUFFERTEXTUREMULTIVIEWOVRPROC)(GLenum, GLenum, GLuint, GLint, GLint, GLsizei);
 #endif
 
@@ -87,7 +87,7 @@ public:
 	float anisotropic_level = 0.0f;
 
 	bool multiview_supported = false;
-#ifdef ANDROID_ENABLED
+#if defined(ANDROID_ENABLED) || defined(USE_OPENGL_ANGLE)
 	PFNGLFRAMEBUFFERTEXTUREMULTIVIEWOVRPROC eglFramebufferTextureMultiviewOVR = nullptr;
 #endif
 

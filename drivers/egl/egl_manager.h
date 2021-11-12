@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  gl_manager_macos_legacy.h                                             */
+/*  egl_manager.h                                                         */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,42 +28,77 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GL_MANAGER_MACOS_LEGACY_H
-#define GL_MANAGER_MACOS_LEGACY_H
+#ifndef EGL_MANAGER_H
+#define EGL_MANAGER_H
 
-#if defined(MACOS_ENABLED) && defined(USE_OPENGL_LEGACY)
+#ifdef EGL_ENABLED
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations" // OpenGL is deprecated in macOS 10.14
+#ifdef GLAD_ENABLED
+#include "thirdparty/glad/glad/egl.h"
+#else
+#include <EGL/egl.h>
+#include <EGL/eglext.h>
+#endif
 
-#include "core/error/error_list.h"
-#include "core/os/os.h"
+#include "core/config/project_settings.h"
+#include "core/crypto/crypto_core.h"
+#include "core/io/dir_access.h"
+#include "core/io/file_access.h"
 #include "core/templates/local_vector.h"
 #include "servers/display_server.h"
 
-#import <AppKit/AppKit.h>
-#import <ApplicationServices/ApplicationServices.h>
-#import <CoreVideo/CoreVideo.h>
+class EGLManager {
+private:
+	// An EGL-side rappresentation of a display with its own rendering
+	// context.
+	struct GLDisplay {
+		void *display = nullptr;
 
-class GLManager_MacOS {
-	struct GLWindow {
-		id window_view = nullptr;
-		NSOpenGLContext *context = nullptr;
+		EGLDisplay egl_display = EGL_NO_DISPLAY;
+		EGLContext egl_context = EGL_NO_CONTEXT;
+		EGLConfig egl_config = nullptr;
 	};
 
-	RBMap<DisplayServer::WindowID, GLWindow> windows;
+	// EGL specific window data.
+	struct GLWindow {
+		bool initialized = false;
 
-	NSOpenGLContext *shared_context = nullptr;
-	DisplayServer::WindowID current_window = DisplayServer::INVALID_WINDOW_ID;
+		// An handle to the GLDisplay associated with this window.
+		int gldisplay_id = -1;
 
-	Error create_context(GLWindow &win);
+		EGLSurface egl_surface = EGL_NO_SURFACE;
+	};
 
-	bool use_vsync = false;
+	LocalVector<GLDisplay> displays;
+	LocalVector<GLWindow> windows;
+
+	GLWindow *current_window = nullptr;
+
+	// On EGL the default swap interval is 1 and thus vsync is on by defualt.
+	bool use_vsync = true;
+
+	virtual const char *_get_platform_extension_name() const = 0;
+	virtual EGLenum _get_platform_extension_enum() const = 0;
+	virtual EGLenum _get_platform_api_enum() const = 0;
+	virtual Vector<EGLAttrib> _get_platform_display_attributes() const = 0;
+	virtual Vector<EGLint> _get_platform_context_attribs() const = 0;
+
+#ifdef EGL_ANDROID_blob_cache
+	static String shader_cache_dir;
+
+	static void _set_cache(const void *p_key, EGLsizeiANDROID p_key_size, const void *p_value, EGLsizeiANDROID p_value_size);
+	static EGLsizeiANDROID _get_cache(const void *p_key, EGLsizeiANDROID p_key_size, void *p_value, EGLsizeiANDROID p_value_size);
+#endif
+
+	int _get_gldisplay_id(void *p_display);
+	Error _gldisplay_create_context(GLDisplay &p_gldisplay);
 
 public:
-	Error window_create(DisplayServer::WindowID p_window_id, id p_view, int p_width, int p_height);
+	int display_get_native_visual_id(void *p_display);
+
+	Error window_create(DisplayServer::WindowID p_window_id, void *p_display, void *p_native_window, int p_width, int p_height);
+
 	void window_destroy(DisplayServer::WindowID p_window_id);
-	void window_resize(DisplayServer::WindowID p_window_id, int p_width, int p_height);
 
 	void release_current();
 	void make_current();
@@ -71,22 +106,17 @@ public:
 
 	void window_make_current(DisplayServer::WindowID p_window_id);
 
-	void window_update(DisplayServer::WindowID p_window_id);
-	void window_set_per_pixel_transparency_enabled(DisplayServer::WindowID p_window_id, bool p_enabled);
-
-	Error initialize();
-
 	void set_use_vsync(bool p_use);
 	bool is_using_vsync() const;
 
-	NSOpenGLContext *get_context(DisplayServer::WindowID p_window_id);
+	EGLContext get_context(DisplayServer::WindowID p_window_id);
 
-	GLManager_MacOS();
-	~GLManager_MacOS();
+	Error initialize();
+
+	EGLManager();
+	virtual ~EGLManager();
 };
 
-#pragma clang diagnostic push
+#endif // EGL_ENABLED
 
-#endif // MACOS_ENABLED && USE_OPENGL_LEGACY
-
-#endif // GL_MANAGER_MACOS_LEGACY_H
+#endif // EGL_MANAGER_H

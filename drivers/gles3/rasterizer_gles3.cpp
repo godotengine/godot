@@ -75,13 +75,16 @@
 #define CAN_DEBUG
 #endif
 
-#if !defined(GLES_OVER_GL) && defined(CAN_DEBUG)
+#if !defined(GLAD_ENABLED) && defined(CAN_DEBUG)
+#include <EGL/egl.h>
+#include <EGL/eglext.h>
 #include <GLES3/gl3.h>
 #include <GLES3/gl3ext.h>
 #include <GLES3/gl3platform.h>
+#endif
 
-#include <EGL/egl.h>
-#include <EGL/eglext.h>
+#if defined(GLAD_ENABLED) && defined(EGL_ENABLED)
+#include "thirdparty/glad/glad/egl.h"
 #endif
 
 #if defined(MINGW_ENABLED) || defined(_MSC_VER)
@@ -199,16 +202,41 @@ void RasterizerGLES3::finalize() {
 
 RasterizerGLES3::RasterizerGLES3() {
 #ifdef GLAD_ENABLED
-	if (!gladLoaderLoadGL()) {
-		ERR_PRINT("Error initializing GLAD");
-		// FIXME this is an early return from a constructor.  Any other code using this instance will crash or the finalizer will crash, because none of
-		// the members of this instance are initialized, so this just makes debugging harder.  It should either crash here intentionally,
-		// or we need to actually test for this situation before constructing this.
-		return;
+	bool glad_loaded = false;
+#ifdef EGL_ENABLED
+	// There should be a more flexible system for getting the GL pointer, as
+	// different DisplayServers can have different ways. We can just use the GLAD
+	// version global to see if it loaded for now though, otherwise we fallback to
+	// the generic loader below.
+
+#if defined(USE_OPENGL_ANGLE)
+	if (GLAD_EGL_VERSION_1_5 && !glad_loaded && gladLoadGLES2((GLADloadfunc)eglGetProcAddress)) {
+		glad_loaded = true;
+	}
+#else
+	if (GLAD_EGL_VERSION_1_5 && !glad_loaded && gladLoadGL((GLADloadfunc)eglGetProcAddress)) {
+		glad_loaded = true;
 	}
 #endif
 
-#ifdef GLAD_ENABLED
+#endif // EGL_ENABLED
+#if defined(USE_OPENGL_ANGLE)
+	if (!glad_loaded && gladLoaderLoadGLES2()) {
+		glad_loaded = true;
+	}
+#else
+	if (!glad_loaded && gladLoaderLoadGL()) {
+		glad_loaded = true;
+	}
+#endif
+
+	// FIXME this is an early return from a constructor.  Any other code using this instance will crash or the finalizer will crash, because none of
+	// the members of this instance are initialized, so this just makes debugging harder.  It should either crash here intentionally,
+	// or we need to actually test for this situation before constructing this.
+	ERR_FAIL_COND_MSG(!glad_loaded, "Error initializing GLAD.");
+#endif // GLAD_ENABLED
+
+#if defined(GLAD_ENABLED) && !defined(USE_OPENGL_ANGLE)
 	if (OS::get_singleton()->is_stdout_verbose()) {
 		if (GLAD_GL_ARB_debug_output) {
 			glEnable(_EXT_DEBUG_OUTPUT_SYNCHRONOUS_ARB);

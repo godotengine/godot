@@ -30,4 +30,8 @@
 
 #include <malloc.h>
 
+#ifdef USE_OPENGL_ANGLE
+#define OPENGL_INCLUDE_H "thirdparty/glad/glad/gles2.h"
+#else
 #define OPENGL_INCLUDE_H "thirdparty/glad/glad/gl.h"
+#endif

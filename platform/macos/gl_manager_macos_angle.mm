@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  godot_content_view.h                                                  */
+/*  gl_manager_macos_angle.mm                                             */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,55 +28,61 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GODOT_CONTENT_VIEW_H
-#define GODOT_CONTENT_VIEW_H
+#include "gl_manager_macos_angle.h"
 
-#include "servers/display_server.h"
+#ifdef MACOS_ENABLED
+#ifdef USE_OPENGL_ANGLE
 
-#import <AppKit/AppKit.h>
-#import <Foundation/Foundation.h>
+#include <stdio.h>
+#include <stdlib.h>
 
-#if defined(USE_OPENGL_LEGACY)
-#import <AppKit/NSOpenGLView.h>
-#define RootView NSOpenGLView
-#else
-#define RootView NSView
-#endif
+#include "thirdparty/angle/EGL/eglext_angle.h"
 
-#import <QuartzCore/CAMetalLayer.h>
-
-@interface GodotContentLayerDelegate : NSObject <CALayerDelegate> {
-	DisplayServer::WindowID window_id;
+const char *GLManager_MacOS::_get_platform_extension_name() const {
+	return "EGL_ANGLE_platform_angle";
 }
 
-- (void)setWindowID:(DisplayServer::WindowID)wid;
-
-@end
-
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations" // OpenGL is deprecated in macOS 10.14
-
-@interface GodotContentView : RootView <NSTextInputClient> {
-	DisplayServer::WindowID window_id;
-	NSTrackingArea *tracking_area;
-	NSMutableAttributedString *marked_text;
-	bool ime_input_event_in_progress;
-	bool mouse_down_control;
-	bool ignore_momentum_scroll;
-	bool last_pen_inverted;
-	bool ime_suppress_next_keyup;
-	id layer_delegate;
+EGLenum GLManager_MacOS::_get_platform_extension_enum() const {
+	return EGL_PLATFORM_ANGLE_ANGLE;
 }
 
-- (void)processScrollEvent:(NSEvent *)event button:(MouseButton)button factor:(double)factor;
-- (void)processPanEvent:(NSEvent *)event dx:(double)dx dy:(double)dy;
-- (void)processMouseEvent:(NSEvent *)event index:(MouseButton)index pressed:(bool)pressed;
-- (void)setWindowID:(DisplayServer::WindowID)wid;
-- (void)updateLayerDelegate;
-- (void)cancelComposition;
+Vector<EGLAttrib> GLManager_MacOS::_get_platform_display_attributes() const {
+	EGLint angle_platform_type = EGL_PLATFORM_ANGLE_TYPE_METAL_ANGLE;
 
-@end
+	List<String> args = OS::get_singleton()->get_cmdline_args();
+	for (const List<String>::Element *E = args.front(); E; E = E->next()) {
+		if (E->get() == "--angle-platform-type" && E->next()) {
+			String cmd = E->next()->get().to_lower();
+			if (cmd == "metal") {
+				angle_platform_type = EGL_PLATFORM_ANGLE_TYPE_METAL_ANGLE;
+			} else if (cmd == "opengl") {
+				angle_platform_type = EGL_PLATFORM_ANGLE_TYPE_OPENGL_ANGLE;
+			} else {
+				WARN_PRINT("Invalid ANGLE platform type, it should be \"metal\" or \"opengl\".");
+			}
+		}
+	}
 
-#pragma clang diagnostic pop
+	Vector<EGLAttrib> ret;
+	ret.push_back(EGL_PLATFORM_ANGLE_TYPE_ANGLE);
+	ret.push_back(angle_platform_type);
+	ret.push_back(EGL_NONE);
 
-#endif // GODOT_CONTENT_VIEW_H
+	return ret;
+}
+
+EGLenum GLManager_MacOS::_get_platform_api_enum() const {
+	return EGL_OPENGL_ES_API;
+}
+
+Vector<EGLint> GLManager_MacOS::_get_platform_context_attribs() const {
+	Vector<EGLint> ret;
+	ret.push_back(EGL_CONTEXT_CLIENT_VERSION);
+	ret.push_back(3);
+	ret.push_back(EGL_NONE);
+
+	return ret;
+}
+
+#endif // USE_OPENGL_ANGLE
+#endif // MACOS_ENABLED

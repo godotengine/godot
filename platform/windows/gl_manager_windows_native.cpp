@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  gl_manager_windows.cpp                                                */
+/*  gl_manager_windows_native.cpp                                         */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,10 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "gl_manager_windows.h"
+#include "gl_manager_windows_native.h"
 
 #ifdef WINDOWS_ENABLED
-#ifdef GLES3_ENABLED
+#ifdef USE_OPENGL_NATIVE
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -205,8 +205,6 @@ Error GLManager_Windows::window_create(DisplayServer::WindowID p_window_id, HWND
 	}
 
 	GLWindow win;
-	win.width = p_width;
-	win.height = p_height;
 	win.hwnd = p_hwnd;
 	win.hDC = hDC;
 
@@ -228,19 +226,6 @@ Error GLManager_Windows::window_create(DisplayServer::WindowID p_window_id, HWND
 
 void GLManager_Windows::_internal_set_current_window(GLWindow *p_win) {
 	_current_window = p_win;
-}
-
-void GLManager_Windows::window_resize(DisplayServer::WindowID p_window_id, int p_width, int p_height) {
-	get_window(p_window_id).width = p_width;
-	get_window(p_window_id).height = p_height;
-}
-
-int GLManager_Windows::window_get_width(DisplayServer::WindowID p_window_id) {
-	return get_window(p_window_id).width;
-}
-
-int GLManager_Windows::window_get_height(DisplayServer::WindowID p_window_id) {
-	return get_window(p_window_id).height;
 }
 
 void GLManager_Windows::window_destroy(DisplayServer::WindowID p_window_id) {
@@ -333,9 +318,7 @@ HGLRC GLManager_Windows::get_hglrc(DisplayServer::WindowID p_window_id) {
 	return disp.hRC;
 }
 
-GLManager_Windows::GLManager_Windows(ContextType p_context_type) {
-	context_type = p_context_type;
-
+GLManager_Windows::GLManager_Windows() {
 	direct_render = false;
 	glx_minor = glx_major = 0;
 	_current_window = nullptr;
@@ -345,5 +328,5 @@ GLManager_Windows::~GLManager_Windows() {
 	release_current();
 }
 
-#endif // GLES3_ENABLED
+#endif // USE_OPENGL_NATIVE
 #endif // WINDOWS

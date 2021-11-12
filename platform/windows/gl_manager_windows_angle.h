@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  godot_content_view.h                                                  */
+/*  gl_manager_windows_angle.h                                            */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,55 +28,35 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GODOT_CONTENT_VIEW_H
-#define GODOT_CONTENT_VIEW_H
+#ifndef GL_MANAGER_WINDOWS_ANGLE_H
+#define GL_MANAGER_WINDOWS_ANGLE_H
 
+#if defined(WINDOWS_ENABLED) && defined(USE_OPENGL_ANGLE)
+
+#include "core/error/error_list.h"
+#include "core/os/os.h"
+#include "core/templates/local_vector.h"
+#include "drivers/egl/egl_manager.h"
 #include "servers/display_server.h"
 
-#import <AppKit/AppKit.h>
-#import <Foundation/Foundation.h>
+#include <windows.h>
 
-#if defined(USE_OPENGL_LEGACY)
-#import <AppKit/NSOpenGLView.h>
-#define RootView NSOpenGLView
-#else
-#define RootView NSView
-#endif
+class GLManager_Windows : public EGLManager {
+private:
+	virtual const char *_get_platform_extension_name() const override;
+	virtual EGLenum _get_platform_extension_enum() const override;
+	virtual EGLenum _get_platform_api_enum() const override;
+	virtual Vector<EGLAttrib> _get_platform_display_attributes() const override;
+	virtual Vector<EGLint> _get_platform_context_attribs() const override;
 
-#import <QuartzCore/CAMetalLayer.h>
+public:
+	void window_resize(DisplayServer::WindowID p_window_id, int p_width, int p_height) {}
+	void window_update(DisplayServer::WindowID p_window_id) {}
 
-@interface GodotContentLayerDelegate : NSObject <CALayerDelegate> {
-	DisplayServer::WindowID window_id;
-}
+	GLManager_Windows(){};
+	~GLManager_Windows(){};
+};
 
-- (void)setWindowID:(DisplayServer::WindowID)wid;
+#endif // WINDOWS_ENABLED && USE_OPENGL_ANGLE
 
-@end
-
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations" // OpenGL is deprecated in macOS 10.14
-
-@interface GodotContentView : RootView <NSTextInputClient> {
-	DisplayServer::WindowID window_id;
-	NSTrackingArea *tracking_area;
-	NSMutableAttributedString *marked_text;
-	bool ime_input_event_in_progress;
-	bool mouse_down_control;
-	bool ignore_momentum_scroll;
-	bool last_pen_inverted;
-	bool ime_suppress_next_keyup;
-	id layer_delegate;
-}
-
-- (void)processScrollEvent:(NSEvent *)event button:(MouseButton)button factor:(double)factor;
-- (void)processPanEvent:(NSEvent *)event dx:(double)dx dy:(double)dy;
-- (void)processMouseEvent:(NSEvent *)event index:(MouseButton)index pressed:(bool)pressed;
-- (void)setWindowID:(DisplayServer::WindowID)wid;
-- (void)updateLayerDelegate;
-- (void)cancelComposition;
-
-@end
-
-#pragma clang diagnostic pop
-
-#endif // GODOT_CONTENT_VIEW_H
+#endif // GL_MANAGER_WINDOWS_ANGLE_H

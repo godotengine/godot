@@ -34,7 +34,7 @@
 #include "config.h"
 #include "drivers/gles3/effects/copy_effects.h"
 
-#ifdef ANDROID_ENABLED
+#if defined(ANDROID_ENABLED) || defined(USE_OPENGL_ANGLE)
 #define glFramebufferTextureMultiviewOVR GLES3::Config::get_singleton()->eglFramebufferTextureMultiviewOVR
 #endif
 

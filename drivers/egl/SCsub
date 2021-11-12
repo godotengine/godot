@@ -1,0 +1,11 @@
+#!/usr/bin/env python
+
+Import("env")
+
+files = ["egl_manager.cpp"]
+
+if env["platform"] == "linuxbsd":
+    files += ["detect_prime_egl.cpp"]
+
+# Godot source files
+env.add_source_files(env.drivers_sources, files)
