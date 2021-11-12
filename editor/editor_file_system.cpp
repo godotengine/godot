@@ -650,6 +650,8 @@ void EditorFileSystem::scan() {
 	}
 
 	if (scanning || scanning_changes || thread.is_started()) {
+		scan_pending = true;
+		set_process(true);
 		return;
 	}
 
@@ -1216,6 +1218,11 @@ void EditorFileSystem::_notification(int p_what) {
 					emit_signal(SNAME("sources_changed"), sources_changed.size() > 0);
 					_queue_update_script_classes();
 					first_scan = false;
+				}
+
+				if (!is_processing() && scan_pending) {
+					scan_pending = false;
+					scan();
 				}
 
 				if (!is_processing() && scan_changes_pending) {
@@ -2395,6 +2402,7 @@ EditorFileSystem::EditorFileSystem() {
 	scan_total = 0;
 	update_script_classes_queued.clear();
 	first_scan = true;
+	scan_pending = false;
 	scan_changes_pending = false;
 	revalidate_import_files = false;
 	import_threads.init();
