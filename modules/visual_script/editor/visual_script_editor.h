@@ -31,11 +31,11 @@
 #ifndef VISUALSCRIPT_EDITOR_H
 #define VISUALSCRIPT_EDITOR_H
 
+#include "../visual_script.h"
 #include "editor/create_dialog.h"
 #include "editor/plugins/script_editor_plugin.h"
 #include "editor/property_editor.h"
 #include "scene/gui/graph_edit.h"
-#include "visual_script.h"
 #include "visual_script_property_selector.h"
 
 class VisualScriptEditorSignalEdit;

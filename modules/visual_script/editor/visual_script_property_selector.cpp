@@ -30,15 +30,15 @@
 
 #include "visual_script_property_selector.h"
 
+#include "../visual_script.h"
+#include "../visual_script_builtin_funcs.h"
+#include "../visual_script_flow_control.h"
+#include "../visual_script_func_nodes.h"
+#include "../visual_script_nodes.h"
 #include "core/os/keyboard.h"
 #include "editor/doc_tools.h"
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
-#include "modules/visual_script/visual_script.h"
-#include "modules/visual_script/visual_script_builtin_funcs.h"
-#include "modules/visual_script/visual_script_flow_control.h"
-#include "modules/visual_script/visual_script_func_nodes.h"
-#include "modules/visual_script/visual_script_nodes.h"
 #include "scene/main/node.h"
 #include "scene/main/window.h"
 

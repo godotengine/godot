@@ -35,9 +35,6 @@
 
 #include "core/io/image.h"
 #include "core/object/ref_counted.h"
-#include "editor/editor_node.h"
-#include "editor/editor_plugin.h"
-#include "editor/property_editor.h"
 
 class NoiseTexture : public Texture2D {
 	GDCLASS(NoiseTexture, Texture2D);

@@ -30,6 +30,10 @@
 
 #include "visual_script_editor.h"
 
+#include "../visual_script_expression.h"
+#include "../visual_script_flow_control.h"
+#include "../visual_script_func_nodes.h"
+#include "../visual_script_nodes.h"
 #include "core/input/input.h"
 #include "core/object/class_db.h"
 #include "core/object/script_language.h"
@@ -39,10 +43,6 @@
 #include "editor/editor_resource_preview.h"
 #include "editor/editor_scale.h"
 #include "scene/main/window.h"
-#include "visual_script_expression.h"
-#include "visual_script_flow_control.h"
-#include "visual_script_func_nodes.h"
-#include "visual_script_nodes.h"
 
 #ifdef TOOLS_ENABLED
 class VisualScriptEditorSignalEdit : public Object {
