@@ -45,6 +45,21 @@
 				Returns the alternative ID a following call to [method create_alternative_tile] would return.
 			</description>
 		</method>
+		<method name="get_runtime_texture" qualifiers="const">
+			<return type="Texture2D" />
+			<description>
+				If [member use_texture_padding] is [code]false[/code], returns [member texture]. Otherwise, returns and internal [ImageTexture] created that includes the padding.
+			</description>
+		</method>
+		<method name="get_runtime_tile_texture_region" qualifiers="const">
+			<return type="Rect2i" />
+			<argument index="0" name="atlas_coords" type="Vector2i" />
+			<argument index="1" name="frame" type="int" />
+			<description>
+				Returns the region of the tile at coordinates [code]atlas_coords[/code] for frame [code]frame[/code] inside the texture returned by [method get_runtime_texture].
+				[b]Note:[/b] If [member use_texture_padding] is [code]false[/code], returns the same as [method get_tile_texture_region].
+			</description>
+		</method>
 		<method name="get_tile_animation_columns" qualifiers="const">
 			<return type="int" />
 			<argument index="0" name="atlas_coords" type="Vector2i" />
@@ -231,6 +246,10 @@
 		</member>
 		<member name="texture_region_size" type="Vector2i" setter="set_texture_region_size" getter="get_texture_region_size" default="Vector2i(16, 16)">
 			The base tile size in the texture (in pixel). This size must be bigger than the TileSet's [code]tile_size[/code] value.
+		</member>
+		<member name="use_texture_padding" type="bool" setter="set_use_texture_padding" getter="get_use_texture_padding" default="true">
+			If [code]true[/code], generates an internal texture with an additional one pixel padding around each tile. Texture padding avoids a common artifact where lines appear between tiles.
+			Disabling this setting might lead a small performance improvement, as generating the internal texture requires both memory and processing time when the TileSetAtlasSource resource is modified.
 		</member>
 	</members>
 </class>
