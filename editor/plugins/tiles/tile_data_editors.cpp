@@ -449,15 +449,15 @@ void GenericTilePolygonEditor::_base_control_gui_input(Ref<InputEvent> p_event) 
 
 	Ref<InputEventMouseButton> mb = p_event;
 	if (mb.is_valid()) {
-		if (mb->get_button_index() == MOUSE_BUTTON_WHEEL_UP && mb->is_ctrl_pressed()) {
+		if (mb->get_button_index() == MouseButton::WHEEL_UP && mb->is_ctrl_pressed()) {
 			editor_zoom_widget->set_zoom_by_increments(1);
 			_zoom_changed();
 			accept_event();
-		} else if (mb->get_button_index() == MOUSE_BUTTON_WHEEL_DOWN && mb->is_ctrl_pressed()) {
+		} else if (mb->get_button_index() == MouseButton::WHEEL_DOWN && mb->is_ctrl_pressed()) {
 			editor_zoom_widget->set_zoom_by_increments(-1);
 			_zoom_changed();
 			accept_event();
-		} else if (mb->get_button_index() == MOUSE_BUTTON_LEFT) {
+		} else if (mb->get_button_index() == MouseButton::LEFT) {
 			if (mb->is_pressed()) {
 				if (tools_button_group->get_pressed_button() != button_create) {
 					in_creation_polygon.clear();
@@ -554,7 +554,7 @@ void GenericTilePolygonEditor::_base_control_gui_input(Ref<InputEvent> p_event) 
 				drag_point_index = -1;
 			}
 
-		} else if (mb->get_button_index() == MOUSE_BUTTON_RIGHT) {
+		} else if (mb->get_button_index() == MouseButton::RIGHT) {
 			if (mb->is_pressed()) {
 				if (tools_button_group->get_pressed_button() == button_edit) {
 					// Remove point or pan.
@@ -588,7 +588,7 @@ void GenericTilePolygonEditor::_base_control_gui_input(Ref<InputEvent> p_event) 
 			} else {
 				drag_type = DRAG_TYPE_NONE;
 			}
-		} else if (mb->get_button_index() == MOUSE_BUTTON_MIDDLE) {
+		} else if (mb->get_button_index() == MouseButton::MIDDLE) {
 			if (mb->is_pressed()) {
 				drag_type = DRAG_TYPE_PAN;
 				drag_last_pos = mb->get_position();
@@ -929,7 +929,7 @@ void TileDataDefaultEditor::forward_painting_atlas_gui_input(TileAtlasView *p_ti
 
 	Ref<InputEventMouseButton> mb = p_event;
 	if (mb.is_valid()) {
-		if (mb->get_button_index() == MOUSE_BUTTON_LEFT) {
+		if (mb->get_button_index() == MouseButton::LEFT) {
 			if (mb->is_pressed()) {
 				if (picker_button->is_pressed()) {
 					Vector2i coords = p_tile_atlas_view->get_atlas_tile_coords_at_pos(mb->get_position());
@@ -1020,7 +1020,7 @@ void TileDataDefaultEditor::forward_painting_alternatives_gui_input(TileAtlasVie
 
 	Ref<InputEventMouseButton> mb = p_event;
 	if (mb.is_valid()) {
-		if (mb->get_button_index() == MOUSE_BUTTON_LEFT) {
+		if (mb->get_button_index() == MouseButton::LEFT) {
 			if (mb->is_pressed()) {
 				if (picker_button->is_pressed()) {
 					Vector3i tile = p_tile_atlas_view->get_alternative_tile_at_pos(mb->get_position());
@@ -1175,7 +1175,7 @@ TileDataDefaultEditor::TileDataDefaultEditor() {
 	picker_button = memnew(Button);
 	picker_button->set_flat(true);
 	picker_button->set_toggle_mode(true);
-	picker_button->set_shortcut(ED_SHORTCUT("tiles_editor/picker", "Picker", KEY_P));
+	picker_button->set_shortcut(ED_SHORTCUT("tiles_editor/picker", "Picker", Key::P));
 	toolbar->add_child(picker_button);
 }
 
@@ -1966,7 +1966,7 @@ void TileDataTerrainsEditor::forward_painting_atlas_gui_input(TileAtlasView *p_t
 
 	Ref<InputEventMouseButton> mb = p_event;
 	if (mb.is_valid()) {
-		if (mb->get_button_index() == MOUSE_BUTTON_LEFT) {
+		if (mb->get_button_index() == MouseButton::LEFT) {
 			if (mb->is_pressed()) {
 				if (picker_button->is_pressed()) {
 					Vector2i coords = p_tile_atlas_view->get_atlas_tile_coords_at_pos(mb->get_position());
@@ -2307,7 +2307,7 @@ void TileDataTerrainsEditor::forward_painting_alternatives_gui_input(TileAtlasVi
 
 	Ref<InputEventMouseButton> mb = p_event;
 	if (mb.is_valid()) {
-		if (mb->get_button_index() == MOUSE_BUTTON_LEFT) {
+		if (mb->get_button_index() == MouseButton::LEFT) {
 			if (mb->is_pressed()) {
 				if (picker_button->is_pressed()) {
 					Vector3i tile = p_tile_atlas_view->get_alternative_tile_at_pos(mb->get_position());
@@ -2478,7 +2478,7 @@ TileDataTerrainsEditor::TileDataTerrainsEditor() {
 	picker_button = memnew(Button);
 	picker_button->set_flat(true);
 	picker_button->set_toggle_mode(true);
-	picker_button->set_shortcut(ED_SHORTCUT("tiles_editor/picker", "Picker", KEY_P));
+	picker_button->set_shortcut(ED_SHORTCUT("tiles_editor/picker", "Picker", Key::P));
 	toolbar->add_child(picker_button);
 
 	// Setup

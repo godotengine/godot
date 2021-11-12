@@ -2408,9 +2408,9 @@ String DisplayServerX11::keyboard_get_layout_name(int p_index) const {
 }
 
 Key DisplayServerX11::keyboard_get_keycode_from_physical(Key p_keycode) const {
-	unsigned int modifiers = p_keycode & KEY_MODIFIER_MASK;
-	unsigned int keycode_no_mod = p_keycode & KEY_CODE_MASK;
-	unsigned int xkeycode = KeyMappingX11::get_xlibcode((Key)keycode_no_mod);
+	Key modifiers = p_keycode & KeyModifierMask::MODIFIER_MASK;
+	Key keycode_no_mod = p_keycode & KeyModifierMask::CODE_MASK;
+	unsigned int xkeycode = KeyMappingX11::get_xlibcode(keycode_no_mod);
 	KeySym xkeysym = XkbKeycodeToKeysym(x11_display, xkeycode, 0, 0);
 	if (xkeysym >= 'a' && xkeysym <= 'z') {
 		xkeysym -= ('a' - 'A');
@@ -2419,7 +2419,7 @@ Key DisplayServerX11::keyboard_get_keycode_from_physical(Key p_keycode) const {
 	Key key = KeyMappingX11::get_keycode(xkeysym);
 	// If not found, fallback to QWERTY.
 	// This should match the behavior of the event pump
-	if (key == KEY_NONE) {
+	if (key == Key::NONE) {
 		return p_keycode;
 	}
 	return (Key)(key | modifiers);
@@ -2493,12 +2493,12 @@ void DisplayServerX11::_get_key_modifier_state(unsigned int p_x11_state, Ref<Inp
 }
 
 MouseButton DisplayServerX11::_get_mouse_button_state(MouseButton p_x11_button, int p_x11_type) {
-	MouseButton mask = MouseButton(1 << (p_x11_button - 1));
+	MouseButton mask = mouse_button_to_mask(p_x11_button);
 
 	if (p_x11_type == ButtonPress) {
 		last_button_state |= mask;
 	} else {
-		last_button_state &= MouseButton(~mask);
+		last_button_state &= ~mask;
 	}
 
 	return last_button_state;
@@ -2565,9 +2565,9 @@ void DisplayServerX11::_handle_key_event(WindowID p_window, XKeyEvent *p_event, 
 		if (status == XLookupChars) {
 			bool keypress = xkeyevent->type == KeyPress;
 			Key keycode = KeyMappingX11::get_keycode(keysym_keycode);
-			unsigned int physical_keycode = KeyMappingX11::get_scancode(xkeyevent->keycode);
+			Key physical_keycode = KeyMappingX11::get_scancode(xkeyevent->keycode);
 
-			if (keycode >= 'a' && keycode <= 'z') {
+			if (keycode >= Key::A + 32 && keycode <= Key::Z + 32) {
 				keycode -= 'a' - 'A';
 			}
 
@@ -2576,11 +2576,11 @@ void DisplayServerX11::_handle_key_event(WindowID p_window, XKeyEvent *p_event, 
 			for (int i = 0; i < tmp.length(); i++) {
 				Ref<InputEventKey> k;
 				k.instantiate();
-				if (physical_keycode == 0 && keycode == 0 && tmp[i] == 0) {
+				if (physical_keycode == Key::NONE && keycode == Key::NONE && tmp[i] == 0) {
 					continue;
 				}
 
-				if (keycode == 0) {
+				if (keycode == Key::NONE) {
 					keycode = (Key)physical_keycode;
 				}
 
@@ -2597,10 +2597,10 @@ void DisplayServerX11::_handle_key_event(WindowID p_window, XKeyEvent *p_event, 
 
 				k->set_echo(false);
 
-				if (k->get_keycode() == KEY_BACKTAB) {
+				if (k->get_keycode() == Key::BACKTAB) {
 					//make it consistent across platforms.
-					k->set_keycode(KEY_TAB);
-					k->set_physical_keycode(KEY_TAB);
+					k->set_keycode(Key::TAB);
+					k->set_physical_keycode(Key::TAB);
 					k->set_shift_pressed(true);
 				}
 
@@ -2629,7 +2629,7 @@ void DisplayServerX11::_handle_key_event(WindowID p_window, XKeyEvent *p_event, 
 	// keysym, so it works in all platforms the same.
 
 	Key keycode = KeyMappingX11::get_keycode(keysym_keycode);
-	unsigned int physical_keycode = KeyMappingX11::get_scancode(xkeyevent->keycode);
+	Key physical_keycode = KeyMappingX11::get_scancode(xkeyevent->keycode);
 
 	/* Phase 3, obtain a unicode character from the keysym */
 
@@ -2649,11 +2649,11 @@ void DisplayServerX11::_handle_key_event(WindowID p_window, XKeyEvent *p_event, 
 
 	bool keypress = xkeyevent->type == KeyPress;
 
-	if (physical_keycode == 0 && keycode == KEY_NONE && unicode == 0) {
+	if (physical_keycode == Key::NONE && keycode == Key::NONE && unicode == 0) {
 		return;
 	}
 
-	if (keycode == KEY_NONE) {
+	if (keycode == Key::NONE) {
 		keycode = (Key)physical_keycode;
 	}
 
@@ -2716,7 +2716,7 @@ void DisplayServerX11::_handle_key_event(WindowID p_window, XKeyEvent *p_event, 
 
 	k->set_pressed(keypress);
 
-	if (keycode >= 'a' && keycode <= 'z') {
+	if (keycode >= Key::A + 32 && keycode <= Key::Z + 32) {
 		keycode -= int('a' - 'A');
 	}
 
@@ -2725,23 +2725,23 @@ void DisplayServerX11::_handle_key_event(WindowID p_window, XKeyEvent *p_event, 
 	k->set_unicode(unicode);
 	k->set_echo(p_echo);
 
-	if (k->get_keycode() == KEY_BACKTAB) {
+	if (k->get_keycode() == Key::BACKTAB) {
 		//make it consistent across platforms.
-		k->set_keycode(KEY_TAB);
-		k->set_physical_keycode(KEY_TAB);
+		k->set_keycode(Key::TAB);
+		k->set_physical_keycode(Key::TAB);
 		k->set_shift_pressed(true);
 	}
 
 	//don't set mod state if modifier keys are released by themselves
 	//else event.is_action() will not work correctly here
 	if (!k->is_pressed()) {
-		if (k->get_keycode() == KEY_SHIFT) {
+		if (k->get_keycode() == Key::SHIFT) {
 			k->set_shift_pressed(false);
-		} else if (k->get_keycode() == KEY_CTRL) {
+		} else if (k->get_keycode() == Key::CTRL) {
 			k->set_ctrl_pressed(false);
-		} else if (k->get_keycode() == KEY_ALT) {
+		} else if (k->get_keycode() == Key::ALT) {
 			k->set_alt_pressed(false);
-		} else if (k->get_keycode() == KEY_META) {
+		} else if (k->get_keycode() == Key::META) {
 			k->set_meta_pressed(false);
 		}
 	}
@@ -3469,10 +3469,10 @@ void DisplayServerX11::process_events() {
 				mb->set_window_id(window_id);
 				_get_key_modifier_state(event.xbutton.state, mb);
 				mb->set_button_index((MouseButton)event.xbutton.button);
-				if (mb->get_button_index() == MOUSE_BUTTON_RIGHT) {
-					mb->set_button_index(MOUSE_BUTTON_MIDDLE);
-				} else if (mb->get_button_index() == MOUSE_BUTTON_MIDDLE) {
-					mb->set_button_index(MOUSE_BUTTON_RIGHT);
+				if (mb->get_button_index() == MouseButton::RIGHT) {
+					mb->set_button_index(MouseButton::MIDDLE);
+				} else if (mb->get_button_index() == MouseButton::MIDDLE) {
+					mb->set_button_index(MouseButton::RIGHT);
 				}
 				mb->set_button_mask(_get_mouse_button_state(mb->get_button_index(), event.xbutton.type));
 				mb->set_position(Vector2(event.xbutton.x, event.xbutton.y));
@@ -3498,11 +3498,11 @@ void DisplayServerX11::process_events() {
 						if (diff < 400 && Vector2(last_click_pos).distance_to(Vector2(event.xbutton.x, event.xbutton.y)) < 5) {
 							last_click_ms = 0;
 							last_click_pos = Point2i(-100, -100);
-							last_click_button_index = -1;
+							last_click_button_index = MouseButton::NONE;
 							mb->set_double_click(true);
 						}
 
-					} else if (mb->get_button_index() < 4 || mb->get_button_index() > 7) {
+					} else if (mb->get_button_index() < MouseButton::WHEEL_UP || mb->get_button_index() > MouseButton::WHEEL_RIGHT) {
 						last_click_button_index = mb->get_button_index();
 					}
 
@@ -3635,12 +3635,12 @@ void DisplayServerX11::process_events() {
 				if (xi.pressure_supported) {
 					mm->set_pressure(xi.pressure);
 				} else {
-					mm->set_pressure((mouse_get_button_state() & MOUSE_BUTTON_MASK_LEFT) ? 1.0f : 0.0f);
+					mm->set_pressure(bool(mouse_get_button_state() & MouseButton::MASK_LEFT) ? 1.0f : 0.0f);
 				}
 				mm->set_tilt(xi.tilt);
 
 				_get_key_modifier_state(event.xmotion.state, mm);
-				mm->set_button_mask(mouse_get_button_state());
+				mm->set_button_mask((MouseButton)mouse_get_button_state());
 				mm->set_position(pos);
 				mm->set_global_position(pos);
 				Input::get_singleton()->set_mouse_position(pos);
@@ -4251,7 +4251,7 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 	xmbstring = nullptr;
 
 	last_click_ms = 0;
-	last_click_button_index = -1;
+	last_click_button_index = MouseButton::NONE;
 	last_click_pos = Point2i(-100, -100);
 
 	last_timestamp = 0;

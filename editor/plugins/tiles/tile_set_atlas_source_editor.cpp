@@ -1142,7 +1142,7 @@ void TileSetAtlasSourceEditor::_tile_atlas_control_gui_input(const Ref<InputEven
 		Ref<InputEventMouseButton> mb = p_event;
 		if (mb.is_valid()) {
 			Vector2 mouse_local_pos = tile_atlas_control->get_local_mouse_position();
-			if (mb->get_button_index() == MOUSE_BUTTON_LEFT) {
+			if (mb->get_button_index() == MouseButton::LEFT) {
 				if (mb->is_pressed()) {
 					// Left click pressed.
 					if (tools_button_group->get_pressed_button() == tool_setup_atlas_source_button) {
@@ -1288,7 +1288,7 @@ void TileSetAtlasSourceEditor::_tile_atlas_control_gui_input(const Ref<InputEven
 				alternative_tiles_control_unscaled->update();
 				tile_atlas_view->update();
 				return;
-			} else if (mb->get_button_index() == MOUSE_BUTTON_RIGHT) {
+			} else if (mb->get_button_index() == MouseButton::RIGHT) {
 				// Right click pressed.
 				if (mb->is_pressed()) {
 					drag_type = DRAG_TYPE_MAY_POPUP_MENU;
@@ -1427,7 +1427,7 @@ void TileSetAtlasSourceEditor::_end_dragging() {
 
 			// Determine if we clear, then add or remove to the selection.
 			bool add_to_selection = true;
-			if (Input::get_singleton()->is_key_pressed(KEY_SHIFT)) {
+			if (Input::get_singleton()->is_key_pressed(Key::SHIFT)) {
 				Vector2i coords = tile_set_atlas_source->get_tile_at_coords(start_base_tiles_coords);
 				if (coords != TileSetSource::INVALID_ATLAS_COORDS) {
 					if (selection.has({ coords, 0 })) {
@@ -1892,7 +1892,7 @@ void TileSetAtlasSourceEditor::_tile_alternatives_control_gui_input(const Ref<In
 		drag_type = DRAG_TYPE_NONE;
 
 		Vector2 mouse_local_pos = alternative_tiles_control->get_local_mouse_position();
-		if (mb->get_button_index() == MOUSE_BUTTON_LEFT) {
+		if (mb->get_button_index() == MouseButton::LEFT) {
 			if (mb->is_pressed()) {
 				// Left click pressed.
 				if (tools_button_group->get_pressed_button() == tool_select_button) {
@@ -1908,7 +1908,7 @@ void TileSetAtlasSourceEditor::_tile_alternatives_control_gui_input(const Ref<In
 					_update_tile_id_label();
 				}
 			}
-		} else if (mb->get_button_index() == MOUSE_BUTTON_RIGHT) {
+		} else if (mb->get_button_index() == MouseButton::RIGHT) {
 			if (mb->is_pressed()) {
 				// Right click pressed
 				Vector3 tile = tile_atlas_view->get_alternative_tile_at_pos(mouse_local_pos);
@@ -2454,7 +2454,7 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 	tools_settings_erase_button = memnew(Button);
 	tools_settings_erase_button->set_flat(true);
 	tools_settings_erase_button->set_toggle_mode(true);
-	tools_settings_erase_button->set_shortcut(ED_SHORTCUT("tiles_editor/eraser", "Eraser", KEY_E));
+	tools_settings_erase_button->set_shortcut(ED_SHORTCUT("tiles_editor/eraser", "Eraser", Key::E));
 	tools_settings_erase_button->set_shortcut_context(this);
 	tool_settings->add_child(tools_settings_erase_button);
 
@@ -2486,7 +2486,7 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 	right_panel->add_child(tile_atlas_view);
 
 	base_tile_popup_menu = memnew(PopupMenu);
-	base_tile_popup_menu->add_shortcut(ED_SHORTCUT("tiles_editor/delete", TTR("Delete"), KEY_DELETE), TILE_DELETE);
+	base_tile_popup_menu->add_shortcut(ED_SHORTCUT("tiles_editor/delete", TTR("Delete"), Key::KEY_DELETE), TILE_DELETE);
 	base_tile_popup_menu->add_item(TTR("Create an Alternative Tile"), TILE_CREATE_ALTERNATIVE);
 	base_tile_popup_menu->connect("id_pressed", callable_mp(this, &TileSetAtlasSourceEditor::_menu_option));
 	tile_atlas_view->add_child(base_tile_popup_menu);
@@ -2509,7 +2509,7 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 	tile_atlas_control_unscaled->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
 
 	alternative_tile_popup_menu = memnew(PopupMenu);
-	alternative_tile_popup_menu->add_shortcut(ED_SHORTCUT("tiles_editor/delete_tile", TTR("Delete"), KEY_DELETE), TILE_DELETE);
+	alternative_tile_popup_menu->add_shortcut(ED_SHORTCUT("tiles_editor/delete_tile", TTR("Delete"), Key::KEY_DELETE), TILE_DELETE);
 	alternative_tile_popup_menu->connect("id_pressed", callable_mp(this, &TileSetAtlasSourceEditor::_menu_option));
 	tile_atlas_view->add_child(alternative_tile_popup_menu);
 

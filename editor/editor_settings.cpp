@@ -1482,7 +1482,7 @@ void ED_SHORTCUT_OVERRIDE(const String &p_path, const String &p_feature, Key p_k
 	ERR_FAIL_COND_MSG(!sc.is_valid(), "Used ED_SHORTCUT_OVERRIDE with invalid shortcut: " + p_path + ".");
 
 	PackedInt32Array arr;
-	arr.push_back(p_keycode);
+	arr.push_back((int32_t)p_keycode);
 
 	ED_SHORTCUT_OVERRIDE_ARRAY(p_path, p_feature, arr);
 }
@@ -1503,13 +1503,12 @@ void ED_SHORTCUT_OVERRIDE_ARRAY(const String &p_path, const String &p_feature, c
 
 #ifdef OSX_ENABLED
 		// Use Cmd+Backspace as a general replacement for Delete shortcuts on macOS
-		if (keycode == KEY_DELETE) {
-			keycode = KEY_MASK_CMD | KEY_BACKSPACE;
+		if (keycode == Key::KEY_DELETE) {
+			keycode = KeyModifierMask::CMD | Key::BACKSPACE;
 		}
 #endif
-
 		Ref<InputEventKey> ie;
-		if (keycode) {
+		if (keycode != Key::NONE) {
 			ie = InputEventKey::create_reference(keycode);
 			events.push_back(ie);
 		}
@@ -1522,7 +1521,7 @@ void ED_SHORTCUT_OVERRIDE_ARRAY(const String &p_path, const String &p_feature, c
 
 Ref<Shortcut> ED_SHORTCUT(const String &p_path, const String &p_name, Key p_keycode) {
 	PackedInt32Array arr;
-	arr.push_back(p_keycode);
+	arr.push_back((int32_t)p_keycode);
 	return ED_SHORTCUT_ARRAY(p_path, p_name, arr);
 }
 
@@ -1534,13 +1533,13 @@ Ref<Shortcut> ED_SHORTCUT_ARRAY(const String &p_path, const String &p_name, cons
 
 #ifdef OSX_ENABLED
 		// Use Cmd+Backspace as a general replacement for Delete shortcuts on macOS
-		if (keycode == KEY_DELETE) {
-			keycode = KEY_MASK_CMD | KEY_BACKSPACE;
+		if (keycode == Key::KEY_DELETE) {
+			keycode = KeyModifierMask::CMD | Key::BACKSPACE;
 		}
 #endif
 
 		Ref<InputEventKey> ie;
-		if (keycode) {
+		if (keycode != Key::NONE) {
 			ie = InputEventKey::create_reference(keycode);
 			events.push_back(ie);
 		}

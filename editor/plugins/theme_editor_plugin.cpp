@@ -1711,13 +1711,13 @@ void ThemeItemEditorDialog::_edit_theme_item_gui_input(const Ref<InputEvent> &p_
 		}
 
 		switch (k->get_keycode()) {
-			case KEY_KP_ENTER:
-			case KEY_ENTER: {
+			case Key::KP_ENTER:
+			case Key::ENTER: {
 				_confirm_edit_theme_item();
 				edit_theme_item_dialog->hide();
 				edit_theme_item_dialog->set_input_as_handled();
 			} break;
-			case KEY_ESCAPE: {
+			case Key::ESCAPE: {
 				edit_theme_item_dialog->hide();
 				edit_theme_item_dialog->set_input_as_handled();
 			} break;

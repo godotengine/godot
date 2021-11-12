@@ -50,7 +50,7 @@
 		<member name="button_group" type="ButtonGroup" setter="set_button_group" getter="get_button_group">
 			The [ButtonGroup] associated with the button. Not to be confused with node groups.
 		</member>
-		<member name="button_mask" type="int" setter="set_button_mask" getter="get_button_mask" default="1">
+		<member name="button_mask" type="int" setter="set_button_mask" getter="get_button_mask" enum="MouseButton" default="1">
 			Binary mask to choose which mouse buttons this button will respond to.
 			To allow both left-click and right-click, use [code]MOUSE_BUTTON_MASK_LEFT | MOUSE_BUTTON_MASK_RIGHT[/code].
 		</member>

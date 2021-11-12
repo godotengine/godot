@@ -502,15 +502,15 @@ String OS::get_system_dir(SystemDir p_dir, bool p_shared_storage) const {
 	return ::OS::get_singleton()->get_system_dir(::OS::SystemDir(p_dir), p_shared_storage);
 }
 
-String OS::get_keycode_string(uint32_t p_code) const {
+String OS::get_keycode_string(Key p_code) const {
 	return ::keycode_get_string(p_code);
 }
 
-bool OS::is_keycode_unicode(uint32_t p_unicode) const {
-	return ::keycode_has_unicode(p_unicode);
+bool OS::is_keycode_unicode(char32_t p_unicode) const {
+	return ::keycode_has_unicode((Key)p_unicode);
 }
 
-int OS::find_keycode_from_string(const String &p_code) const {
+Key OS::find_keycode_from_string(const String &p_code) const {
 	return find_keycode(p_code);
 }
 

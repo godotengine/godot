@@ -155,7 +155,7 @@
 			</description>
 		</method>
 		<method name="get_mouse_button_mask" qualifiers="const">
-			<return type="int" />
+			<return type="int" enum="MouseButton" />
 			<description>
 				Returns mouse buttons as a bitmask. If multiple mouse buttons are pressed at the same time, the bits are added together.
 			</description>

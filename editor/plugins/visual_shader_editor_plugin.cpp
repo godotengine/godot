@@ -3051,7 +3051,7 @@ void VisualShaderEditor::_graph_gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseButton> mb = p_event;
 	VisualShader::Type type = get_current_shader_type();
 
-	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_RIGHT) {
+	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MouseButton::RIGHT) {
 		selected_constants.clear();
 		selected_uniforms.clear();
 		selected_comment = -1;
@@ -3211,7 +3211,7 @@ void VisualShaderEditor::_show_members_dialog(bool at_mouse_pos, VisualShaderNod
 
 void VisualShaderEditor::_sbox_input(const Ref<InputEvent> &p_ie) {
 	Ref<InputEventKey> ie = p_ie;
-	if (ie.is_valid() && (ie->get_keycode() == KEY_UP || ie->get_keycode() == KEY_DOWN || ie->get_keycode() == KEY_ENTER || ie->get_keycode() == KEY_KP_ENTER)) {
+	if (ie.is_valid() && (ie->get_keycode() == Key::UP || ie->get_keycode() == Key::DOWN || ie->get_keycode() == Key::ENTER || ie->get_keycode() == Key::KP_ENTER)) {
 		members->gui_input(ie);
 		node_filter->accept_event();
 	}

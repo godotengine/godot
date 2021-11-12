@@ -142,7 +142,7 @@ EditorPlugin::AfterGUIInput CollisionPolygon3DEditor::forward_spatial_gui_input(
 
 		switch (mode) {
 			case MODE_CREATE: {
-				if (mb->get_button_index() == MOUSE_BUTTON_LEFT && mb->is_pressed()) {
+				if (mb->get_button_index() == MouseButton::LEFT && mb->is_pressed()) {
 					if (!wip_active) {
 						wip.clear();
 						wip.push_back(cpoint);
@@ -166,14 +166,14 @@ EditorPlugin::AfterGUIInput CollisionPolygon3DEditor::forward_spatial_gui_input(
 							return EditorPlugin::AFTER_GUI_INPUT_STOP;
 						}
 					}
-				} else if (mb->get_button_index() == MOUSE_BUTTON_RIGHT && mb->is_pressed() && wip_active) {
+				} else if (mb->get_button_index() == MouseButton::RIGHT && mb->is_pressed() && wip_active) {
 					_wip_close();
 				}
 
 			} break;
 
 			case MODE_EDIT: {
-				if (mb->get_button_index() == MOUSE_BUTTON_LEFT) {
+				if (mb->get_button_index() == MouseButton::LEFT) {
 					if (mb->is_pressed()) {
 						if (mb->is_ctrl_pressed()) {
 							if (poly.size() < 3) {
@@ -267,7 +267,7 @@ EditorPlugin::AfterGUIInput CollisionPolygon3DEditor::forward_spatial_gui_input(
 						}
 					}
 				}
-				if (mb->get_button_index() == MOUSE_BUTTON_RIGHT && mb->is_pressed() && edited_point == -1) {
+				if (mb->get_button_index() == MouseButton::RIGHT && mb->is_pressed() && edited_point == -1) {
 					int closest_idx = -1;
 					Vector2 closest_pos;
 					real_t closest_dist = 1e10;
@@ -301,7 +301,7 @@ EditorPlugin::AfterGUIInput CollisionPolygon3DEditor::forward_spatial_gui_input(
 	Ref<InputEventMouseMotion> mm = p_event;
 
 	if (mm.is_valid()) {
-		if (edited_point != -1 && (wip_active || mm->get_button_mask() & MOUSE_BUTTON_MASK_LEFT)) {
+		if (edited_point != -1 && (wip_active || (mm->get_button_mask() & MouseButton::MASK_LEFT) != MouseButton::NONE)) {
 			Vector2 gpoint = mm->get_position();
 
 			Vector3 ray_from = p_camera->project_ray_origin(gpoint);
@@ -317,7 +317,7 @@ EditorPlugin::AfterGUIInput CollisionPolygon3DEditor::forward_spatial_gui_input(
 
 			Vector2 cpoint(spoint.x, spoint.y);
 
-			if (snap_ignore && !Input::get_singleton()->is_key_pressed(KEY_CTRL)) {
+			if (snap_ignore && !Input::get_singleton()->is_key_pressed(Key::CTRL)) {
 				snap_ignore = false;
 			}
 

@@ -51,7 +51,7 @@ void EditorZoomWidget::_update_zoom_label() {
 }
 
 void EditorZoomWidget::_button_zoom_minus() {
-	set_zoom_by_increments(-6, Input::get_singleton()->is_key_pressed(KEY_ALT));
+	set_zoom_by_increments(-6, Input::get_singleton()->is_key_pressed(Key::ALT));
 	emit_signal(SNAME("zoom_changed"), zoom);
 }
 
@@ -61,7 +61,7 @@ void EditorZoomWidget::_button_zoom_reset() {
 }
 
 void EditorZoomWidget::_button_zoom_plus() {
-	set_zoom_by_increments(6, Input::get_singleton()->is_key_pressed(KEY_ALT));
+	set_zoom_by_increments(6, Input::get_singleton()->is_key_pressed(Key::ALT));
 	emit_signal(SNAME("zoom_changed"), zoom);
 }
 
@@ -169,7 +169,7 @@ EditorZoomWidget::EditorZoomWidget() {
 	zoom_minus->set_flat(true);
 	add_child(zoom_minus);
 	zoom_minus->connect("pressed", callable_mp(this, &EditorZoomWidget::_button_zoom_minus));
-	zoom_minus->set_shortcut(ED_SHORTCUT("canvas_item_editor/zoom_minus", TTR("Zoom Out"), KEY_MASK_CMD | KEY_MINUS));
+	zoom_minus->set_shortcut(ED_SHORTCUT("canvas_item_editor/zoom_minus", TTR("Zoom Out"), KeyModifierMask::CMD | Key::MINUS));
 	zoom_minus->set_shortcut_context(this);
 	zoom_minus->set_focus_mode(FOCUS_NONE);
 
@@ -180,7 +180,7 @@ EditorZoomWidget::EditorZoomWidget() {
 	zoom_reset->add_theme_color_override("font_outline_color", Color(0, 0, 0));
 	zoom_reset->add_theme_color_override("font_color", Color(1, 1, 1));
 	zoom_reset->connect("pressed", callable_mp(this, &EditorZoomWidget::_button_zoom_reset));
-	zoom_reset->set_shortcut(ED_SHORTCUT("canvas_item_editor/zoom_reset", TTR("Zoom Reset"), KEY_MASK_CMD | KEY_0));
+	zoom_reset->set_shortcut(ED_SHORTCUT("canvas_item_editor/zoom_reset", TTR("Zoom Reset"), KeyModifierMask::CMD | Key::KEY_0));
 	zoom_reset->set_shortcut_context(this);
 	zoom_reset->set_focus_mode(FOCUS_NONE);
 	zoom_reset->set_text_align(Button::TextAlign::ALIGN_CENTER);
@@ -191,7 +191,7 @@ EditorZoomWidget::EditorZoomWidget() {
 	zoom_plus->set_flat(true);
 	add_child(zoom_plus);
 	zoom_plus->connect("pressed", callable_mp(this, &EditorZoomWidget::_button_zoom_plus));
-	zoom_plus->set_shortcut(ED_SHORTCUT("canvas_item_editor/zoom_plus", TTR("Zoom In"), KEY_MASK_CMD | KEY_EQUAL)); // Usually direct access key for PLUS
+	zoom_plus->set_shortcut(ED_SHORTCUT("canvas_item_editor/zoom_plus", TTR("Zoom In"), KeyModifierMask::CMD | Key::EQUAL)); // Usually direct access key for PLUS
 	zoom_plus->set_shortcut_context(this);
 	zoom_plus->set_focus_mode(FOCUS_NONE);
 

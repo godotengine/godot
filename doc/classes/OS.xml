@@ -133,7 +133,7 @@
 			</description>
 		</method>
 		<method name="find_keycode_from_string" qualifiers="const">
-			<return type="int" />
+			<return type="int" enum="Key" />
 			<argument index="0" name="string" type="String" />
 			<description>
 				Returns the keycode of the given string (e.g. "Escape").
@@ -222,7 +222,7 @@
 		</method>
 		<method name="get_keycode_string" qualifiers="const">
 			<return type="String" />
-			<argument index="0" name="code" type="int" />
+			<argument index="0" name="code" type="int" enum="Key" />
 			<description>
 				Returns the given keycode as a string (e.g. Return values: [code]"Escape"[/code], [code]"Shift+Escape"[/code]).
 				See also [member InputEventKey.keycode] and [method InputEventKey.get_keycode_with_modifiers].

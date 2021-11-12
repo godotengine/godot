@@ -200,9 +200,9 @@ Variant _EDITOR_DEF(const String &p_setting, const Variant &p_default, bool p_re
 Variant _EDITOR_GET(const String &p_setting);
 
 #define ED_IS_SHORTCUT(p_name, p_ev) (EditorSettings::get_singleton()->is_shortcut(p_name, p_ev))
-Ref<Shortcut> ED_SHORTCUT(const String &p_path, const String &p_name, Key p_keycode = KEY_NONE);
+Ref<Shortcut> ED_SHORTCUT(const String &p_path, const String &p_name, Key p_keycode = Key::NONE);
 Ref<Shortcut> ED_SHORTCUT_ARRAY(const String &p_path, const String &p_name, const PackedInt32Array &p_keycodes);
-void ED_SHORTCUT_OVERRIDE(const String &p_path, const String &p_feature, Key p_keycode = KEY_NONE);
+void ED_SHORTCUT_OVERRIDE(const String &p_path, const String &p_feature, Key p_keycode = Key::NONE);
 void ED_SHORTCUT_OVERRIDE_ARRAY(const String &p_path, const String &p_feature, const PackedInt32Array &p_keycodes);
 Ref<Shortcut> ED_GET_SHORTCUT(const String &p_path);
 

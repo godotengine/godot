@@ -2673,18 +2673,18 @@ TEST_CASE("[SceneTree][CodeEdit] completion") {
 
 		/* Check typing inserts closing pair. */
 		code_edit->clear();
-		SEND_GUI_KEY_EVENT(code_edit, KEY_BRACKETLEFT);
+		SEND_GUI_KEY_EVENT(code_edit, Key::BRACKETLEFT);
 		CHECK(code_edit->get_line(0) == "[]");
 
 		/* Should first match and insert smaller key. */
 		code_edit->clear();
-		SEND_GUI_KEY_EVENT(code_edit, KEY_APOSTROPHE);
+		SEND_GUI_KEY_EVENT(code_edit, Key::APOSTROPHE);
 		CHECK(code_edit->get_line(0) == "''");
 		CHECK(code_edit->get_caret_column() == 1);
 
 		/* Move out from centre, Should match and insert larger key. */
 		SEND_GUI_ACTION(code_edit, "ui_text_caret_right");
-		SEND_GUI_KEY_EVENT(code_edit, KEY_APOSTROPHE);
+		SEND_GUI_KEY_EVENT(code_edit, Key::APOSTROPHE);
 		CHECK(code_edit->get_line(0) == "''''''");
 		CHECK(code_edit->get_caret_column() == 3);
 
@@ -2693,30 +2693,30 @@ TEST_CASE("[SceneTree][CodeEdit] completion") {
 		CHECK(code_edit->get_line(0).is_empty());
 
 		/* If in between and typing close key should "skip". */
-		SEND_GUI_KEY_EVENT(code_edit, KEY_BRACKETLEFT);
+		SEND_GUI_KEY_EVENT(code_edit, Key::BRACKETLEFT);
 		CHECK(code_edit->get_line(0) == "[]");
 		CHECK(code_edit->get_caret_column() == 1);
-		SEND_GUI_KEY_EVENT(code_edit, KEY_BRACKETRIGHT);
+		SEND_GUI_KEY_EVENT(code_edit, Key::BRACKETRIGHT);
 		CHECK(code_edit->get_line(0) == "[]");
 		CHECK(code_edit->get_caret_column() == 2);
 
 		/* If current is char and inserting a string, do not autocomplete. */
 		code_edit->clear();
-		SEND_GUI_KEY_EVENT(code_edit, KEY_A);
-		SEND_GUI_KEY_EVENT(code_edit, KEY_APOSTROPHE);
+		SEND_GUI_KEY_EVENT(code_edit, Key::A);
+		SEND_GUI_KEY_EVENT(code_edit, Key::APOSTROPHE);
 		CHECK(code_edit->get_line(0) == "A'");
 
 		/* If in comment, do not complete. */
 		code_edit->add_comment_delimiter("#", "");
 		code_edit->clear();
-		SEND_GUI_KEY_EVENT(code_edit, KEY_NUMBERSIGN);
-		SEND_GUI_KEY_EVENT(code_edit, KEY_APOSTROPHE);
+		SEND_GUI_KEY_EVENT(code_edit, Key::NUMBERSIGN);
+		SEND_GUI_KEY_EVENT(code_edit, Key::APOSTROPHE);
 		CHECK(code_edit->get_line(0) == "#'");
 
 		/* If in string, and inserting string do not complete. */
 		code_edit->clear();
-		SEND_GUI_KEY_EVENT(code_edit, KEY_APOSTROPHE);
-		SEND_GUI_KEY_EVENT(code_edit, KEY_QUOTEDBL);
+		SEND_GUI_KEY_EVENT(code_edit, Key::APOSTROPHE);
+		SEND_GUI_KEY_EVENT(code_edit, Key::QUOTEDBL);
 		CHECK(code_edit->get_line(0) == "'\"'");
 	}
 
@@ -2862,7 +2862,7 @@ TEST_CASE("[SceneTree][CodeEdit] completion") {
 		SEND_GUI_ACTION(code_edit, "ui_down");
 		CHECK(code_edit->get_code_completion_selected_index() == 0);
 
-		SEND_GUI_KEY_EVENT(code_edit, KEY_T);
+		SEND_GUI_KEY_EVENT(code_edit, Key::T);
 		CHECK(code_edit->get_code_completion_selected_index() == 0);
 
 		SEND_GUI_ACTION(code_edit, "ui_left");
@@ -2876,14 +2876,14 @@ TEST_CASE("[SceneTree][CodeEdit] completion") {
 
 		Point2 caret_pos = code_edit->get_caret_draw_pos();
 		caret_pos.y -= code_edit->get_line_height();
-		SEND_GUI_MOUSE_EVENT(code_edit, caret_pos, MOUSE_BUTTON_WHEEL_DOWN, MOUSE_BUTTON_NONE);
+		SEND_GUI_MOUSE_EVENT(code_edit, caret_pos, MouseButton::WHEEL_DOWN, MouseButton::NONE);
 		CHECK(code_edit->get_code_completion_selected_index() == 1);
 
-		SEND_GUI_MOUSE_EVENT(code_edit, caret_pos, MOUSE_BUTTON_WHEEL_UP, MOUSE_BUTTON_NONE);
+		SEND_GUI_MOUSE_EVENT(code_edit, caret_pos, MouseButton::WHEEL_UP, MouseButton::NONE);
 		CHECK(code_edit->get_code_completion_selected_index() == 0);
 
 		/* Single click selects. */
-		SEND_GUI_MOUSE_EVENT(code_edit, caret_pos, MOUSE_BUTTON_LEFT, MOUSE_BUTTON_MASK_LEFT);
+		SEND_GUI_MOUSE_EVENT(code_edit, caret_pos, MouseButton::LEFT, MouseButton::MASK_LEFT);
 		CHECK(code_edit->get_code_completion_selected_index() == 2);
 
 		/* Double click inserts. */
@@ -3091,15 +3091,15 @@ TEST_CASE("[SceneTree][CodeEdit] symbol lookup") {
 
 	Point2 caret_pos = code_edit->get_caret_draw_pos();
 	caret_pos.x += 55;
-	SEND_GUI_MOUSE_EVENT(code_edit, caret_pos, MOUSE_BUTTON_NONE, MOUSE_BUTTON_NONE);
+	SEND_GUI_MOUSE_EVENT(code_edit, caret_pos, MouseButton::NONE, MouseButton::NONE);
 	CHECK(code_edit->get_text_for_symbol_lookup() == "this is s" + String::chr(0xFFFF) + "ome text");
 
 	SIGNAL_WATCH(code_edit, "symbol_validate");
 
 #ifdef OSX_ENABLED
-	SEND_GUI_KEY_EVENT(code_edit, KEY_META);
+	SEND_GUI_KEY_EVENT(code_edit, Key::META);
 #else
-	SEND_GUI_KEY_EVENT(code_edit, KEY_CTRL);
+	SEND_GUI_KEY_EVENT(code_edit, Key::CTRL);
 #endif
 
 	Array signal_args;

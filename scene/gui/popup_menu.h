@@ -66,7 +66,7 @@ class PopupMenu : public Popup {
 		Variant metadata;
 		String submenu;
 		String tooltip;
-		uint32_t accel = 0;
+		Key accel = Key::NONE;
 		int _ofs_cache = 0;
 		int _height_cache = 0;
 		int h_ofs = 0;
@@ -92,7 +92,7 @@ class PopupMenu : public Popup {
 	Timer *submenu_timer;
 	List<Rect2> autohide_areas;
 	Vector<Item> items;
-	int initial_button_mask = 0;
+	MouseButton initial_button_mask = MouseButton::NONE;
 	bool during_grabbed_click = false;
 	int mouse_over = -1;
 	int submenu_over = -1;
@@ -148,14 +148,14 @@ public:
 	// this value should be updated to reflect the new size.
 	static const int ITEM_PROPERTY_SIZE = 10;
 
-	void add_item(const String &p_label, int p_id = -1, uint32_t p_accel = 0);
-	void add_icon_item(const Ref<Texture2D> &p_icon, const String &p_label, int p_id = -1, uint32_t p_accel = 0);
-	void add_check_item(const String &p_label, int p_id = -1, uint32_t p_accel = 0);
-	void add_icon_check_item(const Ref<Texture2D> &p_icon, const String &p_label, int p_id = -1, uint32_t p_accel = 0);
-	void add_radio_check_item(const String &p_label, int p_id = -1, uint32_t p_accel = 0);
-	void add_icon_radio_check_item(const Ref<Texture2D> &p_icon, const String &p_label, int p_id = -1, uint32_t p_accel = 0);
+	void add_item(const String &p_label, int p_id = -1, Key p_accel = Key::NONE);
+	void add_icon_item(const Ref<Texture2D> &p_icon, const String &p_label, int p_id = -1, Key p_accel = Key::NONE);
+	void add_check_item(const String &p_label, int p_id = -1, Key p_accel = Key::NONE);
+	void add_icon_check_item(const Ref<Texture2D> &p_icon, const String &p_label, int p_id = -1, Key p_accel = Key::NONE);
+	void add_radio_check_item(const String &p_label, int p_id = -1, Key p_accel = Key::NONE);
+	void add_icon_radio_check_item(const Ref<Texture2D> &p_icon, const String &p_label, int p_id = -1, Key p_accel = Key::NONE);
 
-	void add_multistate_item(const String &p_label, int p_max_states, int p_default_state = 0, int p_id = -1, uint32_t p_accel = 0);
+	void add_multistate_item(const String &p_label, int p_max_states, int p_default_state = 0, int p_id = -1, Key p_accel = Key::NONE);
 
 	void add_shortcut(const Ref<Shortcut> &p_shortcut, int p_id = -1, bool p_global = false);
 	void add_icon_shortcut(const Ref<Texture2D> &p_icon, const Ref<Shortcut> &p_shortcut, int p_id = -1, bool p_global = false);
@@ -175,7 +175,7 @@ public:
 	void set_item_icon(int p_idx, const Ref<Texture2D> &p_icon);
 	void set_item_checked(int p_idx, bool p_checked);
 	void set_item_id(int p_idx, int p_id);
-	void set_item_accelerator(int p_idx, uint32_t p_accel);
+	void set_item_accelerator(int p_idx, Key p_accel);
 	void set_item_metadata(int p_idx, const Variant &p_meta);
 	void set_item_disabled(int p_idx, bool p_disabled);
 	void set_item_submenu(int p_idx, const String &p_submenu);
@@ -200,7 +200,7 @@ public:
 	bool is_item_checked(int p_idx) const;
 	int get_item_id(int p_idx) const;
 	int get_item_index(int p_id) const;
-	uint32_t get_item_accelerator(int p_idx) const;
+	Key get_item_accelerator(int p_idx) const;
 	Variant get_item_metadata(int p_idx) const;
 	bool is_item_disabled(int p_idx) const;
 	String get_item_submenu(int p_idx) const;

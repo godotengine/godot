@@ -39,9 +39,9 @@
 String EditorSpinSlider::get_tooltip(const Point2 &p_pos) const {
 	if (grabber->is_visible()) {
 #ifdef OSX_ENABLED
-		const int key = KEY_META;
+		Key key = Key::META;
 #else
-		const int key = KEY_CTRL;
+		Key key = Key::CTRL;
 #endif
 		return TS->format_number(rtos(get_value())) + "\n\n" + vformat(TTR("Hold %s to round to integers. Hold Shift for more precise changes."), find_keycode_name(key));
 	}
@@ -61,7 +61,7 @@ void EditorSpinSlider::gui_input(const Ref<InputEvent> &p_event) {
 
 	Ref<InputEventMouseButton> mb = p_event;
 	if (mb.is_valid()) {
-		if (mb->get_button_index() == MOUSE_BUTTON_LEFT) {
+		if (mb->get_button_index() == MouseButton::LEFT) {
 			if (mb->is_pressed()) {
 				if (updown_offset != -1 && mb->get_position().x > updown_offset) {
 					//there is an updown, so use it.
@@ -92,7 +92,7 @@ void EditorSpinSlider::gui_input(const Ref<InputEvent> &p_event) {
 					grabbing_spinner_attempt = false;
 				}
 			}
-		} else if (mb->get_button_index() == MOUSE_BUTTON_WHEEL_UP || mb->get_button_index() == MOUSE_BUTTON_WHEEL_DOWN) {
+		} else if (mb->get_button_index() == MouseButton::WHEEL_UP || mb->get_button_index() == MouseButton::WHEEL_DOWN) {
 			if (grabber->is_visible()) {
 				call_deferred(SNAME("update"));
 			}
@@ -154,17 +154,17 @@ void EditorSpinSlider::_grabber_gui_input(const Ref<InputEvent> &p_event) {
 
 	if (grabbing_grabber) {
 		if (mb.is_valid()) {
-			if (mb->get_button_index() == MOUSE_BUTTON_WHEEL_UP) {
+			if (mb->get_button_index() == MouseButton::WHEEL_UP) {
 				set_value(get_value() + get_step());
 				mousewheel_over_grabber = true;
-			} else if (mb->get_button_index() == MOUSE_BUTTON_WHEEL_DOWN) {
+			} else if (mb->get_button_index() == MouseButton::WHEEL_DOWN) {
 				set_value(get_value() - get_step());
 				mousewheel_over_grabber = true;
 			}
 		}
 	}
 
-	if (mb.is_valid() && mb->get_button_index() == MOUSE_BUTTON_LEFT) {
+	if (mb.is_valid() && mb->get_button_index() == MouseButton::LEFT) {
 		if (mb->is_pressed()) {
 			grabbing_grabber = true;
 			if (!mousewheel_over_grabber) {
@@ -212,9 +212,9 @@ void EditorSpinSlider::_value_input_gui_input(const Ref<InputEvent> &p_event) {
 			step *= 0.1;
 		}
 
-		uint32_t code = k->get_keycode();
+		Key code = k->get_keycode();
 		switch (code) {
-			case KEY_UP: {
+			case Key::UP: {
 				_evaluate_input_text();
 
 				double last_value = get_value();
@@ -228,7 +228,7 @@ void EditorSpinSlider::_value_input_gui_input(const Ref<InputEvent> &p_event) {
 				value_input_dirty = true;
 				set_process_internal(true);
 			} break;
-			case KEY_DOWN: {
+			case Key::DOWN: {
 				_evaluate_input_text();
 
 				double last_value = get_value();
@@ -242,6 +242,8 @@ void EditorSpinSlider::_value_input_gui_input(const Ref<InputEvent> &p_event) {
 				value_input_dirty = true;
 				set_process_internal(true);
 			} break;
+			default:
+				break;
 		}
 	}
 }

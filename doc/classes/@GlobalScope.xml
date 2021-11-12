@@ -1251,7 +1251,7 @@
 		<constant name="INLINE_ALIGN_BOTTOM" value="14" enum="InlineAlign">
 			Aligns bottom of the inline object (e.g. image, table) to the bottom of the text. Equvalent to [code]INLINE_ALIGN_BOTTOM_TO | INLINE_ALIGN_TO_BOTTOM[/code].
 		</constant>
-		<constant name="SPKEY" value="16777216">
+		<constant name="KEY_SPECIAL" value="16777216" enum="Key">
 			Keycodes with this bit applied are non-printable.
 		</constant>
 		<constant name="KEY_ESCAPE" value="16777217" enum="Key">
@@ -2016,12 +2016,6 @@
 		<constant name="MOUSE_BUTTON_MIDDLE" value="3" enum="MouseButton">
 			Middle mouse button.
 		</constant>
-		<constant name="MOUSE_BUTTON_XBUTTON1" value="8" enum="MouseButton">
-			Extra mouse button 1 (only present on some mice).
-		</constant>
-		<constant name="MOUSE_BUTTON_XBUTTON2" value="9" enum="MouseButton">
-			Extra mouse button 2 (only present on some mice).
-		</constant>
 		<constant name="MOUSE_BUTTON_WHEEL_UP" value="4" enum="MouseButton">
 			Mouse wheel up.
 		</constant>
@@ -2033,6 +2027,12 @@
 		</constant>
 		<constant name="MOUSE_BUTTON_WHEEL_RIGHT" value="7" enum="MouseButton">
 			Mouse wheel right button (only present on some mice).
+		</constant>
+		<constant name="MOUSE_BUTTON_XBUTTON1" value="8" enum="MouseButton">
+			Extra mouse button 1 (only present on some mice).
+		</constant>
+		<constant name="MOUSE_BUTTON_XBUTTON2" value="9" enum="MouseButton">
+			Extra mouse button 2 (only present on some mice).
 		</constant>
 		<constant name="MOUSE_BUTTON_MASK_LEFT" value="1" enum="MouseButton">
 			Left mouse button mask.

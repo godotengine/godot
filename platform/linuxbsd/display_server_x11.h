@@ -173,8 +173,8 @@ class DisplayServerX11 : public DisplayServer {
 	bool last_mouse_pos_valid;
 	Point2i last_click_pos;
 	uint64_t last_click_ms;
-	int last_click_button_index;
-	MouseButton last_button_state = MOUSE_BUTTON_NONE;
+	MouseButton last_click_button_index = MouseButton::NONE;
+	MouseButton last_button_state = MouseButton::NONE;
 	bool app_focused = false;
 	uint64_t time_since_no_focus = 0;
 

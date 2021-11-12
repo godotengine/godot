@@ -225,7 +225,7 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 			// Ignore mouse clicks in IME input mode.
 			return;
 		}
-		if (b->is_pressed() && b->get_button_index() == MOUSE_BUTTON_RIGHT && context_menu_enabled) {
+		if (b->is_pressed() && b->get_button_index() == MouseButton::RIGHT && context_menu_enabled) {
 			_ensure_menu();
 			menu->set_position(get_screen_transform().xform(get_local_mouse_position()));
 			menu->set_size(Vector2(1, 1));
@@ -235,7 +235,7 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 			return;
 		}
 
-		if (is_middle_mouse_paste_enabled() && b->is_pressed() && b->get_button_index() == MOUSE_BUTTON_MIDDLE && is_editable() && DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_CLIPBOARD_PRIMARY)) {
+		if (is_middle_mouse_paste_enabled() && b->is_pressed() && b->get_button_index() == MouseButton::MIDDLE && is_editable() && DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_CLIPBOARD_PRIMARY)) {
 			String paste_buffer = DisplayServer::get_singleton()->clipboard_get_primary().strip_escapes();
 
 			deselect();
@@ -254,7 +254,7 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 			return;
 		}
 
-		if (b->get_button_index() != MOUSE_BUTTON_LEFT) {
+		if (b->get_button_index() != MouseButton::LEFT) {
 			return;
 		}
 
@@ -328,7 +328,7 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 			update();
 
 		} else {
-			if (selection.enabled && !pass && b->get_button_index() == MOUSE_BUTTON_LEFT && DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_CLIPBOARD_PRIMARY)) {
+			if (selection.enabled && !pass && b->get_button_index() == MouseButton::LEFT && DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_CLIPBOARD_PRIMARY)) {
 				DisplayServer::get_singleton()->clipboard_set_primary(text.substr(selection.begin, selection.end - selection.begin));
 			}
 			if (!text.is_empty() && is_editable() && clear_button_enabled) {
@@ -363,7 +363,7 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 			}
 		}
 
-		if (m->get_button_mask() & MOUSE_BUTTON_LEFT) {
+		if ((m->get_button_mask() & MouseButton::MASK_LEFT) != MouseButton::NONE) {
 			if (selection.creating) {
 				set_caret_at_pixel_pos(m->get_position().x);
 				selection_fill_at_caret();
@@ -2070,25 +2070,25 @@ void LineEdit::_create_undo_state() {
 	undo_stack.push_back(op);
 }
 
-int LineEdit::_get_menu_action_accelerator(const String &p_action) {
+Key LineEdit::_get_menu_action_accelerator(const String &p_action) {
 	const List<Ref<InputEvent>> *events = InputMap::get_singleton()->action_get_events(p_action);
 	if (!events) {
-		return 0;
+		return Key::NONE;
 	}
 
 	// Use first event in the list for the accelerator.
 	const List<Ref<InputEvent>>::Element *first_event = events->front();
 	if (!first_event) {
-		return 0;
+		return Key::NONE;
 	}
 
 	const Ref<InputEventKey> event = first_event->get();
 	if (event.is_null()) {
-		return 0;
+		return Key::NONE;
 	}
 
 	// Use physical keycode if non-zero
-	if (event->get_physical_keycode() != 0) {
+	if (event->get_physical_keycode() != Key::NONE) {
 		return event->get_physical_keycode_with_modifiers();
 	} else {
 		return event->get_keycode_with_modifiers();
@@ -2344,21 +2344,21 @@ void LineEdit::_ensure_menu() {
 	// Reorganize context menu.
 	menu->clear();
 	if (editable) {
-		menu->add_item(RTR("Cut"), MENU_CUT, is_shortcut_keys_enabled() ? _get_menu_action_accelerator("ui_cut") : 0);
+		menu->add_item(RTR("Cut"), MENU_CUT, is_shortcut_keys_enabled() ? _get_menu_action_accelerator("ui_cut") : Key::NONE);
 	}
-	menu->add_item(RTR("Copy"), MENU_COPY, is_shortcut_keys_enabled() ? _get_menu_action_accelerator("ui_copy") : 0);
+	menu->add_item(RTR("Copy"), MENU_COPY, is_shortcut_keys_enabled() ? _get_menu_action_accelerator("ui_copy") : Key::NONE);
 	if (editable) {
-		menu->add_item(RTR("Paste"), MENU_PASTE, is_shortcut_keys_enabled() ? _get_menu_action_accelerator("ui_paste") : 0);
+		menu->add_item(RTR("Paste"), MENU_PASTE, is_shortcut_keys_enabled() ? _get_menu_action_accelerator("ui_paste") : Key::NONE);
 	}
 	menu->add_separator();
 	if (is_selecting_enabled()) {
-		menu->add_item(RTR("Select All"), MENU_SELECT_ALL, is_shortcut_keys_enabled() ? _get_menu_action_accelerator("ui_text_select_all") : 0);
+		menu->add_item(RTR("Select All"), MENU_SELECT_ALL, is_shortcut_keys_enabled() ? _get_menu_action_accelerator("ui_text_select_all") : Key::NONE);
 	}
 	if (editable) {
 		menu->add_item(RTR("Clear"), MENU_CLEAR);
 		menu->add_separator();
-		menu->add_item(RTR("Undo"), MENU_UNDO, is_shortcut_keys_enabled() ? _get_menu_action_accelerator("ui_undo") : 0);
-		menu->add_item(RTR("Redo"), MENU_REDO, is_shortcut_keys_enabled() ? _get_menu_action_accelerator("ui_redo") : 0);
+		menu->add_item(RTR("Undo"), MENU_UNDO, is_shortcut_keys_enabled() ? _get_menu_action_accelerator("ui_undo") : Key::NONE);
+		menu->add_item(RTR("Redo"), MENU_REDO, is_shortcut_keys_enabled() ? _get_menu_action_accelerator("ui_redo") : Key::NONE);
 	}
 	menu->add_separator();
 	menu->add_submenu_item(RTR("Text Writing Direction"), "DirMenu");

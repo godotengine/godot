@@ -317,8 +317,9 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_joybutton(JNIEnv *env
 
 // Called on the UI thread
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_joyaxis(JNIEnv *env, jclass clazz, jint p_device, jint p_axis, jfloat p_value) {
-	if (step.get() <= 0)
+	if (step.get() <= 0) {
 		return;
+	}
 
 	AndroidInputHandler::JoypadEvent jevent;
 	jevent.device = p_device;
@@ -331,24 +332,27 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_joyaxis(JNIEnv *env, 
 
 // Called on the UI thread
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_joyhat(JNIEnv *env, jclass clazz, jint p_device, jint p_hat_x, jint p_hat_y) {
-	if (step.get() <= 0)
+	if (step.get() <= 0) {
 		return;
+	}
 
 	AndroidInputHandler::JoypadEvent jevent;
 	jevent.device = p_device;
 	jevent.type = AndroidInputHandler::JOY_EVENT_HAT;
-	int hat = 0;
+	HatMask hat = HatMask::CENTER;
 	if (p_hat_x != 0) {
-		if (p_hat_x < 0)
-			hat |= HatMask::HAT_MASK_LEFT;
-		else
-			hat |= HatMask::HAT_MASK_RIGHT;
+		if (p_hat_x < 0) {
+			hat |= HatMask::LEFT;
+		} else {
+			hat |= HatMask::RIGHT;
+		}
 	}
 	if (p_hat_y != 0) {
-		if (p_hat_y < 0)
-			hat |= HatMask::HAT_MASK_UP;
-		else
-			hat |= HatMask::HAT_MASK_DOWN;
+		if (p_hat_y < 0) {
+			hat |= HatMask::UP;
+		} else {
+			hat |= HatMask::DOWN;
+		}
 	}
 	jevent.hat = hat;
 

@@ -303,7 +303,7 @@ void EditorAudioBus::_volume_changed(float p_normalized) {
 
 	const float p_db = this->_normalized_volume_to_scaled_db(p_normalized);
 
-	if (Input::get_singleton()->is_key_pressed(KEY_CTRL)) {
+	if (Input::get_singleton()->is_key_pressed(Key::CTRL)) {
 		// Snap the value when holding Ctrl for easier editing.
 		// To do so, it needs to be converted back to normalized volume (as the slider uses that unit).
 		slider->set_value(_scaled_db_to_normalized_volume(Math::round(p_db)));
@@ -363,7 +363,7 @@ float EditorAudioBus::_scaled_db_to_normalized_volume(float db) {
 
 void EditorAudioBus::_show_value(float slider_value) {
 	float db;
-	if (Input::get_singleton()->is_key_pressed(KEY_CTRL)) {
+	if (Input::get_singleton()->is_key_pressed(Key::CTRL)) {
 		// Display the correct (snapped) value when holding Ctrl
 		db = Math::round(_normalized_volume_to_scaled_db(slider_value));
 	} else {
@@ -534,7 +534,7 @@ void EditorAudioBus::gui_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
 	Ref<InputEventMouseButton> mb = p_event;
-	if (mb.is_valid() && mb->get_button_index() == MOUSE_BUTTON_RIGHT && mb->is_pressed()) {
+	if (mb.is_valid() && mb->get_button_index() == MouseButton::RIGHT && mb->is_pressed()) {
 		Vector2 pos = mb->get_position();
 		bus_popup->set_position(get_global_position() + pos);
 		bus_popup->popup();
@@ -543,7 +543,7 @@ void EditorAudioBus::gui_input(const Ref<InputEvent> &p_event) {
 
 void EditorAudioBus::_effects_gui_input(Ref<InputEvent> p_event) {
 	Ref<InputEventKey> k = p_event;
-	if (k.is_valid() && k->is_pressed() && !k->is_echo() && k->get_keycode() == KEY_DELETE) {
+	if (k.is_valid() && k->is_pressed() && !k->is_echo() && k->get_keycode() == Key::KEY_DELETE) {
 		TreeItem *current_effect = effects->get_selected();
 		if (current_effect && current_effect->get_metadata(0).get_type() == Variant::INT) {
 			_delete_effect_pressed(0);
@@ -925,8 +925,8 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 	hbc->add_child(bus_options);
 
 	bus_popup = bus_options->get_popup();
-	bus_popup->add_shortcut(ED_SHORTCUT("audio_bus_editor/duplicate_selected_bus", TTR("Duplicate Bus"), KEY_MASK_CMD | KEY_D));
-	bus_popup->add_shortcut(ED_SHORTCUT("audio_bus_editor/delete_selected_bus", TTR("Delete Bus"), KEY_DELETE));
+	bus_popup->add_shortcut(ED_SHORTCUT("audio_bus_editor/duplicate_selected_bus", TTR("Duplicate Bus"), KeyModifierMask::CMD | Key::D));
+	bus_popup->add_shortcut(ED_SHORTCUT("audio_bus_editor/delete_selected_bus", TTR("Delete Bus"), Key::KEY_DELETE));
 	bus_popup->set_item_disabled(1, is_master);
 	bus_popup->add_item(TTR("Reset Volume"));
 	bus_popup->connect("index_pressed", callable_mp(this, &EditorAudioBus::_bus_popup_pressed));

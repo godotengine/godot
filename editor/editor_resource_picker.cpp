@@ -464,7 +464,7 @@ void EditorResourcePicker::_button_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseButton> mb = p_event;
 
 	if (mb.is_valid()) {
-		if (mb->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_RIGHT) {
+		if (mb->is_pressed() && mb->get_button_index() == MouseButton::RIGHT) {
 			_update_menu_items();
 
 			Vector2 pos = get_screen_position() + mb->get_position();

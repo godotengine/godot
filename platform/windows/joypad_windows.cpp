@@ -334,12 +334,12 @@ void JoypadWindows::process_joypads() {
 				button_mask = button_mask * 2;
 			}
 
-			input->joy_axis(joy.id, JOY_AXIS_LEFT_X, axis_correct(joy.state.Gamepad.sThumbLX, true));
-			input->joy_axis(joy.id, JOY_AXIS_LEFT_Y, axis_correct(joy.state.Gamepad.sThumbLY, true, false, true));
-			input->joy_axis(joy.id, JOY_AXIS_RIGHT_X, axis_correct(joy.state.Gamepad.sThumbRX, true));
-			input->joy_axis(joy.id, JOY_AXIS_RIGHT_Y, axis_correct(joy.state.Gamepad.sThumbRY, true, false, true));
-			input->joy_axis(joy.id, JOY_AXIS_TRIGGER_LEFT, axis_correct(joy.state.Gamepad.bLeftTrigger, true, true));
-			input->joy_axis(joy.id, JOY_AXIS_TRIGGER_RIGHT, axis_correct(joy.state.Gamepad.bRightTrigger, true, true));
+			input->joy_axis(joy.id, JoyAxis::LEFT_X, axis_correct(joy.state.Gamepad.sThumbLX, true));
+			input->joy_axis(joy.id, JoyAxis::LEFT_Y, axis_correct(joy.state.Gamepad.sThumbLY, true, false, true));
+			input->joy_axis(joy.id, JoyAxis::RIGHT_X, axis_correct(joy.state.Gamepad.sThumbRX, true));
+			input->joy_axis(joy.id, JoyAxis::RIGHT_Y, axis_correct(joy.state.Gamepad.sThumbRY, true, false, true));
+			input->joy_axis(joy.id, JoyAxis::TRIGGER_LEFT, axis_correct(joy.state.Gamepad.bLeftTrigger, true, true));
+			input->joy_axis(joy.id, JoyAxis::TRIGGER_RIGHT, axis_correct(joy.state.Gamepad.bRightTrigger, true, true));
 			joy.last_packet = joy.state.dwPacketNumber;
 		}
 		uint64_t timestamp = input->get_joy_vibration_timestamp(joy.id);
@@ -417,31 +417,31 @@ void JoypadWindows::post_hat(int p_device, DWORD p_dpad) {
 	//  BOOL POVCentered = (LOWORD(dwPOV) == 0xFFFF);"
 	// https://docs.microsoft.com/en-us/previous-versions/windows/desktop/ee416628(v%3Dvs.85)#remarks
 	if (LOWORD(p_dpad) == 0xFFFF) {
-		dpad_val = (HatMask)HatMask::HAT_MASK_CENTER;
+		dpad_val = (HatMask)HatMask::CENTER;
 	}
 	if (p_dpad == 0) {
-		dpad_val = (HatMask)HatMask::HAT_MASK_UP;
+		dpad_val = (HatMask)HatMask::UP;
 
 	} else if (p_dpad == 4500) {
-		dpad_val = (HatMask)(HatMask::HAT_MASK_UP | HatMask::HAT_MASK_RIGHT);
+		dpad_val = (HatMask)(HatMask::UP | HatMask::RIGHT);
 
 	} else if (p_dpad == 9000) {
-		dpad_val = (HatMask)HatMask::HAT_MASK_RIGHT;
+		dpad_val = (HatMask)HatMask::RIGHT;
 
 	} else if (p_dpad == 13500) {
-		dpad_val = (HatMask)(HatMask::HAT_MASK_RIGHT | HatMask::HAT_MASK_DOWN);
+		dpad_val = (HatMask)(HatMask::RIGHT | HatMask::DOWN);
 
 	} else if (p_dpad == 18000) {
-		dpad_val = (HatMask)HatMask::HAT_MASK_DOWN;
+		dpad_val = (HatMask)HatMask::DOWN;
 
 	} else if (p_dpad == 22500) {
-		dpad_val = (HatMask)(HatMask::HAT_MASK_DOWN | HatMask::HAT_MASK_LEFT);
+		dpad_val = (HatMask)(HatMask::DOWN | HatMask::LEFT);
 
 	} else if (p_dpad == 27000) {
-		dpad_val = (HatMask)HatMask::HAT_MASK_LEFT;
+		dpad_val = (HatMask)HatMask::LEFT;
 
 	} else if (p_dpad == 31500) {
-		dpad_val = (HatMask)(HatMask::HAT_MASK_LEFT | HatMask::HAT_MASK_UP);
+		dpad_val = (HatMask)(HatMask::LEFT | HatMask::UP);
 	}
 	input->joy_hat(p_device, dpad_val);
 };

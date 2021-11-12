@@ -15,7 +15,7 @@
 			<return type="void" />
 			<argument index="0" name="label" type="String" />
 			<argument index="1" name="id" type="int" default="-1" />
-			<argument index="2" name="accel" type="int" default="0" />
+			<argument index="2" name="accel" type="int" enum="Key" default="0" />
 			<description>
 				Adds a new checkable item with text [code]label[/code].
 				An [code]id[/code] can optionally be provided, as well as an accelerator ([code]accel[/code]). If no [code]id[/code] is provided, one will be created from the index. If no [code]accel[/code] is provided then the default [code]0[/code] will be assigned to it. See [method get_item_accelerator] for more info on accelerators.
@@ -38,7 +38,7 @@
 			<argument index="0" name="texture" type="Texture2D" />
 			<argument index="1" name="label" type="String" />
 			<argument index="2" name="id" type="int" default="-1" />
-			<argument index="3" name="accel" type="int" default="0" />
+			<argument index="3" name="accel" type="int" enum="Key" default="0" />
 			<description>
 				Adds a new checkable item with text [code]label[/code] and icon [code]texture[/code].
 				An [code]id[/code] can optionally be provided, as well as an accelerator ([code]accel[/code]). If no [code]id[/code] is provided, one will be created from the index. If no [code]accel[/code] is provided then the default [code]0[/code] will be assigned to it. See [method get_item_accelerator] for more info on accelerators.
@@ -62,7 +62,7 @@
 			<argument index="0" name="texture" type="Texture2D" />
 			<argument index="1" name="label" type="String" />
 			<argument index="2" name="id" type="int" default="-1" />
-			<argument index="3" name="accel" type="int" default="0" />
+			<argument index="3" name="accel" type="int" enum="Key" default="0" />
 			<description>
 				Adds a new item with text [code]label[/code] and icon [code]texture[/code].
 				An [code]id[/code] can optionally be provided, as well as an accelerator ([code]accel[/code]). If no [code]id[/code] is provided, one will be created from the index. If no [code]accel[/code] is provided then the default [code]0[/code] will be assigned to it. See [method get_item_accelerator] for more info on accelerators.
@@ -73,7 +73,7 @@
 			<argument index="0" name="texture" type="Texture2D" />
 			<argument index="1" name="label" type="String" />
 			<argument index="2" name="id" type="int" default="-1" />
-			<argument index="3" name="accel" type="int" default="0" />
+			<argument index="3" name="accel" type="int" enum="Key" default="0" />
 			<description>
 				Same as [method add_icon_check_item], but uses a radio check button.
 			</description>
@@ -103,7 +103,7 @@
 			<return type="void" />
 			<argument index="0" name="label" type="String" />
 			<argument index="1" name="id" type="int" default="-1" />
-			<argument index="2" name="accel" type="int" default="0" />
+			<argument index="2" name="accel" type="int" enum="Key" default="0" />
 			<description>
 				Adds a new item with text [code]label[/code].
 				An [code]id[/code] can optionally be provided, as well as an accelerator ([code]accel[/code]). If no [code]id[/code] is provided, one will be created from the index. If no [code]accel[/code] is provided then the default [code]0[/code] will be assigned to it. See [method get_item_accelerator] for more info on accelerators.
@@ -115,7 +115,7 @@
 			<argument index="1" name="max_states" type="int" />
 			<argument index="2" name="default_state" type="int" default="0" />
 			<argument index="3" name="id" type="int" default="-1" />
-			<argument index="4" name="accel" type="int" default="0" />
+			<argument index="4" name="accel" type="int" enum="Key" default="0" />
 			<description>
 				Adds a new multistate item with text [code]label[/code].
 				Contrarily to normal binary items, multistate items can have more than two states, as defined by [code]max_states[/code]. Each press or activate of the item will increase the state by one. The default value is defined by [code]default_state[/code].
@@ -126,7 +126,7 @@
 			<return type="void" />
 			<argument index="0" name="label" type="String" />
 			<argument index="1" name="id" type="int" default="-1" />
-			<argument index="2" name="accel" type="int" default="0" />
+			<argument index="2" name="accel" type="int" enum="Key" default="0" />
 			<description>
 				Adds a new radio check button with text [code]label[/code].
 				An [code]id[/code] can optionally be provided, as well as an accelerator ([code]accel[/code]). If no [code]id[/code] is provided, one will be created from the index. If no [code]accel[/code] is provided then the default [code]0[/code] will be assigned to it. See [method get_item_accelerator] for more info on accelerators.
@@ -193,7 +193,7 @@
 			</description>
 		</method>
 		<method name="get_item_accelerator" qualifiers="const">
-			<return type="int" />
+			<return type="int" enum="Key" />
 			<argument index="0" name="idx" type="int" />
 			<description>
 				Returns the accelerator of the item at index [code]idx[/code]. Accelerators are special combinations of keys that activate the item, no matter which control is focused.
@@ -333,7 +333,7 @@
 		<method name="set_item_accelerator">
 			<return type="void" />
 			<argument index="0" name="idx" type="int" />
-			<argument index="1" name="accel" type="int" />
+			<argument index="1" name="accel" type="int" enum="Key" />
 			<description>
 				Sets the accelerator of the item at index [code]idx[/code]. Accelerators are special combinations of keys that activate the item, no matter which control is focused.
 			</description>

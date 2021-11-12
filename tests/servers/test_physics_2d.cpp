@@ -196,10 +196,10 @@ protected:
 			if (mb->is_pressed()) {
 				Point2 p = mb->get_position();
 
-				if (mb->get_button_index() == 1) {
+				if (mb->get_button_index() == MouseButton::LEFT) {
 					ray_to = p;
 					_do_ray_query();
-				} else if (mb->get_button_index() == 2) {
+				} else if (mb->get_button_index() == MouseButton::RIGHT) {
 					ray_from = p;
 					_do_ray_query();
 				}
@@ -211,10 +211,10 @@ protected:
 		if (mm.is_valid()) {
 			Point2 p = mm->get_position();
 
-			if (mm->get_button_mask() & MOUSE_BUTTON_MASK_LEFT) {
+			if ((mm->get_button_mask() & MouseButton::MASK_LEFT) != MouseButton::NONE) {
 				ray_to = p;
 				_do_ray_query();
-			} else if (mm->get_button_mask() & MOUSE_BUTTON_MASK_RIGHT) {
+			} else if ((mm->get_button_mask() & MouseButton::MASK_RIGHT) != MouseButton::NONE) {
 				ray_from = p;
 				_do_ray_query();
 			}

@@ -84,8 +84,8 @@ public:
 		bool pressed = false;
 		bool echo = false;
 		bool raw = false;
-		Key keycode = KEY_NONE;
-		uint32_t physical_keycode = 0;
+		Key keycode = Key::NONE;
+		Key physical_keycode = Key::NONE;
 		uint32_t unicode = 0;
 	};
 
@@ -172,7 +172,7 @@ public:
 
 	MouseMode mouse_mode;
 	Point2i last_mouse_pos;
-	MouseButton last_button_state = MOUSE_BUTTON_NONE;
+	MouseButton last_button_state = MouseButton::NONE;
 
 	bool window_focused;
 	bool drop_events;

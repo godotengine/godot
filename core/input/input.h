@@ -85,11 +85,11 @@ public:
 	typedef void (*EventDispatchFunc)(const Ref<InputEvent> &p_event);
 
 private:
-	int mouse_button_mask = 0;
+	MouseButton mouse_button_mask = MouseButton::NONE;
 
-	Set<int> keys_pressed;
-	Set<int> joy_buttons_pressed;
-	Map<int, float> _joy_axis;
+	Set<Key> keys_pressed;
+	Set<JoyButton> joy_buttons_pressed;
+	Map<JoyAxis, float> _joy_axis;
 	//Map<StringName,int> custom_action_press;
 	Vector3 gravity;
 	Vector3 accelerometer;
@@ -133,9 +133,9 @@ private:
 		StringName name;
 		StringName uid;
 		bool connected = false;
-		bool last_buttons[JOY_BUTTON_MAX] = { false };
-		float last_axis[JOY_AXIS_MAX] = { 0.0f };
-		int last_hat = HatMask::HAT_MASK_CENTER;
+		bool last_buttons[(size_t)JoyButton::MAX] = { false };
+		float last_axis[(size_t)JoyAxis::MAX] = { 0.0f };
+		HatMask last_hat = HatMask::CENTER;
 		int mapping = -1;
 		int hat_current = 0;
 	};
@@ -162,7 +162,7 @@ private:
 
 	struct JoyEvent {
 		int type;
-		int index;
+		int index; // Can be either JoyAxis or JoyButton.
 		float value;
 	};
 
@@ -206,7 +206,7 @@ private:
 
 	JoyEvent _get_mapped_button_event(const JoyDeviceMapping &mapping, JoyButton p_button);
 	JoyEvent _get_mapped_axis_event(const JoyDeviceMapping &mapping, JoyAxis p_axis, float p_value);
-	void _get_mapped_hat_events(const JoyDeviceMapping &mapping, HatDir p_hat, JoyEvent r_events[HAT_MAX]);
+	void _get_mapped_hat_events(const JoyDeviceMapping &mapping, HatDir p_hat, JoyEvent r_events[(size_t)HatDir::MAX]);
 	JoyButton _get_output_button(String output);
 	JoyAxis _get_output_axis(String output);
 	void _button_event(int p_device, JoyButton p_index, bool p_pressed);
@@ -273,7 +273,7 @@ public:
 
 	Point2 get_mouse_position() const;
 	Point2 get_last_mouse_speed() const;
-	int get_mouse_button_mask() const;
+	MouseButton get_mouse_button_mask() const;
 
 	void warp_mouse_position(const Vector2 &p_to);
 	Point2i warp_mouse_motion(const Ref<InputEventMouseMotion> &p_motion, const Rect2 &p_rect);
@@ -312,7 +312,7 @@ public:
 	void parse_mapping(String p_mapping);
 	void joy_button(int p_device, JoyButton p_button, bool p_pressed);
 	void joy_axis(int p_device, JoyAxis p_axis, const JoyAxisValue &p_value);
-	void joy_hat(int p_device, int p_val);
+	void joy_hat(int p_device, HatMask p_val);
 
 	void add_joy_mapping(String p_mapping, bool p_update_existing = false);
 	void remove_joy_mapping(String p_guid);

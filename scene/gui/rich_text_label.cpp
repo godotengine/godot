@@ -1545,7 +1545,7 @@ void RichTextLabel::gui_input(const Ref<InputEvent> &p_event) {
 			return;
 		}
 
-		if (b->get_button_index() == MOUSE_BUTTON_LEFT) {
+		if (b->get_button_index() == MouseButton::LEFT) {
 			if (b->is_pressed() && !b->is_double_click()) {
 				scroll_updated = false;
 				ItemFrame *c_frame = nullptr;
@@ -1636,12 +1636,12 @@ void RichTextLabel::gui_input(const Ref<InputEvent> &p_event) {
 			}
 		}
 
-		if (b->get_button_index() == MOUSE_BUTTON_WHEEL_UP) {
+		if (b->get_button_index() == MouseButton::WHEEL_UP) {
 			if (scroll_active) {
 				vscroll->set_value(vscroll->get_value() - vscroll->get_page() * b->get_factor() * 0.5 / 8);
 			}
 		}
-		if (b->get_button_index() == MOUSE_BUTTON_WHEEL_DOWN) {
+		if (b->get_button_index() == MouseButton::WHEEL_DOWN) {
 			if (scroll_active) {
 				vscroll->set_value(vscroll->get_value() + vscroll->get_page() * b->get_factor() * 0.5 / 8);
 			}

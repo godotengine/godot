@@ -261,7 +261,7 @@ void DisplayServerIPhone::key(Key p_key, bool p_pressed) {
 	ev->set_pressed(p_pressed);
 	ev->set_keycode(p_key);
 	ev->set_physical_keycode(p_key);
-	ev->set_unicode(p_key);
+	ev->set_unicode((char32_t)p_key);
 	perform_event(ev);
 };
 

@@ -54,17 +54,17 @@ void ScrollBar::gui_input(const Ref<InputEvent> &p_event) {
 	if (b.is_valid()) {
 		accept_event();
 
-		if (b->get_button_index() == MOUSE_BUTTON_WHEEL_DOWN && b->is_pressed()) {
+		if (b->get_button_index() == MouseButton::WHEEL_DOWN && b->is_pressed()) {
 			set_value(get_value() + get_page() / 4.0);
 			accept_event();
 		}
 
-		if (b->get_button_index() == MOUSE_BUTTON_WHEEL_UP && b->is_pressed()) {
+		if (b->get_button_index() == MouseButton::WHEEL_UP && b->is_pressed()) {
 			set_value(get_value() - get_page() / 4.0);
 			accept_event();
 		}
 
-		if (b->get_button_index() != MOUSE_BUTTON_LEFT) {
+		if (b->get_button_index() != MouseButton::LEFT) {
 			return;
 		}
 
@@ -525,7 +525,7 @@ void ScrollBar::_drag_node_input(const Ref<InputEvent> &p_input) {
 	Ref<InputEventMouseButton> mb = p_input;
 
 	if (mb.is_valid()) {
-		if (mb->get_button_index() != 1) {
+		if (mb->get_button_index() != MouseButton::LEFT) {
 			return;
 		}
 

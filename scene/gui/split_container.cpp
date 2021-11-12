@@ -216,7 +216,7 @@ void SplitContainer::gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseButton> mb = p_event;
 
 	if (mb.is_valid()) {
-		if (mb->get_button_index() == MOUSE_BUTTON_LEFT) {
+		if (mb->get_button_index() == MouseButton::LEFT) {
 			if (mb->is_pressed()) {
 				int sep = get_theme_constant(SNAME("separation"));
 
