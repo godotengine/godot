@@ -32,8 +32,11 @@
 
 #include "core/config/engine.h"
 #include "core/templates/local_vector.h"
-#include "editor/editor_node.h"
 #include "scene/resources/packed_scene.h"
+
+#ifdef TOOLS_ENABLED
+#include "editor/editor_node.h"
+#endif // TOOLS_ENABLED
 
 bool PropertyUtils::is_property_value_different(const Variant &p_a, const Variant &p_b) {
 	if (p_a.get_type() == Variant::FLOAT && p_b.get_type() == Variant::FLOAT) {
