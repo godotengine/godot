@@ -3230,7 +3230,11 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor, Node *p_scene_root, EditorSel
 	filter_hbc->add_theme_constant_override("separate", 0);
 
 	ED_SHORTCUT("scene_tree/rename", TTR("Rename"), KEY_F2);
+	ED_SHORTCUT_OVERRIDE("scene_tree/rename", "macos", KEY_ENTER);
+
 	ED_SHORTCUT("scene_tree/batch_rename", TTR("Batch Rename"), KEY_MASK_SHIFT | KEY_F2);
+	ED_SHORTCUT_OVERRIDE("scene_tree/batch_rename", "macos", KEY_MASK_SHIFT | KEY_ENTER);
+
 	ED_SHORTCUT("scene_tree/add_child_node", TTR("Add Child Node"), KEY_MASK_CMD | KEY_A);
 	ED_SHORTCUT("scene_tree/instance_scene", TTR("Instantiate Child Scene"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_A);
 	ED_SHORTCUT("scene_tree/expand_collapse_all", TTR("Expand/Collapse All"));
