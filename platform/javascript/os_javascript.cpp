@@ -36,7 +36,7 @@
 #include "main/main.h"
 #include "platform/javascript/display_server_javascript.h"
 
-#include "modules/modules_enabled.gen.h"
+#include "modules/modules_enabled.gen.h" // For websocket.
 #ifdef MODULE_WEBSOCKET_ENABLED
 #include "modules/websocket/remote_debugger_peer_websocket.h"
 #endif

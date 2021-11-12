@@ -52,6 +52,8 @@
 #include "servers/display_server.h"
 #include "servers/rendering_server.h"
 
+#include "modules/modules_enabled.gen.h" // For regex.
+
 void SceneTreeDock::_nodes_drag_begin() {
 	if (restore_script_editor_on_drag) {
 		EditorNode::get_singleton()->set_visible_editor(EditorNode::EDITOR_SCRIPT);
