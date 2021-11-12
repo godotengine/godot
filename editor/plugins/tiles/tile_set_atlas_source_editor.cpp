@@ -2061,7 +2061,7 @@ void TileSetAtlasSourceEditor::_undo_redo_inspector_callback(Object *p_undo_redo
 			int new_polygons_count = p_new_value;
 			int old_polygons_count = tile_data_proxy->get(vformat("physics_layer_%d/polygons_count", layer_index));
 			if (new_polygons_count < old_polygons_count) {
-				for (int i = new_polygons_count - 1; i < old_polygons_count; i++) {
+				for (int i = new_polygons_count; i < old_polygons_count; i++) {
 					ADD_UNDO(tile_data_proxy, vformat("physics_layer_%d/polygon_%d/points", layer_index, i));
 					ADD_UNDO(tile_data_proxy, vformat("physics_layer_%d/polygon_%d/one_way", layer_index, i));
 					ADD_UNDO(tile_data_proxy, vformat("physics_layer_%d/polygon_%d/one_way_margin", layer_index, i));
@@ -2534,9 +2534,194 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 	right_panel->add_child(tile_atlas_view_missing_source_label);
 
 	EditorNode::get_singleton()->get_editor_data().add_undo_redo_inspector_hook_callback(callable_mp(this, &TileSetAtlasSourceEditor::_undo_redo_inspector_callback));
+
+	// Inspector plugin.
+	Ref<EditorInspectorPluginTileData> tile_data_inspector_plugin;
+	tile_data_inspector_plugin.instantiate();
+	EditorInspector::add_inspector_plugin(tile_data_inspector_plugin);
 }
 
 TileSetAtlasSourceEditor::~TileSetAtlasSourceEditor() {
 	memdelete(tile_proxy_object);
 	memdelete(atlas_source_proxy_object);
+}
+
+////// EditorPropertyTilePolygon //////
+
+void EditorPropertyTilePolygon::_add_focusable_children(Node *p_node) {
+	Control *control = Object::cast_to<Control>(p_node);
+	if (control && control->get_focus_mode() != Control::FOCUS_NONE) {
+		add_focusable(control);
+	}
+	for (int i = 0; i < p_node->get_child_count(); i++) {
+		_add_focusable_children(p_node->get_child(i));
+	}
+}
+
+void EditorPropertyTilePolygon::_polygons_changed() {
+	if (String(count_property).is_empty()) {
+		if (base_type == "OccluderPolygon2D") {
+			// Single OccluderPolygon2D.
+			Ref<OccluderPolygon2D> occluder;
+			if (generic_tile_polygon_editor->get_polygon_count() >= 1) {
+				occluder.instantiate();
+				occluder->set_polygon(generic_tile_polygon_editor->get_polygon(0));
+			}
+			emit_changed(get_edited_property(), occluder);
+		} else if (base_type == "NavigationPolygon") {
+			Ref<NavigationPolygon> navigation_polygon;
+			if (generic_tile_polygon_editor->get_polygon_count() >= 1) {
+				navigation_polygon.instantiate();
+				for (int i = 0; i < generic_tile_polygon_editor->get_polygon_count(); i++) {
+					Vector<Vector2> polygon = generic_tile_polygon_editor->get_polygon(i);
+					navigation_polygon->add_outline(polygon);
+				}
+				navigation_polygon->make_polygons_from_outlines();
+			}
+			emit_changed(get_edited_property(), navigation_polygon);
+		}
+	} else {
+		if (base_type.is_empty()) {
+			// Multiple array of vertices.
+			Vector<String> changed_properties;
+			Array values;
+			int count = generic_tile_polygon_editor->get_polygon_count();
+			changed_properties.push_back(count_property);
+			values.push_back(count);
+			for (int i = 0; i < count; i++) {
+				changed_properties.push_back(vformat(element_pattern, i));
+				values.push_back(generic_tile_polygon_editor->get_polygon(i));
+			}
+			emit_signal("multiple_properties_changed", changed_properties, values, false);
+		}
+	}
+}
+
+void EditorPropertyTilePolygon::update_property() {
+	TileSetAtlasSourceEditor::AtlasTileProxyObject *atlas_tile_proxy_object = Object::cast_to<TileSetAtlasSourceEditor::AtlasTileProxyObject>(get_edited_object());
+	ERR_FAIL_COND(!atlas_tile_proxy_object);
+	ERR_FAIL_COND(atlas_tile_proxy_object->get_edited_tiles().is_empty());
+
+	TileSetAtlasSource *tile_set_atlas_source = atlas_tile_proxy_object->get_edited_tile_set_atlas_source();
+	generic_tile_polygon_editor->set_tile_set(Ref<TileSet>(tile_set_atlas_source->get_tile_set()));
+
+	// Set the background
+	Vector2i coords = atlas_tile_proxy_object->get_edited_tiles().front()->get().tile;
+	int alternative = atlas_tile_proxy_object->get_edited_tiles().front()->get().alternative;
+	TileData *tile_data = Object::cast_to<TileData>(tile_set_atlas_source->get_tile_data(coords, alternative));
+	generic_tile_polygon_editor->set_background(tile_set_atlas_source->get_texture(), tile_set_atlas_source->get_tile_texture_region(coords), tile_set_atlas_source->get_tile_effective_texture_offset(coords, alternative), tile_data->get_flip_h(), tile_data->get_flip_v(), tile_data->get_transpose(), tile_data->get_modulate());
+
+	// Reset the polygons.
+	generic_tile_polygon_editor->clear_polygons();
+
+	if (String(count_property).is_empty()) {
+		if (base_type == "OccluderPolygon2D") {
+			// Single OccluderPolygon2D.
+			Ref<OccluderPolygon2D> occluder = get_edited_object()->get(get_edited_property());
+			generic_tile_polygon_editor->clear_polygons();
+			if (occluder.is_valid()) {
+				generic_tile_polygon_editor->add_polygon(occluder->get_polygon());
+			}
+		} else if (base_type == "NavigationPolygon") {
+			// Single OccluderPolygon2D.
+			Ref<NavigationPolygon> navigation_polygon = get_edited_object()->get(get_edited_property());
+			generic_tile_polygon_editor->clear_polygons();
+			if (navigation_polygon.is_valid()) {
+				for (int i = 0; i < navigation_polygon->get_outline_count(); i++) {
+					generic_tile_polygon_editor->add_polygon(navigation_polygon->get_outline(i));
+				}
+			}
+		}
+	} else {
+		int count = get_edited_object()->get(count_property);
+		if (base_type.is_empty()) {
+			// Multiple array of vertices.
+			generic_tile_polygon_editor->clear_polygons();
+			for (int i = 0; i < count; i++) {
+				generic_tile_polygon_editor->add_polygon(get_edited_object()->get(vformat(element_pattern, i)));
+			}
+		}
+	}
+}
+
+void EditorPropertyTilePolygon::setup_single_mode(const StringName &p_property, const String &p_base_type) {
+	set_object_and_property(nullptr, p_property);
+	base_type = p_base_type;
+
+	generic_tile_polygon_editor->set_multiple_polygon_mode(false);
+}
+
+void EditorPropertyTilePolygon::setup_multiple_mode(const StringName &p_property, const StringName &p_count_property, const String &p_element_pattern, const String &p_base_type) {
+	set_object_and_property(nullptr, p_property);
+	count_property = p_count_property;
+	element_pattern = p_element_pattern;
+	base_type = p_base_type;
+
+	generic_tile_polygon_editor->set_multiple_polygon_mode(true);
+}
+
+EditorPropertyTilePolygon::EditorPropertyTilePolygon() {
+	// Setup the polygon editor.
+	generic_tile_polygon_editor = memnew(GenericTilePolygonEditor);
+	generic_tile_polygon_editor->set_use_undo_redo(false);
+	generic_tile_polygon_editor->clear_polygons();
+	add_child(generic_tile_polygon_editor);
+	generic_tile_polygon_editor->connect("polygons_changed", callable_mp(this, &EditorPropertyTilePolygon::_polygons_changed));
+
+	// Add all focussable children of generic_tile_polygon_editor as focussable.
+	_add_focusable_children(generic_tile_polygon_editor);
+}
+
+////// EditorInspectorPluginTileData //////
+
+bool EditorInspectorPluginTileData::can_handle(Object *p_object) {
+	return Object::cast_to<TileSetAtlasSourceEditor::AtlasTileProxyObject>(p_object) != nullptr;
+}
+
+bool EditorInspectorPluginTileData::parse_property(Object *p_object, const Variant::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const uint32_t p_usage, const bool p_wide) {
+	Vector<String> components = String(p_path).split("/", true, 2);
+	if (components.size() == 2 && components[0].begins_with("occlusion_layer_") && components[0].trim_prefix("occlusion_layer_").is_valid_int()) {
+		// Occlusion layers.
+		int layer_index = components[0].trim_prefix("occlusion_layer_").to_int();
+		ERR_FAIL_COND_V(layer_index < 0, false);
+		if (components[1] == "polygon") {
+			EditorPropertyTilePolygon *ep = memnew(EditorPropertyTilePolygon);
+			ep->setup_single_mode(p_path, "OccluderPolygon2D");
+			add_property_editor(p_path, ep);
+			return true;
+		}
+	} else if (components.size() >= 2 && components[0].begins_with("physics_layer_") && components[0].trim_prefix("physics_layer_").is_valid_int()) {
+		// Physics layers.
+		int layer_index = components[0].trim_prefix("physics_layer_").to_int();
+		ERR_FAIL_COND_V(layer_index < 0, false);
+		if (components[1] == "polygons_count") {
+			EditorPropertyTilePolygon *ep = memnew(EditorPropertyTilePolygon);
+			ep->setup_multiple_mode(vformat("physics_layer_%d/polygons", layer_index), vformat("physics_layer_%d/polygons_count", layer_index), vformat("physics_layer_%d/polygon_%%d/points", layer_index), "");
+			Vector<String> properties;
+			properties.push_back(p_path);
+			int count = p_object->get(vformat("physics_layer_%d/polygons_count", layer_index));
+			for (int i = 0; i < count; i++) {
+				properties.push_back(vformat(vformat("physics_layer_%d/polygon_%d/points", layer_index, i)));
+			}
+			add_property_editor_for_multiple_properties("Polygons", properties, ep);
+			return true;
+		} else if (components.size() == 3 && components[1].begins_with("polygon_") && components[1].trim_prefix("polygon_").is_valid_int()) {
+			int polygon_index = components[1].trim_prefix("polygon_").to_int();
+			ERR_FAIL_COND_V(polygon_index < 0, false);
+			if (components[2] == "points") {
+				return true;
+			}
+		}
+	} else if (components.size() == 2 && components[0].begins_with("navigation_layer_") && components[0].trim_prefix("navigation_layer_").is_valid_int()) {
+		// Navigation layers.
+		int layer_index = components[0].trim_prefix("navigation_layer_").to_int();
+		ERR_FAIL_COND_V(layer_index < 0, false);
+		if (components[1] == "polygon") {
+			EditorPropertyTilePolygon *ep = memnew(EditorPropertyTilePolygon);
+			ep->setup_single_mode(p_path, "NavigationPolygon");
+			add_property_editor(p_path, ep);
+			return true;
+		}
+	}
+	return false;
 }
