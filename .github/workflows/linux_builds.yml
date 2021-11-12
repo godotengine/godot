@@ -51,6 +51,14 @@ jobs:
             build-mono: false
             artifact: true
 
+          - name: Minimal Template (target=release, tools=no, everything disabled)
+            cache-name: linux-template-minimal
+            target: release
+            tools: false
+            tests: false
+            sconsflags: modules_enabled_by_default=no disable_3d=yes disable_advanced_gui=yes deprecated=no minizip=no
+            artifact: true
+
     steps:
       - uses: actions/checkout@v2
 
