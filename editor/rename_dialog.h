@@ -31,7 +31,7 @@
 #ifndef RENAME_DIALOG_H
 #define RENAME_DIALOG_H
 
-#include "modules/modules_enabled.gen.h"
+#include "modules/modules_enabled.gen.h" // For regex.
 #ifdef MODULE_REGEX_ENABLED
 
 #include "scene/gui/check_box.h"
