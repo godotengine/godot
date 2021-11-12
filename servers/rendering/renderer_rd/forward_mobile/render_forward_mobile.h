@@ -292,7 +292,8 @@ protected:
 
 			float roughness_limiter_amount;
 			float roughness_limiter_limit;
-			uint32_t roughness_limiter_pad[2];
+			float opaque_prepass_threshold;
+			uint32_t roughness_limiter_pad;
 
 			// Fog
 			uint32_t fog_enabled;

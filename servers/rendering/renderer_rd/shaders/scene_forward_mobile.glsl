@@ -705,7 +705,7 @@ void main() {
 #endif // ALPHA_ANTIALIASING_EDGE_USED
 
 #ifdef USE_OPAQUE_PREPASS
-	if (alpha < opaque_prepass_threshold) {
+	if (alpha < scene_data.opaque_prepass_threshold) {
 		discard;
 	}
 #endif // USE_OPAQUE_PREPASS
@@ -1476,7 +1476,7 @@ void main() {
 
 #ifdef USE_OPAQUE_PREPASS
 
-	if (alpha < opaque_prepass_threshold) {
+	if (alpha < scene_data.opaque_prepass_threshold) {
 		discard;
 	}
 
