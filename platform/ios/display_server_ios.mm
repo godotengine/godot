@@ -103,7 +103,7 @@ DisplayServerIOS::DisplayServerIOS(const String &p_rendering_driver, WindowMode 
 			ERR_FAIL_MSG("Failed to create iOS OpenGLES rendering layer.");
 		}
 
-		RasterizerGLES3::make_current();
+		RasterizerGLES3::make_current(false);
 	}
 #endif
 

@@ -59,7 +59,6 @@
 #define XR_USE_GRAPHICS_API_OPENGL
 #endif // ANDROID_ENABLED
 #ifdef X11_ENABLED
-#include OPENGL_INCLUDE_H
 #define GL_GLEXT_PROTOTYPES 1
 #define GL3_PROTOTYPES 1
 #include "thirdparty/glad/glad/gl.h"

@@ -43,13 +43,7 @@
 
 #ifdef GLES3_ENABLED
 
-// This must come first to avoid windows.h mess
-#include "platform_config.h"
-#ifndef OPENGL_INCLUDE_H
-#include <GLES3/gl3.h>
-#else
-#include OPENGL_INCLUDE_H
-#endif
+#include "platform_gl.h"
 
 #include <stdio.h>
 

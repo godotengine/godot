@@ -579,6 +579,8 @@ if selected_platform in platform_list:
         if env["debug_symbols"]:
             env.Append(CCFLAGS=["/Zi", "/FS"])
             env.Append(LINKFLAGS=["/DEBUG:FULL"])
+        else:
+            env.Append(LINKFLAGS=["/DEBUG:NONE"])
 
         if env["optimize"] == "speed":
             env.Append(CCFLAGS=["/O2"])

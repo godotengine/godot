@@ -38,12 +38,7 @@
 #include "core/templates/self_list.h"
 #include "servers/rendering/environment/renderer_gi.h"
 
-#include "platform_config.h"
-#ifndef OPENGL_INCLUDE_H
-#include <GLES3/gl3.h>
-#else
-#include OPENGL_INCLUDE_H
-#endif
+#include "platform_gl.h"
 
 namespace GLES3 {
 
