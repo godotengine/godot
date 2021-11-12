@@ -29,9 +29,7 @@
 /*************************************************************************/
 
 #include "gltf_document.h"
-#include "core/error_list.h"
-#include "core/error_macros.h"
-#include "core/variant.h"
+
 #include "gltf_accessor.h"
 #include "gltf_animation.h"
 #include "gltf_camera.h"
@@ -44,11 +42,9 @@
 #include "gltf_state.h"
 #include "gltf_texture.h"
 
-#include <stdio.h>
-#include <stdlib.h>
-
 #include "core/bind/core_bind.h"
 #include "core/crypto/crypto_core.h"
+#include "core/error_list.h"
 #include "core/error_macros.h"
 #include "core/io/json.h"
 #include "core/math/disjoint_set.h"
@@ -58,15 +54,6 @@
 #include "core/version_hash.gen.h"
 #include "drivers/png/png_driver_common.h"
 #include "editor/import/resource_importer_scene.h"
-#ifdef MODULE_CSG_ENABLED
-#include "modules/csg/csg_shape.h"
-#endif // MODULE_CSG_ENABLED
-#ifdef MODULE_GRIDMAP_ENABLED
-#include "modules/gridmap/grid_map.h"
-#endif // MODULE_GRIDMAP_ENABLED
-#ifdef MODULE_REGEX_ENABLED
-#include "modules/regex/regex.h"
-#endif // MODULE_REGEX_ENABLED
 #include "scene/2d/node_2d.h"
 #include "scene/3d/bone_attachment.h"
 #include "scene/3d/camera.h"
@@ -77,6 +64,21 @@
 #include "scene/animation/animation_player.h"
 #include "scene/main/node.h"
 #include "scene/resources/surface_tool.h"
+
+#include "modules/modules_enabled.gen.h" // For csg, gridmap, regex.
+
+#ifdef MODULE_CSG_ENABLED
+#include "modules/csg/csg_shape.h"
+#endif // MODULE_CSG_ENABLED
+#ifdef MODULE_GRIDMAP_ENABLED
+#include "modules/gridmap/grid_map.h"
+#endif // MODULE_GRIDMAP_ENABLED
+#ifdef MODULE_REGEX_ENABLED
+#include "modules/regex/regex.h"
+#endif // MODULE_REGEX_ENABLED
+
+#include <stdio.h>
+#include <stdlib.h>
 #include <limits>
 
 Error GLTFDocument::serialize(Ref<GLTFState> state, Node *p_root, const String &p_path) {
@@ -5424,18 +5426,18 @@ void GLTFDocument::_convert_grid_map_to_gltf(GridMap *p_grid_map, GLTFNodeIndex 
 		state->nodes.push_back(new_gltf_node);
 		Vector3 cell_location = cells[k];
 		int32_t cell = p_grid_map->get_cell_item(
-				Vector3(cell_location.x, cell_location.y, cell_location.z));
+				cell_location.x, cell_location.y, cell_location.z);
 		MeshInstance *import_mesh_node = memnew(MeshInstance);
 		import_mesh_node->set_mesh(p_grid_map->get_mesh_library()->get_item_mesh(cell));
 		Transform cell_xform;
 		cell_xform.basis.set_orthogonal_index(
 				p_grid_map->get_cell_item_orientation(
-						Vector3(cell_location.x, cell_location.y, cell_location.z)));
+						cell_location.x, cell_location.y, cell_location.z));
 		cell_xform.basis.scale(Vector3(p_grid_map->get_cell_scale(),
 				p_grid_map->get_cell_scale(),
 				p_grid_map->get_cell_scale()));
 		cell_xform.set_origin(p_grid_map->map_to_world(
-				Vector3(cell_location.x, cell_location.y, cell_location.z)));
+				cell_location.x, cell_location.y, cell_location.z));
 		Ref<GLTFMesh> gltf_mesh;
 		gltf_mesh.instance();
 		gltf_mesh = import_mesh_node;

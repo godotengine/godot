@@ -31,7 +31,7 @@
 #ifndef DYNAMIC_FONT_H
 #define DYNAMIC_FONT_H
 
-#include "modules/modules_enabled.gen.h"
+#include "modules/modules_enabled.gen.h" // For freetype.
 #ifdef MODULE_FREETYPE_ENABLED
 
 #include "core/io/resource_loader.h"

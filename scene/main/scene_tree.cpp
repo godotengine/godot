@@ -30,8 +30,6 @@
 
 #include "scene_tree.h"
 
-#include "modules/modules_enabled.gen.h"
-
 #include "core/io/marshalls.h"
 #include "core/io/resource_loader.h"
 #include "core/message_queue.h"
@@ -51,6 +49,8 @@
 #include "servers/physics_2d_server.h"
 #include "servers/physics_server.h"
 #include "viewport.h"
+
+#include "modules/modules_enabled.gen.h" // For freetype.
 
 #include <stdio.h>
 #include <stdlib.h>

@@ -218,6 +218,8 @@
 #include "scene/resources/occluder_shape.h"
 #endif
 
+#include "modules/modules_enabled.gen.h" // For freetype.
+
 static Ref<ResourceFormatSaverText> resource_saver_text;
 static Ref<ResourceFormatLoaderText> resource_loader_text;
 
