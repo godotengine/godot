@@ -53,6 +53,9 @@ class EditorProperty : public Container {
 public:
 	enum MenuItems {
 		MENU_PIN_VALUE,
+		MENU_COPY_PROPERTY,
+		MENU_PASTE_PROPERTY,
+		MENU_COPY_PROPERTY_PATH,
 	};
 
 private:
@@ -112,6 +115,7 @@ protected:
 	static void _bind_methods();
 
 	void _gui_input(const Ref<InputEvent> &p_event);
+	void _unhandled_key_input(const Ref<InputEvent> &p_event);
 
 public:
 	void emit_changed(const StringName &p_property, const Variant &p_value, const StringName &p_field = StringName(), bool p_changing = false);
@@ -308,6 +312,7 @@ class EditorInspector : public ScrollContainer {
 
 	String property_prefix; //used for sectioned inspector
 	String object_class;
+	Variant property_clipboard;
 
 	void _edit_set(const String &p_name, const Variant &p_value, bool p_refresh_all, const String &p_changed_field);
 
@@ -393,6 +398,9 @@ public:
 
 	void set_sub_inspector(bool p_enable);
 	bool is_sub_inspector() const { return sub_inspector; }
+
+	void set_property_clipboard(const Variant &p_value);
+	Variant get_property_clipboard() const;
 
 	EditorInspector();
 };
