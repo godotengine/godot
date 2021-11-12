@@ -3267,7 +3267,9 @@ TextServerFallback::TextServerFallback() {
 };
 
 TextServerFallback::~TextServerFallback() {
+#ifdef MODULE_FREETYPE_ENABLED
 	if (library != nullptr) {
 		FT_Done_FreeType(library);
 	}
+#endif
 };
