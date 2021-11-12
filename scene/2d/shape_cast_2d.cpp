@@ -130,26 +130,6 @@ real_t ShapeCast2D::get_closest_collision_unsafe_fraction() const {
 	return collision_unsafe_fraction;
 }
 
-Object *ShapeCast2D::get_closest_collider() const {
-	ERR_FAIL_COND_V_MSG(result.is_empty(), nullptr, "Shape cast has not collided with anything yet.");
-	return ObjectDB::get_instance(result[0].collider_id);
-}
-
-int ShapeCast2D::get_closest_collider_shape() const {
-	ERR_FAIL_COND_V_MSG(result.is_empty(), -1, "Shape cast has not collided with anything yet.");
-	return result[0].shape;
-}
-
-Vector2 ShapeCast2D::get_closest_collision_point() const {
-	ERR_FAIL_COND_V_MSG(result.is_empty(), Vector2(), "Shape cast has not collided with anything yet.");
-	return result[0].point;
-}
-
-Vector2 ShapeCast2D::get_closest_collision_normal() const {
-	ERR_FAIL_COND_V_MSG(result.is_empty(), Vector2(), "Shape cast has not collided with anything yet.");
-	return result[0].normal;
-}
-
 void ShapeCast2D::set_enabled(bool p_enabled) {
 	enabled = p_enabled;
 	update();
@@ -437,10 +417,6 @@ void ShapeCast2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_collision_point", "index"), &ShapeCast2D::get_collision_point);
 	ClassDB::bind_method(D_METHOD("get_collision_normal", "index"), &ShapeCast2D::get_collision_normal);
 
-	ClassDB::bind_method(D_METHOD("get_closest_collider"), &ShapeCast2D::get_closest_collider);
-	ClassDB::bind_method(D_METHOD("get_closest_collider_shape"), &ShapeCast2D::get_closest_collider_shape);
-	ClassDB::bind_method(D_METHOD("get_closest_collision_point"), &ShapeCast2D::get_closest_collision_point);
-	ClassDB::bind_method(D_METHOD("get_closest_collision_normal"), &ShapeCast2D::get_closest_collision_normal);
 	ClassDB::bind_method(D_METHOD("get_closest_collision_safe_fraction"), &ShapeCast2D::get_closest_collision_safe_fraction);
 	ClassDB::bind_method(D_METHOD("get_closest_collision_unsafe_fraction"), &ShapeCast2D::get_closest_collision_unsafe_fraction);
 

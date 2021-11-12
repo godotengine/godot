@@ -105,10 +105,6 @@ public:
 	Vector2 get_collision_point(int p_idx) const;
 	Vector2 get_collision_normal(int p_idx) const;
 
-	Object *get_closest_collider() const;
-	int get_closest_collider_shape() const;
-	Vector2 get_closest_collision_point() const;
-	Vector2 get_closest_collision_normal() const;
 	real_t get_closest_collision_safe_fraction() const;
 	real_t get_closest_collision_unsafe_fraction() const;
 

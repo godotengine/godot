@@ -39,31 +39,6 @@
 				[b]Note:[/b] [code]enabled == true[/code] is not required for this to work.
 			</description>
 		</method>
-		<method name="get_closest_collider" qualifiers="const">
-			<return type="Object" />
-			<description>
-				Returns the first object that the shape intersects, or [code]null[/code] if no object is intersecting the shape (i.e. [method is_colliding] returns [code]false[/code]).
-			</description>
-		</method>
-		<method name="get_closest_collider_shape" qualifiers="const">
-			<return type="int" />
-			<description>
-				Returns the shape ID of the first object that the shape intersects, or [code]0[/code] if no object is intersecting the shape (i.e. [method is_colliding] returns [code]false[/code]).
-			</description>
-		</method>
-		<method name="get_closest_collision_normal" qualifiers="const">
-			<return type="Vector2" />
-			<description>
-				Returns the normal of the closest intersecting object's shape at the collision point.
-			</description>
-		</method>
-		<method name="get_closest_collision_point" qualifiers="const">
-			<return type="Vector2" />
-			<description>
-				Returns the collision point at which the shape intersects the closest object.
-				[b]Note:[/b] this point is in the [b]global[/b] coordinate system.
-			</description>
-		</method>
 		<method name="get_closest_collision_safe_fraction" qualifiers="const">
 			<return type="float" />
 			<description>
