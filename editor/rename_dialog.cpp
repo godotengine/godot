@@ -30,6 +30,7 @@
 
 #include "rename_dialog.h"
 
+#include "modules/modules_enabled.gen.h" // For regex.
 #ifdef MODULE_REGEX_ENABLED
 
 #include "core/string/print_string.h"

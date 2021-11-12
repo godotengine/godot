@@ -41,7 +41,7 @@
 #include "scene/resources/theme.h"
 
 // Used for a hack preserving Mono properties on non-Mono builds.
-#include "modules/modules_enabled.gen.h"
+#include "modules/modules_enabled.gen.h" // For mono.
 
 void DocTools::merge_from(const DocTools &p_data) {
 	for (KeyValue<String, DocData::ClassDoc> &E : class_list) {

@@ -38,6 +38,8 @@
 #include "thirdparty/icu4c/icudata.gen.h"
 #endif
 
+#include "modules/modules_enabled.gen.h" // For freetype, msdfgen.
+
 #ifdef MODULE_MSDFGEN_ENABLED
 #include "core/ShapeDistanceFinder.h"
 #include "core/contour-combiners.h"

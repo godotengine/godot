@@ -57,7 +57,6 @@
 #include "main/performance.h"
 #include "main/splash.gen.h"
 #include "main/splash_editor.gen.h"
-#include "modules/modules_enabled.gen.h"
 #include "modules/register_module_types.h"
 #include "platform/register_platform_apis.h"
 #include "scene/main/scene_tree.h"
@@ -81,15 +80,15 @@
 #endif
 
 #ifdef TOOLS_ENABLED
-
 #include "editor/doc_data_class_path.gen.h"
 #include "editor/doc_tools.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
 #include "editor/progress_dialog.h"
 #include "editor/project_manager.h"
-
 #endif
+
+#include "modules/modules_enabled.gen.h" // For mono.
 
 /* Static members */
 

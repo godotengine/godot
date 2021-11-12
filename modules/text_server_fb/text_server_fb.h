@@ -42,7 +42,7 @@
 #include "core/templates/thread_work_pool.h"
 #include "scene/resources/texture.h"
 
-#include "modules/modules_enabled.gen.h"
+#include "modules/modules_enabled.gen.h" // For freetype, msdfgen.
 
 #ifdef MODULE_FREETYPE_ENABLED
 #include <ft2build.h>

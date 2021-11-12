@@ -46,7 +46,8 @@
 #include "scene/resources/material.h"
 #include "scene/resources/texture.h"
 
-#include "modules/modules_enabled.gen.h"
+#include "modules/modules_enabled.gen.h" // For csg, gridmap.
+
 #include <cstdint>
 
 class GLTFState;

@@ -48,6 +48,8 @@
 #include "scene/gui/tree.h"
 #include "scene_tree_editor.h"
 
+#include "modules/modules_enabled.gen.h" // For regex.
+
 class EditorNode;
 class ShaderCreateDialog;
 
