@@ -1346,10 +1346,10 @@ void VisualServerScene::rooms_set_active(RID p_scenario, bool p_active) {
 	scenario->_portal_renderer.rooms_set_active(p_active);
 }
 
-void VisualServerScene::rooms_set_params(RID p_scenario, int p_portal_depth_limit) {
+void VisualServerScene::rooms_set_params(RID p_scenario, int p_portal_depth_limit, real_t p_roaming_expansion_margin) {
 	Scenario *scenario = scenario_owner.getornull(p_scenario);
 	ERR_FAIL_COND(!scenario);
-	scenario->_portal_renderer.rooms_set_params(p_portal_depth_limit);
+	scenario->_portal_renderer.rooms_set_params(p_portal_depth_limit, p_roaming_expansion_margin);
 }
 
 void VisualServerScene::rooms_set_debug_feature(RID p_scenario, VisualServer::RoomsDebugFeature p_feature, bool p_active) {

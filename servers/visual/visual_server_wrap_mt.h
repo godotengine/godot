@@ -521,7 +521,7 @@ public:
 	FUNC8(rooms_finalize, RID, bool, bool, bool, bool, String, bool, bool)
 	FUNC4(rooms_override_camera, RID, bool, const Vector3 &, const Vector<Plane> *)
 	FUNC2(rooms_set_active, RID, bool)
-	FUNC2(rooms_set_params, RID, int)
+	FUNC3(rooms_set_params, RID, int, real_t)
 	FUNC3(rooms_set_debug_feature, RID, RoomsDebugFeature, bool)
 	FUNC2(rooms_update_gameplay_monitor, RID, const Vector<Vector3> &)
 
