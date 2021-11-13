@@ -80,9 +80,6 @@ struct ContainerTypeValidate {
 		}
 
 		ERR_FAIL_COND_V_MSG(type != p_variant.get_type(), false, "Attempted to " + String(p_operation) + " a variable of type '" + Variant::get_type_name(p_variant.get_type()) + "' into a " + where + " of type '" + Variant::get_type_name(type) + "'.");
-		if (type != p_variant.get_type()) {
-			return false;
-		}
 
 		if (type != Variant::OBJECT) {
 			return true;

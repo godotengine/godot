@@ -233,8 +233,45 @@ void Array::push_back(const Variant &p_value) {
 }
 
 void Array::append_array(const Array &p_array) {
-	ERR_FAIL_COND(!_p->typed.validate(p_array, "append_array"));
-	_p->array.append_array(p_array._p->array);
+	if (_p->typed.type != Variant::OBJECT && _p->typed.type == p_array._p->typed.type) {
+		// Same type or untyped, should be fine
+		_p->array.append_array(p_array._p->array);
+	} else if (_p->typed.type == Variant::NIL) { // From typed to untyped
+		_p->array.append_array(p_array._p->array);
+	} else if (p_array._p->typed.type == Variant::NIL) { // From untyped to typed, must try to check if they are all valid
+		if (_p->typed.type == Variant::OBJECT) {
+			// For objects, it needs full validation, either can be converted or fail
+			for (int i = 0; i < p_array._p->array.size(); i++) {
+				ERR_FAIL_COND(!_p->typed.validate(p_array._p->array[i], "assign"));
+			}
+			_p->array.append_array(p_array._p->array);
+		} else {
+			// For non objects, we need to check if there is a valid conversion, which needs to happen one by one, so this is the worst case.
+			Vector<Variant> new_array;
+			new_array.resize(p_array._p->array.size());
+			for (int i = 0; i < p_array._p->array.size(); i++) {
+				Variant src_val = p_array._p->array[i];
+				if (src_val.get_type() == _p->typed.type) {
+					new_array.write[i] = src_val;
+				} else if (Variant::can_convert_strict(src_val.get_type(), _p->typed.type)) {
+					Variant *ptr = &src_val;
+					Callable::CallError ce;
+					Variant::construct(_p->typed.type, new_array.write[i], (const Variant **)&ptr, 1, ce);
+					if (ce.error != Callable::CallError::CALL_OK) {
+						ERR_FAIL_MSG("Unable to convert array index " + itos(i) + " from '" + Variant::get_type_name(src_val.get_type()) + "' to '" + Variant::get_type_name(_p->typed.type) + "'.");
+					}
+				} else {
+					ERR_FAIL_MSG("Unable to convert array index " + itos(i) + " from '" + Variant::get_type_name(src_val.get_type()) + "' to '" + Variant::get_type_name(_p->typed.type) + "'.");
+				}
+			}
+
+			_p->array.append_array(new_array);
+		}
+	} else if (_p->typed.can_reference(p_array._p->typed)) { // Same type or compatible
+		_p->array.append_array(p_array._p->array);
+	} else {
+		ERR_FAIL_MSG("Assignment of arrays of incompatible types.");
+	}
 }
 
 Error Array::resize(int p_new_size) {
