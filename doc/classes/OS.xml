@@ -246,6 +246,13 @@
 				This can be used to narrow down fully specified locale strings to only the "common" language code, when you don't need the additional information about country code or variants. For example, for a French Canadian user with [code]fr_CA[/code] locale, this would return [code]fr[/code].
 			</description>
 		</method>
+		<method name="get_main_thread_id" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the ID of the main thread. See [method get_thread_caller_id].
+				[b]Note:[/b] Thread IDs are not deterministic and may be reused across application restarts.
+			</description>
+		</method>
 		<method name="get_model_name" qualifiers="const">
 			<return type="String" />
 			<description>
