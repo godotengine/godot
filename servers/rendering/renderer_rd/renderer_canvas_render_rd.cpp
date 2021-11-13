@@ -758,6 +758,10 @@ void RendererCanvasRenderRD::_render_item(RD::DrawListID p_draw_list, RID p_rend
 
 					instance_count = storage->multimesh_get_instances_to_draw(multimesh);
 
+					if (instance_count == 0) {
+						break;
+					}
+
 					RID uniform_set = storage->multimesh_get_2d_uniform_set(multimesh, shader.default_version_rd_shader, TRANSFORMS_UNIFORM_SET);
 					RD::get_singleton()->draw_list_bind_uniform_set(p_draw_list, uniform_set, TRANSFORMS_UNIFORM_SET);
 					push_constant.flags |= 1; //multimesh, trails disabled

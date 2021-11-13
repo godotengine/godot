@@ -334,6 +334,10 @@ void RenderForwardClustered::_render_list_template(RenderingDevice::DrawListID p
 		const GeometryInstanceSurfaceDataCache *surf = p_params->elements[i];
 		const RenderElementInfo &element_info = p_params->element_info[i];
 
+		if (surf->owner->instance_count == 0) {
+			continue;
+		}
+
 		push_constant.base_index = i + p_params->element_offset;
 
 		RID material_uniform_set;
