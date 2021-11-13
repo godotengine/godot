@@ -314,8 +314,9 @@ void ShaderTextEditor::_validate_script() {
 		set_error("");
 	}
 
+	// reset intensity and reset for lines that match unevaluated conditional macros
 	for (int i = 0; i < get_text_editor()->get_line_count(); i++) {
-		get_text_editor()->set_line_color_scale(i, 1.0f);
+		get_text_editor()->set_line_font_color_intensity(i, 1.0f);
 	}
 	if (!state->skipped_conditions.is_empty())
 	{
@@ -333,7 +334,8 @@ void ShaderTextEditor::_validate_script() {
 
 				for (int i = cond->start_line; i < cond->end_line; i++)
 				{
-					get_text_editor()->set_line_color_scale(i, 0.5f);
+					// TODO expose unevaluated macro conditional block intensity in editor settings
+					get_text_editor()->set_line_font_color_intensity(i, 0.5f);
 				}
 			}
 		}

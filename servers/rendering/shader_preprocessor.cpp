@@ -930,11 +930,11 @@ int ShaderDependencyNode::GetContext(int line, ShaderDependencyNode** context)
 			}
 		}
 
-		include_offset += include->get_line_count();
+		include_offset += include->get_line_count() - 1; // subracting 1 because the line count starts on the starting line, which is occupied already. So need to shift by just total lines - 1
 	}
 
 	*context = this;
-	return line;
+	return line - include_offset;
 }
 
 ShaderDependencyNode::~ShaderDependencyNode() {

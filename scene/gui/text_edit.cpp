@@ -866,12 +866,8 @@ void TextEdit::_notification(int p_what) {
 				Dictionary color_map = _get_line_syntax_highlighting(line);
 
 				// Ensure we at least use the font color.
-				Color current_color = !editable ? font_readonly_color : font_color;
-				float color_scale = text.get_line_color_scale(line);
-				if (color_scale != 1.0f)
-				{
-					current_color *= color_scale;
-				}
+				float font_color_intensity = text.get_line_font_color_intensity(line);
+				Color current_color = (!editable ? font_readonly_color : font_color) * font_color_intensity;
 
 				const Ref<TextParagraph> ldata = text.get_line_data(line);
 
@@ -1164,15 +1160,11 @@ void TextEdit::_notification(int p_what) {
 						if (color_data != nullptr) {
 							current_color = (color_data->operator Dictionary()).get("color", font_color);
 
-							float color_scale = text.get_line_color_scale(line);
-							if (color_scale != 1.0f)
-							{
-								current_color *= color_scale;
-							}
-
 							if (!editable && current_color.a > font_readonly_color.a) {
 								current_color.a = font_readonly_color.a;
 							}
+
+							current_color *= font_color_intensity;
 						}
 
 						if (selection.active && line >= selection.from_line && line <= selection.to_line) { // Selection
@@ -1180,13 +1172,7 @@ void TextEdit::_notification(int p_what) {
 							int sel_to = (line < selection.to_line) ? TS->shaped_text_get_range(rid).y : selection.to_column;
 
 							if (glyphs[j].start >= sel_from && glyphs[j].end <= sel_to && override_selected_font_color) {
-								current_color = font_selected_color;
-
-								float color_scale = text.get_line_color_scale(line);
-								if (color_scale != 1.0f)
-								{
-									current_color *= color_scale;
-								}
+								current_color = font_selected_color * font_color_intensity;
 							}
 						}
 
@@ -1196,13 +1182,7 @@ void TextEdit::_notification(int p_what) {
 								if ((brace_open_match_line == line && brace_open_match_column == glyphs[j].start) ||
 										(caret.column == glyphs[j].start && caret.line == line && caret_wrap_index == line_wrap_index && (brace_open_matching || brace_open_mismatch))) {
 									if (brace_open_mismatch) {
-										current_color = brace_mismatch_color;
-
-										float color_scale = text.get_line_color_scale(line);
-										if (color_scale != 1.0f)
-										{
-											current_color *= color_scale;
-										}
+										current_color = brace_mismatch_color * font_color_intensity;
 									}
 									Rect2 rect = Rect2(char_pos, ofs_y + font->get_underline_position(font_size), glyphs[j].advance * glyphs[j].repeat, font->get_underline_thickness(font_size));
 									draw_rect(rect, current_color);
@@ -1211,13 +1191,7 @@ void TextEdit::_notification(int p_what) {
 								if ((brace_close_match_line == line && brace_close_match_column == glyphs[j].start) ||
 										(caret.column == glyphs[j].start + 1 && caret.line == line && caret_wrap_index == line_wrap_index && (brace_close_matching || brace_close_mismatch))) {
 									if (brace_close_mismatch) {
-										current_color = brace_mismatch_color;
-
-										float color_scale = text.get_line_color_scale(line);
-										if (color_scale != 1.0f)
-										{
-											current_color *= color_scale;
-										}
+										current_color = brace_mismatch_color * font_color_intensity;
 									}
 									Rect2 rect = Rect2(char_pos, ofs_y + font->get_underline_position(font_size), glyphs[j].advance * glyphs[j].repeat, font->get_underline_thickness(font_size));
 									draw_rect(rect, current_color);
@@ -4773,17 +4747,17 @@ Color TextEdit::get_line_background_color(int p_line) const {
 	return text.get_line_background_color(p_line);
 }
 
-void TextEdit::set_line_color_scale(int p_line, const float color_scale)
+void TextEdit::set_line_font_color_intensity(int p_line, const float font_color_intensity)
 {
 	ERR_FAIL_INDEX(p_line, text.size());
-	text.set_line_color_scale(p_line, color_scale);
+	text.set_line_font_color_intensity(p_line, font_color_intensity);
 	update();
 }
 
-float TextEdit::get_line_color_scale(int p_line) const
+float TextEdit::get_line_font_color_intensity(int p_line) const
 {
 	ERR_FAIL_INDEX_V(p_line, text.size(), 0.0f);
-	return text.get_line_color_scale(p_line);
+	return text.get_line_font_color_intensity(p_line);
 }
 
 /* Syntax Highlighting. */
