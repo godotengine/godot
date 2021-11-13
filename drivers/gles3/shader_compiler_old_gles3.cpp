@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "shader_compiler_gles3.h"
+#include "shader_compiler_old_gles3.h"
 #ifdef GLES3_BACKEND_ENABLED
 
 #include "core/config/project_settings.h"
@@ -206,7 +206,7 @@ static String get_constant_text(SL::DataType p_type, const Vector<SL::ConstantNo
 	}
 }
 
-void ShaderCompilerGLES3::_dump_function_deps(SL::ShaderNode *p_node, const StringName &p_for_func, const Map<StringName, String> &p_func_code, StringBuilder &r_to_add, Set<StringName> &r_added) {
+void ShaderCompilerOLDGLES3::_dump_function_deps(SL::ShaderNode *p_node, const StringName &p_for_func, const Map<StringName, String> &p_func_code, StringBuilder &r_to_add, Set<StringName> &r_added) {
 	int fidx = -1;
 
 	for (int i = 0; i < p_node->functions.size(); i++) {
@@ -264,7 +264,7 @@ void ShaderCompilerGLES3::_dump_function_deps(SL::ShaderNode *p_node, const Stri
 	}
 }
 
-String ShaderCompilerGLES3::_dump_node_code(SL::Node *p_node, int p_level, GeneratedCode &r_gen_code, IdentifierActions &p_actions, const DefaultIdentifierActions &p_default_actions, bool p_assigning, bool p_use_scope) {
+String ShaderCompilerOLDGLES3::_dump_node_code(SL::Node *p_node, int p_level, GeneratedCode &r_gen_code, IdentifierActions &p_actions, const DefaultIdentifierActions &p_default_actions, bool p_assigning, bool p_use_scope) {
 	StringBuilder code;
 
 	switch (p_node->type) {
@@ -842,13 +842,13 @@ String ShaderCompilerGLES3::_dump_node_code(SL::Node *p_node, int p_level, Gener
 	return code.as_string();
 }
 
-ShaderLanguage::DataType ShaderCompilerGLES3::_get_variable_type(const StringName &p_type) {
+ShaderLanguage::DataType ShaderCompilerOLDGLES3::_get_variable_type(const StringName &p_type) {
 	//	RS::GlobalVariableType gvt = ((RasterizerStorageRD *)(RendererStorage::base_singleton))->global_variable_get_type_internal(p_type);
 	RS::GlobalVariableType gvt = RS::GLOBAL_VAR_TYPE_MAX;
 	return RS::global_variable_type_get_shader_datatype(gvt);
 }
 
-Error ShaderCompilerGLES3::compile(RS::ShaderMode p_mode, const String &p_code, IdentifierActions *p_actions, const String &p_path, GeneratedCode &r_gen_code) {
+Error ShaderCompilerOLDGLES3::compile(RS::ShaderMode p_mode, const String &p_code, IdentifierActions *p_actions, const String &p_path, GeneratedCode &r_gen_code) {
 	ShaderLanguage::VaryingFunctionNames var_names;
 
 	Error err = parser.compile(p_code, ShaderTypes::get_singleton()->get_functions(p_mode), ShaderTypes::get_singleton()->get_modes(p_mode), var_names, ShaderTypes::get_singleton()->get_types(), _get_variable_type);
@@ -885,7 +885,7 @@ Error ShaderCompilerGLES3::compile(RS::ShaderMode p_mode, const String &p_code, 
 	return OK;
 }
 
-ShaderCompilerGLES3::ShaderCompilerGLES3() {
+ShaderCompilerOLDGLES3::ShaderCompilerOLDGLES3() {
 	/** CANVAS ITEM SHADER **/
 
 	actions[RS::SHADER_CANVAS_ITEM].renames["VERTEX"] = "outvec.xy";

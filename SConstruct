@@ -16,6 +16,7 @@ from collections import OrderedDict
 import methods
 import glsl_builders
 import gles3_builders
+import gles3_old_builders
 from platform_methods import run_in_subprocess
 
 # Scan possible build platforms
@@ -712,11 +713,16 @@ if selected_platform in platform_list:
     if not env["platform"] == "server":
         env.Append(
             BUILDERS={
+                "GLES3_OLD_GLSL": env.Builder(
+                    action=run_in_subprocess(gles3_old_builders.build_gles3_headers),
+                    suffix="glsl.gen.h",
+                    src_suffix=".glsl",
+                ),
                 "GLES3_GLSL": env.Builder(
                     action=run_in_subprocess(gles3_builders.build_gles3_headers),
                     suffix="glsl.gen.h",
                     src_suffix=".glsl",
-                )
+                ),
             }
         )
 

@@ -31,7 +31,7 @@
 #include "rasterizer_gles3.h"
 
 #ifdef GLES3_BACKEND_ENABLED
-#include "shader_gles3.h"
+#include "shader_old_gles3.h"
 
 #include "core/config/project_settings.h"
 #include "core/os/os.h"

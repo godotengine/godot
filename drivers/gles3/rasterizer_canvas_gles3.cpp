@@ -430,7 +430,7 @@ void RasterizerCanvasGLES3::render_batches(Item::Command *const *p_commands, Ite
 									texture = texture->get_ptr();
 
 									if (next_power_of_2(texture->alloc_width) != (unsigned int)texture->alloc_width && next_power_of_2(texture->alloc_height) != (unsigned int)texture->alloc_height) {
-										state.canvas_shader.set_conditional(CanvasShaderGLES3::USE_FORCE_REPEAT, true);
+										state.canvas_shader.set_conditional(CanvasOldShaderGLES3::USE_FORCE_REPEAT, true);
 										can_tile = false;
 									}
 								}
@@ -510,7 +510,7 @@ void RasterizerCanvasGLES3::render_batches(Item::Command *const *p_commands, Ite
 										flip_v = !flip_v;
 									}
 
-									state.canvas_shader.set_uniform(CanvasShaderGLES3::COLOR_TEXPIXEL_SIZE, texpixel_size);
+									state.canvas_shader.set_uniform(CanvasOldShaderGLES3::COLOR_TEXPIXEL_SIZE, texpixel_size);
 
 									bool untile = false;
 
@@ -558,7 +558,7 @@ void RasterizerCanvasGLES3::render_batches(Item::Command *const *p_commands, Ite
 										Vector2(1.0, 0.0),
 									};
 
-									state.canvas_shader.set_uniform(CanvasShaderGLES3::COLOR_TEXPIXEL_SIZE, Vector2());
+									state.canvas_shader.set_uniform(CanvasOldShaderGLES3::COLOR_TEXPIXEL_SIZE, Vector2());
 									_draw_gui_primitive(4, points, NULL, uvs);
 								}
 
@@ -589,8 +589,8 @@ void RasterizerCanvasGLES3::render_batches(Item::Command *const *p_commands, Ite
 										dst_rect.size.height *= -1;
 									}
 
-									state.canvas_shader.set_uniform(CanvasShaderGLES3::DST_RECT, Color(dst_rect.position.x, dst_rect.position.y, dst_rect.size.x, dst_rect.size.y));
-									state.canvas_shader.set_uniform(CanvasShaderGLES3::SRC_RECT, Color(0, 0, 1, 1));
+									state.canvas_shader.set_uniform(CanvasOldShaderGLES3::DST_RECT, Color(dst_rect.position.x, dst_rect.position.y, dst_rect.size.x, dst_rect.size.y));
+									state.canvas_shader.set_uniform(CanvasOldShaderGLES3::SRC_RECT, Color(0, 0, 1, 1));
 
 									glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 									storage->info.render._2d_draw_call_count++;
@@ -628,10 +628,10 @@ void RasterizerCanvasGLES3::render_batches(Item::Command *const *p_commands, Ite
 										dst_rect.size.x *= -1; // Encoding in the dst_rect.z uniform
 									}
 
-									state.canvas_shader.set_uniform(CanvasShaderGLES3::COLOR_TEXPIXEL_SIZE, texpixel_size);
+									state.canvas_shader.set_uniform(CanvasOldShaderGLES3::COLOR_TEXPIXEL_SIZE, texpixel_size);
 
-									state.canvas_shader.set_uniform(CanvasShaderGLES3::DST_RECT, Color(dst_rect.position.x, dst_rect.position.y, dst_rect.size.x, dst_rect.size.y));
-									state.canvas_shader.set_uniform(CanvasShaderGLES3::SRC_RECT, Color(src_rect.position.x, src_rect.position.y, src_rect.size.x, src_rect.size.y));
+									state.canvas_shader.set_uniform(CanvasOldShaderGLES3::DST_RECT, Color(dst_rect.position.x, dst_rect.position.y, dst_rect.size.x, dst_rect.size.y));
+									state.canvas_shader.set_uniform(CanvasOldShaderGLES3::SRC_RECT, Color(src_rect.position.x, src_rect.position.y, src_rect.size.x, src_rect.size.y));
 
 									glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 									storage->info.render._2d_draw_call_count++;
@@ -645,7 +645,7 @@ void RasterizerCanvasGLES3::render_batches(Item::Command *const *p_commands, Ite
 								glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 							}
 
-							state.canvas_shader.set_conditional(CanvasShaderGLES3::USE_FORCE_REPEAT, false);
+							state.canvas_shader.set_conditional(CanvasOldShaderGLES3::USE_FORCE_REPEAT, false);
 
 						} break;
 						case Item::Command::TYPE_NINEPATCH: {
@@ -678,7 +678,7 @@ void RasterizerCanvasGLES3::render_batches(Item::Command *const *p_commands, Ite
 							Size2 texpixel_size(1.0 / tex->width, 1.0 / tex->height);
 
 							// state.canvas_shader.set_uniform(CanvasShaderGLES3::MODELVIEW_MATRIX, state.uniforms.modelview_matrix);
-							state.canvas_shader.set_uniform(CanvasShaderGLES3::COLOR_TEXPIXEL_SIZE, texpixel_size);
+							state.canvas_shader.set_uniform(CanvasOldShaderGLES3::COLOR_TEXPIXEL_SIZE, texpixel_size);
 
 							Rect2 source = np->source;
 							if (source.size.x == 0 && source.size.y == 0) {
@@ -1151,7 +1151,7 @@ void RasterizerCanvasGLES3::render_batches(Item::Command *const *p_commands, Ite
 						case Item::Command::TYPE_TRANSFORM: {
 							Item::CommandTransform *transform = static_cast<Item::CommandTransform *>(command);
 							state.uniforms.extra_matrix = transform->xform;
-							state.canvas_shader.set_uniform(CanvasShaderGLES3::EXTRA_MATRIX, state.uniforms.extra_matrix);
+							state.canvas_shader.set_uniform(CanvasOldShaderGLES3::EXTRA_MATRIX, state.uniforms.extra_matrix);
 						} break;
 
 						case Item::Command::TYPE_PARTICLES: {
@@ -1250,7 +1250,7 @@ void RasterizerCanvasGLES3::canvas_render_items_implementation(Item *p_item_list
 	ris.item_group_light = p_light;
 	ris.item_group_base_transform = p_base_transform;
 
-	state.canvas_shader.set_conditional(CanvasShaderGLES3::USE_SKELETON, false);
+	state.canvas_shader.set_conditional(CanvasOldShaderGLES3::USE_SKELETON, false);
 
 	state.current_tex = RID();
 	state.current_tex_ptr = NULL;
@@ -1270,7 +1270,7 @@ void RasterizerCanvasGLES3::canvas_render_items_implementation(Item *p_item_list
 		glDisable(GL_SCISSOR_TEST);
 	}
 
-	state.canvas_shader.set_conditional(CanvasShaderGLES3::USE_SKELETON, false);
+	state.canvas_shader.set_conditional(CanvasOldShaderGLES3::USE_SKELETON, false);
 }
 
 // Legacy non-batched implementation for regression testing.
@@ -1555,7 +1555,7 @@ void RasterizerCanvasGLES3::_legacy_canvas_render_item(Item *p_ci, RenderItemSta
 				}
 
 				if (!light_used) {
-					state.canvas_shader.set_conditional(CanvasShaderGLES3::USE_LIGHTING, true);
+					state.canvas_shader.set_conditional(CanvasOldShaderGLES3::USE_LIGHTING, true);
 					light_used = true;
 				}
 
@@ -1563,20 +1563,20 @@ void RasterizerCanvasGLES3::_legacy_canvas_render_item(Item *p_ci, RenderItemSta
 				//bool has_shadow = light->shadow_buffer.is_valid() && p_ci->light_mask & light->item_shadow_mask;
 				bool has_shadow = light->use_shadow && p_ci->light_mask & light->item_shadow_mask;
 
-				state.canvas_shader.set_conditional(CanvasShaderGLES3::USE_SHADOWS, has_shadow);
+				state.canvas_shader.set_conditional(CanvasOldShaderGLES3::USE_SHADOWS, has_shadow);
 				if (has_shadow) {
 					// FTODO
 					//state.canvas_shader.set_conditional(CanvasShaderGLES3::SHADOW_USE_GRADIENT, light->shadow_gradient_length > 0);
-					state.canvas_shader.set_conditional(CanvasShaderGLES3::SHADOW_USE_GRADIENT, false);
-					state.canvas_shader.set_conditional(CanvasShaderGLES3::SHADOW_FILTER_NEAREST, light->shadow_filter == RS::CANVAS_LIGHT_FILTER_NONE);
+					state.canvas_shader.set_conditional(CanvasOldShaderGLES3::SHADOW_USE_GRADIENT, false);
+					state.canvas_shader.set_conditional(CanvasOldShaderGLES3::SHADOW_FILTER_NEAREST, light->shadow_filter == RS::CANVAS_LIGHT_FILTER_NONE);
 					//state.canvas_shader.set_conditional(CanvasShaderGLES3::SHADOW_FILTER_PCF3, light->shadow_filter == RS::CANVAS_LIGHT_FILTER_PCF3);
-					state.canvas_shader.set_conditional(CanvasShaderGLES3::SHADOW_FILTER_PCF3, false);
-					state.canvas_shader.set_conditional(CanvasShaderGLES3::SHADOW_FILTER_PCF5, light->shadow_filter == RS::CANVAS_LIGHT_FILTER_PCF5);
-					state.canvas_shader.set_conditional(CanvasShaderGLES3::SHADOW_FILTER_PCF7, false);
+					state.canvas_shader.set_conditional(CanvasOldShaderGLES3::SHADOW_FILTER_PCF3, false);
+					state.canvas_shader.set_conditional(CanvasOldShaderGLES3::SHADOW_FILTER_PCF5, light->shadow_filter == RS::CANVAS_LIGHT_FILTER_PCF5);
+					state.canvas_shader.set_conditional(CanvasOldShaderGLES3::SHADOW_FILTER_PCF7, false);
 					//state.canvas_shader.set_conditional(CanvasShaderGLES3::SHADOW_FILTER_PCF7, light->shadow_filter == RS::CANVAS_LIGHT_FILTER_PCF7);
 					//state.canvas_shader.set_conditional(CanvasShaderGLES3::SHADOW_FILTER_PCF9, light->shadow_filter == RS::CANVAS_LIGHT_FILTER_PCF9);
-					state.canvas_shader.set_conditional(CanvasShaderGLES3::SHADOW_FILTER_PCF9, false);
-					state.canvas_shader.set_conditional(CanvasShaderGLES3::SHADOW_FILTER_PCF13, light->shadow_filter == RS::CANVAS_LIGHT_FILTER_PCF13);
+					state.canvas_shader.set_conditional(CanvasOldShaderGLES3::SHADOW_FILTER_PCF9, false);
+					state.canvas_shader.set_conditional(CanvasOldShaderGLES3::SHADOW_FILTER_PCF13, light->shadow_filter == RS::CANVAS_LIGHT_FILTER_PCF13);
 				}
 
 				state.canvas_shader.bind();
@@ -1607,14 +1607,14 @@ void RasterizerCanvasGLES3::_legacy_canvas_render_item(Item *p_ci, RenderItemSta
 		}
 
 		if (light_used) {
-			state.canvas_shader.set_conditional(CanvasShaderGLES3::USE_LIGHTING, false);
-			state.canvas_shader.set_conditional(CanvasShaderGLES3::USE_SHADOWS, false);
-			state.canvas_shader.set_conditional(CanvasShaderGLES3::SHADOW_FILTER_NEAREST, false);
-			state.canvas_shader.set_conditional(CanvasShaderGLES3::SHADOW_FILTER_PCF3, false);
-			state.canvas_shader.set_conditional(CanvasShaderGLES3::SHADOW_FILTER_PCF5, false);
-			state.canvas_shader.set_conditional(CanvasShaderGLES3::SHADOW_FILTER_PCF7, false);
-			state.canvas_shader.set_conditional(CanvasShaderGLES3::SHADOW_FILTER_PCF9, false);
-			state.canvas_shader.set_conditional(CanvasShaderGLES3::SHADOW_FILTER_PCF13, false);
+			state.canvas_shader.set_conditional(CanvasOldShaderGLES3::USE_LIGHTING, false);
+			state.canvas_shader.set_conditional(CanvasOldShaderGLES3::USE_SHADOWS, false);
+			state.canvas_shader.set_conditional(CanvasOldShaderGLES3::SHADOW_FILTER_NEAREST, false);
+			state.canvas_shader.set_conditional(CanvasOldShaderGLES3::SHADOW_FILTER_PCF3, false);
+			state.canvas_shader.set_conditional(CanvasOldShaderGLES3::SHADOW_FILTER_PCF5, false);
+			state.canvas_shader.set_conditional(CanvasOldShaderGLES3::SHADOW_FILTER_PCF7, false);
+			state.canvas_shader.set_conditional(CanvasOldShaderGLES3::SHADOW_FILTER_PCF9, false);
+			state.canvas_shader.set_conditional(CanvasOldShaderGLES3::SHADOW_FILTER_PCF13, false);
 
 			state.canvas_shader.bind();
 
