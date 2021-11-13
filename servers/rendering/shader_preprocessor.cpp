@@ -515,9 +515,9 @@ void ShaderPreprocessor::start_branch_condition(PreproprocessorTokenizer *tokeni
 		state->skip_stack_else.push_back(true);
 	} else {
 
-		/*SkippedPreprocessorCondition cond;
-		cond.start_line = tokenizer->get_line();
-		state->skipped_conditions[state->current_include].push_back(cond);*/
+		SkippedPreprocessorCondition* cond = new SkippedPreprocessorCondition();
+		cond->start_line = tokenizer->get_line();
+		state->skipped_conditions[state->current_include].push_back(cond);
 
 		Vector<String> ends;
 		ends.push_back("else");
@@ -540,14 +540,16 @@ void ShaderPreprocessor::process_else(PreproprocessorTokenizer *tokenizer) {
 	bool skip = state->skip_stack_else[state->skip_stack_else.size() - 1];
 	state->skip_stack_else.remove(state->skip_stack_else.size() - 1);
 
-	/*auto vec = state->skipped_conditions[state->current_include];
-	int size = vec.size() - 1;
-	SkippedPreprocessorCondition cond = vec[size];
-	if (cond.end_line == -1)
+	auto vec = state->skipped_conditions[state->current_include];
+	int index = vec.size() - 1;
+	if (index >= 0)
 	{
-		cond.end_line = tokenizer->get_line();
-		state->skipped_conditions[state->current_include][size] = cond;
-	}*/
+		SkippedPreprocessorCondition* cond = vec[index];
+		if (cond->end_line == -1)
+		{
+			cond->end_line = tokenizer->get_line();
+		}
+	}
 
 
 	if (skip) {
@@ -564,14 +566,16 @@ void ShaderPreprocessor::process_endif(PreproprocessorTokenizer *tokenizer) {
 		return;
 	}
 
-	/*auto vec = state->skipped_conditions[state->current_include];
-	int size = vec.size() - 1;
-	SkippedPreprocessorCondition cond = vec[size];
-	if (cond.end_line == -1)
+	auto vec = state->skipped_conditions[state->current_include];
+	int index = vec.size() - 1;
+	if (index >= 0)
 	{
-		cond.end_line = tokenizer->get_line();
-		state->skipped_conditions[state->current_include][size] = cond;
-	}*/
+		SkippedPreprocessorCondition* cond = vec[index];
+		if (cond->end_line == -1)
+		{
+			cond->end_line = tokenizer->get_line();
+		}
+	}
 
 	tokenizer->advance('\n');
 }
@@ -694,7 +698,7 @@ void ShaderPreprocessor::process_include(PreproprocessorTokenizer *tokenizer) {
 
 	//Mark as included
 	state->includes.insert(real_path);
-	state->current_include = real_path;
+	
 
 	state->include_depth++;
 	if (state->include_depth > 25) {
@@ -706,9 +710,12 @@ void ShaderPreprocessor::process_include(PreproprocessorTokenizer *tokenizer) {
 	//included = included.substr(type_end + 1, included.length());
 	included = included.replace("shader_type ", "//shader_type ");
 
+	String old_include = state->current_include;
+	state->current_include = real_path;
 	ShaderPreprocessor processor(included);
 	String result = processor.preprocess(state); // .replace("\n", " "); //To preserve line numbers cram everything into a single line
 	add_to_output(result);
+	state->current_include = old_include;
 
 	if (!state->error.is_empty() && state_owner) {
 		//This is the root file, so force the line number to match this instead of the included file

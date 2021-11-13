@@ -66,7 +66,22 @@ struct PreprocessorState {
 	String current_include = "";
 	String error;
 	int error_line;
-	Map<String, Vector<SkippedPreprocessorCondition>> skipped_conditions;
+	Map<String, Vector<SkippedPreprocessorCondition*>> skipped_conditions;
+
+	~PreprocessorState()
+	{
+		for (auto& kvp : skipped_conditions)
+		{
+			for (auto& skip_proc : kvp.value)
+			{
+				delete skip_proc;
+			}
+
+			kvp.value.clear();
+		}
+
+		skipped_conditions.clear();
+	}
 };
 
 class ShaderPreprocessor {

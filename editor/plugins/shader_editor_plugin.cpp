@@ -314,7 +314,30 @@ void ShaderTextEditor::_validate_script() {
 		set_error("");
 	}
 
+	for (int i = 0; i < get_text_editor()->get_line_count(); i++) {
+		get_text_editor()->set_line_color_scale(i, 1.0f);
+	}
+	if (!state->skipped_conditions.is_empty())
+	{
+		auto val_elem = state->skipped_conditions.find("");
+		if (val_elem)
+		{
+			for (auto& cond : val_elem->get())
+			{
+				int end_line = cond->end_line;
+				if (end_line < 0)
+				{
+					// set to end of file
+					end_line = get_text_editor()->get_line_count() - cond->start_line;
+				}
 
+				for (int i = cond->start_line; i < cond->end_line; i++)
+				{
+					get_text_editor()->set_line_color_scale(i, 0.5f);
+				}
+			}
+		}
+	}
 
 	if (warnings.size() > 0 || err != OK) {
 		warnings_panel->clear();

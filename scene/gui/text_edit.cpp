@@ -867,6 +867,11 @@ void TextEdit::_notification(int p_what) {
 
 				// Ensure we at least use the font color.
 				Color current_color = !editable ? font_readonly_color : font_color;
+				float color_scale = text.get_line_color_scale(line);
+				if (color_scale != 1.0f)
+				{
+					current_color *= color_scale;
+				}
 
 				const Ref<TextParagraph> ldata = text.get_line_data(line);
 
@@ -1158,6 +1163,13 @@ void TextEdit::_notification(int p_what) {
 						const Variant *color_data = color_map.getptr(glyphs[j].start);
 						if (color_data != nullptr) {
 							current_color = (color_data->operator Dictionary()).get("color", font_color);
+
+							float color_scale = text.get_line_color_scale(line);
+							if (color_scale != 1.0f)
+							{
+								current_color *= color_scale;
+							}
+
 							if (!editable && current_color.a > font_readonly_color.a) {
 								current_color.a = font_readonly_color.a;
 							}
@@ -1169,6 +1181,12 @@ void TextEdit::_notification(int p_what) {
 
 							if (glyphs[j].start >= sel_from && glyphs[j].end <= sel_to && override_selected_font_color) {
 								current_color = font_selected_color;
+
+								float color_scale = text.get_line_color_scale(line);
+								if (color_scale != 1.0f)
+								{
+									current_color *= color_scale;
+								}
 							}
 						}
 
@@ -1179,6 +1197,12 @@ void TextEdit::_notification(int p_what) {
 										(caret.column == glyphs[j].start && caret.line == line && caret_wrap_index == line_wrap_index && (brace_open_matching || brace_open_mismatch))) {
 									if (brace_open_mismatch) {
 										current_color = brace_mismatch_color;
+
+										float color_scale = text.get_line_color_scale(line);
+										if (color_scale != 1.0f)
+										{
+											current_color *= color_scale;
+										}
 									}
 									Rect2 rect = Rect2(char_pos, ofs_y + font->get_underline_position(font_size), glyphs[j].advance * glyphs[j].repeat, font->get_underline_thickness(font_size));
 									draw_rect(rect, current_color);
@@ -1188,6 +1212,12 @@ void TextEdit::_notification(int p_what) {
 										(caret.column == glyphs[j].start + 1 && caret.line == line && caret_wrap_index == line_wrap_index && (brace_close_matching || brace_close_mismatch))) {
 									if (brace_close_mismatch) {
 										current_color = brace_mismatch_color;
+
+										float color_scale = text.get_line_color_scale(line);
+										if (color_scale != 1.0f)
+										{
+											current_color *= color_scale;
+										}
 									}
 									Rect2 rect = Rect2(char_pos, ofs_y + font->get_underline_position(font_size), glyphs[j].advance * glyphs[j].repeat, font->get_underline_thickness(font_size));
 									draw_rect(rect, current_color);
@@ -4741,6 +4771,19 @@ void TextEdit::set_line_background_color(int p_line, const Color &p_color) {
 Color TextEdit::get_line_background_color(int p_line) const {
 	ERR_FAIL_INDEX_V(p_line, text.size(), Color());
 	return text.get_line_background_color(p_line);
+}
+
+void TextEdit::set_line_color_scale(int p_line, const float color_scale)
+{
+	ERR_FAIL_INDEX(p_line, text.size());
+	text.set_line_color_scale(p_line, color_scale);
+	update();
+}
+
+float TextEdit::get_line_color_scale(int p_line) const
+{
+	ERR_FAIL_INDEX_V(p_line, text.size(), 0.0f);
+	return text.get_line_color_scale(p_line);
 }
 
 /* Syntax Highlighting. */

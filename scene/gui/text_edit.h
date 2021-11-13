@@ -141,6 +141,7 @@ private:
 			Array bidi_override;
 			Ref<TextParagraph> data_buf;
 
+			float color_scale = 1.0f;
 			Color background_color = Color(0, 0, 0, 0);
 			bool hidden = false;
 			int height = 0;
@@ -238,6 +239,9 @@ private:
 		/* Line style. */
 		void set_line_background_color(int p_line, const Color &p_color) { text.write[p_line].background_color = p_color; }
 		const Color get_line_background_color(int p_line) const { return text[p_line].background_color; }
+
+		void set_line_color_scale(int p_line, const float p_color) { text.write[p_line].color_scale = p_color; }
+		const float get_line_color_scale(int p_line) const { return text[p_line].color_scale; }
 	};
 
 	/* Text */
@@ -902,6 +906,9 @@ public:
 	// Line style
 	void set_line_background_color(int p_line, const Color &p_color);
 	Color get_line_background_color(int p_line) const;
+
+	void set_line_color_scale(int p_line, const float color_scale);
+	float get_line_color_scale(int p_line) const;
 
 	/* Syntax Highlighting. */
 	void set_syntax_highlighter(Ref<SyntaxHighlighter> p_syntax_highlighter);
