@@ -624,6 +624,10 @@ Thread::ID _OS::get_thread_caller_id() const {
 	return Thread::get_caller_id();
 };
 
+Thread::ID _OS::get_main_thread_id() const {
+	return Thread::get_main_id();
+};
+
 bool _OS::has_feature(const String &p_feature) const {
 	return OS::get_singleton()->has_feature(p_feature);
 }
@@ -1398,6 +1402,7 @@ void _OS::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_thread_name", "name"), &_OS::set_thread_name);
 	ClassDB::bind_method(D_METHOD("get_thread_caller_id"), &_OS::get_thread_caller_id);
+	ClassDB::bind_method(D_METHOD("get_main_thread_id"), &_OS::get_main_thread_id);
 
 	ClassDB::bind_method(D_METHOD("set_use_vsync", "enable"), &_OS::set_use_vsync);
 	ClassDB::bind_method(D_METHOD("is_vsync_enabled"), &_OS::is_vsync_enabled);
