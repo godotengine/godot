@@ -51,14 +51,22 @@ struct PreprocessorDefine {
 	String body;
 };
 
+struct SkippedPreprocessorCondition
+{
+	int start_line = -1;
+	int end_line = -1;
+};
+
 struct PreprocessorState {
 	Map<String, PreprocessorDefine *> defines;
 	Vector<bool> skip_stack_else;
 	int condition_depth;
 	Set<String> includes;
 	int include_depth;
+	String current_include = "";
 	String error;
 	int error_line;
+	Map<String, Vector<SkippedPreprocessorCondition>> skipped_conditions;
 };
 
 class ShaderPreprocessor {
@@ -111,11 +119,40 @@ private:
 };
 
 struct ShaderDependencyNode {
+	int line;
+	int line_count;
+	String code;
+
+	String path;
 	Ref<Shader> shader;
 	Set<ShaderDependencyNode*> dependencies;
 
 	ShaderDependencyNode() = default;
 	ShaderDependencyNode(Ref<Shader>);
+	ShaderDependencyNode(String code);
+	ShaderDependencyNode(String path, String code);
+
+	int GetContext(int line, ShaderDependencyNode** context);
+	String get_path()
+	{
+		if (shader.is_null())
+		{
+			return path;
+		}
+
+		return shader->get_path();
+	}
+
+	int get_line_count()
+	{
+		int total_lines = line_count;
+		for (ShaderDependencyNode* node : dependencies)
+		{
+			total_lines += node->get_line_count();
+		}
+
+		return total_lines;
+	}
 
 	~ShaderDependencyNode();
 
@@ -130,13 +167,19 @@ public:
 	Set<ShaderDependencyNode*> nodes;
 
 	void populate(Ref<Shader>);
+	void populate(String code);
+	void populate(String path, String code);
 	void update_shaders();
+
+	
 
 private:
 	List<ShaderDependencyNode*> cyclic_dep_tracker;
-	List<Ref<Shader>> visited_shaders;
+	//List<Ref<Shader>> visited_shaders;
+	List<String> visited_shaders;
 
 	Set<ShaderDependencyNode*>::Element* find(Ref<Shader>);
+	Set<ShaderDependencyNode*>::Element* find(String path);
 	void populate(ShaderDependencyNode*);
 	void update_shaders(ShaderDependencyNode*);
 };

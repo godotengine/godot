@@ -34,6 +34,7 @@
 #include "core/os/os.h"
 #include "servers/rendering/shader_types.h"
 #include "servers/rendering_server.h"
+#include "servers/rendering/shader_preprocessor.h"
 
 #define SL ShaderLanguage
 
@@ -1347,9 +1348,41 @@ Error ShaderCompiler::compile(RS::ShaderMode p_mode, const String &p_code, Ident
 	Error err = parser.compile(p_code, info);
 
 	if (err != OK) {
-		Vector<String> shader = p_code.split("\n");
+		// create shader preprocessor block here again
+		ShaderDependencyGraph graph;
+		graph.populate(p_code);
+		ShaderDependencyNode* context;
+		int adjusted_line = parser.get_error_line();
+		for (ShaderDependencyNode* node : graph.nodes)
+		{
+			adjusted_line = node->GetContext(parser.get_error_line(), &context);
+			break;
+		}
+
+		String path = p_path;
+		Vector<String> shader;
+
+		if (context)
+		{
+			if (!context->shader.is_null())
+			{
+				shader = context->shader->get_code().split("\n");
+				path = context->shader->get_path();
+			}
+			else if (!context->path.is_empty())
+			{
+				shader = context->code.split("\n");
+				path = context->path;
+			}
+			else
+				shader = p_code.split("\n");
+		}
+		else
+			shader = p_code.split("\n");
+
+		
 		for (int i = 0; i < shader.size(); i++) {
-			if (i + 1 == parser.get_error_line()) {
+			if (i + 1 == adjusted_line) {
 				// Mark the error line to be visible without having to look at
 				// the trace at the end.
 				print_line(vformat("E%4d-> %s", i + 1, shader[i]));
@@ -1358,7 +1391,7 @@ Error ShaderCompiler::compile(RS::ShaderMode p_mode, const String &p_code, Ident
 			}
 		}
 
-		_err_print_error(nullptr, p_path.utf8().get_data(), parser.get_error_line(), parser.get_error_text().utf8().get_data(), false, ERR_HANDLER_SHADER);
+		_err_print_error(nullptr, path.utf8().get_data(), adjusted_line, parser.get_error_text().utf8().get_data(), false, ERR_HANDLER_SHADER);
 		return err;
 	}
 

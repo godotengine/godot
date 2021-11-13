@@ -100,6 +100,11 @@ void ShaderTextEditor::set_warnings_panel(RichTextLabel *p_warnings_panel) {
 	warnings_panel = p_warnings_panel;
 }
 
+void ShaderTextEditor::set_shader_editor(ShaderEditor* editor)
+{
+	shader_editor = editor;
+}
+
 void ShaderTextEditor::set_shader_dependency_tree(Tree* tree) {
 	shader_dependency_tree = tree;
 }
@@ -259,6 +264,13 @@ void ShaderTextEditor::_validate_script() {
 	info.shader_types = ShaderTypes::get_singleton()->get_types();
 	info.global_variable_type_func = _get_global_variable_type;
 
+	ShaderPreprocessor processor(code);
+	String processed = processor.preprocess();
+
+	PreprocessorState* state = processor.get_state();
+	if (!state->error.is_empty()) {
+	}
+
 	ShaderLanguage sl;
 
 	sl.enable_warning_checking(saved_warnings_enabled);
@@ -267,19 +279,42 @@ void ShaderTextEditor::_validate_script() {
 	Error err = sl.compile(code, info);
 
 	if (err != OK) {
-		String error_text = "error(" + itos(sl.get_error_line()) + "): " + sl.get_error_text();
+		// create shader preprocessor block here again
+		ShaderDependencyGraph graph;
+		graph.populate(code);
+		ShaderDependencyNode* context;
+		int adjusted_line = sl.get_error_line();
+		for (ShaderDependencyNode* node : graph.nodes)
+		{
+			adjusted_line = node->GetContext(sl.get_error_line(), &context);
+			break;
+		}
+
+		if (context)
+		{
+			if (!context->path.is_empty())
+			{
+				// we have to change files
+				shader_editor->open_path(context->path);
+			}
+		}
+
+
+		String error_text = "error(" + itos(adjusted_line) + "): " + sl.get_error_text();
 		set_error(error_text);
-		set_error_pos(sl.get_error_line() - 1, 0);
+		set_error_pos(adjusted_line - 1, 0);
 		for (int i = 0; i < get_text_editor()->get_line_count(); i++) {
 			get_text_editor()->set_line_background_color(i, Color(0, 0, 0, 0));
 		}
-		get_text_editor()->set_line_background_color(sl.get_error_line() - 1, marked_line_color);
+		get_text_editor()->set_line_background_color(adjusted_line - 1, marked_line_color);
 	} else {
 		for (int i = 0; i < get_text_editor()->get_line_count(); i++) {
 			get_text_editor()->set_line_background_color(i, Color(0, 0, 0, 0));
 		}
 		set_error("");
 	}
+
+
 
 	if (warnings.size() > 0 || err != OK) {
 		warnings_panel->clear();
@@ -589,6 +624,8 @@ void ShaderEditor::save_external_data(const String &p_str) {
 	apply_shaders();
 	if (!shader->is_built_in()) {
 		//external shader, save it
+		auto edited_shader = shader_editor->get_edited_shader();
+		ResourceSaver::save(edited_shader->get_path(), edited_shader);
 		ResourceSaver::save(shader->get_path(), shader);
 	}
 
@@ -597,14 +634,13 @@ void ShaderEditor::save_external_data(const String &p_str) {
 
 void ShaderEditor::apply_shaders() {
 	if (shader.is_valid()) {
-		String shader_code = shader->get_code();
-
-		// shader_rolling_code
-
 		Ref<Shader> currently_edited_shader = shader_editor->get_edited_shader();
+		String editor_code = shader_editor->get_text_editor()->get_text();
+		shader_rolling_code[currently_edited_shader->get_path()] = editor_code;
 		if (currently_edited_shader == shader)
 		{
-			String editor_code = shader_editor->get_text_editor()->get_text(); // TODO get cached version of root node shader code to apply. Then set all dep code too. Do this in reverse order up the tree?
+			// TODO get cached version of root node shader code to apply. Then set all dep code too. Do this in reverse order up the tree?
+			String shader_code = shader->get_code();
 			if (shader_code != editor_code) {
 				shader->set_code(editor_code);
 				shader->set_edited(true);
@@ -612,7 +648,6 @@ void ShaderEditor::apply_shaders() {
 		}
 		else
 		{
-			String editor_code = shader_editor->get_text_editor()->get_text();
 			currently_edited_shader->set_code(editor_code);
 			currently_edited_shader->set_edited(true);
 		}
@@ -722,38 +757,37 @@ void ShaderEditor::_make_context_menu(bool p_selection, Vector2 p_position) {
 	context_menu->popup();
 }
 
+void ShaderEditor::open_path(String path)
+{
+	// TODO pull from shader dependency graph which can hold cache data, or store directly in tree?
+		// using only to pull code. how to cache data? hash set in editor panel with path lookup?
+	RES res = ResourceLoader::load(path);
+	if (!res.is_null()) {
+		Shader* shader = Object::cast_to<Shader>(*res);
+		if (shader != nullptr) {
+			auto rollingCode = shader_rolling_code.find(shader->get_path());
+
+			if (rollingCode)
+			{
+				shader_editor->set_edited_shader(shader, rollingCode->get());
+			}
+			else
+			{
+				String included = shader->get_code();
+				shader_rolling_code[path] = included;
+				shader_editor->set_edited_shader(shader);
+			}
+		}
+	}
+}
+
 void ShaderEditor::_tree_activate_shader()
 {
 	TreeItem *selected = shader_dependency_tree->get_selected();
 	if (selected) {
 		String path = selected->get_metadata(0);
 
-		auto rollingCode = shader_rolling_code.find(path);
-
-		if (rollingCode)
-		{
-			RES res = ResourceLoader::load(path);
-			if (!res.is_null()) {
-				Shader* shader = Object::cast_to<Shader>(*res);
-				if (shader != nullptr) {
-					shader_editor->set_edited_shader(shader, rollingCode->get());
-				}
-			}
-		}
-		else
-		{
-			// TODO pull from shader dependency graph which can hold cache data, or store directly in tree?
-			// using only to pull code. how to cache data? hash set in editor panel with path lookup?
-			RES res = ResourceLoader::load(path);
-			if (!res.is_null()) {
-				Shader* shader = Object::cast_to<Shader>(*res);
-				if (shader != nullptr) {
-					String included = shader->get_code();
-					shader_rolling_code[path] = included;
-					shader_editor->set_edited_shader(shader);
-				}
-			}
-		}
+		open_path(path);
 
 		/*TreeItem* parent = selected->get_parent();
 		bool is_favorite = parent != nullptr && parent->get_metadata(0) == "Favorites";
@@ -776,8 +810,8 @@ void ShaderEditor::_update_shader_dependency_tree()
 
 	for (ShaderDependencyNode *node : shader_dependencies.nodes) {
 		TreeItem *shader_parent_item = shader_dependency_tree->create_item(root);
-		shader_parent_item->set_text(0, TTR(node->shader->get_path()));
-		shader_parent_item->set_metadata(0, node->shader->get_path());
+		shader_parent_item->set_text(0, TTR(node->get_path()));
+		shader_parent_item->set_metadata(0, node->get_path());
 		shader_parent_item->set_icon(0, get_theme_icon(SNAME("Shader"), SNAME("EditorIcons")));
 
 		_update_shader_dependency_tree_items(shader_parent_item, node);
@@ -788,8 +822,8 @@ void ShaderEditor::_update_shader_dependency_tree_items(TreeItem* parent_tree_it
 {
 	for (ShaderDependencyNode *child_node : node->dependencies) {
 		TreeItem *shader_child_item = shader_dependency_tree->create_item(parent_tree_item);
-		shader_child_item->set_text(0, TTR(child_node->shader->get_path()));
-		shader_child_item->set_metadata(0, child_node->shader->get_path());
+		shader_child_item->set_text(0, TTR(child_node->get_path()));
+		shader_child_item->set_metadata(0, child_node->get_path());
 		shader_child_item->set_icon(0, get_theme_icon(SNAME("Shader"), SNAME("EditorIcons")));
 
 		_update_shader_dependency_tree_items(shader_child_item, child_node);
@@ -805,6 +839,8 @@ ShaderEditor::ShaderEditor(EditorNode *p_node) {
 	_update_warnings(false);
 
 	shader_editor = memnew(ShaderTextEditor);
+	shader_editor->set_shader_editor(this);
+
 	shader_editor->set_v_size_flags(SIZE_EXPAND_FILL);
 	shader_editor->add_theme_constant_override("separation", 0);
 	shader_editor->set_anchors_and_offsets_preset(Control::PRESET_WIDE);

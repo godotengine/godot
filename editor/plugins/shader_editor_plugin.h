@@ -44,6 +44,8 @@
 #include "servers/rendering/shader_warnings.h"
 #include "servers/rendering/shader_preprocessor.h"
 
+class ShaderEditor;
+
 class ShaderTextEditor : public CodeTextEditor {
 	GDCLASS(ShaderTextEditor, CodeTextEditor);
 
@@ -58,6 +60,7 @@ class ShaderTextEditor : public CodeTextEditor {
 	Tree *shader_dependency_tree;
 	Ref<Shader> shader;
 	List<ShaderWarning> warnings;
+	ShaderEditor* shader_editor;
 
 	void _check_shader_mode();
 	void _update_warning_panel();
@@ -74,6 +77,8 @@ public:
 
 	void reload_text();
 	void set_warnings_panel(RichTextLabel *p_warnings_panel);
+
+	void set_shader_editor(ShaderEditor* editor);
 
 	// TODO even necessary now?
 	void set_shader_dependency_tree(Tree* tree);
@@ -163,6 +168,8 @@ public:
 
 	void ensure_select_current();
 	void edit(const Ref<Shader> &p_shader);
+
+	void open_path(String path);
 
 	void goto_line_selection(int p_line, int p_begin, int p_end);
 
