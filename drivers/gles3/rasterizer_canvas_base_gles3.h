@@ -41,7 +41,7 @@
 #include "servers/rendering/renderer_canvas_render.h"
 #include "servers/rendering/renderer_compositor.h"
 
-#include "shaders/canvas.glsl.gen.h"
+#include "shaders/canvas_old.glsl.gen.h"
 #include "shaders/canvas_shadow.glsl.gen.h"
 #include "shaders/lens_distorted.glsl.gen.h"
 
@@ -94,7 +94,7 @@ public:
 		CanvasItemUBO canvas_item_ubo_data;
 		GLuint canvas_item_ubo;
 		bool canvas_texscreen_used;
-		CanvasShaderGLES3 canvas_shader;
+		CanvasOldShaderGLES3 canvas_shader;
 		CanvasShadowShaderGLES3 canvas_shadow_shader;
 		LensDistortedShaderGLES3 lens_shader;
 

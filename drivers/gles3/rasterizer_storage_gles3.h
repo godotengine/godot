@@ -41,8 +41,8 @@
 #include "servers/rendering/renderer_compositor.h"
 #include "servers/rendering/renderer_storage.h"
 #include "servers/rendering/shader_language.h"
-#include "shader_compiler_gles3.h"
-#include "shader_gles3.h"
+#include "shader_compiler_old_gles3.h"
+#include "shader_old_gles3.h"
 
 #include "shaders/copy.glsl.gen.h"
 #include "shaders/cubemap_filter.glsl.gen.h"
@@ -134,14 +134,14 @@ public:
 	} resources;
 
 	mutable struct Shaders {
-		ShaderCompilerGLES3 compiler;
+		ShaderCompilerOLDGLES3 compiler;
 
 		CopyShaderGLES3 copy;
 		CubemapFilterShaderGLES3 cubemap_filter;
 
-		ShaderCompilerGLES3::IdentifierActions actions_canvas;
-		ShaderCompilerGLES3::IdentifierActions actions_scene;
-		ShaderCompilerGLES3::IdentifierActions actions_particles;
+		ShaderCompilerOLDGLES3::IdentifierActions actions_canvas;
+		ShaderCompilerOLDGLES3::IdentifierActions actions_scene;
+		ShaderCompilerOLDGLES3::IdentifierActions actions_particles;
 
 	} shaders;
 
@@ -567,7 +567,7 @@ public:
 		RID self;
 
 		RS::ShaderMode mode;
-		ShaderGLES3 *shader;
+		ShaderOLDGLES3 *shader;
 		String code;
 		SelfList<Material>::List materials;
 

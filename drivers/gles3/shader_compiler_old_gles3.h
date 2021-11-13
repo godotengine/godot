@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef SHADER_COMPILER_OPENGL_H
-#define SHADER_COMPILER_OPENGL_H
+#ifndef SHADER_COMPILER_OLD_OPENGL_H
+#define SHADER_COMPILER_OLD_OPENGL_H
 
 #include "drivers/gles3/rasterizer_platforms.h"
 #ifdef GLES3_BACKEND_ENABLED
@@ -40,7 +40,7 @@
 #include "servers/rendering/shader_types.h"
 #include "servers/rendering_server.h"
 
-class ShaderCompilerGLES3 {
+class ShaderCompilerOLDGLES3 {
 public:
 	struct IdentifierActions {
 		Map<StringName, Pair<int *, int>> render_mode_values;
@@ -98,7 +98,7 @@ private:
 public:
 	Error compile(RS::ShaderMode p_mode, const String &p_code, IdentifierActions *p_actions, const String &p_path, GeneratedCode &r_gen_code);
 
-	ShaderCompilerGLES3();
+	ShaderCompilerOLDGLES3();
 };
 
 #endif // GLES3_BACKEND_ENABLED
