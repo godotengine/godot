@@ -780,8 +780,6 @@ void LineEdit::_notification(int p_what) {
 				ofs_max -= r_icon->get_width();
 			}
 
-			int caret_width = Math::round(1 * get_theme_default_base_scale());
-
 			// Draw selections rects.
 			Vector2 ofs = Point2(x_ofs + scroll_offset, y_ofs);
 			if (selection.enabled) {
@@ -843,6 +841,8 @@ void LineEdit::_notification(int p_what) {
 			// Draw carets.
 			ofs.x = x_ofs + scroll_offset;
 			if (draw_caret || drag_caret_force_displayed) {
+				const int caret_width = get_theme_constant(SNAME("caret_width")) * get_theme_default_base_scale();
+
 				if (ime_text.length() == 0) {
 					// Normal caret.
 					CaretInfo caret = TS->shaped_text_get_carets(text_rid, caret_column);
